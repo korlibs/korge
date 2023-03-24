@@ -5,40 +5,41 @@ import com.soywiz.kmem.*
 import com.soywiz.kmem.dyn.*
 import com.soywiz.korag.*
 import com.soywiz.korim.color.*
+import com.soywiz.korio.lang.*
 import com.soywiz.korma.geom.*
 import kotlin.reflect.*
 
 class UniformBlocksBuffersRef(
     val blocks: Array<UniformBlockBuffer<*>?>,
     val buffers: Array<AGBuffer?>,
-    val textures: Array<Array<AGTexture?>?>,
-    val texturesInfo: Array<IntArray?>,
     val valueIndices: IntArray
 ) {
     val size: Int get() = blocks.size
 
     companion object {
-        val EMPTY = UniformBlocksBuffersRef(emptyArray(), emptyArray(), emptyArray(), emptyArray(),  IntArray(0))
+        val EMPTY = UniformBlocksBuffersRef(emptyArray(), emptyArray(), IntArray(0))
     }
 
-    inline fun fastForEachBlock(callback: (index: Int, block: UniformBlockBuffer<*>, buffer: AGBuffer?, textures: Array<AGTexture?>?, texturesInfo: IntArray?, valueIndex: Int) -> Unit) {
+    inline fun fastForEachBlock(callback: (index: Int, block: UniformBlockBuffer<*>, buffer: AGBuffer?, valueIndex: Int) -> Unit) {
         for (n in 0 until size) {
             val block = blocks[n] ?: continue
-            callback(n, block, buffers[n], textures[n], texturesInfo[n], valueIndices[n])
+            callback(n, block, buffers[n], valueIndices[n])
         }
     }
 
     // @TODO: This won't be required in backends supporting uniform buffers, since the buffer can just be uploaded
     inline fun fastForEachUniform(callback: (AGUniformValue) -> Unit) {
         //println("AGUniformBlocksBuffersRef: ${blocks.toList()} : ${valueIndices.toList()}")
-        fastForEachBlock { index, block, buffer, textures, texturesInfo, valueIndex ->
+        fastForEachBlock { index, block, buffer, valueIndex ->
             if (valueIndex >= 0) {
                 val byteOffset = valueIndex * block.block.totalSize
                 //println(" :: index=$index, block=$block, buffer=$buffer, mem=${buffer?.mem}, valueIndex=$valueIndex, byteOffset=$byteOffset")
                 val buffer1 = buffer?.mem ?: error("Memory is empty for block $block")
-                block.readFrom(buffer1, textures, texturesInfo, byteOffset).fastForEach {
+                block.readFrom(buffer1, byteOffset).fastForEach {
                     callback(it)
                 }
+            } else {
+                println("ERROR block: ${block.block} has an invalid valueIndex=$valueIndex")
             }
         }
     }
@@ -72,6 +73,7 @@ open class UniformBlock(val fixedLocation: Int) {
     protected fun short2(name: String? = null): Gen<List<Boolean>> = gen(name, VarType.Short2, 4, 2)
     protected fun short3(name: String? = null): Gen<List<Boolean>> = gen(name, VarType.Short3, 6, 2)
     protected fun short4(name: String? = null): Gen<List<Boolean>> = gen(name, VarType.Short4, 8, 2)
+    @Deprecated("")
     protected fun sampler2D(name: String? = null): Gen<Int> = gen(name, VarType.Sampler2D, 4, 4)
     protected fun int(name: String? = null): Gen<Int> = gen(name, VarType.SInt1, 4, 4)
     protected fun ivec2(name: String? = null): Gen<Vector2Int> = gen(name, VarType.SInt2, 8, 4)
@@ -87,7 +89,7 @@ open class UniformBlock(val fixedLocation: Int) {
     fun <T> gen(name: String? = null, type: VarType, size: Int, align: Int = size): Gen<T> =
         Gen(this, name, layout.rawAlloc(size, align), lastIndex++, type)
 
-    override fun toString(): String = "VertexLayout[${uniforms.joinToString(", ")}, fixedLocation=$fixedLocation]"
+    override fun toString(): String = "UniformBlock[${this::class.portableSimpleName}][${uniforms.joinToString(", ")}, fixedLocation=$fixedLocation]"
 
     class Gen<T>(val block: UniformBlock, var name: String?, val voffset: Int, val vindex: Int, val type: VarType) {
         val uniform: TypedUniform<T> by lazy {
@@ -101,11 +103,13 @@ open class UniformBlock(val fixedLocation: Int) {
     }
 }
 
-class UniformRef(val block: UniformBlock, var buffer: Buffer, var textures: Array<AGTexture?>, var texturesInfo: IntArray, var index: Int) {
+class UniformRef(
+    val block: UniformBlock,
+    var buffer: Buffer,
+    var index: Int
+) {
     constructor(block: UniformBlock, size: Int = 1, index: Int = 0) : this(
         block, Buffer(block.totalSize * size),
-        arrayOfNulls(block.uniformCount * size),
-        IntArray(block.uniformCount * size),
         index
     )
 
@@ -117,7 +121,7 @@ class UniformRef(val block: UniformBlock, var buffer: Buffer, var textures: Arra
     }
 
     operator fun set(uniform: TypedUniform<Int>, value: Int) {
-        getOffset(uniform).also { buffer.setInt32(it, value) }
+        getOffset(uniform).also { buffer.setUnalignedInt32(it, value) }
     }
     operator fun set(uniform: TypedUniform<Float>, value: Boolean) = set(uniform, if (value) 1f else 0f)
     operator fun set(uniform: TypedUniform<Float>, value: Double) = set(uniform, value.toFloat())
@@ -174,11 +178,12 @@ class UniformRef(val block: UniformBlock, var buffer: Buffer, var textures: Arra
         }
     }
 
-    fun set(uniform: TypedUniform<Int>, tex: AGTexture?, samplerInfo: AGTextureUnitInfo = AGTextureUnitInfo.DEFAULT) {
-        buffer.setUnalignedInt32(getOffset(uniform), -1)
-        textures[index * blockSize + uniform.vindex] = tex
-        texturesInfo[index * blockSize + uniform.vindex] = samplerInfo.data
-    }
+    //@Deprecated("")
+    //fun set(uniform: TypedUniform<Int>, tex: AGTexture?, samplerInfo: AGTextureUnitInfo = AGTextureUnitInfo.DEFAULT) {
+    //    buffer.setUnalignedInt32(getOffset(uniform), -1)
+    //    textures[index * blockSize + uniform.vindex] = tex
+    //    texturesInfo[index * blockSize + uniform.vindex] = samplerInfo.data
+    //}
 }
 
 class UniformBlockBuffer<T : UniformBlock>(val block: T) {
@@ -192,10 +197,8 @@ class UniformBlockBuffer<T : UniformBlock>(val block: T) {
     val blockSize = block.totalSize
     val texBlockSize = block.uniforms.size
     @PublishedApi internal var buffer = Buffer(blockSize * 1)
-    @PublishedApi internal var textures = arrayOfNulls<AGTexture?>(texBlockSize * 1)
-    @PublishedApi internal var texturesInfo = IntArray(texBlockSize * 1)
     private val bufferSize: Int get() = buffer.sizeInBytes / blockSize
-    val current = UniformRef(block, buffer, textures, texturesInfo, -1)
+    val current = UniformRef(block, buffer, -1)
     var currentIndex by current::index
     val size: Int get() = currentIndex + 1
 
@@ -203,11 +206,7 @@ class UniformBlockBuffer<T : UniformBlock>(val block: T) {
         if (index >= bufferSize - 1) {
             val newCapacity = kotlin.math.max(index + 1, (index + 2) * 3)
             buffer = buffer.copyOf(blockSize * newCapacity)
-            textures = textures.copyOf(texBlockSize * newCapacity)
-            texturesInfo = texturesInfo.copyOf(texBlockSize * newCapacity)
             current.buffer = buffer
-            current.textures = textures
-            current.texturesInfo = texturesInfo
         }
     }
 
@@ -249,12 +248,8 @@ class UniformBlockBuffer<T : UniformBlock>(val block: T) {
         val texIndex1 = currentIndex * texBlockSize
         if (currentIndex > 0) {
             arraycopy(buffer, index0, buffer, index1, blockSize)
-            arraycopy(textures, texIndex0, textures, texIndex1, texBlockSize)
-            arraycopy(texturesInfo, texIndex0, texturesInfo, texIndex1, texBlockSize)
         } else {
             arrayfill(buffer, 0, 0, blockSize)
-            arrayfill(textures, null, 0, texBlockSize)
-            arrayfill(texturesInfo, 0, 0, texBlockSize)
         }
         block(this.block, current)
         if (deduplicate && currentIndex >= 1) {
@@ -262,8 +257,6 @@ class UniformBlockBuffer<T : UniformBlock>(val block: T) {
             //println(buffer.slice(0, 128).hex())
             //println(buffer.slice(128, 256).hex())
             val equals = arrayequal(buffer, index0, buffer, index1, blockSize)
-                && arrayequal(textures, texIndex0, textures, texIndex1, texBlockSize)
-                && arrayequal(texturesInfo, texIndex0, texturesInfo, texIndex1, texBlockSize)
             if (equals) {
                 currentIndex--
                 return false
@@ -275,17 +268,10 @@ class UniformBlockBuffer<T : UniformBlock>(val block: T) {
     val data = Buffer(block.totalSize)
     //val values by lazy { block.uniforms.map { AGUniformValue(it.uniform) } }
     val values: List<AGUniformValue> = block.uniforms.map { uniform ->
-        AGUniformValue(uniform.uniform, data.sliceWithSize(uniform.voffset, uniform.type.bytesSize), null, AGTextureUnitInfo.DEFAULT)
+        AGUniformValue(uniform.uniform, data.sliceWithSize(uniform.voffset, uniform.type.bytesSize))
     }
 
-    fun readFrom(buffer: Buffer, textures: Array<AGTexture?>?, texturesInfo: IntArray?, offset: Int): List<AGUniformValue> {
-        if (textures != null && texturesInfo != null) {
-            for (n in values.indices) {
-                values[n].set(textures[n], AGTextureUnitInfo.fromRaw(texturesInfo[n]))
-                //values[n].texture = textures[n]
-                //values[n].textureUnitInfo = AGTextureUnitInfo.DEFAULT // @TODO
-            }
-        }
+    fun readFrom(buffer: Buffer, offset: Int): List<AGUniformValue> {
         arraycopy(buffer, offset, data, 0, block.totalSize)
         return values
     }

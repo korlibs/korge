@@ -33,6 +33,13 @@ inline class AGReadKind(val ordinal: Int) {
 
 //TODO: there are other possible values
 inline class AGTextureTargetKind(val ordinal: Int) {
+    override fun toString(): String = when (this) {
+        TEXTURE_2D -> "TEXTURE_2D"
+        TEXTURE_3D -> "TEXTURE_3D"
+        TEXTURE_CUBE_MAP -> "TEXTURE_CUBE_MAP"
+        EXTERNAL_TEXTURE -> "EXTERNAL_TEXTURE"
+        else -> "AGTextureTargetKind($ordinal)"
+    }
     val dims: Int get() = when (this) {
         TEXTURE_2D -> 2
         TEXTURE_3D -> 3
@@ -808,8 +815,8 @@ data class AGBatch(
     var indexType: AGIndexType = AGIndexType.USHORT,
     // Program & Uniforms
     var program: Program = DefaultShaders.PROGRAM_DEBUG,
-    var uniforms: AGUniformValues = AGUniformValues.EMPTY,
-    val newUniformBlocks: UniformBlocksBuffersRef = UniformBlocksBuffersRef.EMPTY,
+    var uniformBlocks: UniformBlocksBuffersRef = UniformBlocksBuffersRef.EMPTY,
+    var textureUnits: AGTextureUnits = AGTextureUnits.EMPTY,
 
     // State
     var blending: AGBlending = AGBlending.NORMAL,
@@ -826,7 +833,7 @@ data class AGBatch(
     var instances: Int = 1
 ) : AGCommand {
     override fun execute(ag: AG) {
-        ag.draw(frameBuffer, frameBufferInfo, vertexData, program, drawType, vertexCount, indices, indexType, drawOffset, blending, uniforms, newUniformBlocks, stencilRef, stencilOpFunc, colorMask, depthAndFrontFace, scissor, cullFace, instances)
+        ag.draw(frameBuffer, frameBufferInfo, vertexData, program, drawType, vertexCount, indices, indexType, drawOffset, blending, uniformBlocks, textureUnits, stencilRef, stencilOpFunc, colorMask, depthAndFrontFace, scissor, cullFace, instances)
     }
 }
 

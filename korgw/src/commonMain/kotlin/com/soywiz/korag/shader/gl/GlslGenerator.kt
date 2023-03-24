@@ -1,20 +1,7 @@
 package com.soywiz.korag.shader.gl
 
 import com.soywiz.klogger.Logger
-import com.soywiz.korag.shader.Attribute
-import com.soywiz.korag.shader.FuncDecl
-import com.soywiz.korag.shader.Output
-import com.soywiz.korag.shader.Precision
-import com.soywiz.korag.shader.Program
-import com.soywiz.korag.shader.ProgramConfig
-import com.soywiz.korag.shader.Shader
-import com.soywiz.korag.shader.ShaderType
-import com.soywiz.korag.shader.Temp
-import com.soywiz.korag.shader.Uniform
-import com.soywiz.korag.shader.VarKind
-import com.soywiz.korag.shader.VarType
-import com.soywiz.korag.shader.Variable
-import com.soywiz.korag.shader.Varying
+import com.soywiz.korag.shader.*
 import com.soywiz.korio.lang.Environment
 import com.soywiz.korio.lang.invalidOp
 import com.soywiz.korio.util.Indenter
@@ -49,6 +36,8 @@ class GlobalsProgramVisitor : Program.Visitor<Unit>(Unit) {
     val attributes = LinkedHashSet<Attribute>()
     val varyings = LinkedHashSet<Varying>()
     val uniforms = LinkedHashSet<Uniform>()
+    val typedUniforms = LinkedHashSet<TypedUniform<*>>()
+    val samplers = LinkedHashSet<Sampler>()
     val funcRefs = LinkedHashSet<String>()
 
     override fun visit(attribute: Attribute) {
@@ -61,6 +50,16 @@ class GlobalsProgramVisitor : Program.Visitor<Unit>(Unit) {
 
     override fun visit(uniform: Uniform) {
         uniforms += uniform
+        uniform.typedUniform?.let { typedUniforms += it }
+    }
+
+    override fun visit(typedUniform: TypedUniform<*>) {
+        uniforms += typedUniform.uniform
+        typedUniforms += typedUniform
+    }
+
+    override fun visit(sampler: Sampler) {
+        samplers += sampler
     }
 
     override fun visit(func: Program.CustomFunc) {
@@ -165,6 +164,7 @@ class GlslGenerator constructor(
             }
 
             for (it in types.attributes) line("$IN ${precToString(it.precision)}${typeToString(it.type)} ${it.name}${it.arrayDecl};")
+            for (it in types.samplers) line("$UNIFORM ${precToString(it.precision)}${typeToString(it.type)} ${it.name}${it.arrayDecl};")
             for (it in types.uniforms) line("$UNIFORM ${precToString(it.precision)}${typeToString(it.type)} ${it.name}${it.arrayDecl};")
             for (it in types.varyings) {
                 if (it is Output) continue

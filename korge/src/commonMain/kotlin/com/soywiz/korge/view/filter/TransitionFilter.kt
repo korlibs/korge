@@ -45,15 +45,16 @@ class TransitionFilter(
         val u_Reversed by float()
         val u_Spread by float()
         val u_Ratio by float()
-        val u_Mask by sampler2D()
     }
 
     companion object : BaseProgramProvider() {
+        private val u_Mask = DefaultShaders.u_TexEx
+
         override val fragment = DEFAULT_FRAGMENT.appending {
             val alpha = t_Temp1.x
             val spread = t_Temp1.y
 
-            SET(alpha, texture2D(TransitionUB.u_Mask, v_Tex01).r)
+            SET(alpha, texture2D(u_Mask, v_Tex01).r)
             IF(TransitionUB.u_Reversed eq 1f.lit) {
                 SET(alpha, 1f.lit - alpha)
             }
@@ -85,9 +86,8 @@ class TransitionFilter(
             it[u_Reversed] = reversed
             it[u_Spread] = spread
             it[u_Ratio] = ratio
-            // @TODO: Textures should go differently
-            it.set(u_Mask, ctx.getTex(transition.bmp).base, AGTextureUnitInfo.DEFAULT)
         }
+        ctx.textureUnits.set(u_Mask, ctx.getTex(transition.bmp).base, AGTextureUnitInfo.DEFAULT)
         //println("ratio=$ratio, s_ratio=$s_ratio, uniformValue=${uniforms[u_Ratio].f32[0]}")
     }
 }

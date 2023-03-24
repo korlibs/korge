@@ -48,7 +48,7 @@ class AGUniformValues(val capacity: Int = 8 * 1024) {
         val out = AGUniformValues(allocOffset)
         arraycopy(this.data, 0, out.data, 0, allocOffset)
         values.fastForEach { value ->
-            out.values.add(AGUniformValue(value.uniform, out.data.sliceWithSize(value.data.byteOffset, value.data.sizeInBytes), value.texture, value.textureUnitInfo))
+            out.values.add(AGUniformValue(value.uniform, out.data.sliceWithSize(value.data.byteOffset, value.data.sizeInBytes)))
         }
         return out
     }
@@ -60,7 +60,7 @@ class AGUniformValues(val capacity: Int = 8 * 1024) {
         }
         val dataSize = uniform.totalElementCount * 4
         if (allocOffset + dataSize >= this.data.size) error("this=$this : uniform=$uniform, allocOffset=$allocOffset, dataSize=$dataSize")
-        val out = AGUniformValue(uniform, data.sliceWithSize(allocOffset, dataSize), null, AGTextureUnitInfo.INVALID)
+        val out = AGUniformValue(uniform, data.sliceWithSize(allocOffset, dataSize))
         values.add(out)
         allocOffset += dataSize
         return out
@@ -68,7 +68,6 @@ class AGUniformValues(val capacity: Int = 8 * 1024) {
 
     operator fun set(uniform: Uniform, value: Unit) { this[uniform].set(value) }
     operator fun set(uniform: Uniform, value: AGValue) { this[uniform].set(value) }
-    fun set(uniform: Uniform, value: AGTexture?, info: AGTextureUnitInfo = AGTextureUnitInfo.DEFAULT) { this[uniform].set(value, info) }
     operator fun set(uniform: Uniform, value: Boolean) { this[uniform].set(value) }
     operator fun set(uniform: Uniform, value: BooleanArray) { this[uniform].set(value) }
     operator fun set(uniform: Uniform, value: Int) { this[uniform].set(value) }
@@ -133,10 +132,8 @@ fun AGBufferExtractToFloatAndInts(type: VarType, arrayCount: Int, buffer: Buffer
 class AGUniformValue(
     val uniform: Uniform,
     data: Buffer = Buffer(uniform.totalBytes),
-    texture: AGTexture? = null,
-    textureUnitInfo: AGTextureUnitInfo = AGTextureUnitInfo.DEFAULT,
-) : AGValue(uniform, data, texture, textureUnitInfo) {
-    override fun equals(other: Any?): Boolean = other is AGUniformValue && this.uniform == uniform && this.data == other.data && this.texture == other.texture && this.textureUnitInfo == other.textureUnitInfo
+) : AGValue(uniform, data) {
+    override fun equals(other: Any?): Boolean = other is AGUniformValue && this.uniform == uniform && this.data == other.data
     override fun hashCode(): Int = uniform.hashCode() + super.hashCode()
     override fun toString(): String = "AGUniformValue[$uniform][${super.toString()}]"
 }
@@ -146,15 +143,11 @@ open class AGValue(
     val type: VarType,
     val arrayCount: Int,
     val data: Buffer,
-    var texture: AGTexture?,
-    var textureUnitInfo: AGTextureUnitInfo,
 ) {
     constructor(
         variable: OperandWithArray,
         data: Buffer,
-        texture: AGTexture?,
-        textureUnitInfo: AGTextureUnitInfo
-    ) : this(variable.type, variable.arrayCount, data, texture, textureUnitInfo)
+    ) : this(variable.type, variable.arrayCount, data)
 
     val kind: VarKind = type.kind
     val stride: Int = type.elementCount
@@ -179,14 +172,6 @@ open class AGValue(
 
     fun set(value: AGValue) {
         arraycopy(value.data, 0, this.data, 0, min(this.data.size, value.data.size))
-        this.texture = value.texture
-        this.textureUnitInfo = value.textureUnitInfo
-    }
-
-    fun set(value: AGTexture?, info: AGTextureUnitInfo = AGTextureUnitInfo.DEFAULT) {
-        set(-1)
-        texture = value
-        textureUnitInfo = info
     }
 
     fun set(value: Int) = when (kind) {
@@ -315,7 +300,7 @@ open class AGValue(
     //    }
     //}
 
-    override fun equals(other: Any?): Boolean = other is AGValue && this.data == other.data && this.texture == other.texture && this.textureUnitInfo == other.textureUnitInfo
+    override fun equals(other: Any?): Boolean = other is AGValue && this.data == other.data
     override fun hashCode(): Int = data.hashCode()
 
     companion object {
@@ -345,12 +330,6 @@ open class AGValue(
                     }
                 }
                 append(']')
-            }
-            if (texture != null) {
-                append(',')
-                append(texture)
-                append(',')
-                append(textureUnitInfo)
             }
             append(']')
             append(")")

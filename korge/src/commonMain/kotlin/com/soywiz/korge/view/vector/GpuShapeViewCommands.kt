@@ -8,7 +8,6 @@ import com.soywiz.korag.shader.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
-import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korma.geom.*
 
@@ -93,7 +92,7 @@ class GpuShapeViewCommands {
 
     private var decomposed = MatrixTransform()
     private val texturesToDelete = FastArrayList<AGTexture>()
-    private val tempUniforms = AGUniformValues()
+    val tempTextureUnits = AGTextureUnits()
     fun render(ctx: RenderContext, globalMatrix: Matrix, localMatrix: Matrix, applyScissor: Boolean, colorMul: RGBA, doRequireTexture: Boolean) {
         val vertices = this.vertices ?: return
         ctx.agBufferManager.delete(verticesToDelete)
@@ -132,7 +131,6 @@ class GpuShapeViewCommands {
                 )
                 var scissor = AGScissor.NIL
                 //list.vertexArrayObjectSet(ag, GpuShapeViewPrograms.LAYOUT_POS_TEX_FILL_DIST, bufferVertexData) {
-                val uniforms = batcher.uniforms
                 //println("----")
                 //println("----")
                 //println("----")
@@ -152,7 +150,6 @@ class GpuShapeViewCommands {
                             batcher.simulateBatchStats(cmd.vertexCount)
                             //println(paintShader.uniforms)
                             val pixelScale = decomposed.scaleAvg / ctx.bp.globalToWindowScaleAvg
-                            tempUniforms.clear()
                             if (paintShader != null) {
                                 batcher.ctx[GpuShapeViewPrograms.ShapeViewUB].push {
                                     it.copyFrom(paintShader.uniforms)
@@ -162,7 +159,8 @@ class GpuShapeViewCommands {
                                 if (paintShader.texture != null) {
                                     val tex = ctx.tempTexturePool.alloc()
                                     tex.upload(paintShader.texture)
-                                    tempUniforms.set(DefaultShaders.u_Tex, tex)
+                                    tempTextureUnits.set(DefaultShaders.u_Tex, tex)
+                                    //println("texture.tex=$tex")
                                     texturesToDelete.add(tex)
                                 }
                             }
@@ -180,8 +178,8 @@ class GpuShapeViewCommands {
                                 vertexData = vertices,
                                 //indices = indices,
                                 scissor = scissor.applyMatrixBounds(tempMat),
-                                uniforms = tempUniforms,
-                                newUniformBlocks = ctx.createCurrentUniformsRef(_program),
+                                uniformBlocks = ctx.createCurrentUniformsRef(_program),
+                                textureUnits = tempTextureUnits.clone(),
                                 stencilOpFunc = cmd.stencilOpFunc,
                                 stencilRef = cmd.stencilRef,
                                 colorMask = cmd.colorMask,
@@ -201,15 +199,6 @@ class GpuShapeViewCommands {
             ctx.tempTexturePool.free(tex)
         }
         texturesToDelete.clear()
-    }
-
-    private fun resolve(ctx: RenderContext, uniforms: AGUniformValues, texUniforms: Map<Uniform, Bitmap>) {
-        for ((uniform, value) in texUniforms) {
-            val tex = ctx.tempTexturePool.alloc()
-            tex.upload(value)
-            uniforms.set(uniform, tex)
-            texturesToDelete.add(tex)
-        }
     }
 
     sealed interface ICommand

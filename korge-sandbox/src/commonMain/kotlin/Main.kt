@@ -3,7 +3,9 @@ import com.soywiz.korge.scene.*
 import com.soywiz.korge.ui.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
+import com.soywiz.korim.format.*
 import com.soywiz.korio.async.*
+import com.soywiz.korio.file.std.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korma.interpolation.*
 import samples.*
@@ -28,6 +30,9 @@ suspend fun main() = Korge(
     //forceRenderEveryFrame = true
     //debugAg = true,
 ) {
+    //image(resourcesVfs["korge.png"].readBitmap()); text("hello world!", textSize = 64.0, color = Colors.RED); return@Korge
+    //text("hello world!", textSize = 64.0); return@Korge
+
     //graphics(renderer = GraphicsRenderer.CPU) {
 
     //graphics(renderer = GraphicsRenderer.SYSTEM) {
@@ -45,8 +50,8 @@ suspend fun main() = Korge(
     demoSelector(
         //Demo(::MainGpuVectorRendering),
         //Demo(::MainColorTransformFilter),
-        //Demo(::MainMasks),
-        Demo(::MainStressMatrixMultiplication),
+        Demo(::MainMasks),
+        //Demo(::MainStressMatrixMultiplication),
         //Demo(::MainSDF),
         listOf(
             Demo(::MainStressMatrixMultiplication),

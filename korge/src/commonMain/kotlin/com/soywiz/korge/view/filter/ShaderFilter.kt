@@ -182,18 +182,21 @@ abstract class ShaderFilter : Filter {
             val slice = texture.sliceWithBounds(-marginLeft, -marginTop, texture.width + marginRight, texture.height + marginBottom, clamped = false)
 
             //println("matrix=$matrix, slice=$slice, marginLeft=$marginLeft")
-            batch.drawQuad(
-                slice,
-                x = -marginLeft.toFloat(),
-                y = -marginTop.toFloat(),
-                m = matrix,
-                filtering = filtering,
-                colorMul = renderColorMul,
-                blendMode = blendMode,
-                //program = if (texture.premultiplied) programPremult else programNormal
-                program = programProvider.getProgram(),
-            )
-            //ctx.batch.flush()
+            //ctx.keepTextureUnit(DefaultShaders.u_Tex, flush = true) {
+                ctx.textureUnits.set(DefaultShaders.u_Tex, slice.base.base)
+                batch.drawQuad(
+                    slice,
+                    x = -marginLeft.toFloat(),
+                    y = -marginTop.toFloat(),
+                    m = matrix,
+                    filtering = filtering,
+                    colorMul = renderColorMul,
+                    blendMode = blendMode,
+                    //program = if (texture.premultiplied) programPremult else programNormal
+                    program = programProvider.getProgram(),
+                )
+                //ctx.batch.flush()
+            //}
         }
     }
 }

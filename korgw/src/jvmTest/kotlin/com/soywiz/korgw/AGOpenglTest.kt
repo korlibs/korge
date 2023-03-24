@@ -30,7 +30,7 @@ class AGOpenglTest {
             ),
             AGBuffer().also { it.upload(shortArrayOf(0, 1, 2)) },
             AGIndexType.USHORT,
-            uniforms = AGUniformValues {
+            textureUnits = AGTextureUnits().also {
                 it.set(DefaultShaders.u_Tex, AGTexture().also { it.upload(bmp) })
             },
             program = DefaultShaders.PROGRAM_DEBUG,

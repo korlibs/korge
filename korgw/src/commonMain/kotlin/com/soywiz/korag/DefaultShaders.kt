@@ -22,25 +22,38 @@ interface IDefaultShaders {
     val t_TempMat2: Temp get() = DefaultShaders.t_TempMat2
 }
 
+object ShaderIndices {
+    // 6 Custom samplers
+    const val SAMPLER_INDEX0 = 0
+    const val SAMPLER_INDEX1 = 1
+    const val SAMPLER_INDEX2 = 2
+    const val SAMPLER_INDEX3 = 3
+    const val SAMPLER_INDEX4 = 4
+    const val SAMPLER_INDEX5 = 5
+
+    // Reserved sampler indices
+    const val SAMPLER_MTEX_INDEX = 6
+    const val SAMPLER_TEX_INDEX = 10
+    const val SAMPLER_TEXEX_INDEX = 11
+}
+
 object DefaultShaders {
     // from korge
-    object TexExUB : UniformBlock(fixedLocation = 6) {
-        val u_TexEx by sampler2D()
-    }
-    val u_TexEx: Uniform get() = TexExUB.u_TexEx.uniform
+    val u_Tex by Sampler(ShaderIndices.SAMPLER_TEX_INDEX, SamplerVarType.Sampler2D)
+    val u_TexEx by Sampler(ShaderIndices.SAMPLER_TEXEX_INDEX, SamplerVarType.Sampler2D)
 
     object ProjViewUB : UniformBlock(fixedLocation = 0) {
         val u_ProjMat by mat4()
         val u_ViewMat by mat4()
     }
 
-    object TexUB : UniformBlock(fixedLocation = 1) {
-        val u_Tex by sampler2D()
-    }
+    //object TexUB : UniformBlock(fixedLocation = 1) {
+    //    val u_Tex by sampler2D()
+    //}
 
     val u_ProjMat get() = ProjViewUB.u_ProjMat.uniform
     val u_ViewMat get() = ProjViewUB.u_ViewMat.uniform
-    val u_Tex get() = TexUB.u_Tex.uniform
+    //val u_Tex by Sampler(10, SamplerVarType.Sampler2D)
 
     //val u_ProjMat: Uniform = Uniform("u_ProjMat", VarType.Mat4)
 	//val u_ViewMat: Uniform = Uniform("u_ViewMat", VarType.Mat4)
@@ -69,7 +82,7 @@ object DefaultShaders {
 
     val MERGE_ALPHA_PROGRAM = Program(VERTEX_DEFAULT, FragmentShaderDefault {
         val coords = v_Tex["xy"]
-        SET(out, texture2D(u_Tex, coords) * texture2D(TexExUB.u_TexEx, coords).a)
+        SET(out, texture2D(u_Tex, coords) * texture2D(u_TexEx, coords).a)
         //SET(out, vec4(1f.lit, 1f.lit, 0f.lit, 1f.lit))
     })
 

@@ -75,8 +75,6 @@ class LineRenderBatcher(
         }
     }
 
-    internal val uniforms get() = ctx.uniforms
-
     private val vertexBuffer = AGBuffer()
     private val vertexData = AGVertexArrayObject(AGVertexData(LAYOUT, vertexBuffer))
     private val program = Program(VERTEX, FRAGMENT)
@@ -176,8 +174,8 @@ class LineRenderBatcher(
                 program = program,
                 drawType = AGDrawType.LINES,
                 vertexCount = vertexCount,
-                uniforms = uniforms,
-                newUniformBlocks = ctx.createCurrentUniformsRef(program),
+                uniformBlocks = ctx.createCurrentUniformsRef(program),
+                textureUnits = ctx.textureUnits.clone(),
                 blending = blendMode.factors
             )
         }
