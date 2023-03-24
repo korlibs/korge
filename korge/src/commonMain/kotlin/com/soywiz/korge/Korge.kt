@@ -98,7 +98,7 @@ data class Korge(
     val finalImageFormats get() = imageFormats + module.imageFormats
     val finalTitle: String get() = title ?: module.title
     val finalWindowSize: SizeInt get() = windowSize ?: module.windowSize
-    val finalVirtualSize: SizeInt get() = virtualSize ?: module.virtualSize
+    val finalVirtualSize: SizeInt get() = virtualSize ?: windowSize ?: module.virtualSize
     val finalScaleAnchor: Anchor get() = scaleAnchor ?: module.scaleAnchor
     val finalScaleMode: ScaleMode get() = scaleMode ?: module.scaleMode
     val finalClipBorders: Boolean get() = clipBorders ?: module.clipBorders
