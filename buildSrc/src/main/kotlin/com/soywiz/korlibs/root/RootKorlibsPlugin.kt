@@ -1072,7 +1072,10 @@ object RootKorlibsPlugin {
                                     tasks.createThis<Exec>("runNative${deb}${type.interpCapital}") {
                                         group = "run"
                                         dependsOn(linkTask)
-                                        commandLineCross(linkTask.binary.outputFile.absolutePath, type = type)
+                                        val result = commandLineCross(linkTask.binary.outputFile.absolutePath, type = type)
+                                        doFirst {
+                                            result.ensure()
+                                        }
                                         this.environment("WINEDEBUG", "-all")
                                         workingDir = linkTask.binary.outputDirectory
                                     }

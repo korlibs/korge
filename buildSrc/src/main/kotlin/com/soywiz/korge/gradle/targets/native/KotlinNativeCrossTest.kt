@@ -1,13 +1,15 @@
 package com.soywiz.korge.gradle.targets.native
 
-import com.soywiz.korge.gradle.targets.CrossExecType
+import com.soywiz.korge.gradle.targets.*
 import org.gradle.api.tasks.Exec
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.options.Option
 
-fun Exec.commandLineCross(vararg args: String, type: CrossExecType) {
-    commandLine(*type.commands(*args))
+fun Exec.commandLineCross(vararg args: String, type: CrossExecType): CommandLineCrossResult {
+    val (result, array) = type.commands(*args)
+    commandLine(*array)
+    return result
 }
 
 abstract class KotlinNativeCrossTest : org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest() {
@@ -20,7 +22,7 @@ abstract class KotlinNativeCrossTest : org.jetbrains.kotlin.gradle.targets.nativ
 
     @get:Internal
     override val testCommand: TestCommand = object : TestCommand() {
-        val commands get() = type.commands()
+        val commands get() = type.commands().second
 
         override val executable: String
             get() = commands.first()
@@ -31,11 +33,13 @@ abstract class KotlinNativeCrossTest : org.jetbrains.kotlin.gradle.targets.nativ
             testGradleFilter: Set<String>,
             testNegativeGradleFilter: Set<String>,
             userArgs: List<String>
-        ): List<String> =
-            listOfNotNull(
+        ): List<String> {
+            type.commands().first.ensure()
+            return listOfNotNull(
                 *commands.drop(1).toTypedArray(),
                 this@KotlinNativeCrossTest.executable.absolutePath,
             ) +
                 testArgs(testLogger, checkExitCode, testGradleFilter, testNegativeGradleFilter, userArgs)
+        }
     }
 }

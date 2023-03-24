@@ -41,10 +41,15 @@ fun Project.configureNativeDesktopCross() {
                 val linkTask = project.tasks.findByName(linkTaskName) as? KotlinNativeLink?
                 //println("!!!!!!!!!linkTaskName=$linkTaskName :: $linkTask")
                 linkTask ?: continue
-                project.tasks.createThis<Exec>("runNative${deb}${type.interpCapital}") {
+                val runNativeCrossName = "runNative${deb}${type.interpCapital}"
+                //println("Creating $runNativeCrossName")
+                project.tasks.createThis<Exec>(runNativeCrossName) {
                     group = "run"
                     dependsOn(linkTask)
-                    commandLineCross(linkTask.binary.outputFile.absolutePath, type = type)
+                    val result = commandLineCross(linkTask.binary.outputFile.absolutePath, type = type)
+                    doFirst {
+                        result.ensure()
+                    }
                     this.environment("WINEDEBUG", "-all")
                     workingDir = linkTask.binary.outputDirectory
                 }
