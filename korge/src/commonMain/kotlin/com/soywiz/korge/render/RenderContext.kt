@@ -154,25 +154,25 @@ class RenderContext constructor(
         }
     }
 
-    inline fun <T> keepTextureUnit(unit: Int, flush: Boolean = true, callback: () -> T): T {
-        val oldTex = textureUnits.textures[unit]
-        val oldInfo = textureUnits.infos[unit]
+    inline fun <T> keepTextureUnit(sampler: Sampler, flush: Boolean = true, callback: () -> T): T {
+        val oldTex = textureUnits.textures[sampler.index]
+        val oldInfo = textureUnits.infos[sampler.index]
         try {
             return callback()
         } finally {
             if (flush) flush()
-            textureUnits.set(unit, oldTex, oldInfo)
+            textureUnits.set(sampler, oldTex, oldInfo)
         }
     }
 
-    inline fun <T> keepTextureUnits(unitStart: Int, unitEnd: Int, flush: Boolean = true, callback: () -> T): T {
+    inline fun <T> keepTextureUnits(samplers: Array<Sampler>, flush: Boolean = true, callback: () -> T): T {
         textureUnitsPool.alloc { old ->
-            for (n in unitStart until unitEnd) old.set(n, textureUnits.textures[n], textureUnits.infos[n])
+            samplers.fastForEach { old.set(it, textureUnits.textures[it.index], textureUnits.infos[it.index]) }
             try {
                 return callback()
             } finally {
                 if (flush) flush()
-                for (n in unitStart until unitEnd) textureUnits.set(n, old.textures[n], old.infos[n])
+                samplers.fastForEach { textureUnits.set(it, old.textures[it.index], old.infos[it.index]) }
             }
         }
     }

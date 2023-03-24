@@ -55,14 +55,12 @@ class ViewRenderPhaseBackdropFilter(var filter: Filter) : ViewRenderPhase {
                         super.render(view, ctx)
                     }
                 }) { mask ->
-                    //batcher.flush {
-                    batcher.keepTextureUnit(
-                        DefaultShaders.u_TexEx.index,
-                        flush = true
-                    ) {
+                    batcher.flush {
+                    //batcher.keepTextureUnit(DefaultShaders.u_TexEx.index, flush = true) {
                         //    ctx[DefaultShaders.TexExUB].push {
                         //        it.set(u_TexEx, mask.base.base)
                         //    }
+                        ctx.textureUnits.set(DefaultShaders.u_Tex, bgrtex?.base?.base)
                         ctx.textureUnits.set(DefaultShaders.u_TexEx, mask.base.base)
 
                         //batcher.drawQuad(bgrtex, x = 0f, y = 0f, program = MERGE_ALPHA)

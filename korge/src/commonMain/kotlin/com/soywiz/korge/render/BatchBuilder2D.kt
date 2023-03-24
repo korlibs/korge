@@ -549,7 +549,7 @@ class BatchBuilder2D constructor(
     //}
 
     companion object {
-        val u_TexN = Array(BB_MAX_TEXTURES) { Sampler("u_Tex$it", ShaderIndices.SAMPLER_MTEX_INDEX + it, SamplerVarType.Sampler2D) }
+        val u_TexN: Array<Sampler> = Array(BB_MAX_TEXTURES) { Sampler("u_Tex$it", ShaderIndices.SAMPLER_MTEX_INDEX + it, SamplerVarType.Sampler2D) }
 
         val MAX_BATCH_QUADS = 16383
         //val DEFAULT_BATCH_QUADS = 0x1000
@@ -732,8 +732,8 @@ class BatchBuilder2D constructor(
      */
 	inline fun setViewMatrixTemp(matrix: Matrix, crossinline callback: () -> Unit) = ctx.setViewMatrixTemp(matrix, callback)
 
-    inline fun <T> keepTextureUnit(unit: Int, flush: Boolean = true, callback: () -> T): T = ctx.keepTextureUnit(unit, flush, callback)
-    inline fun <T> keepTextureUnits(unitStart: Int, unitEnd: Int, flush: Boolean = true, callback: () -> T): T = ctx.keepTextureUnits(unitStart, unitEnd, flush, callback)
+    inline fun <T> keepTextureUnit(sampler: Sampler, flush: Boolean = true, callback: () -> T): T = ctx.keepTextureUnit(sampler, flush, callback)
+    inline fun <T> keepTextureUnits(samplers: Array<Sampler>, flush: Boolean = true, callback: () -> T): T = ctx.keepTextureUnits(samplers, flush, callback)
 
     inline fun flush(block: () -> Unit) {
         ctx.flush()

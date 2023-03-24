@@ -149,12 +149,12 @@ open class FSprites(val maxSize: Int) {
             ctx.useBatcher { batch ->
                 batch.updateStandardUniforms()
                 //batch.setTemporalUniform(u_i_texSizeN[0], u_i_texSizeDataN[0]) {
-                batch.keepTextureUnits(ShaderIndices.SAMPLER_MTEX_INDEX, ShaderIndices.SAMPLER_MTEX_INDEX + u_i_texSizeN.size, flush = true) {
+                batch.keepTextureUnits(BatchBuilder2D.u_TexN, flush = true) {
                     for (n in 0 until texs.size) {
                         val tex = texs[n]
                         val ttex = ctx.agBitmapTextureManager.getTextureBase(tex)
                         u_i_texSizeDataN[n] = Vector2(1f / ttex.width.toFloat(), 1f / ttex.height.toFloat())
-                        ctx.textureUnits.set(ShaderIndices.SAMPLER_MTEX_INDEX + n, ttex.base, AGTextureUnitInfo(linear = smoothing))
+                        ctx.textureUnits.set(BatchBuilder2D.u_TexN[n], ttex.base, AGTextureUnitInfo(linear = smoothing))
                         //println(ttex.base)
                     }
                     ctx[FspritesUB].push {
