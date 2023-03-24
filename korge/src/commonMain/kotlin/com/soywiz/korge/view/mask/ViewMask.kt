@@ -62,10 +62,7 @@ class ViewRenderPhaseMask(var mask: View) : ViewRenderPhase {
                 //batcher.drawQuad(Texture(viewFB), 300f, 200f, m = view.parent!!.globalMatrix)
                 //batcher.flush {
                 batcher.keepTextureUnit(6, flush = true) {
-                    batcher.ctx[DefaultShaders.TexExUB].push {
-                        it[u_TexEx] = 6
-                    }
-                    ctx.textureUnits.set(6, maskFB.tex)
+                    ctx.textureUnits.set(DefaultShaders.u_TexEx, maskFB.tex)
                     //ctx[DefaultShaders.TexExUB].push {
                     //    it.set(u_TexEx, maskFB.tex)
                     //}

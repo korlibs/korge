@@ -4,6 +4,7 @@ import com.soywiz.klogger.*
 import com.soywiz.kmem.*
 import com.soywiz.kmem.unit.*
 import com.soywiz.korag.gl.*
+import com.soywiz.korag.shader.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korma.geom.*
@@ -58,6 +59,9 @@ data class AGTextureUnits(val textures: Array<AGTexture?>, val infos: AGTextureU
     fun set(index: Int, texture: AGTexture?, info: AGTextureUnitInfo = AGTextureUnitInfo.DEFAULT) {
         textures[index] = texture
         infos[index] = info
+    }
+    fun set(sampler: Sampler, texture: AGTexture?, info: AGTextureUnitInfo = AGTextureUnitInfo.DEFAULT) {
+        set(sampler.index, texture, info)
     }
     fun clear() {
         for (n in 0 until size) set(n, null, AGTextureUnitInfo.DEFAULT)

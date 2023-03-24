@@ -449,6 +449,12 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
 
         //println("PROGRAM=$program")
 
+        // @TODO: We can do this just once per shader since indexes are fixed
+        program.samplers.forEach {
+            val location = glProgram.programInfo.getUniformLocation(gl, it.name)
+            gl.uniform1i(location, it.index)
+        }
+
         textureUnits.fastForEach { index, tex, info ->
             if (currentTextureUnits.textures[index] == tex && currentTextureUnits.infos[index] == info) {
                 return@fastForEach

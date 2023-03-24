@@ -10,6 +10,7 @@ import com.soywiz.kds.*
 import com.soywiz.kmem.*
 import com.soywiz.korag.*
 import com.soywiz.korag.annotation.KoragExperimental
+import com.soywiz.korag.shader.gl.*
 import com.soywiz.korio.lang.*
 import kotlin.reflect.*
 
@@ -68,6 +69,13 @@ interface VarTypeAccessor {
     val SInt2: VarType get() = VarType.SInt2
     val SInt3: VarType get() = VarType.SInt3
     val SInt4: VarType get() = VarType.SInt4
+}
+
+enum class SamplerVarType(val vtype: VarType) {
+    Sampler1D(VarType.Sampler1D),
+    Sampler2D(VarType.Sampler2D),
+    Sampler3D(VarType.Sampler3D),
+    SamplerCube(VarType.SamplerCube);
 }
 
 enum class VarType(val kind: VarKind, val elementCount: Int, val isMatrix: Boolean = false) {
@@ -276,6 +284,22 @@ open class Varying(name: String, type: VarType, arrayCount: Int, precision: Prec
 }
 fun Varying(type: VarType, arrayCount: Int = 1, precision: Precision = Precision.DEFAULT): Varying.Provider = Varying.Provider(type, arrayCount, precision)
 
+fun Sampler(index: Int, stype: SamplerVarType): Sampler.Provider = Sampler.Provider(index, stype)
+open class Sampler(
+    name: String,
+    val index: Int,
+    val stype: SamplerVarType
+) : Variable(name, stype.vtype) {
+    override fun toString(): String = "Sampler($name, $index, $stype)"
+    override fun equals(other: Any?): Boolean = mequals<Sampler>(other)
+    override fun hashCode(): Int = mhashcode()
+    operator fun getValue(thisRef: Any?, property: KProperty<*>): Sampler = this
+
+    class Provider(val index: Int, val stype: SamplerVarType) {
+        operator fun provideDelegate(thisRef: Any?, property: KProperty<*>): Sampler = Sampler(property.name, index, stype)
+    }
+}
+
 open class Uniform(
     name: String, type: VarType, arrayCount: Int, precision: Precision = Precision.DEFAULT, offset: Int? = null,
     val typedUniform: TypedUniform<*>? = null
@@ -350,8 +374,9 @@ inline fun Program.appendingFragment(extraName: String, block: Program.Builder.(
 data class UniformInProgram(val uniform: Uniform, val index: Int)
 
 data class Program(val vertex: VertexShader, val fragment: FragmentShader, val name: String = "program-${vertex.name}-${fragment.name}") : Closeable {
-	val uniforms = (vertex.uniforms + fragment.uniforms).distinct()
-    val typedUniforms = (vertex.typedUniforms + fragment.typedUniforms).distinct()
+	val uniforms = (vertex.uniforms + fragment.uniforms)
+    val typedUniforms = (vertex.typedUniforms + fragment.typedUniforms)
+    val samplers = (vertex.samplers + fragment.samplers)
     // @TODO: Proper indices
     val uniformsToIndex = uniforms.withIndex().associate { it.value to UniformInProgram(it.value, it.index) }
 	val attributes = vertex.attributes + fragment.attributes
@@ -946,6 +971,7 @@ data class Program(val vertex: VertexShader, val fragment: FragmentShader, val n
         open fun visit(operand: Variable): E = when (operand) {
 			is Attribute -> visit(operand)
 			is Varying -> visit(operand)
+            is Sampler -> visit(operand)
 			is Uniform -> visit(operand)
             is TypedUniform<*> -> visit(operand)
 			is Output -> visit(operand)
@@ -958,6 +984,7 @@ data class Program(val vertex: VertexShader, val fragment: FragmentShader, val n
 		open fun visit(attribute: Attribute): E = default
 		open fun visit(varying: Varying): E = default
 		open fun visit(uniform: Uniform): E = default
+        open fun visit(sampler: Sampler): E = default
         //open fun visit(uniform: NewTypedUniform<*>): E = default
         open fun visit(typedUniform: TypedUniform<*>): E = visit(typedUniform.uniform)
 		open fun visit(output: Output): E = default
@@ -1006,25 +1033,12 @@ data class Shader(val type: ShaderType, val stm: Program.Stm, val functions: Lis
 
     val isRaw get() = stm is Program.Stm.Raw
 
-	val uniforms = LinkedHashSet<Uniform>().also { out ->
-        object : Program.Visitor<Unit>(Unit) {
-            override fun visit(uniform: Uniform) { out += uniform }
-            override fun visit(typedUniform: TypedUniform<*>) { out += typedUniform.uniform }
-        }.visit(stm)
-    }.toSet()
+    val globals = GlobalsProgramVisitor().also { it.visit(stm) }
 
-    val typedUniforms = LinkedHashSet<TypedUniform<*>>().also { out ->
-        object : Program.Visitor<Unit>(Unit) {
-            override fun visit(uniform: Uniform) { uniform.typedUniform?.let { out += it } }
-            override fun visit(typedUniform: TypedUniform<*>) { out += typedUniform }
-        }.visit(stm)
-    }.toSet()
-
-    val attributes = LinkedHashSet<Attribute>().also { out ->
-        object : Program.Visitor<Unit>(Unit) {
-            override fun visit(attribute: Attribute) { out += attribute }
-        }.visit(stm)
-    }.toSet()
+	val uniforms = globals.uniforms
+    val typedUniforms = globals.typedUniforms
+    val attributes = globals.attributes
+    val samplers = globals.samplers
 
     override fun equals(other: Any?): Boolean = (this === other) || (other is Shader && (this.type == other.type) && (this.cachedHashCode == other.cachedHashCode) && (this.stm == other.stm) && (this.functions == other.functions))
     override fun hashCode(): Int = cachedHashCode

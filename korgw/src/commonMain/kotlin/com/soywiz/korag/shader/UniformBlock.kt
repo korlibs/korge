@@ -73,6 +73,7 @@ open class UniformBlock(val fixedLocation: Int) {
     protected fun short2(name: String? = null): Gen<List<Boolean>> = gen(name, VarType.Short2, 4, 2)
     protected fun short3(name: String? = null): Gen<List<Boolean>> = gen(name, VarType.Short3, 6, 2)
     protected fun short4(name: String? = null): Gen<List<Boolean>> = gen(name, VarType.Short4, 8, 2)
+    @Deprecated("")
     protected fun sampler2D(name: String? = null): Gen<Int> = gen(name, VarType.Sampler2D, 4, 4)
     protected fun int(name: String? = null): Gen<Int> = gen(name, VarType.SInt1, 4, 4)
     protected fun ivec2(name: String? = null): Gen<Vector2Int> = gen(name, VarType.SInt2, 8, 4)
