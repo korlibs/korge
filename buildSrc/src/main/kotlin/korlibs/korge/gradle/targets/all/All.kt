@@ -11,18 +11,25 @@ fun Project.rootEnableFeaturesOnAllTargets() {
     }
 }
 
-fun Project.enableFeaturesOnAllTargets() {
-    fun KotlinTarget.configureTarget() {
-        val target = this
+object AddFreeCompilerArgs {
+    @JvmStatic
+    fun addFreeCompilerArgs(project: Project, target: KotlinTarget) {
         target.compilations.configureEach { compilation ->
-            //println("initAllTargets: $target - $compilation")
             val options = compilation.compilerOptions.options
             options.suppressWarnings.set(true)
-            options.freeCompilerArgs.apply {
-                add("-Xvalue-classes")
-                add("-Xskip-prerelease-check")
+            if (project.findProperty("enableMFVC") == "true") {
+                options.freeCompilerArgs.apply {
+                    add("-Xvalue-classes")
+                    add("-Xskip-prerelease-check")
+                }
             }
         }
+    }
+}
+
+fun Project.enableFeaturesOnAllTargets() {
+    fun KotlinTarget.configureTarget() {
+        AddFreeCompilerArgs.addFreeCompilerArgs(project, this)
     }
 
     extensions.findByType(KotlinSingleTargetExtension::class.java)?.also {

@@ -9,14 +9,7 @@ allOpen {
 }
 
 kotlin.jvm {
-    //-Xskip-prerelease-check
-    compilations.configureEach { compilation ->
-        //println("initAllTargets: $target - $compilation")
-        def options = compilation.compilerOptions.options
-        options.suppressWarnings.set(true)
-        options.freeCompilerArgs.add("-Xvalue-classes")
-        options.freeCompilerArgs.add("-Xskip-prerelease-check")
-    }
+    korlibs.korge.gradle.targets.all.AddFreeCompilerArgs.addFreeCompilerArgs(project, it)
 }
 benchmark.targets.register("jvm")
 //kotlin { js(IR) { nodejs() } }; benchmark.targets.register("js")
