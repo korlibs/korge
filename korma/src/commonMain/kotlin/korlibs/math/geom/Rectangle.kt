@@ -9,6 +9,8 @@ import kotlin.math.*
 
 //@KormaValueApi
 inline class Rectangle(val data: Float4Pack) {
+    val int: RectangleInt get() = toInt()
+
     @Deprecated("", ReplaceWith("this")) fun clone(): Rectangle = this
     @Deprecated("", ReplaceWith("this")) val immutable: Rectangle get() = this
 
@@ -176,6 +178,10 @@ inline class Rectangle(val data: Float4Pack) {
         width.roundDecimalPlaces(places),
         height.roundDecimalPlaces(places)
     )
+
+    fun rounded(): Rectangle = Rectangle(round(x), round(y), round(width), round(height))
+    fun floored(): Rectangle = Rectangle(floor(x), floor(y), floor(width), floor(height))
+    fun ceiled(): Rectangle = Rectangle(ceil(x), ceil(y), ceil(width), ceil(height))
 }
 
 @KormaMutableApi
