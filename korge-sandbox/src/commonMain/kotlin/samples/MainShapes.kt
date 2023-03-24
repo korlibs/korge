@@ -1,15 +1,15 @@
 package samples
 
-import com.soywiz.klock.*
-import com.soywiz.korge.input.*
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.view.*
-import com.soywiz.korge.view.Circle
-import com.soywiz.korim.color.*
-import com.soywiz.korio.async.*
-import com.soywiz.korio.async.delay
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.vector.*
+import korlibs.time.*
+import korlibs.korge.input.*
+import korlibs.korge.scene.Scene
+import korlibs.korge.view.*
+import korlibs.korge.view.Circle
+import korlibs.image.color.*
+import korlibs.io.async.*
+import korlibs.io.async.delay
+import korlibs.math.geom.*
+import korlibs.math.geom.vector.*
 
 class MainShapes : Scene() {
     override suspend fun SContainer.sceneMain() {

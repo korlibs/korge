@@ -1,10 +1,10 @@
 package samples
 
-import com.soywiz.korge.particle.*
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.view.*
-import com.soywiz.korio.file.std.*
-import com.soywiz.korma.geom.*
+import korlibs.korge.particle.*
+import korlibs.korge.scene.Scene
+import korlibs.korge.view.*
+import korlibs.io.file.std.*
+import korlibs.math.geom.*
 
 class MainParticles : Scene() {
     override suspend fun SContainer.sceneMain() {

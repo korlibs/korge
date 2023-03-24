@@ -1,6 +1,6 @@
 package com.soywiz.korui.light
 
-import com.soywiz.korag.*
+import korlibs.graphics.*
 
 actual object NativeLightsComponentsFactory : LightComponentsFactory {
 	actual override fun create(): LightComponents = NativeLightComponents()

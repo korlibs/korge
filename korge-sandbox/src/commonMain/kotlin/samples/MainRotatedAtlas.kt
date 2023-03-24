@@ -1,16 +1,16 @@
 package samples
 
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.view.SContainer
-import com.soywiz.korge.view.image
-import com.soywiz.korge.view.solidRect
-import com.soywiz.korge.view.xy
-import com.soywiz.korim.atlas.Atlas
-import com.soywiz.korim.atlas.readAtlas
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.RGBA
-import com.soywiz.korim.format.ImageOrientation
-import com.soywiz.korio.file.std.resourcesVfs
+import korlibs.korge.scene.Scene
+import korlibs.korge.view.SContainer
+import korlibs.korge.view.image
+import korlibs.korge.view.solidRect
+import korlibs.korge.view.xy
+import korlibs.image.atlas.Atlas
+import korlibs.image.atlas.readAtlas
+import korlibs.image.bitmap.*
+import korlibs.image.color.RGBA
+import korlibs.image.format.ImageOrientation
+import korlibs.io.file.std.resourcesVfs
 import kotlin.math.max
 import kotlin.native.concurrent.ThreadLocal
 
@@ -79,4 +79,3 @@ class BG {
             }
     }
 }
-

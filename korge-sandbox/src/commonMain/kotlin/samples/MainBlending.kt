@@ -1,13 +1,13 @@
 package samples
 
-import com.soywiz.korge.scene.ScaledScene
-import com.soywiz.korge.view.SContainer
-import com.soywiz.korge.view.image
-import com.soywiz.korge.view.xy
-import com.soywiz.korim.color.Colors
-import com.soywiz.korim.format.PNG
-import com.soywiz.korim.format.readBitmap
-import com.soywiz.korio.file.std.resourcesVfs
+import korlibs.korge.scene.ScaledScene
+import korlibs.korge.view.SContainer
+import korlibs.korge.view.image
+import korlibs.korge.view.xy
+import korlibs.image.color.Colors
+import korlibs.image.format.PNG
+import korlibs.image.format.readBitmap
+import korlibs.io.file.std.resourcesVfs
 
 class MainBlending : ScaledScene(1024, 512) {
     override suspend fun SContainer.sceneMain() {

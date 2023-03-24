@@ -1,14 +1,14 @@
 package samples
 
-import com.soywiz.korge.scene.Scene
-import com.soywiz.kmem.*
-import com.soywiz.korev.*
-import com.soywiz.korge.input.*
-import com.soywiz.korge.view.*
-import com.soywiz.korim.color.*
-import com.soywiz.korio.util.toStringDecimal
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.vector.*
+import korlibs.korge.scene.Scene
+import korlibs.memory.*
+import korlibs.event.*
+import korlibs.korge.input.*
+import korlibs.korge.view.*
+import korlibs.image.color.*
+import korlibs.io.util.toStringDecimal
+import korlibs.math.geom.*
+import korlibs.math.geom.vector.*
 import kotlin.math.*
 
 class MainOnScreenController : Scene() {

@@ -3,4 +3,4 @@ plugins {
     // ./gradlew :kds:compileKotlinJs taskTree
 }
 
-com.soywiz.korlibs.root.RootKorlibsPlugin.doInit(rootProject)
+korlibs.root.RootKorlibsPlugin.doInit(rootProject)

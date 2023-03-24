@@ -1,22 +1,22 @@
 package samples
 
-import com.soywiz.klock.milliseconds
-import com.soywiz.klock.seconds
-import com.soywiz.korev.Key
-import com.soywiz.korge.input.InputKeys
-import com.soywiz.korge.scene.ScaledScene
-import com.soywiz.korge.view.SContainer
-import com.soywiz.korge.view.Sprite
-import com.soywiz.korge.view.SpriteAnimation
-import com.soywiz.korge.view.addUpdater
-import com.soywiz.korge.view.alignRightToRightOf
-import com.soywiz.korge.view.position
-import com.soywiz.korge.view.positionY
-import com.soywiz.korge.view.scale
-import com.soywiz.korge.view.text
-import com.soywiz.korge.view.xy
-import com.soywiz.korim.format.readBitmap
-import com.soywiz.korio.file.std.resourcesVfs
+import korlibs.time.milliseconds
+import korlibs.time.seconds
+import korlibs.event.Key
+import korlibs.korge.input.InputKeys
+import korlibs.korge.scene.ScaledScene
+import korlibs.korge.view.SContainer
+import korlibs.korge.view.Sprite
+import korlibs.korge.view.SpriteAnimation
+import korlibs.korge.view.addUpdater
+import korlibs.korge.view.alignRightToRightOf
+import korlibs.korge.view.position
+import korlibs.korge.view.positionY
+import korlibs.korge.view.scale
+import korlibs.korge.view.text
+import korlibs.korge.view.xy
+import korlibs.image.format.readBitmap
+import korlibs.io.file.std.resourcesVfs
 
 class MainSpriteAnim : ScaledScene(512, 512) {
     companion object {

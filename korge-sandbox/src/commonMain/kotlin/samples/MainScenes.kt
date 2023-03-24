@@ -1,10 +1,10 @@
 package samples
 
-import com.soywiz.korge.input.*
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.scene.sceneContainer
-import com.soywiz.korge.view.*
-import com.soywiz.korim.color.Colors
+import korlibs.korge.input.*
+import korlibs.korge.scene.Scene
+import korlibs.korge.scene.sceneContainer
+import korlibs.korge.view.*
+import korlibs.image.color.Colors
 
 class MainScenes : Scene() {
     override suspend fun SContainer.sceneMain() {

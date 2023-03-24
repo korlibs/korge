@@ -1,14 +1,14 @@
 package samples
 
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.view.SContainer
-import com.soywiz.korge.view.image
-import com.soywiz.korge.view.scale
-import com.soywiz.korge.view.xy
-import com.soywiz.korim.atlas.MutableAtlasUnit
-import com.soywiz.korim.format.readBitmapSlice
-import com.soywiz.korim.format.readBitmapSliceWithOrientation
-import com.soywiz.korio.file.std.resourcesVfs
+import korlibs.korge.scene.Scene
+import korlibs.korge.view.SContainer
+import korlibs.korge.view.image
+import korlibs.korge.view.scale
+import korlibs.korge.view.xy
+import korlibs.image.atlas.MutableAtlasUnit
+import korlibs.image.format.readBitmapSlice
+import korlibs.image.format.readBitmapSliceWithOrientation
+import korlibs.io.file.std.resourcesVfs
 
 class MainMutableAtlasTest : Scene() {
     override suspend fun SContainer.sceneMain() {

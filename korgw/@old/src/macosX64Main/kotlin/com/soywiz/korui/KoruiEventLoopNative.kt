@@ -1,11 +1,11 @@
 package com.soywiz.korui
 
-import com.soywiz.kds.*
-import com.soywiz.klock.*
-import com.soywiz.korag.*
-import com.soywiz.korev.*
-import com.soywiz.korio.file.*
-import com.soywiz.korio.lang.*
+import korlibs.datastructure.*
+import korlibs.time.*
+import korlibs.graphics.*
+import korlibs.event.*
+import korlibs.io.file.*
+import korlibs.io.lang.*
 import com.soywiz.korui.light.*
 import kotlinx.cinterop.*
 import kotlinx.coroutines.*
@@ -121,9 +121,9 @@ class NativeLightComponents(val nkcAg: AG) : LightComponents() {
             setCanChooseDirectories(false)
         }
         if (openDlg.runModalForDirectory(null, null).toInt() == NSOKButton.toInt()) {
-            return com.soywiz.korio.file.std.localVfs(openDlg.filename())
+            return korlibs.io.file.std.localVfs(openDlg.filename())
         } else {
-            throw com.soywiz.korio.lang.CancelException()
+            throw korlibs.io.lang.CancelException()
         }
     }
 }

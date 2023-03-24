@@ -1,14 +1,14 @@
 package samples
 
-import com.soywiz.kmem.arraycopy
-import com.soywiz.kmem.clamp
-import com.soywiz.korau.sound.AudioSamples
-import com.soywiz.korau.sound.nativeSoundProvider
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.ui.uiVerticalStack
-import com.soywiz.korge.view.SContainer
-import com.soywiz.korge.view.text
-import com.soywiz.korio.async.launchImmediately
+import korlibs.memory.arraycopy
+import korlibs.memory.clamp
+import korlibs.audio.sound.AudioSamples
+import korlibs.audio.sound.nativeSoundProvider
+import korlibs.korge.scene.Scene
+import korlibs.korge.ui.uiVerticalStack
+import korlibs.korge.view.SContainer
+import korlibs.korge.view.text
+import korlibs.io.async.launchImmediately
 import kotlin.math.*
 
 class MainPolyphonic : Scene() {

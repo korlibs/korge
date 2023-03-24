@@ -1,15 +1,15 @@
 package samples
 
-import com.soywiz.klock.seconds
-import com.soywiz.korge.scene.ScaledScene
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.tween.get
-import com.soywiz.korge.tween.tween
-import com.soywiz.korge.view.SContainer
-import com.soywiz.korge.view.position
-import com.soywiz.korge.view.solidRect
-import com.soywiz.korim.color.Colors
-import com.soywiz.korio.async.delay
+import korlibs.time.seconds
+import korlibs.korge.scene.ScaledScene
+import korlibs.korge.scene.Scene
+import korlibs.korge.tween.get
+import korlibs.korge.tween.tween
+import korlibs.korge.view.SContainer
+import korlibs.korge.view.position
+import korlibs.korge.view.solidRect
+import korlibs.image.color.Colors
+import korlibs.io.async.delay
 
 class MainTweens : ScaledScene(512, 512) {
     override suspend fun SContainer.sceneMain() {

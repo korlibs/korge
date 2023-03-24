@@ -1,13 +1,13 @@
 package samples
 
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.view.SContainer
-import com.soywiz.korge.view.image
-import com.soywiz.korim.format.readBitmapSlice
-import com.soywiz.korio.file.std.resourcesVfs
-import com.soywiz.korma.geom.MMatrix
-import com.soywiz.korma.geom.degrees
-import com.soywiz.korma.geom.slice.*
+import korlibs.korge.scene.Scene
+import korlibs.korge.view.SContainer
+import korlibs.korge.view.image
+import korlibs.image.format.readBitmapSlice
+import korlibs.io.file.std.resourcesVfs
+import korlibs.math.geom.MMatrix
+import korlibs.math.geom.degrees
+import korlibs.math.geom.slice.*
 
 class MainRotatedTexture : Scene() {
     override suspend fun SContainer.sceneMain() {

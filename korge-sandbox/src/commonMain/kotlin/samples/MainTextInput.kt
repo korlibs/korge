@@ -1,16 +1,16 @@
 package samples
 
-import com.soywiz.korev.*
-import com.soywiz.korge.scene.*
-import com.soywiz.korge.text.*
-import com.soywiz.korge.ui.*
-import com.soywiz.korge.view.*
-import com.soywiz.korge.view.filter.*
-import com.soywiz.korim.color.*
-import com.soywiz.korim.font.*
-import com.soywiz.korio.file.std.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.shape.*
+import korlibs.event.*
+import korlibs.korge.scene.*
+import korlibs.korge.text.*
+import korlibs.korge.ui.*
+import korlibs.korge.view.*
+import korlibs.korge.view.filter.*
+import korlibs.image.color.*
+import korlibs.image.font.*
+import korlibs.io.file.std.*
+import korlibs.math.geom.*
+import korlibs.math.geom.shape.*
 
 class MainTextInput : Scene() {
     override suspend fun SContainer.sceneMain() {
@@ -87,7 +87,7 @@ class MainTextInput : Scene() {
 
          */
 
-        //text("HELLO WORLD", textSize = 64.0, renderer = com.soywiz.korim.text.DefaultStringTextRenderer.aroundPath(buildVectorPath { circle(0, 0, 100) }), font = DefaultTtfFont).xy(700, 200)
+        //text("HELLO WORLD", textSize = 64.0, renderer = korlibs.image.text.DefaultStringTextRenderer.aroundPath(buildVectorPath { circle(0, 0, 100) }), font = DefaultTtfFont).xy(700, 200)
         /*
         text("HELLO WORLD", 64.0, font = font).xy(600, 150).aroundPath(buildVectorPath { circle(50, 50, 100) }).also {
             it.font = DefaultUIBitmapFont

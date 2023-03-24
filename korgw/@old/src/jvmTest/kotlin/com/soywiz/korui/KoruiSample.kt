@@ -1,6 +1,6 @@
 package com.soywiz.korui
 
-import com.soywiz.korev.*
+import korlibs.event.*
 import com.soywiz.korui.geom.len.*
 import com.soywiz.korui.style.*
 import com.soywiz.korui.ui.*

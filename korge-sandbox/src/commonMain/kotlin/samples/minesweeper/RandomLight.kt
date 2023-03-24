@@ -1,9 +1,9 @@
 package samples.minesweeper
 
-import com.soywiz.korge.view.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.random.*
+import korlibs.korge.view.*
+import korlibs.image.bitmap.*
+import korlibs.math.geom.*
+import korlibs.math.random.*
 import kotlin.math.*
 import kotlin.random.*
 

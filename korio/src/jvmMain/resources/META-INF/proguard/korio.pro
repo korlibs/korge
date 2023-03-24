@@ -1,5 +1,5 @@
-#-keep,allowobfuscation @interface com.soywiz.korio.annotations.Keep
--keep @com.soywiz.korio.annotations.Keep public class *
+#-keep,allowobfuscation @interface korlibs.io.annotations.Keep
+-keep @korlibs.io.annotations.Keep public class *
 -keepclassmembers class * {
-    @com.soywiz.korio.annotations.Keep *;
+    @korlibs.io.annotations.Keep *;
 }

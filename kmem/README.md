@@ -11,7 +11,7 @@
 <!-- BADGES -->
 <p align="center">
 	<a href="https://github.com/korlibs/korge/actions"><img alt="Build Status" src="https://github.com/korlibs/korge/workflows/CI/badge.svg" /></a>
-    <a href="https://search.maven.org/artifact/com.soywiz.korlibs.kmem/kmem"><img alt="Maven Central" src="https://img.shields.io/maven-central/v/com.soywiz.korlibs.kmem/kmem"></a>
+    <a href="https://search.maven.org/artifact/korlibs.kmem/kmem"><img alt="Maven Central" src="https://img.shields.io/maven-central/v/korlibs.kmem/kmem"></a>
 	<a href="https://discord.korge.org/"><img alt="Discord" src="https://img.shields.io/discord/728582275884908604?logo=discord" /></a>
 </p>
 <!-- /BADGES -->
@@ -74,7 +74,7 @@ assertEquals(0x07060504, mem.getAlignedInt32(1))
 ### Usage with gradle
 
 ```
-def kmemVersion = "..." // Find latest version on https://search.maven.org/artifact/com.soywiz.korlibs.kmem/kmem
+def kmemVersion = "..." // Find latest version on https://search.maven.org/artifact/korlibs.kmem/kmem
 
 repositories {
     maven { url "https://dl.bintray.com/korlibs/korlibs" }
@@ -82,11 +82,11 @@ repositories {
 
 dependencies {
     // For multiplatform projects
-    implementation "com.soywiz.korlibs.kmem:kmem:$kmemVersion"
+    implementation "korlibs.kmem:kmem:$kmemVersion"
     
     // For JVM/Android only
-    implementation "com.soywiz.korlibs.kmem:kmem-jvm:$kmemVersion"
+    implementation "korlibs.kmem:kmem-jvm:$kmemVersion"
     // For JS only
-    implementation "com.soywiz.korlibs.kmem:kmem-js:$kmemVersion"
+    implementation "korlibs.kmem:kmem-js:$kmemVersion"
 }
 ```

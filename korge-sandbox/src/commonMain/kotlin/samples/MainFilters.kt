@@ -1,23 +1,23 @@
 package samples
 
-import com.soywiz.klock.seconds
-import com.soywiz.korge.animate.*
-import com.soywiz.korge.scene.ScaledScene
-import com.soywiz.korge.tween.get
-import com.soywiz.korge.view.SContainer
-import com.soywiz.korge.view.filter.BlurFilter
-import com.soywiz.korge.view.filter.Convolute3Filter
-import com.soywiz.korge.view.filter.PageFilter
-import com.soywiz.korge.view.filter.SwizzleColorsFilter
-import com.soywiz.korge.view.filter.TransitionFilter
-import com.soywiz.korge.view.filter.WaveFilter
-import com.soywiz.korge.view.filter.filter
-import com.soywiz.korge.view.image
-import com.soywiz.korge.view.position
-import com.soywiz.korge.view.scale
-import com.soywiz.korim.format.readBitmap
-import com.soywiz.korio.file.std.resourcesVfs
-import com.soywiz.korma.interpolation.Easing
+import korlibs.time.seconds
+import korlibs.korge.animate.*
+import korlibs.korge.scene.ScaledScene
+import korlibs.korge.tween.get
+import korlibs.korge.view.SContainer
+import korlibs.korge.view.filter.BlurFilter
+import korlibs.korge.view.filter.Convolute3Filter
+import korlibs.korge.view.filter.PageFilter
+import korlibs.korge.view.filter.SwizzleColorsFilter
+import korlibs.korge.view.filter.TransitionFilter
+import korlibs.korge.view.filter.WaveFilter
+import korlibs.korge.view.filter.filter
+import korlibs.korge.view.image
+import korlibs.korge.view.position
+import korlibs.korge.view.scale
+import korlibs.image.format.readBitmap
+import korlibs.io.file.std.resourcesVfs
+import korlibs.math.interpolation.Easing
 
 class MainFilters : ScaledScene(768, 512) {
     override suspend fun SContainer.sceneMain() {

@@ -1,13 +1,13 @@
 package samples
 
-import com.soywiz.klock.*
-import com.soywiz.korge.scene.*
-import com.soywiz.korge.time.*
-import com.soywiz.korge.ui.*
-import com.soywiz.korge.view.*
-import com.soywiz.korim.color.*
-import com.soywiz.korma.interpolation.*
-import com.soywiz.korma.random.*
+import korlibs.time.*
+import korlibs.korge.scene.*
+import korlibs.korge.time.*
+import korlibs.korge.ui.*
+import korlibs.korge.view.*
+import korlibs.image.color.*
+import korlibs.math.interpolation.*
+import korlibs.math.random.*
 import kotlin.random.*
 
 //class MainCache : ScaledScene(512, 512) {

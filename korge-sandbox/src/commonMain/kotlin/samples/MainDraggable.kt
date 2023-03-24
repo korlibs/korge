@@ -1,10 +1,10 @@
 package samples
-import com.soywiz.korge.input.DraggableCloseable
-import com.soywiz.korge.input.draggableCloseable
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.ui.uiCheckBox
-import com.soywiz.korge.view.SContainer
-import com.soywiz.korge.view.solidRect
+import korlibs.korge.input.DraggableCloseable
+import korlibs.korge.input.draggableCloseable
+import korlibs.korge.scene.Scene
+import korlibs.korge.ui.uiCheckBox
+import korlibs.korge.view.SContainer
+import korlibs.korge.view.solidRect
 
 class MainDraggable : Scene() {
     override suspend fun SContainer.sceneMain() {

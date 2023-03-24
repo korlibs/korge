@@ -1,11 +1,11 @@
 package samples
 
-import com.soywiz.korag.shader.*
-import com.soywiz.korge.render.*
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.view.*
-import com.soywiz.korim.color.*
-import com.soywiz.korma.geom.*
+import korlibs.graphics.shader.*
+import korlibs.korge.render.*
+import korlibs.korge.scene.Scene
+import korlibs.korge.view.*
+import korlibs.image.color.*
+import korlibs.math.geom.*
 import kotlin.math.*
 
 class MainSDF : Scene() {
@@ -69,4 +69,3 @@ open class CircleSDFView(width: Double = 100.0, height: Double = 100.0) : Shaded
         }
     }
 }
-

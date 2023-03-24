@@ -1,17 +1,17 @@
 package samples
 
-import com.soywiz.kds.*
-import com.soywiz.korge.input.*
-import com.soywiz.korge.scene.*
-import com.soywiz.korge.ui.*
-import com.soywiz.korge.view.*
-import com.soywiz.korim.color.*
-import com.soywiz.korim.font.*
-import com.soywiz.korim.paint.*
-import com.soywiz.korim.text.*
-import com.soywiz.korio.file.std.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.shape.*
+import korlibs.datastructure.*
+import korlibs.korge.input.*
+import korlibs.korge.scene.*
+import korlibs.korge.ui.*
+import korlibs.korge.view.*
+import korlibs.image.color.*
+import korlibs.image.font.*
+import korlibs.image.paint.*
+import korlibs.image.text.*
+import korlibs.io.file.std.*
+import korlibs.math.geom.*
+import korlibs.math.geom.shape.*
 
 class MainTextBounds : Scene() {
     enum class Wrap { NO, CIRCLE }

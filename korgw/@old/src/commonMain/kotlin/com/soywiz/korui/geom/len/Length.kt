@@ -1,8 +1,8 @@
 package com.soywiz.korui.geom.len
 
-import com.soywiz.kmem.*
-import com.soywiz.korio.util.*
-import com.soywiz.korma.geom.*
+import korlibs.memory.*
+import korlibs.io.util.*
+import korlibs.math.geom.*
 import kotlin.math.*
 
 //sealed class Length : Comparable<Length> {

@@ -1,12 +1,12 @@
 package samples
 
-import com.soywiz.korge.scene.*
-import com.soywiz.korge.view.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.bitmap.trace.*
-import com.soywiz.korim.color.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.vector.*
+import korlibs.korge.scene.*
+import korlibs.korge.view.*
+import korlibs.image.bitmap.*
+import korlibs.image.bitmap.trace.*
+import korlibs.image.color.*
+import korlibs.math.geom.*
+import korlibs.math.geom.vector.*
 
 class MainImageTrace : Scene() {
     override suspend fun SContainer.sceneMain() {

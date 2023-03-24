@@ -1,13 +1,13 @@
 package samples.minesweeper
 
-import com.soywiz.klock.*
-import com.soywiz.korau.sound.*
-import com.soywiz.korge.render.*
-import com.soywiz.korge.view.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.text.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korma.random.*
+import korlibs.time.*
+import korlibs.audio.sound.*
+import korlibs.korge.render.*
+import korlibs.korge.view.*
+import korlibs.image.bitmap.*
+import korlibs.image.text.*
+import korlibs.io.lang.*
+import korlibs.math.random.*
 import kotlin.random.*
 
 // Process of the board

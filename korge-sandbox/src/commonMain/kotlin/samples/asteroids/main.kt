@@ -1,8 +1,8 @@
 package samples.asteroids
 
-import com.soywiz.korev.*
-import com.soywiz.korge.scene.ScaledScene
-import com.soywiz.korge.view.SContainer
+import korlibs.event.*
+import korlibs.korge.scene.ScaledScene
+import korlibs.korge.view.SContainer
 
 const val WIDTH = 640
 const val HEIGHT = 480

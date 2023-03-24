@@ -1,7 +1,7 @@
 package com.soywiz.korui.async
 
-import com.soywiz.korio.async.*
-import com.soywiz.korio.lang.*
+import korlibs.io.async.*
+import korlibs.io.lang.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
 

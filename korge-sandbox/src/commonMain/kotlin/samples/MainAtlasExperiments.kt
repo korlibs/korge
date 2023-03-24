@@ -1,7 +1,7 @@
 package samples
 
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.view.SContainer
+import korlibs.korge.scene.Scene
+import korlibs.korge.view.SContainer
 
 class MainAtlasExperiments : Scene() {
     override suspend fun SContainer.sceneMain() {

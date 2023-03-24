@@ -1,14 +1,14 @@
 package samples
 
-import com.soywiz.kmem.clamp
-import com.soywiz.korge.input.mouse
-import com.soywiz.korge.scene.ScaledScene
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.view.SContainer
-import com.soywiz.korge.view.ninePatch
-import com.soywiz.korge.view.position
-import com.soywiz.korim.bitmap.readNinePatch
-import com.soywiz.korio.file.std.resourcesVfs
+import korlibs.memory.clamp
+import korlibs.korge.input.mouse
+import korlibs.korge.scene.ScaledScene
+import korlibs.korge.scene.Scene
+import korlibs.korge.view.SContainer
+import korlibs.korge.view.ninePatch
+import korlibs.korge.view.position
+import korlibs.image.bitmap.readNinePatch
+import korlibs.io.file.std.resourcesVfs
 
 //class MainNinePatch : ScaledScene(512, 512) {
 class MainNinePatch : Scene() {

@@ -1,7 +1,7 @@
 package kotlinx.cinterop
 
 /*
-import com.soywiz.kmem.dyn.*
+import korlibs.memory.dyn.*
 
 actual operator fun <R> KPointerTT<KFunctionTT<() -> R>>.invoke(): R = TODO()
 actual operator fun <P1, R> KPointerTT<KFunctionTT<(P1) -> R>>.invoke(p1: P1): R = TODO()

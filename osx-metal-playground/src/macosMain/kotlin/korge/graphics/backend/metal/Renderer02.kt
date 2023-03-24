@@ -1,9 +1,9 @@
 package korge.graphics.backend.metal
 
-import com.soywiz.korag.*
-import com.soywiz.korag.metal.shader.*
-import com.soywiz.korag.shader.*
-import com.soywiz.korag.shader.gl.*
+import korlibs.graphics.*
+import korlibs.graphics.metal.shader.*
+import korlibs.graphics.shader.*
+import korlibs.graphics.shader.gl.*
 import kotlinx.cinterop.*
 import platform.Foundation.*
 import platform.Metal.*

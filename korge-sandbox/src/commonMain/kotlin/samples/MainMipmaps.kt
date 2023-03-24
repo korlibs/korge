@@ -1,12 +1,12 @@
 package samples
 
-import com.soywiz.klock.*
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.tween.*
-import com.soywiz.korge.view.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.format.*
-import com.soywiz.korio.file.std.*
+import korlibs.time.*
+import korlibs.korge.scene.Scene
+import korlibs.korge.tween.*
+import korlibs.korge.view.*
+import korlibs.image.bitmap.*
+import korlibs.image.format.*
+import korlibs.io.file.std.*
 
 class MainMipmaps : Scene() {
     override suspend fun SContainer.sceneMain() {

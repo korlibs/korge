@@ -1,17 +1,17 @@
 package samples
 
-import com.soywiz.klock.*
-import com.soywiz.korge.scene.*
-import com.soywiz.korge.tween.*
-import com.soywiz.korge.tween.get
-import com.soywiz.korge.view.*
-import com.soywiz.korim.color.*
-import com.soywiz.korim.vector.*
-import com.soywiz.korio.async.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.bezier.*
-import com.soywiz.korma.geom.vector.*
-import com.soywiz.korma.random.get
+import korlibs.time.*
+import korlibs.korge.scene.*
+import korlibs.korge.tween.*
+import korlibs.korge.tween.get
+import korlibs.korge.view.*
+import korlibs.image.color.*
+import korlibs.image.vector.*
+import korlibs.io.async.*
+import korlibs.math.geom.*
+import korlibs.math.geom.bezier.*
+import korlibs.math.geom.vector.*
+import korlibs.math.random.get
 import kotlin.random.*
 
 class MainBezier : Scene() {

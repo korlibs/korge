@@ -1,13 +1,13 @@
 package com.soywiz.korui.light
 
-import com.soywiz.kds.*
-import com.soywiz.korag.*
-import com.soywiz.korev.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
-import com.soywiz.korio.file.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korev.*
+import korlibs.datastructure.*
+import korlibs.graphics.*
+import korlibs.event.*
+import korlibs.image.bitmap.*
+import korlibs.image.color.*
+import korlibs.io.file.*
+import korlibs.io.lang.*
+import korlibs.event.*
 import kotlin.coroutines.*
 import kotlin.reflect.*
 

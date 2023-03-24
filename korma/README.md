@@ -7,7 +7,7 @@
 <!-- BADGES -->
 <p align="center">
 	<a href="https://github.com/korlibs/korge/actions"><img alt="Build Status" src="https://github.com/korlibs/korge/workflows/CI/badge.svg" /></a>
-    <a href="https://search.maven.org/artifact/com.soywiz.korlibs.korma/korma"><img alt="Maven Central" src="https://img.shields.io/maven-central/v/com.soywiz.korlibs.korma/korma"></a>
+    <a href="https://search.maven.org/artifact/korlibs.korma/korma"><img alt="Maven Central" src="https://img.shields.io/maven-central/v/korlibs.korma/korma"></a>
 	<a href="https://discord.korge.org/"><img alt="Discord" src="https://img.shields.io/discord/728582275884908604?logo=discord" /></a>
 </p>
 <!-- /BADGES -->
@@ -78,18 +78,18 @@ repositories {
 
 dependencies {
     // For multiplatform projects
-    implementation "com.soywiz.korlibs.korma:korma:$kormaVersion"
+    implementation "korlibs.korma:korma:$kormaVersion"
     
     // For JVM/Android only
-    implementation "com.soywiz.korlibs.korma:korma-jvm:$kormaVersion"
+    implementation "korlibs.korma:korma-jvm:$kormaVersion"
     // For JS only
-    implementation "com.soywiz.korlibs.korma:korma-js:$kormaVersion"
+    implementation "korlibs.korma:korma-js:$kormaVersion"
 }
 
 // Additional funcionality using Clipper and poly2try code (with separate licenses):
 // - https://github.com/korlibs/korma/blob/master/korma-shape/LICENSE
 dependencies {
-    implementation "com.soywiz.korlibs.korma:korma-shape:$kormaVersion"
+    implementation "korlibs.korma:korma-shape:$kormaVersion"
 }
 
 ```

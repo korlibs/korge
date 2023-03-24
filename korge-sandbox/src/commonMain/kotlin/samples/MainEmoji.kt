@@ -1,20 +1,20 @@
 package samples
 
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.view.SContainer
-import com.soywiz.korge.view.cpuGraphics
-import com.soywiz.korge.view.image
-import com.soywiz.korge.view.text
-import com.soywiz.korge.view.xy
-import com.soywiz.korim.color.Colors
-import com.soywiz.korim.font.DefaultTtfFont
-import com.soywiz.korim.font.SystemFont
-import com.soywiz.korim.font.readTtfFont
-import com.soywiz.korim.font.withFallback
-import com.soywiz.korim.format.readBitmap
-import com.soywiz.korim.text.text
-import com.soywiz.korio.file.std.localVfs
-import com.soywiz.korio.file.std.resourcesVfs
+import korlibs.korge.scene.Scene
+import korlibs.korge.view.SContainer
+import korlibs.korge.view.cpuGraphics
+import korlibs.korge.view.image
+import korlibs.korge.view.text
+import korlibs.korge.view.xy
+import korlibs.image.color.Colors
+import korlibs.image.font.DefaultTtfFont
+import korlibs.image.font.SystemFont
+import korlibs.image.font.readTtfFont
+import korlibs.image.font.withFallback
+import korlibs.image.format.readBitmap
+import korlibs.image.text.text
+import korlibs.io.file.std.localVfs
+import korlibs.io.file.std.resourcesVfs
 
 class MainEmoji : Scene() {
     override suspend fun SContainer.sceneMain() {

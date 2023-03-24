@@ -11,8 +11,8 @@ group = "com.soywiz.korlibs.korge.reloadagent"
 jar {
     manifest {
         attributes(
-            "Agent-Class": "com.soywiz.korge.reloadagent.KorgeReloadAgent",
-            "Premain-Class": "com.soywiz.korge.reloadagent.KorgeReloadAgent",
+            "Agent-Class": "korlibs.korge.reloadagent.KorgeReloadAgent",
+            "Premain-Class": "korlibs.korge.reloadagent.KorgeReloadAgent",
             "Can-Redefine-Classes": true,
             "Can-Retransform-Classes": true
         )
@@ -55,5 +55,5 @@ afterEvaluate {
     }
 }
 
-com.soywiz.korlibs.NativeTools.groovyConfigurePublishing(project, false)
-com.soywiz.korlibs.NativeTools.groovyConfigureSigning(project)
+korlibs.NativeTools.groovyConfigurePublishing(project, false)
+korlibs.NativeTools.groovyConfigureSigning(project)

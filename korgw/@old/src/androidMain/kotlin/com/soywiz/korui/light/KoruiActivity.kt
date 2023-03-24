@@ -3,7 +3,7 @@ package com.soywiz.korui.light
 import android.app.Activity
 import android.os.Bundle
 import android.os.PersistableBundle
-import com.soywiz.korio.Korio
+import korlibs.io.Korio
 
 open class KoruiActivity : Activity() {
     lateinit var rootLayout: RootKoruiAbsoluteLayout

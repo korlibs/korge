@@ -1,15 +1,15 @@
 package samples.connect4
 
-import com.soywiz.kds.*
-import com.soywiz.korge.animate.*
-import com.soywiz.korge.input.*
-import com.soywiz.korge.scene.*
-import com.soywiz.korge.tween.*
-import com.soywiz.korge.view.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
-import com.soywiz.korio.async.*
-import com.soywiz.korma.geom.*
+import korlibs.datastructure.*
+import korlibs.korge.animate.*
+import korlibs.korge.input.*
+import korlibs.korge.scene.*
+import korlibs.korge.tween.*
+import korlibs.korge.view.*
+import korlibs.image.bitmap.*
+import korlibs.image.color.*
+import korlibs.io.async.*
+import korlibs.math.geom.*
 
 class MainConnect4 : ScaledScene(448, 384) {
     override suspend fun SContainer.sceneMain() {

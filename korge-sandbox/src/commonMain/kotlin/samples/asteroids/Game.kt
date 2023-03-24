@@ -1,14 +1,14 @@
 package samples.asteroids
 
-import com.soywiz.klock.*
-import com.soywiz.korev.*
-import com.soywiz.korge.tween.*
-import com.soywiz.korge.view.*
-import com.soywiz.korim.color.*
-import com.soywiz.korim.font.*
-import com.soywiz.korio.async.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.random.*
+import korlibs.time.*
+import korlibs.event.*
+import korlibs.korge.tween.*
+import korlibs.korge.view.*
+import korlibs.image.color.*
+import korlibs.image.font.*
+import korlibs.io.async.*
+import korlibs.math.geom.*
+import korlibs.math.random.*
 import kotlin.random.*
 
 const val NUMBER_OF_ASTEROIDS = 15

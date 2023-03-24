@@ -1,6 +1,6 @@
 package com.soywiz.korui.ui
 
-import com.soywiz.korma.geom.*
+import korlibs.math.geom.*
 import com.soywiz.korui.*
 import com.soywiz.korui.geom.len.*
 import com.soywiz.korui.style.*

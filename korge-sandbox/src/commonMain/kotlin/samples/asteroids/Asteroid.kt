@@ -1,8 +1,8 @@
 package samples.asteroids
 
-import com.soywiz.klock.milliseconds
-import com.soywiz.korge.view.*
-import com.soywiz.korma.geom.*
+import korlibs.time.milliseconds
+import korlibs.korge.view.*
+import korlibs.math.geom.*
 
 class Asteroid(
     private val assets: Assets,

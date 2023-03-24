@@ -1,12 +1,12 @@
 package samples
 
-import com.soywiz.klock.*
-import com.soywiz.korag.gl.*
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.time.*
-import com.soywiz.korge.view.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
+import korlibs.time.*
+import korlibs.graphics.gl.*
+import korlibs.korge.scene.Scene
+import korlibs.korge.time.*
+import korlibs.korge.view.*
+import korlibs.image.bitmap.*
+import korlibs.image.color.*
 
 class MainBitmapTexId : Scene() {
     /*

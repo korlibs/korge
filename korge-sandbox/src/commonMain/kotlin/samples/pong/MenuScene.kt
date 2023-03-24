@@ -1,11 +1,11 @@
 package samples.pong
 
-import com.soywiz.korge.input.*
-import com.soywiz.korge.scene.*
-import com.soywiz.korge.ui.*
-import com.soywiz.korge.view.*
-import com.soywiz.korim.color.*
-import com.soywiz.korma.geom.*
+import korlibs.korge.input.*
+import korlibs.korge.scene.*
+import korlibs.korge.ui.*
+import korlibs.korge.view.*
+import korlibs.image.color.*
+import korlibs.math.geom.*
 
 class MenuScene() : Scene() {
 	override suspend fun SContainer.sceneMain() {

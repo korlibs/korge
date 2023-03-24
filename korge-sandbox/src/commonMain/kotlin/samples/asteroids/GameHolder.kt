@@ -1,12 +1,12 @@
 package samples.asteroids
 
-import com.soywiz.klock.milliseconds
-import com.soywiz.korge.tween.get
-import com.soywiz.korge.tween.tween
-import com.soywiz.korge.view.SContainer
-import com.soywiz.korge.view.solidRect
-import com.soywiz.korim.color.Colors
-import com.soywiz.korio.async.launchImmediately
+import korlibs.time.milliseconds
+import korlibs.korge.tween.get
+import korlibs.korge.tween.tween
+import korlibs.korge.view.SContainer
+import korlibs.korge.view.solidRect
+import korlibs.image.color.Colors
+import korlibs.io.async.launchImmediately
 
 class GameHolder(private val scene: MainAsteroids) {
     val sceneView: SContainer get() = scene.sceneView

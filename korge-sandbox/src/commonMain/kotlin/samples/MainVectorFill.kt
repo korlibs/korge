@@ -1,14 +1,14 @@
 package samples
 
-import com.soywiz.korge.scene.*
-import com.soywiz.korge.view.*
-import com.soywiz.korge.view.vector.*
-import com.soywiz.korim.color.*
-import com.soywiz.korim.format.*
-import com.soywiz.korim.paint.*
-import com.soywiz.korim.vector.*
-import com.soywiz.korio.file.std.*
-import com.soywiz.korma.geom.*
+import korlibs.korge.scene.*
+import korlibs.korge.view.*
+import korlibs.korge.view.vector.*
+import korlibs.image.color.*
+import korlibs.image.format.*
+import korlibs.image.paint.*
+import korlibs.image.vector.*
+import korlibs.io.file.std.*
+import korlibs.math.geom.*
 
 class MainVectorFill : Scene() {
     override suspend fun SContainer.sceneMain() {

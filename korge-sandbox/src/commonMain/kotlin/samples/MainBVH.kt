@@ -1,18 +1,18 @@
 package samples
 
-import com.soywiz.kds.*
-import com.soywiz.klock.*
-import com.soywiz.korge.input.*
-import com.soywiz.korge.scene.*
-import com.soywiz.korge.view.*
-import com.soywiz.korim.color.*
-import com.soywiz.korim.font.*
-import com.soywiz.korio.util.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.ds.*
-import com.soywiz.korma.geom.shape.*
-import com.soywiz.korma.geom.vector.*
-import com.soywiz.korma.random.*
+import korlibs.datastructure.*
+import korlibs.time.*
+import korlibs.korge.input.*
+import korlibs.korge.scene.*
+import korlibs.korge.view.*
+import korlibs.image.color.*
+import korlibs.image.font.*
+import korlibs.io.util.*
+import korlibs.math.geom.*
+import korlibs.math.geom.ds.*
+import korlibs.math.geom.shape.*
+import korlibs.math.geom.vector.*
+import korlibs.math.random.*
 import kotlin.random.*
 
 class MainBVH : Scene() {

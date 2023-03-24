@@ -1,8 +1,8 @@
 package com.soywiz.korui
 
-import com.soywiz.klock.*
-import com.soywiz.kmem.*
-import com.soywiz.korio.async.*
+import korlibs.time.*
+import korlibs.memory.*
+import korlibs.io.async.*
 import com.soywiz.korui.async.*
 import kotlinx.coroutines.*
 import java.awt.event.*

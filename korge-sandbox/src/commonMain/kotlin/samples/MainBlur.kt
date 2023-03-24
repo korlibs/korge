@@ -1,17 +1,17 @@
 package samples
 
-import com.soywiz.kds.fastArrayListOf
-import com.soywiz.klock.*
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.style.*
-import com.soywiz.korge.ui.*
-import com.soywiz.korge.view.*
-import com.soywiz.korge.view.filter.*
-import com.soywiz.korim.color.Colors
-import com.soywiz.korim.format.readBitmap
-import com.soywiz.korio.file.std.resourcesVfs
-import com.soywiz.korma.geom.Anchor
-import com.soywiz.korma.geom.degrees
+import korlibs.datastructure.fastArrayListOf
+import korlibs.time.*
+import korlibs.korge.scene.Scene
+import korlibs.korge.style.*
+import korlibs.korge.ui.*
+import korlibs.korge.view.*
+import korlibs.korge.view.filter.*
+import korlibs.image.color.Colors
+import korlibs.image.format.readBitmap
+import korlibs.io.file.std.resourcesVfs
+import korlibs.math.geom.Anchor
+import korlibs.math.geom.degrees
 import kotlin.reflect.KMutableProperty0
 
 class MainBlur : Scene() {

@@ -1,13 +1,13 @@
 /*
-import com.soywiz.korge.GLCanvasKorge
-import com.soywiz.korge.animate.animate
-import com.soywiz.korge.input.mouse
-import com.soywiz.korge.tween.get
-import com.soywiz.korge.tween.tween
-import com.soywiz.korge.view.solidRect
-import com.soywiz.korgw.awt.GLCanvas
-import com.soywiz.korim.color.Colors
-import com.soywiz.korio.async.launchImmediately
+import korlibs.korge.GLCanvasKorge
+import korlibs.korge.animate.animate
+import korlibs.korge.input.mouse
+import korlibs.korge.tween.get
+import korlibs.korge.tween.tween
+import korlibs.korge.view.solidRect
+import korlibs.render.awt.GLCanvas
+import korlibs.image.color.Colors
+import korlibs.io.async.launchImmediately
 import kotlinx.coroutines.runBlocking
 import java.awt.Dimension
 import java.awt.Graphics

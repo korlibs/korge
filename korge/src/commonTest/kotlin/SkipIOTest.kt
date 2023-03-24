@@ -1,4 +1,4 @@
-import com.soywiz.kmem.*
+import korlibs.memory.*
 
 //val skipIOTest get() = OS.isJsBrowser
 val skipIOTest get() = Platform.isJsBrowserOrWorker || Platform.isJsNodeJs

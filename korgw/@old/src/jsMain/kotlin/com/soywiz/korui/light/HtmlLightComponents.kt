@@ -1,16 +1,16 @@
 package com.soywiz.korui.light
 
-import com.soywiz.kmem.*
-import com.soywiz.korag.*
-import com.soywiz.korag.log.*
-import com.soywiz.korev.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.format.*
-import com.soywiz.korio.async.*
-import com.soywiz.korio.file.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.stream.*
-import com.soywiz.korio.util.*
+import korlibs.memory.*
+import korlibs.graphics.*
+import korlibs.graphics.log.*
+import korlibs.event.*
+import korlibs.image.bitmap.*
+import korlibs.image.format.*
+import korlibs.io.async.*
+import korlibs.io.file.*
+import korlibs.io.lang.*
+import korlibs.io.stream.*
+import korlibs.io.util.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.*
 import org.khronos.webgl.*
@@ -254,7 +254,7 @@ class HtmlLightComponents : LightComponents() {
 		return Closeable { this.removeEventListener(name, func) }
 	}
 
-	override fun <T : com.soywiz.korev.Event> registerEventKind(
+	override fun <T : korlibs.event.Event> registerEventKind(
 		c: Any, clazz: KClass<T>, ed: EventDispatcher
 	): Closeable {
         if (c.isInvalid()) return DummyCloseable
@@ -264,8 +264,8 @@ class HtmlLightComponents : LightComponents() {
 		val node = c.unsafeCast<HTMLElement>()
 
 		when (clazz) {
-			com.soywiz.korev.MouseEvent::class -> {
-				val event = com.soywiz.korev.MouseEvent()
+			korlibs.event.MouseEvent::class -> {
+				val event = korlibs.event.MouseEvent()
 
 				fun dispatchMouseEvent(e: Event) {
 					val me = e.unsafeCast<MouseEvent>()
@@ -283,19 +283,19 @@ class HtmlLightComponents : LightComponents() {
 						this.isMetaDown = me.metaKey
 						this.scaleCoords = false
 						this.type = when (me.type) {
-							"click" -> com.soywiz.korev.MouseEvent.Type.CLICK
+							"click" -> korlibs.event.MouseEvent.Type.CLICK
 							"mousemove" -> {
 								if (me.button.toInt() == 0) {
-									com.soywiz.korev.MouseEvent.Type.MOVE
+									korlibs.event.MouseEvent.Type.MOVE
 								} else {
-									com.soywiz.korev.MouseEvent.Type.DRAG
+									korlibs.event.MouseEvent.Type.DRAG
 								}
 							}
-							"mouseup" -> com.soywiz.korev.MouseEvent.Type.UP
-							"mousedown" -> com.soywiz.korev.MouseEvent.Type.DOWN
-							"mouseenter" -> com.soywiz.korev.MouseEvent.Type.DOWN
-							"mouseover" -> com.soywiz.korev.MouseEvent.Type.ENTER
-							"mouseout" -> com.soywiz.korev.MouseEvent.Type.EXIT
+							"mouseup" -> korlibs.event.MouseEvent.Type.UP
+							"mousedown" -> korlibs.event.MouseEvent.Type.DOWN
+							"mouseenter" -> korlibs.event.MouseEvent.Type.DOWN
+							"mouseover" -> korlibs.event.MouseEvent.Type.ENTER
+							"mouseout" -> korlibs.event.MouseEvent.Type.EXIT
 							else -> error("Unsupported event type ${me.type}")
 						}
 					})

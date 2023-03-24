@@ -15,7 +15,7 @@
 <!-- BADGES -->
 <p align="center">
 	<a href="https://github.com/korlibs/korge/actions"><img alt="Build Status" src="https://github.com/korlibs/korge/workflows/CI/badge.svg" /></a>
-    <a href="https://search.maven.org/artifact/com.soywiz.korlibs.klock/klock"><img alt="Maven Central" src="https://img.shields.io/maven-central/v/com.soywiz.korlibs.klock/klock"></a>
+    <a href="https://search.maven.org/artifact/korlibs.klock/klock"><img alt="Maven Central" src="https://img.shields.io/maven-central/v/korlibs.klock/klock"></a>
 	<a href="https://discord.korge.org/"><img alt="Discord" src="https://img.shields.io/discord/728582275884908604?logo=discord" /></a>
 </p>
 <!-- /BADGES -->
@@ -36,7 +36,7 @@ val daysInNextMonth = (now.yearMonth + 1.months).days
 ### Usage with gradle:
 
 ```groovy
-def klockVersion = "..." // Find latest version in https://search.maven.org/artifact/com.soywiz.korlibs.klock/klock
+def klockVersion = "..." // Find latest version in https://search.maven.org/artifact/korlibs.klock/klock
 
 repositories {
     mavenCentral()
@@ -47,7 +47,7 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                implementation "com.soywiz.korlibs.klock:klock:$klockVersion" // Common 
+                implementation "korlibs.klock:klock:$klockVersion" // Common 
             }
         }
     }
@@ -55,7 +55,7 @@ kotlin {
 
 // For JVM
 dependencies {
-    implementation "com.soywiz.korlibs.klock:klock-jvm:$klockVersion"
+    implementation "korlibs.klock:klock-jvm:$klockVersion"
 }
 ```
 

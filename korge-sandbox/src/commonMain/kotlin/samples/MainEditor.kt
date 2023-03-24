@@ -1,17 +1,17 @@
 package samples
 
-import com.soywiz.klock.*
-import com.soywiz.korge.animate.*
-import com.soywiz.korge.render.*
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.style.*
-import com.soywiz.korge.tween.*
-import com.soywiz.korge.ui.*
-import com.soywiz.korge.view.*
-import com.soywiz.korim.color.*
-import com.soywiz.korim.font.*
-import com.soywiz.korim.text.*
-import com.soywiz.korma.geom.*
+import korlibs.time.*
+import korlibs.korge.animate.*
+import korlibs.korge.render.*
+import korlibs.korge.scene.Scene
+import korlibs.korge.style.*
+import korlibs.korge.tween.*
+import korlibs.korge.ui.*
+import korlibs.korge.view.*
+import korlibs.image.color.*
+import korlibs.image.font.*
+import korlibs.image.text.*
+import korlibs.math.geom.*
 
 class MainEditor : Scene() {
     override suspend fun SContainer.sceneMain() {

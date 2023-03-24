@@ -1,18 +1,18 @@
 package samples
 
-import com.soywiz.korge.input.mouse
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.view.SContainer
-import com.soywiz.korge.view.addUpdater
-import com.soywiz.korge.view.image
-import com.soywiz.korge.view.scale
-import com.soywiz.korge.view.unsafeRenderToBitmapSync
-import com.soywiz.korge.view.xy
-import com.soywiz.korim.bitmap.Bitmaps
-import com.soywiz.korim.bitmap.slice
-import com.soywiz.korim.format.readBitmap
-import com.soywiz.korio.file.std.resourcesVfs
-import com.soywiz.korma.geom.MRectangle
+import korlibs.korge.input.mouse
+import korlibs.korge.scene.Scene
+import korlibs.korge.view.SContainer
+import korlibs.korge.view.addUpdater
+import korlibs.korge.view.image
+import korlibs.korge.view.scale
+import korlibs.korge.view.unsafeRenderToBitmapSync
+import korlibs.korge.view.xy
+import korlibs.image.bitmap.Bitmaps
+import korlibs.image.bitmap.slice
+import korlibs.image.format.readBitmap
+import korlibs.io.file.std.resourcesVfs
+import korlibs.math.geom.MRectangle
 
 class MainColorPicker : Scene() {
     override suspend fun SContainer.sceneMain() {

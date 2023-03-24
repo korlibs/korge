@@ -1,19 +1,19 @@
 package samples
 
-import com.soywiz.kds.*
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.time.delayFrame
-import com.soywiz.korge.view.*
-import com.soywiz.korge.view.tiles.TileMapRepeat
-import com.soywiz.korge.view.tiles.tileMap
-import com.soywiz.korim.bitmap.Bitmap32
-import com.soywiz.korim.bitmap.slice
-import com.soywiz.korim.color.*
-import com.soywiz.korim.format.readBitmap
-import com.soywiz.korim.tiles.*
-import com.soywiz.korio.async.launchImmediately
-import com.soywiz.korio.file.std.resourcesVfs
-import com.soywiz.korma.geom.*
+import korlibs.datastructure.*
+import korlibs.korge.scene.Scene
+import korlibs.korge.time.delayFrame
+import korlibs.korge.view.*
+import korlibs.korge.view.tiles.TileMapRepeat
+import korlibs.korge.view.tiles.tileMap
+import korlibs.image.bitmap.Bitmap32
+import korlibs.image.bitmap.slice
+import korlibs.image.color.*
+import korlibs.image.format.readBitmap
+import korlibs.image.tiles.*
+import korlibs.io.async.launchImmediately
+import korlibs.io.file.std.resourcesVfs
+import korlibs.math.geom.*
 
 class MainTiledBackground : Scene() {
     override suspend fun SContainer.sceneMain() {

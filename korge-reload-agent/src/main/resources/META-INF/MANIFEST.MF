@@ -1,4 +1,4 @@
-Agent-Class: com.soywiz.korge.reloadagent.KorgeReloadAgent
-Premain-Class: com.soywiz.korge.reloadagent.KorgeReloadAgent
+Agent-Class: korlibs.korge.reloadagent.KorgeReloadAgent
+Premain-Class: korlibs.korge.reloadagent.KorgeReloadAgent
 Can-Redefine-Classes: true
 Can-Retransform-Classes: true

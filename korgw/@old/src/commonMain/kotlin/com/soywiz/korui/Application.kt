@@ -1,10 +1,10 @@
 package com.soywiz.korui
 
-import com.soywiz.korag.*
-import com.soywiz.korev.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.util.*
+import korlibs.graphics.*
+import korlibs.event.*
+import korlibs.image.bitmap.*
+import korlibs.io.lang.*
+import korlibs.io.util.*
 import com.soywiz.korui.geom.len.*
 import com.soywiz.korui.light.*
 import com.soywiz.korui.ui.*
@@ -152,4 +152,3 @@ suspend fun CanvasApplicationEx(
 	callback(canvas, frame)
 	if (OS.isNative) println("CanvasApplicationEx[6]")
 }
-

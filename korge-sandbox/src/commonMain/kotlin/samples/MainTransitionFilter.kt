@@ -1,13 +1,13 @@
 package samples
 
-import com.soywiz.klock.*
-import com.soywiz.korge.scene.*
-import com.soywiz.korge.tween.*
-import com.soywiz.korge.view.*
-import com.soywiz.korge.view.filter.*
-import com.soywiz.korim.format.*
-import com.soywiz.korio.async.*
-import com.soywiz.korio.file.std.*
+import korlibs.time.*
+import korlibs.korge.scene.*
+import korlibs.korge.tween.*
+import korlibs.korge.view.*
+import korlibs.korge.view.filter.*
+import korlibs.image.format.*
+import korlibs.io.async.*
+import korlibs.io.file.std.*
 
 class MainTransitionFilter : ScaledScene(768, 512) {
     override suspend fun SContainer.sceneMain() {

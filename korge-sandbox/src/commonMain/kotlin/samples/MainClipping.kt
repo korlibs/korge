@@ -1,12 +1,12 @@
 package samples
 
-import com.soywiz.korge.scene.*
-import com.soywiz.korge.view.*
-import com.soywiz.korge.view.filter.*
-import com.soywiz.korge.view.vector.*
-import com.soywiz.korim.color.*
-import com.soywiz.korim.format.*
-import com.soywiz.korio.file.std.*
+import korlibs.korge.scene.*
+import korlibs.korge.view.*
+import korlibs.korge.view.filter.*
+import korlibs.korge.view.vector.*
+import korlibs.image.color.*
+import korlibs.image.format.*
+import korlibs.io.file.std.*
 
 class MainClipping : Scene() {
     override suspend fun SContainer.sceneMain() {

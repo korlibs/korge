@@ -6,7 +6,7 @@
 <!-- BADGES -->
 <p align="center">
 	<a href="https://github.com/korlibs/korge/actions"><img alt="Build Status" src="https://github.com/korlibs/korge/workflows/CI/badge.svg" /></a>
-    <a href="https://search.maven.org/artifact/com.soywiz.korlibs.korte/korte"><img alt="Maven Central" src="https://img.shields.io/maven-central/v/com.soywiz.korlibs.korte/korte"></a>
+    <a href="https://search.maven.org/artifact/korlibs.korte/korte"><img alt="Maven Central" src="https://img.shields.io/maven-central/v/korlibs.korte/korte"></a>
 	<a href="https://discord.korge.org/"><img alt="Discord" src="https://img.shields.io/discord/728582275884908604?logo=discord" /></a>
 </p>
 <!-- /BADGES -->
@@ -21,7 +21,7 @@ It is a non-strict super set of twig / django / atpl.js template engines and can
 
 It has out of the box support for [ktor](https://ktor.io/) and [vert.x](https://vertx.io/).
 
-It works on JVM and JS out of the box. And on Native with untyped model data or by making the models implement the [DynamicType](https://github.com/korlibs/korte/blob/7461aa4b7dc496ff1c0e986cdb2c7843891ba325/korte/src/commonMain/kotlin/com/soywiz/korte/dynamic/DynamicType.kt#L61) interface.
+It works on JVM and JS out of the box. And on Native with untyped model data or by making the models implement the [DynamicType](https://github.com/korlibs/korte/blob/7461aa4b7dc496ff1c0e986cdb2c7843891ba325/korte/src/commonMain/kotlin/korlibs/template/dynamic/DynamicType.kt#L61) interface.
 
 Because asynchrony is in its name and soul, it allows to call *suspend*ing methods from within your templates.
 

@@ -1,15 +1,15 @@
 package samples
 
-import com.soywiz.kds.*
-import com.soywiz.kds.random.*
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.view.*
-import com.soywiz.korge.view.fast.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
-import com.soywiz.korim.format.*
-import com.soywiz.korio.file.std.*
-import com.soywiz.korma.geom.slice.*
+import korlibs.datastructure.*
+import korlibs.datastructure.random.*
+import korlibs.korge.scene.Scene
+import korlibs.korge.view.*
+import korlibs.korge.view.fast.*
+import korlibs.image.bitmap.*
+import korlibs.image.color.*
+import korlibs.image.format.*
+import korlibs.io.file.std.*
+import korlibs.math.geom.slice.*
 
 class MainTerminalEmulator : Scene() {
     override suspend fun SContainer.sceneMain() {

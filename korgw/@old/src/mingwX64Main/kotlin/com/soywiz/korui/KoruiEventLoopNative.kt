@@ -1,25 +1,25 @@
 package com.soywiz.korui
 
-import com.soywiz.korio.async.*
+import korlibs.io.async.*
 import com.soywiz.korui.light.*
-import com.soywiz.korio.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.file.*
-import com.soywiz.korag.*
-import com.soywiz.korev.*
-import com.soywiz.kds.*
-import com.soywiz.kgl.*
+import korlibs.io.*
+import korlibs.io.lang.*
+import korlibs.io.file.*
+import korlibs.graphics.*
+import korlibs.event.*
+import korlibs.datastructure.*
+import korlibs.kgl.*
 import kotlinx.cinterop.*
 import platform.posix.*
 import platform.windows.*
 import platform.opengl32.*
 import kotlin.reflect.KClass
-import com.soywiz.korio.async.*
-import com.soywiz.klock.*
-import com.soywiz.kmem.*
+import korlibs.io.async.*
+import korlibs.time.*
+import korlibs.memory.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
-import com.soywiz.korev.Key
+import korlibs.event.Key
 
 @UseExperimental(InternalCoroutinesApi::class)
 class MyNativeCoroutineDispatcher() : CoroutineDispatcher(), Delay, Closeable {
@@ -123,9 +123,9 @@ class NativeLightComponents(val nkcAg: AG) : LightComponents() {
 		// openSelectFile(initialDir: String? = null, filters: List<FileFilter> = listOf(FileFilter("All (*.*)", "*.*")), hwnd: HWND? = null)
 		val selectedFile = openSelectFile(hwnd = hwnd)
 		if (selectedFile != null) {
-			return com.soywiz.korio.file.std.localVfs(selectedFile)
+			return korlibs.io.file.std.localVfs(selectedFile)
 		} else {
-			throw com.soywiz.korio.lang.CancelException()
+			throw korlibs.io.lang.CancelException()
 		}
 	}
 }
@@ -338,7 +338,7 @@ fun WndProc(hWnd: HWND?, message: UINT, wParam: WPARAM, lParam: LPARAM): LRESULT
 	return DefWindowProcW(hWnd, message, wParam, lParam)
 }
 
-val reshapeEvent = com.soywiz.korev.ReshapeEvent()
+val reshapeEvent = korlibs.event.ReshapeEvent()
 
 fun resized(width: Int, height: Int) {
 	ag.resized(width, height)
@@ -361,21 +361,21 @@ fun tryRender() {
 	}
 }
 
-val keyEvent = com.soywiz.korev.KeyEvent()
+val keyEvent = korlibs.event.KeyEvent()
 
 fun keyUpdate(keyCode: Int, down: Boolean) {
 	// @TODO: KeyEvent.Tpe.TYPE
 	light.dispatch(keyEvent.apply {
-		this.type = if (down) com.soywiz.korev.KeyEvent.Type.DOWN else com.soywiz.korev.KeyEvent.Type.UP
+		this.type = if (down) korlibs.event.KeyEvent.Type.DOWN else korlibs.event.KeyEvent.Type.UP
 		this.id = 0
-		this.key = KEYS[keyCode] ?: com.soywiz.korev.Key.UNKNOWN
+		this.key = KEYS[keyCode] ?: korlibs.event.Key.UNKNOWN
 		this.keyCode = keyCode
 		this.character = keyCode.toChar()
 	})
 }
 
-val mevent = com.soywiz.korev.MouseEvent()
-private fun mouseEvent(etype: com.soywiz.korev.MouseEvent.Type, ex: Int, ey: Int, ebutton: Int) {
+val mevent = korlibs.event.MouseEvent()
+private fun mouseEvent(etype: korlibs.event.MouseEvent.Type, ex: Int, ey: Int, ebutton: Int) {
 	light.dispatch(mevent.apply {
 		this.type = etype
 		this.x = ex
@@ -429,16 +429,16 @@ fun mouseMove(x: Int, y: Int) {
 	mouseX = x
 	mouseY = y
 	SetCursor(ARROW_CURSOR)
-	mouseEvent(com.soywiz.korev.MouseEvent.Type.MOVE, mouseX, mouseY, 0)
+	mouseEvent(korlibs.event.MouseEvent.Type.MOVE, mouseX, mouseY, 0)
 }
 
 fun mouseButton(button: Int, down: Boolean) {
 	//buttons[button] = down
 	if (down) {
-		mouseEvent(com.soywiz.korev.MouseEvent.Type.DOWN, mouseX, mouseY, button)
+		mouseEvent(korlibs.event.MouseEvent.Type.DOWN, mouseX, mouseY, button)
 	} else {
-		mouseEvent(com.soywiz.korev.MouseEvent.Type.UP, mouseX, mouseY, button)
-		mouseEvent(com.soywiz.korev.MouseEvent.Type.CLICK, mouseX, mouseY, button) // @TODO: Conditionally depending on the down x,y & time
+		mouseEvent(korlibs.event.MouseEvent.Type.UP, mouseX, mouseY, button)
+		mouseEvent(korlibs.event.MouseEvent.Type.CLICK, mouseX, mouseY, button) // @TODO: Conditionally depending on the down x,y & time
 	}
 }
 

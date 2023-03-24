@@ -1,20 +1,20 @@
 package samples
 
-import com.soywiz.klock.*
-import com.soywiz.korge.input.*
-import com.soywiz.korge.scene.*
-import com.soywiz.korge.style.*
-import com.soywiz.korge.tween.*
-import com.soywiz.korge.ui.*
-import com.soywiz.korge.view.*
-import com.soywiz.korge.view.property.*
-import com.soywiz.korgw.*
-import com.soywiz.korim.color.*
-import com.soywiz.korim.font.*
-import com.soywiz.korio.async.*
-import com.soywiz.korio.file.std.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.interpolation.*
+import korlibs.time.*
+import korlibs.korge.input.*
+import korlibs.korge.scene.*
+import korlibs.korge.style.*
+import korlibs.korge.tween.*
+import korlibs.korge.ui.*
+import korlibs.korge.view.*
+import korlibs.korge.view.property.*
+import korlibs.render.*
+import korlibs.image.color.*
+import korlibs.image.font.*
+import korlibs.io.async.*
+import korlibs.io.file.std.*
+import korlibs.math.geom.*
+import korlibs.math.interpolation.*
 
 class MainUI : Scene() {
     @ViewProperty

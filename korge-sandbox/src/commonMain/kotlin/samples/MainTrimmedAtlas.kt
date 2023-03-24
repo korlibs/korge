@@ -1,15 +1,15 @@
 package samples
 
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.view.SContainer
-import com.soywiz.korge.view.anchor
-import com.soywiz.korge.view.image
-import com.soywiz.korge.view.rotation
-import com.soywiz.korge.view.xy
-import com.soywiz.korim.bitmap.Bitmap32
-import com.soywiz.korim.bitmap.BitmapSlice
-import com.soywiz.korim.color.Colors
-import com.soywiz.korma.geom.*
+import korlibs.korge.scene.Scene
+import korlibs.korge.view.SContainer
+import korlibs.korge.view.anchor
+import korlibs.korge.view.image
+import korlibs.korge.view.rotation
+import korlibs.korge.view.xy
+import korlibs.image.bitmap.Bitmap32
+import korlibs.image.bitmap.BitmapSlice
+import korlibs.image.color.Colors
+import korlibs.math.geom.*
 
 class MainTrimmedAtlas : Scene() {
     override suspend fun SContainer.sceneMain() {

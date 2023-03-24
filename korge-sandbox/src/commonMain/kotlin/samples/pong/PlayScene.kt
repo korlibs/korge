@@ -1,10 +1,10 @@
 package samples.pong
 
-import com.soywiz.korev.Key
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.input.*
-import com.soywiz.korge.view.*
-import com.soywiz.korim.color.Colors
+import korlibs.event.Key
+import korlibs.korge.scene.Scene
+import korlibs.korge.input.*
+import korlibs.korge.view.*
+import korlibs.image.color.Colors
 import kotlin.math.*
 import kotlin.random.Random.Default.nextDouble
 
