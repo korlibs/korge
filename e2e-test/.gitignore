@@ -12,3 +12,5 @@ src/main/*
 /opengl32-x64.zip
 libglapi.dll
 opengl32.dll
+/src/androidMain
+/src/main
