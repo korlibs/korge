@@ -1,14 +1,14 @@
 package samples
 
-import com.soywiz.klock.*
-import com.soywiz.korge.animate.*
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.tween.get
-import com.soywiz.korge.view.*
-import com.soywiz.korge.view.filter.*
-import com.soywiz.korim.format.*
-import com.soywiz.korio.file.std.*
-import com.soywiz.korma.interpolation.Easing
+import korlibs.time.*
+import korlibs.korge.animate.*
+import korlibs.korge.scene.Scene
+import korlibs.korge.tween.get
+import korlibs.korge.view.*
+import korlibs.korge.view.filter.*
+import korlibs.image.format.*
+import korlibs.io.file.std.*
+import korlibs.math.interpolation.Easing
 
 class MainFiltersSample : Scene() {
     override suspend fun SContainer.sceneMain() {

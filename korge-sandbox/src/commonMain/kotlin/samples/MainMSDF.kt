@@ -1,20 +1,20 @@
 package samples
 
-import com.soywiz.korev.*
-import com.soywiz.korge.input.*
-import com.soywiz.korge.render.*
-import com.soywiz.korge.scene.*
-import com.soywiz.korge.text.*
-import com.soywiz.korge.view.*
-import com.soywiz.korim.color.*
-import com.soywiz.korim.font.*
-import com.soywiz.korim.format.*
-import com.soywiz.korim.text.*
-import com.soywiz.korim.vector.*
-import com.soywiz.korim.vector.format.*
-import com.soywiz.korio.file.std.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.vector.*
+import korlibs.event.*
+import korlibs.korge.input.*
+import korlibs.korge.render.*
+import korlibs.korge.scene.*
+import korlibs.korge.text.*
+import korlibs.korge.view.*
+import korlibs.image.color.*
+import korlibs.image.font.*
+import korlibs.image.format.*
+import korlibs.image.text.*
+import korlibs.image.vector.*
+import korlibs.image.vector.format.*
+import korlibs.io.file.std.*
+import korlibs.math.geom.*
+import korlibs.math.geom.vector.*
 
 class MainMSDF : Scene() {
     override suspend fun SContainer.sceneMain() {

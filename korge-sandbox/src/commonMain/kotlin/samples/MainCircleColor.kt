@@ -1,10 +1,10 @@
 package samples
 
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.view.SContainer
-import com.soywiz.korge.view.addUpdater
-import com.soywiz.korge.view.circle
-import com.soywiz.korim.color.Colors
+import korlibs.korge.scene.Scene
+import korlibs.korge.view.SContainer
+import korlibs.korge.view.addUpdater
+import korlibs.korge.view.circle
+import korlibs.image.color.Colors
 
 class MainCircleColor : Scene() {
     override suspend fun SContainer.sceneMain() {

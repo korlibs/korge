@@ -1,13 +1,13 @@
 package samples
 
-import com.soywiz.klock.measureTime
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.view.SContainer
-import com.soywiz.korio.file.std.MemoryVfsMix
-import com.soywiz.korio.file.std.localVfs
-import com.soywiz.korio.file.std.openAsZip
-import com.soywiz.korio.stream.DummyAsyncOutputStream
-import com.soywiz.korio.stream.openAsync
+import korlibs.time.measureTime
+import korlibs.korge.scene.Scene
+import korlibs.korge.view.SContainer
+import korlibs.io.file.std.MemoryVfsMix
+import korlibs.io.file.std.localVfs
+import korlibs.io.file.std.openAsZip
+import korlibs.io.stream.DummyAsyncOutputStream
+import korlibs.io.stream.openAsync
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 

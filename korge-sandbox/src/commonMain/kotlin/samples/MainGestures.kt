@@ -1,26 +1,26 @@
 package samples
 
-import com.soywiz.klock.seconds
-import com.soywiz.klock.timesPerSecond
-import com.soywiz.korge.input.*
-import com.soywiz.korge.scene.ScaledScene
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.tween.get
-import com.soywiz.korge.tween.tween
-import com.soywiz.korge.ui.uiButton
-import com.soywiz.korge.view.Image
-import com.soywiz.korge.view.SContainer
-import com.soywiz.korge.view.addFixedUpdater
-import com.soywiz.korge.view.anchor
-import com.soywiz.korge.view.container
-import com.soywiz.korge.view.image
-import com.soywiz.korge.view.position
-import com.soywiz.korge.view.scale
-import com.soywiz.korge.view.text
-import com.soywiz.korim.format.readBitmap
-import com.soywiz.korio.file.std.resourcesVfs
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.interpolation.Easing
+import korlibs.time.seconds
+import korlibs.time.timesPerSecond
+import korlibs.korge.input.*
+import korlibs.korge.scene.ScaledScene
+import korlibs.korge.scene.Scene
+import korlibs.korge.tween.get
+import korlibs.korge.tween.tween
+import korlibs.korge.ui.uiButton
+import korlibs.korge.view.Image
+import korlibs.korge.view.SContainer
+import korlibs.korge.view.addFixedUpdater
+import korlibs.korge.view.anchor
+import korlibs.korge.view.container
+import korlibs.korge.view.image
+import korlibs.korge.view.position
+import korlibs.korge.view.scale
+import korlibs.korge.view.text
+import korlibs.image.format.readBitmap
+import korlibs.io.file.std.resourcesVfs
+import korlibs.math.geom.*
+import korlibs.math.interpolation.Easing
 
 class MainGestures : ScaledScene(512, 512) {
 //class MainGestures : Scene() {

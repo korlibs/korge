@@ -1,9 +1,9 @@
-import com.soywiz.kds.iterators.fastForEachWithIndex
-import com.soywiz.korge.*
-import com.soywiz.korge.input.onClick
-import com.soywiz.korge.ui.*
-import com.soywiz.korim.color.toRgba
-import com.soywiz.korma.geom.*
+import korlibs.datastructure.iterators.fastForEachWithIndex
+import korlibs.korge.*
+import korlibs.korge.input.onClick
+import korlibs.korge.ui.*
+import korlibs.image.color.toRgba
+import korlibs.math.geom.*
 import java.awt.Component
 import java.awt.GridLayout
 import javax.swing.JButton

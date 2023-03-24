@@ -1,15 +1,15 @@
 package samples
 
-import com.soywiz.korge.input.mouse
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.ui.uiButton
-import com.soywiz.korge.ui.uiHorizontalStack
-import com.soywiz.korge.ui.uiText
-import com.soywiz.korge.ui.uiVerticalStack
-import com.soywiz.korge.view.Container
-import com.soywiz.korge.view.SContainer
-import com.soywiz.korio.async.launchImmediately
-import com.soywiz.korio.lang.*
+import korlibs.korge.input.mouse
+import korlibs.korge.scene.Scene
+import korlibs.korge.ui.uiButton
+import korlibs.korge.ui.uiHorizontalStack
+import korlibs.korge.ui.uiText
+import korlibs.korge.ui.uiVerticalStack
+import korlibs.korge.view.Container
+import korlibs.korge.view.SContainer
+import korlibs.io.async.launchImmediately
+import korlibs.io.lang.*
 import kotlinx.coroutines.CompletableDeferred
 
 class MainSuspendUserInput : Scene() {

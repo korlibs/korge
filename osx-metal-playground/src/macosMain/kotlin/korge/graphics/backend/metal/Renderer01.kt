@@ -1,10 +1,10 @@
 package korge.graphics.backend.metal
 
-import com.soywiz.kmem.*
-import com.soywiz.korag.*
-import com.soywiz.korag.shader.*
-import com.soywiz.korma.geom.*
-import com.soywiz.metal.*
+import korlibs.memory.*
+import korlibs.graphics.*
+import korlibs.graphics.shader.*
+import korlibs.math.geom.*
+import korlibs.metal.*
 import kotlinx.cinterop.*
 import platform.Metal.*
 import platform.MetalKit.*

@@ -1,7 +1,7 @@
 package kotlinx.cinterop
 
 /*
-import com.soywiz.kmem.dyn.*
+import korlibs.memory.dyn.*
 import kotlin.native.internal.*
 
 @TypedIntrinsic(IntrinsicType.INTEROP_FUNPTR_INVOKE) actual external operator fun <R> KPointerTT<KFunctionTT<() -> R>>.invoke(): R

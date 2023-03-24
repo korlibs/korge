@@ -1,7 +1,7 @@
 package com.soywiz.korui
 
-import com.soywiz.korev.*
-import com.soywiz.korio.util.*
+import korlibs.event.*
+import korlibs.io.util.*
 import com.soywiz.korui.light.log.*
 import com.soywiz.korui.ui.*
 import kotlin.test.*

@@ -1,19 +1,19 @@
 @file:Suppress("EXPERIMENTAL_FEATURE_WARNING")
 
-package com.soywiz.korag.software
+package korlibs.graphics.software
 
-import com.soywiz.kds.IntArrayList
-import com.soywiz.kmem.extract
-import com.soywiz.kmem.insert
-import com.soywiz.korag.*
-import com.soywiz.korag.shader.Uniform
-import com.soywiz.korag.shader.VarKind
-import com.soywiz.korag.shader.Variable
-import com.soywiz.korio.lang.assert
-import com.soywiz.korma.geom.MajorOrder
-import com.soywiz.korma.geom.Matrix3D
-import com.soywiz.korma.geom.Vector3D
-import com.soywiz.korma.geom.copyToFloat4x4
+import korlibs.datastructure.IntArrayList
+import korlibs.memory.extract
+import korlibs.memory.insert
+import korlibs.graphics.*
+import korlibs.graphics.shader.Uniform
+import korlibs.graphics.shader.VarKind
+import korlibs.graphics.shader.Variable
+import korlibs.io.lang.assert
+import korlibs.math.geom.MajorOrder
+import korlibs.math.geom.Matrix3D
+import korlibs.math.geom.Vector3D
+import korlibs.math.geom.copyToFloat4x4
 import kotlin.math.absoluteValue
 import kotlin.math.max
 import kotlin.math.min

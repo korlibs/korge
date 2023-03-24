@@ -1,6 +1,6 @@
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.bezier.*
-import com.soywiz.korma.math.*
+import korlibs.math.geom.*
+import korlibs.math.geom.bezier.*
+import korlibs.math.math.*
 import kotlin.test.*
 
 fun <

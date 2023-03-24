@@ -1,12 +1,12 @@
 package samples
 
-import com.soywiz.korge.scene.*
-import com.soywiz.korge.ui.*
-import com.soywiz.korge.view.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.bitmap.ImageOrientation
-import com.soywiz.korim.format.*
-import com.soywiz.korio.file.std.*
+import korlibs.korge.scene.*
+import korlibs.korge.ui.*
+import korlibs.korge.view.*
+import korlibs.image.bitmap.*
+import korlibs.image.bitmap.ImageOrientation
+import korlibs.image.format.*
+import korlibs.io.file.std.*
 
 class MainImageOrientationTest : ScaledScene(512, 512) {
     override suspend fun SContainer.sceneMain() {

@@ -7,7 +7,7 @@
 <!-- BADGES -->
 <p align="center">
 	<a href="https://github.com/korlibs/korge/actions"><img alt="Build Status" src="https://github.com/korlibs/korge/workflows/CI/badge.svg" /></a>
-    <a href="https://search.maven.org/artifact/com.soywiz.korlibs.korim/korim"><img alt="Maven Central" src="https://img.shields.io/maven-central/v/com.soywiz.korlibs.korim/korim"></a>
+    <a href="https://search.maven.org/artifact/korlibs.korim/korim"><img alt="Maven Central" src="https://img.shields.io/maven-central/v/korlibs.korim/korim"></a>
 	<a href="https://discord.korge.org/"><img alt="Discord" src="https://img.shields.io/discord/728582275884908604?logo=discord" /></a>
 </p>
 <!-- /BADGES -->
@@ -22,7 +22,7 @@ repositories {
 }
 
 dependencies {
-    compile "com.soywiz.korlibs.korim:korim:$korimVersion"
+    compile "korlibs.korim:korim:$korimVersion"
 }
 ```
 

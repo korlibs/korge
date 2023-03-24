@@ -1,14 +1,14 @@
-package com.soywiz.korag.software
+package korlibs.graphics.software
 
-import com.soywiz.korag.DefaultShaders
-import com.soywiz.korag.FragmentShaderDefault
-import com.soywiz.korag.shader.Attribute
-import com.soywiz.korag.shader.FragmentShader
-import com.soywiz.korag.shader.Program
-import com.soywiz.korag.shader.VarType
-import com.soywiz.korag.shader.Varying
-import com.soywiz.korag.shader.VertexLayout
-import com.soywiz.korag.shader.VertexShader
+import korlibs.graphics.DefaultShaders
+import korlibs.graphics.FragmentShaderDefault
+import korlibs.graphics.shader.Attribute
+import korlibs.graphics.shader.FragmentShader
+import korlibs.graphics.shader.Program
+import korlibs.graphics.shader.VarType
+import korlibs.graphics.shader.Varying
+import korlibs.graphics.shader.VertexLayout
+import korlibs.graphics.shader.VertexShader
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

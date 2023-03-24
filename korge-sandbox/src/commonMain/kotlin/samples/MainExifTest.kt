@@ -1,10 +1,10 @@
 package samples
 
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.view.*
-import com.soywiz.korge.view.filter.*
-import com.soywiz.korim.format.*
-import com.soywiz.korio.file.std.*
+import korlibs.korge.scene.Scene
+import korlibs.korge.view.*
+import korlibs.korge.view.filter.*
+import korlibs.image.format.*
+import korlibs.io.file.std.*
 
 class MainExifTest : Scene() {
     override suspend fun SContainer.sceneMain() {

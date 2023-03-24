@@ -1,19 +1,19 @@
 package samples.minesweeper
 
-import com.soywiz.kds.*
-import com.soywiz.kmem.*
-import com.soywiz.korau.sound.*
-import com.soywiz.korev.*
-import com.soywiz.korge.component.*
-import com.soywiz.korge.scene.ScaledScene
-import com.soywiz.korge.time.*
-import com.soywiz.korge.view.*
-import com.soywiz.korim.format.*
-import com.soywiz.korio.async.*
-import com.soywiz.korio.file.std.*
-import com.soywiz.korio.lang.Closeable
-import com.soywiz.korio.lang.CancellableGroup
-import com.soywiz.korma.geom.*
+import korlibs.datastructure.*
+import korlibs.memory.*
+import korlibs.audio.sound.*
+import korlibs.event.*
+import korlibs.korge.component.*
+import korlibs.korge.scene.ScaledScene
+import korlibs.korge.time.*
+import korlibs.korge.view.*
+import korlibs.image.format.*
+import korlibs.io.async.*
+import korlibs.io.file.std.*
+import korlibs.io.lang.Closeable
+import korlibs.io.lang.CancellableGroup
+import korlibs.math.geom.*
 import kotlinx.coroutines.*
 import kotlin.reflect.*
 

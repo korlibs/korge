@@ -1,4 +1,4 @@
-import com.soywiz.korge.gradle.targets.jvm.KorgeJavaExec
+import korlibs.korge.gradle.targets.jvm.KorgeJavaExec
 
 description = "Multiplatform Game Engine written in Kotlin"
 

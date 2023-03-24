@@ -1,15 +1,15 @@
 package samples
 
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.view.SContainer
-import com.soywiz.korge.view.addUpdater
-import com.soywiz.korge.view.ninePatchShapeView
-import com.soywiz.korim.color.Colors
-import com.soywiz.korim.vector.format.readSVG
-import com.soywiz.korim.vector.scaledShape
-import com.soywiz.korim.vector.toNinePatchFromGuides
-import com.soywiz.korim.vector.toShape
-import com.soywiz.korio.file.std.resourcesVfs
+import korlibs.korge.scene.Scene
+import korlibs.korge.view.SContainer
+import korlibs.korge.view.addUpdater
+import korlibs.korge.view.ninePatchShapeView
+import korlibs.image.color.Colors
+import korlibs.image.vector.format.readSVG
+import korlibs.image.vector.scaledShape
+import korlibs.image.vector.toNinePatchFromGuides
+import korlibs.image.vector.toShape
+import korlibs.io.file.std.resourcesVfs
 
 class MainVectorNinePatch : Scene() {
     val mousePos get() = sceneView.localMousePos(views)

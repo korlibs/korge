@@ -1,18 +1,18 @@
 package samples
 
-import com.soywiz.kds.*
-import com.soywiz.korge.input.*
-import com.soywiz.korge.scene.*
-import com.soywiz.korge.view.*
-import com.soywiz.korge.view.camera.*
-import com.soywiz.korge.view.tiles.*
-import com.soywiz.korim.atlas.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
-import com.soywiz.korim.tiles.*
-import com.soywiz.korio.util.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.MPoint.Companion.Zero
+import korlibs.datastructure.*
+import korlibs.korge.input.*
+import korlibs.korge.scene.*
+import korlibs.korge.view.*
+import korlibs.korge.view.camera.*
+import korlibs.korge.view.tiles.*
+import korlibs.image.atlas.*
+import korlibs.image.bitmap.*
+import korlibs.image.color.*
+import korlibs.image.tiles.*
+import korlibs.io.util.*
+import korlibs.math.geom.*
+import korlibs.math.geom.MPoint.Companion.Zero
 import kotlin.math.*
 import kotlin.random.*
 

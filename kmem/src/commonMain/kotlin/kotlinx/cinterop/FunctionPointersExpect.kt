@@ -1,7 +1,7 @@
 package kotlinx.cinterop
 
 /*
-import com.soywiz.kmem.dyn.*
+import korlibs.memory.dyn.*
 
 expect operator fun <R> KPointerTT<KFunctionTT<() -> R>>.invoke(): R
 expect operator fun <P1, R> KPointerTT<KFunctionTT<(P1) -> R>>.invoke(p1: P1): R

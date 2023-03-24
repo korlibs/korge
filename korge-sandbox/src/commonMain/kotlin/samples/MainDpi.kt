@@ -1,13 +1,13 @@
 package samples
 
-import com.soywiz.klock.seconds
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.time.intervalAndNow
-import com.soywiz.korge.view.SContainer
-import com.soywiz.korge.view.scale
-import com.soywiz.korge.view.solidRect
-import com.soywiz.korge.view.text
-import com.soywiz.korge.view.xy
+import korlibs.time.seconds
+import korlibs.korge.scene.Scene
+import korlibs.korge.time.intervalAndNow
+import korlibs.korge.view.SContainer
+import korlibs.korge.view.scale
+import korlibs.korge.view.solidRect
+import korlibs.korge.view.text
+import korlibs.korge.view.xy
 
 class MainDpi : Scene() {
     override suspend fun SContainer.sceneMain() {

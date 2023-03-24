@@ -1,11 +1,11 @@
 package samples
 
-import com.soywiz.korev.Key
-import com.soywiz.korge.input.keys
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.view.SContainer
-import com.soywiz.korge.view.solidRect
-import com.soywiz.korim.color.Colors
+import korlibs.event.Key
+import korlibs.korge.input.keys
+import korlibs.korge.scene.Scene
+import korlibs.korge.view.SContainer
+import korlibs.korge.view.solidRect
+import korlibs.image.color.Colors
 
 class MainZIndex : Scene() {
     override suspend fun SContainer.sceneMain() {

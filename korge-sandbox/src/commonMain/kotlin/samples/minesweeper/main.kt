@@ -1,16 +1,16 @@
 package samples.minesweeper
 
-import com.soywiz.kds.setExtra
-import com.soywiz.korev.Key
-import com.soywiz.korge.component.docking.dockedTo
-import com.soywiz.korge.scene.ScaledScene
-import com.soywiz.korge.view.Container
-import com.soywiz.korge.view.SContainer
-import com.soywiz.korge.view.image
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korma.geom.Anchor
-import com.soywiz.korma.geom.ScaleMode
-import com.soywiz.korma.geom.slice.*
+import korlibs.datastructure.setExtra
+import korlibs.event.Key
+import korlibs.korge.component.docking.dockedTo
+import korlibs.korge.scene.ScaledScene
+import korlibs.korge.view.Container
+import korlibs.korge.view.SContainer
+import korlibs.korge.view.image
+import korlibs.image.bitmap.*
+import korlibs.math.geom.Anchor
+import korlibs.math.geom.ScaleMode
+import korlibs.math.geom.slice.*
 
 // Ported from here: https://github.com/soywiz/lunea/tree/master/samples/busca
 class MainMineSweeper : ScaledScene(640, 480) {
@@ -57,4 +57,3 @@ class MainProcess(parent: Container) : Process(parent) {
 		}
 	}
 }
-

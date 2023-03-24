@@ -1,21 +1,21 @@
 package samples
 
-import com.soywiz.klock.*
-import com.soywiz.korge.input.*
-import com.soywiz.korge.resources.*
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.view.*
-import com.soywiz.korge.view.fast.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.font.*
-import com.soywiz.korim.format.*
-import com.soywiz.korim.text.*
-import com.soywiz.korio.async.*
-import com.soywiz.korio.file.std.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.resources.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.random.*
+import korlibs.time.*
+import korlibs.korge.input.*
+import korlibs.korge.resources.*
+import korlibs.korge.scene.Scene
+import korlibs.korge.view.*
+import korlibs.korge.view.fast.*
+import korlibs.image.bitmap.*
+import korlibs.image.font.*
+import korlibs.image.format.*
+import korlibs.image.text.*
+import korlibs.io.async.*
+import korlibs.io.file.std.*
+import korlibs.io.lang.*
+import korlibs.io.resources.*
+import korlibs.math.geom.*
+import korlibs.math.random.*
 import kotlin.collections.random
 import kotlin.random.*
 

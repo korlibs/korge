@@ -1,10 +1,10 @@
 package samples
 
-import com.soywiz.korge.scene.*
-import com.soywiz.korge.ui.*
-import com.soywiz.korge.view.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korma.geom.*
+import korlibs.korge.scene.*
+import korlibs.korge.ui.*
+import korlibs.korge.view.*
+import korlibs.io.lang.*
+import korlibs.math.geom.*
 
 class MainStressMatrixMultiplication : Scene() {
     override suspend fun SContainer.sceneMain() {

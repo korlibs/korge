@@ -9,15 +9,15 @@ import android.content.Context
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
-import com.soywiz.korag.AG
-import com.soywiz.korag.AGConfig
-import com.soywiz.korag.AGFactoryAndroid
-import com.soywiz.korag.AGOpenglFactory
-import com.soywiz.korev.Event
-import com.soywiz.korev.EventDispatcher
-import com.soywiz.korim.format.toAndroidBitmap
-import com.soywiz.korio.lang.Closeable
-import com.soywiz.korio.lang.DummyCloseable
+import korlibs.graphics.AG
+import korlibs.graphics.AGConfig
+import korlibs.graphics.AGFactoryAndroid
+import korlibs.graphics.AGOpenglFactory
+import korlibs.event.Event
+import korlibs.event.EventDispatcher
+import korlibs.image.format.toAndroidBitmap
+import korlibs.io.lang.Closeable
+import korlibs.io.lang.DummyCloseable
 import kotlinx.coroutines.CompletableDeferred
 import kotlin.reflect.KClass
 
@@ -160,9 +160,9 @@ class AndroidLightComponents(val activity: Activity) : LightComponents() {
         TODO()
         val cc = c as View
         when (clazz) {
-            com.soywiz.korev.MouseEvent::class -> {
+            korlibs.event.MouseEvent::class -> {
                 cc.setOnClickListener {
-                    //insideEventHandler { ed.dispatch(com.soywiz.korev.MouseEvent()) }
+                    //insideEventHandler { ed.dispatch(korlibs.event.MouseEvent()) }
                     TODO()
                 }
                 return DummyCloseable

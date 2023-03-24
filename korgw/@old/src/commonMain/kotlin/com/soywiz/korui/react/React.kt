@@ -1,8 +1,8 @@
 package com.soywiz.korui.react
 
-import com.soywiz.kds.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korio.async.*
+import korlibs.datastructure.*
+import korlibs.image.bitmap.*
+import korlibs.io.async.*
 import com.soywiz.korui.*
 import com.soywiz.korui.light.*
 import com.soywiz.korui.ui.*

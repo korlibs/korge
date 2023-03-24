@@ -1,20 +1,20 @@
-package com.soywiz.korag.software
+package korlibs.graphics.software
 
-import com.soywiz.klock.measureTime
-import com.soywiz.kmem.*
-import com.soywiz.korag.*
-import com.soywiz.korag.shader.Attribute
-import com.soywiz.korag.shader.Program
-import com.soywiz.korag.shader.VarKind
-import com.soywiz.korim.bitmap.Bitmap
-import com.soywiz.korim.bitmap.Bitmap32
-import com.soywiz.korim.bitmap.Bitmaps
-import com.soywiz.korim.color.Colors
-import com.soywiz.korim.color.RGBA
-import com.soywiz.korma.geom.Point
-import com.soywiz.korma.geom.PointInt
-import com.soywiz.korma.geom.vector.Edge
-import com.soywiz.korma.interpolation.interpolate
+import korlibs.time.measureTime
+import korlibs.memory.*
+import korlibs.graphics.*
+import korlibs.graphics.shader.Attribute
+import korlibs.graphics.shader.Program
+import korlibs.graphics.shader.VarKind
+import korlibs.image.bitmap.Bitmap
+import korlibs.image.bitmap.Bitmap32
+import korlibs.image.bitmap.Bitmaps
+import korlibs.image.color.Colors
+import korlibs.image.color.RGBA
+import korlibs.math.geom.Point
+import korlibs.math.geom.PointInt
+import korlibs.math.geom.vector.Edge
+import korlibs.math.interpolation.interpolate
 import kotlin.math.max
 import kotlin.math.min
 
@@ -68,7 +68,7 @@ open class AGSoftware(val bitmap: Bitmap32) : AG() {
     }
 
     inner class SoftwareBuffer(list: AGList) : AGBuffer(this, list) {
-        val memory: com.soywiz.kmem.Buffer? get() = mem
+        val memory: korlibs.memory.Buffer? get() = mem
     }
 
     override fun createBuffer(): AGBuffer = commandsNoWait { SoftwareBuffer(it) }

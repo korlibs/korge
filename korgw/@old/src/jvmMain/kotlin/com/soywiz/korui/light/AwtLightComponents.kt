@@ -1,14 +1,14 @@
 package com.soywiz.korui.light
 
-import com.soywiz.korag.*
-import com.soywiz.korev.*
-import com.soywiz.korev.ChangeEvent
-import com.soywiz.korim.awt.*
-import com.soywiz.korio.file.*
-import com.soywiz.korio.file.std.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.lang.Closeable
-import com.soywiz.korev.Event
+import korlibs.graphics.*
+import korlibs.event.*
+import korlibs.event.ChangeEvent
+import korlibs.image.awt.*
+import korlibs.io.file.*
+import korlibs.io.file.std.*
+import korlibs.io.lang.*
+import korlibs.io.lang.Closeable
+import korlibs.event.Event
 import java.awt.*
 import java.awt.datatransfer.*
 import java.awt.dnd.*
@@ -25,8 +25,8 @@ import javax.swing.event.*
 import javax.swing.text.*
 import kotlin.reflect.*
 
-typealias KoruiMouseEvent = com.soywiz.korev.MouseEvent
-typealias KoruiMouseEventType = com.soywiz.korev.MouseEvent.Type
+typealias KoruiMouseEvent = korlibs.event.MouseEvent
+typealias KoruiMouseEventType = korlibs.event.MouseEvent.Type
 typealias KoruiChangeEvent = ChangeEvent
 
 @Suppress("EXPERIMENTAL_FEATURE_WARNING")
@@ -218,12 +218,12 @@ class AwtLightComponents : LightComponents() {
 					cc?.removeComponentListener(adapter)
 				}
 			}
-			com.soywiz.korev.KeyEvent::class -> {
+			korlibs.event.KeyEvent::class -> {
 				val cc = c as Component
-				val ev = com.soywiz.korev.KeyEvent()
+				val ev = korlibs.event.KeyEvent()
 
 				val adapter = object : KeyAdapter() {
-					private fun populate(type: com.soywiz.korev.KeyEvent.Type, e: KeyEvent) = ev.apply {
+					private fun populate(type: korlibs.event.KeyEvent.Type, e: KeyEvent) = ev.apply {
 						this.type = type
 						this.key = when (e.keyCode) {
 							KeyEvent.VK_ENTER          -> Key.ENTER
@@ -421,13 +421,13 @@ class AwtLightComponents : LightComponents() {
 					}
 
 					override fun keyTyped(e: KeyEvent) =
-						ed.dispatch(populate(com.soywiz.korev.KeyEvent.Type.TYPE, e))
+						ed.dispatch(populate(korlibs.event.KeyEvent.Type.TYPE, e))
 
 					override fun keyPressed(e: KeyEvent) =
-						ed.dispatch(populate(com.soywiz.korev.KeyEvent.Type.DOWN, e))
+						ed.dispatch(populate(korlibs.event.KeyEvent.Type.DOWN, e))
 
 					override fun keyReleased(e: KeyEvent) =
-						ed.dispatch(populate(com.soywiz.korev.KeyEvent.Type.UP, e))
+						ed.dispatch(populate(korlibs.event.KeyEvent.Type.UP, e))
 				}
 
 				cc.addKeyListener(adapter)
@@ -774,5 +774,4 @@ class RequestFocusListener(private val removeListener: Boolean = true) : Ancesto
 
 	override fun ancestorRemoved(e: AncestorEvent) {}
 }
-
 

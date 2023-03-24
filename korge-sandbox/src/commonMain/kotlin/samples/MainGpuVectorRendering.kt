@@ -1,26 +1,26 @@
 package samples
 
-import com.soywiz.kds.doubleArrayListOf
-import com.soywiz.klock.*
-import com.soywiz.klogger.*
-import com.soywiz.korev.*
-import com.soywiz.korge.input.*
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.ui.uiButton
-import com.soywiz.korge.view.*
-import com.soywiz.korge.view.vector.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
-import com.soywiz.korim.font.*
-import com.soywiz.korim.format.*
-import com.soywiz.korim.paint.*
-import com.soywiz.korim.text.*
-import com.soywiz.korim.vector.*
-import com.soywiz.korim.vector.format.*
-import com.soywiz.korio.file.std.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.vector.*
-import com.soywiz.korma.geom.vector.StrokeInfo
+import korlibs.datastructure.doubleArrayListOf
+import korlibs.time.*
+import korlibs.logger.*
+import korlibs.event.*
+import korlibs.korge.input.*
+import korlibs.korge.scene.Scene
+import korlibs.korge.ui.uiButton
+import korlibs.korge.view.*
+import korlibs.korge.view.vector.*
+import korlibs.image.bitmap.*
+import korlibs.image.color.*
+import korlibs.image.font.*
+import korlibs.image.format.*
+import korlibs.image.paint.*
+import korlibs.image.text.*
+import korlibs.image.vector.*
+import korlibs.image.vector.format.*
+import korlibs.io.file.std.*
+import korlibs.math.geom.*
+import korlibs.math.geom.vector.*
+import korlibs.math.geom.vector.StrokeInfo
 
 class MainGpuVectorRendering : Scene() {
     private val logger = Logger("MainGpuVectorRendering")

@@ -70,7 +70,7 @@ String projectVersion = System.getenv("FORCED_VERSION")?.replaceFirst(~"^refs/ta
 String realKotlinVersion = System.getenv("FORCED_KOTLIN_VERSION") ?: libs.versions.kotlin.get()
 
 String buildVersionsString = """
-package com.soywiz.korge.gradle
+package korlibs.korge.gradle
 
 object BuildVersions {
     const val GIT = "---"
@@ -104,8 +104,8 @@ String buildVersionsStringForPlugin = buildVersionsString.replace(
     "const val GIT = \"${gitVersion}\""
 )
 
-File buildsVersionBuildSrcFile = file("../buildSrc/src/main/kotlinGen/com/soywiz/korge/gradle/BuildVersions.kt")
-File buildsVersionFilePlugin = file("../korge-gradle-plugin/build/srcgen/com/soywiz/korge/gradle/BuildVersions.kt")
+File buildsVersionBuildSrcFile = file("../buildSrc/src/main/kotlinGen/korlibs/korge/gradle/BuildVersions.kt")
+File buildsVersionFilePlugin = file("../korge-gradle-plugin/build/srcgen/korlibs/korge/gradle/BuildVersions.kt")
 
 if (!buildsVersionBuildSrcFile.exists() || buildsVersionBuildSrcFile.text != buildVersionsStringForBuildSrc) {
     buildsVersionBuildSrcFile.parentFile.mkdirs()

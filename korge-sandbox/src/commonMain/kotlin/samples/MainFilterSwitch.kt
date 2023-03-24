@@ -1,20 +1,20 @@
 package samples
 
-import com.soywiz.klock.seconds
-import com.soywiz.klock.timesPerSecond
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.time.delay
-import com.soywiz.korge.view.SContainer
-import com.soywiz.korge.view.anchor
-import com.soywiz.korge.view.filter.filter
-import com.soywiz.korge.view.filter.ColorMatrixFilter
-import com.soywiz.korge.view.image
-import com.soywiz.korge.view.position
-import com.soywiz.korge.view.scale
-import com.soywiz.korim.format.readBitmap
-import com.soywiz.korio.async.launch
-import com.soywiz.korio.async.launchImmediately
-import com.soywiz.korio.file.std.resourcesVfs
+import korlibs.time.seconds
+import korlibs.time.timesPerSecond
+import korlibs.korge.scene.Scene
+import korlibs.korge.time.delay
+import korlibs.korge.view.SContainer
+import korlibs.korge.view.anchor
+import korlibs.korge.view.filter.filter
+import korlibs.korge.view.filter.ColorMatrixFilter
+import korlibs.korge.view.image
+import korlibs.korge.view.position
+import korlibs.korge.view.scale
+import korlibs.image.format.readBitmap
+import korlibs.io.async.launch
+import korlibs.io.async.launchImmediately
+import korlibs.io.file.std.resourcesVfs
 import util.*
 import kotlin.random.Random
 

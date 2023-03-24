@@ -1,12 +1,12 @@
 package samples
 
-import com.soywiz.korev.*
-import com.soywiz.korge.input.*
-import com.soywiz.korge.scene.*
-import com.soywiz.korge.view.*
-import com.soywiz.korim.color.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.vector.*
+import korlibs.event.*
+import korlibs.korge.input.*
+import korlibs.korge.scene.*
+import korlibs.korge.view.*
+import korlibs.image.color.*
+import korlibs.math.geom.*
+import korlibs.math.geom.vector.*
 
 class MainRotateCircle : Scene() {
     override suspend fun SContainer.sceneMain() {

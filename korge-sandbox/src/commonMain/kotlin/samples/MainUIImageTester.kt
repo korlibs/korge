@@ -1,25 +1,25 @@
 package samples
 
-import com.soywiz.korge.component.docking.dockedTo
-import com.soywiz.korge.input.onClick
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.ui.UIButtonToggleableGroup
-import com.soywiz.korge.ui.group
-import com.soywiz.korge.ui.tooltip
-import com.soywiz.korge.ui.uiButton
-import com.soywiz.korge.ui.uiGridFill
-import com.soywiz.korge.ui.uiHorizontalStack
-import com.soywiz.korge.ui.uiImage
-import com.soywiz.korge.ui.uiTooltipContainer
-import com.soywiz.korge.ui.uiVerticalStack
-import com.soywiz.korge.view.*
-import com.soywiz.korim.bitmap.asumePremultiplied
-import com.soywiz.korim.bitmap.slice
-import com.soywiz.korim.color.*
-import com.soywiz.korim.format.*
-import com.soywiz.korio.file.std.resourcesVfs
-import com.soywiz.korma.geom.Anchor
-import com.soywiz.korma.geom.ScaleMode
+import korlibs.korge.component.docking.dockedTo
+import korlibs.korge.input.onClick
+import korlibs.korge.scene.Scene
+import korlibs.korge.ui.UIButtonToggleableGroup
+import korlibs.korge.ui.group
+import korlibs.korge.ui.tooltip
+import korlibs.korge.ui.uiButton
+import korlibs.korge.ui.uiGridFill
+import korlibs.korge.ui.uiHorizontalStack
+import korlibs.korge.ui.uiImage
+import korlibs.korge.ui.uiTooltipContainer
+import korlibs.korge.ui.uiVerticalStack
+import korlibs.korge.view.*
+import korlibs.image.bitmap.asumePremultiplied
+import korlibs.image.bitmap.slice
+import korlibs.image.color.*
+import korlibs.image.format.*
+import korlibs.io.file.std.resourcesVfs
+import korlibs.math.geom.Anchor
+import korlibs.math.geom.ScaleMode
 
 class MainUIImageTester : Scene() {
     override suspend fun SContainer.sceneMain() {

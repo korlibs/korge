@@ -1,17 +1,17 @@
-import com.soywiz.klock.*
-import com.soywiz.korge.*
-import com.soywiz.korge.component.docking.dockedTo
-import com.soywiz.korge.time.*
-import com.soywiz.korge.view.*
-import com.soywiz.korge.view.filter.*
-import com.soywiz.korim.bitmap.Bitmap32
-import com.soywiz.korim.bitmap.resized
-import com.soywiz.korim.color.*
-import com.soywiz.korim.format.*
-import com.soywiz.korio.file.std.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.serialization.json.Json
-import com.soywiz.korma.geom.*
+import korlibs.time.*
+import korlibs.korge.*
+import korlibs.korge.component.docking.dockedTo
+import korlibs.korge.time.*
+import korlibs.korge.view.*
+import korlibs.korge.view.filter.*
+import korlibs.image.bitmap.Bitmap32
+import korlibs.image.bitmap.resized
+import korlibs.image.color.*
+import korlibs.image.format.*
+import korlibs.io.file.std.*
+import korlibs.io.lang.*
+import korlibs.io.serialization.json.Json
+import korlibs.math.geom.*
 
 suspend fun main() = Korge(windowSize = SizeInt(768, 512), bgcolor = Colors["#2b2b2b"]).start {
     val exceptions = arrayListOf<Throwable>()

@@ -1,13 +1,13 @@
 package samples
 
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.view.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.format.*
-import com.soywiz.korim.paint.*
-import com.soywiz.korim.vector.*
-import com.soywiz.korio.file.std.*
-import com.soywiz.korma.geom.*
+import korlibs.korge.scene.Scene
+import korlibs.korge.view.*
+import korlibs.image.bitmap.*
+import korlibs.image.format.*
+import korlibs.image.paint.*
+import korlibs.image.vector.*
+import korlibs.io.file.std.*
+import korlibs.math.geom.*
 
 class MainVectorRendering : Scene() {
     override suspend fun SContainer.sceneMain() {

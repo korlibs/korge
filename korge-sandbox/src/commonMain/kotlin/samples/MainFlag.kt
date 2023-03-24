@@ -1,15 +1,15 @@
 package samples
 
-import com.soywiz.klock.*
-import com.soywiz.korev.Key
-import com.soywiz.korge.*
-import com.soywiz.korge.input.keys
-import com.soywiz.korge.scene.ScaledScene
-import com.soywiz.korge.view.*
-import com.soywiz.korge.view.filter.*
-import com.soywiz.korim.color.*
-import com.soywiz.korim.format.*
-import com.soywiz.korio.file.std.*
+import korlibs.time.*
+import korlibs.event.Key
+import korlibs.korge.*
+import korlibs.korge.input.keys
+import korlibs.korge.scene.ScaledScene
+import korlibs.korge.view.*
+import korlibs.korge.view.filter.*
+import korlibs.image.color.*
+import korlibs.image.format.*
+import korlibs.io.file.std.*
 
 class MainFlag : ScaledScene(592, 592) {
     override suspend fun SContainer.sceneMain() {

@@ -1,21 +1,21 @@
 package samples
 
-import com.soywiz.klock.measureTime
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.view.SContainer
-import com.soywiz.korge.view.container
-import com.soywiz.korge.view.cpuGraphics
-import com.soywiz.korge.view.text
-import com.soywiz.korge.view.vector.gpuGraphics
-import com.soywiz.korge.view.xy
-import com.soywiz.korim.color.Colors
-import com.soywiz.korim.font.DefaultTtfFont
-import com.soywiz.korim.font.SystemFont
-import com.soywiz.korim.font.asFallbackOf
-import com.soywiz.korim.font.readTtfFont
-import com.soywiz.korim.vector.Context2d
-import com.soywiz.korim.vector.buildShape
-import com.soywiz.korio.file.std.resourcesVfs
+import korlibs.time.measureTime
+import korlibs.korge.scene.Scene
+import korlibs.korge.view.SContainer
+import korlibs.korge.view.container
+import korlibs.korge.view.cpuGraphics
+import korlibs.korge.view.text
+import korlibs.korge.view.vector.gpuGraphics
+import korlibs.korge.view.xy
+import korlibs.image.color.Colors
+import korlibs.image.font.DefaultTtfFont
+import korlibs.image.font.SystemFont
+import korlibs.image.font.asFallbackOf
+import korlibs.image.font.readTtfFont
+import korlibs.image.vector.Context2d
+import korlibs.image.vector.buildShape
+import korlibs.io.file.std.resourcesVfs
 
 class MainEmojiColrv1 : Scene() {
     override suspend fun SContainer.sceneMain() {

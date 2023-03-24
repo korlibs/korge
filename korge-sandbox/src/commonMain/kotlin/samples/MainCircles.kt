@@ -1,18 +1,18 @@
 package samples
 
-import com.soywiz.kds.fastArrayListOf
-import com.soywiz.klock.milliseconds
-import com.soywiz.korev.Key
-import com.soywiz.korge.input.draggable
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.view.SContainer
-import com.soywiz.korge.view.View
-import com.soywiz.korge.view.addUpdater
-import com.soywiz.korge.view.centered
-import com.soywiz.korge.view.circle
-import com.soywiz.korge.view.moveWithCollisions
-import com.soywiz.korge.view.xy
-import com.soywiz.korim.color.Colors
+import korlibs.datastructure.fastArrayListOf
+import korlibs.time.milliseconds
+import korlibs.event.Key
+import korlibs.korge.input.draggable
+import korlibs.korge.scene.Scene
+import korlibs.korge.view.SContainer
+import korlibs.korge.view.View
+import korlibs.korge.view.addUpdater
+import korlibs.korge.view.centered
+import korlibs.korge.view.circle
+import korlibs.korge.view.moveWithCollisions
+import korlibs.korge.view.xy
+import korlibs.image.color.Colors
 
 class MainCircles : Scene() {
     override suspend fun SContainer.sceneMain() {

@@ -1,15 +1,15 @@
 package samples
 
-import com.soywiz.klock.seconds
-import com.soywiz.korau.format.AudioDecodingProps
-import com.soywiz.korau.format.mp3.javamp3.JavaMp3AudioFormat
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.view.SContainer
-import com.soywiz.korau.sound.*
-import com.soywiz.korge.tween.get
-import com.soywiz.korge.tween.tween
-import com.soywiz.korio.async.delay
-import com.soywiz.korio.file.std.*
+import korlibs.time.seconds
+import korlibs.audio.format.AudioDecodingProps
+import korlibs.audio.format.mp3.javamp3.JavaMp3AudioFormat
+import korlibs.korge.scene.Scene
+import korlibs.korge.view.SContainer
+import korlibs.audio.sound.*
+import korlibs.korge.tween.get
+import korlibs.korge.tween.tween
+import korlibs.io.async.delay
+import korlibs.io.file.std.*
 
 class MainSound : Scene() {
     override suspend fun SContainer.sceneMain() {

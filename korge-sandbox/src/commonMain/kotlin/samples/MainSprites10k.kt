@@ -1,19 +1,19 @@
 package samples
 
-import com.soywiz.klock.milliseconds
-import com.soywiz.korge.Korge
-import com.soywiz.korge.render.BatchBuilder2D
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.view.SContainer
-import com.soywiz.korge.view.Sprite
-import com.soywiz.korge.view.SpriteAnimation
-import com.soywiz.korge.view.addUpdater
-import com.soywiz.korge.view.scale
-import com.soywiz.korge.view.sprite
-import com.soywiz.korge.view.xy
-import com.soywiz.korim.bitmap.Bitmap
-import com.soywiz.korim.format.readBitmap
-import com.soywiz.korio.file.std.resourcesVfs
+import korlibs.time.milliseconds
+import korlibs.korge.Korge
+import korlibs.korge.render.BatchBuilder2D
+import korlibs.korge.scene.Scene
+import korlibs.korge.view.SContainer
+import korlibs.korge.view.Sprite
+import korlibs.korge.view.SpriteAnimation
+import korlibs.korge.view.addUpdater
+import korlibs.korge.view.scale
+import korlibs.korge.view.sprite
+import korlibs.korge.view.xy
+import korlibs.image.bitmap.Bitmap
+import korlibs.image.format.readBitmap
+import korlibs.io.file.std.resourcesVfs
 import kotlin.random.Random
 
 class MainSprites10k : Scene() {

@@ -1,14 +1,14 @@
 package samples
 
-import com.soywiz.klock.milliseconds
-import com.soywiz.klock.seconds
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.view.*
-import com.soywiz.korge.view.filter.*
-import com.soywiz.korim.font.readBitmapFont
-import com.soywiz.korio.async.delay
-import com.soywiz.korio.async.launchImmediately
-import com.soywiz.korio.file.std.resourcesVfs
+import korlibs.time.milliseconds
+import korlibs.time.seconds
+import korlibs.korge.scene.Scene
+import korlibs.korge.view.*
+import korlibs.korge.view.filter.*
+import korlibs.image.font.readBitmapFont
+import korlibs.io.async.delay
+import korlibs.io.async.launchImmediately
+import korlibs.io.file.std.resourcesVfs
 
 class MainBmpFont : Scene() {
     override suspend fun SContainer.sceneMain() {

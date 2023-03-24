@@ -1,8 +1,8 @@
-import com.soywiz.korag.shader.Program
-import com.soywiz.korag.shader.VertexShader
-import com.soywiz.korag.shader.appending
-import com.soywiz.korag.software.AGFactorySoftware
-import com.soywiz.korio.async.suspendTest
+import korlibs.graphics.shader.Program
+import korlibs.graphics.shader.VertexShader
+import korlibs.graphics.shader.appending
+import korlibs.graphics.software.AGFactorySoftware
+import korlibs.io.async.suspendTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertSame

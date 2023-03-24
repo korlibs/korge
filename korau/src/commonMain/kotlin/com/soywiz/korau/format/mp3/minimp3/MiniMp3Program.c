@@ -1,6 +1,6 @@
 #define MINIMP3_IMPLEMENTATION 1
 #pragma ktcc module MiniMp3Program
-#pragma ktcc package com.soywiz.korau.format.mp3
+#pragma ktcc package korlibs.audio.format.mp3
 #pragma ktcc visibility internal
 #pragma ktcc runtime common
 

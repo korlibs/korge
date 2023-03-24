@@ -1,15 +1,15 @@
 package samples
 
-import com.soywiz.klock.*
-import com.soywiz.korev.*
-import com.soywiz.korge.animate.*
-import com.soywiz.korge.input.*
-import com.soywiz.korge.scene.ScaledScene
-import com.soywiz.korge.view.SContainer
-import com.soywiz.korge.view.position
-import com.soywiz.korge.view.solidRect
-import com.soywiz.korim.color.Colors
-import com.soywiz.korio.async.*
+import korlibs.time.*
+import korlibs.event.*
+import korlibs.korge.animate.*
+import korlibs.korge.input.*
+import korlibs.korge.scene.ScaledScene
+import korlibs.korge.view.SContainer
+import korlibs.korge.view.position
+import korlibs.korge.view.solidRect
+import korlibs.image.color.Colors
+import korlibs.io.async.*
 import kotlinx.coroutines.Job
 
 class MainAnimations : ScaledScene(512, 512) {

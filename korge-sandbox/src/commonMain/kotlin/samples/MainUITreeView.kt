@@ -1,13 +1,13 @@
 package samples
 
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.ui.UIText
-import com.soywiz.korge.ui.UITreeViewList
-import com.soywiz.korge.ui.UITreeViewNode
-import com.soywiz.korge.ui.tooltip
-import com.soywiz.korge.ui.uiTooltipContainer
-import com.soywiz.korge.ui.uiTreeView
-import com.soywiz.korge.view.SContainer
+import korlibs.korge.scene.Scene
+import korlibs.korge.ui.UIText
+import korlibs.korge.ui.UITreeViewList
+import korlibs.korge.ui.UITreeViewNode
+import korlibs.korge.ui.tooltip
+import korlibs.korge.ui.uiTooltipContainer
+import korlibs.korge.ui.uiTreeView
+import korlibs.korge.view.SContainer
 
 class MainUITreeView : Scene() {
     override suspend fun SContainer.sceneMain() {

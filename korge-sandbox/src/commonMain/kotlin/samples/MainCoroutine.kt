@@ -1,15 +1,15 @@
 package samples
 
-import com.soywiz.klock.timesPerSecond
-import com.soywiz.korge.scene.ScaledScene
-import com.soywiz.korge.view.SContainer
-import com.soywiz.korge.view.position
-import com.soywiz.korge.view.solidRect
-import com.soywiz.korim.color.Colors
-import com.soywiz.korio.async.launchImmediately
-import com.soywiz.korma.geom.MPoint
-import com.soywiz.korma.interpolation.*
-import com.soywiz.korma.random.get
+import korlibs.time.timesPerSecond
+import korlibs.korge.scene.ScaledScene
+import korlibs.korge.view.SContainer
+import korlibs.korge.view.position
+import korlibs.korge.view.solidRect
+import korlibs.image.color.Colors
+import korlibs.io.async.launchImmediately
+import korlibs.math.geom.MPoint
+import korlibs.math.interpolation.*
+import korlibs.math.random.get
 import util.*
 import kotlin.random.Random
 

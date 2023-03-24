@@ -1,12 +1,12 @@
 package samples
 
-import com.soywiz.korge.scene.MaskTransition
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.scene.TransitionView
-import com.soywiz.korge.ui.uiButton
-import com.soywiz.korge.view.*
-import com.soywiz.korge.view.filter.*
-import com.soywiz.korim.color.Colors
+import korlibs.korge.scene.MaskTransition
+import korlibs.korge.scene.Scene
+import korlibs.korge.scene.TransitionView
+import korlibs.korge.ui.uiButton
+import korlibs.korge.view.*
+import korlibs.korge.view.filter.*
+import korlibs.image.color.Colors
 
 class MainTransition : Scene() {
     override suspend fun SContainer.sceneMain() {

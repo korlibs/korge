@@ -1,10 +1,10 @@
 package samples.minesweeper
 
-import com.soywiz.korim.bitmap.effect.*
-import com.soywiz.korim.color.*
-import com.soywiz.korim.font.*
-import com.soywiz.korim.paint.*
-import com.soywiz.korio.resources.*
+import korlibs.image.bitmap.effect.*
+import korlibs.image.color.*
+import korlibs.image.font.*
+import korlibs.image.paint.*
+import korlibs.io.resources.*
 
 val ResourcesContainer.minesweeperFont by resourceGlobal {
     DefaultTtfFont.toBitmapFont(

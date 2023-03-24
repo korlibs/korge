@@ -2,16 +2,16 @@
 
 package com.soywiz.korui.ui
 
-import com.soywiz.kds.*
-import com.soywiz.korag.*
-import com.soywiz.korev.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.vector.*
-import com.soywiz.korio.file.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korma.geom.*
+import korlibs.datastructure.*
+import korlibs.graphics.*
+import korlibs.event.*
+import korlibs.image.bitmap.*
+import korlibs.image.vector.*
+import korlibs.io.file.*
+import korlibs.io.lang.*
+import korlibs.math.geom.*
 import com.soywiz.korui.*
-import com.soywiz.korev.*
+import korlibs.event.*
 import com.soywiz.korui.geom.len.*
 import com.soywiz.korui.light.*
 import com.soywiz.korui.style.*

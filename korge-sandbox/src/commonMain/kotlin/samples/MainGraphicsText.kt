@@ -1,18 +1,18 @@
 package samples
 
-import com.soywiz.korge.*
-import com.soywiz.korge.scene.*
-import com.soywiz.korge.view.*
-import com.soywiz.korge.view.filter.*
-import com.soywiz.korge.view.property.*
-import com.soywiz.korim.color.*
-import com.soywiz.korim.font.*
-import com.soywiz.korim.paint.*
-import com.soywiz.korim.text.*
-import com.soywiz.korio.async.*
-import com.soywiz.korio.file.std.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.vector.*
+import korlibs.korge.*
+import korlibs.korge.scene.*
+import korlibs.korge.view.*
+import korlibs.korge.view.filter.*
+import korlibs.korge.view.property.*
+import korlibs.image.color.*
+import korlibs.image.font.*
+import korlibs.image.paint.*
+import korlibs.image.text.*
+import korlibs.io.async.*
+import korlibs.io.file.std.*
+import korlibs.math.geom.*
+import korlibs.math.geom.vector.*
 import kotlin.properties.*
 
 class MainGraphicsText : Scene() {

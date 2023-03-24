@@ -1,26 +1,26 @@
 package samples
 
-import com.soywiz.kds.*
-import com.soywiz.kds.iterators.*
-import com.soywiz.klock.*
-import com.soywiz.korag.*
-import com.soywiz.korev.*
-import com.soywiz.korge.input.*
-import com.soywiz.korge.scene.*
-import com.soywiz.korge.time.*
-import com.soywiz.korge.tween.*
-import com.soywiz.korge.view.*
-import com.soywiz.korge.view.debug.*
-import com.soywiz.korge.view.vector.*
-import com.soywiz.korim.color.*
-import com.soywiz.korim.font.*
-import com.soywiz.korim.text.*
-import com.soywiz.korio.async.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.bezier.*
-import com.soywiz.korma.geom.shape.*
-import com.soywiz.korma.geom.vector.*
-import com.soywiz.korma.interpolation.*
+import korlibs.datastructure.*
+import korlibs.datastructure.iterators.*
+import korlibs.time.*
+import korlibs.graphics.*
+import korlibs.event.*
+import korlibs.korge.input.*
+import korlibs.korge.scene.*
+import korlibs.korge.time.*
+import korlibs.korge.tween.*
+import korlibs.korge.view.*
+import korlibs.korge.view.debug.*
+import korlibs.korge.view.vector.*
+import korlibs.image.color.*
+import korlibs.image.font.*
+import korlibs.image.text.*
+import korlibs.io.async.*
+import korlibs.math.geom.*
+import korlibs.math.geom.bezier.*
+import korlibs.math.geom.shape.*
+import korlibs.math.geom.vector.*
+import korlibs.math.interpolation.*
 
 class MainStrokesExperiment3 : Scene() {
     override suspend fun SContainer.sceneMain() {

@@ -1,19 +1,19 @@
 package samples
 
-import com.soywiz.klock.*
-import com.soywiz.korge.scene.*
-import com.soywiz.korge.ui.*
-import com.soywiz.korge.view.SContainer
-import com.soywiz.korge.view.image
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
-import com.soywiz.korim.format.*
-import com.soywiz.korim.paint.*
-import com.soywiz.korio.async.*
-import com.soywiz.korio.file.std.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.vector.*
-import com.soywiz.korma.interpolation.*
+import korlibs.time.*
+import korlibs.korge.scene.*
+import korlibs.korge.ui.*
+import korlibs.korge.view.SContainer
+import korlibs.korge.view.image
+import korlibs.image.bitmap.*
+import korlibs.image.color.*
+import korlibs.image.format.*
+import korlibs.image.paint.*
+import korlibs.io.async.*
+import korlibs.io.file.std.*
+import korlibs.math.geom.*
+import korlibs.math.geom.vector.*
+import korlibs.math.interpolation.*
 
 class MainVector : ScaledScene(1280, 720) {
     companion object {

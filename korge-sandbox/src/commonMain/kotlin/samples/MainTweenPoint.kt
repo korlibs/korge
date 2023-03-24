@@ -1,27 +1,27 @@
 package samples
 
-import com.soywiz.klock.seconds
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.tween.get
-import com.soywiz.korge.tween.tween
-import com.soywiz.korge.view.SContainer
-import com.soywiz.korge.view.anchor
-import com.soywiz.korge.view.addUpdater
-import com.soywiz.korge.view.circle
-import com.soywiz.korge.view.container
-import com.soywiz.korge.view.cpuGraphics
-import com.soywiz.korge.view.image
-import com.soywiz.korge.view.scale
-import com.soywiz.korge.view.xy
-import com.soywiz.korim.color.Colors
-import com.soywiz.korim.format.readBitmap
-import com.soywiz.korim.vector.toStrokeShape
-import com.soywiz.korio.async.launch
-import com.soywiz.korio.file.std.resourcesVfs
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.shape.buildVectorPath
-import com.soywiz.korma.geom.vector.getCurves
-import com.soywiz.korma.interpolation.Easing
+import korlibs.time.seconds
+import korlibs.korge.scene.Scene
+import korlibs.korge.tween.get
+import korlibs.korge.tween.tween
+import korlibs.korge.view.SContainer
+import korlibs.korge.view.anchor
+import korlibs.korge.view.addUpdater
+import korlibs.korge.view.circle
+import korlibs.korge.view.container
+import korlibs.korge.view.cpuGraphics
+import korlibs.korge.view.image
+import korlibs.korge.view.scale
+import korlibs.korge.view.xy
+import korlibs.image.color.Colors
+import korlibs.image.format.readBitmap
+import korlibs.image.vector.toStrokeShape
+import korlibs.io.async.launch
+import korlibs.io.file.std.resourcesVfs
+import korlibs.math.geom.*
+import korlibs.math.geom.shape.buildVectorPath
+import korlibs.math.geom.vector.getCurves
+import korlibs.math.interpolation.Easing
 
 class MainTweenPoint : Scene() {
     override suspend fun SContainer.sceneMain() {

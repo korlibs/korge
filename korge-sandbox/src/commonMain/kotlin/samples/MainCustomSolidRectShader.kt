@@ -1,12 +1,12 @@
 package samples
 
-import com.soywiz.klock.*
-import com.soywiz.korag.*
-import com.soywiz.korag.shader.*
-import com.soywiz.korge.render.*
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.view.*
-import com.soywiz.korim.color.*
+import korlibs.time.*
+import korlibs.graphics.*
+import korlibs.graphics.shader.*
+import korlibs.korge.render.*
+import korlibs.korge.scene.Scene
+import korlibs.korge.view.*
+import korlibs.image.color.*
 
 class MainCustomSolidRectShader : Scene() {
     object TimeUB : UniformBlock(fixedLocation = 6) {

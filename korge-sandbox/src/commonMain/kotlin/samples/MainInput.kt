@@ -1,10 +1,10 @@
 package samples
 
-import com.soywiz.klock.*
-import com.soywiz.korge.component.*
-import com.soywiz.korge.input.*
-import com.soywiz.korge.scene.*
-import com.soywiz.korge.view.*
+import korlibs.time.*
+import korlibs.korge.component.*
+import korlibs.korge.input.*
+import korlibs.korge.scene.*
+import korlibs.korge.view.*
 
 class MainInput : Scene() {
     override suspend fun SContainer.sceneMain() {

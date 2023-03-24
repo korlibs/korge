@@ -10,6 +10,6 @@ repositories {
 
 dependencies {
     implementation("com.soywiz.korlibs.korim:korim-jvm:3.0.0")
-    //implementation("com.soywiz.korlibs.korim:korim-jvm:3.4.0")
-    //implementation("com.soywiz.korlibs.korim:korim-jvm:999.0.0.999")
+    //implementation("korlibs.korim:korim-jvm:3.4.0")
+    //implementation("korlibs.korim:korim-jvm:999.0.0.999")
 }

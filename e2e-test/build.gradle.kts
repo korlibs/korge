@@ -1,5 +1,5 @@
-import com.soywiz.korge.gradle.*
-import com.soywiz.korge.gradle.targets.jvm.*
+import korlibs.korge.gradle.*
+import korlibs.korge.gradle.targets.jvm.*
 import org.jetbrains.kotlin.gradle.tasks.*
 import java.net.*
 

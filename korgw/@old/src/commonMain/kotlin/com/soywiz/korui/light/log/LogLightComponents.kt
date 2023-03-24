@@ -1,6 +1,6 @@
 package com.soywiz.korui.light.log
 
-import com.soywiz.kds.*
+import korlibs.datastructure.*
 import com.soywiz.korui.light.*
 
 class LogLightComponents : LightComponents() {

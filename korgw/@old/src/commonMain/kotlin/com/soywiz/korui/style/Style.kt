@@ -1,6 +1,6 @@
 package com.soywiz.korui.style
 
-import com.soywiz.korma.geom.*
+import korlibs.math.geom.*
 import com.soywiz.korui.geom.len.*
 import com.soywiz.korui.geom.len.Size
 import com.soywiz.korui.ui.*
@@ -106,4 +106,3 @@ fun Styled.computedCalcSize(
 	this.computedCalcWidth(ctx.setSize(size.width), ignoreBounds),
 	this.computedCalcHeight(ctx.setSize(size.height), ignoreBounds)
 )
-

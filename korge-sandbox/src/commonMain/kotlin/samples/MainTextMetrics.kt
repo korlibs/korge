@@ -1,20 +1,20 @@
 package samples
 
-import com.soywiz.korev.*
-import com.soywiz.korge.input.*
-import com.soywiz.korge.scene.*
-import com.soywiz.korge.ui.*
-import com.soywiz.korge.view.*
-import com.soywiz.korgw.*
-import com.soywiz.korim.bitmap.effect.*
-import com.soywiz.korim.color.*
-import com.soywiz.korim.font.*
-import com.soywiz.korim.text.*
-import com.soywiz.korio.async.*
-import com.soywiz.korio.file.std.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.vector.*
-import com.soywiz.korma.interpolation.*
+import korlibs.event.*
+import korlibs.korge.input.*
+import korlibs.korge.scene.*
+import korlibs.korge.ui.*
+import korlibs.korge.view.*
+import korlibs.render.*
+import korlibs.image.bitmap.effect.*
+import korlibs.image.color.*
+import korlibs.image.font.*
+import korlibs.image.text.*
+import korlibs.io.async.*
+import korlibs.io.file.std.*
+import korlibs.math.geom.*
+import korlibs.math.geom.vector.*
+import korlibs.math.interpolation.*
 import kotlin.reflect.*
 
 class MainTextMetrics : Scene() {
@@ -117,8 +117,8 @@ class MainTextMetrics : Scene() {
                 @Suppress("UNCHECKED_CAST") val rinfo = (info as SecInfo<Any>)
                 horizontal {
                     label("${info.name}:")
-                    val prop = com.soywiz.korio.async.ObservableProperty(info.prop)
-                    @Suppress("UNCHECKED_CAST") val rprop = (prop as com.soywiz.korio.async.ObservableProperty<Any>)
+                    val prop = korlibs.io.async.ObservableProperty(info.prop)
+                    @Suppress("UNCHECKED_CAST") val rprop = (prop as korlibs.io.async.ObservableProperty<Any>)
                     for (item in info.items) {
                         toggleButton(rinfo.convert(item)) {
                             prop.observeStart { this.pressed = (it == item) }
@@ -129,7 +129,7 @@ class MainTextMetrics : Scene() {
                     }
                 }
             }
-            val fontProp = com.soywiz.korio.async.ObservableProperty(text1.font.getOrNull()!!).observeStart { text1.font = it }
+            val fontProp = korlibs.io.async.ObservableProperty(text1.font.getOrNull()!!).observeStart { text1.font = it }
             horizontal {
                 label("Font:")
                 onDragAndDropFileEvent {
@@ -163,7 +163,7 @@ class MainTextMetrics : Scene() {
             }
             horizontal {
                 label("Text:")
-                val prop = com.soywiz.korio.async.ObservableProperty(textStrs.values.first()).observeStart { text1.text = it }
+                val prop = korlibs.io.async.ObservableProperty(textStrs.values.first()).observeStart { text1.text = it }
                 for ((key, value) in textStrs) {
                     toggleButton(key) {
                         prop.observeStart { this.pressed = (it == value) }

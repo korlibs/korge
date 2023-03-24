@@ -8,8 +8,8 @@ plugins {
 
 description = "Multiplatform Game Engine written in Kotlin"
 group = "com.soywiz.korlibs.korge.plugins"
-//group = "com.soywiz.korge"
-//this.name = "com.soywiz.korge.gradle.plugin"
+//group = "korlibs.korge"
+//this.name = "korlibs.korge.gradle.plugin"
 
 gradlePlugin {
     website = "https://korge.soywiz.com/"
@@ -19,10 +19,10 @@ gradlePlugin {
 	plugins {
 		create("korge") {
             //PluginDeclaration decl = it
-			id = "com.soywiz.korge"
+			id = "korlibs.korge"
 			displayName = "Korge"
 			description = "Multiplatform Game Engine for Kotlin"
-			implementationClass = "com.soywiz.korge.gradle.KorgeGradlePlugin"
+			implementationClass = "korlibs.korge.gradle.KorgeGradlePlugin"
 		}
 	}
 }
@@ -38,7 +38,7 @@ afterEvaluate {
 }
 */
 
-def jversion = com.soywiz.korge.gradle.targets.android.AndroidKt.ANDROID_JAVA_VERSION_STR
+def jversion = korlibs.korge.gradle.targets.android.AndroidKt.ANDROID_JAVA_VERSION_STR
 
 java {
     sourceCompatibility = jversion
@@ -62,8 +62,8 @@ java.sourceSets.main.each {
     it.resources.srcDirs(new File(buildDir, "srcgen2res"))
 }
 
-com.soywiz.korlibs.NativeTools.groovyConfigurePublishing(project, false)
-com.soywiz.korlibs.NativeTools.groovyConfigureSigning(project)
+korlibs.NativeTools.groovyConfigurePublishing(project, false)
+korlibs.NativeTools.groovyConfigureSigning(project)
 
 dependencies {
     implementation(libs.kotlin.gradle.plugin)

@@ -1,19 +1,19 @@
 package com.soywiz.korui
 
 import GL.*
-import com.soywiz.kds.PriorityQueue
-import com.soywiz.kds.Queue
-import com.soywiz.klock.DateTime
-import com.soywiz.klock.milliseconds
-import com.soywiz.korag.AG
-import com.soywiz.korag.AGConfig
-import com.soywiz.korag.AGOpenglFactory
-import com.soywiz.korio.file.VfsFile
-import com.soywiz.korio.lang.Closeable
-import com.soywiz.korio.lang.DummyCloseable
-import com.soywiz.korev.Event
-import com.soywiz.korev.EventDispatcher
-import com.soywiz.korev.Key
+import korlibs.datastructure.PriorityQueue
+import korlibs.datastructure.Queue
+import korlibs.time.DateTime
+import korlibs.time.milliseconds
+import korlibs.graphics.AG
+import korlibs.graphics.AGConfig
+import korlibs.graphics.AGOpenglFactory
+import korlibs.io.file.VfsFile
+import korlibs.io.lang.Closeable
+import korlibs.io.lang.DummyCloseable
+import korlibs.event.Event
+import korlibs.event.EventDispatcher
+import korlibs.event.Key
 import com.soywiz.korui.light.LightComponents
 import com.soywiz.korui.light.LightType
 import com.soywiz.korui.light.ag
@@ -155,7 +155,7 @@ fun glutDisplay() {
 }
 
 @ThreadLocal
-val reshapeEvent = com.soywiz.korev.ReshapeEvent()
+val reshapeEvent = korlibs.event.ReshapeEvent()
 
 fun glutReshape(width: Int, height: Int) {
     ag.resized(width, height)
@@ -166,9 +166,9 @@ fun glutReshape(width: Int, height: Int) {
     glutDisplay()
 }
 
-val mevent = com.soywiz.korev.MouseEvent()
+val mevent = korlibs.event.MouseEvent()
 
-private fun mouseEvent(etype: com.soywiz.korev.MouseEvent.Type, ex: Int, ey: Int, ebutton: Int) {
+private fun mouseEvent(etype: korlibs.event.MouseEvent.Type, ex: Int, ey: Int, ebutton: Int) {
     light.dispatch(mevent.apply {
         this.type = etype
         this.x = ex
@@ -183,23 +183,23 @@ private fun mouseEvent(etype: com.soywiz.korev.MouseEvent.Type, ex: Int, ey: Int
 }
 
 fun glutMouseMove(x: Int, y: Int) {
-    mouseEvent(com.soywiz.korev.MouseEvent.Type.MOVE, x, y, 0)
+    mouseEvent(korlibs.event.MouseEvent.Type.MOVE, x, y, 0)
 }
 
 fun glutMouse(button: Int, state: Int, x: Int, y: Int) {
     val up = state == GLUT_UP
     val event = if (up) {
-        com.soywiz.korev.MouseEvent.Type.UP
+        korlibs.event.MouseEvent.Type.UP
     } else {
-        com.soywiz.korev.MouseEvent.Type.DOWN
+        korlibs.event.MouseEvent.Type.DOWN
     }
     mouseEvent(event, x, y, button)
     if (up) {
-        mouseEvent(com.soywiz.korev.MouseEvent.Type.CLICK, x, y, button)
+        mouseEvent(korlibs.event.MouseEvent.Type.CLICK, x, y, button)
     }
 }
 
-private val keyEvent = com.soywiz.korev.KeyEvent()
+private val keyEvent = korlibs.event.KeyEvent()
 
 val CharToKeys = mapOf(
     'a' to Key.A, 'A' to Key.A,
@@ -247,7 +247,7 @@ fun glutKeyUpDown(key: UByte, pressed: Boolean) {
     //println("keyDownUp: char=$char, modifiers=$modifiers, keyCode=${keyCode.toInt()}, key=$key, pressed=$pressed")
     light.dispatch(keyEvent.apply {
         this.type =
-            if (pressed) com.soywiz.korev.KeyEvent.Type.DOWN else com.soywiz.korev.KeyEvent.Type.UP
+            if (pressed) korlibs.event.KeyEvent.Type.DOWN else korlibs.event.KeyEvent.Type.UP
         this.id = 0
         this.key = key
         this.keyCode = keyCode

@@ -1,17 +1,17 @@
 package samples
 
-import com.soywiz.klock.*
-import com.soywiz.korev.*
-import com.soywiz.korge.input.*
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.view.*
-import com.soywiz.korge.view.filter.DropshadowFilter
-import com.soywiz.korge.view.filter.filter
-import com.soywiz.korge.view.vector.*
-import com.soywiz.korim.color.Colors
-import com.soywiz.korim.vector.*
-import com.soywiz.korim.vector.format.*
-import com.soywiz.korio.file.std.*
+import korlibs.time.*
+import korlibs.event.*
+import korlibs.korge.input.*
+import korlibs.korge.scene.Scene
+import korlibs.korge.view.*
+import korlibs.korge.view.filter.DropshadowFilter
+import korlibs.korge.view.filter.filter
+import korlibs.korge.view.vector.*
+import korlibs.image.color.Colors
+import korlibs.image.vector.*
+import korlibs.image.vector.format.*
+import korlibs.io.file.std.*
 
 class MainSvgAnimation : Scene() {
     override suspend fun SContainer.sceneMain() {

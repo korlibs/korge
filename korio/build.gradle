@@ -9,5 +9,5 @@ dependencies {
     add("commonMainApi", project(":klogger"))
 }
 
-com.soywiz.korlibs.NativeTools.configureAndroidDependency(project, libs.kotlinx.coroutines.android)
-com.soywiz.korlibs.NativeTools.configureCInteropWin32(project, "win32ssl")
+korlibs.NativeTools.configureAndroidDependency(project, libs.kotlinx.coroutines.android)
+korlibs.NativeTools.configureCInteropWin32(project, "win32ssl")

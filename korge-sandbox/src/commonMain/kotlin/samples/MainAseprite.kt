@@ -1,14 +1,14 @@
 package samples
 
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.view.SContainer
-import com.soywiz.korge.view.animation.imageAnimationView
-import com.soywiz.korim.atlas.MutableAtlasUnit
-import com.soywiz.korim.format.ASE
-import com.soywiz.korim.format.ImageDecodingProps
-import com.soywiz.korim.format.readImageData
-import com.soywiz.korim.format.toProps
-import com.soywiz.korio.file.std.resourcesVfs
+import korlibs.korge.scene.Scene
+import korlibs.korge.view.SContainer
+import korlibs.korge.view.animation.imageAnimationView
+import korlibs.image.atlas.MutableAtlasUnit
+import korlibs.image.format.ASE
+import korlibs.image.format.ImageDecodingProps
+import korlibs.image.format.readImageData
+import korlibs.image.format.toProps
+import korlibs.io.file.std.resourcesVfs
 
 class MainAseprite : Scene() {
     override suspend fun SContainer.sceneMain() {

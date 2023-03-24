@@ -1,18 +1,18 @@
 package samples
 
-import com.soywiz.korge.Korge
-import com.soywiz.korge.scene.ScaledScene
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.view.SContainer
-import com.soywiz.korge.view.Stage
-import com.soywiz.korge.view.container
-import com.soywiz.korge.view.image
-import com.soywiz.korge.view.position
-import com.soywiz.korge.view.text
-import com.soywiz.korim.atlas.MutableAtlasUnit
-import com.soywiz.korim.atlas.readAtlas
-import com.soywiz.korim.format.readBitmapSlice
-import com.soywiz.korio.file.std.resourcesVfs
+import korlibs.korge.Korge
+import korlibs.korge.scene.ScaledScene
+import korlibs.korge.scene.Scene
+import korlibs.korge.view.SContainer
+import korlibs.korge.view.Stage
+import korlibs.korge.view.container
+import korlibs.korge.view.image
+import korlibs.korge.view.position
+import korlibs.korge.view.text
+import korlibs.image.atlas.MutableAtlasUnit
+import korlibs.image.atlas.readAtlas
+import korlibs.image.format.readBitmapSlice
+import korlibs.io.file.std.resourcesVfs
 
 class MainAtlas : ScaledScene(640, 480) {
     override suspend fun SContainer.sceneMain() {

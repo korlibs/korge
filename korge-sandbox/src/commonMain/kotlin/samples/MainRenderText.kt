@@ -1,11 +1,11 @@
 package samples
 
-import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.view.*
-import com.soywiz.korim.color.*
-import com.soywiz.korim.font.*
-import com.soywiz.korim.text.*
-import com.soywiz.korio.file.std.*
+import korlibs.korge.scene.Scene
+import korlibs.korge.view.*
+import korlibs.image.color.*
+import korlibs.image.font.*
+import korlibs.image.text.*
+import korlibs.io.file.std.*
 
 class MainRenderText : Scene() {
     override suspend fun SContainer.sceneMain() {
