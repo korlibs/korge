@@ -148,6 +148,8 @@ enum class VarType(val kind: VarKind, val elementCount: Int, val isMatrix: Boole
         }
     }
 
+    val isSampler: Boolean get() = this == Sampler1D || this == Sampler2D || this == Sampler3D || this == SamplerCube
+
     val bytesSize: Int = kind.bytesSize * elementCount
 
 	companion object {
@@ -306,6 +308,10 @@ open class Uniform(
 ) : VariableWithOffset(
     name, type, arrayCount, precision, offset
 ) {
+    init {
+        if (type.isSampler) error("Can't create uniform '$name' with a sampler type '$type', please use `Sampler` class instead")
+    }
+
     val totalElementCount: Int get() = type.elementCount * arrayCount
 
     constructor(name: String, type: VarType, precision: Precision = Precision.DEFAULT) : this(name, type, 1, precision)

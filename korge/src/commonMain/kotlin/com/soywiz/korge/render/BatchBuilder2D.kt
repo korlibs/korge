@@ -544,11 +544,13 @@ class BatchBuilder2D constructor(
         )
     }
 
-    object TexNUB : UniformBlock(fixedLocation = 2) {
-        val u_TexN = Array(BB_MAX_TEXTURES) { sampler2D("u_Tex$it").uniform }
-    }
+    //object TexNUB : UniformBlock(fixedLocation = 2) {
+    //    val u_TexN = Array(BB_MAX_TEXTURES) { sampler2D("u_Tex$it").uniform }
+    //}
 
     companion object {
+        val u_TexN = Array(BB_MAX_TEXTURES) { Sampler("u_Tex$it", ShaderIndices.SAMPLER_MTEX_INDEX + it, SamplerVarType.Sampler2D) }
+
         val MAX_BATCH_QUADS = 16383
         //val DEFAULT_BATCH_QUADS = 0x1000
         val DEFAULT_BATCH_QUADS = 0x2000
@@ -608,7 +610,7 @@ class BatchBuilder2D constructor(
         fun createTextureLookup(builder: ProgramBuilderDefault) {
             builder.apply {
                 IF_ELSE_BINARY_LOOKUP(v_TexIndex, 0, BB_MAX_TEXTURES - 1) { n ->
-                    SET(out, texture2D(TexNUB.u_TexN[n], v_Tex["xy"]))
+                    SET(out, texture2D(u_TexN[n], v_Tex["xy"]))
                 }
             }
         }
@@ -626,14 +628,11 @@ class BatchBuilder2D constructor(
     fun updateStandardUniforms() {
         //println("updateStandardUniforms: ag.currentSize(${ag.currentWidth}, ${ag.currentHeight}) : ${ag.currentRenderBuffer}")
         ctx.updateStandardUniforms()
-        ctx[TexNUB].push(deduplicate = true) {
-            for (n in 0 until maxTextures) {
-                //println("this.u_TexN[$n]=${this.u_TexN[n]}")
-                it[this.u_TexN[n]] = n
-                val info = AGTextureUnitInfo(linear = currentSmoothing)
-                //println("updateStandardUniforms: $n, ${currentTexN[n]}, info=$info")
-                ctx.textureUnits.set(n, currentTexN[n], info)
-            }
+        for (n in 0 until maxTextures) {
+            //println("this.u_TexN[$n]=${this.u_TexN[n]}")
+            val info = AGTextureUnitInfo(linear = currentSmoothing)
+            //println("updateStandardUniforms: $n, ${currentTexN[n]}, info=$info")
+            ctx.textureUnits.set(u_TexN[n], currentTexN[n], info)
         }
         //uniforms[u_InputPre] = currentTexN[0]?.premultiplied == true
         //uniforms[u_OutputPre] = ctx.isRenderingToTexture

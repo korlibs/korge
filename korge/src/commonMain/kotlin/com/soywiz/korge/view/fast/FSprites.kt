@@ -149,12 +149,12 @@ open class FSprites(val maxSize: Int) {
             ctx.useBatcher { batch ->
                 batch.updateStandardUniforms()
                 //batch.setTemporalUniform(u_i_texSizeN[0], u_i_texSizeDataN[0]) {
-                batch.keepTextureUnits(0, u_i_texSizeN.size, flush = true) {
+                batch.keepTextureUnits(ShaderIndices.SAMPLER_MTEX_INDEX, ShaderIndices.SAMPLER_MTEX_INDEX + u_i_texSizeN.size, flush = true) {
                     for (n in 0 until texs.size) {
                         val tex = texs[n]
                         val ttex = ctx.agBitmapTextureManager.getTextureBase(tex)
                         u_i_texSizeDataN[n] = Vector2(1f / ttex.width.toFloat(), 1f / ttex.height.toFloat())
-                        ctx.textureUnits.set(n, ttex.base, AGTextureUnitInfo(linear = smoothing))
+                        ctx.textureUnits.set(ShaderIndices.SAMPLER_MTEX_INDEX + n, ttex.base, AGTextureUnitInfo(linear = smoothing))
                         //println(ttex.base)
                     }
                     ctx[FspritesUB].push {
@@ -256,7 +256,7 @@ open class FSprites(val maxSize: Int) {
                 SET(localPos, t_TempMat2 * ((a_xy - a_anchor) * size))
                 SET(out, (u_ProjMat * u_ViewMat) * vec4(localPos + vec2(a_pos.x, a_pos.y), 0f.lit, 1f.lit))
             }, FragmentShaderDefault {
-                blockN(v_TexId) { SET(out, texture2D(BatchBuilder2D.TexNUB.u_TexN[it], v_Tex["xy"])) }
+                blockN(v_TexId) { SET(out, texture2D(BatchBuilder2D.u_TexN[it], v_Tex["xy"])) }
                 SET(out, out * v_Col)
                 IF(out["a"] le 0f.lit) { DISCARD() }
             }, name = "FSprites$maxTexs")

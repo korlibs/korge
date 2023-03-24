@@ -158,10 +158,7 @@ class GpuShapeViewCommands {
                                 if (paintShader.texture != null) {
                                     val tex = ctx.tempTexturePool.alloc()
                                     tex.upload(paintShader.texture)
-                                    ctx[DefaultShaders.TexUB].push {
-                                        it[u_Tex] = 5
-                                    }
-                                    ctx.textureUnits.set(5, tex)
+                                    ctx.textureUnits.set(DefaultShaders.u_Tex, tex)
                                     texturesToDelete.add(tex)
                                 }
                             }
