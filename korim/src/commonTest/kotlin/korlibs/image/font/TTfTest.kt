@@ -3,7 +3,7 @@ package korlibs.image.font
 import korlibs.io.async.suspendTest
 import korlibs.io.file.std.resourcesVfs
 import korlibs.io.lang.*
-import korlibs.math.geom.MRectangle
+import korlibs.math.geom.*
 import kotlin.test.*
 
 class TTfTest {
@@ -17,7 +17,7 @@ class TTfTest {
         val colorPath = glyph.colorEntry!!.getColorShape()
         assertEquals(1275, glyph.advanceWidth)
         assertEquals(
-            MRectangle(x = 32, y = -256, width = 1216, height = 1216),
+            Rectangle(x = 32, y = -256, width = 1216, height = 1216),
             glyph.metrics1px.bounds
         )
         //colorPath.scaled(0.01, 0.01).render().showImageAndWait()

@@ -120,7 +120,7 @@ class BoundBuilderTextRendererActions : TextRendererActions() {
         }
     }
 
-    private fun add(x: Double, y: Double) {
+    private fun add(x: Float, y: Float) {
         //val itransform = transform.inverted()
         val rx = this.x + transform.transformX(x, y)
         val ry = this.y + transform.transformY(x, y)
@@ -132,7 +132,7 @@ class BoundBuilderTextRendererActions : TextRendererActions() {
         current.bounds.add(rx, ry)
     }
 
-    private fun add(rect: MRectangle) {
+    private fun add(rect: Rectangle) {
         val fx = rect.left
         val fy = rect.top
         val w = rect.width

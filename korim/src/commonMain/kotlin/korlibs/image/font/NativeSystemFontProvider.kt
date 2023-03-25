@@ -18,6 +18,7 @@ import korlibs.io.file.std.standardVfs
 import korlibs.io.lang.Environment
 import korlibs.io.lang.WStringReader
 import korlibs.io.lang.expand
+import korlibs.math.geom.*
 import kotlinx.coroutines.CancellationException
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
@@ -102,7 +103,7 @@ open class NativeSystemFontProvider {
         reader: WStringReader? = null
     ) {
         metrics.existing = false
-        metrics.bounds.setTo(0.0, 0.0, size, size)
+        metrics.bounds = Rectangle(0.0, 0.0, size, size)
         metrics.xadvance = size
     }
 

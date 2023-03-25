@@ -279,13 +279,11 @@ fun <T> Font.drawText(
             metrics.fontMetrics.copyFrom(fmetrics)
             metrics.nlines = glyphs.glyphsPerLine.size
             metrics.lineBounds = glyphs.glyphsPerLine.map { glyphs ->
-                val bb = BoundsBuilder()
-                for (g in glyphs) {
-                    bb.add(g.boundsPath)
-                }
-                bb.getBounds()
+                var bb = NewBoundsBuilder()
+                for (g in glyphs) bb += g.boundsPath
+                bb.bounds
             }
-            metrics.lineBounds.bounds(metrics.bounds)
+            metrics.bounds = (NewBoundsBuilder() + metrics.lineBounds).bounds
         } else {
             val metrics = getTextBounds(size, text, renderer = renderer, align = align)
             outMetrics.fmetrics = metrics.fontMetrics
@@ -323,28 +321,28 @@ fun <T> Font.getTextBounds(
     out.nlines = actions.nlines
 
     // Compute
-    val bb = BoundsBuilder()
+    var bb = NewBoundsBuilder()
     var dy = 0.0
-    val lineBounds = FastArrayList<MRectangle>()
+    val lineBounds = FastArrayList<Rectangle>()
     val offsetY = actions.getAlignY(align.vertical, out.fontMetrics)
     //println("--")
     //println("offsetY=$offsetY, totalMaxLineHeight=${actions.totalMaxLineHeight}, align=$align")
     //printStackTrace()
     for (line in actions.lines) {
         val offsetX = line.getAlignX(align.horizontal)
-        val rect = MRectangle(
+        val rect = Rectangle(
             -offsetX,
             +offsetY + dy - out.ascent,
             line.maxX,
             line.maxLineHeight
         )
         //println("rect=$rect, offsetX=$offsetX, drawLeft=${out.drawLeft}")
-        bb.add(rect)
+        bb += rect
         lineBounds.add(rect)
         dy += line.maxLineHeight
     }
     out.lineBounds = lineBounds
-    bb.getBounds(out.bounds)
+    out.bounds = bb.bounds
 
     return out
 }

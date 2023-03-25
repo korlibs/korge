@@ -4,6 +4,8 @@ import korlibs.math.annotations.*
 
 @KormaMutableApi
 inline class MRectangleInt(val rect: MRectangle) {
+    val immutable: RectangleInt get() = RectangleInt(x, y, width, height)
+
     companion object {
         operator fun invoke(): MRectangleInt = MRectangleInt(MRectangle())
         operator fun invoke(x: Int, y: Int, width: Int, height: Int): MRectangleInt = MRectangleInt(MRectangle(x, y, width, height))

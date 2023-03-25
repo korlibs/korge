@@ -198,7 +198,7 @@ class FontTest {
                 [2]middle:   ${metrics(text2, TextAlignment.MIDDLE_LEFT)}
                 [2]baseline: ${metrics(text2, TextAlignment.BASELINE_LEFT)}
                 [2]bottom:   ${metrics(text2, TextAlignment.BOTTOM_LEFT)}
-                ${DefaultTtfFont.getTextBounds(64.0, "jHello : Worljg").bounds.int.toString()}
+                ${DefaultTtfFont.getTextBounds(64.0, "jHello : Worljg").bounds.int}
             """.trimIndent()
         )
     }

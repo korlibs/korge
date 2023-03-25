@@ -260,7 +260,7 @@ abstract class BaseTtfFont(
     val substitutionsCodePoints = IntMap<SubstitutionInfo>()
 
     lateinit var fontMetrics1px: FontMetrics; private set
-    protected val nonExistantGlyphMetrics1px = GlyphMetrics(1.0, false, 0, MRectangle(), 0.0)
+    protected val nonExistantGlyphMetrics1px = GlyphMetrics(1.0, false, 0, Rectangle(), 0.0)
     var isOpenType = false
 
     val ttfName: String get() = namesi.ttfName
@@ -1897,7 +1897,7 @@ abstract class BaseTtfFont(
 
             val size = unitsPerEm.toDouble()
             val scale = getTextScale(size)
-            GlyphMetrics(size, true, -1, MRectangle.fromBounds(
+            GlyphMetrics(size, true, -1, Rectangle.fromBounds(
                 xMin * scale, yMin * scale,
                 xMax * scale, yMax * scale
             ), advanceWidth * scale)

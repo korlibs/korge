@@ -4,6 +4,8 @@ import korlibs.memory.pack.*
 
 //@KormaValueApi
 inline class RectangleInt(val data: Int4Pack) {
+    val float: Rectangle get() = Rectangle(x, y, width, height)
+
     val position: Vector2Int get() = Vector2Int(data.i0, data.i1)
     val size: SizeInt get() = SizeInt(data.i2, data.i3)
 

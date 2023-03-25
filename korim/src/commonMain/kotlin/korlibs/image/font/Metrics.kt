@@ -94,15 +94,15 @@ data class GlyphMetrics(
     var size: Double = 0.0,
     var existing: Boolean = false,
     var codePoint: Int = 0,
-    val bounds: MRectangle = MRectangle(),
+    var bounds: Rectangle = Rectangle(),
     var xadvance: Double = 0.0,
 ) {
-    val right: Double get() = bounds.right
-    val bottom: Double get() = bounds.bottom
-    val left: Double get() = bounds.left
-    val top: Double get() = bounds.top
-    val width: Double get() = bounds.width
-    val height: Double get() = bounds.height
+    val right: Double get() = bounds.right.toDouble()
+    val bottom: Double get() = bounds.bottom.toDouble()
+    val left: Double get() = bounds.left.toDouble()
+    val top: Double get() = bounds.top.toDouble()
+    val width: Double get() = bounds.width.toDouble()
+    val height: Double get() = bounds.height.toDouble()
 
     fun clone() = copy(bounds = bounds.clone())
 
@@ -113,7 +113,7 @@ data class GlyphMetrics(
         this.size = other.size
         this.existing = other.existing
         this.codePoint = codePoint
-        this.bounds.setTo(other.bounds.x * scale, other.bounds.y * scale, other.bounds.width * scale, other.bounds.height * scale)
+        this.bounds = other.bounds * scale
         this.xadvance = other.xadvance * scale
         return this
     }
@@ -129,24 +129,22 @@ data class GlyphMetrics(
 }
 
 data class TextMetrics constructor(
-    val bounds: MRectangle = MRectangle(),
-    var lineBounds: List<MRectangle> = emptyList(),
+    var bounds: Rectangle = Rectangle(),
+    var lineBounds: List<Rectangle> = emptyList(),
     val fontMetrics: FontMetrics = FontMetrics(),
     var nlines: Int = 0,
 ) {
-    val firstLineBounds: MRectangle get() = lineBounds.firstOrNull() ?: MRectangle()
+    val firstLineBounds: Rectangle get() = lineBounds.firstOrNull() ?: Rectangle.ZERO
 
-    val left: Double get() = bounds.left
-    val top: Double get() = bounds.top
-
-    val right: Double get() = bounds.right
-    val bottom: Double get() = bounds.bottom
-
-    val width: Double get() = bounds.width
-    val height: Double get() = bounds.height
+    val left: Double get() = bounds.left.toDouble()
+    val top: Double get() = bounds.top.toDouble()
+    val right: Double get() = bounds.right.toDouble()
+    val bottom: Double get() = bounds.bottom.toDouble()
+    val width: Double get() = bounds.width.toDouble()
+    val height: Double get() = bounds.height.toDouble()
 
     val drawLeft: Double get() = -left
-    val drawTop: Double get() = firstLineBounds.height + firstLineBounds.top
+    val drawTop: Double get() = (firstLineBounds.height + firstLineBounds.top).toDouble()
 
     val ascent: Double get() = fontMetrics.ascent
     val descent: Double get() = fontMetrics.descent
@@ -154,14 +152,13 @@ data class TextMetrics constructor(
     val allLineHeight: Double get() = lineHeight * nlines
 
     fun round(): TextMetrics {
-        bounds.round()
-        firstLineBounds.round()
+        bounds = bounds.rounded()
+        lineBounds = lineBounds.map { it.rounded() }
         return this
     }
 
     fun clear() {
-        bounds.setTo(0, 0, 0, 0)
-        firstLineBounds.setTo(0, 0, 0, 0)
+        bounds = Rectangle(0, 0, 0, 0)
         fontMetrics.clear()
         nlines = 0
     }

@@ -33,7 +33,7 @@ import korlibs.io.serialization.json.*
 import korlibs.io.serialization.xml.Xml
 import korlibs.io.serialization.xml.get
 import korlibs.io.util.unquote
-import korlibs.math.geom.MRectangle
+import korlibs.math.geom.*
 import kotlin.collections.component1
 import kotlin.collections.component2
 import kotlin.collections.set
@@ -213,7 +213,7 @@ interface BitmapFont : Font {
 
         internal val naturalMetrics = GlyphMetrics(
             fontSize, true, -1,
-            MRectangle(xoffset, yoffset, texture.width, texture.height),
+            Rectangle(xoffset, yoffset, texture.width, texture.height),
             xadvance.toDouble()
         )
     }
@@ -245,7 +245,7 @@ private class BitmapFontImpl constructor(
             }
         )
     }
-    override val naturalNonExistantGlyphMetrics: GlyphMetrics = GlyphMetrics(fontSize, false, 0, MRectangle(), 0.0)
+    override val naturalNonExistantGlyphMetrics: GlyphMetrics = GlyphMetrics(fontSize, false, 0, Rectangle(), 0.0)
 
 	override fun getKerning(first: Int, second: Int): BitmapFont.Kerning? = kernings[BitmapFont.Kerning.buildKey(first, second)]
     override fun getOrNull(codePoint: Int): BitmapFont.Glyph? = glyphs[codePoint]

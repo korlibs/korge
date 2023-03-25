@@ -516,6 +516,26 @@ fun BoundsBuilder.add(path: VectorPath, transform: MMatrix? = null) {
     //println("BoundsBuilder.add.path: " + bb.getBounds())
 }
 
+fun NewBoundsBuilder.with(path: VectorPath, transform: Matrix = Matrix.NIL): NewBoundsBuilder {
+    var bb = this
+    val curvesList = path.getCurvesList()
+    if (curvesList.isEmpty() && path.isNotEmpty()) {
+        path.visit(object : VectorPath.Visitor {
+            override fun moveTo(p: Point) { bb += p }
+        })
+    }
+    curvesList.fastForEach { curves ->
+        curves.beziers.fastForEach { bezier ->
+            bb += bezier.getBounds(transform)
+        }
+    }
+
+    //println("BoundsBuilder.add.path: " + bb.getBounds())
+    return bb
+}
+
+operator fun NewBoundsBuilder.plus(path: VectorPath): NewBoundsBuilder = with(path)
+
 fun VectorPath.applyTransform(m: Matrix): VectorPath = when {
     m.isNotNIL -> transformPoints { m.transform(it) }
     else -> this
