@@ -17,4 +17,10 @@ class KorgeConfigTest {
             assertEquals(size2, config.finalVirtualSize)
         }
     }
+
+    @Test
+    fun testImageFormats() {
+        val config = KorgeConfig()
+        assertEquals("ImageFormats(0)[]", config.finalImageFormats.toString())
+    }
 }

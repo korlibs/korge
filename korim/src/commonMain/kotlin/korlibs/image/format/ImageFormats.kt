@@ -7,14 +7,16 @@ import korlibs.io.lang.*
 import korlibs.io.lang.ASCII
 import korlibs.io.stream.*
 import korlibs.crypto.encoding.*
-import kotlinx.coroutines.*
+import kotlin.coroutines.cancellation.*
 
 open class ImageFormats(formats: Iterable<ImageFormat>) : ImageFormat("") {
     constructor(vararg formats: ImageFormat) : this(formats.toList())
 
     @PublishedApi
-    internal var _formats: Set<ImageFormat> by KorAtomicRef(formats.listFormats())
+    internal var _formats: Set<ImageFormat> by KorAtomicRef(formats.listFormats() - this)
 	val formats: Set<ImageFormat> get() = _formats
+
+    override fun toString(): String = "ImageFormats(${formats.size})$formats"
 
     override suspend fun decodeHeaderSuspend(s: AsyncStream, props: ImageDecodingProps): ImageInfo? {
         for (format in formats) return try {
@@ -29,9 +31,12 @@ open class ImageFormats(formats: Iterable<ImageFormat>) : ImageFormat("") {
     }
 
     override fun decodeHeader(s: SyncStream, props: ImageDecodingProps): ImageInfo? {
+        if (formats.isEmpty()) return null
+        //println("ImageFormats.decodeHeader:" + formats.size + ": " + formats)
 		for (format in formats) return try {
-			format.decodeHeader(s.sliceStart(), props) ?: continue
+            format.decodeHeader(s.sliceStart(), props) ?: continue
 		} catch (e: Throwable) {
+            //e.printStackTrace()
             if (e is CancellationException) throw e
 			continue
 		}
@@ -76,7 +81,9 @@ fun ImageFormat.listFormats(): Set<ImageFormat> = when (this) {
 
 operator fun ImageFormat.plus(format: ImageFormat): ImageFormat {
     if (this == format) return this
-    return ImageFormats((this.listFormats() + format.listFormats().distinct()))
+    if (format is ImageFormats && format.formats.isEmpty()) return this
+    if (this is ImageFormats && this.formats.isEmpty()) return format
+    return ImageFormats((this.listFormats() + format.listFormats()).distinct())
 }
 operator fun ImageFormat.plus(formats: List<ImageFormat>): ImageFormat {
     if (formats.isEmpty()) return this
