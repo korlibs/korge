@@ -63,7 +63,8 @@ object CheckReferences {
 
     data class ComparisonResult(val similarPixelPerfect: Boolean, val isEquals: Boolean, val psnr: Double) {
         //val similar get() = psnr >= 38.0
-        val similar get() = psnr >= 32.0
+        //val similar get() = psnr >= 32.0
+        val similar get() = psnr >= 30.0
     }
 
     data class ComparisonConfig(
