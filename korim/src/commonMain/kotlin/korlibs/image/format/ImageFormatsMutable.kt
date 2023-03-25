@@ -6,7 +6,7 @@ class ImageFormatsMutable : ImageFormats() {
     val lock = NonRecursiveLock()
 
     fun register(vararg formats: ImageFormat) {
-        lock { this._formats = this._formats + formats }
+        lock { this._formats = this._formats + formats - this }
     }
 
     fun unregister(vararg formats: ImageFormat) {

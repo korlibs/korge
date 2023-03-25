@@ -17,4 +17,10 @@ class KorgeConfigTest {
             assertEquals(size2, config.finalVirtualSize)
         }
     }
+
+    @Test
+    fun testImageFormats() {
+        val config = KorgeConfig()
+        assertNotNull(config.finalImageFormats.toString()) // Assert that it doesn't throw due to stack overflow
+    }
 }
