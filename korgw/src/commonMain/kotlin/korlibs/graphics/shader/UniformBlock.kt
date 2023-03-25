@@ -80,10 +80,10 @@ open class UniformBlock(val fixedLocation: Int) {
     protected fun float(name: String? = null): Gen<Float> = gen(name, VarType.Float1, 4, 4)
     protected fun vec2(name: String? = null): Gen<Vector2> = gen(name, VarType.Float2, 8, 4)
     // @TODO: Some drivers get this wrong
-    //protected fun vec3(name: String? = null): Gen<MVector3> = gen(name, VarType.Float3, 12, 4)
-    protected fun vec4(name: String? = null): Gen<MVector4> = gen(name, VarType.Float4, 16, 4)
-    protected fun mat3(name: String? = null): Gen<MMatrix4> = gen(name, VarType.Mat3, 36, 4)
-    protected fun mat4(name: String? = null): Gen<MMatrix4> = gen(name, VarType.Mat4, 64, 4)
+    //protected fun vec3(name: String? = null): Gen<Vector3> = gen(name, VarType.Float3, 12, 4)
+    protected fun vec4(name: String? = null): Gen<Vector4> = gen(name, VarType.Float4, 16, 4)
+    protected fun mat3(name: String? = null): Gen<Matrix4> = gen(name, VarType.Mat3, 36, 4)
+    protected fun mat4(name: String? = null): Gen<Matrix4> = gen(name, VarType.Mat4, 64, 4)
     //protected fun <T> array(size: Int, gen: Gen<T>): Gen<Array<T>> = TODO()
 
     fun <T> gen(name: String? = null, type: VarType, size: Int, align: Int = size): Gen<T> =
@@ -127,33 +127,33 @@ class UniformRef(
     operator fun set(uniform: TypedUniform<Float>, value: Double) = set(uniform, value.toFloat())
     operator fun set(uniform: TypedUniform<Point>, value: Point) = set(uniform, value.x, value.y)
     operator fun set(uniform: TypedUniform<Point>, value: Size) = set(uniform, value.width, value.height)
-    operator fun set(uniform: TypedUniform<MVector4>, value: RGBA) = set(uniform, value.rf, value.gf, value.bf, value.af)
-    operator fun set(uniform: TypedUniform<MVector4>, value: RGBAPremultiplied) = set(uniform, value.rf, value.gf, value.bf, value.af)
-    operator fun set(uniform: TypedUniform<MVector4>, value: ColorAdd) = set(uniform, value.rf, value.gf, value.bf, value.af)
-    operator fun set(uniform: TypedUniform<MVector4>, value: Vector4) = set(uniform, value.x, value.y, value.z, value.w)
-    operator fun set(uniform: TypedUniform<MVector4>, value: RectCorners) = set(uniform, value.bottomRight, value.topRight, value.bottomLeft, value.topLeft)
-    operator fun set(uniform: TypedUniform<MVector4>, value: MVector4) = set(uniform, value.x, value.y, value.z, value.w)
-    operator fun set(uniform: TypedUniform<MMatrix4>, value: MMatrix4) {
+    operator fun set(uniform: TypedUniform<Vector4>, value: RGBA) = set(uniform, value.rf, value.gf, value.bf, value.af)
+    operator fun set(uniform: TypedUniform<Vector4>, value: RGBAPremultiplied) = set(uniform, value.rf, value.gf, value.bf, value.af)
+    operator fun set(uniform: TypedUniform<Vector4>, value: ColorAdd) = set(uniform, value.rf, value.gf, value.bf, value.af)
+    operator fun set(uniform: TypedUniform<Vector4>, value: Vector4) = set(uniform, value.x, value.y, value.z, value.w)
+    operator fun set(uniform: TypedUniform<Vector4>, value: RectCorners) = set(uniform, value.bottomRight, value.topRight, value.bottomLeft, value.topLeft)
+    operator fun set(uniform: TypedUniform<Vector4>, value: MVector4) = set(uniform, value.x, value.y, value.z, value.w)
+    operator fun set(uniform: TypedUniform<Matrix4>, value: MMatrix4) {
         when (uniform.type) {
             VarType.Mat4 -> set(uniform, value.data, Matrix4.INDICES_BY_COLUMNS_4x4)
             VarType.Mat3 -> set(uniform, value.data, Matrix4.INDICES_BY_COLUMNS_3x3)
             else -> TODO()
         }
     }
-    operator fun set(uniform: TypedUniform<MMatrix4>, value: Matrix4) {
+    operator fun set(uniform: TypedUniform<Matrix4>, value: Matrix4) {
         when (uniform.type) {
             VarType.Mat4 -> set(uniform, value, Matrix4.INDICES_BY_COLUMNS_4x4)
             VarType.Mat3 -> set(uniform, value, Matrix4.INDICES_BY_COLUMNS_3x3)
             else -> TODO()
         }
     }
-    fun set(uniform: TypedUniform<MMatrix4>, value: Matrix4, indices: IntArray) {
+    fun set(uniform: TypedUniform<Matrix4>, value: Matrix4, indices: IntArray) {
         getOffset(uniform).also {
             //println("SET OFFSET: $it")
             for (n in 0 until indices.size) buffer.setUnalignedFloat32(it + n * 4, value.getAtIndex(indices[n]))
         }
     }
-    fun set(uniform: TypedUniform<MMatrix4>, value: FloatArray, indices: IntArray) {
+    fun set(uniform: TypedUniform<Matrix4>, value: FloatArray, indices: IntArray) {
         getOffset(uniform).also {
             for (n in 0 until indices.size) buffer.setUnalignedFloat32(it + n * 4, value[indices[n]])
         }
@@ -169,7 +169,7 @@ class UniformRef(
             buffer.setUnalignedFloat32(it + 4, y)
         }
     }
-    fun set(uniform: TypedUniform<MVector4>, x: Float, y: Float, z: Float, w: Float) {
+    fun set(uniform: TypedUniform<Vector4>, x: Float, y: Float, z: Float, w: Float) {
         getOffset(uniform).also {
             buffer.setUnalignedFloat32(it + 0, x)
             buffer.setUnalignedFloat32(it + 4, y)
