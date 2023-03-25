@@ -19,7 +19,8 @@ gradlePlugin {
 	plugins {
 		create("korge") {
             //PluginDeclaration decl = it
-			id = "korlibs.korge"
+			//id = "korlibs.korge"
+            id = "com.soywiz.korge"
 			displayName = "Korge"
 			description = "Multiplatform Game Engine for Kotlin"
 			implementationClass = "korlibs.korge.gradle.KorgeGradlePlugin"
