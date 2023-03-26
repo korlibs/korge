@@ -201,4 +201,32 @@ class ViewTest {
         assertEqualsOperation({ c.addChildAt(rect3, 0) }, listOf(rect3, rect2))
         assertEqualsOperation({ c.addChildAt(rect1, c.numChildren) }, listOf(rect3, rect2, rect1))
     }
+
+    @Test
+    fun testBoundsInOtherView() {
+        lateinit var container1: Container
+        lateinit var container2: Container
+        lateinit var view: View
+        val container0 = Container().apply {
+            scale(6)
+            container1 = container { scale(8.0); view = solidRect(100, 100).xy(100, 50).scale(2) }
+            container2 = container { scale(4.0); xy(200, 200) }
+        }
+        assertEquals(
+            """
+                null:Rectangle(x=4800, y=2400, width=9600, height=9600)
+                root:Rectangle(x=800, y=400, width=1600, height=1600)
+                parent:Rectangle(x=100, y=50, width=200, height=200)
+                other:Rectangle(x=150, y=50, width=400, height=400)
+                self:Rectangle(x=0, y=0, width=100, height=100)
+            """.trimIndent(),
+            """
+                null:${view.getBoundsInSpace(null)}
+                root:${view.getBoundsInSpace(container0)}
+                parent:${view.getBoundsInSpace(container1)}
+                other:${view.getBoundsInSpace(container2)}
+                self:${view.getBoundsInSpace(view)}
+            """.trimIndent()
+        )
+    }
 }
