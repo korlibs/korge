@@ -34,7 +34,6 @@ class Renderer01(device: MTLDeviceProtocol) : Renderer(device) {
         AGVertexData(
             layout = VertexLayout(DefaultShaders.a_Col, DefaultShaders.a_Pos),
             buffer = AGBuffer()
-                .also { println(it.mem?.size) }
                 .upload(
                     ubyteArrayOf(
                         255u, 255u, 255u, 0u, // White
@@ -43,9 +42,6 @@ class Renderer01(device: MTLDeviceProtocol) : Renderer(device) {
                         0u, 0u, 255u, 0u, // Green
                     ).toByteArray()
                 )
-                .also {
-                    println(it.mem?.size)
-                }
                 .upload(
                     floatArrayOf(
                         vertex1, vertex1,
@@ -54,7 +50,6 @@ class Renderer01(device: MTLDeviceProtocol) : Renderer(device) {
                         vertex1, vertex2
                     )
                 )
-                .also { println(it.mem?.size) }
         )
     )
 
@@ -86,6 +81,15 @@ class Renderer01(device: MTLDeviceProtocol) : Renderer(device) {
             .withHasStencil(true)
 
 
+        val uniformBlockBuffer = UniformBlockBuffer(object : UniformBlock(fixedLocation = 0) {
+            val u_ProjMat by DefaultShaders.ProjViewUB.mat4()
+        })
+
+        val uniformBuffer = MMatrix3D()
+                .setToOrtho(0f, width.toFloat(), 0f, height.toFloat(), -1f, +1f)
+                .data
+                .let { AGBuffer().upload(it, 0, it.size) }
+
         ag?.draw(
             frameBuffer,
             frameBufferInfo,
@@ -97,21 +101,11 @@ class Renderer01(device: MTLDeviceProtocol) : Renderer(device) {
             indexType = AGIndexType.USHORT,
             drawOffset = 0, // This value can be != of 0 ?
             blending = AGBlending.NORMAL, // Pure guess
-            uniforms = AGUniformValues().apply {
-                val floatBuffer = MMatrix3D()
-                    .setToOrtho(0f, width.toFloat(), 0f, height.toFloat(), -1f, +1f)
-                    .data
-                    .let { Float32Buffer(it, 0, it.size) }
-                values.add(
-                    AGUniformValue(
-                        DefaultShaders.u_ProjMat,
-                        floatBuffer.buffer,
-                        texture = null,
-                        AGTextureUnitInfo.INVALID
-                    )
-                )
-            },
-            uniformBlocks = AGUniformBlocksBuffersRef.EMPTY,  // Not yet supported on shader generation
+            uniformBlocks = UniformBlocksBuffersRef(
+                blocks = arrayOf(uniformBlockBuffer),
+                buffers = arrayOf(uniformBuffer),
+                valueIndices = intArrayOf()
+            ),  // Not yet supported on shader generation
             //AGUniformValues(
             //  u_ProjMat=AGUniformValue[Uniform(u_ProjMat)][AGValue[Mat4]([[0.0015625, 0, 0, 0, 0, -0.0027777778, 0, 0, 0, 0, -1, 0, -1, 1, 0, 1]])],
             //  u_ViewMat=AGUniformValue[Uniform(u_ViewMat)][AGValue[Mat4]([[1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]])],

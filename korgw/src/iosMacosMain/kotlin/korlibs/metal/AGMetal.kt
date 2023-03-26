@@ -74,20 +74,23 @@ class AGMetal(private val view: MTKView) : AG() {
                 //}
 
                 //TODO: support uniform blocks
-                /*uniformBlocks.fastForEachUniform {
-
-                }*/
-
-                uniforms.values.fastForEach { uniformUnit ->
+                uniformBlocks.fastForEachUniform { uniformUnit ->
                     val bufferLocation = currentProgram.indexOfUniformOnBuffer(uniformUnit.uniform)
                     setVertexBuffer(uniformUnit.data.toMetal.buffer, 0, bufferLocation)
+
                 }
+
+                /*uniforms.values.fastForEach { uniformUnit ->
+                    val bufferLocation = currentProgram.indexOfUniformOnBuffer(uniformUnit.uniform)
+                    setVertexBuffer(uniformUnit.data.toMetal.buffer, 0, bufferLocation)
+                }*/
                 //uniforms.values.fastForEach { buffer ->
                 //    setVertexBuffer(buffer.data.toMetal.buffer, 0, currentBuffer)
                 //    currentBuffer += 1uL
                 //}
 
                 if (indices != null) {
+                    indices.mem!!.size
                     drawIndexedPrimitives(
                         drawType.toMetal(),
                         vertexCount.toULong(),

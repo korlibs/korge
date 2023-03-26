@@ -7,6 +7,7 @@ import korlibs.graphics.DefaultShaders.u_ProjMat
 import korlibs.graphics.DefaultShaders.u_ViewMat
 import korlibs.graphics.shader.*
 import korlibs.test.*
+import kotlin.js.*
 import kotlin.test.*
 
 /**
@@ -32,10 +33,13 @@ class MetalShaderGeneratorTest {
     }
 
     @Test
-    //@Ignore
-    fun checkThatVertexMetalShaderIsCorrectlyGenerated() {
-        val metalResult = (vertexShader to fragmentShader).toNewMetalShaderStringResult()
+    fun check_that_vertex_metal_shader_is_correctly_generated() {
+        // Given
+        val metalResult = (vertexShader to fragmentShader)
+            // When
+            .toNewMetalShaderStringResult()
 
+        // Then
         assertThat(metalResult.result.trim()).isEqualTo("""
             #include <metal_stdlib>
             using namespace metal;
@@ -47,7 +51,7 @@ class MetalShaderGeneratorTest {
             vertex v2f vertexMain(
             	uint vertexId [[vertex_id]],
             	device const float2* a_Tex [[buffer(0)]],
-            	device const char4* a_Col [[buffer(1)]],
+            	device const uchar4* a_Col [[buffer(1)]],
             	device const float2* a_Pos [[buffer(2)]],
             	constant float4x4& u_ProjMat [[buffer(3)]],
             	constant float4x4& u_ViewMat [[buffer(4)]]
