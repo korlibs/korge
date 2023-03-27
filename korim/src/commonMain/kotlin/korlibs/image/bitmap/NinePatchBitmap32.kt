@@ -62,7 +62,7 @@ class NinePatchInfo constructor(
 	val scaledWidth = xaxis.scaledLen
 	val scaledHeight = yaxis.scaledLen
 
-	class Segment(val info: NinePatchInfo, val rect: MRectangleInt, val x: AxisSegment, val y: AxisSegment) : Extra by Extra.Mixin() {
+	class Segment(val info: NinePatchInfo, val rect: RectangleInt, val x: AxisSegment, val y: AxisSegment) : Extra by Extra.Mixin() {
 		val scaleX: Boolean = x.scaled
 		val scaleY: Boolean = y.scaled
 
@@ -74,7 +74,7 @@ class NinePatchInfo constructor(
 		xsegments.map { x ->
 			Segment(
                 this,
-				MRectangleInt.fromBounds(x.range.first, y.range.first, x.range.last + 1, y.range.last + 1),
+				RectangleInt.fromBounds(x.range.first, y.range.first, x.range.last + 1, y.range.last + 1),
 				x, y
 			)
 		}.toFastList()

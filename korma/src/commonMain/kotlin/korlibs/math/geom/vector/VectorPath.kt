@@ -240,11 +240,7 @@ class VectorPath(
         return true
     }
 
-    fun getBounds(out: MRectangle = MRectangle(), bb: BoundsBuilder = BoundsBuilder()): MRectangle {
-        bb.reset()
-        bb.add(this)
-        return bb.getBounds(out)
-    }
+    fun getBounds(): Rectangle = (NewBoundsBuilder() + this).bounds
 
     // http://erich.realtimerendering.com/ptinpoly/
     // http://stackoverflow.com/questions/217578/how-can-i-determine-whether-a-2d-point-is-within-a-polygon/2922778#2922778

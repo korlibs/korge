@@ -21,6 +21,7 @@ inline class NewBoundsBuilder(val bounds: Rectangle) {
         return NewBoundsBuilder(Rectangle.fromBounds(Point.minComponents(bounds.topLeft, p), Point.maxComponents(bounds.bottomRight, p)))
     }
     operator fun plus(bb: NewBoundsBuilder): NewBoundsBuilder = this + bb.bounds
+    operator fun plus(rect: Rectangle?): NewBoundsBuilder = if (rect == null) this else plus(rect)
     operator fun plus(rect: Rectangle): NewBoundsBuilder {
         if (rect.isNIL) return this
         return this + rect.topLeft + rect.bottomRight

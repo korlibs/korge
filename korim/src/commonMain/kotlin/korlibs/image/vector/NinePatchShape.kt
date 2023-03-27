@@ -42,8 +42,8 @@ fun Shape.toNinePatchFromGuides(guideColor: RGBA = Colors.FUCHSIA, optimizeShape
         }
     }.let { if (optimizeShape) it.optimize() else it }
     val guidesBounds = guides.map { it.getBounds() }
-    val horizontalSlices = guidesBounds.filter { it.height > it.width }.map { it.x }.sorted().toDoubleArray()
-    val verticalSlices = guidesBounds.filter { it.width > it.height }.map { it.y }.sorted().toDoubleArray()
+    val horizontalSlices = guidesBounds.filter { it.height > it.width }.map { it.xD }.sorted().toDoubleArray()
+    val verticalSlices = guidesBounds.filter { it.width > it.height }.map { it.yD }.sorted().toDoubleArray()
     if (verticalSlices.size % 2 != 0) error("Vertical guides are not a pair number")
     if (horizontalSlices.size % 2 != 0) error("Horizontal guides are not a pair number")
     val slices = NinePatchSlices2D(
