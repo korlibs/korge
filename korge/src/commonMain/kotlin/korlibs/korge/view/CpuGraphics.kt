@@ -122,6 +122,6 @@ open class CpuGraphics @JvmOverloads constructor(
     }
 
     override fun getShapeBounds(bb: BoundsBuilder, includeStrokes: Boolean) {
-        shape?.addBounds(bb, includeStrokes)
+        bb.add(shape?.getBounds(includeStrokes)?.mutable)
     }
 }

@@ -113,9 +113,10 @@ open class GpuShapeView(
             val valid = if (boundsIncludeStrokes) validShapeBoundsStrokes else validShapeBounds
             if (!valid) {
                 if (boundsIncludeStrokes) validShapeBoundsStrokes = true else validShapeBounds = true
-                shape.getBounds(_bounds, bb, includeStrokes = boundsIncludeStrokes)
+                return shape.getBounds(includeStrokes = boundsIncludeStrokes).let { _bounds.copyFrom(it) }
+            } else {
+                return _bounds
             }
-            return _bounds
         }
 
     val shapeWidth: Double get() = shapeBounds.width

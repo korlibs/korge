@@ -25,7 +25,7 @@ interface SizedDrawable : Drawable {
 }
 
 interface BoundsDrawable : SizedDrawable {
-    val bounds: MRectangle
+    val bounds: Rectangle
     val left: Int get() = bounds.left.toInt()
     val top: Int get() = bounds.top.toInt()
     override val width: Int get() = bounds.width.toInt()
@@ -36,7 +36,7 @@ fun BoundsDrawable.renderWithHotspot(scale: Double? = null, fit: MSize? = null, 
     val bounds = this.bounds
     val rscale = when {
         fit != null -> {
-            val size2 = ScaleMode.FIT(bounds.mSize, fit)
+            val size2 = ScaleMode.FIT(bounds.size.mutable, fit)
             kotlin.math.min(size2.width / bounds.width, size2.height / bounds.height)
         }
         scale != null ->  scale

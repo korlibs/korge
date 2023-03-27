@@ -1885,7 +1885,7 @@ abstract class BaseTtfFont(
                     val clipOffset = glyphIDToClipOffset[index]
                     sClipOffset.sliceStart(clipOffset).readClipBox()
                 } else {
-                    colorEntry?.getColorShape()?.bounds
+                    colorEntry?.getColorShape()?.bounds?.mutable
                 }
                 if (bounds != null) {
                     xMin = bounds.left.toInt()
