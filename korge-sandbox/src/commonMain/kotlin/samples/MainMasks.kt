@@ -36,6 +36,10 @@ class MainMasks : Scene() {
         roundRect(100, 100, 16, 16).xy(15, 15)
             .backdropFilters(ColorMatrixFilter(ColorMatrixFilter.GRAYSCALE_MATRIX))
             .backdropFilters(BlurFilter())
+            // @TODO: crestCount is wrong due to backdrop filter rendering the whole screen right now
+            .backdropFilters(WaveFilter(crestCountX = 20.0, crestCountY = 20.0, time = 0.seconds).also { filter ->
+                addUpdater { filter.time += it }
+            })
 
         /*
         addChild(BackdropMaskView().apply {

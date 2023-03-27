@@ -30,14 +30,12 @@ abstract class ShaderFilter : Filter {
     companion object {
         val DEFAULT_FRAGMENT = BatchBuilder2D.PROGRAM.fragment
 
-        val Program.Builder.fragmentCoords01 get() = DefaultShaders.v_Tex["xy"]
-        val Program.Builder.fragmentCoords get() = fragmentCoords01 * TexInfoUB.u_TextureSize
-        fun Program.Builder.tex(coords: Operand) = texture2D(DefaultShaders.u_Tex, coords / TexInfoUB.u_TextureSize)
+        val Program.ExpressionBuilder.fragmentCoords01 get() = DefaultShaders.v_Tex["xy"]
+        val Program.ExpressionBuilder.fragmentCoords get() = fragmentCoords01 * TexInfoUB.u_TextureSize
+        fun Program.ExpressionBuilder.tex(coords: Operand): Operand = texture2D(DefaultShaders.u_Tex, coords / TexInfoUB.u_TextureSize)
 
         val Program.ExpressionBuilder.v_Tex01: Operand get() = (DefaultShaders.v_Tex["xy"] / TexInfoUB.u_MaxTexCoords)
 
-        val Program.ExpressionBuilder.fragmentCoords01: Operand get() = DefaultShaders.v_Tex["xy"]
-        val Program.ExpressionBuilder.fragmentCoords: Operand get() = fragmentCoords01 * TexInfoUB.u_TextureSize
         fun Program.ExpressionBuilder.texture2DZeroOutside(sampler: Operand, coords: Operand, check: Boolean = true): Operand = if (check) {
             TERNARY(
                 //(step(vec2(0f.lit, 0f.lit), coords) - step(vec2(1f.lit, 1f.lit), coords)) eq vec2(0f.lit, 0f.lit),
@@ -48,9 +46,6 @@ abstract class ShaderFilter : Filter {
         } else{
             texture2D(sampler, coords)
         }
-        //return texture2D(sampler, coords)
-        // @TODO: Here it should premultiply if required
-        fun Program.ExpressionBuilder.tex(coords: Operand): Operand = texture2D(DefaultShaders.u_Tex, coords / TexInfoUB.u_TextureSize)
     }
 
     interface ProgramProvider {

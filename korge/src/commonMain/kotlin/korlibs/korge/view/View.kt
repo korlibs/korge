@@ -19,7 +19,6 @@ import korlibs.io.lang.*
 import korlibs.io.util.*
 import korlibs.io.util.encoding.*
 import korlibs.math.geom.*
-import korlibs.math.geom.Matrix.Companion.IDENTITY
 import korlibs.math.geom.shape.*
 import korlibs.math.geom.vector.*
 import korlibs.math.interpolation.*
@@ -1317,8 +1316,10 @@ abstract class View internal constructor(
     /**
      * **NOTE:** that if [out] is not provided, the [MRectangle] returned shouldn't stored and modified since it is owned by this class.
      */
+    @Deprecated("", ReplaceWith("getLocalBounds(includeFilters = includeFilters)"))
     fun getLocalBoundsOptimized(includeFilters: Boolean = false): Rectangle = getLocalBounds(includeFilters = includeFilters)
 
+    @Deprecated("", ReplaceWith("getLocalBounds(doAnchoring = true, includeFilters = includeFilters)"))
     fun getLocalBoundsOptimizedAnchored(includeFilters: Boolean = false): Rectangle = getLocalBounds(doAnchoring = true, includeFilters = includeFilters)
 
     /**
@@ -1335,6 +1336,19 @@ abstract class View internal constructor(
             }
         }
         return out
+    }
+
+    /**
+     * Get the bounds of the current [this] view in another view [viewSpace].
+     */
+    fun getBoundsInSpace(viewSpace: View?, doAnchoring: Boolean = true, includeFilters: Boolean = false): Rectangle {
+        val bounds = getLocalBounds(doAnchoring, includeFilters)
+        return NewBoundsBuilder(
+            View.convertViewSpace(this, bounds.topLeft, viewSpace),
+            View.convertViewSpace(this, bounds.topRight, viewSpace),
+            View.convertViewSpace(this, bounds.bottomLeft, viewSpace),
+            View.convertViewSpace(this, bounds.bottomRight, viewSpace),
+        ).bounds
     }
 
     //open fun getLocalBoundsInternal(out: MRectangle) { out.clear() }

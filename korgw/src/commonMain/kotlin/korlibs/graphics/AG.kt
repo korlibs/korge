@@ -5,6 +5,7 @@ import korlibs.logger.*
 import korlibs.graphics.shader.*
 import korlibs.image.bitmap.*
 import korlibs.image.color.*
+import korlibs.math.geom.*
 import kotlinx.coroutines.channels.*
 
 interface AGWindow : AGContainer {
@@ -158,6 +159,7 @@ fun AG.readColor(frameBuffer: AGFrameBuffer, bitmap: Bitmap32, x: Int = 0, y: In
 fun AG.readDepth(frameBuffer: AGFrameBuffer, width: Int, height: Int, out: FloatArray) = readToMemory(frameBuffer.base, frameBuffer.info, 0, 0, width, height, out, AGReadKind.DEPTH)
 fun AG.readStencil(frameBuffer: AGFrameBuffer, bitmap: Bitmap8) = readToMemory(frameBuffer.base, frameBuffer.info, 0, 0, bitmap.width, bitmap.height, bitmap.data, AGReadKind.STENCIL)
 fun AG.readDepth(frameBuffer: AGFrameBuffer, out: FloatArray2): Unit = readDepth(frameBuffer, out.width, out.height, out.data)
+fun AG.readToTexture(frameBuffer: AGFrameBuffer, texture: AGTexture, bounds: RectangleInt): Unit = readToTexture(frameBuffer.base, frameBuffer.info, texture, bounds.x, bounds.y, bounds.width, bounds.height)
 fun AG.readToTexture(frameBuffer: AGFrameBuffer, texture: AGTexture, x: Int = 0, y: Int = 0, width: Int = frameBuffer.width, height: Int = frameBuffer.height): Unit = readToTexture(frameBuffer.base, frameBuffer.info, texture, x, y, width, height)
 fun AG.readColor(frameBuffer: AGFrameBuffer): Bitmap32 = Bitmap32(frameBuffer.width, frameBuffer.height, premultiplied = frameBuffer.isTexture).apply { readColor(frameBuffer, this) }
 fun AG.readDepth(frameBuffer: AGFrameBuffer): FloatArray2 = FloatArray2(frameBuffer.width, frameBuffer.height) { 0f }.apply { readDepth(frameBuffer, this) }
