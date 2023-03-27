@@ -25,7 +25,7 @@ fun <T : View> T.onNewAttachDetach(onAttach: Views.(T) -> Unit = {}, onDetach: V
     val view = this
     val closeable = CancellableGroup()
     val viewStageComponent = this.viewStageComponent
-    view.deferWithViews { it.registerStageComponent() }
+    view.deferWithViews { it.registerStageComponent(view) }
     closeable += viewStageComponent.added.add { onAttach(it, view) }
     closeable += viewStageComponent.removed.add { onDetach(it, view) }
     return closeable
@@ -36,25 +36,25 @@ fun <T : View> T.onAttachDetach(onAttach: Views.(T) -> Unit = {}, onDetach: View
     return this
 }
 
+private val viewsToTrack = mutableSetOf<View>()
+
 /**
  * Enables the use of [StageComponent] components.
  */
-fun Views.registerStageComponent() {
+fun Views.registerStageComponent(view: View) {
     val EXTRA_ID = "Views.registerStageComponent"
+    viewsToTrack += view
     if (views.getExtra(EXTRA_ID) == true) return
     views.setExtra(EXTRA_ID, true)
     val componentsInStagePrev = FastArrayList<ViewStageComponent>()
     val componentsInStageCur = linkedSetOf<ViewStageComponent>()
     val componentsInStage = linkedSetOf<ViewStageComponent>()
-    val tempViews: FastArrayList<View> = FastArrayList()
     onBeforeRender {
         componentsInStagePrev.clear()
         componentsInStagePrev += componentsInStageCur
         componentsInStageCur.clear()
 
-        val stagedViews = getAllDescendantViews(stage, tempViews)
-
-        stagedViews.fastForEach { view ->
+        viewsToTrack.forEach { view ->
             if (view.hasExtra(__VIEW_STAGE_COMPONENT_NAME)) {
                 val it = view.viewStageComponent
                 componentsInStageCur += it
@@ -67,7 +67,7 @@ fun Views.registerStageComponent() {
 
         componentsInStagePrev.fastForEach {
             if (it !in componentsInStageCur) {
-                it.removed(views)
+                it.removed(this.views)
             }
         }
     }
