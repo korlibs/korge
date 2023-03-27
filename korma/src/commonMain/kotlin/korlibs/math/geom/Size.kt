@@ -56,7 +56,7 @@ fun MSizeInt.asDouble(): MSize = this.float
 
 fun MPoint.asSize(): MSize = MSize(this)
 
-fun Point.toSize(): Size = Size(raw)
+fun Point.toSize(): Size = Size(x, y)
 fun Vector2Int.toSize(): SizeInt = SizeInt(raw)
 
 fun Size.toInt(): SizeInt = SizeInt(width.toInt(), height.toInt())

@@ -22,7 +22,7 @@ inline class Scale internal constructor(internal val raw: Float2Pack) {
     constructor(scaleX: Int, scaleY: Int) : this(scaleX.toFloat(), scaleY.toFloat())
 }
 
-fun Scale.toPoint(): Point = Point(raw)
+fun Scale.toPoint(): Point = Point(scaleX, scaleY)
 
 @KormaMutableApi
 sealed interface IScale {

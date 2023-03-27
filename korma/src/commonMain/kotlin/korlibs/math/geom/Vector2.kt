@@ -8,6 +8,7 @@ import korlibs.math.internal.*
 import korlibs.math.interpolation.*
 import korlibs.math.math.*
 import korlibs.math.math.isAlmostZero
+import kotlin.jvm.*
 import kotlin.math.*
 
 typealias Point = Vector2
@@ -26,9 +27,10 @@ fun vec2(x: Float, y: Float): Vector2 = Vector2(x, y)
 // @JvmInline value
 //@KormaValueApi
 //data class Point(val x: Double, val y: Double) {
-inline class Vector2 internal constructor(internal val raw: Float2Pack) {
-    val x: Float get() = raw.f0
-    val y: Float get() = raw.f1
+//inline class Vector2 internal constructor(internal val raw: Float2Pack) {
+//    val x: Float get() = raw.f0
+//    val y: Float get() = raw.f1
+@JvmInline value class Vector2(val x: Float, val y: Float) {
 
     val xF: Float get() = x
     val yF: Float get() = y
@@ -36,15 +38,12 @@ inline class Vector2 internal constructor(internal val raw: Float2Pack) {
     val xD: Double get() = x.toDouble()
     val yD: Double get() = y.toDouble()
 
-    constructor(x: Float, y: Float) : this(float2PackOf(x, y))
-    constructor(x: Double, y: Double) : this(float2PackOf(x.toFloat(), y.toFloat()))
-    constructor(x: Int, y: Int) : this(float2PackOf(x.toFloat(), y.toFloat()))
-
-    constructor(x: Double, y: Int) : this(float2PackOf(x.toFloat(), y.toFloat()))
-    constructor(x: Int, y: Double) : this(float2PackOf(x.toFloat(), y.toFloat()))
-
-    constructor(x: Float, y: Int) : this(float2PackOf(x.toFloat(), y.toFloat()))
-    constructor(x: Int, y: Float) : this(float2PackOf(x.toFloat(), y.toFloat()))
+    constructor(x: Double, y: Double) : this(x.toFloat(), y.toFloat())
+    constructor(x: Int, y: Int) : this(x.toFloat(), y.toFloat())
+    constructor(x: Double, y: Int) : this(x.toFloat(), y.toFloat())
+    constructor(x: Int, y: Double) : this(x.toFloat(), y.toFloat())
+    constructor(x: Float, y: Int) : this(x.toFloat(), y.toFloat())
+    constructor(x: Int, y: Float) : this(x.toFloat(), y.toFloat())
 
     constructor(p: MPoint) : this(p.x.toFloat(), p.y.toFloat())
     //constructor(p: Vector2) : this(p.raw)
