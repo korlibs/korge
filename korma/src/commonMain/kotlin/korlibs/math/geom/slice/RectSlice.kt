@@ -87,8 +87,6 @@ data class RectSlice<T : SizeableInt>(
         RectSlice(base, rect.sliceWithBounds(left, top, right, bottom, clamped = clamped), orientation, padding, name ?: this.name)
     fun sliceWithSize(x: Int, y: Int, width: Int, height: Int, name: String? = null, clamped: Boolean = true, orientation: SliceOrientation = this.orientation): RectSlice<T> =
         sliceWithBounds(x, y, x + width, y + height, name = name, clamped = clamped, orientation = orientation)
-    fun slice(rect: MRectangleInt, name: String? = null, clamped: Boolean = true, orientation: SliceOrientation = this.orientation): RectSlice<T> =
-        sliceWithBounds(rect.left, rect.top, rect.right, rect.bottom, name = name, clamped = clamped, orientation = orientation)
     fun slice(rect: RectangleInt, name: String? = null, clamped: Boolean = true, orientation: SliceOrientation = this.orientation): RectSlice<T> =
         sliceWithBounds(rect.left, rect.top, rect.right, rect.bottom, name = name, clamped = clamped, orientation = orientation)
 

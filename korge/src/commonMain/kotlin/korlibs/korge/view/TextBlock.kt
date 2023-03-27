@@ -102,7 +102,7 @@ class TextBlock(
         bmp.context2d {
             drawRichText(
                 text,
-                bounds = MRectangle.fromBounds(padding.left, padding.top, width - padding.right, height - padding.bottom),
+                bounds = Rectangle.fromBounds(padding.left, padding.top, width - padding.right, height - padding.bottom),
                 includePartialLines = includePartialLines, wordWrap = wordWrap, ellipsis = ellipsis, align = align,
                 fill = fill, stroke = stroke, includeFirstLineAlways = true,
                 textRangeStart = textRangeStart, textRangeEnd = textRangeEnd
@@ -116,7 +116,7 @@ class TextBlock(
         if (allBitmap == true) {
             if (dirty || placements == null) {
                 dirty = false
-                placements = text.place(MRectangle(padding.left, padding.top, (width - padding.right).toFloat(), (height - padding.bottom).toFloat()), wordWrap, includePartialLines, ellipsis, fill, stroke, align, includeFirstLineAlways = includeFirstLineAlways)
+                placements = text.place(Rectangle(padding.left, padding.top, (width - padding.right).toFloat(), (height - padding.bottom).toFloat()), wordWrap, includePartialLines, ellipsis, fill, stroke, align, includeFirstLineAlways = includeFirstLineAlways)
             }
             image?.removeFromParent()
             image = null
