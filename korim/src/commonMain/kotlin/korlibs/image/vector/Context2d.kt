@@ -400,7 +400,7 @@ open class Context2d(
         state.path = VectorPath()
     }
 
-    fun getBounds(out: MRectangle = MRectangle()) = state.path.getBounds(out)
+    fun getBounds(): Rectangle = state.path.getBounds()
 
     fun stroke() {
         if (state.strokeStyle != NonePaint) rendererRender(state, fill = false)
@@ -798,12 +798,12 @@ private fun VectorBuilder.write(path: VectorPath, m: MMatrix) {
 
 fun Paint.toBitmapPaint(state: Context2d.State): BitmapPaint {
     val filler: BaseFiller = this.toFiller(state)
-    val bb = BoundsBuilder()
-    state.path.getBounds(bb = bb)
-    state.clip?.getBounds(bb = bb)
-    val bounds = bb.getBounds().applyTransform(state.transform.mutable)
+    var bb = NewBoundsBuilder()
+    bb += state.path.getBounds()
+    bb += state.clip?.getBounds()
+    val bounds = bb.bounds.mutable.applyTransform(state.transform.mutable)
     // @TODO: Make it work for negative x, y, and for other transforms
-    println("bounds=$bounds")
+    //println("bounds=$bounds")
     val bmp = Bitmap32(bounds.width.toIntCeil(), bounds.height.toIntCeil(), premultiplied = true).also { filler.fill(it) }
     return BitmapPaint(bmp, MMatrix().translate(-bounds.left, -bounds.top).immutable)
 }

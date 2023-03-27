@@ -210,38 +210,21 @@ class Text2TextRendererActions : TextRendererActions() {
         return out
     }
 
-    fun getGlyphBounds(n: Int, out: MRectangle = MRectangle()): MRectangle {
-        if (n >= size) {
-            out.setTo(0, 0, 0, 0)
-        } else {
-            out.setToBounds(
-                arrayX[n],
-                arrayY[n],
-                arrayX[n] + arrayTex[n].width * arraySX[n],
-                arrayY[n] + arrayTex[n].height * arraySY[n]
-            )
-        }
-        return out
+    fun getGlyphBounds(n: Int): Rectangle = when {
+        n >= size -> Rectangle.ZERO
+        else -> Rectangle.fromBounds(
+            arrayX[n], arrayY[n],
+            arrayX[n] + arrayTex[n].width * arraySX[n], arrayY[n] + arrayTex[n].height * arraySY[n]
+        )
     }
 
-    fun getBounds(out: MRectangle = MRectangle()): MRectangle {
+    fun getBounds(): Rectangle {
         if (size == 0) {
-            out.setTo(0, 0, 0, 0)
-            return out
+            return Rectangle.ZERO
         }
-        var xmin = Double.POSITIVE_INFINITY
-        var xmax = Double.NEGATIVE_INFINITY
-        var ymin = Double.POSITIVE_INFINITY
-        var ymax = Double.NEGATIVE_INFINITY
-        for (n in 0 until size) {
-            val temp = getGlyphBounds(n, out)
-            xmin = kotlin.math.min(xmin, temp.left)
-            xmax = kotlin.math.max(xmin, temp.right)
-            ymin = kotlin.math.min(ymin, temp.top)
-            ymax = kotlin.math.max(ymin, temp.bottom)
-        }
-        out.setToBounds(xmin, ymin, xmax, ymax)
-        return out
+        var bb = NewBoundsBuilder()
+        for (n in 0 until size) bb += getGlyphBounds(n)
+        return bb.bounds
     }
 
     data class Entry(

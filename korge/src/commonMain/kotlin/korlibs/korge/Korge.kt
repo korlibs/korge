@@ -1,54 +1,32 @@
 package korlibs.korge
 
-import korlibs.datastructure.iterators.fastForEach
-import korlibs.time.DateTime
-import korlibs.time.TimeProvider
-import korlibs.time.TimeSpan
-import korlibs.time.milliseconds
-import korlibs.logger.Logger
-import korlibs.memory.*
-import korlibs.graphics.log.AGPrint
+import korlibs.datastructure.iterators.*
 import korlibs.event.*
-import korlibs.korge.input.Input
-import korlibs.korge.internal.DefaultViewport
-import korlibs.korge.internal.KorgeInternal
-import korlibs.korge.logger.configureLoggerFromProperties
-import korlibs.korge.render.BatchBuilder2D
-import korlibs.korge.resources.ResourcesRoot
-import korlibs.korge.scene.EmptyScene
-import korlibs.korge.scene.Module
-import korlibs.korge.scene.Scene
-import korlibs.korge.scene.SceneContainer
-import korlibs.korge.stat.Stats
-import korlibs.korge.view.Stage
-import korlibs.korge.view.Views
-import korlibs.render.CreateDefaultGameWindow
-import korlibs.render.GameWindow
-import korlibs.render.GameWindowCreationConfig
-import korlibs.render.configure
-import korlibs.image.bitmap.Bitmap
-import korlibs.image.color.Colors
-import korlibs.image.color.RGBA
-import korlibs.image.format.ImageFormat
-import korlibs.image.format.ImageFormats
-import korlibs.image.format.RegisteredImageFormats
-import korlibs.image.format.plus
-import korlibs.image.format.readBitmap
+import korlibs.graphics.log.*
+import korlibs.image.color.*
+import korlibs.image.format.*
 import korlibs.inject.AsyncInjector
 import korlibs.inject.AsyncInjectorContext
-import korlibs.io.async.delay
-import korlibs.io.async.launchImmediately
+import korlibs.io.async.*
 import korlibs.io.dynamic.*
-import korlibs.io.file.std.localCurrentDirVfs
-import korlibs.io.file.std.resourcesVfs
-import korlibs.io.resources.Resources
+import korlibs.io.file.std.*
+import korlibs.io.resources.*
+import korlibs.korge.input.*
+import korlibs.korge.internal.*
+import korlibs.korge.logger.*
+import korlibs.korge.render.*
+import korlibs.korge.resources.*
+import korlibs.korge.scene.*
+import korlibs.korge.stat.*
+import korlibs.korge.view.*
+import korlibs.logger.*
 import korlibs.math.geom.*
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.coroutineScope
-import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.coroutineContext
-import kotlin.reflect.KClass
+import korlibs.memory.*
+import korlibs.render.*
+import korlibs.time.*
+import kotlinx.coroutines.*
+import kotlin.coroutines.*
+import kotlin.reflect.*
 
 typealias KorgeConfig = Korge
 
@@ -278,8 +256,8 @@ object KorgeRunner {
         val tempXY: MPoint = MPoint()
 
         // devicePixelRatio might change at runtime by changing the resolution or changing the screen of the window
-        fun getRealXY(x: Double, y: Double, scaleCoords: Boolean, out: MPoint = tempXY): MPoint {
-            return views.windowToGlobalCoords(x, y, out)
+        fun getRealXY(x: Double, y: Double, scaleCoords: Boolean): Point {
+            return views.windowToGlobalCoords(Point(x, y))
         }
 
         fun getRealX(x: Double, scaleCoords: Boolean): Double = if (scaleCoords) x * views.devicePixelRatio else x
@@ -360,7 +338,7 @@ object KorgeRunner {
         eventDispatcher.onEvents(*MouseEvent.Type.ALL) { e ->
             //println("MOUSE: $e")
             Korge.logger.trace { "eventDispatcher.addEventListener<MouseEvent>:$e" }
-            val p = getRealXY(e.x.toDouble(), e.y.toDouble(), e.scaleCoords).point
+            val p = getRealXY(e.x.toDouble(), e.y.toDouble(), e.scaleCoords)
             when (e.type) {
                 MouseEvent.Type.DOWN -> {
                     mouseDown("mouseDown", p, e.button)
@@ -420,8 +398,8 @@ object KorgeRunner {
             val ee = input.touch
             for (t in ee.touches) {
                 val (x, y) = getRealXY(t.x, t.y, e.scaleCoords)
-                t.x = x
-                t.y = y
+                t.x = x.toDouble()
+                t.y = y.toDouble()
             }
             views.dispatch(ee)
 

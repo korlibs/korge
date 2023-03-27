@@ -93,7 +93,7 @@ fun <T : SizeableInt> SliceCoordsWithBase<T>.slice(bounds: MRectangleInt = MRect
 //fun <T : ISizeInt> CoordsWithContainer<T>.sliceWithSize(x: Int, y: Int, width: Int, height: Int, name: String? = null, orientation: ImageOrientation = ImageOrientation.ORIGINAL, padding: MarginInt = MarginInt.ZERO): RectSlice<T> =
 //    slice(RectangleInt(x, y, width, height), name, orientation, padding)
 
-fun <T : Bitmap> T.slice(bounds: MRectangleInt = MRectangleInt(0, 0, width, height), name: String? = null, orientation: ImageOrientation = ImageOrientation.ROTATE_0, padding: MarginInt = MarginInt.ZERO): RectSlice<T> {
+fun <T : Bitmap> T.slice(bounds: RectangleInt = RectangleInt(0, 0, width, height), name: String? = null, orientation: ImageOrientation = ImageOrientation.ROTATE_0, padding: MarginInt = MarginInt.ZERO): RectSlice<T> {
     val left = bounds.left.clamp(0, width)
     val top = bounds.top.clamp(0, height)
 
@@ -107,6 +107,6 @@ fun <T : Bitmap> T.slice(bounds: MRectangleInt = MRectangleInt(0, 0, width, heig
     )
 }
 fun <T : Bitmap> T.sliceWithBounds(left: Int, top: Int, right: Int, bottom: Int, name: String? = null, orientation: ImageOrientation = ImageOrientation.ROTATE_0, padding: MarginInt = MarginInt.ZERO): RectSlice<T> =
-    slice(MRectangleInt(left, top, right - left, bottom - top), name, orientation, padding)
+    slice(RectangleInt(left, top, right - left, bottom - top), name, orientation, padding)
 fun <T : Bitmap> T.sliceWithSize(x: Int, y: Int, width: Int, height: Int, name: String? = null, orientation: ImageOrientation = ImageOrientation.ROTATE_0, padding: MarginInt = MarginInt.ZERO): RectSlice<T> =
-    slice(MRectangleInt(x, y, width, height), name, orientation, padding)
+    slice(RectangleInt(x, y, width, height), name, orientation, padding)

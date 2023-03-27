@@ -27,9 +27,9 @@ import korlibs.io.stream.readString
 import korlibs.io.stream.readU16LE
 import korlibs.io.stream.readU32LE
 import korlibs.io.stream.readU8
-import korlibs.math.geom.MRectangleInt
 import korlibs.math.geom.slice.*
 import korlibs.crypto.encoding.hex
+import korlibs.math.geom.*
 
 // If this is true, only processes visible layers from the ASE file.
 // Otherwise, will process invisible layers as well.
@@ -690,7 +690,7 @@ object ASE : ImageFormatWithContainer("ase") {
                 val layerData = cells.map { (key, value) ->
                     createImageFrameLayer(key, value)
                 }.map {
-                    val sliceFrame = MRectangleInt(
+                    val sliceFrame = RectangleInt(
                         sliceKey.sliceFrame.x - it.targetX, sliceKey.sliceFrame.y - it.targetY,
                         sliceKey.sliceFrame.width, sliceKey.sliceFrame.height
                     )

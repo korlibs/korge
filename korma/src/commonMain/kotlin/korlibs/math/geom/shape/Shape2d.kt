@@ -31,13 +31,14 @@ interface WithHitShape2d {
     val hitShape2d: Shape2d
 }
 
+@Deprecated("")
 abstract class Shape2d {
     abstract val type: Int
     abstract val paths: List<PointList>
     abstract val closed: Boolean
     abstract fun containsPoint(p: Point): Boolean
     fun containsPoint(p: Point, mat: Matrix) = containsPoint(mat.transform(p))
-    open fun getBounds(out: MRectangle = MRectangle()): MRectangle {
+    open fun getBounds(): Rectangle {
         var minx = Double.POSITIVE_INFINITY
         var miny = Double.POSITIVE_INFINITY
         var maxx = Double.NEGATIVE_INFINITY
@@ -50,7 +51,7 @@ abstract class Shape2d {
                 maxy = max(maxy, y.toDouble())
             }
         }
-        return out.setBounds(minx, miny, maxx, maxy)
+        return Rectangle.fromBounds(minx, miny, maxx, maxy)
     }
 
     open val center: Point get() = getBounds().center

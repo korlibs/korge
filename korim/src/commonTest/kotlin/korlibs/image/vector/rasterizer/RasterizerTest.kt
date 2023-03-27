@@ -28,7 +28,7 @@ class RasterizerTest {
         rast.path.close()
         val log = arrayListOf<String>()
         val stats = Rasterizer.Stats()
-        rast.rasterizeFill(MRectangle(0, 0, 10, 10), quality = 8, stats = stats) { a, b, y ->
+        rast.rasterizeFill(Rectangle(0, 0, 10, 10), quality = 8, stats = stats) { a, b, y ->
             log += "rast(${(a.toDouble() / RastScale.RAST_FIXED_SCALE).niceStr}, ${(a.toDouble() / RastScale.RAST_FIXED_SCALE).niceStr}, ${(a.toDouble() / RastScale.RAST_FIXED_SCALE).niceStr})"
             //println(log.last())
         }

@@ -162,7 +162,7 @@ class Views constructor(
 
     /** Mouse coordinates relative to the native window. Can't be used directly. Use [globalMousePos] instead */
     @KorgeInternal
-    val windowMousePos: Point get() = bp.globalToWindowCoords(input.mousePos.mutable).point
+    val windowMousePos: Point get() = bp.globalToWindowCoords(input.mousePos)
 
     /** Mouse coordinates relative to the [Stage] singleton */
     val globalMousePos get() = stage.mousePos
@@ -554,11 +554,11 @@ fun View.updateSingleViewWithViewsAll(
 }
 
 interface BoundsProvider {
-    val windowToGlobalMatrix: MMatrix
+    var windowToGlobalMatrix: Matrix
     var windowToGlobalTransform: MatrixTransform
-    val globalToWindowMatrix: MMatrix
+    var globalToWindowMatrix: Matrix
     var globalToWindowTransform: MatrixTransform
-    val actualVirtualBounds: MRectangle
+    var actualVirtualBounds: Rectangle
 
     @KorgeExperimental val actualVirtualLeft: Int get() = actualVirtualBounds.left.toIntRound()
     @KorgeExperimental val actualVirtualTop: Int get() = actualVirtualBounds.top.toIntRound()
@@ -567,18 +567,18 @@ interface BoundsProvider {
     //@KorgeExperimental var actualVirtualWidth = DefaultViewport.WIDTH; private set
     //@KorgeExperimental var actualVirtualHeight = DefaultViewport.HEIGHT; private set
 
-    val virtualLeft: Double get() = actualVirtualBounds.left
-    val virtualTop: Double get() = actualVirtualBounds.top
-    val virtualRight: Double get() = actualVirtualBounds.right
-    val virtualBottom: Double get() = actualVirtualBounds.bottom
+    val virtualLeft: Double get() = actualVirtualBounds.left.toDouble()
+    val virtualTop: Double get() = actualVirtualBounds.top.toDouble()
+    val virtualRight: Double get() = actualVirtualBounds.right.toDouble()
+    val virtualBottom: Double get() = actualVirtualBounds.bottom.toDouble()
 
     @KorgeExperimental
-    val actualVirtualRight: Double get() = actualVirtualBounds.right
+    val actualVirtualRight: Double get() = actualVirtualBounds.right.toDouble()
     @KorgeExperimental
-    val actualVirtualBottom: Double get() = actualVirtualBounds.bottom
+    val actualVirtualBottom: Double get() = actualVirtualBounds.bottom.toDouble()
 
-    fun globalToWindowBounds(bounds: MRectangle, out: MRectangle = MRectangle()): MRectangle =
-        out.copyFrom(bounds).applyTransform(globalToWindowMatrix)
+    fun globalToWindowBounds(bounds: Rectangle): Rectangle =
+        bounds.transformed(globalToWindowMatrix)
 
     val windowToGlobalScale: Scale get() = windowToGlobalTransform.scale
     val windowToGlobalScaleX: Double get() = windowToGlobalTransform.scale.scaleXD
@@ -590,26 +590,15 @@ interface BoundsProvider {
     val globalToWindowScaleY: Double get() = globalToWindowTransform.scaleY.toDouble()
     val globalToWindowScaleAvg: Double get() = globalToWindowTransform.scaleAvg.toDouble()
 
-    fun windowToGlobalCoords(pos: MPoint, out: MPoint = MPoint()): MPoint = windowToGlobalMatrix.transform(pos, out)
-    fun windowToGlobalCoords(x: Double, y: Double, out: MPoint = MPoint()): MPoint = windowToGlobalMatrix.transform(x, y, out)
-    fun windowToGlobalCoordsX(x: Double, y: Double): Double = windowToGlobalMatrix.transformX(x, y)
-    fun windowToGlobalCoordsY(x: Double, y: Double): Double = windowToGlobalMatrix.transformY(x, y)
-    fun windowToGlobalCoordsX(pos: MPoint): Double = windowToGlobalCoordsX(pos.x, pos.y)
-    fun windowToGlobalCoordsY(pos: MPoint): Double = windowToGlobalCoordsY(pos.x, pos.y)
-
-    fun globalToWindowCoords(pos: MPoint, out: MPoint = MPoint()): MPoint = globalToWindowMatrix.transform(pos, out)
-    fun globalToWindowCoords(x: Double, y: Double, out: MPoint = MPoint()): MPoint = globalToWindowMatrix.transform(x, y, out)
-    fun globalToWindowCoordsX(x: Double, y: Double): Double = globalToWindowMatrix.transformX(x, y)
-    fun globalToWindowCoordsY(x: Double, y: Double): Double = globalToWindowMatrix.transformY(x, y)
-    fun globalToWindowCoordsX(pos: MPoint): Double = globalToWindowCoordsX(pos.x, pos.y)
-    fun globalToWindowCoordsY(pos: MPoint): Double = globalToWindowCoordsY(pos.x, pos.y)
+    fun windowToGlobalCoords(pos: Point): Point = windowToGlobalMatrix.transform(pos)
+    fun globalToWindowCoords(pos: Point): Point = globalToWindowMatrix.transform(pos)
 
     open class Base : BoundsProvider {
-        override val windowToGlobalMatrix: MMatrix = MMatrix()
+        override var windowToGlobalMatrix: Matrix = Matrix()
         override var windowToGlobalTransform: MatrixTransform = MatrixTransform()
-        override val globalToWindowMatrix: MMatrix = MMatrix()
+        override var globalToWindowMatrix: Matrix = Matrix()
         override var globalToWindowTransform: MatrixTransform = MatrixTransform()
-        override val actualVirtualBounds: MRectangle = MRectangle(0, 0, DefaultViewport.WIDTH, DefaultViewport.HEIGHT)
+        override var actualVirtualBounds: Rectangle = Rectangle(0, 0, DefaultViewport.WIDTH, DefaultViewport.HEIGHT)
     }
 }
 
@@ -630,19 +619,19 @@ fun BoundsProvider.setBoundsInfo(
     val actualVirtualWidth = (actualSize.width / ratioX).toIntRound()
     val actualVirtualHeight = (actualSize.height / ratioY).toIntRound()
 
-    globalToWindowMatrix.identity()
-    globalToWindowMatrix.prescale(ratioX, ratioY)
-    globalToWindowMatrix.pretranslate(
-        ((actualVirtualWidth - virtualWidth) * anchor.doubleX).toIntRound().toDouble(),
-        ((actualVirtualHeight - virtualHeight) * anchor.doubleY).toIntRound().toDouble(),
-    )
-    windowToGlobalMatrix.invert(globalToWindowMatrix)
-    globalToWindowTransform = globalToWindowMatrix.immutable.toTransform()
-    windowToGlobalTransform = windowToGlobalMatrix.immutable.toTransform()
+    globalToWindowMatrix = Matrix.IDENTITY
+        .prescaled(ratioX, ratioY)
+        .pretranslated(
+            ((actualVirtualWidth - virtualWidth) * anchor.doubleX).toIntRound().toDouble(),
+            ((actualVirtualHeight - virtualHeight) * anchor.doubleY).toIntRound().toDouble(),
+        )
+    windowToGlobalMatrix = globalToWindowMatrix.inverted()
+    globalToWindowTransform = globalToWindowMatrix.toTransform()
+    windowToGlobalTransform = windowToGlobalMatrix.toTransform()
 
-    val tl = windowToGlobalCoords(0.0, 0.0)
-    val br = windowToGlobalCoords(actualSize.width.toDouble(), actualSize.height.toDouble())
-    actualVirtualBounds.setToBounds(tl.x, tl.y, br.x, br.y)
+    val tl = windowToGlobalCoords(Point(0, 0))
+    val br = windowToGlobalCoords(Point(actualSize.width.toDouble(), actualSize.height.toDouble()))
+    actualVirtualBounds = Rectangle.fromBounds(tl.x, tl.y, br.x, br.y)
 }
 
 suspend fun views(): Views = injector().get()

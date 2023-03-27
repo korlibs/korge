@@ -41,7 +41,7 @@ import kotlin.math.round
  */
 
 class SvgBuilder(
-    val bounds: MRectangle,
+    val bounds: Rectangle,
     val scale: Double,
     val roundDecimalPlaces: Int = -1
 ) {
@@ -123,13 +123,12 @@ fun VectorPath.toContext2dCommands(prefix: String = "ctx.", suffix: String = ";"
 //}
 
 sealed interface Shape : BoundsDrawable {
-	fun addBounds(bb: BoundsBuilder, includeStrokes: Boolean = false): Unit
 	fun buildSvg(svg: SvgBuilder): Unit = Unit
     fun getPath(path: VectorPath = VectorPath()): VectorPath = path
 
     // Unoptimized version
-    fun getBounds(includeStrokes: Boolean): MRectangle = BoundsBuilder().also { addBounds(it, includeStrokes = includeStrokes) }.getBounds()
-    override val bounds: MRectangle get() = getBounds(includeStrokes = true)
+    fun getBounds(includeStrokes: Boolean = true): Rectangle
+    override val bounds: Rectangle get() = getBounds(includeStrokes = true)
 	fun containsPoint(x: Double, y: Double): Boolean = bounds.contains(x, y)
 }
 
@@ -141,13 +140,6 @@ fun Shape.optimize(): Shape {
         }
         else -> this
     }
-}
-
-fun Shape.getBounds(out: MRectangle = MRectangle(), bb: BoundsBuilder = BoundsBuilder(), includeStrokes: Boolean = false): MRectangle {
-	bb.reset()
-	addBounds(bb, includeStrokes)
-	bb.getBounds(out)
-    return out
 }
 
 fun Shape.toSvgInstance(scale: Double = 1.0): SVG = SVG(toSvg(scale))
@@ -174,11 +166,11 @@ interface StyledShape : Shape {
         return path?.clone()?.applyTransform(transform.inverted())
     }
 
-	override fun addBounds(bb: BoundsBuilder, includeStrokes: Boolean) {
-        path?.let { path ->
+	override fun getBounds(includeStrokes: Boolean): Rectangle {
+        return path?.let { path ->
+            (NewBoundsBuilder() + path).bounds
             // path is already transformed, so using `transform` is not required
-            bb.add(path)
-        }
+        } ?: Rectangle.NIL
 	}
 
 	override fun buildSvg(svg: SvgBuilder) {
@@ -308,7 +300,7 @@ fun Paint.toSvg(svg: SvgBuilder): String {
 }
 
 object EmptyShape : Shape {
-    override fun addBounds(bb: BoundsBuilder, includeStrokes: Boolean) = Unit
+    override fun getBounds(includeStrokes: Boolean): Rectangle = Rectangle.NIL
     override fun draw(c: Context2d) = Unit
 }
 
@@ -366,10 +358,8 @@ data class PolylineShape constructor(
         FillShape(path.strokeToFill(strokeInfo), clip, paint, transform, globalAlpha)
     }
 
-    override fun addBounds(bb: BoundsBuilder, includeStrokes: Boolean) {
-        tempBB.reset()
-        tempBB.add(path)
-        val bounds = tempBB.getBoundsOrNull(tempRect)
+    override fun getBounds(includeStrokes: Boolean): Rectangle {
+        val bounds = (NewBoundsBuilder() + path).boundsOrNull()?.mutable
 
         //println("PolylineShape.addBounds: bounds=bounds, path=$path")
 
@@ -383,7 +373,7 @@ data class PolylineShape constructor(
         //println("  TEMP_RECT AFTER INFLATE: ${tempRect}")
 
         //println("PolylineShape.addBounds: thickness=$thickness, rect=$tempRect")
-        bb.addEvenEmpty(bounds)
+        return bounds?.immutable ?: Rectangle.ZERO
     }
 
     override fun drawInternal(c: Context2d) {
@@ -411,7 +401,11 @@ data class PolylineShape constructor(
 open class CompoundShape(
 	val components: List<Shape>
 ) : Shape {
-	override fun addBounds(bb: BoundsBuilder, includeStrokes: Boolean) { components.fastForEach { it.addBounds(bb, includeStrokes)}  }
+	override fun getBounds(includeStrokes: Boolean): Rectangle {
+        var bb = NewBoundsBuilder()
+        components.fastForEach { bb += it.getBounds(includeStrokes) }
+        return bb.bounds
+    }
 	override fun draw(c: Context2d) = c.buffering { components.fastForEach { it.draw(c) } }
 	override fun buildSvg(svg: SvgBuilder) { components.fastForEach { it.buildSvg(svg) } }
     override fun getPath(path: VectorPath): VectorPath = path.also { components.fastForEach { it.getPath(path) } }
@@ -440,10 +434,8 @@ class TextShape(
 ) : StyledShape {
     override val paint: Paint get() = fill ?: stroke ?: NonePaint
 
-    override fun addBounds(bb: BoundsBuilder, includeStrokes: Boolean) {
-        bb.add(x, y)
-        bb.add(x + fontSize * text.length, y + fontSize) // @TODO: this is not right since we don't have information about Glyph metrics
-    }
+    override fun getBounds(includeStrokes: Boolean): Rectangle =
+        Rectangle.fromBounds(x, y, x + fontSize * text.length, y + fontSize) // @TODO: this is not right since we don't have information about Glyph metrics
     override fun drawInternal(c: Context2d) {
         c.font(font, halign, valign) {
             if (fill != null) c.fillText(text, x, y)

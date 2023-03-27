@@ -178,13 +178,13 @@ open class UIScrollable(width: Double, height: Double, cache: Boolean = true) : 
         vertical.ensurePositionIsVisible(y, anchor.doubleY)
     }
 
-    fun ensureRectIsVisible(rect: MRectangle, anchor: Anchor = Anchor.CENTER) {
-        horizontal.ensureRangeIsVisible(rect.left, rect.right, anchor.doubleX)
-        vertical.ensureRangeIsVisible(rect.top, rect.bottom, anchor.doubleY)
+    fun ensureRectIsVisible(rect: Rectangle, anchor: Anchor = Anchor.CENTER) {
+        horizontal.ensureRangeIsVisible(rect.left.toDouble(), rect.right.toDouble(), anchor.doubleX)
+        vertical.ensureRangeIsVisible(rect.top.toDouble(), rect.bottom.toDouble(), anchor.doubleY)
     }
 
     fun ensureViewIsVisible(view: View, anchor: Anchor = Anchor.CENTER) {
-        ensureRectIsVisible(view.getBounds(this).mutable, anchor)
+        ensureRectIsVisible(view.getBounds(this), anchor)
         scrollParentsToMakeVisible()
     }
 

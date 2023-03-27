@@ -166,7 +166,7 @@ fun RenderContext2D.drawText(
     align: TextAlignment = TextAlignment.TOP_LEFT,
     includeFirstLineAlways: Boolean = true
 ) {
-    drawText(text.place(MRectangle(x, y, width, height), wordWrap, includePartialLines, ellipsis, fill, stroke, align, includeFirstLineAlways = includeFirstLineAlways))
+    drawText(text.place(Rectangle(x, y, width, height), wordWrap, includePartialLines, ellipsis, fill, stroke, align, includeFirstLineAlways = includeFirstLineAlways))
 }
 
 @KorgeExperimental

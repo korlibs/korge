@@ -94,7 +94,7 @@ class Bitmap32Context2d(val bmp: Bitmap32, val antialiasing: Boolean) : korlibs.
                 scanlineWriter.filler = filler
                 scanlineWriter.globalAlpha = state.globalAlpha
                 scanlineWriter.reset()
-                rasterizer.rasterizeFill(bounds.mutable, winding = winding ?: fillPath.winding) { x0, x1, y ->
+                rasterizer.rasterizeFill(bounds, winding = winding ?: fillPath.winding) { x0, x1, y ->
                     scanlineWriter.select(x0, x1, y)
                 }
                 scanlineWriter.flush()

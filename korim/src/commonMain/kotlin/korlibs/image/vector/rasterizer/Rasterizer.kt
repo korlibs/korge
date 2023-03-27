@@ -3,7 +3,7 @@ package korlibs.image.vector.rasterizer
 import korlibs.datastructure.IntArrayList
 import korlibs.datastructure.iterators.fastForEach
 import korlibs.math.annotations.KormaExperimental
-import korlibs.math.geom.MRectangle
+import korlibs.math.geom.*
 import korlibs.math.geom.vector.PolygonScanline
 import korlibs.math.geom.vector.RastScale
 import korlibs.math.geom.vector.Winding
@@ -53,7 +53,7 @@ class Rasterizer : RastScale() {
         clip.reset()
     }
 
-    fun rasterizeFill(bounds: MRectangle, quality: Int = this.quality, stats: Stats? = null, winding: Winding = Winding.NON_ZERO, callback: RasterizerCallback) {
+    fun rasterizeFill(bounds: Rectangle, quality: Int = this.quality, stats: Stats? = null, winding: Winding = Winding.NON_ZERO, callback: RasterizerCallback) {
         stats?.reset()
 
         //for (e in path.edges) println("e: ${e.toString(1.0 / RAST_FIXED_SCALE)}")
@@ -62,8 +62,8 @@ class Rasterizer : RastScale() {
         val xmin = bounds.left.s
         val xmax = bounds.right.s
         tempRect.copyFrom(path.getBounds())
-        val startY = max(bounds.top, tempRect.top).s
-        val endY = min(bounds.bottom, tempRect.bottom).s
+        val startY = max(bounds.top, tempRect.top.toFloat()).s
+        val endY = min(bounds.bottom, tempRect.bottom.toFloat()).s
         val func: (x0: Int, x1: Int, y: Int) -> Unit = { a, b, y ->
             //println("CHUNK")
             if (a <= xmax && b >= xmin) {

@@ -3,19 +3,20 @@ package korlibs.math.geom.binpack
 import korlibs.datastructure.*
 import korlibs.math.geom.*
 
-class MaxRects(
-    maxWidth: Double,
-    maxHeight: Double
-) : BinPacker.Algo {
-    var freeRectangles = fastArrayListOf<MRectangle>(MRectangle(0.0, 0.0, maxWidth, maxHeight))
+class MaxRects(maxSize: Size) : BinPacker.Algo {
+    constructor(width: Float, height: Float) : this(Size(width, height))
+    constructor(width: Double, height: Double) : this(Size(width, height))
 
-    override fun add(width: Double, height: Double): MRectangle? = quickInsert(width, height)
+    var freeRectangles = fastArrayListOf(Rectangle(Point.ZERO, maxSize))
 
-    fun quickInsert(width: Double, height: Double): MRectangle? {
-        if (width <= 0.0 && height <= 0.0) return MRectangle(0, 0, 0, 0)
+    override fun add(size: Size): Rectangle? = quickInsert(size)
+
+    fun quickInsert(size: Size): Rectangle? {
+        val (width, height) = size
+        if (width <= 0.0 && height <= 0.0) return Rectangle(0, 0, 0, 0)
         val newNode = quickFindPositionForNewNodeBestAreaFit(width, height)
 
-        if (newNode.height == 0.0) return null
+        if (newNode.height == 0f) return null
 
         var numRectanglesToProcess = freeRectangles.size
         var i = 0
@@ -32,20 +33,17 @@ class MaxRects(
         return newNode
     }
 
-    private fun quickFindPositionForNewNodeBestAreaFit(width: Double, height: Double): MRectangle {
+    private fun quickFindPositionForNewNodeBestAreaFit(width: Float, height: Float): Rectangle {
         var score = Double.MAX_VALUE
         var areaFit: Double
-        val bestNode = MRectangle()
+        var bestNode = Rectangle()
 
         for (r in freeRectangles) {
             // Try to place the rectangle in upright (non-flipped) orientation.
             if (r.width >= width && r.height >= height) {
-                areaFit = r.width * r.height - width * height
+                areaFit = (r.width * r.height - width * height).toDouble()
                 if (areaFit < score) {
-                    bestNode.x = r.x
-                    bestNode.y = r.y
-                    bestNode.width = width
-                    bestNode.height = height
+                    bestNode = Rectangle(r.x, r.y, width, height)
                     score = areaFit
                 }
             }
@@ -54,8 +52,8 @@ class MaxRects(
         return bestNode
     }
 
-    private fun splitFreeNode(freeNode: MRectangle, usedNode: MRectangle): Boolean {
-        var newNode: MRectangle
+    private fun splitFreeNode(freeNode: Rectangle, usedNode: Rectangle): Boolean {
+        var newNode: Rectangle
         // Test with SAT if the rectangles even intersect.
         if (usedNode.left >= freeNode.right || usedNode.right <= freeNode.x || usedNode.top >= freeNode.bottom || usedNode.bottom <= freeNode.top) {
             return false
@@ -63,30 +61,30 @@ class MaxRects(
         if (usedNode.x < freeNode.right && usedNode.right > freeNode.x) {
             // New node at the top side of the used node.
             if (usedNode.y > freeNode.y && usedNode.y < freeNode.bottom) {
-                newNode = freeNode.clone()
-                newNode.height = usedNode.y - newNode.y
+                newNode = freeNode.copy(height = usedNode.y - freeNode.y)
                 freeRectangles.add(newNode)
             }
             // New node at the bottom side of the used node.
             if (usedNode.bottom < freeNode.bottom) {
-                newNode = freeNode.clone()
-                newNode.top = usedNode.bottom
-                newNode.height = freeNode.bottom - usedNode.bottom
+                newNode = freeNode.copy(
+                    y = usedNode.bottom,
+                    height = freeNode.bottom - usedNode.bottom
+                )
                 freeRectangles.add(newNode)
             }
         }
         if (usedNode.y < freeNode.bottom && usedNode.bottom > freeNode.y) {
             // New node on the left side of the used node.
             if (usedNode.x > freeNode.x && usedNode.x < freeNode.right) {
-                newNode = freeNode.clone()
-                newNode.width = usedNode.x - newNode.x
+                newNode = freeNode.copy(width = usedNode.x - freeNode.x)
                 freeRectangles.add(newNode)
             }
             // New node on the right side of the used node.
             if (usedNode.right < freeNode.right) {
-                newNode = freeNode.clone()
-                newNode.x = usedNode.right
-                newNode.width = freeNode.right - usedNode.right
+                newNode = freeNode.copy(
+                    x = usedNode.right,
+                    width = freeNode.right - usedNode.right
+                )
                 freeRectangles.add(newNode)
             }
         }
@@ -102,13 +100,13 @@ class MaxRects(
             val tmpRect = freeRectangles[i]
             while (j < len) {
                 val tmpRect2 = freeRectangles[j]
-                if (MRectangle.isContainedIn(tmpRect, tmpRect2)) {
+                if (Rectangle.isContainedIn(tmpRect, tmpRect2)) {
                     freeRectangles.removeAt(i)
                     --i
                     --len
                     break
                 }
-                if (MRectangle.isContainedIn(tmpRect2, tmpRect)) {
+                if (Rectangle.isContainedIn(tmpRect2, tmpRect)) {
                     freeRectangles.removeAt(j)
                     --len
                     --j

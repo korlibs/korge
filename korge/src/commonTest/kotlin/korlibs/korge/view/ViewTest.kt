@@ -68,13 +68,13 @@ class ViewTest {
         log.add("[6]:${leaf.getGlobalBounds().toStringCompat()}")
         log.add("[7]:${leaf.getBounds(root, inclusive = true).toStringCompat()}")
         log.add("[8]:${leaf.getWindowBoundsOrNull()?.toStringCompat()}")
-        log.add("[9]:${leaf.getWindowBounds().toStringCompat()}")
+        log.add("[9]:${leaf.windowBounds.toStringCompat()}")
 
         root.addTo(viewsForTesting.stage)
 
         log.add("[b1]:${leaf.getBounds(root, inclusive = true).toStringCompat()}")
         log.add("[b2]:${leaf.getWindowBoundsOrNull()?.toStringCompat()}")
-        log.add("[b3]:${leaf.getWindowBounds().toStringCompat()}")
+        log.add("[b3]:${leaf.windowBounds.toStringCompat()}")
 
         assertEquals(
             """

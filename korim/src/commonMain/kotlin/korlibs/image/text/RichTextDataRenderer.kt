@@ -21,7 +21,7 @@ data class RichTextDataPlacements(
 }
 
 fun RichTextData.place(
-    bounds: MRectangle,
+    bounds: Rectangle,
     wordWrap: Boolean = true,
     includePartialLines: Boolean = false,
     ellipsis: String? = null,
@@ -36,9 +36,9 @@ fun RichTextData.place(
     if (text.lines.isEmpty()) return out
 
     val rtext = text.limit(
-        if (wordWrap) bounds.width else Double.POSITIVE_INFINITY,
+        (if (wordWrap) bounds.width else Float.POSITIVE_INFINITY).toDouble(),
         includePartialLines = includePartialLines,
-        maxHeight = bounds.height,
+        maxHeight = bounds.height.toDouble(),
         ellipsis = ellipsis,
         trimSpaces = true,
         includeFirstLineAlways = includeFirstLineAlways
@@ -49,8 +49,8 @@ fun RichTextData.place(
     var y = bounds.y + ((bounds.height - totalHeight) * align.vertical.ratioFake0)
 
     for (line in rtext.lines) {
-        var x = bounds.x - align.horizontal.getOffsetX(line.width) + align.horizontal.getOffsetX(bounds.width)
-        val wordSpacing = if (align.horizontal == HorizontalAlign.JUSTIFY) (bounds.width - line.width).toDouble() / (line.nodes.size.toDouble() - 1) else 0.0
+        var x = bounds.x - align.horizontal.getOffsetX(line.width) + align.horizontal.getOffsetX(bounds.width.toDouble())
+        val wordSpacing = if (align.horizontal == HorizontalAlign.JUSTIFY) (bounds.width - line.width) / (line.nodes.size.toDouble() - 1) else 0.0
         y += line.maxHeight
         for (node in line.nodes) {
             when (node) {
@@ -82,7 +82,7 @@ fun RichTextData.place(
 
 fun Context2d.drawRichText(
     text: RichTextData,
-    bounds: MRectangle = MRectangle(0, 0, width, height),
+    bounds: Rectangle = Rectangle(0, 0, width, height),
     wordWrap: Boolean = true,
     includePartialLines: Boolean = false,
     ellipsis: String? = null,

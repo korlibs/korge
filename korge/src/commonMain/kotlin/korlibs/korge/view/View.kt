@@ -23,6 +23,7 @@ import korlibs.math.geom.shape.*
 import korlibs.math.geom.vector.*
 import korlibs.math.interpolation.*
 import korlibs.crypto.encoding.*
+import kotlin.jvm.*
 import kotlin.math.*
 
 /**
@@ -1237,29 +1238,25 @@ abstract class View internal constructor(
     }
 
     /** Returns the global bounds of this object. Note this incurs in allocations. Use [getGlobalBounds] (out) to avoid it */
-    val windowBounds: MRectangle get() = getWindowBounds()
+    val windowBounds: Rectangle get() = getWindowBoundsOrNull() ?: getGlobalBounds()
 
-    /** Returns the global bounds of this object. Allows to specify an [out] [MRectangle] to prevent allocations. */
-    @Deprecated("")
-    fun getWindowBounds(out: MRectangle = MRectangle()): MRectangle = getWindowBoundsOrNull(out) ?: out.copyFrom(getGlobalBounds())
-
-    fun getWindowBoundsOrNull(out: MRectangle = MRectangle()): MRectangle? {
+    fun getWindowBoundsOrNull(): Rectangle? {
         val stage = root
         if (stage !is Stage) return null
         //return getBounds(stage, out, inclusive = true).applyTransform(stage.views.globalToWindowMatrix)
-        return getWindowBounds(stage, out)
+        return getWindowBounds(stage)
     }
 
-    fun getWindowBounds(bp: BoundsProvider, out: MRectangle = MRectangle()): MRectangle =
-        getGlobalBounds().copyTo(out).applyTransform(bp.globalToWindowMatrix)
+    fun getWindowBounds(bp: BoundsProvider): Rectangle =
+        getGlobalBounds().transformed(bp.globalToWindowMatrix)
 
-    fun getRenderTargetBounds(ctx: RenderContext, out: MRectangle = MRectangle()): MRectangle {
+    fun getRenderTargetBounds(ctx: RenderContext): Rectangle {
         //println("ctx.ag.isRenderingToWindow=${ctx.ag.isRenderingToWindow}")
-        return if (ctx.isRenderingToWindow) getWindowBounds(ctx, out) else getGlobalBounds().copyTo(out)
+        return if (ctx.isRenderingToWindow) getWindowBounds(ctx) else getGlobalBounds()
     }
 
-    fun getClippingBounds(ctx: RenderContext, out: MRectangle = MRectangle()): MRectangle =
-        getRenderTargetBounds(ctx, out)
+    fun getClippingBounds(ctx: RenderContext): Rectangle =
+        getRenderTargetBounds(ctx)
 
     /** Returns the global bounds of this object. Note this incurs in allocations. Use [getGlobalBounds] (out) to avoid it */
     val globalBounds: Rectangle get() = getGlobalBounds()

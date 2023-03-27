@@ -34,8 +34,3 @@ fun Bitmap32.toNSImage(): NSImage {
 @KormaValueApi fun Vector2Int.toNSPoint(): CValue<NSPoint> = NSMakePoint(x.cg.toDouble(), y.cg.toDouble())
 @KormaMutableApi fun CValue<NSPoint>.toPoint(): Point = useContents { Point(this.x, this.y) }
 @KormaMutableApi fun CValue<NSRect>.toRectangle(): Rectangle = useContents { Rectangle(this.origin.x, this.origin.y, this.size.width, this.size.height) }
-
-@KormaMutableApi fun MPoint.toNSPoint(): CValue<NSPoint> = NSMakePoint(x.toDouble(), y.cg.toDouble())
-@KormaMutableApi fun MPointInt.toNSPoint(): CValue<NSPoint> = NSMakePoint(x.cg.toDouble(), y.cg.toDouble())
-@KormaMutableApi fun CValue<NSPoint>.toMPoint(): MPoint = useContents { MPoint(this.x, this.y) }
-@KormaMutableApi fun CValue<NSRect>.toMRectangle(): MRectangle = useContents { MRectangle(this.origin.x, this.origin.y, this.size.width, this.size.height) }

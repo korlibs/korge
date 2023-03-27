@@ -6,7 +6,7 @@ import kotlin.math.*
 
 //@KormaExperimental
 //@KormaValueApi
-inline class Size internal constructor(internal val raw: Float2Pack) {
+inline class Size internal constructor(internal val raw: Float2Pack) {//: Sizeable {
     operator fun component1(): Float = width
     operator fun component2(): Float = height
 
@@ -43,6 +43,8 @@ inline class Size internal constructor(internal val raw: Float2Pack) {
     operator fun div(s: Float): Size = Size(width / s, height / s)
     operator fun div(s: Double): Size = div(s.toFloat())
     operator fun div(s: Int): Size = div(s.toFloat())
+
+    //override val size: Size get() = this
 
     override fun toString(): String = "Size(width=${width.niceStr}, height=${height.niceStr})"
 }

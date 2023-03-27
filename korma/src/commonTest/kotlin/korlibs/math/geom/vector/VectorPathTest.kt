@@ -19,7 +19,7 @@ class VectorPathTest {
 
         assertEquals(true, g.containsPoint(50, 50))
         assertEquals(false, g.containsPoint(150, 50))
-        assertEquals(MRectangle(0, 0, 100, 100), g.getBounds())
+        assertEquals(Rectangle(0, 0, 100, 100), g.getBounds())
     }
 
     @Test
@@ -55,7 +55,7 @@ class VectorPathTest {
         assertEquals(false, g.containsPoint(50, 50))
         assertEquals(false, g.containsPoint(150, 50))
         assertEquals(true, g.containsPoint(20, 50))
-        assertEquals(MRectangle(0, 0, 100, 100), g.getBounds())
+        assertEquals(Rectangle(0, 0, 100, 100), g.getBounds())
         //g.filled(Context2d.Color(Colors.RED)).raster().showImageAndWaitExt()
     }
 

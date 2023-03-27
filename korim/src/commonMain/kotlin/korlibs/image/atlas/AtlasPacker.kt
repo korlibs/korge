@@ -8,7 +8,7 @@ import korlibs.math.geom.binpack.BinPacker
 import kotlin.jvm.JvmName
 
 object AtlasPacker {
-    data class Entry<T>(val item: T, val originalSlice: BmpSlice, val slice: BmpSlice32, val rectWithBorder: MRectangle, val rect: MRectangle)
+    data class Entry<T>(val item: T, val originalSlice: BmpSlice, val slice: BmpSlice32, val rectWithBorder: Rectangle, val rect: Rectangle)
 
     data class AtlasResult<T>(val tex: Bitmap32, val atlas: Atlas, val packedItems: List<Entry<T>>) : AtlasLookup {
         val packedItemsByItem = packedItems.associateBy { it.item }
@@ -43,7 +43,7 @@ object AtlasPacker {
     @JvmName("packPairs")
     fun <T> pack(items: List<Pair<T, BmpSlice>>, maxSide: Int = 2048, maxTextures: Int = 16, borderSize: Int = 2, fileName: String = "atlas.png"): Result<T> {
         val borderSize2 = borderSize * 2
-        val packs = BinPacker.packSeveral(maxSide.toDouble(), maxSide.toDouble(), items) {
+        val packs = BinPacker.packSeveral(Size(maxSide, maxSide), items) {
             Size(it.second.width + borderSize2, it.second.height + borderSize2)
         }
         if (packs.size > maxTextures) error("textures:${packs.size} > maxTextures:${maxTextures}")
@@ -51,12 +51,12 @@ object AtlasPacker {
             val out = Bitmap32(pack.width.toInt().nextPowerOfTwo, pack.height.toInt().nextPowerOfTwo, premultiplied = true)
             val packedItems = arrayListOf<Entry<T>>()
             for ((item, rectOrNull) in pack.items) {
-                val rectWithBorder = rectOrNull ?: MRectangle(0, 0, 1, 1)
+                val rectWithBorder = rectOrNull ?: Rectangle(0, 0, 1, 1)
                 val width = item.second.width
                 val height = item.second.height
                 val x0 = rectWithBorder.x.toInt() + borderSize
                 val y0 = rectWithBorder.y.toInt() + borderSize
-                val rect = MRectangle(x0, y0, width, height)
+                val rect = Rectangle(x0, y0, width, height)
                 val x1 = x0 + width - 1
                 val y1 = y0 + height - 1
                 val bmp = item.second.extract().toBMP32IfRequired().premultipliedIfRequired()

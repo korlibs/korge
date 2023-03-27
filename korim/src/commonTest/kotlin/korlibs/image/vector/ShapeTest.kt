@@ -62,12 +62,12 @@ class ShapeTest {
         assertEquals(shape2.bounds, shape2.getBounds(includeStrokes = true))
         assertEquals(shape3.bounds, shape3.getBounds(includeStrokes = true))
 
-        assertEquals(MRectangle(100, 100, 0, 0), shape1.getBounds(includeStrokes = false))
-        assertEquals(MRectangle(100, 100, 100, 0), shape2.getBounds(includeStrokes = false))
-        assertEquals(MRectangle(100, 100, 100, 100), shape3.getBounds(includeStrokes = false))
+        assertEquals(Rectangle(100, 100, 0, 0), shape1.getBounds(includeStrokes = false))
+        assertEquals(Rectangle(100, 100, 100, 0), shape2.getBounds(includeStrokes = false))
+        assertEquals(Rectangle(100, 100, 100, 100), shape3.getBounds(includeStrokes = false))
 
-        assertEquals(MRectangle(99.5, 99.5, 1.0, 1.0), shape1.getBounds(includeStrokes = true))
-        assertEquals(MRectangle(99.5, 99.5, 101.0, 1.0), shape2.getBounds(includeStrokes = true))
-        assertEquals(MRectangle(99.5, 99.5, 101.0, 101.0), shape3.getBounds(includeStrokes = true))
+        assertEquals(Rectangle(99.5, 99.5, 1.0, 1.0), shape1.getBounds(includeStrokes = true))
+        assertEquals(Rectangle(99.5, 99.5, 101.0, 1.0), shape2.getBounds(includeStrokes = true))
+        assertEquals(Rectangle(99.5, 99.5, 101.0, 101.0), shape3.getBounds(includeStrokes = true))
     }
 }

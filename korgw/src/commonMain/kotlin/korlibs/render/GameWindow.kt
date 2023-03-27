@@ -237,7 +237,7 @@ open class GameWindow :
     override val dialogInterface: DialogInterface get() = DialogInterface.Unsupported
 
     data class CustomCursor(val shape: Shape, val name: String = "custom") : ICursor, Extra by Extra.Mixin() {
-        val bounds: MRectangle = this.shape.bounds
+        val bounds: MRectangle = this.shape.bounds.mutable
         fun createBitmap(size: MSize? = null, native: Boolean = true) = shape.renderWithHotspot(fit = size, native = native)
     }
 

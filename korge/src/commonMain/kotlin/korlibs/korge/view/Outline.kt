@@ -29,7 +29,7 @@ class Outline(
 
     override fun renderInternal(ctx: RenderContext) {
         ctx.useLineBatcher { lines ->
-            lines.drawWithGlobalMatrix(globalMatrix.mutableOrNull) {
+            lines.drawWithGlobalMatrix(globalMatrix) {
                 lines.color(renderColorMul) {
                     lines.drawVector(vectorPath)
                 }

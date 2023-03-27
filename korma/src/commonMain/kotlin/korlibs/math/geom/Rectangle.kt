@@ -85,7 +85,9 @@ inline class Rectangle(val data: Float4Pack) {
     val area: Float get() = width * height
     val isEmpty: Boolean get() = width == 0f && height == 0f
     val isNotEmpty: Boolean get() = !isEmpty
+    @Deprecated("")
     val mutable: MRectangle get() = MRectangle(x, y, width, height)
+    @Deprecated("")
     fun mutable(out: MRectangle = MRectangle()): MRectangle = out.copyFrom(this)
 
     val left: Float get() = x
@@ -146,6 +148,7 @@ inline class Rectangle(val data: Float4Pack) {
 
     fun getAnchoredPoint(anchor: Anchor): Point = Point(left + width * anchor.sx, top + height * anchor.sy)
 
+    @Deprecated("")
     @KormaMutableApi fun toMRectangle(out: MRectangle = MRectangle()): MRectangle = out.setTo(x, y, width, height)
 
     fun expanded(border: MarginInt): Rectangle =
@@ -159,7 +162,7 @@ inline class Rectangle(val data: Float4Pack) {
 
     fun translated(delta: Point): Rectangle = copy(x = this.x + delta.x, y = this.y + delta.y)
 
-    fun transformed(m: MMatrix): Rectangle {
+    fun transformed(m: Matrix): Rectangle {
         val tl = m.transform(topLeft)
         val tr = m.transform(topRight)
         val bl = m.transform(bottomLeft)
