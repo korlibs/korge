@@ -90,10 +90,10 @@ data class RectSlice<T : SizeableInt>(
     fun slice(rect: RectangleInt, name: String? = null, clamped: Boolean = true, orientation: SliceOrientation = this.orientation): RectSlice<T> =
         sliceWithBounds(rect.left, rect.top, rect.right, rect.bottom, name = name, clamped = clamped, orientation = orientation)
 
-    val virtFrame: MRectangleInt?
+    val virtFrame: RectangleInt?
         get() {
             if (padding.left == 0 && padding.right == 0 && padding.top == 0 && padding.bottom == 0) return null
-            return MRectangleInt.fromBounds(padding.left, padding.top, width + padding.leftPlusRight, height + padding.topPlusBottom)
+            return RectangleInt.fromBounds(padding.left, padding.top, width + padding.leftPlusRight, height + padding.topPlusBottom)
         }
 
     fun virtFrame(x: Int, y: Int, width: Int, height: Int): RectSlice<T> {
@@ -105,10 +105,6 @@ data class RectSlice<T : SizeableInt>(
         //})
     }
 
-    fun virtFrame(frame: MRectangleInt?): RectSlice<T> = when (frame) {
-        null -> copy(padding = MarginInt.ZERO)
-        else -> virtFrame(frame.x, frame.y, frame.width, frame.height)
-    }
     fun virtFrame(frame: RectangleInt?): RectSlice<T> = when (frame) {
         null -> copy(padding = MarginInt.ZERO)
         else -> virtFrame(frame.x, frame.y, frame.width, frame.height)
