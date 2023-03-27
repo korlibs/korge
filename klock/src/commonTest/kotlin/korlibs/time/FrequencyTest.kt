@@ -11,7 +11,7 @@ class FrequencyTest {
     }
 
     @Test
-    fun `test frequency operators work as expected`() {
+    fun testFrequencyOperatorsWorkAsExpected() {
         assertEquals((-60).hz, -(60.hz))
         assertEquals((+60).hz, +(60.hz))
         assertEquals(80.hz, 60.hz + 20.hz)
