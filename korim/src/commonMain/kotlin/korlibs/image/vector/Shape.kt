@@ -41,7 +41,7 @@ import kotlin.math.round
  */
 
 class SvgBuilder(
-    val bounds: MRectangle,
+    val bounds: Rectangle,
     val scale: Double,
     val roundDecimalPlaces: Int = -1
 ) {
@@ -143,7 +143,7 @@ fun Shape.optimize(): Shape {
 }
 
 fun Shape.toSvgInstance(scale: Double = 1.0): SVG = SVG(toSvg(scale))
-fun Shape.toSvg(scale: Double = 1.0, roundDecimalPlaces: Int = -1): Xml = SvgBuilder(this.getBounds().mutable, scale, roundDecimalPlaces).apply { buildSvg(this) }.toXml()
+fun Shape.toSvg(scale: Double = 1.0, roundDecimalPlaces: Int = -1): Xml = SvgBuilder(this.getBounds(), scale, roundDecimalPlaces).apply { buildSvg(this) }.toXml()
 fun Drawable.toShape(width: Int, height: Int): Shape = buildShape(width, height) { draw(this@toShape) }
 fun Drawable.toSvg(width: Int, height: Int, scale: Double = 1.0): Xml = toShape(width, height).toSvg(scale)
 
