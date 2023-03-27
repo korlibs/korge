@@ -69,8 +69,8 @@ internal open class NativeUiFactory {
     interface NativeComponent : Extra {
         val component: Component
         val factory: NativeUiFactory
-        var bounds: MRectangleInt
-            get() = MRectangleInt(0, 0, 0, 0)
+        var bounds: RectangleInt
+            get() = RectangleInt(0, 0, 0, 0)
             set(value) = Unit
         //fun setBounds(x: Int, y: Int, width: Int, height: Int) = Unit
         var parent: NativeContainer?
@@ -246,10 +246,10 @@ internal open class AwtComponent(override val factory: NativeUiFactory, override
         awtToWrappersMap[component] = this
     }
 
-    override var bounds: MRectangleInt
+    override var bounds: RectangleInt
         get() {
             val b = component.bounds
-            return MRectangleInt(b.x, b.y, b.width, b.height)
+            return RectangleInt(b.x, b.y, b.width, b.height)
         }
         set(value) {
             component.bounds = Rectangle(value.x, value.y, value.width, value.height)
@@ -588,7 +588,7 @@ internal open class AwtScrollPanel(
     val view: JFixedSizeContainer = AwtContainer(factory, JFixedSizeContainer()).container as JFixedSizeContainer,
     val scrollPanel: JScrollPane = factory.createJScrollPane()
 ) : AwtContainer(factory, scrollPanel, view), NativeUiFactory.NativeScrollPanel {
-    override var bounds: MRectangleInt
+    override var bounds: RectangleInt
         get() = super<AwtContainer>.bounds
         set(value) {
             super<AwtContainer>.bounds = value
