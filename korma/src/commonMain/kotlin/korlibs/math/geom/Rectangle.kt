@@ -162,7 +162,7 @@ inline class Rectangle(val data: Float4Pack) {
 
     fun translated(delta: Point): Rectangle = copy(x = this.x + delta.x, y = this.y + delta.y)
 
-    fun transformed(m: MMatrix): Rectangle {
+    fun transformed(m: Matrix): Rectangle {
         val tl = m.transform(topLeft)
         val tr = m.transform(topRight)
         val bl = m.transform(bottomLeft)

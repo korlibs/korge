@@ -2,7 +2,7 @@ package korlibs.korge.render
 
 import korlibs.korge.internal.KorgeInternal
 import korlibs.image.bitmap.BmpSlice
-import korlibs.math.geom.MRectangle
+import korlibs.math.geom.*
 
 /**
  * A [texture] wrap that includes [scale] and [bounds] information.
@@ -13,5 +13,5 @@ data class TextureWithBitmapSlice(
 	val texture: BmpSlice,
 	val bitmapSlice: BmpSlice,
 	val scale: Double,
-	val bounds: MRectangle
+	val bounds: Rectangle
 )

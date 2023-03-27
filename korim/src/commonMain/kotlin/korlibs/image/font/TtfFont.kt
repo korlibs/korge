@@ -905,7 +905,7 @@ abstract class BaseTtfFont(
         out.alpha = readF2DOT14().toDouble()
         return out
     }
-    fun FastByteArrayInputStream.readClipBox(doVar: Boolean = false): MRectangle {
+    fun FastByteArrayInputStream.readClipBox(doVar: Boolean = false): Rectangle {
         val format = readU8()
         val xMin: Int = readFWORD()
         val yMin: Int = readFWORD()
@@ -914,7 +914,7 @@ abstract class BaseTtfFont(
         if (format == 2) {
             val varIndexBase = readVarIdxBase()
         }
-        return MRectangle.fromBounds(xMin, yMin, xMax, yMax)
+        return Rectangle.fromBounds(xMin, yMin, xMax, yMax)
     }
     fun FastByteArrayInputStream.readBaseGlyphPaintRecord() {
         val glyphID = s.readU16BE()
@@ -1885,7 +1885,7 @@ abstract class BaseTtfFont(
                     val clipOffset = glyphIDToClipOffset[index]
                     sClipOffset.sliceStart(clipOffset).readClipBox()
                 } else {
-                    colorEntry?.getColorShape()?.bounds?.mutable
+                    colorEntry?.getColorShape()?.bounds
                 }
                 if (bounds != null) {
                     xMin = bounds.left.toInt()

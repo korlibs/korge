@@ -208,20 +208,17 @@ class TexturedVertexArray(vcount: Int, val indices: ShortArray, icount: Int = in
         pos += quadV(fast, pos, x3, y3, bl_x, bl_y, cm)
     }
 
-
-    private val bounds: BoundsBuilder = BoundsBuilder()
-
     /**
      * Returns the bounds of the vertices defined in the indices from [min] to [max] (excluding) as [MRectangle]
      * Allows to define the output as [out] to be allocation-free, setting the [out] [MRectangle] and returning it.
      */
-    fun getBounds(min: Int = 0, max: Int = vcount, out: MRectangle = MRectangle()): MRectangle {
-        bounds.reset()
+    fun getBounds(min: Int = 0, max: Int = vcount): Rectangle {
+        var bb = NewBoundsBuilder()
         for (n in min until max) {
             select(n)
-            bounds.add(x.toDouble(), y.toDouble())
+            bb += Point(x, y)
         }
-        return bounds.getBounds(out)
+        return bb.bounds
     }
 
     /** [x] at the previously vertex selected by calling [select] */

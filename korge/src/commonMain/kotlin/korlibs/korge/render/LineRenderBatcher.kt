@@ -21,7 +21,7 @@ import kotlin.native.concurrent.ThreadLocal
 val RenderContext.debugLineRenderContext: LineRenderBatcher by Extra.PropertyThis<RenderContext, LineRenderBatcher> { LineRenderBatcher(this) }
 
 @Suppress("DEPRECATION")
-inline fun RenderContext.useLineBatcher(matrix: MMatrix? = null, block: (LineRenderBatcher) -> Unit) = debugLineRenderContext.use { batcher ->
+inline fun RenderContext.useLineBatcher(matrix: Matrix? = null, block: (LineRenderBatcher) -> Unit) = debugLineRenderContext.use { batcher ->
     debugLineRenderContext.drawWithGlobalMatrix(matrix) {
         block(batcher)
     }
@@ -186,7 +186,7 @@ class LineRenderBatcher(
     @PublishedApi
     internal val currentMatrix: MMatrix = MMatrix()
 
-    inline fun <T> drawWithGlobalMatrix(matrix: MMatrix?, block: () -> T): T = currentMatrix.keepMatrix {
+    inline fun <T> drawWithGlobalMatrix(matrix: Matrix?, block: () -> T): T = currentMatrix.keepMatrix {
         if (matrix != null) it.copyFrom(matrix)
         block()
     }

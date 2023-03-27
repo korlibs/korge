@@ -644,6 +644,8 @@ inline class AGScissor(val data: Short4Pack) {
         val INVALID = AGScissor.fromBounds(Short.MIN_VALUE + 2, Short.MIN_VALUE + 2, Int.MAX_VALUE, Int.MAX_VALUE)
         val NIL = AGScissor.fromBounds(Short.MIN_VALUE + 1, Short.MIN_VALUE + 1, Int.MAX_VALUE, Int.MAX_VALUE)
 
+        operator fun invoke(rect: Rectangle?): AGScissor = if (rect == null) NIL else invoke(rect)
+
         operator fun invoke(rect: Rectangle): AGScissor {
             if (rect.isNIL) return NIL
             return AGScissor(rect.x, rect.y, rect.width, rect.height)

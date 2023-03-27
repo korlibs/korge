@@ -284,7 +284,7 @@ class RenderContext2D(
     inline fun scissor(x: Float, y: Float, width: Float, height: Float, block: () -> Unit) = scissor(x.toInt(), y.toInt(), width.toInt(), height.toInt(), block)
 
     /** Temporarily sets the [scissor] (visible rendering area) to [rect] is executed. */
-    inline fun scissor(rect: MRectangle?, block: () -> Unit) =
+    inline fun scissor(rect: Rectangle?, block: () -> Unit) =
         scissor(AGScissor(rect), block)
 
     /** Temporarily sets the [scissor] (visible rendering area) to [scissor] is executed. */
