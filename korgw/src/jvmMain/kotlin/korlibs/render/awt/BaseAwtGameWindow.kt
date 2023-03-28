@@ -103,10 +103,10 @@ abstract class BaseAwtGameWindow(
     val CustomCursor.jvmCursor: java.awt.Cursor by extraPropertyThis {
         val toolkit = Toolkit.getDefaultToolkit()
         val size = toolkit.getBestCursorSize(bounds.width.toIntCeil(), bounds.height.toIntCeil())
-        val result = this.createBitmap(MSize(size.width, size.height))
+        val result = this.createBitmap(Size(size.width, size.height))
         //println("BITMAP SIZE=${result.bitmap.size}, hotspot=${result.hotspot}")
-        val hotspotX = result.hotspot.x.toInt().coerceIn(0, result.bitmap.width - 1)
-        val hotspotY = result.hotspot.y.toInt().coerceIn(0, result.bitmap.height - 1)
+        val hotspotX = result.hotspot.x.coerceIn(0, result.bitmap.width - 1)
+        val hotspotY = result.hotspot.y.coerceIn(0, result.bitmap.height - 1)
         toolkit.createCustomCursor(result.bitmap.toAwt(), java.awt.Point(hotspotX, hotspotY), name).also {
             //println("CUSTOM CURSOR: $it")
         }
