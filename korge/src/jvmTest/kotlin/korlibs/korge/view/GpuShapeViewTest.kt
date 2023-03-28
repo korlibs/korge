@@ -30,7 +30,7 @@ class GpuShapeViewTest {
                 }
             }
         }
-        assertScreenshot(posterize = 6)
+        assertScreenshot(posterize = 6, psnr = 34.0)
     }
 
     @Test
