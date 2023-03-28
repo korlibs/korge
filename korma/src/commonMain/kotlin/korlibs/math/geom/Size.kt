@@ -10,6 +10,9 @@ import kotlin.math.*
 //@KormaExperimental
 //@KormaValueApi
 inline class Size internal constructor(internal val raw: Float2Pack) {//: Sizeable {
+
+    fun isEmpty(): Boolean = width == 0f || height == 0f
+
     operator fun component1(): Float = width
     operator fun component2(): Float = height
 

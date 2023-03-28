@@ -150,7 +150,7 @@ abstract class View internal constructor(
                 if (_hitShape2d == null && hitShape != null) _hitShape2d = hitShape!!.toShape2d()
                 //if (_hitShape2d == null) _hitShape2d = Shape2d.Rectangle(getLocalBounds())
             }
-            return _hitShape2d ?: Shape2d.Empty
+            return _hitShape2d ?: EmptyShape2d
         }
         set(value) {
             _hitShape2d = value

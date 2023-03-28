@@ -313,6 +313,8 @@ class Bezier(
     }
 
     private fun findNearestLine(pX: Double, pY: Double, aX: Double, aY: Double, bX: Double, bY: Double, out: ProjectedPoint = ProjectedPoint()): ProjectedPoint {
+        out.bezier = this
+
         val atobX = bX - aX
         val atobY = bY - aY
 
@@ -331,6 +333,7 @@ class Bezier(
     }
 
     override fun project(point: Point, out: ProjectedPoint): ProjectedPoint {
+        out.bezier = this
         if (points.size == 2) {
             val p0 = points.get(0)
             val p1 = points.get(1)
@@ -371,12 +374,14 @@ class Bezier(
     }
 
     data class ProjectedPoint(var p: Point = Point(), var t: Double = 0.0, var dSq: Double = 0.0) {
+        lateinit var bezier: Bezier
         val d: Double get() = sqrt(dSq)
+        val normal: Point get() = bezier.normal(t)
         fun roundDecimalPlaces(places: Int): ProjectedPoint = ProjectedPoint(
             p.roundDecimalPlaces(places),
             t.roundDecimalPlaces(places),
             dSq.roundDecimalPlaces(places)
-        )
+        ).also { it.bezier = bezier }
     }
 
     //private var BezierCurve._t1: Double by Extra.Property { 0.0 }
@@ -622,13 +627,13 @@ class Bezier(
     /** The derivate vector of the curve at [t] (normalized when [normalize] is set to true) */
     override fun derivative(t: Double, normalize: Boolean): Point {
         var out = compute(t, dpoints[0])
-        if ((t == 0.0 || t == 1.0) && out.squaredLength.isAlmostZero()) {
+        if ((t == 0.0 || t == 1.0) && out.lengthSquared.isAlmostZero()) {
             for (n in 0 until 10) {
                 val newT = 10.0.pow(-(10 - n))
                 val nt = if (t == 1.0) 1.0 - newT else newT
                 //println("newT=$newT, nt=$nt")
                 out = compute(nt, dpoints[0])
-                if (!out.squaredLength.isAlmostZero()) break
+                if (!out.lengthSquared.isAlmostZero()) break
             }
         }
         if (normalize) out = out.normalized

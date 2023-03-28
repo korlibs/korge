@@ -6,6 +6,7 @@ import korlibs.math.interpolation.*
 import korlibs.math.math.*
 import kotlin.math.*
 
+@PublishedApi internal const val PIF = (PI).toFloat()
 @PublishedApi internal const val PI2 = PI * 2.0
 @PublishedApi internal const val PI2F = (PI * 2f).toFloat()
 @PublishedApi internal const val DEG2RAD = PI / 180.0
@@ -44,15 +45,16 @@ inline class Angle private constructor(
     /** [0..1] ratio -> [0..360] degrees */
     val ratioF: Float
 ) : Comparable<Angle> {
-    val ratio: Double get() = ratioF.toDouble()
+    val ratio: Float get() = ratioF
+    val ratioD: Double get() = ratioF.toDouble()
 
     val radiansF: Float get() = ratioToRadians(ratioF)
     val degreesF: Float get() = ratioToDegrees(ratioF)
 
     /** [0..PI * 2] radians -> [0..360] degrees */
-    val radians: Double get() = ratioToRadians(ratio)
+    val radians: Double get() = ratioToRadians(ratioD)
     /** [0..360] degrees -> [0..PI * 2] radians -> [0..1] ratio */
-    val degrees: Double get() = ratioToDegrees(ratio)
+    val degrees: Double get() = ratioToDegrees(ratioD)
 
     val cosine: Float get() = kotlin.math.cos(radiansF)
     val sine: Float get() = kotlin.math.sin(radiansF)

@@ -1,10 +1,9 @@
 package korlibs.math.geom.vector
 
 import korlibs.math.geom.*
-import korlibs.math.geom.bezier.Bezier
-import korlibs.math.geom.shape.buildVectorPath
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import korlibs.math.geom.bezier.*
+import korlibs.math.geom.shape.*
+import kotlin.test.*
 
 class VectorPathTest {
     @Test
@@ -80,7 +79,10 @@ class VectorPathTest {
         buildVectorPath { rect(0, 0, 10, 10) }.also {
             assertEquals(true, it.containsPoint(5, 5))
             assertEquals(false, it.containsPoint(-1, -1))
-            assertEquals(true, it.containsPoint(10, 10)) // This is true in JS: var ctx = document.createElement('canvas').getContext('2d'); ctx.beginPath(), ctx.rect(0, 0, 100, 100), ctx.isPointInPath(100, 100)
+            assertEquals(
+                true,
+                it.containsPoint(10, 10)
+            ) // This is true in JS: var ctx = document.createElement('canvas').getContext('2d'); ctx.beginPath(), ctx.rect(0, 0, 100, 100), ctx.isPointInPath(100, 100)
             assertEquals(false, it.containsPoint(11, 11))
         }
         buildVectorPath(winding = Winding.NON_ZERO) {
@@ -210,9 +212,18 @@ class VectorPathTest {
         }.intersectsWith(MMatrix().scale(2.0, 2.0), path2, MMatrix()))
 
         assertEquals(true, VectorPath.intersects(path1, MMatrix(), path1, MMatrix()))
-        assertEquals(true, VectorPath.intersects(path1, MMatrix().translate(101.0, 0.0), path1, MMatrix().translate(101.0, 0.0)))
-        assertEquals(true, VectorPath.intersects(path1, MMatrix().translate(50.0, 0.0), path1, MMatrix().translate(100.0, 0.0)))
-        assertEquals(true, VectorPath.intersects(path1, MMatrix().translate(100.0, 0.0), path1, MMatrix().translate(50.0, 0.0)))
+        assertEquals(
+            true,
+            VectorPath.intersects(path1, MMatrix().translate(101.0, 0.0), path1, MMatrix().translate(101.0, 0.0))
+        )
+        assertEquals(
+            true,
+            VectorPath.intersects(path1, MMatrix().translate(50.0, 0.0), path1, MMatrix().translate(100.0, 0.0))
+        )
+        assertEquals(
+            true,
+            VectorPath.intersects(path1, MMatrix().translate(100.0, 0.0), path1, MMatrix().translate(50.0, 0.0))
+        )
         assertEquals(false, VectorPath.intersects(path1, MMatrix().translate(101.0, 0.0), path1, MMatrix()))
         assertEquals(false, VectorPath.intersects(path1, MMatrix(), path1, MMatrix().translate(101.0, 0.0)))
     }
@@ -250,7 +261,8 @@ class VectorPathTest {
                     Bezier(Point(0.0, 100.0), Point(55.23, 100.0), Point(100.0, 55.23), Point(100.0, 0.0)),
                 )
             ),
-            buildVectorPath { circle(Point(0, 0), 100f) }.toCurvesList().map { it.beziers.map { it.roundDecimalPlaces(2) } }
+            buildVectorPath { circle(Point(0, 0), 100f) }.toCurvesList()
+                .map { it.beziers.map { it.roundDecimalPlaces(2) } }
         )
     }
 }

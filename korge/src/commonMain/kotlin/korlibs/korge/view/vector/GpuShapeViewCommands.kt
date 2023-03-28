@@ -154,7 +154,7 @@ class GpuShapeViewCommands {
                                 batcher.ctx[GpuShapeViewPrograms.ShapeViewUB].push {
                                     it.copyFrom(paintShader.uniforms)
                                     it[u_GlobalPixelScale] = pixelScale
-                                    it[u_ColorMul] = colorMul
+                                    it[u_ColorMul] = colorMul.premultiplied
                                 }
                                 if (paintShader.texture != null) {
                                     val tex = ctx.tempTexturePool.alloc()

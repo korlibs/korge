@@ -16,6 +16,7 @@ import korlibs.io.async.*
 import korlibs.io.util.*
 import korlibs.math.geom.*
 import korlibs.math.geom.shape.*
+import korlibs.math.geom.vector.*
 import korlibs.math.interpolation.*
 import kotlin.native.concurrent.*
 

@@ -406,7 +406,7 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
         init {
             warningProcessor?.invoke("Parsed SVG Path: '${path.toSvgPathString()}'")
             warningProcessor?.invoke("Original SVG Path: '$d'")
-            warningProcessor?.invoke("Points: ${path.getPoints2()}")
+            warningProcessor?.invoke("Points: ${path.cachedPoints}")
         }
 
         override fun drawInternal(c: Context2d) {
