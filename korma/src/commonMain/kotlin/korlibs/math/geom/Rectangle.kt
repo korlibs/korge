@@ -55,7 +55,7 @@ inline class Rectangle(val data: Float4Pack) {
         val NaN = Rectangle(Float.NaN, Float.NaN, 0f, 0f)
         val NIL get() = NaN
 
-        operator fun invoke(): Rectangle = Rectangle(Point(), Size())
+        operator fun invoke(): Rectangle = ZERO
         operator fun invoke(p: Point, s: Size): Rectangle = Rectangle(float4PackOf(p.x, p.y, s.width, s.height))
         operator fun invoke(x: Int, y: Int, width: Int, height: Int): Rectangle = Rectangle(Point(x, y), Size(width, height))
         operator fun invoke(x: Float, y: Float, width: Float, height: Float): Rectangle = Rectangle(Point(x, y), Size(width, height))

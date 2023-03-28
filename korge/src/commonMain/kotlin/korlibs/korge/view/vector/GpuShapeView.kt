@@ -105,22 +105,22 @@ open class GpuShapeView(
     private var validShapeBounds = false
     private var validShapeBoundsStrokes = false
     private var renderCount = 0
-    private val _shapeBounds: MRectangle = MRectangle()
-    private val _shapeBoundsStrokes: MRectangle = MRectangle()
-    private val shapeBounds: MRectangle
+    private var _shapeBounds: Rectangle = Rectangle()
+    private var _shapeBoundsStrokes: Rectangle = Rectangle()
+    private val shapeBounds: Rectangle
         get() {
-            val _bounds = if (boundsIncludeStrokes) _shapeBoundsStrokes else _shapeBounds
             val valid = if (boundsIncludeStrokes) validShapeBoundsStrokes else validShapeBounds
             if (!valid) {
                 if (boundsIncludeStrokes) validShapeBoundsStrokes = true else validShapeBounds = true
-                return shape.getBounds(includeStrokes = boundsIncludeStrokes).let { _bounds.copyFrom(it) }
-            } else {
-                return _bounds
+                val result = shape.getBounds(includeStrokes = boundsIncludeStrokes)
+                if (boundsIncludeStrokes) _shapeBoundsStrokes = result else _shapeBounds = result
+                return result
             }
+            return if (boundsIncludeStrokes) _shapeBoundsStrokes else _shapeBounds
         }
 
-    val shapeWidth: Double get() = shapeBounds.width
-    val shapeHeight: Double get() = shapeBounds.height
+    val shapeWidth: Double get() = shapeBounds.width.toDouble()
+    val shapeHeight: Double get() = shapeBounds.height.toDouble()
     private var lastCommandWasClipped: Boolean = false
 
     override val anchorDispX: Double get() = shapeBounds.width * anchorX
@@ -152,9 +152,9 @@ open class GpuShapeView(
         invalidateShape()
     }
 
-    override fun getLocalBoundsInternal() = Rectangle(
-        shapeBounds.x - anchorDispX,
-        shapeBounds.y - anchorDispY,
+    override fun getLocalBoundsInternal(): Rectangle = Rectangle(
+        shapeBounds.x - anchorDispXF,
+        shapeBounds.y - anchorDispYF,
         shapeBounds.width,
         shapeBounds.height,
     )
@@ -180,7 +180,7 @@ open class GpuShapeView(
     private var cachedScale: Double = Double.NaN
 
     override fun renderInternal(ctx: RenderContext) {
-        globalScale = globalMatrix.immutable.toTransform().scaleAvg * ctx.bp.globalToWindowScaleAvg
+        globalScale = globalMatrix.toTransform().scaleAvg * ctx.bp.globalToWindowScaleAvg
         //globalScale = ctx.bp.globalToWindowScaleAvg
         if (cachedScale != globalScale) {
             invalidateShape()

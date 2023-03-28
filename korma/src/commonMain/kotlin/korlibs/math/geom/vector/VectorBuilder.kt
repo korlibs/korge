@@ -75,10 +75,6 @@ interface VectorBuilder {
     fun isEmpty(): Boolean = totalPoints == 0
     fun isNotEmpty(): Boolean = totalPoints != 0
 
-
-    fun rect(rect: MRectangleInt) = rect(rect.x, rect.y, rect.width, rect.height)
-    fun rect(rect: MRectangle) = rect(rect.x, rect.y, rect.width, rect.height)
-
     fun rect(rect: RectangleInt) = rect(rect.x, rect.y, rect.width, rect.height)
     fun rect(rect: Rectangle) = rect(rect.x, rect.y, rect.width, rect.height)
 
@@ -130,7 +126,7 @@ interface VectorBuilder {
     fun rectHole(x: Int, y: Int, width: Int, height: Int) =
         rectHole(x.toDouble(), y.toDouble(), width.toDouble(), height.toDouble())
 
-    fun rectHole(rect: MRectangle) = rectHole(rect.x, rect.y, rect.width, rect.height)
+    fun rectHole(rect: Rectangle) = rectHole(rect.x, rect.y, rect.width, rect.height)
 
     fun curves(curves: List<Curves>) = write(curves.toVectorPath())
     fun curves(curves: Curves) = write(curves.toVectorPath())
@@ -197,10 +193,10 @@ interface VectorBuilder {
      *  \________\
      *
      * */
-    fun parallelogram(bounds: MRectangle, angle: Angle = 30.degrees, direction: Boolean = true) {
-        val dx = angle.sineD * bounds.height
-        val dx0 = if (direction) 0.0 else dx
-        val dx1 = if (direction) dx else 0.0
+    fun parallelogram(bounds: Rectangle, angle: Angle = 30.degrees, direction: Boolean = true) {
+        val dx: Float = angle.sine * bounds.height
+        val dx0: Float = if (direction) 0f else dx
+        val dx1: Float = if (direction) dx else 0f
         moveTo(Point(bounds.left - dx0, bounds.top))
         lineTo(Point(bounds.right + dx1, bounds.top))
         lineTo(Point(bounds.right + dx0, bounds.bottom))

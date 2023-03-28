@@ -19,7 +19,11 @@ inline class NewBoundsBuilder(val bounds: Rectangle) {
         operator fun invoke(p1: Point, p2: Point): NewBoundsBuilder = NewBoundsBuilder(Rectangle.fromBounds(Point.minComponents(p1, p2), Point.maxComponents(p1, p2)))
         operator fun invoke(p1: Point, p2: Point, p3: Point): NewBoundsBuilder = NewBoundsBuilder(Rectangle.fromBounds(Point.minComponents(p1, p2, p3), Point.maxComponents(p1, p2, p3)))
         operator fun invoke(p1: Point, p2: Point, p3: Point, p4: Point): NewBoundsBuilder = NewBoundsBuilder(Rectangle.fromBounds(Point.minComponents(p1, p2, p3, p4), Point.maxComponents(p1, p2, p3, p4)))
-
+        operator fun invoke(size: Int, func: NewBoundsBuilder.(Int) -> NewBoundsBuilder): NewBoundsBuilder {
+            var bb = NewBoundsBuilder()
+            for (n in 0 until size) bb = func(bb, n)
+            return bb
+        }
     }
     operator fun plus(p: Point): NewBoundsBuilder {
         if (bounds.isNIL) return NewBoundsBuilder(Rectangle(p, Size(0, 0)))

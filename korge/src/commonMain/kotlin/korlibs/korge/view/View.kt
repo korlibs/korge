@@ -82,6 +82,9 @@ abstract class View internal constructor(
     @KorgeInternal
     open val anchorDispY get() = 0.0
 
+    val anchorDispXF: Float get() = anchorDispX.toFloat()
+    val anchorDispYF: Float get() = anchorDispY.toFloat()
+
     /** Read-only internal children list, or null when not a [Container] */
     @KorgeInternal
     @PublishedApi
@@ -1267,12 +1270,12 @@ abstract class View internal constructor(
 
     /** Tries to set the global bounds of the object. If there are rotations in the ancestors, this might not work as expected. */
     @KorgeUntested
-    fun setGlobalBounds(bounds: MRectangle) {
+    fun setGlobalBounds(bounds: Rectangle) {
         val transform = parent!!.globalMatrix.toTransform()
         globalPos = bounds.topLeft
         setSizeScaled(
-            bounds.width * transform.scaleX,
-            bounds.height * transform.scaleY,
+            (bounds.width * transform.scaleX).toDouble(),
+            (bounds.height * transform.scaleY).toDouble(),
         )
     }
 
@@ -1348,9 +1351,7 @@ abstract class View internal constructor(
         ).bounds
     }
 
-    //open fun getLocalBoundsInternal(out: MRectangle) { out.clear() }
-
-    open fun getLocalBoundsInternal(): Rectangle = Rectangle.ZERO
+    open fun getLocalBoundsInternal(): Rectangle = Rectangle.NIL
 
     protected open fun createInstance(): View =
         throw MustOverrideException("Must Override ${this::class}.createInstance()")
@@ -1793,10 +1794,9 @@ fun <T : View> T.position(x: Double, y: Double): T = xy(Point(x, y))
 fun <T : View> T.position(x: Float, y: Float): T = xy(Point(x, y))
 fun <T : View> T.position(x: Int, y: Int): T = xy(Point(x, y))
 fun <T : View> T.position(p: Point): T = xy(p)
-fun <T : View> T.position(p: MPoint): T = xy(p.point)
 
 fun <T : View> T.bounds(left: Double, top: Double, right: Double, bottom: Double): T = xy(left, top).size(Size(right - left, bottom - top))
-fun <T : View> T.bounds(rect: MRectangle): T = bounds(rect.left, rect.top, rect.right, rect.bottom)
+fun <T : View> T.bounds(rect: Rectangle): T = bounds(rect.left.toDouble(), rect.top.toDouble(), rect.right.toDouble(), rect.bottom.toDouble())
 
 fun <T : View> T.positionX(x: Double): T {
     this.x = x

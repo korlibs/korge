@@ -89,7 +89,7 @@ class MainGpuVectorRendering3 : Scene() {
             })
 
             debugPath("Rect closed", getPos(0, 1), strokeInfo, buildVectorPath {
-                rect(MRectangle.fromBounds(0, 0, 100, 100))
+                rect(Rectangle.fromBounds(0, 0, 100, 100))
             })
 
             debugPath("Rect not closed", getPos(1, 1), strokeInfo, buildVectorPath {
