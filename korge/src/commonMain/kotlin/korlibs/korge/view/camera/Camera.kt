@@ -36,7 +36,7 @@ class CameraContainer(
     block: @ViewDslMarker CameraContainer.() -> Unit = {}
 ) : FixedSizeContainer(width, height, clip), View.Reference {
     var clampToBounds: Boolean = false
-    val cameraViewportBounds: MRectangle = MRectangle(0, 0, 4096, 4096)
+    var cameraViewportBounds: Rectangle = Rectangle(0, 0, 4096, 4096)
 
     private val contentContainer = Container()
 
@@ -110,14 +110,14 @@ class CameraContainer(
     fun getDefaultCamera(out: Camera = Camera()): Camera = out.setTo(x = width / 2.0, y = height / 2.0, anchorX = 0.5, anchorY = 0.5)
 
     companion object {
-        fun getCameraRect(rect: MRectangle, scaleMode: ScaleMode = ScaleMode.SHOW_ALL, cameraWidth: Double, cameraHeight: Double, cameraAnchorX: Double, cameraAnchorY: Double, out: Camera = Camera()): Camera {
-            val size = MRectangle(0.0, 0.0, cameraWidth, cameraHeight).place(rect.mSize, Anchor.TOP_LEFT, scale = scaleMode).mSize
+        fun getCameraRect(rect: Rectangle, scaleMode: ScaleMode = ScaleMode.SHOW_ALL, cameraWidth: Double, cameraHeight: Double, cameraAnchorX: Double, cameraAnchorY: Double, out: Camera = Camera()): Camera {
+            val size = Rectangle(0.0, 0.0, cameraWidth, cameraHeight).place(rect.size, Anchor.TOP_LEFT, scale = scaleMode)
             val scaleX = size.width / rect.width
             val scaleY = size.height / rect.height
             return out.setTo(
                 rect.x + rect.width * cameraAnchorX,
                 rect.y + rect.height * cameraAnchorY,
-                zoom = min(scaleX, scaleY),
+                zoom = min(scaleX, scaleY).toDouble(),
                 angle = 0.degrees,
                 anchorX = cameraAnchorX,
                 anchorY = cameraAnchorY
@@ -125,9 +125,9 @@ class CameraContainer(
         }
     }
 
-    fun getCameraRect(rect: MRectangle, scaleMode: ScaleMode = ScaleMode.SHOW_ALL, out: Camera = Camera()): Camera = getCameraRect(rect, scaleMode, width, height, cameraAnchorX, cameraAnchorY, out)
-    fun getCameraToFit(rect: MRectangle, out: Camera = Camera()): Camera = getCameraRect(rect, ScaleMode.SHOW_ALL, out)
-    fun getCameraToCover(rect: MRectangle, out: Camera = Camera()): Camera = getCameraRect(rect, ScaleMode.COVER, out)
+    fun getCameraRect(rect: Rectangle, scaleMode: ScaleMode = ScaleMode.SHOW_ALL, out: Camera = Camera()): Camera = getCameraRect(rect, scaleMode, width, height, cameraAnchorX, cameraAnchorY, out)
+    fun getCameraToFit(rect: Rectangle, out: Camera = Camera()): Camera = getCameraRect(rect, ScaleMode.SHOW_ALL, out)
+    fun getCameraToCover(rect: Rectangle, out: Camera = Camera()): Camera = getCameraRect(rect, ScaleMode.COVER, out)
 
     private var transitionTime = 1.0.seconds
     private var elapsedTime = 0.0.milliseconds

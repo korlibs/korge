@@ -24,6 +24,13 @@ interface SizedDrawable : Drawable {
     val height: Int
 }
 
+//@Deprecated("Use .toShape(size)")
+//fun Drawable.withSize(size: Size): SizedDrawable = object : SizedDrawable {
+//    override val width: Int get() = size.width.toInt()
+//    override val height: Int get() = size.height.toInt()
+//    override fun draw(c: Context2d) = this@withSize.draw(c)
+//}
+
 interface BoundsDrawable : SizedDrawable {
     val bounds: Rectangle
     val left: Int get() = bounds.left.toInt()
