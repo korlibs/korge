@@ -3,7 +3,7 @@ package korlibs.korge.view
 import korlibs.graphics.log.AGLog
 import korlibs.korge.render.RenderContext
 import korlibs.korge.render.testRenderContext
-import korlibs.math.geom.MSizeInt
+import korlibs.math.geom.*
 import kotlin.test.*
 
 class FixedSizeContainerTest {
@@ -11,8 +11,8 @@ class FixedSizeContainerTest {
     @Ignore
     fun test() {
         testRenderContext {
-            val windowSize = MSizeInt(640, 480)
-            val virtualSize = MSizeInt(512, 512)
+            val windowSize = SizeInt(640, 480)
+            val virtualSize = SizeInt(512, 512)
             val ag: AGLog = AGLog(windowSize.width, windowSize.height)
             val bp: BoundsProvider = BoundsProvider.Base()
             bp.setBoundsInfo(virtualSize.width, virtualSize.height, windowSize)

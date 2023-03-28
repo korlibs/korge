@@ -4,8 +4,8 @@ import korlibs.korge.view.*
 import korlibs.math.geom.*
 import korlibs.math.interpolation.*
 
-fun <T : View> T.dockedTo(anchor: Anchor, scaleMode: ScaleMode = ScaleMode.NO_SCALE, offset: MPoint = MPoint(), hook: (View) -> Unit = {}): T {
-    DockingComponent(this, anchor, scaleMode, MPoint().copyFrom(offset), hook)
+fun <T : View> T.dockedTo(anchor: Anchor, scaleMode: ScaleMode = ScaleMode.NO_SCALE, offset: Point = Point(), hook: (View) -> Unit = {}): T {
+    DockingComponent(this, anchor, scaleMode, offset, hook)
     return this
 }
 
@@ -13,12 +13,12 @@ class DockingComponent(
     val view: View,
     var anchor: Anchor,
     var scaleMode: ScaleMode = ScaleMode.NO_SCALE,
-    val offset: MPoint = MPoint(),
+    val offset: Point = Point(),
     val hook: (View) -> Unit
 ) {
-    val initialViewSize = MSize(view.width, view.height)
-    private val actualVirtualSize = MSize(0, 0)
-    private val targetSize = MSize(0, 0)
+    val initialViewSize = Size(view.width, view.height)
+    private var actualVirtualSize = Size(0, 0)
+    private var targetSize = Size(0, 0)
 
     init {
         view.onStageResized { width, height ->
@@ -32,9 +32,10 @@ class DockingComponent(
             //view.alignX(views.stage, anchor.sx, true)
             //view.alignY(views.stage, anchor.sy, true)
             if (scaleMode != ScaleMode.NO_SCALE) {
-                actualVirtualSize.setTo(views.actualVirtualWidth, views.actualVirtualHeight)
-                val size = scaleMode.invoke(initialViewSize, actualVirtualSize, targetSize)
-                view.setSize(size.width, size.height)
+                actualVirtualSize = Size(views.actualVirtualWidth, views.actualVirtualHeight)
+                val size = scaleMode.invoke(initialViewSize, actualVirtualSize)
+                targetSize = size
+                view.setSize(size)
             }
             view.invalidate()
             view.parent?.invalidate()

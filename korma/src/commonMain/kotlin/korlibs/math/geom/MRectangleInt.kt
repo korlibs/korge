@@ -3,6 +3,7 @@ package korlibs.math.geom
 import korlibs.math.annotations.*
 
 @KormaMutableApi
+@Deprecated("Use RectangleInt instead")
 inline class MRectangleInt(val rect: MRectangle) {
     val immutable: RectangleInt get() = RectangleInt(x, y, width, height)
 

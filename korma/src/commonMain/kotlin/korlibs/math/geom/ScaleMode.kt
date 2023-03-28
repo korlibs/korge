@@ -6,8 +6,6 @@ class ScaleMode(
 ) {
     override fun toString(): String = "ScaleMode($name)"
 
-    operator fun invoke(item: MSize, container: MSize, target: MSize = MSize()): MSize = target.setTo(invoke(item.immutable, container.immutable))
-    operator fun invoke(item: MSizeInt, container: MSizeInt, target: MSizeInt = MSizeInt()): MSizeInt = target.setTo(invoke(item.immutable, container.immutable))
     operator fun invoke(item: Size, container: Size): Size = transform(item, container)
     operator fun invoke(item: SizeInt, container: SizeInt): SizeInt = transform(item.toFloat(), container.toFloat()).toInt()
 
@@ -25,31 +23,11 @@ class ScaleMode(
     }
 }
 
-fun MRectangle.applyScaleMode(
-    container: MRectangle, mode: ScaleMode, anchor: Anchor, out: MRectangle = MRectangle()
-): MRectangle = this.mSize.applyScaleMode(container, mode, anchor, out)
-fun MSize.applyScaleMode(container: MRectangle, mode: ScaleMode, anchor: Anchor, out: MRectangle = MRectangle(), tempSize: MSize = MSize()): MRectangle {
-    val outSize = this.applyScaleMode(container.mSize, mode, tempSize)
-    out.setToAnchoredRectangle(MRectangle(0.0, 0.0, outSize.width, outSize.height), anchor, container)
-    return out
-}
+fun Rectangle.applyScaleMode(
+    container: Rectangle, mode: ScaleMode, anchor: Anchor
+): Rectangle = this.size.applyScaleMode(container, mode, anchor)
 
-fun MSize.applyScaleMode(container: MSize, mode: ScaleMode, out: MSize = MSize(0, 0)): MSize =
-    mode(this, container, out)
-fun MSize.fitTo(container: MSize, out: MSize = MSize(0, 0)): MSize =
-    applyScaleMode(container, ScaleMode.SHOW_ALL, out)
-
-
-fun MSizeInt.applyScaleMode(container: MRectangleInt, mode: ScaleMode, anchor: Anchor, out: MRectangleInt = MRectangleInt(), tempSize: MSizeInt = MSizeInt()): MRectangleInt =
-    this.asDouble().applyScaleMode(container.float, mode, anchor, out.float, tempSize.asDouble()).int
-fun MSizeInt.applyScaleMode(container: MSizeInt, mode: ScaleMode, out: MSizeInt = MSizeInt(0, 0)): MSizeInt =
-    mode(this, container, out)
-fun MSizeInt.fitTo(container: MSizeInt, out: MSizeInt = MSizeInt(0, 0)): MSizeInt =
-    applyScaleMode(container, ScaleMode.SHOW_ALL, out)
-
-
-fun SizeInt.applyScaleMode(container: RectangleInt, mode: ScaleMode, anchor: Anchor): RectangleInt =
-    this.toFloat().applyScaleMode(container.toFloat(), mode, anchor).toInt()
+fun SizeInt.applyScaleMode(container: RectangleInt, mode: ScaleMode, anchor: Anchor): RectangleInt = this.toFloat().applyScaleMode(container.toFloat(), mode, anchor).toInt()
 fun SizeInt.applyScaleMode(container: SizeInt, mode: ScaleMode): SizeInt = mode(this, container)
 fun SizeInt.fitTo(container: SizeInt): SizeInt = applyScaleMode(container, ScaleMode.SHOW_ALL)
 

@@ -191,9 +191,9 @@ class Views constructor(
 
     private val tempViewsPool = Pool { FastArrayList<View>() }
     //private val tempViews = FastArrayList<View>()
-	private val virtualSize = MSizeInt()
-	private val actualSize = MSizeInt()
-	private val targetSize = MSizeInt()
+	private var virtualSize = SizeInt()
+	private var actualSize = SizeInt()
+	private var targetSize = SizeInt()
 
     @KorgeInternal
     val actualWidth get() = actualSize.width
@@ -339,7 +339,7 @@ class Views constructor(
 		val actualWidth = width
 		val actualHeight = height
 		//println("RESIZED: $width, $height")
-		actualSize.setTo(actualWidth, actualHeight)
+		actualSize = SizeInt(actualWidth, actualHeight)
 		resized()
 	}
 
@@ -352,8 +352,8 @@ class Views constructor(
             actualSize,
             scaleMode,
             scaleAnchor,
-            virtualSize,
-            targetSize
+            this::virtualSize.toRef(),
+            this::targetSize.toRef()
         )
 
         //println("RESIZED: $virtualSize, $actualSize, $targetSize")
@@ -605,17 +605,17 @@ interface BoundsProvider {
 fun BoundsProvider.setBoundsInfo(
     virtualWidth: Int,
     virtualHeight: Int,
-    actualSize: MSizeInt,
+    actualSize: SizeInt,
     scaleMode: ScaleMode = ScaleMode.FILL,
     anchor: Anchor = Anchor.CENTER,
-    virtualSize: MSizeInt = MSizeInt(),
-    targetSize: MSizeInt = MSizeInt()
+    virtualSize: Ref<SizeInt> = Ref(),
+    targetSize: Ref<SizeInt> = Ref()
 ) {
-    virtualSize.setTo(virtualWidth, virtualHeight)
-    scaleMode(virtualSize, actualSize, targetSize)
+    virtualSize.value = SizeInt(virtualWidth, virtualHeight)
+    targetSize.value = scaleMode(virtualSize.value, actualSize)
 
-    val ratioX = targetSize.width.toDouble() / virtualWidth.toDouble()
-    val ratioY = targetSize.height.toDouble() / virtualHeight.toDouble()
+    val ratioX = targetSize.value.width.toDouble() / virtualWidth.toDouble()
+    val ratioY = targetSize.value.height.toDouble() / virtualHeight.toDouble()
     val actualVirtualWidth = (actualSize.width / ratioX).toIntRound()
     val actualVirtualHeight = (actualSize.height / ratioY).toIntRound()
 
