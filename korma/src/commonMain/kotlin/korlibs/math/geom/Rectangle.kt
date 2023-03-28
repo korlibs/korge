@@ -210,3 +210,15 @@ fun Iterable<MRectangle>.bounds(target: MRectangle = MRectangle()): MRectangle {
     }
     return target.setBounds(left, top, right, bottom)
 }
+
+fun Rectangle.place(item: Size, anchor: Anchor, scale: ScaleMode): Rectangle {
+    val outSize = scale(item, this.size)
+    val p = (this.size - outSize) * anchor
+    return Rectangle(p, outSize)
+}
+
+//fun RectangleInt.place(item: SizeInt, anchor: Anchor, scale: ScaleMode): RectangleInt {
+//    val outSize = scale(item, this.size)
+//    val p = (this.size - outSize) * anchor
+//    return RectangleInt(p, outSize)
+//}

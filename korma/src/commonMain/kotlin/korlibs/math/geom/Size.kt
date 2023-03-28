@@ -63,4 +63,6 @@ fun Vector2Int.toSize(): SizeInt = SizeInt(raw)
 
 fun Size.toInt(): SizeInt = SizeInt(width.toInt(), height.toInt())
 fun SizeInt.toFloat(): Size = Size(width.toFloat(), height.toFloat())
+fun SizeInt.toVector(): Vector2Int = Vector2Int(width, height)
 fun Size.toPoint(): Point = Point(width, height)
+fun Size.toVector(): Vector2 = Vector2(width, height)

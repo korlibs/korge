@@ -18,4 +18,18 @@ inline class SizeInt internal constructor(internal val raw: Int2Pack) {
 
     constructor() : this(0, 0)
     constructor(width: Int, height: Int) : this(int2PackOf(width, height))
+
+
+    operator fun unaryMinus(): SizeInt = SizeInt(-width, -height)
+    operator fun unaryPlus(): SizeInt = this
+
+    operator fun minus(other: SizeInt): SizeInt = SizeInt(width - other.width, height - other.height)
+    operator fun plus(other: SizeInt): SizeInt = SizeInt(width + other.width, height + other.height)
+    operator fun times(s: Float): SizeInt = SizeInt((width * s).toInt(), (height * s).toInt())
+    operator fun times(s: Double): SizeInt = times(s.toFloat())
+    operator fun times(s: Int): SizeInt = times(s.toFloat())
+    operator fun div(other: SizeInt): SizeInt = SizeInt(width / other.width, height / other.height)
+    operator fun div(s: Float): SizeInt = SizeInt((width / s).toInt(), (height / s).toInt())
+    operator fun div(s: Double): SizeInt = div(s.toFloat())
+    operator fun div(s: Int): SizeInt = div(s.toFloat())
 }
