@@ -31,13 +31,102 @@ interface WithHitShape2d {
     val hitShape2d: Shape2d
 }
 
+abstract class AbstractNShape2d : NShape2d {
+    abstract protected val lazyVectorPath: VectorPath
+    protected val lazyCurves: List<Curves> by lazy { lazyVectorPath.toCurvesList() }
+
+    override val perimeter: Float get() {
+        var sum: Double = 0.0
+        lazyCurves.fastForEach { sum += it.length }
+        return sum.toFloat()
+    }
+
+    override val area: Float get() = if (lazyVectorPath.isLastCommandClose) lazyVectorPath.area else 0f
+    override fun toVectorPath(): VectorPath = lazyVectorPath
+    override fun distance(p: Point): Float = (p - projectedPoint(p)).length * insideSign(p)
+    override fun normalVectorAt(p: Point): Vector2 = -projectedPointExt(p, normal = true)
+    override fun projectedPoint(p: Point): Point = projectedPointExt(p, normal = false)
+    protected fun insideSign(p: Point): Float = if (containsPoint(p)) -1f else +1f
+    protected fun projectedPointExt(p: Point, normal: Boolean): Point {
+        var length = Double.POSITIVE_INFINITY
+        var pp = Point()
+        var n = Point()
+        lazyCurves.fastForEach { it.beziers.fastForEach {
+            val out = it.project(p)
+            if (length > out.dSq) {
+                length = out.dSq
+                pp = out.p
+                if (normal) n = out.normal
+            } else if (length == out.dSq) {
+                //println("EQUALS!")
+                length = out.dSq
+                pp = out.p
+                if (normal) {
+                    n += out.normal
+                }
+            }
+        } }
+        return if (normal) n.normalized else pp
+    }
+    override fun containsPoint(p: Point): Boolean = lazyVectorPath.containsPoint(p)
+}
+
+// RoundRectangle
+interface NShape2d {
+    val center: Point get() = TODO()
+    val area: Float
+    val perimeter: Float
+    // @TODO: SDF
+    // @TODO: NormalVector
+
+    /** Compute the distance to the shortest point to the edge (SDF). Negative inside. Positive outside. */
+    fun distance(p: Point): Float = TODO()
+    /** Returns the normal vector to the shortest point to the edge */
+    fun normalVectorAt(p: Point): Vector2 = (p - center).normalized
+    /** Point projected to the closest edge */
+    fun projectedPoint(p: Point): Point = p - normalVectorAt(p) * distance(p)
+
+    fun toVectorPath(): VectorPath
+    fun containsPoint(p: Point): Boolean = distance(p) <= 0f
+    //fun containsPoint(p: Point, mat: Matrix) = containsPoint(mat.transform(p))
+
+    companion object {
+        operator fun invoke(vararg shapes: NShape2d): NShape2d {
+            if (shapes.isEmpty()) return EmptyShape2d
+            if (shapes.size == 1) return shapes[0]
+            return CompoundShape2d(shapes.toList())
+        }
+    }
+}
+
+data class CompoundShape2d(val shapes: List<NShape2d>) : NShape2d {
+    override val area: Float get() = shapes.sumOf { it.area.toDouble() }.toFloat()
+    override val perimeter: Float get() = shapes.sumOf { it.perimeter.toDouble() }.toFloat()
+
+    override fun containsPoint(p: Point): Boolean {
+        shapes.fastForEach { if (it.containsPoint(p)) return true }
+        return false
+    }
+    override fun toVectorPath(): VectorPath = buildVectorPath { shapes.fastForEach { write(it.toVectorPath()) } }
+}
+
+object EmptyShape2d : NShape2d {
+    override val area: Float get() = 0f
+    override val perimeter: Float get() = 0f
+    override fun containsPoint(p: Point): Boolean = false
+    override fun toVectorPath(): VectorPath = buildVectorPath { }
+    override val center: Point get() = Point.ZERO
+    override fun distance(p: Point): Float = Float.POSITIVE_INFINITY
+    override fun normalVectorAt(p: Point): Vector2 = Vector2.NaN
+    override fun projectedPoint(p: Point): Point = Vector2.NaN
+}
+
 @Deprecated("")
 abstract class Shape2d {
     abstract val type: Int
     abstract val paths: List<PointList>
     abstract val closed: Boolean
     abstract fun containsPoint(p: Point): Boolean
-    fun containsPoint(p: Point, mat: Matrix) = containsPoint(mat.transform(p))
     open fun getBounds(): Rectangle {
         var minx = Double.POSITIVE_INFINITY
         var miny = Double.POSITIVE_INFINITY

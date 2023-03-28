@@ -3,6 +3,7 @@ package korlibs.math.geom.trapezoid
 import korlibs.datastructure.*
 import korlibs.datastructure.iterators.*
 import kotlin.jvm.*
+import kotlin.math.*
 
 /**
  *   (x0a, y0)  (x0b, y0)
@@ -15,6 +16,8 @@ class FTrapezoidsInt(capacity: Int = 5) {
     var assumeSorted: Boolean = false
     private val data = IntArrayList(capacity * 7)
     val size: Int get() = data.size / 6
+
+    val area: Double get() = TODO()
 
     fun clear() { data.clear() }
     operator fun get(index: Int): Item = Item(index)
@@ -114,6 +117,8 @@ class FTrapezoidsInt(capacity: Int = 5) {
     var Item.x1b: Int; get() = data[index * 6 + 4]; set(value) { data[index * 6 + 4] = value }
     /** Bottom coordinate */
     var Item.y1: Int; get() = data[index * 6 + 5]; set(value) { data[index * 6 + 5] = value }
+
+    val Item.area: Double get() = (y1 - y0).toDouble() * ((x0b - x0a) + (x1b - x1a)) / 2.0
 
     fun Item.containsY(y: Int): Boolean = y in y0..y1
 

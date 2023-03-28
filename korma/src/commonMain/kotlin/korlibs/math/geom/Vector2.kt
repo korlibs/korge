@@ -62,6 +62,9 @@ inline class Vector2 internal constructor(internal val raw: Float2Pack) {
     inline operator fun unaryMinus(): Vector2 = Point(-x, -y)
     inline operator fun unaryPlus(): Vector2 = this
 
+    inline operator fun plus(that: Size): Vector2 = Point(x + that.width, y + that.height)
+    inline operator fun minus(that: Size): Vector2 = Point(x - that.width, y - that.height)
+
     inline operator fun plus(that: Vector2): Vector2 = Point(x + that.x, y + that.y)
     inline operator fun minus(that: Vector2): Vector2 = Point(x - that.x, y - that.y)
     inline operator fun times(that: Vector2): Vector2 = Point(x * that.x, y * that.y)
@@ -109,7 +112,7 @@ inline class Vector2 internal constructor(internal val raw: Float2Pack) {
         else -> throw IndexOutOfBoundsException("Point doesn't have $component component")
     }
     val length: Float get() = hypot(x, y)
-    val squaredLength: Float get() {
+    val lengthSquared: Float get() {
         val x = x
         val y = y
         return x*x + y*y
@@ -144,6 +147,8 @@ inline class Vector2 internal constructor(internal val raw: Float2Pack) {
 
     fun isNaN(): Boolean = this.x.isNaN() && this.y.isNaN()
 
+    val absoluteValue: Vector2 get() = Point(abs(x), abs(y))
+
     @Deprecated("", ReplaceWith("ratio.interpolate(this, other)", "korlibs.math.interpolation.interpolate")) fun interpolateWith(ratio: Ratio, other: Vector2): Vector2 = ratio.interpolate(this, other)
 
     companion object {
@@ -156,10 +161,10 @@ inline class Vector2 internal constructor(internal val raw: Float2Pack) {
         //fun fromRaw(raw: Float2Pack) = Point(raw)
 
         /** Constructs a point from polar coordinates determined by an [angle] and a [length]. Angle 0 is pointing to the right, and the direction is counter-clock-wise */
-        inline fun fromPolar(x: Float, y: Float, angle: Angle, length: Double = 1.0): Vector2 = Point(x + angle.cosineF * length, y + angle.sineF * length)
-        inline fun fromPolar(x: Double, y: Double, angle: Angle, length: Double = 1.0): Vector2 = Point(x + angle.cosineD * length, y + angle.sineD * length)
-        inline fun fromPolar(base: Vector2, angle: Angle, length: Double = 1.0): Vector2 = fromPolar(base.x, base.y, angle, length)
-        inline fun fromPolar(angle: Angle, length: Double = 1.0): Vector2 = fromPolar(0.0, 0.0, angle, length)
+        inline fun fromPolar(x: Float, y: Float, angle: Angle, length: Float = 1f): Vector2 = Point(x + angle.cosineF * length, y + angle.sineF * length)
+        inline fun fromPolar(x: Double, y: Double, angle: Angle, length: Float = 1f): Vector2 = Point(x + angle.cosineD * length, y + angle.sineD * length)
+        inline fun fromPolar(base: Vector2, angle: Angle, length: Float = 1f): Vector2 = fromPolar(base.x, base.y, angle, length)
+        inline fun fromPolar(angle: Angle, length: Float = 1f): Vector2 = fromPolar(0.0, 0.0, angle, length)
 
         inline fun middle(a: Vector2, b: Vector2): Vector2 = (a + b) * 0.5
 
@@ -261,10 +266,12 @@ fun Iterable<Point>.bounds(): Rectangle {
     return bb.bounds
 }
 
+fun abs(a: Point): Point = a.absoluteValue
 fun min(a: Point, b: Point): Point = Point(min(a.x, b.x), min(a.y, b.y))
 fun max(a: Point, b: Point): Point = Point(max(a.x, b.x), max(a.y, b.y))
 fun Point.clamp(min: Float, max: Float): Point = Point(x.clamp(min, max), y.clamp(min, max))
 fun Point.clamp(min: Double, max: Double): Point = clamp(min.toFloat(), max.toFloat())
+fun Point.clamp(min: Point, max: Point): Point = Point(x.clamp(min.x, max.x), y.clamp(min.y, max.y))
 
 fun Point.toInt(): Vector2Int = Vector2Int(x.toInt(), y.toInt())
 fun Point.toIntCeil(): Vector2Int = Vector2Int(x.toIntCeil(), y.toIntCeil())

@@ -6,6 +6,7 @@ import korlibs.memory.*
 import korlibs.math.annotations.*
 import korlibs.math.geom.*
 import korlibs.math.geom.bezier.*
+import korlibs.math.geom.shape.*
 import korlibs.math.geom.trapezoid.*
 import korlibs.math.internal.*
 import korlibs.math.math.*
@@ -21,7 +22,7 @@ class VectorPath(
     val data: FloatArrayList = FloatArrayList(),
     var winding: Winding = Winding.DEFAULT,
     var optimize: Boolean = true,
-) : IVectorPath, Extra by Extra.Mixin() {
+) : AbstractNShape2d(), IVectorPath, Extra by Extra.Mixin() {
     var assumeConvex: Boolean = false
     var version: Int = 0
 
@@ -242,13 +243,22 @@ class VectorPath(
 
     fun getBounds(): Rectangle = (NewBoundsBuilder() + this).bounds
 
+    override val area: Float get() {
+        var sum = 0.0
+        trapezoids.trapezoids(winding).fastForEach { sum += it.area / trapezoids.scaleSq }
+        return sum.toFloat()
+    }
+    override val lazyVectorPath: VectorPath get() = this
+
+    override fun toVectorPath(): VectorPath = clone()
+
     // http://erich.realtimerendering.com/ptinpoly/
     // http://stackoverflow.com/questions/217578/how-can-i-determine-whether-a-2d-point-is-within-a-polygon/2922778#2922778
     // https://www.particleincell.com/2013/cubic-line-intersection/
     // I run a semi-infinite ray horizontally (increasing x, fixed y) out from the test point, and count how many edges it crosses.
     // At each crossing, the ray switches between inside and outside. This is called the Jordan curve theorem.
     fun containsPoint(x: Double, y: Double): Boolean = trapezoids.containsPoint(x, y, this.winding)
-    fun containsPoint(p: Point): Boolean = containsPoint(p.xD, p.yD, this.winding)
+    override fun containsPoint(p: Point): Boolean = containsPoint(p.xD, p.yD, this.winding)
     fun containsPoint(p: MPoint): Boolean = containsPoint(p.x, p.y, this.winding)
     fun containsPoint(x: Int, y: Int): Boolean = containsPoint(x.toDouble(), y.toDouble())
     fun containsPoint(x: Float, y: Float): Boolean = containsPoint(x.toDouble(), y.toDouble())
@@ -441,6 +451,7 @@ class VectorPath(
 }
 
 class VectorPathTrapezoids(val version: Int, val path: VectorPath, val scale: Int = 100) {
+    val scaleSq: Int = scale * scale
     val segments = path.toSegments(scale)
     val trapezoidsEvenOdd by lazy { SegmentIntToTrapezoidIntList.convert(segments, Winding.EVEN_ODD) }
     val trapezoidsNonZero by lazy { SegmentIntToTrapezoidIntList.convert(segments, Winding.NON_ZERO) }

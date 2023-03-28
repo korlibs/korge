@@ -3,12 +3,14 @@ package korlibs.math.geom
 import korlibs.memory.*
 import korlibs.memory.pack.*
 import korlibs.math.annotations.*
+import korlibs.math.geom.shape.*
+import korlibs.math.geom.vector.*
 import korlibs.math.internal.*
 import korlibs.math.math.*
 import kotlin.math.*
 
 //@KormaValueApi
-inline class Rectangle(val data: Float4Pack) {
+inline class Rectangle(val data: Float4Pack) : NShape2d {
     val int: RectangleInt get() = toInt()
 
     @Deprecated("", ReplaceWith("this")) fun clone(): Rectangle = this
@@ -82,7 +84,58 @@ inline class Rectangle(val data: Float4Pack) {
     fun contains(x: Double, y: Double): Boolean = contains(x.toFloat(), y.toFloat())
     fun contains(x: Int, y: Int): Boolean = contains(x.toFloat(), y.toFloat())
 
-    val area: Float get() = width * height
+    override val area: Float get() = width * height
+    override val perimeter: Float get() = (width + height) * 2
+
+    override fun containsPoint(p: Point): Boolean = (p.x >= left && p.x < right) && (p.y >= top && p.y < bottom)
+    override fun toVectorPath(): VectorPath = buildVectorPath { rect(this@Rectangle) }
+    override fun distance(p: Point): Float {
+        val p = p - center
+        val b = Vector2(width * 0.5, height * 0.5)
+        val d = p.absoluteValue - b
+        return max(d, Vector2.ZERO).length + min(max(d.x, d.y), 0f)
+    }
+
+    override fun normalVectorAt(p: Point): Vector2 {
+        val pp = projectedPoint(p)
+        val x = if (pp.x == left) -1f else if (pp.x == right) +1f else 0f
+        val y = if (pp.y == top) -1f else if (pp.y == bottom) +1f else 0f
+        return Point(x, y).normalized
+    }
+
+    override fun projectedPoint(p: Point): Point {
+        val p0 = Line(topLeft, topRight).projectedPoint(p)
+        val p1 = Line(topRight, bottomRight).projectedPoint(p)
+        val p2 = Line(bottomRight, bottomLeft).projectedPoint(p)
+        val p3 = Line(bottomLeft, topLeft).projectedPoint(p)
+        val d0 = (p0 - p).lengthSquared
+        val d1 = (p1 - p).lengthSquared
+        val d2 = (p2 - p).lengthSquared
+        val d3 = (p3 - p).lengthSquared
+        val dmin = min(d0, d1, d2, d3)
+        return when (dmin) {
+            d0 -> p0
+            d1 -> p1
+            d2 -> p2
+            d3 -> p3
+            else -> p0
+        }
+
+        val px = p.x.clamp(left, right)
+        val py = p.y.clamp(top, bottom)
+        val distTop = (py - top).absoluteValue
+        val distBottom = (py - bottom).absoluteValue
+        val minDistY = min(distTop, distBottom)
+        val distLeft = (px - left).absoluteValue
+        val distRight = (px - right).absoluteValue
+        val minDistX = min(distLeft, distRight)
+        if (minDistX < minDistY) {
+            return Point(if (distLeft < distRight) left else right, py)
+        } else {
+            return Point(px, if (distTop < distBottom) top else bottom)
+        }
+    }
+
     val isEmpty: Boolean get() = width == 0f && height == 0f
     val isNotEmpty: Boolean get() = !isEmpty
     @Deprecated("")
@@ -102,7 +155,7 @@ inline class Rectangle(val data: Float4Pack) {
 
     val centerX: Float get() = (right + left) * 0.5f
     val centerY: Float get() = (bottom + top) * 0.5f
-    val center: Point get() = Point(centerX, centerY)
+    override val center: Point get() = Point(centerX, centerY)
 
     /**
      * Circle that touches or contains all the corners ([topLeft], [topRight], [bottomLeft], [bottomRight]) of the rectangle.
@@ -110,7 +163,7 @@ inline class Rectangle(val data: Float4Pack) {
     fun outerCircle(): Circle {
         val centerX = centerX
         val centerY = centerY
-        return Circle(center, Point.distance(centerX, centerY, right, top).toDouble())
+        return Circle(center, Point.distance(centerX, centerY, right, top))
     }
 
     fun without(padding: Margin): Rectangle = fromBounds(
