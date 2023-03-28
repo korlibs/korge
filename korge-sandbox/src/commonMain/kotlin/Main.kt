@@ -7,7 +7,6 @@ import korlibs.image.format.*
 import korlibs.io.async.*
 import korlibs.io.file.std.*
 import korlibs.io.lang.*
-import korlibs.korge.view.filter.*
 import korlibs.math.interpolation.*
 import samples.*
 import samples.asteroids.*
@@ -27,16 +26,10 @@ suspend fun main() = Korge(
     debug = false,
     //debugAg = true,
     multithreaded = true,
-    //forceRenderEveryFrame = false // Newly added optimization!
-    forceRenderEveryFrame = true
+    forceRenderEveryFrame = false // Newly added optimization!
+    //forceRenderEveryFrame = true
     //debugAg = true,
 ).start {
-
-    //solidRect(50, 50, Colors.GREEN).xy(50, 50)
-    //    .filters(WaveFilter(amplitudeX = 15, amplitudeY = 10, crestDistanceX = 25.0, crestDistanceY = 10.0).also { filter ->
-    //        addUpdater { filter.time += it }
-    //        invalidateRender()
-    //    }).also { return@start }
     //image(resourcesVfs["korge.png"].readBitmap()); text("hello world!", textSize = 64.0, color = Colors.RED); return@Korge
     //text("hello world!", textSize = 64.0); return@Korge
 
