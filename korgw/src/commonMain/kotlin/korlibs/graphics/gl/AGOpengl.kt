@@ -435,7 +435,7 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
     }
 
     val tempBuffer = Buffer(4 * 128)
-    val tempBufferBlockCount = Array(128) { tempBuffer.sliceWithSize(0, 4 * it) }
+    //val tempBufferBlockCount = Array(128) { tempBuffer.sliceWithSize(0, 4 * it) }
 
     // UBO
     fun uniformsSet(
@@ -478,57 +478,64 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
         }
         //selectTextureUnit(7)
 
-        uniformBlocks.fastForEachUniform {
-            //println("UNIFORM IN BLOCK: $it")
-            uniformSet(glProgram, it)
+        val glProgramInfo = glProgram.programInfo
+        uniformBlocks.fastForEachBlock { index, block, buffer, valueIndex ->
+            val ref = glProgramInfo.uniforms[block.block.fixedLocation]
+            val bufferMem = buffer!!.mem!!
+            val currentMem = ref!!.buffer
+            val ublock = ref.block
+            if (valueIndex >= 0) {
+                if (!arrayequal(bufferMem, valueIndex, currentMem, 0, ublock.totalSize)) {
+                    arraycopy(bufferMem, ublock.totalSize * valueIndex, currentMem, 0, ublock.totalSize)
+                    ublock.uniforms.fastForEach { uniform ->
+                        //arraycopy(currentMem, uniform.voffset, tempBuffer, 0, uniform.totalBytes)
+                        writeUniform(
+                            uniform.uniform,
+                            glProgramInfo,
+                            currentMem.slice(uniform.voffset, uniform.voffset + uniform.totalBytes),
+                            "blockUniformSet",
+                        )
+                    }
+                }
+            } else {
+                println("ERROR block: ${block.block} has an invalid valueIndex=$valueIndex")
+            }
         }
+
+        //uniformBlocks.fastForEachUniform {
+        //    //println("UNIFORM IN BLOCK: $it")
+        //    uniformSet(glProgram, it)
+        //}
         //uniforms.fastForEach {
         //    //println("UNIFORM LEGACY: $it")
         //    uniformSet(glProgram, it)
         //}
     }
 
-    private fun uniformSet(glProgram: GLBaseProgram, value: AGUniformValue) {
-        val uniform = value.uniform
-        val uniformName = uniform.name
+    private fun writeUniform(uniform: Uniform, programInfo: GLProgramInfo, data: Buffer, source: String) {
+        val location = programInfo.getUniformLocation(gl, uniform.name)
         val uniformType = uniform.type
-        val location = glProgram.programInfo.getUniformLocation(gl, uniformName)
-        val declArrayCount = uniform.arrayCount
+        val arrayCount = uniform.arrayCount
 
-        val oldValue = glProgram.programInfo.cache[uniform]
-        if (value == oldValue) {
-            //println("uniform: $uniform already cached!")
-            return
-        }
-        glProgram.programInfo.cache[uniform] = value
-
-        //println("uniform: $uniform, arrayCount=${uniform.arrayCount}, stride=${uniform.elementCount}, value=$value old=$oldValue")
-
-        // Store into a direct buffer
-        //arraycopy(value.data, 0, tempData, 0, value.data.size)
-        //val data = value.data
-        value.extractToFloatAndInts(tempBuffer)
-        val data = tempBufferBlockCount[declArrayCount * uniformType.elementCount]
-
-        //println("uniform=$uniform, data=${value.data} : ${value.data.getInt32(0)}")
+        //println("uniform[$source]=$uniform, data=${data.hex()}")
 
         when (uniformType.kind) {
-            VarKind.TFLOAT -> when (uniform.type) {
-                VarType.Mat2 -> gl.uniformMatrix2fv(location, declArrayCount, false, data)
-                VarType.Mat3 -> gl.uniformMatrix3fv(location, declArrayCount, false, data)
-                VarType.Mat4 -> gl.uniformMatrix4fv(location, declArrayCount, false, data)
+            VarKind.TFLOAT -> when (uniformType) {
+                VarType.Mat2 -> gl.uniformMatrix2fv(location, arrayCount, false, data)
+                VarType.Mat3 -> gl.uniformMatrix3fv(location, arrayCount, false, data)
+                VarType.Mat4 -> gl.uniformMatrix4fv(location, arrayCount, false, data)
                 else -> when (uniformType.elementCount) {
-                    1 -> gl.uniform1fv(location, declArrayCount, data)
-                    2 -> gl.uniform2fv(location, declArrayCount, data)
-                    3 -> gl.uniform3fv(location, declArrayCount, data)
-                    4 -> gl.uniform4fv(location, declArrayCount, data)
+                    1 -> gl.uniform1fv(location, arrayCount, data)
+                    2 -> gl.uniform2fv(location, arrayCount, data)
+                    3 -> gl.uniform3fv(location, arrayCount, data)
+                    4 -> gl.uniform4fv(location, arrayCount, data)
                 }
             }
             else -> when (uniformType.elementCount) {
-                1 -> gl.uniform1iv(location, declArrayCount, data)
-                2 -> gl.uniform2iv(location, declArrayCount, data)
-                3 -> gl.uniform3iv(location, declArrayCount, data)
-                4 -> gl.uniform4iv(location, declArrayCount, data)
+                1 -> gl.uniform1iv(location, arrayCount, data)
+                2 -> gl.uniform2iv(location, arrayCount, data)
+                3 -> gl.uniform3iv(location, arrayCount, data)
+                4 -> gl.uniform4iv(location, arrayCount, data)
             }
         }
     }

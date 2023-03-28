@@ -304,7 +304,7 @@ open class Sampler(
 
 open class Uniform(
     name: String, type: VarType, arrayCount: Int, precision: Precision = Precision.DEFAULT, offset: Int? = null,
-    val typedUniform: TypedUniform<*>? = null
+    val typedUniform: TypedUniform<*>
 ) : VariableWithOffset(
     name, type, arrayCount, precision, offset
 ) {
@@ -314,20 +314,20 @@ open class Uniform(
 
     val totalElementCount: Int get() = type.elementCount * arrayCount
 
-    constructor(name: String, type: VarType, precision: Precision = Precision.DEFAULT) : this(name, type, 1, precision)
+    //constructor(name: String, type: VarType, precision: Precision = Precision.DEFAULT) : this(name, type, 1, precision)
 	override fun toString(): String = "Uniform($name)"
     override fun equals(other: Any?): Boolean = mequals<Uniform>(other)
     override fun hashCode(): Int = mhashcode()
     operator fun getValue(thisRef: Any?, property: KProperty<*>): Uniform = this
 
-    class Provider(val type: VarType, val arrayCount: Int, val precision: Precision = Precision.DEFAULT) {
-        operator fun provideDelegate(thisRef: Any?, property: KProperty<*>): Uniform = Uniform(property.name, type, arrayCount, precision)
-    }
+    //class Provider(val type: VarType, val arrayCount: Int, val precision: Precision = Precision.DEFAULT) {
+    //    operator fun provideDelegate(thisRef: Any?, property: KProperty<*>): Uniform = Uniform(property.name, type, arrayCount, precision)
+    //}
 }
 
 class UniformBlockBase(val fixedLocation: Int = -1)
 
-fun Uniform(type: VarType, arrayCount: Int = 1, precision: Precision = Precision.DEFAULT): Uniform.Provider = Uniform.Provider(type, arrayCount, precision)
+//fun Uniform(type: VarType, arrayCount: Int = 1, precision: Precision = Precision.DEFAULT): Uniform.Provider = Uniform.Provider(type, arrayCount, precision)
 
 open class Temp(id: Int, type: VarType, arrayCount: Int, precision: Precision = Precision.DEFAULT) : Variable("temp$id", type, arrayCount, precision) {
     constructor(id: Int, type: VarType, precision: Precision = Precision.DEFAULT) : this(id, type, 1, precision)
@@ -382,6 +382,7 @@ data class UniformInProgram(val uniform: Uniform, val index: Int)
 data class Program(val vertex: VertexShader, val fragment: FragmentShader, val name: String = "program-${vertex.name}-${fragment.name}") : Closeable {
 	val uniforms = (vertex.uniforms + fragment.uniforms)
     val typedUniforms = (vertex.typedUniforms + fragment.typedUniforms)
+    val uniformBlocks = typedUniforms.map { it.block }.distinct()
     val samplers = (vertex.samplers + fragment.samplers)
     // @TODO: Proper indices
     val uniformsToIndex = uniforms.withIndex().associate { it.value to UniformInProgram(it.value, it.index) }
