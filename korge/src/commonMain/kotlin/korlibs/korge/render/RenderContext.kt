@@ -66,14 +66,6 @@ class RenderContext constructor(
     @KorgeInternal
     var viewMat2D: Matrix = Matrix()
 
-    @KorgeInternal
-    val uniforms: AGUniformValues by lazy {
-        AGUniformValues {
-            //it[DefaultShaders.u_ProjMat] = projMat
-            //it[DefaultShaders.u_ViewMat] = viewMat
-        }
-    }
-
     var flipRenderTexture = true
     //var flipRenderTexture = false
 
@@ -158,30 +150,6 @@ class RenderContext constructor(
             } finally {
                 if (flush) flush()
                 samplers.fastForEach { textureUnits.set(it, old.textures[it.index], old.infos[it.index]) }
-            }
-        }
-    }
-
-    @PublishedApi
-    internal val tempOldUniformsList: Pool<AGUniformValues> = Pool { AGUniformValues() }
-
-    /**
-     * Executes [callback] while setting temporarily a set of [uniforms]
-     */
-    inline fun setTemporalUniforms(uniforms: AGUniformValues?, callback: (AGUniformValues) -> Unit) {
-        tempOldUniformsList { tempOldUniforms ->
-            if (uniforms != null && uniforms.isNotEmpty()) {
-                flush(FlushKind.STATE)
-                tempOldUniforms.setTo(this.uniforms)
-                this.uniforms.put(uniforms)
-            }
-            try {
-                callback(this.uniforms)
-            } finally {
-                if (uniforms != null && uniforms.isNotEmpty()) {
-                    flush(FlushKind.STATE)
-                    this.uniforms.setTo(tempOldUniforms)
-                }
             }
         }
     }

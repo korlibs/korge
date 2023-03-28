@@ -15,7 +15,11 @@ import kotlin.test.*
  */
 class MetalShaderGeneratorTest {
 
-    val u_ColorModifier = Uniform("u_ColorModifier", VarType.Float4)
+    object UB : UniformBlock(1) {
+        val u_ColorModifier by vec4()
+    }
+
+    val u_ColorModifier = UB.u_ColorModifier.uniform
 
     private val vertexShader = VertexShader {
         SET(v_Tex, a_Tex)
