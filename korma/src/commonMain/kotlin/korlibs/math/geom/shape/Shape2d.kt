@@ -275,11 +275,11 @@ fun Iterable<VectorPath>.toShape2d(closed: Boolean = true) = Shape2d.Complex(thi
 
 val List<PointList>.totalVertices get() = this.map { it.size }.sum()
 
-fun BoundsBuilder.add(shape: Shape2d) {
+fun MBoundsBuilder.add(shape: Shape2d) {
     for (path in shape.paths) add(path)
 }
 
-val Shape2d.bounds: MRectangle get() = BoundsBuilder().apply { add(this@bounds) }.getBounds()
+val Shape2d.bounds: MRectangle get() = MBoundsBuilder().apply { add(this@bounds) }.getBounds()
 
 fun MRectangle.toShape() = Shape2d.Rectangle(x, y, width, height)
 

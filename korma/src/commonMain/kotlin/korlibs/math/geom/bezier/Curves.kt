@@ -42,7 +42,7 @@ data class Curves(val beziers: List<Bezier>, val closed: Boolean) : Curve, Extra
         val curve: Bezier,
         val startLength: Double,
         val endLength: Double,
-        val bounds: MRectangle,
+        val bounds: Rectangle,
     ) {
         fun contains(length: Double): Boolean = length in startLength..endLength
 
@@ -54,20 +54,19 @@ data class Curves(val beziers: List<Bezier>, val closed: Boolean) : Curve, Extra
         beziers.mapIndexed { index, curve ->
             val start = pos
             pos += curve.length
-            CurveInfo(index, curve, start, pos, curve.getBounds().mutable)
+            CurveInfo(index, curve, start, pos, curve.getBounds())
         }
 
     }
     override val length: Double by lazy { infos.sumOf { it.length } }
-    private val bb = BoundsBuilder()
 
     val CurveInfo.startRatio: Double get() = this.startLength / this@Curves.length
     val CurveInfo.endRatio: Double get() = this.endLength / this@Curves.length
 
     override fun getBounds(): Rectangle {
-        bb.reset()
-        infos.fastForEach { bb.addEvenEmpty(it.bounds) }
-        return bb.getBounds().immutable
+        var bb = NewBoundsBuilder()
+        infos.fastForEach { bb += it.bounds }
+        return bb.bounds
     }
 
     @PublishedApi

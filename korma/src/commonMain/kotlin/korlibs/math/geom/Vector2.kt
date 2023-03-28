@@ -46,6 +46,7 @@ inline class Vector2 internal constructor(internal val raw: Float2Pack) {
     constructor(x: Float, y: Int) : this(float2PackOf(x.toFloat(), y.toFloat()))
     constructor(x: Int, y: Float) : this(float2PackOf(x.toFloat(), y.toFloat()))
 
+    @Deprecated("")
     constructor(p: MPoint) : this(p.x.toFloat(), p.y.toFloat())
     //constructor(p: Vector2) : this(p.raw)
     constructor() : this(0f, 0f)
@@ -137,6 +138,9 @@ inline class Vector2 internal constructor(internal val raw: Float2Pack) {
     val niceStr: String get() = "(${x.niceStr}, ${y.niceStr})"
     fun niceStr(decimalPlaces: Int): String = "(${x.niceStr(decimalPlaces)}, ${y.niceStr(decimalPlaces)})"
     override fun toString(): String = niceStr
+
+    /** Vector2 with inverted (1f / v) components to this */
+    fun inv(): Vector2 = Vector2(1f / x, 1f / y)
 
     fun isNaN(): Boolean = this.x.isNaN() && this.y.isNaN()
 
@@ -236,7 +240,7 @@ fun Point.mutable(out: MPoint = MPoint()): MPoint = out.setTo(x, y)
 @Deprecated("")
 val Point.mutable: MPoint get() = mutable()
 
-private inline fun getPolylineLength(size: Int, crossinline get: (n: Int) -> Point): Double {
+internal inline fun getPolylineLength(size: Int, crossinline get: (n: Int) -> Point): Double {
     var out = 0.0
     var prev = Point.ZERO
     for (n in 0 until size) {
@@ -248,14 +252,19 @@ private inline fun getPolylineLength(size: Int, crossinline get: (n: Int) -> Poi
 }
 
 fun PointList.getPolylineLength(): Double = getPolylineLength(size) { get(it) }
-fun List<MPoint>.getPolylineLength(): Double = getPolylineLength(size) { get(it).point }
+fun List<Point>.getPolylineLength(): Double = getPolylineLength(size) { get(it) }
 
-fun List<MPoint>.bounds(out: MRectangle = MRectangle(), bb: BoundsBuilder = BoundsBuilder()): MRectangle = bb.add(this).getBounds(out)
-fun Iterable<MPoint>.bounds(out: MRectangle = MRectangle(), bb: BoundsBuilder = BoundsBuilder()): MRectangle = bb.add(this).getBounds(out)
+fun List<Point>.bounds(): Rectangle = NewBoundsBuilder(size) { this + get(it) }.bounds
+fun Iterable<Point>.bounds(): Rectangle {
+    var bb = NewBoundsBuilder()
+    for (p in this) bb += p
+    return bb.bounds
+}
 
-fun min(a: MPoint, b: MPoint, out: MPoint = MPoint()): MPoint = out.setTo(kotlin.math.min(a.x, b.x), kotlin.math.min(a.y, b.y))
-fun max(a: MPoint, b: MPoint, out: MPoint = MPoint()): MPoint = out.setTo(kotlin.math.max(a.x, b.x), kotlin.math.max(a.y, b.y))
-fun MPoint.clamp(min: Double, max: Double, out: MPoint = MPoint()): MPoint = out.setTo(x.clamp(min, max), y.clamp(min, max))
+fun min(a: Point, b: Point): Point = Point(min(a.x, b.x), min(a.y, b.y))
+fun max(a: Point, b: Point): Point = Point(max(a.x, b.x), max(a.y, b.y))
+fun Point.clamp(min: Float, max: Float): Point = Point(x.clamp(min, max), y.clamp(min, max))
+fun Point.clamp(min: Double, max: Double): Point = clamp(min.toFloat(), max.toFloat())
 
 fun Point.toInt(): Vector2Int = Vector2Int(x.toInt(), y.toInt())
 fun Point.toIntCeil(): Vector2Int = Vector2Int(x.toIntCeil(), y.toIntCeil())

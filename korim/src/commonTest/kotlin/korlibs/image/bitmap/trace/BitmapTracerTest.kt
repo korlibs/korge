@@ -11,10 +11,10 @@ class BitmapTracerTest {
     fun testSmokeTrace() {
         val bmp = Bitmap32(300, 200, premultiplied = true).context2d {
             fill(Colors.WHITE, winding = Winding.EVEN_ODD) {
-                rect(MRectangle.fromBounds(2, 2, 18, 18))
-                rectHole(MRectangle.fromBounds(6, 6, 9, 12))
-                rectHole(MRectangle.fromBounds(10, 5, 15, 12))
-                rect(MRectangle.fromBounds(50, 2, 68, 18))
+                rect(Rectangle.fromBounds(2, 2, 18, 18))
+                rectHole(Rectangle.fromBounds(6, 6, 9, 12))
+                rectHole(Rectangle.fromBounds(10, 5, 15, 12))
+                rect(Rectangle.fromBounds(50, 2, 68, 18))
                 circle(Point(100, 100), 40f)
                 circle(Point(100, 100), 20f)
                 roundRect(200, 50, 50, 50, 5, 5)

@@ -3,7 +3,7 @@ package korlibs.math.geom
 import kotlin.math.*
 
 
-data class AABB3D(val min: MVector3 = MVector3(), val max: MVector3) {
+data class MAABB3D(val min: MVector3 = MVector3(), val max: MVector3) {
     var minX: Float get() = min.x; set(value) { min.x = value }
     var minY: Float get() = min.y; set(value) { min.y = value }
     var minZ: Float get() = min.z; set(value) { min.z = value }
@@ -17,10 +17,10 @@ data class AABB3D(val min: MVector3 = MVector3(), val max: MVector3) {
     val sizeZ: Float get() = maxZ - minZ
 
     companion object {
-        operator fun invoke(min: Float = Float.POSITIVE_INFINITY, max: Float = Float.NEGATIVE_INFINITY): AABB3D =
-            AABB3D(MVector3(min, min, min), MVector3(max, max, max))
+        operator fun invoke(min: Float = Float.POSITIVE_INFINITY, max: Float = Float.NEGATIVE_INFINITY): MAABB3D =
+            MAABB3D(MVector3(min, min, min), MVector3(max, max, max))
 
-        fun fromSphere(pos: IVector3, radius: Float): AABB3D = AABB3D(
+        fun fromSphere(pos: IVector3, radius: Float): MAABB3D = MAABB3D(
             MVector3(pos.x - radius, pos.y - radius, pos.z - radius),
             MVector3(pos.x + radius, pos.y + radius, pos.z + radius)
         )
@@ -39,12 +39,12 @@ data class AABB3D(val min: MVector3 = MVector3(), val max: MVector3) {
         this.maxZ = max
     }
 
-    fun copyFrom(other: AABB3D) {
+    fun copyFrom(other: MAABB3D) {
         this.min.copyFrom(other.min)
         this.max.copyFrom(other.max)
     }
 
-    fun expandBy(that: AABB3D) {
+    fun expandBy(that: MAABB3D) {
         val a = this
         val b = that
         a.minX = min(a.minX, b.minX)
@@ -55,9 +55,9 @@ data class AABB3D(val min: MVector3 = MVector3(), val max: MVector3) {
         a.maxZ = max(a.maxZ, b.maxZ)
     }
 
-    fun expandToFit(that: AABB3D) = expandBy(that)
+    fun expandToFit(that: MAABB3D) = expandBy(that)
 
-    fun expandedBy(that: AABB3D, out: AABB3D = AABB3D()): AABB3D {
+    fun expandedBy(that: MAABB3D, out: MAABB3D = MAABB3D()): MAABB3D {
         out.copyFrom(this)
         out.expandBy(that)
         return out
@@ -71,9 +71,9 @@ data class AABB3D(val min: MVector3 = MVector3(), val max: MVector3) {
         origin.y - radius > maxY ||
         origin.z - radius > maxZ)
 
-    fun intersectsAABB(box: AABB3D): Boolean = max.x > box.min.x && min.x < box.max.x &&
+    fun intersectsAABB(box: MAABB3D): Boolean = max.x > box.min.x && min.x < box.max.x &&
         max.y > box.min.y && min.y < box.max.y &&
         max.z > box.min.z && min.z < box.max.z
 
-    fun clone() = AABB3D(min.clone(), max.clone())
+    fun clone() = MAABB3D(min.clone(), max.clone())
 }

@@ -342,7 +342,7 @@ data class PolylineShape constructor(
     val strokeInfo: StrokeInfo,
     override val globalAlpha: Double = 1.0,
 ) : StyledShape {
-    private val tempBB = BoundsBuilder()
+    private val tempBB = MBoundsBuilder()
     private val tempRect = MRectangle()
 
     val thickness by strokeInfo::thickness

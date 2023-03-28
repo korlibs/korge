@@ -111,7 +111,7 @@ class UIWindow(title: String, width: Double = 256.0, height: Double = 256.0) : U
 
                     else -> Unit
                 }
-                window.setGlobalBounds(bounds)
+                window.setGlobalBounds(bounds.immutable)
             }
         }
 

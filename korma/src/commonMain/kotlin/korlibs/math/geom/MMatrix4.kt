@@ -7,10 +7,12 @@ import kotlin.math.floor
 import kotlin.math.sign
 import kotlin.math.sqrt
 
+@Deprecated("Use Matrix4 instead")
 typealias MMatrix3D = MMatrix4
 
 // Stored as four consecutive column vectors (effectively stored in column-major order) see https://en.wikipedia.org/wiki/Row-_and_column-major_order
 @KormaMutableApi
+@Deprecated("Use Matrix4 instead")
 class MMatrix4 {
     val data: FloatArray = floatArrayOf(
         1f, 0f, 0f, 0f, // column-0
@@ -1062,7 +1064,7 @@ class MMatrix4 {
     )
 
     fun copyFrom(that: MMatrix): MMatrix4 = that.toMatrix4(this)
-    fun copyFrom(that: Matrix): MMatrix4 = that.toMatrix4(this)
+    //fun copyFrom(that: Matrix): MMatrix4 = that.toMMatrix4(this)
 
 }
 
@@ -1073,7 +1075,7 @@ fun MMatrix.toMatrix4(out: MMatrix4 = MMatrix3D()): MMatrix4 = out.setRows(
     0.0, 0.0, 0.0, 1.0
 )
 
-fun Matrix.toMatrix4(out: MMatrix4 = MMatrix3D()): MMatrix4 = out.setRows(
+fun Matrix.toMatrix4(): Matrix4 = Matrix4.fromRows(
     a, c, 0f, tx,
     b, d, 0f, ty,
     0f, 0f, 1f, 0f,

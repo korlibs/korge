@@ -12,10 +12,10 @@ class MainImageTrace : Scene() {
     override suspend fun SContainer.sceneMain() {
         val bmp = Bitmap32Context2d(300, 200) {
             fill(Colors.WHITE, winding = Winding.EVEN_ODD) {
-                rect(MRectangle.fromBounds(2, 2, 18, 18))
-                rectHole(MRectangle.fromBounds(6, 6, 9, 12))
-                rectHole(MRectangle.fromBounds(10, 5, 15, 12))
-                rect(MRectangle.fromBounds(50, 2, 68, 18))
+                rect(Rectangle.fromBounds(2, 2, 18, 18))
+                rectHole(Rectangle.fromBounds(6, 6, 9, 12))
+                rectHole(Rectangle.fromBounds(10, 5, 15, 12))
+                rect(Rectangle.fromBounds(50, 2, 68, 18))
                 circle(Point(100, 100), 60f)
                 circle(Point(100, 100), 30f)
                 roundRect(200, 50, 50, 50, 5, 5)

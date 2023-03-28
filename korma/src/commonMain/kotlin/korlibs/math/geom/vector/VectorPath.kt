@@ -496,7 +496,7 @@ fun VectorBuilder.write(path: VectorPath, m: MMatrix?) {
     )
 }
 
-fun BoundsBuilder.add(path: VectorPath, transform: MMatrix? = null) {
+fun MBoundsBuilder.add(path: VectorPath, transform: MMatrix? = null) {
     val curvesList = path.getCurvesList()
     if (curvesList.isEmpty() && path.isNotEmpty()) {
         path.visit(object : VectorPath.Visitor {

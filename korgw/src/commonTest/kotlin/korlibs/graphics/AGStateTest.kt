@@ -15,7 +15,7 @@ class AGStateTest {
 
     @Test
     fun testBoundsBuilder() {
-        val bb = BoundsBuilder()
+        val bb = MBoundsBuilder()
         bb.add(AGScissor(10, 20, 110, 120))
         bb.add(AGScissor(50, 60, 135, 145))
         assertEquals(

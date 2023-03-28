@@ -1,10 +1,8 @@
 package korlibs.image.vector
 
-import korlibs.logger.*
 import korlibs.image.color.*
-import korlibs.image.format.*
-import korlibs.image.vector.chart.*
-import korlibs.image.vector.format.SVG
+import korlibs.image.vector.format.*
+import korlibs.logger.*
 import korlibs.math.geom.vector.*
 import kotlin.test.*
 
