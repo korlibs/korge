@@ -53,7 +53,8 @@ object RootKorlibsPlugin {
         korlibs.korge.gradle.KorgeVersionsTask.registerShowKorgeVersions(project)
         initInstallAndCheckLinuxLibs()
         initCatalog()
-        configureKover()
+        // Disabled by default, since it resolves configurations at configuration time
+        if (System.getenv("ENABLE_KOVER") == "true") configureKover()
         initAndroidFixes()
         initPublishing()
         initKMM()
