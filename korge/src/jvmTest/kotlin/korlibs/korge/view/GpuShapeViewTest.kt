@@ -13,6 +13,7 @@ class GpuShapeViewTest {
     fun test() = korgeScreenshotTest(SizeInt(450, 200)) {
         gpuShapeView {
             it.antialiased = true
+            it.alpha = 0.75
             val paint1 = createLinearGradient(0, 0, 200, 200).add(0.0, Colors.BLUE.withAd(0.9)).add(1.0, Colors.WHITE.withAd(0.7))
             translate(60.0, 70.0) {
                 fill(paint1, winding = Winding.EVEN_ODD) {
