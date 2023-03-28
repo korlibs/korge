@@ -224,7 +224,7 @@ internal open class NativeUiFactory {
             override fun preferredSize(): Dimension {
                 //cachedBounds = null
                 if (cachedBounds == null) {
-                    val bb = BoundsBuilder()
+                    val bb = MBoundsBuilder()
                     for (n in 0 until componentCount) {
                         val b = this.getComponent(n).bounds
                         bb.add(b.x, b.y)
@@ -646,7 +646,7 @@ open class JFixedSizeContainer : JPanel() {
     override fun preferredSize(): Dimension {
         //cachedBounds = null
         if (cachedBounds == null) {
-            val bb = BoundsBuilder()
+            val bb = MBoundsBuilder()
             for (n in 0 until componentCount) {
                 val b = this.getComponent(n).bounds
                 bb.add(b.x, b.y)

@@ -77,8 +77,8 @@ fun <T> TextRenderer<T>.measure(text: T, size: Double, defaultFont: Font): Bound
 }
 
 class BoundBuilderTextRendererActions : TextRendererActions() {
-    val flbb = BoundsBuilder()
-    val bb = BoundsBuilder()
+    val flbb = MBoundsBuilder()
+    val bb = MBoundsBuilder()
     var currentLine = 0
     //val nlines get() = currentLine + 1
     val nlines get() = currentLine
@@ -98,7 +98,7 @@ class BoundBuilderTextRendererActions : TextRendererActions() {
     data class LineStats(
         var maxLineHeight: Double = 0.0,
         var maxX: Double = 0.0,
-        val bounds: BoundsBuilder = BoundsBuilder(),
+        val bounds: MBoundsBuilder = MBoundsBuilder(),
     ) {
         fun getAlignX(align: HorizontalAlign): Double = align.getOffsetX(maxX) + bounds.xminOr(0.0)
 

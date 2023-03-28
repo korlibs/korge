@@ -280,8 +280,8 @@ data class MPoint(
 
 fun List<MPoint>.getPolylineLength(): Double = getPolylineLength(size) { get(it).point }
 
-fun List<MPoint>.bounds(out: MRectangle = MRectangle(), bb: BoundsBuilder = BoundsBuilder()): MRectangle = bb.add(this).getBounds(out)
-fun Iterable<MPoint>.bounds(out: MRectangle = MRectangle(), bb: BoundsBuilder = BoundsBuilder()): MRectangle = bb.add(this).getBounds(out)
+fun List<MPoint>.bounds(out: MRectangle = MRectangle(), bb: MBoundsBuilder = MBoundsBuilder()): MRectangle = bb.add(this).getBounds(out)
+fun Iterable<MPoint>.bounds(out: MRectangle = MRectangle(), bb: MBoundsBuilder = MBoundsBuilder()): MRectangle = bb.add(this).getBounds(out)
 
 fun min(a: MPoint, b: MPoint, out: MPoint = MPoint()): MPoint = out.setTo(kotlin.math.min(a.x, b.x), kotlin.math.min(a.y, b.y))
 fun max(a: MPoint, b: MPoint, out: MPoint = MPoint()): MPoint = out.setTo(kotlin.math.max(a.x, b.x), kotlin.math.max(a.y, b.y))

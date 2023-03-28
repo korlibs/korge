@@ -565,7 +565,7 @@ fun MRectangle?.toAGScissor(): AGScissor {
     if (this == null) return AGScissor.NIL
     return AGScissor(x.toInt(), y.toInt(), width.toInt(), height.toInt())
 }
-fun BoundsBuilder.add(scissor: AGScissor) {
+fun MBoundsBuilder.add(scissor: AGScissor) {
     add(scissor.left, scissor.top)
     add(scissor.right, scissor.bottom)
 }

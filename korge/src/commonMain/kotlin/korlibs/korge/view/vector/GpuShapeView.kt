@@ -74,7 +74,7 @@ open class GpuShapeView(
     var boundsIncludeStrokes: Boolean = true
 
     private val gpuShapeViewCommands = GpuShapeViewCommands()
-    private val bb = BoundsBuilder()
+    private val bb = MBoundsBuilder()
     var bufferWidth = 1000
     var bufferHeight = 1000
     private val pointsScope = PointPool(128)
@@ -473,7 +473,7 @@ open class GpuShapeView(
         val isSimpleDraw = shapeIsConvex && shape.clip == null && !debugDrawOnlyAntialiasedBorder
         //val isSimpleDraw = false
         val pathDataList = getPointsForPathList(shape.path, if (isSimpleDraw) AGDrawType.TRIANGLE_STRIP else AGDrawType.TRIANGLE_FAN)
-        val pathBoundsNoExpanded = BoundsBuilder().also { bb -> pathDataList.fastForEach {
+        val pathBoundsNoExpanded = MBoundsBuilder().also { bb -> pathDataList.fastForEach {
             //println("bounds=${it.bounds}")
             bb.add(it.bounds)
         } }.getBounds()
