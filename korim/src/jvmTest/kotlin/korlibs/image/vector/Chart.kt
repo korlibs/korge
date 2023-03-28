@@ -1,4 +1,4 @@
-package korlibs.image.vector.chart
+package korlibs.image.vector
 
 import korlibs.image.vector.Context2d
 import korlibs.image.vector.Drawable

@@ -1,4 +1,4 @@
-package korlibs.image.vector.chart
+package korlibs.image.vector
 
 import korlibs.image.color.Colors
 import korlibs.image.color.RGBA
