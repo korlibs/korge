@@ -4,7 +4,7 @@ import korlibs.math.geom.*
 import korlibs.math.geom.collider.HitTestDirection
 import korlibs.math.geom.collider.HitTestDirectionFlags
 import korlibs.math.geom.collider.HitTestable
-import korlibs.math.geom.shape.Shape2d
+import korlibs.math.geom.shape.*
 
 interface TileShapeInfo : HitTestable {
     fun hitTestAny(shape2d: Shape2d, matrix: Matrix, direction: HitTestDirection): Boolean

@@ -1,9 +1,8 @@
 package korlibs.math.geom.vector
 
 import korlibs.math.geom.*
-import korlibs.math.geom.shape.buildVectorPath
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import korlibs.math.geom.shape.*
+import kotlin.test.*
 
 class VectorBuilderTest {
     @Test

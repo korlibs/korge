@@ -2,9 +2,8 @@ package korlibs.math.geom
 
 import korlibs.math.geom.shape.*
 import korlibs.math.geom.vector.*
-import kotlin.math.*
 
-data class Circle(override val center: Point, val radius: Float) : NShape2d {
+data class Circle(override val center: Point, val radius: Float) : Shape2d {
     constructor(x: Float, y: Float, radius: Float) : this(Point(x, y), radius)
 
     override val area: Float get() = (PIF * radius * radius)

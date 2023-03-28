@@ -31,12 +31,12 @@ class MainShape2dScene : Scene() {
             buildVectorPath { star(7, 30.0, 50.0, x = 100.0, y = 100.0) },
             buildVectorPath { star(7, 30.0, 50.0, x = 100.0, y = 100.0); rectHole(Rectangle(80, 80, 40, 40)) },
         )
-        var shape: NShape2d = shapes.first()
+        var shape: Shape2d = shapes.first()
 
         fun update() {
             val pos = localMousePos(views)
 
-            val intersects = NShape2d.intersects(shape, Matrix.NIL, cursorShape, Matrix.IDENTITY.translated(pos))
+            val intersects = Shape2d.intersects(shape, Matrix.NIL, cursorShape, Matrix.IDENTITY.translated(pos))
 
             gpuShapeView.alpha = if (intersects) 1.0 else 0.5
             //println("intersects=$intersects")

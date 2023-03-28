@@ -46,7 +46,7 @@ open class Circle(
     private fun updateGraphics() {
         val halfStroke = this@Circle.strokeThickness / 2
         val radius = this.radius
-        hitShape2d = Shape2d.Circle(radius, radius, radius)
+        hitShape2d = Circle(Point(radius, radius), radius.toFloat())
         //println("radius=$radius, halfStroke=$halfStroke")
         updatePath {
             clear()

@@ -241,7 +241,7 @@ class VectorPath(
         return true
     }
 
-    fun getBounds(): Rectangle = (NewBoundsBuilder() + this).bounds
+    override fun getBounds(): Rectangle = (NewBoundsBuilder() + this).bounds
 
     override val area: Float get() {
         var sum = 0.0

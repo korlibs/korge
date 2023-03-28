@@ -7,6 +7,8 @@ import korlibs.image.format.*
 import korlibs.io.async.*
 import korlibs.io.file.std.*
 import korlibs.io.lang.*
+import korlibs.korge.view.Circle
+import korlibs.math.geom.*
 import korlibs.math.interpolation.*
 import samples.*
 import samples.asteroids.*
@@ -30,6 +32,21 @@ suspend fun main() = Korge(
     //forceRenderEveryFrame = true
     //debugAg = true,
 ).start {
+    //lateinit var circle1: Circle
+    //lateinit var circle2: Circle
+    //val container = container {
+    //    xy(200, 200)
+    //    scale(1.2)
+    //    circle1 = circle(128.0, Colors.RED)
+    //        .scale(0.75)
+    //        .anchor(Anchor.MIDDLE_CENTER)
+    //    circle2 = circle(64.0, Colors.BLUE)
+    //        .scale(1.5)
+    //        .anchor(Anchor.MIDDLE_CENTER)
+    //}
+    //circle1.xy(167, 100)
+    //circle2.xy(0, 0)
+    //return@start
     //image(resourcesVfs["korge.png"].readBitmap()); text("hello world!", textSize = 64.0, color = Colors.RED); return@Korge
     //text("hello world!", textSize = 64.0); return@Korge
 
