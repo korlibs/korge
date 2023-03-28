@@ -9,7 +9,7 @@ import korlibs.math.geom.*
 
 class BitmapVector(
     val shape: BoundsDrawable,
-    val bounds: MRectangle = shape.bounds.mutable,
+    val bounds: Rectangle = shape.bounds,
     val scale: Double = 1.0,
     val rasterizerMethod: ShapeRasterizerMethod = ShapeRasterizerMethod.X4,
     val antialiasing: Boolean = true,

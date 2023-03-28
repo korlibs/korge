@@ -18,8 +18,8 @@ interface BaseOpenglContext : Disposable {
     val isCore: Boolean get() = false
     val scaleFactor: Double get() = 1.0
     data class ContextInfo(
-        val scissors: MRectangleInt? = null,
-        val viewport: MRectangleInt? = null
+        var scissors: RectangleInt? = null,
+        var viewport: RectangleInt? = null
     ) {
         companion object {
             val DEFAULT = ContextInfo()

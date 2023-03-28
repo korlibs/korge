@@ -622,8 +622,6 @@ fun Bitmap32.posterizeInplace(nbits: Int = 4): Bitmap32 {
     return this
 }
 
-@Deprecated("")
-fun Bitmap32.expandBorder(area: MRectangleInt, border: Int) = expandBorder(area.immutable, border)
 fun Bitmap32.expandBorder(area: RectangleInt, border: Int) = expandBorder(area.top, area.left, area.bottom, area.right, border)
 
 fun Bitmap32.expandBorder(areaTop: Int, areaLeft: Int, areaBottom: Int, areaRight: Int, border: Int) {

@@ -17,6 +17,8 @@ inline class RectangleInt(val data: Int4Pack) {
     val area: Int get() = width * height
     val isEmpty: Boolean get() = width == 0 && height == 0
     val isNotEmpty: Boolean get() = !isEmpty
+
+    @Deprecated("")
     val mutable: MRectangleInt get() = MRectangleInt(x, y, width, height)
 
     val left: Int get() = x

@@ -74,7 +74,7 @@ fun <T : Bitmap> RectSlice<T>.extract(): T {
 
 fun <T : Bitmap> RectSlice<T>.toBitmap(): T = extract()
 
-fun <T : SizeableInt> SliceCoordsWithBase<T>.slice(bounds: MRectangleInt = MRectangleInt(0, 0, width, height), name: String? = null, orientation: ImageOrientation = ImageOrientation.ROTATE_0, padding: MarginInt = MarginInt.ZERO): RectSlice<T> =
+fun <T : SizeableInt> SliceCoordsWithBase<T>.slice(bounds: RectangleInt = RectangleInt(0, 0, width, height), name: String? = null, orientation: ImageOrientation = ImageOrientation.ROTATE_0, padding: MarginInt = MarginInt.ZERO): RectSlice<T> =
     RectSlice(
         this.base,
         // @TODO: This shouldn't be necessary. But ASE test fails without this

@@ -78,7 +78,7 @@ open class FixedSizeContainer(
                 //println("ctx.ag.isRenderingToWindow=${ctx.ag.isRenderingToWindow}, FIXED_CLIP: bounds=$bounds, ctx.viewMat2D=${ctx.viewMat2D}")
 
                 //println("FIXED_CLIP: bounds=$bounds")
-                val rect = c2d.batch.scissor.toRectOrNull(tempRect)?.immutable
+                val rect = c2d.batch.scissor.toRectOrNull()
                 var intersects = true
                 if (rect != null) {
                     intersects = bounds.intersects(rect)
