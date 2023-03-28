@@ -1,12 +1,12 @@
 package korlibs.image.awt
 
-import korlibs.memory.*
 import korlibs.image.bitmap.*
 import korlibs.image.color.*
 import korlibs.image.format.*
 import korlibs.io.async.*
+import korlibs.math.awt.*
 import korlibs.math.geom.*
-import korlibs.math.geom.MRectangle
+import korlibs.memory.*
 import kotlinx.coroutines.*
 import java.awt.*
 import java.awt.Point
@@ -66,9 +66,9 @@ fun awtShowImage(image: BufferedImage): JFrame {
             (g as? Graphics2D)?.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC)
             (g as? Graphics2D)?.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY)
             val scaleMode = ScaleMode.SHOW_ALL
-            val imageSize = MSize(image.width, image.height)
+            val imageSize = Size(image.width, image.height)
             val containerSize = g.clipBounds.toKorma()
-            val out = containerSize.place(imageSize, Anchor.MIDDLE_CENTER, scaleMode).toInt()
+            val out = containerSize.toFloat().place(imageSize, Anchor.MIDDLE_CENTER, scaleMode).toInt()
             g.drawImage(image, out.x, out.y, out.width, out.height, null)
         }
     }
@@ -89,16 +89,6 @@ fun awtShowImage(image: BufferedImage): JFrame {
 	return frame
 }
 
-// @TODO: Move to KorMA
-private fun java.awt.Rectangle.toKorma(): MRectangle = MRectangle(this.x, this.y, this.width, this.height)
-
-// @TODO: Move to KorMA
-private fun MRectangle.place(item: MSize, anchor: Anchor, scale: ScaleMode, out: MRectangle = MRectangle()): MRectangle {
-    val outSize = scale(item, this.mSize)
-    val x = (this.width - outSize.width) * anchor.doubleX
-    val y = (this.height - outSize.height) * anchor.doubleY
-    return out.setTo(x, y, outSize.width, outSize.height)
-}
 
 fun awtShowImage(bitmap: Bitmap) = awtShowImage(bitmap.toBMP32().toAwt())
 

@@ -10,6 +10,14 @@ data class DoubleRangeExclusive(val start: Double, val endExclusive: Double) {
 
 inline infix fun Double.until(endExclusive: Double): DoubleRangeExclusive = DoubleRangeExclusive(this, endExclusive)
 
+data class FloatRangeExclusive(val start: Float, val endExclusive: Float) {
+    val length: Float get() = endExclusive - start
+    operator fun contains(value: Double): Boolean = value >= start && value < endExclusive
+    override fun toString(): String = "${start.niceStr} until ${endExclusive.niceStr}"
+}
+
+inline infix fun Float.until(endExclusive: Float): FloatRangeExclusive = FloatRangeExclusive(this, endExclusive)
+
 class OpenRange<T : Comparable<T>>(val start: T, val endExclusive: T)
 
 // @TODO: Would cause conflicts with Int until Int for example

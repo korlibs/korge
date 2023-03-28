@@ -52,7 +52,7 @@ inline class Rectangle(val data: Float4Pack) {
     companion object {
         val ZERO = Rectangle(0, 0, 0, 0)
         val INFINITE = Rectangle(Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY)
-        val NaN = Rectangle(Float.NaN, Float.NaN, Float.NaN, Float.NaN)
+        val NaN = Rectangle(Float.NaN, Float.NaN, 0f, 0f)
         val NIL get() = NaN
 
         operator fun invoke(): Rectangle = Rectangle(Point(), Size())
@@ -187,13 +187,13 @@ inline class Rectangle(val data: Float4Pack) {
     fun ceiled(): Rectangle = Rectangle(ceil(x), ceil(y), ceil(width), ceil(height))
 }
 
-@KormaMutableApi
-fun Iterable<MRectangle>.bounds(target: MRectangle = MRectangle()): MRectangle {
+
+fun Iterable<Rectangle>.bounds(): Rectangle {
     var first = true
-    var left = 0.0
-    var right = 0.0
-    var top = 0.0
-    var bottom = 0.0
+    var left = 0f
+    var right = 0f
+    var top = 0f
+    var bottom = 0f
     for (r in this) {
         if (first) {
             left = r.left
@@ -208,5 +208,17 @@ fun Iterable<MRectangle>.bounds(target: MRectangle = MRectangle()): MRectangle {
             bottom = max(bottom, r.bottom)
         }
     }
-    return target.setBounds(left, top, right, bottom)
+    return Rectangle.fromBounds(left, top, right, bottom)
 }
+
+fun Rectangle.place(item: Size, anchor: Anchor, scale: ScaleMode): Rectangle {
+    val outSize = scale(item, this.size)
+    val p = (this.size - outSize) * anchor
+    return Rectangle(p, outSize)
+}
+
+//fun RectangleInt.place(item: SizeInt, anchor: Anchor, scale: ScaleMode): RectangleInt {
+//    val outSize = scale(item, this.size)
+//    val p = (this.size - outSize) * anchor
+//    return RectangleInt(p, outSize)
+//}

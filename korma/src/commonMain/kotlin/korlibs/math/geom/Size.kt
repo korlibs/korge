@@ -4,6 +4,9 @@ import korlibs.memory.pack.*
 import korlibs.math.internal.*
 import kotlin.math.*
 
+/**
+ * A class representing a size with a [width] and a [height] as Float.
+ */
 //@KormaExperimental
 //@KormaValueApi
 inline class Size internal constructor(internal val raw: Float2Pack) {//: Sizeable {
@@ -47,7 +50,7 @@ inline class Size internal constructor(internal val raw: Float2Pack) {//: Sizeab
     //override val size: Size get() = this
 
     override fun toString(): String = "Size(width=${width.niceStr}, height=${height.niceStr})"
-}
+    }
 
 val Size.mutable: MSize get() = MSize(width, height)
 
@@ -63,4 +66,6 @@ fun Vector2Int.toSize(): SizeInt = SizeInt(raw)
 
 fun Size.toInt(): SizeInt = SizeInt(width.toInt(), height.toInt())
 fun SizeInt.toFloat(): Size = Size(width.toFloat(), height.toFloat())
+fun SizeInt.toVector(): Vector2Int = Vector2Int(width, height)
 fun Size.toPoint(): Point = Point(width, height)
+fun Size.toVector(): Vector2 = Vector2(width, height)

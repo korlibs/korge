@@ -606,6 +606,9 @@ inline class AGSize(val data: Int) {
 }
 
 inline class AGScissor(val data: Short4Pack) {
+    val isNIL: Boolean get() = this == NIL
+    val isNotNIL: Boolean get() = !isNIL
+
     //constructor(xy: Int, wh: Int) : this(short4PackOf(xy.toShort(), (xy ushr 16).toShort(), wh.toShort(), (wh ushr 16).toShort()))
     constructor(x: Int, y: Int, width: Int, height: Int) : this(short4PackOf(x.toShortClamped(), y.toShortClamped(), (x + width).toShortClamped(), (y + height).toShortClamped()))
     constructor(x: Float, y: Float, width: Float, height: Float) : this(x.toIntRound(), y.toIntRound(), width.toIntRound(), height.toIntRound())
@@ -629,11 +632,8 @@ inline class AGScissor(val data: Short4Pack) {
         return "Scissor(x=${x}, y=${y}, width=${width}, height=${height})"
     }
 
-    fun toRect(out: MRectangle = MRectangle()): MRectangle = out.setTo(x, y, width, height)
-    fun toRectOrNull(out: MRectangle = MRectangle()): MRectangle? {
-        if (this == NIL) return null
-        return out.setTo(x, y, width, height)
-    }
+    fun toRect(): Rectangle = if (isNIL) Rectangle.NIL else Rectangle(x, y, width, height)
+    fun toRectOrNull(): Rectangle? = toRect().takeIf { it.isNotNIL }
 
     companion object {
         fun fromBounds(left: Int, top: Int, right: Int, bottom: Int): AGScissor = AGScissor(left, top, right - left, bottom - top)
@@ -648,10 +648,6 @@ inline class AGScissor(val data: Short4Pack) {
 
         operator fun invoke(rect: Rectangle): AGScissor {
             if (rect.isNIL) return NIL
-            return AGScissor(rect.x, rect.y, rect.width, rect.height)
-        }
-        operator fun invoke(rect: MRectangle?): AGScissor {
-            if (rect == null) return NIL
             return AGScissor(rect.x, rect.y, rect.width, rect.height)
         }
 

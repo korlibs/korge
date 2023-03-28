@@ -5,7 +5,7 @@ import korlibs.image.vector.Context2d
 import korlibs.image.vector.Shape
 import korlibs.image.vector.ShapeBuilder
 import korlibs.image.vector.buildShape
-import korlibs.math.geom.BoundsBuilder
+import korlibs.math.geom.*
 import korlibs.math.geom.shape.Shape2d
 import korlibs.math.geom.shape.toShape2d
 import korlibs.math.geom.vector.VectorPath
@@ -121,7 +121,8 @@ open class CpuGraphics @JvmOverloads constructor(
         shape?.draw(ctx)
     }
 
-    override fun getShapeBounds(bb: BoundsBuilder, includeStrokes: Boolean) {
-        bb.add(shape?.getBounds(includeStrokes)?.mutable)
+    override fun getShapeBounds(includeStrokes: Boolean): Rectangle {
+        //return shape?.getBounds(includeStrokes) ?: Rectangle.NIL
+        return shape?.getBounds(includeStrokes) ?: Rectangle.ZERO
     }
 }

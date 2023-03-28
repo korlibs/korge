@@ -13,7 +13,7 @@ inline fun Container.ninePatchShapeView(
 class NinePatchShapeView(
     shape: NinePatchShape,
     renderer: GraphicsRenderer,
-) : UIView(shape.size.width, shape.size.height), Anchorable {
+) : UIView(shape.size.widthD, shape.size.heightD), Anchorable {
     private val graphics = graphics(shape.shape, renderer = renderer)
     var boundsIncludeStrokes: Boolean by graphics::boundsIncludeStrokes
     var antialiased: Boolean by graphics::antialiased
@@ -32,6 +32,6 @@ class NinePatchShapeView(
 
     override fun onSizeChanged() {
         super.onSizeChanged()
-        graphics.shape = shape.transform(MSize(width, height))
+        graphics.shape = shape.transform(Size(width, height))
     }
 }

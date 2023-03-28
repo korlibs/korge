@@ -33,7 +33,7 @@ class ImageFormatsNativeTest {
     @Test
     fun svg() = suspendTest {
         val bi = resourcesVfs["logo.svg"].readBitmapInfo(formats)!!
-        assertEquals(MSize(60, 60), bi.size)
+        assertEquals(Size(60, 60), bi.size)
         val bitmap = resourcesVfs["logo.svg"].readBitmap(formats)
         //bitmap.showImageAndWait()
         //val logs = Console.capture {}

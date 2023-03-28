@@ -200,7 +200,7 @@ open class AGFrameBuffer(val base: AGFrameBufferBase, val id: Int = -1) : Closea
     var fullWidth = DEFAULT_INITIAL_WIDTH
     var fullHeight = DEFAULT_INITIAL_HEIGHT
     private val _scissor = MRectangleInt()
-    var scissor: MRectangleInt? = null
+    var scissor: RectangleInt? = null
 
     open fun setSize(width: Int, height: Int) {
         setSize(0, 0, width, height)
@@ -221,8 +221,8 @@ open class AGFrameBuffer(val base: AGFrameBufferBase, val id: Int = -1) : Closea
         markAsDirty()
     }
 
-    fun scissor(scissor: MRectangleInt?) {
-        this.scissor = scissor?.let { _scissor.setTo(it) }
+    fun scissor(scissor: RectangleInt?) {
+        this.scissor = scissor
     }
 
     override fun close() {
