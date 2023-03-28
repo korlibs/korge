@@ -58,11 +58,11 @@ class RenderContext constructor(
     @PublishedApi internal val textureUnitsPool = Pool { AGTextureUnits() }
     val textureUnits = AGTextureUnits()
 
-    val projectionMatrixTransform = MMatrix()
-    val projectionMatrixTransformInv = MMatrix()
-    private val projMat: MMatrix3D = MMatrix3D()
+    var projectionMatrixTransform = Matrix()
+    var projectionMatrixTransformInv = Matrix()
+    private var projMat: Matrix4 = Matrix4()
     @KorgeInternal
-    val viewMat: MMatrix3D = MMatrix3D()
+    var viewMat: Matrix4 = Matrix4()
     @KorgeInternal
     var viewMat2D: Matrix = Matrix()
 
@@ -74,21 +74,8 @@ class RenderContext constructor(
         }
     }
 
-    inline fun <T> setTemporalProjectionMatrixTransform(m: MMatrix, block: () -> T): T =
-        this.projectionMatrixTransform.keepMatrix {
-            flush()
-            this.projectionMatrixTransform.copyFrom(m)
-            try {
-                block()
-            } finally {
-                flush()
-            }
-        }
-
     var flipRenderTexture = true
     //var flipRenderTexture = false
-    private val tempRect = MRectangle()
-    private val tempMat3d = MMatrix3D()
 
     val tempTexturePool: Pool<AGTexture> = Pool { AGTexture() }
 
@@ -102,10 +89,10 @@ class RenderContext constructor(
     fun updateStandardUniforms() {
         //println("updateStandardUniforms: ag.currentSize(${ag.currentWidth}, ${ag.currentHeight}) : ${ag.currentFrameBuffer}")
         if (flipRenderTexture && currentFrameBuffer.isTexture) {
-            projMat.setToOrtho(tempRect.setBounds(0, currentFrameBuffer.height, currentFrameBuffer.width, 0), -1f, 1f)
+            projMat = Matrix4.ortho(Rectangle.fromBounds(0, currentFrameBuffer.height, currentFrameBuffer.width, 0), -1f, 1f)
         } else {
-            projMat.setToOrtho(tempRect.setBounds(0, 0, currentFrameBuffer.width, currentFrameBuffer.height), -1f, 1f)
-            projMat.multiply(projMat, projectionMatrixTransform.toMatrix4(tempMat3d))
+            projMat = Matrix4.ortho(Rectangle.fromBounds(0, 0, currentFrameBuffer.width, currentFrameBuffer.height), -1f, 1f)
+            projMat = projMat * projectionMatrixTransform.toMatrix4()
         }
 
         //println("updateStandardUniforms!!!")
@@ -128,29 +115,27 @@ class RenderContext constructor(
      * Executes [callback] while setting temporarily the view matrix to [matrix]
      */
     inline fun setViewMatrixTemp(matrix: Matrix, crossinline callback: () -> Unit) {
-        matrix3DPool.alloc { temp ->
+        flush()
+        val temp4 = this.viewMat
+        val temp2d = this.viewMat2D
+        this.viewMat2D = matrix
+        this.viewMat = matrix.toMatrix4()
+        //this[DefaultShaders.ub_ProjViewMatBlock].push {
+        //    it[DefaultShaders.u_ViewMat].set(this.viewMat)
+        //}
+        this[DefaultShaders.ProjViewUB].push {
+            it[u_ViewMat] = this@RenderContext.viewMat
+        }
+        //println("viewMat: $viewMat, matrix: $matrix")
+        try {
+            callback()
+        } finally {
             flush()
-            temp.copyFrom(this.viewMat)
-            val temp2d = this.viewMat2D
-            this.viewMat2D = matrix
-            this.viewMat.copyFrom(matrix)
-            //this[DefaultShaders.ub_ProjViewMatBlock].push {
-            //    it[DefaultShaders.u_ViewMat].set(this.viewMat)
-            //}
-            this[DefaultShaders.ProjViewUB].push {
-                it[u_ViewMat] = this@RenderContext.viewMat
-            }
-            //println("viewMat: $viewMat, matrix: $matrix")
-            try {
-                callback()
-            } finally {
-                flush()
-                this.viewMat.copyFrom(temp)
-                this.viewMat2D = temp2d
-                //this[DefaultShaders.ub_ProjViewMatBlock].pop()
-                this[DefaultShaders.ProjViewUB].pop()
-                //uniforms[DefaultShaders.u_ViewMat] = this.viewMat
-            }
+            this.viewMat = temp4
+            this.viewMat2D = temp2d
+            //this[DefaultShaders.ub_ProjViewMatBlock].pop()
+            this[DefaultShaders.ProjViewUB].pop()
+            //uniforms[DefaultShaders.u_ViewMat] = this.viewMat
         }
     }
 

@@ -358,8 +358,8 @@ class Views constructor(
 
         //println("RESIZED: $virtualSize, $actualSize, $targetSize")
 
-        renderContext.projectionMatrixTransform.copyFrom(bp.globalToWindowMatrix)
-        renderContext.projectionMatrixTransformInv.copyFrom(bp.windowToGlobalMatrix)
+        renderContext.projectionMatrixTransform = bp.globalToWindowMatrix
+        renderContext.projectionMatrixTransformInv = bp.windowToGlobalMatrix
 
         //println("virtualSize=$virtualSize, targetSize=$targetSize, actualVirtualBounds=${actualVirtualBounds}")
 

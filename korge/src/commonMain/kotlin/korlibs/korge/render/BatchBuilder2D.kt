@@ -43,9 +43,9 @@ class BatchBuilder2D constructor(
     val maxTextures = BB_MAX_TEXTURES
 
     @KorgeInternal
-    val viewMat: MMatrix3D get() = ctx.viewMat
+    val viewMat: Matrix4 get() = ctx.viewMat
     @KorgeInternal
-    val viewMat2D: Matrix get() = ctx.viewMat2D.immutable
+    val viewMat2D: Matrix get() = ctx.viewMat2D
 
     inline fun use(block: (BatchBuilder2D) -> Unit) = ctx.useBatcher(this, block)
 
