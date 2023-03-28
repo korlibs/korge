@@ -71,6 +71,9 @@ inline class Vector3(val data: Float4Pack) {
     infix fun dot(v: Vector3): Float = (x * v.x) + (y * v.y) + (z * v.z)
     infix fun cross(v: Vector3): Vector3 = cross(this, v)
 
+    /** Vector3 with inverted (1f / v) components to this */
+    fun inv(): Vector3 = Vector3(1f / x, 1f / y, 1f / z)
+
     override fun toString(): String = "Vector3(${x.niceStr}, ${y.niceStr}, ${z.niceStr})"
 }
 

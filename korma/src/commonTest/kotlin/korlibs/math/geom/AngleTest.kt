@@ -60,10 +60,10 @@ class AngleTest {
 
     @Test
     fun between() {
-        assertEquals(0.degrees, Angle.between(MPoint(0, 0), MPoint(10, 0)))
-        assertEquals(90.degrees, Angle.between(MPoint(0, 0), MPoint(0, 10)))
-        assertEquals(180.degrees, Angle.between(MPoint(0, 0), MPoint(-10, 0)))
-        assertEquals(270.degrees, Angle.between(MPoint(0, 0), MPoint(0, -10)))
+        assertEquals(0.degrees, Angle.between(Point(0, 0), Point(10, 0)))
+        assertEquals(90.degrees, Angle.between(Point(0, 0), Point(0, 10)))
+        assertEquals(180.degrees, Angle.between(Point(0, 0), Point(-10, 0)))
+        assertEquals(270.degrees, Angle.between(Point(0, 0), Point(0, -10)))
 
         assertEquals(0.degrees, Angle.between(100, 100, 110, 100))
         assertEquals(90.degrees, Angle.between(100, 100, 100, 110))

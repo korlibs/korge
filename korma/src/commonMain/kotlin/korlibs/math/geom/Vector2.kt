@@ -139,6 +139,9 @@ inline class Vector2 internal constructor(internal val raw: Float2Pack) {
     fun niceStr(decimalPlaces: Int): String = "(${x.niceStr(decimalPlaces)}, ${y.niceStr(decimalPlaces)})"
     override fun toString(): String = niceStr
 
+    /** Vector2 with inverted (1f / v) components to this */
+    fun inv(): Vector2 = Vector2(1f / x, 1f / y)
+
     fun isNaN(): Boolean = this.x.isNaN() && this.y.isNaN()
 
     @Deprecated("", ReplaceWith("ratio.interpolate(this, other)", "korlibs.math.interpolation.interpolate")) fun interpolateWith(ratio: Ratio, other: Vector2): Vector2 = ratio.interpolate(this, other)

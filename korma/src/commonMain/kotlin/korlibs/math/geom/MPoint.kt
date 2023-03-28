@@ -33,7 +33,7 @@ data class MPoint(
     fun transformX(m: MMatrix?): Double = m?.transformX(this) ?: x
     fun transformY(m: MMatrix?): Double = m?.transformY(this) ?: y
     val mutable: MPoint get() = MPoint(x, y)
-    val immutable: MPoint get() = MPoint(x, y)
+    val immutable: Point get() = Point(x, y)
     fun isAlmostEquals(other: MPoint, epsilon: Double = 0.000001): Boolean =
         this.x.isAlmostEquals(other.x, epsilon) && this.y.isAlmostEquals(other.y, epsilon)
 
@@ -207,7 +207,7 @@ data class MPoint(
 
         fun angleArc(a: Point, b: Point): Angle = Angle.fromRadians(acos((a.dot(b)) / (a.length * b.length)))
         fun angleArc(a: MPoint, b: MPoint): Angle = Angle.fromRadians(acos((a.dot(b)) / (a.length * b.length)))
-        fun angleFull(a: MPoint, b: MPoint): Angle = Angle.between(a, b)
+        fun angleFull(a: MPoint, b: MPoint): Angle = Angle.between(a.immutable, b.immutable)
 
         fun middle(a: MPoint, b: MPoint): MPoint = MPoint((a.x + b.x) * 0.5, (a.y + b.y) * 0.5)
 

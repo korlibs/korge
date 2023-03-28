@@ -277,7 +277,7 @@ open class GpuShapeView(
             this.e = e
             scope.apply {
                 line = MLine(s, e)
-                angleSE = Angle.between(s, e)
+                angleSE = Angle.between(s.immutable, e.immutable)
                 angleSE0 = angleSE - 90.degrees
                 angleSE1 = angleSE + 90.degrees
                 s0 = Point(s, angleSE0, length = lineWidth)
