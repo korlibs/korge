@@ -76,7 +76,7 @@ class BVH<T>(
         var nodes: FastArrayList<Node<T>>? = null
     )
 
-    data class IntersectResult<T>(val intersect: Double, val obj: Node<T>)
+    data class IntersectResult<T>(val intersect: Float, val obj: Node<T>)
 
     open class Comparators {
         companion object : Comparators()
@@ -418,7 +418,7 @@ class BVH<T>(
         }
 
         var d = 0
-        var last_difference = 0.0
+        var last_difference = 0f
         //for (i = 0; i < _Dimensions; i++) {
         for (i in 0 until this.dimensions) {
             val difference =
@@ -554,9 +554,9 @@ class BVH<T>(
         if (ints == null) {
             ints = this.root.d // By default, use the scene bounding box
         }
-        val parameters = Array(2) { DoubleArray(this.dimensions) }
+        val parameters = Array(2) { FloatArray(this.dimensions) }
         // inv_direction and sign can be pre-computed per ray
-        val inv_direction = DoubleArray(this.dimensions)
+        val inv_direction = FloatArray(this.dimensions)
         val sign = IntArray(this.dimensions)
 
         // Initialize values
@@ -564,7 +564,7 @@ class BVH<T>(
             parameters[0][i] = ints.a(i)
             parameters[1][i] = ints.a(i) + ints.b(i)
 
-            val j = 1.0 / ray.b(i)
+            val j = 1f / ray.b(i)
             inv_direction[i] = j
             sign[i] = if (j <= 0) 1 else 0
         }
@@ -591,7 +591,7 @@ class BVH<T>(
             return null
         }
         if (omin < 0 && omax < 0) return null
-        if (omin < 0) omin = 0.0
+        if (omin < 0) omin = 0f
         val rs = _make_Empty()
 
         for (i in 0 until this.dimensions) {
@@ -844,30 +844,30 @@ class BVH<T>(
  * [x, width, y, height, z, depth]
  */
 @Suppress("INLINE_CLASS_DEPRECATED")
-inline class BVHIntervals(val data: DoubleArray) {
-    constructor(dimensions: Int) : this(DoubleArray(dimensions * 2))
+inline class BVHIntervals(val data: FloatArray) {
+    constructor(dimensions: Int) : this(FloatArray(dimensions * 2))
 
     companion object {
-        operator fun invoke(vararg values: Double): BVHIntervals = BVHIntervals(values)
-        operator fun invoke(vararg values: Int): BVHIntervals = BVHIntervals(DoubleArray(values.size) { values[it].toDouble() })
+        operator fun invoke(vararg values: Float): BVHIntervals = BVHIntervals(values)
+        operator fun invoke(vararg values: Int): BVHIntervals = BVHIntervals(FloatArray(values.size) { values[it].toFloat() })
     }
 
     fun checkDimensions(dimensions: Int) {
         if (dimensions != length) error("element $length doesn't match dimensions $dimensions")
     }
 
-    fun setTo(vararg values: Double) {
+    fun setTo(vararg values: Float) {
         values.copyInto(data)
     }
 
-    fun setTo(a0: Double, b0: Double, a1: Double, b1: Double) {
+    fun setTo(a0: Float, b0: Float, a1: Float, b1: Float) {
         data[0] = a0
         data[1] = b0
         data[2] = a1
         data[3] = b1
     }
 
-    fun setTo(a0: Double, b0: Double, a1: Double, b1: Double, a2: Double, b2: Double) {
+    fun setTo(a0: Float, b0: Float, a1: Float, b1: Float, a2: Float, b2: Float) {
         data[0] = a0
         data[1] = b0
         data[2] = a1
@@ -877,11 +877,11 @@ inline class BVHIntervals(val data: DoubleArray) {
     }
 
     val length get() = data.size / 2
-    fun a(index: Int): Double = data[index * 2 + 0]
-    fun a(index: Int, value: Double) { data[index * 2 + 0] = value }
+    fun a(index: Int): Float = data[index * 2 + 0]
+    fun a(index: Int, value: Float) { data[index * 2 + 0] = value }
 
-    fun b(index: Int): Double = data[index * 2 + 1]
-    fun b(index: Int, value: Double) {
+    fun b(index: Int): Float = data[index * 2 + 1]
+    fun b(index: Int, value: Float) {
         data[index * 2 + 1] = value
     }
 

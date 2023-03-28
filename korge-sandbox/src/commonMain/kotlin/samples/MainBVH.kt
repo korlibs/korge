@@ -30,7 +30,7 @@ class MainBVH : Scene() {
             val view = solidRect(width, height, rand[Colors.RED, Colors.BLUE]).xy(x, y)
             view.movingDirection = if (rand.nextBoolean()) -1 else +1
             rects += view
-            bvh.insertOrUpdate(view.getBounds(this).mutable, view)
+            bvh.insertOrUpdate(view.getBounds(this), view)
         }
         addUpdater {
             for (n in rects.size - 100 until rects.size) {
@@ -42,14 +42,14 @@ class MainBVH : Scene() {
                     view.movingDirection = -1
                 }
                 view.x += view.movingDirection
-                bvh.insertOrUpdate(view.getBounds(this).mutable, view)
+                bvh.insertOrUpdate(view.getBounds(this), view)
             }
         }
-        val center = MPoint(width / 2, height / 2)
-        val dir = MPoint(-1, -1)
-        val ray = MRay(center, dir)
+        val center = Point(width / 2, height / 2)
+        var dir = Point(-1, -1)
+        var ray = Ray(center, dir)
         val statusText = text("", font = DefaultTtfFontAsBitmap)
-        var selectedRectangle = MRectangle(MPoint(100, 100) - MPoint(50, 50), MSize(100, 100))
+        var selectedRectangle = Rectangle(Point(100, 100) - Point(50, 50), Size(100, 100))
         val rayLine = line(center, center + (dir * 1000), Colors.WHITE)
         val selectedRect = outline(buildVectorPath(VectorPath()) {
             rect(selectedRectangle)
@@ -60,7 +60,7 @@ class MainBVH : Scene() {
             var allObjectsSize = 0
             var rayObjectsSize = 0
             var rectangleObjectsSize = 0
-            val allObjects = bvh.search(MRectangle(0.0, 0.0, width, height))
+            val allObjects = bvh.search(Rectangle(0.0, 0.0, width, height))
             val time = measureTime {
                 val rayObjects = bvh.intersect(ray)
                 val rectangleObjects = bvh.search(selectedRectangle)
@@ -78,9 +78,10 @@ class MainBVH : Scene() {
         addUpdater {
             //println("moved")
             val mousePos = localMousePos(views)
-            val angle = Point.angleFull(center.point, mousePos)
+            val angle = Point.angleFull(center, mousePos)
             //println("center=$center, mousePos=$mousePos, angle = $angle")
-            dir.setTo(angle.cosineD, angle.sineD)
+            dir = Vector2(angle.cosineD, angle.sineD)
+            ray = Ray(center, dir)
             rayLine.setPoints(center, center + (dir * 1000))
 
             updateRay()
@@ -88,13 +89,13 @@ class MainBVH : Scene() {
 
         mouse {
             onDown {
-                selectedRectangle = MRectangle(stage!!.mousePos.mutable - MPoint(50, 50), MSize(100, 100))
+                selectedRectangle = Rectangle(stage!!.mousePos - Point(50, 50), Size(100, 100))
                 selectedRect.vectorPath = buildVectorPath(VectorPath()) {
                     rect(selectedRectangle)
                 }
             }
             onMouseDrag {
-                selectedRectangle = MRectangle(stage.mousePos.mutable - MPoint(50, 50), MSize(100, 100))
+                selectedRectangle = Rectangle(stage.mousePos - Point(50, 50), Size(100, 100))
                 selectedRect.vectorPath = buildVectorPath(VectorPath()) {
                     rect(selectedRectangle)
                 }

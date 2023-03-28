@@ -10,19 +10,11 @@ fun BVHIntervals.toAABB3D(out: AABB3D = AABB3D()): AABB3D {
     return out
 }
 fun AABB3D.toBVH(out: BVHIntervals = BVHIntervals(3)): BVHIntervals {
-    out.setTo(
-        minX.toDouble(), sizeX.toDouble(),
-        minY.toDouble(), sizeY.toDouble(),
-        minZ.toDouble(), sizeZ.toDouble(),
-    )
+    out.setTo(minX, sizeX, minY, sizeY, minZ, sizeZ)
     return out
 }
 fun MRay3D.toBVH(out: BVHIntervals = BVHIntervals(3)): BVHIntervals {
-    out.setTo(
-        pos.x.toDouble(), dir.x.toDouble(),
-        pos.y.toDouble(), dir.y.toDouble(),
-        pos.z.toDouble(), dir.z.toDouble()
-    )
+    out.setTo(pos.x, dir.x, pos.y, dir.y, pos.z, dir.z)
     return out
 }
 
