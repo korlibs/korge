@@ -17,8 +17,11 @@ class MainShape2dScene : Scene() {
         lateinit var textAreaView: UIText
         lateinit var textPerimeterView: UIText
         lateinit var projected: View
+        lateinit var cursor: View
         lateinit var gpuShapeView: GpuShapeView
         lateinit var normalVectorView: GpuShapeView
+
+        val cursorShape = buildVectorPath { star(7, 10.0, 16.0) }
 
         val shapes = listOf(
             Circle(Point(100, 100), radius = 50f),
@@ -32,7 +35,13 @@ class MainShape2dScene : Scene() {
 
         fun update() {
             val pos = localMousePos(views)
+
+            val intersects = NShape2d.intersects(shape, Matrix.NIL, cursorShape, Matrix.IDENTITY.translated(pos))
+
+            gpuShapeView.alpha = if (intersects) 1.0 else 0.5
+            //println("intersects=$intersects")
             try {
+                cursor.pos = pos
                 textDistanceView.text = "distance: ${shape.distance(pos)}"
                 val projectedPos = shape.projectedPoint(pos)
                 projected.pos = projectedPos
@@ -65,6 +74,7 @@ class MainShape2dScene : Scene() {
         gpuShapeView = gpuShapeView { }
         normalVectorView = gpuShapeView { }
         projected = circle(4.0, Colors.RED).centered
+        cursor = gpuShapeView { fill(Colors.GREEN.withAd(0.5)) { path(cursorShape) } }
 
         addUpdater {
             update()

@@ -13,6 +13,11 @@ private fun Matrix.ty(x: Double, y: Double): Double = if (this.isNotNIL) this.tr
 private fun Matrix.dtx(x: Double, y: Double): Double = if (this.isNotNIL) this.deltaTransform(Point(x, y)).x.toDouble() else x
 private fun Matrix.dty(x: Double, y: Double): Double = if (this.isNotNIL) this.deltaTransform(Point(x, y)).y.toDouble() else y
 
+private fun Matrix.tx(x: Float, y: Float): Float = if (this.isNotNIL) this.transformX(x, y) else x
+private fun Matrix.ty(x: Float, y: Float): Float = if (this.isNotNIL) this.transformY(x, y) else y
+private fun Matrix.dtx(x: Float, y: Float): Float = if (this.isNotNIL) this.deltaTransform(Point(x, y)).x else x
+private fun Matrix.dty(x: Float, y: Float): Float = if (this.isNotNIL) this.deltaTransform(Point(x, y)).y else y
+
 private fun optimizedIntersect(l: Shape2d.Circle, r: Shape2d.Circle): Boolean =
     MPoint.distance(l.x, l.y, r.x, r.y) < (l.radius + r.radius)
 
@@ -71,6 +76,8 @@ abstract class AbstractNShape2d : NShape2d {
     override fun containsPoint(p: Point): Boolean = lazyVectorPath.containsPoint(p)
 }
 
+val VectorPath.cachedPoints: PointList by Extra.PropertyThis { this.getPoints2() }
+
 // RoundRectangle
 interface NShape2d {
     val center: Point get() = TODO()
@@ -96,6 +103,40 @@ interface NShape2d {
             if (shapes.size == 1) return shapes[0]
             return CompoundShape2d(shapes.toList())
         }
+
+        fun intersects(l: NShape2d, ml: Matrix, r: NShape2d, mr: Matrix): Boolean {
+            //println("Shape2d.intersects:"); println(" - l=$l[$ml]"); println(" - r=$r[$mr]")
+
+            //if (l is Circle && r is Circle) return optimizedIntersect(l, ml, r, mr)
+
+            return _intersectsStep0(l, ml, r, mr) || _intersectsStep0(r, mr, l, ml)
+        }
+
+        //private fun optimizedIntersect(l: Circle, r: Circle): Boolean =
+        //    Point.distance(l.center, r.center) < (l.radius + r.radius)
+        //private fun optimizedIntersect(l: Circle, ml: Matrix, r: Circle, mr: Matrix): Boolean {
+        //    if (ml.isNIL && mr.isNIL) return optimizedIntersect(l, r)
+        //    val radiusL = ml.dtx(l.radius, l.radius)
+        //    val radiusR = mr.dtx(r.radius, r.radius)
+        //    //println("radiusL=$radiusL, radiusR=$radiusR")
+        //    return Point.distance(ml.transform(l.center), ml.transform(r.center)) < radiusL + radiusR
+        //}
+
+        private fun _intersectsStep0(l: NShape2d, ml: Matrix, r: NShape2d, mr: Matrix): Boolean {
+            var tempMatrix = if (mr.isNotNIL) mr.inverted() else Matrix.IDENTITY
+            if (ml.isNotNIL) tempMatrix = tempMatrix.premultiplied(ml)
+
+            l.toVectorPath().cachedPoints.fastForEach {
+                if (r.containsPoint(tempMatrix.transform(it))) return true
+            }
+            r.toVectorPath().cachedPoints.fastForEach {
+                if (l.containsPoint(tempMatrix.transform(it))) return true
+            }
+            return false
+        }
+
+        fun intersects(l: NShape2d, r: NShape2d): Boolean = intersects(l, Matrix.NIL, r, Matrix.NIL)
+
     }
 }
 
@@ -495,7 +536,7 @@ fun PointList.toPolygon(out: VectorPath = VectorPath()): VectorPath = buildVecto
 
 inline fun approximateCurve(
     curveSteps: Int,
-    crossinline compute: (ratio: Double, get: (Point) -> Unit) -> Unit,
+    compute: (ratio: Double, get: (Point) -> Unit) -> Unit,
     crossinline emit: (Point) -> Unit,
     includeStart: Boolean = false,
     includeEnd: Boolean = true,
