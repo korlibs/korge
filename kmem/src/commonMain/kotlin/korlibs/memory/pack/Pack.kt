@@ -51,6 +51,7 @@ data class BFloat6Pack(
     val f3: Float,
     val f4: Float,
     val f5: Float,
+    val twobits: Int
 )
 
 val BFloat6Pack.bf0: Float get() = f0
@@ -59,9 +60,10 @@ val BFloat6Pack.bf2: Float get() = f2
 val BFloat6Pack.bf3: Float get() = f3
 val BFloat6Pack.bf4: Float get() = f4
 val BFloat6Pack.bf5: Float get() = f5
+val BFloat6Pack.twobits: Int get() = twobits
 
-fun bfloat6PackOf(bf0: Float, bf1: Float, bf2: Float, bf3: Float, bf4: Float, bf5: Float): BFloat6Pack =
-    BFloat6Pack(bf0, bf1, bf2, bf3, bf4, bf5)
+fun bfloat6PackOf(bf0: Float, bf1: Float, bf2: Float, bf3: Float, bf4: Float, bf5: Float, twobits: Int = 0): BFloat6Pack =
+    BFloat6Pack(bf0, bf1, bf2, bf3, bf4, bf5, twobits)
 
 
 

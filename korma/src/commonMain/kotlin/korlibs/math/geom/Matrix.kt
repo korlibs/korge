@@ -27,6 +27,7 @@ inline class Matrix(val data: BFloat6Pack) {
     val d: Float get() = data.bf3
     val tx: Float get() = data.bf4
     val ty: Float get() = data.bf5
+    //private val twobits: Int get() = data.twobits
 
     @Deprecated("", ReplaceWith("this")) val immutable: Matrix get() = this
     val mutable: MMatrix get() = MMatrix(a, b, c, d, tx, ty)
@@ -52,7 +53,8 @@ inline class Matrix(val data: BFloat6Pack) {
     val isNIL: Boolean get() = this.a.isNaN()
     val isNotNIL: Boolean get() = !isNIL
     val isNaN: Boolean get() = isNIL
-    val isIdentity: Boolean get() = type == MatrixType.IDENTITY
+    val isIdentity: Boolean get() = (a == 1f && b == 0f && c == 0f && d == 1f && tx == 0f && ty == 0f)
+    //val isIdentity: Boolean get() = twobits == 1
 
     val type: MatrixType get() {
         val hasRotation = b != 0f || c != 0f
@@ -203,8 +205,8 @@ inline class Matrix(val data: BFloat6Pack) {
     fun preconcated(other: Matrix): Matrix = this * other
 
     companion object {
-        val IDENTITY = Matrix(1f, 0f, 0f, 1f, 0f, 0f)
-        val NIL = Matrix(Float.NaN, Float.NaN, Float.NaN, Float.NaN, Float.NaN, Float.NaN)
+        val IDENTITY = Matrix(bfloat6PackOf(1f, 0f, 0f, 1f, 0f, 0f))
+        val NIL = Matrix(bfloat6PackOf(Float.NaN, Float.NaN, Float.NaN, Float.NaN, Float.NaN, Float.NaN))
         val NaN = NIL
 
         //@Deprecated("", ReplaceWith("korlibs.math.geom.Matrix.IDENTITY", "korlibs.math.geom.Matrix"))
@@ -218,14 +220,18 @@ inline class Matrix(val data: BFloat6Pack) {
                 && a.c.isAlmostEquals(b.c, epsilon)
                 && a.d.isAlmostEquals(b.d, epsilon)
 
-        fun multiply(l: Matrix, r: Matrix): Matrix = Matrix(
-            l.a * r.a + l.b * r.c,
-            l.a * r.b + l.b * r.d,
-            l.c * r.a + l.d * r.c,
-            l.c * r.b + l.d * r.d,
-            l.tx * r.a + l.ty * r.c + r.tx,
-            l.tx * r.b + l.ty * r.d + r.ty
-        )
+        fun multiply(l: Matrix, r: Matrix): Matrix {
+            if (l.isNIL) return r
+            if (r.isNIL) return l
+            return Matrix(
+                l.a * r.a + l.b * r.c,
+                l.a * r.b + l.b * r.d,
+                l.c * r.a + l.d * r.c,
+                l.c * r.b + l.d * r.d,
+                l.tx * r.a + l.ty * r.c + r.tx,
+                l.tx * r.b + l.ty * r.d + r.ty
+            )
+        }
 
         fun translating(delta: Point): Matrix = Matrix.IDENTITY.copy(tx = delta.x, ty = delta.y)
         fun rotating(angle: Angle): Matrix = Matrix.IDENTITY.rotated(angle)

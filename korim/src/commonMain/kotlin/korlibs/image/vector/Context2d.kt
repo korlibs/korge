@@ -586,7 +586,7 @@ open class Context2d(
         x1: Number,
         y1: Number,
         cycle: CycleMethod = CycleMethod.NO_CYCLE,
-        transform: Matrix = Matrix.NIL,
+        transform: Matrix = Matrix.IDENTITY,
         block: GradientPaint.() -> Unit = {}
     ) = LinearGradientPaint(x0, y0, x1, y1, cycle, transform, block)
 
@@ -598,7 +598,7 @@ open class Context2d(
         y1: Number,
         r1: Number,
         cycle: CycleMethod = CycleMethod.NO_CYCLE,
-        transform: Matrix = Matrix.NIL,
+        transform: Matrix = Matrix.IDENTITY,
         block: GradientPaint.() -> Unit = {}
     ) = RadialGradientPaint(x0, y0, r0, x1, y1, r1, cycle, transform, block)
 
@@ -606,7 +606,7 @@ open class Context2d(
         x0: Number,
         y0: Number,
         startAngle: Angle = Angle.ZERO,
-        transform: Matrix = Matrix.NIL,
+        transform: Matrix = Matrix.IDENTITY,
         block: GradientPaint.() -> Unit = {}
     ) = SweepGradientPaint(x0, y0, startAngle, transform, block)
 
@@ -615,7 +615,7 @@ open class Context2d(
         bitmap: Bitmap,
         repeat: Boolean = false,
         smooth: Boolean = true,
-        transform: Matrix = Matrix.NIL,
+        transform: Matrix = Matrix.IDENTITY,
     ) = createPattern(
         bitmap, CycleMethod.fromRepeat(repeat), CycleMethod.fromRepeat(repeat), smooth, transform
     )
@@ -625,7 +625,7 @@ open class Context2d(
         cycleX: CycleMethod = CycleMethod.NO_CYCLE,
         cycleY: CycleMethod = cycleX,
         smooth: Boolean = true,
-        transform: Matrix = Matrix.NIL,
+        transform: Matrix = Matrix.IDENTITY,
     ) = BitmapPaint(bitmap, transform, cycleX, cycleY, smooth)
 
     fun getTextBounds(

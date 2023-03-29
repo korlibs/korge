@@ -127,7 +127,11 @@ class LineRenderBatcher(
         ctx.flush()
         return keep(this::viewMat) {
             viewMat = matrix.toMatrix4()
-            body()
+            try {
+                body()
+            } finally {
+                flush()
+            }
         }
     }
 
