@@ -130,11 +130,6 @@ class RenderContext2D(
 	}
 
     /** Sets the current transform [matrix] */
-	fun setMatrix(matrix: MMatrix) {
-		this.m = matrix.immutable
-	}
-
-    /** Sets the current transform [matrix] */
     fun setMatrix(matrix: Matrix) {
         this.m = matrix
     }

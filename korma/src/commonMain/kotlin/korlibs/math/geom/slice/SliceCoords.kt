@@ -114,30 +114,30 @@ fun SliceCoords.transformed(orientation: SliceOrientation): RectCoords {
     )
 }
 
-fun SliceCoords.transformed(m: MMatrix): RectCoords = RectCoords(
-    m.transformXf(tlX, tlY), m.transformYf(tlX, tlY),
-    m.transformXf(trX, trY), m.transformYf(trX, trY),
-    m.transformXf(brX, brY), m.transformYf(brX, brY),
-    m.transformXf(blX, blY), m.transformYf(blX, blY),
+fun SliceCoords.transformed(m: Matrix): RectCoords = RectCoords(
+    m.transformX(tlX, tlY), m.transformY(tlX, tlY),
+    m.transformX(trX, trY), m.transformY(trX, trY),
+    m.transformX(brX, brY), m.transformY(brX, brY),
+    m.transformX(blX, blY), m.transformY(blX, blY),
 )
 
-fun SliceCoords.transformed(m: MMatrix3D): RectCoords {
+fun SliceCoords.transformed(m: Matrix4): RectCoords {
     // @TODO: This allocates
-    val v1 = m.transform(tlX, tlY, 0f, 1f)
-    val v2 = m.transform(trX, trY, 0f, 1f)
-    val v3 = m.transform(brX, brY, 0f, 1f)
-    val v4 = m.transform(blX, blY, 0f, 1f)
+    val v1 = m.transform(Vector4(tlX, tlY, 0f, 1f))
+    val v2 = m.transform(Vector4(trX, trY, 0f, 1f))
+    val v3 = m.transform(Vector4(brX, brY, 0f, 1f))
+    val v4 = m.transform(Vector4(blX, blY, 0f, 1f))
     return RectCoords(v1.x, v1.y, v2.x, v2.y, v3.x, v3.y, v4.x, v4.y)
 }
 
 // Special versions
 
-fun <T : SizeableInt> SliceCoordsWithBase<T>.transformed(m: MMatrix): SliceCoordsWithBase<T> {
+fun <T : SizeableInt> SliceCoordsWithBase<T>.transformed(m: Matrix): SliceCoordsWithBase<T> {
     val coords = (this as SliceCoords).transformed(m)
     return SliceCoordsImpl(base, coords, name)
 }
 
-fun <T : SizeableInt> SliceCoordsWithBase<T>.transformed(m: MMatrix3D): SliceCoordsWithBase<T> {
+fun <T : SizeableInt> SliceCoordsWithBase<T>.transformed(m: Matrix4): SliceCoordsWithBase<T> {
     val coords = (this as SliceCoords).transformed(m)
     return SliceCoordsImpl(base, coords, name)
 }

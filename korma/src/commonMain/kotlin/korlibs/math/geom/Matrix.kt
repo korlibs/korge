@@ -30,10 +30,11 @@ inline class Matrix(val data: BFloat6Pack) {
 
     @Deprecated("", ReplaceWith("this")) val immutable: Matrix get() = this
     val mutable: MMatrix get() = MMatrix(a, b, c, d, tx, ty)
+    @Deprecated("")
     val mutableOrNull: MMatrix? get() = if (isNIL) null else MMatrix(a, b, c, d, tx, ty)
 
     //constructor() : this(1f, 0f, 0f, 1f, 0f, 0f)
-    constructor(a: Float, b: Float, c: Float, d: Float, tx: Float, ty: Float) :
+    constructor(a: Float, b: Float, c: Float, d: Float, tx: Float = 0f, ty: Float = 0f) :
         this(bfloat6PackOf(a, b, c, d, tx, ty))
     constructor(a: Double, b: Double, c: Double, d: Double, tx: Double, ty: Double) :
         this(a.toFloat(), b.toFloat(), c.toFloat(), d.toFloat(), tx.toFloat(), ty.toFloat())
@@ -67,10 +68,13 @@ inline class Matrix(val data: BFloat6Pack) {
         }
     }
 
-    inline fun transform(p: Point): Point = Point(
-        this.a * p.x + this.c * p.y + this.tx,
-        this.d * p.y + this.b * p.x + this.ty
-    )
+    inline fun transform(p: Point): Point {
+        if (this.isNIL) return p
+        return Point(
+            this.a * p.x + this.c * p.y + this.tx,
+            this.d * p.y + this.b * p.x + this.ty
+        )
+    }
 
     @Deprecated("", ReplaceWith("transform(p).x")) fun transformX(p: Point): Float = transform(p).x
     @Deprecated("", ReplaceWith("transform(p).y")) fun transformY(p: Point): Float = transform(p).y
@@ -153,6 +157,7 @@ inline class Matrix(val data: BFloat6Pack) {
     @Deprecated("", ReplaceWith("this")) fun clone(): Matrix = this
 
     fun inverted(): Matrix {
+        if (this.isNIL) return Matrix.IDENTITY
         val m = this
         val norm = m.a * m.d - m.b * m.c
 
@@ -255,11 +260,11 @@ inline class Matrix(val data: BFloat6Pack) {
         fun fromTransform(
             x: Float,
             y: Float,
-            rotation: Angle,
-            scaleX: Float,
-            scaleY: Float,
-            skewX: Angle,
-            skewY: Angle,
+            rotation: Angle = Angle.ZERO,
+            scaleX: Float = 1f,
+            scaleY: Float = 1f,
+            skewX: Angle = Angle.ZERO,
+            skewY: Angle = Angle.ZERO,
             pivotX: Float = 0f,
             pivotY: Float = 0f,
         ): Matrix {

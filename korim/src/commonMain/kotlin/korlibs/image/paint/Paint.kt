@@ -157,7 +157,7 @@ data class GradientPaint(
 
     val untransformedGradientMatrix = Matrix.IDENTITY
         .translated(-x0, -y0)
-        .scaled(1.0 / MPoint.distance(x0, y0, x1, y1).clamp(1.0, 16000.0))
+        .scaled(1.0 / Point.distance(x0, y0, x1, y1).clamp(1.0, 16000.0))
         .rotated(-Angle.between(x0, y0, x1, y1))
 
     //val gradientMatrixInv = gradientMatrix.inverted()
@@ -199,11 +199,11 @@ data class GradientPaint(
     val Float.pow2: Float get() = this * this
     val Double.pow2: Double get() = this * this
 
-    fun getRatioAt(x: Float, y: Float, m: MMatrix): Float {
+    fun getRatioAt(x: Float, y: Float, m: Matrix): Float {
         //val tx = gradientMatrix.transformX(x, y)
         //val ty = gradientMatrix.transformY(x, y)
         //return m.transformX(tx, ty)
-        return getRatioAt(m.transformX(x, y).toFloat(), m.transformY(x, y).toFloat())
+        return getRatioAt(m.transformX(x, y), m.transformY(x, y))
         //return getRatioAt(x, y)
     }
 

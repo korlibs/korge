@@ -95,13 +95,9 @@ inline class Vector2 internal constructor(internal val raw: Float2Pack) {
     fun angleTo(other: Vector2): Angle = Angle.between(this.x, this.y, other.x, other.y)
     val angle: Angle get() = Angle.between(0f, 0f, this.x, this.y)
 
-    inline fun transformed(m: MMatrix?): Vector2 = m?.transform(this) ?: this
-    fun transformX(m: MMatrix?): Float = m?.transform(this)?.x ?: x
-    fun transformY(m: MMatrix?): Float = m?.transform(this)?.y ?: y
-
-    inline fun transformed(m: Matrix): Vector2 = if (m.isNotNIL) m.transform(this) else this
-    fun transformX(m: Matrix): Float = if (m.isNotNIL) m.transform(this).x else x
-    fun transformY(m: Matrix): Float = if (m.isNotNIL) m.transform(this).y else y
+    inline fun transformed(m: Matrix): Vector2 = m.transform(this)
+    fun transformX(m: Matrix): Float = m.transform(this).x
+    fun transformY(m: Matrix): Float = m.transform(this).y
 
     inline fun transformedNullable(m: Matrix?): Vector2 = if (m != null && m.isNotNIL) m.transform(this) else this
     fun transformNullableX(m: Matrix?): Float = if (m != null && m.isNotNIL) m.transform(this).x else x

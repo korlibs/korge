@@ -135,7 +135,7 @@ class MainGpuVectorRendering3 : Scene() {
             debugPath("Shape", getPos(2, 4), strokeInfo, buildVectorPath {
                 pathSvg(
                     "m262.15-119.2s2.05-8-2.35-3.6c0,0-6.4,5.2-13.2,5.2,0,0-13.2,2-17.2,14,0,0-3.6,24.4,3.6,29.6,0,0,4.4,6.8,10.8,0.8s20.35-33.6,18.35-46z",
-                    MMatrix().setTransform(x = -200.0, y = 150.0).scale(1.2)
+                    Matrix.fromTransform(x = -200f, y = 150f).scaled(1.2f)
                 )
             })
         }

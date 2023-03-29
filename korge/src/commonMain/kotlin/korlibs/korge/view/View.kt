@@ -1227,13 +1227,13 @@ abstract class View internal constructor(
         return out
     }
 
-    fun getConcatMatrixAccurateSlow(target: View, out: MMatrix = MMatrix(), inclusive: Boolean = false): MMatrix {
-        out.identity()
+    fun getConcatMatrixAccurateSlow(target: View, inclusive: Boolean = false): Matrix {
+        var out = Matrix.IDENTITY
         if (target !== this) {
             var current: View? = this
             val stopAt = if (inclusive) target.parent else target
             while (current !== null && current !== stopAt) {
-                out.multiply(out, current.localMatrix.mutable) // Verified
+                out *= current.localMatrix // Verified
                 current = current.parent
             }
         }

@@ -263,7 +263,7 @@ interface VectorBuilder {
     }
 
     fun <T> transformed(m: Matrix, block: VectorBuilder.() -> T): T = block(this.transformed(m))
-    fun <T> transformed(m: MMatrix, block: VectorBuilder.() -> T): T = block(this.transformed(m.immutable))
+
 
 }
 

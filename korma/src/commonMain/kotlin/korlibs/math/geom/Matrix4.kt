@@ -9,7 +9,8 @@ import kotlin.math.*
 // v[Row][Column]
 //@KormaExperimental
 //@KormaValueApi
-inline class Matrix4 private constructor(
+//inline class Matrix4 private constructor(
+data class Matrix4 private constructor(
     private val data: FloatArray,
     //val c0: Vector4, val c1: Vector4, val c2: Vector4, val c3: Vector4,
 
@@ -26,11 +27,17 @@ inline class Matrix4 private constructor(
     val v02: Float get() = data[8]; val v12: Float get() = data[9]; val v22: Float get() = data[10]; val v32: Float get() = data[11]
     val v03: Float get() = data[12]; val v13: Float get() = data[13]; val v23: Float get() = data[14]; val v33: Float get() = data[15]
 
+    override fun equals(other: Any?): Boolean = other is Matrix4 && this.data.contentEquals(other.data)
+    override fun hashCode(): Int = data.contentHashCode()
+
     operator fun times(scale: Float): Matrix4 = Matrix4.fromColumns(c0 * scale, c1 * scale, c2 * scale, c3 * scale)
     operator fun times(that: Matrix4): Matrix4 = Matrix4.multiply(this, that)
 
     fun transformTransposed(v: Vector4): Vector4 = Vector4(c0.dot(v), c1.dot(v), c2.dot(v), c3.dot(v))
     fun transform(v: Vector4): Vector4 = Vector4(r0.dot(v), r1.dot(v), r2.dot(v), r3.dot(v))
+    fun transform(v: Vector3): Vector3 = transform(v.toVector4()).toVector3()
+
+    fun transposed(): Matrix4 = Matrix4.fromColumns(r0, r1, r2, r3)
 
     val determinant: Float get() = 0f +
         (v30 * v21 * v12 * v03) -
@@ -310,6 +317,20 @@ inline class Matrix4 private constructor(
             c3.x, c3.y, c3.z, c3.w,
         )
 
+        fun fromColumns(v: FloatArray, offset: Int = 0): Matrix4 = Matrix4.fromColumns(
+            v[offset + 0], v[offset + 1], v[offset + 2], v[offset + 3],
+            v[offset + 4], v[offset + 5], v[offset + 6], v[offset + 7],
+            v[offset + 8], v[offset + 9], v[offset + 10], v[offset + 11],
+            v[offset + 12], v[offset + 13], v[offset + 14], v[offset + 15],
+        )
+
+        fun fromRows(v: FloatArray, offset: Int = 0): Matrix4 = Matrix4.fromRows(
+            v[offset + 0], v[offset + 1], v[offset + 2], v[offset + 3],
+            v[offset + 4], v[offset + 5], v[offset + 6], v[offset + 7],
+            v[offset + 8], v[offset + 9], v[offset + 10], v[offset + 11],
+            v[offset + 12], v[offset + 13], v[offset + 14], v[offset + 15],
+        )
+
         fun fromRows(
             r0: Vector4, r1: Vector4, r2: Vector4, r3: Vector4
         ): Matrix4 = Matrix4(
@@ -341,6 +362,28 @@ inline class Matrix4 private constructor(
             v01, v11, v21, v31,
             v02, v12, v22, v32,
             v03, v13, v23, v33,
+        )
+
+        fun fromRows3x3(
+            a00: Float, a01: Float, a02: Float,
+            a10: Float, a11: Float, a12: Float,
+            a20: Float, a21: Float, a22: Float
+        ): Matrix4 = Matrix4.fromRows(
+            a00, a01, a02, 0f,
+            a10, a11, a12, 0f,
+            a20, a21, a22, 0f,
+            0f, 0f, 0f, 1f,
+        )
+
+        fun fromColumns3x3(
+            a00: Float, a10: Float, a20: Float,
+            a01: Float, a11: Float, a21: Float,
+            a02: Float, a12: Float, a22: Float
+        ): Matrix4 = Matrix4.fromColumns(
+            a00, a10, a20, 0f,
+            a01, a11, a21, 0f,
+            a02, a12, a22, 0f,
+            0f, 0f, 0f, 1f,
         )
 
         fun fromTRS(trs: TRS4): Matrix4 = fromTRS(trs.translation, trs.rotation, trs.scale)

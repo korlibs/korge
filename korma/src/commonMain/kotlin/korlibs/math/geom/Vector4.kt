@@ -92,6 +92,9 @@ inline class Vector4(val data: Float4Pack) {
     fun inv(): Vector4 = Vector4(1f / x, 1f / y, 1f / z, 1f / w)
 
     override fun toString(): String = "Vector4(${x.niceStr}, ${y.niceStr}, ${z.niceStr}, ${w.niceStr})"
+
+    // @TODO: Should we scale Vector3 by w?
+    fun toVector3(): Vector3 = Vector3(x, y, z)
 }
 
 fun vec(x: Float, y: Float, z: Float, w: Float): Vector4 = Vector4(x, y, z, w)

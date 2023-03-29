@@ -477,27 +477,17 @@ fun VectorBuilder.write(path: VectorPath) {
     )
 }
 
-fun VectorBuilder.moveTo(p: Point, m: MMatrix?) = if (m != null) moveTo(m.transform(p)) else moveTo(p)
-fun VectorBuilder.lineTo(p: Point, m: MMatrix?) = if (m != null) lineTo(m.transform(p)) else lineTo(p)
-fun VectorBuilder.quadTo(c: Point, a: Point, m: MMatrix?) =
-    if (m != null) {
-        quadTo(m.transform(c), m.transform(a))
-    } else {
-        quadTo(c, a)
-    }
-fun VectorBuilder.cubicTo(c1: Point, c2: Point, a: Point, m: MMatrix?) =
-    if (m != null) {
-        cubicTo(m.transform(c1), m.transform(c2), m.transform(a))
-    } else {
-        cubicTo(c1, c2, a)
-    }
+fun VectorBuilder.moveTo(p: Point, m: Matrix = Matrix.NIL) = moveTo(m.transform(p))
+fun VectorBuilder.lineTo(p: Point, m: Matrix = Matrix.NIL) = lineTo(m.transform(p))
+fun VectorBuilder.quadTo(c: Point, a: Point, m: Matrix = Matrix.NIL) = quadTo(m.transform(c), m.transform(a))
+fun VectorBuilder.cubicTo(c1: Point, c2: Point, a: Point, m: Matrix = Matrix.NIL) = cubicTo(m.transform(c1), m.transform(c2), m.transform(a))
 
 
-fun VectorBuilder.path(path: VectorPath, m: MMatrix?) {
+fun VectorBuilder.path(path: VectorPath, m: Matrix = Matrix.NIL) {
     write(path, m)
 }
 
-fun VectorBuilder.write(path: VectorPath, m: MMatrix?) {
+fun VectorBuilder.write(path: VectorPath, m: Matrix = Matrix.NIL) {
     path.visitCmds(
         moveTo = { moveTo(it, m) },
         lineTo = { lineTo(it, m) },

@@ -309,7 +309,6 @@ open class Context2d(
     fun transform(m: Matrix) {
         state.transform = state.transform.premultiplied(m)
     }
-    fun transform(m: MMatrix) = transform(m.immutable)
 
     fun transform(a: Double, b: Double, c: Double, d: Double, tx: Double, ty: Double) {
         state.transform = state.transform.premultiplied(Matrix(a, b, c, d, tx, ty))
@@ -587,9 +586,9 @@ open class Context2d(
         x1: Number,
         y1: Number,
         cycle: CycleMethod = CycleMethod.NO_CYCLE,
-        transform: MMatrix = MMatrix(),
+        transform: Matrix = Matrix.NIL,
         block: GradientPaint.() -> Unit = {}
-    ) = LinearGradientPaint(x0, y0, x1, y1, cycle, transform.immutable, block)
+    ) = LinearGradientPaint(x0, y0, x1, y1, cycle, transform, block)
 
     inline fun createRadialGradient(
         x0: Number,
@@ -599,24 +598,24 @@ open class Context2d(
         y1: Number,
         r1: Number,
         cycle: CycleMethod = CycleMethod.NO_CYCLE,
-        transform: MMatrix = MMatrix(),
+        transform: Matrix = Matrix.NIL,
         block: GradientPaint.() -> Unit = {}
-    ) = RadialGradientPaint(x0, y0, r0, x1, y1, r1, cycle, transform.immutable, block)
+    ) = RadialGradientPaint(x0, y0, r0, x1, y1, r1, cycle, transform, block)
 
     inline fun createSweepGradient(
         x0: Number,
         y0: Number,
         startAngle: Angle = Angle.ZERO,
-        transform: MMatrix = MMatrix(),
+        transform: Matrix = Matrix.NIL,
         block: GradientPaint.() -> Unit = {}
-    ) = SweepGradientPaint(x0, y0, startAngle, transform.immutable, block)
+    ) = SweepGradientPaint(x0, y0, startAngle, transform, block)
 
     fun createColor(color: RGBA): RGBA = color
     fun createPattern(
         bitmap: Bitmap,
         repeat: Boolean = false,
         smooth: Boolean = true,
-        transform: MMatrix = MMatrix()
+        transform: Matrix = Matrix.NIL,
     ) = createPattern(
         bitmap, CycleMethod.fromRepeat(repeat), CycleMethod.fromRepeat(repeat), smooth, transform
     )
@@ -626,15 +625,15 @@ open class Context2d(
         cycleX: CycleMethod = CycleMethod.NO_CYCLE,
         cycleY: CycleMethod = cycleX,
         smooth: Boolean = true,
-        transform: MMatrix = MMatrix()
-    ) = BitmapPaint(bitmap, transform.immutable, cycleX, cycleY, smooth)
+        transform: Matrix = Matrix.NIL,
+    ) = BitmapPaint(bitmap, transform, cycleX, cycleY, smooth)
 
     fun getTextBounds(
         text: String,
         out: TextMetrics = TextMetrics(),
         fontSize: Double = this.fontSize,
         renderer: TextRenderer<String> = DefaultStringTextRenderer,
-        align: TextAlignment = this.alignment
+        align: TextAlignment = this.alignment,
     ): TextMetrics {
         val font = font
         if (font != null) {
@@ -786,7 +785,7 @@ private fun VectorBuilder.write(path: VectorPath) {
     )
 }
 
-private fun VectorBuilder.write(path: VectorPath, m: MMatrix) {
+private fun VectorBuilder.write(path: VectorPath, m: Matrix) {
     path.visitCmds(
         moveTo = { moveTo(m.transform(it)) },
         lineTo = { lineTo(m.transform(it)) },
@@ -801,9 +800,9 @@ fun Paint.toBitmapPaint(state: Context2d.State): BitmapPaint {
     var bb = NewBoundsBuilder()
     bb += state.path.getBounds()
     bb += state.clip?.getBounds()
-    val bounds = bb.bounds.mutable.applyTransform(state.transform.mutable)
+    val bounds = bb.bounds.transformed(state.transform)
     // @TODO: Make it work for negative x, y, and for other transforms
     //println("bounds=$bounds")
     val bmp = Bitmap32(bounds.width.toIntCeil(), bounds.height.toIntCeil(), premultiplied = true).also { filler.fill(it) }
-    return BitmapPaint(bmp, MMatrix().translate(-bounds.left, -bounds.top).immutable)
+    return BitmapPaint(bmp, Matrix().translated(-bounds.left, -bounds.top))
 }

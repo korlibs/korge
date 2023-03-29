@@ -87,6 +87,8 @@ object GpuShapeViewPrograms {
                     // Linear gradient paint
                     PROGRAM_TYPE_GRADIENT_LINEAR -> {
                         SET(out, texture2D(u_Tex, (u_Transform * vec4(v_Tex.x, v_Tex.y, 0f.lit, 1f.lit))["xy"]))
+                        //SET(out, texture2D(u_Tex, vec2(0f.lit, 0f.lit)))
+                        //SET(out, vec4(1f, 0f, 1f, 1f))
                     }
                     // Radial gradient paint
                     PROGRAM_TYPE_GRADIENT_RADIAL -> {
@@ -176,7 +178,7 @@ object GpuShapeViewPrograms {
         is ColorPaint -> {
             PaintShader(UniformBlockBuffer.single(ShapeViewUB) {
                 it[u_ProgramType] = PROGRAM_TYPE_COLOR.toFloat()
-                it[u_Color] = paint.premultiplied.toVector3D()
+                it[u_Color] = paint.premultiplied
                 it[u_GlobalAlpha] = globalAlpha.toFloat()
                 //u_LineWidth to lineWidth.toFloat(),
             }, null)
@@ -227,6 +229,9 @@ object GpuShapeViewPrograms {
                         GradientKind.SWEEP -> PROGRAM_TYPE_GRADIENT_SWEEP
                         else -> PROGRAM_TYPE_GRADIENT_LINEAR
                     }.toFloat()
+                    //println("npaint.gradientMatrix=${npaint.gradientMatrix}")
+                    //println("mat=$mat")
+                    //println("mat=${mat.toMatrix4()}")
                     it[u_Transform] = mat.toMatrix4()
                     it[u_Gradientp0] = Vector4(paint.x0.toFloat(), paint.y0.toFloat(), paint.r0.toFloat(), 1f)
                     it[u_Gradientp1] = Vector4(paint.x1.toFloat(), paint.y1.toFloat(), paint.r1.toFloat(), 1f)

@@ -11,7 +11,6 @@ import korlibs.image.text.*
 import korlibs.io.lang.*
 import korlibs.math.geom.*
 
-
 class MainText : ScaledScene(512, 160) {
     override suspend fun SContainer.sceneMain() {
         val font = BitmapFont(
@@ -29,12 +28,11 @@ class MainText : ScaledScene(512, 160) {
         var version = 0
         //text("Hello World!", font = font, textSize = 64.0, alignment = TextAlignment.BASELINE_LEFT, renderer = CreateStringTextRenderer({ version++ }) { reader: WStringReader, c: Int, g: GlyphMetrics, advance: Double ->
         val text = text("Hello World!", font = font, textSize = 64.0, alignment = TextAlignment.BASELINE_LEFT, renderer = CreateStringTextRenderer({ version++ }) { reader: WStringReader, c: Int, g: GlyphMetrics, advance: Double ->
-            transform.identity()
-
             val sin = sind(offset + (reader.position * 360 / reader.length).degrees)
-            transform.rotate(15.degrees)
-            transform.translate(0.0, sin * 16)
-            transform.scale(1.0, 1.0 + sin * 0.1)
+            transform = Matrix()
+                .rotated(15.degrees)
+                .translated(0.0, sin * 16)
+                .scaled(1.0, 1.0 + sin * 0.1)
             put(reader, c)
             advance(advance)
         }).position(100, 100)

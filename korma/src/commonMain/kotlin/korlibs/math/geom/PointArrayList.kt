@@ -240,10 +240,10 @@ open class PointArrayList(capacity: Int = 7) : PointList, Extra by Extra.Mixin()
     }
     fun setXY(index: Int, x: Int, y: Int) = setXY(index, x.toFloat(), y.toFloat())
     fun setXY(index: Int, x: Double, y: Double) = setXY(index, x.toFloat(), y.toFloat())
-    fun setXY(index: Int, p: MPoint) = setXY(index, p.x, p.y)
+    fun setXY(index: Int, p: Point) = setXY(index, p.x, p.y)
     operator fun set(index: Int, p: Point) = setXY(index, p.x, p.y)
 
-    fun transform(matrix: MMatrix) {
+    fun transform(matrix: Matrix) {
         for (n in 0 until size) set(n, matrix.transform(this[n]))
     }
 

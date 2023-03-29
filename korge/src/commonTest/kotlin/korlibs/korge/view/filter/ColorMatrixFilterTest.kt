@@ -1,6 +1,6 @@
 package korlibs.korge.view.filter
 
-import korlibs.math.geom.MVector4
+import korlibs.math.geom.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -10,8 +10,8 @@ class ColorMatrixFilterTest {
         val grayFilter = ColorMatrixFilter(ColorMatrixFilter.GRAYSCALE_MATRIX)
 
         assertEquals(
-            MVector4(0.57f, 0.57f, 0.57f, 1f),
-            grayFilter.colorMatrix.transform(MVector4(.75f, .5f, .25f, 1f))
+            Vector4(0.57f, 0.57f, 0.57f, 1f),
+            grayFilter.colorMatrix.transform(Vector4(.75f, .5f, .25f, 1f))
         )
     }
 }
