@@ -54,9 +54,9 @@ enum class HitTestDirection {
     val left get() = this == ANY || this == LEFT
 
     companion object {
-        fun fromPoint(point: MPoint): HitTestDirection {
-            if (point.x == 0.0 && point.y == 0.0) return ANY
-            return fromAngle(MPoint.Zero.angleTo(point))
+        fun fromPoint(point: Point): HitTestDirection {
+            if (point.x == 0f && point.y == 0f) return ANY
+            return fromAngle(Point.ZERO.angleTo(point))
         }
         fun fromAngle(angle: Angle): HitTestDirection {
             val quadrant = ((angle + 45.degrees) / 90.degrees).toInt()

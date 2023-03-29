@@ -8,7 +8,6 @@ enum class Orientation(val value: Int) {
     companion object {
         private const val EPSILON: Double = 1e-7
 
-        fun orient2d(pa: MPoint, pb: MPoint, pc: MPoint): Orientation = orient2d(pa.x, pa.y, pb.x, pb.y, pc.x, pc.y)
         fun orient2d(pa: Point, pb: Point, pc: Point): Orientation = orient2d(pa.xD, pa.yD, pb.xD, pb.yD, pc.xD, pc.yD)
 
         fun orient2d(paX: Double, paY: Double, pbX: Double, pbY: Double, pcX: Double, pcY: Double, epsilon: Double = EPSILON): Orientation {

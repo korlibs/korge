@@ -157,10 +157,10 @@ inline class Vector2 internal constructor(internal val raw: Float2Pack) {
         //fun fromRaw(raw: Float2Pack) = Point(raw)
 
         /** Constructs a point from polar coordinates determined by an [angle] and a [length]. Angle 0 is pointing to the right, and the direction is counter-clock-wise */
-        inline fun fromPolar(x: Float, y: Float, angle: Angle, length: Float = 1f): Vector2 = Point(x + angle.cosineF * length, y + angle.sineF * length)
-        inline fun fromPolar(x: Double, y: Double, angle: Angle, length: Float = 1f): Vector2 = Point(x + angle.cosineD * length, y + angle.sineD * length)
-        inline fun fromPolar(base: Vector2, angle: Angle, length: Float = 1f): Vector2 = fromPolar(base.x, base.y, angle, length)
-        inline fun fromPolar(angle: Angle, length: Float = 1f): Vector2 = fromPolar(0.0, 0.0, angle, length)
+        inline fun polar(x: Float, y: Float, angle: Angle, length: Float = 1f): Vector2 = Point(x + angle.cosineF * length, y + angle.sineF * length)
+        inline fun polar(x: Double, y: Double, angle: Angle, length: Float = 1f): Vector2 = Point(x + angle.cosineD * length, y + angle.sineD * length)
+        inline fun polar(base: Vector2, angle: Angle, length: Float = 1f): Vector2 = polar(base.x, base.y, angle, length)
+        inline fun polar(angle: Angle, length: Float = 1f): Vector2 = polar(0.0, 0.0, angle, length)
 
         inline fun middle(a: Vector2, b: Vector2): Vector2 = (a + b) * 0.5
 

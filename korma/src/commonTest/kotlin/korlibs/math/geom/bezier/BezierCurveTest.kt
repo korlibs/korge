@@ -204,7 +204,7 @@ class BezierCurveTest {
                 listOf(Point(25.0, -37.5), Point(32.125, -37.5), Point(39.25, -33.43875), Point(44.06009, -25.316252)),
                 listOf(Point(44.06009, -25.316252), Point(47.68875, -19.188751), Point(50.0, -10.75), Point(50, 0)),
             ),
-            curves.map { it.curve.points.toList().map { it.point } }
+            curves.map { it.curve.points.toList().map { it } }
         )
     }
 

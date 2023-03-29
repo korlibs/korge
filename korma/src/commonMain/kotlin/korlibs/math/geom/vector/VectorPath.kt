@@ -311,7 +311,7 @@ class VectorPath(
         return false
     }
 
-    fun getLineIntersection(line: MLine, out: LineIntersection = LineIntersection()): LineIntersection? {
+    fun getLineIntersection(line: Line, out: LineIntersection = LineIntersection()): LineIntersection? {
         // Directs from outside the shape, to inside the shape
 //        if (this.containsPoint(line.b) && !this.containsPoint(line.a)) {
             return this.scanline.getLineIntersection(line, out)

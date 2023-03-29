@@ -325,10 +325,9 @@ class PolygonScanline : RastScale() {
     }
 
     fun getLineIntersection(x0: Double, y0: Double, x1: Double, y1: Double, out: LineIntersection = LineIntersection()) = getLineIntersection(x0.s, y0.s, x1.s, y1.s, out)
-    fun getLineIntersection(a: MPointInt, b: MPointInt, out: LineIntersection = LineIntersection()) = getLineIntersection(a.x, a.y, b.x, b.y, out)
-    fun getLineIntersection(a: MPoint, b: MPoint, out: LineIntersection = LineIntersection()) = getLineIntersection(a.x.s, a.y.s, b.x.s, b.y.s, out)
-    fun getLineIntersection(a: Point, b: Point, out: LineIntersection = LineIntersection()) = getLineIntersection(a.xD.s, a.yD.s, b.xD.s, b.yD.s, out)
-    fun getLineIntersection(line: MLine, out: LineIntersection = LineIntersection()) = getLineIntersection(line.a, line.b, out)
+    fun getLineIntersection(a: PointInt, b: PointInt, out: LineIntersection = LineIntersection()) = getLineIntersection(a.x, a.y, b.x, b.y, out)
+    fun getLineIntersection(a: Point, b: Point, out: LineIntersection = LineIntersection()) = getLineIntersection(a.x.s, a.y.s, b.x.s, b.y.s, out)
+    fun getLineIntersection(line: Line, out: LineIntersection = LineIntersection()) = getLineIntersection(line.a, line.b, out)
 
     private class XWithWind {
         val x = IntArrayList(1024)

@@ -37,16 +37,16 @@ class PointArrayListTest {
 
     @Test
     fun testInsert() {
-        val list = PointArrayList(MPoint(1, -1), MPoint(2, -2), MPoint(3, -3))
-        list.insertAt(1, MPoint(0, -1))
+        val list = pointArrayListOf(Point(1, -1), Point(2, -2), Point(3, -3))
+        list.insertAt(1, Point(0, -1))
         assertEquals("[(1, -1), (0, -1), (2, -2), (3, -3)]", list.toList().toString())
         list.removeAt(1, 2)
         assertEquals("[(1, -1), (3, -3)]", list.toList().toString())
         list.removeAt(0, 2)
         assertEquals("[]", list.toList().toString())
-        list.insertAt(0, MPoint(0, -1))
+        list.insertAt(0, Point(0, -1))
         assertEquals("[(0, -1)]", list.toList().toString())
-        list.insertAt(1, PointArrayList(MPoint(2, -2), MPoint(4, -4)))
+        list.insertAt(1, pointArrayListOf(Point(2, -2), Point(4, -4)))
         assertEquals("[(0, -1), (2, -2), (4, -4)]", list.toList().toString())
     }
 

@@ -18,7 +18,7 @@ data class Circle(override val center: Point, val radius: Float) : Shape2d {
     fun distanceClosestSquared(p: Point): Float = distanceToCenterSquared(p) - radiusSquared
     // @TODO: Check if inside the circle
     fun distanceFarthestSquared(p: Point): Float = distanceToCenterSquared(p) + radiusSquared
-    override fun projectedPoint(p: Point): Point = Point.fromPolar(center, Angle.between(center, p), radius)
+    override fun projectedPoint(p: Point): Point = Point.polar(center, Angle.between(center, p), radius)
     override fun containsPoint(p: Point): Boolean = (p - center).length <= radius
     override fun toVectorPath(): VectorPath = buildVectorPath { circle(this@Circle.center, this@Circle.radius) }
 }

@@ -11,7 +11,7 @@ interface ICircle {
     fun distanceClosestSquared(p: Point): Double = distanceToCenterSquared(p) - radiusSquared
     // @TODO: Check if inside the circle
     fun distanceFarthestSquared(p: Point): Double = distanceToCenterSquared(p) + radiusSquared
-    fun projectedPoint(point: Point): Point = Point.fromPolar(center, Angle.between(center, point), radius.toFloat())
+    fun projectedPoint(point: Point): Point = Point.polar(center, Angle.between(center, point), radius.toFloat())
 }
 
 @Deprecated("")

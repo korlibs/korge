@@ -138,13 +138,14 @@ inline class Line internal constructor(val data: Float4Pack) : Shape2d {
     fun isNaN(): Boolean = data.f0.isNaN()
 
     companion object {
+        val ZERO = Line(Point.ZERO, Point.ZERO)
         val NaN = Line(Point.NaN, Point.NaN)
         val NIL: Line get() = NaN
 
         fun fromPointAndDirection(point: Point, direction: Point, scale: Float = 1f): Line =
             Line(point, point + direction * scale)
         fun fromPointAngle(point: Point, angle: Angle, length: Float = 1f): Line =
-            Line(point, Point.fromPolar(angle, length))
+            Line(point, Point.polar(angle, length))
 
         fun length(Ax: Double, Ay: Double, Bx: Double, By: Double): Double = kotlin.math.hypot(Bx - Ax, By - Ay)
 
