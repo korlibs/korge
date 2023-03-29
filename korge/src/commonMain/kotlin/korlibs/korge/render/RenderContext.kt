@@ -55,7 +55,7 @@ class RenderContext constructor(
     @PublishedApi internal val _buffers = AGProgramWithUniforms.BufferCache()
     private val _programs = FastIdentityMap<Program, AGProgramWithUniforms>()
 
-    @PublishedApi internal val textureUnitsPool = Pool { AGTextureUnits() }
+    //@PublishedApi internal val textureUnitsPool = Pool { AGTextureUnits() }
     val textureUnits = AGTextureUnits()
 
     var projectionMatrixTransform = Matrix()
@@ -131,28 +131,27 @@ class RenderContext constructor(
         }
     }
 
-    inline fun <T> keepTextureUnit(sampler: Sampler, flush: Boolean = true, callback: () -> T): T {
-        val oldTex = textureUnits.textures[sampler.index]
-        val oldInfo = textureUnits.infos[sampler.index]
-        try {
-            return callback()
-        } finally {
-            if (flush) flush()
-            textureUnits.set(sampler, oldTex, oldInfo)
-        }
-    }
-
-    inline fun <T> keepTextureUnits(samplers: Array<Sampler>, flush: Boolean = true, callback: () -> T): T {
-        textureUnitsPool.alloc { old ->
-            samplers.fastForEach { old.set(it, textureUnits.textures[it.index], textureUnits.infos[it.index]) }
-            try {
-                return callback()
-            } finally {
-                if (flush) flush()
-                samplers.fastForEach { textureUnits.set(it, old.textures[it.index], old.infos[it.index]) }
-            }
-        }
-    }
+    //inline fun <T> keepTextureUnit(sampler: Sampler, flush: Boolean = true, callback: () -> T): T {
+    //    val oldTex = textureUnits.textures[sampler.index]
+    //    val oldInfo = textureUnits.infos[sampler.index]
+    //    try {
+    //        return callback()
+    //    } finally {
+    //        if (flush) flush()
+    //        textureUnits.set(sampler, oldTex, oldInfo)
+    //    }
+    //}
+    //inline fun <T> keepTextureUnits(samplers: Array<Sampler>, flush: Boolean = true, callback: () -> T): T {
+    //    textureUnitsPool.alloc { old ->
+    //        samplers.fastForEach { old.set(it, textureUnits.textures[it.index], textureUnits.infos[it.index]) }
+    //        try {
+    //            return callback()
+    //        } finally {
+    //            if (flush) flush()
+    //            samplers.fastForEach { textureUnits.set(it, old.textures[it.index], old.infos[it.index]) }
+    //        }
+    //    }
+    //}
 
     val agAutoFreeManager = AgAutoFreeManager()
 	val agBitmapTextureManager = AgBitmapTextureManager(ag)

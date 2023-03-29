@@ -462,6 +462,7 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
                 //logger.warn { "FrameBuffer and texture loop!" }
                 tex = null
             }
+            //if (currentTextureUnits.textures[index] != tex || currentTextureUnits.infos[index] != info) {
             if (currentTextureUnits.textures[index] != tex || currentTextureUnits.infos[index] != info) {
                 currentTextureUnits.set(index, tex, info)
 
@@ -785,7 +786,7 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
         }
     }
 
-    private val TEMP_TEXTURE_UNIT = 31
+    private val TEMP_TEXTURE_UNIT = 15
 
     fun textureSetFromFrameBuffer(tex: AGTexture, x: Int, y: Int, width: Int, height: Int) {
         selectTextureUnitTemp(TEMP_TEXTURE_UNIT, setToNullLater = true) {

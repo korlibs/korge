@@ -732,8 +732,8 @@ class BatchBuilder2D constructor(
      */
 	inline fun setViewMatrixTemp(matrix: Matrix, crossinline callback: () -> Unit) = ctx.setViewMatrixTemp(matrix, callback)
 
-    inline fun <T> keepTextureUnit(sampler: Sampler, flush: Boolean = true, callback: () -> T): T = ctx.keepTextureUnit(sampler, flush, callback)
-    inline fun <T> keepTextureUnits(samplers: Array<Sampler>, flush: Boolean = true, callback: () -> T): T = ctx.keepTextureUnits(samplers, flush, callback)
+    //inline fun <T> keepTextureUnit(sampler: Sampler, flush: Boolean = true, callback: () -> T): T = ctx.keepTextureUnit(sampler, flush, callback)
+    //inline fun <T> keepTextureUnits(samplers: Array<Sampler>, flush: Boolean = true, callback: () -> T): T = ctx.keepTextureUnits(samplers, flush, callback)
 
     inline fun flush(block: () -> Unit) {
         ctx.flush()
@@ -756,7 +756,7 @@ class BatchBuilder2D constructor(
         }
     }
 
-    inline fun <T> temporalTextureUnit2(sampler1: Sampler, tex1: AGTexture?, sampler2: Sampler, tex2: AGTexture?, info: AGTextureUnitInfo = AGTextureUnitInfo.DEFAULT, block: () -> T): T {
+    inline fun <T> temporalTextureUnit(sampler1: Sampler, tex1: AGTexture?, sampler2: Sampler, tex2: AGTexture?, info: AGTextureUnitInfo = AGTextureUnitInfo.DEFAULT, block: () -> T): T {
         val oldTex1 = this.ctx.textureUnits.textures[sampler1.index]
         val oldInfo1 = this.ctx.textureUnits.infos[sampler1.index]
         val oldTex2 = this.ctx.textureUnits.textures[sampler2.index]

@@ -3,7 +3,6 @@ package korlibs.korge.view.mask
 import korlibs.datastructure.extraProperty
 import korlibs.graphics.*
 import korlibs.graphics.annotation.KoragExperimental
-import korlibs.graphics.shader.Program
 import korlibs.korge.render.RenderContext
 import korlibs.korge.render.Texture
 import korlibs.korge.view.View
@@ -60,7 +59,7 @@ class ViewRenderPhaseMask(var mask: View) : ViewRenderPhase {
                 }
                 //batcher.drawQuad(Texture(maskFB), 100f, 200f, m = view.parent!!.globalMatrix)
                 //batcher.drawQuad(Texture(viewFB), 300f, 200f, m = view.parent!!.globalMatrix)
-                batcher.temporalTextureUnit2(DefaultShaders.u_Tex, viewFB.tex, DefaultShaders.u_TexEx, maskFB.tex) {
+                batcher.temporalTextureUnit(DefaultShaders.u_Tex, viewFB.tex, DefaultShaders.u_TexEx, maskFB.tex) {
                     batcher.drawQuad(
                         Texture(viewFB), m = mask.globalMatrix, program = DefaultShaders.MERGE_ALPHA_PROGRAM,
                     )

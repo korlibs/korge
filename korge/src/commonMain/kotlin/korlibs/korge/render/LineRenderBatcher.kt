@@ -56,31 +56,29 @@ class LineRenderBatcher(
 
     var color: RGBA = Colors.YELLOW
 
-    @KorgeInternal
-    val LAYOUT = VertexLayout(DefaultShaders.a_Pos, DefaultShaders.a_Col)
-
-    @KorgeInternal
-    val VERTEX = VertexShader {
-        DefaultShaders.apply {
-            SET(out, (u_ProjMat * u_ViewMat) * vec4(a_Pos, 0f.lit, 1f.lit))
-            SET(v_Col, a_Col)
+    companion object {
+        val LAYOUT = VertexLayout(DefaultShaders.a_Pos, DefaultShaders.a_Col)
+        val VERTEX = VertexShader {
+            DefaultShaders.apply {
+                SET(out, (u_ProjMat * u_ViewMat) * vec4(a_Pos, 0f.lit, 1f.lit))
+                SET(v_Col, a_Col)
+            }
         }
+        val FRAGMENT = FragmentShader {
+            DefaultShaders.apply {
+                //SET(out, vec4(1f.lit, 1f.lit, 0f.lit, 1f.lit))
+                SET(out, v_Col)
+            }
+        }
+        val PROGRAM = Program(VERTEX, FRAGMENT)
     }
 
-    @KorgeInternal
-    val FRAGMENT = FragmentShader {
-        DefaultShaders.apply {
-            //SET(out, vec4(1f.lit, 1f.lit, 0f.lit, 1f.lit))
-            SET(out, v_Col)
-        }
-    }
+
 
     private val vertexBuffer = AGBuffer()
     private val vertexData = AGVertexArrayObject(AGVertexData(LAYOUT, vertexBuffer))
-    private val program = Program(VERTEX, FRAGMENT)
     private val maxVertexCount = 1024
     private val vertices = Buffer.allocDirect(6 * 4 * maxVertexCount)
-    private val tempRect = MRectangle()
     @PublishedApi
     internal var viewMat = Matrix4()
     @PublishedApi
@@ -167,11 +165,11 @@ class LineRenderBatcher(
             ag.draw(
                 ctx.currentFrameBuffer,
                 vertexData,
-                program = program,
+                program = PROGRAM,
                 drawType = AGDrawType.LINES,
                 vertexCount = vertexCount,
-                uniformBlocks = ctx.createCurrentUniformsRef(program),
-                textureUnits = ctx.textureUnits.clone(),
+                uniformBlocks = ctx.createCurrentUniformsRef(PROGRAM),
+                //textureUnits = ctx.textureUnits.clone(),
                 blending = blendMode.factors
             )
         }

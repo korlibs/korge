@@ -92,9 +92,11 @@ abstract class ShaderFilter : Filter {
 
     open val programProvider: ProgramProvider = BaseProgramProvider
 
+    private val oldTextureUnits = AGTextureUnits()
     private var resetTex: Int = 0
 
     protected fun setTex(ctx: RenderContext, sampler: Sampler, texture: AGTexture?, info: AGTextureUnitInfo = AGTextureUnitInfo.DEFAULT) {
+        oldTextureUnits.copyFrom(ctx.textureUnits, sampler)
         ctx.textureUnits.set(sampler, texture, info)
         resetTex = resetTex or (1 shl sampler.index)
     }
@@ -104,7 +106,10 @@ abstract class ShaderFilter : Filter {
     }
 
     private fun _restoreUniforms(ctx: RenderContext, filterScale: Double) {
-        resetTex.fastForEachOneBits { ctx.textureUnits.set(it, null) }
+        resetTex.fastForEachOneBits {
+            ctx.textureUnits.copyFrom(oldTextureUnits, it)
+            oldTextureUnits.set(it, null)
+        }
         resetTex = 0
     }
 
@@ -180,7 +185,6 @@ abstract class ShaderFilter : Filter {
 
         //println("$this.render()")
         // @TODO: Precompute vertices
-        _updateUniforms(ctx, filterScale, texture, texWidth, texHeight)
 
         ctx.useBatcher { batch ->
             //println("renderColorMulInt=" + RGBA(renderColorMulInt))
@@ -191,6 +195,7 @@ abstract class ShaderFilter : Filter {
             //println("matrix=$matrix, slice=$slice, marginLeft=$marginLeft")
             //ctx.keepTextureUnit(DefaultShaders.u_Tex, flush = true) {
             batch.temporalTextureUnit(DefaultShaders.u_Tex, slice.base.base) {
+                _updateUniforms(ctx, filterScale, texture, texWidth, texHeight)
                 batch.drawQuad(
                     slice,
                     x = -marginLeft.toFloat(),
@@ -203,8 +208,8 @@ abstract class ShaderFilter : Filter {
                     program = programProvider.getProgram(),
                 )
             }
+            _restoreUniforms(ctx, filterScale)
         }
 
-        _restoreUniforms(ctx, filterScale)
     }
 }

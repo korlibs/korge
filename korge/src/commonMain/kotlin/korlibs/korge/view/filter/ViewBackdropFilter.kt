@@ -1,7 +1,6 @@
 package korlibs.korge.view.filter
 
 import korlibs.graphics.*
-import korlibs.graphics.shader.Program
 import korlibs.korge.render.RenderContext
 import korlibs.korge.render.Texture
 import korlibs.korge.view.BlendMode
@@ -36,6 +35,7 @@ class ViewRenderPhaseBackdropFilter(var filter: Filter) : ViewRenderPhase {
         val bgtex = ctx.tempTexturePool.alloc()
         val width = ctx.currentFrameBufferOrMain.width
         val height = ctx.currentFrameBufferOrMain.height
+        ctx.flush()
         ctx.ag.readToTexture(ctx.currentFrameBufferOrMain, bgtex, 0, 0, width, height)
         bgrtex = Texture(bgtex, width, height)
     }
@@ -55,18 +55,19 @@ class ViewRenderPhaseBackdropFilter(var filter: Filter) : ViewRenderPhase {
                         super.render(view, ctx)
                     }
                 }) { mask ->
-                    batcher.temporalTextureUnit2(DefaultShaders.u_Tex, bgrtex?.base?.base, DefaultShaders.u_TexEx, mask.base.base) {
+                    batcher.temporalTextureUnit(DefaultShaders.u_Tex, bgrtex?.base?.base, DefaultShaders.u_TexEx, mask.base.base) {
                         batcher.drawQuad(
                             bgrtex!!, x = 0f, y = 0f, m = view.parent!!.globalMatrix, program = DefaultShaders.MERGE_ALPHA_PROGRAM,
                         )
                     }
                 }
             }
-        }) {
+        }) { tex ->
             filter.render(
-                ctx, view.parent!!.globalMatrix, it, it.width, it.height, Colors.WHITE, BlendMode.NORMAL,
+                ctx, view.parent!!.globalMatrix, tex, tex.width, tex.height, Colors.WHITE, BlendMode.NORMAL,
                 filter.recommendedFilterScale
             )
+            ctx.batch.createBatchIfRequired()
         }
     }
 }
