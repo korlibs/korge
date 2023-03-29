@@ -77,6 +77,8 @@ inline class Vector3(val data: Float4Pack) {
     override fun toString(): String = "Vector3(${x.niceStr}, ${y.niceStr}, ${z.niceStr})"
 
     fun toVector4(w: Float = 1f): Vector4 = Vector4(x, y, z, w)
+    fun isAlmostEquals(other: Vector3, epsilon: Float = 0.00001f): Boolean =
+        this.x.isAlmostEquals(other.x, epsilon) && this.y.isAlmostEquals(other.y, epsilon) && this.z.isAlmostEquals(other.z, epsilon)
 }
 
 fun vec(x: Float, y: Float, z: Float): Vector3 = Vector3(x, y, z)
