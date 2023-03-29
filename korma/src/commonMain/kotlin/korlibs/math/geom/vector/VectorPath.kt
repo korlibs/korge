@@ -239,7 +239,7 @@ class VectorPath(
         return true
     }
 
-    override fun getBounds(): Rectangle = (NewBoundsBuilder() + this).bounds
+    override fun getBounds(): Rectangle = (BoundsBuilder() + this).bounds
 
     override val area: Float get() {
         var sum = 0.0
@@ -502,7 +502,7 @@ fun MBoundsBuilder.add(path: VectorPath, transform: Matrix = Matrix.NIL) {
     //println("BoundsBuilder.add.path: " + bb.getBounds())
 }
 
-fun NewBoundsBuilder.with(path: VectorPath, transform: Matrix = Matrix.NIL): NewBoundsBuilder {
+fun BoundsBuilder.with(path: VectorPath, transform: Matrix = Matrix.NIL): BoundsBuilder {
     var bb = this
     val curvesList = path.getCurvesList()
     if (curvesList.isEmpty() && path.isNotEmpty()) {
@@ -520,7 +520,7 @@ fun NewBoundsBuilder.with(path: VectorPath, transform: Matrix = Matrix.NIL): New
     return bb
 }
 
-operator fun NewBoundsBuilder.plus(path: VectorPath): NewBoundsBuilder = with(path)
+operator fun BoundsBuilder.plus(path: VectorPath): BoundsBuilder = with(path)
 
 fun VectorPath.applyTransform(m: Matrix): VectorPath = when {
     m.isNotNIL -> transformPoints { m.transform(it) }

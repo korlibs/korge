@@ -255,9 +255,9 @@ internal inline fun getPolylineLength(size: Int, crossinline get: (n: Int) -> Po
 fun PointList.getPolylineLength(): Double = getPolylineLength(size) { get(it) }
 fun List<Point>.getPolylineLength(): Double = getPolylineLength(size) { get(it) }
 
-fun List<Point>.bounds(): Rectangle = NewBoundsBuilder(size) { this + get(it) }.bounds
+fun List<Point>.bounds(): Rectangle = BoundsBuilder(size) { this + get(it) }.bounds
 fun Iterable<Point>.bounds(): Rectangle {
-    var bb = NewBoundsBuilder()
+    var bb = BoundsBuilder()
     for (p in this) bb += p
     return bb.bounds
 }

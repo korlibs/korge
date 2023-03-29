@@ -11,10 +11,10 @@ class MBoundsBuilder {
         private val MIN = Double.NEGATIVE_INFINITY
         private val MAX = Double.POSITIVE_INFINITY
 
-        fun getBounds(p1: Point): Rectangle = NewBoundsBuilder(p1).bounds
-        fun getBounds(p1: Point, p2: Point): Rectangle = NewBoundsBuilder(p1, p2).bounds
-        fun getBounds(p1: Point, p2: Point, p3: Point): Rectangle = NewBoundsBuilder(p1, p2, p3).bounds
-        fun getBounds(p1: Point, p2: Point, p3: Point, p4: Point): Rectangle = NewBoundsBuilder(p1, p2, p3, p4).bounds
+        fun getBounds(p1: Point): Rectangle = BoundsBuilder(p1).bounds
+        fun getBounds(p1: Point, p2: Point): Rectangle = BoundsBuilder(p1, p2).bounds
+        fun getBounds(p1: Point, p2: Point, p3: Point): Rectangle = BoundsBuilder(p1, p2, p3).bounds
+        fun getBounds(p1: Point, p2: Point, p3: Point, p4: Point): Rectangle = BoundsBuilder(p1, p2, p3, p4).bounds
     }
 
     var npoints = 0; private set

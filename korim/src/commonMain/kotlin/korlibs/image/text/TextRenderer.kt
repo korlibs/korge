@@ -222,7 +222,7 @@ class Text2TextRendererActions : TextRendererActions() {
         if (size == 0) {
             return Rectangle.ZERO
         }
-        var bb = NewBoundsBuilder()
+        var bb = BoundsBuilder()
         for (n in 0 until size) bb += getGlyphBounds(n)
         return bb.bounds
     }

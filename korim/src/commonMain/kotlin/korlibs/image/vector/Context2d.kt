@@ -797,7 +797,7 @@ private fun VectorBuilder.write(path: VectorPath, m: Matrix) {
 
 fun Paint.toBitmapPaint(state: Context2d.State): BitmapPaint {
     val filler: BaseFiller = this.toFiller(state)
-    var bb = NewBoundsBuilder()
+    var bb = BoundsBuilder()
     bb += state.path.getBounds()
     bb += state.clip?.getBounds()
     val bounds = bb.bounds.transformed(state.transform)

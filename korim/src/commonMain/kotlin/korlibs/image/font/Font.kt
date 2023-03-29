@@ -279,11 +279,11 @@ fun <T> Font.drawText(
             metrics.fontMetrics.copyFrom(fmetrics)
             metrics.nlines = glyphs.glyphsPerLine.size
             metrics.lineBounds = glyphs.glyphsPerLine.map { glyphs ->
-                var bb = NewBoundsBuilder()
+                var bb = BoundsBuilder()
                 for (g in glyphs) bb += g.boundsPath
                 bb.bounds
             }
-            metrics.bounds = (NewBoundsBuilder() + metrics.lineBounds).bounds
+            metrics.bounds = (BoundsBuilder() + metrics.lineBounds).bounds
         } else {
             val metrics = getTextBounds(size, text, renderer = renderer, align = align)
             outMetrics.fmetrics = metrics.fontMetrics
@@ -321,7 +321,7 @@ fun <T> Font.getTextBounds(
     out.nlines = actions.nlines
 
     // Compute
-    var bb = NewBoundsBuilder()
+    var bb = BoundsBuilder()
     var dy = 0.0
     val lineBounds = FastArrayList<Rectangle>()
     val offsetY = actions.getAlignY(align.vertical, out.fontMetrics)

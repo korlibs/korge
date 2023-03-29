@@ -301,7 +301,7 @@ open class Container(
     }
 
     override fun getLocalBoundsInternal(): Rectangle {
-        var bb = NewBoundsBuilder()
+        var bb = BoundsBuilder()
         fastForEachChild { child: View ->
             bb += child.getBounds(this).immutable
         }
