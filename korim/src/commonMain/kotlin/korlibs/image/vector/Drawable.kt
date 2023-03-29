@@ -24,6 +24,13 @@ interface SizedDrawable : Drawable {
     val height: Int
 }
 
+//@Deprecated("Use .toShape(size)")
+//fun Drawable.withSize(size: Size): SizedDrawable = object : SizedDrawable {
+//    override val width: Int get() = size.width.toInt()
+//    override val height: Int get() = size.height.toInt()
+//    override fun draw(c: Context2d) = this@withSize.draw(c)
+//}
+
 interface BoundsDrawable : SizedDrawable {
     val bounds: Rectangle
     val left: Int get() = bounds.left.toInt()
@@ -32,15 +39,15 @@ interface BoundsDrawable : SizedDrawable {
     override val height: Int get() = bounds.height.toInt()
 }
 
-fun BoundsDrawable.renderWithHotspot(scale: Double? = null, fit: MSize? = null, native: Boolean = true): BitmapWithHotspot<Bitmap> {
+fun BoundsDrawable.renderWithHotspot(scale: Double? = null, fit: Size? = null, native: Boolean = true): BitmapWithHotspot<Bitmap> {
     val bounds = this.bounds
-    val rscale = when {
+    val rscale: Float = when {
         fit != null -> {
-            val size2 = ScaleMode.FIT(bounds.size.mutable, fit)
+            val size2 = ScaleMode.FIT(bounds.size, fit)
             kotlin.math.min(size2.width / bounds.width, size2.height / bounds.height)
         }
-        scale != null ->  scale
-        else -> 1.0
+        scale != null -> scale.toFloat()
+        else -> 1f
     }
     val image = NativeImageOrBitmap32((bounds.width * rscale).toIntCeil(), (bounds.height * rscale).toIntCeil(), premultiplied = true, native = native).context2d {
         scale(rscale)

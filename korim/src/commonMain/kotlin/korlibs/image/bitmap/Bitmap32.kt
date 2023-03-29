@@ -274,13 +274,8 @@ class Bitmap32(
         updateColors(x, y, width, height) { RGBA(R[it.r], G[it.g], B[it.b], A[it.a]) }
 	}
 
-    fun applyColorMatrix(matrix: MMatrix3D, x: Int = 0, y: Int = 0, width: Int = this.width - x, height: Int = this.height - y, temp: MVector4 = MVector4()) {
-        val v = temp
-        updateColors(x, y, width, height) {
-            v.setTo(it.rf, it.gf, it.bf, it.af)
-            matrix.transform(v, v)
-            RGBA.float(v.x, v.y, v.z, v.w)
-        }
+    fun applyColorMatrix(matrix: Matrix4, x: Int = 0, y: Int = 0, width: Int = this.width - x, height: Int = this.height - y) {
+        updateColors(x, y, width, height) { RGBA.float(matrix.transform(it.toVector4())) }
     }
 
     fun mipmap(levels: Int): Bitmap32 {
@@ -622,8 +617,6 @@ fun Bitmap32.posterizeInplace(nbits: Int = 4): Bitmap32 {
     return this
 }
 
-@Deprecated("")
-fun Bitmap32.expandBorder(area: MRectangleInt, border: Int) = expandBorder(area.immutable, border)
 fun Bitmap32.expandBorder(area: RectangleInt, border: Int) = expandBorder(area.top, area.left, area.bottom, area.right, border)
 
 fun Bitmap32.expandBorder(areaTop: Int, areaLeft: Int, areaBottom: Int, areaRight: Int, border: Int) {

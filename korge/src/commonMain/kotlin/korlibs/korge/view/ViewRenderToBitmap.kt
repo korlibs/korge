@@ -1,5 +1,6 @@
 package korlibs.korge.view
 
+import korlibs.datastructure.*
 import korlibs.logger.*
 import korlibs.korge.annotations.*
 import korlibs.korge.render.*
@@ -14,7 +15,7 @@ private val logger = Logger("RenderToBitmap")
  * Asynchronously renders this [View] (with the provided [views]) to a [Bitmap32] and returns it.
  * The rendering will happen before the next frame.
  */
-suspend fun View.renderToBitmap(views: Views? = this.stage?.views, region: MRectangle? = null, scale: Double = 1.0, outPoint: MPoint = MPoint(), includeBackground: Boolean = false): Bitmap32 {
+suspend fun View.renderToBitmap(views: Views? = this.stage?.views, region: Rectangle? = null, scale: Double = 1.0, outPoint: Ref<Point>? = null, includeBackground: Boolean = false): Bitmap32 {
     if (views == null) {
         logger.warn { "View.renderToBitmap Views not specified" }
         return Bitmap32(1, 1, Colors.TRANSPARENT.premultiplied)
@@ -37,9 +38,9 @@ suspend fun View.renderToBitmap(views: Views? = this.stage?.views, region: MRect
 @KorgeExperimental
 fun View.unsafeRenderToBitmapSync(
     ctx: RenderContext,
-    region: MRectangle? = null,
+    region: Rectangle? = null,
     scale: Double = 1.0,
-    outPoint: MPoint = MPoint(),
+    outPoint: Ref<Point>? = null,
     useTexture: Boolean = true,
     bgcolor: RGBA = Colors.TRANSPARENT
 ): Bitmap32 {
@@ -66,7 +67,7 @@ fun View.unsafeRenderToBitmapSync(
                     matrix.pretranslate(-region.x, -region.y)
                 }
                 matrix.translate(-bounds.x, -bounds.y)
-                outPoint.setTo(bounds.x, bounds.y)
+                outPoint?.value = Point(bounds.x, bounds.y)
                 batch.setViewMatrixTemp(matrix.immutable) {
                     view.render(ctx)
                 }

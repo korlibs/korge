@@ -40,7 +40,7 @@ open class Mesh(
 		val vcount = vertices.size / 2
 		val isize = indices.size
 
-		var bb = NewBoundsBuilder()
+		var bb = BoundsBuilder()
 
         if (vcount > 0 || isize > 0) {
             val tva = when {

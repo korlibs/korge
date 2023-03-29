@@ -12,7 +12,7 @@ import korlibs.image.bitmap.Bitmaps
 import korlibs.image.bitmap.slice
 import korlibs.image.format.readBitmap
 import korlibs.io.file.std.resourcesVfs
-import korlibs.math.geom.MRectangle
+import korlibs.math.geom.*
 
 class MainColorPicker : Scene() {
     override suspend fun SContainer.sceneMain() {
@@ -22,7 +22,7 @@ class MainColorPicker : Scene() {
 
         mouse {
             move {
-                val bmp = stage!!.unsafeRenderToBitmapSync(views!!.renderContext, MRectangle(views.stage.mousePos.xD - 5.0, views.stage.mousePos.yD - 5.0, 10.0, 10.0), views!!.globalToWindowScaleAvg)
+                val bmp = stage!!.unsafeRenderToBitmapSync(views!!.renderContext, Rectangle(views.stage.mousePos.xD - 5.0, views.stage.mousePos.yD - 5.0, 10.0, 10.0), views!!.globalToWindowScaleAvg)
                 magnifier.bitmap = bmp.slice()
                 invalidateRender()
             }

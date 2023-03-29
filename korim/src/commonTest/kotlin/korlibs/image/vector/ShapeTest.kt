@@ -35,7 +35,7 @@ class ShapeTest {
                 scale(2, 2)
                 translate(200, 100)
                 fill(
-                    createLinearGradient(50, 50, 75, 120, transform = MMatrix(2, 0, 0, 2)).addColorStop(0.0, Colors.RED)
+                    createLinearGradient(50, 50, 75, 120, transform = Matrix(2f, 0f, 0f, 2f)).addColorStop(0.0, Colors.RED)
                         .addColorStop(1.0, Colors.BLUE)
                 ) {
                     rect(50, 10, 300, 200)

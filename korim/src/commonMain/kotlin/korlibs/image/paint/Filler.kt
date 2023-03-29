@@ -119,6 +119,6 @@ class GradientFiller : BaseFiller() {
 
     private fun color(ratio: Float): RGBAPremultiplied = colors[(ratio.clamp01() * (NCOLORS - 1)).toInt()]
     fun getRatio(x: Double, y: Double): Double = getRatio(x.toFloat(), y.toFloat()).toDouble()
-    fun getRatio(x: Float, y: Float): Float = fill.getRatioAt(x, y)
+    fun getRatio(x: Float, y: Float): Float = fill.getRatioAt(Point(x, y))
     override fun getColor(x: Float, y: Float): RGBAPremultiplied = color(getRatio(x, y))
 }

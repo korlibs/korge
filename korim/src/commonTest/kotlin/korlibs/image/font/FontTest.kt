@@ -120,8 +120,7 @@ class FontTest {
             val scale = 1.0 + reader.position * 0.1
             //val scale = 1.0
             //transform.translate(0.0, scale)
-            transform.scale(scale)
-            transform.rotate(25.degrees)
+            transform = Matrix().scaled(scale).rotated(25.degrees)
             put(reader, c)
             advance(advance * scale)
         })

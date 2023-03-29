@@ -6,16 +6,18 @@ import korlibs.kgl.getProgramiv
 import korlibs.kgl.getShaderInfoLog
 import korlibs.kgl.getShaderiv
 import korlibs.logger.Logger
-import korlibs.graphics.*
-import korlibs.graphics.shader.Program
-import korlibs.graphics.shader.Shader
+import korlibs.graphics.shader.*
 import korlibs.graphics.shader.gl.GlslConfig
 import korlibs.graphics.shader.gl.GlslGenerator
 import korlibs.graphics.shader.gl.toNewGlslString
 import kotlin.native.concurrent.*
 
-internal data class GLProgramInfo(var programId: Int, var vertexId: Int, var fragmentId: Int) {
-    val cache = AGUniformValues()
+internal data class GLProgramInfo(var programId: Int, var vertexId: Int, var fragmentId: Int, val blocks: List<UniformBlock>) {
+    private val blocksByFixedLocation = blocks.associateBy { it.fixedLocation }
+    private val maxBlockId = (blocks.maxOfOrNull { it.fixedLocation } ?: -1) + 1
+    val uniforms: Array<UniformsRef?> = Array(maxBlockId + 1) { blocksByFixedLocation[it]?.let { UniformsRef(it) } }
+    //@Deprecated("This is the only place where AGUniformValues are still used")
+    //val cache = AGUniformValues()
 
     val cachedAttribLocations = FastStringMap<Int>()
     val cachedUniformLocations = FastStringMap<Int>()
@@ -77,7 +79,7 @@ internal object GLShaderCompiler {
         gl.attachShader(id, vertexShaderId)
         gl.linkProgram(id)
         val linkStatus = gl.getProgramiv(id, gl.LINK_STATUS)
-        return GLProgramInfo(id, vertexShaderId, fragmentShaderId)
+        return GLProgramInfo(id, vertexShaderId, fragmentShaderId, program.uniformBlocks)
     }
 
     private fun createShaderCompat(gl: KmlGl, config: GlslConfig, type: Int, shader: Shader, debugName: String?): Int {

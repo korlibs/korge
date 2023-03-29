@@ -1,30 +1,28 @@
 package korlibs.image.vector
 
 import korlibs.image.util.NinePatchSlices2D
-import korlibs.math.geom.MPoint
-import korlibs.math.geom.PointArrayList
-import korlibs.math.geom.MSize
+import korlibs.math.geom.*
 import korlibs.math.geom.vector.*
 
 class NinePatchVector(
     val path: VectorPath,
     val slices: NinePatchSlices2D,
-    oldSize: MSize? = null
+    oldSize: Size? = null
 ) {
-    val size = oldSize ?: path.getBounds().let { MSize(it.right, it.bottom) }
+    val size = oldSize ?: path.getBounds().let { Size(it.right, it.bottom) }
     private val tempPoints = PointArrayList()
 
-    fun getScaledPointAt(point: MPoint, newSize: MSize, out: MPoint = MPoint()): MPoint =
-        slices.getScaledPointAt(point, size, newSize, out)
+    fun getScaledPointAt(point: Point, newSize: Size): Point =
+        slices.getScaledPointAt(point, size, newSize)
 
-    private inline fun transformPoints(newSize: MSize, gen: PointArrayList.() -> Unit): PointArrayList {
+    private inline fun transformPoints(newSize: Size, gen: PointArrayList.() -> Unit): PointArrayList {
         tempPoints.clear()
         gen(tempPoints)
         slices.transform2DInplace(tempPoints, size, newSize)
         return tempPoints
     }
 
-    fun transform(newSize: MSize, out: VectorPath = VectorPath()): VectorPath {
+    fun transform(newSize: Size, out: VectorPath = VectorPath()): VectorPath {
         out.clear()
         path.visitCmds(
             moveTo = { (x, y) ->
@@ -51,7 +49,7 @@ class NinePatchVector(
     }
 }
 
-fun VectorPath.scaleNinePatch(newSize: MSize, slices: NinePatchSlices2D = NinePatchSlices2D(), oldSize: MSize? = null, out: VectorPath = VectorPath()): VectorPath {
+fun VectorPath.scaleNinePatch(newSize: Size, slices: NinePatchSlices2D = NinePatchSlices2D(), oldSize: Size? = null, out: VectorPath = VectorPath()): VectorPath {
     out.clear()
     return NinePatchVector(this, slices, oldSize).transform(newSize, out)
 }

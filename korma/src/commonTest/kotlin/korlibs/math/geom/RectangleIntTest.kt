@@ -8,23 +8,23 @@ import kotlin.test.assertTrue
 class RectangleIntTest {
     @Test
     fun name() {
-        assertEquals(MSizeInt(25, 100), MSizeInt(50, 200).fitTo(container = MSizeInt(100, 100)))
-        assertEquals(MSizeInt(50, 200), MSizeInt(50, 200).fitTo(container = MSizeInt(100, 200)))
+        assertEquals(SizeInt(25, 100), SizeInt(50, 200).fitTo(container = SizeInt(100, 100)))
+        assertEquals(SizeInt(50, 200), SizeInt(50, 200).fitTo(container = SizeInt(100, 200)))
     }
 
     @Test
     fun corners() {
-        val rectangle = MRectangleInt(1, 20, 300, 4000)
-        assertEquals(MPointInt(1, 20), rectangle.topLeft)
-        assertEquals(MPointInt(301, 20), rectangle.topRight)
-        assertEquals(MPointInt(1, 4020), rectangle.bottomLeft)
-        assertEquals(MPointInt(301, 4020), rectangle.bottomRight)
+        val rectangle = RectangleInt(1, 20, 300, 4000)
+        assertEquals(PointInt(1, 20), rectangle.topLeft)
+        assertEquals(PointInt(301, 20), rectangle.topRight)
+        assertEquals(PointInt(1, 4020), rectangle.bottomLeft)
+        assertEquals(PointInt(301, 4020), rectangle.bottomRight)
 
-        val iRectangle = MRectangleInt(1000, 200, 30, 4)
-        assertEquals(MPointInt(1000, 200), iRectangle.topLeft)
-        assertEquals(MPointInt(1030, 200), iRectangle.topRight)
-        assertEquals(MPointInt(1000, 204), iRectangle.bottomLeft)
-        assertEquals(MPointInt(1030, 204), iRectangle.bottomRight)
+        val iRectangle = RectangleInt(1000, 200, 30, 4)
+        assertEquals(PointInt(1000, 200), iRectangle.topLeft)
+        assertEquals(PointInt(1030, 200), iRectangle.topRight)
+        assertEquals(PointInt(1000, 204), iRectangle.bottomLeft)
+        assertEquals(PointInt(1030, 204), iRectangle.bottomRight)
     }
     
     @Test

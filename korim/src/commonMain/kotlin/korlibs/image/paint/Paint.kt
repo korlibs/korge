@@ -157,7 +157,7 @@ data class GradientPaint(
 
     val untransformedGradientMatrix = Matrix.IDENTITY
         .translated(-x0, -y0)
-        .scaled(1.0 / MPoint.distance(x0, y0, x1, y1).clamp(1.0, 16000.0))
+        .scaled(1.0 / Point.distance(x0, y0, x1, y1).clamp(1.0, 16000.0))
         .rotated(-Angle.between(x0, y0, x1, y1))
 
     //val gradientMatrixInv = gradientMatrix.inverted()
@@ -175,23 +175,21 @@ data class GradientPaint(
     private val x0_x1 = x0 - x1
     private val radial_scale = 1.0 / ((r0 - r1).pow2 - (x0 - x1).pow2 - (y0 - y1).pow2)
 
-    fun getRatioAt(px: Float, py: Float): Float {
+    fun getRatioAt(p: Point): Float {
         //val x = px
         //val y = py
         return cycle.apply(when (kind) {
             GradientKind.SWEEP -> {
-                val x = transformInv.transformX(px, py)
-                val y = transformInv.transformY(px, py)
-                (Point.angle(Point(x0, y0), Point(x, y)) / 360.degrees).toFloat()
+                val p = transformInv.transform(p)
+                (Point.angle(Point(x0, y0), p) / 360.degrees).toFloat()
             }
             GradientKind.RADIAL -> {
-                val x = transformInv.transformX(px, py)
-                val y = transformInv.transformY(px, py)
+                val (x, y) = transformInv.transform(p)
                 (1.0 - (-r1 * r0_r1 + x0_x1 * (x1 - x) + y0_y1 * (y1 - y) - sqrt(r1pow2 * ((x0 - x).pow2 + (y0 - y).pow2) - r0r1_2 * ((x0 - x) * (x1 - x) + (y0 - y) * (y1 - y)) + r0pow2 * ((x1 - x).pow2 + (y1 - y).pow2) - (x1 * y0 - x * y0 - x0 * y1 + x * y1 + x0 * y - x1 * y).pow2)) * radial_scale).toFloat()
             }
             else -> {
                 //println("gradientMatrix.transformX($x, $y): ${gradientMatrix.transformX(x, y)}")
-                gradientMatrix.transformX(px, py).toFloat()
+                gradientMatrix.transformX(p).toFloat()
             }
         })
     }
@@ -199,11 +197,11 @@ data class GradientPaint(
     val Float.pow2: Float get() = this * this
     val Double.pow2: Double get() = this * this
 
-    fun getRatioAt(x: Float, y: Float, m: MMatrix): Float {
+    fun getRatioAt(p: Point, m: Matrix): Float {
         //val tx = gradientMatrix.transformX(x, y)
         //val ty = gradientMatrix.transformY(x, y)
         //return m.transformX(tx, ty)
-        return getRatioAt(m.transformX(x, y).toFloat(), m.transformY(x, y).toFloat())
+        return getRatioAt(m.transform(p))
         //return getRatioAt(x, y)
     }
 

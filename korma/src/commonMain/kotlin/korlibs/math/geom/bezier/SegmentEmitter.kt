@@ -1,5 +1,6 @@
 package korlibs.math.geom.bezier
 
+/*
 import korlibs.math.geom.*
 
 object SegmentEmitter {
@@ -18,3 +19,4 @@ object SegmentEmitter {
         }
     }
 }
+*/

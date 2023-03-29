@@ -109,6 +109,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       DISABLE_HEADLESS_TEST: true
+      ENABLE_KOVER: true
     steps:
       - { uses: actions/checkout@v3 }
       - { name: Install freeglut3 & openal, run: sudo apt-get update && sudo apt-get -y install freeglut3-dev libopenal-dev xvfb }

@@ -8,6 +8,7 @@ import korlibs.render.*
 import korlibs.render.platform.*
 import korlibs.io.dynamic.*
 import korlibs.math.geom.*
+import korlibs.math.geom.Rectangle
 import java.awt.*
 import java.security.*
 import javax.swing.SwingUtilities
@@ -135,9 +136,7 @@ class MacosGLContext(
                 val fw = (frame.width * factor).toInt()
                 val fh = (frame.height * factor).toInt()
                 // factor=2.0, scissorBox: java.awt.Rectangle[x=0,y=0,width=2560,height=1496], viewport: java.awt.Rectangle[x=0,y=0,width=2560,height=1496]
-                val info = BaseOpenglContext.ContextInfo(MRectangleInt(), MRectangleInt(),)
-                info.scissors?.setTo(fx, fy, fw, fh)
-                info.viewport?.setTo(fx, fy, fw, fh)
+                val info = BaseOpenglContext.ContextInfo(RectangleInt(fx, fy, fw, fh), RectangleInt(fx, fy, fw, fh))
                 println("info=$info")
                 action(g, info)
             } finally {
@@ -187,7 +186,7 @@ class MacAWTOpenglContext(val gwconfig: GameWindowConfig, val c: Component, var 
     }
 
     val info = BaseOpenglContext.ContextInfo(
-        MRectangleInt(), MRectangleInt()
+        RectangleInt(), RectangleInt()
     )
 
     override val scaleFactor: Double get() = getDisplayScalingFactor(c)
@@ -204,9 +203,9 @@ class MacAWTOpenglContext(val gwconfig: GameWindowConfig, val c: Component, var 
                 ///println("factor=$factor, scissorBox: $scissorBox, viewport: $viewport")
                 //info.scissors?.setTo(scissorBox.x, scissorBox.y, scissorBox.width, scissorBox.height)
                 if (scissorBox != null) {
-                    info.scissors?.setTo(scissorBox.x, scissorBox.y, scissorBox.width, scissorBox.height)
+                    info.scissors = RectangleInt(scissorBox.x, scissorBox.y, scissorBox.width, scissorBox.height)
                     //info.viewport?.setTo(viewport.x, viewport.y, viewport.width, viewport.height)
-                    info.viewport?.setTo(scissorBox.x, scissorBox.y, scissorBox.width, scissorBox.height)
+                    info.viewport = RectangleInt(scissorBox.x, scissorBox.y, scissorBox.width, scissorBox.height)
                 } else {
                     System.err.println("ERROR !! scissorBox = $scissorBox, viewport = $viewport")
                 }

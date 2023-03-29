@@ -2,6 +2,7 @@ package korlibs.image.vector
 
 import korlibs.math.geom.*
 import korlibs.math.geom.shape.*
+import korlibs.math.geom.vector.*
 import kotlin.test.*
 
 class NinePatchVectorTest {
@@ -17,8 +18,8 @@ class NinePatchVectorTest {
                 M0,0 L100,0 L100,100 L0,100 Z
             """.trimIndent(),
             """
-                ${vector.scaleNinePatch(MSize(200, 200)).toSvgString()}
-                ${vector.scaleNinePatch(MSize(50, 50)).toSvgString()}
+                ${vector.scaleNinePatch(Size(200, 200)).toSvgString()}
+                ${vector.scaleNinePatch(Size(50, 50)).toSvgString()}
                 ${vector.toSvgString()}
             """.trimIndent()
 
@@ -36,7 +37,7 @@ class NinePatchVectorTest {
                 M25,0 L75,0 Q100,0,100,25 L100,75 Q100,100,75,100 L25,100 Q0,100,0,75 L0,25 Q0,0,25,0 Z
             """.trimIndent(),
             """
-                ${vector.scaleNinePatch(MSize(200, 200)).roundDecimalPlaces(1).toSvgString()}
+                ${vector.scaleNinePatch(Size(200, 200)).roundDecimalPlaces(1).toSvgString()}
                 ${vector.toSvgString()}
             """.trimIndent()
 
@@ -55,8 +56,8 @@ class NinePatchVectorTest {
                 M25,0 L75,0 Q100,0,100,25 L100,75 Q100,100,75,100 L25,100 Q0,100,0,75 L0,25 Q0,0,25,0 Z
             """.trimIndent(),
             """
-                ${vector.scaleNinePatch(MSize(50, 50)).roundDecimalPlaces(1).toSvgString()}
-                ${vector.scaleNinePatch(MSize(50, 10)).roundDecimalPlaces(1).toSvgString()}
+                ${vector.scaleNinePatch(Size(50, 50)).roundDecimalPlaces(1).toSvgString()}
+                ${vector.scaleNinePatch(Size(50, 10)).roundDecimalPlaces(1).toSvgString()}
                 ${vector.toSvgString()}
             """.trimIndent()
 

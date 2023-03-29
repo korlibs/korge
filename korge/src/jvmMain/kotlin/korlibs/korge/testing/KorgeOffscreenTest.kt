@@ -12,10 +12,10 @@ import korlibs.io.lang.*
 import korlibs.math.geom.*
 import kotlinx.coroutines.*
 
-fun suspendTestWithOffscreenAG(fbo_width: Int, fbo_height: Int, callback: suspend CoroutineScope.(ag: AG) -> Unit) = suspendTest {
+fun suspendTestWithOffscreenAG(fbo_width: Int, fbo_height: Int, checkGl: Boolean = false, logGl: Boolean = false, callback: suspend CoroutineScope.(ag: AG) -> Unit) = suspendTest {
     KmlGlContextDefault().use { ctx ->
     //GLOBAL_HEADLESS_KML_CONTEXT.also { ctx ->
-        val ag = AGOpenglAWT(checkGl = false, logGl = false, context = ctx)
+        val ag = AGOpenglAWT(checkGl = checkGl, logGl = logGl, context = ctx)
         ag.mainFrameBuffer.setSize(fbo_width, fbo_height)
         ctx.set()
         val gl = ag.gl
@@ -65,6 +65,8 @@ inline fun korgeScreenshotTest(
     virtualSize: SizeInt = windowSize,
     bgcolor: RGBA? = Colors.BLACK,
     devicePixelRatio: Double = 1.0,
+    checkGl: Boolean = true,
+    logGl: Boolean = false,
     noinline callback: suspend OffscreenStage.() -> Unit
 ) {
     val offscreenContext = OffscreenContext()
@@ -75,7 +77,7 @@ inline fun korgeScreenshotTest(
     }
 
     var exception: Throwable? = null
-    suspendTestWithOffscreenAG(windowSize.width, windowSize.height) { ag ->
+    suspendTestWithOffscreenAG(windowSize.width, windowSize.height, checkGl = checkGl, logGl = logGl) { ag ->
         val korge = KorgeHeadless(KorgeConfig(
             windowSize = windowSize, virtualSize = virtualSize,
             bgcolor = bgcolor,

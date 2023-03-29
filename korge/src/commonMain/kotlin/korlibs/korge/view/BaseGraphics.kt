@@ -50,8 +50,6 @@ abstract class BaseGraphics(
         _dirtyBounds = true
     }
 
-    private val bb = BoundsBuilder()
-
     @OptIn(KorgeExperimental::class)
     override fun renderInternal(ctx: RenderContext) {
         bitmapsToRemove.fastForEach {
@@ -123,7 +121,7 @@ abstract class BaseGraphics(
     var realImageScaleY = 1.0
 
     protected abstract fun drawShape(ctx: Context2d) // this@BaseGraphics.compoundShape.draw(this)
-    protected abstract fun getShapeBounds(bb: BoundsBuilder, includeStrokes: Boolean) // shapes.fastForEach { it.addBounds(bb) }
+    protected abstract fun getShapeBounds(includeStrokes: Boolean): Rectangle // shapes.fastForEach { it.addBounds(bb) }
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -153,27 +151,22 @@ abstract class BaseGraphics(
 
     override fun getLocalBoundsInternal(): Rectangle = _getLocalBoundsInternal()
 
-    private val __localBounds: MRectangle = MRectangle()
+    private var __localBounds: Rectangle = Rectangle()
     //var boundsIncludeStrokes = false
     var boundsIncludeStrokes = true
     private fun _getLocalBoundsInternal(strokes: Boolean = this.boundsIncludeStrokes): Rectangle {
         val bounds = boundsUnsafe(strokes = strokes)
-        return Rectangle(bounds.x - anchorDispX, bounds.y - anchorDispY, bounds.width, bounds.height)
+        return Rectangle(bounds.x - anchorDispX, bounds.y - anchorDispY, bounds.widthD, bounds.heightD)
     }
 
-    private val _localBoundsWithStrokes = MRectangle()
-    private val _localBounds = MRectangle()
+    private var _localBoundsWithStrokes = Rectangle()
+    private var _localBounds = Rectangle()
 
-    private fun boundsUnsafe(strokes: Boolean): MRectangle {
+    private fun boundsUnsafe(strokes: Boolean): Rectangle {
         if (_dirtyBounds) {
             _dirtyBounds = false
-            bb.reset()
-            getShapeBounds(bb, includeStrokes = false)
-            bb.getBounds(_localBounds)
-
-            bb.reset()
-            getShapeBounds(bb, includeStrokes = true)
-            bb.getBounds(_localBoundsWithStrokes)
+            _localBounds = getShapeBounds(includeStrokes = false)
+            _localBoundsWithStrokes = getShapeBounds(includeStrokes = true)
 
             /*
             println("getLocalBoundsInternalNoAnchor: ")
@@ -185,9 +178,7 @@ abstract class BaseGraphics(
         return if (strokes) _localBoundsWithStrokes else _localBounds
     }
 
-    fun getLocalBoundsInternalNoAnchor(out: MRectangle, includeStrokes: Boolean) {
-        out.copyFrom(boundsUnsafe(includeStrokes))
-    }
+    fun getLocalBoundsInternalNoAnchor(includeStrokes: Boolean): Rectangle = boundsUnsafe(includeStrokes)
 
     internal class InternalViewAutoscaling {
         var renderedAtScaleXInv = 1.0; private set

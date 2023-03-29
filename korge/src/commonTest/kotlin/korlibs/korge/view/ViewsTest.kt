@@ -218,8 +218,6 @@ class ViewsTest : ViewsForTesting() {
         assertEquals(false, image.isVisibleToUser())
     }
 
-    private fun assertEquals(a: MRectangle, b: MRectangle) = assertEquals(a.toString(), b.toString())
-
     @Test
     fun testRect() = viewsTest {
         assertEqualsFloat(Rectangle(0, 0, 1280, 720), this.stage.globalBounds, message = "rect0")

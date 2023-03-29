@@ -245,3 +245,15 @@ val Long.high: Int get() = (this ushr 32).toInt()
 val Long.low: Int get() = this.toInt()
 
 fun Long.Companion.fromLowHigh(low: Int, high: Int): Long = (low.toLong() and 0xFFFFFFFFL) or (high.toLong() shl 32)
+
+inline fun Int.fastForEachOneBits(block: (Int) -> Unit) {
+    var value = this
+    var index = 0
+    while (value != 0) {
+        val shift = value.countTrailingZeroBits()
+        index += shift
+        if (index < 32) block(index)
+        value = value ushr (shift + 1)
+        index++
+    }
+}

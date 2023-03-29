@@ -46,6 +46,7 @@ inline class Vector2 internal constructor(internal val raw: Float2Pack) {
     constructor(x: Float, y: Int) : this(float2PackOf(x.toFloat(), y.toFloat()))
     constructor(x: Int, y: Float) : this(float2PackOf(x.toFloat(), y.toFloat()))
 
+    @Deprecated("")
     constructor(p: MPoint) : this(p.x.toFloat(), p.y.toFloat())
     //constructor(p: Vector2) : this(p.raw)
     constructor() : this(0f, 0f)
@@ -60,6 +61,9 @@ inline class Vector2 internal constructor(internal val raw: Float2Pack) {
 
     inline operator fun unaryMinus(): Vector2 = Point(-x, -y)
     inline operator fun unaryPlus(): Vector2 = this
+
+    inline operator fun plus(that: Size): Vector2 = Point(x + that.width, y + that.height)
+    inline operator fun minus(that: Size): Vector2 = Point(x - that.width, y - that.height)
 
     inline operator fun plus(that: Vector2): Vector2 = Point(x + that.x, y + that.y)
     inline operator fun minus(that: Vector2): Vector2 = Point(x - that.x, y - that.y)
@@ -91,13 +95,9 @@ inline class Vector2 internal constructor(internal val raw: Float2Pack) {
     fun angleTo(other: Vector2): Angle = Angle.between(this.x, this.y, other.x, other.y)
     val angle: Angle get() = Angle.between(0f, 0f, this.x, this.y)
 
-    inline fun transformed(m: MMatrix?): Vector2 = m?.transform(this) ?: this
-    fun transformX(m: MMatrix?): Float = m?.transform(this)?.x ?: x
-    fun transformY(m: MMatrix?): Float = m?.transform(this)?.y ?: y
-
-    inline fun transformed(m: Matrix): Vector2 = if (m.isNotNIL) m.transform(this) else this
-    fun transformX(m: Matrix): Float = if (m.isNotNIL) m.transform(this).x else x
-    fun transformY(m: Matrix): Float = if (m.isNotNIL) m.transform(this).y else y
+    inline fun transformed(m: Matrix): Vector2 = m.transform(this)
+    fun transformX(m: Matrix): Float = m.transform(this).x
+    fun transformY(m: Matrix): Float = m.transform(this).y
 
     inline fun transformedNullable(m: Matrix?): Vector2 = if (m != null && m.isNotNIL) m.transform(this) else this
     fun transformNullableX(m: Matrix?): Float = if (m != null && m.isNotNIL) m.transform(this).x else x
@@ -108,7 +108,7 @@ inline class Vector2 internal constructor(internal val raw: Float2Pack) {
         else -> throw IndexOutOfBoundsException("Point doesn't have $component component")
     }
     val length: Float get() = hypot(x, y)
-    val squaredLength: Float get() {
+    val lengthSquared: Float get() {
         val x = x
         val y = y
         return x*x + y*y
@@ -138,7 +138,12 @@ inline class Vector2 internal constructor(internal val raw: Float2Pack) {
     fun niceStr(decimalPlaces: Int): String = "(${x.niceStr(decimalPlaces)}, ${y.niceStr(decimalPlaces)})"
     override fun toString(): String = niceStr
 
+    /** Vector2 with inverted (1f / v) components to this */
+    fun inv(): Vector2 = Vector2(1f / x, 1f / y)
+
     fun isNaN(): Boolean = this.x.isNaN() && this.y.isNaN()
+
+    val absoluteValue: Vector2 get() = Point(abs(x), abs(y))
 
     @Deprecated("", ReplaceWith("ratio.interpolate(this, other)", "korlibs.math.interpolation.interpolate")) fun interpolateWith(ratio: Ratio, other: Vector2): Vector2 = ratio.interpolate(this, other)
 
@@ -152,10 +157,10 @@ inline class Vector2 internal constructor(internal val raw: Float2Pack) {
         //fun fromRaw(raw: Float2Pack) = Point(raw)
 
         /** Constructs a point from polar coordinates determined by an [angle] and a [length]. Angle 0 is pointing to the right, and the direction is counter-clock-wise */
-        inline fun fromPolar(x: Float, y: Float, angle: Angle, length: Double = 1.0): Vector2 = Point(x + angle.cosineF * length, y + angle.sineF * length)
-        inline fun fromPolar(x: Double, y: Double, angle: Angle, length: Double = 1.0): Vector2 = Point(x + angle.cosineD * length, y + angle.sineD * length)
-        inline fun fromPolar(base: Vector2, angle: Angle, length: Double = 1.0): Vector2 = fromPolar(base.x, base.y, angle, length)
-        inline fun fromPolar(angle: Angle, length: Double = 1.0): Vector2 = fromPolar(0.0, 0.0, angle, length)
+        inline fun polar(x: Float, y: Float, angle: Angle, length: Float = 1f): Vector2 = Point(x + angle.cosineF * length, y + angle.sineF * length)
+        inline fun polar(x: Double, y: Double, angle: Angle, length: Float = 1f): Vector2 = Point(x + angle.cosineD * length, y + angle.sineD * length)
+        inline fun polar(base: Vector2, angle: Angle, length: Float = 1f): Vector2 = polar(base.x, base.y, angle, length)
+        inline fun polar(angle: Angle, length: Float = 1f): Vector2 = polar(0.0, 0.0, angle, length)
 
         inline fun middle(a: Vector2, b: Vector2): Vector2 = (a + b) * 0.5
 
@@ -236,7 +241,7 @@ fun Point.mutable(out: MPoint = MPoint()): MPoint = out.setTo(x, y)
 @Deprecated("")
 val Point.mutable: MPoint get() = mutable()
 
-private inline fun getPolylineLength(size: Int, crossinline get: (n: Int) -> Point): Double {
+internal inline fun getPolylineLength(size: Int, crossinline get: (n: Int) -> Point): Double {
     var out = 0.0
     var prev = Point.ZERO
     for (n in 0 until size) {
@@ -248,14 +253,21 @@ private inline fun getPolylineLength(size: Int, crossinline get: (n: Int) -> Poi
 }
 
 fun PointList.getPolylineLength(): Double = getPolylineLength(size) { get(it) }
-fun List<MPoint>.getPolylineLength(): Double = getPolylineLength(size) { get(it).point }
+fun List<Point>.getPolylineLength(): Double = getPolylineLength(size) { get(it) }
 
-fun List<MPoint>.bounds(out: MRectangle = MRectangle(), bb: BoundsBuilder = BoundsBuilder()): MRectangle = bb.add(this).getBounds(out)
-fun Iterable<MPoint>.bounds(out: MRectangle = MRectangle(), bb: BoundsBuilder = BoundsBuilder()): MRectangle = bb.add(this).getBounds(out)
+fun List<Point>.bounds(): Rectangle = BoundsBuilder(size) { this + get(it) }.bounds
+fun Iterable<Point>.bounds(): Rectangle {
+    var bb = BoundsBuilder()
+    for (p in this) bb += p
+    return bb.bounds
+}
 
-fun min(a: MPoint, b: MPoint, out: MPoint = MPoint()): MPoint = out.setTo(kotlin.math.min(a.x, b.x), kotlin.math.min(a.y, b.y))
-fun max(a: MPoint, b: MPoint, out: MPoint = MPoint()): MPoint = out.setTo(kotlin.math.max(a.x, b.x), kotlin.math.max(a.y, b.y))
-fun MPoint.clamp(min: Double, max: Double, out: MPoint = MPoint()): MPoint = out.setTo(x.clamp(min, max), y.clamp(min, max))
+fun abs(a: Point): Point = a.absoluteValue
+fun min(a: Point, b: Point): Point = Point(min(a.x, b.x), min(a.y, b.y))
+fun max(a: Point, b: Point): Point = Point(max(a.x, b.x), max(a.y, b.y))
+fun Point.clamp(min: Float, max: Float): Point = Point(x.clamp(min, max), y.clamp(min, max))
+fun Point.clamp(min: Double, max: Double): Point = clamp(min.toFloat(), max.toFloat())
+fun Point.clamp(min: Point, max: Point): Point = Point(x.clamp(min.x, max.x), y.clamp(min.y, max.y))
 
 fun Point.toInt(): Vector2Int = Vector2Int(x.toInt(), y.toInt())
 fun Point.toIntCeil(): Vector2Int = Vector2Int(x.toIntCeil(), y.toIntCeil())

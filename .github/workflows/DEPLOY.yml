@@ -25,7 +25,7 @@ jobs:
       - { name: Set up JDK, uses: actions/setup-java@v3, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
       - run: sudo apt-get install xvfb
       - id: createStagedRepositoryId
-        run: xvfb-run --auto-servernum ./gradlew --no-daemon startReleasingMavenCentral
+        run: xvfb-run --auto-servernum ./gradlew --no-daemon --info --stacktrace startReleasingMavenCentral
 
   publish-windows:
     runs-on: windows-latest

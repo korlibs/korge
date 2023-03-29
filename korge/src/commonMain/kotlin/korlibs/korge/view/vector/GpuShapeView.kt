@@ -11,6 +11,7 @@ import korlibs.korge.view.property.*
 import korlibs.image.paint.*
 import korlibs.image.vector.*
 import korlibs.math.geom.*
+import korlibs.math.geom.Line
 import korlibs.math.geom.bezier.*
 import korlibs.math.geom.shape.*
 import korlibs.math.geom.vector.*
@@ -74,12 +75,9 @@ open class GpuShapeView(
     var boundsIncludeStrokes: Boolean = true
 
     private val gpuShapeViewCommands = GpuShapeViewCommands()
-    private val bb = BoundsBuilder()
+    private val bb = MBoundsBuilder()
     var bufferWidth = 1000
     var bufferHeight = 1000
-    private val pointsScope = PointPool(128)
-    private val ab = SegmentInfo()
-    private val bc = SegmentInfo()
     //private var notifyAboutEvenOdd = false
 
     override var anchorX: Double = 0.0 ; set(value) { field = value; invalidate() }
@@ -105,22 +103,22 @@ open class GpuShapeView(
     private var validShapeBounds = false
     private var validShapeBoundsStrokes = false
     private var renderCount = 0
-    private val _shapeBounds: MRectangle = MRectangle()
-    private val _shapeBoundsStrokes: MRectangle = MRectangle()
-    private val shapeBounds: MRectangle
+    private var _shapeBounds: Rectangle = Rectangle()
+    private var _shapeBoundsStrokes: Rectangle = Rectangle()
+    private val shapeBounds: Rectangle
         get() {
-            val _bounds = if (boundsIncludeStrokes) _shapeBoundsStrokes else _shapeBounds
             val valid = if (boundsIncludeStrokes) validShapeBoundsStrokes else validShapeBounds
             if (!valid) {
                 if (boundsIncludeStrokes) validShapeBoundsStrokes = true else validShapeBounds = true
-                return shape.getBounds(includeStrokes = boundsIncludeStrokes).let { _bounds.copyFrom(it) }
-            } else {
-                return _bounds
+                val result = shape.getBounds(includeStrokes = boundsIncludeStrokes)
+                if (boundsIncludeStrokes) _shapeBoundsStrokes = result else _shapeBounds = result
+                return result
             }
+            return if (boundsIncludeStrokes) _shapeBoundsStrokes else _shapeBounds
         }
 
-    val shapeWidth: Double get() = shapeBounds.width
-    val shapeHeight: Double get() = shapeBounds.height
+    val shapeWidth: Double get() = shapeBounds.width.toDouble()
+    val shapeHeight: Double get() = shapeBounds.height.toDouble()
     private var lastCommandWasClipped: Boolean = false
 
     override val anchorDispX: Double get() = shapeBounds.width * anchorX
@@ -152,9 +150,9 @@ open class GpuShapeView(
         invalidateShape()
     }
 
-    override fun getLocalBoundsInternal() = Rectangle(
-        shapeBounds.x - anchorDispX,
-        shapeBounds.y - anchorDispY,
+    override fun getLocalBoundsInternal(): Rectangle = Rectangle(
+        shapeBounds.x - anchorDispXF,
+        shapeBounds.y - anchorDispYF,
         shapeBounds.width,
         shapeBounds.height,
     )
@@ -180,7 +178,7 @@ open class GpuShapeView(
     private var cachedScale: Double = Double.NaN
 
     override fun renderInternal(ctx: RenderContext) {
-        globalScale = globalMatrix.immutable.toTransform().scaleAvg * ctx.bp.globalToWindowScaleAvg
+        globalScale = globalMatrix.toTransform().scaleAvg * ctx.bp.globalToWindowScaleAvg
         //globalScale = ctx.bp.globalToWindowScaleAvg
         if (cachedScale != globalScale) {
             invalidateShape()
@@ -253,44 +251,42 @@ open class GpuShapeView(
     }
 
     class SegmentInfo {
-        lateinit var s: MPoint // start
-        lateinit var e: MPoint // end
-        lateinit var line: MLine
+        var s: Point = Point.ZERO // start
+        var e: Point = Point.ZERO // end
+        var line: Line = Line.ZERO
         var angleSE: Angle = 0.degrees
         var angleSE0: Angle = 0.degrees
         var angleSE1: Angle = 0.degrees
-        lateinit var s0: MPoint
-        lateinit var s1: MPoint
-        lateinit var e0: MPoint
-        lateinit var e1: MPoint
-        lateinit var e0s: MPoint
-        lateinit var e1s: MPoint
-        lateinit var s0s: MPoint
-        lateinit var s1s: MPoint
+        var s0: Point = Point.ZERO
+        var s1: Point = Point.ZERO
+        var e0: Point = Point.ZERO
+        var e1: Point = Point.ZERO
+        var e0s: Point = Point.ZERO
+        var e1s: Point = Point.ZERO
+        var s0s: Point = Point.ZERO
+        var s1s: Point = Point.ZERO
 
         fun p(index: Int) = if (index == 0) s else e
         fun p0(index: Int) = if (index == 0) s0 else e0
         fun p1(index: Int) = if (index == 0) s1 else e1
 
-        fun setTo(s: MPoint, e: MPoint, lineWidth: Double, scope: PointPool) {
+        fun setTo(s: Point, e: Point, lineWidth: Float) {
             this.s = s
             this.e = e
-            scope.apply {
-                line = MLine(s, e)
-                angleSE = Angle.between(s, e)
-                angleSE0 = angleSE - 90.degrees
-                angleSE1 = angleSE + 90.degrees
-                s0 = Point(s, angleSE0, length = lineWidth)
-                s1 = Point(s, angleSE1, length = lineWidth)
-                e0 = Point(e, angleSE0, length = lineWidth)
-                e1 = Point(e, angleSE1, length = lineWidth)
+            line = Line(s, e)
+            angleSE = Angle.between(s, e)
+            angleSE0 = angleSE - 90.degrees
+            angleSE1 = angleSE + 90.degrees
+            s0 = Point.polar(s, angleSE0, length = lineWidth)
+            s1 = Point.polar(s, angleSE1, length = lineWidth)
+            e0 = Point.polar(e, angleSE0, length = lineWidth)
+            e1 = Point.polar(e, angleSE1, length = lineWidth)
 
-                s0s = Point(s0, angleSE + 180.degrees, length = lineWidth)
-                s1s = Point(s1, angleSE + 180.degrees, length = lineWidth)
+            s0s = Point.polar(s0, angleSE + 180.degrees, length = lineWidth)
+            s1s = Point.polar(s1, angleSE + 180.degrees, length = lineWidth)
 
-                e0s = Point(e0, angleSE, length = lineWidth)
-                e1s = Point(e1, angleSE, length = lineWidth)
-            }
+            e0s = Point.polar(e0, angleSE, length = lineWidth)
+            e1s = Point.polar(e1, angleSE, length = lineWidth)
         }
     }
 
@@ -305,24 +301,22 @@ open class GpuShapeView(
     }
 
     private fun pointsAddCubicOrLine(
-        scope: PointPool, fix: Point,
+        fix: Point,
         p0: Point, p0s: Point, p1s: Point, p1: Point,
         lineWidth: Double,
         reverse: Boolean = false,
         start: Boolean = true,
     ) {
         val NPOINTS = 15
-        scope.apply {
-            for (i in 0..NPOINTS) {
-                val ratio = i.toFloat() / NPOINTS.toFloat()
-                val pos = when {
-                    start -> Bezier.cubicCalc(p0, p0s, p1s, p1, ratio)
-                    else -> Bezier.cubicCalc(p1, p1s, p0s, p0, ratio)
-                }
-                when {
-                    reverse -> pointsAdd(fix, pos, lineWidth.toFloat())
-                    else -> pointsAdd(pos, fix, lineWidth.toFloat())
-                }
+        for (i in 0..NPOINTS) {
+            val ratio = i.toFloat() / NPOINTS.toFloat()
+            val pos = when {
+                start -> Bezier.cubicCalc(p0, p0s, p1s, p1, ratio)
+                else -> Bezier.cubicCalc(p1, p1s, p0s, p0, ratio)
+            }
+            when {
+                reverse -> pointsAdd(fix, pos, lineWidth.toFloat())
+                else -> pointsAdd(pos, fix, lineWidth.toFloat())
             }
         }
     }
@@ -393,7 +387,7 @@ open class GpuShapeView(
 
     class PointsResult(val bounds: AGScissor, val vertexCount: Int, val vertexStart: Int, val vertexEnd: Int)
 
-    private fun getPointsForPath(points: PointArrayList, type: AGDrawType): PointsResult? {
+    private fun getPointsForPath(points: PointList, type: AGDrawType): PointsResult? {
         if (points.size < 3) return null
         val vertexStart = gpuShapeViewCommands.verticesStart()
         val bb = this.bb
@@ -428,7 +422,7 @@ open class GpuShapeView(
     }
 
     private fun getPointsForPath(path: VectorPath, type: AGDrawType): PointsResult? {
-        return getPointsForPath(path.getPoints2(), type)
+        return getPointsForPath(path.cachedPoints, type)
     }
 
     private fun getPointsForPathList(path: VectorPath, type: AGDrawType): List<PointsResult> {
@@ -473,7 +467,7 @@ open class GpuShapeView(
         val isSimpleDraw = shapeIsConvex && shape.clip == null && !debugDrawOnlyAntialiasedBorder
         //val isSimpleDraw = false
         val pathDataList = getPointsForPathList(shape.path, if (isSimpleDraw) AGDrawType.TRIANGLE_STRIP else AGDrawType.TRIANGLE_FAN)
-        val pathBoundsNoExpanded = BoundsBuilder().also { bb -> pathDataList.fastForEach {
+        val pathBoundsNoExpanded = MBoundsBuilder().also { bb -> pathDataList.fastForEach {
             //println("bounds=${it.bounds}")
             bb.add(it.bounds)
         } }.getBounds()

@@ -15,5 +15,5 @@ package korlibs.math.annotations
  * For now, they force allocations, but once MFVC is ready,
  * this API won't allocate and will replace mutable versions.
  */
-@RequiresOptIn(level = RequiresOptIn.Level.WARNING)
+//@RequiresOptIn(level = RequiresOptIn.Level.WARNING)
 annotation class KormaValueApi

@@ -7,6 +7,9 @@ import korlibs.image.format.*
 import korlibs.io.async.*
 import korlibs.io.file.std.*
 import korlibs.io.lang.*
+import korlibs.korge.view.filter.*
+import korlibs.korge.view.Circle
+import korlibs.math.geom.*
 import korlibs.math.interpolation.*
 import samples.*
 import samples.asteroids.*
@@ -26,10 +29,31 @@ suspend fun main() = Korge(
     debug = false,
     //debugAg = true,
     multithreaded = true,
-    forceRenderEveryFrame = false // Newly added optimization!
-    //forceRenderEveryFrame = true
+    //forceRenderEveryFrame = false // Newly added optimization!
+    forceRenderEveryFrame = true
     //debugAg = true,
 ).start {
+    //solidRect(200, 200, Colors.RED); return@start
+    //solidRect(50, 50, Colors.GREEN).xy(50, 50)
+    //    .filters(WaveFilter(amplitudeX = 15, amplitudeY = 10, crestDistanceX = 25.0, crestDistanceY = 10.0).also { filter ->
+    //        addUpdater { filter.time += it }
+    //        invalidateRender()
+    //    }).also { return@start }
+    //lateinit var circle1: Circle
+    //lateinit var circle2: Circle
+    //val container = container {
+    //    xy(200, 200)
+    //    scale(1.2)
+    //    circle1 = circle(128.0, Colors.RED)
+    //        .scale(0.75)
+    //        .anchor(Anchor.MIDDLE_CENTER)
+    //    circle2 = circle(64.0, Colors.BLUE)
+    //        .scale(1.5)
+    //        .anchor(Anchor.MIDDLE_CENTER)
+    //}
+    //circle1.xy(167, 100)
+    //circle2.xy(0, 0)
+    //return@start
     //image(resourcesVfs["korge.png"].readBitmap()); text("hello world!", textSize = 64.0, color = Colors.RED); return@Korge
     //text("hello world!", textSize = 64.0); return@Korge
 
@@ -51,9 +75,11 @@ suspend fun main() = Korge(
         //Demo(::MainGpuVectorRendering),
         //Demo(::MainColorTransformFilter),
         Demo(::MainMasks),
+        //Demo(::MainShape2dScene),
         //Demo(::MainStressMatrixMultiplication),
         //Demo(::MainSDF),
         listOf(
+            Demo(::MainShape2dScene),
             Demo(::MainStressMatrixMultiplication),
             Demo(::MainStressButtons),
             Demo(::MainVectorNinePatch),

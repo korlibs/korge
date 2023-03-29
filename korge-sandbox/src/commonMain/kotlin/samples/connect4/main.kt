@@ -47,8 +47,8 @@ class MainConnect4 : ScaledScene(448, 384) {
         }
         image(skeleton)
 
-        fun getPosition(column: Int, row: Int): MPoint {
-            return MPoint(column * 64.0 + 32.0, row * 64.0 + 32.0)
+        fun getPosition(column: Int, row: Int): Point {
+            return Point(column * 64.0 + 32.0, row * 64.0 + 32.0)
         }
 
         fun createChip(column: Int, row: Int, chip: Chip): Image {

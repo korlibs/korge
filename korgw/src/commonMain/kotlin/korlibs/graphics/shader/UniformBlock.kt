@@ -26,23 +26,6 @@ class UniformBlocksBuffersRef(
             callback(n, block, buffers[n], valueIndices[n])
         }
     }
-
-    // @TODO: This won't be required in backends supporting uniform buffers, since the buffer can just be uploaded
-    inline fun fastForEachUniform(callback: (AGUniformValue) -> Unit) {
-        //println("AGUniformBlocksBuffersRef: ${blocks.toList()} : ${valueIndices.toList()}")
-        fastForEachBlock { index, block, buffer, valueIndex ->
-            if (valueIndex >= 0) {
-                val byteOffset = valueIndex * block.block.totalSize
-                //println(" :: index=$index, block=$block, buffer=$buffer, mem=${buffer?.mem}, valueIndex=$valueIndex, byteOffset=$byteOffset")
-                val buffer1 = buffer?.mem ?: error("Memory is empty for block $block")
-                block.readFrom(buffer1, byteOffset).fastForEach {
-                    callback(it)
-                }
-            } else {
-                println("ERROR block: ${block.block} has an invalid valueIndex=$valueIndex")
-            }
-        }
-    }
 }
 
 @Suppress("unused")
@@ -103,7 +86,7 @@ open class UniformBlock(val fixedLocation: Int) {
     }
 }
 
-class UniformRef(
+class UniformsRef(
     val block: UniformBlock,
     var buffer: Buffer,
     var index: Int
@@ -120,6 +103,14 @@ class UniformRef(
         arraycopy(ref.buffer, 0, this.buffer, (index * blockSize), blockSize)
     }
 
+    // @TODO: Remaining get functions
+    operator fun get(uniform: TypedUniform<Int>): Int = getOffset(uniform).let { buffer.getUnalignedInt32(it) }
+    operator fun get(uniform: TypedUniform<Float>): Float = getOffset(uniform).let { buffer.getUnalignedFloat32(it + 0) }
+    operator fun get(uniform: TypedUniform<Vector2>): Vector2 = getOffset(uniform).let { Vector2(buffer.getUnalignedFloat32(it + 0), buffer.getUnalignedFloat32(it + 4)) }
+    operator fun get(uniform: TypedUniform<Vector3>): Vector3 = getOffset(uniform).let { Vector3(buffer.getUnalignedFloat32(it + 0), buffer.getUnalignedFloat32(it + 4), buffer.getUnalignedFloat32(it + 8)) }
+    operator fun get(uniform: TypedUniform<Vector4>): Vector4 = getOffset(uniform).let { Vector4(buffer.getUnalignedFloat32(it + 0), buffer.getUnalignedFloat32(it + 4), buffer.getUnalignedFloat32(it + 8), buffer.getUnalignedFloat32(it + 12)) }
+    //operator fun get(uniform: TypedUniform<Matrix4>): Matrix4 = TODO()
+
     operator fun set(uniform: TypedUniform<Int>, value: Int) {
         getOffset(uniform).also { buffer.setUnalignedInt32(it, value) }
     }
@@ -132,14 +123,6 @@ class UniformRef(
     operator fun set(uniform: TypedUniform<Vector4>, value: ColorAdd) = set(uniform, value.rf, value.gf, value.bf, value.af)
     operator fun set(uniform: TypedUniform<Vector4>, value: Vector4) = set(uniform, value.x, value.y, value.z, value.w)
     operator fun set(uniform: TypedUniform<Vector4>, value: RectCorners) = set(uniform, value.bottomRight, value.topRight, value.bottomLeft, value.topLeft)
-    operator fun set(uniform: TypedUniform<Vector4>, value: MVector4) = set(uniform, value.x, value.y, value.z, value.w)
-    operator fun set(uniform: TypedUniform<Matrix4>, value: MMatrix4) {
-        when (uniform.type) {
-            VarType.Mat4 -> set(uniform, value.data, Matrix4.INDICES_BY_COLUMNS_4x4)
-            VarType.Mat3 -> set(uniform, value.data, Matrix4.INDICES_BY_COLUMNS_3x3)
-            else -> TODO()
-        }
-    }
     operator fun set(uniform: TypedUniform<Matrix4>, value: Matrix4) {
         when (uniform.type) {
             VarType.Mat4 -> set(uniform, value, Matrix4.INDICES_BY_COLUMNS_4x4)
@@ -147,6 +130,7 @@ class UniformRef(
             else -> TODO()
         }
     }
+
     fun set(uniform: TypedUniform<Matrix4>, value: Matrix4, indices: IntArray) {
         getOffset(uniform).also {
             //println("SET OFFSET: $it")
@@ -187,20 +171,21 @@ class UniformRef(
 }
 
 class UniformBlockBuffer<T : UniformBlock>(val block: T) {
-    val agBuffer = AGBuffer()
-
     companion object {
-        inline fun <T : UniformBlock> single(block: T, gen: T.(UniformRef) -> Unit): UniformBlockBuffer<T> =
+        inline fun <T : UniformBlock> single(block: T, gen: T.(UniformsRef) -> Unit): UniformBlockBuffer<T> =
             UniformBlockBuffer(block).also { it.reset() }.also { it.push { gen(it) } }
     }
 
+    val agBuffer = AGBuffer()
     val blockSize = block.totalSize
     val texBlockSize = block.uniforms.size
     @PublishedApi internal var buffer = Buffer(blockSize * 1)
     private val bufferSize: Int get() = buffer.sizeInBytes / blockSize
-    val current = UniformRef(block, buffer, -1)
+    val current = UniformsRef(block, buffer, -1)
     var currentIndex by current::index
     val size: Int get() = currentIndex + 1
+    val data = Buffer(block.totalSize)
+    //val values by lazy { block.uniforms.map { AGUniformValue(it.uniform) } }
 
     @PublishedApi internal fun ensure(index: Int) {
         if (index >= bufferSize - 1) {
@@ -225,7 +210,7 @@ class UniformBlockBuffer<T : UniformBlock>(val block: T) {
         currentIndex--
     }
 
-    inline fun pushTemp(block: T.(UniformRef) -> Unit, use: () -> Unit) {
+    inline fun pushTemp(block: T.(UniformsRef) -> Unit, use: () -> Unit) {
         val pushed = push(deduplicate = true, block)
         try {
             use()
@@ -236,7 +221,7 @@ class UniformBlockBuffer<T : UniformBlock>(val block: T) {
         }
     }
 
-    inline fun push(deduplicate: Boolean = true, block: T.(UniformRef) -> Unit): Boolean {
+    inline fun push(deduplicate: Boolean = true, block: T.(UniformsRef) -> Unit): Boolean {
         currentIndex++
         ensure(currentIndex + 1)
         val blockSize = this.blockSize
@@ -263,16 +248,5 @@ class UniformBlockBuffer<T : UniformBlock>(val block: T) {
             }
         }
         return true
-    }
-
-    val data = Buffer(block.totalSize)
-    //val values by lazy { block.uniforms.map { AGUniformValue(it.uniform) } }
-    val values: List<AGUniformValue> = block.uniforms.map { uniform ->
-        AGUniformValue(uniform.uniform, data.sliceWithSize(uniform.voffset, uniform.type.bytesSize))
-    }
-
-    fun readFrom(buffer: Buffer, offset: Int): List<AGUniformValue> {
-        arraycopy(buffer, offset, data, 0, block.totalSize)
-        return values
     }
 }
