@@ -1911,9 +1911,9 @@ abstract class BaseTtfFont(
         override val paths = refs.map { ref ->
             val gpath = ref.glyph.path.path
             GlyphGraphicsPath(ref.glyph.index, VectorPath(IntArrayList(gpath.commands.size), FloatArrayList(gpath.data.size))).also { out ->
-                val m = MMatrix()
-                m.scale(ref.scaleX, ref.scaleY)
-                m.translate(ref.x, -ref.y)
+                val m = Matrix()
+                    .scaled(ref.scaleX, ref.scaleY)
+                    .translated(ref.x, -ref.y)
                 out.path.write(ref.glyph.path.path, m)
             }
         }

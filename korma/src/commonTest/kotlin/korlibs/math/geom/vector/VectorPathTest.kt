@@ -180,7 +180,7 @@ class VectorPathTest {
         rect(110, 0, 100, 100)
     }
 
-    val path2b = path2.clone().applyTransform(MMatrix().scale(2.0))
+    val path2b = path2.clone().applyTransform(Matrix().scaled(2.0))
 
     @Test
     fun testToString() {
@@ -203,29 +203,29 @@ class VectorPathTest {
     fun testCollidesTransformed() {
         assertEquals(false, buildVectorPath(VectorPath()) {
             rect(0, 0, 15, 15)
-        }.intersectsWith(MMatrix(), path2, MMatrix().scale(2.0)))
+        }.intersectsWith(Matrix(), path2, Matrix().scaled(2.0)))
         assertEquals(true, buildVectorPath(VectorPath()) {
             rect(0, 0, 15, 15)
-        }.intersectsWith(MMatrix().scale(2.0, 2.0), path2, MMatrix().scale(2.0)))
+        }.intersectsWith(Matrix().scaled(2.0, 2.0), path2, Matrix().scaled(2.0)))
         assertEquals(true, buildVectorPath(VectorPath()) {
             rect(0, 0, 15, 15)
-        }.intersectsWith(MMatrix().scale(2.0, 2.0), path2, MMatrix()))
+        }.intersectsWith(Matrix().scaled(2.0, 2.0), path2, Matrix()))
 
-        assertEquals(true, VectorPath.intersects(path1, MMatrix(), path1, MMatrix()))
+        assertEquals(true, VectorPath.intersects(path1, Matrix(), path1, Matrix()))
         assertEquals(
             true,
-            VectorPath.intersects(path1, MMatrix().translate(101.0, 0.0), path1, MMatrix().translate(101.0, 0.0))
+            VectorPath.intersects(path1, Matrix().translated(101.0, 0.0), path1, Matrix().translated(101.0, 0.0))
         )
         assertEquals(
             true,
-            VectorPath.intersects(path1, MMatrix().translate(50.0, 0.0), path1, MMatrix().translate(100.0, 0.0))
+            VectorPath.intersects(path1, Matrix().translated(50.0, 0.0), path1, Matrix().translated(100.0, 0.0))
         )
         assertEquals(
             true,
-            VectorPath.intersects(path1, MMatrix().translate(100.0, 0.0), path1, MMatrix().translate(50.0, 0.0))
+            VectorPath.intersects(path1, Matrix().translated(100.0, 0.0), path1, Matrix().translated(50.0, 0.0))
         )
-        assertEquals(false, VectorPath.intersects(path1, MMatrix().translate(101.0, 0.0), path1, MMatrix()))
-        assertEquals(false, VectorPath.intersects(path1, MMatrix(), path1, MMatrix().translate(101.0, 0.0)))
+        assertEquals(false, VectorPath.intersects(path1, Matrix().translated(101.0, 0.0), path1, Matrix()))
+        assertEquals(false, VectorPath.intersects(path1, Matrix(), path1, Matrix().translated(101.0, 0.0)))
     }
 
     @Test

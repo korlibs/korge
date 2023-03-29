@@ -89,7 +89,7 @@ data class PlacedGlyphMetrics constructor(
                 metrics.xadvance,
                 fontMetrics.lineHeight
             )
-        }.applyTransform(MMatrix().translate(x, y).premultiply(transform))
+        }.applyTransform(Matrix().translated(x, y).premultiplied(transform))
     }
     val boundsPathCurves: Curves by lazy {
         val curves = boundsPath.getCurves()
