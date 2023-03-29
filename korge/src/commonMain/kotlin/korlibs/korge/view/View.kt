@@ -768,6 +768,7 @@ abstract class View internal constructor(
 
     override fun invalidateRender() {
         _invalidateNotifier?.invalidatedView(this)
+        invalidateLocalBounds()
         //stage?.views?.invalidatedView(this)
     }
 

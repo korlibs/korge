@@ -73,6 +73,10 @@ open class GpuShapeView(
     /** Use for compatibility with [BaseGraphics] */
     //var boundsIncludeStrokes: Boolean = false
     var boundsIncludeStrokes: Boolean = true
+        set(value) {
+            field = value
+            invalidateLocalBounds()
+        }
 
     private val gpuShapeViewCommands = GpuShapeViewCommands()
     private val bb = MBoundsBuilder()
