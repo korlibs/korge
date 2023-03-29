@@ -128,11 +128,7 @@ data class CurveLUT(val curve: Curve, val points: PointArrayList, val ts: Double
     override fun toString(): String =
         "CurveLUT[$curve](${
             (0 until size).joinToString(", ") {
-                "${ts[it]},len=${estimatedLengths[it]}: ${
-                    points.getPoint(
-                        it
-                    )
-                }"
+                "${ts[it]},len=${estimatedLengths[it]}: ${points[it]}"
             }
         })"
 }

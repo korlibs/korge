@@ -12,6 +12,7 @@ import korlibs.image.paint.Paint
 import korlibs.io.util.niceStr
 import korlibs.math.interpolation.*
 import korlibs.crypto.encoding.appendHexByte
+import korlibs.math.geom.*
 import kotlin.jvm.JvmName
 import kotlin.math.pow
 import kotlin.math.roundToInt
@@ -43,6 +44,9 @@ inline class RGBA(val value: Int) : Comparable<RGBA>, Interpolable<RGBA>, Paint 
         out[index + 2] = bf
         out[index + 3] = af
     }
+
+    fun toRGBAf(): RGBAf = RGBAf(rf, gf, bf, af)
+    fun toVector4(): Vector4 = Vector4(rf, gf, bf, af)
 
 	fun withR(v: Int): RGBA = RGBA((value and (0xFF shl 0).inv()) or (v.clampUByte() shl RED_OFFSET))
 	fun withG(v: Int): RGBA = RGBA((value and (0xFF shl 8).inv()) or (v.clampUByte() shl GREEN_OFFSET))
@@ -153,6 +157,8 @@ inline class RGBA(val value: Int) : Comparable<RGBA>, Interpolable<RGBA>, Paint 
         internal const val ALPHA_OFFSET = 24
 
         fun float(array: FloatArray, index: Int = 0): RGBA = float(array[index + 0], array[index + 1], array[index + 2], array[index + 3])
+        fun float(rgbaf: RGBAf): RGBA = float(rgbaf.data)
+        fun float(v: Vector4): RGBA = float(v.x, v.y, v.z, v.w)
         fun float(r: Float, g: Float, b: Float, a: Float): RGBA = unclamped(f2i(r), f2i(g), f2i(b), f2i(a))
         fun float(r: Double, g: Double, b: Double, a: Double): RGBA = unclamped(d2i(r), d2i(g), d2i(b), d2i(a))
         fun unclamped(r: Int, g: Int, b: Int, a: Int): RGBA = RGBA(packIntUnchecked(r, g, b, a))

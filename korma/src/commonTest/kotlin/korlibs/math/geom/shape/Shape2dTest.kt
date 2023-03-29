@@ -105,7 +105,7 @@ class Shape2dTest {
         """.trimIndent(),
             points.joinToString("\n") {
                 val kind = if (it.closed) "closed" else "opened"
-                "$kind : " + it.toPoints().joinToString(",") { "(${it.x.niceStr},${it.y.niceStr})" }
+                "$kind : " + it.toList().joinToString(",") { "(${it.x.niceStr},${it.y.niceStr})" }
             }
         )
     }

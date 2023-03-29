@@ -2,11 +2,11 @@ package korlibs.image.color
 
 import korlibs.memory.clamp01
 import korlibs.io.util.niceStr
+import korlibs.math.geom.*
 
 //inline class RGBAf private constructor(
-inline class RGBAf(
-    val data: FloatArray,
-) {
+inline class RGBAf(val data: FloatArray) {
+//data class RGBAf(val r: Float, val g: Float, val b: Float, val a: Float)
     constructor(r: Float = 1f, g: Float = 1f, b: Float = 1f, a: Float = 1f) : this(floatArrayOf(r, g, b, a))
     constructor(color: RGBA) : this(color.rf, color.gf, color.bf, color.af)
 
@@ -79,6 +79,7 @@ inline class RGBAf(
     fun setToMultiply(r: Float, g: Float, b: Float, a: Float) = setTo(this.r * r, this.g * g, this.b * b, this.a * a)
 
     fun toRGBA(): RGBA = rgba
+    fun toVector(): Vector4 = Vector4(r, g, b, a)
 
     fun setToIdentity() = setTo(1f, 1f, 1f, 1f)
 

@@ -100,7 +100,7 @@ open class FixedSizeContainer(
 
 fun View.getVisibleLocalArea(): Rectangle {
     val global = getVisibleGlobalArea()
-    return NewBoundsBuilder(
+    return BoundsBuilder(
         globalToLocal(global.topLeft),
         globalToLocal(global.topRight),
         globalToLocal(global.bottomRight),

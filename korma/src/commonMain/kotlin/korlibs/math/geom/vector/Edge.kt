@@ -14,7 +14,7 @@ class MEdge {
 
     companion object {
         operator fun invoke(ax: Int, ay: Int, bx: Int, by: Int, wind: Int = 0) = MEdge().setTo(ax, ay, bx, by, wind)
-        operator fun invoke(a: MPointInt, b: MPointInt, wind: Int = 0) = this(a.x, a.y, b.x, b.y, wind)
+        operator fun invoke(a: PointInt, b: PointInt, wind: Int = 0) = this(a.x, a.y, b.x, b.y, wind)
 
         fun getIntersectY(a: MEdge, b: MEdge): Int = getIntersectXYInt(a, b)?.y ?: Int.MIN_VALUE
         fun getIntersectX(a: MEdge, b: MEdge): Int = getIntersectXYInt(a, b)?.x ?: Int.MIN_VALUE

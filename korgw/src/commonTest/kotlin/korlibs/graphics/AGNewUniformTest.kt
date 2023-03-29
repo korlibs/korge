@@ -27,8 +27,8 @@ class AGNewUniformTest {
     fun testWrite() {
         val ref = UniformsRef(ProjViewUB)
         val ref2 = UniformsRef(ProjViewUB)
-        ref[ProjViewUB.u_ProjMat] = MMatrix4().setColumns4x4(FloatArray(16) { it.toFloat() }, 0)
-        ref[ProjViewUB.u_ViewMat] = MMatrix4().setColumns4x4(FloatArray(16) { -it.toFloat() }, 0)
+        ref[ProjViewUB.u_ProjMat] = Matrix4.fromColumns(FloatArray(16) { it.toFloat() })
+        ref[ProjViewUB.u_ViewMat] = Matrix4.fromColumns(FloatArray(16) { -it.toFloat() })
         assertEquals(
             "000000000000803f0000004000004040000080400000a0400000c0400000e040000000410000104100002041000030410000404100005041000060410000704100000080000080bf000000c0000040c0000080c00000a0c00000c0c00000e0c0000000c1000010c1000020c1000030c1000040c1000050c1000060c1000070c1",
             ref.buffer.hex()

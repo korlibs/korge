@@ -107,7 +107,7 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
                 val y0 = def.double("y1", 0.0)
                 val x1 = def.double("x2", 1.0)
                 val y1 = def.double("y2", 1.0)
-                GradientPaint(GradientKind.LINEAR, x0, y0, 0.0, x1, y1, 0.0, cycle = spreadMethod, transform = gradientTransform.immutable, units = gradientUnits)
+                GradientPaint(GradientKind.LINEAR, x0, y0, 0.0, x1, y1, 0.0, cycle = spreadMethod, transform = gradientTransform, units = gradientUnits)
             }
             else -> {
                 val cx = def.double("cx", 0.0)
@@ -115,7 +115,7 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
                 val r = def.double("r", 16.0)
                 val fx = def.double("fx", cx)
                 val fy = def.double("fy", cy)
-                GradientPaint(GradientKind.RADIAL, cx, cy, 0.0, fx, fy, r, cycle = spreadMethod, transform = gradientTransform.immutable, units = gradientUnits)
+                GradientPaint(GradientKind.RADIAL, cx, cy, 0.0, fx, fy, r, cycle = spreadMethod, transform = gradientTransform, units = gradientUnits)
             }
         }
 

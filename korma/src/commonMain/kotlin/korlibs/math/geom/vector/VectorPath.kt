@@ -34,11 +34,9 @@ class VectorPath(
     override fun hashCode(): Int = commands.hashCode() + (data.hashCode() * 13) + (winding.ordinal * 111)
 
     companion object {
-        private val identityMatrix = MMatrix()
-
         inline operator fun invoke(winding: Winding = Winding.DEFAULT, callback: VectorPath.() -> Unit): VectorPath = VectorPath(winding = winding).apply(callback)
 
-        fun intersects(left: VectorPath, leftTransform: MMatrix, right: VectorPath, rightTransform: MMatrix): Boolean =
+        fun intersects(left: VectorPath, leftTransform: Matrix, right: VectorPath, rightTransform: Matrix): Boolean =
             left.intersectsWith(leftTransform, right, rightTransform)
 
         fun intersects(left: VectorPath, right: VectorPath): Boolean = left.intersectsWith(right)
@@ -241,7 +239,7 @@ class VectorPath(
         return true
     }
 
-    override fun getBounds(): Rectangle = (NewBoundsBuilder() + this).bounds
+    override fun getBounds(): Rectangle = (BoundsBuilder() + this).bounds
 
     override val area: Float get() {
         var sum = 0.0
@@ -293,36 +291,27 @@ class VectorPath(
     fun containsPoint(x: Int, y: Int, winding: Winding): Boolean = containsPoint(x.toDouble(), y.toDouble(), winding)
     fun containsPoint(x: Float, y: Float, winding: Winding): Boolean = containsPoint(x.toDouble(), y.toDouble(), winding)
 
-    fun intersectsWith(right: VectorPath): Boolean = intersectsWith(identityMatrix, right, identityMatrix)
+    fun intersectsWith(right: VectorPath): Boolean = intersectsWith(Matrix.IDENTITY, right, Matrix.IDENTITY)
 
     // @TODO: Use trapezoids instead
-    fun intersectsWith(leftMatrix: MMatrix, right: VectorPath, rightMatrix: MMatrix, tempMatrix: MMatrix = MMatrix()): Boolean {
+    fun intersectsWith(leftMatrix: Matrix, right: VectorPath, rightMatrix: Matrix): Boolean {
         val left = this
         val leftScanline = left.scanline
         val rightScanline = right.scanline
 
-        tempMatrix.invert(rightMatrix)
-        tempMatrix.premultiply(leftMatrix)
-
+        val tmL = rightMatrix.inverted().premultiplied(leftMatrix)
         leftScanline.forEachPoint { x, y ->
-            val tx = tempMatrix.transformX(x, y)
-            val ty = tempMatrix.transformY(x, y)
             //println("LEFT: $tx, $ty")
-            if (rightScanline.containsPoint(tx, ty)) return true
+            if (rightScanline.containsPoint(tmL.transform(Point(x, y)))) return true
         }
-
-        tempMatrix.invert(leftMatrix)
-        tempMatrix.premultiply(rightMatrix)
-
+        val tmR = leftMatrix.inverted().premultiplied(rightMatrix)
         rightScanline.forEachPoint { x, y ->
-            val tx = tempMatrix.transformX(x, y)
-            val ty = tempMatrix.transformY(x, y)
-            if (leftScanline.containsPoint(tx, ty)) return true
+            if (leftScanline.containsPoint(tmR.transform(Point(x, y)))) return true
         }
         return false
     }
 
-    fun getLineIntersection(line: MLine, out: LineIntersection = LineIntersection()): LineIntersection? {
+    fun getLineIntersection(line: Line, out: LineIntersection = LineIntersection()): LineIntersection? {
         // Directs from outside the shape, to inside the shape
 //        if (this.containsPoint(line.b) && !this.containsPoint(line.a)) {
             return this.scanline.getLineIntersection(line, out)
@@ -382,9 +371,9 @@ class VectorPath(
         }
     }
 
-    fun write(path: VectorPath, transform: MMatrix = identityMatrix) {
+    fun write(path: VectorPath, transform: Matrix = Matrix.IDENTITY) {
         this.commands += path.commands
-        if (transform.isIdentity()) {
+        if (transform.isIdentity) {
             this.data += path.data
             lastPos = path.lastPos
         } else {
@@ -477,27 +466,17 @@ fun VectorBuilder.write(path: VectorPath) {
     )
 }
 
-fun VectorBuilder.moveTo(p: Point, m: MMatrix?) = if (m != null) moveTo(m.transform(p)) else moveTo(p)
-fun VectorBuilder.lineTo(p: Point, m: MMatrix?) = if (m != null) lineTo(m.transform(p)) else lineTo(p)
-fun VectorBuilder.quadTo(c: Point, a: Point, m: MMatrix?) =
-    if (m != null) {
-        quadTo(m.transform(c), m.transform(a))
-    } else {
-        quadTo(c, a)
-    }
-fun VectorBuilder.cubicTo(c1: Point, c2: Point, a: Point, m: MMatrix?) =
-    if (m != null) {
-        cubicTo(m.transform(c1), m.transform(c2), m.transform(a))
-    } else {
-        cubicTo(c1, c2, a)
-    }
+fun VectorBuilder.moveTo(p: Point, m: Matrix = Matrix.NIL) = moveTo(m.transform(p))
+fun VectorBuilder.lineTo(p: Point, m: Matrix = Matrix.NIL) = lineTo(m.transform(p))
+fun VectorBuilder.quadTo(c: Point, a: Point, m: Matrix = Matrix.NIL) = quadTo(m.transform(c), m.transform(a))
+fun VectorBuilder.cubicTo(c1: Point, c2: Point, a: Point, m: Matrix = Matrix.NIL) = cubicTo(m.transform(c1), m.transform(c2), m.transform(a))
 
 
-fun VectorBuilder.path(path: VectorPath, m: MMatrix?) {
+fun VectorBuilder.path(path: VectorPath, m: Matrix = Matrix.NIL) {
     write(path, m)
 }
 
-fun VectorBuilder.write(path: VectorPath, m: MMatrix?) {
+fun VectorBuilder.write(path: VectorPath, m: Matrix = Matrix.NIL) {
     path.visitCmds(
         moveTo = { moveTo(it, m) },
         lineTo = { lineTo(it, m) },
@@ -507,7 +486,7 @@ fun VectorBuilder.write(path: VectorPath, m: MMatrix?) {
     )
 }
 
-fun MBoundsBuilder.add(path: VectorPath, transform: MMatrix? = null) {
+fun MBoundsBuilder.add(path: VectorPath, transform: Matrix = Matrix.NIL) {
     val curvesList = path.getCurvesList()
     if (curvesList.isEmpty() && path.isNotEmpty()) {
         path.visit(object : VectorPath.Visitor {
@@ -516,14 +495,14 @@ fun MBoundsBuilder.add(path: VectorPath, transform: MMatrix? = null) {
     }
     curvesList.fastForEach { curves ->
         curves.beziers.fastForEach { bezier ->
-            addEvenEmpty(this.tempRect.copyFrom(bezier.getBounds(transform?.immutable ?: Matrix.NaN)))
+            addEvenEmpty(this.tempRect.copyFrom(bezier.getBounds(transform)))
         }
     }
 
     //println("BoundsBuilder.add.path: " + bb.getBounds())
 }
 
-fun NewBoundsBuilder.with(path: VectorPath, transform: Matrix = Matrix.NIL): NewBoundsBuilder {
+fun BoundsBuilder.with(path: VectorPath, transform: Matrix = Matrix.NIL): BoundsBuilder {
     var bb = this
     val curvesList = path.getCurvesList()
     if (curvesList.isEmpty() && path.isNotEmpty()) {
@@ -541,14 +520,12 @@ fun NewBoundsBuilder.with(path: VectorPath, transform: Matrix = Matrix.NIL): New
     return bb
 }
 
-operator fun NewBoundsBuilder.plus(path: VectorPath): NewBoundsBuilder = with(path)
+operator fun BoundsBuilder.plus(path: VectorPath): BoundsBuilder = with(path)
 
 fun VectorPath.applyTransform(m: Matrix): VectorPath = when {
     m.isNotNIL -> transformPoints { m.transform(it) }
     else -> this
 }
-
-fun VectorPath.applyTransform(m: MMatrix?): VectorPath = applyTransform(m.immutable)
 
 @ThreadLocal
 private var VectorPath._curvesCacheVersion by extraProperty { -1 }

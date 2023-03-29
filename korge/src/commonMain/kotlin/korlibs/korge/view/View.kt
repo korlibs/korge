@@ -1227,13 +1227,13 @@ abstract class View internal constructor(
         return out
     }
 
-    fun getConcatMatrixAccurateSlow(target: View, out: MMatrix = MMatrix(), inclusive: Boolean = false): MMatrix {
-        out.identity()
+    fun getConcatMatrixAccurateSlow(target: View, inclusive: Boolean = false): Matrix {
+        var out = Matrix.IDENTITY
         if (target !== this) {
             var current: View? = this
             val stopAt = if (inclusive) target.parent else target
             while (current !== null && current !== stopAt) {
-                out.multiply(out, current.localMatrix.mutable) // Verified
+                out *= current.localMatrix // Verified
                 current = current.parent
             }
         }
@@ -1291,7 +1291,7 @@ abstract class View internal constructor(
         var out = getLocalBounds(doAnchoring, includeFilters)
 
         if (concat.isNotNIL && !concat.isIdentity) {
-            out = NewBoundsBuilder(
+            out = BoundsBuilder(
                 concat.transform(out.topLeft),
                 concat.transform(out.topRight),
                 concat.transform(out.bottomRight),
@@ -1343,7 +1343,7 @@ abstract class View internal constructor(
      */
     fun getBoundsInSpace(viewSpace: View?, doAnchoring: Boolean = true, includeFilters: Boolean = false): Rectangle {
         val bounds = getLocalBounds(doAnchoring, includeFilters)
-        return NewBoundsBuilder(
+        return BoundsBuilder(
             View.convertViewSpace(this, bounds.topLeft, viewSpace),
             View.convertViewSpace(this, bounds.topRight, viewSpace),
             View.convertViewSpace(this, bounds.bottomLeft, viewSpace),

@@ -123,14 +123,6 @@ class UniformsRef(
     operator fun set(uniform: TypedUniform<Vector4>, value: ColorAdd) = set(uniform, value.rf, value.gf, value.bf, value.af)
     operator fun set(uniform: TypedUniform<Vector4>, value: Vector4) = set(uniform, value.x, value.y, value.z, value.w)
     operator fun set(uniform: TypedUniform<Vector4>, value: RectCorners) = set(uniform, value.bottomRight, value.topRight, value.bottomLeft, value.topLeft)
-    operator fun set(uniform: TypedUniform<Vector4>, value: MVector4) = set(uniform, value.x, value.y, value.z, value.w)
-    operator fun set(uniform: TypedUniform<Matrix4>, value: MMatrix4) {
-        when (uniform.type) {
-            VarType.Mat4 -> set(uniform, value.data, Matrix4.INDICES_BY_COLUMNS_4x4)
-            VarType.Mat3 -> set(uniform, value.data, Matrix4.INDICES_BY_COLUMNS_3x3)
-            else -> TODO()
-        }
-    }
     operator fun set(uniform: TypedUniform<Matrix4>, value: Matrix4) {
         when (uniform.type) {
             VarType.Mat4 -> set(uniform, value, Matrix4.INDICES_BY_COLUMNS_4x4)
@@ -138,6 +130,7 @@ class UniformsRef(
             else -> TODO()
         }
     }
+
     fun set(uniform: TypedUniform<Matrix4>, value: Matrix4, indices: IntArray) {
         getOffset(uniform).also {
             //println("SET OFFSET: $it")

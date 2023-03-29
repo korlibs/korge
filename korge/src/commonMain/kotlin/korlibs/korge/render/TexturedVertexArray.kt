@@ -213,7 +213,7 @@ class TexturedVertexArray(vcount: Int, val indices: ShortArray, icount: Int = in
      * Allows to define the output as [out] to be allocation-free, setting the [out] [MRectangle] and returning it.
      */
     fun getBounds(min: Int = 0, max: Int = vcount): Rectangle {
-        var bb = NewBoundsBuilder()
+        var bb = BoundsBuilder()
         for (n in min until max) {
             select(n)
             bb += Point(x, y)
@@ -258,8 +258,6 @@ class TexturedVertexArray(vcount: Int, val indices: ShortArray, icount: Int = in
             setXY(matrix.transformX(x, y), matrix.transformY(x, y))
         }
     }
-
-    fun applyMatrix(matrix: MMatrix) = applyMatrix(matrix.immutable)
 
     fun copy(): TexturedVertexArray {
         val out = TexturedVertexArray(vcount, indices, icount)

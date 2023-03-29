@@ -11,10 +11,10 @@ class MBoundsBuilder {
         private val MIN = Double.NEGATIVE_INFINITY
         private val MAX = Double.POSITIVE_INFINITY
 
-        fun getBounds(p1: Point): Rectangle = NewBoundsBuilder(p1).bounds
-        fun getBounds(p1: Point, p2: Point): Rectangle = NewBoundsBuilder(p1, p2).bounds
-        fun getBounds(p1: Point, p2: Point, p3: Point): Rectangle = NewBoundsBuilder(p1, p2, p3).bounds
-        fun getBounds(p1: Point, p2: Point, p3: Point, p4: Point): Rectangle = NewBoundsBuilder(p1, p2, p3, p4).bounds
+        fun getBounds(p1: Point): Rectangle = BoundsBuilder(p1).bounds
+        fun getBounds(p1: Point, p2: Point): Rectangle = BoundsBuilder(p1, p2).bounds
+        fun getBounds(p1: Point, p2: Point, p3: Point): Rectangle = BoundsBuilder(p1, p2, p3).bounds
+        fun getBounds(p1: Point, p2: Point, p3: Point, p4: Point): Rectangle = BoundsBuilder(p1, p2, p3, p4).bounds
     }
 
     var npoints = 0; private set
@@ -81,14 +81,13 @@ class MBoundsBuilder {
     fun add(p: Point, transform: MMatrix?): MBoundsBuilder = add(p.x, p.y, transform)
 
     fun add(point: Point): MBoundsBuilder = add(point.x, point.y)
-    fun add(point: MPoint): MBoundsBuilder = add(point.x, point.y)
     fun add(point: MPoint, transform: MMatrix): MBoundsBuilder = add(point.x, point.y, transform)
 
     fun addRect(x: Int, y: Int, width: Int, height: Int): MBoundsBuilder = addRect(x.toDouble(), y.toDouble(), width.toDouble(), height.toDouble())
     fun addRect(x: Double, y: Double, width: Double, height: Double): MBoundsBuilder = add(x, y).add(x + width, y + height)
 
     fun add(ps: Iterable<MPoint>): MBoundsBuilder {
-        for (p in ps) add(p)
+        for (p in ps) add(p.immutable)
         return this
     }
     fun add(ps: PointList): MBoundsBuilder {

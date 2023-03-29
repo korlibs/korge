@@ -9,6 +9,8 @@ import korlibs.korge.internal.*
 import korlibs.korge.render.*
 import korlibs.korge.view.*
 import korlibs.image.color.*
+import korlibs.image.format.*
+import korlibs.io.async.*
 import korlibs.math.geom.*
 
 @KorgeInternal

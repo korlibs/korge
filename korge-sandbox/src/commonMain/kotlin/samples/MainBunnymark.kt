@@ -49,7 +49,7 @@ class Bunny(tex: BmpSlice) : FastSprite(tex) {
         println("ag.isInstancedSupported=${ag.isInstancedSupported}")
 //suspend fun main() = Korge(width = 800, height = 600, bgcolor = Colors["#2b2b9b"]) {
         val wabbitTexture0 = resourcesVfs["bunnys.png"].readBitmap()
-        val GRAYSCALE_MATRIX = MMatrix3D.fromColumns(
+        val GRAYSCALE_MATRIX = Matrix4.fromColumns(
             0.33f, 0.33f, 0.33f, 0f,
             0.59f, 0.59f, 0.59f, 0f,
             0.11f, 0.11f, 0.11f, 0f,

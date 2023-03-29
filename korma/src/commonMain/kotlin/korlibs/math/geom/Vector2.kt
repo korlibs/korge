@@ -95,13 +95,9 @@ inline class Vector2 internal constructor(internal val raw: Float2Pack) {
     fun angleTo(other: Vector2): Angle = Angle.between(this.x, this.y, other.x, other.y)
     val angle: Angle get() = Angle.between(0f, 0f, this.x, this.y)
 
-    inline fun transformed(m: MMatrix?): Vector2 = m?.transform(this) ?: this
-    fun transformX(m: MMatrix?): Float = m?.transform(this)?.x ?: x
-    fun transformY(m: MMatrix?): Float = m?.transform(this)?.y ?: y
-
-    inline fun transformed(m: Matrix): Vector2 = if (m.isNotNIL) m.transform(this) else this
-    fun transformX(m: Matrix): Float = if (m.isNotNIL) m.transform(this).x else x
-    fun transformY(m: Matrix): Float = if (m.isNotNIL) m.transform(this).y else y
+    inline fun transformed(m: Matrix): Vector2 = m.transform(this)
+    fun transformX(m: Matrix): Float = m.transform(this).x
+    fun transformY(m: Matrix): Float = m.transform(this).y
 
     inline fun transformedNullable(m: Matrix?): Vector2 = if (m != null && m.isNotNIL) m.transform(this) else this
     fun transformNullableX(m: Matrix?): Float = if (m != null && m.isNotNIL) m.transform(this).x else x
@@ -161,10 +157,10 @@ inline class Vector2 internal constructor(internal val raw: Float2Pack) {
         //fun fromRaw(raw: Float2Pack) = Point(raw)
 
         /** Constructs a point from polar coordinates determined by an [angle] and a [length]. Angle 0 is pointing to the right, and the direction is counter-clock-wise */
-        inline fun fromPolar(x: Float, y: Float, angle: Angle, length: Float = 1f): Vector2 = Point(x + angle.cosineF * length, y + angle.sineF * length)
-        inline fun fromPolar(x: Double, y: Double, angle: Angle, length: Float = 1f): Vector2 = Point(x + angle.cosineD * length, y + angle.sineD * length)
-        inline fun fromPolar(base: Vector2, angle: Angle, length: Float = 1f): Vector2 = fromPolar(base.x, base.y, angle, length)
-        inline fun fromPolar(angle: Angle, length: Float = 1f): Vector2 = fromPolar(0.0, 0.0, angle, length)
+        inline fun polar(x: Float, y: Float, angle: Angle, length: Float = 1f): Vector2 = Point(x + angle.cosineF * length, y + angle.sineF * length)
+        inline fun polar(x: Double, y: Double, angle: Angle, length: Float = 1f): Vector2 = Point(x + angle.cosineD * length, y + angle.sineD * length)
+        inline fun polar(base: Vector2, angle: Angle, length: Float = 1f): Vector2 = polar(base.x, base.y, angle, length)
+        inline fun polar(angle: Angle, length: Float = 1f): Vector2 = polar(0.0, 0.0, angle, length)
 
         inline fun middle(a: Vector2, b: Vector2): Vector2 = (a + b) * 0.5
 
@@ -259,9 +255,9 @@ internal inline fun getPolylineLength(size: Int, crossinline get: (n: Int) -> Po
 fun PointList.getPolylineLength(): Double = getPolylineLength(size) { get(it) }
 fun List<Point>.getPolylineLength(): Double = getPolylineLength(size) { get(it) }
 
-fun List<Point>.bounds(): Rectangle = NewBoundsBuilder(size) { this + get(it) }.bounds
+fun List<Point>.bounds(): Rectangle = BoundsBuilder(size) { this + get(it) }.bounds
 fun Iterable<Point>.bounds(): Rectangle {
-    var bb = NewBoundsBuilder()
+    var bb = BoundsBuilder()
     for (p in this) bb += p
     return bb.bounds
 }

@@ -64,7 +64,7 @@ data class Curves(val beziers: List<Bezier>, val closed: Boolean) : Curve, Extra
     val CurveInfo.endRatio: Double get() = this.endLength / this@Curves.length
 
     override fun getBounds(): Rectangle {
-        var bb = NewBoundsBuilder()
+        var bb = BoundsBuilder()
         infos.fastForEach { bb += it.bounds }
         return bb.bounds
     }
