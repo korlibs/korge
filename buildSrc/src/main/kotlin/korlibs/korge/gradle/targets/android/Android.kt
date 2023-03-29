@@ -186,7 +186,7 @@ fun Project.installAndroidRun(dependsOnList: List<String>, direct: Boolean) {
     tasks.createTyped<DefaultTask>(adbLogcatTaskName) {
         group = GROUP_KORGE_ADB
         doFirst {
-            execAndroidAdb("logcat")
+            execAndroidAdb("logcat", "*:I")
         }
     }
 }
