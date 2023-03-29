@@ -7,6 +7,7 @@ import korlibs.image.format.*
 import korlibs.io.async.*
 import korlibs.io.file.std.*
 import korlibs.io.lang.*
+import korlibs.korge.view.filter.*
 import korlibs.korge.view.Circle
 import korlibs.math.geom.*
 import korlibs.math.interpolation.*
@@ -28,10 +29,15 @@ suspend fun main() = Korge(
     debug = false,
     //debugAg = true,
     multithreaded = true,
-    forceRenderEveryFrame = false // Newly added optimization!
-    //forceRenderEveryFrame = true
+    //forceRenderEveryFrame = false // Newly added optimization!
+    forceRenderEveryFrame = true
     //debugAg = true,
 ).start {
+    //solidRect(50, 50, Colors.GREEN).xy(50, 50)
+    //    .filters(WaveFilter(amplitudeX = 15, amplitudeY = 10, crestDistanceX = 25.0, crestDistanceY = 10.0).also { filter ->
+    //        addUpdater { filter.time += it }
+    //        invalidateRender()
+    //    }).also { return@start }
     //lateinit var circle1: Circle
     //lateinit var circle2: Circle
     //val container = container {
