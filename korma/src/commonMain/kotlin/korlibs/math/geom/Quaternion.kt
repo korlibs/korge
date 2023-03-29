@@ -158,5 +158,3 @@ inline class Quaternion private constructor(val data: Float4Pack) {
         }
     }
 }
-
-operator fun Double.times(scale: MQuaternion): MQuaternion = scale.times(this)

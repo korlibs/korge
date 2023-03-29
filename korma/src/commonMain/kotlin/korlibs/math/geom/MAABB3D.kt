@@ -2,7 +2,7 @@ package korlibs.math.geom
 
 import kotlin.math.*
 
-
+@Deprecated("Use AABB3D")
 data class MAABB3D(val min: MVector3 = MVector3(), val max: MVector3) {
     var minX: Float get() = min.x; set(value) { min.x = value }
     var minY: Float get() = min.y; set(value) { min.y = value }
