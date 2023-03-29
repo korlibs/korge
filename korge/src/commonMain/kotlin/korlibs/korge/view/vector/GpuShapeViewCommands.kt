@@ -160,6 +160,7 @@ class GpuShapeViewCommands {
                                 }
                                 if (paintShader.texture != null) {
                                     val tex = ctx.tempTexturePool.alloc()
+                                    //println("tex[${tex.forcedTexId}]=$tex")
                                     tex.upload(paintShader.texture)
                                     tempTextureUnits.set(DefaultShaders.u_Tex, tex)
                                     //println("texture.tex=$tex")

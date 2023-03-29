@@ -257,6 +257,7 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
     private var currentRenderState: AGDepthAndFrontFace = AGDepthAndFrontFace.INVALID
     private var currentProgram: GLBaseProgram? = null
     private val currentTextureUnits = AGTextureUnits()
+    private val currentTextureVersions = IntArray(currentTextureUnits.size)
     var backBufferFrameBufferBinding: Int = 0
     private var currentScissor: AGScissor = AGScissor.INVALID
 
@@ -462,9 +463,11 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
                 //logger.warn { "FrameBuffer and texture loop!" }
                 tex = null
             }
-            //if (currentTextureUnits.textures[index] != tex || currentTextureUnits.infos[index] != info) {
-            if (currentTextureUnits.textures[index] != tex || currentTextureUnits.infos[index] != info) {
+            val texVersion = tex?._version ?: -1
+            if (currentTextureUnits.textures[index] !== tex || currentTextureUnits.infos[index] != info || currentTextureVersions[index] != texVersion) {
+            //if (true) {
                 currentTextureUnits.set(index, tex, info)
+                currentTextureVersions[index] = texVersion
 
                 //println("TEXTURE: index=$index, tex=$tex, info=$info")
                 selectTextureUnit(index)

@@ -1,9 +1,9 @@
 package korlibs.korge.view
 
-import korlibs.korge.testing.*
-import korlibs.korge.view.vector.*
 import korlibs.image.color.*
 import korlibs.image.paint.*
+import korlibs.korge.testing.*
+import korlibs.korge.view.vector.*
 import korlibs.math.geom.*
 import korlibs.math.geom.vector.*
 import kotlin.test.*
@@ -73,5 +73,27 @@ class GpuShapeViewTest {
         }
 
         assertScreenshot(posterize = 6)
+    }
+
+    @Test
+    fun testMultiTextures() = korgeScreenshotTest(SizeInt(450, 200), checkGl = false) {
+        gpuShapeView {
+            it.antialiased = true
+            it.alpha = 0.75
+            val paint1 = createLinearGradient(0, 0, 200, 0).add(0.0, Colors.BLUE.withAd(0.9)).add(1.0, Colors.WHITE.withAd(0.7))
+            fill(paint1, winding = Winding.EVEN_ODD) {
+                rect(0, 0, 100, 100)
+            }
+        }
+        gpuShapeView {
+            it.xy(100, 0)
+            it.antialiased = true
+            it.alpha = 0.75
+            val paint1 = createLinearGradient(0, 0, 200, 0).add(0.0, Colors.GREEN.withAd(0.9)).add(1.0, Colors.PURPLE.withAd(0.7))
+            fill(paint1, winding = Winding.EVEN_ODD) {
+                rect(0, 0, 100, 100)
+            }
+        }
+        assertScreenshot(posterize = 6, psnr = 34.0)
     }
 }

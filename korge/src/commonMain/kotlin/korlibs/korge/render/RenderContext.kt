@@ -406,7 +406,7 @@ class RenderContext constructor(
         rb.setSize(0, 0, realWidth, realHeight, realWidth, realHeight)
         rb.setExtra(hasDepth = hasDepth, hasStencil = hasStencil)
         rb.setSamples(msamples)
-        //println("unsafeAllocateFrameRenderBuffer($width, $height), real($realWidth, $realHeight), $rb")
+        //println("unsafeAllocateFrameRenderBuffer[${rb.id}]($width, $height), real($realWidth, $realHeight), $rb")
         return rb
     }
 
