@@ -229,4 +229,53 @@ class ViewTest {
             """.trimIndent()
         )
     }
+
+    @Test
+    fun testBounds() {
+        lateinit var container1: Container
+        lateinit var container2: Container
+        lateinit var container3: Container
+        lateinit var container4: Container
+        lateinit var container5: Container
+        lateinit var view1: View
+        lateinit var view2: View
+
+        container1 = Container().apply {
+            container2 = container {
+                view1 = solidRect(100, 100).xy(200, 200)
+            }
+            container3 = container {
+                container4 = container {
+                    container5 = container {
+                        scale(2.0)
+                        view2 = solidRect(100, 100)
+                    }
+                }
+            }
+        }
+
+        val logs = arrayListOf<String>()
+
+        fun act(name: String, block: () -> Unit = {}) {
+            block()
+            logs += "$name:" + container1.getBounds().toStringCompat()
+        }
+
+        act("initial")
+        act("moveView") { view1.xy(300, 0) }
+        view1.width = 400.0
+        view1.x = 100.0
+        logs += "view_bounds:" + view1.getBounds()
+        act("reinsertView1") { container5.addChild(view1) }
+
+        assertEquals(
+            """
+                initial:Rectangle(x=0, y=0, w=300, h=300)
+                moveView:Rectangle(x=0, y=0, w=400, h=200)
+                view_bounds:Rectangle(x=0, y=0, width=400, height=100)
+                reinsertView1:Rectangle(x=0, y=0, w=1000, h=200)
+            """.trimIndent(),
+            logs.joinToString("\n")
+        )
+    }
 }
