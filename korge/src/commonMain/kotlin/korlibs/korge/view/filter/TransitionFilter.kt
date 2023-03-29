@@ -87,7 +87,7 @@ class TransitionFilter(
             it[u_Spread] = spread
             it[u_Ratio] = ratio
         }
-        ctx.textureUnits.set(u_Mask, ctx.getTex(transition.bmp).base, AGTextureUnitInfo.DEFAULT)
+        setTex(ctx, u_Mask, ctx.getTex(transition.bmp).base, AGTextureUnitInfo.DEFAULT)
         //println("ratio=$ratio, s_ratio=$s_ratio, uniformValue=${uniforms[u_Ratio].f32[0]}")
     }
 }

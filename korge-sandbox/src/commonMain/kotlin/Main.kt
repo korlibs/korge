@@ -33,6 +33,7 @@ suspend fun main() = Korge(
     forceRenderEveryFrame = true
     //debugAg = true,
 ).start {
+    //solidRect(200, 200, Colors.RED); return@start
     //solidRect(50, 50, Colors.GREEN).xy(50, 50)
     //    .filters(WaveFilter(amplitudeX = 15, amplitudeY = 10, crestDistanceX = 25.0, crestDistanceY = 10.0).also { filter ->
     //        addUpdater { filter.time += it }

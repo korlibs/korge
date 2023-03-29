@@ -92,8 +92,20 @@ abstract class ShaderFilter : Filter {
 
     open val programProvider: ProgramProvider = BaseProgramProvider
 
+    private var resetTex: Int = 0
+
+    protected fun setTex(ctx: RenderContext, sampler: Sampler, texture: AGTexture?, info: AGTextureUnitInfo = AGTextureUnitInfo.DEFAULT) {
+        ctx.textureUnits.set(sampler, texture, info)
+        resetTex = resetTex or (1 shl sampler.index)
+    }
+
     //@CallSuper
     protected open fun updateUniforms(ctx: RenderContext, filterScale: Double) {
+    }
+
+    private fun _restoreUniforms(ctx: RenderContext, filterScale: Double) {
+        resetTex.fastForEachOneBits { ctx.textureUnits.set(it, null) }
+        resetTex = 0
     }
 
     private fun _updateUniforms(
@@ -178,7 +190,7 @@ abstract class ShaderFilter : Filter {
 
             //println("matrix=$matrix, slice=$slice, marginLeft=$marginLeft")
             //ctx.keepTextureUnit(DefaultShaders.u_Tex, flush = true) {
-                ctx.textureUnits.set(DefaultShaders.u_Tex, slice.base.base)
+            batch.temporalTextureUnit(DefaultShaders.u_Tex, slice.base.base) {
                 batch.drawQuad(
                     slice,
                     x = -marginLeft.toFloat(),
@@ -190,8 +202,9 @@ abstract class ShaderFilter : Filter {
                     //program = if (texture.premultiplied) programPremult else programNormal
                     program = programProvider.getProgram(),
                 )
-                //ctx.batch.flush()
-            //}
+            }
         }
+
+        _restoreUniforms(ctx, filterScale)
     }
 }

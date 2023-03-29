@@ -743,6 +743,34 @@ class BatchBuilder2D constructor(
             ctx.flush()
         }
     }
+
+    inline fun <T> temporalTextureUnit(sampler: Sampler, tex: AGTexture?, info: AGTextureUnitInfo = AGTextureUnitInfo.DEFAULT, block: () -> T): T {
+        val oldTex = this.ctx.textureUnits.textures[sampler.index]
+        val oldInfo = this.ctx.textureUnits.infos[sampler.index]
+        this.ctx.textureUnits.set(sampler, tex, info)
+        try {
+            return block()
+        } finally {
+            createBatchIfRequired()
+            this.ctx.textureUnits.set(sampler, oldTex, oldInfo)
+        }
+    }
+
+    inline fun <T> temporalTextureUnit2(sampler1: Sampler, tex1: AGTexture?, sampler2: Sampler, tex2: AGTexture?, info: AGTextureUnitInfo = AGTextureUnitInfo.DEFAULT, block: () -> T): T {
+        val oldTex1 = this.ctx.textureUnits.textures[sampler1.index]
+        val oldInfo1 = this.ctx.textureUnits.infos[sampler1.index]
+        val oldTex2 = this.ctx.textureUnits.textures[sampler2.index]
+        val oldInfo2 = this.ctx.textureUnits.infos[sampler2.index]
+        this.ctx.textureUnits.set(sampler1, tex1, info)
+        this.ctx.textureUnits.set(sampler2, tex2, info)
+        try {
+            return block()
+        } finally {
+            createBatchIfRequired()
+            this.ctx.textureUnits.set(sampler2, oldTex2, oldInfo2)
+            this.ctx.textureUnits.set(sampler1, oldTex1, oldInfo1)
+        }
+    }
 }
 
 internal val BB_MAX_TEXTURES = when {

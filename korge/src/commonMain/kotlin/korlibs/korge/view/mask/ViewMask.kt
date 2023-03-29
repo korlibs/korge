@@ -60,20 +60,11 @@ class ViewRenderPhaseMask(var mask: View) : ViewRenderPhase {
                 }
                 //batcher.drawQuad(Texture(maskFB), 100f, 200f, m = view.parent!!.globalMatrix)
                 //batcher.drawQuad(Texture(viewFB), 300f, 200f, m = view.parent!!.globalMatrix)
-                batcher.flush {
-                //batcher.keepTextureUnit(DefaultShaders.u_TexEx.index, flush = true) {
-                    //batcher.keepTextureUnit(DefaultShaders.u_Tex.index, flush = true) {
-                        //batcher.keepTextureUnit(DefaultShaders.u_Tex.index, flush = true) {
-                        ctx.textureUnits.set(DefaultShaders.u_Tex, viewFB.tex)
-                        ctx.textureUnits.set(DefaultShaders.u_TexEx, maskFB.tex)
-                        //ctx[DefaultShaders.TexExUB].push {
-                        //    it.set(u_TexEx, maskFB.tex)
-                        //}
-                        batcher.drawQuad(
-                            Texture(viewFB), m = mask.globalMatrix, program = DefaultShaders.MERGE_ALPHA_PROGRAM,
-                        )
-                        //}
-                //    }
+                batcher.temporalTextureUnit2(DefaultShaders.u_Tex, viewFB.tex, DefaultShaders.u_TexEx, maskFB.tex) {
+                    batcher.drawQuad(
+                        Texture(viewFB), m = mask.globalMatrix, program = DefaultShaders.MERGE_ALPHA_PROGRAM,
+                    )
+                    //batcher.createBatchIfRequired()
                 }
             }
         }
