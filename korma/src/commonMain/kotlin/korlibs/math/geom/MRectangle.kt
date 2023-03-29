@@ -45,8 +45,8 @@ data class MRectangle(
     /**
      * Circle that touches or contains all the corners ([topLeft], [topRight], [bottomLeft], [bottomRight]) of the rectangle.
      */
-    fun outerCircle(): MCircle {
-        return MCircle(center, Point.distance(center, topRight).toDouble())
+    fun outerCircle(): Circle {
+        return Circle(center, Point.distance(center, topRight))
     }
 
 

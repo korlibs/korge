@@ -184,3 +184,5 @@ data class MQuaternion(
         return out.setTo(result4.x, result4.y, result4.z, result4.w)
     }
 }
+
+operator fun Double.times(scale: MQuaternion): MQuaternion = scale.times(this)
