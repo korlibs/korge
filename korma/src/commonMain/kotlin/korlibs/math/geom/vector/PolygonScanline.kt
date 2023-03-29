@@ -289,6 +289,8 @@ class PolygonScanline : RastScale() {
         return containsPointInt(x.s, y.s, winding)
     }
 
+    fun containsPoint(p: Point, winding: Winding = this.winding): Boolean = containsPoint(p.x.toDouble(), p.y.toDouble(), winding)
+
     fun containsPointInt(x: Int, y: Int, winding: Winding = this.winding): Boolean {
         val ss = this.ss
         scanline(y, winding, ss.clear())

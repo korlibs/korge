@@ -34,11 +34,9 @@ class VectorPath(
     override fun hashCode(): Int = commands.hashCode() + (data.hashCode() * 13) + (winding.ordinal * 111)
 
     companion object {
-        private val identityMatrix = MMatrix()
-
         inline operator fun invoke(winding: Winding = Winding.DEFAULT, callback: VectorPath.() -> Unit): VectorPath = VectorPath(winding = winding).apply(callback)
 
-        fun intersects(left: VectorPath, leftTransform: MMatrix, right: VectorPath, rightTransform: MMatrix): Boolean =
+        fun intersects(left: VectorPath, leftTransform: Matrix, right: VectorPath, rightTransform: Matrix): Boolean =
             left.intersectsWith(leftTransform, right, rightTransform)
 
         fun intersects(left: VectorPath, right: VectorPath): Boolean = left.intersectsWith(right)
@@ -293,31 +291,22 @@ class VectorPath(
     fun containsPoint(x: Int, y: Int, winding: Winding): Boolean = containsPoint(x.toDouble(), y.toDouble(), winding)
     fun containsPoint(x: Float, y: Float, winding: Winding): Boolean = containsPoint(x.toDouble(), y.toDouble(), winding)
 
-    fun intersectsWith(right: VectorPath): Boolean = intersectsWith(identityMatrix, right, identityMatrix)
+    fun intersectsWith(right: VectorPath): Boolean = intersectsWith(Matrix.IDENTITY, right, Matrix.IDENTITY)
 
     // @TODO: Use trapezoids instead
-    fun intersectsWith(leftMatrix: MMatrix, right: VectorPath, rightMatrix: MMatrix, tempMatrix: MMatrix = MMatrix()): Boolean {
+    fun intersectsWith(leftMatrix: Matrix, right: VectorPath, rightMatrix: Matrix): Boolean {
         val left = this
         val leftScanline = left.scanline
         val rightScanline = right.scanline
 
-        tempMatrix.invert(rightMatrix)
-        tempMatrix.premultiply(leftMatrix)
-
+        val tmL = rightMatrix.inverted().premultiplied(leftMatrix)
         leftScanline.forEachPoint { x, y ->
-            val tx = tempMatrix.transformX(x, y)
-            val ty = tempMatrix.transformY(x, y)
             //println("LEFT: $tx, $ty")
-            if (rightScanline.containsPoint(tx, ty)) return true
+            if (rightScanline.containsPoint(tmL.transform(Point(x, y)))) return true
         }
-
-        tempMatrix.invert(leftMatrix)
-        tempMatrix.premultiply(rightMatrix)
-
+        val tmR = leftMatrix.inverted().premultiplied(rightMatrix)
         rightScanline.forEachPoint { x, y ->
-            val tx = tempMatrix.transformX(x, y)
-            val ty = tempMatrix.transformY(x, y)
-            if (leftScanline.containsPoint(tx, ty)) return true
+            if (leftScanline.containsPoint(tmR.transform(Point(x, y)))) return true
         }
         return false
     }
@@ -382,9 +371,9 @@ class VectorPath(
         }
     }
 
-    fun write(path: VectorPath, transform: MMatrix = identityMatrix) {
+    fun write(path: VectorPath, transform: Matrix = Matrix.IDENTITY) {
         this.commands += path.commands
-        if (transform.isIdentity()) {
+        if (transform.isIdentity) {
             this.data += path.data
             lastPos = path.lastPos
         } else {
@@ -497,7 +486,7 @@ fun VectorBuilder.write(path: VectorPath, m: Matrix = Matrix.NIL) {
     )
 }
 
-fun MBoundsBuilder.add(path: VectorPath, transform: MMatrix? = null) {
+fun MBoundsBuilder.add(path: VectorPath, transform: Matrix = Matrix.NIL) {
     val curvesList = path.getCurvesList()
     if (curvesList.isEmpty() && path.isNotEmpty()) {
         path.visit(object : VectorPath.Visitor {
@@ -506,7 +495,7 @@ fun MBoundsBuilder.add(path: VectorPath, transform: MMatrix? = null) {
     }
     curvesList.fastForEach { curves ->
         curves.beziers.fastForEach { bezier ->
-            addEvenEmpty(this.tempRect.copyFrom(bezier.getBounds(transform?.immutable ?: Matrix.NaN)))
+            addEvenEmpty(this.tempRect.copyFrom(bezier.getBounds(transform)))
         }
     }
 
@@ -537,8 +526,6 @@ fun VectorPath.applyTransform(m: Matrix): VectorPath = when {
     m.isNotNIL -> transformPoints { m.transform(it) }
     else -> this
 }
-
-fun VectorPath.applyTransform(m: MMatrix?): VectorPath = applyTransform(m.immutable)
 
 @ThreadLocal
 private var VectorPath._curvesCacheVersion by extraProperty { -1 }

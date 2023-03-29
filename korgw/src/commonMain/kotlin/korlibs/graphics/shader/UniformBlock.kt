@@ -131,17 +131,6 @@ class UniformsRef(
         }
     }
 
-    //@Deprecated("")
-    //operator fun set(uniform: TypedUniform<Vector4>, value: MVector4) = set(uniform, value.x, value.y, value.z, value.w)
-    //@Deprecated("")
-    //operator fun set(uniform: TypedUniform<Matrix4>, value: MMatrix4) {
-    //    when (uniform.type) {
-    //        VarType.Mat4 -> set(uniform, value.data, Matrix4.INDICES_BY_COLUMNS_4x4)
-    //        VarType.Mat3 -> set(uniform, value.data, Matrix4.INDICES_BY_COLUMNS_3x3)
-    //        else -> TODO()
-    //    }
-    //}
-
     fun set(uniform: TypedUniform<Matrix4>, value: Matrix4, indices: IntArray) {
         getOffset(uniform).also {
             //println("SET OFFSET: $it")
