@@ -10,6 +10,9 @@ object Arc {
     //val K = (4.0 / 3.0) * (sqrt(2.0) - 1.0)
     const val K = 0.5522847498307933
 
+    fun area(radius: Float, angle: Angle): Float = (PIF * radius * radius) * angle.ratioF
+    fun length(radius: Float, angle: Angle): Float = PI2F * radius * angle.ratioF
+
     fun arcToPath(out: VectorBuilder, a: Point, c: Point, r: Double) {
         if (out.isEmpty()) out.moveTo(a)
         val b = out.lastPos

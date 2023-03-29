@@ -7,7 +7,7 @@ class StrokeToFillTest {
     private inline fun path(stroke: Double = 2.0, crossinline block: VectorPath.() -> Unit) =
         buildVectorPath(VectorPath()) {
             block()
-        }.strokeToFill(stroke).getPoints2().toList().map { it.int }.toString()
+        }.strokeToFill(stroke).cachedPoints.toList().map { it.int }.toString()
 
     /*
     @Test

@@ -71,6 +71,7 @@ interface VectorBuilder {
         }
     }
 
+    fun arcTo(a: Point, c: Point, r: Float) = Arc.arcToPath(this, a, c, r.toDouble())
     fun arcTo(a: Point, c: Point, r: Double) = Arc.arcToPath(this, a, c, r)
     fun isEmpty(): Boolean = totalPoints == 0
     fun isNotEmpty(): Boolean = totalPoints != 0
@@ -100,18 +101,28 @@ interface VectorBuilder {
         close()
     }
 
-    fun roundRect(x: Double, y: Double, w: Double, h: Double, rx: Double, ry: Double = rx) {
-        if (rx == 0.0 && ry == 0.0) {
+    fun roundRect(x: Double, y: Double, w: Double, h: Double, rtl: Double, rtr: Double, rbr: Double, rbl: Double) {
+        if (rtl == 0.0 && rtr == 0.0 && rbr == 0.0 && rbl == 0.0) {
             rect(x, y, w, h)
         } else {
-            val r = if (w < 2 * rx) w / 2f else if (h < 2 * rx) h / 2f else rx
-            this.moveTo(Point(x + r, y))
-            this.arcTo(Point(x + w, y), Point(x + w, y + h), r)
-            this.arcTo(Point(x + w, y + h), Point(x, y + h), r)
-            this.arcTo(Point(x, y + h), Point(x, y), r)
-            this.arcTo(Point(x, y), Point(x + w, y), r)
+            this.moveTo(Point(x + rtl, y))
+            this.arcTo(Point(x + w, y), Point(x + w, y + h), rtr)
+            this.arcTo(Point(x + w, y + h), Point(x, y + h), rbr)
+            this.arcTo(Point(x, y + h), Point(x, y), rbl)
+            this.arcTo(Point(x, y), Point(x + w, y), rtl)
             this.close()
         }
+    }
+
+    fun roundRect(rect: RoundRectangle) {
+        val r = rect.rect
+        val c = rect.corners
+        roundRect(r.xD, r.yD, r.widthD, r.heightD, c.topLeft.toDouble(), c.topRight.toDouble(), c.bottomLeft.toDouble(), c.bottomRight.toDouble())
+    }
+
+    fun roundRect(x: Double, y: Double, w: Double, h: Double, rx: Double, ry: Double = rx) {
+        val r = if (w < 2 * rx) w / 2f else if (h < 2 * rx) h / 2f else rx
+        roundRect(x, y, w, h, r, r, r, r)
     }
 
     fun roundRect(x: Float, y: Float, w: Float, h: Float, rx: Float, ry: Float = rx) =
@@ -136,7 +147,7 @@ interface VectorBuilder {
     fun arc(center: Point, r: Float, start: Angle, end: Angle, counterclockwise: Boolean = false) = Arc.arcPath(this, center, r, start, end, counterclockwise)
     fun circle(center: Point, radius: Float) = arc(center, radius, Angle.ZERO, Angle.FULL)
     fun circleHole(center: Point, radius: Float) = arc(center, radius, Angle.ZERO, Angle.FULL, counterclockwise = true)
-    fun ellipse(center: Point, radius: Size) = Arc.ellipsePath(this, center, radius)
+    fun ellipse(center: Point, radius: Size) = Arc.ellipsePath(this, center - radius, radius * 2)
     fun star(
         points: Int,
         radiusSmall: Double,

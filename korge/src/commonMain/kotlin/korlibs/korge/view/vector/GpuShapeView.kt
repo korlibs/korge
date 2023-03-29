@@ -393,7 +393,7 @@ open class GpuShapeView(
 
     class PointsResult(val bounds: AGScissor, val vertexCount: Int, val vertexStart: Int, val vertexEnd: Int)
 
-    private fun getPointsForPath(points: PointArrayList, type: AGDrawType): PointsResult? {
+    private fun getPointsForPath(points: PointList, type: AGDrawType): PointsResult? {
         if (points.size < 3) return null
         val vertexStart = gpuShapeViewCommands.verticesStart()
         val bb = this.bb
@@ -428,7 +428,7 @@ open class GpuShapeView(
     }
 
     private fun getPointsForPath(path: VectorPath, type: AGDrawType): PointsResult? {
-        return getPointsForPath(path.getPoints2(), type)
+        return getPointsForPath(path.cachedPoints, type)
     }
 
     private fun getPointsForPathList(path: VectorPath, type: AGDrawType): List<PointsResult> {
