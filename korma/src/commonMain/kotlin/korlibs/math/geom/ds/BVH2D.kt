@@ -16,7 +16,7 @@ fun Ray.toBVH(out: BVHIntervals = BVHIntervals(2)): BVHIntervals {
 
 /**
  * A Bounding Volume Hierarchy implementation for 2D.
- * It uses [MRectangle] to describe volumes and [MRay] for raycasting.
+ * It uses [Rectangle] to describe volumes and [Ray] for raycasting.
  */
 open class BVH2D<T>(
     val allowUpdateObjects: Boolean = true
