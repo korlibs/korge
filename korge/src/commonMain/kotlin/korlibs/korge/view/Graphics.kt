@@ -51,6 +51,7 @@ class Graphics(
             softGraphics?.boundsIncludeStrokes = value
             gpuGraphics?.boundsIncludeStrokes = value
             invalidateRender()
+            invalidateLocalBounds()
         }
 
     override var anchorX: Double
