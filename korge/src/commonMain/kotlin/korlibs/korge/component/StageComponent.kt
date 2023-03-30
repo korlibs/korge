@@ -41,8 +41,6 @@ private var Views.viewsToTrack by Extra.Property<MutableSet<View>?> { null }
  * Enables the use of [StageComponent] components.
  */
 fun Views.registerStageComponent(view: View) {
-    val EXTRA_ID = "Views.registerStageComponent"
-
     val firstRun = viewsToTrack == null
     if (firstRun) {
         viewsToTrack = linkedSetOf()
