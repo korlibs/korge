@@ -20,11 +20,10 @@ import kotlin.collections.set
 
 class TtfFont(
     d: ByteArray,
-    freeze: Boolean = false,
     extName: String? = null,
     onlyReadMetadata: Boolean = false,
     enableLigatures: Boolean = true,
-) : BaseTtfFont(d, freeze, extName, onlyReadMetadata, enableLigatures) {
+) : BaseTtfFont(d, extName, onlyReadMetadata, enableLigatures) {
     private val tablesByName = LinkedHashMap<String, Table>()
 
     init {
@@ -69,18 +68,16 @@ class TtfFont(
 @OptIn(KorimInternal::class)
 abstract class BaseTtfFont(
     protected val s: FastByteArrayInputStream,
-    protected val freeze: Boolean = false,
     protected val extName: String? = null,
     protected val onlyReadMetadata: Boolean = false,
     protected val enableLigatures: Boolean = true,
 ) : VectorFont, Extra by Extra.Mixin() {
     constructor(
         d: ByteArray,
-        freeze: Boolean = false,
         extName: String? = null,
         onlyReadMetadata: Boolean = false,
         enableLigatures: Boolean = true
-    ) : this(d.openFastStream(), freeze, extName, onlyReadMetadata, enableLigatures)
+    ) : this(d.openFastStream(), extName, onlyReadMetadata, enableLigatures)
 
     fun getAllBytes() = s.getAllBytes()
     fun getAllBytesUnsafe() = s.getBackingArrayUnsafe()
@@ -305,15 +302,6 @@ abstract class BaseTtfFont(
         }
 
         //println("tablesByName=$tablesByName")
-
-        if (freeze) {
-            getAllGlyphs(cache = true).fastForEach {
-                it.metrics1px // Compute it
-                it.path // Compute it
-            }
-        }
-
-        frozen = true
 
         //substitutionsGlyphIds.fastForEach { from, subsMap ->
         //    val fromCodePoint = getCodePointFromCharIndex(from) ?: -1
@@ -2219,12 +2207,10 @@ internal inline class Fixed(val data: Int) {
 }
 
 suspend fun VfsFile.readTtfFont(
-    preload: Boolean = false,
     onlyReadMetadata: Boolean = false,
     enableLigatures: Boolean = true,
 ): TtfFont = TtfFont(
     this.readAll(),
-    freeze = preload,
     extName = this.baseName,
     onlyReadMetadata = onlyReadMetadata,
     enableLigatures = enableLigatures

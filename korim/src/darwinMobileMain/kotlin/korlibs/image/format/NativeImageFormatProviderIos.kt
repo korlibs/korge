@@ -32,8 +32,8 @@ object UIImageNativeImageFormatProvider : BaseNativeImageFormatProvider() {
         data class Info(val data: ByteArray, val premultiplied: Boolean)
 
         return executeInImageIOWorker { worker ->
-            worker.execute(TransferMode.SAFE, { Info(if (data.isFrozen) data else data.copyOf().freeze(), premultiplied) }, { info ->
-                //return run { val info = Info(if (data.isFrozen) data else data.copyOf().freeze(), premultiplied)
+            worker.execute(TransferMode.SAFE, { Info(data.copyOf(), premultiplied) }, { info ->
+                //return run { val info = Info(data.copyOf(), premultiplied)
                 val data = info.data
                 val premultiplied = info.premultiplied
                 val nsdata: NSData = data.usePinned { pin -> NSData.dataWithBytes(pin.addressOf(0), data.size.convert()) }

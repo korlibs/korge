@@ -3,8 +3,6 @@ package korlibs.logger.test
 import korlibs.logger.Logger
 import kotlin.native.concurrent.TransferMode
 import kotlin.native.concurrent.Worker
-import kotlin.native.concurrent.freeze
-import kotlin.native.concurrent.isFrozen
 import kotlin.test.*
 
 class LoggerMultithreadedTest {
@@ -17,12 +15,9 @@ class LoggerMultithreadedTest {
             logger.level = Logger.Level.INFO
             logger.level
         }
-        val future = worker.execute(TransferMode.SAFE, { changeLoggerLevel.freeze() }) { it() }
+        val future = worker.execute(TransferMode.SAFE, { changeLoggerLevel }) { it() }
         val result = future.result
 
-        if (Platform.memoryModel != MemoryModel.EXPERIMENTAL) {
-            assertTrue(logger.isFrozen)
-        }
         assertTrue { result == Logger.Level.INFO }
         assertTrue { logger.level == Logger.Level.INFO }
 
@@ -33,12 +28,9 @@ class LoggerMultithreadedTest {
             logger2.level
         }
         val worker2 = Worker.start()
-        val future2 = worker2.execute(TransferMode.SAFE, { getLoggerLevel.freeze() }) { it() }
+        val future2 = worker2.execute(TransferMode.SAFE, { getLoggerLevel }) { it() }
         val result2 = future2.result
 
-        if (Platform.memoryModel != MemoryModel.EXPERIMENTAL) {
-            assertTrue(logger2.isFrozen)
-        }
         assertTrue { result2 == Logger.Level.INFO }
         assertTrue { logger2.level == Logger.Level.INFO }
 

@@ -13,13 +13,10 @@ interface Platform {
     val buildVariant: BuildVariant
 
     /**
-     * JVM: true
+     * JVM, Android & K/N: true
      * Android: true
      * JS: false <-- workers have different heaps
-     * K/N:
-     *   - new memory model: true
-     *   - old memory model: false <-- frozen
-     * */
+     **/
     val hasMultithreadedSharedHeap: Boolean
 
     val isLittleEndian: Boolean get() = endian == Endian.LITTLE_ENDIAN
@@ -87,6 +84,6 @@ interface Platform {
         override val buildVariant: BuildVariant,
         override val rawPlatformName: String,
         override val rawOsName: String,
-        override val hasMultithreadedSharedHeap: Boolean
+        override val hasMultithreadedSharedHeap: Boolean,
     ) : Platform
 }
