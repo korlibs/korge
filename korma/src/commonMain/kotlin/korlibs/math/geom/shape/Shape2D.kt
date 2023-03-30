@@ -4,7 +4,6 @@ import korlibs.datastructure.*
 import korlibs.datastructure.iterators.*
 import korlibs.math.geom.*
 import korlibs.math.geom.bezier.*
-import korlibs.math.geom.ds.*
 import korlibs.math.geom.vector.*
 import kotlin.math.*
 
@@ -12,7 +11,7 @@ interface WithHitShape2D {
     val hitShape2d: Shape2D
 }
 
-abstract class AbstractNShape2D : Shape2D {
+abstract class AbstractShape2D : Shape2D {
     abstract protected val lazyVectorPath: VectorPath
     override fun toVectorPath(): VectorPath = lazyVectorPath
 
@@ -194,16 +193,23 @@ interface Shape2D {
         }
 
         fun intersects(l: Shape2D, r: Shape2D): Boolean = intersects(l, Matrix.NIL, r, Matrix.NIL)
-
     }
 }
 
-data class CompoundShape2d(val shapes: List<Shape2D>) : Shape2D {
+data class CompoundShape2d(val shapes: List<Shape2D>) : AbstractShape2D() {
+    override val lazyVectorPath: VectorPath by lazy {
+        buildVectorPath { shapes.fastForEach { shape -> path(shape.toVectorPath()) } }
+    }
+
     override val area: Float get() = shapes.sumOf { it.area.toDouble() }.toFloat()
     override val perimeter: Float get() = shapes.sumOf { it.perimeter.toDouble() }.toFloat()
 
     override fun intersectionsWith(ml: Matrix, that: Shape2D, mr: Matrix): PointList {
-        TODO("Not yet implemented")
+        val out = PointArrayList()
+        shapes.fastForEach { shape ->
+            out += shape.intersectionsWith(ml, that, mr)
+        }
+        return out
     }
 
     fun findClosestShape(p: Point): Shape2D? {

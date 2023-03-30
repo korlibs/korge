@@ -34,9 +34,8 @@ object AwtSandboxSample {
                     frame.add(
                         GLCanvasWithKorge(
                             KorgeConfig(
-                                bgcolor = frame.background.toRgba(),
+                                backgroundColor = frame.background.toRgba(),
                                 virtualSize = Size(UIButton.DEFAULT_WIDTH, UIButton.DEFAULT_HEIGHT * 3).toInt(),
-                                scaleAnchor = Anchor.CENTER
                             )
                         ) {
                             uiVerticalStack {

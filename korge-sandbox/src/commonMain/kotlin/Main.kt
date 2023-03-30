@@ -3,13 +3,8 @@ import korlibs.korge.scene.*
 import korlibs.korge.ui.*
 import korlibs.korge.view.*
 import korlibs.image.color.*
-import korlibs.image.format.*
 import korlibs.io.async.*
-import korlibs.io.file.std.*
 import korlibs.io.lang.*
-import korlibs.korge.view.filter.*
-import korlibs.korge.view.Circle
-import korlibs.math.geom.*
 import korlibs.math.interpolation.*
 import samples.*
 import samples.asteroids.*
@@ -19,19 +14,31 @@ import samples.pong.*
 
 val DEFAULT_KORGE_BG_COLOR = Colors.DARKCYAN.mix(Colors.BLACK, 0.8.toRatio())
 
+//class MyScene : Scene() {
+//    override suspend fun SContainer.sceneMain() {
+//        solidRect(100, 100, Colors.BLUE)
+//    }
+//}
+//
+//suspend fun main() = Korge(
+//    windowSize = Korge.DEFAULT_WINDOW_SIZE,
+//    backgroundColor = DEFAULT_KORGE_BG_COLOR,
+//    displayMode = KorgeDisplayMode.DEFAULT.copy(clipBorders = false),
+//    debug = false,
+//    multithreaded = true,
+//    forceRenderEveryFrame = false,
+//    mainSceneClass = MyScene::class,
+//    configInjector = {
+//        mapPrototype { MyScene() }
+//    }
+//).start()
+
 suspend fun main() = Korge(
     windowSize = Korge.DEFAULT_WINDOW_SIZE,
-    bgcolor = DEFAULT_KORGE_BG_COLOR,
-    //bgcolor = Colors.WHITE,
-    clipBorders = false,
-    //scaleMode = ScaleMode.EXACT,
-    //debug = true,
+    backgroundColor = DEFAULT_KORGE_BG_COLOR,
+    displayMode = KorgeDisplayMode.CENTER_NO_CLIP,
     debug = false,
-    //debugAg = true,
-    multithreaded = true,
-    //forceRenderEveryFrame = false // Newly added optimization!
     forceRenderEveryFrame = false
-    //debugAg = true,
 ).start {
     //solidRect(200, 200, Colors.RED); return@start
     //solidRect(50, 50, Colors.GREEN).xy(50, 50)

@@ -1,6 +1,5 @@
 package korlibs.korge
 
-import korlibs.korge.scene.Module
 import korlibs.korge.scene.Scene
 import korlibs.korge.tests.ViewsForTesting
 import korlibs.korge.view.SContainer
@@ -21,25 +20,24 @@ class ViewsForTestingTest : ViewsForTesting() {
         }
     }
 
-    object DummyModule : Module() {
-        override suspend fun AsyncInjector.configure() {
-            mapSingleton {
-                Dependency()
-            }
-            mapPrototype {
-                DummyScene(get())
-            }
+    fun AsyncInjector.mapCommon() {
+        mapSingleton {
+            Dependency()
+        }
+        mapPrototype {
+            DummyScene(get())
         }
     }
 
     @Test
-    fun sceneTestRunsScene() = sceneTest<DummyScene>(DummyModule) {
+    fun sceneTestRunsScene() = sceneTest<DummyScene>(configureInjector = { mapCommon() }) {
         assertEquals("bar", dependency.foo)
         assertTrue(running)
     }
 
     @Test
-    fun sceneTestCanOverrideBindingsForTesting() = sceneTest<DummyScene>(DummyModule, {
+    fun sceneTestCanOverrideBindingsForTesting() = sceneTest<DummyScene>(configureInjector = {
+        mapCommon()
         mapSingleton<Dependency> {
             object : Dependency() {
                 override val foo = "test"

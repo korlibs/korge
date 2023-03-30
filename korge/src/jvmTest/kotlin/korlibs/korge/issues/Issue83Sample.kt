@@ -17,7 +17,7 @@ object Issue83Sample {
         }
     }
 
-    suspend fun main() = Korge(windowSize = SizeInt(512, 512), bgcolor = Colors["#2b2b2b"]).start {
+    suspend fun main() = Korge(windowSize = SizeInt(512, 512), backgroundColor = Colors["#2b2b2b"]).start {
         val image = image(resourcesVfs["korge.png"].readBitmap()) {
             anchor(.5, .5)
             scale(.8)

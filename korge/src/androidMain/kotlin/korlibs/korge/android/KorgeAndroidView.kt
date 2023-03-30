@@ -48,16 +48,11 @@ open class KorgeAndroidView @JvmOverloads constructor(
         moduleLoaded = false
     }
 
-    fun loadModule(module: Module) {
-        loadModule(KorgeConfig(module))
-    }
-
     fun loadModule(config: KorgeConfig) {
         unloadModule() // Unload module if already loaded
 
         agOpenGl = AGOpengl(KmlGlAndroid { mGLView?.clientVersion ?: -1 }.checkedIf(checked = false).logIf(log = false))
-        gameWindow = AndroidGameWindowNoActivity(config.windowSize?.width ?: config.finalWindowSize.width,
-            config.finalWindowSize.height, agOpenGl!!, context, this.config) { mGLView!! }
+        gameWindow = AndroidGameWindowNoActivity(config.windowSize.width, config.windowSize.height, agOpenGl!!, context, this.config) { mGLView!! }
         mGLView = korlibs.render.KorgwSurfaceView(this, context, gameWindow!!, this.config)
 
         addView(mGLView)

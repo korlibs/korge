@@ -4,6 +4,8 @@ import korlibs.korge.view.Stage
 import korlibs.render.awt.GLCanvas
 import korlibs.render.awt.GLCanvasGameWindow
 import korlibs.io.async.launchImmediately
+import korlibs.korge.internal.*
+import korlibs.korge.internal.DefaultViewport
 import korlibs.math.geom.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
@@ -98,7 +100,7 @@ class GLCanvasKorge internal constructor(
             virtualWidth: Int? = null,
             virtualHeight: Int? = null
         ): GLCanvasKorge {
-            return GLCanvasKorge(true, canvas, KorgeConfig(virtualSize = virtualWidth?.let { SizeInt(virtualWidth, virtualHeight ?: virtualWidth) })).apply { init() }
+            return GLCanvasKorge(true, canvas, KorgeConfig(virtualSize = virtualWidth?.let { SizeInt(virtualWidth, virtualHeight ?: virtualWidth) } ?: DefaultViewport.SIZE)).apply { init() }
         }
     }
 }
