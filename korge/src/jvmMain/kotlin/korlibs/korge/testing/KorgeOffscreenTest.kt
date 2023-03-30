@@ -5,7 +5,6 @@ import korlibs.graphics.*
 import korlibs.korge.*
 import korlibs.korge.view.*
 import korlibs.render.awt.*
-import korlibs.render.osx.*
 import korlibs.image.color.*
 import korlibs.io.async.*
 import korlibs.io.lang.*
@@ -80,7 +79,7 @@ inline fun korgeScreenshotTest(
     suspendTestWithOffscreenAG(windowSize.width, windowSize.height, checkGl = checkGl, logGl = logGl) { ag ->
         val korge = KorgeHeadless(KorgeConfig(
             windowSize = windowSize, virtualSize = virtualSize,
-            bgcolor = bgcolor,
+            backgroundColor = bgcolor,
             stageBuilder = { OffscreenStage(it, offscreenContext) }
             ),
             ag = ag, devicePixelRatio = devicePixelRatio,

@@ -11,10 +11,6 @@ import korlibs.inject.AsyncInjector
 import korlibs.math.geom.*
 import kotlin.reflect.KClass
 
-open class KorgeModule(mainScene: KClass<out Scene>) : Module() {
-	final override val mainScene: KClass<out Scene> = mainScene
-}
-
 open class Module {
 	open val imageFormats: List<ImageFormat> = listOf()
 

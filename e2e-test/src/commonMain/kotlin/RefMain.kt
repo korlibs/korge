@@ -13,7 +13,7 @@ import korlibs.io.lang.*
 import korlibs.io.serialization.json.Json
 import korlibs.math.geom.*
 
-suspend fun main() = Korge(windowSize = SizeInt(768, 512), bgcolor = Colors["#2b2b2b"]).start {
+suspend fun main() = Korge(windowSize = SizeInt(768, 512), backgroundColor = Colors["#2b2b2b"]).start {
     val exceptions = arrayListOf<Throwable>()
     try {
         // Test cases

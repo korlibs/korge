@@ -30,40 +30,47 @@ import kotlin.reflect.*
 
 typealias KorgeConfig = Korge
 
+data class KorgeDisplayMode(val scaleMode: ScaleMode, val scaleAnchor: Anchor, val clipBorders: Boolean) {
+    companion object {
+        val DEFAULT get() = CENTER
+        val CENTER = KorgeDisplayMode(ScaleMode.SHOW_ALL, Anchor.CENTER, clipBorders = true)
+        val CENTER_NO_CLIP = KorgeDisplayMode(ScaleMode.SHOW_ALL, Anchor.CENTER, clipBorders = false)
+        val NO_SCALE = KorgeDisplayMode(ScaleMode.NO_SCALE, Anchor.TOP_LEFT, clipBorders = false)
+    }
+}
+
 data class Korge(
-    val module: Module = Module(),
     val args: Array<String> = arrayOf(),
     val imageFormats: ImageFormat = RegisteredImageFormats,
     val gameWindow: GameWindow? = null,
     //val eventDispatcher: EventDispatcher = gameWindow ?: DummyEventDispatcher, // Removed
-    val sceneClass: KClass<out Scene>? = null,
-    val sceneInjects: List<Any> = listOf(),
+    val mainSceneClass: KClass<out Scene>? = null,
     val timeProvider: TimeProvider = TimeProvider,
     val injector: AsyncInjector = AsyncInjector(),
+    val configInjector: AsyncInjector.() -> Unit = {},
     val debug: Boolean = false,
     val trace: Boolean = false,
     val context: Any? = null,
-    val fullscreen: Boolean? = null,
+    val fullscreen: Boolean = false,
     val blocking: Boolean = true,
     val gameId: String = DEFAULT_GAME_ID,
     val settingsFolder: String? = null,
     val batchMaxQuads: Int = BatchBuilder2D.DEFAULT_BATCH_QUADS,
-    val virtualSize: SizeInt? = null,
-    val windowSize: SizeInt? = null,
-    val scaleMode: ScaleMode? = null,
-    val scaleAnchor: Anchor? = null,
-    val clipBorders: Boolean? = null,
-    val title: String? = null,
-    val bgcolor: RGBA? = null,
-    val quality: GameWindow.Quality? = null,
+    val windowSize: SizeInt = DefaultViewport.SIZE,
+    val virtualSize: SizeInt = windowSize,
+    val displayMode: KorgeDisplayMode = KorgeDisplayMode.DEFAULT,
+    val title: String = "Game",
+    val backgroundColor: RGBA? = Colors.BLACK,
+    val quality: GameWindow.Quality = GameWindow.Quality.PERFORMANCE,
     val icon: String? = null,
     val multithreaded: Boolean? = null,
     val forceRenderEveryFrame: Boolean = true,
-    val main: (suspend Stage.() -> Unit)? = null,
+    val main: (suspend Stage.() -> Unit) = {},
     val debugAg: Boolean = false,
     val debugFontExtraScale: Double = 1.0,
     val debugFontColor: RGBA = Colors.WHITE,
     val stageBuilder: (Views) -> Stage = { Stage(it) },
+    val targetFps: Double = 0.0,
     val unit: Unit = Unit,
 ) {
     companion object {
@@ -72,17 +79,7 @@ data class Korge(
         val DEFAULT_WINDOW_SIZE: SizeInt get() = DefaultViewport.SIZE
     }
 
-    val finalMain: (suspend Stage.() -> Unit) get() = main ?: module.main ?: {}
-    val finalImageFormats get() = imageFormats + module.imageFormats
-    val finalTitle: String get() = title ?: module.title
-    val finalWindowSize: SizeInt get() = windowSize ?: module.windowSize
-    val finalVirtualSize: SizeInt get() = virtualSize ?: windowSize ?: module.virtualSize
-    val finalScaleAnchor: Anchor get() = scaleAnchor ?: module.scaleAnchor
-    val finalScaleMode: ScaleMode get() = scaleMode ?: module.scaleMode
-    val finalClipBorders: Boolean get() = clipBorders ?: module.clipBorders
-    val finalTargetFps: Double get() = module.targetFps
-
-    suspend fun start(entry: suspend Stage.() -> Unit = this.finalMain) {
+    suspend fun start(entry: suspend Stage.() -> Unit = this.main) {
         KorgeRunner.invoke(this.copy(main = entry))
     }
 }
@@ -100,16 +97,16 @@ object KorgeRunner {
         RegisteredImageFormats.register(config.imageFormats)
 
         val iconPath = config.icon
-        val imageFormats = config.finalImageFormats
-        val entry = config.finalMain
+        val imageFormats = config.imageFormats
+        val entry = config.main
         val multithreaded = config.multithreaded
-        val windowSize = config.windowSize ?: config.module.windowSize
+        val windowSize = config.windowSize
 
         if (!Platform.isJsBrowser) {
             configureLoggerFromProperties(localCurrentDirVfs["klogger.properties"])
         }
         val realGameWindow = (config.gameWindow ?: coroutineContext[GameWindow] ?: CreateDefaultGameWindow(GameWindowCreationConfig(multithreaded = multithreaded)))
-        realGameWindow.bgcolor = config.bgcolor ?: Colors.BLACK
+        realGameWindow.bgcolor = config.backgroundColor ?: Colors.BLACK
         //println("Configure: ${width}x${height}")
         // @TODO: Configure should happen before loop. But we should ensure that all the korgw targets are ready for this
         //realGameWindow.configure(width, height, title, icon, fullscreen)
@@ -117,7 +114,7 @@ object KorgeRunner {
             val gameWindow = this
             if (Platform.isNative) println("Korui[0]")
             gameWindow.registerTime("configureGameWindow") {
-                realGameWindow.configure(windowSize, title, icon, fullscreen, bgcolor ?: Colors.BLACK)
+                realGameWindow.configure(windowSize, config.title, null, config.fullscreen, config.backgroundColor ?: Colors.BLACK)
             }
             gameWindow.registerTime("setIcon") {
                 try {
@@ -162,20 +159,20 @@ object KorgeRunner {
                 .mapInstance(ModuleArgs(config.args))
                 .mapInstance(GameWindow::class, gameWindow)
                 .mapInstance<Module>(object : Module() {
-                    override val title = config.finalTitle
+                    override val title = config.title
                     override val fullscreen: Boolean? = config.fullscreen
-                    override val windowSize = config.finalWindowSize
-                    override val virtualSize = config.finalVirtualSize
+                    override val windowSize = config.windowSize
+                    override val virtualSize = config.virtualSize
                 })
             views.debugViews = debug
             views.debugFontExtraScale = config.debugFontExtraScale
             views.debugFontColor = config.debugFontColor
-            views.virtualWidth = config.finalVirtualSize.width
-            views.virtualHeight = config.finalVirtualSize.height
-            views.scaleAnchor = config.finalScaleAnchor
-            views.scaleMode = config.finalScaleMode
-            views.clipBorders = config.finalClipBorders
-            views.targetFps = config.finalTargetFps
+            views.virtualWidth = config.virtualSize.width
+            views.virtualHeight = config.virtualSize.height
+            views.scaleAnchor = config.displayMode.scaleAnchor
+            views.scaleMode = config.displayMode.scaleMode
+            views.clipBorders = config.displayMode.clipBorders
+            views.targetFps = config.targetFps
             //Korge.prepareViews(views, gameWindow, bgcolor != null, bgcolor ?: Colors.TRANSPARENT_BLACK)
 
             gameWindow.registerTime("prepareViews") {
@@ -185,7 +182,8 @@ object KorgeRunner {
                     bgcolor != null,
                     bgcolor ?: Colors.TRANSPARENT,
                     waitForFirstRender = true,
-                    forceRenderEveryFrame = config.forceRenderEveryFrame
+                    forceRenderEveryFrame = config.forceRenderEveryFrame,
+                    configInjector = config.configInjector
                 )
             }
 
@@ -196,6 +194,9 @@ object KorgeRunner {
                 coroutineScope {
                     //println("coroutineContext: $coroutineContext")
                     //println("GameWindow: ${coroutineContext[GameWindow]}")
+                    if (config.mainSceneClass != null) {
+                        views.stage.sceneContainer().changeTo(config.mainSceneClass)
+                    }
                     entry(views.stage)
                     if (config.blocking) {
                         // @TODO: Do not complete to prevent job cancelation?
@@ -227,7 +228,8 @@ object KorgeRunner {
         clearEachFrame: Boolean = true,
         bgcolor: RGBA = Colors.TRANSPARENT,
         fixedSizeStep: TimeSpan = TimeSpan.NIL,
-        forceRenderEveryFrame: Boolean = true
+        forceRenderEveryFrame: Boolean = true,
+        configInjector: AsyncInjector.() -> Unit = {},
     ): CompletableDeferred<Unit> {
         KorgeReload.registerEventDispatcher(eventDispatcher)
 
@@ -241,6 +243,7 @@ object KorgeRunner {
         injector.mapInstance(CoroutineContext::class, views.coroutineContext)
         injector.mapPrototype(EmptyScene::class) { EmptyScene() }
         injector.mapInstance(TimeProvider::class, views.timeProvider)
+        configInjector(injector)
 
         val input = views.input
         val ag = views.ag
@@ -525,10 +528,11 @@ object KorgeRunner {
         bgcolor: RGBA = Colors.TRANSPARENT,
         fixedSizeStep: TimeSpan = TimeSpan.NIL,
         waitForFirstRender: Boolean = true,
-        forceRenderEveryFrame: Boolean = true
+        forceRenderEveryFrame: Boolean = true,
+        configInjector: AsyncInjector.() -> Unit
     ) {
         val firstRenderDeferred =
-            prepareViewsBase(views, eventDispatcher, clearEachFrame, bgcolor, fixedSizeStep, forceRenderEveryFrame)
+            prepareViewsBase(views, eventDispatcher, clearEachFrame, bgcolor, fixedSizeStep, forceRenderEveryFrame, configInjector)
         if (waitForFirstRender) {
             firstRenderDeferred.await()
         }

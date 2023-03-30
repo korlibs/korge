@@ -118,6 +118,9 @@ fun Project.configureJvmRunJvm(isRootKorlibs: Boolean) {
             this.enableRedefinition = enableRedefinition
             group = GROUP_KORGE_RUN
             dependsOn("jvmMainClasses", "compileKotlinJvm")
+            if (isRootKorlibs) {
+                dependsOn(":korge-reload-agent:jar")
+            }
             project.afterEvaluate {
                 val beforeJava9 = JvmAddOpens.beforeJava9
                 if (!beforeJava9) jvmArgs(project.korge.javaAddOpens)
