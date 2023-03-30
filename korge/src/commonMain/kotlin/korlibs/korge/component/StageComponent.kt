@@ -58,7 +58,7 @@ fun Views.registerStageComponent(view: View) {
         componentsInStageCur.clear()
 
         viewsToTrack!!.forEach { view ->
-            if (view.hasExtra(__VIEW_STAGE_COMPONENT_NAME) && view.hasAncestor(stage)) {
+            if (view.hasExtra(__VIEW_STAGE_COMPONENT_NAME) && view.stage != null) {
                 val it = view.viewStageComponent
                 componentsInStageCur += it
                 if (it !in componentsInStage) {
