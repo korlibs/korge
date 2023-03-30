@@ -10,9 +10,12 @@ internal const val fragmentMainFunctionName = "fragmentMain"
 
 class MetalShaderGenerator(
     private val vertexShader: VertexShader,
-    private val fragmentShader: FragmentShader
+    private val fragmentShader: FragmentShader,
+    private val bufferLayouts: MetalShaderBufferInputLayouts
 ) : BaseMetalShaderGenerator {
 
+    private val vertexBodyGenerator = MetalShaderBodyGenerator(ShaderType.VERTEX)
+    private val inputStructure = mutableListOf<VertexLayout>()
     private val inputBuffers = mutableListOf<VariableWithOffset>()
 
     data class Result(
@@ -33,7 +36,8 @@ class MetalShaderGenerator(
 
             addHeaders()
 
-            declareVertexOutputStructure(types.varyings)
+            declareVertexInputStructure()
+            declareVertexOutputStructure(types.varyings.toList())
 
             customFunctions.filter { it.ref.name in types.funcRefs }
                 .reversed()
@@ -55,16 +59,27 @@ class MetalShaderGenerator(
         )
     }
 
-    private fun Indenter.declareVertexOutputStructure(attributes: LinkedHashSet<Varying>) {
-        if (attributes.isEmpty()) return
-        val generator = MetalShaderBodyGenerator(ShaderType.VERTEX)
-
-        "struct v2f"(expressionSuffix = ";") {
-            attributes.forEach {
-                val name = if (it == Output) "position [[position]]" else it.name
-                +"${generator.typeToString(it.type)} $name;"
+    private fun Indenter.declareVertexInputStructure() {
+        bufferLayouts.vertexInputStructure
+            .map { it.attributes }
+            .map { it.toMetalShaderStructureGeneratorAttributes() }
+            .forEachIndexed { index, attributes ->
+                MetalShaderStructureGenerator.generate(
+                    indenter = this,
+                    name = "VertexInput$index",
+                    attributes = attributes
+                )
             }
-        }
+    }
+
+    private fun Indenter.declareVertexOutputStructure(attributes: List<Varying>) {
+        if (attributes.isEmpty()) return
+
+        MetalShaderStructureGenerator.generate(
+            indenter = this,
+            name = "v2f",
+            attributes = attributes.toMetalShaderStructureGeneratorAttributes()
+        )
     }
 
     private fun Indenter.generateVertexMainFunction(
@@ -155,14 +170,14 @@ class MetalShaderGenerator(
         }
     }
 
-}
-
-private fun Attribute.toMetalName(): String {
-    return when (this) {
-        DefaultShaders.a_Tex -> "texture"
-        DefaultShaders.a_Col -> "color"
-        DefaultShaders.a_Pos -> "position"
-        else -> error("unreachable statement")
+    private fun List<Variable>.toMetalShaderStructureGeneratorAttributes(): List<MetalShaderStructureGenerator.Attribute> {
+        return map {
+            MetalShaderStructureGenerator.Attribute(
+                type = vertexBodyGenerator.typeToString(it.type),
+                name = if (it == Output) "position" else it.name,
+                attribute = if (it == Output) "position" else null
+            )
+        }
     }
 }
 
