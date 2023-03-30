@@ -424,7 +424,6 @@ inline class MatrixTransform(
     )
 }
 
-@KormaValueApi
 class MatrixComputed(val matrix: Matrix, val transform: MatrixTransform) {
     companion object;
     constructor(matrix: Matrix) : this(matrix, MatrixTransform.fromMatrix(matrix))

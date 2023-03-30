@@ -1,5 +1,6 @@
 package korlibs.math.geom
 
+import korlibs.datastructure.*
 import korlibs.math.annotations.KormaMutableApi
 import korlibs.math.interpolation.interpolate
 import korlibs.math.interpolation.toRatio
@@ -301,42 +302,42 @@ class MMatrix4 {
         0f, 0f, 0f, 1f
     )
 
-    fun setColumns4x4(f: FloatArray, offset: Int): MMatrix4 = setColumns(
+    fun setColumns4x4(f: FloatArray, offset: Int = 0): MMatrix4 = setColumns(
         f[offset + 0], f[offset + 1], f[offset + 2], f[offset + 3],
         f[offset + 4], f[offset + 5], f[offset + 6], f[offset + 7],
         f[offset + 8], f[offset + 9], f[offset + 10], f[offset + 11],
         f[offset + 12], f[offset + 13], f[offset + 14], f[offset + 15]
     )
 
-    fun setRows4x4(f: FloatArray, offset: Int): MMatrix4 = setRows(
+    fun setRows4x4(f: FloatArray, offset: Int = 0): MMatrix4 = setRows(
         f[offset + 0], f[offset + 1], f[offset + 2], f[offset + 3],
         f[offset + 4], f[offset + 5], f[offset + 6], f[offset + 7],
         f[offset + 8], f[offset + 9], f[offset + 10], f[offset + 11],
         f[offset + 12], f[offset + 13], f[offset + 14], f[offset + 15]
     )
 
-    fun setColumns3x3(f: FloatArray, offset: Int): MMatrix4 = setColumns(
+    fun setColumns3x3(f: FloatArray, offset: Int = 0): MMatrix4 = setColumns(
         f[offset + 0], f[offset + 1], f[offset + 2], 0f,
         f[offset + 3], f[offset + 4], f[offset + 5], 0f,
         f[offset + 6], f[offset + 7], f[offset + 8], 0f,
         0f, 0f, 0f, 1f
     )
 
-    fun setRows3x3(f: FloatArray, offset: Int) = setRows(
+    fun setRows3x3(f: FloatArray, offset: Int = 0) = setRows(
         f[offset + 0], f[offset + 1], f[offset + 2], 0f,
         f[offset + 3], f[offset + 4], f[offset + 5], 0f,
         f[offset + 6], f[offset + 7], f[offset + 8], 0f,
         0f, 0f, 0f, 1f
     )
 
-    fun setColumns2x2(f: FloatArray, offset: Int) = setColumns(
+    fun setColumns2x2(f: FloatArray, offset: Int = 0) = setColumns(
         f[offset + 0], f[offset + 1], 0f, 0f,
         f[offset + 1], f[offset + 2], 0f, 0f,
         0f, 0f, 1f, 0f,
         0f, 0f, 0f, 1f
     )
 
-    fun setRows2x2(f: FloatArray, offset: Int) = setRows(
+    fun setRows2x2(f: FloatArray, offset: Int = 0) = setRows(
         f[offset + 0], f[offset + 1], 0f, 0f,
         f[offset + 1], f[offset + 2], 0f, 0f,
         0f, 0f, 1f, 0f,
@@ -711,54 +712,8 @@ class MMatrix4 {
         return out.setTo(x, y, z, 1f)
     }
 
-    fun extractRotation(row_normalise: Boolean = true, out: MQuaternion = MQuaternion()): MQuaternion
-    {
-        val v1 = this.getRowVector(0)
-        val v2 = this.getRowVector(1)
-        val v3 = this.getRowVector(2)
-        if (row_normalise)
-        {
-            v1.normalize()
-            v2.normalize()
-            v3.normalize()
-        }
-        val d = 0.25 * (v1[0].toDouble() + v2[1].toDouble() + v3[2].toDouble() + 1.0)
-        when {
-            d > 0.0 -> {
-                val num1 = sqrt(d)
-                out.w = num1
-                val num2 = 1.0 / (4.0 * num1)
-                out.x = ((v2[2].toDouble() - v3[1].toDouble()) * num2)
-                out.y = ((v3[0].toDouble() - v1[2].toDouble()) * num2)
-                out.z = ((v1[1].toDouble() - v2[0].toDouble()) * num2)
-            }
-            v1[0].toDouble() > v2[1].toDouble() && v1[0].toDouble() > v3[2].toDouble() -> {
-                val num1 = 2.0 * sqrt(1.0 + v1[0].toDouble() - v2[1].toDouble() - v3[2].toDouble())
-                out.x = (0.25 * num1)
-                val num2 = 1.0 / num1
-                out.w = ((v3[1].toDouble() - v2[2].toDouble()) * num2)
-                out.y = ((v2[0].toDouble() + v1[1].toDouble()) * num2)
-                out.z = ((v3[0].toDouble() + v1[2].toDouble()) * num2)
-            }
-            v2[1].toDouble() > v3[2].toDouble() -> {
-                val num5 = 2.0 * sqrt(1.0 + v2[1].toDouble() - v1[0].toDouble() - v3[2].toDouble())
-                out.y = (0.25 * num5)
-                val num6 = 1.0 / num5
-                out.w = ((v3[0].toDouble() - v1[2].toDouble()) * num6)
-                out.x = ((v2[0].toDouble() + v1[1].toDouble()) * num6)
-                out.z = ((v3[1].toDouble() + v2[2].toDouble()) * num6)
-            }
-            else -> {
-                val num7 = 2.0 * sqrt(1.0 + v3[2].toDouble() - v1[0].toDouble() - v2[1].toDouble())
-                out.z = (0.25 * num7)
-                val num8 = 1.0 / num7
-                out.w = ((v2[0].toDouble() - v1[1].toDouble()) * num8)
-                out.x = ((v3[0].toDouble() + v1[2].toDouble()) * num8)
-                out.y = ((v3[1].toDouble() + v2[2].toDouble()) * num8)
-            }
-        }
-        out.normalize()
-        return out
+    fun extractRotation(row_normalise: Boolean = true): Quaternion {
+        return this.immutable.decomposeRotation(row_normalise)
     }
 
     fun extractProjection(out: MVector4 = MVector4()) = this.getColumnVector(3, out)
@@ -902,26 +857,23 @@ class MMatrix4 {
     fun scale(x: Double, y: Double, z: Double, w: Double = 1.0, temp: MMatrix4 = MMatrix4()) = this.scale(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat(), temp)
     fun scale(x: Int, y: Int, z: Int, w: Int = 1, temp: MMatrix4 = MMatrix4()) = this.scale(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat(), temp)
 
-    fun setToRotation(quat: MQuaternion, temp: MMatrix4 = MMatrix4()) = this.apply {
-        quat.toMatrix(temp)
-        this.multiply(this, temp)
+    fun setToRotation(quat: Quaternion) = this.apply {
+
+        this.multiply(this, quat.toMatrix().mutable)
     }
-    fun setToRotation(euler: MEulerRotation, temp: MMatrix4 = MMatrix4()) = this.apply {
-        euler.toMatrix(temp)
-        this.multiply(this, temp)
+    fun setToRotation(euler: EulerRotation) = this.apply {
+        this.multiply(this, euler.toMatrix().mutable)
     }
     fun rotate(x: Angle, y: Angle, z: Angle, temp: MMatrix4 = MMatrix4()) = this.apply {
         rotate(x, 1f, 0f, 0f, temp)
         rotate(y, 0f, 1f, 0f, temp)
         rotate(z, 0f, 0f, 1f, temp)
     }
-    fun rotate(euler: MEulerRotation, temp: MMatrix4 = MMatrix4()) = this.apply {
-        temp.setToRotation(euler)
-        this.multiply(this, temp)
+    fun rotate(euler: EulerRotation) = this.apply {
+        this.multiply(this, euler.toMatrix().mutable)
     }
-    fun rotate(quat: MQuaternion, temp: MMatrix4 = MMatrix4()) = this.apply {
-        temp.setToRotation(quat)
-        this.multiply(this, temp)
+    fun rotate(quat: Quaternion) = this.apply {
+        this.multiply(this, quat.toMatrix().mutable)
     }
 
     fun setToLookAt(
@@ -959,7 +911,7 @@ class MMatrix4 {
     inline fun rotate(angle: Angle, v: MVector4, temp: MMatrix4 = MMatrix4()) = rotate(angle, v.x, v.y, v.z, temp)
     inline fun scale(v: MVector4, temp: MMatrix4 = MMatrix4()) = scale(v.x, v.y, v.z, v.w, temp)
 
-    fun setTRS(translation: Position3D, rotation: MQuaternion, scale: Scale3D): MMatrix4 {
+    fun setTRS(translation: MPosition3D, rotation: Quaternion, scale: MScale3D): MMatrix4 {
         val rx = rotation.x.toFloat()
         val ry = rotation.y.toFloat()
         val rz = rotation.z.toFloat()
@@ -989,7 +941,7 @@ class MMatrix4 {
         )
     }
 
-    fun getTRS(position: Position3D, rotation: MQuaternion, scale: Scale3D): MMatrix4 = this.apply {
+    fun getTRS(position: MPosition3D, rotation: Ref<Quaternion>, scale: MScale3D): MMatrix4 = this.apply {
         val tempMat1 = MMatrix4()
         val det = determinant
         position.setTo(v03, v13, v23, 1f)
@@ -1000,12 +952,12 @@ class MMatrix4 {
         val invSX = 1f / scale.x
         val invSY = 1f / scale.y
         val invSZ = 1f / scale.z
-        rotation.setFromRotationMatrix(tempMat1.setRows(
+        rotation.value = Quaternion.fromRotationMatrix(tempMat1.setRows(
             v00 * invSX, v01 * invSY, v02 * invSZ, v03,
             v10 * invSX, v11 * invSY, v12 * invSZ, v13,
             v20 * invSX, v21 * invSY, v22 * invSZ, v23,
             v30, v31, v32, v33
-        ))
+        ).immutable)
     }
 
     fun invert(m: MMatrix4 = this): MMatrix4 {
@@ -1085,3 +1037,6 @@ fun Matrix.toMatrix4(): Matrix4 {
         0f, 0f, 0f, 1f
     )
 }
+
+val MMatrix4.immutable: Matrix4 get() = Matrix4.fromColumns(data)
+val Matrix4.mutable: MMatrix4 get() = MMatrix4().setColumns4x4(copyToColumns(), 0)

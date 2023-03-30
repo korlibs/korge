@@ -19,6 +19,8 @@ inline class Vector3(val data: Float4Pack) {
         val UP = Vector3(0f, 1f, 0f)
         val DOWN = Vector3(0f, -1f, 0f)
 
+        operator fun invoke(): Vector3 = ZERO
+
         fun cross(a: Vector3, b: Vector3): Vector3 = Vector3(
             (a.y * b.z - a.z * b.y),
             (a.z * b.x - a.x * b.z),

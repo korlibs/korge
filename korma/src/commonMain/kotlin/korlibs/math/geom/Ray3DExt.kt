@@ -4,7 +4,7 @@ import korlibs.math.annotations.*
 import kotlin.math.*
 
 @KormaMutableApi
-fun Ray3D.intersectRayAABox1(box: MAABB3D) : Boolean {
+fun Ray3D.intersectRayAABox1(box: AABB3D) : Boolean {
     val ray = this
     // r.dir is unit direction vector of ray
     val dirfrac = ray.dir.inv()

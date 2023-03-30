@@ -6,9 +6,6 @@ import korlibs.math.annotations.*
 import korlibs.math.math.*
 import kotlin.math.*
 
-@Deprecated("Use PointList directly")
-typealias IPointArrayList = PointList
-
 sealed interface PointList : IVectorArrayList, Extra {
     override val dimensions: Int get() = 2
     override fun get(index: Int, dim: Int): Float = if (dim == 0) getX(index) else getY(index)

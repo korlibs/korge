@@ -9,6 +9,7 @@ interface Ref<T : Any> {
 fun <T : Any> Ref(): Ref<T> = object : Ref<T> {
     override lateinit var value: T
 }
+fun <T : Any> Ref(value: T): Ref<T> = Ref<T>().also { it.value = value }
 
 fun <T : Any> KMutableProperty0<T>.toRef(): Ref<T> = Ref(this)
 

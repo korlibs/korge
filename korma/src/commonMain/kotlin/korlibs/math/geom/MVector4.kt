@@ -119,23 +119,7 @@ class MVector4 {
     override fun toString(): String = if (w == 1f) "(${x.niceStr}, ${y.niceStr}, ${z.niceStr})" else "(${x.niceStr}, ${y.niceStr}, ${z.niceStr}, ${w.niceStr})"
 }
 
-@KormaMutableApi
-sealed interface IVector4Int {
-    val x: Int
-    val y: Int
-    val z: Int
-    val w: Int
-}
-
-@KormaMutableApi
-inline class MVector4Int(val v: MVector4) : IVector4Int {
-    override val x: Int get() = v.x.toInt()
-    override val y: Int get() = v.y.toInt()
-    override val z: Int get() = v.z.toInt()
-    override val w: Int get() = v.w.toInt()
-}
-
 fun MVector4.asIntVector3D() = MVector4Int(this)
 
-typealias Position3D = MVector4
-typealias Scale3D = MVector4
+typealias MPosition3D = MVector4
+typealias MScale3D = MVector4

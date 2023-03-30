@@ -6,6 +6,11 @@ inline class EulerRotation internal constructor(private val data: Vector3) {
     val roll: Angle get() = Angle.fromRatio(data.x)
     val pitch: Angle get() = Angle.fromRatio(data.y)
     val yaw: Angle get() = Angle.fromRatio(data.z)
+
+    @Deprecated("", ReplaceWith("roll")) val x: Angle get() = roll
+    @Deprecated("", ReplaceWith("pitch")) val y: Angle get() = pitch
+    @Deprecated("", ReplaceWith("yaw")) val z: Angle get() = yaw
+
     fun copy(roll: Angle = this.roll, pitch: Angle = this.pitch, yaw: Angle = this.yaw): EulerRotation = EulerRotation(roll, pitch, yaw)
     constructor(roll: Angle, pitch: Angle, yaw: Angle) : this(Vector3(roll.ratio, pitch.ratio, yaw.ratio))
 
