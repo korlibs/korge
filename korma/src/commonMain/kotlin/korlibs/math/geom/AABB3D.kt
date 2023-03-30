@@ -34,7 +34,7 @@ data class AABB3D(val min: Vector3 = Vector3(), val max: Vector3 = Vector3()) {
         )
     }
 
-    fun intersectsSphere(sphere: Sphere): Boolean = intersectsSphere(sphere.center, sphere.radius)
+    fun intersectsSphere(sphere: Sphere3D): Boolean = intersectsSphere(sphere.center, sphere.radius)
     fun intersectsSphere(origin: Vector3, radius: Float): Boolean = !(origin.x + radius < minX ||
         origin.y + radius < minY ||
         origin.z + radius < minZ ||
