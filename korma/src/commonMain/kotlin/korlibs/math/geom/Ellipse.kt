@@ -4,7 +4,7 @@ import korlibs.math.geom.shape.*
 import korlibs.math.geom.vector.*
 import kotlin.math.*
 
-data class Ellipse(override val center: Point, val radius: Size) : Shape2d {
+data class Ellipse(override val center: Point, val radius: Size) : Shape2D {
     override val area: Float get() = (PI * radius.widthD * radius.heightD).toFloat()
     override val perimeter: Float get() {
         if (radius.width == radius.height) return (2 * PI * radius.width).toFloat() // Circle formula

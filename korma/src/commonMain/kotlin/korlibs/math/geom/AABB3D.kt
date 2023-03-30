@@ -1,8 +1,9 @@
 package korlibs.math.geom
 
+import korlibs.math.geom.shape.*
 import kotlin.math.*
 
-data class AABB3D(val min: Vector3 = Vector3(), val max: Vector3 = Vector3()) {
+data class AABB3D(val min: Vector3 = Vector3(), val max: Vector3 = Vector3()) : Shape3D {
     val minX: Float get() = min.x
     val minY: Float get() = min.y
     val minZ: Float get() = min.z
@@ -45,4 +46,10 @@ data class AABB3D(val min: Vector3 = Vector3(), val max: Vector3 = Vector3()) {
     fun intersectsAABB(box: AABB3D): Boolean = max.x > box.min.x && min.x < box.max.x &&
         max.y > box.min.y && min.y < box.max.y &&
         max.z > box.min.z && min.z < box.max.z
+
+    override val center: Vector3 get() = (min + max) * 0.5f
+    override val volume: Float get() {
+        val v = (max - min)
+        return v.x * v.y * v.z
+    }
 }

@@ -11,7 +11,7 @@ import korlibs.math.math.isAlmostZero
 
 //@KormaValueApi
 //data class Line(val a: Point, val b: Point) {
-inline class Line internal constructor(val data: Float4Pack) : Shape2d {
+inline class Line internal constructor(val data: Float4Pack) : Shape2D {
     override val area: Float get() = 0f
     override val perimeter: Float get() = length
     override val center: Point get() = (a + b) * 0.5f
