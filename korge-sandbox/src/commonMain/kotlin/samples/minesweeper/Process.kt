@@ -110,8 +110,6 @@ val ScaledScene.mouseV by Extra.PropertyThis<ScaledScene, MouseV> { MouseV(this)
 val ScaledScene.audioV by Extra.PropertyThis<ScaledScene, AudioV> { AudioV(this) }
 
 fun ScaledScene.registerProcessSystem(): Closeable {
-	views.registerStageComponent()
-
     val closeable = CancellableGroup()
 
     closeable += stage.onEvents(*MouseEvent.Type.ALL) { e ->

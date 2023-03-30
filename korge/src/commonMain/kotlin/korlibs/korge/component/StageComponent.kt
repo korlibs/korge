@@ -2,10 +2,9 @@ package korlibs.korge.component
 
 import korlibs.datastructure.*
 import korlibs.event.*
-import korlibs.korge.view.*
 import korlibs.io.async.*
-import korlibs.io.lang.Closeable
-import korlibs.io.lang.CancellableGroup
+import korlibs.io.lang.*
+import korlibs.korge.view.*
 
 /**
  * **Important**: To use this component you have to call the [Views.registerStageComponent] extension method at the start of the APP.
@@ -25,7 +24,7 @@ fun <T : View> T.onNewAttachDetach(onAttach: Views.(T) -> Unit = {}, onDetach: V
     val view = this
     val closeable = CancellableGroup()
     val viewStageComponent = this.viewStageComponent
-    view.deferWithViews { it.registerStageComponent() }
+    view.deferWithViews { it.registerStageComponent(view) }
     closeable += viewStageComponent.added.add { onAttach(it, view) }
     closeable += viewStageComponent.removed.add { onDetach(it, view) }
     return closeable
@@ -36,26 +35,30 @@ fun <T : View> T.onAttachDetach(onAttach: Views.(T) -> Unit = {}, onDetach: View
     return this
 }
 
+private var Views.viewsToTrack by Extra.Property<MutableSet<View>?> { null }
+
 /**
  * Enables the use of [StageComponent] components.
  */
-fun Views.registerStageComponent() {
-    val EXTRA_ID = "Views.registerStageComponent"
-    if (views.getExtra(EXTRA_ID) == true) return
-    views.setExtra(EXTRA_ID, true)
+fun Views.registerStageComponent(view: View) {
+    val firstRun = viewsToTrack == null
+    if (firstRun) {
+        viewsToTrack = linkedSetOf()
+    }
+    viewsToTrack!! += view
+
+    if (!firstRun) return
+
     val componentsInStagePrev = FastArrayList<ViewStageComponent>()
     val componentsInStageCur = linkedSetOf<ViewStageComponent>()
     val componentsInStage = linkedSetOf<ViewStageComponent>()
-    val tempViews: FastArrayList<View> = FastArrayList()
     onBeforeRender {
         componentsInStagePrev.clear()
         componentsInStagePrev += componentsInStageCur
         componentsInStageCur.clear()
 
-        val stagedViews = getAllDescendantViews(stage, tempViews)
-
-        stagedViews.fastForEach { view ->
-            if (view.hasExtra(__VIEW_STAGE_COMPONENT_NAME)) {
+        viewsToTrack!!.forEach { view ->
+            if (view.hasExtra(__VIEW_STAGE_COMPONENT_NAME) && view.stage != null) {
                 val it = view.viewStageComponent
                 componentsInStageCur += it
                 if (it !in componentsInStage) {
