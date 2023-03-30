@@ -64,18 +64,16 @@ typealias Shape2d = Shape2D
 
 // RoundRectangle
 interface Shape2D {
-    val center: Point get() = TODO()
+    val center: Point get() = getBounds().center
     val area: Float
     val perimeter: Float
-    // @TODO: SDF
-    // @TODO: NormalVector
 
     /** Compute the distance to the shortest point to the edge (SDF). Negative inside. Positive outside. */
-    fun distance(p: Point): Float = TODO()
+    fun distance(p: Point): Float = (p - projectedPoint(p)).length
     /** Returns the normal vector to the shortest point to the edge */
-    fun normalVectorAt(p: Point): Vector2 = (p - center).normalized
+    fun normalVectorAt(p: Point): Vector2
     /** Point projected to the closest edge */
-    fun projectedPoint(p: Point): Point = p - normalVectorAt(p) * distance(p)
+    fun projectedPoint(p: Point): Point
 
     fun toVectorPath(): VectorPath
     fun containsPoint(p: Point): Boolean = distance(p) <= 0f
@@ -128,6 +126,23 @@ interface Shape2D {
 data class CompoundShape2d(val shapes: List<Shape2D>) : Shape2D {
     override val area: Float get() = shapes.sumOf { it.area.toDouble() }.toFloat()
     override val perimeter: Float get() = shapes.sumOf { it.perimeter.toDouble() }.toFloat()
+
+    fun findClosestShape(p: Point): Shape2D? {
+        var minDistance = Float.POSITIVE_INFINITY
+        var shape: Shape2D? = null
+        shapes.fastForEach {
+            val dist = it.distance(p)
+            if (dist < minDistance) {
+                minDistance = dist
+                shape = it
+            }
+        }
+        return shape
+    }
+
+    override fun projectedPoint(p: Point): Point = findClosestShape(p)?.projectedPoint(p) ?: Point.NaN
+    override fun distance(p: Point): Float = findClosestShape(p)?.distance(p) ?: Float.POSITIVE_INFINITY
+    override fun normalVectorAt(p: Point): Vector2 = findClosestShape(p)?.normalVectorAt(p) ?: Vector2.NaN
 
     override fun containsPoint(p: Point): Boolean {
         shapes.fastForEach { if (it.containsPoint(p)) return true }

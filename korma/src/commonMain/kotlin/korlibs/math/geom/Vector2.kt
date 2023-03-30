@@ -117,7 +117,7 @@ inline class Vector2 internal constructor(internal val raw: Float2Pack) {
     val normalized: Vector2 get() = this * (1f / magnitude)
     val unit: Vector2 get() = this / length
 
-    /** Rotates the vector/point -90 degrees (not normalizing it) */
+    /** Normal vector. Rotates the vector/point -90 degrees (not normalizing it) */
     fun toNormal(): Vector2 = Point(-this.y, this.x)
 
 

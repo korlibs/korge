@@ -9,6 +9,7 @@ import korlibs.korge.view.vector.*
 import korlibs.math.geom.*
 import korlibs.math.geom.Circle
 import korlibs.math.geom.Ellipse
+import korlibs.math.geom.Line
 import korlibs.math.geom.shape.*
 
 class MainShape2dScene : Scene() {
@@ -30,6 +31,7 @@ class MainShape2dScene : Scene() {
             RoundRectangle(Rectangle(50, 50, 250, 100), RectCorners(10f, 15f, 20f, 30f)),
             buildVectorPath { star(7, 30.0, 50.0, x = 100.0, y = 100.0) },
             buildVectorPath { star(7, 30.0, 50.0, x = 100.0, y = 100.0); rectHole(Rectangle(80, 80, 40, 40)) },
+            Line(Point(50, 50), Point(150, 120)),
         )
         var shape: Shape2D = shapes.first()
 
@@ -57,7 +59,14 @@ class MainShape2dScene : Scene() {
             }
         }
         fun updateShape() {
-            gpuShapeView.updateShape { fill(Colors.WHITE) { path(shape.toVectorPath()) } }
+            gpuShapeView.updateShape {
+                val vectorPath = shape.toVectorPath()
+                if (vectorPath.isLastCommandClose) {
+                    fill(Colors.WHITE) { path(vectorPath) }
+                } else {
+                    stroke(Colors.WHITE, lineWidth = 4.0) { path(vectorPath) }
+                }
+            }
             textAreaView.text = "area: ${shape.area}"
             textPerimeterView.text = "perimeter: ${shape.perimeter}"
             update()

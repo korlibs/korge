@@ -8,13 +8,21 @@ import korlibs.math.geom.shape.*
 import korlibs.math.geom.vector.*
 import korlibs.math.math.*
 import korlibs.math.math.isAlmostZero
+import kotlin.math.*
 
 //@KormaValueApi
 //data class Line(val a: Point, val b: Point) {
 inline class Line internal constructor(val data: Float4Pack) : Shape2D {
     override val area: Float get() = 0f
     override val perimeter: Float get() = length
+
+    override fun normalVectorAt(p: Point): Vector2 {
+        val projected = projectedPoint(p)
+        return (b - a).toNormal().normalized * Point.crossProduct(projected, p).sign
+    }
+
     override val center: Point get() = (a + b) * 0.5f
+    fun toRay(): Ray = Ray(a, (b - a).normalized)
 
     val xmin: Float get() = kotlin.math.min(x0, x1)
     val xmax: Float get() = kotlin.math.max(x0, x1)
