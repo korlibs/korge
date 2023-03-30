@@ -31,6 +31,7 @@ private fun <T : Any> T?.isAlmostEqualsGeneric(
     val e = this
     if (e == null || a == null) return (e == null) && (a == null)
     return when (e) {
+        is Ray -> e.isAlmostEquals((a as? Ray?) ?: return false, absoluteTolerance.toFloat())
         is Point -> e.isAlmostEquals((a as? Point?) ?: return false, absoluteTolerance.toFloat())
         is MPoint -> e.isAlmostEquals((a as? MPoint?) ?: return false, absoluteTolerance)
         is Float -> {

@@ -4,6 +4,7 @@ import korlibs.datastructure.*
 import korlibs.datastructure.iterators.*
 import korlibs.math.geom.*
 import korlibs.math.geom.bezier.*
+import korlibs.math.geom.ds.*
 import korlibs.math.geom.vector.*
 import kotlin.math.*
 
@@ -13,16 +14,8 @@ interface WithHitShape2D {
 
 abstract class AbstractNShape2D : Shape2D {
     abstract protected val lazyVectorPath: VectorPath
-    protected val lazyCurves: List<Curves> by lazy { lazyVectorPath.toCurvesList() }
-
-    override val perimeter: Float get() {
-        var sum: Double = 0.0
-        lazyCurves.fastForEach { sum += it.length }
-        return sum.toFloat()
-    }
-
-    override val area: Float get() = if (lazyVectorPath.isLastCommandClose) lazyVectorPath.area else 0f
     override fun toVectorPath(): VectorPath = lazyVectorPath
+
     override fun distance(p: Point): Float = (p - projectedPoint(p)).length * insideSign(p)
     override fun normalVectorAt(p: Point): Vector2 = -projectedPointExt(p, normal = true)
     override fun projectedPoint(p: Point): Point = projectedPointExt(p, normal = false)
@@ -31,7 +24,7 @@ abstract class AbstractNShape2D : Shape2D {
         var length = Double.POSITIVE_INFINITY
         var pp = Point()
         var n = Point()
-        lazyCurves.fastForEach { it.beziers.fastForEach {
+        toVectorPath().getCurvesList().fastForEach { it.beziers.fastForEach {
             val out = it.project(p)
             if (length > out.dSq) {
                 length = out.dSq
@@ -48,7 +41,7 @@ abstract class AbstractNShape2D : Shape2D {
         } }
         return if (normal) n.normalized else pp
     }
-    override fun containsPoint(p: Point): Boolean = lazyVectorPath.containsPoint(p)
+    override fun containsPoint(p: Point): Boolean = toVectorPath().containsPoint(p)
 }
 
 val VectorPath.cachedPoints: PointList by Extra.PropertyThis { this.getPoints2() }
@@ -64,26 +57,104 @@ typealias Shape2d = Shape2D
 
 // RoundRectangle
 interface Shape2D {
-    val center: Point get() = TODO()
-    val area: Float
-    val perimeter: Float
-    // @TODO: SDF
-    // @TODO: NormalVector
+    val center: Point get() = getBounds().center
+    val area: Float get() {
+        val lazyVectorPath = toVectorPath()
+        return if (lazyVectorPath.isLastCommandClose) lazyVectorPath.area else 0f
+    }
+    val perimeter: Float get() {
+        var sum: Double = 0.0
+        toVectorPath().getCurvesList().fastForEach { sum += it.length }
+        return sum.toFloat()
+    }
 
     /** Compute the distance to the shortest point to the edge (SDF). Negative inside. Positive outside. */
-    fun distance(p: Point): Float = TODO()
+    fun distance(p: Point): Float = (p - projectedPoint(p)).length
     /** Returns the normal vector to the shortest point to the edge */
-    fun normalVectorAt(p: Point): Vector2 = (p - center).normalized
+    fun normalVectorAt(p: Point): Vector2
     /** Point projected to the closest edge */
-    fun projectedPoint(p: Point): Point = p - normalVectorAt(p) * distance(p)
+    fun projectedPoint(p: Point): Point
 
     fun toVectorPath(): VectorPath
     fun containsPoint(p: Point): Boolean = distance(p) <= 0f
     fun getBounds(): Rectangle = toVectorPath().getBounds()
     //fun containsPoint(p: Point, mat: Matrix) = containsPoint(mat.transform(p))
 
+    fun intersectionsWith(that: Shape2D): PointList = intersectionsWith(Matrix.NIL, that, Matrix.NIL)
+    //fun intersectionsWith(ray: Ray): PointList = intersectionsWith(Matrix.NIL, ray, Matrix.NIL)
     fun intersectsWith(that: Shape2D) = Shape2D.intersects(this, Matrix.NIL, that, Matrix.NIL)
     fun intersectsWith(ml: Matrix, that: Shape2D, mr: Matrix) = Shape2D.intersects(this, ml, that, mr)
+
+    //fun intersectionsWith(ml: Matrix, ray: Ray, mr: Matrix): PointList {
+    //    //val mat = mr * ml.inverted()
+    //    //this.toVectorPath().getBVHBeziers().intersect(ray.transformed(mat)).fastForEach {
+    //    //    TODO()
+    //    //}
+    //    TODO()
+    //}
+
+    /** [ml] transformation matrix of this [Shape2d], [mr] transformation matrix of the point [p] */
+    @Deprecated("Untested yet")
+    fun containsPoint(ml: Matrix, p: Point, mr: Matrix): Boolean {
+        val mat = mr * ml.inverted()
+        return containsPoint(p.transformed(mat))
+    }
+
+    // @TODO: Check
+    /** [ml] transformation matrix of this [Shape2d], [mr] transformation matrix of the point [p] */
+    @Deprecated("Untested yet")
+    fun distance(ml: Matrix, p: Point, mr: Matrix): Float {
+        return (p.transformed(mr) - projectedPoint(ml, p, mr)).length
+    }
+
+    // @TODO: Check
+    /** [ml] transformation matrix of this [Shape2d], [mr] transformation matrix of the point [p] */
+    @Deprecated("Untested yet")
+    fun normalVectorAt(ml: Matrix, p: Point, mr: Matrix): Point {
+        val mat = mr * ml.inverted()
+        return normalVectorAt(p.transformed(mat)).deltaTransformed(ml)
+    }
+
+    // @TODO: Check
+    /** [ml] transformation matrix of this [Shape2d], [mr] transformation matrix of the point [p] */
+    @Deprecated("Untested yet")
+    fun projectedPoint(ml: Matrix, p: Point, mr: Matrix): Point {
+        val mat = mr * ml.inverted()
+        return projectedPoint(p.transformed(mat)).transformed(ml)
+    }
+
+    /** [ml] transformation matrix of this [Shape2d], [mr] transformation matrix of the shape [that] */
+    fun intersectionsWith(ml: Matrix, that: Shape2D, mr: Matrix): PointList {
+        val mat = mr * ml.inverted()
+
+        val out = PointArrayList()
+        val thatPath = that.toVectorPath()
+        thatPath.getCurvesList().fastForEachBezier { bezier1 ->
+            val bezier1 = bezier1.transform(mat)
+            //println("BASE: $bezier1")
+            this.toVectorPath().getBVHBeziers().search(bezier1.getBounds()).fastForEach {
+                //println("  OTHER: $it")
+                it.value?.let { bezier0 ->
+                    bezier0.intersections(bezier1).fastForEach {
+                        val p1 = bezier0[it.first]
+                        val p2 = bezier1[it.second]
+                        val p = Point.middle(p1, p2).transformed(ml)
+                        //println("    EMIT: $it : $p")
+                        if (out.isNotEmpty()) {
+                            val diff = (out.last - p).absoluteValue
+                            //println("      DIFF=$diff")
+                            // Repeated
+                            if (diff.maxComponent() < 0.5f) {
+                                return@fastForEach
+                            }
+                        }
+                        out.add(p)
+                    }
+                }
+            }
+        }
+        return out
+    }
 
     companion object {
         operator fun invoke(vararg shapes: Shape2D): Shape2D {
@@ -91,6 +162,8 @@ interface Shape2D {
             if (shapes.size == 1) return shapes[0]
             return CompoundShape2d(shapes.toList())
         }
+
+        fun intersections(l: Shape2D, ml: Matrix, r: Shape2D, mr: Matrix): PointList = l.intersectionsWith(ml, r, mr)
 
         fun intersects(l: Shape2D, ml: Matrix, r: Shape2D, mr: Matrix): Boolean {
             //println("Shape2d.intersects:"); println(" - l=$l[$ml]"); println(" - r=$r[$mr]")
@@ -128,6 +201,27 @@ interface Shape2D {
 data class CompoundShape2d(val shapes: List<Shape2D>) : Shape2D {
     override val area: Float get() = shapes.sumOf { it.area.toDouble() }.toFloat()
     override val perimeter: Float get() = shapes.sumOf { it.perimeter.toDouble() }.toFloat()
+
+    override fun intersectionsWith(ml: Matrix, that: Shape2D, mr: Matrix): PointList {
+        TODO("Not yet implemented")
+    }
+
+    fun findClosestShape(p: Point): Shape2D? {
+        var minDistance = Float.POSITIVE_INFINITY
+        var shape: Shape2D? = null
+        shapes.fastForEach {
+            val dist = it.distance(p)
+            if (dist < minDistance) {
+                minDistance = dist
+                shape = it
+            }
+        }
+        return shape
+    }
+
+    override fun projectedPoint(p: Point): Point = findClosestShape(p)?.projectedPoint(p) ?: Point.NaN
+    override fun distance(p: Point): Float = findClosestShape(p)?.distance(p) ?: Float.POSITIVE_INFINITY
+    override fun normalVectorAt(p: Point): Vector2 = findClosestShape(p)?.normalVectorAt(p) ?: Vector2.NaN
 
     override fun containsPoint(p: Point): Boolean {
         shapes.fastForEach { if (it.containsPoint(p)) return true }

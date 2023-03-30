@@ -189,6 +189,10 @@ fun List<Curve>.toVectorPath(out: VectorPath = VectorPath()): VectorPath {
     return out
 }
 
+inline fun List<Curves>.fastForEachBezier(block: (Bezier) -> Unit) {
+    this.fastForEach { it.beziers.fastForEach(block) }
+}
+
 @KormaExperimental
 @KormaMutableApi
 fun Curves.toNonCurveSimplePointList(out: PointArrayList = PointArrayList()): PointList? {

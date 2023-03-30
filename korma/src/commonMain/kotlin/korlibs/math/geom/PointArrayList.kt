@@ -139,8 +139,12 @@ open class PointArrayList(capacity: Int = 7) : PointList, Extra by Extra.Mixin()
     fun add(x: Double, y: Double) = add(x.toFloat(), y.toFloat())
     fun add(x: Int, y: Int) = add(x.toDouble(), y.toDouble())
 
+    operator fun plusAssign(other: Point): Unit { add(other) }
+    operator fun plusAssign(other: PointList): Unit { addAll(other) }
+
     fun add(p: Point) = add(p.x, p.y)
-    fun add(p: PointList) = this.apply { p.fastForEach { (x, y) -> add(x, y) } }
+    @Deprecated("", ReplaceWith("addAll(p)")) fun add(p: PointList) = addAll(p)
+    fun addAll(p: PointList) = this.apply { p.fastForEach { (x, y) -> add(x, y) } }
     fun addReverse(p: PointList) = this.apply { p.fastForEachReverse { (x, y) -> add(x, y) } }
     fun add(p: PointList, index: Int) {
         add(p.getX(index), p.getY(index))

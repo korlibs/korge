@@ -147,4 +147,27 @@ class Shape2dTest {
             pointsStr
         )
     }
+
+    @Test
+    fun testIntersections() {
+        val circle1 = Circle(Point(0, 0), 50f)
+        val circle2 = Circle(Point(40, 0), 50f)
+        assertEqualsFloat(
+            pointArrayListOf(Point(20f, -46f), Point(20f, 46f)),
+            circle1.intersectionsWith(circle2),//.mapPoints { it.round() },
+            absoluteTolerance = 0.5
+        )
+    }
+
+    @Test
+    fun testIntersectionsTransformed() {
+        assertEqualsFloat(
+            pointArrayListOf(Point(120f, 138f), Point(180f, 105.5f)),
+            Shape2D.intersections(
+                Circle(Point(100, 100), 100f), Matrix.IDENTITY.scaled(1.1).translated(-10, -80),
+                Circle(Point(100, 100), 100f), Matrix.IDENTITY.scaled(1.5).translated(70, 100)
+            ),
+            absoluteTolerance = 0.5
+        )
+    }
 }
