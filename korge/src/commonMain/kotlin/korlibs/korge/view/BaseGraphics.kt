@@ -48,6 +48,7 @@ abstract class BaseGraphics(
     internal fun dirty() {
         _dirty = true
         _dirtyBounds = true
+        invalidateLocalBounds()
     }
 
     @OptIn(KorgeExperimental::class)
@@ -151,9 +152,12 @@ abstract class BaseGraphics(
 
     override fun getLocalBoundsInternal(): Rectangle = _getLocalBoundsInternal()
 
-    private var __localBounds: Rectangle = Rectangle()
     //var boundsIncludeStrokes = false
     var boundsIncludeStrokes = true
+        set(value) {
+            field = value
+            invalidateLocalBounds()
+        }
     private fun _getLocalBoundsInternal(strokes: Boolean = this.boundsIncludeStrokes): Rectangle {
         val bounds = boundsUnsafe(strokes = strokes)
         return Rectangle(bounds.x - anchorDispX, bounds.y - anchorDispY, bounds.widthD, bounds.heightD)

@@ -544,6 +544,7 @@ abstract class View internal constructor(
         this._localMatrix = matrix
         this.validLocalProps = false
         invalidate()
+        invalidateLocalBounds()
     }
 
     /** Like [setMatrix] but directly sets an interpolated version of the [l] and [r] matrices with the [ratio] */
@@ -551,6 +552,7 @@ abstract class View internal constructor(
         this._localMatrix = ratio.toRatio().interpolate(l, r)
         this.validLocalProps = false
         invalidate()
+        invalidateLocalBounds()
     }
 
     ///**
@@ -573,6 +575,7 @@ abstract class View internal constructor(
     fun setTransform(transform: MatrixTransform) {
         _setTransform(transform)
         invalidate()
+        invalidateLocalBounds()
         validLocalProps = true
         validLocalMatrix = false
     }
@@ -615,6 +618,7 @@ abstract class View internal constructor(
         set(value) {
             setMatrix(value)
             invalidate()
+            invalidateLocalBounds()
         }
 
     private var _globalMatrix = Matrix.IDENTITY
@@ -751,11 +755,20 @@ abstract class View internal constructor(
         invalidateRender()
     }
 
+    private var cachedLocalBounds: Rectangle? = null
+    fun invalidateLocalBounds() {
+        if (cachedLocalBounds != null) {
+            cachedLocalBounds = null
+            this.parent?.invalidateLocalBounds()
+        }
+    }
+
     protected open fun onParentChanged() {
     }
 
     override fun invalidateRender() {
         _invalidateNotifier?.invalidatedView(this)
+        invalidateLocalBounds()
         //stage?.views?.invalidatedView(this)
     }
 
@@ -1173,6 +1186,7 @@ abstract class View internal constructor(
         _rotation = 0.0.radians
         validLocalMatrix = false
         invalidate()
+        invalidateLocalBounds()
     }
 
     /**
@@ -1326,7 +1340,7 @@ abstract class View internal constructor(
      * Get local bounds of the view. Allows to specify [out] [MRectangle] if you want to reuse an object.
      */
     fun getLocalBounds(doAnchoring: Boolean = true, includeFilters: Boolean = false): Rectangle {
-        var out = getLocalBoundsInternal()
+        var out = cachedLocalBounds ?: getLocalBoundsInternal().also { cachedLocalBounds = it }
         if (!doAnchoring) {
             out = out.translated(Point(anchorDispX, anchorDispY))
         }

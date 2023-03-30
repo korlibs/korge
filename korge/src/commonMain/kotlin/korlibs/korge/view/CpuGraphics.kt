@@ -59,6 +59,7 @@ open class CpuGraphics @JvmOverloads constructor(
         this.shape = buildShape { block(this@CpuGraphics) }
         if (redrawNow) this.redrawIfRequired()
         _dirtyBounds = true
+        invalidateLocalBounds()
         return this
     }
 
