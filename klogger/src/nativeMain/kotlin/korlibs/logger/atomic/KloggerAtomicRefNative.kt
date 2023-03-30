@@ -1,10 +1,9 @@
 package korlibs.logger.atomic
 
-import kotlin.native.concurrent.FreezableAtomicReference
-import kotlin.native.concurrent.freeze
+import kotlin.native.concurrent.*
 
 internal actual class KloggerAtomicRef<T> actual constructor(initial: T) {
-    private val ref = FreezableAtomicReference(initial.freeze())
+    private val ref = AtomicReference(initial)
 
     actual var value: T
         get() = ref.value
@@ -16,7 +15,7 @@ internal actual class KloggerAtomicRef<T> actual constructor(initial: T) {
         //synchronized(ref) { ref.set(ref.get()) }
         do {
             val old = ref.value
-            val new = block(old).freeze()
+            val new = block(old)
         } while (!ref.compareAndSet(old, new))
     }
 }

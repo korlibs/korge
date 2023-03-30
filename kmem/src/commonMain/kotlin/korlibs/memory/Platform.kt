@@ -12,16 +12,6 @@ interface Platform {
     val rawOsName: String
     val buildVariant: BuildVariant
 
-    /**
-     * JVM: true
-     * Android: true
-     * JS: false <-- workers have different heaps
-     * K/N:
-     *   - new memory model: true
-     *   - old memory model: false <-- frozen
-     * */
-    val hasMultithreadedSharedHeap: Boolean
-
     val isLittleEndian: Boolean get() = endian == Endian.LITTLE_ENDIAN
     val isBigEndian: Boolean get() = endian == Endian.BIG_ENDIAN
     val isDebug: Boolean get() = buildVariant == BuildVariant.DEBUG
@@ -65,7 +55,6 @@ interface Platform {
         override val buildVariant: BuildVariant get() = BuildVariant.CURRENT
         override val isDebug: Boolean get() = currentIsDebug
         override val isRelease: Boolean get() = !currentIsDebug
-        override val hasMultithreadedSharedHeap: Boolean get() = multithreadedSharedHeap
 
         operator fun invoke(
             endian: Endian = Endian.LITTLE_ENDIAN,
@@ -75,8 +64,7 @@ interface Platform {
             buildVariant: BuildVariant = BuildVariant.DEBUG,
             rawPlatformName: String = "unknown",
             rawOsName: String = "unknown",
-            hasMultithreadedSharedHeap: Boolean = false,
-        ): Platform = Impl(endian, arch, os, runtime, buildVariant, rawPlatformName, rawOsName, hasMultithreadedSharedHeap)
+        ): Platform = Impl(endian, arch, os, runtime, buildVariant, rawPlatformName, rawOsName)
     }
 
     data class Impl(
@@ -87,6 +75,5 @@ interface Platform {
         override val buildVariant: BuildVariant,
         override val rawPlatformName: String,
         override val rawOsName: String,
-        override val hasMultithreadedSharedHeap: Boolean
     ) : Platform
 }

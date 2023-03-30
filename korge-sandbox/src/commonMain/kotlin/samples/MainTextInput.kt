@@ -24,7 +24,7 @@ class MainTextInput : Scene() {
         //sceneContainer.changeTo({ MainSWF().apply { init(it) } })
         //image(atlas.bitmap)
 
-        val emojiFont = resourcesVfs["noto-glyf_colr_1.ttf"].readTtfFont(preload = false)
+        val emojiFont = resourcesVfs["noto-glyf_colr_1.ttf"].readTtfFont()
         val font = DefaultTtfFont.withFallback(emojiFont)
 
         uiTextInput("HELLO", width = 256.0, height = 64.0) {

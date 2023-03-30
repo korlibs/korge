@@ -102,12 +102,11 @@ class KorgeMultithreadedTest {
     }
 
     fun <T> runInWorker(block: () -> T): T {
-        block.freeze()
         block()
 
         val worker = Worker.start()
         return try {
-            worker.execute(TransferMode.SAFE, { block.freeze() }) { it().freeze() }.result
+            worker.execute(TransferMode.SAFE, { block }) { it() }.result
         } finally {
             worker.requestTermination(processScheduledJobs = false)
         }

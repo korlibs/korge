@@ -12,10 +12,9 @@ import korlibs.io.stream.openFastStream
 
 class WoffFont(
     d: ByteArray,
-    freeze: Boolean = false,
     extName: String? = null,
     onlyReadMetadata: Boolean = false,
-) : BaseTtfFont(d, freeze, extName, onlyReadMetadata) {
+) : BaseTtfFont(d, extName, onlyReadMetadata) {
     private val tablesByName = LinkedHashMap<String, Table>()
 
     init {
@@ -71,6 +70,5 @@ class WoffFont(
 }
 
 suspend fun VfsFile.readWoffFont(
-    preload: Boolean = false,
     onlyReadMetadata: Boolean = false,
-) = WoffFont(this.readAll(), freeze = preload, extName = this.baseName, onlyReadMetadata = onlyReadMetadata)
+) = WoffFont(this.readAll(), extName = this.baseName, onlyReadMetadata = onlyReadMetadata)

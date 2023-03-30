@@ -19,8 +19,8 @@ import korlibs.io.file.std.resourcesVfs
 
 class MainEmojiColrv1 : Scene() {
     override suspend fun SContainer.sceneMain() {
-        val font = resourcesVfs["twemoji-glyf_colr_1.ttf"].readTtfFont(preload = false).asFallbackOf(DefaultTtfFont)
-        val font2 = measureTime({resourcesVfs["noto-glyf_colr_1.ttf"].readTtfFont(preload = false).asFallbackOf(DefaultTtfFont)}) {
+        val font = resourcesVfs["twemoji-glyf_colr_1.ttf"].readTtfFont().asFallbackOf(DefaultTtfFont)
+        val font2 = measureTime({resourcesVfs["noto-glyf_colr_1.ttf"].readTtfFont().asFallbackOf(DefaultTtfFont)}) {
             println("Read font in... $it")
         }
         val font3 = SystemFont.getEmojiFont().asFallbackOf(DefaultTtfFont)

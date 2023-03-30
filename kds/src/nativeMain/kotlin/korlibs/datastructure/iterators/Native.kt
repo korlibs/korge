@@ -4,8 +4,7 @@ import kotlin.math.*
 import kotlin.native.concurrent.*
 
 @OptIn(ExperimentalStdlibApi::class)
-actual val CONCURRENCY_COUNT: Int = if (Platform.memoryModel == MemoryModel.EXPERIMENTAL) Platform.getAvailableProcessors() else 1
-//actual val CONCURRENCY_COUNT: Int = 1
+actual val CONCURRENCY_COUNT: Int = Platform.getAvailableProcessors()
 
 val PARALLEL_WORKERS = if (CONCURRENCY_COUNT > 1) Array(CONCURRENCY_COUNT) { Worker.start() } else emptyArray()
 

@@ -205,12 +205,12 @@ open class FolderBasedNativeSystemFontProvider(
         return _namesMapLC.value!!
     }
 
-    override fun loadFontByName(name: String, freeze: Boolean): TtfFont? =
-        runBlockingNoJs { namesMapLC[name.normalizeName()]?.let { TtfFont(it.readAll(), freeze = freeze) } }
+    override fun loadFontByName(name: String): TtfFont? =
+        runBlockingNoJs { namesMapLC[name.normalizeName()]?.let { TtfFont(it.readAll()) } }
 }
 
 abstract class TtfNativeSystemFontProvider() : NativeSystemFontProvider() {
-    abstract fun loadFontByName(name: String, freeze: Boolean = false): TtfFont?
+    abstract fun loadFontByName(name: String): TtfFont?
     abstract fun defaultFont(): TtfFont
 
     fun String.normalizeName() = this.toLowerCase().trim()
@@ -220,7 +220,7 @@ abstract class TtfNativeSystemFontProvider() : NativeSystemFontProvider() {
 
     fun locateFontByName(name: String): TtfFont? {
         val normalizedName = name.normalizeName()
-        return ttfCache.getOrPut(normalizedName) { loadFontByName(name, freeze = false) }
+        return ttfCache.getOrPut(normalizedName) { loadFontByName(name) }
     }
 
     fun ttf(systemFont: SystemFont) = locateFontByName(systemFont.name) ?: defaultFont()
@@ -262,6 +262,6 @@ open class FallbackNativeSystemFontProvider(val ttf: TtfFont) : TtfNativeSystemF
     val vfs = VfsFileFromData(ttf.getAllBytesUnsafe(), "ttf")
     override fun getTtfFromSystemFont(systemFont: SystemFont): TtfFont = ttf
     override fun listFontNamesWithFiles(): Map<String, VfsFile> = mapOf(ttf.ttfCompleteName to vfs)
-    override fun loadFontByName(name: String, freeze: Boolean): TtfFont? = ttf
+    override fun loadFontByName(name: String): TtfFont? = ttf
     override fun defaultFont(): TtfFont = ttf
 }

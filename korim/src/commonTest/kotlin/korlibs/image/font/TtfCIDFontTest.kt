@@ -53,7 +53,7 @@ class TtfCIDFontTest {
 
     @Test
     fun testReadHeader() = suspendTest {
-        val font1 = resourcesVfs["helvetica.otf"].readTtfFont(preload = false)
+        val font1 = resourcesVfs["helvetica.otf"].readTtfFont()
         val cff = font1._cff
         assertNotNull(cff)
 

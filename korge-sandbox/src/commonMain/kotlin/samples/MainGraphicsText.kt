@@ -12,7 +12,6 @@ import korlibs.image.text.*
 import korlibs.io.async.*
 import korlibs.io.file.std.*
 import korlibs.math.geom.*
-import korlibs.math.geom.vector.*
 import kotlin.properties.*
 
 class MainGraphicsText : Scene() {
