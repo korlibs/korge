@@ -30,7 +30,7 @@ suspend fun main() = Korge(
     //debugAg = true,
     multithreaded = true,
     //forceRenderEveryFrame = false // Newly added optimization!
-    forceRenderEveryFrame = true
+    forceRenderEveryFrame = false
     //debugAg = true,
 ).start {
     //solidRect(200, 200, Colors.RED); return@start

@@ -21,6 +21,7 @@ class MainShape2dScene : Scene() {
         lateinit var cursor: View
         lateinit var gpuShapeView: GpuShapeView
         lateinit var normalVectorView: GpuShapeView
+        lateinit var annotationsView: GpuShapeView
 
         val cursorShape = buildVectorPath { star(7, 10.0, 16.0) }
 
@@ -39,6 +40,9 @@ class MainShape2dScene : Scene() {
             val pos = localMousePos(views)
 
             val intersects = Shape2D.intersects(shape, Matrix.NIL, cursorShape, Matrix.IDENTITY.translated(pos))
+            val intersections = Shape2D.intersections(shape, Matrix.NIL, cursorShape, Matrix.IDENTITY.translated(pos))
+
+            //println("intersections=$intersections")
 
             gpuShapeView.alpha = if (intersects) 1.0 else 0.5
             //println("intersects=$intersects")
@@ -52,6 +56,13 @@ class MainShape2dScene : Scene() {
                     stroke(Colors.GREEN, lineWidth = 4.0) {
                         moveTo(0, 0)
                         lineTo(shape.normalVectorAt(pos) * 10)
+                    }
+                }
+                annotationsView.updateShape {
+                    intersections.fastForEach { p ->
+                        fill(Colors.RED) {
+                            circle(p, 4f)
+                        }
                     }
                 }
             } catch (e: Throwable) {
@@ -80,10 +91,33 @@ class MainShape2dScene : Scene() {
             textPerimeterView = uiText("")
         }
         //val shape = Ellipse(Point(100, 100), radius = Size(50f, 30f))
+        annotationsView = gpuShapeView { }
         gpuShapeView = gpuShapeView { }
         normalVectorView = gpuShapeView { }
         projected = circle(4.0, Colors.RED).centered
         cursor = gpuShapeView { fill(Colors.GREEN.withAd(0.5)) { path(cursorShape) } }
+
+
+        //container {
+        //    xy(300, 300)
+        //    val view1 = gpuShapeView { stroke(Colors.GREEN.withAd(0.5), lineWidth = 4.0) { circle(Point(100, 100), 100f) } }.scale(1.1).xy(-10, -80)
+        //    val view2 = gpuShapeView { stroke(Colors.GREEN.withAd(0.5), lineWidth = 4.0) { circle(Point(100, 100), 100f) } }.scale(1.5).xy(70, 100)
+        //    val circle1 = Circle(Point(100, 100), 100f)
+        //    val circle2 = Circle(Point(100, 100), 100f)
+        //    val intersections = circle1.intersectionsWith(view1.localMatrix, circle2, view2.localMatrix)
+        //    println("matrices=${view1.localMatrix}, ${view2.localMatrix}")
+        //    println("circles=$circle1, $circle2")
+        //    println("intersections=$intersections")
+        //    gpuShapeView {
+        //        intersections.fastForEach { p ->
+        //            fill(Colors.RED) {
+        //                circle(p, 4f)
+        //            }
+        //            //println(it)
+        //        }
+        //    }
+        //}
+
 
         addUpdater {
             update()

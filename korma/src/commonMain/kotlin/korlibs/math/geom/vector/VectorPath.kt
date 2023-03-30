@@ -6,6 +6,7 @@ import korlibs.memory.*
 import korlibs.math.annotations.*
 import korlibs.math.geom.*
 import korlibs.math.geom.bezier.*
+import korlibs.math.geom.ds.*
 import korlibs.math.geom.shape.*
 import korlibs.math.geom.trapezoid.*
 import korlibs.math.internal.*
@@ -15,6 +16,10 @@ import kotlin.native.concurrent.*
 interface IVectorPath : VectorBuilder {
     fun toSvgString(): String
 }
+
+// @TODO:
+//interface ImmutableVectorPath {
+//}
 
 @OptIn(KormaExperimental::class)
 class VectorPath(
@@ -527,10 +532,18 @@ fun VectorPath.applyTransform(m: Matrix): VectorPath = when {
     else -> this
 }
 
-@ThreadLocal
-private var VectorPath._curvesCacheVersion by extraProperty { -1 }
-@ThreadLocal
-private var VectorPath._curvesCache by extraProperty<List<Curves>?> { null }
+@ThreadLocal private var VectorPath._bvhCurvesCacheVersion by extraProperty { -1 }
+@ThreadLocal private var VectorPath._bvhCurvesCache by extraProperty<BVH2D<Bezier>?> { null }
+@ThreadLocal private var VectorPath._curvesCacheVersion by extraProperty { -1 }
+@ThreadLocal private var VectorPath._curvesCache by extraProperty<List<Curves>?> { null }
+
+fun VectorPath.getBVHBeziers(): BVH2D<Bezier> {
+    if (_bvhCurvesCacheVersion != version) {
+        _bvhCurvesCacheVersion = version
+        _bvhCurvesCache = BVH2D<Bezier>(false).also { bvh -> getCurvesList().fastForEachBezier { bvh.insertOrUpdate(it.getBounds(), it) } }
+    }
+    return _bvhCurvesCache!!
+}
 
 fun VectorPath.getCurvesList(): List<Curves> {
     if (_curvesCacheVersion != version) {

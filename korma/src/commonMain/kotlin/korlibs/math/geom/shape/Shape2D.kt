@@ -4,6 +4,7 @@ import korlibs.datastructure.*
 import korlibs.datastructure.iterators.*
 import korlibs.math.geom.*
 import korlibs.math.geom.bezier.*
+import korlibs.math.geom.ds.*
 import korlibs.math.geom.vector.*
 import kotlin.math.*
 
@@ -13,11 +14,10 @@ interface WithHitShape2D {
 
 abstract class AbstractNShape2D : Shape2D {
     abstract protected val lazyVectorPath: VectorPath
-    protected val lazyCurves: List<Curves> by lazy { lazyVectorPath.toCurvesList() }
 
     override val perimeter: Float get() {
         var sum: Double = 0.0
-        lazyCurves.fastForEach { sum += it.length }
+        toVectorPath().getCurvesList().fastForEach { sum += it.length }
         return sum.toFloat()
     }
 
@@ -31,7 +31,7 @@ abstract class AbstractNShape2D : Shape2D {
         var length = Double.POSITIVE_INFINITY
         var pp = Point()
         var n = Point()
-        lazyCurves.fastForEach { it.beziers.fastForEach {
+        toVectorPath().getCurvesList().fastForEach { it.beziers.fastForEach {
             val out = it.project(p)
             if (length > out.dSq) {
                 length = out.dSq
@@ -80,8 +80,50 @@ interface Shape2D {
     fun getBounds(): Rectangle = toVectorPath().getBounds()
     //fun containsPoint(p: Point, mat: Matrix) = containsPoint(mat.transform(p))
 
+    fun intersectionsWith(that: Shape2D): PointList = intersectionsWith(Matrix.NIL, that, Matrix.NIL)
+    //fun intersectionsWith(ray: Ray): PointList = intersectionsWith(Matrix.NIL, ray, Matrix.NIL)
     fun intersectsWith(that: Shape2D) = Shape2D.intersects(this, Matrix.NIL, that, Matrix.NIL)
     fun intersectsWith(ml: Matrix, that: Shape2D, mr: Matrix) = Shape2D.intersects(this, ml, that, mr)
+
+    //fun intersectionsWith(ml: Matrix, ray: Ray, mr: Matrix): PointList {
+    //    //val mat = mr * ml.inverted()
+    //    //this.toVectorPath().getBVHBeziers().intersect(ray.transformed(mat)).fastForEach {
+    //    //    TODO()
+    //    //}
+    //    TODO()
+    //}
+
+    fun intersectionsWith(ml: Matrix, that: Shape2D, mr: Matrix): PointList {
+        val mat = mr * ml.inverted()
+
+        val out = PointArrayList()
+        val thatPath = that.toVectorPath()
+        thatPath.getCurvesList().fastForEachBezier { bezier1 ->
+            val bezier1 = bezier1.transform(mat)
+            //println("BASE: $bezier1")
+            this.toVectorPath().getBVHBeziers().search(bezier1.getBounds()).fastForEach {
+                //println("  OTHER: $it")
+                it.value?.let { bezier0 ->
+                    bezier0.intersections(bezier1).fastForEach {
+                        val p1 = bezier0[it.first]
+                        val p2 = bezier1[it.second]
+                        val p = Point.middle(p1, p2).transformed(ml)
+                        //println("    EMIT: $it : $p")
+                        if (out.isNotEmpty()) {
+                            val diff = (out.last - p).absoluteValue
+                            //println("      DIFF=$diff")
+                            // Repeated
+                            if (diff.maxComponent() < 0.5f) {
+                                return@fastForEach
+                            }
+                        }
+                        out.add(p)
+                    }
+                }
+            }
+        }
+        return out
+    }
 
     companion object {
         operator fun invoke(vararg shapes: Shape2D): Shape2D {
@@ -89,6 +131,8 @@ interface Shape2D {
             if (shapes.size == 1) return shapes[0]
             return CompoundShape2d(shapes.toList())
         }
+
+        fun intersections(l: Shape2D, ml: Matrix, r: Shape2D, mr: Matrix): PointList = l.intersectionsWith(ml, r, mr)
 
         fun intersects(l: Shape2D, ml: Matrix, r: Shape2D, mr: Matrix): Boolean {
             //println("Shape2d.intersects:"); println(" - l=$l[$ml]"); println(" - r=$r[$mr]")
@@ -126,6 +170,10 @@ interface Shape2D {
 data class CompoundShape2d(val shapes: List<Shape2D>) : Shape2D {
     override val area: Float get() = shapes.sumOf { it.area.toDouble() }.toFloat()
     override val perimeter: Float get() = shapes.sumOf { it.perimeter.toDouble() }.toFloat()
+
+    override fun intersectionsWith(ml: Matrix, that: Shape2D, mr: Matrix): PointList {
+        TODO("Not yet implemented")
+    }
 
     fun findClosestShape(p: Point): Shape2D? {
         var minDistance = Float.POSITIVE_INFINITY

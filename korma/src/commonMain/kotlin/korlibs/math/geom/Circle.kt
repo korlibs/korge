@@ -3,7 +3,9 @@ package korlibs.math.geom
 import korlibs.math.geom.shape.*
 import korlibs.math.geom.vector.*
 
-data class Circle(override val center: Point, val radius: Float) : Shape2D {
+data class Circle(override val center: Point, val radius: Float) : AbstractNShape2D() {
+    override val lazyVectorPath: VectorPath by lazy { buildVectorPath { circle(this@Circle.center, this@Circle.radius) } }
+
     constructor(x: Float, y: Float, radius: Float) : this(Point(x, y), radius)
 
     override val area: Float get() = (PIF * radius * radius)
@@ -20,5 +22,4 @@ data class Circle(override val center: Point, val radius: Float) : Shape2D {
     fun distanceFarthestSquared(p: Point): Float = distanceToCenterSquared(p) + radiusSquared
     override fun projectedPoint(p: Point): Point = Point.polar(center, Angle.between(center, p), radius)
     override fun containsPoint(p: Point): Boolean = (p - center).length <= radius
-    override fun toVectorPath(): VectorPath = buildVectorPath { circle(this@Circle.center, this@Circle.radius) }
 }
