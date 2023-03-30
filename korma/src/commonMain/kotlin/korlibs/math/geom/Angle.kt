@@ -6,6 +6,7 @@ import korlibs.math.interpolation.*
 import korlibs.math.math.*
 import kotlin.math.*
 
+@PublishedApi internal const val PIF = (PI).toFloat()
 @PublishedApi internal const val PI2 = PI * 2.0
 @PublishedApi internal const val PI2F = (PI * 2f).toFloat()
 @PublishedApi internal const val DEG2RAD = PI / 180.0
@@ -44,15 +45,16 @@ inline class Angle private constructor(
     /** [0..1] ratio -> [0..360] degrees */
     val ratioF: Float
 ) : Comparable<Angle> {
-    val ratio: Double get() = ratioF.toDouble()
+    val ratio: Float get() = ratioF
+    val ratioD: Double get() = ratioF.toDouble()
 
     val radiansF: Float get() = ratioToRadians(ratioF)
     val degreesF: Float get() = ratioToDegrees(ratioF)
 
     /** [0..PI * 2] radians -> [0..360] degrees */
-    val radians: Double get() = ratioToRadians(ratio)
+    val radians: Double get() = ratioToRadians(ratioD)
     /** [0..360] degrees -> [0..PI * 2] radians -> [0..1] ratio */
-    val degrees: Double get() = ratioToDegrees(ratio)
+    val degrees: Double get() = ratioToDegrees(ratioD)
 
     val cosine: Float get() = kotlin.math.cos(radiansF)
     val sine: Float get() = kotlin.math.sin(radiansF)
@@ -150,7 +152,6 @@ inline class Angle private constructor(
         inline fun atan2(x: Float, y: Float): Angle = fromRadians(kotlin.math.atan2(x, y))
         inline fun atan2(x: Double, y: Double): Angle = fromRadians(kotlin.math.atan2(x, y))
         inline fun atan2(p: Point): Angle = atan2(p.xD, p.yD)
-        inline fun atan2(p: MPoint): Angle = atan2(p.x, p.y)
 
         inline fun ratioToDegrees(ratio: Double): Double = ratio * 360.0
         inline fun ratioToRadians(ratio: Double): Double = ratio * PI2
@@ -168,13 +169,11 @@ inline class Angle private constructor(
 
         inline fun between(x0: Int, y0: Int, x1: Int, y1: Int): Angle = between(x0.toDouble(), y0.toDouble(), x1.toDouble(), y1.toDouble())
         inline fun between(x0: Float, y0: Float, x1: Float, y1: Float): Angle = between(x0.toDouble(), y0.toDouble(), x1.toDouble(), y1.toDouble())
-        inline fun between(p0: MPoint, p1: MPoint): Angle = between(p0.x, p0.y, p1.x, p1.y)
         inline fun between(p0: Point, p1: Point): Angle = between(p0.x, p0.y, p1.x, p1.y)
 
         inline fun between(ox: Double, oy: Double, x1: Double, y1: Double, x2: Double, y2: Double): Angle = between(x1 - ox, y1 - oy, x2 - ox, y2 - oy)
         inline fun between(ox: Float, oy: Float, x1: Float, y1: Float, x2: Float, y2: Float): Angle = between(x1 - ox, y1 - oy, x2 - ox, y2 - oy)
 
-        inline fun between(o: MPoint, v1: MPoint, v2: MPoint): Angle = between(o.x, o.y, v1.x, v1.y, v2.x, v2.y)
         inline fun between(o: Point, v1: Point, v2: Point): Angle = between(o.x, o.y, v1.x, v1.y, v2.x, v2.y)
     }
 }

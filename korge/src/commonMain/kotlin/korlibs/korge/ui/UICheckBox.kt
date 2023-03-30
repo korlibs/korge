@@ -63,7 +63,7 @@ open class UIBaseCheckBox<T : UIBaseCheckBox<T>>(
         //skin.render(ctx2d, this@UIBaseCheckBox.width, this@UIBaseCheckBox.height, this@UIBaseCheckBox, kind)
     }
     private val textView = textBlock(RichTextData(text))
-    var checkedRatio: Double = 0.0; private set
+    var checkedRatio: Double = if (checked) 1.0 else 0.0; private set
     var overRatio: Double = 0.0; private set
 
     private var over by uiObservable(false) {

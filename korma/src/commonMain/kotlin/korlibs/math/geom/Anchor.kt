@@ -6,6 +6,9 @@ import korlibs.math.interpolation.*
 //@KormaValueApi
 //data class Anchor(val sx: Double, val sy: Double) : Interpolable<Anchor> {
 inline class Anchor internal constructor(internal val raw: Float2Pack) : Interpolable<Anchor> {
+
+    fun toVector(): Vector2 = Vector2(sx, sy)
+
     val sx: Float get() = raw.f0
     val sy: Float get() = raw.f1
 
@@ -60,3 +63,6 @@ inline class Anchor internal constructor(internal val raw: Float2Pack) : Interpo
         else -> toString()
     }
 }
+
+operator fun Size.times(anchor: Anchor): Point = this.toVector() * anchor.toVector()
+//operator fun SizeInt.times(anchor: Anchor): PointInt = (this.toVector().toFloat() * anchor.toVector()).toInt()

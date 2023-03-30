@@ -10,7 +10,7 @@ import korlibs.korge.view.ViewDslMarker
 import korlibs.korge.view.addTo
 import korlibs.image.color.Colors
 import korlibs.image.color.RGBA
-import korlibs.math.geom.BoundsBuilder
+import korlibs.math.geom.MBoundsBuilder
 import korlibs.math.geom.IVectorArrayList
 import korlibs.math.geom.fastForEachGeneric
 import korlibs.math.geom.toMatrix4
@@ -58,7 +58,7 @@ class DebugVertexView(pointsList: List<IVectorArrayList>, color: RGBA = Colors.W
     class Batch(val offset: Int, val count: Int)
     var buffer: FloatArray = floatArrayOf(0f, 0f, 100f, 0f, 0f, 100f, 100f, 100f)
     val batches = arrayListOf<Batch>()
-    private val bb = BoundsBuilder()
+    private val bb = MBoundsBuilder()
 
     private fun updatedPoints() {
         this.buffer = FloatArray(pointsList.sumOf { it.size } * 2)

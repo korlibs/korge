@@ -45,7 +45,7 @@ class NinePatch(
         }
 	var smoothing = true
 
-	private val bounds = MRectangleInt()
+	private var bounds = RectangleInt()
 
 	override fun renderInternal(ctx: RenderContext) {
 		if (!visible) return
@@ -56,7 +56,7 @@ class NinePatch(
 		val xscale = gm.a
 		val yscale = gm.d
 
-		bounds.setTo(0, 0, (width * xscale).toInt(), (height * yscale).toInt())
+		bounds = RectangleInt(0, 0, (width * xscale).toInt(), (height * yscale).toInt())
 
         val m = gm.prescaled(1.0 / xscale, 1.0 / yscale)
 
@@ -84,12 +84,12 @@ class NinePatch(
     private var cachedRenderColorMul = Colors.WHITE
 
     private var cachedNinePatch: NinePatchBmpSlice? = null
-    private val cachedBounds = MRectangleInt()
+    private var cachedBounds = RectangleInt()
 
     private fun recomputeVerticesIfRequired() {
         val viewBounds = this.bounds
-        if (cachedBounds.rect == viewBounds.rect && cachedNinePatch == ninePatch && cachedRenderColorMul == renderColorMul) return
-        cachedBounds.rect.copyFrom(viewBounds.rect)
+        if (cachedBounds == viewBounds && cachedNinePatch == ninePatch && cachedRenderColorMul == renderColorMul) return
+        cachedBounds = viewBounds
         cachedNinePatch = ninePatch
         cachedRenderColorMul = renderColorMul
         val ninePatch = ninePatch

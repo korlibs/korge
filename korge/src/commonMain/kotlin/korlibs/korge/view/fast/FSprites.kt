@@ -125,6 +125,8 @@ open class FSprites(val maxSize: Int) {
         val u_i_texSizeN = Array(MAX_SUPPORTED_TEXTURES + 1) { vec2("u_texSize$it").uniform }
     }
 
+    private val textureUnits = AGTextureUnits()
+
     companion object {
         const val MAX_SUPPORTED_TEXTURES = 4
 
@@ -134,13 +136,15 @@ open class FSprites(val maxSize: Int) {
             info: FViewInfo,
             smoothing: Boolean,
             globalMatrix: Matrix,
-            blending: BlendMode
+            blending: BlendMode,
         ) {
             if (!ctx.isInstancedSupported) {
                 println("WARNING: FSprites without instanced rendering support not implemented yet.")
                 println("         Please, if you are reading this message, let us know")
                 return
             }
+
+            val textureUnits = sprites.textureUnits
 
             val texs = info.texs
             val u_i_texSizeDataN = info.u_i_texSizeDataN
@@ -149,35 +153,33 @@ open class FSprites(val maxSize: Int) {
             ctx.useBatcher { batch ->
                 batch.updateStandardUniforms()
                 //batch.setTemporalUniform(u_i_texSizeN[0], u_i_texSizeDataN[0]) {
-                batch.keepTextureUnits(BatchBuilder2D.u_TexN, flush = true) {
-                    for (n in 0 until texs.size) {
-                        val tex = texs[n]
-                        val ttex = ctx.agBitmapTextureManager.getTextureBase(tex)
-                        u_i_texSizeDataN[n] = Vector2(1f / ttex.width.toFloat(), 1f / ttex.height.toFloat())
-                        ctx.textureUnits.set(BatchBuilder2D.u_TexN[n], ttex.base, AGTextureUnitInfo(linear = smoothing))
-                        //println(ttex.base)
-                    }
-                    ctx[FspritesUB].push {
-                        for (n in 0 until texs.size) it[u_i_texSizeN[n]] = u_i_texSizeDataN[n]
-                    }
-                    batch.setViewMatrixTemp(globalMatrix) {
-                        //ctx.batch.setStateFast()
-                        sprites.uploadVertices(ctx)
-                        ctx.xyBuffer.buffer.upload(xyData)
-                        ctx.ag.draw(
-                            ctx.currentFrameBuffer,
-                            vertexData = ctx.buffers,
-                            program = program,
-                            drawType = AGDrawType.TRIANGLE_FAN,
-                            vertexCount = 4,
-                            instances = sprites.size,
-                            uniformBlocks = ctx.createCurrentUniformsRef(program),
-                            textureUnits = ctx.textureUnits.clone(),
-                            //renderState = AGRenderState(depthFunc = AGCompareMode.LESS),
-                            blending = blending.factors
-                        )
-                        sprites.unloadVertices(ctx)
-                    }
+                for (n in 0 until texs.size) {
+                    val tex = texs[n]
+                    val ttex = ctx.agBitmapTextureManager.getTextureBase(tex)
+                    u_i_texSizeDataN[n] = Vector2(1f / ttex.width.toFloat(), 1f / ttex.height.toFloat())
+                    textureUnits.set(BatchBuilder2D.u_TexN[n], ttex.base, AGTextureUnitInfo(linear = smoothing))
+                    //println(ttex.base)
+                }
+                ctx[FspritesUB].push {
+                    for (n in 0 until texs.size) it[u_i_texSizeN[n]] = u_i_texSizeDataN[n]
+                }
+                batch.setViewMatrixTemp(globalMatrix) {
+                    //ctx.batch.setStateFast()
+                    sprites.uploadVertices(ctx)
+                    ctx.xyBuffer.buffer.upload(xyData)
+                    ctx.ag.draw(
+                        ctx.currentFrameBuffer,
+                        vertexData = ctx.buffers,
+                        program = program,
+                        drawType = AGDrawType.TRIANGLE_FAN,
+                        vertexCount = 4,
+                        instances = sprites.size,
+                        uniformBlocks = ctx.createCurrentUniformsRef(program),
+                        textureUnits = textureUnits.clone(),
+                        //renderState = AGRenderState(depthFunc = AGCompareMode.LESS),
+                        blending = blending.factors
+                    )
+                    sprites.unloadVertices(ctx)
                 }
                 batch.onInstanceCount(sprites.size)
             }

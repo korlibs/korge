@@ -52,10 +52,15 @@ class AGBuffer : AGObject() {
 
 data class AGTextureUnits(val textures: Array<AGTexture?>, val infos: AGTextureUnitInfoArray) {
     companion object {
+        val MAX_TEXTURE_UNITS = 14
         val EMPTY get() = AGTextureUnits()
     }
-    constructor(size: Int = 16) : this(arrayOfNulls(size), AGTextureUnitInfoArray(size))
+    constructor(size: Int = MAX_TEXTURE_UNITS) : this(arrayOfNulls(size), AGTextureUnitInfoArray(size))
     val size: Int get() = textures.size
+
+    fun copyFrom(other: AGTextureUnits, sampler: Sampler) = copyFrom(other, sampler.index)
+    fun copyFrom(other: AGTextureUnits, index: Int) = set(index, other.textures[index], other.infos[index])
+
     fun set(index: Int, texture: AGTexture?, info: AGTextureUnitInfo = AGTextureUnitInfo.DEFAULT) {
         textures[index] = texture
         infos[index] = info
@@ -200,7 +205,7 @@ open class AGFrameBuffer(val base: AGFrameBufferBase, val id: Int = -1) : Closea
     var fullWidth = DEFAULT_INITIAL_WIDTH
     var fullHeight = DEFAULT_INITIAL_HEIGHT
     private val _scissor = MRectangleInt()
-    var scissor: MRectangleInt? = null
+    var scissor: RectangleInt? = null
 
     open fun setSize(width: Int, height: Int) {
         setSize(0, 0, width, height)
@@ -221,8 +226,8 @@ open class AGFrameBuffer(val base: AGFrameBufferBase, val id: Int = -1) : Closea
         markAsDirty()
     }
 
-    fun scissor(scissor: MRectangleInt?) {
-        this.scissor = scissor?.let { _scissor.setTo(it) }
+    fun scissor(scissor: RectangleInt?) {
+        this.scissor = scissor
     }
 
     override fun close() {

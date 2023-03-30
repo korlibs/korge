@@ -6,7 +6,7 @@ import korlibs.image.util.NinePatchSlices2D
 import korlibs.image.vector.format.readSVG
 import korlibs.io.async.suspendTest
 import korlibs.io.file.std.resourcesVfs
-import korlibs.math.geom.MSize
+import korlibs.math.geom.*
 import korlibs.math.geom.range.until
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -17,10 +17,10 @@ class NinePatchShapeTest {
     fun test() = suspendTest {
         val shape = resourcesVfs["chat-bubble.svg"].readSVG().toShape()
         val ninePatch = shape.toNinePatchFromGuides(guideColor = Colors.FUCHSIA)
-        assertEquals(MSize(128, 128), ninePatch.size)
+        assertEquals(Size(128, 128), ninePatch.size)
         assertEquals(NinePatchSlices2D(
-            NinePatchSlices(30.0 until 33.0, 80.0 until 100.0),
-            NinePatchSlices(40.0 until 80.0)
+            NinePatchSlices(30f until 33f, 80f until 100f),
+            NinePatchSlices(40f until 80f)
         ), ninePatch.slices)
         assertTrue { ninePatch.shape is FillShape }
         assertEquals(

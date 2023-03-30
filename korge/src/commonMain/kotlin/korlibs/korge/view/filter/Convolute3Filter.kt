@@ -13,7 +13,7 @@ import korlibs.math.geom.*
  */
 class Convolute3Filter(
     /** 3x3 matrix representing a convolution kernel */
-    var kernel: MMatrix3D,
+    var kernel: Matrix4,
     /** Distance between the origin pixel for sampling for edges */
     dist: Double = 1.0,
     applyAlpha: Boolean = false
@@ -25,36 +25,36 @@ class Convolute3Filter(
     }
 
     companion object : BaseProgramProvider() {
-        /** A Gaussian Blur Kernel. This [MMatrix3D] can be used as [kernel] for [Convolute3Filter] */
-        val KERNEL_GAUSSIAN_BLUR: MMatrix3D = MMatrix3D.fromRows3x3(
+        /** A Gaussian Blur Kernel. This [Matrix4] can be used as [kernel] for [Convolute3Filter] */
+        val KERNEL_GAUSSIAN_BLUR: Matrix4 = Matrix4.fromRows3x3(
             1f, 2f, 1f,
             2f, 4f, 2f,
             1f, 2f, 1f
         ) * (1f / 16f)
 
-        /** A Box Blur Kernel. This [MMatrix3D] can be used as [kernel] for [Convolute3Filter] */
-        val KERNEL_BOX_BLUR: MMatrix3D = MMatrix3D.fromRows3x3(
+        /** A Box Blur Kernel. This [Matrix4] can be used as [kernel] for [Convolute3Filter] */
+        val KERNEL_BOX_BLUR: Matrix4 = Matrix4.fromRows3x3(
             1f, 1f, 1f,
             1f, 1f, 1f,
             1f, 1f, 1f
         ) * (1f / 9f)
 
         /** An Identity Kernel (doesn't perform any operation). This [MMatrix3D] can be used as [kernel] for [Convolute3Filter] */
-        val KERNEL_IDENTITY: MMatrix3D = MMatrix3D.fromRows3x3(
+        val KERNEL_IDENTITY: Matrix4 = Matrix4.fromRows3x3(
             0f, 0f, 0f,
             0f, 1f, 0f,
             0f, 0f, 0f
         )
 
-        /** An Edge Detection Kernel. This [MMatrix3D] can be used as [kernel] for [Convolute3Filter] */
-        val KERNEL_EDGE_DETECTION: MMatrix3D = MMatrix3D.fromRows3x3(
+        /** An Edge Detection Kernel. This [Matrix4] can be used as [kernel] for [Convolute3Filter] */
+        val KERNEL_EDGE_DETECTION: Matrix4 = Matrix4.fromRows3x3(
             -1f, -1f, -1f,
             -1f, +8f, -1f,
             -1f, -1f, -1f
         )
 
         /** A Sharpen Kernel. This [MMatrix3D] can be used as [kernel] for [Convolute3Filter] */
-        val KERNEL_SHARPEN: MMatrix3D = MMatrix3D.fromRows3x3(
+        val KERNEL_SHARPEN: Matrix4 = Matrix4.fromRows3x3(
             -1f, -1f, -1f,
             -1f, +9f, -1f,
             -1f, -1f, -1f
@@ -95,7 +95,7 @@ class Convolute3Filter(
 
     /** 3x3 matrix representing a convolution kernel */
     @ViewProperty
-    var weights: MMatrix3D = MMatrix3D().copyFrom(kernel)
+    var weights: Matrix4 = kernel
     /** Distance between the origin pixel for sampling for edges */
     @ViewProperty
     var dist: Double = dist

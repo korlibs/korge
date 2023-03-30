@@ -50,8 +50,8 @@ class AGUniformBlockTest {
         //    it[DefaultShaders.u_ViewMat].set(MMatrix4().identity())
         //}
         data1[DefaultShaders.ProjViewUB].push {
-            it[DefaultShaders.ProjViewUB.u_ProjMat] = MMatrix4().setToOrtho(0f, 0f, 100f, 100f)
-            it[DefaultShaders.ProjViewUB.u_ViewMat] = MMatrix4().identity()
+            it[u_ProjMat] = Matrix4.ortho(0f, 0f, 100f, 100f)
+            it[u_ViewMat] = Matrix4.IDENTITY
         }
 
         /*

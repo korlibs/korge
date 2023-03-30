@@ -172,18 +172,18 @@ class TileMap(
     }
 
     private val infosPool = Pool(reset = { it.reset() }) { Info(Bitmaps.transparent.bmp, ShrinkableTexturedVertexArray(TexturedVertexArray.EMPTY)) }
-    private var lastVirtualRect = MRectangle(-1, -1, -1, -1)
-    private var currentVirtualRect = MRectangle(-1, -1, -1, -1)
+    private var lastVirtualRect = Rectangle(-1, -1, -1, -1)
+    private var currentVirtualRect = Rectangle(-1, -1, -1, -1)
 
     private val tempX = FloatArray(4)
     private val tempY = FloatArray(4)
 
     // @TODO: Use instanced rendering to support much more tiles at once
     private fun computeVertexIfRequired(ctx: RenderContext) {
-        currentVirtualRect.setBounds(ctx.virtualLeft, ctx.virtualTop, ctx.virtualRight, ctx.virtualBottom)
+        currentVirtualRect = Rectangle(ctx.virtualLeft, ctx.virtualTop, ctx.virtualRight, ctx.virtualBottom)
         if (currentVirtualRect != lastVirtualRect) {
             dirtyVertices = true
-            lastVirtualRect.copyFrom(currentVirtualRect)
+            lastVirtualRect = currentVirtualRect
         }
 
         if (!dirtyVertices && cachedContentVersion == contentVersion) return
@@ -196,8 +196,7 @@ class TileMap(
 
         val renderTilesCounter = ctx.stats.counter("renderedTiles")
 
-        val posX = m.transformX(0f, 0f)
-        val posY = m.transformY(0f, 0f)
+        val (posX, posY) = m.transform(Point.ZERO)
         val dUX = m.transformX(tileWidth, 0f) - posX
         val dUY = m.transformY(tileWidth, 0f) - posY
         val dVX = m.transformX(0f, tileHeight) - posX

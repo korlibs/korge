@@ -5,8 +5,8 @@ import korlibs.image.vector.Context2d
 import korlibs.image.vector.Shape
 import korlibs.image.vector.ShapeBuilder
 import korlibs.image.vector.buildShape
-import korlibs.math.geom.BoundsBuilder
-import korlibs.math.geom.shape.Shape2d
+import korlibs.math.geom.*
+import korlibs.math.geom.shape.Shape2D
 import korlibs.math.geom.shape.toShape2d
 import korlibs.math.geom.vector.VectorPath
 import kotlin.jvm.JvmOverloads
@@ -59,6 +59,7 @@ open class CpuGraphics @JvmOverloads constructor(
         this.shape = buildShape { block(this@CpuGraphics) }
         if (redrawNow) this.redrawIfRequired()
         _dirtyBounds = true
+        invalidateLocalBounds()
         return this
     }
 
@@ -66,7 +67,7 @@ open class CpuGraphics @JvmOverloads constructor(
     private var hitShape2dVersion = -1
 
     private var tempVectorPaths = arrayListOf<VectorPath>()
-    private var customHitShape2d: Shape2d? = null
+    private var customHitShape2d: Shape2D? = null
     private var customHitShapes: List<VectorPath>? = null
 
     override var hitShape: VectorPath?
@@ -100,7 +101,7 @@ open class CpuGraphics @JvmOverloads constructor(
             return tempVectorPaths
         }
 
-    override var hitShape2d: Shape2d
+    override var hitShape2d: Shape2D
         set(value) {
             customHitShape2d = value
         }
@@ -121,7 +122,8 @@ open class CpuGraphics @JvmOverloads constructor(
         shape?.draw(ctx)
     }
 
-    override fun getShapeBounds(bb: BoundsBuilder, includeStrokes: Boolean) {
-        bb.add(shape?.getBounds(includeStrokes)?.mutable)
+    override fun getShapeBounds(includeStrokes: Boolean): Rectangle {
+        //return shape?.getBounds(includeStrokes) ?: Rectangle.NIL
+        return shape?.getBounds(includeStrokes) ?: Rectangle.ZERO
     }
 }

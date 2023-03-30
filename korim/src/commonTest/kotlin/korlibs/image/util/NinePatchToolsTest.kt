@@ -1,9 +1,8 @@
 package korlibs.image.util
 
-import korlibs.datastructure.DoubleArrayList
+import korlibs.datastructure.*
 import korlibs.datastructure.doubleArrayListOf
-import korlibs.math.geom.MSize
-import korlibs.math.geom.pointArrayListOf
+import korlibs.math.geom.*
 import korlibs.math.geom.range.until
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -11,22 +10,22 @@ import kotlin.test.assertEquals
 class NinePatchToolsTest {
     @Test
     fun testTransform1D() {
-        val result = NinePatchSlices(4.0 until 9.0).transform1D(
+        val result = NinePatchSlices(4f until 9f).transform1D(
             listOf(
-                doubleArrayListOf(1.0),
-                doubleArrayListOf(5.0),
-                doubleArrayListOf(10.0),
-                doubleArrayListOf(15.0),
+                floatArrayListOf(1f),
+                floatArrayListOf(5f),
+                floatArrayListOf(10f),
+                floatArrayListOf(15f),
             ),
-            oldLen = 15.0,
-            newLen = 32.0
+            oldLen = 15f,
+            newLen = 32f
         )
         assertEquals(
             listOf(
-                DoubleArrayList(1.0),
-                DoubleArrayList(8.4),
-                DoubleArrayList(27.0),
-                DoubleArrayList(32.0),
+                floatArrayListOf(1f),
+                floatArrayListOf(8.4f),
+                floatArrayListOf(27f),
+                floatArrayListOf(32f),
             ),
             result.toList()
         )
@@ -35,25 +34,25 @@ class NinePatchToolsTest {
     @Test
     fun testTransform2D() {
         val result = NinePatchSlices2D(
-            x = NinePatchSlices(4.0 until 9.0),
-            y = NinePatchSlices(4.0 until 9.0),
+            x = NinePatchSlices(4f until 9f),
+            y = NinePatchSlices(4f until 9f),
         ).transform2D(
             listOf(
-                pointArrayListOf(1.0, 1.0),
-                pointArrayListOf(5.0, 5.0),
-                pointArrayListOf(10.0, 10.0),
-                pointArrayListOf(15.0, 15.0),
+                pointArrayListOf(Point(1, 1)),
+                pointArrayListOf(Point(5, 5)),
+                pointArrayListOf(Point(10, 10)),
+                pointArrayListOf(Point(15, 15)),
             ),
-            oldSize = MSize(15.0, 15.0),
-            newSize = MSize(32.0, 64.0)
+            oldSize = Size(15.0, 15.0),
+            newSize = Size(32.0, 64.0)
         )
 
         assertEquals(
             listOf(
-                pointArrayListOf(1.0, 1.0),
-                pointArrayListOf(8.4, 14.8),
-                pointArrayListOf(27.0, 59.0),
-                pointArrayListOf(32.0, 64.0),
+                pointArrayListOf(Point(1, 1)),
+                pointArrayListOf(Point(8.4f, 14.8f)),
+                pointArrayListOf(Point(27, 59)),
+                pointArrayListOf(Point(32, 64)),
             ),
             result.toList()
         )

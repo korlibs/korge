@@ -37,7 +37,7 @@ class Bitmap32Context2dTest {
                             //32.0, 8.0, 1.0,
                             stops = DoubleArrayList(0.0, 1.0),
                             colors = IntArrayList(Colors.BLUE.value, Colors.RED.value),
-                            transform = Matrix.IDENTITY.scaled(2.0, 0.75).immutable
+                            transform = Matrix.IDENTITY.scaled(2.0, 0.75)
                         )
                     )
                     if (true) {

@@ -168,7 +168,7 @@ interface StyledShape : Shape {
 
 	override fun getBounds(includeStrokes: Boolean): Rectangle {
         return path?.let { path ->
-            (NewBoundsBuilder() + path).bounds
+            (BoundsBuilder() + path).bounds
             // path is already transformed, so using `transform` is not required
         } ?: Rectangle.NIL
 	}
@@ -342,7 +342,7 @@ data class PolylineShape constructor(
     val strokeInfo: StrokeInfo,
     override val globalAlpha: Double = 1.0,
 ) : StyledShape {
-    private val tempBB = BoundsBuilder()
+    private val tempBB = MBoundsBuilder()
     private val tempRect = MRectangle()
 
     val thickness by strokeInfo::thickness
@@ -359,7 +359,7 @@ data class PolylineShape constructor(
     }
 
     override fun getBounds(includeStrokes: Boolean): Rectangle {
-        val bounds = (NewBoundsBuilder() + path).boundsOrNull()?.mutable
+        val bounds = (BoundsBuilder() + path).boundsOrNull()?.mutable
 
         //println("PolylineShape.addBounds: bounds=bounds, path=$path")
 
@@ -402,7 +402,7 @@ open class CompoundShape(
 	val components: List<Shape>
 ) : Shape {
 	override fun getBounds(includeStrokes: Boolean): Rectangle {
-        var bb = NewBoundsBuilder()
+        var bb = BoundsBuilder()
         components.fastForEach { bb += it.getBounds(includeStrokes) }
         return bb.bounds
     }

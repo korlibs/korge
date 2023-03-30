@@ -14,7 +14,7 @@ class Shape2dTest {
         )
 
         assertEquals(
-            "Complex(items=[Rectangle(x=0, y=0, width=100, height=100), Rectangle(x=300, y=0, width=100, height=100)])",
+            "CompoundShape2d(shapes=[Rectangle(x=0, y=0, width=100, height=100), Rectangle(x=300, y=0, width=100, height=100)])",
             VectorPath {
                 rect(0, 0, 100, 100)
                 rect(300, 0, 100, 100)
@@ -71,31 +71,31 @@ class Shape2dTest {
 
     @Test
     fun testIntersects() {
-        assertEquals(false, Shape2d.Circle(0, 0, 20).intersectsWith(Shape2d.Circle(40, 0, 20)))
-        assertEquals(true, Shape2d.Circle(0, 0, 20).intersectsWith(Shape2d.Circle(38, 0, 20)))
+        assertEquals(false, Circle(Point(0, 0), 20f).intersectsWith(Circle(Point(40, 0), 20f)))
+        assertEquals(true, Circle(Point(0, 0), 20f).intersectsWith(Circle(Point(38, 0), 20f)))
     }
 
     @Test
     fun testToPaths() {
         val points = buildVectorPath {
-                moveTo(Point(100, 100))
-                lineTo(Point(400, 400))
-                lineTo(Point(200, 500))
-                lineTo(Point(500, 500))
-                lineTo(Point(200, 700))
-                close()
+            moveTo(Point(100, 100))
+            lineTo(Point(400, 400))
+            lineTo(Point(200, 500))
+            lineTo(Point(500, 500))
+            lineTo(Point(200, 700))
+            close()
 
-                moveTo(Point(800, 600))
-                lineTo(Point(900, 600))
-                lineTo(Point(900, 400))
-                close()
+            moveTo(Point(800, 600))
+            lineTo(Point(900, 600))
+            lineTo(Point(900, 400))
+            close()
 
-                moveTo(Point(800, 100))
-                lineTo(Point(800, 110))
+            moveTo(Point(800, 100))
+            lineTo(Point(800, 110))
 
-                moveTo(Point(750, 100))
-                lineTo(Point(750, 110))
-            }.toPathPointList()
+            moveTo(Point(750, 100))
+            lineTo(Point(750, 110))
+        }.toPathPointList()
 
         assertEquals("""
             closed : (100,100),(400,400),(200,500),(500,500),(200,700)
@@ -105,7 +105,7 @@ class Shape2dTest {
         """.trimIndent(),
             points.joinToString("\n") {
                 val kind = if (it.closed) "closed" else "opened"
-                "$kind : " + it.toPoints().joinToString(",") { "(${it.x.niceStr},${it.y.niceStr})" }
+                "$kind : " + it.toList().joinToString(",") { "(${it.x.niceStr},${it.y.niceStr})" }
             }
         )
     }
@@ -141,7 +141,7 @@ class Shape2dTest {
     @Test
     fun testApproximateCurve2() {
         val path = buildVectorPath { circle(Point(0, 0), 10f) }
-        val pointsStr = path.getPoints2().map { x, y -> "(${(x * 100).toInt()},${(y * 100).toInt()})" }.joinToString(" ")
+        val pointsStr = path.cachedPoints.map { x, y -> "(${(x * 100).toInt()},${(y * 100).toInt()})" }.joinToString(" ")
         assertEquals(
             "(1000,0) (996,-82) (986,-162) (970,-240) (949,-316) (921,-389) (888,-459) (850,-526) (807,-590) (759,-650) (707,-707) (650,-759) (590,-807) (526,-850) (459,-888) (389,-921) (316,-949) (240,-970) (162,-986) (82,-996) (0,-1000) (-82,-996) (-162,-986) (-240,-970) (-316,-949) (-389,-921) (-459,-888) (-526,-850) (-590,-807) (-650,-759) (-707,-707) (-759,-650) (-807,-590) (-850,-526) (-888,-459) (-921,-389) (-949,-316) (-970,-240) (-986,-162) (-996,-82) (-1000,0) (-996,82) (-986,162) (-970,240) (-949,316) (-921,389) (-888,459) (-850,526) (-807,590) (-759,650) (-707,707) (-650,759) (-590,807) (-526,850) (-459,888) (-389,921) (-316,949) (-240,970) (-162,986) (-82,996) (0,1000) (82,996) (162,986) (240,970) (316,949) (389,921) (459,888) (526,850) (590,807) (650,759) (707,707) (759,650) (807,590) (850,526) (888,459) (921,389) (949,316) (970,240) (986,162) (996,82) (1000,0) (1000,0)",
             pointsStr

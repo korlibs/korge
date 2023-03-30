@@ -9,6 +9,8 @@ import korlibs.korge.internal.*
 import korlibs.korge.render.*
 import korlibs.korge.view.*
 import korlibs.image.color.*
+import korlibs.image.format.*
+import korlibs.io.async.*
 import korlibs.math.geom.*
 
 @KorgeInternal
@@ -154,10 +156,11 @@ class GpuShapeViewCommands {
                                 batcher.ctx[GpuShapeViewPrograms.ShapeViewUB].push {
                                     it.copyFrom(paintShader.uniforms)
                                     it[u_GlobalPixelScale] = pixelScale
-                                    it[u_ColorMul] = colorMul
+                                    it[u_ColorMul] = colorMul.premultiplied
                                 }
                                 if (paintShader.texture != null) {
                                     val tex = ctx.tempTexturePool.alloc()
+                                    //println("tex[${tex.forcedTexId}]=$tex")
                                     tex.upload(paintShader.texture)
                                     tempTextureUnits.set(DefaultShaders.u_Tex, tex)
                                     //println("texture.tex=$tex")

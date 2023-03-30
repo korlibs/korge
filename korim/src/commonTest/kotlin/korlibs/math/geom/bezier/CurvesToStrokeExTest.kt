@@ -3,11 +3,8 @@ package korlibs.math.geom.bezier
 import korlibs.logger.*
 import korlibs.image.vector.format.pathSvg
 import korlibs.math.geom.*
-import korlibs.math.geom.shape.buildVectorPath
-import korlibs.math.geom.vector.LineJoin
-import korlibs.math.geom.vector.StrokeInfo
-import korlibs.math.geom.vector.VectorBuilder
-import korlibs.math.geom.vector.toCurvesList
+import korlibs.math.geom.shape.*
+import korlibs.math.geom.vector.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

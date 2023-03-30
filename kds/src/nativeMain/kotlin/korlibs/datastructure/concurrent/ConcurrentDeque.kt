@@ -1,21 +1,16 @@
 package korlibs.datastructure.concurrent
 
 import kotlin.native.concurrent.AtomicReference
-import kotlin.native.concurrent.freeze
 
 class ConcurrentDeque<T : Any> {
-    private val items = AtomicReference<List<T>>(emptyList<T>().freeze())
-
-    init {
-        this.freeze()
-    }
+    private val items = AtomicReference<List<T>>(emptyList<T>())
 
     val size get() = items.value.size
 
     fun add(item: T) {
         do {
             val oldList = this.items.value
-            val newList = (oldList + item).freeze()
+            val newList = (oldList + item)
         } while (!this.items.compareAndSet(oldList, newList))
     }
 
@@ -26,7 +21,7 @@ class ConcurrentDeque<T : Any> {
             val oldList = this.items.value
             if (oldList.isEmpty()) return null
             val lastItem = oldList.first()
-            val newList = oldList.subList(1, oldList.size).freeze()
+            val newList = oldList.subList(1, oldList.size)
             if (this.items.compareAndSet(oldList, newList)) return lastItem
         }
     }

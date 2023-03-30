@@ -35,7 +35,6 @@ import kotlin.native.concurrent.AtomicReference
 import kotlin.native.concurrent.Future
 import kotlin.native.concurrent.TransferMode
 import kotlin.native.concurrent.Worker
-import kotlin.native.concurrent.freeze
 
 internal object WINMM : DynamicLibrary("winmm.dll") {
     val waveOutOpenExt by func<(phwo: LPHWAVEOUT?, uDeviceID: UINT, pwfx: LPCWAVEFORMATEX?, dwCallback: DWORD_PTR, dwInstance: DWORD_PTR, fdwOpen: DWORD) -> MMRESULT>()
@@ -52,9 +51,6 @@ private object WaveOutEnd : WaveOutPart
 private object WaveOutFlush : WaveOutPart
 
 private class WaveOutReopen(val freq: Int) : WaveOutPart {
-    init {
-        this.freeze()
-    }
 }
 
 private interface WaveOutDataBase : WaveOutPart {
@@ -63,14 +59,10 @@ private interface WaveOutDataBase : WaveOutPart {
 
 //private class WaveOutData(val data: ShortArray) : WaveOutDataBase {
 //    override fun computeData(): ShortArray = data
-//
-//    init {
-//        this.freeze()
-//    }
 //}
 
 internal class AtomicDouble(value: Double) {
-    val atomic = AtomicLong(value.toRawBits()).freeze()
+    val atomic = AtomicLong(value.toRawBits())
 
     var value: Double
         get() = Double.fromBits(atomic.value)
@@ -87,10 +79,6 @@ internal class WaveOutDataEx(
             .interleaved()
             .applyProps(pitch, panning, volume)
             .data
-
-    init {
-        this.freeze()
-    }
 }
 class WaveOutProcess(val freq: Int, val nchannels: Int) {
     private val sPosition = AtomicLong(0L)
@@ -107,11 +95,6 @@ class WaveOutProcess(val freq: Int, val nchannels: Int) {
     val length get() = sLength.value
     //val isCompleted get() = completed.value != 0L
     val pendingAudio get() = numPendingChunks.value != 0L || deque.size > 0
-
-    init {
-        freeze()
-    }
-
     val pendingCommands get() = deque.size
 
     //fun addData(data: ShortArray) {

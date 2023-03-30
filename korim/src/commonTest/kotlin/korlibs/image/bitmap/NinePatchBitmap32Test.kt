@@ -5,7 +5,7 @@ import korlibs.image.format.PNG
 import korlibs.image.format.readBitmap
 import korlibs.io.async.suspendTestNoBrowser
 import korlibs.io.file.std.resourcesVfs
-import korlibs.math.geom.MRectangleInt
+import korlibs.math.geom.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -57,10 +57,10 @@ class NinePatchBitmap32Test {
             return arrayListOf<String>().apply {
                 val log = this
                 for (rect in listOf(
-                    MRectangleInt(0, 0, 512, 256),
-                    MRectangleInt(0, 0, 256, 512),
-                    MRectangleInt(0, 0, 100, 100),
-                    MRectangleInt(0, 0, 0, 0)
+                    RectangleInt(0, 0, 512, 256),
+                    RectangleInt(0, 0, 256, 512),
+                    RectangleInt(0, 0, 100, 100),
+                    RectangleInt(0, 0, 0, 0)
                 )) {
                     log += "$rect:"
                     ninePatch.info.computeScale(rect, new = new) { seg, x, y, width, height ->

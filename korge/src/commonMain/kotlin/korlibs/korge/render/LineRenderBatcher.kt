@@ -56,55 +56,51 @@ class LineRenderBatcher(
 
     var color: RGBA = Colors.YELLOW
 
-    @KorgeInternal
-    val LAYOUT = VertexLayout(DefaultShaders.a_Pos, DefaultShaders.a_Col)
-
-    @KorgeInternal
-    val VERTEX = VertexShader {
-        DefaultShaders.apply {
-            SET(out, (u_ProjMat * u_ViewMat) * vec4(a_Pos, 0f.lit, 1f.lit))
-            SET(v_Col, a_Col)
+    companion object {
+        val LAYOUT = VertexLayout(DefaultShaders.a_Pos, DefaultShaders.a_Col)
+        val VERTEX = VertexShader {
+            DefaultShaders.apply {
+                SET(out, (u_ProjMat * u_ViewMat) * vec4(a_Pos, 0f.lit, 1f.lit))
+                SET(v_Col, a_Col)
+            }
         }
+        val FRAGMENT = FragmentShader {
+            DefaultShaders.apply {
+                //SET(out, vec4(1f.lit, 1f.lit, 0f.lit, 1f.lit))
+                SET(out, v_Col)
+            }
+        }
+        val PROGRAM = Program(VERTEX, FRAGMENT)
     }
 
-    @KorgeInternal
-    val FRAGMENT = FragmentShader {
-        DefaultShaders.apply {
-            //SET(out, vec4(1f.lit, 1f.lit, 0f.lit, 1f.lit))
-            SET(out, v_Col)
-        }
-    }
+
 
     private val vertexBuffer = AGBuffer()
     private val vertexData = AGVertexArrayObject(AGVertexData(LAYOUT, vertexBuffer))
-    private val program = Program(VERTEX, FRAGMENT)
     private val maxVertexCount = 1024
     private val vertices = Buffer.allocDirect(6 * 4 * maxVertexCount)
-    private val tempRect = MRectangle()
     @PublishedApi
-    internal val viewMat = MMatrix3D()
-    @PublishedApi
-    internal val tempViewMat = Pool { MMatrix3D() }
+    internal var viewMat = Matrix4()
     @PublishedApi
     internal var vertexCount = 0
     @PublishedApi
     internal var vertexPos = 0
 
-    fun line(p0: Point, p1: Point, color0: RGBA = color, color1: RGBA = color0, m: MMatrix = currentMatrix) =
+    fun line(p0: Point, p1: Point, color0: RGBA = color, color1: RGBA = color0, m: Matrix = currentMatrix) =
         line(p0.x, p0.y, p1.x, p1.y, color, color1, m)
 
     /** Draw a line from [x0],[y0] to [x1],[y1] */
-    fun line(x0: Float, y0: Float, x1: Float, y1: Float, color0: RGBA = color, color1: RGBA = color0, m: MMatrix = currentMatrix) {
+    fun line(x0: Float, y0: Float, x1: Float, y1: Float, color0: RGBA = color, color1: RGBA = color0, m: Matrix = currentMatrix) {
         if (vertexCount >= maxVertexCount - 2) {
             flush()
         }
         addVertex(x0, y0, color0, m)
         addVertex(x1, y1, color1, m)
     }
-    fun line(x0: Double, y0: Double, x1: Double, y1: Double, color0: RGBA = color, color1: RGBA = color0, m: MMatrix = currentMatrix) = line(x0.toFloat(), y0.toFloat(), x1.toFloat(), y1.toFloat(), color0, color1, m)
-    fun line(x0: Int, y0: Int, x1: Int, y1: Int, color0: RGBA = color, color1: RGBA = color0, m: MMatrix = currentMatrix) = line(x0.toFloat(), y0.toFloat(), x1.toFloat(), y1.toFloat(), color0, color1, m)
+    fun line(x0: Double, y0: Double, x1: Double, y1: Double, color0: RGBA = color, color1: RGBA = color0, m: Matrix = currentMatrix) = line(x0.toFloat(), y0.toFloat(), x1.toFloat(), y1.toFloat(), color0, color1, m)
+    fun line(x0: Int, y0: Int, x1: Int, y1: Int, color0: RGBA = color, color1: RGBA = color0, m: Matrix = currentMatrix) = line(x0.toFloat(), y0.toFloat(), x1.toFloat(), y1.toFloat(), color0, color1, m)
 
-    fun drawVector(path: VectorPath, m: MMatrix = currentMatrix) {
+    fun drawVector(path: VectorPath, m: Matrix = currentMatrix) {
         var lastPos = Point()
         path.emitPoints2 { p, move ->
             if (!move) {
@@ -114,27 +110,25 @@ class LineRenderBatcher(
         }
     }
 
-    inline fun drawVector(m: MMatrix = currentMatrix, block: VectorBuilder.() -> Unit) {
+    inline fun drawVector(m: Matrix = currentMatrix, block: VectorBuilder.() -> Unit) {
         drawVector(VectorPath().apply(block), m = m)
     }
 
-    inline fun drawVector(color: RGBA, m: MMatrix = currentMatrix, block: VectorBuilder.() -> Unit) {
+    inline fun drawVector(color: RGBA, m: Matrix = currentMatrix, block: VectorBuilder.() -> Unit) {
         color(color) {
             drawVector(m, block)
         }
     }
 
     /** Prepares for drawing a set of lines with the specified [matrix]. It flushes all other contexts, and the set [matrix]. */
-    inline fun <T> draw(matrix: MMatrix, body: () -> T): T {
+    inline fun <T> draw(matrix: Matrix, body: () -> T): T {
         ctx.flush()
-        return tempViewMat.alloc { temp ->
-            temp.copyFrom(viewMat)
-            matrix.toMatrix4(viewMat)
+        return keep(this::viewMat) {
+            viewMat = matrix.toMatrix4()
             try {
                 body()
             } finally {
                 flush()
-                viewMat.copyFrom(temp)
             }
         }
     }
@@ -171,11 +165,11 @@ class LineRenderBatcher(
             ag.draw(
                 ctx.currentFrameBuffer,
                 vertexData,
-                program = program,
+                program = PROGRAM,
                 drawType = AGDrawType.LINES,
                 vertexCount = vertexCount,
-                uniformBlocks = ctx.createCurrentUniformsRef(program),
-                textureUnits = ctx.textureUnits.clone(),
+                uniformBlocks = ctx.createCurrentUniformsRef(PROGRAM),
+                //textureUnits = ctx.textureUnits.clone(),
                 blending = blendMode.factors
             )
         }
@@ -184,16 +178,16 @@ class LineRenderBatcher(
     }
 
     @PublishedApi
-    internal val currentMatrix: MMatrix = MMatrix()
+    internal var currentMatrix: Matrix = Matrix()
 
-    inline fun <T> drawWithGlobalMatrix(matrix: Matrix?, block: () -> T): T = currentMatrix.keepMatrix {
-        if (matrix != null) it.copyFrom(matrix)
+    inline fun <T> drawWithGlobalMatrix(matrix: Matrix?, block: () -> T): T = keep(::currentMatrix) {
+        if (matrix != null) currentMatrix = matrix
         block()
     }
 
-    private fun addVertex(x: Float, y: Float, color: RGBA = this.color, m: MMatrix = currentMatrix) {
-        vertices.setFloat32(vertexPos + 0, m.transformXf(x, y))
-        vertices.setFloat32(vertexPos + 1, m.transformYf(x, y))
+    private fun addVertex(x: Float, y: Float, color: RGBA = this.color, m: Matrix = currentMatrix) {
+        vertices.setFloat32(vertexPos + 0, m.transformX(x, y))
+        vertices.setFloat32(vertexPos + 1, m.transformY(x, y))
         vertices.setInt32(vertexPos + 2, color.value)
         vertexPos += LAYOUT.totalSize / Int.SIZE_BYTES
         vertexCount++

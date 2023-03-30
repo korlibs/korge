@@ -34,6 +34,6 @@ class ViewFixedSizeContainerTest : ViewsForTesting(
             stage.render(it)
         }
 
-        assertEquals(listOf<Any?>(MRectangle(234, 105, 150, 150)), log)
+        assertEquals(listOf<Any?>(Rectangle(234, 105, 150, 150)), log)
     }
 }

@@ -24,7 +24,7 @@ private var DefaultTtfFontOrNull: TtfFont? = null
 val DefaultTtfFont: TtfFont get() {
     if (DefaultTtfFontOrNull == null) {
         val res = measureTimeWithResult {
-            TtfFont(DefaultTtfFontBytes(), freeze = true, extName = "Default Font")
+            TtfFont(DefaultTtfFontBytes(), extName = "Default Font")
             //TtfFont(DefaultTtfFontBytes, preloadAllGlyphs = false, extName = "Default Font")
         }
         //println("Loaded DefaultTtfFont in... ${res.time}")

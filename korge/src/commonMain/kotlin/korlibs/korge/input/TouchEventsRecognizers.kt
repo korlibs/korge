@@ -26,7 +26,7 @@ fun TouchEvents.swipeRecognizer(
 
                 val distance = MPoint.distance(i.startGlobal, i.global)
                 if (distance >= thresold) {
-                    val angle = Angle.between(i.startGlobal, i.global)
+                    val angle = Angle.between(i.startGlobal.immutable, i.global.immutable)
                     completed = true
                     val direction = when {
                         angle >= 315.degrees || angle < 45.degrees -> SwipeRecognizerDirection.RIGHT
@@ -104,8 +104,8 @@ fun TouchEvents.rotationRecognizer(
             val i1 = it.infos[1]
             info.started = info.completed
             info.completed = false
-            info.start = Angle.between(i0.startGlobal, i1.startGlobal)
-            info.current = Angle.between(i0.global, i1.global)
+            info.start = Angle.between(i0.startGlobal.immutable, i1.startGlobal.immutable)
+            info.current = Angle.between(i0.global.immutable, i1.global.immutable)
             if (info.started) {
                 start(info)
             }

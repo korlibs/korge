@@ -38,7 +38,7 @@ open class RastScale {
 class PolygonScanline : RastScale() {
     var version = -1
     var winding = Winding.NON_ZERO
-    private var boundsBuilder = NewBoundsBuilder()
+    private var boundsBuilder = BoundsBuilder()
 
     class Bucket {
         val edges = FastArrayList<MEdge>()
@@ -114,7 +114,7 @@ class PolygonScanline : RastScale() {
     private var closed = true
     fun reset() {
         closed = true
-        boundsBuilder = NewBoundsBuilder.EMPTY
+        boundsBuilder = BoundsBuilder.EMPTY
         edges.fastForEach { edgesPool.free(it) }
         hedges.fastForEach { edgesPool.free(it) }
         edges.clear()
@@ -289,6 +289,8 @@ class PolygonScanline : RastScale() {
         return containsPointInt(x.s, y.s, winding)
     }
 
+    fun containsPoint(p: Point, winding: Winding = this.winding): Boolean = containsPoint(p.x.toDouble(), p.y.toDouble(), winding)
+
     fun containsPointInt(x: Int, y: Int, winding: Winding = this.winding): Boolean {
         val ss = this.ss
         scanline(y, winding, ss.clear())
@@ -323,10 +325,9 @@ class PolygonScanline : RastScale() {
     }
 
     fun getLineIntersection(x0: Double, y0: Double, x1: Double, y1: Double, out: LineIntersection = LineIntersection()) = getLineIntersection(x0.s, y0.s, x1.s, y1.s, out)
-    fun getLineIntersection(a: MPointInt, b: MPointInt, out: LineIntersection = LineIntersection()) = getLineIntersection(a.x, a.y, b.x, b.y, out)
-    fun getLineIntersection(a: MPoint, b: MPoint, out: LineIntersection = LineIntersection()) = getLineIntersection(a.x.s, a.y.s, b.x.s, b.y.s, out)
-    fun getLineIntersection(a: Point, b: Point, out: LineIntersection = LineIntersection()) = getLineIntersection(a.xD.s, a.yD.s, b.xD.s, b.yD.s, out)
-    fun getLineIntersection(line: MLine, out: LineIntersection = LineIntersection()) = getLineIntersection(line.a, line.b, out)
+    fun getLineIntersection(a: PointInt, b: PointInt, out: LineIntersection = LineIntersection()) = getLineIntersection(a.x, a.y, b.x, b.y, out)
+    fun getLineIntersection(a: Point, b: Point, out: LineIntersection = LineIntersection()) = getLineIntersection(a.x.s, a.y.s, b.x.s, b.y.s, out)
+    fun getLineIntersection(line: Line, out: LineIntersection = LineIntersection()) = getLineIntersection(line.a, line.b, out)
 
     private class XWithWind {
         val x = IntArrayList(1024)

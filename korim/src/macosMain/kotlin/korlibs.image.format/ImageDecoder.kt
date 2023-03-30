@@ -21,7 +21,7 @@ object NSNativeImageFormatProvider : BaseNativeImageFormatProvider() {
         return executeInImageIOWorker { worker ->
             worker.execute(
                 TransferMode.SAFE,
-                { Info(if (data.isFrozen) data else data.copyOf().freeze(), premultiplied) },
+                { Info(data.copyOf(), premultiplied) },
                 { info ->
                     val data = info.data
                     val premultiplied = info.premultiplied

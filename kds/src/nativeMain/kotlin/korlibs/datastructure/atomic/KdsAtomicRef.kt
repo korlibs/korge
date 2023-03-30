@@ -4,8 +4,8 @@ import kotlin.native.concurrent.*
 
 // @TODO: Use AtomicReference
 actual class KdsAtomicRef<T> actual constructor(initial: T) {
-    val ref = AtomicReference((initial.freeze()))
+    val ref = AtomicReference(initial)
     actual var value: T
         get() = ref.value
-        set(value) { ref.value = (value.freeze()) }
+        set(value) { ref.value = value }
 }

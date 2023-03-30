@@ -5,6 +5,8 @@ import korlibs.math.annotations.*
 import korlibs.math.internal.*
 import korlibs.math.interpolation.*
 import korlibs.math.math.*
+import korlibs.math.math.isAlmostZero
+import korlibs.memory.*
 import kotlin.math.*
 
 typealias MVector2D = MPoint
@@ -31,7 +33,7 @@ data class MPoint(
     fun transformX(m: MMatrix?): Double = m?.transformX(this) ?: x
     fun transformY(m: MMatrix?): Double = m?.transformY(this) ?: y
     val mutable: MPoint get() = MPoint(x, y)
-    val immutable: MPoint get() = MPoint(x, y)
+    val immutable: Point get() = Point(x, y)
     fun isAlmostEquals(other: MPoint, epsilon: Double = 0.000001): Boolean =
         this.x.isAlmostEquals(other.x, epsilon) && this.y.isAlmostEquals(other.y, epsilon)
 
@@ -205,7 +207,7 @@ data class MPoint(
 
         fun angleArc(a: Point, b: Point): Angle = Angle.fromRadians(acos((a.dot(b)) / (a.length * b.length)))
         fun angleArc(a: MPoint, b: MPoint): Angle = Angle.fromRadians(acos((a.dot(b)) / (a.length * b.length)))
-        fun angleFull(a: MPoint, b: MPoint): Angle = Angle.between(a, b)
+        fun angleFull(a: MPoint, b: MPoint): Angle = Angle.between(a.immutable, b.immutable)
 
         fun middle(a: MPoint, b: MPoint): MPoint = MPoint((a.x + b.x) * 0.5, (a.y + b.y) * 0.5)
 
@@ -275,3 +277,12 @@ data class MPoint(
         //return acos((ax * bx + ay * by) / (al * bl))
     }
 }
+
+fun List<MPoint>.getPolylineLength(): Double = getPolylineLength(size) { get(it).point }
+
+fun List<MPoint>.bounds(out: MRectangle = MRectangle(), bb: MBoundsBuilder = MBoundsBuilder()): MRectangle = bb.add(this).getBounds(out)
+fun Iterable<MPoint>.bounds(out: MRectangle = MRectangle(), bb: MBoundsBuilder = MBoundsBuilder()): MRectangle = bb.add(this).getBounds(out)
+
+fun min(a: MPoint, b: MPoint, out: MPoint = MPoint()): MPoint = out.setTo(kotlin.math.min(a.x, b.x), kotlin.math.min(a.y, b.y))
+fun max(a: MPoint, b: MPoint, out: MPoint = MPoint()): MPoint = out.setTo(kotlin.math.max(a.x, b.x), kotlin.math.max(a.y, b.y))
+fun MPoint.clamp(min: Double, max: Double, out: MPoint = MPoint()): MPoint = out.setTo(x.clamp(min, max), y.clamp(min, max))

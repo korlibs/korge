@@ -4,25 +4,13 @@ import korlibs.datastructure.*
 import korlibs.datastructure.ds.*
 import korlibs.math.geom.*
 
-fun BVHIntervals.toAABB3D(out: AABB3D = AABB3D()): AABB3D {
-    out.min.setTo(a(0), a(1), a(2))
-    out.max.setTo(aPlusB(0), aPlusB(1), aPlusB(2))
-    return out
-}
+fun BVHIntervals.toAABB3D(): AABB3D = AABB3D(Vector3(a(0), a(1), a(2)), Vector3(aPlusB(0), aPlusB(1), aPlusB(2)))
 fun AABB3D.toBVH(out: BVHIntervals = BVHIntervals(3)): BVHIntervals {
-    out.setTo(
-        minX.toDouble(), sizeX.toDouble(),
-        minY.toDouble(), sizeY.toDouble(),
-        minZ.toDouble(), sizeZ.toDouble(),
-    )
+    out.setTo(minX, sizeX, minY, sizeY, minZ, sizeZ)
     return out
 }
-fun MRay3D.toBVH(out: BVHIntervals = BVHIntervals(3)): BVHIntervals {
-    out.setTo(
-        pos.x.toDouble(), dir.x.toDouble(),
-        pos.y.toDouble(), dir.y.toDouble(),
-        pos.z.toDouble(), dir.z.toDouble()
-    )
+fun Ray3D.toBVH(out: BVHIntervals = BVHIntervals(3)): BVHIntervals {
+    out.setTo(pos.x, dir.x, pos.y, dir.y, pos.z, dir.z)
     return out
 }
 
@@ -35,12 +23,12 @@ open class BVH3D<T>(
 ) {
     val bvh = BVH<T>(allowUpdateObjects = allowUpdateObjects)
 
-    fun intersectRay(ray: MRay3D, rect: AABB3D? = null) = bvh.intersectRay(ray.toBVH(), rect?.toBVH())
+    fun intersectRay(ray: Ray3D, rect: AABB3D? = null) = bvh.intersectRay(ray.toBVH(), rect?.toBVH())
 
     fun envelope(): AABB3D = bvh.envelope().toAABB3D()
 
     fun intersect(
-        ray: MRay3D,
+        ray: Ray3D,
         return_array: FastArrayList<BVH.IntersectResult<T>> = fastArrayListOf(),
     ) = bvh.intersect(ray.toBVH(), return_array)
 
@@ -55,7 +43,7 @@ open class BVH3D<T>(
 
     fun remove(obj: T) = bvh.remove(obj)
 
-    fun getObjectBounds(obj: T, out: AABB3D = AABB3D()): AABB3D? = bvh.getObjectBounds(obj)?.toAABB3D(out)
+    fun getObjectBounds(obj: T): AABB3D? = bvh.getObjectBounds(obj)?.toAABB3D()
 
     fun debug() {
         bvh.debug()

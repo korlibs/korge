@@ -10,7 +10,6 @@ import korlibs.image.text.*
 import korlibs.io.async.*
 import korlibs.io.file.std.*
 import korlibs.math.geom.*
-import korlibs.math.geom.vector.*
 import kotlin.test.*
 
 class FontTest {
@@ -120,8 +119,7 @@ class FontTest {
             val scale = 1.0 + reader.position * 0.1
             //val scale = 1.0
             //transform.translate(0.0, scale)
-            transform.scale(scale)
-            transform.rotate(25.degrees)
+            transform = Matrix().scaled(scale).rotated(25.degrees)
             put(reader, c)
             advance(advance * scale)
         })
@@ -146,10 +144,10 @@ class FontTest {
 
     @Test
     fun testReadFont() = suspendTestNoBrowser {
-        val font1 = resourcesVfs["myfont.ttf"].readTtfFont(preload = true)
-        val font2 = resourcesVfs["myfont-bug.ttf"].readTtfFont(preload = true)
-        val font3 = resourcesVfs["myfont-bug2.ttf"].readTtfFont(preload = true)
-        val font4 = resourcesVfs["myfont-bug3.ttf"].readTtfFont(preload = true)
+        val font1 = resourcesVfs["myfont.ttf"].readTtfFont()
+        val font2 = resourcesVfs["myfont-bug.ttf"].readTtfFont()
+        val font3 = resourcesVfs["myfont-bug2.ttf"].readTtfFont()
+        val font4 = resourcesVfs["myfont-bug3.ttf"].readTtfFont()
         //font1.renderTextToBitmap(20.0, "Hello World!", border = 64, nativeRendering = false).bmp.showImageAndWait()
         //font4.renderTextToBitmap(64.0, "12 Hello World", nativeRendering = true).bmp.showImageAndWait()
     }
@@ -157,7 +155,7 @@ class FontTest {
     @Test
     fun testReadOpenTypeFont() = suspendTestNoBrowser {
         //assertFailsWith<UnsupportedOperationException> {
-            val font1 = resourcesVfs["helvetica.otf"].readTtfFont(preload = true)
+            val font1 = resourcesVfs["helvetica.otf"].readTtfFont()
             logger.debug { "font1=$font1" }
         //}
     }

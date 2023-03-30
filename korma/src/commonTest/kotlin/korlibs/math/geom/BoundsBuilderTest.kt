@@ -7,7 +7,7 @@ import kotlin.test.assertEquals
 class BoundsBuilderTest {
     @Test
     fun name() {
-        val bb = BoundsBuilder()
+        val bb = MBoundsBuilder()
         bb.add(MRectangle(20, 10, 200, 300))
         bb.add(MRectangle(2000, 70, 400, 50))
         bb.add(MRectangle(10000, 10000, 0, 0))
@@ -22,7 +22,7 @@ class BoundsBuilderTest {
 
     @Test
     fun test2() {
-        val bb = BoundsBuilder()
+        val bb = MBoundsBuilder()
             .add(-100, 100)
             .add(-90, 100)
             .add(-100, 110)
@@ -31,7 +31,7 @@ class BoundsBuilderTest {
         assertEquals(MRectangle(-100, 100, 10, 10), bb.getBounds())
     }
 
-    fun BoundsBuilder.toPropsString(): String {
+    fun MBoundsBuilder.toPropsString(): String {
         val bb = this
         return """
             ${bb.npoints}, ${bb.hasPoints}
@@ -50,7 +50,7 @@ class BoundsBuilderTest {
                 (null, null, null, null)
                 (0, 0, 0, 0)
             """.trimIndent(),
-            BoundsBuilder().toPropsString()
+            MBoundsBuilder().toPropsString()
         )
     }
 
@@ -63,7 +63,7 @@ class BoundsBuilderTest {
                 (0, 0, 0, 0)
                 (0, 0, 0, 0)
             """.trimIndent(),
-            BoundsBuilder().also { it.add(0, 0) }.toPropsString()
+            MBoundsBuilder().also { it.add(0, 0) }.toPropsString()
         )
 
         assertEquals(
@@ -73,7 +73,7 @@ class BoundsBuilderTest {
                 (-1, -1, -3, -3)
                 (-1, -1, -3, -3)
             """.trimIndent(),
-            BoundsBuilder().also { it.add(-1, -3) }.toPropsString()
+            MBoundsBuilder().also { it.add(-1, -3) }.toPropsString()
         )
 
         assertEquals(
@@ -83,7 +83,7 @@ class BoundsBuilderTest {
                 (7, 7, 5, 5)
                 (7, 7, 5, 5)
             """.trimIndent(),
-            BoundsBuilder().also { it.add(+7, +5) }.toPropsString()
+            MBoundsBuilder().also { it.add(+7, +5) }.toPropsString()
         )
     }
 
@@ -96,7 +96,7 @@ class BoundsBuilderTest {
                 (-1, 7, -5, 3)
                 (-1, 7, -5, 3)
             """.trimIndent(),
-            BoundsBuilder().also { it.add(-1, -5).add(+7, +3) }.toPropsString()
+            MBoundsBuilder().also { it.add(-1, -5).add(+7, +3) }.toPropsString()
         )
     }
 }

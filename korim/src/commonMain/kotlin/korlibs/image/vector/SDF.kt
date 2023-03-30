@@ -141,7 +141,7 @@ class ProjectCurvesLookup(val beziers: List<Bezier>) {
         beziers.fastForEach {
             val dist = it.outerCircle.distanceFarthestSquared(point)
             if (dist < minDistSq) {
-                minDistSq = dist
+                minDistSq = dist.toDouble()
                 //closest = it
             }
         }

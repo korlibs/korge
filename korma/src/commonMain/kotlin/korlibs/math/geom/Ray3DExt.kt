@@ -4,13 +4,10 @@ import korlibs.math.annotations.*
 import kotlin.math.*
 
 @KormaMutableApi
-fun IRay3D.intersectRayAABox1(box: AABB3D) : Boolean {
+fun Ray3D.intersectRayAABox1(box: AABB3D) : Boolean {
     val ray = this
     // r.dir is unit direction vector of ray
-    val dirfrac = MVector3()
-    dirfrac.x = 1.0f / ray.dir.x
-    dirfrac.y = 1.0f / ray.dir.y
-    dirfrac.z = 1.0f / ray.dir.z
+    val dirfrac = ray.dir.inv()
     // lb is the corner of AABB with minimal coordinates - left bottom, rt is maximal corner
     // r.org is origin of ray
     val t1 = (box.min.x - ray.pos.x) * dirfrac.x

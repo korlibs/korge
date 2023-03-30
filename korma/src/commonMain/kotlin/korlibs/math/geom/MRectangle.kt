@@ -45,8 +45,8 @@ data class MRectangle(
     /**
      * Circle that touches or contains all the corners ([topLeft], [topRight], [bottomLeft], [bottomRight]) of the rectangle.
      */
-    fun outerCircle(): MCircle {
-        return MCircle(center, Point.distance(center, topRight).toDouble())
+    fun outerCircle(): Circle {
+        return Circle(center, Point.distance(center, topRight))
     }
 
 
@@ -331,8 +331,33 @@ data class MRectangle(
     fun toRectangle(): Rectangle = Rectangle(x, y, width, height)
     @KormaMutableApi fun asInt(): MRectangleInt = MRectangleInt(this)
     @KormaMutableApi val int: MRectangleInt get() = MRectangleInt(x, y, width, height)
-    @KormaValueApi val value: Rectangle get() = Rectangle(x, y, width, height)
+    val value: Rectangle get() = Rectangle(x, y, width, height)
 
 }
 
 fun Rectangle.copyTo(out: MRectangle = MRectangle()): MRectangle = out.copyFrom(this)
+
+
+@KormaMutableApi
+fun Iterable<MRectangle>.bounds(target: MRectangle = MRectangle()): MRectangle {
+    var first = true
+    var left = 0.0
+    var right = 0.0
+    var top = 0.0
+    var bottom = 0.0
+    for (r in this) {
+        if (first) {
+            left = r.left
+            right = r.right
+            top = r.top
+            bottom = r.bottom
+            first = false
+        } else {
+            left = kotlin.math.min(left, r.left)
+            right = kotlin.math.max(right, r.right)
+            top = kotlin.math.min(top, r.top)
+            bottom = kotlin.math.max(bottom, r.bottom)
+        }
+    }
+    return target.setBounds(left, top, right, bottom)
+}

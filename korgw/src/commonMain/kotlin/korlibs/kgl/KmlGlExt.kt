@@ -2,8 +2,8 @@ package korlibs.kgl
 
 import korlibs.logger.Logger
 import korlibs.memory.*
-import korlibs.math.geom.MRectangle
 import korlibs.crypto.encoding.hex
+import korlibs.math.geom.*
 import kotlin.native.concurrent.ThreadLocal
 
 class KmlGlException(message: String) : RuntimeException(message)
@@ -39,13 +39,13 @@ fun KmlGl.getBooleanv(pname: Int): Boolean = tempByte1Buffer { getBooleanv(pname
 fun KmlGl.getFloatv(pname: Int): Float = tempFloat1Buffer { getFloatv(pname, it) }
 fun KmlGl.getIntegerv(pname: Int): Int = tempInt1Buffer { getIntegerv(pname, it) }
 fun KmlGl.getVertexAttribiv(index: Int, pname: Int): Int = tempInt1Buffer { getVertexAttribiv(index, pname, it) }
-fun KmlGl.getRectanglev(pname: Int, out: MRectangle = MRectangle()): MRectangle = tempNBuffer4.let {
+fun KmlGl.getRectanglev(pname: Int): Rectangle = tempNBuffer4.let {
     it.setFloat32(0, 0f)
     it.setFloat32(1, 0f)
     it.setFloat32(2, 0f)
     it.setFloat32(3, 0f)
     getFloatv(pname, it)
-    out.setTo(it.getFloat32(0), it.getFloat32(1), it.getFloat32(2), it.getFloat32(3))
+    Rectangle(it.getFloat32(0), it.getFloat32(1), it.getFloat32(2), it.getFloat32(3))
 }
 
 fun KmlGl.genBuffer(): Int = tempInt1Buffer { genBuffers(1, it) }

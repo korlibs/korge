@@ -30,7 +30,7 @@ class Line(
         colorMul = color
     }
 
-    fun setPoints(a: MPoint, b: MPoint) = setPoints(a.x, a.y, b.x, b.y)
+    fun setPoints(a: Point, b: Point) = setPoints(a.xD, a.yD, b.xD, b.yD)
 
     fun setPoints(x1: Double, y1: Double, x2: Double, y2: Double) {
         this.x1 = x1

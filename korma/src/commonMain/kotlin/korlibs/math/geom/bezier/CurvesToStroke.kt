@@ -143,7 +143,7 @@ class StrokePointsBuilder(
             val angleB = (angle + 180.degrees).absoluteValue
             val angle2 = (angle umod 180.degrees).absoluteValue
             val angle3 = if (angle2 >= 90.degrees) 180.degrees - angle2 else angle2
-            val ratio = (angle3.ratio.absoluteValue * 4).clamp(0.0, 1.0)
+            val ratio = (angle3.ratio.absoluteValue * 4).clamp(0f, 1f)
             val p5 = ratio.toRatio().interpolate(p4, p3!!)
 
             //val p5 = p3
@@ -225,15 +225,15 @@ class StrokePointsBuilder(
         val angleStart = Angle.between(mid, p0)
         val angleEnd = Angle.between(mid, p3)
 
-        if (ratio == 1.0) addTwoPoints(mid, Point.fromPolar(angleEnd), width)
+        if (ratio == 1.0) addTwoPoints(mid, Point.polar(angleEnd), width)
         val addAngle = if (Point.crossProduct(p0, p3) <= 0.0) Angle.ZERO else Angle.HALF
         Ratio.forEachRatio(nsteps, include0 = true, include1 = true) {
             val angle = it.interpolateAngleDenormalized(angleStart, angleEnd)
-            val dir = Point.fromPolar(angle + addAngle)
+            val dir = Point.polar(angle + addAngle)
             addPoint(mid, dir, 0.0, width)
             addPoint(mid, dir, width, width)
         }
-        if (ratio == 0.0) addTwoPoints(mid, Point.fromPolar(angleStart), width)
+        if (ratio == 0.0) addTwoPoints(mid, Point.polar(angleStart), width)
     }
 
     // @TODO: instead of nsteps we should have some kind of threshold regarding to how much information do we lose at 1:1 scale

@@ -98,7 +98,7 @@ fun Project.doOnce(uniqueName: String, block: () -> Unit) {
 }
 
 fun Project.doOncePerProject(uniqueName: String, block: () -> Unit) {
-    val key = "doOnceProject-$uniqueName"
+    val key = "doOnceProject-${project.name}-$uniqueName"
     if (!project.extra.has(key)) {
         project.extra.set(key, true)
         block()

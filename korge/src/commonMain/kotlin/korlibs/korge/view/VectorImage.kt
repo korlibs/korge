@@ -33,9 +33,8 @@ class VectorImage(
         ctx.draw(shape)
     }
 
-    override fun getShapeBounds(bb: BoundsBuilder, includeStrokes: Boolean) {
-        bb.add(0.0, 0.0)
-        bb.add(shape.width, shape.height)
+    override fun getShapeBounds(includeStrokes: Boolean): Rectangle {
+        return Rectangle(0, 0, shape.width, shape.height)
     }
 
     override fun renderInternal(ctx: RenderContext) {

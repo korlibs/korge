@@ -83,14 +83,14 @@ class NinePatchInfo constructor(
     //init { println("Created NinePatchInfo") }
 
     fun computeScale(
-        bounds: MRectangleInt,
+        bounds: RectangleInt,
         new: Boolean = true,
         callback: (segment: Segment, x: Int, y: Int, width: Int, height: Int) -> Unit
     ) = if (new) computeScaleNew(bounds, callback) else computeScaleOld(bounds, callback)
 
 	// Can be reused for textures using AG
 	fun computeScaleOld(
-        bounds: MRectangleInt,
+        bounds: RectangleInt,
         callback: (segment: Segment, x: Int, y: Int, width: Int, height: Int) -> Unit
 	) {
 		//println("scaleFixed=($scaleFixedX,$scaleFixedY)")
@@ -118,7 +118,7 @@ class NinePatchInfo constructor(
     private val yComputed = IntArray(64)
 
     fun computeScaleNew(
-        bounds: MRectangleInt,
+        bounds: RectangleInt,
         callback: (segment: NinePatchInfo.Segment, x: Int, y: Int, width: Int, height: Int) -> Unit
     ) {
         //println("scaleFixed=($scaleFixedX,$scaleFixedY)")
@@ -233,7 +233,7 @@ open class NinePatchBmpSlice(
 
 	fun <T : Bitmap> drawTo(
         other: T,
-        bounds: MRectangleInt,
+        bounds: RectangleInt,
         antialiased: Boolean = true,
         drawRegions: Boolean = false
 	): T {
@@ -251,7 +251,7 @@ open class NinePatchBmpSlice(
 	fun renderedNative(width: Int, height: Int, antialiased: Boolean = true, drawRegions: Boolean = false): NativeImage = drawTo(
         NativeImage(width, height),
         //Bitmap32(width, height),
-        MRectangleInt(0, 0, width, height),
+        RectangleInt(0, 0, width, height),
         antialiased = antialiased,
         drawRegions = drawRegions
     )

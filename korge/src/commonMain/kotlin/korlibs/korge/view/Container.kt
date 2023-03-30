@@ -301,9 +301,9 @@ open class Container(
     }
 
     override fun getLocalBoundsInternal(): Rectangle {
-        var bb = NewBoundsBuilder()
+        var bb = BoundsBuilder()
         fastForEachChild { child: View ->
-            bb += child.getBounds(this).immutable
+            bb += child.getBounds(this)
         }
         return bb.bounds
     }
@@ -406,6 +406,7 @@ open class Container(
         onChildAdded(view)
         invalidateZIndexChildren()
         invalidateContainer()
+        invalidateLocalBounds()
     }
 
     /**
@@ -425,6 +426,7 @@ open class Container(
         view.index = -1
         invalidateZIndexChildren()
         invalidateContainer()
+        invalidateLocalBounds()
         return true
     }
 
@@ -446,6 +448,7 @@ open class Container(
         old.parent = null
         new.invalidate()
         old.index = -1
+        invalidateLocalBounds()
         return true
     }
 

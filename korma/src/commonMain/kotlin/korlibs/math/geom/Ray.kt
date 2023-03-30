@@ -6,5 +6,5 @@ inline class Ray(val data: Float4Pack) {
     val point: Point get() = Point(data.f0, data.f1)
     val direction: Point get() = Point(data.f2, data.f3)
 
-    constructor(point: Point, direction: Point) : this(float4PackOf(point.x, point.y, direction.x, direction.y))
+    constructor(point: Point, direction: Vector2) : this(float4PackOf(point.x, point.y, direction.x, direction.y))
 }

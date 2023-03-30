@@ -36,7 +36,7 @@ class CameraContainer(
     block: @ViewDslMarker CameraContainer.() -> Unit = {}
 ) : FixedSizeContainer(width, height, clip), View.Reference {
     var clampToBounds: Boolean = false
-    val cameraViewportBounds: MRectangle = MRectangle(0, 0, 4096, 4096)
+    var cameraViewportBounds: Rectangle = Rectangle(0, 0, 4096, 4096)
 
     private val contentContainer = Container()
 
@@ -110,14 +110,14 @@ class CameraContainer(
     fun getDefaultCamera(out: Camera = Camera()): Camera = out.setTo(x = width / 2.0, y = height / 2.0, anchorX = 0.5, anchorY = 0.5)
 
     companion object {
-        fun getCameraRect(rect: MRectangle, scaleMode: ScaleMode = ScaleMode.SHOW_ALL, cameraWidth: Double, cameraHeight: Double, cameraAnchorX: Double, cameraAnchorY: Double, out: Camera = Camera()): Camera {
-            val size = MRectangle(0.0, 0.0, cameraWidth, cameraHeight).place(rect.mSize, Anchor.TOP_LEFT, scale = scaleMode).mSize
+        fun getCameraRect(rect: Rectangle, scaleMode: ScaleMode = ScaleMode.SHOW_ALL, cameraWidth: Double, cameraHeight: Double, cameraAnchorX: Double, cameraAnchorY: Double, out: Camera = Camera()): Camera {
+            val size = Rectangle(0.0, 0.0, cameraWidth, cameraHeight).place(rect.size, Anchor.TOP_LEFT, scale = scaleMode)
             val scaleX = size.width / rect.width
             val scaleY = size.height / rect.height
             return out.setTo(
                 rect.x + rect.width * cameraAnchorX,
                 rect.y + rect.height * cameraAnchorY,
-                zoom = min(scaleX, scaleY),
+                zoom = min(scaleX, scaleY).toDouble(),
                 angle = 0.degrees,
                 anchorX = cameraAnchorX,
                 anchorY = cameraAnchorY
@@ -125,9 +125,9 @@ class CameraContainer(
         }
     }
 
-    fun getCameraRect(rect: MRectangle, scaleMode: ScaleMode = ScaleMode.SHOW_ALL, out: Camera = Camera()): Camera = getCameraRect(rect, scaleMode, width, height, cameraAnchorX, cameraAnchorY, out)
-    fun getCameraToFit(rect: MRectangle, out: Camera = Camera()): Camera = getCameraRect(rect, ScaleMode.SHOW_ALL, out)
-    fun getCameraToCover(rect: MRectangle, out: Camera = Camera()): Camera = getCameraRect(rect, ScaleMode.COVER, out)
+    fun getCameraRect(rect: Rectangle, scaleMode: ScaleMode = ScaleMode.SHOW_ALL, out: Camera = Camera()): Camera = getCameraRect(rect, scaleMode, width, height, cameraAnchorX, cameraAnchorY, out)
+    fun getCameraToFit(rect: Rectangle, out: Camera = Camera()): Camera = getCameraRect(rect, ScaleMode.SHOW_ALL, out)
+    fun getCameraToCover(rect: Rectangle, out: Camera = Camera()): Camera = getCameraRect(rect, ScaleMode.COVER, out)
 
     private var transitionTime = 1.0.seconds
     private var elapsedTime = 0.0.milliseconds
@@ -139,9 +139,9 @@ class CameraContainer(
     fun follow(view: View?, setImmediately: Boolean = false) {
         following = view
         if (setImmediately) {
-            val point = getFollowingXY(tempPoint)
-            cameraX = point.x
-            cameraY = point.y
+            val point = getFollowingXY()
+            cameraX = point.xD
+            cameraY = point.yD
             sourceCamera.x = cameraX
             sourceCamera.y = cameraY
         }
@@ -178,14 +178,12 @@ class CameraContainer(
         onCompletedTransition.waitOne()
     }
 
-    fun getFollowingXY(out: MPoint = MPoint()): MPoint {
+    fun getFollowingXY(): Point {
         val followGlobalX = following!!.globalPos.xD
         val followGlobalY = following!!.globalPos.yD
-        val localToContentPos = content!!.globalToLocal(Point(followGlobalX, followGlobalY))
-        return out.setTo(localToContentPos)
+        return content.globalToLocal(Point(followGlobalX, followGlobalY))
     }
 
-    private val tempPoint = MPoint()
     init {
         block(this)
         contentContainer.addTo(this)
@@ -193,9 +191,9 @@ class CameraContainer(
         addUpdater {
             when {
                 following != null -> {
-                    val point = getFollowingXY(tempPoint)
-                    cameraX = 0.1.toRatio().interpolate(currentCamera.x, point.x)
-                    cameraY = 0.1.toRatio().interpolate(currentCamera.y, point.y)
+                    val point = getFollowingXY()
+                    cameraX = 0.1.toRatio().interpolate(currentCamera.x, point.xD)
+                    cameraY = 0.1.toRatio().interpolate(currentCamera.y, point.yD)
                     sourceCamera.x = cameraX
                     sourceCamera.y = cameraY
                     //cameraX = 0.0

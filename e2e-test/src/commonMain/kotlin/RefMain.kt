@@ -98,7 +98,7 @@ object FiltersE2ETestCase : E2ETestCase() {
         println("LOADING IMAGE...")
         val bitmap = resourcesVfs["korge.png"].readBitmap()
         println("PREPARING VIEWS...")
-        image(bitmap).scale(.5).position(0, 0).addFilter(WaveFilter(time = 0.5.seconds))
+        image(bitmap).scale(.5).position(0, 0).addFilter(WaveFilter(time = 0.5.seconds, crestDistanceX = 256.0, crestDistanceY = 128.0))
         image(bitmap).scale(.5).position(256, 0).addFilter(BlurFilter(radius = 6.0))
         image(bitmap).scale(.5).position(512, 0).addFilter(TransitionFilter(TransitionFilter.Transition.SWEEP, reversed = false, spread = 1.0, ratio = 0.5))
         image(bitmap).scale(.5).position(0, 256).addFilter(PageFilter(hratio = 0.5, hamplitude1 = 20.0))

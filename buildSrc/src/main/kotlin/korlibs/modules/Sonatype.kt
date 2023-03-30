@@ -47,7 +47,7 @@ fun Project.configureMavenCentralRelease() {
                 val stagedRepositoryId = sonatype.startStagedRepository(profileId)
                 println("profileId=$profileId")
                 println("stagedRepositoryId=$stagedRepositoryId")
-                println("::set-output name=stagedRepositoryId::$stagedRepositoryId")
+                GithubCI.setOutput("stagedRepositoryId", stagedRepositoryId)
             }
         }
     }

@@ -6,9 +6,6 @@ import korlibs.math.annotations.*
 import korlibs.math.math.*
 import kotlin.math.*
 
-@Deprecated("Use PointList directly")
-typealias IPointArrayList = PointList
-
 sealed interface PointList : IVectorArrayList, Extra {
     override val dimensions: Int get() = 2
     override fun get(index: Int, dim: Int): Float = if (dim == 0) getX(index) else getY(index)
@@ -19,8 +16,7 @@ sealed interface PointList : IVectorArrayList, Extra {
 
     operator fun get(index: Int): Point = Point(getX(index), getY(index))
 
-    @Deprecated("")
-    fun get(index: Int, out: MPoint): MPoint = out.setTo(getX(index), getY(index))
+    fun toList(): List<Point> = ArrayList<Point>(this.size).also { out -> fastForEach { out.add(it) } }
 
     fun roundDecimalPlaces(places: Int, out: PointArrayList = PointArrayList()): PointList {
         fastForEach { (x, y) -> out.add(x.roundDecimalPlaces(places), y.roundDecimalPlaces(places)) }
@@ -42,24 +38,9 @@ sealed interface PointList : IVectorArrayList, Extra {
         return Orientation.orient2dFixed(getX(0).toDouble(), getY(0).toDouble(), getX(1).toDouble(), getY(1).toDouble(), getX(2).toDouble(), getY(2).toDouble())
     }
 
-    @Deprecated("")
-    fun getPoint(index: Int, out: MPoint = MPoint()): MPoint = out.setTo(getX(index), getY(index))
-    @Deprecated("")
-    fun getMPoint(index: Int): MPoint = MPoint(getX(index), getY(index))
-    @Deprecated("")
-    fun toList(): List<MPoint> = (0 until size).map { getPoint(it) }
-
-    @Deprecated("")
-    fun toPoints(): List<MPoint> = (0 until size).map { getPoint(it) }
-    @Deprecated("")
-    fun toIPoints(): List<MPoint> = (0 until size).map { getMPoint(it) }
-
     operator fun contains(p: Point): Boolean = contains(p.x, p.y)
-    @Deprecated("")
     fun contains(x: Double, y: Double): Boolean = contains(x.toFloat(), y.toFloat())
-    @Deprecated("")
     fun contains(x: Int, y: Int): Boolean = contains(x.toFloat(), y.toFloat())
-    @Deprecated("")
     fun contains(x: Float, y: Float): Boolean {
         for (n in 0 until size) if (getX(n) == x && getY(n) == y) return true
         return false
@@ -95,12 +76,6 @@ fun PointList.mapPoints(gen: (p: Point) -> Point): PointList {
     return out
 }
 
-fun PointList.mapPoints(temp: MPoint = MPoint(), gen: (x: Double, y: Double, out: MPoint) -> MPoint): PointList {
-    val out = PointArrayList(this.size)
-    fastForEach { (x, y) -> out.add(gen(x.toDouble(), y.toDouble(), temp)) }
-    return out
-}
-
 fun List<Point>.toPointArrayList(): PointArrayList = PointArrayList(size).also { for (p in this) it.add(p) }
 
 open class PointArrayList(capacity: Int = 7) : PointList, Extra by Extra.Mixin() {
@@ -131,12 +106,7 @@ open class PointArrayList(capacity: Int = 7) : PointList, Extra by Extra.Mixin()
         }
 
         operator fun invoke(capacity: Int = 7, callback: PointArrayList.() -> Unit): PointArrayList = PointArrayList(capacity).apply(callback)
-        @Deprecated("")
-        operator fun invoke(points: List<MPoint>): PointArrayList = PointArrayList(points.size) {
-            for (n in points.indices) add(points[n].x, points[n].y)
-        }
-        @Deprecated("")
-        operator fun invoke(vararg points: MPoint): PointArrayList = PointArrayList(points.size) {
+        operator fun invoke(points: List<Point>): PointArrayList = PointArrayList(points.size) {
             for (n in points.indices) add(points[n].x, points[n].y)
         }
         operator fun invoke(capacity: Int = 7): PointArrayList = PointArrayList(capacity)
@@ -170,7 +140,6 @@ open class PointArrayList(capacity: Int = 7) : PointList, Extra by Extra.Mixin()
     fun add(x: Int, y: Int) = add(x.toDouble(), y.toDouble())
 
     fun add(p: Point) = add(p.x, p.y)
-    fun add(p: MPoint) = add(p.x, p.y)
     fun add(p: PointList) = this.apply { p.fastForEach { (x, y) -> add(x, y) } }
     fun addReverse(p: PointList) = this.apply { p.fastForEachReverse { (x, y) -> add(x, y) } }
     fun add(p: PointList, index: Int) {
@@ -188,12 +157,6 @@ open class PointArrayList(capacity: Int = 7) : PointList, Extra by Extra.Mixin()
     }
     override fun clone(out: PointArrayList): PointArrayList = out.clear().add(this)
 
-    override fun toList(): List<MPoint> {
-        val out = arrayListOf<MPoint>()
-        fastForEach { (x, y) -> out.add(MPoint(x, y)) }
-        return out
-    }
-
     private fun index(index: Int, offset: Int): Int = index * 2 + offset
 
     override fun getX(index: Int): Float = data.getAt(index(index, 0))
@@ -208,12 +171,12 @@ open class PointArrayList(capacity: Int = 7) : PointList, Extra by Extra.Mixin()
         return this
     }
 
-    fun insertAt(index: Int, x: Double, y: Double): PointArrayList {
+    fun insertAt(index: Int, x: Float, y: Float): PointArrayList {
         data.insertAt(index(index, 0), x.toFloat(), y.toFloat())
         return this
     }
 
-    fun insertAt(index: Int, point: MPoint) = insertAt(index, point.x, point.y)
+    fun insertAt(index: Int, point: Point) = insertAt(index, point.x, point.y)
 
     fun removeAt(index: Int, count: Int = 1): PointArrayList {
         data.removeAt(index(index, 0), count * 2)
@@ -240,10 +203,10 @@ open class PointArrayList(capacity: Int = 7) : PointList, Extra by Extra.Mixin()
     }
     fun setXY(index: Int, x: Int, y: Int) = setXY(index, x.toFloat(), y.toFloat())
     fun setXY(index: Int, x: Double, y: Double) = setXY(index, x.toFloat(), y.toFloat())
-    fun setXY(index: Int, p: MPoint) = setXY(index, p.x, p.y)
+    fun setXY(index: Int, p: Point) = setXY(index, p.x, p.y)
     operator fun set(index: Int, p: Point) = setXY(index, p.x, p.y)
 
-    fun transform(matrix: MMatrix) {
+    fun transform(matrix: Matrix) {
         for (n in 0 until size) set(n, matrix.transform(this[n]))
     }
 
@@ -289,7 +252,6 @@ fun pointArrayListOf(vararg values: Int): PointArrayList =
     PointArrayList(values.size / 2).also { it.addRaw(*values.mapDouble { it.toDouble() }) }
 fun pointArrayListOf(vararg values: Double): PointArrayList =
     PointArrayList(values.size / 2).also { it.addRaw(*values) }
-fun pointArrayListOf(vararg values: MPoint): PointArrayList = PointArrayList(*values)
 
 fun pointArrayListOf(p0: Point): PointArrayList = PointArrayList(1).add(p0)
 fun pointArrayListOf(p0: Point, p1: Point): PointArrayList = PointArrayList(2).add(p0).add(p1)
@@ -299,136 +261,3 @@ fun pointArrayListOf(p0: Point, p1: Point, p2: Point, p3: Point): PointArrayList
 inline fun <T : Point> pointArrayListOf(vararg points: T): PointArrayList =
     PointArrayList(points.size).also { list -> for (element in points) list.add(element) }
     //PointArrayList(points.size).also { list -> points.fastForEach { list.add(Point.fromRaw(Float2Pack.fromRaw(it as Long))) } }
-
-//////////////////////////////////////
-
-sealed interface MPointIntArrayList {
-    val closed: Boolean
-    val size: Int
-    fun getX(index: Int): Int
-    fun getY(index: Int): Int
-}
-
-fun MPointIntArrayList.getPoint(index: Int, out: MPointInt = MPointInt()): MPointInt = out.setTo(getX(index), getY(index))
-fun MPointIntArrayList.getMPoint(index: Int): MPointInt = MPointInt(getX(index), getY(index))
-fun MPointIntArrayList.toPoints(): List<MPointInt> = (0 until size).map { getPoint(it) }
-fun MPointIntArrayList.toIPoints(): List<MPointInt> = (0 until size).map { getMPoint(it) }
-fun MPointIntArrayList.contains(x: Int, y: Int): Boolean {
-    for (n in 0 until size) if (getX(n) == x && getY(n) == y) return true
-    return false
-}
-inline fun MPointIntArrayList.fastForEach(block: (x: Int, y: Int) -> Unit) {
-    for (n in 0 until size) {
-        block(getX(n), getY(n))
-    }
-}
-
-inline fun MPointIntArrayList.fastForEachReverse(block: (x: Int, y: Int) -> Unit) {
-    for (n in 0 until size) {
-        val m = size - 1 - n
-        block(getX(m), getY(m))
-    }
-}
-
-open class PointIntArrayList(capacity: Int = 7) : MPointIntArrayList, Extra by Extra.Mixin() {
-    override var closed: Boolean = false
-    private val xList = IntArrayList(capacity)
-    private val yList = IntArrayList(capacity)
-    override val size get() = xList.size
-
-    fun isEmpty() = size == 0
-    fun isNotEmpty() = size != 0
-
-    fun clear() {
-        xList.clear()
-        yList.clear()
-    }
-
-    companion object {
-        operator fun invoke(capacity: Int = 7, callback: PointIntArrayList.() -> Unit): PointIntArrayList = PointIntArrayList(capacity).apply(callback)
-        operator fun invoke(points: List<MPointInt>): PointIntArrayList = PointIntArrayList(points.size) {
-            for (n in points.indices) add(points[n].x, points[n].y)
-        }
-        operator inline fun <reified T : MPointInt> invoke(vararg points: T): PointIntArrayList = PointIntArrayList(points.size) {
-            for (n in points.indices) add(points[n].x, points[n].y)
-        }
-    }
-
-    fun add(x: Int, y: Int) = this.apply {
-        xList += x
-        yList += y
-    }
-    fun add(p: Vector2Int) = add(p.x, p.y)
-    fun add(p: MPointInt) = add(p.x, p.y)
-    fun add(p: MPointIntArrayList) = this.apply { p.fastForEach { x, y -> add(x, y) } }
-    fun addReverse(p: MPointIntArrayList) = this.apply { p.fastForEachReverse { x, y -> add(x, y) } }
-
-    inline fun fastForEach(block: (x: Int, y: Int) -> Unit) {
-        for (n in 0 until size) {
-            block(getX(n), getY(n))
-        }
-    }
-
-    fun toList(): List<MPointInt> {
-        val out = arrayListOf<MPointInt>()
-        fastForEach { x, y -> out.add(MPointInt(x, y)) }
-        return out
-    }
-
-    override fun getX(index: Int) = xList.getAt(index)
-    override fun getY(index: Int) = yList.getAt(index)
-
-    fun setX(index: Int, x: Int) { xList[index] = x }
-    fun setY(index: Int, y: Int) { yList[index] = y }
-    fun setXY(index: Int, x: Int, y: Int) {
-        xList[index] = x
-        yList[index] = y
-    }
-
-    override fun toString(): String {
-        val sb = StringBuilder()
-        sb.append('[')
-        for (n in 0 until size) {
-            val x = getX(n)
-            val y = getY(n)
-            if (n != 0) {
-                sb.append(", ")
-            }
-            sb.append('(')
-            sb.append(x)
-            sb.append(", ")
-            sb.append(y)
-            sb.append(')')
-        }
-        sb.append(']')
-        return sb.toString()
-    }
-
-    fun swap(indexA: Int, indexB: Int) {
-        xList.swap(indexA, indexB)
-        yList.swap(indexA, indexB)
-    }
-
-    fun reverse() {
-        for (n in 0 until size / 2) swap(0 + n, size - 1 - n)
-    }
-
-    fun sort() {
-        genericSort(this, 0, this.size - 1, PointSortOpts)
-    }
-
-    object PointSortOpts : SortOps<PointIntArrayList>() {
-        override fun compare(p: PointIntArrayList, l: Int, r: Int): Int = MPointInt.compare(p.getX(l), p.getY(l), p.getX(r), p.getY(r))
-        override fun swap(subject: PointIntArrayList, indexL: Int, indexR: Int) = subject.swap(indexL, indexR)
-    }
-}
-
-inline fun <T> Iterable<T>.mapPoint(temp: MPoint = MPoint(), out: PointArrayList = PointArrayList(), block: MPoint.(value: T) -> MPoint): PointArrayList {
-    for (v in this) {
-        out.add(block(temp, v))
-    }
-    return out
-}
-
-fun List<PointList>.flatten(): PointList =
-    PointArrayList(this.sumOf { it.size }).also { out -> this.fastForEach { out.add(it) } }

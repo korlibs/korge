@@ -55,40 +55,19 @@ class RenderContext constructor(
     @PublishedApi internal val _buffers = AGProgramWithUniforms.BufferCache()
     private val _programs = FastIdentityMap<Program, AGProgramWithUniforms>()
 
-    @PublishedApi internal val textureUnitsPool = Pool { AGTextureUnits() }
+    //@PublishedApi internal val textureUnitsPool = Pool { AGTextureUnits() }
     val textureUnits = AGTextureUnits()
 
-    val projectionMatrixTransform = MMatrix()
-    val projectionMatrixTransformInv = MMatrix()
-    private val projMat: MMatrix3D = MMatrix3D()
+    var projectionMatrixTransform = Matrix()
+    var projectionMatrixTransformInv = Matrix()
+    private var projMat: Matrix4 = Matrix4()
     @KorgeInternal
-    val viewMat: MMatrix3D = MMatrix3D()
+    var viewMat: Matrix4 = Matrix4()
     @KorgeInternal
     var viewMat2D: Matrix = Matrix()
 
-    @KorgeInternal
-    val uniforms: AGUniformValues by lazy {
-        AGUniformValues {
-            //it[DefaultShaders.u_ProjMat] = projMat
-            //it[DefaultShaders.u_ViewMat] = viewMat
-        }
-    }
-
-    inline fun <T> setTemporalProjectionMatrixTransform(m: MMatrix, block: () -> T): T =
-        this.projectionMatrixTransform.keepMatrix {
-            flush()
-            this.projectionMatrixTransform.copyFrom(m)
-            try {
-                block()
-            } finally {
-                flush()
-            }
-        }
-
     var flipRenderTexture = true
     //var flipRenderTexture = false
-    private val tempRect = MRectangle()
-    private val tempMat3d = MMatrix3D()
 
     val tempTexturePool: Pool<AGTexture> = Pool { AGTexture() }
 
@@ -102,10 +81,10 @@ class RenderContext constructor(
     fun updateStandardUniforms() {
         //println("updateStandardUniforms: ag.currentSize(${ag.currentWidth}, ${ag.currentHeight}) : ${ag.currentFrameBuffer}")
         if (flipRenderTexture && currentFrameBuffer.isTexture) {
-            projMat.setToOrtho(tempRect.setBounds(0, currentFrameBuffer.height, currentFrameBuffer.width, 0), -1f, 1f)
+            projMat = Matrix4.ortho(Rectangle.fromBounds(0, currentFrameBuffer.height, currentFrameBuffer.width, 0), -1f, 1f)
         } else {
-            projMat.setToOrtho(tempRect.setBounds(0, 0, currentFrameBuffer.width, currentFrameBuffer.height), -1f, 1f)
-            projMat.multiply(projMat, projectionMatrixTransform.toMatrix4(tempMat3d))
+            projMat = Matrix4.ortho(Rectangle.fromBounds(0, 0, currentFrameBuffer.width, currentFrameBuffer.height), -1f, 1f)
+            projMat = projMat * projectionMatrixTransform.toMatrix4()
         }
 
         //println("updateStandardUniforms!!!")
@@ -128,78 +107,51 @@ class RenderContext constructor(
      * Executes [callback] while setting temporarily the view matrix to [matrix]
      */
     inline fun setViewMatrixTemp(matrix: Matrix, crossinline callback: () -> Unit) {
-        matrix3DPool.alloc { temp ->
-            flush()
-            temp.copyFrom(this.viewMat)
-            val temp2d = this.viewMat2D
-            this.viewMat2D = matrix
-            this.viewMat.copyFrom(matrix)
-            //this[DefaultShaders.ub_ProjViewMatBlock].push {
-            //    it[DefaultShaders.u_ViewMat].set(this.viewMat)
-            //}
-            this[DefaultShaders.ProjViewUB].push {
-                it[u_ViewMat] = this@RenderContext.viewMat
-            }
-            //println("viewMat: $viewMat, matrix: $matrix")
-            try {
-                callback()
-            } finally {
-                flush()
-                this.viewMat.copyFrom(temp)
-                this.viewMat2D = temp2d
-                //this[DefaultShaders.ub_ProjViewMatBlock].pop()
-                this[DefaultShaders.ProjViewUB].pop()
-                //uniforms[DefaultShaders.u_ViewMat] = this.viewMat
-            }
+        flush()
+        val temp4 = this.viewMat
+        val temp2d = this.viewMat2D
+        this.viewMat2D = matrix
+        this.viewMat = matrix.toMatrix4()
+        //this[DefaultShaders.ub_ProjViewMatBlock].push {
+        //    it[DefaultShaders.u_ViewMat].set(this.viewMat)
+        //}
+        this[DefaultShaders.ProjViewUB].push {
+            it[u_ViewMat] = this@RenderContext.viewMat
         }
-    }
-
-    inline fun <T> keepTextureUnit(sampler: Sampler, flush: Boolean = true, callback: () -> T): T {
-        val oldTex = textureUnits.textures[sampler.index]
-        val oldInfo = textureUnits.infos[sampler.index]
+        //println("viewMat: $viewMat, matrix: $matrix")
         try {
-            return callback()
+            callback()
         } finally {
-            if (flush) flush()
-            textureUnits.set(sampler, oldTex, oldInfo)
+            flush()
+            this.viewMat = temp4
+            this.viewMat2D = temp2d
+            //this[DefaultShaders.ub_ProjViewMatBlock].pop()
+            this[DefaultShaders.ProjViewUB].pop()
+            //uniforms[DefaultShaders.u_ViewMat] = this.viewMat
         }
     }
 
-    inline fun <T> keepTextureUnits(samplers: Array<Sampler>, flush: Boolean = true, callback: () -> T): T {
-        textureUnitsPool.alloc { old ->
-            samplers.fastForEach { old.set(it, textureUnits.textures[it.index], textureUnits.infos[it.index]) }
-            try {
-                return callback()
-            } finally {
-                if (flush) flush()
-                samplers.fastForEach { textureUnits.set(it, old.textures[it.index], old.infos[it.index]) }
-            }
-        }
-    }
-
-    @PublishedApi
-    internal val tempOldUniformsList: Pool<AGUniformValues> = Pool { AGUniformValues() }
-
-    /**
-     * Executes [callback] while setting temporarily a set of [uniforms]
-     */
-    inline fun setTemporalUniforms(uniforms: AGUniformValues?, callback: (AGUniformValues) -> Unit) {
-        tempOldUniformsList { tempOldUniforms ->
-            if (uniforms != null && uniforms.isNotEmpty()) {
-                flush(FlushKind.STATE)
-                tempOldUniforms.setTo(this.uniforms)
-                this.uniforms.put(uniforms)
-            }
-            try {
-                callback(this.uniforms)
-            } finally {
-                if (uniforms != null && uniforms.isNotEmpty()) {
-                    flush(FlushKind.STATE)
-                    this.uniforms.setTo(tempOldUniforms)
-                }
-            }
-        }
-    }
+    //inline fun <T> keepTextureUnit(sampler: Sampler, flush: Boolean = true, callback: () -> T): T {
+    //    val oldTex = textureUnits.textures[sampler.index]
+    //    val oldInfo = textureUnits.infos[sampler.index]
+    //    try {
+    //        return callback()
+    //    } finally {
+    //        if (flush) flush()
+    //        textureUnits.set(sampler, oldTex, oldInfo)
+    //    }
+    //}
+    //inline fun <T> keepTextureUnits(samplers: Array<Sampler>, flush: Boolean = true, callback: () -> T): T {
+    //    textureUnitsPool.alloc { old ->
+    //        samplers.fastForEach { old.set(it, textureUnits.textures[it.index], textureUnits.infos[it.index]) }
+    //        try {
+    //            return callback()
+    //        } finally {
+    //            if (flush) flush()
+    //            samplers.fastForEach { textureUnits.set(it, old.textures[it.index], old.infos[it.index]) }
+    //        }
+    //    }
+    //}
 
     val agAutoFreeManager = AgAutoFreeManager()
 	val agBitmapTextureManager = AgBitmapTextureManager(ag)
@@ -454,7 +406,7 @@ class RenderContext constructor(
         rb.setSize(0, 0, realWidth, realHeight, realWidth, realHeight)
         rb.setExtra(hasDepth = hasDepth, hasStencil = hasStencil)
         rb.setSamples(msamples)
-        //println("unsafeAllocateFrameRenderBuffer($width, $height), real($realWidth, $realHeight), $rb")
+        //println("unsafeAllocateFrameRenderBuffer[${rb.id}]($width, $height), real($realWidth, $realHeight), $rb")
         return rb
     }
 

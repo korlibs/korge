@@ -67,6 +67,9 @@ abstract class KorgwActivity(
 
                 override fun resumeWith(result: Result<Unit>) {
                     println("KorgwActivity.activityMain completed! result=$result")
+                    if (result.isFailure) {
+                        result.exceptionOrNull()?.printStackTrace()
+                    }
                 }
             })
         }
@@ -128,24 +131,30 @@ abstract class KorgwActivity(
     abstract suspend fun activityMain(): Unit
 
     fun makeFullscreen(value: Boolean) {
-        if (value) window.decorView.run {
-            if (defaultUiVisibility == -1)
-                defaultUiVisibility = systemUiVisibility
-            val flags = (View.SYSTEM_UI_FLAG_FULLSCREEN
-                or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY)
-            systemUiVisibility = flags
-            setOnSystemUiVisibilityChangeListener { visibility ->
-                if ((visibility and View.SYSTEM_UI_FLAG_FULLSCREEN) == 0) {
+        try {
+            runOnUiThread {
+                if (value) window.decorView.run {
+                    if (defaultUiVisibility == -1)
+                        defaultUiVisibility = systemUiVisibility
+                    val flags = (View.SYSTEM_UI_FLAG_FULLSCREEN
+                        or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                        or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                        or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                        or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                        or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY)
                     systemUiVisibility = flags
+                    setOnSystemUiVisibilityChangeListener { visibility ->
+                        if ((visibility and View.SYSTEM_UI_FLAG_FULLSCREEN) == 0) {
+                            systemUiVisibility = flags
+                        }
+                    }
+                } else window.decorView.run {
+                    setOnSystemUiVisibilityChangeListener(null)
+                    systemUiVisibility = defaultUiVisibility
                 }
             }
-        } else window.decorView.run {
-            setOnSystemUiVisibilityChangeListener(null)
-            systemUiVisibility = defaultUiVisibility
+        } catch (e: Throwable) {
+            e.printStackTrace()
         }
     }
 
