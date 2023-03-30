@@ -14,15 +14,8 @@ interface WithHitShape2D {
 
 abstract class AbstractNShape2D : Shape2D {
     abstract protected val lazyVectorPath: VectorPath
-
-    override val perimeter: Float get() {
-        var sum: Double = 0.0
-        toVectorPath().getCurvesList().fastForEach { sum += it.length }
-        return sum.toFloat()
-    }
-
-    override val area: Float get() = if (lazyVectorPath.isLastCommandClose) lazyVectorPath.area else 0f
     override fun toVectorPath(): VectorPath = lazyVectorPath
+
     override fun distance(p: Point): Float = (p - projectedPoint(p)).length * insideSign(p)
     override fun normalVectorAt(p: Point): Vector2 = -projectedPointExt(p, normal = true)
     override fun projectedPoint(p: Point): Point = projectedPointExt(p, normal = false)
@@ -48,7 +41,7 @@ abstract class AbstractNShape2D : Shape2D {
         } }
         return if (normal) n.normalized else pp
     }
-    override fun containsPoint(p: Point): Boolean = lazyVectorPath.containsPoint(p)
+    override fun containsPoint(p: Point): Boolean = toVectorPath().containsPoint(p)
 }
 
 val VectorPath.cachedPoints: PointList by Extra.PropertyThis { this.getPoints2() }
@@ -65,8 +58,15 @@ typealias Shape2d = Shape2D
 // RoundRectangle
 interface Shape2D {
     val center: Point get() = getBounds().center
-    val area: Float
-    val perimeter: Float
+    val area: Float get() {
+        val lazyVectorPath = toVectorPath()
+        return if (lazyVectorPath.isLastCommandClose) lazyVectorPath.area else 0f
+    }
+    val perimeter: Float get() {
+        var sum: Double = 0.0
+        toVectorPath().getCurvesList().fastForEach { sum += it.length }
+        return sum.toFloat()
+    }
 
     /** Compute the distance to the shortest point to the edge (SDF). Negative inside. Positive outside. */
     fun distance(p: Point): Float = (p - projectedPoint(p)).length
@@ -93,6 +93,37 @@ interface Shape2D {
     //    TODO()
     //}
 
+    /** [ml] transformation matrix of this [Shape2d], [mr] transformation matrix of the point [p] */
+    @Deprecated("Untested yet")
+    fun containsPoint(ml: Matrix, p: Point, mr: Matrix): Boolean {
+        val mat = mr * ml.inverted()
+        return containsPoint(p.transformed(mat))
+    }
+
+    // @TODO: Check
+    /** [ml] transformation matrix of this [Shape2d], [mr] transformation matrix of the point [p] */
+    @Deprecated("Untested yet")
+    fun distance(ml: Matrix, p: Point, mr: Matrix): Float {
+        return (p.transformed(mr) - projectedPoint(ml, p, mr)).length
+    }
+
+    // @TODO: Check
+    /** [ml] transformation matrix of this [Shape2d], [mr] transformation matrix of the point [p] */
+    @Deprecated("Untested yet")
+    fun normalVectorAt(ml: Matrix, p: Point, mr: Matrix): Point {
+        val mat = mr * ml.inverted()
+        return normalVectorAt(p.transformed(mat)).deltaTransformed(ml)
+    }
+
+    // @TODO: Check
+    /** [ml] transformation matrix of this [Shape2d], [mr] transformation matrix of the point [p] */
+    @Deprecated("Untested yet")
+    fun projectedPoint(ml: Matrix, p: Point, mr: Matrix): Point {
+        val mat = mr * ml.inverted()
+        return projectedPoint(p.transformed(mat)).transformed(ml)
+    }
+
+    /** [ml] transformation matrix of this [Shape2d], [mr] transformation matrix of the shape [that] */
     fun intersectionsWith(ml: Matrix, that: Shape2D, mr: Matrix): PointList {
         val mat = mr * ml.inverted()
 
