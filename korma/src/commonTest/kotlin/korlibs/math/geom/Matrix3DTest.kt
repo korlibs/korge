@@ -207,9 +207,18 @@ class Matrix3DTest {
         assertEquals(Quaternion(0.7, 0.0, 0.0, 0.7).round(1), Quaternion.fromEuler(90.degrees, 0.degrees, 0.degrees).round(1))
         assertEquals(Quaternion(0.0, 0.7, 0.0, 0.7).round(1), Quaternion.fromEuler(0.degrees, 90.degrees, 0.degrees).round(1))
         assertEquals(Quaternion(0.0, 0.0, 0.7, 0.7).round(1), Quaternion.fromEuler(0.degrees, 0.degrees, 90.degrees).round(1))
+    }
 
+    @Test
+    fun testEuler0() {
         assertEquals(EulerRotation(90.degrees, 0.degrees, 0.degrees), EulerRotation.fromQuaternion(Quaternion.fromEuler(90.degrees, 0.degrees, 0.degrees)), 0.1)
+    }
+    @Test
+    fun testEuler1() {
         assertEquals(EulerRotation(0.degrees, 90.degrees, 0.degrees), EulerRotation.fromQuaternion(Quaternion.fromEuler(0.degrees, 90.degrees, 0.degrees)), 0.1)
+    }
+    @Test
+    fun testEuler2() {
         assertEquals(EulerRotation(0.degrees, 0.degrees, 90.degrees), EulerRotation.fromQuaternion(Quaternion.fromEuler(0.degrees, 0.degrees, 90.degrees)), 0.1)
     }
 
