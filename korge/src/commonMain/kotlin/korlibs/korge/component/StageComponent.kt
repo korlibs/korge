@@ -36,17 +36,17 @@ fun <T : View> T.onAttachDetach(onAttach: Views.(T) -> Unit = {}, onDetach: View
     return this
 }
 
-private val viewsToTrack = linkedSetOf<View>()
-
 /**
  * Enables the use of [StageComponent] components.
  */
 fun Views.registerStageComponent(view: View) {
+    val EXTRA_ID = "Views.registerStageComponent"
+
+    val firstRun = !views.hasExtra(EXTRA_ID)
+    val viewsToTrack = views.extraCache(EXTRA_ID) { linkedSetOf<View>() }
     viewsToTrack += view
 
-    val EXTRA_ID = "Views.registerStageComponent"
-    if (views.getExtra(EXTRA_ID) == true) return
-    views.setExtra(EXTRA_ID, true)
+    if (!firstRun) return
 
     val componentsInStagePrev = FastArrayList<ViewStageComponent>()
     val componentsInStageCur = linkedSetOf<ViewStageComponent>()
@@ -69,7 +69,7 @@ fun Views.registerStageComponent(view: View) {
 
         componentsInStagePrev.fastForEach {
             if (it !in componentsInStageCur) {
-                it.removed(this.views)
+                it.removed(views)
             }
         }
     }
