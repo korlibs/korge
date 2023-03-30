@@ -2,10 +2,9 @@ package korlibs.korge.component
 
 import korlibs.datastructure.*
 import korlibs.event.*
-import korlibs.korge.view.*
 import korlibs.io.async.*
-import korlibs.io.lang.Closeable
-import korlibs.io.lang.CancellableGroup
+import korlibs.io.lang.*
+import korlibs.korge.view.*
 
 /**
  * **Important**: To use this component you have to call the [Views.registerStageComponent] extension method at the start of the APP.
@@ -36,15 +35,19 @@ fun <T : View> T.onAttachDetach(onAttach: Views.(T) -> Unit = {}, onDetach: View
     return this
 }
 
+private var Views.viewsToTrack by Extra.Property<MutableSet<View>?> { null }
+
 /**
  * Enables the use of [StageComponent] components.
  */
 fun Views.registerStageComponent(view: View) {
     val EXTRA_ID = "Views.registerStageComponent"
 
-    val firstRun = !views.hasExtra(EXTRA_ID)
-    val viewsToTrack = views.extraCache(EXTRA_ID) { linkedSetOf<View>() }
-    viewsToTrack += view
+    val firstRun = viewsToTrack == null
+    if (firstRun) {
+        viewsToTrack = linkedSetOf()
+    }
+    viewsToTrack!! += view
 
     if (!firstRun) return
 
@@ -56,7 +59,7 @@ fun Views.registerStageComponent(view: View) {
         componentsInStagePrev += componentsInStageCur
         componentsInStageCur.clear()
 
-        viewsToTrack.forEach { view ->
+        viewsToTrack!!.forEach { view ->
             if (view.hasExtra(__VIEW_STAGE_COMPONENT_NAME) && view.hasAncestor(stage)) {
                 val it = view.viewStageComponent
                 componentsInStageCur += it
