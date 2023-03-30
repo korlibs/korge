@@ -267,6 +267,8 @@ class ViewTest {
         view1.x = 100.0
         logs += "view_bounds:" + view1.getBounds()
         act("reinsertView1") { container5.addChild(view1) }
+        view1.y = 700.0
+        act("reinsertView1_2") { view1.parent = container2 }
 
         assertEquals(
             """
@@ -274,6 +276,7 @@ class ViewTest {
                 moveView:Rectangle(x=0, y=0, w=400, h=200)
                 view_bounds:Rectangle(x=0, y=0, width=400, height=100)
                 reinsertView1:Rectangle(x=0, y=0, w=1000, h=200)
+                reinsertView1_2:Rectangle(x=0, y=0, w=500, h=800)
             """.trimIndent(),
             logs.joinToString("\n")
         )
