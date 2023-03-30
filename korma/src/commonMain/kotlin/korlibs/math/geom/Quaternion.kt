@@ -29,7 +29,9 @@ inline class Quaternion private constructor(val data: Float4Pack) {
     operator fun component4(): Float = w
 
     constructor(vector: Vector4, unit: Unit = Unit) : this(vector.data)
+    constructor() : this(0f, 0f, 0f, 1f)
     constructor(x: Float, y: Float, z: Float, w: Float) : this(float4PackOf(x, y, z, w))
+    constructor(x: Double, y: Double, z: Double, w: Double) : this(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat())
 
     fun toMatrix(): Matrix4 = Matrix4.multiply(
         // Left
@@ -141,6 +143,7 @@ inline class Quaternion private constructor(val data: Float4Pack) {
         }
 
         fun fromEuler(e: EulerRotation): Quaternion = e.toQuaternion()
+        fun fromEuler(roll: Angle, pitch: Angle, yaw: Angle): Quaternion = EulerRotation(roll, pitch, yaw).toQuaternion()
 
         fun toEuler(x: Float, y: Float, z: Float, w: Float): EulerRotation {
             val sinrCosp = +2.0 * (w * x + y * z)

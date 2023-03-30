@@ -2,7 +2,6 @@ package korlibs.korge.view
 
 import korlibs.datastructure.iterators.*
 import korlibs.io.lang.*
-import korlibs.math.geom.*
 import korlibs.math.geom.shape.*
 import korlibs.math.geom.vector.*
 import kotlin.collections.set
@@ -32,7 +31,7 @@ internal class ViewCollisionContext {
             val ml = left.getGlobalMatrixWithAnchor()
             val mr = right.getGlobalMatrixWithAnchor()
             //println("intersects[$result]: left=$leftShape, right=$rightShape, ml=$ml, mr=$mr")
-            return Shape2d.intersects(leftShape, ml, rightShape, mr)
+            return Shape2D.intersects(leftShape, ml, rightShape, mr)
         }
         return true
     }

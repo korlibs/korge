@@ -175,5 +175,5 @@ inline class MRectangleInt(val rect: MRectangle) {
 
     @KormaMutableApi fun asDouble(): MRectangle = this.rect
     @KormaMutableApi val float: MRectangle get() = MRectangle(x, y, width, height)
-    @KormaValueApi val value: Rectangle get() = Rectangle(x, y, width, height)
+    val value: Rectangle get() = Rectangle(x, y, width, height)
 }

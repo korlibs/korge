@@ -7,12 +7,12 @@ import korlibs.math.geom.collider.HitTestable
 import korlibs.math.geom.shape.*
 
 interface TileShapeInfo : HitTestable {
-    fun hitTestAny(shape2d: Shape2d, matrix: Matrix, direction: HitTestDirection): Boolean
+    fun hitTestAny(shape2d: Shape2D, matrix: Matrix, direction: HitTestDirection): Boolean
 }
 
 data class TileShapeInfoImpl(
     val type: HitTestDirectionFlags,
-    val shape: Shape2d,
+    val shape: Shape2D,
     val transform: Matrix,
     //val path: VectorPath
 ) : TileShapeInfo {
@@ -24,6 +24,6 @@ data class TileShapeInfoImpl(
         return shape.containsPoint(transformInv.transform(p)) && type.matches(direction)
     }
 
-    override fun hitTestAny(shape2d: Shape2d, matrix: Matrix, direction: HitTestDirection): Boolean =
-        Shape2d.intersects(shape, transform, shape2d, matrix) && type.matches(direction)
+    override fun hitTestAny(shape2d: Shape2D, matrix: Matrix, direction: HitTestDirection): Boolean =
+        Shape2D.intersects(shape, transform, shape2d, matrix) && type.matches(direction)
 }

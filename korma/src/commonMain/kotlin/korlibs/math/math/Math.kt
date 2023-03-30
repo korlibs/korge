@@ -1,5 +1,6 @@
 package korlibs.math.math
 
+import korlibs.memory.*
 import kotlin.math.*
 
 fun Double.betweenInclusive(min: Double, max: Double): Boolean = (this >= min) && (this <= max)
@@ -47,9 +48,10 @@ fun Double.isAlmostEquals(other: Double, epsilon: Double = 0.000001): Boolean = 
 fun Double.isAlmostZero(): Boolean = kotlin.math.abs(this) <= 1e-19
 fun Double.isNanOrInfinite() = this.isNaN() || this.isInfinite()
 
-fun Float.isAlmostEquals(other: Float, epsilon: Float = 0.000001f): Boolean = (this - other).absoluteValue < epsilon
-fun Float.isAlmostZero(): Boolean = kotlin.math.abs(this) <= 1e-19
+fun Float.isAlmostEquals(other: Float, epsilon: Float = 0.00001f): Boolean = (this - other).absoluteValue < epsilon
+fun Float.isAlmostZero(): Boolean = kotlin.math.abs(this) <= 1e-7
 fun Float.isNanOrInfinite() = this.isNaN() || this.isInfinite()
+fun Float.normalizeAlmostZero() = if (this.isAlmostZero()) 0f else this
 
 fun Double.closestMultipleOf(multiple: Double): Double {
     val prev = prevMultipleOf(multiple)

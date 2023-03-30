@@ -13,7 +13,6 @@ import kotlin.math.*
  * +--------------+
  * (x1a, y1)     (x1b, y1)
  */
-@KormaValueApi
 data class TrapezoidInt(
     val x0a: Int, val x0b: Int, val y0: Int,
     val x1a: Int, val x1b: Int, val y1: Int,

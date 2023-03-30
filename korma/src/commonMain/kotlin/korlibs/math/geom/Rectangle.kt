@@ -10,7 +10,7 @@ import korlibs.math.math.*
 import kotlin.math.*
 
 //@KormaValueApi
-inline class Rectangle(val data: Float4Pack) : Shape2d {
+inline class Rectangle(val data: Float4Pack) : Shape2D {
     val int: RectangleInt get() = toInt()
 
     @Deprecated("", ReplaceWith("this")) fun clone(): Rectangle = this

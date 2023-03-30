@@ -13,6 +13,8 @@ inline class Vector4(val data: Float4Pack) {
         val ZERO = Vector4(0f, 0f, 0f, 0f)
         val ONE = Vector4(1f, 1f, 1f, 1f)
 
+        operator fun invoke(): Vector4 = Vector4.ZERO
+
         //fun cross(a: Vector4, b: Vector4): Vector4 = Vector4(
         //    (a.y * b.z - a.z * b.y),
         //    (a.z * b.x - a.x * b.z),

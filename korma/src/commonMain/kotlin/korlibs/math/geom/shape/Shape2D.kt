@@ -7,11 +7,11 @@ import korlibs.math.geom.bezier.*
 import korlibs.math.geom.vector.*
 import kotlin.math.*
 
-interface WithHitShape2d {
-    val hitShape2d: Shape2d
+interface WithHitShape2D {
+    val hitShape2d: Shape2D
 }
 
-abstract class AbstractNShape2d : Shape2d {
+abstract class AbstractNShape2D : Shape2D {
     abstract protected val lazyVectorPath: VectorPath
     protected val lazyCurves: List<Curves> by lazy { lazyVectorPath.toCurvesList() }
 
@@ -56,11 +56,14 @@ val VectorPath.cachedPoints: PointList by Extra.PropertyThis { this.getPoints2()
 inline fun buildVectorPath(out: VectorPath = VectorPath(), block: VectorPath.() -> Unit): VectorPath = out.apply(block)
 inline fun buildVectorPath(out: VectorPath = VectorPath(), winding: Winding = Winding.DEFAULT, block: VectorPath.() -> Unit): VectorPath = out.also { it.winding = winding }.apply(block)
 
-fun List<Shape2d>.toShape2d(): Shape2d = Shape2d(*this.toTypedArray())
-fun Shape2d.toShape2d(): Shape2d = this
+fun List<Shape2D>.toShape2d(): Shape2D = Shape2D(*this.toTypedArray())
+fun Shape2D.toShape2d(): Shape2D = this
+
+@Deprecated("Use Shape2D")
+typealias Shape2d = Shape2D
 
 // RoundRectangle
-interface Shape2d {
+interface Shape2D {
     val center: Point get() = TODO()
     val area: Float
     val perimeter: Float
@@ -79,17 +82,17 @@ interface Shape2d {
     fun getBounds(): Rectangle = toVectorPath().getBounds()
     //fun containsPoint(p: Point, mat: Matrix) = containsPoint(mat.transform(p))
 
-    fun intersectsWith(that: Shape2d) = Shape2d.intersects(this, Matrix.NIL, that, Matrix.NIL)
-    fun intersectsWith(ml: Matrix, that: Shape2d, mr: Matrix) = Shape2d.intersects(this, ml, that, mr)
+    fun intersectsWith(that: Shape2D) = Shape2D.intersects(this, Matrix.NIL, that, Matrix.NIL)
+    fun intersectsWith(ml: Matrix, that: Shape2D, mr: Matrix) = Shape2D.intersects(this, ml, that, mr)
 
     companion object {
-        operator fun invoke(vararg shapes: Shape2d): Shape2d {
+        operator fun invoke(vararg shapes: Shape2D): Shape2D {
             if (shapes.isEmpty()) return EmptyShape2d
             if (shapes.size == 1) return shapes[0]
             return CompoundShape2d(shapes.toList())
         }
 
-        fun intersects(l: Shape2d, ml: Matrix, r: Shape2d, mr: Matrix): Boolean {
+        fun intersects(l: Shape2D, ml: Matrix, r: Shape2D, mr: Matrix): Boolean {
             //println("Shape2d.intersects:"); println(" - l=$l[$ml]"); println(" - r=$r[$mr]")
 
             if (ml.isNIL && mr.isNIL && l is Circle && r is Circle) return optimizedIntersect(l, ml, r, mr)
@@ -107,7 +110,7 @@ interface Shape2d {
         //    return Point.distance(ml.transform(l.center), ml.transform(r.center)) < radiusL + radiusR
         //}
 
-        private fun _intersectsStep0(l: Shape2d, ml: Matrix, r: Shape2d, mr: Matrix): Boolean {
+        private fun _intersectsStep0(l: Shape2D, ml: Matrix, r: Shape2D, mr: Matrix): Boolean {
             var tempMatrix = if (mr.isNotNIL) mr.inverted() else Matrix.IDENTITY
             if (ml.isNotNIL) tempMatrix = tempMatrix.premultiplied(ml)
 
@@ -117,12 +120,12 @@ interface Shape2d {
             return false
         }
 
-        fun intersects(l: Shape2d, r: Shape2d): Boolean = intersects(l, Matrix.NIL, r, Matrix.NIL)
+        fun intersects(l: Shape2D, r: Shape2D): Boolean = intersects(l, Matrix.NIL, r, Matrix.NIL)
 
     }
 }
 
-data class CompoundShape2d(val shapes: List<Shape2d>) : Shape2d {
+data class CompoundShape2d(val shapes: List<Shape2D>) : Shape2D {
     override val area: Float get() = shapes.sumOf { it.area.toDouble() }.toFloat()
     override val perimeter: Float get() = shapes.sumOf { it.perimeter.toDouble() }.toFloat()
 
@@ -133,7 +136,7 @@ data class CompoundShape2d(val shapes: List<Shape2d>) : Shape2d {
     override fun toVectorPath(): VectorPath = buildVectorPath { shapes.fastForEach { write(it.toVectorPath()) } }
 }
 
-object EmptyShape2d : Shape2d {
+object EmptyShape2d : Shape2D {
     override val area: Float get() = 0f
     override val perimeter: Float get() = 0f
     override fun containsPoint(p: Point): Boolean = false
@@ -174,7 +177,7 @@ fun PointList.toPolygon(out: VectorPath = VectorPath()): VectorPath = buildVecto
 
 
 
-fun PointList.toShape2d(closed: Boolean = true): Shape2d {
+fun PointList.toShape2d(closed: Boolean = true): Shape2D {
     if (closed && this.size == 4) {
         val x0 = this.getX(0)
         val y0 = this.getY(0)
@@ -188,12 +191,12 @@ fun PointList.toShape2d(closed: Boolean = true): Shape2d {
 }
 
 //fun VectorPath.toShape2dNew(closed: Boolean = true): Shape2d = VectorPath(this, closed)
-fun VectorPath.toShape2dNew(closed: Boolean = true): Shape2d = this
+fun VectorPath.toShape2dNew(closed: Boolean = true): Shape2D = this
 
 //fun VectorPath.toShape2d(closed: Boolean = true): Shape2d = toShape2dNew(closed)
-fun VectorPath.toShape2d(closed: Boolean = true): Shape2d = toShape2dOld(closed)
+fun VectorPath.toShape2d(closed: Boolean = true): Shape2D = toShape2dOld(closed)
 
-fun VectorPath.toShape2dOld(closed: Boolean = true): Shape2d {
+fun VectorPath.toShape2dOld(closed: Boolean = true): Shape2D {
     val items = toPathPointList().map { it.toShape2d(closed) }
     return when (items.size) {
         0 -> EmptyShape2d

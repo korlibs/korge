@@ -74,67 +74,67 @@ data class Matrix4 private constructor(
     //    val z = r2.length3
     //    return Vector4(x, y, z, 1f)
     //}
-    //fun decomposeRotation(rowNormalise: Boolean = true): Quaternion {
-    //    var v1 = this.r0
-    //    var v2 = this.r1
-    //    var v3 = this.r2
-    //    if (rowNormalise) {
-    //        v1 = v1.normalized()
-    //        v2 = v2.normalized()
-    //        v3 = v3.normalized()
-    //    }
-    //    val d: Float = 0.25f * (v1[0] + v2[1] + v3[2] + 1f)
-    //    val out: Vector4
-    //    when {
-    //        d > 0f -> {
-    //            val num1: Float = sqrt(d)
-    //            val num2: Float = 1f / (4f * num1)
-    //            out = Vector4(
-    //                ((v2[2] - v3[1]) * num2),
-    //                ((v3[0] - v1[2]) * num2),
-    //                ((v1[1] - v2[0]) * num2),
-    //                num1,
-    //            )
-    //        }
-    //        v1[0] > v2[1] && v1[0] > v3[2] -> {
-    //            val num1: Float = 2f * sqrt(1f + v1[0] - v2[1] - v3[2])
-    //            val num2: Float = 1f / num1
-    //            out = Vector4(
-    //                (0.25f * num1),
-    //                ((v2[0] + v1[1]) * num2),
-    //                ((v3[0] + v1[2]) * num2),
-    //                ((v3[1] - v2[2]) * num2),
-    //            )
-    //        }
-    //        v2[1] > v3[2] -> {
-    //            val num5: Float = 2f * sqrt(1f + v2[1] - v1[0] - v3[2])
-    //            val num6: Float = 1f / num5
-    //            out = Vector4(
-    //                ((v2[0] + v1[1]) * num6),
-    //                (0.25f * num5),
-    //                ((v3[1] + v2[2]) * num6),
-    //                ((v3[0] - v1[2]) * num6),
-    //            )
-    //        }
-    //        else -> {
-    //            val num7: Float = 2f * sqrt(1f + v3[2] - v1[0] - v2[1])
-    //            val num8: Float = 1f / num7
-    //            out = Vector4(
-    //                ((v3[0] + v1[2]) * num8),
-    //                ((v3[1] + v2[2]) * num8),
-    //                (0.25f * num7),
-    //                ((v2[0] - v1[1]) * num8),
-    //            )
-    //        }
-    //    }
-    //    return Quaternion(out.normalized())
-    //}
+    fun decomposeRotation(rowNormalise: Boolean = true): Quaternion {
+        var v1 = this.r0
+        var v2 = this.r1
+        var v3 = this.r2
+        if (rowNormalise) {
+            v1 = v1.normalized()
+            v2 = v2.normalized()
+            v3 = v3.normalized()
+        }
+        val d: Float = 0.25f * (v1[0] + v2[1] + v3[2] + 1f)
+        val out: Vector4
+        when {
+            d > 0f -> {
+                val num1: Float = sqrt(d)
+                val num2: Float = 1f / (4f * num1)
+                out = Vector4(
+                    ((v2[2] - v3[1]) * num2),
+                    ((v3[0] - v1[2]) * num2),
+                    ((v1[1] - v2[0]) * num2),
+                    num1,
+                )
+            }
+            v1[0] > v2[1] && v1[0] > v3[2] -> {
+                val num1: Float = 2f * sqrt(1f + v1[0] - v2[1] - v3[2])
+                val num2: Float = 1f / num1
+                out = Vector4(
+                    (0.25f * num1),
+                    ((v2[0] + v1[1]) * num2),
+                    ((v3[0] + v1[2]) * num2),
+                    ((v3[1] - v2[2]) * num2),
+                )
+            }
+            v2[1] > v3[2] -> {
+                val num5: Float = 2f * sqrt(1f + v2[1] - v1[0] - v3[2])
+                val num6: Float = 1f / num5
+                out = Vector4(
+                    ((v2[0] + v1[1]) * num6),
+                    (0.25f * num5),
+                    ((v3[1] + v2[2]) * num6),
+                    ((v3[0] - v1[2]) * num6),
+                )
+            }
+            else -> {
+                val num7: Float = 2f * sqrt(1f + v3[2] - v1[0] - v2[1])
+                val num8: Float = 1f / num7
+                out = Vector4(
+                    ((v3[0] + v1[2]) * num8),
+                    ((v3[1] + v2[2]) * num8),
+                    (0.25f * num7),
+                    ((v2[0] - v1[1]) * num8),
+                )
+            }
+        }
+        return Quaternion(out.normalized())
+    }
 
-    fun copyToColumns(out: FloatArray, offset: Int = 0): FloatArray {
+    fun copyToColumns(out: FloatArray = FloatArray(16), offset: Int = 0): FloatArray {
         arraycopy(this.data, 0, out, offset, 16)
         return out
     }
-    fun copyToRows(out: FloatArray, offset: Int = 0): FloatArray {
+    fun copyToRows(out: FloatArray = FloatArray(16), offset: Int = 0): FloatArray {
         this.r0.copyTo(out, offset + 0)
         this.r1.copyTo(out, offset + 4)
         this.r2.copyTo(out, offset + 8)

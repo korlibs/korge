@@ -3,7 +3,6 @@ package korlibs.math.geom.trapezoid
 import korlibs.math.annotations.*
 import korlibs.math.geom.*
 
-@KormaValueApi
 data class TriangleInt(
     val p0: Vector2Int,
     val p1: Vector2Int,

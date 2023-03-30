@@ -331,7 +331,7 @@ data class MRectangle(
     fun toRectangle(): Rectangle = Rectangle(x, y, width, height)
     @KormaMutableApi fun asInt(): MRectangleInt = MRectangleInt(this)
     @KormaMutableApi val int: MRectangleInt get() = MRectangleInt(x, y, width, height)
-    @KormaValueApi val value: Rectangle get() = Rectangle(x, y, width, height)
+    val value: Rectangle get() = Rectangle(x, y, width, height)
 
 }
 

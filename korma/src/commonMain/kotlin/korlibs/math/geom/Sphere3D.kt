@@ -1,15 +1,12 @@
 package korlibs.math.geom
 
-import korlibs.math.annotations.*
+import korlibs.math.geom.shape.*
+import korlibs.memory.pack.*
 
-@KormaValueApi
-data class Sphere3D(val origin: Vector3, val radius: Float)
+inline class Sphere3D private constructor(private val data: Float4Pack) : Shape3D {
+    constructor(center: Vector3, radius: Float) : this(Float4Pack(center.x, center.y, center.z, radius))
 
-@KormaMutableApi
-sealed interface ISphere3D {
-    val origin: IVector3
-    val radius: Float
+    override val center: Vector3 get() = Vector3(data.x, data.y, data.z)
+    val radius: Float get() = data.w
+    override val volume: Float get() = ((4f / 3f) * PIF) * (radius * radius * radius)
 }
-
-@KormaMutableApi
-data class MSphere3D(override var origin: MVector3, override var radius: Float) : ISphere3D

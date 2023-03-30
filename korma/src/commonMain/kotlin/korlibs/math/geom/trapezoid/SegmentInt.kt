@@ -5,7 +5,6 @@ import korlibs.math.annotations.*
 import korlibs.math.geom.*
 
 // @TODO: What about [Line]?
-@KormaValueApi
 data class SegmentInt(
     val p0: Vector2Int, val p1: Vector2Int
 )

@@ -22,7 +22,7 @@ class VectorPath(
     val data: FloatArrayList = FloatArrayList(),
     var winding: Winding = Winding.DEFAULT,
     var optimize: Boolean = true,
-) : AbstractNShape2d(), IVectorPath, Extra by Extra.Mixin() {
+) : AbstractNShape2D(), IVectorPath, Extra by Extra.Mixin() {
     var assumeConvex: Boolean = false
     var version: Int = 0
 

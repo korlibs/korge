@@ -5,17 +5,9 @@ import korlibs.math.math.*
 import korlibs.memory.*
 import korlibs.memory.isAlmostZero
 
-
 @KormaMutableApi
-@Deprecated("")
-sealed interface ILine {
-    val a: Point
-    val b: Point
-}
-
-@KormaMutableApi
-@Deprecated("")
-data class MLine(override var a: Point, override var b: Point) : ILine {
+@Deprecated("Use Line instead")
+data class MLine(var a: Point, var b: Point) {
     fun clone(): MLine = MLine(a, b)
     fun flipped(): MLine = MLine(b, a)
 
@@ -233,4 +225,4 @@ fun MLine.Companion.segmentIntersectionPoint(
 // @TODO: Should we create a common interface make projectedPoint part of it? (for ecample to project other kind of shapes)
 // https://math.stackexchange.com/questions/62633/orthogonal-projection-of-a-point-onto-a-line
 // http://www.sunshine2k.de/coding/java/PointOnLine/PointOnLine.html
-fun ILine.projectedPoint(point: Point): Point = MLine.projectedPoint(a, b, point)
+fun MLine.projectedPoint(point: Point): Point = MLine.projectedPoint(a, b, point)
