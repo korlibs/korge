@@ -270,7 +270,7 @@ open class ViewsForTesting(
 		if (this.alphaF <= 0.0) return false
 		val bounds = this.getGlobalBounds()
 		if (bounds.area <= 0.0) return false
-		val module = injector.get<Module>()
+		val module = injector.get<KorgeConfig>()
 		val visibleBounds = Rectangle(0, 0, module.windowSize.width, module.windowSize.height)
         return bounds.intersects(visibleBounds)
     }
@@ -288,11 +288,11 @@ open class ViewsForTesting(
         //suspendTest(timeout = timeout, cond = { !OS.isAndroid && !OS.isJs && !OS.isNative }) {
         KorgeRunner.prepareViewsBase(views, gameWindow, fixedSizeStep = frameTime, forceRenderEveryFrame = forceRenderEveryFrame)
 
-		injector.mapInstance<Module>(object : Module() {
-			override val title = "KorgeViewsForTesting"
-			override val virtualSize = this@ViewsForTesting.virtualSize
-			override val windowSize = this@ViewsForTesting.windowSize
-		})
+		injector.mapInstance<KorgeConfig>(KorgeConfig(
+			title = "KorgeViewsForTesting",
+            windowSize = this@ViewsForTesting.windowSize,
+			virtualSize = this@ViewsForTesting.virtualSize,
+        ))
 
 		var completed = false
 		var completedException: Throwable? = null
@@ -326,18 +326,18 @@ open class ViewsForTesting(
 
     @Suppress("UNCHECKED_CAST")
     inline fun <reified S : Scene> sceneTest(
-        module: Module? = null,
-        crossinline mappingsForTest: AsyncInjector.() -> Unit = {},
+        config: Korge? = null,
+        noinline configureInjector: AsyncInjector.() -> Unit = {},
         timeout: TimeSpan? = DEFAULT_SUSPEND_TEST_TIMEOUT,
         frameTime: TimeSpan = this.frameTime,
         crossinline block: suspend S.() -> Unit
     ): Unit =
         viewsTest(timeout, frameTime) {
-            module?.apply {
-                injector.configure()
+            config?.apply {
+                injector.configInjector()
             }
 
-            injector.mappingsForTest()
+            injector.configureInjector()
 
             val container = sceneContainer(views)
             container.changeTo<S>()

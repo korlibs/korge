@@ -158,12 +158,7 @@ object KorgeRunner {
             config.injector
                 .mapInstance(ModuleArgs(config.args))
                 .mapInstance(GameWindow::class, gameWindow)
-                .mapInstance<Module>(object : Module() {
-                    override val title = config.title
-                    override val fullscreen: Boolean? = config.fullscreen
-                    override val windowSize = config.windowSize
-                    override val virtualSize = config.virtualSize
-                })
+                .mapInstance(KorgeConfig::class, config)
             views.debugViews = debug
             views.debugFontExtraScale = config.debugFontExtraScale
             views.debugFontColor = config.debugFontColor
