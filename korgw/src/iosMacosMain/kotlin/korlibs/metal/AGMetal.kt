@@ -2,6 +2,7 @@ package korlibs.metal
 
 import korlibs.memory.*
 import korlibs.graphics.*
+import korlibs.graphics.metal.shader.*
 import korlibs.graphics.shader.*
 import korlibs.metal.shader.*
 import kotlinx.cinterop.*
@@ -41,7 +42,11 @@ class AGMetal(private val view: MTKView) : AG() {
         autoreleasepool { // TODO: Check if that necessary
 
             val currentProgram = getProgram(
-                program
+                program,
+                bufferInputLayouts = MetalShaderBufferInputLayouts(
+                    //TODO
+                    listOf()
+                )
             )
 
             val commandBuffer = commandQueue.commandBuffer() ?: error("fail to get command buffer")
@@ -124,8 +129,8 @@ class AGMetal(private val view: MTKView) : AG() {
     private val AGBuffer.toMetal: MTLBuffer
         get() = (mem ?: error("cannot create buffer from null memory")).toMetal
 
-    private fun getProgram(program: Program) = programs
+    private fun getProgram(program: Program, bufferInputLayouts: MetalShaderBufferInputLayouts) = programs
         .getOrPut(program) {
-            MetalShaderCompiler.compile(device, program)
+            MetalShaderCompiler.compile(device, program, bufferInputLayouts)
         }
 }

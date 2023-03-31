@@ -19,8 +19,8 @@ import platform.Metal.*
  */
 object MetalShaderCompiler {
 
-    fun compile(device: MTLDeviceProtocol, program: Program): MetalProgram {
-        return program.toMetalShader()
+    fun compile(device: MTLDeviceProtocol, program: Program, bufferInputLayouts: MetalShaderBufferInputLayouts): MetalProgram {
+        return program.toMetalShader(bufferInputLayouts)
             .also {
                 println(it.result)
                 println(it.inputBuffers)
@@ -40,8 +40,8 @@ private fun MetalShaderGenerator.Result.toInternalMetalProgram(device: MTLDevice
 
     }
 
-private fun Program.toMetalShader() = (vertex to fragment)
-    .toNewMetalShaderStringResult()
+private fun Program.toMetalShader(bufferInputLayouts: MetalShaderBufferInputLayouts) = (vertex to fragment)
+    .toNewMetalShaderStringResult(bufferInputLayouts)
 
 private fun String.toFunctionsLibrary(device: MTLDeviceProtocol): MTLLibraryProtocol = let { result ->
     memScoped {
