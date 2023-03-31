@@ -1,6 +1,5 @@
 package korlibs.graphics.metal.shader
 
-import korlibs.graphics.*
 import korlibs.graphics.shader.*
 import korlibs.graphics.shader.gl.*
 import korlibs.io.util.*
@@ -16,11 +15,11 @@ class MetalShaderGenerator(
 
     private val vertexBodyGenerator = MetalShaderBodyGenerator(ShaderType.VERTEX)
     private val inputStructure = mutableListOf<VertexLayout>()
-    private val inputBuffers = mutableListOf<VariableWithOffset>()
+    private val inputBuffers = mutableListOf<List<VariableWithOffset>>()
 
     data class Result(
         val result: String,
-        val inputBuffers: List<VariableWithOffset>
+        val inputBuffers: List<List<VariableWithOffset>>
     )
 
     fun generateResult(): Result = generateResult(vertexShader.functions + fragmentShader.functions)
@@ -36,7 +35,7 @@ class MetalShaderGenerator(
 
             addHeaders()
 
-            declareVertexInputStructure()
+            declareVertexInputStructures()
             declareVertexOutputStructure(types.varyings.toList())
 
             customFunctions.filter { it.ref.name in types.funcRefs }
@@ -59,7 +58,7 @@ class MetalShaderGenerator(
         )
     }
 
-    private fun Indenter.declareVertexInputStructure() {
+    private fun Indenter.declareVertexInputStructures() {
         bufferLayouts.vertexInputStructure
             .map { it.attributes }
             .map { it.toMetalShaderStructureGeneratorAttributes() }
@@ -85,7 +84,7 @@ class MetalShaderGenerator(
     private fun Indenter.generateVertexMainFunction(
         attributes: LinkedHashSet<Attribute>,
         uniforms: LinkedHashSet<Uniform>
-    ): List<VariableWithOffset> {
+    ): List<List<VariableWithOffset>> {
         val generator = MetalShaderBodyGenerator(ShaderType.VERTEX)
         val inputBuffers = attributes.toList() + uniforms
 
@@ -112,10 +111,10 @@ class MetalShaderGenerator(
             line("return out;")
         }
 
-        return inputBuffers
+        return inputBuffers.map { listOf(it) }
     }
 
-    private fun Indenter.generateFragmentMainFunction(): List<VariableWithOffset> {
+    private fun Indenter.generateFragmentMainFunction(): List<List<VariableWithOffset>> {
 
         val generator = MetalShaderBodyGenerator(ShaderType.FRAGMENT)
         val fragmentInstructions = fragmentShader.stm
@@ -151,7 +150,7 @@ class MetalShaderGenerator(
             line("return out;")
         }
 
-        return fragmentUniformInput
+        return fragmentUniformInput.map { listOf(it) }
     }
 
     private fun Indenter.generationFunctions(functions: List<FuncDecl>) {
