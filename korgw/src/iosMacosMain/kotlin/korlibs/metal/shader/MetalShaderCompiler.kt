@@ -21,10 +21,6 @@ object MetalShaderCompiler {
 
     fun compile(device: MTLDeviceProtocol, program: Program, bufferInputLayouts: MetalShaderBufferInputLayouts): MetalProgram {
         return program.toMetalShader(bufferInputLayouts)
-            .also {
-                println(it.result)
-                println(it.inputBuffers)
-            }
             .toInternalMetalProgram(device)
     }
 }
