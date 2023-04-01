@@ -83,8 +83,7 @@ fun Project.configureAndroidDirect(projectType: ProjectType, isKorge: Boolean) {
             it.targetSdk = if (isKorge) project.korge.androidTargetSdk else project.getAndroidTargetSdkVersion()
             it.versionCode = if (isKorge) project.korge.versionCode else 1
             it.versionName = if (isKorge) project.korge.version else "1.0"
-            //it.testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-            it.testInstrumentationRunner = "android.support.test.runner.AndroidJUnitRunner"
+            it.testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
             it.manifestPlaceholders.clear()
             it.manifestPlaceholders.putAll(if (isKorge) korge.configs else emptyMap())
         }
