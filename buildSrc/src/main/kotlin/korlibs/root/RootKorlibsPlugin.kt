@@ -258,30 +258,10 @@ object RootKorlibsPlugin {
         //apply(plugin = "kotlin-android-extensions")
         // apply plugin: 'kotlin-android'
         // apply plugin: 'kotlin-android-extensions'
+        configureBasicKotlinAndroid2(isKorge = false, isApp = isSample)
         val android = extensions.getByName<TestedExtension>("android")
         android.apply {
             namespace = "com.soywiz.${project.name.replace("-", ".")}"
-            setCompileSdkVersion(project.getAndroidCompileSdkVersion())
-            //buildToolsVersion(project.findProperty("android.buildtools.version")?.toString() ?: "30.0.2")
-
-            compileOptions.apply {
-                sourceCompatibility = ANDROID_JAVA_VERSION
-                targetCompatibility = ANDROID_JAVA_VERSION
-            }
-
-            packagingOptions {
-                for (pattern in KorgeExtension.DEFAULT_ANDROID_EXCLUDE_PATTERNS) {
-                    it.resources.excludes.add(pattern)
-                }
-            }
-
-            defaultConfig {
-                it.multiDexEnabled = true
-                it.minSdk = project.getAndroidMinSdkVersion()
-                it.targetSdk = project.getAndroidTargetSdkVersion()
-                it.testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-                //testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-            }
         }
 
         dependencies {
@@ -314,50 +294,18 @@ object RootKorlibsPlugin {
     fun Project.initAndroidApplication() {
         //apply(plugin = "com.android.application")
         val androidApplicationId = "com.korge.samples.${project.name.replace("-", "_")}"
-        val korgeGradlePluginResources = File(rootProject.projectDir, "buildSrc/src/main/resources")
         val android = extensions.getByName<TestedExtension>("android")
         android.apply {
             namespace = androidApplicationId
-            lintOptions {
-                // @TODO: ../../build.gradle: All com.android.support libraries must use the exact same version specification (mixing versions can lead to runtime crashes). Found versions 28.0.0, 26.1.0. Examples include com.android.support:animated-vector-drawable:28.0.0 and com.android.support:customtabs:26.1.0
-                it.disable("GradleCompatible")
-            }
+
             // @TODO: Is this required?
             //kotlinOptions {
             //    jvmTarget = "1.8"
             //    freeCompilerArgs += "-Xmulti-platform"
             //}
-            compileSdkVersion(30)
-            defaultConfig {
-                it.multiDexEnabled = true
-                it.applicationId = androidApplicationId
-                it.minSdk = 16
-                it.targetSdk = 28
-                it.versionCode = 1
-                it.versionName = "1.0"
-                it.testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-                it.manifestPlaceholders.clear()
-            }
-            signingConfigs {
-                it.maybeCreate("release").apply {
-                    //storeFile file(findProperty('RELEASE_STORE_FILE') ?: "korge.keystore")
-                    storeFile(File(korgeGradlePluginResources, "korge.keystore"))
-                    storePassword(findProperty("RELEASE_STORE_PASSWORD")?.toString() ?: "password")
-                    keyAlias(findProperty("RELEASE_KEY_ALIAS")?.toString() ?: "korge")
-                    keyPassword(findProperty("RELEASE_KEY_PASSWORD")?.toString() ?: "password")
-                }
-            }
-            buildTypes {
-                it.maybeCreate("debug").apply {
-                    minifyEnabled(false)
-                    setSigningConfig(signingConfigs.maybeCreate("release"))
-                }
-                it.maybeCreate("release").apply {
-                    minifyEnabled(true)
-                    proguardFiles(getDefaultProguardFile(ProguardFiles.ProguardFile.OPTIMIZE.fileName), File(rootProject.rootDir, "proguard-rules.pro"))
-                    setSigningConfig(signingConfigs.maybeCreate("release"))
-                }
-            }
+
+            configureKotlinAndroidSignAndBuildTypes(isKorge = false)
+
             sourceSets {
                 it.maybeCreate("main").apply {
                 //it.maybeCreate("androidMain").apply {
@@ -419,14 +367,6 @@ object RootKorlibsPlugin {
                     commandLine(adb, "logcat", "--pid=${pid.trim()}")
                 }
             }
-        }
-
-        fun ordered(vararg dependencyPaths: String): List<Task> {
-            val dependencies = dependencyPaths.map { tasks.getByPath(it) }
-            for (n in 0 until dependencies.size - 1) {
-                dependencies[n + 1].mustRunAfter(dependencies[n])
-            }
-            return dependencies
         }
 
         afterEvaluate {
@@ -493,97 +433,6 @@ object RootKorlibsPlugin {
                     configurePublishing()
                     configureSigning()
                 }
-
-                /*
-                val javadocJar = tasks.maybeCreate<Jar>("javadocJar").apply { archiveClassifier.set("javadoc") }
-                val sourcesJar = tasks.maybeCreate<Jar>("sourceJar").apply { archiveClassifier.set("sources") }
-                //val emptyJar = tasks.maybeCreate<Jar>("emptyJar").apply {}
-                extensions.getByType(PublishingExtension::class.java).apply {
-                    afterEvaluate {
-                        //println(gkotlin.sourceSets.names)
-
-                        fun configure(publication: MavenPublication) {
-                            //println("Publication: $publication : ${publication.name} : ${publication.artifactId}")
-                            if (publication.name == "kotlinMultiplatform") {
-                                //publication.artifact(sourcesJar) {}
-                                //publication.artifact(emptyJar) {}
-                            }
-
-                            /*
-                            val sourcesJar = tasks.createThis<Jar>("sourcesJar${publication.name.capitalize()}") {
-                                classifier = "sources"
-                                baseName = publication.name
-                                val pname = when (publication.name) {
-                                    "metadata" -> "common"
-                                    else -> publication.name
-                                }
-                                val names = listOf("${pname}Main", pname)
-                                val sourceSet = names.mapNotNull { gkotlin.sourceSets.findByName(it) }.firstOrNull() as? KotlinSourceSet
-                                sourceSet?.let { from(it.kotlin) }
-                                //println("${publication.name} : ${sourceSet?.javaClass}")
-                                /*
-                                doFirst {
-                                    println(gkotlin.sourceSets)
-                                    println(gkotlin.sourceSets.names)
-                                    println(gkotlin.sourceSets.getByName("main"))
-                                    //from(sourceSets.main.allSource)
-                                }
-                                afterEvaluate {
-                                    println(gkotlin.sourceSets.names)
-                                }
-                                 */
-                            }
-                            */
-
-                            //val mustIncludeDocs = publication.name != "kotlinMultiplatform"
-                            val mustIncludeDocs = true
-
-                            //if (publication.name == "")
-                            if (mustIncludeDocs) {
-                                publication.artifact(javadocJar)
-                            }
-                            publication.pom.withXml {
-                                asNode().apply {
-                                    appendNode("name", project.name)
-                                    appendNode("description", project.property("project.description"))
-                                    appendNode("url", project.property("project.scm.url"))
-                                    appendNode("licenses").apply {
-                                        appendNode("license").apply {
-                                            appendNode("name").setValue(project.property("project.license.name"))
-                                            appendNode("url").setValue(project.property("project.license.url"))
-                                        }
-                                    }
-                                    appendNode("scm").apply {
-                                        appendNode("url").setValue(project.property("project.scm.url"))
-                                    }
-
-                                    // Changes runtime -> compile in Android's AAR publications
-                                    if (publication.pom.packaging == "aar") {
-                                        val nodes = this.getAt(groovy.xml.QName("dependencies")).getAt("dependency").getAt("scope")
-                                        for (node in nodes) {
-                                            (node as groovy.util.Node).setValue("compile")
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        if (project.tasks.findByName("publishKotlinMultiplatformPublicationToMavenLocal") != null) {
-                            publications.withType(MavenPublication::class.java) {
-                                configure(this)
-                            }
-                        } else {
-                            publications.maybeCreate<MavenPublication>("maven").apply {
-                                groupId = project.group.toString()
-                                artifactId = project.name
-                                version = project.version.toString()
-                                from(components["java"])
-                                configure(this)
-                            }
-                        }
-                    }
-                }
-                */
             }
         }
     }
@@ -682,7 +531,7 @@ object RootKorlibsPlugin {
                     }
                     jvm {
                         compilations.allThis {
-                            kotlinOptions.jvmTarget = "1.8"
+                            kotlinOptions.jvmTarget = ANDROID_JAVA_VERSION_STR
                             compilerOptions.options.freeCompilerArgs.add("-Xno-param-assertions")
                             //kotlinOptions.freeCompilerArgs.add("-Xno-param-assertions")
                             //kotlinOptions.
@@ -706,18 +555,7 @@ object RootKorlibsPlugin {
 
 
                     if (hasAndroid) {
-                        kotlin {
-                            android {
-                                publishAllLibraryVariants()
-                                publishLibraryVariantsGroupedByFlavor = true
-                                //this.attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.androidJvm)
-                                compilations.allThis {
-                                    kotlinOptions.jvmTarget = "1.8"
-                                    compilerOptions.options.freeCompilerArgs.add("-Xno-param-assertions")
-                                }
-                            }
-                        }
-
+                        project.configureBasicKotlinAndroid()
                     }
 
                     val desktopAndMobileTargets = ArrayList<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget>().apply {

@@ -11,31 +11,7 @@ import org.gradle.api.tasks.GradleBuild
 import java.io.File
 import java.util.*
 
-val ANDROID_SDK_PATH_KEY = "android.sdk.path"
-
-//Linux: ~/Android/Sdk
-//Mac: ~/Library/Android/sdk
-//Windows: %LOCALAPPDATA%\Android\sdk
-// @TODO: Use [AndroidSdk] class
-val Project.androidSdkPath: String get() {
-    val extensionAndroidSdkPath = this.findProperty(ANDROID_SDK_PATH_KEY)?.toString() ?: this.extensions.findByName(ANDROID_SDK_PATH_KEY)?.toString()
-    if (extensionAndroidSdkPath != null) return extensionAndroidSdkPath
-
-    val localPropertiesFile = projectDir["local.properties"]
-    if (localPropertiesFile.exists()) {
-        val props = Properties().apply { load(localPropertiesFile.readText().reader()) }
-        if (props.getProperty("sdk.dir") != null) {
-            return props.getProperty("sdk.dir")!!
-        }
-    }
-    val userHome = System.getProperty("user.home")
-    return listOfNotNull(
-        System.getenv("ANDROID_HOME"),
-        "$userHome/AppData/Local/Android/sdk",
-        "$userHome/Library/Android/sdk",
-        "$userHome/Android/Sdk"
-    ).firstOrNull { File(it).exists() } ?: error("Can't find android sdk (ANDROID_HOME environment not set and Android SDK not found in standard locations)")
-}
+val Project.androidSdkPath: String get() = AndroidSdk.getAndroidSdkPath(this)
 
 val Project.androidAdbPath get() = "$androidSdkPath/platform-tools/adb"
 val Project.androidEmulatorPath get() = "$androidSdkPath/emulator/emulator"
@@ -282,104 +258,13 @@ class AndroidGenerated constructor(
 
     fun writeMainActivity(outputFolder: File) {
         File(outputFolder, "MainActivity.kt").conditionally(ifNotExists) {
-            ensureParents().writeTextIfChanged(Indenter {
-                line("package $androidPackageName")
-
-                line("import korlibs.io.android.withAndroidContext")
-                line("import korlibs.render.*")
-                line("import $realEntryPoint")
-
-                line("class MainActivity : KorgwActivity(config = GameWindowCreationConfig(msaa = ${androidMsaa ?: 1}))") {
-                    line("override suspend fun activityMain()") {
-                        //line("withAndroidContext(this)") { // @TODO: Probably we should move this to KorgwActivity itself
-                        for (text in androidInit) {
-                            line(text)
-                        }
-                        line("${realEntryPoint}()")
-                        //}
-                    }
-                }
-            }.toString())
+            ensureParents().writeTextIfChanged(AndroidMainActivityKt.genAndroidMainActivityKt(this@AndroidGenerated))
         }
     }
 
     fun writeAndroidManifest(outputFolder: File) {
         File(outputFolder, "AndroidManifest.xml").also { it.parentFile.mkdirs() }.conditionally(ifNotExists) {
-            ensureParents().writeTextIfChanged(Indenter {
-                line("<?xml version=\"1.0\" encoding=\"utf-8\"?>")
-                line("<manifest")
-                indent {
-                    //line("xmlns:tools=\"http://schemas.android.com/tools\"")
-                    line("xmlns:android=\"http://schemas.android.com/apk/res/android\"")
-                    //line("package=\"$androidPackageName\"")
-                }
-                line(">")
-                indent {
-                    line("<uses-feature android:name=\"android.hardware.touchscreen\" android:required=\"false\" />")
-                    line("<uses-feature android:name=\"android.software.leanback\" android:required=\"false\" />")
-
-                    line("<application")
-                    indent {
-                        line("")
-                        //line("tools:replace=\"android:appComponentFactory\"")
-                        line("android:allowBackup=\"true\"")
-
-                        if (!androidLibrary) {
-                            line("android:label=\"$androidAppName\"")
-                            line("android:icon=\"@mipmap/icon\"")
-                            // // line("android:icon=\"@android:drawable/sym_def_app_icon\"")
-                            line("android:roundIcon=\"@android:drawable/sym_def_app_icon\"")
-                            line("android:theme=\"@android:style/Theme.Holo.NoActionBar\"")
-                        }
-
-
-                        line("android:supportsRtl=\"true\"")
-                    }
-                    line(">")
-                    indent {
-                        for (text in androidManifest) {
-                            line(text)
-                        }
-                        for (text in androidManifestApplicationChunks) {
-                            line(text)
-                        }
-
-                        line("<activity android:name=\".MainActivity\"")
-                        indent {
-                            val orientationString = when (orientation) {
-                                Orientation.LANDSCAPE -> "landscape"
-                                Orientation.PORTRAIT -> "portrait"
-                                Orientation.DEFAULT -> "sensor"
-                            }
-                            line("android:banner=\"@drawable/app_banner\"")
-                            line("android:icon=\"@drawable/app_icon\"")
-                            line("android:label=\"$androidAppName\"")
-                            line("android:logo=\"@drawable/app_icon\"")
-                            line("android:configChanges=\"orientation|screenSize|screenLayout|keyboardHidden\"")
-                            line("android:screenOrientation=\"$orientationString\"")
-                            line("android:exported=\"true\"")
-                        }
-                        line(">")
-
-                        if (!androidLibrary) {
-                            indent {
-                                line("<intent-filter>")
-                                indent {
-                                    line("<action android:name=\"android.intent.action.MAIN\"/>")
-                                    line("<category android:name=\"android.intent.category.LAUNCHER\"/>")
-                                }
-                                line("</intent-filter>")
-                            }
-                        }
-                        line("</activity>")
-                    }
-                    line("</application>")
-                    for (text in androidManifestChunks) {
-                        line(text)
-                    }
-                }
-                line("</manifest>")
-            }.toString())
+            ensureParents().writeTextIfChanged(AndroidManifestXml.genAndroidManifestXml(this@AndroidGenerated))
         }
     }
 
@@ -423,11 +308,15 @@ fun Project.getAndroidMinSdkVersion(): Int = project.findProperty("android.min.s
 fun Project.getAndroidCompileSdkVersion(): Int = project.findProperty("android.compile.sdk.version")?.toString()?.toIntOrNull() ?: ANDROID_DEFAULT_COMPILE_SDK
 fun Project.getAndroidTargetSdkVersion(): Int = project.findProperty("android.target.sdk.version")?.toString()?.toIntOrNull() ?: ANDROID_DEFAULT_TARGET_SDK
 
-const val ANDROID_DEFAULT_MIN_SDK = 16 // Previously 18
+//const val ANDROID_DEFAULT_MIN_SDK = 16 // Previously 18
+const val ANDROID_DEFAULT_MIN_SDK = 18
 const val ANDROID_DEFAULT_COMPILE_SDK = 30
 const val ANDROID_DEFAULT_TARGET_SDK = 30
 
-//val ANDROID_JAVA_VERSION = JavaVersion.VERSION_1_8
-val ANDROID_JAVA_VERSION = JavaVersion.VERSION_11
+val ANDROID_JAVA_VERSION = JavaVersion.VERSION_1_8
+//val ANDROID_JAVA_VERSION = JavaVersion.VERSION_11
 //val ANDROID_JAVA_VERSION_STR = "1.8"
-val ANDROID_JAVA_VERSION_STR = "11"
+val ANDROID_JAVA_VERSION_STR = ANDROID_JAVA_VERSION.toString()
+
+val GRADLE_JAVA_VERSION_STR = "11"
+

@@ -4,6 +4,9 @@ import korlibs.*
 import org.gradle.api.*
 import org.jetbrains.kotlin.gradle.dsl.*
 import org.jetbrains.kotlin.gradle.plugin.*
+import java.io.*
+
+val Project.korgeGradlePluginResources: File get() = File(rootProject.projectDir, "buildSrc/src/main/resources")
 
 fun Project.rootEnableFeaturesOnAllTargets() {
     rootProject.subprojectsThis {

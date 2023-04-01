@@ -39,7 +39,7 @@ afterEvaluate {
 }
 */
 
-def jversion = korlibs.korge.gradle.targets.android.AndroidKt.ANDROID_JAVA_VERSION_STR
+def jversion = korlibs.korge.gradle.targets.android.AndroidKt.GRADLE_JAVA_VERSION_STR
 
 java {
     sourceCompatibility = jversion
