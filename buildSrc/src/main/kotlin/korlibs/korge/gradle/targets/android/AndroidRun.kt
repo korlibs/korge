@@ -19,16 +19,15 @@ fun Project.installAndroidRun(dependsOnList: List<String>, direct: Boolean, isKo
         }
     }
 
-    tasks.findByName("generateDebugBuildConfig")
-        ?.dependsOn(createAndroidManifest)
-
-    //afterEvaluate {
-    //    //tasks.getByName("installDebug").dependsOn("createAndroidManifest")
-    //    (tasks.getByName("installRelease") as InstallVariantTask).apply {
-    //        installOptions = listOf("-r")
-    //    }
-    //    //println(installDebug.class)
-    //}
+    afterEvaluate {
+        for (Type in listOf("Debug", "Release")) {
+            tasks.findByName("generate${Type}BuildConfig")?.dependsOn(createAndroidManifest)
+            tasks.findByName("process${Type}MainManifest")?.dependsOn(createAndroidManifest)
+            // Not required anymore
+            //(tasks.getByName("install${Type}") as InstallVariantTask).apply { installOptions = listOf("-r") }
+            //tasks.getByName("install${Type}").dependsOn("createAndroidManifest")
+        }
+    }
 
     // adb shell am start -n com.package.name/com.package.name.ActivityName
     for (debug in listOf(false, true)) {
