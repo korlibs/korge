@@ -55,10 +55,10 @@ class AndroidTest : AbstractGradleIntegrationTest() {
     @Test
     fun testLogcatTask() {
         val expectedStdout = "logs\n"
-        project.installAndroidRun(listOf(), direct = true)
+        project.installAndroidRun(listOf(), direct = true, isKorge = true)
         val stdout = captureStdout {
             project.defineExecResult(ANDROID_ADB_PATH, "logcat", stdout = expectedStdout)
-            project.tasks.getByName(adbLogcatTaskName).execute()
+            project.tasks.getByName("adbLogcat").execute()
         }
         assertEquals(expectedStdout, stdout)
     }
@@ -98,7 +98,7 @@ class AndroidTest : AbstractGradleIntegrationTest() {
         project.tasks.create("installDebug", Task::class.java)
         //project.tasks.create("korgeProcessedResourcesJvmMain", Task::class.java)
 
-        project.installAndroidRun(listOf(), direct = true)
+        project.installAndroidRun(listOf(), direct = true, isKorge = true)
 
         assertEquals(
             "installDebug",
