@@ -13,7 +13,7 @@ class AndroidTest : AbstractGradleIntegrationTest() {
     val spawnResult = arrayListOf<Any>()
 
     init {
-        project.extensions.add(ANDROID_SDK_PATH_KEY, ANDROID_SDK_PATH)
+        project.extensions.add(korlibs.korge.gradle.targets.android.AndroidSdk.ANDROID_SDK_PATH_KEY, ANDROID_SDK_PATH)
         project.spawnExt = object : SpawnExtension() {
             override fun spawn(dir: File, command: List<String>) {
                 spawnResult.add(dir to command)
