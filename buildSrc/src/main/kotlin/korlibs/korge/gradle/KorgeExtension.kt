@@ -193,7 +193,7 @@ open class KorgeExtension(
      */
     fun targetAndroid() {
         target("android") {
-            project.configureAndroidDirect(projectType)
+            project.configureAndroidDirect(projectType, isKorge = true)
         }
     }
 

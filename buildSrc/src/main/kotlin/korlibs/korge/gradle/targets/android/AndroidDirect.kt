@@ -15,28 +15,34 @@ import org.gradle.api.*
 import java.io.*
 import kotlin.collections.*
 
-fun Project.configureAndroidDirect(projectType: ProjectType) {
+fun Project.configureAndroidDirect(projectType: ProjectType, isKorge: Boolean) {
     project.ensureAndroidLocalPropertiesWithSdkDir()
 
-    project.plugins.apply("com.android.application")
+    if (projectType.isExecutable) {
+        project.plugins.apply("com.android.application")
+    } else {
+        plugins.apply("com.android.library")
+    }
 
     //val android = project.extensions.getByName("android")
 
     configureBasicKotlinAndroid()
 
-    project.afterEvaluate {
-        //println("@TODO: Info is not generated")
-        writeAndroidManifest(project.rootDir, project.korge)
-    }
+    //if (isKorge) {
+    //    project.afterEvaluate {
+    //        //println("@TODO: Info is not generated")
+    //        //writeAndroidManifest(project.rootDir, project.korge)
+    //    }
+    //}
 
-    val generated = AndroidGenerated(korge)
+    //val generated = AndroidGenerated(korge)
 
-    configureBasicKotlinAndroid2(isKorge = true, isApp = projectType.isExecutable)
+    configureBasicKotlinAndroid2(isKorge = isKorge, isApp = projectType.isExecutable)
 
     android.apply {
-        namespace = generated.androidPackageName
+        namespace = AndroidConfig.getAppId(project, isKorge)
 
-        configureKotlinAndroidSignAndBuildTypes(isKorge = true)
+        configureKotlinAndroidSignAndBuildTypes(isKorge = isKorge)
         sourceSets.apply {
             maybeCreate("main").apply {
                 val (resourcesSrcDirs, kotlinSrcDirs) = androidGetResourcesFolders()
@@ -58,7 +64,8 @@ fun Project.configureAndroidDirect(projectType: ProjectType) {
         sourceSets.also {
             it.maybeCreate("main").apply {
                 //it.maybeCreate("androidMain").apply {
-                manifest.srcFile(File(project.projectDir, "src/androidMain/AndroidManifest.xml"))
+
+                manifest.srcFile(AndroidConfig.getAndroidManifestFile(project, isKorge))
                 java.srcDirs("${project.buildDir}/androidsrc")
                 res.srcDirs("${project.buildDir}/androidres")
                 assets.srcDirs(
@@ -73,7 +80,7 @@ fun Project.configureAndroidDirect(projectType: ProjectType) {
     }
 
     if (projectType.isExecutable) {
-        installAndroidRun(listOf(), direct = true)
+        installAndroidRun(listOf(), direct = true, isKorge = isKorge)
     }
 }
 
@@ -107,16 +114,22 @@ val Project.android: TestedExtension get() = extensions.getByName<TestedExtensio
 //val Project.android: BaseAppModuleExtension get() = extensions.getByType(BaseAppModuleExtension::class.java)
 
 fun Project.configureBasicKotlinAndroid2(isKorge: Boolean, isApp: Boolean) {
+
+    dependencies {
+        add("androidTestImplementation", "androidx.test:core:1.4.0")
+        add("androidTestImplementation", "androidx.test.ext:junit:1.1.2")
+        add("androidTestImplementation", "androidx.test.espresso:espresso-core:3.3.0")
+        //androidTestImplementation 'com.android.support.test:runner:1.0.2'
+    }
+
     android.apply {
         setCompileSdkVersion(if (isKorge) project.korge.androidCompileSdk else project.getAndroidCompileSdkVersion())
         //buildToolsVersion(project.findProperty("android.buildtools.version")?.toString() ?: "30.0.2")
 
-        (this as CommonExtension<*, *, *, *>).installation {
+        (this as CommonExtension<*, *, *, *>).installation.apply {
             // @TODO: Android Build Gradle newer version
-            //installation {
-                //installOptions = listOf("-r")
-                timeOutInMs = project.korge.androidTimeoutMs
-            //}
+            //installOptions = listOf("-r")
+            timeOutInMs = project.korge.androidTimeoutMs
         }
 
         compileOptions.apply {
@@ -133,12 +146,10 @@ fun Project.configureBasicKotlinAndroid2(isKorge: Boolean, isApp: Boolean) {
             }
         }
 
-        val androidApplicationId = "com.korge.samples.${project.name.replace("-", "_")}"
-
         defaultConfig.apply {
             multiDexEnabled = true
             if (isApp) {
-                applicationId = if (isKorge) project.korge.id else androidApplicationId
+                applicationId = AndroidConfig.getAppId(project, isKorge)
             }
             minSdk = if (isKorge) project.korge.androidMinSdk else project.getAndroidMinSdkVersion()
             targetSdk = if (isKorge) project.korge.androidTargetSdk else project.getAndroidTargetSdkVersion()

@@ -14,6 +14,7 @@ import korlibs.korge.gradle.targets.native.*
 import korlibs.korge.gradle.util.*
 import korlibs.korge.gradle.util.create
 import korlibs.*
+import korlibs.korge.gradle.targets.android.AndroidConfig
 import korlibs.kotlin
 import korlibs.modules.*
 import korlibs.tasks
@@ -52,10 +53,8 @@ object RootKorlibsPlugin {
         initShowSystemInfoWhenLinkingInWindows()
         korlibs.korge.gradle.KorgeVersionsTask.registerShowKorgeVersions(project)
         initInstallAndCheckLinuxLibs()
-        initCatalog()
         // Disabled by default, since it resolves configurations at configuration time
         if (System.getenv("ENABLE_KOVER") == "true") configureKover()
-        initAndroidFixes()
         initPublishing()
         initKMM()
         initShortcuts()
@@ -105,21 +104,8 @@ object RootKorlibsPlugin {
     }
 
     fun Project.initAllRepositories() {
-        fun ArtifactRepository.config() {
-            content { it.excludeGroup("Kotlin/Native") }
-        }
         allprojectsThis {
-            repositories.apply {
-                mavenLocal().config()
-                mavenCentral().config()
-                google().config()
-                maven { it.url = uri("https://plugins.gradle.org/m2/") }.config()
-                maven { it.url = uri("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/bootstrap") }.config()
-                maven { it.url = uri("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/temporary") }.config()
-                maven { it.url = uri("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev") }.config()
-                maven { it.url = uri("https://maven.pkg.jetbrains.space/public/p/kotlinx-coroutines/maven") }.config()
-                maven { it.url = uri("https://oss.sonatype.org/content/repositories/snapshots/") }.config()
-            }
+            configureRepositories()
         }
     }
 
@@ -224,27 +210,6 @@ object RootKorlibsPlugin {
         }
     }
 
-    fun Project.initCatalog() {
-
-        //try {
-        //    println(URL("http://127.0.0.1:$httpPort/?startTime=0&endTime=1").readText())
-        //} catch (e: Throwable) {
-        //    e.printStackTrace()
-        //}
-
-        // @TODO: $catalog.json
-        //afterEvaluate {
-        //    val jsTestTestDevelopmentExecutableCompileSync = tasks.findByPath(":korim:jsTestTestDevelopmentExecutableCompileSync")
-        //    if (jsTestTestDevelopmentExecutableCompileSync != null) {
-        //        val copy = jsTestTestDevelopmentExecutableCompileSync as Copy
-        //        //copy.from(File(""))
-        //    }
-        //}
-
-        //println(tasks.findByPath(":korim:jsTestTestDevelopmentExecutableCompileSync")!!::class)
-
-    }
-
     fun Project.initAndroid() {
         if (isSample) {
             plugins.apply("com.android.application")
@@ -261,17 +226,8 @@ object RootKorlibsPlugin {
         configureBasicKotlinAndroid2(isKorge = false, isApp = isSample)
         val android = extensions.getByName<TestedExtension>("android")
         android.apply {
-            namespace = "com.soywiz.${project.name.replace("-", ".")}"
-        }
+            namespace = AndroidConfig.getNamespace(project, isKorge = false)
 
-        dependencies {
-            add("androidTestImplementation", "androidx.test:core:1.4.0")
-            add("androidTestImplementation", "androidx.test.ext:junit:1.1.2")
-            add("androidTestImplementation", "androidx.test.espresso:espresso-core:3.3.0")
-            //androidTestImplementation 'com.android.support.test:runner:1.0.2'
-        }
-
-        android.apply {
             sourceSets {
                 it.maybeCreate("main").apply {
                     assets.srcDirs("src/commonMain/resources",)
@@ -309,9 +265,9 @@ object RootKorlibsPlugin {
             sourceSets {
                 it.maybeCreate("main").apply {
                 //it.maybeCreate("androidMain").apply {
-                    manifest.srcFile(File(project.buildDir, "AndroidManifest.xml"))
-                    java.srcDirs("${project.buildDir}/androidsrc")
-                    res.srcDirs("${project.buildDir}/androidres")
+                    manifest.srcFile(AndroidConfig.getAndroidManifestFile(project, isKorge = false))
+                    java.srcDirs(AndroidConfig.getAndroidSrcFolder(project, isKorge = false))
+                    res.srcDirs(AndroidConfig.getAndroidResFolder(project, isKorge = false))
                     assets.srcDirs(
                         "${project.projectDir}/src/commonMain/resources",
                         "${project.projectDir}/src/androidMain/resources",
@@ -325,71 +281,7 @@ object RootKorlibsPlugin {
 
         val mainDir = project.buildDir
 
-        val createAndroidManifest = tasks.createThis<Task>("createAndroidManifest") {
-            doFirst {
-                val generated = AndroidGenerated(
-                    icons = KorgeIconProvider(File(korgeGradlePluginResources, "icons/korge.png"), File(korgeGradlePluginResources, "banners/korge.png")),
-                    ifNotExists = true,
-                    androidPackageName = androidApplicationId,
-                    realEntryPoint = "main",
-                    androidMsaa = 4,
-                    androidAppName = project.name,
-                )
-
-                generated.writeResources(File(mainDir, "androidres"))
-                generated.writeMainActivity(File(mainDir, "androidsrc"))
-                generated.writeKeystore(mainDir)
-                generated.writeAndroidManifest(mainDir)
-            }
-        }
-
-        //tasks.getByName("installDebug").dependsOn("createAndroidManifest")
-
-        tasks.createThis<Task>("onlyRunAndroid") {
-            doFirst {
-                val adb = "${AndroidSdk.guessAndroidSdkPath()}/platform-tools/adb"
-                execThis {
-                    commandLine(adb, "shell", "am", "start", "-n", "${androidApplicationId}/${androidApplicationId}.MainActivity")
-                }
-
-                var pid = ""
-                for (n in 0 until 10) {
-                    try {
-                        pid = execOutput(adb, "shell", "pidof", androidApplicationId)
-                        break
-                    } catch (e: Throwable) {
-                        Thread.sleep(500L)
-                        if (n == 9) throw e
-                    }
-                }
-                println(pid)
-                execThis {
-                    commandLine(adb, "logcat", "--pid=${pid.trim()}")
-                }
-            }
-        }
-
-        afterEvaluate {
-            //InstallVariantTask id = installDebug
-            (tasks.getByName("installRelease") as InstallVariantTask).apply {
-                installOptions = listOf("-r")
-            }
-            //println(installDebug.class)
-
-            tasks.createThis<Task>("runAndroidDebug") {
-                dependsOn(ordered("createAndroidManifest", "installDebug"))
-                finalizedBy("onlyRunAndroid")
-            }
-
-            tasks.createThis<Task>("runAndroidRelease") {
-                dependsOn(ordered("createAndroidManifest", "installRelease"))
-                finalizedBy("onlyRunAndroid")
-            }
-
-            tasks.findByName("generateDebugBuildConfig")
-                ?.dependsOn(createAndroidManifest)
-        }
-
+        installAndroidRun(listOf(), direct = true, isKorge = false)
     }
 
     fun Project.initPlugins() {
@@ -397,27 +289,6 @@ object RootKorlibsPlugin {
         plugins.apply("kotlin-multiplatform")
         plugins.apply("signing")
         plugins.apply("maven-publish")
-    }
-
-    fun Project.initAndroidFixes() {
-        /*
-        allprojectsThis {
-            //println("GROUP: $group")
-            tasks.whenTaskAdded {
-                if ("DebugUnitTest" in name || "ReleaseUnitTest" in name) {
-                    enabled = false
-                    // MPP + Android unit testing is so broken we just disable it altogether,
-                    // (discussion here https://kotlinlang.slack.com/archives/C3PQML5NU/p1572168720226200)
-                }
-            }
-            afterEvaluate {
-                // Remove log pollution until Android support in KMP improves.
-                project.extensions.findByType<org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension>()?.let { kmpExt ->
-                    kmpExt.sourceSets.removeAll { it.name == "androidAndroidTestRelease" }
-                }
-            }
-        }
-        */
     }
 
     fun Project.initPublishing() {
