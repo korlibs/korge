@@ -74,19 +74,19 @@ fun Project.configureAndroidDirect(projectType: ProjectType, isKorge: Boolean) {
             }
         }
 
-        defaultConfig.apply {
-            multiDexEnabled = true
+        defaultConfig.also {
+            it.multiDexEnabled = true
             if (projectType.isExecutable) {
-                applicationId = AndroidConfig.getAppId(project, isKorge)
+                it.applicationId = AndroidConfig.getAppId(project, isKorge)
             }
-            minSdk = if (isKorge) project.korge.androidMinSdk else project.getAndroidMinSdkVersion()
-            targetSdk = if (isKorge) project.korge.androidTargetSdk else project.getAndroidTargetSdkVersion()
-            versionCode = if (isKorge) project.korge.versionCode else 1
-            version = if (isKorge) project.korge.version else "1.0"
-            //testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-            testInstrumentationRunner = "android.support.test.runner.AndroidJUnitRunner"
-            manifestPlaceholders.clear()
-            manifestPlaceholders.putAll(if (isKorge) korge.configs else emptyMap())
+            it.minSdk = if (isKorge) project.korge.androidMinSdk else project.getAndroidMinSdkVersion()
+            it.targetSdk = if (isKorge) project.korge.androidTargetSdk else project.getAndroidTargetSdkVersion()
+            it.versionCode = if (isKorge) project.korge.versionCode else 1
+            it.versionName = if (isKorge) project.korge.version else "1.0"
+            //it.testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+            it.testInstrumentationRunner = "android.support.test.runner.AndroidJUnitRunner"
+            it.manifestPlaceholders.clear()
+            it.manifestPlaceholders.putAll(if (isKorge) korge.configs else emptyMap())
         }
 
         lintOptions.also {
