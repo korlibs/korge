@@ -1,7 +1,5 @@
 package korlibs.root
 
-import com.android.build.gradle.*
-import com.android.build.gradle.internal.tasks.*
 import korlibs.korge.gradle.*
 import korlibs.korge.gradle.module.*
 import korlibs.korge.gradle.targets.*
@@ -14,13 +12,11 @@ import korlibs.korge.gradle.targets.native.*
 import korlibs.korge.gradle.util.*
 import korlibs.korge.gradle.util.create
 import korlibs.*
-import korlibs.korge.gradle.targets.android.AndroidConfig
 import korlibs.kotlin
 import korlibs.modules.*
 import korlibs.tasks
 import org.gradle.api.*
 import org.gradle.api.Project
-import org.gradle.api.artifacts.repositories.*
 import org.gradle.api.file.*
 import org.gradle.api.tasks.*
 import org.gradle.api.tasks.testing.*
@@ -210,80 +206,6 @@ object RootKorlibsPlugin {
         }
     }
 
-    fun Project.initAndroid() {
-        if (isSample) {
-            plugins.apply("com.android.application")
-        } else {
-            plugins.apply("com.android.library")
-        }
-
-        //apply(from = "${rootProject.rootDir}/build.android.gradle")
-
-        //apply(plugin = "kotlin-android")
-        //apply(plugin = "kotlin-android-extensions")
-        // apply plugin: 'kotlin-android'
-        // apply plugin: 'kotlin-android-extensions'
-        configureBasicKotlinAndroid2(isKorge = false, isApp = isSample)
-        val android = extensions.getByName<TestedExtension>("android")
-        android.apply {
-            namespace = AndroidConfig.getNamespace(project, isKorge = false)
-
-            sourceSets {
-                it.maybeCreate("main").apply {
-                    assets.srcDirs("src/commonMain/resources",)
-                }
-                for (name in listOf("test", "testDebug", "testRelease", "androidTest", "androidTestDebug", "androidTestRelease")) {
-                    it.maybeCreate(name).apply {
-                        assets.srcDirs("src/commonTest/resources",)
-                    }
-                }
-            }
-        }
-
-
-        if (isSample) {
-            initAndroidApplication()
-            //apply(from = "${rootProject.rootDir}/build.android.application.gradle")
-        }
-    }
-
-    fun Project.initAndroidApplication() {
-        //apply(plugin = "com.android.application")
-        val androidApplicationId = "com.korge.samples.${project.name.replace("-", "_")}"
-        val android = extensions.getByName<TestedExtension>("android")
-        android.apply {
-            namespace = androidApplicationId
-
-            // @TODO: Is this required?
-            //kotlinOptions {
-            //    jvmTarget = "1.8"
-            //    freeCompilerArgs += "-Xmulti-platform"
-            //}
-
-            configureKotlinAndroidSignAndBuildTypes(isKorge = false)
-
-            sourceSets {
-                it.maybeCreate("main").apply {
-                //it.maybeCreate("androidMain").apply {
-                    manifest.srcFile(AndroidConfig.getAndroidManifestFile(project, isKorge = false))
-                    java.srcDirs(AndroidConfig.getAndroidSrcFolder(project, isKorge = false))
-                    res.srcDirs(AndroidConfig.getAndroidResFolder(project, isKorge = false))
-                    assets.srcDirs(
-                        "${project.projectDir}/src/commonMain/resources",
-                        "${project.projectDir}/src/androidMain/resources",
-                        "${project.projectDir}/src/main/resources",
-                        "${project.projectDir}/build/commonMain/korgeProcessedResources/metadata/main",
-                    )
-                    //java.srcDirs += ["C:\\Users\\soywi\\projects\\korlibs\\korge-hello-world\\src\\commonMain\\kotlin", "C:\\Users\\soywi\\projects\\korlibs\\korge-hello-world\\src\\androidMain\\kotlin", "C:\\Users\\soywi\\projects\\korlibs\\korge-hello-world\\src\\main\\java"]
-                }
-            }
-        }
-
-        val mainDir = project.buildDir
-
-        installAndroidRun(listOf(), direct = true, isKorge = false)
-    }
-
     fun Project.initPlugins() {
         plugins.apply("java")
         plugins.apply("kotlin-multiplatform")
@@ -323,7 +245,7 @@ object RootKorlibsPlugin {
 
                 //initAndroidProject()
                 if (hasAndroid) {
-                    initAndroid()
+                    project.configureAndroidDirect(ProjectType.fromExecutable(isSample), isKorge = false)
                 }
 
                 if (isSample && doEnableKotlinNative && isMacos) {
@@ -423,11 +345,6 @@ object RootKorlibsPlugin {
                         configureJSTestsOnce()
                     }
                     //configureJSTests()
-
-
-                    if (hasAndroid) {
-                        project.configureBasicKotlinAndroid()
-                    }
 
                     val desktopAndMobileTargets = ArrayList<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget>().apply {
                         if (doEnableKotlinNative) addAll(nativeTargets(project))

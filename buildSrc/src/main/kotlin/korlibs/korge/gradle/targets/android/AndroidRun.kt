@@ -1,9 +1,6 @@
 package korlibs.korge.gradle.targets.android
 
-import com.android.build.gradle.internal.tasks.*
-import korlibs.korge.gradle.*
 import korlibs.korge.gradle.targets.*
-import korlibs.korge.gradle.targets.all.*
 import korlibs.korge.gradle.util.*
 import org.gradle.api.*
 import org.gradle.api.tasks.*

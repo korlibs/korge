@@ -1,11 +1,9 @@
 package korlibs.memory.internal
 
-import android.os.Build
-import com.soywiz.kmem.*
-import korlibs.memory.Arch
-import korlibs.memory.Os
-import korlibs.memory.Runtime
-import java.nio.ByteOrder
+import android.os.*
+import korlibs.kmem.*
+import korlibs.memory.*
+import java.nio.*
 
 internal actual val currentOs: Os = Os.ANDROID
 internal actual val currentRuntime: Runtime = Runtime.ANDROID
