@@ -241,6 +241,24 @@ class KlockLocaleTest {
 		)
 	}
 
+    @Test
+    fun testTurkishLocale() {
+        assertEquals(
+            """
+			Çar, 13 Mar 2019 21:36:45 UTC
+			13 Mar 2019 21:36:45
+			13.03.2019 21:36
+			13 Mart 2019 Çarşamba
+			13 Mart 2019
+			13 Mar 2019
+			13.03.2019
+			21:36:45
+			21:36
+			""".trimIndent(),
+            multiFormat(TurkishKlockLocale, KlockLocale.turkish)
+        )
+    }
+
 	fun multiFormat(locale1: KlockLocale, locale2: KlockLocale, date: DateTime = this@KlockLocaleTest.date): String {
 		return listOf(
 			date.toString(korlibs.time.DateFormat.DEFAULT_FORMAT.withLocale(locale1)),

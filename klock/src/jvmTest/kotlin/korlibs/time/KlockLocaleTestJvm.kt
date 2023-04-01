@@ -12,6 +12,7 @@ import korlibs.time.locale.russian
 import korlibs.time.locale.spanish
 import korlibs.time.locale.swedish
 import korlibs.time.locale.ukrainian
+import korlibs.time.locale.turkish
 import org.junit.Test
 import java.time.LocalDateTime
 import java.time.ZoneOffset
@@ -156,6 +157,14 @@ class KlockLocaleTestJvm {
         assertEquals(
             expected = Locale.forLanguageTag("uk").getFormattedJavaTestDate(),
             actual = KlockLocale.ukrainian.getFormattedKlockTestDate()
+        )
+    }
+
+    @Test
+    fun assertTurkishLocalization() {
+        assertEquals(
+            expected = Locale.forLanguageTag("tr").getFormattedJavaTestDate(),
+            actual = KlockLocale.turkish.getFormattedKlockTestDate()
         )
     }
 
