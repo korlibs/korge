@@ -1,10 +1,9 @@
 package korlibs.graphics.gl
 
-import korlibs.kgl.KmlGl
 import korlibs.graphics.*
-import korlibs.graphics.shader.VarKind
-import korlibs.graphics.shader.VarType
+import korlibs.graphics.shader.*
 import korlibs.io.lang.*
+import korlibs.kgl.*
 
 fun AGCullFace.toGl(): Int = when (this) {
     AGCullFace.BOTH -> KmlGl.FRONT_AND_BACK
@@ -134,4 +133,5 @@ fun VarType.toGl(): Int = when (this.kind) {
 fun AGBufferKind.toGl(): Int = when (this) {
     AGBufferKind.INDEX -> KmlGl.ELEMENT_ARRAY_BUFFER
     AGBufferKind.VERTEX -> KmlGl.ARRAY_BUFFER
+    AGBufferKind.UNIFORM -> KmlGl.UNIFORM_BUFFER
 }

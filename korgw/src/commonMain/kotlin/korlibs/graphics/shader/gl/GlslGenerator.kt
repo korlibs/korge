@@ -1,20 +1,34 @@
 package korlibs.graphics.shader.gl
 
-import korlibs.logger.Logger
+import korlibs.graphics.gl.*
 import korlibs.graphics.shader.*
-import korlibs.io.lang.Environment
-import korlibs.io.lang.invalidOp
-import korlibs.io.util.Indenter
+import korlibs.io.lang.*
+import korlibs.io.util.*
+import korlibs.logger.*
 
-data class GlslConfig(
+data class GlslConfig constructor(
+    val webgl: Boolean = false,
     val gles: Boolean = true,
     val version: Int = DEFAULT_VERSION,
+    val shaderLanguageVersion: Int = -1,
     val compatibility: Boolean = true,
     val android: Boolean = false,
     val programConfig: ProgramConfig = ProgramConfig.DEFAULT
 ) {
+    fun getFunctionName(name: String): String {
+        if (compatibility) return name
+
+        return when (name) {
+            "texture2D" -> "texture"
+            else -> name
+        }
+    }
+
     //val newGlSlVersion: Boolean get() = version > 120
-    val newGlSlVersion: Boolean get() = false
+    val newGlSlVersion: Boolean get() = !compatibility
+
+    val useUniformBlocks: Boolean get() = ENABLE_UNIFORM_BLOCKS && newGlSlVersion
+    //val useUniformBlocks: Boolean get() = false
 
     companion object {
         val NAME: String = "GLSL"
@@ -37,6 +51,7 @@ class GlobalsProgramVisitor : Program.Visitor<Unit>(Unit) {
     val varyings = LinkedHashSet<Varying>()
     val uniforms = LinkedHashSet<Uniform>()
     val typedUniforms = LinkedHashSet<TypedUniform<*>>()
+    val uniformBlocks = LinkedHashSet<UniformBlock>()
     val samplers = LinkedHashSet<Sampler>()
     val funcRefs = LinkedHashSet<String>()
 
@@ -51,11 +66,13 @@ class GlobalsProgramVisitor : Program.Visitor<Unit>(Unit) {
     override fun visit(uniform: Uniform) {
         uniforms += uniform
         uniform.typedUniform?.let { typedUniforms += it }
+        uniformBlocks += uniform.typedUniform.block
     }
 
     override fun visit(typedUniform: TypedUniform<*>) {
         uniforms += typedUniform.uniform
         typedUniforms += typedUniform
+        uniformBlocks += typedUniform.block
     }
 
     override fun visit(sampler: Sampler) {
@@ -81,13 +98,7 @@ class GlslGenerator constructor(
         val DEBUG_GLSL: Boolean get() = GlslConfig.DEBUG_GLSL
     }
 
-    constructor(
-        kind: ShaderType,
-        gles: Boolean = true,
-        version: Int = GlslConfig.DEFAULT_VERSION,
-        compatibility: Boolean = true
-    ) : this(kind, GlslConfig(gles, version, compatibility))
-
+    val webgl: Boolean get() = config.webgl
     val gles: Boolean get() = config.gles
     val version: Int get() = config.version
     val compatibility: Boolean get() = config.compatibility
@@ -128,51 +139,99 @@ class GlslGenerator constructor(
         //}
 
         val result = Indenter {
-            if (gles) {
-                if (!android) {
-                    if (compatibility) {
-                        line("#version $version compatibility")
-                    } else {
-                        line("#version $version")
+            when {
+                webgl -> line("#version ${config.shaderLanguageVersion} es")
+                gles -> {
+                    if (!android) {
+                        if (compatibility) {
+                            line("#version $version compatibility")
+                        } else {
+                            line("#version $version es")
+                        }
+                    }
+                    //if (config.programConfig.externalTextureSampler) {
+                    //    line("#extension GL_OES_EGL_image_external : require")
+                    //}
+                    line("#ifdef GL_ES")
+                    indent {
+                        line("precision highp float;")
+                        line("precision highp int;")
+                        line("precision lowp sampler2D;")
+                        line("precision lowp samplerCube;")
+                    }
+                    line("#else")
+                    indent {
+                        line("  #define highp ")
+                        line("  #define mediump ")
+                        line("  #define lowp ")
+                    }
+                    //indent {
+                    //    line("precision highp float;")
+                    //    line("precision highp int;")
+                    //}
+                    line("#endif")
+                    //line("precision highp float;")
+                    //line("precision highp int;")
+                    //line("precision lowp sampler2D;")
+                    //line("precision lowp samplerCube;")
+                }
+                else -> {
+                    //if (config.newGlSlVersion && !compatibility && config.shaderLanguageVersion >= 310) {
+                    if (config.newGlSlVersion) {
+                        line("#version ${config.shaderLanguageVersion} core")
                     }
                 }
-                //if (config.programConfig.externalTextureSampler) {
-                //    line("#extension GL_OES_EGL_image_external : require")
-                //}
-                line("#ifdef GL_ES")
-                indent {
-                    line("precision highp float;")
-                    line("precision highp int;")
-                    line("precision lowp sampler2D;")
-                    line("precision lowp samplerCube;")
+            }
+            line("#extension GL_OES_standard_derivatives : enable")
+            line("#ifdef GL_ES")
+            line("precision mediump float;")
+            line("#endif")
+
+            //println("gles=$gles, compatibility=$compatibility")
+
+            for (it in types.attributes) {
+                // https://www.khronos.org/opengl/wiki/Layout_Qualifier_(GLSL)
+                val layout = when {
+                    config.newGlSlVersion && config.shaderLanguageVersion >= 410 -> "layout(location = ${it.fixedLocation}) "
+                    else -> ""
                 }
-                line("#else")
-                indent {
-                    line("  #define highp ")
-                    line("  #define mediump ")
-                    line("  #define lowp ")
+
+                line("$layout$IN ${precToString(it.precision)}${typeToString(it.type)} ${it.name}${it.arrayDecl};")
+            }
+            for (it in types.samplers) {
+                // https://www.khronos.org/opengl/wiki/Layout_Qualifier_(GLSL)
+                val layout = when {
+                    config.newGlSlVersion -> ""
+                    else -> ""
                 }
-                //indent {
-                //    line("precision highp float;")
-                //    line("precision highp int;")
-                //}
-                line("#endif")
-                //line("precision highp float;")
-                //line("precision highp int;")
-                //line("precision lowp sampler2D;")
-                //line("precision lowp samplerCube;")
+
+                line("$layout$UNIFORM ${precToString(it.precision)}${typeToString(it.type)} ${it.name}${it.arrayDecl};")
             }
 
-            for (it in types.attributes) line("$IN ${precToString(it.precision)}${typeToString(it.type)} ${it.name}${it.arrayDecl};")
-            for (it in types.samplers) line("$UNIFORM ${precToString(it.precision)}${typeToString(it.type)} ${it.name}${it.arrayDecl};")
-            for (it in types.uniforms) line("$UNIFORM ${precToString(it.precision)}${typeToString(it.type)} ${it.name}${it.arrayDecl};")
-            for (it in types.varyings) {
-                if (it is Output) continue
-                if (config.newGlSlVersion && it.name == config.gl_FragColor) {
-                    line("layout(location=0) $OUT ${precToString(it.precision)}${typeToString(it.type)} ${it.name};")
-                } else {
-                    line("$OUT ${precToString(it.precision)}${typeToString(it.type)} ${it.name};")
+            if (config.useUniformBlocks) {
+                for (block in types.uniformBlocks) {
+                    //line("layout(std140, binding = ${block.fixedLocation}) uniform ${block.name} {")
+                    line("layout(std140) uniform ${block.name} {")
+                    for (uniform in block.uniforms) {
+                        line("  ${precToString(uniform.precision)}${typeToString(uniform.type)} ${uniform.name}${uniform.arrayDecl};")
+                    }
+                    line("};")
                 }
+            } else {
+                for (it in types.uniforms) line("$UNIFORM ${precToString(it.precision)}${typeToString(it.type)} ${it.name}${it.arrayDecl};")
+            }
+
+            for ((index, it) in types.varyings.sortedBy { it.name }.withIndex()) {
+                if (it is Output) continue
+
+                val INOUT = when {
+                    !config.newGlSlVersion -> OUT
+                    it.name == config.gl_FragColor && kind == ShaderType.FRAGMENT -> OUT
+                    kind == ShaderType.VERTEX -> OUT
+                    else -> IN
+                }
+
+                line("$INOUT ${precToString(it.precision)}${typeToString(it.type)} ${it.name};")
             }
 
             for (func in allFuncs) {
@@ -252,7 +311,10 @@ class GlslBodyGenerator(
 
     override fun visit(operand: Program.Unop): String = "(" + operand.op + "("  + visit(operand.right) + ")" + ")"
     override fun visit(operand: Program.Binop): String = "(" + visit(operand.left) + " " + operand.op + " " + visit(operand.right) + ")"
-    override fun visit(func: Program.BaseFunc): String = func.name + "(" + func.ops.joinToString(", ") { visit(it) } + ")"
+    override fun visit(func: Program.BaseFunc): String {
+
+        return config.getFunctionName(func.name) + "(" + func.ops.joinToString(", ") { visit(it) } + ")"
+    }
     override fun visit(ternary: Program.Ternary): String = "((${visit(ternary.cond)}) ? (${visit(ternary.otrue)}) : (${visit(ternary.ofalse)}))"
 
     override fun visit(stm: Program.Stm.If) {

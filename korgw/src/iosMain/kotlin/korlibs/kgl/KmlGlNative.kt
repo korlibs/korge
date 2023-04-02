@@ -4,11 +4,11 @@
 
 package korlibs.kgl
 
-import korlibs.memory.*
-import kotlinx.cinterop.*
 import korlibs.image.bitmap.*
 import korlibs.image.format.*
-import platform.gles2.*
+import korlibs.memory.*
+import kotlinx.cinterop.*
+import platform.gles3.*
 
 internal actual fun glGetProcAddressAnyOrNull(name: String): COpaquePointer? {
     TODO()
@@ -171,14 +171,14 @@ actual class KmlGlNative constructor(override val gles: Boolean) : NativeBaseKml
     override val isInstancedSupported: Boolean get() = true
 
     override fun drawArraysInstanced(mode: Int, first: Int, count: Int, instancecount: Int) {
-        glDrawArraysInstancedEXT(mode.convert(), first.convert(), count.convert(), instancecount.convert())
+        glDrawArraysInstanced(mode.convert(), first.convert(), count.convert(), instancecount.convert())
     }
 
     override fun drawElementsInstanced(mode: Int, count: Int, type: Int, indices: Int, instancecount: Int) {
-        glDrawElementsInstancedEXT(mode.convert(), count.convert(), type.convert(), indices.toLong().toCPointer<IntVar>(), instancecount.convert())
+        glDrawElementsInstanced(mode.convert(), count.convert(), type.convert(), indices.toLong().toCPointer<IntVar>(), instancecount.convert())
     }
 
     override fun vertexAttribDivisor(index: Int, divisor: Int) {
-        glVertexAttribDivisorEXT(index.convert(), divisor.convert())
+        glVertexAttribDivisor(index.convert(), divisor.convert())
     }
 }

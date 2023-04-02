@@ -1,8 +1,8 @@
 package korlibs.kgl
 
-import korlibs.memory.*
 import korlibs.image.bitmap.*
 import korlibs.io.lang.*
+import korlibs.memory.*
 
 interface IKmlGl {
 	fun startFrame() = Unit
@@ -164,29 +164,17 @@ interface IKmlGl {
     fun renderbufferStorageMultisample(target: Int, samples: Int, internalformat: Int, width: Int, height: Int): Unit = unsupported("Not supported MSAA")
     fun texImage2DMultisample(target: Int, samples: Int, internalformat: Int, width: Int, height: Int, fixedsamplelocations: Boolean): Unit = unsupported("Not supported MSAA")
 
-    fun shaderSourceWithExt(shader: Int, string: String) {
-        val stringLines = string.lines()
-        val versionLines = arrayListOf<String>()
-        val extensionLines = arrayListOf<String>()
-        val normalLines = arrayListOf<String>()
-        for (line in stringLines) {
-            when {
-                line.startsWith("#version") -> versionLines += line
-                line.startsWith("#extension") -> extensionLines += line
-                else -> normalLines += line
-            }
-        }
-        shaderSource(shader, listOf(
-            // @TODO: This shouldn't be necessary. Just do not include it in the shader source code, and include it here
-            *versionLines.toTypedArray(),
-            *extensionLines.toTypedArray(),
-            "#extension GL_OES_standard_derivatives : enable",
-            "#ifdef GL_ES",
-            "precision mediump float;",
-            "#endif",
-            *normalLines.toTypedArray(),
-        ).joinToString("\n"))
-    }
+    // UBO
+    // https://registry.khronos.org/OpenGL-Refpages/es3.0/html/glBindBufferRange.xhtml
+    fun bindBufferRange(target: Int, index: Int, buffer: Int, offset: Int, size: Int): Unit = unsupported("Not supported uniform buffers ${this::class}")
+
+    // VAO
+    // https://registry.khronos.org/OpenGL-Refpages/gl4/html/glGenVertexArrays.xhtml
+    // https://registry.khronos.org/OpenGL-Refpages/gl4/html/glDeleteVertexArrays.xhtml
+    // https://registry.khronos.org/OpenGL-Refpages/gl4/html/glBindVertexArray.xhtml
+    fun genVertexArrays(n: Int, arrays: Buffer): Unit = unsupported("Not supported vertex arrays ${this::class}")
+    fun deleteVertexArrays(n: Int, arrays: Buffer): Unit = unsupported("Not supported vertex arrays ${this::class}")
+    fun bindVertexArray(array: Int): Unit = unsupported("Not supported vertex arrays ${this::class}")
 }
 
 inline fun IKmlGl.enableDisable(cap: Int, enable: Boolean, block: () -> Unit) {

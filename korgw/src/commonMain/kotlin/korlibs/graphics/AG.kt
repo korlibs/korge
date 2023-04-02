@@ -1,10 +1,10 @@
 package korlibs.graphics
 
 import korlibs.datastructure.*
-import korlibs.logger.*
 import korlibs.graphics.shader.*
 import korlibs.image.bitmap.*
 import korlibs.image.color.*
+import korlibs.logger.*
 import korlibs.math.geom.*
 import kotlinx.coroutines.channels.*
 
@@ -15,6 +15,8 @@ interface AGFeatures {
     val parentFeatures: AGFeatures? get() = null
     val graphicExtensions: Set<String> get() = emptySet()
     val isInstancedSupported: Boolean get() = parentFeatures?.isInstancedSupported ?: false
+    val isUniformBuffersSupported: Boolean get() = parentFeatures?.isUniformBuffersSupported ?: false
+    val isVertexArraysSupported: Boolean get() = parentFeatures?.isVertexArraysSupported ?: false
     val isStorageMultisampleSupported: Boolean get() = parentFeatures?.isStorageMultisampleSupported ?: false
     val isFloatTextureSupported: Boolean get() = parentFeatures?.isFloatTextureSupported ?: false
 }

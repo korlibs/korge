@@ -1,7 +1,6 @@
 package korlibs.kgl
 
 import korlibs.memory.*
-import korlibs.image.bitmap.NativeImage
 
 class KmlGlProgram(val gl: KmlGl, val program: Int, val vertex: Int, val fragment: Int) {
 	fun use() = gl.useProgram(program)
@@ -27,7 +26,7 @@ class KmlGlProgram(val gl: KmlGl, val program: Int, val vertex: Int, val fragmen
 
 private fun KmlGl.createShader(type: Int, source: String): Int {
 	val shader = createShader(type)
-	shaderSourceWithExt(shader, source)
+	shaderSource(shader, source)
 	compileShaderAndCheck(shader)
 	return shader
 }

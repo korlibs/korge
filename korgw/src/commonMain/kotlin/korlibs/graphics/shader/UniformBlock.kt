@@ -1,12 +1,12 @@
 package korlibs.graphics.shader
 
-import korlibs.datastructure.iterators.*
-import korlibs.memory.*
-import korlibs.memory.dyn.*
 import korlibs.graphics.*
 import korlibs.image.color.*
 import korlibs.io.lang.*
 import korlibs.math.geom.*
+import korlibs.math.math.*
+import korlibs.memory.*
+import korlibs.memory.dyn.*
 import kotlin.reflect.*
 
 class UniformBlocksBuffersRef(
@@ -39,11 +39,12 @@ class TypedUniform<T>(name: String, val voffset: Int, var vindex: Int, val block
 }
 
 open class UniformBlock(val fixedLocation: Int) {
+    val name: String get() = this::class.portableSimpleName
     private val layout = KMemLayoutBuilder()
     private val _items = arrayListOf<TypedUniform<*>>()
     private var lastIndex = 0
     val uniforms: List<TypedUniform<*>> get() = _items
-    val totalSize: Int get() = layout.size
+    val totalSize: Int get() = layout.size.nextMultipleOf(256)
     val uniformCount: Int get() = uniforms.size
 
     // @TODO: Fix alignment

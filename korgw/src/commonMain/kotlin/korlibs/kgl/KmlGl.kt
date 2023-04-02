@@ -5,9 +5,8 @@
 package korlibs.kgl
 
 import korlibs.datastructure.*
-import korlibs.memory.*
 import korlibs.graphics.*
-import korlibs.io.util.*
+import korlibs.memory.*
 
 abstract class KmlGl : Extra by Extra.Mixin(), IKmlGl, AGFeatures {
     open val gles: Boolean get() = false
@@ -661,6 +660,11 @@ abstract class KmlGl : Extra by Extra.Mixin(), IKmlGl, AGFeatures {
 
         // ANDROID
         const val TEXTURE_EXTERNAL_OES           = 0x8D65
+
+        // UNIFORM BUFFERS
+        const val UNIFORM_BUFFER = 0x8A11
+        const val UNIFORM_BUFFER_BINDING = 0x8A28
+        const val UNIFORM_BUFFER_OFFSET_ALIGNMENT = 0x8A34
     }
 
     open fun init() = Unit

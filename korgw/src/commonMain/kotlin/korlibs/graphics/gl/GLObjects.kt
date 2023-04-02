@@ -2,11 +2,10 @@ package korlibs.graphics.gl
 
 import korlibs.datastructure.*
 import korlibs.datastructure.lock.*
+import korlibs.graphics.*
+import korlibs.io.concurrent.atomic.*
 import korlibs.kgl.*
 import korlibs.memory.unit.*
-import korlibs.graphics.*
-import korlibs.graphics.AGNativeObject
-import korlibs.io.concurrent.atomic.*
 
 class GLGlobalState(val gl: KmlGl, val ag: AG) {
     var texturesCreated = korAtomic(0)
@@ -52,7 +51,7 @@ internal open class GLBaseObject(val globalState: GLGlobalState) : AGNativeObjec
 
 internal fun AGBuffer.gl(state: GLGlobalState): GLBuffer = this.createOnce(state) { GLBuffer(state) }
 internal class GLBuffer(state: GLGlobalState) : GLBaseObject(state) {
-    var id = gl.genBuffer()
+    var id: Int = gl.genBuffer()
     var estimatedBytes: Long = 0L
         set(value) {
             globalState.buffersSize.addAndGet(+value -field)

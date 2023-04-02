@@ -1,9 +1,9 @@
 package korlibs.kgl
 
-import korlibs.memory.*
 import korlibs.image.bitmap.*
 import korlibs.image.format.*
 import korlibs.io.concurrent.atomic.*
+import korlibs.memory.*
 import kotlinx.cinterop.*
 import kotlin.reflect.*
 
@@ -178,6 +178,12 @@ abstract class NativeBaseKmlGl : KmlGlWithExtensions() {
     override fun drawElementsInstanced(mode: Int, count: Int, type: Int, indices: Int, instancecount: Int): Unit = glDrawElementsInstancedExt(mode.convert(), count.convert(), type.convert(), indices.toLong().toCPointer<IntVar>()?.reinterpret(), instancecount.convert())
     override fun vertexAttribDivisor(index: Int, divisor: Int): Unit = glVertexAttribDivisorExt(index, divisor)
 
+    // https://registry.khronos.org/OpenGL-Refpages/es3.0/html/glBindBufferRange.xhtml
+    override val isUniformBuffersSupported: Boolean get() = glBindBufferRangeExt != null
+    override fun bindBufferRange(target: Int, index: Int, buffer: Int, offset: Int, size: Int) {
+        glBindBufferRangeExt?.invoke(target, index, buffer, offset.convert(), size.convert())
+    }
+
     companion object {
         const val GL_NUM_EXTENSIONS = 0x821D
         const val GL_COLOR_BUFFER_BIT = 0x00004000
@@ -340,6 +346,9 @@ abstract class NativeBaseKmlGl : KmlGlWithExtensions() {
         val glVertexAttrib1fvExt by GLFunc<(GLuint, GLfloatPtr) -> GLvoid>()
         val glVertexAttrib2fvExt by GLFunc<(GLuint, GLfloatPtr) -> GLvoid>()
         val glVertexAttrib3fvExt by GLFunc<(GLuint, GLfloatPtr) -> GLvoid>()
+
+        val glBindBufferRangeExt by GLFuncNull<(GLenum, GLuint, GLuint, GLintPtr, GLsizeiPtr) -> GLvoid>()
+
     }
 }
 

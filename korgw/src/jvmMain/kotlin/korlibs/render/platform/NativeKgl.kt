@@ -1,10 +1,10 @@
 package korlibs.render.platform
 
+import com.sun.jna.*
+import korlibs.image.awt.*
+import korlibs.image.bitmap.*
 import korlibs.kgl.*
 import korlibs.memory.*
-import korlibs.image.awt.AwtNativeImage
-import korlibs.image.bitmap.NativeImage
-import com.sun.jna.NativeLong
 
 open class NativeKgl constructor(private val gl: INativeGL) : KmlGlWithExtensions() {
     override fun activeTexture(texture: Int): Unit = gl.glActiveTexture(texture)
@@ -160,6 +160,18 @@ open class NativeKgl constructor(private val gl: INativeGL) : KmlGlWithExtension
     override fun renderbufferStorageMultisample(target: Int, samples: Int, internalformat: Int, width: Int, height: Int) {
         gl.glRenderbufferStorageMultisample(target, samples, internalformat, width, height)
     }
+
+    override val isUniformBuffersSupported: Boolean get() = true
+
+    override fun bindBufferRange(target: Int, index: Int, buffer: Int, offset: Int, size: Int) {
+        gl.glBindBufferRange(target, index, buffer, NativeLong(offset.toLong()), NativeLong(size.toLong()))
+    }
+
+    override val isVertexArraysSupported: Boolean get() = true
+
+    override fun genVertexArrays(n: Int, arrays: Buffer): Unit { gl.glGenVertexArrays(n, arrays.directIntBuffer) }
+    override fun deleteVertexArrays(n: Int, arrays: Buffer): Unit { gl.glDeleteVertexArrays(n, arrays.directIntBuffer) }
+    override fun bindVertexArray(array: Int): Unit { gl.glBindVertexArray(array) }
 }
 
 

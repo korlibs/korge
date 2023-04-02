@@ -1,10 +1,11 @@
+
+import korlibs.image.color.*
+import korlibs.io.async.*
+import korlibs.io.lang.*
 import korlibs.korge.*
 import korlibs.korge.scene.*
 import korlibs.korge.ui.*
 import korlibs.korge.view.*
-import korlibs.image.color.*
-import korlibs.io.async.*
-import korlibs.io.lang.*
 import korlibs.math.interpolation.*
 import samples.*
 import samples.asteroids.*

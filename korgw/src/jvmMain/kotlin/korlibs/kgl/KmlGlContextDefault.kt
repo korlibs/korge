@@ -1,22 +1,17 @@
 package korlibs.kgl
 
-import korlibs.datastructure.lock.*
+import com.sun.jna.*
+import com.sun.jna.platform.win32.*
+import korlibs.io.lang.*
 import korlibs.logger.*
-import korlibs.memory.*
 import korlibs.memory.Platform
 import korlibs.memory.dyn.*
-import korlibs.memory.dyn.osx.*
 import korlibs.render.*
 import korlibs.render.osx.*
 import korlibs.render.platform.*
-import korlibs.render.platform.NativeLoad
 import korlibs.render.win32.*
 import korlibs.render.x11.*
-import korlibs.io.lang.*
-import com.sun.jna.*
-import com.sun.jna.platform.win32.*
 import java.util.concurrent.atomic.*
-import kotlin.collections.buildList
 
 val GLOBAL_HEADLESS_KML_CONTEXT by lazy { KmlGlContextDefault() }
 
@@ -428,22 +423,33 @@ open class MacKmlGlContextRaw(window: Any? = null, parent: KmlGlContext? = null)
             //checkError("CGLDestroyPixelFormat", MacGL.CGLDestroyPixelFormat(pix))
 
             fun formatsProvider(): Sequence<IntArray> = sequence<IntArray> {
-                for (extra in listOf(true, false)) {
-                    for (accelerated in listOf(true, false)) {
-                        yield(buildList {
-                            // Let's not specify profile version, so we are using old shader syntax
-                            //kCGLPFAOpenGLProfile, kCGLOGLPVersion_GL3_Core,
-                            //kCGLPFAOpenGLProfile, kCGLOGLPVersion_GL4_Core,
-                            if (accelerated) add(kCGLPFAAccelerated)
-                            if (extra) {
-                                add(kCGLPFAColorSize); add(24)
-                                add(kCGLPFADepthSize); add(16)
-                                add(kCGLPFAStencilSize); add(8)
-                            }
-                            //kCGLPFADoubleBuffer,
-                            //kCGLPFASupersample,
-                            add(0)
-                        }.toIntArray())
+                //for (glVersion in listOf(410, 320, 210)) {
+                for (glVersion in listOf(210)) {
+                    for (extra in listOf(true, false)) {
+                        for (accelerated in listOf(true, false)) {
+                            yield(buildList {
+                                // Let's not specify profile version, so we are using old shader syntax
+                                //add(kCGLPFAOpenGLProfile); add(kCGLOGLPVersion_GL3_Core)
+                                add(kCGLPFAOpenGLProfile); add(
+                                when (glVersion) {
+                                    410 -> kCGLOGLPVersion_GL4_Core
+                                    320 -> kCGLOGLPVersion_GL3_Core
+                                    else -> kCGLOGLPVersion_Legacy
+                                }
+                            )
+                                //add(kCGLPFAOpenGLProfile); add(if (core) kCGLOGLPVersion_GL3_Core else kCGLOGLPVersion_Legacy)
+                                if (accelerated) add(kCGLPFAAccelerated)
+                                add(kCGLPFAAllowOfflineRenderers)
+                                if (extra) {
+                                    add(kCGLPFAColorSize); add(24)
+                                    add(kCGLPFADepthSize); add(16)
+                                    add(kCGLPFAStencilSize); add(8)
+                                }
+                                //kCGLPFADoubleBuffer,
+                                //kCGLPFASupersample,
+                                add(0)
+                            }.toIntArray())
+                        }
                     }
                 }
             }
@@ -461,7 +467,7 @@ open class MacKmlGlContextRaw(window: Any? = null, parent: KmlGlContext? = null)
                     return@lazy pix.getPointer(0L)
                 } catch (e: Throwable) {
                     exceptions += e
-                    //e.printStackTrace()
+                    e.printStackTrace()
                 }
             }
             if (exceptions.isNotEmpty()) {
@@ -480,6 +486,7 @@ open class MacKmlGlContextRaw(window: Any? = null, parent: KmlGlContext? = null)
 
         // https://github.com/apitrace/apitrace/blob/master/retrace/glretrace_cgl.cpp
         const val kCGLPFAAccelerated = 73
+        const val kCGLPFAAllowOfflineRenderers = 96
         const val kCGLPFAOpenGLProfile = 99
         //const val kCGLOGLPVersion_GL4_Core = 16640
 

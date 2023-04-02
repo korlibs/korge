@@ -1,15 +1,17 @@
 package korlibs.graphics.gl
 
+import korlibs.crypto.encoding.*
 import korlibs.datastructure.iterators.*
-import korlibs.kgl.*
-import korlibs.memory.*
 import korlibs.graphics.*
 import korlibs.graphics.shader.*
 import korlibs.graphics.shader.gl.*
 import korlibs.image.bitmap.*
 import korlibs.image.color.*
 import korlibs.io.lang.*
-import korlibs.crypto.encoding.*
+import korlibs.kgl.*
+import korlibs.memory.*
+
+val ENABLE_UNIFORM_BLOCKS = Environment["ENABLE_UNIFORM_BLOCKS"] == "true"
 
 class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
     class ShaderException(val str: String, val error: String, val errorInt: Int, val gl: KmlGl, val debugName: String?, val type: Int, val shaderReturnInt: Int) :
@@ -89,13 +91,25 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
     private val normalPrograms = HashMap<Program, GLBaseProgram>()
     //private val externalPrograms = HashMap<Program, GLBaseProgram>()
 
+    var shadingLanguageVersion: String? = null
+
     private fun useProgram(program: Program, config: ProgramConfig = ProgramConfig.DEFAULT) {
         //val map = if (config.externalTextureSampler) externalPrograms else normalPrograms
         val map = normalPrograms
+
+        if (shadingLanguageVersion == null) {
+            shadingLanguageVersion = gl.getString(KmlGl.SHADING_LANGUAGE_VERSION)
+            logger.info { "GL_VERSION=" + gl.getString(KmlGl.VERSION) }
+            logger.info { "GL_SHADING_LANGUAGE_VERSION=$shadingLanguageVersion" }
+            logger.info { "GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT=" + gl.getInteger(KmlGl.UNIFORM_BUFFER_OFFSET_ALIGNMENT) }
+            logger.info { "gl.versionString=${gl.versionString}" }
+            logger.info { "gl.versionInt=${gl.versionInt}" }
+        }
+
         val nprogram: GLBaseProgram = map.getOrPut(program) {
             GLBaseProgram(glGlobalState, GLShaderCompiler.programCreate(
                 gl,
-                this.glslConfig.copy(programConfig = config),
+                this.glslConfig.copy(programConfig = config, shaderLanguageVersion = gl.versionInt),
                 program, debugName = program.name
             )).also { baseProgram ->
                 baseProgram.use()
@@ -243,6 +257,7 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
 
     val glslConfig: GlslConfig by lazy {
         GlslConfig(
+            webgl = gl.webgl,
             gles = gl.gles,
             android = gl.android,
         )
@@ -366,10 +381,10 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
         }
     }
 
-    private fun bindBuffer(buffer: AGBuffer?, target: AGBufferKind, onlyUpdate: Boolean = false) {
+    private fun bindBuffer(buffer: AGBuffer?, target: AGBufferKind, onlyUpdate: Boolean = false): GLBuffer? {
         if (buffer == null) {
             gl.bindBuffer(target.toGl(), 0)
-            return
+            return null
         }
         val bufferInfo = buffer.gl
         if (!onlyUpdate) gl.bindBuffer(target.toGl(), bufferInfo.id)
@@ -379,6 +394,7 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
             if (onlyUpdate) gl.bindBuffer(target.toGl(), bufferInfo.id)
             gl.bufferData(target.toGl(), mem.sizeInBytes, mem, KmlGl.STATIC_DRAW)
         }
+        return bufferInfo
     }
 
     fun vaoUnuse(vao: AGVertexArrayObject) {
@@ -397,7 +413,18 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
         }
     }
 
+    var vertexArray = -1
+
     fun vaoUse(vao: AGVertexArrayObject) {
+        if (gl.isVertexArraysSupported) {
+        //if (true) {
+            if (vertexArray < 0) {
+                vertexArray = gl.genVertexArray()
+            }
+            gl.bindVertexArray(vertexArray)
+        }
+        //gl.enableVertexAttribArray()
+
         vao.list.fastForEach { entry ->
             val vertices = entry.buffer
             val vertexLayout = entry.layout
@@ -498,6 +525,13 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
 
         val glProgramInfo = glProgram.programInfo
         uniformBlocks.fastForEachBlock { index, block, buffer, valueIndex ->
+            if (gl.isUniformBuffersSupported && glProgram.programInfo.config.useUniformBlocks) {
+                //println("isUniformBuffersSupported!!")
+                val buffer = bindBuffer(buffer, AGBufferKind.UNIFORM)
+                gl.bindBufferRange(KmlGl.UNIFORM_BUFFER, block.block.fixedLocation, buffer?.id ?: -1, valueIndex * block.blockSize, block.blockSize)
+                return@fastForEachBlock
+            }
+
             val ref = glProgramInfo.uniforms[block.block.fixedLocation]
             val bufferMem = buffer!!.mem!!
             val currentMem = ref!!.buffer

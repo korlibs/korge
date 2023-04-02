@@ -2,12 +2,12 @@ package korlibs.graphics
 
 import korlibs.datastructure.*
 import korlibs.datastructure.iterators.*
-import korlibs.memory.*
-import korlibs.memory.pack.*
 import korlibs.graphics.shader.*
 import korlibs.image.color.*
 import korlibs.io.lang.*
 import korlibs.math.geom.*
+import korlibs.memory.*
+import korlibs.memory.pack.*
 import kotlin.jvm.*
 
 inline class AGReadKind(val ordinal: Int) {
@@ -687,7 +687,12 @@ fun AGScissor.applyMatrixBounds(m: Matrix): AGScissor {
     )
 }
 
-enum class AGBufferKind { INDEX, VERTEX }
+enum class AGBufferKind {
+    INDEX,
+    VERTEX,
+    // Only if supported by the OpenGL implmenetation. In GLES it requires 3.0 or greater, or an extension
+    UNIFORM
+}
 
 interface AGFactory {
     val supportsNativeFrame: Boolean
