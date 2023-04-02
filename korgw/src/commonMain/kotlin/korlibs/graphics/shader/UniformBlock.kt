@@ -44,7 +44,8 @@ open class UniformBlock(val fixedLocation: Int) {
     private val _items = arrayListOf<TypedUniform<*>>()
     private var lastIndex = 0
     val uniforms: List<TypedUniform<*>> get() = _items
-    val totalSize: Int get() = layout.size.nextMultipleOf(256)
+    val totalSizeNoGlAlign: Int get() = layout.size
+    val totalSize: Int get() = totalSizeNoGlAlign.nextMultipleOf(256)
     val uniformCount: Int get() = uniforms.size
 
     // @TODO: Fix alignment

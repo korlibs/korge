@@ -164,8 +164,11 @@ open class NativeKgl constructor(private val gl: INativeGL) : KmlGlWithExtension
     override val isUniformBuffersSupported: Boolean get() = true
 
     override fun bindBufferRange(target: Int, index: Int, buffer: Int, offset: Int, size: Int) {
-        gl.glBindBufferRange(target, index, buffer, NativeLong(offset.toLong()), NativeLong(size.toLong()))
+        return gl.glBindBufferRange(target, index, buffer, NativeLong(offset.toLong()), NativeLong(size.toLong()))
     }
+    override fun getUniformBlockIndex(program: Int, name: String): Int = gl.glGetUniformBlockIndex(program, name)
+    override fun uniformBlockBinding(program: Int, uniformBlockIndex: Int, uniformBlockBinding: Int) =
+        gl.glUniformBlockBinding(program, uniformBlockIndex, uniformBlockBinding)
 
     override val isVertexArraysSupported: Boolean get() = true
 

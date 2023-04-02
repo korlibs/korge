@@ -4,13 +4,9 @@
 
 package korlibs.kgl
 
-import korlibs.datastructure.FastStringMap
-import korlibs.datastructure.IntMap
-import korlibs.datastructure.Pool
-import korlibs.datastructure.clear
-import korlibs.datastructure.getOrPut
+import korlibs.datastructure.*
+import korlibs.image.bitmap.*
 import korlibs.memory.*
-import korlibs.image.bitmap.NativeImage
 
 class KmlGlDummy : KmlGlDummyBase()
 
@@ -230,4 +226,8 @@ open class KmlGlDummyBase : KmlGl() {
     override fun genVertexArrays(n: Int, arrays: Buffer) = Unit
     override fun deleteVertexArrays(n: Int, arrays: Buffer) = Unit
     override fun bindVertexArray(array: Int) = Unit
+
+    override fun bindBufferRange(target: Int, index: Int, buffer: Int, offset: Int, size: Int) = Unit
+    override fun getUniformBlockIndex(program: Int, name: String): Int = 0
+    override fun uniformBlockBinding(program: Int, uniformBlockIndex: Int, uniformBlockBinding: Int) = Unit
 }

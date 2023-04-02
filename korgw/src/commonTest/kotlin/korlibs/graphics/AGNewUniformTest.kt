@@ -1,8 +1,8 @@
 package korlibs.graphics
 
-import korlibs.memory.*
 import korlibs.graphics.shader.*
 import korlibs.math.geom.*
+import korlibs.memory.*
 import kotlin.test.*
 
 class AGNewUniformTest {
@@ -19,7 +19,8 @@ class AGNewUniformTest {
         assertEquals(ProjViewUB::u_ViewMat.name, ProjViewUB.u_ViewMat.name)
         assertEquals(0, ProjViewUB.u_ProjMat.voffset)
         assertEquals(64, ProjViewUB.u_ViewMat.voffset)
-        assertEquals(128, ProjViewUB.totalSize)
+        assertEquals(128, ProjViewUB.totalSizeNoGlAlign)
+        assertEquals(256, ProjViewUB.totalSize)
         assertEquals(listOf(ProjViewUB.u_ProjMat, ProjViewUB.u_ViewMat), ProjViewUB.uniforms)
     }
 
@@ -30,7 +31,7 @@ class AGNewUniformTest {
         ref[ProjViewUB.u_ProjMat] = Matrix4.fromColumns(FloatArray(16) { it.toFloat() })
         ref[ProjViewUB.u_ViewMat] = Matrix4.fromColumns(FloatArray(16) { -it.toFloat() })
         assertEquals(
-            "000000000000803f0000004000004040000080400000a0400000c0400000e040000000410000104100002041000030410000404100005041000060410000704100000080000080bf000000c0000040c0000080c00000a0c00000c0c00000e0c0000000c1000010c1000020c1000030c1000040c1000050c1000060c1000070c1",
+            "000000000000803f0000004000004040000080400000a0400000c0400000e040000000410000104100002041000030410000404100005041000060410000704100000080000080bf000000c0000040c0000080c00000a0c00000c0c00000e0c0000000c1000010c1000020c1000030c1000040c1000050c1000060c1000070c10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
             ref.buffer.hex()
         )
         assertEquals(false, arrayequal(ref.buffer, 0, ref2.buffer, 0, ref.buffer.size))

@@ -115,16 +115,19 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
             )).also { baseProgram ->
                 baseProgram.use()
 
-                val programId = baseProgram.programInfo.programId
+                val programInfo = baseProgram.programInfo
+                val programId = programInfo.programId
 
                 program.samplers.forEach {
-                    val location = baseProgram.programInfo.getUniformLocation(gl, it.name)
+                    val location = programInfo.getUniformLocation(gl, it.name)
                     gl.uniform1i(location, it.index)
                 }
 
-                program.uniformBlocks.fastForEach {
-                    val index = gl.getUniformBlockIndex(programId, it.name)
-                    gl.uniformBlockBinding(programId, index, it.fixedLocation)
+                if (programInfo.config.useUniformBlocks) {
+                    program.uniformBlocks.fastForEach {
+                        val index = gl.getUniformBlockIndex(programId, it.name)
+                        gl.uniformBlockBinding(programId, index, it.fixedLocation)
+                    }
                 }
             }
         }
@@ -533,7 +536,8 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
 
         val glProgramInfo = glProgram.programInfo
         uniformBlocks.fastForEachBlock { index, block, buffer, valueIndex ->
-            if (gl.isUniformBuffersSupported && glProgram.programInfo.config.useUniformBlocks) {
+            //if (gl.isUniformBuffersSupported && glProgram.programInfo.config.useUniformBlocks) {
+            if (glProgram.programInfo.config.useUniformBlocks) {
                 //println("isUniformBuffersSupported!!")
                 val buffer = bindBuffer(buffer, AGBufferKind.UNIFORM)
                 gl.bindBufferRange(KmlGl.UNIFORM_BUFFER, block.block.fixedLocation, buffer?.id ?: -1, valueIndex * block.blockSize, block.blockSize)

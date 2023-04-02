@@ -205,8 +205,13 @@ object DirectGL : INativeGL {
     external override fun glDrawElementsInstanced(mode: GLenum, count: GLsizei, type: GLenum, indices: IntSize, instancecount: GLsizei)
     external override fun glVertexAttribDivisor(index: GLuint, divisor: GLuint)
     external override fun glRenderbufferStorageMultisample(target: GLenum, samples: GLint, internalformat: GLenum, width: GLsizei, height: GLsizei)
-    external override fun glBindBufferRange(target: GLenum, index: GLuint, buffer: GLuint, offset: GLintptr, size: GLsizeiptr)
 
+    // Uniform Block
+    external override fun glBindBufferRange(target: GLenum, index: GLuint, buffer: GLuint, offset: GLintptr, size: GLsizeiptr)
+    external override fun glGetUniformBlockIndex(program: GLuint, uniformBlockName: String): Int
+    external override fun glUniformBlockBinding(program: GLuint, uniformBlockIndex: GLuint, uniformBlockBinding: GLuint)
+
+    // VAO
     external override fun glGenVertexArrays(n: GLsizei, buffers: IntPtr)
     external override fun glDeleteVertexArrays(n: GLsizei, items: IntPtr)
     external override fun glBindVertexArray(array: GLuint)
@@ -429,7 +434,11 @@ interface INativeGL {
     fun glRenderbufferStorageMultisample(target: GLenum, samples: GLint, internalformat: GLenum, width: GLsizei, height: GLsizei)
 
     // https://registry.khronos.org/OpenGL-Refpages/gl4/html/glBindBufferRange.xhtml
-    fun glBindBufferRange(target: GLenum, index: GLuint, buffer: GLuint, offset: GLintptr, size: GLsizeiptr): Unit = unsupported("Not supported uniform buffers")
+    // https://registry.khronos.org/OpenGL-Refpages/gl4/html/glGetUniformBlockIndex.xhtml
+    // https://registry.khronos.org/OpenGL-Refpages/gl4/html/glUniformBlockBinding.xhtml
+    fun glBindBufferRange(target: GLenum, index: GLuint, buffer: GLuint, offset: GLintptr, size: GLsizeiptr): Unit = unsupported("Not supported uniform buffers ${this::class}")
+    fun glGetUniformBlockIndex(program: GLuint, uniformBlockName: String): Int = unsupported("Not supported uniform buffers ${this::class}")
+    fun glUniformBlockBinding(program: GLuint, uniformBlockIndex: GLuint, uniformBlockBinding: GLuint): Unit = unsupported("Not supported uniform buffers ${this::class}")
 
     // https://registry.khronos.org/OpenGL-Refpages/gl4/html/glGenVertexArrays.xhtml
     // https://registry.khronos.org/OpenGL-Refpages/gl4/html/glDeleteVertexArrays.xhtml
