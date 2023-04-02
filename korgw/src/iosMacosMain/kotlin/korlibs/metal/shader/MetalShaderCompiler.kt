@@ -76,7 +76,7 @@ private fun createPipelineState(
     }
 }
 
-private fun MTLRenderPipelineStateProtocol.toInternalMetalProgram(inputBuffers: List<VariableWithOffset>) =
+private fun MTLRenderPipelineStateProtocol.toInternalMetalProgram(inputBuffers: List<List<VariableWithOffset>>) =
     MetalProgram(
         this,
         inputBuffers
