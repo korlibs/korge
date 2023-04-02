@@ -19,7 +19,6 @@ class MetalShaderGeneratorTest {
         val u_ColorModifier by vec4()
     }
 
-    private val colorModifier = Uniform("u_ColorModifier", VarType.Float4)
     private val emptyBufferInputLayouts = MetalShaderBufferInputLayouts(listOf(), listOf())
     private val colorAndTextureBufferInputLayouts = MetalShaderBufferInputLayouts(
         vertexLayouts = listOf(
@@ -35,7 +34,7 @@ class MetalShaderGeneratorTest {
     }
 
     private val fragmentShader = FragmentShader {
-        SET(out, v_Col * colorModifier)
+        SET(out, v_Col * UB.u_ColorModifier)
     }
 
     @Test
@@ -86,7 +85,7 @@ class MetalShaderGeneratorTest {
             listOf(a_Pos),
             listOf(u_ProjMat),
             listOf(u_ViewMat),
-            listOf(colorModifier)
+            listOf(UB.u_ColorModifier)
         ))
     }
 
@@ -136,7 +135,7 @@ class MetalShaderGeneratorTest {
             listOf(a_Pos),
             listOf(u_ProjMat),
             listOf(u_ViewMat),
-            listOf(colorModifier)
+            listOf(UB.u_ColorModifier)
         ))
     }
 }

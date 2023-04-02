@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalUnsignedTypes::class)
+
 package korlibs.graphics
 
 import korlibs.graphics.gl.*
@@ -39,6 +41,7 @@ class AGBuffer : AGObject() {
     // @TODO: This will allow to upload chunks of uniform buffers for example.
     // glBufferData & glBufferSubData
     fun upload(data: ByteArray, offset: Int = 0, length: Int = data.size - offset): AGBuffer = upload(Int8Buffer(data, offset, length).buffer)
+    fun upload(data: UByteArray, offset: Int = 0, length: Int = data.size - offset): AGBuffer = upload(Uint8Buffer(data, offset, length).buffer)
     fun upload(data: FloatArray, offset: Int = 0, length: Int = data.size - offset): AGBuffer = upload(Float32Buffer(data, offset, length).buffer)
     fun upload(data: IntArray, offset: Int = 0, length: Int = data.size - offset): AGBuffer = upload(Int32Buffer(data, offset, length).buffer)
     fun upload(data: ShortArray, offset: Int = 0, length: Int = data.size - offset): AGBuffer = upload(Int16Buffer(data, offset, length).buffer)
@@ -52,6 +55,7 @@ class AGBuffer : AGObject() {
     }
 
     override fun toString(): String = "AGBuffer(${mem?.sizeInBytes ?: 0})"
+
 }
 
 data class AGTextureUnits(val textures: Array<AGTexture?>, val infos: AGTextureUnitInfoArray) {

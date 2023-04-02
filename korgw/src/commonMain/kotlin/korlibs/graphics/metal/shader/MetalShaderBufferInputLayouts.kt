@@ -4,7 +4,7 @@ import korlibs.graphics.shader.*
 
 data class MetalShaderBufferInputLayouts(
     var vertexLayouts: List<VertexLayout>,
-    var uniforms: List<UniformBlock>
+    var uniforms: List<Uniform>
 ) {
 
     val vertexInputStructure by lazy {
@@ -12,7 +12,7 @@ data class MetalShaderBufferInputLayouts(
     }
 
     fun MetalShaderGenerator.computeInputBuffers(): Lazy<MutableList<List<VariableWithOffset>>> = lazy {
-        (vertexLayouts.map { it.items }  + uniforms.map { it.uniforms })
+        (vertexLayouts.map { it.items }  + uniforms.map { listOf(it) })
             .toMutableList()
     }
 }

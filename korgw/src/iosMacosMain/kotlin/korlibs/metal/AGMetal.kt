@@ -77,9 +77,9 @@ class AGMetal(private val view: MTKView) : AG() {
                 //}
 
                 //TODO: support uniform blocks
-                uniformBlocks.fastForEachUniform { uniformUnit ->
-                    val bufferLocation = currentProgram.indexOfUniformOnBuffer(uniformUnit.uniform)
-                    setVertexBuffer(uniformUnit.data.toMetal.buffer, 0, bufferLocation)
+                uniformBlocks.fastForEachBlock { index, block, buffer, valueIndex ->
+                    //val bufferLocation = currentProgram.indexOfUniformOnBuffer(uniformUnit.uniform)
+                    //setVertexBuffer(uniformUnit.data.toMetal.buffer, 0, bufferLocation)
 
                 }
 
@@ -145,12 +145,15 @@ class AGMetal(private val view: MTKView) : AG() {
 }
 
 private fun AGVertexArrayObject.map(function: (AGVertexData) -> ProgramLayout<Attribute>): List<ProgramLayout<Attribute>> {
-    val mutableList = mutableListOf<ProgramLayout<Attribute>>()
-    list.fastForEach { input -> function(input).also { mutableList.add(it) } }
-    return mutableList
+    return mutableListOf<ProgramLayout<Attribute>>().apply {
+        list.fastForEach { input -> function(input).also { add(it) } }
+    }
 }
 
-//TODO
-private fun UniformBlocksBuffersRef.map(): List<UniformBlock> {
-    return listOf<UniformBlock>()
+private fun UniformBlocksBuffersRef.map(): List<Uniform> {
+    return mutableListOf<Uniform>().apply {
+        fastForEachBlock { _, block, _, _ ->
+            addAll(block.block.uniforms.map { it.uniform } )
+        }
+    }
 }

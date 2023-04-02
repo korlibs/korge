@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalUnsignedTypes::class)
+
 package korge.graphics.backend.metal
 
 import korlibs.memory.*
@@ -34,22 +36,33 @@ class Renderer01(device: MTLDeviceProtocol) : Renderer(device) {
         AGVertexData(
             layout = VertexLayout(DefaultShaders.a_Col, DefaultShaders.a_Pos),
             buffer = AGBuffer()
-                .upload(
-                    ubyteArrayOf(
-                        255u, 255u, 255u, 0u, // White
-                        255u, 0u, 0u, 0u, // Red
-                        0u, 255u, 0u, 0u, // Blue
-                        0u, 0u, 255u, 0u, // Green
-                    ).toByteArray()
-                )
-                .upload(
-                    floatArrayOf(
-                        vertex1, vertex1,
-                        vertex2, vertex1,
-                        vertex2, vertex2,
-                        vertex1, vertex2
-                    )
-                )
+                .upload(ubyteArrayOf(
+                    255u, 255u, 255u, 0u, // White
+                ))
+                .upload(floatArrayOf(
+                    vertex1, vertex1,
+                ))
+
+                .upload(ubyteArrayOf(
+                    255u, 0u, 0u, 0u, // Red
+                ))
+                .upload(floatArrayOf(
+                    vertex2, vertex1,
+                ))
+
+                .upload(ubyteArrayOf(
+                    0u, 255u, 0u, 0u, // Blue
+                ))
+                .upload(floatArrayOf(
+                    vertex2, vertex2,
+                ))
+
+                .upload(ubyteArrayOf(
+                    0u, 0u, 255u, 0u, // Green
+                ))
+                .upload(floatArrayOf(
+                    vertex1, vertex2
+                ))
         )
     )
 
@@ -63,13 +76,11 @@ class Renderer01(device: MTLDeviceProtocol) : Renderer(device) {
         if (ag == null) {
             ag = AGMetal(view)
 
-            MMatrix3D()
-                .setToOrtho(0f, width.toFloat(), 0f, height.toFloat(), -1f, +1f)
+            Matrix4.ortho(0f, width.toFloat(), 0f, height.toFloat(), -1f, +1f)
                 .also(::println)
 
-            MMatrix3D()
-                .setToOrtho(0f, width.toFloat(), 0f, height.toFloat(), -1f, +1f)
-                .transform(200f, 0f, 0f, 1f)
+            Matrix4.ortho(0f, width.toFloat(), 0f, height.toFloat(), -1f, +1f)
+                .transform(Vector4(200f, 0f, 0f, 1f))
                 .also(::println)
 
         }
@@ -104,7 +115,7 @@ class Renderer01(device: MTLDeviceProtocol) : Renderer(device) {
             uniformBlocks = UniformBlocksBuffersRef(
                 blocks = arrayOf(uniformBlockBuffer),
                 buffers = arrayOf(uniformBuffer),
-                valueIndices = intArrayOf()
+                valueIndices = intArrayOf(0)
             ),  // Not yet supported on shader generation
             //AGUniformValues(
             //  u_ProjMat=AGUniformValue[Uniform(u_ProjMat)][AGValue[Mat4]([[0.0015625, 0, 0, 0, 0, -0.0027777778, 0, 0, 0, 0, -1, 0, -1, 1, 0, 1]])],

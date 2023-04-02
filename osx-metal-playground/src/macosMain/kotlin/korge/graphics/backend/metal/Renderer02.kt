@@ -113,7 +113,10 @@ class Renderer02(device: MTLDeviceProtocol) : Renderer(device) {
         """.trimIndent()
 
         //shaderSrc =
-        (vertexShader to fragmentShader).toNewMetalShaderStringResult(MetalShaderBufferInputLayouts(listOf()))
+        (vertexShader to fragmentShader).toNewMetalShaderStringResult(MetalShaderBufferInputLayouts(
+            listOf(),
+            listOf()
+        ))
             .result
             .also(::println)
 

@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalUnsignedTypes::class)
+
 package korlibs.memory
 
 import kotlin.jvm.*
@@ -170,7 +172,8 @@ value class FloatArrayBuffer(val array: FloatArray) : BaseFloatBuffer {
     override operator fun set(index: Int, value: Float) { array[index] = value }
 }
 
-inline class Int8Buffer(override val buffer: Buffer) : TypedBuffer {
+@JvmInline
+value class Int8Buffer(override val buffer: Buffer) : TypedBuffer {
     constructor(size: Int, direct: Boolean = false) : this(Buffer(size * 1, direct))
     constructor(data: ByteArray, offset: Int = 0, size: Int = data.size - offset) : this(Buffer(size * 1).also { it.setArrayInt8(0, data, offset, size) })
 
@@ -186,7 +189,8 @@ inline class Int8Buffer(override val buffer: Buffer) : TypedBuffer {
         Int8Buffer(buffer.sliceWithSize(start, size))
 }
 
-inline class Int16Buffer(override val buffer: Buffer) : TypedBuffer {
+@JvmInline
+value class Int16Buffer(override val buffer: Buffer) : TypedBuffer {
     constructor(size: Int, direct: Boolean = false) : this(Buffer(size * 2, direct))
     constructor(data: ShortArray, offset: Int = 0, size: Int = data.size - offset) : this(Buffer(size * 2).also { it.setArrayInt16(0, data, offset, size) })
 
@@ -202,11 +206,13 @@ inline class Int16Buffer(override val buffer: Buffer) : TypedBuffer {
         Int16Buffer(buffer.sliceWithSize(start * 2, size * 2))
 }
 
-inline class Uint8Buffer(override val buffer: Buffer) : TypedBuffer, BaseIntBuffer {
+@JvmInline
+value class Uint8Buffer(override val buffer: Buffer) : TypedBuffer, BaseIntBuffer {
     constructor(size: Int, direct: Boolean = false) : this(Buffer(size * 1, direct))
     constructor(data: UByteArrayInt, offset: Int = 0, size: Int = data.size - offset) : this(Buffer(size).also { it.setArrayUInt8(0, data, offset, size) })
     companion object {
         operator fun invoke(data: ByteArray) = Uint8Buffer(UByteArrayInt(data))
+        operator fun invoke(data: UByteArray, offset: Int = 0, size: Int = data.size - offset) = Uint8Buffer(UByteArrayInt(data.toByteArray()), offset, size)
     }
 
     override val size: Int get() = buffer.sizeInBytes
@@ -221,7 +227,8 @@ inline class Uint8Buffer(override val buffer: Buffer) : TypedBuffer, BaseIntBuff
 }
 
 
-inline class Uint8ClampedBuffer(override val buffer: Buffer) : TypedBuffer, BaseIntBuffer {
+@JvmInline
+value class Uint8ClampedBuffer(override val buffer: Buffer) : TypedBuffer, BaseIntBuffer {
     constructor(size: Int, direct: Boolean = false) : this(Buffer(size * 1, direct))
     constructor(data: UByteArrayInt, offset: Int = 0, size: Int = data.size - offset) : this(Buffer(size).also { it.setArrayUInt8(0, data, offset, size) })
     companion object {
@@ -238,7 +245,8 @@ inline class Uint8ClampedBuffer(override val buffer: Buffer) : TypedBuffer, Base
         Uint8ClampedBuffer(buffer.sliceWithSize(start, size))
 }
 
-inline class Uint16Buffer(override val buffer: Buffer) : TypedBuffer, BaseIntBuffer {
+@JvmInline
+value class Uint16Buffer(override val buffer: Buffer) : TypedBuffer, BaseIntBuffer {
     constructor(size: Int, direct: Boolean = false) : this(Buffer(size * 2, direct))
     constructor(data: UShortArrayInt, offset: Int = 0, size: Int = data.size - offset) : this(Buffer(size * 2).also { it.setArrayUInt16(0, data, offset, size) })
 
@@ -253,7 +261,8 @@ inline class Uint16Buffer(override val buffer: Buffer) : TypedBuffer, BaseIntBuf
     fun sliceWithSize(start: Int = 0, size: Int = this.size - start): Uint16Buffer = Uint16Buffer(buffer.sliceWithSize(start * 2, size * 2))
 }
 
-inline class Int32Buffer(override val buffer: Buffer) : TypedBuffer, BaseIntBuffer {
+@JvmInline
+value class Int32Buffer(override val buffer: Buffer) : TypedBuffer, BaseIntBuffer {
     constructor(size: Int, direct: Boolean = false) : this(Buffer(size * 4, direct))
     constructor(data: IntArray, offset: Int = 0, size: Int = data.size - offset) : this(Buffer(size * 4).also { it.setArrayInt32(0, data, offset, size) })
 
@@ -269,7 +278,8 @@ inline class Int32Buffer(override val buffer: Buffer) : TypedBuffer, BaseIntBuff
         Int32Buffer(buffer.sliceWithSize(start * 4, size * 4))
 }
 
-inline class Uint32Buffer(override val buffer: Buffer) : TypedBuffer {
+@JvmInline
+value class Uint32Buffer(override val buffer: Buffer) : TypedBuffer {
     constructor(size: Int, direct: Boolean = false) : this(Buffer(size * 4, direct))
     constructor(data: UIntArray, offset: Int = 0, size: Int = data.size - offset) : this(Buffer(size * 4).also { it.setArrayInt32(0, data.toIntArray(), offset, size) })
 
@@ -286,7 +296,8 @@ inline class Uint32Buffer(override val buffer: Buffer) : TypedBuffer {
         Int32Buffer(buffer.sliceWithSize(start * 4, size * 4))
 }
 
-inline class Int64Buffer(override val buffer: Buffer) : TypedBuffer {
+@JvmInline
+value class Int64Buffer(override val buffer: Buffer) : TypedBuffer {
     constructor(size: Int, direct: Boolean = false) : this(Buffer(size * 8, direct))
     constructor(data: LongArray, offset: Int = 0, size: Int = data.size - offset) : this(Buffer(size * 8).also { it.setArrayInt64(0, data, offset, size) })
 
@@ -301,7 +312,8 @@ inline class Int64Buffer(override val buffer: Buffer) : TypedBuffer {
     fun sliceWithSize(start: Int = 0, size: Int = this.size - start): Int64Buffer = Int64Buffer(buffer.sliceWithSize(start * 8, size * 8))
 }
 
-inline class Float32Buffer(override val buffer: Buffer) : TypedBuffer, BaseFloatBuffer {
+@JvmInline
+value class Float32Buffer(override val buffer: Buffer) : TypedBuffer, BaseFloatBuffer {
     constructor(size: Int, direct: Boolean = false) : this(Buffer(size * 4, direct))
     constructor(data: FloatArray, offset: Int = 0, size: Int = data.size - offset) : this(Buffer(size * 4).also { it.setArrayFloat32(0, data, offset, size) })
 
@@ -318,7 +330,8 @@ inline class Float32Buffer(override val buffer: Buffer) : TypedBuffer, BaseFloat
         Float32Buffer(buffer.sliceWithSize(start * 4, size * 4))
 }
 
-inline class Float64Buffer(override val buffer: Buffer) : TypedBuffer {
+@JvmInline
+value class Float64Buffer(override val buffer: Buffer) : TypedBuffer {
     constructor(size: Int, direct: Boolean = false) : this(Buffer(size * 8, direct))
     constructor(data: DoubleArray, offset: Int = 0, size: Int = data.size - offset) : this(Buffer(size * 8).also { it.setArrayFloat64(0, data, offset, size) })
 
