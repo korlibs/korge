@@ -1105,6 +1105,22 @@ open class KmlGlProxy(parent: KmlGl) : KmlGlFastProxy(parent) {
         return res
     }
 
+    override fun getUniformBlockIndex(program: Int, name: String): Int {
+        val sparams = listOf<Any?>(program, name)
+        before("getUniformBlockIndex", sparams)
+        val res = parent.getUniformBlockIndex(program, name)
+        after("getUniformBlockIndex", sparams, res)
+        return res
+    }
+
+    override fun uniformBlockBinding(program: Int, uniformBlockIndex: Int, uniformBlockBinding: Int) {
+        val sparams = listOf<Any?>(program, uniformBlockIndex, uniformBlockBinding)
+        before("uniformBlockBinding", sparams)
+        val res = parent.uniformBlockBinding(program, uniformBlockIndex, uniformBlockBinding)
+        after("uniformBlockBinding", sparams, res)
+        return res
+    }
+
     override fun genVertexArrays(n: Int, arrays: Buffer) {
         val sparams = listOf<Any?>(n, arrays)
         before("genVertexArrays", sparams)
@@ -1593,7 +1609,12 @@ open class KmlGlFastProxy(var parent: KmlGl) : KmlGl() {
 	override fun vertexAttrib4fv(index: Int, v: Buffer) = parent.vertexAttrib4fv(index, v)
 	override fun vertexAttribPointer(index: Int, size: Int, type: Int, normalized: Boolean, stride: Int, pointer: Long) = parent.vertexAttribPointer(index, size, type, normalized, stride, pointer)
 	override fun viewport(x: Int, y: Int, width: Int, height: Int) = parent.viewport(x, y, width, height)
+
     override fun bindBufferRange(target: Int, index: Int, buffer: Int, offset: Int, size: Int) = parent.bindBufferRange(target, index, buffer, offset, size)
+    override fun getUniformBlockIndex(program: Int, name: String): Int = parent.getUniformBlockIndex(program, name)
+    override fun uniformBlockBinding(program: Int, uniformBlockIndex: Int, uniformBlockBinding: Int) =
+        parent.uniformBlockBinding(program, uniformBlockIndex, uniformBlockBinding)
+
     override fun genVertexArrays(n: Int, arrays: Buffer) = parent.genVertexArrays(n, arrays)
     override fun deleteVertexArrays(n: Int, arrays: Buffer) = parent.deleteVertexArrays(n, arrays)
     override fun bindVertexArray(array: Int) = parent.bindVertexArray(array)

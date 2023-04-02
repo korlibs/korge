@@ -166,7 +166,11 @@ interface IKmlGl {
 
     // UBO
     // https://registry.khronos.org/OpenGL-Refpages/es3.0/html/glBindBufferRange.xhtml
+    // https://registry.khronos.org/OpenGL-Refpages/es3.0/html/glGetUniformBlockIndex.xhtml
+    // https://registry.khronos.org/OpenGL-Refpages/es3.0/html/glUniformBlockBinding.xhtml
     fun bindBufferRange(target: Int, index: Int, buffer: Int, offset: Int, size: Int): Unit = unsupported("Not supported uniform buffers ${this::class}")
+    fun getUniformBlockIndex(program: Int, name: String): Int = unsupported("Not supported uniform buffers ${this::class}")
+    fun uniformBlockBinding(program: Int, uniformBlockIndex: Int, uniformBlockBinding: Int): Unit = unsupported("Not supported uniform buffers ${this::class}")
 
     // VAO
     // https://registry.khronos.org/OpenGL-Refpages/gl4/html/glGenVertexArrays.xhtml

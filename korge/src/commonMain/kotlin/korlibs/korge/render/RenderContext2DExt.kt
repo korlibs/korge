@@ -2,12 +2,12 @@ package korlibs.korge.render
 
 import korlibs.datastructure.iterators.*
 import korlibs.graphics.shader.*
-import korlibs.korge.annotations.*
-import korlibs.korge.view.*
 import korlibs.image.color.*
 import korlibs.image.font.*
 import korlibs.image.paint.*
 import korlibs.image.text.*
+import korlibs.korge.annotations.*
+import korlibs.korge.view.*
 import korlibs.math.geom.*
 
 // https://www.shadertoy.com/view/WtdSDs
@@ -18,17 +18,31 @@ object MaterialRender {
         val u_ShadowColor by vec4()
         val u_ShadowRadius by float()
         val u_ShadowOffset by vec2()
-
         val u_HighlightPos by vec2()
         val u_HighlightRadius by float()
         val u_HighlightColor by vec4()
-
         val u_Size by vec2()
         val u_Radius by vec4()
-
         val u_BorderSizeHalf by float()
         val u_BorderColor by vec4()
         val u_BackgroundColor by vec4()
+
+        // Optimized order to reduce space!
+        /*
+
+        val u_ShadowColor by vec4()
+        val u_Radius by vec4()
+        val u_HighlightColor by vec4()
+        val u_BorderColor by vec4()
+        val u_BackgroundColor by vec4()
+        val u_ShadowOffset by vec2()
+        val u_HighlightPos by vec2()
+        val u_Size by vec2()
+
+        val u_ShadowRadius by float()
+        val u_HighlightRadius by float()
+        val u_BorderSizeHalf by float()
+         */
     }
     val u_ShadowColor = MaterialBlockUB.u_ShadowColor
     val u_ShadowRadius = MaterialBlockUB.u_ShadowRadius

@@ -181,7 +181,7 @@ abstract class NativeBaseKmlGl : KmlGlWithExtensions() {
     // https://registry.khronos.org/OpenGL-Refpages/es3.0/html/glBindBufferRange.xhtml
     override val isUniformBuffersSupported: Boolean get() = glBindBufferRangeExt != null
     override fun bindBufferRange(target: Int, index: Int, buffer: Int, offset: Int, size: Int) {
-        glBindBufferRangeExt?.invoke(target, index, buffer, offset.convert(), size.convert())
+        glBindBufferRangeExt?.invoke(target, index, buffer, offset.toSizeiPtr()?.reinterpret(), size.toSizeiPtr()?.reinterpret())
     }
 
     companion object {

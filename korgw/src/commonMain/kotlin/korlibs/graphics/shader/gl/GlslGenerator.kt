@@ -210,7 +210,7 @@ class GlslGenerator constructor(
 
             if (config.useUniformBlocks) {
                 for (block in types.uniformBlocks) {
-                    //line("layout(std140, binding = ${block.fixedLocation}) uniform ${block.name} {")
+                    //line("layout(binding = ${block.fixedLocation}) layout(std140) uniform ${block.name} {")
                     line("layout(std140) uniform ${block.name} {")
                     for (uniform in block.uniforms) {
                         line("  ${precToString(uniform.precision)}${typeToString(uniform.type)} ${uniform.name}${uniform.arrayDecl};")

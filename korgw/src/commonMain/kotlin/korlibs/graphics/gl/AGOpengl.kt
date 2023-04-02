@@ -11,7 +11,8 @@ import korlibs.io.lang.*
 import korlibs.kgl.*
 import korlibs.memory.*
 
-val ENABLE_UNIFORM_BLOCKS = Environment["ENABLE_UNIFORM_BLOCKS"] == "true"
+//val ENABLE_UNIFORM_BLOCKS = Environment["ENABLE_UNIFORM_BLOCKS"] == "true"
+val ENABLE_UNIFORM_BLOCKS = true
 
 class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
     class ShaderException(val str: String, val error: String, val errorInt: Int, val gl: KmlGl, val debugName: String?, val type: Int, val shaderReturnInt: Int) :
@@ -114,9 +115,16 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
             )).also { baseProgram ->
                 baseProgram.use()
 
+                val programId = baseProgram.programInfo.programId
+
                 program.samplers.forEach {
                     val location = baseProgram.programInfo.getUniformLocation(gl, it.name)
                     gl.uniform1i(location, it.index)
+                }
+
+                program.uniformBlocks.fastForEach {
+                    val index = gl.getUniformBlockIndex(programId, it.name)
+                    gl.uniformBlockBinding(programId, index, it.fixedLocation)
                 }
             }
         }

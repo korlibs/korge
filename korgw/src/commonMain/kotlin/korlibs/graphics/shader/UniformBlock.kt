@@ -48,26 +48,31 @@ open class UniformBlock(val fixedLocation: Int) {
     val uniformCount: Int get() = uniforms.size
 
     // @TODO: Fix alignment
-    protected fun bool(name: String? = null): Gen<List<Boolean>> = gen(name, VarType.Bool1, 1, 1)
-    protected fun bool2(name: String? = null): Gen<List<Boolean>> = gen(name, VarType.Bool2, 2, 1)
-    protected fun bool3(name: String? = null): Gen<List<Boolean>> = gen(name, VarType.Bool3, 3, 1)
-    protected fun bool4(name: String? = null): Gen<List<Boolean>> = gen(name, VarType.Bool4, 4, 1)
-    protected fun ubyte4(name: String? = null): Gen<Int> = gen(name, VarType.UByte4, 4, 1)
-    protected fun short(name: String? = null): Gen<List<Boolean>> = gen(name, VarType.Short1, 2, 2)
-    protected fun short2(name: String? = null): Gen<List<Boolean>> = gen(name, VarType.Short2, 4, 2)
-    protected fun short3(name: String? = null): Gen<List<Boolean>> = gen(name, VarType.Short3, 6, 2)
-    protected fun short4(name: String? = null): Gen<List<Boolean>> = gen(name, VarType.Short4, 8, 2)
-    @Deprecated("")
-    protected fun sampler2D(name: String? = null): Gen<Int> = gen(name, VarType.Sampler2D, 4, 4)
+    //protected fun bool(name: String? = null): Gen<List<Boolean>> = gen(name, VarType.Bool1, 4, 4)
+    //protected fun bool2(name: String? = null): Gen<List<Boolean>> = gen(name, VarType.Bool2, 8, 8)
+    //protected fun bool3(name: String? = null): Gen<List<Boolean>> = gen(name, VarType.Bool3, 12, 16)
+    //protected fun bool4(name: String? = null): Gen<List<Boolean>> = gen(name, VarType.Bool4, 16, 16)
+    //protected fun ubyte4(name: String? = null): Gen<Int> = gen(name, VarType.UByte4, 4, 4)
+    //protected fun short(name: String? = null): Gen<List<Boolean>> = gen(name, VarType.Short1, 2, 2)
+    //protected fun short2(name: String? = null): Gen<List<Boolean>> = gen(name, VarType.Short2, 4, 4)
+    //protected fun short3(name: String? = null): Gen<List<Boolean>> = gen(name, VarType.Short3, 6, 2)
+    //protected fun short4(name: String? = null): Gen<List<Boolean>> = gen(name, VarType.Short4, 8, 2)
+    //@Deprecated("") protected fun sampler2D(name: String? = null): Gen<Int> = gen(name, VarType.Sampler2D, 4, 4)
+
     protected fun int(name: String? = null): Gen<Int> = gen(name, VarType.SInt1, 4, 4)
-    protected fun ivec2(name: String? = null): Gen<Vector2Int> = gen(name, VarType.SInt2, 8, 4)
     protected fun float(name: String? = null): Gen<Float> = gen(name, VarType.Float1, 4, 4)
-    protected fun vec2(name: String? = null): Gen<Vector2> = gen(name, VarType.Float2, 8, 4)
+
+    protected fun ivec2(name: String? = null): Gen<Vector2Int> = gen(name, VarType.SInt2, 8, 8)
+    protected fun vec2(name: String? = null): Gen<Vector2> = gen(name, VarType.Float2, 8, 8)
+
     // @TODO: Some drivers get this wrong
-    //protected fun vec3(name: String? = null): Gen<Vector3> = gen(name, VarType.Float3, 12, 4)
-    protected fun vec4(name: String? = null): Gen<Vector4> = gen(name, VarType.Float4, 16, 4)
-    protected fun mat3(name: String? = null): Gen<Matrix4> = gen(name, VarType.Mat3, 36, 4)
-    protected fun mat4(name: String? = null): Gen<Matrix4> = gen(name, VarType.Mat4, 64, 4)
+    //protected fun vec3(name: String? = null): Gen<Vector3> = gen(name, VarType.Float3, 16, 4)
+
+    protected fun ivec4(name: String? = null): Gen<Vector4Int> = gen(name, VarType.SInt4, 16, 16)
+    protected fun vec4(name: String? = null): Gen<Vector4> = gen(name, VarType.Float4, 16, 16)
+
+    protected fun mat3(name: String? = null): Gen<Matrix4> = gen(name, VarType.Mat3, 36, 48)
+    protected fun mat4(name: String? = null): Gen<Matrix4> = gen(name, VarType.Mat4, 64, 64)
     //protected fun <T> array(size: Int, gen: Gen<T>): Gen<Array<T>> = TODO()
 
     fun <T> gen(name: String? = null, type: VarType, size: Int, align: Int = size): Gen<T> =

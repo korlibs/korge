@@ -276,6 +276,14 @@ class KmlGlJsCanvas(val canvas: HTMLCanvasElement, val glOpts: dynamic) : KmlGlW
         gl.asDynamic().bindBufferRange(target, index, buffer.get<WebGLBuffer>(), offset, size)
     }
 
+    override fun getUniformBlockIndex(program: Int, name: String): Int {
+        return gl.asDynamic().getUniformBlockIndex(program.get<WebGLProgram>(), name)
+    }
+
+    override fun uniformBlockBinding(program: Int, uniformBlockIndex: Int, uniformBlockBinding: Int) {
+        gl.asDynamic().uniformBlockBinding(program.get<WebGLProgram>(), uniformBlockIndex, uniformBlockBinding)
+    }
+
     val vertexArrayObject: WebGLExtension = WebGLExtension(
         this, "OES_vertex_array_object", coreSince = 2,
         functions = listOf(
