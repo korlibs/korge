@@ -3,6 +3,7 @@ package korlibs.korge.gradle.targets.android
 import korlibs.korge.gradle.util.*
 import korlibs.korge.gradle.*
 import korlibs.korge.gradle.targets.*
+import korlibs.korge.gradle.targets.all.*
 import org.gradle.api.DefaultTask
 import org.gradle.api.JavaVersion
 import org.gradle.api.Project
@@ -11,31 +12,7 @@ import org.gradle.api.tasks.GradleBuild
 import java.io.File
 import java.util.*
 
-val ANDROID_SDK_PATH_KEY = "android.sdk.path"
-
-//Linux: ~/Android/Sdk
-//Mac: ~/Library/Android/sdk
-//Windows: %LOCALAPPDATA%\Android\sdk
-// @TODO: Use [AndroidSdk] class
-val Project.androidSdkPath: String get() {
-    val extensionAndroidSdkPath = this.findProperty(ANDROID_SDK_PATH_KEY)?.toString() ?: this.extensions.findByName(ANDROID_SDK_PATH_KEY)?.toString()
-    if (extensionAndroidSdkPath != null) return extensionAndroidSdkPath
-
-    val localPropertiesFile = projectDir["local.properties"]
-    if (localPropertiesFile.exists()) {
-        val props = Properties().apply { load(localPropertiesFile.readText().reader()) }
-        if (props.getProperty("sdk.dir") != null) {
-            return props.getProperty("sdk.dir")!!
-        }
-    }
-    val userHome = System.getProperty("user.home")
-    return listOfNotNull(
-        System.getenv("ANDROID_HOME"),
-        "$userHome/AppData/Local/Android/sdk",
-        "$userHome/Library/Android/sdk",
-        "$userHome/Android/Sdk"
-    ).firstOrNull { File(it).exists() } ?: error("Can't find android sdk (ANDROID_HOME environment not set and Android SDK not found in standard locations)")
-}
+val Project.androidSdkPath: String get() = AndroidSdk.getAndroidSdkPath(this)
 
 val Project.androidAdbPath get() = "$androidSdkPath/platform-tools/adb"
 val Project.androidEmulatorPath get() = "$androidSdkPath/emulator/emulator"
@@ -86,112 +63,6 @@ fun Project.ensureAndroidLocalPropertiesWithSdkDir(outputFolder: File = project.
     }
 }
 
-fun Project.installAndroidRun(dependsOnList: List<String>, direct: Boolean) {
-    // adb shell am start -n com.package.name/com.package.name.ActivityName
-    for (debug in listOf(false, true)) {
-        val suffixDebug = if (debug) "Debug" else "Release"
-
-        for (emulator in listOf(null, false, true)) {
-            val suffixDevice = when (emulator) {
-                null -> ""
-                false -> "Device"
-                true -> "Emulator"
-            }
-
-            val extra = when (emulator) {
-                null -> arrayOf()
-                false -> arrayOf("-d")
-                true -> arrayOf("-e")
-            }
-
-            val installAndroidTaskName = "installAndroid$suffixDevice$suffixDebug"
-            val installAndroidTask = when {
-                direct -> tasks.createThis<Task>(installAndroidTaskName) {
-                    //task.dependsOn("install$suffixDevice$suffixDebug")
-                    dependsOn("install$suffixDebug")
-                }
-                else -> tasks.createThis<GradleBuild>(installAndroidTaskName) {
-                    buildFile = File(buildDir, "platforms/android/build.gradle")
-                    //task.version = "4.10.1"
-                    //task.tasks = listOf("install$suffixDevice$suffixDebug")
-                    tasks = listOf("install$suffixDebug")
-                }
-            }
-            if (emulator == true) {
-                installAndroidTask.dependsOn("androidEmulatorStart")
-            }
-            for (dependsOnTaskName in dependsOnList) {
-                installAndroidTask.dependsOn(dependsOnTaskName)
-            }
-            installAndroidTask.group = GROUP_KORGE_INSTALL
-
-            //installAndroidTask.dependsOn(getKorgeProcessResourcesTaskName("jvm", "main"))
-            //installAndroidTask.dependsOn(getKorgeProcessResourcesTaskName("metadata", "main"))
-
-            tasks.createTyped<DefaultTask>("runAndroid$suffixDevice$suffixDebug") {
-                group = GROUP_KORGE_RUN
-
-                dependsOn(installAndroidTask)
-                doFirst {
-                    execLogger {
-                        it.commandLine(
-                            "$androidSdkPath/platform-tools/adb", *extra, "shell", "am", "start", "-n",
-                            "${korge.id}/${korge.id}.MainActivity"
-                        )
-                    }
-                    val pid = run {
-                        for (n in 0 until 10) {
-                            try {
-                                return@run execOutput("$androidSdkPath/platform-tools/adb", *extra, "shell", "pidof", korge.id).trim()
-                            } catch (e: Throwable) {
-                                Thread.sleep(500L)
-                                if (n == 9) throw e
-                            }
-                        }
-                    }
-                    execLogger {
-                        it.commandLine(
-                            "$androidSdkPath/platform-tools/adb", *extra, "logcat", "--pid=$pid"
-                        )
-                    }
-                }
-            }
-        }
-    }
-
-    tasks.createTyped<DefaultTask>("androidEmulatorDeviceList") {
-        group = GROUP_KORGE_ADB
-        doFirst {
-            println(androidEmulatorListAvds().joinToString("\n"))
-            //execAndroidAdb("devices", "-l")
-        }
-    }
-
-    tasks.createTyped<DefaultTask>("androidEmulatorStart") {
-        group = GROUP_KORGE_ADB
-        onlyIf { !androidEmulatorIsStarted() }
-        doFirst {
-            androidEmulatorStart()
-        }
-    }
-
-    tasks.createTyped<DefaultTask>("adbDeviceList") {
-        group = GROUP_KORGE_ADB
-        doFirst {
-            println(androidAdbDeviceList().joinToString("\n"))
-            //execAndroidAdb("devices", "-l")
-        }
-    }
-
-    tasks.createTyped<DefaultTask>(adbLogcatTaskName) {
-        group = GROUP_KORGE_ADB
-        doFirst {
-            execAndroidAdb("logcat")
-        }
-    }
-}
-
-val adbLogcatTaskName = "adbLogcat"
 
 fun Project.androidEmulatorStart() {
     val avdName = androidEmulatorFirstAvd() ?: error("No android emulators available to start. Please create one using Android Studio")
@@ -227,15 +98,15 @@ fun isKorlibsDependency(cleanFullName: String): Boolean {
 }
 
 
-fun writeAndroidManifest(outputFolder: File, korge: KorgeExtension, info: AndroidInfo = AndroidInfo(null)) {
-    val generated = AndroidGenerated(korge, info)
-
-    generated.writeKeystore(outputFolder)
-    val srcMain = "src/androidMain"
-    generated.writeAndroidManifest(File(outputFolder, srcMain))
-    generated.writeResources(File(outputFolder, "$srcMain/res"))
-    generated.writeMainActivity(File(outputFolder, "$srcMain/kotlin"))
-}
+//fun writeAndroidManifest(outputFolder: File, korge: KorgeExtension, info: AndroidInfo = AndroidInfo(null)) {
+//    val generated = AndroidGenerated(korge, info)
+//
+//    generated.writeKeystore(outputFolder)
+//    val srcMain = "src/androidMain"
+//    generated.writeAndroidManifest(File(outputFolder, srcMain))
+//    generated.writeResources(File(outputFolder, "$srcMain/res"))
+//    generated.writeMainActivity(File(outputFolder, "$srcMain/kotlin"))
+//}
 
 fun AndroidGenerated(korge: KorgeExtension, info: AndroidInfo = AndroidInfo(null)): AndroidGenerated {
     return AndroidGenerated(
@@ -254,6 +125,21 @@ fun AndroidGenerated(korge: KorgeExtension, info: AndroidInfo = AndroidInfo(null
     )
 }
 
+fun AndroidGenerated(project: Project, isKorge: Boolean, info: AndroidInfo = AndroidInfo(null)): AndroidGenerated {
+    return when {
+        isKorge -> AndroidGenerated(project.korge, info)
+        else -> AndroidGenerated(
+            icons = KorgeIconProvider(File(project.korgeGradlePluginResources, "icons/korge.png"), File(project.korgeGradlePluginResources, "banners/korge.png")),
+            ifNotExists = true,
+            androidPackageName = AndroidConfig.getAppId(project, isKorge),
+            realEntryPoint = "main",
+            androidMsaa = 4,
+            androidAppName = project.name,
+            androidLibrary = false,
+        )
+    }
+}
+
 class AndroidGenerated constructor(
     val icons: KorgeIconProvider,
     val ifNotExists: Boolean,
@@ -268,125 +154,30 @@ class AndroidGenerated constructor(
     val androidManifest: List<String> = emptyList(),
     val androidLibrary: Boolean = true,
 ) {
+    companion object
     fun writeResources(folder: File) {
-        File(folder, "mipmap-mdpi/icon.png").conditionally(ifNotExists) {
-            ensureParents().writeBytesIfChanged(icons.getIconBytes())
-        }
-        File(folder, "drawable/app_icon.png").conditionally(ifNotExists) {
-            ensureParents().writeBytesIfChanged(icons.getIconBytes())
-        }
-        File(folder, "drawable/app_banner.png").conditionally(ifNotExists) {
-            ensureParents().writeBytesIfChanged(icons.getBannerBytes(432, 243))
-        }
+        writeFileBytes(File(folder, "mipmap-mdpi/icon.png")) { icons.getIconBytes() }
+        writeFileBytes(File(folder, "drawable/app_icon.png")) { icons.getIconBytes() }
+        writeFileBytes(File(folder, "drawable/app_banner.png")) { icons.getBannerBytes(432, 243) }
     }
 
     fun writeMainActivity(outputFolder: File) {
-        File(outputFolder, "MainActivity.kt").conditionally(ifNotExists) {
-            ensureParents().writeTextIfChanged(Indenter {
-                line("package $androidPackageName")
-
-                line("import korlibs.io.android.withAndroidContext")
-                line("import korlibs.render.*")
-                line("import $realEntryPoint")
-
-                line("class MainActivity : KorgwActivity(config = GameWindowCreationConfig(msaa = ${androidMsaa ?: 1}))") {
-                    line("override suspend fun activityMain()") {
-                        //line("withAndroidContext(this)") { // @TODO: Probably we should move this to KorgwActivity itself
-                        for (text in androidInit) {
-                            line(text)
-                        }
-                        line("${realEntryPoint}()")
-                        //}
-                    }
-                }
-            }.toString())
-        }
+        writeFileText(File(outputFolder, "MainActivity.kt")) { AndroidMainActivityKt.genAndroidMainActivityKt(this@AndroidGenerated) }
     }
 
     fun writeAndroidManifest(outputFolder: File) {
-        File(outputFolder, "AndroidManifest.xml").also { it.parentFile.mkdirs() }.conditionally(ifNotExists) {
-            ensureParents().writeTextIfChanged(Indenter {
-                line("<?xml version=\"1.0\" encoding=\"utf-8\"?>")
-                line("<manifest")
-                indent {
-                    //line("xmlns:tools=\"http://schemas.android.com/tools\"")
-                    line("xmlns:android=\"http://schemas.android.com/apk/res/android\"")
-                    //line("package=\"$androidPackageName\"")
-                }
-                line(">")
-                indent {
-                    line("<uses-feature android:name=\"android.hardware.touchscreen\" android:required=\"false\" />")
-                    line("<uses-feature android:name=\"android.software.leanback\" android:required=\"false\" />")
-
-                    line("<application")
-                    indent {
-                        line("")
-                        //line("tools:replace=\"android:appComponentFactory\"")
-                        line("android:allowBackup=\"true\"")
-
-                        if (!androidLibrary) {
-                            line("android:label=\"$androidAppName\"")
-                            line("android:icon=\"@mipmap/icon\"")
-                            // // line("android:icon=\"@android:drawable/sym_def_app_icon\"")
-                            line("android:roundIcon=\"@android:drawable/sym_def_app_icon\"")
-                            line("android:theme=\"@android:style/Theme.Holo.NoActionBar\"")
-                        }
-
-
-                        line("android:supportsRtl=\"true\"")
-                    }
-                    line(">")
-                    indent {
-                        for (text in androidManifest) {
-                            line(text)
-                        }
-                        for (text in androidManifestApplicationChunks) {
-                            line(text)
-                        }
-
-                        line("<activity android:name=\".MainActivity\"")
-                        indent {
-                            val orientationString = when (orientation) {
-                                Orientation.LANDSCAPE -> "landscape"
-                                Orientation.PORTRAIT -> "portrait"
-                                Orientation.DEFAULT -> "sensor"
-                            }
-                            line("android:banner=\"@drawable/app_banner\"")
-                            line("android:icon=\"@drawable/app_icon\"")
-                            line("android:label=\"$androidAppName\"")
-                            line("android:logo=\"@drawable/app_icon\"")
-                            line("android:configChanges=\"orientation|screenSize|screenLayout|keyboardHidden\"")
-                            line("android:screenOrientation=\"$orientationString\"")
-                            line("android:exported=\"true\"")
-                        }
-                        line(">")
-
-                        if (!androidLibrary) {
-                            indent {
-                                line("<intent-filter>")
-                                indent {
-                                    line("<action android:name=\"android.intent.action.MAIN\"/>")
-                                    line("<category android:name=\"android.intent.category.LAUNCHER\"/>")
-                                }
-                                line("</intent-filter>")
-                            }
-                        }
-                        line("</activity>")
-                    }
-                    line("</application>")
-                    for (text in androidManifestChunks) {
-                        line(text)
-                    }
-                }
-                line("</manifest>")
-            }.toString())
-        }
+        writeFileText(File(outputFolder, "AndroidManifest.xml")) { AndroidManifestXml.genAndroidManifestXml(this@AndroidGenerated) }
     }
 
     fun writeKeystore(outputFolder: File) {
-        File(outputFolder, "korge.keystore").conditionally(ifNotExists) {
-            ensureParents().writeBytesIfChanged(getResourceBytes("korge.keystore"))
-        }
+        writeFileBytes(File(outputFolder, "korge.keystore")) { getResourceBytes("korge.keystore") }
+    }
+
+    private fun writeFileBytes(file: File, gen: () -> ByteArray) {
+        file.conditionally(ifNotExists) { ensureParents().writeBytesIfChanged(gen()) }
+    }
+    private fun writeFileText(file: File, gen: () -> String) {
+        file.conditionally(ifNotExists) { ensureParents().writeTextIfChanged(gen()) }
     }
 }
 
@@ -423,11 +214,15 @@ fun Project.getAndroidMinSdkVersion(): Int = project.findProperty("android.min.s
 fun Project.getAndroidCompileSdkVersion(): Int = project.findProperty("android.compile.sdk.version")?.toString()?.toIntOrNull() ?: ANDROID_DEFAULT_COMPILE_SDK
 fun Project.getAndroidTargetSdkVersion(): Int = project.findProperty("android.target.sdk.version")?.toString()?.toIntOrNull() ?: ANDROID_DEFAULT_TARGET_SDK
 
-const val ANDROID_DEFAULT_MIN_SDK = 16 // Previously 18
+//const val ANDROID_DEFAULT_MIN_SDK = 16 // Previously 18
+const val ANDROID_DEFAULT_MIN_SDK = 18
 const val ANDROID_DEFAULT_COMPILE_SDK = 30
 const val ANDROID_DEFAULT_TARGET_SDK = 30
 
-//val ANDROID_JAVA_VERSION = JavaVersion.VERSION_1_8
-val ANDROID_JAVA_VERSION = JavaVersion.VERSION_11
+val ANDROID_JAVA_VERSION = JavaVersion.VERSION_1_8
+//val ANDROID_JAVA_VERSION = JavaVersion.VERSION_11
 //val ANDROID_JAVA_VERSION_STR = "1.8"
-val ANDROID_JAVA_VERSION_STR = "11"
+val ANDROID_JAVA_VERSION_STR = ANDROID_JAVA_VERSION.toString()
+
+val GRADLE_JAVA_VERSION_STR = "11"
+

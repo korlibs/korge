@@ -1,7 +1,5 @@
 package korlibs.root
 
-import com.android.build.gradle.*
-import com.android.build.gradle.internal.tasks.*
 import korlibs.korge.gradle.*
 import korlibs.korge.gradle.module.*
 import korlibs.korge.gradle.targets.*
@@ -19,7 +17,6 @@ import korlibs.modules.*
 import korlibs.tasks
 import org.gradle.api.*
 import org.gradle.api.Project
-import org.gradle.api.artifacts.repositories.*
 import org.gradle.api.file.*
 import org.gradle.api.tasks.*
 import org.gradle.api.tasks.testing.*
@@ -52,10 +49,8 @@ object RootKorlibsPlugin {
         initShowSystemInfoWhenLinkingInWindows()
         korlibs.korge.gradle.KorgeVersionsTask.registerShowKorgeVersions(project)
         initInstallAndCheckLinuxLibs()
-        initCatalog()
         // Disabled by default, since it resolves configurations at configuration time
         if (System.getenv("ENABLE_KOVER") == "true") configureKover()
-        initAndroidFixes()
         initPublishing()
         initKMM()
         initShortcuts()
@@ -105,21 +100,8 @@ object RootKorlibsPlugin {
     }
 
     fun Project.initAllRepositories() {
-        fun ArtifactRepository.config() {
-            content { it.excludeGroup("Kotlin/Native") }
-        }
         allprojectsThis {
-            repositories.apply {
-                mavenLocal().config()
-                mavenCentral().config()
-                google().config()
-                maven { it.url = uri("https://plugins.gradle.org/m2/") }.config()
-                maven { it.url = uri("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/bootstrap") }.config()
-                maven { it.url = uri("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/temporary") }.config()
-                maven { it.url = uri("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev") }.config()
-                maven { it.url = uri("https://maven.pkg.jetbrains.space/public/p/kotlinx-coroutines/maven") }.config()
-                maven { it.url = uri("https://oss.sonatype.org/content/repositories/snapshots/") }.config()
-            }
+            configureRepositories()
         }
     }
 
@@ -224,260 +206,11 @@ object RootKorlibsPlugin {
         }
     }
 
-    fun Project.initCatalog() {
-
-        //try {
-        //    println(URL("http://127.0.0.1:$httpPort/?startTime=0&endTime=1").readText())
-        //} catch (e: Throwable) {
-        //    e.printStackTrace()
-        //}
-
-        // @TODO: $catalog.json
-        //afterEvaluate {
-        //    val jsTestTestDevelopmentExecutableCompileSync = tasks.findByPath(":korim:jsTestTestDevelopmentExecutableCompileSync")
-        //    if (jsTestTestDevelopmentExecutableCompileSync != null) {
-        //        val copy = jsTestTestDevelopmentExecutableCompileSync as Copy
-        //        //copy.from(File(""))
-        //    }
-        //}
-
-        //println(tasks.findByPath(":korim:jsTestTestDevelopmentExecutableCompileSync")!!::class)
-
-    }
-
-    fun Project.initAndroid() {
-        if (isSample) {
-            plugins.apply("com.android.application")
-        } else {
-            plugins.apply("com.android.library")
-        }
-
-        //apply(from = "${rootProject.rootDir}/build.android.gradle")
-
-        //apply(plugin = "kotlin-android")
-        //apply(plugin = "kotlin-android-extensions")
-        // apply plugin: 'kotlin-android'
-        // apply plugin: 'kotlin-android-extensions'
-        val android = extensions.getByName<TestedExtension>("android")
-        android.apply {
-            namespace = "com.soywiz.${project.name.replace("-", ".")}"
-            setCompileSdkVersion(project.getAndroidCompileSdkVersion())
-            //buildToolsVersion(project.findProperty("android.buildtools.version")?.toString() ?: "30.0.2")
-
-            compileOptions.apply {
-                sourceCompatibility = ANDROID_JAVA_VERSION
-                targetCompatibility = ANDROID_JAVA_VERSION
-            }
-
-            packagingOptions {
-                for (pattern in KorgeExtension.DEFAULT_ANDROID_EXCLUDE_PATTERNS) {
-                    it.resources.excludes.add(pattern)
-                }
-            }
-
-            defaultConfig {
-                it.multiDexEnabled = true
-                it.minSdk = project.getAndroidMinSdkVersion()
-                it.targetSdk = project.getAndroidTargetSdkVersion()
-                it.testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-                //testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-            }
-        }
-
-        dependencies {
-            add("androidTestImplementation", "androidx.test:core:1.4.0")
-            add("androidTestImplementation", "androidx.test.ext:junit:1.1.2")
-            add("androidTestImplementation", "androidx.test.espresso:espresso-core:3.3.0")
-            //androidTestImplementation 'com.android.support.test:runner:1.0.2'
-        }
-
-        android.apply {
-            sourceSets {
-                it.maybeCreate("main").apply {
-                    assets.srcDirs("src/commonMain/resources",)
-                }
-                for (name in listOf("test", "testDebug", "testRelease", "androidTest", "androidTestDebug", "androidTestRelease")) {
-                    it.maybeCreate(name).apply {
-                        assets.srcDirs("src/commonTest/resources",)
-                    }
-                }
-            }
-        }
-
-
-        if (isSample) {
-            initAndroidApplication()
-            //apply(from = "${rootProject.rootDir}/build.android.application.gradle")
-        }
-    }
-
-    fun Project.initAndroidApplication() {
-        //apply(plugin = "com.android.application")
-        val androidApplicationId = "com.korge.samples.${project.name.replace("-", "_")}"
-        val korgeGradlePluginResources = File(rootProject.projectDir, "buildSrc/src/main/resources")
-        val android = extensions.getByName<TestedExtension>("android")
-        android.apply {
-            namespace = androidApplicationId
-            lintOptions {
-                // @TODO: ../../build.gradle: All com.android.support libraries must use the exact same version specification (mixing versions can lead to runtime crashes). Found versions 28.0.0, 26.1.0. Examples include com.android.support:animated-vector-drawable:28.0.0 and com.android.support:customtabs:26.1.0
-                it.disable("GradleCompatible")
-            }
-            // @TODO: Is this required?
-            //kotlinOptions {
-            //    jvmTarget = "1.8"
-            //    freeCompilerArgs += "-Xmulti-platform"
-            //}
-            compileSdkVersion(30)
-            defaultConfig {
-                it.multiDexEnabled = true
-                it.applicationId = androidApplicationId
-                it.minSdk = 16
-                it.targetSdk = 28
-                it.versionCode = 1
-                it.versionName = "1.0"
-                it.testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-                it.manifestPlaceholders.clear()
-            }
-            signingConfigs {
-                it.maybeCreate("release").apply {
-                    //storeFile file(findProperty('RELEASE_STORE_FILE') ?: "korge.keystore")
-                    storeFile(File(korgeGradlePluginResources, "korge.keystore"))
-                    storePassword(findProperty("RELEASE_STORE_PASSWORD")?.toString() ?: "password")
-                    keyAlias(findProperty("RELEASE_KEY_ALIAS")?.toString() ?: "korge")
-                    keyPassword(findProperty("RELEASE_KEY_PASSWORD")?.toString() ?: "password")
-                }
-            }
-            buildTypes {
-                it.maybeCreate("debug").apply {
-                    minifyEnabled(false)
-                    setSigningConfig(signingConfigs.maybeCreate("release"))
-                }
-                it.maybeCreate("release").apply {
-                    minifyEnabled(true)
-                    proguardFiles(getDefaultProguardFile(ProguardFiles.ProguardFile.OPTIMIZE.fileName), File(rootProject.rootDir, "proguard-rules.pro"))
-                    setSigningConfig(signingConfigs.maybeCreate("release"))
-                }
-            }
-            sourceSets {
-                it.maybeCreate("main").apply {
-                //it.maybeCreate("androidMain").apply {
-                    manifest.srcFile(File(project.buildDir, "AndroidManifest.xml"))
-                    java.srcDirs("${project.buildDir}/androidsrc")
-                    res.srcDirs("${project.buildDir}/androidres")
-                    assets.srcDirs(
-                        "${project.projectDir}/src/commonMain/resources",
-                        "${project.projectDir}/src/androidMain/resources",
-                        "${project.projectDir}/src/main/resources",
-                        "${project.projectDir}/build/commonMain/korgeProcessedResources/metadata/main",
-                    )
-                    //java.srcDirs += ["C:\\Users\\soywi\\projects\\korlibs\\korge-hello-world\\src\\commonMain\\kotlin", "C:\\Users\\soywi\\projects\\korlibs\\korge-hello-world\\src\\androidMain\\kotlin", "C:\\Users\\soywi\\projects\\korlibs\\korge-hello-world\\src\\main\\java"]
-                }
-            }
-        }
-
-        val mainDir = project.buildDir
-
-        val createAndroidManifest = tasks.createThis<Task>("createAndroidManifest") {
-            doFirst {
-                val generated = AndroidGenerated(
-                    icons = KorgeIconProvider(File(korgeGradlePluginResources, "icons/korge.png"), File(korgeGradlePluginResources, "banners/korge.png")),
-                    ifNotExists = true,
-                    androidPackageName = androidApplicationId,
-                    realEntryPoint = "main",
-                    androidMsaa = 4,
-                    androidAppName = project.name,
-                )
-
-                generated.writeResources(File(mainDir, "androidres"))
-                generated.writeMainActivity(File(mainDir, "androidsrc"))
-                generated.writeKeystore(mainDir)
-                generated.writeAndroidManifest(mainDir)
-            }
-        }
-
-        //tasks.getByName("installDebug").dependsOn("createAndroidManifest")
-
-        tasks.createThis<Task>("onlyRunAndroid") {
-            doFirst {
-                val adb = "${AndroidSdk.guessAndroidSdkPath()}/platform-tools/adb"
-                execThis {
-                    commandLine(adb, "shell", "am", "start", "-n", "${androidApplicationId}/${androidApplicationId}.MainActivity")
-                }
-
-                var pid = ""
-                for (n in 0 until 10) {
-                    try {
-                        pid = execOutput(adb, "shell", "pidof", androidApplicationId)
-                        break
-                    } catch (e: Throwable) {
-                        Thread.sleep(500L)
-                        if (n == 9) throw e
-                    }
-                }
-                println(pid)
-                execThis {
-                    commandLine(adb, "logcat", "--pid=${pid.trim()}")
-                }
-            }
-        }
-
-        fun ordered(vararg dependencyPaths: String): List<Task> {
-            val dependencies = dependencyPaths.map { tasks.getByPath(it) }
-            for (n in 0 until dependencies.size - 1) {
-                dependencies[n + 1].mustRunAfter(dependencies[n])
-            }
-            return dependencies
-        }
-
-        afterEvaluate {
-            //InstallVariantTask id = installDebug
-            (tasks.getByName("installRelease") as InstallVariantTask).apply {
-                installOptions = listOf("-r")
-            }
-            //println(installDebug.class)
-
-            tasks.createThis<Task>("runAndroidDebug") {
-                dependsOn(ordered("createAndroidManifest", "installDebug"))
-                finalizedBy("onlyRunAndroid")
-            }
-
-            tasks.createThis<Task>("runAndroidRelease") {
-                dependsOn(ordered("createAndroidManifest", "installRelease"))
-                finalizedBy("onlyRunAndroid")
-            }
-
-            tasks.findByName("generateDebugBuildConfig")
-                ?.dependsOn(createAndroidManifest)
-        }
-
-    }
-
     fun Project.initPlugins() {
         plugins.apply("java")
         plugins.apply("kotlin-multiplatform")
         plugins.apply("signing")
         plugins.apply("maven-publish")
-    }
-
-    fun Project.initAndroidFixes() {
-        /*
-        allprojectsThis {
-            //println("GROUP: $group")
-            tasks.whenTaskAdded {
-                if ("DebugUnitTest" in name || "ReleaseUnitTest" in name) {
-                    enabled = false
-                    // MPP + Android unit testing is so broken we just disable it altogether,
-                    // (discussion here https://kotlinlang.slack.com/archives/C3PQML5NU/p1572168720226200)
-                }
-            }
-            afterEvaluate {
-                // Remove log pollution until Android support in KMP improves.
-                project.extensions.findByType<org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension>()?.let { kmpExt ->
-                    kmpExt.sourceSets.removeAll { it.name == "androidAndroidTestRelease" }
-                }
-            }
-        }
-        */
     }
 
     fun Project.initPublishing() {
@@ -493,97 +226,6 @@ object RootKorlibsPlugin {
                     configurePublishing()
                     configureSigning()
                 }
-
-                /*
-                val javadocJar = tasks.maybeCreate<Jar>("javadocJar").apply { archiveClassifier.set("javadoc") }
-                val sourcesJar = tasks.maybeCreate<Jar>("sourceJar").apply { archiveClassifier.set("sources") }
-                //val emptyJar = tasks.maybeCreate<Jar>("emptyJar").apply {}
-                extensions.getByType(PublishingExtension::class.java).apply {
-                    afterEvaluate {
-                        //println(gkotlin.sourceSets.names)
-
-                        fun configure(publication: MavenPublication) {
-                            //println("Publication: $publication : ${publication.name} : ${publication.artifactId}")
-                            if (publication.name == "kotlinMultiplatform") {
-                                //publication.artifact(sourcesJar) {}
-                                //publication.artifact(emptyJar) {}
-                            }
-
-                            /*
-                            val sourcesJar = tasks.createThis<Jar>("sourcesJar${publication.name.capitalize()}") {
-                                classifier = "sources"
-                                baseName = publication.name
-                                val pname = when (publication.name) {
-                                    "metadata" -> "common"
-                                    else -> publication.name
-                                }
-                                val names = listOf("${pname}Main", pname)
-                                val sourceSet = names.mapNotNull { gkotlin.sourceSets.findByName(it) }.firstOrNull() as? KotlinSourceSet
-                                sourceSet?.let { from(it.kotlin) }
-                                //println("${publication.name} : ${sourceSet?.javaClass}")
-                                /*
-                                doFirst {
-                                    println(gkotlin.sourceSets)
-                                    println(gkotlin.sourceSets.names)
-                                    println(gkotlin.sourceSets.getByName("main"))
-                                    //from(sourceSets.main.allSource)
-                                }
-                                afterEvaluate {
-                                    println(gkotlin.sourceSets.names)
-                                }
-                                 */
-                            }
-                            */
-
-                            //val mustIncludeDocs = publication.name != "kotlinMultiplatform"
-                            val mustIncludeDocs = true
-
-                            //if (publication.name == "")
-                            if (mustIncludeDocs) {
-                                publication.artifact(javadocJar)
-                            }
-                            publication.pom.withXml {
-                                asNode().apply {
-                                    appendNode("name", project.name)
-                                    appendNode("description", project.property("project.description"))
-                                    appendNode("url", project.property("project.scm.url"))
-                                    appendNode("licenses").apply {
-                                        appendNode("license").apply {
-                                            appendNode("name").setValue(project.property("project.license.name"))
-                                            appendNode("url").setValue(project.property("project.license.url"))
-                                        }
-                                    }
-                                    appendNode("scm").apply {
-                                        appendNode("url").setValue(project.property("project.scm.url"))
-                                    }
-
-                                    // Changes runtime -> compile in Android's AAR publications
-                                    if (publication.pom.packaging == "aar") {
-                                        val nodes = this.getAt(groovy.xml.QName("dependencies")).getAt("dependency").getAt("scope")
-                                        for (node in nodes) {
-                                            (node as groovy.util.Node).setValue("compile")
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        if (project.tasks.findByName("publishKotlinMultiplatformPublicationToMavenLocal") != null) {
-                            publications.withType(MavenPublication::class.java) {
-                                configure(this)
-                            }
-                        } else {
-                            publications.maybeCreate<MavenPublication>("maven").apply {
-                                groupId = project.group.toString()
-                                artifactId = project.name
-                                version = project.version.toString()
-                                from(components["java"])
-                                configure(this)
-                            }
-                        }
-                    }
-                }
-                */
             }
         }
     }
@@ -603,7 +245,7 @@ object RootKorlibsPlugin {
 
                 //initAndroidProject()
                 if (hasAndroid) {
-                    initAndroid()
+                    project.configureAndroidDirect(ProjectType.fromExecutable(isSample), isKorge = false)
                 }
 
                 if (isSample && doEnableKotlinNative && isMacos) {
@@ -682,7 +324,7 @@ object RootKorlibsPlugin {
                     }
                     jvm {
                         compilations.allThis {
-                            kotlinOptions.jvmTarget = "1.8"
+                            kotlinOptions.jvmTarget = ANDROID_JAVA_VERSION_STR
                             compilerOptions.options.freeCompilerArgs.add("-Xno-param-assertions")
                             //kotlinOptions.freeCompilerArgs.add("-Xno-param-assertions")
                             //kotlinOptions.
@@ -703,22 +345,6 @@ object RootKorlibsPlugin {
                         configureJSTestsOnce()
                     }
                     //configureJSTests()
-
-
-                    if (hasAndroid) {
-                        kotlin {
-                            android {
-                                publishAllLibraryVariants()
-                                publishLibraryVariantsGroupedByFlavor = true
-                                //this.attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.androidJvm)
-                                compilations.allThis {
-                                    kotlinOptions.jvmTarget = "1.8"
-                                    compilerOptions.options.freeCompilerArgs.add("-Xno-param-assertions")
-                                }
-                            }
-                        }
-
-                    }
 
                     val desktopAndMobileTargets = ArrayList<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget>().apply {
                         if (doEnableKotlinNative) addAll(nativeTargets(project))

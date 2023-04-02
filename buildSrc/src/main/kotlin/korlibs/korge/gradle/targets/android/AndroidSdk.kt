@@ -1,9 +1,30 @@
 package korlibs.korge.gradle.targets.android
 
+import korlibs.korge.gradle.util.*
 import org.gradle.api.*
 import java.io.*
+import java.util.*
 
 object AndroidSdk {
+    val ANDROID_SDK_PATH_KEY = "android.sdk.path"
+
+    //Linux: ~/Android/Sdk
+    //Mac: ~/Library/Android/sdk
+    //Windows: %LOCALAPPDATA%\Android\sdk
+    @JvmStatic
+    fun getAndroidSdkPath(project: Project): String {
+        val extensionAndroidSdkPath = project.findProperty(ANDROID_SDK_PATH_KEY)?.toString() ?: project.extensions.findByName(ANDROID_SDK_PATH_KEY)?.toString()
+        if (extensionAndroidSdkPath != null) return extensionAndroidSdkPath
+        val localPropertiesFile = project.projectDir["local.properties"]
+        if (localPropertiesFile.exists()) {
+            val props = Properties().apply { load(localPropertiesFile.readText().reader()) }
+            if (props.getProperty("sdk.dir") != null) {
+                return props.getProperty("sdk.dir")!!
+            }
+        }
+        return guessAndroidSdkPath() ?: error("Can't find android sdk (ANDROID_HOME environment not set and Android SDK not found in standard locations)")
+    }
+
     @JvmStatic
     fun guessAndroidSdkPath(): String? {
         val userHome = System.getProperty("user.home")

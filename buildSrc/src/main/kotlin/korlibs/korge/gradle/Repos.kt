@@ -10,10 +10,16 @@ fun Project.configureRepositories() {
     }
 
     repositories.apply {
-		mavenLocal().config()
+        mavenLocal().config()
         mavenCentral().config()
         google().config()
+        maven { it.url = uri("https://plugins.gradle.org/m2/") }.config()
         if (kotlinVersionIsDev) {
+            maven { it.url = uri("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/bootstrap") }.config()
+            maven { it.url = uri("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/temporary") }.config()
+            maven { it.url = uri("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev") }.config()
+            maven { it.url = uri("https://maven.pkg.jetbrains.space/public/p/kotlinx-coroutines/maven") }.config()
+            maven { it.url = uri("https://oss.sonatype.org/content/repositories/snapshots/") }.config()
             maven { it.url = uri("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/temporary") }
             maven { it.url = uri("https://maven.pkg.jetbrains.space/public/p/kotlinx-coroutines/maven") }
         }

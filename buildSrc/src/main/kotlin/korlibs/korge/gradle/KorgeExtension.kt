@@ -93,7 +93,7 @@ open class KorgeExtension(
     companion object {
         const val ESBUILD_DEFAULT_VERSION = "0.17.10"
 
-        val DEFAULT_ANDROID_EXCLUDE_PATTERNS = listOf(
+        val DEFAULT_ANDROID_EXCLUDE_PATTERNS = setOf(
             "META-INF/DEPENDENCIES",
             "META-INF/LICENSE",
             "META-INF/LICENSE.txt",
@@ -103,11 +103,14 @@ open class KorgeExtension(
             "META-INF/notice.txt",
             "META-INF/LGPL*",
             "META-INF/AL2.0",
+            "**/androidsupportmultidexversion.txt",
+            "META-INF/versions/9/previous-compilation-data.bin",
+        )
+
+        val DEFAULT_ANDROID_INCLUDE_PATTERNS_LIBS = setOf(
             "META-INF/*.kotlin_module",
             "**/*.kotlin_metadata",
             "**/*.kotlin_builtins",
-            "**/androidsupportmultidexversion.txt",
-            "META-INF/versions/9/previous-compilation-data.bin",
         )
 
         val validIdentifierRegexp = Regex("^[a-zA-Z_]\\w*$")
@@ -190,7 +193,7 @@ open class KorgeExtension(
      */
     fun targetAndroid() {
         target("android") {
-            project.configureAndroidDirect(projectType)
+            project.configureAndroidDirect(projectType, isKorge = true)
         }
     }
 
@@ -387,7 +390,7 @@ open class KorgeExtension(
 
     var androidTimeoutMs: Int = 30 * 1000
 
-    var androidExcludePatterns: List<String> = DEFAULT_ANDROID_EXCLUDE_PATTERNS
+    var androidExcludePatterns: Set<String> = DEFAULT_ANDROID_EXCLUDE_PATTERNS
 
 	fun androidSdk(compileSdk: Int, minSdk: Int, targetSdk: Int) {
 		androidMinSdk = minSdk

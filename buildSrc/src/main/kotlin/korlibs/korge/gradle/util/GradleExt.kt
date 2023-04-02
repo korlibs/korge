@@ -19,3 +19,12 @@ fun <T : Plugin<*>> PluginContainer.applyOnce(clazz: Class<T>) {
 inline fun <reified T : Plugin<*>> PluginContainer.applyOnce() {
     applyOnce(T::class.java)
 }
+
+fun Project.ordered(vararg dependencyPaths: String): List<Task> {
+    val dependencies = dependencyPaths.map { tasks.getByPath(it) }
+    for (n in 0 until dependencies.size - 1) {
+        dependencies[n + 1].mustRunAfter(dependencies[n])
+    }
+    return dependencies
+}
+
