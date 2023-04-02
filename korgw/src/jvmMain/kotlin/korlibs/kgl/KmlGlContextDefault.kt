@@ -15,6 +15,9 @@ import java.util.concurrent.atomic.*
 
 val GLOBAL_HEADLESS_KML_CONTEXT by lazy { KmlGlContextDefault() }
 
+//val ENABLE_JVM_MAC_OPENGL41_CORE = true
+val ENABLE_JVM_MAC_OPENGL41_CORE = Environment["ENABLE_JVM_MAC_OPENGL41_CORE"] == "true"
+
 actual fun KmlGlContextDefault(window: Any?, parent: KmlGlContext?): KmlGlContext = when {
     Platform.isMac -> MacKmlGlContextRaw(window, parent)
     //Platform.isMac -> MacKmlGlContextManaged(window, parent)
@@ -423,21 +426,19 @@ open class MacKmlGlContextRaw(window: Any? = null, parent: KmlGlContext? = null)
             //checkError("CGLDestroyPixelFormat", MacGL.CGLDestroyPixelFormat(pix))
 
             fun formatsProvider(): Sequence<IntArray> = sequence<IntArray> {
-                //for (glVersion in listOf(410, 320, 210)) {
-                for (glVersion in listOf(210)) {
+                for (glVersion in (if (ENABLE_JVM_MAC_OPENGL41_CORE) listOf(410, 320, 210) else listOf(210))) {
+                //for (glVersion in listOf(210)) {
                     for (extra in listOf(true, false)) {
                         for (accelerated in listOf(true, false)) {
                             yield(buildList {
                                 // Let's not specify profile version, so we are using old shader syntax
                                 //add(kCGLPFAOpenGLProfile); add(kCGLOGLPVersion_GL3_Core)
-                                add(kCGLPFAOpenGLProfile); add(
-                                when (glVersion) {
+                                add(kCGLPFAOpenGLProfile)
+                                add(when (glVersion) {
                                     410 -> kCGLOGLPVersion_GL4_Core
                                     320 -> kCGLOGLPVersion_GL3_Core
                                     else -> kCGLOGLPVersion_Legacy
-                                }
-                            )
-                                //add(kCGLPFAOpenGLProfile); add(if (core) kCGLOGLPVersion_GL3_Core else kCGLOGLPVersion_Legacy)
+                                })
                                 if (accelerated) add(kCGLPFAAccelerated)
                                 add(kCGLPFAAllowOfflineRenderers)
                                 if (extra) {

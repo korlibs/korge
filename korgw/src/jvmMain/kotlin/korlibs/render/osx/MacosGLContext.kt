@@ -31,6 +31,7 @@ class MacosGLContext(
         const val NSOpenGLPFAAccumSize = 14
 
         const val NSOpenGLPFAOpenGLProfile = 99
+        const val NSOpenGLProfileVersionLegacy = 0x1000
         const val NSOpenGLProfileVersion4_1Core = 0x4100
     }
 
@@ -43,7 +44,7 @@ class MacosGLContext(
         ) else intArrayOf()
         intArrayOf(
             *antialiasArray,
-            //NSOpenGLPFAOpenGLProfile, NSOpenGLProfileVersion4_1Core,
+            NSOpenGLPFAOpenGLProfile, if (ENABLE_JVM_MAC_OPENGL41_CORE) NSOpenGLProfileVersion4_1Core else NSOpenGLProfileVersionLegacy,
             //NSOpenGLPFADoubleBuffer,
             NSOpenGLPFAAccelerated,
             NSOpenGLPFAColorSize, 24,

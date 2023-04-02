@@ -472,7 +472,7 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
         }
     }
 
-    val tempBuffer = Buffer(4 * 128)
+    //val tempBuffer = Buffer(4 * 128)
     //val tempBufferBlockCount = Array(128) { tempBuffer.sliceWithSize(0, 4 * it) }
 
     // UBO

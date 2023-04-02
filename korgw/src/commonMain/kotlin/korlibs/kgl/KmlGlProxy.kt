@@ -4,6 +4,7 @@
 
 package korlibs.kgl
 
+import korlibs.graphics.*
 import korlibs.image.bitmap.*
 import korlibs.io.lang.*
 import korlibs.io.util.*
@@ -1645,6 +1646,8 @@ class LogKmlGlProxy(parent: KmlGl = KmlGlDummy(), var logBefore: Boolean = false
 	}
 }
 open class CheckErrorsKmlGlProxy(parent: KmlGl, val throwException: Boolean = false, val printStackTrace: Boolean = false) : KmlGlProxy(parent) {
+    override val parentFeatures: AGFeatures? get() = parent
+
     private val logger = Logger("CheckErrorsKmlGlProxy")
     init {
         //println("CheckErrorsKmlGlProxy")
