@@ -1,8 +1,9 @@
 package korlibs.graphics.metal.shader
 
 import korlibs.graphics.shader.*
-import korlibs.graphics.shader.gl.*
-import korlibs.io.util.*
+import korlibs.graphics.shader.gl.GlobalsProgramVisitor
+import korlibs.io.util.Indenter
+import korlibs.logger.Logger
 
 internal const val vertexMainFunctionName = "vertexMain"
 internal const val fragmentMainFunctionName = "fragmentMain"
@@ -13,9 +14,23 @@ class MetalShaderGenerator(
     private val bufferLayouts: MetalShaderBufferInputLayouts
 ) : BaseMetalShaderGenerator {
 
+
+    private val vertexInstructions = vertexShader.stm
+    private val fragmentInstructions = fragmentShader.stm
+    private val varyings = computeVaryings()
+    private val logger = Logger("MetalShaderGenerator")
     private val vertexBodyGenerator = MetalShaderBodyGenerator(ShaderType.VERTEX)
     private val inputStructure = mutableListOf<VertexLayout>()
-    private val inputBuffers = mutableListOf<List<VariableWithOffset>>()
+    private val inputBuffers by with(bufferLayouts) {
+        computeInputBuffers()
+    }
+
+    private fun computeVaryings(): List<Varying> {
+        val types = GlobalsProgramVisitor()
+        FuncDecl("main", VarType.TVOID, listOf(), vertexInstructions)
+            .also(types::visit)
+        return types.varyings.toList()
+    }
 
     data class Result(
         val result: String,
@@ -25,7 +40,6 @@ class MetalShaderGenerator(
     fun generateResult(): Result = generateResult(vertexShader.functions + fragmentShader.functions)
 
     private fun generateResult(customFunctions: List<FuncDecl>): Result {
-        val vertexInstructions = vertexShader.stm
         val types = GlobalsProgramVisitor()
 
         FuncDecl("main", VarType.TVOID, listOf(), vertexInstructions)
@@ -34,16 +48,15 @@ class MetalShaderGenerator(
         val result = Indenter {
 
             addHeaders()
-
             declareVertexInputStructures()
-            declareVertexOutputStructure(types.varyings.toList())
+            declareVertexOutputStructure()
 
             customFunctions.filter { it.ref.name in types.funcRefs }
                 .reversed()
                 .distinctBy { it.ref.name }
                 .let { generationFunctions(it) }
 
-            generateVertexMainFunction(types.attributes, types.uniforms)
+            generateVertexMainFunction()
                 .also(inputBuffers::addAll)
 
             generateFragmentMainFunction()
@@ -71,20 +84,21 @@ class MetalShaderGenerator(
             }
     }
 
-    private fun Indenter.declareVertexOutputStructure(attributes: List<Varying>) {
-        if (attributes.isEmpty()) return
+    private fun Indenter.declareVertexOutputStructure() = MetalShaderStructureGenerator.generate(
+        indenter = this,
+        name = "v2f",
+        attributes = varyings.toMetalShaderStructureGeneratorAttributes()
+    )
 
-        MetalShaderStructureGenerator.generate(
-            indenter = this,
-            name = "v2f",
-            attributes = attributes.toMetalShaderStructureGeneratorAttributes()
-        )
-    }
+    private fun Indenter.generateVertexMainFunction(): List<List<VariableWithOffset>> {
+        val types = GlobalsProgramVisitor()
 
-    private fun Indenter.generateVertexMainFunction(
-        attributes: LinkedHashSet<Attribute>,
-        uniforms: LinkedHashSet<Uniform>
-    ): List<List<VariableWithOffset>> {
+        FuncDecl("main", VarType.TVOID, listOf(), vertexInstructions)
+            .also(types::visit)
+
+        val attributes = types.attributes
+        val uniforms =  types.uniforms
+
         val generator = MetalShaderBodyGenerator(ShaderType.VERTEX)
         val inputBuffers = attributes.toList() + uniforms
 
@@ -117,7 +131,6 @@ class MetalShaderGenerator(
     private fun Indenter.generateFragmentMainFunction(): List<List<VariableWithOffset>> {
 
         val generator = MetalShaderBodyGenerator(ShaderType.FRAGMENT)
-        val fragmentInstructions = fragmentShader.stm
         val types = GlobalsProgramVisitor()
         FuncDecl("main", VarType.TVOID, listOf(), fragmentInstructions)
             .also(types::visit)
@@ -162,7 +175,7 @@ class MetalShaderGenerator(
 
             line("${typeToString(function.rettype)} ${function.name}(${argsStrings.joinToString(", ")})") {
                 for (temp in generator.temps) {
-                    line(precitionToString(temp.precision) + typeToString(temp.type) + " " + temp.name + ";")
+                    line(precisionToString(temp.precision) + typeToString(temp.type) + " " + temp.name + ";")
                 }
                 line(generator.programIndenter)
             }

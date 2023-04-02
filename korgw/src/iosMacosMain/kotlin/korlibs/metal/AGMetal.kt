@@ -43,10 +43,8 @@ class AGMetal(private val view: MTKView) : AG() {
 
             val currentProgram = getProgram(
                 program,
-                bufferInputLayouts = MetalShaderBufferInputLayouts(
-                    //TODO
-                    listOf()
-                )
+                vertexData,
+                uniformBlocks
             )
 
             val commandBuffer = commandQueue.commandBuffer() ?: error("fail to get command buffer")
@@ -129,8 +127,30 @@ class AGMetal(private val view: MTKView) : AG() {
     private val AGBuffer.toMetal: MTLBuffer
         get() = (mem ?: error("cannot create buffer from null memory")).toMetal
 
-    private fun getProgram(program: Program, bufferInputLayouts: MetalShaderBufferInputLayouts) = programs
+    private fun getProgram(
+        program: Program,
+        vertexData: AGVertexArrayObject,
+        uniformBlocks: UniformBlocksBuffersRef
+    ) = programs
         .getOrPut(program) {
-            MetalShaderCompiler.compile(device, program, bufferInputLayouts)
+            MetalShaderCompiler.compile(
+                device,
+                program,
+                bufferInputLayouts = MetalShaderBufferInputLayouts(
+                    vertexLayouts = vertexData.map { it.layout },
+                    uniforms = uniformBlocks.map()
+                )
+            )
         }
+}
+
+private fun AGVertexArrayObject.map(function: (AGVertexData) -> ProgramLayout<Attribute>): List<ProgramLayout<Attribute>> {
+    val mutableList = mutableListOf<ProgramLayout<Attribute>>()
+    list.fastForEach { input -> function(input).also { mutableList.add(it) } }
+    return mutableList
+}
+
+//TODO
+private fun UniformBlocksBuffersRef.map(): List<UniformBlock> {
+    return listOf<UniformBlock>()
 }

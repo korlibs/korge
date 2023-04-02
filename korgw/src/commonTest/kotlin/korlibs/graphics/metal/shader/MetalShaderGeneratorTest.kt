@@ -20,11 +20,12 @@ class MetalShaderGeneratorTest {
     }
 
     private val colorModifier = Uniform("u_ColorModifier", VarType.Float4)
-    private val emptyBufferInputLayouts = MetalShaderBufferInputLayouts(listOf())
+    private val emptyBufferInputLayouts = MetalShaderBufferInputLayouts(listOf(), listOf())
     private val colorAndTextureBufferInputLayouts = MetalShaderBufferInputLayouts(
-        listOf(
+        vertexLayouts = listOf(
             VertexLayout(a_Tex, a_Col)
-        )
+        ),
+        uniforms = listOf()
     )
 
     private val vertexShader = VertexShader {
