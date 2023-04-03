@@ -198,7 +198,7 @@ fun Project.configureNativeIosRun() {
             }
         }
 
-        tasks.createTyped<Exec>("runIosDevice$debugSuffix") {
+        val runIosDevice = tasks.createTyped<Exec>("runIosDevice$debugSuffix") {
             group = GROUP_KORGE_RUN
             val buildTaskName = "iosBuildDevice$debugSuffix"
             dependsOn("installIosDeploy", buildTaskName)
@@ -208,7 +208,7 @@ fun Project.configureNativeIosRun() {
             }
         }
 
-        tasks.createTyped<Exec>("runIosSimulator$debugSuffix") {
+        val runIosSimulator = tasks.createTyped<Exec>("runIosSimulator$debugSuffix") {
             group = GROUP_KORGE_RUN
             dependsOn(installIosSimulator)
             doFirst {
@@ -217,6 +217,10 @@ fun Project.configureNativeIosRun() {
                 //logger.info(params.joinToString(" "))
                 execLogger { it.commandLine("xcrun", "simctl", "launch", "--console", device.udid, "${korge.id}.app-X64-$debugSuffix") }
             }
+        }
+
+        tasks.createTyped<Task>("runIos$debugSuffix") {
+            dependsOn(runIosDevice)
         }
     }
 
