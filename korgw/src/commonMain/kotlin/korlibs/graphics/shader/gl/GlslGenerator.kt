@@ -139,7 +139,7 @@ class GlslGenerator constructor(
                 val suffix = if (config.variant.isES) " es" else ""
                 line("#version ${config.glslVersion}$suffix")
             }
-            line("/* glslVersion=${config.glslVersion}, newGlSlVersion=${config.newGlSlVersion}, compatibility=${config.compatibility} */")
+            //line("/* glslVersion=${config.glslVersion}, newGlSlVersion=${config.newGlSlVersion}, compatibility=${config.compatibility} */")
             line("#extension GL_OES_standard_derivatives : enable")
             line("#ifdef GL_ES")
             line("precision mediump float;")

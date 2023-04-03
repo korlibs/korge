@@ -1,7 +1,6 @@
 package korlibs.graphics.shaders
 
 import korlibs.graphics.*
-import korlibs.graphics.log.*
 import korlibs.graphics.shader.*
 import korlibs.graphics.shader.gl.*
 import kotlin.test.*
@@ -134,7 +133,7 @@ class ShadersTest {
     fun assertEqualsShader(expected: String, shader: Shader, version: Int = GlslGenerator.DEFAULT_VERSION, variant: GLVariant = GLVariant.DESKTOP, stripDirectives: Boolean = true) {
         assertEquals(
             expected.trimEnd(),
-            shader.toNewGlslStringResult(GlslConfig(variant, glslVersion = version)).result.lines().filter {
+            shader.toNewGlslStringResult(GlslConfig(variant, AGFeatures.Mutable(), glslVersion = version)).result.lines().filter {
                 val isDirective = it.startsWith("#") || it.startsWith("precision ")
                 if (stripDirectives) !isDirective else true
             }.joinToString("\n").trimEnd().replace("\t", "    ")
