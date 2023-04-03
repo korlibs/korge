@@ -171,15 +171,19 @@ actual class KmlGlNative actual constructor() : NativeBaseKmlGl() {
 
     override val isInstancedSupported: Boolean get() = true
 
-    override fun drawArraysInstanced(mode: Int, first: Int, count: Int, instancecount: Int) {
-        glDrawArraysInstanced(mode.convert(), first.convert(), count.convert(), instancecount.convert())
-    }
+    override fun drawArraysInstanced(mode: Int, first: Int, count: Int, instancecount: Int) = glDrawArraysInstanced(mode.convert(), first.convert(), count.convert(), instancecount.convert())
+    override fun drawElementsInstanced(mode: Int, count: Int, type: Int, indices: Int, instancecount: Int) = glDrawElementsInstanced(mode.convert(), count.convert(), type.convert(), indices.toLong().toCPointer<IntVar>(), instancecount.convert())
+    override fun vertexAttribDivisor(index: Int, divisor: Int) = glVertexAttribDivisor(index.convert(), divisor.convert())
 
-    override fun drawElementsInstanced(mode: Int, count: Int, type: Int, indices: Int, instancecount: Int) {
-        glDrawElementsInstanced(mode.convert(), count.convert(), type.convert(), indices.toLong().toCPointer<IntVar>(), instancecount.convert())
-    }
+    override val isUniformBuffersSupported: Boolean get() = true
 
-    override fun vertexAttribDivisor(index: Int, divisor: Int) {
-        glVertexAttribDivisor(index.convert(), divisor.convert())
-    }
+    override fun bindBufferRange(target: Int, index: Int, buffer: Int, offset: Int, size: Int) = glBindBufferRange(target.convert(), index.convert(), buffer.convert(), offset.convert(), size.convert())
+    override fun getUniformBlockIndex(program: Int, name: String): Int = glGetUniformBlockIndex(program.convert(), name).toInt()
+    override fun uniformBlockBinding(program: Int, uniformBlockIndex: Int, uniformBlockBinding: Int) = glUniformBlockBinding(program.convert(), uniformBlockIndex.convert(), uniformBlockBinding.convert())
+
+    override val isVertexArraysSupported: Boolean get() = true
+
+    override fun genVertexArrays(n: Int, arrays: Buffer) = tempBufferAddress { glGenVertexArrays(n.convert(), arrays.unsafeAddress().reinterpret()) }
+    override fun deleteVertexArrays(n: Int, arrays: Buffer) = tempBufferAddress { glDeleteBuffers(n.convert(), arrays.unsafeAddress().reinterpret()) }
+    override fun bindVertexArray(array: Int) = glBindVertexArray(array.convert())
 }
