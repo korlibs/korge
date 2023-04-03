@@ -3,17 +3,17 @@
 package korlibs.korge.render
 
 import korlibs.datastructure.*
-import korlibs.memory.*
 import korlibs.graphics.*
 import korlibs.graphics.shader.*
-import korlibs.korge.internal.*
-import korlibs.korge.view.*
 import korlibs.image.color.*
 import korlibs.io.async.*
+import korlibs.korge.internal.*
+import korlibs.korge.view.*
 import korlibs.math.geom.*
 import korlibs.math.geom.shape.*
 import korlibs.math.geom.vector.*
-import kotlin.native.concurrent.ThreadLocal
+import korlibs.memory.*
+import kotlin.native.concurrent.*
 
 /** Creates/gets a [LineRenderBatcher] associated to [this] [RenderContext] */
 @Deprecated("USe useDebugLineRenderContext instead")
@@ -76,7 +76,7 @@ class LineRenderBatcher(
 
 
     private val vertexBuffer = AGBuffer()
-    private val vertexData = AGVertexArrayObject(AGVertexData(LAYOUT, vertexBuffer))
+    private val vertexData = AGVertexArrayObject(AGVertexData(LAYOUT, vertexBuffer), isDynamic = false)
     private val maxVertexCount = 1024
     private val vertices = Buffer.allocDirect(6 * 4 * maxVertexCount)
     @PublishedApi

@@ -1,11 +1,10 @@
 package korlibs.render
 
-import korlibs.memory.*
-import korlibs.graphics.*
 import korlibs.event.*
+import korlibs.graphics.*
 import korlibs.image.bitmap.*
 import korlibs.image.color.*
-import korlibs.io.util.*
+import korlibs.memory.*
 import kotlinx.coroutines.*
 import java.awt.*
 import kotlin.test.*
@@ -47,7 +46,7 @@ class TestE2eJava {
                         ag.draw(
                             //ctx.rctx.currentFrameBuffer,
                             ag.mainFrameBuffer,
-                            AGVertexArrayObject(AGVertexData(DefaultShaders.LAYOUT_DEBUG, vertices)),
+                            AGVertexArrayObject(AGVertexData(DefaultShaders.LAYOUT_DEBUG, vertices), isDynamic = true),
                             program = DefaultShaders.PROGRAM_DEBUG,
                             drawType = AGDrawType.TRIANGLES,
                             vertexCount = 3,

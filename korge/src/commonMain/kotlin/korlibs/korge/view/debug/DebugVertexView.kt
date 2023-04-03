@@ -1,19 +1,12 @@
 package korlibs.korge.view.debug
 
-import korlibs.datastructure.iterators.fastForEach
+import korlibs.datastructure.iterators.*
 import korlibs.graphics.*
 import korlibs.graphics.shader.*
-import korlibs.korge.render.RenderContext
-import korlibs.korge.view.Container
-import korlibs.korge.view.View
-import korlibs.korge.view.ViewDslMarker
-import korlibs.korge.view.addTo
-import korlibs.image.color.Colors
-import korlibs.image.color.RGBA
-import korlibs.math.geom.MBoundsBuilder
-import korlibs.math.geom.IVectorArrayList
-import korlibs.math.geom.fastForEachGeneric
-import korlibs.math.geom.toMatrix4
+import korlibs.image.color.*
+import korlibs.korge.render.*
+import korlibs.korge.view.*
+import korlibs.math.geom.*
 
 inline fun Container.debugVertexView(
     pointsList: List<IVectorArrayList> = listOf(),
@@ -106,7 +99,8 @@ class DebugVertexView(pointsList: List<IVectorArrayList>, color: RGBA = Colors.W
         ctx.dynamicVertexBufferPool.alloc { vb ->
             vb.upload(this@DebugVertexView.buffer)
             val vData = AGVertexArrayObject(
-                AGVertexData(DefaultShaders.LAYOUT_DEBUG, vb)
+                AGVertexData(DefaultShaders.LAYOUT_DEBUG, vb),
+                isDynamic = true
             )
             batches.fastForEach { batch ->
                 ctx.ag.draw(

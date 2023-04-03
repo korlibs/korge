@@ -8,7 +8,6 @@ import korlibs.io.lang.*
 import korlibs.math.geom.*
 import korlibs.memory.*
 import korlibs.memory.pack.*
-import kotlin.jvm.*
 
 inline class AGReadKind(val ordinal: Int) {
     companion object {
@@ -717,11 +716,11 @@ interface AGContainer {
 }
 
 /** List<VertexData> -> VAO */
-@JvmInline
-value class AGVertexArrayObject(
-    val list: FastArrayList<AGVertexData>
-) {
-    constructor(vararg datas: AGVertexData) : this(fastArrayListOf(*datas))
+data class AGVertexArrayObject constructor(
+    val list: FastArrayList<AGVertexData>,
+    val isDynamic: Boolean = true
+) : Extra by Extra.Mixin() {
+    constructor(vararg datas: AGVertexData, isDynamic: Boolean = true) : this(fastArrayListOf(*datas), isDynamic = isDynamic)
 }
 
 data class AGVertexData(
@@ -813,7 +812,7 @@ data class AGBatch(
     var frameBuffer: AGFrameBufferBase,
     var frameBufferInfo: AGFrameBufferInfo,
     // Vertex & Index data
-    var vertexData: AGVertexArrayObject = AGVertexArrayObject(AGVertexData()),
+    var vertexData: AGVertexArrayObject = AGVertexArrayObject(AGVertexData(), isDynamic = true),
     var indices: AGBuffer? = null,
     var indexType: AGIndexType = AGIndexType.USHORT,
     // Program & Uniforms

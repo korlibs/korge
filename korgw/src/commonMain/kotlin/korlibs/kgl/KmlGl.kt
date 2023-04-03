@@ -332,6 +332,18 @@ abstract class KmlGl : Extra by Extra.Mixin(), IKmlGl, AGFeatures {
     inline val TEXTURE_2D_MULTISAMPLE: Int get() = KmlGl.TEXTURE_2D_MULTISAMPLE
 
     companion object {
+        fun errorString(error: Int): String {
+            return when (error) {
+                NO_ERROR -> "NO_ERROR"
+                INVALID_ENUM -> "INVALID_ENUM"
+                INVALID_VALUE -> "INVALID_VALUE"
+                INVALID_OPERATION -> "INVALID_OPERATION"
+                OUT_OF_MEMORY -> "OUT_OF_MEMORY"
+                INVALID_FRAMEBUFFER_OPERATION -> "INVALID_FRAMEBUFFER_OPERATION"
+                else -> "ERROR($error)"
+            }
+        }
+
         const val TEXTURE_BASE_LEVEL = 0x813C
         const val TEXTURE_MAX_LEVEL = 0x813D
 

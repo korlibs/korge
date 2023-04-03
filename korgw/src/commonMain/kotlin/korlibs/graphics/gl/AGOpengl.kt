@@ -1,6 +1,7 @@
 package korlibs.graphics.gl
 
 import korlibs.crypto.encoding.*
+import korlibs.datastructure.*
 import korlibs.datastructure.iterators.*
 import korlibs.graphics.*
 import korlibs.graphics.shader.*
@@ -379,7 +380,15 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
         }
     }
 
-    private fun bindBuffer(buffer: AGBuffer?, target: AGBufferKind, onlyUpdate: Boolean = false): GLBuffer? {
+    private fun bindBuffer(
+        buffer: AGBuffer?,
+        target: AGBufferKind,
+        onlyUpdate: Boolean = false,
+        reallocated: Ref<Boolean>? = null,
+        updated: Ref<Boolean>? = null,
+    ): GLBuffer? {
+        reallocated?.value = false
+        updated?.value = false
         if (buffer == null) {
             gl.bindBuffer(target.toGl(), 0)
             return null
@@ -387,41 +396,97 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
         val bufferInfo = buffer.gl
         if (!onlyUpdate) gl.bindBuffer(target.toGl(), bufferInfo.id)
         buffer.update {
+            //println("Updated buffer: ${buffer.identityHashCode()} $buffer, $target, $onlyUpdate")
             val mem = buffer.mem ?: Buffer(0)
             bufferInfo.estimatedBytes = mem.sizeInBytes.toLong()
             if (onlyUpdate) gl.bindBuffer(target.toGl(), bufferInfo.id)
-            gl.bufferData(target.toGl(), mem.sizeInBytes, mem, KmlGl.STATIC_DRAW)
+            if (buffer.lastUploadedSize < mem.sizeInBytes) {
+                buffer.lastUploadedSize = mem.sizeInBytes
+                gl.bufferData(target.toGl(), mem.sizeInBytes, mem, KmlGl.DYNAMIC_DRAW)
+                reallocated?.value = true
+                //println("UPLOAD FULL DATA")
+            } else {
+                //println("UPDATES DATA")
+                gl.bufferSubData(target.toGl(), 0, mem.sizeInBytes, mem)
+            }
+            updated?.value = true
         }
         return bufferInfo
     }
 
     fun vaoUnuse(vao: AGVertexArrayObject) {
-        vao.list.fastForEach { entry ->
-            entry.layout.attributes.fastForEach { att ->
-                if (att.active) {
-                    val loc = att.fixedLocation
-                    if (loc >= 0) {
-                        if (att.divisor != 0) {
-                            gl.vertexAttribDivisor(loc, 0)
+        if (reallyIsVertexArraysSupported && gl.isVertexArraysSupported) {
+            gl.bindVertexArray(0)
+        } else {
+            vao.list.fastForEach { entry ->
+                entry.layout.attributes.fastForEach { att ->
+                    if (att.active) {
+                        val loc = att.fixedLocation
+                        if (loc >= 0) {
+                            if (att.divisor != 0) {
+                                gl.vertexAttribDivisor(loc, 0)
+                            }
+                            gl.disableVertexAttribArray(loc)
                         }
-                        gl.disableVertexAttribArray(loc)
                     }
                 }
             }
         }
     }
 
-    var vertexArray = -1
+    class GLVAO(var vao: AGVertexArrayObject, var glId: Int = -1, var contextVersion: Int = -1)
+
+    var AGVertexArrayObject.gl: GLVAO by Extra.PropertyThis { GLVAO(this) }
+
+    var dynamicVaoGlId = -1
+    var dynamicVaoContextVersion = -1
+
+    var reallyIsVertexArraysSupported = true
 
     fun vaoUse(vao: AGVertexArrayObject) {
-        if (gl.isVertexArraysSupported) {
-        //if (true) {
-            if (vertexArray < 0) {
-                vertexArray = gl.genVertexArray()
+        if (reallyIsVertexArraysSupported && gl.isVertexArraysSupported) {
+            val vaoGl = vao.gl
+            if (vao.isDynamic) {
+                if (dynamicVaoContextVersion != contextVersion) {
+                    dynamicVaoGlId = gl.genVertexArray()
+                    dynamicVaoContextVersion = contextVersion
+                    if (dynamicVaoGlId <= 0) reallyIsVertexArraysSupported = false
+                }
+                gl.bindVertexArray(dynamicVaoGlId)
+                _vaoUse(vao)
+            } else {
+                if (vaoGl.contextVersion != contextVersion) {
+                    vaoGl.contextVersion = contextVersion
+                    vaoGl.glId = gl.genVertexArray()
+                    //println("VAO created[${vaoGl.glId}]: ${vao.identityHashCode()} $vao")
+                    if (vaoGl.glId <= 0) reallyIsVertexArraysSupported = false
+                    //gl.bindVertexArray(vaoGl.glId)
+                    //for (n in 0 until 16) gl.disableVertexAttribArray(n)
+
+                    gl.bindVertexArray(vaoGl.glId)
+                    _vaoUse(vao)
+                }
+                gl.bindVertexArray(vaoGl.glId)
+                _vaoUse(vao, updateBuffersOnly = reallyIsVertexArraysSupported)
             }
-            gl.bindVertexArray(vertexArray)
+        } else {
+            _vaoUse(vao)
         }
         //gl.enableVertexAttribArray()
+    }
+
+    val bindBufferReallocated = Ref<Boolean>()
+
+    fun _vaoUse(vao: AGVertexArrayObject, updateBuffersOnly: Boolean = false) {
+        //var locBitSet = 0
+        if (updateBuffersOnly) {
+            //gl.bindBuffer(AGBufferKind.VERTEX.toGl(), 0)
+            vao.list.fastForEach { entry ->
+                bindBuffer(entry.buffer, AGBufferKind.VERTEX, updated = bindBufferReallocated)
+            }
+            //if (!bindBufferReallocated.value) return
+            return
+        }
 
         vao.list.fastForEach { entry ->
             val vertices = entry.buffer
@@ -432,7 +497,10 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
 
             //if (vertices.kind != AG.BufferKind.VERTEX) invalidOp("Not a VertexBuffer")
 
-            bindBuffer(vertices, AGBufferKind.VERTEX)
+            bindBuffer(vertices, AGBufferKind.VERTEX, updated = bindBufferReallocated)
+
+            //if (updateBuffersOnly && !bindBufferReallocated.value) {
+
             val totalSize = vertexLayout.totalSize
             for (n in vattrspos.indices) {
                 val att = vattrs[n]
@@ -441,6 +509,7 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
                 val loc = att.fixedLocation
                 val glElementType = att.type.toGl()
                 val elementCount = att.type.elementCount
+                //println("loc=$loc")
                 if (loc >= 0) {
                     gl.enableVertexAttribArray(loc)
                     gl.vertexAttribPointer(
@@ -454,9 +523,12 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
                     if (att.divisor != 0) {
                         gl.vertexAttribDivisor(loc, att.divisor)
                     }
+                    //locBitSet = locBitSet.insert(true, loc)
                 }
             }
         }
+        //locBitSet.fastForEachOneBits { gl.enableVertexAttribArray(it) }
+        //locBitSet.inv().fastForEachOneBits { gl.disableVertexAttribArray(it) }
     }
 
     //val tempBuffer = Buffer(4 * 128)

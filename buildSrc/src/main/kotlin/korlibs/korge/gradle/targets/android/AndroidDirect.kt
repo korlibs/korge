@@ -111,7 +111,13 @@ fun Project.configureAndroidDirect(projectType: ProjectType, isKorge: Boolean) {
             }
             maybeCreate("release").apply {
                 isMinifyEnabled = true
-                proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+                proguardFiles(
+                    getDefaultProguardFile("proguard-android-optimize.txt"),
+                    "proguard-rules.pro"
+                )
+                File(rootDir, "proguard-rules.pro").takeIfExists()?.also {
+                    proguardFile(it)
+                }
                 //proguardFiles(getDefaultProguardFile(ProguardFiles.ProguardFile.OPTIMIZE.fileName), File(rootProject.rootDir, "proguard-rules.pro"))
                 signingConfig = signingConfigs.getByName("release")
             }

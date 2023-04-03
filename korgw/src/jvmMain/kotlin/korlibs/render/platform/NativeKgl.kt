@@ -173,10 +173,24 @@ open class NativeKgl constructor(private val gl: INativeGL) : KmlGlWithExtension
     override fun uniformBlockBinding(program: Int, uniformBlockIndex: Int, uniformBlockBinding: Int) =
         gl.glUniformBlockBinding(program, uniformBlockIndex, uniformBlockBinding)
 
-    override val isVertexArraysSupported: Boolean get() = true
+    override var isVertexArraysSupported: Boolean = true
 
-    override fun genVertexArrays(n: Int, arrays: Buffer): Unit { gl.glGenVertexArrays(n, arrays.directIntBuffer) }
-    override fun deleteVertexArrays(n: Int, arrays: Buffer): Unit { gl.glDeleteVertexArrays(n, arrays.directIntBuffer) }
+    override fun genVertexArrays(n: Int, arrays: Buffer): Unit {
+        val intBuffer = arrays.directIntBuffer
+        gl.glGenVertexArrays(n, intBuffer)
+        if (intBuffer[0] <= 0) {
+            val error = gl.glGetError()
+            println("ERROR: genVertexArray: count=$n, error=${KmlGl.errorString(error)}, firstBuffer=${intBuffer[0]}")
+            isVertexArraysSupported = false
+            arrays.setInt32(0, -1)
+            return
+        }
+    }
+    override fun deleteVertexArrays(n: Int, arrays: Buffer): Unit {
+        val intBuffer = arrays.directIntBuffer
+        gl.glDeleteVertexArrays(n, arrays.directIntBuffer)
+        println("deleteVertexArrays, $n: " + intBuffer[0])
+    }
     override fun bindVertexArray(array: Int): Unit { gl.glBindVertexArray(array) }
 }
 
