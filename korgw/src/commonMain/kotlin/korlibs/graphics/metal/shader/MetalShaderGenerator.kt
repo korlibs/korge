@@ -73,12 +73,11 @@ class MetalShaderGenerator(
 
     private fun Indenter.declareVertexInputStructures() {
         bufferLayouts.vertexInputStructure
-            .map { it.attributes }
-            .map { it.toMetalShaderStructureGeneratorAttributes() }
-            .forEachIndexed { index, attributes ->
+            .map { (index, attributes) -> index to attributes.attributes.toMetalShaderStructureGeneratorAttributes()}
+            .forEach { (index, attributes) ->
                 MetalShaderStructureGenerator.generate(
                     indenter = this,
-                    name = "VertexInput$index",
+                    name = "Buffer$index",
                     attributes = attributes
                 )
             }

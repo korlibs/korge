@@ -20,11 +20,16 @@ class MetalShaderGeneratorTest {
     }
 
     private val emptyBufferInputLayouts = MetalShaderBufferInputLayouts(listOf(), listOf())
-    private val colorAndTextureBufferInputLayouts = MetalShaderBufferInputLayouts(
+    private val bufferInputLayoutsWithComplexLayout = MetalShaderBufferInputLayouts(
         vertexLayouts = listOf(
+            VertexLayout(a_Pos),
             VertexLayout(a_Tex, a_Col)
         ),
-        uniforms = listOf()
+        uniforms = listOf(
+            u_ProjMat,
+            u_ViewMat,
+            UB.u_ColorModifier.uniform
+        )
     )
 
     private val vertexShader = VertexShader {
@@ -38,17 +43,17 @@ class MetalShaderGeneratorTest {
     }
 
     @Test
-    fun check_that_vertex_metal_shader_is_correctly_generated_with_buffer_input_layout() {
+    fun check_that_vertex_metal_shader_is_correctly_generated_with_complex_layout_in_buffer_input() {
         // Given
         val metalResult = (vertexShader to fragmentShader)
             // When
-            .toNewMetalShaderStringResult(colorAndTextureBufferInputLayouts)
+            .toNewMetalShaderStringResult(bufferInputLayoutsWithComplexLayout)
 
         // Then
         assertThat(metalResult.result.trim()).isEqualTo("""
             #include <metal_stdlib>
             using namespace metal;
-            struct VertexInput0 {
+            struct Buffer1 {
             	float2 a_Tex;
             	uchar4 a_Col;
             };
@@ -59,14 +64,16 @@ class MetalShaderGeneratorTest {
             };
             vertex v2f vertexMain(
             	uint vertexId [[vertex_id]],
-                device const VertexInput0* vertexInput0 [[buffer(0)]]
-            	device const float2* a_Pos [[buffer(1)]],
+            	device const float2* a_Pos [[buffer(0)]],
+                device const Buffer1* buffer0 [[buffer(1)]]
             	constant float4x4& u_ProjMat [[buffer(2)]],
             	constant float4x4& u_ViewMat [[buffer(3)]]
             ) {
             	v2f out;
-            	v_Tex = vertexInput0[vertexId].a_Tex;
-            	out.v_Col = vertexInput0[vertexId].a_Col;
+                val a_Tex = buffer0[vertexId].a_Tex;
+                val a_Col = buffer0[vertexId].a_Col;
+            	v_Tex = a_Tex;
+            	out.v_Col = a_Col;
             	out.position = ((u_ProjMat * u_ViewMat) * float4(a_Pos[vertexId], 0.0, 1.0));
             	return out;
             }

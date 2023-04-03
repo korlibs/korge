@@ -8,7 +8,9 @@ data class MetalShaderBufferInputLayouts(
 ) {
 
     val vertexInputStructure by lazy {
-        vertexLayouts.filter { it.items.size >= 2 }
+        vertexLayouts
+            .mapIndexed { index, attributes -> index to attributes }
+            .filter { (_, attributes) -> attributes.items.size >= 2 }
     }
 
     fun MetalShaderGenerator.computeInputBuffers(): Lazy<MutableList<List<VariableWithOffset>>> = lazy {

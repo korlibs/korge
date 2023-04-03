@@ -41,7 +41,7 @@ class AGBuffer : AGObject() {
     // @TODO: This will allow to upload chunks of uniform buffers for example.
     // glBufferData & glBufferSubData
     fun upload(data: ByteArray, offset: Int = 0, length: Int = data.size - offset): AGBuffer = upload(Int8Buffer(data, offset, length).buffer)
-    fun upload(data: UByteArray, offset: Int = 0, length: Int = data.size - offset): AGBuffer = upload(Uint8Buffer(data, offset, length).buffer)
+    fun upload(data: UByteArray): AGBuffer = upload(Uint8Buffer(data).buffer)
     fun upload(data: FloatArray, offset: Int = 0, length: Int = data.size - offset): AGBuffer = upload(Float32Buffer(data, offset, length).buffer)
     fun upload(data: IntArray, offset: Int = 0, length: Int = data.size - offset): AGBuffer = upload(Int32Buffer(data, offset, length).buffer)
     fun upload(data: ShortArray, offset: Int = 0, length: Int = data.size - offset): AGBuffer = upload(Int16Buffer(data, offset, length).buffer)

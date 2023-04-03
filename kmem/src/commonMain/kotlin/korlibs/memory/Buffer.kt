@@ -212,7 +212,7 @@ value class Uint8Buffer(override val buffer: Buffer) : TypedBuffer, BaseIntBuffe
     constructor(data: UByteArrayInt, offset: Int = 0, size: Int = data.size - offset) : this(Buffer(size).also { it.setArrayUInt8(0, data, offset, size) })
     companion object {
         operator fun invoke(data: ByteArray) = Uint8Buffer(UByteArrayInt(data))
-        operator fun invoke(data: UByteArray, offset: Int = 0, size: Int = data.size - offset) = Uint8Buffer(UByteArrayInt(data.toByteArray()), offset, size)
+        operator fun invoke(data: UByteArray) = Uint8Buffer(UByteArrayInt(data.toByteArray()))
     }
 
     override val size: Int get() = buffer.sizeInBytes
