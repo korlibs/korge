@@ -43,21 +43,16 @@ internal object GLShaderCompiler {
     private fun String.replaceVersion(version: Int) = this.replace("#version 100", "#version $version")
 
     // @TODO: Prevent leaks if we throw exceptions, we should free resources
-    fun programCreate(gl: KmlGl, config: GlslConfig, program: Program, glSlVersion: Int? = null, debugName: String?): GLProgramInfo {
+    fun programCreate(gl: KmlGl, config: GlslConfig, program: Program, debugName: String?): GLProgramInfo {
         val id = gl.createProgram()
 
         //println("GL_SHADING_LANGUAGE_VERSION: $glslVersionInt : $glslVersionString")
 
-        val guessedGlSlVersion = glSlVersion ?: gl.versionInt
-        val usedGlSlVersion = GlslGenerator.FORCE_GLSL_VERSION?.toIntOrNull()
-            ?: when (guessedGlSlVersion) {
-                460 -> 460
-                in 300..450 -> 100
-                else -> guessedGlSlVersion
-            }
+        val guessedGlSlVersion = gl.versionInt
+        val usedGlSlVersion = GlslGenerator.FORCE_GLSL_VERSION ?: guessedGlSlVersion
 
         if (GlslGenerator.DEBUG_GLSL) {
-            logger.trace { "GLSL version: requested=$glSlVersion, guessed=$guessedGlSlVersion, forced=${GlslGenerator.FORCE_GLSL_VERSION}. used=$usedGlSlVersion" }
+            logger.trace { "GLSL version: usedGlSlVersion=$usedGlSlVersion, guessed=$guessedGlSlVersion, forced=${GlslGenerator.FORCE_GLSL_VERSION}. used=$usedGlSlVersion" }
         }
 
         val (

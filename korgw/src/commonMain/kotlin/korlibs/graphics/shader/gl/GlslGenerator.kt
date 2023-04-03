@@ -21,7 +21,10 @@ data class GlslConfig constructor(
     }
 
     //val newGlSlVersion: Boolean get() = version > 120
-    val newGlSlVersion: Boolean get() = !compatibility
+    val newGlSlVersion: Boolean get() {
+        if (variant.isES) return glslVersion >= 300
+        return !compatibility
+    }
 
     val useUniformBlocks: Boolean get() = ENABLE_UNIFORM_BLOCKS && newGlSlVersion
     //val useUniformBlocks: Boolean get() = false
@@ -31,7 +34,7 @@ data class GlslConfig constructor(
         val DEFAULT_VERSION: Int = 100
         val FRAGCOLOR: String = "fragColor"
         val GL_FRAGCOLOR: String = "gl_FragColor"
-        val FORCE_GLSL_VERSION: String? get() = Environment["FORCE_GLSL_VERSION"]
+        val FORCE_GLSL_VERSION: Int? get() = Environment["FORCE_GLSL_VERSION"]?.replace(".", "")?.toIntOrNull()
         val DEBUG_GLSL: Boolean get() = Environment["DEBUG_GLSL"] == "true"
     }
 
@@ -90,7 +93,7 @@ class GlslGenerator constructor(
 
         val NAME: String get() = GlslConfig.NAME
         val DEFAULT_VERSION: Int get() = GlslConfig.DEFAULT_VERSION
-        val FORCE_GLSL_VERSION: String? get() = GlslConfig.FORCE_GLSL_VERSION
+        val FORCE_GLSL_VERSION: Int? get() = GlslConfig.FORCE_GLSL_VERSION
         val DEBUG_GLSL: Boolean get() = GlslConfig.DEBUG_GLSL
     }
 
@@ -130,10 +133,11 @@ class GlslGenerator constructor(
         //}
 
         val result = Indenter {
-            if (config.newGlSlVersion) {
+            if (!config.compatibility) {
                 val suffix = if (config.variant.isES) " es" else ""
                 line("#version ${config.glslVersion}$suffix")
             }
+            line("/* glslVersion=${config.glslVersion}, newGlSlVersion=${config.newGlSlVersion}, compatibility=${config.compatibility} */")
             line("#extension GL_OES_standard_derivatives : enable")
             line("#ifdef GL_ES")
             line("precision mediump float;")

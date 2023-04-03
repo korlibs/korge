@@ -108,11 +108,7 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
         }
 
         val nprogram: GLBaseProgram = map.getOrPut(program) {
-            GLBaseProgram(glGlobalState, GLShaderCompiler.programCreate(
-                gl,
-                this.glslConfig.copy(glslVersion = gl.versionInt),
-                program, debugName = program.name
-            )).also { baseProgram ->
+            GLBaseProgram(glGlobalState, GLShaderCompiler.programCreate(gl, this.glslConfig, program, debugName = program.name)).also { baseProgram ->
                 baseProgram.use()
 
                 val programInfo = baseProgram.programInfo
