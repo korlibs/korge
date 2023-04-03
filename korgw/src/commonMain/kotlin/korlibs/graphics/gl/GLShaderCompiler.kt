@@ -118,8 +118,7 @@ internal object GLShaderCompiler {
 @SharedImmutable
 val KmlGl.versionString by Extra.PropertyThis<KmlGl, String> {
     when {
-        this.webgl2 -> "3.00"
-        this.webgl -> "1.00"
+        this.variant.isWebGL -> if (this.variant.version == 1) "1.00" else "3.00"
         else -> getString(SHADING_LANGUAGE_VERSION)
     }
 }

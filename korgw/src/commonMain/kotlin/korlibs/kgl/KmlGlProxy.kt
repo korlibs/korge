@@ -5,6 +5,7 @@
 package korlibs.kgl
 
 import korlibs.graphics.*
+import korlibs.graphics.shader.gl.*
 import korlibs.image.bitmap.*
 import korlibs.io.lang.*
 import korlibs.io.util.*
@@ -1147,11 +1148,7 @@ open class KmlGlProxy(parent: KmlGl) : KmlGlFastProxy(parent) {
     }
 }
 open class KmlGlFastProxy(var parent: KmlGl) : KmlGl() {
-    override val gles: Boolean get() = parent.gles
-    override val linux: Boolean get() = parent.linux
-    override val android: Boolean get() = parent.android
-    override val webgl: Boolean get() = parent.webgl
-    override val webgl2: Boolean get() = parent.webgl2
+    override val variant: GLVariant get() = parent.variant
     override val root: KmlGl get() = parent.root
 
     override val graphicExtensions: Set<String> get() = parent.graphicExtensions

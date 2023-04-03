@@ -1,5 +1,6 @@
 package korlibs.kgl
 
+import korlibs.graphics.shader.gl.*
 import korlibs.image.bitmap.*
 import korlibs.image.format.*
 import korlibs.io.concurrent.atomic.*
@@ -8,6 +9,8 @@ import kotlinx.cinterop.*
 import kotlin.reflect.*
 
 abstract class NativeBaseKmlGl : KmlGlWithExtensions() {
+    override val variant: GLVariant get() = GLVariant.DESKTOP
+
     val tempBufferAddress = NBufferTempAddress()
 
     override fun activeTexture(texture: Int): Unit = tempBufferAddress { glActiveTextureExt(texture.convert()) }

@@ -5,12 +5,15 @@
 package korlibs.kgl
 
 import korlibs.datastructure.*
+import korlibs.graphics.shader.gl.*
 import korlibs.image.bitmap.*
 import korlibs.memory.*
 
 class KmlGlDummy : KmlGlDummyBase()
 
 open class KmlGlDummyBase : KmlGl() {
+    override val variant: GLVariant get() = GLVariant.DESKTOP_GENERIC
+
     class Allocator(val base: Int = 0) {
         var id = base
         var pool = Pool { ++id }

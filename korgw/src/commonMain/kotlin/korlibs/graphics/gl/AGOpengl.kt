@@ -48,7 +48,7 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
         //gl.finish()
         selectTextureUnitTemp(TEMP_TEXTURE_UNIT, setToNullLater = true) {
             textureBind(texture, AGTextureTargetKind.TEXTURE_2D)
-            if (!gl.webgl) {
+            if (!gl.variant.isWebGL) {
                 gl.texParameteri(gl.TEXTURE_2D, KmlGl.TEXTURE_BASE_LEVEL, 0)
                 gl.texParameteri(gl.TEXTURE_2D, KmlGl.TEXTURE_MAX_LEVEL, 0)
             }
@@ -294,7 +294,7 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
         _currentViewportSize = AGSize.INVALID
         textureParams.fastForEach { it.reset() }
         gl.activeTexture(KmlGl.TEXTURE0)
-        if (!gl.webgl) {
+        if (!gl.variant.isWebGL) {
             gl.texParameteri(gl.TEXTURE_2D, KmlGl.TEXTURE_BASE_LEVEL, 0)
             gl.texParameteri(gl.TEXTURE_2D, KmlGl.TEXTURE_MAX_LEVEL, 0)
         }
@@ -766,7 +766,7 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
                     //println("_textureUpdate: texId=$textureId, id=${tex?.id}, glId=${tex?.glId}, target=$target, source=${source.width}x${source.height}")
                     //println(buffer)
                     val internalFormat = when {
-                        isFloat && (gl.webgl2 || !gl.webgl) -> KmlGl.RGBA32F
+                        isFloat && (gl.variant.isWebGL && gl.variant.version >= 2) -> KmlGl.RGBA32F
                         //isFloat && (gl.webgl) -> KmlGl.FLOAT
                         //isFloat && (gl.webgl) -> KmlGl.RGBA
                         else -> type
@@ -778,14 +778,14 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
                     }
 
 
-                    if (gl.linux) {
+                    if (gl.variant.os.isLinux) {
                         //println("prepareTexImage2D")
                         //gl.pixelStorei(GL_UNPACK_LSB_FIRST, KmlGl.TRUE)
                         gl.pixelStorei(KmlGl.UNPACK_LSB_FIRST, KmlGl.GFALSE)
                         gl.pixelStorei(KmlGl.UNPACK_SWAP_BYTES, KmlGl.GTRUE)
                     }
 
-                    if (!gl.webgl) {
+                    if (!gl.variant.isWebGL) {
                         gl.texParameteri(texTarget, KmlGl.TEXTURE_BASE_LEVEL, 0)
                         gl.texParameteri(texTarget, KmlGl.TEXTURE_MAX_LEVEL, 0)
                     }

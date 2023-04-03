@@ -1,6 +1,6 @@
 package korlibs.memory
 
-import korlibs.memory.internal.currentOs
+import korlibs.memory.internal.*
 
 enum class Os {
     UNKNOWN, MACOSX, IOS, LINUX, WINDOWS, ANDROID, TVOS, WATCHOS;
@@ -19,6 +19,7 @@ enum class Os {
     val isPosix: Boolean get() = !isWindows
 
     companion object {
+        val VALUES = values()
         val CURRENT: Os get() = currentOs
     }
 }

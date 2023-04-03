@@ -5,6 +5,7 @@
 package korlibs.kgl
 
 import korlibs.graphics.gl.*
+import korlibs.graphics.shader.gl.*
 import korlibs.image.bitmap.*
 import korlibs.image.format.*
 import korlibs.memory.*
@@ -46,9 +47,7 @@ class KmlGlJsCanvas(val canvas: HTMLCanvasElement, val glOpts: dynamic) : KmlGlW
             error("Can't get webgl context")
         }
 
-    override val webgl: Boolean get() = true
-    override val webgl2: Boolean get() = webglVersion >= 2
-
+    override val variant: GLVariant get() = GLVariant.JS_WEBGL(webglVersion)
     private val items = arrayOfNulls<Any>(8 * 1024)
     private val freeList = (1 until items.size).reversed().toMutableList()
     private fun <T> T.alloc(): Int {

@@ -1,29 +1,20 @@
-import korlibs.kgl.KmlGl
-import korlibs.kgl.checkedIf
-import korlibs.graphics.gl.AGOpengl
-import korlibs.event.Key
-import korlibs.event.KeyEvent
-import korlibs.event.MouseButton
-import korlibs.event.MouseEvent
-import korlibs.render.EventLoopGameWindow
+
+import com.sun.jna.*
+import korlibs.event.*
+import korlibs.graphics.gl.*
+import korlibs.graphics.shader.gl.*
+import korlibs.kgl.*
+import korlibs.render.*
 import korlibs.render.platform.*
-import korlibs.render.sdl2.SDLKeyCode
-import korlibs.render.sdl2.SDL_Keycode_Table
-import korlibs.render.sdl2.jna.ISDL
-import korlibs.render.sdl2.jna.SDL_GLContext
-import korlibs.render.sdl2.jna.SDL_Renderer
-import korlibs.render.sdl2.jna.SDL_Window
+import korlibs.render.sdl2.*
+import korlibs.render.sdl2.jna.*
 import korlibs.render.sdl2.jna.enums.*
-import korlibs.render.sdl2.jna.events.SDL_Event
-import korlibs.render.sdl2.jna.structs.SDL_DisplayMode
-import com.sun.jna.Library
-import com.sun.jna.Native
-import com.sun.jna.Pointer
+import korlibs.render.sdl2.jna.events.*
+import korlibs.render.sdl2.jna.structs.*
 import kotlin.system.*
 
 open class SDLKmlGl : NativeKgl(SDL) {
-    override val gles: Boolean = true
-    override val linux: Boolean = true
+    override val variant: GLVariant get() = GLVariant.JVM_SDL
 }
 
 interface GL : INativeGL, Library

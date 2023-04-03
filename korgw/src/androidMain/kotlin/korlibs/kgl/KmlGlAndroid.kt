@@ -6,6 +6,7 @@ package korlibs.kgl
 
 import android.opengl.GLES30.*
 import android.os.*
+import korlibs.graphics.shader.gl.*
 import korlibs.image.bitmap.*
 import korlibs.image.format.*
 import korlibs.memory.*
@@ -13,9 +14,7 @@ import korlibs.memory.Buffer
 import java.nio.*
 
 class KmlGlAndroid(val clientVersion: () -> Int) : KmlGlWithExtensions() {
-    override val gles: Boolean = true
-    override val linux: Boolean = true
-    override val android: Boolean = true
+    override val variant: GLVariant get() = GLVariant.ANDROID
 
     override fun activeTexture(texture: Int): Unit = glActiveTexture(texture)
     override fun attachShader(program: Int, shader: Int): Unit = glAttachShader(program, shader)

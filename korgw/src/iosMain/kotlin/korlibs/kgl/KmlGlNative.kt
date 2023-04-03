@@ -4,6 +4,7 @@
 
 package korlibs.kgl
 
+import korlibs.graphics.shader.gl.*
 import korlibs.image.bitmap.*
 import korlibs.image.format.*
 import korlibs.memory.*
@@ -14,8 +15,8 @@ internal actual fun glGetProcAddressAnyOrNull(name: String): COpaquePointer? {
     TODO()
 }
 
-actual class KmlGlNative constructor(override val gles: Boolean) : NativeBaseKmlGl() {
-    actual constructor() : this(gles = false)
+actual class KmlGlNative actual constructor() : NativeBaseKmlGl() {
+    override val variant: GLVariant get() = GLVariant.IOS
     override fun activeTexture(texture: Int): Unit = tempBufferAddress { glActiveTexture(texture.convert()) }
     override fun attachShader(program: Int, shader: Int): Unit = tempBufferAddress { glAttachShader(program.convert(), shader.convert()) }
     override fun bindAttribLocation(program: Int, index: Int, name: String): Unit = memScoped { tempBufferAddress { glBindAttribLocation(program.convert(), index.convert(), name) } }

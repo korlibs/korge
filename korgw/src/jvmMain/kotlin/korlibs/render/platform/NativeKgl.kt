@@ -1,12 +1,15 @@
 package korlibs.render.platform
 
 import com.sun.jna.*
+import korlibs.graphics.shader.gl.*
 import korlibs.image.awt.*
 import korlibs.image.bitmap.*
 import korlibs.kgl.*
 import korlibs.memory.*
 
 open class NativeKgl constructor(private val gl: INativeGL) : KmlGlWithExtensions() {
+    override val variant: GLVariant = GLVariant.JVM
+
     override fun activeTexture(texture: Int): Unit = gl.glActiveTexture(texture)
     override fun attachShader(program: Int, shader: Int): Unit = gl.glAttachShader(program, shader)
     override fun bindAttribLocation(program: Int, index: Int, name: String): Unit = gl.glBindAttribLocation(program, index, name)
