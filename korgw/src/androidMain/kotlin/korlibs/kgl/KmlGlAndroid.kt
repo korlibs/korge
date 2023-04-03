@@ -191,7 +191,8 @@ class KmlGlAndroid(val clientVersion: () -> Int) : KmlGlWithExtensions() {
         }
     }
 
-    override val isUniformBuffersSupported: Boolean get() = true
+    //override val isUniformBuffersSupported: Boolean get() = true
+    override val isUniformBuffersSupported: Boolean get() = false
 
     override fun bindBufferRange(target: Int, index: Int, buffer: Int, offset: Int, size: Int) {
         glBindBufferRange(target, index, buffer, offset, size)
