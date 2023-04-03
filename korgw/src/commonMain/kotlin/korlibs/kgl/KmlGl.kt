@@ -6,14 +6,24 @@ package korlibs.kgl
 
 import korlibs.datastructure.*
 import korlibs.graphics.*
+import korlibs.graphics.shader.gl.*
 import korlibs.memory.*
 
 abstract class KmlGl : Extra by Extra.Mixin(), IKmlGl, AGFeatures {
+    @Deprecated("Replace with variant")
     open val gles: Boolean get() = false
+    @Deprecated("Replace with variant")
     open val linux: Boolean get() = false
+    @Deprecated("Replace with variant")
     open val android: Boolean get() = Platform.isAndroid
+    @Deprecated("Replace with variant")
     open val webgl: Boolean get() = false
+    @Deprecated("Replace with variant")
     open val webgl2: Boolean get() = false
+    open val variant: GLVariant get() = when {
+        android || webgl || webgl2 || gles -> GLVariant.ES
+        else -> GLVariant.DESKTOP
+    }
 
     open val root: KmlGl get() = this
     open var info: ContextInfo = ContextInfo()

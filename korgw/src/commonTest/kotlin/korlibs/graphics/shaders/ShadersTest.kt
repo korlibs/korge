@@ -34,7 +34,7 @@ class ShadersTest {
     fun testGlslGenerationRaw() {
         val vs = VertexShaderRawGlSl("hello")
 
-        assertEquals("hello", vs.toNewGlslString(GlslConfig()))
+        assertEquals("hello", vs.toNewGlslString(GlslConfig(GLVariant.DESKTOP)))
     }
 
     val fs by lazy {
@@ -130,10 +130,10 @@ class ShadersTest {
         """.trimIndent(), fragment, version = 330)
     }
 
-    fun assertEqualsShader(expected: String, shader: Shader, version: Int = GlslGenerator.DEFAULT_VERSION, gles: Boolean = false, stripDirectives: Boolean = true) {
+    fun assertEqualsShader(expected: String, shader: Shader, version: Int = GlslGenerator.DEFAULT_VERSION, variant: GLVariant = GLVariant.DESKTOP, stripDirectives: Boolean = true) {
         assertEquals(
             expected.trimEnd(),
-            shader.toNewGlslStringResult(gles = gles, version = version).result.lines().filter {
+            shader.toNewGlslStringResult(GlslConfig(variant, glslVersion = version)).result.lines().filter {
                 val isDirective = it.startsWith("#") || it.startsWith("precision ")
                 if (stripDirectives) !isDirective else true
             }.joinToString("\n").trimEnd().replace("\t", "    ")

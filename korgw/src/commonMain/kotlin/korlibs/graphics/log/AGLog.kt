@@ -1,13 +1,10 @@
 package korlibs.graphics.log
 
-import korlibs.datastructure.linkedHashMapOf
-import korlibs.memory.*
+import korlibs.datastructure.*
 import korlibs.graphics.*
 import korlibs.graphics.shader.*
-import korlibs.graphics.shader.gl.GlslGenerator
-import korlibs.image.bitmap.Bitmap32
-import korlibs.image.color.RGBA
-import korlibs.io.annotations.KorInternal
+import korlibs.graphics.shader.gl.*
+import korlibs.io.annotations.*
 
 /*
 open class ComposedAG(val agBase: AG, val agExtra: AG) : AG(), AGFeatures by agBase {
@@ -172,9 +169,9 @@ open class AGBaseLog(width: Int = 640, height: Int = 480) : AGDummy(width, heigh
     }
     var shaderSourceId = 0
     val shaderSources = linkedHashMapOf<Shader, ShaderInfo>()
-    fun getShaderSource(shader: Shader, type: ShaderType): ShaderInfo {
+    fun getShaderSource(shader: Shader, shaderType: ShaderType, glVariant: GLVariant = GLVariant.DESKTOP): ShaderInfo {
         return shaderSources.getOrPut(shader) {
-            ShaderInfo(shader, ++shaderSourceId, GlslGenerator(type).generate(shader))
+            ShaderInfo(shader, ++shaderSourceId, GlslGenerator(shaderType, GlslConfig(glVariant)).generate(shader))
         }.also {
             it.requested++
         }

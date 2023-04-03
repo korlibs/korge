@@ -94,7 +94,7 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
 
     var shadingLanguageVersion: String? = null
 
-    private fun useProgram(program: Program, config: ProgramConfig = ProgramConfig.DEFAULT) {
+    private fun useProgram(program: Program) {
         //val map = if (config.externalTextureSampler) externalPrograms else normalPrograms
         val map = normalPrograms
 
@@ -110,7 +110,7 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
         val nprogram: GLBaseProgram = map.getOrPut(program) {
             GLBaseProgram(glGlobalState, GLShaderCompiler.programCreate(
                 gl,
-                this.glslConfig.copy(programConfig = config, shaderLanguageVersion = gl.versionInt),
+                this.glslConfig.copy(glslVersion = gl.versionInt),
                 program, debugName = program.name
             )).also { baseProgram ->
                 baseProgram.use()
@@ -184,10 +184,7 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
             //println("REUSING: currentVertexData=$currentVertexData, vertexData=$vertexData")
         }
 
-        useProgram(program, config = when {
-            //uniforms.useExternalSampler() -> ProgramConfig.EXTERNAL_TEXTURE_SAMPLER
-            else -> ProgramConfig.DEFAULT
-        })
+        useProgram(program)
         uniformsSet(
             //uniforms,
             uniformBlocks, textureUnits, program, frameBuffer
@@ -266,13 +263,7 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
 
     }
 
-    val glslConfig: GlslConfig by lazy {
-        GlslConfig(
-            webgl = gl.webgl,
-            gles = gl.gles,
-            android = gl.android,
-        )
-    }
+    val glslConfig: GlslConfig by lazy { GlslConfig(gl.variant) }
 
     private var currentVertexData: AGVertexArrayObject? = null
     private var currentBlending: AGBlending = AGBlending.INVALID

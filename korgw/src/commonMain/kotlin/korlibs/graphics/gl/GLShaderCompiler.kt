@@ -66,7 +66,7 @@ internal object GLShaderCompiler {
             finalConfig
         ) = createShaderWithConfigs(
             gl, program, debugName,
-            listOf(false, true).map { compat -> config.copy(version = usedGlSlVersion, compatibility = compat) }
+            listOf(false, true).map { compat -> config.copy(glslVersion = usedGlSlVersion, compatibility = compat) }
         )
 
         for (attr in program.attributes) {

@@ -7,13 +7,9 @@ import korlibs.io.util.*
 import korlibs.logger.*
 
 data class GlslConfig constructor(
-    val webgl: Boolean = false,
-    val gles: Boolean = true,
-    val version: Int = DEFAULT_VERSION,
-    val shaderLanguageVersion: Int = -1,
+    val variant: GLVariant,
+    val glslVersion: Int = -1,
     val compatibility: Boolean = true,
-    val android: Boolean = false,
-    val programConfig: ProgramConfig = ProgramConfig.DEFAULT
 ) {
     fun getFunctionName(name: String): String {
         if (compatibility) return name
@@ -87,7 +83,7 @@ class GlobalsProgramVisitor : Program.Visitor<Unit>(Unit) {
 
 class GlslGenerator constructor(
     val kind: ShaderType,
-    override val config: GlslConfig = GlslConfig()
+    override val config: GlslConfig
 ) : BaseGlslGenerator {
     companion object {
         private val logger = Logger("GlslGenerator")
@@ -98,12 +94,7 @@ class GlslGenerator constructor(
         val DEBUG_GLSL: Boolean get() = GlslConfig.DEBUG_GLSL
     }
 
-    val webgl: Boolean get() = config.webgl
-    val gles: Boolean get() = config.gles
-    val version: Int get() = config.version
     val compatibility: Boolean get() = config.compatibility
-    val android: Boolean get() = config.android
-
 
     data class Result(
         val generator: GlslGenerator,
@@ -139,48 +130,9 @@ class GlslGenerator constructor(
         //}
 
         val result = Indenter {
-            when {
-                webgl -> line("#version ${config.shaderLanguageVersion} es")
-                gles -> {
-                    if (!android) {
-                        if (compatibility) {
-                            line("#version $version compatibility")
-                        } else {
-                            line("#version $version es")
-                        }
-                    }
-                    //if (config.programConfig.externalTextureSampler) {
-                    //    line("#extension GL_OES_EGL_image_external : require")
-                    //}
-                    line("#ifdef GL_ES")
-                    indent {
-                        line("precision highp float;")
-                        line("precision highp int;")
-                        line("precision lowp sampler2D;")
-                        line("precision lowp samplerCube;")
-                    }
-                    line("#else")
-                    indent {
-                        line("  #define highp ")
-                        line("  #define mediump ")
-                        line("  #define lowp ")
-                    }
-                    //indent {
-                    //    line("precision highp float;")
-                    //    line("precision highp int;")
-                    //}
-                    line("#endif")
-                    //line("precision highp float;")
-                    //line("precision highp int;")
-                    //line("precision lowp sampler2D;")
-                    //line("precision lowp samplerCube;")
-                }
-                else -> {
-                    //if (config.newGlSlVersion && !compatibility && config.shaderLanguageVersion >= 310) {
-                    if (config.newGlSlVersion) {
-                        line("#version ${config.shaderLanguageVersion} core")
-                    }
-                }
+            if (config.newGlSlVersion) {
+                val suffix = if (config.variant.isES) " es" else ""
+                line("#version ${config.glslVersion}$suffix")
             }
             line("#extension GL_OES_standard_derivatives : enable")
             line("#ifdef GL_ES")
@@ -192,7 +144,7 @@ class GlslGenerator constructor(
             for (it in types.attributes) {
                 // https://www.khronos.org/opengl/wiki/Layout_Qualifier_(GLSL)
                 val layout = when {
-                    config.newGlSlVersion && config.shaderLanguageVersion >= 410 -> "layout(location = ${it.fixedLocation}) "
+                    config.newGlSlVersion && config.glslVersion >= 410 -> "layout(location = ${it.fixedLocation}) "
                     else -> ""
                 }
 
@@ -249,7 +201,7 @@ class GlslGenerator constructor(
             }
         }.toString().also {
             if (GlslConfig.DEBUG_GLSL) {
-                logger.info { "GlSlGenerator.version: $version" }
+                logger.info { "GlSlGenerator.version: ${config.glslVersion}" }
                 logger.debug { "GlSlGenerator:\n$it" }
             }
         }
@@ -386,7 +338,7 @@ interface BaseGlslGenerator {
     private fun errorType(type: VarType): Nothing = invalidOp("Don't know how to serialize type $type")
 
     fun precToString(prec: Precision) = when {
-        !config.gles -> ""
+        !config.variant.isES -> ""
         else -> when (prec) {
             Precision.DEFAULT -> ""
             Precision.LOW -> "lowp "
