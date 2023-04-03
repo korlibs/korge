@@ -6,10 +6,10 @@ package korlibs.kgl
 
 import android.opengl.GLES30.*
 import android.os.*
-import korlibs.memory.*
-import korlibs.memory.Buffer
 import korlibs.image.bitmap.*
 import korlibs.image.format.*
+import korlibs.memory.*
+import korlibs.memory.Buffer
 import java.nio.*
 
 class KmlGlAndroid(val clientVersion: () -> Int) : KmlGlWithExtensions() {
@@ -189,5 +189,33 @@ class KmlGlAndroid(val clientVersion: () -> Int) : KmlGlWithExtensions() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
             glVertexAttribDivisor(index, divisor)
         }
+    }
+
+    override val isUniformBuffersSupported: Boolean get() = true
+
+    override fun bindBufferRange(target: Int, index: Int, buffer: Int, offset: Int, size: Int) {
+        glBindBufferRange(target, index, buffer, offset, size)
+    }
+
+    override fun getUniformBlockIndex(program: Int, name: String): Int {
+        return glGetUniformBlockIndex(program, name)
+    }
+
+    override fun uniformBlockBinding(program: Int, uniformBlockIndex: Int, uniformBlockBinding: Int) {
+        glUniformBlockBinding(program, uniformBlockIndex, uniformBlockBinding)
+    }
+
+    override val isVertexArraysSupported: Boolean get() = true
+
+    override fun genVertexArrays(n: Int, arrays: Buffer) {
+        glGenVertexArrays(n, arrays.directIntBuffer)
+    }
+
+    override fun deleteVertexArrays(n: Int, arrays: Buffer) {
+        glDeleteVertexArrays(n, arrays.directIntBuffer)
+    }
+
+    override fun bindVertexArray(array: Int) {
+        glBindVertexArray(array)
     }
 }

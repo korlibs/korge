@@ -1,5 +1,6 @@
 package korlibs.graphics.shader.gl
 
+import korlibs.graphics.*
 import korlibs.graphics.gl.*
 import korlibs.graphics.shader.*
 import korlibs.io.lang.*
@@ -8,6 +9,7 @@ import korlibs.logger.*
 
 data class GlslConfig constructor(
     val variant: GLVariant,
+    val features: AGFeatures,
     val glslVersion: Int = -1,
     val compatibility: Boolean = true,
 ) {
@@ -26,7 +28,7 @@ data class GlslConfig constructor(
         return !compatibility
     }
 
-    val useUniformBlocks: Boolean get() = ENABLE_UNIFORM_BLOCKS && newGlSlVersion
+    val useUniformBlocks: Boolean get() = ENABLE_UNIFORM_BLOCKS && newGlSlVersion && features.isUniformBuffersSupported
     //val useUniformBlocks: Boolean get() = false
 
     companion object {

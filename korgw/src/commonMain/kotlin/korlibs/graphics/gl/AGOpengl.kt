@@ -259,7 +259,7 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
 
     }
 
-    val glslConfig: GlslConfig by lazy { GlslConfig(gl.variant) }
+    val glslConfig: GlslConfig by lazy { GlslConfig(gl.variant, gl) }
 
     private var currentVertexData: AGVertexArrayObject? = null
     private var currentBlending: AGBlending = AGBlending.INVALID

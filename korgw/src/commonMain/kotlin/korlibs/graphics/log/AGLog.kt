@@ -171,7 +171,7 @@ open class AGBaseLog(width: Int = 640, height: Int = 480) : AGDummy(width, heigh
     val shaderSources = linkedHashMapOf<Shader, ShaderInfo>()
     fun getShaderSource(shader: Shader, shaderType: ShaderType, glVariant: GLVariant = GLVariant.DESKTOP): ShaderInfo {
         return shaderSources.getOrPut(shader) {
-            ShaderInfo(shader, ++shaderSourceId, GlslGenerator(shaderType, GlslConfig(glVariant)).generate(shader))
+            ShaderInfo(shader, ++shaderSourceId, GlslGenerator(shaderType, GlslConfig(glVariant, this)).generate(shader))
         }.also {
             it.requested++
         }

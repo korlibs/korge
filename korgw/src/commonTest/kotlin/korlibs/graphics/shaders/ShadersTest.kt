@@ -1,6 +1,7 @@
 package korlibs.graphics.shaders
 
 import korlibs.graphics.*
+import korlibs.graphics.log.*
 import korlibs.graphics.shader.*
 import korlibs.graphics.shader.gl.*
 import kotlin.test.*
@@ -34,7 +35,7 @@ class ShadersTest {
     fun testGlslGenerationRaw() {
         val vs = VertexShaderRawGlSl("hello")
 
-        assertEquals("hello", vs.toNewGlslString(GlslConfig(GLVariant.DESKTOP)))
+        assertEquals("hello", vs.toNewGlslString(GlslConfig(GLVariant.DESKTOP, AGFeatures.Mutable())))
     }
 
     val fs by lazy {
