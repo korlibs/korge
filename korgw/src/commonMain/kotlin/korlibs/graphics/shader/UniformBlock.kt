@@ -67,13 +67,15 @@ open class UniformBlock(val fixedLocation: Int) {
     protected fun vec2(name: String? = null): Gen<Vector2> = gen(name, VarType.Float2, 8, 8)
 
     // @TODO: Some drivers get this wrong
-    //protected fun vec3(name: String? = null): Gen<Vector3> = gen(name, VarType.Float3, 16, 4)
+    //protected fun ivec3(name: String? = null): Gen<Vector3> = gen(name, VarType.Float3, 16, 16)
+    //protected fun vec3(name: String? = null): Gen<Vector3> = gen(name, VarType.Float3, 16, 16)
 
     protected fun ivec4(name: String? = null): Gen<Vector4Int> = gen(name, VarType.SInt4, 16, 16)
     protected fun vec4(name: String? = null): Gen<Vector4> = gen(name, VarType.Float4, 16, 16)
 
-    protected fun mat3(name: String? = null): Gen<Matrix4> = gen(name, VarType.Mat3, 36, 48)
-    protected fun mat4(name: String? = null): Gen<Matrix4> = gen(name, VarType.Mat4, 64, 64)
+    // @TODO: Some problems implementing mat3 layout in UBOs
+    protected fun mat3(name: String? = null): Gen<Matrix4> = gen(name, VarType.Mat3, 48, 16)
+    protected fun mat4(name: String? = null): Gen<Matrix4> = gen(name, VarType.Mat4, 64, 16)
     //protected fun <T> array(size: Int, gen: Gen<T>): Gen<Array<T>> = TODO()
 
     fun <T> gen(name: String? = null, type: VarType, size: Int, align: Int = size): Gen<T> =
@@ -133,15 +135,15 @@ class UniformsRef(
     operator fun set(uniform: TypedUniform<Matrix4>, value: Matrix4) {
         when (uniform.type) {
             VarType.Mat4 -> set(uniform, value, Matrix4.INDICES_BY_COLUMNS_4x4)
-            VarType.Mat3 -> set(uniform, value, Matrix4.INDICES_BY_COLUMNS_3x3)
+            VarType.Mat3 -> set(uniform, value, Matrix4.INDICES_BY_COLUMNS_4x4, max = 12)
             else -> TODO()
         }
     }
 
-    fun set(uniform: TypedUniform<Matrix4>, value: Matrix4, indices: IntArray) {
+    fun set(uniform: TypedUniform<Matrix4>, value: Matrix4, indices: IntArray, max: Int = indices.size) {
         getOffset(uniform).also {
             //println("SET OFFSET: $it")
-            for (n in 0 until indices.size) buffer.setUnalignedFloat32(it + n * 4, value.getAtIndex(indices[n]))
+            for (n in 0 until max) buffer.setUnalignedFloat32(it + n * 4, value.getAtIndex(indices[n]))
         }
     }
     fun set(uniform: TypedUniform<Matrix4>, value: FloatArray, indices: IntArray) {

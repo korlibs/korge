@@ -635,6 +635,8 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
         //}
     }
 
+    private val tempData = Buffer(3 * 3 * 4)
+
     private fun writeUniform(uniform: Uniform, programInfo: GLProgramInfo, data: Buffer, source: String) {
         val location = programInfo.getUniformLocation(gl, uniform.name)
         val uniformType = uniform.type
@@ -645,7 +647,10 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
         when (uniformType.kind) {
             VarKind.TFLOAT -> when (uniformType) {
                 VarType.Mat2 -> gl.uniformMatrix2fv(location, arrayCount, false, data)
-                VarType.Mat3 -> gl.uniformMatrix3fv(location, arrayCount, false, data)
+                VarType.Mat3 -> {
+                    for (n in 0 until 3) arraycopy(data, n * 16, tempData, n * 12, 12)
+                    gl.uniformMatrix3fv(location, arrayCount, false, tempData)
+                }
                 VarType.Mat4 -> gl.uniformMatrix4fv(location, arrayCount, false, data)
                 else -> when (uniformType.elementCount) {
                     1 -> gl.uniform1fv(location, arrayCount, data)
