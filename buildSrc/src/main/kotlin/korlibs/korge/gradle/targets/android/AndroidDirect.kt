@@ -140,7 +140,7 @@ fun Project.configureAndroidDirect(projectType: ProjectType, isKorge: Boolean) {
             }
             for (name in listOf("test", "testDebug", "testRelease", "androidTest", "androidTestDebug", "androidTestRelease")) {
                 maybeCreate(name).apply {
-                    assets.srcDirs("src/commonTest/resources",)
+                    assets.srcDirs("src/commonTest/resources")
                 }
             }
         }
