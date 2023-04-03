@@ -1,39 +1,23 @@
 package korlibs.render
 
-import korlibs.datastructure.Pool
-import korlibs.kgl.*
-import korlibs.time.measureTime
+import korlibs.datastructure.*
+import korlibs.event.*
 import korlibs.graphics.*
-
-import korlibs.logger.Logger
-import korlibs.memory.KmemGC
-import korlibs.memory.hasFlags
 import korlibs.graphics.gl.*
-import korlibs.event.ISoftKeyboardConfig
-import korlibs.event.Key
-import korlibs.event.KeyEvent
-import korlibs.event.SoftKeyboardConfig
-import korlibs.event.SoftKeyboardReturnKeyType
-import korlibs.event.SoftKeyboardType
 import korlibs.image.format.cg.*
+import korlibs.kgl.*
+import korlibs.logger.*
 import korlibs.math.geom.*
+import korlibs.memory.*
+import korlibs.time.*
 import kotlinx.cinterop.*
-import platform.CoreGraphics.CGPoint
-import platform.CoreGraphics.CGRect
-import platform.EAGL.EAGLContext
-import platform.EAGL.kEAGLRenderingAPIOpenGLES2
-import platform.Foundation.NSBundle
-import platform.Foundation.NSComparisonResult
-import platform.Foundation.NSFileManager
-import platform.Foundation.NSNotification
-import platform.Foundation.NSRange
-import platform.GLKit.GLKView
-import platform.GLKit.GLKViewController
-import platform.GLKit.GLKViewDrawableDepthFormat24
-import platform.GLKit.GLKViewDrawableStencilFormat8
-import platform.GameController.GCEventViewController
+import platform.CoreGraphics.*
+import platform.EAGL.*
+import platform.Foundation.*
+import platform.GLKit.*
+import platform.GameController.*
 import platform.UIKit.*
-import platform.darwin.NSInteger
+import platform.darwin.*
 
 // @TODO: Do not remove! Called from a generated .kt file : platforms/native-ios/bootstrap.kt
 @Suppress("unused", "UNUSED_PARAMETER")
@@ -349,7 +333,7 @@ open class IosGameWindow(
 ) : GameWindow() {
     override val dialogInterface = DialogInterfaceIos()
 
-    override val ag: AG = AGOpengl(KmlGlNative(gles = true).checkedIf(checked = false))
+    override val ag: AG = AGOpengl(KmlGlNative().checkedIf(checked = false))
 
     override val pixelsPerInch: Double get() = UIScreen.mainScreen.scale.toDouble() * 160.0
 
