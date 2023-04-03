@@ -1,5 +1,6 @@
 package korlibs.root
 
+import korlibs.*
 import korlibs.korge.gradle.*
 import korlibs.korge.gradle.module.*
 import korlibs.korge.gradle.targets.*
@@ -11,12 +12,9 @@ import korlibs.korge.gradle.targets.jvm.*
 import korlibs.korge.gradle.targets.native.*
 import korlibs.korge.gradle.util.*
 import korlibs.korge.gradle.util.create
-import korlibs.*
 import korlibs.kotlin
 import korlibs.modules.*
-import korlibs.tasks
 import org.gradle.api.*
-import org.gradle.api.Project
 import org.gradle.api.file.*
 import org.gradle.api.tasks.*
 import org.gradle.api.tasks.testing.*
@@ -25,7 +23,6 @@ import org.jetbrains.kotlin.gradle.targets.js.ir.*
 import org.jetbrains.kotlin.gradle.tasks.*
 import java.io.*
 import java.nio.file.*
-import kotlin.apply
 
 object RootKorlibsPlugin {
     @JvmStatic
@@ -641,37 +638,40 @@ object RootKorlibsPlugin {
                                 into(wwwFolder)
                             }
                             val compileDevelopmentExecutableKotlinJs = "compileDevelopmentExecutableKotlinJs"
-                            val runJs = createThis<Exec>("runJs") {
-                                group = "run"
-                                //dependsOn("jsBrowserDevelopmentRun")
-                                dependsOn(browserEsbuildResources)
-                                dependsOn("::$npmInstallEsbuild")
-                                dependsOn(compileDevelopmentExecutableKotlinJs)
-                                //task.dependsOn(browserPrepareEsbuild)
+                            for (variant in listOf("", "Debug")) {
+                                val runJs = createThis<Exec>("runJs$variant") {
+                                    group = "run"
+                                    //dependsOn("jsBrowserDevelopmentRun")
+                                    dependsOn(browserEsbuildResources)
+                                    dependsOn("::$npmInstallEsbuild")
+                                    dependsOn(compileDevelopmentExecutableKotlinJs)
+                                    //task.dependsOn(browserPrepareEsbuild)
 
-                                val compileDevelopmentExecutableKotlinJsTask = project.tasks.getByName(compileDevelopmentExecutableKotlinJs) as KotlinJsIrLink
-                                //println("compileDevelopmentExecutableKotlinJs=$compileDevelopmentExecutableKotlinJsTask :: ${compileDevelopmentExecutableKotlinJsTask::class}")
-                                //println(compileDevelopmentExecutableKotlinJsTask.outputFileProperty.get())
-                                val jsPath = compileDevelopmentExecutableKotlinJsTask.outputFileProperty.get()
+                                    val compileDevelopmentExecutableKotlinJsTask =
+                                        project.tasks.getByName(compileDevelopmentExecutableKotlinJs) as KotlinJsIrLink
+                                    //println("compileDevelopmentExecutableKotlinJs=$compileDevelopmentExecutableKotlinJsTask :: ${compileDevelopmentExecutableKotlinJsTask::class}")
+                                    //println(compileDevelopmentExecutableKotlinJsTask.outputFileProperty.get())
+                                    val jsPath = compileDevelopmentExecutableKotlinJsTask.outputFileProperty.get()
 
-                                val output = File(wwwFolder, "${project.name}.js")
-                                inputs.file(jsPath)
-                                outputs.file(output)
-                                //task.environment("PATH", ENV_PATH)
-                                commandLine(ArrayList<Any>().apply {
-                                    add(esbuildCmd)
-                                    //add("--watch",)
-                                    add("--bundle")
-                                    //add("--minify")
-                                    //add("--sourcemap=external")
-                                    add(jsPath)
-                                    add("--outfile=$output")
-                                    // @TODO: Close this command on CTRL+C
-                                    //if (run) add("--servedir=$wwwFolder")
-                                })
+                                    val output = File(wwwFolder, "${project.name}.js")
+                                    inputs.file(jsPath)
+                                    outputs.file(output)
+                                    //task.environment("PATH", ENV_PATH)
+                                    commandLine(ArrayList<Any>().apply {
+                                        add(esbuildCmd)
+                                        //add("--watch",)
+                                        add("--bundle")
+                                        //add("--minify")
+                                        //add("--sourcemap=external")
+                                        add(jsPath)
+                                        add("--outfile=$output")
+                                        // @TODO: Close this command on CTRL+C
+                                        //if (run) add("--servedir=$wwwFolder")
+                                    })
 
-                                doLast {
-                                    runServer(!project.gradle.startParameter.isContinuous)
+                                    doLast {
+                                        runServer(!project.gradle.startParameter.isContinuous, debug = variant == "Debug")
+                                    }
                                 }
                             }
                         }
@@ -1072,7 +1072,7 @@ fun Project.symlinktree(fromFolder: File, intoFolder: File) {
     }
 }
 
-fun Project.runServer(blocking: Boolean) {
+fun Project.runServer(blocking: Boolean, debug: Boolean = false) {
     if (_webServer == null) {
         val address = "0.0.0.0"
         val port = 8080
@@ -1083,7 +1083,8 @@ fun Project.runServer(blocking: Boolean) {
                 "0.0.0.0" -> "127.0.0.1"
                 else -> address
             }
-            openBrowser("http://$openAddress:${server.port}/index.html")
+            val SUFFIX = if (debug) "?LOG_LEVEL=debug" else ""
+            openBrowser("http://$openAddress:${server.port}/index.html$SUFFIX")
             if (blocking) {
                 while (true) {
                     Thread.sleep(1000L)

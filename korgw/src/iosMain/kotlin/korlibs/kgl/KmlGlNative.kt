@@ -4,18 +4,19 @@
 
 package korlibs.kgl
 
-import korlibs.memory.*
-import kotlinx.cinterop.*
+import korlibs.graphics.shader.gl.*
 import korlibs.image.bitmap.*
 import korlibs.image.format.*
-import platform.gles2.*
+import korlibs.memory.*
+import kotlinx.cinterop.*
+import platform.gles3.*
 
 internal actual fun glGetProcAddressAnyOrNull(name: String): COpaquePointer? {
     TODO()
 }
 
-actual class KmlGlNative constructor(override val gles: Boolean) : NativeBaseKmlGl() {
-    actual constructor() : this(gles = false)
+actual class KmlGlNative actual constructor() : NativeBaseKmlGl() {
+    override val variant: GLVariant get() = GLVariant.IOS
     override fun activeTexture(texture: Int): Unit = tempBufferAddress { glActiveTexture(texture.convert()) }
     override fun attachShader(program: Int, shader: Int): Unit = tempBufferAddress { glAttachShader(program.convert(), shader.convert()) }
     override fun bindAttribLocation(program: Int, index: Int, name: String): Unit = memScoped { tempBufferAddress { glBindAttribLocation(program.convert(), index.convert(), name) } }
@@ -170,15 +171,19 @@ actual class KmlGlNative constructor(override val gles: Boolean) : NativeBaseKml
 
     override val isInstancedSupported: Boolean get() = true
 
-    override fun drawArraysInstanced(mode: Int, first: Int, count: Int, instancecount: Int) {
-        glDrawArraysInstancedEXT(mode.convert(), first.convert(), count.convert(), instancecount.convert())
-    }
+    override fun drawArraysInstanced(mode: Int, first: Int, count: Int, instancecount: Int) = glDrawArraysInstanced(mode.convert(), first.convert(), count.convert(), instancecount.convert())
+    override fun drawElementsInstanced(mode: Int, count: Int, type: Int, indices: Int, instancecount: Int) = glDrawElementsInstanced(mode.convert(), count.convert(), type.convert(), indices.toLong().toCPointer<IntVar>(), instancecount.convert())
+    override fun vertexAttribDivisor(index: Int, divisor: Int) = glVertexAttribDivisor(index.convert(), divisor.convert())
 
-    override fun drawElementsInstanced(mode: Int, count: Int, type: Int, indices: Int, instancecount: Int) {
-        glDrawElementsInstancedEXT(mode.convert(), count.convert(), type.convert(), indices.toLong().toCPointer<IntVar>(), instancecount.convert())
-    }
+    override val isUniformBuffersSupported: Boolean get() = true
 
-    override fun vertexAttribDivisor(index: Int, divisor: Int) {
-        glVertexAttribDivisorEXT(index.convert(), divisor.convert())
-    }
+    override fun bindBufferRange(target: Int, index: Int, buffer: Int, offset: Int, size: Int) = glBindBufferRange(target.convert(), index.convert(), buffer.convert(), offset.convert(), size.convert())
+    override fun getUniformBlockIndex(program: Int, name: String): Int = glGetUniformBlockIndex(program.convert(), name).toInt()
+    override fun uniformBlockBinding(program: Int, uniformBlockIndex: Int, uniformBlockBinding: Int) = glUniformBlockBinding(program.convert(), uniformBlockIndex.convert(), uniformBlockBinding.convert())
+
+    override val isVertexArraysSupported: Boolean get() = true
+
+    override fun genVertexArrays(n: Int, arrays: Buffer) = tempBufferAddress { glGenVertexArrays(n.convert(), arrays.unsafeAddress().reinterpret()) }
+    override fun deleteVertexArrays(n: Int, arrays: Buffer) = tempBufferAddress { glDeleteBuffers(n.convert(), arrays.unsafeAddress().reinterpret()) }
+    override fun bindVertexArray(array: Int) = glBindVertexArray(array.convert())
 }

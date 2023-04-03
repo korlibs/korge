@@ -1,13 +1,13 @@
 package korlibs.graphics
 
-import korlibs.memory.*
 import korlibs.graphics.shader.*
+import korlibs.memory.*
 
 class AGTextureDrawer(val ag: AG) {
     val VERTEX_COUNT = 4
     val vertices = AGBuffer()
     val vertexLayout = VertexLayout(DefaultShaders.a_Pos, DefaultShaders.a_Tex)
-    val vertexData = AGVertexArrayObject(AGVertexData(vertexLayout, vertices))
+    val vertexData = AGVertexArrayObject(AGVertexData(vertexLayout, vertices), isDynamic = false)
     val verticesData = Buffer(VERTEX_COUNT * vertexLayout.totalSize)
     val textureUnits = AGTextureUnits(1)
     companion object {

@@ -4,17 +4,16 @@
 
 package korlibs.kgl
 
-import korlibs.datastructure.FastStringMap
-import korlibs.datastructure.IntMap
-import korlibs.datastructure.Pool
-import korlibs.datastructure.clear
-import korlibs.datastructure.getOrPut
+import korlibs.datastructure.*
+import korlibs.graphics.shader.gl.*
+import korlibs.image.bitmap.*
 import korlibs.memory.*
-import korlibs.image.bitmap.NativeImage
 
 class KmlGlDummy : KmlGlDummyBase()
 
 open class KmlGlDummyBase : KmlGl() {
+    override val variant: GLVariant get() = GLVariant.DESKTOP_GENERIC
+
     class Allocator(val base: Int = 0) {
         var id = base
         var pool = Pool { ++id }
@@ -226,4 +225,12 @@ open class KmlGlDummyBase : KmlGl() {
     override fun drawArraysInstanced(mode: Int, first: Int, count: Int, instancecount: Int): Unit = Unit
     override fun drawElementsInstanced(mode: Int, count: Int, type: Int, indices: Int, instancecount: Int): Unit = Unit
     override fun vertexAttribDivisor(index: Int, divisor: Int): Unit = Unit
+
+    override fun genVertexArrays(n: Int, arrays: Buffer) = Unit
+    override fun deleteVertexArrays(n: Int, arrays: Buffer) = Unit
+    override fun bindVertexArray(array: Int) = Unit
+
+    override fun bindBufferRange(target: Int, index: Int, buffer: Int, offset: Int, size: Int) = Unit
+    override fun getUniformBlockIndex(program: Int, name: String): Int = 0
+    override fun uniformBlockBinding(program: Int, uniformBlockIndex: Int, uniformBlockBinding: Int) = Unit
 }

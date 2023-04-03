@@ -1,10 +1,11 @@
+
+import korlibs.image.color.*
+import korlibs.io.async.*
+import korlibs.io.lang.*
 import korlibs.korge.*
 import korlibs.korge.scene.*
 import korlibs.korge.ui.*
 import korlibs.korge.view.*
-import korlibs.image.color.*
-import korlibs.io.async.*
-import korlibs.io.lang.*
 import korlibs.math.interpolation.*
 import samples.*
 import samples.asteroids.*
@@ -40,6 +41,7 @@ suspend fun main() = Korge(
     debug = false,
     forceRenderEveryFrame = false
 ).start {
+    //uiButton(""); return@start
     //solidRect(200, 200, Colors.RED); return@start
     //solidRect(50, 50, Colors.GREEN).xy(50, 50)
     //    .filters(WaveFilter(amplitudeX = 15, amplitudeY = 10, crestDistanceX = 25.0, crestDistanceY = 10.0).also { filter ->

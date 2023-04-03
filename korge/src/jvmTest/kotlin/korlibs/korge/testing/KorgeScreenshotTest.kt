@@ -1,15 +1,15 @@
 package korlibs.korge.testing
 
-import korlibs.korge.view.*
 import korlibs.image.bitmap.*
 import korlibs.image.color.*
+import korlibs.korge.view.*
 import korlibs.math.geom.*
 import org.junit.*
 
 class KorgeScreenshotTest {
     // https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/arc
     @Test
-    fun testArcShapes() = korgeScreenshotTest(SizeInt(200, 200), bgcolor = Colors.WHITE) {
+    fun testArcShapes() = korgeScreenshotTest(SizeInt(200, 200), bgcolor = Colors.WHITE, logGl = false) {
         image(NativeImageContext2d(200, 200) {
             val ctx = this
             // Draw shapes

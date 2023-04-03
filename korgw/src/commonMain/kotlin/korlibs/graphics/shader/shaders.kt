@@ -349,16 +349,6 @@ object Output : Varying("out", VarType.Float4) {
     override fun hashCode(): Int = mhashcode()
 }
 
-data class ProgramConfig(
-    val dummy: Boolean = false,
-    //val externalTextureSampler: Boolean = false
-) {
-    companion object {
-        val DEFAULT = ProgramConfig()
-        //val EXTERNAL_TEXTURE_SAMPLER = ProgramConfig(externalTextureSampler = true)
-    }
-}
-
 inline fun Shader.appending(block: Program.Builder.() -> Unit): FragmentShader {
     // @TODO: Raw shaders don't support appending
     if (this.isRaw) return this

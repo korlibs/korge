@@ -2,16 +2,14 @@ package korlibs.korge.view.vector
 
 import korlibs.datastructure.*
 import korlibs.datastructure.iterators.*
-import korlibs.memory.*
 import korlibs.graphics.*
 import korlibs.graphics.shader.*
+import korlibs.image.color.*
 import korlibs.korge.internal.*
 import korlibs.korge.render.*
 import korlibs.korge.view.*
-import korlibs.image.color.*
-import korlibs.image.format.*
-import korlibs.io.async.*
 import korlibs.math.geom.*
+import korlibs.memory.*
 
 @KorgeInternal
 class GpuShapeViewCommands {
@@ -20,7 +18,6 @@ class GpuShapeViewCommands {
     private val commands = arrayListOf<ICommand>()
     private var vertices: AgCachedBuffer? = null
     private val verticesToDelete = FastArrayList<AgCachedBuffer>()
-
     fun clear() {
         vertexIndex = 0
         bufferVertexData.clear()
@@ -102,6 +99,16 @@ class GpuShapeViewCommands {
 
         ctx.flush()
         val ag = ctx.ag
+        val vao = AGVertexArrayObject(
+            fastArrayListOf(
+                AGVertexData(
+                    GpuShapeViewPrograms.LAYOUT_POS_TEX_FILL_DIST,
+                    ctx.getBuffer(
+                        vertices
+                    ),
+                )
+            ), isDynamic = true
+        )
         ctx.useBatcher { batcher ->
             batcher.updateStandardUniforms()
             //tempMat.identity()
@@ -121,16 +128,7 @@ class GpuShapeViewCommands {
                 //list.useProgram(ag.getProgram(GpuShapeViewPrograms.PROGRAM_COMBINED))
                 //println(bufferVertexData)
                 val program = GpuShapeViewPrograms.PROGRAM_COMBINED
-                val vertices = AGVertexArrayObject(
-                    fastArrayListOf(
-                        AGVertexData(
-                            GpuShapeViewPrograms.LAYOUT_POS_TEX_FILL_DIST,
-                            ctx.getBuffer(
-                                vertices
-                            ),
-                        )
-                    )
-                )
+
                 var scissor = AGScissor.NIL
                 //list.vertexArrayObjectSet(ag, GpuShapeViewPrograms.LAYOUT_POS_TEX_FILL_DIST, bufferVertexData) {
                 //println("----")
@@ -178,7 +176,7 @@ class GpuShapeViewCommands {
                                 ctx.currentFrameBuffer.base,
                                 ctx.currentFrameBuffer.info,
                                 program = _program,
-                                vertexData = vertices,
+                                vertexData = vao,
                                 //indices = indices,
                                 scissor = scissor.applyMatrixBounds(tempMat),
                                 uniformBlocks = ctx.createCurrentUniformsRef(_program),

@@ -112,6 +112,7 @@ class BatchBuilder2D constructor(
         val vertexData = AGVertexArrayObject(
             AGVertexData(LAYOUT, vertexBuffer),
             AGVertexData(LAYOUT_TEX_INDEX, texIndexVertexBuffer),
+            isDynamic = false
         )
     }
 

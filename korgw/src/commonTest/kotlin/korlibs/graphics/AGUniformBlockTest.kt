@@ -6,9 +6,41 @@ import kotlin.test.*
 
 class AGUniformBlockTest {
     object NewUniformUB : UniformBlock(fixedLocation = 2) {
-        val uniform1 by bool4()
-        val uniform2 by short2()
+        val u_ShadowColor by vec4()
+        val u_ShadowRadius by float()
+        val u_ShadowOffset by vec2()
+        val u_HighlightPos by vec2()
+        val u_HighlightRadius by float()
+        val u_HighlightColor by vec4()
+        val u_Size by vec2()
+        val u_Radius by vec4()
+        val u_BorderSizeHalf by float()
+        val u_BorderColor by vec4()
+        val u_BackgroundColor by vec4()
+
+        //val uniform1 by bool4()
+        //val uniform2 by short2()
         //val uniform3 by int()
+    }
+
+    @Test
+    fun testAlign() {
+        assertEquals(
+            """
+                u_ShadowColor:0
+                u_ShadowRadius:16
+                u_ShadowOffset:24
+                u_HighlightPos:32
+                u_HighlightRadius:40
+                u_HighlightColor:48
+                u_Size:64
+                u_Radius:80
+                u_BorderSizeHalf:96
+                u_BorderColor:112
+                u_BackgroundColor:128
+            """.trimIndent(),
+            NewUniformUB.uniforms.joinToString("\n") { "${it.name}:${it.voffset}" }
+        )
     }
 
     //@Test

@@ -4,22 +4,23 @@
 
 package korlibs.kgl
 
+import korlibs.graphics.gl.*
+import korlibs.graphics.shader.gl.*
+import korlibs.image.bitmap.*
+import korlibs.image.format.*
 import korlibs.memory.*
-import korlibs.image.bitmap.NativeImage
-import korlibs.image.format.HtmlNativeImage
-import kotlinx.browser.document
+import kotlinx.browser.*
 import org.khronos.webgl.*
-import org.w3c.dom.HTMLCanvasElement
-import org.w3c.dom.HTMLElement
-import kotlin.math.min
+import org.w3c.dom.*
+import kotlin.math.*
 
 // https://github.com/shrekshao/MoveWebGL1EngineToWebGL2/blob/master/Move-a-WebGL-1-Engine-To-WebGL-2-Blog-1.md
 // https://webglstats.com/
 // https://caniuse.com/#feat=webgl
 class KmlGlJsCanvas(val canvas: HTMLCanvasElement, val glOpts: dynamic) : KmlGlWithExtensions() {
     var webglVersion = 1
-    val gl = (null
-            //?: canvas.getContext("webgl2", glOpts)?.also { webglVersion = 2 }
+    val gl: WebGLRenderingContext = (null
+            ?: canvas.getContext("webgl2", glOpts)?.also { webglVersion = 2 }
             ?: canvas.getContext("webgl", glOpts)
             ?: canvas.getContext("experimental-webgl", glOpts)
         ).unsafeCast<WebGLRenderingContext?>()
@@ -46,9 +47,7 @@ class KmlGlJsCanvas(val canvas: HTMLCanvasElement, val glOpts: dynamic) : KmlGlW
             error("Can't get webgl context")
         }
 
-    override val webgl: Boolean get() = true
-    override val webgl2: Boolean get() = webglVersion >= 2
-
+    override val variant: GLVariant get() = GLVariant.JS_WEBGL(webglVersion)
     private val items = arrayOfNulls<Any>(8 * 1024)
     private val freeList = (1 until items.size).reversed().toMutableList()
     private fun <T> T.alloc(): Int {
@@ -245,18 +244,10 @@ class KmlGlJsCanvas(val canvas: HTMLCanvasElement, val glOpts: dynamic) : KmlGlW
             || webglVersion >= 2 // Supported by default in WebGL 2
     }
 
-    var _instancedArraysSet: Boolean = false
-    var _instancedArrays: dynamic = null
-    val instancedArrays: dynamic
-        get() {
-            if (!_instancedArraysSet) {
-                _instancedArraysSet = true
-                _instancedArrays = gl.getExtension("ANGLE_instanced_arrays")
-            }
-            return _instancedArrays
-        }
-
-    override val isInstancedSupported: Boolean get() = (webglVersion >= 2) || (instancedArrays != null)
+    val instancedArrays: WebGLExtension = WebGLExtension(
+        this, "ANGLE_instanced_arrays", coreSince = 2, functions = listOf("drawArraysInstanced", "drawElementsInstanced", "vertexAttribDivisor"), suffix = "ANGLE"
+    )
+    override val isInstancedSupported: Boolean get() = instancedArrays.supported
 
     override fun renderbufferStorageMultisample(target: Int, samples: Int, internalformat: Int, width: Int, height: Int) {
         if (webglVersion >= 2) {
@@ -267,26 +258,78 @@ class KmlGlJsCanvas(val canvas: HTMLCanvasElement, val glOpts: dynamic) : KmlGlW
     }
 
     override fun drawArraysInstanced(mode: Int, first: Int, count: Int, instancecount: Int) {
-        if (webglVersion >= 2) {
-            gl.asDynamic().drawArraysInstanced(mode, first, count, instancecount)
-        } else {
-            instancedArrays.drawArraysInstancedANGLE(mode, first, count, instancecount)
-        }
+        gl.asDynamic().drawArraysInstanced(mode, first, count, instancecount)
     }
 
     override fun drawElementsInstanced(mode: Int, count: Int, type: Int, indices: Int, instancecount: Int) {
-        if (webglVersion >= 2) {
-            gl.asDynamic().drawElementsInstanced(mode, count, type, indices, instancecount)
-        } else {
-            instancedArrays.drawElementsInstancedANGLE(mode, count, type, indices, instancecount)
-        }
+        gl.asDynamic().drawElementsInstanced(mode, count, type, indices, instancecount)
     }
 
     override fun vertexAttribDivisor(index: Int, divisor: Int) {
-        if (webglVersion >= 2) {
-            gl.asDynamic().vertexAttribDivisor(index, divisor)
-        } else {
-            instancedArrays.vertexAttribDivisorANGLE(index, divisor)
+        gl.asDynamic().vertexAttribDivisor(index, divisor)
+    }
+
+    override val isUniformBuffersSupported: Boolean get() = versionInt >= 2
+
+    override fun bindBufferRange(target: Int, index: Int, buffer: Int, offset: Int, size: Int) {
+        gl.asDynamic().bindBufferRange(target, index, buffer.get<WebGLBuffer>(), offset, size)
+    }
+
+    override fun getUniformBlockIndex(program: Int, name: String): Int {
+        return gl.asDynamic().getUniformBlockIndex(program.get<WebGLProgram>(), name)
+    }
+
+    override fun uniformBlockBinding(program: Int, uniformBlockIndex: Int, uniformBlockBinding: Int) {
+        gl.asDynamic().uniformBlockBinding(program.get<WebGLProgram>(), uniformBlockIndex, uniformBlockBinding)
+    }
+
+    val vertexArrayObject: WebGLExtension = WebGLExtension(
+        this, "OES_vertex_array_object", coreSince = 2,
+        functions = listOf(
+            "createVertexArrayOES", "deleteVertexArrayOES", "isVertexArrayOES",
+            "bindVertexArrayOES"
+        ),
+        suffix = "OES"
+    )
+    override val isVertexArraysSupported: Boolean get() = vertexArrayObject.supported
+
+    override fun genVertexArrays(n: Int, arrays: Buffer) {
+        for (i in 0 until n) arrays.setInt32(i, (gl.asDynamic().createVertexArray().unsafeCast<WebGLVertexArrayObject>()).alloc())
+    }
+
+    override fun deleteVertexArrays(n: Int, arrays: Buffer) {
+        for (i in 0 until n) {
+            val v = arrays.getInt32(i)
+            (gl.asDynamic().deleteVertexArray(v.free<WebGLVertexArrayObject>()))
         }
     }
+
+    override fun bindVertexArray(array: Int) {
+        gl.asDynamic().bindVertexArray(array.get<WebGLVertexArrayObject>())
+    }
 }
+
+class WebGLExtension(val canvas: KmlGlJsCanvas, val name: String, val coreSince: Int = 1000, val functions: List<String> = emptyList(), val suffix: String = "") {
+    private var _set: Boolean = false
+    private var _value: dynamic = null
+    val value: dynamic
+        get() {
+            if (!_set) {
+                _set = true
+                _value = canvas.gl.getExtension(name)
+                for (func in functions) {
+                    val base = func.removeSuffix(suffix)
+                    val vfunc = _value[func]
+                    if (jsTypeOf(vfunc) == "function") {
+                        canvas.gl.asDynamic()[base] = vfunc.bind(_value)
+                    }
+                }
+            }
+            return _value
+        }
+
+    val supported: Boolean get() = (canvas.webglVersion >= coreSince) || (value != null)
+}
+
+external interface WebGLVertexArrayObject
+

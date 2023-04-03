@@ -6,9 +6,6 @@ import korlibs.graphics.shader.Program
 import korlibs.graphics.shader.Shader
 import korlibs.graphics.shader.VertexShader
 
-fun Shader.toNewGlslStringResult(gles: Boolean = true, version: Int = GlslGenerator.DEFAULT_VERSION, compatibility: Boolean = true, android: Boolean = false) =
-    toNewGlslStringResult(GlslConfig(gles = gles, version = version, compatibility = compatibility, android = android))
-
 fun Shader.toNewGlslStringResult(config: GlslConfig): GlslGenerator.Result =
     GlslGenerator(this.type, config).generateResult(this)
 

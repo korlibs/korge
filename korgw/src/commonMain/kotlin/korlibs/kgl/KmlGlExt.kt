@@ -1,10 +1,10 @@
 package korlibs.kgl
 
-import korlibs.logger.Logger
-import korlibs.memory.*
-import korlibs.crypto.encoding.hex
+import korlibs.crypto.encoding.*
+import korlibs.logger.*
 import korlibs.math.geom.*
-import kotlin.native.concurrent.ThreadLocal
+import korlibs.memory.*
+import kotlin.native.concurrent.*
 
 class KmlGlException(message: String) : RuntimeException(message)
 
@@ -38,6 +38,7 @@ fun KmlGl.getProgramiv(program: Int, type: Int): Int = tempInt1Buffer { getProgr
 fun KmlGl.getBooleanv(pname: Int): Boolean = tempByte1Buffer { getBooleanv(pname, it) } != 0
 fun KmlGl.getFloatv(pname: Int): Float = tempFloat1Buffer { getFloatv(pname, it) }
 fun KmlGl.getIntegerv(pname: Int): Int = tempInt1Buffer { getIntegerv(pname, it) }
+fun KmlGl.getInteger(pname: Int): Int = getIntegerv(pname)
 fun KmlGl.getVertexAttribiv(index: Int, pname: Int): Int = tempInt1Buffer { getVertexAttribiv(index, pname, it) }
 fun KmlGl.getRectanglev(pname: Int): Rectangle = tempNBuffer4.let {
     it.setFloat32(0, 0f)
@@ -48,11 +49,13 @@ fun KmlGl.getRectanglev(pname: Int): Rectangle = tempNBuffer4.let {
     Rectangle(it.getFloat32(0), it.getFloat32(1), it.getFloat32(2), it.getFloat32(3))
 }
 
+fun KmlGl.genVertexArray(): Int = tempInt1Buffer { genVertexArrays(1, it) }
 fun KmlGl.genBuffer(): Int = tempInt1Buffer { genBuffers(1, it) }
 fun KmlGl.genTexture(): Int = tempInt1Buffer { genTextures(1, it) }
 fun KmlGl.genRenderbuffer(): Int = tempInt1Buffer { genRenderbuffers(1, it) }
 fun KmlGl.genFramebuffer(): Int = tempInt1Buffer { genFramebuffers(1, it) }
 
+fun KmlGl.deleteVertexArray(id: Int) { tempInt1Buffer(id) { deleteVertexArrays(1, it) } }
 fun KmlGl.deleteBuffer(id: Int) { tempInt1Buffer(id) { deleteBuffers(1, it) } }
 fun KmlGl.deleteTexture(id: Int) { tempInt1Buffer(id) { deleteTextures(1, it) } }
 fun KmlGl.deleteRenderbuffer(id: Int) { tempInt1Buffer(id) { deleteRenderbuffers(1, it) } }

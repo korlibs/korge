@@ -1,12 +1,12 @@
 package korlibs.graphics.shader
 
-import korlibs.datastructure.iterators.*
-import korlibs.memory.*
-import korlibs.memory.dyn.*
 import korlibs.graphics.*
 import korlibs.image.color.*
 import korlibs.io.lang.*
 import korlibs.math.geom.*
+import korlibs.math.math.*
+import korlibs.memory.*
+import korlibs.memory.dyn.*
 import kotlin.reflect.*
 
 class UniformBlocksBuffersRef(
@@ -39,34 +39,43 @@ class TypedUniform<T>(name: String, val voffset: Int, var vindex: Int, val block
 }
 
 open class UniformBlock(val fixedLocation: Int) {
+    val name: String get() = this::class.portableSimpleName
     private val layout = KMemLayoutBuilder()
     private val _items = arrayListOf<TypedUniform<*>>()
     private var lastIndex = 0
     val uniforms: List<TypedUniform<*>> get() = _items
-    val totalSize: Int get() = layout.size
+    val totalSizeNoGlAlign: Int get() = layout.size
+    val totalSize: Int get() = totalSizeNoGlAlign.nextMultipleOf(256)
     val uniformCount: Int get() = uniforms.size
 
     // @TODO: Fix alignment
-    protected fun bool(name: String? = null): Gen<List<Boolean>> = gen(name, VarType.Bool1, 1, 1)
-    protected fun bool2(name: String? = null): Gen<List<Boolean>> = gen(name, VarType.Bool2, 2, 1)
-    protected fun bool3(name: String? = null): Gen<List<Boolean>> = gen(name, VarType.Bool3, 3, 1)
-    protected fun bool4(name: String? = null): Gen<List<Boolean>> = gen(name, VarType.Bool4, 4, 1)
-    protected fun ubyte4(name: String? = null): Gen<Int> = gen(name, VarType.UByte4, 4, 1)
-    protected fun short(name: String? = null): Gen<List<Boolean>> = gen(name, VarType.Short1, 2, 2)
-    protected fun short2(name: String? = null): Gen<List<Boolean>> = gen(name, VarType.Short2, 4, 2)
-    protected fun short3(name: String? = null): Gen<List<Boolean>> = gen(name, VarType.Short3, 6, 2)
-    protected fun short4(name: String? = null): Gen<List<Boolean>> = gen(name, VarType.Short4, 8, 2)
-    @Deprecated("")
-    protected fun sampler2D(name: String? = null): Gen<Int> = gen(name, VarType.Sampler2D, 4, 4)
+    //protected fun bool(name: String? = null): Gen<List<Boolean>> = gen(name, VarType.Bool1, 4, 4)
+    //protected fun bool2(name: String? = null): Gen<List<Boolean>> = gen(name, VarType.Bool2, 8, 8)
+    //protected fun bool3(name: String? = null): Gen<List<Boolean>> = gen(name, VarType.Bool3, 12, 16)
+    //protected fun bool4(name: String? = null): Gen<List<Boolean>> = gen(name, VarType.Bool4, 16, 16)
+    //protected fun ubyte4(name: String? = null): Gen<Int> = gen(name, VarType.UByte4, 4, 4)
+    //protected fun short(name: String? = null): Gen<List<Boolean>> = gen(name, VarType.Short1, 2, 2)
+    //protected fun short2(name: String? = null): Gen<List<Boolean>> = gen(name, VarType.Short2, 4, 4)
+    //protected fun short3(name: String? = null): Gen<List<Boolean>> = gen(name, VarType.Short3, 6, 2)
+    //protected fun short4(name: String? = null): Gen<List<Boolean>> = gen(name, VarType.Short4, 8, 2)
+    //@Deprecated("") protected fun sampler2D(name: String? = null): Gen<Int> = gen(name, VarType.Sampler2D, 4, 4)
+
     protected fun int(name: String? = null): Gen<Int> = gen(name, VarType.SInt1, 4, 4)
-    protected fun ivec2(name: String? = null): Gen<Vector2Int> = gen(name, VarType.SInt2, 8, 4)
     protected fun float(name: String? = null): Gen<Float> = gen(name, VarType.Float1, 4, 4)
-    protected fun vec2(name: String? = null): Gen<Vector2> = gen(name, VarType.Float2, 8, 4)
+
+    protected fun ivec2(name: String? = null): Gen<Vector2Int> = gen(name, VarType.SInt2, 8, 8)
+    protected fun vec2(name: String? = null): Gen<Vector2> = gen(name, VarType.Float2, 8, 8)
+
     // @TODO: Some drivers get this wrong
-    //protected fun vec3(name: String? = null): Gen<Vector3> = gen(name, VarType.Float3, 12, 4)
-    protected fun vec4(name: String? = null): Gen<Vector4> = gen(name, VarType.Float4, 16, 4)
-    protected fun mat3(name: String? = null): Gen<Matrix4> = gen(name, VarType.Mat3, 36, 4)
-    protected fun mat4(name: String? = null): Gen<Matrix4> = gen(name, VarType.Mat4, 64, 4)
+    //protected fun ivec3(name: String? = null): Gen<Vector3> = gen(name, VarType.Float3, 16, 16)
+    //protected fun vec3(name: String? = null): Gen<Vector3> = gen(name, VarType.Float3, 16, 16)
+
+    protected fun ivec4(name: String? = null): Gen<Vector4Int> = gen(name, VarType.SInt4, 16, 16)
+    protected fun vec4(name: String? = null): Gen<Vector4> = gen(name, VarType.Float4, 16, 16)
+
+    // @TODO: Some problems implementing mat3 layout in UBOs
+    protected fun mat3(name: String? = null): Gen<Matrix4> = gen(name, VarType.Mat3, 48, 16)
+    protected fun mat4(name: String? = null): Gen<Matrix4> = gen(name, VarType.Mat4, 64, 16)
     //protected fun <T> array(size: Int, gen: Gen<T>): Gen<Array<T>> = TODO()
 
     fun <T> gen(name: String? = null, type: VarType, size: Int, align: Int = size): Gen<T> =
@@ -126,15 +135,15 @@ class UniformsRef(
     operator fun set(uniform: TypedUniform<Matrix4>, value: Matrix4) {
         when (uniform.type) {
             VarType.Mat4 -> set(uniform, value, Matrix4.INDICES_BY_COLUMNS_4x4)
-            VarType.Mat3 -> set(uniform, value, Matrix4.INDICES_BY_COLUMNS_3x3)
+            VarType.Mat3 -> set(uniform, value, Matrix4.INDICES_BY_COLUMNS_4x4, max = 12)
             else -> TODO()
         }
     }
 
-    fun set(uniform: TypedUniform<Matrix4>, value: Matrix4, indices: IntArray) {
+    fun set(uniform: TypedUniform<Matrix4>, value: Matrix4, indices: IntArray, max: Int = indices.size) {
         getOffset(uniform).also {
             //println("SET OFFSET: $it")
-            for (n in 0 until indices.size) buffer.setUnalignedFloat32(it + n * 4, value.getAtIndex(indices[n]))
+            for (n in 0 until max) buffer.setUnalignedFloat32(it + n * 4, value.getAtIndex(indices[n]))
         }
     }
     fun set(uniform: TypedUniform<Matrix4>, value: FloatArray, indices: IntArray) {

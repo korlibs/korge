@@ -1,13 +1,16 @@
 package korlibs.kgl
 
-import korlibs.memory.*
+import korlibs.graphics.shader.gl.*
 import korlibs.image.bitmap.*
 import korlibs.image.format.*
 import korlibs.io.concurrent.atomic.*
+import korlibs.memory.*
 import kotlinx.cinterop.*
 import kotlin.reflect.*
 
 abstract class NativeBaseKmlGl : KmlGlWithExtensions() {
+    override val variant: GLVariant get() = GLVariant.DESKTOP
+
     val tempBufferAddress = NBufferTempAddress()
 
     override fun activeTexture(texture: Int): Unit = tempBufferAddress { glActiveTextureExt(texture.convert()) }
@@ -178,6 +181,34 @@ abstract class NativeBaseKmlGl : KmlGlWithExtensions() {
     override fun drawElementsInstanced(mode: Int, count: Int, type: Int, indices: Int, instancecount: Int): Unit = glDrawElementsInstancedExt(mode.convert(), count.convert(), type.convert(), indices.toLong().toCPointer<IntVar>()?.reinterpret(), instancecount.convert())
     override fun vertexAttribDivisor(index: Int, divisor: Int): Unit = glVertexAttribDivisorExt(index, divisor)
 
+    // https://registry.khronos.org/OpenGL-Refpages/es3.0/html/glBindBufferRange.xhtml
+    override val isUniformBuffersSupported: Boolean get() = glBindBufferRangeExt != null
+    override fun bindBufferRange(target: Int, index: Int, buffer: Int, offset: Int, size: Int) {
+        glBindBufferRangeExt?.invoke(target, index, buffer, offset.toSizeiPtr()?.reinterpret(), size.toSizeiPtr()?.reinterpret())
+    }
+
+    override fun getUniformBlockIndex(program: Int, name: String): Int {
+        return memScoped { tempBufferAddress { glGetUniformBlockIndexExt.invoke(program.convert(), ((name).cstr.getPointer(this@memScoped))) } }
+    }
+
+    override fun uniformBlockBinding(program: Int, uniformBlockIndex: Int, uniformBlockBinding: Int) {
+        glUniformBlockBindingExt.invoke(program, uniformBlockIndex, uniformBlockBinding)
+    }
+
+    override val isVertexArraysSupported: Boolean get() = glGenVertexArraysExt != null
+
+    override fun genVertexArrays(n: Int, arrays: Buffer) {
+        tempBufferAddress { glGenVertexArraysExt?.invoke(n, arrays.unsafeAddress().reinterpret()) }
+    }
+
+    override fun deleteVertexArrays(n: Int, arrays: Buffer) {
+        tempBufferAddress { glDeleteVertexArraysExt.invoke(n, arrays.unsafeAddress().reinterpret()) }
+    }
+
+    override fun bindVertexArray(array: Int) {
+        glBindVertexArrayExt.invoke(array)
+    }
+
     companion object {
         const val GL_NUM_EXTENSIONS = 0x821D
         const val GL_COLOR_BUFFER_BIT = 0x00004000
@@ -340,6 +371,13 @@ abstract class NativeBaseKmlGl : KmlGlWithExtensions() {
         val glVertexAttrib1fvExt by GLFunc<(GLuint, GLfloatPtr) -> GLvoid>()
         val glVertexAttrib2fvExt by GLFunc<(GLuint, GLfloatPtr) -> GLvoid>()
         val glVertexAttrib3fvExt by GLFunc<(GLuint, GLfloatPtr) -> GLvoid>()
+
+        val glBindBufferRangeExt by GLFuncNull<(GLenum, GLuint, GLuint, GLintPtr, GLsizeiPtr) -> GLvoid>()
+        val glGetUniformBlockIndexExt by GLFunc<(GLuint, GLString) -> GLint>()
+        val glUniformBlockBindingExt by GLFunc<(GLuint, GLuint, GLuint) -> GLvoid>()
+        val glGenVertexArraysExt by GLFuncNull<(GLsizei, GLuintPtr) -> GLvoid>()
+        val glDeleteVertexArraysExt by GLFunc<(GLsizei, GLuintPtr) -> GLvoid>()
+        val glBindVertexArrayExt by GLFunc<(GLuint) -> GLvoid>()
     }
 }
 

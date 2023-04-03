@@ -36,6 +36,7 @@ open class KorgeJavaExecWithAutoreload : KorgeJavaExec() {
     //private var reloadAgentConfiguration: Configuration = project.configurations.getByName(KORGE_RELOAD_AGENT_CONFIGURATION_NAME)//.resolve().first()
     lateinit var reloadAgentJar: File
 
+
     init {
         //val reloadAgent = project.findProject(":korge-reload-agent")
         //if (reloadAgent != null)
@@ -137,6 +138,9 @@ fun Project.getKorgeClassPath(): FileCollection {
 open class KorgeJavaExec : JavaExec() {
     //dependsOn(getKorgeProcessResourcesTaskName("jvm", "main"))
 
+    @get:Input
+    var logLevel = "info"
+
     @get:InputFiles
     val korgeClassPath: FileCollection = project.getKorgeClassPath()
 
@@ -158,6 +162,7 @@ open class KorgeJavaExec : JavaExec() {
         for (classPath in classpath.toList()) {
             logger.info("- $classPath")
         }
+        environment("LOG_LEVEL", logLevel)
         super.exec()
     }
 

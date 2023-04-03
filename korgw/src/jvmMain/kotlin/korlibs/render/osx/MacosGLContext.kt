@@ -1,17 +1,16 @@
 package korlibs.render.osx
 
-import korlibs.kgl.*
-import korlibs.memory.dyn.osx.*
 import korlibs.graphics.*
 import korlibs.graphics.gl.*
+import korlibs.io.dynamic.*
+import korlibs.kgl.*
+import korlibs.math.geom.*
+import korlibs.memory.dyn.osx.*
 import korlibs.render.*
 import korlibs.render.platform.*
-import korlibs.io.dynamic.*
-import korlibs.math.geom.*
-import korlibs.math.geom.Rectangle
 import java.awt.*
 import java.security.*
-import javax.swing.SwingUtilities
+import javax.swing.*
 
 class MacosGLContext(
     var contentView: Long = 0L,
@@ -31,6 +30,9 @@ class MacosGLContext(
         const val NSOpenGLPFAStencilSize = 13
         const val NSOpenGLPFAAccumSize = 14
 
+        const val NSOpenGLPFAOpenGLProfile = 99
+        const val NSOpenGLProfileVersionLegacy = 0x1000
+        const val NSOpenGLProfileVersion4_1Core = 0x4100
     }
 
     val attrs: IntArray by lazy {
@@ -42,7 +44,7 @@ class MacosGLContext(
         ) else intArrayOf()
         intArrayOf(
             *antialiasArray,
-            //NSOpenGLPFAOpenGLProfile, NSOpenGLProfileVersion4_1Core,
+            NSOpenGLPFAOpenGLProfile, if (ENABLE_JVM_MAC_OPENGL41_CORE) NSOpenGLProfileVersion4_1Core else NSOpenGLProfileVersionLegacy,
             //NSOpenGLPFADoubleBuffer,
             NSOpenGLPFAAccelerated,
             NSOpenGLPFAColorSize, 24,

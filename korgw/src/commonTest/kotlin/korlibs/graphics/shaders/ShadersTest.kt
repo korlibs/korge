@@ -1,47 +1,40 @@
 package korlibs.graphics.shaders
 
-import korlibs.graphics.DefaultShaders
+import korlibs.graphics.*
 import korlibs.graphics.shader.*
-import korlibs.graphics.shader.gl.GlslConfig
-import korlibs.graphics.shader.gl.GlslGenerator
-import korlibs.graphics.shader.gl.VertexShaderRawGlSl
-import korlibs.graphics.shader.gl.toNewGlslString
-import korlibs.graphics.shader.gl.toNewGlslStringResult
-import korlibs.io.util.Indenter
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNotEquals
+import korlibs.graphics.shader.gl.*
+import kotlin.test.*
 
 class ShadersTest {
 	@Test
 	fun testGlslGeneration() {
 		val vs = VertexShader {
 			IF(true.lit) {
-				DefaultShaders.t_Temp0 setTo 1.lit * 2.lit
+                SET(DefaultShaders.t_Temp0, 1.lit * 2.lit)
 			} ELSE {
-				DefaultShaders.t_Temp0 setTo 3.lit * 4.lit
+                SET(DefaultShaders.t_Temp0, 3.lit * 4.lit)
 			}
 		}
 
 		// @TODO: Optimizer phase!
-        assertEqualsShader(vs) {
-            "void main()" {
-                +"vec4 temp0;"
-                "if (true)" {
-                    +"temp0 = (1 * 2);"
+        assertEqualsShader("""
+            void main() {
+                vec4 temp0;
+                if (true) {
+                    temp0 = (1 * 2);
                 }
-                "else" {
-                    +"temp0 = (3 * 4);"
+                else {
+                    temp0 = (3 * 4);
                 }
             }
-        }
+        """.trimIndent(), vs)
 	}
 
     @Test
     fun testGlslGenerationRaw() {
         val vs = VertexShaderRawGlSl("hello")
 
-        assertEquals("hello", vs.toNewGlslString(GlslConfig()))
+        assertEquals("hello", vs.toNewGlslString(GlslConfig(GLVariant.DESKTOP, AGFeatures.Mutable())))
     }
 
     val fs by lazy {
@@ -54,29 +47,45 @@ class ShadersTest {
 
     @Test
     fun testGlslFragmentGenerationOld() {
-        assertEqualsShader(fs, version = 100) {
-            line("void main()") {
-                line("gl_FragColor = vec4(1, 0, 0, 1);")
+        assertEqualsShader("""
+            void main() {
+                gl_FragColor = vec4(1, 0, 0, 1);
             }
-        }
+        """.trimIndent(), fs, version = 100)
+    }
+
+    @Test
+    fun testGlslDirectives() {
+        assertEqualsShader("""
+            #extension GL_OES_standard_derivatives : enable
+            #ifdef GL_ES
+            precision mediump float;
+            #endif
+            void main() {
+                gl_FragColor = vec4(1, 0, 0, 1);
+            }
+        """.trimIndent(), fs, version = 100, stripDirectives = false)
     }
 
     @Test
     fun testGlslFragmentGenerationNew() {
-        assertEqualsShader(fs, version = 330) {
-            line("void main()") {
-                line("gl_FragColor = vec4(1, 0, 0, 1);")
+        assertEqualsShader("""
+            void main() {
+                gl_FragColor = vec4(1, 0, 0, 1);
             }
-            //+"layout(location = 0) out vec4 fragColor;"
-            //"void main()" {
-            //    +"fragColor = vec4(1, 0, 0, 1);"
-            //}
-        }
+        """.trimIndent(), fs, version = 330)
     }
 
     @Test
     fun testGlslFragmentGenerationNewCustomFunc() {
-        assertEqualsShader(FragmentShader {
+        assertEqualsShader("""
+            float demo(float p0, float p1) {
+                return ((p0 + p1) + 2);
+            }
+            void main() {
+                gl_FragColor = vec4(1, 0, 0, demo(0, 1));
+            }
+        """.trimIndent(), FragmentShader {
             DefaultShaders.apply {
                 // This is discarded
                 val demo2 by FUNC(Float1, Float1, returns = Float1) { x, y ->
@@ -89,18 +98,7 @@ class ShadersTest {
 
                 SET(out, vec4(1.lit, 0.lit, 0.lit, demo(0.lit, 1.lit)))
             }
-        }, version = 330) {
-            line("float demo(float p0, float p1)") {
-                line("return ((p0 + p1) + 2);")
-            }
-            line("void main()") {
-                line("gl_FragColor = vec4(1, 0, 0, demo(0, 1));")
-            }
-            //+"layout(location = 0) out vec4 fragColor;"
-            //"void main()" {
-            //    +"fragColor = vec4(1, 0, 0, 1);"
-            //}
-        }
+        }, version = 330)
     }
 
     @Test
@@ -122,26 +120,23 @@ class ShadersTest {
             }
         }
 
-        assertEqualsShader(fragment, version = 330) {
-            line("float demo(float x, float y)") {
-                line("return ((x + y) + 2);")
+        assertEqualsShader("""
+            float demo(float x, float y) {
+                return ((x + y) + 2);
             }
-            line("void main()") {
-                line("gl_FragColor = vec4(1, 0, 0, demo(0, 1));")
+            void main() {
+                gl_FragColor = vec4(1, 0, 0, demo(0, 1));
             }
-            //+"layout(location = 0) out vec4 fragColor;"
-            //"void main()" {
-            //    +"fragColor = vec4(1, 0, 0, 1);"
-            //}
-        }
+        """.trimIndent(), fragment, version = 330)
     }
 
-    fun assertEqualsShader(shader: Shader, version: Int = GlslGenerator.DEFAULT_VERSION, gles: Boolean = false, block: Indenter.() -> Unit) {
+    fun assertEqualsShader(expected: String, shader: Shader, version: Int = GlslGenerator.DEFAULT_VERSION, variant: GLVariant = GLVariant.DESKTOP, stripDirectives: Boolean = true) {
         assertEquals(
-            Indenter {
-                block()
-            }.toString(),
-            shader.toNewGlslStringResult(gles = gles, version = version).result
+            expected.trimEnd(),
+            shader.toNewGlslStringResult(GlslConfig(variant, AGFeatures.Mutable(), glslVersion = version)).result.lines().filter {
+                val isDirective = it.startsWith("#") || it.startsWith("precision ")
+                if (stripDirectives) !isDirective else true
+            }.joinToString("\n").trimEnd().replace("\t", "    ")
         )
     }
 
@@ -149,16 +144,16 @@ class ShadersTest {
     fun testGlslEquality() {
         fun genFragment(sub: Int) = FragmentShader {
             DefaultShaders {
-                out setTo vec4(0f.lit, 0f.lit, 0f.lit, 0f.lit)
+                SET(out, vec4(0f.lit, 0f.lit, 0f.lit, 0f.lit))
 
                 for (y in 0 until 3) {
                     for (x in 0 until 3) {
-                        out setTo out + (tex(
+                        SET(out, out + (tex(
                             fragmentCoords + vec2(
                                 (x - sub).toFloat().lit,
                                 (y - sub).toFloat().lit
                             )
-                        )) * u_Weights[x][y]
+                        )) * u_Weights[x][y])
                     }
                 }
             }

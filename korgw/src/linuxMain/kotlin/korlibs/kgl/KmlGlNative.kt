@@ -5,6 +5,7 @@
 package korlibs.kgl
 
 import X11Embed.*
+import korlibs.graphics.shader.gl.*
 import korlibs.memory.dyn.*
 import kotlinx.cinterop.*
 
@@ -30,6 +31,5 @@ internal actual fun glGetProcAddressAnyOrNull(name: String): COpaquePointer? = m
 }
 
 actual class KmlGlNative actual constructor() : NativeBaseKmlGl() {
-    override val gles: Boolean = true
-    override val linux: Boolean = true
+    override val variant: GLVariant get() = GLVariant.LINUX_DESKTOP
 }

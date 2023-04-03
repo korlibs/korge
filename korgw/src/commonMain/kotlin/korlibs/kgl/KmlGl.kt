@@ -5,16 +5,14 @@
 package korlibs.kgl
 
 import korlibs.datastructure.*
-import korlibs.memory.*
 import korlibs.graphics.*
-import korlibs.io.util.*
+import korlibs.graphics.shader.gl.*
 
 abstract class KmlGl : Extra by Extra.Mixin(), IKmlGl, AGFeatures {
+    @Deprecated("Replace with variant")
     open val gles: Boolean get() = false
-    open val linux: Boolean get() = false
-    open val android: Boolean get() = Platform.isAndroid
-    open val webgl: Boolean get() = false
-    open val webgl2: Boolean get() = false
+
+    abstract val variant: GLVariant
 
     open val root: KmlGl get() = this
     open var info: ContextInfo = ContextInfo()
@@ -334,6 +332,18 @@ abstract class KmlGl : Extra by Extra.Mixin(), IKmlGl, AGFeatures {
     inline val TEXTURE_2D_MULTISAMPLE: Int get() = KmlGl.TEXTURE_2D_MULTISAMPLE
 
     companion object {
+        fun errorString(error: Int): String {
+            return when (error) {
+                NO_ERROR -> "NO_ERROR"
+                INVALID_ENUM -> "INVALID_ENUM"
+                INVALID_VALUE -> "INVALID_VALUE"
+                INVALID_OPERATION -> "INVALID_OPERATION"
+                OUT_OF_MEMORY -> "OUT_OF_MEMORY"
+                INVALID_FRAMEBUFFER_OPERATION -> "INVALID_FRAMEBUFFER_OPERATION"
+                else -> "ERROR($error)"
+            }
+        }
+
         const val TEXTURE_BASE_LEVEL = 0x813C
         const val TEXTURE_MAX_LEVEL = 0x813D
 
@@ -661,6 +671,11 @@ abstract class KmlGl : Extra by Extra.Mixin(), IKmlGl, AGFeatures {
 
         // ANDROID
         const val TEXTURE_EXTERNAL_OES           = 0x8D65
+
+        // UNIFORM BUFFERS
+        const val UNIFORM_BUFFER = 0x8A11
+        const val UNIFORM_BUFFER_BINDING = 0x8A28
+        const val UNIFORM_BUFFER_OFFSET_ALIGNMENT = 0x8A34
     }
 
     open fun init() = Unit

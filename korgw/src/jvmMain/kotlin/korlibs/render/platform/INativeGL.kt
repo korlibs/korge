@@ -2,19 +2,16 @@
 
 package korlibs.render.platform
 
-import korlibs.logger.Logger
-import korlibs.memory.*
+import com.sun.jna.*
+import korlibs.io.lang.*
+import korlibs.io.time.*
+import korlibs.logger.*
 import korlibs.memory.Platform
 import korlibs.memory.dyn.*
 import korlibs.render.win32.*
-import korlibs.io.lang.*
-import korlibs.io.time.*
-import korlibs.io.util.*
-import com.sun.jna.*
 import java.io.*
-import java.nio.ByteBuffer
-import java.nio.FloatBuffer
-import java.nio.IntBuffer
+import java.nio.*
+import kotlin.collections.set
 
 typealias GLboolean = Byte // Check https://github.com/korlibs/korge/issues/268#issuecomment-729056184 for details
 typealias GLbyte = Byte
@@ -47,7 +44,7 @@ object DirectGL : INativeGL {
     private val logger = Logger("DirectGL")
 
     external fun glGenVertexArrays(n: Int, out: IntArray)
-    external fun glBindVertexArray(varray: Int)
+    //external fun glBindVertexArray(varray: Int)
 
     external override fun glActiveTexture(texture: GLenum)
     external override fun glAttachShader(program: GLuint, shader: GLuint)
@@ -208,6 +205,17 @@ object DirectGL : INativeGL {
     external override fun glDrawElementsInstanced(mode: GLenum, count: GLsizei, type: GLenum, indices: IntSize, instancecount: GLsizei)
     external override fun glVertexAttribDivisor(index: GLuint, divisor: GLuint)
     external override fun glRenderbufferStorageMultisample(target: GLenum, samples: GLint, internalformat: GLenum, width: GLsizei, height: GLsizei)
+
+    // Uniform Block
+    external override fun glBindBufferRange(target: GLenum, index: GLuint, buffer: GLuint, offset: GLintptr, size: GLsizeiptr)
+    external override fun glGetUniformBlockIndex(program: GLuint, uniformBlockName: String): Int
+    external override fun glUniformBlockBinding(program: GLuint, uniformBlockIndex: GLuint, uniformBlockBinding: GLuint)
+
+    // VAO
+    external override fun glGenVertexArrays(n: GLsizei, buffers: IntPtr)
+    external override fun glDeleteVertexArrays(n: GLsizei, items: IntPtr)
+    external override fun glBindVertexArray(array: GLuint)
+
 
     internal var loaded = false
 
@@ -424,6 +432,20 @@ interface INativeGL {
     fun glDrawElementsInstanced(mode: GLenum, count: GLsizei, type: GLenum, indices: IntSize, instancecount: GLsizei)
     fun glVertexAttribDivisor(index: GLuint, divisor: GLuint)
     fun glRenderbufferStorageMultisample(target: GLenum, samples: GLint, internalformat: GLenum, width: GLsizei, height: GLsizei)
+
+    // https://registry.khronos.org/OpenGL-Refpages/gl4/html/glBindBufferRange.xhtml
+    // https://registry.khronos.org/OpenGL-Refpages/gl4/html/glGetUniformBlockIndex.xhtml
+    // https://registry.khronos.org/OpenGL-Refpages/gl4/html/glUniformBlockBinding.xhtml
+    fun glBindBufferRange(target: GLenum, index: GLuint, buffer: GLuint, offset: GLintptr, size: GLsizeiptr): Unit = unsupported("Not supported uniform buffers ${this::class}")
+    fun glGetUniformBlockIndex(program: GLuint, uniformBlockName: String): Int = unsupported("Not supported uniform buffers ${this::class}")
+    fun glUniformBlockBinding(program: GLuint, uniformBlockIndex: GLuint, uniformBlockBinding: GLuint): Unit = unsupported("Not supported uniform buffers ${this::class}")
+
+    // https://registry.khronos.org/OpenGL-Refpages/gl4/html/glGenVertexArrays.xhtml
+    // https://registry.khronos.org/OpenGL-Refpages/gl4/html/glDeleteVertexArrays.xhtml
+    // https://registry.khronos.org/OpenGL-Refpages/gl4/html/glBindVertexArray.xhtml
+    fun glGenVertexArrays(n: GLsizei, buffers: IntPtr)
+    fun glDeleteVertexArrays(n: GLsizei, items: IntPtr)
+    fun glBindVertexArray(array: GLuint)
 
     companion object {
         const val DEPTH_BUFFER_BIT: Int = 0x0100

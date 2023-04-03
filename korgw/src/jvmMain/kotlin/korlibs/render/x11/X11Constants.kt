@@ -1,13 +1,13 @@
 package korlibs.render.x11
 
-import korlibs.datastructure.IntMap
-import korlibs.memory.dyn.*
-import korlibs.event.Key
-import korlibs.render.platform.INativeGL
-import korlibs.render.platform.NativeKgl
 import com.sun.jna.*
-import com.sun.jna.platform.unix.X11
+import com.sun.jna.platform.unix.*
 import com.sun.jna.ptr.*
+import korlibs.datastructure.*
+import korlibs.event.*
+import korlibs.graphics.shader.gl.*
+import korlibs.memory.dyn.*
+import korlibs.render.platform.*
 
 
 typealias XVisualInfo = Pointer
@@ -677,6 +677,5 @@ internal interface GL : INativeGL, Library {
 //internal object X11KmlGl : NativeKgl(X)
 
 open class X11KmlGl : NativeKgl(X) {
-    override val gles: Boolean = true
-    override val linux: Boolean = true
+    override val variant: GLVariant get() = GLVariant.JVM_X11
 }

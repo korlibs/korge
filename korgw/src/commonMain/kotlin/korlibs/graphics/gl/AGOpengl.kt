@@ -1,15 +1,19 @@
 package korlibs.graphics.gl
 
+import korlibs.crypto.encoding.*
+import korlibs.datastructure.*
 import korlibs.datastructure.iterators.*
-import korlibs.kgl.*
-import korlibs.memory.*
 import korlibs.graphics.*
 import korlibs.graphics.shader.*
 import korlibs.graphics.shader.gl.*
 import korlibs.image.bitmap.*
 import korlibs.image.color.*
 import korlibs.io.lang.*
-import korlibs.crypto.encoding.*
+import korlibs.kgl.*
+import korlibs.memory.*
+
+//val ENABLE_UNIFORM_BLOCKS = Environment["ENABLE_UNIFORM_BLOCKS"] == "true"
+val ENABLE_UNIFORM_BLOCKS = true
 
 class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
     class ShaderException(val str: String, val error: String, val errorInt: Int, val gl: KmlGl, val debugName: String?, val type: Int, val shaderReturnInt: Int) :
@@ -45,7 +49,7 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
         //gl.finish()
         selectTextureUnitTemp(TEMP_TEXTURE_UNIT, setToNullLater = true) {
             textureBind(texture, AGTextureTargetKind.TEXTURE_2D)
-            if (!gl.webgl) {
+            if (!gl.variant.isWebGL) {
                 gl.texParameteri(gl.TEXTURE_2D, KmlGl.TEXTURE_BASE_LEVEL, 0)
                 gl.texParameteri(gl.TEXTURE_2D, KmlGl.TEXTURE_MAX_LEVEL, 0)
             }
@@ -89,20 +93,38 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
     private val normalPrograms = HashMap<Program, GLBaseProgram>()
     //private val externalPrograms = HashMap<Program, GLBaseProgram>()
 
-    private fun useProgram(program: Program, config: ProgramConfig = ProgramConfig.DEFAULT) {
+    var shadingLanguageVersion: String? = null
+
+    private fun useProgram(program: Program) {
         //val map = if (config.externalTextureSampler) externalPrograms else normalPrograms
         val map = normalPrograms
+
+        if (shadingLanguageVersion == null) {
+            shadingLanguageVersion = gl.getString(KmlGl.SHADING_LANGUAGE_VERSION)
+            logger.info { "GL_VERSION=" + gl.getString(KmlGl.VERSION) }
+            logger.info { "GL_SHADING_LANGUAGE_VERSION=$shadingLanguageVersion" }
+            logger.info { "GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT=" + gl.getInteger(KmlGl.UNIFORM_BUFFER_OFFSET_ALIGNMENT) }
+            logger.info { "gl.versionString=${gl.versionString}" }
+            logger.info { "gl.versionInt=${gl.versionInt}" }
+        }
+
         val nprogram: GLBaseProgram = map.getOrPut(program) {
-            GLBaseProgram(glGlobalState, GLShaderCompiler.programCreate(
-                gl,
-                this.glslConfig.copy(programConfig = config),
-                program, debugName = program.name
-            )).also { baseProgram ->
+            GLBaseProgram(glGlobalState, GLShaderCompiler.programCreate(gl, this.glslConfig, program, debugName = program.name)).also { baseProgram ->
                 baseProgram.use()
 
+                val programInfo = baseProgram.programInfo
+                val programId = programInfo.programId
+
                 program.samplers.forEach {
-                    val location = baseProgram.programInfo.getUniformLocation(gl, it.name)
+                    val location = programInfo.getUniformLocation(gl, it.name)
                     gl.uniform1i(location, it.index)
+                }
+
+                if (programInfo.config.useUniformBlocks) {
+                    program.uniformBlocks.fastForEach {
+                        val index = gl.getUniformBlockIndex(programId, it.name)
+                        gl.uniformBlockBinding(programId, index, it.fixedLocation)
+                    }
                 }
             }
         }
@@ -159,10 +181,7 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
             //println("REUSING: currentVertexData=$currentVertexData, vertexData=$vertexData")
         }
 
-        useProgram(program, config = when {
-            //uniforms.useExternalSampler() -> ProgramConfig.EXTERNAL_TEXTURE_SAMPLER
-            else -> ProgramConfig.DEFAULT
-        })
+        useProgram(program)
         uniformsSet(
             //uniforms,
             uniformBlocks, textureUnits, program, frameBuffer
@@ -241,12 +260,7 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
 
     }
 
-    val glslConfig: GlslConfig by lazy {
-        GlslConfig(
-            gles = gl.gles,
-            android = gl.android,
-        )
-    }
+    val glslConfig: GlslConfig by lazy { GlslConfig(gl.variant, gl) }
 
     private var currentVertexData: AGVertexArrayObject? = null
     private var currentBlending: AGBlending = AGBlending.INVALID
@@ -281,7 +295,7 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
         _currentViewportSize = AGSize.INVALID
         textureParams.fastForEach { it.reset() }
         gl.activeTexture(KmlGl.TEXTURE0)
-        if (!gl.webgl) {
+        if (!gl.variant.isWebGL) {
             gl.texParameteri(gl.TEXTURE_2D, KmlGl.TEXTURE_BASE_LEVEL, 0)
             gl.texParameteri(gl.TEXTURE_2D, KmlGl.TEXTURE_MAX_LEVEL, 0)
         }
@@ -366,38 +380,114 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
         }
     }
 
-    private fun bindBuffer(buffer: AGBuffer?, target: AGBufferKind, onlyUpdate: Boolean = false) {
+    private fun bindBuffer(
+        buffer: AGBuffer?,
+        target: AGBufferKind,
+        onlyUpdate: Boolean = false,
+        reallocated: Ref<Boolean>? = null,
+        updated: Ref<Boolean>? = null,
+    ): GLBuffer? {
+        reallocated?.value = false
+        updated?.value = false
         if (buffer == null) {
             gl.bindBuffer(target.toGl(), 0)
-            return
+            return null
         }
         val bufferInfo = buffer.gl
         if (!onlyUpdate) gl.bindBuffer(target.toGl(), bufferInfo.id)
         buffer.update {
+            //println("Updated buffer: ${buffer.identityHashCode()} $buffer, $target, $onlyUpdate")
             val mem = buffer.mem ?: Buffer(0)
             bufferInfo.estimatedBytes = mem.sizeInBytes.toLong()
             if (onlyUpdate) gl.bindBuffer(target.toGl(), bufferInfo.id)
-            gl.bufferData(target.toGl(), mem.sizeInBytes, mem, KmlGl.STATIC_DRAW)
+            if (buffer.lastUploadedSize < mem.sizeInBytes) {
+                buffer.lastUploadedSize = mem.sizeInBytes
+                gl.bufferData(target.toGl(), mem.sizeInBytes, mem, KmlGl.DYNAMIC_DRAW)
+                reallocated?.value = true
+                //println("UPLOAD FULL DATA")
+            } else {
+                //println("UPDATES DATA")
+                gl.bufferSubData(target.toGl(), 0, mem.sizeInBytes, mem)
+            }
+            updated?.value = true
         }
+        return bufferInfo
     }
 
     fun vaoUnuse(vao: AGVertexArrayObject) {
-        vao.list.fastForEach { entry ->
-            entry.layout.attributes.fastForEach { att ->
-                if (att.active) {
-                    val loc = att.fixedLocation
-                    if (loc >= 0) {
-                        if (att.divisor != 0) {
-                            gl.vertexAttribDivisor(loc, 0)
+        if (reallyIsVertexArraysSupported && gl.isVertexArraysSupported) {
+            gl.bindVertexArray(0)
+        } else {
+            vao.list.fastForEach { entry ->
+                entry.layout.attributes.fastForEach { att ->
+                    if (att.active) {
+                        val loc = att.fixedLocation
+                        if (loc >= 0) {
+                            if (att.divisor != 0) {
+                                gl.vertexAttribDivisor(loc, 0)
+                            }
+                            gl.disableVertexAttribArray(loc)
                         }
-                        gl.disableVertexAttribArray(loc)
                     }
                 }
             }
         }
     }
 
+    class GLVAO(var vao: AGVertexArrayObject, var glId: Int = -1, var contextVersion: Int = -1)
+
+    var AGVertexArrayObject.gl: GLVAO by Extra.PropertyThis { GLVAO(this) }
+
+    var dynamicVaoGlId = -1
+    var dynamicVaoContextVersion = -1
+
+    var reallyIsVertexArraysSupported = true
+
     fun vaoUse(vao: AGVertexArrayObject) {
+        if (reallyIsVertexArraysSupported && gl.isVertexArraysSupported) {
+            val vaoGl = vao.gl
+            if (vao.isDynamic) {
+                if (dynamicVaoContextVersion != contextVersion) {
+                    dynamicVaoGlId = gl.genVertexArray()
+                    dynamicVaoContextVersion = contextVersion
+                    if (dynamicVaoGlId <= 0) reallyIsVertexArraysSupported = false
+                }
+                gl.bindVertexArray(dynamicVaoGlId)
+                _vaoUse(vao)
+            } else {
+                if (vaoGl.contextVersion != contextVersion) {
+                    vaoGl.contextVersion = contextVersion
+                    vaoGl.glId = gl.genVertexArray()
+                    //println("VAO created[${vaoGl.glId}]: ${vao.identityHashCode()} $vao")
+                    if (vaoGl.glId <= 0) reallyIsVertexArraysSupported = false
+                    //gl.bindVertexArray(vaoGl.glId)
+                    //for (n in 0 until 16) gl.disableVertexAttribArray(n)
+
+                    gl.bindVertexArray(vaoGl.glId)
+                    _vaoUse(vao)
+                }
+                gl.bindVertexArray(vaoGl.glId)
+                _vaoUse(vao, updateBuffersOnly = reallyIsVertexArraysSupported)
+            }
+        } else {
+            _vaoUse(vao)
+        }
+        //gl.enableVertexAttribArray()
+    }
+
+    val bindBufferReallocated = Ref<Boolean>()
+
+    fun _vaoUse(vao: AGVertexArrayObject, updateBuffersOnly: Boolean = false) {
+        //var locBitSet = 0
+        if (updateBuffersOnly) {
+            //gl.bindBuffer(AGBufferKind.VERTEX.toGl(), 0)
+            vao.list.fastForEach { entry ->
+                bindBuffer(entry.buffer, AGBufferKind.VERTEX, updated = bindBufferReallocated)
+            }
+            //if (!bindBufferReallocated.value) return
+            return
+        }
+
         vao.list.fastForEach { entry ->
             val vertices = entry.buffer
             val vertexLayout = entry.layout
@@ -407,7 +497,10 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
 
             //if (vertices.kind != AG.BufferKind.VERTEX) invalidOp("Not a VertexBuffer")
 
-            bindBuffer(vertices, AGBufferKind.VERTEX)
+            bindBuffer(vertices, AGBufferKind.VERTEX, updated = bindBufferReallocated)
+
+            //if (updateBuffersOnly && !bindBufferReallocated.value) {
+
             val totalSize = vertexLayout.totalSize
             for (n in vattrspos.indices) {
                 val att = vattrs[n]
@@ -416,6 +509,7 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
                 val loc = att.fixedLocation
                 val glElementType = att.type.toGl()
                 val elementCount = att.type.elementCount
+                //println("loc=$loc")
                 if (loc >= 0) {
                     gl.enableVertexAttribArray(loc)
                     gl.vertexAttribPointer(
@@ -429,12 +523,15 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
                     if (att.divisor != 0) {
                         gl.vertexAttribDivisor(loc, att.divisor)
                     }
+                    //locBitSet = locBitSet.insert(true, loc)
                 }
             }
         }
+        //locBitSet.fastForEachOneBits { gl.enableVertexAttribArray(it) }
+        //locBitSet.inv().fastForEachOneBits { gl.disableVertexAttribArray(it) }
     }
 
-    val tempBuffer = Buffer(4 * 128)
+    //val tempBuffer = Buffer(4 * 128)
     //val tempBufferBlockCount = Array(128) { tempBuffer.sliceWithSize(0, 4 * it) }
 
     // UBO
@@ -498,6 +595,14 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
 
         val glProgramInfo = glProgram.programInfo
         uniformBlocks.fastForEachBlock { index, block, buffer, valueIndex ->
+            //if (gl.isUniformBuffersSupported && glProgram.programInfo.config.useUniformBlocks) {
+            if (glProgram.programInfo.config.useUniformBlocks) {
+                //println("isUniformBuffersSupported!!")
+                val buffer = bindBuffer(buffer, AGBufferKind.UNIFORM)
+                gl.bindBufferRange(KmlGl.UNIFORM_BUFFER, block.block.fixedLocation, buffer?.id ?: -1, valueIndex * block.blockSize, block.blockSize)
+                return@fastForEachBlock
+            }
+
             val ref = glProgramInfo.uniforms[block.block.fixedLocation]
             val bufferMem = buffer!!.mem!!
             val currentMem = ref!!.buffer
@@ -530,6 +635,8 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
         //}
     }
 
+    private val tempData = Buffer(3 * 3 * 4)
+
     private fun writeUniform(uniform: Uniform, programInfo: GLProgramInfo, data: Buffer, source: String) {
         val location = programInfo.getUniformLocation(gl, uniform.name)
         val uniformType = uniform.type
@@ -540,7 +647,10 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
         when (uniformType.kind) {
             VarKind.TFLOAT -> when (uniformType) {
                 VarType.Mat2 -> gl.uniformMatrix2fv(location, arrayCount, false, data)
-                VarType.Mat3 -> gl.uniformMatrix3fv(location, arrayCount, false, data)
+                VarType.Mat3 -> {
+                    for (n in 0 until 3) arraycopy(data, n * 16, tempData, n * 12, 12)
+                    gl.uniformMatrix3fv(location, arrayCount, false, tempData)
+                }
                 VarType.Mat4 -> gl.uniformMatrix4fv(location, arrayCount, false, data)
                 else -> when (uniformType.elementCount) {
                     1 -> gl.uniform1fv(location, arrayCount, data)
@@ -733,7 +843,7 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
                     //println("_textureUpdate: texId=$textureId, id=${tex?.id}, glId=${tex?.glId}, target=$target, source=${source.width}x${source.height}")
                     //println(buffer)
                     val internalFormat = when {
-                        isFloat && (gl.webgl2 || !gl.webgl) -> KmlGl.RGBA32F
+                        isFloat && (gl.variant.isWebGL && gl.variant.version >= 2) -> KmlGl.RGBA32F
                         //isFloat && (gl.webgl) -> KmlGl.FLOAT
                         //isFloat && (gl.webgl) -> KmlGl.RGBA
                         else -> type
@@ -745,14 +855,14 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
                     }
 
 
-                    if (gl.linux) {
+                    if (gl.variant.os.isLinux) {
                         //println("prepareTexImage2D")
                         //gl.pixelStorei(GL_UNPACK_LSB_FIRST, KmlGl.TRUE)
                         gl.pixelStorei(KmlGl.UNPACK_LSB_FIRST, KmlGl.GFALSE)
                         gl.pixelStorei(KmlGl.UNPACK_SWAP_BYTES, KmlGl.GTRUE)
                     }
 
-                    if (!gl.webgl) {
+                    if (!gl.variant.isWebGL) {
                         gl.texParameteri(texTarget, KmlGl.TEXTURE_BASE_LEVEL, 0)
                         gl.texParameteri(texTarget, KmlGl.TEXTURE_MAX_LEVEL, 0)
                     }

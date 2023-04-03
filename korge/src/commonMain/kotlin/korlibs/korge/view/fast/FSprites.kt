@@ -1,17 +1,13 @@
 package korlibs.korge.view.fast
-import korlibs.datastructure.Extra
-import korlibs.datastructure.IntArrayList
-import korlibs.memory.*
+import korlibs.datastructure.*
 import korlibs.graphics.*
 import korlibs.graphics.shader.*
-import korlibs.korge.render.BatchBuilder2D
-import korlibs.korge.render.RenderContext
-import korlibs.korge.view.BlendMode
-import korlibs.korge.view.View
 import korlibs.image.bitmap.*
-import korlibs.image.color.Colors
-import korlibs.image.color.RGBA
+import korlibs.image.color.*
+import korlibs.korge.render.*
+import korlibs.korge.view.*
 import korlibs.math.geom.*
+import korlibs.memory.*
 
 @PublishedApi
 internal const val FSPRITES_STRIDE = 8
@@ -217,7 +213,7 @@ open class FSprites(val maxSize: Int) {
             AGVertexData(a_texId)
         }
         val RenderContext.buffers by Extra.PropertyThis<RenderContext, AGVertexArrayObject> {
-            AGVertexArrayObject(xyBuffer, fastSpriteBuffer, fastSpriteBufferMul, fastSpriteBufferTexId)
+            AGVertexArrayObject(xyBuffer, fastSpriteBuffer, fastSpriteBufferMul, fastSpriteBufferTexId, isDynamic = false)
         }
 
         fun createProgram(maxTexs: Int = 4): Program {

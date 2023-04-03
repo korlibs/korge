@@ -4,9 +4,9 @@ import korlibs.graphics.shader.*
 
 class AGUniformsTest {
     object UB : UniformBlock(fixedLocation = 0) {
-        val projMatrix by mat4()
-        val viewMatrix by mat4()
-        val color1 by ubyte4()
+        //val projMatrix by mat4()
+        //val viewMatrix by mat4()
+        //val color1 by ubyte4()
     }
 
     //@Test

@@ -1,12 +1,15 @@
 package korlibs.render.platform
 
+import com.sun.jna.*
+import korlibs.graphics.shader.gl.*
+import korlibs.image.awt.*
+import korlibs.image.bitmap.*
 import korlibs.kgl.*
 import korlibs.memory.*
-import korlibs.image.awt.AwtNativeImage
-import korlibs.image.bitmap.NativeImage
-import com.sun.jna.NativeLong
 
 open class NativeKgl constructor(private val gl: INativeGL) : KmlGlWithExtensions() {
+    override val variant: GLVariant = GLVariant.JVM
+
     override fun activeTexture(texture: Int): Unit = gl.glActiveTexture(texture)
     override fun attachShader(program: Int, shader: Int): Unit = gl.glAttachShader(program, shader)
     override fun bindAttribLocation(program: Int, index: Int, name: String): Unit = gl.glBindAttribLocation(program, index, name)
@@ -160,6 +163,35 @@ open class NativeKgl constructor(private val gl: INativeGL) : KmlGlWithExtension
     override fun renderbufferStorageMultisample(target: Int, samples: Int, internalformat: Int, width: Int, height: Int) {
         gl.glRenderbufferStorageMultisample(target, samples, internalformat, width, height)
     }
+
+    override val isUniformBuffersSupported: Boolean get() = true
+
+    override fun bindBufferRange(target: Int, index: Int, buffer: Int, offset: Int, size: Int) {
+        return gl.glBindBufferRange(target, index, buffer, NativeLong(offset.toLong()), NativeLong(size.toLong()))
+    }
+    override fun getUniformBlockIndex(program: Int, name: String): Int = gl.glGetUniformBlockIndex(program, name)
+    override fun uniformBlockBinding(program: Int, uniformBlockIndex: Int, uniformBlockBinding: Int) =
+        gl.glUniformBlockBinding(program, uniformBlockIndex, uniformBlockBinding)
+
+    override var isVertexArraysSupported: Boolean = true
+
+    override fun genVertexArrays(n: Int, arrays: Buffer): Unit {
+        val intBuffer = arrays.directIntBuffer
+        gl.glGenVertexArrays(n, intBuffer)
+        if (intBuffer[0] <= 0) {
+            val error = gl.glGetError()
+            println("ERROR: genVertexArray: count=$n, error=${KmlGl.errorString(error)}, firstBuffer=${intBuffer[0]}")
+            isVertexArraysSupported = false
+            arrays.setInt32(0, -1)
+            return
+        }
+    }
+    override fun deleteVertexArrays(n: Int, arrays: Buffer): Unit {
+        val intBuffer = arrays.directIntBuffer
+        gl.glDeleteVertexArrays(n, arrays.directIntBuffer)
+        println("deleteVertexArrays, $n: " + intBuffer[0])
+    }
+    override fun bindVertexArray(array: Int): Unit { gl.glBindVertexArray(array) }
 }
 
 

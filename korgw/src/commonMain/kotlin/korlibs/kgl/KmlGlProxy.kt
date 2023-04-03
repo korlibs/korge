@@ -4,12 +4,13 @@
 
 package korlibs.kgl
 
-import korlibs.logger.Logger
-import korlibs.memory.*
-import korlibs.image.bitmap.NativeImage
-import korlibs.io.lang.printStackTrace
-import korlibs.io.lang.quoted
+import korlibs.graphics.*
+import korlibs.graphics.shader.gl.*
+import korlibs.image.bitmap.*
+import korlibs.io.lang.*
 import korlibs.io.util.*
+import korlibs.logger.*
+import korlibs.memory.*
 
 open class KmlGlProxy(parent: KmlGl) : KmlGlFastProxy(parent) {
     fun Int32Buffer.toRealString(size: Int = this.size): String = buildString {
@@ -1097,13 +1098,57 @@ open class KmlGlProxy(parent: KmlGl) : KmlGlFastProxy(parent) {
         val res = parent.handleContextLost()
         after("handleContextLost", sparams, res)
     }
+
+    override fun bindBufferRange(target: Int, index: Int, buffer: Int, offset: Int, size: Int) {
+        val sparams = listOf<Any?>(target, index, buffer, offset, size)
+        before("bindBufferRange", sparams)
+        val res = parent.bindBufferRange(target, index, buffer, offset, size)
+        after("bindBufferRange", sparams, res)
+        return res
+    }
+
+    override fun getUniformBlockIndex(program: Int, name: String): Int {
+        val sparams = listOf<Any?>(program, name)
+        before("getUniformBlockIndex", sparams)
+        val res = parent.getUniformBlockIndex(program, name)
+        after("getUniformBlockIndex", sparams, res)
+        return res
+    }
+
+    override fun uniformBlockBinding(program: Int, uniformBlockIndex: Int, uniformBlockBinding: Int) {
+        val sparams = listOf<Any?>(program, uniformBlockIndex, uniformBlockBinding)
+        before("uniformBlockBinding", sparams)
+        val res = parent.uniformBlockBinding(program, uniformBlockIndex, uniformBlockBinding)
+        after("uniformBlockBinding", sparams, res)
+        return res
+    }
+
+    override fun genVertexArrays(n: Int, arrays: Buffer) {
+        val sparams = listOf<Any?>(n, arrays)
+        before("genVertexArrays", sparams)
+        val res = parent.genVertexArrays(n, arrays)
+        after("genVertexArrays", sparams, res)
+        return res
+    }
+
+    override fun deleteVertexArrays(n: Int, arrays: Buffer) {
+        val sparams = listOf<Any?>(n, arrays)
+        before("deleteVertexArrays", sparams)
+        val res = parent.deleteVertexArrays(n, arrays)
+        after("deleteVertexArrays", sparams, res)
+        return res
+    }
+
+    override fun bindVertexArray(array: Int) {
+        val sparams = listOf<Any?>(array)
+        before("bindVertexArray", sparams)
+        val res = parent.bindVertexArray(array)
+        after("bindVertexArray", sparams, res)
+        return res
+    }
 }
 open class KmlGlFastProxy(var parent: KmlGl) : KmlGl() {
-    override val gles: Boolean get() = parent.gles
-    override val linux: Boolean get() = parent.linux
-    override val android: Boolean get() = parent.android
-    override val webgl: Boolean get() = parent.webgl
-    override val webgl2: Boolean get() = parent.webgl2
+    override val variant: GLVariant get() = parent.variant
     override val root: KmlGl get() = parent.root
 
     override val graphicExtensions: Set<String> get() = parent.graphicExtensions
@@ -1559,15 +1604,18 @@ open class KmlGlFastProxy(var parent: KmlGl) : KmlGl() {
 	override fun vertexAttrib4f(index: Int, x: Float, y: Float, z: Float, w: Float) {
 		return parent.vertexAttrib4f(index, x, y, z, w)
 	}
-	override fun vertexAttrib4fv(index: Int, v: Buffer) {
-		return parent.vertexAttrib4fv(index, v)
-	}
-	override fun vertexAttribPointer(index: Int, size: Int, type: Int, normalized: Boolean, stride: Int, pointer: Long) {
-		return parent.vertexAttribPointer(index, size, type, normalized, stride, pointer)
-	}
-	override fun viewport(x: Int, y: Int, width: Int, height: Int) {
-		return parent.viewport(x, y, width, height)
-	}
+	override fun vertexAttrib4fv(index: Int, v: Buffer) = parent.vertexAttrib4fv(index, v)
+	override fun vertexAttribPointer(index: Int, size: Int, type: Int, normalized: Boolean, stride: Int, pointer: Long) = parent.vertexAttribPointer(index, size, type, normalized, stride, pointer)
+	override fun viewport(x: Int, y: Int, width: Int, height: Int) = parent.viewport(x, y, width, height)
+
+    override fun bindBufferRange(target: Int, index: Int, buffer: Int, offset: Int, size: Int) = parent.bindBufferRange(target, index, buffer, offset, size)
+    override fun getUniformBlockIndex(program: Int, name: String): Int = parent.getUniformBlockIndex(program, name)
+    override fun uniformBlockBinding(program: Int, uniformBlockIndex: Int, uniformBlockBinding: Int) =
+        parent.uniformBlockBinding(program, uniformBlockIndex, uniformBlockBinding)
+
+    override fun genVertexArrays(n: Int, arrays: Buffer) = parent.genVertexArrays(n, arrays)
+    override fun deleteVertexArrays(n: Int, arrays: Buffer) = parent.deleteVertexArrays(n, arrays)
+    override fun bindVertexArray(array: Int) = parent.bindVertexArray(array)
 }
 
 open class KmlGlProxyLogToString(parent: KmlGl = KmlGlDummy()) : KmlGlProxy(parent) {
@@ -1595,6 +1643,8 @@ class LogKmlGlProxy(parent: KmlGl = KmlGlDummy(), var logBefore: Boolean = false
 	}
 }
 open class CheckErrorsKmlGlProxy(parent: KmlGl, val throwException: Boolean = false, val printStackTrace: Boolean = false) : KmlGlProxy(parent) {
+    override val parentFeatures: AGFeatures? get() = parent
+
     private val logger = Logger("CheckErrorsKmlGlProxy")
     init {
         //println("CheckErrorsKmlGlProxy")
