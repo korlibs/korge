@@ -76,22 +76,13 @@ fun Project.addGenResourcesTasks() {
             val compilationName = if (isTest) "test" else "main"
             val compilation = target.compilations[compilationName]
             val korgeGeneratedTaskName = getKorgeProcessResourcesTaskName(target.name, compilation.name)
-            val korgeGeneratedTask = tasks.createThis<Task>(korgeGeneratedTaskName)
+            val korgeGeneratedTask = tasks.createThis<KorgeCatalogJsonTask>(korgeGeneratedTaskName)
             val korgeGeneratedFolder = getCompilationKorgeProcessedResourcesFolder(targetName, compilationName)
+            val folders = compilation.allKotlinSourceSets.map { it.resources.sourceDirectories }
 
-            korgeGeneratedTask.doFirst {
-                korgeGeneratedFolder.mkdirs()
-                val folders = compilation.allKotlinSourceSets.flatMap { it.resources.sourceDirectories.toList() }
-                val files = folders.flatMap { it.listFiles()?.toList() ?: emptyList() }.distinct()
-                val map = LinkedHashMap<String, Any?>()
-                for (file in files) {
-                    val fileName = if (file.isDirectory) "${file.name}/" else file.name
-                    map[fileName] = listOf(file.length(), file.lastModified())
-                }
-                //println("-------- $folders")
-                //println("++++++++ $files")
-                korgeGeneratedFolder["\$catalog.json"].writeText(Json.stringify(map))
-            }
+            korgeGeneratedTask.korgeGeneratedFolder = korgeGeneratedFolder
+            korgeGeneratedTask.inputFolders = folders
+
             task.from(korgeGeneratedFolder)
             task.dependsOn(korgeGeneratedTask)
         }
@@ -198,6 +189,30 @@ fun Project.addGenResourcesTasks() {
     }
 
      */
+}
+
+open class KorgeCatalogJsonTask @Inject constructor(
+    //private val fs: FileSystemOperations,
+) : DefaultTask() {
+    @get:OutputDirectory
+    lateinit var korgeGeneratedFolder: File
+
+    @get:InputFiles
+    lateinit var inputFolders: List<FileCollection>
+
+    @TaskAction
+    fun run() {
+        korgeGeneratedFolder.mkdirs()
+        val files = inputFolders.flatMap { it.toList() }.flatMap { it.listFiles()?.toList() ?: emptyList() }.distinct()
+        val map = LinkedHashMap<String, Any?>()
+        for (file in files) {
+            val fileName = if (file.isDirectory) "${file.name}/" else file.name
+            map[fileName] = listOf(file.length(), file.lastModified())
+        }
+        //println("-------- $folders")
+        //println("++++++++ $files")
+        korgeGeneratedFolder["\$catalog.json"].writeText(Json.stringify(map))
+    }
 }
 
 data class KorgeProcessedResourcesTaskConfig(
