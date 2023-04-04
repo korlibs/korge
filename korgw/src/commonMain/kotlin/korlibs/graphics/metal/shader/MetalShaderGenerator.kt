@@ -14,22 +14,25 @@ class MetalShaderGenerator(
     private val bufferLayouts: MetalShaderBufferInputLayouts
 ) : BaseMetalShaderGenerator {
 
-
     private val vertexInstructions = vertexShader.stm
     private val fragmentInstructions = fragmentShader.stm
     private val varyings = computeVaryings()
     private val logger = Logger("MetalShaderGenerator")
     private val vertexBodyGenerator = MetalShaderBodyGenerator(ShaderType.VERTEX)
-    private val inputStructure = mutableListOf<VertexLayout>()
-    private val inputBuffers by with(bufferLayouts) {
-        computeInputBuffers()
+    private val fragmentBodyGenerator = MetalShaderBodyGenerator(ShaderType.VERTEX)
+    private val inputBuffers by bufferLayouts
+        .computeInputBuffers()
+    private val inputStructure by lazy {
+        bufferLayouts.vertexInputStructure
+            .map { (index, attributes) -> index to attributes.attributes.toMetalShaderStructureGeneratorAttributes()}
     }
-
-    private fun computeVaryings(): List<Varying> {
-        val types = GlobalsProgramVisitor()
-        FuncDecl("main", VarType.TVOID, listOf(), vertexInstructions)
-            .also(types::visit)
-        return types.varyings.toList()
+    private val vertexVisitor by lazy {
+        GlobalsProgramVisitor()
+            .also { it.visit(vertexInstructions) }
+    }
+    private val fragmentVisitor by lazy {
+        GlobalsProgramVisitor()
+            .also { it.visit(fragmentInstructions) }
     }
 
     data class Result(
@@ -72,9 +75,7 @@ class MetalShaderGenerator(
     }
 
     private fun Indenter.declareVertexInputStructures() {
-        bufferLayouts.vertexInputStructure
-            .map { (index, attributes) -> index to attributes.attributes.toMetalShaderStructureGeneratorAttributes()}
-            .forEach { (index, attributes) ->
+        inputStructure.forEach { (index, attributes) ->
                 MetalShaderStructureGenerator.generate(
                     indenter = this,
                     name = "Buffer$index",
@@ -90,13 +91,9 @@ class MetalShaderGenerator(
     )
 
     private fun Indenter.generateVertexMainFunction(): List<List<VariableWithOffset>> {
-        val types = GlobalsProgramVisitor()
 
-        FuncDecl("main", VarType.TVOID, listOf(), vertexInstructions)
-            .also(types::visit)
-
-        val attributes = types.attributes
-        val uniforms =  types.uniforms
+        val attributes = vertexVisitor.attributes
+        val uniforms =  vertexVisitor.uniforms
 
         val generator = MetalShaderBodyGenerator(ShaderType.VERTEX)
         val inputBuffers = attributes.toList() + uniforms
@@ -129,12 +126,7 @@ class MetalShaderGenerator(
 
     private fun Indenter.generateFragmentMainFunction(): List<List<VariableWithOffset>> {
 
-        val generator = MetalShaderBodyGenerator(ShaderType.FRAGMENT)
-        val types = GlobalsProgramVisitor()
-        FuncDecl("main", VarType.TVOID, listOf(), fragmentInstructions)
-            .also(types::visit)
-
-        val fragmentUniformInput = types.uniforms.toList()
+        val fragmentUniformInput = fragmentVisitor.uniforms.toList()
         val initialBufferIndex = inputBuffers.size
 
         val parameters = listOf(("v2f in [[stage_in]]")) +
@@ -145,7 +137,7 @@ class MetalShaderGenerator(
                 }
 
                 val index = indexOfUniform + initialBufferIndex
-                "${parameterModifier.first} ${generator.typeToString(uniform.type)}${parameterModifier.second} ${uniform.name} [[buffer($index)]]"
+                "${parameterModifier.first} ${fragmentBodyGenerator.typeToString(uniform.type)}${parameterModifier.second} ${uniform.name} [[buffer($index)]]"
             }
 
 
@@ -157,8 +149,8 @@ class MetalShaderGenerator(
         }
         line(")") {
             line("float4 out;")
-            generator.visit(fragmentShader.stm)
-            line(generator.programIndenter)
+            fragmentBodyGenerator.visit(fragmentShader.stm)
+            line(fragmentBodyGenerator.programIndenter)
             line("return out;")
         }
 
@@ -189,6 +181,10 @@ class MetalShaderGenerator(
                 attribute = if (it == Output) "position" else null
             )
         }
+    }
+
+    private fun computeVaryings(): List<Varying> {
+        return vertexVisitor.varyings.toList()
     }
 }
 

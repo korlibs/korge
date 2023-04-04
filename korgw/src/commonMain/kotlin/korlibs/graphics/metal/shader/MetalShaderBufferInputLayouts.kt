@@ -13,8 +13,10 @@ data class MetalShaderBufferInputLayouts(
             .filter { (_, attributes) -> attributes.items.size >= 2 }
     }
 
-    fun MetalShaderGenerator.computeInputBuffers(): Lazy<MutableList<List<VariableWithOffset>>> = lazy {
+    fun computeInputBuffers(): Lazy<MutableList<List<VariableWithOffset>>> = lazy {
         (vertexLayouts.map { it.items }  + uniforms.map { listOf(it) })
             .toMutableList()
     }
 }
+
+
