@@ -16,10 +16,9 @@ class MetalShaderGenerator(
 
     private val vertexInstructions = vertexShader.stm
     private val fragmentInstructions = fragmentShader.stm
-    private val varyings = computeVaryings()
     private val logger = Logger("MetalShaderGenerator")
     private val vertexBodyGenerator = MetalShaderBodyGenerator(ShaderType.VERTEX)
-    private val fragmentBodyGenerator = MetalShaderBodyGenerator(ShaderType.VERTEX)
+    private val fragmentBodyGenerator = MetalShaderBodyGenerator(ShaderType.FRAGMENT)
     private val inputBuffers by bufferLayouts
         .computeInputBuffers()
     private val inputStructure by lazy {
@@ -34,19 +33,14 @@ class MetalShaderGenerator(
         GlobalsProgramVisitor()
             .also { it.visit(fragmentInstructions) }
     }
+    private val varyings = computeVaryings()
 
     data class Result(
         val result: String,
         val inputBuffers: List<List<VariableWithOffset>>
     )
 
-    fun generateResult(): Result = generateResult(vertexShader.functions + fragmentShader.functions)
-
-    private fun generateResult(customFunctions: List<FuncDecl>): Result {
-        val types = GlobalsProgramVisitor()
-
-        FuncDecl("main", VarType.TVOID, listOf(), vertexInstructions)
-            .also(types::visit)
+    fun generateResult(): Result  {
 
         val result = Indenter {
 
@@ -54,10 +48,8 @@ class MetalShaderGenerator(
             declareVertexInputStructures()
             declareVertexOutputStructure()
 
-            customFunctions.filter { it.ref.name in types.funcRefs }
-                .reversed()
-                .distinctBy { it.ref.name }
-                .let { generationFunctions(it) }
+            listFunctions()
+                .also { generationFunctions(it) }
 
             generateVertexMainFunction()
                 .also(inputBuffers::addAll)
@@ -73,6 +65,8 @@ class MetalShaderGenerator(
             inputBuffers.toList()
         )
     }
+
+    private fun listFunctions() = (vertexShader.functions + fragmentShader.functions)
 
     private fun Indenter.declareVertexInputStructures() {
         inputStructure.forEach { (index, attributes) ->
