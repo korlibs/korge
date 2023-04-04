@@ -1,13 +1,13 @@
 package korlibs.math.geom
 
-import korlibs.memory.clamp
-import korlibs.memory.pack.*
 import korlibs.math.annotations.*
 import korlibs.math.geom.bezier.*
 import korlibs.math.geom.shape.*
 import korlibs.math.geom.vector.*
 import korlibs.math.math.*
 import korlibs.math.math.isAlmostZero
+import korlibs.memory.clamp
+import korlibs.memory.pack.*
 import kotlin.math.*
 
 //@KormaValueApi
@@ -76,7 +76,7 @@ inline class Line internal constructor(val data: Float4Pack) : Shape2D {
     constructor() : this(Point(), Point())
     constructor(a: Point, b: Point) : this(float4PackOf(a.x, a.y, b.x, b.y))
     constructor(x0: Double, y0: Double, x1: Double, y1: Double) : this(Point(x0, y0), Point(x1, y1))
-    constructor(x0: Float, y0: Float, x1: Float, y1: Float) : this(Point(x0, y0), Point(x1, y1))
+    constructor(x0: Float, y0: Float, x1: Float, y1: Float, v: Unit = Unit) : this(Point(x0, y0), Point(x1, y1))
     constructor(x0: Int, y0: Int, x1: Int, y1: Int) : this(Point(x0, y0), Point(x1, y1))
 
     inline fun flipped(): Line = Line(b, a)

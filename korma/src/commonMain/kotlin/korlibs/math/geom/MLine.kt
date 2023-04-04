@@ -73,7 +73,7 @@ data class MLine(var a: Point, var b: Point) {
     constructor() : this(Point(), Point())
     constructor(p0: MPoint, p1: MPoint) : this(p0.point, p1.point)
     constructor(x0: Double, y0: Double, x1: Double, y1: Double) : this(MPoint(x0, y0), MPoint(x1, y1))
-    constructor(x0: Float, y0: Float, x1: Float, y1: Float) : this(MPoint(x0, y0), MPoint(x1, y1))
+    constructor(x0: Float, y0: Float, x1: Float, y1: Float, v: Unit = Unit) : this(MPoint(x0, y0), MPoint(x1, y1))
     constructor(x0: Int, y0: Int, x1: Int, y1: Int) : this(MPoint(x0, y0), MPoint(x1, y1))
 
     val x0: Double get() = a.xD

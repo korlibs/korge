@@ -6,7 +6,7 @@ import korlibs.math.geom.vector.*
 data class Circle(override val center: Point, val radius: Float) : AbstractShape2D() {
     override val lazyVectorPath: VectorPath by lazy { buildVectorPath { circle(this@Circle.center, this@Circle.radius) } }
 
-    constructor(x: Float, y: Float, radius: Float) : this(Point(x, y), radius)
+    constructor(x: Float, y: Float, radius: Float, v: Unit = Unit) : this(Point(x, y), radius)
 
     override val area: Float get() = (PIF * radius * radius)
     override val perimeter: Float get() = (PI2F * radius)

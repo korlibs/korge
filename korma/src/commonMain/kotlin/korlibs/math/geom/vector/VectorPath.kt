@@ -2,7 +2,6 @@ package korlibs.math.geom.vector
 
 import korlibs.datastructure.*
 import korlibs.datastructure.iterators.*
-import korlibs.memory.*
 import korlibs.math.annotations.*
 import korlibs.math.geom.*
 import korlibs.math.geom.bezier.*
@@ -11,6 +10,7 @@ import korlibs.math.geom.shape.*
 import korlibs.math.geom.trapezoid.*
 import korlibs.math.internal.*
 import korlibs.math.math.*
+import korlibs.memory.*
 import kotlin.native.concurrent.*
 
 interface IVectorPath : VectorBuilder {
@@ -416,6 +416,7 @@ class VectorPath(
         version++
         return this
     }
+
 
     fun scale(sx: Double, sy: Double = sx): VectorPath = transformPoints { Point(it.x * sx, it.y * sy) }
 

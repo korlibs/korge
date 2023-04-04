@@ -1,5 +1,7 @@
 package korlibs.memory.pack
 
+import kotlin.jvm.*
+
 data class Half8Pack(
     val h0: Float,
     val h1: Float,
@@ -108,7 +110,7 @@ fun int4PackOf(i0: Int, i1: Int, i2: Int, i3: Int): Int4Pack = Int4Pack(i0, i1, 
 //val Float2Pack.f1: Float get() = Float.fromBits(data.high)
 //fun float2PackOf(f0: Float, f1: Float): Float2Pack = Float2Pack(Long.fromLowHigh(f0.toRawBits(), f1.toRawBits()))
 
-data class Float2Pack(val x: Float, val y: Float)
+@JvmInline value class Float2Pack(val x: Float, val y: Float)
 val Float2Pack.f0: Float get() = x
 val Float2Pack.f1: Float get() = y
 fun float2PackOf(f0: Float, f1: Float): Float2Pack = Float2Pack(f0, f1)

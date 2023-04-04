@@ -1,7 +1,8 @@
 package korlibs.math.geom
 
-import korlibs.memory.pack.*
 import korlibs.math.internal.*
+import korlibs.memory.pack.*
+import kotlin.jvm.*
 import kotlin.math.*
 
 /**
@@ -9,7 +10,8 @@ import kotlin.math.*
  */
 //@KormaExperimental
 //@KormaValueApi
-inline class Size internal constructor(internal val raw: Float2Pack) {//: Sizeable {
+@JvmInline
+value class Size internal constructor(internal val raw: Float2Pack) {//: Sizeable {
 
     fun isEmpty(): Boolean = width == 0f || height == 0f
 

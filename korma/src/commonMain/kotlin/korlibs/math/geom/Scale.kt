@@ -1,10 +1,12 @@
 package korlibs.math.geom
 
-import korlibs.memory.pack.*
 import korlibs.math.annotations.*
+import korlibs.memory.pack.*
+import kotlin.jvm.*
 
 //@KormaValueApi
-inline class Scale internal constructor(internal val raw: Float2Pack) {
+@JvmInline
+value class Scale internal constructor(internal val raw: Float2Pack) {
     val scaleX: Float get() = raw.f0
     val scaleY: Float get() = raw.f1
     val scaleAvg: Float get() = scaleX * .5f + scaleY * .5f

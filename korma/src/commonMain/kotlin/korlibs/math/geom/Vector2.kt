@@ -2,12 +2,13 @@
 
 package korlibs.math.geom
 
-import korlibs.memory.*
-import korlibs.memory.pack.*
 import korlibs.math.internal.*
 import korlibs.math.interpolation.*
 import korlibs.math.math.*
 import korlibs.math.math.isAlmostZero
+import korlibs.memory.*
+import korlibs.memory.pack.*
+import kotlin.jvm.*
 import kotlin.math.*
 
 typealias Point = Vector2
@@ -26,7 +27,9 @@ fun vec2(x: Float, y: Float): Vector2 = Vector2(x, y)
 // @JvmInline value
 //@KormaValueApi
 //data class Point(val x: Double, val y: Double) {
-inline class Vector2 internal constructor(internal val raw: Float2Pack) {
+@JvmInline value class Vector2 internal constructor(internal val raw: Float2Pack) {
+//@JvmInline
+//value class Vector2 internal constructor(val x: Float, val y: Float) {
     val x: Float get() = raw.f0
     val y: Float get() = raw.f1
 

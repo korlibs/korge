@@ -1,11 +1,13 @@
 package korlibs.math.geom
 
-import korlibs.memory.pack.*
 import korlibs.math.interpolation.*
+import korlibs.memory.pack.*
+import kotlin.jvm.*
 
 //@KormaValueApi
 //data class Anchor(val sx: Double, val sy: Double) : Interpolable<Anchor> {
-inline class Anchor internal constructor(internal val raw: Float2Pack) : Interpolable<Anchor> {
+@JvmInline
+value class Anchor internal constructor(internal val raw: Float2Pack) : Interpolable<Anchor> {
 
     fun toVector(): Vector2 = Vector2(sx, sy)
 

@@ -4,7 +4,7 @@ import korlibs.datastructure.*
 import korlibs.math.geom.*
 
 class MaxRects(maxSize: Size) : BinPacker.Algo {
-    constructor(width: Float, height: Float) : this(Size(width, height))
+    constructor(width: Float, height: Float, v: Unit = Unit) : this(Size(width, height))
     constructor(width: Double, height: Double) : this(Size(width, height))
 
     var freeRectangles = fastArrayListOf(Rectangle(Point.ZERO, maxSize))
