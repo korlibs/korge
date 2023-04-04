@@ -1,10 +1,15 @@
 package korlibs.korge.view
 
+import korlibs.datastructure.*
+import korlibs.io.lang.*
+import korlibs.korge.internal.*
 import korlibs.korge.render.*
 import korlibs.korge.view.property.*
-import korlibs.render.*
-import korlibs.io.lang.*
 import korlibs.math.geom.*
+import korlibs.render.*
+
+inline fun Container.fixedSizeCachedContainer(width: Double, height: Double, cache: Boolean = true, clip: Boolean = true, callback: @ViewDslMarker CachedContainer.() -> Unit = {}) =
+    FixedSizeCachedContainer(width, height, cache, clip).addTo(this, callback)
 
 inline fun Container.cachedContainer(cache: Boolean = true, callback: @ViewDslMarker CachedContainer.() -> Unit = {}) =
     CachedContainer(cache).addTo(this, callback)
@@ -12,9 +17,19 @@ inline fun Container.cachedContainer(cache: Boolean = true, callback: @ViewDslMa
 open class FixedSizeCachedContainer(
     override var width: Double = 100.0,
     override var height: Double = 100.0,
-    cache: Boolean = true
+    cache: Boolean = true,
+    var clip: Boolean = true,
 ) : CachedContainer(cache), View.Reference {
     override fun getLocalBoundsInternal(): Rectangle = Rectangle(0.0, 0.0, width, height)
+
+    private var renderingInternalRef = Ref(false)
+
+    private val tempRect = MRectangle()
+
+    @OptIn(KorgeInternal::class)
+    override fun renderInternal(ctx: RenderContext) {
+        FixedSizeContainer.renderClipped(this, ctx, clip, renderingInternalRef) { super.renderInternal(ctx) }
+    }
 }
 
 open class CachedContainer(
@@ -77,6 +92,7 @@ open class CachedContainer(
             val texWidth = (lbounds.width * renderScale).toInt().coerceAtLeast(1)
             val texHeight = (lbounds.height * renderScale).toInt().coerceAtLeast(1)
             cache.resize(texWidth, texHeight)
+            ctx.flush()
             ctx.renderToFrameBuffer(cache.rb) {
                 //ctx.ag.clear(Colors.TRANSPARENT, clearColor = true)
                 ctx.setViewMatrixTemp(globalMatrixInv

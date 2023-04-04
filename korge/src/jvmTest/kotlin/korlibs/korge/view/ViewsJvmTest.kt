@@ -1,14 +1,15 @@
 package korlibs.korge.view
 
-import korlibs.korge.testing.*
-import korlibs.korge.tests.*
-import korlibs.korge.view.filter.*
 import korlibs.image.bitmap.*
 import korlibs.image.color.*
 import korlibs.image.font.*
 import korlibs.image.format.*
 import korlibs.image.text.*
 import korlibs.io.file.std.*
+import korlibs.korge.testing.*
+import korlibs.korge.tests.*
+import korlibs.korge.ui.*
+import korlibs.korge.view.filter.*
 import korlibs.math.geom.*
 import kotlin.test.*
 
@@ -85,5 +86,53 @@ class ViewsJvmTest : ViewsForTesting(log = true) {
             resourcesVfs["texture.png"].readBitmap()
         }
         assertEquals(SizeInt(64, 64), bitmap.size)
+    }
+
+    @Test
+    fun testUIScrollableCacheTrue() = korgeScreenshotTest(SizeInt(40, 40)) {
+        solidRect(40, 40, Colors.DARKBLUE).xy(0, 0)
+        uiScrollable(width = 20.0, height = 20.0, cache = true) { solidRect(0, 40) }
+        solidRect(40, 40, Colors.DARKRED).xy(20, 20)
+        assertScreenshot()
+    }
+
+    @Test
+    fun testUIScrollableCacheFalse() = korgeScreenshotTest(SizeInt(40, 40)) {
+        solidRect(40, 40, Colors.DARKBLUE).xy(0, 0)
+        uiScrollable(width = 20.0, height = 20.0, cache = false) { solidRect(0, 40) }
+        solidRect(40, 40, Colors.DARKRED).xy(20, 20)
+        assertScreenshot()
+    }
+
+    @Test
+    fun testClipping1() = korgeScreenshotTest(SizeInt(40, 40)) {
+        solidRect(1000, 1000, Colors.DARKBLUE).xy(0, 0)
+        fixedSizeContainer(20, 20, clip = true) { solidRect(80, 40, Colors.GREEN) }
+        solidRect(1000, 1000, Colors.DARKRED).xy(20, 20)
+        assertScreenshot()
+    }
+
+    @Test
+    fun testCachedTrue() = korgeScreenshotTest(SizeInt(40, 40)) {
+        solidRect(1000, 1000, Colors.DARKBLUE).xy(0, 0)
+        fixedSizeCachedContainer(20.0, 20.0, cache = true) { solidRect(30, 25, Colors.GREEN) }
+        solidRect(1000, 1000, Colors.DARKRED).xy(20, 20)
+        assertScreenshot()
+    }
+
+    @Test
+    fun testCachedFalse() = korgeScreenshotTest(SizeInt(40, 40)) {
+        solidRect(1000, 1000, Colors.DARKBLUE).xy(0, 0)
+        fixedSizeCachedContainer(20.0, 20.0, cache = false) { solidRect(30, 25, Colors.GREEN) }
+        solidRect(1000, 1000, Colors.DARKRED).xy(20, 20)
+        assertScreenshot()
+    }
+
+    @Test
+    fun testCachedFalseClipFalse() = korgeScreenshotTest(SizeInt(40, 40)) {
+        solidRect(1000, 1000, Colors.DARKBLUE).xy(0, 0)
+        fixedSizeCachedContainer(20.0, 20.0, cache = false, clip = false) { solidRect(30, 25, Colors.GREEN) }
+        solidRect(1000, 1000, Colors.DARKRED).xy(20, 20)
+        assertScreenshot()
     }
 }
