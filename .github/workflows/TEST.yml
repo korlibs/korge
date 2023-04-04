@@ -99,7 +99,7 @@ jobs:
     - { name: Publish to maven local, run: ./gradlew publishJvmLocal }
     - { name: e2e test, working-directory: e2e-test, run: ./gradlew checkReferencesJvm --stacktrace }
     - { name: Archive E2E Test Results, if: failure(), uses: actions/upload-artifact@v3, with: { name: e2e-test-results-linux-jvm, retention-days: 21, path: "**/e2e-test/build/screenshots", if-no-files-found: ignore } }
-    - { name: e2e multi test and hotreload, working-directory: e2e-test-multi, run: ./gradlew --watch-fs --warn --configuration-cache --configuration-cache-problems=warn compileKotlinJvm :client:compileKotlinJvmAndNotify }
+    - { name: e2e multi test and hotreload, working-directory: e2e-test-multi, run: "./gradlew --watch-fs --warn --configuration-cache --configuration-cache-problems=warn compileKotlinJvm :client:compileKotlinJvmAndNotify" }
     - { name: Run benchmarks, run: "./gradlew :korge-benchmarks:jvmBenchmark" }
     #- { name: e2e test, uses: GabrielBB/xvfb-action@v1, with: { working-directory: e2e-test, run: ./gradlew checkReferencesJvm --stacktrace } }
 
