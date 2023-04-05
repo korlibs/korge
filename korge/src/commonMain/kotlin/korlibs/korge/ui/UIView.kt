@@ -12,8 +12,8 @@ open class UIView(
     size: Size = DEFAULT_SIZE,
     cache: Boolean = false
 ) : FixedSizeCachedContainer(size, cache = cache) {
-    private var _width: Float = width
-    private var _height: Float = height
+    private var _width: Float = size.width
+    private var _height: Float = size.height
 
     override var width: Float
         get() = _width

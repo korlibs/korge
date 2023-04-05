@@ -15,7 +15,7 @@ class UIViewTest {
         }
         val lines = arrayListOf<String>()
         fun log() {
-            lines += "${view.widthD.niceStr}, ${view.heightD.niceStr}, $sizeChangedCount"
+            lines += "${view.width.niceStr}, ${view.height.niceStr}, $sizeChangedCount"
         }
 
         log()
