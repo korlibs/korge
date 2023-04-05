@@ -11,6 +11,9 @@ inline fun Container.solidRect(size: Size, color: RGBA = Colors.WHITE, callback:
 inline fun Container.solidRect(width: Double, height: Double, color: RGBA = Colors.WHITE, callback: @ViewDslMarker SolidRect.() -> Unit = {})
     = SolidRect(Size(width, height), color).addTo(this, callback)
 
+inline fun Container.solidRect(width: Float, height: Float, color: RGBA = Colors.WHITE, callback: @ViewDslMarker SolidRect.() -> Unit = {})
+    = SolidRect(Size(width, height), color).addTo(this, callback)
+
 /** Creates a new [SolidRect] of size [width]x[height] and color [color] and allows you to configure it via [callback]. Once created, it is added to this receiver [Container]. */
 inline fun Container.solidRect(width: Int, height: Int, color: RGBA = Colors.WHITE, callback: @ViewDslMarker SolidRect.() -> Unit = {})
     = SolidRect(Size(width, height), color).addTo(this, callback)

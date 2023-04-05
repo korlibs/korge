@@ -5,6 +5,7 @@ import korlibs.graphics.shader.*
 import korlibs.korge.render.*
 import korlibs.korge.view.property.*
 import korlibs.math.geom.*
+import korlibs.memory.*
 import korlibs.time.*
 import kotlin.math.*
 
@@ -17,34 +18,22 @@ import kotlin.math.*
  * [time] is the elapsed time of the animation
  */
 class WaveFilter(
-	amplitudeX: Int = 10,
-	amplitudeY: Int = 10,
-	crestDistanceX: Double = 16.0,
-	crestDistanceY: Double = 16.0,
-	cyclesPerSecondX: Double = 1.0,
-	cyclesPerSecondY: Double = 1.0,
+    amplitude: Vector2 = Vector2(10f, 10f),
+    crestDistance: Vector2 = Vector2(16f, 16f),
+	cyclesPerSecond: Vector2 = Vector2(1f, 1f),
 	time: TimeSpan = 0.seconds
 ) : ShaderFilter() {
-    /** Maximum amplitude of the wave on the X axis */
+    /** Maximum amplitude of the wave on the X,Y axis */
     @ViewProperty
-	var amplitudeX: Int = amplitudeX
-    /** Maximum amplitude of the wave on the Y axis */
-    @ViewProperty
-	var amplitudeY: Int = amplitudeY
+	var amplitude: Vector2 = amplitude
 
-    /** Distance between crests in the X axis */
+    /** Distance between crests in the X,Y axis */
     @ViewProperty
-	var crestDistanceX: Double = crestDistanceX
-    /** Distance between crests in the Y axis */
-    @ViewProperty
-    var crestDistanceY: Double = crestDistanceY
+	var crestDistance: Vector2 = crestDistance
 
-    /** Number of repetitions of the animation on the X axis per second */
+    /** Number of repetitions of the animation on the X,Y axis per second */
     @ViewProperty
-	var cyclesPerSecondX: Double = cyclesPerSecondX
-    /** Number of repetitions of the animation on the Y axis per second */
-    @ViewProperty
-	var cyclesPerSecondY: Double = cyclesPerSecondY
+	var cyclesPerSecond: Vector2 = cyclesPerSecond
 
     /** The elapsed time for the animation */
     @ViewProperty
@@ -56,14 +45,14 @@ class WaveFilter(
         super.updateUniforms(ctx, filterScale)
         ctx[WaveUB].push {
             it[u_Time] = time.seconds
-            it[u_Amplitude] = Point(amplitudeX, amplitudeY)
-            it[u_crestDistance] = Vector2(crestDistanceX, crestDistanceY)
-            it[u_cyclesPerSecond] = Point(cyclesPerSecondX, cyclesPerSecondY)
+            it[u_Amplitude] = amplitude
+            it[u_crestDistance] = crestDistance
+            it[u_cyclesPerSecond] = cyclesPerSecond
         }
     }
 
     override fun computeBorder(texWidth: Int, texHeight: Int): MarginInt {
-        return MarginInt(amplitudeY.absoluteValue, amplitudeX.absoluteValue)
+        return MarginInt(amplitude.y.absoluteValue.toIntCeil(), amplitude.x.absoluteValue.toIntCeil())
     }
 
     object WaveUB : UniformBlock(fixedLocation = 5) {
