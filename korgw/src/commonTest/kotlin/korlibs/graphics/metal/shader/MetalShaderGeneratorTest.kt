@@ -65,13 +65,13 @@ class MetalShaderGeneratorTest {
             vertex v2f vertexMain(
             	uint vertexId [[vertex_id]],
             	device const float2* a_Pos [[buffer(0)]],
-                device const Buffer1* buffer0 [[buffer(1)]]
+            	device const Buffer1* buffer1 [[buffer(1)]],
             	constant float4x4& u_ProjMat [[buffer(2)]],
             	constant float4x4& u_ViewMat [[buffer(3)]]
             ) {
             	v2f out;
-                val a_Tex = buffer0[vertexId].a_Tex;
-                val a_Col = buffer0[vertexId].a_Col;
+                val a_Tex = buffer1[vertexId].a_Tex;
+                val a_Col = buffer1[vertexId].a_Col;
             	v_Tex = a_Tex;
             	out.v_Col = a_Col;
             	out.position = ((u_ProjMat * u_ViewMat) * float4(a_Pos[vertexId], 0.0, 1.0));
@@ -79,7 +79,7 @@ class MetalShaderGeneratorTest {
             }
             fragment float4 fragmentMain(
             	v2f in [[stage_in]],
-            	constant float4& u_ColorModifier [[buffer(5)]]
+            	constant float4& u_ColorModifier [[buffer(4)]]
             ) {
             	float4 out;
             	out = (in.v_Col * u_ColorModifier);
