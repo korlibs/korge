@@ -335,6 +335,12 @@ abstract class View internal constructor(
     var scalef: Float get() = scale.toFloat() ; set(v) { scale = v.toDouble() }
     */
 
+    var scaleAvg: Float
+        get() = scale.scaleAvg
+        set(value) {
+            scale = Scale(value, value)
+        }
+
     /** Local scaling in the X axis of this view */
     var scaleX: Float
         get() { ensureTransform(); return _scaleX }
@@ -356,14 +362,14 @@ abstract class View internal constructor(
         get() = this::class.simpleName ?: "Unknown"
 
     @ViewProperty(min = 0.0, max = 1.0)
-    var scaleXY: Scale
+    var scale: Scale
         get() = Scale(scaleX, scaleY)
         set(value) {
             scaleX = value.scaleX
             scaleY = value.scaleY
         }
 
-    var scale: Float
+    var scaleXY: Float
         get() = (scaleX + scaleY) / 2f
         set(v) { scaleX = v; scaleY = v }
 
@@ -406,17 +412,39 @@ abstract class View internal constructor(
      */
     fun setSize(width: Float, height: Float) = setSize(Size(width, height))
     fun setSize(width: Double, height: Double) = setSize(Size(width, height))
-    open fun setSize(size: Size) {
-        this.width = size.width
-        this.height = size.height
+    fun setSize(size: Size) {
+        this.unscaledSize = size
     }
 
-    open fun setSizeScaled(size: Size) {
+    fun setSizeScaled(size: Size) {
         this.setSize(Size(
             if (scaleX == 0f) size.width else size.width / scaleX,
             if (scaleY == 0f) size.height else size.height / scaleY,
         ))
     }
+
+    open var unscaledSize: Size
+        get() = getLocalBounds().size
+        set(value) {
+            val size = this.size
+            scale = Scale(
+                (if (scaleX == 0f) 1f else scaleX) * (value.width / size.width),
+                (if (scaleY == 0f) 1f else scaleY) * (value.height / size.height)
+            )
+            //da dsad ad a dasdas !!!!!!!!!!!!! we should remove open var width, and open var height and only make open this size
+        }
+
+
+    val size: Size get() = unscaledSize
+
+    var scaledSize: Size
+        get() = unscaledSize * scale
+        set(value) {
+            unscaledSize = Size(
+                if (scaleX == 0f) value.width else value.width / scaleX,
+                if (scaleY == 0f) value.height else value.height / scaleY,
+            )
+        }
 
     /**
      * Changes the [widthD] of this view. Generically, this means adjusting the [scaleXD] of the view to match that size using the current bounds,
@@ -424,12 +452,9 @@ abstract class View internal constructor(
      *
      * @TODO: In KorGE 2.0, View.width/View.height will be immutable and available from an extension method for Views that doesn't have a width/height properties
      */
-    open var width: Float
-        get() = getLocalBoundsOptimizedAnchored().width
+    var width: Float get() = unscaledSize.width
         @Deprecated("Shouldn't set width but scaleWidth instead")
-        set(value) {
-            scaleX = (if (scaleX == 0f) 1f else scaleX) * (value / width)
-        }
+        set(value) { unscaledSize = unscaledSize.copy(width = value) }
 
     /**
      * Changes the [heightD] of this view. Generically, this means adjusting the [scaleYD] of the view to match that size using the current bounds,
@@ -437,12 +462,9 @@ abstract class View internal constructor(
      *
      * @TODO: In KorGE 2.0, View.width/View.height will be immutable and available from an extension method for Views that doesn't have a width/height properties
      */
-    open var height: Float
-        get() = getLocalBoundsOptimizedAnchored().height
-        @Deprecated("Shouldn't set height but scaleHeight instead")
-        set(value) {
-            scaleY = (if (scaleY == 0f) 1f else scaleY) * (value / getLocalBoundsOptimizedAnchored().height)
-        }
+    var height: Float get() = unscaledSize.height
+        @Deprecated("Shouldn't set width but scaleHeight instead")
+        set(value) { unscaledSize = unscaledSize.copy(height = value) }
 
     val sizeWH: Size get() = Size(width, height)
 
@@ -887,7 +909,7 @@ abstract class View internal constructor(
     protected open fun renderDebugAnnotationsInternal(ctx: RenderContext) {
         //println("DEBUG ANNOTATE VIEW!")
         //ctx.flush()
-        val local = getLocalBoundsOptimizedAnchored()
+        val local = getLocalBounds()
         ctx.useLineBatcher { lines ->
             lines.blending(BlendMode.INVERT) {
                 lines.drawVector(Colors.RED) {
@@ -1093,7 +1115,7 @@ abstract class View internal constructor(
         // Adjusted coordinates to compensate anchoring
         val ll = globalToLocal(p)
 
-        val bounds = getLocalBoundsOptimizedAnchored()
+        val bounds = getLocalBounds()
         if (!bounds.contains(ll)) {
             //println("bounds = null : $bounds")
             return null
@@ -1356,15 +1378,6 @@ abstract class View internal constructor(
     //}
 
     /**
-     * **NOTE:** that if [out] is not provided, the [MRectangle] returned shouldn't stored and modified since it is owned by this class.
-     */
-    @Deprecated("", ReplaceWith("getLocalBounds(includeFilters = includeFilters)"))
-    fun getLocalBoundsOptimized(includeFilters: Boolean = false): Rectangle = getLocalBounds(includeFilters = includeFilters)
-
-    @Deprecated("", ReplaceWith("getLocalBounds(doAnchoring = true, includeFilters = includeFilters)"))
-    fun getLocalBoundsOptimizedAnchored(includeFilters: Boolean = false): Rectangle = getLocalBounds(doAnchoring = true, includeFilters = includeFilters)
-
-    /**
      * Get local bounds of the view. Allows to specify [out] [MRectangle] if you want to reuse an object.
      */
     fun getLocalBounds(doAnchoring: Boolean = true, includeFilters: Boolean = false): Rectangle {
@@ -1433,7 +1446,7 @@ abstract class View internal constructor(
     fun globalLocalBoundsPointRatio(anchor: Anchor, out: MPoint = MPoint()): MPoint = globalLocalBoundsPointRatio(anchor.doubleX, anchor.doubleY, out)
 
     fun globalLocalBoundsPointRatio(ratioX: Double, ratioY: Double, out: MPoint = MPoint()): MPoint {
-        val bounds = getLocalBoundsOptimizedAnchored()
+        val bounds = getLocalBounds()
         val x = ratioX.toRatio().interpolate(bounds.left, bounds.right)
         val y = ratioY.toRatio().interpolate(bounds.top, bounds.bottom)
         return out.setTo(localToGlobal(Point(x, y)))
@@ -1925,7 +1938,7 @@ fun <T : View> T.alignXY(other: View, ratio: Double, inside: Boolean, doX: Boole
     //val parent = this.parent
     //val bounds = other.getBoundsNoAnchoring(this)
     val bounds = other.getBoundsNoAnchoring(parent)
-    val localBounds = this.getLocalBoundsOptimized()
+    val localBounds = this.getLocalBounds()
 
     //bounds.setTo(other.x, other.y, other.unscaledWidth, other.unscaledHeight)
     val ratioM1_1 = (ratio * 2 - 1)

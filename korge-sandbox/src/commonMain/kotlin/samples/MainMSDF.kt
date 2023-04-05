@@ -30,72 +30,72 @@ class MainMSDF : Scene() {
 
         image(outputPng) {
             xy(196 * 0, 0)
-            scale = 3.0f
+            scaleAvg = 3.0f
         }
 
         image(outputPng) {
             xy(196 * 1, 0)
-            scale = 3.0f
+            scaleAvg = 3.0f
             program = MsdfRender.PROGRAM_MSDF
         }
         image(outputPng) {
             xy(196 * 1, 50)
-            scale = 1.5f
+            scaleAvg = 1.5f
             program = MsdfRender.PROGRAM_MSDF
         }
         image(outputPng) {
             xy(196 * 1, 100)
-            scale = 0.5f
+            scaleAvg = 0.5f
             program = MsdfRender.PROGRAM_MSDF
         }
         image(outputPng) {
             xy(196 * 1, 150)
-            scale = 0.25f
+            scaleAvg = 0.25f
             program = MsdfRender.PROGRAM_MSDF
         }
         image(outputPng) {
             xy(196 * 1, 175)
-            scale = 0.15f
+            scaleAvg = 0.15f
             program = MsdfRender.PROGRAM_MSDF
         }
         image(outputPng) {
             xy(196 * 1, 200)
-            scale = 0.1f
+            scaleAvg = 0.1f
             program = MsdfRender.PROGRAM_MSDF
         }
 
         image(msdfBitmap) {
             xy(196 * 2, 0)
-            scale = 3.0f
+            scaleAvg = 3.0f
         }
 
         image(msdfBitmap) {
             xy(196 * 3, 0)
-            scale = 3.0f
+            scaleAvg = 3.0f
             program = MsdfRender.PROGRAM_MSDF
         }
 
         image(DefaultTtfFontAsBitmap.atlas.bitmap) {
             xy(196 * 0, 256)
-            scale = 2f
+            scaleAvg = 2f
             program = MsdfRender.PROGRAM_MSDF
         }
 
         image(DefaultTtfFontAsBitmap.atlas.bitmap) {
             xy(196 * 2, 256)
-            scale = 0.5f
+            scaleAvg = 0.5f
             program = MsdfRender.PROGRAM_MSDF
         }
 
         image(DefaultTtfFontAsBitmap.atlas.bitmap) {
             xy(196 * 3, 256)
-            scale = 0.25f
+            scaleAvg = 0.25f
             program = MsdfRender.PROGRAM_MSDF
         }
 
         image(DefaultTtfFontAsBitmap.atlas.bitmap) {
             xy(196 * 4, 256)
-            scale = 2f
+            scaleAvg = 2f
         }
 
         //val font1 = resourcesVfs["msdf/SaniTrixieSans.fnt"].readBitmapFont()

@@ -8,15 +8,18 @@ import korlibs.memory.*
 
 open class ShadedView(
     program: Program,
-    width: Float = 100f,
-    height: Float = 100f,
+    size: Size = Size(100f, 100f),
     coordsType: CoordsType = CoordsType.D_0_1,
 ) : RectBase(Anchor.TOP_LEFT) {
     //constructor(width: Double = 100.0, height: Double = 100.0, callback: ProgramBuilderDefault.() -> Unit) : this(
     //    buildShader(callback), width, height
     //)
-    override var width: Float = width; set(v) { field = v; dirtyVertices = true }
-    override var height: Float = height; set(v) { field = v; dirtyVertices = true }
+    override var unscaledSize: Size = size
+        set(value) {
+            if (field == value) return
+            field = value
+            dirtyVertices = true
+        }
 
     override val bwidth: Float get() = widthD.toFloat()
     override val bheight: Float get() = heightD.toFloat()

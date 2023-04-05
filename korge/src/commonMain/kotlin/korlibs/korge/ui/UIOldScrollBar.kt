@@ -15,40 +15,39 @@ import kotlin.math.*
 
 @Deprecated("Use UINewScrollable")
 inline fun Container.uiOldScrollBar(
-    width: Float,
-    height: Float,
+    size: Size,
     current: Float = 0f,
     pageSize: Float = 1f,
     totalSize: Float = 10f,
     buttonSize: Float = 32f,
     stepSize: Float = pageSize / 10f,
-    direction: Direction = Direction.auto(width, height),
+    direction: Direction = Direction.auto(size),
     block: @ViewDslMarker UIOldScrollBar.() -> Unit = {}
-): UIOldScrollBar = UIOldScrollBar(width, height, current, pageSize, totalSize, buttonSize, stepSize, direction).addTo(this).apply(block)
+): UIOldScrollBar = UIOldScrollBar(size, current, pageSize, totalSize, buttonSize, stepSize, direction).addTo(this).apply(block)
 
 @Deprecated("Use UINewScrollable")
 open class UIOldScrollBar(
-    width: Float,
-    height: Float,
+    size: Size,
     current: Float,
     pageSize: Float,
     totalSize: Float,
     buttonSize: Float = 32f,
     var stepSize: Float = pageSize / 10f,
-    direction: Direction = Direction.auto(width, height)
-) : UIView() {
+    direction: Direction = Direction.auto(size)
+) : UIView(size) {
 
     enum class Direction {
         Vertical, Horizontal;
 
         companion object {
+            fun auto(size: Size) = if (size.width > size.height) Horizontal else Vertical
             fun auto(width: Double, height: Double) = if (width > height) Horizontal else Vertical
             fun auto(width: Float, height: Float) = if (width > height) Horizontal else Vertical
         }
     }
 
-    override var width by uiObservable(width) { reshape() }
-    override var height by uiObservable(height) { reshape() }
+    override var unscaledSize: Size by uiObservable(size) { reshape() }
+
     var buttonSize by uiObservable(buttonSize) { reshape() }
     var direction by uiObservable(direction) { reshape() }
 

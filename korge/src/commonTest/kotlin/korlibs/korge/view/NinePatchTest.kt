@@ -5,6 +5,7 @@ import korlibs.image.bitmap.*
 import korlibs.io.file.std.*
 import korlibs.korge.render.*
 import korlibs.korge.tests.*
+import korlibs.math.geom.*
 import kotlin.test.*
 
 class NinePatchTest : ViewsForTesting() {
@@ -13,7 +14,7 @@ class NinePatchTest : ViewsForTesting() {
         val vertices = arrayListOf<List<VertexInfo>>()
         val ninePatch = resourcesVfs["npatch/9patch.9.png"].readNinePatch()
 
-        ninePatch(ninePatch, 450f, 600f) {
+        ninePatch(ninePatch, Size(450f, 600f)) {
             position(0, 0)
         }
         val log = testRenderContext { ctx ->
@@ -75,7 +76,7 @@ class NinePatchTest : ViewsForTesting() {
             val vertices = arrayListOf<List<VertexInfo>>()
             stage.removeChildren()
             testRenderContext { ctx ->
-                val view = ninePatch(ninePatch, width, height) {
+                val view = ninePatch(ninePatch, Size(width, height)) {
                     position(0, 0)
                 }
                 ctx.batch.beforeFlush { vertices.add(it.readVertices()) }
@@ -109,7 +110,7 @@ class NinePatchTest : ViewsForTesting() {
     fun testNinePatchColorInvalidation() {
         val ctx = RenderContext(AGLog())
         val container = Container()
-        val ninePatch = container.ninePatch(NinePatchBmpSlice(Bitmap32(32, 32, premultiplied = true)), 16f, 16f)
+        val ninePatch = container.ninePatch(NinePatchBmpSlice(Bitmap32(32, 32, premultiplied = true)), Size(16f, 16f))
         ninePatch.render(ctx)
         assertEquals(1, ninePatch.renderedVersion)
         container.alphaF = 0.5f

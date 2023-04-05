@@ -109,7 +109,7 @@ class Views2Test : ViewsForTesting(
     fun testImageLocalBounds() = viewsTest {
         val image = image(Bitmap32(10, 10, Colors.TRANSPARENT)).size(120, 100).xy(50, 50)
         println("image=$image : ${image.scaleXY}")
-        assertEquals(Rectangle(0, 0, 10, 10).toStringBounds(), image.getLocalBoundsOptimizedAnchored().toStringBounds())
+        assertEquals(Rectangle(0, 0, 10, 10).toStringBounds(), image.getLocalBounds().toStringBounds())
         assertEquals(Rectangle(50, 50, 120, 100).toStringBounds(), image.getBounds(image.parent!!).toStringBounds())
     }
 }

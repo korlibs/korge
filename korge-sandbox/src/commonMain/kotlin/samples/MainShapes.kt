@@ -57,8 +57,8 @@ class MainShapes : Scene() {
     }
 
     fun Container.setupRects() {
-        val rect1 = roundRect(80f, 100f, 5f, fill = Colors.GREEN).position(820, 128)
-        val rect2 = roundRect(80f, 100f, 5f, fill = Colors.GREEN, stroke = Colors.RED, strokeThickness = 4.0).position(1020, 128).anchor(0.5, 0.5)
+        val rect1 = roundRect(Size(80f, 100f), RectCorners(5f), fill = Colors.GREEN).position(820, 128)
+        val rect2 = roundRect(Size(80f, 100f), RectCorners(5f), fill = Colors.GREEN, stroke = Colors.RED, strokeThickness = 4.0).position(1020, 128).anchor(0.5, 0.5)
         addFixedUpdater(60.timesPerSecond) {
             rect1.rotation += 1.degrees
             rect2.rotation += 1.degrees

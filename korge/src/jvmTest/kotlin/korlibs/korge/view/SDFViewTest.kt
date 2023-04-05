@@ -12,7 +12,7 @@ class SDFViewTest {
     @Test
     fun test() = korgeScreenshotTest(SizeInt(200, 200)) {
         addChild(
-            CircleSDFView(width = 200f, height = 200f, time = 2f)
+            CircleSDFView(size = Size(200f, 200f), time = 2f)
                 .skew(15.degrees, 0.degrees)
                 .also {
                     it.colorMul = Colors.DARKGREY
@@ -22,7 +22,7 @@ class SDFViewTest {
         assertScreenshot(posterize = 5)
     }
 
-    open class CircleSDFView(width: Float = 100f, height: Float = 100f, var time: Float = 0f) : ShadedView(PROGRAM, width, height) {
+    open class CircleSDFView(size: Size = Size(100f, 100f), var time: Float = 0f) : ShadedView(PROGRAM, size) {
         var radius = 0.49
         var feather = 0.005
         var center = Point(0.5, 0.5)

@@ -5,11 +5,10 @@ import korlibs.korge.render.*
 import korlibs.math.geom.*
 
 abstract class FastRoundRectBase(
-    width: Float = 100f,
-    height: Float = 100f,
+    size: Size = Size(100f, 100f),
     cornersRatio: RectCorners = RectCorners(.0f, .0f, .0f, .0f),
     doScale: Boolean = true
-) : ShadedView(PROGRAM, width, height) {
+) : ShadedView(PROGRAM, size) {
     protected var cornersRatio = cornersRatio
     protected var doScale = doScale
 

@@ -25,20 +25,13 @@ class SolidRect(size: Size, color: RGBA = Colors.WHITE) : RectBase() {
         operator fun invoke(width: Double, height: Double, color: RGBA = Colors.WHITE) = SolidRect(Size(width, height), color)
 	}
 
-	override var width: Float = size.width; set(v) {
-        if (field != v) {
-            field = v
+    override var unscaledSize: Size = size
+        set(value) {
+            if (field == value) return
+            field = value
             dirtyVertices = true
             invalidateRender()
         }
-    }
-	override var height: Float = size.height; set(v) {
-       if (field != v) {
-           field = v
-           dirtyVertices = true
-           invalidateRender()
-       }
-    }
 
     override val bwidth: Float get() = width
     override val bheight: Float get() = height

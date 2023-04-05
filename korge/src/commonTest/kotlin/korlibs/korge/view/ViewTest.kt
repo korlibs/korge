@@ -59,7 +59,7 @@ class ViewTest {
         }
 
         val log = arrayListOf<String>()
-        log.add("[1]:${leaf.getLocalBoundsOptimizedAnchored().toStringCompat()}")
+        log.add("[1]:${leaf.getLocalBounds().toStringCompat()}")
         log.add("[3]:${leaf.getBounds().toStringCompat()}")
         log.add("[2]:${leaf.getBounds(leaf).toStringCompat()}")
         log.add("[4]:${leaf.getBounds(middle).toStringCompat()}")

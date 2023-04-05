@@ -233,7 +233,7 @@ class ViewsTest : ViewsForTesting() {
             assertEqualsFloat(Rectangle(0, 0, 32, 32), rect3.globalBounds, message = "rect3")
         }
 
-        RoundRect(32f, 24f, 5f, 5f, Colors.RED).also { addChild(it) }.also { rect3 ->
+        RoundRect(Size(32f, 24f), RectCorners(5f), Colors.RED).also { addChild(it) }.also { rect3 ->
             assertEqualsFloat(Rectangle(0, 0, 32, 24), rect3.globalBounds, message = "rect4")
         }
 
@@ -250,7 +250,7 @@ class ViewsTest : ViewsForTesting() {
 
     @Test
     fun testRoundRect() = viewsTest {
-        RoundRect(32f, 24f, 5f, 5f, Colors.RED).also { addChild(it) }.also { rect3 ->
+        RoundRect(Size(32f, 24f), RectCorners(5f), Colors.RED).also { addChild(it) }.also { rect3 ->
             assertEquals(Rectangle(0, 0, 32, 24), rect3.getLocalBounds(), message = "local")
             assertEquals(Rectangle(0, 0, 32, 24), rect3.globalBounds, message = "global")
         }

@@ -24,8 +24,8 @@ open class Stage internal constructor(override val views: Views) : FixedSizeCont
     , InvalidateNotifier
 {
     override var clip: Boolean by views::clipBorders
-    override var width: Float by views::virtualWidthFloat
-    override var height: Float by views::virtualHeightFloat
+
+    override var unscaledSize: Size by views::virtualSizeFloat
 
     val keys: InputKeys get() = views.input.keys
     val input: Input get() = views.input

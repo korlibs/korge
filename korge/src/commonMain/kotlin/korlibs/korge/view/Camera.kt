@@ -24,14 +24,11 @@ inline fun Container.camera(callback: @ViewDslMarker Camera.() -> Unit = {}): Ca
  */
 // @TODO: Do not require a [ClipContainer] by handling the [renderInternal] to use a transformed Camera. To support legacy we should do this in a separate class NewCamera? CameraContainer?.
 class Camera : Container(), View.Reference {
-    override var width: Float
+    override var unscaledSize: Size
+        get() = Size(referenceParent?.width ?: 100f, referenceParent?.height ?: 100f)
         set(_) = Unit
-        get() = referenceParent?.width ?: 100f
-    override var height: Float
-        set(_) = Unit
-        get() = referenceParent?.height ?: 100f
 
-    override fun getLocalBoundsInternal() = Rectangle(0.0, 0.0, widthD, heightD)
+    override fun getLocalBoundsInternal() = Rectangle(0f, 0f, width, height)
 
 	fun getLocalMatrixFittingGlobalRect(rect: Rectangle): Matrix {
 		val destinationBounds = rect

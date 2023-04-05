@@ -11,7 +11,7 @@ class MainParticles : Scene() {
         //val emitter = resourcesVfs["particle/demo2.pex"].readParticleEmitter()
         container {
             //scale = 0.05
-            scale = .5f
+            scaleAvg = .5f
             val emitter = resourcesVfs["particle/particle.pex"].readParticleEmitter()
             //val emitter = resourcesVfs["particle/particle.pex"].readParticleEmitter()
             //val emitter = resourcesVfs["particle/1/particle.pex"].readParticleEmitter()

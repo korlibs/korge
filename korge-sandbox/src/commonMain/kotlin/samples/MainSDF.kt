@@ -11,7 +11,7 @@ import kotlin.math.*
 class MainSDF : Scene() {
     override suspend fun SContainer.sceneMain() {
         addChild(
-            CircleSDFView(width = 400f, height = 400f)
+            CircleSDFView(Size(400f, 400f))
                 .skew(45.degrees, 0.degrees)
                 .also {
                     it.colorMul = Colors.DARKGREY
@@ -20,7 +20,7 @@ class MainSDF : Scene() {
     }
 }
 
-open class CircleSDFView(width: Float = 100f, height: Float = 100f) : ShadedView(PROGRAM, width, height) {
+open class CircleSDFView(size: Size = Size(100f, 100f)) : ShadedView(PROGRAM, size) {
     var radius = 0.49
     var feather = 0.005
     var center = Point(0.5, 0.5)

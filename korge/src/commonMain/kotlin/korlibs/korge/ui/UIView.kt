@@ -12,15 +12,13 @@ open class UIView(
     size: Size = DEFAULT_SIZE,
     cache: Boolean = false
 ) : FixedSizeCachedContainer(size, cache = cache) {
-    private var _width: Float = size.width
-    private var _height: Float = size.height
-
-    override var width: Float
-        get() = _width
-        set(value) { if (_width != value) { _width = value; onSizeChanged() } }
-    override var height: Float
-        get() = _height
-        set(value) { if (_height != value) { _height = value; onSizeChanged() } }
+    override var unscaledSize: Size = size
+        set(value) {
+            if (field != value) {
+                field = value
+                onSizeChanged()
+            }
+        }
 
     //var preferredWidth: Double = 100.0
     //var preferredHeight: Double = 100.0
@@ -33,14 +31,6 @@ open class UIView(
         this@UIView.renderCtx2d(ctx) {
             this@render(it, view)
         }
-    }
-
-    override fun setSize(size: Size) {
-        val (width, height) = size
-        if (width == this._width && height == this._height) return
-        _width = width
-        _height = height
-        onSizeChanged()
     }
 
     override fun getLocalBoundsInternal(): Rectangle = Rectangle(0.0, 0.0, widthD, heightD)

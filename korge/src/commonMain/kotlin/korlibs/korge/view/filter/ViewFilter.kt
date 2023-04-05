@@ -50,7 +50,7 @@ fun View.renderFiltered(
     ctx: RenderContext, filter: Filter,
     first: Boolean = true,
 ) {
-    val bounds = getLocalBoundsOptimizedAnchored(includeFilters = false)
+    val bounds = getLocalBounds(includeFilters = false)
 
     if (bounds.width <= 0.0 || bounds.height <= 0.0) return
 

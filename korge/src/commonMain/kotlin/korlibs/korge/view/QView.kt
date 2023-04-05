@@ -26,7 +26,8 @@ class QView(val views: List<View>) : List<View> by views, BView {
 
     var visible: Boolean get() = firstOrNull?.visible ?: false ; set(value) = fastForEach { it.visible = value }
     var alpha: Float get() = firstOrNull?.alpha ?: 1.0f ; set(value) = fastForEach { it.alpha = value }
-    var scale: Float get() = firstOrNull?.scale ?: 1f ; set(value) = fastForEach { it.scale = value }
+    var scale: Scale get() = firstOrNull?.scale ?: Scale(1f, 1f) ; set(value) = fastForEach { it.scale = value }
+    var scaleAvg: Float get() = firstOrNull?.scaleAvg ?: 1f ; set(value) = fastForEach { it.scaleAvg = value }
     var scaleX: Float get() = firstOrNull?.scaleX ?: 1f ; set(value) = fastForEach { it.scaleX = value }
     var scaleY: Float get() = firstOrNull?.scaleY ?: 1f ; set(value) = fastForEach { it.scaleY = value }
     var x: Float get() = firstOrNull?.x ?: 0f ; set(value) = fastForEach { it.x = value }

@@ -1,14 +1,12 @@
 package korlibs.korge.view.mask
 
-import korlibs.datastructure.extraProperty
+import korlibs.datastructure.*
 import korlibs.graphics.*
-import korlibs.graphics.annotation.KoragExperimental
-import korlibs.korge.render.RenderContext
-import korlibs.korge.render.Texture
-import korlibs.korge.view.View
-import korlibs.korge.view.ViewRenderPhase
-import korlibs.image.color.Colors
-import kotlin.native.concurrent.ThreadLocal
+import korlibs.graphics.annotation.*
+import korlibs.image.color.*
+import korlibs.korge.render.*
+import korlibs.korge.view.*
+import kotlin.native.concurrent.*
 
 @ThreadLocal
 private var View.__mask: View? by extraProperty { null }
@@ -37,7 +35,7 @@ class ViewRenderPhaseMask(var mask: View) : ViewRenderPhase {
     override val priority: Int get() = PRIORITY
     override fun render(view: View, ctx: RenderContext) {
         ctx.useBatcher { batcher ->
-            val maskBounds = mask.getLocalBoundsOptimized()
+            val maskBounds = mask.getLocalBounds()
             val boundsWidth = maskBounds.width.toInt()
             val boundsHeight = maskBounds.height.toInt()
             ctx.tempAllocateFrameBuffers2(boundsWidth, boundsHeight) { maskFB, viewFB ->

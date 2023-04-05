@@ -1,18 +1,18 @@
 package korlibs.korge.particle
 
-import korlibs.time.TimeSpan
-import korlibs.time.milliseconds
 import korlibs.graphics.*
+import korlibs.image.bitmap.*
+import korlibs.image.format.*
+import korlibs.io.async.*
+import korlibs.io.file.*
 import korlibs.korge.render.*
 import korlibs.korge.time.*
 import korlibs.korge.view.*
 import korlibs.korge.view.fast.*
 import korlibs.korge.view.property.*
-import korlibs.image.bitmap.*
-import korlibs.image.format.*
-import korlibs.io.async.*
-import korlibs.io.file.*
 import korlibs.math.geom.*
+import korlibs.time.TimeSpan
+import korlibs.time.milliseconds
 import kotlinx.coroutines.*
 import kotlin.random.*
 
@@ -106,7 +106,7 @@ class ParticleEmitterView(
 //                simulator.emitterPos.setTo(x, y)
 //            }
         if (dt > 0.milliseconds) {
-            val g = globalPos / stage!!.scaleXY.toPoint()
+            val g = globalPos / stage!!.scale.toPoint()
             val gx = g.x
             val gy = g.y
 

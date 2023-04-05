@@ -4,16 +4,16 @@ import korlibs.korge.render.*
 import korlibs.math.geom.*
 
 inline fun Container.scaleView(
-	size: Size, scale: Float = 2f, filtering: Boolean = false,
-	callback: @ViewDslMarker Container.() -> Unit = {}
-) = ScaleView(size, scale, filtering).addTo(this, callback)
+    size: Size, scaleAvg: Float = 2f, filtering: Boolean = false,
+    callback: @ViewDslMarker Container.() -> Unit = {}
+) = ScaleView(size, scaleAvg, filtering).addTo(this, callback)
 
 class ScaleView(
-    size: Size, scale: Float = 2f,
+    size: Size, scaleAvg: Float = 2f,
     var filtering: Boolean = false
 ) : SContainer(size, clip = false), View.Reference {
 	init {
-		this.scale = scale
+		this.scaleAvg = scaleAvg
 	}
 
 	//val once = Once()

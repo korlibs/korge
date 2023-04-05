@@ -1,19 +1,19 @@
 package samples
 
-import korlibs.time.*
+import korlibs.image.color.*
+import korlibs.image.paint.*
+import korlibs.io.async.*
 import korlibs.korge.animate.*
 import korlibs.korge.scene.*
 import korlibs.korge.tween.*
 import korlibs.korge.view.*
 import korlibs.korge.view.filter.*
 import korlibs.korge.view.mask.*
-import korlibs.image.color.*
-import korlibs.image.paint.*
-import korlibs.io.async.*
 import korlibs.math.geom.*
 import korlibs.math.geom.shape.*
 import korlibs.math.geom.vector.*
 import korlibs.math.interpolation.*
+import korlibs.time.*
 
 class MainMasks : Scene() {
     override suspend fun SContainer.sceneMain() {
@@ -33,7 +33,7 @@ class MainMasks : Scene() {
             .mask(maskView)
         //.mask(solidRect(100, 100, Colors.WHITE).xy(50, 50).visible(false))
 
-        roundRect(100, 100, 16, 16).xy(15, 15)
+        roundRect(Size(100, 100), RectCorners(16f)).xy(15, 15)
             .backdropFilters(ColorMatrixFilter(ColorMatrixFilter.GRAYSCALE_MATRIX))
             .backdropFilters(BlurFilter())
             .backdropFilters(WaveFilter(crestDistanceX = 50.0, crestDistanceY = 25.0, time = 0.seconds).also { filter ->

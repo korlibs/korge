@@ -47,6 +47,8 @@ inline class Size internal constructor(internal val raw: Float2Pack) {//: Sizeab
 
     operator fun minus(other: Size): Size = Size(width - other.width, height - other.height)
     operator fun plus(other: Size): Size = Size(width + other.width, height + other.height)
+    operator fun times(scale: Scale): Size = Size(width * scale.scaleX, height * scale.scaleY)
+    operator fun times(scale: Vector2): Size = Size(width * scale.x, height * scale.y)
     operator fun times(s: Float): Size = Size(width * s, height * s)
     operator fun times(s: Double): Size = times(s.toFloat())
     operator fun times(s: Int): Size = times(s.toFloat())

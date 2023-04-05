@@ -156,7 +156,7 @@ abstract class OldScaledScene : Scene() {
 
 	override fun createSceneView(size: Size): SContainer = ScaleView(
 		sceneSize.toInt().toFloat(),
-		scale = sceneScale,
+		scaleAvg = sceneScale,
 		filtering = sceneFiltering
 	)
 }

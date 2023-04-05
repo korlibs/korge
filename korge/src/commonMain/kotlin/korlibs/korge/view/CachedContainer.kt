@@ -21,8 +21,7 @@ open class FixedSizeCachedContainer(
     cache: Boolean = true,
     var clip: Boolean = true,
 ) : CachedContainer(cache), View.Reference {
-    override var width: Float = size.width
-    override var height: Float = size.height
+    override var unscaledSize: Size = size
 
     override fun getLocalBoundsInternal(): Rectangle = Rectangle(0f, 0f, width, height)
 
@@ -91,7 +90,7 @@ open class CachedContainer(
 
         if (dirty || scaledCache != renderScale) {
             scaledCache = renderScale
-            lbounds.copyFrom(getLocalBoundsOptimizedAnchored(includeFilters = false))
+            lbounds.copyFrom(getLocalBounds(includeFilters = false))
             dirty = false
             val texWidth = (lbounds.width * renderScale).toInt().coerceAtLeast(1)
             val texHeight = (lbounds.height * renderScale).toInt().coerceAtLeast(1)

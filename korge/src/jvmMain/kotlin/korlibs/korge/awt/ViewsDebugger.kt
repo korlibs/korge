@@ -294,7 +294,7 @@ internal class ViewsDebuggerComponent constructor(
         list.add(ViewFactory("Image") { Image(Bitmaps.white).apply { setSize(100.0, 100.0) } })
         list.add(ViewFactory("VectorImage") { VectorImage.createDefault().apply { setSize(100.0, 100.0) } })
         list.add(ViewFactory("SolidRect") { SolidRect(100, 100, Colors.WHITE) })
-        list.add(ViewFactory("Ellipse") { Ellipse(50f, 50f, Colors.WHITE).center() })
+        list.add(ViewFactory("Ellipse") { Ellipse(Size(50f, 50f), Colors.WHITE).center() })
         list.add(ViewFactory("Container") { Container() })
         //list.add(ViewFactory("TreeViewRef") { TreeViewRef() })
         list.add(ViewFactory("ParticleEmitter") { ParticleEmitterView(ParticleEmitter()) })

@@ -25,8 +25,7 @@ open class FixedSizeContainer(
     @property:ViewProperty
     open var clip: Boolean = false,
 ) : Container(), View.Reference {
-    override var width: Float = size.width
-    override var height: Float = size.height
+    override var unscaledSize: Size = size
 
     override fun getLocalBoundsInternal() = Rectangle(0f, 0f, width, height)
 

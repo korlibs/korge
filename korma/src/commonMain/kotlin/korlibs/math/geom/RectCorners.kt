@@ -2,13 +2,17 @@ package korlibs.math.geom
 
 import korlibs.memory.*
 import korlibs.memory.pack.*
-import korlibs.math.annotations.*
 
 //@KormaValueApi
 inline class RectCorners internal constructor(val raw: Half4Pack) {
     companion object {
         val EMPTY = RectCorners(0f)
     }
+
+    constructor(corner: Int) : this(corner, corner, corner, corner)
+    constructor(topLeftBottomRight: Int, topRightAndBottomLeft: Int) : this(topLeftBottomRight, topRightAndBottomLeft, topLeftBottomRight, topRightAndBottomLeft)
+    constructor(topLeft: Int, topRightAndBottomLeft: Int, bottomRight: Int) : this(topLeft, topRightAndBottomLeft, bottomRight, topRightAndBottomLeft)
+    constructor(topLeft: Int, topRight: Int, bottomRight: Int, bottomLeft: Int) : this(Half4Pack(topLeft.toHalf(), topRight.toHalf(), bottomRight.toHalf(), bottomLeft.toHalf()))
 
     constructor(corner: Float) : this(corner, corner, corner, corner)
     constructor(topLeftBottomRight: Float, topRightAndBottomLeft: Float) : this(topLeftBottomRight, topRightAndBottomLeft, topLeftBottomRight, topRightAndBottomLeft)

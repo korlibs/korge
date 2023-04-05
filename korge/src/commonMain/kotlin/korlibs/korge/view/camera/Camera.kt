@@ -38,13 +38,9 @@ class CameraContainer(
     private val currentCamera = sourceCamera.copy()
     private val targetCamera = sourceCamera.copy()
 
-    override var width: Float = size.width
+    override var unscaledSize: Size = size
         set(value) {
-            field = value
-            sync()
-        }
-    override var height: Float = size.height
-        set(value) {
+            if (field == value) return
             field = value
             sync()
         }

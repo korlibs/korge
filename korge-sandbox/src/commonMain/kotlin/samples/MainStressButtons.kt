@@ -8,7 +8,7 @@ import korlibs.korge.view.*
 class MainStressButtons : Scene() {
     override suspend fun SContainer.sceneMain() {
         container {
-            scale = .5f
+            scaleAvg = .5f
             uiVerticalStack {
                 //for (row in 0 until 20) {
                 for (row in 0 until 40) {

@@ -9,28 +9,21 @@ import korlibs.math.geom.*
 import kotlinx.coroutines.*
 
 inline fun Container.ninePatch(
-	ninePatch: NinePatchBmpSlice?, width: Float = ninePatch?.widthF ?: 16f, height: Float = ninePatch?.heightF ?: 16f,
+	ninePatch: NinePatchBmpSlice?, size: Size = Size(ninePatch?.widthF ?: 16f, ninePatch?.heightF ?: 16f),
 	callback: @ViewDslMarker NinePatch.() -> Unit = {}
-): NinePatch = NinePatch(ninePatch, width, height).addTo(this, callback)
+): NinePatch = NinePatch(ninePatch, size).addTo(this, callback)
 
 inline fun Container.ninePatch(
-    tex: BmpSlice, width: Float, height: Float, left: Float, top: Float, right: Float, bottom: Float,
+    tex: BmpSlice, size: Size, left: Float, top: Float, right: Float, bottom: Float,
     callback: @ViewDslMarker NinePatch.() -> Unit = {}
-): NinePatch = ninePatch(tex.asNinePatchSimpleRatio(left, top, right, bottom), width, height, callback)
+): NinePatch = ninePatch(tex.asNinePatchSimpleRatio(left, top, right, bottom), size, callback)
 
 class NinePatch(
 	ninePatch: NinePatchBmpSlice?,
-	width: Float = ninePatch?.width?.toFloat() ?: 16f,
-	height: Float = ninePatch?.height?.toFloat() ?: 16f
+    size: Size = Size(ninePatch?.width?.toFloat() ?: 16f, ninePatch?.height?.toFloat() ?: 16f),
 ) : View(), ViewFileRef by ViewFileRef.Mixin() {
 
-    override var width: Float = width
-        set(value) {
-            if (field == value) return
-            field = value
-            invalidateRender()
-        }
-    override var height: Float = height
+    override var unscaledSize: Size = size
         set(value) {
             if (field == value) return
             field = value

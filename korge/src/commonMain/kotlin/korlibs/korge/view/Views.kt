@@ -130,6 +130,10 @@ class Views constructor(
 
     var virtualWidthFloat: Float get() = virtualWidth.toFloat() ; set(value) { virtualWidth = value.toInt() }
     var virtualHeightFloat: Float get() = virtualHeight.toFloat() ; set(value) { virtualHeight = value.toInt() }
+    var virtualSizeFloat: Size get() = Size(virtualWidthFloat, virtualHeightFloat); set(value) {
+        virtualWidthFloat = value.width
+        virtualHeightFloat = value.height
+    }
 
     private val closeables = arrayListOf<AsyncCloseable>()
 

@@ -6,6 +6,7 @@ import korlibs.image.text.*
 import korlibs.io.lang.*
 import korlibs.korge.render.*
 import korlibs.korge.view.*
+import korlibs.math.geom.*
 import korlibs.math.random.*
 import korlibs.time.*
 import kotlin.random.*
@@ -38,8 +39,10 @@ class Board(
 	var lastx: Int = 0
 	var lasty: Int = 0
 
-	override var width = bwidth * imageSet.height.toFloat()
-	override var height = bheight * imageSet.height.toFloat()
+    override var unscaledSize: Size = Size(
+        bwidth * imageSet.height.toFloat(),
+        bheight * imageSet.height.toFloat()
+    )
 
 	init {
 		// Creating text with time

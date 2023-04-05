@@ -72,7 +72,7 @@ class MouseEvents(val view: View) : Extra by Extra.Mixin(), Closeable {
                     val lineHeight = 8.toDouble() * scale
                     val mouseHit = mouseHitTest(views)
                     if (mouseHit != null) {
-                        val bounds = mouseHit.getLocalBoundsOptimizedAnchored()
+                        val bounds = mouseHit.getLocalBounds()
                         if (mouseDebugLastFrameClicked) {
                             views.debugHightlightView(mouseHit)
                         }
@@ -104,7 +104,7 @@ class MouseEvents(val view: View) : Extra by Extra.Mixin(), Closeable {
 
                     val mouseHitResultUsed = input.mouseHitResultUsed
                     if (mouseHitResultUsed != null) {
-                        val bounds = mouseHitResultUsed.getLocalBoundsOptimizedAnchored()
+                        val bounds = mouseHitResultUsed.getLocalBounds()
                         renderContext.useBatcher { batch ->
                             batch.drawQuad(
                                 ctx.getTex(Bitmaps.white),
