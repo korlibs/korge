@@ -19,6 +19,7 @@ inline fun Container.cachedContainer(cache: Boolean = true, callback: @ViewDslMa
 open class FixedSizeCachedContainer(
     size: Size = Size(100, 100),
     cache: Boolean = true,
+    @property:ViewProperty
     var clip: Boolean = true,
 ) : CachedContainer(cache), View.Reference {
     override var unscaledSize: Size = size

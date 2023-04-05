@@ -11,7 +11,7 @@ import kotlin.math.*
 open class UIView(
     size: Size = DEFAULT_SIZE,
     cache: Boolean = false
-) : FixedSizeCachedContainer(size, cache = cache) {
+) : FixedSizeCachedContainer(size, cache = cache, clip = false) {
     override var unscaledSize: Size = size
         set(value) {
             if (field != value) {

@@ -374,7 +374,6 @@ abstract class View internal constructor(
         set(v) { scaleX = v; scaleY = v }
 
     /** Allows to change [scaleXD] and [scaleYD] at once. Returns the mean value of x and y scales. */
-    @ViewProperty(min = 0.0, max = 1.0)
     var scaleD: Double
         get() = (scaleXD + scaleYD) / 2f
         set(v) { scaleXD = v; scaleYD = v }
@@ -437,6 +436,7 @@ abstract class View internal constructor(
 
     val size: Size get() = unscaledSize
 
+    @ViewProperty(min = -1000.0, max = +1000.0, name = "size")
     var scaledSize: Size
         get() = unscaledSize * scale
         set(value) {
@@ -496,14 +496,6 @@ abstract class View internal constructor(
      * but some views might override this to adjust its internal width or height (like [SolidRect] or [UIView] for example).
      */
     var scaledHeightD: Double get() = scaledHeight.toDouble() ; set(value) { scaledHeight = value.toFloat() }
-
-    @ViewProperty(min = -1000.0, max = +1000.0, name = "size")
-    var scaledWH: Size
-        get() = Size(scaledWidthD, scaledHeightD)
-        set(value) {
-            scaledWidthD = value.widthD
-            scaledHeightD = value.heightD
-        }
 
     /**
      * The multiplicative [RGBA] color.

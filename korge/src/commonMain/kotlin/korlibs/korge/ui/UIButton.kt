@@ -40,7 +40,7 @@ open class UIButton(
     richText: RichTextData? = null,
 ) : UIFocusableView(size) {
     companion object {
-        val DEFAULT_SIZE = Size(128, 32)
+        val DEFAULT_SIZE = UI_DEFAULT_SIZE
     }
 
 	var forcePressed = false
