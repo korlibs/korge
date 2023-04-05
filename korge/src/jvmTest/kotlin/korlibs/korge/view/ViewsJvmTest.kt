@@ -107,7 +107,7 @@ class ViewsJvmTest : ViewsForTesting(log = true) {
     @Test
     fun testClipping1() = korgeScreenshotTest(SizeInt(40, 40)) {
         solidRect(1000, 1000, Colors.DARKBLUE).xy(0, 0)
-        fixedSizeContainer(20, 20, clip = true) { solidRect(80, 40, Colors.GREEN) }
+        fixedSizeContainer(Size(20, 20), clip = true) { solidRect(80, 40, Colors.GREEN) }
         solidRect(1000, 1000, Colors.DARKRED).xy(20, 20)
         assertScreenshot()
     }

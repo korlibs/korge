@@ -119,7 +119,7 @@ class ViewsTest : ViewsForTesting() {
 
     @Test
     fun alignTest() = viewsTest {
-        fixedSizeContainer(1280, 720) {
+        fixedSizeContainer(Size(1280, 720)) {
             scale(0.5)
             val rootView = this
             xD = 32.0

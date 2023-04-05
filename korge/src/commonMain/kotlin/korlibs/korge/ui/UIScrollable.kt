@@ -104,7 +104,7 @@ open class UIScrollable(size: Size, cache: Boolean = true) : UIView(size, cache 
     }
 
     //private val background = solidRect(width, height, Colors["#161a1d"])
-    private val contentContainer = fixedSizeContainer(size.width, size.height, clip = true)
+    private val contentContainer = fixedSizeContainer(size, clip = true)
     val container = contentContainer.container(cull = true)
     //private val verticalScrollBar = solidRect(10.0, height / 2, Colors["#57577a"])
     //private val horizontalScrollBar = solidRect(width / 2, 10.0, Colors["#57577a"])

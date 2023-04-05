@@ -1,9 +1,9 @@
 package samples
 
-import korlibs.korge.particle.*
-import korlibs.korge.scene.Scene
-import korlibs.korge.view.*
 import korlibs.io.file.std.*
+import korlibs.korge.particle.*
+import korlibs.korge.scene.*
+import korlibs.korge.view.*
 import korlibs.math.geom.*
 
 class MainParticles : Scene() {
@@ -11,7 +11,7 @@ class MainParticles : Scene() {
         //val emitter = resourcesVfs["particle/demo2.pex"].readParticleEmitter()
         container {
             //scale = 0.05
-            scale = 0.5
+            scale = .5f
             val emitter = resourcesVfs["particle/particle.pex"].readParticleEmitter()
             //val emitter = resourcesVfs["particle/particle.pex"].readParticleEmitter()
             //val emitter = resourcesVfs["particle/1/particle.pex"].readParticleEmitter()

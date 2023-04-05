@@ -71,7 +71,7 @@ class SceneContainer(
     @ViewPropertySubTree
 	var currentScene: Scene? = null
     override fun onSizeChanged() {
-        currentScene?.onSizeChanged(widthD, heightD)
+        currentScene?.onSizeChanged(Size(width, height))
     }
 
     init {

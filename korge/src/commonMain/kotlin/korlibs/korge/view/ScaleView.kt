@@ -1,14 +1,17 @@
 package korlibs.korge.view
 
 import korlibs.korge.render.*
+import korlibs.math.geom.*
 
 inline fun Container.scaleView(
-	width: Int, height: Int, scale: Double = 2.0, filtering: Boolean = false,
+	size: Size, scale: Float = 2f, filtering: Boolean = false,
 	callback: @ViewDslMarker Container.() -> Unit = {}
-) = ScaleView(width, height, scale, filtering).addTo(this, callback)
+) = ScaleView(size, scale, filtering).addTo(this, callback)
 
-class ScaleView(width: Int, height: Int, scale: Double = 2.0, var filtering: Boolean = false) :
-    SContainer(width.toDouble(), height.toDouble(), clip = false), View.Reference {
+class ScaleView(
+    size: Size, scale: Float = 2f,
+    var filtering: Boolean = false
+) : SContainer(size, clip = false), View.Reference {
 	init {
 		this.scale = scale
 	}

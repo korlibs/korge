@@ -157,10 +157,10 @@ class Image(
         //println("### Trying to load sourceImage=$sourceImage")
         try {
             bitmap = currentVfs["$sourceFile"].readBitmapSlice()
-            scale = 1.0
+            scaleD = 1.0
         } catch (e: Throwable) {
             bitmap = Bitmaps.white
-            scale = 100.0
+            scaleD = 100.0
         }
     }
 }

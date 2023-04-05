@@ -40,9 +40,10 @@ open class UIScrollableArea(
 
     val viewportWidth: Float get() = if (verticalScroll) width - buttonSize else width
     val viewportHeight: Float get() = if (horizontalScroll) height - buttonSize else height
+    val viewportSize: Size get() = Size(viewportWidth, viewportHeight)
 
-    val clipContainer = clipContainer(viewportWidth, viewportHeight)
-    val container = clipContainer.fixedSizeContainer(contentWidth, contentHeight)
+    val clipContainer = clipContainer(viewportSize)
+    val container = clipContainer.fixedSizeContainer(contentSize)
 
     val horScrollBar = uiOldScrollBar(size.width, buttonSize) { onChange { this@UIScrollableArea.onMoved() } }
     val verScrollBar = uiOldScrollBar(buttonSize, size.height) { onChange { this@UIScrollableArea.onMoved() } }

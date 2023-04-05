@@ -18,7 +18,7 @@ import korlibs.math.interpolation.*
 class MainMasks : Scene() {
     override suspend fun SContainer.sceneMain() {
         filter = IdentityFilter
-        scale = 0.9
+        scaleD = 0.9
         //y -= 32.0
 
         solidRect(widthD, heightD, Colors.GREEN)

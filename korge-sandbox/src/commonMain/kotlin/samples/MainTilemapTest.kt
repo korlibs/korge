@@ -28,7 +28,7 @@ class MainTilemapTest : Scene() {
 
         //filters(IdentityFilter)
         solidRect(widthD, heightD, Colors["#3e0000"])
-        val cameraContainer = cameraContainer(width, height) {
+        val cameraContainer = cameraContainer(Size(width, height)) {
             tilemap = tileMap(donutMap, tileSet).centerOn(this)
         }//.filters(BlurFilter())
         cameraContainer.cameraY = -80.0 * mapSize

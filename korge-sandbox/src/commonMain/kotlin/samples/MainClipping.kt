@@ -7,12 +7,13 @@ import korlibs.korge.scene.*
 import korlibs.korge.view.*
 import korlibs.korge.view.filter.*
 import korlibs.korge.view.vector.*
+import korlibs.math.geom.*
 
 class MainClipping : Scene() {
     override suspend fun SContainer.sceneMain() {
         image(resourcesVfs["korge.png"].readBitmap()).xy(-50, 0)
 
-        clipContainer(100, 100) {
+        clipContainer(Size(100, 100)) {
             xy(50, 70)
             solidRect(20, 20, Colors.RED).xy(-10, -10)
         }
@@ -20,9 +21,9 @@ class MainClipping : Scene() {
         container {
             xy(200, 200)
             filter = IdentityFilter.Linear
-            clipContainer(100, 100) {
+            clipContainer(Size(100, 100)) {
                 xy(150, 70)
-                clipContainer(40, 40) {
+                clipContainer(Size(40, 40)) {
                     filter = IdentityFilter.Linear
                     solidRect(20, 20, Colors.GREEN).xy(-10, -10)
                 }
@@ -33,7 +34,7 @@ class MainClipping : Scene() {
         tv.xy(400, 100)
         tv.startNewTransition(DummyView())
         tv.startNewTransition(Container().apply {
-            clipContainer(512, 512) {
+            clipContainer(Size(512, 512)) {
                 solidRect(512, 512, Colors.BLUE)
             }
         }, MaskTransition(TransitionFilter.Transition.CIRCULAR))
@@ -51,7 +52,7 @@ class MainClipping : Scene() {
             val escale = 1.0
             val container = Container().apply {
                 yD = views.virtualHeightDouble; scaleYD = -1.0 * escale; scaleXD = escale
-                clipContainer(150, 100) {
+                clipContainer(Size(150, 100)) {
                     xy(75, 50)
                     solidRect(300, 400)
                 }

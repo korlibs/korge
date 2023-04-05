@@ -26,10 +26,10 @@ class ViewTest {
         lateinit var rect: SolidRect
         lateinit var rectParent: Container
         val container = Container().apply {
-            scale = 2.0
+            scaleD = 2.0
             position(10, 10)
             rectParent = container {
-                scale = 3.0
+                scaleD = 3.0
                 rect = solidRect(100, 100).position(30, 30)
             }
         }

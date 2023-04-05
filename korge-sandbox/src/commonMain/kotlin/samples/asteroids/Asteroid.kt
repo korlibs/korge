@@ -13,7 +13,7 @@ class Asteroid(
 
 	init {
 		anchor(.5, .5)
-		scale = asteroidSize.toDouble() / 3.0
+		scaleD = asteroidSize.toDouble() / 3.0
 		name = "asteroid"
 		speed = 0.6f
 		addUpdater { time ->

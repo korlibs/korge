@@ -1,43 +1,20 @@
 package korlibs.korge.scene
 
-import korlibs.datastructure.Extra
-import korlibs.time.TimeSpan
-import korlibs.graphics.AG
-import korlibs.korge.input.Input
-import korlibs.korge.input.InputKeys
-import korlibs.korge.resources.ResourcesRoot
-import korlibs.korge.time.delay
-import korlibs.korge.view.Container
-import korlibs.korge.view.SContainer
-import korlibs.korge.view.ScaleView
-import korlibs.korge.view.Stage
-import korlibs.korge.view.View
-import korlibs.korge.view.Views
-import korlibs.korge.view.ViewsContainer
-import korlibs.korge.view.filter.filter
-import korlibs.korge.view.filter.IdentityFilter
-import korlibs.korge.view.scale
-import korlibs.korge.view.size
-import korlibs.korge.view.views
-import korlibs.korge.view.xy
-import korlibs.render.GameWindow
-import korlibs.inject.AsyncInjector
-import korlibs.inject.AsyncInjectorContext
-import korlibs.inject.InjectorAsyncDependency
-import korlibs.io.lang.cancel
-import korlibs.io.lang.CancellableGroup
-import korlibs.io.resources.Resources
-import korlibs.io.resources.ResourcesContainer
-import korlibs.math.geom.Anchor
-import korlibs.math.geom.MRectangle
-import korlibs.math.geom.ScaleMode
-import korlibs.math.geom.MSize
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.launch
-import kotlin.coroutines.coroutineContext
+import korlibs.datastructure.*
+import korlibs.graphics.*
+import korlibs.inject.*
+import korlibs.io.lang.*
+import korlibs.io.resources.*
+import korlibs.korge.input.*
+import korlibs.korge.resources.*
+import korlibs.korge.time.*
+import korlibs.korge.view.*
+import korlibs.korge.view.filter.*
+import korlibs.math.geom.*
+import korlibs.render.*
+import korlibs.time.*
+import kotlinx.coroutines.*
+import kotlin.coroutines.*
 
 /**
  * Acts as a controller. Subclasses must override at least one of: [sceneInit] or [sceneMain].
@@ -79,7 +56,7 @@ abstract class Scene : InjectorAsyncDependency, ViewsContainer, CoroutineScope, 
 	protected val cancellables = CancellableGroup()
     override val coroutineContext by lazy { views.coroutineContext + AsyncInjectorContext(injector) + Job(views.coroutineContext[Job.Key]) }
 	val sceneView: SContainer by lazy {
-        createSceneView(sceneContainer.widthD, sceneContainer.heightD).apply {
+        createSceneView(sceneContainer.sizeWH).apply {
             _sceneViewContainer += this
         }
     }
@@ -88,7 +65,7 @@ abstract class Scene : InjectorAsyncDependency, ViewsContainer, CoroutineScope, 
     open val sceneHeight: Int get() = sceneView.heightD.toInt()
 
     override val resources: Resources by lazy { injector.getSync() }
-	protected open fun createSceneView(width: Double, height: Double): SContainer = SContainer(width, height)
+	protected open fun createSceneView(size: Size): SContainer = SContainer(size)
 
     /**
      * This method will be called by the [SceneContainer] that will display this [Scene].
@@ -166,20 +143,19 @@ abstract class Scene : InjectorAsyncDependency, ViewsContainer, CoroutineScope, 
         }
     }
 
-    open fun onSizeChanged(width: Double, height: Double) {
-        sceneView.setSize(width, height)
+    open fun onSizeChanged(size: Size) {
+        sceneView.setSize(size)
     }
 }
 
 @Deprecated("")
 abstract class OldScaledScene : Scene() {
-	open val sceneSize: MSize = MSize(320, 240)
-	open val sceneScale: Double = 2.0
+	open val sceneSize: Size = Size(320, 240)
+	open val sceneScale: Float = 2f
 	open val sceneFiltering: Boolean = false
 
-	override fun createSceneView(width: Double, height: Double): SContainer = ScaleView(
-		sceneSize.width.toInt(),
-		sceneSize.height.toInt(),
+	override fun createSceneView(size: Size): SContainer = ScaleView(
+		sceneSize.toInt().toFloat(),
 		scale = sceneScale,
 		filtering = sceneFiltering
 	)
@@ -234,15 +210,16 @@ abstract class ScaledScene(
         }
 
     private fun onSizeChanged() {
-        onSizeChanged(sceneView, sceneContainer.widthD, sceneContainer.heightD)
+        onSizeChanged(sceneView, Size(sceneContainer.width, sceneContainer.height))
     }
 
-    override fun onSizeChanged(width: Double, height: Double) {
-        onSizeChanged(sceneView, width, height)
+    override fun onSizeChanged(size: Size) {
+        onSizeChanged(sceneView, size)
     }
 
-    private fun onSizeChanged(sceneView: SContainer, width: Double, height: Double) {
-        val out = MRectangle(0.0, 0.0, width, height).place(MSize(sceneWidth, sceneHeight), sceneAnchor, sceneScaleMode)
+    private fun onSizeChanged(sceneView: SContainer, size: Size) {
+        val (width, height) = size
+        val out = MRectangle(0f, 0f, width, height).place(MSize(sceneWidth, sceneHeight), sceneAnchor, sceneScaleMode)
         sceneView
             .size(sceneWidth, sceneHeight)
             .xy(out.x, out.y)
@@ -250,8 +227,8 @@ abstract class ScaledScene(
             .also { it.filter = if (sceneSmoothing) IdentityFilter.Linear else IdentityFilter.Nearest }
     }
 
-    override fun createSceneView(width: Double, height: Double): SContainer {
-        return SContainer(width, height).also { onSizeChanged(it, width, height) }
+    override fun createSceneView(size: Size): SContainer {
+        return SContainer(size).also { onSizeChanged(it, size) }
     }
 }
 

@@ -217,7 +217,7 @@ class ParticleEmitterView(
         baseForceLoadSourceFile(views, currentVfs, sourceFile)
         emitter = currentVfs["$sourceFile"].readParticleEmitter()
         simulator = ParticleEmitterSimulator(emitter, emitterPos)
-        scale = 1.0
+        scaleD = 1.0
     }
 
     @Suppress("unused")

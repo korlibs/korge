@@ -9,43 +9,41 @@ import korlibs.time.*
 import kotlin.math.*
 
 inline fun Container.cameraContainer(
-    width: Float,
-    height: Float,
+    size: Size,
     clip: Boolean = true,
-    noinline contentBuilder: (camera: CameraContainer) -> Container = { FixedSizeContainer(it.width, it.height) },
+    noinline contentBuilder: (camera: CameraContainer) -> Container = { FixedSizeContainer(it.sizeWH) },
     noinline block: @ViewDslMarker CameraContainer.() -> Unit = {},
     content: @ViewDslMarker Container.() -> Unit = {}
-) = CameraContainer(width, height, clip, contentBuilder, block).addTo(this).also { content(it.content) }
+) = CameraContainer(size, clip, contentBuilder, block).addTo(this).also { content(it.content) }
 
 class CameraContainer(
-    width: Float = 100f,
-    height: Float = 100f,
+    size: Size,
     clip: Boolean = true,
-    contentBuilder: (camera: CameraContainer) -> Container = { FixedSizeContainer(it.width, it.height) },
+    contentBuilder: (camera: CameraContainer) -> Container = { FixedSizeContainer(it.sizeWH) },
     block: @ViewDslMarker CameraContainer.() -> Unit = {}
-) : FixedSizeContainer(width, height, clip), View.Reference {
+) : FixedSizeContainer(size, clip), View.Reference {
     var clampToBounds: Boolean = false
     var cameraViewportBounds: Rectangle = Rectangle(0, 0, 4096, 4096)
 
     private val contentContainer = Container()
 
-    class ContentContainer(val cameraContainer: CameraContainer) : FixedSizeContainer(cameraContainer.width, cameraContainer.height), Reference {
+    class ContentContainer(val cameraContainer: CameraContainer) : FixedSizeContainer(cameraContainer.sizeWH), Reference {
         //out.setTo(0, 0, cameraContainer.width, cameraContainer.height)
         override fun getLocalBoundsInternal() = Rectangle(0.0, 0.0, widthD, heightD)
     }
 
     val content: Container by lazy { contentBuilder(this) }
 
-    private val sourceCamera = Camera(x = width / 2.0, y = height / 2.0, anchorX = 0.5, anchorY = 0.5)
+    private val sourceCamera = Camera(x = size.width / 2.0, y = size.height / 2.0, anchorX = 0.5, anchorY = 0.5)
     private val currentCamera = sourceCamera.copy()
     private val targetCamera = sourceCamera.copy()
 
-    override var width: Float = width
+    override var width: Float = size.width
         set(value) {
             field = value
             sync()
         }
-    override var height: Float = height
+    override var height: Float = size.height
         set(value) {
             field = value
             sync()

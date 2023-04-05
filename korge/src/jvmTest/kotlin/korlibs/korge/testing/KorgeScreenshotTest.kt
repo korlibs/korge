@@ -47,7 +47,7 @@ class KorgeScreenshotTest {
         val rect1 = solidRect(100, 100, Colors.RED) {
             rotation = maxDegrees
             anchor(.5, .5)
-            scale = 0.8
+            scaleD = 0.8
             position(200, 200)
         }
 
@@ -56,7 +56,7 @@ class KorgeScreenshotTest {
         val rect2 = solidRect(150, 150, Colors.YELLOW) {
             rotation = maxDegrees
             anchor(.5, .5)
-            scale = 0.8
+            scaleD = 0.8
             position(350, 350)
         }
 
@@ -65,7 +65,7 @@ class KorgeScreenshotTest {
         val rect3 = solidRect(150, 150, Colors.GREEN) {
             rotation = maxDegrees
             anchor(.5, .5)
-            scale = 0.8
+            scaleD = 0.8
             position(100, 350)
         }
 

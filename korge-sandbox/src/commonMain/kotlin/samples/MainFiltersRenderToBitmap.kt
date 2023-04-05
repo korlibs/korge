@@ -5,13 +5,14 @@ import korlibs.io.file.std.*
 import korlibs.korge.scene.*
 import korlibs.korge.view.*
 import korlibs.korge.view.filter.*
+import korlibs.math.geom.*
 import korlibs.time.*
 
 class MainFiltersRenderToBitmap : Scene() {
     override suspend fun SContainer.sceneMain() {
         println("LOADING IMAGE...")
         val bitmap = resourcesVfs["korge.png"].readBitmap()
-        val container = FixedSizeContainer(width, height).apply {
+        val container = FixedSizeContainer(Size(width, height)).apply {
             //scale(2.0, 2.0)
             println("PREPARING VIEWS...")
             image(bitmap).scale(.5).position(0, 0).addFilter(WaveFilter(time = 0.5.seconds))

@@ -13,8 +13,8 @@ class MainMipmaps : Scene() {
         val image = image(resourcesVfs["korge.png"].readBitmap().mipmaps())
         //image.program = BatchBuilder2D.PROGRAM_PRE_WRAP
         while (true) {
-            tween(image::scale[0.01], time = 3.seconds)
-            tween(image::scale[0.2], time = 1.seconds)
+            tween(image::scale[0.01f], time = 3.seconds)
+            tween(image::scale[0.2f], time = 1.seconds)
         }
     }
 }

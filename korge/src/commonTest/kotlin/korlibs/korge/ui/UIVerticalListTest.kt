@@ -3,6 +3,7 @@ package korlibs.korge.ui
 import korlibs.korge.annotations.*
 import korlibs.korge.internal.*
 import korlibs.korge.view.*
+import korlibs.math.geom.*
 import korlibs.time.*
 import kotlin.coroutines.*
 import kotlin.test.*
@@ -14,7 +15,7 @@ class UIVerticalListTest {
         val viewsLog = ViewsLog(EmptyCoroutineContext)
         val views = viewsLog.views
         views.resized(DefaultViewport.WIDTH, (DefaultViewport.HEIGHT * 0.75).toInt())
-        val clipContainer = views.stage.clipContainer(256.0, 130.0).xy(0, 100)
+        val clipContainer = views.stage.clipContainer(Size(256, 130)).xy(0, 100)
         val verticalList = clipContainer.uiVerticalList(object : UIVerticalList.Provider {
             override val numItems: Int get() = 100
             override val fixedHeight: Float get() = 32f

@@ -150,7 +150,7 @@ class ReferenceGraphicsTest {
     @Test
     fun testGpuShapeViewFilter() = korgeScreenshotTest(SizeInt(400, 400)) {
         container {
-            scale = 1.2
+            scaleD = 1.2
             circle(100.0).xy(100, 100).filters(DropshadowFilter())
         }
         assertScreenshot(posterize = 6)

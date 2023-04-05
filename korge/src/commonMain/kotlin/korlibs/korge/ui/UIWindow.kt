@@ -50,7 +50,7 @@ class UIWindow(title: String, size: Size = Size(256, 256)) : UIContainer(size) {
         val borderColor = if (isFocused) borderColorFocused else borderColorNoFocused
         //ctx2d.rectOutline(-borderSize, -borderSize, this@UIWindow.width + borderSize * 2, this@UIWindow.height + borderSize * 2, borderSize, borderColor.withAd(renderAlpha))
     })
-    private val titleContainer = fixedSizeContainer(width, titleHeight)
+    private val titleContainer = fixedSizeContainer(Size(width, titleHeight))
     private val titleView = titleContainer.textBlock(RichTextData(title), align = TextAlignment.MIDDLE_LEFT).xy(12, 0).size(width, titleHeight)
     private val closeButton = titleContainer.uiButton("X", size = Size(titleHeight - buttonSeparation * 2, titleHeight - buttonSeparation * 2)) {
         radiusRatio = Ratio.ONE

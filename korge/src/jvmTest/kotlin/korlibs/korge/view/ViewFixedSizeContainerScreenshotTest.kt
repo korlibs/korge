@@ -1,13 +1,13 @@
 package korlibs.korge.view
 
-import korlibs.kgl.*
 import korlibs.graphics.*
 import korlibs.graphics.gl.*
+import korlibs.image.bitmap.*
+import korlibs.image.color.*
+import korlibs.kgl.*
 import korlibs.korge.testing.*
 import korlibs.korge.tests.*
 import korlibs.korge.view.filter.*
-import korlibs.image.bitmap.*
-import korlibs.image.color.*
 import korlibs.math.geom.*
 import kotlin.test.*
 
@@ -21,7 +21,7 @@ class ViewFixedSizeContainerScreenshotTest : ViewsForTesting(
 
     @Test
     fun testClipping() = korgeScreenshotTest(SizeInt(150, 150)) {
-        fixedSizeContainer(50, 50, clip = true) {
+        fixedSizeContainer(Size(50, 50), clip = true) {
             image(Bitmap32(100, 100) { x, y -> if (y <= 25) Colors.RED else Colors.BLUE}.premultiplied())
             xy(25, 25)
         }
@@ -31,7 +31,7 @@ class ViewFixedSizeContainerScreenshotTest : ViewsForTesting(
 
     @Test
     fun testClippingMain() = viewsTest(forceRenderEveryFrame = false) {
-        fixedSizeContainer(50, 50, clip = true) {
+        fixedSizeContainer(Size(50, 50), clip = true) {
             image(Bitmap32(100, 100) { x, y -> if (y <= 25) Colors.RED else Colors.BLUE}.premultiplied())
             xy(25, 25)
         }
@@ -43,7 +43,7 @@ class ViewFixedSizeContainerScreenshotTest : ViewsForTesting(
     @Test
     fun testClippingNoMain() = viewsTest(forceRenderEveryFrame = false) {
         container {
-            fixedSizeContainer(50, 50, clip = true) {
+            fixedSizeContainer(Size(50, 50), clip = true) {
                 image(Bitmap32(100, 100) { x, y -> if (y <= 25) Colors.RED else Colors.BLUE}.premultiplied())
                 xy(25, 25)
             }

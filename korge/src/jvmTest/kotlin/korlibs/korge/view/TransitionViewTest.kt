@@ -13,7 +13,7 @@ class TransitionViewTest {
         val tv = TransitionView()
         tv.startNewTransition(DummyView())
         tv.startNewTransition(Container().apply {
-            clipContainer(50, 50) {
+            clipContainer(Size(50, 50)) {
                 solidRect(50, 50, Colors.BLUE)
             }
         }, MaskTransition(TransitionFilter.Transition.CIRCULAR))

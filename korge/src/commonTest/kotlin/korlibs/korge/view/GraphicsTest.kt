@@ -179,7 +179,7 @@ class GraphicsTest {
     @Test
     fun testScale() {
         val container = Container()
-        container.scale = 2.0
+        container.scaleD = 2.0
         val graphics = CpuGraphics(autoScaling = true).addTo(container)
         graphics.updateShape(redrawNow = true) { fill(Colors.RED) { rect(50, 50, 100, 100) } }
         graphics.anchor(Anchor(0.75, 0.5))

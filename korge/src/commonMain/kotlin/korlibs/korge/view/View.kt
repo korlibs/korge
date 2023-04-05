@@ -39,7 +39,7 @@ import kotlin.math.*
  *
  * ## Properties
  *
- * Basic transform properties of the [View] are [xD], [yD], [scaleXD], [scaleYD], [rotation], [skewX] and [skewY].
+ * Basic transform properties of the [View] are [x], [y], [scaleX], [scaleY], [rotation], [skewX] and [skewY].
  * Regarding to how the views are drawn there are: [alphaF], [colorMul] ([tint]).
  *
  * [View] implements the [Extra] interface, thus allows to add arbitrary typed properties.
@@ -363,9 +363,13 @@ abstract class View internal constructor(
             scaleY = value.scaleY
         }
 
+    var scale: Float
+        get() = (scaleX + scaleY) / 2f
+        set(v) { scaleX = v; scaleY = v }
+
     /** Allows to change [scaleXD] and [scaleYD] at once. Returns the mean value of x and y scales. */
     @ViewProperty(min = 0.0, max = 1.0)
-    var scale: Double
+    var scaleD: Double
         get() = (scaleXD + scaleYD) / 2f
         set(v) { scaleXD = v; scaleYD = v }
 
@@ -634,7 +638,7 @@ abstract class View internal constructor(
             if (!validLocalMatrix) {
                 validLocalMatrix = true
                 _requireInvalidate = true
-                _localMatrix = Matrix.fromTransform(xD.toFloat(), yD.toFloat(), rotation, scaleXD.toFloat(), scaleYD.toFloat(), skewX, skewY)
+                _localMatrix = Matrix.fromTransform(x, y, rotation, scaleX, scaleY, skewX, skewY)
             }
             return _localMatrix
         }
@@ -924,10 +928,10 @@ abstract class View internal constructor(
     @Suppress("RemoveCurlyBracesFromTemplate")
     override fun toString(): String {
         var out = this::class.portableSimpleName
-        if (xD != 0.0 || yD != 0.0) out += ":pos=(${x.str},${y.str})"
-        if (scaleXD != 1.0 || scaleYD != 1.0) out += ":scale=(${scaleXD.str},${scaleYD.str})"
-        if (skewX.radians != 0.0 || skewY.radians != 0.0) out += ":skew=(${skewX.degrees.str},${skewY.degrees.str})"
-        if (rotation.absoluteValue != 0.radians) out += ":rotation=(${rotation.degrees.str}º)"
+        if (x != 0f || y != 0f) out += ":pos=(${x.str},${y.str})"
+        if (scaleX != 1f || scaleY != 1f) out += ":scale=(${scaleXD.str},${scaleYD.str})"
+        if (skewX != Angle.ZERO || skewY != Angle.ZERO) out += ":skew=(${skewX.degrees.str},${skewY.degrees.str})"
+        if (rotation.absoluteValue != Angle.ZERO) out += ":rotation=(${rotation.degrees.str}º)"
         if (name != null) out += ":name=($name)"
         if (blendMode != BlendMode.INHERIT) out += ":blendMode=($blendMode)"
         if (!visible) out += ":visible=$visible"
@@ -1033,7 +1037,7 @@ abstract class View internal constructor(
     }
 
     // @TODO: we should compute view bounds on demand
-    /** [xD] and [yD] are in global coordinates */
+    /** [x] and [y] are in global coordinates */
     fun mouseHitTest(p: Point): View? {
         //return hitTest(p)
         if (!hitTestEnabled) return null
@@ -1078,7 +1082,7 @@ abstract class View internal constructor(
 
     var hitTestUsingShapes: Boolean? = null
 
-    /** [xD] and [yD] coordinates are global */
+    /** [x] and [y] coordinates are global */
     protected open fun hitTestInternal(p: Point, direction: HitTestDirection = HitTestDirection.ANY): View? {
         if (!hitTestEnabled) return null
 
@@ -1816,10 +1820,9 @@ inline fun <reified T> View?.descendantsOfType(): List<T> = descendantsWith { it
 
 fun View?.allDescendants(out: ArrayList<View> = arrayListOf()): List<View> = descendantsWith { true }
 
-/** Chainable method returning this that sets [View.xD] and [View.yD] */
+/** Chainable method returning this that sets [View.x] and [View.y] */
 fun <T : View> T.xy(p: Point): T {
-    this.xD = p.xD
-    this.yD = p.yD
+    this.pos = p
     return this
 }
 fun <T : View> T.xy(x: Double, y: Double): T = xy(Point(x, y))
@@ -1827,7 +1830,7 @@ fun <T : View> T.xy(x: Float, y: Float): T = xy(Point(x, y))
 fun <T : View> T.xy(x: Int, y: Int): T = xy(Point(x, y))
 fun <T : View> T.xy(p: MPoint): T = xy(p.point)
 
-/** Chainable method returning this that sets [View.xD] and [View.yD] */
+/** Chainable method returning this that sets [View.x] and [View.y] */
 fun <T : View> T.position(x: Double, y: Double): T = xy(Point(x, y))
 fun <T : View> T.position(x: Float, y: Float): T = xy(Point(x, y))
 fun <T : View> T.position(x: Int, y: Int): T = xy(Point(x, y))
@@ -1859,8 +1862,8 @@ fun View.setPositionRelativeTo(view: View, pos: Point) {
     val mat = this.parent!!.getConcatMatrix(view, inclusive = false)
     val matInv = mat.inverted()
     val out = matInv.transform(pos)
-    this.xD = out.xD
-    this.yD = out.yD
+    this.x = out.x
+    this.y = out.y
 }
 
 fun View.getPointRelativeTo(pos: Point, view: View): Point {
