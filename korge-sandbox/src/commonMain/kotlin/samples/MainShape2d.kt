@@ -44,7 +44,7 @@ class MainShape2dScene : Scene() {
 
             //println("intersections=$intersections")
 
-            gpuShapeView.alpha = if (intersects) 1.0 else 0.5
+            gpuShapeView.alpha = if (intersects) 1f else 0.5f
             //println("intersects=$intersects")
             try {
                 cursor.pos = pos

@@ -503,10 +503,13 @@ abstract class View internal constructor(
      * Equivalent to [ColorTransform.mA] + [View.invalidate]
      */
     @ViewProperty(min = 0.0, max = 1.0, clampMin = true, clampMax = true)
-    var alpha: Double
-        get() = alphaD
-        set(value) {
-            alphaD = value
+    var alpha: Float
+        get() = _colorTransform.a
+        set(v) {
+            if (_colorTransform.a != v) {
+                _colorTransform.a = v
+                invalidateColorTransform()
+            }
         }
 
     var alphaD: Double
@@ -515,14 +518,8 @@ abstract class View internal constructor(
             alphaF = value.toFloat()
         }
 
-    var alphaF: Float
-        get() = _colorTransform.a
-        set(v) {
-            if (_colorTransform.a != v) {
-                _colorTransform.a = v
-                invalidateColorTransform()
-            }
-        }
+    var alphaF: Float by this::alpha
+
 
     /** Alias for [colorMul] to make this familiar to people coming from other engines. */
     var tint: RGBA

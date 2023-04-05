@@ -1,10 +1,10 @@
 package korlibs.korge.view.fast
 
+import korlibs.image.bitmap.*
+import korlibs.image.color.*
 import korlibs.korge.testing.*
 import korlibs.korge.tests.*
 import korlibs.korge.view.*
-import korlibs.image.bitmap.*
-import korlibs.image.color.*
 import korlibs.math.geom.*
 import kotlin.test.*
 
@@ -34,7 +34,7 @@ class FSpritesJvmTest : ViewsForTesting(log = true) {
         image(bmp).xy(0, 0)
         image(bmp) {
             xy(0, 10)
-            alpha = .5
+            alpha = .5f
         }
 
         val fSprites = FSprites(2)
