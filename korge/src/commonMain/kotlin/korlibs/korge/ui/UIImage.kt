@@ -9,20 +9,19 @@ import korlibs.math.geom.*
 import korlibs.memory.*
 
 inline fun Container.uiImage(
-    width: Number = UI_DEFAULT_WIDTH,
-    height: Number = UI_DEFAULT_HEIGHT,
+    size: Size = UI_DEFAULT_SIZE,
     bitmap: BmpSlice = Bitmaps.transparent,
     scaleMode: ScaleMode = ScaleMode.NO_SCALE,
     contentAnchor: Anchor = Anchor.TOP_LEFT,
     block: @ViewDslMarker UIImage.() -> Unit = {}
-): UIImage = UIImage(width.toFloat(), height.toFloat(), bitmap, scaleMode, contentAnchor).addTo(this).apply(block)
+): UIImage = UIImage(size, bitmap, scaleMode, contentAnchor).addTo(this).apply(block)
 
 class UIImage(
-    width: Float, height: Float,
+    size: Size,
     bitmap: BmpSlice,
     scaleMode: ScaleMode = ScaleMode.NO_SCALE,
     contentAnchor: Anchor = Anchor.TOP_LEFT,
-) : UIView(width, height) {
+) : UIView(size) {
     private var cachedGlobalMatrix = Matrix.IDENTITY
     private var validCoords: Boolean = false
 

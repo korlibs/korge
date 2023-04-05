@@ -4,22 +4,21 @@ import korlibs.korge.render.*
 import korlibs.korge.style.*
 import korlibs.korge.view.*
 import korlibs.korge.view.property.*
+import korlibs.math.geom.*
 import korlibs.memory.*
 
 inline fun Container.uiProgressBar(
-    width: Float = 256f,
-    height: Float = 24f,
+    size: Size = Size(256, 24),
     current: Float = 0f,
     maximum: Float = 100f,
     block: @ViewDslMarker UIProgressBar.() -> Unit = {}
-): UIProgressBar = UIProgressBar(width, height, current, maximum).addTo(this).apply(block)
+): UIProgressBar = UIProgressBar(size, current, maximum).addTo(this).apply(block)
 
 open class UIProgressBar(
-	width: Float = 256f,
-	height: Float = 24f,
-	current: Float = 0f,
-	maximum: Float = 100f,
-) : UIView(width, height), ViewLeaf {
+    size: Size = Size(256, 24),
+    current: Float = 0f,
+    maximum: Float = 100f,
+) : UIView(size), ViewLeaf {
     @ViewProperty(min = 0.0, max = 100.0)
 	var current: Float by uiObservable(current) { updateState() }
     @ViewProperty(min = 0.0, max = 100.0)

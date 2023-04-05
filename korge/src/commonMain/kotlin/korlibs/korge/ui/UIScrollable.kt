@@ -17,18 +17,14 @@ import korlibs.time.*
 import kotlin.math.*
 
 inline fun Container.uiScrollable(
-    width: Float = 256f,
-    height: Float = 256f,
+    size: Size = Size(256, 256),
     config: UIScrollable.() -> Unit = {},
     cache: Boolean = true,
     block: @ViewDslMarker Container.(UIScrollable) -> Unit = {},
-): UIScrollable = UIScrollable(width, height, cache)
+): UIScrollable = UIScrollable(size, cache)
     .addTo(this).apply(config).also { block(it.container, it) }
 
-open class UIScrollable(width: Float, height: Float, cache: Boolean = true) : UIView(
-    width, height,
-    cache = cache
-) {
+open class UIScrollable(size: Size, cache: Boolean = true) : UIView(size, cache = cache) {
     @PublishedApi
     internal var overflowEnabled: Boolean = true
 
@@ -108,13 +104,13 @@ open class UIScrollable(width: Float, height: Float, cache: Boolean = true) : UI
     }
 
     //private val background = solidRect(width, height, Colors["#161a1d"])
-    private val contentContainer = fixedSizeContainer(width, height, clip = true)
+    private val contentContainer = fixedSizeContainer(size.width, size.height, clip = true)
     val container = contentContainer.container(cull = true)
     //private val verticalScrollBar = solidRect(10.0, height / 2, Colors["#57577a"])
     //private val horizontalScrollBar = solidRect(width / 2, 10.0, Colors["#57577a"])
 
-    private val vertical = MyScrollbarInfo(this, UIDirection.VERTICAL, solidRect(10f, height / 2, Colors["#57577a"]))
-    private val horizontal = MyScrollbarInfo(this, UIDirection.HORIZONTAL, solidRect(width / 2, 10f, Colors["#57577a"]))
+    private val vertical = MyScrollbarInfo(this, UIDirection.VERTICAL, solidRect(Size(10f, size.height / 2), Colors["#57577a"]))
+    private val horizontal = MyScrollbarInfo(this, UIDirection.HORIZONTAL, solidRect(Size(size.width / 2, 10f), Colors["#57577a"]))
     private val infos = arrayOf(horizontal, vertical)
 
     private val totalHeight: Double get() = vertical.totalSize

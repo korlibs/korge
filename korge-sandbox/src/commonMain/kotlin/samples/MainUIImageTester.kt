@@ -30,11 +30,11 @@ class MainUIImageTester : Scene() {
 
         //println("vampireAse.premultiplied=${vampireAse.premultiplied}")
 
-        val image = uiImage(300, 170, korimPng, scaleMode = ScaleMode.COVER, contentAnchor = Anchor.MIDDLE_CENTER).xy(200, 200)
+        val image = uiImage(Size(300, 170), korimPng, scaleMode = ScaleMode.COVER, contentAnchor = Anchor.MIDDLE_CENTER).xy(200, 200)
         image.bgcolor = Colors["#17334f"]
 
         uiTooltipContainer { tooltips ->
-            uiGridFill(100f, 100f, cols = 3, rows = 3) {
+            uiGridFill(Size(100, 100), cols = 3, rows = 3) {
                 val group = UIButtonToggleableGroup()
                 for (y in 0 until 3) {
                     for (x in 0 until 3) {

@@ -11,20 +11,21 @@ import korlibs.math.geom.*
 // @TODO: Replace with TextBlock
 inline fun Container.uiText(
     text: String,
-    width: Float = 128f,
-    height: Float = 18f,
+    size: Size = UIText.DEFAULT_SIZE,
     block: @ViewDslMarker UIText.() -> Unit = {}
-): UIText = UIText(text, width, height).addTo(this).apply(block)
+): UIText = UIText(text, size).addTo(this).apply(block)
 
 class UIText(
     text: String,
-    width: Float = 128f,
-    height: Float = 64f,
-) : UIView(width, height) {
+    size: Size = DEFAULT_SIZE,
+) : UIView(size) {
+    companion object {
+        val DEFAULT_SIZE = Size(128, 18)
+    }
     protected var bover by uiObservable(false) { updateState() }
     protected var bpressing by uiObservable(false) { updateState() }
 
-    private val background = solidRect(width, height, Colors.TRANSPARENT)
+    private val background = solidRect(size, Colors.TRANSPARENT)
     private val textView = text(text, font = DefaultTtfFontAsBitmap)
     var bgcolor: RGBA = Colors.TRANSPARENT
 

@@ -27,20 +27,20 @@ class MainTextInput : Scene() {
         val emojiFont = resourcesVfs["noto-glyf_colr_1.ttf"].readTtfFont()
         val font = DefaultTtfFont.withFallback(emojiFont)
 
-        uiTextInput("HELLO", width = 256f, height = 64f) {
+        uiTextInput("HELLO", size = Size(256f, 64f)) {
             this.textSize = 40.0
             this.font = font
             this.softKeyboardReturnKeyType = SoftKeyboardReturnKeyType.NEXT
         }.xy(200, 100)
 
-        uiTextInput("1234", width = 256f, height = 64f) {
+        uiTextInput("1234", size = Size(256f, 64f)) {
             this.textSize = 40.0
             this.font = font
             this.softKeyboardType = SoftKeyboardType.NUMBER_PAD
             this.softKeyboardReturnKeyType = SoftKeyboardReturnKeyType.EMERGENCY_CALL
         }.xy(200, 200)
 
-        uiTextInput("test@gmail.com", width = 256f, height = 64f) {
+        uiTextInput("test@gmail.com", size = Size(256f, 64f)) {
             this.textSize = 40.0
             this.font = font
             this.softKeyboardType = SoftKeyboardType.EMAIL_ADDRESS

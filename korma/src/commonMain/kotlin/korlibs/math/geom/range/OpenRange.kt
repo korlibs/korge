@@ -10,6 +10,8 @@ data class DoubleRangeExclusive(val start: Double, val endExclusive: Double) {
 
 inline infix fun Double.until(endExclusive: Double): DoubleRangeExclusive = DoubleRangeExclusive(this, endExclusive)
 
+data class FloatInRange(val value: Float, val min: Float, val max: Float, val inclusive: Boolean = true)
+
 data class FloatRangeExclusive(val start: Float, val endExclusive: Float) {
     val length: Float get() = endExclusive - start
     operator fun contains(value: Double): Boolean = value >= start && value < endExclusive

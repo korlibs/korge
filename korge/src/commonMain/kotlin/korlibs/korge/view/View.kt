@@ -394,7 +394,7 @@ abstract class View internal constructor(
         }
 
     var globalPos: Point
-        get() = parent?.localToGlobal(Point(xD, yD)) ?: Point(xD, yD)
+        get() = parent?.localToGlobal(Point(x, y)) ?: Point(x, y)
         set(value) { pos = parent?.globalToLocal(value) ?: value }
 
     /**
@@ -439,6 +439,8 @@ abstract class View internal constructor(
         set(value) {
             scaleY = (if (scaleY == 0f) 1f else scaleY) * (value / getLocalBoundsOptimizedAnchored().height)
         }
+
+    val sizeWH: Size get() = Size(width, height)
 
     var widthD: Double get() = width.toDouble(); @Deprecated("") set(value) { width = value.toFloat() }
     var heightD: Double get() = height.toDouble(); @Deprecated("") set(value) { height = value.toFloat() }

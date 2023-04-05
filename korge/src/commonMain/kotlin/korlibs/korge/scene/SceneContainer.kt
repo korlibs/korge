@@ -11,6 +11,7 @@ import korlibs.korge.ui.*
 import korlibs.korge.view.*
 import korlibs.korge.view.property.*
 import korlibs.logger.*
+import korlibs.math.geom.*
 import korlibs.math.interpolation.*
 import korlibs.time.*
 import kotlinx.coroutines.CancellationException
@@ -26,9 +27,10 @@ inline fun Container.sceneContainer(
 	views: Views,
     defaultTransition: Transition = AlphaTransition.withEasing(Easing.EASE_IN_OUT_QUAD),
     name: String = "sceneContainer",
-    width: Float = 0f, height: Float = 0f,
+    size: Size = Size(0f, 0f),
 	callback: SceneContainer.() -> Unit = {}
 ): SceneContainer {
+    val (width, height) = size
     var rwidth = width
     var rheight = height
     if (width == 0f && height == 0f) {
@@ -36,15 +38,15 @@ inline fun Container.sceneContainer(
         rwidth = base?.width ?: views.stage.width
         rheight = base?.height ?: views.stage.height
     }
-    return SceneContainer(views, defaultTransition, name, rwidth, rheight).addTo(this, callback)
+    return SceneContainer(views, defaultTransition, name, Size(rwidth, rheight)).addTo(this, callback)
 }
 
 suspend inline fun Container.sceneContainer(
     defaultTransition: Transition = AlphaTransition.withEasing(Easing.EASE_IN_OUT_QUAD),
     name: String = "sceneContainer",
-    width: Float = 0f, height: Float = 0f,
+    size: Size = Size.ZERO,
     callback: SceneContainer.() -> Unit = {}
-): SceneContainer = sceneContainer(views(), defaultTransition, name, width, height, callback)
+): SceneContainer = sceneContainer(views(), defaultTransition, name, size, callback)
 
 /**
  * A [Container] [View] that can hold [Scene]s controllers and contains a history.
@@ -56,8 +58,8 @@ class SceneContainer(
     /** Default [Transition] that will be used when no transition is specified */
     val defaultTransition: Transition = AlphaTransition.withEasing(Easing.EASE_IN_OUT_QUAD),
     name: String = "sceneContainer",
-    width: Float = views.stage.width, height: Float = views.stage.height,
-) : UIView(width, height), CoroutineScope by views {
+    size: Size = views.stage.sizeWH,
+) : UIView(size), CoroutineScope by views {
     init {
         this.name = name
     }

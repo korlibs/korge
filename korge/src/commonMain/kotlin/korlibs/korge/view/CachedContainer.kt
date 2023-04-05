@@ -8,18 +8,22 @@ import korlibs.korge.view.property.*
 import korlibs.math.geom.*
 import korlibs.render.*
 
-inline fun Container.fixedSizeCachedContainer(width: Float, height: Float, cache: Boolean = true, clip: Boolean = true, callback: @ViewDslMarker CachedContainer.() -> Unit = {}) =
-    FixedSizeCachedContainer(width, height, cache, clip).addTo(this, callback)
+inline fun Container.fixedSizeCachedContainer(size: Size, cache: Boolean = true, clip: Boolean = true, callback: @ViewDslMarker CachedContainer.() -> Unit = {}) =
+    FixedSizeCachedContainer(size, cache, clip).addTo(this, callback)
+inline fun Container.fixedSizeCachedContainer(width: Double, height: Double, cache: Boolean = true, clip: Boolean = true, callback: @ViewDslMarker CachedContainer.() -> Unit = {}) =
+    FixedSizeCachedContainer(Size(width, height), cache, clip).addTo(this, callback)
 
 inline fun Container.cachedContainer(cache: Boolean = true, callback: @ViewDslMarker CachedContainer.() -> Unit = {}) =
     CachedContainer(cache).addTo(this, callback)
 
 open class FixedSizeCachedContainer(
-    override var width: Float = 100f,
-    override var height: Float = 100f,
+    size: Size = Size(100, 100),
     cache: Boolean = true,
     var clip: Boolean = true,
 ) : CachedContainer(cache), View.Reference {
+    override var width: Float = size.width
+    override var height: Float = size.height
+
     override fun getLocalBoundsInternal(): Rectangle = Rectangle(0f, 0f, width, height)
 
     private var renderingInternalRef = Ref(false)

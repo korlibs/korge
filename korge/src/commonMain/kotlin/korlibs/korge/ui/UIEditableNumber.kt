@@ -26,16 +26,15 @@ class UIEditableBooleanProps(
 @KorgeExperimental
 inline fun Container.uiEditableNumber(
     value: Double = 0.0, min: Double = 0.0, max: Double = 1.0, decimals: Int = 2, clamped: Boolean = true,
-    width: Double = 64.0,
-    height: Double = 18.0,
+    size: Size = Size(64, 18),
     block: @ViewDslMarker UIEditableNumber.() -> Unit = {}
-): UIEditableNumber = append(UIEditableNumber(value, min, max, decimals, clamped, width, height)).apply(block)
+): UIEditableNumber = append(UIEditableNumber(value, min, max, decimals, clamped, size)).apply(block)
 
 // @TODO: lock cursor while dragging
 @KorgeExperimental
-class UIEditableNumber(value: Double = 0.0, min: Double = 0.0, max: Double = 1.0, var decimals: Int = 2, var clamped: Boolean = true, width: Double = 64.0, height: Double = 18.0) : UIView(width.toFloat(), height.toFloat()) {
-    private val textView = uiText("", width.toFloat(), height.toFloat())
-    private val textInputView = uiTextInput("", width.toFloat(), height.toFloat())
+class UIEditableNumber(value: Double = 0.0, min: Double = 0.0, max: Double = 1.0, var decimals: Int = 2, var clamped: Boolean = true, size: Size = Size(64, 18)) : UIView(size) {
+    private val textView = uiText("", size)
+    private val textInputView = uiTextInput("", size)
         .also { it.visible = false }
         .also { it.padding = Margin.ZERO }
     var min: Double = min

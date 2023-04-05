@@ -2,6 +2,7 @@ package korlibs.korge.ui
 
 import korlibs.korge.tests.*
 import korlibs.korge.view.*
+import korlibs.math.geom.*
 import kotlin.test.*
 
 class UiLayoutTest : ViewsForTesting() {
@@ -29,7 +30,7 @@ class UiLayoutTest : ViewsForTesting() {
 
     @Test
     fun testGrid() = viewsTest {
-        val container = uiGridFill(300f, 200f, cols = 3, rows = 2) {
+        val container = uiGridFill(Size(300f, 200f), cols = 3, rows = 2) {
             for (n in 0 until 5) solidRect(1, 1) { name = "rect$n" }
         }
         assertEquals(

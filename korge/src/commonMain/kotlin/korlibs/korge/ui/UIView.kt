@@ -9,10 +9,9 @@ import korlibs.math.geom.*
 import kotlin.math.*
 
 open class UIView(
-	width: Float = 90f,
-	height: Float = 32f,
+    size: Size = DEFAULT_SIZE,
     cache: Boolean = false
-) : FixedSizeCachedContainer(width, height, cache = cache) {
+) : FixedSizeCachedContainer(size, cache = cache) {
     private var _width: Float = width
     private var _height: Float = height
 
@@ -91,6 +90,10 @@ open class UIView(
 	}
 
     companion object {
+        const val DEFAULT_WIDTH = 90f
+        const val DEFAULT_HEIGHT = 32f
+        val DEFAULT_SIZE = Size(DEFAULT_WIDTH, DEFAULT_HEIGHT)
+
         fun fitIconInRect(iconView: Image, bmp: BmpSlice, width: Double, height: Double, anchor: Anchor) {
             val iconScaleX = width / bmp.width
             val iconScaleY = height / bmp.height
@@ -105,10 +108,9 @@ open class UIView(
 }
 
 open class UIFocusableView(
-    width: Float = 90f,
-    height: Float = 32f,
+    size: Size = Size(90, 32),
     cache: Boolean = false
-) : UIView(width, height, cache), UIFocusable {
+) : UIView(size, cache), UIFocusable {
     override val UIFocusManager.Scope.focusView: View get() = this@UIFocusableView
     override var tabIndex: Int = 0
     override var isFocusable: Boolean = true

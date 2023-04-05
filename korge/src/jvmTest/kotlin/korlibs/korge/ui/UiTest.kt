@@ -3,6 +3,7 @@ package korlibs.korge.ui
 import korlibs.korge.*
 import korlibs.korge.input.*
 import korlibs.korge.view.*
+import korlibs.math.geom.*
 import korlibs.render.*
 import kotlinx.coroutines.*
 
@@ -10,18 +11,18 @@ fun main(): Unit = runBlocking { korge() }
 
 suspend fun korge() = Korge(quality = GameWindow.Quality.PERFORMANCE, title = "UI").start {
 
-    uiText("Some text", 130f, 20f) {
+    uiText("Some text", Size(130f, 20f)) {
         position(128, 265)
     }
 
-    uiButton("Disabled Button", 256f, 32f) {
+    uiButton("Disabled Button", Size(256f, 32f)) {
         position(128, 128)
         onClick {
             println("CLICKED!")
         }
         disable()
     }
-    uiButton("Enabled Button", 256f, 32f) {
+    uiButton("Enabled Button", Size(256f, 32f)) {
         position(128, 128 + 32)
         onClick {
             println("CLICKED!")

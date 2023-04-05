@@ -13,18 +13,16 @@ import korlibs.memory.*
 inline fun Container.textBlock(
     text: RichTextData = RichTextData("", textSize = 16.0, font = DefaultTtfFontAsBitmap),
     align: TextAlignment = TextAlignment.TOP_LEFT,
-    width: Float = 100f,
-    height: Float = 100f,
+    size: Size = Size(100, 100),
     block: @ViewDslMarker TextBlock.() -> Unit = {}
 ): TextBlock
-    = TextBlock(text, align, width, height).addTo(this, block)
+    = TextBlock(text, align, size).addTo(this, block)
 
 class TextBlock(
     text: RichTextData = RichTextData("", textSize = 16.0, font = DefaultTtfFontAsBitmap),
     align: TextAlignment = TextAlignment.TOP_LEFT,
-    width: Float = 100f,
-    height: Float = 100f,
-) : UIView(width, height), ViewLeaf {
+    size: Size = Size(100, 100),
+) : UIView(size), ViewLeaf {
     private var dirty = true
 
     @ViewProperty

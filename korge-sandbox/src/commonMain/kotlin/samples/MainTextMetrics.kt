@@ -107,7 +107,7 @@ class MainTextMetrics : Scene() {
         )
 
 
-        uiContainer(width, 200f) { uiVerticalStack {
+        uiContainer(Size(width, 200f)) { uiVerticalStack {
         //korui(width, 200) {
             for (info in listOf(
                 SecInfo("Vertical", text1::verticalAlign, verticalAlignments),

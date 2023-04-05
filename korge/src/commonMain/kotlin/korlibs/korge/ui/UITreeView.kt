@@ -5,6 +5,7 @@ import korlibs.image.color.*
 import korlibs.korge.annotations.*
 import korlibs.korge.input.*
 import korlibs.korge.view.*
+import korlibs.math.geom.*
 
 @KorgeExperimental
 class UITreeViewNode<T>(val element: T, val items: List<UITreeViewNode<T>> = emptyList()) {
@@ -161,17 +162,16 @@ private class UITreeViewVerticalListProviderAdapter<T>(val provider: UITreeViewP
 @KorgeExperimental
 inline fun <T> Container.uiTreeView(
     provider: UITreeViewProvider<T>,
-    width: Float = 256f,
-    height: Float = 256f,
+    size: Size = Size(256, 256),
     block: @ViewDslMarker Container.(UITreeView<T>) -> Unit = {}
-): UITreeView<T> = UITreeView(provider, width, height)
+): UITreeView<T> = UITreeView(provider, size)
     .addTo(this).also { block(it) }
 
 @KorgeExperimental
 class UITreeView<T>(
     provider: UITreeViewProvider<T>,
-    width: Float = 128f, height: Float = 128f,
-) : UIGridFill(width, height, cols = 1, rows = 1) {
+    size: Size = Size(128, 128),
+) : UIGridFill(size, cols = 1, rows = 1) {
     val scrollable = uiScrollable {  }
     @KorgeExperimental
     internal val list = scrollable.container.uiVerticalList(UIVerticalList.Provider.Dummy)

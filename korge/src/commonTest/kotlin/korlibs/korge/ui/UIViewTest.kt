@@ -1,13 +1,14 @@
 package korlibs.korge.ui
 
 import korlibs.io.util.*
+import korlibs.math.geom.*
 import kotlin.test.*
 
 class UIViewTest {
     @Test
     fun test() {
         var sizeChangedCount = 0
-        val view = object : UIView(100f, 110f) {
+        val view = object : UIView(Size(100f, 110f)) {
             override fun onSizeChanged() {
                 sizeChangedCount++
             }

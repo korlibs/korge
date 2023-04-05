@@ -19,39 +19,28 @@ import kotlin.math.*
 
 inline fun Container.uiButton(
     label: String = "",
-    width: Float = UI_DEFAULT_WIDTH,
-    height: Float = UI_DEFAULT_HEIGHT,
+    size: Size = UIButton.DEFAULT_SIZE,
     icon: BmpSlice? = null,
     block: @ViewDslMarker UIButton.() -> Unit = {}
-): UIButton = UIButton(width, height, label, icon).addTo(this).apply(block)
-
-inline fun Container.uiButton(
-    label: String = "",
-    size: Size = UI_DEFAULT_SIZE,
-    icon: BmpSlice? = null,
-    block: @ViewDslMarker UIButton.() -> Unit = {}
-): UIButton = UIButton(size.width, size.height, label, icon).addTo(this).apply(block)
+): UIButton = UIButton(size, label, icon).addTo(this).apply(block)
 
 open class UIToggleableButton(
-    width: Float = 128f,
-    height: Float = 32f,
+    size: Size = UIButton.DEFAULT_SIZE,
     text: String = "",
     icon: BmpSlice? = null,
     richText: RichTextData? = null,
-) : UIButton(width, height, text, icon, richText) {
+) : UIButton(size, text, icon, richText) {
     var pressed: Boolean = false
 }
 
 open class UIButton(
-	width: Float = 128f,
-	height: Float = 32f,
+    size: Size = DEFAULT_SIZE,
     text: String = "",
     icon: BmpSlice? = null,
     richText: RichTextData? = null,
-) : UIFocusableView(width, height) {
+) : UIFocusableView(size) {
     companion object {
-        const val DEFAULT_WIDTH = UI_DEFAULT_WIDTH
-        const val DEFAULT_HEIGHT = UI_DEFAULT_HEIGHT
+        val DEFAULT_SIZE = Size(128, 32)
     }
 
 	var forcePressed = false
@@ -119,7 +108,7 @@ open class UIButton(
 
     //var newSkin: NewUIButtonSkin = DefaultUISkin
 
-    val background = uiMaterialLayer(width, height) {
+    val background = uiMaterialLayer(size) {
         radius = RectCorners(5f)
     }
     //internal val background = FastMaterialBackground(width, height).addTo(this)
@@ -168,7 +157,7 @@ open class UIButton(
         background.setSize(width, height)
         //background.setSize(width, height)
         background.radius = RectCorners(this.radius)
-        background.shadowRadius = if (elevation) 10.0 else 0.0
+        background.shadowRadius = if (elevation) 10f else 0f
         //textView.setSize(width, height)
 
         textView.setSize(width, height)

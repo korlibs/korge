@@ -1,14 +1,12 @@
-import korlibs.datastructure.iterators.fastForEachWithIndex
+
+import korlibs.datastructure.iterators.*
+import korlibs.image.color.*
 import korlibs.korge.*
-import korlibs.korge.input.onClick
+import korlibs.korge.input.*
 import korlibs.korge.ui.*
-import korlibs.image.color.toRgba
 import korlibs.math.geom.*
-import java.awt.Component
-import java.awt.GridLayout
-import javax.swing.JButton
-import javax.swing.JFrame
-import javax.swing.SwingUtilities
+import java.awt.*
+import javax.swing.*
 
 object AwtSandboxSample {
     @JvmStatic
@@ -35,7 +33,7 @@ object AwtSandboxSample {
                         GLCanvasWithKorge(
                             KorgeConfig(
                                 backgroundColor = frame.background.toRgba(),
-                                virtualSize = Size(UIButton.DEFAULT_WIDTH, UIButton.DEFAULT_HEIGHT * 3).toInt(),
+                                virtualSize = Size(UIButton.DEFAULT_SIZE.width, UIButton.DEFAULT_SIZE.height * 3).toInt(),
                             )
                         ) {
                             uiVerticalStack {

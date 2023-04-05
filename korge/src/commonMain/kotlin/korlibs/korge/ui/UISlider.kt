@@ -7,6 +7,7 @@ import korlibs.io.util.*
 import korlibs.korge.input.*
 import korlibs.korge.view.*
 import korlibs.korge.view.property.*
+import korlibs.math.geom.*
 import korlibs.memory.*
 
 inline fun Container.uiSlider(
@@ -15,24 +16,23 @@ inline fun Container.uiSlider(
     max: Number = UISlider.DEFAULT_MAX,
     step: Number = UISlider.DEFAULT_STEP,
     decimalPlaces: Int = UISlider.decimalPlacesFromStep(step.toDouble()),
-    width: Float = UISlider.DEFAULT_WIDTH,
-    height: Float = UISlider.DEFAULT_HEIGHT,
+    size: Size = UISlider.DEFAULT_SIZE,
     block: @ViewDslMarker UISlider.() -> Unit = {}
-): UISlider = UISlider(value, min, max, step, decimalPlaces, width, height).addTo(this).apply(block)
+): UISlider = UISlider(value, min, max, step, decimalPlaces, size).addTo(this).apply(block)
 
 class UISlider(
     value: Number = DEFAULT_VALUE, min: Number = DEFAULT_MIN, max: Number = DEFAULT_MAX, step: Number = DEFAULT_STEP,
     decimalPlaces: Int = DEFAULT_DECIMAL_PLACES,
-    width: Float = DEFAULT_WIDTH, height: Float = DEFAULT_HEIGHT
-) : UIView(width, height) {
+    size: Size = UISlider.DEFAULT_SIZE,
+    //width: Float = DEFAULT_WIDTH, height: Float = DEFAULT_HEIGHT
+) : UIView(size) {
     companion object {
         const val DEFAULT_VALUE = 0
         const val DEFAULT_MIN = 0
         const val DEFAULT_MAX = 100
         const val DEFAULT_STEP = 1f
         const val DEFAULT_DECIMAL_PLACES = 1
-        const val DEFAULT_WIDTH = 128f
-        const val DEFAULT_HEIGHT = 16f
+        val DEFAULT_SIZE = Size(128, 16)
         const val NO_STEP = 0f
 
         fun decimalPlacesFromStep(step: Double): Int = when {
@@ -42,8 +42,8 @@ class UISlider(
         }
     }
 
-    val bg = solidRect(width, height, RGBA(32, 32, 32))
-    val button = solidRect(height, height, Colors.DARKGREY)
+    val bg = solidRect(size, RGBA(32, 32, 32))
+    val button = solidRect(size, Colors.DARKGREY)
     val text = text("", alignment = TextAlignment.TOP_LEFT, color = Colors.BLACK)
 
     val onChange: Signal<Float> = Signal()

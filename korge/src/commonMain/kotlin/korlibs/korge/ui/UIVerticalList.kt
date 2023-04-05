@@ -15,7 +15,7 @@ inline fun Container.uiVerticalList(
     .addTo(this).also { block(it) }
 
 @KorgeExperimental
-open class UIVerticalList(provider: Provider, width: Float = 200f) : UIView(width) {
+open class UIVerticalList(provider: Provider, width: Float = 200f) : UIView(DEFAULT_SIZE.copy(width = width)) {
     interface Provider {
         val numItems: Int
         val fixedHeight: Float?

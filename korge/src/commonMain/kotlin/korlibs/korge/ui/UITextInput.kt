@@ -13,23 +13,22 @@ import korlibs.math.geom.*
 @KorgeExperimental
 inline fun Container.uiTextInput(
     initialText: String = "",
-    width: Float = 128f,
-    height: Float = 24f,
+    size: Size = Size(128, 24),
     block: @ViewDslMarker UITextInput.() -> Unit = {}
-): UITextInput = UITextInput(initialText, width, height)
+): UITextInput = UITextInput(initialText, size)
     .addTo(this).also { block(it) }
 
 /**
  * Simple Single Line Text Input
  */
 @KorgeExperimental
-class UITextInput(initialText: String = "", width: Float = 128f, height: Float = 24f) :
-    UIView(width, height),
+class UITextInput(initialText: String = "", size: Size = Size(128, 24)) :
+    UIView(size),
     //UIFocusable,
     ISoftKeyboardConfig by SoftKeyboardConfig() {
 
     //private val bg = ninePatch(NinePatchBmpSlice.createSimple(Bitmap32(3, 3) { x, y -> if (x == 1 && y == 1) Colors.WHITE else Colors.BLACK }.slice(), 1, 1, 2, 2), width, height).also { it.smoothing = false }
-    private val bg = renderableView(width, height) {
+    private val bg = renderableView(size) {
         styles.uiTextInputBackgroundRender.apply {
             render()
         }

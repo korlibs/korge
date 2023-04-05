@@ -98,7 +98,7 @@ class MainEditor : Scene() {
         */
 
         val solidRect = solidRect(100, 100, Colors.RED).position(300, 300).anchor(Anchor.CENTER)
-        uiWindow("Properties", 300f, 100f) {
+        uiWindow("Properties", Size(300f, 100f)) {
             //it.isCloseable = false
             it.container.mobileBehaviour = false
             it.container.overflowRate = 0.0
@@ -132,8 +132,8 @@ class MainEditor : Scene() {
             uiTextInput("LOL").position(0.0, 128.0)
         }
 
-        renderableView(width, height) {
-            ctx2d.materialRoundRect(0.0, 0.0, 64.0, 64.0, radius = RectCorners(32.0, 16.0, 8.0, 0.0))
+        renderableView(Size(width, height)) {
+            ctx2d.materialRoundRect(0f, 0f, 64f, 64f, radius = RectCorners(32.0, 16.0, 8.0, 0.0))
         }.xy(500, 500)
 
         val richTextData = RichTextData.fromHTML("hello world,<br /><br />this is a long test to see how <font size=24 color='red'><b><i>rich text</i></b></font> <b color=yellow>works</b>! And <i>see</i> if this is going to show ellipsis if the text is too long")

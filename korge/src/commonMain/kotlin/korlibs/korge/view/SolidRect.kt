@@ -2,35 +2,37 @@ package korlibs.korge.view
 
 import korlibs.image.bitmap.*
 import korlibs.image.color.*
+import korlibs.math.geom.*
 
-/** Creates a new [SolidRect] of size [width]x[height] and color [color] and allows you to configure it via [callback]. Once created, it is added to this receiver [Container]. */
-inline fun Container.solidRect(width: Float, height: Float, color: RGBA = Colors.WHITE, callback: @ViewDslMarker SolidRect.() -> Unit = {})
-    = SolidRect(width, height, color).addTo(this, callback)
+/** Creates a new [SolidRect] of [size] and color [color] and allows you to configure it via [callback]. Once created, it is added to this receiver [Container]. */
+inline fun Container.solidRect(size: Size, color: RGBA = Colors.WHITE, callback: @ViewDslMarker SolidRect.() -> Unit = {})
+    = SolidRect(size, color).addTo(this, callback)
 
 inline fun Container.solidRect(width: Double, height: Double, color: RGBA = Colors.WHITE, callback: @ViewDslMarker SolidRect.() -> Unit = {})
-    = SolidRect(width.toFloat(), height.toFloat(), color).addTo(this, callback)
+    = SolidRect(Size(width, height), color).addTo(this, callback)
 
 /** Creates a new [SolidRect] of size [width]x[height] and color [color] and allows you to configure it via [callback]. Once created, it is added to this receiver [Container]. */
 inline fun Container.solidRect(width: Int, height: Int, color: RGBA = Colors.WHITE, callback: @ViewDslMarker SolidRect.() -> Unit = {})
-    = SolidRect(width.toFloat(), height.toFloat(), color).addTo(this, callback)
+    = SolidRect(Size(width, height), color).addTo(this, callback)
 
 /**
  * A Rect [RectBase] [View] of size [widthD] and [heightD] with the initial color, [color].
  */
-class SolidRect(width: Float, height: Float, color: RGBA = Colors.WHITE) : RectBase() {
+class SolidRect(size: Size, color: RGBA = Colors.WHITE) : RectBase() {
 	companion object {
-        operator fun invoke(width: Int, height: Int, color: RGBA = Colors.WHITE) = SolidRect(width.toFloat(), height.toFloat(), color)
-        operator fun invoke(width: Double, height: Double, color: RGBA = Colors.WHITE) = SolidRect(width.toFloat(), height.toFloat(), color)
+        operator fun invoke(width: Int, height: Int, color: RGBA = Colors.WHITE) = SolidRect(Size(width, height), color)
+        operator fun invoke(width: Float, height: Float, color: RGBA = Colors.WHITE) = SolidRect(Size(width, height), color)
+        operator fun invoke(width: Double, height: Double, color: RGBA = Colors.WHITE) = SolidRect(Size(width, height), color)
 	}
 
-	override var width: Float = width; set(v) {
+	override var width: Float = size.width; set(v) {
         if (field != v) {
             field = v
             dirtyVertices = true
             invalidateRender()
         }
     }
-	override var height: Float = height; set(v) {
+	override var height: Float = size.height; set(v) {
        if (field != v) {
            field = v
            dirtyVertices = true
@@ -56,5 +58,5 @@ class SolidRect(width: Float, height: Float, color: RGBA = Colors.WHITE) : RectB
 		this.colorMul = color
 	}
 
-	override fun createInstance(): View = SolidRect(width, height, colorMul)
+	override fun createInstance(): View = SolidRect(Size(width, height), colorMul)
 }

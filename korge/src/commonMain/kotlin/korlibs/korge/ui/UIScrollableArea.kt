@@ -1,38 +1,37 @@
 package korlibs.korge.ui
 
 import korlibs.korge.view.*
+import korlibs.math.geom.*
 
 @Deprecated("Use UINewScrollable")
 inline fun Container.uiScrollableArea(
-    width: Float = 256f,
-    height: Float = 256f,
-    contentWidth: Float = 512f,
-    contentHeight: Float = 512f,
+    size: Size = Size(256, 256),
+    contentSize: Size = Size(512, 512),
     buttonSize: Float = 32f,
     verticalScroll: Boolean = true,
     horizontalScroll: Boolean = true,
     config: UIScrollableArea.() -> Unit = {},
     block: @ViewDslMarker Container.(UIScrollableArea) -> Unit = {}
-): UIScrollableArea = UIScrollableArea(width, height, contentWidth, contentHeight, buttonSize, verticalScroll, horizontalScroll)
+): UIScrollableArea = UIScrollableArea(size, contentSize, buttonSize, verticalScroll, horizontalScroll)
     .addTo(this).apply(config).also { block(it.container, it) }
 
 // @TODO: Optimize this!
 // @TODO: Add an actualContainer = this inside Container
 @Deprecated("Use UINewScrollable")
 open class UIScrollableArea(
-    width: Float = 256f,
-    height: Float = 256f,
-    contentWidth: Float = 512f,
-    contentHeight: Float = 512f,
+    size: Size = Size(256, 256),
+    contentSize: Size = Size(512, 512),
     buttonSize: Float = 32f,
     verticalScroll: Boolean = true,
     horizontalScroll: Boolean = true,
-) : UIView(width, height) {
+) : UIView(size) {
 
     var buttonSize by uiObservable(buttonSize) { onSizeChanged() }
 
-    var contentWidth by uiObservable(contentWidth) { onSizeChanged() }
-    var contentHeight by uiObservable(contentHeight) { onSizeChanged() }
+    var contentSize by uiObservable(contentSize) { onSizeChanged() }
+
+    var contentWidth get() = contentSize.width; set(value) { contentSize = contentSize.copy(width = value) }
+    var contentHeight get() = contentSize.height; set(value) { contentSize = contentSize.copy(height = value) }
 
     var verticalScroll by uiObservable(verticalScroll) { onSizeChanged() }
     var horizontalScroll by uiObservable(horizontalScroll) { onSizeChanged() }
@@ -45,8 +44,8 @@ open class UIScrollableArea(
     val clipContainer = clipContainer(viewportWidth, viewportHeight)
     val container = clipContainer.fixedSizeContainer(contentWidth, contentHeight)
 
-    val horScrollBar = uiOldScrollBar(width, buttonSize) { onChange { this@UIScrollableArea.onMoved() } }
-    val verScrollBar = uiOldScrollBar(buttonSize, height) { onChange { this@UIScrollableArea.onMoved() } }
+    val horScrollBar = uiOldScrollBar(size.width, buttonSize) { onChange { this@UIScrollableArea.onMoved() } }
+    val verScrollBar = uiOldScrollBar(buttonSize, size.height) { onChange { this@UIScrollableArea.onMoved() } }
 
     init {
         calculateSizes()
