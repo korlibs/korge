@@ -16,7 +16,7 @@ import kotlin.test.*
 
 class ReferenceGraphicsTest {
     @Test
-    fun testGraphics() = korgeScreenshotTest(SizeInt(300, 300)) {
+    fun testGraphics() = korgeScreenshotTest(Size(300, 300)) {
         cpuGraphics {
             fill(Colors.RED) {
                 rect(-60, -60, 70, 70)
@@ -48,7 +48,7 @@ class ReferenceGraphicsTest {
     @Test
     fun testFSprites4() = testFSpritesN(4)
 
-    fun testFSpritesN(N: Int) = korgeScreenshotTest(SizeInt(512, 512)) {
+    fun testFSpritesN(N: Int) = korgeScreenshotTest(Size(512, 512)) {
         val bmp = Bitmap32(32, 32, Colors.RED.premultiplied).slice()
         val sprites = FSprites(16)
         val anchorsX = listOf(.5f, .5f, .5f, .0f)
@@ -76,7 +76,7 @@ class ReferenceGraphicsTest {
     @Test
     @OptIn(KorgeExperimental::class)
     @Ignore
-    fun testGpuShapeView() = korgeScreenshotTest(SizeInt(512, 512)) {
+    fun testGpuShapeView() = korgeScreenshotTest(Size(512, 512)) {
         val korgeBitmap = resourcesVfs["korge.png"].readBitmap()
         val view = gpuShapeView({
             keep {
@@ -148,7 +148,7 @@ class ReferenceGraphicsTest {
     }
 
     @Test
-    fun testGpuShapeViewFilter() = korgeScreenshotTest(SizeInt(400, 400)) {
+    fun testGpuShapeViewFilter() = korgeScreenshotTest(Size(400, 400)) {
         container {
             scaleD = 1.2
             circle(100.0).xy(100, 100).filters(DropshadowFilter())
@@ -158,7 +158,7 @@ class ReferenceGraphicsTest {
 
     @Test
     //@Ignore
-    fun testBlurFilterInEmptyContainer() = korgeScreenshotTest(SizeInt(512, 512)) {
+    fun testBlurFilterInEmptyContainer() = korgeScreenshotTest(Size(512, 512)) {
         val view = solidRect(100, 100) {
             filter = BlurFilter(4f)
         }

@@ -1,15 +1,14 @@
 package korlibs.korge.view
 
-import korlibs.kgl.*
 import korlibs.graphics.*
 import korlibs.graphics.gl.*
+import korlibs.image.bitmap.*
+import korlibs.image.color.*
+import korlibs.kgl.*
 import korlibs.korge.render.*
-import korlibs.korge.test.*
 import korlibs.korge.testing.*
 import korlibs.korge.tests.*
 import korlibs.korge.view.filter.*
-import korlibs.image.bitmap.*
-import korlibs.image.color.*
 import korlibs.math.geom.*
 import org.junit.*
 
@@ -25,7 +24,7 @@ class ViewsOpenglJvmTest : ViewsForTesting(log = true) {
 
     // This checks that the texture is generated with the default size (dirty=true fix)
     @Test
-    fun testIdentityFilterFor128x128() = korgeScreenshotTest(SizeInt(200, 200)) {
+    fun testIdentityFilterFor128x128() = korgeScreenshotTest(Size(200, 200)) {
         views.stage += Image(Bitmap32(102, 102, Colors.RED.premultiplied)).also {
             it.filter = IdentityFilter
         }
@@ -33,7 +32,7 @@ class ViewsOpenglJvmTest : ViewsForTesting(log = true) {
     }
 
     @Test
-    fun testRenderToTextureWithStencil() = korgeScreenshotTest(SizeInt(512, 512)) {
+    fun testRenderToTextureWithStencil() = korgeScreenshotTest(Size(512, 512)) {
         this += object : View() {
             override fun renderInternal(ctx: RenderContext) {
                 ctx.renderToTexture(100, 100, render = {

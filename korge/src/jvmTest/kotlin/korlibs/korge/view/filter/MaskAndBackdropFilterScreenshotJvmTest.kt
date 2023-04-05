@@ -1,15 +1,15 @@
 package korlibs.korge.view.filter
 
+import korlibs.image.color.*
 import korlibs.korge.testing.*
 import korlibs.korge.view.*
 import korlibs.korge.view.mask.*
-import korlibs.image.color.*
 import korlibs.math.geom.*
 import org.junit.*
 
 class MaskAndBackdropFilterScreenshotJvmTest {
     @Test
-    fun test() = korgeScreenshotTest(SizeInt(100, 100)) {
+    fun test() = korgeScreenshotTest(Size(100, 100)) {
         solidRect(widthD, heightD, Colors.GREEN)
 
         //val fill1 = LinearGradientPaint(0, 0, 100, 100).add(0.0, Colors.RED).add(1.0, Colors.BLUE)

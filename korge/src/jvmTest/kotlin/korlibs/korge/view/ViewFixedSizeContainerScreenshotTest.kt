@@ -12,15 +12,15 @@ import korlibs.math.geom.*
 import kotlin.test.*
 
 class ViewFixedSizeContainerScreenshotTest : ViewsForTesting(
-    windowSize = SizeInt(150, 150),
-    virtualSize = SizeInt(150, 150),
+    windowSize = Size(150, 150),
+    virtualSize = Size(150, 150),
     log = true
 ) {
     val glLog = KmlGlProxyLogToString()
     override fun createAg(): AG = AGOpengl(glLog)
 
     @Test
-    fun testClipping() = korgeScreenshotTest(SizeInt(150, 150)) {
+    fun testClipping() = korgeScreenshotTest(Size(150, 150)) {
         fixedSizeContainer(Size(50, 50), clip = true) {
             image(Bitmap32(100, 100) { x, y -> if (y <= 25) Colors.RED else Colors.BLUE}.premultiplied())
             xy(25, 25)

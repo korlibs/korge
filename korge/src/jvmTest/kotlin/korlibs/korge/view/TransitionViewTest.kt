@@ -9,7 +9,7 @@ import kotlin.test.*
 
 class TransitionViewTest {
     @Test
-    fun test() = korgeScreenshotTest(SizeInt(50, 50)) {
+    fun test() = korgeScreenshotTest(Size(50, 50)) {
         val tv = TransitionView()
         tv.startNewTransition(DummyView())
         tv.startNewTransition(Container().apply {

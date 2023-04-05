@@ -10,7 +10,7 @@ import kotlin.math.*
 
 class SDFViewTest {
     @Test
-    fun test() = korgeScreenshotTest(SizeInt(200, 200)) {
+    fun test() = korgeScreenshotTest(Size(200, 200)) {
         addChild(
             CircleSDFView(size = Size(200f, 200f), time = 2f)
                 .skew(15.degrees, 0.degrees)

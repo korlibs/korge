@@ -6,8 +6,8 @@ import kotlin.test.*
 class KorgeConfigTest {
     @Test
     fun testSize() {
-        val size1 = SizeInt(111, 222)
-        val size2 = SizeInt(333, 444)
+        val size1 = Size(111, 222)
+        val size2 = Size(333, 444)
         KorgeConfig(windowSize = size1).also { config ->
             assertEquals(size1, config.windowSize)
             assertEquals(size1, config.virtualSize)

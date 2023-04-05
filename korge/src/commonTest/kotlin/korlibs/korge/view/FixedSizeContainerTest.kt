@@ -10,11 +10,11 @@ class FixedSizeContainerTest {
     @Ignore
     fun test() {
         testRenderContext {
-            val windowSize = SizeInt(640, 480)
-            val virtualSize = SizeInt(512, 512)
-            val ag: AGLog = AGLog(windowSize.width, windowSize.height)
+            val windowSize = Size(640, 480)
+            val virtualSize = Size(512, 512)
+            val ag: AGLog = AGLog(windowSize)
             val bp: BoundsProvider = BoundsProvider.Base()
-            bp.setBoundsInfo(virtualSize.width, virtualSize.height, windowSize)
+            bp.setBoundsInfo(virtualSize, windowSize)
             val container = ClipContainer(Size(30f, 40f)).xy(110, 120)
             val log = arrayListOf<String>()
             container.addChild(object : View() {

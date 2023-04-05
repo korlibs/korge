@@ -1,18 +1,18 @@
 package korlibs.korge.view.tiles
 
 import korlibs.datastructure.*
-import korlibs.korge.testing.*
-import korlibs.korge.view.*
 import korlibs.image.bitmap.*
 import korlibs.image.color.*
 import korlibs.image.tiles.*
+import korlibs.korge.testing.*
+import korlibs.korge.view.*
 import korlibs.math.geom.*
 import kotlin.test.*
 
 class TileMapViewScreenshotTest {
     @Test
     fun testTilemapScreenshotTest() = korgeScreenshotTest(
-        windowSize = SizeInt(512, 512),
+        windowSize = Size(512, 512),
         bgcolor = Colors.RED
     ) {
 

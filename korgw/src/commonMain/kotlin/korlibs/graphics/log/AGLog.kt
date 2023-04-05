@@ -5,6 +5,7 @@ import korlibs.graphics.*
 import korlibs.graphics.shader.*
 import korlibs.graphics.shader.gl.*
 import korlibs.io.annotations.*
+import korlibs.math.geom.*
 
 /*
 open class ComposedAG(val agBase: AG, val agExtra: AG) : AG(), AGFeatures by agBase {
@@ -122,13 +123,13 @@ open class ComposedAG(val agBase: AG, val agExtra: AG) : AG(), AGFeatures by agB
 }
 */
 
-open class AGPrint(width: Int = 640, height: Int = 480) : AGBaseLog(width, height) {
+open class AGPrint(size: Size = Size(640, 480)) : AGBaseLog(size) {
     override fun log(str: String, kind: Kind) {
         println("PrintAG: $str")
     }
 }
 
-open class AGLog(width: Int = 640, height: Int = 480) : AGBaseLog(width, height) {
+open class AGLog(size: Size = Size(640, 480)) : AGBaseLog(size) {
     val log = arrayListOf<String>()
     fun clearLog() = log.clear()
     fun getLogAsString(): String = log.joinToString("\n")
@@ -141,7 +142,7 @@ open class AGLog(width: Int = 640, height: Int = 480) : AGBaseLog(width, height)
 }
 
 @OptIn(KorInternal::class)
-open class AGBaseLog(width: Int = 640, height: Int = 480) : AGDummy(width, height) {
+open class AGBaseLog(size: Size = Size(640, 480)) : AGDummy(size) {
     enum class Kind { COMMAND, DRAW, DRAW_DETAILS, CLEAR, METRICS, FLIP, READ, REPAINT, DISPOSE, TEXTURE_UPLOAD, CLOSE, FRAME_BUFFER, BUFFER, TEXTURE, SHADER, OTHER, UNIFORM, UNIFORM_VALUES, SCISSORS, VIEWPORT, VERTEX, ENABLE_DISABLE, CONTEXT_LOST, FLUSH }
 
 	open fun log(str: String, kind: Kind) {

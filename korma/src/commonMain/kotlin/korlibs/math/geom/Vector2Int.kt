@@ -6,6 +6,10 @@ typealias PointInt = Vector2Int
 
 //@KormaValueApi
 inline class Vector2Int internal constructor(internal val raw: Int2Pack) {
+    companion object {
+        val ZERO = Vector2Int(0, 0)
+    }
+
     val x: Int get() = raw.i0
     val y: Int get() = raw.i1
 

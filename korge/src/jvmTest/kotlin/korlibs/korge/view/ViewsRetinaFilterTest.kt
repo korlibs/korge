@@ -11,7 +11,7 @@ import kotlin.test.*
 class ViewsRetinaFilterTest {
     @Test
     fun test() = korgeScreenshotTest(
-        windowSize = SizeInt(100, 100),
+        windowSize = Size(100, 100),
         devicePixelRatio = 2.0,
     ) {
         val container = container {

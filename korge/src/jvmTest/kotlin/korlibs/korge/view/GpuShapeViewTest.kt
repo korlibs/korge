@@ -10,7 +10,7 @@ import kotlin.test.*
 
 class GpuShapeViewTest {
     @Test
-    fun test() = korgeScreenshotTest(SizeInt(450, 200)) {
+    fun test() = korgeScreenshotTest(Size(450, 200)) {
         gpuShapeView {
             it.antialiased = true
             it.alpha = 0.75f
@@ -34,7 +34,7 @@ class GpuShapeViewTest {
     }
 
     @Test
-    fun test2() = korgeScreenshotTest(SizeInt(20, 20)) {
+    fun test2() = korgeScreenshotTest(Size(20, 20)) {
         gpuShapeView {
             fillStroke(fill = Colors.TRANSPARENT_WHITE, stroke = Stroke(Colors.GREEN, thickness = 2.0)) {
                 rect(.0, .0, 10.0, 10.0)
@@ -51,7 +51,7 @@ class GpuShapeViewTest {
     }
 
     @Test
-    fun testClipping() = korgeScreenshotTest(SizeInt(30, 20)) {
+    fun testClipping() = korgeScreenshotTest(Size(30, 20)) {
         val from = Point(0, 0)
         val to = Point(-10, -10)
         val shift = Point(5, 15)
@@ -76,7 +76,7 @@ class GpuShapeViewTest {
     }
 
     @Test
-    fun testMultiTextures() = korgeScreenshotTest(SizeInt(450, 200), checkGl = false) {
+    fun testMultiTextures() = korgeScreenshotTest(Size(450, 200), checkGl = false) {
         gpuShapeView {
             it.antialiased = true
             it.alpha = 0.75f

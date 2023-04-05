@@ -1,24 +1,24 @@
 package korlibs.korge.view
 
-import korlibs.korge.testing.*
-import korlibs.korge.view.vector.*
 import korlibs.image.bitmap.*
 import korlibs.image.color.*
 import korlibs.image.format.*
 import korlibs.io.file.std.*
+import korlibs.korge.testing.*
+import korlibs.korge.view.vector.*
 import korlibs.math.geom.*
 import korlibs.math.geom.vector.*
 import org.junit.*
 
 class ReferenceOpenglTest {
     @Test
-    fun testOpengl() = korgeScreenshotTest(SizeInt(100, 100)) {
+    fun testOpengl() = korgeScreenshotTest(Size(100, 100)) {
         image(resourcesVfs["texture.png"].readBitmap().mipmaps())
         assertScreenshot(posterize = 6)
     }
 
     @Test
-    fun testOpenglShapeView() = korgeScreenshotTest(SizeInt(500, 500)) {
+    fun testOpenglShapeView() = korgeScreenshotTest(Size(500, 500)) {
         container {
             xy(300, 300)
             val shape = gpuShapeView({

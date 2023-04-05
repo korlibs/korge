@@ -1,16 +1,15 @@
 package korlibs.korge.input
 
-import korlibs.event.MouseButton
-import korlibs.korge.tests.ViewsForTesting
-import korlibs.korge.view.solidRect
-import korlibs.image.color.Colors
+import korlibs.event.*
+import korlibs.image.color.*
+import korlibs.korge.tests.*
+import korlibs.korge.view.*
 import korlibs.math.geom.*
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import kotlin.test.*
 
 class MouseDragComponentTest : ViewsForTesting(
-    virtualSize = SizeInt(100, 100),
-    windowSize = SizeInt(200, 200),
+    virtualSize = Size(100, 100),
+    windowSize = Size(200, 200),
 ) {
     @Test
     fun testStageScale() = viewsTest {

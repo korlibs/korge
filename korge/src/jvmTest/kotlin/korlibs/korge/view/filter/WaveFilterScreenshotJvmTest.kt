@@ -8,7 +8,7 @@ import org.junit.*
 
 class WaveFilterScreenshotJvmTest {
     @Test
-    fun test() = korgeScreenshotTest(SizeInt(150, 150)) {
+    fun test() = korgeScreenshotTest(Size(150, 150)) {
         solidRect(50, 50, Colors.GREEN).xy(50, 50)
             .filters(WaveFilter(amplitudeX = 15, amplitudeY = 10, crestDistanceX = 25.0, crestDistanceY = 10.0))
 

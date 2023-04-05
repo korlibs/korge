@@ -2,15 +2,10 @@ package korlibs.render
 
 import korlibs.datastructure.*
 import korlibs.datastructure.lock.*
-import korlibs.time.*
-import korlibs.logger.*
-import korlibs.memory.*
+import korlibs.event.*
 import korlibs.graphics.*
 import korlibs.graphics.annotation.*
 import korlibs.graphics.log.*
-import korlibs.event.*
-import korlibs.render.GameWindow.Quality.*
-import korlibs.render.internal.*
 import korlibs.image.bitmap.*
 import korlibs.image.color.*
 import korlibs.image.vector.*
@@ -18,7 +13,13 @@ import korlibs.io.*
 import korlibs.io.async.*
 import korlibs.io.file.*
 import korlibs.io.lang.*
+import korlibs.logger.*
 import korlibs.math.geom.*
+import korlibs.memory.*
+import korlibs.render.GameWindow.Quality.PERFORMANCE
+import korlibs.render.GameWindow.Quality.QUALITY
+import korlibs.render.internal.*
+import korlibs.time.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
 import kotlin.native.concurrent.*
@@ -935,13 +936,13 @@ fun GameWindow.mainLoop(entry: suspend GameWindow.() -> Unit) = Korio { loop(ent
 fun GameWindow.toggleFullScreen()  { fullscreen = !fullscreen }
 
 fun GameWindow.configure(
-    size: SizeInt,
+    size: Size,
     title: String? = "GameWindow",
     icon: Bitmap? = null,
     fullscreen: Boolean? = null,
     bgcolor: RGBA = Colors.BLACK,
 ) {
-    this.setSize(size.width, size.height)
+    this.setSize(size.width.toInt(), size.height.toInt())
     if (title != null) this.title = title
     this.icon = icon
     if (fullscreen != null) this.fullscreen = fullscreen

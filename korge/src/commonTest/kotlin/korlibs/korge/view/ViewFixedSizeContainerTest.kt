@@ -8,8 +8,8 @@ import korlibs.math.geom.*
 import kotlin.test.*
 
 class ViewFixedSizeContainerTest : ViewsForTesting(
-    windowSize = SizeInt(1280, 720),
-    virtualSize = SizeInt(640, 480)
+    windowSize = Size(1280, 720),
+    virtualSize = Size(640, 480)
 ) {
     @Test
     fun testClipContainerScissors() = viewsTest {

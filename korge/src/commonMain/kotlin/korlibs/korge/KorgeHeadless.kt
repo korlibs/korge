@@ -1,17 +1,12 @@
 package korlibs.korge
 
-import korlibs.time.*
 import korlibs.graphics.*
 import korlibs.graphics.log.*
-import korlibs.korge.internal.*
-import korlibs.korge.view.*
-import korlibs.render.*
-import korlibs.image.bitmap.*
-import korlibs.image.color.*
 import korlibs.image.format.*
-import korlibs.inject.*
+import korlibs.korge.view.*
 import korlibs.math.geom.*
-import kotlinx.coroutines.*
+import korlibs.render.*
+import korlibs.time.*
 
 object KorgeHeadless {
     class HeadlessGameWindowCoroutineDispatcher(val gameWindow: HeadlessGameWindow) : GameWindowCoroutineDispatcher() {
@@ -34,13 +29,15 @@ object KorgeHeadless {
     }
 
     class HeadlessGameWindow(
-        override val width: Int = 640,
-        override val height: Int = 480,
+        val size: Size = Size(640, 480),
         val draw: Boolean = false,
-        override val ag: AG = AGDummy(width, height),
+        override val ag: AG = AGDummy(size),
         exitProcessOnClose: Boolean = false,
         override val devicePixelRatio: Double = 1.0,
     ) : GameWindow() {
+        override val width: Int = size.width.toInt()
+        override val height: Int = size.height.toInt()
+
         init {
             this.exitProcessOnClose = exitProcessOnClose
         }
@@ -54,13 +51,13 @@ object KorgeHeadless {
 
     suspend operator fun invoke(
         config: KorgeConfig,
-        ag: AG = AGDummy(config.windowSize.width, config.windowSize.height),
+        ag: AG = AGDummy(config.windowSize),
         devicePixelRatio: Double = 1.0,
         draw: Boolean = false,
         entry: suspend Stage.() -> Unit,
     ): HeadlessGameWindow {
         val config = config.copy(imageFormats = config.imageFormats + PNG)
-        val gameWindow = HeadlessGameWindow(config.windowSize.width, config.windowSize.height, draw = draw, ag = ag, devicePixelRatio = devicePixelRatio)
+        val gameWindow = HeadlessGameWindow(config.windowSize, draw = draw, ag = ag, devicePixelRatio = devicePixelRatio)
         gameWindow.exitProcessOnClose = false
         config.copy(gameWindow = gameWindow).start {
             //config.main?.invoke(this)
@@ -71,7 +68,7 @@ object KorgeHeadless {
 }
 
 suspend fun KorgeConfig.headless(
-    ag: AG = AGDummy(this.windowSize.width, this.windowSize.height),
+    ag: AG = AGDummy(this.windowSize),
     devicePixelRatio: Double = 1.0,
     draw: Boolean = false,
     entry: suspend Stage.() -> Unit,

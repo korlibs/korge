@@ -10,8 +10,8 @@ import kotlin.math.*
 import kotlin.test.*
 
 class Views2Test : ViewsForTesting(
-    windowSize = SizeInt(1280, 720),
-    virtualSize = SizeInt(640, 480)
+    windowSize = Size(1280, 720),
+    virtualSize = Size(640, 480)
 ) {
     val logger = Logger("Views2Test")
 
