@@ -1,10 +1,10 @@
 package samples.pong
 
-import korlibs.event.Key
-import korlibs.korge.scene.Scene
+import korlibs.event.*
+import korlibs.image.color.*
 import korlibs.korge.input.*
+import korlibs.korge.scene.*
 import korlibs.korge.view.*
-import korlibs.image.color.Colors
 import kotlin.math.*
 import kotlin.random.Random.Default.nextDouble
 
@@ -128,7 +128,7 @@ class PlayScene() : Scene() {
 			}
 		}
 
-		val ball = circle(ballRadius, Colors.WHITE) {
+		val ball = circle(ballRadius.toFloat(), Colors.WHITE) {
 			position(ballPosXAtStart, ballPosYAtStart)
 
 			// mutable data defining the ball state

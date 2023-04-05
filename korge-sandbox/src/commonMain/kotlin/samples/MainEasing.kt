@@ -1,10 +1,10 @@
 package samples
 
+import korlibs.image.color.*
 import korlibs.korge.input.*
 import korlibs.korge.scene.*
 import korlibs.korge.tween.*
 import korlibs.korge.view.*
-import korlibs.image.color.*
 import korlibs.math.geom.*
 import korlibs.math.interpolation.*
 import kotlinx.coroutines.*
@@ -12,7 +12,7 @@ import kotlinx.coroutines.*
 class MainEasing : Scene() {
     override suspend fun SContainer.sceneMain() {
         var ballTween: Job? = null
-        val ball = circle(64.0, Colors.PURPLE).xy(64, 64)
+        val ball = circle(64f, Colors.PURPLE).xy(64, 64)
 
         fun renderEasing(easing: Easing): View {
             return Container().apply {

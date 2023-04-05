@@ -24,7 +24,7 @@ class ReferenceGraphicsTest {
         }
 
         // Circle Graphics
-        circle(64.0, fill = Colors.RED, stroke = Colors.BLUE, strokeThickness = 32.0).xy(50, 50).centered.rotation(30.degrees)
+        circle(64f, fill = Colors.RED, stroke = Colors.BLUE, strokeThickness = 32.0).xy(50, 50).centered.rotation(30.degrees)
 
         val bmp = BitmapSlice(
             Bitmap32(64, 64) { x, y -> Colors.PURPLE }.premultipliedIfRequired(),
@@ -150,8 +150,8 @@ class ReferenceGraphicsTest {
     @Test
     fun testGpuShapeViewFilter() = korgeScreenshotTest(Size(400, 400)) {
         container {
-            scaleD = 1.2
-            circle(100.0).xy(100, 100).filters(DropshadowFilter())
+            scaleAvg = 1.2f
+            circle(100f).xy(100, 100).filters(DropshadowFilter())
         }
         assertScreenshot(posterize = 6)
     }

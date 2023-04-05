@@ -1,26 +1,20 @@
 package samples
 
-import korlibs.datastructure.fastArrayListOf
-import korlibs.time.milliseconds
-import korlibs.event.Key
-import korlibs.korge.input.draggable
-import korlibs.korge.scene.Scene
-import korlibs.korge.view.SContainer
-import korlibs.korge.view.View
-import korlibs.korge.view.addUpdater
-import korlibs.korge.view.centered
-import korlibs.korge.view.circle
-import korlibs.korge.view.moveWithCollisions
-import korlibs.korge.view.xy
-import korlibs.image.color.Colors
+import korlibs.datastructure.*
+import korlibs.event.*
+import korlibs.image.color.*
+import korlibs.korge.input.*
+import korlibs.korge.scene.*
+import korlibs.korge.view.*
+import korlibs.time.*
 
 class MainCircles : Scene() {
     override suspend fun SContainer.sceneMain() {
         // @TODO: USe BVH2D to limit collision view checkings
         lateinit var collisionViews: List<View>
-        val rect1 = circle(50.0, fill = Colors.RED).xy(300, 300).centered
-        val rect1b = circle(50.0, fill = Colors.RED).xy(520, 300).centered
-        val rect2 = circle(50.0, fill = Colors.GREEN).xy(120, 0).draggable(autoMove = false) {
+        val rect1 = circle(50f, fill = Colors.RED).xy(300, 300).centered
+        val rect1b = circle(50f, fill = Colors.RED).xy(520, 300).centered
+        val rect2 = circle(50f, fill = Colors.GREEN).xy(120, 0).draggable(autoMove = false) {
             //it.view.xy(it.viewPrevXY)
             it.view.moveWithCollisions(collisionViews, it.viewDeltaXY)
         }

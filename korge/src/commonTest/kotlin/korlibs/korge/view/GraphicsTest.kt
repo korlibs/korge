@@ -85,10 +85,10 @@ class GraphicsTest {
         lateinit var circle2: Circle
         val container = Container().apply {
             scale(1.2)
-            circle1 = circle(128.0, Colors.RED)
+            circle1 = circle(128f, Colors.RED)
                 .scale(0.75)
                 .anchor(Anchor.MIDDLE_CENTER)
-            circle2 = circle(64.0, Colors.BLUE)
+            circle2 = circle(64f, Colors.BLUE)
                 .scale(1.5)
                 .anchor(Anchor.MIDDLE_CENTER)
         }
@@ -220,12 +220,12 @@ class GraphicsTest {
             fill(Colors.BLUE)
         }
 
-        val posCircle = container.circle(25.0, fill = Colors.ORANGE) {
+        val posCircle = container.circle(25f, fill = Colors.ORANGE) {
             anchor(Anchor.CENTER)
             position(graphics.pos)
         }
 
-        val posCircle2 = container.circle(5.0, fill = Colors.RED) {
+        val posCircle2 = container.circle(5f, fill = Colors.RED) {
             anchor(Anchor.CENTER)
             position(100.0, 100.0)
         }

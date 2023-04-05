@@ -94,7 +94,7 @@ class MainShape2dScene : Scene() {
         annotationsView = gpuShapeView { }
         gpuShapeView = gpuShapeView { }
         normalVectorView = gpuShapeView { }
-        projected = circle(4.0, Colors.RED).centered
+        projected = circle(4f, Colors.RED).centered
         cursor = gpuShapeView { fill(Colors.GREEN.withAd(0.5)) { path(cursorShape) } }
 
 

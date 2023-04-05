@@ -237,7 +237,7 @@ class ViewsTest : ViewsForTesting() {
             assertEqualsFloat(Rectangle(0, 0, 32, 24), rect3.globalBounds, message = "rect4")
         }
 
-        Circle(32.0, Colors.RED).also { addChild(it) }.also { rect3 ->
+        Circle(32f, Colors.RED).also { addChild(it) }.also { rect3 ->
             assertEqualsFloat(Rectangle(0, 0, 64, 64).toString(), rect3.globalBounds.toString(), message = "rect5")
         }
 

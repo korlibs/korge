@@ -1,14 +1,12 @@
 package samples
 
-import korlibs.korge.scene.Scene
-import korlibs.korge.view.SContainer
-import korlibs.korge.view.addUpdater
-import korlibs.korge.view.circle
-import korlibs.image.color.Colors
+import korlibs.image.color.*
+import korlibs.korge.scene.*
+import korlibs.korge.view.*
 
 class MainCircleColor : Scene() {
     override suspend fun SContainer.sceneMain() {
-        circle(100.0).also { shape ->
+        circle(100f).also { shape ->
             //roundRect(100.0, 200.0, 50.0, 50.0).also { shape ->
             shape.xD = 100.0
             shape.yD = 100.0
@@ -16,7 +14,7 @@ class MainCircleColor : Scene() {
             shape.stroke = Colors.RED
             shape.fill = Colors.GREEN
             shape.strokeThickness = 16.0
-            addUpdater { shape.radius += 1.0 }
+            addUpdater { shape.radius += 1f }
         }
     }
 }
