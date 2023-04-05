@@ -1,20 +1,12 @@
 package samples
 
-import korlibs.time.milliseconds
-import korlibs.korge.Korge
-import korlibs.korge.render.BatchBuilder2D
-import korlibs.korge.scene.Scene
-import korlibs.korge.view.SContainer
-import korlibs.korge.view.Sprite
-import korlibs.korge.view.SpriteAnimation
-import korlibs.korge.view.addUpdater
-import korlibs.korge.view.scale
-import korlibs.korge.view.sprite
-import korlibs.korge.view.xy
-import korlibs.image.bitmap.Bitmap
-import korlibs.image.format.readBitmap
-import korlibs.io.file.std.resourcesVfs
-import kotlin.random.Random
+import korlibs.image.bitmap.*
+import korlibs.image.format.*
+import korlibs.io.file.std.*
+import korlibs.korge.scene.*
+import korlibs.korge.view.*
+import korlibs.time.*
+import kotlin.random.*
 
 class MainSprites10k : Scene() {
     override suspend fun SContainer.sceneMain() {
@@ -44,10 +36,10 @@ class MainSprites10k : Scene() {
         }
 
         val random = Random(0)
-        val randoms = DoubleArray(greenSprites.size) { random.nextDouble(0.5, 1.1) }
+        val randoms = FloatArray(greenSprites.size) { random.nextDouble(0.5, 1.1).toFloat() }
 
         addUpdater {
-            val scale = (if (it == 0.0.milliseconds) 0.0 else (it / 16.666666.milliseconds))
+            val scale = (if (it == 0.0.milliseconds) 0f else (it / 16.666666.milliseconds))
 
             greenSprites.forEachIndexed { index, sprite ->
                 sprite.walkDirection(index % greenAnimations.size, scale * randoms[index])
@@ -65,7 +57,7 @@ class MainSprites10k : Scene() {
         SpriteAnimation(spriteMap, 16, 32, 0, 1, 4, 1)
     ) // down
 
-    fun Sprite.walkDirection(indexOfAnimation: Int, scale: Double = 1.0) {
+    fun Sprite.walkDirection(indexOfAnimation: Int, scale: Float = 1f) {
         val delta = 2 * scale
         when (indexOfAnimation) {
             0 -> x -= delta

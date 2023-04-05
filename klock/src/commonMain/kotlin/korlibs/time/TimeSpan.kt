@@ -1,18 +1,8 @@
 package korlibs.time
 
-import korlibs.time.internal.MILLIS_PER_DAY
-import korlibs.time.internal.MILLIS_PER_HOUR
-import korlibs.time.internal.MILLIS_PER_MINUTE
-import korlibs.time.internal.MILLIS_PER_SECOND
-import korlibs.time.internal.MILLIS_PER_WEEK
-import korlibs.time.internal.Serializable
-import korlibs.time.internal.niceStr
-import korlibs.time.internal.padded
-import korlibs.time.internal.umod
-import kotlin.jvm.JvmInline
-import kotlin.math.floor
-import kotlin.math.max
-import kotlin.math.min
+import korlibs.time.internal.*
+import kotlin.jvm.*
+import kotlin.math.*
 
 /** [TimeSpan] representing this number as [nanoseconds] or 1 / 1_000_000_000 [seconds]. */
 inline val Long.nanoseconds get() = TimeSpan.fromNanoseconds(this.toDouble())
@@ -140,7 +130,7 @@ value class TimeSpan(
     operator fun div(scale: Float): TimeSpan = TimeSpan(this.milliseconds / scale)
     operator fun div(scale: Double): TimeSpan = TimeSpan((this.milliseconds / scale))
 
-    operator fun div(other: TimeSpan): Double = this.milliseconds / other.milliseconds
+    operator fun div(other: TimeSpan): Float = (this.milliseconds / other.milliseconds).toFloat()
     operator fun rem(other: TimeSpan): TimeSpan = (this.milliseconds % other.milliseconds).milliseconds
     infix fun umod(other: TimeSpan): TimeSpan = (this.milliseconds umod other.milliseconds).milliseconds
 

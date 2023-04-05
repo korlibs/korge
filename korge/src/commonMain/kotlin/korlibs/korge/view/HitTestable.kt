@@ -19,23 +19,23 @@ fun View.moveWithHitTestable(collision: HitTestable, dx: Double, dy: Double, hit
     val deltaXY = MPoint(dx, dy)
     val angle = Angle.between(0.0, 0.0, deltaXY.x, deltaXY.y)
     val length = deltaXY.length
-    val oldX = char.x
-    val oldY = char.y
+    val oldX = char.xD
+    val oldY = char.yD
     MOVE_ANGLES.fastForEach { dangle ->
         MOVE_SCALES.fastForEach { dscale ->
             val rangle = angle + dangle * dscale
             val lengthScale = dangle.cosineD
             val dpoint = MPoint.fromPolar(rangle, length * lengthScale)
-            char.x = oldX + dpoint.x
-            char.y = oldY + dpoint.y
+            char.xD = oldX + dpoint.x
+            char.yD = oldY + dpoint.y
             val global = char.globalPos
             if (!collision.hitTestAny(global, hitTestDirection ?: HitTestDirection.fromAngle(angle))) {
                 return // Accept movement
             }
         }
     }
-    char.x = oldX
-    char.y = oldY
+    char.xD = oldX
+    char.yD = oldY
 }
 
 fun View.moveWithCollisions(collision: List<View>, delta: MVector2D, kind: CollisionKind = CollisionKind.SHAPE) {
@@ -47,15 +47,15 @@ fun View.moveWithCollisions(collision: List<View>, dx: Double, dy: Double, kind:
     val deltaXY = MPoint(dx, dy)
     val angle = Angle.between(0.0, 0.0, deltaXY.x, deltaXY.y)
     val length = deltaXY.length
-    val oldX = char.x
-    val oldY = char.y
+    val oldX = char.xD
+    val oldY = char.yD
     MOVE_ANGLES.fastForEach { dangle ->
         MOVE_SCALES.fastForEach { dscale ->
             val rangle = angle + dangle * dscale
             val lengthScale = dangle.cosineD
             val dpoint = MPoint.fromPolar(rangle, length * lengthScale)
-            char.x = oldX + dpoint.x
-            char.y = oldY + dpoint.y
+            char.xD = oldX + dpoint.x
+            char.yD = oldY + dpoint.y
             //char.hitTestView(collision, kind)
             //if (!char.collidesWith(collision, kind)) {
             if (collision.all { it == this || it.hitTestView(char) == null }) {
@@ -64,6 +64,6 @@ fun View.moveWithCollisions(collision: List<View>, dx: Double, dy: Double, kind:
             }
         }
     }
-    char.x = oldX
-    char.y = oldY
+    char.xD = oldX
+    char.yD = oldY
 }

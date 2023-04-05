@@ -94,12 +94,12 @@ class ViewsTest : ViewsForTesting() {
         lateinit var b: View
         lateinit var c: View
         val s1 = Container().apply {
-            this += SolidRect(100, 100, Colors.RED).apply { a = this; y = 100.0 }
-            this += SolidRect(100, 100, Colors.RED).apply { b = this; y = 50.0 }
-            this += SolidRect(100, 100, Colors.RED).apply { c = this; y = 0.0 }
+            this += SolidRect(100, 100, Colors.RED).apply { a = this; yD = 100.0 }
+            this += SolidRect(100, 100, Colors.RED).apply { b = this; yD = 50.0 }
+            this += SolidRect(100, 100, Colors.RED).apply { c = this; yD = 0.0 }
         }
 
-        fun View.toStr() = "($index,${y.niceStr})"
+        fun View.toStr() = "($index,${yD.niceStr})"
         fun dump() = "${a.toStr()},${b.toStr()},${c.toStr()}::${s1.children.map { it.toStr() }}"
         assertEquals("(0,100),(1,50),(2,0)::[(0,100), (1,50), (2,0)]", dump())
         s1.sortChildrenByY()
@@ -122,8 +122,8 @@ class ViewsTest : ViewsForTesting() {
         fixedSizeContainer(1280, 720) {
             scale(0.5)
             val rootView = this
-            x = 32.0
-            y = -100.0
+            xD = 32.0
+            yD = -100.0
             val zoomOut = solidRect(100, 100, Colors.RED) {
                 anchor(0.5, 1.0)
                 alignBottomToBottomOf(rootView, 150.0)
@@ -132,7 +132,7 @@ class ViewsTest : ViewsForTesting() {
             val zoomIn = solidRect(100, 100, Colors.RED) {
                 anchor(0.5, 1.0)
                 logger.info { "addZoomMap" }
-                logger.info { zoomOut.x }
+                logger.info { zoomOut.xD }
                 logger.info { zoomOut.getBounds(this) }
                 alignLeftToLeftOf(zoomOut)
                 alignBottomToTopOf(zoomOut, 10.0)
@@ -144,20 +144,20 @@ class ViewsTest : ViewsForTesting() {
     fun alignTest2a() = viewsTest {
         val rect1 = solidRect(400, 100, Colors.RED).xy(200, 50)
         val rect2 = solidRect(83, 65, Colors.RED)
-        rect2.alignTopToTopOf(rect1, 3.0).also { assertEquals(53.0, rect2.y) }
-        rect2.alignBottomToTopOf(rect1, 3.0).also { assertEquals(-18.0, rect2.y) }
-        rect2.alignBottomToBottomOf(rect1, 3.0).also { assertEquals(82.0, rect2.y) }
-        rect2.alignTopToBottomOf(rect1, 3.0).also { assertEquals(153.0, rect2.y) }
+        rect2.alignTopToTopOf(rect1, 3.0).also { assertEquals(53.0, rect2.yD) }
+        rect2.alignBottomToTopOf(rect1, 3.0).also { assertEquals(-18.0, rect2.yD) }
+        rect2.alignBottomToBottomOf(rect1, 3.0).also { assertEquals(82.0, rect2.yD) }
+        rect2.alignTopToBottomOf(rect1, 3.0).also { assertEquals(153.0, rect2.yD) }
     }
 
     @Test
     fun alignTest2b() = viewsTest {
         val rect1 = solidRect(400, 100, Colors.RED).xy(200, 50)
         val rect2 = solidRect(83, 65, Colors.RED)
-        rect2.alignLeftToLeftOf(rect1, 3.0).also { assertEquals(203.0, rect2.x) }
-        rect2.alignRightToLeftOf(rect1, 3.0).also { assertEquals(114.0, rect2.x) }
-        rect2.alignRightToRightOf(rect1, 3.0).also { assertEquals(514.0, rect2.x) }
-        rect2.alignLeftToRightOf(rect1, 3.0).also { assertEquals(603.0, rect2.x) }
+        rect2.alignLeftToLeftOf(rect1, 3.0).also { assertEquals(203.0, rect2.xD) }
+        rect2.alignRightToLeftOf(rect1, 3.0).also { assertEquals(114.0, rect2.xD) }
+        rect2.alignRightToRightOf(rect1, 3.0).also { assertEquals(514.0, rect2.xD) }
+        rect2.alignLeftToRightOf(rect1, 3.0).also { assertEquals(603.0, rect2.xD) }
     }
 
     @Test
@@ -185,23 +185,23 @@ class ViewsTest : ViewsForTesting() {
         val c = Container()
         val s1 = SolidRect(100, 100, Colors.RED)
         val s2 = SolidRect(100, 100, Colors.RED)
-        c += s1.apply { x = 0.0 }
-        c += s2.apply { x = 100.0 }
+        c += s1.apply { xD = 0.0 }
+        c += s2.apply { xD = 100.0 }
         assertEquals(200, c.width.toInt())
         assertEquals(100, c.height.toInt())
-        assertEquals(1.0, c.scaleX)
+        assertEquals(1.0, c.scaleXD)
         c.scaledWidth = 400.0
         assertEquals(400, c.scaledWidth.toInt())
         assertEquals(100, c.scaledHeight.toInt())
-        assertEquals(2.0, c.scaleX)
+        assertEquals(2.0, c.scaleXD)
     }
 
     @Test
     // This test is verified against AS3
     fun testSize2() = viewsTest {
         val container = Container();
-        container.x = 100.0
-        container.y = 100.0
+        container.xD = 100.0
+        container.yD = 100.0
         this.addChild(container)
         val contents = CpuGraphics().updateShape {
             fill(Colors.RED) { circle(Point(0, 0), 100f) }
@@ -214,7 +214,7 @@ class ViewsTest : ViewsForTesting() {
     @Test
     fun testTween() = viewsTest {
         val image = solidRect(100, 100, Colors.RED).position(0, 0)
-        image.tween(image::x[-101], time = 4.seconds)
+        image.tween(image::xD[-101], time = 4.seconds)
         assertEquals(false, image.isVisibleToUser())
     }
 
@@ -262,7 +262,7 @@ class ViewsTest : ViewsForTesting() {
         val container = Container().apply {
             rect = solidRect(100, 100, Colors.RED)
             rect.addUpdater { time ->
-                x++
+                xD++
                 assertEquals(0.0.seconds, time)
                 @Suppress("USELESS_IS_CHECK")
                 assertTrue { this is SolidRect }
@@ -270,8 +270,8 @@ class ViewsTest : ViewsForTesting() {
         }
         container.updateSingleView(0.milliseconds)
         container.updateSingleView(0.milliseconds)
-        assertEquals(0.0, container.x)
-        assertEquals(3.0, rect.x) // It is 3 instead of 2 since when the addUpdater is called the body is called with time as 0.secs once
+        assertEquals(0.0, container.xD)
+        assertEquals(3.0, rect.xD) // It is 3 instead of 2 since when the addUpdater is called the body is called with time as 0.secs once
     }
 
     @Test
@@ -280,38 +280,38 @@ class ViewsTest : ViewsForTesting() {
 
         rect.position(0, 0)
         rect.centerXBetween(100, 200)
-        assertEquals(rect.x, 100.0)
-        assertEquals(rect.y, 0.0)
+        assertEquals(rect.xD, 100.0)
+        assertEquals(rect.yD, 0.0)
 
         rect.position(0, 0)
         rect.centerYBetween(100, 200)
-        assertEquals(rect.x, 0.0)
-        assertEquals(rect.y, 100.0)
+        assertEquals(rect.xD, 0.0)
+        assertEquals(rect.yD, 100.0)
 
         rect.position(0, 0)
         rect.centerBetween(0, 0, 200, 200)
-        assertEquals(rect.x, 50.0)
-        assertEquals(rect.y, 50.0)
+        assertEquals(rect.xD, 50.0)
+        assertEquals(rect.yD, 50.0)
 
         val other = solidRect(50, 50, Colors.WHITE)
 
         rect.position(0, 0)
         other.position(50, 50)
         rect.centerXOn(other)
-        assertEquals(rect.x, 25.0)
-        assertEquals(rect.y, 0.0)
+        assertEquals(rect.xD, 25.0)
+        assertEquals(rect.yD, 0.0)
 
         rect.position(0, 0)
         other.position(50, 50)
         rect.centerYOn(other)
-        assertEquals(rect.x, 0.0)
-        assertEquals(rect.y, 25.0)
+        assertEquals(rect.xD, 0.0)
+        assertEquals(rect.yD, 25.0)
 
         rect.position(0, 0)
         other.position(50, 50)
         rect.centerOn(other)
-        assertEquals(rect.x, 25.0)
-        assertEquals(rect.y, 25.0)
+        assertEquals(rect.xD, 25.0)
+        assertEquals(rect.yD, 25.0)
     }
 
     @Test
@@ -322,51 +322,51 @@ class ViewsTest : ViewsForTesting() {
         rect.position(0, 0)
         other.position(50, 50)
         rect.alignLeftToLeftOf(other, padding = 5)
-        assertEquals(rect.x, 55.0)
-        assertEquals(rect.y, 0.0)
+        assertEquals(rect.xD, 55.0)
+        assertEquals(rect.yD, 0.0)
 
         rect.position(0, 0)
         other.position(50, 50)
         rect.alignLeftToRightOf(other, padding = 5)
-        assertEquals(rect.x, 105.0)
-        assertEquals(rect.y, 0.0)
+        assertEquals(rect.xD, 105.0)
+        assertEquals(rect.yD, 0.0)
 
         rect.position(0, 0)
         other.position(50, 50)
         rect.alignRightToLeftOf(other, padding = 5)
-        assertEquals(rect.x, -55.0)
-        assertEquals(rect.y, 0.0)
+        assertEquals(rect.xD, -55.0)
+        assertEquals(rect.yD, 0.0)
 
         rect.position(0, 0)
         other.position(50, 50)
         rect.alignRightToRightOf(other, padding = 5)
-        assertEquals(rect.x, -5.0)
-        assertEquals(rect.y, 0.0)
+        assertEquals(rect.xD, -5.0)
+        assertEquals(rect.yD, 0.0)
 
 
         rect.position(0, 0)
         other.position(50, 50)
         rect.alignTopToTopOf(other, padding = 5)
-        assertEquals(rect.x, 0.0)
-        assertEquals(rect.y, 55.0)
+        assertEquals(rect.xD, 0.0)
+        assertEquals(rect.yD, 55.0)
 
         rect.position(0, 0)
         other.position(50, 50)
         rect.alignTopToBottomOf(other, padding = 5)
-        assertEquals(rect.x, 0.0)
-        assertEquals(rect.y, 105.0)
+        assertEquals(rect.xD, 0.0)
+        assertEquals(rect.yD, 105.0)
 
         rect.position(0, 0)
         other.position(50, 50)
         rect.alignBottomToTopOf(other, padding = 5)
-        assertEquals(rect.x, 0.0)
-        assertEquals(rect.y, -55.0)
+        assertEquals(rect.xD, 0.0)
+        assertEquals(rect.yD, -55.0)
 
         rect.position(0, 0)
         other.position(50, 50)
         rect.alignBottomToBottomOf(other, padding = 5)
-        assertEquals(rect.x, 0.0)
-        assertEquals(rect.y, -5.0)
+        assertEquals(rect.xD, 0.0)
+        assertEquals(rect.yD, -5.0)
     }
 
     @Test
@@ -433,13 +433,13 @@ class ViewsTest : ViewsForTesting() {
 
     private fun <T, T2 : Comparable<T2>> ((T) -> T2).toComparator() = Comparator { a: T, b: T -> this(a).compareTo(this(b)) }
     fun <T2 : Comparable<T2>> Container.sortChildrenBy(selector: (View) -> T2) = sortChildrenBy(selector.toComparator())
-    fun Container.sortChildrenByY() = sortChildrenBy(View::y)
+    fun Container.sortChildrenByY() = sortChildrenBy(View::yD)
     fun <T : Container> T.keepChildrenSortedBy(comparator: Comparator<View>): T {
         addUpdater { this.sortChildrenBy(comparator) }
         return this
     }
 
     fun <T : Container, T2 : Comparable<T2>> T.keepChildrenSortedBy(selector: (View) -> T2): T = this.keepChildrenSortedBy(selector.toComparator())
-    fun <T : Container> T.keepChildrenSortedByY(): T = this.keepChildrenSortedBy(View::y)
+    fun <T : Container> T.keepChildrenSortedByY(): T = this.keepChildrenSortedBy(View::yD)
 
 }

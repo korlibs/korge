@@ -7,7 +7,6 @@ import korlibs.korge.input.onClick
 import korlibs.image.color.Colors
 import korlibs.image.color.RGBA
 import korlibs.math.geom.Angle
-import korlibs.math.geom.MPoint
 import korlibs.math.geom.degrees
 import kotlin.reflect.KMutableProperty1
 
@@ -42,20 +41,20 @@ class QView(val views: List<View>) : List<View> by views, BView {
         set(value) = fastForEach { it.scale = value }
 
     var scaleX: Double
-        get() = firstOrNull?.scaleX ?: 1.0
-        set(value) = fastForEach { it.scaleX = value }
+        get() = firstOrNull?.scaleXD ?: 1.0
+        set(value) = fastForEach { it.scaleXD = value }
 
     var scaleY: Double
-        get() = firstOrNull?.scaleY ?: 1.0
-        set(value) = fastForEach { it.scaleY = value }
+        get() = firstOrNull?.scaleYD ?: 1.0
+        set(value) = fastForEach { it.scaleYD = value }
 
     var x: Double
-        get() = firstOrNull?.x ?: 0.0
-        set(value) = fastForEach { it.x = value }
+        get() = firstOrNull?.xD ?: 0.0
+        set(value) = fastForEach { it.xD = value }
 
     var y: Double
-        get() = firstOrNull?.y ?: 0.0
-        set(value) = fastForEach { it.y = value }
+        get() = firstOrNull?.yD ?: 0.0
+        set(value) = fastForEach { it.yD = value }
 
     var rotation: Angle
         get() = firstOrNull?.rotation ?: 0.degrees

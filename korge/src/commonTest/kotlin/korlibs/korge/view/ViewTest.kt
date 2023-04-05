@@ -1,11 +1,10 @@
 package korlibs.korge.view
 
 import assertEqualsFloat
-import korlibs.korge.tests.ViewsForTesting
-import korlibs.image.bitmap.Bitmap32
+import korlibs.image.bitmap.*
+import korlibs.korge.tests.*
 import korlibs.math.geom.*
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import kotlin.test.*
 
 class ViewTest {
     @Test
@@ -164,12 +163,12 @@ class ViewTest {
         val c = Container()
         val rect1 = c.solidRect(1, 1)
         val rect2 = c.solidRect(1, 1)
-        rect1.zIndex = 0.0
-        rect2.zIndex = 1.0
+        rect1.zIndex = 0f
+        rect2.zIndex = 1f
         fun getRenderViews(): List<View> = ArrayList<View>().also { array -> c.fastForEachChildRender { array.add(it) } }
         assertEquals(listOf(rect1, rect2), getRenderViews())
-        rect1.zIndex = 1.0
-        rect2.zIndex = 0.0
+        rect1.zIndex = 1f
+        rect2.zIndex = 0f
         assertEquals(listOf(rect2, rect1), getRenderViews())
     }
 
@@ -264,10 +263,10 @@ class ViewTest {
         act("initial")
         act("moveView") { view1.xy(300, 0) }
         view1.width = 400.0
-        view1.x = 100.0
+        view1.xD = 100.0
         logs += "view_bounds:" + view1.getBounds()
         act("reinsertView1") { container5.addChild(view1) }
-        view1.y = 700.0
+        view1.yD = 700.0
         act("reinsertView1_2") { view1.parent = container2 }
 
         assertEquals(

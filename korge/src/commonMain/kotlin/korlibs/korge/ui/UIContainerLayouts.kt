@@ -146,7 +146,7 @@ open class UIVerticalStack(
     override fun relayout() {
         var y = 0.0
         forEachChild {
-            it.y = y
+            it.yD = y
             if (adjustSize) it.scaledWidth = width
             y += it.height + padding
         }
@@ -165,7 +165,7 @@ open class UIHorizontalStack(height: Double = UI_DEFAULT_HEIGHT, padding: Double
     override fun relayout() {
         var x = 0.0
         forEachChild {
-            it.x = x
+            it.xD = x
             if (adjustSize) it.scaledHeight = height
             x += it.width + padding
         }
@@ -192,7 +192,7 @@ open class UIHorizontalFill(width: Double = 128.0, height: Double = 20.0) : UICo
         var x = 0.0
         val elementWidth = width / numChildren
         forEachChild {
-            it.x = x
+            it.xD = x
             it.scaledHeight = height
             it.width = elementWidth
             x += elementWidth
@@ -211,7 +211,7 @@ open class UIVerticalFill(width: Double = 128.0, height: Double = 128.0) : UICon
         var y = 0.0
         val elementHeight = height / numChildren
         forEachChild {
-            it.y = y
+            it.yD = y
             it.scaledWidth = width
             it.height = elementHeight
             y += elementHeight

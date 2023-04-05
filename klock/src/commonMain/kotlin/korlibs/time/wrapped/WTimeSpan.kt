@@ -1,20 +1,8 @@
 package korlibs.time.wrapped
 
-import korlibs.time.TimeSpan
-import korlibs.time.annotations.KlockExperimental
-import korlibs.time.clamp
-import korlibs.time.days
-import korlibs.time.hours
-import korlibs.time.internal.Serializable
-import korlibs.time.max
-import korlibs.time.microseconds
-import korlibs.time.milliseconds
-import korlibs.time.min
-import korlibs.time.minutes
-import korlibs.time.nanoseconds
-import korlibs.time.seconds
-import korlibs.time.toTimeString
-import korlibs.time.weeks
+import korlibs.time.*
+import korlibs.time.annotations.*
+import korlibs.time.internal.*
 
 @KlockExperimental
 val TimeSpan.wrapped get() = WTimeSpan(this)
@@ -68,7 +56,7 @@ data class WTimeSpan(val value: TimeSpan) : Comparable<WTimeSpan>, Serializable 
     operator fun div(scale: Int): WTimeSpan = (value / scale).wrapped
     operator fun div(scale: Double): WTimeSpan = (value / scale).wrapped
 
-    operator fun div(other: WTimeSpan): Double = this.value / other.value
+    operator fun div(other: WTimeSpan): Float = this.value / other.value
     operator fun rem(other: WTimeSpan): WTimeSpan = (this.value % other.value).wrapped
 
     companion object {

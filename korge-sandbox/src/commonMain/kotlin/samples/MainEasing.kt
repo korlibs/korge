@@ -6,7 +6,6 @@ import korlibs.korge.tween.*
 import korlibs.korge.view.*
 import korlibs.image.color.*
 import korlibs.math.geom.*
-import korlibs.math.geom.vector.*
 import korlibs.math.interpolation.*
 import kotlinx.coroutines.*
 
@@ -47,7 +46,7 @@ class MainEasing : Scene() {
                 onOut { bg.color = Colors.BLACK.withAd(0.2) }
                 onClick {
                     ballTween?.cancel()
-                    ballTween = ball.tweenAsync(ball::x[64.0, 64.0 + 512.0], easing = easing)
+                    ballTween = ball.tweenAsync(ball::xD[64.0, 64.0 + 512.0], easing = easing)
                 }
             }
         }

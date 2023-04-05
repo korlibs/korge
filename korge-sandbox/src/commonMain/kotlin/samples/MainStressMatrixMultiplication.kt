@@ -3,7 +3,6 @@ package samples
 import korlibs.korge.scene.*
 import korlibs.korge.ui.*
 import korlibs.korge.view.*
-import korlibs.io.lang.*
 import korlibs.math.geom.*
 
 class MainStressMatrixMultiplication : Scene() {
@@ -16,7 +15,7 @@ class MainStressMatrixMultiplication : Scene() {
             addUpdater {
                 var sum = 0f
                 for (n in 0 until N) {
-                    val mat = this.localMatrix * this@sceneMain.localMatrix * this@MainStressMatrixMultiplication.stage.localMatrix * Matrix().scaled(n.toFloat()).translated(x.toFloat() * 10f, y.toFloat() * -20f)
+                    val mat = this.localMatrix * this@sceneMain.localMatrix * this@MainStressMatrixMultiplication.stage.localMatrix * Matrix().scaled(n.toFloat()).translated(xD.toFloat() * 10f, yD.toFloat() * -20f)
                     sum += mat.a + mat.b + mat.c + mat.d + mat.tx + mat.ty
                 }
                 text.text = "result: $sum, $step"

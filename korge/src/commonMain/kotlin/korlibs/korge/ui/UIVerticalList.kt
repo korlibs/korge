@@ -1,10 +1,10 @@
 package korlibs.korge.ui
 
-import korlibs.memory.*
 import korlibs.korge.annotations.*
 import korlibs.korge.render.*
 import korlibs.korge.view.*
 import korlibs.math.geom.*
+import korlibs.memory.*
 
 @KorgeExperimental
 inline fun Container.uiVerticalList(
@@ -112,7 +112,7 @@ open class UIVerticalList(provider: Provider, width: Double = 200.0) : UIView(wi
                             .position(0.0, provider.getItemY(index))
                             .size(width, itemHeight)
                     }
-                    view.zIndex = index.toDouble()
+                    view.zIndex = index.toFloat()
                     toIndex = index
 
                     //val localViewY = view.localToGlobalY(0.0, view.height)

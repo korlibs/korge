@@ -99,7 +99,7 @@ class UISlider(
     //val clampedValue: Int get() = value.clamp(min, max)
 
     private fun reposition() {
-        this@UISlider.button.x = value.convertRange(min, max, 0.0, maxXPos).toDouble()
+        this@UISlider.button.xD = value.convertRange(min, max, 0.0, maxXPos).toDouble()
     }
 
     override fun onSizeChanged() {

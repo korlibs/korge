@@ -1,37 +1,17 @@
 package korlibs.image.style
 
 import korlibs.datastructure.*
-import korlibs.time.*
-import korlibs.memory.*
 import korlibs.image.annotation.*
 import korlibs.image.color.*
 import korlibs.io.lang.*
 import korlibs.io.util.*
 import korlibs.math.geom.*
 import korlibs.math.interpolation.*
-import kotlin.collections.List
-import kotlin.collections.arrayListOf
-import kotlin.collections.associate
-import kotlin.collections.associateBy
-import kotlin.collections.associateWith
+import korlibs.memory.*
+import korlibs.time.*
 import kotlin.collections.component1
 import kotlin.collections.component2
-import kotlin.collections.distinct
-import kotlin.collections.emptyList
-import kotlin.collections.filter
-import kotlin.collections.filterIsInstance
-import kotlin.collections.flatMap
-import kotlin.collections.getOrElse
-import kotlin.collections.getOrNull
-import kotlin.collections.indexOfFirst
-import kotlin.collections.iterator
-import kotlin.collections.joinToString
-import kotlin.collections.listOf
-import kotlin.collections.map
-import kotlin.collections.plusAssign
 import kotlin.collections.set
-import kotlin.collections.sortedBy
-import kotlin.collections.toMutableMap
 import kotlin.native.concurrent.*
 
 @KorimExperimental
@@ -75,15 +55,15 @@ class CSS(val allRules: List<IRuleSet>, unit: Unit = Unit) {
     data class RuleSet(val selector: Selector, val declarations: Declarations) : IRuleSet {
     }
 
-    data class KeyFrame constructor(val ratio: Double, val declarations: Declarations) {
+    data class KeyFrame constructor(val ratio: Float, val declarations: Declarations) {
         operator fun get(key: String): Expression? = declarations.declarationsMap[key]
         val easing: Easing = this["animation-timing-function"]?.easing ?: Easing.LINEAR
         companion object {
-            val DUMMY = KeyFrame(0.0, Declarations(emptyList()))
+            val DUMMY = KeyFrame(0f, Declarations(emptyList()))
         }
     }
 
-    data class InterpolationResult(var ratio: Double = 0.0, var k0: KeyFrame = KeyFrame.DUMMY, var k1: KeyFrame = KeyFrame.DUMMY) {
+    data class InterpolationResult(var ratio: Float = 0f, var k0: KeyFrame = KeyFrame.DUMMY, var k1: KeyFrame = KeyFrame.DUMMY) {
         val properties get() = k0.declarations.declarations.map { it.property }
     }
 
@@ -102,8 +82,10 @@ class CSS(val allRules: List<IRuleSet>, unit: Unit = Unit) {
             }
         }
 
+        fun getAt(ratio: Double, out: InterpolationResult = InterpolationResult()): InterpolationResult = getAt(ratio.toFloat(), out)
+
         // @TODO: Optimize: bisect
-        fun getAt(ratio: Double, out: InterpolationResult = InterpolationResult()): InterpolationResult {
+        fun getAt(ratio: Float, out: InterpolationResult = InterpolationResult()): InterpolationResult {
             val firstFrameIndex = fullKeyFrames.indexOfFirst { it.ratio >= ratio }
             if (firstFrameIndex >= 0) {
                 val firstFrame = fullKeyFrames[firstFrameIndex]
@@ -113,26 +95,26 @@ class CSS(val allRules: List<IRuleSet>, unit: Unit = Unit) {
                 }
                 out.k1 = firstFrame
                 out.ratio = when {
-                    out.k0.ratio == out.k1.ratio -> 0.0
+                    out.k0.ratio == out.k1.ratio -> 0f
                     else -> {
                         val easing = out.k0.easing
                         //val easing = Easing.LINEAR
-                        easing(ratio.convertRange(out.k0.ratio, out.k1.ratio, 0.0, 1.0))
+                        easing(ratio.convertRange(out.k0.ratio, out.k1.ratio, 0f, 1f))
                     }
                 }
             } else {
                 out.k0 = KeyFrame.DUMMY
                 out.k1 = KeyFrame.DUMMY
-                out.ratio = 0.0
+                out.ratio = 0f
             }
             return out
         }
 
         companion object {
-            fun selectorToRatio(selector: Selector): Double {
+            fun selectorToRatio(selector: Selector): Float {
                 val str = selector.str
-                if (str == "from") return 0.0
-                if (str == "to") return 1.0
+                if (str == "from") return 0f
+                if (str == "to") return 1f
                 if (!str.endsWith("%")) error("Invalid keyframe selector $selector")
                 return CSS.parseRatio(str)
             }
@@ -202,8 +184,8 @@ class CSS(val allRules: List<IRuleSet>, unit: Unit = Unit) {
 
         }
 
-        fun parseNumberDropSuffix(str: String): Double? {
-            return str.trimEnd { it != '.' && it !in '0'..'9'  }.toDoubleOrNull()
+        fun parseNumberDropSuffix(str: String): Float? {
+            return str.trimEnd { it != '.' && it !in '0'..'9'  }.toFloatOrNull()
         }
 
         fun parseTime(str: String): TimeSpan? {
@@ -222,7 +204,7 @@ class CSS(val allRules: List<IRuleSet>, unit: Unit = Unit) {
             if (str.endsWith("%")) return str.removeSuffix("%").toDoubleOrNull()?.div(100.0)
             if (str.endsWith("px")) return str.removeSuffix("px").toDoubleOrNull()
             if (str.endsWith("pt")) return str.removeSuffix("pt").toDoubleOrNull()
-            return parseNumberDropSuffix(str)
+            return parseNumberDropSuffix(str)?.toDouble()
             //return str.toDoubleOrNull()
         }
 
@@ -285,11 +267,11 @@ class CSS(val allRules: List<IRuleSet>, unit: Unit = Unit) {
             return out
         }
 
-        fun parseRatio(str: String, default: Double = 0.0): Double {
-            if (str.endsWith("%")) return (parseNumberDropSuffix(str) ?: 0.0) / 100.0
+        fun parseRatio(str: String, default: Float = 0f): Float {
+            if (str.endsWith("%")) return (parseNumberDropSuffix(str)?.toFloat() ?: 0f) / 100f
             return when (str.lowercase()) {
-                "from" -> 0.0
-                "to" -> 1.0
+                "from" -> 0f
+                "to" -> 1f
                 else -> parseNumberDropSuffix(str) ?: default
             }
         }
@@ -437,8 +419,8 @@ class CSSReader(val tokens: ListReader<CSS.Companion.Token>) {
 }
 
 fun CSS.InterpolationResult.getColor(key: String, default: RGBA = Colors.TRANSPARENT): RGBA =
-    this.ratio.interpolate(k0[key]?.color ?: default, k1[key]?.color ?: default)
-fun CSS.InterpolationResult.getRatio(key: String, default: Double = 0.0): Double =
+    this.ratio.toRatio().interpolate(k0[key]?.color ?: default, k1[key]?.color ?: default)
+fun CSS.InterpolationResult.getRatio(key: String, default: Float = 0f): Float =
     this.ratio.toRatio().interpolate(k0[key]?.ratio ?: default, k1[key]?.ratio ?: default)
 fun CSS.InterpolationResult.getMatrix(key: String, default: Matrix = Matrix()): Matrix =
     this.ratio.toRatio().interpolate(k0[key]?.matrix?.takeIf { it.isNotNIL } ?: default, k1[key]?.matrix ?: default)

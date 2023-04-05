@@ -1,18 +1,18 @@
 package samples
 
 import korlibs.datastructure.*
-import korlibs.time.*
-import korlibs.korge.input.*
-import korlibs.korge.scene.*
-import korlibs.korge.view.*
 import korlibs.image.color.*
 import korlibs.image.font.*
 import korlibs.io.util.*
+import korlibs.korge.input.*
+import korlibs.korge.scene.*
+import korlibs.korge.view.*
 import korlibs.math.geom.*
 import korlibs.math.geom.ds.*
 import korlibs.math.geom.shape.*
 import korlibs.math.geom.vector.*
 import korlibs.math.random.*
+import korlibs.time.*
 import kotlin.random.*
 
 class MainBVH : Scene() {
@@ -38,10 +38,10 @@ class MainBVH : Scene() {
                 if (view.x < 0) {
                     view.movingDirection = +1
                 }
-                if (view.x > stage!!.width) {
+                if (view.xD > stage!!.width) {
                     view.movingDirection = -1
                 }
-                view.x += view.movingDirection
+                view.xD += view.movingDirection
                 bvh.insertOrUpdate(view.getBounds(this), view)
             }
         }

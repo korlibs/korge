@@ -225,7 +225,7 @@ open class Text(
         val tva = tva
         if (tva != null) {
             tempMatrix.copyFrom(globalMatrix)
-            tempMatrix.pretranslate(container.x, container.y)
+            tempMatrix.pretranslate(container.xD, container.yD)
             ctx.useBatcher { batch ->
                 val bmpfont = font as BitmapFont
                 val tex = bmpfont.baseBmp
@@ -346,10 +346,10 @@ open class Text(
                         it.anchor(0, 0)
                         it.smoothing = smoothing
                         it.bitmap = entry.tex
-                        it.x = entry.x + dx
-                        it.y = entry.y + dy
-                        it.scaleX = entry.sx
-                        it.scaleY = entry.sy
+                        it.xD = entry.x + dx
+                        it.yD = entry.y + dy
+                        it.scaleXD = entry.sx
+                        it.scaleYD = entry.sy
                         it.rotation = entry.rot
                     }
 

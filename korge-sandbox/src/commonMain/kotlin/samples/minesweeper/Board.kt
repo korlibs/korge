@@ -48,7 +48,7 @@ class Board(
 		val FONT_HEIGHT = 32.0
         timeText = text("00:00", font = views.minesweeperFont, textSize = FONT_HEIGHT).apply {
 			centerXBetween(0.0, this@Board.width)
-			y = -FONT_HEIGHT - 16
+			yD = -FONT_HEIGHT - 16
 			alignment = TextAlignment.CENTER
 		}
 
@@ -56,11 +56,11 @@ class Board(
 		//x = screen.width / 2 - width / 2
 		//y = screen.height / 2 - (height - 10 - FONT_HEIGHT) / 2
 
-        x = scene.sceneWidth / 2 - width / 2
-        y = scene.sceneHeight / 2 - (height - 10 - FONT_HEIGHT) / 2
+        xD = scene.sceneWidth / 2 - width / 2
+        yD = scene.sceneHeight / 2 - (height - 10 - FONT_HEIGHT) / 2
 
 		//centerOnStage()
-		y += FONT_HEIGHT / 2
+		yD += FONT_HEIGHT / 2
 
 		// Restart board
 		restart()
@@ -283,10 +283,10 @@ class Board(
 	suspend fun play() {
 		while (true) {
 			//println("Mouse.x: ${Mouse.x}, x=$x")
-			if (mouse.x >= x && mouse.x < x + bwidth * imageSet.height) {
-				if (mouse.y >= y && mouse.y < y + bheight * imageSet.height) {
-					val px = ((mouse.x - x) / imageSet.height).toInt()
-					val py = ((mouse.y - y) / imageSet.height).toInt()
+			if (mouse.x >= xD && mouse.x < xD + bwidth * imageSet.height) {
+				if (mouse.y >= yD && mouse.y < yD + bheight * imageSet.height) {
+					val px = ((mouse.x - xD) / imageSet.height).toInt()
+					val py = ((mouse.y - yD) / imageSet.height).toInt()
 
 					if (mouse.released[0]) {
 						if (!mark[py][px]) {

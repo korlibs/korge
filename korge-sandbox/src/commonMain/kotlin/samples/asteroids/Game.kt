@@ -64,7 +64,7 @@ class Game(val scene: MainAsteroids) {
         with(sceneView) {
             val bullet = image(assets.bulletBitmap)
                 .center()
-                .position(ship.image.x, ship.image.y)
+                .position(ship.image.xD, ship.image.yD)
                 .rotation(ship.image.rotation)
                 .advance(assets.shipSize * 0.75)
 
@@ -79,7 +79,7 @@ class Game(val scene: MainAsteroids) {
                 val scale = it / 16.milliseconds
                 bullet.advance(+3.0 * scale)
                 // If the bullet flies off the screen, discard it
-                if (bullet.x < -BULLET_SIZE || bullet.y < -BULLET_SIZE || bullet.x > WIDTH + BULLET_SIZE || bullet.y > HEIGHT + BULLET_SIZE) {
+                if (bullet.xD < -BULLET_SIZE || bullet.yD < -BULLET_SIZE || bullet.xD > WIDTH + BULLET_SIZE || bullet.yD > HEIGHT + BULLET_SIZE) {
                     bullet.removeFromParent()
                 }
             }
@@ -91,8 +91,8 @@ class Game(val scene: MainAsteroids) {
         repeat(NUMBER_OF_ASTEROIDS) {
             val asteroid = spawnAsteroid(0.0, 0.0)
             do {
-                asteroid.x = random[0.0, WIDTH.toDouble()]
-                asteroid.y = random[0.0, HEIGHT.toDouble()]
+                asteroid.xD = random[0.0, WIDTH.toDouble()]
+                asteroid.yD = random[0.0, HEIGHT.toDouble()]
                 asteroid.angle = random[0.0, 360.0].degrees
             } while (asteroid.collidesWith(ship) || ship.distanceTo(asteroid) < 100.0)
         }
@@ -146,11 +146,11 @@ class Game(val scene: MainAsteroids) {
     }
 }
 
-fun View.distanceTo(other: View) = MPoint.distance(x, y, other.x, other.y)
+fun View.distanceTo(other: View) = MPoint.distance(xD, yD, other.xD, other.yD)
 
 fun View.advance(amount: Double, rot: Angle = (-90).degrees) = this.apply {
-    x += (this.rotation + rot).cosineD * amount
-    y += (this.rotation + rot).sineD * amount
+    xD += (this.rotation + rot).cosineD * amount
+    yD += (this.rotation + rot).sineD * amount
 }
 
 // A dummy throwable to cancel updatables

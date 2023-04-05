@@ -1,23 +1,22 @@
 package korlibs.korge.ui
 
 import korlibs.datastructure.*
-import korlibs.time.*
-import korlibs.memory.*
 import korlibs.event.*
-import korlibs.korge.animate.*
-import korlibs.korge.input.*
-import korlibs.korge.render.*
-import korlibs.korge.tween.*
-import korlibs.korge.view.*
 import korlibs.image.color.*
 import korlibs.image.font.*
 import korlibs.image.text.*
 import korlibs.io.async.*
 import korlibs.io.util.*
+import korlibs.korge.animate.*
+import korlibs.korge.input.*
+import korlibs.korge.render.*
+import korlibs.korge.tween.*
+import korlibs.korge.view.*
 import korlibs.math.geom.*
 import korlibs.math.geom.shape.*
-import korlibs.math.geom.vector.*
 import korlibs.math.interpolation.*
+import korlibs.memory.*
+import korlibs.time.*
 import kotlin.native.concurrent.*
 
 typealias UIDropDown<T> = UIComboBox<T>
@@ -99,7 +98,7 @@ open class UIComboBox<T>(
 
     private val itemsViewBackground = uiMaterialLayer(width, height = 128.0) {
         radius = RectCorners(0.0, 0.0, 9.0, 9.0)
-        zIndex = -1000.0
+        zIndex = -1000f
     }
     private val itemsView = uiScrollable(width, height = 128.0).also {
         it.backgroundColor = Colors.TRANSPARENT
@@ -207,8 +206,8 @@ open class UIComboBox<T>(
             itemsViewBackground.removeFromParent()
             itemsView.removeFromParent()
         }
-        itemsView.zIndex = +100001.0
-        itemsViewBackground.zIndex = +100000.0
+        itemsView.zIndex = +100001f
+        itemsViewBackground.zIndex = +100000f
     }
 
     fun open(immediate: Boolean = false) {
@@ -230,24 +229,24 @@ open class UIComboBox<T>(
             itemsViewBackground.visible = true
             if (immediate) {
                 itemsView.alphaF = 1.0f
-                itemsView.scaleY = 1.0
+                itemsView.scaleYD = 1.0
                 itemsViewBackground.alphaF = 1.0f
-                itemsViewBackground.scaleY = 1.0
-                expandButtonIcon.scaleY = -1.0
+                itemsViewBackground.scaleYD = 1.0
+                expandButtonIcon.scaleYD = -1.0
                 selectedButton.background.borderColor = MaterialColors.BLUE_300
                 selectedButton.background.borderSize = 2.0
             } else {
                 itemsView.alphaF = 0.0f
-                itemsView.scaleY = 0.0
+                itemsView.scaleYD = 0.0
                 itemsViewBackground.alphaF = 0.0f
-                itemsViewBackground.scaleY = 0.0
+                itemsViewBackground.scaleYD = 0.0
                 simpleAnimator.cancel().sequence {
                     tween(
                         itemsView::alpha[0.0f, 1.0f],
-                        itemsView::scaleY[0.0, 1.0],
+                        itemsView::scaleYD[0.0, 1.0],
                         itemsViewBackground::alpha[0.0f, 1.0f],
-                        itemsViewBackground::scaleY[0.0, 1.0],
-                        expandButtonIcon::scaleY[-1.0],
+                        itemsViewBackground::scaleYD[0.0, 1.0],
+                        expandButtonIcon::scaleYD[-1.0],
                         selectedButton.background::borderColor[MaterialColors.BLUE_300],
                         selectedButton.background::borderSize[2.0],
                         time = 0.25.seconds,
@@ -294,10 +293,10 @@ open class UIComboBox<T>(
         if (isOpened) {
             if (immediate) {
                 itemsView.alphaF = 0.0f
-                itemsView.scaleY = 0.0
+                itemsView.scaleYD = 0.0
                 itemsViewBackground.alphaF = 0.0f
-                itemsViewBackground.scaleY = 0.0
-                expandButtonIcon.scaleY = +1.0
+                itemsViewBackground.scaleYD = 0.0
+                expandButtonIcon.scaleYD = +1.0
                 selectedButton.background.borderColor = MaterialColors.GRAY_400
                 selectedButton.background.borderSize = 1.0
                 itemsView.visible = false
@@ -306,10 +305,10 @@ open class UIComboBox<T>(
                 simpleAnimator.cancel().sequence {
                     tween(
                         itemsView::alpha[0.0f],
-                        itemsView::scaleY[0.0],
+                        itemsView::scaleYD[0.0],
                         itemsViewBackground::alpha[0.0f],
-                        itemsViewBackground::scaleY[0.0],
-                        expandButtonIcon::scaleY[+1.0],
+                        itemsViewBackground::scaleYD[0.0],
+                        expandButtonIcon::scaleYD[+1.0],
                         selectedButton.background::borderColor[MaterialColors.GRAY_400],
                         selectedButton.background::borderSize[1.0],
                         time = 0.25.seconds,

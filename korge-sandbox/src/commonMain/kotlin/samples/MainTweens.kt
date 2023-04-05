@@ -2,7 +2,6 @@ package samples
 
 import korlibs.time.seconds
 import korlibs.korge.scene.ScaledScene
-import korlibs.korge.scene.Scene
 import korlibs.korge.tween.get
 import korlibs.korge.tween.tween
 import korlibs.korge.view.SContainer
@@ -18,15 +17,15 @@ class MainTweens : ScaledScene(512, 512) {
 
         while (true) {
             tween(
-                rect1::x[width - 100],
-                rect2::y[height - 200],
+                rect1::xD[width - 100],
+                rect2::yD[height - 200],
                 time = 1.seconds
             )
 
             tween(
-                rect1::y[height - 100],
-                rect2::x[width - 100],
-                rect2::y[height - 100],
+                rect1::yD[height - 100],
+                rect2::xD[width - 100],
+                rect2::yD[height - 100],
                 time = 1.seconds,
             )
 

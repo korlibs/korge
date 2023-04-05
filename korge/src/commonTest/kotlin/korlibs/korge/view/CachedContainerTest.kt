@@ -23,7 +23,7 @@ class CachedContainerTest {
         assertEquals("a", rlog, "First time, rendering of the descendants should happen")
         root.render(log.views.renderContext)
         assertEquals("a", rlog, "No re-rendering should happen")
-        view.x = 10.0
+        view.xD = 10.0
         root.render(log.views.renderContext)
         assertEquals("aa", rlog, "After updating a descendant, it should trigger a re-render")
         root.render(log.views.renderContext)

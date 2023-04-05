@@ -16,9 +16,9 @@ inline fun Container.camera(callback: @ViewDslMarker Camera.() -> Unit = {}): Ca
  * A [Camera] is a [Container] that allows to center its position using [setTo] and [tweenTo] methods.
  *
  * Should be used along with a wrapping [ClipContainer] defining its bounds.
- * You shouldn't change [Camera]'s [x], [y], [width], [height] or any other transform property.
+ * You shouldn't change [Camera]'s [xD], [yD], [width], [height] or any other transform property.
  *
- * You can consider that this view [x] and [y] starts at 0 and changes its coordinates and scaling to move everything inside.
+ * You can consider that this view [xD] and [yD] starts at 0 and changes its coordinates and scaling to move everything inside.
  *
  * This is a [View.Reference] to prevent re-computing things inside here when you are just moving the camera.
  *

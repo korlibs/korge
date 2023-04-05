@@ -1,22 +1,12 @@
 package samples
 
-import korlibs.time.milliseconds
-import korlibs.time.seconds
-import korlibs.event.Key
-import korlibs.korge.input.InputKeys
-import korlibs.korge.scene.ScaledScene
-import korlibs.korge.view.SContainer
-import korlibs.korge.view.Sprite
-import korlibs.korge.view.SpriteAnimation
-import korlibs.korge.view.addUpdater
-import korlibs.korge.view.alignRightToRightOf
-import korlibs.korge.view.position
-import korlibs.korge.view.positionY
-import korlibs.korge.view.scale
-import korlibs.korge.view.text
-import korlibs.korge.view.xy
-import korlibs.image.format.readBitmap
-import korlibs.io.file.std.resourcesVfs
+import korlibs.event.*
+import korlibs.image.format.*
+import korlibs.io.file.std.*
+import korlibs.korge.input.*
+import korlibs.korge.scene.*
+import korlibs.korge.view.*
+import korlibs.time.*
 
 class MainSpriteAnim : ScaledScene(512, 512) {
     companion object {
@@ -69,7 +59,7 @@ class MainSpriteAnim : ScaledScene(512, 512) {
         data class KeyAssignment(
             val key: Key,
             val animation: SpriteAnimation,
-            val block: (Double) -> Unit
+            val block: (Float) -> Unit
         )
 
         /**
@@ -81,10 +71,10 @@ class MainSpriteAnim : ScaledScene(512, 512) {
         ) : Sprite(spriteAnimation) {
 
             private val assignments = listOf(
-                KeyAssignment(upKey, spriteAnimationUp) { y -= it },
-                KeyAssignment(downKey, spriteAnimationDown) { y += it },
-                KeyAssignment(leftKey, spriteAnimationLeft) { x -= it },
-                KeyAssignment(rightKey, spriteAnimationRight) { x += it },
+                KeyAssignment(upKey, spriteAnimationUp) { yD -= it },
+                KeyAssignment(downKey, spriteAnimationDown) { yD += it },
+                KeyAssignment(leftKey, spriteAnimationLeft) { xD -= it },
+                KeyAssignment(rightKey, spriteAnimationRight) { xD += it },
             )
 
             /** Allows to know the appropriate moment to stop the movement animation. */
@@ -93,7 +83,7 @@ class MainSpriteAnim : ScaledScene(512, 512) {
             val assignedKeyDesc: String
                 get() = assignments.map { it.key }.joinToString("/")
 
-            fun handleKeys(inputKeys: InputKeys, disp: Double) {
+            fun handleKeys(inputKeys: InputKeys, disp: Float) {
                 // Let's check if any movement keys were pressed during this frame
                 val anyMovement: Boolean = assignments // Iterate all registered movement keys
                     .filter { inputKeys[it.key] } // Check if this movement key was pressed
@@ -142,7 +132,7 @@ class MainSpriteAnim : ScaledScene(512, 512) {
 
             if (keys[Key.L]) { player1.playAnimationLooped(spriteAnimationDown, 100.milliseconds) }
             if (keys[Key.T]) { player1.playAnimation(spriteAnimation = spriteAnimationDown, times = 3, spriteDisplayTime = 200.milliseconds) }
-            if (keys[Key.C]) { player1.playAnimationForDuration(1.seconds, spriteAnimationDown); player1.y -= 2 }
+            if (keys[Key.C]) { player1.playAnimationForDuration(1.seconds, spriteAnimationDown); player1.yD -= 2 }
             if (keys[Key.ESCAPE]) { player1.stopAnimation() }
         }
         /*onKeyDown {

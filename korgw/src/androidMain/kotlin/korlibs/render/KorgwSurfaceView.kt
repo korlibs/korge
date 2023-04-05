@@ -9,10 +9,10 @@ import android.view.*
 import android.view.KeyEvent
 import korlibs.datastructure.*
 import korlibs.datastructure.lock.*
-import korlibs.time.*
-import korlibs.memory.*
 import korlibs.event.*
 import korlibs.io.async.*
+import korlibs.memory.*
+import korlibs.time.*
 import javax.microedition.khronos.egl.*
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.egl.EGLDisplay
@@ -92,7 +92,8 @@ open class KorgwSurfaceView constructor(
                         val endTime = System.currentTimeMillis()
                         val elapsedTime = (endTime - startTime).toInt()
                         // @TODO: Ideally this shouldn't be a timer, but a vsync-based callback, or at least use screen's hz)
-                        Thread.sleep(maxOf(4L, (1000L / refreshRating).toLong() - elapsedTime))
+                        //Thread.sleep(maxOf(4L, (1000L / refreshRating).toLong() - elapsedTime))
+                        Thread.sleep(1L)
                     }
                 }
             } catch (e: InterruptedException) {

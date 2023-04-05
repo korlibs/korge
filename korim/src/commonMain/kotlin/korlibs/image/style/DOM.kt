@@ -1,11 +1,10 @@
 package korlibs.image.style
 
-import korlibs.datastructure.iterators.fastForEach
-import korlibs.datastructure.iterators.fastForEachReverse
-import korlibs.image.annotation.KorimExperimental
+import korlibs.datastructure.iterators.*
+import korlibs.image.annotation.*
 import korlibs.math.geom.*
-import kotlin.jvm.JvmName
-import kotlin.reflect.KMutableProperty1
+import kotlin.jvm.*
+import kotlin.reflect.*
 
 @KorimExperimental
 open class DOM(val css: CSS) {
@@ -45,7 +44,7 @@ open class DOM(val css: CSS) {
             override val property: KMutableProperty1<DomElement, Double?>
         ) : Mapping<Double?> {
             override fun set(element: DomElement, prop: String, value: Any?) {
-                property.set(element, getRatio(prop, value))
+                property.set(element, getRatio(prop, value).toDouble())
             }
         }
         class MatrixMapping(
@@ -139,11 +138,12 @@ open class DOM(val css: CSS) {
             is CSS.Expression -> value.matrix
             else -> Matrix.IDENTITY
         }
-        fun getRatio(prop: String, value: Any?): Double = when (value) {
-            is Double -> value
+        fun getRatio(prop: String, value: Any?): Float = when (value) {
+            is Float -> value
+            is Double -> value.toFloat()
             is CSS.InterpolationResult -> value.getRatio(prop)
             is CSS.Expression -> value.ratio
-            else -> 0.0
+            else -> 0f
         }
     }
 }

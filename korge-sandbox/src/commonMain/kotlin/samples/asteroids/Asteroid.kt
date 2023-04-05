@@ -20,23 +20,23 @@ class Asteroid(
 			val scale = time / 16.0.milliseconds
 			val dx = angle.cosineD * scale
 			val dy = angle.sineD * scale
-			x += dx
-			y += dy
+			xD += dx
+			yD += dy
 			rotation += scale.degrees
-			if (y < 0 && dy < 0) angle += 45.degrees
-			if (x < 0 && dx < 0) angle += 45.degrees
-			if (x > WIDTH && dx > 0) angle += 45.degrees
-			if (y > HEIGHT && dy > 0) angle += 45.degrees
+			if (yD < 0 && dy < 0) angle += 45.degrees
+			if (xD < 0 && dx < 0) angle += 45.degrees
+			if (xD > WIDTH && dx > 0) angle += 45.degrees
+			if (yD > HEIGHT && dy > 0) angle += 45.degrees
 		}
 	}
 
 	fun divide() {
 		if (asteroidSize > 1) {
-			Asteroid(assets, asteroidSize - 1).xy(x, y).addTo(parent!!).also {
+			Asteroid(assets, asteroidSize - 1).xy(xD, yD).addTo(parent!!).also {
 				it.angle = this.angle + 45.degrees
 				it.speed = this.speed * 1.5f
 			}
-			Asteroid(assets, asteroidSize - 1).xy(x, y).addTo(parent!!).also {
+			Asteroid(assets, asteroidSize - 1).xy(xD, yD).addTo(parent!!).also {
 				it.angle = this.angle - 45.degrees
 				it.speed = this.speed * 1.5f
 			}

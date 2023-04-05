@@ -37,8 +37,8 @@ open class UIScrollable(width: Double, height: Double, cache: Boolean = true) : 
         val isVertical get() = direction.isVertical
         val container get() = scrollable.container
 
-        var scrollBarPos: Double by if (isHorizontal) view::x else view::y
-        var viewPos: Double by if (isHorizontal) view::x else view::y
+        var scrollBarPos: Double by if (isHorizontal) view::xD else view::yD
+        var viewPos: Double by if (isHorizontal) view::xD else view::yD
             //get() = if (isHorizontal) view.x else view.y
             //set(value) = if (isHorizontal) view.x = value else view.y = value
         var viewScaledSize: Double by if (isHorizontal) view::scaledWidth else view::scaledHeight
@@ -49,7 +49,7 @@ open class UIScrollable(width: Double, height: Double, cache: Boolean = true) : 
         val scrollbarSize: Double get() = size * scrollRatio
 
         val scaledSize get() = if (isHorizontal) view.scaledWidth  else view.scaledHeight
-        var containerPos: Double by if (isHorizontal) container::x else container::y
+        var containerPos: Double by if (isHorizontal) container::xD else container::yD
             //get() = if (isHorizontal) container.x else container.y
             //set(value) { if (isHorizontal) container.x = value else container.y = value }
 
@@ -144,9 +144,9 @@ open class UIScrollable(width: Double, height: Double, cache: Boolean = true) : 
     val overflowPixelsLeft get() = overflowPixelsHorizontal
     val overflowPixelsRight get() = overflowPixelsHorizontal
     @ViewProperty
-    var containerX: Double by container::x
+    var containerX: Double by container::xD
     @ViewProperty
-    var containerY: Double by container::y
+    var containerY: Double by container::yD
     @ViewProperty
     var timeScrollBar = 0.seconds
     @ViewProperty
@@ -189,7 +189,7 @@ open class UIScrollable(width: Double, height: Double, cache: Boolean = true) : 
     }
 
     init {
-        container.y = 0.0
+        container.yD = 0.0
         showScrollBar()
         //onScrollTopChange.add { println(it.scrollRatio) }
         onSizeChanged()

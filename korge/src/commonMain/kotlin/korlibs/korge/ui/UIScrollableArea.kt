@@ -85,7 +85,7 @@ open class UIScrollableArea(
     }
 
     protected open fun onMoved() {
-        container.x = -horScrollBar.current
-        container.y = -verScrollBar.current
+        container.xD = -horScrollBar.current
+        container.yD = -verScrollBar.current
     }
 }

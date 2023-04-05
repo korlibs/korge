@@ -105,9 +105,9 @@ class MainEditor : Scene() {
             uiVerticalStack(300.0, padding = 4.0) {
                 uiText("Properties").styles { textColor = Colors.RED }
                 uiPropertyNumberRow("Alpha", *UIEditableNumberPropsList(solidRect::alphaF))
-                uiPropertyNumberRow("Position", *UIEditableNumberPropsList(solidRect::x, solidRect::y, min = -1024.0, max = +1024.0, clamped = false))
+                uiPropertyNumberRow("Position", *UIEditableNumberPropsList(solidRect::xD, solidRect::yD, min = -1024.0, max = +1024.0, clamped = false))
                 uiPropertyNumberRow("Size", *UIEditableNumberPropsList(solidRect::width, solidRect::height, min = -1024.0, max = +1024.0, clamped = false))
-                uiPropertyNumberRow("Scale", *UIEditableNumberPropsList(solidRect::scaleX, solidRect::scaleY, min = -1.0, max = +1.0, clamped = false))
+                uiPropertyNumberRow("Scale", *UIEditableNumberPropsList(solidRect::scaleXD, solidRect::scaleYD, min = -1.0, max = +1.0, clamped = false))
                 uiPropertyNumberRow("Rotation", *UIEditableNumberPropsList(solidRect::rotationDeg, min = -360.0, max = +360.0, clamped = true))
                 val skewProp = uiPropertyNumberRow("Skew", *UIEditableNumberPropsList(solidRect::skewXDeg, solidRect::skewYDeg, min = -360.0, max = +360.0, clamped = true))
                 append(UIPropertyRow("Visible")) {

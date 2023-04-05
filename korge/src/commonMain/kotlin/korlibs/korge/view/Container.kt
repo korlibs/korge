@@ -2,12 +2,12 @@ package korlibs.korge.view
 
 import korlibs.datastructure.*
 import korlibs.datastructure.iterators.*
-import korlibs.memory.*
 import korlibs.event.*
 import korlibs.korge.internal.*
 import korlibs.korge.render.*
 import korlibs.korge.view.property.*
 import korlibs.math.geom.*
+import korlibs.memory.*
 
 /** Creates a new [Container], allowing to configure with [callback], and attaches the newly created container to the receiver this [Container] */
 inline fun Container.container(cull: Boolean = false, callback: @ViewDslMarker Container.() -> Unit = {}) =
@@ -342,7 +342,7 @@ open class Container(
     @PublishedApi internal val __childrenZIndex = FastArrayList<View>()
 
     @PublishedApi internal fun shouldSortChildren(): Boolean {
-        __children.fastForEach { if (it.zIndex != 0.0) { return true } }
+        __children.fastForEach { if (it.zIndex != 0f) { return true } }
         return false
     }
 
@@ -375,7 +375,7 @@ open class Container(
     }
 
     // @TODO: Instead of resort everytime that something changes, let's keep an index in the zIndex collection
-    @PublishedApi internal fun updatedChildZIndex(child: View, oldZIndex: Double, newZIndex: Double) {
+    @PublishedApi internal fun updatedChildZIndex(child: View, oldZIndex: Float, newZIndex: Float) {
         if (child.parent != this) return
         __childrenZIndexValidOrder = false
         invalidateContainer()

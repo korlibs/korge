@@ -21,12 +21,12 @@ class Line(
     var y2: Double,
     color: RGBA = Colors.WHITE,
 ) : View() {
-    var x1: Double get() = x ; set(value) { x = value }
-    var y1: Double get() = y ; set(value) { y = value }
+    var x1: Double get() = xD ; set(value) { xD = value }
+    var y1: Double get() = yD ; set(value) { yD = value }
 
     init {
-        x = x1
-        y = y1
+        xD = x1
+        yD = y1
         colorMul = color
     }
 

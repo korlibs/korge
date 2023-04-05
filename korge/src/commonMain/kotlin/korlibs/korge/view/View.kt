@@ -2,27 +2,27 @@
 
 package korlibs.korge.view
 
+import korlibs.crypto.encoding.*
 import korlibs.datastructure.*
 import korlibs.datastructure.iterators.*
-import korlibs.time.*
-import korlibs.memory.*
 import korlibs.event.*
+import korlibs.image.color.*
+import korlibs.image.vector.*
+import korlibs.io.lang.*
+import korlibs.io.util.*
+import korlibs.io.util.encoding.*
 import korlibs.korge.component.*
 import korlibs.korge.internal.*
 import korlibs.korge.render.*
 import korlibs.korge.ui.*
 import korlibs.korge.view.filter.*
 import korlibs.korge.view.property.*
-import korlibs.image.color.*
-import korlibs.image.vector.*
-import korlibs.io.lang.*
-import korlibs.io.util.*
-import korlibs.io.util.encoding.*
 import korlibs.math.geom.*
 import korlibs.math.geom.shape.*
 import korlibs.math.geom.vector.*
 import korlibs.math.interpolation.*
-import korlibs.crypto.encoding.*
+import korlibs.memory.*
+import korlibs.time.*
 import kotlin.jvm.*
 import kotlin.math.*
 
@@ -39,7 +39,7 @@ import kotlin.math.*
  *
  * ## Properties
  *
- * Basic transform properties of the [View] are [x], [y], [scaleX], [scaleY], [rotation], [skewX] and [skewY].
+ * Basic transform properties of the [View] are [xD], [yD], [scaleXD], [scaleYD], [rotation], [skewX] and [skewY].
  * Regarding to how the views are drawn there are: [alphaF], [colorMul] ([tint]).
  *
  * [View] implements the [Extra] interface, thus allows to add arbitrary typed properties.
@@ -255,15 +255,15 @@ abstract class View internal constructor(
     /** Computed [speed] combining all the speeds from ancestors */
     val globalSpeed: Float get() = if (parent != null) parent!!.globalSpeed * speed else speed
 
-    protected var _x: Double = 0.0
-    protected var _y: Double = 0.0
-    private var _scaleX: Double = 1.0
-    private var _scaleY: Double = 1.0
+    protected var _x: Float = 0f
+    protected var _y: Float = 0f
+    private var _scaleX: Float = 1f
+    private var _scaleY: Float = 1f
     private var _skewX: Angle = Angle.ZERO
     private var _skewY: Angle = Angle.ZERO
     private var _rotation: Angle = Angle.ZERO
 
-    private fun setXY(x: Double, y: Double) {
+    private fun setXY(x: Float, y: Float) {
         ensureTransform()
         if (this._x != x || this._y != y) {
             this._x = x
@@ -281,10 +281,10 @@ abstract class View internal constructor(
     @ViewProperty(min = -1000.0, max = +1000.0, name = "position")
     var pos: Point
         get() = Point(x, y)
-        set(value) = setXY(value.xD, value.yD)
+        set(value) = setXY(value.x, value.y)
 
     /** Local X position of this view */
-    var x: Double
+    var x: Float
         get() {
             ensureTransform()
             return _x
@@ -292,25 +292,32 @@ abstract class View internal constructor(
         set(v) { setXY(v, y) }
 
     /** Local Y position of this view */
-    var y: Double
+    var y: Float
         get() {
             ensureTransform()
             return _y
         }
         set(v) { setXY(x, v) }
 
-    private var _zIndex: Double = 0.0
+    /** Local X position of this view */
+    var xD: Double get() = x.toDouble() ; set(v) { x = v.toFloat() }
+    /** Local Y position of this view */
+    var yD: Double get() = y.toDouble() ; set(v) { y = v.toFloat() }
+
+    private var _zIndex: Float = 0f
 
     // @TODO: Instead of resort everytime that something changes, let's keep an index in the zIndex collection
     //@PublishedApi internal var _zIndexIndex: Int = 0
 
-    @ViewProperty()
-    var zIndex: Double
+    @ViewProperty
+    var zIndex: Float
         get() = _zIndex
         set(v) {
             parent?.updatedChildZIndex(this, _zIndex, v)
             _zIndex = v
         }
+
+    var zIndexD: Double get() = zIndex.toDouble() ; set(v) { zIndex = v.toFloat() }
 
     /*
     var xf: Float get() = x.toFloat() ; set(v) { x = v.toDouble() }
@@ -329,14 +336,20 @@ abstract class View internal constructor(
     */
 
     /** Local scaling in the X axis of this view */
-    var scaleX: Double
+    var scaleX: Float
         get() { ensureTransform(); return _scaleX }
         set(v) { ensureTransform(); if (_scaleX != v) { _scaleX = v; invalidateMatrix() } }
 
     /** Local scaling in the Y axis of this view */
-    var scaleY: Double
+    var scaleY: Float
         get() { ensureTransform(); return _scaleY }
         set(v) { ensureTransform(); if (_scaleY != v) { _scaleY = v; invalidateMatrix() } }
+
+    /** Local scaling in the X axis of this view */
+    var scaleXD: Double get() = scaleX.toDouble(); set(value) { scaleX = value.toFloat() }
+
+    /** Local scaling in the Y axis of this view */
+    var scaleYD: Double get() = scaleY.toDouble(); set(value) { scaleY = value.toFloat() }
 
     @ViewProperty(name = "type", order = -1000, editable = false)
     private val __type: String
@@ -344,17 +357,17 @@ abstract class View internal constructor(
 
     @ViewProperty(min = 0.0, max = 1.0)
     var scaleXY: Scale
-        get() = Scale(scaleX, scaleY)
+        get() = Scale(scaleXD, scaleYD)
         set(value) {
-            scaleX = value.scaleXD
-            scaleY = value.scaleYD
+            scaleXD = value.scaleXD
+            scaleYD = value.scaleYD
         }
 
-    /** Allows to change [scaleX] and [scaleY] at once. Returns the mean value of x and y scales. */
+    /** Allows to change [scaleXD] and [scaleYD] at once. Returns the mean value of x and y scales. */
     @ViewProperty(min = 0.0, max = 1.0)
     var scale: Double
-        get() = (scaleX + scaleY) / 2f
-        set(v) { scaleX = v; scaleY = v }
+        get() = (scaleXD + scaleYD) / 2f
+        set(v) { scaleXD = v; scaleYD = v }
 
     /** Local skewing in the X axis of this view */
     var skewX: Angle
@@ -381,7 +394,7 @@ abstract class View internal constructor(
         }
 
     var globalPos: Point
-        get() = parent?.localToGlobal(Point(x, y)) ?: Point(x, y)
+        get() = parent?.localToGlobal(Point(xD, yD)) ?: Point(xD, yD)
         set(value) { pos = parent?.globalToLocal(value) ?: value }
 
     /**
@@ -395,13 +408,13 @@ abstract class View internal constructor(
 
     open fun setSizeScaled(width: Double, height: Double) {
         this.setSize(
-            if (scaleX == 0.0) width else width / scaleX,
-            if (scaleY == 0.0) height else height / scaleY,
+            if (scaleXD == 0.0) width else width / scaleXD,
+            if (scaleYD == 0.0) height else height / scaleYD,
         )
     }
 
     /**
-     * Changes the [width] of this view. Generically, this means adjusting the [scaleX] of the view to match that size using the current bounds,
+     * Changes the [width] of this view. Generically, this means adjusting the [scaleXD] of the view to match that size using the current bounds,
      * but some views might override this to adjust its internal width or height (like [SolidRect] or [UIView] for example).
      *
      * @TODO: In KorGE 2.0, View.width/View.height will be immutable and available from an extension method for Views that doesn't have a width/height properties
@@ -410,11 +423,11 @@ abstract class View internal constructor(
         get() = getLocalBoundsOptimizedAnchored().widthD
         @Deprecated("Shouldn't set width but scaleWidth instead")
         set(value) {
-            scaleX = (if (scaleX == 0.0) 1.0 else scaleX) * (value / width)
+            scaleXD = (if (scaleXD == 0.0) 1.0 else scaleXD) * (value / width)
         }
 
     /**
-     * Changes the [height] of this view. Generically, this means adjusting the [scaleY] of the view to match that size using the current bounds,
+     * Changes the [height] of this view. Generically, this means adjusting the [scaleYD] of the view to match that size using the current bounds,
      * but some views might override this to adjust its internal width or height (like [SolidRect] or [UIView] for example).
      *
      * @TODO: In KorGE 2.0, View.width/View.height will be immutable and available from an extension method for Views that doesn't have a width/height properties
@@ -423,26 +436,26 @@ abstract class View internal constructor(
         get() = getLocalBoundsOptimizedAnchored().heightD
         @Deprecated("Shouldn't set height but scaleHeight instead")
         set(value) {
-            scaleY = (if (scaleY == 0.0) 1.0 else scaleY) * (value / getLocalBoundsOptimizedAnchored().height)
+            scaleYD = (if (scaleYD == 0.0) 1.0 else scaleYD) * (value / getLocalBoundsOptimizedAnchored().height)
         }
 
     val unscaledWidth: Double get() = width
     val unscaledHeight: Double get() = height
 
     var scaledWidth: Double
-        get() = unscaledWidth * scaleX
+        get() = unscaledWidth * scaleXD
         set(value) {
-            width = if (scaleX == 0.0) value else value / scaleX
+            width = if (scaleXD == 0.0) value else value / scaleXD
         }
 
     /**
-     * Changes the [height] of this view. Generically, this means adjusting the [scaleY] of the view to match that size using the current bounds,
+     * Changes the [height] of this view. Generically, this means adjusting the [scaleYD] of the view to match that size using the current bounds,
      * but some views might override this to adjust its internal width or height (like [SolidRect] or [UIView] for example).
      */
     var scaledHeight: Double
-        get() = unscaledHeight * scaleY
+        get() = unscaledHeight * scaleYD
         set(value) {
-            height = if (scaleY == 0.0) value else value / scaleY
+            height = if (scaleYD == 0.0) value else value / scaleYD
         }
 
     @ViewProperty(min = -1000.0, max = +1000.0, name = "size")
@@ -508,11 +521,11 @@ abstract class View internal constructor(
     protected fun ensureTransform() {
         if (validLocalProps) return
         validLocalProps = true
-        val t = this._localMatrix.immutable.toTransform()
-        this._x = t.x.toDouble()
-        this._y = t.y.toDouble()
-        this._scaleX = t.scaleX.toDouble()
-        this._scaleY = t.scaleY.toDouble()
+        val t = this._localMatrix.toTransform()
+        this._x = t.x
+        this._y = t.y
+        this._scaleX = t.scaleX
+        this._scaleY = t.scaleY
         this._skewX = t.skewX
         this._skewY = t.skewY
         this._rotation = t.rotation
@@ -539,7 +552,7 @@ abstract class View internal constructor(
             }
         }
 
-    /** Sets the local transform matrix that includes [x], [y], [scaleX], [scaleY], [rotation], [skewX] and [skewY] encoded into a [Matrix] */
+    /** Sets the local transform matrix that includes [xD], [yD], [scaleXD], [scaleYD], [rotation], [skewX] and [skewY] encoded into a [Matrix] */
     fun setMatrix(matrix: Matrix) {
         this._localMatrix = matrix
         this.validLocalProps = false
@@ -570,7 +583,7 @@ abstract class View internal constructor(
 
     /**
      * Sets the [MatrixTransform] decomposed version of the transformation,
-     * that directly includes [x], [y], [scaleX], [scaleY], [rotation], [skewX] and [skewY].
+     * that directly includes [xD], [yD], [scaleXD], [scaleYD], [rotation], [skewX] and [skewY].
      */
     fun setTransform(transform: MatrixTransform) {
         _setTransform(transform)
@@ -587,8 +600,8 @@ abstract class View internal constructor(
     @Deprecated("")
     fun _setTransform(t: MatrixTransform) {
         //transform.toMatrix(_localMatrix)
-        _x = t.x.toDouble(); _y = t.y.toDouble()
-        _scaleX = t.scaleX.toDouble(); _scaleY = t.scaleY.toDouble()
+        _x = t.x; _y = t.y
+        _scaleX = t.scaleX; _scaleY = t.scaleY
         _skewX = t.skewY; _skewY = t.skewY
         _rotation = t.rotation
     }
@@ -611,7 +624,7 @@ abstract class View internal constructor(
             if (!validLocalMatrix) {
                 validLocalMatrix = true
                 _requireInvalidate = true
-                _localMatrix = Matrix.fromTransform(x.toFloat(), y.toFloat(), rotation, scaleX.toFloat(), scaleY.toFloat(), skewX, skewY)
+                _localMatrix = Matrix.fromTransform(xD.toFloat(), yD.toFloat(), rotation, scaleXD.toFloat(), scaleYD.toFloat(), skewX, skewY)
             }
             return _localMatrix
         }
@@ -730,7 +743,7 @@ abstract class View internal constructor(
     fun localMousePos(views: Views): Point = globalToLocal(views.input.mousePos)
 
     /**
-     * Invalidates the [localMatrix] [MMatrix], so it gets updated from the decomposed properties: [x], [y], [scaleX], [scaleY], [rotation], [skewX] and [skewY].
+     * Invalidates the [localMatrix] [MMatrix], so it gets updated from the decomposed properties: [xD], [yD], [scaleXD], [scaleYD], [rotation], [skewX] and [skewY].
      */
     fun invalidateMatrix() {
         validLocalMatrix = false
@@ -901,8 +914,8 @@ abstract class View internal constructor(
     @Suppress("RemoveCurlyBracesFromTemplate")
     override fun toString(): String {
         var out = this::class.portableSimpleName
-        if (x != 0.0 || y != 0.0) out += ":pos=(${x.str},${y.str})"
-        if (scaleX != 1.0 || scaleY != 1.0) out += ":scale=(${scaleX.str},${scaleY.str})"
+        if (xD != 0.0 || yD != 0.0) out += ":pos=(${xD.str},${yD.str})"
+        if (scaleXD != 1.0 || scaleYD != 1.0) out += ":scale=(${scaleXD.str},${scaleYD.str})"
         if (skewX.radians != 0.0 || skewY.radians != 0.0) out += ":skew=(${skewX.degrees.str},${skewY.degrees.str})"
         if (rotation.absoluteValue != 0.radians) out += ":rotation=(${rotation.degrees.str}º)"
         if (name != null) out += ":name=($name)"
@@ -935,9 +948,9 @@ abstract class View internal constructor(
     var hitTestEnabled = true
 
     /**
-     * Determines the view at the global point defined by [x] and [y] if any, or null
+     * Determines the view at the global point defined by [xD] and [yD] if any, or null
      *
-     * When a container, recursively finds the [View] displayed the given global [x], [y] coordinates.
+     * When a container, recursively finds the [View] displayed the given global [xD], [yD] coordinates.
      *
      * @returns The (visible) [View] displayed at the given coordinates or `null` if none is found.
      */
@@ -1009,7 +1022,7 @@ abstract class View internal constructor(
     }
 
     // @TODO: we should compute view bounds on demand
-    /** [x] and [y] are in global coordinates */
+    /** [xD] and [yD] are in global coordinates */
     fun mouseHitTest(p: Point): View? {
         //return hitTest(p)
         if (!hitTestEnabled) return null
@@ -1054,7 +1067,7 @@ abstract class View internal constructor(
 
     var hitTestUsingShapes: Boolean? = null
 
-    /** [x] and [y] coordinates are global */
+    /** [xD] and [yD] coordinates are global */
     protected open fun hitTestInternal(p: Point, direction: HitTestDirection = HitTestDirection.ANY): View? {
         if (!hitTestEnabled) return null
 
@@ -1180,8 +1193,8 @@ abstract class View internal constructor(
      */
     open fun reset() {
         _localMatrix = Matrix.IDENTITY
-        _x = 0.0; _y = 0.0
-        _scaleX = 1.0; _scaleY = 1.0
+        _x = 0f; _y = 0f
+        _scaleX = 1f; _scaleY = 1f
         _skewX = 0.0.radians; _skewY = 0.0.radians
         _rotation = 0.0.radians
         validLocalMatrix = false
@@ -1792,10 +1805,10 @@ inline fun <reified T> View?.descendantsOfType(): List<T> = descendantsWith { it
 
 fun View?.allDescendants(out: ArrayList<View> = arrayListOf()): List<View> = descendantsWith { true }
 
-/** Chainable method returning this that sets [View.x] and [View.y] */
+/** Chainable method returning this that sets [View.xD] and [View.yD] */
 fun <T : View> T.xy(p: Point): T {
-    this.x = p.xD
-    this.y = p.yD
+    this.xD = p.xD
+    this.yD = p.yD
     return this
 }
 fun <T : View> T.xy(x: Double, y: Double): T = xy(Point(x, y))
@@ -1803,7 +1816,7 @@ fun <T : View> T.xy(x: Float, y: Float): T = xy(Point(x, y))
 fun <T : View> T.xy(x: Int, y: Int): T = xy(Point(x, y))
 fun <T : View> T.xy(p: MPoint): T = xy(p.point)
 
-/** Chainable method returning this that sets [View.x] and [View.y] */
+/** Chainable method returning this that sets [View.xD] and [View.yD] */
 fun <T : View> T.position(x: Double, y: Double): T = xy(Point(x, y))
 fun <T : View> T.position(x: Float, y: Float): T = xy(Point(x, y))
 fun <T : View> T.position(x: Int, y: Int): T = xy(Point(x, y))
@@ -1813,14 +1826,14 @@ fun <T : View> T.bounds(left: Double, top: Double, right: Double, bottom: Double
 fun <T : View> T.bounds(rect: Rectangle): T = bounds(rect.left.toDouble(), rect.top.toDouble(), rect.right.toDouble(), rect.bottom.toDouble())
 
 fun <T : View> T.positionX(x: Double): T {
-    this.x = x
+    this.xD = x
     return this
 }
 fun <T : View> T.positionX(x: Float): T = positionX(x.toDouble())
 fun <T : View> T.positionX(x: Int): T = positionX(x.toDouble())
 
 fun <T : View> T.positionY(y: Double): T {
-    this.y = y
+    this.yD = y
     return this
 }
 fun <T : View> T.positionY(y: Float): T = positionY(y.toDouble())
@@ -1835,8 +1848,8 @@ fun View.setPositionRelativeTo(view: View, pos: Point) {
     val mat = this.parent!!.getConcatMatrix(view, inclusive = false)
     val matInv = mat.inverted()
     val out = matInv.transform(pos)
-    this.x = out.xD
-    this.y = out.yD
+    this.xD = out.xD
+    this.yD = out.yD
 }
 
 fun View.getPointRelativeTo(pos: Point, view: View): Point {
@@ -1850,7 +1863,7 @@ fun View.getPointRelativeToInv(pos: Point, view: View): Point {
 
 /** Chainable method returning this that sets [this] View in the middle between [x1] and [x2] */
 fun <T : View> T.centerXBetween(x1: Double, x2: Double): T {
-    this.x = (x2 + x1 - this.width) / 2
+    this.xD = (x2 + x1 - this.width) / 2
     return this
 }
 fun <T : View> T.centerXBetween(x1: Float, x2: Float): T = centerXBetween(x1.toDouble(), x2.toDouble())
@@ -1858,7 +1871,7 @@ fun <T : View> T.centerXBetween(x1: Int, x2: Int): T = centerXBetween(x1.toDoubl
 
 /** Chainable method returning this that sets [this] View in the middle between [y1] and [y2] */
 fun <T : View> T.centerYBetween(y1: Double, y2: Double): T {
-    this.y = (y2 + y1 - this.height) / 2
+    this.yD = (y2 + y1 - this.height) / 2
     return this
 }
 fun <T : View> T.centerYBetween(y1: Float, y2: Float): T = centerYBetween(y1.toDouble(), y2.toDouble())
@@ -1873,19 +1886,19 @@ fun <T : View> T.centerBetween(x1: Float, y1: Float, x2: Float, y2: Float): T = 
 fun <T : View> T.centerBetween(x1: Int, y1: Int, x2: Int, y2: Int): T = centerBetween(x1.toDouble(), y1.toDouble(), x2.toDouble(), y2.toDouble())
 
 /**
- * Chainable method returning this that sets [View.x] so that
+ * Chainable method returning this that sets [View.xD] so that
  * [this] View is centered on the [other] View horizontally
  */
 fun <T : View> T.centerXOn(other: View): T = this.alignX(other, 0.5, true)
 
 /**
- * Chainable method returning this that sets [View.y] so that
+ * Chainable method returning this that sets [View.yD] so that
  * [this] View is centered on the [other] View vertically
  */
 fun <T : View> T.centerYOn(other: View): T = this.alignY(other, 0.5, true)
 
 /**
- * Chainable method returning this that sets [View.x] and [View.y]
+ * Chainable method returning this that sets [View.xD] and [View.yD]
  * so that [this] View is centered on the [other] View
  */
 fun <T : View> T.centerOn(other: View): T = this.centerXOn(other).centerYOn(other)
@@ -1906,9 +1919,9 @@ fun <T : View> T.alignXY(other: View, ratio: Double, inside: Boolean, doX: Boole
     val iratio = if (inside) ratio else 1.0 - ratio
     //println("this: $this, other: $other, bounds=$bounds, scaledWidth=$scaledWidth, scaledHeight=$scaledHeight, width=$width, height=$height, scale=$scale, $scaleX, $scaleY")
     if (doX) {
-        x = (bounds.x + (bounds.width * ratio) - localBounds.left) - (this.scaledWidth * iratio) - (padding * rratioM1_1)
+        xD = (bounds.x + (bounds.width * ratio) - localBounds.left) - (this.scaledWidth * iratio) - (padding * rratioM1_1)
     } else {
-        y = (bounds.y + (bounds.height * ratio) - localBounds.top) - (this.scaledHeight * iratio) - (padding * rratioM1_1)
+        yD = (bounds.y + (bounds.height * ratio) - localBounds.top) - (this.scaledHeight * iratio) - (padding * rratioM1_1)
     }
     return this
 }
@@ -1922,7 +1935,7 @@ fun <T : View> T.alignY(other: View, ratio: Double, inside: Boolean, padding: Do
 }
 
 /**
- * Chainable method returning this that sets [View.x] so that
+ * Chainable method returning this that sets [View.xD] so that
  * [this] View's left side is aligned with the [other] View's left side
  */
 // @TODO: What about rotations? we might need to adjust y too?
@@ -1931,7 +1944,7 @@ fun <T : View> T.alignLeftToLeftOf(other: View, padding: Float): T = alignLeftTo
 fun <T : View> T.alignLeftToLeftOf(other: View, padding: Int): T = alignLeftToLeftOf(other, padding.toDouble())
 
 /**
- * Chainable method returning this that sets [View.x] so that
+ * Chainable method returning this that sets [View.xD] so that
  * [this] View's left side is aligned with the [other] View's right side
  */
 fun <T : View> T.alignLeftToRightOf(other: View, padding: Double = 0.0): T = alignX(other, 1.0, inside = false, padding = padding)
@@ -1939,7 +1952,7 @@ fun <T : View> T.alignLeftToRightOf(other: View, padding: Float): T = alignLeftT
 fun <T : View> T.alignLeftToRightOf(other: View, padding: Int): T = alignLeftToRightOf(other, padding.toDouble())
 
 /**
- * Chainable method returning this that sets [View.x] so that
+ * Chainable method returning this that sets [View.xD] so that
  * [this] View's right side is aligned with the [other] View's left side
  */
 fun <T : View> T.alignRightToLeftOf(other: View, padding: Double = 0.0): T = alignX(other, 0.0, inside = false, padding = padding)
@@ -1947,7 +1960,7 @@ fun <T : View> T.alignRightToLeftOf(other: View, padding: Float): T = alignRight
 fun <T : View> T.alignRightToLeftOf(other: View, padding: Int): T = alignRightToLeftOf(other, padding.toDouble())
 
 /**
- * Chainable method returning this that sets [View.x] so that
+ * Chainable method returning this that sets [View.xD] so that
  * [this] View's right side is aligned with the [other] View's right side
  */
 fun <T : View> T.alignRightToRightOf(other: View, padding: Double = 0.0): T = alignX(other, 1.0, inside = true, padding = padding)
@@ -1955,7 +1968,7 @@ fun <T : View> T.alignRightToRightOf(other: View, padding: Float): T = alignRigh
 fun <T : View> T.alignRightToRightOf(other: View, padding: Int): T = alignRightToRightOf(other, padding.toDouble())
 
 /**
- * Chainable method returning this that sets [View.y] so that
+ * Chainable method returning this that sets [View.yD] so that
  * [this] View's top side is aligned with the [other] View's top side
  */
 fun <T : View> T.alignTopToTopOf(other: View, padding: Double = 0.0): T = alignY(other, 0.0, inside = true, padding = padding)
@@ -1963,7 +1976,7 @@ fun <T : View> T.alignTopToTopOf(other: View, padding: Float): T = alignTopToTop
 fun <T : View> T.alignTopToTopOf(other: View, padding: Int): T = alignTopToTopOf(other, padding.toDouble())
 
 /**
- * Chainable method returning this that sets [View.y] so that
+ * Chainable method returning this that sets [View.yD] so that
  * [this] View's top side is aligned with the [other] View's bottom side
  */
 fun <T : View> T.alignTopToBottomOf(other: View, padding: Double = 0.0): T = alignY(other, 1.0, inside = false, padding = padding)
@@ -1971,7 +1984,7 @@ fun <T : View> T.alignTopToBottomOf(other: View, padding: Float): T = alignTopTo
 fun <T : View> T.alignTopToBottomOf(other: View, padding: Int): T = alignTopToBottomOf(other, padding.toDouble())
 
 /**
- * Chainable method returning this that sets [View.y] so that
+ * Chainable method returning this that sets [View.yD] so that
  * [this] View's bottom side is aligned with the [other] View's top side
  */
 fun <T : View> T.alignBottomToTopOf(other: View, padding: Double = 0.0): T = alignY(other, 0.0, inside = false, padding = padding)
@@ -1979,7 +1992,7 @@ fun <T : View> T.alignBottomToTopOf(other: View, padding: Float): T = alignBotto
 fun <T : View> T.alignBottomToTopOf(other: View, padding: Int): T = alignBottomToTopOf(other, padding.toDouble())
 
 /**
- * Chainable method returning this that sets [View.y] so that
+ * Chainable method returning this that sets [View.yD] so that
  * [this] View's bottom side is aligned with the [other] View's bottom side
  */
 fun <T : View> T.alignBottomToBottomOf(other: View, padding: Double = 0.0): T = alignY(other, 1.0, inside = true, padding = padding)
@@ -1999,10 +2012,10 @@ fun <T : View> T.skew(sx: Angle, sy: Angle): T {
     return this
 }
 
-/** Chainable method returning this that sets [View.scaleX] and [View.scaleY] */
+/** Chainable method returning this that sets [View.scaleXD] and [View.scaleYD] */
 fun <T : View> T.scale(sx: Double, sy: Double = sx): T {
-    this.scaleX = sx
-    this.scaleY = sy
+    this.scaleXD = sx
+    this.scaleYD = sy
     return this
 }
 fun <T : View> T.scale(sx: Float, sy: Float = sx): T = scale(sx.toDouble(), sy.toDouble())
@@ -2022,12 +2035,12 @@ fun <T : View> T.alpha(alpha: Float): T {
 fun <T : View> T.alpha(alpha: Double): T = alpha(alpha.toFloat())
 fun <T : View> T.alpha(alpha: Int): T = alpha(alpha.toFloat())
 
-fun <T : View> T.zIndex(index: Float): T = zIndex(index.toDouble())
-fun <T : View> T.zIndex(index: Int): T = zIndex(index.toDouble())
-fun <T : View> T.zIndex(index: Double): T {
+fun <T : View> T.zIndex(index: Float): T {
     this.zIndex = index
     return this
 }
+fun <T : View> T.zIndex(index: Double): T = zIndex(index.toFloat())
+fun <T : View> T.zIndex(index: Int): T = zIndex(index.toFloat())
 
 typealias ViewDslMarker = korlibs.math.annotations.ViewDslMarker
 // @TODO: This causes issues having to put some explicit this@ when it shouldn't be required

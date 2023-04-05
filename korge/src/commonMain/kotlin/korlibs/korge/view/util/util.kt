@@ -24,7 +24,7 @@ fun distributeEvenlyHorizontally(views: Iterable<View>, boundingWidth: Double) {
 
     var offset = 0.0
     for (view in views) {
-        view.x = originView.x + offset
+        view.xD = originView.xD + offset
         offset += view.scaledWidth + padding
     }
 }
@@ -47,9 +47,9 @@ fun distributeEvenlyHorizontally(views: Iterable<View>, boundingWidth: Double) {
 fun distributeEvenlyHorizontally(views: Iterable<View>) {
     val originView = views.first()
     val rightMostX = views.maxOf {
-        it.x + it.scaledWidth
+        it.xD + it.scaledWidth
     }
-    distributeEvenlyHorizontally(views, rightMostX - originView.x)
+    distributeEvenlyHorizontally(views, rightMostX - originView.xD)
 }
 
 // Distributes an iterable of views evenly across a provided bounding height.
@@ -73,7 +73,7 @@ fun distributeEvenlyVertically(views: Iterable<View>, boundingHeight: Double) {
 
     var offset = 0.0
     for (view in views) {
-        view.y = originView.y + offset
+        view.yD = originView.yD + offset
         offset += view.scaledHeight + padding
     }
 }
@@ -100,7 +100,7 @@ fun distributeEvenlyVertically(views: Iterable<View>, boundingHeight: Double) {
 fun distributeEvenlyVertically(views: Iterable<View>) {
     val originView = views.first()
     val bottomMostY = views.maxOf {
-        it.y + it.scaledHeight
+        it.yD + it.scaledHeight
     }
-    distributeEvenlyVertically(views, bottomMostY - originView.y)
+    distributeEvenlyVertically(views, bottomMostY - originView.yD)
 }

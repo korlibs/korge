@@ -119,8 +119,8 @@ internal open class ViewsDebuggerActions(val views: Views) {
         val view = selectedView
         val increment = if (shift) 10.0 else 1.0
         if (view != null) {
-            view.x += dx * increment
-            view.y += dy * increment
+            view.xD += dx * increment
+            view.yD += dy * increment
         }
         save("Move", view)
     }

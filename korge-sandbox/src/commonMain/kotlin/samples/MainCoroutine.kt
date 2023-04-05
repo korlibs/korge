@@ -27,14 +27,14 @@ class MainCoroutine : ScaledScene(512, 512) {
                         val targetX = random[0, 512].toDouble()
                         val targetY = random[0, 512].toDouble()
 
-                        while (MPoint.distance(view.x, view.y, targetX, targetY) > 5.0) {
+                        while (MPoint.distance(view.xD, view.yD, targetX, targetY) > 5.0) {
                             when {
-                                view.x < targetX -> view.x += 2
-                                view.x > targetX -> view.x -= 2
+                                view.xD < targetX -> view.xD += 2
+                                view.xD > targetX -> view.xD -= 2
                             }
                             when {
-                                view.y < targetY -> view.y += 2
-                                view.y > targetY -> view.y -= 2
+                                view.yD < targetY -> view.yD += 2
+                                view.yD > targetY -> view.yD -= 2
                             }
                             frame()
                         }

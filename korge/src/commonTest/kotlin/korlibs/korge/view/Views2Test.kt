@@ -17,7 +17,7 @@ class Views2Test : ViewsForTesting(
 ) {
     val logger = Logger("Views2Test")
 
-    fun str() = "window(${gameWindow.width},${gameWindow.height}),virtual(${views.virtualWidth},${views.virtualHeight}),stage(${stage.x},${stage.y},${stage.width},${stage.height},${stage.scaleX},${stage.scaleY})"
+    fun str() = "window(${gameWindow.width},${gameWindow.height}),virtual(${views.virtualWidth},${views.virtualHeight}),stage(${stage.xD},${stage.yD},${stage.width},${stage.height},${stage.scaleXD},${stage.scaleYD})"
 
     @Test
     fun testScaleMode() = viewsTest {
@@ -94,8 +94,8 @@ class Views2Test : ViewsForTesting(
             centerOn(rect1)
         }
 
-        assertEquals(20.0, rect1.scaleX)
-        assertEquals(6.66666, rect1.scaleY, 0.001)
+        assertEquals(20.0, rect1.scaleXD)
+        assertEquals(6.66666, rect1.scaleYD, 0.001)
 
         assertEqualsFloat(
             Point(

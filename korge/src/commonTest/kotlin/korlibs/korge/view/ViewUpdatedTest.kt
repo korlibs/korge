@@ -13,10 +13,10 @@ import kotlin.test.assertEquals
 class ViewUpdatedTest {
     @Test
     fun testStandard() = updatePropertyTest({ solidRect(10.0, 10.0) }) {
-        assertUpdatedOnce(view::x, 11.0)
-        assertUpdatedOnce(view::y, 12.0)
-        assertUpdatedOnce(view::scaleX, 2.0)
-        assertUpdatedOnce(view::scaleY, 4.0)
+        assertUpdatedOnce(view::xD, 11.0)
+        assertUpdatedOnce(view::yD, 12.0)
+        assertUpdatedOnce(view::scaleXD, 2.0)
+        assertUpdatedOnce(view::scaleYD, 4.0)
         assertUpdatedOnce(view::alphaF, 0.5f)
         assertUpdatedOnce(view::colorMul, Colors.BLUE)
         assertUpdatedOnce(view::rotation, 45.degrees)

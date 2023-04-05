@@ -85,7 +85,7 @@ class MainBezierSample : Scene() {
         }.position(pointRef.get())
 
         fun updateText() {
-            text.text = "(${anchorView.x.toInt()}, ${anchorView.y.toInt()})"
+            text.text = "(${anchorView.xD.toInt()}, ${anchorView.yD.toInt()})"
         }
         circle.mouse {
             onOver { circle.filter = ColorTransformFilter(ColorTransform(add = ColorAdd(+64, +64, +64, 0))) }

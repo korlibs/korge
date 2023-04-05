@@ -4,7 +4,6 @@ import korlibs.korge.view.*
 import korlibs.image.bitmap.*
 import korlibs.math.geom.*
 import korlibs.math.random.*
-import kotlin.math.*
 import kotlin.random.*
 
 class RandomLight(
@@ -38,8 +37,8 @@ class RandomLight(
 
 		while (true) {
 			rotation += inca.degrees
-			x = w2 - cosd(rotation) * w2 * excx + sx
-			y = h2 - sind(rotation) * h2 * excy + sy
+			xD = w2 - cosd(rotation) * w2 * excx + sx
+			yD = h2 - sind(rotation) * h2 * excy + sy
 			scale = 1 + (cosd(rotation) / 6) * incs
 
             //println("FRAME! $x -> $x2")

@@ -1,23 +1,12 @@
 package korlibs.korge.view.camera
 
-import korlibs.time.TimeSpan
-import korlibs.time.milliseconds
-import korlibs.time.seconds
-import korlibs.memory.clamp
-import korlibs.korge.view.Container
-import korlibs.korge.view.FixedSizeContainer
-import korlibs.korge.view.View
-import korlibs.korge.view.ViewDslMarker
-import korlibs.korge.view.addTo
-import korlibs.korge.view.addUpdater
-import korlibs.io.async.Signal
-import korlibs.io.async.invoke
-import korlibs.io.async.waitOne
+import korlibs.io.async.*
+import korlibs.korge.view.*
 import korlibs.math.geom.*
 import korlibs.math.interpolation.*
-import kotlin.math.min
-import kotlin.math.pow
-import kotlin.math.sqrt
+import korlibs.memory.*
+import korlibs.time.*
+import kotlin.math.*
 
 inline fun Container.cameraContainer(
     width: Double,
@@ -203,7 +192,7 @@ class CameraContainer(
                 }
                 elapsedTime < transitionTime -> {
                     elapsedTime += it
-                    val ratio = (elapsedTime / transitionTime).coerceIn(0.0, 1.0)
+                    val ratio = (elapsedTime / transitionTime).coerceIn(0f, 1f)
                     currentCamera.setToInterpolated(easing(ratio).toRatio(), sourceCamera, targetCamera)
                     /*
                     val ratioCamera = easing(ratio)
@@ -236,13 +225,13 @@ class CameraContainer(
 
         //println("content=${content.getLocalBoundsOptimized()}, contentContainer=${contentContainer.getLocalBoundsOptimized()}, cameraViewportBounds=$cameraViewportBounds")
 
-        content.x = if (clampToBounds) -cameraX.clamp(contentContainerX + cameraViewportBounds.left, contentContainerX + cameraViewportBounds.width - width) else -cameraX
-        content.y = if (clampToBounds) -cameraY.clamp(contentContainerY + cameraViewportBounds.top, contentContainerY + cameraViewportBounds.height - height) else -cameraY
-        contentContainer.x = contentContainerX
-        contentContainer.y = contentContainerY
+        content.xD = if (clampToBounds) -cameraX.clamp(contentContainerX + cameraViewportBounds.left, contentContainerX + cameraViewportBounds.width - width) else -cameraX
+        content.yD = if (clampToBounds) -cameraY.clamp(contentContainerY + cameraViewportBounds.top, contentContainerY + cameraViewportBounds.height - height) else -cameraY
+        contentContainer.xD = contentContainerX
+        contentContainer.yD = contentContainerY
         contentContainer.rotation = cameraAngle
-        contentContainer.scaleX = realScaleX
-        contentContainer.scaleY = realScaleY
+        contentContainer.scaleXD = realScaleX
+        contentContainer.scaleYD = realScaleY
     }
 
     fun setZoomAt(anchor: MPoint, zoom: Double) = setZoomAt(anchor.x, anchor.y, zoom)
