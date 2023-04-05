@@ -79,13 +79,13 @@ abstract class Scene : InjectorAsyncDependency, ViewsContainer, CoroutineScope, 
 	protected val cancellables = CancellableGroup()
     override val coroutineContext by lazy { views.coroutineContext + AsyncInjectorContext(injector) + Job(views.coroutineContext[Job.Key]) }
 	val sceneView: SContainer by lazy {
-        createSceneView(sceneContainer.width, sceneContainer.height).apply {
+        createSceneView(sceneContainer.widthD, sceneContainer.heightD).apply {
             _sceneViewContainer += this
         }
     }
 
-    open val sceneWidth: Int get() = sceneView.width.toInt()
-    open val sceneHeight: Int get() = sceneView.height.toInt()
+    open val sceneWidth: Int get() = sceneView.widthD.toInt()
+    open val sceneHeight: Int get() = sceneView.heightD.toInt()
 
     override val resources: Resources by lazy { injector.getSync() }
 	protected open fun createSceneView(width: Double, height: Double): SContainer = SContainer(width, height)
@@ -234,7 +234,7 @@ abstract class ScaledScene(
         }
 
     private fun onSizeChanged() {
-        onSizeChanged(sceneView, sceneContainer.width, sceneContainer.height)
+        onSizeChanged(sceneView, sceneContainer.widthD, sceneContainer.heightD)
     }
 
     override fun onSizeChanged(width: Double, height: Double) {

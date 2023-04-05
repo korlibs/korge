@@ -1,8 +1,8 @@
 package korlibs.korge.view
 
-import korlibs.korge.ui.*
 import korlibs.image.color.*
-import korlibs.image.paint.Paint
+import korlibs.image.paint.*
+import korlibs.korge.ui.*
 import korlibs.math.geom.vector.*
 
 /** Creates a new [RoundRect] of size [width]x[height] and [color]
@@ -19,13 +19,13 @@ inline fun Container.roundRect(
     strokeThickness: Double = 0.0,
     autoScaling: Boolean = true,
     callback: @ViewDslMarker RoundRect.() -> Unit = {}
-) = roundRect(width.toDouble(), height.toDouble(), rx.toDouble(), ry.toDouble(), fill, stroke, strokeThickness, autoScaling, callback)
+) = roundRect(width.toFloat(), height.toFloat(), rx.toFloat(), ry.toFloat(), fill, stroke, strokeThickness, autoScaling, callback)
 
 inline fun Container.roundRect(
-    width: Double,
-    height: Double,
-    rx: Double,
-    ry: Double = rx,
+    width: Float,
+    height: Float,
+    rx: Float,
+    ry: Float = rx,
     fill: Paint = Colors.WHITE,
     stroke: Paint = Colors.WHITE,
     strokeThickness: Double = 0.0,
@@ -34,24 +34,24 @@ inline fun Container.roundRect(
 ) = RoundRect(width, height, rx, ry, fill, stroke, strokeThickness, autoScaling).addTo(this, callback)
 
 /**
- * A Rect [View] with rounded corners of size [width] and [height] with the initial [color].
+ * A Rect [View] with rounded corners of size [widthD] and [heightD] with the initial [color].
  */
 class RoundRect(
-    width: Double,
-    height: Double,
-    rx: Double,
-    ry: Double = rx,
+    width: Float,
+    height: Float,
+    rx: Float,
+    ry: Float = rx,
     fill: Paint = Colors.WHITE,
     stroke: Paint = Colors.WHITE,
     strokeThickness: Double = 0.0,
     autoScaling: Boolean = true
 ) : ShapeView(shape = VectorPath(), fill = fill, stroke = stroke, strokeThickness = strokeThickness, autoScaling = autoScaling) {
 
-    override var width: Double by uiObservable(width) { updateGraphics() }
-    override var height: Double by uiObservable(height) { updateGraphics() }
+    override var width: Float by uiObservable(width) { updateGraphics() }
+    override var height: Float by uiObservable(height) { updateGraphics() }
 
-    var rx: Double by uiObservable(rx) { updateGraphics() }
-    var ry: Double by uiObservable(ry) { updateGraphics() }
+    var rx: Float by uiObservable(rx) { updateGraphics() }
+    var ry: Float by uiObservable(ry) { updateGraphics() }
 
     /** The [color] of this [RoundRect]. Alias of [colorMul]. */
     var color: RGBA by ::colorMul
@@ -63,7 +63,7 @@ class RoundRect(
     private fun updateGraphics() {
         updatePath {
             clear()
-            roundRect(0.0, 0.0, this@RoundRect.width, this@RoundRect.height, this@RoundRect.rx, this@RoundRect.ry)
+            roundRect(0f, 0f, this@RoundRect.width, this@RoundRect.height, this@RoundRect.rx, this@RoundRect.ry)
             assumeConvex = true // Optimization to avoid computing convexity
         }
     }

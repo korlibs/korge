@@ -1,11 +1,11 @@
 package korlibs.korge.view.filter
 
-import korlibs.time.*
 import korlibs.graphics.*
 import korlibs.graphics.shader.*
 import korlibs.korge.render.*
 import korlibs.korge.view.property.*
 import korlibs.math.geom.*
+import korlibs.time.*
 import kotlin.math.*
 
 /**
@@ -52,7 +52,7 @@ class WaveFilter(
 
     override val programProvider: ProgramProvider get() = WaveFilter
 
-    override fun updateUniforms(ctx: RenderContext, filterScale: Double) {
+    override fun updateUniforms(ctx: RenderContext, filterScale: Float) {
         super.updateUniforms(ctx, filterScale)
         ctx[WaveUB].push {
             it[u_Time] = time.seconds

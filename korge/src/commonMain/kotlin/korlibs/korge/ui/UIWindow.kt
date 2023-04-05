@@ -1,32 +1,32 @@
 package korlibs.korge.ui
 
 import korlibs.datastructure.iterators.*
-import korlibs.time.*
-import korlibs.memory.*
+import korlibs.image.color.*
+import korlibs.image.text.*
 import korlibs.korge.annotations.*
 import korlibs.korge.input.*
 import korlibs.korge.render.*
 import korlibs.korge.tween.*
 import korlibs.korge.view.*
-import korlibs.render.*
-import korlibs.image.color.*
-import korlibs.image.text.*
 import korlibs.math.geom.*
 import korlibs.math.interpolation.*
+import korlibs.memory.*
+import korlibs.render.*
+import korlibs.time.*
 
 @KorgeExperimental
 inline fun Container.uiWindow(
     title: String,
-    width: Double = 256.0,
-    height: Double = 256.0,
+    width: Float = 256f,
+    height: Float = 256f,
     configure: @ViewDslMarker UIWindow.() -> Unit = {},
     block: @ViewDslMarker Container.(UIWindow) -> Unit = {},
 ): UIWindow = UIWindow(title, width, height).addTo(this).apply(configure).also { block(it.container.container, it) }
 
 @KorgeExperimental
-class UIWindow(title: String, width: Double = 256.0, height: Double = 256.0) : UIContainer(width, height) {
-    private val titleHeight = 32.0
-    private val buttonSeparation = 6.0
+class UIWindow(title: String, width: Float = 256f, height: Float = 256f) : UIContainer(width, height) {
+    private val titleHeight = 32f
+    private val buttonSeparation = 6f
     val isFocused get() = this.index == (parent?.numChildren ?: 0) -1
     private val colorBg = Colors["#6f6e85"]
     private val colorBgTitle = Colors["#6f6e85"]
@@ -61,7 +61,7 @@ class UIWindow(title: String, width: Double = 256.0, height: Double = 256.0) : U
         onClick { closeAnimated() }
     }
     var title: String by titleView::plainText
-    val container = uiScrollable(width, height - titleHeight).position(0.0, titleHeight).also {
+    val container = uiScrollable(width, height - titleHeight).position(0f, titleHeight).also {
         it.backgroundColor = Colors["#161a1d"]
     }
     var isCloseable: Boolean = true
@@ -115,12 +115,12 @@ class UIWindow(title: String, width: Double = 256.0, height: Double = 256.0) : U
             }
         }
 
-        private fun getExpectedX(): Double = window.width * anchor.doubleX + when (anchor.doubleX) {
+        private fun getExpectedX(): Double = window.widthD * anchor.doubleX + when (anchor.doubleX) {
             0.0 -> -2.0
             1.0 -> +2.0
             else -> 0.0
         }
-        private fun getExpectedY(): Double = window.height * anchor.doubleY + when (anchor.doubleY) {
+        private fun getExpectedY(): Double = window.heightD * anchor.doubleY + when (anchor.doubleY) {
             0.0 -> -2.0
             1.0 -> +2.0
             else -> 0.0
@@ -220,12 +220,12 @@ class UIWindow(title: String, width: Double = 256.0, height: Double = 256.0) : U
     }
 
     override fun onSizeChanged() {
-        bgMaterial.setSize(width, height)
-        bg.setSize(width, height)
+        bgMaterial.setSize(widthD, heightD)
+        bg.setSize(widthD, heightD)
         titleContainer.setSize(width, titleHeight)
-        container.setSize(width, height - titleHeight)
+        container.setSize(widthD, heightD - titleHeight)
         closeButton.position(width - titleHeight - buttonSeparation, buttonSeparation)
-        scaleHandlers.fastForEach { it.resized(width, height) }
+        scaleHandlers.fastForEach { it.resized(widthD, heightD) }
     }
 
     fun close() {
@@ -233,7 +233,7 @@ class UIWindow(title: String, width: Double = 256.0, height: Double = 256.0) : U
     }
 
     suspend fun closeAnimated() {
-        tween(this::height[0.0], this::alphaF[0.0f], time = 300.milliseconds)
+        tween(this::heightD[0.0], this::alphaF[0.0f], time = 300.milliseconds)
         removeFromParent()
     }
 }

@@ -50,7 +50,7 @@ class MainUITreeView : Scene() {
                     UITreeViewNode("hello"),
                     UITreeViewNode("hello"),
                     UITreeViewNode("hello"),
-                ), height = 16.0, genView = {
+                ), height = 16f, genView = {
                     UIText("$it").tooltip(tooltips, "Tooltip for $it")
                 })
             )

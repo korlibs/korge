@@ -1,13 +1,13 @@
 package korlibs.korge.ui
 
-import korlibs.korge.input.onClick
+import korlibs.image.font.*
+import korlibs.io.file.std.*
+import korlibs.korge.input.*
 import korlibs.korge.style.*
-import korlibs.korge.tests.ViewsForTesting
+import korlibs.korge.tests.*
 import korlibs.korge.view.position
-import korlibs.image.font.readBitmapFont
-import korlibs.io.file.std.resourcesVfs
 import korlibs.math.geom.*
-import kotlin.test.Test
+import kotlin.test.*
 
 class UiTest : ViewsForTesting() {
     @Test
@@ -33,13 +33,13 @@ class UiTest : ViewsForTesting() {
             }
             enable()
         }
-        uiOldScrollBar(256.0, 32.0, 0.0, 32.0, 64.0) {
+        uiOldScrollBar(256f, 32f, 0f, 32f, 64f) {
             position(64, 64)
             onChange {
                 println(it.ratio)
             }
         }
-        uiOldScrollBar(32.0, 256.0, 0.0, 16.0, 64.0) {
+        uiOldScrollBar(32f, 256f, 0f, 16f, 64f) {
             position(64, 128)
             onChange {
                 println(it.ratio)
@@ -65,7 +65,7 @@ class UiTest : ViewsForTesting() {
 
         val progress = uiProgressBar {
             position(64, 32)
-            current = 0.5
+            current = 0.5f
         }
 
     }

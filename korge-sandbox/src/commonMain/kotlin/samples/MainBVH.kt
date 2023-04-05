@@ -23,8 +23,8 @@ class MainBVH : Scene() {
         val rand = Random(0)
         val rects = arrayListOf<SolidRect>()
         for (n in 0 until 2_000) {
-            val x = rand[0.0, width]
-            val y = rand[0.0, height]
+            val x = rand[0.0, widthD]
+            val y = rand[0.0, heightD]
             val width = rand[1.0, 50.0]
             val height = rand[1.0, 50.0]
             val view = solidRect(width, height, rand[Colors.RED, Colors.BLUE]).xy(x, y)
@@ -38,14 +38,14 @@ class MainBVH : Scene() {
                 if (view.x < 0) {
                     view.movingDirection = +1
                 }
-                if (view.xD > stage!!.width) {
+                if (view.xD > stage!!.widthD) {
                     view.movingDirection = -1
                 }
                 view.xD += view.movingDirection
                 bvh.insertOrUpdate(view.getBounds(this), view)
             }
         }
-        val center = Point(width / 2, height / 2)
+        val center = Point(widthD / 2, heightD / 2)
         var dir = Point(-1, -1)
         var ray = Ray(center, dir)
         val statusText = text("", font = DefaultTtfFontAsBitmap)
@@ -60,7 +60,7 @@ class MainBVH : Scene() {
             var allObjectsSize = 0
             var rayObjectsSize = 0
             var rectangleObjectsSize = 0
-            val allObjects = bvh.search(Rectangle(0.0, 0.0, width, height))
+            val allObjects = bvh.search(Rectangle(0.0, 0.0, widthD, heightD))
             val time = measureTime {
                 val rayObjects = bvh.intersect(ray)
                 val rectangleObjects = bvh.search(selectedRectangle)

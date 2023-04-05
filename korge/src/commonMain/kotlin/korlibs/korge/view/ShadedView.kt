@@ -1,25 +1,25 @@
 package korlibs.korge.view
 
-import korlibs.memory.*
 import korlibs.graphics.*
 import korlibs.graphics.shader.*
 import korlibs.korge.render.*
 import korlibs.math.geom.*
+import korlibs.memory.*
 
 open class ShadedView(
     program: Program,
-    width: Double = 100.0,
-    height: Double = 100.0,
+    width: Float = 100f,
+    height: Float = 100f,
     coordsType: CoordsType = CoordsType.D_0_1,
-) : RectBase(0.0, 0.0) {
+) : RectBase(Anchor.TOP_LEFT) {
     //constructor(width: Double = 100.0, height: Double = 100.0, callback: ProgramBuilderDefault.() -> Unit) : this(
     //    buildShader(callback), width, height
     //)
-    override var width: Double = width; set(v) { field = v; dirtyVertices = true }
-    override var height: Double = height; set(v) { field = v; dirtyVertices = true }
+    override var width: Float = width; set(v) { field = v; dirtyVertices = true }
+    override var height: Float = height; set(v) { field = v; dirtyVertices = true }
 
-    override val bwidth: Double get() = width
-    override val bheight: Double get() = height
+    override val bwidth: Float get() = widthD.toFloat()
+    override val bheight: Float get() = heightD.toFloat()
 
     init {
         this.program = program

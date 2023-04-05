@@ -16,7 +16,7 @@ class DockingComponent(
     val offset: Point = Point(),
     val hook: (View) -> Unit
 ) {
-    val initialViewSize = Size(view.width, view.height)
+    val initialViewSize = Size(view.widthD, view.heightD)
     private var actualVirtualSize = Size(0, 0)
     private var targetSize = Size(0, 0)
 

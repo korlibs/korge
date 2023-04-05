@@ -11,23 +11,22 @@ import korlibs.korge.style.*
 import korlibs.korge.tween.*
 import korlibs.korge.view.*
 import korlibs.korge.view.property.*
-import korlibs.image.bitmap.*
 import korlibs.image.color.*
 import korlibs.image.text.*
 import korlibs.io.async.*
 import korlibs.math.geom.*
 
 inline fun Container.uiCheckBox(
-    width: Double = UI_DEFAULT_WIDTH,
-    height: Double = UI_DEFAULT_HEIGHT,
+    width: Float = UI_DEFAULT_WIDTH,
+    height: Float = UI_DEFAULT_HEIGHT,
     checked: Boolean = false,
     text: String = "CheckBox",
     block: @ViewDslMarker UICheckBox.() -> Unit = {}
 ): UICheckBox = UICheckBox(width, height, checked, text).addTo(this).apply(block)
 
 open class UICheckBox(
-    width: Double = UI_DEFAULT_WIDTH,
-    height: Double = UI_DEFAULT_HEIGHT,
+    width: Float = UI_DEFAULT_WIDTH,
+    height: Float = UI_DEFAULT_HEIGHT,
     checked: Boolean = false,
     text: String = "CheckBox",
 ) : UIBaseCheckBox<UICheckBox>(width, height, checked, text, UICheckBox) {
@@ -35,8 +34,8 @@ open class UICheckBox(
 }
 
 open class UIBaseCheckBox<T : UIBaseCheckBox<T>>(
-    width: Double = UI_DEFAULT_WIDTH,
-    height: Double = UI_DEFAULT_HEIGHT,
+    width: Float = UI_DEFAULT_WIDTH,
+    height: Float = UI_DEFAULT_HEIGHT,
     checked: Boolean = false,
     @ViewProperty
     var text: String = "CheckBox",
@@ -86,8 +85,8 @@ open class UIBaseCheckBox<T : UIBaseCheckBox<T>>(
 
     override fun updateState() {
         super.updateState()
-        val width = this.width
-        val height = this.height
+        val width = this.widthD
+        val height = this.heightD
 
         textView.text = RichTextData(textView.text.text, RichTextData.Style(
             font = styles.textFont,

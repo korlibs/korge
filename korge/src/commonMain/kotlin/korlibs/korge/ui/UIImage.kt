@@ -1,12 +1,12 @@
 package korlibs.korge.ui
 
-import korlibs.memory.*
+import korlibs.image.bitmap.*
+import korlibs.image.color.*
 import korlibs.korge.render.*
 import korlibs.korge.view.*
 import korlibs.korge.view.property.*
-import korlibs.image.bitmap.*
-import korlibs.image.color.*
 import korlibs.math.geom.*
+import korlibs.memory.*
 
 inline fun Container.uiImage(
     width: Number = UI_DEFAULT_WIDTH,
@@ -15,10 +15,10 @@ inline fun Container.uiImage(
     scaleMode: ScaleMode = ScaleMode.NO_SCALE,
     contentAnchor: Anchor = Anchor.TOP_LEFT,
     block: @ViewDslMarker UIImage.() -> Unit = {}
-): UIImage = UIImage(width.toDouble(), height.toDouble(), bitmap, scaleMode, contentAnchor).addTo(this).apply(block)
+): UIImage = UIImage(width.toFloat(), height.toFloat(), bitmap, scaleMode, contentAnchor).addTo(this).apply(block)
 
 class UIImage(
-    width: Double, height: Double,
+    width: Float, height: Float,
     bitmap: BmpSlice,
     scaleMode: ScaleMode = ScaleMode.NO_SCALE,
     contentAnchor: Anchor = Anchor.TOP_LEFT,
@@ -70,12 +70,12 @@ class UIImage(
 
             // @TODO: Can we generalize this to be placed in KorMA?
             val bitmapSize = bitmap.bounds.size.toFloat()
-            val finalRect = bitmapSize.applyScaleMode(Rectangle(0.0, 0.0, width, height), scaleMode, contentAnchor)
+            val finalRect = bitmapSize.applyScaleMode(Rectangle(0.0, 0.0, widthD, heightD), scaleMode, contentAnchor)
 
-            val realL = finalRect.left.clamp(0f, width.toFloat())
-            val realT = finalRect.top.clamp(0f, height.toFloat())
-            val realR = finalRect.right.clamp(0f, width.toFloat())
-            val realB = finalRect.bottom.clamp(0f, height.toFloat())
+            val realL = finalRect.left.clamp(0f, widthD.toFloat())
+            val realT = finalRect.top.clamp(0f, heightD.toFloat())
+            val realR = finalRect.right.clamp(0f, widthD.toFloat())
+            val realB = finalRect.bottom.clamp(0f, heightD.toFloat())
 
             val ratioL = realL.convertRange(finalRect.left, finalRect.right, 0f, 1f)
             val ratioR = realR.convertRange(finalRect.left, finalRect.right, 0f, 1f)
@@ -107,8 +107,8 @@ class UIImage(
                 ctx.getTex(Bitmaps.white),
                 0f,
                 0f,
-                width.toFloat(),
-                height.toFloat(),
+                widthD.toFloat(),
+                heightD.toFloat(),
                 globalMatrix,
                 colorMul = bgcolor
             )

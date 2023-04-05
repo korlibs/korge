@@ -1,31 +1,31 @@
 package korlibs.korge.ui
 
 import korlibs.datastructure.iterators.*
-import korlibs.time.*
-import korlibs.memory.*
+import korlibs.image.bitmap.*
+import korlibs.image.color.*
+import korlibs.io.async.*
 import korlibs.korge.component.*
 import korlibs.korge.input.*
 import korlibs.korge.internal.*
 import korlibs.korge.render.*
 import korlibs.korge.view.*
 import korlibs.korge.view.property.*
-import korlibs.image.bitmap.*
-import korlibs.image.color.*
-import korlibs.io.async.*
 import korlibs.math.geom.*
 import korlibs.math.interpolation.*
+import korlibs.memory.*
+import korlibs.time.*
 import kotlin.math.*
 
 inline fun Container.uiScrollable(
-    width: Double = 256.0,
-    height: Double = 256.0,
+    width: Float = 256f,
+    height: Float = 256f,
     config: UIScrollable.() -> Unit = {},
     cache: Boolean = true,
     block: @ViewDslMarker Container.(UIScrollable) -> Unit = {},
 ): UIScrollable = UIScrollable(width, height, cache)
     .addTo(this).apply(config).also { block(it.container, it) }
 
-open class UIScrollable(width: Double, height: Double, cache: Boolean = true) : UIView(
+open class UIScrollable(width: Float, height: Float, cache: Boolean = true) : UIView(
     width, height,
     cache = cache
 ) {
@@ -41,14 +41,14 @@ open class UIScrollable(width: Double, height: Double, cache: Boolean = true) : 
         var viewPos: Double by if (isHorizontal) view::xD else view::yD
             //get() = if (isHorizontal) view.x else view.y
             //set(value) = if (isHorizontal) view.x = value else view.y = value
-        var viewScaledSize: Double by if (isHorizontal) view::scaledWidth else view::scaledHeight
+        var viewScaledSize: Double by if (isHorizontal) view::scaledWidthD else view::scaledHeightD
             //get() = if (isHorizontal) view.scaledWidth else view.scaledHeight
             //set(value: Double) = if (isHorizontal) view.scaledWidth = value else view.scaledHeight = value
 
         val scrollRatio: Double get() = size / totalSize
         val scrollbarSize: Double get() = size * scrollRatio
 
-        val scaledSize get() = if (isHorizontal) view.scaledWidth  else view.scaledHeight
+        val scaledSize get() = if (isHorizontal) view.scaledWidthD  else view.scaledHeightD
         var containerPos: Double by if (isHorizontal) container::xD else container::yD
             //get() = if (isHorizontal) container.x else container.y
             //set(value) { if (isHorizontal) container.x = value else container.y = value }
@@ -56,9 +56,9 @@ open class UIScrollable(width: Double, height: Double, cache: Boolean = true) : 
         val overflowPixelsBegin get() = if (isHorizontal) scrollable.overflowPixelsLeft else scrollable.overflowPixelsTop
         val overflowPixelsEnd get() = if (isHorizontal) scrollable.overflowPixelsRight else scrollable.overflowPixelsBottom
         val onScrollPosChange = Signal<UIScrollable>()
-        val size: Double get() = if (isHorizontal) scrollable.width else scrollable.height
+        val size: Double get() = if (isHorizontal) scrollable.widthD else scrollable.heightD
         val shouldBeVisible get() = (size < totalSize)
-        val totalSize: Double get() = (container.getLocalBoundsOptimized().let { if (isHorizontal) max(scrollable.width, it.right.toDouble()) else max(scrollable.height, it.bottom.toDouble()) })
+        val totalSize: Double get() = (container.getLocalBoundsOptimized().let { if (isHorizontal) max(scrollable.widthD, it.right.toDouble()) else max(scrollable.heightD, it.bottom.toDouble()) })
             //.also { println("totalSize=$it") }
         val scrollArea get() = totalSize - size
         val positionEnd: Double get() = position + size
@@ -113,8 +113,8 @@ open class UIScrollable(width: Double, height: Double, cache: Boolean = true) : 
     //private val verticalScrollBar = solidRect(10.0, height / 2, Colors["#57577a"])
     //private val horizontalScrollBar = solidRect(width / 2, 10.0, Colors["#57577a"])
 
-    private val vertical = MyScrollbarInfo(this, UIDirection.VERTICAL, solidRect(10.0, height / 2, Colors["#57577a"]))
-    private val horizontal = MyScrollbarInfo(this, UIDirection.HORIZONTAL, solidRect(width / 2, 10.0, Colors["#57577a"]))
+    private val vertical = MyScrollbarInfo(this, UIDirection.VERTICAL, solidRect(10f, height / 2, Colors["#57577a"]))
+    private val horizontal = MyScrollbarInfo(this, UIDirection.HORIZONTAL, solidRect(width / 2, 10f, Colors["#57577a"]))
     private val infos = arrayOf(horizontal, vertical)
 
     private val totalHeight: Double get() = vertical.totalSize
@@ -137,8 +137,8 @@ open class UIScrollable(width: Double, height: Double, cache: Boolean = true) : 
     var frictionRate = 0.75
     @ViewProperty
     var overflowRate = 0.1
-    val overflowPixelsVertical get() = height * overflowRate
-    val overflowPixelsHorizontal get() = width * overflowRate
+    val overflowPixelsVertical get() = heightD * overflowRate
+    val overflowPixelsHorizontal get() = widthD * overflowRate
     val overflowPixelsTop get() = overflowPixelsVertical
     val overflowPixelsBottom get() = overflowPixelsVertical
     val overflowPixelsLeft get() = overflowPixelsHorizontal
@@ -167,7 +167,7 @@ open class UIScrollable(width: Double, height: Double, cache: Boolean = true) : 
     override fun renderInternal(ctx: RenderContext) {
         if (backgroundColor != Colors.TRANSPARENT) {
             ctx.useBatcher { batch ->
-                batch.drawQuad(ctx.getTex(Bitmaps.white), 0f, 0f, width.toFloat(), height.toFloat(), globalMatrix, colorMul = backgroundColor * renderColorMul)
+                batch.drawQuad(ctx.getTex(Bitmaps.white), 0f, 0f, widthD.toFloat(), heightD.toFloat(), globalMatrix, colorMul = backgroundColor * renderColorMul)
             }
         }
         super.renderInternal(ctx)
@@ -326,9 +326,9 @@ open class UIScrollable(width: Double, height: Double, cache: Boolean = true) : 
 
     override fun onSizeChanged() {
         super.onSizeChanged()
-        contentContainer.size(this.width, this.height)
-        vertical.view.position(width - 10.0, 0.0)
-        horizontal.view.position(0.0, height - 10.0)
+        contentContainer.size(this.widthD, this.heightD)
+        vertical.view.position(widthD - 10.0, 0.0)
+        horizontal.view.position(0.0, heightD - 10.0)
         //println(vertical.overflowPixelsEnd)
         //background.size(width, height)
         invalidateRender()

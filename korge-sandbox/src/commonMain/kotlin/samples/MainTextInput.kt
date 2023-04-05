@@ -1,14 +1,14 @@
 package samples
 
 import korlibs.event.*
+import korlibs.image.color.*
+import korlibs.image.font.*
+import korlibs.io.file.std.*
 import korlibs.korge.scene.*
 import korlibs.korge.text.*
 import korlibs.korge.ui.*
 import korlibs.korge.view.*
 import korlibs.korge.view.filter.*
-import korlibs.image.color.*
-import korlibs.image.font.*
-import korlibs.io.file.std.*
 import korlibs.math.geom.*
 import korlibs.math.geom.shape.*
 
@@ -27,20 +27,20 @@ class MainTextInput : Scene() {
         val emojiFont = resourcesVfs["noto-glyf_colr_1.ttf"].readTtfFont()
         val font = DefaultTtfFont.withFallback(emojiFont)
 
-        uiTextInput("HELLO", width = 256.0, height = 64.0) {
+        uiTextInput("HELLO", width = 256f, height = 64f) {
             this.textSize = 40.0
             this.font = font
             this.softKeyboardReturnKeyType = SoftKeyboardReturnKeyType.NEXT
         }.xy(200, 100)
 
-        uiTextInput("1234", width = 256.0, height = 64.0) {
+        uiTextInput("1234", width = 256f, height = 64f) {
             this.textSize = 40.0
             this.font = font
             this.softKeyboardType = SoftKeyboardType.NUMBER_PAD
             this.softKeyboardReturnKeyType = SoftKeyboardReturnKeyType.EMERGENCY_CALL
         }.xy(200, 200)
 
-        uiTextInput("test@gmail.com", width = 256.0, height = 64.0) {
+        uiTextInput("test@gmail.com", width = 256f, height = 64f) {
             this.textSize = 40.0
             this.font = font
             this.softKeyboardType = SoftKeyboardType.EMAIL_ADDRESS

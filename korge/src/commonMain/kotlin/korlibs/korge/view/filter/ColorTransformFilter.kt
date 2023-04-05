@@ -40,7 +40,7 @@ class ColorTransformFilter(colorTransform: ColorTransform) : ShaderFilter() {
 
     override val programProvider: ProgramProvider get() = ColorTransformFilter
 
-    override fun updateUniforms(ctx: RenderContext, filterScale: Double) {
+    override fun updateUniforms(ctx: RenderContext, filterScale: Float) {
         super.updateUniforms(ctx, filterScale)
         ctx[ColorTransformUB].push {
             it[u_ColorMul] = colorMul

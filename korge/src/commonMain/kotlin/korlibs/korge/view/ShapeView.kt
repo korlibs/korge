@@ -4,6 +4,7 @@ import korlibs.korge.internal.*
 import korlibs.korge.view.property.*
 import korlibs.image.color.*
 import korlibs.image.paint.*
+import korlibs.math.geom.*
 import korlibs.math.geom.vector.*
 
 inline fun Container.shapeView(
@@ -30,10 +31,9 @@ open class ShapeView(
         shapeView.autoScaling = autoScaling
     }
 
-    override var anchorX: Double by shapeView::anchorX
-    override var anchorY: Double by shapeView::anchorY
-    @KorgeInternal override val anchorDispX: Double get() = shapeView.anchorDispX
-    @KorgeInternal override val anchorDispY: Double get() = shapeView.anchorDispY
+    override var anchor: Anchor by shapeView::anchor
+    @KorgeInternal override val anchorDispX: Float get() = shapeView.anchorDispX
+    @KorgeInternal override val anchorDispY: Float get() = shapeView.anchorDispY
 
     @ViewProperty
     var antialiased: Boolean by shapeView::antialiased

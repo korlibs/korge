@@ -21,7 +21,7 @@ class MainMasks : Scene() {
         scale = 0.9
         //y -= 32.0
 
-        solidRect(width, height, Colors.GREEN)
+        solidRect(widthD, heightD, Colors.GREEN)
 
         val fill1 = LinearGradientPaint(0, 0, 200, 200).add(Colors.RED, Colors.BLUE)
         var maskView = fastEllipse(Size(100.0, 100.0)).xy(50, 50).visible(false)
@@ -54,8 +54,8 @@ class MainMasks : Scene() {
 
         val circle3 = circle(100.0, fill = fill1).centered
         launchImmediately {
-            val width = this.width
-            val height = this.height
+            val width = this.widthD
+            val height = this.heightD
             val path = buildVectorPath(VectorPath()) {
                 circle(Point(width * 0.5, height * 0.5), 300f)
             }

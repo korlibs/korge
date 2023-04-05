@@ -17,15 +17,15 @@ class MainTweens : ScaledScene(512, 512) {
 
         while (true) {
             tween(
-                rect1::xD[width - 100],
-                rect2::yD[height - 200],
+                rect1::xD[widthD - 100],
+                rect2::yD[heightD - 200],
                 time = 1.seconds
             )
 
             tween(
-                rect1::yD[height - 100],
-                rect2::xD[width - 100],
-                rect2::yD[height - 100],
+                rect1::yD[heightD - 100],
+                rect2::xD[widthD - 100],
+                rect2::yD[heightD - 100],
                 time = 1.seconds,
             )
 

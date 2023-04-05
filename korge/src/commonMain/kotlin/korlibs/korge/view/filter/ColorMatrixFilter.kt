@@ -16,7 +16,7 @@ import korlibs.math.geom.*
  * - [ColorMatrixFilter.GRAYSCALE_MATRIX] - Used to make the colors grey
  * - [ColorMatrixFilter.IDENTITY_MATRIX]  - Doesn't modify the colors at all
  */
-class ColorMatrixFilter(colorMatrix: Matrix4, blendRatio: Double = 1.0) : ShaderFilter() {
+class ColorMatrixFilter(colorMatrix: Matrix4, blendRatio: Float = 1f) : ShaderFilter() {
     object ColorMatrixUB : UniformBlock(fixedLocation = 5) {
         val u_ColorMatrix by mat4()
         val u_BlendRatio by float()
@@ -69,11 +69,11 @@ class ColorMatrixFilter(colorMatrix: Matrix4, blendRatio: Double = 1.0) : Shader
      * - Values between [0 and 1] would be an interpolation between those colors.
      * */
     @ViewProperty
-	var blendRatio: Double = blendRatio
+	var blendRatio: Float = blendRatio
 
     override val programProvider: ProgramProvider get() = ColorMatrixFilter
 
-    override fun updateUniforms(ctx: RenderContext, filterScale: Double) {
+    override fun updateUniforms(ctx: RenderContext, filterScale: Float) {
         ctx[ColorMatrixUB].push {
             it[u_ColorMatrix] = colorMatrix
             it[u_BlendRatio] = blendRatio

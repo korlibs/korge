@@ -9,8 +9,8 @@ import korlibs.time.*
 import kotlin.math.*
 
 inline fun Container.cameraContainer(
-    width: Double,
-    height: Double,
+    width: Float,
+    height: Float,
     clip: Boolean = true,
     noinline contentBuilder: (camera: CameraContainer) -> Container = { FixedSizeContainer(it.width, it.height) },
     noinline block: @ViewDslMarker CameraContainer.() -> Unit = {},
@@ -18,8 +18,8 @@ inline fun Container.cameraContainer(
 ) = CameraContainer(width, height, clip, contentBuilder, block).addTo(this).also { content(it.content) }
 
 class CameraContainer(
-    width: Double = 100.0,
-    height: Double = 100.0,
+    width: Float = 100f,
+    height: Float = 100f,
     clip: Boolean = true,
     contentBuilder: (camera: CameraContainer) -> Container = { FixedSizeContainer(it.width, it.height) },
     block: @ViewDslMarker CameraContainer.() -> Unit = {}
@@ -31,7 +31,7 @@ class CameraContainer(
 
     class ContentContainer(val cameraContainer: CameraContainer) : FixedSizeContainer(cameraContainer.width, cameraContainer.height), Reference {
         //out.setTo(0, 0, cameraContainer.width, cameraContainer.height)
-        override fun getLocalBoundsInternal() = Rectangle(0.0, 0.0, width, height)
+        override fun getLocalBoundsInternal() = Rectangle(0.0, 0.0, widthD, heightD)
     }
 
     val content: Container by lazy { contentBuilder(this) }
@@ -40,12 +40,12 @@ class CameraContainer(
     private val currentCamera = sourceCamera.copy()
     private val targetCamera = sourceCamera.copy()
 
-    override var width: Double = width
+    override var width: Float = width
         set(value) {
             field = value
             sync()
         }
-    override var height: Double = height
+    override var height: Float = height
         set(value) {
             field = value
             sync()
@@ -96,7 +96,7 @@ class CameraContainer(
     val onCompletedTransition = Signal<Unit>()
 
     fun getCurrentCamera(out: Camera = Camera()): Camera = out.copyFrom(currentCamera)
-    fun getDefaultCamera(out: Camera = Camera()): Camera = out.setTo(x = width / 2.0, y = height / 2.0, anchorX = 0.5, anchorY = 0.5)
+    fun getDefaultCamera(out: Camera = Camera()): Camera = out.setTo(x = widthD / 2.0, y = heightD / 2.0, anchorX = 0.5, anchorY = 0.5)
 
     companion object {
         fun getCameraRect(rect: Rectangle, scaleMode: ScaleMode = ScaleMode.SHOW_ALL, cameraWidth: Double, cameraHeight: Double, cameraAnchorX: Double, cameraAnchorY: Double, out: Camera = Camera()): Camera {
@@ -114,7 +114,7 @@ class CameraContainer(
         }
     }
 
-    fun getCameraRect(rect: Rectangle, scaleMode: ScaleMode = ScaleMode.SHOW_ALL, out: Camera = Camera()): Camera = getCameraRect(rect, scaleMode, width, height, cameraAnchorX, cameraAnchorY, out)
+    fun getCameraRect(rect: Rectangle, scaleMode: ScaleMode = ScaleMode.SHOW_ALL, out: Camera = Camera()): Camera = getCameraRect(rect, scaleMode, widthD, heightD, cameraAnchorX, cameraAnchorY, out)
     fun getCameraToFit(rect: Rectangle, out: Camera = Camera()): Camera = getCameraRect(rect, ScaleMode.SHOW_ALL, out)
     fun getCameraToCover(rect: Rectangle, out: Camera = Camera()): Camera = getCameraRect(rect, ScaleMode.COVER, out)
 
@@ -220,13 +220,13 @@ class CameraContainer(
         val realScaleX = cameraZoom
         val realScaleY = cameraZoom
 
-        val contentContainerX = width * cameraAnchorX
-        val contentContainerY = height * cameraAnchorY
+        val contentContainerX = widthD * cameraAnchorX
+        val contentContainerY = heightD * cameraAnchorY
 
         //println("content=${content.getLocalBoundsOptimized()}, contentContainer=${contentContainer.getLocalBoundsOptimized()}, cameraViewportBounds=$cameraViewportBounds")
 
-        content.xD = if (clampToBounds) -cameraX.clamp(contentContainerX + cameraViewportBounds.left, contentContainerX + cameraViewportBounds.width - width) else -cameraX
-        content.yD = if (clampToBounds) -cameraY.clamp(contentContainerY + cameraViewportBounds.top, contentContainerY + cameraViewportBounds.height - height) else -cameraY
+        content.xD = if (clampToBounds) -cameraX.clamp(contentContainerX + cameraViewportBounds.left, contentContainerX + cameraViewportBounds.width - widthD) else -cameraX
+        content.yD = if (clampToBounds) -cameraY.clamp(contentContainerY + cameraViewportBounds.top, contentContainerY + cameraViewportBounds.height - heightD) else -cameraY
         contentContainer.xD = contentContainerX
         contentContainer.yD = contentContainerY
         contentContainer.rotation = cameraAngle
@@ -244,10 +244,10 @@ class CameraContainer(
     fun setAnchorPosKeepingPos(anchor: MPoint) = setAnchorPosKeepingPos(anchor.x, anchor.y)
 
     fun setAnchorPosKeepingPos(anchorX: Double, anchorY: Double) {
-        setAnchorRatioKeepingPos(anchorX / width, anchorY / height)
+        setAnchorRatioKeepingPos(anchorX / widthD, anchorY / heightD)
     }
     fun setAnchorRatioKeepingPos(ratioX: Double, ratioY: Double) {
-        currentCamera.setAnchorRatioKeepingPos(ratioX, ratioY, width, height)
+        currentCamera.setAnchorRatioKeepingPos(ratioX, ratioY, widthD, heightD)
         sync()
     }
 }

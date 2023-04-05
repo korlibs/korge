@@ -1,20 +1,20 @@
 package korlibs.korge.view
 
-import korlibs.memory.*
-import korlibs.korge.render.*
-import korlibs.korge.ui.*
-import korlibs.korge.view.property.*
 import korlibs.image.bitmap.*
 import korlibs.image.font.*
 import korlibs.image.paint.*
 import korlibs.image.text.*
+import korlibs.korge.render.*
+import korlibs.korge.ui.*
+import korlibs.korge.view.property.*
 import korlibs.math.geom.*
+import korlibs.memory.*
 
 inline fun Container.textBlock(
     text: RichTextData = RichTextData("", textSize = 16.0, font = DefaultTtfFontAsBitmap),
     align: TextAlignment = TextAlignment.TOP_LEFT,
-    width: Double = 100.0,
-    height: Double = 100.0,
+    width: Float = 100f,
+    height: Float = 100f,
     block: @ViewDslMarker TextBlock.() -> Unit = {}
 ): TextBlock
     = TextBlock(text, align, width, height).addTo(this, block)
@@ -22,8 +22,8 @@ inline fun Container.textBlock(
 class TextBlock(
     text: RichTextData = RichTextData("", textSize = 16.0, font = DefaultTtfFontAsBitmap),
     align: TextAlignment = TextAlignment.TOP_LEFT,
-    width: Double = 100.0,
-    height: Double = 100.0,
+    width: Float = 100f,
+    height: Float = 100f,
 ) : UIView(width, height), ViewLeaf {
     private var dirty = true
 
@@ -92,7 +92,7 @@ class TextBlock(
     private fun ensureTexture() {
         if (!dirty) return
         dirty = false
-        val bmp = NativeImage(width.toIntCeil(), height.toIntCeil())
+        val bmp = NativeImage(widthD.toIntCeil(), heightD.toIntCeil())
         //println("ensureTexture: bmp=$bmp")
         if (image == null) {
             image = image(Bitmaps.transparent)
@@ -116,7 +116,7 @@ class TextBlock(
         if (allBitmap == true) {
             if (dirty || placements == null) {
                 dirty = false
-                placements = text.place(Rectangle(padding.left, padding.top, (width - padding.right).toFloat(), (height - padding.bottom).toFloat()), wordWrap, includePartialLines, ellipsis, fill, stroke, align, includeFirstLineAlways = includeFirstLineAlways)
+                placements = text.place(Rectangle(padding.left, padding.top, (widthD - padding.right).toFloat(), (heightD - padding.bottom).toFloat()), wordWrap, includePartialLines, ellipsis, fill, stroke, align, includeFirstLineAlways = includeFirstLineAlways)
             }
             image?.removeFromParent()
             image = null

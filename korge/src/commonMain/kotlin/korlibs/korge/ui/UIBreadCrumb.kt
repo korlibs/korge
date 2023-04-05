@@ -48,7 +48,7 @@ class UIBreadCrumb<T>(path: Path<T>) : UIView() {
             for ((index, path) in field.paths.withIndex()) {
                 if (index != 0) {
                     val text = text(">").autoSize(true).position(mx, 0.0)
-                    mx += text.width + 4.0
+                    mx += text.widthD + 4.0
                 }
                 val text = text(path.toString()).autoSize(true).position(mx, 0.0)
                 text.decorateOutOver { view, over ->
@@ -57,7 +57,7 @@ class UIBreadCrumb<T>(path: Path<T>) : UIView() {
                 text.onClick {
                     onClickPath(PathPosition(this, index, value))
                 }
-                mx += text.width + 4.0
+                mx += text.widthD + 4.0
             }
         }
 

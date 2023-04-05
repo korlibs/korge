@@ -91,7 +91,7 @@ class ViewsJvmTest : ViewsForTesting(log = true) {
     @Test
     fun testUIScrollableCacheTrue() = korgeScreenshotTest(SizeInt(40, 40)) {
         solidRect(40, 40, Colors.DARKBLUE).xy(0, 0)
-        uiScrollable(width = 20.0, height = 20.0, cache = true) { solidRect(0, 40) }
+        uiScrollable(width = 20f, height = 20f, cache = true) { solidRect(0, 40) }
         solidRect(40, 40, Colors.DARKRED).xy(20, 20)
         assertScreenshot()
     }
@@ -99,7 +99,7 @@ class ViewsJvmTest : ViewsForTesting(log = true) {
     @Test
     fun testUIScrollableCacheFalse() = korgeScreenshotTest(SizeInt(40, 40)) {
         solidRect(40, 40, Colors.DARKBLUE).xy(0, 0)
-        uiScrollable(width = 20.0, height = 20.0, cache = false) { solidRect(0, 40) }
+        uiScrollable(width = 20f, height = 20f, cache = false) { solidRect(0, 40) }
         solidRect(40, 40, Colors.DARKRED).xy(20, 20)
         assertScreenshot()
     }
@@ -115,7 +115,7 @@ class ViewsJvmTest : ViewsForTesting(log = true) {
     @Test
     fun testCachedTrue() = korgeScreenshotTest(SizeInt(40, 40)) {
         solidRect(1000, 1000, Colors.DARKBLUE).xy(0, 0)
-        fixedSizeCachedContainer(20.0, 20.0, cache = true) { solidRect(30, 25, Colors.GREEN) }
+        fixedSizeCachedContainer(20f, 20f, cache = true) { solidRect(30, 25, Colors.GREEN) }
         solidRect(1000, 1000, Colors.DARKRED).xy(20, 20)
         assertScreenshot()
     }
@@ -123,7 +123,7 @@ class ViewsJvmTest : ViewsForTesting(log = true) {
     @Test
     fun testCachedFalse() = korgeScreenshotTest(SizeInt(40, 40)) {
         solidRect(1000, 1000, Colors.DARKBLUE).xy(0, 0)
-        fixedSizeCachedContainer(20.0, 20.0, cache = false) { solidRect(30, 25, Colors.GREEN) }
+        fixedSizeCachedContainer(20f, 20f, cache = false) { solidRect(30, 25, Colors.GREEN) }
         solidRect(1000, 1000, Colors.DARKRED).xy(20, 20)
         assertScreenshot()
     }
@@ -131,7 +131,7 @@ class ViewsJvmTest : ViewsForTesting(log = true) {
     @Test
     fun testCachedFalseClipFalse() = korgeScreenshotTest(SizeInt(40, 40)) {
         solidRect(1000, 1000, Colors.DARKBLUE).xy(0, 0)
-        fixedSizeCachedContainer(20.0, 20.0, cache = false, clip = false) { solidRect(30, 25, Colors.GREEN) }
+        fixedSizeCachedContainer(20f, 20f, cache = false, clip = false) { solidRect(30, 25, Colors.GREEN) }
         solidRect(1000, 1000, Colors.DARKRED).xy(20, 20)
         assertScreenshot()
     }

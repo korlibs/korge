@@ -1,10 +1,10 @@
 package korlibs.korge.view.filter
 
 import korlibs.datastructure.*
+import korlibs.image.color.*
 import korlibs.korge.render.*
 import korlibs.korge.view.*
 import korlibs.korge.view.property.*
-import korlibs.image.color.*
 import korlibs.math.geom.*
 
 /**
@@ -44,8 +44,8 @@ open class ComposedFilter private constructor(
 
     override val allFilters: List<Filter> get() = filters.flatMap { it.allFilters }
 
-    override val recommendedFilterScale: Double get() {
-        var out = 1.0
+    override val recommendedFilterScale: Float get() {
+        var out = 1f
         filters.fastForEach { out *= it.recommendedFilterScale  }
         return out
     }
@@ -76,7 +76,7 @@ open class ComposedFilter private constructor(
         texHeight: Int,
         renderColorMul: RGBA,
         blendMode: BlendMode,
-        filterScale: Double,
+        filterScale: Float,
 	) {
         var mat = matrix
         var tex = texture
@@ -115,7 +115,7 @@ open class ComposedFilter private constructor(
         texHeight: Int,
         renderColorMul: RGBA,
         blendMode: BlendMode,
-        filterScale: Double,
+        filterScale: Float,
     ) {
         if (isIdentity) return IdentityFilter.render(ctx, matrix, texture, texWidth, texHeight, renderColorMul, blendMode, filterScale)
         renderIndex(ctx, matrix, texture, texWidth, texHeight, renderColorMul, blendMode, filterScale, filters.size - 1)
@@ -129,7 +129,7 @@ open class ComposedFilter private constructor(
         texHeight: Int,
         renderColorMul: RGBA,
         blendMode: BlendMode,
-        filterScale: Double,
+        filterScale: Float,
         level: Int,
     ) {
         stepBefore()

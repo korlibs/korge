@@ -16,8 +16,8 @@ class MainDpi : Scene() {
         val rect = solidRect(views.virtualPixelsPerCm * 2, views.virtualPixelsPerCm * 2).xy(0, 400)
 
         intervalAndNow(0.5.seconds) {
-            rect.width = views.virtualPixelsPerCm * 2
-            rect.height = views.virtualPixelsPerCm * 2
+            rect.widthD = views.virtualPixelsPerCm * 2
+            rect.heightD = views.virtualPixelsPerCm * 2
             text.text = """
             nativeWidth: ${views.nativeWidth}, ${views.nativeHeight}
             devicePixelRatio: ${views.devicePixelRatio}

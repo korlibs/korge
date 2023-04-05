@@ -1,15 +1,13 @@
 package korlibs.korge.view
 
 import assertEqualsFloat
+import korlibs.image.bitmap.*
+import korlibs.image.color.*
+import korlibs.korge.tests.*
 import korlibs.logger.*
-import korlibs.korge.tests.ViewsForTesting
-import korlibs.image.bitmap.Bitmap32
-import korlibs.image.color.Colors
 import korlibs.math.geom.*
-import kotlin.math.absoluteValue
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertTrue
+import kotlin.math.*
+import kotlin.test.*
 
 class Views2Test : ViewsForTesting(
     windowSize = SizeInt(1280, 720),
@@ -17,7 +15,7 @@ class Views2Test : ViewsForTesting(
 ) {
     val logger = Logger("Views2Test")
 
-    fun str() = "window(${gameWindow.width},${gameWindow.height}),virtual(${views.virtualWidth},${views.virtualHeight}),stage(${stage.xD},${stage.yD},${stage.width},${stage.height},${stage.scaleXD},${stage.scaleYD})"
+    fun str() = "window(${gameWindow.width},${gameWindow.height}),virtual(${views.virtualWidth},${views.virtualHeight}),stage(${stage.xD},${stage.yD},${stage.widthD},${stage.heightD},${stage.scaleXD},${stage.scaleYD})"
 
     @Test
     fun testScaleMode() = viewsTest {
@@ -109,8 +107,9 @@ class Views2Test : ViewsForTesting(
 
     @Test
     fun testImageLocalBounds() = viewsTest {
-        val image = image(Bitmap32(10, 10, Colors.TRANSPARENT)).size(100, 100).xy(50, 50)
-        assertEquals(MRectangle(0, 0, 10, 10).toStringBounds(), image.getLocalBoundsOptimizedAnchored().toStringBounds())
-        assertEquals(MRectangle(50, 50, 100, 100).toStringBounds(), image.getBounds(image.parent!!).toStringBounds())
+        val image = image(Bitmap32(10, 10, Colors.TRANSPARENT)).size(120, 100).xy(50, 50)
+        println("image=$image : ${image.scaleXY}")
+        assertEquals(Rectangle(0, 0, 10, 10).toStringBounds(), image.getLocalBoundsOptimizedAnchored().toStringBounds())
+        assertEquals(Rectangle(50, 50, 120, 100).toStringBounds(), image.getBounds(image.parent!!).toStringBounds())
     }
 }

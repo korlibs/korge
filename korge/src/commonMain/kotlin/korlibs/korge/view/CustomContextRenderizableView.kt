@@ -2,9 +2,9 @@ package korlibs.korge.view
 
 import korlibs.korge.render.*
 
-abstract class CustomContextRenderizableView(width: Double, height: Double) : RectBase() {
-    override var width: Double = width; set(v) { field = v; dirtyVertices = true }
-    override var height: Double = height; set(v) { field = v; dirtyVertices = true }
+abstract class CustomContextRenderizableView(width: Float, height: Float) : RectBase() {
+    override var width: Float = width; set(v) { field = v; dirtyVertices = true }
+    override var height: Float = height; set(v) { field = v; dirtyVertices = true }
 
     lateinit var ctx: RenderContext
     lateinit var ctx2d: RenderContext2D
@@ -18,5 +18,5 @@ abstract class CustomContextRenderizableView(width: Double, height: Double) : Re
         }
     }
 
-    abstract fun renderer(context: RenderContext2D, width: Double, height: Double)
+    abstract fun renderer(context: RenderContext2D, width: Float, height: Float)
 }

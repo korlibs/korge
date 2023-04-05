@@ -1,8 +1,7 @@
 package korlibs.korge.view
 
-import korlibs.graphics.log.AGLog
-import korlibs.korge.render.RenderContext
-import korlibs.korge.render.testRenderContext
+import korlibs.graphics.log.*
+import korlibs.korge.render.*
 import korlibs.math.geom.*
 import kotlin.test.*
 
@@ -16,7 +15,7 @@ class FixedSizeContainerTest {
             val ag: AGLog = AGLog(windowSize.width, windowSize.height)
             val bp: BoundsProvider = BoundsProvider.Base()
             bp.setBoundsInfo(virtualSize.width, virtualSize.height, windowSize)
-            val container = ClipContainer(30.0, 40.0).xy(110, 120)
+            val container = ClipContainer(30f, 40f).xy(110, 120)
             val log = arrayListOf<String>()
             container.addChild(object : View() {
                 override fun renderInternal(ctx: RenderContext) {

@@ -1,10 +1,10 @@
 package korlibs.korge.scene
 
+import korlibs.image.bitmap.*
 import korlibs.korge.render.*
 import korlibs.korge.tween.*
 import korlibs.korge.view.*
 import korlibs.korge.view.filter.*
-import korlibs.image.bitmap.*
 import korlibs.math.interpolation.*
 import kotlin.native.concurrent.*
 
@@ -29,7 +29,7 @@ class TransitionView() : Container() {
     /** Moves [next] to [prev], sets [next] and starts the [ratio] to 0.0 to start the transition. */
 	fun startNewTransition(next: View, transition: Transition = this.transition) {
         this.transition = transition
-		this.ratio = 0.0
+		this.ratio = 0f
         this.transitionProcess = transition.create()
 		setViews(this.next, next)
         this.transitionProcess.start(this.prev, this.next)
@@ -38,7 +38,7 @@ class TransitionView() : Container() {
     override fun toString(): String = super.toString() + ":ratio=$ratio:transition=$transition"
 
     fun endTransition() {
-        this.ratio = 1.0
+        this.ratio = 1f
         this.transitionProcess.end(this.prev, this.next)
         setViews(dummyView(), next)
     }
@@ -52,8 +52,8 @@ class TransitionView() : Container() {
 
 	override fun renderInternal(ctx: RenderContext) {
 		when {
-			ratio <= 0.0 -> prev.render(ctx)
-			ratio >= 1.0 -> next.render(ctx)
+			ratio <= 0f -> prev.render(ctx)
+			ratio >= 1f -> next.render(ctx)
 			else -> this.transitionProcess.render(ctx, prev, next, ratio)
 		}
 	}
@@ -62,23 +62,23 @@ class TransitionView() : Container() {
 interface TransitionProcess {
     fun start(prev: View, next: View) = Unit
     fun end(prev: View, next: View) = Unit
-    fun render(ctx: RenderContext, prev: View, next: View, ratio: Double) = Unit
+    fun render(ctx: RenderContext, prev: View, next: View, ratio: Float) = Unit
 }
 
 interface Transition {
     fun create(): TransitionProcess
 }
 
-fun TransitionProcess(name: String = "Transition", render: (ctx: RenderContext, prev: View, next: View, ratio: Double) -> Unit): TransitionProcess =
+fun TransitionProcess(name: String = "Transition", render: (ctx: RenderContext, prev: View, next: View, ratio: Float) -> Unit): TransitionProcess =
     object : TransitionProcess {
-        override fun render(ctx: RenderContext, prev: View, next: View, ratio: Double) = render(ctx, prev, next, ratio)
+        override fun render(ctx: RenderContext, prev: View, next: View, ratio: Float) = render(ctx, prev, next, ratio)
         override fun toString(): String = name
     }
 
-fun Transition(name: String = "Transition", render: (ctx: RenderContext, prev: View, next: View, ratio: Double) -> Unit): Transition {
+fun Transition(name: String = "Transition", render: (ctx: RenderContext, prev: View, next: View, ratio: Float) -> Unit): Transition {
     return object : Transition, TransitionProcess {
         override fun create(): TransitionProcess = this
-        override fun render(ctx: RenderContext, prev: View, next: View, ratio: Double) = render(ctx, prev, next, ratio)
+        override fun render(ctx: RenderContext, prev: View, next: View, ratio: Float) = render(ctx, prev, next, ratio)
         override fun toString(): String = name
     }
 }
@@ -106,7 +106,7 @@ fun Transition.withEasing(easing: Easing) = object : Transition {
         return object : TransitionProcess {
             override fun start(prev: View, next: View) = process.start(prev, next)
             override fun end(prev: View, next: View) = process.end(prev, next)
-            override fun render(ctx: RenderContext, prev: View, next: View, ratio: Double) =
+            override fun render(ctx: RenderContext, prev: View, next: View, ratio: Float) =
                 process.render(ctx, prev, next, easing(ratio))
         }
     }
@@ -135,7 +135,7 @@ val AlphaTransition = Transition("AlphaTransition") { ctx, prev, next, ratio ->
 fun MaskTransition(
     transition: TransitionFilter.Transition = TransitionFilter.Transition.CIRCULAR,
     reversed: Boolean = false,
-    spread: Double = 1.0,
+    spread: Float = 1f,
     filtering: Boolean = true,
 ) = TransitionCreate("MaskTransition") {
     val filter = TransitionFilter(transition, reversed, spread, filtering = filtering)

@@ -1,24 +1,25 @@
 package korlibs.korge.ui
 
 import korlibs.datastructure.*
+import korlibs.image.bitmap.*
 import korlibs.korge.input.*
 import korlibs.korge.render.*
 import korlibs.korge.view.*
-import korlibs.image.bitmap.*
 import korlibs.math.geom.*
 import kotlin.math.*
 
 open class UIView(
-	width: Double = 90.0,
-	height: Double = 32.0,
+	width: Float = 90f,
+	height: Float = 32f,
     cache: Boolean = false
 ) : FixedSizeCachedContainer(width, height, cache = cache) {
-    private var _width: Double = width
-    private var _height: Double = height
-	override var width: Double
+    private var _width: Float = width
+    private var _height: Float = height
+
+    override var width: Float
         get() = _width
         set(value) { if (_width != value) { _width = value; onSizeChanged() } }
-	override var height: Double
+    override var height: Float
         get() = _height
         set(value) { if (_height != value) { _height = value; onSizeChanged() } }
 
@@ -35,14 +36,15 @@ open class UIView(
         }
     }
 
-    override fun setSize(width: Double, height: Double) {
+    override fun setSize(size: Size) {
+        val (width, height) = size
         if (width == this._width && height == this._height) return
         _width = width
         _height = height
         onSizeChanged()
     }
 
-    override fun getLocalBoundsInternal(): Rectangle = Rectangle(0.0, 0.0, width, height)
+    override fun getLocalBoundsInternal(): Rectangle = Rectangle(0.0, 0.0, widthD, heightD)
 
     open var enabled: Boolean
 		get() = mouseEnabled
@@ -103,8 +105,8 @@ open class UIView(
 }
 
 open class UIFocusableView(
-    width: Double = 90.0,
-    height: Double = 32.0,
+    width: Float = 90f,
+    height: Float = 32f,
     cache: Boolean = false
 ) : UIView(width, height, cache), UIFocusable {
     override val UIFocusManager.Scope.focusView: View get() = this@UIFocusableView

@@ -59,7 +59,7 @@ class FlagFilter(
 
     override val programProvider: ProgramProvider get() = FlagFilter
 
-    override fun updateUniforms(ctx: RenderContext, filterScale: Double) {
+    override fun updateUniforms(ctx: RenderContext, filterScale: Float) {
         super.updateUniforms(ctx, filterScale)
         ctx[FlagUB].push {
             it[u_amplitude] = amplitude

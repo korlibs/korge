@@ -1,15 +1,15 @@
 package korlibs.korge.view
 
 import assertEqualsFloat
-import korlibs.time.*
-import korlibs.logger.*
 import korlibs.event.*
-import korlibs.korge.tests.*
-import korlibs.korge.tween.*
 import korlibs.image.bitmap.*
 import korlibs.image.color.*
 import korlibs.io.util.*
+import korlibs.korge.tests.*
+import korlibs.korge.tween.*
+import korlibs.logger.*
 import korlibs.math.geom.*
+import korlibs.time.*
 import kotlin.test.*
 
 class ViewsTest : ViewsForTesting() {
@@ -187,12 +187,12 @@ class ViewsTest : ViewsForTesting() {
         val s2 = SolidRect(100, 100, Colors.RED)
         c += s1.apply { xD = 0.0 }
         c += s2.apply { xD = 100.0 }
-        assertEquals(200, c.width.toInt())
-        assertEquals(100, c.height.toInt())
+        assertEquals(200, c.widthD.toInt())
+        assertEquals(100, c.heightD.toInt())
         assertEquals(1.0, c.scaleXD)
-        c.scaledWidth = 400.0
-        assertEquals(400, c.scaledWidth.toInt())
-        assertEquals(100, c.scaledHeight.toInt())
+        c.scaledWidthD = 400.0
+        assertEquals(400, c.scaledWidthD.toInt())
+        assertEquals(100, c.scaledHeightD.toInt())
         assertEquals(2.0, c.scaleXD)
     }
 
@@ -233,7 +233,7 @@ class ViewsTest : ViewsForTesting() {
             assertEqualsFloat(Rectangle(0, 0, 32, 32), rect3.globalBounds, message = "rect3")
         }
 
-        RoundRect(32.0, 24.0, 5.0, 5.0, Colors.RED).also { addChild(it) }.also { rect3 ->
+        RoundRect(32f, 24f, 5f, 5f, Colors.RED).also { addChild(it) }.also { rect3 ->
             assertEqualsFloat(Rectangle(0, 0, 32, 24), rect3.globalBounds, message = "rect4")
         }
 
@@ -250,7 +250,7 @@ class ViewsTest : ViewsForTesting() {
 
     @Test
     fun testRoundRect() = viewsTest {
-        RoundRect(32.0, 24.0, 5.0, 5.0, Colors.RED).also { addChild(it) }.also { rect3 ->
+        RoundRect(32f, 24f, 5f, 5f, Colors.RED).also { addChild(it) }.also { rect3 ->
             assertEquals(Rectangle(0, 0, 32, 24), rect3.getLocalBounds(), message = "local")
             assertEquals(Rectangle(0, 0, 32, 24), rect3.globalBounds, message = "global")
         }

@@ -102,9 +102,9 @@ class Bunny(tex: BmpSlice) : FastSprite(tex) {
 
         addBunny(startBunnyCount)
 
-        val maxX = width.toFloat()
+        val maxX = widthD.toFloat()
         val minX = 0f
-        val maxY = height.toFloat()
+        val maxY = heightD.toFloat()
         val minY = 0f
         val gravity = 0.5f // 1.5f
 

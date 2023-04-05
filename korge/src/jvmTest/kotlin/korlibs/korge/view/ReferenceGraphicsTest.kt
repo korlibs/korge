@@ -1,18 +1,17 @@
 package korlibs.korge.view
 
-import korlibs.korge.annotations.*
-import korlibs.korge.testing.*
-import korlibs.korge.view.fast.*
-import korlibs.korge.view.filter.*
-import korlibs.korge.view.vector.*
 import korlibs.image.bitmap.*
 import korlibs.image.color.*
 import korlibs.image.format.*
 import korlibs.image.paint.*
 import korlibs.image.vector.*
 import korlibs.io.file.std.*
+import korlibs.korge.annotations.*
+import korlibs.korge.testing.*
+import korlibs.korge.view.fast.*
+import korlibs.korge.view.filter.*
+import korlibs.korge.view.vector.*
 import korlibs.math.geom.*
-import korlibs.math.geom.vector.*
 import kotlin.test.*
 
 class ReferenceGraphicsTest {
@@ -161,7 +160,7 @@ class ReferenceGraphicsTest {
     //@Ignore
     fun testBlurFilterInEmptyContainer() = korgeScreenshotTest(SizeInt(512, 512)) {
         val view = solidRect(100, 100) {
-            filter = BlurFilter(4.0)
+            filter = BlurFilter(4f)
         }
         assertScreenshot(this, "blur", includeBackground = true)
     }

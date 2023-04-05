@@ -1,14 +1,14 @@
 package samples
 
-import korlibs.time.*
-import korlibs.korge.animate.*
-import korlibs.korge.scene.Scene
-import korlibs.korge.tween.get
-import korlibs.korge.view.*
-import korlibs.korge.view.filter.*
 import korlibs.image.format.*
 import korlibs.io.file.std.*
-import korlibs.math.interpolation.Easing
+import korlibs.korge.animate.*
+import korlibs.korge.scene.*
+import korlibs.korge.tween.*
+import korlibs.korge.view.*
+import korlibs.korge.view.filter.*
+import korlibs.math.interpolation.*
+import korlibs.time.*
 
 class MainFiltersSample : Scene() {
     override suspend fun SContainer.sceneMain() {
@@ -30,7 +30,7 @@ class MainFiltersSample : Scene() {
 
         //val color = ColorMatrixFilter(ColorMatrixFilter.GRAYSCALE_MATRIX)
         //val color = TransitionFilter(TransitionFilter.Transition.DIAGONAL1, reversed = false)
-        val color = TransitionFilter(TransitionFilter.Transition.SWEEP, reversed = false, spread = 1.0)
+        val color = TransitionFilter(TransitionFilter.Transition.SWEEP, reversed = false, spread = 1f)
         //val color = TransitionFilter(TransitionFilter.Transition.CIRCULAR, reversed = false)
         //val color = TransitionFilter(time = 1.0)
         image(bitmap) {

@@ -1,16 +1,16 @@
 package samples
 
 import korlibs.datastructure.*
-import korlibs.korge.input.*
-import korlibs.korge.scene.*
-import korlibs.korge.view.*
-import korlibs.korge.view.camera.*
-import korlibs.korge.view.tiles.*
 import korlibs.image.atlas.*
 import korlibs.image.bitmap.*
 import korlibs.image.color.*
 import korlibs.image.tiles.*
 import korlibs.io.util.*
+import korlibs.korge.input.*
+import korlibs.korge.scene.*
+import korlibs.korge.view.*
+import korlibs.korge.view.camera.*
+import korlibs.korge.view.tiles.*
 import korlibs.math.geom.*
 import korlibs.math.geom.MPoint.Companion.Zero
 import kotlin.math.*
@@ -27,7 +27,7 @@ class MainTilemapTest : Scene() {
         lateinit var tilemap: TileMap
 
         //filters(IdentityFilter)
-        solidRect(width, height, Colors["#3e0000"])
+        solidRect(widthD, heightD, Colors["#3e0000"])
         val cameraContainer = cameraContainer(width, height) {
             tilemap = tileMap(donutMap, tileSet).centerOn(this)
         }//.filters(BlurFilter())

@@ -1,20 +1,20 @@
 package korlibs.korge.ui
 
 import korlibs.event.*
+import korlibs.image.color.*
+import korlibs.image.font.*
+import korlibs.io.async.*
 import korlibs.korge.annotations.*
 import korlibs.korge.style.*
 import korlibs.korge.text.*
 import korlibs.korge.view.*
-import korlibs.image.color.*
-import korlibs.image.font.*
-import korlibs.io.async.*
 import korlibs.math.geom.*
 
 @KorgeExperimental
 inline fun Container.uiTextInput(
     initialText: String = "",
-    width: Double = 128.0,
-    height: Double = 24.0,
+    width: Float = 128f,
+    height: Float = 24f,
     block: @ViewDslMarker UITextInput.() -> Unit = {}
 ): UITextInput = UITextInput(initialText, width, height)
     .addTo(this).also { block(it) }
@@ -23,7 +23,7 @@ inline fun Container.uiTextInput(
  * Simple Single Line Text Input
  */
 @KorgeExperimental
-class UITextInput(initialText: String = "", width: Double = 128.0, height: Double = 24.0) :
+class UITextInput(initialText: String = "", width: Float = 128f, height: Float = 24f) :
     UIView(width, height),
     //UIFocusable,
     ISoftKeyboardConfig by SoftKeyboardConfig() {
@@ -64,8 +64,8 @@ class UITextInput(initialText: String = "", width: Double = 128.0, height: Doubl
         }
 
     override fun onSizeChanged() {
-        bg.setSize(width, height)
-        container.bounds(Rectangle(0.0, 0.0, width, height).without(padding))
+        bg.setSize(widthD, heightD)
+        container.bounds(Rectangle(0.0, 0.0, widthD, heightD).without(padding))
     }
 
     init {
@@ -82,5 +82,5 @@ class UITextInput(initialText: String = "", width: Double = 128.0, height: Doubl
 }
 
 var ViewStyles.uiTextInputBackgroundRender: ViewRenderer by ViewStyle(ViewRenderer {
-    ctx2d.rect(0.0, 0.0, width, height, Colors.WHITE)
+    ctx2d.rect(0.0, 0.0, widthD, heightD, Colors.WHITE)
 })

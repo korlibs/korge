@@ -1,26 +1,26 @@
 package korlibs.korge.ui
 
-import korlibs.time.*
 import korlibs.event.*
-import korlibs.korge.animate.*
-import korlibs.korge.input.*
-import korlibs.korge.tween.*
-import korlibs.korge.view.*
-import korlibs.korge.view.property.*
-import korlibs.render.*
 import korlibs.image.bitmap.*
 import korlibs.image.color.*
 import korlibs.image.font.*
 import korlibs.image.text.*
 import korlibs.io.async.*
+import korlibs.korge.animate.*
+import korlibs.korge.input.*
+import korlibs.korge.tween.*
+import korlibs.korge.view.*
+import korlibs.korge.view.property.*
 import korlibs.math.geom.*
 import korlibs.math.interpolation.*
+import korlibs.render.*
+import korlibs.time.*
 import kotlin.math.*
 
 inline fun Container.uiButton(
     label: String = "",
-    width: Double = UI_DEFAULT_WIDTH,
-    height: Double = UI_DEFAULT_HEIGHT,
+    width: Float = UI_DEFAULT_WIDTH,
+    height: Float = UI_DEFAULT_HEIGHT,
     icon: BmpSlice? = null,
     block: @ViewDslMarker UIButton.() -> Unit = {}
 ): UIButton = UIButton(width, height, label, icon).addTo(this).apply(block)
@@ -30,11 +30,11 @@ inline fun Container.uiButton(
     size: Size = UI_DEFAULT_SIZE,
     icon: BmpSlice? = null,
     block: @ViewDslMarker UIButton.() -> Unit = {}
-): UIButton = UIButton(size.widthD, size.heightD, label, icon).addTo(this).apply(block)
+): UIButton = UIButton(size.width, size.height, label, icon).addTo(this).apply(block)
 
 open class UIToggleableButton(
-    width: Double = 128.0,
-    height: Double = 32.0,
+    width: Float = 128f,
+    height: Float = 32f,
     text: String = "",
     icon: BmpSlice? = null,
     richText: RichTextData? = null,
@@ -43,8 +43,8 @@ open class UIToggleableButton(
 }
 
 open class UIButton(
-	width: Double = 128.0,
-	height: Double = 32.0,
+	width: Float = 128f,
+	height: Float = 32f,
     text: String = "",
     icon: BmpSlice? = null,
     richText: RichTextData? = null,
@@ -59,7 +59,7 @@ open class UIButton(
     private var _radiusRatio: Ratio = Ratio.NaN
     private var _radius: Float = 6f
 
-    private val halfSide: Int get() = min(width, height).toInt() / 2
+    private val halfSide: Int get() = min(widthD, heightD).toInt() / 2
 
     var radiusRatio: Ratio
         get() = if (!_radiusRatio.isNaN()) _radiusRatio else Ratio(_radius, halfSide.toFloat())
@@ -163,8 +163,8 @@ open class UIButton(
         }
 
     private fun setInitialState() {
-        val width = width
-        val height = height
+        val width = widthD
+        val height = heightD
         background.setSize(width, height)
         //background.setSize(width, height)
         background.radius = RectCorners(this.radius)
@@ -261,7 +261,7 @@ open class UIButton(
     }
 
     fun simulateClick(views: Views) {
-        touch.simulateTapAt(views, localToGlobal(Point(width * 0.5, height * 0.5)).mutable)
+        touch.simulateTapAt(views, localToGlobal(Point(widthD * 0.5, heightD * 0.5)).mutable)
     }
 
     open fun updatedUIButton(down: Boolean? = null, over: Boolean? = null, px: Double = 0.0, py: Double = 0.0, immediate: Boolean = false) {

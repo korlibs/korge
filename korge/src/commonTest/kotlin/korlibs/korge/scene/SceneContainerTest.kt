@@ -1,10 +1,10 @@
 package korlibs.korge.scene
 
-import korlibs.time.*
+import korlibs.image.color.*
 import korlibs.korge.tests.*
 import korlibs.korge.view.*
 import korlibs.korge.view.filter.*
-import korlibs.image.color.*
+import korlibs.time.*
 import kotlin.test.*
 
 class SceneContainerTest : ViewsForTesting() {
@@ -68,7 +68,7 @@ class SceneContainerTest : ViewsForTesting() {
         sceneContainer.changeTo({ EmptyScene() }, time = 0.5.seconds, transition = MaskTransition(TransitionFilter.Transition.HORIZONTAL))
         val transitionView = sceneContainer.firstChild as TransitionView
         assertEquals("MaskTransition", transitionView.transition.toString())
-        assertEquals(1.0, transitionView.ratio)
+        assertEquals(1f, transitionView.ratio)
         val endTime = time
         assertTrue { endTime - startTime in 0.5.seconds..0.75.seconds }
     }
@@ -84,7 +84,7 @@ class SceneContainerTest : ViewsForTesting() {
         sceneContainer.changeTo<EmptyScene>(time = 0.5.seconds, transition = MaskTransition(TransitionFilter.Transition.HORIZONTAL))
         val transitionView = sceneContainer.firstChild as TransitionView
         assertEquals("MaskTransition", transitionView.transition.toString())
-        assertEquals(1.0, transitionView.ratio)
+        assertEquals(1f, transitionView.ratio)
         val endTime = time
         assertTrue { endTime - startTime in 0.5.seconds..0.75.seconds }
     }

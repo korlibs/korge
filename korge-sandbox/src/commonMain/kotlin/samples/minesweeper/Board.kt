@@ -1,13 +1,13 @@
 package samples.minesweeper
 
-import korlibs.time.*
 import korlibs.audio.sound.*
-import korlibs.korge.render.*
-import korlibs.korge.view.*
 import korlibs.image.bitmap.*
 import korlibs.image.text.*
 import korlibs.io.lang.*
+import korlibs.korge.render.*
+import korlibs.korge.view.*
 import korlibs.math.random.*
+import korlibs.time.*
 import kotlin.random.*
 
 // Process of the board
@@ -38,8 +38,8 @@ class Board(
 	var lastx: Int = 0
 	var lasty: Int = 0
 
-	override var width = bwidth * imageSet.height.toDouble()
-	override var height = bheight * imageSet.height.toDouble()
+	override var width = bwidth * imageSet.height.toFloat()
+	override var height = bheight * imageSet.height.toFloat()
 
 	init {
 		// Creating text with time
@@ -47,7 +47,7 @@ class Board(
 		//timeText = Text("", 50, 50, Text.Align.center, Text.Align.middle, Color.white, Font.fromResource("font.ttf", 40));
 		val FONT_HEIGHT = 32.0
         timeText = text("00:00", font = views.minesweeperFont, textSize = FONT_HEIGHT).apply {
-			centerXBetween(0.0, this@Board.width)
+			centerXBetween(0.0, this@Board.widthD)
 			yD = -FONT_HEIGHT - 16
 			alignment = TextAlignment.CENTER
 		}
@@ -56,8 +56,8 @@ class Board(
 		//x = screen.width / 2 - width / 2
 		//y = screen.height / 2 - (height - 10 - FONT_HEIGHT) / 2
 
-        xD = scene.sceneWidth / 2 - width / 2
-        yD = scene.sceneHeight / 2 - (height - 10 - FONT_HEIGHT) / 2
+        xD = scene.sceneWidth / 2 - widthD / 2
+        yD = scene.sceneHeight / 2 - (heightD - 10 - FONT_HEIGHT) / 2
 
 		//centerOnStage()
 		yD += FONT_HEIGHT / 2

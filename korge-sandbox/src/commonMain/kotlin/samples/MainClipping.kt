@@ -37,7 +37,7 @@ class MainClipping : Scene() {
                 solidRect(512, 512, Colors.BLUE)
             }
         }, MaskTransition(TransitionFilter.Transition.CIRCULAR))
-        tv.ratio = 0.5
+        tv.ratio = 0.5f
         addChild(tv)
 
         gpuShapeView({

@@ -9,24 +9,24 @@ import korlibs.memory.*
 @KorgeExperimental
 inline fun Container.uiVerticalList(
     provider: UIVerticalList.Provider,
-    width: Double = 256.0,
+    width: Float = 256f,
     block: @ViewDslMarker Container.(UIVerticalList) -> Unit = {}
 ): UIVerticalList = UIVerticalList(provider, width)
     .addTo(this).also { block(it) }
 
 @KorgeExperimental
-open class UIVerticalList(provider: Provider, width: Double = 200.0) : UIView(width) {
+open class UIVerticalList(provider: Provider, width: Float = 200f) : UIView(width) {
     interface Provider {
         val numItems: Int
-        val fixedHeight: Double?
-        fun getItemY(index: Int): Double = (fixedHeight ?: 20.0) * index
-        fun getItemHeight(index: Int): Double
+        val fixedHeight: Float?
+        fun getItemY(index: Int): Float = (fixedHeight ?: 20f) * index
+        fun getItemHeight(index: Int): Float
         fun getItemView(index: Int, vlist: UIVerticalList): View
 
         object Dummy : Provider {
             override val numItems: Int get() = 0
-            override val fixedHeight: Double? = null
-            override fun getItemHeight(index: Int): Double = 0.0
+            override val fixedHeight: Float? = null
+            override fun getItemHeight(index: Int): Float = 0f
             override fun getItemView(index: Int, vlist: UIVerticalList): View = DummyView()
         }
     }
@@ -109,7 +109,7 @@ open class UIVerticalList(provider: Provider, width: Double = 200.0) : UIView(wi
                         val itemHeight = provider.getItemHeight(index)
                         provider.getItemView(index, this)
                             .also { addChild(it) }
-                            .position(0.0, provider.getItemY(index))
+                            .position(0f, provider.getItemY(index))
                             .size(width, itemHeight)
                     }
                     view.zIndex = index.toFloat()
@@ -120,7 +120,7 @@ open class UIVerticalList(provider: Provider, width: Double = 200.0) : UIView(wi
                     //println(":: ${view.localToGlobalY(0.0, view.height)}, ${area.bottom}")
 
                     //if (view.localToRenderY(0.0, view.height) >= area.bottom) {
-                    if (view.localToGlobal(Point(0.0, view.height)).yD >= area.bottom) {
+                    if (view.localToGlobal(Point(0.0, view.heightD)).yD >= area.bottom) {
                         //if (view.localToWindowY(stage!!.views, 0.0, view.height) >= area.bottom) {
                         //if (false) {
                         //println("localViewY=localViewY, globalY=${view.localToGlobalY(0.0, view.height)}")

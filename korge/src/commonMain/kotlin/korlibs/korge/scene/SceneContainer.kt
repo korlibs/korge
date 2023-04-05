@@ -1,33 +1,22 @@
 package korlibs.korge.scene
 
-import korlibs.datastructure.iterators.fastForEach
-import korlibs.time.TimeSpan
-import korlibs.time.seconds
-import korlibs.logger.*
-import korlibs.korge.ReloadEvent
-import korlibs.korge.tween.get
-import korlibs.korge.tween.tween
-import korlibs.korge.ui.UIView
-import korlibs.korge.view.Container
-import korlibs.korge.view.FixedSizeContainer
-import korlibs.korge.view.View
-import korlibs.korge.view.Views
-import korlibs.korge.view.addTo
-import korlibs.korge.view.descendantsWith
-import korlibs.korge.view.findFirstAscendant
-import korlibs.korge.view.property.*
-import korlibs.korge.view.views
-import korlibs.inject.AsyncInjector
+import korlibs.datastructure.iterators.*
+import korlibs.inject.*
+import korlibs.io.async.*
 import korlibs.io.async.async
-import korlibs.io.async.launchImmediately
-import korlibs.io.async.launchUnscoped
-import korlibs.io.async.launchUnscopedAndWait
-import korlibs.io.resources.Resources
-import korlibs.math.interpolation.Easing
+import korlibs.io.resources.*
+import korlibs.korge.*
+import korlibs.korge.tween.*
+import korlibs.korge.ui.*
+import korlibs.korge.view.*
+import korlibs.korge.view.property.*
+import korlibs.logger.*
+import korlibs.math.interpolation.*
+import korlibs.time.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
-import kotlin.reflect.KClass
+import kotlin.reflect.*
 
 /**
  * Creates a new [SceneContainer], allowing to configure with [callback], and attaches the newly created container to the receiver this [Container]
@@ -37,12 +26,12 @@ inline fun Container.sceneContainer(
 	views: Views,
     defaultTransition: Transition = AlphaTransition.withEasing(Easing.EASE_IN_OUT_QUAD),
     name: String = "sceneContainer",
-    width: Double = 0.0, height: Double = 0.0,
+    width: Float = 0f, height: Float = 0f,
 	callback: SceneContainer.() -> Unit = {}
 ): SceneContainer {
     var rwidth = width
     var rheight = height
-    if (width == 0.0 && height == 0.0) {
+    if (width == 0f && height == 0f) {
         val base = this.findFirstAscendant { it is FixedSizeContainer } as? FixedSizeContainer?
         rwidth = base?.width ?: views.stage.width
         rheight = base?.height ?: views.stage.height
@@ -53,7 +42,7 @@ inline fun Container.sceneContainer(
 suspend inline fun Container.sceneContainer(
     defaultTransition: Transition = AlphaTransition.withEasing(Easing.EASE_IN_OUT_QUAD),
     name: String = "sceneContainer",
-    width: Double = 0.0, height: Double = 0.0,
+    width: Float = 0f, height: Float = 0f,
     callback: SceneContainer.() -> Unit = {}
 ): SceneContainer = sceneContainer(views(), defaultTransition, name, width, height, callback)
 
@@ -67,7 +56,7 @@ class SceneContainer(
     /** Default [Transition] that will be used when no transition is specified */
     val defaultTransition: Transition = AlphaTransition.withEasing(Easing.EASE_IN_OUT_QUAD),
     name: String = "sceneContainer",
-    width: Double = views.stage.width, height: Double = views.stage.height,
+    width: Float = views.stage.width, height: Float = views.stage.height,
 ) : UIView(width, height), CoroutineScope by views {
     init {
         this.name = name
@@ -80,7 +69,7 @@ class SceneContainer(
     @ViewPropertySubTree
 	var currentScene: Scene? = null
     override fun onSizeChanged() {
-        currentScene?.onSizeChanged(width, height)
+        currentScene?.onSizeChanged(widthD, heightD)
     }
 
     init {
@@ -297,7 +286,7 @@ class SceneContainer(
         if (time > 0.seconds) {
             transitionView.tween(transitionView::ratio[0.0, 1.0], time = time)
         } else {
-            transitionView.ratio = 1.0
+            transitionView.ratio = 1f
         }
 
         transitionView.endTransition()

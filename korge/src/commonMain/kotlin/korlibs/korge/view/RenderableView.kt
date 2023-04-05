@@ -1,28 +1,28 @@
 package korlibs.korge.view
 
-import korlibs.korge.annotations.KorgeExperimental
-import korlibs.korge.render.RenderContext2D
+import korlibs.korge.annotations.*
+import korlibs.korge.render.*
 
 @KorgeExperimental
 inline fun Container.renderableView(
-    width: Double = 128.0,
-    height: Double = 24.0,
+    width: Float = 128f,
+    height: Float = 24f,
     noinline viewRenderer: RenderableView.() -> Unit,
 ): RenderableView = RenderableView(width, height, viewRenderer).addTo(this)
 
 @KorgeExperimental
 inline fun Container.renderableView(
-    width: Double = 128.0,
-    height: Double = 24.0,
+    width: Float = 128f,
+    height: Float = 24f,
     viewRenderer: ViewRenderer,
 ): RenderableView = RenderableView(width, height, viewRenderer).addTo(this)
 
-class RenderableView(width: Double, height: Double, var viewRenderer: ViewRenderer) : CustomContextRenderizableView(width, height) {
+class RenderableView(width: Float, height: Float, var viewRenderer: ViewRenderer) : CustomContextRenderizableView(width, height) {
     var isFocused: Boolean = false
     var isOver: Boolean = false
     var isDown: Boolean = false
 
-    override fun renderer(context: RenderContext2D, width: Double, height: Double) {
+    override fun renderer(context: RenderContext2D, width: Float, height: Float) {
         viewRenderer.apply { render() }
     }
 }

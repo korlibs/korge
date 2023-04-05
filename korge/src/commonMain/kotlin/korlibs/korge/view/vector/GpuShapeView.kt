@@ -1,20 +1,20 @@
 package korlibs.korge.view.vector
 
 import korlibs.datastructure.iterators.*
-import korlibs.time.measureTime
 import korlibs.graphics.*
+import korlibs.image.paint.*
+import korlibs.image.vector.*
 import korlibs.korge.internal.*
 import korlibs.korge.render.*
 import korlibs.korge.view.*
 import korlibs.korge.view.BlendMode
 import korlibs.korge.view.property.*
-import korlibs.image.paint.*
-import korlibs.image.vector.*
 import korlibs.math.geom.*
 import korlibs.math.geom.Line
 import korlibs.math.geom.bezier.*
 import korlibs.math.geom.shape.*
 import korlibs.math.geom.vector.*
+import korlibs.time.measureTime
 import kotlin.math.absoluteValue
 
 //@KorgeExperimental
@@ -84,8 +84,7 @@ open class GpuShapeView(
     var bufferHeight = 1000
     //private var notifyAboutEvenOdd = false
 
-    override var anchorX: Double = 0.0 ; set(value) { field = value; invalidate() }
-    override var anchorY: Double = 0.0 ; set(value) { field = value; invalidate() }
+    override var anchor: Anchor = Anchor.TOP_LEFT ; set(value) { field = value; invalidate() }
 
     var applyScissor: Boolean = true
 
@@ -125,8 +124,8 @@ open class GpuShapeView(
     val shapeHeight: Double get() = shapeBounds.height.toDouble()
     private var lastCommandWasClipped: Boolean = false
 
-    override val anchorDispX: Double get() = shapeBounds.width * anchorX
-    override val anchorDispY: Double get() = shapeBounds.height * anchorY
+    override val anchorDispX: Float get() = shapeBounds.width * anchor.sx
+    override val anchorDispY: Float get() = shapeBounds.height * anchor.sy
 
     private fun invalidateShape() {
         renderCount = 0

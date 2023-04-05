@@ -1,19 +1,19 @@
 package korlibs.korge.ui
 
 import korlibs.datastructure.*
-import korlibs.time.*
+import korlibs.image.color.*
 import korlibs.korge.animate.*
 import korlibs.korge.render.*
 import korlibs.korge.tween.*
 import korlibs.korge.view.*
 import korlibs.korge.view.property.*
-import korlibs.image.color.*
 import korlibs.math.geom.*
 import korlibs.math.interpolation.*
+import korlibs.time.*
 
 inline fun Container.uiMaterialLayer(
-    width: Double = UI_DEFAULT_WIDTH,
-    height: Double = UI_DEFAULT_HEIGHT,
+    width: Float = UI_DEFAULT_WIDTH,
+    height: Float = UI_DEFAULT_HEIGHT,
     block: @ViewDslMarker UIMaterialLayer.() -> Unit = {}
 ): UIMaterialLayer = UIMaterialLayer(width, height).addTo(this).apply(block)
 
@@ -50,8 +50,8 @@ class MaterialLayerHighlights(val view: View) {
 }
 
 class UIMaterialLayer(
-    width: Double = 100.0,
-    height: Double = 100.0
+    width: Float = 100f,
+    height: Float = 100f
 ) : UIView(width, height), ViewLeaf {
     @ViewProperty
     var bgColor: RGBA = Colors.WHITE; set(value) { field = value; invalidateRender() }
@@ -84,8 +84,8 @@ class UIMaterialLayer(
             ctx2d.materialRoundRect(
                 x = 0.0,
                 y = 0.0,
-                width = width,
-                height = height,
+                width = widthD,
+                height = heightD,
                 color = bgColor,
                 radius = radius,
                 shadowOffset = shadowOffset,
@@ -102,8 +102,8 @@ class UIMaterialLayer(
                 ctx2d.materialRoundRect(
                     x = 0.0,
                     y = 0.0,
-                    width = width,
-                    height = height,
+                    width = widthD,
+                    height = heightD,
                     color = Colors.TRANSPARENT,
                     radius = radius,
                     highlightPos = it.pos,

@@ -1,17 +1,11 @@
 package korlibs.korge.view
 
-import korlibs.graphics.log.AGLog
-import korlibs.korge.render.RenderContext
-import korlibs.korge.render.VertexInfo
-import korlibs.korge.render.testRenderContext
-import korlibs.korge.tests.ViewsForTesting
-import korlibs.image.bitmap.Bitmap32
-import korlibs.image.bitmap.NinePatchBitmap32
-import korlibs.image.bitmap.NinePatchBmpSlice
-import korlibs.image.bitmap.readNinePatch
-import korlibs.io.file.std.resourcesVfs
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import korlibs.graphics.log.*
+import korlibs.image.bitmap.*
+import korlibs.io.file.std.*
+import korlibs.korge.render.*
+import korlibs.korge.tests.*
+import kotlin.test.*
 
 class NinePatchTest : ViewsForTesting() {
     @Test
@@ -19,7 +13,7 @@ class NinePatchTest : ViewsForTesting() {
         val vertices = arrayListOf<List<VertexInfo>>()
         val ninePatch = resourcesVfs["npatch/9patch.9.png"].readNinePatch()
 
-        ninePatch(ninePatch, 450.0, 600.0) {
+        ninePatch(ninePatch, 450f, 600f) {
             position(0, 0)
         }
         val log = testRenderContext { ctx ->
@@ -77,7 +71,7 @@ class NinePatchTest : ViewsForTesting() {
     fun testNinePatchSmaller() = viewsTest {
         val ninePatch = resourcesVfs["npatch/9patch.9.png"].readNinePatch()
 
-        fun computeVertices(ninePatch: NinePatchBitmap32, width: Double, height: Double): List<List<VertexInfo>> {
+        fun computeVertices(ninePatch: NinePatchBitmap32, width: Float, height: Float): List<List<VertexInfo>> {
             val vertices = arrayListOf<List<VertexInfo>>()
             stage.removeChildren()
             testRenderContext { ctx ->
@@ -91,7 +85,7 @@ class NinePatchTest : ViewsForTesting() {
         }
 
         fun computeInterestingPoints(width: Number, height: Number): String {
-            val batch = computeVertices(ninePatch, width.toDouble(), height.toDouble())[0]
+            val batch = computeVertices(ninePatch, width.toFloat(), height.toFloat())[0]
             return listOf(batch[0], batch[2], batch[32], batch[34]).joinToString(", ") { it.toStringXY() }
         }
 
@@ -115,7 +109,7 @@ class NinePatchTest : ViewsForTesting() {
     fun testNinePatchColorInvalidation() {
         val ctx = RenderContext(AGLog())
         val container = Container()
-        val ninePatch = container.ninePatch(NinePatchBmpSlice(Bitmap32(32, 32, premultiplied = true)), 16.0, 16.0)
+        val ninePatch = container.ninePatch(NinePatchBmpSlice(Bitmap32(32, 32, premultiplied = true)), 16f, 16f)
         ninePatch.render(ctx)
         assertEquals(1, ninePatch.renderedVersion)
         container.alphaF = 0.5f

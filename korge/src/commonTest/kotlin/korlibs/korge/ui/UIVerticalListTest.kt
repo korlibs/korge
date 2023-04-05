@@ -1,19 +1,11 @@
 package korlibs.korge.ui
 
-import korlibs.time.milliseconds
-import korlibs.korge.annotations.KorgeExperimental
-import korlibs.korge.internal.DefaultViewport
-import korlibs.korge.tests.ViewsForTesting
-import korlibs.korge.view.BoundsProvider
-import korlibs.korge.view.SolidRect
-import korlibs.korge.view.View
-import korlibs.korge.view.ViewsLog
-import korlibs.korge.view.clipContainer
-import korlibs.korge.view.fixedSizeContainer
-import korlibs.korge.view.xy
-import kotlin.coroutines.EmptyCoroutineContext
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import korlibs.korge.annotations.*
+import korlibs.korge.internal.*
+import korlibs.korge.view.*
+import korlibs.time.*
+import kotlin.coroutines.*
+import kotlin.test.*
 
 class UIVerticalListTest {
     @KorgeExperimental
@@ -25,8 +17,8 @@ class UIVerticalListTest {
         val clipContainer = views.stage.clipContainer(256.0, 130.0).xy(0, 100)
         val verticalList = clipContainer.uiVerticalList(object : UIVerticalList.Provider {
             override val numItems: Int get() = 100
-            override val fixedHeight: Double get() = 32.0
-            override fun getItemHeight(index: Int): Double = fixedHeight
+            override val fixedHeight: Float get() = 32f
+            override fun getItemHeight(index: Int): Float = fixedHeight
             override fun getItemView(index: Int, vlist: UIVerticalList): View = SolidRect(vlist.width, fixedHeight)
         })
         views.update(0.milliseconds)

@@ -1,13 +1,11 @@
 package korlibs.korge.render
 
-import korlibs.memory.*
-import korlibs.korge.internal.KorgeInternal
-import korlibs.image.bitmap.BmpCoords
-import korlibs.image.bitmap.BmpSlice
-import korlibs.image.color.Colors
-import korlibs.image.color.RGBA
+import korlibs.image.bitmap.*
+import korlibs.image.color.*
+import korlibs.korge.internal.*
 import korlibs.math.geom.*
-import kotlin.native.concurrent.SharedImmutable
+import korlibs.memory.*
+import kotlin.native.concurrent.*
 
 // @TODO: Call this mesh?
 /**
@@ -150,6 +148,7 @@ class TexturedVertexArray(vcount: Int, val indices: ShortArray, icount: Int = in
      * using the texture coords defined by [BmpSlice] and color transforms [colMul]
      */
     @OptIn(KorgeInternal::class)
+    @Deprecated("Use Float version instead")
     fun quad(index: Int, x: Double, y: Double, width: Double, height: Double, matrix: Matrix, bmp: BmpCoords, colMul: RGBA) {
         quad(index, x.toFloat(), y.toFloat(), width.toFloat(), height.toFloat(), matrix, bmp, colMul)
     }

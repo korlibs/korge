@@ -7,14 +7,14 @@ class UIViewTest {
     @Test
     fun test() {
         var sizeChangedCount = 0
-        val view = object : UIView(100.0, 110.0) {
+        val view = object : UIView(100f, 110f) {
             override fun onSizeChanged() {
                 sizeChangedCount++
             }
         }
         val lines = arrayListOf<String>()
         fun log() {
-            lines += "${view.width.niceStr}, ${view.height.niceStr}, $sizeChangedCount"
+            lines += "${view.widthD.niceStr}, ${view.heightD.niceStr}, $sizeChangedCount"
         }
 
         log()

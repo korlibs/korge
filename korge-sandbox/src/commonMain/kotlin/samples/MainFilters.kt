@@ -1,23 +1,14 @@
 package samples
 
-import korlibs.time.seconds
+import korlibs.image.format.*
+import korlibs.io.file.std.*
 import korlibs.korge.animate.*
-import korlibs.korge.scene.ScaledScene
-import korlibs.korge.tween.get
-import korlibs.korge.view.SContainer
-import korlibs.korge.view.filter.BlurFilter
-import korlibs.korge.view.filter.Convolute3Filter
-import korlibs.korge.view.filter.PageFilter
-import korlibs.korge.view.filter.SwizzleColorsFilter
-import korlibs.korge.view.filter.TransitionFilter
-import korlibs.korge.view.filter.WaveFilter
-import korlibs.korge.view.filter.filter
-import korlibs.korge.view.image
-import korlibs.korge.view.position
-import korlibs.korge.view.scale
-import korlibs.image.format.readBitmap
-import korlibs.io.file.std.resourcesVfs
-import korlibs.math.interpolation.Easing
+import korlibs.korge.scene.*
+import korlibs.korge.tween.*
+import korlibs.korge.view.*
+import korlibs.korge.view.filter.*
+import korlibs.math.interpolation.*
+import korlibs.time.*
 
 class MainFilters : ScaledScene(768, 512) {
     override suspend fun SContainer.sceneMain() {
@@ -39,7 +30,7 @@ class MainFilters : ScaledScene(768, 512) {
 
         //val color = ColorMatrixFilter(ColorMatrixFilter.GRAYSCALE_MATRIX)
         //val color = TransitionFilter(TransitionFilter.Transition.DIAGONAL1, reversed = false)
-        val color = TransitionFilter(TransitionFilter.Transition.SWEEP, reversed = false, spread = 1.0)
+        val color = TransitionFilter(TransitionFilter.Transition.SWEEP, reversed = false, spread = 1f)
         //val color = TransitionFilter(TransitionFilter.Transition.CIRCULAR, reversed = false)
         //val color = TransitionFilter(time = 1.0)
         image(bitmap) {

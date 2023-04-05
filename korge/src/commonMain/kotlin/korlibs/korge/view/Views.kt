@@ -125,14 +125,13 @@ class Views constructor(
     /** The defined virtual height */
 	var virtualHeight: Int = DefaultViewport.HEIGHT; internal set
 
-    var virtualWidthDouble: Double
-        get() = virtualWidth.toDouble()
-        set(value) { virtualWidth = value.toInt() }
-    var virtualHeightDouble: Double
-        get() = virtualHeight.toDouble()
-        set(value) { virtualHeight = value.toInt() }
+    var virtualWidthDouble: Double get() = virtualWidth.toDouble() ; set(value) { virtualWidth = value.toInt() }
+    var virtualHeightDouble: Double get() = virtualHeight.toDouble() ; set(value) { virtualHeight = value.toInt() }
 
-	private val closeables = arrayListOf<AsyncCloseable>()
+    var virtualWidthFloat: Float get() = virtualWidth.toFloat() ; set(value) { virtualWidth = value.toInt() }
+    var virtualHeightFloat: Float get() = virtualHeight.toFloat() ; set(value) { virtualHeight = value.toInt() }
+
+    private val closeables = arrayListOf<AsyncCloseable>()
 
     /**
      * Adds a [callback] to be executed when the game is closed in normal circumstances.

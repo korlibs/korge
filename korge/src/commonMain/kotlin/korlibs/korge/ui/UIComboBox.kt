@@ -22,8 +22,8 @@ import kotlin.native.concurrent.*
 typealias UIDropDown<T> = UIComboBox<T>
 
 inline fun <T> Container.uiComboBox(
-    width: Double = UI_DEFAULT_WIDTH,
-    height: Double = UI_DEFAULT_HEIGHT,
+    width: Float = UI_DEFAULT_WIDTH,
+    height: Float = UI_DEFAULT_HEIGHT,
     selectedIndex: Int = 0,
     items: List<T>,
     block: @ViewDslMarker UIComboBox<T>.() -> Unit = {}
@@ -33,8 +33,8 @@ inline fun <T> Container.uiComboBox(
 var Views.openedComboBox by Extra.Property<UIComboBox<*>?>() { null }
 
 open class UIComboBox<T>(
-    width: Double = UI_DEFAULT_WIDTH,
-    height: Double = UI_DEFAULT_HEIGHT,
+    width: Float = UI_DEFAULT_WIDTH,
+    height: Float = UI_DEFAULT_HEIGHT,
     selectedIndex: Int = 0,
     items: List<T> = listOf(),
 ) : UIFocusableView(width, height) {
@@ -66,7 +66,7 @@ open class UIComboBox<T>(
         }
     var items: List<T> by uiObservable(items) { updateItems() }
     //var itemHeight by uiObservable(height) { updateItemsSize() }
-    val itemHeight get() = height
+    val itemHeight: Float get() = height
     var viewportHeight by uiObservable(196) { onSizeChanged() }
     var filter: String = ""
         set(value) {
@@ -96,17 +96,17 @@ open class UIComboBox<T>(
     //private val expandButton = uiButton(height, height, icon = comboBoxExpandIcon).position(width - height, 0.0)
     private val invisibleRect = solidRect(width, height, Colors.TRANSPARENT)
 
-    private val itemsViewBackground = uiMaterialLayer(width, height = 128.0) {
+    private val itemsViewBackground = uiMaterialLayer(width, height = 128f) {
         radius = RectCorners(0.0, 0.0, 9.0, 9.0)
         zIndex = -1000f
     }
-    private val itemsView = uiScrollable(width, height = 128.0).also {
+    private val itemsView = uiScrollable(width, height = 128f).also {
         it.backgroundColor = Colors.TRANSPARENT
     }
     private val verticalList = itemsView.container.uiVerticalList(object : UIVerticalList.Provider {
         override val numItems: Int = items.size
-        override val fixedHeight: Double = itemHeight
-        override fun getItemHeight(index: Int): Double = fixedHeight
+        override val fixedHeight: Float = itemHeight
+        override fun getItemHeight(index: Int): Float = fixedHeight
         override fun getItemView(index: Int, vlist: UIVerticalList): View {
             val itemText = items[index].toString()
             val richText = when {
@@ -153,7 +153,7 @@ open class UIComboBox<T>(
         verticalList.updateList()
         itemsView.ensureRectIsVisible(
             Rectangle(
-                0.0, verticalList.provider.getItemY(index),
+                0f, verticalList.provider.getItemY(index),
                 width,
                 verticalList.provider.getItemHeight(index)
             )
@@ -259,13 +259,13 @@ open class UIComboBox<T>(
 
         //itemsView.size(width, viewportHeight.toDouble()).position(0.0, height)
         itemsView
-            .size(width, viewportHeight.toDouble())
-            .globalPos(localToGlobal(Point(0.0, height + 8.0)))
+            .size(widthD, viewportHeight.toDouble())
+            .globalPos(localToGlobal(Point(0.0, heightD + 8.0)))
         itemsViewBackground
-            .size(width, itemsView.height + 16)
-            .globalPos(localToGlobal(Point(0.0, height)))
+            .size(widthD, itemsView.heightD + 16)
+            .globalPos(localToGlobal(Point(0.0, heightD)))
         verticalList
-            .size(width, verticalList.height)
+            .size(widthD, verticalList.heightD)
 
         verticalList.invalidateList()
 
@@ -328,7 +328,7 @@ open class UIComboBox<T>(
     private fun updateItemsSize() {
         itemsView.container.forEachChildWithIndex { index, child ->
             child.scaledHeight = itemHeight
-            child.position(0.0, index * itemHeight)
+            child.position(0f, index * itemHeight)
         }
     }
 
@@ -374,10 +374,10 @@ open class UIComboBox<T>(
         //expandButton.simulatePressing(showItems)
         //expandButton.icon = if (showItems) comboBoxShrinkIcon else comboBoxExpandIcon
         //expandButtonIcon.bitmap = if (showItems) comboBoxShrinkIcon else comboBoxExpandIcon
-        invisibleRect.size(width, height)
-        selectedButton.size(width, height)
+        invisibleRect.size(widthD, heightD)
+        selectedButton.size(widthD, heightD)
         selectedButton.text = selectedItem?.toString() ?: ""
-        expandButtonIcon.position(width - 16.0, height * 0.5)
+        expandButtonIcon.position(widthD - 16.0, heightD * 0.5)
         //expandButton.position(width - height, 0.0).size(height, height)
     }
 

@@ -4,18 +4,8 @@ import korlibs.korge.view.property.*
 import korlibs.math.geom.*
 
 interface Anchorable {
-    /** Normally in the range [0.0, 1.0] */
-    var anchorX: Double
-    /** Normally in the range [0.0, 1.0] */
-    var anchorY: Double
-
     @ViewProperty(name = "anchor")
-    var anchorXY: Pair<Double, Double>
-        get() = anchorX to anchorY
-        set(value) {
-            anchorX = value.first
-            anchorY = value.second
-        }
+    var anchor: Anchor
 
     @ViewProperty
     val anchorActions: ViewActionList get() = ViewActionList(
@@ -32,16 +22,14 @@ interface Anchorable {
     )
 }
 
-fun <T : Anchorable> T.anchor(ax: Double, ay: Double): T {
-    this.anchorX = ax
-    this.anchorY = ay
+fun <T : Anchorable> T.anchor(anchor: Anchor): T {
+    this.anchor = anchor
     return this
 }
 
-fun <T : Anchorable> T.anchor(ax: Float, ay: Float): T = anchor(ax.toDouble(), ay.toDouble())
-fun <T : Anchorable> T.anchor(ax: Int, ay: Int): T = anchor(ax.toDouble(), ay.toDouble())
+fun <T : Anchorable> T.anchor(ax: Float, ay: Float): T = anchor(Anchor(ax, ay))
+fun <T : Anchorable> T.anchor(ax: Double, ay: Double): T = anchor(Anchor(ax, ay))
+fun <T : Anchorable> T.anchor(ax: Int, ay: Int): T = anchor(Anchor(ax, ay))
 
-fun <T : Anchorable> T.anchor(anchor: Anchor): T = anchor(anchor.doubleX, anchor.doubleY)
-
-fun <T : Anchorable> T.center(): T = anchor(0.5, 0.5)
-val <T : Anchorable> T.centered: T get() = anchor(0.5, 0.5)
+fun <T : Anchorable> T.center(): T = anchor(0.5f, 0.5f)
+val <T : Anchorable> T.centered: T get() = anchor(0.5f, 0.5f)

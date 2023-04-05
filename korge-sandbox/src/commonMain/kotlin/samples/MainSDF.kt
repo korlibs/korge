@@ -1,17 +1,17 @@
 package samples
 
 import korlibs.graphics.shader.*
-import korlibs.korge.render.*
-import korlibs.korge.scene.Scene
-import korlibs.korge.view.*
 import korlibs.image.color.*
+import korlibs.korge.render.*
+import korlibs.korge.scene.*
+import korlibs.korge.view.*
 import korlibs.math.geom.*
 import kotlin.math.*
 
 class MainSDF : Scene() {
     override suspend fun SContainer.sceneMain() {
         addChild(
-            CircleSDFView(width = 400.0, height = 400.0)
+            CircleSDFView(width = 400f, height = 400f)
                 .skew(45.degrees, 0.degrees)
                 .also {
                     it.colorMul = Colors.DARKGREY
@@ -20,7 +20,7 @@ class MainSDF : Scene() {
     }
 }
 
-open class CircleSDFView(width: Double = 100.0, height: Double = 100.0) : ShadedView(PROGRAM, width, height) {
+open class CircleSDFView(width: Float = 100f, height: Float = 100f) : ShadedView(PROGRAM, width, height) {
     var radius = 0.49
     var feather = 0.005
     var center = Point(0.5, 0.5)

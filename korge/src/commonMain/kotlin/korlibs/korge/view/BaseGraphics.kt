@@ -1,12 +1,12 @@
 package korlibs.korge.view
 
-import korlibs.datastructure.iterators.fastForEach
-import korlibs.memory.toIntCeil
-import korlibs.korge.annotations.KorgeExperimental
-import korlibs.korge.render.RenderContext
+import korlibs.datastructure.iterators.*
 import korlibs.image.bitmap.*
-import korlibs.image.vector.Context2d
+import korlibs.image.vector.*
+import korlibs.korge.annotations.*
+import korlibs.korge.render.*
 import korlibs.math.geom.*
+import korlibs.memory.*
 import kotlin.math.*
 
 abstract class BaseGraphics(
@@ -118,8 +118,8 @@ abstract class BaseGraphics(
         return true
     }
 
-    var realImageScaleX = 1.0
-    var realImageScaleY = 1.0
+    var realImageScaleX = 1f
+    var realImageScaleY = 1f
 
     protected abstract fun drawShape(ctx: Context2d) // this@BaseGraphics.compoundShape.draw(this)
     protected abstract fun getShapeBounds(includeStrokes: Boolean): Rectangle // shapes.fastForEach { it.addBounds(bb) }
@@ -131,21 +131,21 @@ abstract class BaseGraphics(
 
     //val fillWidth get() = (bitmap.width - EXTRA_PIXELS).toDouble() / realImageScaleX
     //val fillHeight get() = (bitmap.height - EXTRA_PIXELS).toDouble() / realImageScaleY
-    val fillWidth get() = _getLocalBoundsInternal(strokes = renderBoundsStrokes).width
-    val fillHeight get() = _getLocalBoundsInternal(strokes = renderBoundsStrokes).height
+    val fillWidth: Float get() = _getLocalBoundsInternal(strokes = renderBoundsStrokes).width
+    val fillHeight: Float get() = _getLocalBoundsInternal(strokes = renderBoundsStrokes).height
 
-    private val bitmapWidth: Double get() = bitmap.width.toDouble()
-    private val bitmapHeight: Double get() = bitmap.height.toDouble()
+    private val bitmapWidth: Float get() = bitmap.width.toFloat()
+    private val bitmapHeight: Float get() = bitmap.height.toFloat()
 
-    final override val bwidth: Double get() = bitmapWidth / realImageScaleX
-    final override val bheight: Double get() = bitmapHeight / realImageScaleY
-    final override val frameWidth: Double get() = bwidth
-    final override val frameHeight: Double get() = bheight
+    final override val bwidth: Float get() = bitmapWidth / realImageScaleX
+    final override val bheight: Float get() = bitmapHeight / realImageScaleY
+    final override val frameWidth: Float get() = bwidth
+    final override val frameHeight: Float get() = bheight
 
-    final override val anchorDispX: Double get() = (anchorX * bwidth)
-    final override val anchorDispY: Double get() = (anchorY * bheight)
-    override val sLeft: Double get() = _getLocalBoundsInternal(strokes = renderBoundsStrokes).xD
-    override val sTop: Double get() = _getLocalBoundsInternal(strokes = renderBoundsStrokes).yD
+    final override val anchorDispX: Float get() = (anchor.sx * bwidth)
+    final override val anchorDispY: Float get() = (anchor.sy * bheight)
+    override val sLeft: Float get() = _getLocalBoundsInternal(strokes = renderBoundsStrokes).x
+    override val sTop: Float get() = _getLocalBoundsInternal(strokes = renderBoundsStrokes).y
 
     internal val _sLeft get() = sLeft
     internal val _sTop get() = sTop
@@ -160,7 +160,7 @@ abstract class BaseGraphics(
         }
     private fun _getLocalBoundsInternal(strokes: Boolean = this.boundsIncludeStrokes): Rectangle {
         val bounds = boundsUnsafe(strokes = strokes)
-        return Rectangle(bounds.x - anchorDispX, bounds.y - anchorDispY, bounds.widthD, bounds.heightD)
+        return Rectangle(bounds.x - anchorDispX, bounds.y - anchorDispY, bounds.width, bounds.height)
     }
 
     private var _localBoundsWithStrokes = Rectangle()
@@ -185,11 +185,11 @@ abstract class BaseGraphics(
     fun getLocalBoundsInternalNoAnchor(includeStrokes: Boolean): Rectangle = boundsUnsafe(includeStrokes)
 
     internal class InternalViewAutoscaling {
-        var renderedAtScaleXInv = 1.0; private set
-        var renderedAtScaleYInv = 1.0; private set
-        var renderedAtScaleX = 1.0; private set
-        var renderedAtScaleY = 1.0; private set
-        var renderedAtScaleXY = 1.0; private set
+        var renderedAtScaleXInv = 1f; private set
+        var renderedAtScaleYInv = 1f; private set
+        var renderedAtScaleX = 1f; private set
+        var renderedAtScaleY = 1f; private set
+        var renderedAtScaleXY = 1f; private set
         private var matrixTransform = MatrixTransform()
 
         fun onRender(autoScaling: Boolean, autoScalingPrecise: Boolean, globalMatrix: Matrix): Boolean {
@@ -213,20 +213,20 @@ abstract class BaseGraphics(
                 if (shouldUpdate) {
                     //println("diffX=$diffX, diffY=$diffY")
 
-                    renderedAtScaleX = sx.toDouble()
-                    renderedAtScaleY = sy.toDouble()
-                    renderedAtScaleXY = sxy.toDouble()
-                    renderedAtScaleXInv = 1.0 / sx
-                    renderedAtScaleYInv = 1.0 / sy
+                    renderedAtScaleX = sx
+                    renderedAtScaleY = sy
+                    renderedAtScaleXY = sxy
+                    renderedAtScaleXInv = 1f / sx
+                    renderedAtScaleYInv = 1f / sy
                     //println("renderedAtScale: $renderedAtScaleX, $renderedAtScaleY")
                     return true
                 }
             } else {
-                renderedAtScaleX = 1.0
-                renderedAtScaleY = 1.0
-                renderedAtScaleXY = 1.0
-                renderedAtScaleXInv = 1.0
-                renderedAtScaleYInv = 1.0
+                renderedAtScaleX = 1f
+                renderedAtScaleY = 1f
+                renderedAtScaleXY = 1f
+                renderedAtScaleXInv = 1f
+                renderedAtScaleYInv = 1f
             }
             return false
         }

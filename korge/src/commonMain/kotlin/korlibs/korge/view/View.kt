@@ -78,9 +78,9 @@ abstract class View internal constructor(
     //}
 
     @KorgeInternal
-    open val anchorDispX get() = 0.0
+    open val anchorDispX: Float get() = 0f
     @KorgeInternal
-    open val anchorDispY get() = 0.0
+    open val anchorDispY: Float get() = 0f
 
     val anchorDispXF: Float get() = anchorDispX.toFloat()
     val anchorDispYF: Float get() = anchorDispY.toFloat()
@@ -190,7 +190,7 @@ abstract class View internal constructor(
 
     /** Property used for interpolable views like morph shapes, progress bars etc. */
     @ViewProperty(min = 0.0, max = 1.0, clampMin = false, clampMax = false)
-    open var ratio: Double = 0.0
+    open var ratio: Float = 0f
 
     @PublishedApi internal var _index: Int = 0
     @PublishedApi internal var _parent: Container? = null
@@ -357,10 +357,10 @@ abstract class View internal constructor(
 
     @ViewProperty(min = 0.0, max = 1.0)
     var scaleXY: Scale
-        get() = Scale(scaleXD, scaleYD)
+        get() = Scale(scaleX, scaleY)
         set(value) {
-            scaleXD = value.scaleXD
-            scaleYD = value.scaleYD
+            scaleX = value.scaleX
+            scaleY = value.scaleY
         }
 
     /** Allows to change [scaleXD] and [scaleYD] at once. Returns the mean value of x and y scales. */
@@ -400,70 +400,81 @@ abstract class View internal constructor(
     /**
      * Changes the [width] and [height] to match the parameters.
      */
-    open fun setSize(width: Double, height: Double) {
-        this.width = width
-        this.height = height
+    fun setSize(width: Float, height: Float) = setSize(Size(width, height))
+    fun setSize(width: Double, height: Double) = setSize(Size(width, height))
+    open fun setSize(size: Size) {
+        this.width = size.width
+        this.height = size.height
     }
-    fun setSize(size: Size) = setSize(size.widthD, size.heightD)
 
-    open fun setSizeScaled(width: Double, height: Double) {
-        this.setSize(
-            if (scaleXD == 0.0) width else width / scaleXD,
-            if (scaleYD == 0.0) height else height / scaleYD,
-        )
+    open fun setSizeScaled(size: Size) {
+        this.setSize(Size(
+            if (scaleX == 0f) size.width else size.width / scaleX,
+            if (scaleY == 0f) size.height else size.height / scaleY,
+        ))
     }
 
     /**
-     * Changes the [width] of this view. Generically, this means adjusting the [scaleXD] of the view to match that size using the current bounds,
+     * Changes the [widthD] of this view. Generically, this means adjusting the [scaleXD] of the view to match that size using the current bounds,
      * but some views might override this to adjust its internal width or height (like [SolidRect] or [UIView] for example).
      *
      * @TODO: In KorGE 2.0, View.width/View.height will be immutable and available from an extension method for Views that doesn't have a width/height properties
      */
-    open var width: Double
-        get() = getLocalBoundsOptimizedAnchored().widthD
+    open var width: Float
+        get() = getLocalBoundsOptimizedAnchored().width
         @Deprecated("Shouldn't set width but scaleWidth instead")
         set(value) {
-            scaleXD = (if (scaleXD == 0.0) 1.0 else scaleXD) * (value / width)
+            scaleX = (if (scaleX == 0f) 1f else scaleX) * (value / width)
         }
 
     /**
-     * Changes the [height] of this view. Generically, this means adjusting the [scaleYD] of the view to match that size using the current bounds,
+     * Changes the [heightD] of this view. Generically, this means adjusting the [scaleYD] of the view to match that size using the current bounds,
      * but some views might override this to adjust its internal width or height (like [SolidRect] or [UIView] for example).
      *
      * @TODO: In KorGE 2.0, View.width/View.height will be immutable and available from an extension method for Views that doesn't have a width/height properties
      */
-    open var height: Double
-        get() = getLocalBoundsOptimizedAnchored().heightD
+    open var height: Float
+        get() = getLocalBoundsOptimizedAnchored().height
         @Deprecated("Shouldn't set height but scaleHeight instead")
         set(value) {
-            scaleYD = (if (scaleYD == 0.0) 1.0 else scaleYD) * (value / getLocalBoundsOptimizedAnchored().height)
+            scaleY = (if (scaleY == 0f) 1f else scaleY) * (value / getLocalBoundsOptimizedAnchored().height)
         }
 
-    val unscaledWidth: Double get() = width
-    val unscaledHeight: Double get() = height
+    var widthD: Double get() = width.toDouble(); @Deprecated("") set(value) { width = value.toFloat() }
+    var heightD: Double get() = height.toDouble(); @Deprecated("") set(value) { height = value.toFloat() }
 
-    var scaledWidth: Double
-        get() = unscaledWidth * scaleXD
+    val unscaledWidth: Float get() = width
+    val unscaledHeight: Float get() = height
+
+    val unscaledWidthD: Double get() = widthD
+    val unscaledHeightD: Double get() = heightD
+
+    var scaledWidth: Float
+        get() = unscaledWidth * scaleX
         set(value) {
-            width = if (scaleXD == 0.0) value else value / scaleXD
+            width = if (scaleX == 0f) value else value / scaleX
         }
+
+    var scaledHeight: Float
+        get() = unscaledHeight * scaleY
+        set(value) {
+            height = if (scaleY == 0f) value else value / scaleY
+        }
+
+    var scaledWidthD: Double get() = scaledWidth.toDouble() ; set(value) { scaledWidth = value.toFloat() }
 
     /**
-     * Changes the [height] of this view. Generically, this means adjusting the [scaleYD] of the view to match that size using the current bounds,
+     * Changes the [heightD] of this view. Generically, this means adjusting the [scaleYD] of the view to match that size using the current bounds,
      * but some views might override this to adjust its internal width or height (like [SolidRect] or [UIView] for example).
      */
-    var scaledHeight: Double
-        get() = unscaledHeight * scaleYD
-        set(value) {
-            height = if (scaleYD == 0.0) value else value / scaleYD
-        }
+    var scaledHeightD: Double get() = scaledHeight.toDouble() ; set(value) { scaledHeight = value.toFloat() }
 
     @ViewProperty(min = -1000.0, max = +1000.0, name = "size")
     var scaledWH: Size
-        get() = Size(scaledWidth, scaledHeight)
+        get() = Size(scaledWidthD, scaledHeightD)
         set(value) {
-            scaledWidth = value.widthD
-            scaledHeight = value.heightD
+            scaledWidthD = value.widthD
+            scaledHeightD = value.heightD
         }
 
     /**
@@ -914,7 +925,7 @@ abstract class View internal constructor(
     @Suppress("RemoveCurlyBracesFromTemplate")
     override fun toString(): String {
         var out = this::class.portableSimpleName
-        if (xD != 0.0 || yD != 0.0) out += ":pos=(${xD.str},${yD.str})"
+        if (xD != 0.0 || yD != 0.0) out += ":pos=(${x.str},${y.str})"
         if (scaleXD != 1.0 || scaleYD != 1.0) out += ":scale=(${scaleXD.str},${scaleYD.str})"
         if (skewX.radians != 0.0 || skewY.radians != 0.0) out += ":skew=(${skewX.degrees.str},${skewY.degrees.str})"
         if (rotation.absoluteValue != 0.radians) out += ":rotation=(${rotation.degrees.str}º)"
@@ -926,6 +937,7 @@ abstract class View internal constructor(
         return out
     }
 
+    protected val Float.str get() = this.toStringDecimal(2, skipTrailingZeros = true)
     protected val Double.str get() = this.toStringDecimal(2, skipTrailingZeros = true)
 
     // Version with root-most object as reference
@@ -1300,10 +1312,10 @@ abstract class View internal constructor(
     fun setGlobalBounds(bounds: Rectangle) {
         val transform = parent!!.globalMatrix.toTransform()
         globalPos = bounds.topLeft
-        setSizeScaled(
-            (bounds.width * transform.scaleX).toDouble(),
-            (bounds.height * transform.scaleY).toDouble(),
-        )
+        setSizeScaled(Size(
+            (bounds.width * transform.scaleX),
+            (bounds.height * transform.scaleY),
+        ))
     }
 
     // @TODO: Would not include strokes
@@ -1432,8 +1444,8 @@ abstract class View internal constructor(
     }
 }
 
-val View.width: Double get() = unscaledWidth
-val View.height: Double get() = unscaledHeight
+val View.width: Double get() = unscaledWidthD
+val View.height: Double get() = unscaledHeightD
 
 // Doesn't seem to work
 //operator fun <T : View, R> T.invoke(callback: T.() -> R): R = this.apply(callback)
@@ -1753,7 +1765,7 @@ inline fun <T : View> T.hitShape(crossinline block: @ViewDslMarker VectorBuilder
 }
 
 fun <T : View> T.size(size: Size): T {
-    this.setSize(size.widthD, size.heightD)
+    this.setSize(size.width, size.height)
     return this
 }
 fun <T : View> T.size(width: Double, height: Double): T = size(Size(width, height))
@@ -1863,7 +1875,7 @@ fun View.getPointRelativeToInv(pos: Point, view: View): Point {
 
 /** Chainable method returning this that sets [this] View in the middle between [x1] and [x2] */
 fun <T : View> T.centerXBetween(x1: Double, x2: Double): T {
-    this.xD = (x2 + x1 - this.width) / 2
+    this.xD = (x2 + x1 - this.widthD) / 2
     return this
 }
 fun <T : View> T.centerXBetween(x1: Float, x2: Float): T = centerXBetween(x1.toDouble(), x2.toDouble())
@@ -1871,7 +1883,7 @@ fun <T : View> T.centerXBetween(x1: Int, x2: Int): T = centerXBetween(x1.toDoubl
 
 /** Chainable method returning this that sets [this] View in the middle between [y1] and [y2] */
 fun <T : View> T.centerYBetween(y1: Double, y2: Double): T {
-    this.yD = (y2 + y1 - this.height) / 2
+    this.yD = (y2 + y1 - this.heightD) / 2
     return this
 }
 fun <T : View> T.centerYBetween(y1: Float, y2: Float): T = centerYBetween(y1.toDouble(), y2.toDouble())
@@ -1919,9 +1931,9 @@ fun <T : View> T.alignXY(other: View, ratio: Double, inside: Boolean, doX: Boole
     val iratio = if (inside) ratio else 1.0 - ratio
     //println("this: $this, other: $other, bounds=$bounds, scaledWidth=$scaledWidth, scaledHeight=$scaledHeight, width=$width, height=$height, scale=$scale, $scaleX, $scaleY")
     if (doX) {
-        xD = (bounds.x + (bounds.width * ratio) - localBounds.left) - (this.scaledWidth * iratio) - (padding * rratioM1_1)
+        xD = (bounds.x + (bounds.width * ratio) - localBounds.left) - (this.scaledWidthD * iratio) - (padding * rratioM1_1)
     } else {
-        yD = (bounds.y + (bounds.height * ratio) - localBounds.top) - (this.scaledHeight * iratio) - (padding * rratioM1_1)
+        yD = (bounds.y + (bounds.height * ratio) - localBounds.top) - (this.scaledHeightD * iratio) - (padding * rratioM1_1)
     }
     return this
 }
@@ -2143,19 +2155,19 @@ sealed class ScalingOption {
 fun <T : View> T.scaleWhileMaintainingAspect(scalingOption: ScalingOption): T {
     val scaleValue = when (scalingOption) {
         is ScalingOption.ByHeight -> {
-            scalingOption.height / this.scaledHeight
+            scalingOption.height / this.scaledHeightD
         }
         is ScalingOption.ByWidth -> {
-            scalingOption.width / this.scaledWidth
+            scalingOption.width / this.scaledWidthD
         }
         is ScalingOption.ByWidthAndHeight -> {
-            val scaledByWidth = scalingOption.width / this.scaledWidth
-            val scaledByHeight = scalingOption.height / this.scaledHeight
+            val scaledByWidth = scalingOption.width / this.scaledWidthD
+            val scaledByHeight = scalingOption.height / this.scaledHeightD
             kotlin.math.min(scaledByHeight, scaledByWidth)
         }
     }
-    this.scaledHeight = this.scaledHeight * scaleValue
-    this.scaledWidth = this.scaledWidth * scaleValue
+    this.scaledHeightD = this.scaledHeightD * scaleValue
+    this.scaledWidthD = this.scaledWidthD * scaleValue
     return this
 }
 

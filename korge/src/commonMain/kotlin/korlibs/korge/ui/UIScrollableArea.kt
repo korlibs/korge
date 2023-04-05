@@ -1,20 +1,14 @@
 package korlibs.korge.ui
 
-import korlibs.korge.view.Container
-import korlibs.korge.view.ViewDslMarker
-import korlibs.korge.view.addTo
-import korlibs.korge.view.clipContainer
-import korlibs.korge.view.fixedSizeContainer
-import korlibs.korge.view.position
-import korlibs.korge.view.size
+import korlibs.korge.view.*
 
 @Deprecated("Use UINewScrollable")
 inline fun Container.uiScrollableArea(
-    width: Double = 256.0,
-    height: Double = 256.0,
-    contentWidth: Double = 512.0,
-    contentHeight: Double = 512.0,
-    buttonSize: Double = 32.0,
+    width: Float = 256f,
+    height: Float = 256f,
+    contentWidth: Float = 512f,
+    contentHeight: Float = 512f,
+    buttonSize: Float = 32f,
     verticalScroll: Boolean = true,
     horizontalScroll: Boolean = true,
     config: UIScrollableArea.() -> Unit = {},
@@ -26,11 +20,11 @@ inline fun Container.uiScrollableArea(
 // @TODO: Add an actualContainer = this inside Container
 @Deprecated("Use UINewScrollable")
 open class UIScrollableArea(
-    width: Double = 256.0,
-    height: Double = 256.0,
-    contentWidth: Double = 512.0,
-    contentHeight: Double = 512.0,
-    buttonSize: Double = 32.0,
+    width: Float = 256f,
+    height: Float = 256f,
+    contentWidth: Float = 512f,
+    contentHeight: Float = 512f,
+    buttonSize: Float = 32f,
     verticalScroll: Boolean = true,
     horizontalScroll: Boolean = true,
 ) : UIView(width, height) {
@@ -43,10 +37,10 @@ open class UIScrollableArea(
     var verticalScroll by uiObservable(verticalScroll) { onSizeChanged() }
     var horizontalScroll by uiObservable(horizontalScroll) { onSizeChanged() }
 
-    var stepRatio by uiObservable(0.1) { onSizeChanged() }
+    var stepRatio by uiObservable(0.125f) { onSizeChanged() }
 
-    val viewportWidth get() = if (verticalScroll) width - buttonSize else width
-    val viewportHeight get() = if (horizontalScroll) height - buttonSize else height
+    val viewportWidth: Float get() = if (verticalScroll) width - buttonSize else width
+    val viewportHeight: Float get() = if (horizontalScroll) height - buttonSize else height
 
     val clipContainer = clipContainer(viewportWidth, viewportHeight)
     val container = clipContainer.fixedSizeContainer(contentWidth, contentHeight)
@@ -76,16 +70,16 @@ open class UIScrollableArea(
         container.size(contentWidth, contentHeight)
 
         horScrollBar.size(viewportWidth, buttonSize)
-        horScrollBar.position(0.0, height - buttonSize)
+        horScrollBar.position(0.0, heightD - buttonSize)
         horScrollBar.visible = horizontalScroll
 
         verScrollBar.size(buttonSize, viewportHeight)
-        verScrollBar.position(width - buttonSize, 0.0)
+        verScrollBar.position(widthD - buttonSize, 0.0)
         verScrollBar.visible = verticalScroll
     }
 
     protected open fun onMoved() {
-        container.xD = -horScrollBar.current
-        container.yD = -verScrollBar.current
+        container.x = -horScrollBar.current
+        container.y = -verScrollBar.current
     }
 }

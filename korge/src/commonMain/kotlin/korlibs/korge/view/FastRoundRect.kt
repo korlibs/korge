@@ -1,7 +1,7 @@
 package korlibs.korge.view
 
-import korlibs.korge.render.*
 import korlibs.image.color.*
+import korlibs.korge.render.*
 import korlibs.math.geom.*
 
 inline fun Container.fastRoundRect(
@@ -9,11 +9,11 @@ inline fun Container.fastRoundRect(
     corners: RectCorners = RectCorners(.1f, .1f, 1f, 1f),
     color: RGBA = Colors.WHITE,
     callback: @ViewDslMarker FastRoundRect.() -> Unit = {}
-) = FastRoundRect(size.widthD, size.heightD, corners).colorMul(color).addTo(this, callback)
+) = FastRoundRect(size.width, size.height, corners).colorMul(color).addTo(this, callback)
 
 open class FastRoundRect(
-    width: Double = 100.0,
-    height: Double = 100.0,
+    width: Float = 100f,
+    height: Float = 100f,
     corners: RectCorners = RectCorners(.1f, .1f, 1f, 1f)
 ) : FastRoundRectBase(
     width, height, corners, doScale = true

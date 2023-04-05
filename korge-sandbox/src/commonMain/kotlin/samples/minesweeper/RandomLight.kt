@@ -1,7 +1,7 @@
 package samples.minesweeper
 
-import korlibs.korge.view.*
 import korlibs.image.bitmap.*
+import korlibs.korge.view.*
 import korlibs.math.geom.*
 import korlibs.math.random.*
 import kotlin.random.*
@@ -10,8 +10,8 @@ class RandomLight(
 	parent: Container,
 	light: BmpSlice
 ) : Process(parent) {
-	var w2: Double = stage.width / 2
-	var h2: Double = stage.height / 2
+	var w2: Double = stage.widthD / 2
+	var h2: Double = stage.heightD / 2
 	val random = Random
 	var sx: Double = 0.0
 	var sy: Double = 0.0
@@ -21,7 +21,7 @@ class RandomLight(
 	var excy: Double = 0.0
 
 	init {
-		image(light, 0.5, 0.5).apply {
+		image(light, Anchor.CENTER).apply {
 			blendMode = BlendMode.ADD
 		}
 	}

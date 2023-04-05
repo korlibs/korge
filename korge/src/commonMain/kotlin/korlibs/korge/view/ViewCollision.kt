@@ -17,7 +17,7 @@ internal class ViewCollisionContext {
         out[0].clear()
         val dispX = view.anchorDispX
         val dispY = view.anchorDispY
-        out[0].rect(tempRect1.x + dispX, tempRect1.y + dispY, tempRect1.widthD, tempRect1.heightD)
+        out[0].rect(tempRect1.x + dispX, tempRect1.y + dispY, tempRect1.width, tempRect1.height)
         return out
     }
 

@@ -1,14 +1,14 @@
 package samples.connect4
 
 import korlibs.datastructure.*
+import korlibs.image.bitmap.*
+import korlibs.image.color.*
+import korlibs.io.async.*
 import korlibs.korge.animate.*
 import korlibs.korge.input.*
 import korlibs.korge.scene.*
 import korlibs.korge.tween.*
 import korlibs.korge.view.*
-import korlibs.image.bitmap.*
-import korlibs.image.color.*
-import korlibs.io.async.*
 import korlibs.math.geom.*
 
 class MainConnect4 : ScaledScene(448, 384) {
@@ -52,7 +52,7 @@ class MainConnect4 : ScaledScene(448, 384) {
         }
 
         fun createChip(column: Int, row: Int, chip: Chip): Image {
-            return container.image(chipImages[chip]!!, 0.5, 0.5).position(getPosition(column, row))
+            return container.image(chipImages[chip]!!, Anchor.CENTER).position(getPosition(column, row))
         }
 
         var turn = Chip.RED

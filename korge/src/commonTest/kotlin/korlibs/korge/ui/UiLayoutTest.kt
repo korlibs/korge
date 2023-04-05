@@ -1,17 +1,15 @@
 package korlibs.korge.ui
 
-import korlibs.korge.tests.ViewsForTesting
-import korlibs.korge.view.View
-import korlibs.korge.view.solidRect
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import korlibs.korge.tests.*
+import korlibs.korge.view.*
+import kotlin.test.*
 
 class UiLayoutTest : ViewsForTesting() {
     @Test
     fun test() = viewsTest {
         lateinit var rect1: View
         lateinit var rect2: View
-        val stack = uiHorizontalStack(100.0) {
+        val stack = uiHorizontalStack(100f) {
             rect1 = solidRect(50, 50)
             rect2 = solidRect(50, 50)
         }
@@ -31,7 +29,7 @@ class UiLayoutTest : ViewsForTesting() {
 
     @Test
     fun testGrid() = viewsTest {
-        val container = uiGridFill(300.0, 200.0, cols = 3, rows = 2) {
+        val container = uiGridFill(300f, 200f, cols = 3, rows = 2) {
             for (n in 0 until 5) solidRect(1, 1) { name = "rect$n" }
         }
         assertEquals(

@@ -1,21 +1,19 @@
 package korlibs.korge.view
 
-import korlibs.graphics.*
 import korlibs.graphics.shader.*
+import korlibs.image.bitmap.*
 import korlibs.korge.internal.*
 import korlibs.korge.render.*
-import korlibs.image.bitmap.*
 import korlibs.math.geom.*
 import korlibs.math.geom.vector.*
 
 /**
  * [RectBase] is an abstract [Container] [View] that represents something with a Rect-like shape: like a [SolidRect] or an [Image].
- * It supports anchoring [anchorX] and [anchorY] ratios [0..1] for anchoring this rectangle, and handles pre-computing of vertices for performance.
+ * It supports anchoring [anchor] for this rectangle, and handles pre-computing of vertices for performance.
  */
 @OptIn(KorgeInternal::class)
 open class RectBase(
-	anchorX: Double = 0.0,
-	anchorY: Double = anchorX,
+	anchor: Anchor = Anchor.TOP_LEFT,
 	hitShape: VectorPath? = null,
 	var smoothing: Boolean = true
 ) : View(), Anchorable {
@@ -35,20 +33,19 @@ open class RectBase(
             }
         }
 
-	override var anchorX: Double = anchorX; set(v) { if (field != v) { field = v; dirtyVertices = true; invalidateRender() } }
-    override var anchorY: Double = anchorY; set(v) { if (field != v) { field = v; dirtyVertices = true; invalidateRender() } }
+	override var anchor: Anchor = anchor; set(v) { if (field != v) { field = v; dirtyVertices = true; invalidateRender() } }
 
-    protected open val bwidth: Double get() = 0.0
-	protected open val bheight: Double get() = 0.0
+    protected open val bwidth: Float get() = 0f
+	protected open val bheight: Float get() = 0f
 
-    override val anchorDispX: Double get() = (anchorX * bwidth)
-    override val anchorDispY: Double get() = (anchorY * bheight)
+    override val anchorDispX: Float get() = (anchor.sx * bwidth)
+    override val anchorDispY: Float get() = (anchor.sy * bheight)
 
-    protected open val sLeft: Double get() = -anchorDispX
-	protected open val sTop: Double get() = -anchorDispY
+    protected open val sLeft: Float get() = -anchorDispX
+	protected open val sTop: Float get() = -anchorDispY
 
-	val sRight: Double get() = sLeft + bwidth
-	val sBottom: Double get() = sTop + bheight
+	val sRight: Float get() = sLeft + bwidth
+	val sBottom: Float get() = sTop + bheight
 
     protected val vertices = TexturedVertexArray(4, TexturedVertexArray.QUAD_INDICES)
 
@@ -110,7 +107,7 @@ open class RectBase(
 
 	override fun toString(): String {
 		var out = super.toString()
-		if (anchorX != 0.0 || anchorY != 0.0) out += ":anchor=(${anchorX.str}, ${anchorY.str})"
+		if (anchor != Anchor.TOP_LEFT) out += ":anchor=(${anchor.sx.str}, ${anchor.sy.str})"
 		return out
 	}
 }

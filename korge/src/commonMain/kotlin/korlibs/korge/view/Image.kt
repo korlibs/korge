@@ -1,49 +1,46 @@
 package korlibs.korge.view
 
-import korlibs.korge.render.*
-import korlibs.korge.view.property.*
 import korlibs.image.bitmap.*
 import korlibs.image.format.*
 import korlibs.io.file.*
 import korlibs.io.resources.*
+import korlibs.korge.render.*
+import korlibs.korge.view.property.*
 import korlibs.math.geom.*
 import korlibs.math.geom.vector.*
 
 inline fun Container.image(
-	texture: Resourceable<out BaseBmpSlice>, anchorX: Double = 0.0, anchorY: Double = 0.0, callback: @ViewDslMarker Image.() -> Unit = {}
-): Image = Image(texture, anchorX, anchorY).addTo(this, callback)
+	texture: Resourceable<out BaseBmpSlice>, anchor: Anchor = Anchor.TOP_LEFT, callback: @ViewDslMarker Image.() -> Unit = {}
+): Image = Image(texture, anchor).addTo(this, callback)
 
 inline fun Container.image(
-    texture: BitmapCoords, anchorX: Double = 0.0, anchorY: Double = 0.0, callback: @ViewDslMarker Image.() -> Unit = {}
-): Image = Image(texture, anchorX, anchorY).addTo(this, callback)
+    texture: BitmapCoords, anchor: Anchor = Anchor.TOP_LEFT, callback: @ViewDslMarker Image.() -> Unit = {}
+): Image = Image(texture, anchor).addTo(this, callback)
 
 inline fun Container.image(
-	texture: Bitmap, anchorX: Double = 0.0, anchorY: Double = 0.0, callback: @ViewDslMarker Image.() -> Unit = {}
-): Image = Image(texture, anchorX, anchorY).addTo(this, callback)
+	texture: Bitmap, anchor: Anchor = Anchor.TOP_LEFT, callback: @ViewDslMarker Image.() -> Unit = {}
+): Image = Image(texture, anchor).addTo(this, callback)
 
 //typealias Sprite = Image
 
 open class BaseImage(
     bitmap: Resourceable<out BitmapCoords>,
-    anchorX: Double = 0.0,
-    anchorY: Double = anchorX,
+    anchor: Anchor = Anchor.TOP_LEFT,
     hitShape: VectorPath? = null,
     smoothing: Boolean = true
-) : RectBase(anchorX, anchorY, hitShape, smoothing) {
+) : RectBase(anchor, hitShape, smoothing) {
     constructor(
         bitmap: Bitmap,
-        anchorX: Double = 0.0,
-        anchorY: Double = anchorX,
+        anchor: Anchor = Anchor.TOP_LEFT,
         hitShape: VectorPath? = null,
         smoothing: Boolean = true
-    ) : this(Resourceable(bitmap.slice()), anchorX, anchorY, hitShape, smoothing)
+    ) : this(Resourceable(bitmap.slice()), anchor, hitShape, smoothing)
     constructor(
         bmpCoords: BitmapCoords,
-        anchorX: Double = 0.0,
-        anchorY: Double = anchorX,
+        anchor: Anchor = Anchor.TOP_LEFT,
         hitShape: VectorPath? = null,
         smoothing: Boolean = true
-    ) : this(Resourceable(bmpCoords), anchorX, anchorY, hitShape, smoothing)
+    ) : this(Resourceable(bmpCoords), anchor, hitShape, smoothing)
 
     private var setBitmapSource: Boolean = false
 
@@ -97,23 +94,23 @@ open class BaseImage(
 
     //override val bwidth: Double get() = baseBitmap.frameWidth.toDouble()
     //override val bheight: Double get() = baseBitmap.frameHeight.toDouble()
-    override val bwidth: Double get() = baseBitmap.width.toDouble()
-    override val bheight: Double get() = baseBitmap.height.toDouble()
+    override val bwidth: Float get() = baseBitmap.width.toFloat()
+    override val bheight: Float get() = baseBitmap.height.toFloat()
 
-    open val frameOffsetX: Double get() = baseBitmap.frameOffsetX.toDouble()
-    open val frameOffsetY: Double get() = baseBitmap.frameOffsetY.toDouble()
-    open val frameWidth: Double get() = baseBitmap.frameWidth.toDouble()
-    open val frameHeight: Double get() = baseBitmap.frameHeight.toDouble()
+    open val frameOffsetX: Float get() = baseBitmap.frameOffsetX.toFloat()
+    open val frameOffsetY: Float get() = baseBitmap.frameOffsetY.toFloat()
+    open val frameWidth: Float get() = baseBitmap.frameWidth.toFloat()
+    open val frameHeight: Float get() = baseBitmap.frameHeight.toFloat()
 
-    open val anchorDispXNoOffset get() = (anchorX * frameWidth)
-    open val anchorDispYNoOffset get() = (anchorY * frameHeight)
+    open val anchorDispXNoOffset: Float get() = (anchor.sx * frameWidth)
+    open val anchorDispYNoOffset: Float get() = (anchor.sy * frameHeight)
 
-    override val anchorDispX: Double get() = (anchorDispXNoOffset - frameOffsetX)
-    override val anchorDispY: Double get() = (anchorDispYNoOffset - frameOffsetY)
+    override val anchorDispX: Float get() = (anchorDispXNoOffset - frameOffsetX)
+    override val anchorDispY: Float get() = (anchorDispYNoOffset - frameOffsetY)
 
     override fun getLocalBoundsInternal() = Rectangle(-anchorDispXNoOffset, -anchorDispYNoOffset, frameWidth, frameHeight)
 
-    override fun createInstance(): View = BaseImage(bitmap, anchorX, anchorY, hitShape, smoothing)
+    override fun createInstance(): View = BaseImage(bitmap, anchor, hitShape, smoothing)
 
     override fun toString(): String = super.toString() + ":bitmap=$bitmap"
 }
@@ -125,18 +122,16 @@ interface SmoothedBmpSlice {
 
 class Image(
 	bitmap: Resourceable<out BitmapCoords>,
-	anchorX: Double = 0.0,
-	anchorY: Double = anchorX,
+    anchor: Anchor = Anchor.TOP_LEFT,
 	hitShape: VectorPath? = null,
 	smoothing: Boolean = true
-) : BaseImage(bitmap, anchorX, anchorY, hitShape, smoothing), ViewFileRef by ViewFileRef.Mixin(), SmoothedBmpSlice {
+) : BaseImage(bitmap, anchor, hitShape, smoothing), ViewFileRef by ViewFileRef.Mixin(), SmoothedBmpSlice {
     constructor(
         bitmap: BitmapCoords,
-        anchorX: Double = 0.0,
-        anchorY: Double = anchorX,
+        anchor: Anchor = Anchor.TOP_LEFT,
         hitShape: VectorPath? = null,
         smoothing: Boolean = true
-    ) : this(Resourceable(bitmap), anchorX, anchorY, hitShape, smoothing)
+    ) : this(Resourceable(bitmap), anchor, hitShape, smoothing)
 
     @Suppress("unused")
     @ViewProperty
@@ -145,13 +140,12 @@ class Image(
 
     constructor(
 		bitmap: Bitmap,
-		anchorX: Double = 0.0,
-		anchorY: Double = anchorX,
+        anchor: Anchor = Anchor.TOP_LEFT,
 		hitShape: VectorPath? = null,
 		smoothing: Boolean = true
-	) : this(bitmap.slice(), anchorX, anchorY, hitShape, smoothing)
+	) : this(bitmap.slice(), anchor, hitShape, smoothing)
 
-    override fun createInstance(): View = Image(bitmap, anchorX, anchorY, hitShape, smoothing)
+    override fun createInstance(): View = Image(bitmap, anchor, hitShape, smoothing)
 
     override fun renderInternal(ctx: RenderContext) {
         lazyLoadRenderInternal(ctx, this)

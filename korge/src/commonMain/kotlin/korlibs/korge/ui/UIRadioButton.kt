@@ -1,11 +1,7 @@
 package korlibs.korge.ui
 
-import korlibs.korge.render.*
-import korlibs.korge.style.*
-import korlibs.korge.view.*
-import korlibs.image.bitmap.*
 import korlibs.io.async.*
-import korlibs.math.geom.*
+import korlibs.korge.view.*
 
 class UIRadioButtonGroup {
     private var mutableButtons = hashSetOf<UIRadioButton>()
@@ -34,8 +30,8 @@ class UIRadioButtonGroup {
 }
 
 inline fun Container.uiRadioButton(
-    width: Double = UI_DEFAULT_WIDTH,
-    height: Double = UI_DEFAULT_HEIGHT,
+    width: Float = UI_DEFAULT_WIDTH,
+    height: Float = UI_DEFAULT_HEIGHT,
     checked: Boolean = false,
     text: String = "Radio Button",
     group: UIRadioButtonGroup = UIRadioButtonGroup(),
@@ -43,8 +39,8 @@ inline fun Container.uiRadioButton(
 ): UIRadioButton = UIRadioButton(width, height, checked, group, text).addTo(this).apply(block)
 
 open class UIRadioButton(
-    width: Double = UI_DEFAULT_WIDTH,
-    height: Double = UI_DEFAULT_HEIGHT,
+    width: Float = UI_DEFAULT_WIDTH,
+    height: Float = UI_DEFAULT_HEIGHT,
     checked: Boolean = false,
     group: UIRadioButtonGroup = UIRadioButtonGroup(),
     text: String = "Radio Button",

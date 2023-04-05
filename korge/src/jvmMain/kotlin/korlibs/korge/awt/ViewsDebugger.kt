@@ -2,17 +2,20 @@ package korlibs.korge.awt
 
 import korlibs.datastructure.*
 import korlibs.event.Event
+import korlibs.image.bitmap.*
+import korlibs.image.color.*
+import korlibs.io.async.*
 import korlibs.korge.internal.*
 import korlibs.korge.particle.*
 import korlibs.korge.view.*
 import korlibs.korge.view.Container
+import korlibs.korge.view.Ellipse
 import korlibs.korge.view.Image
-import korlibs.image.bitmap.*
-import korlibs.image.color.*
-import korlibs.io.async.*
-import korlibs.math.geom.Point
+import korlibs.math.geom.*
 import java.awt.*
 import java.awt.event.*
+import java.awt.event.KeyEvent
+import java.awt.event.MouseEvent
 import java.util.*
 import javax.swing.*
 import javax.swing.tree.*
@@ -193,7 +196,7 @@ internal class ViewsDebuggerComponent constructor(
                                 it.isEnabled = isContainer
                                 it.addActionListener {
                                     actions.attachNewView(factory.build().also {
-                                        it.globalPos = Point(views.virtualWidth * 0.5, views.virtualHeight * 0.5)
+                                        it.globalPos = Vector2(views.virtualWidthFloat * 0.5f, views.virtualHeightFloat * 0.5f)
                                     })
                                 }
                             })
@@ -291,7 +294,7 @@ internal class ViewsDebuggerComponent constructor(
         list.add(ViewFactory("Image") { Image(Bitmaps.white).apply { setSize(100.0, 100.0) } })
         list.add(ViewFactory("VectorImage") { VectorImage.createDefault().apply { setSize(100.0, 100.0) } })
         list.add(ViewFactory("SolidRect") { SolidRect(100, 100, Colors.WHITE) })
-        list.add(ViewFactory("Ellipse") { Ellipse(50.0, 50.0, Colors.WHITE).center() })
+        list.add(ViewFactory("Ellipse") { Ellipse(50f, 50f, Colors.WHITE).center() })
         list.add(ViewFactory("Container") { Container() })
         //list.add(ViewFactory("TreeViewRef") { TreeViewRef() })
         list.add(ViewFactory("ParticleEmitter") { ParticleEmitterView(ParticleEmitter()) })

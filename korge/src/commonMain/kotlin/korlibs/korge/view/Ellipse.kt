@@ -1,9 +1,9 @@
 package korlibs.korge.view
 
-import korlibs.korge.ui.*
-import korlibs.korge.view.property.*
 import korlibs.image.color.*
 import korlibs.image.paint.*
+import korlibs.korge.ui.*
+import korlibs.korge.view.property.*
 import korlibs.math.geom.*
 import korlibs.math.geom.vector.*
 
@@ -13,8 +13,8 @@ import korlibs.math.geom.vector.*
  * The [callback] allows to configure the [Circle] instance.
  */
 inline fun Container.ellipse(
-    radiusX: Double = 16.0,
-    radiusY: Double = 16.0,
+    radiusX: Float = 16f,
+    radiusY: Float = 16f,
     fill: Paint = Colors.WHITE,
     stroke: Paint = Colors.WHITE,
     strokeThickness: Double = 0.0,
@@ -27,20 +27,20 @@ inline fun Container.ellipse(
  * The [autoScaling] property determines if the underlying texture will be updated when the hierarchy is scaled.
  */
 open class Ellipse(
-    radiusX: Double = 16.0,
-    radiusY: Double = 16.0,
+    radiusX: Float = 16f,
+    radiusY: Float = 16f,
     fill: Paint = Colors.WHITE,
     stroke: Paint = Colors.WHITE,
     strokeThickness: Double = 0.0,
     autoScaling: Boolean = true,
 ) : ShapeView(shape = VectorPath(), fill = fill, stroke = stroke, strokeThickness = strokeThickness, autoScaling = autoScaling) {
     /** Radius of the circle */
-    var radiusX: Double by uiObservable(radiusX) { updateGraphics() }
-    var radiusY: Double by uiObservable(radiusY) { updateGraphics() }
+    var radiusX: Float by uiObservable(radiusX) { updateGraphics() }
+    var radiusY: Float by uiObservable(radiusY) { updateGraphics() }
 
     @Suppress("unused")
     @ViewProperty(min = 0.0, max = 1000.0, name = "radius")
-    private var radiusXY: Pair<Double, Double>
+    private var radiusXY: Pair<Float, Float>
         get() = radiusX to radiusY
         set(value) {
             radiusX = value.first
@@ -53,12 +53,12 @@ open class Ellipse(
         get() = colorMul
         set(value) { colorMul = value }
 
-    override var width: Double
+    override var width: Float
         get() = radiusX * 2
         set(value) {
             radiusX = value / 2
         }
-    override var height: Double
+    override var height: Float
         get() = radiusY * 2
         set(value) {
             radiusY = value / 2
@@ -71,7 +71,7 @@ open class Ellipse(
     private fun updateGraphics() {
         updatePath {
             clear()
-            ellipse(Point(0, 0), Size(this@Ellipse.width, this@Ellipse.height))
+            ellipse(Point(0, 0), Size(this@Ellipse.widthD, this@Ellipse.heightD))
         }
     }
 }

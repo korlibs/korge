@@ -102,8 +102,8 @@ class ViewTest {
             160.0, 100000.0
         ))
 
-        assertEquals(rect.scaledWidth, 160.0)
-        assertEquals(rect.scaledHeight, 120.0)
+        assertEquals(rect.scaledWidthD, 160.0)
+        assertEquals(rect.scaledHeightD, 120.0)
     }
 
     @Test
@@ -114,8 +114,8 @@ class ViewTest {
             1000000.0, 120.0
         ))
 
-        assertEquals(rect.scaledWidth, 160.0)
-        assertEquals(rect.scaledHeight, 120.0)
+        assertEquals(rect.scaledWidthD, 160.0)
+        assertEquals(rect.scaledHeightD, 120.0)
     }
 
     @Test
@@ -124,8 +124,8 @@ class ViewTest {
 
         rect.scaleWhileMaintainingAspect(ScalingOption.ByWidth(240.0))
 
-        assertEquals(rect.scaledWidth, 240.0)
-        assertEquals(rect.scaledHeight, 180.0)
+        assertEquals(rect.scaledWidthD, 240.0)
+        assertEquals(rect.scaledHeightD, 180.0)
     }
 
     @Test
@@ -134,8 +134,8 @@ class ViewTest {
 
         rect.scaleWhileMaintainingAspect(ScalingOption.ByWidth(40.0))
 
-        assertEquals(rect.scaledWidth, 40.0)
-        assertEquals(rect.scaledHeight, 30.0)
+        assertEquals(rect.scaledWidthD, 40.0)
+        assertEquals(rect.scaledHeightD, 30.0)
     }
 
     @Test
@@ -144,8 +144,8 @@ class ViewTest {
 
         rect.scaleWhileMaintainingAspect(ScalingOption.ByHeight(240.0))
 
-        assertEquals(rect.scaledWidth, 320.0)
-        assertEquals(rect.scaledHeight, 240.0)
+        assertEquals(rect.scaledWidthD, 320.0)
+        assertEquals(rect.scaledHeightD, 240.0)
     }
 
     @Test
@@ -154,8 +154,8 @@ class ViewTest {
 
         rect.scaleWhileMaintainingAspect(ScalingOption.ByHeight(15.0))
 
-        assertEquals(rect.scaledWidth, 20.0)
-        assertEquals(rect.scaledHeight, 15.0)
+        assertEquals(rect.scaledWidthD, 20.0)
+        assertEquals(rect.scaledHeightD, 15.0)
     }
 
     @Test
@@ -262,7 +262,7 @@ class ViewTest {
 
         act("initial")
         act("moveView") { view1.xy(300, 0) }
-        view1.width = 400.0
+        view1.widthD = 400.0
         view1.xD = 100.0
         logs += "view_bounds:" + view1.getBounds()
         act("reinsertView1") { container5.addChild(view1) }

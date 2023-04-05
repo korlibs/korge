@@ -2,12 +2,12 @@ package korlibs.image.bitmap
 
 import korlibs.datastructure.*
 import korlibs.datastructure.iterators.*
-import korlibs.memory.*
 import korlibs.image.color.*
 import korlibs.image.format.*
 import korlibs.io.file.*
 import korlibs.io.util.*
 import korlibs.math.geom.*
+import korlibs.memory.*
 import kotlin.math.*
 
 class NinePatchInfo constructor(
@@ -224,10 +224,14 @@ open class NinePatchBmpSlice(
         }
     }
 
-	val width get() = bmpSlice.width
-	val height get() = bmpSlice.height
-	val dwidth get() = width.toDouble()
-	val dheight get() = height.toDouble()
+	val width: Int get() = bmpSlice.width
+	val height: Int get() = bmpSlice.height
+    @Deprecated("", ReplaceWith("widthD")) val dwidth get() = widthD
+	@Deprecated("", ReplaceWith("heightD")) val dheight get() = heightD
+    val widthD get() = width.toDouble()
+    val heightD get() = height.toDouble()
+    val widthF get() = width.toFloat()
+    val heightF get() = height.toFloat()
 
     fun getSegmentBmpSlice(segment: NinePatchInfo.Segment) = segment.bmpSlice!!
 
@@ -264,6 +268,10 @@ typealias NinePatchBitmap32 = NinePatchBmpSlice
 fun BmpSlice.asNinePatch() = NinePatchBmpSlice(this)
 fun Bitmap.asNinePatch() = NinePatchBitmap32(this.toBMP32IfRequired())
 
+fun BmpSlice.asNinePatchSimpleRatio(left: Float, top: Float, right: Float, bottom: Float) = this.asNinePatchSimple(
+    (left * width).toInt(), (top * height).toInt(),
+    (right * width).toInt(), (bottom * height).toInt()
+)
 fun BmpSlice.asNinePatchSimpleRatio(left: Double, top: Double, right: Double, bottom: Double) = this.asNinePatchSimple(
     (left * width).toInt(), (top * height).toInt(),
     (right * width).toInt(), (bottom * height).toInt()

@@ -2,13 +2,13 @@ package korlibs.korge.view
 
 import korlibs.graphics.*
 import korlibs.graphics.annotation.*
-import korlibs.korge.input.*
-import korlibs.korge.view.property.*
-import korlibs.render.*
 import korlibs.inject.*
 import korlibs.io.resources.*
+import korlibs.korge.input.*
+import korlibs.korge.view.property.*
 import korlibs.math.annotations.*
 import korlibs.math.geom.*
+import korlibs.render.*
 import kotlinx.coroutines.*
 
 /**
@@ -24,8 +24,8 @@ open class Stage internal constructor(override val views: Views) : FixedSizeCont
     , InvalidateNotifier
 {
     override var clip: Boolean by views::clipBorders
-    override var width: Double by views::virtualWidthDouble
-    override var height: Double by views::virtualHeightDouble
+    override var width: Float by views::virtualWidthFloat
+    override var height: Float by views::virtualHeightFloat
 
     val keys: InputKeys get() = views.input.keys
     val input: Input get() = views.input

@@ -1,25 +1,15 @@
 package samples
 
-import korlibs.korge.component.docking.dockedTo
-import korlibs.korge.input.onClick
-import korlibs.korge.scene.Scene
-import korlibs.korge.ui.UIButtonToggleableGroup
-import korlibs.korge.ui.group
-import korlibs.korge.ui.tooltip
-import korlibs.korge.ui.uiButton
-import korlibs.korge.ui.uiGridFill
-import korlibs.korge.ui.uiHorizontalStack
-import korlibs.korge.ui.uiImage
-import korlibs.korge.ui.uiTooltipContainer
-import korlibs.korge.ui.uiVerticalStack
-import korlibs.korge.view.*
-import korlibs.image.bitmap.asumePremultiplied
-import korlibs.image.bitmap.slice
+import korlibs.image.bitmap.*
 import korlibs.image.color.*
 import korlibs.image.format.*
-import korlibs.io.file.std.resourcesVfs
-import korlibs.math.geom.Anchor
-import korlibs.math.geom.ScaleMode
+import korlibs.io.file.std.*
+import korlibs.korge.component.docking.*
+import korlibs.korge.input.*
+import korlibs.korge.scene.*
+import korlibs.korge.ui.*
+import korlibs.korge.view.*
+import korlibs.math.geom.*
 
 class MainUIImageTester : Scene() {
     override suspend fun SContainer.sceneMain() {
@@ -44,7 +34,7 @@ class MainUIImageTester : Scene() {
         image.bgcolor = Colors["#17334f"]
 
         uiTooltipContainer { tooltips ->
-            uiGridFill(100.0, 100.0, cols = 3, rows = 3) {
+            uiGridFill(100f, 100f, cols = 3, rows = 3) {
                 val group = UIButtonToggleableGroup()
                 for (y in 0 until 3) {
                     for (x in 0 until 3) {

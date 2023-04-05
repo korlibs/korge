@@ -1,11 +1,11 @@
 package korlibs.korge.view.filter
 
-import korlibs.memory.*
 import korlibs.graphics.*
 import korlibs.graphics.shader.*
 import korlibs.korge.render.*
 import korlibs.korge.view.property.*
 import korlibs.math.geom.*
+import korlibs.memory.*
 import kotlin.math.*
 
 // https://en.wikipedia.org/wiki/Gaussian_blur
@@ -13,7 +13,7 @@ class DirectionalBlurFilter(
     @ViewProperty
     var angle: Angle = 0.degrees,
     @ViewProperty
-    var radius: Double = 4.0,
+    var radius: Float = 4f,
     @ViewProperty
     var expandBorder: Boolean = true
 ) : ShaderFilter() {
@@ -63,7 +63,7 @@ class DirectionalBlurFilter(
     private val rradius: Double get() = (radius * qfactor)
 
     // @TODO: Here we cannot do this, but we should be able to do this trick: https://www.rastergrid.com/blog/2010/09/efficient-gaussian-blur-with-linear-sampling/
-    //override val recommendedFilterScale: Double get() = if (rradius <= 2.0) 1.0 else 1.0 / log2(rradius.coerceAtLeast(1.0))
+    //override val recommendedFilterScale: Float get() = if (rradius <= 2.0) 1.0 else 1.0 / log2(rradius.coerceAtLeast(1.0))
 
     override fun computeBorder(texWidth: Int, texHeight: Int): MarginInt {
         if (!expandBorder) return MarginInt.ZERO
@@ -76,7 +76,7 @@ class DirectionalBlurFilter(
 
     private fun gaussian(x: Double, constant1: Double, constant2: Double): Double = constant1 * exp((-x * x) * constant2)
 
-    override fun updateUniforms(ctx: RenderContext, filterScale: Double) {
+    override fun updateUniforms(ctx: RenderContext, filterScale: Float) {
         val radius = this.rradius * filterScale
         //println("rradius=$rradius")
         //val sigma = max(radius / 3.0, 0.9)
@@ -105,5 +105,5 @@ class DirectionalBlurFilter(
 
     override val programProvider: ProgramProvider get() = DirectionalBlurFilter
 
-    override val isIdentity: Boolean get() = radius == 0.0
+    override val isIdentity: Boolean get() = radius == 0f
 }

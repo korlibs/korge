@@ -1,14 +1,11 @@
 package korlibs.korge.view
 
-import korlibs.image.bitmap.Bitmap32
-import korlibs.image.bitmap.slice
-import korlibs.image.color.Colors
-import korlibs.image.color.RGBAPremultiplied
-import korlibs.math.geom.degrees
-import kotlin.coroutines.EmptyCoroutineContext
-import kotlin.reflect.KMutableProperty0
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import korlibs.image.bitmap.*
+import korlibs.image.color.*
+import korlibs.math.geom.*
+import kotlin.coroutines.*
+import kotlin.reflect.*
+import kotlin.test.*
 
 class ViewUpdatedTest {
     @Test
@@ -27,19 +24,17 @@ class ViewUpdatedTest {
 
     @Test
     fun testSolidRect() = updatePropertyTest({ solidRect(10.0, 10.0) }) {
-        assertUpdatedOnce(view::width, 5.0)
-        assertUpdatedOnce(view::height, 5.0)
+        assertUpdatedOnce(view::widthD, 5.0)
+        assertUpdatedOnce(view::heightD, 5.0)
         assertUpdatedOnce(view::color, Colors.RED)
-        assertUpdatedOnce(view::anchorX, 0.5)
-        assertUpdatedOnce(view::anchorY, 0.75)
+        assertUpdatedOnce(view::anchor, Anchor(0.5, 0.75))
         assertUpdatedOnce(view::whiteBitmap, Bitmap32(1, 1, RGBAPremultiplied(-1)).slice())
     }
 
     @Test
     fun testImage() = updatePropertyTest({ image(Bitmap32(1, 1, Colors.RED.premultiplied)) }) {
         assertUpdatedOnce(view::bitmap, Bitmap32(1, 1, RGBAPremultiplied(-1)).slice())
-        assertUpdatedOnce(view::anchorX, 0.5)
-        assertUpdatedOnce(view::anchorY, 0.75)
+        assertUpdatedOnce(view::anchor, Anchor(0.5, 0.75))
 
         // @TODO: We might want to repaint when the source has been loaded and this might be asynchronous
         //assertUpdatedOnce(view::bitmapSrc, Bitmap32(1, 1, RGBAPremultiplied(-1)).slice())
