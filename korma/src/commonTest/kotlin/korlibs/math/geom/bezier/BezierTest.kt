@@ -13,8 +13,8 @@ class BezierTest {
         assertEquals(100f, Bezier(Point(0, 0), Point(50, 0), Point(100, 0)).length, 0.001f)
         val bezier = Bezier(Point(0, 0), Point(50, 0), Point(100, 0))
         assertEquals(100f, bezier.length, 0.001f)
-        bezier.setPoints(Point(0, 0), Point(100, 0), Point(100, 100))
-        assertEquals(162.32f, bezier.length.roundDecimalPlaces(2), 0.001f)
+        val bezier2 = Bezier(Point(0, 0), Point(100, 0), Point(100, 100))
+        assertEquals(162.32f, bezier2.length.roundDecimalPlaces(2), 0.001f)
     }
 
     @Test
