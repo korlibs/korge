@@ -33,7 +33,7 @@ class MainBezierSample : Scene() {
             stroke(Colors.WHITE, info = StrokeInfo(thickness = 2f)) {
                 cubic(p0, p1, p2, p3)
             }
-            val ratio = 0.3
+            val ratio = 0.3f
             val split = Bezier(p0, p1, p2, p3).split(ratio)
             val cubic2 = split.leftCurve
             val cubic3 = split.rightCurve

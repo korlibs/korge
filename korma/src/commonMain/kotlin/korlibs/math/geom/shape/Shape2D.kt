@@ -20,7 +20,7 @@ abstract class AbstractShape2D : Shape2D {
     override fun projectedPoint(p: Point): Point = projectedPointExt(p, normal = false)
     protected fun insideSign(p: Point): Float = if (containsPoint(p)) -1f else +1f
     protected fun projectedPointExt(p: Point, normal: Boolean): Point {
-        var length = Double.POSITIVE_INFINITY
+        var length = Float.POSITIVE_INFINITY
         var pp = Point()
         var n = Point()
         toVectorPath().getCurvesList().fastForEach { it.beziers.fastForEach {
@@ -201,8 +201,8 @@ data class CompoundShape2d(val shapes: List<Shape2D>) : AbstractShape2D() {
         buildVectorPath { shapes.fastForEach { shape -> path(shape.toVectorPath()) } }
     }
 
-    override val area: Float get() = shapes.sumOf { it.area.toDouble() }.toFloat()
-    override val perimeter: Float get() = shapes.sumOf { it.perimeter.toDouble() }.toFloat()
+    override val area: Float get() = shapes.sumOfFloat { it.area }
+    override val perimeter: Float get() = shapes.sumOfFloat { it.perimeter }
 
     override fun intersectionsWith(ml: Matrix, that: Shape2D, mr: Matrix): PointList {
         val out = PointArrayList()
@@ -394,17 +394,17 @@ inline fun VectorPath.emitPoints2(
 
 @PublishedApi internal inline fun approximateCurve(
     curveSteps: Int,
-    compute: (ratio: Double, get: (Point) -> Unit) -> Unit,
+    compute: (ratio: Float, get: (Point) -> Unit) -> Unit,
     crossinline emit: (Point) -> Unit,
     includeStart: Boolean = false,
     includeEnd: Boolean = true,
 ) {
     val rcurveSteps = max(curveSteps, 20)
-    val dt = 1.0 / rcurveSteps
+    val dt = 1f / rcurveSteps
     var lastPos = Point()
     var prevPos = Point()
     var emittedCount = 0
-    compute(0.0) { lastPos = it }
+    compute(0f) { lastPos = it }
     val nStart = if (includeStart) 0 else 1
     val nEnd = if (includeEnd) rcurveSteps else rcurveSteps - 1
     for (n in nStart .. nEnd) {
@@ -436,13 +436,13 @@ inline fun VectorPath.emitPoints2(
             l = it
         },
         quadTo = { c, a ->
-            val dt = 1.0 / curveSteps
+            val dt = 1f / curveSteps
             for (n in 1 .. curveSteps) emit(Bezier.quadCalc(l, c, a, n * dt))
             l = a
         },
         cubicTo = { c1,c2, a ->
-            val dt = 1.0 / curveSteps
-            for (n in 1 .. curveSteps) emit(Bezier.cubicCalc(l, c1, c2, a, (n * dt).toFloat()))
+            val dt = 1f / curveSteps
+            for (n in 1 .. curveSteps) emit(Bezier.cubicCalc(l, c1, c2, a, (n * dt)))
             l = a
         },
         close = { flush(true) }

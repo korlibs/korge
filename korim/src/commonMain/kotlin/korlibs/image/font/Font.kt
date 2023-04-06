@@ -104,9 +104,9 @@ data class PlacedGlyphMetrics constructor(
         if (boundsPath.containsPoint(x, y)) return 0.0
 
         val middle = when (startEnd) {
-            true -> caretStart[0.5]
-            false -> caretEnd[0.5]
-            null -> Point.middle(caretStart[0.5], caretEnd[0.5])
+            true -> caretStart[0.5f]
+            false -> caretEnd[0.5f]
+            null -> Point.middle(caretStart[0.5f], caretEnd[0.5f])
         }
         return Point.distance(middle.xD, middle.yD, x, y)
     }

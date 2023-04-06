@@ -10,11 +10,11 @@ import kotlin.test.*
 class BezierTest {
     @Test
     fun testLength() {
-        assertEquals(100.0, Bezier(Point(0, 0), Point(50, 0), Point(100, 0)).length, 0.001)
+        assertEquals(100f, Bezier(Point(0, 0), Point(50, 0), Point(100, 0)).length, 0.001f)
         val bezier = Bezier(Point(0, 0), Point(50, 0), Point(100, 0))
-        assertEquals(100.0, bezier.length, 0.001)
+        assertEquals(100f, bezier.length, 0.001f)
         bezier.setPoints(Point(0, 0), Point(100, 0), Point(100, 100))
-        assertEquals(162.32, bezier.length.roundDecimalPlaces(2), 0.001)
+        assertEquals(162.32f, bezier.length.roundDecimalPlaces(2), 0.001f)
     }
 
     @Test
@@ -25,8 +25,8 @@ class BezierTest {
             quadTo(Point(400.0, 400.0), Point(200.0, 200.0))
         }
         val curves = path.getCurves()
-        assertEquals(590.0, curves.length, 0.4)
-        assertEquals(Rectangle(200, 100, 200, 180), curves.getBounds())
+        assertEquals(590f, curves.length, 0.4f)
+        assertEqualsFloat(Rectangle(200, 100, 200, 180), curves.getBounds(), 0.1)
         assertEquals(
             """
                 (200, 200)
@@ -70,6 +70,6 @@ class BezierTest {
     @Test
     fun testTangent() {
         val bezier = Bezier(Point(74.58, 36.96), Point(74.58, 36.96), Point(77.04, 27.36), Point(71.76, 32.64))
-        assertEquals(Point(0.2482, -0.9687), bezier.tangent(0.0).roundDecimalPlaces(4))
+        assertEquals(Point(0.2482, -0.9687), bezier.tangent(0f).roundDecimalPlaces(4))
     }
 }

@@ -75,11 +75,11 @@ class StrokePointsBuilder(
     }
 
     fun addJoin(curr: Curve, next: Curve, kind: LineJoin, miterLimitRatio: Float) {
-        val commonPoint = curr.calc(1.0)
-        val currTangent = curr.tangent(1.0)
-        val currNormal = curr.normal(1.0)
-        val nextTangent = next.tangent(0.0)
-        val nextNormal = next.normal(0.0)
+        val commonPoint = curr.calc(1f)
+        val currTangent = curr.tangent(1f)
+        val currNormal = curr.normal(1f)
+        val nextTangent = next.tangent(0f)
+        val nextNormal = next.normal(0f)
 
         val currLine0 = MLine.fromPointAndDirection(commonPoint + currNormal * width, currTangent)
         val currLine1 = MLine.fromPointAndDirection(commonPoint + currNormal * -width, currTangent)
@@ -194,10 +194,10 @@ class StrokePointsBuilder(
         addPoint(commonPoint, d1.normalized, -d1.length.toDouble(), d1.length.absoluteValue.toDouble())
     }
 
-    fun addCap(curr: Curve, ratio: Double, kind: LineCap) {
+    fun addCap(curr: Curve, ratio: Float, kind: LineCap) {
         when (kind) {
             LineCap.SQUARE, LineCap.ROUND -> {
-                val derivate = curr.normal(ratio).toNormal().let { if (ratio == 1.0) -it else it }
+                val derivate = curr.normal(ratio).toNormal().let { if (ratio == 1f) -it else it }
                 when (kind) {
                     LineCap.SQUARE -> {
                         //val w = if (ratio == 1.0) -width else width
@@ -208,8 +208,8 @@ class StrokePointsBuilder(
                         val normal = curr.normal(ratio)
                         val p0 = mid + normal * width
                         val p3 = mid + normal * -width
-                        val a = if (ratio == 0.0) p0 else p3
-                        val b = if (ratio == 0.0) p3 else p0
+                        val a = if (ratio == 0f) p0 else p3
+                        val b = if (ratio == 0f) p3 else p0
                         addCurvePointsCap(a, b, ratio, mid)
                     }
                     else -> error("Can't happen")
@@ -221,11 +221,11 @@ class StrokePointsBuilder(
         }
     }
 
-    fun addCurvePointsCap(p0: Point, p3: Point, ratio: Double, mid: Point = Point.middle(p0, p3), nsteps: Int = NSTEPS) {
+    fun addCurvePointsCap(p0: Point, p3: Point, ratio: Float, mid: Point = Point.middle(p0, p3), nsteps: Int = NSTEPS) {
         val angleStart = Angle.between(mid, p0)
         val angleEnd = Angle.between(mid, p3)
 
-        if (ratio == 1.0) addTwoPoints(mid, Point.polar(angleEnd), width)
+        if (ratio == 1f) addTwoPoints(mid, Point.polar(angleEnd), width)
         val addAngle = if (Point.crossProduct(p0, p3) <= 0.0) Angle.ZERO else Angle.HALF
         Ratio.forEachRatio(nsteps, include0 = true, include1 = true) {
             val angle = it.interpolateAngleDenormalized(angleStart, angleEnd)
@@ -233,14 +233,14 @@ class StrokePointsBuilder(
             addPoint(mid, dir, 0.0, width)
             addPoint(mid, dir, width, width)
         }
-        if (ratio == 0.0) addTwoPoints(mid, Point.polar(angleStart), width)
+        if (ratio == 0f) addTwoPoints(mid, Point.polar(angleStart), width)
     }
 
     // @TODO: instead of nsteps we should have some kind of threshold regarding to how much information do we lose at 1:1 scale
     fun addCurvePoints(curr: Curve, nsteps: Int = (curr.length / 10.0).clamp(10.0, 100.0).toInt()) {
         // @TODO: Here we could generate curve information to render in the shader with a plain simple quadratic bezier to reduce the number of points and make the curve as accurate as possible
         Ratio.forEachRatio(nsteps, include0 = false, include1 = false) {
-            addTwoPoints(curr.calc(it.toDouble()), curr.normal(it.toDouble()), width)
+            addTwoPoints(curr.calc(it.toFloat()), curr.normal(it.toFloat()), width)
         }
     }
 
@@ -263,7 +263,7 @@ class StrokePointsBuilder(
                 if (closed) {
                     addJoin(curves.getCyclic(n - 1), curr, join, miterLimit)
                 } else {
-                    addCap(curr, 0.0, startCap)
+                    addCap(curr, 0f, startCap)
                 }
             }
 
@@ -282,7 +282,7 @@ class StrokePointsBuilder(
                 if (closed) {
                     addJoin(curr, next, join, miterLimit)
                 } else {
-                    addCap(curr, 1.0, endCap)
+                    addCap(curr, 1f, endCap)
                 }
             }
         }

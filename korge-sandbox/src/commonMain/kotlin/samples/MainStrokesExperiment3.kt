@@ -257,7 +257,7 @@ class MainStrokesExperiment : Scene() {
             cpuGraphics {
                 stroke(Colors.GREEN, StrokeInfo(thickness = 2f)) {
                     Ratio.forEachRatio(200) { ratio ->
-                        val t = curves.ratioFromLength(ratio.convertToRange(0.0, curves.length))
+                        val t = curves.ratioFromLength(ratio.convertToRange(0f, curves.length))
                         //println("t=$t")
                         val p = curves.calc(t)
                         val n = curves.normal(t)

@@ -294,8 +294,8 @@ class CSS(val allRules: List<IRuleSet>, unit: Unit = Unit) {
                     }
                     "jump-start", "start" -> Easing.EASE_CLAMP_START
                     "jump-end", "end" -> Easing.EASE_CLAMP_END
-                    "step-start" -> Easing { 1.0 } //Easing.steps(1, Easing.EASE_CLAMP_START)
-                    "step-end" -> Easing { 0.0 } //Easing.steps(1, Easing.EASE_CLAMP_END)
+                    "step-start" -> Easing { 1f } //Easing.steps(1, Easing.EASE_CLAMP_START)
+                    "step-end" -> Easing { 0f } //Easing.steps(1, Easing.EASE_CLAMP_END)
                     else -> TODO("${tr.peek(-1)}")
                 }
             }

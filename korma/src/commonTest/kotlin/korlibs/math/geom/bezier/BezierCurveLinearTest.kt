@@ -1,8 +1,7 @@
 package korlibs.math.geom.bezier
 
 import korlibs.math.geom.*
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import kotlin.test.*
 
 class BezierCurveLinearTest {
     val b = Bezier(Point(0, 0), Point(100, 100))
@@ -14,6 +13,6 @@ class BezierCurveLinearTest {
 
     @Test
     fun testMidpointIsIndeedTheMidpoint() {
-        assertEquals(Point(50, 50), b.compute(0.5))
+        assertEquals(Point(50, 50), b.compute(0.5f))
     }
 }

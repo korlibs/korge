@@ -44,7 +44,7 @@ class MainBezier : Scene() {
                 }
                 stroke(Colors.PURPLE, lineWidth = 2.0f) {
                     for (n in 0..50) {
-                        val p = curve.calc(n.toDouble() / 50.0)
+                        val p = curve.calc(n.toFloat() / 50f)
                         this.circle(p, 1f)
                     }
                 }

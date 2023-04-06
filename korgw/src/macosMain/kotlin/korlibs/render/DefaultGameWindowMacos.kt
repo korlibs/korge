@@ -9,6 +9,7 @@ import korlibs.image.format.*
 import korlibs.image.format.ns.*
 import korlibs.io.lang.*
 import korlibs.math.geom.*
+import korlibs.math.geom.Size
 import korlibs.memory.*
 import korlibs.time.*
 import kotlinx.cinterop.*
@@ -489,18 +490,18 @@ class MyDefaultGameWindow : GameWindow() {
 
     override val pixelsPerInch: Float by TimedCache<Float>(0.5.seconds) {
         val screen = window.screen ?: return@TimedCache 96f
-        val screenSizeInPixels = screen.visibleFrame.useContents { MSize(size.width, size.height) }
-        val screenSizeInMillimeters = CGDisplayScreenSize(((screen.deviceDescription["NSScreenNumber"]) as NSNumber).unsignedIntValue).useContents { MSize(width, height) }
+        val screenSizeInPixels = screen.visibleFrame.useContents { Size(size.width, size.height) }
+        val screenSizeInMillimeters = CGDisplayScreenSize(((screen.deviceDescription["NSScreenNumber"]) as NSNumber).unsignedIntValue).useContents { Size(width, height) }
 
         val dpmm = screenSizeInPixels.width / screenSizeInMillimeters.width
-        val dpi = dpmm / 0.0393701
+        val dpi = dpmm / 0.0393701f
 
         //println("screenSizeInPixels=$screenSizeInPixels")
         //println("screenSizeInMillimeters=$screenSizeInMillimeters")
         //println("dpmm=$dpmm")
         //println("dpi=$dpi")
 
-        dpi.toFloat() // 1 millimeter -> 0.0393701 inches
+        dpi // 1 millimeter -> 0.0393701 inches
     }
 
     //override val width: Int get() = window.frame.width.toInt()

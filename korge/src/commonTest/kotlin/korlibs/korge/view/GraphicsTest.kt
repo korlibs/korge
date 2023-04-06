@@ -160,7 +160,7 @@ class GraphicsTest {
             stroke(Colors.WHITE, info = StrokeInfo(thickness = 2f)) {
                 cubic(p0, p1, p2, p3)
             }
-            val ratio = 0.3
+            val ratio = 0.3f
 
             val cubic2 = Bezier(p0, p1, p2, p3).split(ratio).leftCurve
             val cubic3 = Bezier(p0, p1, p2, p3).split(ratio).rightCurve

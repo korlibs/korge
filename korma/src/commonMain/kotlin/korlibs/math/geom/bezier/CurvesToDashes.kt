@@ -14,7 +14,7 @@ fun Curves.toDashes(pattern: FloatArray?, offset: Float = 0f): List<Curves> {
     while (current < length) {
         val len = pattern.getCyclic(index++)
         if (dashNow) {
-            out += splitByLength(current.toDouble(), (current + len).toDouble())
+            out += splitByLength(current, (current + len))
         }
         current += len
         dashNow = !dashNow

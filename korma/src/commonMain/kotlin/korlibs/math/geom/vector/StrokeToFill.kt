@@ -77,7 +77,7 @@ class StrokeToFill {
                             Point(prev.bx.toDouble(), prev.by.toDouble()),
                             Point(i.xD, i.yD),
                             Point(curr.ax.toDouble(), curr.ay.toDouble()),
-                            n.toDouble() / count
+                            n.toFloat() / count
                         ))
                     }
                 } else {

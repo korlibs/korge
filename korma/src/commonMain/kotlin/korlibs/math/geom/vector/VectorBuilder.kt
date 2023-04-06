@@ -14,7 +14,7 @@ interface VectorBuilder {
     fun moveTo(p: Point)
     fun lineTo(p: Point)
     fun quadTo(c: Point, a: Point) {
-        Bezier.quadToCubic(lastPos.xD, lastPos.yD, c.xD, c.yD, a.xD, a.yD) { _, _, cx1, cy1, cx2, cy2, x2, y2 ->
+        Bezier.quadToCubic(lastPos.x, lastPos.y, c.x, c.y, a.x, a.y) { _, _, cx1, cy1, cx2, cy2, x2, y2 ->
             cubicTo(Point(cx1, cy1), Point(cx2, cy2), Point(x2, y2))
         }
         //val x1 = lastX

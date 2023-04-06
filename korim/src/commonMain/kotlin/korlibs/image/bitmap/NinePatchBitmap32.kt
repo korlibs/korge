@@ -28,8 +28,8 @@ class NinePatchInfo constructor(
 	)
 
 	class AxisSegment(val scaled: Boolean, val range: IntRange) {
-		val fixed get() = !scaled
-		val length get() = range.length
+		val fixed: Boolean get() = !scaled
+		val length: Int get() = range.length
 
 		fun computedLength(axis: AxisInfo, boundsLength: Int): Double {
 			val scale = (boundsLength.toDouble() / axis.totalLen.toDouble()).clamp(0.0, 1.0)

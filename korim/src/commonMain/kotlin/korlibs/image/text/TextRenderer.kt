@@ -311,7 +311,7 @@ fun ITextRendererActions.aroundPath(curve: Curve): ITextRendererActions {
             val oldPos = this.pos
             keep(this::transform) {
                 try {
-                    val ratio = curve.ratioFromLength(this.pos.x.toDouble())
+                    val ratio = curve.ratioFromLength(this.pos.x)
                     val pos = curve.calc(ratio)
                     val normal = curve.normal(ratio)
                     val rpos = pos + normal * oldPos.y
