@@ -1,11 +1,11 @@
 package korlibs.korge.issues
 
-import korlibs.korge.*
-import korlibs.korge.input.*
-import korlibs.korge.view.*
 import korlibs.image.color.*
 import korlibs.image.format.*
 import korlibs.io.file.std.*
+import korlibs.korge.*
+import korlibs.korge.input.*
+import korlibs.korge.view.*
 import korlibs.math.geom.*
 import kotlinx.coroutines.*
 
@@ -17,7 +17,7 @@ object Issue83Sample {
         }
     }
 
-    suspend fun main() = Korge(windowSize = SizeInt(512, 512), backgroundColor = Colors["#2b2b2b"]).start {
+    suspend fun main() = Korge(windowSize = Size(512, 512), backgroundColor = Colors["#2b2b2b"]).start {
         val image = image(resourcesVfs["korge.png"].readBitmap()) {
             anchor(.5, .5)
             scale(.8)

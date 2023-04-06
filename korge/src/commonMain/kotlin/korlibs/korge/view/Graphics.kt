@@ -1,9 +1,10 @@
 package korlibs.korge.view
 
+import korlibs.image.vector.*
 import korlibs.korge.internal.*
 import korlibs.korge.view.property.*
 import korlibs.korge.view.vector.*
-import korlibs.image.vector.*
+import korlibs.math.geom.*
 
 inline fun Container.graphics(
     renderer: GraphicsRenderer = GraphicsRenderer.SYSTEM,
@@ -54,20 +55,15 @@ class Graphics(
             invalidateLocalBounds()
         }
 
-    override var anchorX: Double
-        get() = anchorable.anchorX
+    override var anchor: Anchor
+        get() = anchorable.anchor
         set(value) {
-            anchorable.anchorX = value
+            anchorable.anchor = value
             invalidateRender()
         }
-    override var anchorY: Double
-        get() = anchorable.anchorY
-        set(value) {
-            anchorable.anchorY = value
-            invalidateRender()
-        }
-    @KorgeInternal override val anchorDispX: Double get() = rendererView.anchorDispX
-    @KorgeInternal override val anchorDispY: Double get() = rendererView.anchorDispY
+
+    @KorgeInternal override val anchorDispX: Float get() = rendererView.anchorDispX
+    @KorgeInternal override val anchorDispY: Float get() = rendererView.anchorDispY
 
     @ViewProperty
     var antialiased: Boolean = true

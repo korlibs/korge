@@ -1,18 +1,18 @@
 package korlibs.korge.view
 
 import korlibs.graphics.shader.*
+import korlibs.image.color.*
 import korlibs.korge.render.*
 import korlibs.korge.testing.*
-import korlibs.image.color.*
 import korlibs.math.geom.*
 import org.junit.*
 import kotlin.math.*
 
 class SDFViewTest {
     @Test
-    fun test() = korgeScreenshotTest(SizeInt(200, 200)) {
+    fun test() = korgeScreenshotTest(Size(200, 200)) {
         addChild(
-            CircleSDFView(width = 200.0, height = 200.0, time = 2.0)
+            CircleSDFView(size = Size(200f, 200f), time = 2f)
                 .skew(15.degrees, 0.degrees)
                 .also {
                     it.colorMul = Colors.DARKGREY
@@ -22,7 +22,7 @@ class SDFViewTest {
         assertScreenshot(posterize = 5)
     }
 
-    open class CircleSDFView(width: Double = 100.0, height: Double = 100.0, var time: Double = 0.0) : ShadedView(PROGRAM, width, height) {
+    open class CircleSDFView(size: Size = Size(100f, 100f), var time: Float = 0f) : ShadedView(PROGRAM, size) {
         var radius = 0.49
         var feather = 0.005
         var center = Point(0.5, 0.5)

@@ -1,23 +1,22 @@
 package korlibs.korge.view
 
-import korlibs.korge.annotations.*
-import korlibs.korge.testing.*
-import korlibs.korge.view.fast.*
-import korlibs.korge.view.filter.*
-import korlibs.korge.view.vector.*
 import korlibs.image.bitmap.*
 import korlibs.image.color.*
 import korlibs.image.format.*
 import korlibs.image.paint.*
 import korlibs.image.vector.*
 import korlibs.io.file.std.*
+import korlibs.korge.annotations.*
+import korlibs.korge.testing.*
+import korlibs.korge.view.fast.*
+import korlibs.korge.view.filter.*
+import korlibs.korge.view.vector.*
 import korlibs.math.geom.*
-import korlibs.math.geom.vector.*
 import kotlin.test.*
 
 class ReferenceGraphicsTest {
     @Test
-    fun testGraphics() = korgeScreenshotTest(SizeInt(300, 300)) {
+    fun testGraphics() = korgeScreenshotTest(Size(300, 300)) {
         cpuGraphics {
             fill(Colors.RED) {
                 rect(-60, -60, 70, 70)
@@ -25,7 +24,7 @@ class ReferenceGraphicsTest {
         }
 
         // Circle Graphics
-        circle(64.0, fill = Colors.RED, stroke = Colors.BLUE, strokeThickness = 32.0).xy(50, 50).centered.rotation(30.degrees)
+        circle(64f, fill = Colors.RED, stroke = Colors.BLUE, strokeThickness = 32.0).xy(50, 50).centered.rotation(30.degrees)
 
         val bmp = BitmapSlice(
             Bitmap32(64, 64) { x, y -> Colors.PURPLE }.premultipliedIfRequired(),
@@ -49,7 +48,7 @@ class ReferenceGraphicsTest {
     @Test
     fun testFSprites4() = testFSpritesN(4)
 
-    fun testFSpritesN(N: Int) = korgeScreenshotTest(SizeInt(512, 512)) {
+    fun testFSpritesN(N: Int) = korgeScreenshotTest(Size(512, 512)) {
         val bmp = Bitmap32(32, 32, Colors.RED.premultiplied).slice()
         val sprites = FSprites(16)
         val anchorsX = listOf(.5f, .5f, .5f, .0f)
@@ -77,7 +76,7 @@ class ReferenceGraphicsTest {
     @Test
     @OptIn(KorgeExperimental::class)
     @Ignore
-    fun testGpuShapeView() = korgeScreenshotTest(SizeInt(512, 512)) {
+    fun testGpuShapeView() = korgeScreenshotTest(Size(512, 512)) {
         val korgeBitmap = resourcesVfs["korge.png"].readBitmap()
         val view = gpuShapeView({
             keep {
@@ -149,19 +148,19 @@ class ReferenceGraphicsTest {
     }
 
     @Test
-    fun testGpuShapeViewFilter() = korgeScreenshotTest(SizeInt(400, 400)) {
+    fun testGpuShapeViewFilter() = korgeScreenshotTest(Size(400, 400)) {
         container {
-            scale = 1.2
-            circle(100.0).xy(100, 100).filters(DropshadowFilter())
+            scaleAvg = 1.2f
+            circle(100f).xy(100, 100).filters(DropshadowFilter())
         }
         assertScreenshot(posterize = 6)
     }
 
     @Test
     //@Ignore
-    fun testBlurFilterInEmptyContainer() = korgeScreenshotTest(SizeInt(512, 512)) {
+    fun testBlurFilterInEmptyContainer() = korgeScreenshotTest(Size(512, 512)) {
         val view = solidRect(100, 100) {
-            filter = BlurFilter(4.0)
+            filter = BlurFilter(4f)
         }
         assertScreenshot(this, "blur", includeBackground = true)
     }

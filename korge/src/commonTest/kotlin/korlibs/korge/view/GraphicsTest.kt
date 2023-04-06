@@ -1,19 +1,16 @@
 package korlibs.korge.view
 
 import assertEqualsFloat
-import korlibs.memory.*
-import korlibs.graphics.log.AGLog
-import korlibs.korge.render.RenderContext
-import korlibs.image.color.Colors
-import korlibs.io.async.suspendTest
-import korlibs.io.util.niceStr
+import korlibs.graphics.log.*
+import korlibs.image.color.*
+import korlibs.io.async.*
+import korlibs.io.util.*
+import korlibs.korge.render.*
 import korlibs.math.geom.*
-import korlibs.math.geom.bezier.Bezier
+import korlibs.math.geom.bezier.*
 import korlibs.math.geom.vector.*
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
+import korlibs.memory.*
+import kotlin.test.*
 
 class GraphicsTest {
     @Test
@@ -29,8 +26,8 @@ class GraphicsTest {
         //assertEquals("#ff0000ff", bmp[99, 99].hexString)
         assertEquals("#ff0000ff", bmp[1, 1].hexString)
         assertEquals("#ff0000ff", bmp[98, 98].hexString)
-        assertEquals(-50.0, g._sLeft)
-        assertEquals(-50.0, g._sTop)
+        assertEquals(-50f, g._sLeft)
+        assertEquals(-50f, g._sTop)
     }
 
     @Test
@@ -52,16 +49,16 @@ class GraphicsTest {
                 rect(0, 0, 100, 100)
             }
         }.also { g ->
-            assertEquals(100.0, g.width)
-            assertEquals(100.0, g.height)
+            assertEquals(100.0, g.widthD)
+            assertEquals(100.0, g.heightD)
         }
         CpuGraphics().updateShape {
             fill(Colors.RED) {
                 rect(10, 10, 100, 100)
             }
         }.also { g ->
-            assertEquals(100.0, g.width)
-            assertEquals(100.0, g.height)
+            assertEquals(100.0, g.widthD)
+            assertEquals(100.0, g.heightD)
         }
     }
 
@@ -88,10 +85,10 @@ class GraphicsTest {
         lateinit var circle2: Circle
         val container = Container().apply {
             scale(1.2)
-            circle1 = circle(128.0, Colors.RED)
+            circle1 = circle(128f, Colors.RED)
                 .scale(0.75)
                 .anchor(Anchor.MIDDLE_CENTER)
-            circle2 = circle(64.0, Colors.BLUE)
+            circle2 = circle(64f, Colors.BLUE)
                 .scale(1.5)
                 .anchor(Anchor.MIDDLE_CENTER)
         }
@@ -182,7 +179,7 @@ class GraphicsTest {
     @Test
     fun testScale() {
         val container = Container()
-        container.scale = 2.0
+        container.scaleD = 2.0
         val graphics = CpuGraphics(autoScaling = true).addTo(container)
         graphics.updateShape(redrawNow = true) { fill(Colors.RED) { rect(50, 50, 100, 100) } }
         graphics.anchor(Anchor(0.75, 0.5))
@@ -223,12 +220,12 @@ class GraphicsTest {
             fill(Colors.BLUE)
         }
 
-        val posCircle = container.circle(25.0, fill = Colors.ORANGE) {
+        val posCircle = container.circle(25f, fill = Colors.ORANGE) {
             anchor(Anchor.CENTER)
             position(graphics.pos)
         }
 
-        val posCircle2 = container.circle(5.0, fill = Colors.RED) {
+        val posCircle2 = container.circle(5f, fill = Colors.RED) {
             anchor(Anchor.CENTER)
             position(100.0, 100.0)
         }

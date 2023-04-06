@@ -1,11 +1,11 @@
 package korlibs.korge.view
 
 import korlibs.datastructure.*
-import korlibs.logger.*
-import korlibs.korge.annotations.*
-import korlibs.korge.render.*
 import korlibs.image.bitmap.*
 import korlibs.image.color.*
+import korlibs.korge.annotations.*
+import korlibs.korge.render.*
+import korlibs.logger.*
 import korlibs.math.geom.*
 import kotlinx.coroutines.*
 
@@ -45,7 +45,7 @@ fun View.unsafeRenderToBitmapSync(
     bgcolor: RGBA = Colors.TRANSPARENT
 ): Bitmap32 {
     val view = this
-    val bounds = getLocalBoundsOptimizedAnchored(includeFilters = true)
+    val bounds = getLocalBounds(includeFilters = true)
 
     //println("bounds=$bounds")
 

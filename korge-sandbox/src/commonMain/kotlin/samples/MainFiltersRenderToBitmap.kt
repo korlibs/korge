@@ -1,24 +1,25 @@
 package samples
 
-import korlibs.time.*
-import korlibs.korge.scene.Scene
-import korlibs.korge.view.*
-import korlibs.korge.view.filter.*
 import korlibs.image.format.*
 import korlibs.io.file.std.*
+import korlibs.korge.scene.*
+import korlibs.korge.view.*
+import korlibs.korge.view.filter.*
+import korlibs.math.geom.*
+import korlibs.time.*
 
 class MainFiltersRenderToBitmap : Scene() {
     override suspend fun SContainer.sceneMain() {
         println("LOADING IMAGE...")
         val bitmap = resourcesVfs["korge.png"].readBitmap()
-        val container = FixedSizeContainer(width, height).apply {
+        val container = FixedSizeContainer(Size(width, height)).apply {
             //scale(2.0, 2.0)
             println("PREPARING VIEWS...")
             image(bitmap).scale(.5).position(0, 0).addFilter(WaveFilter(time = 0.5.seconds))
             //image(bitmap).scale(.5).position(256, 0).addFilter(DirectionalBlurFilter(radius = 32.0))
-            image(bitmap).scale(.5).position(256, 0).addFilter(BlurFilter(radius = 32.0))
-            image(bitmap).scale(.5).position(512, 0).addFilter(TransitionFilter(TransitionFilter.Transition.SWEEP, reversed = false, spread = 1.0, ratio = 0.5))
-            image(bitmap).scale(.5).position(0, 256).addFilter(PageFilter(hratio = 0.5, hamplitude1 = 20.0))
+            image(bitmap).scale(.5).position(256, 0).addFilter(BlurFilter(radius = 32f))
+            image(bitmap).scale(.5).position(512, 0).addFilter(TransitionFilter(TransitionFilter.Transition.SWEEP, reversed = false, spread = 1.0f, ratio = 0.5f))
+            image(bitmap).scale(.5).position(0, 256).addFilter(PageFilter(hratio = 0.5f, hamplitude1 = 20.0f))
             image(bitmap).scale(.5).position(256, 256).addFilter(Convolute3Filter(Convolute3Filter.KERNEL_SHARPEN))
             image(bitmap).scale(.5).position(512, 256).addFilter(SwizzleColorsFilter("bgga"))
             println("VIEWS PREPARED")

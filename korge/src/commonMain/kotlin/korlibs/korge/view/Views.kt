@@ -2,19 +2,9 @@ package korlibs.korge.view
 
 import korlibs.datastructure.*
 import korlibs.datastructure.iterators.*
-import korlibs.time.*
-import korlibs.memory.*
+import korlibs.event.*
 import korlibs.graphics.*
 import korlibs.graphics.log.*
-import korlibs.event.*
-import korlibs.korge.*
-import korlibs.korge.annotations.*
-import korlibs.korge.bitmapfont.*
-import korlibs.korge.input.*
-import korlibs.korge.internal.*
-import korlibs.korge.render.*
-import korlibs.korge.stat.*
-import korlibs.render.*
 import korlibs.image.color.*
 import korlibs.image.font.*
 import korlibs.image.format.*
@@ -26,7 +16,17 @@ import korlibs.io.file.std.*
 import korlibs.io.lang.*
 import korlibs.io.resources.*
 import korlibs.io.stream.*
+import korlibs.korge.*
+import korlibs.korge.annotations.*
+import korlibs.korge.bitmapfont.*
+import korlibs.korge.input.*
+import korlibs.korge.internal.*
+import korlibs.korge.render.*
+import korlibs.korge.stat.*
 import korlibs.math.geom.*
+import korlibs.memory.*
+import korlibs.render.*
+import korlibs.time.*
 import kotlinx.coroutines.*
 import kotlin.collections.set
 import kotlin.coroutines.*
@@ -125,14 +125,17 @@ class Views constructor(
     /** The defined virtual height */
 	var virtualHeight: Int = DefaultViewport.HEIGHT; internal set
 
-    var virtualWidthDouble: Double
-        get() = virtualWidth.toDouble()
-        set(value) { virtualWidth = value.toInt() }
-    var virtualHeightDouble: Double
-        get() = virtualHeight.toDouble()
-        set(value) { virtualHeight = value.toInt() }
+    var virtualWidthDouble: Double get() = virtualWidth.toDouble() ; set(value) { virtualWidth = value.toInt() }
+    var virtualHeightDouble: Double get() = virtualHeight.toDouble() ; set(value) { virtualHeight = value.toInt() }
 
-	private val closeables = arrayListOf<AsyncCloseable>()
+    var virtualWidthFloat: Float get() = virtualWidth.toFloat() ; set(value) { virtualWidth = value.toInt() }
+    var virtualHeightFloat: Float get() = virtualHeight.toFloat() ; set(value) { virtualHeight = value.toInt() }
+    var virtualSizeFloat: Size get() = Size(virtualWidthFloat, virtualHeightFloat); set(value) {
+        virtualWidthFloat = value.width
+        virtualHeightFloat = value.height
+    }
+
+    private val closeables = arrayListOf<AsyncCloseable>()
 
     /**
      * Adds a [callback] to be executed when the game is closed in normal circumstances.
@@ -347,9 +350,8 @@ class Views constructor(
 	fun resized() {
 		//println("$e : ${views.ag.backWidth}x${views.ag.backHeight}")
         bp.setBoundsInfo(
-            virtualWidth,
-            virtualHeight,
-            actualSize,
+            Size(virtualWidth, virtualHeight),
+            actualSize.toFloat(),
             scaleMode,
             scaleAnchor,
             this::virtualSize.toRef(),
@@ -603,27 +605,28 @@ interface BoundsProvider {
 }
 
 fun BoundsProvider.setBoundsInfo(
-    virtualWidth: Int,
-    virtualHeight: Int,
-    actualSize: SizeInt,
+    reqVirtualSize: Size,
+    actualSize: Size,
     scaleMode: ScaleMode = ScaleMode.FILL,
     anchor: Anchor = Anchor.CENTER,
     virtualSize: Ref<SizeInt> = Ref(),
     targetSize: Ref<SizeInt> = Ref()
 ) {
-    virtualSize.value = SizeInt(virtualWidth, virtualHeight)
+    val reqVirtualSize = reqVirtualSize.toInt()
+    val actualSize = actualSize.toInt()
+    virtualSize.value = reqVirtualSize
     targetSize.value = scaleMode(virtualSize.value, actualSize)
 
-    val ratioX = targetSize.value.width.toDouble() / virtualWidth.toDouble()
-    val ratioY = targetSize.value.height.toDouble() / virtualHeight.toDouble()
+    val ratioX = targetSize.value.width.toDouble() / reqVirtualSize.width.toDouble()
+    val ratioY = targetSize.value.height.toDouble() / reqVirtualSize.height.toDouble()
     val actualVirtualWidth = (actualSize.width / ratioX).toIntRound()
     val actualVirtualHeight = (actualSize.height / ratioY).toIntRound()
 
     globalToWindowMatrix = Matrix.IDENTITY
         .prescaled(ratioX, ratioY)
         .pretranslated(
-            ((actualVirtualWidth - virtualWidth) * anchor.doubleX).toIntRound().toDouble(),
-            ((actualVirtualHeight - virtualHeight) * anchor.doubleY).toIntRound().toDouble(),
+            ((actualVirtualWidth - reqVirtualSize.width) * anchor.doubleX).toIntRound().toDouble(),
+            ((actualVirtualHeight - reqVirtualSize.height) * anchor.doubleY).toIntRound().toDouble(),
         )
     windowToGlobalMatrix = globalToWindowMatrix.inverted()
     globalToWindowTransform = globalToWindowMatrix.toTransform()

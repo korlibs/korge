@@ -1,11 +1,10 @@
 package korlibs.korge.view
 
 import assertEqualsFloat
-import korlibs.korge.tests.ViewsForTesting
-import korlibs.image.bitmap.Bitmap32
+import korlibs.image.bitmap.*
+import korlibs.korge.tests.*
 import korlibs.math.geom.*
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import kotlin.test.*
 
 class ViewTest {
     @Test
@@ -27,10 +26,10 @@ class ViewTest {
         lateinit var rect: SolidRect
         lateinit var rectParent: Container
         val container = Container().apply {
-            scale = 2.0
+            scaleD = 2.0
             position(10, 10)
             rectParent = container {
-                scale = 3.0
+                scaleD = 3.0
                 rect = solidRect(100, 100).position(30, 30)
             }
         }
@@ -42,8 +41,8 @@ class ViewTest {
     @Test
     fun testConcatMatrix() {
         val viewsForTesting = ViewsForTesting(
-            windowSize = SizeInt(200, 200),
-            virtualSize = SizeInt(100, 100),
+            windowSize = Size(200, 200),
+            virtualSize = Size(100, 100),
         )
         lateinit var root: Container
         lateinit var middle: Container
@@ -60,7 +59,7 @@ class ViewTest {
         }
 
         val log = arrayListOf<String>()
-        log.add("[1]:${leaf.getLocalBoundsOptimizedAnchored().toStringCompat()}")
+        log.add("[1]:${leaf.getLocalBounds().toStringCompat()}")
         log.add("[3]:${leaf.getBounds().toStringCompat()}")
         log.add("[2]:${leaf.getBounds(leaf).toStringCompat()}")
         log.add("[4]:${leaf.getBounds(middle).toStringCompat()}")
@@ -103,8 +102,8 @@ class ViewTest {
             160.0, 100000.0
         ))
 
-        assertEquals(rect.scaledWidth, 160.0)
-        assertEquals(rect.scaledHeight, 120.0)
+        assertEquals(rect.scaledWidthD, 160.0)
+        assertEquals(rect.scaledHeightD, 120.0)
     }
 
     @Test
@@ -115,8 +114,8 @@ class ViewTest {
             1000000.0, 120.0
         ))
 
-        assertEquals(rect.scaledWidth, 160.0)
-        assertEquals(rect.scaledHeight, 120.0)
+        assertEquals(rect.scaledWidthD, 160.0)
+        assertEquals(rect.scaledHeightD, 120.0)
     }
 
     @Test
@@ -125,8 +124,8 @@ class ViewTest {
 
         rect.scaleWhileMaintainingAspect(ScalingOption.ByWidth(240.0))
 
-        assertEquals(rect.scaledWidth, 240.0)
-        assertEquals(rect.scaledHeight, 180.0)
+        assertEquals(rect.scaledWidthD, 240.0)
+        assertEquals(rect.scaledHeightD, 180.0)
     }
 
     @Test
@@ -135,8 +134,8 @@ class ViewTest {
 
         rect.scaleWhileMaintainingAspect(ScalingOption.ByWidth(40.0))
 
-        assertEquals(rect.scaledWidth, 40.0)
-        assertEquals(rect.scaledHeight, 30.0)
+        assertEquals(rect.scaledWidthD, 40.0)
+        assertEquals(rect.scaledHeightD, 30.0)
     }
 
     @Test
@@ -145,8 +144,8 @@ class ViewTest {
 
         rect.scaleWhileMaintainingAspect(ScalingOption.ByHeight(240.0))
 
-        assertEquals(rect.scaledWidth, 320.0)
-        assertEquals(rect.scaledHeight, 240.0)
+        assertEquals(rect.scaledWidthD, 320.0)
+        assertEquals(rect.scaledHeightD, 240.0)
     }
 
     @Test
@@ -155,8 +154,8 @@ class ViewTest {
 
         rect.scaleWhileMaintainingAspect(ScalingOption.ByHeight(15.0))
 
-        assertEquals(rect.scaledWidth, 20.0)
-        assertEquals(rect.scaledHeight, 15.0)
+        assertEquals(rect.scaledWidthD, 20.0)
+        assertEquals(rect.scaledHeightD, 15.0)
     }
 
     @Test
@@ -164,12 +163,12 @@ class ViewTest {
         val c = Container()
         val rect1 = c.solidRect(1, 1)
         val rect2 = c.solidRect(1, 1)
-        rect1.zIndex = 0.0
-        rect2.zIndex = 1.0
+        rect1.zIndex = 0f
+        rect2.zIndex = 1f
         fun getRenderViews(): List<View> = ArrayList<View>().also { array -> c.fastForEachChildRender { array.add(it) } }
         assertEquals(listOf(rect1, rect2), getRenderViews())
-        rect1.zIndex = 1.0
-        rect2.zIndex = 0.0
+        rect1.zIndex = 1f
+        rect2.zIndex = 0f
         assertEquals(listOf(rect2, rect1), getRenderViews())
     }
 
@@ -263,11 +262,11 @@ class ViewTest {
 
         act("initial")
         act("moveView") { view1.xy(300, 0) }
-        view1.width = 400.0
-        view1.x = 100.0
+        view1.unscaledWidthD = 400.0
+        view1.xD = 100.0
         logs += "view_bounds:" + view1.getBounds()
         act("reinsertView1") { container5.addChild(view1) }
-        view1.y = 700.0
+        view1.yD = 700.0
         act("reinsertView1_2") { view1.parent = container2 }
 
         assertEquals(

@@ -1,13 +1,10 @@
 package samples
 
-import korlibs.time.seconds
-import korlibs.korge.scene.Scene
-import korlibs.korge.time.intervalAndNow
-import korlibs.korge.view.SContainer
-import korlibs.korge.view.scale
-import korlibs.korge.view.solidRect
-import korlibs.korge.view.text
-import korlibs.korge.view.xy
+import korlibs.korge.scene.*
+import korlibs.korge.time.*
+import korlibs.korge.view.*
+import korlibs.math.geom.*
+import korlibs.time.*
 
 class MainDpi : Scene() {
     override suspend fun SContainer.sceneMain() {
@@ -16,8 +13,7 @@ class MainDpi : Scene() {
         val rect = solidRect(views.virtualPixelsPerCm * 2, views.virtualPixelsPerCm * 2).xy(0, 400)
 
         intervalAndNow(0.5.seconds) {
-            rect.width = views.virtualPixelsPerCm * 2
-            rect.height = views.virtualPixelsPerCm * 2
+            rect.unscaledSize = Size(views.virtualPixelsPerCm * 2, views.virtualPixelsPerCm * 2)
             text.text = """
             nativeWidth: ${views.nativeWidth}, ${views.nativeHeight}
             devicePixelRatio: ${views.devicePixelRatio}

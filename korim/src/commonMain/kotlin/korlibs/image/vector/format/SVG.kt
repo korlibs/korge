@@ -1,8 +1,6 @@
 package korlibs.image.vector.format
 
 import korlibs.datastructure.*
-import korlibs.time.*
-import korlibs.logger.*
 import korlibs.image.annotation.*
 import korlibs.image.color.*
 import korlibs.image.paint.*
@@ -12,9 +10,11 @@ import korlibs.image.vector.*
 import korlibs.io.lang.*
 import korlibs.io.serialization.xml.*
 import korlibs.io.util.*
+import korlibs.logger.*
 import korlibs.math.geom.*
 import korlibs.math.geom.shape.*
 import korlibs.math.geom.vector.*
+import korlibs.time.*
 import kotlin.collections.set
 
 class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = null) : SizedDrawable {
@@ -130,18 +130,18 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
 
         val paint = g
 
-        fun parseStops(xml: Xml): List<Pair<Double, RGBA>> {
-            val out = arrayListOf<Pair<Double, RGBA>>()
+        fun parseStops(xml: Xml): List<Pair<Float, RGBA>> {
+            val out = arrayListOf<Pair<Float, RGBA>>()
             for (stop in xml.children("stop")) {
                 val info = SVG.parseAttributesAndStyles(stop)
-                var offset = 0.0
+                var offset = 0f
                 var colorStop = SVG.ColorDefaultBlack.defaultColor
-                var alphaStop = 1.0
+                var alphaStop = 1f
                 for ((key, value) in info) {
                     when (key) {
                         "offset" -> offset = CSS.parseRatio(value)
                         "stop-color" -> colorStop = SVG.ColorDefaultBlack[value]
-                        "stop-opacity" -> alphaStop = value.toDoubleOrNull() ?: 1.0
+                        "stop-opacity" -> alphaStop = value.toFloatOrNull() ?: 1f
                     }
                 }
                 out += Pair(offset, RGBA(colorStop.rgb, ((colorStop.ad * alphaStop) * 255).toInt()))

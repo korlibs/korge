@@ -1,16 +1,16 @@
 package samples
 
-import korlibs.korge.*
-import korlibs.korge.scene.*
-import korlibs.korge.view.*
-import korlibs.korge.view.filter.*
-import korlibs.korge.view.property.*
 import korlibs.image.color.*
 import korlibs.image.font.*
 import korlibs.image.paint.*
 import korlibs.image.text.*
 import korlibs.io.async.*
 import korlibs.io.file.std.*
+import korlibs.korge.*
+import korlibs.korge.scene.*
+import korlibs.korge.view.*
+import korlibs.korge.view.filter.*
+import korlibs.korge.view.property.*
 import korlibs.math.geom.*
 import kotlin.properties.*
 
@@ -46,7 +46,7 @@ class MainGraphicsText : Scene() {
             //drawText("hello", font = DefaultTtfFont, x = 50.0)
         }
             //.filters(IdentityFilter)
-            .filters(DropshadowFilter(dropX = 200.0))
+            .filters(DropshadowFilter(dropX = 200f))
             .xy(200, 200)
         /*
         graphics { fill(Colors.RED) { circle(0, 0, 10) } }.xy(100, 100)

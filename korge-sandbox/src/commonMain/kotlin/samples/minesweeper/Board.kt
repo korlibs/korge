@@ -1,13 +1,14 @@
 package samples.minesweeper
 
-import korlibs.time.*
 import korlibs.audio.sound.*
-import korlibs.korge.render.*
-import korlibs.korge.view.*
 import korlibs.image.bitmap.*
 import korlibs.image.text.*
 import korlibs.io.lang.*
+import korlibs.korge.render.*
+import korlibs.korge.view.*
+import korlibs.math.geom.*
 import korlibs.math.random.*
+import korlibs.time.*
 import kotlin.random.*
 
 // Process of the board
@@ -38,8 +39,10 @@ class Board(
 	var lastx: Int = 0
 	var lasty: Int = 0
 
-	override var width = bwidth * imageSet.height.toDouble()
-	override var height = bheight * imageSet.height.toDouble()
+    override var unscaledSize: Size = Size(
+        bwidth * imageSet.height.toFloat(),
+        bheight * imageSet.height.toFloat()
+    )
 
 	init {
 		// Creating text with time
@@ -47,8 +50,8 @@ class Board(
 		//timeText = Text("", 50, 50, Text.Align.center, Text.Align.middle, Color.white, Font.fromResource("font.ttf", 40));
 		val FONT_HEIGHT = 32.0
         timeText = text("00:00", font = views.minesweeperFont, textSize = FONT_HEIGHT).apply {
-			centerXBetween(0.0, this@Board.width)
-			y = -FONT_HEIGHT - 16
+			centerXBetween(0.0, this@Board.widthD)
+			yD = -FONT_HEIGHT - 16
 			alignment = TextAlignment.CENTER
 		}
 
@@ -56,11 +59,11 @@ class Board(
 		//x = screen.width / 2 - width / 2
 		//y = screen.height / 2 - (height - 10 - FONT_HEIGHT) / 2
 
-        x = scene.sceneWidth / 2 - width / 2
-        y = scene.sceneHeight / 2 - (height - 10 - FONT_HEIGHT) / 2
+        xD = scene.sceneWidth / 2 - widthD / 2
+        yD = scene.sceneHeight / 2 - (heightD - 10 - FONT_HEIGHT) / 2
 
 		//centerOnStage()
-		y += FONT_HEIGHT / 2
+		yD += FONT_HEIGHT / 2
 
 		// Restart board
 		restart()
@@ -283,10 +286,10 @@ class Board(
 	suspend fun play() {
 		while (true) {
 			//println("Mouse.x: ${Mouse.x}, x=$x")
-			if (mouse.x >= x && mouse.x < x + bwidth * imageSet.height) {
-				if (mouse.y >= y && mouse.y < y + bheight * imageSet.height) {
-					val px = ((mouse.x - x) / imageSet.height).toInt()
-					val py = ((mouse.y - y) / imageSet.height).toInt()
+			if (mouse.x >= xD && mouse.x < xD + bwidth * imageSet.height) {
+				if (mouse.y >= yD && mouse.y < yD + bheight * imageSet.height) {
+					val px = ((mouse.x - xD) / imageSet.height).toInt()
+					val py = ((mouse.y - yD) / imageSet.height).toInt()
 
 					if (mouse.released[0]) {
 						if (!mark[py][px]) {

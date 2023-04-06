@@ -11,17 +11,17 @@ import korlibs.math.geom.*
 
 open class DropshadowFilter(
     @ViewProperty
-    var dropX: Double = 10.0,
+    var dropX: Float = 10f,
     @ViewProperty
-    var dropY: Double = 10.0,
+    var dropY: Float = 10f,
     @ViewProperty
     var shadowColor: RGBA = Colors.BLACK.withAd(0.75),
     @ViewProperty
-    var blurRadius: Double = 4.0,
+    var blurRadius: Float = 4f,
     @ViewProperty
     var smoothing: Boolean = true
 ) : Filter {
-    private val blur = BlurFilter(16.0)
+    private val blur = BlurFilter(16f)
 
     override fun computeBorder(texWidth: Int, texHeight: Int): MarginInt {
         val out = blur.computeBorder(texWidth, texHeight)
@@ -42,7 +42,7 @@ open class DropshadowFilter(
         texHeight: Int,
         renderColorMul: RGBA,
         blendMode: BlendMode,
-        filterScale: Double,
+        filterScale: Float,
     ) {
         //println(blur.border)
         blur.radius = blurRadius

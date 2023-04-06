@@ -1,15 +1,11 @@
 package korlibs.korge.ui
 
-import korlibs.datastructure.iterators.fastForEachWithIndex
-import korlibs.korge.annotations.KorgeExperimental
-import korlibs.korge.input.mouse
-import korlibs.korge.view.Container
-import korlibs.korge.view.DummyView
-import korlibs.korge.view.View
-import korlibs.korge.view.ViewDslMarker
-import korlibs.korge.view.addTo
-import korlibs.korge.view.solidRect
-import korlibs.image.color.Colors
+import korlibs.datastructure.iterators.*
+import korlibs.image.color.*
+import korlibs.korge.annotations.*
+import korlibs.korge.input.*
+import korlibs.korge.view.*
+import korlibs.math.geom.*
 
 @KorgeExperimental
 class UITreeViewNode<T>(val element: T, val items: List<UITreeViewNode<T>> = emptyList()) {
@@ -19,7 +15,7 @@ class UITreeViewNode<T>(val element: T, val items: List<UITreeViewNode<T>> = emp
 @KorgeExperimental
 class UITreeViewList<T>(
     val nodes: List<UITreeViewNode<T>> = listOf(),
-    override val height: Double = 20.0,
+    override val height: Float = 20f,
     val genView: (T) -> View = { UIText("$it") }
 ) : UITreeViewProvider<UITreeViewNode<T>> {
     override fun getNumChildren(node: UITreeViewNode<T>?): Int {
@@ -42,7 +38,7 @@ fun <T> UITreeViewProvider<T>.getChildrenList(node: T?): List<T> = List(getNumCh
 
 @KorgeExperimental
 interface UITreeViewProvider<T> {
-    val height: Double
+    val height: Float
     fun getNumChildren(node: T?): Int
     fun getChildAt(node: T?, index: Int): T
     fun getViewForNode(node: T): View
@@ -50,7 +46,7 @@ interface UITreeViewProvider<T> {
     object Dummy : UITreeViewProvider<Any> {
         operator fun <T> invoke(): UITreeViewProvider<T> = Dummy as UITreeViewProvider<T>
 
-        override val height: Double get() = 0.0
+        override val height: Float get() = 0f
 
         override fun getNumChildren(node: Any?): Int = 0
         override fun getChildAt(node: Any?, index: Int): Any = Unit
@@ -70,15 +66,15 @@ private class UITreeViewVerticalListProviderAdapter<T>(val provider: UITreeViewP
     private var selectedBackground: View? = null
 
     override val numItems: Int get() = items.size
-    override val fixedHeight: Double get() = provider.height
+    override val fixedHeight: Float get() = provider.height
 
-    override fun getItemHeight(index: Int): Double = fixedHeight
+    override fun getItemHeight(index: Int): Float = fixedHeight
     override fun getItemView(index: Int, vlist: UIVerticalList): View {
         val node = items[index]
         val childCount = provider.getNumChildren(node.value)
         val container = UIFillLayeredContainer()
         val background = container.solidRect(10, 10, Colors.TRANSPARENT)
-        val stack = container.uiHorizontalStack(padding = 2.0)
+        val stack = container.uiHorizontalStack(padding = 2f)
         val child = provider.getViewForNode(node.value)
         stack.solidRect(10 * node.indentation, 10, Colors.TRANSPARENT)
         val rect = stack.solidRect(10, 10, Colors.TRANSPARENT)
@@ -166,17 +162,16 @@ private class UITreeViewVerticalListProviderAdapter<T>(val provider: UITreeViewP
 @KorgeExperimental
 inline fun <T> Container.uiTreeView(
     provider: UITreeViewProvider<T>,
-    width: Double = 256.0,
-    height: Double = 256.0,
+    size: Size = Size(256, 256),
     block: @ViewDslMarker Container.(UITreeView<T>) -> Unit = {}
-): UITreeView<T> = UITreeView(provider, width, height)
+): UITreeView<T> = UITreeView(provider, size)
     .addTo(this).also { block(it) }
 
 @KorgeExperimental
 class UITreeView<T>(
     provider: UITreeViewProvider<T>,
-    width: Double = 128.0, height: Double = 128.0,
-) : UIGridFill(width, height, cols = 1, rows = 1) {
+    size: Size = Size(128, 128),
+) : UIGridFill(size, cols = 1, rows = 1) {
     val scrollable = uiScrollable {  }
     @KorgeExperimental
     internal val list = scrollable.container.uiVerticalList(UIVerticalList.Provider.Dummy)

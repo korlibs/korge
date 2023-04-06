@@ -1,10 +1,10 @@
 package korlibs.korge
 
-import korlibs.logger.*
-import korlibs.korge.testing.*
-import korlibs.korge.view.*
 import korlibs.image.color.*
 import korlibs.io.lang.*
+import korlibs.korge.testing.*
+import korlibs.korge.view.*
+import korlibs.logger.*
 import korlibs.math.geom.*
 import org.junit.Test
 import kotlin.test.*
@@ -17,7 +17,7 @@ class KorgeHeadlessJvmTest {
         if (Environment["DISABLE_HEADLESS_TEST"] == "true") return
         var wasCalled = false
         logger.info { "1" }
-        korgeScreenshotTest(windowSize = SizeInt(256, 256), bgcolor = Colors["#2b2b2b"]) {
+        korgeScreenshotTest(windowSize = Size(256, 256), bgcolor = Colors["#2b2b2b"]) {
             val image = solidRect(100, 100, Colors.RED) {
                 rotation = 16.degrees
                 anchor(.5, .5)

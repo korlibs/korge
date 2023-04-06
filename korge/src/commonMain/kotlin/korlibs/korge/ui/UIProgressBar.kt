@@ -1,31 +1,30 @@
 package korlibs.korge.ui
 
-import korlibs.memory.*
 import korlibs.korge.render.*
 import korlibs.korge.style.*
 import korlibs.korge.view.*
 import korlibs.korge.view.property.*
+import korlibs.math.geom.*
+import korlibs.memory.*
 
 inline fun Container.uiProgressBar(
-    width: Double = 256.0,
-    height: Double = 24.0,
-    current: Double = 0.0,
-    maximum: Double = 100.0,
+    size: Size = Size(256, 24),
+    current: Float = 0f,
+    maximum: Float = 100f,
     block: @ViewDslMarker UIProgressBar.() -> Unit = {}
-): UIProgressBar = UIProgressBar(width, height, current, maximum).addTo(this).apply(block)
+): UIProgressBar = UIProgressBar(size, current, maximum).addTo(this).apply(block)
 
 open class UIProgressBar(
-	width: Double = 256.0,
-	height: Double = 24.0,
-	current: Double = 0.0,
-	maximum: Double = 100.0,
-) : UIView(width, height), ViewLeaf {
+    size: Size = Size(256, 24),
+    current: Float = 0f,
+    maximum: Float = 100f,
+) : UIView(size), ViewLeaf {
     @ViewProperty(min = 0.0, max = 100.0)
-	var current by uiObservable(current) { updateState() }
+	var current: Float by uiObservable(current) { updateState() }
     @ViewProperty(min = 0.0, max = 100.0)
-	var maximum by uiObservable(maximum) { updateState() }
+	var maximum: Float by uiObservable(maximum) { updateState() }
 
-	override var ratio: Double
+	override var ratio: Float
 		set(value) { current = value * maximum }
 		get() = (current / maximum).clamp01()
 

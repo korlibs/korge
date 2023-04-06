@@ -1,26 +1,24 @@
 package korlibs.korge.ui
 
 import korlibs.datastructure.*
+import korlibs.image.bitmap.*
 import korlibs.korge.input.*
 import korlibs.korge.render.*
 import korlibs.korge.view.*
-import korlibs.image.bitmap.*
 import korlibs.math.geom.*
 import kotlin.math.*
 
 open class UIView(
-	width: Double = 90.0,
-	height: Double = 32.0,
+    size: Size = DEFAULT_SIZE,
     cache: Boolean = false
-) : FixedSizeCachedContainer(width, height, cache = cache) {
-    private var _width: Double = width
-    private var _height: Double = height
-	override var width: Double
-        get() = _width
-        set(value) { if (_width != value) { _width = value; onSizeChanged() } }
-	override var height: Double
-        get() = _height
-        set(value) { if (_height != value) { _height = value; onSizeChanged() } }
+) : FixedSizeCachedContainer(size, cache = cache, clip = false) {
+    override var unscaledSize: Size = size
+        set(value) {
+            if (field != value) {
+                field = value
+                onSizeChanged()
+            }
+        }
 
     //var preferredWidth: Double = 100.0
     //var preferredHeight: Double = 100.0
@@ -35,14 +33,7 @@ open class UIView(
         }
     }
 
-    override fun setSize(width: Double, height: Double) {
-        if (width == this._width && height == this._height) return
-        _width = width
-        _height = height
-        onSizeChanged()
-    }
-
-    override fun getLocalBoundsInternal(): Rectangle = Rectangle(0.0, 0.0, width, height)
+    override fun getLocalBoundsInternal(): Rectangle = Rectangle(0.0, 0.0, widthD, heightD)
 
     open var enabled: Boolean
 		get() = mouseEnabled
@@ -89,6 +80,10 @@ open class UIView(
 	}
 
     companion object {
+        const val DEFAULT_WIDTH = 90f
+        const val DEFAULT_HEIGHT = 32f
+        val DEFAULT_SIZE = Size(DEFAULT_WIDTH, DEFAULT_HEIGHT)
+
         fun fitIconInRect(iconView: Image, bmp: BmpSlice, width: Double, height: Double, anchor: Anchor) {
             val iconScaleX = width / bmp.width
             val iconScaleY = height / bmp.height
@@ -103,10 +98,9 @@ open class UIView(
 }
 
 open class UIFocusableView(
-    width: Double = 90.0,
-    height: Double = 32.0,
+    size: Size = Size(90, 32),
     cache: Boolean = false
-) : UIView(width, height, cache), UIFocusable {
+) : UIView(size, cache), UIFocusable {
     override val UIFocusManager.Scope.focusView: View get() = this@UIFocusableView
     override var tabIndex: Int = 0
     override var isFocusable: Boolean = true

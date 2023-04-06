@@ -25,8 +25,8 @@ class ViewCollisionTest {
         lateinit var circle1: Circle
         lateinit var circle2: Circle
         val container = Container().apply {
-            circle1 = circle(50.0, fill = Colors.RED, renderer = GraphicsRenderer.GPU).xy(100.0, 100.0).centered
-            circle2 = circle(50.0, fill = Colors.GREEN, renderer = GraphicsRenderer.GPU).xy(0, 0)
+            circle1 = circle(50f, fill = Colors.RED, renderer = GraphicsRenderer.GPU).xy(100.0, 100.0).centered
+            circle2 = circle(50f, fill = Colors.GREEN, renderer = GraphicsRenderer.GPU).xy(0, 0)
         }
         assertNotNull(circle1.hitTestView(circle2))
         circle1.xy(130.0, 130.0)

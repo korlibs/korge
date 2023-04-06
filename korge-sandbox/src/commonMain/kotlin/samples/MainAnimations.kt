@@ -52,8 +52,8 @@ class MainAnimations : ScaledScene(512, 512) {
                         }
                         parallel {
                             //rect1.moveTo(0, 150)
-                            moveToWithSpeed(rect1, width - 100, 0.0)
-                            moveToWithSpeed(rect2, 0.0, height - 100 - 100)
+                            moveToWithSpeed(rect1, widthD - 100, 0.0)
+                            moveToWithSpeed(rect2, 0.0, heightD - 100 - 100)
                             //rect1.moveTo(0, height - 100)
                         }
                         block {
@@ -61,8 +61,8 @@ class MainAnimations : ScaledScene(512, 512) {
                         }
                         parallel {
                             //rect1.moveTo(0, 150)
-                            moveTo(rect1, width - 100, height - 100)
-                            moveTo(rect2, width - 100, height - 100)
+                            moveTo(rect1, widthD - 100, heightD - 100)
+                            moveTo(rect2, widthD - 100, heightD - 100)
                             //rect1.moveTo(0, height - 100)
                         }
                         block {

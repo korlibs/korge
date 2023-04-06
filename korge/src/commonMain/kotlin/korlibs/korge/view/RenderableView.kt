@@ -1,28 +1,21 @@
 package korlibs.korge.view
 
-import korlibs.korge.annotations.KorgeExperimental
-import korlibs.korge.render.RenderContext2D
+import korlibs.korge.annotations.*
+import korlibs.korge.render.*
+import korlibs.math.geom.*
 
 @KorgeExperimental
-inline fun Container.renderableView(
-    width: Double = 128.0,
-    height: Double = 24.0,
-    noinline viewRenderer: RenderableView.() -> Unit,
-): RenderableView = RenderableView(width, height, viewRenderer).addTo(this)
+inline fun Container.renderableView(size: Size = Size(128, 24), noinline viewRenderer: RenderableView.() -> Unit, ): RenderableView = RenderableView(size, viewRenderer).addTo(this)
 
 @KorgeExperimental
-inline fun Container.renderableView(
-    width: Double = 128.0,
-    height: Double = 24.0,
-    viewRenderer: ViewRenderer,
-): RenderableView = RenderableView(width, height, viewRenderer).addTo(this)
+inline fun Container.renderableView(size: Size = Size(128, 24), viewRenderer: ViewRenderer, ): RenderableView = RenderableView(size, viewRenderer).addTo(this)
 
-class RenderableView(width: Double, height: Double, var viewRenderer: ViewRenderer) : CustomContextRenderizableView(width, height) {
+class RenderableView(size: Size, var viewRenderer: ViewRenderer) : CustomContextRenderizableView(size) {
     var isFocused: Boolean = false
     var isOver: Boolean = false
     var isDown: Boolean = false
 
-    override fun renderer(context: RenderContext2D, width: Double, height: Double) {
+    override fun renderer(context: RenderContext2D, size: Size) {
         viewRenderer.apply { render() }
     }
 }

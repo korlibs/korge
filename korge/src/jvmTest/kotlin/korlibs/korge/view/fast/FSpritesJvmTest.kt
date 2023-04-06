@@ -1,16 +1,16 @@
 package korlibs.korge.view.fast
 
+import korlibs.image.bitmap.*
+import korlibs.image.color.*
 import korlibs.korge.testing.*
 import korlibs.korge.tests.*
 import korlibs.korge.view.*
-import korlibs.image.bitmap.*
-import korlibs.image.color.*
 import korlibs.math.geom.*
 import kotlin.test.*
 
 class FSpritesJvmTest : ViewsForTesting(log = true) {
     @Test
-    fun test() = korgeScreenshotTest(SizeInt(512, 512)) {
+    fun test() = korgeScreenshotTest(Size(512, 512)) {
         val sprites = FSprites(64)
         val view = sprites.createView(Bitmaps.white.bmp)
         addChild(view)
@@ -29,12 +29,12 @@ class FSpritesJvmTest : ViewsForTesting(log = true) {
     }
 
     @Test
-    fun testAlpha() = korgeScreenshotTest(SizeInt(20, 20), bgcolor = Colors.GREEN) {
+    fun testAlpha() = korgeScreenshotTest(Size(20, 20), bgcolor = Colors.GREEN) {
         val bmp = Bitmap32(10, 10, Colors.RED).premultiplied()
         image(bmp).xy(0, 0)
         image(bmp) {
             xy(0, 10)
-            alpha = .5
+            alpha = .5f
         }
 
         val fSprites = FSprites(2)

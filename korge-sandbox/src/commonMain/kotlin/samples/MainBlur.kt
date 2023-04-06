@@ -1,26 +1,26 @@
 package samples
 
-import korlibs.datastructure.fastArrayListOf
-import korlibs.time.*
-import korlibs.korge.scene.Scene
+import korlibs.datastructure.*
+import korlibs.image.color.*
+import korlibs.image.format.*
+import korlibs.io.file.std.*
+import korlibs.korge.scene.*
 import korlibs.korge.style.*
 import korlibs.korge.ui.*
 import korlibs.korge.view.*
 import korlibs.korge.view.filter.*
-import korlibs.image.color.Colors
-import korlibs.image.format.readBitmap
-import korlibs.io.file.std.resourcesVfs
 import korlibs.math.geom.Anchor
 import korlibs.math.geom.degrees
-import kotlin.reflect.KMutableProperty0
+import korlibs.time.*
+import kotlin.reflect.*
 
 class MainBlur : Scene() {
     override suspend fun SContainer.sceneMain() {
-        solidRect(views.stage.width, views.stage.height, Colors.WHITE)
+        solidRect(views.stage.widthD, views.stage.heightD, Colors.WHITE)
         val bitmap = resourcesVfs["korim.png"].readBitmap()
 
-        val initialBlur = 6.0
-        var filterScale = 1.0
+        val initialBlur = 6f
+        var filterScale = 1f
         fun <T : View> T.bindScale(): T {
             addUpdater { this.filterScale = filterScale }
             return this
@@ -28,16 +28,16 @@ class MainBlur : Scene() {
 
         val blur1 = BlurFilter(initialBlur)
         val blur2 = BlurFilter(initialBlur)
-        val radiusProps = fastArrayListOf<KMutableProperty0<Double>>()
+        val radiusProps = fastArrayListOf<KMutableProperty0<Float>>()
 
         addUpdater {
             //blur2.radius = blur1.radius
-            blur2.radius = blur1.radius / 2.0
+            blur2.radius = blur1.radius / 2f
             for (prop in radiusProps) prop.set(blur1.radius)
             //println(blur1.radius)
         }
 
-        fun bindRadius(prop: KMutableProperty0<Double>) = radiusProps.add(prop)
+        fun bindRadius(prop: KMutableProperty0<Float>) = radiusProps.add(prop)
         fun DirectionalBlurFilter.bindRadius() = also { bindRadius(it::radius) }
         fun BlurFilter.bindRadius() = also { bindRadius(it::radius) }
 
@@ -67,13 +67,13 @@ class MainBlur : Scene() {
             .bindScale()
         //.visible(false)
 
-        val dropshadowFilter = DropshadowFilter(blurRadius = 1.0, shadowColor = Colors.RED.withAd(0.3))
+        val dropshadowFilter = DropshadowFilter(blurRadius = 1f, shadowColor = Colors.RED.withAd(0.3))
         image(bitmap).xy(500, 100).filters(dropshadowFilter).bindScale()
 
-        val colorMatrixFilter = ColorMatrixFilter(ColorMatrixFilter.SEPIA_MATRIX, blendRatio = 0.5)
+        val colorMatrixFilter = ColorMatrixFilter(ColorMatrixFilter.SEPIA_MATRIX, blendRatio = 0.5f)
         image(bitmap).xy(500, 250).filters(colorMatrixFilter).bindScale()
 
-        val transitionFilter = TransitionFilter(TransitionFilter.Transition.CIRCULAR, reversed = false, ratio = 0.5, spread = 0.2)
+        val transitionFilter = TransitionFilter(TransitionFilter.Transition.CIRCULAR, reversed = false, ratio = 0.5f, spread = 0.2f)
         image(bitmap).xy(370, 250).filters(transitionFilter).bindScale()
 
         val pageFilter = PageFilter()
@@ -87,23 +87,23 @@ class MainBlur : Scene() {
 
         image(bitmap).xy(900, 600).filters(blur1, waveFilter, blur1, pageFilter).bindScale()
 
-        uiVerticalStack(padding = 2.0, width = 370.0) {
+        uiVerticalStack(padding = 2f, width = 370f) {
             xy(50, 400)
             uiHorizontalFill {
                 uiText("Blur radius").styles { textColor = Colors.BLACK }
-                uiSlider(value = initialBlur, max = 32, step = 0.1).changed { blur1.radius = it.toDouble()  }
+                uiSlider(value = initialBlur, max = 32, step = 0.1).changed { blur1.radius = it }
             }
             uiHorizontalFill {
                 uiText("Drop radius").styles { textColor = Colors.BLACK }
-                uiSlider(value = dropshadowFilter.blurRadius.toInt(), max = 32).changed { dropshadowFilter.blurRadius = it.toDouble() }
+                uiSlider(value = dropshadowFilter.blurRadius.toInt(), max = 32).changed { dropshadowFilter.blurRadius = it }
             }
             uiHorizontalFill {
                 uiText("Drop X").styles { textColor = Colors.BLACK }
-                uiSlider(value = dropshadowFilter.dropX.toInt(), min = -32, max = +32).changed { dropshadowFilter.dropX = it.toDouble() }
+                uiSlider(value = dropshadowFilter.dropX.toInt(), min = -32, max = +32).changed { dropshadowFilter.dropX = it }
             }
             uiHorizontalFill {
                 uiText("Drop Y").styles { textColor = Colors.BLACK }
-                uiSlider(value = dropshadowFilter.dropY.toInt(), min = -32, max = +32).changed { dropshadowFilter.dropY = it.toDouble() }
+                uiSlider(value = dropshadowFilter.dropY.toInt(), min = -32, max = +32).changed { dropshadowFilter.dropY = it }
             }
             uiHorizontalFill {
                 uiButton("black").clicked { dropshadowFilter.shadowColor = Colors.BLACK.withAd(dropshadowFilter.shadowColor.ad) }

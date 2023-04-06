@@ -1,12 +1,12 @@
 package korlibs.math.geom
 
-import korlibs.memory.*
-import korlibs.memory.pack.*
 import korlibs.math.annotations.*
 import korlibs.math.geom.shape.*
 import korlibs.math.geom.vector.*
 import korlibs.math.internal.*
 import korlibs.math.math.*
+import korlibs.memory.*
+import korlibs.memory.pack.*
 import kotlin.math.*
 
 //@KormaValueApi
@@ -121,19 +121,19 @@ inline class Rectangle(val data: Float4Pack) : Shape2D {
             else -> p0
         }
 
-        val px = p.x.clamp(left, right)
-        val py = p.y.clamp(top, bottom)
-        val distTop = (py - top).absoluteValue
-        val distBottom = (py - bottom).absoluteValue
-        val minDistY = min(distTop, distBottom)
-        val distLeft = (px - left).absoluteValue
-        val distRight = (px - right).absoluteValue
-        val minDistX = min(distLeft, distRight)
-        if (minDistX < minDistY) {
-            return Point(if (distLeft < distRight) left else right, py)
-        } else {
-            return Point(px, if (distTop < distBottom) top else bottom)
-        }
+        //val px = p.x.clamp(left, right)
+        //val py = p.y.clamp(top, bottom)
+        //val distTop = (py - top).absoluteValue
+        //val distBottom = (py - bottom).absoluteValue
+        //val minDistY = min(distTop, distBottom)
+        //val distLeft = (px - left).absoluteValue
+        //val distRight = (px - right).absoluteValue
+        //val minDistX = min(distLeft, distRight)
+        //if (minDistX < minDistY) {
+        //    return Point(if (distLeft < distRight) left else right, py)
+        //} else {
+        //    return Point(px, if (distTop < distBottom) top else bottom)
+        //}
     }
 
     val isEmpty: Boolean get() = width == 0f && height == 0f

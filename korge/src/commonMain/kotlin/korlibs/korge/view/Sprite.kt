@@ -4,19 +4,20 @@ import korlibs.time.*
 import korlibs.memory.umod
 import korlibs.image.bitmap.*
 import korlibs.io.async.Signal
+import korlibs.math.geom.*
 import korlibs.math.geom.vector.VectorPath
 
 inline fun Container.sprite(
-    initialAnimation: SpriteAnimation, anchorX: Double = 0.0, anchorY: Double = 0.0, callback: @ViewDslMarker Sprite.() -> Unit = {}
-): Sprite = Sprite(initialAnimation, anchorX, anchorY).addTo(this, callback)
+    initialAnimation: SpriteAnimation, anchor: Anchor = Anchor.TOP_LEFT, callback: @ViewDslMarker Sprite.() -> Unit = {}
+): Sprite = Sprite(initialAnimation, anchor).addTo(this, callback)
 
 inline fun Container.sprite(
-    texture: BmpSlice = Bitmaps.white, anchorX: Double = 0.0, anchorY: Double = 0.0, callback: @ViewDslMarker Sprite.() -> Unit = {}
-): Sprite = Sprite(texture, anchorX, anchorY).addTo(this, callback)
+    texture: BmpSlice = Bitmaps.white, anchor: Anchor = Anchor.TOP_LEFT, callback: @ViewDslMarker Sprite.() -> Unit = {}
+): Sprite = Sprite(texture, anchor).addTo(this, callback)
 
 inline fun Container.sprite(
-    texture: Bitmap, anchorX: Double = 0.0, anchorY: Double = 0.0, callback: @ViewDslMarker Sprite.() -> Unit = {}
-): Sprite = Sprite(texture, anchorX, anchorY).addTo(this, callback)
+    texture: Bitmap, anchor: Anchor = Anchor.TOP_LEFT, callback: @ViewDslMarker Sprite.() -> Unit = {}
+): Sprite = Sprite(texture, anchor).addTo(this, callback)
 
 /**
  * A [Sprite] is basically an [Image] with added abilities to display a [SpriteAnimation]
@@ -38,26 +39,23 @@ inline fun Container.sprite(
  */
 open class Sprite(
     bitmap: BmpSlice = Bitmaps.white,
-    anchorX: Double = 0.0,
-    anchorY: Double = anchorX,
+    anchor: Anchor = Anchor.TOP_LEFT,
     hitShape: VectorPath? = null,
     smoothing: Boolean = true
-) : BaseImage(bitmap, anchorX, anchorY, hitShape, smoothing) {
+) : BaseImage(bitmap, anchor, hitShape, smoothing) {
     constructor(
         bitmap : Bitmap,
-        anchorX: Double = 0.0,
-        anchorY: Double = anchorX,
+        anchor: Anchor = Anchor.TOP_LEFT,
         hitShape: VectorPath? = null,
         smoothing: Boolean = true
-    ) : this(bitmap.slice(), anchorX, anchorY, hitShape, smoothing)
+    ) : this(bitmap.slice(), anchor, hitShape, smoothing)
 
     constructor(
         initialAnimation: SpriteAnimation,
-        anchorX: Double = 0.0,
-        anchorY: Double = anchorX,
+        anchor: Anchor = Anchor.TOP_LEFT,
         hitShape: VectorPath? = null,
         smoothing: Boolean = true
-    ) : this(initialAnimation.firstSprite, anchorX, anchorY, hitShape, smoothing) {
+    ) : this(initialAnimation.firstSprite, anchor, hitShape, smoothing) {
         currentAnimation = initialAnimation
         setFrame(0)
     }

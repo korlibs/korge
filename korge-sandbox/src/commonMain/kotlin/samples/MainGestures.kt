@@ -4,7 +4,6 @@ import korlibs.time.seconds
 import korlibs.time.timesPerSecond
 import korlibs.korge.input.*
 import korlibs.korge.scene.ScaledScene
-import korlibs.korge.scene.Scene
 import korlibs.korge.tween.get
 import korlibs.korge.tween.tween
 import korlibs.korge.ui.uiButton
@@ -42,7 +41,7 @@ class MainGestures : ScaledScene(512, 512) {
 
         gestures {
             onMagnify {
-                image.scale += it.amount * image.scale
+                image.scaleD += it.amount * image.scaleD
             }
             onRotate {
                 image.rotation += 5.degrees * it.amount
@@ -54,9 +53,9 @@ class MainGestures : ScaledScene(512, 512) {
             var startRotation = 0.degrees
 
             scaleRecognizer(start = {
-                startImageRatio = image.scale
+                startImageRatio = image.scaleD
             }) {
-                image.scale = startImageRatio * this.ratio
+                image.scaleD = startImageRatio * this.ratio
             }
 
             rotationRecognizer(start = {

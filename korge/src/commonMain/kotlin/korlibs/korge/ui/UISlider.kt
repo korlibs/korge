@@ -1,13 +1,14 @@
 package korlibs.korge.ui
 
-import korlibs.memory.*
-import korlibs.korge.input.*
-import korlibs.korge.view.*
-import korlibs.korge.view.property.*
 import korlibs.image.color.*
 import korlibs.image.text.*
 import korlibs.io.async.*
 import korlibs.io.util.*
+import korlibs.korge.input.*
+import korlibs.korge.view.*
+import korlibs.korge.view.property.*
+import korlibs.math.geom.*
+import korlibs.memory.*
 
 inline fun Container.uiSlider(
     value: Number = UISlider.DEFAULT_VALUE,
@@ -15,25 +16,24 @@ inline fun Container.uiSlider(
     max: Number = UISlider.DEFAULT_MAX,
     step: Number = UISlider.DEFAULT_STEP,
     decimalPlaces: Int = UISlider.decimalPlacesFromStep(step.toDouble()),
-    width: Double = UISlider.DEFAULT_WIDTH,
-    height: Double = UISlider.DEFAULT_HEIGHT,
+    size: Size = UISlider.DEFAULT_SIZE,
     block: @ViewDslMarker UISlider.() -> Unit = {}
-): UISlider = UISlider(value, min, max, step, decimalPlaces, width, height).addTo(this).apply(block)
+): UISlider = UISlider(value, min, max, step, decimalPlaces, size).addTo(this).apply(block)
 
 class UISlider(
     value: Number = DEFAULT_VALUE, min: Number = DEFAULT_MIN, max: Number = DEFAULT_MAX, step: Number = DEFAULT_STEP,
     decimalPlaces: Int = DEFAULT_DECIMAL_PLACES,
-    width: Double = DEFAULT_WIDTH, height: Double = DEFAULT_HEIGHT
-) : UIView(width, height) {
+    size: Size = UISlider.DEFAULT_SIZE,
+    //width: Float = DEFAULT_WIDTH, height: Float = DEFAULT_HEIGHT
+) : UIView(size) {
     companion object {
         const val DEFAULT_VALUE = 0
         const val DEFAULT_MIN = 0
         const val DEFAULT_MAX = 100
-        const val DEFAULT_STEP = 1.0
+        const val DEFAULT_STEP = 1f
         const val DEFAULT_DECIMAL_PLACES = 1
-        const val DEFAULT_WIDTH = 128.0
-        const val DEFAULT_HEIGHT = 16.0
-        const val NO_STEP = 0.0
+        val DEFAULT_SIZE = Size(128, 16)
+        const val NO_STEP = 0f
 
         fun decimalPlacesFromStep(step: Double): Int = when {
             step >= 1.0 -> 0
@@ -42,11 +42,11 @@ class UISlider(
         }
     }
 
-    val bg = solidRect(width, height, RGBA(32, 32, 32))
-    val button = solidRect(height, height, Colors.DARKGREY)
+    val bg = solidRect(size, RGBA(32, 32, 32))
+    val button = solidRect(size, Colors.DARKGREY)
     val text = text("", alignment = TextAlignment.TOP_LEFT, color = Colors.BLACK)
 
-    val onChange: Signal<Double> = Signal()
+    val onChange: Signal<Float> = Signal()
 
     @ViewProperty
     var min: Double = min.toDouble()
@@ -83,7 +83,7 @@ class UISlider(
                 field = rvalue
                 reposition()
                 valueChanged()
-                onChange(rvalue)
+                onChange(rvalue.toFloat())
             }
         }
 
@@ -94,18 +94,18 @@ class UISlider(
             valueChanged()
         }
 
-    private val maxXPos: Double get() = (bg.width - button.width)
+    private val maxXPos: Double get() = (bg.widthD - button.widthD)
 
     //val clampedValue: Int get() = value.clamp(min, max)
 
     private fun reposition() {
-        this@UISlider.button.x = value.convertRange(min, max, 0.0, maxXPos).toDouble()
+        this@UISlider.button.xD = value.convertRange(min, max, 0.0, maxXPos).toDouble()
     }
 
     override fun onSizeChanged() {
-        bg.size(width - 16.0, height)
-        button.size(height, height)
-        text.xy(width - 16.0, 0.0)
+        bg.size(widthD - 16.0, heightD)
+        button.size(heightD, heightD)
+        text.xy(widthD - 16.0, 0.0)
         reposition()
     }
 
@@ -121,12 +121,12 @@ class UISlider(
 
     init {
         this.onMouseDrag {
-            this@UISlider.value = (localMousePos(views).x - button.width / 2).convertRange(0.0, maxXPos, this@UISlider.min, this@UISlider.max)
+            this@UISlider.value = (localMousePos(views).x - button.widthD / 2).convertRange(0.0, maxXPos, this@UISlider.min, this@UISlider.max)
         }
     }
 }
 
-fun <T : UISlider> T.changed(block: (Double) -> Unit): T {
+fun <T : UISlider> T.changed(block: (Float) -> Unit): T {
     onChange.add(block)
     return this
 }

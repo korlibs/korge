@@ -22,8 +22,8 @@ class Outline(
         }
 
     init {
-        this.x = x
-        this.y = y
+        this.xD = x
+        this.yD = y
         colorMul = color
     }
 

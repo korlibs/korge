@@ -1,15 +1,15 @@
 package korlibs.korge.view.filter
 
-import korlibs.memory.*
 import korlibs.graphics.*
 import korlibs.graphics.shader.*
+import korlibs.image.color.*
 import korlibs.korge.render.*
 import korlibs.korge.view.*
 import korlibs.korge.view.filter.ShaderFilter.Companion.fragmentCoords
 import korlibs.korge.view.filter.ShaderFilter.Companion.fragmentCoords01
 import korlibs.korge.view.filter.ShaderFilter.Companion.tex
-import korlibs.image.color.*
 import korlibs.math.geom.*
+import korlibs.memory.*
 
 /**
  * Abstract class for [View] [Filter]s that paints the [Texture] using a [FragmentShader] ([fragment]).
@@ -102,10 +102,10 @@ abstract class ShaderFilter : Filter {
     }
 
     //@CallSuper
-    protected open fun updateUniforms(ctx: RenderContext, filterScale: Double) {
+    protected open fun updateUniforms(ctx: RenderContext, filterScale: Float) {
     }
 
-    private fun _restoreUniforms(ctx: RenderContext, filterScale: Double) {
+    private fun _restoreUniforms(ctx: RenderContext, filterScale: Float) {
         resetTex.fastForEachOneBits {
             ctx.textureUnits.copyFrom(oldTextureUnits, it)
             oldTextureUnits.set(it, null)
@@ -114,7 +114,7 @@ abstract class ShaderFilter : Filter {
     }
 
     private fun _updateUniforms(
-        ctx: RenderContext, filterScale: Double, texture: Texture,
+        ctx: RenderContext, filterScale: Float, texture: Texture,
         texWidth: Int,
         texHeight: Int,
     ) {
@@ -155,7 +155,7 @@ abstract class ShaderFilter : Filter {
         texHeight: Int,
         renderColorMul: RGBA,
         blendMode: BlendMode,
-        filterScale: Double,
+        filterScale: Float,
     ) {
         if (isIdentity) return IdentityFilter.render(
             ctx,

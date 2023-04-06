@@ -1,8 +1,8 @@
 package korlibs.korge.view.filter
 
+import korlibs.image.color.*
 import korlibs.korge.render.*
-import korlibs.korge.view.BlendMode
-import korlibs.image.color.RGBA
+import korlibs.korge.view.*
 import korlibs.math.geom.*
 
 /**
@@ -21,7 +21,7 @@ open class IdentityFilter(val smoothing: Boolean) : Filter {
         texHeight: Int,
         renderColorMul: RGBA,
         blendMode: BlendMode,
-        filterScale: Double,
+        filterScale: Float,
     ) {
         ctx.useBatcher { batch ->
             batch.drawQuad(

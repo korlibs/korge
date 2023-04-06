@@ -1,9 +1,10 @@
 package korlibs.korge.ui
 
 import korlibs.datastructure.*
-import korlibs.time.*
-import korlibs.memory.*
 import korlibs.event.*
+import korlibs.image.color.*
+import korlibs.image.text.*
+import korlibs.io.async.*
 import korlibs.korge.animate.*
 import korlibs.korge.input.*
 import korlibs.korge.render.*
@@ -11,37 +12,32 @@ import korlibs.korge.style.*
 import korlibs.korge.tween.*
 import korlibs.korge.view.*
 import korlibs.korge.view.property.*
-import korlibs.image.bitmap.*
-import korlibs.image.color.*
-import korlibs.image.text.*
-import korlibs.io.async.*
 import korlibs.math.geom.*
+import korlibs.memory.*
+import korlibs.time.*
 
 inline fun Container.uiCheckBox(
-    width: Double = UI_DEFAULT_WIDTH,
-    height: Double = UI_DEFAULT_HEIGHT,
+    size: Size = UI_DEFAULT_SIZE,
     checked: Boolean = false,
     text: String = "CheckBox",
     block: @ViewDslMarker UICheckBox.() -> Unit = {}
-): UICheckBox = UICheckBox(width, height, checked, text).addTo(this).apply(block)
+): UICheckBox = UICheckBox(size, checked, text).addTo(this).apply(block)
 
 open class UICheckBox(
-    width: Double = UI_DEFAULT_WIDTH,
-    height: Double = UI_DEFAULT_HEIGHT,
+    size: Size = UI_DEFAULT_SIZE,
     checked: Boolean = false,
     text: String = "CheckBox",
-) : UIBaseCheckBox<UICheckBox>(width, height, checked, text, UICheckBox) {
+) : UIBaseCheckBox<UICheckBox>(size, checked, text, UICheckBox) {
     companion object : Kind()
 }
 
 open class UIBaseCheckBox<T : UIBaseCheckBox<T>>(
-    width: Double = UI_DEFAULT_WIDTH,
-    height: Double = UI_DEFAULT_HEIGHT,
+    size: Size = UI_DEFAULT_SIZE,
     checked: Boolean = false,
     @ViewProperty
     var text: String = "CheckBox",
     var kind: Kind,
-) : UIFocusableView(width, height), ViewLeaf {
+) : UIFocusableView(size), ViewLeaf {
     open class Kind
 
     val thisAsT: T get() = this.fastCastTo<T>()
@@ -57,7 +53,7 @@ open class UIBaseCheckBox<T : UIBaseCheckBox<T>>(
             simpleAnimator.tween(this::checkedRatio[if (value) 1.0 else 0.0], time = 0.1.seconds)
         }
 
-    private val background = solidRect(width, height, Colors.TRANSPARENT)
+    private val background = solidRect(size, Colors.TRANSPARENT)
     val canvas = renderableView {
         styles.uiCheckboxButtonRenderer.render(ctx)
         //skin.render(ctx2d, this@UIBaseCheckBox.width, this@UIBaseCheckBox.height, this@UIBaseCheckBox, kind)
@@ -86,8 +82,8 @@ open class UIBaseCheckBox<T : UIBaseCheckBox<T>>(
 
     override fun updateState() {
         super.updateState()
-        val width = this.width
-        val height = this.height
+        val width = this.widthD
+        val height = this.heightD
 
         textView.text = RichTextData(textView.text.text, RichTextData.Style(
             font = styles.textFont,
@@ -96,7 +92,7 @@ open class UIBaseCheckBox<T : UIBaseCheckBox<T>>(
         ))
         textView.align = TextAlignment.MIDDLE_LEFT
         textView.position(height + 4.0, 0.0)
-        textView.setSize(width - height - 8.0, height)
+        textView.size(width - height - 8.0, height)
 
         background.size(width, height)
     }

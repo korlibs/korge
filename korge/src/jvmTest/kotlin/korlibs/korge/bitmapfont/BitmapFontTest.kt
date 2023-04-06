@@ -1,16 +1,16 @@
 package korlibs.korge.bitmapfont
 
-import korlibs.korge.testing.*
-import korlibs.korge.view.*
 import korlibs.image.font.*
 import korlibs.io.async.*
 import korlibs.io.file.std.*
+import korlibs.korge.testing.*
+import korlibs.korge.view.*
 import korlibs.math.geom.*
 import kotlin.test.*
 
 class BitmapFontTest {
 	@Test
-	fun simple() = korgeScreenshotTest(SizeInt(64, 20)) {
+	fun simple() = korgeScreenshotTest(Size(64, 20)) {
 		val font = resourcesVfs["font/font.fnt"].readBitmapFont()
 		assertEquals(81, font.glyphs.size)
 		val glyph = font[64]

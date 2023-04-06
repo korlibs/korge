@@ -18,14 +18,14 @@ fun distributeEvenlyHorizontally(views: Iterable<View>, boundingWidth: Double) {
     val originView = views.first()
 
     var remainingWidthToDistribute = boundingWidth
-    views.forEach { remainingWidthToDistribute -= it.scaledWidth }
+    views.forEach { remainingWidthToDistribute -= it.scaledWidthD }
 
     val padding = remainingWidthToDistribute / (views.count() - 1)
 
     var offset = 0.0
     for (view in views) {
-        view.x = originView.x + offset
-        offset += view.scaledWidth + padding
+        view.xD = originView.xD + offset
+        offset += view.scaledWidthD + padding
     }
 }
 
@@ -47,9 +47,9 @@ fun distributeEvenlyHorizontally(views: Iterable<View>, boundingWidth: Double) {
 fun distributeEvenlyHorizontally(views: Iterable<View>) {
     val originView = views.first()
     val rightMostX = views.maxOf {
-        it.x + it.scaledWidth
+        it.xD + it.scaledWidthD
     }
-    distributeEvenlyHorizontally(views, rightMostX - originView.x)
+    distributeEvenlyHorizontally(views, rightMostX - originView.xD)
 }
 
 // Distributes an iterable of views evenly across a provided bounding height.
@@ -67,14 +67,14 @@ fun distributeEvenlyVertically(views: Iterable<View>, boundingHeight: Double) {
     val originView = views.first()
 
     var remainingHeightToDistribute = boundingHeight
-    views.forEach { remainingHeightToDistribute -= it.scaledHeight }
+    views.forEach { remainingHeightToDistribute -= it.scaledHeightD }
 
     val padding = remainingHeightToDistribute / (views.count() - 1)
 
     var offset = 0.0
     for (view in views) {
-        view.y = originView.y + offset
-        offset += view.scaledHeight + padding
+        view.yD = originView.yD + offset
+        offset += view.scaledHeightD + padding
     }
 }
 
@@ -100,7 +100,7 @@ fun distributeEvenlyVertically(views: Iterable<View>, boundingHeight: Double) {
 fun distributeEvenlyVertically(views: Iterable<View>) {
     val originView = views.first()
     val bottomMostY = views.maxOf {
-        it.y + it.scaledHeight
+        it.yD + it.scaledHeightD
     }
-    distributeEvenlyVertically(views, bottomMostY - originView.y)
+    distributeEvenlyVertically(views, bottomMostY - originView.yD)
 }

@@ -244,7 +244,7 @@ class MainStrokesExperiment : Scene() {
             }
         }
 
-        val circle = circle(16.0, Colors.PURPLE).centered
+        val circle = circle(16f, Colors.PURPLE).centered
         launchImmediately {
             while (true) {
                 circle.tween(circle::pos.get(path, includeLastPoint = true, reversed = false), time = 5.seconds, easing = Easing.LINEAR)

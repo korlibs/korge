@@ -1,57 +1,46 @@
 package korlibs.korge.ui
 
-import korlibs.time.*
 import korlibs.event.*
-import korlibs.korge.animate.*
-import korlibs.korge.input.*
-import korlibs.korge.tween.*
-import korlibs.korge.view.*
-import korlibs.korge.view.property.*
-import korlibs.render.*
 import korlibs.image.bitmap.*
 import korlibs.image.color.*
 import korlibs.image.font.*
 import korlibs.image.text.*
 import korlibs.io.async.*
+import korlibs.korge.animate.*
+import korlibs.korge.input.*
+import korlibs.korge.tween.*
+import korlibs.korge.view.*
+import korlibs.korge.view.property.*
 import korlibs.math.geom.*
 import korlibs.math.interpolation.*
+import korlibs.render.*
+import korlibs.time.*
 import kotlin.math.*
 
 inline fun Container.uiButton(
     label: String = "",
-    width: Double = UI_DEFAULT_WIDTH,
-    height: Double = UI_DEFAULT_HEIGHT,
+    size: Size = UIButton.DEFAULT_SIZE,
     icon: BmpSlice? = null,
     block: @ViewDslMarker UIButton.() -> Unit = {}
-): UIButton = UIButton(width, height, label, icon).addTo(this).apply(block)
-
-inline fun Container.uiButton(
-    label: String = "",
-    size: Size = UI_DEFAULT_SIZE,
-    icon: BmpSlice? = null,
-    block: @ViewDslMarker UIButton.() -> Unit = {}
-): UIButton = UIButton(size.widthD, size.heightD, label, icon).addTo(this).apply(block)
+): UIButton = UIButton(size, label, icon).addTo(this).apply(block)
 
 open class UIToggleableButton(
-    width: Double = 128.0,
-    height: Double = 32.0,
+    size: Size = UIButton.DEFAULT_SIZE,
     text: String = "",
     icon: BmpSlice? = null,
     richText: RichTextData? = null,
-) : UIButton(width, height, text, icon, richText) {
+) : UIButton(size, text, icon, richText) {
     var pressed: Boolean = false
 }
 
 open class UIButton(
-	width: Double = 128.0,
-	height: Double = 32.0,
+    size: Size = DEFAULT_SIZE,
     text: String = "",
     icon: BmpSlice? = null,
     richText: RichTextData? = null,
-) : UIFocusableView(width, height) {
+) : UIFocusableView(size) {
     companion object {
-        const val DEFAULT_WIDTH = UI_DEFAULT_WIDTH
-        const val DEFAULT_HEIGHT = UI_DEFAULT_HEIGHT
+        val DEFAULT_SIZE = UI_DEFAULT_SIZE
     }
 
 	var forcePressed = false
@@ -59,7 +48,7 @@ open class UIButton(
     private var _radiusRatio: Ratio = Ratio.NaN
     private var _radius: Float = 6f
 
-    private val halfSide: Int get() = min(width, height).toInt() / 2
+    private val halfSide: Int get() = min(widthD, heightD).toInt() / 2
 
     var radiusRatio: Ratio
         get() = if (!_radiusRatio.isNaN()) _radiusRatio else Ratio(_radius, halfSide.toFloat())
@@ -119,7 +108,7 @@ open class UIButton(
 
     //var newSkin: NewUIButtonSkin = DefaultUISkin
 
-    val background = uiMaterialLayer(width, height) {
+    val background = uiMaterialLayer(size) {
         radius = RectCorners(5f)
     }
     //internal val background = FastMaterialBackground(width, height).addTo(this)
@@ -163,15 +152,15 @@ open class UIButton(
         }
 
     private fun setInitialState() {
-        val width = width
-        val height = height
-        background.setSize(width, height)
+        val width = widthD
+        val height = heightD
+        background.size(width, height)
         //background.setSize(width, height)
         background.radius = RectCorners(this.radius)
-        background.shadowRadius = if (elevation) 10.0 else 0.0
+        background.shadowRadius = if (elevation) 10f else 0f
         //textView.setSize(width, height)
 
-        textView.setSize(width, height)
+        textView.size(width, height)
 
         fitIconInRect(iconView, icon ?: Bitmaps.transparent, width, height, Anchor.MIDDLE_CENTER)
         iconView.alphaF = when {
@@ -261,7 +250,7 @@ open class UIButton(
     }
 
     fun simulateClick(views: Views) {
-        touch.simulateTapAt(views, localToGlobal(Point(width * 0.5, height * 0.5)).mutable)
+        touch.simulateTapAt(views, localToGlobal(Point(widthD * 0.5, heightD * 0.5)).mutable)
     }
 
     open fun updatedUIButton(down: Boolean? = null, over: Boolean? = null, px: Double = 0.0, py: Double = 0.0, immediate: Boolean = false) {

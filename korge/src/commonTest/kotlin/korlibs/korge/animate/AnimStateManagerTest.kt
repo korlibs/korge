@@ -11,7 +11,7 @@ class AnimStateManagerTest {
     fun test() {
         val log = arrayListOf<String>()
         val view = DummyView()
-        val state1 = AnimState(view::x[100], time = 0.5.seconds)
+        val state1 = AnimState(view::xD[100], time = 0.5.seconds)
         view.animStateManager.set(state1)
         fun log() { log += "${view.pos.niceStr} : ${view.alphaF.niceStr(1)}" }
 

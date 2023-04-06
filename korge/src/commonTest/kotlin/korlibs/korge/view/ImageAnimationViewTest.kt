@@ -91,13 +91,13 @@ class ImageAnimationViewTest {
         // Test if the correct frame is set as first frame
         // Here we check if the corresponding targetX value was set as X position of the layer.
         anim.animation = animImages4Layers1
-        assertEquals(1, anim.children[0].x.toInt())
+        assertEquals(1, anim.children[0].xD.toInt())
         anim.direction = ImageAnimation.Direction.REVERSE
         anim.rewind()
-        assertEquals(4, anim.children[0].x.toInt())
+        assertEquals(4, anim.children[0].xD.toInt())
         anim.animation = animImages6Layers2
-        assertEquals(6, anim.children[0].x.toInt())
-        assertEquals(60, anim.children[1].x.toInt())
+        assertEquals(6, anim.children[0].xD.toInt())
+        assertEquals(60, anim.children[1].xD.toInt())
     }
 
 //        println("children: ${imageanimView.children.size}")

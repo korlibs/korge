@@ -1,20 +1,13 @@
 package korlibs.korge.view
 
-import korlibs.datastructure.IntDeque
-import korlibs.time.PerformanceCounter
-import korlibs.time.TimeSpan
-import korlibs.time.microseconds
-import korlibs.time.milliseconds
-import korlibs.time.seconds
-import korlibs.time.toFrequency
-import korlibs.memory.Platform
-import korlibs.memory.convertRange
-import korlibs.korge.bitmapfont.drawText
-import korlibs.korge.internal.KorgeInternal
-import korlibs.korge.render.debugLineRenderContext
-import korlibs.korge.render.useLineBatcher
-import korlibs.image.color.Colors
-import korlibs.math.math.roundDecimalPlaces
+import korlibs.datastructure.*
+import korlibs.image.color.*
+import korlibs.korge.bitmapfont.*
+import korlibs.korge.internal.*
+import korlibs.korge.render.*
+import korlibs.math.math.*
+import korlibs.memory.*
+import korlibs.time.*
 
 @OptIn(KorgeInternal::class)
 internal fun ViewsContainer.installFpsDebugOverlay() {
@@ -173,9 +166,9 @@ private class TimeSlidingWindow(val capacity: Int) {
     val min: TimeSpan get() = deque.minOrNull()?.microseconds ?: 1.microseconds
     val max: TimeSpan get() = deque.maxOrNull()?.microseconds ?: 1.microseconds
 
-    val avgFps: Double get() = 1.seconds / avg
-    val minFps: Double get() = 1.seconds / max
-    val maxFps: Double get() = 1.seconds / min
+    val avgFps: Float get() = 1.seconds / avg
+    val minFps: Float get() = 1.seconds / max
+    val maxFps: Float get() = 1.seconds / min
 
     operator fun get(index: Int): TimeSpan = deque[index].microseconds
 

@@ -1,30 +1,28 @@
 package korlibs.korge.ui
 
+import korlibs.image.color.*
 import korlibs.korge.annotations.*
 import korlibs.korge.view.Container
 import korlibs.korge.view.ViewDslMarker
 import korlibs.korge.view.addTo
 import korlibs.korge.view.append
 import korlibs.korge.view.size
-import korlibs.image.color.*
-import korlibs.math.geom.Angle
-import korlibs.math.geom.MPoint
-import korlibs.math.geom.degrees
+import korlibs.math.geom.*
 import kotlin.reflect.*
 
 @KorgeExperimental
 inline fun Container.uiPropertyNumberRow(
     title: String, vararg propsList: UIEditableNumberProps,
-    width: Double = 128.0, height: Double = 20.0,
+    size: Size = Size(128, 20),
     block: @ViewDslMarker UIPropertyNumberRow.() -> Unit = {},
-): UIPropertyNumberRow = append(UIPropertyNumberRow(title, *propsList, width = width, height = height)).apply(block)
+): UIPropertyNumberRow = append(UIPropertyNumberRow(title, *propsList, size = size)).apply(block)
 
 
 @KorgeExperimental
 inline fun <T> Container.uiPropertyComboBox(
     title: String, field: KMutableProperty0<T>, values: List<T>,
-    width: Double = 128.0, height: Double = 20.0,
-): UIPropertyRow = UIPropertyRow(title, width, height).also {
+    size: Size = Size(128, 20),
+): UIPropertyRow = UIPropertyRow(title, size).also {
     it.container.apply {
         val comboBox = uiComboBox(items = values, selectedIndex = values.indexOf(field.get()))
         comboBox.onSelectionUpdate {
@@ -36,14 +34,14 @@ inline fun <T> Container.uiPropertyComboBox(
 @KorgeExperimental
 inline fun <reified T : Enum<T>> Container.uiPropertyComboBox(
     title: String, field: KMutableProperty0<T>,
-    width: Double = 128.0, height: Double = 20.0,
-): UIPropertyRow = uiPropertyComboBox(title, field, enumValues<T>().toList(), width, height)
+    size: Size = Size(128, 20),
+): UIPropertyRow = uiPropertyComboBox(title, field, enumValues<T>().toList(), size)
 
 @KorgeExperimental
 inline fun Container.uiPropertyCheckBox(
     title: String, vararg propsList: UIEditableBooleanProps,
-    width: Double = 128.0, height: Double = 20.0,
-): UIPropertyRow = append(UIPropertyRow(title, width, height)) {
+    size: Size = Size(128, 20),
+): UIPropertyRow = append(UIPropertyRow(title, size)) {
     for (props in propsList) {
         this.container.append(uiCheckBox(checked = props.value, text = "").also { checkBox ->
             props.getDisplayValue = { checkBox.checked }
@@ -105,7 +103,11 @@ fun UIEditableBooleanPropsList(prop: KMutableProperty0<Boolean>): Array<UIEditab
 }
 
 @KorgeExperimental
-open class UIPropertyNumberRow(title: String, vararg propsList: UIEditableNumberProps, width: Double = 128.0, height: Double = 20.0) : UIPropertyRow(title, width, height) {
+open class UIPropertyNumberRow(
+    title: String,
+    vararg propsList: UIEditableNumberProps,
+    size: Size = Size(128, 20),
+) : UIPropertyRow(title, size) {
     init {
         container.apply {
             for (props in propsList) {
@@ -121,11 +123,11 @@ open class UIPropertyNumberRow(title: String, vararg propsList: UIEditableNumber
 }
 
 @KorgeExperimental
-open class UIPropertyRow(val title: String, width: Double = 128.0, height: Double = 20.0) : UIView(width, height) {
+open class UIPropertyRow(val title: String, size: Size = Size(128, 20)) : UIView(size) {
     lateinit var container: Container
-    val horizontal = append(UIHorizontalFill(width, height)) {
+    val horizontal = append(UIHorizontalFill(size)) {
         uiText(title)
-        container = append(UIHorizontalFill(width, height)) {
+        container = append(UIHorizontalFill(size)) {
             //uiEditableNumber()
             //uiEditableNumber()
         }

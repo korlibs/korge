@@ -2,7 +2,6 @@ package samples
 
 import korlibs.time.*
 import korlibs.event.Key
-import korlibs.korge.*
 import korlibs.korge.input.keys
 import korlibs.korge.scene.ScaledScene
 import korlibs.korge.view.*
@@ -27,7 +26,7 @@ class MainFlag : ScaledScene(592, 592) {
         // Flag
         image(bitmap) {
             position(40, 40)
-            scaleY = 0.5
+            scaleYD = 0.5
             filter = flagFilter
         }
 

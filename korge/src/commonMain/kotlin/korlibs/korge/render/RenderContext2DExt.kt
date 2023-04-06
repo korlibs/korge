@@ -120,19 +120,19 @@ object MaterialRender {
 
 @KorgeExperimental
 fun RenderContext2D.materialRoundRect(
-    x: Double,
-    y: Double,
-    width: Double,
-    height: Double,
+    x: Float,
+    y: Float,
+    width: Float,
+    height: Float,
     color: RGBA = Colors.RED,
     radius: RectCorners = RectCorners.EMPTY,
     shadowOffset: Point = Point.ZERO,
     shadowColor: RGBA = Colors.BLACK,
-    shadowRadius: Double = 0.0,
+    shadowRadius: Float = 0f,
     highlightPos: Point = Point.ZERO,
-    highlightRadius: Double = 0.0,
+    highlightRadius: Float = 0f,
     highlightColor: RGBA = Colors.WHITE,
-    borderSize: Double = 0.0,
+    borderSize: Float = 0f,
     borderColor: RGBA = Colors.WHITE,
     //colorMul: RGBA = Colors.WHITE,
 ) {
@@ -162,7 +162,7 @@ fun RenderContext2D.materialRoundRect(
     //    it[MaterialRender.u_ShadowOffset].set(shadowOffset)
     //    it[MaterialRender.u_ShadowRadius].set(shadowRadius)
     //}
-    quadPaddedCustomProgram(x, y, width, height, MaterialRender.PROGRAM, Margin((shadowRadius + shadowOffset.length).toFloat()))
+    quadPaddedCustomProgram(x, y, width, height, MaterialRender.PROGRAM, Margin((shadowRadius + shadowOffset.length)))
 }
 
 @KorgeExperimental

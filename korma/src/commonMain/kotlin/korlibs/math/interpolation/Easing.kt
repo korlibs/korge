@@ -1,12 +1,9 @@
 package korlibs.math.interpolation
 
-import korlibs.math.geom.bezier.Bezier
-import korlibs.memory.clamp
 import korlibs.math.geom.*
-import kotlin.math.PI
-import kotlin.math.absoluteValue
-import kotlin.math.pow
-import kotlin.math.sin
+import korlibs.math.geom.bezier.*
+import korlibs.memory.*
+import kotlin.math.*
 
 private inline fun combine(it: Double, start: Easing, end: Easing) =
     if (it < 0.5) 0.5 * start(it * 2.0) else 0.5 * end((it - 0.5) * 2.0) + 0.5
@@ -17,6 +14,7 @@ private const val HALF_PI = PI / 2.0
 @Suppress("unused")
 fun interface Easing {
     operator fun invoke(it: Double): Double
+    operator fun invoke(it: Float): Float = invoke(it.toDouble()).toFloat()
 
     companion object {
         operator fun invoke(name: () -> String, block: (Double) -> Double): Easing {

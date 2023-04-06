@@ -1,14 +1,14 @@
 package samples
 
+import korlibs.io.lang.*
 import korlibs.korge.scene.*
 import korlibs.korge.ui.*
 import korlibs.korge.view.*
-import korlibs.io.lang.*
 
 class MainStressButtons : Scene() {
     override suspend fun SContainer.sceneMain() {
         container {
-            scale = 0.5
+            scaleAvg = .5f
             uiVerticalStack {
                 //for (row in 0 until 20) {
                 for (row in 0 until 40) {

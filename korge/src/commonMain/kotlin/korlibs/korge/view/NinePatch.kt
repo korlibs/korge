@@ -1,36 +1,29 @@
 package korlibs.korge.view
 
-import korlibs.korge.render.*
-import korlibs.korge.view.property.*
 import korlibs.image.bitmap.*
 import korlibs.image.color.*
 import korlibs.io.file.*
+import korlibs.korge.render.*
+import korlibs.korge.view.property.*
 import korlibs.math.geom.*
 import kotlinx.coroutines.*
 
 inline fun Container.ninePatch(
-	ninePatch: NinePatchBmpSlice?, width: Double = ninePatch?.dwidth ?: 16.0, height: Double = ninePatch?.dheight ?: 16.0,
+	ninePatch: NinePatchBmpSlice?, size: Size = Size(ninePatch?.widthF ?: 16f, ninePatch?.heightF ?: 16f),
 	callback: @ViewDslMarker NinePatch.() -> Unit = {}
-): NinePatch = NinePatch(ninePatch, width, height).addTo(this, callback)
+): NinePatch = NinePatch(ninePatch, size).addTo(this, callback)
 
 inline fun Container.ninePatch(
-    tex: BmpSlice, width: Double, height: Double, left: Double, top: Double, right: Double, bottom: Double,
+    tex: BmpSlice, size: Size, left: Float, top: Float, right: Float, bottom: Float,
     callback: @ViewDslMarker NinePatch.() -> Unit = {}
-): NinePatch = ninePatch(tex.asNinePatchSimpleRatio(left, top, right, bottom), width, height, callback)
+): NinePatch = ninePatch(tex.asNinePatchSimpleRatio(left, top, right, bottom), size, callback)
 
 class NinePatch(
 	ninePatch: NinePatchBmpSlice?,
-	width: Double = ninePatch?.width?.toDouble() ?: 16.0,
-	height: Double = ninePatch?.height?.toDouble() ?: 16.0
+    size: Size = Size(ninePatch?.width?.toFloat() ?: 16f, ninePatch?.height?.toFloat() ?: 16f),
 ) : View(), ViewFileRef by ViewFileRef.Mixin() {
 
-    override var width: Double = width
-        set(value) {
-            if (field == value) return
-            field = value
-            invalidateRender()
-        }
-    override var height: Double = height
+    override var unscaledSize: Size = size
         set(value) {
             if (field == value) return
             field = value
@@ -56,7 +49,7 @@ class NinePatch(
 		val xscale = gm.a
 		val yscale = gm.d
 
-		bounds = RectangleInt(0, 0, (width * xscale).toInt(), (height * yscale).toInt())
+		bounds = RectangleInt(0, 0, (widthD * xscale).toInt(), (heightD * yscale).toInt())
 
         val m = gm.prescaled(1.0 / xscale, 1.0 / yscale)
 
@@ -116,7 +109,7 @@ class NinePatch(
         renderedVersion++
     }
 
-	override fun getLocalBoundsInternal() = Rectangle(0.0, 0.0, width, height)
+	override fun getLocalBoundsInternal() = Rectangle(0.0, 0.0, widthD, heightD)
 
     override suspend fun forceLoadSourceFile(views: Views, currentVfs: VfsFile, sourceFile: String?) {
         baseForceLoadSourceFile(views, currentVfs, sourceFile)

@@ -25,7 +25,7 @@ class AnimatorTest : ViewsForTesting() {
             moveBy(view, y = +100.0)
             block { log += "${view.pos}" }
             moveBy(view, x = +10.0)
-            moveTo(view, x = { view.x + 10 })
+            moveTo(view, x = { view.xD + 10 })
         }
         assertEquals("(120, 100)", view.pos.toString())
         assertEquals("[(100, 100)]", log.toString())

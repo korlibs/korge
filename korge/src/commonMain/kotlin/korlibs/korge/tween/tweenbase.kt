@@ -1,21 +1,15 @@
 package korlibs.korge.tween
 
-import korlibs.time.TimeSpan
-import korlibs.time.coalesce
-import korlibs.time.milliseconds
-import korlibs.time.nanoseconds
-import korlibs.memory.fract
-import korlibs.memory.toIntFloor
-import korlibs.image.color.ColorAdd
-import korlibs.image.color.RGBA
+import korlibs.image.color.*
 import korlibs.math.geom.*
-import korlibs.math.geom.bezier.getEquidistantPoints
-import korlibs.math.geom.vector.VectorPath
-import korlibs.math.geom.vector.getCurves
+import korlibs.math.geom.bezier.*
+import korlibs.math.geom.vector.*
 import korlibs.math.interpolation.*
-import kotlin.jvm.JvmName
+import korlibs.memory.*
+import korlibs.time.*
+import kotlin.jvm.*
 import kotlin.native.concurrent.*
-import kotlin.reflect.KMutableProperty0
+import kotlin.reflect.*
 
 @Suppress("UNCHECKED_CAST")
 data class V2<V>(
@@ -203,29 +197,27 @@ inline operator fun KMutableProperty0<Point>.get(range: PointList): V2<Point> {
     )
 }
 
-@JvmName("getFloat")
-inline operator fun KMutableProperty0<Float>.get(end: Float): V2<Float> = V2(this, this.get(), end, ::_interpolateFloat, includeStart = false)
-@JvmName("getFloat")
-inline operator fun KMutableProperty0<Float>.get(initial: Float, end: Float) = V2(this, initial, end, ::_interpolateFloat, true)
+@JvmName("getFloat") inline operator fun KMutableProperty0<Float>.get(end: Float) = V2(this, this.get(), end, ::_interpolateFloat, includeStart = false)
+@JvmName("getFloat") inline operator fun KMutableProperty0<Float>.get(end: Int) = get(end.toFloat())
+@JvmName("getFloat") inline operator fun KMutableProperty0<Float>.get(end: Double) = get(end.toFloat())
+@JvmName("getFloat") inline operator fun KMutableProperty0<Float>.get(end: Long) = get(end.toFloat())
+@JvmName("getFloat") inline operator fun KMutableProperty0<Float>.get(end: Number) = get(end.toFloat())
+@JvmName("getFloat") inline operator fun KMutableProperty0<Float>.get(initial: Float, end: Float) = V2(this, initial, end, ::_interpolateFloat, true)
+@JvmName("getFloat") inline operator fun KMutableProperty0<Float>.get(initial: Int, end: Int) = get(initial.toFloat(), end.toFloat())
+@JvmName("getFloat") inline operator fun KMutableProperty0<Float>.get(initial: Double, end: Double) = get(initial.toFloat(), end.toFloat())
+@JvmName("getFloat") inline operator fun KMutableProperty0<Float>.get(initial: Long, end: Long) = get(initial.toFloat(), end.toFloat())
+@JvmName("getFloat") inline operator fun KMutableProperty0<Float>.get(initial: Number, end: Number) = get(initial.toFloat(), end.toFloat())
 
-@JvmName("getFloatDouble") inline operator fun KMutableProperty0<Float>.get(end: Double): V2<Float> = get(end.toFloat())
-@JvmName("getFloatDouble") inline operator fun KMutableProperty0<Float>.get(initial: Double, end: Double) = get(initial.toFloat(), end.toFloat())
-@JvmName("getFloatInt") inline operator fun KMutableProperty0<Float>.get(end: Int): V2<Float> = get(end.toFloat())
-@JvmName("getFloatInt") inline operator fun KMutableProperty0<Float>.get(initial: Int, end: Int) = get(initial.toFloat(), end.toFloat())
 
 inline operator fun KMutableProperty0<Double>.get(end: Double) = V2(this, this.get(), end, ::_interpolate, includeStart = false)
-inline operator fun KMutableProperty0<Double>.get(initial: Double, end: Double) = V2(this, initial, end, ::_interpolate, true)
-
 inline operator fun KMutableProperty0<Double>.get(end: Int) = get(end.toDouble())
-inline operator fun KMutableProperty0<Double>.get(initial: Int, end: Int) = get(initial.toDouble(), end.toDouble())
-
 inline operator fun KMutableProperty0<Double>.get(end: Float) = get(end.toDouble())
-inline operator fun KMutableProperty0<Double>.get(initial: Float, end: Float) = get(initial.toDouble(), end.toDouble())
-
 inline operator fun KMutableProperty0<Double>.get(end: Long) = get(end.toDouble())
-inline operator fun KMutableProperty0<Double>.get(initial: Long, end: Float) = get(initial.toDouble(), end.toDouble())
-
 inline operator fun KMutableProperty0<Double>.get(end: Number) = get(end.toDouble())
+inline operator fun KMutableProperty0<Double>.get(initial: Double, end: Double) = V2(this, initial, end, ::_interpolate, true)
+inline operator fun KMutableProperty0<Double>.get(initial: Int, end: Int) = get(initial.toDouble(), end.toDouble())
+inline operator fun KMutableProperty0<Double>.get(initial: Float, end: Float) = get(initial.toDouble(), end.toDouble())
+inline operator fun KMutableProperty0<Double>.get(initial: Long, end: Long) = get(initial.toDouble(), end.toDouble())
 inline operator fun KMutableProperty0<Double>.get(initial: Number, end: Number) = get(initial.toDouble(), end.toDouble())
 
 inline operator fun KMutableProperty0<RGBA>.get(end: RGBA) = V2(this, this.get(), end, ::_interpolateColor, includeStart = false)

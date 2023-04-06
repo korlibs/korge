@@ -1,41 +1,40 @@
 package korlibs.korge.ui
 
 import korlibs.event.*
+import korlibs.image.color.*
+import korlibs.image.font.*
+import korlibs.io.async.*
 import korlibs.korge.annotations.*
 import korlibs.korge.style.*
 import korlibs.korge.text.*
 import korlibs.korge.view.*
-import korlibs.image.color.*
-import korlibs.image.font.*
-import korlibs.io.async.*
 import korlibs.math.geom.*
 
 @KorgeExperimental
 inline fun Container.uiTextInput(
     initialText: String = "",
-    width: Double = 128.0,
-    height: Double = 24.0,
+    size: Size = Size(128, 24),
     block: @ViewDslMarker UITextInput.() -> Unit = {}
-): UITextInput = UITextInput(initialText, width, height)
+): UITextInput = UITextInput(initialText, size)
     .addTo(this).also { block(it) }
 
 /**
  * Simple Single Line Text Input
  */
 @KorgeExperimental
-class UITextInput(initialText: String = "", width: Double = 128.0, height: Double = 24.0) :
-    UIView(width, height),
+class UITextInput(initialText: String = "", size: Size = Size(128, 24)) :
+    UIView(size),
     //UIFocusable,
     ISoftKeyboardConfig by SoftKeyboardConfig() {
 
     //private val bg = ninePatch(NinePatchBmpSlice.createSimple(Bitmap32(3, 3) { x, y -> if (x == 1 && y == 1) Colors.WHITE else Colors.BLACK }.slice(), 1, 1, 2, 2), width, height).also { it.smoothing = false }
-    private val bg = renderableView(width, height) {
+    private val bg = renderableView(size) {
         styles.uiTextInputBackgroundRender.apply {
             render()
         }
     }
     var skin by bg::viewRenderer
-    private val container = clipContainer(0.0, 0.0)
+    private val container = clipContainer(Size.ZERO)
     //private val container = fixedSizeContainer(width - 4.0, height - 4.0).position(2.0, 3.0)
     private val textView = container.text(initialText, 16.0, color = Colors.BLACK, font = DefaultTtfFontAsBitmap)
     //private val textView = container.text(initialText, 16.0, color = Colors.BLACK, font = DefaultTtfFont)
@@ -64,8 +63,8 @@ class UITextInput(initialText: String = "", width: Double = 128.0, height: Doubl
         }
 
     override fun onSizeChanged() {
-        bg.setSize(width, height)
-        container.bounds(Rectangle(0.0, 0.0, width, height).without(padding))
+        bg.size(widthD, heightD)
+        container.bounds(Rectangle(0.0, 0.0, widthD, heightD).without(padding))
     }
 
     init {
@@ -82,5 +81,5 @@ class UITextInput(initialText: String = "", width: Double = 128.0, height: Doubl
 }
 
 var ViewStyles.uiTextInputBackgroundRender: ViewRenderer by ViewStyle(ViewRenderer {
-    ctx2d.rect(0.0, 0.0, width, height, Colors.WHITE)
+    ctx2d.rect(0.0, 0.0, widthD, heightD, Colors.WHITE)
 })

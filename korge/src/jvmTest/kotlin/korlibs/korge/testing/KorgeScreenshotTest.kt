@@ -9,7 +9,7 @@ import org.junit.*
 class KorgeScreenshotTest {
     // https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/arc
     @Test
-    fun testArcShapes() = korgeScreenshotTest(SizeInt(200, 200), bgcolor = Colors.WHITE, logGl = false) {
+    fun testArcShapes() = korgeScreenshotTest(Size(200, 200), bgcolor = Colors.WHITE, logGl = false) {
         image(NativeImageContext2d(200, 200) {
             val ctx = this
             // Draw shapes
@@ -39,7 +39,7 @@ class KorgeScreenshotTest {
 
     @Test
     fun test1() = korgeScreenshotTest(
-        SizeInt(512, 512),
+        Size(512, 512),
         bgcolor = Colors.RED
     ) {
         val maxDegrees = (+16).degrees
@@ -47,7 +47,7 @@ class KorgeScreenshotTest {
         val rect1 = solidRect(100, 100, Colors.RED) {
             rotation = maxDegrees
             anchor(.5, .5)
-            scale = 0.8
+            scaleD = 0.8
             position(200, 200)
         }
 
@@ -56,7 +56,7 @@ class KorgeScreenshotTest {
         val rect2 = solidRect(150, 150, Colors.YELLOW) {
             rotation = maxDegrees
             anchor(.5, .5)
-            scale = 0.8
+            scaleD = 0.8
             position(350, 350)
         }
 
@@ -65,7 +65,7 @@ class KorgeScreenshotTest {
         val rect3 = solidRect(150, 150, Colors.GREEN) {
             rotation = maxDegrees
             anchor(.5, .5)
-            scale = 0.8
+            scaleD = 0.8
             position(100, 350)
         }
 

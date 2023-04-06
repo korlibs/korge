@@ -3,12 +3,12 @@
 package korlibs.korge.tween
 
 import korlibs.datastructure.iterators.*
-import korlibs.time.*
-import korlibs.memory.*
-import korlibs.korge.view.*
 import korlibs.io.async.*
 import korlibs.io.lang.*
+import korlibs.korge.view.*
 import korlibs.math.interpolation.*
+import korlibs.memory.*
+import korlibs.time.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
 
@@ -17,7 +17,7 @@ class TweenComponent(
     private val vs: List<V2<*>>,
     val time: TimeSpan = TimeSpan.NIL,
     val easing: Easing = DEFAULT_EASING,
-    val callback: (Double) -> Unit,
+    val callback: (Float) -> Unit,
     val c: CancellableContinuation<Unit>?,
     val waitTime: TimeSpan = TimeSpan.NIL,
     val autoInvalidate: Boolean = true
@@ -51,7 +51,7 @@ class TweenComponent(
         //println("TWEEN UPDATE[$this, $vs]: $elapsed + $dt")
         elapsed += dt
 
-        val ratio = (elapsed / hrtime).clamp(0.0, 1.0)
+        val ratio: Float = (elapsed / hrtime).clamp(0f, 1f)
         //println("$elapsed/$hrtime : $ratio")
         setTo(elapsed)
         callback(easing(ratio))
@@ -92,7 +92,7 @@ class TweenComponent(
 		vs.fastForEach { v ->
 			val durationInTween = v.duration.coalesce { (hrtime - v.startTime) }
 			val elapsedInTween = (elapsed - v.startTime).clamp(0.0.milliseconds, durationInTween)
-			val ratioInTween = if (durationInTween <= 0.0.milliseconds || elapsedInTween >= durationInTween) 1.0 else elapsedInTween / durationInTween
+			val ratioInTween = if (durationInTween <= TimeSpan.ZERO || elapsedInTween >= durationInTween) 1f else elapsedInTween / durationInTween
             val easedRatioInTween = easing(ratioInTween)
             //println("easedRatioInTween: $easedRatioInTween, ratioInTween: $ratioInTween, durationInTween: $durationInTween, elapsedInTween: $elapsedInTween, elapsed: $elapsed")
 			v.set(easedRatioInTween.toRatio())
@@ -118,7 +118,7 @@ suspend fun BaseView?.tween(
     waitTime: TimeSpan = TimeSpan.NIL,
     timeout: Boolean = false,
     autoInvalidate: Boolean = true,
-    callback: (Double) -> Unit = { }
+    callback: (Float) -> Unit = { }
 ) {
 	if (this != null) {
 		var tc: TweenComponent? = null
@@ -141,7 +141,7 @@ fun BaseView?.tweenNoWait(
     time: TimeSpan = DEFAULT_TIME,
     easing: Easing = DEFAULT_EASING,
     waitTime: TimeSpan = TimeSpan.NIL,
-    callback: (Double) -> Unit = { }
+    callback: (Float) -> Unit = { }
 ): TweenComponent? {
     if (this == null) return null
     return TweenComponent(this, vs.toList(), time, easing, callback, null, waitTime)
@@ -152,7 +152,7 @@ suspend fun QView.tween(
     time: TimeSpan = DEFAULT_TIME,
     easing: Easing = DEFAULT_EASING,
     waitTime: TimeSpan = TimeSpan.NIL,
-    callback: (Double) -> Unit = { }
+    callback: (Float) -> Unit = { }
 ) {
     if (isEmpty()) {
         // @TODO: Do this?
@@ -175,7 +175,7 @@ suspend fun BaseView?.tweenAsync(
 	time: TimeSpan = DEFAULT_TIME,
 	easing: Easing = DEFAULT_EASING,
     waitTime: TimeSpan = TimeSpan.NIL,
-	callback: (Double) -> Unit = {}
+	callback: (Float) -> Unit = {}
 ): Deferred<Unit> = asyncImmediately(coroutineContext) { tween(*vs, time = time, easing = easing, waitTime = waitTime, callback = callback) }
 
 fun BaseView?.tweenAsync(
@@ -184,5 +184,5 @@ fun BaseView?.tweenAsync(
 	time: TimeSpan = DEFAULT_TIME,
 	easing: Easing = DEFAULT_EASING,
     waitTime: TimeSpan = TimeSpan.NIL,
-    callback: (Double) -> Unit = {}
+    callback: (Float) -> Unit = {}
 ) = asyncImmediately(coroutineContext) { tween(*vs, time = time, easing = easing, waitTime = waitTime, callback = callback) }

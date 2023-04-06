@@ -1,14 +1,14 @@
 package korlibs.korge.view.filter
 
 import korlibs.datastructure.*
-import korlibs.memory.*
 import korlibs.graphics.*
 import korlibs.graphics.annotation.*
-import korlibs.korge.render.*
-import korlibs.korge.view.*
 import korlibs.image.color.*
 import korlibs.io.lang.*
+import korlibs.korge.render.*
+import korlibs.korge.view.*
 import korlibs.math.geom.*
+import korlibs.memory.*
 import kotlin.math.*
 import kotlin.native.concurrent.*
 
@@ -26,8 +26,8 @@ import kotlin.native.concurrent.*
  */
 interface Filter {
     companion object {
-        private val VALID_FILTER_SCALES = doubleArrayOf(0.03125, 0.0625, 0.125, 0.25, 0.5, 0.75, 1.0)
-        fun discretizeFilterScale(scale: Double): Double {
+        private val VALID_FILTER_SCALES = floatArrayOf(0.03125f, 0.0625f, 0.125f, 0.25f, 0.5f, 0.75f, 1.0f)
+        fun discretizeFilterScale(scale: Float): Float {
             //return scale.clamp(0.03125, 1.5)
             return VALID_FILTER_SCALES.minByOrNull { (scale - it).absoluteValue }!!
         }
@@ -35,7 +35,7 @@ interface Filter {
 
     val allFilters: List<Filter> get() = listOf(this)
 
-    val recommendedFilterScale: Double get() = 1.0
+    val recommendedFilterScale: Float get() = 1f
 
     /**
      * The number of pixels the passed texture should be bigger at each direction: left, right, top, left.
@@ -57,7 +57,7 @@ interface Filter {
         texHeight: Int,
         renderColorMul: RGBA,
         blendMode: BlendMode,
-        filterScale: Double,
+        filterScale: Float,
     )
 }
 
@@ -72,7 +72,7 @@ fun Filter.renderToTextureWithBorder(
     texture: Texture,
     texWidth: Int,
     texHeight: Int,
-    filterScale: Double,
+    filterScale: Float,
     block: (texture: Texture, matrix: Matrix) -> Unit,
 ) {
     val filter = this
@@ -110,7 +110,7 @@ class RenderToTextureResult() : Disposable {
     var newTexHeight: Int = 0
     var borderLeft: Int = 0
     var borderTop: Int = 0
-    var filterScale: Double = 1.0
+    var filterScale: Float = 1f
     var matrix = Matrix.IDENTITY
     var texture: Texture? = null
     var fb: AGFrameBuffer? = null
@@ -157,7 +157,7 @@ fun Filter.renderToTextureWithBorderUnsafe(
     texture: Texture,
     texWidth: Int,
     texHeight: Int,
-    filterScale: Double,
+    filterScale: Float,
     result: RenderToTextureResult = RenderToTextureResult()
 ): RenderToTextureResult {
     val filter = this

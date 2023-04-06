@@ -1,17 +1,13 @@
 package korlibs.korge.ui
 
-import korlibs.korge.view.Container
-import korlibs.korge.view.ViewDslMarker
-import korlibs.korge.view.ViewLeaf
-import korlibs.korge.view.addTo
+import korlibs.korge.view.*
+import korlibs.math.geom.*
 
 inline fun Container.uiSpacing(
-    width: Double = UI_DEFAULT_WIDTH,
-    height: Double = UI_DEFAULT_HEIGHT,
+    size: Size = UI_DEFAULT_SIZE,
     block: @ViewDslMarker UISpacing.() -> Unit = {}
-): UISpacing = UISpacing(width, height).addTo(this).apply(block)
+): UISpacing = UISpacing(size).addTo(this).apply(block)
 
 open class UISpacing(
-    width: Double = UI_DEFAULT_WIDTH,
-    height: Double = UI_DEFAULT_HEIGHT,
-) : UIView(width, height), ViewLeaf
+    size: Size = UI_DEFAULT_SIZE,
+) : UIView(size), ViewLeaf

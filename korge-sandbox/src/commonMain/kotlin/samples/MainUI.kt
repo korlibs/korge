@@ -1,6 +1,9 @@
 package samples
 
-import korlibs.time.*
+import korlibs.image.color.*
+import korlibs.image.font.*
+import korlibs.io.async.*
+import korlibs.io.file.std.*
 import korlibs.korge.input.*
 import korlibs.korge.scene.*
 import korlibs.korge.style.*
@@ -8,13 +11,10 @@ import korlibs.korge.tween.*
 import korlibs.korge.ui.*
 import korlibs.korge.view.*
 import korlibs.korge.view.property.*
-import korlibs.render.*
-import korlibs.image.color.*
-import korlibs.image.font.*
-import korlibs.io.async.*
-import korlibs.io.file.std.*
 import korlibs.math.geom.*
 import korlibs.math.interpolation.*
+import korlibs.render.*
+import korlibs.time.*
 
 class MainUI : Scene() {
     @ViewProperty
@@ -37,9 +37,9 @@ class MainUI : Scene() {
             this.textFont = resourcesVfs["uifont.fnt"].readBitmapFont()
         }
 
-        uiVerticalStack(padding = 8.0, adjustSize = true) {
+        uiVerticalStack(padding = 8f, adjustSize = true) {
             position(128, 128)
-            width = 256.0
+            width = 256f
 
             uiButton(size = Size(256, 32)) {
                 text = "Disabled Button"
@@ -101,7 +101,7 @@ class MainUI : Scene() {
 
         val progress = uiProgressBar {
             position(64, 32)
-            current = 0.5
+            current = 0.5f
         }
         val job = launchImmediately {
             while (true) {
@@ -109,7 +109,7 @@ class MainUI : Scene() {
                 tween(progress::ratio[1.0, 0.0], time = 1.seconds, easing = Easing.EASE_IN_OUT)
             }
         }
-        uiButton("Stop Progress").position(Point(64 + progress.width, 32.0)).mouse { onClick { job.cancel() } }
+        uiButton("Stop Progress").position(Point(64 + progress.widthD, 32.0)).mouse { onClick { job.cancel() } }
 
     }
 }

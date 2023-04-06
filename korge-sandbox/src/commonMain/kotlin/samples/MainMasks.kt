@@ -1,31 +1,31 @@
 package samples
 
-import korlibs.time.*
+import korlibs.image.color.*
+import korlibs.image.paint.*
+import korlibs.io.async.*
 import korlibs.korge.animate.*
 import korlibs.korge.scene.*
 import korlibs.korge.tween.*
 import korlibs.korge.view.*
 import korlibs.korge.view.filter.*
 import korlibs.korge.view.mask.*
-import korlibs.image.color.*
-import korlibs.image.paint.*
-import korlibs.io.async.*
 import korlibs.math.geom.*
 import korlibs.math.geom.shape.*
 import korlibs.math.geom.vector.*
 import korlibs.math.interpolation.*
+import korlibs.time.*
 
 class MainMasks : Scene() {
     override suspend fun SContainer.sceneMain() {
         filter = IdentityFilter
-        scale = 0.9
+        scaleD = 0.9
         //y -= 32.0
 
-        solidRect(width, height, Colors.GREEN)
+        solidRect(widthD, heightD, Colors.GREEN)
 
         val fill1 = LinearGradientPaint(0, 0, 200, 200).add(Colors.RED, Colors.BLUE)
         var maskView = fastEllipse(Size(100.0, 100.0)).xy(50, 50).visible(false)
-        val circle1 = circle(100.0, fill = fill1)
+        val circle1 = circle(100f, fill = fill1)
             //val circle1 = solidRect(200, 200, Colors.PURPLE)
             .filters(DropshadowFilter())
             //.filters(BlurFilter())
@@ -33,10 +33,10 @@ class MainMasks : Scene() {
             .mask(maskView)
         //.mask(solidRect(100, 100, Colors.WHITE).xy(50, 50).visible(false))
 
-        roundRect(100, 100, 16, 16).xy(15, 15)
+        roundRect(Size(100, 100), RectCorners(16f)).xy(15, 15)
             .backdropFilters(ColorMatrixFilter(ColorMatrixFilter.GRAYSCALE_MATRIX))
             .backdropFilters(BlurFilter())
-            .backdropFilters(WaveFilter(crestDistanceX = 50.0, crestDistanceY = 25.0, time = 0.seconds).also { filter ->
+            .backdropFilters(WaveFilter(crestDistance = Vector2(50.0, 25.0), time = 0.seconds).also { filter ->
                 addUpdater { filter.time += it }
             })
 
@@ -52,10 +52,10 @@ class MainMasks : Scene() {
         })
         */
 
-        val circle3 = circle(100.0, fill = fill1).centered
+        val circle3 = circle(100f, fill = fill1).centered
         launchImmediately {
-            val width = this.width
-            val height = this.height
+            val width = this.widthD
+            val height = this.heightD
             val path = buildVectorPath(VectorPath()) {
                 circle(Point(width * 0.5, height * 0.5), 300f)
             }

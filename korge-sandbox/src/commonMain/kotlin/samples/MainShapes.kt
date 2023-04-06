@@ -1,15 +1,13 @@
 package samples
 
-import korlibs.time.*
-import korlibs.korge.input.*
-import korlibs.korge.scene.Scene
-import korlibs.korge.view.*
-import korlibs.korge.view.Circle
 import korlibs.image.color.*
 import korlibs.io.async.*
 import korlibs.io.async.delay
+import korlibs.korge.input.*
+import korlibs.korge.scene.Scene
+import korlibs.korge.view.*
 import korlibs.math.geom.*
-import korlibs.math.geom.vector.*
+import korlibs.time.*
 
 class MainShapes : Scene() {
     override suspend fun SContainer.sceneMain() {
@@ -59,8 +57,8 @@ class MainShapes : Scene() {
     }
 
     fun Container.setupRects() {
-        val rect1 = roundRect(80.0, 100.0, 5.0, fill = Colors.GREEN).position(820, 128)
-        val rect2 = roundRect(80.0, 100.0, 5.0, fill = Colors.GREEN, stroke = Colors.RED, strokeThickness = 4.0).position(1020, 128).anchor(0.5, 0.5)
+        val rect1 = roundRect(Size(80f, 100f), RectCorners(5f), fill = Colors.GREEN).position(820, 128)
+        val rect2 = roundRect(Size(80f, 100f), RectCorners(5f), fill = Colors.GREEN, stroke = Colors.RED, strokeThickness = 4.0).position(1020, 128).anchor(0.5, 0.5)
         addFixedUpdater(60.timesPerSecond) {
             rect1.rotation += 1.degrees
             rect2.rotation += 1.degrees

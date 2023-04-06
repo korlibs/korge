@@ -1,17 +1,17 @@
 package samples
 
-import korlibs.time.*
+import korlibs.image.color.*
+import korlibs.image.font.*
+import korlibs.image.text.*
 import korlibs.korge.animate.*
 import korlibs.korge.render.*
-import korlibs.korge.scene.Scene
+import korlibs.korge.scene.*
 import korlibs.korge.style.*
 import korlibs.korge.tween.*
 import korlibs.korge.ui.*
 import korlibs.korge.view.*
-import korlibs.image.color.*
-import korlibs.image.font.*
-import korlibs.image.text.*
 import korlibs.math.geom.*
+import korlibs.time.*
 
 class MainEditor : Scene() {
     override suspend fun SContainer.sceneMain() {
@@ -77,7 +77,7 @@ class MainEditor : Scene() {
             uiSpacing()
             uiRadioButton(group = group)
         }
-        uiVerticalStack(padding = 4.0) {
+        uiVerticalStack(padding = 4f) {
             xy(800, 100)
             uiButton("BUTTON")
             uiButton("NAME")
@@ -98,16 +98,16 @@ class MainEditor : Scene() {
         */
 
         val solidRect = solidRect(100, 100, Colors.RED).position(300, 300).anchor(Anchor.CENTER)
-        uiWindow("Properties", 300.0, 100.0) {
+        uiWindow("Properties", Size(300f, 100f)) {
             //it.isCloseable = false
             it.container.mobileBehaviour = false
             it.container.overflowRate = 0.0
-            uiVerticalStack(300.0, padding = 4.0) {
+            uiVerticalStack(300f, padding = 4f) {
                 uiText("Properties").styles { textColor = Colors.RED }
                 uiPropertyNumberRow("Alpha", *UIEditableNumberPropsList(solidRect::alphaF))
-                uiPropertyNumberRow("Position", *UIEditableNumberPropsList(solidRect::x, solidRect::y, min = -1024.0, max = +1024.0, clamped = false))
-                uiPropertyNumberRow("Size", *UIEditableNumberPropsList(solidRect::width, solidRect::height, min = -1024.0, max = +1024.0, clamped = false))
-                uiPropertyNumberRow("Scale", *UIEditableNumberPropsList(solidRect::scaleX, solidRect::scaleY, min = -1.0, max = +1.0, clamped = false))
+                uiPropertyNumberRow("Position", *UIEditableNumberPropsList(solidRect::x, solidRect::y, min = -1024f, max = +1024f, clamped = false))
+                uiPropertyNumberRow("Size", *UIEditableNumberPropsList(solidRect::unscaledWidth, solidRect::unscaledHeight, min = -1024f, max = +1024f, clamped = false))
+                uiPropertyNumberRow("Scale", *UIEditableNumberPropsList(solidRect::scaleX, solidRect::scaleY, min = -1f, max = +1f, clamped = false))
                 uiPropertyNumberRow("Rotation", *UIEditableNumberPropsList(solidRect::rotationDeg, min = -360.0, max = +360.0, clamped = true))
                 val skewProp = uiPropertyNumberRow("Skew", *UIEditableNumberPropsList(solidRect::skewXDeg, solidRect::skewYDeg, min = -360.0, max = +360.0, clamped = true))
                 append(UIPropertyRow("Visible")) {
@@ -132,8 +132,8 @@ class MainEditor : Scene() {
             uiTextInput("LOL").position(0.0, 128.0)
         }
 
-        renderableView(width, height) {
-            ctx2d.materialRoundRect(0.0, 0.0, 64.0, 64.0, radius = RectCorners(32.0, 16.0, 8.0, 0.0))
+        renderableView(Size(width, height)) {
+            ctx2d.materialRoundRect(0f, 0f, 64f, 64f, radius = RectCorners(32.0, 16.0, 8.0, 0.0))
         }.xy(500, 500)
 
         val richTextData = RichTextData.fromHTML("hello world,<br /><br />this is a long test to see how <font size=24 color='red'><b><i>rich text</i></b></font> <b color=yellow>works</b>! And <i>see</i> if this is going to show ellipsis if the text is too long")
@@ -148,8 +148,8 @@ class MainEditor : Scene() {
         }
 
         textBlock.simpleAnimator.sequence(looped = true) {
-            tween(textBlock::width[300.0], time = 5.seconds)
-            tween(textBlock::width[1.0], time = 5.seconds)
+            tween(textBlock::unscaledWidthD[300.0], time = 5.seconds)
+            tween(textBlock::unscaledWidthD[1.0], time = 5.seconds)
         }
 
         /*

@@ -1,63 +1,46 @@
 package korlibs.korge.view.camera
 
-import korlibs.time.TimeSpan
-import korlibs.time.milliseconds
-import korlibs.time.seconds
-import korlibs.memory.clamp
-import korlibs.korge.view.Container
-import korlibs.korge.view.FixedSizeContainer
-import korlibs.korge.view.View
-import korlibs.korge.view.ViewDslMarker
-import korlibs.korge.view.addTo
-import korlibs.korge.view.addUpdater
-import korlibs.io.async.Signal
-import korlibs.io.async.invoke
-import korlibs.io.async.waitOne
+import korlibs.io.async.*
+import korlibs.korge.view.*
 import korlibs.math.geom.*
 import korlibs.math.interpolation.*
-import kotlin.math.min
-import kotlin.math.pow
-import kotlin.math.sqrt
+import korlibs.memory.*
+import korlibs.time.*
+import kotlin.math.*
 
 inline fun Container.cameraContainer(
-    width: Double,
-    height: Double,
+    size: Size,
     clip: Boolean = true,
-    noinline contentBuilder: (camera: CameraContainer) -> Container = { FixedSizeContainer(it.width, it.height) },
+    noinline contentBuilder: (camera: CameraContainer) -> Container = { FixedSizeContainer(it.size) },
     noinline block: @ViewDslMarker CameraContainer.() -> Unit = {},
     content: @ViewDslMarker Container.() -> Unit = {}
-) = CameraContainer(width, height, clip, contentBuilder, block).addTo(this).also { content(it.content) }
+) = CameraContainer(size, clip, contentBuilder, block).addTo(this).also { content(it.content) }
 
 class CameraContainer(
-    width: Double = 100.0,
-    height: Double = 100.0,
+    size: Size,
     clip: Boolean = true,
-    contentBuilder: (camera: CameraContainer) -> Container = { FixedSizeContainer(it.width, it.height) },
+    contentBuilder: (camera: CameraContainer) -> Container = { FixedSizeContainer(it.size) },
     block: @ViewDslMarker CameraContainer.() -> Unit = {}
-) : FixedSizeContainer(width, height, clip), View.Reference {
+) : FixedSizeContainer(size, clip), View.Reference {
     var clampToBounds: Boolean = false
     var cameraViewportBounds: Rectangle = Rectangle(0, 0, 4096, 4096)
 
     private val contentContainer = Container()
 
-    class ContentContainer(val cameraContainer: CameraContainer) : FixedSizeContainer(cameraContainer.width, cameraContainer.height), Reference {
+    class ContentContainer(val cameraContainer: CameraContainer) : FixedSizeContainer(cameraContainer.size), Reference {
         //out.setTo(0, 0, cameraContainer.width, cameraContainer.height)
-        override fun getLocalBoundsInternal() = Rectangle(0.0, 0.0, width, height)
+        override fun getLocalBoundsInternal() = Rectangle(0.0, 0.0, widthD, heightD)
     }
 
     val content: Container by lazy { contentBuilder(this) }
 
-    private val sourceCamera = Camera(x = width / 2.0, y = height / 2.0, anchorX = 0.5, anchorY = 0.5)
+    private val sourceCamera = Camera(x = size.width / 2.0, y = size.height / 2.0, anchorX = 0.5, anchorY = 0.5)
     private val currentCamera = sourceCamera.copy()
     private val targetCamera = sourceCamera.copy()
 
-    override var width: Double = width
+    override var unscaledSize: Size = size
         set(value) {
-            field = value
-            sync()
-        }
-    override var height: Double = height
-        set(value) {
+            if (field == value) return
             field = value
             sync()
         }
@@ -107,7 +90,7 @@ class CameraContainer(
     val onCompletedTransition = Signal<Unit>()
 
     fun getCurrentCamera(out: Camera = Camera()): Camera = out.copyFrom(currentCamera)
-    fun getDefaultCamera(out: Camera = Camera()): Camera = out.setTo(x = width / 2.0, y = height / 2.0, anchorX = 0.5, anchorY = 0.5)
+    fun getDefaultCamera(out: Camera = Camera()): Camera = out.setTo(x = widthD / 2.0, y = heightD / 2.0, anchorX = 0.5, anchorY = 0.5)
 
     companion object {
         fun getCameraRect(rect: Rectangle, scaleMode: ScaleMode = ScaleMode.SHOW_ALL, cameraWidth: Double, cameraHeight: Double, cameraAnchorX: Double, cameraAnchorY: Double, out: Camera = Camera()): Camera {
@@ -125,7 +108,7 @@ class CameraContainer(
         }
     }
 
-    fun getCameraRect(rect: Rectangle, scaleMode: ScaleMode = ScaleMode.SHOW_ALL, out: Camera = Camera()): Camera = getCameraRect(rect, scaleMode, width, height, cameraAnchorX, cameraAnchorY, out)
+    fun getCameraRect(rect: Rectangle, scaleMode: ScaleMode = ScaleMode.SHOW_ALL, out: Camera = Camera()): Camera = getCameraRect(rect, scaleMode, widthD, heightD, cameraAnchorX, cameraAnchorY, out)
     fun getCameraToFit(rect: Rectangle, out: Camera = Camera()): Camera = getCameraRect(rect, ScaleMode.SHOW_ALL, out)
     fun getCameraToCover(rect: Rectangle, out: Camera = Camera()): Camera = getCameraRect(rect, ScaleMode.COVER, out)
 
@@ -203,7 +186,7 @@ class CameraContainer(
                 }
                 elapsedTime < transitionTime -> {
                     elapsedTime += it
-                    val ratio = (elapsedTime / transitionTime).coerceIn(0.0, 1.0)
+                    val ratio = (elapsedTime / transitionTime).coerceIn(0f, 1f)
                     currentCamera.setToInterpolated(easing(ratio).toRatio(), sourceCamera, targetCamera)
                     /*
                     val ratioCamera = easing(ratio)
@@ -231,18 +214,18 @@ class CameraContainer(
         val realScaleX = cameraZoom
         val realScaleY = cameraZoom
 
-        val contentContainerX = width * cameraAnchorX
-        val contentContainerY = height * cameraAnchorY
+        val contentContainerX = widthD * cameraAnchorX
+        val contentContainerY = heightD * cameraAnchorY
 
         //println("content=${content.getLocalBoundsOptimized()}, contentContainer=${contentContainer.getLocalBoundsOptimized()}, cameraViewportBounds=$cameraViewportBounds")
 
-        content.x = if (clampToBounds) -cameraX.clamp(contentContainerX + cameraViewportBounds.left, contentContainerX + cameraViewportBounds.width - width) else -cameraX
-        content.y = if (clampToBounds) -cameraY.clamp(contentContainerY + cameraViewportBounds.top, contentContainerY + cameraViewportBounds.height - height) else -cameraY
-        contentContainer.x = contentContainerX
-        contentContainer.y = contentContainerY
+        content.xD = if (clampToBounds) -cameraX.clamp(contentContainerX + cameraViewportBounds.left, contentContainerX + cameraViewportBounds.width - widthD) else -cameraX
+        content.yD = if (clampToBounds) -cameraY.clamp(contentContainerY + cameraViewportBounds.top, contentContainerY + cameraViewportBounds.height - heightD) else -cameraY
+        contentContainer.xD = contentContainerX
+        contentContainer.yD = contentContainerY
         contentContainer.rotation = cameraAngle
-        contentContainer.scaleX = realScaleX
-        contentContainer.scaleY = realScaleY
+        contentContainer.scaleXD = realScaleX
+        contentContainer.scaleYD = realScaleY
     }
 
     fun setZoomAt(anchor: MPoint, zoom: Double) = setZoomAt(anchor.x, anchor.y, zoom)
@@ -255,10 +238,10 @@ class CameraContainer(
     fun setAnchorPosKeepingPos(anchor: MPoint) = setAnchorPosKeepingPos(anchor.x, anchor.y)
 
     fun setAnchorPosKeepingPos(anchorX: Double, anchorY: Double) {
-        setAnchorRatioKeepingPos(anchorX / width, anchorY / height)
+        setAnchorRatioKeepingPos(anchorX / widthD, anchorY / heightD)
     }
     fun setAnchorRatioKeepingPos(ratioX: Double, ratioY: Double) {
-        currentCamera.setAnchorRatioKeepingPos(ratioX, ratioY, width, height)
+        currentCamera.setAnchorRatioKeepingPos(ratioX, ratioY, widthD, heightD)
         sync()
     }
 }

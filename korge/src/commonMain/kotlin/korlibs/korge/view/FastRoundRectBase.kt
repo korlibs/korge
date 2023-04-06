@@ -5,11 +5,10 @@ import korlibs.korge.render.*
 import korlibs.math.geom.*
 
 abstract class FastRoundRectBase(
-    width: Double = 100.0,
-    height: Double = 100.0,
+    size: Size = Size(100f, 100f),
     cornersRatio: RectCorners = RectCorners(.0f, .0f, .0f, .0f),
     doScale: Boolean = true
-) : ShadedView(PROGRAM, width, height) {
+) : ShadedView(PROGRAM, size) {
     protected var cornersRatio = cornersRatio
     protected var doScale = doScale
 
@@ -18,9 +17,9 @@ abstract class FastRoundRectBase(
         ctx[SDFUB].push {
             it[u_Corners] = cornersRatio
             it[u_Scale] = when {
-                !doScale || width == height -> Point(1f, 1f)
-                width > height -> Point(width / height, 1.0)
-                else -> Point(1.0, height / width)
+                !doScale || widthD == heightD -> Point(1f, 1f)
+                widthD > heightD -> Point(widthD / heightD, 1.0)
+                else -> Point(1.0, heightD / widthD)
             }
         }
         super.renderInternal(ctx)

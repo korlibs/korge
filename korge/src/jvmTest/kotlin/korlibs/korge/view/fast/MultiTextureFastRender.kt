@@ -1,20 +1,18 @@
 package korlibs.korge.view.fast
 
-import korlibs.korge.test.*
+import korlibs.image.bitmap.*
+import korlibs.image.color.*
 import korlibs.korge.testing.*
 import korlibs.korge.tests.*
 import korlibs.korge.view.*
-import korlibs.image.bitmap.*
-import korlibs.image.color.*
 import korlibs.math.geom.*
-import org.junit.*
 import org.junit.Test
 import kotlin.test.*
 
 class MultiTextureFastRender : ViewsForTesting(log = true) {
     @Test
     @Suppress("UNUSED_CHANGED_VALUE")
-    fun test() = korgeScreenshotTest(SizeInt(180, 180)) {
+    fun test() = korgeScreenshotTest(Size(180, 180)) {
         val tex0 = Bitmap32(16, 16) { x, y -> Colors.RED }.premultipliedIfRequired()
         val tex1 = Bitmap32(16, 16) { x, y -> Colors.GREEN }.premultipliedIfRequired()
         val tex2 = Bitmap32(16, 16) { x, y -> Colors.BLUE }.premultipliedIfRequired()

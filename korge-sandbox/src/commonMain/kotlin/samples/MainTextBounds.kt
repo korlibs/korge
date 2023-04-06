@@ -1,15 +1,15 @@
 package samples
 
 import korlibs.datastructure.*
-import korlibs.korge.input.*
-import korlibs.korge.scene.*
-import korlibs.korge.ui.*
-import korlibs.korge.view.*
 import korlibs.image.color.*
 import korlibs.image.font.*
 import korlibs.image.paint.*
 import korlibs.image.text.*
 import korlibs.io.file.std.*
+import korlibs.korge.input.*
+import korlibs.korge.scene.*
+import korlibs.korge.ui.*
+import korlibs.korge.view.*
 import korlibs.math.geom.*
 import korlibs.math.geom.shape.*
 
@@ -65,7 +65,7 @@ class MainTextBounds : Scene() {
                     stroke(Colors.GREEN.withAd(0.5), lineWidth = 1.0) { path(glyph.boundsPath) }
                 }
             }
-            circle(16.0, Colors.PURPLE).centered
+            circle(16f, Colors.PURPLE).centered
         }
     }
 

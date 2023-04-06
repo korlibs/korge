@@ -1,31 +1,30 @@
 package korlibs.korge.tests
 
 import korlibs.datastructure.TGenPriorityQueue
-import korlibs.time.*
-import korlibs.memory.*
+import korlibs.event.*
 import korlibs.graphics.*
 import korlibs.graphics.log.*
-import korlibs.event.*
+import korlibs.inject.*
+import korlibs.io.async.*
+import korlibs.io.lang.*
 import korlibs.korge.*
 import korlibs.korge.input.*
-import korlibs.korge.input.MouseEvents
 import korlibs.korge.internal.*
 import korlibs.korge.render.*
 import korlibs.korge.scene.*
 import korlibs.korge.view.*
-import korlibs.render.*
-import korlibs.inject.*
-import korlibs.io.async.*
-import korlibs.io.lang.*
 import korlibs.math.geom.*
+import korlibs.memory.*
+import korlibs.render.*
+import korlibs.time.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
 import kotlin.jvm.*
 
 open class ViewsForTesting(
     val frameTime: TimeSpan = 10.milliseconds,
-    val windowSize: SizeInt = DefaultViewport.SIZE,
-    val virtualSize: SizeInt = windowSize,
+    val windowSize: Size = DefaultViewport.SIZE,
+    val virtualSize: Size = windowSize,
     val defaultDevicePixelRatio: Double = 1.0,
     val log: Boolean = false,
 ) {
@@ -38,10 +37,10 @@ open class ViewsForTesting(
         override fun now(): DateTime = time
     }
 	val dispatcher = FastGameWindowCoroutineDispatcher()
-    inner class TestGameWindow(initialSize: SizeInt, val dispatcher: FastGameWindowCoroutineDispatcher) : GameWindowLog() {
+    inner class TestGameWindow(initialSize: Size, val dispatcher: FastGameWindowCoroutineDispatcher) : GameWindowLog() {
         override val devicePixelRatio: Double get() = this@ViewsForTesting.devicePixelRatio
-        override var width: Int = initialSize.width
-        override var height: Int = initialSize.height
+        override var width: Int = initialSize.width.toInt()
+        override var height: Int = initialSize.height.toInt()
         override val coroutineDispatcher = dispatcher
     }
     open fun filterLogDraw(str: String, kind: AGBaseLog.Kind): Boolean {
@@ -51,12 +50,12 @@ open class ViewsForTesting(
 	val gameWindow = TestGameWindow(windowSize, dispatcher)
     val ag: AG by lazy {
         createAg().also {
-            it.mainFrameBuffer.setSize(0, 0, windowSize.width, windowSize.height)
+            it.mainFrameBuffer.setSize(0, 0, windowSize.width.toInt(), windowSize.height.toInt())
         }
     }
 
     open fun createAg(): AG {
-        return object : AGLog(windowSize.width, windowSize.height) {
+        return object : AGLog(windowSize) {
             override fun log(str: String, kind: Kind) {
                 if (this@ViewsForTesting.log && filterLogDraw(str, kind)) {
                     super.log(str, kind)
@@ -67,9 +66,9 @@ open class ViewsForTesting(
     }
 
 	val viewsLog by lazy { ViewsLog(gameWindow, ag = ag, gameWindow = gameWindow, timeProvider = timeProvider).also { viewsLog ->
-        viewsLog.views.virtualWidth = virtualSize.width
-        viewsLog.views.virtualHeight = virtualSize.height
-        viewsLog.views.resized(windowSize.width, windowSize.height)
+        viewsLog.views.virtualWidth = virtualSize.width.toInt()
+        viewsLog.views.virtualHeight = virtualSize.height.toInt()
+        viewsLog.views.resized(windowSize.width.toInt(), windowSize.height.toInt())
     } }
 
 	val injector get() = viewsLog.injector
@@ -271,7 +270,7 @@ open class ViewsForTesting(
 		val bounds = this.getGlobalBounds()
 		if (bounds.area <= 0.0) return false
 		val module = injector.get<KorgeConfig>()
-		val visibleBounds = Rectangle(0, 0, module.windowSize.width, module.windowSize.height)
+		val visibleBounds = Rectangle(Point.ZERO, module.windowSize)
         return bounds.intersects(visibleBounds)
     }
 

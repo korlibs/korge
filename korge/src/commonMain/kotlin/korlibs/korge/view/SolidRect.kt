@@ -1,43 +1,43 @@
 package korlibs.korge.view
 
-import korlibs.image.bitmap.BitmapCoords
-import korlibs.image.color.Colors
-import korlibs.image.color.RGBA
+import korlibs.image.bitmap.*
+import korlibs.image.color.*
+import korlibs.math.geom.*
 
-/** Creates a new [SolidRect] of size [width]x[height] and color [color] and allows you to configure it via [callback]. Once created, it is added to this receiver [Container]. */
+/** Creates a new [SolidRect] of [size] and color [color] and allows you to configure it via [callback]. Once created, it is added to this receiver [Container]. */
+inline fun Container.solidRect(size: Size, color: RGBA = Colors.WHITE, callback: @ViewDslMarker SolidRect.() -> Unit = {})
+    = SolidRect(size, color).addTo(this, callback)
+
 inline fun Container.solidRect(width: Double, height: Double, color: RGBA = Colors.WHITE, callback: @ViewDslMarker SolidRect.() -> Unit = {})
-    = SolidRect(width, height, color).addTo(this, callback)
+    = SolidRect(Size(width, height), color).addTo(this, callback)
+
+inline fun Container.solidRect(width: Float, height: Float, color: RGBA = Colors.WHITE, callback: @ViewDslMarker SolidRect.() -> Unit = {})
+    = SolidRect(Size(width, height), color).addTo(this, callback)
 
 /** Creates a new [SolidRect] of size [width]x[height] and color [color] and allows you to configure it via [callback]. Once created, it is added to this receiver [Container]. */
 inline fun Container.solidRect(width: Int, height: Int, color: RGBA = Colors.WHITE, callback: @ViewDslMarker SolidRect.() -> Unit = {})
-    = SolidRect(width.toDouble(), height.toDouble(), color).addTo(this, callback)
+    = SolidRect(Size(width, height), color).addTo(this, callback)
 
 /**
- * A Rect [RectBase] [View] of size [width] and [height] with the initial color, [color].
+ * A Rect [RectBase] [View] of size [widthD] and [heightD] with the initial color, [color].
  */
-class SolidRect(width: Double, height: Double, color: RGBA = Colors.WHITE) : RectBase() {
+class SolidRect(size: Size, color: RGBA = Colors.WHITE) : RectBase() {
 	companion object {
-        operator fun invoke(width: Int, height: Int, color: RGBA = Colors.WHITE) = SolidRect(width.toDouble(), height.toDouble(), color)
-        operator fun invoke(width: Float, height: Float, color: RGBA = Colors.WHITE) = SolidRect(width.toDouble(), height.toDouble(), color)
+        operator fun invoke(width: Int, height: Int, color: RGBA = Colors.WHITE) = SolidRect(Size(width, height), color)
+        operator fun invoke(width: Float, height: Float, color: RGBA = Colors.WHITE) = SolidRect(Size(width, height), color)
+        operator fun invoke(width: Double, height: Double, color: RGBA = Colors.WHITE) = SolidRect(Size(width, height), color)
 	}
 
-	override var width: Double = width; set(v) {
-        if (field != v) {
-            field = v
+    override var unscaledSize: Size = size
+        set(value) {
+            if (field == value) return
+            field = value
             dirtyVertices = true
             invalidateRender()
         }
-    }
-	override var height: Double = height; set(v) {
-       if (field != v) {
-           field = v
-           dirtyVertices = true
-           invalidateRender()
-       }
-    }
 
-    override val bwidth: Double get() = width
-    override val bheight: Double get() = height
+    override val bwidth: Float get() = width
+    override val bheight: Float get() = height
 
     /**
      * Allows to store a white bitmap in an atlas along for example a bitmap font to render this rect
@@ -54,5 +54,5 @@ class SolidRect(width: Double, height: Double, color: RGBA = Colors.WHITE) : Rec
 		this.colorMul = color
 	}
 
-	override fun createInstance(): View = SolidRect(width, height, colorMul)
+	override fun createInstance(): View = SolidRect(Size(width, height), colorMul)
 }

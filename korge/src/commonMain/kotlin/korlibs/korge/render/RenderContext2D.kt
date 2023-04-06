@@ -1,13 +1,13 @@
 package korlibs.korge.render
 
 import korlibs.datastructure.*
-import korlibs.logger.*
 import korlibs.graphics.*
 import korlibs.graphics.shader.*
-import korlibs.korge.internal.*
-import korlibs.korge.view.*
 import korlibs.image.bitmap.*
 import korlibs.image.color.*
+import korlibs.korge.internal.*
+import korlibs.korge.view.*
+import korlibs.logger.*
 import korlibs.math.geom.*
 import korlibs.math.geom.shape.*
 import korlibs.math.geom.vector.*
@@ -43,9 +43,9 @@ class RenderContext2D(
 
     val ctx: RenderContext get() = batch.ctx
 
-    var size: Size = Size(0.0, 0.0)
-    val width: Double get() = size.widthD
-    val height: Double get() = size.heightD
+    var size: Size = Size(0, 0)
+    val width: Float get() = size.width
+    val height: Float get() = size.height
 
     inline fun getTexture(slice: BmpSlice): TextureCoords = agBitmapTextureManager.getTexture(slice)
 
@@ -208,10 +208,10 @@ class RenderContext2D(
     }
 
     fun quadPaddedCustomProgram(
-        x: Double,
-        y: Double,
-        width: Double,
-        height: Double,
+        x: Float,
+        y: Float,
+        width: Float,
+        height: Float,
         program: Program,
         padding: Margin = Margin.ZERO,
     ) {
@@ -225,15 +225,15 @@ class RenderContext2D(
             //    premultiplied = baseBitmap.base.premultiplied, wrap = wrapTexture
             //)
 
-            val L = (x - padding.left).toFloat()
-            val T = (y - padding.top).toFloat()
-            val R = (width + padding.leftPlusRight).toFloat()
-            val B = (height + padding.topPlusBottom).toFloat()
+            val L = (x - padding.left)
+            val T = (y - padding.top)
+            val R = (width + padding.leftPlusRight)
+            val B = (height + padding.topPlusBottom)
 
             val l = -padding.left
             val t = -padding.top
-            val r = (width + padding.right).toFloat()
-            val b = (height + padding.bottom).toFloat()
+            val r = (width + padding.right)
+            val b = (height + padding.bottom)
 
             val vertices = TexturedVertexArray(6, TexturedVertexArray.QUAD_INDICES)
             vertices.quad(
@@ -302,7 +302,7 @@ class RenderContext2D(
 inline fun View.renderCtx2d(ctx: RenderContext, crossinline block: (RenderContext2D) -> Unit) {
     ctx.useCtx2d { context ->
         context.keep {
-            context.size = Size(this@renderCtx2d.width, this@renderCtx2d.height)
+            context.size = Size(this@renderCtx2d.widthD, this@renderCtx2d.heightD)
             context.blendMode = renderBlendMode
             context.multiplyColor = renderColorMul
             context.setMatrix(globalMatrix)

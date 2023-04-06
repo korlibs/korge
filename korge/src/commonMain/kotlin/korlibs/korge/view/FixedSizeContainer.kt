@@ -9,34 +9,25 @@ import korlibs.korge.view.property.*
 import korlibs.math.geom.*
 
 inline fun Container.fixedSizeContainer(
-    width: Double,
-    height: Double,
+    size: Size,
     clip: Boolean = false,
     callback: @ViewDslMarker FixedSizeContainer.() -> Unit = {}
-) = FixedSizeContainer(width, height, clip).addTo(this, callback)
-
-inline fun Container.fixedSizeContainer(
-    width: Int,
-    height: Int,
-    clip: Boolean = false,
-    callback: @ViewDslMarker FixedSizeContainer.() -> Unit = {}
-) = FixedSizeContainer(width.toDouble(), height.toDouble(), clip).addTo(this, callback)
+) = FixedSizeContainer(size, clip).addTo(this, callback)
 
 @korlibs.math.annotations.ViewDslMarker
 open class SContainer(
-    width: Double = 100.0,
-    height: Double = 100.0,
+    size: Size = Size(100, 100),
     clip: Boolean = false,
-) : FixedSizeContainer(width, height, clip)
+) : FixedSizeContainer(size, clip)
 
 open class FixedSizeContainer(
-    override var width: Double = 100.0,
-    override var height: Double = 100.0,
+    size: Size = Size(100, 100),
     @property:ViewProperty
     open var clip: Boolean = false,
 ) : Container(), View.Reference {
+    override var unscaledSize: Size = size
 
-    override fun getLocalBoundsInternal() = Rectangle(0.0, 0.0, width, height)
+    override fun getLocalBoundsInternal() = Rectangle(0f, 0f, width, height)
 
     override fun toString(): String {
         var out = super.toString()

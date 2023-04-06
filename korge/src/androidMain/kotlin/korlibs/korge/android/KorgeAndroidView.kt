@@ -3,14 +3,13 @@ package korlibs.korge.android
 import android.content.*
 import android.util.*
 import android.widget.*
-import korlibs.kgl.*
-import korlibs.graphics.gl.*
 import korlibs.event.*
-import korlibs.korge.*
-import korlibs.korge.scene.*
-import korlibs.render.*
+import korlibs.graphics.gl.*
 import korlibs.io.*
 import korlibs.io.android.*
+import korlibs.kgl.*
+import korlibs.korge.*
+import korlibs.render.*
 import kotlinx.coroutines.*
 
 @Suppress("unused")
@@ -52,7 +51,7 @@ open class KorgeAndroidView @JvmOverloads constructor(
         unloadModule() // Unload module if already loaded
 
         agOpenGl = AGOpengl(KmlGlAndroid { mGLView?.clientVersion ?: -1 }.checkedIf(checked = false).logIf(log = false))
-        gameWindow = AndroidGameWindowNoActivity(config.windowSize.width, config.windowSize.height, agOpenGl!!, context, this.config) { mGLView!! }
+        gameWindow = AndroidGameWindowNoActivity(config.windowSize.width.toInt(), config.windowSize.height.toInt(), agOpenGl!!, context, this.config) { mGLView!! }
         mGLView = korlibs.render.KorgwSurfaceView(this, context, gameWindow!!, this.config)
 
         addView(mGLView)

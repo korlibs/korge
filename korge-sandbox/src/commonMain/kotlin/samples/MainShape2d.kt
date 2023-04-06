@@ -44,7 +44,7 @@ class MainShape2dScene : Scene() {
 
             //println("intersections=$intersections")
 
-            gpuShapeView.alpha = if (intersects) 1.0 else 0.5
+            gpuShapeView.alpha = if (intersects) 1f else 0.5f
             //println("intersects=$intersects")
             try {
                 cursor.pos = pos
@@ -94,7 +94,7 @@ class MainShape2dScene : Scene() {
         annotationsView = gpuShapeView { }
         gpuShapeView = gpuShapeView { }
         normalVectorView = gpuShapeView { }
-        projected = circle(4.0, Colors.RED).centered
+        projected = circle(4f, Colors.RED).centered
         cursor = gpuShapeView { fill(Colors.GREEN.withAd(0.5)) { path(cursorShape) } }
 
 

@@ -31,12 +31,11 @@ object AndroidManifestXml {
                     //line("android:theme=\"@android:style/Theme.Holo.NoActionBar\"")
                     line("android:theme=\"@android:style/Theme.NoTitleBar.Fullscreen\"")
                 }
-
-
                 line("android:supportsRtl=\"true\"")
             }
             line(">")
             indent {
+                line("<profileable android:shell=\"true\" />")
                 for (text in config.androidManifest) {
                     line(text)
                 }

@@ -1,14 +1,14 @@
 package korlibs.render
 
-import korlibs.graphics.*
 import korlibs.event.*
+import korlibs.graphics.*
 import korlibs.image.color.*
 import korlibs.io.*
 import korlibs.math.geom.*
 
 fun main(args: Array<String>) = Korio {
     CreateDefaultGameWindow().loop {
-        configure(SizeInt(640, 480), "hello", fullscreen = false)
+        configure(Size(640, 480), "hello", fullscreen = false)
         onEvent(MouseEvent.Type.CLICK) { e ->
             toggleFullScreen()
             //    //fullscreen = !fullscreen

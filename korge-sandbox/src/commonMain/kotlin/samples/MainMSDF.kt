@@ -1,11 +1,6 @@
 package samples
 
 import korlibs.event.*
-import korlibs.korge.input.*
-import korlibs.korge.render.*
-import korlibs.korge.scene.*
-import korlibs.korge.text.*
-import korlibs.korge.view.*
 import korlibs.image.color.*
 import korlibs.image.font.*
 import korlibs.image.format.*
@@ -13,6 +8,11 @@ import korlibs.image.text.*
 import korlibs.image.vector.*
 import korlibs.image.vector.format.*
 import korlibs.io.file.std.*
+import korlibs.korge.input.*
+import korlibs.korge.render.*
+import korlibs.korge.scene.*
+import korlibs.korge.text.*
+import korlibs.korge.view.*
 import korlibs.math.geom.*
 import korlibs.math.geom.vector.*
 
@@ -30,72 +30,72 @@ class MainMSDF : Scene() {
 
         image(outputPng) {
             xy(196 * 0, 0)
-            scale = 3.0
+            scaleAvg = 3.0f
         }
 
         image(outputPng) {
             xy(196 * 1, 0)
-            scale = 3.0
+            scaleAvg = 3.0f
             program = MsdfRender.PROGRAM_MSDF
         }
         image(outputPng) {
             xy(196 * 1, 50)
-            scale = 1.5
+            scaleAvg = 1.5f
             program = MsdfRender.PROGRAM_MSDF
         }
         image(outputPng) {
             xy(196 * 1, 100)
-            scale = 0.5
+            scaleAvg = 0.5f
             program = MsdfRender.PROGRAM_MSDF
         }
         image(outputPng) {
             xy(196 * 1, 150)
-            scale = 0.25
+            scaleAvg = 0.25f
             program = MsdfRender.PROGRAM_MSDF
         }
         image(outputPng) {
             xy(196 * 1, 175)
-            scale = 0.15
+            scaleAvg = 0.15f
             program = MsdfRender.PROGRAM_MSDF
         }
         image(outputPng) {
             xy(196 * 1, 200)
-            scale = 0.1
+            scaleAvg = 0.1f
             program = MsdfRender.PROGRAM_MSDF
         }
 
         image(msdfBitmap) {
             xy(196 * 2, 0)
-            scale = 3.0
+            scaleAvg = 3.0f
         }
 
         image(msdfBitmap) {
             xy(196 * 3, 0)
-            scale = 3.0
+            scaleAvg = 3.0f
             program = MsdfRender.PROGRAM_MSDF
         }
 
         image(DefaultTtfFontAsBitmap.atlas.bitmap) {
             xy(196 * 0, 256)
-            scale = 2.0
+            scaleAvg = 2f
             program = MsdfRender.PROGRAM_MSDF
         }
 
         image(DefaultTtfFontAsBitmap.atlas.bitmap) {
             xy(196 * 2, 256)
-            scale = 0.5
+            scaleAvg = 0.5f
             program = MsdfRender.PROGRAM_MSDF
         }
 
         image(DefaultTtfFontAsBitmap.atlas.bitmap) {
             xy(196 * 3, 256)
-            scale = 0.25
+            scaleAvg = 0.25f
             program = MsdfRender.PROGRAM_MSDF
         }
 
         image(DefaultTtfFontAsBitmap.atlas.bitmap) {
             xy(196 * 4, 256)
-            scale = 2.0
+            scaleAvg = 2f
         }
 
         //val font1 = resourcesVfs["msdf/SaniTrixieSans.fnt"].readBitmapFont()
@@ -126,7 +126,7 @@ class MainMSDF : Scene() {
                 } else {
                     //textBlock(RichTextData("HELLO WORLD aeioun coooool", font = font2, textSize = 32.0)).also {
                     val tb = textBlock(RichTextData("HELLO WORLD áéúóúñ cooool", font = font2, textSize = 32.0)).also {
-                        it.setSize(300.0, 100.0)
+                        it.size(300.0, 100.0)
                         it.align = TextAlignment.MIDDLE_CENTER
                     }
 

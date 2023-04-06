@@ -1,20 +1,12 @@
 package korlibs.korge.input.component
 
-import korlibs.korge.input.onClick
-import korlibs.korge.input.onDown
-import korlibs.korge.input.onMove
-import korlibs.korge.input.onOut
-import korlibs.korge.input.onOver
-import korlibs.korge.input.onUp
-import korlibs.korge.input.onUpOutside
-import korlibs.korge.tests.ViewsForTesting
-import korlibs.korge.view.Image
-import korlibs.korge.view.fixedSizeContainer
-import korlibs.korge.view.solidRect
-import korlibs.image.bitmap.Bitmap32
-import korlibs.image.color.Colors
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import korlibs.image.bitmap.*
+import korlibs.image.color.*
+import korlibs.korge.input.*
+import korlibs.korge.tests.*
+import korlibs.korge.view.*
+import korlibs.math.geom.*
+import kotlin.test.*
 
 class MouseComponentTest : ViewsForTesting() {
 	@Test
@@ -50,7 +42,7 @@ class MouseComponentTest : ViewsForTesting() {
     @Test
     fun test2() = viewsTest {
         val log = arrayListOf<String>()
-        fixedSizeContainer(100, 100) {
+        fixedSizeContainer(Size(100, 100)) {
             solidRect(50, 50, Colors.RED) {
                 onClick { log += "rect" }
             }

@@ -1,16 +1,12 @@
 package korlibs.korge
 
-import korlibs.korge.view.Stage
-import korlibs.render.awt.GLCanvas
-import korlibs.render.awt.GLCanvasGameWindow
-import korlibs.io.async.launchImmediately
+import korlibs.io.async.*
 import korlibs.korge.internal.*
-import korlibs.korge.internal.DefaultViewport
+import korlibs.korge.view.*
 import korlibs.math.geom.*
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
-import java.io.Closeable
+import korlibs.render.awt.*
+import kotlinx.coroutines.*
+import java.io.*
 
 fun GLCanvasWithKorge(
     config: KorgeConfig,
@@ -97,10 +93,9 @@ class GLCanvasKorge internal constructor(
     companion object {
         suspend operator fun invoke(
             canvas: GLCanvasWithKorge,
-            virtualWidth: Int? = null,
-            virtualHeight: Int? = null
+            virtualSize: Size? = null,
         ): GLCanvasKorge {
-            return GLCanvasKorge(true, canvas, KorgeConfig(virtualSize = virtualWidth?.let { SizeInt(virtualWidth, virtualHeight ?: virtualWidth) } ?: DefaultViewport.SIZE)).apply { init() }
+            return GLCanvasKorge(true, canvas, KorgeConfig(virtualSize = virtualSize ?: DefaultViewport.SIZE)).apply { init() }
         }
     }
 }

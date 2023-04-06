@@ -1,9 +1,9 @@
 package korlibs.korge.view.filter
 
 import korlibs.datastructure.*
-import korlibs.memory.*
 import korlibs.korge.render.*
 import korlibs.korge.view.*
+import korlibs.memory.*
 import kotlin.native.concurrent.*
 
 /**
@@ -41,7 +41,7 @@ class ViewRenderPhaseFilter(var filter: Filter? = null) : ViewRenderPhase {
 
 /** Usually a value between [0.0, 1.0] */
 @ThreadLocal
-var View.filterScale: Double by extraPropertyThis(transform = { Filter.discretizeFilterScale(it) }) { 1.0 }
+var View.filterScale: Float by extraPropertyThis(transform = { Filter.discretizeFilterScale(it) }) { 1f }
 
 //internal const val VIEW_FILTER_TRANSPARENT_EDGE = true
 internal const val VIEW_FILTER_TRANSPARENT_EDGE = false
@@ -50,7 +50,7 @@ fun View.renderFiltered(
     ctx: RenderContext, filter: Filter,
     first: Boolean = true,
 ) {
-    val bounds = getLocalBoundsOptimizedAnchored(includeFilters = false)
+    val bounds = getLocalBounds(includeFilters = false)
 
     if (bounds.width <= 0.0 || bounds.height <= 0.0) return
 
@@ -60,7 +60,7 @@ fun View.renderFiltered(
         val texWidthNoBorder = (bounds.width * tryFilterScale).toInt().coerceAtLeast(1)
         val texHeightNoBorder = (bounds.height * tryFilterScale).toInt().coerceAtLeast(1)
 
-        val realFilterScale = (texWidthNoBorder.toDouble() / bounds.width).clamp(0.03125, 1.0)
+        val realFilterScale: Float = (texWidthNoBorder.toFloat() / bounds.width).clamp(0.03125f, 1.0f)
 
         // This edge is meant to keep the edge pixels transparent, since we are using clamping to edge wrapping
         // so for example the blur filter that reads outside [0, 1] bounds can read transparent pixels.
@@ -114,13 +114,13 @@ fun View.renderFiltered(
     }
 }
 
-inline fun <T : View> T.filterScale(scale: Double): T {
+inline fun <T : View> T.filterScale(scale: Float): T {
     filterScale = scale
     return this
 }
 
-inline fun <T : View> T.filters(vararg filters: Filter, filterScale: Double = this.filterScale): T = filters(filters.toList(), filterScale)
-inline fun <T : View> T.filters(filters: List<Filter>, filterScale: Double = this.filterScale): T {
+inline fun <T : View> T.filters(vararg filters: Filter, filterScale: Float = this.filterScale): T = filters(filters.toList(), filterScale)
+inline fun <T : View> T.filters(filters: List<Filter>, filterScale: Float = this.filterScale): T {
     this.filter = ComposedFilter.combine(null, filters)
     this.filterScale = filterScale
     return this

@@ -1,26 +1,26 @@
 package korlibs.korge.view.filter
 
-import korlibs.memory.*
 import korlibs.graphics.*
 import korlibs.graphics.shader.*
 import korlibs.korge.render.*
 import korlibs.korge.view.property.*
 import korlibs.math.geom.*
+import korlibs.memory.*
 import kotlin.math.*
 
 /**
  * A filter that simulates a page of a book.
  */
 class PageFilter(
-    hratio: Double = 0.5,
-    hamplitude0: Double = 0.0,
-    hamplitude1: Double = 10.0,
-    hamplitude2: Double = 0.0,
+    hratio: Float = 0f,
+    hamplitude0: Float = 0f,
+    hamplitude1: Float = 10f,
+    hamplitude2: Float = 0f,
 
-    vratio: Double = 0.5,
-    vamplitude0: Double = 0.0,
-    vamplitude1: Double = 0.0,
-    vamplitude2: Double = 0.0
+    vratio: Float = 0.5f,
+    vamplitude0: Float = 0f,
+    vamplitude1: Float = 0f,
+    vamplitude2: Float = 0f
 ) : ShaderFilter() {
     object PageUB : UniformBlock(fixedLocation = 5) {
         val u_Offset by vec2()
@@ -53,22 +53,22 @@ class PageFilter(
     }
 
     @ViewProperty
-    var hratio: Double = hratio
+    var hratio: Float = hratio
     @ViewProperty
-    var hamplitude0: Double = hamplitude0
+    var hamplitude0: Float = hamplitude0
     @ViewProperty
-    var hamplitude1: Double = hamplitude1
+    var hamplitude1: Float = hamplitude1
     @ViewProperty
-    var hamplitude2: Double = hamplitude2
+    var hamplitude2: Float = hamplitude2
 
     @ViewProperty
-    var vratio: Double = vratio
+    var vratio: Float = vratio
     @ViewProperty
-    var vamplitude0: Double = vamplitude0
+    var vamplitude0: Float = vamplitude0
     @ViewProperty
-    var vamplitude1: Double = vamplitude1
+    var vamplitude1: Float = vamplitude1
     @ViewProperty
-    var vamplitude2: Double = vamplitude2
+    var vamplitude2: Float = vamplitude2
 
     override val programProvider: ProgramProvider get() = PageFilter
 
@@ -76,7 +76,7 @@ class PageFilter(
         return MarginInt(max(max(abs(hamplitude0), abs(hamplitude1)), abs(hamplitude2)).toIntCeil())
     }
 
-    override fun updateUniforms(ctx: RenderContext, filterScale: Double) {
+    override fun updateUniforms(ctx: RenderContext, filterScale: Float) {
         super.updateUniforms(ctx, filterScale)
 
         ctx[PageUB].push {

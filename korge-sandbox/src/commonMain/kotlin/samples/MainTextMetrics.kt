@@ -1,20 +1,20 @@
 package samples
 
 import korlibs.event.*
-import korlibs.korge.input.*
-import korlibs.korge.scene.*
-import korlibs.korge.ui.*
-import korlibs.korge.view.*
-import korlibs.render.*
 import korlibs.image.bitmap.effect.*
 import korlibs.image.color.*
 import korlibs.image.font.*
 import korlibs.image.text.*
 import korlibs.io.async.*
 import korlibs.io.file.std.*
+import korlibs.korge.input.*
+import korlibs.korge.scene.*
+import korlibs.korge.ui.*
+import korlibs.korge.view.*
 import korlibs.math.geom.*
 import korlibs.math.geom.vector.*
 import korlibs.math.interpolation.*
+import korlibs.render.*
 import kotlin.reflect.*
 
 class MainTextMetrics : Scene() {
@@ -107,7 +107,7 @@ class MainTextMetrics : Scene() {
         )
 
 
-        uiContainer(width, 200.0) { uiVerticalStack {
+        uiContainer(Size(width, 200f)) { uiVerticalStack {
         //korui(width, 200) {
             for (info in listOf(
                 SecInfo("Vertical", text1::verticalAlign, verticalAlignments),

@@ -1,8 +1,8 @@
 package korlibs.korge.ui
 
+import korlibs.image.color.*
 import korlibs.korge.render.*
 import korlibs.korge.style.*
-import korlibs.image.color.*
 import korlibs.math.geom.*
 import korlibs.math.interpolation.*
 
@@ -13,20 +13,20 @@ var ViewStyles.uiSelectedColor: RGBA by ViewStyle(MaterialColors.BLUE_600)
 var ViewStyles.uiUnselectedColor: RGBA by ViewStyle(MaterialColors.GRAY_700)
 fun ViewStyles.uiSelectedColor(selected: Boolean): RGBA = if (selected) uiSelectedColor else uiUnselectedColor
 var ViewStyles.uiProgressBarRenderer: UIRenderer<UIProgressBar> by ViewStyle {
-    materialRoundRect(0.0, 0.0, width, height, radius = RectCorners(3.0), color = it.styles.uiBackgroundColor)
-    materialRoundRect(0.0, 0.0, width * it.ratio, height, radius = RectCorners(3.0), color = it.styles.uiSelectedColor)
+    materialRoundRect(0f, 0f, width, height, radius = RectCorners(3.0), color = it.styles.uiBackgroundColor)
+    materialRoundRect(0f, 0f, width * it.ratio, height, radius = RectCorners(3.0), color = it.styles.uiSelectedColor)
 }
 var ViewStyles.uiCheckboxButtonRenderer: UIRenderer<UIBaseCheckBox<*>> by ViewStyle {
-    val extraPad = -0.0
+    val extraPad = -0f
     val extraPad2 = extraPad * 2
     val styles = it.styles
     materialRoundRect(
-        0.0 + extraPad, 0.0 + extraPad, height - extraPad2, height - extraPad2, radius = RectCorners((height - extraPad2) * 0.5),
+        0f + extraPad, 0f + extraPad, height - extraPad2, height - extraPad2, radius = RectCorners((height - extraPad2) * 0.5),
         color = (kotlin.math.max(it.overRatio, it.focusRatio)).interpolate(Colors.TRANSPARENT, styles.uiSelectedColor(it.checkedRatio > 0.5).withAd(0.3))
     )
     it.highlights.fastForEach {
         materialRoundRect(
-            0.0 + extraPad, 0.0 + extraPad, height - extraPad2, height - extraPad2, radius = RectCorners(height * 0.5),
+            0f + extraPad, 0f + extraPad, height - extraPad2, height - extraPad2, radius = RectCorners(height * 0.5),
             color = Colors.TRANSPARENT,
             highlightPos = it.pos,
             highlightRadius = it.radiusRatio,
@@ -36,36 +36,36 @@ var ViewStyles.uiCheckboxButtonRenderer: UIRenderer<UIBaseCheckBox<*>> by ViewSt
     }
     when (it.kind) {
         UISwitch, UICheckBox -> {
-            val padding = 6.0
+            val padding = 6f
             val padding2 = padding * 2
             materialRoundRect(
-                0.0 + padding, 0.0 + padding, height - padding2, height - padding2, radius = RectCorners(4.0),
+                0f + padding, 0f + padding, height - padding2, height - padding2, radius = RectCorners(4.0),
                 color = Colors.TRANSPARENT,
                 borderColor = it.checkedRatio.interpolate(styles.uiUnselectedColor, styles.uiSelectedColor),
-                borderSize = 2.0,
+                borderSize = 2f,
             )
             run {
-                val padding = it.checkedRatio.toRatio().interpolate(height, 10.0)
+                val padding = it.checkedRatio.toRatio().interpolate(height, 10f)
                 val padding2 = padding * 2
                 materialRoundRect(
-                    0.0 + padding, 0.0 + padding, height - padding2, height - padding2, radius = RectCorners(1.0),
+                    0f + padding, 0f + padding, height - padding2, height - padding2, radius = RectCorners(1.0),
                     color = it.checkedRatio.interpolate(Colors.TRANSPARENT, styles.uiSelectedColor),
                 )
             }
         }
         else -> {
-            val padding = 6.0
+            val padding = 6f
             val padding2 = padding * 2
             materialRoundRect(
-                0.0 + padding,
-                0.0 + padding,
+                0f + padding,
+                0f + padding,
                 height - padding2,
                 height - padding2,
                 radius = RectCorners((height - padding2) * 0.5),
-                borderSize = 2.0,
+                borderSize = 2f,
                 borderColor = it.checkedRatio.interpolate(styles.uiUnselectedColor, styles.uiSelectedColor),
                 color = Colors.TRANSPARENT,
-                highlightRadius = it.checkedRatio.toRatio().interpolate(0.0, 0.2),
+                highlightRadius = it.checkedRatio.toRatio().interpolate(0f, 0.2f),
                 highlightPos = Point(0.5, 0.5),
                 highlightColor = styles.uiSelectedColor,
             )

@@ -1,7 +1,7 @@
 package korlibs.korge.view
 
-import korlibs.korge.ui.*
 import korlibs.image.vector.*
+import korlibs.korge.ui.*
 import korlibs.math.geom.*
 
 inline fun Container.ninePatchShapeView(
@@ -13,14 +13,13 @@ inline fun Container.ninePatchShapeView(
 class NinePatchShapeView(
     shape: NinePatchShape,
     renderer: GraphicsRenderer,
-) : UIView(shape.size.widthD, shape.size.heightD), Anchorable {
+) : UIView(shape.size), Anchorable {
     private val graphics = graphics(shape.shape, renderer = renderer)
     var boundsIncludeStrokes: Boolean by graphics::boundsIncludeStrokes
     var antialiased: Boolean by graphics::antialiased
     var smoothing: Boolean by graphics::smoothing
     var autoScaling: Boolean by graphics::autoScaling
-    override var anchorX: Double by graphics::anchorX
-    override var anchorY: Double by graphics::anchorY
+    override var anchor: Anchor by graphics::anchor
     var renderer: GraphicsRenderer by graphics::renderer
 
     var shape: NinePatchShape = shape
@@ -32,6 +31,6 @@ class NinePatchShapeView(
 
     override fun onSizeChanged() {
         super.onSizeChanged()
-        graphics.shape = shape.transform(Size(width, height))
+        graphics.shape = shape.transform(Size(widthD, heightD))
     }
 }

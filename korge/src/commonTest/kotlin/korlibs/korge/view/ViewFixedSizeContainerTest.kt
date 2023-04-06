@@ -1,20 +1,19 @@
 package korlibs.korge.view
 
 import korlibs.graphics.*
-import korlibs.graphics.log.AGBaseLog
-import korlibs.korge.tests.ViewsForTesting
-import korlibs.image.color.Colors
+import korlibs.graphics.log.*
+import korlibs.image.color.*
+import korlibs.korge.tests.*
 import korlibs.math.geom.*
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import kotlin.test.*
 
 class ViewFixedSizeContainerTest : ViewsForTesting(
-    windowSize = SizeInt(1280, 720),
-    virtualSize = SizeInt(640, 480)
+    windowSize = Size(1280, 720),
+    virtualSize = Size(640, 480)
 ) {
     @Test
     fun testClipContainerScissors() = viewsTest {
-        clipContainer(100, 100) {
+        clipContainer(Size(100, 100)) {
             xy(50, 70)
             solidRect(20, 20, Colors.RED).xy(-10, -10)
         }

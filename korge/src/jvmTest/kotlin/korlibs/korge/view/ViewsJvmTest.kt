@@ -17,7 +17,7 @@ class ViewsJvmTest : ViewsForTesting(log = true) {
 	val tex = Bitmap32(10, 10, Colors.GREEN.premultiplied)
 
 	@Test
-	fun name() = korgeScreenshotTest(SizeInt(20, 20)) {
+	fun name() = korgeScreenshotTest(Size(20, 20)) {
 		this += Container().apply {
 			this += Image(tex)
 		}
@@ -33,7 +33,7 @@ class ViewsJvmTest : ViewsForTesting(log = true) {
 	}
 
     @Test
-    fun testFilter() = korgeScreenshotTest(SizeInt(20, 20)) {
+    fun testFilter() = korgeScreenshotTest(Size(20, 20)) {
         this += Container().apply {
             this += Image(tex).also {
                 it.addFilter(ColorMatrixFilter(ColorMatrixFilter.GRAYSCALE_MATRIX))
@@ -89,49 +89,49 @@ class ViewsJvmTest : ViewsForTesting(log = true) {
     }
 
     @Test
-    fun testUIScrollableCacheTrue() = korgeScreenshotTest(SizeInt(40, 40)) {
+    fun testUIScrollableCacheTrue() = korgeScreenshotTest(Size(40, 40)) {
         solidRect(40, 40, Colors.DARKBLUE).xy(0, 0)
-        uiScrollable(width = 20.0, height = 20.0, cache = true) { solidRect(0, 40) }
+        uiScrollable(Size(20f, 20f), cache = true) { solidRect(0, 40) }
         solidRect(40, 40, Colors.DARKRED).xy(20, 20)
         assertScreenshot()
     }
 
     @Test
-    fun testUIScrollableCacheFalse() = korgeScreenshotTest(SizeInt(40, 40)) {
+    fun testUIScrollableCacheFalse() = korgeScreenshotTest(Size(40, 40)) {
         solidRect(40, 40, Colors.DARKBLUE).xy(0, 0)
-        uiScrollable(width = 20.0, height = 20.0, cache = false) { solidRect(0, 40) }
+        uiScrollable(Size(20f, 20f), cache = false) { solidRect(0, 40) }
         solidRect(40, 40, Colors.DARKRED).xy(20, 20)
         assertScreenshot()
     }
 
     @Test
-    fun testClipping1() = korgeScreenshotTest(SizeInt(40, 40)) {
+    fun testClipping1() = korgeScreenshotTest(Size(40, 40)) {
         solidRect(1000, 1000, Colors.DARKBLUE).xy(0, 0)
-        fixedSizeContainer(20, 20, clip = true) { solidRect(80, 40, Colors.GREEN) }
+        fixedSizeContainer(Size(20, 20), clip = true) { solidRect(80, 40, Colors.GREEN) }
         solidRect(1000, 1000, Colors.DARKRED).xy(20, 20)
         assertScreenshot()
     }
 
     @Test
-    fun testCachedTrue() = korgeScreenshotTest(SizeInt(40, 40)) {
+    fun testCachedTrue() = korgeScreenshotTest(Size(40, 40)) {
         solidRect(1000, 1000, Colors.DARKBLUE).xy(0, 0)
-        fixedSizeCachedContainer(20.0, 20.0, cache = true) { solidRect(30, 25, Colors.GREEN) }
+        fixedSizeCachedContainer(Size(20f, 20f), cache = true) { solidRect(30, 25, Colors.GREEN) }
         solidRect(1000, 1000, Colors.DARKRED).xy(20, 20)
         assertScreenshot()
     }
 
     @Test
-    fun testCachedFalse() = korgeScreenshotTest(SizeInt(40, 40)) {
+    fun testCachedFalse() = korgeScreenshotTest(Size(40, 40)) {
         solidRect(1000, 1000, Colors.DARKBLUE).xy(0, 0)
-        fixedSizeCachedContainer(20.0, 20.0, cache = false) { solidRect(30, 25, Colors.GREEN) }
+        fixedSizeCachedContainer(Size(20, 20), cache = false) { solidRect(30, 25, Colors.GREEN) }
         solidRect(1000, 1000, Colors.DARKRED).xy(20, 20)
         assertScreenshot()
     }
 
     @Test
-    fun testCachedFalseClipFalse() = korgeScreenshotTest(SizeInt(40, 40)) {
+    fun testCachedFalseClipFalse() = korgeScreenshotTest(Size(40, 40)) {
         solidRect(1000, 1000, Colors.DARKBLUE).xy(0, 0)
-        fixedSizeCachedContainer(20.0, 20.0, cache = false, clip = false) { solidRect(30, 25, Colors.GREEN) }
+        fixedSizeCachedContainer(Size(20, 20), cache = false, clip = false) { solidRect(30, 25, Colors.GREEN) }
         solidRect(1000, 1000, Colors.DARKRED).xy(20, 20)
         assertScreenshot()
     }

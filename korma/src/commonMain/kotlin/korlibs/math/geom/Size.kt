@@ -1,7 +1,7 @@
 package korlibs.math.geom
 
-import korlibs.memory.pack.*
 import korlibs.math.internal.*
+import korlibs.memory.pack.*
 import kotlin.math.*
 
 /**
@@ -10,11 +10,16 @@ import kotlin.math.*
 //@KormaExperimental
 //@KormaValueApi
 inline class Size internal constructor(internal val raw: Float2Pack) {//: Sizeable {
+    companion object {
+        val ZERO = Size(0f, 0f)
+    }
 
     fun isEmpty(): Boolean = width == 0f || height == 0f
 
     operator fun component1(): Float = width
     operator fun component2(): Float = height
+
+    fun copy(width: Float = this.width, height: Float = this.height): Size = Size(width, height)
 
     fun avgComponent(): Float = width * 0.5f + height * 0.5f
     fun minComponent(): Float = min(width, height)
@@ -42,6 +47,8 @@ inline class Size internal constructor(internal val raw: Float2Pack) {//: Sizeab
 
     operator fun minus(other: Size): Size = Size(width - other.width, height - other.height)
     operator fun plus(other: Size): Size = Size(width + other.width, height + other.height)
+    operator fun times(scale: Scale): Size = Size(width * scale.scaleX, height * scale.scaleY)
+    operator fun times(scale: Vector2): Size = Size(width * scale.x, height * scale.y)
     operator fun times(s: Float): Size = Size(width * s, height * s)
     operator fun times(s: Double): Size = times(s.toFloat())
     operator fun times(s: Int): Size = times(s.toFloat())

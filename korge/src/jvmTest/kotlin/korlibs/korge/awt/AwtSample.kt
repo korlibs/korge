@@ -1,14 +1,12 @@
 package korlibs.korge.awt
 
+import korlibs.image.color.*
 import korlibs.korge.*
-import korlibs.korge.view.solidRect
-import korlibs.image.color.Colors
+import korlibs.korge.view.*
 import korlibs.math.geom.*
-import kotlinx.coroutines.runBlocking
-import java.awt.Dimension
-import java.awt.GridLayout
-import javax.swing.JButton
-import javax.swing.JFrame
+import kotlinx.coroutines.*
+import java.awt.*
+import javax.swing.*
 
 object AwtSample {
     @JvmStatic
@@ -19,7 +17,7 @@ object AwtSample {
             frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
             frame.layout = GridLayout(5, 1)
             frame.add(JButton("[1]"))
-            frame.add(Korge(virtualSize = SizeInt(512, 512), displayMode = KorgeDisplayMode.NO_SCALE).glCanvas {
+            frame.add(Korge(virtualSize = Size(512, 512), displayMode = KorgeDisplayMode.NO_SCALE).glCanvas {
                 views.clearColor = Colors.RED
                 solidRect(100, 100, Colors.YELLOW)
             })

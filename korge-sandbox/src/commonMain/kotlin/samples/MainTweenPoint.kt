@@ -1,27 +1,18 @@
 package samples
 
-import korlibs.time.seconds
-import korlibs.korge.scene.Scene
-import korlibs.korge.tween.get
-import korlibs.korge.tween.tween
-import korlibs.korge.view.SContainer
-import korlibs.korge.view.anchor
-import korlibs.korge.view.addUpdater
-import korlibs.korge.view.circle
-import korlibs.korge.view.container
-import korlibs.korge.view.cpuGraphics
-import korlibs.korge.view.image
-import korlibs.korge.view.scale
-import korlibs.korge.view.xy
-import korlibs.image.color.Colors
-import korlibs.image.format.readBitmap
-import korlibs.image.vector.toStrokeShape
-import korlibs.io.async.launch
-import korlibs.io.file.std.resourcesVfs
+import korlibs.image.color.*
+import korlibs.image.format.*
+import korlibs.image.vector.*
+import korlibs.io.async.*
+import korlibs.io.file.std.*
+import korlibs.korge.scene.*
+import korlibs.korge.tween.*
+import korlibs.korge.view.*
 import korlibs.math.geom.*
-import korlibs.math.geom.shape.buildVectorPath
-import korlibs.math.geom.vector.getCurves
-import korlibs.math.interpolation.Easing
+import korlibs.math.geom.shape.*
+import korlibs.math.geom.vector.*
+import korlibs.math.interpolation.*
+import korlibs.time.*
 
 class MainTweenPoint : Scene() {
     override suspend fun SContainer.sceneMain() {
@@ -30,7 +21,7 @@ class MainTweenPoint : Scene() {
         container {
             this.scale(2.0)
 
-            val circle = circle(64.0).xy(200.0, 200.0).anchor(Anchor.CENTER)
+            val circle = circle(64f).xy(200.0, 200.0).anchor(Anchor.CENTER)
             val path = buildVectorPath {
                 //circle(200, 200, 100)
                 moveTo(Point(200.0, 200.0))

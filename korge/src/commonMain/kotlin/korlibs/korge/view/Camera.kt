@@ -1,11 +1,9 @@
 package korlibs.korge.view
 
-import korlibs.time.TimeSpan
-import korlibs.korge.tween.V2
-import korlibs.korge.tween.get
-import korlibs.korge.tween.tween
+import korlibs.korge.tween.*
 import korlibs.math.geom.*
-import korlibs.math.interpolation.Easing
+import korlibs.math.interpolation.*
+import korlibs.time.*
 
 /**
  * Creates a new [Camera] and attaches to [this] [Container]. The [callback] argument is called with the [Camera] injected as this to be able to configure the camera.
@@ -16,9 +14,9 @@ inline fun Container.camera(callback: @ViewDslMarker Camera.() -> Unit = {}): Ca
  * A [Camera] is a [Container] that allows to center its position using [setTo] and [tweenTo] methods.
  *
  * Should be used along with a wrapping [ClipContainer] defining its bounds.
- * You shouldn't change [Camera]'s [x], [y], [width], [height] or any other transform property.
+ * You shouldn't change [Camera]'s [xD], [yD], [widthD], [heightD] or any other transform property.
  *
- * You can consider that this view [x] and [y] starts at 0 and changes its coordinates and scaling to move everything inside.
+ * You can consider that this view [xD] and [yD] starts at 0 and changes its coordinates and scaling to move everything inside.
  *
  * This is a [View.Reference] to prevent re-computing things inside here when you are just moving the camera.
  *
@@ -26,22 +24,19 @@ inline fun Container.camera(callback: @ViewDslMarker Camera.() -> Unit = {}): Ca
  */
 // @TODO: Do not require a [ClipContainer] by handling the [renderInternal] to use a transformed Camera. To support legacy we should do this in a separate class NewCamera? CameraContainer?.
 class Camera : Container(), View.Reference {
-    override var width: Double
+    override var unscaledSize: Size
+        get() = Size(referenceParent?.width ?: 100f, referenceParent?.height ?: 100f)
         set(_) = Unit
-        get() = referenceParent?.width ?: 100.0
-    override var height: Double
-        set(_) = Unit
-        get() = referenceParent?.height ?: 100.0
 
-    override fun getLocalBoundsInternal() = Rectangle(0.0, 0.0, width, height)
+    override fun getLocalBoundsInternal() = Rectangle(0f, 0f, width, height)
 
 	fun getLocalMatrixFittingGlobalRect(rect: Rectangle): Matrix {
 		val destinationBounds = rect
 		return (this.parent?.globalMatrix ?: Matrix())
 		    .translated(-destinationBounds.x, -destinationBounds.y)
             .scaled(
-                width / destinationBounds.width,
-                height / destinationBounds.height
+                widthD / destinationBounds.width,
+                heightD / destinationBounds.height
             )
 	}
 

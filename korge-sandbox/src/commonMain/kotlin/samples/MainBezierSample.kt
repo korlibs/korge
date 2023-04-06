@@ -1,29 +1,15 @@
 package samples
 
-import korlibs.korge.input.draggable
-import korlibs.korge.input.mouse
-import korlibs.korge.scene.Scene
-import korlibs.korge.view.Container
-import korlibs.korge.view.SContainer
-import korlibs.korge.view.Text
-import korlibs.korge.view.View
-import korlibs.korge.view.centered
-import korlibs.korge.view.circle
-import korlibs.korge.view.container
-import korlibs.korge.view.cpuGraphics
-import korlibs.korge.view.filter.filter
-import korlibs.korge.view.filter.ColorTransformFilter
-import korlibs.korge.view.position
-import korlibs.korge.view.text
-import korlibs.korge.view.vector.gpuShapeView
-import korlibs.korge.view.xy
-import korlibs.image.color.ColorAdd
-import korlibs.image.color.ColorTransform
-import korlibs.image.color.Colors
-import korlibs.image.paint.Paint
-import korlibs.image.vector.ShapeBuilder
+import korlibs.image.color.*
+import korlibs.image.paint.*
+import korlibs.image.vector.*
+import korlibs.korge.input.*
+import korlibs.korge.scene.*
+import korlibs.korge.view.*
+import korlibs.korge.view.filter.*
+import korlibs.korge.view.vector.*
 import korlibs.math.geom.*
-import korlibs.math.geom.bezier.Bezier
+import korlibs.math.geom.bezier.*
 import korlibs.math.geom.vector.*
 import kotlin.reflect.*
 
@@ -80,12 +66,12 @@ class MainBezierSample : Scene() {
         lateinit var circle: View
         lateinit var text: Text
         val anchorView = container {
-            circle = circle(6.0, fill = color, stroke = Colors.DARKGRAY, strokeThickness = 2.0).centered
+            circle = circle(6f, fill = color, stroke = Colors.DARKGRAY, strokeThickness = 2.0).centered
             text = text("", 10.0).position(10.0, 6.0)
         }.position(pointRef.get())
 
         fun updateText() {
-            text.text = "(${anchorView.x.toInt()}, ${anchorView.y.toInt()})"
+            text.text = "(${anchorView.xD.toInt()}, ${anchorView.yD.toInt()})"
         }
         circle.mouse {
             onOver { circle.filter = ColorTransformFilter(ColorTransform(add = ColorAdd(+64, +64, +64, 0))) }

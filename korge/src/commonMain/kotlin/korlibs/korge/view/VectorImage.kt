@@ -7,7 +7,6 @@ import korlibs.image.format.*
 import korlibs.image.vector.*
 import korlibs.io.file.*
 import korlibs.math.geom.*
-import korlibs.math.geom.vector.*
 
 inline fun Container.vectorImage(shape: SizedDrawable, autoScaling: Boolean = true, callback: @ViewDslMarker VectorImage.() -> Unit = {}): VectorImage = VectorImage(shape, autoScaling).addTo(this, callback).apply { redrawIfRequired() }
 
@@ -25,7 +24,7 @@ class VectorImage(
                 field = value
                 dirty()
                 redrawIfRequired()
-                scale = 1.0
+                scaleD = 1.0
             }
         }
 

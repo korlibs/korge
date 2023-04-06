@@ -1,19 +1,14 @@
 package korlibs.korge.ui
 
-import korlibs.memory.clamp
-import korlibs.korge.annotations.KorgeExperimental
-import korlibs.korge.input.cursor
-import korlibs.korge.input.mouse
-import korlibs.korge.input.onMouseDrag
-import korlibs.korge.view.Container
-import korlibs.korge.view.ViewDslMarker
-import korlibs.korge.view.append
-import korlibs.korge.view.size
-import korlibs.render.GameWindow
-import korlibs.io.async.Signal
-import korlibs.io.util.toStringDecimal
+import korlibs.io.async.*
+import korlibs.io.util.*
+import korlibs.korge.annotations.*
+import korlibs.korge.input.*
+import korlibs.korge.view.*
 import korlibs.math.geom.*
-import kotlin.math.absoluteValue
+import korlibs.memory.*
+import korlibs.render.*
+import kotlin.math.*
 
 @KorgeExperimental
 class UIEditableNumberProps(
@@ -31,16 +26,15 @@ class UIEditableBooleanProps(
 @KorgeExperimental
 inline fun Container.uiEditableNumber(
     value: Double = 0.0, min: Double = 0.0, max: Double = 1.0, decimals: Int = 2, clamped: Boolean = true,
-    width: Double = 64.0,
-    height: Double = 18.0,
+    size: Size = Size(64, 18),
     block: @ViewDslMarker UIEditableNumber.() -> Unit = {}
-): UIEditableNumber = append(UIEditableNumber(value, min, max, decimals, clamped, width, height)).apply(block)
+): UIEditableNumber = append(UIEditableNumber(value, min, max, decimals, clamped, size)).apply(block)
 
 // @TODO: lock cursor while dragging
 @KorgeExperimental
-class UIEditableNumber(value: Double = 0.0, min: Double = 0.0, max: Double = 1.0, var decimals: Int = 2, var clamped: Boolean = true, width: Double = 64.0, height: Double = 18.0) : UIView(width, height) {
-    private val textView = uiText("", width, height)
-    private val textInputView = uiTextInput("", width, height)
+class UIEditableNumber(value: Double = 0.0, min: Double = 0.0, max: Double = 1.0, var decimals: Int = 2, var clamped: Boolean = true, size: Size = Size(64, 18)) : UIView(size) {
+    private val textView = uiText("", size)
+    private val textInputView = uiTextInput("", size)
         .also { it.visible = false }
         .also { it.padding = Margin.ZERO }
     var min: Double = min
@@ -48,8 +42,8 @@ class UIEditableNumber(value: Double = 0.0, min: Double = 0.0, max: Double = 1.0
 
     override fun onSizeChanged() {
         super.onSizeChanged()
-        textView.size(width, height)
-        textInputView.size(width, height)
+        textView.size(widthD, heightD)
+        textInputView.size(widthD, heightD)
     }
 
     private fun getValueText(value: Double = this.value): String {

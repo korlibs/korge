@@ -56,8 +56,8 @@ data class Korge(
     val gameId: String = DEFAULT_GAME_ID,
     val settingsFolder: String? = null,
     val batchMaxQuads: Int = BatchBuilder2D.DEFAULT_BATCH_QUADS,
-    val windowSize: SizeInt = DefaultViewport.SIZE,
-    val virtualSize: SizeInt = windowSize,
+    val windowSize: Size = DefaultViewport.SIZE,
+    val virtualSize: Size = windowSize,
     val displayMode: KorgeDisplayMode = KorgeDisplayMode.DEFAULT,
     val title: String = "Game",
     val backgroundColor: RGBA? = Colors.BLACK,
@@ -76,7 +76,7 @@ data class Korge(
     companion object {
         val logger = Logger("Korge")
         val DEFAULT_GAME_ID = "korlibs.korge.unknown"
-        val DEFAULT_WINDOW_SIZE: SizeInt get() = DefaultViewport.SIZE
+        val DEFAULT_WINDOW_SIZE: Size get() = DefaultViewport.SIZE
     }
 
     suspend fun start(entry: suspend Stage.() -> Unit = this.main) {
@@ -162,8 +162,8 @@ object KorgeRunner {
             views.debugViews = debug
             views.debugFontExtraScale = config.debugFontExtraScale
             views.debugFontColor = config.debugFontColor
-            views.virtualWidth = config.virtualSize.width
-            views.virtualHeight = config.virtualSize.height
+            views.virtualWidth = config.virtualSize.width.toInt()
+            views.virtualHeight = config.virtualSize.height.toInt()
             views.scaleAnchor = config.displayMode.scaleAnchor
             views.scaleMode = config.displayMode.scaleMode
             views.clipBorders = config.displayMode.clipBorders

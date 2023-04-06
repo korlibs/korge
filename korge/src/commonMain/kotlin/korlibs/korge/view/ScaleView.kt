@@ -1,23 +1,26 @@
 package korlibs.korge.view
 
 import korlibs.korge.render.*
+import korlibs.math.geom.*
 
 inline fun Container.scaleView(
-	width: Int, height: Int, scale: Double = 2.0, filtering: Boolean = false,
-	callback: @ViewDslMarker Container.() -> Unit = {}
-) = ScaleView(width, height, scale, filtering).addTo(this, callback)
+    size: Size, scaleAvg: Float = 2f, filtering: Boolean = false,
+    callback: @ViewDslMarker Container.() -> Unit = {}
+) = ScaleView(size, scaleAvg, filtering).addTo(this, callback)
 
-class ScaleView(width: Int, height: Int, scale: Double = 2.0, var filtering: Boolean = false) :
-    SContainer(width.toDouble(), height.toDouble(), clip = false), View.Reference {
+class ScaleView(
+    size: Size, scaleAvg: Float = 2f,
+    var filtering: Boolean = false
+) : SContainer(size, clip = false), View.Reference {
 	init {
-		this.scale = scale
+		this.scaleAvg = scaleAvg
 	}
 
 	//val once = Once()
 
 	override fun renderInternal(ctx: RenderContext) {
-		val iwidth = width.toInt()
-		val iheight = height.toInt()
+		val iwidth = widthD.toInt()
+		val iheight = heightD.toInt()
 
 		ctx.renderToTexture(iwidth, iheight, render = {
 			super.renderInternal(ctx)

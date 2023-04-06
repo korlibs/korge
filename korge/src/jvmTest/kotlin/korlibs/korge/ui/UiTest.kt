@@ -3,6 +3,7 @@ package korlibs.korge.ui
 import korlibs.korge.*
 import korlibs.korge.input.*
 import korlibs.korge.view.*
+import korlibs.math.geom.*
 import korlibs.render.*
 import kotlinx.coroutines.*
 
@@ -10,18 +11,18 @@ fun main(): Unit = runBlocking { korge() }
 
 suspend fun korge() = Korge(quality = GameWindow.Quality.PERFORMANCE, title = "UI").start {
 
-    uiText("Some text", 130.0, 20.0) {
+    uiText("Some text", Size(130f, 20f)) {
         position(128, 265)
     }
 
-    uiButton("Disabled Button", 256.0, 32.0) {
+    uiButton("Disabled Button", Size(256f, 32f)) {
         position(128, 128)
         onClick {
             println("CLICKED!")
         }
         disable()
     }
-    uiButton("Enabled Button", 256.0, 32.0) {
+    uiButton("Enabled Button", Size(256f, 32f)) {
         position(128, 128 + 32)
         onClick {
             println("CLICKED!")
@@ -29,13 +30,13 @@ suspend fun korge() = Korge(quality = GameWindow.Quality.PERFORMANCE, title = "U
         enable()
     }
 
-    uiOldScrollBar(256.0, 32.0, 0.0, 32.0, 64.0) {
+    uiOldScrollBar(Size(256f, 32f), 0f, 32f, 64f) {
         position(64, 64)
         onChange {
             //println(it.ratio)
         }
     }
-    uiOldScrollBar(32.0, 256.0, 0.0, 16.0, 64.0) {
+    uiOldScrollBar(Size(32f, 256f), 0f, 16f, 64f) {
         position(64, 128)
         onChange {
             //println(it.ratio)
@@ -60,7 +61,7 @@ suspend fun korge() = Korge(quality = GameWindow.Quality.PERFORMANCE, title = "U
 
     val progress = uiProgressBar {
         position(64, 32)
-        current = 0.5
+        current = 0.5f
     }
 
     /*

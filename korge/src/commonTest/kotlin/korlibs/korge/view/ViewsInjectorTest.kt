@@ -1,17 +1,14 @@
 package korlibs.korge.view
 
-import korlibs.korge.scene.EmptyScene
-import korlibs.korge.scene.Scene
-import korlibs.korge.scene.sceneContainer
-import korlibs.korge.tests.ViewsForTesting
-import korlibs.inject.injector
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import korlibs.inject.*
+import korlibs.korge.scene.*
+import korlibs.korge.tests.*
+import kotlin.test.*
 
 class ViewsInjectorTest : ViewsForTesting() {
     @Test
     fun testViewsInjector() = viewsTest {
-        assertEquals(virtualSize.width, injector().get<Views>().virtualWidth)
+        assertEquals(virtualSize.width.toInt(), injector().get<Views>().virtualWidth)
     }
 
     @Test

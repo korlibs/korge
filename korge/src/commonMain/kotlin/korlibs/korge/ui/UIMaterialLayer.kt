@@ -1,24 +1,23 @@
 package korlibs.korge.ui
 
 import korlibs.datastructure.*
-import korlibs.time.*
+import korlibs.image.color.*
 import korlibs.korge.animate.*
 import korlibs.korge.render.*
 import korlibs.korge.tween.*
 import korlibs.korge.view.*
 import korlibs.korge.view.property.*
-import korlibs.image.color.*
 import korlibs.math.geom.*
 import korlibs.math.interpolation.*
+import korlibs.time.*
 
 inline fun Container.uiMaterialLayer(
-    width: Double = UI_DEFAULT_WIDTH,
-    height: Double = UI_DEFAULT_HEIGHT,
+    size: Size = UI_DEFAULT_SIZE,
     block: @ViewDslMarker UIMaterialLayer.() -> Unit = {}
-): UIMaterialLayer = UIMaterialLayer(width, height).addTo(this).apply(block)
+): UIMaterialLayer = UIMaterialLayer(size).addTo(this).apply(block)
 
 class MaterialLayerHighlights(val view: View) {
-    class Highlight(var pos: Point, var radiusRatio: Double, var alpha: Double)
+    class Highlight(var pos: Point, var radiusRatio: Float, var alpha: Float)
 
     @PublishedApi internal val highlights = fastArrayListOf<Highlight>()
     private val highlightsActive = fastArrayListOf<Highlight>()
@@ -31,7 +30,7 @@ class MaterialLayerHighlights(val view: View) {
 
     fun addHighlight(pos: Point) {
         removeHighlights()
-        val highlight = Highlight(pos, 0.0, 1.0)
+        val highlight = Highlight(pos, 0f, 1f)
         highlights += highlight
         highlightsActive += highlight
         view.simpleAnimator.tween(highlight::radiusRatio[1.0], V2Callback { view.invalidateRender() }, time = 0.5.seconds, easing = Easing.EASE_IN)
@@ -50,9 +49,8 @@ class MaterialLayerHighlights(val view: View) {
 }
 
 class UIMaterialLayer(
-    width: Double = 100.0,
-    height: Double = 100.0
-) : UIView(width, height), ViewLeaf {
+    size: Size = Size(100, 100),
+) : UIView(size), ViewLeaf {
     @ViewProperty
     var bgColor: RGBA = Colors.WHITE; set(value) { field = value; invalidateRender() }
     @ViewProperty
@@ -61,16 +59,16 @@ class UIMaterialLayer(
     @ViewProperty
     var borderColor: RGBA = Colors.BLACK; set(value) { field = value; invalidateRender() }
     @ViewProperty
-    var borderSize: Double = 0.0; set(value) { field = value; invalidateRender() }
+    var borderSize: Float = 0f; set(value) { field = value; invalidateRender() }
 
     //var highlightPos = Point(0.5, 0.5); set(value) { field = value; invalidateRender() }
     //var highlightRadius = 0.0; set(value) { field = value; invalidateRender() }
     //var highlightColor = Colors.WHITE; set(value) { field = value; invalidateRender() }
 
     @ViewProperty
-    var shadowColor: RGBA = Colors.BLACK.withAd(0.3); set(value) { field = value; invalidateRender() }
+    var shadowColor: RGBA = Colors.BLACK.withAf(0.3f); set(value) { field = value; invalidateRender() }
     @ViewProperty
-    var shadowRadius: Double = 10.0; set(value) { field = value; invalidateRender() }
+    var shadowRadius: Float = 10f; set(value) { field = value; invalidateRender() }
     @ViewProperty
     var shadowOffset: Point = Point.ZERO; set(value) { field = value; invalidateRender() }
 
@@ -82,8 +80,8 @@ class UIMaterialLayer(
         renderCtx2d(ctx) { ctx2d ->
             //println("context.multiplyColor=${ctx2d.multiplyColor}")
             ctx2d.materialRoundRect(
-                x = 0.0,
-                y = 0.0,
+                x = 0f,
+                y = 0f,
                 width = width,
                 height = height,
                 color = bgColor,
@@ -100,8 +98,8 @@ class UIMaterialLayer(
             )
             highlights.fastForEach {
                 ctx2d.materialRoundRect(
-                    x = 0.0,
-                    y = 0.0,
+                    x = 0f,
+                    y = 0f,
                     width = width,
                     height = height,
                     color = Colors.TRANSPARENT,

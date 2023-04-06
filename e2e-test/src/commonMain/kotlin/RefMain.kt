@@ -13,7 +13,7 @@ import korlibs.io.lang.*
 import korlibs.io.serialization.json.Json
 import korlibs.math.geom.*
 
-suspend fun main() = Korge(windowSize = SizeInt(768, 512), backgroundColor = Colors["#2b2b2b"]).start {
+suspend fun main() = Korge(windowSize = Size(768, 512), backgroundColor = Colors["#2b2b2b"]).start {
     val exceptions = arrayListOf<Throwable>()
     try {
         // Test cases
@@ -98,10 +98,10 @@ object FiltersE2ETestCase : E2ETestCase() {
         println("LOADING IMAGE...")
         val bitmap = resourcesVfs["korge.png"].readBitmap()
         println("PREPARING VIEWS...")
-        image(bitmap).scale(.5).position(0, 0).addFilter(WaveFilter(time = 0.5.seconds, crestDistanceX = 256.0, crestDistanceY = 128.0))
-        image(bitmap).scale(.5).position(256, 0).addFilter(BlurFilter(radius = 6.0))
-        image(bitmap).scale(.5).position(512, 0).addFilter(TransitionFilter(TransitionFilter.Transition.SWEEP, reversed = false, spread = 1.0, ratio = 0.5))
-        image(bitmap).scale(.5).position(0, 256).addFilter(PageFilter(hratio = 0.5, hamplitude1 = 20.0))
+        image(bitmap).scale(.5).position(0, 0).addFilter(WaveFilter(time = 0.5.seconds, crestDistance = Vector2(256f, 128f)))
+        image(bitmap).scale(.5).position(256, 0).addFilter(BlurFilter(radius = 6f))
+        image(bitmap).scale(.5).position(512, 0).addFilter(TransitionFilter(TransitionFilter.Transition.SWEEP, reversed = false, spread = 1f, ratio = 0.5f))
+        image(bitmap).scale(.5).position(0, 256).addFilter(PageFilter(hratio = 0.5f, hamplitude1 = 20f))
         image(bitmap).scale(.5).position(256, 256).addFilter(Convolute3Filter(Convolute3Filter.KERNEL_SHARPEN))
         image(bitmap).scale(.5).position(512, 256).addFilter(SwizzleColorsFilter("bgga"))
         println("VIEWS PREPARED")
@@ -126,10 +126,10 @@ object EmptyE2ETestCase : E2ETestCase() {
 
 object DirectionalBlurE2ETestCase : E2ETestCase() {
     override suspend fun Container.run() {
-        solidRect(width, height, Colors.WHITE)
-        circle(32.0, Colors.RED)
+        solidRect(size, Colors.WHITE)
+        circle(32f, Colors.RED)
             .centered
             .dockedTo(Anchor.CENTER, ScaleMode.NO_SCALE)
-            .filters(DirectionalBlurFilter(angle = 0.degrees, radius = 16.0, expandBorder = true))
+            .filters(DirectionalBlurFilter(angle = 0.degrees, radius = 16f, expandBorder = true))
     }
 }

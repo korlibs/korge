@@ -1,6 +1,7 @@
 package korlibs.korge.ui
 
 import korlibs.korge.view.*
+import korlibs.math.geom.*
 
 /**
  * Equivalent to CSS flexbox `justify-content` values.
@@ -95,16 +96,15 @@ enum class AlignItems {
 }
 
 inline fun Container.uiContainer(
-    width: Double = 128.0,
-    height: Double = 128.0,
+    size: Size = Size(128, 128),
     block: @ViewDslMarker UIContainer.() -> Unit = {}
-) = UIContainer(width, height).addTo(this).apply(block)
+) = UIContainer(size).addTo(this).apply(block)
 
-open class UIContainer(width: Double, height: Double) : UIBaseContainer(width, height) {
+open class UIContainer(size: Size) : UIBaseContainer(size) {
     override fun relayout() {}
 }
 
-abstract class UIBaseContainer(width: Double, height: Double) : UIView(width, height) {
+abstract class UIBaseContainer(size: Size) : UIView(size) {
     override fun onChildAdded(view: View) {
         relayout()
     }
@@ -132,49 +132,49 @@ abstract class UIBaseContainer(width: Double, height: Double) : UIView(width, he
 }
 
 inline fun Container.uiVerticalStack(
-    width: Double = UI_DEFAULT_WIDTH,
-    padding: Double = UI_DEFAULT_PADDING,
+    width: Float = UI_DEFAULT_SIZE.width,
+    padding: Float = UI_DEFAULT_PADDING,
     adjustSize: Boolean = true,
     block: @ViewDslMarker UIVerticalStack.() -> Unit = {}
 ) = UIVerticalStack(width, padding, adjustSize).addTo(this).apply(block)
 
 open class UIVerticalStack(
-    width: Double = UI_DEFAULT_WIDTH,
-    padding: Double = UI_DEFAULT_PADDING,
+    width: Float = UI_DEFAULT_SIZE.width,
+    padding: Float = UI_DEFAULT_PADDING,
     adjustSize: Boolean = true,
-) : UIVerticalHorizontalStack(width, 0.0, padding, adjustSize) {
+) : UIVerticalHorizontalStack(Size(width, 0f), padding, adjustSize) {
     override fun relayout() {
-        var y = 0.0
+        var y = 0f
         forEachChild {
             it.y = y
-            if (adjustSize) it.scaledWidth = width
+            if (adjustSize) it.scaledWidthD = widthD
             y += it.height + padding
         }
-        height = y
+        unscaledHeight = y
     }
 }
 
 inline fun Container.uiHorizontalStack(
-    height: Double = UI_DEFAULT_HEIGHT,
-    padding: Double = UI_DEFAULT_PADDING,
+    height: Float = UI_DEFAULT_SIZE.height,
+    padding: Float = UI_DEFAULT_PADDING,
     adjustHeight: Boolean = true,
     block: @ViewDslMarker UIHorizontalStack.() -> Unit = {}
 ) = UIHorizontalStack(height, padding, adjustHeight).addTo(this).apply(block)
 
-open class UIHorizontalStack(height: Double = UI_DEFAULT_HEIGHT, padding: Double = UI_DEFAULT_PADDING, adjustHeight: Boolean = true) : UIVerticalHorizontalStack(0.0, height, padding, adjustHeight) {
+open class UIHorizontalStack(height: Float = UI_DEFAULT_SIZE.height, padding: Float = UI_DEFAULT_PADDING, adjustHeight: Boolean = true) : UIVerticalHorizontalStack(Size(0f, height), padding, adjustHeight) {
     override fun relayout() {
-        var x = 0.0
+        var x = 0f
         forEachChild {
             it.x = x
-            if (adjustSize) it.scaledHeight = height
+            if (adjustSize) it.scaledHeightD = heightD
             x += it.width + padding
         }
-        width = x
+        unscaledWidth = x
     }
 }
 
-abstract class UIVerticalHorizontalStack(width: Double = UI_DEFAULT_WIDTH, height: Double = UI_DEFAULT_HEIGHT, padding: Double = UI_DEFAULT_PADDING, val adjustSize: Boolean) : UIContainer(width, height) {
-    var padding: Double = padding
+abstract class UIVerticalHorizontalStack(size: Size = UI_DEFAULT_SIZE, padding: Float = UI_DEFAULT_PADDING, val adjustSize: Boolean) : UIContainer(size) {
+    var padding: Float = padding
         set(value) {
             field = value
             relayout()
@@ -182,58 +182,55 @@ abstract class UIVerticalHorizontalStack(width: Double = UI_DEFAULT_WIDTH, heigh
 }
 
 inline fun Container.uiHorizontalFill(
-    width: Double = 128.0,
-    height: Double = 20.0,
+    size: Size = Size(128, 20),
     block: @ViewDslMarker UIHorizontalFill.() -> Unit = {}
-) = UIHorizontalFill(width, height).addTo(this).apply(block)
+) = UIHorizontalFill(size).addTo(this).apply(block)
 
-open class UIHorizontalFill(width: Double = 128.0, height: Double = 20.0) : UIContainer(width, height) {
+open class UIHorizontalFill(size: Size = Size(128, 20)) : UIContainer(size) {
     override fun relayout() {
         var x = 0.0
         val elementWidth = width / numChildren
         forEachChild {
-            it.x = x
-            it.scaledHeight = height
-            it.width = elementWidth
+            it.xD = x
+            it.scaledHeightD = heightD
+            it.unscaledWidth = elementWidth
             x += elementWidth
         }
     }
 }
 
 inline fun Container.uiVerticalFill(
-    width: Double = 128.0,
-    height: Double = 128.0,
+    size: Size = Size(128, 20),
     block: @ViewDslMarker UIVerticalFill.() -> Unit = {}
-) = UIVerticalFill(width, height).addTo(this).apply(block)
+) = UIVerticalFill(size).addTo(this).apply(block)
 
-open class UIVerticalFill(width: Double = 128.0, height: Double = 128.0) : UIContainer(width, height) {
+open class UIVerticalFill(size: Size = Size(128, 128)) : UIContainer(size) {
     override fun relayout() {
         var y = 0.0
         val elementHeight = height / numChildren
         forEachChild {
-            it.y = y
-            it.scaledWidth = width
-            it.height = elementHeight
+            it.yD = y
+            it.scaledWidthD = widthD
+            it.unscaledHeight = elementHeight
             y += elementHeight
         }
     }
 }
 
 inline fun Container.uiGridFill(
-    width: Double = 128.0,
-    height: Double = 128.0,
+    size: Size = Size(128, 128),
     cols: Int = 3,
     rows: Int = 3,
     block: @ViewDslMarker UIGridFill.() -> Unit = {}
-) = UIGridFill(width, height, cols, rows).addTo(this).apply(block)
+) = UIGridFill(size, cols, rows).addTo(this).apply(block)
 
-open class UIGridFill(width: Double = 128.0, height: Double = 128.0, cols: Int = 3, rows: Int = 3) : UIContainer(width, height) {
+open class UIGridFill(size: Size = Size(128, 128), cols: Int = 3, rows: Int = 3) : UIContainer(size) {
     var cols: Int = cols
     var rows: Int = rows
 
     override fun relayout() {
-        val elementHeight = height / rows
-        val elementWidth = width / cols
+        val elementHeight = heightD / rows
+        val elementWidth = widthD / cols
         forEachChildWithIndex { index, view ->
             val ex = index % cols
             val ey = index / cols
@@ -244,15 +241,14 @@ open class UIGridFill(width: Double = 128.0, height: Double = 128.0, cols: Int =
 }
 
 inline fun Container.uiFillLayeredContainer(
-    width: Double = 128.0,
-    height: Double = 20.0,
+    size: Size = Size(128, 20),
     block: @ViewDslMarker UIFillLayeredContainer.() -> Unit = {}
-) = UIFillLayeredContainer(width, height).addTo(this).apply(block)
+) = UIFillLayeredContainer(size).addTo(this).apply(block)
 
-open class UIFillLayeredContainer(width: Double = 128.0, height: Double = 20.0) : UIContainer(width, height) {
+open class UIFillLayeredContainer(size: Size = Size(128, 20)) : UIContainer(size) {
     override fun relayout() {
-        val width = this.width
-        val height = this.height
+        val width = this.widthD
+        val height = this.heightD
         forEachChild {
             it.xy(0, 0)
             it.size(width, height)
