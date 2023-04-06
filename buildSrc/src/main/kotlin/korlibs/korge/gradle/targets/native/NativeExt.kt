@@ -21,5 +21,14 @@ fun KotlinNativeCompilation.getCompileTask(kind: NativeOutputKind, type: NativeB
 val KotlinNativeTest.executableFolder get() = executable.parentFile ?: error("Can't get executable folder for KotlinNativeTest")
 
 fun KotlinTarget.configureKotlinNativeTarget(project: Project) {
-    // Do nothing for now
+    val overridenKonanProperties = mapOf(
+        // From: https://github.com/JetBrains/kotlin/blob/1.8.20/kotlin-native/konan/konan.properties#L969
+        //"clangFlags.mingw_x86" to "-cc1 -emit-obj -disable-llvm-passes -x ir -femulated-tls",
+        "clangFlags.mingw_x86" to "-cc1 -emit-obj -disable-llvm-passes -x ir",
+        "clangOptFlags.mingw_x86" to "-O3 -ffunction-sections",
+    )
+
+    compilations.all {
+        it.kotlinOptions.freeCompilerArgs += listOf("-Xoverride-konan-properties=${overridenKonanProperties.map { "${it.key}=${it.value}" }.joinToString(";")}")
+    }
 }
