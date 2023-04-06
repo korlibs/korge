@@ -1,10 +1,9 @@
 package samples
 
+import korlibs.image.color.*
 import korlibs.korge.input.*
-import korlibs.korge.scene.Scene
-import korlibs.korge.scene.sceneContainer
+import korlibs.korge.scene.*
 import korlibs.korge.view.*
-import korlibs.image.color.Colors
 
 class MainScenes : Scene() {
     override suspend fun SContainer.sceneMain() {
@@ -25,7 +24,7 @@ class MainScenes : Scene() {
 
     class MyScene1(private val myDependency: MyDependency) : Scene() {
         override suspend fun SContainer.sceneMain() {
-            val mainText = text("MyScene1: ${myDependency.value}", 32.0) {
+            val mainText = text("MyScene1: ${myDependency.value}", 32f) {
                 smoothing = false
                 position(MARGIN, MARGIN)
             }
@@ -57,7 +56,7 @@ class MainScenes : Scene() {
 
     class MyScene2(private val myDependency: MyDependency) : Scene() {
         override suspend fun SContainer.sceneMain() {
-            text("MyScene2: ${myDependency.value}", 32.0) {
+            text("MyScene2: ${myDependency.value}", 32f) {
                 smoothing = false
                 position(MARGIN, 10)
             }

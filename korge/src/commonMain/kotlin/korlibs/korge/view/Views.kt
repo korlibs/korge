@@ -65,8 +65,8 @@ class Views constructor(
     var rethrowRenderError = false
     var forceRenderEveryFrame: Boolean by gameWindow::continuousRenderMode
 
-    val virtualPixelsPerInch: Double get() = pixelsPerInch / globalToWindowScaleAvg
-    val virtualPixelsPerCm: Double get() = virtualPixelsPerInch / DeviceDimensionsProvider.INCH_TO_CM
+    val virtualPixelsPerInch: Float get() = pixelsPerInch / globalToWindowScaleAvg
+    val virtualPixelsPerCm: Float get() = virtualPixelsPerInch / DeviceDimensionsProvider.INCH_TO_CM
 
     internal val resizedEvent = ReshapeEvent(0, 0)
     internal val updateEvent = UpdateEvent()
@@ -583,14 +583,14 @@ interface BoundsProvider {
         bounds.transformed(globalToWindowMatrix)
 
     val windowToGlobalScale: Scale get() = windowToGlobalTransform.scale
-    val windowToGlobalScaleX: Double get() = windowToGlobalTransform.scale.scaleXD
-    val windowToGlobalScaleY: Double get() = windowToGlobalTransform.scale.scaleYD
-    val windowToGlobalScaleAvg: Double get() = windowToGlobalTransform.scale.scaleAvgD
+    val windowToGlobalScaleX: Float get() = windowToGlobalTransform.scale.scaleX
+    val windowToGlobalScaleY: Float get() = windowToGlobalTransform.scale.scaleY
+    val windowToGlobalScaleAvg: Float get() = windowToGlobalTransform.scale.scaleAvg
 
     val globalToWindowScale: Scale get() = globalToWindowTransform.scale
-    val globalToWindowScaleX: Double get() = globalToWindowTransform.scaleX.toDouble()
-    val globalToWindowScaleY: Double get() = globalToWindowTransform.scaleY.toDouble()
-    val globalToWindowScaleAvg: Double get() = globalToWindowTransform.scaleAvg.toDouble()
+    val globalToWindowScaleX: Float get() = globalToWindowTransform.scaleX
+    val globalToWindowScaleY: Float get() = globalToWindowTransform.scaleY
+    val globalToWindowScaleAvg: Float get() = globalToWindowTransform.scaleAvg
 
     fun windowToGlobalCoords(pos: Point): Point = windowToGlobalMatrix.transform(pos)
     fun globalToWindowCoords(pos: Point): Point = globalToWindowMatrix.transform(pos)

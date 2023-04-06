@@ -1,15 +1,15 @@
 package samples
 
-import korlibs.graphics.*
 import korlibs.event.*
+import korlibs.graphics.*
+import korlibs.image.color.*
+import korlibs.image.text.*
+import korlibs.image.vector.format.*
 import korlibs.korge.input.*
 import korlibs.korge.scene.*
 import korlibs.korge.view.*
 import korlibs.korge.view.debug.*
 import korlibs.korge.view.vector.*
-import korlibs.image.color.*
-import korlibs.image.text.*
-import korlibs.image.vector.format.*
 import korlibs.math.geom.*
 import korlibs.math.geom.bezier.*
 import korlibs.math.geom.shape.*
@@ -49,9 +49,9 @@ class MainGpuVectorRendering3 : Scene() {
 
         //val strokeInfo = StrokeInfo(thickness = 10.0, join = LineJoin.MITER)
         for ((index, strokeInfo) in listOf(
-            StrokeInfo(thickness = 10.0, join = LineJoin.BEVEL),
-            StrokeInfo(thickness = 10.0, join = LineJoin.MITER),
-            StrokeInfo(thickness = 10.0, join = LineJoin.ROUND),
+            StrokeInfo(thickness = 10f, join = LineJoin.BEVEL),
+            StrokeInfo(thickness = 10f, join = LineJoin.MITER),
+            StrokeInfo(thickness = 10f, join = LineJoin.ROUND),
         ).withIndex()) {
             val sx = index * 430 + 15
 

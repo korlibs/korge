@@ -1,10 +1,6 @@
 package korlibs.korge.view
 
 import korlibs.graphics.shader.*
-import korlibs.korge.render.*
-import korlibs.korge.text.*
-import korlibs.korge.view.filter.*
-import korlibs.korge.view.property.*
 import korlibs.image.bitmap.*
 import korlibs.image.color.*
 import korlibs.image.font.*
@@ -13,6 +9,10 @@ import korlibs.image.text.*
 import korlibs.io.async.*
 import korlibs.io.file.*
 import korlibs.io.resources.*
+import korlibs.korge.render.*
+import korlibs.korge.text.*
+import korlibs.korge.view.filter.*
+import korlibs.korge.view.property.*
 import korlibs.math.geom.*
 import korlibs.math.geom.vector.*
 
@@ -33,7 +33,7 @@ text2("Hello World!", color = Colors.RED, font = font, renderer = CreateStringTe
 }).position(100, 100)
 */
 inline fun Container.text(
-    text: String, textSize: Double = Text.DEFAULT_TEXT_SIZE,
+    text: String, textSize: Float = Text.DEFAULT_TEXT_SIZE,
     color: RGBA = Colors.WHITE, font: Resourceable<out Font> = DefaultTtfFontAsBitmap,
     alignment: TextAlignment = TextAlignment.TOP_LEFT,
     renderer: TextRenderer<String> = DefaultStringTextRenderer,
@@ -44,7 +44,7 @@ inline fun Container.text(
     = Text(text, textSize, color, font, alignment, renderer, autoScaling, fill, stroke).addTo(this, block)
 
 open class Text(
-    text: String, textSize: Double = DEFAULT_TEXT_SIZE,
+    text: String, textSize: Float = DEFAULT_TEXT_SIZE,
     color: RGBA = Colors.WHITE, font: Resourceable<out Font> = DefaultTtfFontAsBitmap,
     alignment: TextAlignment = TextAlignment.TOP_LEFT,
     renderer: TextRenderer<String> = DefaultStringTextRenderer,
@@ -52,7 +52,7 @@ open class Text(
     fill: Paint? = null, stroke: Stroke? = null,
 ) : Container(), IText, ViewLeaf {
     companion object {
-        val DEFAULT_TEXT_SIZE = 16.0
+        val DEFAULT_TEXT_SIZE = 16f
         val DEFAULT_AUTO_SCALING = true
     }
 
@@ -95,14 +95,14 @@ open class Text(
     }
 
     @ViewProperty(min = 1.0, max = 300.0)
-    var textSize: Double = textSize; set(value) {
+    var textSize: Float = textSize; set(value) {
         if (field != value) {
             field = value
             version++
             invalidate()
         }
     }
-    var fontSize: Double by ::textSize
+    var fontSize: Float by ::textSize
 
     var renderer: TextRenderer<String> = renderer; set(value) {
         if (field != value) {
@@ -186,7 +186,7 @@ open class Text(
 
     fun setFormat(face: Resourceable<out Font>? = this.font, size: Int = this.textSize.toInt(), color: RGBA = this.color, align: TextAlignment = this.alignment) {
         this.font = face ?: DefaultTtfFontAsBitmap
-        this.textSize = size.toDouble()
+        this.textSize = size.toFloat()
         this.color = color
         this.alignment = align
     }
@@ -321,7 +321,7 @@ open class Text(
                     val firstBounds = bitmapFontActions.getGlyphBounds(0)
                     val lineInfos = bitmapFontActions.getLineInfos()
                     val firstLineInfos = lineInfos.firstOrNull() ?: Text2TextRendererActions.LineInfo()
-                    val totalHeight = lineInfos.sumOf { it.maxLineHeight }
+                    val totalHeight = lineInfos.sumOf { it.maxLineHeight.toDouble() }.toFloat()
                     val textWidth = bounds.width
                     val textHeight = bounds.height
 
@@ -330,8 +330,8 @@ open class Text(
 
                     //val dx = (-_textBounds.width - textWidth) * horizontalAlign.ratio
                     val dx = _textBounds.x
-                    val dy = when (verticalAlign) {
-                        VerticalAlign.BASELINE -> 0.0
+                    val dy: Float = when (verticalAlign) {
+                        VerticalAlign.BASELINE -> 0f
                         VerticalAlign.TOP -> firstLineInfos.maxTop
                         else -> firstLineInfos.maxTop - (totalHeight) * verticalAlign.ratioFake
                     }
@@ -346,10 +346,8 @@ open class Text(
                         it.anchor(0, 0)
                         it.smoothing = smoothing
                         it.bitmap = entry.tex
-                        it.xD = entry.x + dx
-                        it.yD = entry.y + dy
-                        it.scaleXD = entry.sx
-                        it.scaleYD = entry.sy
+                        it.pos = Point(entry.x + dx, entry.y + dy)
+                        it.scale = Scale(entry.sx, entry.sy)
                         it.rotation = entry.rot
                     }
 
@@ -393,7 +391,7 @@ open class Text(
                         //}
                         drawText(
                             text = this@Text.text,
-                            x = 0.0, y = 0.0,
+                            pos = Point.ZERO,
                             size = realTextSize,
                             font = font,
                             paint = this@Text.color,
@@ -416,7 +414,7 @@ open class Text(
                     //setContainerPosition(x * 1.0, y * 1.0, font.getFontMetrics(fontSize, fontMetrics).baseline)
                     //println("alignment=$alignment, horizontalAlign=$horizontalAlign, verticalAlign=$verticalAlign")
                     //setContainerPosition(x, y, font.getFontMetrics(fontSize, fontMetrics).baseline)
-                    setContainerPosition(0.0, 0.0, font.getFontMetrics(fontSize, fontMetrics).baseline)
+                    setContainerPosition(Point.ZERO, font.getFontMetrics(fontSize, fontMetrics).baseline)
 
                 }
                 //_staticImage?.smoothing = smoothing
@@ -427,18 +425,19 @@ open class Text(
 
     var useNativeRendering: Boolean = true
 
-    private fun setContainerPosition(x: Double, y: Double, baseline: Double) {
+    private fun setContainerPosition(pos: Point, baseline: Float) {
+        val (x, y) = pos
         if (autoSize) {
             setRealContainerPosition(x, y)
         } else {
             //staticImage?.position(x + alignment.horizontal.getOffsetX(textBounds.width), y + alignment.vertical.getOffsetY(textBounds.height, font.getFontMetrics(fontSize).baseline))
 
             // @TODO: Fix this!
-            setRealContainerPosition(x + alignment.horizontal.getOffsetX(_textBounds.widthD), y - alignment.vertical.getOffsetY(_textBounds.heightD, baseline))
+            setRealContainerPosition(x + alignment.horizontal.getOffsetX(_textBounds.width), y - alignment.vertical.getOffsetY(_textBounds.height, baseline))
         }
     }
 
-    private fun setRealContainerPosition(x: Double, y: Double) {
+    private fun setRealContainerPosition(x: Float, y: Float) {
         container.position(x, y)
     }
 
@@ -455,7 +454,7 @@ fun <T : Text> T.autoSize(value: Boolean): T {
     return this
 }
 
-fun <T : Text> T.textSpacing(spacing: Double): T {
+fun <T : Text> T.textSpacing(spacing: Float): T {
     renderer = renderer.withSpacing(spacing)
     return this
 }

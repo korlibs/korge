@@ -1,12 +1,12 @@
 package korlibs.image.font.ttf
 
-import korlibs.logger.*
 import korlibs.image.font.*
 import korlibs.image.vector.format.*
 import korlibs.io.async.*
 import korlibs.io.file.*
 import korlibs.io.file.std.*
 import korlibs.io.lang.*
+import korlibs.logger.*
 import kotlin.test.*
 
 class TtfFontTest {
@@ -44,7 +44,7 @@ class TtfFontTest {
     fun testScaleOrder() = suspendTest {
         assertEquals(
             "M675 -800L475 -800L475 -1000L675 -1000L675 -800ZM200 0Q200 104, 288 177Q376 250, 500 250Q666 250, 783 177Q814 158, 836 136L940 240Q917 262, 889 283Q728 400, 500 400Q314 400, 182 283Q50 166, 50 0Q50 -230, 275 -340Q500 -450, 500 -600L650 -600Q650 -370, 425 -260Q200 -150, 200 0Z",
-            DefaultTtfFont.getGlyphPath(16.0, '¿'.code)!!.path.toSvgPathString()
+            DefaultTtfFont.getGlyphPath(16f, '¿'.code)!!.path.toSvgPathString()
         )
     }
 

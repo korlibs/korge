@@ -41,10 +41,10 @@ open class DOM(val css: CSS) {
         }
         class RatioMapping(
             override val name: String,
-            override val property: KMutableProperty1<DomElement, Double?>
-        ) : Mapping<Double?> {
+            override val property: KMutableProperty1<DomElement, Float?>
+        ) : Mapping<Float?> {
             override fun set(element: DomElement, prop: String, value: Any?) {
-                property.set(element, getRatio(prop, value).toDouble())
+                property.set(element, getRatio(prop, value))
             }
         }
         class MatrixMapping(
@@ -58,8 +58,8 @@ open class DOM(val css: CSS) {
 
         val mappings = HashMap<String, Mapping<*>>()
         @JvmName("addRatio")
-        fun add(name: String, property: KMutableProperty1<out DomElement, out Double?>): DomPropertyMapping = this.apply { mappings[name] = RatioMapping(name,
-            property as KMutableProperty1<DomElement, Double?>
+        fun add(name: String, property: KMutableProperty1<out DomElement, out Float?>): DomPropertyMapping = this.apply { mappings[name] = RatioMapping(name,
+            property as KMutableProperty1<DomElement, Float?>
         ) }
         @JvmName("addMatrix")
         fun add(name: String, property: KMutableProperty1<out DomElement, out Matrix>): DomPropertyMapping = this.apply { mappings[name] = MatrixMapping(name,

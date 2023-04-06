@@ -2,10 +2,10 @@ package korlibs.korge.view.vector
 
 import korlibs.graphics.*
 import korlibs.graphics.shader.*
-import korlibs.korge.internal.*
 import korlibs.image.bitmap.*
 import korlibs.image.color.*
 import korlibs.image.paint.*
+import korlibs.korge.internal.*
 import korlibs.math.geom.*
 import kotlin.math.*
 
@@ -169,8 +169,8 @@ object GpuShapeViewPrograms {
     fun paintToShaderInfo(
         stateTransform: Matrix,
         paint: Paint,
-        globalAlpha: Double,
-        lineWidth: Double,
+        globalAlpha: Float,
+        lineWidth: Float,
     ): PaintShader? = when (paint) {
         is NonePaint -> {
             null

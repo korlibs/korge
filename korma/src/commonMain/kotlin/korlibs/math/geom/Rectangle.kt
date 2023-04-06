@@ -13,6 +13,11 @@ import kotlin.math.*
 inline class Rectangle(val data: Float4Pack) : Shape2D {
     val int: RectangleInt get() = toInt()
 
+    operator fun component1(): Float = x
+    operator fun component2(): Float = y
+    operator fun component3(): Float = width
+    operator fun component4(): Float = height
+
     @Deprecated("", ReplaceWith("this")) fun clone(): Rectangle = this
     @Deprecated("", ReplaceWith("this")) val immutable: Rectangle get() = this
 

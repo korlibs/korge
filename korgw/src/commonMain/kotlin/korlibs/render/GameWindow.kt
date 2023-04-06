@@ -468,15 +468,15 @@ open class GameWindow :
         fun computeTargetScale(
             width: Int,
             height: Int,
-            devicePixelRatio: Double,
+            devicePixelRatio: Float,
             targetPixels: Int = UPPER_BOUND_RENDERED_PIXELS
-        ): Double = when (this) {
-            PERFORMANCE -> 1.0
+        ): Float = when (this) {
+            PERFORMANCE -> 1f
             QUALITY -> devicePixelRatio
             AUTOMATIC -> {
-                listOf(devicePixelRatio, 2.0, 1.0)
+                listOf(devicePixelRatio, 2f, 1f)
                     .firstOrNull { width * height * it <= targetPixels }
-                    ?: 1.0
+                    ?: 1f
             }
         }
     }

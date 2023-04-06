@@ -11,8 +11,8 @@ data class RichTextDataPlacements(
 ) : List<RichTextDataPlacements.Placement> by placements {
     data class Placement(
         val text: String,
-        val x: Double, val y: Double,
-        val size: Double,
+        val pos: Point,
+        val size: Float,
         val font: Font,
         val fillStyle: Paint?,
         val stroke: Stroke?,
@@ -36,21 +36,21 @@ fun RichTextData.place(
     if (text.lines.isEmpty()) return out
 
     val rtext = text.limit(
-        (if (wordWrap) bounds.width else Float.POSITIVE_INFINITY).toDouble(),
+        (if (wordWrap) bounds.width else Float.POSITIVE_INFINITY).toFloat(),
         includePartialLines = includePartialLines,
-        maxHeight = bounds.height.toDouble(),
+        maxHeight = bounds.height,
         ellipsis = ellipsis,
         trimSpaces = true,
         includeFirstLineAlways = includeFirstLineAlways
     )
     //var y = bounds.y + rtext.lines.first().maxHeight
-    val totalHeight = if (rtext.lines.isNotEmpty()) rtext.lines.dropLast(1).sumOf { it.maxLineHeight } + rtext.lines.last().maxHeight else 0.0
+    val totalHeight = if (rtext.lines.isNotEmpty()) rtext.lines.dropLast(1).sumOf { it.maxLineHeight.toDouble() }.toFloat() + rtext.lines.last().maxHeight else 0f
 
     var y = bounds.y + ((bounds.height - totalHeight) * align.vertical.ratioFake0)
 
     for (line in rtext.lines) {
-        var x = bounds.x - align.horizontal.getOffsetX(line.width) + align.horizontal.getOffsetX(bounds.width.toDouble())
-        val wordSpacing = if (align.horizontal == HorizontalAlign.JUSTIFY) (bounds.width - line.width) / (line.nodes.size.toDouble() - 1) else 0.0
+        var x = bounds.x - align.horizontal.getOffsetX(line.width) + align.horizontal.getOffsetX(bounds.width)
+        val wordSpacing: Float = if (align.horizontal == HorizontalAlign.JUSTIFY) ((bounds.width - line.width) / (line.nodes.size.toDouble() - 1)).toFloat() else 0f
         y += line.maxHeight
         for (node in line.nodes) {
             when (node) {
@@ -58,7 +58,7 @@ fun RichTextData.place(
                     fun render(dx: Double, dy: Double) {
                         out.placements.add(RichTextDataPlacements.Placement(
                             node.text,
-                            x + dx, y + dy,
+                            Point(x + dx, y + dy),
                             size = node.style.textSize,
                             font = node.style.font,
                             fillStyle = node.style.color ?: fill,
@@ -99,7 +99,7 @@ fun Context2d.drawRichText(
     for (place in result.placements) {
         drawText(
             place.text,
-            place.x,place.y,
+            place.pos,
             size = place.size,
             font = place.font,
             fillStyle = place.fillStyle,

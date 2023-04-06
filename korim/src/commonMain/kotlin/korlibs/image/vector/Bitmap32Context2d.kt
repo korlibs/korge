@@ -1,32 +1,14 @@
 package korlibs.image.vector
 
-import korlibs.datastructure.intArrayListOf
-import korlibs.memory.clamp01
-import korlibs.image.bitmap.Bitmap32
-import korlibs.image.color.RgbaArray
-import korlibs.image.color.RgbaPremultipliedArray
-import korlibs.image.color.depremultiply
-import korlibs.image.color.premultiply
-import korlibs.image.color.scale
-import korlibs.image.paint.BaseFiller
-import korlibs.image.paint.BitmapFiller
-import korlibs.image.paint.BitmapPaint
-import korlibs.image.paint.ColorFiller
-import korlibs.image.paint.ColorPaint
-import korlibs.image.paint.GradientFiller
-import korlibs.image.paint.GradientPaint
-import korlibs.image.paint.NoneFiller
-import korlibs.image.paint.NonePaint
-import korlibs.image.vector.rasterizer.Rasterizer
-import korlibs.math.geom.*
-import korlibs.math.geom.shape.emitPoints2
-import korlibs.math.geom.vector.RastScale
-import korlibs.math.geom.vector.StrokeToFill
-import korlibs.math.geom.vector.VectorPath
-import korlibs.math.geom.vector.Winding
-import korlibs.math.geom.vector.strokeToFill
-import kotlin.math.max
-import kotlin.math.min
+import korlibs.datastructure.*
+import korlibs.image.bitmap.*
+import korlibs.image.color.*
+import korlibs.image.paint.*
+import korlibs.image.vector.rasterizer.*
+import korlibs.math.geom.shape.*
+import korlibs.math.geom.vector.*
+import korlibs.memory.*
+import kotlin.math.*
 
 // References:
 // - https://github.com/memononen/nanosvg/blob/master/src/nanosvgrast.h
@@ -196,7 +178,7 @@ class Bitmap32Context2d(val bmp: Bitmap32, val antialiasing: Boolean) : korlibs.
         val color = RgbaPremultipliedArray(size)
         val segments = SegmentHandler()
         var subRowCount = 0
-        var globalAlpha = 1.0
+        var globalAlpha = 1f
         fun reset() {
             segments.forEachFast { xmin, xmax ->
                 alpha.fill(0f, xmin, xmax + 1)

@@ -4,7 +4,6 @@ import korlibs.image.bitmap.*
 import korlibs.image.color.*
 import korlibs.io.async.*
 import korlibs.math.geom.*
-import korlibs.math.geom.vector.*
 import kotlin.test.*
 
 class RichTextDataRendererText {
@@ -13,11 +12,11 @@ class RichTextDataRendererText {
         val nativeImage = NativeImage(512, 512)
         nativeImage.context2d {
             val textBounds = Rectangle(50, 50, 150, 100)
-            stroke(Colors.BLUE, lineWidth = 2.0) {
+            stroke(Colors.BLUE, lineWidth = 2f) {
                 rect(textBounds)
             }
             drawRichText(
-                RichTextData.fromHTML("hello world<br /><br /> this is a long test", style = RichTextData.Style.DEFAULT.copy(textSize = 24.0)),
+                RichTextData.fromHTML("hello world<br /><br /> this is a long test", style = RichTextData.Style.DEFAULT.copy(textSize = 24f)),
                 bounds = textBounds,
                 ellipsis = "...",
                 fill = Colors.RED,

@@ -1,15 +1,15 @@
 package korlibs.math.geom.bezier
 
-import korlibs.memory.*
 import korlibs.math.geom.*
 import korlibs.math.internal.*
 import korlibs.math.math.*
+import korlibs.memory.*
 
 data class CurveSplit(
     val base: Bezier,
     val left: SubBezier,
     val right: SubBezier,
-    val t: Double,
+    val t: Float,
     val hull: PointList?
 ) {
     val leftCurve: Bezier get() = left.curve
@@ -24,8 +24,8 @@ data class CurveSplit(
     )
 }
 
-class SubBezier(val curve: Bezier, val t1: Double, val t2: Double, val parent: Bezier?) {
-    constructor(curve: Bezier) : this(curve, 0.0, 1.0, null)
+class SubBezier(val curve: Bezier, val t1: Float, val t2: Float, val parent: Bezier?) {
+    constructor(curve: Bezier) : this(curve, 0f, 1f, null)
 
     val boundingBox: Rectangle get() = curve.boundingBox
 
@@ -40,12 +40,12 @@ class SubBezier(val curve: Bezier, val t1: Double, val t2: Double, val parent: B
         }
     }
 
-    fun calc(t: Double): Point = curve.calc(t.convertRange(t1, t2, 0.0, 1.0))
+    fun calc(t: Float): Point = curve.calc(t.convertRange(t1, t2, 0f, 1f))
 
-    private fun _split(t: Double, hull: PointList?, left: Boolean): SubBezier {
-        val rt = t.convertRange(0.0, 1.0, t1, t2)
-        val rt1 = if (left) t1 else rt
-        val rt2 = if (left) rt else t2
+    private fun _split(t: Float, hull: PointList?, left: Boolean): SubBezier {
+        val rt = t.convertRange(0f, 1f, t1, t2)
+        val rt1: Float = if (left) t1 else rt
+        val rt2: Float = if (left) rt else t2
         // Line
         val curve = if (curve.order < 2) {
             val p1 = calc(rt1)
@@ -58,13 +58,13 @@ class SubBezier(val curve: Bezier, val t1: Double, val t2: Double, val parent: B
         return SubBezier(curve, rt1, rt2, parent)
     }
 
-    private fun _splitLeft(t: Double, hull: PointList? = curve.hullOrNull(t)): SubBezier = _split(t, hull, left = true)
-    private fun _splitRight(t: Double, hull: PointList? = curve.hullOrNull(t)): SubBezier = _split(t, hull, left = false)
+    private fun _splitLeft(t: Float, hull: PointList? = curve.hullOrNull(t)): SubBezier = _split(t, hull, left = true)
+    private fun _splitRight(t: Float, hull: PointList? = curve.hullOrNull(t)): SubBezier = _split(t, hull, left = false)
 
-    fun splitLeft(t: Double): SubBezier = _splitLeft(t)
-    fun splitRight(t: Double): SubBezier = _splitRight(t)
+    fun splitLeft(t: Float): SubBezier = _splitLeft(t)
+    fun splitRight(t: Float): SubBezier = _splitRight(t)
 
-    fun split(t: Double): CurveSplit {
+    fun split(t: Float): CurveSplit {
         val hull = curve.hullOrNull(t)
         return CurveSplit(
             base = curve,

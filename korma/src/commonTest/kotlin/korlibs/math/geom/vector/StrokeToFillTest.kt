@@ -1,10 +1,9 @@
 package korlibs.math.geom.vector
 
-import korlibs.math.geom.int
 import korlibs.math.geom.shape.*
 
 class StrokeToFillTest {
-    private inline fun path(stroke: Double = 2.0, crossinline block: VectorPath.() -> Unit) =
+    private inline fun path(stroke: Float = 2f, crossinline block: VectorPath.() -> Unit) =
         buildVectorPath(VectorPath()) {
             block()
         }.strokeToFill(stroke).cachedPoints.toList().map { it.int }.toString()

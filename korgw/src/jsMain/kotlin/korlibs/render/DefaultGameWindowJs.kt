@@ -1,15 +1,15 @@
 package korlibs.render
 
-import korlibs.memory.*
-import korlibs.graphics.*
-import korlibs.graphics.gl.*
 import korlibs.event.*
 import korlibs.event.Touch
+import korlibs.graphics.*
+import korlibs.graphics.gl.*
 import korlibs.image.bitmap.*
 import korlibs.image.format.*
 import korlibs.io.async.*
 import korlibs.io.file.*
 import korlibs.math.geom.*
+import korlibs.memory.*
 import kotlinx.browser.*
 import kotlinx.coroutines.*
 import org.w3c.dom.*
@@ -29,11 +29,11 @@ open class JsGameWindow : GameWindow() {
 open class BrowserCanvasJsGameWindow(
     val canvas: HTMLCanvasElement = AGDefaultCanvas()
 ) : JsGameWindow() {
-    val tDevicePixelRatio get() = window.devicePixelRatio.toDouble()
-    override val devicePixelRatio get() = when {
-        tDevicePixelRatio <= 0.0 -> 1.0
-        tDevicePixelRatio.isNaN() -> 1.0
-        tDevicePixelRatio.isInfinite() -> 1.0
+    val tDevicePixelRatio: Float get() = window.devicePixelRatio.toFloat()
+    override val devicePixelRatio: Float get() = when {
+        tDevicePixelRatio <= 0f -> 1f
+        tDevicePixelRatio.isNaN() -> 1f
+        tDevicePixelRatio.isInfinite() -> 1f
         else -> tDevicePixelRatio
     }
     // @TODO: Improve this: https://gist.github.com/scryptonite/5242987
@@ -119,7 +119,7 @@ open class BrowserCanvasJsGameWindow(
         }
 
     @PublishedApi
-    internal var canvasRatio = 1.0
+    internal var canvasRatio = 1f
 
     private fun onResized() {
         isTouchDeviceCache = null
@@ -139,7 +139,7 @@ open class BrowserCanvasJsGameWindow(
             //ag.resized(canvas.width, canvas.height)
             //dispatchReshapeEvent(0, 0, window.innerWidth, window.innerHeight)
         } else {
-            canvasRatio = (canvas.width.toDouble() / canvas.clientWidth.toDouble())
+            canvasRatio = (canvas.width.toFloat() / canvas.clientWidth.toFloat())
         }
         //canvasRatio = (canvas.width.toDouble() / canvas.clientWidth.toDouble())
 

@@ -62,7 +62,7 @@ open class CachedContainer(
 
     private var _cacheTex: CacheTexture? = null
     private var dirty = true
-    private var scaledCache = -1.0
+    private var scaledCache = -1f
     private var lbounds = MRectangle()
 
     override fun invalidateRender() {
@@ -83,8 +83,8 @@ open class CachedContainer(
         val cache = _cacheTex!!
         ctx.refGcCloseable(cache)
 
-        val renderScale = when (ctx.views?.gameWindow?.quality) {
-            GameWindow.Quality.PERFORMANCE -> 1.0
+        val renderScale: Float = when (ctx.views?.gameWindow?.quality) {
+            GameWindow.Quality.PERFORMANCE -> 1f
             else -> ctx.devicePixelRatio
         }
         //val renderScale = 1.0

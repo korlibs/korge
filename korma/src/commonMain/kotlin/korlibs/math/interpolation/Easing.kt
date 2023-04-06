@@ -5,32 +5,32 @@ import korlibs.math.geom.bezier.*
 import korlibs.memory.*
 import kotlin.math.*
 
-private inline fun combine(it: Double, start: Easing, end: Easing) =
-    if (it < 0.5) 0.5 * start(it * 2.0) else 0.5 * end((it - 0.5) * 2.0) + 0.5
+private inline fun combine(it: Float, start: Easing, end: Easing) =
+    if (it < .5f) .5f * start(it * 2f) else .5f * end((it - .5f) * 2f) + .5f
 
-private const val BOUNCE_FACTOR = 1.70158
-private const val HALF_PI = PI / 2.0
+private const val BOUNCE_FACTOR = 1.70158f
+private const val HALF_PI = PI.toFloat() / 2f
 
 @Suppress("unused")
 fun interface Easing {
-    operator fun invoke(it: Double): Double
-    operator fun invoke(it: Float): Float = invoke(it.toDouble()).toFloat()
+    operator fun invoke(it: Float): Float
+    operator fun invoke(it: Double): Double = invoke(it.toFloat()).toDouble()
 
     companion object {
-        operator fun invoke(name: () -> String, block: (Double) -> Double): Easing {
+        operator fun invoke(name: () -> String, block: (Float) -> Float): Easing {
             return object : Easing {
-                override fun invoke(it: Double): Double = block(it)
+                override fun invoke(it: Float): Float = block(it)
                 override fun toString(): String = name()
             }
         }
 
         fun steps(steps: Int, easing: Easing): Easing = Easing({ "steps($steps, $easing)" }) {
-            easing((it * steps).toInt().toDouble() / steps)
+            easing((it * steps).toInt().toFloat() / steps)
         }
-        fun cubic(x1: Double, y1: Double, x2: Double, y2: Double, name: String? = null): Easing =
-            EasingCubic(x1, y1, x2, y2, name)
+        fun cubic(x1: Float, y1: Float, x2: Float, y2: Float, name: String? = null): Easing = EasingCubic(x1, y1, x2, y2, name)
+        fun cubic(x1: Double, y1: Double, x2: Double, y2: Double, name: String? = null): Easing = EasingCubic(x1, y1, x2, y2, name)
 
-        fun cubic(f: (t: Double, b: Double, c: Double, d: Double) -> Double): Easing = Easing { f(it, 0.0, 1.0, 1.0) }
+        fun cubic(f: (t: Float, b: Float, c: Float, d: Float) -> Float): Easing = Easing { f(it, 0f, 1f, 1f) }
         fun combine(start: Easing, end: Easing) = Easing { combine(it, start, end) }
 
         private val _ALL_LIST: List<Easings> by lazy(LazyThreadSafetyMode.PUBLICATION) {
@@ -83,32 +83,33 @@ fun interface Easing {
 }
 
 // @TODO: We need to heavily optimize this. If we can have a formula instead of doing a bisect, this would be much faster.
-class EasingCubic(val x1: Double, val y1: Double, val x2: Double, val y2: Double, val name: String? = null) : Easing {
-    val cubic = Bezier(Point(0f, 0f), Point(x1.clamp(0.0, 1.0), y1), Point(x2.clamp(0.0, 1.0), y2), Point(1.0, 1.0))
+class EasingCubic(val x1: Float, val y1: Float, val x2: Float, val y2: Float, val name: String? = null) : Easing {
+    constructor(x1: Double, y1: Double, x2: Double, y2: Double, name: String? = null) : this(x1.toFloat(), y1.toFloat(), x2.toFloat(), y2.toFloat(), name)
+    val cubic = Bezier(Point(0f, 0f), Point(x1.clamp(0f, 1f), y1), Point(x2.clamp(0f, 1f), y2), Point(1.0, 1.0))
     override fun toString(): String = name ?: "cubic-bezier($x1, $y1, $x2, $y2)"
 
     // @TODO: this doesn't work properly for `it` outside range [0, 1], and not in constant time
-    override fun invoke(it: Double): Double {
-        var pivotLeft = if (it < 0.0) it * 10.0 else 0.0
-        var pivotRight = if (it > 1.0) it * 10.0 else 1.0
+    override fun invoke(it: Float): Float {
+        var pivotLeft = if (it < 0f) it * 10f else 0f
+        var pivotRight = if (it > 1f) it * 10f else 1f
         //var pivot = (pivotLeft + pivotRight) * 0.5
         var pivot = it
         //println(" - x=$x, time=$time, pivotLeft=$pivotLeft, pivotRight=$pivotRight, pivot=$pivot")
-        var lastX = 0.0
-        var lastY = 0.0
+        var lastX = 0f
+        var lastY = 0f
         var steps = 0
         for (n in 0 until 50) {
             steps++
             val res = cubic.calc(pivot)
-            lastX = res.xD
-            lastY = res.yD
+            lastX = res.x
+            lastY = res.y
             if ((lastX - it).absoluteValue < 0.001) break
             if (it < lastX) {
                 pivotRight = pivot
-                pivot = (pivotLeft + pivot) * 0.5
+                pivot = (pivotLeft + pivot) * 0.5f
             } else if (it > lastX) {
                 pivotLeft = pivot
-                pivot = (pivotRight + pivot) * 0.5
+                pivot = (pivotRight + pivot) * 0.5f
             } else {
                 break
             }
@@ -174,139 +175,139 @@ class EasingCubic(val x1: Double, val y1: Double, val x2: Double, val y2: Double
 
 private enum class Easings : Easing {
     SMOOTH {
-        override fun invoke(it: Double): Double = it * it * (3 - 2 * it)
+        override fun invoke(it: Float): Float = it * it * (3 - 2 * it)
     },
     EASE_IN_ELASTIC {
-        override fun invoke(it: Double): Double =
-            if (it == 0.0 || it == 1.0) {
+        override fun invoke(it: Float): Float =
+            if (it == 0f || it == 1f) {
                 it
             } else {
-                val p = 0.3
-                val s = p / 4.0
+                val p = 0.3f
+                val s = p / 4.0f
                 val inv = it - 1
 
-                -1.0 * 2.0.pow(10.0 * inv) * sin((inv - s) * (2.0 * PI) / p)
+                -1f * 2f.pow(10f * inv) * sin((inv - s) * (2f * PI.toFloat()) / p)
             }
     },
     EASE_OUT_ELASTIC {
-        override fun invoke(it: Double): Double =
-            if (it == 0.0 || it == 1.0) {
+        override fun invoke(it: Float): Float =
+            if (it == 0f || it == 1f) {
                 it
             } else {
-                val p = 0.3
-                val s = p / 4.0
-                2.0.pow(-10.0 * it) * sin((it - s) * (2.0 * PI) / p) + 1
+                val p = 0.3f
+                val s = p / 4.0f
+                2.0f.pow(-10.0f * it) * sin((it - s) * (2.0f * PI.toFloat()) / p) + 1
             }
     },
     EASE_OUT_BOUNCE {
-        override fun invoke(it: Double): Double {
-            val s = 7.5625
-            val p = 2.75
+        override fun invoke(it: Float): Float {
+            val s = 7.5625f
+            val p = 2.75f
             return when {
-                it < 1.0 / p -> s * it.pow(2.0)
-                it < 2.0 / p -> s * (it - 1.5 / p).pow(2.0) + 0.75
-                it < 2.5 / p -> s * (it - 2.25 / p).pow(2.0) + 0.9375
-                else -> s * (it - 2.625 / p).pow(2.0) + 0.984375
+                it < 1f / p -> s * it.pow(2f)
+                it < 2f / p -> s * (it - 1.5f / p).pow(2.0f) + 0.75f
+                it < 2.5f / p -> s * (it - 2.25f / p).pow(2.0f) + 0.9375f
+                else -> s * (it - 2.625f / p).pow(2.0f) + 0.984375f
             }
         }
     },
     //Easing.cubic(0.0, 0.0, 1.0, 1.0, "linear"),
     LINEAR {
-        override fun invoke(it: Double): Double = it
+        override fun invoke(it: Float): Float = it
     },
     // https://developer.mozilla.org/en-US/docs/Web/CSS/animation-timing-function
     EASE {
-        val easing = EasingCubic(0.25, 0.1, 0.25, 1.0, "ease")
-        override fun invoke(it: Double): Double = easing.invoke(it)
+        val easing = EasingCubic(0.25f, 0.1f, 0.25f, 1.0f, "ease")
+        override fun invoke(it: Float): Float = easing.invoke(it)
     },
     EASE_IN {
-        val easing = EasingCubic(0.42, 0.0, 1.0, 1.0, "ease-in")
-        override fun invoke(it: Double): Double = easing.invoke(it)
+        val easing = EasingCubic(0.42f, 0.0f, 1.0f, 1.0f, "ease-in")
+        override fun invoke(it: Float): Float = easing.invoke(it)
     },
     EASE_OUT {
-        val easing = EasingCubic(0.0, 0.0, 0.58, 1.0, "ease-out")
-        override fun invoke(it: Double): Double = easing.invoke(it)
+        val easing = EasingCubic(0.0f, 0.0f, 0.58f, 1.0f, "ease-out")
+        override fun invoke(it: Float): Float = easing.invoke(it)
     },
     EASE_IN_OUT {
-        val easing = EasingCubic(0.42, 0.0, 0.58, 1.0, "ease-in-out")
-        override fun invoke(it: Double): Double = easing.invoke(it)
+        val easing = EasingCubic(0.42f, 0.0f, 0.58f, 1.0f, "ease-in-out")
+        override fun invoke(it: Float): Float = easing.invoke(it)
     },
     //EASE_OUT_IN {
     //    val easing = EasingCubic(-, "ease-out-in")
     //    override fun invoke(it: Double): Double = easing.invoke(it)
     //},
     EASE_IN_OLD {
-        override fun invoke(it: Double): Double = it * it * it
+        override fun invoke(it: Float): Float = it * it * it
     },
     EASE_OUT_OLD {
-        override fun invoke(it: Double): Double =
-            (it - 1.0).let { inv ->
+        override fun invoke(it: Float): Float =
+            (it - 1f).let { inv ->
                 inv * inv * inv + 1
             }
     },
     EASE_IN_OUT_OLD {
-        override fun invoke(it: Double): Double = combine(it, EASE_IN_OLD, EASE_OUT_OLD)
+        override fun invoke(it: Float): Float = combine(it, EASE_IN_OLD, EASE_OUT_OLD)
     },
     EASE_OUT_IN_OLD {
-        override fun invoke(it: Double): Double = combine(it, EASE_OUT_OLD, EASE_IN_OLD)
+        override fun invoke(it: Float): Float = combine(it, EASE_OUT_OLD, EASE_IN_OLD)
     },
     EASE_IN_BACK {
-        override fun invoke(it: Double): Double = it.pow(2.0) * ((BOUNCE_FACTOR + 1.0) * it - BOUNCE_FACTOR)
+        override fun invoke(it: Float): Float = it.pow(2f) * ((BOUNCE_FACTOR + 1f) * it - BOUNCE_FACTOR)
     },
     EASE_OUT_BACK {
-        override fun invoke(it: Double): Double =
-            (it - 1.0).let { inv ->
-                inv.pow(2.0) * ((BOUNCE_FACTOR + 1.0) * inv + BOUNCE_FACTOR) + 1.0
+        override fun invoke(it: Float): Float =
+            (it - 1f).let { inv ->
+                inv.pow(2f) * ((BOUNCE_FACTOR + 1f) * inv + BOUNCE_FACTOR) + 1f
             }
     },
     EASE_IN_OUT_BACK {
-        override fun invoke(it: Double): Double = combine(it, EASE_IN_BACK, EASE_OUT_BACK)
+        override fun invoke(it: Float): Float = combine(it, EASE_IN_BACK, EASE_OUT_BACK)
     },
     EASE_OUT_IN_BACK {
-        override fun invoke(it: Double): Double = combine(it, EASE_OUT_BACK, EASE_IN_BACK)
+        override fun invoke(it: Float): Float = combine(it, EASE_OUT_BACK, EASE_IN_BACK)
     },
     EASE_IN_OUT_ELASTIC {
-        override fun invoke(it: Double): Double = combine(it, EASE_IN_ELASTIC, EASE_OUT_ELASTIC)
+        override fun invoke(it: Float): Float = combine(it, EASE_IN_ELASTIC, EASE_OUT_ELASTIC)
     },
     EASE_OUT_IN_ELASTIC {
-        override fun invoke(it: Double): Double = combine(it, EASE_OUT_ELASTIC, EASE_IN_ELASTIC)
+        override fun invoke(it: Float): Float = combine(it, EASE_OUT_ELASTIC, EASE_IN_ELASTIC)
     },
     EASE_IN_BOUNCE {
-        override fun invoke(it: Double): Double = 1.0 - EASE_OUT_BOUNCE(1.0 - it)
+        override fun invoke(it: Float): Float = 1f - EASE_OUT_BOUNCE(1f - it)
     },
     EASE_IN_OUT_BOUNCE {
-        override fun invoke(it: Double): Double = combine(it, EASE_IN_BOUNCE, EASE_OUT_BOUNCE)
+        override fun invoke(it: Float): Float = combine(it, EASE_IN_BOUNCE, EASE_OUT_BOUNCE)
     },
     EASE_OUT_IN_BOUNCE {
-        override fun invoke(it: Double): Double = combine(it, EASE_OUT_BOUNCE, EASE_IN_BOUNCE)
+        override fun invoke(it: Float): Float = combine(it, EASE_OUT_BOUNCE, EASE_IN_BOUNCE)
     },
     EASE_IN_QUAD {
-        override fun invoke(it: Double): Double = 1.0 * it * it
+        override fun invoke(it: Float): Float = 1f * it * it
     },
     EASE_OUT_QUAD {
-        override fun invoke(it: Double): Double = -1.0 * it * (it - 2)
+        override fun invoke(it: Float): Float = -1f * it * (it - 2)
     },
     EASE_IN_OUT_QUAD {
-        override fun invoke(it: Double): Double =
-            (it * 2.0).let { t ->
+        override fun invoke(it: Float): Float =
+            (it * 2f).let { t ->
                 if (t < 1) {
-                    1.0 / 2 * t * t
+                    +1f / 2 * t * t
                 } else {
-                    -1.0 / 2 * ((t - 1) * ((t - 1) - 2) - 1)
+                    -1f / 2 * ((t - 1) * ((t - 1) - 2) - 1)
                 }
             }
     },
     EASE_SINE {
-        override fun invoke(it: Double): Double = sin(it * HALF_PI)
+        override fun invoke(it: Float): Float = sin(it * HALF_PI)
     },
     EASE_CLAMP_START {
-        override fun invoke(it: Double): Double = if (it <= 0.0) 0.0 else 1.0
+        override fun invoke(it: Float): Float = if (it <= 0f) 0f else 1f
     },
     EASE_CLAMP_END {
-        override fun invoke(it: Double): Double = if (it < 1.0) 0.0 else 1.0
+        override fun invoke(it: Float): Float = if (it < 1f) 0f else 1f
     },
     EASE_CLAMP_MIDDLE {
-        override fun invoke(it: Double): Double = if (it < 0.5) 0.0 else 1.0
+        override fun invoke(it: Float): Float = if (it < 0.5f) 0f else 1f
     };
 
     override fun toString(): String = super.toString().replace('_', '-').lowercase()

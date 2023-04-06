@@ -35,7 +35,7 @@ interface AGFeatures {
 abstract class AG : AGFeatures, Extra by Extra.Mixin() {
     companion object {
         val logger = Logger("AG")
-        const val defaultPixelsPerInch : Double = 96.0
+        const val defaultPixelsPerInch : Float = 96f
     }
 
     val mainFrameBuffer: AGFrameBuffer = AGFrameBuffer(isMain = true)

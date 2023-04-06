@@ -2,7 +2,6 @@ package korlibs.math.geom.vector
 
 import korlibs.datastructure.*
 import korlibs.datastructure.iterators.*
-import korlibs.memory.*
 import korlibs.math.annotations.*
 import korlibs.math.geom.*
 import korlibs.math.geom.bezier.*
@@ -11,6 +10,7 @@ import korlibs.math.geom.shape.*
 import korlibs.math.geom.trapezoid.*
 import korlibs.math.internal.*
 import korlibs.math.math.*
+import korlibs.memory.*
 import kotlin.native.concurrent.*
 
 interface IVectorPath : VectorBuilder {
@@ -127,7 +127,7 @@ class VectorPath(
             //val cx2 = Bezier.quadToCubic2(x0, x1, x2)
             //val cy2 = Bezier.quadToCubic2(y0, y1, y2)
             //cubic(x0, y0, cx1, cy1, cx2, cy2, x2, y2)
-            Bezier.quadToCubic(p1.xD, p1.yD, p2.xD, p2.yD, p3.xD, p3.yD) { qx0, qy0, qx1, qy1, qx2, qy2, qx3, qy3 ->
+            Bezier.quadToCubic(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y) { qx0, qy0, qx1, qy1, qx2, qy2, qx3, qy3 ->
                 cubic(Point(qx0, qy0), Point(qx1, qy1), Point(qx2, qy2), Point(qx3, qy3))
             }
         },

@@ -1,15 +1,13 @@
 package korlibs.korge.view
 
 import korlibs.math.geom.*
-import korlibs.math.geom.vector.*
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import kotlin.test.*
 
 class ShapeViewTest {
     @Test
     fun testShapeViewBounds() {
         for (renderer in GraphicsRenderer.values()) {
-            val view = ShapeView(strokeThickness = 1.0)
+            val view = ShapeView(strokeThickness = 1f)
             view.renderer = renderer
             view.updatePath {
                 clear()

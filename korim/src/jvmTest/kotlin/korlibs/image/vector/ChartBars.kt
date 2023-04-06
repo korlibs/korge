@@ -27,27 +27,26 @@ open class ChartBars(val list: List<DataPoint>) : Chart() {
     val colors = listOf(Colors["#5485ec"], Colors.GREEN, Colors.BLUE, Colors.AZURE, Colors.CHARTREUSE, Colors.CADETBLUE)
 
     private fun Context2d.renderLine(
-        x0: Double,
-        y0: Double,
-        x1: Double,
-        y1: Double,
+        x0: Float,
+        y0: Float,
+        x1: Float,
+        y1: Float,
         color: RGBA,
-        width: Double = 1.2
+        width: Float = 1.2f
     ) {
-        lineWidth = width.toDouble()
+        lineWidth = width
         beginPath()
         moveTo(Point(x0, y0))
         lineTo(Point(x1, y1))
         stroke(createColor(color))
     }
 
-    private fun Context2d.renderRefLine(rect: Rectangle, y: Double, value: String, important: Boolean) {
+    private fun Context2d.renderRefLine(rect: Rectangle, y: Float, value: String, important: Boolean) {
         val x = rect.left
-        renderLine(x.toDouble(), y, rect.right.toDouble(), y, if (important) Colors.BLACK else Colors.DARKGREY)
+        renderLine(x, y, rect.right, y, if (important) Colors.BLACK else Colors.DARKGREY)
         fillText(
             value,
-            x - 2,
-            y,
+            Point(x - 2, y),
             halign = HorizontalAlign.RIGHT,
             valign = VerticalAlign.BOTTOM,
             color = Colors.DARKGREY
@@ -59,7 +58,7 @@ open class ChartBars(val list: List<DataPoint>) : Chart() {
 
     private fun Context2d.renderReferenceLines(rect: Rectangle) {
         for (n in 0 until 5) {
-            val ratio = n.toDouble() / 4
+            val ratio = n.toFloat() / 4
             renderRefLine(
                 rect,
                 rect.bottom - 1 - (rect.height - 1) * ratio,
@@ -99,8 +98,7 @@ open class ChartBars(val list: List<DataPoint>) : Chart() {
                 //fillText(item.name, rx + barWidth * 0.5, rect.bottom, halign = HorizontalAlign.CENTER, valign = VerticalAlign.TOP)
                 fillText(
                     item.name,
-                    0,
-                    0,
+                    Point(0f, 0f),
                     halign = if (fit == Fit.FULL) HorizontalAlign.CENTER else HorizontalAlign.RIGHT,
                     valign = VerticalAlign.MIDDLE,
                     color = Colors.DARKSLATEGRAY

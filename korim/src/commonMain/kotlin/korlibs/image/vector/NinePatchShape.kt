@@ -1,12 +1,10 @@
 package korlibs.image.vector
 
 import korlibs.datastructure.*
-import korlibs.image.color.Colors
-import korlibs.image.color.RGBA
-import korlibs.image.util.NinePatchSlices
-import korlibs.image.util.NinePatchSlices2D
+import korlibs.image.color.*
+import korlibs.image.util.*
 import korlibs.math.geom.*
-import korlibs.math.geom.vector.VectorPath
+import korlibs.math.geom.vector.*
 
 class NinePatchShape(val shape: Shape, val slices: NinePatchSlices2D) {
     val size: Size = shape.bounds.bottomRight.toSize()
@@ -22,7 +20,7 @@ class NinePatchShape(val shape: Shape, val slices: NinePatchSlices2D) {
             is CompoundShape -> CompoundShape(this.components.map { it.scaleNinePatch(newSize, slices, oldSize) })
             is FillShape -> FillShape(path.scaleNinePatch(newSize, slices, oldSize), clip?.scaleNinePatch(newSize, slices, oldSize), paint, transform, globalAlpha)
             is PolylineShape -> PolylineShape(path.scaleNinePatch(newSize, slices, oldSize), clip?.scaleNinePatch(newSize, slices, oldSize), paint, transform, strokeInfo, globalAlpha)
-            is TextShape -> TextShape(text, x, y, font, fontSize, clip?.scaleNinePatch(newSize, slices, oldSize), fill, stroke, halign, valign, transform, globalAlpha)
+            is TextShape -> TextShape(text, pos, font, fontSize, clip?.scaleNinePatch(newSize, slices, oldSize), fill, stroke, halign, valign, transform, globalAlpha)
             else -> TODO()
         }
     }

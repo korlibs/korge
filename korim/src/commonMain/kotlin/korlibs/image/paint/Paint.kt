@@ -1,13 +1,13 @@
 package korlibs.image.paint
 
 import korlibs.datastructure.*
-import korlibs.memory.*
 import korlibs.image.bitmap.*
 import korlibs.image.color.*
 import korlibs.image.vector.*
 import korlibs.math.geom.*
 import korlibs.math.geom.vector.*
 import korlibs.math.interpolation.*
+import korlibs.memory.*
 import kotlin.math.*
 
 interface Paint {
@@ -17,15 +17,15 @@ interface Paint {
 data class Stroke(val paint: Paint, val info: StrokeInfo) {
     constructor(
         paint: Paint,
-        thickness: Double = 1.0,
+        thickness: Float = 1f,
         pixelHinting: Boolean = false,
         scaleMode: LineScaleMode = LineScaleMode.NORMAL,
         startCap: LineCap = LineCap.BUTT,
         endCap: LineCap = LineCap.BUTT,
         join: LineJoin = LineJoin.MITER,
-        miterLimit: Double = 20.0,
-        dash: IDoubleArrayList? = null,
-        dashOffset: Double = 0.0
+        miterLimit: Float = 20f,
+        dash: IFloatArrayList? = null,
+        dashOffset: Float = 0f
     ) : this(paint, StrokeInfo(
         thickness = thickness,
         pixelHinting = pixelHinting,

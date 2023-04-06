@@ -25,8 +25,8 @@ class MainTextMetrics : Scene() {
         val font1 = views.debugBmpFont
         val font2 = DefaultTtfFont
         val font2b = DefaultTtfFontAsBitmap
-        val font3 = BitmapFont(DefaultTtfFont, 64.0)
-        val font4 = BitmapFont(DefaultTtfFont, 64.0, paint = Colors.BLUEVIOLET, effect = BitmapEffect(
+        val font3 = BitmapFont(DefaultTtfFont, 64f)
+        val font4 = BitmapFont(DefaultTtfFont, 64f, paint = Colors.BLUEVIOLET, effect = BitmapEffect(
             blurRadius = 0,
             dropShadowX = 2,
             dropShadowY = 2,
@@ -64,7 +64,7 @@ class MainTextMetrics : Scene() {
         container {
             xy(300, 500)
             val leftPadding = 50
-            text1 = text(textStrs["simple"]!!, 175.0, Colors.WHITE, font2, alignment = TextAlignment.BASELINE_LEFT, autoScaling = true).xy(leftPadding, 0)
+            text1 = text(textStrs["simple"]!!, 175f, Colors.WHITE, font2, alignment = TextAlignment.BASELINE_LEFT, autoScaling = true).xy(leftPadding, 0)
             val gbounds = cpuGraphics {}.xy(leftPadding, 0)
 
             val baseLineLine = solidRect(960 + 1200, 1, Colors.ORANGE)
@@ -77,18 +77,18 @@ class MainTextMetrics : Scene() {
                 if (cachedBounds != currentBounds) {
                     cachedBounds = currentBounds
                     gbounds.updateShape {
-                        stroke(Colors.RED, StrokeInfo(2.0)) {
+                        stroke(Colors.RED, StrokeInfo(2f)) {
                             rect(text1.getLocalBounds())
                         }
-                        stroke(Colors.YELLOWGREEN, StrokeInfo(2.0)) {
+                        stroke(Colors.YELLOWGREEN, StrokeInfo(2f)) {
                             line(Point(-5, 0), Point(+5, 0))
                             line(Point(0, -5), Point(0, +5))
                         }
                     }
                     val metrics = text1.font.getOrNull()!!.getFontMetrics(text1.fontSize)
-                    baseLineLine.xy(0.0, -metrics.baseline)
-                    baseAscent.xy(0.0, -metrics.ascent)
-                    baseDescent.xy(0.0, -metrics.descent)
+                    baseLineLine.xy(0f, -metrics.baseline)
+                    baseAscent.xy(0f, -metrics.ascent)
+                    baseDescent.xy(0f, -metrics.descent)
                 }
             }
 
@@ -112,7 +112,7 @@ class MainTextMetrics : Scene() {
             for (info in listOf(
                 SecInfo("Vertical", text1::verticalAlign, verticalAlignments),
                 SecInfo("Horizontal", text1::horizontalAlign, horizontalAlignments),
-                SecInfo("Size", text1::textSize, fontSizes.map { it.toDouble() }) { "${it.toInt()}" },
+                SecInfo("Size", text1::textSize, fontSizes.map { it.toFloat() }) { "${it.toInt()}" },
             )) {
                 @Suppress("UNCHECKED_CAST") val rinfo = (info as SecInfo<Any>)
                 horizontal {

@@ -1,7 +1,6 @@
 package korlibs.image.awt
 
 import korlibs.datastructure.*
-import korlibs.memory.*
 import korlibs.image.bitmap.*
 import korlibs.image.color.*
 import korlibs.image.paint.*
@@ -10,9 +9,10 @@ import korlibs.image.paint.Paint
 import korlibs.image.vector.*
 import korlibs.math.geom.*
 import korlibs.math.geom.vector.*
+import korlibs.memory.*
 import java.awt.*
 import java.awt.Rectangle
-import java.awt.RenderingHints.*
+import java.awt.RenderingHints.KEY_ANTIALIASING
 import java.awt.geom.*
 import java.awt.image.*
 import java.nio.*
@@ -249,7 +249,7 @@ class AwtContext2dRender(val awtImage: BufferedImage, val antialiasing: Boolean 
 	//	}
 	//}
 
-	override fun drawImage(image: Bitmap, x: Double, y: Double, width: Double, height: Double, transform: Matrix) {
+    override fun drawImage(image: Bitmap, pos: korlibs.math.geom.Point, size: Size, transform: Matrix) {
 		//transform.toAwt()
 		//BufferedImageOp
 
@@ -258,8 +258,8 @@ class AwtContext2dRender(val awtImage: BufferedImage, val antialiasing: Boolean 
             this.g.transform(transform.toAwt())
             this.g.drawImage(
                 (image.ensureNative() as AwtNativeImage).awtImage,
-                x.toInt(), y.toInt(),
-                width.toInt(), height.toInt(),
+                pos.x.toInt(), pos.y.toInt(),
+                size.width.toInt(), size.height.toInt(),
                 null
             )
         }
@@ -434,7 +434,7 @@ class AwtContext2dRender(val awtImage: BufferedImage, val antialiasing: Boolean 
 			g.paint = state.strokeStyle.toAwt(awtTransform)
 		}
 		val comp = AlphaComposite.SRC_OVER
-		g.composite = if (state.globalAlpha == 1.0) AlphaComposite.getInstance(comp) else AlphaComposite.getInstance(
+		g.composite = if (state.globalAlpha == 1f) AlphaComposite.getInstance(comp) else AlphaComposite.getInstance(
             comp,
             state.globalAlpha.toFloat()
         )

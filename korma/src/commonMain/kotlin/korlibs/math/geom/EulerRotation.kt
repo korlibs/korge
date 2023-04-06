@@ -46,12 +46,13 @@ inline class EulerRotation internal constructor(private val data: Vector3) {
             //println("roll=$roll, sinrCosp=$sinrCosp, cosrCosp=$cosrCosp")
             val sinp = (+2f * (w * y - z * x)).normalizeAlmostZero()
             val pitch: Float = when {
-                abs(sinp) >= 1f -> if (sinp > 0) PI2F / 2 else -PI2F / 2
+                abs(sinp) > 1f -> if (sinp > 0) PI2F / 2 else -PI2F / 2
                 else -> asin(sinp)
             }
             val sinyCosp = (+2f * (w * z + x * y)).normalizeAlmostZero()
             val cosyCosp = (+1f - 2f * (y * y + z * z)).normalizeAlmostZero()
             val yaw = atan2(sinyCosp, cosyCosp)
+            //println("x=$x, y=$y, z=$z, w=$w, sinrCosp=$sinrCosp, cosrCosp=$cosrCosp, roll=$roll, sinp=$sinp, pitch=$pitch, sinyCosp=$sinyCosp, cosyCosp=$cosyCosp, yaw=$yaw")
             return EulerRotation(roll.radians, pitch.radians, yaw.radians)
         }
     }

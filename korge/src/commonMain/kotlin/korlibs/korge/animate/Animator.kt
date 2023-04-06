@@ -2,15 +2,15 @@ package korlibs.korge.animate
 
 import korlibs.datastructure.*
 import korlibs.datastructure.iterators.*
-import korlibs.time.*
-import korlibs.memory.*
-import korlibs.korge.tween.*
-import korlibs.korge.view.*
 import korlibs.io.async.*
 import korlibs.io.lang.*
+import korlibs.korge.tween.*
+import korlibs.korge.view.*
 import korlibs.math.geom.*
 import korlibs.math.geom.vector.*
 import korlibs.math.interpolation.*
+import korlibs.memory.*
+import korlibs.time.*
 import kotlinx.coroutines.*
 import kotlin.math.*
 import kotlin.reflect.*
@@ -422,9 +422,9 @@ fun Animator.rotateTo(view: View, rotation: () -> Angle, time: TimeSpan = this.d
 fun Animator.show(view: View, time: TimeSpan = this.defaultTime, easing: Easing = this.defaultEasing) = alpha(view, 1.0, time, easing)
 fun Animator.hide(view: View, time: TimeSpan = this.defaultTime, easing: Easing = this.defaultEasing) = alpha(view, 0.0, time, easing)
 
-private val VectorPath.length: Double get() = getCurves().length
-private val PointList.length: Double get() {
-    var sum = 0.0
+private val VectorPath.length: Float get() = getCurves().length
+private val PointList.length: Float get() {
+    var sum = 0f
     for (n in 1 until size) sum += Point.distance(get(n - 1), get(n))
     return sum
 }

@@ -1,8 +1,7 @@
 package korlibs.datastructure
 
-import korlibs.datastructure.internal.umod
-import kotlin.math.max
-import kotlin.math.min
+import korlibs.datastructure.internal.*
+import kotlin.math.*
 
 inline fun count(cond: (index: Int) -> Boolean): Int {
     var counter = 0
@@ -52,7 +51,7 @@ fun IntArray.binarySearch(v: Int, fromIndex: Int = 0, toIndex: Int = size): BSea
 fun FloatArray.binarySearch(v: Float, fromIndex: Int = 0, toIndex: Int = size): BSearchResult = (genericBinarySearchResult(fromIndex, toIndex) { this[it].compareTo(v) })
 fun DoubleArray.binarySearch(v: Double, fromIndex: Int = 0, toIndex: Int = size): BSearchResult = (genericBinarySearchResult(fromIndex, toIndex) { this[it].compareTo(v) })
 fun IntArrayList.binarySearch(v: Int, fromIndex: Int = 0, toIndex: Int = size): BSearchResult = (genericBinarySearchResult(fromIndex, toIndex) { this.getAt(it).compareTo(v) })
-fun FloatArrayList.binarySearch(v: Int, fromIndex: Int = 0, toIndex: Int = size): BSearchResult = (genericBinarySearchResult(fromIndex, toIndex) { this.getAt(it).compareTo(v) })
+fun FloatArrayList.binarySearch(v: Float, fromIndex: Int = 0, toIndex: Int = size): BSearchResult = (genericBinarySearchResult(fromIndex, toIndex) { this.getAt(it).compareTo(v) })
 fun DoubleArrayList.binarySearch(v: Double, fromIndex: Int = 0, toIndex: Int = size): BSearchResult = (genericBinarySearchResult(fromIndex, toIndex) { this.getAt(it).compareTo(v) })
 
 fun IntArray.binarySearchLeft(v: Int, fromIndex: Int = 0, toIndex: Int = size) = (genericBinarySearchLeft(fromIndex, toIndex) { this[it].compareTo(v) })

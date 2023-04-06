@@ -1,9 +1,9 @@
 package korlibs.korge.view
 
-import korlibs.korge.internal.*
-import korlibs.korge.view.property.*
 import korlibs.image.color.*
 import korlibs.image.paint.*
+import korlibs.korge.internal.*
+import korlibs.korge.view.property.*
 import korlibs.math.geom.*
 import korlibs.math.geom.vector.*
 
@@ -11,7 +11,7 @@ inline fun Container.shapeView(
     shape: VectorPath? = null,
     fill: Paint = Colors.WHITE,
     stroke: Paint = Colors.WHITE,
-    strokeThickness: Double = 1.0,
+    strokeThickness: Float = 1f,
     autoScaling: Boolean = true,
     renderer: GraphicsRenderer = GraphicsRenderer.GPU,
     callback: @ViewDslMarker ShapeView.() -> Unit = {}
@@ -21,7 +21,7 @@ open class ShapeView(
     shape: VectorPath? = null,
     fill: Paint = Colors.WHITE,
     stroke: Paint = Colors.WHITE,
-    strokeThickness: Double = 1.0,
+    strokeThickness: Float = 1f,
     autoScaling: Boolean = true,
     //renderer: GraphicsRenderer = GraphicsRenderer.SYSTEM
     renderer: GraphicsRenderer = GraphicsRenderer.GPU
@@ -72,7 +72,7 @@ open class ShapeView(
             _updateShapeGraphics()
         }
     @ViewProperty
-    var strokeThickness: Double = strokeThickness
+    var strokeThickness: Float = strokeThickness
         set(value) {
             if (field == value) return
             field = value
@@ -100,7 +100,7 @@ open class ShapeView(
             val shapeView = this@ShapeView
             val shape = shapeView.path
             if (shape != null && shape.isNotEmpty()) {
-                if (shapeView.strokeThickness != 0.0) {
+                if (shapeView.strokeThickness != 0f) {
                     this.fillStroke(shapeView.fill, shapeView.stroke, StrokeInfo(thickness = shapeView.strokeThickness)) {
                         this.path(shape)
                     }

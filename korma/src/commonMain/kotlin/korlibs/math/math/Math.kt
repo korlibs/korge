@@ -1,6 +1,5 @@
 package korlibs.math.math
 
-import korlibs.memory.*
 import kotlin.math.*
 
 fun Double.betweenInclusive(min: Double, max: Double): Boolean = (this >= min) && (this <= max)
@@ -24,7 +23,9 @@ fun Double.roundDecimalPlaces(places: Int): Double {
 }
 //fun Double.normalizeZero(): Double = if (this.isAlmostZero()) 0.0 else this
 private val MINUS_ZERO_D = -0.0
+private val MINUS_ZERO_F = -0.0f
 fun Double.normalizeZero(): Double = if (this == MINUS_ZERO_D) 0.0 else this
+fun Float.normalizeZero(): Float = if (this == MINUS_ZERO_F) 0f else this
 
 fun isEquivalent(a: Double, b: Double, epsilon: Double = 0.0001): Boolean = (a - epsilon < b) && (a + epsilon > b)
 
@@ -49,7 +50,7 @@ fun Double.isAlmostZero(): Boolean = kotlin.math.abs(this) <= 1e-19
 fun Double.isNanOrInfinite() = this.isNaN() || this.isInfinite()
 
 fun Float.isAlmostEquals(other: Float, epsilon: Float = 0.00001f): Boolean = (this - other).absoluteValue < epsilon
-fun Float.isAlmostZero(): Boolean = kotlin.math.abs(this) <= 1e-7
+fun Float.isAlmostZero(): Boolean = kotlin.math.abs(this) <= 1e-6
 fun Float.isNanOrInfinite() = this.isNaN() || this.isInfinite()
 fun Float.normalizeAlmostZero() = if (this.isAlmostZero()) 0f else this
 

@@ -1,28 +1,22 @@
 package korlibs.image.font
 
-import korlibs.datastructure.cacheLazyNullable
-import korlibs.time.measureTime
-import korlibs.time.measureTimeWithResult
-import korlibs.time.milliseconds
-import korlibs.logger.*
-import korlibs.memory.Os
-import korlibs.memory.Platform
+import korlibs.datastructure.*
 import korlibs.image.format.*
-import korlibs.io.async.runBlockingNoJs
-import korlibs.io.concurrent.atomic.KorAtomicRef
-import korlibs.io.file.VfsFile
-import korlibs.io.file.baseName
-import korlibs.io.file.std.VfsFileFromData
-import korlibs.io.file.std.localVfs
-import korlibs.io.file.std.standardVfs
-import korlibs.io.lang.Environment
-import korlibs.io.lang.WStringReader
-import korlibs.io.lang.expand
+import korlibs.io.async.*
+import korlibs.io.concurrent.atomic.*
+import korlibs.io.file.*
+import korlibs.io.file.std.*
+import korlibs.io.lang.*
+import korlibs.logger.*
 import korlibs.math.geom.*
-import kotlinx.coroutines.CancellationException
-import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.coroutineContext
-import kotlin.native.concurrent.ThreadLocal
+import korlibs.memory.*
+import korlibs.time.*
+import kotlinx.coroutines.*
+import kotlin.collections.component1
+import kotlin.collections.component2
+import kotlin.collections.set
+import kotlin.coroutines.*
+import kotlin.native.concurrent.*
 
 internal fun createNativeSystemFontProvider(coroutineContext: CoroutineContext, platform: Platform = Platform): NativeSystemFontProvider = when {
     platform.runtime.isJs -> FallbackNativeSystemFontProvider(DefaultTtfFont)
@@ -80,35 +74,34 @@ open class NativeSystemFontProvider {
         return mapOf()
     }
 
-    open fun getSystemFontGlyph(systemFont: SystemFont, size: Double, codePoint: Int, path: GlyphPath = GlyphPath(), reader: WStringReader? = null): GlyphPath? {
+    open fun getSystemFontGlyph(systemFont: SystemFont, size: Float, codePoint: Int, path: GlyphPath = GlyphPath(), reader: WStringReader? = null): GlyphPath? {
         return null
     }
 
-    open fun getSystemFontMetrics(systemFont: SystemFont, size: Double, metrics: FontMetrics) {
-        val ascentRatio = 0.8
+    open fun getSystemFontMetrics(systemFont: SystemFont, size: Float, metrics: FontMetrics) {
+        val ascentRatio = 0.8f
         metrics.size = size
         metrics.top = size * ascentRatio
         metrics.ascent = metrics.top
-        metrics.baseline = 0.0
-        metrics.descent = -size * (1.0 - ascentRatio)
+        metrics.baseline = 0f
+        metrics.descent = -size * (1f - ascentRatio)
         metrics.bottom = metrics.descent
         metrics.maxWidth = size
     }
 
     open fun getSystemFontGlyphMetrics(
         systemFont: SystemFont,
-        size: Double,
+        size: Float,
         codePoint: Int,
         metrics: GlyphMetrics,
         reader: WStringReader? = null
     ) {
         metrics.existing = false
-        metrics.bounds = Rectangle(0.0, 0.0, size, size)
+        metrics.bounds = Rectangle(0f, 0f, size, size)
         metrics.xadvance = size
     }
 
-    open fun getSystemFontKerning(systemFont: SystemFont, size: Double, leftCodePoint: Int, rightCodePoint: Int) : Double
-        = 0.0
+    open fun getSystemFontKerning(systemFont: SystemFont, size: Float, leftCodePoint: Int, rightCodePoint: Int) : Float = 0f
 }
 
 // Windows: C:\Windows\Fonts (%DRIVE%)
@@ -229,20 +222,20 @@ abstract class TtfNativeSystemFontProvider() : NativeSystemFontProvider() {
 
     override fun getSystemFontGlyph(
         systemFont: SystemFont,
-        size: Double,
+        size: Float,
         codePoint: Int,
         path: GlyphPath,
         reader: WStringReader?
     ): GlyphPath? =
         ttf(systemFont).getGlyphPath(size, codePoint, path, reader)
 
-    override fun getSystemFontMetrics(systemFont: SystemFont, size: Double, metrics: FontMetrics) {
+    override fun getSystemFontMetrics(systemFont: SystemFont, size: Float, metrics: FontMetrics) {
         ttf(systemFont).getFontMetrics(size, metrics)
     }
 
     override fun getSystemFontGlyphMetrics(
         systemFont: SystemFont,
-        size: Double,
+        size: Float,
         codePoint: Int,
         metrics: GlyphMetrics,
         reader: WStringReader?,
@@ -252,10 +245,10 @@ abstract class TtfNativeSystemFontProvider() : NativeSystemFontProvider() {
 
     override fun getSystemFontKerning(
         systemFont: SystemFont,
-        size: Double,
+        size: Float,
         leftCodePoint: Int,
         rightCodePoint: Int
-    ): Double = ttf(systemFont).getKerning(size, leftCodePoint, rightCodePoint)
+    ): Float = ttf(systemFont).getKerning(size, leftCodePoint, rightCodePoint)
 }
 
 open class FallbackNativeSystemFontProvider(val ttf: TtfFont) : TtfNativeSystemFontProvider() {

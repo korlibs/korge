@@ -1,14 +1,7 @@
 package samples
 
-import korlibs.datastructure.doubleArrayListOf
-import korlibs.time.*
-import korlibs.logger.*
+import korlibs.datastructure.*
 import korlibs.event.*
-import korlibs.korge.input.*
-import korlibs.korge.scene.Scene
-import korlibs.korge.ui.uiButton
-import korlibs.korge.view.*
-import korlibs.korge.view.vector.*
 import korlibs.image.bitmap.*
 import korlibs.image.color.*
 import korlibs.image.font.*
@@ -18,9 +11,15 @@ import korlibs.image.text.*
 import korlibs.image.vector.*
 import korlibs.image.vector.format.*
 import korlibs.io.file.std.*
+import korlibs.korge.input.*
+import korlibs.korge.scene.*
+import korlibs.korge.ui.*
+import korlibs.korge.view.*
+import korlibs.korge.view.vector.*
+import korlibs.logger.*
 import korlibs.math.geom.*
 import korlibs.math.geom.vector.*
-import korlibs.math.geom.vector.StrokeInfo
+import korlibs.time.*
 
 class MainGpuVectorRendering : Scene() {
     private val logger = Logger("MainGpuVectorRendering")
@@ -137,7 +136,7 @@ class MainGpuVectorRendering : Scene() {
                         //rect(-100, -100, 500, 500)
                         //rectHole(40, 40, 320, 320)
                     }
-                    stroke(Colors.GREEN, StrokeInfo(thickness = 5.0, startCap = LineCap.ROUND, endCap = LineCap.ROUND, dash = doubleArrayListOf(15.0, 10.0), dashOffset = 8.0)) {
+                    stroke(Colors.GREEN, StrokeInfo(thickness = 5f, startCap = LineCap.ROUND, endCap = LineCap.ROUND, dash = floatArrayListOf(15f, 10f), dashOffset = 8f)) {
                         regularPolygon(6, 30.0, x = 100.0, y = 100.0)
                     }
                 }
@@ -146,7 +145,7 @@ class MainGpuVectorRendering : Scene() {
                 translate(100, 20)
                 scale(2.0)
                 if (PAINT_BITMAP) {
-                    globalAlpha = 0.75
+                    globalAlpha = 0.75f
                     fillStyle = BitmapPaint(
                         korgeBitmap,
                         MMatrix().translate(50, 50).scale(0.125).immutable,
@@ -157,7 +156,7 @@ class MainGpuVectorRendering : Scene() {
                 }
 
                 if (PAINT_LINEAR_GRADIENT) {
-                    globalAlpha = 0.9
+                    globalAlpha = 0.9f
                     fillStyle =
                         //createLinearGradient(150.0, 0.0, 200.0, 50.0)
                         createLinearGradient(0.0, 0.0, 100.0, 100.0, transform = Matrix().scaled(0.5).pretranslated(300, 0))
@@ -170,14 +169,14 @@ class MainGpuVectorRendering : Scene() {
                     })
                 }
                 if (PAINT_RADIAL_GRADIENT) {
-                    globalAlpha = 0.9
+                    globalAlpha = 0.9f
                     fillStyle =
                         createRadialGradient(150,150,30, 130,180,70)
                             .addColorStop(0.0, Colors.RED).addColorStop(0.5, Colors.GREEN).addColorStop(1.0, Colors.BLUE)
                     fillRect(100.0, 100.0, 100.0, 100.0)
                 }
                 if (PAINT_RADIAL_GRADIENT) {
-                    globalAlpha = 0.9
+                    globalAlpha = 0.9f
                     fillStyle =
                         createSweepGradient(175, 100)
                             .addColorStop(0.0, Colors.RED).addColorStop(0.5, Colors.PURPLE).addColorStop(1.0, Colors.YELLOW)
@@ -187,10 +186,10 @@ class MainGpuVectorRendering : Scene() {
             if (PAINT_TEXT) {
                 keep {
                     font = DefaultTtfFont
-                    fontSize = 16.0
+                    fontSize = 16f
                     fillStyle = Colors.WHITE
                     alignment = TextAlignment.TOP_LEFT
-                    fillText("HELLO WORLD ($kind)", 0.0, 16.0)
+                    fillText("HELLO WORLD ($kind)", Point(0, 16))
                 }
             }
         }

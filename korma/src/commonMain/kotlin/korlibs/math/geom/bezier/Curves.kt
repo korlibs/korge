@@ -2,10 +2,10 @@ package korlibs.math.geom.bezier
 
 import korlibs.datastructure.*
 import korlibs.datastructure.iterators.*
-import korlibs.memory.*
 import korlibs.math.annotations.*
 import korlibs.math.geom.*
 import korlibs.math.geom.vector.*
+import korlibs.memory.*
 import kotlin.jvm.*
 
 @JvmName("ListCurves_toCurves")
@@ -40,17 +40,17 @@ data class Curves(val beziers: List<Bezier>, val closed: Boolean) : Curve, Extra
     data class CurveInfo(
         val index: Int,
         val curve: Bezier,
-        val startLength: Double,
-        val endLength: Double,
+        val startLength: Float,
+        val endLength: Float,
         val bounds: Rectangle,
     ) {
-        fun contains(length: Double): Boolean = length in startLength..endLength
+        fun contains(length: Float): Boolean = length in startLength..endLength
 
-        val length: Double get() = endLength - startLength
+        val length: Float get() = endLength - startLength
     }
 
     val infos: List<CurveInfo> by lazy {
-        var pos = 0.0
+        var pos = 0f
         beziers.mapIndexed { index, curve ->
             val start = pos
             pos += curve.length
@@ -58,10 +58,10 @@ data class Curves(val beziers: List<Bezier>, val closed: Boolean) : Curve, Extra
         }
 
     }
-    override val length: Double by lazy { infos.sumOf { it.length } }
+    override val length: Float by lazy { infos.sumOfFloat { it.length } }
 
-    val CurveInfo.startRatio: Double get() = this.startLength / this@Curves.length
-    val CurveInfo.endRatio: Double get() = this.endLength / this@Curves.length
+    val CurveInfo.startRatio: Float get() = this.startLength / this@Curves.length
+    val CurveInfo.endRatio: Float get() = this.endLength / this@Curves.length
 
     override fun getBounds(): Rectangle {
         var bb = BoundsBuilder()
@@ -70,7 +70,7 @@ data class Curves(val beziers: List<Bezier>, val closed: Boolean) : Curve, Extra
     }
 
     @PublishedApi
-    internal fun findInfo(t: Double): CurveInfo {
+    internal fun findInfo(t: Float): CurveInfo {
         val pos = t * length
         val index = infos.binarySearch {
             when {
@@ -85,7 +85,7 @@ data class Curves(val beziers: List<Bezier>, val closed: Boolean) : Curve, Extra
     }
 
     @PublishedApi
-    internal inline fun <T> findTInCurve(t: Double, block: (info: CurveInfo, ratioInCurve: Double) -> T): T {
+    internal inline fun <T> findTInCurve(t: Float, block: (info: CurveInfo, ratioInCurve: Float) -> T): T {
         val pos = t * length
         val info = findInfo(t)
         val posInCurve = pos - info.startLength
@@ -93,18 +93,18 @@ data class Curves(val beziers: List<Bezier>, val closed: Boolean) : Curve, Extra
         return block(info, ratioInCurve)
     }
 
-    override fun calc(t: Double): Point =
+    override fun calc(t: Float): Point =
         findTInCurve(t) { info, ratioInCurve -> info.curve.calc(ratioInCurve) }
 
-    override fun normal(t: Double): Point =
+    override fun normal(t: Float): Point =
         findTInCurve(t) { info, ratioInCurve -> info.curve.normal(ratioInCurve) }
 
-    override fun tangent(t: Double): Point =
+    override fun tangent(t: Float): Point =
         findTInCurve(t) { info, ratioInCurve -> info.curve.tangent(ratioInCurve) }
 
-    override fun ratioFromLength(length: Double): Double {
-        if (length <= 0.0) return 0.0
-        if (length >= this.length) return 1.0
+    override fun ratioFromLength(length: Float): Float {
+        if (length <= 0f) return 0f
+        if (length >= this.length) return 1f
 
         val curveIndex = infos.binarySearch {
             when {
@@ -117,22 +117,22 @@ data class Curves(val beziers: List<Bezier>, val closed: Boolean) : Curve, Extra
         if (curveIndex < 0) {
             //infos.fastForEach { println("it=$it") }
             //println("length=${this.length}, requestedLength = $length, curveIndex=$curveIndex")
-            return Double.NaN
+            return Float.NaN
         } // length not in curve!
         val info = infos[index]
         val lengthInCurve = length - info.startLength
         val ratioInCurve = info.curve.ratioFromLength(lengthInCurve)
-        return ratioInCurve.convertRange(0.0, 1.0, info.startRatio, info.endRatio)
+        return ratioInCurve.convertRange(0f, 1f, info.startRatio, info.endRatio)
     }
 
-    fun splitLeftByLength(len: Double): Curves = splitLeft(ratioFromLength(len))
-    fun splitRightByLength(len: Double): Curves = splitRight(ratioFromLength(len))
-    fun splitByLength(len0: Double, len1: Double): Curves = split(ratioFromLength(len0), ratioFromLength(len1))
+    fun splitLeftByLength(len: Float): Curves = splitLeft(ratioFromLength(len))
+    fun splitRightByLength(len: Float): Curves = splitRight(ratioFromLength(len))
+    fun splitByLength(len0: Float, len1: Float): Curves = split(ratioFromLength(len0), ratioFromLength(len1))
 
-    fun splitLeft(t: Double): Curves = split(0.0, t)
-    fun splitRight(t: Double): Curves = split(t, 1.0)
+    fun splitLeft(t: Float): Curves = split(0f, t)
+    fun splitRight(t: Float): Curves = split(t, 1f)
 
-    fun split(t0: Double, t1: Double): Curves {
+    fun split(t0: Float, t1: Float): Curves {
         if (t0 > t1) return split(t1, t0)
         check(t0 <= t1)
 
@@ -141,12 +141,12 @@ data class Curves(val beziers: List<Bezier>, val closed: Boolean) : Curve, Extra
         return Curves(findTInCurve(t0) { info0, ratioInCurve0 ->
             findTInCurve(t1) { info1, ratioInCurve1 ->
                 if (info0.index == info1.index) {
-                    listOf((info0.curve as Bezier).split(ratioInCurve0, ratioInCurve1).curve)
+                    listOf(info0.curve.split(ratioInCurve0, ratioInCurve1).curve)
                 } else {
                     buildList {
-                        if (ratioInCurve0 != 1.0) add((info0.curve as Bezier).splitRight(ratioInCurve0).curve)
+                        if (ratioInCurve0 != 1f) add(info0.curve.splitRight(ratioInCurve0).curve)
                         for (index in info0.index + 1 until info1.index) add(infos[index].curve)
-                        if (ratioInCurve1 != 0.0) add((info1.curve as Bezier).splitLeft(ratioInCurve1).curve)
+                        if (ratioInCurve1 != 0f) add(info1.curve.splitLeft(ratioInCurve1).curve)
                     }
                 }
             }

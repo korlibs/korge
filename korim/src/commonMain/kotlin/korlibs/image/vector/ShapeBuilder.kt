@@ -12,13 +12,13 @@ fun VectorPath.toFillShape(paint: Paint): Shape = buildShape { fill(paint) { wri
 fun VectorPath.toStrokeShape(paint: Paint, info: StrokeInfo = StrokeInfo()): Shape = buildShape { stroke(paint, info) { write(this@toStrokeShape) } }
 fun VectorPath.toStrokeShape(
     paint: Paint,
-    thickness: Double = 1.0,
+    thickness: Float = 1f,
     pixelHinting: Boolean = false,
     scaleMode: LineScaleMode = LineScaleMode.NORMAL,
     startCap: LineCap = LineCap.BUTT,
     endCap: LineCap = LineCap.BUTT,
     lineJoin: LineJoin = LineJoin.MITER,
-    miterLimit: Double = 20.0
+    miterLimit: Float = 20f
 ): Shape = buildShape { stroke(paint, StrokeInfo(thickness, pixelHinting, scaleMode, startCap, endCap, lineJoin, miterLimit)) { write(this@toStrokeShape) } }
 
 @OptIn(ExperimentalContracts::class)
@@ -69,10 +69,10 @@ open class ShapeBuilder(width: Int?, height: Int?) : Context2d(DummyRenderer), D
         }
     }
 
-    override fun rendererRenderSystemText(state: State, font: Font?, fontSize: Double, text: String, x: Double, y: Double, fill: Boolean) {
+    override fun rendererRenderSystemText(state: State, font: Font?, fontSize: Float, text: String, pos: Point, fill: Boolean) {
         shapes += TextShape(
             text = text,
-            x = x, y = y,
+            pos = pos,
             font = font,
             fontSize = fontSize,
             clip = state.clip?.clone(),
@@ -85,16 +85,16 @@ open class ShapeBuilder(width: Int?, height: Int?) : Context2d(DummyRenderer), D
         )
     }
 
-    override fun rendererDrawImage(image: Bitmap, x: Double, y: Double, width: Double, height: Double, transform: Matrix) {
+    override fun rendererDrawImage(image: Bitmap, pos: Point, size: Size, transform: Matrix) {
         rendererRender(
             State(
                 transform = transform,
-                path = VectorPath().apply { rect(x, y, width, height) },
+                path = VectorPath().apply { rect(pos, size) },
                 fillStyle = BitmapPaint(
                     image,
                     transform = Matrix.IDENTITY
-                        .scaled(width / image.width.toDouble(), height / image.height.toDouble())
-                        .translated(x, y)
+                        .scaled(size / image.size.toFloat())
+                        .translated(pos)
                 )
             ), fill = true)
     }

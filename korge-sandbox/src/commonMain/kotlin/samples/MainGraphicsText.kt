@@ -36,9 +36,9 @@ class MainGraphicsText : Scene() {
         //val font = resourcesVfs["Radicalis.ttf"].readTtfFont()
 
         graphics {
-            fillStroke(Colors.WHITE, Stroke(Colors.RED, thickness = 5.0)) {
+            fillStroke(Colors.WHITE, Stroke(Colors.RED, thickness = 5f)) {
                 //rect(0, 0, 100, 100)
-                text("Hello World!", font = this@MainGraphicsText.vfont, textSize = 128.0, align = this@MainGraphicsText.align)
+                text("Hello World!", font = this@MainGraphicsText.vfont, textSize = 128f, align = this@MainGraphicsText.align)
             }
             fill(Colors.GREEN) {
                 circle(Point(0, 0), 10f)

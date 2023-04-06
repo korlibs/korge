@@ -1,5 +1,6 @@
 package korlibs.math.geom
 
+import korlibs.datastructure.*
 import korlibs.math.geom.bezier.*
 import korlibs.math.math.*
 import kotlin.test.*
@@ -49,7 +50,10 @@ private fun <T : Any> T?.isAlmostEqualsGeneric(
         is Rectangle -> e.isAlmostEquals((a as Rectangle), absoluteTolerance.toFloat())
         is MRectangle -> e.isAlmostEquals((a as MRectangle), absoluteTolerance)
         is Bezier -> e.points.isAlmostEqualsGeneric((a as? Bezier)?.points, absoluteTolerance)
+        is Bezier.ProjectedPoint -> e.isAlmostEquals((a as Bezier.ProjectedPoint), absoluteTolerance.toFloat())
         is PointList -> e.toList().isAlmostEqualsGeneric((a as? PointList)?.toList(), absoluteTolerance)
+        is FloatArrayList -> e.toList().isAlmostEqualsGeneric((a as? FloatArrayList)?.toList(), absoluteTolerance)
+        is DoubleArrayList -> e.toList().isAlmostEqualsGeneric((a as? DoubleArrayList)?.toList(), absoluteTolerance)
         is List<*> -> {
             if (a !is List<*>?) return false
             if (e.size != a.size) return false

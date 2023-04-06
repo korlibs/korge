@@ -155,13 +155,13 @@ class RenderContext2D(
 	}
 
     /** Renders a colored rectangle with the [multiplyColor] with the [blendMode] at [x], [y] of size [width]x[height] */
-    fun rect(x: Double, y: Double, width: Double, height: Double, color: RGBA = this.multiplyColor, filtering: Boolean = this.filtering, bmp: BmpSlice = Bitmaps.white, program: Program? = null) {
+    fun rect(rect: Rectangle, color: RGBA = this.multiplyColor, filtering: Boolean = this.filtering, bmp: BmpSlice = Bitmaps.white, program: Program? = null) {
         batch.drawQuad(
             getTexture(bmp),
-            x.toFloat(),
-            y.toFloat(),
-            width.toFloat(),
-            height.toFloat(),
+            rect.x,
+            rect.y,
+            rect.width,
+            rect.height,
             filtering = filtering,
             m = m,
             colorMul = color,
@@ -171,22 +171,23 @@ class RenderContext2D(
     }
 
     /** Renders a colored rectangle with the [multiplyColor] with the [blendMode] at [x], [y] of size [width]x[height] */
-    fun rectOutline(x: Double, y: Double, width: Double, height: Double, border: Double = 1.0, color: RGBA = this.multiplyColor, filtering: Boolean = this.filtering) {
-        rect(x, y, width, border, color, filtering)
-        rect(x, y, border, height, color, filtering)
-        rect(x + width - border, y, border, height, color, filtering)
-        rect(x, y + height - border, width, border, color, filtering)
+    fun rectOutline(rect: Rectangle, border: Float = 1f, color: RGBA = this.multiplyColor, filtering: Boolean = this.filtering) {
+        val (x, y, width, height) = rect
+        rect(Rectangle(x, y, width, border), color, filtering)
+        rect(Rectangle(x, y, border, height), color, filtering)
+        rect(Rectangle(x + width - border, y, border, height), color, filtering)
+        rect(Rectangle(x, y + height - border, width, border), color, filtering)
     }
 
-    fun ellipse(x: Double, y: Double, width: Double, height: Double, color: RGBA = this.multiplyColor, filtering: Boolean = this.filtering) {
+    fun ellipse(center: Point, radius: Size, color: RGBA = this.multiplyColor, filtering: Boolean = this.filtering) {
         simplePath(buildVectorPath(VectorPath()) {
-            ellipse(x, y, width, height)
+            this.ellipse(center, radius)
         }, color, filtering)
     }
 
-    fun ellipseOutline(x: Double, y: Double, width: Double, height: Double, lineWidth: Double = 1.0, color: RGBA = this.multiplyColor, filtering: Boolean = this.filtering) {
+    fun ellipseOutline(center: Point, radius: Size, lineWidth: Float = 1f, color: RGBA = this.multiplyColor, filtering: Boolean = this.filtering) {
         simplePath(buildVectorPath(VectorPath()) {
-            ellipse(x, y, width, height)
+            this.ellipse(center, radius)
         }.strokeToFill(lineWidth), color, filtering)
     }
 

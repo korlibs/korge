@@ -48,10 +48,10 @@ class Board(
 		// Creating text with time
 		//timeText = new Text("", 50, 50, Text.Align.center, Text.Align.middle, Color.white, new Font("Arial", 40));
 		//timeText = Text("", 50, 50, Text.Align.center, Text.Align.middle, Color.white, Font.fromResource("font.ttf", 40));
-		val FONT_HEIGHT = 32.0
+		val FONT_HEIGHT = 32f
         timeText = text("00:00", font = views.minesweeperFont, textSize = FONT_HEIGHT).apply {
 			centerXBetween(0.0, this@Board.widthD)
-			yD = -FONT_HEIGHT - 16
+			y = -FONT_HEIGHT - 16
 			alignment = TextAlignment.CENTER
 		}
 
@@ -59,11 +59,11 @@ class Board(
 		//x = screen.width / 2 - width / 2
 		//y = screen.height / 2 - (height - 10 - FONT_HEIGHT) / 2
 
-        xD = scene.sceneWidth / 2 - widthD / 2
-        yD = scene.sceneHeight / 2 - (heightD - 10 - FONT_HEIGHT) / 2
+        x = scene.sceneWidth / 2 - width / 2
+        y = scene.sceneHeight / 2 - (height - 10 - FONT_HEIGHT) / 2
 
 		//centerOnStage()
-		yD += FONT_HEIGHT / 2
+		y += FONT_HEIGHT / 2
 
 		// Restart board
 		restart()

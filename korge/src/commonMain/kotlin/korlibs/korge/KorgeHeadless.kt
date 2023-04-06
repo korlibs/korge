@@ -33,7 +33,7 @@ object KorgeHeadless {
         val draw: Boolean = false,
         override val ag: AG = AGDummy(size),
         exitProcessOnClose: Boolean = false,
-        override val devicePixelRatio: Double = 1.0,
+        override val devicePixelRatio: Float = 1f,
     ) : GameWindow() {
         override val width: Int = size.width.toInt()
         override val height: Int = size.height.toInt()
@@ -52,7 +52,7 @@ object KorgeHeadless {
     suspend operator fun invoke(
         config: KorgeConfig,
         ag: AG = AGDummy(config.windowSize),
-        devicePixelRatio: Double = 1.0,
+        devicePixelRatio: Float = 1f,
         draw: Boolean = false,
         entry: suspend Stage.() -> Unit,
     ): HeadlessGameWindow {
@@ -69,7 +69,7 @@ object KorgeHeadless {
 
 suspend fun KorgeConfig.headless(
     ag: AG = AGDummy(this.windowSize),
-    devicePixelRatio: Double = 1.0,
+    devicePixelRatio: Float = 1f,
     draw: Boolean = false,
     entry: suspend Stage.() -> Unit,
 ) = KorgeHeadless.invoke(this, ag, devicePixelRatio, draw, entry)

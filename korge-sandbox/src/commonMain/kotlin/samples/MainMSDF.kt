@@ -119,13 +119,13 @@ class MainMSDF : Scene() {
                 xy(400, 200 + 150 * n)
                 solidRect(300, 100, Colors.DARKGREY)
                 if (n == 0) {
-                    text("HELLO WORLD áéúóúñ cooool", textSize = 32.0, font = font1).also {
+                    text("HELLO WORLD áéúóúñ cooool", textSize = 32f, font = font1).also {
                         it.setTextBounds(Rectangle(0, 0, 300, 100))
                         it.alignment = TextAlignment.MIDDLE_CENTER
                     }
                 } else {
                     //textBlock(RichTextData("HELLO WORLD aeioun coooool", font = font2, textSize = 32.0)).also {
-                    val tb = textBlock(RichTextData("HELLO WORLD áéúóúñ cooool", font = font2, textSize = 32.0)).also {
+                    val tb = textBlock(RichTextData("HELLO WORLD áéúóúñ cooool", font = font2, textSize = 32f)).also {
                         it.size(300.0, 100.0)
                         it.align = TextAlignment.MIDDLE_CENTER
                     }
@@ -134,9 +134,9 @@ class MainMSDF : Scene() {
                         var toggle = true
                         down(Key.RETURN) {
                             tb.text = if (toggle) {
-                                RichTextData("HELLO WORLD", font = font1, textSize = 32.0)
+                                RichTextData("HELLO WORLD", font = font1, textSize = 32f)
                             } else {
-                                RichTextData("HELLO WORLD", font = font2, textSize = 32.0)
+                                RichTextData("HELLO WORLD", font = font2, textSize = 32f)
                             }
                             toggle = !toggle
                         }
@@ -148,14 +148,12 @@ class MainMSDF : Scene() {
         image(font1.baseBmp).xy(200, 200)
 
         renderableView(viewRenderer = ViewRenderer {
-            ctx2d.rect(0.0, 0.0, 100.0, 100.0, Colors.RED)
+            ctx2d.rect(Rectangle(0, 0, 100, 100), Colors.RED)
             //ctx2d.drawText("HELLO WORLD!", font1, textSize = 128.0)
-            ctx2d.drawText(
-                RichTextData.fromHTML(
-                    "HELLO, World! <b>this</b> is a test!",
-                    RichTextData.Style(textSize = 64.0, font = font2, color = Colors.WHITE)
-                )
-            )
+            ctx2d.drawText(RichTextData.fromHTML(
+                "HELLO, World! <b>this</b> is a test!",
+                RichTextData.Style(textSize = 64f, font = font2, color = Colors.WHITE)
+            ))
         })
 
         //val image = text("HELLO, World!\nthis is test!", font = font2, color = Colors.WHITE)

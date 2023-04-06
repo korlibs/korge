@@ -1,11 +1,9 @@
 package korlibs.image.font
 
 import korlibs.datastructure.*
-import korlibs.io.lang.WStringReader
-import korlibs.io.resources.Resourceable
-import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.EmptyCoroutineContext
-import kotlin.coroutines.coroutineContext
+import korlibs.io.lang.*
+import korlibs.io.resources.*
+import kotlin.coroutines.*
 
 suspend fun SystemFont(name: String): SystemFont = SystemFont(name, coroutineContext)
 
@@ -23,19 +21,19 @@ class SystemFont constructor(override val name: String, val coroutineContext: Co
 
     val nativeSystemFontProvider get() = nativeSystemFontProvider(coroutineContext)
 
-    override fun getFontMetrics(size: Double, metrics: FontMetrics): FontMetrics =
+    override fun getFontMetrics(size: Float, metrics: FontMetrics): FontMetrics =
         metrics.also { nativeSystemFontProvider.getSystemFontMetrics(this, size, metrics) }
 
-    override fun getGlyphMetrics(size: Double, codePoint: Int, metrics: GlyphMetrics, reader: WStringReader?): GlyphMetrics =
+    override fun getGlyphMetrics(size: Float, codePoint: Int, metrics: GlyphMetrics, reader: WStringReader?): GlyphMetrics =
         metrics.also { nativeSystemFontProvider.getSystemFontGlyphMetrics(this, size, codePoint, metrics, reader) }
 
     override fun getKerning(
-        size: Double,
+        size: Float,
         leftCodePoint: Int,
         rightCodePoint: Int
-    ): Double = nativeSystemFontProvider.getSystemFontKerning(this, size, leftCodePoint, rightCodePoint)
+    ): Float = nativeSystemFontProvider.getSystemFontKerning(this, size, leftCodePoint, rightCodePoint)
 
-    override fun getGlyphPath(size: Double, codePoint: Int, path: GlyphPath, reader: WStringReader?): GlyphPath? {
+    override fun getGlyphPath(size: Float, codePoint: Int, path: GlyphPath, reader: WStringReader?): GlyphPath? {
         return nativeSystemFontProvider.getSystemFontGlyph(this, size, codePoint, path, reader)
     }
 

@@ -294,16 +294,16 @@ class CSS(val allRules: List<IRuleSet>, unit: Unit = Unit) {
                     }
                     "jump-start", "start" -> Easing.EASE_CLAMP_START
                     "jump-end", "end" -> Easing.EASE_CLAMP_END
-                    "step-start" -> Easing { 1.0 } //Easing.steps(1, Easing.EASE_CLAMP_START)
-                    "step-end" -> Easing { 0.0 } //Easing.steps(1, Easing.EASE_CLAMP_END)
+                    "step-start" -> Easing { 1f } //Easing.steps(1, Easing.EASE_CLAMP_START)
+                    "step-end" -> Easing { 0f } //Easing.steps(1, Easing.EASE_CLAMP_END)
                     else -> TODO("${tr.peek(-1)}")
                 }
             }
             return parseEasing(tokenize(str).map { it.str.lowercase() }.reader())
        }
 
-        fun parseSizeAsDouble(size: String): Double {
-            return size.filter { it !in 'a'..'z' && it !in 'A'..'Z' }.toDoubleOrNull() ?: 16.0
+        fun parseSizeAsFloat(size: String): Float {
+            return size.filter { it !in 'a'..'z' && it !in 'A'..'Z' }.toFloatOrNull() ?: 16f
         }
 
         fun parseAnimation(str: String): CSS.Animation {

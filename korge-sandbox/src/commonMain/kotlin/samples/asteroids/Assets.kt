@@ -16,7 +16,7 @@ class Assets(val shipSize: Int = 24) {
     private val asteroidSize = shipSize * 2
 
     val shipBitmap = NativeImage(shipSize, shipSize).context2d {
-		lineWidth = 0.05
+		lineWidth = 0.05f
 		lineCap = LineCap.ROUND
 		stroke(Colors.WHITE) {
             scale(shipSize)
@@ -29,7 +29,7 @@ class Assets(val shipSize: Int = 24) {
 	}
 
     val bulletBitmap = NativeImage(3, (shipSize * 0.3).toInt()).context2d {
-		lineWidth = 1.0
+		lineWidth = 1f
 		lineCap = LineCap.ROUND
 		stroke(Colors.WHITE) {
 			moveTo(Point(width / 2.0, 0.0))
@@ -38,7 +38,7 @@ class Assets(val shipSize: Int = 24) {
 	}
 
     val asteroidBitmap = Bitmap32Context2d(asteroidSize, asteroidSize) { // Let's use software vector rendering here for testing purposes
-		lineWidth = 0.05
+		lineWidth = 0.05f
 		lineCap = LineCap.ROUND
 		stroke(Colors.WHITE) {
             scale(asteroidSize)

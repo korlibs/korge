@@ -1,14 +1,13 @@
 package korlibs.image.font
 
 import korlibs.image.bitmap.*
-import korlibs.io.async.suspendTest
-import kotlin.coroutines.EmptyCoroutineContext
+import korlibs.io.async.*
 import kotlin.test.*
 
 class NativeFontTest {
 	@Test
 	fun name() = suspendTest{
-		val bmpFont = BitmapFont(SystemFont("Arial"), 64, CharacterSet("ABCDEFGHIJKLMNOPQRSTUVWXYZ"))
+		val bmpFont = BitmapFont(SystemFont("Arial"), 64f, CharacterSet("ABCDEFGHIJKLMNOPQRSTUVWXYZ"))
         // This check possible issues on native
         bmpFont.registerTemporarily {
             val bmp = Bitmap32(200, 200, premultiplied = true)

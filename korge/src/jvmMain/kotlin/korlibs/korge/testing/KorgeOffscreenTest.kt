@@ -66,7 +66,7 @@ inline fun korgeScreenshotTest(
     windowSize: Size = Size(512, 512),
     virtualSize: Size = windowSize,
     bgcolor: RGBA? = Colors.BLACK,
-    devicePixelRatio: Double = 1.0,
+    devicePixelRatio: Float = 1f,
     checkGl: Boolean = true,
     logGl: Boolean = false,
     noinline callback: suspend OffscreenStage.() -> Unit

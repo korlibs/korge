@@ -82,22 +82,18 @@ abstract class BaseTtfFont(
     fun getAllBytes() = s.getAllBytes()
     fun getAllBytesUnsafe() = s.getBackingArrayUnsafe()
 
-    override fun getFontMetrics(size: Double, metrics: FontMetrics): FontMetrics =
+    override fun getFontMetrics(size: Float, metrics: FontMetrics): FontMetrics =
         metrics.copyFromNewSize(this.fontMetrics1px, size)
 
-    override fun getGlyphMetrics(size: Double, codePoint: Int, metrics: GlyphMetrics, reader: WStringReader?): GlyphMetrics =
+    override fun getGlyphMetrics(size: Float, codePoint: Int, metrics: GlyphMetrics, reader: WStringReader?): GlyphMetrics =
         metrics.copyFromNewSize(getGlyphByReader(reader, codePoint)?.metrics1px ?: nonExistantGlyphMetrics1px, size, codePoint)
 
-    override fun getKerning(
-        size: Double,
-        leftCodePoint: Int,
-        rightCodePoint: Int
-    ): Double {
+    override fun getKerning(size: Float, leftCodePoint: Int, rightCodePoint: Int): Float {
         // @TODO: Kerning information not read yet. Not implemented
-        return 0.0
+        return 0f
     }
 
-    override fun getGlyphPath(size: Double, codePoint: Int, path: GlyphPath, reader: WStringReader?): GlyphPath? {
+    override fun getGlyphPath(size: Float, codePoint: Int, path: GlyphPath, reader: WStringReader?): GlyphPath? {
         val spos = reader?.position
         val codePointPeek = reader?.peek(0)
         val g = getGlyphByReader(reader, codePoint, cache = true) ?: return null
@@ -120,7 +116,7 @@ abstract class BaseTtfFont(
                 0.0,
                 ((-bitmapEntry.height - bitmapEntry.descender) * scaleY),
             )
-            path.bitmapScale = Vector2(scaleX, scaleY)
+            path.bitmapScale = Scale(scaleX, scaleY)
             //path.advanceWidth = g.advanceWidth.toDouble() * scale * scaleX
         } else {
             //path.advanceWidth = g.advanceWidth.toDouble() * scale
@@ -131,9 +127,9 @@ abstract class BaseTtfFont(
         return path
     }
 
-    protected fun getTextScale(size: Double): Double {
+    protected fun getTextScale(size: Float): Float {
         //return size / (yMax - yMin).toDouble()
-        return size / unitsPerEm.toDouble()
+        return size / unitsPerEm.toFloat()
     }
 
     class NamesInfo {
@@ -253,7 +249,7 @@ abstract class BaseTtfFont(
     val substitutionsCodePoints = IntMap<SubstitutionInfo>()
 
     lateinit var fontMetrics1px: FontMetrics; private set
-    protected val nonExistantGlyphMetrics1px = GlyphMetrics(1.0, false, 0, Rectangle(), 0.0)
+    protected val nonExistantGlyphMetrics1px = GlyphMetrics(1f, false, 0, Rectangle(), 0f)
     var isOpenType = false
 
     val ttfName: String get() = namesi.ttfName
@@ -318,11 +314,11 @@ abstract class BaseTtfFont(
         //}
 
         fontMetrics1px = FontMetrics().also {
-            val scale = getTextScale(1.0)
-            it.size = 1.0
+            val scale = getTextScale(1f)
+            it.size = 1f
             it.top = (this.yMax) * scale
             it.ascent = this.ascender * scale
-            it.baseline = 0.0 * scale
+            it.baseline = 0f * scale
             it.descent = this.descender * scale
             it.bottom = (this.yMin) * scale
             it.lineGap = this.lineGap * scale
@@ -1878,7 +1874,7 @@ abstract class BaseTtfFont(
                 }
             }
 
-            val size = unitsPerEm.toDouble()
+            val size = unitsPerEm.toFloat()
             val scale = getTextScale(size)
             GlyphMetrics(size, true, -1, Rectangle.fromBounds(
                 xMin * scale, yMin * scale,

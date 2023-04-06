@@ -28,20 +28,20 @@ class MainTextInput : Scene() {
         val font = DefaultTtfFont.withFallback(emojiFont)
 
         uiTextInput("HELLO", size = Size(256f, 64f)) {
-            this.textSize = 40.0
+            this.textSize = 40f
             this.font = font
             this.softKeyboardReturnKeyType = SoftKeyboardReturnKeyType.NEXT
         }.xy(200, 100)
 
         uiTextInput("1234", size = Size(256f, 64f)) {
-            this.textSize = 40.0
+            this.textSize = 40f
             this.font = font
             this.softKeyboardType = SoftKeyboardType.NUMBER_PAD
             this.softKeyboardReturnKeyType = SoftKeyboardReturnKeyType.EMERGENCY_CALL
         }.xy(200, 200)
 
         uiTextInput("test@gmail.com", size = Size(256f, 64f)) {
-            this.textSize = 40.0
+            this.textSize = 40f
             this.font = font
             this.softKeyboardType = SoftKeyboardType.EMAIL_ADDRESS
         }.xy(200, 300)
@@ -50,18 +50,18 @@ class MainTextInput : Scene() {
 
         text(
             "HELLO WORLD",
-            textSize = 64.0,
+            textSize = 64f,
             font = font,
             color = Colors.RED,
-        ).xy(600, 200).textSpacing(9.0).aroundPath(textPath).filters(DropshadowFilter()).also { it.editText() }
+        ).xy(600, 200).textSpacing(9f).aroundPath(textPath).filters(DropshadowFilter()).also { it.editText() }
 
         text(
             "HELLO WORLD",
-            textSize = 64.0,
+            textSize = 64f,
             font = font,
             color = Colors.RED,
         ).xy(600, 500)
-            .textSpacing(9.0)
+            .textSpacing(9f)
             .aroundPath(buildVectorPath { moveTo(Point(0.0, 0.0)); quadTo(Point(250.0, -100.0), Point(500.0, 0.0)) })
             .filters(DropshadowFilter())
             .also { it.editText() }

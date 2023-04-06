@@ -20,12 +20,12 @@ class MainTextBounds : Scene() {
     var align = TextAlignment.BASELINE_CENTER
     //val vfont get() = DefaultTtfFont
     val vfont get() = playfairDisplayTTF
-    val bmpFont by lazy { vfont.toBitmapFont(16.0) }
+    val bmpFont by lazy { vfont.toBitmapFont(16f) }
     var wrap = Wrap.NO
 
     fun Container.reload() {
         removeChildren()
-        val fontSize = 128.0
+        val fontSize = 128f
         //val text = "HÉLLO\nji!"
         val text = "¡Everyone's got\na story s t st to to tell!"
         //val text = "¡¿"
@@ -47,7 +47,7 @@ class MainTextBounds : Scene() {
             text(
                 text, fontSize, font = vfont, alignment = align, renderer = renderer,
                 fill = Colors.YELLOW,
-                stroke = Stroke(Colors.RED, thickness = 3.0, dash = doubleArrayListOf(50.0, 50.0))
+                stroke = Stroke(Colors.RED, thickness = 3f, dash = floatArrayListOf(50f, 50f))
             )//.also { it.zIndex = 1.0 }
             graphics {
                 println("MainTextBounds: ----------------------")
@@ -55,14 +55,14 @@ class MainTextBounds : Scene() {
                 val metrics = stats.metrics
                 //val metrics = font.getTextBounds(64.0, text, align = align)
                 println("MainTextBounds: - ${metrics.bounds}")
-                stroke(Colors.BLUE.withAd(0.5), lineWidth = 8.0) { rect(metrics.firstLineBounds) }
-                stroke(Colors.WHITE.withAd(0.5), lineWidth = 5.0) { rect(metrics.bounds) }
+                stroke(Colors.BLUE.withAf(.5f), lineWidth = 8f) { rect(metrics.firstLineBounds) }
+                stroke(Colors.WHITE.withAf(.5f), lineWidth = 5f) { rect(metrics.bounds) }
                 for (line in metrics.lineBounds) {
-                    stroke(Colors.RED.withAd(0.5), lineWidth = 3.0) { rect(line) }
+                    stroke(Colors.RED.withAf(.5f), lineWidth = 3f) { rect(line) }
                 }
 
                 for (glyph in stats.glyphs) {
-                    stroke(Colors.GREEN.withAd(0.5), lineWidth = 1.0) { path(glyph.boundsPath) }
+                    stroke(Colors.GREEN.withAf(.5f), lineWidth = 1f) { path(glyph.boundsPath) }
                 }
             }
             circle(16f, Colors.PURPLE).centered

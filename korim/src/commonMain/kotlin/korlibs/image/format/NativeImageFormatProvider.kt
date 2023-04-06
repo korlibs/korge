@@ -4,7 +4,7 @@ import korlibs.image.bitmap.*
 import korlibs.image.color.*
 import korlibs.image.vector.*
 import korlibs.io.file.*
-import korlibs.io.stream.*
+import korlibs.math.geom.*
 import kotlinx.coroutines.*
 import kotlin.math.*
 import kotlin.native.concurrent.*
@@ -67,12 +67,12 @@ abstract class NativeImageFormatProvider : ImageFormatEncoderDecoder {
         return image
     }
     //open fun create(width: Int, height: Int, premultiplied: Boolean): NativeImage = create(width, height)
-	open fun copy(bmp: Bitmap): NativeImage = create(bmp.width, bmp.height, bmp.premultiplied).apply { context2d { drawImage(bmp, 0, 0) } }
+	open fun copy(bmp: Bitmap): NativeImage = create(bmp.width, bmp.height, bmp.premultiplied).apply { context2d { drawImage(bmp, Point.ZERO) } }
 	open fun mipmap(bmp: Bitmap, levels: Int): NativeImage = bmp.toBMP32().mipmap(levels).ensureNative()
 	open fun mipmap(bmp: Bitmap): NativeImage {
         val out = NativeImage(ceil(bmp.width * 0.5).toInt(), ceil(bmp.height * 0.5).toInt())
         out.context2d(antialiased = true) {
-            renderer.drawImage(bmp, 0, 0, out.width, out.height)
+            renderer.drawImage(bmp, Point.ZERO, Size(out.width, out.height))
         }
         return out
     }

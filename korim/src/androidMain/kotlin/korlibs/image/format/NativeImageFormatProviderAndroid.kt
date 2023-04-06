@@ -9,7 +9,6 @@ import android.text.*
 import android.view.*
 import android.widget.*
 import korlibs.datastructure.*
-import korlibs.memory.*
 import korlibs.image.bitmap.*
 import korlibs.image.bitmap.Bitmap
 import korlibs.image.color.*
@@ -18,8 +17,9 @@ import korlibs.image.vector.*
 import korlibs.io.android.*
 import korlibs.math.geom.*
 import korlibs.math.geom.vector.*
+import korlibs.memory.*
 import kotlinx.coroutines.*
-import java.io.ByteArrayOutputStream
+import java.io.*
 
 actual val nativeImageFormatProvider: NativeImageFormatProvider by lazy {
     try {
@@ -257,7 +257,7 @@ class AndroidContext2dRenderer(val bmp: android.graphics.Bitmap, val antialiasin
     }
 
     @Suppress("RemoveRedundantQualifierName")
-    fun convertPaint(c: korlibs.image.paint.Paint, m: korlibs.math.geom.Matrix, out: Paint, alpha: Double) {
+    fun convertPaint(c: korlibs.image.paint.Paint, m: korlibs.math.geom.Matrix, out: Paint, alpha: Float) {
         when (c) {
             is korlibs.image.paint.NonePaint -> {
                 out.shader = null
@@ -291,7 +291,7 @@ class AndroidContext2dRenderer(val bmp: android.graphics.Bitmap, val antialiasin
             }
             is korlibs.image.paint.BitmapPaint -> {
                 val androidBitmap = c.bitmap.toAndroidBitmap()
-                val colorAlpha = Colors.WHITE.withAd(alpha)
+                val colorAlpha = Colors.WHITE.withAf(alpha)
                 val shaderA = LinearGradient(0f, 0f, androidBitmap.width.toFloat(), 0f, colorAlpha.value, colorAlpha.value, Shader.TileMode.REPEAT)
                 val shaderB = BitmapShader(androidBitmap, c.cycleX.toTileMode(), c.cycleY.toTileMode())
                 out.shader = ComposeShader(shaderA, shaderB, PorterDuff.Mode.SRC_IN)
@@ -303,8 +303,8 @@ class AndroidContext2dRenderer(val bmp: android.graphics.Bitmap, val antialiasin
     }
 
     fun DoubleArrayList.toFloatArray() = map(Double::toFloat).toFloatArray()
-    fun IntArrayList.toColorScaledAlpha(alpha: Double) = mapInt { RGBA(it).withScaledAlpha(alpha).value }.toIntArray()
-    fun RGBA.withScaledAlpha(scale: Double): RGBA = this.withA((this.a * scale.clamp01()).toInt())
+    fun IntArrayList.toColorScaledAlpha(alpha: Float) = mapInt { RGBA(it).withScaledAlpha(alpha).value }.toIntArray()
+    fun RGBA.withScaledAlpha(scale: Float): RGBA = this.withA((this.a * scale.clamp01()).toInt())
 
     inline fun <T> keep(callback: () -> T): T {
         canvas.save()

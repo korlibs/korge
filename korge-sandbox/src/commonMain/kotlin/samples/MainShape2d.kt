@@ -53,7 +53,7 @@ class MainShape2dScene : Scene() {
                 projected.pos = projectedPos
                 normalVectorView.pos = projectedPos
                 normalVectorView.updateShape {
-                    stroke(Colors.GREEN, lineWidth = 4.0) {
+                    stroke(Colors.GREEN, lineWidth = 4f) {
                         moveTo(0, 0)
                         lineTo(shape.normalVectorAt(pos) * 10)
                     }
@@ -75,7 +75,7 @@ class MainShape2dScene : Scene() {
                 if (vectorPath.isLastCommandClose) {
                     fill(Colors.WHITE) { path(vectorPath) }
                 } else {
-                    stroke(Colors.WHITE, lineWidth = 4.0) { path(vectorPath) }
+                    stroke(Colors.WHITE, lineWidth = 4f) { path(vectorPath) }
                 }
             }
             textAreaView.text = "area: ${shape.area}"

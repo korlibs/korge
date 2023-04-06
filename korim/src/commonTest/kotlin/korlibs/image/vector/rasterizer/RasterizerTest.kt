@@ -55,7 +55,7 @@ class RasterizerTest {
         }
         val shipSize = 24
         val bmp2 = Bitmap32Context2d(shipSize, shipSize) {
-            stroke(Colors.RED, lineWidth = shipSize * 0.05, lineCap = LineCap.ROUND) {
+            stroke(Colors.RED, lineWidth = shipSize * 0.05f, lineCap = LineCap.ROUND) {
                 moveTo(Point(shipSize * 0.5, 0.0))
                 lineTo(Point(shipSize, shipSize))
                 lineTo(Point(shipSize * 0.5, shipSize * 0.8))
@@ -64,7 +64,7 @@ class RasterizerTest {
             }
         }
         val bmp3 = Bitmap32Context2d(3, (shipSize * 0.3).toInt()) {
-            lineWidth = 1.0
+            lineWidth = 1f
             lineCap = LineCap.ROUND
             stroke(Colors.WHITE) {
                 moveTo(Point(width / 2, 0))
@@ -81,7 +81,7 @@ class RasterizerTest {
         // https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/lineJoin
         val bmp = NativeImageOrBitmap32(500, 500, native = false).context2d {
             //val bmp = NativeImageOrBitmap32(150, 150, native = true).context2d {
-            lineWidth = 10.0
+            lineWidth = 10f
             for ((i, lineJoin) in listOf(LineJoin.ROUND, LineJoin.BEVEL, LineJoin.MITER).withIndex()) {
                 this.lineJoin = lineJoin
                 keep {
@@ -159,7 +159,7 @@ class RasterizerTest {
             // https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/strokeStyle
             keep {
                 translate(300, 300)
-                lineWidth = 1.0
+                lineWidth = 1f
                 for (i in 0 until 6) {
                     for (j in 0 until 6) {
                         strokeStyle = korlibs.image.paint.ColorPaint(RGBA(0, (255 - 42.5 * i).toInt(), (255 - 42.5 * j).toInt(), 255))
@@ -179,7 +179,7 @@ class RasterizerTest {
         val bmp = NativeImageOrBitmap32(500, 500, native = false).context2d {
             beginPath()
             lineCap = LineCap.SQUARE
-            lineWidth = 30.0
+            lineWidth = 30f
             moveTo(Point(200, 200))
             lineTo(Point(300, 100))
             stroke()

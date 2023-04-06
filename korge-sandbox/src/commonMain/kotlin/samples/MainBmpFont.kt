@@ -1,29 +1,28 @@
 package samples
 
-import korlibs.time.milliseconds
-import korlibs.time.seconds
+import korlibs.image.font.*
+import korlibs.io.async.*
+import korlibs.io.async.delay
+import korlibs.io.file.std.*
 import korlibs.korge.scene.Scene
 import korlibs.korge.view.*
 import korlibs.korge.view.filter.*
-import korlibs.image.font.readBitmapFont
-import korlibs.io.async.delay
-import korlibs.io.async.launchImmediately
-import korlibs.io.file.std.resourcesVfs
+import korlibs.time.*
 
 class MainBmpFont : Scene() {
     override suspend fun SContainer.sceneMain() {
         val font1 = resourcesVfs["font1.fnt"].readBitmapFont()
         val segment7 = resourcesVfs["segment7.fnt"].readBitmapFont() // mono spaced
-        val text1 = text("Hello World!", textSize = 96.0, font = font1)
-        val text2 = text("Hello : World! jg", textSize = 96.0, font = font1) {
+        val text1 = text("Hello World!", textSize = 96f, font = font1)
+        val text2 = text("Hello : World! jg", textSize = 96f, font = font1) {
             smoothing = false
             alignTopToBottomOf(text1)
         }
-        val text3 = text("Hello World!", textSize = 96.0, font = font1) {
+        val text3 = text("Hello World!", textSize = 96f, font = font1) {
             filter = Convolute3Filter(Convolute3Filter.KERNEL_GAUSSIAN_BLUR)
             alignTopToBottomOf(text2)
         }
-        text("Hello World 2!", textSize = 32.0, font = font1) {
+        text("Hello World 2!", textSize = 32f, font = font1) {
             val text = this
             launchImmediately {
                 var n = 0
@@ -34,7 +33,7 @@ class MainBmpFont : Scene() {
                 }
             }
         }
-        text("42:10", textSize = 64.0, font = segment7) {
+        text("42:10", textSize = 64f, font = segment7) {
             val text = this
             alignX(root, 0.5, true)
             alignY(root, 0.75, true)

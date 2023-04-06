@@ -2,12 +2,12 @@
 
 package korlibs.math.geom
 
-import korlibs.memory.*
-import korlibs.memory.pack.*
 import korlibs.math.internal.*
 import korlibs.math.interpolation.*
 import korlibs.math.math.*
 import korlibs.math.math.isAlmostZero
+import korlibs.memory.*
+import korlibs.memory.pack.*
 import kotlin.math.*
 
 typealias Point = Vector2

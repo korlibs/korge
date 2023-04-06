@@ -1,15 +1,15 @@
 package samples
 
 import korlibs.event.*
+import korlibs.image.color.*
+import korlibs.image.paint.*
 import korlibs.korge.input.*
 import korlibs.korge.scene.*
 import korlibs.korge.view.*
 import korlibs.korge.view.vector.*
-import korlibs.render.*
-import korlibs.image.color.*
-import korlibs.image.paint.*
 import korlibs.math.geom.*
 import korlibs.math.geom.vector.*
+import korlibs.render.*
 
 class MainGpuVectorRendering2 : Scene() {
     override suspend fun SContainer.sceneMain() {
@@ -32,9 +32,9 @@ class MainGpuVectorRendering2 : Scene() {
             //val shape = graphics({
             shape = gpuShapeView({
                 //val lineWidth = 6.12123231 * 2
-                val lineWidth = 12.0
-                val width = 300.0
-                val height = 300.0
+                val lineWidth = 12f
+                val width = 300f
+                val height = 300f
                 //rotation = 180.degrees
                 this.stroke(mainStrokePaint, lineWidth = lineWidth, lineJoin = LineJoin.MITER, lineCap = LineCap.BUTT) {
                     //this.fill(mainStrokePaint) {

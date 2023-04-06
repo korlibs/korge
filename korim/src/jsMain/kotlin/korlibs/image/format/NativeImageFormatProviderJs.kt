@@ -1,7 +1,7 @@
 package korlibs.image.format
 
-import korlibs.time.*
-import korlibs.memory.*
+import korlibs.crypto.encoding.*
+import korlibs.datastructure.*
 import korlibs.image.bitmap.*
 import korlibs.image.color.*
 import korlibs.image.font.*
@@ -10,10 +10,10 @@ import korlibs.image.vector.*
 import korlibs.image.vector.renderer.*
 import korlibs.io.file.*
 import korlibs.io.file.std.*
-import korlibs.io.util.*
 import korlibs.math.geom.*
 import korlibs.math.geom.vector.*
-import korlibs.crypto.encoding.*
+import korlibs.memory.*
+import korlibs.time.*
 import kotlinx.browser.*
 import kotlinx.coroutines.*
 import org.khronos.webgl.*
@@ -22,7 +22,6 @@ import org.w3c.dom.*
 import org.w3c.dom.url.*
 import org.w3c.files.*
 import kotlin.coroutines.*
-import kotlin.js.*
 import kotlin.math.*
 
 actual val nativeImageFormatProvider: NativeImageFormatProvider = when {
@@ -173,7 +172,7 @@ object HtmlNativeImageFormatProvider : NativeImageFormatProvider() {
 	override fun mipmap(bmp: Bitmap): NativeImage {
 		val out = NativeImage(ceil(bmp.width * 0.5).toInt(), ceil(bmp.height * 0.5).toInt())
         out.context2d(antialiased = true) {
-            renderer.drawImage(bmp, 0.0, 0.0, out.width.toDouble(), out.height.toDouble())
+            renderer.drawImage(bmp, Point.ZERO, out.size.toFloat())
         }
 		return out
 	}
@@ -343,15 +342,15 @@ class CanvasContext2dRenderer(private val canvas: HTMLCanvasElementLike) : Rende
     }
 
 	private fun setState(state: Context2d.State, fill: Boolean, doSetFont: Boolean) {
-		ctx.globalAlpha = state.globalAlpha
+		ctx.globalAlpha = state.globalAlpha.toDouble()
         ctx.globalCompositeOperation = state.globalCompositeOperation.toJsStr()
         if (doSetFont) {
-            setFont(state.font, state.fontSize)
+            setFont(state.font, state.fontSize.toDouble())
         }
 		if (fill) {
             ctx.fillStyle = state.fillStyle.toJsStr()
 		} else {
-            ctx.lineWidth = state.lineWidth
+            ctx.lineWidth = state.lineWidth.toDouble()
 			ctx.lineJoin = when (state.lineJoin) {
 				LineJoin.BEVEL -> CanvasLineJoin.BEVEL
 				LineJoin.MITER -> CanvasLineJoin.MITER
@@ -378,13 +377,13 @@ class CanvasContext2dRenderer(private val canvas: HTMLCanvasElementLike) : Rende
 		}
 	}
 
-	override fun drawImage(image: Bitmap, x: Double, y: Double, width: Double, height: Double, transform: Matrix) {
+	override fun drawImage(image: Bitmap, pos: Point, size: Size, transform: Matrix) {
 		ctx.save()
 		try {
 			transform.run { ctx.setTransform(a.toDouble(), b.toDouble(), c.toDouble(), d.toDouble(), tx.toDouble(), ty.toDouble()) }
 			ctx.drawImage(
 				(image.ensureNative() as HtmlNativeImage).texSource.unsafeCast<CanvasImageSource>(),
-                x, y, width, height
+                pos.xD, pos.yD, size.widthD, size.heightD
 			)
 		} finally {
 			ctx.restore()
@@ -431,8 +430,8 @@ class CanvasContext2dRenderer(private val canvas: HTMLCanvasElementLike) : Rende
 				transformPaint(state.strokeStyle)
                 val lineDash = state.lineDash
                 if (lineDash != null) {
-                    ctx.lineDashOffset = state.lineDashOffset
-                    ctx.setLineDash(lineDash.toDoubleArray().toTypedArray())
+                    ctx.lineDashOffset = state.lineDashOffset.toDouble()
+                    ctx.setLineDash(lineDash.mapDouble { it.toDouble() }.toTypedArray())
                 }
                 ctx.stroke()
 				//println("stroke: $s")

@@ -1,10 +1,10 @@
 package korlibs.math.geom.trapezoid
 
 import korlibs.datastructure.iterators.*
-import korlibs.memory.*
 import korlibs.math.geom.*
 import korlibs.math.geom.bezier.*
 import korlibs.math.geom.vector.*
+import korlibs.memory.*
 import kotlin.math.*
 
 /*
@@ -301,7 +301,7 @@ fun VectorPath.toSegments(scale: Int = 1): FSegmentsInt {
         val len = bezier.length.toIntRound().coerceIn(2, 20)
         var oldPos = Point()
         for (n in 0 .. len) {
-            val ratio = n.toDouble() / len
+            val ratio = n.toFloat() / len
             val p = bezier.calc(ratio)
             if (n > 0) {
                 emit(oldPos, p)

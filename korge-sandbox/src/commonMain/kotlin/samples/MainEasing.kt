@@ -18,11 +18,11 @@ class MainEasing : Scene() {
             return Container().apply {
                 val bg = solidRect(64, -64, Colors.BLACK.withAd(0.2))
                 graphics { shape ->
-                    stroke(Colors.RED, lineWidth = 4.0) {
+                    stroke(Colors.RED, lineWidth = 4f) {
                         this.line(Point(0, 0), Point(0, -64))
                         this.line(Point(0, 0), Point(64, 0))
                     }
-                    stroke(Colors.WHITE, lineWidth = 2.0) {
+                    stroke(Colors.WHITE, lineWidth = 2f) {
                         var first = true
                         //val overflow = 8
                         val overflow = 0
@@ -40,13 +40,13 @@ class MainEasing : Scene() {
                         }
                     }
                 }.addTo(this)
-                val textSize = 10.0
-                text("$easing", textSize = textSize).xy(0.0, textSize)
+                val textSize = 10f
+                text("$easing", textSize = textSize).xy(0f, textSize)
                 onOver { bg.color = Colors.BLACK.withAd(1.0) }
                 onOut { bg.color = Colors.BLACK.withAd(0.2) }
                 onClick {
                     ballTween?.cancel()
-                    ballTween = ball.tweenAsync(ball::xD[64.0, 64.0 + 512.0], easing = easing)
+                    ballTween = ball.tweenAsync(ball::x[64f, 64f + 512f], easing = easing)
                 }
             }
         }

@@ -185,7 +185,7 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
 
         val attributes: Map<String, String> = parseAttributesAndStyles(xml)
         var transform: Matrix = attributes["transform"]?.let { CSS.parseTransform(it) } ?: Matrix.IDENTITY
-        var opacity: Double = attributes["opacity"]?.toDoubleOrNull() ?: 1.0
+        var opacity: Float = attributes["opacity"]?.toFloatOrNull() ?: 1f
 
         val children = xml.allNodeChildren.mapNotNull {
             createSvgElementFromXml(it)
@@ -231,15 +231,15 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
         open fun setCommonStyles(c: Context2d) {
             for ((key, it) in attributes) {
                 when (key) {
-                    "stroke-width" -> c.lineWidth = it.toDoubleOrNull() ?: 1.0
+                    "stroke-width" -> c.lineWidth = it.toFloatOrNull() ?: 1f
                     "stroke-linejoin" -> c.lineJoin = LineJoin[it]
                     "stroke-linecap" -> c.lineCap = LineCap[it]
                     "stroke" -> c.strokeStyle = parseFillStroke(c, it)
                     "opacity" -> c.globalAlpha *= opacity
-                    "fill-opacity" -> c.globalAlpha *= it.toDoubleOrNull() ?: 1.0 // @TODO: Do this properly
-                    "stroke-opacity" -> c.globalAlpha *= it.toDoubleOrNull() ?: 1.0 // @TODO: Do this properly
+                    "fill-opacity" -> c.globalAlpha *= it.toFloatOrNull() ?: 1f // @TODO: Do this properly
+                    "stroke-opacity" -> c.globalAlpha *= it.toFloatOrNull() ?: 1f // @TODO: Do this properly
                     "fill" -> c.fillStyle = parseFillStroke(c, it)
-                    "font-size" -> c.fontSize = CSS.parseSizeAsDouble(it)
+                    "font-size" -> c.fontSize = CSS.parseSizeAsFloat(it)
                     "font-family" -> c.font = c.fontRegistry?.get(it)
                     "text-anchor" -> c.horizontalAlign = when (it.lowercase().trim()) {
                         "left" -> HorizontalAlign.LEFT
@@ -387,16 +387,16 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
 
     open inner class TextSvgElement(xml: Xml) : SvgElement(xml) {
         var text = xml.text.trim()
-        var x = xml.double("x")
-        var dx = xml.double("dx")
-        var y = xml.double("y")
-        var dy = xml.double("dy")
+        var x = xml.float("x")
+        var dx = xml.float("dx")
+        var y = xml.float("y")
+        var dy = xml.float("dy")
 
         override fun drawInternal(c: Context2d) {
         }
 
         override fun fillStrokeInternal(c: Context2d) {
-            c.fillText(text, x + dx, y + dy)
+            c.fillText(text, Point(x + dx, y + dy))
         }
     }
 
