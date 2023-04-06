@@ -11,7 +11,7 @@ import kotlin.math.*
 inline fun Container.cameraContainer(
     size: Size,
     clip: Boolean = true,
-    noinline contentBuilder: (camera: CameraContainer) -> Container = { FixedSizeContainer(it.sizeWH) },
+    noinline contentBuilder: (camera: CameraContainer) -> Container = { FixedSizeContainer(it.size) },
     noinline block: @ViewDslMarker CameraContainer.() -> Unit = {},
     content: @ViewDslMarker Container.() -> Unit = {}
 ) = CameraContainer(size, clip, contentBuilder, block).addTo(this).also { content(it.content) }
@@ -19,7 +19,7 @@ inline fun Container.cameraContainer(
 class CameraContainer(
     size: Size,
     clip: Boolean = true,
-    contentBuilder: (camera: CameraContainer) -> Container = { FixedSizeContainer(it.sizeWH) },
+    contentBuilder: (camera: CameraContainer) -> Container = { FixedSizeContainer(it.size) },
     block: @ViewDslMarker CameraContainer.() -> Unit = {}
 ) : FixedSizeContainer(size, clip), View.Reference {
     var clampToBounds: Boolean = false
@@ -27,7 +27,7 @@ class CameraContainer(
 
     private val contentContainer = Container()
 
-    class ContentContainer(val cameraContainer: CameraContainer) : FixedSizeContainer(cameraContainer.sizeWH), Reference {
+    class ContentContainer(val cameraContainer: CameraContainer) : FixedSizeContainer(cameraContainer.size), Reference {
         //out.setTo(0, 0, cameraContainer.width, cameraContainer.height)
         override fun getLocalBoundsInternal() = Rectangle(0.0, 0.0, widthD, heightD)
     }

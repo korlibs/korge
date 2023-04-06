@@ -291,8 +291,8 @@ internal class ViewsDebuggerComponent constructor(
     data class ViewFactory(val name: String, val build: () -> View)
 
     private fun getViewFactories(views: Views): List<ViewFactory> = ArrayList<ViewFactory>().also { list ->
-        list.add(ViewFactory("Image") { Image(Bitmaps.white).apply { setSize(100.0, 100.0) } })
-        list.add(ViewFactory("VectorImage") { VectorImage.createDefault().apply { setSize(100.0, 100.0) } })
+        list.add(ViewFactory("Image") { Image(Bitmaps.white).apply { size(100f, 100f) } })
+        list.add(ViewFactory("VectorImage") { VectorImage.createDefault().apply { size(100f, 100f) } })
         list.add(ViewFactory("SolidRect") { SolidRect(100, 100, Colors.WHITE) })
         list.add(ViewFactory("Ellipse") { Ellipse(Size(50f, 50f), Colors.WHITE).center() })
         list.add(ViewFactory("Container") { Container() })

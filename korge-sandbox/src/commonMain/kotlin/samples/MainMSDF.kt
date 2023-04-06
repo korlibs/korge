@@ -126,7 +126,7 @@ class MainMSDF : Scene() {
                 } else {
                     //textBlock(RichTextData("HELLO WORLD aeioun coooool", font = font2, textSize = 32.0)).also {
                     val tb = textBlock(RichTextData("HELLO WORLD áéúóúñ cooool", font = font2, textSize = 32.0)).also {
-                        it.setSize(300.0, 100.0)
+                        it.size(300.0, 100.0)
                         it.align = TextAlignment.MIDDLE_CENTER
                     }
 

@@ -139,7 +139,7 @@ open class UIVerticalList(provider: Provider, width: Float = 200f) : UIView(DEFA
             }
             for (index in removeIndices) viewsByIndex.remove(index)
         }
-        setSize(width, provider.getItemY(numItems - 1) + provider.getItemHeight(numItems - 1))
+        size(width, provider.getItemY(numItems - 1) + provider.getItemHeight(numItems - 1))
         //println("height=$height")
     }
 }

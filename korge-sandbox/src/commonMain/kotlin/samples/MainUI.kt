@@ -39,7 +39,7 @@ class MainUI : Scene() {
 
         uiVerticalStack(padding = 8f, adjustSize = true) {
             position(128, 128)
-            widthD = 256.0
+            width = 256f
 
             uiButton(size = Size(256, 32)) {
                 text = "Disabled Button"

@@ -154,13 +154,13 @@ open class UIButton(
     private fun setInitialState() {
         val width = widthD
         val height = heightD
-        background.setSize(width, height)
+        background.size(width, height)
         //background.setSize(width, height)
         background.radius = RectCorners(this.radius)
         background.shadowRadius = if (elevation) 10f else 0f
         //textView.setSize(width, height)
 
-        textView.setSize(width, height)
+        textView.size(width, height)
 
         fitIconInRect(iconView, icon ?: Bitmaps.transparent, width, height, Anchor.MIDDLE_CENTER)
         iconView.alphaF = when {

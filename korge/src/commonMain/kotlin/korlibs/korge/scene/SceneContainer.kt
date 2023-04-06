@@ -58,7 +58,7 @@ class SceneContainer(
     /** Default [Transition] that will be used when no transition is specified */
     val defaultTransition: Transition = AlphaTransition.withEasing(Easing.EASE_IN_OUT_QUAD),
     name: String = "sceneContainer",
-    size: Size = views.stage.sizeWH,
+    size: Size = views.stage.size,
 ) : UIView(size), CoroutineScope by views {
     init {
         this.name = name

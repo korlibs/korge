@@ -262,7 +262,7 @@ class ViewTest {
 
         act("initial")
         act("moveView") { view1.xy(300, 0) }
-        view1.widthD = 400.0
+        view1.unscaledWidthD = 400.0
         view1.xD = 100.0
         logs += "view_bounds:" + view1.getBounds()
         act("reinsertView1") { container5.addChild(view1) }

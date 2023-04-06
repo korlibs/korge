@@ -35,7 +35,7 @@ class DockingComponent(
                 actualVirtualSize = Size(views.actualVirtualWidth, views.actualVirtualHeight)
                 val size = scaleMode.invoke(initialViewSize, actualVirtualSize)
                 targetSize = size
-                view.setSize(size)
+                view.size(size)
             }
             view.invalidate()
             view.parent?.invalidate()

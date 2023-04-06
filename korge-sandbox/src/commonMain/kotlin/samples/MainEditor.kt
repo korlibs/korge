@@ -105,9 +105,9 @@ class MainEditor : Scene() {
             uiVerticalStack(300f, padding = 4f) {
                 uiText("Properties").styles { textColor = Colors.RED }
                 uiPropertyNumberRow("Alpha", *UIEditableNumberPropsList(solidRect::alphaF))
-                uiPropertyNumberRow("Position", *UIEditableNumberPropsList(solidRect::xD, solidRect::yD, min = -1024.0, max = +1024.0, clamped = false))
-                uiPropertyNumberRow("Size", *UIEditableNumberPropsList(solidRect::widthD, solidRect::heightD, min = -1024.0, max = +1024.0, clamped = false))
-                uiPropertyNumberRow("Scale", *UIEditableNumberPropsList(solidRect::scaleXD, solidRect::scaleYD, min = -1.0, max = +1.0, clamped = false))
+                uiPropertyNumberRow("Position", *UIEditableNumberPropsList(solidRect::x, solidRect::y, min = -1024f, max = +1024f, clamped = false))
+                uiPropertyNumberRow("Size", *UIEditableNumberPropsList(solidRect::unscaledWidth, solidRect::unscaledHeight, min = -1024f, max = +1024f, clamped = false))
+                uiPropertyNumberRow("Scale", *UIEditableNumberPropsList(solidRect::scaleX, solidRect::scaleY, min = -1f, max = +1f, clamped = false))
                 uiPropertyNumberRow("Rotation", *UIEditableNumberPropsList(solidRect::rotationDeg, min = -360.0, max = +360.0, clamped = true))
                 val skewProp = uiPropertyNumberRow("Skew", *UIEditableNumberPropsList(solidRect::skewXDeg, solidRect::skewYDeg, min = -360.0, max = +360.0, clamped = true))
                 append(UIPropertyRow("Visible")) {
@@ -148,8 +148,8 @@ class MainEditor : Scene() {
         }
 
         textBlock.simpleAnimator.sequence(looped = true) {
-            tween(textBlock::widthD[300.0], time = 5.seconds)
-            tween(textBlock::widthD[1.0], time = 5.seconds)
+            tween(textBlock::unscaledWidthD[300.0], time = 5.seconds)
+            tween(textBlock::unscaledWidthD[1.0], time = 5.seconds)
         }
 
         /*

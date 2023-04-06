@@ -63,7 +63,7 @@ class UITextInput(initialText: String = "", size: Size = Size(128, 24)) :
         }
 
     override fun onSizeChanged() {
-        bg.setSize(widthD, heightD)
+        bg.size(widthD, heightD)
         container.bounds(Rectangle(0.0, 0.0, widthD, heightD).without(padding))
     }
 

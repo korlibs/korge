@@ -1,18 +1,18 @@
 package korlibs.korge.input
 
 import korlibs.datastructure.*
-import korlibs.time.*
 import korlibs.event.*
-import korlibs.korge.bitmapfont.*
-import korlibs.korge.internal.*
-import korlibs.korge.view.*
-import korlibs.render.*
 import korlibs.image.bitmap.*
 import korlibs.image.color.*
 import korlibs.io.async.*
 import korlibs.io.lang.*
 import korlibs.io.util.*
+import korlibs.korge.bitmapfont.*
+import korlibs.korge.internal.*
+import korlibs.korge.view.*
 import korlibs.math.geom.*
+import korlibs.render.*
+import korlibs.time.*
 import kotlin.math.*
 import kotlin.native.concurrent.*
 import kotlin.reflect.*
@@ -306,11 +306,11 @@ class MouseEvents(val view: View) : Extra by Extra.Mixin(), Closeable {
     var currentPosGlobal = Point()
 
     // Local variants
-    val startedPosLocal get() = view.globalToLocal(startedPosGlobal)
-    val lastPosLocal get() = view.globalToLocal(lastPosGlobal)
-    val currentPosLocal get() = view.globalToLocal(currentPosGlobal)
-    val downPosLocal get() = view.globalToLocal(downPosGlobal)
-    val upPosLocal get() = view.globalToLocal(upPosGlobal)
+    val startedPosLocal: Point get() = view.globalToLocal(startedPosGlobal)
+    val lastPosLocal: Point get() = view.globalToLocal(lastPosGlobal)
+    val currentPosLocal: Point get() = view.globalToLocal(currentPosGlobal)
+    val downPosLocal: Point get() = view.globalToLocal(downPosGlobal)
+    val upPosLocal: Point get() = view.globalToLocal(upPosGlobal)
 
     // Stage-based variants
     val startedPosStage get() = views.stage.globalToLocal(startedPosGlobal)

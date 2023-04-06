@@ -1,6 +1,7 @@
 package korlibs.korge.ui
 
 import korlibs.io.util.*
+import korlibs.korge.view.*
 import korlibs.math.geom.*
 import kotlin.test.*
 
@@ -19,7 +20,7 @@ class UIViewTest {
         }
 
         log()
-        view.setSize(230.0, 240.0)
+        view.size(230.0, 240.0)
         log()
 
         assertEquals(

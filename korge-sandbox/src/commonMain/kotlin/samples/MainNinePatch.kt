@@ -6,7 +6,6 @@ import korlibs.korge.input.*
 import korlibs.korge.scene.*
 import korlibs.korge.view.*
 import korlibs.math.geom.*
-import korlibs.memory.*
 
 //class MainNinePatch : ScaledScene(512, 512) {
 class MainNinePatch : Scene() {
@@ -18,8 +17,7 @@ class MainNinePatch : Scene() {
         }
         np.mouse {
             moveAnywhere {
-                np.widthD = it.currentPosLocal.xD.clamp(16.0, widthD)
-                np.heightD = it.currentPosLocal.yD.clamp(16.0, heightD)
+                np.unscaledSize = it.currentPosLocal.clamp(Vector2(16f, 16f), Vector2(width, height)).toSize()
             }
         }
     }

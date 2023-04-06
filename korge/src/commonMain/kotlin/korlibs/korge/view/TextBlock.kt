@@ -69,7 +69,7 @@ class TextBlock(
     private fun invalidateText() {
         invalidProps()
         if (autoSize) {
-            setSize(text.width, text.height)
+            size(text.width, text.height)
         }
         allBitmap = null
     }

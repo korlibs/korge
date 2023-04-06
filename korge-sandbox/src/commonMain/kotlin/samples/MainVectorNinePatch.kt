@@ -1,15 +1,11 @@
 package samples
 
-import korlibs.korge.scene.Scene
-import korlibs.korge.view.SContainer
-import korlibs.korge.view.addUpdater
-import korlibs.korge.view.ninePatchShapeView
-import korlibs.image.color.Colors
-import korlibs.image.vector.format.readSVG
-import korlibs.image.vector.scaledShape
-import korlibs.image.vector.toNinePatchFromGuides
-import korlibs.image.vector.toShape
-import korlibs.io.file.std.resourcesVfs
+import korlibs.image.color.*
+import korlibs.image.vector.*
+import korlibs.image.vector.format.*
+import korlibs.io.file.std.*
+import korlibs.korge.scene.*
+import korlibs.korge.view.*
 
 class MainVectorNinePatch : Scene() {
     val mousePos get() = sceneView.localMousePos(views)
@@ -39,7 +35,7 @@ class MainVectorNinePatch : Scene() {
         //))
 
         addUpdater {
-            view.setSize(mousePos.xD, mousePos.yD)
+            view.size(mousePos.xD, mousePos.yD)
         }
     }
 }

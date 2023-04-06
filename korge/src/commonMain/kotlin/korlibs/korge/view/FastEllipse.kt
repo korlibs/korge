@@ -12,7 +12,7 @@ inline fun Container.fastEllipse(
 open class FastEllipse(size: Size = Size(100f, 100f)) : FastRoundRectBase(size, RectCorners(1f, 1f, 1f, 1f), doScale = false) {
     var radius: Size
         get() = Size(widthD, heightD) / 2f
-        set(value) { setSize(value * 2f) }
+        set(value) { size(value * 2f) }
     var radiusAvg: Float
         get() = radius.avgComponent()
         set(value) { radius = Size(value, value) }

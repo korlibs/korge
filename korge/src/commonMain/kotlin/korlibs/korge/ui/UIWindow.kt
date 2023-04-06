@@ -219,10 +219,10 @@ class UIWindow(title: String, size: Size = Size(256, 256)) : UIContainer(size) {
     }
 
     override fun onSizeChanged() {
-        bgMaterial.setSize(widthD, heightD)
-        bg.setSize(widthD, heightD)
-        titleContainer.setSize(width, titleHeight)
-        container.setSize(widthD, heightD - titleHeight)
+        bgMaterial.size(widthD, heightD)
+        bg.size(widthD, heightD)
+        titleContainer.size(width, titleHeight)
+        container.size(widthD, heightD - titleHeight)
         closeButton.position(width - titleHeight - buttonSeparation, buttonSeparation)
         scaleHandlers.fastForEach { it.resized(widthD, heightD) }
     }
@@ -232,7 +232,7 @@ class UIWindow(title: String, size: Size = Size(256, 256)) : UIContainer(size) {
     }
 
     suspend fun closeAnimated() {
-        tween(this::heightD[0.0], this::alphaF[0.0f], time = 300.milliseconds)
+        tween(this::height[0.0], this::alphaF[0.0f], time = 300.milliseconds)
         removeFromParent()
     }
 }

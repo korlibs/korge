@@ -406,21 +406,7 @@ abstract class View internal constructor(
         get() = parent?.localToGlobal(Point(x, y)) ?: Point(x, y)
         set(value) { pos = parent?.globalToLocal(value) ?: value }
 
-    /**
-     * Changes the [width] and [height] to match the parameters.
-     */
-    fun setSize(width: Float, height: Float) = setSize(Size(width, height))
-    fun setSize(width: Double, height: Double) = setSize(Size(width, height))
-    fun setSize(size: Size) {
-        this.unscaledSize = size
-    }
-
-    fun setSizeScaled(size: Size) {
-        this.setSize(Size(
-            if (scaleX == 0f) size.width else size.width / scaleX,
-            if (scaleY == 0f) size.height else size.height / scaleY,
-        ))
-    }
+    var size: Size get() = unscaledSize ; set(value) { unscaledSize = value }
 
     open var unscaledSize: Size
         get() = getLocalBounds().size
@@ -430,11 +416,16 @@ abstract class View internal constructor(
                 (if (scaleX == 0f) 1f else scaleX) * (value.width / size.width),
                 (if (scaleY == 0f) 1f else scaleY) * (value.height / size.height)
             )
-            //da dsad ad a dasdas !!!!!!!!!!!!! we should remove open var width, and open var height and only make open this size
         }
+    var unscaledWidth: Float
+        get() = unscaledSize.width
+        set(value) { unscaledSize = unscaledSize.copy(width = value) }
+    var unscaledHeight: Float
+        get() = unscaledSize.height
+        set(value) { unscaledSize = unscaledSize.copy(height = value) }
+    var unscaledWidthD: Double get() = unscaledWidth.toDouble() ; set(value) { unscaledWidth = value.toFloat() }
+    var unscaledHeightD: Double get() = unscaledHeight.toDouble() ; set(value) { unscaledHeight = value.toFloat() }
 
-
-    val size: Size get() = unscaledSize
 
     @ViewProperty(min = -1000.0, max = +1000.0, name = "size")
     var scaledSize: Size
@@ -446,56 +437,29 @@ abstract class View internal constructor(
             )
         }
 
-    /**
-     * Changes the [widthD] of this view. Generically, this means adjusting the [scaleXD] of the view to match that size using the current bounds,
-     * but some views might override this to adjust its internal width or height (like [SolidRect] or [UIView] for example).
-     *
-     * @TODO: In KorGE 2.0, View.width/View.height will be immutable and available from an extension method for Views that doesn't have a width/height properties
-     */
-    var width: Float get() = unscaledSize.width
-        @Deprecated("Shouldn't set width but scaleWidth instead")
-        set(value) { unscaledSize = unscaledSize.copy(width = value) }
-
-    /**
-     * Changes the [heightD] of this view. Generically, this means adjusting the [scaleYD] of the view to match that size using the current bounds,
-     * but some views might override this to adjust its internal width or height (like [SolidRect] or [UIView] for example).
-     *
-     * @TODO: In KorGE 2.0, View.width/View.height will be immutable and available from an extension method for Views that doesn't have a width/height properties
-     */
-    var height: Float get() = unscaledSize.height
-        @Deprecated("Shouldn't set width but scaleHeight instead")
-        set(value) { unscaledSize = unscaledSize.copy(height = value) }
-
-    val sizeWH: Size get() = Size(width, height)
-
-    var widthD: Double get() = width.toDouble(); @Deprecated("") set(value) { width = value.toFloat() }
-    var heightD: Double get() = height.toDouble(); @Deprecated("") set(value) { height = value.toFloat() }
-
-    val unscaledWidth: Float get() = width
-    val unscaledHeight: Float get() = height
-
-    val unscaledWidthD: Double get() = widthD
-    val unscaledHeightD: Double get() = heightD
-
-    var scaledWidth: Float
-        get() = unscaledWidth * scaleX
-        set(value) {
-            width = if (scaleX == 0f) value else value / scaleX
-        }
-
-    var scaledHeight: Float
-        get() = unscaledHeight * scaleY
-        set(value) {
-            height = if (scaleY == 0f) value else value / scaleY
-        }
-
+    var scaledWidth: Float get() = scaledSize.width ;set(value) { scaledSize = scaledSize.copy(width = value) }
+    var scaledHeight: Float get() = scaledSize.height ; set(value) { scaledSize = scaledSize.copy(height = value) }
     var scaledWidthD: Double get() = scaledWidth.toDouble() ; set(value) { scaledWidth = value.toFloat() }
+    var scaledHeightD: Double get() = scaledHeight.toDouble() ; set(value) { scaledHeight = value.toFloat() }
 
     /**
-     * Changes the [heightD] of this view. Generically, this means adjusting the [scaleYD] of the view to match that size using the current bounds,
+     * Changes the [width] of this view. Generically, this means adjusting the [scaleX] of the view to match that size using the current bounds,
      * but some views might override this to adjust its internal width or height (like [SolidRect] or [UIView] for example).
+     *
+     * To mutate use [unscaledWidth] or [scaledWidth].
      */
-    var scaledHeightD: Double get() = scaledHeight.toDouble() ; set(value) { scaledHeight = value.toFloat() }
+    var width: Float get() = unscaledWidth ; set(value) { unscaledWidth = value }
+
+    /**
+     * Changes the [height] of this view. Generically, this means adjusting the [scaleY] of the view to match that size using the current bounds,
+     * but some views might override this to adjust its internal width or height (like [SolidRect] or [UIView] for example).
+     *
+     * To mutate use [unscaledHeight] or [scaledHeight].
+     */
+    var height: Float get() = unscaledHeight ; set(value) { unscaledHeight = value }
+
+    var widthD: Double get() = unscaledWidth.toDouble() ; set(value) { unscaledWidth = value.toFloat() }
+    var heightD: Double get() = unscaledHeight.toDouble() ; set(value) { unscaledHeight = value.toFloat() }
 
     /**
      * The multiplicative [RGBA] color.
@@ -761,11 +725,14 @@ abstract class View internal constructor(
         return _renderColorTransform.colorMul
     }
 
-    /** The concatenated/global version of the local [alphaF] */
-    val renderAlpha: Double get() {
+    /** The concatenated/global version of the local [alpha] */
+    val renderAlpha: Float get() {
         updateRenderColorTransformIfRequired()
-        return renderColorTransform.a.toDouble()
+        return renderColorTransform.a
     }
+
+    /** The concatenated/global version of the local [alpha] */
+    val renderAlphaD: Double get() = renderAlpha.toDouble()
 
     /** Computes the local X and Y coordinates of the mouse using the coords from the [Views] object */
     fun localMousePos(views: Views): Point = globalToLocal(views.input.mousePos)
@@ -1160,62 +1127,16 @@ abstract class View internal constructor(
 
     }
 
-    //fun hitTest(x: Double, y: Double): View? {
-    //	if (!mouseEnabled) return null
-    //	return hitTestInternal(x, y)
-    //}
-
-    /*
-    /** @TODO: Check this */
-    @KorgeInternal
-    open fun hitTestInternal(x: Double, y: Double): View? {
-        val bounds = getLocalBounds()
-        return if (checkGlobalBounds(x, y, bounds.left, bounds.top, bounds.right, bounds.bottom)) this else null
-    }
-    */
-
-    /*
-    /** @TODO: Check this */
-    @KorgeInternal
-    open fun hitTestBoundingInternal(x: Double, y: Double): View? {
-        val bounds = getGlobalBounds()
-        return if (bounds.contains(x, y)) this else null
-    }
-     */
-
     /** [x] and [y] are global, while [sLeft], [sTop], [sRight], [sBottom] are local */
     protected fun checkGlobalBounds(
-        x: Double,
-        y: Double,
-        sLeft: Double,
-        sTop: Double,
-        sRight: Double,
-        sBottom: Double
+        gp: Point,
+        lrect: Rectangle,
     ): Boolean {
-        val p = globalToLocal(Point(x, y))
-        return checkLocalBounds(p.xD, p.yD, sLeft, sTop, sRight, sBottom)
+        val lp = globalToLocal(gp)
+        return checkLocalBounds(lp, lrect)
     }
 
-    //protected fun checkGlobalBounds(
-    //    x: Double,
-    //    y: Double,
-    //    grect: Rectangle
-    //): Boolean = grect.contains(x, y)
-
-    protected fun checkLocalBounds(
-        lx: Double,
-        ly: Double,
-        sLeft: Double,
-        sTop: Double,
-        sRight: Double,
-        sBottom: Double
-    ): Boolean = lx >= sLeft && ly >= sTop && lx < sRight && ly < sBottom
-
-    //protected fun checkLocalBounds(
-    //    lx: Double,
-    //    ly: Double,
-    //    lrect: Rectangle
-    //): Boolean = lrect.contains(lx, ly)
+    protected fun checkLocalBounds(lp: Point, lrect: Rectangle): Boolean = lp in lrect
 
     /**
      * Resets the View properties to an identity state.
@@ -1329,7 +1250,7 @@ abstract class View internal constructor(
     fun setGlobalBounds(bounds: Rectangle) {
         val transform = parent!!.globalMatrix.toTransform()
         globalPos = bounds.topLeft
-        setSizeScaled(Size(
+        sizeScaled(Size(
             (bounds.width * transform.scaleX),
             (bounds.height * transform.scaleY),
         ))
@@ -1451,9 +1372,6 @@ abstract class View internal constructor(
         return out
     }
 }
-
-val View.width: Double get() = unscaledWidthD
-val View.height: Double get() = unscaledHeightD
 
 // Doesn't seem to work
 //operator fun <T : View, R> T.invoke(callback: T.() -> R): R = this.apply(callback)
@@ -1772,8 +1690,16 @@ inline fun <T : View> T.hitShape(crossinline block: @ViewDslMarker VectorBuilder
     return this
 }
 
+fun <T : View> T.sizeScaled(size: Size): T {
+    this.size = (Size(
+        if (scaleX == 0f) size.width else size.width / scaleX,
+        if (scaleY == 0f) size.height else size.height / scaleY,
+    ))
+    return this
+}
+
 fun <T : View> T.size(size: Size): T {
-    this.setSize(size.width, size.height)
+    this.size = size
     return this
 }
 fun <T : View> T.size(width: Double, height: Double): T = size(Size(width, height))

@@ -150,7 +150,7 @@ open class UIVerticalStack(
             if (adjustSize) it.scaledWidthD = widthD
             y += it.height + padding
         }
-        height = y
+        unscaledHeight = y
     }
 }
 
@@ -169,7 +169,7 @@ open class UIHorizontalStack(height: Float = UI_DEFAULT_SIZE.height, padding: Fl
             if (adjustSize) it.scaledHeightD = heightD
             x += it.width + padding
         }
-        width = x
+        unscaledWidth = x
     }
 }
 
@@ -189,11 +189,11 @@ inline fun Container.uiHorizontalFill(
 open class UIHorizontalFill(size: Size = Size(128, 20)) : UIContainer(size) {
     override fun relayout() {
         var x = 0.0
-        val elementWidth = widthD / numChildren
+        val elementWidth = width / numChildren
         forEachChild {
             it.xD = x
             it.scaledHeightD = heightD
-            it.widthD = elementWidth
+            it.unscaledWidth = elementWidth
             x += elementWidth
         }
     }
@@ -207,11 +207,11 @@ inline fun Container.uiVerticalFill(
 open class UIVerticalFill(size: Size = Size(128, 128)) : UIContainer(size) {
     override fun relayout() {
         var y = 0.0
-        val elementHeight = heightD / numChildren
+        val elementHeight = height / numChildren
         forEachChild {
             it.yD = y
             it.scaledWidthD = widthD
-            it.heightD = elementHeight
+            it.unscaledHeight = elementHeight
             y += elementHeight
         }
     }
