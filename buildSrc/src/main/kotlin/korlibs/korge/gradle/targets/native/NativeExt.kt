@@ -22,6 +22,11 @@ val KotlinNativeTest.executableFolder get() = executable.parentFile ?: error("Ca
 
 fun KotlinTarget.configureKotlinNativeTarget(project: Project) {
     val overridenKonanProperties = mapOf(
+        // From: https://github.com/JetBrains/kotlin/blob/1.8.20/kotlin-native/konan/konan.properties#L929
+        //"clangFlags.mingw_x64" to "-cc1 -emit-obj -disable-llvm-passes -x ir -femulated-tls",
+        "clangFlags.mingw_x64" to "-cc1 -emit-obj -disable-llvm-passes -x ir",
+        "clangOptFlags.mingw_x64" to "-O3 -ffunction-sections",
+
         // From: https://github.com/JetBrains/kotlin/blob/1.8.20/kotlin-native/konan/konan.properties#L969
         //"clangFlags.mingw_x86" to "-cc1 -emit-obj -disable-llvm-passes -x ir -femulated-tls",
         "clangFlags.mingw_x86" to "-cc1 -emit-obj -disable-llvm-passes -x ir",
