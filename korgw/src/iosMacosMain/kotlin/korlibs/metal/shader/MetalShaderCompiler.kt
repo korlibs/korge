@@ -4,6 +4,7 @@ import korlibs.graphics.metal.shader.*
 import korlibs.graphics.metal.shader.fragmentMainFunctionName
 import korlibs.graphics.metal.shader.vertexMainFunctionName
 import korlibs.graphics.shader.*
+import korlibs.logger.*
 import korlibs.metal.*
 import kotlinx.cinterop.*
 import platform.Foundation.*
@@ -17,7 +18,7 @@ import platform.Metal.*
  * - create a MTLRenderPipelineStateProtocol https://developer.apple.com/documentation/metal/mtlrenderpipelinestate
  * - use a value class to store the compiled program and the list of input buffers
  */
-object MetalShaderCompiler {
+internal object MetalShaderCompiler {
 
     fun compile(device: MTLDeviceProtocol, program: Program, bufferInputLayouts: MetalShaderBufferInputLayouts): MetalProgram {
         return program.toMetalShader(bufferInputLayouts)
@@ -25,10 +26,13 @@ object MetalShaderCompiler {
     }
 }
 
+private val logger by lazy { Logger("MetalShaderCompiler") }
+
 
 private fun MetalShaderGenerator.Result.toInternalMetalProgram(device: MTLDeviceProtocol) =
     let { (shaderAsString, inputBuffers) ->
         shaderAsString
+            .also { logger.info { "generated shader:\n$shaderAsString" } }
             .toFunctionsLibrary(device)
             .let { it.toFunction(vertexMainFunctionName) to it.toFunction(fragmentMainFunctionName) }
             .toCompiledProgram(device)

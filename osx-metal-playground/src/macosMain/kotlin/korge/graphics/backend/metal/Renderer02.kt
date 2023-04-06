@@ -113,12 +113,12 @@ class Renderer02(device: MTLDeviceProtocol) : Renderer(device) {
         """.trimIndent()
 
         //shaderSrc =
-        (vertexShader to fragmentShader).toNewMetalShaderStringResult(MetalShaderBufferInputLayouts(
+        /*(vertexShader to fragmentShader).toNewMetalShaderStringResult(MetalShaderBufferInputLayouts(
             listOf(),
             listOf()
         ))
             .result
-            .also(::println)
+            .also(::println)*/
 
         val errorPtr = alloc<ObjCObjectVar<NSError?>>()
         val library = device.newLibraryWithSource(shaderSrc, null, errorPtr.ptr).let {

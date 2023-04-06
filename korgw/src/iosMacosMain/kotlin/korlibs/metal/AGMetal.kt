@@ -4,6 +4,7 @@ import korlibs.memory.*
 import korlibs.graphics.*
 import korlibs.graphics.metal.shader.*
 import korlibs.graphics.shader.*
+import korlibs.logger.*
 import korlibs.metal.shader.*
 import kotlinx.cinterop.*
 import platform.Metal.*
@@ -11,6 +12,7 @@ import platform.MetalKit.*
 
 class AGMetal(private val view: MTKView) : AG() {
 
+    private val logger = Logger("AGMetal")
     private val device = MTLCreateSystemDefaultDevice() ?: error("fail to create metal device")
     private val commandQueue = device.newCommandQueue() ?: error("fail to create metal command queue")
     private val programs = HashMap<Program, MetalProgram>()
