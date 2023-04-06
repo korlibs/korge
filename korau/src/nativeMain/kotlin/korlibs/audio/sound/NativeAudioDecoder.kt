@@ -283,7 +283,7 @@ object NativeOggVorbisDecoderFormat : AudioFormat("ogg") {
         = OGG.tryReadInfo(data, props)
     //= decodeStream(data)?.use { Info(it.totalLength.microseconds.microseconds, it.channels) }
 
-    override suspend fun decodeStream(data: AsyncStream, props: AudioDecodingProps): AudioStream? {
+    override suspend fun decodeStreamInternal(data: AsyncStream, props: AudioDecodingProps): AudioStream? {
         return object : NativeAudioDecoder(data, 16 * 1024) {
             override fun init() {
             }

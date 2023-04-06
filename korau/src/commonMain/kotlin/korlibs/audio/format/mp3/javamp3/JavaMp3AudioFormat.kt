@@ -20,7 +20,7 @@ open class JavaMp3AudioFormat() : AudioFormat("mp3") {
     companion object : JavaMp3AudioFormat()
 
     override suspend fun tryReadInfo(data: AsyncStream, props: AudioDecodingProps): Info? = MP3.tryReadInfo(data, props)
-    override suspend fun decodeStream(data: AsyncStream, props: AudioDecodingProps): AudioStream? = createJavaMp3DecoderStream(data, props)
+    override suspend fun decodeStreamInternal(data: AsyncStream, props: AudioDecodingProps): AudioStream? = createJavaMp3DecoderStream(data, props)
     override fun toString(): String = "NativeMp3DecoderFormat"
 }
 

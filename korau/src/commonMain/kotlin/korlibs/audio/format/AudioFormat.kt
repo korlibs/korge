@@ -2,27 +2,18 @@
 
 package korlibs.audio.format
 
-import korlibs.datastructure.Extra
-import korlibs.time.TimeSpan
-import korlibs.time.seconds
-import korlibs.audio.format.mp3.FastMP3Decoder
-import korlibs.audio.internal.niceStr
-import korlibs.audio.sound.AudioData
-import korlibs.audio.sound.AudioStream
-import korlibs.audio.sound.toData
-import korlibs.io.file.PathInfo
-import korlibs.io.file.VfsFile
-import korlibs.io.file.extensionLC
-import korlibs.io.lang.unsupported
-import korlibs.io.stream.AsyncOutputStream
-import korlibs.io.stream.AsyncStream
-import korlibs.io.stream.MemorySyncStreamToByteArray
-import korlibs.io.stream.openAsync
-import korlibs.io.stream.readBytesUpTo
-import korlibs.io.stream.toAsync
-import korlibs.crypto.encoding.hex
+import korlibs.audio.format.mp3.*
+import korlibs.audio.internal.*
+import korlibs.audio.sound.*
+import korlibs.crypto.encoding.*
+import korlibs.datastructure.*
+import korlibs.io.file.*
+import korlibs.io.lang.*
+import korlibs.io.stream.*
+import korlibs.time.*
+import kotlinx.coroutines.*
 import kotlin.coroutines.cancellation.CancellationException
-import kotlin.native.concurrent.ThreadLocal
+import kotlin.native.concurrent.*
 
 open class AudioFormat(vararg exts: String) {
 	open val extensions: Set<String> = exts.map { it.lowercase().trim() }.toSet()
@@ -37,7 +28,14 @@ open class AudioFormat(vararg exts: String) {
 	}
 
 	open suspend fun tryReadInfo(data: AsyncStream, props: AudioDecodingProps = AudioDecodingProps.DEFAULT): Info? = null
-	open suspend fun decodeStream(data: AsyncStream, props: AudioDecodingProps = AudioDecodingProps.DEFAULT): AudioStream? = null
+	protected open suspend fun decodeStreamInternal(data: AsyncStream, props: AudioDecodingProps = AudioDecodingProps.DEFAULT): AudioStream? = null
+    suspend fun decodeStream(data: AsyncStream, props: AudioDecodingProps = AudioDecodingProps.DEFAULT): AudioStream? {
+        return if (props.dispatcher != null) {
+            withContext(props.dispatcher) { decodeStreamInternal(data, props) }
+        } else {
+            decodeStreamInternal(data, props)
+        }
+    }
 	suspend fun decode(data: AsyncStream, props: AudioDecodingProps = AudioDecodingProps.DEFAULT): AudioData? = decodeStream(data, props)?.toData(props.maxSamples)
 	suspend fun decode(data: ByteArray, props: AudioDecodingProps = AudioDecodingProps.DEFAULT): AudioData? = decodeStream(data.openAsync(), props)?.toData(props.maxSamples)
 	open suspend fun encode(data: AudioData, out: AsyncOutputStream, filename: String, props: AudioEncodingProps = AudioEncodingProps.DEFAULT): Unit = unsupported()
@@ -57,12 +55,13 @@ open class AudioFormat(vararg exts: String) {
 	override fun toString(): String = "$name(${extensions.sorted()})"
 }
 
-open class AudioDecodingProps(
+data class AudioDecodingProps(
     val exactTimings: Boolean? = null,
     val readInMemory: Boolean = true,
     val formats: AudioFormat? = null,
     val maxSamples: Int = 15 * 60 * 44100,
-) {
+    val dispatcher: CoroutineDispatcher? = null,
+) : Extra by Extra.Mixin() {
     //var readInMemory: Boolean = true
 
     companion object {
@@ -71,10 +70,10 @@ open class AudioDecodingProps(
     }
 }
 
-open class AudioEncodingProps(
+data class AudioEncodingProps(
     val quality: Double = 0.84,
     val filename: String? = null
-) {
+) : Extra by Extra.Mixin() {
     companion object {
         val DEFAULT = AudioEncodingProps()
     }
@@ -128,7 +127,7 @@ class AudioFormats : AudioFormat() {
 		return null
 	}
 
-	override suspend fun decodeStream(data: AsyncStream, props: AudioDecodingProps): AudioStream? {
+	override suspend fun decodeStreamInternal(data: AsyncStream, props: AudioDecodingProps): AudioStream? {
 		//println(formats)
 		for (format in formats) {
 			try {

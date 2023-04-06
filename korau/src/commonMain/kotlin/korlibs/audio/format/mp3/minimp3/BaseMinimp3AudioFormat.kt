@@ -1,26 +1,18 @@
 package korlibs.audio.format.mp3.minimp3
 
-import korlibs.datastructure.ByteArrayDeque
-import korlibs.memory.hasFlags
-import korlibs.memory.indexOf
-import korlibs.audio.format.AudioDecodingProps
-import korlibs.audio.format.AudioFormat
-import korlibs.audio.format.MP3
-import korlibs.audio.format.MP3Base
-import korlibs.audio.sound.AudioSamples
-import korlibs.audio.sound.AudioSamplesDeque
-import korlibs.audio.sound.AudioStream
-import korlibs.io.lang.Closeable
-import korlibs.io.stream.AsyncStream
-import korlibs.io.stream.FastByteArrayInputStream
-import korlibs.io.stream.readBytesUpTo
+import korlibs.audio.format.*
+import korlibs.audio.sound.*
+import korlibs.datastructure.*
+import korlibs.io.lang.*
+import korlibs.io.stream.*
+import korlibs.memory.*
 
 abstract class BaseMinimp3AudioFormat : AudioFormat("mp3") {
     override suspend fun tryReadInfo(data: AsyncStream, props: AudioDecodingProps): Info? {
         return MP3.tryReadInfo(data, props)
     }
 
-    override suspend fun decodeStream(data: AsyncStream, props: AudioDecodingProps): AudioStream? {
+    override suspend fun decodeStreamInternal(data: AsyncStream, props: AudioDecodingProps): AudioStream? {
         return createDecoderStream(data, props, null)
     }
 
@@ -34,6 +26,7 @@ abstract class BaseMinimp3AudioFormat : AudioFormat("mp3") {
         }
 
         suspend fun readMoreSamples(): Boolean {
+            //println("currentThreadId=$currentThreadId, currentThreadName=$currentThreadName")
             while (true) {
                 if (decoder.info.compressedData.availableRead < decoder.info.tempBuffer.size && data.hasAvailable()) {
                     decoder.info.compressedData.write(data.readBytesUpTo(0x1000))
