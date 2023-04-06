@@ -98,6 +98,9 @@ internal class MetalShaderGenerator(
         }
         ")" {
             line("v2f out;")
+            bufferLayouts.convertInputBufferToLocalDeclarations(vertexVisitor.attributes.toList() + vertexVisitor.uniforms)
+                .forEach { line(it) }
+
             vertexBodyGenerator.visit(vertexShader.stm)
             line(vertexBodyGenerator.programIndenter)
             line("return out;")

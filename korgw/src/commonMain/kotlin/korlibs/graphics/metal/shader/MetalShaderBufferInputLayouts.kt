@@ -29,9 +29,17 @@ internal data class MetalShaderBufferInputLayouts(
         parameters: List<VariableWithOffset>,
         bodyGenerator: MetalShaderBodyGenerator
     ): Lazy<List<String>> = lazy {
-
         inputBuffers.filterNotIn(parameters)
             .map { it.findDeclarationFromInputBuffer(bodyGenerator) }
+
+    }
+
+    internal fun convertInputBufferToLocalDeclarations(
+        parameters: List<VariableWithOffset>
+    ): List<String> {
+        return inputBuffers.filterNotIn(parameters)
+            .filter { buffer -> buffer.any { it is Attribute } }
+            .flatMap { it.toLocalDeclarations() }
 
     }
 
@@ -52,13 +60,26 @@ internal data class MetalShaderBufferInputLayouts(
                 val type = bodyGenerator.typeToString(variableWithOffset.type)
                 val name = variableWithOffset.name
                 when (variableWithOffset) {
-                    is Attribute -> "device const $type* $name [[buffer($bufferIndex)]]"
+                    is Attribute -> "device const $type* buffer$bufferIndex [[buffer($bufferIndex)]]"
                     else -> "constant $type& $name [[buffer($bufferIndex)]]"
                 }
             }
         }
     }
-}
+    private fun List<VariableWithOffset>.toLocalDeclarations(): List<String> {
+        val bufferIndex = inputBuffers.indexOf(this)
 
+        return map {
+            when {
+                size > 1 -> "auto ${it.name} = buffer$bufferIndex[vertexId].${it.name};"
+                else -> "auto ${it.name} = buffer$bufferIndex[vertexId];"
+            }
+
+        }
+    }
+
+
+
+}
 
 

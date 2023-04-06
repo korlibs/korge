@@ -19,7 +19,18 @@ class MetalShaderGeneratorTest {
         val u_ColorModifier by vec4()
     }
 
-    private val emptyBufferInputLayouts = MetalShaderBufferInputLayouts(listOf(), listOf())
+    private val simpleBufferInputLayouts = MetalShaderBufferInputLayouts(
+        vertexLayouts = listOf(
+            VertexLayout(a_Pos),
+            VertexLayout(a_Tex),
+            VertexLayout(a_Col)
+        ),
+        uniforms = listOf(
+            u_ProjMat,
+            u_ViewMat,
+            UB.u_ColorModifier.uniform
+        )
+    )
     private val bufferInputLayoutsWithComplexLayout = MetalShaderBufferInputLayouts(
         vertexLayouts = listOf(
             VertexLayout(a_Pos),
@@ -64,17 +75,18 @@ class MetalShaderGeneratorTest {
             };
             vertex v2f vertexMain(
             	uint vertexId [[vertex_id]],
-            	device const float2* a_Pos [[buffer(0)]],
+            	device const float2* buffer0 [[buffer(0)]],
             	device const Buffer1* buffer1 [[buffer(1)]],
             	constant float4x4& u_ProjMat [[buffer(2)]],
             	constant float4x4& u_ViewMat [[buffer(3)]]
             ) {
             	v2f out;
-                val a_Tex = buffer1[vertexId].a_Tex;
-                val a_Col = buffer1[vertexId].a_Col;
+            	auto a_Pos = buffer0[vertexId];
+            	auto a_Tex = buffer1[vertexId].a_Tex;
+            	auto a_Col = buffer1[vertexId].a_Col;
             	v_Tex = a_Tex;
             	out.v_Col = a_Col;
-            	out.position = ((u_ProjMat * u_ViewMat) * float4(a_Pos[vertexId], 0.0, 1.0));
+            	out.position = ((u_ProjMat * u_ViewMat) * float4(a_Pos, 0.0, 1.0));
             	return out;
             }
             fragment float4 fragmentMain(
@@ -88,8 +100,8 @@ class MetalShaderGeneratorTest {
         """.trimIndent())
 
         assertThat(metalResult.inputBuffers).isEqualTo(listOf(
-            listOf(a_Tex, a_Col),
             listOf(a_Pos),
+            listOf(a_Tex, a_Col),
             listOf(u_ProjMat),
             listOf(u_ViewMat),
             listOf(UB.u_ColorModifier)
@@ -97,11 +109,11 @@ class MetalShaderGeneratorTest {
     }
 
     @Test
-    fun check_that_vertex_metal_shader_is_correctly_generated_with_empty_buffer_input_layout() {
+    fun check_that_vertex_metal_shader_is_correctly_generated_with_simple_buffer_input_layout() {
         // Given
         val metalResult = (vertexShader to fragmentShader)
             // When
-            .toNewMetalShaderStringResult(emptyBufferInputLayouts)
+            .toNewMetalShaderStringResult(simpleBufferInputLayouts)
 
         // Then
         assertThat(metalResult.result.trim()).isEqualTo("""
@@ -114,16 +126,19 @@ class MetalShaderGeneratorTest {
             };
             vertex v2f vertexMain(
             	uint vertexId [[vertex_id]],
-            	device const float2* a_Tex [[buffer(0)]],
-            	device const uchar4* a_Col [[buffer(1)]],
-            	device const float2* a_Pos [[buffer(2)]],
+            	device const float2* buffer0 [[buffer(0)]],
+            	device const float2* buffer1 [[buffer(1)]],
+            	device const uchar4* buffer2 [[buffer(2)]],
             	constant float4x4& u_ProjMat [[buffer(3)]],
             	constant float4x4& u_ViewMat [[buffer(4)]]
             ) {
             	v2f out;
-            	v_Tex = a_Tex[vertexId];
-            	out.v_Col = a_Col[vertexId];
-            	out.position = ((u_ProjMat * u_ViewMat) * float4(a_Pos[vertexId], 0.0, 1.0));
+            	auto a_Pos = buffer0[vertexId];
+            	auto a_Tex = buffer1[vertexId];
+            	auto a_Col = buffer2[vertexId];
+            	v_Tex = a_Tex;
+            	out.v_Col = a_Col;
+            	out.position = ((u_ProjMat * u_ViewMat) * float4(a_Pos, 0.0, 1.0));
             	return out;
             }
             fragment float4 fragmentMain(
@@ -137,9 +152,9 @@ class MetalShaderGeneratorTest {
         """.trimIndent())
 
         assertThat(metalResult.inputBuffers).isEqualTo(listOf(
+            listOf(a_Pos),
             listOf(a_Tex),
             listOf(a_Col),
-            listOf(a_Pos),
             listOf(u_ProjMat),
             listOf(u_ViewMat),
             listOf(UB.u_ColorModifier)
