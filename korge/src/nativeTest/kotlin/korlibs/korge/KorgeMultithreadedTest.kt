@@ -1,21 +1,21 @@
 package korlibs.korge
 
-import korlibs.time.*
-import korlibs.logger.*
-import korlibs.graphics.shader.*
 import korlibs.event.*
+import korlibs.graphics.shader.*
+import korlibs.image.format.*
+import korlibs.io.file.std.*
 import korlibs.korge.input.*
 import korlibs.korge.tests.*
 import korlibs.korge.view.*
 import korlibs.korge.view.filter.*
 import korlibs.korge.view.mask.*
 import korlibs.korge.view.vector.*
-import korlibs.image.format.*
-import korlibs.io.file.std.*
+import korlibs.logger.*
 import korlibs.math.geom.*
 import korlibs.math.geom.bezier.*
 import korlibs.math.geom.shape.*
 import korlibs.math.geom.vector.*
+import korlibs.time.*
 import kotlinx.coroutines.*
 import kotlin.native.concurrent.*
 import kotlin.test.*
@@ -54,7 +54,7 @@ class KorgeMultithreadedTest {
             val viewsForTesting = ViewsForTesting()
             viewsForTesting.viewsTest(timeout = 5.seconds, cond = { true }) {
                 val rect = solidRect(10, 10)
-                    .filters(BlurFilter(), filterScale = 0.1)
+                    .filters(BlurFilter(), filterScale = 0.1f)
                     .mask(solidRect(5, 5))
                 val gpuShapeView = gpuShapeView({ roundRect(0, 0, 200, 100, 10, 10) })
                 this.views.render()
