@@ -15,7 +15,7 @@ inline fun Container.roundRect(
     radius: RectCorners,
     fill: Paint = Colors.WHITE,
     stroke: Paint = Colors.WHITE,
-    strokeThickness: Double = 0.0,
+    strokeThickness: Float = 0f,
     autoScaling: Boolean = true,
     callback: @ViewDslMarker RoundRect.() -> Unit = {}
 ) = RoundRect(size, radius, fill, stroke, strokeThickness, autoScaling).addTo(this, callback)
@@ -28,7 +28,7 @@ class RoundRect(
     radius: RectCorners,
     fill: Paint = Colors.WHITE,
     stroke: Paint = Colors.WHITE,
-    strokeThickness: Double = 0.0,
+    strokeThickness: Float = 0f,
     autoScaling: Boolean = true
 ) : ShapeView(shape = VectorPath(), fill = fill, stroke = stroke, strokeThickness = strokeThickness, autoScaling = autoScaling) {
 

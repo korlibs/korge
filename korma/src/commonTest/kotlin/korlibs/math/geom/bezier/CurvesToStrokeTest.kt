@@ -76,7 +76,7 @@ class CurvesToStrokeTest {
     fun testCircleJoins() {
         val curves = Arc.createCircle(Point(0, 0), 100f)
         val builder = StrokePointsBuilder(10.0, mode = StrokePointsMode.SCALABLE_POS_NORMAL_WIDTH)
-        builder.addJoin(curves.beziers[0], curves.beziers[1], LineJoin.MITER, 5.0)
+        builder.addJoin(curves.beziers[0], curves.beziers[1], LineJoin.MITER, 5f)
         assertEquals(
             """
                 VectorArrayList[2](
@@ -90,6 +90,6 @@ class CurvesToStrokeTest {
 
     fun pathPoints(join: LineJoin, block: VectorBuilder.() -> Unit): VectorArrayList =
         buildVectorPath { block() }
-            .toStrokePointsList(StrokeInfo(thickness = 10.0, join = join), mode = StrokePointsMode.SCALABLE_POS_NORMAL_WIDTH)
+            .toStrokePointsList(StrokeInfo(thickness = 10f, join = join), mode = StrokePointsMode.SCALABLE_POS_NORMAL_WIDTH)
             .first().vector.clone()
 }

@@ -1,17 +1,16 @@
 package korlibs.render
 
 import korlibs.datastructure.*
-import korlibs.time.*
-import korlibs.memory.*
+import korlibs.event.*
 import korlibs.graphics.*
 import korlibs.graphics.gl.*
-import korlibs.event.*
 import korlibs.image.bitmap.*
 import korlibs.image.format.*
 import korlibs.image.format.ns.*
 import korlibs.io.lang.*
 import korlibs.math.geom.*
-import korlibs.math.geom.MSize
+import korlibs.memory.*
+import korlibs.time.*
 import kotlinx.cinterop.*
 import kotlinx.coroutines.*
 import platform.AppKit.*
@@ -482,28 +481,27 @@ class MyDefaultGameWindow : GameWindow() {
 
     override val ag: AG = AGNative()
 
-    override val devicePixelRatio: Double
+    override val devicePixelRatio: Float
         get() {
             //return NSScreen.mainScreen?.backingScaleFactor?.toDouble() ?: field
-            return window.backingScaleFactor
+            return window.backingScaleFactor.toFloat()
         }
 
-    override val pixelsPerInch: Double
-        get() {
-            val screen = window.screen ?: return 96.0
-            val screenSizeInPixels = screen.visibleFrame.useContents { MSize(size.width, size.height) }
-            val screenSizeInMillimeters = CGDisplayScreenSize(((screen.deviceDescription["NSScreenNumber"]) as NSNumber).unsignedIntValue).useContents { MSize(width, height) }
+    override val pixelsPerInch: Float by TimedCache<Float>(0.5.seconds) {
+        val screen = window.screen ?: return@TimedCache 96f
+        val screenSizeInPixels = screen.visibleFrame.useContents { MSize(size.width, size.height) }
+        val screenSizeInMillimeters = CGDisplayScreenSize(((screen.deviceDescription["NSScreenNumber"]) as NSNumber).unsignedIntValue).useContents { MSize(width, height) }
 
-            val dpmm = screenSizeInPixels.width / screenSizeInMillimeters.width
-            val dpi = dpmm / 0.0393701
+        val dpmm = screenSizeInPixels.width / screenSizeInMillimeters.width
+        val dpi = dpmm / 0.0393701
 
-            //println("screenSizeInPixels=$screenSizeInPixels")
-            //println("screenSizeInMillimeters=$screenSizeInMillimeters")
-            //println("dpmm=$dpmm")
-            //println("dpi=$dpi")
+        //println("screenSizeInPixels=$screenSizeInPixels")
+        //println("screenSizeInMillimeters=$screenSizeInMillimeters")
+        //println("dpmm=$dpmm")
+        //println("dpi=$dpi")
 
-            return dpi // 1 millimeter -> 0.0393701 inches
-        }
+        dpi.toFloat() // 1 millimeter -> 0.0393701 inches
+    }
 
     //override val width: Int get() = window.frame.width.toInt()
     //override val height: Int get() = window.frame.height.toInt()

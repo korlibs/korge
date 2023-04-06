@@ -24,7 +24,7 @@ class ReferenceGraphicsTest {
         }
 
         // Circle Graphics
-        circle(64f, fill = Colors.RED, stroke = Colors.BLUE, strokeThickness = 32.0).xy(50, 50).centered.rotation(30.degrees)
+        circle(64f, fill = Colors.RED, stroke = Colors.BLUE, strokeThickness = 32f).xy(50, 50).centered.rotation(30.degrees)
 
         val bmp = BitmapSlice(
             Bitmap32(64, 64) { x, y -> Colors.PURPLE }.premultipliedIfRequired(),
@@ -100,7 +100,7 @@ class ReferenceGraphicsTest {
                 translate(100, 20)
                 scale(2.0)
                 run {
-                    globalAlpha = 0.75
+                    globalAlpha = 0.75f
                     fillStyle = BitmapPaint(
                         korgeBitmap,
                         MMatrix().translate(50, 50).scale(0.125).immutable,
@@ -111,7 +111,7 @@ class ReferenceGraphicsTest {
                 }
 
                 run {
-                    globalAlpha = 0.9
+                    globalAlpha = 0.9f
                     fillStyle =
                         //createLinearGradient(150.0, 0.0, 200.0, 50.0)
                         createLinearGradient(0.0, 0.0, 100.0, 100.0, transform = Matrix().scaled(0.5).pretranslated(300, 0))
@@ -124,14 +124,14 @@ class ReferenceGraphicsTest {
                     })
                 }
                 run {
-                    globalAlpha = 0.9
+                    globalAlpha = 0.9f
                     fillStyle =
                         createRadialGradient(150,150,30, 130,180,70)
                             .addColorStop(0.0, Colors.RED).addColorStop(0.5, Colors.GREEN).addColorStop(1.0, Colors.BLUE)
                     fillRect(100.0, 100.0, 100.0, 100.0)
                 }
                 run {
-                    globalAlpha = 0.9
+                    globalAlpha = 0.9f
                     fillStyle =
                         createSweepGradient(175, 100)
                             .addColorStop(0.0, Colors.RED).addColorStop(0.5, Colors.PURPLE).addColorStop(1.0, Colors.YELLOW)

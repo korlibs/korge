@@ -1,14 +1,10 @@
 package korlibs.math.geom
 
-import korlibs.datastructure.ConcurrentPool
+import korlibs.datastructure.*
 import korlibs.math.annotations.*
-import korlibs.math.internal.niceStr
-import korlibs.math.interpolation.Interpolable
-import korlibs.math.interpolation.MutableInterpolable
-import korlibs.math.interpolation.Ratio
-import korlibs.math.interpolation.interpolate
-import korlibs.math.math.isAlmostEquals
-import korlibs.math.math.roundDecimalPlaces
+import korlibs.math.internal.*
+import korlibs.math.interpolation.*
+import korlibs.math.math.*
 
 @KormaMutableApi
 @Deprecated("Use Rectangle")
@@ -140,7 +136,8 @@ data class MRectangle(
     var right: Double ; get() = x + width ; set(value) { width = value - x }
     var bottom: Double ; get() = y + height ; set(value) { height = value - y }
 
-    val position: MPoint get() = MPoint(x, y)
+    val pos: Point get() = Point(x, y)
+    val mPosition: MPoint get() = MPoint(x, y)
     override val size: Size get() = Size(width, height)
     override val mSize: MSize get() = MSize(width, height)
 

@@ -37,7 +37,7 @@ class ViewsOpenglJvmTest : ViewsForTesting(log = true) {
             override fun renderInternal(ctx: RenderContext) {
                 ctx.renderToTexture(100, 100, render = {
                    ctx.useCtx2d { ctx2d ->
-                       ctx2d.rect(0.0, 0.0, 100.0, 100.0, Colors.RED)
+                       ctx2d.rect(Rectangle(0.0, 0.0, 100.0, 100.0), Colors.RED)
                    }
                 }, hasStencil = true) { tex ->
                     ctx.useBatcher { batcher ->
@@ -46,7 +46,7 @@ class ViewsOpenglJvmTest : ViewsForTesting(log = true) {
                 }
                 ctx.renderToTexture(100, 100, render = {
                     ctx.useCtx2d { ctx2d ->
-                        ctx2d.rect(0.0, 0.0, 100.0, 100.0, Colors.BLUE)
+                        ctx2d.rect(Rectangle(0.0, 0.0, 100.0, 100.0), Colors.BLUE)
                     }
                 }, hasDepth = true, hasStencil = true) { tex ->
                     ctx.useBatcher { batcher ->

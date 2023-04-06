@@ -143,7 +143,7 @@ fun RenderContext2D.materialRoundRect(
         it[u_HighlightPos] = (highlightPos * Size(width, height))
         it[u_HighlightRadius] = (highlightRadius * kotlin.math.max(width, height) * 1.25).toFloat()
         it[u_HighlightColor] = (highlightColor.premultipliedFast)
-        it[u_BorderSizeHalf] = (borderSize * 0.5f).toFloat()
+        it[u_BorderSizeHalf] = (borderSize * 0.5f)
         it[u_BorderColor] = (borderColor.premultipliedFast)
         it[u_ShadowColor] = (shadowColor.premultipliedFast)
         it[u_ShadowOffset] = (shadowOffset)
@@ -168,10 +168,8 @@ fun RenderContext2D.materialRoundRect(
 @KorgeExperimental
 fun RenderContext2D.drawText(
     text: RichTextData,
-    x: Double = 0.0,
-    y: Double = 0.0,
-    width: Double = 10000.0,
-    height: Double = 10000.0,
+    pos: Point = Point.ZERO,
+    size: Size = Size(10000, 10000),
     wordWrap: Boolean = true,
     includePartialLines: Boolean = false,
     ellipsis: String? = null,
@@ -180,7 +178,7 @@ fun RenderContext2D.drawText(
     align: TextAlignment = TextAlignment.TOP_LEFT,
     includeFirstLineAlways: Boolean = true
 ) {
-    drawText(text.place(Rectangle(x, y, width, height), wordWrap, includePartialLines, ellipsis, fill, stroke, align, includeFirstLineAlways = includeFirstLineAlways))
+    drawText(text.place(Rectangle(pos, size), wordWrap, includePartialLines, ellipsis, fill, stroke, align, includeFirstLineAlways = includeFirstLineAlways))
 }
 
 @KorgeExperimental
@@ -192,7 +190,7 @@ fun RenderContext2D.drawText(
     var n = 0
     placements.fastForEach {
         drawText(
-            it.text, it.font.lazyBitmap, it.size, it.x, it.y, (it.fillStyle as? RGBA?) ?: Colors.WHITE, baseline = true,
+            it.text, it.font.lazyBitmap, it.size, it.pos, (it.fillStyle as? RGBA?) ?: Colors.WHITE, baseline = true,
             textRangeStart = textRangeStart - n,
             textRangeEnd = textRangeEnd - n
         )
@@ -204,9 +202,8 @@ fun RenderContext2D.drawText(
 fun RenderContext2D.drawText(
     text: String,
     font: BitmapFont,
-    textSize: Double = 16.0,
-    x: Double = 0.0,
-    y: Double = 0.0,
+    textSize: Float = 16f,
+    pos: Point = Point.ZERO,
     color: RGBA = Colors.WHITE,
     baseline: Boolean = false,
     textRangeStart: Int = 0,
@@ -214,18 +211,20 @@ fun RenderContext2D.drawText(
     //stroke: Stroke?,
 ) {
     val scale = font.getTextScale(textSize)
-    var sx = x
-    val sy = y + if (baseline) -font.base * scale else 0.0
+    var sx = pos.x
+    val sy = pos.y + if (baseline) -font.base * scale else 0f
     //println("multiplyColor=$multiplyColor")
     var n = 0
     for (char in text) {
         val glyph = font.getGlyph(char)
         if (n in textRangeStart until textRangeEnd) {
             rect(
-                sx + glyph.xoffset * scale,
-                sy + glyph.yoffset * scale,
-                glyph.texWidth.toDouble() * scale,
-                glyph.texHeight.toDouble() * scale,
+                Rectangle(
+                    sx + glyph.xoffset * scale,
+                    sy + glyph.yoffset * scale,
+                    glyph.texWidth.toFloat() * scale,
+                    glyph.texHeight.toFloat() * scale,
+                ),
                 (color * multiplyColor),
                 //multiplyColor,
                 true, glyph.texture, font.agProgram,

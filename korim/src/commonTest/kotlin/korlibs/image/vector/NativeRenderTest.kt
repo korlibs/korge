@@ -1,16 +1,14 @@
 package korlibs.image.vector
 
-import korlibs.memory.*
 import korlibs.image.bitmap.*
-import korlibs.image.color.Colors
-import korlibs.image.format.PNG
-import korlibs.image.format.writeTo
-import korlibs.io.async.suspendTest
-import korlibs.io.file.fullPathNormalized
-import korlibs.io.file.std.tempVfs
-import korlibs.math.geom.degrees
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import korlibs.image.color.*
+import korlibs.image.format.*
+import korlibs.io.async.*
+import korlibs.io.file.*
+import korlibs.io.file.std.*
+import korlibs.math.geom.*
+import korlibs.memory.*
+import kotlin.test.*
 
 class NativeRenderTest {
     @Test fun testNativeFill() = doTest(native = true, drawBitmap = false)
@@ -30,7 +28,7 @@ class NativeRenderTest {
             translate(20, 20)
             fillStyle = createColor(Colors.RED)
             if (drawBitmap) {
-                drawImage(Bitmap32(20, 20, Colors.RED), 10, 10)
+                drawImage(Bitmap32(20, 20, Colors.RED), Point(10, 10))
             } else {
                 fillRect(10, 10, 20, 20)
             }

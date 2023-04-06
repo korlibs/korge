@@ -42,7 +42,7 @@ class MainClipping : Scene() {
         addChild(tv)
 
         gpuShapeView({
-            stroke(Colors.GREEN, lineWidth = 2.0) {
+            stroke(Colors.GREEN, lineWidth = 2f) {
                 rect(0.0, 0.0, views.virtualWidthDouble, views.virtualHeightDouble)
             }
         })

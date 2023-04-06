@@ -1,16 +1,13 @@
 package korlibs.render
 
-import android.app.Activity
+import android.app.*
 import android.content.*
 import android.view.*
 import android.view.inputmethod.*
+import korlibs.event.*
 import korlibs.graphics.*
-import korlibs.event.ISoftKeyboardConfig
-import korlibs.event.SoftKeyboardConfig
 import korlibs.image.bitmap.*
-import korlibs.io.async.Signal
 import kotlin.coroutines.*
-import kotlin.properties.Delegates
 
 actual fun CreateDefaultGameWindow(config: GameWindowCreationConfig): GameWindow = TODO()
 
@@ -21,7 +18,7 @@ abstract class BaseAndroidGameWindow(
     abstract val androidView: View
 
     // @TODO: Cache somehow?
-    override val pixelsPerInch: Double get() = androidContext.resources.displayMetrics.xdpi.toDouble()
+    override val pixelsPerInch: Float get() = androidContext.resources.displayMetrics.xdpi
 
     val context get() = androidContext
     var coroutineContext: CoroutineContext? = null

@@ -177,8 +177,8 @@ open class GpuShapeView(
             }
         }
 
-    private var globalScale: Double = 1.0
-    private var cachedScale: Double = Double.NaN
+    private var globalScale: Float = 1f
+    private var cachedScale: Float = Float.NaN
 
     override fun renderInternal(ctx: RenderContext) {
         globalScale = globalMatrix.toTransform().scaleAvg * ctx.bp.globalToWindowScaleAvg
@@ -337,7 +337,7 @@ open class GpuShapeView(
         stateTransform: Matrix,
         strokePath: VectorPath,
         paint: Paint,
-        globalAlpha: Double,
+        globalAlpha: Float,
         strokeInfo: StrokeInfo,
         forceClosed: Boolean? = null,
         stencilOpFunc: AGStencilOpFunc = AGStencilOpFunc.DEFAULT,
@@ -460,7 +460,7 @@ open class GpuShapeView(
         //println("renderCount=$renderCount")
         val paintShader = GpuShapeViewPrograms.paintToShaderInfo(
             shape.transform, shape.paint, shape.globalAlpha,
-            lineWidth = 10000000.0,
+            lineWidth = 10000000f,
         ) ?: return
 
         val drawFill = !debugDrawOnlyAntialiasedBorder
@@ -580,12 +580,12 @@ open class GpuShapeView(
                 paint = shape.paint,
                 globalAlpha = shape.globalAlpha,
                 strokeInfo = StrokeInfo(
-                    thickness = (1.6 / globalScale),
+                    thickness = (1.6f / globalScale),
                     scaleMode = LineScaleMode.NONE,
                     startCap = LineCap.BUTT,
                     endCap = LineCap.BUTT,
                     join = LineJoin.MITER,
-                    miterLimit = 5.0,
+                    miterLimit = 5.0f,
                 ),
                 forceClosed = true,
                 stencilOpFunc = if (!drawFill) AGStencilOpFunc.DEFAULT else AGStencilOpFunc.DEFAULT.withEnabled(true).withCompareMode(stencilCompare.inverted()),

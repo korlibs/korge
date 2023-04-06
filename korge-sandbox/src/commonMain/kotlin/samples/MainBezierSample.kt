@@ -24,13 +24,13 @@ class MainBezierSample : Scene() {
         val graphics2 = gpuShapeView().xy(0, 300)
 
         fun ShapeBuilder.updateBezier() {
-            stroke(Colors.DIMGREY, info = StrokeInfo(thickness = 1.0)) {
+            stroke(Colors.DIMGREY, info = StrokeInfo(thickness = 1f)) {
                 moveTo(p0)
                 lineTo(p1)
                 lineTo(p2)
                 lineTo(p3)
             }
-            stroke(Colors.WHITE, info = StrokeInfo(thickness = 2.0)) {
+            stroke(Colors.WHITE, info = StrokeInfo(thickness = 2f)) {
                 cubic(p0, p1, p2, p3)
             }
             val ratio = 0.3
@@ -38,10 +38,10 @@ class MainBezierSample : Scene() {
             val cubic2 = split.leftCurve
             val cubic3 = split.rightCurve
 
-            stroke(Colors.PURPLE, info = StrokeInfo(thickness = 4.0)) {
+            stroke(Colors.PURPLE, info = StrokeInfo(thickness = 4f)) {
                 curve(cubic2)
             }
-            stroke(Colors.YELLOW, info = StrokeInfo(thickness = 4.0)) {
+            stroke(Colors.YELLOW, info = StrokeInfo(thickness = 4f)) {
                 curve(cubic3)
             }
         }
@@ -66,8 +66,8 @@ class MainBezierSample : Scene() {
         lateinit var circle: View
         lateinit var text: Text
         val anchorView = container {
-            circle = circle(6f, fill = color, stroke = Colors.DARKGRAY, strokeThickness = 2.0).centered
-            text = text("", 10.0).position(10.0, 6.0)
+            circle = circle(6f, fill = color, stroke = Colors.DARKGRAY, strokeThickness = 2f).centered
+            text = text("", 10f).position(10.0, 6.0)
         }.position(pointRef.get())
 
         fun updateText() {

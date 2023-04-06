@@ -1,7 +1,6 @@
 package korlibs.image.vector
 
 import korlibs.datastructure.*
-import korlibs.memory.*
 import korlibs.image.bitmap.*
 import korlibs.image.color.*
 import korlibs.image.font.*
@@ -12,6 +11,7 @@ import korlibs.io.lang.*
 import korlibs.math.geom.*
 import korlibs.math.geom.shape.*
 import korlibs.math.geom.vector.*
+import korlibs.memory.*
 import kotlin.math.*
 
 open class Context2d(
@@ -32,12 +32,10 @@ open class Context2d(
 
     protected open fun rendererDrawImage(
         image: Bitmap,
-        x: Double,
-        y: Double,
-        width: Double = image.width.toDouble(),
-        height: Double = image.height.toDouble(),
+        pos: Point,
+        size: Size = image.size.toFloat(),
         transform: Matrix = Matrix.IDENTITY
-    ) = renderer.drawImage(image, x, y, width, height, transform)
+    ) = renderer.drawImage(image, pos, size, transform)
 
     protected open fun rendererDispose() = renderer.dispose()
     protected open fun rendererBufferingStart() = renderer.bufferingStart()
@@ -45,20 +43,19 @@ open class Context2d(
     protected open fun rendererRenderSystemText(
         state: State,
         font: Font?,
-        fontSize: Double,
+        fontSize: Float,
         text: String,
-        x: Double,
-        y: Double,
+        pos: Point,
         fill: Boolean
     ) {
-        font?.drawText(this, fontSize, text, if (fill) state.fillStyle else state.strokeStyle, x, y, fill = fill)
+        font?.drawText(this, fontSize, text, if (fill) state.fillStyle else state.strokeStyle, pos, fill = fill)
     }
 
-    fun fillText(text: String, x: Double, y: Double) =
-        rendererRenderSystemText(state, font, fontSize, text, x, y, fill = true)
+    fun fillText(text: String, pos: Point) =
+        rendererRenderSystemText(state, font, fontSize, text, pos, fill = true)
 
-    fun strokeText(text: String, x: Double, y: Double) =
-        rendererRenderSystemText(state, font, fontSize, text, x, y, fill = false)
+    fun strokeText(text: String, pos: Point) =
+        rendererRenderSystemText(state, font, fontSize, text, pos, fill = false)
 
     open val width: Int get() = rendererWidth
     open val height: Int get() = rendererHeight
@@ -67,10 +64,10 @@ open class Context2d(
         rendererDispose()
     }
 
-    fun withScaledRenderer(scaleX: Double, scaleY: Double = scaleX): Context2d =
-        if (scaleX == 1.0 && scaleY == 1.0) this else Context2d(ScaledRenderer(renderer, scaleX, scaleY))
+    fun withScaledRenderer(scaleX: Float, scaleY: Float = scaleX): Context2d =
+        if (scaleX == 1f && scaleY == 1f) this else Context2d(ScaledRenderer(renderer, scaleX, scaleY))
 
-    class ScaledRenderer(val parent: Renderer, val scaleX: Double, val scaleY: Double) : Renderer() {
+    class ScaledRenderer(val parent: Renderer, val scaleX: Float, val scaleY: Float) : Renderer() {
         override val width: Int get() = (parent.width / scaleX).toInt()
         override val height: Int get() = (parent.height / scaleY).toInt()
 
@@ -91,8 +88,8 @@ open class Context2d(
         //override fun renderText(state: State, font: Font, fontSize: Double, text: String, x: Double, y: Double, fill: Boolean): Unit =
         //	adjustState(state) { parent.renderText(state, font, fontSize, text, x, y, fill) }
 
-        override fun drawImage(image: Bitmap, x: Double, y: Double, width: Double, height: Double, transform: Matrix) {
-            parent.drawImage(image, x, y, width, height, transform.adjusted())
+        override fun drawImage(image: Bitmap, pos: Point, size: Size, transform: Matrix) {
+            parent.drawImage(image, pos, size, transform.adjusted())
         }
     }
 
@@ -115,22 +112,22 @@ open class Context2d(
         var clip: VectorPath? = null,
         var path: VectorPath = VectorPath(),
         var lineScaleMode: LineScaleMode = LineScaleMode.NORMAL,
-        var lineWidth: Double = 1.0,
+        var lineWidth: Float = 1f,
         var startLineCap: LineCap = LineCap.BUTT,
         var endLineCap: LineCap = LineCap.BUTT,
         var lineJoin: LineJoin = LineJoin.MITER,
-        var miterLimit: Double = 10.0,
+        var miterLimit: Float = 10f,
         var strokeStyle: Paint = DefaultPaint,
         var fillStyle: Paint = DefaultPaint,
         var fontRegistry: FontRegistry? = null,
         var font: Font? = null,
-        var fontSize: Double = 24.0,
+        var fontSize: Float = 24f,
         var verticalAlign: VerticalAlign = VerticalAlign.BASELINE,
         var horizontalAlign: HorizontalAlign = HorizontalAlign.LEFT,
-        var globalAlpha: Double = 1.0,
+        var globalAlpha: Float = 1f,
         var globalCompositeOperation: CompositeOperation = CompositeMode.SOURCE_OVER,
-        var lineDash: IDoubleArrayList? = null,
-        var lineDashOffset: Double = 0.0,
+        var lineDash: IFloatArrayList? = null,
+        var lineDashOffset: Float = 0f,
     ) {
         val transformTransform by lazy { transform.toTransform() }
         val scaledLineWidth get() = lineWidth * transformTransform.scaleAvg.absoluteValue.toFloat()
@@ -165,9 +162,9 @@ open class Context2d(
     private val stack = Stack<State>()
 
     var lineScaleMode: LineScaleMode ; get() = state.lineScaleMode ; set(value) { state.lineScaleMode = value }
-    var lineWidth: Double ; get() = state.lineWidth ; set(value) { state.lineWidth = value }
+    var lineWidth: Float ; get() = state.lineWidth ; set(value) { state.lineWidth = value }
     var lineCap: LineCap ; get() = state.lineCap ; set(value) { state.lineCap = value }
-    var miterLimit: Double ; get() = state.miterLimit ; set(value) { state.miterLimit = value }
+    var miterLimit: Float ; get() = state.miterLimit ; set(value) { state.miterLimit = value }
     var startLineCap: LineCap ; get() = state.startLineCap ; set(value) { state.startLineCap = value }
     var endLineCap: LineCap ; get() = state.endLineCap ; set(value) { state.endLineCap = value }
     var lineJoin: LineJoin ; get() = state.lineJoin ; set(value) { state.lineJoin = value }
@@ -176,7 +173,7 @@ open class Context2d(
     var fontRegistry: FontRegistry? ; get() = state.fontRegistry ; set(value) { state.fontRegistry = value }
     var font: Font? ; get() = state.font ; set(value) { state.font = value }
     var fontName: String? ; get() = font?.name ; set(value) { font = fontRegistry?.get(value) }
-    var fontSize: Double ; get() = state.fontSize ; set(value) { state.fontSize = value }
+    var fontSize: Float ; get() = state.fontSize ; set(value) { state.fontSize = value }
     var verticalAlign: VerticalAlign; get() = state.verticalAlign ; set(value) { state.verticalAlign = value }
     var horizontalAlign: HorizontalAlign; get() = state.horizontalAlign ; set(value) { state.horizontalAlign = value }
     var alignment: TextAlignment
@@ -185,12 +182,12 @@ open class Context2d(
             horizontalAlign = value.horizontal
             verticalAlign = value.vertical
         }
-    var globalAlpha: Double ; get() = state.globalAlpha ; set(value) { state.globalAlpha = value }
+    var globalAlpha: Float ; get() = state.globalAlpha ; set(value) { state.globalAlpha = value }
     var globalCompositeOperation: CompositeOperation ; get() = state.globalCompositeOperation ; set(value) { state.globalCompositeOperation = value }
-    var lineDash: IDoubleArrayList?; get() = state.lineDash ; set(value) { state.lineDash = value }
-    var lineDashOffset: Double; get() = state.lineDashOffset ; set(value) { state.lineDashOffset = value }
+    var lineDash: IFloatArrayList?; get() = state.lineDash ; set(value) { state.lineDash = value }
+    var lineDashOffset: Float; get() = state.lineDashOffset ; set(value) { state.lineDashOffset = value }
 
-    inline fun lineDash(lineDash: IDoubleArrayList?, lineDashOffset: Double = 0.0, callback: () -> Unit) {
+    inline fun lineDash(lineDash: IFloatArrayList?, lineDashOffset: Float = 0f, callback: () -> Unit) {
         val oldLineDash = this.lineDash
         val oldLineDashOffset = this.lineDashOffset
         this.lineDash = lineDash
@@ -227,7 +224,7 @@ open class Context2d(
         font: Font? = this.font,
         halign: HorizontalAlign = this.horizontalAlign,
         valign: VerticalAlign = this.verticalAlign,
-        fontSize: Double = this.fontSize,
+        fontSize: Float = this.fontSize,
         callback: () -> Unit
     ) {
         val oldFont = this.font
@@ -279,6 +276,7 @@ open class Context2d(
 
     inline fun scale(sx: Number, sy: Number = sx) = scale(sx.toDouble(), sy.toDouble())
     inline fun translate(tx: Number, ty: Number) = translate(tx.toDouble(), ty.toDouble())
+    inline fun translate(pos: Point) = translate(pos.x.toDouble(), pos.y.toDouble())
 
     inline fun scale(sx: Int, sy: Int = sx) = scale(sx.toDouble(), sy.toDouble())
     inline fun translate(tx: Int, ty: Int) = translate(tx.toDouble(), ty.toDouble())
@@ -286,9 +284,9 @@ open class Context2d(
     inline fun skew(skewX: Angle = Angle.ZERO, skewY: Angle = Angle.ZERO, block: () -> Unit) =
         keep { skew(skewX, skewY).also { block() } }
 
-    inline fun scale(sx: Double, sy: Double = sx, block: () -> Unit) = keep { scale(sx, sy).also { block() } }
+    inline fun scale(sx: Float, sy: Float = sx, block: () -> Unit) = keep { scale(sx, sy).also { block() } }
     inline fun rotate(angle: Angle, block: () -> Unit) = keep { rotate(angle).also { block() } }
-    inline fun translate(tx: Double, ty: Double, block: () -> Unit) = keep { translate(tx, ty).also { block() } }
+    inline fun translate(tx: Float, ty: Float, block: () -> Unit) = keep { translate(tx, ty).also { block() } }
 
     fun skew(skewX: Angle = 0.degrees, skewY: Angle = 0.degrees) {
         state.transform = state.transform.preskewed(skewX, skewY)
@@ -434,12 +432,12 @@ open class Context2d(
 
     inline fun stroke(
         paint: Paint,
-        lineWidth: Double = this.lineWidth,
+        lineWidth: Float = this.lineWidth,
         lineCap: LineCap = this.lineCap,
         lineJoin: LineJoin = this.lineJoin,
-        miterLimit: Double = this.miterLimit,
-        lineDash: IDoubleArrayList? = this.lineDash,
-        lineDashOffset: Double = this.lineDashOffset,
+        miterLimit: Float = this.miterLimit,
+        lineDash: IFloatArrayList? = this.lineDash,
+        lineDashOffset: Float = this.lineDashOffset,
         begin: Boolean = true,
         callback: () -> Unit = {}
     ) {
@@ -571,7 +569,7 @@ open class Context2d(
                 }
                 keepTransform {
                     setTransform(Matrix.IDENTITY)
-                    this.rendererDrawImage(renderBi, 0.0, 0.0)
+                    this.rendererDrawImage(renderBi, Point.ZERO)
                 }
                 //} finally {
                 //	bi.lineScale = oldLineScale
@@ -631,7 +629,7 @@ open class Context2d(
     fun getTextBounds(
         text: String,
         out: TextMetrics = TextMetrics(),
-        fontSize: Double = this.fontSize,
+        fontSize: Float = this.fontSize,
         renderer: TextRenderer<String> = DefaultStringTextRenderer,
         align: TextAlignment = this.alignment,
     ): TextMetrics {
@@ -645,43 +643,31 @@ open class Context2d(
     }
 
     @Suppress("NOTHING_TO_INLINE") // Number inlining
-    inline fun fillText(text: String, x: Number, y: Number): Unit {
-        drawText(text, x.toDouble(), y.toDouble(), fill = true)
-    }
-
-    @Suppress("NOTHING_TO_INLINE") // Number inlining
-    inline fun strokeText(text: String, x: Number, y: Number): Unit {
-        drawText(text, x.toDouble(), y.toDouble(), fill = false)
-    }
-
-    @Suppress("NOTHING_TO_INLINE") // Number inlining
     inline fun fillText(
         text: String,
-        x: Number,
-        y: Number,
+        pos: Point,
         font: Font? = this.font,
-        textSize: Double = this.fontSize,
+        textSize: Float = this.fontSize,
         halign: HorizontalAlign = this.horizontalAlign,
         valign: VerticalAlign = this.verticalAlign,
         color: Paint? = null
     ) {
         font(font, halign, valign, textSize) {
             fillStyle(color ?: fillStyle) {
-                drawText(text, x.toDouble(), y.toDouble(), fill = true, fillStyle = color ?: fillStyle)
+                drawText(text, pos, fill = true, fillStyle = color ?: fillStyle)
             }
         }
     }
 
     fun <T> drawText(
         text: T,
-        x: Double = 0.0,
-        y: Double = 0.0,
+        pos: Point = Point.ZERO,
 
         fill: Boolean = true, // Deprecated parameter
         paint: Paint? = null, // Deprecated parameter
 
         font: Font? = this.font,
-        size: Double = this.fontSize,
+        size: Float = this.fontSize,
         renderer: TextRenderer<T> = DefaultStringTextRenderer as TextRenderer<T>,
         align: TextAlignment = TextAlignment.BASELINE_LEFT,
         outMetrics: TextMetricsResult? = null,
@@ -694,7 +680,7 @@ open class Context2d(
     ): TextMetricsResult? {
         val paint = paint ?: (if (fill) this.fillStyle else this.strokeStyle)
         return font?.drawText(
-            this, size, text, paint, x, y, fill,
+            this, size, text, paint, pos, fill,
             renderer = renderer, align = align, outMetrics = outMetrics,
             fillStyle = fillStyle, stroke = stroke,
             textRangeStart = textRangeStart,
@@ -702,25 +688,7 @@ open class Context2d(
         )
     }
 
-    // @TODO: Fix this!
-    open fun drawImage(
-        image: Bitmap,
-        x: Double,
-        y: Double,
-        width: Double = image.width.toDouble(),
-        height: Double = image.height.toDouble()
-    ) =
-        rendererDrawImage(image, x, y, width, height, state.transform)
-
-    // @TODO: Fix this!
-    inline fun drawImage(
-        image: Bitmap,
-        x: Number,
-        y: Number,
-        width: Number = image.width.toDouble(),
-        height: Number = image.height.toDouble()
-    ) = drawImage(image, x.toDouble(), y.toDouble(), width.toDouble(), height.toDouble())
-
+    open fun drawImage(image: Bitmap, pos: Point, size: Size = image.size.toFloat()) = rendererDrawImage(image, pos, size, state.transform)
 }
 
 fun RGBA.toFill() = ColorPaint(this)

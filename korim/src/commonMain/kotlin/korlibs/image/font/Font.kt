@@ -1,7 +1,6 @@
 package korlibs.image.font
 
 import korlibs.datastructure.*
-import korlibs.memory.*
 import korlibs.image.bitmap.*
 import korlibs.image.bitmap.effect.*
 import korlibs.image.paint.*
@@ -13,6 +12,7 @@ import korlibs.math.geom.*
 import korlibs.math.geom.bezier.*
 import korlibs.math.geom.shape.*
 import korlibs.math.geom.vector.*
+import korlibs.memory.*
 
 interface Font : Resourceable<Font>, Extra {
     override fun getOrNull() = this
@@ -21,19 +21,19 @@ interface Font : Resourceable<Font>, Extra {
     val name: String
 
     // Metrics
-    fun getFontMetrics(size: Double, metrics: FontMetrics = FontMetrics()): FontMetrics
+    fun getFontMetrics(size: Float, metrics: FontMetrics = FontMetrics()): FontMetrics
     fun getGlyphMetrics(
-        size: Double,
+        size: Float,
         codePoint: Int,
         metrics: GlyphMetrics = GlyphMetrics(),
         reader: WStringReader? = null
     ): GlyphMetrics
-    fun getKerning(size: Double, leftCodePoint: Int, rightCodePoint: Int): Double
+    fun getKerning(size: Float, leftCodePoint: Int, rightCodePoint: Int): Float
 
     // Rendering
     // Returns true if it painted something
     fun renderGlyph(
-        ctx: Context2d, size: Double, codePoint: Int, x: Double, y: Double, fill: Boolean?,
+        ctx: Context2d, size: Float, codePoint: Int, pos: Point, fill: Boolean?,
         metrics: GlyphMetrics, reader: WStringReader? = null,
         beforeDraw: (() -> Unit)? = null
     ): Boolean
@@ -72,8 +72,7 @@ class MultiplePlacedGlyphMetrics {
 
 data class PlacedGlyphMetrics constructor(
     val codePoint: Int,
-    val x: Double,
-    val y: Double,
+    val pos: Point,
     val metrics: GlyphMetrics,
     val fontMetrics: FontMetrics,
     val transform: Matrix,
@@ -89,7 +88,7 @@ data class PlacedGlyphMetrics constructor(
                 metrics.xadvance,
                 fontMetrics.lineHeight
             )
-        }.applyTransform(Matrix().translated(x, y).premultiplied(transform))
+        }.applyTransform(Matrix().translated(pos).premultiplied(transform))
     }
     val boundsPathCurves: Curves by lazy {
         val curves = boundsPath.getCurves()
@@ -123,7 +122,7 @@ interface BaseTextMetricsResult {
 }
 
 fun Font.renderGlyphToBitmap(
-    size: Double, codePoint: Int, paint: Paint = DefaultPaint, fill: Boolean = true,
+    size: Float, codePoint: Int, paint: Paint = DefaultPaint, fill: Boolean = true,
     effect: BitmapEffect? = null,
     border: Int = 1,
     nativeRendering: Boolean = true,
@@ -141,7 +140,7 @@ fun Font.renderGlyphToBitmap(
 
     fun Context2d.renderGlyph() {
         fillStyle = paint
-        font.renderGlyph(this, size, codePoint, gx + border, gy + border, fill = true, metrics = gmetrics)
+        font.renderGlyph(this, size, codePoint, Point(gx + border, gy + border), fill = true, metrics = gmetrics)
         if (fill) fill() else stroke()
     }
 
@@ -149,7 +148,7 @@ fun Font.renderGlyphToBitmap(
         renderGlyph()
     }
     val imageOut = image.toBMP32IfRequired().applyEffect(effect)
-    val glyph = PlacedGlyphMetrics(codePoint, gx + border, gy + border, gmetrics, fmetrics, Matrix.IDENTITY, 0, 0)
+    val glyph = PlacedGlyphMetrics(codePoint, Point(gx + border, gy + border), gmetrics, fmetrics, Matrix.IDENTITY, 0, 0)
     return TextToBitmapResult(imageOut, fmetrics, TextMetrics(), listOf(glyph), listOf(listOf(glyph)), buildShape(iwidth, iheight) {
         renderGlyph()
     })
@@ -157,7 +156,7 @@ fun Font.renderGlyphToBitmap(
 
 // @TODO: Fix metrics
 fun <T> Font.renderTextToBitmap(
-    size: Double,
+    size: Float,
     text: T,
     paint: Paint = DefaultPaint,
     background: Paint = NonePaint,
@@ -186,9 +185,9 @@ fun <T> Font.renderTextToBitmap(
         }
         //font.drawText(this, size, text, paint, bounds.drawLeft, bounds.drawTop, fill, renderer = renderer, placed = { codePoint, x, y, size, metrics, transform ->
         var index = 0
-        font.drawText(this, size, text, paint, bounds.drawLeft, bounds.ascent, fill, renderer = renderer, placed = { codePoint, x, y, size, metrics, fmetrics, transform ->
+        font.drawText(this, size, text, paint, Point(bounds.drawLeft, bounds.ascent), fill, renderer = renderer, placed = { codePoint, pos, size, metrics, fmetrics, transform ->
             if (returnGlyphs) {
-                glyphs += PlacedGlyphMetrics(codePoint, x, y, metrics.clone(), fmetrics, transform.clone(), index++, currentLineNum)
+                glyphs += PlacedGlyphMetrics(codePoint, pos, metrics.clone(), fmetrics, transform.clone(), index++, currentLineNum)
             }
         })
     }
@@ -197,10 +196,10 @@ fun <T> Font.renderTextToBitmap(
 
 fun <T> Font.drawText(
     ctx: Context2d?,
-    size: Double,
+    size: Float,
     text: T,
     paint: Paint?, // Deprecated parameter
-    x: Double = 0.0, y: Double = 0.0,
+    pos: Point = Point.ZERO,
     fill: Boolean = true, // Deprecated parameter
     renderer: TextRenderer<T> = DefaultStringTextRenderer as TextRenderer<T>,
     align: TextAlignment = TextAlignment.BASELINE_LEFT,
@@ -212,7 +211,7 @@ fun <T> Font.drawText(
     textRangeStart: Int = 0,
     textRangeEnd: Int = Int.MAX_VALUE,
 
-    placed: (TextRendererActions.(codePoint: Int, x: Double, y: Double, size: Double, metrics: GlyphMetrics, fmetrics: FontMetrics, transform: Matrix) -> Unit)? = null
+    placed: (TextRendererActions.(codePoint: Int, pos: Point, size: Float, metrics: GlyphMetrics, fmetrics: FontMetrics, transform: Matrix) -> Unit)? = null
 ): TextMetricsResult? {
     //println("drawText!!: text=$text, align=$align")
     val glyphs = if (outMetrics != null) MultiplePlacedGlyphMetrics() else null
@@ -234,8 +233,8 @@ fun <T> Font.drawText(
             val nline = currentLineNum
             val dx = metrics.getAlignX(align.horizontal, nline)
             val dy = metrics.getAlignY(align.vertical, fontMetrics)
-            val px = this.x + x - dx
-            val py = this.y + y + dy
+            val px = this.pos.x + pos.x - dx
+            val py = this.pos.y + pos.y + dy
             ctx?.keepTransform {
                 //val m = getGlyphMetrics(codePoint)
                 //println("valign=$valign, glyphMetrics.height=${glyphMetrics.height}")
@@ -249,18 +248,18 @@ fun <T> Font.drawText(
                 ctx.fillStyle = this.paint ?: paint ?: NonePaint
                 //println("n=$n, textRangeStart=$textRangeStart, textRangeEnd=$textRangeEnd, doDraw=$doDraw")
                 if (n in textRangeStart until textRangeEnd) {
-                    this.font.renderGlyph(ctx, size, codePoint, 0.0, 0.0, null, glyphMetrics, reader, beforeDraw = doRender)
+                    this.font.renderGlyph(ctx, size, codePoint, Point.ZERO, null, glyphMetrics, reader, beforeDraw = doRender)
                 }
                 n++
             }
             if (glyphs != null) {
                 val glyph = PlacedGlyphMetrics(
-                    codePoint, px, py, glyphMetrics.clone(), fontMetrics.clone(), transform,
+                    codePoint, Point(px, py), glyphMetrics.clone(), fontMetrics.clone(), transform,
                     glyphs.size, nline
                 )
                 glyphs.add(glyph)
             }
-            placed?.invoke(this, codePoint, px, py, size, glyphMetrics, fontMetrics, this.transform)
+            placed?.invoke(this, codePoint, Point(px, py), size, glyphMetrics, fontMetrics, this.transform)
             return glyphMetrics
         }
     }
@@ -294,7 +293,7 @@ fun <T> Font.drawText(
 }
 
 fun <T> Font.getTextBoundsWithGlyphs(
-    size: Double,
+    size: Float,
     text: T,
     renderer: TextRenderer<T> = DefaultStringTextRenderer as TextRenderer<T>,
     align: TextAlignment = TextAlignment.BASELINE_LEFT
@@ -304,12 +303,12 @@ fun <T> Font.getTextBoundsWithGlyphs(
     //println("BOUNDS: $bounds")
     return TextMetricsResult().also { out ->
         //font.drawText(null, size, text, null, bounds.drawLeft, bounds.ascent, false, renderer = renderer, outMetrics = out, align = align)
-        font.drawText(null, size, text, null, 0.0, 0.0, false, renderer = renderer, outMetrics = out, align = align)
+        font.drawText(null, size, text, null, Point.ZERO, false, renderer = renderer, outMetrics = out, align = align)
     }
 }
 
 fun <T> Font.getTextBounds(
-    size: Double,
+    size: Float,
     text: T,
     out: TextMetrics = TextMetrics(),
     renderer: TextRenderer<T> = DefaultStringTextRenderer as TextRenderer<T>,
@@ -322,7 +321,7 @@ fun <T> Font.getTextBounds(
 
     // Compute
     var bb = BoundsBuilder()
-    var dy = 0.0
+    var dy = 0f
     val lineBounds = FastArrayList<Rectangle>()
     val offsetY = actions.getAlignY(align.vertical, out.fontMetrics)
     //println("--")

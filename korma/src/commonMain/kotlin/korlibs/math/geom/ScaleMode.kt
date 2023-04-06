@@ -14,8 +14,8 @@ class ScaleMode(
     }
 
     companion object {
-        val COVER: ScaleMode = ScaleMode("COVER") { i, c -> i * (c / i).maxComponent() }
-        val SHOW_ALL: ScaleMode = ScaleMode("SHOW_ALL") { i, c -> i * (c / i).minComponent() }
+        val COVER: ScaleMode = ScaleMode("COVER") { i, c -> i * (c / i).toVector2().maxComponent() }
+        val SHOW_ALL: ScaleMode = ScaleMode("SHOW_ALL") { i, c -> i * (c / i).toVector2().minComponent() }
         val FIT: ScaleMode get() = SHOW_ALL
         val FILL: ScaleMode get() = EXACT
         val EXACT: ScaleMode = ScaleMode("EXACT") { i, c -> c }

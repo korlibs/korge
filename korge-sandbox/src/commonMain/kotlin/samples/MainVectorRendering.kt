@@ -1,12 +1,12 @@
 package samples
 
-import korlibs.korge.scene.Scene
-import korlibs.korge.view.*
 import korlibs.image.bitmap.*
 import korlibs.image.format.*
 import korlibs.image.paint.*
 import korlibs.image.vector.*
 import korlibs.io.file.std.*
+import korlibs.korge.scene.*
+import korlibs.korge.view.*
 import korlibs.math.geom.*
 
 class MainVectorRendering : Scene() {
@@ -18,7 +18,7 @@ class MainVectorRendering : Scene() {
             //val bitmap2 = Bitmap32(512, 512).context2d {
             translate(100, 100)
             scale(2.0)
-            globalAlpha = 0.75
+            globalAlpha = 0.75f
             fillStyle = BitmapPaint(korgeBitmap, Matrix.IDENTITY.translated(50, 50), cycleX = CycleMethod.REPEAT, cycleY = CycleMethod.REPEAT)
             /*
             fillStyle = createLinearGradient(0.0, 0.0, 200.0, 200.0, transform = Matrix().scale(0.5).pretranslate(30, 30))

@@ -11,7 +11,7 @@ import korlibs.math.geom.*
 import korlibs.memory.*
 
 inline fun Container.textBlock(
-    text: RichTextData = RichTextData("", textSize = 16.0, font = DefaultTtfFontAsBitmap),
+    text: RichTextData = RichTextData("", textSize = 16f, font = DefaultTtfFontAsBitmap),
     align: TextAlignment = TextAlignment.TOP_LEFT,
     size: Size = Size(100, 100),
     block: @ViewDslMarker TextBlock.() -> Unit = {}
@@ -19,7 +19,7 @@ inline fun Container.textBlock(
     = TextBlock(text, align, size).addTo(this, block)
 
 class TextBlock(
-    text: RichTextData = RichTextData("", textSize = 16.0, font = DefaultTtfFontAsBitmap),
+    text: RichTextData = RichTextData("", textSize = 16f, font = DefaultTtfFontAsBitmap),
     align: TextAlignment = TextAlignment.TOP_LEFT,
     size: Size = Size(100, 100),
 ) : UIView(size), ViewLeaf {

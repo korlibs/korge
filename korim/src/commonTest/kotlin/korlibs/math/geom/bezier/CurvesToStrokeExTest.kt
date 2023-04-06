@@ -1,12 +1,11 @@
 package korlibs.math.geom.bezier
 
+import korlibs.image.vector.format.*
 import korlibs.logger.*
-import korlibs.image.vector.format.pathSvg
 import korlibs.math.geom.*
 import korlibs.math.geom.shape.*
 import korlibs.math.geom.vector.*
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import kotlin.test.*
 
 class CurvesToStrokeExTest {
     val logger = Logger("CurvesToStrokeExTest")
@@ -18,7 +17,7 @@ class CurvesToStrokeExTest {
 
     @Test
     fun testStroke() {
-        val stroke = path.toStrokePointsList(StrokeInfo(thickness = 10.0))
+        val stroke = path.toStrokePointsList(StrokeInfo(thickness = 10f))
         logger.debug { stroke }
     }
 
@@ -41,6 +40,6 @@ class CurvesToStrokeExTest {
     }
 
     fun pathPoints(join: LineJoin, block: VectorBuilder.() -> Unit): VectorArrayList =
-        buildVectorPath { block() }.toStrokePointsList(StrokeInfo(thickness = 10.0, join = join), mode = StrokePointsMode.SCALABLE_POS_NORMAL_WIDTH).first().vector.clone().roundDecimalPlaces(2)
+        buildVectorPath { block() }.toStrokePointsList(StrokeInfo(thickness = 10f, join = join), mode = StrokePointsMode.SCALABLE_POS_NORMAL_WIDTH).first().vector.clone().roundDecimalPlaces(2)
 
 }

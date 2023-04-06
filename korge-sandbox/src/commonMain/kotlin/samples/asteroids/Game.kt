@@ -1,14 +1,14 @@
 package samples.asteroids
 
-import korlibs.time.*
 import korlibs.event.*
-import korlibs.korge.tween.*
-import korlibs.korge.view.*
 import korlibs.image.color.*
 import korlibs.image.font.*
 import korlibs.io.async.*
+import korlibs.korge.tween.*
+import korlibs.korge.view.*
 import korlibs.math.geom.*
 import korlibs.math.random.*
+import korlibs.time.*
 import kotlin.random.*
 
 const val NUMBER_OF_ASTEROIDS = 15
@@ -114,12 +114,12 @@ class Game(val scene: MainAsteroids) {
                 overlay.tween(overlay::color[Colors.RED.withA(64)], time = 300.milliseconds)
             }
 
-            val gameOverText = text("GAME OVER", 64.0, font = DefaultTtfFont)
+            val gameOverText = text("GAME OVER", 64f, font = DefaultTtfFont)
                 .centerOnStage()
 
             text("Press R to restart")
                 .centerXOnStage()
-                .alignTopToBottomOf(gameOverText, 10.0)
+                .alignTopToBottomOf(gameOverText, 10f)
         }
     }
 

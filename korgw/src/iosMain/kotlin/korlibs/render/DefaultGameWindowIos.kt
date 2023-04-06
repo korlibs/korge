@@ -335,7 +335,7 @@ open class IosGameWindow(
 
     override val ag: AG = AGOpengl(KmlGlNative().checkedIf(checked = false))
 
-    override val pixelsPerInch: Double get() = UIScreen.mainScreen.scale.toDouble() * 160.0
+    override val pixelsPerInch: Float get() = UIScreen.mainScreen.scale.toFloat() * 160f
 
     val window: UIWindow get() = windowProvider?.invoke()
         ?: UIApplication.sharedApplication.keyWindow

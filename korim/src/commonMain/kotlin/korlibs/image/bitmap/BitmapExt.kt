@@ -1,10 +1,8 @@
 package korlibs.image.bitmap
 
-import korlibs.image.color.RGBA
-import korlibs.math.geom.Anchor
-import korlibs.math.geom.MRectangle
-import korlibs.math.geom.ScaleMode
-import kotlin.math.absoluteValue
+import korlibs.image.color.*
+import korlibs.math.geom.*
+import kotlin.math.*
 
 // -1 if dimensions do not match
 fun Bitmap.matchContentsDistinctCount(that: Bitmap): Int {
@@ -66,7 +64,7 @@ fun Bitmap.resized(out: Bitmap, scale: ScaleMode, anchor: Anchor): Bitmap {
     val height = out.height
     out.context2d(antialiased = true) {
         val rect = MRectangle(0, 0, width, height).place(bmp.width.toDouble(), bmp.height.toDouble(), anchor, scale)
-        drawImage(bmp, rect.x, rect.y, rect.width, rect.height)
+        drawImage(bmp, rect.pos, rect.size)
     }
     return out
 }

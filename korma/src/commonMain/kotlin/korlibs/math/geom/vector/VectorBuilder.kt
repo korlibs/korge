@@ -3,7 +3,6 @@ package korlibs.math.geom.vector
 import korlibs.math.annotations.*
 import korlibs.math.geom.*
 import korlibs.math.geom.bezier.*
-import kotlin.jvm.*
 
 @KorDslMarker
 @ViewDslMarker
@@ -79,6 +78,10 @@ interface VectorBuilder {
     fun rect(rect: RectangleInt) = rect(rect.x, rect.y, rect.width, rect.height)
     fun rect(rect: Rectangle) = rect(rect.x, rect.y, rect.width, rect.height)
 
+    fun rect(pos: Point, size: Size) {
+        rect(pos.x, pos.y, size.width, size.height)
+    }
+
     fun rect(x: Double, y: Double, width: Double, height: Double) {
         moveTo(Point(x, y))
         lineTo(Point(x + width, y))
@@ -152,6 +155,7 @@ interface VectorBuilder {
     fun circle(center: Point, radius: Float) = arc(center, radius, Angle.ZERO, Angle.FULL)
     fun circleHole(center: Point, radius: Float) = arc(center, radius, Angle.ZERO, Angle.FULL, counterclockwise = true)
 
+    fun ellipse(bounds: Rectangle) = ellipse(bounds.center, bounds.size / 2)
     fun ellipse(ellipse: Ellipse) = ellipse(ellipse.center, ellipse.radius)
     fun ellipse(center: Point, radius: Size) = Arc.ellipsePath(this, center - radius, radius * 2)
 

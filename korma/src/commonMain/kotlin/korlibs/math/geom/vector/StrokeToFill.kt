@@ -2,11 +2,11 @@ package korlibs.math.geom.vector
 
 import korlibs.datastructure.*
 import korlibs.datastructure.iterators.*
-import korlibs.memory.*
 import korlibs.math.annotations.*
 import korlibs.math.geom.*
 import korlibs.math.geom.bezier.*
 import korlibs.math.geom.shape.*
+import korlibs.memory.*
 
 // @TODO: Implement LineCap + LineJoin
 // @TODO: Use Curves and reuse code from [CurvesToStrokes]
@@ -20,7 +20,7 @@ class StrokeToFill {
     private var startCap: LineCap = LineCap.BUTT
     private var endCap: LineCap = LineCap.BUTT
     private var joins: LineJoin = LineJoin.BEVEL
-    private var miterLimit: Double = 4.0 // ratio of the width
+    private var miterLimit: Float = 4f // ratio of the width
     internal val strokePoints = PointIntArrayList(1024)
     internal val doJointList = IntArrayList(1024)
     internal val fillPoints = Array(2) { PointIntArrayList(1024) }
@@ -48,7 +48,7 @@ class StrokeToFill {
     internal fun PointIntArrayList.addEdgePointAB(e: MEdge, point: EdgePoint) = if (point == EdgePoint.A) addEdgePointA(e) else addEdgePointB(e)
     internal fun PointIntArrayList.add(e: Point) { add(e.x.toInt(), e.y.toInt()) }
 
-    internal fun doJoin(out: PointIntArrayList, mainPrev: MEdge, mainCurr: MEdge, prev: MEdge, curr: MEdge, join: LineJoin, miterLimit: Double, scale: Double, forcedMiter: Boolean) {
+    internal fun doJoin(out: PointIntArrayList, mainPrev: MEdge, mainCurr: MEdge, prev: MEdge, curr: MEdge, join: LineJoin, miterLimit: Float, scale: Float, forcedMiter: Boolean) {
         val rjoin = if (forcedMiter) LineJoin.MITER else join
         when (rjoin) {
             LineJoin.MITER -> {
@@ -88,7 +88,7 @@ class StrokeToFill {
         }
     }
 
-    internal fun doCap(l: PointIntArrayList, r: PointIntArrayList, left: MEdge, right: MEdge, epoint: EdgePoint, cap: LineCap, scale: Double) {
+    internal fun doCap(l: PointIntArrayList, r: PointIntArrayList, left: MEdge, right: MEdge, epoint: EdgePoint, cap: LineCap, scale: Float) {
         val angle = if (epoint == EdgePoint.A) -left.angle else +left.angle
         val lx = left.getX(epoint.n)
         val ly = left.getY(epoint.n)
@@ -130,7 +130,7 @@ class StrokeToFill {
         }
     }
 
-    internal fun computeStroke(scale: Double, closed: Boolean) {
+    internal fun computeStroke(scale: Float, closed: Boolean) {
         if (strokePoints.isEmpty()) return
 
         val weightD2 = weight / 2
@@ -206,7 +206,7 @@ class StrokeToFill {
     }
 
 
-    fun set(outFill: VectorPath, weight: Int, startCap: LineCap, endCap: LineCap, joins: LineJoin, miterLimit: Double) {
+    fun set(outFill: VectorPath, weight: Int, startCap: LineCap, endCap: LineCap, joins: LineJoin, miterLimit: Float) {
         this.outFill = outFill
         this.weight = weight
         this.startCap = startCap
@@ -217,10 +217,10 @@ class StrokeToFill {
 
     fun strokeFill(
         stroke: VectorPath,
-        lineWidth: Double, joins: LineJoin, startCap: LineCap, endCap: LineCap, miterLimit: Double, outFill: VectorPath
+        lineWidth: Float, joins: LineJoin, startCap: LineCap, endCap: LineCap, miterLimit: Float, outFill: VectorPath
     ) {
         val scale = RastScale.RAST_FIXED_SCALE
-        val iscale = 1.0 / RastScale.RAST_FIXED_SCALE
+        val iscale = 1f / RastScale.RAST_FIXED_SCALE
         set(outFill, (lineWidth * scale).toInt(), startCap, endCap, joins, miterLimit)
         stroke.emitPoints2(
             flush = { close ->
@@ -254,19 +254,19 @@ fun VectorPath.strokeToFill(
 )
 
 fun VectorPath.strokeToFill(
-    lineWidth: Double,
+    lineWidth: Float,
     joins: LineJoin = LineJoin.MITER,
     startCap: LineCap = LineCap.BUTT,
     endCap: LineCap = startCap,
-    miterLimit: Double = 4.0,
-    lineDash: IDoubleArrayList? = null,
-    lineDashOffset: Double = 0.0,
+    miterLimit: Float = 4f,
+    lineDash: IFloatArrayList? = null,
+    lineDashOffset: Float = 0f,
     temp: StrokeToFill = StrokeToFill(),
     outFill: VectorPath = VectorPath(winding = Winding.NON_ZERO),
 ): VectorPath {
     val strokePaths = when {
         lineDash != null -> this.toCurvesList()
-            .flatMap { it.toDashes(lineDash.toDoubleArray(), lineDashOffset) }
+            .flatMap { it.toDashes(lineDash.toFloatArray(), lineDashOffset) }
             .map { it.toVectorPath() }
         else -> listOf(this)
     }

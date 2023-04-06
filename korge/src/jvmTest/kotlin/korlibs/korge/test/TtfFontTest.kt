@@ -1,9 +1,9 @@
 package korlibs.korge.test
 
-import korlibs.korge.testing.*
-import korlibs.korge.view.*
 import korlibs.image.font.*
 import korlibs.io.file.std.*
+import korlibs.korge.testing.*
+import korlibs.korge.view.*
 import org.junit.*
 
 class TtfFontTest {
@@ -15,10 +15,10 @@ class TtfFontTest {
             resourcesVfs["font_atkinson/AtkinsonHyperlegible-Bold.ttf"].readTtfFont(enableLigatures = false)
 
         val c = container {
-            val t1 = text("41/41", font = ttfFontWithLigatures, textSize = 40.0) {
+            val t1 = text("41/41", font = ttfFontWithLigatures, textSize = 40f) {
                 this.graphicsRenderer = GraphicsRenderer.CPU
             }
-            text("41/41", font = ttfFontWithoutLigatures, textSize = 40.0) {
+            text("41/41", font = ttfFontWithoutLigatures, textSize = 40f) {
                 this.graphicsRenderer = GraphicsRenderer.CPU
                 alignTopToBottomOf(t1)
             }

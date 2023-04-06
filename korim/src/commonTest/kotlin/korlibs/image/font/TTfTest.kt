@@ -1,7 +1,7 @@
 package korlibs.image.font
 
-import korlibs.io.async.suspendTest
-import korlibs.io.file.std.resourcesVfs
+import korlibs.io.async.*
+import korlibs.io.file.std.*
 import korlibs.io.lang.*
 import korlibs.math.geom.*
 import kotlin.test.*
@@ -26,10 +26,10 @@ class TTfTest {
     @Test
     fun testLigatureAdvancementBug() = suspendTest {
         val font = resourcesVfs["PlayfairDisplay-BoldItalic.ttf"].readTtfFont()
-        fun res(str: String, reader: Boolean = true): Pair<Double, Int> {
+        fun res(str: String, reader: Boolean = true): Pair<Float, Int> {
             val rreader = WStringReader(str)
             val res = font.getGlyphMetrics(
-                100.0,
+                100f,
                 rreader.peek().codePoint,
                 reader = if (reader) rreader else null
             )
@@ -37,15 +37,15 @@ class TTfTest {
         }
 
         res("s", reader = false).also { (advance, pos) ->
-            assertEquals(42.0, advance, absoluteTolerance = 0.1)
+            assertEquals(42f, advance, absoluteTolerance = 0.1f)
             assertEquals(0, pos)
         }
         res("t", reader = false).also { (advance, pos) ->
-            assertEquals(35.3, advance, absoluteTolerance = 0.1)
+            assertEquals(35.3f, advance, absoluteTolerance = 0.1f)
             assertEquals(0, pos)
         }
         res("st", reader = true).also { (advance, pos) ->
-            assertEquals(76.4, advance, absoluteTolerance = 0.1)
+            assertEquals(76.4f, advance, absoluteTolerance = 0.1f)
             assertEquals(2, pos)
         }
     }

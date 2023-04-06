@@ -1,11 +1,5 @@
 package samples
 
-import korlibs.time.*
-import korlibs.korge.input.*
-import korlibs.korge.resources.*
-import korlibs.korge.scene.Scene
-import korlibs.korge.view.*
-import korlibs.korge.view.fast.*
 import korlibs.image.bitmap.*
 import korlibs.image.font.*
 import korlibs.image.format.*
@@ -14,8 +8,14 @@ import korlibs.io.async.*
 import korlibs.io.file.std.*
 import korlibs.io.lang.*
 import korlibs.io.resources.*
+import korlibs.korge.input.*
+import korlibs.korge.resources.*
+import korlibs.korge.scene.Scene
+import korlibs.korge.view.*
+import korlibs.korge.view.fast.*
 import korlibs.math.geom.*
 import korlibs.math.random.*
+import korlibs.time.*
 import kotlin.collections.random
 import kotlin.random.*
 
@@ -75,7 +75,7 @@ class Bunny(tex: BmpSlice) : FastSprite(tex) {
             it.blendMode = BlendMode.NONE
         })
 
-        val bunnyCountText = text("", font = DefaultTtfFontAsBitmap, textSize = 16.0, alignment = TextAlignment.TOP_LEFT).position(16.0, 16.0)
+        val bunnyCountText = text("", font = DefaultTtfFontAsBitmap, textSize = 16f, alignment = TextAlignment.TOP_LEFT).position(16, 16)
 
         val random = Random(0)
 

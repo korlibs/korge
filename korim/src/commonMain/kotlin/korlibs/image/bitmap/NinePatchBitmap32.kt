@@ -243,7 +243,7 @@ open class NinePatchBmpSlice(
 	): T {
 		other.context2d(antialiased) {
 			info.computeScale(bounds) { seg, segLeft, segTop, segWidth, segHeight ->
-				drawImage(seg.bmp!!, segLeft, segTop, segWidth.toInt(), segHeight.toInt())
+				drawImage(seg.bmp!!, Point(segLeft, segTop), Size(segWidth, segHeight))
 				if (drawRegions) {
 					stroke(Colors.RED) { rect(segLeft, segTop, segWidth, segHeight) }
 				}

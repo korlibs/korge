@@ -1,14 +1,14 @@
 package korlibs.render
 
 import X11Embed.*
-import korlibs.kgl.*
-import korlibs.time.*
-import korlibs.memory.*
-import korlibs.memory.dyn.*
-import korlibs.graphics.gl.*
 import korlibs.event.*
+import korlibs.graphics.gl.*
 import korlibs.image.bitmap.*
 import korlibs.io.lang.*
+import korlibs.kgl.*
+import korlibs.memory.*
+import korlibs.memory.dyn.*
+import korlibs.time.*
 import kotlinx.cinterop.*
 import platform.posix.*
 
@@ -147,12 +147,12 @@ class X11GameWindow : EventLoopGameWindow() {
     override val ag: AGOpengl = AGOpengl(korlibs.kgl.KmlGlNative())
 
 
-    override val pixelsPerInch: Double by TimedCache<Double>(0.5.seconds) {
+    override val pixelsPerInch: Float by TimedCache<Float>(0.5.seconds) {
         val str = X11.XResourceManagerString(this@X11GameWindow.d)?.toKStringFromUtf8() ?: ""
         val Xftdpi = str.lines().firstOrNull { it.contains("Xft.dpi") }
         val dpiInt = Xftdpi?.split(':')?.lastOrNull()?.trim()?.toDoubleOrNull()
         //println("X11AgOpengl.pixelsPerInch: str=$str, dpiInt=$dpiInt")
-        kotlin.math.max(dpiInt ?: 96.0, 96.0)
+        kotlin.math.max(dpiInt ?: 96.0, 96.0).toFloat()
     }
 
     override var width: Int = 200; private set

@@ -2,7 +2,7 @@ package korlibs.image.vector
 
 import korlibs.image.bitmap.*
 import korlibs.image.color.*
-import korlibs.image.vector.format.SVG
+import korlibs.image.vector.format.*
 import korlibs.io.async.*
 import korlibs.math.geom.*
 import korlibs.math.geom.vector.*
@@ -14,17 +14,17 @@ class Context2dTest {
 		val ctx = Context2d(korlibs.image.vector.renderer.DummyRenderer)
 		ctx.apply {
 			keep {
-				lineWidth = 22.0
+				lineWidth = 22f
 				keep {
 					keep {
-						lineWidth = 33.0
-						assertEquals(33.0, state.lineWidth)
-						assertEquals(33.0, lineWidth)
+						lineWidth = 33f
+						assertEquals(33f, state.lineWidth)
+						assertEquals(33f, lineWidth)
 					}
 				}
-				assertEquals(22.0, state.lineWidth)
-				lineWidth = 11.0
-				assertEquals(11.0, state.lineWidth)
+				assertEquals(22f, state.lineWidth)
+				lineWidth = 11f
+				assertEquals(11f, state.lineWidth)
 			}
 		}
 	}
@@ -54,7 +54,7 @@ class Context2dTest {
 
 				beginPath()
 				fillStyle = Colors.GREEN
-				lineWidth = 10.0
+				lineWidth = 10f
 				lineCap = LineCap.ROUND
 				moveTo(Point(100, 100))
 				lineTo(Point(120, 120))

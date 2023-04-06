@@ -2,7 +2,7 @@ package korlibs.math.geom.bezier
 
 import korlibs.datastructure.*
 
-fun Curves.toDashes(pattern: DoubleArray?, offset: Double = 0.0): List<Curves> {
+fun Curves.toDashes(pattern: FloatArray?, offset: Float = 0f): List<Curves> {
     if (pattern == null) return listOf(this)
 
     check(!pattern.all { it <= 0.0 })
@@ -14,7 +14,7 @@ fun Curves.toDashes(pattern: DoubleArray?, offset: Double = 0.0): List<Curves> {
     while (current < length) {
         val len = pattern.getCyclic(index++)
         if (dashNow) {
-            out += splitByLength(current, current + len)
+            out += splitByLength(current.toDouble(), (current + len).toDouble())
         }
         current += len
         dashNow = !dashNow

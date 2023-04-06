@@ -30,7 +30,7 @@ class ShapeBuilderTest {
     @Test
     fun testFillStroke() {
         val shape = buildShape {
-            fillStroke(Colors.RED, Colors.BLUE, StrokeInfo(thickness = 5.0)) {
+            fillStroke(Colors.RED, Colors.BLUE, StrokeInfo(thickness = 5f)) {
                 rect(0, 0, 200, 100)
             }
         }

@@ -2,9 +2,12 @@ package samples
 
 import korlibs.datastructure.*
 import korlibs.datastructure.iterators.*
-import korlibs.time.*
-import korlibs.graphics.*
 import korlibs.event.*
+import korlibs.graphics.*
+import korlibs.image.color.*
+import korlibs.image.font.*
+import korlibs.image.text.*
+import korlibs.io.async.*
 import korlibs.korge.input.*
 import korlibs.korge.scene.*
 import korlibs.korge.time.*
@@ -12,15 +15,12 @@ import korlibs.korge.tween.*
 import korlibs.korge.view.*
 import korlibs.korge.view.debug.*
 import korlibs.korge.view.vector.*
-import korlibs.image.color.*
-import korlibs.image.font.*
-import korlibs.image.text.*
-import korlibs.io.async.*
 import korlibs.math.geom.*
 import korlibs.math.geom.bezier.*
 import korlibs.math.geom.shape.*
 import korlibs.math.geom.vector.*
 import korlibs.math.interpolation.*
+import korlibs.time.*
 
 class MainStrokesExperiment3 : Scene() {
     override suspend fun SContainer.sceneMain() {
@@ -29,11 +29,11 @@ class MainStrokesExperiment3 : Scene() {
             val points = path.toCurves().toNonCurveSimplePointList()
             val path2 = points?.toPolygon()
 
-            stroke(Colors.BLUE, StrokeInfo(thickness = 3.0)) {
+            stroke(Colors.BLUE, StrokeInfo(thickness = 3f)) {
                 path(path)
             }
 
-            stroke(Colors.RED, StrokeInfo(thickness = 2.0)) {
+            stroke(Colors.RED, StrokeInfo(thickness = 2f)) {
                 path(path2)
             }
 
@@ -46,7 +46,7 @@ class MainStrokesExperiment3 : Scene() {
             fill(Colors.WHITE) {
                 var n = 0
                 points?.fastForEach { (x, y) ->
-                    text("${n++}", DefaultTtfFont, x = x + 2.0, y = y - 5.0)
+                    text("${n++}", DefaultTtfFont, pos = Point(x + 2.0, y - 5.0))
                 }
             }
         }
@@ -71,7 +71,7 @@ class MainStrokesExperiment2 : Scene() {
     override suspend fun SContainer.sceneMain() {
         val path = buildVectorPath {}
         val curves = path.getCurves()
-        val points = curves.toStrokePointsList(10.0, mode = StrokePointsMode.SCALABLE_POS_NORMAL_WIDTH)
+        val points = curves.toStrokePointsList(10f, mode = StrokePointsMode.SCALABLE_POS_NORMAL_WIDTH)
         //addChild(DebugVertexView(points.vector, type = AGDrawType.LINE_STRIP).also { it.color = Colors.WHITE })
         val dbv = debugVertexView(points.map { it.vector }, type = AGDrawType.TRIANGLE_STRIP) { color = Colors.WHITE }
         val dbv3 = debugVertexView(type = AGDrawType.LINE_STRIP) { color = Colors.BLUE.withAd(0.1) }
@@ -80,8 +80,8 @@ class MainStrokesExperiment2 : Scene() {
         //val dbv4 = graphics {  }
 
         var alternate = false
-        var pathScale = 1.0
-        var strokeWidth = 20.0
+        var pathScale = 1f
+        var strokeWidth = 20f
         var debug = true
         var closed = false
         var quad = false
@@ -92,10 +92,10 @@ class MainStrokesExperiment2 : Scene() {
             up(Key.N1) { closed = !closed }
             up(Key.N2) { quad = !quad }
             up(Key.N3) { dashes = !dashes }
-            up(Key.UP) { pathScale *= 1.1 }
-            up(Key.DOWN) { pathScale *= 0.9 }
-            down(Key.LEFT) { strokeWidth *= 0.9 }
-            down(Key.RIGHT) { strokeWidth *= 1.1 }
+            up(Key.UP) { pathScale *= 1.1f }
+            up(Key.DOWN) { pathScale *= 0.9f }
+            down(Key.LEFT) { strokeWidth *= 0.9f }
+            down(Key.RIGHT) { strokeWidth *= 1.1f }
         }
 
         var startX = 100.0
@@ -143,13 +143,13 @@ class MainStrokesExperiment2 : Scene() {
                 //dbv.points = curves.toStrokePoints(5.0, endCap = LineCap.ROUND, startCap = LineCap.ROUND, mode = StrokePointsMode.SCALABLE_POS_NORMAL_WIDTH).vector
                 //dbv.points = curves.toStrokePoints(5.0, endCap = LineCap.ROUND, startCap = LineCap.ROUND, mode = StrokePointsMode.SCALABLE_POS_NORMAL_WIDTH).also {
                 val pointsInfoList = curves
-                    .toStrokePointsList(strokeWidth, mode = StrokePointsMode.SCALABLE_POS_NORMAL_WIDTH, lineDash = if (dashes) doubleArrayListOf(30.0, 10.0) else null, generateDebug = debug)
+                    .toStrokePointsList(strokeWidth, mode = StrokePointsMode.SCALABLE_POS_NORMAL_WIDTH, lineDash = if (dashes) floatArrayListOf(30f, 10f) else null, generateDebug = debug)
                 dbv.pointsList = pointsInfoList.map { it.vector }
                 dbv3.pointsList = pointsInfoList.map { it.vector }
                 dbv4.updateShape {
                     pointsInfoList.fastForEach { pointsInfo ->
                         pointsInfo.debugSegments.fastForEach { line ->
-                            stroke(Colors.GREEN, lineWidth = 1.5) {
+                            stroke(Colors.GREEN, lineWidth = 1.5f) {
                                 //println("line=$line")
                                 this.line(line.a, line.b)
                             }
@@ -209,7 +209,7 @@ class MainStrokesExperiment : Scene() {
         }
         //.applyTransform(Matrix().translate(-100, -200))
         val curves = path.getCurves()
-        val points = curves.toStrokePointsList(10.0, mode = StrokePointsMode.SCALABLE_POS_NORMAL_WIDTH)
+        val points = curves.toStrokePointsList(10f, mode = StrokePointsMode.SCALABLE_POS_NORMAL_WIDTH)
         //Bezier(10.0, 10.0).inflections()
         //points.scale(2.0)
 
@@ -217,16 +217,16 @@ class MainStrokesExperiment : Scene() {
 
         addChild(DebugVertexView(points.map { it.vector }).also { it.color = Colors.WHITE })
 
-        fun generateDashes(offset: Double): Container = Container().apply {
+        fun generateDashes(offset: Float): Container = Container().apply {
             addChild(DebugVertexView(curves
-                .toDashes(doubleArrayOf(180.0, 50.0), offset = offset)
-                .toStrokePointsList(20.0)
+                .toDashes(floatArrayOf(180f, 50f), offset = offset)
+                .toStrokePointsList(20f)
                 .map { it.vector }
             ).also { it.color = Colors.BLUEVIOLET })
         }
 
         class OffsetInfo {
-            var offset = 0.0
+            var offset = 0f
         }
 
         val container = container {
@@ -255,7 +255,7 @@ class MainStrokesExperiment : Scene() {
         if (true) {
             //if (false) {
             cpuGraphics {
-                stroke(Colors.GREEN, StrokeInfo(thickness = 2.0)) {
+                stroke(Colors.GREEN, StrokeInfo(thickness = 2f)) {
                     Ratio.forEachRatio(200) { ratio ->
                         val t = curves.ratioFromLength(ratio.convertToRange(0.0, curves.length))
                         //println("t=$t")
@@ -265,7 +265,10 @@ class MainStrokesExperiment : Scene() {
                     }
                 }
                 fill(Colors.RED) {
-                    this.text("Hello, this is a test. Oh nice! Text following paths! How cool is that? Really cool? or not at all?\nCOOL, COOL, COOL, let's rock this path a bit more because it is cool, yeah!", DefaultTtfFont, textSize = 32.0, x = 0.0, y = 0.0, renderer = DefaultStringTextRenderer.aroundPath(path))
+                    this.text(
+                        "Hello, this is a test. Oh nice! Text following paths! How cool is that? Really cool? or not at all?\nCOOL, COOL, COOL, let's rock this path a bit more because it is cool, yeah!",
+                        DefaultTtfFont, textSize = 32f, pos = Point.ZERO, renderer = DefaultStringTextRenderer.aroundPath(path)
+                    )
                 }
             }
         }

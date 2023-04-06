@@ -119,7 +119,7 @@ class GraphicsTest {
     @Test
     fun testGraphicsTextureSize() {
         val bitmap = CpuGraphics().updateShape(redrawNow = true) {
-            stroke(Colors["#f0f0f0"], StrokeInfo(thickness = 2.0)) { rect(-75.0, -50.0, 150.0, 100.0) }
+            stroke(Colors["#f0f0f0"], StrokeInfo(thickness = 2f)) { rect(-75.0, -50.0, 150.0, 100.0) }
         }.bitmap
         assertEquals("153x103", "${bitmap.width}x${bitmap.height}")
     }
@@ -129,7 +129,7 @@ class GraphicsTest {
         val g = CpuGraphics()
         assertEquals(0, g.bitmapsToRemove.size)
         g.updateShape {
-            stroke(Colors["#f0f0f0"], StrokeInfo(thickness = 2.0)) { rect(-75.0, -50.0, 150.0, 100.0) }
+            stroke(Colors["#f0f0f0"], StrokeInfo(thickness = 2f)) { rect(-75.0, -50.0, 150.0, 100.0) }
         }
         assertEquals(0, g.bitmapsToRemove.size)
         assertEquals("1x1", "${g.bitmap.width}x${g.bitmap.height}")
@@ -151,13 +151,13 @@ class GraphicsTest {
         assertEquals(Rectangle(), g.getLocalBounds())
         g.updateShape {
             clear()
-            stroke(Colors.DIMGREY, info = StrokeInfo(thickness = 1.0)) {
+            stroke(Colors.DIMGREY, info = StrokeInfo(thickness = 1f)) {
                 moveTo(p0)
                 lineTo(p1)
                 lineTo(p2)
                 lineTo(p3)
             }
-            stroke(Colors.WHITE, info = StrokeInfo(thickness = 2.0)) {
+            stroke(Colors.WHITE, info = StrokeInfo(thickness = 2f)) {
                 cubic(p0, p1, p2, p3)
             }
             val ratio = 0.3
@@ -165,10 +165,10 @@ class GraphicsTest {
             val cubic2 = Bezier(p0, p1, p2, p3).split(ratio).leftCurve
             val cubic3 = Bezier(p0, p1, p2, p3).split(ratio).rightCurve
 
-            stroke(Colors.PURPLE, info = StrokeInfo(thickness = 4.0)) {
+            stroke(Colors.PURPLE, info = StrokeInfo(thickness = 4f)) {
                 curve(cubic2)
             }
-            stroke(Colors.YELLOW, info = StrokeInfo(thickness = 4.0)) {
+            stroke(Colors.YELLOW, info = StrokeInfo(thickness = 4f)) {
                 curve(cubic3)
             }
         }
@@ -213,7 +213,7 @@ class GraphicsTest {
         val graphics = container.graphics {
             it.renderer = GraphicsRenderer.SYSTEM
             it.antialiased = true
-            this.stroke(Colors.YELLOW, info = StrokeInfo(50.0)) {
+            this.stroke(Colors.YELLOW, info = StrokeInfo(50f)) {
                 line(Point(100, 100), Point(200, 200))
             }
             this.circle(Point(100, 100), 5f)

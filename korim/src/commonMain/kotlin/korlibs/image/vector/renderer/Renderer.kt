@@ -46,42 +46,29 @@ abstract class Renderer {
         else -> true
     }
 
-    open fun drawImage(
-        image: Bitmap,
-        x: Double,
-        y: Double,
-        width: Double = image.width.toDouble(),
-        height: Double = image.height.toDouble(),
-        transform: Matrix = Matrix.IDENTITY
-    ) {
+    open fun drawImage(image: Bitmap, pos: Point, size: Size = image.size.toFloat(), transform: Matrix = Matrix.IDENTITY) {
         render(
             Context2d.State(
                 transform = transform,
                 path = VectorPath().apply {
                     if (transform.type == MatrixType.IDENTITY) {
-                        rect(x, y, width, height)
+                        rect(pos, size)
                     } else {
                         transformed(transform) {
-                            rect(x, y, width, height)
+                            rect(pos, size)
                         }
                     }
                 },
                 fillStyle = BitmapPaint(
                     image,
                     transform = Matrix.IDENTITY
-                        .scaled(width / image.width.toDouble(), height / image.height.toDouble())
-                        .translated(x, y)
+                        .scaled(size / image.size.toFloat())
+                        .translated(pos)
                 )
             ),
             fill = true
         )
     }
-
-    inline fun drawImage(
-        image: Bitmap,
-        x: Number, y: Number, width: Number = image.width, height: Number = image.height,
-        transform: Matrix = Matrix.IDENTITY
-    ) = drawImage(image, x.toDouble(), y.toDouble(), width.toDouble(), height.toDouble(), transform)
 
     open fun dispose() {
         flush()

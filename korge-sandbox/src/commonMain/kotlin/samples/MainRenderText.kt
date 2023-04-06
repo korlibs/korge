@@ -1,16 +1,16 @@
 package samples
 
-import korlibs.korge.scene.Scene
-import korlibs.korge.view.*
 import korlibs.image.color.*
 import korlibs.image.font.*
 import korlibs.image.text.*
 import korlibs.io.file.std.*
+import korlibs.korge.scene.*
+import korlibs.korge.view.*
 
 class MainRenderText : Scene() {
     override suspend fun SContainer.sceneMain() {
         val font = resourcesVfs["Pacifico.ttf"].readFont()
-        val realTextSize = 64.0
+        val realTextSize = 64f
         //val text = "WTF is going on\nWTF is going on"
         val text = "WTF is going on"
         val renderer = DefaultStringTextRenderer

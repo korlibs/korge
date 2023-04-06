@@ -1,7 +1,7 @@
 package korlibs.math.geom
 
-import korlibs.memory.pack.*
 import korlibs.math.annotations.*
+import korlibs.memory.pack.*
 
 //@KormaValueApi
 inline class Scale internal constructor(internal val raw: Float2Pack) {
@@ -23,6 +23,7 @@ inline class Scale internal constructor(internal val raw: Float2Pack) {
 }
 
 fun Scale.toPoint(): Point = Point(raw)
+fun Scale.toVector2(): Vector2 = Vector2(raw)
 
 @KormaMutableApi
 sealed interface IScale {

@@ -1,10 +1,10 @@
 package samples
 
 import korlibs.event.*
+import korlibs.image.color.*
 import korlibs.korge.input.*
 import korlibs.korge.scene.*
 import korlibs.korge.view.*
-import korlibs.image.color.*
 import korlibs.math.geom.*
 import korlibs.math.geom.bezier.*
 import korlibs.math.geom.vector.*
@@ -17,14 +17,14 @@ class MainArc : Scene() {
             val p2 = Point(300, 200)
             val radius = 100f
 
-            stroke(Colors.BLUE, StrokeInfo(thickness = 10.0)) {
+            stroke(Colors.BLUE, StrokeInfo(thickness = 10f)) {
                 //fill(Colors.BLUE) {
                 circle(Arc.findArcCenter(p1, p2, radius), radius)
             }
-            stroke(Colors.RED, StrokeInfo(thickness = 5.0)) {
+            stroke(Colors.RED, StrokeInfo(thickness = 5f)) {
                 curves(Arc.createArc(p1, p2, radius))
             }
-            stroke(Colors.PURPLE, StrokeInfo(thickness = 5.0)) {
+            stroke(Colors.PURPLE, StrokeInfo(thickness = 5f)) {
                 curves(Arc.createArc(p1, p2, radius, counterclockwise = true))
             }
             fill(Colors.WHITE) {

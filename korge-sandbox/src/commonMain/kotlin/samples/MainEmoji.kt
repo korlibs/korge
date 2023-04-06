@@ -1,20 +1,13 @@
 package samples
 
-import korlibs.korge.scene.Scene
-import korlibs.korge.view.SContainer
-import korlibs.korge.view.cpuGraphics
-import korlibs.korge.view.image
-import korlibs.korge.view.text
-import korlibs.korge.view.xy
-import korlibs.image.color.Colors
-import korlibs.image.font.DefaultTtfFont
-import korlibs.image.font.SystemFont
-import korlibs.image.font.readTtfFont
-import korlibs.image.font.withFallback
-import korlibs.image.format.readBitmap
-import korlibs.image.text.text
-import korlibs.io.file.std.localVfs
-import korlibs.io.file.std.resourcesVfs
+import korlibs.image.color.*
+import korlibs.image.font.*
+import korlibs.image.format.*
+import korlibs.image.text.*
+import korlibs.io.file.std.*
+import korlibs.korge.scene.*
+import korlibs.korge.view.*
+import korlibs.math.geom.*
 
 class MainEmoji : Scene() {
     override suspend fun SContainer.sceneMain() {
@@ -42,13 +35,13 @@ class MainEmoji : Scene() {
         val font2 = font0.withFallback(fontEmojiSystem)
         val font3 = font0.withFallback(fontEmojiOther)
 
-        text("HELLO　зклмн 😃😀😁😂🥰🤩🦍", font = font1, textSize = 90.0).xy(100, 100)
-        text("HELLO　쌍디귿 😃😀😁😂🥰🤩🦍", font = font2, textSize = 90.0).xy(100, 228)
-        text("HELLO　あかめ私 😃\uD83D\uDDB9", font = font3, textSize = 90.0).xy(100, 368)
+        text("HELLO　зклмн 😃😀😁😂🥰🤩🦍", font = font1, textSize = 90f).xy(100, 100)
+        text("HELLO　쌍디귿 😃😀😁😂🥰🤩🦍", font = font2, textSize = 90f).xy(100, 228)
+        text("HELLO　あかめ私 😃\uD83D\uDDB9", font = font3, textSize = 90f).xy(100, 368)
 
         cpuGraphics({
             fill(Colors.RED) {
-                text("h̷̷̶̨͋ͩ̏ͣ̒̉ͤ͛̓̄͢͡͠͡͏͈̬̜̲̙̤̙̤̯e̷͛̒ͪ́ͤ̒̃͏̶͠͏̞̰̻͙̟̜͕̞̮͟͟͡ļ̸̥͎̼̪̘̜̞͓̩ͧ̈̌ͣͨ́̕͡͞ͅl̡̡̛̦̫͖̞̯̻̓̆͆̑̅ͣ̑̕̕͡ͅǫ̴̸̊͐̈́̈̀͛̾́͏̸̡̡̦̤̦͚̬̯͔͉͇́͞HELLO　зклмн 쌍디귿 あかめ私 😃\uD83D\uDDB9", font = font3, textSize = 90.0, x = 100.0, y = 368.0)
+                text("h̷̷̶̨͋ͩ̏ͣ̒̉ͤ͛̓̄͢͡͠͡͏͈̬̜̲̙̤̙̤̯e̷͛̒ͪ́ͤ̒̃͏̶͠͏̞̰̻͙̟̜͕̞̮͟͟͡ļ̸̥͎̼̪̘̜̞͓̩ͧ̈̌ͣͨ́̕͡͞ͅl̡̡̛̦̫͖̞̯̻̓̆͆̑̅ͣ̑̕̕͡ͅǫ̴̸̊͐̈́̈̀͛̾́͏̸̡̡̦̤̦͚̬̯͔͉͇́͞HELLO　зклмн 쌍디귿 あかめ私 😃\uD83D\uDDB9", font = font3, textSize = 90f, pos = Point(100, 368))
             }
         })
     }

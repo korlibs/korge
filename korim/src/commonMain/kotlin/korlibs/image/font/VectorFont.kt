@@ -1,20 +1,19 @@
 package korlibs.image.font
 
 import korlibs.datastructure.*
-import korlibs.datastructure.iterators.fastForEach
-import korlibs.image.vector.Context2d
-import korlibs.io.lang.WStringReader
-import korlibs.io.lang.keep
+import korlibs.datastructure.iterators.*
+import korlibs.image.vector.*
+import korlibs.io.lang.*
+import korlibs.math.geom.*
 
 interface VectorFont : Font {
-    fun getGlyphPath(size: Double, codePoint: Int, path: GlyphPath = GlyphPath(), reader: WStringReader? = null): GlyphPath?
+    fun getGlyphPath(size: Float, codePoint: Int, path: GlyphPath = GlyphPath(), reader: WStringReader? = null): GlyphPath?
 
     override fun renderGlyph(
         ctx: Context2d,
-        size: Double,
+        size: Float,
         codePoint: Int,
-        x: Double,
-        y: Double,
+        pos: Point,
         fill: Boolean?,
         metrics: GlyphMetrics,
         reader: WStringReader?,
@@ -32,7 +31,7 @@ interface VectorFont : Font {
                 beforeDraw?.invoke()
             }
             ctx.keepTransform {
-                ctx.translate(x, y)
+                ctx.translate(pos)
                 g.draw(ctx)
             }
             when (fill) {
@@ -62,13 +61,13 @@ data class VectorFontList(val list: List<VectorFont>) : VectorFont, Extra by Ext
 
     private val temp = GlyphPath()
 
-    override fun getGlyphPath(size: Double, codePoint: Int, path: GlyphPath, reader: WStringReader?): GlyphPath? =
+    override fun getGlyphPath(size: Float, codePoint: Int, path: GlyphPath, reader: WStringReader?): GlyphPath? =
         list.firstNotNullOfOrNull { it.getGlyphPath(size, codePoint, path, reader) }
 
-    override fun getFontMetrics(size: Double, metrics: FontMetrics): FontMetrics =
+    override fun getFontMetrics(size: Float, metrics: FontMetrics): FontMetrics =
         list.first().getFontMetrics(size, metrics)
 
-    override fun getGlyphMetrics(size: Double, codePoint: Int, metrics: GlyphMetrics, reader: WStringReader?): GlyphMetrics {
+    override fun getGlyphMetrics(size: Float, codePoint: Int, metrics: GlyphMetrics, reader: WStringReader?): GlyphMetrics {
         list.fastForEach { font ->
             if (font.getGlyphPath(size, codePoint, temp, reader) != null) {
                 return font.getGlyphMetrics(size, codePoint, metrics, reader)
@@ -77,7 +76,7 @@ data class VectorFontList(val list: List<VectorFont>) : VectorFont, Extra by Ext
         return list.first().getGlyphMetrics(size, codePoint, metrics, reader)
     }
 
-    override fun getKerning(size: Double, leftCodePoint: Int, rightCodePoint: Int): Double =
+    override fun getKerning(size: Float, leftCodePoint: Int, rightCodePoint: Int): Float =
         list.first().getKerning(size, leftCodePoint, rightCodePoint)
 
 }

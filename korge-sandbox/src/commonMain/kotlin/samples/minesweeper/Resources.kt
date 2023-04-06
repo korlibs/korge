@@ -8,7 +8,7 @@ import korlibs.io.resources.*
 
 val ResourcesContainer.minesweeperFont by resourceGlobal {
     DefaultTtfFont.toBitmapFont(
-        fontSize = 32.0,
+        fontSize = 32f,
         paint = LinearGradientPaint(0.0, 0.0, 0.0, 32.0)
             .add(0.0, Colors["#ecfff8"])
             .add(1.0, Colors["#90c5ff"]),

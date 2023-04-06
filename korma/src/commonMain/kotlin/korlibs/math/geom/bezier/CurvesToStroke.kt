@@ -1,10 +1,10 @@
 package korlibs.math.geom.bezier
 
 import korlibs.datastructure.*
-import korlibs.memory.*
 import korlibs.math.geom.*
 import korlibs.math.geom.vector.*
 import korlibs.math.interpolation.*
+import korlibs.memory.*
 import kotlin.math.*
 
 // @TODO
@@ -74,7 +74,7 @@ class StrokePointsBuilder(
         addPoint(pos, normal, -width)
     }
 
-    fun addJoin(curr: Curve, next: Curve, kind: LineJoin, miterLimitRatio: Double) {
+    fun addJoin(curr: Curve, next: Curve, kind: LineJoin, miterLimitRatio: Float) {
         val commonPoint = curr.calc(1.0)
         val currTangent = curr.tangent(1.0)
         val currNormal = curr.normal(1.0)
@@ -249,7 +249,7 @@ class StrokePointsBuilder(
         join: LineJoin = LineJoin.MITER,
         startCap: LineCap = LineCap.BUTT,
         endCap: LineCap = LineCap.BUTT,
-        miterLimit: Double = 10.0,
+        miterLimit: Float = 10f,
         forceClosed: Boolean? = null
     ) {
         val closed = forceClosed ?: curves.closed
@@ -323,32 +323,32 @@ fun List<Curves>.toStrokePointsList(
 
 /** Useful for drawing */
 fun Curves.toStrokePointsList(
-    width: Double,
+    width: Float,
     join: LineJoin = LineJoin.MITER,
     startCap: LineCap = LineCap.BUTT,
     endCap: LineCap = LineCap.BUTT,
-    miterLimit: Double = 10.0,
+    miterLimit: Float = 10f,
     mode: StrokePointsMode = StrokePointsMode.NON_SCALABLE_POS,
-    lineDash: IDoubleArrayList? = null,
-    lineDashOffset: Double = 0.0,
+    lineDash: IFloatArrayList? = null,
+    lineDashOffset: Float = 0f,
     generateDebug: Boolean = false
 ): List<StrokePoints> =
     listOf(this).toStrokePointsList(width, join, startCap, endCap, miterLimit, mode, lineDash, lineDashOffset, generateDebug)
 
 fun List<Curves>.toStrokePointsList(
-    width: Double,
+    width: Float,
     join: LineJoin = LineJoin.MITER,
     startCap: LineCap = LineCap.BUTT,
     endCap: LineCap = LineCap.BUTT,
-    miterLimit: Double = 10.0,
+    miterLimit: Float = 10f,
     mode: StrokePointsMode = StrokePointsMode.NON_SCALABLE_POS,
-    lineDash: IDoubleArrayList? = null,
-    lineDashOffset: Double = 0.0,
+    lineDash: IFloatArrayList? = null,
+    lineDashOffset: Float = 0f,
     generateDebug: Boolean = false,
     forceClosed: Boolean? = null,
 ): List<StrokePoints> {
     val curvesList = when {
-        lineDash != null -> this.flatMap { it.toDashes(lineDash.toDoubleArray(), lineDashOffset) }
+        lineDash != null -> this.flatMap { it.toDashes(lineDash.toFloatArray(), lineDashOffset) }
         else -> this
     }
     return curvesList

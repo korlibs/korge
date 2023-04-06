@@ -1,17 +1,15 @@
 package samples
 
-import korlibs.time.*
-import korlibs.korge.scene.*
-import korlibs.korge.tween.*
-import korlibs.korge.tween.get
-import korlibs.korge.view.*
 import korlibs.image.color.*
 import korlibs.image.vector.*
 import korlibs.io.async.*
+import korlibs.korge.scene.*
+import korlibs.korge.tween.*
+import korlibs.korge.view.*
 import korlibs.math.geom.*
 import korlibs.math.geom.bezier.*
-import korlibs.math.geom.vector.*
-import korlibs.math.random.get
+import korlibs.math.random.*
+import korlibs.time.*
 import kotlin.random.*
 
 class MainBezier : Scene() {
@@ -33,18 +31,18 @@ class MainBezier : Scene() {
                 //val curve = Bezier.Quad(bez.p1, bez.p2, bez.p3)
                 val curve = Bezier(bez.p1, bez.p2, bez.p3, bez.p4)
 
-                stroke(Colors.WHITE, lineWidth = 4.0) {
+                stroke(Colors.WHITE, lineWidth = 4.0f) {
                     beginPath()
                     curve(curve)
                 }
 
-                stroke(Colors.DIMGREY, lineWidth = 1.6) {
+                stroke(Colors.DIMGREY, lineWidth = 1.6f) {
                     moveTo(bez.p1)
                     lineTo(bez.p2)
                     lineTo(bez.p3)
                     lineTo(bez.p4)
                 }
-                stroke(Colors.PURPLE, lineWidth = 2.0) {
+                stroke(Colors.PURPLE, lineWidth = 2.0f) {
                     for (n in 0..50) {
                         val p = curve.calc(n.toDouble() / 50.0)
                         this.circle(p, 1f)
@@ -66,7 +64,7 @@ class MainBezier : Scene() {
                 //fill(Colors.YELLOW) { this.circle(bez.p3, 4.0) }
                 //fill(Colors.YELLOW) { this.circle(bez.p4, 4.0) }
 
-                stroke(Colors.RED, lineWidth = 2.0) {
+                stroke(Colors.RED, lineWidth = 2.0f) {
                     rect(curve.getBounds())
                 }
             }

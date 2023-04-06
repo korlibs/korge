@@ -1,21 +1,14 @@
 package samples
 
-import korlibs.time.measureTime
-import korlibs.korge.scene.Scene
-import korlibs.korge.view.SContainer
-import korlibs.korge.view.container
-import korlibs.korge.view.cpuGraphics
-import korlibs.korge.view.text
-import korlibs.korge.view.vector.gpuGraphics
-import korlibs.korge.view.xy
-import korlibs.image.color.Colors
-import korlibs.image.font.DefaultTtfFont
-import korlibs.image.font.SystemFont
-import korlibs.image.font.asFallbackOf
-import korlibs.image.font.readTtfFont
-import korlibs.image.vector.Context2d
-import korlibs.image.vector.buildShape
-import korlibs.io.file.std.resourcesVfs
+import korlibs.image.color.*
+import korlibs.image.font.*
+import korlibs.image.vector.*
+import korlibs.io.file.std.*
+import korlibs.korge.scene.*
+import korlibs.korge.view.*
+import korlibs.korge.view.vector.*
+import korlibs.math.geom.*
+import korlibs.time.*
 
 class MainEmojiColrv1 : Scene() {
     override suspend fun SContainer.sceneMain() {
@@ -33,15 +26,15 @@ class MainEmojiColrv1 : Scene() {
         //val str = "🌄"
 
         fun Context2d.buildText() {
-            fillText(str, font = font, textSize = 50.0, x = 22.0, y = 0.0, color = Colors.WHITE)
-            fillText(str, font = font2, textSize = 50.0, x = 22.0, y = 75.0, color = Colors.WHITE)
+            fillText(str, font = font, textSize = 50f, pos = Point(22, 0), color = Colors.WHITE)
+            fillText(str, font = font2, textSize = 50f, pos = Point(22, 75), color = Colors.WHITE)
             //fillText(str, font = font3, textSize = 50.0, x = 22.0, y = 150.0, color = Colors.WHITE)
         }
 
         container {
             xy(0, 0)
-            text(str, font = font, textSize = 50.0, color = Colors.WHITE).xy(x = 22.0, y = 0.0)
-            text(str, font = font2, textSize = 50.0, color = Colors.WHITE).xy(x = 22.0, y = 75.0)
+            text(str, font = font, textSize = 50f, color = Colors.WHITE).xy(x = 22.0, y = 0.0)
+            text(str, font = font2, textSize = 50f, color = Colors.WHITE).xy(x = 22.0, y = 75.0)
         }
 
         val shape = buildShape { buildText() }

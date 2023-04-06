@@ -1,19 +1,19 @@
 package samples
 
-import korlibs.time.*
-import korlibs.korge.scene.*
-import korlibs.korge.ui.*
-import korlibs.korge.view.SContainer
-import korlibs.korge.view.image
 import korlibs.image.bitmap.*
 import korlibs.image.color.*
 import korlibs.image.format.*
 import korlibs.image.paint.*
 import korlibs.io.async.*
 import korlibs.io.file.std.*
+import korlibs.korge.scene.*
+import korlibs.korge.ui.*
+import korlibs.korge.view.SContainer
+import korlibs.korge.view.image
 import korlibs.math.geom.*
 import korlibs.math.geom.vector.*
 import korlibs.math.interpolation.*
+import korlibs.time.*
 
 class MainVector : ScaledScene(1280, 720) {
     companion object {
@@ -35,13 +35,13 @@ class MainVector : ScaledScene(1280, 720) {
                             translate(128 + 256 * index, 128)
 
                             for (n in 0 until N_STEPS) {
-                                val ratio = n.toDouble() / N_STEPS
+                                val ratio = n.toFloat() / N_STEPS
                                 val angle = 360.degrees * ratio
                                 val radius = 96 - ratio * 16
                                 //clip({ circle(0.0, 0.0, 64.0) }) {
                                 stroke(
                                     RGBA.interpolate(Colors.GREEN, Colors.BLUE, ratio.toRatio()),
-                                    StrokeInfo(thickness = 1.0 + ratio * 6, startCap = lineCap, endCap = lineCap)
+                                    StrokeInfo(thickness = 1f + ratio * 6, startCap = lineCap, endCap = lineCap)
                                 ) {
                                     moveTo(Point(0, 0))
                                     lineTo(Point(angle.cosineD * radius, angle.sineD * radius))

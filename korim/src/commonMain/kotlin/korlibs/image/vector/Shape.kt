@@ -1,28 +1,32 @@
 package korlibs.image.vector
 
-import korlibs.datastructure.iterators.fastForEach
-import korlibs.image.bitmap.toUri
-import korlibs.image.color.RGBA
-import korlibs.image.font.Font
-import korlibs.image.font.drawText
-import korlibs.image.paint.BitmapPaint
-import korlibs.image.paint.ColorPaint
-import korlibs.image.paint.GradientKind
-import korlibs.image.paint.GradientPaint
-import korlibs.image.paint.NonePaint
-import korlibs.image.paint.Paint
-import korlibs.image.text.HorizontalAlign
-import korlibs.image.text.VerticalAlign
-import korlibs.image.vector.format.SVG
-import korlibs.image.vector.format.SvgPath
-import korlibs.io.serialization.xml.Xml
+import korlibs.datastructure.iterators.*
+import korlibs.image.bitmap.*
+import korlibs.image.color.*
+import korlibs.image.font.*
+import korlibs.image.paint.*
+import korlibs.image.text.*
+import korlibs.image.vector.format.*
+import korlibs.io.serialization.xml.*
 import korlibs.io.util.niceStr
 import korlibs.math.geom.*
-import korlibs.math.geom.bezier.Curves
-import korlibs.math.geom.bezier.isConvex
+import korlibs.math.geom.bezier.*
 import korlibs.math.geom.vector.*
-import kotlin.math.max
-import kotlin.math.round
+import kotlin.collections.List
+import kotlin.collections.Map
+import kotlin.collections.any
+import kotlin.collections.arrayListOf
+import kotlin.collections.buildList
+import kotlin.collections.filter
+import kotlin.collections.first
+import kotlin.collections.joinToString
+import kotlin.collections.linkedMapOf
+import kotlin.collections.listOf
+import kotlin.collections.map
+import kotlin.collections.mapOf
+import kotlin.collections.plus
+import kotlin.collections.plusAssign
+import kotlin.math.*
 
 /*
 <svg width="80px" height="30px" viewBox="0 0 80 30"
@@ -160,7 +164,7 @@ interface StyledShape : Shape {
 	val clip: VectorPath?
 	val paint: Paint
 	val transform: Matrix
-    val globalAlpha: Double
+    val globalAlpha: Float
 
     fun getUntransformedPath(): VectorPath? {
         return path?.clone()?.applyTransform(transform.inverted())
@@ -309,7 +313,7 @@ data class FillShape(
     override val clip: VectorPath?,
     override val paint: Paint,
     override val transform: Matrix = Matrix.IDENTITY,
-    override val globalAlpha: Double = 1.0,
+    override val globalAlpha: Float = 1f,
 ) : StyledShape {
     val pathCurvesList: List<Curves> by lazy {
         //println("Computed pathCurves for path=$path")
@@ -340,7 +344,7 @@ data class PolylineShape constructor(
     override val paint: Paint,
     override val transform: Matrix,
     val strokeInfo: StrokeInfo,
-    override val globalAlpha: Double = 1.0,
+    override val globalAlpha: Float = 1f,
 ) : StyledShape {
     private val tempBB = MBoundsBuilder()
     private val tempRect = MRectangle()
@@ -420,26 +424,25 @@ open class CompoundShape(
 
 class TextShape(
     val text: String,
-    val x: Double,
-    val y: Double,
+    val pos: Point,
     val font: Font?,
-    val fontSize: Double,
+    val fontSize: Float,
     override val clip: VectorPath?,
     val fill: Paint?,
     val stroke: Paint?,
     val halign: HorizontalAlign = HorizontalAlign.LEFT,
     val valign: VerticalAlign = VerticalAlign.TOP,
     override val transform: Matrix = Matrix.IDENTITY,
-    override val globalAlpha: Double = 1.0,
+    override val globalAlpha: Float = 1f,
 ) : StyledShape {
     override val paint: Paint get() = fill ?: stroke ?: NonePaint
 
     override fun getBounds(includeStrokes: Boolean): Rectangle =
-        Rectangle.fromBounds(x, y, x + fontSize * text.length, y + fontSize) // @TODO: this is not right since we don't have information about Glyph metrics
+        Rectangle.fromBounds(pos, Point(pos.x + fontSize * text.length, pos.y + fontSize)) // @TODO: this is not right since we don't have information about Glyph metrics
     override fun drawInternal(c: Context2d) {
         c.font(font, halign, valign) {
-            if (fill != null) c.fillText(text, x, y)
-            if (stroke != null) c.strokeText(text, x, y)
+            if (fill != null) c.fillText(text, pos)
+            if (stroke != null) c.strokeText(text, pos)
         }
     }
 
@@ -447,16 +450,16 @@ class TextShape(
         buildShape {
             this.transform(this@TextShape.transform.immutable)
             this.clip(this@TextShape.clip)
-            if (this@TextShape.fill != null) this@TextShape.font?.drawText(this, this@TextShape.fontSize, this@TextShape.text, this@TextShape.fill, this@TextShape.x, this@TextShape.y, fill = true)
-            if (this@TextShape.stroke != null) this@TextShape.font?.drawText(this, this@TextShape.fontSize, this@TextShape.text, this@TextShape.stroke, this@TextShape.x, this@TextShape.y, fill = false)
+            if (this@TextShape.fill != null) this@TextShape.font?.drawText(this, this@TextShape.fontSize, this@TextShape.text, this@TextShape.fill, this@TextShape.pos, fill = true)
+            if (this@TextShape.stroke != null) this@TextShape.font?.drawText(this, this@TextShape.fontSize, this@TextShape.text, this@TextShape.stroke, this@TextShape.pos, fill = false)
         }
     }
 
     override fun buildSvg(svg: SvgBuilder) {
         svg.nodes += Xml.Tag(
             "text", mapOf(
-                "x" to x,
-                "y" to y,
+                "x" to pos.xD,
+                "y" to pos.yD,
                 "fill" to (fill?.toSvg(svg) ?: "none"),
                 "stroke" to (stroke?.toSvg(svg) ?: "none"),
                 "font-family" to font?.name,
@@ -488,7 +491,7 @@ fun Shape.transformedShape(m: Matrix): Shape = when (this) {
     is CompoundShape -> CompoundShape(components.map { it.transformedShape(m) })
     is FillShape -> FillShape(path.applyTransform(m), clip?.applyTransform(m), paint, transform * m, globalAlpha)
     is PolylineShape -> PolylineShape(path.applyTransform(m), clip?.applyTransform(m), paint, transform * m, strokeInfo, globalAlpha)
-    is TextShape -> TextShape(text, x, y, font, fontSize, clip?.applyTransform(m), fill, stroke, halign, valign, transform * m, globalAlpha)
+    is TextShape -> TextShape(text, pos, font, fontSize, clip?.applyTransform(m), fill, stroke, halign, valign, transform * m, globalAlpha)
     else -> TODO()
 }
 

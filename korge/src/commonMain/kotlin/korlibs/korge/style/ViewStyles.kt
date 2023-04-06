@@ -23,7 +23,7 @@ class ViewStyles(val view: View) {
 }
 
 var ViewStyles.textFont: Font by ViewStyle(DefaultTtfFontAsBitmap)
-var ViewStyles.textSize: Double by ViewStyle(16.0)
+var ViewStyles.textSize: Float by ViewStyle(16f)
 var ViewStyles.textColor: RGBA by ViewStyle(Colors.WHITE)
 var ViewStyles.buttonBackColor: RGBA by ViewStyle(Colors.DARKGRAY)
 var ViewStyles.textAlignment: TextAlignment by ViewStyle(TextAlignment.TOP_LEFT)

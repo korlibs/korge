@@ -117,7 +117,7 @@ open class UIButton(
 
     //protected val textShadowView = text("", 16.0)
     @ViewProperty(min = 1.0, max = 300.0)
-    var textSize: Double
+    var textSize: Float
         get() = richText.defaultStyle.textSize
         set(value) {
             richText = richText.withStyle(richText.defaultStyle.copy(textSize = value))

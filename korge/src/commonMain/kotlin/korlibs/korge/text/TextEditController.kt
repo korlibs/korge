@@ -1,9 +1,12 @@
 package korlibs.korge.text
 
 import korlibs.datastructure.*
-import korlibs.time.*
-import korlibs.memory.*
 import korlibs.event.*
+import korlibs.image.color.*
+import korlibs.image.font.*
+import korlibs.io.async.*
+import korlibs.io.lang.*
+import korlibs.io.util.length
 import korlibs.korge.annotations.*
 import korlibs.korge.component.*
 import korlibs.korge.input.*
@@ -11,14 +14,11 @@ import korlibs.korge.time.*
 import korlibs.korge.ui.*
 import korlibs.korge.view.*
 import korlibs.korge.view.debug.*
-import korlibs.render.*
-import korlibs.image.color.*
-import korlibs.image.font.*
-import korlibs.io.async.*
-import korlibs.io.lang.*
-import korlibs.io.util.length
 import korlibs.math.geom.*
 import korlibs.math.geom.bezier.*
+import korlibs.memory.*
+import korlibs.render.*
+import korlibs.time.*
 import kotlin.math.*
 import kotlin.text.isLetterOrDigit
 
@@ -128,7 +128,7 @@ class TextEditController(
             updateCaretPosition()
         }
 
-    var textSize: Double
+    var textSize: Float
         get() = textView.textSize
         set(value) {
             textView.textSize = value

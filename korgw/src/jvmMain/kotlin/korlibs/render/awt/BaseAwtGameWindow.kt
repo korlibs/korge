@@ -1,26 +1,25 @@
 package korlibs.render.awt
 
+import com.sun.jna.*
 import korlibs.datastructure.*
+import korlibs.event.*
+import korlibs.graphics.*
+import korlibs.graphics.gl.*
+import korlibs.image.awt.*
+import korlibs.image.color.*
+import korlibs.io.async.*
+import korlibs.io.dynamic.*
 import korlibs.kgl.*
-import korlibs.time.*
+import korlibs.math.geom.*
 import korlibs.memory.*
 import korlibs.memory.Platform
 import korlibs.memory.dyn.osx.*
-import korlibs.graphics.*
-import korlibs.graphics.gl.*
-import korlibs.event.*
 import korlibs.render.*
 import korlibs.render.osx.*
 import korlibs.render.platform.*
 import korlibs.render.win32.*
 import korlibs.render.x11.*
-import korlibs.image.awt.*
-import korlibs.image.color.*
-import korlibs.io.async.*
-import korlibs.io.dynamic.*
-import korlibs.io.util.*
-import korlibs.math.geom.*
-import com.sun.jna.*
+import korlibs.time.*
 import kotlinx.coroutines.*
 import java.awt.*
 import java.awt.datatransfer.*
@@ -37,7 +36,7 @@ abstract class BaseAwtGameWindow(
         GraphicsEnvironment.getLocalGraphicsEnvironment()
     }
 
-    override val devicePixelRatio: Double get() {
+    override val devicePixelRatio: Float get() {
         if (GraphicsEnvironment.isHeadless()) {
             return super.devicePixelRatio
         }
@@ -45,21 +44,21 @@ abstract class BaseAwtGameWindow(
         // https://stackoverflow.com/questions/20767708/how-do-you-detect-a-retina-display-in-java
         val config = component.graphicsConfiguration
             ?: localGraphicsEnvironment.defaultScreenDevice.defaultConfiguration
-        return config.defaultTransform.scaleX
+        return config.defaultTransform.scaleX.toFloat()
     }
 
     //override val pixelsPerInch: Double by lazy(LazyThreadSafetyMode.PUBLICATION) {
-    override val pixelsPerInch: Double get() {
+    override val pixelsPerInch: Float get() {
         if (GraphicsEnvironment.isHeadless()) {
             return AG.defaultPixelsPerInch
         }
         // maybe this is not just windows specific :
         // https://stackoverflow.com/questions/32586883/windows-scaling
         // somehow this value is not update when you change the scaling in the windows settings while the jvm is running :(
-        return Toolkit.getDefaultToolkit().screenResolution.toDouble()
+        return Toolkit.getDefaultToolkit().screenResolution.toFloat()
     }
 
-    override val pixelsPerLogicalInchRatio: Double by lazy(LazyThreadSafetyMode.PUBLICATION) {
+    override val pixelsPerLogicalInchRatio: Float by lazy(LazyThreadSafetyMode.PUBLICATION) {
         pixelsPerInch / AG.defaultPixelsPerInch
     }
 

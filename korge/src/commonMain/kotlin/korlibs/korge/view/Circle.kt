@@ -16,7 +16,7 @@ inline fun Container.circle(
     radius: Float = 16f,
     fill: Paint = Colors.WHITE,
     stroke: Paint = Colors.WHITE,
-    strokeThickness: Double = 0.0,
+    strokeThickness: Float = 0f,
     autoScaling: Boolean = true,
     renderer: GraphicsRenderer = GraphicsRenderer.GPU,
     callback: @ViewDslMarker korlibs.korge.view.Circle.() -> Unit = {}
@@ -30,7 +30,7 @@ open class Circle(
     radius: Float = 16f,
     fill: Paint = Colors.WHITE,
     stroke: Paint = Colors.WHITE,
-    strokeThickness: Double = 0.0,
+    strokeThickness: Float = 0f,
     autoScaling: Boolean = true,
     renderer: GraphicsRenderer = GraphicsRenderer.GPU,
 ) : ShapeView(shape = VectorPath(), fill = fill, stroke = stroke, strokeThickness = strokeThickness, autoScaling = autoScaling, renderer = renderer) {
