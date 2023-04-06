@@ -1,14 +1,12 @@
 package korlibs.korge.particle
 
-import korlibs.datastructure.flip
-import korlibs.time.TimeSpan
+import korlibs.datastructure.*
 import korlibs.graphics.*
+import korlibs.image.bitmap.*
+import korlibs.image.color.*
 import korlibs.korge.view.property.*
-import korlibs.image.bitmap.BmpSlice
-import korlibs.image.color.RGBAf
-import korlibs.math.geom.Angle
-import korlibs.math.geom.MPoint
-import korlibs.math.geom.degrees
+import korlibs.math.geom.*
+import korlibs.time.*
 
 //e: java.lang.UnsupportedOperationException: Class literal annotation arguments are not yet supported: Factory
 //@AsyncFactoryClass(ParticleEmitter.Factory::class)
@@ -20,9 +18,9 @@ class ParticleEmitter() {
     var textureName: String? = null
 	var texture: BmpSlice? = null
     @ViewProperty
-	var sourcePosition = MPoint()
+	var sourcePosition = Point()
     @ViewProperty
-	var sourcePositionVariance = MPoint()
+	var sourcePositionVariance = Point()
     @ViewProperty
 	var speed = 100.0
     @ViewProperty
@@ -36,7 +34,7 @@ class ParticleEmitter() {
     @ViewProperty
 	var angleVariance: Angle = 360.0.degrees
     @ViewProperty
-	var gravity = MPoint()
+	var gravity = Point()
     @ViewProperty
 	var radialAcceleration = 0.0
     @ViewProperty

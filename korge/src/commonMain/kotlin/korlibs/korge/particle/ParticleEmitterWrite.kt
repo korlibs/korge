@@ -1,11 +1,9 @@
 package korlibs.korge.particle
 
-import korlibs.image.color.RGBAf
-import korlibs.io.file.VfsFile
-import korlibs.io.serialization.xml.buildXml
-import korlibs.math.geom.Angle
-import korlibs.math.geom.MPoint
-import korlibs.math.geom.degrees
+import korlibs.image.color.*
+import korlibs.io.file.*
+import korlibs.io.serialization.xml.*
+import korlibs.math.geom.*
 
 suspend fun VfsFile.writeParticleEmitter(particle: ParticleEmitter) {
     val file = this
@@ -16,7 +14,7 @@ suspend fun VfsFile.writeParticleEmitter(particle: ParticleEmitter) {
         fun nodeAngle(name: String, value: Angle) {
             node(name, "value" to value.degrees)
         }
-        fun nodePoint(name: String, point: MPoint) {
+        fun nodePoint(name: String, point: Point) {
             node(name, "x" to point.x, "y" to point.y)
         }
         fun nodeColor(name: String, color: RGBAf) {

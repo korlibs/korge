@@ -236,7 +236,7 @@ class Text2TextRendererActions : TextRendererActions() {
             append("'${tex.name}', ${x.toInt()}, ${y.toInt()}, ${tex.width}, ${tex.height}")
             if (sx != 1f) append(", sx=${sx.niceStr}")
             if (sy != 1f) append(", sy=${sy.niceStr}")
-            if (rot != 0.radians) append(", rot=${rot.degrees.niceStr}")
+            if (rot != 0.radians) append(", rot=${rot.degreesD.niceStr}")
             append(")")
         }
     }

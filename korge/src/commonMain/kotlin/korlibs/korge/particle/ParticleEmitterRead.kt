@@ -19,7 +19,7 @@ suspend fun VfsFile.readParticleEmitter(): ParticleEmitter {
     //var blendFuncDestination = AGBlendFactor.ONE
 
     particleXml.allChildrenNoComments.fastForEach { item ->
-        fun point() = MPoint(item.double("x"), item.double("y"))
+        fun point() = Point(item.double("x"), item.double("y"))
         fun scalar() = item.double("value")
         fun blendFactor() = ParticleEmitter.blendFactorMap[scalar().toInt()] ?: AGBlendFactor.ONE
         fun type() = ParticleEmitter.typeMap[scalar().toInt()] ?: ParticleEmitter.Type.GRAVITY

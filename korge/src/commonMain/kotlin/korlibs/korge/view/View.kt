@@ -911,8 +911,8 @@ abstract class View internal constructor(
         var out = this::class.portableSimpleName
         if (x != 0f || y != 0f) out += ":pos=(${x.str},${y.str})"
         if (scaleX != 1f || scaleY != 1f) out += ":scale=(${scaleXD.str},${scaleYD.str})"
-        if (skewX != Angle.ZERO || skewY != Angle.ZERO) out += ":skew=(${skewX.degrees.str},${skewY.degrees.str})"
-        if (rotation.absoluteValue != Angle.ZERO) out += ":rotation=(${rotation.degrees.str}º)"
+        if (skewX != Angle.ZERO || skewY != Angle.ZERO) out += ":skew=(${skewX.degreesD.str},${skewY.degreesD.str})"
+        if (rotation.absoluteValue != Angle.ZERO) out += ":rotation=(${rotation.degreesD.str}º)"
         if (name != null) out += ":name=($name)"
         if (blendMode != BlendMode.INHERIT) out += ":blendMode=($blendMode)"
         if (!visible) out += ":visible=$visible"

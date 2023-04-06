@@ -168,15 +168,15 @@ class MainEditor : Scene() {
 }
 
 private var View.rotationDeg: Double
-    get() = rotation.degrees
+    get() = rotation.degreesD
     set(value) { rotation = value.degrees }
 
 private var View.skewXDeg: Double
-    get() = skewX.degrees
+    get() = skewX.degreesD
     set(value) { skewX = value.degrees }
 
 private var View.skewYDeg: Double
-    get() = skewY.degrees
+    get() = skewY.degreesD
     set(value) { skewY = value.degrees }
 
 private fun Container.mybutton(font: Font): View {

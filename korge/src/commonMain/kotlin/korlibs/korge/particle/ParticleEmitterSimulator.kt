@@ -1,7 +1,7 @@
 package korlibs.korge.particle
 
-import korlibs.time.*
 import korlibs.math.geom.*
+import korlibs.time.*
 import kotlin.math.*
 import kotlin.random.*
 

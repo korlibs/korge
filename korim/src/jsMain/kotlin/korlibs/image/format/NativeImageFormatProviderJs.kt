@@ -263,7 +263,7 @@ class CanvasContext2dRenderer(private val canvas: HTMLCanvasElementLike) : Rende
 					}
                     GradientKind.SWEEP -> {
                         when {
-                            ctx.createConicGradient != undefined -> ctx.createConicGradient(this.startAngle.radians, this.x0, this.y0).unsafeCast<CanvasGradient>().addColors(this)
+                            ctx.createConicGradient != undefined -> ctx.createConicGradient(this.startAngle.radiansD, this.x0, this.y0).unsafeCast<CanvasGradient>().addColors(this)
                             else -> "fuchsia"
                         }
                     }

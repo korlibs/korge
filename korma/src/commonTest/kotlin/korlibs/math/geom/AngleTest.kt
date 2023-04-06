@@ -1,12 +1,9 @@
 package korlibs.math.geom
 
 import korlibs.math.interpolation.*
-import korlibs.math.math.isAlmostZero
-import kotlin.math.PI
-import kotlin.math.abs
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertTrue
+import korlibs.math.math.*
+import kotlin.math.*
+import kotlin.test.*
 
 class AngleTest {
     @Test
@@ -33,8 +30,8 @@ class AngleTest {
         assertEquals(2f, 90.degrees / 45.degrees)
 
         assertEquals(0.degrees, (360 * 2.0).degrees.normalized)
-        assertEquals(0.0, (360 * 2.0).degrees.normalized.degrees)
-        assertEquals(0.0, (360 * 2.0).degrees.normalized.radians)
+        assertEquals(0.0, (360 * 2.0).degrees.normalized.degreesD)
+        assertEquals(0.0, (360 * 2.0).degrees.normalized.radiansD)
 
         assertEquals((-90).degrees, -(90.degrees))
         assertEquals((+90).degrees, +(90.degrees))
@@ -141,7 +138,7 @@ class AngleTest {
 
     // @TODO: Required to avoid: java.lang.AssertionError: expected:<3.141592653589793> but was:<Angle(180.0)>
     private fun assertEquals(a: Angle, b: Angle) {
-        assertEquals(a.degrees, b.degrees)
+        assertEquals(a.degreesD, b.degreesD)
     }
 
     private fun assertEquals(l: Double, r: Double, epsilon: Double = 0.0001) {

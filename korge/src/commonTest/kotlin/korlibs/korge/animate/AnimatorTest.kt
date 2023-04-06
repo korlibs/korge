@@ -50,7 +50,7 @@ class AnimatorTest : ViewsForTesting() {
         val view = solidRect(10, 10, Colors.RED)
         val log = arrayListOf<Int>()
         tween(view::rotation[350.0.degrees, 10.0.degrees], time = 1.seconds, easing = Easing.LINEAR) {
-            log += view.rotation.degrees.toIntRound()
+            log += view.rotation.degreesD.toIntRound()
         }
         assertEquals("350,352,354,356,358,0,2,4,6,8,10", log.joinToString(","))
     }
@@ -60,7 +60,7 @@ class AnimatorTest : ViewsForTesting() {
         val view = solidRect(10, 10, Colors.RED)
         val log = arrayListOf<Int>()
         tween(view::rotation[350.0.degrees, 10.0.degrees].denormalized(), time = 1.seconds, easing = Easing.LINEAR) {
-            log += view.rotation.degrees.toIntRound()
+            log += view.rotation.degreesD.toIntRound()
         }
         assertEquals("350,316,282,248,214,180,146,112,78,44,10", log.joinToString(","))
     }

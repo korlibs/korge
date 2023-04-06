@@ -41,32 +41,32 @@ import kotlin.math.*
  * The equivalent old [Angle] constructor is now [Angle.fromRadians]
  */
 //@KormaValueApi
-inline class Angle private constructor(
+inline class Angle @PublishedApi internal constructor(
     /** [0..1] ratio -> [0..360] degrees */
     val ratioF: Float
 ) : Comparable<Angle> {
     val ratio: Float get() = ratioF
     val ratioD: Double get() = ratioF.toDouble()
 
-    val radiansF: Float get() = ratioToRadians(ratioF)
-    val degreesF: Float get() = ratioToDegrees(ratioF)
+    val radians: Float get() = ratioToRadians(ratioF)
+    val degrees: Float get() = ratioToDegrees(ratioF)
 
     /** [0..PI * 2] radians -> [0..360] degrees */
-    val radians: Double get() = ratioToRadians(ratioD)
+    val radiansD: Double get() = ratioToRadians(ratioD)
     /** [0..360] degrees -> [0..PI * 2] radians -> [0..1] ratio */
-    val degrees: Double get() = ratioToDegrees(ratioD)
+    val degreesD: Double get() = ratioToDegrees(ratioD)
 
-    val cosine: Float get() = kotlin.math.cos(radiansF)
-    val sine: Float get() = kotlin.math.sin(radiansF)
-    val tangent: Float get() = kotlin.math.tan(radiansF)
+    val cosine: Float get() = kotlin.math.cos(radians)
+    val sine: Float get() = kotlin.math.sin(radians)
+    val tangent: Float get() = kotlin.math.tan(radians)
 
-    val cosineD: Double get() = kotlin.math.cos(radians)
-    val sineD: Double get() = kotlin.math.sin(radians)
-    val tangentD: Double get() = kotlin.math.tan(radians)
+    val cosineD: Double get() = kotlin.math.cos(radiansD)
+    val sineD: Double get() = kotlin.math.sin(radiansD)
+    val tangentD: Double get() = kotlin.math.tan(radiansD)
 
-    val cosineF: Float get() = kotlin.math.cos(radiansF)
-    val sineF: Float get() = kotlin.math.sin(radiansF)
-    val tangentF: Float get() = kotlin.math.tan(radiansF)
+    val cosineF: Float get() = kotlin.math.cos(radians)
+    val sineF: Float get() = kotlin.math.sin(radians)
+    val tangentF: Float get() = kotlin.math.tan(radians)
 
     val absoluteValue: Angle get() = fromRatio(ratioF.absoluteValue)
     fun shortDistanceTo(other: Angle): Angle = Angle.shortDistanceTo(this, other)
@@ -124,18 +124,18 @@ inline class Angle private constructor(
     //    return 0
     //}
 
-    override fun toString(): String = "${degrees.roundDecimalPlaces(2).niceStr}.degrees"
+    override fun toString(): String = "${degreesD.roundDecimalPlaces(2).niceStr}.degrees"
 
     @Suppress("MemberVisibilityCanBePrivate")
     companion object {
-        inline val EPSILON get() = fromRatio(0.00001f)
-        inline val ZERO get() = fromRatio(0.0f)
-        inline val QUARTER get() = fromRatio(0.25f)
-        inline val HALF get() = fromRatio(0.5f)
-        inline val FULL get() = fromRatio(1.0f)
+        val EPSILON = Angle(0.00001f)
+        val ZERO = Angle(0.0f)
+        val QUARTER = Angle(0.25f)
+        val HALF = Angle(0.5f)
+        val FULL = Angle(1.0f)
 
-        fun fromRatio(ratio: Float): Angle = Angle(ratio)
-        fun fromRatio(ratio: Double): Angle = Angle(ratio.toFloat())
+        inline fun fromRatio(ratio: Float): Angle = Angle(ratio)
+        inline fun fromRatio(ratio: Double): Angle = Angle(ratio.toFloat())
         inline fun fromRadians(radians: Double): Angle = fromRatio(radiansToRatio(radians))
         inline fun fromDegrees(degrees: Double): Angle = fromRatio(degreesToRatio(degrees))
 
@@ -215,8 +215,8 @@ private fun _interpolateAngleAny(ratio: Ratio, l: Angle, r: Angle, minimizeAngle
     val ln = l.normalized
     val rn = r.normalized
     return when {
-        (rn - ln).absoluteValue <= Angle.HALF -> Angle.fromRadians(ratio.interpolate(ln.radiansF, rn.radiansF))
-        ln < rn -> Angle.fromRadians(ratio.interpolate((ln + Angle.FULL).radiansF, rn.radiansF)).normalized
-        else -> Angle.fromRadians(ratio.interpolate(ln.radiansF, (rn + Angle.FULL).radiansF)).normalized
+        (rn - ln).absoluteValue <= Angle.HALF -> Angle.fromRadians(ratio.interpolate(ln.radians, rn.radians))
+        ln < rn -> Angle.fromRadians(ratio.interpolate((ln + Angle.FULL).radians, rn.radians)).normalized
+        else -> Angle.fromRadians(ratio.interpolate(ln.radians, (rn + Angle.FULL).radians)).normalized
     }
 }

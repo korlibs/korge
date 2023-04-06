@@ -2,6 +2,7 @@ package korlibs.math.geom
 
 import korlibs.math.annotations.*
 import korlibs.math.interpolation.*
+import korlibs.memory.*
 
 @KormaMutableApi
 @Deprecated("Use PointInt instead")
@@ -20,8 +21,8 @@ inline class MPointInt(val p: MPoint) : Comparable<MPointInt>, MutableInterpolab
             return if (ret == 0) lx.compareTo(rx) else ret
         }
     }
-    var x: Int ; set(value) { p.x = value.toDouble() } get() = p.x.toInt()
-    var y: Int ; set(value) { p.y = value.toDouble() } get() = p.y.toInt()
+    var x: Int ; set(value) { p.x = value.toDouble() } get() = p.x.toIntRound()
+    var y: Int ; set(value) { p.y = value.toDouble() } get() = p.y.toIntRound()
     fun setTo(x: Int, y: Int) : MPointInt {
         this.x = x
         this.y = y

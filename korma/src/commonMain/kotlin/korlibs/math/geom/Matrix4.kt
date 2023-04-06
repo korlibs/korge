@@ -620,7 +620,7 @@ data class Matrix4 private constructor(
             val bottom = -1.0f * top
             val left = aspect * bottom
             val right = aspect * top
-            return frustum(left.toFloat(), right.toFloat(), bottom.toFloat(), top.toFloat(), zNear, zFar)
+            return frustum(left, right, bottom, top, zNear, zFar)
         }
         fun perspective(fovy: Angle, aspect: Double, zNear: Double, zFar: Double): Matrix4
             = perspective(fovy, aspect.toFloat(), zNear.toFloat(), zFar.toFloat())

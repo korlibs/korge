@@ -1,12 +1,9 @@
 package korlibs.math.geom
 
 import korlibs.datastructure.*
-import korlibs.math.annotations.KormaMutableApi
-import korlibs.math.interpolation.interpolate
-import korlibs.math.interpolation.toRatio
-import kotlin.math.floor
-import kotlin.math.sign
-import kotlin.math.sqrt
+import korlibs.math.annotations.*
+import korlibs.math.interpolation.*
+import kotlin.math.*
 
 @Deprecated("Use Matrix4 instead")
 typealias MMatrix3D = MMatrix4
@@ -698,7 +695,7 @@ class MMatrix4 {
         val bottom = -1.0f * top
         val left = aspect * bottom
         val right = aspect * top
-        return setToFrustum(left.toFloat(), right.toFloat(), bottom.toFloat(), top.toFloat(), zNear, zFar)
+        return setToFrustum(left, right, bottom, top, zNear, zFar)
     }
     fun setToPerspective(fovy: Angle, aspect: Double, zNear: Double, zFar: Double): MMatrix4
         = setToPerspective(fovy, aspect.toFloat(), zNear.toFloat(), zFar.toFloat())
