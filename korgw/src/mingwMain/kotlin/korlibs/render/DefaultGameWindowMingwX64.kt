@@ -1,11 +1,11 @@
 package korlibs.render
 
-import korlibs.memory.*
+import korlibs.event.*
 import korlibs.graphics.*
 import korlibs.graphics.gl.*
-import korlibs.event.*
 import korlibs.image.bitmap.*
 import korlibs.math.geom.*
+import korlibs.memory.*
 import kotlinx.cinterop.*
 import platform.opengl32.*
 import platform.windows.*
@@ -106,15 +106,15 @@ class WindowsGameWindow : EventLoopGameWindow() {
     var glRenderContext: HGLRC? = null
     override val ag: AG = AGNative()
 
-    override val pixelsPerInch: Double get() {
+    override val pixelsPerInch: Float get() {
         try {
-            return kotlin.math.max(pixelsPerInchRaw, 96.0)
+            return kotlin.math.max(pixelsPerInchRaw, 96f)
         } catch (e: Throwable) {
             e.printStackTrace()
-            return 96.0
+            return 96f
         }
     }
-    val pixelsPerInchRaw: Double get() = memScoped {
+    val pixelsPerInchRaw: Float get() = memScoped {
         val hwnd = this@WindowsGameWindow.hwnd
 
         // Windows 8.1
@@ -125,23 +125,23 @@ class WindowsGameWindow : EventLoopGameWindow() {
             val result = GetDpiForMonitor!!(monitor, MDT_RAW_DPI, dpiX.ptr, dpiY.ptr)
             //println("GetDpiForMonitor: hwnd=$hwnd, result=$result, monitor=$monitor, dpiX=${dpiX.value}")
             if (result == 0) {
-                return dpiX.value.toDouble()
+                return dpiX.value.toFloat()
             }
         }
 
         // Windows 10 only or greater
         if (GetDpiForWindow != null) {
             // This usually returns 96.0 or other thing if scaled
-            val dpi = GetDpiForWindow!!(hwnd).toDouble()
+            val dpi = GetDpiForWindow!!(hwnd).toFloat()
             //println("GetDpiForWindow.dpi: hwnd=$hwnd, $dpi")
-            if (dpi >= 96.0) return dpi
+            if (dpi >= 96f) return dpi
         }
 
         // Older Windows Versions
 
         // @TODO: Use monitor information:
         // @TODO: https://stackoverflow.com/questions/577736/how-to-obtain-the-correct-physical-size-of-the-monitor
-        return 96.0
+        return 96f
     }
 
     override var title: String
