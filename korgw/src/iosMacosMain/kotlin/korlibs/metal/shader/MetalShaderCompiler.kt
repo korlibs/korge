@@ -32,7 +32,7 @@ private val logger by lazy { Logger("MetalShaderCompiler") }
 private fun MetalShaderGenerator.Result.toInternalMetalProgram(device: MTLDeviceProtocol) =
     let { (shaderAsString, inputBuffers) ->
         shaderAsString
-            .also { logger.info { "generated shader:\n$shaderAsString" } }
+            .also { logger.debug { "generated shader:\n$shaderAsString" } }
             .toFunctionsLibrary(device)
             .let { it.toFunction(vertexMainFunctionName) to it.toFunction(fragmentMainFunctionName) }
             .toCompiledProgram(device)

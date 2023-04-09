@@ -7,8 +7,8 @@ data class MetalProgram(
     val renderPipelineState: MTLRenderPipelineStateProtocol,
     val inputBuffers: List<List<VariableWithOffset>>
 ) {
-    fun indexOfAttributeOnBuffer(attribute: Attribute): ULong {
-        return inputBuffers.indexOf(listOf(attribute)).toULong()
+    fun indexOfAttributeOnBuffer(attribute: List<Attribute>): ULong {
+        return inputBuffers.indexOf(attribute).toULong()
     }
 
     fun indexOfUniformOnBuffer(uniform: Uniform): ULong {

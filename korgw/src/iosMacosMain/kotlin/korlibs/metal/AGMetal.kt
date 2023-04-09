@@ -66,33 +66,21 @@ class AGMetal(private val view: MTKView) : AG() {
 
                 vertexData.list.fastForEach { vertexDataUnit ->
                     val buffer = vertexDataUnit.buffer.toMetal.buffer
-                    var offset = 0uL
-                    vertexDataUnit.layout.forEach { attribute ->
-                        val bufferLocation = currentProgram.indexOfAttributeOnBuffer(attribute)
-                        setVertexBuffer(buffer, offset, bufferLocation)
-                        offset += (vertexCount * attribute.totalBytes).toULong()
-                    }
+                    val bufferLocation = currentProgram.indexOfAttributeOnBuffer(vertexDataUnit.layout.items)
+                    logger.trace { "${vertexDataUnit.layout.items} will be bind at location $bufferLocation" }
+                    setVertexBuffer(buffer, offset = 0uL, bufferLocation)
                 }
-                //uniformBlocks.fastForEachUniform {
-                //    setVertexBuffer(it.data.toMetal.buffer, 0, currentBuffer)
-                //    currentBuffer += 1uL
-                //}
 
-                //TODO: support uniform blocks
                 uniformBlocks.fastForEachBlock { index, block, buffer, valueIndex ->
-                    //val bufferLocation = currentProgram.indexOfUniformOnBuffer(uniformUnit.uniform)
-                    //setVertexBuffer(uniformUnit.data.toMetal.buffer, 0, bufferLocation)
-
+                    if (buffer == null) {
+                        logger.warn { "empty buffer" }
+                        return
+                    }
+                    val uniform = block.block.uniforms.map { it.uniform }.first()
+                    val bufferLocation = currentProgram.indexOfUniformOnBuffer(uniform)
+                    logger.trace { "$uniform will be bind at location $bufferLocation" }
+                    setVertexBuffer(buffer.toMetal.buffer, 0, bufferLocation)
                 }
-
-                /*uniforms.values.fastForEach { uniformUnit ->
-                    val bufferLocation = currentProgram.indexOfUniformOnBuffer(uniformUnit.uniform)
-                    setVertexBuffer(uniformUnit.data.toMetal.buffer, 0, bufferLocation)
-                }*/
-                //uniforms.values.fastForEach { buffer ->
-                //    setVertexBuffer(buffer.data.toMetal.buffer, 0, currentBuffer)
-                //    currentBuffer += 1uL
-                //}
 
                 if (indices != null) {
                     indices.mem!!.size
