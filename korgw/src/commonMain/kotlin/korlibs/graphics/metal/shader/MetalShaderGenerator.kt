@@ -83,7 +83,7 @@ internal class MetalShaderGenerator(
     private fun Indenter.declareVertexOutputStructure() = MetalShaderStructureGenerator.generate(
         indenter = this,
         name = "v2f",
-        attributes = varyings.toMetalShaderStructureGeneratorAttributes(true)
+        attributes = varyings.toMetalShaderStructureGeneratorAttributes()
     )
 
     private fun Indenter.generateVertexMainFunction() {

@@ -66,7 +66,7 @@ class MetalShaderGeneratorTest {
             using namespace metal;
             struct Buffer1 {
             	float2 a_Tex [[attribute(0)]];
-            	uchar4 a_Col [[attribute(1)]];;
+            	uchar4 a_Col [[attribute(1)]];
             };
             struct v2f {
             	float2 v_Tex;
