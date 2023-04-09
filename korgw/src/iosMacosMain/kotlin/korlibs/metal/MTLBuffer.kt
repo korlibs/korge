@@ -1,5 +1,6 @@
 package korlibs.metal
 
+import korlibs.logger.*
 import korlibs.memory.*
 import kotlinx.cinterop.*
 import platform.Metal.*
@@ -13,10 +14,13 @@ import platform.posix.*
  */
 value class MTLBuffer internal constructor(val buffer: MTLBufferProtocol)
 
+private val logger by lazy { Logger("MTLBuffer") }
+
 expect fun MTLBuffer.didModifyFullRange()
 
-inline fun MTLBuffer.insert(data: ByteArray) {
+fun MTLBuffer.insert(data: ByteArray) {
     data.usePinned {
+        logger.debug { "will insert ByteArray of size ${data.size} into a buffer of size ${buffer.length}" }
         memmove(buffer.contents(), it.startAddressOf, buffer.length)
         didModifyFullRange()
     }

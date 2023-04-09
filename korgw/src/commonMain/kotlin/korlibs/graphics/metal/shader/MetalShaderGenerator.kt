@@ -3,7 +3,6 @@ package korlibs.graphics.metal.shader
 import korlibs.graphics.shader.*
 import korlibs.graphics.shader.gl.GlobalsProgramVisitor
 import korlibs.io.util.Indenter
-import korlibs.logger.Logger
 
 internal const val vertexMainFunctionName = "vertexMain"
 internal const val fragmentMainFunctionName = "fragmentMain"
@@ -14,6 +13,7 @@ internal class MetalShaderGenerator(
     private val bufferLayouts: MetalShaderBufferInputLayouts
 ) : BaseMetalShaderGenerator {
 
+    private var attributeIndex = -1
     private val vertexInstructions = vertexShader.stm
     private val fragmentInstructions = fragmentShader.stm
     private val vertexBodyGenerator = MetalShaderBodyGenerator(ShaderType.VERTEX)
@@ -21,7 +21,7 @@ internal class MetalShaderGenerator(
     private val inputBuffers by bufferLayouts.computeInputBuffers()
     private val inputStructure by lazy {
         bufferLayouts.vertexInputStructure
-            .map { (index, attributes) -> index to attributes.attributes.toMetalShaderStructureGeneratorAttributes()}
+            .map { (index, attributes) -> index to attributes.attributes.toMetalShaderStructureGeneratorAttributes(shouldAddAttributeNumber = true)}
     }
     private val vertexVisitor by lazy {
         GlobalsProgramVisitor()
@@ -83,7 +83,7 @@ internal class MetalShaderGenerator(
     private fun Indenter.declareVertexOutputStructure() = MetalShaderStructureGenerator.generate(
         indenter = this,
         name = "v2f",
-        attributes = varyings.toMetalShaderStructureGeneratorAttributes()
+        attributes = varyings.toMetalShaderStructureGeneratorAttributes(true)
     )
 
     private fun Indenter.generateVertexMainFunction() {
@@ -143,12 +143,16 @@ internal class MetalShaderGenerator(
         }
     }
 
-    private fun List<Variable>.toMetalShaderStructureGeneratorAttributes(): List<MetalShaderStructureGenerator.Attribute> {
+    private fun List<Variable>.toMetalShaderStructureGeneratorAttributes(shouldAddAttributeNumber: Boolean = false): List<MetalShaderStructureGenerator.Attribute> {
         return map {
+            if (shouldAddAttributeNumber) {
+                attributeIndex += 1
+            }
+
             MetalShaderStructureGenerator.Attribute(
                 type = vertexBodyGenerator.typeToString(it.type),
                 name = if (it == Output) "position" else it.name,
-                attribute = if (it == Output) "position" else null
+                attribute = if (it == Output) "position" else if (shouldAddAttributeNumber) "attribute($attributeIndex)" else null
             )
         }
     }

@@ -1,13 +1,11 @@
 package korlibs.metal.shader
 
 import korlibs.graphics.metal.shader.*
-import korlibs.graphics.metal.shader.fragmentMainFunctionName
-import korlibs.graphics.metal.shader.vertexMainFunctionName
 import korlibs.graphics.shader.*
-import korlibs.logger.*
+import korlibs.logger.Logger
 import korlibs.metal.*
 import kotlinx.cinterop.*
-import platform.Foundation.*
+import platform.Foundation.NSError
 import platform.Metal.*
 
 /**
@@ -20,7 +18,11 @@ import platform.Metal.*
  */
 internal object MetalShaderCompiler {
 
-    fun compile(device: MTLDeviceProtocol, program: Program, bufferInputLayouts: MetalShaderBufferInputLayouts): MetalProgram {
+    fun compile(
+        device: MTLDeviceProtocol,
+        program: Program,
+        bufferInputLayouts: MetalShaderBufferInputLayouts
+    ): MetalProgram {
         return program.toMetalShader(bufferInputLayouts)
             .toInternalMetalProgram(device)
     }
@@ -35,7 +37,7 @@ private fun MetalShaderGenerator.Result.toInternalMetalProgram(device: MTLDevice
             .also { logger.debug { "generated shader:\n$shaderAsString" } }
             .toFunctionsLibrary(device)
             .let { it.toFunction(vertexMainFunctionName) to it.toFunction(fragmentMainFunctionName) }
-            .toCompiledProgram(device)
+            .toCompiledProgram(device, inputBuffers)
             .toInternalMetalProgram(inputBuffers)
 
     }
@@ -56,13 +58,17 @@ private fun String.toFunctionsLibrary(device: MTLDeviceProtocol): MTLLibraryProt
 private fun MTLLibraryProtocol.toFunction(name: String) = newFunctionWithName(name)
     ?: error("fail to create function with name $name using metal function library")
 
-private fun Pair<MTLFunctionProtocol, MTLFunctionProtocol>.toCompiledProgram(device: MTLDeviceProtocol) =
-    let { (vertex, fragment) -> createPipelineState(device, vertex, fragment) }
+private fun Pair<MTLFunctionProtocol, MTLFunctionProtocol>.toCompiledProgram(
+    device: MTLDeviceProtocol,
+    inputBuffers: List<List<VariableWithOffset>>
+) =
+    let { (vertex, fragment) -> createPipelineState(device, vertex, fragment, inputBuffers) }
 
 private fun createPipelineState(
     device: MTLDeviceProtocol,
     vertexFunction: MTLFunctionProtocol,
-    fragmentFunction: MTLFunctionProtocol
+    fragmentFunction: MTLFunctionProtocol,
+    inputBuffers: List<List<VariableWithOffset>>
 ): MTLRenderPipelineStateProtocol {
     memScoped {
         val renderPipelineDescriptor = MTLRenderPipelineDescriptor().apply {
@@ -70,6 +76,44 @@ private fun createPipelineState(
             setFragmentFunction(fragmentFunction)
             colorAttachments.objectAtIndexedSubscript(0)
                 .setPixelFormat(MTLPixelFormatBGRA8Unorm_sRGB)
+
+            var attributeIndex = -1
+            vertexDescriptor = MTLVertexDescriptor().apply {
+                inputBuffers
+                    .mapIndexed { bufferIndex, layout -> bufferIndex to layout }
+                    .filter { (_, layout) -> layout.size > 1 && layout.none { it is Uniform } }
+                    .filterIsInstance<Pair<Int, List<Attribute>>>()
+                    .forEachIndexed { layoutIndex, (bufferIndex, layout) ->
+                        logger.debug { "will create attributes on vertex descriptor with layout $layout" }
+
+                        var offset = 0
+                        layout.forEach { attribute ->
+                            logger.debug { "${attribute.type} "}
+                            val format = attribute.type.toMetalVertexFormat()
+                            attributeIndex += 1
+                            logger.debug {
+                                "will add attribute at buffer index $bufferIndex and attribute index $attributeIndex and offset $offset and format $format"
+                            }
+                            attributes.objectAtIndexedSubscript(attributeIndex.toULong()).apply {
+                                setBufferIndex(bufferIndex.toULong())
+                                setOffset(offset.toULong())
+                                setFormat(format)
+                                offset += attribute.totalBytes
+                            }
+                        }
+
+                        layouts.objectAtIndexedSubscript(layoutIndex.toULong()).apply {
+                            stride = layout.sumOf { it.totalBytes }.toULong()
+                        }
+                    }
+
+                if (attributeIndex >= 0) {
+                    logger.debug { "vertex descriptor will be added to render pipeline descriptor" }
+                    vertexDescriptor = this
+                }
+
+            }
+
         }
 
         val errorPtr = alloc<ObjCObjectVar<NSError?>>()

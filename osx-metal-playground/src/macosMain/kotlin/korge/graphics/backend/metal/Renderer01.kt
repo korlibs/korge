@@ -38,10 +38,10 @@ class Renderer01(device: MTLDeviceProtocol) : Renderer(device) {
     private val vertex1 = 50f
     private val vertex2 = 200f
     private val colors = listOf(
-        ubyteArrayOf(255u, 255u, 255u, 0u), // White
-        ubyteArrayOf(255u, 0u, 0u, 0u), // Red
-        ubyteArrayOf(0u, 255u, 0u, 0u), // Blue
-        ubyteArrayOf(0u, 0u, 255u, 0u), // Green
+        ubyteArrayOf(255u, 255u, 255u, 255u), // White
+        ubyteArrayOf(255u, 0u, 0u, 255u), // Red
+        ubyteArrayOf(0u, 255u, 0u, 255u), // Blue
+        ubyteArrayOf(0u, 0u, 255u, 255u), // Green
     )
     private val vertices = listOf(
         listOf(vertex1, vertex1),
@@ -69,14 +69,15 @@ class Renderer01(device: MTLDeviceProtocol) : Renderer(device) {
         AGVertexData(
             layout = VertexLayout(DefaultShaders.a_Col, DefaultShaders.a_Pos),
             buffer = AGBuffer().apply {
-                Buffer((colors.size * 4 + vertices.size * 4 * 2) * 4).apply {
+                Buffer(48).apply {
                     var position = 0
-                    (0..3).forEach {
-                        colors[it].forEach { color ->
+                    (0..3).forEach { index ->
+                        colors[index].forEach { color ->
                             setUnalignedUInt8(position, color.toInt())
                             position += 1
                         }
-                        vertices[it].forEach { vertex ->
+                        vertices[index].forEach { vertex ->
+                            println("vertex $vertex")
                             setUnalignedFloat32(position, vertex)
                             position += 4
                         }
@@ -87,8 +88,26 @@ class Renderer01(device: MTLDeviceProtocol) : Renderer(device) {
                     mem?.getUInt8(1).let { println(it) }
                     mem?.getUInt8(2).let { println(it) }
                     mem?.getUInt8(3).let { println(it) }
-                    mem?.getFloat32(4).let { println(it) }
-                    mem?.getFloat32(8).let { println(it) }
+                    mem?.getUnalignedFloat32(4).let { println(it) }
+                    mem?.getUnalignedFloat32(8).let { println(it) }
+                    mem?.getUInt8(12 + 0).let { println(it) }
+                    mem?.getUInt8(12 + 1).let { println(it) }
+                    mem?.getUInt8(12 + 2).let { println(it) }
+                    mem?.getUInt8(12 + 3).let { println(it) }
+                    mem?.getUnalignedFloat32(12 + 4).let { println(it) }
+                    mem?.getUnalignedFloat32(12 + 8).let { println(it) }
+                    mem?.getUInt8(24 + 0).let { println(it) }
+                    mem?.getUInt8(24 + 1).let { println(it) }
+                    mem?.getUInt8(24 + 2).let { println(it) }
+                    mem?.getUInt8(24 + 3).let { println(it) }
+                    mem?.getUnalignedFloat32(24 + 4).let { println(it) }
+                    mem?.getUnalignedFloat32(24 + 8).let { println(it) }
+                    mem?.getUInt8(36 + 0).let { println(it) }
+                    mem?.getUInt8(36 + 1).let { println(it) }
+                    mem?.getUInt8(36 + 2).let { println(it) }
+                    mem?.getUInt8(36 + 3).let { println(it) }
+                    mem?.getUnalignedFloat32(36 + 4).let { println(it) }
+                    mem?.getUnalignedFloat32(36 + 8).let { println(it) }
                 }
             }
         )
@@ -129,8 +148,8 @@ class Renderer01(device: MTLDeviceProtocol) : Renderer(device) {
         ag?.draw(
             frameBuffer,
             frameBufferInfo,
-            //simpleVertexData,
-            complexVertexData,
+            simpleVertexData,
+            //complexVertexData,
             program,
             drawType = AGDrawType.TRIANGLES,
             vertexCount = 6, // Draw 2 triangles
