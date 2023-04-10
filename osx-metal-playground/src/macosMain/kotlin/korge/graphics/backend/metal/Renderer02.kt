@@ -71,13 +71,13 @@ class Renderer02(device: MTLDeviceProtocol) : Renderer(device) {
 
     private fun buildShaders() = memScoped {
 
-        vertexShader.toNewGlslStringResult()
+        /*vertexShader.toNewGlslStringResult()
             .result
             .also(::println)
 
         fragmentShader.toNewGlslStringResult()
             .result
-            .also(::println)
+            .also(::println)*/
 
         var shaderSrc = """
                 #include <metal_stdlib>

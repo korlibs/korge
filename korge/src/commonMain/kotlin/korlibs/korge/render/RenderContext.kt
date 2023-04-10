@@ -36,7 +36,7 @@ import kotlin.coroutines.*
  * If you need to get textures from [Bitmap] that are allocated and deallocated as required
  * preventing leaks, you should use [getTex].
  */
-class RenderContext constructor(
+class RenderContext(
     /** The Accelerated Graphics object that allows direct rendering */
 	val ag: AG,
 	val bp: BoundsProvider = BoundsProvider.Base(),

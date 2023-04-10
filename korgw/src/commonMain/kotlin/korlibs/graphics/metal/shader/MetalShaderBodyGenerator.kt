@@ -91,11 +91,7 @@ internal class MetalShaderBodyGenerator(
             }
 
             else -> when (operand) {
-                DefaultShaders.a_Col, DefaultShaders.a_Pos, DefaultShaders.a_Tex -> when (kind) {
-                    ShaderType.VERTEX -> "${operand.name}"
-                    else -> operand.name
-                }
-                DefaultShaders.v_Col -> when (kind) {
+                is Varying -> when (kind) {
                     ShaderType.VERTEX -> "out.${operand.name}"
                     else -> "in.${operand.name}"
                 }
