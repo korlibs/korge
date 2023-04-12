@@ -14,19 +14,15 @@ internal interface AGNativeObject {
 }
 
 open class AGObject : Closeable {
-    companion object {
-        const val RESET_CACHED_VERSION = -2
-        const val RESET_VERSION = -1
-    }
-
     internal var _native: AGNativeObject? = null
     internal var _cachedContextVersion: Int = -1
-    internal var _cachedVersion: Int = RESET_CACHED_VERSION
-    internal var _version: Int = RESET_VERSION
+    internal var _cachedVersion: Int = -2
+    internal var _version: Int = -1
 
     internal fun _resetVersion() {
-        _cachedVersion = RESET_CACHED_VERSION
-        _version = RESET_VERSION
+        //_version = RESET_VERSION
+        markAsDirty()
+        _cachedVersion = _version - 1
     }
 
     protected fun markAsDirty() {
