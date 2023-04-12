@@ -331,9 +331,8 @@ open class IosGameWindow(
     val windowProvider: (() -> UIWindow?)? = null,
     val glXViewControllerProvider: (() -> MyGLKViewController?)? = null,
 ) : GameWindow() {
-    override val dialogInterface = DialogInterfaceIos()
-
     override val ag: AG = AGOpengl(KmlGlNative().checkedIf(checked = false))
+    //override val ag: AG = AGOpengl(KmlGlNative().checkedIf(checked = true))
 
     override val pixelsPerInch: Float get() = UIScreen.mainScreen.scale.toFloat() * 160f
 
@@ -341,7 +340,15 @@ open class IosGameWindow(
         ?: UIApplication.sharedApplication.keyWindow
         ?: (UIApplication.sharedApplication.windows.first() as UIWindow)
 
+    override val dialogInterface = DialogInterfaceIos(this)
+
     val glXViewController: MyGLKViewController? get() = glXViewControllerProvider?.invoke()
+
+    override fun close(exitCode: Int) {
+        println("Not closing with exitCode=$exitCode")
+        //UIApplication.sharedApplication.terminate
+        super.close(exitCode)
+    }
 
     override var preferredFps: Int = GameWindow.DEFAULT_PREFERRED_FPS
         get() = glXViewController?.preferredFramesPerSecond?.toInt() ?: field
