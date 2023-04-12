@@ -26,8 +26,8 @@ class MainEmojiColrv1 : Scene() {
         //val str = "🌄"
 
         fun Context2d.buildText() {
-            fillText(str, font = font, textSize = 50f, pos = Point(22, 0), color = Colors.WHITE)
-            fillText(str, font = font2, textSize = 50f, pos = Point(22, 75), color = Colors.WHITE)
+            fillText(str, font = font, size = 50f, pos = Point(22, 0), color = Colors.WHITE)
+            fillText(str, font = font2, size = 50f, pos = Point(22, 75), color = Colors.WHITE)
             //fillText(str, font = font3, textSize = 50.0, x = 22.0, y = 150.0, color = Colors.WHITE)
         }
 

@@ -20,7 +20,7 @@ class NinePatchShape(val shape: Shape, val slices: NinePatchSlices2D) {
             is CompoundShape -> CompoundShape(this.components.map { it.scaleNinePatch(newSize, slices, oldSize) })
             is FillShape -> FillShape(path.scaleNinePatch(newSize, slices, oldSize), clip?.scaleNinePatch(newSize, slices, oldSize), paint, transform, globalAlpha)
             is PolylineShape -> PolylineShape(path.scaleNinePatch(newSize, slices, oldSize), clip?.scaleNinePatch(newSize, slices, oldSize), paint, transform, strokeInfo, globalAlpha)
-            is TextShape -> TextShape(text, pos, font, fontSize, clip?.scaleNinePatch(newSize, slices, oldSize), fill, stroke, halign, valign, transform, globalAlpha)
+            is TextShape -> TextShape(text, pos, font, fontSize, clip?.scaleNinePatch(newSize, slices, oldSize), fill, stroke, align, transform, globalAlpha)
             else -> TODO()
         }
     }

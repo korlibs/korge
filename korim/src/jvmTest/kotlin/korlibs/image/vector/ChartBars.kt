@@ -47,8 +47,7 @@ open class ChartBars(val list: List<DataPoint>) : Chart() {
         fillText(
             value,
             Point(x - 2, y),
-            halign = HorizontalAlign.RIGHT,
-            valign = VerticalAlign.BOTTOM,
+            align = TextAlignment.BOTTOM_RIGHT,
             color = Colors.DARKGREY
         )
     }
@@ -99,8 +98,7 @@ open class ChartBars(val list: List<DataPoint>) : Chart() {
                 fillText(
                     item.name,
                     Point(0f, 0f),
-                    halign = if (fit == Fit.FULL) HorizontalAlign.CENTER else HorizontalAlign.RIGHT,
-                    valign = VerticalAlign.MIDDLE,
+                    align = TextAlignment(if (fit == Fit.FULL) HorizontalAlign.CENTER else HorizontalAlign.RIGHT, VerticalAlign.MIDDLE),
                     color = Colors.DARKSLATEGRAY
                 )
             }

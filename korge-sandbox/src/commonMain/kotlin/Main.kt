@@ -1,6 +1,7 @@
 
 import korlibs.event.*
 import korlibs.image.color.*
+import korlibs.image.font.*
 import korlibs.image.text.*
 import korlibs.io.async.*
 import korlibs.io.lang.*
@@ -64,6 +65,20 @@ suspend fun main() = Korge(
     debug = false,
     forceRenderEveryFrame = false
 ).start {
+    run {
+        val p = Point(640, 320)
+        graphics {
+            fill(Colors.RED) {
+                circle(p, 60f)
+            }
+
+            fillText("A", p, size = 60f, font = DefaultTtfFont, color = Colors.WHITE, align = TextAlignment.MIDDLE_CENTER)
+
+            drawText("B", p, size = 60f, font = DefaultTtfFont, fillStyle = Colors.WHITE, align = TextAlignment.MIDDLE_CENTER)
+        }
+    }
+    return@start
+
     var lastBackTime = DateTime.EPOCH
     keys {
         this.down(Key.BACK) {

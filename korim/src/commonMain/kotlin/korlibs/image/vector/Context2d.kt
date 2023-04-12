@@ -202,11 +202,11 @@ open class Context2d(
 
     inline fun fillStyle(paint: Paint, callback: () -> Unit) {
         val oldStyle = fillStyle
-        fillStyle = paint
+        this.fillStyle = paint
         try {
             callback()
         } finally {
-            fillStyle = oldStyle
+            this.fillStyle = oldStyle
         }
     }
 
@@ -222,26 +222,22 @@ open class Context2d(
 
     inline fun font(
         font: Font? = this.font,
-        halign: HorizontalAlign = this.horizontalAlign,
-        valign: VerticalAlign = this.verticalAlign,
-        fontSize: Float = this.fontSize,
+        align: TextAlignment = this.alignment,
+        size: Float = this.fontSize,
         callback: () -> Unit
     ) {
         val oldFont = this.font
         val oldFontSize = this.fontSize
-        val oldHalign = this.horizontalAlign
-        val oldValign = this.verticalAlign
+        val oldAlign = this.alignment
         try {
             this.font = font
-            this.fontSize = fontSize
-            this.horizontalAlign = halign
-            this.verticalAlign = valign
+            this.fontSize = size
+            this.alignment = align
             callback()
         } finally {
             this.font = oldFont
             this.fontSize = oldFontSize
-            this.horizontalAlign = oldHalign
-            this.verticalAlign = oldValign
+            this.alignment = oldAlign
         }
     }
 
@@ -647,16 +643,11 @@ open class Context2d(
         text: String,
         pos: Point,
         font: Font? = this.font,
-        textSize: Float = this.fontSize,
-        halign: HorizontalAlign = this.horizontalAlign,
-        valign: VerticalAlign = this.verticalAlign,
+        size: Float = this.fontSize,
+        align: TextAlignment = this.alignment,
         color: Paint? = null
     ) {
-        font(font, halign, valign, textSize) {
-            fillStyle(color ?: fillStyle) {
-                drawText(text, pos, fill = true, fillStyle = color ?: fillStyle)
-            }
-        }
+        this.drawText(text, pos, fill = true, size = size, align = align, fillStyle = color, font = font)
     }
 
     fun <T> drawText(
@@ -669,7 +660,7 @@ open class Context2d(
         font: Font? = this.font,
         size: Float = this.fontSize,
         renderer: TextRenderer<T> = DefaultStringTextRenderer as TextRenderer<T>,
-        align: TextAlignment = TextAlignment.BASELINE_LEFT,
+        align: TextAlignment = this.alignment,
         outMetrics: TextMetricsResult? = null,
 
         fillStyle: Paint? = null,

@@ -78,8 +78,7 @@ open class ShapeBuilder(width: Int?, height: Int?) : Context2d(DummyRenderer), D
             clip = state.clip?.clone(),
             fill = if (fill) state.fillStyle else null,
             stroke = if (fill) null else state.strokeStyle,
-            halign = state.horizontalAlign,
-            valign = state.verticalAlign,
+            align = state.alignment,
             //transform = Matrix()
             transform = state.transform
         )
