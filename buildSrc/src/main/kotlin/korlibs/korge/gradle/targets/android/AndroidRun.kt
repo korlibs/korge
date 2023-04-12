@@ -78,17 +78,22 @@ fun Project.installAndroidRun(dependsOnList: List<String>, direct: Boolean, isKo
                 doFirst {
                     execLogger {
                         it.commandLine(
-                            androidAdbPath, *extra, "shell", "am", "start", "-n",
-                            "$androidApplicationId/$androidApplicationId.MainActivity"
+                            androidAdbPath, *extra, "shell", "am", "start",
+                            "-e", "sleepBeforeStart", "300",
+                            "-n", "$androidApplicationId/$androidApplicationId.MainActivity"
                         )
                     }
                     val pid = run {
-                        for (n in 0 until 10) {
+                        val startTime = System.currentTimeMillis()
+                        while (true) {
+                            val currentTime = System.currentTimeMillis()
+                            val elapsedTime = currentTime - startTime
                             try {
                                 return@run execOutput(androidAdbPath, *extra, "shell", "pidof", androidApplicationId).trim()
                             } catch (e: Throwable) {
-                                Thread.sleep(500L)
-                                if (n == 9) throw e
+                                //e.printStackTrace()
+                                Thread.sleep(10L)
+                                if (elapsedTime >= 5000L) throw e
                             }
                         }
                     }

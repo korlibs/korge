@@ -15,7 +15,9 @@ import korlibs.memory.*
 //val ENABLE_UNIFORM_BLOCKS = Environment["ENABLE_UNIFORM_BLOCKS"] == "true"
 val ENABLE_UNIFORM_BLOCKS = true
 
-class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
+class AGOpengl(val gl: KmlGl, var context: KmlGlContext? = null) : AG() {
+    val contextsToFree = linkedSetOf<KmlGlContext?>()
+
     class ShaderException(val str: String, val error: String, val errorInt: Int, val gl: KmlGl, val debugName: String?, val type: Int, val shaderReturnInt: Int) :
         RuntimeException("Error Compiling Shader : $debugName type=$type : ${errorInt.hex} : '$error' : source='$str', shaderReturnInt=$shaderReturnInt, gl.versionInt=${gl.versionInt}, gl.versionString='${gl.versionString}', gl=$gl")
 
@@ -33,6 +35,10 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
         gl.handleContextLost()
         gl.graphicExtensions // Ensure extensions are available outside the GL thread
         normalPrograms.clear()
+        resetObjects()
+        dynamicVaoGlId = -1
+        dynamicVaoContextVersion = -1
+        reallyIsVertexArraysSupported = true
         //externalPrograms.clear()
     }
 
@@ -255,6 +261,7 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
             instances != 1 -> gl.drawArraysInstanced(drawType.toGl(), drawOffset, vertexCount, instances)
             else -> gl.drawArrays(drawType.toGl(), drawOffset, vertexCount)
         }
+        //println("/GLDRAW")
 
         //currentVertexData?.let { vaoUnuse(it) }
 
@@ -279,6 +286,16 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
         context?.set()
         gl.beforeDoRender(contextVersion)
 
+        resetObjects()
+        backBufferFrameBufferBinding = gl.getIntegerv(KmlGl.FRAMEBUFFER_BINDING)
+        gl.activeTexture(KmlGl.TEXTURE0)
+        if (!gl.variant.isWebGL) {
+            gl.texParameteri(gl.TEXTURE_2D, KmlGl.TEXTURE_BASE_LEVEL, 0)
+            gl.texParameteri(gl.TEXTURE_2D, KmlGl.TEXTURE_MAX_LEVEL, 0)
+        }
+    }
+
+    private fun resetObjects() {
         currentVertexData = null
         currentScissor = AGScissor.INVALID
         currentBlending = AGBlending.INVALID
@@ -289,16 +306,10 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
         currentRenderState = AGDepthAndFrontFace.INVALID
         currentTextureUnits.clear()
         currentProgram = null
-        backBufferFrameBufferBinding = gl.getIntegerv(KmlGl.FRAMEBUFFER_BINDING)
         _currentFrameBuffer = -1
         _currentTextureUnit = 0
         _currentViewportSize = AGSize.INVALID
         textureParams.fastForEach { it.reset() }
-        gl.activeTexture(KmlGl.TEXTURE0)
-        if (!gl.variant.isWebGL) {
-            gl.texParameteri(gl.TEXTURE_2D, KmlGl.TEXTURE_BASE_LEVEL, 0)
-            gl.texParameteri(gl.TEXTURE_2D, KmlGl.TEXTURE_MAX_LEVEL, 0)
-        }
     }
 
     override fun endFrame() {
@@ -374,6 +385,7 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
     }
 
     fun <T : AGObject> T.update(block: (T) -> Unit) {
+        //println("UPDATE $this: this._cachedVersion != this._version  :: ${this._cachedVersion} != ${this._version}")
         if (this._cachedVersion != this._version) {
             this._cachedVersion = this._version
             block(this)
@@ -391,22 +403,26 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
         updated?.value = false
         if (buffer == null) {
             gl.bindBuffer(target.toGl(), 0)
+            //println("BIND: $target : null")
             return null
         }
-        val bufferInfo = buffer.gl
-        if (!onlyUpdate) gl.bindBuffer(target.toGl(), bufferInfo.id)
+        val bufferInfo: GLBuffer = buffer.gl
+        if (!onlyUpdate) {
+            gl.bindBuffer(target.toGl(), bufferInfo.id)
+            //println("BIND: $target : $bufferInfo")
+        }
         buffer.update {
             //println("Updated buffer: ${buffer.identityHashCode()} $buffer, $target, $onlyUpdate")
             val mem = buffer.mem ?: Buffer(0)
             bufferInfo.estimatedBytes = mem.sizeInBytes.toLong()
             if (onlyUpdate) gl.bindBuffer(target.toGl(), bufferInfo.id)
-            if (buffer.lastUploadedSize < mem.sizeInBytes) {
-                buffer.lastUploadedSize = mem.sizeInBytes
+            if (bufferInfo.lastUploadedSize < mem.sizeInBytes) {
+                //println("UPLOAD FULL DATA buffer=$bufferInfo: uploadedSize=${bufferInfo.lastUploadedSize} = ${mem.sizeInBytes} : contextVersion=$contextVersion")
+                bufferInfo.lastUploadedSize = mem.sizeInBytes
                 gl.bufferData(target.toGl(), mem.sizeInBytes, mem, KmlGl.DYNAMIC_DRAW)
                 reallocated?.value = true
-                //println("UPLOAD FULL DATA")
             } else {
-                //println("UPDATES DATA")
+                //println("UPDATES PARTIAL DATA buffer=$bufferInfo, mem=${mem.sizeInBytes}, buffer=${bufferInfo.lastUploadedSize}")
                 gl.bufferSubData(target.toGl(), 0, mem.sizeInBytes, mem)
             }
             updated?.value = true
@@ -812,8 +828,7 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
             if (glTex.cachedContentVersion != texBitmap.contentVersion || glTex.cachedAGContextVersion != contextVersion) {
                 glTex.cachedContentVersion = texBitmap.contentVersion
                 glTex.cachedAGContextVersion = contextVersion
-                tex._cachedVersion = -1
-                tex._version++
+                tex._resetVersion()
             }
             tex.update {
                 //gl.texImage2D(target.toGl(), 0, type, source.width, source.height, 0, type, KmlGl.UNSIGNED_BYTE, null)

@@ -52,6 +52,9 @@ internal open class GLBaseObject(val globalState: GLGlobalState) : AGNativeObjec
 internal fun AGBuffer.gl(state: GLGlobalState): GLBuffer = this.createOnce(state) { GLBuffer(state) }
 internal class GLBuffer(state: GLGlobalState) : GLBaseObject(state) {
     var id: Int = gl.genBuffer()
+
+    internal var lastUploadedSize = -1
+
     var estimatedBytes: Long = 0L
         set(value) {
             globalState.buffersSize.addAndGet(+value -field)
@@ -64,7 +67,10 @@ internal class GLBuffer(state: GLGlobalState) : GLBaseObject(state) {
         globalState.buffersDeleted.incrementAndGet()
         gl.deleteBuffer(id)
         id = -1
+        lastUploadedSize = -1
     }
+
+    override fun toString(): String = "GLBuffer($id)"
 }
 
 internal fun AGFrameBufferBase.gl(state: GLGlobalState): GLFrameBuffer = this.createOnce(state) { GLFrameBuffer(state, this) }
@@ -110,6 +116,7 @@ internal class GLTexture(state: GLGlobalState) : GLBaseObject(state) {
 internal fun <T : AGObject, R: AGNativeObject> T.createOnce(state: GLGlobalState, block: (T) -> R): R {
     if (this._native == null || this._cachedContextVersion != state.ag.contextVersion) {
         this._cachedContextVersion = state.ag.contextVersion
+        this._resetVersion()
         this._native = block(this)
     }
     return this._native as R

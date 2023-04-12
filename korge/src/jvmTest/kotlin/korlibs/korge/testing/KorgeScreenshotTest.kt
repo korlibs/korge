@@ -79,4 +79,38 @@ class KorgeScreenshotTest {
         //assertScreenshot(rectContainer, "initial4")
     }
 
+    @Test
+    fun testContextLost() = korgeScreenshotTest(
+        Size(32, 32),
+        bgcolor = Colors.RED
+    ) {
+        val rect1 = solidRect(16, 16, Colors.GREEN).position(0, 0)
+        image(Bitmap32(16, 16, Colors.BLUE).premultipliedIfRequired()).position(16, 0)
+        assertScreenshot()
+        simulateContextLost()
+        assertScreenshot()
+    }
+
+    @Test
+    fun testContextLost2() = korgeScreenshotTest(
+        Size(32, 32),
+        bgcolor = Colors.RED
+    ) {
+        val rect = solidRect(16, 16, Colors.GREEN).position(0, 0)
+        //for (n in 0 until 32) solidRect(16, 16, Colors.GREEN.withR(n * 7)).position(n, 0)
+        //assertScreenshot()
+        //println("[1]")
+        simulateRenderFrame()
+        //println("[2]")
+        simulateContextLost()
+        //println("[3]")
+        val STEPS = 8
+        for (n in 0 .. STEPS) {
+            simulateRenderFrame()
+            rect.x = STEPS - n.toFloat()
+        }
+        //println("[4]")
+        assertScreenshot()
+        //println("[5]")
+    }
 }
