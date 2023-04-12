@@ -230,20 +230,39 @@ object DirectGL : INativeGL {
                     NativeLibrary.getInstance(
                         nativeOpenGLLibraryPath,
                         mutableMapOf<String, Any?>().apply {
-                            if (Platform.isWindows) {
-                                this[Library.OPTION_SYMBOL_PROVIDER] = SymbolProvider { handle, name, parent ->
-                                    val ptr: Pointer? = Win32OpenglLoader.loadFunctionCachedOrNull(name)
-                                    //println("LOADING $name: ${ptr.address}, $parent")
-                                    //error(name)
-                                    when {
-                                        ptr == null || ptr.address == 0L -> try {
-                                            parent.getSymbolAddress(handle, name, null)
-                                        } catch (e: UnsatisfiedLinkError) {
-                                            0L
+                            when {
+                                Platform.isMac -> {
+                                    this[Library.OPTION_SYMBOL_PROVIDER] = SymbolProvider { handle, name, parent ->
+                                        val suffix = when (name) {
+                                            // To support VAOs in old 2.1 context (to not require CORE profile)
+                                            "glGenVertexArrays", "glDeleteVertexArrays", "glBindVertexArray" -> "APPLE"
+                                            else -> null
                                         }
-                                        else -> ptr.address
-                                    }.also {
-                                        if (it == 0L) println("$nativeOpenGLLibraryPath: $name -> $it")
+                                        val extraName = if (suffix != null) "${name}$suffix" else name
+                                        //println("GL.name=$name")
+                                        try {
+                                            parent.getSymbolAddress(handle, extraName, null)
+                                        } catch (e: UnsatisfiedLinkError) {
+                                            parent.getSymbolAddress(handle, name, null)
+                                        }
+                                    }
+                                }
+                                Platform.isWindows -> {
+                                    this[Library.OPTION_SYMBOL_PROVIDER] = SymbolProvider { handle, name, parent ->
+                                        val ptr: Pointer? = Win32OpenglLoader.loadFunctionCachedOrNull(name)
+                                        //println("LOADING $name: ${ptr.address}, $parent")
+                                        //error(name)
+                                        when {
+                                            ptr == null || ptr.address == 0L -> try {
+                                                parent.getSymbolAddress(handle, name, null)
+                                            } catch (e: UnsatisfiedLinkError) {
+                                                0L
+                                            }
+
+                                            else -> ptr.address
+                                        }.also {
+                                            if (it == 0L) println("$nativeOpenGLLibraryPath: $name -> $it")
+                                        }
                                     }
                                 }
                             }

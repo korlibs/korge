@@ -180,7 +180,7 @@ open class NativeKgl constructor(private val gl: INativeGL) : KmlGlWithExtension
         gl.glGenVertexArrays(n, intBuffer)
         if (intBuffer[0] <= 0) {
             val error = gl.glGetError()
-            println("ERROR: genVertexArray: count=$n, error=${KmlGl.errorString(error)}, firstBuffer=${intBuffer[0]}")
+            println("ERROR: genVertexArray: count=$n, error=${KmlGl.errorString(error)}, firstBuffer=${intBuffer[0]}, OPENGL.VERSION=${gl.glGetString(KmlGl.VERSION)}")
             isVertexArraysSupported = false
             arrays.setInt32(0, -1)
             return
