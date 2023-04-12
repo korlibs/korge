@@ -13,7 +13,9 @@ import korlibs.kgl.*
 import korlibs.memory.*
 
 //val ENABLE_UNIFORM_BLOCKS = Environment["ENABLE_UNIFORM_BLOCKS"] == "true"
-val ENABLE_UNIFORM_BLOCKS = true
+val ENABLE_UNIFORM_BLOCKS = Environment["DISABLE_UNIFORM_BLOCKS"] != "true"
+val ENABLE_VERTEX_ARRAY_OBJECTS = Environment["DISABLE_VERTEX_ARRAY_OBJECTS"] != "true"
+//val ENABLE_UNIFORM_BLOCKS = false
 
 class AGOpengl(val gl: KmlGl, var context: KmlGlContext? = null) : AG() {
     val contextsToFree = linkedSetOf<KmlGlContext?>()
@@ -55,7 +57,7 @@ class AGOpengl(val gl: KmlGl, var context: KmlGlContext? = null) : AG() {
         //gl.finish()
         selectTextureUnitTemp(TEMP_TEXTURE_UNIT, setToNullLater = true) {
             textureBind(texture, AGTextureTargetKind.TEXTURE_2D)
-            if (!gl.variant.isWebGL) {
+            if (gl.variant.supportTextureLevel) {
                 gl.texParameteri(gl.TEXTURE_2D, KmlGl.TEXTURE_BASE_LEVEL, 0)
                 gl.texParameteri(gl.TEXTURE_2D, KmlGl.TEXTURE_MAX_LEVEL, 0)
             }
@@ -264,7 +266,6 @@ class AGOpengl(val gl: KmlGl, var context: KmlGlContext? = null) : AG() {
         //println("/GLDRAW")
 
         //currentVertexData?.let { vaoUnuse(it) }
-
     }
 
     val glslConfig: GlslConfig by lazy { GlslConfig(gl.variant, gl) }
@@ -289,7 +290,7 @@ class AGOpengl(val gl: KmlGl, var context: KmlGlContext? = null) : AG() {
         resetObjects()
         backBufferFrameBufferBinding = gl.getIntegerv(KmlGl.FRAMEBUFFER_BINDING)
         gl.activeTexture(KmlGl.TEXTURE0)
-        if (!gl.variant.isWebGL) {
+        if (gl.variant.supportTextureLevel) {
             gl.texParameteri(gl.TEXTURE_2D, KmlGl.TEXTURE_BASE_LEVEL, 0)
             gl.texParameteri(gl.TEXTURE_2D, KmlGl.TEXTURE_MAX_LEVEL, 0)
         }
@@ -457,7 +458,7 @@ class AGOpengl(val gl: KmlGl, var context: KmlGlContext? = null) : AG() {
     var dynamicVaoGlId = -1
     var dynamicVaoContextVersion = -1
 
-    var reallyIsVertexArraysSupported = true
+    var reallyIsVertexArraysSupported = ENABLE_VERTEX_ARRAY_OBJECTS
 
     fun vaoUse(vao: AGVertexArrayObject) {
         if (reallyIsVertexArraysSupported && gl.isVertexArraysSupported) {
@@ -877,7 +878,7 @@ class AGOpengl(val gl: KmlGl, var context: KmlGlContext? = null) : AG() {
                         gl.pixelStorei(KmlGl.UNPACK_SWAP_BYTES, KmlGl.GTRUE)
                     }
 
-                    if (!gl.variant.isWebGL) {
+                    if (gl.variant.supportTextureLevel) {
                         gl.texParameteri(texTarget, KmlGl.TEXTURE_BASE_LEVEL, 0)
                         gl.texParameteri(texTarget, KmlGl.TEXTURE_MAX_LEVEL, 0)
                     }
@@ -903,8 +904,10 @@ class AGOpengl(val gl: KmlGl, var context: KmlGlContext? = null) : AG() {
                     totalSize += tex.width * tex.height * 4
 
                     if (tex.mipmaps) {
-                        tex.baseMipmapLevel?.let { gl.texParameteri(KmlGl.TEXTURE_2D, KmlGl.TEXTURE_BASE_LEVEL, it) }
-                        tex.maxMipmapLevel?.let { gl.texParameteri(KmlGl.TEXTURE_2D, KmlGl.TEXTURE_MAX_LEVEL, it) }
+                        if (gl.variant.supportTextureLevel) {
+                            tex.baseMipmapLevel?.let { gl.texParameteri(KmlGl.TEXTURE_2D, KmlGl.TEXTURE_BASE_LEVEL, it) }
+                            tex.maxMipmapLevel?.let { gl.texParameteri(KmlGl.TEXTURE_2D, KmlGl.TEXTURE_MAX_LEVEL, it) }
+                        }
                         gl.generateMipmap(texTarget)
                     }
                 }
@@ -914,7 +917,8 @@ class AGOpengl(val gl: KmlGl, var context: KmlGlContext? = null) : AG() {
         }
     }
 
-    private val TEMP_TEXTURE_UNIT = 15
+    //private val TEMP_TEXTURE_UNIT = 15
+    private val TEMP_TEXTURE_UNIT = 7 // GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS might be 8
 
     fun textureSetFromFrameBuffer(tex: AGTexture, x: Int, y: Int, width: Int, height: Int) {
         selectTextureUnitTemp(TEMP_TEXTURE_UNIT, setToNullLater = true) {
