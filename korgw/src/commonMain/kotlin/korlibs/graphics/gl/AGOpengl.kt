@@ -15,7 +15,9 @@ import korlibs.memory.*
 //val ENABLE_UNIFORM_BLOCKS = Environment["ENABLE_UNIFORM_BLOCKS"] == "true"
 val ENABLE_UNIFORM_BLOCKS = true
 
-class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
+class AGOpengl(val gl: KmlGl, var context: KmlGlContext? = null) : AG() {
+    val contextsToFree = linkedSetOf<KmlGlContext?>()
+
     class ShaderException(val str: String, val error: String, val errorInt: Int, val gl: KmlGl, val debugName: String?, val type: Int, val shaderReturnInt: Int) :
         RuntimeException("Error Compiling Shader : $debugName type=$type : ${errorInt.hex} : '$error' : source='$str', shaderReturnInt=$shaderReturnInt, gl.versionInt=${gl.versionInt}, gl.versionString='${gl.versionString}', gl=$gl")
 

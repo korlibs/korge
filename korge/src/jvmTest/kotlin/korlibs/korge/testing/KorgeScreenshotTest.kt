@@ -79,4 +79,15 @@ class KorgeScreenshotTest {
         //assertScreenshot(rectContainer, "initial4")
     }
 
+    @Test
+    fun testContextLost() = korgeScreenshotTest(
+        Size(32, 32),
+        bgcolor = Colors.RED
+    ) {
+        val rect1 = solidRect(16, 16, Colors.GREEN).position(0, 0)
+        image(Bitmap32(16, 16, Colors.BLUE).premultipliedIfRequired()).position(16, 0)
+        assertScreenshot()
+        simulateContextLost()
+        assertScreenshot()
+    }
 }

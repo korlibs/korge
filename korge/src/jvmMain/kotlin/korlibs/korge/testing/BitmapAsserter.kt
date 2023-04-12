@@ -1,12 +1,13 @@
 package korlibs.korge.testing
 
 import korlibs.datastructure.*
-import korlibs.korge.view.*
+import korlibs.graphics.gl.*
 import korlibs.image.awt.*
 import korlibs.image.bitmap.*
 import korlibs.image.color.*
 import korlibs.image.format.*
 import korlibs.io.lang.*
+import korlibs.korge.view.*
 import java.awt.*
 import java.io.*
 import javax.swing.*
@@ -91,6 +92,18 @@ private var OffscreenStage.testIndex: Int by extraProperty { 0 }
 
 private fun Bitmap.toBitmap8Or32(): Bitmap = this.toBMP32().tryToExactBitmap8() ?: this
 //private fun Bitmap.toBitmap8Or32(): Bitmap = this.toBMP32()
+
+suspend fun OffscreenStage.simulateContextLost() {
+    (views.ag as? AGOpengl?)?.let {
+        val fboWidth = ag.mainFrameBuffer.width
+        val fboHeight = ag.mainFrameBuffer.height
+        it.context = createKmlGlContext(fboWidth, fboHeight)
+        it.contextsToFree += it.context
+        it.context?.set()
+        ag.mainFrameBuffer.setSize(fboWidth, fboHeight)
+        it.contextLost()
+    }
+}
 
 suspend fun OffscreenStage.assertScreenshot(
     view: View = this,
