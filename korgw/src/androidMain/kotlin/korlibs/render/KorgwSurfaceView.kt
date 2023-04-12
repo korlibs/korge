@@ -26,6 +26,10 @@ open class KorgwSurfaceView constructor(
     val gameWindow: BaseAndroidGameWindow,
     val config: GameWindowCreationConfig = gameWindow.config,
 ) : GLSurfaceView(context), GLSurfaceView.Renderer {
+    init {
+        println("!!!!!!!!!!!!! KorgwSurfaceView.created")
+    }
+
     val view = this
 
     val onDraw = Signal<Unit>()

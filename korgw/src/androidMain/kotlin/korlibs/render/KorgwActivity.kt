@@ -6,12 +6,10 @@ import android.os.*
 import android.util.*
 import android.view.*
 import android.view.KeyEvent
-import korlibs.datastructure.*
-import korlibs.kgl.*
-import korlibs.memory.KmemGC
-import korlibs.memory.hasBits
-import korlibs.graphics.gl.*
 import korlibs.event.*
+import korlibs.graphics.gl.*
+import korlibs.kgl.*
+import korlibs.memory.*
 import kotlin.coroutines.*
 
 abstract class KorgwActivity(
@@ -24,6 +22,7 @@ abstract class KorgwActivity(
     var mGLView: KorgwSurfaceView? = null
     lateinit var ag: AGOpengl
     open val agCheck: Boolean get() = false
+    //open val agCheck: Boolean get() = true
     open val agTrace: Boolean get() = false
 
     //init { setOnKeyListener(this) }
@@ -44,9 +43,18 @@ abstract class KorgwActivity(
         }
     }
 
+    fun Bundle.toMap(): Map<String, Any?> = this.keySet().associateWith { this.get(it) }
+
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        intent.extras?.get("sleepBeforeStart")?.toString()?.toLongOrNull()?.let {
+            Thread.sleep(it)
+            println("Slept $it milliseconds")
+        }
+        //Thread.sleep(100L)
+
+        println("intent.extras: ${intent.extras?.toMap()} : ${intent.extras}")
         println("---------------- KorgwActivity.onCreate(savedInstanceState=$savedInstanceState) -------------- : ${this.config}")
         Log.e("KorgwActivity", "onCreate")
         //println("KorgwActivity.onCreate")
