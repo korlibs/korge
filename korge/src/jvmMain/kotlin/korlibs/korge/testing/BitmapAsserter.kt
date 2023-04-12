@@ -94,6 +94,7 @@ private fun Bitmap.toBitmap8Or32(): Bitmap = this.toBMP32().tryToExactBitmap8() 
 //private fun Bitmap.toBitmap8Or32(): Bitmap = this.toBMP32()
 
 suspend fun OffscreenStage.simulateContextLost() {
+    //println("----simulateContextLost")
     (views.ag as? AGOpengl?)?.let {
         val fboWidth = ag.mainFrameBuffer.width
         val fboHeight = ag.mainFrameBuffer.height
@@ -102,6 +103,28 @@ suspend fun OffscreenStage.simulateContextLost() {
         it.context?.set()
         ag.mainFrameBuffer.setSize(fboWidth, fboHeight)
         it.contextLost()
+    }
+}
+
+suspend fun OffscreenStage.simulateRenderFrame(
+    view: View = this,
+    posterize: Int = 0,
+    includeBackground: Boolean = true,
+    useTexture: Boolean = true,
+): Bitmap32 {
+    return views.ag.startEndFrame {
+        //val currentFrameBuffer = views.renderContext.currentFrameBuffer
+        //Bitmap32(currentFrameBuffer.width, currentFrameBuffer.height).also { ag.readColor(currentFrameBuffer, it) }
+        stage.views.renderContext.beforeRender()
+        try {
+            view.unsafeRenderToBitmapSync(
+                views.renderContext,
+                bgcolor = if (includeBackground) views.clearColor else Colors.TRANSPARENT,
+                useTexture = useTexture
+            ).depremultiplied().posterizeInplace(posterize)
+        } finally {
+            stage.views.renderContext.afterRender()
+        }
     }
 }
 
@@ -119,15 +142,7 @@ suspend fun OffscreenStage.assertScreenshot(
     val interactive = Environment["INTERACTIVE_SCREENSHOT"] == "true"
     val context = injector.getSyncOrNull<OffscreenContext>() ?: OffscreenContext()
     val outFile = File("src/jvmTest/screenshots/${context.testClassName.replace(".", "/")}/${context.testMethodName}_$name.png")
-    val actualBitmap = views.ag.startEndFrame {
-        //val currentFrameBuffer = views.renderContext.currentFrameBuffer
-        //Bitmap32(currentFrameBuffer.width, currentFrameBuffer.height).also { ag.readColor(currentFrameBuffer, it) }
-        view.unsafeRenderToBitmapSync(
-            views.renderContext,
-            bgcolor = if (includeBackground) views.clearColor else Colors.TRANSPARENT,
-            useTexture = useTexture
-        ).depremultiplied().posterizeInplace(posterize)
-    }
+    val actualBitmap = simulateRenderFrame(view, posterize, includeBackground, useTexture)
 
     var updateReference = updateTestRef
     if (outFile.exists()) {

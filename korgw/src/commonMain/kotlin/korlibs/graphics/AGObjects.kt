@@ -14,10 +14,20 @@ internal interface AGNativeObject {
 }
 
 open class AGObject : Closeable {
+    companion object {
+        const val RESET_CACHED_VERSION = -2
+        const val RESET_VERSION = -1
+    }
+
     internal var _native: AGNativeObject? = null
     internal var _cachedContextVersion: Int = -1
-    internal var _cachedVersion: Int = -2
-    internal var _version: Int = -1
+    internal var _cachedVersion: Int = RESET_CACHED_VERSION
+    internal var _version: Int = RESET_VERSION
+
+    internal fun _resetVersion() {
+        _cachedVersion = RESET_CACHED_VERSION
+        _version = RESET_VERSION
+    }
 
     protected fun markAsDirty() {
         _version++
@@ -30,8 +40,6 @@ open class AGObject : Closeable {
 }
 
 class AGBuffer : AGObject() {
-    internal var lastUploadedSize = 0
-
     var mem: Buffer? = null
         private set
 
@@ -51,7 +59,12 @@ class AGBuffer : AGObject() {
         return this
     }
 
+    //private val id = LAST_ID.incrementAndGet()
+    //companion object { private val LAST_ID = KorAtomicInt(0) }
+    // init { printStackTrace() }
+
     override fun toString(): String = "AGBuffer(${mem?.sizeInBytes ?: 0})"
+    //override fun toString(): String = "AGBuffer[$id](${mem?.sizeInBytes ?: 0})"
 }
 
 data class AGTextureUnits(val textures: Array<AGTexture?>, val infos: AGTextureUnitInfoArray) {
