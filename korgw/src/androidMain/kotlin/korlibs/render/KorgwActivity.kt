@@ -166,31 +166,30 @@ abstract class KorgwActivity(
         }
     }
 
+    private inline fun delegateKeyEvent(event: KeyEvent, fallback: () -> Boolean): Boolean {
+        if (mGLView?.dispatchKeyEvent(event) == true) return true
+        return fallback()
+    }
 
-    override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean =
-        mGLView?.dispatchKeyEvent(event) ?: super.onKeyDown(keyCode, event)
+    override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean = delegateKeyEvent(event) { super.onKeyDown(keyCode, event) }
+    override fun onKeyUp(keyCode: Int, event: KeyEvent): Boolean = delegateKeyEvent(event) { super.onKeyUp(keyCode, event) }
+    override fun onKeyLongPress(keyCode: Int, event: KeyEvent): Boolean = delegateKeyEvent(event) { super.onKeyLongPress(keyCode, event) }
+    override fun onKeyMultiple(keyCode: Int, repeatCount: Int, event: KeyEvent): Boolean = delegateKeyEvent(event) { super.onKeyMultiple(keyCode, repeatCount, event) }
+    override fun onKeyShortcut(keyCode: Int, event: KeyEvent): Boolean = delegateKeyEvent(event) { super.onKeyShortcut(keyCode, event) }
 
-    override fun onKeyUp(keyCode: Int, event: KeyEvent): Boolean =
-        mGLView?.dispatchKeyEvent(event) ?: super.onKeyUp(keyCode, event)
+    override fun onTrackballEvent(event: MotionEvent): Boolean {
+        if (mGLView?.dispatchTrackballEvent(event) == true) return true
+        return super.onTrackballEvent(event)
+    }
 
-    override fun onKeyLongPress(keyCode: Int, event: KeyEvent): Boolean =
-        mGLView?.dispatchKeyEvent(event) ?: super.onKeyLongPress(keyCode, event)
-
-    override fun onKeyMultiple(keyCode: Int, repeatCount: Int, event: KeyEvent): Boolean =
-        mGLView?.dispatchKeyEvent(event) ?: super.onKeyMultiple(keyCode, repeatCount, event)
-
-    override fun onKeyShortcut(keyCode: Int, event: KeyEvent): Boolean =
-        mGLView?.dispatchKeyShortcutEvent(event) ?: super.onKeyShortcut(keyCode, event)
-
-    override fun onTrackballEvent(event: MotionEvent): Boolean =
-        mGLView?.dispatchTrackballEvent(event) ?: super.onTrackballEvent(event)
-
-    override fun onGenericMotionEvent(event: MotionEvent): Boolean =
-        mGLView?.dispatchGenericMotionEvent(event) ?: super.onGenericMotionEvent(event)
+    override fun onGenericMotionEvent(event: MotionEvent): Boolean {
+        if (mGLView?.dispatchGenericMotionEvent(event) == true) return true
+        return super.onGenericMotionEvent(event)
+    }
 
     override fun onBackPressed() {
         gameWindow.queue {
-            if (!gameWindow.dispatchKeyEventEx(korlibs.event.KeyEvent.Type.DOWN, 0, '\u0008', Key.BACKSPACE, KeyEvent.KEYCODE_BACK)) {
+            if (!gameWindow.dispatchKeyEventEx(korlibs.event.KeyEvent.Type.DOWN, 0, '\u0008', Key.BACK, KeyEvent.KEYCODE_BACK)) {
                 runOnUiThread {
                     super.onBackPressed()
                 }

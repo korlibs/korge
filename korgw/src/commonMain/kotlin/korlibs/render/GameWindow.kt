@@ -11,6 +11,7 @@ import korlibs.image.color.*
 import korlibs.image.vector.*
 import korlibs.io.*
 import korlibs.io.async.*
+import korlibs.io.experimental.*
 import korlibs.io.file.*
 import korlibs.io.lang.*
 import korlibs.logger.*
@@ -71,6 +72,15 @@ open class GameWindowCoroutineDispatcher : CoroutineDispatcher(), Delay, Closeab
     }
 
     fun queue(block: () -> Unit) = queue(Runnable { block() })
+
+    @KorioExperimentalApi
+    fun <T> queueBlocking(block: () -> T): T {
+        val result = CompletableDeferred<T>()
+        queue(Runnable {
+            result.complete(block())
+        })
+        return runBlockingNoJs { result.await() }
+    }
 
     override fun dispatch(context: CoroutineContext, block: Runnable) = queue(block) // @TODO: We are not using the context
 
@@ -358,6 +368,7 @@ open class GameWindow :
 
     fun queue(callback: () -> Unit) = coroutineDispatcher.queue(callback)
     fun queue(callback: Runnable) = coroutineDispatcher.queue(callback)
+    fun <T> queueBlocking(callback: () -> T) = coroutineDispatcher.queueBlocking(callback)
 
     protected val pauseEvent = PauseEvent()
     protected val resumeEvent = ResumeEvent()
@@ -374,6 +385,12 @@ open class GameWindow :
     protected val touchBuilder = TouchBuilder()
     protected val touchEvent get() = touchBuilder.new
     protected val dropFileEvent = DropFileEvent()
+
+    inline fun <T : Event> T.reset(block: T.() -> Unit = {}): T {
+        this._stopPropagation = false
+        block(this)
+        return this
+    }
 
     operator fun <TEvent : Event> TEvent.invoke(block: TEvent.() -> Unit): TEvent {
         block(this)
@@ -568,7 +585,7 @@ open class GameWindow :
             doInitialize = false
             //ag.mainRenderBuffer.setSize(0, 0, width, height)
             println("---------------- Trigger AG.initialized ag.mainFrameBuffer.setSize ($width, $height) --------------")
-            dispatch(initEvent)
+            dispatch(initEvent.reset())
         }
         try {
             dispatchRenderEvent(update = doUpdate, render = doRender)
@@ -649,21 +666,21 @@ open class GameWindow :
         coroutineDispatcher.executePending(availableTime)
     }
 
-    fun dispatchInitEvent() = dispatch(initEvent)
-    fun dispatchPauseEvent() = dispatch(pauseEvent)
-    fun dispatchResumeEvent() = dispatch(resumeEvent)
-    fun dispatchStopEvent() = dispatch(stopEvent)
-    fun dispatchDestroyEvent() = dispatch(destroyEvent)
-    fun dispatchDisposeEvent() = dispatch(disposeEvent)
-    fun dispatchRenderEvent(update: Boolean = true, render: Boolean = true) = dispatch(renderEvent.also {
-        it.update = update
-        it.render = render
+    fun dispatchInitEvent() = dispatch(initEvent.reset())
+    fun dispatchPauseEvent() = dispatch(pauseEvent.reset())
+    fun dispatchResumeEvent() = dispatch(resumeEvent.reset())
+    fun dispatchStopEvent() = dispatch(stopEvent.reset())
+    fun dispatchDestroyEvent() = dispatch(destroyEvent.reset())
+    fun dispatchDisposeEvent() = dispatch(disposeEvent.reset())
+    fun dispatchRenderEvent(update: Boolean = true, render: Boolean = true) = dispatch(renderEvent.reset {
+        this.update = update
+        this.render = render
     })
-    fun dispatchDropfileEvent(type: DropFileEvent.Type, files: List<VfsFile>?) = dispatch(dropFileEvent.also {
-        it.type = type
-        it.files = files
+    fun dispatchDropfileEvent(type: DropFileEvent.Type, files: List<VfsFile>?) = dispatch(dropFileEvent.reset {
+        this.type = type
+        this.files = files
     })
-    fun dispatchFullscreenEvent(fullscreen: Boolean) = dispatch(fullScreenEvent.also { it.fullscreen = fullscreen })
+    fun dispatchFullscreenEvent(fullscreen: Boolean) = dispatch(fullScreenEvent.reset { this.fullscreen = fullscreen })
 
     fun dispatchReshapeEvent(x: Int, y: Int, width: Int, height: Int) {
         dispatchReshapeEventEx(x, y, width, height, width, height)
@@ -671,7 +688,7 @@ open class GameWindow :
 
     fun dispatchReshapeEventEx(x: Int, y: Int, width: Int, height: Int, fullWidth: Int, fullHeight: Int) {
         ag.mainFrameBuffer.setSize(x, y, width, height, fullWidth, fullHeight)
-        dispatch(reshapeEvent.apply {
+        dispatch(reshapeEvent.reset {
             this.x = x
             this.y = y
             this.width = width
@@ -728,7 +745,7 @@ open class GameWindow :
         if (type != KeyEvent.Type.TYPE) {
             keysPresing[key.ordinal] = (type == KeyEvent.Type.DOWN)
         }
-        dispatch(keyEvent.apply {
+        dispatch(keyEvent.reset {
             this.id = id
             this.character = character
             this.key = key
@@ -765,7 +782,8 @@ open class GameWindow :
         if (type != MouseEvent.Type.DOWN && type != MouseEvent.Type.UP) {
             this.mouseButtons = this.mouseButtons.setBits(if (button != null) 1 shl button.ordinal else 0, type == MouseEvent.Type.DOWN)
         }
-        dispatch(mouseEvent.apply {
+        dispatch(mouseEvent.reset {
+            this._stopPropagation = false
             this.type = type
             this.id = id
             this.x = x
@@ -793,7 +811,7 @@ open class GameWindow :
     fun dispatchTouchEventStartMove() = touchBuilder.startFrame(TouchEvent.Type.MOVE)
     fun dispatchTouchEventStartEnd() = touchBuilder.startFrame(TouchEvent.Type.END)
     fun dispatchTouchEventAddTouch(id: Int, x: Double, y: Double) = touchBuilder.touch(id, x, y)
-    fun dispatchTouchEventEnd() = dispatch(touchBuilder.endFrame())
+    fun dispatchTouchEventEnd() = dispatch(touchBuilder.endFrame().reset())
 
     // @TODO: Is this used?
     fun entry(callback: suspend () -> Unit) {

@@ -1,13 +1,19 @@
 
+import korlibs.event.*
 import korlibs.image.color.*
+import korlibs.image.text.*
 import korlibs.io.async.*
 import korlibs.io.lang.*
 import korlibs.korge.*
+import korlibs.korge.input.*
 import korlibs.korge.scene.*
+import korlibs.korge.time.*
+import korlibs.korge.tween.*
 import korlibs.korge.ui.*
 import korlibs.korge.view.*
 import korlibs.math.geom.*
 import korlibs.math.interpolation.*
+import korlibs.time.*
 import samples.*
 import samples.asteroids.*
 import samples.connect4.*
@@ -35,6 +41,22 @@ val DEFAULT_KORGE_BG_COLOR = Colors.DARKCYAN.mix(Colors.BLACK, 0.8.toRatio())
 //    }
 //).start()
 
+fun Stage.notification(message: String) {
+    stage.text(message, alignment = TextAlignment.BOTTOM_CENTER).also { text ->
+        text.alpha = 0f
+        text.alignBottomToBottomOf(stage, 16).centerXOn(stage)
+        launchImmediately {
+            while (true) {
+                tween(text::alpha[1.0], time = 0.25.seconds)
+                delay(5.seconds)
+                tween(text::alpha[0.0], time = 0.5.seconds)
+                text.removeFromParent()
+                break
+            }
+        }
+    }
+}
+
 suspend fun main() = Korge(
     windowSize = Korge.DEFAULT_WINDOW_SIZE,
     backgroundColor = DEFAULT_KORGE_BG_COLOR,
@@ -42,6 +64,19 @@ suspend fun main() = Korge(
     debug = false,
     forceRenderEveryFrame = false
 ).start {
+    var lastBackTime = DateTime.EPOCH
+    keys {
+        this.down(Key.BACK) {
+            val now = DateTime.now()
+            val elapsedSinceLast = now - lastBackTime
+            if (elapsedSinceLast > 5.seconds) {
+                lastBackTime = now
+                notification("Press back again to close the application")
+                it.stopPropagation()
+            }
+        }
+    }
+
     //uiButton(""); return@start
     //solidRect(200, 200, Colors.RED); return@start
     //solidRect(50, 50, Colors.GREEN).xy(50, 50)
