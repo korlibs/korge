@@ -55,7 +55,9 @@ open class LazyNativeSoundProvider(val gen: () -> NativeSoundProvider) : NativeS
 open class NativeSoundProvider : Disposable {
 	open val target: String = "unknown"
 
-	open fun createPlatformAudioOutput(coroutineContext: CoroutineContext, freq: Int = 44100): PlatformAudioOutput = PlatformAudioOutput(coroutineContext, freq)
+    open var paused: Boolean = false
+
+    open fun createPlatformAudioOutput(coroutineContext: CoroutineContext, freq: Int = 44100): PlatformAudioOutput = PlatformAudioOutput(coroutineContext, freq)
 
     suspend fun createPlatformAudioOutput(freq: Int = 44100): PlatformAudioOutput = createPlatformAudioOutput(coroutineContextKt, freq)
 

@@ -1,5 +1,6 @@
 package korlibs.korge
 
+import korlibs.audio.sound.*
 import korlibs.datastructure.iterators.*
 import korlibs.event.*
 import korlibs.graphics.log.*
@@ -375,8 +376,14 @@ object KorgeRunner {
         }
 
         eventDispatcher.onEvents(*DropFileEvent.Type.ALL) { e -> views.dispatch(e) }
-        eventDispatcher.onEvent(ResumeEvent) { e -> views.dispatch(e) }
-        eventDispatcher.onEvent(PauseEvent) { e -> views.dispatch(e) }
+        eventDispatcher.onEvent(ResumeEvent) { e ->
+            views.dispatch(e)
+            nativeSoundProvider.paused = false
+        }
+        eventDispatcher.onEvent(PauseEvent) { e ->
+            views.dispatch(e)
+            nativeSoundProvider.paused = true
+        }
         eventDispatcher.onEvent(StopEvent) { e -> views.dispatch(e) }
         eventDispatcher.onEvent(DestroyEvent) { e ->
             try {
