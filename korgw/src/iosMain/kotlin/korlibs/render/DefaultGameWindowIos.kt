@@ -332,7 +332,7 @@ open class IosGameWindow(
     val glXViewControllerProvider: (() -> MyGLKViewController?)? = null,
 ) : GameWindow() {
     override val ag: AG = AGOpengl(KmlGlNative().checkedIf(checked = false))
-    //override val ag: AG = AGOpengl(KmlGlNative().checkedIf(checked = true))
+    //override val ag: AG = AGOpengl(KmlGlNative().checkedIf(checked = true, printStackTrace = true))
 
     override val pixelsPerInch: Float get() = UIScreen.mainScreen.scale.toFloat() * 160f
 

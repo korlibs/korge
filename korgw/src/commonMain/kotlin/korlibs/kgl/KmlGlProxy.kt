@@ -4,6 +4,7 @@
 
 package korlibs.kgl
 
+import korlibs.crypto.encoding.*
 import korlibs.graphics.*
 import korlibs.graphics.shader.gl.*
 import korlibs.image.bitmap.*
@@ -1676,7 +1677,7 @@ open class CheckErrorsKmlGlProxy(parent: KmlGl, val throwException: Boolean = fa
                     break
                 }
                 errorCount++
-                val msg = "glError: $error ${parent.getErrorString(error)} calling $name($params) = $result [$info]"
+                val msg = "glError: $error ${parent.getErrorString(error)} calling $name(${params.map { if (it is Int) it.hex else it }}) = $result [$info]"
                 logger.warn { msg }
                 when {
                     throwException -> throw RuntimeException(msg)

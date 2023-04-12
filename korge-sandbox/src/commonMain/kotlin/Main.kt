@@ -65,6 +65,10 @@ suspend fun main() = Korge(
     debug = false,
     forceRenderEveryFrame = false
 ).start {
+    //sceneContainer().changeTo({MainSprites10k()}); return@start
+    //sceneContainer().changeTo({MainGraphicsText()}); return@start
+    //sceneContainer().changeTo({MainUI()}); return@start
+
     var lastBackTime = DateTime.EPOCH
     keys {
         this.down(Key.BACK) {
