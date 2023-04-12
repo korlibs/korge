@@ -168,9 +168,9 @@ open class KorgwSurfaceView constructor(
         val char = keyCode.toChar()
         val key = AndroidKeyMap.KEY_MAP[keyCode] ?: Key.UNKNOWN
 
-        //println("onKey: char=$char, keyCode=$keyCode, key=$key, sources=$sources, isGamepad=$isGamepad")
+        if (key == Key.BACK) return false
 
-        if (gameController.onKey(keyCode, event, type, long)) return true
+        //println("onKey: char=$char, keyCode=$keyCode, key=$key, sources=$sources, isGamepad=$isGamepad")
 
         //println("type=$type, keyCode=$keyCode, char=$char, key=$key, long=$long, unicodeChar=${event.unicodeChar}, event.keyCode=${event.keyCode}")
         //println("onKey[$type]: $event, keyboardType=${event.device.keyboardType}, sources=${event.device.sources}")
@@ -179,7 +179,8 @@ open class KorgwSurfaceView constructor(
         //if (event.source.hasBits(InputDevice.SOURCE_GAMEPAD)) {
         //}
         //println(InputDevice.SOURCE)
-        gameWindow.queue {
+        //val stopPropagating = gameWindow.queueBlocking {
+        val stopPropagating = gameWindow.queue {
             gameWindow.dispatchKeyEventEx(
                 type, 0, char, key, keyCode,
                 shift = event.isShiftPressed,
@@ -197,6 +198,8 @@ open class KorgwSurfaceView constructor(
             // Mark as not handled, just in case the OS wants to do something with this
             else -> {
                 //return true
+                //println("onKey(key=$key, $keyCode: Int, $event: KeyEvent, $type: korlibs.event.KeyEvent.Type, $long: Boolean): Boolean : stopPropagating=$stopPropagating")
+                //return stopPropagating
                 return false
             }
         }
@@ -219,12 +222,12 @@ open class KorgwSurfaceView constructor(
 
     override fun onKeyUp(keyCode: Int, event: KeyEvent): Boolean {
         //println("KorgwSurfaceView.onKeyUp")
-        onKey(keyCode, event, type = korlibs.event.KeyEvent.Type.UP, long = false)
+        val result = onKey(keyCode, event, type = korlibs.event.KeyEvent.Type.UP, long = false)
         val unicodeChar = event.unicodeChar
         if (unicodeChar != 0) {
             onKey(unicodeChar, event, type = korlibs.event.KeyEvent.Type.TYPE, long = false)
         }
-        return true
+        return result
     }
 
     override fun onKeyMultiple(keyCode: Int, repeatCount: Int, event: KeyEvent): Boolean {
