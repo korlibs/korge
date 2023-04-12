@@ -63,7 +63,7 @@ open class CachedContainer(
     private var _cacheTex: CacheTexture? = null
     private var dirty = true
     private var scaledCache = -1f
-    private var lbounds = MRectangle()
+    private var lbounds = Rectangle()
 
     override fun invalidateRender() {
         super.invalidateRender()
@@ -91,7 +91,7 @@ open class CachedContainer(
 
         if (dirty || scaledCache != renderScale) {
             scaledCache = renderScale
-            lbounds.copyFrom(getLocalBounds(includeFilters = false))
+            lbounds = getLocalBounds(includeFilters = false)
             dirty = false
             val texWidth = (lbounds.width * renderScale).toInt().coerceAtLeast(1)
             val texHeight = (lbounds.height * renderScale).toInt().coerceAtLeast(1)
