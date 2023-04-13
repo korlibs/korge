@@ -10,7 +10,6 @@ import korlibs.korge.view.*
 import korlibs.image.bitmap.*
 import korlibs.image.tiles.*
 import korlibs.math.geom.*
-import korlibs.math.math.*
 import kotlin.math.*
 
 inline fun Container.tileMap(
@@ -228,10 +227,10 @@ class TileMap(
 
         //println("currentVirtualRect=$currentVirtualRect, mx=[$mx0, $mx1, $mx2, $mx3], my=[$my0, $my1, $my2, $my3], pp0=$pp0, pp1=$pp1, pp2=$pp2, pp3=$pp3")
 
-        val ymin = min(my0, my1, my2, my3)
-        val ymax = max(my0, my1, my2, my3)
-        val xmin = min(mx0, mx1, mx2, mx3)
-        val xmax = max(mx0, mx1, mx2, mx3)
+        val ymin = korlibs.math.min(my0, my1, my2, my3)
+        val ymax = korlibs.math.max(my0, my1, my2, my3)
+        val xmin = korlibs.math.min(mx0, mx1, mx2, mx3)
+        val xmax = korlibs.math.max(mx0, mx1, mx2, mx3)
 
         //println("$xmin,$xmax")
 

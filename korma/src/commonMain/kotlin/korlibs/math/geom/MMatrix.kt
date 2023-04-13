@@ -6,7 +6,7 @@ import korlibs.math.interpolation.Interpolable
 import korlibs.math.interpolation.MutableInterpolable
 import korlibs.math.interpolation.Ratio
 import korlibs.math.interpolation.interpolate
-import korlibs.math.math.isAlmostEquals
+import korlibs.math.isAlmostEquals
 import kotlin.math.*
 
 val MMatrix?.immutable: Matrix get() = if (this == null) Matrix.NIL else Matrix(a, b, c, d, tx, ty)

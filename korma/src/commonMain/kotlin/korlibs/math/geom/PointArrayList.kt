@@ -1,9 +1,8 @@
 package korlibs.math.geom
 
 import korlibs.datastructure.*
-import korlibs.datastructure.iterators.*
 import korlibs.math.annotations.*
-import korlibs.math.math.*
+import korlibs.math.roundDecimalPlaces
 import kotlin.math.*
 
 sealed interface PointList : IVectorArrayList, Extra {

@@ -1,7 +1,7 @@
 package korlibs.math.geom
 
+import korlibs.math.almostEquals
 import korlibs.math.annotations.*
-import korlibs.math.math.*
 import korlibs.memory.*
 import korlibs.memory.isAlmostZero
 

@@ -4,7 +4,8 @@ import korlibs.math.annotations.*
 import korlibs.math.geom.shape.*
 import korlibs.math.geom.vector.*
 import korlibs.math.internal.*
-import korlibs.math.math.*
+import korlibs.math.isAlmostEquals
+import korlibs.math.roundDecimalPlaces
 import korlibs.memory.*
 import korlibs.memory.pack.*
 import kotlin.math.*
@@ -117,7 +118,7 @@ inline class Rectangle(val data: Float4Pack) : Shape2D {
         val d1 = (p1 - p).lengthSquared
         val d2 = (p2 - p).lengthSquared
         val d3 = (p3 - p).lengthSquared
-        val dmin = min(d0, d1, d2, d3)
+        val dmin = korlibs.math.min(d0, d1, d2, d3)
         return when (dmin) {
             d0 -> p0
             d1 -> p1

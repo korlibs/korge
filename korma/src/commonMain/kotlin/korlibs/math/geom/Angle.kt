@@ -3,7 +3,8 @@ package korlibs.math.geom
 import korlibs.math.geom.range.*
 import korlibs.math.internal.*
 import korlibs.math.interpolation.*
-import korlibs.math.math.*
+import korlibs.math.isAlmostEquals
+import korlibs.math.roundDecimalPlaces
 import kotlin.math.*
 
 @PublishedApi internal const val PIF = (PI).toFloat()

@@ -9,7 +9,7 @@ import korlibs.math.geom.ds.*
 import korlibs.math.geom.shape.*
 import korlibs.math.geom.trapezoid.*
 import korlibs.math.internal.*
-import korlibs.math.math.*
+import korlibs.math.roundDecimalPlaces
 import korlibs.memory.*
 import kotlin.native.concurrent.*
 

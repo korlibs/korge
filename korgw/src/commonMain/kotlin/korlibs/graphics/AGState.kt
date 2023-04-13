@@ -675,10 +675,10 @@ fun AGScissor.applyMatrixBounds(m: Matrix): AGScissor {
     val y2 = m.transformY(left, bottom)
     val y3 = m.transformY(right, bottom)
     return AGScissor.fromBounds(
-        korlibs.math.math.min(x0, x1, x2, x3).toInt(),
-        korlibs.math.math.min(y0, y1, y2, y3).toInt(),
-        korlibs.math.math.max(x0, x1, x2, x3).toInt(),
-        korlibs.math.math.max(y0, y1, y2, y3).toInt(),
+        korlibs.math.min(x0, x1, x2, x3).toInt(),
+        korlibs.math.min(y0, y1, y2, y3).toInt(),
+        korlibs.math.max(x0, x1, x2, x3).toInt(),
+        korlibs.math.max(y0, y1, y2, y3).toInt(),
     )
 }
 

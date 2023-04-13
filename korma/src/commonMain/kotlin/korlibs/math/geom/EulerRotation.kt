@@ -1,6 +1,6 @@
 package korlibs.math.geom
 
-import korlibs.math.math.*
+import korlibs.math.normalizeAlmostZero
 import kotlin.math.*
 
 inline class EulerRotation internal constructor(private val data: Vector3) {

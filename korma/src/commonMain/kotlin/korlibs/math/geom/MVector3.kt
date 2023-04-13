@@ -4,7 +4,7 @@ import korlibs.math.annotations.KormaMutableApi
 import korlibs.math.internal.niceStr
 import korlibs.math.interpolation.interpolate
 import korlibs.math.interpolation.toRatio
-import korlibs.math.math.almostEquals
+import korlibs.math.almostEquals
 import kotlin.math.sqrt
 
 @KormaMutableApi

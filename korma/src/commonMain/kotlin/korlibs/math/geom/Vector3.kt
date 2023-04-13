@@ -3,8 +3,7 @@ package korlibs.math.geom
 import korlibs.memory.pack.*
 import korlibs.math.annotations.*
 import korlibs.math.internal.*
-import korlibs.math.interpolation.*
-import korlibs.math.math.*
+import korlibs.math.isAlmostEquals
 import kotlin.math.*
 
 inline class Vector3(val data: Float4Pack) {

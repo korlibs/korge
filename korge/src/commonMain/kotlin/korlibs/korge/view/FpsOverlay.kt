@@ -5,7 +5,7 @@ import korlibs.image.color.*
 import korlibs.korge.bitmapfont.*
 import korlibs.korge.internal.*
 import korlibs.korge.render.*
-import korlibs.math.math.*
+import korlibs.math.roundDecimalPlaces
 import korlibs.memory.*
 import korlibs.time.*
 

@@ -4,8 +4,9 @@ package korlibs.math.geom
 
 import korlibs.math.internal.*
 import korlibs.math.interpolation.*
-import korlibs.math.math.*
-import korlibs.math.math.isAlmostZero
+import korlibs.math.isAlmostEquals
+import korlibs.math.isAlmostZero
+import korlibs.math.roundDecimalPlaces
 import korlibs.memory.*
 import korlibs.memory.pack.*
 import kotlin.math.*
@@ -225,11 +226,31 @@ inline class Vector2 internal constructor(internal val raw: Float2Pack) {
         fun crossProduct(p1: Vector2, p2: Vector2): Float = crossProduct(p1.x, p1.y, p2.x, p2.y)
 
         fun minComponents(p1: Vector2, p2: Vector2): Vector2 = Point(min(p1.x, p2.x), min(p1.y, p2.y))
-        fun minComponents(p1: Vector2, p2: Vector2, p3: Vector2): Vector2 = Point(min(p1.x, p2.x, p3.x), min(p1.y, p2.y, p3.y))
-        fun minComponents(p1: Vector2, p2: Vector2, p3: Vector2, p4: Vector2): Vector2 = Point(min(p1.x, p2.x, p3.x, p4.x), min(p1.y, p2.y, p3.y, p4.y))
+        fun minComponents(p1: Vector2, p2: Vector2, p3: Vector2): Vector2 = Point(
+            korlibs.math.min(p1.x, p2.x, p3.x),
+            korlibs.math.min(p1.y, p2.y, p3.y)
+        )
+        fun minComponents(p1: Vector2, p2: Vector2, p3: Vector2, p4: Vector2): Vector2 = Point(
+            korlibs.math.min(
+                p1.x,
+                p2.x,
+                p3.x,
+                p4.x
+            ), korlibs.math.min(p1.y, p2.y, p3.y, p4.y)
+        )
         fun maxComponents(p1: Vector2, p2: Vector2): Vector2 = Point(max(p1.x, p2.x), max(p1.y, p2.y))
-        fun maxComponents(p1: Vector2, p2: Vector2, p3: Vector2): Vector2 = Point(max(p1.x, p2.x, p3.x), max(p1.y, p2.y, p3.y))
-        fun maxComponents(p1: Vector2, p2: Vector2, p3: Vector2, p4: Vector2): Vector2 = Point(max(p1.x, p2.x, p3.x, p4.x), max(p1.y, p2.y, p3.y, p4.y))
+        fun maxComponents(p1: Vector2, p2: Vector2, p3: Vector2): Vector2 = Point(
+            korlibs.math.max(p1.x, p2.x, p3.x),
+            korlibs.math.max(p1.y, p2.y, p3.y)
+        )
+        fun maxComponents(p1: Vector2, p2: Vector2, p3: Vector2, p4: Vector2): Vector2 = Point(
+            korlibs.math.max(
+                p1.x,
+                p2.x,
+                p3.x,
+                p4.x
+            ), korlibs.math.max(p1.y, p2.y, p3.y, p4.y)
+        )
     }
 }
 

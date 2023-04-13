@@ -2,7 +2,7 @@ package korlibs.math.geom.bezier
 
 import korlibs.math.geom.*
 import korlibs.math.internal.*
-import korlibs.math.math.*
+import korlibs.math.roundDecimalPlaces
 import korlibs.memory.*
 
 data class CurveSplit(

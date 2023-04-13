@@ -3,7 +3,7 @@ package korlibs.math.geom
 import korlibs.datastructure.*
 import korlibs.datastructure.iterators.*
 import korlibs.math.internal.*
-import korlibs.math.math.*
+import korlibs.math.roundDecimalPlaces
 import kotlin.math.*
 
 sealed interface IVectorArrayList : Extra {

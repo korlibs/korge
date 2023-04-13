@@ -1,7 +1,7 @@
 package korlibs.math.geom
 
+import korlibs.math.*
 import korlibs.math.interpolation.*
-import korlibs.math.math.*
 import kotlin.math.*
 import kotlin.test.*
 
