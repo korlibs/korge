@@ -141,10 +141,15 @@ now they are available via kproject in these repositories:
 
 * <https://github.com/korlibs/korge-k3d/> (3D support on top of KorGE)
 
+## Particles
+
+* <https://github.com/korlibs/korge-particles/> (Particles support in `.pex` format)
+
 ## Other
 
 * <https://github.com/korlibs/korge-lipsync> (Rhubarb LipSync integration with resource processor)
 * <https://github.com/korlibs/korge-parallax> (Pseudo 3D Parallax Effect)
+* <https://github.com/korlibs/korge-ext/tree/main/korge-docking> (Docking to window corners `dockedTo`)
 * <https://github.com/korlibs/korge-ext/tree/main/korge-ktree> (Old KTree serialization)
 * <https://github.com/korlibs/korge-ext/tree/main/korge-masked-view> (Old Masked View (now we can use `view.mask`))
 * <https://github.com/korlibs/korge-ext/tree/main/korge-text2> (Old Text engine)
