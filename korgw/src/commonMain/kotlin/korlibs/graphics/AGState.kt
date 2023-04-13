@@ -91,13 +91,6 @@ inline class AGBlendEquation(val ordinal: Int) {
         else -> unreachable
     }
 
-    fun apply(l: Double, r: Double): Double = when (this) {
-        ADD -> l + r
-        SUBTRACT -> l - r
-        REVERSE_SUBTRACT -> r - l
-        else -> unreachable
-    }
-
     fun apply(l: Float, r: Float): Float = when (this) {
         ADD -> l + r
         SUBTRACT -> l - r
@@ -156,17 +149,17 @@ inline class AGBlendFactor(val ordinal: Int) {
         else -> unreachable
     }
 
-    fun get(srcC: Double, srcA: Double, dstC: Double, dstA: Double): Double = when (this) {
+    fun get(srcC: Float, srcA: Float, dstC: Float, dstA: Float): Float = when (this) {
         DESTINATION_ALPHA -> dstA
         DESTINATION_COLOR -> dstC
-        ONE -> 1.0
-        ONE_MINUS_DESTINATION_ALPHA -> 1.0 - dstA
-        ONE_MINUS_DESTINATION_COLOR -> 1.0 - dstC
-        ONE_MINUS_SOURCE_ALPHA -> 1.0 - srcA
-        ONE_MINUS_SOURCE_COLOR -> 1.0 - srcC
+        ONE -> 1f
+        ONE_MINUS_DESTINATION_ALPHA -> 1f - dstA
+        ONE_MINUS_DESTINATION_COLOR -> 1f - dstC
+        ONE_MINUS_SOURCE_ALPHA -> 1f - srcA
+        ONE_MINUS_SOURCE_COLOR -> 1f - srcC
         SOURCE_ALPHA -> srcA
         SOURCE_COLOR -> srcC
-        ZERO -> 0.0
+        ZERO -> 0f
         else -> unreachable
     }
 }
@@ -356,28 +349,34 @@ inline class AGBlending(val data: Int) {
     fun withDST(rgb: AGBlendFactor, a: AGBlendFactor = rgb): AGBlending = AGBlending(data.insert4(rgb.ordinal, 8).insert4(a.ordinal, 12))
     fun withEQ(rgb: AGBlendEquation, a: AGBlendEquation = rgb): AGBlending = AGBlending(data.insert2(rgb.ordinal, 16).insert2(a.ordinal, 18))
 
-    private fun applyColorComponent(srcC: Double, dstC: Double, srcA: Double, dstA: Double): Double {
-        return this.eqRGB.apply(srcC * this.srcRGB.get(srcC, srcA, dstC, dstA), dstC * this.dstRGB.get(srcC, srcA, dstC, dstA))
+    private fun applyColorComponent(srcC: Float, dstC: Float, srcA: Float, dstA: Float): Float {
+        return this.eqRGB.apply(
+            srcC * this.srcRGB.get(srcC, srcA, dstC, dstA),
+            dstC * this.dstRGB.get(srcC, srcA, dstC, dstA)
+        )
     }
 
-    private fun applyAlphaComponent(srcA: Double, dstA: Double): Double {
-        return eqRGB.apply(srcA * this.srcA.get(0.0, srcA, 0.0, dstA), dstA * this.dstA.get(0.0, srcA, 0.0, dstA))
+    private fun applyAlphaComponent(srcA: Float, dstA: Float): Float {
+        return eqRGB.apply(
+            srcA * this.srcA.get(0f, srcA, 0f, dstA),
+            dstA * this.dstA.get(0f, srcA, 0f, dstA)
+        )
     }
 
     fun apply(src: RGBAf, dst: RGBAf, out: RGBAf = RGBAf()): RGBAf {
-        out.rd = applyColorComponent(src.rd, dst.rd, src.ad, dst.ad)
-        out.gd = applyColorComponent(src.gd, dst.gd, src.ad, dst.ad)
-        out.bd = applyColorComponent(src.bd, dst.bd, src.ad, dst.ad)
-        out.ad = applyAlphaComponent(src.ad, dst.ad)
+        out.r = applyColorComponent(src.r, dst.r, src.a, dst.a)
+        out.g = applyColorComponent(src.g, dst.g, src.a, dst.a)
+        out.b = applyColorComponent(src.b, dst.b, src.a, dst.a)
+        out.a = applyAlphaComponent(src.a, dst.a)
         return out
     }
 
     fun apply(src: RGBA, dst: RGBA): RGBA {
-        val srcA = src.ad
-        val dstA = dst.ad
-        val r = applyColorComponent(src.rd, dst.rd, srcA, dstA)
-        val g = applyColorComponent(src.gd, dst.gd, srcA, dstA)
-        val b = applyColorComponent(src.bd, dst.bd, srcA, dstA)
+        val srcA = src.af
+        val dstA = dst.af
+        val r = applyColorComponent(src.rf, dst.rf, srcA, dstA)
+        val g = applyColorComponent(src.gf, dst.gf, srcA, dstA)
+        val b = applyColorComponent(src.bf, dst.bf, srcA, dstA)
         val a = applyAlphaComponent(srcA, dstA)
         return RGBA.float(r, g, b, a)
     }
