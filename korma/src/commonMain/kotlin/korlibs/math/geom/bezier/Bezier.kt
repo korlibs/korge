@@ -4,11 +4,7 @@ import korlibs.datastructure.*
 import korlibs.datastructure.iterators.*
 import korlibs.math.geom.*
 import korlibs.math.interpolation.*
-import korlibs.math.isAlmostEquals
-import korlibs.math.math.*
-import korlibs.math.isAlmostZero
-import korlibs.math.normalizeZero
-import korlibs.math.roundDecimalPlaces
+import korlibs.math.*
 import korlibs.memory.*
 import kotlin.contracts.*
 import kotlin.math.*
