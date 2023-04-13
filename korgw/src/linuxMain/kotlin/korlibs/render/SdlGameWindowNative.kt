@@ -114,7 +114,7 @@ class SdlGameWindowNative : EventLoopGameWindow() {
                         MouseEvent.Type.MOVE, 0,
                         event.motion.x, event.motion.y,
                         MouseButton.NONE, 0,
-                        0.0, 0.0, 0.0,
+                        0f, 0f, 0f,
                         isShiftDown = false, isCtrlDown = false, isAltDown = false, isMetaDown = false,
                         scaleCoords = false, simulateClickOnUp = false
                     )
@@ -139,7 +139,7 @@ class SdlGameWindowNative : EventLoopGameWindow() {
                         evType, 0,
                         event.button.x, event.button.y,
                         btn, 0,
-                        0.0, 0.0, 0.0,
+                        0f, 0f, 0f,
                         isShiftDown = false, isCtrlDown = false, isAltDown = false, isMetaDown = false,
                         scaleCoords = false, simulateClickOnUp = true
                     )
