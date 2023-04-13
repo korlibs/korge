@@ -90,10 +90,9 @@ class ParticleEmitter() {
     @ViewProperty(groupName = "rotation")
 	var rotationEndVariance = 0.0.degrees
 
-	fun create(x: Double = 0.0, y: Double = 0.0, time: TimeSpan = TimeSpan.NIL): ParticleEmitterView =
-		ParticleEmitterView(this, MPoint(x, y)).apply {
-			this.timeUntilStop = time
-		}
+    fun create(pos: Point = Point.ZERO, time: TimeSpan = TimeSpan.NIL): ParticleEmitterView = ParticleEmitterView(this, pos).apply { this.timeUntilStop = time }
+    fun create(x: Float = 0f, y: Float = 0f, time: TimeSpan = TimeSpan.NIL): ParticleEmitterView = create(Point(x, y), time)
+    fun create(x: Double = 0.0, y: Double = 0.0, time: TimeSpan = TimeSpan.NIL): ParticleEmitterView = create(Point(x, y), time)
 
     companion object {
         val blendFactorMap = mapOf(

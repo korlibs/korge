@@ -16,46 +16,45 @@ private val MOVE_SCALES = arrayOf(+1.0, -1.0)
 // @TODO: if dx & dy are big, we should check intermediary positions to ensure we are not jumping to the other side of the object
 fun View.moveWithHitTestable(collision: HitTestable, dx: Double, dy: Double, hitTestDirection: HitTestDirection? = null) {
     val char = this
-    val deltaXY = MPoint(dx, dy)
-    val angle = Angle.between(0.0, 0.0, deltaXY.x, deltaXY.y)
+    val deltaXY = Point(dx, dy)
+    val angle = Angle.between(Point.ZERO, deltaXY)
     val length = deltaXY.length
-    val oldX = char.xD
-    val oldY = char.yD
+    val oldX = char.x
+    val oldY = char.y
     MOVE_ANGLES.fastForEach { dangle ->
         MOVE_SCALES.fastForEach { dscale ->
             val rangle = angle + dangle * dscale
-            val lengthScale = dangle.cosineD
-            val dpoint = MPoint.fromPolar(rangle, length * lengthScale)
-            char.xD = oldX + dpoint.x
-            char.yD = oldY + dpoint.y
+            val lengthScale = dangle.cosine
+            val dpoint = Point.polar(rangle, length * lengthScale)
+            char.x = oldX + dpoint.x
+            char.y = oldY + dpoint.y
             val global = char.globalPos
             if (!collision.hitTestAny(global, hitTestDirection ?: HitTestDirection.fromAngle(angle))) {
                 return // Accept movement
             }
         }
     }
-    char.xD = oldX
-    char.yD = oldY
+    char.x = oldX
+    char.y = oldY
 }
 
-fun View.moveWithCollisions(collision: List<View>, delta: MVector2D, kind: CollisionKind = CollisionKind.SHAPE) {
+fun View.moveWithCollisions(collision: List<View>, delta: Vector2, kind: CollisionKind = CollisionKind.SHAPE) {
     return moveWithCollisions(collision, delta.x, delta.y, kind)
 }
 
-fun View.moveWithCollisions(collision: List<View>, dx: Double, dy: Double, kind: CollisionKind = CollisionKind.SHAPE) {
+fun View.moveWithCollisions(collision: List<View>, dx: Float, dy: Float, kind: CollisionKind = CollisionKind.SHAPE) {
     val char = this
-    val deltaXY = MPoint(dx, dy)
-    val angle = Angle.between(0.0, 0.0, deltaXY.x, deltaXY.y)
+    val deltaXY = Point(dx, dy)
+    val angle = Angle.between(Point.ZERO, deltaXY)
     val length = deltaXY.length
-    val oldX = char.xD
-    val oldY = char.yD
+    val oldX = char.x
+    val oldY = char.y
     MOVE_ANGLES.fastForEach { dangle ->
         MOVE_SCALES.fastForEach { dscale ->
             val rangle = angle + dangle * dscale
-            val lengthScale = dangle.cosineD
-            val dpoint = MPoint.fromPolar(rangle, length * lengthScale)
-            char.xD = oldX + dpoint.x
-            char.yD = oldY + dpoint.y
+            val lengthScale = dangle.cosine
+            val dpoint = Point.polar(rangle, length * lengthScale)
+            char.pos = Point(oldX + dpoint.x, oldY + dpoint.y)
             //char.hitTestView(collision, kind)
             //if (!char.collidesWith(collision, kind)) {
             if (collision.all { it == this || it.hitTestView(char) == null }) {
@@ -64,6 +63,6 @@ fun View.moveWithCollisions(collision: List<View>, dx: Double, dy: Double, kind:
             }
         }
     }
-    char.xD = oldX
-    char.yD = oldY
+    char.x = oldX
+    char.y = oldY
 }

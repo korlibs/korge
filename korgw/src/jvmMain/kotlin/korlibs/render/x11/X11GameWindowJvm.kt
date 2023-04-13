@@ -254,17 +254,17 @@ class X11GameWindow(val checkGl: Boolean) : EventLoopGameWindow() {
                     }
 
                     //in 4..7 -> MouseButton.LEFT // 4=WHEEL_UP, 5=WHEEL_DOWN, 6=WHEEL_LEFT, 7=WHEEL_RIGHT!
-                    val scrollDeltaX = when (mot.button) {
-                        6 -> -1.0
-                        7 -> +1.0
-                        else -> 0.0
+                    val scrollDeltaX: Float = when (mot.button) {
+                        6 -> -1f
+                        7 -> +1f
+                        else -> 0f
                     }
-                    val scrollDeltaY = when (mot.button) {
-                        4 -> -1.0
-                        5 -> +1.0
-                        else -> 0.0
+                    val scrollDeltaY: Float = when (mot.button) {
+                        4 -> -1f
+                        5 -> +1f
+                        else -> 0f
                     }
-                    val scrollDeltaZ = 0.0
+                    val scrollDeltaZ: Float = 0f
 
                     val button = when (mot.button) {
                         1 -> MouseButton.LEFT

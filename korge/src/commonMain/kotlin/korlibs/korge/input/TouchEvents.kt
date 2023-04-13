@@ -12,26 +12,26 @@ class TouchEvents(val view: View) {
     data class Info(
         var index: Int = -1,
         var id: Int = 0,
-        var local: MPoint = MPoint(),
-        var startLocal: MPoint = MPoint(),
+        var local: Point = Point(),
+        var startLocal: Point = Point(),
         var startTime: DateTime = DateTime.EPOCH,
-        var global: MPoint = MPoint(),
-        var startGlobal: MPoint = MPoint(),
+        var global: Point = Point(),
+        var startGlobal: Point = Point(),
         var time: DateTime = DateTime.EPOCH,
     ) : Extra by Extra.Mixin() {
         val elapsedTime get() = time - startTime
 
         lateinit var views: Views
 
-        @Deprecated("") val localX: Double get() = local.x
-        @Deprecated("") val localY: Double get() = local.y
-        @Deprecated("") val startLocalX: Double get() = startLocal.x
-        @Deprecated("") val startLocalY: Double get() = startLocal.y
+        @Deprecated("") val localX: Float get() = local.x
+        @Deprecated("") val localY: Float get() = local.y
+        @Deprecated("") val startLocalX: Float get() = startLocal.x
+        @Deprecated("") val startLocalY: Float get() = startLocal.y
 
-        @Deprecated("") val globalX: Double get() = global.x
-        @Deprecated("") val globalY: Double get() = global.y
-        @Deprecated("") val startGlobalX: Double get() = startGlobal.x
-        @Deprecated("") val startGlobalY: Double get() = startGlobal.y
+        @Deprecated("") val globalX: Float get() = global.x
+        @Deprecated("") val globalY: Float get() = global.y
+        @Deprecated("") val startGlobalX: Float get() = startGlobal.x
+        @Deprecated("") val startGlobalY: Float get() = startGlobal.y
 
         override fun toString(): String = "Touch[$id](${localX.toInt()}, ${localY.toInt()})"
     }
@@ -46,27 +46,27 @@ class TouchEvents(val view: View) {
 
     fun Info.copyFrom(touch: Touch) = this.apply {
         this.id = touch.id
-        this.global.setTo(touch.x, touch.y)
-        this.local.copyFrom(view.globalToLocal(Point(touch.x, touch.y)))
+        this.global = touch.p
+        this.local = view.globalToLocal(touch.p)
     }
 
     fun Info.start() = this.apply {
-        this.startLocal.copyFrom(this.local)
-        this.startGlobal.copyFrom(this.global)
+        this.startLocal = this.local
+        this.startGlobal = this.global
     }
 
     private val infoPool = Pool { Info(it) }
     private val infoById = FastIntMap<Info>()
     val infos = FastArrayList<Info>()
 
-    fun simulateTapAt(views: Views, globalXY: MPoint) {
+    fun simulateTapAt(views: Views, globalXY: Point) {
         val ev = TouchEvent(TouchEvent.Type.START)
         ev.startFrame(TouchEvent.Type.START)
-        ev.touch(0, globalXY.x, globalXY.y, Touch.Status.ADD)
+        ev.touch(0, globalXY, Touch.Status.ADD)
         ev.endFrame()
         onTouchEvent(views, ev)
         ev.startFrame(TouchEvent.Type.END)
-        ev.touch(0, globalXY.x, globalXY.y, Touch.Status.REMOVE)
+        ev.touch(0, globalXY, Touch.Status.REMOVE)
         ev.endFrame()
         onTouchEvent(views, ev)
 
@@ -153,7 +153,7 @@ fun View.singleTouch(removeTouch: Boolean = false, supportStartAnywhere: Boolean
             val info = getById(it.id)
             //println("TOUCH START: info=$info")
             val handler = info.handler
-            info.startedInside = this@singleTouch.hitTest(it.global.point) != null
+            info.startedInside = this@singleTouch.hitTest(it.global) != null
             if (handler.start.hasListeners && info.startedInside) {
                 handler.start(it)
             }
@@ -167,7 +167,7 @@ fun View.singleTouch(removeTouch: Boolean = false, supportStartAnywhere: Boolean
             if (!supportStartAnywhere && !info.startedInside) return@move
 
             val handler = info.handler
-            if (handler.move.hasListeners && this@singleTouch.hitTest(it.global.point) != null) {
+            if (handler.move.hasListeners && this@singleTouch.hitTest(it.global) != null) {
                 handler.move(it)
             }
             handler.moveAnywhere(it)
@@ -178,14 +178,14 @@ fun View.singleTouch(removeTouch: Boolean = false, supportStartAnywhere: Boolean
 
             val handler = info.handler
 
-            val hitTest = if (handler.end.hasListeners || handler.tap.hasListeners) this@singleTouch.hitTest(it.global.point) != null else false
+            val hitTest = if (handler.end.hasListeners || handler.tap.hasListeners) this@singleTouch.hitTest(it.global) != null else false
             //println("TOUCH END: info=$info, hitTest=$hitTest")
 
             if (hitTest) {
                 handler.end(it)
             }
             handler.endAnywhere(it)
-            if ((MPoint.distance(it.startGlobal, it.global) <= it.views.input.clickDistance) && (it.elapsedTime <= it.views.input.clickTime)) {
+            if ((Point.distance(it.startGlobal, it.global) <= it.views.input.clickDistance) && (it.elapsedTime <= it.views.input.clickTime)) {
                 if (info.startedInside && hitTest) {
                     //println("TOUCH END: TAP!")
                     handler.tap(it)

@@ -11,6 +11,7 @@ import korlibs.datastructure.*
 import korlibs.datastructure.lock.*
 import korlibs.event.*
 import korlibs.io.async.*
+import korlibs.math.geom.*
 import korlibs.memory.*
 import korlibs.time.*
 import javax.microedition.khronos.egl.*
@@ -265,7 +266,7 @@ open class KorgwSurfaceView constructor(
                     type == TouchEvent.Type.END && actionPointerIndex == n -> Touch.Status.REMOVE
                     else -> Touch.Status.KEEP
                 }
-                currentTouchEvent.touch(id, coords.x.toDouble(), coords.y.toDouble(), status)
+                currentTouchEvent.touch(id, Point(coords.x, coords.y), status)
             }
         }
         return true
@@ -351,11 +352,11 @@ class AndroidConfigChooser(
         val gles3: Boolean? = null,
         val msaa: Int? = null,
     ) {
-        fun matchScore(config: EGLFullConfig): Double {
-            var score = 0.0
-            if (config.depth == depth) score += 10.0
-            if (config.stencil == stencil) score += 5.0
-            if (config.samples == msaa) score += 3.0
+        fun matchScore(config: EGLFullConfig): Float {
+            var score = 0f
+            if (config.depth == depth) score += 10f
+            if (config.stencil == stencil) score += 5f
+            if (config.samples == msaa) score += 3f
             return score
         }
 

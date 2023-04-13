@@ -21,14 +21,14 @@ class MainSDF : Scene() {
 }
 
 open class CircleSDFView(size: Size = Size(100f, 100f)) : ShadedView(PROGRAM, size) {
-    var radius = 0.49
-    var feather = 0.005
-    var center = Point(0.5, 0.5)
-    var time = 0.0
+    var radius = 0.49f
+    var feather = 0.005f
+    var center = Point(0.5f, 0.5f)
+    var time = 0.0f
 
     init {
         addUpdater {
-            time += it.seconds
+            time += it.seconds.toFloat()
             invalidateRender()
         }
     }
@@ -38,7 +38,7 @@ open class CircleSDFView(size: Size = Size(100f, 100f)) : ShadedView(PROGRAM, si
             it[u_Center] = center
             it[u_Radius] = radius
             it[u_Feather] = feather
-            it[u_Time] = sind(time.radians).absoluteValue
+            it[u_Time] = sin(time.radians).absoluteValue
         }
 
         super.renderInternal(ctx)
@@ -59,7 +59,7 @@ open class CircleSDFView(size: Size = Size(100f, 100f)) : ShadedView(PROGRAM, si
             SET(d,
                 SDF.opInterpolate(
                     SDF.circle(v_Tex - SDFUB.u_Center, SDFUB.u_Radius),
-                    SDF.opBorder(SDF.box(v_Tex - SDFUB.u_Center + vec2(.1f.lit, 0f.lit), vec2(SDFUB.u_Radius * .4.lit, SDFUB.u_Radius * .4.lit)), .02f.lit),
+                    SDF.opBorder(SDF.box(v_Tex - SDFUB.u_Center + vec2(.1f.lit, 0f.lit), vec2(SDFUB.u_Radius * .4f.lit, SDFUB.u_Radius * .4f.lit)), .02f.lit),
                     clamp(SDFUB.u_Time, 0f.lit, 1f.lit)
                 )
             )

@@ -37,10 +37,10 @@ interface EventType<T : BEvent>
 data class GestureEvent(
     override var type: Type = Type.MAGNIFY,
     var id: Int = 0,
-    var amountX: Double = 0.0,
-    var amountY: Double = 0.0,
+    var amountX: Float = 0f,
+    var amountY: Float = 0f,
 ) : Event(), TEvent<GestureEvent> {
-    var amount: Double
+    var amount: Float
         get() = amountX
         set(value) {
             amountX = value
@@ -71,11 +71,11 @@ data class MouseEvent(
     var button: MouseButton = MouseButton.NONE,
     var buttons: Int = 0,
     @Deprecated("Use scrollDeltaX variants")
-    var scrollDeltaX: Double = 0.0,
+    var scrollDeltaX: Float = 0f,
     @Deprecated("Use scrollDeltaY variants")
-    var scrollDeltaY: Double = 0.0,
+    var scrollDeltaY: Float = 0f,
     @Deprecated("Use scrollDeltaZ variants")
-    var scrollDeltaZ: Double = 0.0,
+    var scrollDeltaZ: Float = 0f,
     var isShiftDown: Boolean = false,
     var isCtrlDown: Boolean = false,
     var isAltDown: Boolean = false,
@@ -125,36 +125,36 @@ data class MouseEvent(
         this.scrollDeltaMode = other.scrollDeltaMode
     }
 
-    enum class ScrollDeltaMode(val scale: Double) {
-        PIXEL(1.0),
-        LINE(10.0),
-        PAGE(100.0);
+    enum class ScrollDeltaMode(val scale: Float) {
+        PIXEL(1f),
+        LINE(10f),
+        PAGE(100f);
 
-        fun convertTo(value: Double, target: ScrollDeltaMode): Double = value * (this.scale / target.scale)
+        fun convertTo(value: Float, target: ScrollDeltaMode): Float = value * (this.scale / target.scale)
     }
 
-    fun scrollDeltaX(mode: ScrollDeltaMode): Double = this.scrollDeltaMode.convertTo(this.scrollDeltaX, mode)
-    fun scrollDeltaY(mode: ScrollDeltaMode): Double = this.scrollDeltaMode.convertTo(this.scrollDeltaY, mode)
-    fun scrollDeltaZ(mode: ScrollDeltaMode): Double = this.scrollDeltaMode.convertTo(this.scrollDeltaZ, mode)
+    fun scrollDeltaX(mode: ScrollDeltaMode): Float = this.scrollDeltaMode.convertTo(this.scrollDeltaX, mode)
+    fun scrollDeltaY(mode: ScrollDeltaMode): Float = this.scrollDeltaMode.convertTo(this.scrollDeltaY, mode)
+    fun scrollDeltaZ(mode: ScrollDeltaMode): Float = this.scrollDeltaMode.convertTo(this.scrollDeltaZ, mode)
 
-    fun setScrollDelta(mode: ScrollDeltaMode, x: Double, y: Double, z: Double) {
+    fun setScrollDelta(mode: ScrollDeltaMode, x: Float, y: Float, z: Float) {
         this.scrollDeltaMode = mode
         this.scrollDeltaX = x
         this.scrollDeltaY = y
         this.scrollDeltaZ = z
     }
 
-    inline val scrollDeltaXPixels: Double get() = scrollDeltaX(ScrollDeltaMode.PIXEL)
-    inline val scrollDeltaYPixels: Double get() = scrollDeltaY(ScrollDeltaMode.PIXEL)
-    inline val scrollDeltaZPixels: Double get() = scrollDeltaZ(ScrollDeltaMode.PIXEL)
+    inline val scrollDeltaXPixels: Float get() = scrollDeltaX(ScrollDeltaMode.PIXEL)
+    inline val scrollDeltaYPixels: Float get() = scrollDeltaY(ScrollDeltaMode.PIXEL)
+    inline val scrollDeltaZPixels: Float get() = scrollDeltaZ(ScrollDeltaMode.PIXEL)
 
-    inline val scrollDeltaXLines: Double get() = scrollDeltaX(ScrollDeltaMode.LINE)
-    inline val scrollDeltaYLines: Double get() = scrollDeltaY(ScrollDeltaMode.LINE)
-    inline val scrollDeltaZLines: Double get() = scrollDeltaZ(ScrollDeltaMode.LINE)
+    inline val scrollDeltaXLines: Float get() = scrollDeltaX(ScrollDeltaMode.LINE)
+    inline val scrollDeltaYLines: Float get() = scrollDeltaY(ScrollDeltaMode.LINE)
+    inline val scrollDeltaZLines: Float get() = scrollDeltaZ(ScrollDeltaMode.LINE)
 
-    inline val scrollDeltaXPages: Double get() = scrollDeltaX(ScrollDeltaMode.PAGE)
-    inline val scrollDeltaYPages: Double get() = scrollDeltaY(ScrollDeltaMode.PAGE)
-    inline val scrollDeltaZPages: Double get() = scrollDeltaZ(ScrollDeltaMode.PAGE)
+    inline val scrollDeltaXPages: Float get() = scrollDeltaX(ScrollDeltaMode.PAGE)
+    inline val scrollDeltaYPages: Float get() = scrollDeltaY(ScrollDeltaMode.PAGE)
+    inline val scrollDeltaZPages: Float get() = scrollDeltaZ(ScrollDeltaMode.PAGE)
 
     var requestLock: () -> Unit = { }
 }
@@ -170,14 +170,15 @@ data class FocusEvent(
 data class Touch(
 	val index: Int = -1,
 	var id: Int = -1,
-    var x: Double = 0.0,
-    var y: Double = 0.0,
-    var force: Double = 1.0,
+    var p: Point = Point.ZERO,
+    var force: Float = 1f,
     var status: Status = Status.KEEP,
     var kind: Kind = Kind.FINGER,
     var button: MouseButton = MouseButton.LEFT,
 ) : Extra by Extra.Mixin() {
-    val p: Point get() = Point(x, y)
+    val x: Float get() = p.x
+    val y: Float get() = p.y
+
     enum class Status { ADD, KEEP, REMOVE }
     enum class Kind { FINGER, MOUSE, STYLUS, ERASER, UNKNOWN }
 
@@ -189,8 +190,7 @@ data class Touch(
 
     fun copyFrom(other: Touch) {
         this.id = other.id
-        this.x = other.x
-        this.y = other.y
+        this.p = other.p
         this.force = other.force
         this.status = other.status
         this.kind = other.kind
@@ -200,7 +200,7 @@ data class Touch(
     override fun hashCode(): Int = index
     override fun equals(other: Any?): Boolean = other is Touch && this.index == other.index
 
-    fun toStringNice() = "Touch[${id}][${status}](${x.niceStr},${y.niceStr})"
+    fun toStringNice() = "Touch[${id}][${status}](${p.x.niceStr},${p.y.niceStr})"
 }
 
 // On JS: each event contains the active down touches (ontouchend simply don't include the touch that has been removed)
@@ -266,10 +266,9 @@ class TouchBuilder {
         return new
     }
 
-    fun touch(id: Int, x: Double, y: Double, force: Double = 1.0, kind: Touch.Kind = Touch.Kind.FINGER, button: MouseButton = MouseButton.LEFT) {
+    fun touch(id: Int, p: Point, force: Float = 1f, kind: Touch.Kind = Touch.Kind.FINGER, button: MouseButton = MouseButton.LEFT) {
         val touch = new.getOrAllocTouchById(id)
-        touch.x = x
-        touch.y = y
+        touch.p = p
         touch.force = force
         touch.kind = kind
         touch.button = button
@@ -346,10 +345,9 @@ data class TouchEvent(
         return touch
     }
 
-    fun touch(id: Int, x: Double, y: Double, status: Touch.Status = Touch.Status.KEEP, force: Double = 1.0, kind: Touch.Kind = Touch.Kind.FINGER, button: MouseButton = MouseButton.LEFT) {
+    fun touch(id: Int, p: Point, status: Touch.Status = Touch.Status.KEEP, force: Float = 1f, kind: Touch.Kind = Touch.Kind.FINGER, button: MouseButton = MouseButton.LEFT) {
         val touch = getOrAllocTouchById(id)
-        touch.x = x
-        touch.y = y
+        touch.p = p
         touch.status = status
         touch.force = force
         touch.kind = kind
@@ -357,7 +355,7 @@ data class TouchEvent(
     }
 
     fun touch(touch: Touch) {
-        touch(touch.id, touch.x, touch.y, touch.status, touch.force, touch.kind, touch.button)
+        touch(touch.id, touch.p, touch.status, touch.force, touch.kind, touch.button)
     }
 
     fun copyFrom(other: TouchEvent) {

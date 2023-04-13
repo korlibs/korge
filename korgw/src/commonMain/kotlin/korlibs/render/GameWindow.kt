@@ -703,9 +703,9 @@ open class GameWindow :
     private val alt get() = pressing(Key.LEFT_ALT) || pressing(Key.RIGHT_ALT)
     private val meta get() = pressing(Key.META) || pressing(Key.LEFT_SUPER) || pressing(Key.RIGHT_SUPER)
     private var mouseButtons = 0
-    private val scrollDeltaX = 0.0
-    private val scrollDeltaY = 0.0
-    private val scrollDeltaZ = 0.0
+    private val scrollDeltaX = 0f
+    private val scrollDeltaY = 0f
+    private val scrollDeltaZ = 0f
     private val scaleCoords = false
 
     fun dispatchKeyEvent(type: KeyEvent.Type, id: Int, character: Char, key: Key, keyCode: Int, str: String? = null): Boolean {
@@ -774,7 +774,7 @@ open class GameWindow :
 
     fun dispatchMouseEvent(
         type: MouseEvent.Type, id: Int, x: Int, y: Int, button: MouseButton, buttons: Int = this.mouseButtons,
-        scrollDeltaX: Double = this.scrollDeltaX, scrollDeltaY: Double = this.scrollDeltaY, scrollDeltaZ: Double = this.scrollDeltaZ,
+        scrollDeltaX: Float = this.scrollDeltaX, scrollDeltaY: Float = this.scrollDeltaY, scrollDeltaZ: Float = this.scrollDeltaZ,
         isShiftDown: Boolean = this.shift, isCtrlDown: Boolean = this.ctrl, isAltDown: Boolean = this.alt, isMetaDown: Boolean = this.meta,
         scaleCoords: Boolean = this.scaleCoords, simulateClickOnUp: Boolean = false,
         scrollDeltaMode: MouseEvent.ScrollDeltaMode = MouseEvent.ScrollDeltaMode.LINE
@@ -810,7 +810,7 @@ open class GameWindow :
     fun dispatchTouchEventStartStart() = touchBuilder.startFrame(TouchEvent.Type.START)
     fun dispatchTouchEventStartMove() = touchBuilder.startFrame(TouchEvent.Type.MOVE)
     fun dispatchTouchEventStartEnd() = touchBuilder.startFrame(TouchEvent.Type.END)
-    fun dispatchTouchEventAddTouch(id: Int, x: Double, y: Double) = touchBuilder.touch(id, x, y)
+    fun dispatchTouchEventAddTouch(id: Int, x: Float, y: Float) = touchBuilder.touch(id, Point(x, y))
     fun dispatchTouchEventEnd() = dispatch(touchBuilder.endFrame().reset())
 
     // @TODO: Is this used?

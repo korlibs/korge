@@ -15,7 +15,7 @@ class GestureEvents(val view: BaseView) {
     val swipe = Signal<GestureEvents>()
     val smartZoom = Signal<GestureEvents>()
     val id: Int get() = lastEvent.id
-    val amount: Double get() = lastEvent.amount
+    val amount: Float get() = lastEvent.amount
 
     lateinit var views: Views
         private set

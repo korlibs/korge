@@ -94,7 +94,7 @@ class MyNSOpenGLView(
         defaultGameWindow.dispatch(gestureEvent.also {
             it.type = GestureEvent.Type.MAGNIFY
             it.id = 0
-            it.amount = event.magnification()
+            it.amount = event.magnification().toFloat()
         })
         //println("magnifyWithEvent:event=$event")
         super.magnifyWithEvent(event)
@@ -105,7 +105,7 @@ class MyNSOpenGLView(
         defaultGameWindow.dispatch(gestureEvent.also {
             it.type = GestureEvent.Type.ROTATE
             it.id = 0
-            it.amount = event.rotation.toDouble()
+            it.amount = event.rotation.toFloat()
         })
 
         super.rotateWithEvent(event)
@@ -115,8 +115,8 @@ class MyNSOpenGLView(
         defaultGameWindow.dispatch(gestureEvent.also {
             it.type = GestureEvent.Type.SWIPE
             it.id = 0
-            it.amountX = event.deltaX.toDouble()
-            it.amountY = event.deltaY.toDouble()
+            it.amountX = event.deltaX.toFloat()
+            it.amountY = event.deltaY.toFloat()
         })
         //println("swipeWithEvent:event=$event")
         super.swipeWithEvent(event)
@@ -126,7 +126,7 @@ class MyNSOpenGLView(
         defaultGameWindow.dispatch(gestureEvent.also {
             it.type = GestureEvent.Type.SMART_MAGNIFY
             it.id = 0
-            it.amount = 1.0
+            it.amount = 1f
         })
         //println("smartMagnifyWithEvent:event=$event")
         super.smartMagnifyWithEvent(event)
@@ -174,7 +174,7 @@ class MyNSOpenGLView(
                 MouseEvent.Type.SCROLL -> 0
                 else -> buttonMask(e.buttonMask.toInt())
             },
-            scrollDeltaX = -e.deltaX, scrollDeltaY = -e.deltaY, scrollDeltaZ = -e.deltaZ,
+            scrollDeltaX = -e.deltaX.toFloat(), scrollDeltaY = -e.deltaY.toFloat(), scrollDeltaZ = -e.deltaZ.toFloat(),
             isShiftDown = e.shift, isCtrlDown = e.ctrl, isAltDown = e.alt, isMetaDown = e.meta,
             scrollDeltaMode = MouseEvent.ScrollDeltaMode.PIXEL
         )
@@ -433,8 +433,8 @@ class MyDefaultGameWindow : GameWindow() {
     }
 
     @Suppress("RemoveRedundantCallsOfConversionMethods")
-    internal val backingScaleFactor: Double get() = window.backingScaleFactor.toDouble()
-    internal var lastBackingScaleFactor = 0.0
+    internal val backingScaleFactor: Float get() = window.backingScaleFactor.toFloat()
+    internal var lastBackingScaleFactor: Float = 0f
 
     val darwinGamePad = DarwinGameControllerNative()
 

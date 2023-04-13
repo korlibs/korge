@@ -72,7 +72,7 @@ class DarwinGameControllerNative {
             info.connected = true
             info.name = controller.productCategory
             info.index = index // 0 - first player, 1 - second player...
-            info.batteryLevel = controller.battery?.batteryLevel?.toDouble() ?: 1.0
+            info.batteryLevel = controller.battery?.batteryLevel?.toFloat() ?: 1f
             info.batteryStatus = when (controller.battery?.batteryState) {
                 GCDeviceBatteryStateCharging -> GamepadInfo.BatteryStatus.CHARGING
                 GCDeviceBatteryStateDischarging -> GamepadInfo.BatteryStatus.DISCHARGING

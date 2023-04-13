@@ -310,10 +310,10 @@ class MyGLKViewController(val entry: suspend () -> Unit)  : GLKViewController(nu
 
             //printf(" - %d: %d, %d\n", (int)num.intValue, (int)point.x, (int)point.y);
 
-            val pointX = point.useContents { x.toDouble() }
-            val pointY = point.useContents { y.toDouble() }
-            val px = pointX * this.view.contentScaleFactor
-            val py = pointY * this.view.contentScaleFactor
+            val pointX = point.useContents { x.toFloat() }
+            val pointY = point.useContents { y.toFloat() }
+            val px = pointX * this.view.contentScaleFactor.toFloat()
+            val py = pointY * this.view.contentScaleFactor.toFloat()
             this.gameWindow.dispatchTouchEventAddTouch(uid, px, py)
 
             //println(" - TOUCH. index=$index, uid=$uid, px=$px, py=$py")

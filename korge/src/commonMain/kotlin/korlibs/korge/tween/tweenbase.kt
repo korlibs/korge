@@ -74,6 +74,15 @@ fun V2Lazy(callback: () -> V2<*>): V2<Unit> {
     }
 }
 
+fun KMutableProperty0<Point>.incr(delta: Vector2): V2<Point> {
+    var start: Point = Point.ZERO
+    val value: Point = Point.ZERO
+    return V2(this, start, value, { it, _, _ ->
+        Vector2(start.x + delta.x, start.y + delta.y)
+    }, includeStart = false, initialization = {
+        start = this.get()
+    })
+}
 fun KMutableProperty0<MPoint>.incr(dx: Double, dy: Double): V2<MPoint> {
     val start: MPoint = MPoint(0, 0)
     val value: MPoint = MPoint(0, 0)

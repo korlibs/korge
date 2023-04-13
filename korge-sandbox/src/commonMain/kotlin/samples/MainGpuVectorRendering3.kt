@@ -17,7 +17,7 @@ import korlibs.math.geom.vector.*
 
 class MainGpuVectorRendering3 : Scene() {
     override suspend fun SContainer.sceneMain() {
-        fun Container.debugPath(desc: String, pos: MPoint, strokeInfo: StrokeInfo, path: VectorPath) {
+        fun Container.debugPath(desc: String, pos: Point, strokeInfo: StrokeInfo, path: VectorPath) {
             val pointsList = path.toCurves().toStrokePointsList(strokeInfo, generateDebug = true, mode = StrokePointsMode.NON_SCALABLE_POS)
 
             gpuShapeView({
@@ -32,7 +32,7 @@ class MainGpuVectorRendering3 : Scene() {
             }.xy(pos)
 
             //debugVertexView(pointsList.map { it.vector }, type = AGDrawType.POINTS)
-            text(desc, alignment = TextAlignment.BASELINE_LEFT).xy(pos - MPoint(0, 8))
+            text(desc, alignment = TextAlignment.BASELINE_LEFT).xy(pos - Point.ZERO)
 
             debugVertexView(path.getPoints2List(), color = Colors.YELLOWGREEN, type = AGDrawType.LINE_STRIP).xy(pos).apply {
                 keys {
@@ -55,9 +55,7 @@ class MainGpuVectorRendering3 : Scene() {
         ).withIndex()) {
             val sx = index * 430 + 15
 
-            fun getPos(x: Int, y: Int): MPoint {
-                return MPoint(sx + x * 120, 50 + y * 130)
-            }
+            fun getPos(x: Int, y: Int): Point = Point(sx + x * 120, 50 + y * 130)
 
             text("${strokeInfo.join}", color = Colors.YELLOWGREEN).xy(sx, 10)
             debugPath("Lines CW", getPos(0, 0), strokeInfo, buildVectorPath {

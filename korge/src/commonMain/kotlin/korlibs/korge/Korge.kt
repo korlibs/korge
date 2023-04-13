@@ -243,8 +243,8 @@ object KorgeRunner {
 
         val input = views.input
         val ag = views.ag
-        val downPos = MPoint()
-        val upPos = MPoint()
+        var downPos = Point.ZERO
+        var upPos = Point.ZERO
         var downTime = DateTime.EPOCH
         var moveTime = DateTime.EPOCH
         var upTime = DateTime.EPOCH
@@ -252,15 +252,13 @@ object KorgeRunner {
         val mouseTouchId = -1
         views.forceRenderEveryFrame = forceRenderEveryFrame
 
-        val tempXY: MPoint = MPoint()
-
         // devicePixelRatio might change at runtime by changing the resolution or changing the screen of the window
-        fun getRealXY(x: Double, y: Double, scaleCoords: Boolean): Point {
+        fun getRealXY(x: Float, y: Float, scaleCoords: Boolean): Point {
             return views.windowToGlobalCoords(Point(x, y))
         }
 
-        fun getRealX(x: Double, scaleCoords: Boolean): Double = if (scaleCoords) x * views.devicePixelRatio else x
-        fun getRealY(y: Double, scaleCoords: Boolean): Double = if (scaleCoords) y * views.devicePixelRatio else y
+        fun getRealX(x: Float, scaleCoords: Boolean): Float = if (scaleCoords) x * views.devicePixelRatio else x
+        fun getRealY(y: Float, scaleCoords: Boolean): Float = if (scaleCoords) y * views.devicePixelRatio else y
 
         /*
         fun updateTouch(id: Int, x: Double, y: Double, start: Boolean, end: Boolean) {
@@ -287,7 +285,7 @@ object KorgeRunner {
             input.setMouseGlobalPos(p, down = false)
             input.setMouseGlobalPos(p, down = true)
             views.mouseUpdated()
-            downPos.copyFrom(input.mousePos)
+            downPos = input.mousePos
             downTime = DateTime.now()
             input.mouseInside = true
         }
@@ -297,7 +295,7 @@ object KorgeRunner {
             input.toggleButton(button, false)
             input.setMouseGlobalPos(p, down = false)
             views.mouseUpdated()
-            upPos.copyFrom(views.input.mousePos)
+            upPos = views.input.mousePos
         }
 
         fun mouseMove(type: String, p: Point, inside: Boolean) {
@@ -329,7 +327,7 @@ object KorgeRunner {
             mouseTouchEvent.currentTime = DateTime.now()
             mouseTouchEvent.scaleCoords = false
             mouseTouchEvent.startFrame(type)
-            mouseTouchEvent.touch(button.id, p.xD, p.yD, status, kind = Touch.Kind.MOUSE, button = button)
+            mouseTouchEvent.touch(button.id, p, status, kind = Touch.Kind.MOUSE, button = button)
             mouseTouchEvent.endFrame()
             views.dispatch(mouseTouchEvent)
         }
@@ -337,7 +335,7 @@ object KorgeRunner {
         eventDispatcher.onEvents(*MouseEvent.Type.ALL) { e ->
             //println("MOUSE: $e")
             Korge.logger.trace { "eventDispatcher.addEventListener<MouseEvent>:$e" }
-            val p = getRealXY(e.x.toDouble(), e.y.toDouble(), e.scaleCoords)
+            val p = getRealXY(e.x.toFloat(), e.y.toFloat(), e.scaleCoords)
             when (e.type) {
                 MouseEvent.Type.DOWN -> {
                     mouseDown("mouseDown", p, e.button)
@@ -402,9 +400,7 @@ object KorgeRunner {
             input.updateTouches(e)
             val ee = input.touch
             for (t in ee.touches) {
-                val (x, y) = getRealXY(t.x, t.y, e.scaleCoords)
-                t.x = x.toDouble()
-                t.y = y.toDouble()
+                t.p = getRealXY(t.x, t.y, e.scaleCoords)
             }
             views.dispatch(ee)
 

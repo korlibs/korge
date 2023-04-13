@@ -291,12 +291,9 @@ class RenderContext2D(
     }
 
     @PublishedApi internal fun getTransformedScissor(scissor: AGScissor): AGScissor {
-        val left = m.transformX(scissor.left, scissor.top)
-        val top = m.transformY(scissor.left, scissor.top)
-        val right = m.transformX(scissor.right, scissor.bottom)
-        val bottom = m.transformY(scissor.right, scissor.bottom)
-
-        return AGScissor.fromBounds(left, top, right, bottom)
+        val tl = m.transform(Point(scissor.left, scissor.top))
+        val br = m.transform(Point(scissor.right, scissor.bottom))
+        return AGScissor.fromBounds(tl.x, tl.y, br.x, br.y)
     }
 }
 

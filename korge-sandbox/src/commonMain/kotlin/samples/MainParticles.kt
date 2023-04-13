@@ -20,7 +20,7 @@ class MainParticles : Scene() {
             //val particlesView = particleEmitter(emitter).position(0.0, 0.0)
 
             addUpdater {
-                particlesView.emitterPos = localMousePos(views).mutable
+                particlesView.emitterPos = localMousePos(views)
             }
 
             //delay(4.seconds)

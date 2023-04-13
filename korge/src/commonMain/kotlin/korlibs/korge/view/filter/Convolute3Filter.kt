@@ -15,7 +15,7 @@ class Convolute3Filter(
     /** 3x3 matrix representing a convolution kernel */
     var kernel: Matrix4,
     /** Distance between the origin pixel for sampling for edges */
-    dist: Double = 1.0,
+    dist: Float = 1f,
     applyAlpha: Boolean = false
 ) : ShaderFilter() {
     object ConvoluteUB : UniformBlock(fixedLocation = 5) {
@@ -98,7 +98,7 @@ class Convolute3Filter(
     var weights: Matrix4 = kernel
     /** Distance between the origin pixel for sampling for edges */
     @ViewProperty
-    var dist: Double = dist
+    var dist: Float = dist
     /** Whether or not kernel must be applied to the alpha component */
     @ViewProperty
     var applyAlpha: Boolean = applyAlpha

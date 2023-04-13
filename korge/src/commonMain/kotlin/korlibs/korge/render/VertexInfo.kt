@@ -4,7 +4,7 @@ import korlibs.memory.*
 import korlibs.image.color.Colors
 import korlibs.image.color.RGBA
 import korlibs.io.util.niceStr
-import korlibs.math.geom.MPoint
+import korlibs.math.geom.*
 
 data class VertexInfo(
     var x: Float = 0f,
@@ -15,8 +15,8 @@ data class VertexInfo(
 ) {
     var texWidth: Int = -1
     var texHeight: Int = -1
-    val xy get() = MPoint(x, y)
-    val uv get() = MPoint(u, v)
+    val xy get() = Point(x, y)
+    val uv get() = Point(u, v)
     fun read(buffer: Buffer, n: Int) {
         val index = n * 6
         this.x = buffer.getFloat32(index + 0)

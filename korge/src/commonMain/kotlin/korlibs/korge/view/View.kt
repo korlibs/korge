@@ -272,12 +272,6 @@ abstract class View internal constructor(
         }
     }
 
-    @Deprecated("Use pos instead")
-    fun getPosition(out: MPoint = MPoint()): MPoint {
-        out.copyFrom(out)
-        return out
-    }
-
     @ViewProperty(min = -1000.0, max = +1000.0, name = "position")
     var pos: Point
         get() = Point(x, y)
@@ -1356,13 +1350,13 @@ abstract class View internal constructor(
         this@apply.copyPropsFrom(this@View)
     }
 
-    fun globalLocalBoundsPointRatio(anchor: Anchor, out: MPoint = MPoint()): MPoint = globalLocalBoundsPointRatio(anchor.doubleX, anchor.doubleY, out)
+    fun globalLocalBoundsPointRatio(anchor: Anchor): Point = globalLocalBoundsPointRatio(anchor.doubleX, anchor.doubleY)
 
-    fun globalLocalBoundsPointRatio(ratioX: Double, ratioY: Double, out: MPoint = MPoint()): MPoint {
+    fun globalLocalBoundsPointRatio(ratioX: Double, ratioY: Double): Point {
         val bounds = getLocalBounds()
         val x = ratioX.toRatio().interpolate(bounds.left, bounds.right)
         val y = ratioY.toRatio().interpolate(bounds.top, bounds.bottom)
-        return out.setTo(localToGlobal(Point(x, y)))
+        return localToGlobal(Point(x, y))
     }
 
     fun getGlobalMatrixWithAnchor(): Matrix {
