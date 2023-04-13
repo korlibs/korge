@@ -110,8 +110,8 @@ class NativeDecodingTest {
         val x = 8
         val y = 8
         val color = bmp.getRgbaRaw(x, y)
-        val colorPremult = Colors["#7f00007f"]
-        val colorStraight = Colors["#ff00007f"]
+        val colorPremult = Colors["#80000080"]
+        val colorStraight = Colors["#ff000080"]
         if (bmp.premultiplied) {
             assertEquals(colorPremult to true, color to bmp.premultiplied)
         } else {

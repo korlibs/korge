@@ -610,7 +610,6 @@ inline class AGScissor(val data: Short4Pack) {
     //constructor(xy: Int, wh: Int) : this(short4PackOf(xy.toShort(), (xy ushr 16).toShort(), wh.toShort(), (wh ushr 16).toShort()))
     constructor(x: Int, y: Int, width: Int, height: Int) : this(short4PackOf(x.toShortClamped(), y.toShortClamped(), (x + width).toShortClamped(), (y + height).toShortClamped()))
     constructor(x: Float, y: Float, width: Float, height: Float) : this(x.toIntRound(), y.toIntRound(), width.toIntRound(), height.toIntRound())
-    constructor(x: Double, y: Double, width: Double, height: Double) : this(x.toIntRound(), y.toIntRound(), width.toIntRound(), height.toIntRound())
     constructor(rect: Rectangle) : this(rect.x.toIntRound(), rect.y.toIntRound(), rect.width.toIntRound(), rect.height.toIntRound())
     //constructor(x: Double, y: Double, width: Double, height: Double) : this(x.toInt(), y.toInt(), width.toInt(), height.toInt())
 
@@ -635,7 +634,7 @@ inline class AGScissor(val data: Short4Pack) {
 
     companion object {
         fun fromBounds(left: Int, top: Int, right: Int, bottom: Int): AGScissor = AGScissor(left, top, right - left, bottom - top)
-        fun fromBounds(left: Double, top: Double, right: Double, bottom: Double): AGScissor = AGScissor(left, top, right - left, bottom - top)
+        fun fromBounds(left: Float, top: Float, right: Float, bottom: Float): AGScissor = AGScissor(left, top, right - left, bottom - top)
 
         val EMPTY = AGScissor(0, 0, 0, 0)
         val FULL = AGScissor.fromBounds(Int.MIN_VALUE, Int.MIN_VALUE, Int.MAX_VALUE, Int.MAX_VALUE)
