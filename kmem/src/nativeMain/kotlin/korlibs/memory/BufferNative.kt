@@ -1,11 +1,21 @@
 package korlibs.memory
 
 import kotlinx.cinterop.*
+import platform.posix.*
 
 actual class Buffer(val data: ByteArray, val offset: Int, val size: Int, dummy: Unit) {
     val end: Int = offset + size
     override fun toString(): String = NBuffer_toString(this)
     actual companion object {
+        actual fun equals(src: Buffer, srcPosBytes: Int, dst: Buffer, dstPosBytes: Int, sizeInBytes: Int): Boolean {
+            check(srcPosBytes + sizeInBytes <= src.sizeInBytes)
+            check(dstPosBytes + sizeInBytes <= dst.sizeInBytes)
+            src.data.usePinned { srcPin ->
+                dst.data.usePinned { dstPin ->
+                    return memcmp(srcPin.startAddressOf + srcPosBytes, dstPin.startAddressOf + dstPosBytes, sizeInBytes.convert()) == 0
+                }
+            }
+        }
         actual fun copy(src: Buffer, srcPosBytes: Int, dst: Buffer, dstPosBytes: Int, sizeInBytes: Int) {
             arraycopy(
                 src.data, src.offset + srcPosBytes,

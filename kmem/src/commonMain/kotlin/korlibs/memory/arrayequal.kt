@@ -22,10 +22,7 @@ public fun arrayfill(array: Buffer, value: Int, start: Int = 0, end: Int = array
 
 fun <T> arrayequal(src: Array<T>, srcPos: Int, dst: Array<T>, dstPos: Int, size: Int): Boolean = _arrayequal(srcPos, dstPos, size) { s, d -> src[s] == dst[d]}
 fun <T> arrayequal(src: List<T>, srcPos: Int, dst: List<T>, dstPos: Int, size: Int): Boolean = _arrayequal(srcPos, dstPos, size) { s, d -> src[s] == dst[d]}
-fun arrayequal(src: Buffer, srcPos: Int, dst: Buffer, dstPos: Int, size: Int): Boolean = _arrayequal(srcPos, dstPos, size) { s, d ->
-    //println("src.getInt8($s) == dst.getInt8($d) : ${src.getInt8(s)} == ${dst.getInt8(d)}")
-    src.getInt8(s) == dst.getInt8(d)
-}
+fun arrayequal(src: Buffer, srcPos: Int, dst: Buffer, dstPos: Int, size: Int): Boolean = Buffer.equals(src, srcPos, dst, dstPos, size)
 fun arrayequal(src: BooleanArray, srcPos: Int, dst: BooleanArray, dstPos: Int, size: Int): Boolean = _arrayequal(srcPos, dstPos, size) { s, d -> src[s] == dst[d]}
 fun arrayequal(src: ByteArray, srcPos: Int, dst: ByteArray, dstPos: Int, size: Int): Boolean = _arrayequal(srcPos, dstPos, size) { s, d -> src[s] == dst[d]}
 fun arrayequal(src: ShortArray, srcPos: Int, dst: ShortArray, dstPos: Int, size: Int): Boolean = _arrayequal(srcPos, dstPos, size) { s, d -> src[s] == dst[d]}

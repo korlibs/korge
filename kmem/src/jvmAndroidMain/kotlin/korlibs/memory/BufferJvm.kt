@@ -1,7 +1,6 @@
 package korlibs.memory
 
 import java.nio.*
-import java.util.*
 
 actual class Buffer(val buffer: ByteBuffer, val offset: Int, val size: Int) {
     fun slicedBuffer(roffset: Int = 0, rsize: Int = this.size - roffset): ByteBuffer {
@@ -32,6 +31,8 @@ actual class Buffer(val buffer: ByteBuffer, val offset: Int, val size: Int) {
     }
 
     actual companion object {
+        actual fun equals(src: Buffer, srcPosBytes: Int, dst: Buffer, dstPosBytes: Int, sizeInBytes: Int): Boolean =
+            src.slicedBuffer(srcPosBytes, sizeInBytes) == dst.slicedBuffer(dstPosBytes, sizeInBytes)
         actual fun copy(src: Buffer, srcPosBytes: Int, dst: Buffer, dstPosBytes: Int, sizeInBytes: Int) {
 
             //val srcBuf = src.buffer
