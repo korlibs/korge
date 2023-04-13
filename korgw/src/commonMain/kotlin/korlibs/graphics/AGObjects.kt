@@ -48,7 +48,11 @@ class AGBuffer : AGObject() {
     fun upload(data: ShortArray, offset: Int = 0, length: Int = data.size - offset): AGBuffer = upload(Int16Buffer(data, offset, length).buffer)
     fun upload(data: Buffer, offset: Int, length: Int = data.size - offset): AGBuffer = upload(data.sliceWithSize(offset, length))
     fun upload(data: Buffer): AGBuffer {
-        if (this.mem != null && this.mem!!.sizeInBytes == data.sizeInBytes && arrayequal(this.mem!!, 0, data, 0, data.sizeInBytes)) return this
+        //println(data.sizeInBytes)
+        // Only check small buffers
+        if (data.sizeInBytes < 1024) {
+            if (this.mem != null && this.mem!!.sizeInBytes == data.sizeInBytes && arrayequal(this.mem!!, 0, data, 0, data.sizeInBytes)) return this
+        }
         //println("New Data!")
         mem = data.clone()
         markAsDirty()
