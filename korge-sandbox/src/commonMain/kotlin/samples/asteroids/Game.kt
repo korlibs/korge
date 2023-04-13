@@ -6,6 +6,9 @@ import korlibs.image.font.*
 import korlibs.io.async.*
 import korlibs.korge.tween.*
 import korlibs.korge.view.*
+import korlibs.korge.view.align.alignTopToBottomOf
+import korlibs.korge.view.align.centerOnStage
+import korlibs.korge.view.align.centerXOnStage
 import korlibs.math.geom.*
 import korlibs.math.random.*
 import korlibs.time.*

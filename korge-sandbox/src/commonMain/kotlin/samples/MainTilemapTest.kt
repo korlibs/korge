@@ -9,6 +9,7 @@ import korlibs.io.util.*
 import korlibs.korge.input.*
 import korlibs.korge.scene.*
 import korlibs.korge.view.*
+import korlibs.korge.view.align.*
 import korlibs.korge.view.camera.*
 import korlibs.korge.view.tiles.*
 import korlibs.math.geom.*
