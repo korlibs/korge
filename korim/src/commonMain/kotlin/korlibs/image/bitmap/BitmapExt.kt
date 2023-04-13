@@ -63,7 +63,7 @@ fun Bitmap.resized(out: Bitmap, scale: ScaleMode, anchor: Anchor): Bitmap {
     val width = out.width
     val height = out.height
     out.context2d(antialiased = true) {
-        val rect = Rectangle(0, 0, width, height).place(bmp.width.toDouble(), bmp.height.toDouble(), anchor, scale)
+        val rect = Rectangle(0, 0, width, height).place(bmp.size.toFloat(), anchor, scale)
         drawImage(bmp, rect.position, rect.size)
     }
     return out
@@ -75,6 +75,6 @@ fun Bitmap.resized(width: Int, height: Int, scale: ScaleMode, anchor: Anchor, na
 
 fun Bitmap.resizedUpTo(width: Int, height: Int, native: Boolean = true): Bitmap {
     val rect = Rectangle(0, 0, width, height)
-        .place(this.width.toDouble(), this.height.toDouble(), Anchor.TOP_LEFT, ScaleMode.FIT)
+        .place(this.size.toFloat(), Anchor.TOP_LEFT, ScaleMode.FIT)
     return resized(rect.width.toInt(), rect.height.toInt(), ScaleMode.FILL, Anchor.TOP_LEFT, native)
 }
