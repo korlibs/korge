@@ -25,13 +25,13 @@ class GamePadEvents(val view: View) {
 		stick { e -> launchImmediately(coroutineContext) { callback(e.gamepad, e.stick, e.x, e.y) } }
 	}
 
-	fun button(callback: suspend (playerId: Int, pressed: Boolean, button: GameButton, value: Double) -> Unit) {
+	fun button(callback: suspend (playerId: Int, pressed: Boolean, button: GameButton, value: Float) -> Unit) {
 		button { e ->
             launchImmediately(coroutineContext) { callback(e.gamepad, e.type == GamePadButtonEvent.Type.DOWN, e.button, e.value) }
 		}
 	}
 
-	fun button(playerId: Int, callback: suspend (pressed: Boolean, button: GameButton, value: Double) -> Unit) {
+	fun button(playerId: Int, callback: suspend (pressed: Boolean, button: GameButton, value: Float) -> Unit) {
 		button { e ->
 			if (e.gamepad == playerId) launchImmediately(coroutineContext) { callback(e.type == GamePadButtonEvent.Type.DOWN, e.button, e.value) }
 		}
@@ -86,7 +86,7 @@ class GamePadEvents(val view: View) {
                         //println("CHANGED: button=$button: ${gamepad[button]}")
                         button(buttonEvent.apply {
                             this.gamepad = gamepad.index
-                            this.type = if (gamepad[button] != 0.0) GamePadButtonEvent.Type.DOWN else GamePadButtonEvent.Type.UP
+                            this.type = if (gamepad[button] != 0f) GamePadButtonEvent.Type.DOWN else GamePadButtonEvent.Type.UP
                             this.button = button
                             this.value = gamepad[button]
                         })
@@ -139,7 +139,7 @@ data class GamePadButtonEvent @JvmOverloads constructor(
     override var type: Type = Type.DOWN,
     var gamepad: Int = 0,
     var button: GameButton = GameButton.BUTTON_SOUTH,
-    var value: Double = 0.0
+    var value: Float = 0f
 ) : Event(), TEvent<GamePadButtonEvent> {
     //companion object : EventType<GamePadButtonEvent>
 

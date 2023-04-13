@@ -343,25 +343,25 @@ class MouseEvents(val view: View) : Extra by Extra.Mixin(), Closeable {
     val buttons: Int get() = lastEvent.buttons
 
     @Deprecated("Use other variants")
-    val scrollDeltaX: Double get() = lastEvent.scrollDeltaX
+    val scrollDeltaX: Float get() = lastEvent.scrollDeltaX
 
     @Deprecated("Use other variants")
-    val scrollDeltaY: Double get() = lastEvent.scrollDeltaY
+    val scrollDeltaY: Float get() = lastEvent.scrollDeltaY
 
     @Deprecated("Use other variants")
-    val scrollDeltaZ: Double get() = lastEvent.scrollDeltaZ
+    val scrollDeltaZ: Float get() = lastEvent.scrollDeltaZ
 
-    val scrollDeltaXPixels: Double get() = lastEvent.scrollDeltaXPixels
-    val scrollDeltaYPixels: Double get() = lastEvent.scrollDeltaYPixels
-    val scrollDeltaZPixels: Double get() = lastEvent.scrollDeltaZPixels
+    val scrollDeltaXPixels: Float get() = lastEvent.scrollDeltaXPixels
+    val scrollDeltaYPixels: Float get() = lastEvent.scrollDeltaYPixels
+    val scrollDeltaZPixels: Float get() = lastEvent.scrollDeltaZPixels
 
-    val scrollDeltaXLines: Double get() = lastEvent.scrollDeltaXLines
-    val scrollDeltaYLines: Double get() = lastEvent.scrollDeltaYLines
-    val scrollDeltaZLines: Double get() = lastEvent.scrollDeltaZLines
+    val scrollDeltaXLines: Float get() = lastEvent.scrollDeltaXLines
+    val scrollDeltaYLines: Float get() = lastEvent.scrollDeltaYLines
+    val scrollDeltaZLines: Float get() = lastEvent.scrollDeltaZLines
 
-    val scrollDeltaXPages: Double get() = lastEvent.scrollDeltaXPages
-    val scrollDeltaYPages: Double get() = lastEvent.scrollDeltaYPages
-    val scrollDeltaZPages: Double get() = lastEvent.scrollDeltaZPages
+    val scrollDeltaXPages: Float get() = lastEvent.scrollDeltaXPages
+    val scrollDeltaYPages: Float get() = lastEvent.scrollDeltaYPages
+    val scrollDeltaZPages: Float get() = lastEvent.scrollDeltaZPages
 
     val isShiftDown: Boolean get() = lastEvent.isShiftDown
     val isCtrlDown: Boolean get() = lastEvent.isCtrlDown

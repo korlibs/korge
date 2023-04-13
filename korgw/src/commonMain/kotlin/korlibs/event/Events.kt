@@ -37,10 +37,10 @@ interface EventType<T : BEvent>
 data class GestureEvent(
     override var type: Type = Type.MAGNIFY,
     var id: Int = 0,
-    var amountX: Double = 0.0,
-    var amountY: Double = 0.0,
+    var amountX: Float = 0f,
+    var amountY: Float = 0f,
 ) : Event(), TEvent<GestureEvent> {
-    var amount: Double
+    var amount: Float
         get() = amountX
         set(value) {
             amountX = value
@@ -71,11 +71,11 @@ data class MouseEvent(
     var button: MouseButton = MouseButton.NONE,
     var buttons: Int = 0,
     @Deprecated("Use scrollDeltaX variants")
-    var scrollDeltaX: Double = 0.0,
+    var scrollDeltaX: Float = 0f,
     @Deprecated("Use scrollDeltaY variants")
-    var scrollDeltaY: Double = 0.0,
+    var scrollDeltaY: Float = 0f,
     @Deprecated("Use scrollDeltaZ variants")
-    var scrollDeltaZ: Double = 0.0,
+    var scrollDeltaZ: Float = 0f,
     var isShiftDown: Boolean = false,
     var isCtrlDown: Boolean = false,
     var isAltDown: Boolean = false,
@@ -125,36 +125,36 @@ data class MouseEvent(
         this.scrollDeltaMode = other.scrollDeltaMode
     }
 
-    enum class ScrollDeltaMode(val scale: Double) {
-        PIXEL(1.0),
-        LINE(10.0),
-        PAGE(100.0);
+    enum class ScrollDeltaMode(val scale: Float) {
+        PIXEL(1f),
+        LINE(10f),
+        PAGE(100f);
 
-        fun convertTo(value: Double, target: ScrollDeltaMode): Double = value * (this.scale / target.scale)
+        fun convertTo(value: Float, target: ScrollDeltaMode): Float = value * (this.scale / target.scale)
     }
 
-    fun scrollDeltaX(mode: ScrollDeltaMode): Double = this.scrollDeltaMode.convertTo(this.scrollDeltaX, mode)
-    fun scrollDeltaY(mode: ScrollDeltaMode): Double = this.scrollDeltaMode.convertTo(this.scrollDeltaY, mode)
-    fun scrollDeltaZ(mode: ScrollDeltaMode): Double = this.scrollDeltaMode.convertTo(this.scrollDeltaZ, mode)
+    fun scrollDeltaX(mode: ScrollDeltaMode): Float = this.scrollDeltaMode.convertTo(this.scrollDeltaX, mode)
+    fun scrollDeltaY(mode: ScrollDeltaMode): Float = this.scrollDeltaMode.convertTo(this.scrollDeltaY, mode)
+    fun scrollDeltaZ(mode: ScrollDeltaMode): Float = this.scrollDeltaMode.convertTo(this.scrollDeltaZ, mode)
 
-    fun setScrollDelta(mode: ScrollDeltaMode, x: Double, y: Double, z: Double) {
+    fun setScrollDelta(mode: ScrollDeltaMode, x: Float, y: Float, z: Float) {
         this.scrollDeltaMode = mode
         this.scrollDeltaX = x
         this.scrollDeltaY = y
         this.scrollDeltaZ = z
     }
 
-    inline val scrollDeltaXPixels: Double get() = scrollDeltaX(ScrollDeltaMode.PIXEL)
-    inline val scrollDeltaYPixels: Double get() = scrollDeltaY(ScrollDeltaMode.PIXEL)
-    inline val scrollDeltaZPixels: Double get() = scrollDeltaZ(ScrollDeltaMode.PIXEL)
+    inline val scrollDeltaXPixels: Float get() = scrollDeltaX(ScrollDeltaMode.PIXEL)
+    inline val scrollDeltaYPixels: Float get() = scrollDeltaY(ScrollDeltaMode.PIXEL)
+    inline val scrollDeltaZPixels: Float get() = scrollDeltaZ(ScrollDeltaMode.PIXEL)
 
-    inline val scrollDeltaXLines: Double get() = scrollDeltaX(ScrollDeltaMode.LINE)
-    inline val scrollDeltaYLines: Double get() = scrollDeltaY(ScrollDeltaMode.LINE)
-    inline val scrollDeltaZLines: Double get() = scrollDeltaZ(ScrollDeltaMode.LINE)
+    inline val scrollDeltaXLines: Float get() = scrollDeltaX(ScrollDeltaMode.LINE)
+    inline val scrollDeltaYLines: Float get() = scrollDeltaY(ScrollDeltaMode.LINE)
+    inline val scrollDeltaZLines: Float get() = scrollDeltaZ(ScrollDeltaMode.LINE)
 
-    inline val scrollDeltaXPages: Double get() = scrollDeltaX(ScrollDeltaMode.PAGE)
-    inline val scrollDeltaYPages: Double get() = scrollDeltaY(ScrollDeltaMode.PAGE)
-    inline val scrollDeltaZPages: Double get() = scrollDeltaZ(ScrollDeltaMode.PAGE)
+    inline val scrollDeltaXPages: Float get() = scrollDeltaX(ScrollDeltaMode.PAGE)
+    inline val scrollDeltaYPages: Float get() = scrollDeltaY(ScrollDeltaMode.PAGE)
+    inline val scrollDeltaZPages: Float get() = scrollDeltaZ(ScrollDeltaMode.PAGE)
 
     var requestLock: () -> Unit = { }
 }

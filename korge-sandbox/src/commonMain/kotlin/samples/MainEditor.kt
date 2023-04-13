@@ -101,7 +101,7 @@ class MainEditor : Scene() {
         uiWindow("Properties", Size(300f, 100f)) {
             //it.isCloseable = false
             it.container.mobileBehaviour = false
-            it.container.overflowRate = 0.0
+            it.container.overflowRate = 0f
             uiVerticalStack(300f, padding = 4f) {
                 uiText("Properties").styles { textColor = Colors.RED }
                 uiPropertyNumberRow("Alpha", *UIEditableNumberPropsList(solidRect::alphaF))

@@ -562,7 +562,8 @@ data class Program(val vertex: VertexShader, val fragment: FragmentShader, val n
             Func("refract", a, b, c)
 
         val Int.lit: IntLiteral get() = IntLiteral(this)
-        val Double.lit: FloatLiteral get() = FloatLiteral(this.toFloat())
+        @Deprecated("", ReplaceWith("this.toFloat().lit"))
+        val Double.lit: FloatLiteral get() = this.toFloat().lit
         val Float.lit: FloatLiteral get() = FloatLiteral(this)
         val Boolean.lit: BoolLiteral get() = BoolLiteral(this)
         //val Number.lit: Operand get() = this // @TODO: With Kotlin.JS you cannot differentiate Int, Float, Double with 'is'. Since it generates typeof $receiver === 'number' for all of them

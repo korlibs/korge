@@ -8,24 +8,24 @@ class ScrollDeltaTest {
     fun test() {
         MouseEvent().apply {
             scrollDeltaMode = MouseEvent.ScrollDeltaMode.LINE
-            scrollDeltaY = 10.0
-            assertEquals(100.0, scrollDeltaYPixels)
-            assertEquals(10.0, scrollDeltaYLines)
-            assertEquals(1.0, scrollDeltaYPages)
+            scrollDeltaY = 10f
+            assertEquals(100f, scrollDeltaYPixels)
+            assertEquals(10f, scrollDeltaYLines)
+            assertEquals(1f, scrollDeltaYPages)
         }
         MouseEvent().apply {
             scrollDeltaMode = MouseEvent.ScrollDeltaMode.PIXEL
-            scrollDeltaY = 100.0
-            assertEquals(100.0, scrollDeltaYPixels)
-            assertEquals(10.0, scrollDeltaYLines)
-            assertEquals(1.0, scrollDeltaYPages)
+            scrollDeltaY = 100f
+            assertEquals(100f, scrollDeltaYPixels)
+            assertEquals(10f, scrollDeltaYLines)
+            assertEquals(1f, scrollDeltaYPages)
         }
         MouseEvent().apply {
             scrollDeltaMode = MouseEvent.ScrollDeltaMode.PAGE
-            scrollDeltaY = 1.0
-            assertEquals(100.0, scrollDeltaYPixels)
-            assertEquals(10.0, scrollDeltaYLines)
-            assertEquals(1.0, scrollDeltaYPages)
+            scrollDeltaY = 1f
+            assertEquals(100f, scrollDeltaYPixels)
+            assertEquals(10f, scrollDeltaYLines)
+            assertEquals(1f, scrollDeltaYPages)
         }
     }
 }

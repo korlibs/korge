@@ -428,7 +428,7 @@ abstract class AGAwtBase(val config: AGConfig = AGConfig(), val glDecorator: (Km
     override val gl: KmlGl get() = _gl
     lateinit var glThread: Thread
     override var isGlAvailable: Boolean = false
-    override var devicePixelRatio: Double = 1.0
+    override var devicePixelRatio: Float = 1f
 
     fun setAutoDrawable(d: GLAutoDrawable) {
         glThread = Thread.currentThread()

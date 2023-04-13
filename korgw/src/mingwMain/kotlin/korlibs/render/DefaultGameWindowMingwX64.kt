@@ -451,7 +451,7 @@ class WindowsGameWindow : EventLoopGameWindow() {
 
     fun mouseEvent(
         etype: korlibs.event.MouseEvent.Type, ex: Int, ey: Int,
-        ebutton: Int, wParam: Int, scrollDeltaX: Double = 0.0, scrollDeltaY: Double = 0.0, scrollDeltaZ: Double = 0.0,
+        ebutton: Int, wParam: Int, scrollDeltaX: Float = 0f, scrollDeltaY: Float = 0f, scrollDeltaZ: Float = 0f,
         scrollDeltaMode: MouseEvent.ScrollDeltaMode = MouseEvent.ScrollDeltaMode.LINE
     ) {
         val lbutton = (wParam and MK_LBUTTON) != 0
@@ -573,13 +573,13 @@ fun WndProc(hWnd: HWND?, message: UINT, wParam: WPARAM, lParam: LPARAM): LRESULT
             // @TODO: and a negative value indicates a rotation backward.
             // @TODO: https://docs.microsoft.com/en-us/windows/win32/inputmsg/wm-pointerhwheel
             val intWheelDelta = wParam.toInt().extract16(16).toShort().toInt()
-            val scrollDelta = -intWheelDelta.toDouble() / (120 * 3)
+            val scrollDelta = -intWheelDelta.toFloat() / (120 * 3)
             // println("vertical=$vertical, scrollDelta=$scrollDelta, intWheelDelta=$intWheelDelta")
             windowsGameWindow.mouseEvent(
                 type, mouseX, mouseY, 8, wParam.toInt(),
-                scrollDeltaX = if (!vertical) scrollDelta else 0.0,
-                scrollDeltaY = if (vertical) scrollDelta else 0.0,
-                scrollDeltaZ = 0.0,
+                scrollDeltaX = if (!vertical) scrollDelta else 0f,
+                scrollDeltaY = if (vertical) scrollDelta else 0f,
+                scrollDeltaZ = 0f,
                 scrollDeltaMode = MouseEvent.ScrollDeltaMode.LINE
             )
         }

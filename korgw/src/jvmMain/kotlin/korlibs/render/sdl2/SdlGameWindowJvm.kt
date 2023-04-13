@@ -135,7 +135,7 @@ class SdlGameWindowJvm(checkGl: Boolean) : EventLoopGameWindow() {
                     MouseEvent.Type.MOVE, 0,
                     event.motion.x, event.motion.y,
                     MouseButton.NONE, 0,
-                    0.0, 0.0, 0.0,
+                    0f, 0f, 0f,
                     isShiftDown = false, isCtrlDown = false, isAltDown = false, isMetaDown = false,
                     scaleCoords = false, simulateClickOnUp = false
                 )
@@ -158,7 +158,7 @@ class SdlGameWindowJvm(checkGl: Boolean) : EventLoopGameWindow() {
                     evType, 0,
                     event.button.x, event.button.y,
                     button, 0,
-                    0.0, 0.0, 0.0,
+                    0f, 0f, 0f,
                     isShiftDown = false, isCtrlDown = false, isAltDown = false, isMetaDown = false,
                     scaleCoords = false, simulateClickOnUp = true
                 )
@@ -168,9 +168,9 @@ class SdlGameWindowJvm(checkGl: Boolean) : EventLoopGameWindow() {
                     MouseEvent.Type.SCROLL, 0,
                     lastMouseX, lastMouseY,
                     MouseButton.BUTTON_WHEEL, 0,
-                    event.wheel.x.toDouble(),
-                    event.wheel.y.toDouble(),
-                    0.0,
+                    event.wheel.x.toFloat(),
+                    event.wheel.y.toFloat(),
+                    0f,
                     isShiftDown = false, isCtrlDown = false, isAltDown = false, isMetaDown = false,
                     scaleCoords = false, simulateClickOnUp = true
                 )

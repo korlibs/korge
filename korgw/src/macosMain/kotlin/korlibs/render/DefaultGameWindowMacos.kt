@@ -94,7 +94,7 @@ class MyNSOpenGLView(
         defaultGameWindow.dispatch(gestureEvent.also {
             it.type = GestureEvent.Type.MAGNIFY
             it.id = 0
-            it.amount = event.magnification()
+            it.amount = event.magnification().toFloat()
         })
         //println("magnifyWithEvent:event=$event")
         super.magnifyWithEvent(event)
@@ -105,7 +105,7 @@ class MyNSOpenGLView(
         defaultGameWindow.dispatch(gestureEvent.also {
             it.type = GestureEvent.Type.ROTATE
             it.id = 0
-            it.amount = event.rotation.toDouble()
+            it.amount = event.rotation.toFloat()
         })
 
         super.rotateWithEvent(event)
@@ -433,8 +433,8 @@ class MyDefaultGameWindow : GameWindow() {
     }
 
     @Suppress("RemoveRedundantCallsOfConversionMethods")
-    internal val backingScaleFactor: Double get() = window.backingScaleFactor.toDouble()
-    internal var lastBackingScaleFactor = 0.0
+    internal val backingScaleFactor: Float get() = window.backingScaleFactor.toFloat()
+    internal var lastBackingScaleFactor: Float = 0f
 
     val darwinGamePad = DarwinGameControllerNative()
 

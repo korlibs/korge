@@ -30,7 +30,7 @@ class PageFilter(
 
     companion object : BaseProgramProvider() {
 
-        private fun Program.Builder.sin01(arg: Operand) = sin(arg * (PI.lit * 0.5.lit))
+        private fun Program.Builder.sin01(arg: Operand) = sin(arg * (PI.toFloat().lit * 0.5f.lit))
         override val fragment = FragmentShaderDefault {
             val x01 = DefaultShaders.t_Temp0["zw"]
             SET(x01, v_Tex01)
@@ -40,10 +40,10 @@ class PageFilter(
                 val amplitudes = if (n == 0) PageUB.u_HAmplitude["xyz"] else PageUB.u_VAmplitude["xyz"]
                 val tmp = DefaultShaders.t_Temp0[n]
                 IF(vr lt offset) {
-                    val ratio = ((vr - 0.0.lit) / offset)
+                    val ratio = ((vr - 0f.lit) / offset)
                     SET(tmp, mix(amplitudes[0], amplitudes[1], sin01(ratio)))
                 } ELSE {
-                    val ratio = 1.0.lit + ((vr - offset) / (1.0.lit - offset))
+                    val ratio = 1f.lit + ((vr - offset) / (1f.lit - offset))
                     SET(tmp, mix(amplitudes[2], amplitudes[1], sin01(ratio)))
                 }
             }

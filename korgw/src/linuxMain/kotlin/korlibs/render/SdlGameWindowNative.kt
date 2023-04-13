@@ -151,8 +151,7 @@ class SdlGameWindowNative : EventLoopGameWindow() {
                         MouseEvent.Type.SCROLL, 0,
                         lastMouseX, lastMouseY,
                         MouseButton.BUTTON_WHEEL, 0,
-                        event.wheel.x.toDouble(), event.wheel.y.toDouble(),
-                        0.0,
+                        event.wheel.x.toFloat(), event.wheel.y.toFloat(), 0f,
                         isShiftDown = false, isCtrlDown = false, isAltDown = false, isMetaDown = false,
                         scaleCoords = false, simulateClickOnUp = true
                     )

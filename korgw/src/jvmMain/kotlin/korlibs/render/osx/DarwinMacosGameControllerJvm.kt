@@ -29,7 +29,7 @@ inline class GCControllerButtonInput(val id: Long) {
     val analog: Boolean get() = id.msgSendInt(sel_isAnalog) != 0
     val touched: Boolean get() = id.msgSendInt(sel_isTouched) != 0
     val pressed: Boolean get() = id.msgSendInt(sel_isPressed) != 0
-    val value: Double get() = id.msgSendFloat(sel_value).toDouble()
+    val value: Float get() = id.msgSendFloat(sel_value).toFloat()
     val sfSymbolsName: String get() = NSString(id.msgSend("sfSymbolsName")).toString()
     val localizedName: String get() = NSString(id.msgSend("localizedName")).toString()
     val unmappedLocalizedName: String get() = NSString(id.msgSend("unmappedLocalizedName")).toString()
@@ -49,7 +49,7 @@ inline class GCControllerButtonInput(val id: Long) {
 }
 
 class GCControllerAxisInput(id: Long) : ObjcRef(id) {
-    val value: Double get() = id.msgSendFloat("value").toDouble()
+    val value: Float get() = id.msgSendFloat("value").toFloat()
     companion object {
         inline operator fun getValue(obj: ObjcRef, property: KProperty<*>): GCControllerAxisInput = GCControllerAxisInput(obj.id.msgSend(property.name))
     }
@@ -66,8 +66,8 @@ class GCControllerDirectionPad(id: Long) : ObjcRef(id) {
     @Keep val xAxis by GCControllerAxisInput
     @Keep val yAxis by GCControllerAxisInput
 
-    val x: Double get() = xAxis.value
-    val y: Double get() = yAxis.value
+    val x: Float get() = xAxis.value
+    val y: Float get() = yAxis.value
 
     private var _point: Point = Point.ZERO
     val point: Point get() = _point
@@ -198,7 +198,7 @@ class MacosGameController {
 internal class MacosGamepadEventAdapter {
     val lib by lazy { Native.load("/System/Library/Frameworks/GameController.framework/Versions/A/GameController", FrameworkInt::class.java) }
 
-    private fun GamepadInfo.set(button: GameButton, value: Double, deadRange: Boolean = false) { rawButtons[button.index] = GamepadInfo.withoutDeadRange(value.toFloat(), apply = deadRange) }
+    private fun GamepadInfo.set(button: GameButton, value: Float, deadRange: Boolean = false) { rawButtons[button.index] = GamepadInfo.withoutDeadRange(value.toFloat(), apply = deadRange) }
     private fun GamepadInfo.set(button: GameButton, cbutton: GCControllerButtonInput, deadRange: Boolean = false) {
         set(button, cbutton.value, deadRange)
     }
@@ -252,7 +252,7 @@ internal class MacosGamepadEventAdapter {
                     gamepad.set(GameButton.RY, ex.rightThumbstick.y, deadRange = true)
                 }
                 gamepad.name = ctrl.vendorName
-                gamepad.batteryLevel = ctrl.battery?.batteryLevel?.toDouble() ?: 1.0
+                gamepad.batteryLevel = ctrl.battery?.batteryLevel?.toFloat() ?: 1f
                 //println("ctrl.battery?.batteryState=${ctrl.battery?.batteryState}")
                 gamepad.batteryStatus = when (ctrl.battery?.batteryState) {
                     0 -> GamepadInfo.BatteryStatus.DISCHARGING

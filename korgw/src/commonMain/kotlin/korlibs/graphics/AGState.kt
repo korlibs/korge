@@ -607,11 +607,9 @@ inline class AGScissor(val data: Short4Pack) {
     val isNIL: Boolean get() = this == NIL
     val isNotNIL: Boolean get() = !isNIL
 
-    //constructor(xy: Int, wh: Int) : this(short4PackOf(xy.toShort(), (xy ushr 16).toShort(), wh.toShort(), (wh ushr 16).toShort()))
     constructor(x: Int, y: Int, width: Int, height: Int) : this(short4PackOf(x.toShortClamped(), y.toShortClamped(), (x + width).toShortClamped(), (y + height).toShortClamped()))
     constructor(x: Float, y: Float, width: Float, height: Float) : this(x.toIntRound(), y.toIntRound(), width.toIntRound(), height.toIntRound())
     constructor(rect: Rectangle) : this(rect.x.toIntRound(), rect.y.toIntRound(), rect.width.toIntRound(), rect.height.toIntRound())
-    //constructor(x: Double, y: Double, width: Double, height: Double) : this(x.toInt(), y.toInt(), width.toInt(), height.toInt())
 
     val left: Int get() = data.x.toInt()
     val top: Int get() = data.y.toInt()
