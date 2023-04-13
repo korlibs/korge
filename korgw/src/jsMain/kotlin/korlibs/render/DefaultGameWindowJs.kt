@@ -240,9 +240,8 @@ open class BrowserCanvasJsGameWindow(
                 val touchId = touch.identifier
                 touch(
                     id = touchId,
-                    x = transformEventX(touch.clientX.toDouble() - canvasBounds.left),
-                    y = transformEventY(touch.clientY.toDouble() - canvasBounds.top),
-                    force = touch.asDynamic().force.unsafeCast<Double?>() ?: 1.0,
+                    p = Point(transformEventX(touch.clientX.toDouble() - canvasBounds.left), transformEventY(touch.clientY.toDouble() - canvasBounds.top)),
+                    force = touch.asDynamic().force.unsafeCast<Float?>() ?: 1f,
                     kind = Touch.Kind.FINGER
                 )
             }

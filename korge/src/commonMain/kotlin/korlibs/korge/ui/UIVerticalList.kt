@@ -36,7 +36,6 @@ open class UIVerticalList(provider: Provider, width: Float = 200f) : UIView(DEFA
     private var lastArea = Rectangle.NaN
     private var lastPoint = Point.NaN
     private val tempRect = MRectangle()
-    private val tempPoint = MPoint()
     var provider: Provider = provider
         set(value) {
             field = value

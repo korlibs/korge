@@ -14,14 +14,10 @@ fun <T : View> T.addUpdater(referenceFps: Frequency, first: Boolean = true, upda
     }
 }
 
-
 fun View.Companion.convertViewSpace(src: View, srcPoint: Point, dst: View?): Point {
     val global = src.localToGlobal(srcPoint)
     return dst?.globalToLocal(global) ?: global
 }
 
-@Deprecated("") fun View.Companion.convertViewSpace(src: View, srcPoint: MPoint, dst: View, dstPoint: MPoint = MPoint()): MPoint =
-    dstPoint.copyFrom(convertViewSpace(src, srcPoint.point, dst))
-
-@Deprecated("") fun View.convertToSpace(srcPoint: MPoint, dst: View, dstPoint: MPoint = MPoint()): MPoint =
-    View.Companion.convertViewSpace(this, srcPoint, dst, dstPoint)
+@Deprecated("") fun View.convertToSpace(srcPoint: Point, dst: View): Point =
+    View.convertViewSpace(this, srcPoint, dst)

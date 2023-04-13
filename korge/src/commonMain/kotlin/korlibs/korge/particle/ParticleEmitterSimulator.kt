@@ -7,7 +7,7 @@ import kotlin.random.*
 
 class ParticleEmitterSimulator(
     private val emitter: ParticleEmitter,
-    var emitterPos: MPoint = MPoint(),
+    var emitterPos: Point = Point.ZERO,
     val random: Random = Random
 ) {
     var totalElapsedTime = 0.seconds

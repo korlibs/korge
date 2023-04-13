@@ -131,7 +131,7 @@ data class AtlasInfo(
         val orig: SizeInt get() = sourceSize
 
         @Deprecated("Use virtFrame", ReplaceWith("Point(virtFrame?.x ?: 0, virtFrame?.y ?: 0)"))
-        val offset: MPoint get() = MPoint(virtFrame?.x ?: 0, virtFrame?.y ?: 0)
+        val offset: Point get() = Point(virtFrame?.x ?: 0, virtFrame?.y ?: 0)
 
         // @TODO: Rename to path or name
         //@IgnoreSerialization
@@ -309,9 +309,9 @@ data class AtlasInfo(
             val r = ListReader(content.lines())
             var pageImage: Any? = null
 
-            fun String.point(): MPoint {
+            fun String.point(): Point {
                 val list = this.split(',', limit = 2)
-                return MPoint(list.first().trim().toInt(), list.last().trim().toInt())
+                return Point(list.first().trim().toInt(), list.last().trim().toInt())
             }
 
             fun String.size(): SizeInt = point().let { SizeInt(it.x.toInt(), it.y.toInt()) }
@@ -370,10 +370,10 @@ data class AtlasInfo(
                 } else {
                     val name = line
                     var rotate = false
-                    var xy = MPoint()
+                    var xy = Point.ZERO
                     var size = SizeInt(0, 0)
                     var orig = SizeInt(0, 0)
-                    var offset = MPoint()
+                    var offset = Point.ZERO
                     while (r.hasMore && r.peek().contains(':')) {
                         val (key, value) = r.read().trim().keyValue()
                         when (key) {

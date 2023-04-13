@@ -18,7 +18,7 @@ import kotlin.random.*
 
 inline fun Container.particleEmitter(
     emitter: ParticleEmitter,
-    emitterPos: MPoint = MPoint(),
+    emitterPos: Point = Point.ZERO,
     time: TimeSpan = TimeSpan.NIL,
     localCoords: Boolean = false,
     random: Random = Random,
@@ -44,11 +44,11 @@ class ParticleEmitterView(
     @ViewProperty
     @ViewPropertySubTree
     private var emitter: ParticleEmitter,
-    emitterPos: MPoint = MPoint(),
+    emitterPos: Point = Point.ZERO,
     localCoords: Boolean = false,
     random: Random = Random,
 ) : View(), ViewFileRef by ViewFileRef.Mixin() {
-    var simulator = ParticleEmitterSimulator(emitter, MPoint(emitterPos), random)
+    var simulator = ParticleEmitterSimulator(emitter, emitterPos, random)
 
     var timeUntilStop by simulator::timeUntilStop
     var emitting by simulator::emitting
@@ -59,25 +59,25 @@ class ParticleEmitterView(
         min = -1000.0,
         max = +1000.0,
     )
-    var emitterPos: MPoint
+    var emitterPos: Point
         get() = simulator.emitterPos
         set(value) {
-            simulator.emitterPos.copyFrom(value)
+            simulator.emitterPos = value
         }
-    var emitterXY: MPoint
+    var emitterXY: Point
         get() = emitterPos
         set(value) {
             emitterPos = value
         }
-    var emitterX: Double
+    var emitterX: Float
         get() = emitterPos.x
         set(value) {
-            emitterPos.x = value
+            emitterPos = emitterPos.copy(x = value)
         }
-    var emitterY: Double
+    var emitterY: Float
         get() = emitterPos.y
         set(value) {
-            emitterPos.y = value
+            emitterPos = emitterPos.copy(y = value)
         }
 
     @ViewProperty

@@ -810,7 +810,7 @@ open class GameWindow :
     fun dispatchTouchEventStartStart() = touchBuilder.startFrame(TouchEvent.Type.START)
     fun dispatchTouchEventStartMove() = touchBuilder.startFrame(TouchEvent.Type.MOVE)
     fun dispatchTouchEventStartEnd() = touchBuilder.startFrame(TouchEvent.Type.END)
-    fun dispatchTouchEventAddTouch(id: Int, x: Double, y: Double) = touchBuilder.touch(id, x, y)
+    fun dispatchTouchEventAddTouch(id: Int, x: Float, y: Float) = touchBuilder.touch(id, Point(x, y))
     fun dispatchTouchEventEnd() = dispatch(touchBuilder.endFrame().reset())
 
     // @TODO: Is this used?

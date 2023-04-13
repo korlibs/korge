@@ -31,10 +31,10 @@ class UIWindow(title: String, size: Size = Size(256, 256)) : UIContainer(size) {
     private val colorBgTitle = Colors["#6f6e85"]
     private val borderColorFocused = Colors["#471175"]
     private val borderColorNoFocused = Colors.BLACK
-    var minWidth = 128.0
-    var minHeight = 64.0
-    var maxWidth = 4096.0
-    var maxHeight = 4096.0
+    var minWidth = 128f
+    var minHeight = 64f
+    var maxWidth = 4096f
+    var maxHeight = 4096f
 
     private val bgMaterial = uiMaterialLayer(size) {
         radius = RectCorners(12.0)
@@ -78,34 +78,34 @@ class UIWindow(title: String, size: Size = Size(256, 256)) : UIContainer(size) {
             cursor = GameWindow.Cursor.fromAnchorResize(anchor)
             // @TODO: clamping shouldn't affect (we should use it.start and get initial values to compute based on start and not on deltas)
             sh.draggable {
-                val obounds = window.getGlobalBounds().mutable
-                val bounds = obounds.clone()
+                val obounds: Rectangle = window.getGlobalBounds()
+                var bounds: Rectangle = obounds
                 when {
-                    anchor.doubleX < 0.5 -> {
-                        bounds.left = it.cx
+                    anchor.floatX < 0.5f -> {
+                        bounds = bounds.copyBounds(left = it.cx)
                         if (bounds.width !in window.minWidth..window.maxWidth) {
-                            bounds.left = obounds.left
+                            bounds = bounds.copyBounds(left = obounds.left)
                         }
                     }
 
-                    anchor.doubleX > 0.5 -> {
-                        bounds.right = it.cx
-                        bounds.width = bounds.width.clamp(window.minWidth, window.maxWidth)
+                    anchor.floatY > 0.5f -> {
+                        bounds = bounds.copyBounds(right = it.cx)
+                        bounds = bounds.copy(width = bounds.width.clamp(window.minWidth, window.maxWidth))
                     }
 
                     else -> Unit
                 }
                 when {
-                    anchor.sy < 0.5 -> {
-                        bounds.top = it.cy
+                    anchor.sy < 0.5f -> {
+                        bounds = bounds.copyBounds(top = it.cy)
                         if (bounds.height !in window.minHeight..window.maxHeight) {
-                            bounds.top = obounds.top
+                            bounds = bounds.copyBounds(top = obounds.top)
                         }
                     }
 
-                    anchor.sy > 0.5 -> {
-                        bounds.bottom = it.cy
-                        bounds.height = bounds.height.clamp(window.minHeight, window.maxHeight)
+                    anchor.sy > 0.5f -> {
+                        bounds = bounds.copyBounds(bottom = it.cy)
+                        bounds = bounds.copy(height = bounds.height.clamp(window.minHeight, window.maxHeight))
                     }
 
                     else -> Unit
@@ -114,15 +114,15 @@ class UIWindow(title: String, size: Size = Size(256, 256)) : UIContainer(size) {
             }
         }
 
-        private fun getExpectedX(): Double = window.widthD * anchor.doubleX + when (anchor.doubleX) {
-            0.0 -> -2.0
-            1.0 -> +2.0
-            else -> 0.0
+        private fun getExpectedX(): Float = window.width * anchor.floatX + when (anchor.floatX) {
+            0f -> -2f
+            1f -> +2f
+            else -> 0f
         }
-        private fun getExpectedY(): Double = window.heightD * anchor.doubleY + when (anchor.doubleY) {
-            0.0 -> -2.0
-            1.0 -> +2.0
-            else -> 0.0
+        private fun getExpectedY(): Float = window.height * anchor.floatY + when (anchor.floatY) {
+            0f -> -2f
+            1f -> +2f
+            else -> 0f
         }
 
         fun resized(width: Double, height: Double) {

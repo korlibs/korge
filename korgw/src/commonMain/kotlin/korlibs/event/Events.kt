@@ -170,14 +170,15 @@ data class FocusEvent(
 data class Touch(
 	val index: Int = -1,
 	var id: Int = -1,
-    var x: Double = 0.0,
-    var y: Double = 0.0,
-    var force: Double = 1.0,
+    var p: Point = Point.ZERO,
+    var force: Float = 1f,
     var status: Status = Status.KEEP,
     var kind: Kind = Kind.FINGER,
     var button: MouseButton = MouseButton.LEFT,
 ) : Extra by Extra.Mixin() {
-    val p: Point get() = Point(x, y)
+    val x: Float get() = p.x
+    val y: Float get() = p.y
+
     enum class Status { ADD, KEEP, REMOVE }
     enum class Kind { FINGER, MOUSE, STYLUS, ERASER, UNKNOWN }
 
@@ -189,8 +190,7 @@ data class Touch(
 
     fun copyFrom(other: Touch) {
         this.id = other.id
-        this.x = other.x
-        this.y = other.y
+        this.p = other.p
         this.force = other.force
         this.status = other.status
         this.kind = other.kind
@@ -200,7 +200,7 @@ data class Touch(
     override fun hashCode(): Int = index
     override fun equals(other: Any?): Boolean = other is Touch && this.index == other.index
 
-    fun toStringNice() = "Touch[${id}][${status}](${x.niceStr},${y.niceStr})"
+    fun toStringNice() = "Touch[${id}][${status}](${p.x.niceStr},${p.y.niceStr})"
 }
 
 // On JS: each event contains the active down touches (ontouchend simply don't include the touch that has been removed)
@@ -266,10 +266,9 @@ class TouchBuilder {
         return new
     }
 
-    fun touch(id: Int, x: Double, y: Double, force: Double = 1.0, kind: Touch.Kind = Touch.Kind.FINGER, button: MouseButton = MouseButton.LEFT) {
+    fun touch(id: Int, p: Point, force: Float = 1f, kind: Touch.Kind = Touch.Kind.FINGER, button: MouseButton = MouseButton.LEFT) {
         val touch = new.getOrAllocTouchById(id)
-        touch.x = x
-        touch.y = y
+        touch.p = p
         touch.force = force
         touch.kind = kind
         touch.button = button
@@ -346,10 +345,9 @@ data class TouchEvent(
         return touch
     }
 
-    fun touch(id: Int, x: Double, y: Double, status: Touch.Status = Touch.Status.KEEP, force: Double = 1.0, kind: Touch.Kind = Touch.Kind.FINGER, button: MouseButton = MouseButton.LEFT) {
+    fun touch(id: Int, p: Point, status: Touch.Status = Touch.Status.KEEP, force: Float = 1f, kind: Touch.Kind = Touch.Kind.FINGER, button: MouseButton = MouseButton.LEFT) {
         val touch = getOrAllocTouchById(id)
-        touch.x = x
-        touch.y = y
+        touch.p = p
         touch.status = status
         touch.force = force
         touch.kind = kind
@@ -357,7 +355,7 @@ data class TouchEvent(
     }
 
     fun touch(touch: Touch) {
-        touch(touch.id, touch.x, touch.y, touch.status, touch.force, touch.kind, touch.button)
+        touch(touch.id, touch.p, touch.status, touch.force, touch.kind, touch.button)
     }
 
     fun copyFrom(other: TouchEvent) {

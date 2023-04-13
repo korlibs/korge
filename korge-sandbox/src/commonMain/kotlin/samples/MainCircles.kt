@@ -25,7 +25,7 @@ class MainCircles : Scene() {
             val dx = input.keys.getDeltaAxis(Key.LEFT, Key.RIGHT)
             val dy = input.keys.getDeltaAxis(Key.UP, Key.DOWN)
             //if (dx != 0.0 || dy != 0.0) {
-            val speed = (dt / 16.milliseconds) * 5.0
+            val speed = (dt / 16.milliseconds) * 5f
             rect2.moveWithCollisions(collisionViews, dx * speed, dy * speed)
             //}
             //rect2.alpha = if (rect1.collidesWith(rect2, kind = CollisionKind.SHAPE)) 1.0 else 0.3

@@ -5,6 +5,7 @@ import korlibs.datastructure.iterators.*
 import korlibs.event.*
 import korlibs.korge.view.*
 import korlibs.io.async.*
+import korlibs.math.geom.*
 import kotlin.jvm.*
 
 class GamePadEvents(val view: View) {
@@ -20,7 +21,7 @@ class GamePadEvents(val view: View) {
 	val button = Signal<GamePadButtonEvent>()
 	val connection = Signal<GamePadConnectionEvent>()
 
-	fun stick(callback: suspend (playerId: Int, stick: GameStick, x: Double, y: Double) -> Unit) {
+	fun stick(callback: suspend (playerId: Int, stick: GameStick, x: Float, y: Float) -> Unit) {
 		stick { e -> launchImmediately(coroutineContext) { callback(e.gamepad, e.stick, e.x, e.y) } }
 	}
 
@@ -98,8 +99,7 @@ class GamePadEvents(val view: View) {
                         stick(stickEvent.apply {
                             this.gamepad = gamepad.index
                             this.stick = stick
-                            this.x = vector.x
-                            this.y = vector.y
+                            this.pos = vector
                         })
                     }
                 }
@@ -121,16 +121,17 @@ class GamePadEvents(val view: View) {
 data class GamePadStickEvent(
     var gamepad: Int = 0,
     var stick: GameStick = GameStick.LEFT,
-    var x: Double = 0.0,
-    var y: Double = 0.0
+    var pos: Vector2 = Vector2.ZERO,
 ) : TypedEvent<GamePadStickEvent>(GamePadStickEvent) {
+    val x: Float get() = pos.x
+    val y: Float get() = pos.y
+
     companion object : EventType<GamePadStickEvent>
 
     fun copyFrom(other: GamePadStickEvent) {
         this.gamepad = other.gamepad
         this.stick = other.stick
-        this.x = other.x
-        this.y = other.y
+        this.pos = other.pos
     }
 }
 

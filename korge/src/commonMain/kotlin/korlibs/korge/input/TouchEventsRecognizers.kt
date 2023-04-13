@@ -24,9 +24,9 @@ fun TouchEvents.swipeRecognizer(
             if (!completed) {
                 val i = it.infos[0]
 
-                val distance = MPoint.distance(i.startGlobal, i.global)
+                val distance = Point.distance(i.startGlobal, i.global)
                 if (distance >= thresold) {
-                    val angle = Angle.between(i.startGlobal.immutable, i.global.immutable)
+                    val angle = Angle.between(i.startGlobal, i.global)
                     completed = true
                     val direction = when {
                         angle >= 315.degrees || angle < 45.degrees -> SwipeRecognizerDirection.RIGHT
@@ -48,16 +48,16 @@ data class ScaleRecognizerInfo(
     var started: Boolean = false,
     // True when the gestuer ends
     var completed: Boolean = true,
-    var start: Double = 0.0,
-    var current: Double = 0.0,
+    var start: Float = 0f,
+    var current: Float = 0f,
 ) {
-    val ratio get() = current / start
+    val ratio: Float get() = current / start
 }
 
 fun TouchEvents.scaleRecognizer(
     start: ScaleRecognizerInfo.() -> Unit = {},
-    end: ScaleRecognizerInfo.(ratio: Double) -> Unit = {},
-    block: ScaleRecognizerInfo.(ratio: Double) -> Unit
+    end: ScaleRecognizerInfo.(ratio: Float) -> Unit = {},
+    block: ScaleRecognizerInfo.(ratio: Float) -> Unit
 ) {
     val info = ScaleRecognizerInfo()
     updateAll {
@@ -66,8 +66,8 @@ fun TouchEvents.scaleRecognizer(
             val i1 = it.infos[1]
             info.started = info.completed
             info.completed = false
-            info.start = MPoint.distance(i0.startGlobal, i1.startGlobal)
-            info.current = MPoint.distance(i0.global, i1.global)
+            info.start = Point.distance(i0.startGlobal, i1.startGlobal)
+            info.current = Point.distance(i0.global, i1.global)
             if (info.started) {
                 start(info)
             }
@@ -104,8 +104,8 @@ fun TouchEvents.rotationRecognizer(
             val i1 = it.infos[1]
             info.started = info.completed
             info.completed = false
-            info.start = Angle.between(i0.startGlobal.immutable, i1.startGlobal.immutable)
-            info.current = Angle.between(i0.global.immutable, i1.global.immutable)
+            info.start = Angle.between(i0.startGlobal, i1.startGlobal)
+            info.current = Angle.between(i0.global, i1.global)
             if (info.started) {
                 start(info)
             }

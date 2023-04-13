@@ -211,10 +211,8 @@ class GamepadInfo(
     val r2: Double get() = this[GameButton.R2]
     val r3: Boolean get() = this[GameButton.R3] != 0.0
 
-    private val stick = Array(2) { MPoint() }
-
     operator fun get(button: GameButton): Double = rawButtons[button.index].toDouble()
-    operator fun get(stick: GameStick): MPoint = this.stick[stick.id].setTo(getX(stick), getY(stick))
+    operator fun get(stick: GameStick): Point = Point(getX(stick), getY(stick))
     fun getX(stick: GameStick) = when (stick) {
         GameStick.LEFT -> get(GameButton.LX)
         GameStick.RIGHT -> get(GameButton.RX)

@@ -11,50 +11,50 @@ import korlibs.math.geom.*
 
 open class MouseDragInfo(
     val view: View,
-    var dx: Double = 0.0,
-    var dy: Double = 0.0,
+    var dx: Float = 0f,
+    var dy: Float = 0f,
     var start: Boolean = false,
     var end: Boolean = false,
     var startTime: DateTime = DateTime.EPOCH,
     var time: DateTime = DateTime.EPOCH,
-    var sx: Double = 0.0,
-    var sy: Double = 0.0,
-    var cx: Double = 0.0,
-    var cy: Double = 0.0,
+    var sx: Float = 0f,
+    var sy: Float = 0f,
+    var cx: Float = 0f,
+    var cy: Float = 0f,
 ) {
     override fun toString(): String = "MouseDragInfo(start=$start, end=$end, sx=$sx, sy=$sy, cx=$cx, cy=$cy)"
 
     lateinit var mouseEvents: MouseEvents
     val elapsed: TimeSpan get() = time - startTime
 
-    val localDXY get() = localDXY(view)
-    @Deprecated("") val localDX get() = localDX(view)
-    @Deprecated("") val localDY get() = localDY(view)
+    val localDXY: Point get() = localDXY(view)
+    @Deprecated("") val localDX: Float get() = localDX(view)
+    @Deprecated("") val localDY: Float get() = localDY(view)
 
-    fun localDXY(view: View) = view.parent?.globalToLocalDelta(Point(0.0, 0.0), Point(dx, dy)) ?: Point(dx, dy)
-    @Deprecated("") fun localDX(view: View) = localDXY(view).x
-    @Deprecated("") fun localDY(view: View) = localDXY(view).y
+    fun localDXY(view: View): Point = view.parent?.globalToLocalDelta(Point(0.0, 0.0), Point(dx, dy)) ?: Point(dx, dy)
+    @Deprecated("") fun localDX(view: View): Float = localDXY(view).x
+    @Deprecated("") fun localDY(view: View): Float = localDXY(view).y
 
-    private var lastDx: Double = Double.NaN
-    private var lastDy: Double = Double.NaN
+    private var lastDx: Float = Float.NaN
+    private var lastDy: Float = Float.NaN
 
-    var deltaDx: Double = 0.0
-    var deltaDy: Double = 0.0
+    var deltaDx: Float = 0f
+    var deltaDy: Float = 0f
 
     fun reset() {
-        lastDx = Double.NaN
-        lastDy = Double.NaN
-        deltaDx = 0.0
-        deltaDy = 0.0
-        dx = 0.0
-        dy = 0.0
-        sx = 0.0
-        sy = 0.0
-        cx = 0.0
-        cy = 0.0
+        lastDx = Float.NaN
+        lastDy = Float.NaN
+        deltaDx = 0f
+        deltaDy = 0f
+        dx = 0f
+        dy = 0f
+        sx = 0f
+        sy = 0f
+        cx = 0f
+        cy = 0f
     }
 
-    fun set(dx: Double, dy: Double, start: Boolean, end: Boolean, time: DateTime, sx: Double, sy: Double, cx: Double, cy: Double): MouseDragInfo {
+    fun set(dx: Float, dy: Float, start: Boolean, end: Boolean, time: DateTime, sx: Float, sy: Float, cx: Float, cy: Float): MouseDragInfo {
         this.dx = dx
         this.dy = dy
         this.sx = sx
@@ -100,13 +100,13 @@ private fun <T : View> T.onMouseDragInternal(
     MouseDragInfo = MouseDragInfo(this), callback: Views.(MouseDragInfo) -> Unit
 ): Pair<T, OnMouseDragCloseable> {
     var dragging = false
-    var sx = 0.0
-    var sy = 0.0
-    var cx = 0.0
-    var cy = 0.0
+    var sx = 0f
+    var sy = 0f
+    var cx = 0f
+    var cy = 0f
     val view = this
 
-    val mousePos = MPoint()
+    var mousePos = Point()
 
     fun views() = view.stage!!.views
 
@@ -114,7 +114,7 @@ private fun <T : View> T.onMouseDragInternal(
         val views = views()
         //println("views.globalMouse=${views.globalMouseXY}, views.nativeMouse=${views.nativeMouseXY}")
         //mousePos.copyFrom(views.globalMouseXY)
-        mousePos.copyFrom(views.globalMousePos)
+        mousePos = views.globalMousePos
     }
 
     fun handle(it: MouseEvents, state: MouseDragState) {
@@ -169,56 +169,56 @@ fun <T : View> T.onMouseDrag(
 ): T = onMouseDragInternal(timeProvider, info, callback).first
 
 open class DraggableInfo(view: View) : MouseDragInfo(view) {
-    val viewStartXY = MPoint()
+    var viewStartXY = Point()
 
-    var viewStartX: Double
+    var viewStartX: Float
         get() = viewStartXY.x;
         set(value) {
-            viewStartXY.x = value
+            viewStartXY = viewStartXY.copy(x = value)
         }
-    var viewStartY: Double
+    var viewStartY: Float
         get() = viewStartXY.y;
         set(value) {
-            viewStartXY.y = value
+            viewStartXY = viewStartXY.copy(y = value)
         }
 
-    val viewPrevXY = MPoint()
+    var viewPrevXY = Point()
 
-    var viewPrevX: Double
+    var viewPrevX: Float
         get() = viewPrevXY.x;
         set(value) {
-            viewPrevXY.x = value
+            viewPrevXY = viewPrevXY.copy(x = value)
         }
-    var viewPrevY: Double
+    var viewPrevY: Float
         get() = viewPrevXY.y;
         set(value) {
-            viewPrevXY.y = value
+            viewPrevXY = viewPrevXY.copy(y = value)
         }
 
-    val viewNextXY = MPoint()
+    var viewNextXY = Point()
 
-    var viewNextX: Double
+    var viewNextX: Float
         get() = viewNextXY.x;
         set(value) {
-            viewNextXY.x = value
+            viewNextXY = viewNextXY.copy(x = value)
         }
-    var viewNextY: Double
+    var viewNextY: Float
         get() = viewNextXY.y;
         set(value) {
-            viewNextXY.y = value
+            viewNextXY = viewNextXY.copy(y = value)
         }
 
-    val viewDeltaXY = MPoint()
+    var viewDeltaXY = Point.ZERO
 
-    var viewDeltaX: Double
+    var viewDeltaX: Float
         get() = viewDeltaXY.x;
         set(value) {
-            viewDeltaXY.x = value
+            viewDeltaXY = viewDeltaXY.copy(x = value)
         }
-    var viewDeltaY: Double
+    var viewDeltaY: Float
         get() = viewDeltaXY.y;
         set(value) {
-            viewDeltaXY.y = value
+            viewDeltaXY = viewDeltaXY.copy(y = value)
         }
 }
 
@@ -239,15 +239,15 @@ private fun <T : View> T.draggableInternal(
     val info = DraggableInfo(view)
     val onMouseDragCloseable = selector.onMouseDragCloseable(info = info) {
         if (info.start) {
-            info.viewStartXY.copyFrom(view.pos)
+            info.viewStartXY = view.pos
         }
         //println("localDXY=${info.localDX(view)},${info.localDY(view)}")
-        info.viewPrevXY.copyFrom(view.pos)
-        info.viewNextXY.setTo(
+        info.viewPrevXY = view.pos
+        info.viewNextXY = Point(
             info.viewStartX + info.localDX(view),
             info.viewStartY + info.localDY(view)
         )
-        info.viewDeltaXY.setTo(info.viewNextX - info.viewPrevX, info.viewNextY - info.viewPrevY)
+        info.viewDeltaXY = Point(info.viewNextX - info.viewPrevX, info.viewNextY - info.viewPrevY)
         if (autoMove) {
             view.xy(info.viewNextXY)
         }

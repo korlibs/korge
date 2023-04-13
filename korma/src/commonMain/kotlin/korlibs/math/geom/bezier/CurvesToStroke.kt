@@ -452,8 +452,8 @@ fun List<Curves>.toStrokePointsList(
                         }
                         // Joins
                         else -> {
-                            val m0 = Line.getIntersectXY(ab.s0, ab.e0, bc.s0, bc.e0, MPoint()) // Outer (CW)
-                            val m1 = Line.getIntersectXY(ab.s1, ab.e1, bc.s1, bc.e1, MPoint()) // Inner (CW)
+                            val m0 = Line.getIntersectXY(ab.s0, ab.e0, bc.s0, bc.e0, Point.ZERO) // Outer (CW)
+                            val m1 = Line.getIntersectXY(ab.s1, ab.e1, bc.s1, bc.e1, Point.ZERO) // Inner (CW)
                             val e1 = m1 ?: ab.e1
                             val e0 = m0 ?: ab.e0
                             val round = join == LineJoin.ROUND
