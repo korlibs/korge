@@ -73,8 +73,8 @@ fun <T> TextRenderer<T>.measure(text: T, size: Float, defaultFont: Font): BoundB
 }
 
 class BoundBuilderTextRendererActions : TextRendererActions() {
-    val flbb = MBoundsBuilder()
-    val bb = MBoundsBuilder()
+    var flbb = BoundsBuilder()
+    var bb = BoundsBuilder()
     var currentLine = 0
     //val nlines get() = currentLine + 1
     val nlines get() = currentLine
@@ -94,9 +94,9 @@ class BoundBuilderTextRendererActions : TextRendererActions() {
     data class LineStats(
         var maxLineHeight: Float = 0f,
         var maxX: Float = 0f,
-        val bounds: MBoundsBuilder = MBoundsBuilder(),
+        var bounds: BoundsBuilder = BoundsBuilder(),
     ) {
-        fun getAlignX(align: HorizontalAlign): Float = align.getOffsetX(maxX) + bounds.xminOr(0.0).toFloat()
+        fun getAlignX(align: HorizontalAlign): Float = align.getOffsetX(maxX) + bounds.xminOr(0f)
 
         fun advance(dx: Float) {
             maxX += dx
@@ -111,7 +111,7 @@ class BoundBuilderTextRendererActions : TextRendererActions() {
 
         fun reset() {
             maxX = 0f
-            bounds.reset()
+            bounds = BoundsBuilder.EMPTY
             maxLineHeight = 0f
         }
     }
@@ -121,11 +121,11 @@ class BoundBuilderTextRendererActions : TextRendererActions() {
         val rx = this.pos.x + transform.transformX(x, y)
         val ry = this.pos.y + transform.transformY(x, y)
         //println("P: $rx, $ry [$x, $y]")
-        bb.add(rx, ry)
+        bb += Point(rx, ry)
         if (currentLine == 0) {
-            flbb.add(rx, ry)
+            flbb += Point(rx, ry)
         }
-        current.bounds.add(rx, ry)
+        current.bounds += Point(rx, ry)
     }
 
     private fun add(rect: Rectangle) {
@@ -144,8 +144,8 @@ class BoundBuilderTextRendererActions : TextRendererActions() {
     override fun reset() {
         super.reset()
         currentLine = 0
-        bb.reset()
-        flbb.reset()
+        bb = BoundsBuilder.EMPTY
+        flbb = BoundsBuilder.EMPTY
         current.reset()
         lines.clear()
     }

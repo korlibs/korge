@@ -1235,7 +1235,7 @@ abstract class View internal constructor(
     /** Returns the global bounds of this object. Note this incurs in allocations. Use [getGlobalBounds] (out) to avoid it */
     val globalBounds: Rectangle get() = getGlobalBounds()
 
-    /** Returns the global bounds of this object. Allows to specify an [out] [MRectangle] to prevent allocations. */
+    /** Returns the global bounds of this object. */
     //fun getGlobalBounds(out: Rectangle = Rectangle()): Rectangle = getBounds(root, out, inclusive = false)
     fun getGlobalBounds(includeFilters: Boolean = false): Rectangle = getBounds(root, inclusive = true, includeFilters = includeFilters)
 
@@ -1285,7 +1285,7 @@ abstract class View internal constructor(
     //}
 
     /**
-     * Get local bounds of the view. Allows to specify [out] [MRectangle] if you want to reuse an object.
+     * Get local bounds of the view.
      */
     fun getLocalBounds(doAnchoring: Boolean = true, includeFilters: Boolean = false): Rectangle {
         var out = cachedLocalBounds ?: getLocalBoundsInternal().also { cachedLocalBounds = it }

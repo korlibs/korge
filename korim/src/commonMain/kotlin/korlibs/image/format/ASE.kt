@@ -191,7 +191,7 @@ object ASE : ImageFormatWithContainer("ase") {
         val pivotX: Int,
         val pivotY: Int,
     ) {
-        val sliceFrame = MRectangleInt(sliceXOrigin, sliceYOrigin, sliceWidth, sliceHeight)
+        var sliceFrame = RectangleInt(sliceXOrigin, sliceYOrigin, sliceWidth, sliceHeight)
     }
 
     open class AseSlice(val name: String, val hasNinePatch: Boolean, val hasPivotInfo: Boolean) :

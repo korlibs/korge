@@ -221,7 +221,7 @@ open class AGFrameBuffer(val base: AGFrameBufferBase, val id: Int = -1) : Closea
     var height = DEFAULT_INITIAL_HEIGHT
     var fullWidth = DEFAULT_INITIAL_WIDTH
     var fullHeight = DEFAULT_INITIAL_HEIGHT
-    private val _scissor = MRectangleInt()
+    private var _scissor = RectangleInt()
     var scissor: RectangleInt? = null
 
     open fun setSize(width: Int, height: Int) {

@@ -15,12 +15,12 @@ class AGStateTest {
 
     @Test
     fun testBoundsBuilder() {
-        val bb = MBoundsBuilder()
-        bb.add(AGScissor(10, 20, 110, 120))
-        bb.add(AGScissor(50, 60, 135, 145))
+        var bb = BoundsBuilder()
+        bb += AGScissor(10, 20, 110, 120)
+        bb += AGScissor(50, 60, 135, 145)
         assertEquals(
             AGScissor(10, 20, 175, 185),
-            bb.getBounds().toAGScissor()
+            bb.bounds.toAGScissor()
         )
     }
 }

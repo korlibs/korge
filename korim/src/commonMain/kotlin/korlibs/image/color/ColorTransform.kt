@@ -64,10 +64,10 @@ data class ColorTransformMul(
 }
 
 data class ColorTransform(
-    private var _mR: Double,
-    private var _mG: Double,
-    private var _mB: Double,
-    private var _mA: Double,
+    private var _mR: Float,
+    private var _mG: Float,
+    private var _mB: Float,
+    private var _mA: Float,
     private var _aR: Int,
     private var _aG: Int,
     private var _aB: Int,
@@ -101,7 +101,7 @@ data class ColorTransform(
     private fun computeColorMul() {
         if (!dirtyColorMul) return
         dirtyColorMul = false
-        _colorMul = RGBA.float(_mR.toFloat(), _mG.toFloat(), _mB.toFloat(), _mA.toFloat())
+        _colorMul = RGBA.float(_mR, _mG, _mB, _mA)
     }
 
     private fun computeColorAdd() {
@@ -116,10 +116,10 @@ data class ColorTransform(
             return _colorMul
         }
         set(v) {
-            val mR = v.rd
-            val mG = v.gd
-            val mB = v.bd
-            val mA = v.ad
+            val mR = v.rf
+            val mG = v.gf
+            val mB = v.bf
+            val mA = v.af
             if (_mR != mR || _mG != mG || _mB != mB || _mA != mA) {
                 _mR = mR
                 _mG = mG
@@ -149,40 +149,40 @@ data class ColorTransform(
             }
         }
 
-    var mR: Double get() = _mR; set(v) { _mR = v; dirtyColorMul = true }
-    var mG: Double get() = _mG; set(v) { _mG = v; dirtyColorMul = true }
-    var mB: Double get() = _mB; set(v) { _mB = v; dirtyColorMul = true }
-    var mA: Double get() = _mA; set(v) { _mA = v; dirtyColorMul = true }
+    var mRd: Double get() = _mR.toDouble(); set(v) { _mR = v.toFloat(); dirtyColorMul = true }
+    var mGd: Double get() = _mG.toDouble(); set(v) { _mG = v.toFloat(); dirtyColorMul = true }
+    var mBd: Double get() = _mB.toDouble(); set(v) { _mB = v.toFloat(); dirtyColorMul = true }
+    var mAd: Double get() = _mA.toDouble(); set(v) { _mA = v.toFloat(); dirtyColorMul = true }
 
-    var mRf: Float get() = _mR.toFloat(); set(v) { _mR = v.toDouble(); dirtyColorMul = true }
-    var mGf: Float get() = _mG.toFloat(); set(v) { _mG = v.toDouble(); dirtyColorMul = true }
-    var mBf: Float get() = _mB.toFloat(); set(v) { _mB = v.toDouble(); dirtyColorMul = true }
-    var mAf: Float get() = _mA.toFloat(); set(v) { _mA = v.toDouble(); dirtyColorMul = true }
+    var mR: Float get() = _mR; set(v) { _mR = v; dirtyColorMul = true }
+    var mG: Float get() = _mG; set(v) { _mG = v; dirtyColorMul = true }
+    var mB: Float get() = _mB; set(v) { _mB = v; dirtyColorMul = true }
+    var mA: Float get() = _mA; set(v) { _mA = v; dirtyColorMul = true }
 
     var aR: Int get() = _aR; set(v) { _aR = v; dirtyColorAdd = true }
     var aG: Int get() = _aG; set(v) { _aG = v; dirtyColorAdd = true }
     var aB: Int get() = _aB; set(v) { _aB = v; dirtyColorAdd = true }
     var aA: Int get() = _aA; set(v) { _aA = v; dirtyColorAdd = true }
 
-    var alphaMultiplier: Double
+    var alphaMultiplier: Float
         get() = mA
         set(value) {
             mA = value
         }
 
-    var redMultiplier: Double
+    var redMultiplier: Float
         get() = mR
         set(value) {
             mR = value
         }
 
-    var greenMultiplier: Double
+    var greenMultiplier: Float
         get() = mG
         set(value) {
             mG = value
         }
 
-    var blueMultiplier: Double
+    var blueMultiplier: Float
         get() = mB
         set(value) {
             mB = value
@@ -213,10 +213,10 @@ data class ColorTransform(
         }
 
     fun setMultiplyTo(
-        mR: Double = 1.0,
-        mG: Double = 1.0,
-        mB: Double = 1.0,
-        mA: Double = 1.0
+        mR: Float = 1f,
+        mG: Float = 1f,
+        mB: Float = 1f,
+        mA: Float = 1f,
     ): ColorTransform {
         this._mR = mR
         this._mG = mG
@@ -243,10 +243,10 @@ data class ColorTransform(
     }
 
     fun setTo(
-        mR: Double = 1.0,
-        mG: Double = 1.0,
-        mB: Double = 1.0,
-        mA: Double = 1.0,
+        mR: Float = 1f,
+        mG: Float = 1f,
+        mB: Float = 1f,
+        mA: Float = 1f,
         aR: Int = 0,
         aG: Int = 0,
         aB: Int = 0,
@@ -273,7 +273,7 @@ data class ColorTransform(
     }
 
     fun identity() {
-        setTo(1.0, 1.0, 1.0, 1.0, 0, 0, 0, 0)
+        setTo(1f, 1f, 1f, 1f, 0, 0, 0, 0)
     }
 
     fun setToConcat(l: ColorTransform, r: ColorTransform) = this.setTo(
@@ -291,12 +291,12 @@ data class ColorTransform(
         "ColorTransform(*[${mR.niceStr}, ${mG.niceStr}, ${mB.niceStr}, ${mA.niceStr}]+[$aR, $aG, $aB, $aA])"
 
     fun isIdentity(): Boolean =
-        (mR == 1.0) && (mG == 1.0) && (mB == 1.0) && (mA == 1.0) && (aR == 0) && (aG == 0) && (aB == 0) && (aA == 0)
+        (mR == 1f) && (mG == 1f) && (mB == 1f) && (mA == 1f) && (aR == 0) && (aG == 0) && (aB == 0) && (aA == 0)
 
     fun hasJustAlpha(): Boolean =
-        (mR == 1.0) && (mG == 1.0) && (mB == 1.0) && (aR == 0) && (aG == 0) && (aB == 0) && (aA == 0)
+        (mR == 1f) && (mG == 1f) && (mB == 1f) && (aR == 0) && (aG == 0) && (aB == 0) && (aA == 0)
 
-    fun setToIdentity() = setTo(1.0, 1.0, 1.0, 1.0, 0, 0, 0, 0)
+    fun setToIdentity() = setTo(1f, 1f, 1f, 1f, 0, 0, 0, 0)
 
     fun applyToColor(color: Int): Int {
         val r = ((RGBA(color).r * mR) + aR).toInt()
@@ -377,19 +377,19 @@ inline fun ColorTransform(multiply: RGBA = Colors.WHITE, add: ColorAdd = ColorAd
 
 @Suppress("NOTHING_TO_INLINE")
 inline fun ColorTransform(
-    mR: Number = 1,
-    mG: Number = 1,
-    mB: Number = 1,
-    mA: Number = 1,
+    mR: Number = 1f,
+    mG: Number = 1f,
+    mB: Number = 1f,
+    mA: Number = 1f,
     aR: Number = 0,
     aG: Number = 0,
     aB: Number = 0,
     aA: Number = 0
 ) = ColorTransform(
-    mR.toDouble(),
-    mG.toDouble(),
-    mB.toDouble(),
-    mA.toDouble(),
+    mR.toFloat(),
+    mG.toFloat(),
+    mB.toFloat(),
+    mA.toFloat(),
     aR.toInt(),
     aG.toInt(),
     aB.toInt(),

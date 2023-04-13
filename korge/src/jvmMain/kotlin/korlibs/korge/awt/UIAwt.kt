@@ -11,8 +11,8 @@ import korlibs.io.file.*
 import korlibs.io.file.std.*
 import korlibs.io.lang.*
 import korlibs.math.geom.*
+import korlibs.math.geom.Point
 import java.awt.*
-import java.awt.Point
 import java.awt.Rectangle
 import java.awt.event.*
 import java.awt.event.MouseEvent
@@ -224,11 +224,11 @@ internal open class NativeUiFactory {
             override fun preferredSize(): Dimension {
                 //cachedBounds = null
                 if (cachedBounds == null) {
-                    val bb = MBoundsBuilder()
+                    var bb = BoundsBuilder()
                     for (n in 0 until componentCount) {
                         val b = this.getComponent(n).bounds
-                        bb.add(b.x, b.y)
-                        bb.add(b.x + b.width, b.y + b.height)
+                        bb += korlibs.math.geom.Point(b.x, b.y)
+                        bb += korlibs.math.geom.Point(b.x + b.width, b.y + b.height)
                     }
                     cachedBounds = Dimension(bb.xmax.toInt(), bb.ymax.toInt())
                 }
@@ -303,7 +303,7 @@ internal open class AwtComponent(override val factory: NativeUiFactory, override
     }
 
     companion object {
-        val blankCursor = Toolkit.getDefaultToolkit().createCustomCursor(BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB), Point(0, 0), "blank cursor");
+        val blankCursor = Toolkit.getDefaultToolkit().createCustomCursor(BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB), java.awt.Point(0, 0), "blank cursor");
     }
 
     override fun onMouseEvent(handler: (korlibs.event.MouseEvent) -> Unit): Disposable {
@@ -646,11 +646,11 @@ open class JFixedSizeContainer : JPanel() {
     override fun preferredSize(): Dimension {
         //cachedBounds = null
         if (cachedBounds == null) {
-            val bb = MBoundsBuilder()
+            var bb = BoundsBuilder()
             for (n in 0 until componentCount) {
                 val b = this.getComponent(n).bounds
-                bb.add(b.x, b.y)
-                bb.add(b.x + b.width, b.y + b.height)
+                bb += korlibs.math.geom.Point(b.x, b.y)
+                bb += korlibs.math.geom.Point(b.x + b.width, b.y + b.height)
             }
             cachedBounds = Dimension(bb.xmax.toInt(), bb.ymax.toInt())
         }
