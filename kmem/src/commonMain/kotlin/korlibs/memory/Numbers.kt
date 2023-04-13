@@ -82,8 +82,8 @@ public fun Long.convertRangeClamped(srcMin: Long, srcMax: Long, dstMin: Long, ds
 ////////////////////
 ////////////////////
 
-/** Check if the absolute value of [this] floating point value is small (abs(this) <= 1e-19) */
-public fun Float.isAlmostZero(): Boolean = abs(this) <= 1e-19
+/** Check if the absolute value of [this] floating point value is small (abs(this) <= 1e-6) */
+public fun Float.isAlmostZero(): Boolean = abs(this) <= 1e-6
 /** Check if the absolute value of [this] floating point value is small (abs(this) <= 1e-19) */
 public fun Double.isAlmostZero(): Boolean = abs(this) <= 1e-19
 

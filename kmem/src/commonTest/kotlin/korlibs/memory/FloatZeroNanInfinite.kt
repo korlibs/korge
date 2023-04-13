@@ -8,9 +8,9 @@ class FloatZeroNanInfinite {
     fun isAlmostZero() {
         // Float
         assertEquals(true, 0f.isAlmostZero())
-        assertEquals(true, 1e-19f.isAlmostZero())
-        assertEquals(true, 1e-20f.isAlmostZero())
-        assertEquals(false, 1e-18f.isAlmostZero())
+        assertEquals(true, 1e-7f.isAlmostZero())
+        assertEquals(true, 1e-6f.isAlmostZero())
+        assertEquals(false, 1e-5f.isAlmostZero())
 
         // Double
         assertEquals(true, 0.0.isAlmostZero())
