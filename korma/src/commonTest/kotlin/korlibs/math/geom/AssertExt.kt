@@ -2,7 +2,7 @@ package korlibs.math.geom
 
 import korlibs.datastructure.*
 import korlibs.math.geom.bezier.*
-import korlibs.math.math.*
+import korlibs.math.isAlmostEquals
 import kotlin.test.*
 
 fun <

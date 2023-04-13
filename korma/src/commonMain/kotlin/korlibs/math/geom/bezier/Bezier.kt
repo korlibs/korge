@@ -4,8 +4,8 @@ import korlibs.datastructure.*
 import korlibs.datastructure.iterators.*
 import korlibs.math.geom.*
 import korlibs.math.interpolation.*
-import korlibs.math.math.*
-import korlibs.math.math.isAlmostZero
+import korlibs.math.*
+import korlibs.math.isAlmostZero
 import korlibs.memory.*
 import kotlin.contracts.*
 import kotlin.math.*

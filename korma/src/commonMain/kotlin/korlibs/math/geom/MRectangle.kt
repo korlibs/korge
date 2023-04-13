@@ -4,7 +4,8 @@ import korlibs.datastructure.*
 import korlibs.math.annotations.*
 import korlibs.math.internal.*
 import korlibs.math.interpolation.*
-import korlibs.math.math.*
+import korlibs.math.isAlmostEquals
+import korlibs.math.roundDecimalPlaces
 
 @KormaMutableApi
 @Deprecated("Use Rectangle")
@@ -236,10 +237,10 @@ data class MRectangle(
         val bl = m.transform(left, bottom)
         val br = m.transform(right, bottom)
 
-        val minX = korlibs.math.math.min(tl.x, tr.x, bl.x, br.x)
-        val minY = korlibs.math.math.min(tl.y, tr.y, bl.y, br.y)
-        val maxX = korlibs.math.math.max(tl.x, tr.x, bl.x, br.x)
-        val maxY = korlibs.math.math.max(tl.y, tr.y, bl.y, br.y)
+        val minX = korlibs.math.min(tl.x, tr.x, bl.x, br.x)
+        val minY = korlibs.math.min(tl.y, tr.y, bl.y, br.y)
+        val maxX = korlibs.math.max(tl.x, tr.x, bl.x, br.x)
+        val maxY = korlibs.math.max(tl.y, tr.y, bl.y, br.y)
 
         //val l = m.transformX(left, top)
         //val t = m.transformY(left, top)

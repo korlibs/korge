@@ -4,8 +4,9 @@ import korlibs.datastructure.*
 import korlibs.math.annotations.*
 import korlibs.math.internal.*
 import korlibs.math.interpolation.*
-import korlibs.math.math.*
-import korlibs.math.math.isAlmostZero
+import korlibs.math.isAlmostEquals
+import korlibs.math.isAlmostZero
+import korlibs.math.roundDecimalPlaces
 import korlibs.memory.*
 import kotlin.math.*
 

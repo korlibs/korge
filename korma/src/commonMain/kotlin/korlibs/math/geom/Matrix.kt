@@ -4,7 +4,7 @@ package korlibs.math.geom
 
 import korlibs.math.internal.*
 import korlibs.math.interpolation.*
-import korlibs.math.math.*
+import korlibs.math.isAlmostEquals
 import korlibs.memory.pack.*
 import kotlin.math.*
 

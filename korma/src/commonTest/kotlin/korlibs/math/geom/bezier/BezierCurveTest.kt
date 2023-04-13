@@ -2,7 +2,7 @@ package korlibs.math.geom.bezier
 
 import korlibs.datastructure.*
 import korlibs.math.geom.*
-import korlibs.math.math.*
+import korlibs.math.roundDecimalPlaces
 import kotlin.test.*
 
 class BezierCurveTest {

@@ -4,7 +4,7 @@ import korlibs.graphics.*
 import korlibs.image.color.*
 import korlibs.io.lang.*
 import korlibs.math.geom.*
-import korlibs.math.math.*
+import korlibs.math.nextMultipleOf
 import korlibs.memory.*
 import korlibs.memory.dyn.*
 import kotlin.reflect.*

@@ -1,4 +1,4 @@
-package korlibs.math.math
+package korlibs.math
 
 import kotlin.math.max
 import kotlin.math.min

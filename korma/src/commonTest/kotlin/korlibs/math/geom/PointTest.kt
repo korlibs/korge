@@ -1,7 +1,7 @@
 package korlibs.math.geom
 
+import korlibs.math.*
 import korlibs.math.annotations.*
-import korlibs.math.math.*
 import kotlin.test.*
 
 @OptIn(KormaExperimental::class)

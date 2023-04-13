@@ -1,7 +1,7 @@
 package korlibs.korge.view.util
 
 import korlibs.korge.view.SolidRect
-import korlibs.math.math.isAlmostEquals
+import korlibs.math.isAlmostEquals
 import kotlin.test.Test
 import kotlin.test.assertTrue
 
