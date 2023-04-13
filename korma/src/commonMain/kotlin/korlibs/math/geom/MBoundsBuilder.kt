@@ -2,6 +2,7 @@ package korlibs.math.geom
 
 import korlibs.datastructure.*
 
+@Deprecated("Use immutable BoundsBuilder instead")
 class MBoundsBuilder {
     val tempRect = MRectangle()
 

@@ -346,9 +346,6 @@ data class PolylineShape constructor(
     val strokeInfo: StrokeInfo,
     override val globalAlpha: Float = 1f,
 ) : StyledShape {
-    private val tempBB = MBoundsBuilder()
-    private val tempRect = MRectangle()
-
     val thickness by strokeInfo::thickness
     val scaleMode by strokeInfo::scaleMode
     val startCaps by strokeInfo::startCap

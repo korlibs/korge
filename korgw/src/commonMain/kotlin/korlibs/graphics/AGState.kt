@@ -559,14 +559,12 @@ inline class AGStencilOpFunc(val data: Int) {
 //    var scissor: AGScissor ; get() = AGScissor(data[5], data[6]) ; set(value) { data[5] = value.xy; data[6] = value.wh }
 //}
 
-fun MRectangle?.toAGScissor(): AGScissor {
+fun Rectangle?.toAGScissor(): AGScissor {
     if (this == null) return AGScissor.NIL
     return AGScissor(x.toInt(), y.toInt(), width.toInt(), height.toInt())
 }
-fun MBoundsBuilder.add(scissor: AGScissor) {
-    add(scissor.left, scissor.top)
-    add(scissor.right, scissor.bottom)
-}
+operator fun BoundsBuilder.plus(scissor: AGScissor): BoundsBuilder =
+    this + Point(scissor.left, scissor.top) + Point(scissor.right, scissor.bottom)
 
 inline class AGFrameBufferInfo(val data: Int) {
     val width: Int get() = data.extract14(0)

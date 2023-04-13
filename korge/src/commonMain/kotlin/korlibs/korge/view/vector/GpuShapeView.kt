@@ -79,7 +79,6 @@ open class GpuShapeView(
         }
 
     private val gpuShapeViewCommands = GpuShapeViewCommands()
-    private val bb = MBoundsBuilder()
     var bufferWidth = 1000
     var bufferHeight = 1000
     //private var notifyAboutEvenOdd = false
@@ -393,11 +392,9 @@ open class GpuShapeView(
     private fun getPointsForPath(points: PointList, type: AGDrawType): PointsResult? {
         if (points.size < 3) return null
         val vertexStart = gpuShapeViewCommands.verticesStart()
-        val bb = this.bb
-        bb.reset()
-        bb.add(points)
-        val xMid = ((bb.xmax + bb.xmin) / 2).toFloat()
-        val yMid = ((bb.ymax + bb.ymin) / 2).toFloat()
+        val bb = BoundsBuilder() + points
+        val xMid = ((bb.xmax + bb.xmin) / 2)
+        val yMid = ((bb.ymax + bb.ymin) / 2)
         val pMid = Point(xMid, yMid)
 
         val isStrip = type == AGDrawType.TRIANGLE_STRIP
@@ -421,7 +418,7 @@ open class GpuShapeView(
         }
         val vertexEnd = gpuShapeViewCommands.verticesEnd()
         //println("bb.getBounds()=${bb.getBounds()} - ${bb.getBounds().toAGScissor()}")
-        return PointsResult(bb.getBounds().toAGScissor(), points.size + 2, vertexStart, vertexEnd)
+        return PointsResult(bb.bounds.toAGScissor(), points.size + 2, vertexStart, vertexEnd)
     }
 
     private fun getPointsForPath(path: VectorPath, type: AGDrawType): PointsResult? {
@@ -470,11 +467,15 @@ open class GpuShapeView(
         val isSimpleDraw = shapeIsConvex && shape.clip == null && !debugDrawOnlyAntialiasedBorder
         //val isSimpleDraw = false
         val pathDataList = getPointsForPathList(shape.path, if (isSimpleDraw) AGDrawType.TRIANGLE_STRIP else AGDrawType.TRIANGLE_FAN)
-        val pathBoundsNoExpanded = MBoundsBuilder().also { bb -> pathDataList.fastForEach {
-            //println("bounds=${it.bounds}")
-            bb.add(it.bounds)
-        } }.getBounds()
-        val pathBounds: AGScissor = pathBoundsNoExpanded.clone().expand(2, 2, 2, 2).toAGScissor()
+        val pathBoundsNoExpanded: Rectangle = run {
+            var bb = BoundsBuilder()
+            pathDataList.fastForEach {
+                //println("bounds=${it.bounds}")
+                bb += it.bounds
+            }
+            bb.bounds
+        }
+        val pathBounds: AGScissor = pathBoundsNoExpanded.expanded(MarginInt(2)).toAGScissor()
         //println("pathBounds=$pathBounds")
 
         val clipDataStart = gpuShapeViewCommands.verticesStart()

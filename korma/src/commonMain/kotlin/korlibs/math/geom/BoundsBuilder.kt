@@ -4,11 +4,23 @@ import korlibs.datastructure.iterators.*
 
 inline class BoundsBuilder(val bounds: Rectangle) {
     val isEmpty: Boolean get() = bounds.isNIL
+    val isNotEmpty: Boolean get() = bounds.isNotNIL
 
     val xmin: Float get() = kotlin.math.min(bounds.left, bounds.right)
     val xmax: Float get() = kotlin.math.max(bounds.left, bounds.right)
     val ymin: Float get() = kotlin.math.min(bounds.top, bounds.bottom)
     val ymax: Float get() = kotlin.math.max(bounds.top, bounds.bottom)
+
+    /** Minimum value found for X. [default] if ![hasPoints] */
+    fun xminOr(default: Float = 0f): Float = if (hasPoints) xmin else default
+    /** Maximum value found for X. [default] if ![hasPoints] */
+    fun xmaxOr(default: Float = 0f): Float = if (hasPoints) xmax else default
+    /** Minimum value found for Y. [default] if ![hasPoints] */
+    fun yminOr(default: Float = 0f): Float = if (hasPoints) ymin else default
+    /** Maximum value found for Y. [default] if ![hasPoints] */
+    fun ymaxOr(default: Float = 0f): Float = if (hasPoints) ymax else default
+
+    val hasPoints: Boolean get() = isNotEmpty
 
     companion object {
         val EMPTY = BoundsBuilder(Rectangle.NIL)
@@ -27,6 +39,11 @@ inline class BoundsBuilder(val bounds: Rectangle) {
     operator fun plus(p: Point): BoundsBuilder {
         if (bounds.isNIL) return BoundsBuilder(Rectangle(p, Size(0, 0)))
         return BoundsBuilder(Rectangle.fromBounds(Point.minComponents(bounds.topLeft, p), Point.maxComponents(bounds.bottomRight, p)))
+    }
+    operator fun plus(p: PointList): BoundsBuilder {
+        var bb = this
+        p.fastForEach { bb += it }
+        return bb
     }
     operator fun plus(bb: BoundsBuilder): BoundsBuilder = this + bb.bounds
     operator fun plus(rect: Rectangle?): BoundsBuilder = if (rect == null) this else plus(rect)

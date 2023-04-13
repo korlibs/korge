@@ -68,7 +68,7 @@ open class UIBaseCheckBox<T : UIBaseCheckBox<T>>(
     }
     private var pressing by uiObservable(false) { updateState() }
 
-    private val textBounds = MRectangle()
+    private var textBounds = Rectangle()
 
     override fun renderInternal(ctx: RenderContext) {
         updateState()

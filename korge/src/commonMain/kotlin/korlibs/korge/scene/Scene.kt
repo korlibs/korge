@@ -219,7 +219,7 @@ abstract class ScaledScene(
 
     private fun onSizeChanged(sceneView: SContainer, size: Size) {
         val (width, height) = size
-        val out = MRectangle(0f, 0f, width, height).place(MSize(sceneWidth, sceneHeight), sceneAnchor, sceneScaleMode)
+        val out = Rectangle(0f, 0f, width, height).place(Size(sceneWidth, sceneHeight), sceneAnchor, sceneScaleMode)
         sceneView
             .size(sceneWidth, sceneHeight)
             .xy(out.x, out.y)

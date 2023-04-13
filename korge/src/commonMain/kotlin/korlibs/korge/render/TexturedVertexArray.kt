@@ -208,8 +208,7 @@ class TexturedVertexArray(vcount: Int, val indices: ShortArray, icount: Int = in
     }
 
     /**
-     * Returns the bounds of the vertices defined in the indices from [min] to [max] (excluding) as [MRectangle]
-     * Allows to define the output as [out] to be allocation-free, setting the [out] [MRectangle] and returning it.
+     * Returns the bounds of the vertices defined in the indices from [min] to [max] (excluding) as [Rectangle]
      */
     fun getBounds(min: Int = 0, max: Int = vcount): Rectangle {
         var bb = BoundsBuilder()

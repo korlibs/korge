@@ -16,7 +16,6 @@ typealias RasterizerCallback = (x0: Int, x1: Int, y: Int) -> Unit
 @OptIn(KormaExperimental::class)
 class Rasterizer : RastScale() {
     var debug: Boolean = false
-    private val tempRect = MRectangle()
     var quality: Int = 2
 
     data class Stats(
@@ -61,9 +60,9 @@ class Rasterizer : RastScale() {
         // @TODO: Bounds intersection to reduce the number of
         val xmin = bounds.left.s
         val xmax = bounds.right.s
-        tempRect.copyFrom(path.getBounds())
-        val startY = max(bounds.top, tempRect.top.toFloat()).s
-        val endY = min(bounds.bottom, tempRect.bottom.toFloat()).s
+        val tempRect = path.getBounds()
+        val startY = max(bounds.top, tempRect.top).s
+        val endY = min(bounds.bottom, tempRect.bottom).s
         val func: (x0: Int, x1: Int, y: Int) -> Unit = { a, b, y ->
             //println("CHUNK")
             if (a <= xmax && b >= xmin) {

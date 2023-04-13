@@ -35,7 +35,6 @@ open class UIVerticalList(provider: Provider, width: Float = 200f) : UIView(DEFA
     private val viewsByIndex = LinkedHashMap<Int, View>()
     private var lastArea = Rectangle.NaN
     private var lastPoint = Point.NaN
-    private val tempRect = MRectangle()
     var provider: Provider = provider
         set(value) {
             field = value
@@ -55,8 +54,8 @@ open class UIVerticalList(provider: Provider, width: Float = 200f) : UIView(DEFA
         super.renderInternal(ctx)
     }
 
-    private fun getIndexAtY(y: Double): Int {
-        val index = y / (provider.fixedHeight?.toDouble() ?: 20.0)
+    private fun getIndexAtY(y: Float): Int {
+        val index = y / (provider.fixedHeight?.toFloat() ?: 20f)
         return index.toInt()
     }
 
@@ -97,9 +96,9 @@ open class UIVerticalList(provider: Provider, width: Float = 200f) : UIView(DEFA
 
             //println("point=$point")
 
-            val transform = parent!!.globalMatrix.immutable.toTransform()
+            val transform = parent!!.globalMatrix.toTransform()
             //println("transform=${transform.scaleAvg}")
-            val fromIndex = getIndexAtY((-point.y + tempRect.top) / transform.scaleY).clamp(0, numItems - 1)
+            val fromIndex = getIndexAtY((-point.y + 0) / transform.scaleY).clamp(0, numItems - 1)
             var toIndex = fromIndex
             //println("numItems=$numItems")
             if (numItems > 0) {
