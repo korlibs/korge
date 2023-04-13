@@ -422,6 +422,7 @@ class Views constructor(
 
     val debugSavedHandlers = Signal<SaveEvent>()
     val completedEditing = Signal<Unit>()
+    val viewFactories = ArrayList<ViewFactory>()
 
     fun debugSaveView(e: SaveEvent) {
         debugSavedHandlers(e)
@@ -449,6 +450,8 @@ class Views constructor(
 
     //var viewExtraBuildDebugComponent = arrayListOf<(views: Views, view: View, container: UiContainer) -> Unit>()
 }
+
+data class ViewFactory(val name: String, val build: () -> View)
 
 fun viewsLog(callback: suspend Stage.(log: ViewsLog) -> Unit) = Korio {
     viewsLogSuspend(callback)
