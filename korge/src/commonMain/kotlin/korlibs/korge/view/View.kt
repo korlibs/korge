@@ -148,7 +148,7 @@ abstract class View internal constructor(
             if (_hitShape2d == null) {
                 if (_hitShape2d == null && hitShapes != null) _hitShape2d = hitShapes!!.toShape2d()
                 if (_hitShape2d == null && hitShape != null) _hitShape2d = hitShape!!.toShape2d()
-                //if (_hitShape2d == null) _hitShape2d = Shape2d.Rectangle(getLocalBounds())
+                //if (_hitShape2d == null) _hitShape2d = Shape2D.Rectangle(getLocalBounds())
             }
             return _hitShape2d ?: EmptyShape2d
         }
