@@ -1,4 +1,4 @@
-package korlibs.korge.component.docking
+package samples.util
 
 import korlibs.korge.view.*
 import korlibs.math.geom.*
