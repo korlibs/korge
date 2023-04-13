@@ -4,12 +4,12 @@ import korlibs.image.bitmap.*
 import korlibs.image.color.*
 import korlibs.image.format.*
 import korlibs.io.file.std.*
-import korlibs.korge.component.docking.*
 import korlibs.korge.input.*
 import korlibs.korge.scene.*
 import korlibs.korge.ui.*
 import korlibs.korge.view.*
 import korlibs.math.geom.*
+import samples.util.*
 
 class MainUIImageTester : Scene() {
     override suspend fun SContainer.sceneMain() {

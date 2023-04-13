@@ -4,6 +4,8 @@ import assertEqualsFloat
 import korlibs.image.bitmap.*
 import korlibs.image.color.*
 import korlibs.korge.tests.*
+import korlibs.korge.view.align.centerOn
+import korlibs.korge.view.align.centerOnStage
 import korlibs.logger.*
 import korlibs.math.geom.*
 import kotlin.math.*

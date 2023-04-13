@@ -6,6 +6,7 @@ import korlibs.io.file.std.*
 import korlibs.korge.input.*
 import korlibs.korge.scene.*
 import korlibs.korge.view.*
+import korlibs.korge.view.align.*
 import korlibs.time.*
 
 class MainSpriteAnim : ScaledScene(512, 512) {

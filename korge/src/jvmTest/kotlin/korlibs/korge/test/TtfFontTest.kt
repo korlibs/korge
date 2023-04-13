@@ -6,6 +6,7 @@ import korlibs.image.text.*
 import korlibs.io.file.std.*
 import korlibs.korge.testing.*
 import korlibs.korge.view.*
+import korlibs.korge.view.align.alignTopToBottomOf
 import korlibs.math.geom.*
 import org.junit.*
 

@@ -1,6 +1,5 @@
 import korlibs.time.*
 import korlibs.korge.*
-import korlibs.korge.component.docking.dockedTo
 import korlibs.korge.time.*
 import korlibs.korge.view.*
 import korlibs.korge.view.filter.*

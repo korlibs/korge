@@ -6,6 +6,7 @@ import korlibs.io.async.delay
 import korlibs.io.file.std.*
 import korlibs.korge.scene.Scene
 import korlibs.korge.view.*
+import korlibs.korge.view.align.*
 import korlibs.korge.view.filter.*
 import korlibs.time.*
 

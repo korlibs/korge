@@ -7,6 +7,7 @@ import korlibs.image.color.*
 import korlibs.io.util.*
 import korlibs.korge.tests.*
 import korlibs.korge.tween.*
+import korlibs.korge.view.align.*
 import korlibs.logger.*
 import korlibs.math.geom.*
 import korlibs.time.*

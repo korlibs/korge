@@ -1,16 +1,12 @@
 package samples.minesweeper
 
-import korlibs.datastructure.setExtra
-import korlibs.event.Key
-import korlibs.korge.component.docking.dockedTo
-import korlibs.korge.scene.ScaledScene
-import korlibs.korge.view.Container
-import korlibs.korge.view.SContainer
-import korlibs.korge.view.image
-import korlibs.image.bitmap.*
-import korlibs.math.geom.Anchor
-import korlibs.math.geom.ScaleMode
+import korlibs.datastructure.*
+import korlibs.event.*
+import korlibs.korge.scene.*
+import korlibs.korge.view.*
+import korlibs.math.geom.*
 import korlibs.math.geom.slice.*
+import samples.util.*
 
 // Ported from here: https://github.com/soywiz/lunea/tree/master/samples/busca
 class MainMineSweeper : ScaledScene(640, 480) {

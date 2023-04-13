@@ -1,5 +1,3 @@
-package korlibs.korge.component.docking
-
 import korlibs.korge.view.*
 import korlibs.math.geom.*
 import korlibs.math.interpolation.*
