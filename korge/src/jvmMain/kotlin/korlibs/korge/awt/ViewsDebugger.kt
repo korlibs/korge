@@ -298,7 +298,6 @@ internal class ViewsDebuggerComponent constructor(
         }
 
         //list.add(ViewFactory("TreeViewRef") { TreeViewRef() })
-        //list.add(ViewFactory("ParticleEmitter") { ParticleEmitterView(ParticleEmitter()) })
         //for (registration in views.ktreeSerializer.registrationsExt) {
         //    list.add(ViewFactory(registration.name) { registration.factory() })
         //}

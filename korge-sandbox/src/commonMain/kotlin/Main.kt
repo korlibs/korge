@@ -166,7 +166,6 @@ suspend fun main() = Korge(
             Demo(::MainConnect4),
             Demo(::MainMutableAtlasTest),
             Demo(::MainTerminalEmulator),
-            Demo(::MainParticles),
             Demo(::MainBezierSample),
             Demo(::MainEditor),
             Demo(::MainAnimations),
