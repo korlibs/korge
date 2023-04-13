@@ -6,7 +6,6 @@ import korlibs.image.bitmap.*
 import korlibs.image.color.*
 import korlibs.io.async.*
 import korlibs.korge.internal.*
-import korlibs.korge.particle.*
 import korlibs.korge.view.*
 import korlibs.korge.view.Container
 import korlibs.korge.view.Ellipse
@@ -288,21 +287,23 @@ internal class ViewsDebuggerComponent constructor(
     private fun scrollPane(view: Component): JScrollPane =
         JScrollPane(view, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED)
 
-    data class ViewFactory(val name: String, val build: () -> View)
+    private fun getViewFactories(views: Views): List<ViewFactory> = views.viewFactories.toList()
+    /*
+    ArrayList<ViewFactory>().also { list ->
 
-    private fun getViewFactories(views: Views): List<ViewFactory> = ArrayList<ViewFactory>().also { list ->
-        list.add(ViewFactory("Image") { Image(Bitmaps.white).apply { size(100f, 100f) } })
-        list.add(ViewFactory("VectorImage") { VectorImage.createDefault().apply { size(100f, 100f) } })
-        list.add(ViewFactory("SolidRect") { SolidRect(100, 100, Colors.WHITE) })
-        list.add(ViewFactory("Ellipse") { Ellipse(Size(50f, 50f), Colors.WHITE).center() })
-        list.add(ViewFactory("Container") { Container() })
+        for (factory in views.viewFactories) ´
+
+        for (factories in ServiceLoader.load(ViewsFactory::class.java).toList()) {
+            list.addAll(factories.create())
+        }
+
         //list.add(ViewFactory("TreeViewRef") { TreeViewRef() })
-        list.add(ViewFactory("ParticleEmitter") { ParticleEmitterView(ParticleEmitter()) })
-        list.add(ViewFactory("9-Patch") { NinePatch(NinePatchBmpSlice(Bitmap32(62, 62, premultiplied = true))) })
+        //list.add(ViewFactory("ParticleEmitter") { ParticleEmitterView(ParticleEmitter()) })
         //for (registration in views.ktreeSerializer.registrationsExt) {
         //    list.add(ViewFactory(registration.name) { registration.factory() })
         //}
     }
+    */
 
     private fun createPopupMenu(): JPopupMenu = JPopupMenu()
     private fun createSeparator(): JSeparator = JSeparator()
