@@ -610,7 +610,7 @@ abstract class View internal constructor(
             if (!validLocalMatrix) {
                 validLocalMatrix = true
                 _requireInvalidate = true
-                _localMatrix = Matrix.fromTransform(x, y, rotation, scaleX, scaleY, skewX, skewY)
+                _localMatrix = Matrix.fromTransform(x, y, rotation, scaleX, scaleY, skewX, skewY, 0f, 0f)
             }
             return _localMatrix
         }
