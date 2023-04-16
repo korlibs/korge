@@ -1,6 +1,7 @@
 plugins {
     //id "com.dorongold.task-tree" version "2.1.1"
     // ./gradlew :kds:compileKotlinJs taskTree
+    id 'org.jetbrains.kotlinx.binary-compatibility-validator' version '0.13.0'
 }
 
 korlibs.root.RootKorlibsPlugin.doInit(rootProject)

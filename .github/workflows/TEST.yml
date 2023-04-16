@@ -96,6 +96,7 @@ jobs:
     - { name: Testing JVM, run: "./gradlew --stacktrace --parallel jvmTest", env: { EGL_LOG_LEVEL: debug, LIBGL_DEBUG: verbose, LIBGL_ALWAYS_SOFTWARE: true, MESA_DEBUG: true } }
     - { name: Archive Test Results, if: failure(), uses: actions/upload-artifact@v3, with: { name: screenshot-test-results-linux, retention-days: 21, path: "**/build/reports", if-no-files-found: ignore } }
     - { name: Check sandbox compiles, run: "./gradlew :korge-sandbox:jvmJar" }
+    - { name: Try dumping binary API, run: "./gradlew apiDump" }
     - { name: Publish to maven local, run: ./gradlew publishJvmLocal }
     - { name: e2e test, working-directory: e2e-test, run: ./gradlew checkReferencesJvm --stacktrace }
     - { name: Archive E2E Test Results, if: failure(), uses: actions/upload-artifact@v3, with: { name: e2e-test-results-linux-jvm, retention-days: 21, path: "**/e2e-test/build/screenshots", if-no-files-found: ignore } }
