@@ -34,47 +34,26 @@ internal fun AGIndexType.toMetal(): MTLIndexType = when (this) {
     else -> unreachable
 }
 
-fun VarType.toMetalVertexFormat() = when (this) {
-    VarType.TVOID -> TODO()
-    VarType.Mat2 -> TODO()
-    VarType.Mat3 -> TODO()
-    VarType.Mat4 -> TODO()
-    VarType.Sampler1D -> TODO()
-    VarType.Sampler2D -> TODO()
-    VarType.Sampler3D -> TODO()
-    VarType.SamplerCube -> TODO()
-    VarType.Int1 -> TODO()
+fun VarType.toMetalVertexFormat(normalized: Boolean) = when (normalized) {
+    false -> toMetalVertexFormat()
+    else -> toMetalVertexFormatNormalized()
+}
+
+private fun VarType.toMetalVertexFormatNormalized() = when (this) {
+    VarType.UByte2 -> MTLVertexFormatUChar2Normalized
+    VarType.UByte3 -> MTLVertexFormatUChar3Normalized
+    VarType.UByte4 -> MTLVertexFormatUChar4Normalized
+    else -> TODO("implement with format: $this")
+}
+
+private fun VarType.toMetalVertexFormat() = when (this) {
     VarType.Float1 -> MTLVertexFormatFloat
     VarType.Float2 -> MTLVertexFormatFloat2
     VarType.Float3 -> MTLVertexFormatFloat3
     VarType.Float4 -> MTLVertexFormatFloat4
-    VarType.Short1 -> TODO()
-    VarType.Short2 -> TODO()
-    VarType.Short3 -> TODO()
-    VarType.Short4 -> TODO()
-    VarType.Bool1 -> TODO()
-    VarType.Bool2 -> TODO()
-    VarType.Bool3 -> TODO()
-    VarType.Bool4 -> TODO()
     VarType.Byte4 -> MTLVertexFormatChar4
-    VarType.SByte1 -> TODO()
-    VarType.SByte2 -> TODO()
-    VarType.SByte3 -> TODO()
-    VarType.SByte4 -> TODO()
-    VarType.UByte1 -> TODO()
-    VarType.UByte2 -> MTLVertexFormatChar2
-    VarType.UByte3 -> MTLVertexFormatChar3
-    VarType.UByte4 -> MTLVertexFormatChar4
-    VarType.SShort1 -> TODO()
-    VarType.SShort2 -> TODO()
-    VarType.SShort3 -> TODO()
-    VarType.SShort4 -> TODO()
-    VarType.UShort1 -> TODO()
-    VarType.UShort2 -> TODO()
-    VarType.UShort3 -> TODO()
-    VarType.UShort4 -> TODO()
-    VarType.SInt1 -> TODO()
-    VarType.SInt2 -> TODO()
-    VarType.SInt3 -> TODO()
-    VarType.SInt4 -> TODO()
+    VarType.UByte2 -> MTLVertexFormatUChar2
+    VarType.UByte3 -> MTLVertexFormatUChar3
+    VarType.UByte4 -> MTLVertexFormatUChar4
+    else -> TODO("implement with format: $this")
 }

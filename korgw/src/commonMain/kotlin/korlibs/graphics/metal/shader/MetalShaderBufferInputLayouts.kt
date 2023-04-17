@@ -6,23 +6,47 @@ import korlibs.graphics.shader.VariableWithOffset
 import korlibs.graphics.shader.VertexLayout
 import korlibs.logger.Logger
 
-internal data class MetalShaderBufferInputLayouts(
-    var vertexLayouts: List<VertexLayout>,
-    var uniforms: List<Uniform>
+internal fun lazyMetalShaderBufferInputLayouts(
+    vertexLayouts: List<VertexLayout>,
+    uniforms: List<Uniform>
+) = lazy {
+    MetalShaderBufferInputLayouts(
+        vertexLayouts,
+        uniforms,
+        (vertexLayouts.map { it.items } + uniforms.map { listOf(it) })
+            .toList()
+    )
+}
+
+internal class MetalShaderBufferInputLayouts(
+    val vertexLayouts: List<VertexLayout>,
+    val uniforms: List<Uniform>,
+    val inputBuffers: List<List<VariableWithOffset>>
 ) {
 
     private val logger = Logger("MetalShaderBufferInputLayouts")
-    private val inputBuffers by computeInputBuffers()
+
+    fun attributeIndexOf(attribute: Attribute): Int? {
+        return bufferIndexOf(attribute)
+            // take is not zero indexed, so we add 1
+            ?.let { inputBuffers.take(it + 1) }
+            ?.fold(0) { acc, list ->
+                when (attribute) {
+                    in list -> acc + list.indexOf(attribute)
+                    else -> acc + list.size
+                }
+            }
+    }
+
+    private fun bufferIndexOf(attribute: Attribute): Int? {
+        return inputBuffers.indexOfFirst { attribute in it }
+            .let { if (it == -1) null else it }
+    }
 
     internal val vertexInputStructure by lazy {
         vertexLayouts
             .mapIndexed { index, attributes -> index to attributes }
             .filter { (_, attributes) -> attributes.items.size >= 2 }
-    }
-
-    internal fun computeInputBuffers(): Lazy<MutableList<List<VariableWithOffset>>> = lazy {
-        (vertexLayouts.map { it.items } + uniforms.map { listOf(it) })
-            .toMutableList()
     }
 
     internal fun computeFunctionParameter(
@@ -31,15 +55,6 @@ internal data class MetalShaderBufferInputLayouts(
     ): Lazy<List<String>> = lazy {
         inputBuffers.filterNotIn(parameters)
             .map { it.findDeclarationFromInputBuffer(bodyGenerator) }
-
-    }
-
-    internal fun convertInputBufferToLocalDeclarations(
-        parameters: List<VariableWithOffset>
-    ): List<String> {
-        return inputBuffers.filterNotIn(parameters)
-            .filter { buffer -> buffer.any { it is Attribute } }
-            .flatMap { it.toLocalDeclarations() }
 
     }
 
@@ -60,12 +75,13 @@ internal data class MetalShaderBufferInputLayouts(
                 val type = bodyGenerator.typeToString(variableWithOffset.type)
                 val name = variableWithOffset.name
                 when (variableWithOffset) {
-                    is Attribute -> "device const $type* buffer$bufferIndex [[buffer($bufferIndex)]]"
+                    is Attribute -> "const device $type& $name [[attribute(${attributeIndexOf(variableWithOffset)})]]"
                     else -> "constant $type& $name [[buffer($bufferIndex)]]"
                 }
             }
         }
     }
+
     private fun List<VariableWithOffset>.toLocalDeclarations(): List<String> {
         val bufferIndex = inputBuffers.indexOf(this)
 

@@ -65,9 +65,9 @@ class AGMetal(private val view: MTKView) : AG() {
                 //setFragmentSamplerState(samplerState, 0)
 
                 vertexData.list.fastForEach { vertexDataUnit ->
-                    val buffer = vertexDataUnit.buffer.toMetal.buffer
                     val bufferLocation = currentProgram.indexOfAttributeOnBuffer(vertexDataUnit.layout.items)
                     logger.trace { "${vertexDataUnit.layout.items} will be bind at location $bufferLocation" }
+                    val buffer = vertexDataUnit.buffer.toMetal.buffer
                     setVertexBuffer(buffer, offset = 0uL, bufferLocation)
                 }
 
@@ -126,7 +126,7 @@ class AGMetal(private val view: MTKView) : AG() {
             MetalShaderCompiler.compile(
                 device,
                 program,
-                bufferInputLayouts = MetalShaderBufferInputLayouts(
+                bufferInputLayouts = lazyMetalShaderBufferInputLayouts(
                     vertexLayouts = vertexData.map { it.layout },
                     uniforms = uniformBlocks.map()
                 )

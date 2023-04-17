@@ -18,7 +18,6 @@ internal class MetalShaderGenerator(
     private val fragmentInstructions = fragmentShader.stm
     private val vertexBodyGenerator = MetalShaderBodyGenerator(ShaderType.VERTEX)
     private val fragmentBodyGenerator = MetalShaderBodyGenerator(ShaderType.FRAGMENT)
-    private val inputBuffers by bufferLayouts.computeInputBuffers()
     private val inputStructure by lazy {
         bufferLayouts.vertexInputStructure
             .map { (index, attributes) -> index to attributes.attributes.toMetalShaderStructureGeneratorAttributes(shouldAddAttributeNumber = true)}
@@ -43,7 +42,7 @@ internal class MetalShaderGenerator(
 
     data class Result(
         val result: String,
-        val inputBuffers: List<List<VariableWithOffset>>
+        val inputBuffers: MetalShaderBufferInputLayouts
     )
 
     fun generateResult(): Result  {
@@ -64,7 +63,7 @@ internal class MetalShaderGenerator(
 
         return Result(
             result,
-            inputBuffers.toList()
+            bufferLayouts
         )
     }
 
@@ -98,8 +97,9 @@ internal class MetalShaderGenerator(
         }
         ")" {
             line("v2f out;")
+            /*
             bufferLayouts.convertInputBufferToLocalDeclarations(vertexVisitor.attributes.toList() + vertexVisitor.uniforms)
-                .forEach { line(it) }
+                .forEach { line(it) }*/
 
             vertexBodyGenerator.visit(vertexShader.stm)
             line(vertexBodyGenerator.programIndenter)

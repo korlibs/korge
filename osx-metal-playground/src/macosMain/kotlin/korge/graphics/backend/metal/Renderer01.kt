@@ -11,15 +11,15 @@ import kotlinx.cinterop.*
 import platform.Metal.*
 import platform.MetalKit.*
 
-class Renderer01(device: MTLDeviceProtocol) : Renderer(device) {
+class Renderer01(view: MTKView, private val simple: Boolean) : Renderer() {
 
-    private var ag: AGMetal? = null
+    private var ag = AGMetal(view)
     object uniformBlock : UniformBlock(fixedLocation = 0) {
         val u_ProjMat by mat4()
     }
 
     private val vertexShader = VertexShader {
-        SET(DefaultShaders.v_Col, vec4(DefaultShaders.a_Col) / 255f)
+        SET(DefaultShaders.v_Col, DefaultShaders.a_Col)
         //SET(DefaultShaders.v_Col, vec4(1f.lit, 1f.lit, 1f.lit, 1f.lit))
         //SET(out, vec4(DefaultShaders.a_Pos, 0f.lit, 1f.lit))
         SET(out, uniformBlock.u_ProjMat /* DefaultShaders.u_ViewMat*/ * vec4(DefaultShaders.a_Pos, 0f.lit, 1f.lit))
@@ -30,7 +30,7 @@ class Renderer01(device: MTLDeviceProtocol) : Renderer(device) {
 
     private val fragmentShader = FragmentShader {
         SET(out, DefaultShaders.v_Col)
-        //SET(out, vec4(1f.lit, 1f.lit, 1f.lit, 0f.lit))
+        SET(out, vec4(1f.lit, 1f.lit, 1f.lit, 0f.lit))
     }
 
     private val program = Program(vertexShader, fragmentShader)
@@ -120,17 +120,6 @@ class Renderer01(device: MTLDeviceProtocol) : Renderer(device) {
         val width = view.drawableSize.useContents { width }.toInt()
         val height = view.drawableSize.useContents { height }.toInt()
 
-        if (ag == null) {
-            ag = AGMetal(view)
-
-            Matrix4.ortho(0f, width.toFloat(), 0f, height.toFloat(), -1f, +1f)
-                .also(::println)
-
-            Matrix4.ortho(0f, width.toFloat(), 0f, height.toFloat(), -1f, +1f)
-                .transform(Vector4(200f, 0f, 0f, 1f))
-                .also(::println)
-
-        }
         val frameBuffer = AGFrameBufferBase(false)
         val frameBufferInfo = AGFrameBufferInfo(0)
             .withSize(width, height)
@@ -145,11 +134,10 @@ class Renderer01(device: MTLDeviceProtocol) : Renderer(device) {
                 .data
                 .let { AGBuffer().upload(it, 0, it.size) }
 
-        ag?.draw(
+        ag.draw(
             frameBuffer,
             frameBufferInfo,
-            simpleVertexData,
-            //complexVertexData,
+            if (simple) simpleVertexData else complexVertexData,
             program,
             drawType = AGDrawType.TRIANGLES,
             vertexCount = 6, // Draw 2 triangles

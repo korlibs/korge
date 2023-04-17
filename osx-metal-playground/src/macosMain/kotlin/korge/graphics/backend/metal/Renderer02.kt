@@ -1,16 +1,14 @@
 package korge.graphics.backend.metal
 
 import korlibs.graphics.*
-import korlibs.graphics.metal.shader.*
 import korlibs.graphics.shader.*
-import korlibs.graphics.shader.gl.*
 import kotlinx.cinterop.*
 import platform.Foundation.*
 import platform.Metal.*
 import platform.MetalKit.*
 import platform.posix.*
 
-class Renderer02(device: MTLDeviceProtocol) : Renderer(device) {
+class Renderer02 : Renderer() {
 
     private lateinit var samplerState: MTLSamplerStateProtocol
     private lateinit var vertexPositionsBuffer: MTLBufferProtocol

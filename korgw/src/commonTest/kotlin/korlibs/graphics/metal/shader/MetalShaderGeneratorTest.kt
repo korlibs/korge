@@ -19,7 +19,7 @@ class MetalShaderGeneratorTest {
         val u_ColorModifier by vec4()
     }
 
-    private val simpleBufferInputLayouts = MetalShaderBufferInputLayouts(
+    private val simpleBufferInputLayouts = lazyMetalShaderBufferInputLayouts(
         vertexLayouts = listOf(
             VertexLayout(a_Pos),
             VertexLayout(a_Tex),
@@ -30,8 +30,9 @@ class MetalShaderGeneratorTest {
             u_ViewMat,
             UB.u_ColorModifier.uniform
         )
-    )
-    private val bufferInputLayoutsWithComplexLayout = MetalShaderBufferInputLayouts(
+    ).value
+
+    private val bufferInputLayoutsWithComplexLayout = lazyMetalShaderBufferInputLayouts(
         vertexLayouts = listOf(
             VertexLayout(a_Pos),
             VertexLayout(a_Tex, a_Col)
@@ -41,7 +42,7 @@ class MetalShaderGeneratorTest {
             u_ViewMat,
             UB.u_ColorModifier.uniform
         )
-    )
+    ).value
 
     private val vertexShader = VertexShader {
         SET(v_Tex, a_Tex)
@@ -76,14 +77,14 @@ class MetalShaderGeneratorTest {
             vertex v2f vertexMain(
             	uint vertexId [[vertex_id]],
             	device const float2* buffer0 [[buffer(0)]],
-            	device const Buffer1* buffer1 [[buffer(1)]],
+            	Buffer1 buffer1 [[stage_in]]),
             	constant float4x4& u_ProjMat [[buffer(2)]],
             	constant float4x4& u_ViewMat [[buffer(3)]]
             ) {
             	v2f out;
             	auto a_Pos = buffer0[vertexId];
-            	auto a_Tex = buffer1[vertexId].a_Tex;
-            	auto a_Col = buffer1[vertexId].a_Col;
+            	auto a_Tex = buffer1.a_Tex;
+            	auto a_Col = buffer1.a_Col;
             	v_Tex = a_Tex;
             	out.v_Col = a_Col;
             	out.position = ((u_ProjMat * u_ViewMat) * float4(a_Pos, 0.0, 1.0));
@@ -99,7 +100,7 @@ class MetalShaderGeneratorTest {
             }
         """.trimIndent())
 
-        assertThat(metalResult.inputBuffers).isEqualTo(listOf(
+        assertThat(metalResult.inputBuffers.inputBuffers).isEqualTo(listOf(
             listOf(a_Pos),
             listOf(a_Tex, a_Col),
             listOf(u_ProjMat),
@@ -115,6 +116,7 @@ class MetalShaderGeneratorTest {
             // When
             .toNewMetalShaderStringResult(simpleBufferInputLayouts)
 
+
         // Then
         assertThat(metalResult.result.trim()).isEqualTo("""
             #include <metal_stdlib>
@@ -126,17 +128,14 @@ class MetalShaderGeneratorTest {
             };
             vertex v2f vertexMain(
             	uint vertexId [[vertex_id]],
-            	device const float2* buffer0 [[buffer(0)]],
-            	device const float2* buffer1 [[buffer(1)]],
-            	device const uchar4* buffer2 [[buffer(2)]],
+            	constant float2& a_Pos [[attribute(0)]],
+            	constant float2& a_Tex [[attribute(1)]],
+            	constant uchar4& a_Col [[attribute(2)]],
             	constant float4x4& u_ProjMat [[buffer(3)]],
             	constant float4x4& u_ViewMat [[buffer(4)]]
             ) {
             	v2f out;
-            	auto a_Pos = buffer0[vertexId];
-            	auto a_Tex = buffer1[vertexId];
-            	auto a_Col = buffer2[vertexId];
-            	v_Tex = a_Tex;
+            	out.v_Tex = a_Tex;
             	out.v_Col = a_Col;
             	out.position = ((u_ProjMat * u_ViewMat) * float4(a_Pos, 0.0, 1.0));
             	return out;
@@ -151,7 +150,7 @@ class MetalShaderGeneratorTest {
             }
         """.trimIndent())
 
-        assertThat(metalResult.inputBuffers).isEqualTo(listOf(
+        assertThat(metalResult.inputBuffers.inputBuffers).isEqualTo(listOf(
             listOf(a_Pos),
             listOf(a_Tex),
             listOf(a_Col),

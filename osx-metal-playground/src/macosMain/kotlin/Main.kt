@@ -1,7 +1,7 @@
 import korge.graphics.backend.metal.*
 
 fun main() {
-    MetalApplication("test") { device ->
-        Renderer03(device)
+    MetalApplication("test") { view ->
+        Renderer01(view, simple = false)
     }.run()
 }

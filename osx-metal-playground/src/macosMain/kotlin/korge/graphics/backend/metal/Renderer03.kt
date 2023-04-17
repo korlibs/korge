@@ -4,10 +4,9 @@ import korlibs.image.color.*
 import korlibs.korge.render.*
 import korlibs.math.geom.*
 import korlibs.metal.*
-import platform.Metal.*
 import platform.MetalKit.*
 
-class Renderer03(device: MTLDeviceProtocol) : Renderer(device) {
+class Renderer03 : Renderer() {
 
     private var renderContext : RenderContext? = null
     private var renderContext2D : RenderContext2D? = null

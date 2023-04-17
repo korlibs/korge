@@ -21,9 +21,9 @@ internal object MetalShaderCompiler {
     fun compile(
         device: MTLDeviceProtocol,
         program: Program,
-        bufferInputLayouts: MetalShaderBufferInputLayouts
+        bufferInputLayouts: Lazy<MetalShaderBufferInputLayouts>
     ): MetalProgram {
-        return program.toMetalShader(bufferInputLayouts)
+        return program.toMetalShader(bufferInputLayouts.value)
             .toInternalMetalProgram(device)
     }
 }
@@ -33,7 +33,7 @@ private val logger by lazy { Logger("MetalShaderCompiler") }
 
 private fun MetalShaderGenerator.Result.toInternalMetalProgram(device: MTLDeviceProtocol) =
     let { (shaderAsString, inputBuffers) ->
-        shaderAsString
+        fake
             .also { logger.debug { "generated shader:\n$shaderAsString" } }
             .toFunctionsLibrary(device)
             .let { it.toFunction(vertexMainFunctionName) to it.toFunction(fragmentMainFunctionName) }
@@ -60,7 +60,7 @@ private fun MTLLibraryProtocol.toFunction(name: String) = newFunctionWithName(na
 
 private fun Pair<MTLFunctionProtocol, MTLFunctionProtocol>.toCompiledProgram(
     device: MTLDeviceProtocol,
-    inputBuffers: List<List<VariableWithOffset>>
+    inputBuffers: MetalShaderBufferInputLayouts
 ) =
     let { (vertex, fragment) -> createPipelineState(device, vertex, fragment, inputBuffers) }
 
@@ -68,7 +68,7 @@ private fun createPipelineState(
     device: MTLDeviceProtocol,
     vertexFunction: MTLFunctionProtocol,
     fragmentFunction: MTLFunctionProtocol,
-    inputBuffers: List<List<VariableWithOffset>>
+    inputBuffers: MetalShaderBufferInputLayouts
 ): MTLRenderPipelineStateProtocol {
     memScoped {
         val renderPipelineDescriptor = MTLRenderPipelineDescriptor().apply {
@@ -80,19 +80,21 @@ private fun createPipelineState(
             var attributeIndex = -1
             vertexDescriptor = MTLVertexDescriptor().apply {
                 inputBuffers
+                    .inputBuffers
                     .mapIndexed { bufferIndex, layout -> bufferIndex to layout }
-                    .filter { (_, layout) -> layout.size > 1 && layout.none { it is Uniform } }
+                    .filter { (_, layout) -> layout.none { it is Uniform } }
                     .filterIsInstance<Pair<Int, List<Attribute>>>()
                     .forEachIndexed { layoutIndex, (bufferIndex, layout) ->
                         logger.debug { "will create attributes on vertex descriptor with layout $layout" }
 
                         var offset = 0
                         layout.forEach { attribute ->
-                            logger.debug { "${attribute.type} "}
-                            val format = attribute.type.toMetalVertexFormat()
+                            val format = attribute.type.toMetalVertexFormat(attribute.normalized)
                             attributeIndex += 1
                             logger.debug {
-                                "will add attribute at buffer index $bufferIndex and attribute index $attributeIndex and offset $offset and format $format"
+                                val type = attribute.type
+                                val normalized = if (attribute.normalized) "normalized" else ""
+                                "will add attribute at buffer index $bufferIndex and attribute index $attributeIndex and offset $offset and format $type $normalized"
                             }
                             attributes.objectAtIndexedSubscript(attributeIndex.toULong()).apply {
                                 setBufferIndex(bufferIndex.toULong())
@@ -102,8 +104,13 @@ private fun createPipelineState(
                             }
                         }
 
-                        layouts.objectAtIndexedSubscript(layoutIndex.toULong()).apply {
-                            stride = layout.sumOf { it.totalBytes }.toULong()
+                        layouts.objectAtIndexedSubscript(bufferIndex.toULong()).apply {
+                            val stride = layout.sumOf { it.totalBytes }.toULong()
+                            logger.debug {
+                                "will set layout stride to $stride at index $bufferIndex"
+                            }
+                            setStride(stride)
+                            stepFunction = MTLStepFunctionPerVertex
                         }
                     }
 
@@ -124,8 +131,44 @@ private fun createPipelineState(
     }
 }
 
-private fun MTLRenderPipelineStateProtocol.toInternalMetalProgram(inputBuffers: List<List<VariableWithOffset>>) =
+private fun MTLRenderPipelineStateProtocol.toInternalMetalProgram(inputBuffers: MetalShaderBufferInputLayouts) =
     MetalProgram(
         this,
         inputBuffers
     )
+
+
+val fake = """
+    #include <metal_stdlib>
+    using namespace metal;
+    struct v2f {
+    	float4 v_Col;
+    	float4 position [[position]];
+    };
+    
+    struct V1 {
+    	float4 a_Col [[attribute(0)]];
+    	float2 a_Pos [[attribute(1)]];
+    };
+    
+    vertex v2f vertexMain(
+    	uint vertexId [[vertex_id]],
+    	V1 v1 [[stage_in]],
+    	constant float4x4& u_ProjMat [[buffer(2)]]
+    ) {
+        auto a_Col = v1.a_Col;
+        auto a_Pos = v1.a_Pos;
+    	v2f out;
+    	out.v_Col = a_Col;
+    	out.position = (u_ProjMat * float4(a_Pos, 0.0, 1.0));
+    	return out;
+    }
+    fragment float4 fragmentMain(
+    	v2f in [[stage_in]]
+    ) {
+    	float4 out;
+    	out = in.v_Col;
+    	return out;
+    }
+""".trimIndent()
+
