@@ -36,6 +36,7 @@ data class GameWindowCreationConfig(
     val checkGl: Boolean = false,
     val logGl: Boolean = false,
     val cacheGl: Boolean = false,
+    val fullscreen: Boolean? = null,
 )
 
 expect fun CreateDefaultGameWindow(config: GameWindowCreationConfig): GameWindow

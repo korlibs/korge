@@ -10,7 +10,7 @@ object AndroidMainActivityKt {
         line("import korlibs.render.*")
         line("import ${config.realEntryPoint}")
 
-        line("class MainActivity : KorgwActivity(config = GameWindowCreationConfig(msaa = ${config.androidMsaa ?: 1}))") {
+        line("class MainActivity : KorgwActivity(config = GameWindowCreationConfig(msaa = ${config.androidMsaa ?: 1}, fullscreen = ${config.fullscreen}))") {
             line("override suspend fun activityMain()") {
                 //line("withAndroidContext(this)") { // @TODO: Probably we should move this to KorgwActivity itself
                 for (text in config.androidInit) {

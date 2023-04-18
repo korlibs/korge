@@ -52,7 +52,7 @@ data class Korge(
     val debug: Boolean = false,
     val trace: Boolean = false,
     val context: Any? = null,
-    val fullscreen: Boolean = false,
+    val fullscreen: Boolean? = null,
     val blocking: Boolean = true,
     val gameId: String = DEFAULT_GAME_ID,
     val settingsFolder: String? = null,
@@ -106,7 +106,7 @@ object KorgeRunner {
         if (!Platform.isJsBrowser) {
             configureLoggerFromProperties(localCurrentDirVfs["klogger.properties"])
         }
-        val realGameWindow = (config.gameWindow ?: coroutineContext[GameWindow] ?: CreateDefaultGameWindow(GameWindowCreationConfig(multithreaded = multithreaded)))
+        val realGameWindow = (config.gameWindow ?: coroutineContext[GameWindow] ?: CreateDefaultGameWindow(GameWindowCreationConfig(multithreaded = multithreaded, fullscreen = config.fullscreen)))
         realGameWindow.bgcolor = config.backgroundColor ?: Colors.BLACK
         //println("Configure: ${width}x${height}")
         // @TODO: Configure should happen before loop. But we should ensure that all the korgw targets are ready for this

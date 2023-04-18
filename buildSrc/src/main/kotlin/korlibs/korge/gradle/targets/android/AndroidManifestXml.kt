@@ -4,6 +4,23 @@ import korlibs.korge.gradle.*
 import korlibs.korge.gradle.util.*
 
 object AndroidManifestXml {
+    fun genStylesXml(config: AndroidGenerated): String = Indenter {
+        line("<?xml version=\"1.0\" encoding=\"utf-8\" ?>")
+        line("<resources>")
+        indent {
+            line("<style name=\"AppThemeOverride\" parent=\"@android:style/Theme\">")
+                line("<item name=\"android:windowNoTitle\">true</item>")
+                line("<item name=\"android:windowFullscreen\">true</item>")
+                line("<item name=\"android:windowContentOverlay\">@null</item>")
+                line("<item name=\"android:windowLayoutInDisplayCutoutMode\">${config.displayCutout.lc}</item>")
+                line("<item name=\"android:windowTranslucentStatus\">true</item>")
+                line("<item name=\"android:windowTranslucentNavigation\">true</item>")
+                line("<item name=\"android:windowDrawsSystemBarBackgrounds\">false</item>")
+            line("</style>")
+        }
+        line("</resources>")
+    }
+
     fun genAndroidManifestXml(config: AndroidGenerated): String = Indenter {
         line("<?xml version=\"1.0\" encoding=\"utf-8\"?>")
         line("<manifest")
@@ -29,7 +46,8 @@ object AndroidManifestXml {
                     // // line("android:icon=\"@android:drawable/sym_def_app_icon\"")
                     line("android:roundIcon=\"@android:drawable/sym_def_app_icon\"")
                     //line("android:theme=\"@android:style/Theme.Holo.NoActionBar\"")
-                    line("android:theme=\"@android:style/Theme.NoTitleBar.Fullscreen\"")
+                    //line("android:theme=\"@android:style/Theme.NoTitleBar.Fullscreen\"")
+                    line("android:theme=\"@style/AppThemeOverride\"")
                 }
                 line("android:supportsRtl=\"true\"")
             }
