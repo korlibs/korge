@@ -115,7 +115,9 @@ fun AndroidGenerated(korge: KorgeExtension, info: AndroidInfo = AndroidInfo(null
         androidPackageName = korge.id,
         androidInit = korge.plugins.pluginExts.getAndroidInit() + info.androidInit,
         androidMsaa = korge.androidMsaa,
+        fullscreen = korge.fullscreen,
         orientation = korge.orientation,
+        displayCutout = korge.displayCutout,
         realEntryPoint = korge.realEntryPoint,
         androidAppName = korge.name,
         androidManifestChunks = korge.androidManifestChunks,
@@ -131,7 +133,9 @@ fun AndroidGenerated(project: Project, isKorge: Boolean, info: AndroidInfo = And
         else -> AndroidGenerated(
             icons = KorgeIconProvider(File(project.korgeGradlePluginResources, "icons/korge.png"), File(project.korgeGradlePluginResources, "banners/korge.png")),
             ifNotExists = true,
+            fullscreen = true,
             androidPackageName = AndroidConfig.getAppId(project, isKorge),
+            displayCutout = DisplayCutout.SHORT_EDGES,
             realEntryPoint = "main",
             androidMsaa = 4,
             androidAppName = project.name,
@@ -146,8 +150,10 @@ class AndroidGenerated constructor(
     val androidPackageName: String,
     val realEntryPoint: String = "main",
     val androidMsaa: Int? = null,
+    val fullscreen: Boolean? = null,
     val androidInit: List<String> = emptyList(),
     val orientation: Orientation = Orientation.DEFAULT,
+    val displayCutout: DisplayCutout = DisplayCutout.DEFAULT,
     val androidAppName: String = "androidAppName",
     val androidManifestChunks: Set<String> = emptySet(),
     val androidManifestApplicationChunks: Set<String> = emptySet(),
@@ -159,6 +165,7 @@ class AndroidGenerated constructor(
         writeFileBytes(File(folder, "mipmap-mdpi/icon.png")) { icons.getIconBytes() }
         writeFileBytes(File(folder, "drawable/app_icon.png")) { icons.getIconBytes() }
         writeFileBytes(File(folder, "drawable/app_banner.png")) { icons.getBannerBytes(432, 243) }
+        writeFileText(File(folder, "values/styles.xml")) { AndroidManifestXml.genStylesXml(this@AndroidGenerated) }
     }
 
     fun writeMainActivity(outputFolder: File) {

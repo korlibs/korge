@@ -21,6 +21,7 @@ import javax.naming.*
 import kotlin.collections.LinkedHashMap
 
 enum class Orientation(val lc: String) { DEFAULT("default"), LANDSCAPE("landscape"), PORTRAIT("portrait") }
+enum class DisplayCutout(val lc: String) { DEFAULT("default"), SHORT_EDGES("shortEdges"), NEVER("never"), ALWAYS("always") }
 
 class KorgePluginsContainer(val project: Project, val parentClassLoader: ClassLoader = KorgePluginsContainer::class.java.classLoader) {
     val globalParams = LinkedHashMap<String, String>()
@@ -286,6 +287,7 @@ open class KorgeExtension(
     var title: String? = null
 	var description: String = "description"
 	var orientation: Orientation = Orientation.DEFAULT
+    var displayCutout: DisplayCutout = DisplayCutout.DEFAULT
 
 	var copyright: String = "Copyright (c) ${Year.now().value} Unknown"
 
@@ -348,7 +350,7 @@ open class KorgeExtension(
 
 	var gameCategory: GameCategory? = null
 
-	var fullscreen = true
+	var fullscreen: Boolean? = null
 
 	var backgroundColor: Int = 0xff000000.toInt()
 
