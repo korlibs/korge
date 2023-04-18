@@ -286,29 +286,28 @@ class Views constructor(
         renderContext.flush()
     }
 
-	fun frameUpdateAndRender(
+    fun frameUpdate(
         fixedSizeStep: TimeSpan = TimeSpan.NIL,
-        forceRender: Boolean = false,
-        doUpdate: Boolean = true,
-        doRender: Boolean = true,
     ) {
         val currentTime = timeProvider.now()
-		views.stats.startFrame()
-		Korge.logger.trace { "ag.onRender" }
-		//println("Render")
-		//println("currentTime: $currentTime")
-		val delta = (currentTime - lastTime)
-		val adelta = if (delta > views.clampElapsedTimeTo) views.clampElapsedTimeTo else delta
-		//println("delta: $delta")
-		//println("Render($lastTime -> $currentTime): $delta")
-		lastTime = currentTime
-        if (doUpdate) {
-            if (fixedSizeStep != TimeSpan.NIL) {
-                update(fixedSizeStep)
-            } else {
-                update(adelta)
-            }
+        val delta = (currentTime - lastTime)
+        val adelta = if (delta > views.clampElapsedTimeTo) views.clampElapsedTimeTo else delta
+        //println("delta: $delta")
+        //println("Render($lastTime -> $currentTime): $delta")
+        lastTime = currentTime
+        if (fixedSizeStep != TimeSpan.NIL) {
+            update(fixedSizeStep)
+        } else {
+            update(adelta)
         }
+    }
+
+    fun frameRender(
+        forceRender: Boolean = false,
+        doRender: Boolean = true
+    ) {
+        views.stats.startFrame()
+        Korge.logger.trace { "ag.onRender" }
         val doRender2 = doRender && (forceRender || updatedSinceFrame > 0)
         if (doRender2) {
             if (printRendering) {
@@ -317,6 +316,18 @@ class Views constructor(
             render()
             startFrame()
         }
+    }
+
+	fun frameUpdateAndRender(
+        fixedSizeStep: TimeSpan = TimeSpan.NIL,
+        forceRender: Boolean = false,
+        doUpdate: Boolean = true,
+        doRender: Boolean = true,
+    ) {
+        if (doUpdate) frameUpdate(fixedSizeStep)
+        frameRender(forceRender, doRender)
+		//println("Render")
+		//println("currentTime: $currentTime")
 	}
 
     //var printRendering: Boolean = true

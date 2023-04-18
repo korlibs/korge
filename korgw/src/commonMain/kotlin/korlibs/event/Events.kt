@@ -476,6 +476,15 @@ class RenderEvent() : TypedEvent<RenderEvent>(RenderEvent) {
     override fun toString(): String = "RenderEvent(update=$update, render=$render)"
 }
 
+class UpdateFrameEvent() : TypedEvent<UpdateFrameEvent>(UpdateFrameEvent) {
+    companion object : EventType<UpdateFrameEvent>
+
+    fun copyFrom(other: UpdateFrameEvent) {
+    }
+
+    override fun toString(): String = "UpdateFrameEvent()"
+}
+
 class InitEvent() : TypedEvent<InitEvent>(InitEvent) {
     companion object : EventType<InitEvent>
 

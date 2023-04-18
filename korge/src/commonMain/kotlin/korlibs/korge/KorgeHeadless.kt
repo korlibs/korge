@@ -22,9 +22,9 @@ object KorgeHeadless {
         //    }, gameWindow.coroutineDispatcher)
         //}
 
-        override fun executePending(availableTime: TimeSpan) {
+        override fun executePending(availableTime: TimeSpan): Boolean {
             //println("HeadlessGameWindowCoroutineDispatcher.executePending: timedTasks=${_timedTasks.size}, tasks=${_tasks.size}")
-            super.executePending(availableTime)
+            return super.executePending(availableTime)
         }
     }
 

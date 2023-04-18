@@ -11,6 +11,7 @@ import korlibs.io.lang.*
 import korlibs.math.geom.*
 import com.sun.jna.Native
 import com.sun.jna.platform.unix.X11
+import korlibs.graphics.gl.*
 import java.awt.*
 import java.lang.reflect.Method
 
@@ -28,6 +29,7 @@ interface BaseOpenglContext : Disposable {
     fun useContext(g: Graphics, ag: AG, action: (Graphics, ContextInfo) -> Unit) {
         makeCurrent()
         try {
+            (ag?.rootAG as? AGOpengl)?.gl?.initOnThread()
             action(g, ContextInfo.DEFAULT)
         } finally {
             swapBuffers()

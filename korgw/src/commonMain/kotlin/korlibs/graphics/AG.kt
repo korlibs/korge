@@ -1,6 +1,7 @@
 package korlibs.graphics
 
 import korlibs.datastructure.*
+import korlibs.graphics.log.*
 import korlibs.graphics.shader.*
 import korlibs.image.bitmap.*
 import korlibs.image.color.*
@@ -33,6 +34,8 @@ interface AGFeatures {
 }
 
 abstract class AG : AGFeatures, Extra by Extra.Mixin() {
+    open val rootAG: AG get() = this
+
     companion object {
         val logger = Logger("AG")
         const val defaultPixelsPerInch : Float = 96f

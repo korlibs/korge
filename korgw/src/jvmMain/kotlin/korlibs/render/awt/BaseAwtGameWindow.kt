@@ -2,6 +2,7 @@ package korlibs.render.awt
 
 import com.sun.jna.*
 import korlibs.datastructure.*
+import korlibs.datastructure.lock.*
 import korlibs.event.*
 import korlibs.graphics.*
 import korlibs.graphics.gl.*
@@ -32,6 +33,8 @@ import kotlin.system.*
 abstract class BaseAwtGameWindow(
     override val ag: AGOpengl
 ) : GameWindow(), ClipboardOwner {
+    protected var renderAlsoDoUpdate = true
+
     private val localGraphicsEnvironment : GraphicsEnvironment by lazy(LazyThreadSafetyMode.PUBLICATION) {
         GraphicsEnvironment.getLocalGraphicsEnvironment()
     }
@@ -175,6 +178,8 @@ abstract class BaseAwtGameWindow(
     protected open fun ensureContext() {
     }
 
+    val frameLock = Lock()
+
     fun framePaint(g: Graphics) {
         //println("framePaint")
 
@@ -290,7 +295,8 @@ abstract class BaseAwtGameWindow(
             var finishTime: TimeSpan = 0.milliseconds
             val totalTime = measureTime {
                 frameTime = measureTime {
-                    frame()
+                    //println("renderAlsoDoUpdate=$renderAlsoDoUpdate")
+                    frameLock { frame(doUpdate = renderAlsoDoUpdate) }
                 }
                 finishTime = measureTime {
                     gl.flush()

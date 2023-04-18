@@ -499,6 +499,15 @@ object KorgeRunner {
             }
         }
 
+        views.gameWindow.onUpdateFrameEvent { event ->
+            views.frameUpdateAndRender(
+                fixedSizeStep = fixedSizeStep,
+                forceRender = views.forceRenderEveryFrame,
+                doUpdate = true,
+                doRender = false,
+            )
+        }
+
         views.gameWindow.onRenderEvent { event ->
             //println("RenderEvent: $event")
             if (!event.render) {

@@ -3,7 +3,9 @@ import korlibs.event.*
 import korlibs.image.color.*
 import korlibs.image.text.*
 import korlibs.io.async.*
+import korlibs.io.file.std.*
 import korlibs.io.lang.*
+import korlibs.io.stream.*
 import korlibs.korge.*
 import korlibs.korge.input.*
 import korlibs.korge.scene.*
@@ -68,6 +70,18 @@ suspend fun main() = Korge(
     debug = false,
     forceRenderEveryFrame = false
 ).start {
+    //val time = measureTime {
+    //    for (n in 0 until 100) {
+    //        resourcesVfs["korge.png"].openUse {
+    //            while (!this.eof()) {
+    //                //println("${this.getAvailable()}")
+    //                this.read()
+    //            }
+    //        }
+    //    }
+    //}
+    //println("time=$time")
+
     //sceneContainer().changeTo({MainSprites10k()}); return@start
     //sceneContainer().changeTo({MainGraphicsText()}); return@start
     //sceneContainer().changeTo({MainUI()}); return@start

@@ -141,7 +141,13 @@ open class GameWindowCoroutineDispatcher : CoroutineDispatcher(), Delay, Closeab
         return finalResult as T
     }
 
-    open fun executePending(availableTime: TimeSpan) {
+    open fun sleepUntilEvent() {
+        // @TODO: We should use a lock or wait to trigger events and awake the thread as long as they happen. Like receiving from a socket, file, or timer.
+        Thread_sleep(0.1)
+    }
+
+    open fun executePending(availableTime: TimeSpan): Boolean {
+        var processedAll = true
         try {
             val startTime = now()
 
@@ -170,6 +176,7 @@ open class GameWindowCoroutineDispatcher : CoroutineDispatcher(), Delay, Closeab
                     }
                     val elapsedTime = now() - startTime
                     if (elapsedTime >= availableTime) {
+                        processedAll = false
                         informTooManyCallbacksToHandleInThisFrame(elapsedTime, availableTime, processedTimedTasks, processedTasks)
                         break
                     }
@@ -190,6 +197,7 @@ open class GameWindowCoroutineDispatcher : CoroutineDispatcher(), Delay, Closeab
                     //println("task=$time, task=$task")
                     val elapsed = now() - startTime
                     if (elapsed >= availableTime) {
+                        processedAll = false
                         informTooManyCallbacksToHandleInThisFrame(elapsed, availableTime, processedTimedTasks, processedTasks)
                         break
                     }
@@ -198,7 +206,9 @@ open class GameWindowCoroutineDispatcher : CoroutineDispatcher(), Delay, Closeab
         } catch (e: Throwable) {
             println("Error in GameWindowCoroutineDispatcher.executePending:")
             e.printStackTrace()
+            processedAll = false
         }
+        return processedAll
     }
 
     val tooManyCallbacksLogger = Logger("Korgw.GameWindow.TooManyCallbacks")
@@ -376,6 +386,7 @@ open class GameWindow :
     protected val stopEvent = StopEvent()
     protected val destroyEvent = DestroyEvent()
     protected val renderEvent = RenderEvent()
+    protected val updateFrameEvent = UpdateFrameEvent()
     protected val initEvent = InitEvent()
     protected val disposeEvent = DisposeEvent()
     protected val fullScreenEvent = FullScreenEvent()
@@ -411,6 +422,9 @@ open class GameWindow :
 
     fun onRenderEvent(block: (RenderEvent) -> Unit) {
         onEvent(RenderEvent, block)
+    }
+    fun onUpdateFrameEvent(block: (UpdateFrameEvent) -> Unit) {
+        onEvent(UpdateFrameEvent, block)
     }
 
     val counterTimePerFrame: TimeSpan get() = (1_000_000.0 / fps).microseconds
@@ -641,22 +655,23 @@ open class GameWindow :
     }
 
     var gamePadTime: TimeSpan = TimeSpan.ZERO
-    fun frameUpdate(startTime: TimeSpan) {
+    fun frameUpdate(startTime: TimeSpan = TimeSpan.ZERO): Boolean {
         gamePadTime = measureTime {
             updateGamepads()
         }
         try {
-            val now = PerformanceCounter.reference
-            val consumed = now - startTime
+            //val now = PerformanceCounter.reference
+            //val consumed = now - startTime
             //val remaining = (counterTimePerFrame - consumed) - 2.milliseconds // Do not push too much so give two extra milliseconds just in case
             //val timeForTasks = coroutineDispatcher.maxAllocatedTimeForTasksPerFrame ?: (remaining * 10) // We would be skipping up to 10 frames by default
             val timeForTasks = coroutineDispatcher.maxAllocatedTimeForTasksPerFrame ?: (counterTimePerFrame * 10) // We would be skipping up to 10 frames by default
             val finalTimeForTasks = max(timeForTasks, 4.milliseconds) // Avoid having 0 milliseconds or even negative
             //println("         - frameUpdate: finalTimeForTasks=$finalTimeForTasks, startTime=$startTime, now=$now")
-            coroutineDispatcher.executePending(finalTimeForTasks)
+            return coroutineDispatcher.executePending(finalTimeForTasks)
         } catch (e: Throwable) {
             println("ERROR GameWindow.frameRender:")
             println(e)
+            return false
         }
     }
 
@@ -676,6 +691,8 @@ open class GameWindow :
     fun dispatchRenderEvent(update: Boolean = true, render: Boolean = true) = dispatch(renderEvent.reset {
         this.update = update
         this.render = render
+    })
+    fun dispatchUpdateFrameEvent() = dispatch(updateFrameEvent.reset {
     })
     fun dispatchDropfileEvent(type: DropFileEvent.Type, files: List<VfsFile>?) = dispatch(dropFileEvent.reset {
         this.type = type

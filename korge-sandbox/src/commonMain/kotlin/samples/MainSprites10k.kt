@@ -40,6 +40,7 @@ class MainSprites10k : Scene() {
 
         addUpdater {
             val scale = (if (it == 0.0.milliseconds) 0f else (it / 16.666666.milliseconds))
+            //println("time=$it")
 
             greenSprites.forEachIndexed { index, sprite ->
                 sprite.walkDirection(index % greenAnimations.size, scale * randoms[index])

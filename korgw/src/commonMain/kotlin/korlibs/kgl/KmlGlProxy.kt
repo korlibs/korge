@@ -1149,6 +1149,10 @@ open class KmlGlProxy(parent: KmlGl) : KmlGlFastProxy(parent) {
     }
 }
 open class KmlGlFastProxy(var parent: KmlGl) : KmlGl() {
+    override fun initOnThread() {
+        parent.initOnThread()
+    }
+
     override val variant: GLVariant get() = parent.variant
     override val root: KmlGl get() = parent.root
 

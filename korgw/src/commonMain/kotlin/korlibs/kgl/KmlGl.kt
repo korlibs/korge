@@ -678,7 +678,7 @@ abstract class KmlGl : Extra by Extra.Mixin(), IKmlGl, AGFeatures {
         const val UNIFORM_BUFFER_OFFSET_ALIGNMENT = 0x8A34
     }
 
-    open fun init() = Unit
+    open fun initOnThread() = Unit
     open fun handleContextLost() = Unit
     override fun startFrame(): Unit = Unit
     override fun endFrame(): Unit = Unit
@@ -693,7 +693,7 @@ abstract class KmlGlWithExtensions : KmlGl() {
 
     private var _extensions: Set<String>? = null
 
-    open val extensions: Set<String> get() {
+    override fun initOnThread() {
         if (_extensions == null) {
             _extensions = try {
                 val numExtensions = getIntegerv(GL_NUM_EXTENSIONS)
@@ -703,8 +703,11 @@ abstract class KmlGlWithExtensions : KmlGl() {
                 getString(EXTENSIONS).split(" ").toSet()
             }
         }
+    }
+
+    open val extensions: Set<String> get() {
         //println("GL_EXTENSIONS=$_extensions")
-        return _extensions!!
+        return _extensions ?: emptySet()
     }
 
     override val graphicExtensions: Set<String> get() = extensions

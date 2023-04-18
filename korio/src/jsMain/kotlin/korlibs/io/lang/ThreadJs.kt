@@ -6,9 +6,9 @@ import korlibs.time.*
 actual val currentThreadId: Long get() = 1L
 actual val currentThreadName: String? get() = "Thread-$currentThreadId"
 
-actual fun Thread_sleep(time: Long) {
+actual fun Thread_sleep(ms: Double) {
 	val start = PerformanceCounter.milliseconds
-	while (PerformanceCounter.milliseconds - start < time) {
+	while (PerformanceCounter.milliseconds - start < ms) {
 		// Spinlock
 	}
 }

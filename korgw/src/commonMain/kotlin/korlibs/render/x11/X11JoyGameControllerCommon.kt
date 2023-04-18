@@ -177,14 +177,14 @@ internal class LinuxJoyEventAdapter(val syncIO: SyncIO = SyncIO) : Closeable {
                             }
                             //println("$time, $type, $number, $value: ${buttons.toStringUnsigned(2)}, ${axes.slice(0 until maxAxes).toList()}")
                         } else {
-                            Thread_sleep(10L)
+                            Thread_sleep(10.0)
                         }
                         readCount.incrementAndGet()
                         once.complete(Unit)
                     }
                 } catch (e: Throwable) {
                     e.printStackTrace()
-                    Thread_sleep(100L)
+                    Thread_sleep(100.0)
                 }
             }
         }

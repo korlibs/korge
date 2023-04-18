@@ -10,6 +10,7 @@ import korlibs.io.dynamic.*
 import korlibs.io.file.std.*
 import korlibs.io.util.*
 import korlibs.math.geom.*
+import korlibs.time.*
 import java.awt.*
 import java.awt.datatransfer.*
 import java.awt.dnd.*
@@ -17,6 +18,7 @@ import java.awt.event.*
 import java.io.*
 import javax.imageio.*
 import javax.swing.*
+import kotlin.concurrent.*
 
 class AwtGameWindow(config: GameWindowCreationConfig) : BaseAwtGameWindow(AGOpenglAWT(config)) {
 
@@ -54,11 +56,57 @@ class AwtGameWindow(config: GameWindowCreationConfig) : BaseAwtGameWindow(AGOpen
 
     //private var currentInFullScreen = false
 
+    var updateThread: Thread? = null
+
     val frame: JFrame = object : JFrame("Korgw") {
         val frame = this
         //val frame = object : Frame("Korgw") {
         init {
             isVisible = false
+
+
+            //addContainerListener(object : ContainerAdapter() {
+            //    override fun componentAdded(e: ContainerEvent?) {
+            //        super.componentAdded(e)
+            //    }
+            //    override fun componentRemoved(e: ContainerEvent?) {
+            //        super.componentRemoved(e)
+            //    }
+            //})
+            addComponentListener(object : ComponentAdapter() {
+                override fun componentShown(e: ComponentEvent?) {
+                    componentHidden(e)
+                    updateThread = thread {
+                        renderAlsoDoUpdate = false
+                        try {
+                            var lastTime = PerformanceCounter.hr
+                            while (true) {
+                                val now = PerformanceCounter.hr
+                                val elapsed = now - lastTime
+                                if (elapsed >= 60.timesPerSecond.hrTimeSpan) {
+                                    lastTime = now
+                                    dispatchUpdateFrameEvent()
+                                }
+
+                                //val processedAll = frameLock { coroutineDispatcher.executePending(16.milliseconds) }
+                                val processedAll = frameLock { frameUpdate() }
+                                if (processedAll) coroutineDispatcher.sleepUntilEvent()
+                            }
+                        } catch (e: InterruptedException) {
+                        } finally {
+                            renderAlsoDoUpdate = true
+                            updateThread = null
+                        }
+                    }
+                }
+
+                override fun componentHidden(e: ComponentEvent?) {
+                    updateThread?.interrupt()
+                    updateThread = null
+                    renderAlsoDoUpdate = true
+                }
+            })
+
             ignoreRepaint = true
             //background = Color.black
             setBounds(0, 0, 640, 480)
