@@ -209,7 +209,7 @@ inline class Vector2 internal constructor(internal val raw: Float2Pack) {
         fun isCollinear(p1x: Float, p1y: Float, p2x: Float, p2y: Float, p3x: Float, p3y: Float): Boolean {
             val area2 = (p1x * (p2y - p3y) + p2x * (p3y - p1y) + p3x * (p1y - p2y)) // 2x triangle area
             //println("($p1x, $p1y), ($p2x, $p2y), ($p3x, $p3y) :: area=$area2")
-            return area2.absoluteValue < 1e-6
+            return area2.isAlmostZero()
 
             //val div1 = (p2x - p1x) / (p2y - p1y)
             //val div2 = (p1x - p3x) / (p1y - p3y)
