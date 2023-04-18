@@ -9,10 +9,10 @@ internal data class MetalProgram(
     val inputBuffers: MetalShaderBufferInputLayouts
 ) {
     fun indexOfAttributeOnBuffer(attribute: List<Attribute>): ULong {
-        return inputBuffers.inputBuffers.indexOf(attribute).toULong()
+        return inputBuffers.indexOf(attribute).toULong()
     }
 
     fun indexOfUniformOnBuffer(uniform: Uniform): ULong {
-        return inputBuffers.inputBuffers.indexOf(listOf(uniform)).toULong()
+        return inputBuffers.indexOf(listOf(uniform)).toULong()
     }
 }

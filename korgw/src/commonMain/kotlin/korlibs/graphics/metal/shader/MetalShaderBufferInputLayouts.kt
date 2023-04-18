@@ -12,17 +12,15 @@ internal fun lazyMetalShaderBufferInputLayouts(
 ) = lazy {
     MetalShaderBufferInputLayouts(
         vertexLayouts,
-        uniforms,
         (vertexLayouts.map { it.items } + uniforms.map { listOf(it) })
             .toList()
     )
 }
 
 internal class MetalShaderBufferInputLayouts(
-    val vertexLayouts: List<VertexLayout>,
-    val uniforms: List<Uniform>,
-    val inputBuffers: List<List<VariableWithOffset>>
-) {
+    vertexLayouts: List<VertexLayout>,
+    private val inputBuffers: List<List<VariableWithOffset>>
+) : List<List<VariableWithOffset>> by inputBuffers {
 
     private val logger = Logger("MetalShaderBufferInputLayouts")
 

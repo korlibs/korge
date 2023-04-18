@@ -77,20 +77,19 @@ private fun createPipelineState(
             colorAttachments.objectAtIndexedSubscript(0)
                 .setPixelFormat(MTLPixelFormatBGRA8Unorm_sRGB)
 
-            var attributeIndex = -1
             vertexDescriptor = MTLVertexDescriptor().apply {
                 inputBuffers
-                    .inputBuffers
                     .mapIndexed { bufferIndex, layout -> bufferIndex to layout }
                     .filter { (_, layout) -> layout.none { it is Uniform } }
                     .filterIsInstance<Pair<Int, List<Attribute>>>()
-                    .forEachIndexed { layoutIndex, (bufferIndex, layout) ->
+                    .forEach {  (bufferIndex, layout) ->
                         logger.debug { "will create attributes on vertex descriptor with layout $layout" }
 
                         var offset = 0
                         layout.forEach { attribute ->
                             val format = attribute.type.toMetalVertexFormat(attribute.normalized)
-                            attributeIndex += 1
+                            val attributeIndex = inputBuffers.attributeIndexOf(attribute)
+                                ?: error("attribute $attribute not found in input buffers $inputBuffers")
                             logger.debug {
                                 val type = attribute.type
                                 val normalized = if (attribute.normalized) "normalized" else ""
@@ -114,10 +113,9 @@ private fun createPipelineState(
                         }
                     }
 
-                if (attributeIndex >= 0) {
-                    logger.debug { "vertex descriptor will be added to render pipeline descriptor" }
-                    vertexDescriptor = this
-                }
+                logger.debug { "vertex descriptor will be added to render pipeline descriptor" }
+                vertexDescriptor = this
+
 
             }
 
