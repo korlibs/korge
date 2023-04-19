@@ -716,7 +716,7 @@ interface AGContainer {
 }
 
 /** List<VertexData> -> VAO */
-data class AGVertexArrayObject constructor(
+data class AGVertexArrayObject(
     val list: FastArrayList<AGVertexData>,
     val isDynamic: Boolean = true
 ) : Extra by Extra.Mixin() {

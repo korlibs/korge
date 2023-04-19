@@ -1,16 +1,20 @@
 package korlibs.metal
 
-import korlibs.memory.*
 import korlibs.graphics.*
 import korlibs.graphics.metal.shader.*
 import korlibs.graphics.shader.*
 import korlibs.logger.*
+import korlibs.memory.*
 import korlibs.metal.shader.*
 import kotlinx.cinterop.*
 import platform.Metal.*
 import platform.MetalKit.*
 
-class AGMetal(private val view: MTKView) : AG() {
+class AGMetal(
+    private val view: MTKView,
+    // TODO: fix support of vertex data with complex layouts to remove this
+    private val shouldFlattenVertexData: Boolean = true
+) : AG() {
 
     private val logger = Logger("AGMetal")
     private val device = MTLCreateSystemDefaultDevice() ?: error("fail to create metal device")
@@ -43,9 +47,11 @@ class AGMetal(private val view: MTKView) : AG() {
     ) {
         autoreleasepool { // TODO: Check if that necessary
 
+            val intermediateVertexData = computeIntermediateVertexData(vertexData)
+
             val currentProgram = getProgram(
                 program,
-                vertexData,
+                intermediateVertexData,
                 uniformBlocks
             )
 
@@ -64,7 +70,7 @@ class AGMetal(private val view: MTKView) : AG() {
                 //setFragmentTexture(texture, 0)
                 //setFragmentSamplerState(samplerState, 0)
 
-                vertexData.list.fastForEach { vertexDataUnit ->
+                intermediateVertexData.list.fastForEach { vertexDataUnit ->
                     val bufferLocation = currentProgram.indexOfAttributeOnBuffer(vertexDataUnit.layout.items)
                     logger.trace { "${vertexDataUnit.layout.items} will be bind at location $bufferLocation" }
                     val buffer = vertexDataUnit.buffer.toMetal.buffer
@@ -105,6 +111,11 @@ class AGMetal(private val view: MTKView) : AG() {
         }
     }
 
+    private fun computeIntermediateVertexData(vertexData: AGVertexArrayObject): AGVertexArrayObject = when (shouldFlattenVertexData) {
+            true -> vertexData.flatten()
+            false -> vertexData
+    }
+
 
     private val Buffer.toMetal: MTLBuffer
         get() = buffersv1
@@ -143,7 +154,7 @@ private fun AGVertexArrayObject.map(function: (AGVertexData) -> ProgramLayout<At
 private fun UniformBlocksBuffersRef.map(): List<Uniform> {
     return mutableListOf<Uniform>().apply {
         fastForEachBlock { _, block, _, _ ->
-            addAll(block.block.uniforms.map { it.uniform } )
+            addAll(block.block.uniforms.map { it.uniform })
         }
     }
 }

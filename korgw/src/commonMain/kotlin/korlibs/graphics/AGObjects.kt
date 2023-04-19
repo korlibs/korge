@@ -54,6 +54,9 @@ class AGBuffer : AGObject() {
         return this
     }
 
+    val sizeInBytes: Int
+        get() = mem?.sizeInBytes ?: 0
+
     override fun toString(): String = "AGBuffer(${mem?.sizeInBytes ?: 0})"
 
 }

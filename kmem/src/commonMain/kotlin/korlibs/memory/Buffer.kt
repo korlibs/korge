@@ -90,15 +90,15 @@ fun Buffer.getUnalignedArrayInt64(byteOffset: Int, out: LongArray, offset: Int =
 fun Buffer.getUnalignedArrayFloat32(byteOffset: Int, out: FloatArray, offset: Int = 0, size: Int = out.size - offset): FloatArray { for (n in 0 until size) out[offset + n] = getUnalignedFloat32(byteOffset + n * 4); return out }
 fun Buffer.getUnalignedArrayFloat64(byteOffset: Int, out: DoubleArray, offset: Int = 0, size: Int = out.size - offset): DoubleArray { for (n in 0 until size) out[offset + n] = getUnalignedFloat64(byteOffset + n * 8); return out }
 
-fun Buffer.setUnalignedArrayInt8(byteOffset: Int, inp: ByteArray, offset: Int = 0, size: Int = inp.size - offset): Unit { for (n in 0 until size) setUnalignedInt8(byteOffset + n * 1, inp[offset + n]) }
-fun Buffer.setUnalignedArrayInt16(byteOffset: Int, inp: ShortArray, offset: Int = 0, size: Int = inp.size - offset): Unit { for (n in 0 until size) setUnalignedInt16(byteOffset + n * 2, inp[offset + n]) }
-fun Buffer.setUnalignedArrayInt32(byteOffset: Int, inp: IntArray, offset: Int = 0, size: Int = inp.size - offset): Unit { for (n in 0 until size) setUnalignedInt32(byteOffset + n * 4, inp[offset + n]) }
-fun Buffer.setUnalignedArrayInt64(byteOffset: Int, inp: LongArray, offset: Int = 0, size: Int = inp.size - offset): Unit { for (n in 0 until size) setUnalignedInt64(byteOffset + n * 8, inp[offset + n]) }
-fun Buffer.setUnalignedArrayFloat32(byteOffset: Int, inp: FloatArray, offset: Int = 0, size: Int = inp.size - offset): Unit { for (n in 0 until size) setUnalignedFloat32(byteOffset + n * 4, inp[offset + n]) }
-fun Buffer.setUnalignedArrayFloat64(byteOffset: Int, inp: DoubleArray, offset: Int = 0, size: Int = inp.size - offset): Unit { for (n in 0 until size) setUnalignedFloat64(byteOffset + n * 8, inp[offset + n]) }
+fun Buffer.setUnalignedArrayInt8(byteOffset: Int, inp: ByteArray, offset: Int = 0, size: Int = inp.size - offset) { for (n in 0 until size) setUnalignedInt8(byteOffset + n * 1, inp[offset + n]) }
+fun Buffer.setUnalignedArrayInt16(byteOffset: Int, inp: ShortArray, offset: Int = 0, size: Int = inp.size - offset) { for (n in 0 until size) setUnalignedInt16(byteOffset + n * 2, inp[offset + n]) }
+fun Buffer.setUnalignedArrayInt32(byteOffset: Int, inp: IntArray, offset: Int = 0, size: Int = inp.size - offset) { for (n in 0 until size) setUnalignedInt32(byteOffset + n * 4, inp[offset + n]) }
+fun Buffer.setUnalignedArrayInt64(byteOffset: Int, inp: LongArray, offset: Int = 0, size: Int = inp.size - offset) { for (n in 0 until size) setUnalignedInt64(byteOffset + n * 8, inp[offset + n]) }
+fun Buffer.setUnalignedArrayFloat32(byteOffset: Int, inp: FloatArray, offset: Int = 0, size: Int = inp.size - offset) { for (n in 0 until size) setUnalignedFloat32(byteOffset + n * 4, inp[offset + n]) }
+fun Buffer.setUnalignedArrayFloat64(byteOffset: Int, inp: DoubleArray, offset: Int = 0, size: Int = inp.size - offset) { for (n in 0 until size) setUnalignedFloat64(byteOffset + n * 8, inp[offset + n]) }
 
 fun Buffer.getUInt8(index: Int): Int = getUnalignedUInt8(index)
-fun Buffer.getUInt16(index: Int): Int = getUnalignedUInt16(index * 2).toInt() and 0xFFFF
+fun Buffer.getUInt16(index: Int): Int = getUnalignedUInt16(index * 2) and 0xFFFF
 fun Buffer.getInt8(index: Int): Byte = getUnalignedInt8(index)
 fun Buffer.getInt16(index: Int): Short = getUnalignedInt16(index * 2)
 fun Buffer.getInt32(index: Int): Int = getUnalignedInt32(index * 4)

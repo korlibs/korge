@@ -100,7 +100,7 @@ class MetalShaderGeneratorTest {
             }
         """.trimIndent())
 
-        assertThat(metalResult.inputBuffers.inputBuffers).isEqualTo(listOf(
+        assertThat(metalResult.inputBuffers).isEqualTo(listOf(
             listOf(a_Pos),
             listOf(a_Tex, a_Col),
             listOf(u_ProjMat),
@@ -150,7 +150,7 @@ class MetalShaderGeneratorTest {
             }
         """.trimIndent())
 
-        assertThat(metalResult.inputBuffers.inputBuffers).isEqualTo(listOf(
+        assertThat(metalResult.inputBuffers).isEqualTo(listOf(
             listOf(a_Pos),
             listOf(a_Tex),
             listOf(a_Col),
