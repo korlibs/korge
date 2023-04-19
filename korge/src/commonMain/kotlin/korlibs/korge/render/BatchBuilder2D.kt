@@ -563,7 +563,7 @@ class BatchBuilder2D(
         @KorgeInternal
 		val a_ColMul: Attribute get() = DefaultShaders.a_Col
         @KorgeInternal
-		val a_ColAdd: Attribute = Attribute("a_Col2", VarType.Byte4, normalized = true, fixedLocation = 3)
+		val a_ColAdd: Attribute = Attribute("a_Col2", VarType.UByte4, normalized = true, fixedLocation = 3)
 
 		init { logger.trace { "BatchBuilder2D.Companion[1]" } }
 
