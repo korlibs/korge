@@ -30,7 +30,7 @@ class Renderer01(view: MTKView, private val simple: Boolean) : Renderer() {
 
     private val fragmentShader = FragmentShader {
         SET(out, DefaultShaders.v_Col)
-        SET(out, vec4(1f.lit, 1f.lit, 1f.lit, 0f.lit))
+        //SET(out, vec4(1f.lit, 1f.lit, 1f.lit, 0f.lit))
     }
 
     private val program = Program(vertexShader, fragmentShader)
