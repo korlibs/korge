@@ -6,20 +6,15 @@ import korlibs.math.geom.*
 import korlibs.metal.*
 import platform.MetalKit.*
 
-class Renderer03 : Renderer() {
+class Renderer03(view: MTKView) : Renderer() {
 
-    private var renderContext : RenderContext? = null
-    private var renderContext2D : RenderContext2D? = null
+    private val ag = AGMetal(view)
+    private val agBitmapTextureManager = AgBitmapTextureManager(ag)
+    private var renderContext = RenderContext(ag)
+    private var renderContext2D = RenderContext2D(renderContext!!.batch, agBitmapTextureManager)
 
     override fun drawOnView(view: MTKView) {
-        if (renderContext == null) {
-            val ag = AGMetal(view)
-            val agBitmapTextureManager = AgBitmapTextureManager(ag)
-            renderContext = RenderContext(ag)
-            renderContext2D = RenderContext2D(renderContext!!.batch, agBitmapTextureManager)
-        }
-
-        renderContext2D?.rect(Rectangle(0f, 0f, 100f, 100f), Colors.RED)
-        renderContext?.flush()
+        renderContext2D.rect(Rectangle(0f, 0f, 100f, 100f), Colors.RED)
+        renderContext.flush()
     }
 }

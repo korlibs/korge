@@ -1,9 +1,10 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="run sandbox" type="GradleRunConfiguration" factoryName="Gradle">
+  <configuration default="false" name="run metal sandbox render 1 simple" type="GradleRunConfiguration" factoryName="Gradle">
     <ExternalSystemSettings>
       <option name="env">
         <map>
           <entry key="LOG_LEVEL" value="DEBUG" />
+          <entry key="RENDERER" value="Renderer01Simple" />
         </map>
       </option>
       <option name="executionName" />
