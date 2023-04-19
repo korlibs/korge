@@ -22,6 +22,8 @@ internal class MetalShaderBufferInputLayouts(
     private val inputBuffers: List<List<VariableWithOffset>>
 ) : List<List<VariableWithOffset>> by inputBuffers {
 
+    val attributes: List<Attribute> = vertexLayouts.flatMap { it.items }
+
     private val logger = Logger("MetalShaderBufferInputLayouts")
 
     fun attributeIndexOf(attribute: Attribute): Int? {
@@ -56,6 +58,15 @@ internal class MetalShaderBufferInputLayouts(
 
     }
 
+    internal fun convertInputBufferToLocalDeclarations(
+        parameters: List<VariableWithOffset>
+    ): List<String> {
+        return inputBuffers.filterNotIn(parameters)
+            .filter { buffer -> buffer.any { it is Attribute } }
+            .flatMap { it.toLocalDeclarations() }
+
+    }
+
     private fun List<List<VariableWithOffset>>.filterNotIn(parameters: List<VariableWithOffset>): List<List<VariableWithOffset>> {
         return filter { buffer -> parameters.any { parameter -> parameter in buffer } }
     }
@@ -67,6 +78,7 @@ internal class MetalShaderBufferInputLayouts(
                 logger.error { "buffer without layout" }
                 ""
             }
+
             size > 1 -> "device const Buffer$bufferIndex* buffer$bufferIndex [[buffer($bufferIndex)]]"
             else -> {
                 val variableWithOffset = first()
@@ -81,19 +93,10 @@ internal class MetalShaderBufferInputLayouts(
     }
 
     private fun List<VariableWithOffset>.toLocalDeclarations(): List<String> {
-        val bufferIndex = inputBuffers.indexOf(this)
-
         return map {
-            when {
-                size > 1 -> "auto ${it.name} = buffer$bufferIndex[vertexId].${it.name};"
-                else -> "auto ${it.name} = buffer$bufferIndex[vertexId];"
-            }
-
+            "auto ${it.name} = $vertexInputStructureDeclarationName.${it.name};"
         }
     }
-
-
-
 }
 
 

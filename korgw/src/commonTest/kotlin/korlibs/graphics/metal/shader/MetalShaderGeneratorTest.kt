@@ -65,9 +65,10 @@ class MetalShaderGeneratorTest {
         assertThat(metalResult.result.trim()).isEqualTo("""
             #include <metal_stdlib>
             using namespace metal;
-            struct Buffer1 {
-            	float2 a_Tex [[attribute(0)]];
-            	uchar4 a_Col [[attribute(1)]];
+            struct VertexInput {
+            	float2 a_Pos [[attribute(0)]];
+            	float2 a_Tex [[attribute(1)]];
+            	float4 a_Col [[attribute(2)]];
             };
             struct v2f {
             	float2 v_Tex;
@@ -75,17 +76,15 @@ class MetalShaderGeneratorTest {
             	float4 position [[position]];
             };
             vertex v2f vertexMain(
-            	uint vertexId [[vertex_id]],
-            	device const float2* buffer0 [[buffer(0)]],
-            	Buffer1 buffer1 [[stage_in]]),
+            	VertexInput vertexInput [[stage_in]],
             	constant float4x4& u_ProjMat [[buffer(2)]],
             	constant float4x4& u_ViewMat [[buffer(3)]]
             ) {
             	v2f out;
-            	auto a_Pos = buffer0[vertexId];
-            	auto a_Tex = buffer1.a_Tex;
-            	auto a_Col = buffer1.a_Col;
-            	v_Tex = a_Tex;
+            	auto a_Pos = vertexInput.a_Pos;
+            	auto a_Tex = vertexInput.a_Tex;
+            	auto a_Col = vertexInput.a_Col;
+            	out.v_Tex = a_Tex;
             	out.v_Col = a_Col;
             	out.position = ((u_ProjMat * u_ViewMat) * float4(a_Pos, 0.0, 1.0));
             	return out;
@@ -121,20 +120,25 @@ class MetalShaderGeneratorTest {
         assertThat(metalResult.result.trim()).isEqualTo("""
             #include <metal_stdlib>
             using namespace metal;
+            struct VertexInput {
+            	float2 a_Pos [[attribute(0)]];
+            	float2 a_Tex [[attribute(1)]];
+            	float4 a_Col [[attribute(2)]];
+            };
             struct v2f {
             	float2 v_Tex;
             	float4 v_Col;
             	float4 position [[position]];
             };
             vertex v2f vertexMain(
-            	uint vertexId [[vertex_id]],
-            	constant float2& a_Pos [[attribute(0)]],
-            	constant float2& a_Tex [[attribute(1)]],
-            	constant uchar4& a_Col [[attribute(2)]],
+            	VertexInput vertexInput [[stage_in]],
             	constant float4x4& u_ProjMat [[buffer(3)]],
             	constant float4x4& u_ViewMat [[buffer(4)]]
             ) {
             	v2f out;
+            	auto a_Pos = vertexInput.a_Pos;
+            	auto a_Tex = vertexInput.a_Tex;
+            	auto a_Col = vertexInput.a_Col;
             	out.v_Tex = a_Tex;
             	out.v_Col = a_Col;
             	out.position = ((u_ProjMat * u_ViewMat) * float4(a_Pos, 0.0, 1.0));
