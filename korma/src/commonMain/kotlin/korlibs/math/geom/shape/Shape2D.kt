@@ -154,7 +154,7 @@ interface Shape2D {
 
     companion object {
         operator fun invoke(vararg shapes: Shape2D): Shape2D {
-            if (shapes.isEmpty()) return EmptyShape2d
+            if (shapes.isEmpty()) return EmptyShape2D
             if (shapes.size == 1) return shapes[0]
             return CompoundShape2d(shapes.toList())
         }
@@ -233,7 +233,10 @@ data class CompoundShape2d(val shapes: List<Shape2D>) : AbstractShape2D() {
     override fun toVectorPath(): VectorPath = buildVectorPath { shapes.fastForEach { write(it.toVectorPath()) } }
 }
 
-object EmptyShape2d : Shape2D {
+//@Deprecated("")
+//typealias EmptyShape2d = EmptyShape2D
+
+object EmptyShape2D : Shape2D {
     override val area: Float get() = 0f
     override val perimeter: Float get() = 0f
     override fun containsPoint(p: Point): Boolean = false
@@ -296,7 +299,7 @@ fun VectorPath.toShape2d(closed: Boolean = true): Shape2D = toShape2dOld(closed)
 fun VectorPath.toShape2dOld(closed: Boolean = true): Shape2D {
     val items = toPathPointList().map { it.toShape2d(closed) }
     return when (items.size) {
-        0 -> EmptyShape2d
+        0 -> EmptyShape2D
         1 -> items.first()
         else -> CompoundShape2d(items)
     }

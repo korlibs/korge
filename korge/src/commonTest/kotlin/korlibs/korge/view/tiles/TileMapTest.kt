@@ -27,8 +27,8 @@ class TileMapTest {
     fun testHitTest() {
         val tileSet = TileSet(intMapOf(
             0 to TileSetTileInfo(0, Bitmap32(16, 16, premultiplied = true).slice(), collision = TileShapeInfoImpl(HitTestDirectionFlags.NONE, Rectangle(0, 0, 16, 16), Matrix())),
-            1 to TileSetTileInfo(0, Bitmap32(16, 16, premultiplied = true).slice(), collision = TileShapeInfoImpl(HitTestDirectionFlags.NONE, EmptyShape2d, Matrix())),
-            2 to TileSetTileInfo(0, Bitmap32(16, 16, premultiplied = true).slice(), collision = TileShapeInfoImpl(HitTestDirectionFlags.ALL, EmptyShape2d, Matrix())),
+            1 to TileSetTileInfo(0, Bitmap32(16, 16, premultiplied = true).slice(), collision = TileShapeInfoImpl(HitTestDirectionFlags.NONE, EmptyShape2D, Matrix())),
+            2 to TileSetTileInfo(0, Bitmap32(16, 16, premultiplied = true).slice(), collision = TileShapeInfoImpl(HitTestDirectionFlags.ALL, EmptyShape2D, Matrix())),
             3 to TileSetTileInfo(0, Bitmap32(16, 16, premultiplied = true).slice(), collision = TileShapeInfoImpl(HitTestDirectionFlags.ALL, Rectangle(0, 0, 16, 16), Matrix())),
         ))
         val map = TileMap(SparseChunkedStackedIntArray2(StackedIntArray2(IntArray2(2, 2, intArrayOf(0, 1, 2, 3)))), tileSet)
