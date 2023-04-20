@@ -1,7 +1,10 @@
-package korlibs.korge.view
 
 import korlibs.datastructure.iterators.*
 import korlibs.io.lang.*
+import korlibs.korge.view.Container
+import korlibs.korge.view.View
+import korlibs.korge.view.addUpdater
+import korlibs.korge.view.foreachDescendant
 import korlibs.math.geom.shape.*
 import korlibs.math.geom.vector.*
 import kotlin.collections.set
@@ -47,14 +50,16 @@ fun View.collidesWith(other: View, kind: CollisionKind = CollisionKind.GLOBAL_RE
 
 fun View.collidesWith(otherList: List<View>, kind: CollisionKind = CollisionKind.GLOBAL_RECT): Boolean {
     val ctx = collisionContext
-	otherList.fastForEach { other ->
-		if (ctx.collidesWith(this, other, kind)) return true
-	}
-	return false
+    otherList.fastForEach { other ->
+        if (ctx.collidesWith(this, other, kind)) return true
+    }
+    return false
 }
 
 fun View.collidesWithGlobalBoundingBox(other: View): Boolean = collidesWith(other, CollisionKind.GLOBAL_RECT)
-fun View.collidesWithGlobalBoundingBox(otherList: List<View>): Boolean = collidesWith(otherList, CollisionKind.GLOBAL_RECT)
+fun View.collidesWithGlobalBoundingBox(otherList: List<View>): Boolean = collidesWith(otherList,
+    CollisionKind.GLOBAL_RECT
+)
 
 fun View.collidesWithShape(other: View): Boolean = collidesWith(other, CollisionKind.SHAPE)
 fun View.collidesWithShape(otherList: List<View>): Boolean = collidesWith(otherList, CollisionKind.SHAPE)
@@ -79,13 +84,13 @@ fun Container.findCollision(subject: View, kind: CollisionKind = CollisionKind.G
  * if no [root] is provided, it computes the root of the view [this] each frame, you can specify a collision [kind]
  */
 fun View.onCollision(filter: (View) -> Boolean = { true }, root: View? = null, kind: CollisionKind = CollisionKind.GLOBAL_RECT, callback: View.(View) -> Unit): Cancellable {
-	return addUpdater {
-		(root ?: this.root).foreachDescendant {
-			if (this != it && filter(it) && this.collidesWith(it, kind)) {
-				callback(this, it)
-			}
-		}
-	}
+    return addUpdater {
+        (root ?: this.root).foreachDescendant {
+            if (this != it && filter(it) && this.collidesWith(it, kind)) {
+                callback(this, it)
+            }
+        }
+    }
 }
 
 fun List<View>.onCollision(filter: (View) -> Boolean = { true }, root: View? = null, kind: CollisionKind = CollisionKind.GLOBAL_RECT, callback: View.(View) -> Unit): Cancellable =
@@ -100,22 +105,22 @@ fun View.onCollisionShape(filter: (View) -> Boolean = { true }, root: View? = nu
  * When a collision is found, [callback] is called. It returns a [Cancellable] to remove the component.
  */
 fun View.onDescendantCollision(root: View = this, filterSrc: (View) -> Boolean = { true }, filterDst: (View) -> Boolean = { true }, kind: CollisionKind = CollisionKind.GLOBAL_RECT, callback: View.(View) -> Unit): Cancellable {
-	return addUpdater {
-		root.foreachDescendant { src ->
-			if (filterSrc(src)) {
-				root.foreachDescendant { dst ->
-					if (src !== dst && filterDst(dst) && src.collidesWith(dst, kind)) {
-						callback(src, dst)
-					}
-				}
-			}
-		}
-	}
+    return addUpdater {
+        root.foreachDescendant { src ->
+            if (filterSrc(src)) {
+                root.foreachDescendant { dst ->
+                    if (src !== dst && filterDst(dst) && src.collidesWith(dst, kind)) {
+                        callback(src, dst)
+                    }
+                }
+            }
+        }
+    }
 }
 
 /**
  * Adds a component to [this] that checks each frame for collisions against descendant views of [root] that matches the [filter],
- * when a collision is found, it remembers it and the next time the collision does not occur, [callback] is executed with this view as receiver, 
+ * when a collision is found, it remembers it and the next time the collision does not occur, [callback] is executed with this view as receiver,
  * and the collision target as first parameter. if no [root] is provided, it computes the root of the view [this] each frame, you can specify a collision [kind]
  */
 fun View.onCollisionExit(

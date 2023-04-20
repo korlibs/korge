@@ -1,5 +1,6 @@
 package samples.asteroids
 
+import collidesWith
 import korlibs.event.*
 import korlibs.image.color.*
 import korlibs.image.font.*
@@ -12,6 +13,7 @@ import korlibs.korge.view.align.centerXOnStage
 import korlibs.math.geom.*
 import korlibs.math.random.*
 import korlibs.time.*
+import onCollision
 import kotlin.random.*
 
 const val NUMBER_OF_ASTEROIDS = 15

@@ -1,5 +1,6 @@
 package samples.minesweeper
 
+import findCollision
 import korlibs.datastructure.*
 import korlibs.memory.*
 import korlibs.audio.sound.*
