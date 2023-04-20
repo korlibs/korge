@@ -91,7 +91,8 @@ class BatchBuilder2D constructor(
 
     @PublishedApi internal var vertexPos = 0
     @PublishedApi internal var indexPos = 0
-    @PublishedApi internal var currentTexIndex = 0
+    //@PublishedApi internal var currentTexIndex = 0
+    @KorgeInternal var currentTexIndex = 0
 
     @PublishedApi internal var currentTexN: Array<AGTexture?> = Array(maxTextures) { null }
 
