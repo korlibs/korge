@@ -48,11 +48,15 @@ val VectorPath.cachedPoints: PointList by Extra.PropertyThis { this.getPoints2()
 inline fun buildVectorPath(out: VectorPath = VectorPath(), block: VectorPath.() -> Unit): VectorPath = out.apply(block)
 inline fun buildVectorPath(out: VectorPath = VectorPath(), winding: Winding = Winding.DEFAULT, block: VectorPath.() -> Unit): VectorPath = out.also { it.winding = winding }.apply(block)
 
-fun List<Shape2D>.toShape2d(): Shape2D = Shape2D(*this.toTypedArray())
-fun Shape2D.toShape2d(): Shape2D = this
+fun List<Shape2D>.toShape2D(): Shape2D = Shape2D(*this.toTypedArray())
+fun Shape2D.toShape2D(): Shape2D = this
+
+@Deprecated("", ReplaceWith("toShape2D()")) fun List<Shape2D>.toShape2d(): Shape2D = toShape2D()
+@Deprecated("", ReplaceWith("toShape2D()")) fun Shape2D.toShape2d(): Shape2D = toShape2D()
 
 // RoundRectangle
 interface Shape2D {
+    val closed: Boolean get() = toVectorPath().isLastCommandClose
     val center: Point get() = getBounds().center
     val area: Float get() {
         val lazyVectorPath = toVectorPath()
@@ -154,9 +158,9 @@ interface Shape2D {
 
     companion object {
         operator fun invoke(vararg shapes: Shape2D): Shape2D {
-            if (shapes.isEmpty()) return EmptyShape2d
+            if (shapes.isEmpty()) return EmptyShape2D
             if (shapes.size == 1) return shapes[0]
-            return CompoundShape2d(shapes.toList())
+            return CompoundShape2D(shapes.toList())
         }
 
         fun intersections(l: Shape2D, ml: Matrix, r: Shape2D, mr: Matrix): PointList = l.intersectionsWith(ml, r, mr)
@@ -193,7 +197,9 @@ interface Shape2D {
     }
 }
 
-data class CompoundShape2d(val shapes: List<Shape2D>) : AbstractShape2D() {
+//@Deprecated("") typealias CompoundShape2d = CompoundShape2D
+
+data class CompoundShape2D(val shapes: List<Shape2D>) : AbstractShape2D() {
     override val lazyVectorPath: VectorPath by lazy {
         buildVectorPath { shapes.fastForEach { shape -> path(shape.toVectorPath()) } }
     }
@@ -233,7 +239,9 @@ data class CompoundShape2d(val shapes: List<Shape2D>) : AbstractShape2D() {
     override fun toVectorPath(): VectorPath = buildVectorPath { shapes.fastForEach { write(it.toVectorPath()) } }
 }
 
-object EmptyShape2d : Shape2D {
+//@Deprecated("") typealias EmptyShape2d = EmptyShape2D
+
+object EmptyShape2D : Shape2D {
     override val area: Float get() = 0f
     override val perimeter: Float get() = 0f
     override fun containsPoint(p: Point): Boolean = false
@@ -269,12 +277,10 @@ inline fun VectorPath.emitEdges(
 }
 
 
-
 fun PointList.toPolygon(out: VectorPath = VectorPath()): VectorPath = buildVectorPath(out) { polygon(this@toPolygon) }
 
-
-
-fun PointList.toShape2d(closed: Boolean = true): Shape2D {
+@Deprecated("", ReplaceWith("toShape2D(closed)")) fun PointList.toShape2d(closed: Boolean = true): Shape2D = toShape2D(closed)
+fun PointList.toShape2D(closed: Boolean = true): Shape2D {
     if (closed && this.size == 4) {
         val x0 = this.getX(0)
         val y0 = this.getY(0)
@@ -288,17 +294,20 @@ fun PointList.toShape2d(closed: Boolean = true): Shape2D {
 }
 
 //fun VectorPath.toShape2dNew(closed: Boolean = true): Shape2D = VectorPath(this, closed)
-fun VectorPath.toShape2dNew(closed: Boolean = true): Shape2D = this
+@Deprecated("", ReplaceWith("toShape2DNew()")) fun VectorPath.toShape2dNew(closed: Boolean = true): Shape2D = toShape2DNew()
+fun VectorPath.toShape2DNew(closed: Boolean = true): Shape2D = this
 
 //fun VectorPath.toShape2d(closed: Boolean = true): Shape2D = toShape2dNew(closed)
-fun VectorPath.toShape2d(closed: Boolean = true): Shape2D = toShape2dOld(closed)
+@Deprecated("", ReplaceWith("toShape2D(closed)")) fun VectorPath.toShape2d(closed: Boolean = true): Shape2D = toShape2D(closed)
+fun VectorPath.toShape2D(closed: Boolean = true): Shape2D = toShape2DOld(closed)
 
-fun VectorPath.toShape2dOld(closed: Boolean = true): Shape2D {
+@Deprecated("", ReplaceWith("toShape2DOld(closed)")) fun VectorPath.toShape2dOld(closed: Boolean = true): Shape2D = toShape2DOld(closed)
+fun VectorPath.toShape2DOld(closed: Boolean = true): Shape2D {
     val items = toPathPointList().map { it.toShape2d(closed) }
     return when (items.size) {
-        0 -> EmptyShape2d
+        0 -> EmptyShape2D
         1 -> items.first()
-        else -> CompoundShape2d(items)
+        else -> CompoundShape2D(items)
     }
 }
 
