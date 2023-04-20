@@ -40,6 +40,74 @@ data class KorgeDisplayMode(val scaleMode: ScaleMode, val scaleAnchor: Anchor, v
     }
 }
 
+@Target(AnnotationTarget.VALUE_PARAMETER)
+private annotation class DeprecatedParameter(
+    val reason: String
+)
+
+suspend fun Korge(
+    args: Array<String> = arrayOf(),
+    imageFormats: ImageFormat = RegisteredImageFormats,
+    gameWindow: GameWindow? = null,
+    //val eventDispatcher: EventDispatcher = gameWindow ?: DummyEventDispatcher, // Removed
+    mainSceneClass: KClass<out Scene>? = null,
+    timeProvider: TimeProvider = TimeProvider,
+    injector: AsyncInjector = AsyncInjector(),
+    configInjector: AsyncInjector.() -> Unit = {},
+    debug: Boolean = false,
+    trace: Boolean = false,
+    context: Any? = null,
+    fullscreen: Boolean? = null,
+    blocking: Boolean = true,
+    gameId: String = Korge.DEFAULT_GAME_ID,
+    settingsFolder: String? = null,
+    batchMaxQuads: Int = BatchBuilder2D.DEFAULT_BATCH_QUADS,
+    // @TODO: Why @Deprecated doesn't support AnnotationTarget.VALUE_PARAMETER???
+    @DeprecatedParameter("Use windowSize instead")
+    windowWidth: Int = DefaultViewport.SIZE.width.toInt(),
+    @DeprecatedParameter("Use windowSize instead")
+    windowHeight: Int = DefaultViewport.SIZE.height.toInt(),
+    windowSize: Size = Size(windowWidth, windowHeight),
+    @DeprecatedParameter("Use virtualSize instead")
+    virtualWidth: Int = windowSize.width.toInt(),
+    @DeprecatedParameter("Use virtualSize instead")
+    virtualHeight: Int = windowSize.height.toInt(),
+    virtualSize: Size = Size(virtualWidth, virtualHeight),
+    displayMode: KorgeDisplayMode = KorgeDisplayMode.DEFAULT,
+    title: String = "Game",
+    @DeprecatedParameter("Use backgroundColor instead")
+    bgcolor: RGBA? = Colors.BLACK,
+    backgroundColor: RGBA? = bgcolor,
+    quality: GameWindow.Quality = GameWindow.Quality.PERFORMANCE,
+    icon: String? = null,
+    multithreaded: Boolean? = null,
+    forceRenderEveryFrame: Boolean = true,
+    main: (suspend Stage.() -> Unit) = {},
+    debugAg: Boolean = false,
+    debugFontExtraScale: Double = 1.0,
+    debugFontColor: RGBA = Colors.WHITE,
+    stageBuilder: (Views) -> Stage = { Stage(it) },
+    targetFps: Double = 0.0,
+    entry: suspend Stage.() -> Unit = {}
+): Unit = Korge(
+    args = args, imageFormats = imageFormats, gameWindow = gameWindow, mainSceneClass = mainSceneClass,
+    timeProvider = timeProvider, injector = injector, configInjector = configInjector, debug = debug,
+    trace = trace, context = context, fullscreen = fullscreen, blocking = blocking, gameId = gameId,
+    settingsFolder = settingsFolder, batchMaxQuads = batchMaxQuads,
+    windowSize = windowSize, virtualSize = virtualSize,
+    displayMode = displayMode, title = title, backgroundColor = backgroundColor, quality = quality,
+    icon = icon,
+    multithreaded = multithreaded,
+    forceRenderEveryFrame = forceRenderEveryFrame,
+    main = main,
+    debugAg = debugAg,
+    debugFontExtraScale = debugFontExtraScale,
+    debugFontColor = debugFontColor,
+    stageBuilder = stageBuilder,
+    unit = Unit,
+    targetFps = targetFps,
+).start(entry)
+
 data class Korge(
     val args: Array<String> = arrayOf(),
     val imageFormats: ImageFormat = RegisteredImageFormats,
