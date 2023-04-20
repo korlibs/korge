@@ -114,8 +114,8 @@ now they are available via kproject in these repositories:
 ### Image Formats
 
 * PNG, QOI, ASE, PSD, Native Decoders (Integrated in KorGE)
-* <https://github.com/korlibs/korge-image-formats/korim-jpeg> (Pure Kotlin JPEG Encoder/Decoder)
-* <https://github.com/korlibs/korge-image-formats/korim-qr> (Pure Kotlin QR Generator)
+* <https://github.com/korlibs/korge-image-formats/tree/main/korim-jpeg> (Pure Kotlin JPEG Encoder/Decoder)
+* <https://github.com/korlibs/korge-image-formats/tree/main/korim-qr> (Pure Kotlin QR Generator)
 
 ### AudioFormats
 
