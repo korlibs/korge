@@ -5,20 +5,20 @@ import korlibs.math.geom.vector.*
 import korlibs.math.internal.*
 import kotlin.test.*
 
-class Shape2dTest {
+class Shape2DTest {
     @Test
     fun test() {
         assertEquals(
             "Rectangle(x=0, y=0, width=100, height=100)",
-            VectorPath { rect(0, 0, 100, 100) }.toShape2d(closed = true).toString()
+            VectorPath { rect(0, 0, 100, 100) }.toShape2D(closed = true).toString()
         )
 
         assertEquals(
-            "CompoundShape2d(shapes=[Rectangle(x=0, y=0, width=100, height=100), Rectangle(x=300, y=0, width=100, height=100)])",
+            "CompoundShape2D(shapes=[Rectangle(x=0, y=0, width=100, height=100), Rectangle(x=300, y=0, width=100, height=100)])",
             VectorPath {
                 rect(0, 0, 100, 100)
                 rect(300, 0, 100, 100)
-            }.toShape2d(closed = true).toString()
+            }.toShape2D(closed = true).toString()
         )
 
         assertEquals(
@@ -28,7 +28,7 @@ class Shape2dTest {
                 lineTo(Point(100, 0))
                 lineTo(Point(100, 100))
                 close()
-            }.toShape2d(closed = true).toString()
+            }.toShape2D(closed = true).toString()
         )
     }
 

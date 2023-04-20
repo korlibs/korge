@@ -48,11 +48,15 @@ val VectorPath.cachedPoints: PointList by Extra.PropertyThis { this.getPoints2()
 inline fun buildVectorPath(out: VectorPath = VectorPath(), block: VectorPath.() -> Unit): VectorPath = out.apply(block)
 inline fun buildVectorPath(out: VectorPath = VectorPath(), winding: Winding = Winding.DEFAULT, block: VectorPath.() -> Unit): VectorPath = out.also { it.winding = winding }.apply(block)
 
-fun List<Shape2D>.toShape2d(): Shape2D = Shape2D(*this.toTypedArray())
-fun Shape2D.toShape2d(): Shape2D = this
+fun List<Shape2D>.toShape2D(): Shape2D = Shape2D(*this.toTypedArray())
+fun Shape2D.toShape2D(): Shape2D = this
+
+@Deprecated("", ReplaceWith("toShape2D()")) fun List<Shape2D>.toShape2d(): Shape2D = toShape2D()
+@Deprecated("", ReplaceWith("toShape2D()")) fun Shape2D.toShape2d(): Shape2D = toShape2D()
 
 // RoundRectangle
 interface Shape2D {
+    val closed: Boolean get() = toVectorPath().isLastCommandClose
     val center: Point get() = getBounds().center
     val area: Float get() {
         val lazyVectorPath = toVectorPath()
@@ -275,8 +279,8 @@ inline fun VectorPath.emitEdges(
 
 fun PointList.toPolygon(out: VectorPath = VectorPath()): VectorPath = buildVectorPath(out) { polygon(this@toPolygon) }
 
-
-fun PointList.toShape2d(closed: Boolean = true): Shape2D {
+@Deprecated("", ReplaceWith("toShape2D(closed)")) fun PointList.toShape2d(closed: Boolean = true): Shape2D = toShape2D(closed)
+fun PointList.toShape2D(closed: Boolean = true): Shape2D {
     if (closed && this.size == 4) {
         val x0 = this.getX(0)
         val y0 = this.getY(0)
@@ -290,12 +294,15 @@ fun PointList.toShape2d(closed: Boolean = true): Shape2D {
 }
 
 //fun VectorPath.toShape2dNew(closed: Boolean = true): Shape2D = VectorPath(this, closed)
-fun VectorPath.toShape2dNew(closed: Boolean = true): Shape2D = this
+@Deprecated("", ReplaceWith("toShape2DNew()")) fun VectorPath.toShape2dNew(closed: Boolean = true): Shape2D = toShape2DNew()
+fun VectorPath.toShape2DNew(closed: Boolean = true): Shape2D = this
 
 //fun VectorPath.toShape2d(closed: Boolean = true): Shape2D = toShape2dNew(closed)
-fun VectorPath.toShape2d(closed: Boolean = true): Shape2D = toShape2dOld(closed)
+@Deprecated("", ReplaceWith("toShape2D(closed)")) fun VectorPath.toShape2d(closed: Boolean = true): Shape2D = toShape2D(closed)
+fun VectorPath.toShape2D(closed: Boolean = true): Shape2D = toShape2DOld(closed)
 
-fun VectorPath.toShape2dOld(closed: Boolean = true): Shape2D {
+@Deprecated("", ReplaceWith("toShape2DOld(closed)")) fun VectorPath.toShape2dOld(closed: Boolean = true): Shape2D = toShape2DOld(closed)
+fun VectorPath.toShape2DOld(closed: Boolean = true): Shape2D {
     val items = toPathPointList().map { it.toShape2d(closed) }
     return when (items.size) {
         0 -> EmptyShape2D
