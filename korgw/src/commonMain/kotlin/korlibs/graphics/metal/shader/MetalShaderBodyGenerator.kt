@@ -21,7 +21,7 @@ internal class MetalShaderBodyGenerator(
     }
 
     override fun visit(stm: Program.Stm.Discard) {
-        programIndenter.line("discard;")
+        programIndenter.line("discard_fragment();")
     }
 
     override fun visit(stm: Program.Stm.Break) {
