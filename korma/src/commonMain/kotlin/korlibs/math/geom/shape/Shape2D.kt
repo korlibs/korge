@@ -156,7 +156,7 @@ interface Shape2D {
         operator fun invoke(vararg shapes: Shape2D): Shape2D {
             if (shapes.isEmpty()) return EmptyShape2D
             if (shapes.size == 1) return shapes[0]
-            return CompoundShape2d(shapes.toList())
+            return CompoundShape2D(shapes.toList())
         }
 
         fun intersections(l: Shape2D, ml: Matrix, r: Shape2D, mr: Matrix): PointList = l.intersectionsWith(ml, r, mr)
@@ -193,7 +193,9 @@ interface Shape2D {
     }
 }
 
-data class CompoundShape2d(val shapes: List<Shape2D>) : AbstractShape2D() {
+//@Deprecated("") typealias CompoundShape2d = CompoundShape2D
+
+data class CompoundShape2D(val shapes: List<Shape2D>) : AbstractShape2D() {
     override val lazyVectorPath: VectorPath by lazy {
         buildVectorPath { shapes.fastForEach { shape -> path(shape.toVectorPath()) } }
     }
@@ -233,8 +235,7 @@ data class CompoundShape2d(val shapes: List<Shape2D>) : AbstractShape2D() {
     override fun toVectorPath(): VectorPath = buildVectorPath { shapes.fastForEach { write(it.toVectorPath()) } }
 }
 
-//@Deprecated("")
-//typealias EmptyShape2d = EmptyShape2D
+//@Deprecated("") typealias EmptyShape2d = EmptyShape2D
 
 object EmptyShape2D : Shape2D {
     override val area: Float get() = 0f
@@ -272,9 +273,7 @@ inline fun VectorPath.emitEdges(
 }
 
 
-
 fun PointList.toPolygon(out: VectorPath = VectorPath()): VectorPath = buildVectorPath(out) { polygon(this@toPolygon) }
-
 
 
 fun PointList.toShape2d(closed: Boolean = true): Shape2D {
@@ -301,7 +300,7 @@ fun VectorPath.toShape2dOld(closed: Boolean = true): Shape2D {
     return when (items.size) {
         0 -> EmptyShape2D
         1 -> items.first()
-        else -> CompoundShape2d(items)
+        else -> CompoundShape2D(items)
     }
 }
 
