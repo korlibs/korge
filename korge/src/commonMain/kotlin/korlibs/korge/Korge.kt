@@ -63,17 +63,16 @@ suspend fun Korge(
     settingsFolder: String? = null,
     batchMaxQuads: Int = BatchBuilder2D.DEFAULT_BATCH_QUADS,
     // @TODO: Why @Deprecated doesn't support AnnotationTarget.VALUE_PARAMETER???
-    @DeprecatedParameter("Use windowSize instead")
-    windowWidth: Int = DefaultViewport.SIZE.width.toInt(),
-    @DeprecatedParameter("Use windowSize instead")
-    windowHeight: Int = DefaultViewport.SIZE.height.toInt(),
+    @DeprecatedParameter("Use windowSize instead") windowWidth: Int = DefaultViewport.SIZE.width.toInt(),
+    @DeprecatedParameter("Use windowSize instead") windowHeight: Int = DefaultViewport.SIZE.height.toInt(),
     windowSize: Size = Size(windowWidth, windowHeight),
-    @DeprecatedParameter("Use virtualSize instead")
-    virtualWidth: Int = windowSize.width.toInt(),
-    @DeprecatedParameter("Use virtualSize instead")
-    virtualHeight: Int = windowSize.height.toInt(),
+    @DeprecatedParameter("Use virtualSize instead") virtualWidth: Int = windowSize.width.toInt(),
+    @DeprecatedParameter("Use virtualSize instead") virtualHeight: Int = windowSize.height.toInt(),
     virtualSize: Size = Size(virtualWidth, virtualHeight),
-    displayMode: KorgeDisplayMode = KorgeDisplayMode.DEFAULT,
+    @DeprecatedParameter("Use displayMode instead") scaleMode: ScaleMode = ScaleMode.SHOW_ALL,
+    @DeprecatedParameter("Use displayMode instead") scaleAnchor: Anchor = Anchor.CENTER,
+    @DeprecatedParameter("Use displayMode instead") clipBorders: Boolean = true,
+    displayMode: KorgeDisplayMode = KorgeDisplayMode(scaleMode, scaleAnchor, clipBorders),
     title: String = "Game",
     @DeprecatedParameter("Use backgroundColor instead")
     bgcolor: RGBA? = Colors.BLACK,
