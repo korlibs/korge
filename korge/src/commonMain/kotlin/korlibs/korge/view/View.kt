@@ -18,6 +18,7 @@ import korlibs.korge.ui.*
 import korlibs.korge.view.filter.*
 import korlibs.korge.view.property.*
 import korlibs.math.geom.*
+import korlibs.math.geom.collider.*
 import korlibs.math.geom.shape.*
 import korlibs.math.geom.vector.*
 import korlibs.math.interpolation.*

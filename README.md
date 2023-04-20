@@ -89,6 +89,7 @@ now they are available via kproject in these repositories:
 ### Physics
 
 * <https://github.com/korlibs/korge-box2d>
+* <https://github.com/korlibs/korge-ext/tree/main/korge-collision> (Simple collisions)
 
 ### ECS
 

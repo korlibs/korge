@@ -1,8 +1,7 @@
-package korlibs.korge.view
+package korlibs.math.geom.collider
 
-import korlibs.math.geom.degrees
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import korlibs.math.geom.*
+import kotlin.test.*
 
 class HitTestDirectionTest {
     @Test

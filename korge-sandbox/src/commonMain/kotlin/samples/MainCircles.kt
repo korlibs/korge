@@ -7,6 +7,7 @@ import korlibs.korge.input.*
 import korlibs.korge.scene.*
 import korlibs.korge.view.*
 import korlibs.time.*
+import samples.util.collisions.*
 
 class MainCircles : Scene() {
     override suspend fun SContainer.sceneMain() {
