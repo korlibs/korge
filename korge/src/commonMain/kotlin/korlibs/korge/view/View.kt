@@ -191,6 +191,7 @@ abstract class View internal constructor(
 
     /** Property used for interpolable views like morph shapes, progress bars etc. */
     @ViewProperty(min = 0.0, max = 1.0, clampMin = false, clampMax = false)
+    // @TODO: Convert Float -> Ratio
     open var ratio: Float = 0f
 
     @PublishedApi internal var _index: Int = 0
