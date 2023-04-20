@@ -9,6 +9,9 @@ inline class Scale internal constructor(internal val raw: Float2Pack) {
     val scaleY: Float get() = raw.f1
     val scaleAvg: Float get() = scaleX * .5f + scaleY * .5f
 
+    val avg: Float get() = scaleAvg
+    val avgD: Double get() = scaleAvg.toDouble()
+
     val scaleXD: Double get() = scaleX.toDouble()
     val scaleYD: Double get() = scaleY.toDouble()
     val scaleAvgD: Double get() = scaleAvg.toDouble()
