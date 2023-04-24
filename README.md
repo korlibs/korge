@@ -21,10 +21,10 @@ in addition to ensure the continuity of the project, you will get exclusive cont
 
 KorGE is a modern multiplatform game engine for Kotlin. Features include:
 
-* Visual editor
-  * KorGE offers a powerful editor embedded in IntelliJ IDE
-* Bundle support
-  * Easily add sourcecode and resources via GitHub
+* Hot Reloading
+  * KorGE supports HotReloading to see changes immediately without having to restart the application
+* KProject support
+  * Share & re-use source code and resources via GitHub
 * Debugger
   * Live-debug your games
 * 100% Kotlin
