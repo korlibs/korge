@@ -314,11 +314,28 @@ inline class AGDrawType(val ordinal: Int) {
 
 /** Encoded in 2 bits */
 inline class AGIndexType(val ordinal: Int) {
+    val bytesSize: Int get() = when (this) {
+        NONE -> 0
+        UBYTE -> 1
+        USHORT -> 2
+        UINT -> 4
+        else -> -1
+    }
+
     companion object {
         val NONE = AGIndexType(0)
         val UBYTE = AGIndexType(1)
         val USHORT = AGIndexType(2)
         val UINT = AGIndexType(3) // https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/drawElements
+
+        fun fromBytesSize(bytesSize: Int): AGIndexType = when (bytesSize) {
+            0 -> NONE
+            1 -> UBYTE
+            2 -> USHORT
+            4 -> UINT
+            else -> AGIndexType(-1)
+        }
+        operator fun get(kind: VarKind): AGIndexType = fromBytesSize(kind.bytesSize)
     }
 
     override fun toString(): String = when (this) {
