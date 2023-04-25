@@ -720,8 +720,9 @@ data class AGVertexArrayObject constructor(
 data class AGVertexData(
     var layout: VertexLayout = VertexLayout(),
     val buffer: AGBuffer = AGBuffer(),
+    val baseOffset: Int = 0
 ) {
-    constructor(vararg attributes: Attribute, layoutSize: Int? = null) : this(VertexLayout(*attributes, layoutSize = layoutSize))
+    constructor(vararg attributes: Attribute, layoutSize: Int? = null, buffer: AGBuffer = AGBuffer(), baseOffset: Int = 0) : this(VertexLayout(*attributes, layoutSize = layoutSize), buffer = buffer, baseOffset = baseOffset)
 }
 
 sealed interface AGCommand {
