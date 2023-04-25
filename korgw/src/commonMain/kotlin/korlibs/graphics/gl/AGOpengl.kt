@@ -535,7 +535,7 @@ class AGOpengl(val gl: KmlGl, var context: KmlGlContext? = null) : AG() {
                         glElementType,
                         att.normalized,
                         totalSize,
-                        off.toLong()
+                        entry.baseOffset + off.toLong()
                     )
                     if (att.divisor != 0) {
                         gl.vertexAttribDivisor(loc, att.divisor)
