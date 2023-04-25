@@ -69,7 +69,7 @@ class AGBuffer : AGObject() {
 
 data class AGTextureUnits(val textures: Array<AGTexture?>, val infos: AGTextureUnitInfoArray) {
     companion object {
-        val MAX_TEXTURE_UNITS = 14
+        val MAX_TEXTURE_UNITS = 8 // iOS only support 8 texture units on OpenGL
         val EMPTY get() = AGTextureUnits()
     }
     constructor(size: Int = MAX_TEXTURE_UNITS) : this(arrayOfNulls(size), AGTextureUnitInfoArray(size))
