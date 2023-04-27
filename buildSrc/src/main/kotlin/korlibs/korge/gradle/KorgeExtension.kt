@@ -1,6 +1,5 @@
 package korlibs.korge.gradle
 
-import korlibs.korge.gradle.bundle.KorgeBundles
 import korlibs.korge.gradle.targets.*
 import korlibs.korge.gradle.targets.android.*
 import korlibs.korge.gradle.targets.desktop.*
