@@ -1,5 +1,6 @@
 package korlibs.korge.gradle.bundle
 
+/*
 import korlibs.korge.gradle.*
 import korlibs.korge.gradle.targets.*
 import korlibs.korge.gradle.util.*
@@ -262,3 +263,4 @@ class KorgeBundles(val project: Project) {
         }.filter { it.isDirectory && it.exists() }.toSet()
     }
 }
+*/

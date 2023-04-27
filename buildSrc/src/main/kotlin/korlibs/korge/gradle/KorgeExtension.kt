@@ -261,10 +261,10 @@ open class KorgeExtension(
         androidGradleDependency("org.jetbrains.kotlinx:kotlinx-serialization-json:${BuildVersions.KOTLIN_SERIALIZATION}")
     }
 
-    val bundles = KorgeBundles(project)
+    //val bundles = KorgeBundles(project)
 
-    @JvmOverloads
-    fun bundle(uri: String, baseName: String? = null) = bundles.bundle(uri, baseName)
+    //@JvmOverloads
+    //fun bundle(uri: String, baseName: String? = null) = bundles.bundle(uri, baseName)
 
     val DEFAULT_JVM_TARGET = "1.8"
     //val DEFAULT_JVM_TARGET = "1.6"
@@ -470,18 +470,21 @@ open class KorgeExtension(
 		androidPermission("android.permission.VIBRATE")
 	}
 
-    fun admob(ADMOB_APP_ID: String) {
-        bundle("https://github.com/korlibs/korge-bundles.git::korge-admob::4ac7fcee689e1b541849cedd1e017016128624b9##2ca2bf24ab19e4618077f57092abfc8c5c8fba50b2797a9c6d0e139cd24d8b35")
-        config("ADMOB_APP_ID", ADMOB_APP_ID)
-    }
-
-    fun gameServices() {
-        bundle("https://github.com/korlibs/korge-bundles.git::korge-services::4ac7fcee689e1b541849cedd1e017016128624b9##392d5ed87428c7137ae40aa7a44f013dd1d759630dca64e151bbc546eb25e28e")
-    }
-
-    fun billing() {
-        bundle("https://github.com/korlibs/korge-bundles.git::korge-billing::4ac7fcee689e1b541849cedd1e017016128624b9##cbde3d386e8d792855b7ef64e5e700f43b7bb367aedc6a27198892e41d50844b")
-    }
+    //@Deprecated("")
+    //fun admob(ADMOB_APP_ID: String) {
+    //    bundle("https://github.com/korlibs/korge-bundles.git::korge-admob::4ac7fcee689e1b541849cedd1e017016128624b9##2ca2bf24ab19e4618077f57092abfc8c5c8fba50b2797a9c6d0e139cd24d8b35")
+    //    config("ADMOB_APP_ID", ADMOB_APP_ID)
+    //}
+    //
+    //@Deprecated("")
+    //fun gameServices() {
+    //    bundle("https://github.com/korlibs/korge-bundles.git::korge-services::4ac7fcee689e1b541849cedd1e017016128624b9##392d5ed87428c7137ae40aa7a44f013dd1d759630dca64e151bbc546eb25e28e")
+    //}
+    //
+    //@Deprecated("")
+    //fun billing() {
+    //    bundle("https://github.com/korlibs/korge-bundles.git::korge-billing::4ac7fcee689e1b541849cedd1e017016128624b9##cbde3d386e8d792855b7ef64e5e700f43b7bb367aedc6a27198892e41d50844b")
+    //}
 
     fun author(name: String, email: String, href: String) {
 		authorName = name
