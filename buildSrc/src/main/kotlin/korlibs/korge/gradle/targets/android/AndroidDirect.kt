@@ -56,7 +56,7 @@ fun Project.configureAndroidDirect(projectType: ProjectType, isKorge: Boolean) {
 
         (this as CommonExtension<*, *, *, *>).installation.apply {
             // @TODO: Android Build Gradle newer version
-            installOptions = listOf("-r")
+            installOptions("-r")
             timeOutInMs = project.korge.androidTimeoutMs
         }
 
@@ -105,21 +105,25 @@ fun Project.configureAndroidDirect(projectType: ProjectType, isKorge: Boolean) {
             //this.single().
             if (projectType.isExecutable) {
                 maybeCreate("debug").apply {
-                    isMinifyEnabled = false
                     signingConfig = signingConfigs.getByName("release")
+                    isMinifyEnabled = false
                 }
             }
             maybeCreate("release").apply {
-                isMinifyEnabled = true
-                proguardFiles(
-                    getDefaultProguardFile("proguard-android-optimize.txt"),
-                    "proguard-rules.pro"
-                )
-                File(rootDir, "proguard-rules.pro").takeIfExists()?.also {
-                    proguardFile(it)
-                }
-                //proguardFiles(getDefaultProguardFile(ProguardFiles.ProguardFile.OPTIMIZE.fileName), File(rootProject.rootDir, "proguard-rules.pro"))
                 signingConfig = signingConfigs.getByName("release")
+                if (projectType.isExecutable) {
+                    isMinifyEnabled = true // for libraries, this would make the library to be empty
+                    proguardFiles(
+                        getDefaultProguardFile("proguard-android-optimize.txt"),
+                        "proguard-rules.pro"
+                    )
+                    File(rootDir, "proguard-rules.pro").takeIfExists()?.also {
+                        proguardFile(it)
+                    }
+                    //proguardFiles(getDefaultProguardFile(ProguardFiles.ProguardFile.OPTIMIZE.fileName), File(rootProject.rootDir, "proguard-rules.pro"))
+                } else {
+                    isMinifyEnabled = false
+                }
             }
         }
 
