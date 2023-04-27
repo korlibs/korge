@@ -18,6 +18,7 @@ import org.jetbrains.kotlin.gradle.dsl.*
 import java.io.*
 import java.net.*
 import java.util.UUID
+import kotlin.concurrent.*
 
 abstract class KorgeGradleAbstractPlugin(val projectType: ProjectType) : Plugin<Project> {
     override fun apply(project: Project) {
@@ -277,15 +278,16 @@ fun Project.korgeVersionJson(telemetry: Boolean): String {
 }
 
 fun Project.korgeCheckVersion(report: Boolean = true, telemetry: Boolean = true) {
-    try {
-        val versionJson = Json.parse(project.korgeVersionJson(telemetry = telemetry)).dyn
-        val latestVersion = versionJson["version"].str
-        val motd = versionJson["motd"].str
+    thread {
+        try {
+            val versionJson = Json.parse(project.korgeVersionJson(telemetry = telemetry)).dyn
+            val latestVersion = versionJson["version"].str
+            val motd = versionJson["motd"].str
 
-        if (report && latestVersion != BuildVersions.KORGE) {
-            //val lastReportTimeFile = File(korgeCacheDir, "last-report")
-            //if (!lastReportTimeFile.isFile && System.currentTimeMillis() - lastReportTimeFile.lastModified() >= 24 * 3600 * 1000L) {
-            //    lastReportTimeFile.writeText(System.currentTimeMillis().toString())
+            if (report && latestVersion != BuildVersions.KORGE) {
+                //val lastReportTimeFile = File(korgeCacheDir, "last-report")
+                //if (!lastReportTimeFile.isFile && System.currentTimeMillis() - lastReportTimeFile.lastModified() >= 24 * 3600 * 1000L) {
+                //    lastReportTimeFile.writeText(System.currentTimeMillis().toString())
                 println(AnsiEscape {
                     listOf(
                         "You are using KorGE '${BuildVersions.KORGE}', but there is a new version available '$latestVersion' : $motd".yellow.bgGreen,
@@ -293,9 +295,10 @@ fun Project.korgeCheckVersion(report: Boolean = true, telemetry: Boolean = true)
                         "- You can disable this notice by changing `korge { checkVersion(report = false) }` in your `build.gradle.kts`".yellow,
                     ).joinToString("\n")
                 })
-            //}
+                //}
+            }
+        } catch (e: Throwable) {
+            e.printStackTrace()
         }
-    } catch (e: Throwable) {
-        e.printStackTrace()
-    }
+    }.start()
 }
