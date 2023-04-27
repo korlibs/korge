@@ -4,6 +4,7 @@ import android.content.*
 import android.media.*
 import android.os.*
 import korlibs.datastructure.*
+import korlibs.datastructure.lock.*
 import korlibs.io.android.*
 import korlibs.io.async.*
 import korlibs.time.*
@@ -43,6 +44,7 @@ class AndroidNativeSoundProvider : NativeSoundProvider() {
     class AudioThread(val provider: AndroidNativeSoundProvider, var freq: Int = 44100, val id: Int = -1) : Thread() {
         var props: SoundProps = DummySoundProps
         val deque = AudioSamplesDeque(2)
+        val lock = Lock()
         @Volatile
         var running = true
 
@@ -91,6 +93,8 @@ class AndroidNativeSoundProvider : NativeSoundProvider() {
                     var paused = true
                     var lastVolume = Float.NaN
                     while (running) {
+                        //println("Android sound thread running = ${currentThreadId} ${currentThreadName}")
+
                         if (provider.paused) {
                             at.stop()
                             //at.pause()
@@ -102,7 +106,7 @@ class AndroidNativeSoundProvider : NativeSoundProvider() {
                             at.play()
                         }
 
-                        val readCount = deque.read(temp)
+                        val readCount = lock { deque.read(temp) }
                         if (at.state == AudioTrack.STATE_UNINITIALIZED) {
                             Thread.sleep(50L)
                             continue
@@ -179,9 +183,11 @@ class AndroidNativeSoundProvider : NativeSoundProvider() {
         override val availableSamples: Int get() = threadDeque?.availableRead ?: 0
 
         override suspend fun add(samples: AudioSamples, offset: Int, size: Int) {
+            //println("AndroidPlatformAudioOutput.add")
             while (thread == null) delay(10.milliseconds)
             while (threadDeque!!.availableRead >= 44100) delay(1.milliseconds)
-            threadDeque!!.write(samples, offset, size)
+
+            thread!!.lock { threadDeque!!.write(samples, offset, size) }
         }
 
         override fun start() {
