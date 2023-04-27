@@ -17,6 +17,7 @@ import org.gradle.plugins.ide.idea.model.*
 import org.jetbrains.kotlin.gradle.dsl.*
 import java.io.*
 import java.net.*
+import java.util.UUID
 
 abstract class KorgeGradleAbstractPlugin(val projectType: ProjectType) : Plugin<Project> {
     override fun apply(project: Project) {
@@ -225,5 +226,76 @@ open class JsWebCopy() : Copy() {
     open lateinit var targetDir: File
 }
 
-var Project.korgeCacheDir by projectExtension { File(System.getProperty("user.home"), ".korge").apply { mkdirs() } }
+var Project.korgeCacheDir by projectExtension { File(System.getProperty("user.home"), ".korge").apply { if (!this.isDirectory) mkdirs() } }
 //val node_modules by lazy { project.file("node_modules") }
+
+val Project.korgeInstallUUID: String get() {
+    val korgeInstallUUIDKey = "korgeInstallUUID"
+    if (!this.extra.has(korgeInstallUUIDKey)) {
+        val uuidFile = File(korgeCacheDir, "install-uuid")
+        if (!uuidFile.exists()) {
+            uuidFile.writeText(UUID.randomUUID().toString().replace('7', '1').replace('3', '9').replace('a', 'f'))
+        }
+        this.extra.set(korgeInstallUUIDKey, uuidFile.readText())
+    }
+    return this.extra.get(korgeInstallUUIDKey).toString()
+}
+
+fun Project.korgeVersionJson(telemetry: Boolean): String {
+    val korgeVersionJsonKey = "korgeVersionJson"
+    if (!this.extra.has(korgeVersionJsonKey)) {
+        val versionJsonFile = File(korgeCacheDir, "version.json")
+        if (!versionJsonFile.isFile && System.currentTimeMillis() - versionJsonFile.lastModified() >= 24 * 3600 * 1000L) {
+            val base = "https://version.korge.org/version.json?source=gradle"
+            val props: Map<String, String> = mapOf(
+                "version" to BuildVersions.KORGE,
+                "install.uuid" to korgeInstallUUID,
+                "ci" to (System.getenv("CI") == "true").toString(),
+                "os.name" to System.getProperty("os.name"),
+                "os.arch" to System.getProperty("os.arch"),
+                "os.version" to System.getProperty("os.version"),
+            )
+            fun Map<String, String>.toQueryString(): String {
+                return this.map {
+                    URLEncoder.encode(it.key, Charsets.UTF_8) + "=" + URLEncoder.encode(it.value, Charsets.UTF_8)
+                }.joinToString("&")
+            }
+            downloadFile(
+                URL(
+                    when (telemetry) {
+                        true -> "$base&${props.toQueryString()}"
+                        else -> base
+                    }
+
+                ),
+                versionJsonFile
+            )
+        }
+        this.extra.set(korgeVersionJsonKey, versionJsonFile.readText())
+    }
+    return this.extra.get(korgeVersionJsonKey).toString()
+}
+
+fun Project.korgeCheckVersion(report: Boolean = true, telemetry: Boolean = true) {
+    try {
+        val versionJson = Json.parse(project.korgeVersionJson(telemetry = telemetry)).dyn
+        val latestVersion = versionJson["version"].str
+        val motd = versionJson["motd"].str
+
+        if (report && latestVersion != BuildVersions.KORGE) {
+            //val lastReportTimeFile = File(korgeCacheDir, "last-report")
+            //if (!lastReportTimeFile.isFile && System.currentTimeMillis() - lastReportTimeFile.lastModified() >= 24 * 3600 * 1000L) {
+            //    lastReportTimeFile.writeText(System.currentTimeMillis().toString())
+                println(AnsiEscape {
+                    listOf(
+                        "You are using KorGE '${BuildVersions.KORGE}', but there is a new version available '$latestVersion' : $motd".yellow.bgGreen,
+                        "- You can change your KorGE version typically in the file `gradle/libs.versions.toml` or in your `build.gradle.kts`".yellow,
+                        "- You can disable this notice by changing `korge { checkVersion(report = false) }` in your `build.gradle.kts`".yellow,
+                    ).joinToString("\n")
+                })
+            //}
+        }
+    } catch (e: Throwable) {
+        e.printStackTrace()
+    }
+}

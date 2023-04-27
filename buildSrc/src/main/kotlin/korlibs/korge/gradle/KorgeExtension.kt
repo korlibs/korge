@@ -89,6 +89,9 @@ open class KorgeExtension(
 	internal fun init(includeIndirectAndroid: Boolean, projectType: ProjectType) {
 	    this.includeIndirectAndroid = includeIndirectAndroid
         this.projectType = projectType
+        this.project.afterEvaluate {
+            implicitCheckVersion()
+        }
 	}
 
     companion object {
@@ -139,6 +142,39 @@ open class KorgeExtension(
   
     lateinit var projectType: ProjectType
         private set
+
+    private var _checkVersionOnce = false
+
+    /**
+     * This checks that you are using the latest version of KorGE
+     * once per day.
+     *
+     * This downloads the latest version and
+     * optionally when [telemetry] is set to true, or gradle property `korge.disable.telemetry` is set to true
+     * sends your current KorGE version, operating system, cpu architecture and a random, anonymous install UUID
+     * for statistical purposes.
+     *
+     * In the case you want the plugin to also notify you that a new version is available,
+     * you can set the [report] parameter to true.
+     *
+     * If you want to totally disable this check, you can by setting [check] to false.
+     *
+     * Have in mind that this check is a single small GET request once per day, it is anonymous,
+     * doesn't send any kind of personal data, and it greatly helps us to have statistics of how many people is using KorGE
+     * and which version. If you don't want to have the report once per day you can set report=false
+     */
+    fun checkVersion(check: Boolean = true, report: Boolean = true, telemetry: Boolean = project.findProperty("korge.disable.telemetry") != "true") {
+        if (!_checkVersionOnce) {
+            _checkVersionOnce = true
+            if (check) {
+                project.korgeCheckVersion(report, telemetry)
+            }
+        }
+    }
+
+    internal fun implicitCheckVersion() {
+        checkVersion(check = true, report = false)
+    }
 
     /**
      * Configures JVM target
