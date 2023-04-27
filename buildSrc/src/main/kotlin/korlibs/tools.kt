@@ -23,17 +23,19 @@ var File.text get() = this.readText(); set(value) { this.also { it.parentFile.mk
 fun File.ensureParents() = this.apply { this.parentFile.mkdirs() }
 
 // File and archives
-fun Project.downloadFile(url: URL, localFile: File) {
-    println("Downloading $url into $localFile ...")
-    url.openStream().use { input ->
-        FileOutputStream(localFile.ensureParents()).use { output ->
-            input.copyTo(output)
-        }
+fun Project.downloadFile(url: URL, localFile: File, connectionTimeout: Int = 15_000, readTimeout: Int = 15_000) {
+    logger.info("Downloading $url into $localFile ...")
+    url.openConnection().also {
+        it.connectTimeout = connectionTimeout
+        it.readTimeout = readTimeout
+    }.getInputStream().use { input ->
+        localFile.ensureParents().writeBytes(input.readAllBytes())
+        //FileOutputStream(localFile.ensureParents()).use { output -> input.copyTo(output) }
     }
 }
 
 fun Project.extractArchive(archive: File, output: File) {
-    println("Extracting $archive into $output ...")
+    logger.info("Extracting $archive into $output ...")
     copy {
         when {
             archive.name.endsWith(".tar.gz") -> it.from(tarTree(resources.gzip(archive)))

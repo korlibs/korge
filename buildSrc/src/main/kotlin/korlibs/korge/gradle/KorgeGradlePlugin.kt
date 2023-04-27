@@ -18,6 +18,7 @@ import org.jetbrains.kotlin.gradle.dsl.*
 import java.io.*
 import java.net.*
 import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.concurrent.*
 
 abstract class KorgeGradleAbstractPlugin(val projectType: ProjectType) : Plugin<Project> {
@@ -227,24 +228,26 @@ open class JsWebCopy() : Copy() {
     open lateinit var targetDir: File
 }
 
-var Project.korgeCacheDir by projectExtension { File(System.getProperty("user.home"), ".korge").apply { if (!this.isDirectory) mkdirs() } }
+private val korgeCacheData = ConcurrentHashMap<String, String>()
+val korgeCacheDir: File get() = File(System.getProperty("user.home"), ".korge").apply { if (!this.isDirectory) mkdirs() }
+
+var Project.korgeCacheData: ConcurrentHashMap<String, String> by projectExtension { ConcurrentHashMap<String, String>() }
+var Project.korgeCacheDir: File by projectExtension { File(System.getProperty("user.home"), ".korge").apply { if (!this.isDirectory) mkdirs() } }
 //val node_modules by lazy { project.file("node_modules") }
 
 val Project.korgeInstallUUID: String get() {
-    val korgeInstallUUIDKey = "korgeInstallUUID"
-    if (!this.extra.has(korgeInstallUUIDKey)) {
+    return korgeCacheData.getOrPut("korgeInstallUUID") {
         val uuidFile = File(korgeCacheDir, "install-uuid")
         if (!uuidFile.exists()) {
             uuidFile.writeText(UUID.randomUUID().toString().replace('7', '1').replace('3', '9').replace('a', 'f'))
         }
-        this.extra.set(korgeInstallUUIDKey, uuidFile.readText())
+        uuidFile.readText()
     }
-    return this.extra.get(korgeInstallUUIDKey).toString()
 }
 
 fun Project.korgeVersionJson(telemetry: Boolean): String {
-    val korgeVersionJsonKey = "korgeVersionJson"
-    if (!this.extra.has(korgeVersionJsonKey)) {
+    val DEFAULT_JSON = "{\"version\": \"${BuildVersions.KORGE}\", \"motd\": \"Fallback\"}"
+    return korgeCacheData.getOrPut("korgeVersionJson") {
         val versionJsonFile = File(korgeCacheDir, "version.json")
         if (!versionJsonFile.isFile && System.currentTimeMillis() - versionJsonFile.lastModified() >= 24 * 3600 * 1000L) {
             val base = "https://version.korge.org/version.json?source=gradle"
@@ -261,34 +264,42 @@ fun Project.korgeVersionJson(telemetry: Boolean): String {
                     URLEncoder.encode(it.key, Charsets.UTF_8) + "=" + URLEncoder.encode(it.value, Charsets.UTF_8)
                 }.joinToString("&")
             }
-            downloadFile(
-                URL(
-                    when (telemetry) {
-                        true -> "$base&${props.toQueryString()}"
-                        else -> base
-                    }
+            try {
+                downloadFile(
+                    URL(
+                        when (telemetry) {
+                            true -> "$base&${props.toQueryString()}"
+                            else -> base
+                        }
 
-                ),
-                versionJsonFile
-            )
+                    ),
+                    versionJsonFile,
+                    connectionTimeout = 5_000,
+                    readTimeout = 3_000,
+                )
+            } catch (e: Throwable) {
+                logger.info(e.stackTraceToString())
+                versionJsonFile.writeText(DEFAULT_JSON)
+            }
         }
-        this.extra.set(korgeVersionJsonKey, versionJsonFile.readText())
+        try { versionJsonFile.readText() } catch (e: Throwable) { DEFAULT_JSON }
     }
-    return this.extra.get(korgeVersionJsonKey).toString()
 }
 
-fun Project.korgeCheckVersion(report: Boolean = true, telemetry: Boolean = true) {
-    thread {
+fun Project.korgeCheckVersion(report: Boolean = true, telemetry: Boolean = true): Thread {
+    return thread(start = true, isDaemon = false) {
         try {
-            val versionJson = Json.parse(project.korgeVersionJson(telemetry = telemetry)).dyn
+            val versionJson = Json.parse(korgeVersionJson(telemetry = telemetry)).dyn
             val latestVersion = versionJson["version"].str
             val motd = versionJson["motd"].str
+
+            //println("versionJson=$versionJson")
 
             if (report && latestVersion != BuildVersions.KORGE) {
                 //val lastReportTimeFile = File(korgeCacheDir, "last-report")
                 //if (!lastReportTimeFile.isFile && System.currentTimeMillis() - lastReportTimeFile.lastModified() >= 24 * 3600 * 1000L) {
                 //    lastReportTimeFile.writeText(System.currentTimeMillis().toString())
-                println(AnsiEscape {
+                logger.warn(AnsiEscape {
                     listOf(
                         "You are using KorGE '${BuildVersions.KORGE}', but there is a new version available '$latestVersion' : $motd".yellow.bgGreen,
                         "- You can change your KorGE version typically in the file `gradle/libs.versions.toml` or in your `build.gradle.kts`".yellow,
@@ -298,7 +309,7 @@ fun Project.korgeCheckVersion(report: Boolean = true, telemetry: Boolean = true)
                 //}
             }
         } catch (e: Throwable) {
-            e.printStackTrace()
+            logger.info(e.stackTraceToString())
         }
-    }.start()
+    }
 }

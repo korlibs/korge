@@ -167,7 +167,8 @@ open class KorgeExtension(
         if (!_checkVersionOnce) {
             _checkVersionOnce = true
             if (check) {
-                project.korgeCheckVersion(report, telemetry)
+                val thread = project.korgeCheckVersion(report, telemetry)
+                project.afterEvaluate { thread.join() }
             }
         }
     }
