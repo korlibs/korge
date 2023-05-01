@@ -54,6 +54,11 @@ fun Project.configureJavaScript(projectType: ProjectType) {
         }
 	}
 
+    // https://youtrack.jetbrains.com/issue/KT-58187/KJS-IR-Huge-performance-bottleneck-while-generating-sourceMaps-getCannonicalFile#focus=Comments-27-7301819.0-0
+    tasks.withType<org.jetbrains.kotlin.gradle.tasks.Kotlin2JsCompile> {
+        kotlinOptions.sourceMap = korge.sourceMaps
+    }
+
     val generatedIndexHtmlDir = File(project.buildDir, "processedResources-www")
 
     afterEvaluate {
