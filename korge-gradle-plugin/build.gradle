@@ -84,6 +84,7 @@ dependencies {
 	implementation(localGroovy())
     //compileOnly(gradleKotlinDsl())
 
+    testImplementation("org.jetbrains.kotlin:kotlin-test")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
     testImplementation("io.mockk:mockk:1.11.0")
 
