@@ -145,7 +145,6 @@ fun Project.createCopyToExecutableTarget(target: String) {
                             val korgeGenerateResourcesTask = tasks.findByName(processResourcesTaskName) as? Copy?
                             //korgeGenerateResourcesTask?.korgeGeneratedFolder?.let { from(it) }
                             from(korgeGenerateResourcesTask?.outputs)
-
                         }
                     }
                 }
