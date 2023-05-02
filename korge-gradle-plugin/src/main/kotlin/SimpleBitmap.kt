@@ -90,6 +90,16 @@ class SimpleBitmap(val width: Int, val height: Int, val data: IntArray = IntArra
         transferRect(x, y, width, height, out, write = true)
     }
 
+    fun flipY(): SimpleBitmap {
+        val out = SimpleBitmap(width, height)
+        val row = IntArray(width)
+        for (y in 0 until height) {
+            getRect(0, y, width, 1, row)
+            out.putRect(0, height - 1 - y, width, 1, row)
+        }
+        return out
+    }
+
     fun rotate90(): SimpleBitmap {
         val out = SimpleBitmap(height, width)
         val row = IntArray(width)

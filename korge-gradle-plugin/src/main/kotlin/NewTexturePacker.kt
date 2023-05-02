@@ -23,7 +23,11 @@ object NewTexturePacker {
         }
     }
 
-    fun packImages(vararg folders: File): AtlasInfo {
+    fun packImages(
+        vararg folders: File,
+        enableRotation: Boolean = true,
+        enableTrimming: Boolean = true,
+    ): AtlasInfo {
         val images: List<Pair<File, SimpleBitmap>> = folders.flatMap { base -> base.walk().mapNotNull {
             if (it.isFile) {
                 try {
@@ -43,7 +47,7 @@ object NewTexturePacker {
             smart = true,
             pot = true,
             square = false,
-            allowRotation = true,
+            allowRotation = enableRotation,
             //allowRotation = false,
             tag = false,
             border = PADDING
@@ -51,7 +55,7 @@ object NewTexturePacker {
 
         packer.addArray(images.map { (file, image) ->
             val fullArea = Rectangle(0, 0, image.width, image.height)
-            val trimArea = image.trim()
+            val trimArea = if (enableTrimming) image.trim() else fullArea
             val trimmedImage = image.slice(trimArea)
             //println(trimArea == fullArea)
             NewBinPacker.Rectangle(width = trimmedImage.width, height = trimmedImage.height, raw = Info(
@@ -75,20 +79,26 @@ object NewTexturePacker {
                 val fileName = info.file.name
                 //println("$rect :: info=$info")
 
-                val chunk = if (rect.rot) info.trimmedImage.rotate90() else info.trimmedImage
+                val chunk = if (rect.rot) info.trimmedImage.flipY().rotate90() else info.trimmedImage
                 out.put(rect.x - PADDING, rect.y - PADDING, chunk.extrude(PADDING))
                 //out.put(rect.x, rect.y, chunk)
 
                 val obj = LinkedHashMap<String, Any?>()
 
-                fun Rectangle.toObj() = mapOf("x" to x, "y" to y, "w" to width, "h" to height)
-                fun Dimension.toObj() = mapOf("w" to width, "h" to height)
+                fun Dimension.toObj(rot: Boolean): Map<String, Any?> {
+                    val w = if (!rot) width else height
+                    val h = if (!rot) height else width
+                    return mapOf("w" to w, "h" to h)
+                }
+                fun Rectangle.toObj(rot: Boolean): Map<String, Any?> {
+                    return mapOf("x" to x, "y" to y) + this.size.toObj(rot)
+                }
 
-                obj["frame"] = Rectangle(rect.x, rect.y, rect.width, rect.height).toObj()
+                obj["frame"] = Rectangle(rect.x, rect.y, rect.width, rect.height).toObj(rect.rot)
                 obj["rotated"] = rect.rot
                 obj["trimmed"] = info.trimArea != info.fullArea
-                obj["spriteSourceSize"] = info.fullArea.toObj()
-                obj["sourceSize"] = info.fullArea.size.toObj()
+                obj["spriteSourceSize"] = info.fullArea.toObj(false)
+                obj["sourceSize"] = info.fullArea.size.toObj(false)
 
                 frames[fileName] = obj
             }
