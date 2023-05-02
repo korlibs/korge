@@ -111,7 +111,7 @@ object NewTexturePacker {
                 obj["frame"] = Rectangle(rect.x, rect.y, rect.width, rect.height).toObj(rect.rot)
                 obj["rotated"] = rect.rot
                 obj["trimmed"] = info.trimArea != info.fullArea
-                obj["spriteSourceSize"] = info.fullArea.toObj(false)
+                obj["spriteSourceSize"] = info.trimArea.toObj(false)
                 obj["sourceSize"] = info.fullArea.size.toObj(false)
 
                 frames[fileName] = obj
