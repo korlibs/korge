@@ -22,29 +22,26 @@ fun Project.installAndroidRun(dependsOnList: List<String>, direct: Boolean, isKo
 
     generateKorgeProcessedFromTask(null, "androidProcessResources")
 
-    val generateAndroidProcessedResources = tasks.createThis<Task>("generateAndroidProcessedResources") {
-        doFirst {
-            dependsOn(getKorgeProcessResourcesTaskName("android", "main"))
-        }
-    }
-
-    for (Type in listOf("Debug", "Release")) {
-        tasks.findByName("generate${Type}Assets")?.dependsOn(generateAndroidProcessedResources)
-    }
+    val generateAndroidProcessedResources = getKorgeProcessResourcesTaskName("android", "main")
 
     afterEvaluate {
-        for (Type in listOf("Debug", "Release")) {
-            tasks.findByName("generate${Type}BuildConfig")?.dependsOn(createAndroidManifest)
-            tasks.findByName("process${Type}MainManifest")?.dependsOn(createAndroidManifest)
+        afterEvaluate {
+            for (Type in listOf("Debug", "Release")) {
+                //println("tasks.findByName(\"generate${Type}Assets\")=${tasks.findByName("generate${Type}Assets")}")
+                //println("tasks.findByName(\"package${Type}\")=${tasks.findByName("package${Type}")}")
+                tasks.findByName("generate${Type}Assets")?.dependsOn(generateAndroidProcessedResources)
+                tasks.findByName("package${Type}")?.dependsOn(generateAndroidProcessedResources)
+
+                tasks.findByName("generate${Type}BuildConfig")?.dependsOn(createAndroidManifest)
+                tasks.findByName("process${Type}MainManifest")?.dependsOn(createAndroidManifest)
 
 
-            // Not required anymore
-            //(tasks.getByName("install${Type}") as InstallVariantTask).apply { installOptions = listOf("-r") }
-            //tasks.getByName("install${Type}").dependsOn("createAndroidManifest")
+                // Not required anymore
+                //(tasks.getByName("install${Type}") as InstallVariantTask).apply { installOptions = listOf("-r") }
+                //tasks.getByName("install${Type}").dependsOn("createAndroidManifest")
+            }
         }
     }
-
-
 
     // adb shell am start -n com.package.name/com.package.name.ActivityName
     for (debug in listOf(false, true)) {
