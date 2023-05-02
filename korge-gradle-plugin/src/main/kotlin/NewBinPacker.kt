@@ -13,8 +13,11 @@ object NewBinPacker {
         x: Int = 0,
         y: Int = 0,
         rot: Boolean = false,
-        allowRotation: Boolean? = null
+        allowRotation: Boolean? = null,
+        val name: String? = null,
     ) {
+
+        override fun toString(): String = "Rectangle[$x, $y]-[${x + width}, ${y + height}][rot=$rot][name=$name]"
 
         override fun hashCode(): Int {
             return width * 1 + height * 3 + x * 7 + y * 11 + (if (rot) 1 else 0) + (if (allowRotation == true) 3333 else 0)
