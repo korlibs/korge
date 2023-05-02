@@ -213,8 +213,16 @@ open class KorgeGenerateResourcesTask @Inject constructor(
     }
 
     fun processFolder(generatedFolder: File, resourceFolders: List<File>) {
-        KorgeTexturePacker.processFolder(logger, generatedFolder, resourceFolders)
-        processFolderCatalogJson(generatedFolder, resourceFolders)
+        try {
+            KorgeTexturePacker.processFolder(logger, generatedFolder, resourceFolders)
+        } catch (e: Throwable) {
+            e.printStackTrace()
+        }
+        try {
+            processFolderCatalogJson(generatedFolder, resourceFolders)
+        } catch (e: Throwable) {
+            e.printStackTrace()
+        }
     }
 
     fun processFolderCatalogJson(generatedFolder: File, resourceFolders: List<File>) {
