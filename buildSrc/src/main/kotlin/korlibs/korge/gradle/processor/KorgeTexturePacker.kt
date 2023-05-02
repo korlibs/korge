@@ -1,24 +1,26 @@
-package korlibs.korge.gradle
+package korlibs.korge.gradle.processor
 
 import korlibs.korge.gradle.texpacker.*
 import korlibs.korge.gradle.util.*
 import java.io.*
 import kotlin.system.*
 
-object KorgeTexturePacker {
-    fun processFolder(logger: org.slf4j.Logger, generatedFolder: File, resourceFolders: List<File>) {
-        for (folder in resourceFolders) {
+open class KorgeTexturePacker : KorgeResourceProcessor {
+    override fun processFolder(context: KorgeResourceProcessorContext) {
+        for (folder in context.resourceFolders) {
             val files = folder.listFiles()?.toList() ?: emptyList()
             for (file in files) {
                 if (file.name.endsWith(".atlas")) {
-                    val atlasJsonFile = File(generatedFolder, file.nameWithoutExtension + ".atlas.json")
+                    val atlasJsonFile = File(context.generatedFolder, file.nameWithoutExtension + ".atlas.json")
                     when {
                         file.isDirectory -> {
-                            generate(logger, atlasJsonFile, arrayOf(file))
+                            context.skipFiles(file)
+                            generate(context.logger, atlasJsonFile, arrayOf(file))
                         }
                         file.isFile -> {
                             val sources = file.readLines().filter { it.isNotBlank() }.map { File(folder, it) }.toTypedArray()
-                            generate(logger, atlasJsonFile, sources)
+                            context.skipFiles(file, *sources)
+                            generate(context.logger, atlasJsonFile, sources)
                         }
                     }
                 }

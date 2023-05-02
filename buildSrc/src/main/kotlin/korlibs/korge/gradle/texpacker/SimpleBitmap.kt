@@ -25,7 +25,7 @@ class SimpleBitmap(val width: Int, val height: Int, val data: IntArray = IntArra
             return SimpleBitmap(width, height, out)
         }
         operator fun invoke(file: File): SimpleBitmap {
-            return invoke(ImageIO.read(file))
+            return invoke(ImageIO.read(file) ?: error("Couldn't read $file as an image"))
         }
     }
     private fun index(x: Int, y: Int): Int = y * width + x

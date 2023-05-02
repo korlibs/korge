@@ -10,6 +10,7 @@ import korlibs.korge.gradle.util.*
 import org.gradle.api.*
 import java.io.*
 import groovy.text.*
+import korlibs.korge.gradle.processor.*
 import org.gradle.api.artifacts.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import java.net.*
@@ -297,6 +298,12 @@ open class KorgeExtension(
         androidGradleDependency("org.jetbrains.kotlinx:kotlinx-serialization-json:${BuildVersions.KOTLIN_SERIALIZATION}")
     }
 
+    val resourceProcessors = arrayListOf<KorgeResourceProcessor>()
+
+    fun addResourceProcessor(processor: KorgeResourceProcessor) {
+        resourceProcessors += processor
+    }
+
     //val bundles = KorgeBundles(project)
 
     //@JvmOverloads
@@ -466,7 +473,7 @@ open class KorgeExtension(
 
 	internal val defaultPluginsClassLoader by lazy { plugins.classLoader }
 
-    var androidReleaseSignStoreFile: String = "korge.keystore"
+    var androidReleaseSignStoreFile: String = "build/korge.keystore"
     var androidReleaseSignStorePassword: String = "password"
     var androidReleaseSignKeyAlias: String = "korge"
     var androidReleaseSignKeyPassword: String = "password"

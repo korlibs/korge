@@ -1,5 +1,6 @@
 package korlibs.korge.resources
 
+/*
 import korlibs.io.file.*
 import korlibs.io.file.std.localVfs
 import korlibs.io.util.AsyncOnce
@@ -161,3 +162,4 @@ abstract class ResourceProcessor @JvmOverloads constructor(
 		*/
 	}
 }
+*/

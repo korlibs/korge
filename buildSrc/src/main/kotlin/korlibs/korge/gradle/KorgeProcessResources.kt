@@ -1,5 +1,6 @@
 package korlibs.korge.gradle
 
+import korlibs.korge.gradle.processor.*
 import korlibs.korge.gradle.targets.*
 import korlibs.korge.gradle.targets.jvm.*
 import korlibs.korge.gradle.util.*
@@ -23,6 +24,36 @@ fun Project.getCompilationKorgeProcessedResourcesFolder(
 fun getKorgeProcessResourcesTaskName(targetName: String, compilationName: String): String =
     "korgeProcessedResources${targetName.capitalize()}${compilationName.capitalize()}"
 
+fun getProcessResourcesTaskName(targetName: String, compilationName: String): String =
+    "${targetName.decapitalize()}${if (compilationName == "main") "" else compilationName.capitalize()}ProcessResources"
+
+fun Project.generateKorgeProcessedFromTask(task: ProcessResources?, taskName: String) {
+    val targetNameRaw = taskName.removeSuffix("ProcessResources")
+    val isTest = targetNameRaw.endsWith("Test")
+    val targetName = targetNameRaw.removeSuffix("Test")
+    val target = kotlin.targets.findByName(targetName) ?: return
+    val isJvm = targetName == "jvm"
+    val compilationName = if (isTest) "test" else "main"
+    val korgeGeneratedTaskName = getKorgeProcessResourcesTaskName(target.name, compilationName)
+    val korgeGeneratedTask = tasks.createThis<KorgeGenerateResourcesTask>(korgeGeneratedTaskName)
+    val korgeGeneratedFolder = getCompilationKorgeProcessedResourcesFolder(targetName, compilationName)
+    val compilation = target.compilations.findByName(compilationName)
+    val folders: List<FileCollection> = when {
+        compilation != null -> compilation.allKotlinSourceSets.map { it.resources.sourceDirectories }
+        else -> listOf(project.files(file("src/commonMain/resources"), file("src/${targetNameRaw}${compilationName.capitalize()}/resources")))
+    }
+
+    korgeGeneratedTask.korgeGeneratedFolder = korgeGeneratedFolder
+    korgeGeneratedTask.inputFolders = folders
+    korgeGeneratedTask.resourceProcessors = korge.resourceProcessors
+
+    if (task != null) {
+        task.from(korgeGeneratedFolder)
+        task.dependsOn(korgeGeneratedTask)
+        korgeGeneratedTask.addToCopySpec(task)
+    }
+}
+
 fun Project.addGenResourcesTasks() {
     if (project.extensions.findByType(KotlinMultiplatformExtension::class.java) == null) return
 
@@ -44,6 +75,18 @@ fun Project.addGenResourcesTasks() {
 
     tasks.createThis<Task>("listKorgePlugins") {
         group = GROUP_KORGE_LIST
+        doLast {
+            //URLClassLoader(prepareResourceProcessingClasses.outputs.files.toList().map { it.toURL() }.toTypedArray(), ClassLoader.getSystemClassLoader()).use { classLoader ->
+            println("KorgePlugins:")
+            for (item in (korge.resourceProcessors + KorgeResourceProcessor.getAll()).distinct()) {
+                println("- $item")
+            }
+        }
+    }
+
+    /*
+    tasks.createThis<Task>("listKorgePlugins") {
+        group = GROUP_KORGE_LIST
         if (korge.searchResourceProcessorsInMainSourceSet) {
             dependsOn("jvmMainClasses")
         }
@@ -57,6 +100,7 @@ fun Project.addGenResourcesTasks() {
             ) { listOf(it) }
         }
     }
+    */
 
     afterEvaluate {
         //for (target in kotlin.targets) {
@@ -66,25 +110,9 @@ fun Project.addGenResourcesTasks() {
         //    }
         //}
 
+
         for (task in tasks.withType(ProcessResources::class.java).toList()) {
-            val taskName = task.name
-            val targetNameRaw = taskName.removeSuffix("ProcessResources")
-            val isTest = targetNameRaw.endsWith("Test")
-            val targetName = targetNameRaw.removeSuffix("Test")
-            val target = kotlin.targets.findByName(targetName) ?: continue
-            val isJvm = targetName == "jvm"
-            val compilationName = if (isTest) "test" else "main"
-            val compilation = target.compilations[compilationName]
-            val korgeGeneratedTaskName = getKorgeProcessResourcesTaskName(target.name, compilation.name)
-            val korgeGeneratedTask = tasks.createThis<KorgeGenerateResourcesTask>(korgeGeneratedTaskName)
-            val korgeGeneratedFolder = getCompilationKorgeProcessedResourcesFolder(targetName, compilationName)
-            val folders = compilation.allKotlinSourceSets.map { it.resources.sourceDirectories }
-
-            korgeGeneratedTask.korgeGeneratedFolder = korgeGeneratedFolder
-            korgeGeneratedTask.inputFolders = folders
-
-            task.from(korgeGeneratedFolder)
-            task.dependsOn(korgeGeneratedTask)
+            generateKorgeProcessedFromTask(task, task.name)
         }
     }
 
@@ -200,6 +228,38 @@ open class KorgeGenerateResourcesTask @Inject constructor(
     @get:InputFiles
     lateinit var inputFolders: List<FileCollection>
 
+    //@get:Input
+    @Internal
+    lateinit var resourceProcessors: List<KorgeResourceProcessor>
+
+    @get:OutputDirectories
+    var skippedFiles: Set<String> = setOf()
+
+    fun addToCopySpec(copy: CopySpec, addFrom: Boolean = true) {
+        if (addFrom) copy.from(korgeGeneratedFolder)
+
+        copy.exclude {
+            val relativeFile = File(it.relativePath.toString())
+            if (it.relativePath.startsWith('.')) return@exclude true
+            for (skippedFile in skippedFiles) {
+                //println("addExcludeToCopyTask: relativeFile=$relativeFile, skippedFile=$skippedFile")
+                if (relativeFile.startsWith(skippedFile)) {
+                    //println("!! EXCLUDED")
+                    return@exclude true
+                }
+            }
+            //val rfile = it.file.absolutePath
+            //for (skippedFile in skippedFiles) {
+            //    println("it.file=${it.file}, rpath=${it.relativePath}, rfile=$rfile, skippedFile=${skippedFile}")
+            //    if (rfile.startsWith(skippedFile.absolutePath)) {
+            //        println("!! EXCLUDED")
+            //        return@exclude true
+            //    }
+            //}
+            false
+        }
+    }
+
     @TaskAction
     fun run() {
         val resourcesFolders = inputFolders.flatMap { it.toList() }
@@ -213,35 +273,24 @@ open class KorgeGenerateResourcesTask @Inject constructor(
     }
 
     fun processFolder(generatedFolder: File, resourceFolders: List<File>) {
+        val context = KorgeResourceProcessorContext(logger, generatedFolder, resourceFolders)
         try {
-            KorgeTexturePacker.processFolder(logger, generatedFolder, resourceFolders)
-        } catch (e: Throwable) {
-            e.printStackTrace()
-        }
-        try {
-            processFolderCatalogJson(generatedFolder, resourceFolders)
-        } catch (e: Throwable) {
-            e.printStackTrace()
-        }
-    }
-
-    fun processFolderCatalogJson(generatedFolder: File, resourceFolders: List<File>) {
-        val map = LinkedHashMap<String, Any?>()
-        for (folder in (resourceFolders + generatedFolder)) {
-            for (file in (folder.listFiles()?.toList() ?: emptyList())) {
-                if (file.name == "\$catalog.json") continue
-                if (file.name.startsWith(".")) continue
-                val fileName = if (file.isDirectory) "${file.name}/" else file.name
-                map[fileName] = listOf(file.length(), file.lastModified())
+            for (processor in (resourceProcessors + KorgeResourceProcessor.getAll()).distinct()) {
+                try {
+                    processor.processFolder(context)
+                } catch (e: Throwable) {
+                    e.printStackTrace()
+                }
             }
+        } catch (e: Throwable) {
+            e.printStackTrace()
         }
-        //println("-------- $folders")
-        //println("++++++++ $files")
-        generatedFolder["\$catalog.json"].writeText(Json.stringify(map))
-        //println("generatedFolder: $generatedFolder")
+        skippedFiles += context.skippedFiles
+        //println("processFolder.skippedFiles=$skippedFiles")
     }
 }
 
+/*
 data class KorgeProcessedResourcesTaskConfig(
     val isJvm: Boolean,
     val targetName: String,
@@ -289,3 +338,4 @@ open class KorgeProcessedResourcesTask @Inject constructor(
         }
     }
 }
+*/

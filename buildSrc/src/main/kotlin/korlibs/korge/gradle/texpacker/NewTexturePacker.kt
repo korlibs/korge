@@ -32,7 +32,11 @@ object NewTexturePacker {
 
     fun getAllFiles(vararg folders: File): List<FileWithBase> {
         return folders.flatMap { base -> base.walk().mapNotNull {
-            if (it.isFile) FileWithBase(base, it) else null
+            when {
+                it.name.startsWith('.') -> null
+                it.isFile -> FileWithBase(base, it)
+                else -> null
+            }
         } }
     }
 

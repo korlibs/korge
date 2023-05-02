@@ -77,8 +77,15 @@ fun Project.configureNativeIosRun() {
     val copyIosResources = tasks.createTyped<Copy>("copyIosResources") {
         val targetName = "iosX64" // @TODO: Should be one per target?
         val compilationName = "main"
-        dependsOn(getKorgeProcessResourcesTaskName(targetName, compilationName))
-        from(getCompilationKorgeProcessedResourcesFolder(targetName, compilationName))
+
+        val korgeProcessResourcesTaskName = getKorgeProcessResourcesTaskName(targetName, compilationName)
+        dependsOn(korgeProcessResourcesTaskName)
+        afterEvaluate {
+            afterEvaluate {
+                (tasks.findByName(korgeProcessResourcesTaskName) as? KorgeGenerateResourcesTask?)?.addToCopySpec(this@createTyped, addFrom = true)
+            }
+        }
+        //from(getCompilationKorgeProcessedResourcesFolder(targetName, compilationName))
         from(File(project.projectDir, "src/commonMain/resources")) // @TODO: Use proper source sets to determine this?
         into(combinedResourcesFolder)
         duplicatesStrategy = DuplicatesStrategy.INCLUDE
