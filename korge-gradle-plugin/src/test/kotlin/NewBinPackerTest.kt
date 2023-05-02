@@ -1,8 +1,16 @@
 import org.junit.*
+import java.io.*
 
 class NewBinPackerTest {
     @Test
     fun test() {
+        val pimage = NewTexturePacker.packImages(
+            File("/Users/soywiz/projects/paf/src/commonMain/resources/fpg")
+        ).write(
+            File("/Users/soywiz/projects/paf/src/commonMain/resources/fpg.atlas.json"),
+        )
+
+        /*
         val options = NewBinPacker.IOption(
             smart = true,
             pot = true,
@@ -33,5 +41,7 @@ class NewBinPackerTest {
         val bins = packer.save()
         packer.load(bins)
         packer.addArray(input)
+
+         */
     }
 }

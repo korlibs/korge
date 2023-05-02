@@ -15,9 +15,12 @@ object NewBinPacker {
         rot: Boolean = false,
         allowRotation: Boolean? = null,
         val name: String? = null,
+        val raw: Any? = null,
     ) {
+        val right: Int get() = x + width
+        val bottom: Int get() = y + height
 
-        override fun toString(): String = "Rectangle[$x, $y]-[${x + width}, ${y + height}][rot=$rot][name=$name]"
+        override fun toString(): String = "Rectangle($x, $y, $width, $height)[rot=$rot]"
 
         override fun hashCode(): Int {
             return width * 1 + height * 3 + x * 7 + y * 11 + (if (rot) 1 else 0) + (if (allowRotation == true) 3333 else 0)
@@ -579,6 +582,7 @@ object NewBinPacker {
             if (this.stage.contain(node)) return false
             var tmpWidth: Int = Math.max(this.width, node.x + node.width - this.padding + this.border)
             var tmpHeight: Int = Math.max(this.height, node.y + node.height - this.padding + this.border)
+            //println("updateBinSize: $tmpWidth, $tmpHeight : $node")
             if (this.options.allowRotation) {
                 // do extra test on rotated node whether it's a better choice
                 val rotWidth: Int = Math.max(this.width, node.x + node.height - this.padding + this.border)
@@ -591,6 +595,7 @@ object NewBinPacker {
             if (this.options.pot) {
                 tmpWidth = 2.0.pow(ceil(log2(tmpWidth.toDouble()))).toInt()
                 tmpHeight = 2.0.pow(ceil(log2(tmpHeight.toDouble()))).toInt()
+                //println("tmpWidth=$tmpWidth, tmpHeight=$tmpHeight")
             }
             if (this.options.square) {
                 val max = Math.max(tmpWidth, tmpHeight)
