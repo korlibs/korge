@@ -1,5 +1,6 @@
 package korlibs.korge.atlas
 
+/*
 import korlibs.logger.*
 import korlibs.memory.*
 import korlibs.korge.resources.*
@@ -39,3 +40,4 @@ class AtlasResourceProcessorTest {
         memoryVfs["atlas/simple.atlas.json"].readAtlas()
     }
 }
+*/

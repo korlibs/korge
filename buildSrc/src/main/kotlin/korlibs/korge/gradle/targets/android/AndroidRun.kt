@@ -5,6 +5,7 @@ import korlibs.korge.gradle.targets.*
 import korlibs.korge.gradle.util.*
 import org.gradle.api.*
 import org.gradle.api.tasks.*
+import org.jetbrains.kotlin.gradle.dsl.*
 import java.io.*
 
 fun Project.installAndroidRun(dependsOnList: List<String>, direct: Boolean, isKorge: Boolean) {
@@ -20,26 +21,29 @@ fun Project.installAndroidRun(dependsOnList: List<String>, direct: Boolean, isKo
         }
     }
 
-    generateKorgeProcessedFromTask(null, "androidProcessResources")
+    val hasKotlinMultiplatformExtension = project.extensions.findByType(KotlinMultiplatformExtension::class.java) != null
+    if (hasKotlinMultiplatformExtension) {
+        generateKorgeProcessedFromTask(null, "androidProcessResources")
+    }
 
     val generateAndroidProcessedResources = getKorgeProcessResourcesTaskName("android", "main")
 
     afterEvaluate {
-        afterEvaluate {
-            for (Type in listOf("Debug", "Release")) {
-                //println("tasks.findByName(\"generate${Type}Assets\")=${tasks.findByName("generate${Type}Assets")}")
-                //println("tasks.findByName(\"package${Type}\")=${tasks.findByName("package${Type}")}")
+        for (Type in listOf("Debug", "Release")) {
+            //println("tasks.findByName(\"generate${Type}Assets\")=${tasks.findByName("generate${Type}Assets")}")
+            //println("tasks.findByName(\"package${Type}\")=${tasks.findByName("package${Type}")}")
+            if (hasKotlinMultiplatformExtension) {
                 tasks.findByName("generate${Type}Assets")?.dependsOn(generateAndroidProcessedResources)
                 tasks.findByName("package${Type}")?.dependsOn(generateAndroidProcessedResources)
-
-                tasks.findByName("generate${Type}BuildConfig")?.dependsOn(createAndroidManifest)
-                tasks.findByName("process${Type}MainManifest")?.dependsOn(createAndroidManifest)
-
-
-                // Not required anymore
-                //(tasks.getByName("install${Type}") as InstallVariantTask).apply { installOptions = listOf("-r") }
-                //tasks.getByName("install${Type}").dependsOn("createAndroidManifest")
             }
+
+            tasks.findByName("generate${Type}BuildConfig")?.dependsOn(createAndroidManifest)
+            tasks.findByName("process${Type}MainManifest")?.dependsOn(createAndroidManifest)
+
+
+            // Not required anymore
+            //(tasks.getByName("install${Type}") as InstallVariantTask).apply { installOptions = listOf("-r") }
+            //tasks.getByName("install${Type}").dependsOn("createAndroidManifest")
         }
     }
 

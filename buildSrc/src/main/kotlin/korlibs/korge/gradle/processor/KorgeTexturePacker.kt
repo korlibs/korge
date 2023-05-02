@@ -37,8 +37,10 @@ open class KorgeTexturePacker : KorgeResourceProcessor {
         //if (!outputFile.exists() || involvedFile.takeIfExists()?.readText() != involvedString) {
         if (involvedFile.takeIfExists()?.readText() != involvedString) {
             val time = measureTimeMillis {
-                val result = NewTexturePacker.packImages(*imageFolders, enableRotation = true, enableTrimming = true)
-                val imageOut = result.write(outputFile)
+                val results = NewTexturePacker.packImages(*imageFolders, enableRotation = true, enableTrimming = true)
+                for (result in results) {
+                    val imageOut = result.write(outputFile)
+                }
                 involvedFile.writeText(involvedString)
             }
             //outputFile.setLastModified(maxLastModifiedTime)

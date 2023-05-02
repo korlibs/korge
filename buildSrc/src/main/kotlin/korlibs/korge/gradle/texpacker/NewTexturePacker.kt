@@ -44,7 +44,7 @@ object NewTexturePacker {
         vararg folders: File,
         enableRotation: Boolean = true,
         enableTrimming: Boolean = true,
-    ): AtlasInfo {
+    ): List<AtlasInfo> {
         val images: List<Pair<File, SimpleBitmap>> = getAllFiles(*folders).mapNotNull {
             try {
                 it.relative to SimpleBitmap(it.file)
@@ -76,6 +76,7 @@ object NewTexturePacker {
             ))
         })
 
+        val outAtlases = arrayListOf<AtlasInfo>()
         for (bin in packer.bins) {
             //val rwidth = bin.rects.maxOf { it.right }
             //val rheight = bin.rects.maxOf { it.bottom }
@@ -132,9 +133,9 @@ object NewTexturePacker {
                 ),
             )
 
-            return AtlasInfo(out, atlasOut)
+            outAtlases.add(AtlasInfo(out, atlasOut))
         }
 
-        TODO()
+        return outAtlases
     }
 }
