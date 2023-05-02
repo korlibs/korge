@@ -1,3 +1,5 @@
+package korlibs.korge.gradle.texpacker
+
 import kotlin.math.*
 
 // Based on https://github.com/soimy/maxrects-packer/

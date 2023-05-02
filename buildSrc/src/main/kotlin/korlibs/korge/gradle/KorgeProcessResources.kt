@@ -76,7 +76,7 @@ fun Project.addGenResourcesTasks() {
             val compilationName = if (isTest) "test" else "main"
             val compilation = target.compilations[compilationName]
             val korgeGeneratedTaskName = getKorgeProcessResourcesTaskName(target.name, compilation.name)
-            val korgeGeneratedTask = tasks.createThis<KorgeCatalogJsonTask>(korgeGeneratedTaskName)
+            val korgeGeneratedTask = tasks.createThis<KorgeGenerateResourcesTask>(korgeGeneratedTaskName)
             val korgeGeneratedFolder = getCompilationKorgeProcessedResourcesFolder(targetName, compilationName)
             val folders = compilation.allKotlinSourceSets.map { it.resources.sourceDirectories }
 
@@ -191,7 +191,7 @@ fun Project.addGenResourcesTasks() {
      */
 }
 
-open class KorgeCatalogJsonTask @Inject constructor(
+open class KorgeGenerateResourcesTask @Inject constructor(
     //private val fs: FileSystemOperations,
 ) : DefaultTask() {
     @get:OutputDirectory
@@ -202,16 +202,35 @@ open class KorgeCatalogJsonTask @Inject constructor(
 
     @TaskAction
     fun run() {
-        korgeGeneratedFolder.mkdirs()
-        val files = inputFolders.flatMap { it.toList() }.flatMap { it.listFiles()?.toList() ?: emptyList() }.distinct()
+        val resourcesFolders = inputFolders.flatMap { it.toList() }
+        val resourcesSubfolders = resourcesFolders.flatMap { base -> base.walk().filter { it.isDirectory }.map { it.relativeTo(base) } }.distinct()
+
+        for (folder in resourcesSubfolders) {
+            val korgeGeneratedSubFolder = korgeGeneratedFolder.resolve(folder)
+            korgeGeneratedSubFolder.mkdirs()
+            processFolder(korgeGeneratedSubFolder, resourcesFolders.mapNotNull { it.resolve(folder).takeIf { it.isDirectory } })
+        }
+    }
+
+    fun processFolder(generatedFolder: File, resourceFolders: List<File>) {
+        KorgeTexturePacker.processFolder(logger, generatedFolder, resourceFolders)
+        processFolderCatalogJson(generatedFolder, resourceFolders)
+    }
+
+    fun processFolderCatalogJson(generatedFolder: File, resourceFolders: List<File>) {
         val map = LinkedHashMap<String, Any?>()
-        for (file in files) {
-            val fileName = if (file.isDirectory) "${file.name}/" else file.name
-            map[fileName] = listOf(file.length(), file.lastModified())
+        for (folder in (resourceFolders + generatedFolder)) {
+            for (file in (folder.listFiles()?.toList() ?: emptyList())) {
+                if (file.name == "\$catalog.json") continue
+                if (file.name.startsWith(".")) continue
+                val fileName = if (file.isDirectory) "${file.name}/" else file.name
+                map[fileName] = listOf(file.length(), file.lastModified())
+            }
         }
         //println("-------- $folders")
         //println("++++++++ $files")
-        korgeGeneratedFolder["\$catalog.json"].writeText(Json.stringify(map))
+        generatedFolder["\$catalog.json"].writeText(Json.stringify(map))
+        //println("generatedFolder: $generatedFolder")
     }
 }
 

@@ -1,3 +1,5 @@
+package korlibs.korge.gradle.texpacker
+
 import com.android.build.gradle.internal.cxx.json.*
 import korlibs.korge.gradle.*
 import java.awt.*
@@ -15,12 +17,23 @@ object NewTexturePacker {
         val image: SimpleBitmap,
         val info: Map<String, Any?>
     ) {
-        fun write(output: File) {
+        fun write(output: File): File {
             val imageOut = File(output.parentFile, output.nameWithoutExtension + ".png")
             (info["meta"] as MutableMap<String, Any?>)["image"] = imageOut.name
             output.writeText(jsonStringOf(info))
             image.writeTo(imageOut)
+            return imageOut
         }
+    }
+
+    data class FileWithBase(val base: File, val file: File) {
+        val relative = file.relativeTo(base)
+    }
+
+    fun getAllFiles(vararg folders: File): List<FileWithBase> {
+        return folders.flatMap { base -> base.walk().mapNotNull {
+            if (it.isFile) FileWithBase(base, it) else null
+        } }
     }
 
     fun packImages(
@@ -28,18 +41,14 @@ object NewTexturePacker {
         enableRotation: Boolean = true,
         enableTrimming: Boolean = true,
     ): AtlasInfo {
-        val images: List<Pair<File, SimpleBitmap>> = folders.flatMap { base -> base.walk().mapNotNull {
-            if (it.isFile) {
-                try {
-                    it.relativeTo(base) to SimpleBitmap(it)
-                } catch (e: Throwable) {
-                    e.printStackTrace()
-                    null
-                }
-            } else {
+        val images: List<Pair<File, SimpleBitmap>> = getAllFiles(*folders).mapNotNull {
+            try {
+                it.relative to SimpleBitmap(it.file)
+            } catch (e: Throwable) {
+                e.printStackTrace()
                 null
             }
-        } }
+        }
 
         val PADDING = 2
 
