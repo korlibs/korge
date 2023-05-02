@@ -3,6 +3,12 @@ package korlibs.korge.gradle.util
 import java.io.File
 import java.nio.charset.*
 
+val File.absolutePathWithSlash: String get() = if (this.isDirectory) "$absolutePath/" else absolutePath
+
+fun File.isDescendantOf(base: File): Boolean {
+    return this.absolutePathWithSlash.startsWith(base.absolutePathWithSlash)
+}
+
 fun File.takeIfExists() = this.takeIf { it.exists() }
 fun File.takeIfNotExists() = this.takeIf { !it.exists() }
 fun File.ensureParents() = this.apply { parentFile.mkdirs() }

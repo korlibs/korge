@@ -50,6 +50,9 @@ fun Project.configureEsbuild() {
     }
 
     val browserEsbuildResources = tasks.createThis<Copy>("browserEsbuildResources") {
+        val korgeProcessResourcesTaskName = getKorgeProcessResourcesTaskName("js", "main")
+        dependsOn(korgeProcessResourcesTaskName)
+
         duplicatesStrategy = DuplicatesStrategy.EXCLUDE
         from(project.tasks.getByName("jsProcessResources").outputs.files)
         //afterEvaluate {
@@ -59,6 +62,13 @@ fun Project.configureEsbuild() {
         //}
         //for (sourceSet in gkotlin.js().compilations.flatMap { it.kotlinSourceSets }) from(sourceSet.resources)
         into(wwwFolder)
+        //afterEvaluate {
+        //    afterEvaluate {
+        //        val korgeGeneratedTask = project.tasks.findByName(korgeProcessResourcesTaskName) as? KorgeGenerateResourcesTask?
+        //        println("korgeGeneratedTaskName=$korgeGeneratedTask : korgeProcessResourcesTaskName=$korgeProcessResourcesTaskName")
+        //        korgeGeneratedTask?.addExcludeToCopyTask(this)
+        //    }
+        //}
     }
 
     val browserPrepareEsbuildPrepare = tasks.createThis<Task>("browserPrepareEsbuildPrepare") {

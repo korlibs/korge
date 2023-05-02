@@ -11,6 +11,7 @@ import korlibs.*
 import org.gradle.api.*
 import org.gradle.api.file.*
 import org.gradle.api.tasks.*
+import org.gradle.language.jvm.tasks.ProcessResources
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import org.jetbrains.kotlin.gradle.targets.native.tasks.*
 import java.io.*
@@ -135,6 +136,33 @@ class KNTargetWithBuildType(val project: Project, val target: String, val kind: 
 fun Project.createCopyToExecutableTarget(target: String) {
     for (build in KNTargetWithBuildType.buildList(project, target)) {
         val copyTask = project.tasks.createThis<Copy>(build.copyTaskName) {
+            run {
+                val processResourcesTaskName = getProcessResourcesTaskName(build.target, build.compilation.name)
+                dependsOn(processResourcesTaskName)
+                afterEvaluate {
+                    afterEvaluate {
+                        afterEvaluate {
+                            val korgeGenerateResourcesTask = tasks.findByName(processResourcesTaskName) as? Copy?
+                            //korgeGenerateResourcesTask?.korgeGeneratedFolder?.let { from(it) }
+                            from(korgeGenerateResourcesTask?.outputs)
+                        }
+                    }
+                }
+            }
+            run {
+                val processResourcesTaskName = getKorgeProcessResourcesTaskName(build.target, build.compilation.name)
+                dependsOn(processResourcesTaskName)
+                afterEvaluate {
+                    afterEvaluate {
+                        afterEvaluate {
+                            val korgeGenerateResourcesTask =
+                                tasks.findByName(processResourcesTaskName) as? KorgeGenerateResourcesTask?
+                            //korgeGenerateResourcesTask?.korgeGeneratedFolder?.let { from(it) }
+                            korgeGenerateResourcesTask?.addToCopySpec(this@createThis, addFrom = false)
+                        }
+                    }
+                }
+            }
             dependsOn(build.compilation.compileKotlinTask)
             duplicatesStrategy = DuplicatesStrategy.INCLUDE
             for (sourceSet in project.gkotlin.sourceSets) {

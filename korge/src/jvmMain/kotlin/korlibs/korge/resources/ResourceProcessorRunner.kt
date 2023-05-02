@@ -1,5 +1,6 @@
 package korlibs.korge.resources
 
+/*
 import korlibs.korge.plugin.*
 import korlibs.io.file.std.*
 import kotlinx.coroutines.*
@@ -96,3 +97,4 @@ object ResourceProcessorRunner {
 
 public val File.fullExtension: String
     get() = name.substringAfter('.', "")
+*/
