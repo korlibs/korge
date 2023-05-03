@@ -175,7 +175,7 @@ fun File.miniMimeType() = when (this.extension.toLowerCase()) {
     "svg" -> "image/svg+xml"
     "mp3" -> "audio/mpeg"
     "wasm" -> "application/wasm"
-    "mjs" -> "text/javascript"
+    "js", "mjs" -> "text/javascript"
     else -> if (this.exists()) Files.probeContentType(this.toPath()) ?: "application/octet-stream" else "text/plain"
 }
 
