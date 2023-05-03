@@ -878,11 +878,6 @@ class AGOpengl(val gl: KmlGl, var context: KmlGlContext? = null) : AG() {
                         gl.pixelStorei(KmlGl.UNPACK_SWAP_BYTES, KmlGl.GTRUE)
                     }
 
-                    if (gl.variant.supportTextureLevel) {
-                        gl.texParameteri(texTarget, KmlGl.TEXTURE_BASE_LEVEL, 0)
-                        gl.texParameteri(texTarget, KmlGl.TEXTURE_MAX_LEVEL, 0)
-                    }
-
                     when (bmp) {
                         null -> gl.texImage2D(target.toGl(), 0, type, tex.width, tex.height, 0, type, KmlGl.UNSIGNED_BYTE, null)
                         is NativeImage -> if (bmp.area != 0) {
@@ -903,11 +898,11 @@ class AGOpengl(val gl: KmlGl, var context: KmlGlContext? = null) : AG() {
 
                     totalSize += tex.width * tex.height * 4
 
+                    if (gl.variant.supportTextureLevel) {
+                        gl.texParameteri(KmlGl.TEXTURE_2D, KmlGl.TEXTURE_BASE_LEVEL, if (tex.mipmaps) tex.baseMipmapLevel ?: 0 else 0)
+                        gl.texParameteri(KmlGl.TEXTURE_2D, KmlGl.TEXTURE_MAX_LEVEL, if (tex.mipmaps) tex.maxMipmapLevel ?: 1000 else 0)
+                    }
                     if (tex.mipmaps) {
-                        if (gl.variant.supportTextureLevel) {
-                            tex.baseMipmapLevel?.let { gl.texParameteri(KmlGl.TEXTURE_2D, KmlGl.TEXTURE_BASE_LEVEL, it) }
-                            tex.maxMipmapLevel?.let { gl.texParameteri(KmlGl.TEXTURE_2D, KmlGl.TEXTURE_MAX_LEVEL, it) }
-                        }
                         gl.generateMipmap(texTarget)
                     }
                 }
