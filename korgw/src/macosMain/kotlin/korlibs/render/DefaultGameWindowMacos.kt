@@ -365,6 +365,7 @@ class MyDefaultGameWindow : GameWindow() {
         title = windowConfigTitle
         opaque = true
         hasShadow = true
+        collectionBehavior = NSWindowCollectionBehaviorFullScreenPrimary
         preferredBackingLocation = NSWindowBackingLocationVideoMemory
         hidesOnDeactivate = false
         releasedWhenClosed = false
