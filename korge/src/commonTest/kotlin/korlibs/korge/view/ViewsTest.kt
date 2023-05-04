@@ -430,6 +430,18 @@ class ViewsTest : ViewsForTesting() {
         )
     }
 
+    @Test
+    fun testViewsResizedEvent() = viewsTest {
+        val out = arrayListOf<String>()
+        onStageResized { width, height -> out += "${width}x$height" }
+        assertEquals("1280x720", out.joinToString(","))
+        resizeGameWindow(1000, 500)
+        assertEquals("1280x720,1441x721", out.joinToString(","))
+        resizeGameWindow(800, 500)
+        assertEquals("1280x720,1441x721,1280x800", out.joinToString(","))
+    }
+
+
     //// sorted
 
     private fun <T, T2 : Comparable<T2>> ((T) -> T2).toComparator() = Comparator { a: T, b: T -> this(a).compareTo(this(b)) }
