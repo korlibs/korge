@@ -134,11 +134,11 @@ now they are available via kproject in these repositories:
 
 ## I18N
 
-* <https://github.com/korlibs/korge-services/tree/main/korge-i18n> (I18N support)
+* <https://github.com/korlibs/korge-ext/tree/main/korge-i18n> (I18N support)
 
 ## Algorithms
 
-* <https://github.com/korlibs/korge-services/tree/main/korma-astar> (AStar (A*) for finding paths in 2D grids)
+* <https://github.com/korlibs/korge-ext/tree/main/korma-astar> (AStar (A*) for finding paths in 2D grids)
 
 ## 3D
 
@@ -159,4 +159,5 @@ now they are available via kproject in these repositories:
 * <https://github.com/korlibs/korge-ext/tree/main/korge-bus> (Bus / SyncBus)
 * <https://github.com/korlibs/korge-ext/tree/main/korge-frameblock> (`frameBlock(60.fps) { while (true) frame() }` utility function)
 * <https://github.com/korlibs/korge-ext/tree/main/korge-length> (Support physical-based units: cm, inches, percentages, etc.)
-* <https://github.com/korlibs/korge-ext/tree/main/korge-shape-ext> (Support triangulation, spatial pathfinding & shape2d operations)
+* <https://github.com/korlibs/korge-ext/tree/main/korge-shape-ext> (Support triangulation, spatial pathfinding, TRA* & shape2d operations)
+* <https://github.com/korlibs/korge-ext/tree/main/korge-bus> (A Message Bus implementation)

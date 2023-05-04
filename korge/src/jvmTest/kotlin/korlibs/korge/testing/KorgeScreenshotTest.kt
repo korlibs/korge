@@ -113,4 +113,23 @@ class KorgeScreenshotTest {
         assertScreenshot()
         //println("[5]")
     }
+
+    @Test
+    fun testMipmaps() = korgeScreenshotTest(
+        Size(32, 32),
+        bgcolor = Colors.BLUE
+    ) {
+        val bmp = Bitmap32(128, 128).context2d(antialiased = false) {
+            stroke(Colors.RED, lineWidth = 24f) {
+                circle(Point(64, 64), 45f)
+            }
+        }
+        val bmp1 = bmp.clone()
+        val bmp2 = bmp.clone().mipmaps(enable = true)
+
+        image(bmp1).scale(0.125).xy(0, 0)
+        image(bmp2).scale(0.125).xy(16, 0)
+
+        assertScreenshot(posterize = 4)
+    }
 }
