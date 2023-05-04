@@ -64,7 +64,7 @@ object RootKorlibsPlugin {
         //        }
         //    }
         //}
-        korgeCheckVersion()
+        //korgeCheckVersion() // Do not check on the development plugin
     }
 
     fun Project.initPatchTests() {
