@@ -236,27 +236,38 @@ class YamlTest {
 	//	)
 	//}
 
-	@Test
-	fun testMapListIssue() {
-		assertEquals(
-			mapOf(
-				"hello" to listOf("a", "b"),
-				"world" to listOf("c", "d"),
-				"test" to listOf("e", "f")
-			),
-			Yaml.decode("""
-			hello:
-			- a
-			- b
-			world:
-			- c
-			- d
-			test:
-			- e
-			- f
-		""".trimIndent())
-		)
-	}
+    @Test
+    fun testMapListIssue() {
+        val testYmlString = """
+            hello:
+            - a
+            
+            - b
+              
+            lineWithSpaces:
+              
+              
+            - aa
+            - bb
+              
+            world:
+            - c
+            - d
+            test:
+              - e
+              - f
+        """.trimIndent()
+        //println("\n\n[[[$testYmlString]]]\n\n")
+        assertEquals(
+            mapOf(
+                "hello" to listOf("a", "b"),
+                "lineWithSpaces" to listOf("aa", "bb"),
+                "world" to listOf("c", "d"),
+                "test" to listOf("e", "f")
+            ),
+            Yaml.decode(testYmlString)
+        )
+    }
 
     @Test
     fun testWindowsLineEndings() {
