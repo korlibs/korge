@@ -23,7 +23,9 @@ fun Project.installAndroidRun(dependsOnList: List<String>, direct: Boolean, isKo
 
     val hasKotlinMultiplatformExtension = project.extensions.findByType(KotlinMultiplatformExtension::class.java) != null
     if (hasKotlinMultiplatformExtension) {
-        generateKorgeProcessedFromTask(null, "androidProcessResources")
+        afterEvaluate {
+            generateKorgeProcessedFromTask(null, "androidProcessResources")
+        }
     }
 
     val generateAndroidProcessedResources = getKorgeProcessResourcesTaskName("android", "main")

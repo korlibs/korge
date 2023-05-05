@@ -34,7 +34,7 @@ fun Project.configureJavaScript(projectType: ProjectType) {
                 binaries.executable()
             }
 
-			this.attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.js)
+            this.attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.js)
 
 			compilations.allThis {
 				kotlinOptions.apply {

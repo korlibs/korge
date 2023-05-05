@@ -46,6 +46,7 @@ fun Project.extractArchive(archive: File, output: File) {
     }
 }
 
+val Project.selfExtra: ExtraPropertiesExtension get() = extensions.getByType(ExtraPropertiesExtension::class.java)
 val Project.extra: ExtraPropertiesExtension get() = rootProject.extensions.getByType(ExtraPropertiesExtension::class.java)
 
 // Gradle extensions
