@@ -161,3 +161,15 @@ now they are available via kproject in these repositories:
 * <https://github.com/korlibs/korge-ext/tree/main/korge-length> (Support physical-based units: cm, inches, percentages, etc.)
 * <https://github.com/korlibs/korge-ext/tree/main/korge-shape-ext> (Support triangulation, spatial pathfinding, TRA* & shape2d operations)
 * <https://github.com/korlibs/korge-ext/tree/main/korge-bus> (A Message Bus implementation)
+
+## Mascots
+
+* <https://github.com/korlibs/korge-jitto> (Jitto, the programmatic logo and mascot)
+* <https://github.com/korlibs/korge-mascots> (Koral & Gest)
+
+## Starter Kits
+
+* <https://github.com/korlibs/korge-starter-rpg> (RPG Starter Kit)
+* <https://github.com/korlibs/korge-starter-kit-platformer> (Platformer Starter Kit)
+* <https://github.com/korlibs/korge-starter-kit-pointandclickadventure> (Point & Click Adventure Starter Kit)
+
