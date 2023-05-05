@@ -114,7 +114,7 @@ fun Project.configureJvmRunJvm(isRootKorlibs: Boolean) {
             false -> "runJvmAutoreload"
             true -> "runJvmAutoreloadWithRedefinition"
         }
-        project.tasks.createThis<KorgeJavaExecWithAutoreload>(taskName) {
+        val autoreloadTask = project.tasks.createThis<KorgeJavaExecWithAutoreload>(taskName) {
             this.enableRedefinition = enableRedefinition
             group = GROUP_KORGE_RUN
             dependsOn("jvmMainClasses", "compileKotlinJvm")
@@ -125,6 +125,20 @@ fun Project.configureJvmRunJvm(isRootKorlibs: Boolean) {
                 val beforeJava9 = JvmAddOpens.beforeJava9
                 if (!beforeJava9) jvmArgs(project.korge.javaAddOpens)
                 mainClass.set(korge.jvmMainClassName)
+            }
+        }
+
+        rootProject.afterEvaluate {
+            afterEvaluate {
+                val allProjects = setOf(project) + project.allDependantProjects()
+
+                println("KorgeJavaExecWithAutoreload.afterEvaluate: allProjects=$allProjects")
+                //projectPaths = allProjects.map { it.path }
+                autoreloadTask.projectPaths = listOf(project.path)
+                autoreloadTask.rootJars = allProjects.map { File(it.buildDir, "classes/kotlin/jvm/main") }
+                //println("allProjects=${allProjects.map { it.name }}")
+                //println("projectPaths=$projectPaths")
+                //println("rootJars=\n${rootJars.toList().joinToString("\n")}")
             }
         }
     }

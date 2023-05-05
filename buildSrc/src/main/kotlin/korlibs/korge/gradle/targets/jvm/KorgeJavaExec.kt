@@ -9,13 +9,6 @@ import org.gradle.api.tasks.*
 import org.gradle.jvm.tasks.*
 import java.io.*
 
-fun Project.findAllProjectDependencies(visited: MutableSet<Project> = mutableSetOf()): Set<Project> {
-    if (this in visited) return visited
-    visited.add(this)
-    val dependencies = project.configurations.flatMap { it.dependencies.withType(ProjectDependency::class.java) }.filterIsInstance<ProjectDependency>()
-    return (dependencies.flatMap { it.dependencyProject.findAllProjectDependencies(visited) } + this).toSet()
-}
-
 open class KorgeJavaExecWithAutoreload : KorgeJavaExec() {
     @get:Input
     var enableRedefinition: Boolean = false
@@ -28,7 +21,8 @@ open class KorgeJavaExecWithAutoreload : KorgeJavaExec() {
         const val CMD_SEPARATOR = "<@/@>"
     }
 
-    private lateinit var projectPaths: List<String>
+    @get:Internal
+    internal lateinit var projectPaths: List<String>
     private var rootDir: File = project.rootProject.rootDir
     @get:InputFiles
     lateinit var rootJars: List<File>
@@ -41,15 +35,7 @@ open class KorgeJavaExecWithAutoreload : KorgeJavaExec() {
         //val reloadAgent = project.findProject(":korge-reload-agent")
         //if (reloadAgent != null)
         //project.dependencies.add()
-        project.afterEvaluate {
-            val allProjects = project.findAllProjectDependencies()
-            //projectPaths = allProjects.map { it.path }
-            projectPaths = listOf(project.path)
-            rootJars = allProjects.map { File(it.buildDir, "classes/kotlin/jvm/main") }
-            //println("allProjects=${allProjects.map { it.name }}")
-            //println("projectPaths=$projectPaths")
-            //println("rootJars=\n${rootJars.toList().joinToString("\n")}")
-        }
+
         /*
         project.afterEvaluate {
             project.afterEvaluate {
@@ -87,28 +73,34 @@ open class KorgeJavaExecWithAutoreload : KorgeJavaExec() {
         //val outputJar = agentJarTask.outputs.files.files.first()
         //println("agentJarTask=$outputJar")
 
+        val gradleCommand = ArrayList<String>().apply {
+            add("-classpath")
+            add("${rootDir}/gradle/wrapper/gradle-wrapper.jar")
+            add("org.gradle.wrapper.GradleWrapperMain")
+            //add("--no-daemon") // This causes: Continuous build does not work when file system watching is disabled
+            add("--watch-fs")
+            add("--warn")
+            add("--project-dir=${rootDir}")
+            if (doConfigurationCache) {
+                add("--configuration-cache")
+                add("--configuration-cache-problems=warn")
+            }
+            add("-t")
+            add("compileKotlinJvm")
+            //add("compileKotlinJvmAndNotify")
+            for (projectPath in projectPaths) {
+                //add("${projectPath.trimEnd(':')}:compileKotlinJvmAndNotify")
+                add("compileKotlinJvmAndNotify")
+            }
+        }
+
+        println("gradleCommand:\n${gradleCommand.joinToString("\n")}")
+        println("rootJars:\n${rootJars.joinToString("\n")}")
+
         jvmArgs(
             "-javaagent:$reloadAgentJar=${listOf(
                 "$httpPort",
-                ArrayList<String>().apply {
-                    add("-classpath")
-                    add("${rootDir}/gradle/wrapper/gradle-wrapper.jar")
-                    add("org.gradle.wrapper.GradleWrapperMain")
-                    //add("--no-daemon") // This causes: Continuous build does not work when file system watching is disabled
-                    add("--watch-fs")
-                    add("--warn")
-                    add("--project-dir=${rootDir}")
-                    if (doConfigurationCache) {
-                        add("--configuration-cache")
-                        add("--configuration-cache-problems=warn")
-                    }
-                    add("-t")
-                    add("compileKotlinJvm")
-                    //add("compileKotlinJvmAndNotify")
-                    for (projectPath in projectPaths) {
-                        add("${projectPath.trimEnd(':')}:compileKotlinJvmAndNotify")
-                    }
-                }.joinToString(CMD_SEPARATOR),
+                gradleCommand.joinToString(CMD_SEPARATOR),
                 "$enableRedefinition",
                 rootJars.joinToString(CMD_SEPARATOR) { it.absolutePath }
             ).joinToString(ARGS_SEPARATOR)}"
