@@ -152,7 +152,7 @@ open class KorgeGenerateResourcesTask @Inject constructor(
     @TaskAction
     fun run() {
         val resourcesFolders = inputFolders.flatMap { it.toList() }
-        println("resourcesFolders:\n${resourcesFolders.joinToString("\n")}")
+        //println("resourcesFolders:\n${resourcesFolders.joinToString("\n")}")
         val resourcesSubfolders = resourcesFolders.flatMap { base -> base.walk().filter { it.isDirectory }.map { it.relativeTo(base) } }.distinct()
 
         for (folder in resourcesSubfolders) {
