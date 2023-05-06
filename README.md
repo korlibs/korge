@@ -169,7 +169,7 @@ now they are available via kproject in these repositories:
 
 ## Starter Kits
 
-* <https://github.com/korlibs/korge-starter-rpg> (RPG Starter Kit)
+* <https://github.com/korlibs/korge-starter-kit-rpg> (RPG Starter Kit)
 * <https://github.com/korlibs/korge-starter-kit-platformer> (Platformer Starter Kit)
 * <https://github.com/korlibs/korge-starter-kit-pointandclickadventure> (Point & Click Adventure Starter Kit)
 
