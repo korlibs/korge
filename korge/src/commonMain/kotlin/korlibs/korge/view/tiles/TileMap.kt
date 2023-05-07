@@ -178,6 +178,13 @@ class TileMap(
     private val tempX = FloatArray(4)
     private val tempY = FloatArray(4)
 
+    /**
+     * Each tile support an offset,
+     * if we are using maps that have tiles with offsets like in LDtk,
+     * we might need to set this to 1 or 2 depending on the specific case.
+     **/
+    var overdrawTiles = 0
+
     // @TODO: Use instanced rendering to support much more tiles at once
     private fun computeVertexIfRequired(ctx: RenderContext) {
         currentVirtualRect = Rectangle(ctx.virtualLeft, ctx.virtualTop, ctx.virtualRight, ctx.virtualBottom)
@@ -239,10 +246,10 @@ class TileMap(
         val doRepeatY = repeatY != TileMapRepeat.NONE
         val doRepeatAny = doRepeatX || doRepeatY // Since if it is rotated, we might have problems. For no rotation we could repeat separately
 
-        val ymin2 = (if (doRepeatAny) ymin else ymin.clamp(stackedIntMap.startY, stackedIntMap.endY)) - 1
-        val ymax2 = (if (doRepeatAny) ymax else ymax.clamp(stackedIntMap.startY, stackedIntMap.endY)) + 1
-        val xmin2 = (if (doRepeatAny) xmin else xmin.clamp(stackedIntMap.startX, stackedIntMap.endX)) - 1
-        val xmax2 = (if (doRepeatAny) xmax else xmax.clamp(stackedIntMap.startX, stackedIntMap.endX)) + 1
+        val ymin2 = (if (doRepeatAny) ymin else ymin.clamp(stackedIntMap.startY, stackedIntMap.endY)) - 1 - overdrawTiles
+        val ymax2 = (if (doRepeatAny) ymax else ymax.clamp(stackedIntMap.startY, stackedIntMap.endY)) + 1 + overdrawTiles
+        val xmin2 = (if (doRepeatAny) xmin else xmin.clamp(stackedIntMap.startX, stackedIntMap.endX)) - 1 - overdrawTiles
+        val xmax2 = (if (doRepeatAny) xmax else xmax.clamp(stackedIntMap.startX, stackedIntMap.endX)) + 1 + overdrawTiles
 
         //println("xyminmax2=${xmin2},${ymin2} - ${xmax2},${ymax2}")
 
