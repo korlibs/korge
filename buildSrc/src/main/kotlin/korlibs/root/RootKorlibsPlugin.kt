@@ -31,6 +31,8 @@ object RootKorlibsPlugin {
     }
 
     fun Project.init() {
+        plugins.apply("org.jetbrains.dokka")
+
         checkMinimumJavaVersion()
         configureBuildScriptClasspathTasks()
         initPlugins()
@@ -253,29 +255,32 @@ object RootKorlibsPlugin {
                 if (!isSample && rootProject.plugins.hasPlugin("org.jetbrains.dokka")) {
                     plugins.apply("org.jetbrains.dokka")
 
-                    //tasks.dokkaHtml.configure {
-                    //    offlineMode.set(true)
-                    //}
+                    /*
+                    tasks.dokkaHtml.configure {
+                        offlineMode.set(true)
+                    }
 
-                    //dokkaHtml {
-                    //    // Used to prevent resolving package-lists online. When this option is set to true, only local files are resolved
-                    //    offlineMode.set(true)
-                    //}
+                    dokkaHtml {
+                        // Used to prevent resolving package-lists online. When this option is set to true, only local files are resolved
+                        offlineMode.set(true)
+                    }
 
                     tasks {
-                        //val dokkaCopy = createThis<Task>("dokkaCopy") {
-                        //    dependsOn("dokkaHtml")
-                        //    doLast {
-                        //        val ffrom = File(project.buildDir, "dokka/html")
-                        //        val finto = File(project.rootProject.projectDir, "build/dokka-all/${project.name}")
-                        //        copy {
-                        //            from(ffrom)
-                        //            into(finto)
-                        //        }
-                        //        File(finto, "index-redirect.html").writeText("<meta http-equiv=\"refresh\" content=\"0; url=${project.name}\">\n")
-                        //    }
-                        //}
+                        val dokkaCopy = createThis<Task>("dokkaCopy") {
+                            dependsOn("dokkaHtml")
+                            doLast {
+                                val ffrom = File(project.buildDir, "dokka/html")
+                                val finto = File(project.rootProject.projectDir, "build/dokka-all/${project.name}")
+                                copy {
+                                    from(ffrom)
+                                    into(finto)
+                                }
+                                File(finto, "index-redirect.html").writeText("<meta http-equiv=\"refresh\" content=\"0; url=${project.name}\">\n")
+                            }
+                        }
                     }
+
+                     */
                 }
 
                 if (mustPublish) {
