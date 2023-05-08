@@ -171,8 +171,11 @@ now they are available via kproject in these repositories:
 * <https://github.com/korlibs/korge-jitto> (Jitto, the programmatic logo and mascot)
 * <https://github.com/korlibs/korge-mascots> (Koral & Gest)
 
-## Starter Kits
+## Starter Kits / Templates
 
+* <https://github.com/korlibs/korge-hello-world> (Simple Hello World)
+* <https://github.com/korlibs/korge-hello-world-client-server> (Client + Ktor Server + Common module)
+* <https://github.com/korlibs/korge-fleks-hello-world> (Fleks Hello World)
 * <https://github.com/korlibs/korge-starter-kit-rpg> (RPG Starter Kit)
 * <https://github.com/korlibs/korge-starter-kit-platformer> (Platformer Starter Kit)
 * <https://github.com/korlibs/korge-starter-kit-pointandclickadventure> (Point & Click Adventure Starter Kit)
