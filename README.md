@@ -162,6 +162,10 @@ now they are available via kproject in these repositories:
 * <https://github.com/korlibs/korge-ext/tree/main/korge-shape-ext> (Support triangulation, spatial pathfinding, TRA* & shape2d operations)
 * <https://github.com/korlibs/korge-ext/tree/main/korge-bus> (A Message Bus implementation)
 
+## Monetization
+
+* <https://github.com/korlibs/korge-monetization/tree/main/korge-admob> (Admob integration)
+
 ## Mascots
 
 * <https://github.com/korlibs/korge-jitto> (Jitto, the programmatic logo and mascot)
