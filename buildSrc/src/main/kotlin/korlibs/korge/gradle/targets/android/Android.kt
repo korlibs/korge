@@ -73,7 +73,7 @@ fun Project.androidEmulatorStart() {
     }
 }
 
-
+/*
 fun Project.androidGetResourcesFolders(): Pair<List<File>, List<File>> {
     val targets = listOf(kotlin.metadata())
     val mainSourceSets = targets.flatMap { it.compilations["main"].allKotlinSourceSets }
@@ -98,7 +98,7 @@ fun isKorlibsDependency(cleanFullName: String): Boolean {
     if (cleanFullName.startsWith("org.jogamp")) return false
     return true
 }
-
+*/
 
 //fun writeAndroidManifest(outputFolder: File, korge: KorgeExtension, info: AndroidInfo = AndroidInfo(null)) {
 //    val generated = AndroidGenerated(korge, info)
