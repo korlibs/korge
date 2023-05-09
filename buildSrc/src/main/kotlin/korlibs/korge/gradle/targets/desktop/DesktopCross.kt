@@ -6,6 +6,7 @@ import korlibs.korge.gradle.targets.native.*
 import korlibs.korge.gradle.targets.native.getCompileTask
 import korlibs.korge.gradle.util.*
 import korlibs.*
+import korlibs.korge.gradle.module.*
 import org.gradle.api.*
 import org.gradle.api.internal.plugins.*
 import org.gradle.api.reporting.*
