@@ -11,7 +11,9 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import korlibs.logger.*
 import kotlin.system.*
 
-internal actual val KorgeReloadInternal: KorgeReloadInternalImpl = object : KorgeReloadInternalImpl() {
+internal actual val KorgeReloadInternal: KorgeReloadInternalImpl = KorgeReloadInternalJvm
+
+internal object KorgeReloadInternalJvm : KorgeReloadInternalImpl() {
     override fun <T : Any> getReloadedClass(clazz: KClass<T>, context: ReloadClassContext): KClass<T> {
         println("### KorgeReload_getReloadedClass: $clazz")
         val oldClass = clazz
@@ -36,11 +38,14 @@ internal actual val KorgeReloadInternal: KorgeReloadInternalImpl = object : Korg
                 val newClass = newProp.returnType.jvmErasure
                 val oldValue = oldProp.get(old)
                 //println("   ** Trying to set $oldValue to $newProp")
+                //println("$oldClass -> $newClass")
 
                 val newValue = when {
-                    oldClass === newClass -> oldValue
+                    oldClass == newClass -> oldValue
                     // We try to serialize & unserialize in the case we are for example using an enum that has been reloaded
-                    else -> objectMapper.convertValue(oldValue, newClass.java)
+                    else -> {
+                        objectMapper.convertValue(oldValue, newClass.java)
+                    }
                 }
 
                 newProp.set(new, newValue)
