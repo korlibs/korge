@@ -14,7 +14,11 @@ class Vector2Test {
 
     @Test
     fun testString() {
+        assertEquals("(1, 2)", Point(1, 2).toString())
+        assertEquals("(1.5, 2.5)", Point(1.5, 2.5).toString())
         assertEquals("(1, 2)", MPoint(1, 2).toString())
+        assertEquals("(1.5, 2.5)", MPoint(1.5, 2.5).toString())
+        assertEquals("(12, 34)", PointInt(12, 34).toString())
     }
 
     @Test
