@@ -27,6 +27,7 @@ fun Project.configureNativeIos(projectType: ProjectType) {
 	kotlin.apply {
 		for (target in iosTargets) {
             target.configureKotlinNativeTarget(project)
+            //createCopyToExecutableTarget(target.name)
 			//for (target in listOf(iosX64())) {
 			target.also { target ->
 				//target.attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.native)
@@ -74,30 +75,18 @@ fun Project.configureNativeIosRun() {
     }
 
     val combinedResourcesFolder = File(buildDir, "combinedResources/resources")
+    val processedResourcesFolder = File(buildDir, "processedResources/iosArm64/main")
     val copyIosResources = tasks.createTyped<Copy>("copyIosResources") {
-        val targetName = "iosX64" // @TODO: Should be one per target?
-        val compilationName = "main"
-
-        val korgeProcessResourcesTaskName = getKorgeProcessResourcesTaskName(targetName, compilationName)
-        dependsOn(korgeProcessResourcesTaskName)
-        afterEvaluate {
-            afterEvaluate {
-                (tasks.findByName(korgeProcessResourcesTaskName) as? KorgeGenerateResourcesTask?)?.addToCopySpec(this@createTyped, addFrom = true)
-            }
-        }
-        //from(getCompilationKorgeProcessedResourcesFolder(targetName, compilationName))
-        from(File(project.projectDir, "src/commonMain/resources")) // @TODO: Use proper source sets to determine this?
+        val processResourcesTaskName = getProcessResourcesTaskName("iosArm64", "main")
+        dependsOn(processResourcesTaskName)
+        from(processedResourcesFolder)
         into(combinedResourcesFolder)
-        duplicatesStrategy = DuplicatesStrategy.INCLUDE
-        doFirst {
-            //combinedResourcesFolder.mkdirs()
-        }
     }
 
     val prepareKotlinNativeIosProject = tasks.createThis<Task>("prepareKotlinNativeIosProject") {
         dependsOn("installXcodeGen", "prepareKotlinNativeBootstrapIos", prepareKotlinNativeBootstrap, copyIosResources)
         doLast {
-            // project.yml requires these folders to be available or it will fail
+            // project.yml requires these folders to be available, or it will fail
             //File(rootDir, "src/commonMain/resources").mkdirs()
 
             val folder = File(buildDir, "platforms/ios")
