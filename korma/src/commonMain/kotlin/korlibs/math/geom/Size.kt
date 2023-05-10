@@ -12,6 +12,9 @@ import kotlin.math.*
 inline class Size internal constructor(internal val raw: Float2Pack) {//: Sizeable {
     companion object {
         val ZERO = Size(0f, 0f)
+        fun square(value: Int): Size = Size(value, value)
+        fun square(value: Float): Size = Size(value, value)
+        fun square(value: Double): Size = Size(value, value)
     }
 
     fun isEmpty(): Boolean = width == 0f || height == 0f
