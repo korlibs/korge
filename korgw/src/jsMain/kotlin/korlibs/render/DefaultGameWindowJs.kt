@@ -98,8 +98,11 @@ open class BrowserCanvasJsGameWindow(
                         gamepad.rawButtons[BUTTONS_MAPPING[n].index] = controller.buttons[n].value.toFloat()
                     }
                     for (n in 0 until kotlin.math.min(controller.axes.length, AXES_MAPPING.size)) {
+                        val isX = n % 2 == 0
+                        val isY = !isX
                         val value = controller.axes[n].toFloat()
-                        gamepad.rawButtons[AXES_MAPPING[n].index] = GamepadInfo.withoutDeadRange(value, apply = n <= 3)
+                        val valueWithoutDeadRange = GamepadInfo.withoutDeadRange(value, apply = n <= 3)
+                        gamepad.rawButtons[AXES_MAPPING[n].index] = if (isY) -valueWithoutDeadRange else valueWithoutDeadRange
                     }
                     dispatchGamepadUpdateAdd(gamepad)
                 }
