@@ -138,11 +138,12 @@ fun Project.configureAndroidDirect(projectType: ProjectType, isKorge: Boolean) {
                 java.srcDirs(AndroidConfig.getAndroidSrcFolder(project, isKorge = isKorge))
                 res.srcDirs(AndroidConfig.getAndroidResFolder(project, isKorge = isKorge))
                 assets.srcDirs(
-                    "${project.projectDir}/src/commonMain/resources",
-                    "${project.projectDir}/src/androidMain/resources",
-                    "${project.projectDir}/src/main/resources",
-                    "${project.projectDir}/build/commonMain/korgeProcessedResources/metadata/main",
-                    "${project.projectDir}/build/korgeProcessedResources/android/main",
+                    "${project.buildDir}/processedResources/jvm/main",
+                    //"${project.projectDir}/src/commonMain/resources",
+                    //"${project.projectDir}/src/androidMain/resources",
+                    //"${project.projectDir}/src/main/resources",
+                    //"${project.projectDir}/build/commonMain/korgeProcessedResources/metadata/main",
+                    //"${project.projectDir}/build/korgeProcessedResources/android/main",
                 )
                 //assets.srcDirs(*resourcesSrcDirs.map { it.absoluteFile }.toTypedArray())
                 //java.srcDirs(*kotlinSrcDirs.map { it.absoluteFile }.toTypedArray())

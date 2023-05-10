@@ -27,8 +27,8 @@ fun getKorgeProcessResourcesTaskName(targetName: String, compilationName: String
 fun getProcessResourcesTaskName(targetName: String, compilationName: String): String =
     "${targetName.decapitalize()}${if (compilationName == "main") "" else compilationName.capitalize()}ProcessResources"
 
-fun Project.generateKorgeProcessedFromTask(task: ProcessResources?, taskName: String) {
-    val targetNameRaw = taskName.removeSuffix("ProcessResources")
+fun Project.generateKorgeProcessedFromTask(task: ProcessResources) {
+    val targetNameRaw = task.name.removeSuffix("ProcessResources")
     val isTest = targetNameRaw.endsWith("Test")
     val targetName = targetNameRaw.removeSuffix("Test")
     val target = kotlin.targets.findByName(targetName) ?: return
@@ -111,7 +111,7 @@ fun Project.addGenResourcesTasks() {
 
         for (task in tasks.withType(ProcessResources::class.java).toList()) {
             //println("TASK: $task : ${task::class}")
-            generateKorgeProcessedFromTask(task, task.name)
+            generateKorgeProcessedFromTask(task)
         }
     }
 }
