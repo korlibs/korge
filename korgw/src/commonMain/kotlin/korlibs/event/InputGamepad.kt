@@ -161,7 +161,8 @@ class GamepadInfo(
         const val MAX_CONTROLLERS = 4
         //const val MAX_CONTROLLERS = 8
 
-        const val DEAD_RANGE = 0.06f
+        //const val DEAD_RANGE = 0.06f
+        const val DEAD_RANGE = 0.075f
 
         fun withoutDeadRange(value: Float, margin: Float = DEAD_RANGE, apply: Boolean = true): Float {
             if (apply && value.absoluteValue < margin) return 0f
