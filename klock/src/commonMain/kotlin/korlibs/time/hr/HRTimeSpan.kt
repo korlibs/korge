@@ -1,8 +1,6 @@
 package korlibs.time.hr
 
-import korlibs.time.PerformanceCounter
-import korlibs.time.TimeSpan
-import korlibs.time.nanoseconds
+import korlibs.time.*
 import kotlin.jvm.JvmInline
 import kotlin.math.round
 

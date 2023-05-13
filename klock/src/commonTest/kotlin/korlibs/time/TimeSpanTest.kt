@@ -65,8 +65,8 @@ class TimeSpanTest {
 
     @Test
     fun ratio() {
-        assertEquals(0.5f, 0.5.seconds / 1.seconds)
-        assertEquals(5.0f, 10.seconds / 2000.milliseconds)
+        assertEquals(0.5f, 0.5.seconds divFloat 1.seconds)
+        assertEquals(5.0f, 10.seconds divFloat 2000.milliseconds)
     }
 
     @Test

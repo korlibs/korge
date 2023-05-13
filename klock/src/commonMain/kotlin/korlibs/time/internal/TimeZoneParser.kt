@@ -1,9 +1,6 @@
 package korlibs.time.internal
 
-import korlibs.time.TimeSpan
-import korlibs.time.TimezoneNames
-import korlibs.time.hours
-import korlibs.time.minutes
+import korlibs.time.*
 
 internal fun MicroStrReader.readTimeZoneOffset(tzNames: TimezoneNames = TimezoneNames.DEFAULT): TimeSpan? {
     val reader = this

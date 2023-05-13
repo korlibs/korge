@@ -3,202 +3,192 @@ package korlibs.time
 import korlibs.time.internal.*
 import kotlin.jvm.*
 import kotlin.math.*
+import kotlin.time.*
 
 /** [TimeSpan] representing this number as [nanoseconds] or 1 / 1_000_000_000 [seconds]. */
-inline val Long.nanoseconds get() = TimeSpan.fromNanoseconds(this.toDouble())
+inline val Long.nanoseconds get() = Duration.fromNanoseconds(this.toDouble())
 /** [TimeSpan] representing this number as [microseconds] or 1 / 1_000_000 [seconds]. */
-inline val Long.microseconds get() = TimeSpan.fromMicroseconds(this.toDouble())
+inline val Long.microseconds get() = Duration.fromMicroseconds(this.toDouble())
 /** [TimeSpan] representing this number as [milliseconds] or 1 / 1_000 [seconds]. */
-inline val Long.milliseconds get() = TimeSpan.fromMilliseconds(this.toDouble())
+inline val Long.milliseconds get() = Duration.fromMilliseconds(this.toDouble())
 /** [TimeSpan] representing this number as [seconds]. */
-inline val Long.seconds get() = TimeSpan.fromSeconds((this.toDouble()))
+inline val Long.seconds get() = Duration.fromSeconds((this.toDouble()))
 /** [TimeSpan] representing this number as [minutes] or 60 [seconds]. */
-inline val Long.minutes get() = TimeSpan.fromMinutes(this.toDouble())
+inline val Long.minutes get() = Duration.fromMinutes(this.toDouble())
 /** [TimeSpan] representing this number as [hours] or 3_600 [seconds]. */
-inline val Long.hours get() = TimeSpan.fromHours(this.toDouble())
+inline val Long.hours get() = Duration.fromHours(this.toDouble())
 /** [TimeSpan] representing this number as [days] or 86_400 [seconds]. */
-inline val Long.days get() = TimeSpan.fromDays(this.toDouble())
+inline val Long.days get() = Duration.fromDays(this.toDouble())
 /** [TimeSpan] representing this number as [weeks] or 604_800 [seconds]. */
-inline val Long.weeks get() = TimeSpan.fromWeeks(this.toDouble())
+inline val Long.weeks get() = Duration.fromWeeks(this.toDouble())
 
 /** [TimeSpan] representing this number as [nanoseconds] or 1 / 1_000_000_000 [seconds]. */
-inline val Float.nanoseconds get() = TimeSpan.fromNanoseconds(this.toDouble())
+inline val Float.nanoseconds get() = Duration.fromNanoseconds(this.toDouble())
 /** [TimeSpan] representing this number as [microseconds] or 1 / 1_000_000 [seconds]. */
-inline val Float.microseconds get() = TimeSpan.fromMicroseconds(this.toDouble())
+inline val Float.microseconds get() = Duration.fromMicroseconds(this.toDouble())
 /** [TimeSpan] representing this number as [milliseconds] or 1 / 1_000 [seconds]. */
-inline val Float.milliseconds get() = TimeSpan.fromMilliseconds(this.toDouble())
+inline val Float.milliseconds get() = Duration.fromMilliseconds(this.toDouble())
 /** [TimeSpan] representing this number as [seconds]. */
-inline val Float.seconds get() = TimeSpan.fromSeconds((this.toDouble()))
+inline val Float.seconds get() = Duration.fromSeconds((this.toDouble()))
 /** [TimeSpan] representing this number as [minutes] or 60 [seconds]. */
-inline val Float.minutes get() = TimeSpan.fromMinutes(this.toDouble())
+inline val Float.minutes get() = Duration.fromMinutes(this.toDouble())
 /** [TimeSpan] representing this number as [hours] or 3_600 [seconds]. */
-inline val Float.hours get() = TimeSpan.fromHours(this.toDouble())
+inline val Float.hours get() = Duration.fromHours(this.toDouble())
 /** [TimeSpan] representing this number as [days] or 86_400 [seconds]. */
-inline val Float.days get() = TimeSpan.fromDays(this.toDouble())
+inline val Float.days get() = Duration.fromDays(this.toDouble())
 /** [TimeSpan] representing this number as [weeks] or 604_800 [seconds]. */
-inline val Float.weeks get() = TimeSpan.fromWeeks(this.toDouble())
+inline val Float.weeks get() = Duration.fromWeeks(this.toDouble())
 
 /** [TimeSpan] representing this number as [nanoseconds] or 1 / 1_000_000_000 [seconds]. */
-inline val Int.nanoseconds get() = TimeSpan.fromNanoseconds(this.toDouble())
+inline val Int.nanoseconds get() = Duration.fromNanoseconds(this.toDouble())
 /** [TimeSpan] representing this number as [microseconds] or 1 / 1_000_000 [seconds]. */
-inline val Int.microseconds get() = TimeSpan.fromMicroseconds(this.toDouble())
+inline val Int.microseconds get() = Duration.fromMicroseconds(this.toDouble())
 /** [TimeSpan] representing this number as [milliseconds] or 1 / 1_000 [seconds]. */
-inline val Int.milliseconds get() = TimeSpan.fromMilliseconds(this.toDouble())
+inline val Int.milliseconds get() = Duration.fromMilliseconds(this.toDouble())
 /** [TimeSpan] representing this number as [seconds]. */
-inline val Int.seconds get() = TimeSpan.fromSeconds((this.toDouble()))
+inline val Int.seconds get() = Duration.fromSeconds((this.toDouble()))
 /** [TimeSpan] representing this number as [minutes] or 60 [seconds]. */
-inline val Int.minutes get() = TimeSpan.fromMinutes(this.toDouble())
+inline val Int.minutes get() = Duration.fromMinutes(this.toDouble())
 /** [TimeSpan] representing this number as [hours] or 3_600 [seconds]. */
-inline val Int.hours get() = TimeSpan.fromHours(this.toDouble())
+inline val Int.hours get() = Duration.fromHours(this.toDouble())
 /** [TimeSpan] representing this number as [days] or 86_400 [seconds]. */
-inline val Int.days get() = TimeSpan.fromDays(this.toDouble())
+inline val Int.days get() = Duration.fromDays(this.toDouble())
 /** [TimeSpan] representing this number as [weeks] or 604_800 [seconds]. */
-inline val Int.weeks get() = TimeSpan.fromWeeks(this.toDouble())
+inline val Int.weeks get() = Duration.fromWeeks(this.toDouble())
 
 /** [TimeSpan] representing this number as [nanoseconds] or 1 / 1_000_000_000 [seconds]. */
-inline val Double.nanoseconds get() = TimeSpan.fromNanoseconds(this)
+inline val Double.nanoseconds get() = Duration.fromNanoseconds(this)
 /** [TimeSpan] representing this number as [microseconds] or 1 / 1_000_000 [seconds]. */
-inline val Double.microseconds get() = TimeSpan.fromMicroseconds(this)
+inline val Double.microseconds get() = Duration.fromMicroseconds(this)
 /** [TimeSpan] representing this number as [milliseconds] or 1 / 1_000 [seconds]. */
-inline val Double.milliseconds get() = TimeSpan.fromMilliseconds(this)
+inline val Double.milliseconds get() = Duration.fromMilliseconds(this)
 /** [TimeSpan] representing this number as [seconds]. */
-inline val Double.seconds get() = TimeSpan.fromSeconds((this))
+inline val Double.seconds get() = Duration.fromSeconds((this))
 /** [TimeSpan] representing this number as [minutes] or 60 [seconds]. */
-inline val Double.minutes get() = TimeSpan.fromMinutes(this)
+inline val Double.minutes get() = Duration.fromMinutes(this)
 /** [TimeSpan] representing this number as [hours] or 3_600 [seconds]. */
-inline val Double.hours get() = TimeSpan.fromHours(this)
+inline val Double.hours get() = Duration.fromHours(this)
 /** [TimeSpan] representing this number as [days] or 86_400 [seconds]. */
-inline val Double.days get() = TimeSpan.fromDays(this)
+inline val Double.days get() = Duration.fromDays(this)
 /** [TimeSpan] representing this number as [weeks] or 604_800 [seconds]. */
-inline val Double.weeks get() = TimeSpan.fromWeeks(this)
+inline val Double.weeks get() = Duration.fromWeeks(this)
 
+typealias TimeSpan = kotlin.time.Duration
+
+fun TimeSpan(milliseconds: Double): TimeSpan = milliseconds.toDuration(DurationUnit.MILLISECONDS)
+
+val Duration.milliseconds: Double get() = this.inWholeNanoseconds / MILLIS_PER_NANOSECOND
+
+/** Returns the total number of [nanoseconds] for this [TimeSpan] (1 / 1_000_000_000 [seconds]) */
+val Duration.nanoseconds: Double get() = this.milliseconds / MILLIS_PER_NANOSECOND
+/** Returns the total number of [nanoseconds] for this [TimeSpan] (1 / 1_000_000_000 [seconds]) as Integer */
+val Duration.nanosecondsInt: Int get() = (this.milliseconds / MILLIS_PER_NANOSECOND).toInt()
+
+/** Returns the total number of [microseconds] for this [TimeSpan] (1 / 1_000_000 [seconds]) */
+val Duration.microseconds: Double get() = this.milliseconds / MILLIS_PER_MICROSECOND
+/** Returns the total number of [microseconds] for this [TimeSpan] (1 / 1_000_000 [seconds]) as Integer */
+val Duration.microsecondsInt: Int get() = (this.milliseconds / MILLIS_PER_MICROSECOND).toInt()
+
+/** Returns the total number of [seconds] for this [TimeSpan] */
+val Duration.seconds: Double get() = this.milliseconds / MILLIS_PER_SECOND
+/** Returns the total number of [minutes] for this [TimeSpan] (60 [seconds]) */
+val Duration.minutes: Double get() = this.milliseconds / MILLIS_PER_MINUTE
+/** Returns the total number of [hours] for this [TimeSpan] (3_600 [seconds]) */
+val Duration.hours: Double get() = this.milliseconds / MILLIS_PER_HOUR
+/** Returns the total number of [days] for this [TimeSpan] (86_400 [seconds]) */
+val Duration.days: Double get() = this.milliseconds / MILLIS_PER_DAY
+/** Returns the total number of [weeks] for this [TimeSpan] (604_800 [seconds]) */
+val Duration.weeks: Double get() = this.milliseconds / MILLIS_PER_WEEK
+
+/** Returns the total number of [milliseconds] as a [Long] */
+val Duration.millisecondsLong: Long get() = milliseconds.toLong()
+/** Returns the total number of [milliseconds] as an [Int] */
+val Duration.millisecondsInt: Int get() = milliseconds.toInt()
+
+//override fun Duration.compareTo(other: TimeSpan): Int = this.milliseconds.compareTo(other.milliseconds)
+
+/** Return true if [Duration.NIL] */
+val Duration.isNil: Boolean get() = milliseconds.isNaN()
+
+operator fun Duration.unaryMinus() = TimeSpan(-this.milliseconds)
+operator fun Duration.unaryPlus() = TimeSpan(+this.milliseconds)
+
+operator fun Duration.plus(other: TimeSpan): TimeSpan = TimeSpan(this.milliseconds + other.milliseconds)
+operator fun Duration.plus(other: MonthSpan): DateTimeSpan = DateTimeSpan(other, this)
+operator fun Duration.plus(other: DateTimeSpan): DateTimeSpan = DateTimeSpan(other.monthSpan, other.timeSpan + this)
+
+operator fun Duration.minus(other: TimeSpan): TimeSpan = this + (-other)
+operator fun Duration.minus(other: MonthSpan): DateTimeSpan = this + (-other)
+operator fun Duration.minus(other: DateTimeSpan): DateTimeSpan = this + (-other)
+
+operator fun Duration.times(scale: Int): TimeSpan = TimeSpan(this.milliseconds * scale)
+operator fun Duration.times(scale: Float): TimeSpan = TimeSpan((this.milliseconds * scale))
+operator fun Duration.times(scale: Double): TimeSpan = TimeSpan((this.milliseconds * scale))
+
+operator fun Duration.div(scale: Int): TimeSpan = TimeSpan(this.milliseconds / scale)
+operator fun Duration.div(scale: Float): TimeSpan = TimeSpan(this.milliseconds / scale)
+operator fun Duration.div(scale: Double): TimeSpan = TimeSpan((this.milliseconds / scale))
+
+operator fun Duration.div(other: TimeSpan): Float = (this.milliseconds / other.milliseconds).toFloat()
+operator fun Duration.rem(other: TimeSpan): TimeSpan = (this.milliseconds % other.milliseconds).milliseconds
+infix fun Duration.divFloat(other: TimeSpan): Float = (this.milliseconds / other.milliseconds).toFloat()
+infix fun Duration.umod(other: TimeSpan): TimeSpan = (this.milliseconds umod other.milliseconds).milliseconds
+
+private const val MILLIS_PER_MICROSECOND = 1.0 / 1000.0
+private const val MILLIS_PER_NANOSECOND = MILLIS_PER_MICROSECOND / 1000.0
 
 /**
- * Represents a span of time, with [milliseconds] precision.
- *
- * It is a value class wrapping [Double] instead of [Long] to work on JavaScript without allocations.
+ * Zero time.
  */
-@JvmInline
-value class TimeSpan(
-    /** Returns the total number of [milliseconds] for this [TimeSpan] (1 / 1_000 [seconds]) */
-    val milliseconds: Double
-) : Comparable<TimeSpan>, Serializable {
-    /** Returns the total number of [nanoseconds] for this [TimeSpan] (1 / 1_000_000_000 [seconds]) */
-    val nanoseconds: Double get() = this.milliseconds / MILLIS_PER_NANOSECOND
-    /** Returns the total number of [nanoseconds] for this [TimeSpan] (1 / 1_000_000_000 [seconds]) as Integer */
-    val nanosecondsInt: Int get() = (this.milliseconds / MILLIS_PER_NANOSECOND).toInt()
+val Duration.Companion.ZERO get() = TimeSpan(0.0)
 
-    /** Returns the total number of [microseconds] for this [TimeSpan] (1 / 1_000_000 [seconds]) */
-    val microseconds: Double get() = this.milliseconds / MILLIS_PER_MICROSECOND
-    /** Returns the total number of [microseconds] for this [TimeSpan] (1 / 1_000_000 [seconds]) as Integer */
-    val microsecondsInt: Int get() = (this.milliseconds / MILLIS_PER_MICROSECOND).toInt()
+/**
+ * Represents an invalid Duration.
+ * Useful to represent an alternative "null" time-lapse
+ * avoiding the boxing of a nullable type.
+ */
+//val Duration.Companion.NIL get() = TimeSpan(Double.NaN)
+val Duration.Companion.NIL get() = (Long.MAX_VALUE / 2 - 1).toDuration(DurationUnit.MILLISECONDS)
 
-    /** Returns the total number of [seconds] for this [TimeSpan] */
-    val seconds: Double get() = this.milliseconds / MILLIS_PER_SECOND
-    /** Returns the total number of [minutes] for this [TimeSpan] (60 [seconds]) */
-    val minutes: Double get() = this.milliseconds / MILLIS_PER_MINUTE
-    /** Returns the total number of [hours] for this [TimeSpan] (3_600 [seconds]) */
-    val hours: Double get() = this.milliseconds / MILLIS_PER_HOUR
-    /** Returns the total number of [days] for this [TimeSpan] (86_400 [seconds]) */
-    val days: Double get() = this.milliseconds / MILLIS_PER_DAY
-    /** Returns the total number of [weeks] for this [TimeSpan] (604_800 [seconds]) */
-    val weeks: Double get() = this.milliseconds / MILLIS_PER_WEEK
+@PublishedApi
+internal fun Duration.Companion.fromMilliseconds(ms: Double) = when (ms) {
+    0.0 -> ZERO
+    else -> TimeSpan(ms)
+}
 
-    /** Returns the total number of [milliseconds] as a [Long] */
-    val millisecondsLong: Long get() = milliseconds.toLong()
-    /** Returns the total number of [milliseconds] as an [Int] */
-    val millisecondsInt: Int get() = milliseconds.toInt()
+@PublishedApi internal fun Duration.Companion.fromNanoseconds(s: Double) = fromMilliseconds(s * MILLIS_PER_NANOSECOND)
+@PublishedApi internal fun Duration.Companion.fromMicroseconds(s: Double) = fromMilliseconds(s * MILLIS_PER_MICROSECOND)
+@PublishedApi internal fun Duration.Companion.fromSeconds(s: Double) = fromMilliseconds(s * MILLIS_PER_SECOND)
+@PublishedApi internal fun Duration.Companion.fromMinutes(s: Double) = fromMilliseconds(s * MILLIS_PER_MINUTE)
+@PublishedApi internal fun Duration.Companion.fromHours(s: Double) = fromMilliseconds(s * MILLIS_PER_HOUR)
+@PublishedApi internal fun Duration.Companion.fromDays(s: Double) = fromMilliseconds(s * MILLIS_PER_DAY)
+@PublishedApi internal fun Duration.Companion.fromWeeks(s: Double) = fromMilliseconds(s * MILLIS_PER_WEEK)
 
-    override fun compareTo(other: TimeSpan): Int = this.milliseconds.compareTo(other.milliseconds)
+private val timeSteps = listOf(60, 60, 24)
+private fun Duration.Companion.toTimeStringRaw(totalMilliseconds: Double, components: Int = 3): String {
+    var timeUnit = floor(totalMilliseconds / 1000.0).toInt()
 
-    operator fun unaryMinus() = TimeSpan(-this.milliseconds)
-    operator fun unaryPlus() = TimeSpan(+this.milliseconds)
+    val out = arrayListOf<String>()
 
-    operator fun plus(other: TimeSpan): TimeSpan = TimeSpan(this.milliseconds + other.milliseconds)
-    operator fun plus(other: MonthSpan): DateTimeSpan = DateTimeSpan(other, this)
-    operator fun plus(other: DateTimeSpan): DateTimeSpan = DateTimeSpan(other.monthSpan, other.timeSpan + this)
-
-    operator fun minus(other: TimeSpan): TimeSpan = this + (-other)
-    operator fun minus(other: MonthSpan): DateTimeSpan = this + (-other)
-    operator fun minus(other: DateTimeSpan): DateTimeSpan = this + (-other)
-
-    operator fun times(scale: Int): TimeSpan = TimeSpan(this.milliseconds * scale)
-    operator fun times(scale: Float): TimeSpan = TimeSpan((this.milliseconds * scale))
-    operator fun times(scale: Double): TimeSpan = TimeSpan((this.milliseconds * scale))
-
-    operator fun div(scale: Int): TimeSpan = TimeSpan(this.milliseconds / scale)
-    operator fun div(scale: Float): TimeSpan = TimeSpan(this.milliseconds / scale)
-    operator fun div(scale: Double): TimeSpan = TimeSpan((this.milliseconds / scale))
-
-    operator fun div(other: TimeSpan): Float = (this.milliseconds / other.milliseconds).toFloat()
-    operator fun rem(other: TimeSpan): TimeSpan = (this.milliseconds % other.milliseconds).milliseconds
-    infix fun umod(other: TimeSpan): TimeSpan = (this.milliseconds umod other.milliseconds).milliseconds
-
-    /** Return true if [TimeSpan.NIL] */
-    val isNil: Boolean get() = milliseconds.isNaN()
-
-    companion object {
-        @Suppress("MayBeConstant", "unused")
-        private const val serialVersionUID = 1L
-
-        private const val MILLIS_PER_MICROSECOND = 1.0 / 1000.0
-        private const val MILLIS_PER_NANOSECOND = MILLIS_PER_MICROSECOND / 1000.0
-
-        /**
-         * Zero time.
-         */
-        val ZERO = TimeSpan(0.0)
-
-        /**
-         * Represents an invalid TimeSpan.
-         * Useful to represent an alternative "null" time-lapse
-         * avoiding the boxing of a nullable type.
-         */
-        val NIL = TimeSpan(Double.NaN)
-
-        @PublishedApi
-        internal fun fromMilliseconds(ms: Double) = when (ms) {
-            0.0 -> ZERO
-            else -> TimeSpan(ms)
+    for (n in 0 until components) {
+        if (n == components - 1) {
+            out += timeUnit.padded(2)
+            break
         }
-
-        @PublishedApi internal fun fromNanoseconds(s: Double) = fromMilliseconds(s * MILLIS_PER_NANOSECOND)
-        @PublishedApi internal fun fromMicroseconds(s: Double) = fromMilliseconds(s * MILLIS_PER_MICROSECOND)
-        @PublishedApi internal fun fromSeconds(s: Double) = fromMilliseconds(s * MILLIS_PER_SECOND)
-        @PublishedApi internal fun fromMinutes(s: Double) = fromMilliseconds(s * MILLIS_PER_MINUTE)
-        @PublishedApi internal fun fromHours(s: Double) = fromMilliseconds(s * MILLIS_PER_HOUR)
-        @PublishedApi internal fun fromDays(s: Double) = fromMilliseconds(s * MILLIS_PER_DAY)
-        @PublishedApi internal fun fromWeeks(s: Double) = fromMilliseconds(s * MILLIS_PER_WEEK)
-
-        private val timeSteps = listOf(60, 60, 24)
-        private fun toTimeStringRaw(totalMilliseconds: Double, components: Int = 3): String {
-            var timeUnit = floor(totalMilliseconds / 1000.0).toInt()
-
-            val out = arrayListOf<String>()
-
-            for (n in 0 until components) {
-                if (n == components - 1) {
-                    out += timeUnit.padded(2)
-                    break
-                }
-                val step = timeSteps.getOrNull(n) ?: throw RuntimeException("Just supported ${timeSteps.size} steps")
-                val cunit = timeUnit % step
-                timeUnit /= step
-                out += cunit.padded(2)
-            }
-
-            return out.reversed().joinToString(":")
-        }
-
-        @PublishedApi
-        internal fun toTimeString(totalMilliseconds: Double, components: Int = 3, addMilliseconds: Boolean = false): String {
-            val milliseconds = (totalMilliseconds % 1000).toInt()
-            val out = toTimeStringRaw(totalMilliseconds, components)
-            return if (addMilliseconds) "$out.$milliseconds" else out
-        }
+        val step = timeSteps.getOrNull(n) ?: throw RuntimeException("Just supported ${timeSteps.size} steps")
+        val cunit = timeUnit % step
+        timeUnit /= step
+        out += cunit.padded(2)
     }
 
-    override fun toString(): String = "${milliseconds.niceStr}ms"
+    return out.reversed().joinToString(":")
+}
+
+@PublishedApi
+internal fun Duration.Companion.toTimeString(totalMilliseconds: Double, components: Int = 3, addMilliseconds: Boolean = false): String {
+    val milliseconds = (totalMilliseconds % 1000).toInt()
+    val out = toTimeStringRaw(totalMilliseconds, components)
+    return if (addMilliseconds) "$out.$milliseconds" else out
 }
 
 /**
@@ -213,15 +203,15 @@ value class TimeSpan(
  *
  * With milliseconds would add decimals to the seconds part.
  */
-fun TimeSpan.toTimeString(components: Int = 3, addMilliseconds: Boolean = false): String =
-    TimeSpan.toTimeString(milliseconds, components, addMilliseconds)
+fun Duration.toTimeString(components: Int = 3, addMilliseconds: Boolean = false): String =
+    Duration.toTimeString(milliseconds, components, addMilliseconds)
 
-fun TimeSpan.roundMilliseconds(): TimeSpan = kotlin.math.round(milliseconds).milliseconds
+fun Duration.roundMilliseconds(): TimeSpan = kotlin.math.round(milliseconds).milliseconds
 fun max(a: TimeSpan, b: TimeSpan): TimeSpan = max(a.milliseconds, b.milliseconds).milliseconds
 fun min(a: TimeSpan, b: TimeSpan): TimeSpan = min(a.milliseconds, b.milliseconds).milliseconds
-fun TimeSpan.clamp(min: TimeSpan, max: TimeSpan): TimeSpan = when {
+fun Duration.clamp(min: TimeSpan, max: TimeSpan): TimeSpan = when {
     this < min -> min
     this > max -> max
     else -> this
 }
-inline fun TimeSpan.coalesce(block: () -> TimeSpan): TimeSpan = if (this != TimeSpan.NIL) this else block()
+inline fun Duration.coalesce(block: () -> TimeSpan): TimeSpan = if (this != Duration.NIL) this else block()
