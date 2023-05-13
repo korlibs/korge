@@ -95,7 +95,9 @@ open class KorgeExtension(
 	}
 
     companion object {
-        val DEFAULT_JVM_TARGET = "11"
+        //val DEFAULT_JVM_TARGET = "11"
+        val DEFAULT_JVM_TARGET = "1.8"
+        val DEFAULT_ANDROID_TARGET = DEFAULT_JVM_TARGET
 
         const val ESBUILD_DEFAULT_VERSION = "0.17.10"
 
