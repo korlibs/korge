@@ -61,8 +61,8 @@ fun Project.configureAndroidDirect(projectType: ProjectType, isKorge: Boolean) {
         }
 
         compileOptions.apply {
-            sourceCompatibility = JavaVersion.valueOf(KorgeExtension.DEFAULT_ANDROID_TARGET)
-            targetCompatibility = JavaVersion.valueOf(KorgeExtension.DEFAULT_ANDROID_TARGET)
+            sourceCompatibility = JavaVersion.valueOf("VERSION_" + KorgeExtension.DEFAULT_ANDROID_TARGET.replace('.', '_'))
+            targetCompatibility = sourceCompatibility
         }
 
         packagingOptions.also {

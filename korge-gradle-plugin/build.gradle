@@ -42,7 +42,7 @@ afterEvaluate {
 }
 */
 
-def jversion = korlibs.korge.gradle.KorgeExtension.GRADLE_JAVA_VERSION_STR
+def jversion = korlibs.korge.gradle.KorgeExtension.DEFAULT_JVM_TARGET
 
 java {
     sourceCompatibility = jversion
