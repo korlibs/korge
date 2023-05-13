@@ -32,8 +32,11 @@ internal actual object KlockInternal {
     }
 
     actual fun localTimezoneOffsetMinutes(time: DateTime): TimeSpan = autoreleasepool {
-        val tz: CFTimeZoneRef? = CFTimeZoneCopySystem()
-        val minsFromGMT: CFTimeInterval = CFTimeZoneGetSecondsFromGMT(tz, CFAbsoluteTimeGetCurrent()) / 60.0
-        minsFromGMT.minutes
+        return getLocalTimezoneOffsetDarwin(CFTimeZoneCopySystem(), time)
     }
+}
+
+internal fun getLocalTimezoneOffsetDarwin(tz: CFTimeZoneRef?, time: DateTime): TimeSpan {
+    val secondsSince2001 = (time - DateTime(2001, Month.January, 1, 0, 0, 0, 0)).seconds
+    return (CFTimeZoneGetSecondsFromGMT(tz, secondsSince2001.toDouble()) / 60.0).minutes
 }
