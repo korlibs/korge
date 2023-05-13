@@ -41,6 +41,7 @@ class KlockInternalDarwinTest {
     @Test
     fun testNSDate() {
         assertEquals("Mon, 01 Jan 2001 00:00:00 UTC", NSDate(0.0).toDateTime().toStringDefault())
+        assertEquals(0L, DateTime.APPLE_REFERENCE_DATE.toNSDate().timeIntervalSinceReferenceDate.toLong())
         assertEquals(0L, DateTime(2001, Month.January, 1).toNSDate().timeIntervalSinceReferenceDate.toLong())
         assertEquals(-31622400L, DateTime(2000, Month.January, 1).toNSDate().timeIntervalSinceReferenceDate.toLong())
         assertEquals(946684800L, DateTime(2000, Month.January, 1).toNSDate().timeIntervalSince1970.toLong())
