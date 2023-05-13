@@ -23,7 +23,7 @@ fun Project.configureJvm(projectType: ProjectType) {
     if (gkotlin.targets.findByName("jvm") != null) return
 
     val jvmTarget = gkotlin.jvm()
-	gkotlin.targets.add(jvmTarget)
+    gkotlin.targets.add(jvmTarget)
 
     project.korge.addDependency("jvmMainImplementation", "net.java.dev.jna:jna:$jnaVersion")
     project.korge.addDependency("jvmMainImplementation", "net.java.dev.jna:jna-platform:$jnaVersion")

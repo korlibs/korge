@@ -289,6 +289,9 @@ object RootKorlibsPlugin {
 
                 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile::class.java).configureEach {
                     it.kotlinOptions.suppressWarnings = true
+                    it.kotlinOptions {
+                        this.jvmTarget = KorgeExtension.DEFAULT_JVM_TARGET
+                    }
                 }
 
                 afterEvaluate {

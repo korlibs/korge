@@ -95,6 +95,8 @@ open class KorgeExtension(
 	}
 
     companion object {
+        val DEFAULT_JVM_TARGET = "11"
+
         const val ESBUILD_DEFAULT_VERSION = "0.17.10"
 
         val DEFAULT_ANDROID_EXCLUDE_PATTERNS = setOf(
@@ -309,8 +311,6 @@ open class KorgeExtension(
     //@JvmOverloads
     //fun bundle(uri: String, baseName: String? = null) = bundles.bundle(uri, baseName)
 
-    val DEFAULT_JVM_TARGET = "1.8"
-    //val DEFAULT_JVM_TARGET = "1.6"
 	var jvmTarget: String = project.findProject("jvm.target")?.toString() ?: DEFAULT_JVM_TARGET
 	var androidLibrary: Boolean = project.findProperty("android.library") == "true"
     var overwriteAndroidFiles: Boolean = project.findProperty("overwrite.android.files") == "false"

@@ -38,7 +38,7 @@ class KorgeGradleApply(val project: Project, val projectType: ProjectType) {
         // @TODO: Doing this disables the ability to use configuration cache
 		//System.setProperty("java.awt.headless", "true")
 
-		val currentGradleVersion = SemVer(project.gradle.gradleVersion)
+        val currentGradleVersion = SemVer(project.gradle.gradleVersion)
         //val expectedGradleVersion = SemVer("6.8.1")
         val expectedGradleVersion = SemVer("7.5.0")
 		val korgeCheckGradleVersion = (project.ext.properties["korgeCheckGradleVersion"] as? Boolean) ?: true
