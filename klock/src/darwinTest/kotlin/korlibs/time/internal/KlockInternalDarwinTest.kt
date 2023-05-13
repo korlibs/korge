@@ -1,6 +1,7 @@
 package korlibs.time.internal
 
 import korlibs.time.*
+import korlibs.time.darwin.*
 import kotlinx.cinterop.*
 import platform.CoreFoundation.*
 import kotlin.test.*
@@ -26,6 +27,14 @@ class KlockInternalDarwinTest {
                 CET: ${getLocalTimezoneOffsetDarwin(EuropeMadrid, DateTime(2023, Month.January, 10)).minutes.toInt()}
             """.trimIndent()
         )
+    }
+
+    @Test
+    fun testCFAbsoluteTime() {
+        assertEquals(0.0, DateTime.fromCFAbsoluteTime(0.0).cfAbsoluteTime())
+        assertEquals(1000.0, DateTime.fromCFAbsoluteTime(1000.0).cfAbsoluteTime())
+        assertEquals(-1000000.0, DateTime.fromCFAbsoluteTime(-1000000.0).cfAbsoluteTime())
+        assertEquals("Mon, 01 Jan 2001 00:00:00 UTC", DateTime.fromCFAbsoluteTime(0.0).toStringDefault())
     }
 }
 

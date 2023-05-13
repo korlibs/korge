@@ -1,6 +1,7 @@
 package korlibs.time.internal
 
 import korlibs.time.*
+import korlibs.time.darwin.*
 import korlibs.time.hr.*
 import kotlinx.cinterop.*
 import platform.CoreFoundation.*
@@ -32,11 +33,12 @@ internal actual object KlockInternal {
     }
 
     actual fun localTimezoneOffsetMinutes(time: DateTime): TimeSpan = autoreleasepool {
+        CFAbsoluteTimeGetCurrent()
         return getLocalTimezoneOffsetDarwin(CFTimeZoneCopySystem(), time)
     }
 }
 
 internal fun getLocalTimezoneOffsetDarwin(tz: CFTimeZoneRef?, time: DateTime): TimeSpan {
-    val secondsSince2001 = (time - DateTime(2001, Month.January, 1, 0, 0, 0, 0)).seconds
+    val secondsSince2001 = time.cfAbsoluteTime()
     return (CFTimeZoneGetSecondsFromGMT(tz, secondsSince2001.toDouble()) / 60.0).minutes
 }
