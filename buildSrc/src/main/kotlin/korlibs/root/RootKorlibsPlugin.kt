@@ -330,7 +330,7 @@ object RootKorlibsPlugin {
                     }
                     jvm {
                         compilations.allThis {
-                            kotlinOptions.jvmTarget = ANDROID_JAVA_VERSION_STR
+                            kotlinOptions.jvmTarget = KorgeExtension.DEFAULT_JVM_TARGET
                             compilerOptions.options.freeCompilerArgs.add("-Xno-param-assertions")
                             //kotlinOptions.freeCompilerArgs.add("-Xno-param-assertions")
                             //kotlinOptions.

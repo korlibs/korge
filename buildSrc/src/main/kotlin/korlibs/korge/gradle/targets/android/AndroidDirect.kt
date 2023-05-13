@@ -27,7 +27,7 @@ fun Project.configureAndroidDirect(projectType: ProjectType, isKorge: Boolean) {
         publishLibraryVariantsGroupedByFlavor = true
         //this.attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.androidJvm)
         compilations.allThis {
-            kotlinOptions.jvmTarget = ANDROID_JAVA_VERSION_STR
+            kotlinOptions.jvmTarget = KorgeExtension.DEFAULT_ANDROID_TARGET
             compilerOptions.options.freeCompilerArgs.add("-Xno-param-assertions")
         }
     }
@@ -61,8 +61,8 @@ fun Project.configureAndroidDirect(projectType: ProjectType, isKorge: Boolean) {
         }
 
         compileOptions.apply {
-            sourceCompatibility = ANDROID_JAVA_VERSION
-            targetCompatibility = ANDROID_JAVA_VERSION
+            sourceCompatibility = JavaVersion.valueOf(KorgeExtension.DEFAULT_ANDROID_TARGET)
+            targetCompatibility = JavaVersion.valueOf(KorgeExtension.DEFAULT_ANDROID_TARGET)
         }
 
         packagingOptions.also {

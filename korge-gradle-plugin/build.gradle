@@ -1,3 +1,6 @@
+import korlibs.korge.gradle.KorgeExtension
+import korlibs.korge.gradle.KorgeExtensionKt
+
 plugins {
     id "java"
     id "java-gradle-plugin"
@@ -39,7 +42,7 @@ afterEvaluate {
 }
 */
 
-def jversion = korlibs.korge.gradle.targets.android.AndroidKt.GRADLE_JAVA_VERSION_STR
+def jversion = korlibs.korge.gradle.KorgeExtension.GRADLE_JAVA_VERSION_STR
 
 java {
     sourceCompatibility = jversion
