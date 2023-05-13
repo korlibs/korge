@@ -4,6 +4,7 @@ import korlibs.time.*
 import korlibs.time.darwin.*
 import kotlinx.cinterop.*
 import platform.CoreFoundation.*
+import platform.Foundation.*
 import kotlin.test.*
 
 class KlockInternalDarwinTest {
@@ -35,6 +36,15 @@ class KlockInternalDarwinTest {
         assertEquals(1000.0, DateTime.fromCFAbsoluteTime(1000.0).cfAbsoluteTime())
         assertEquals(-1000000.0, DateTime.fromCFAbsoluteTime(-1000000.0).cfAbsoluteTime())
         assertEquals("Mon, 01 Jan 2001 00:00:00 UTC", DateTime.fromCFAbsoluteTime(0.0).toStringDefault())
+    }
+
+    @Test
+    fun testNSDate() {
+        assertEquals("Mon, 01 Jan 2001 00:00:00 UTC", NSDate(0.0).toDateTime().toStringDefault())
+        assertEquals(0L, DateTime(2001, Month.January, 1).toNSDate().timeIntervalSinceReferenceDate.toLong())
+        assertEquals(-31622400L, DateTime(2000, Month.January, 1).toNSDate().timeIntervalSinceReferenceDate.toLong())
+        assertEquals(946684800L, DateTime(2000, Month.January, 1).toNSDate().timeIntervalSince1970.toLong())
+        assertEquals(0L, DateTime.EPOCH.toNSDate().timeIntervalSince1970.toLong())
     }
 }
 
