@@ -339,6 +339,13 @@ object RootKorlibsPlugin {
                             //kotlinOptions.useIR = true
                         }
                     }
+                    if (project.findProperty("enable.wasm") == "true") {
+                        wasm {
+                            //this.
+                            //this.applyBinaryen()
+                            nodejs()
+                        }
+                    }
                     js(org.jetbrains.kotlin.gradle.plugin.KotlinJsCompilerType.IR) {
                         browser {
                             compilations.allThis {
