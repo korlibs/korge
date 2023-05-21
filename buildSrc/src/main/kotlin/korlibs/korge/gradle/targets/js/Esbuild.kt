@@ -15,9 +15,8 @@ fun Project.configureEsbuild() {
 
     val esbuildFolder = File(if (userGradleFolder.isDirectory) userGradleFolder else rootProject.buildDir, "esbuild")
     val isWindows = org.apache.tools.ant.taskdefs.condition.Os.isFamily(org.apache.tools.ant.taskdefs.condition.Os.FAMILY_WINDOWS)
-    val esbuildCmdUnix = File(esbuildFolder, "bin/esbuild")
-    val esbuildCmdCheck = if (isWindows) File(esbuildFolder, "esbuild.cmd") else esbuildCmdUnix
-    val esbuildCmd = if (isWindows) File(esbuildFolder, "node_modules/esbuild/esbuild.exe") else esbuildCmdUnix
+    val esbuildCommand = File(esbuildFolder, if (isWindows) "esbuild.cmd" else "esbuild")
+    val esbuildCmd = if (isWindows) listOf("cmd.exe", "/c", esbuildCommand) else listOf(esbuildCommand)
 
     val npmInstallEsbuild = "npmInstallEsbuild"
 
@@ -32,7 +31,7 @@ fun Project.configureEsbuild() {
     if (rootProject.tasks.findByName(npmInstallEsbuild) == null) {
         rootProject.tasks.createThis<Exec>(npmInstallEsbuild) {
             dependsOn("kotlinNodeJsSetup")
-            onlyIf { !esbuildCmdCheck.exists() && !esbuildCmd.exists() }
+            onlyIf { !esbuildCommand.exists() }
 
             val esbuildVersion = korge.esbuildVersion
             doFirst {
@@ -113,7 +112,7 @@ fun Project.configureEsbuild() {
                 outputs.file(output)
                 environment("PATH", ENV_PATH)
                 commandLine(ArrayList<Any>().apply {
-                    add(esbuildCmd)
+                    addAll(esbuildCmd)
                     //add("--watch",)
                     add("--bundle")
                     add("--minify")
