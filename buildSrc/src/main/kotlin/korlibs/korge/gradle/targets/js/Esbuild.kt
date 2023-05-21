@@ -15,10 +15,10 @@ fun Project.configureEsbuild() {
 
     val esbuildFolder = File(if (userGradleFolder.isDirectory) userGradleFolder else rootProject.buildDir, "esbuild")
     val isWindows = org.apache.tools.ant.taskdefs.condition.Os.isFamily(org.apache.tools.ant.taskdefs.condition.Os.FAMILY_WINDOWS)
-    val esbuildCommand = File(esbuildFolder, if (isWindows) "esbuild.cmd" else "esbuild")
+    val esbuildCommand = File(esbuildFolder, if (isWindows) "esbuild.cmd" else "bin/esbuild")
     val esbuildCmd = if (isWindows) listOf("cmd.exe", "/c", esbuildCommand) else listOf(esbuildCommand)
 
-    val npmInstallEsbuild = "npmInstallEsbuild"
+    val npmInstallEsbuildTaskName = "npmInstallEsbuild"
 
     val env by lazy { org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin.apply(project.rootProject).requireConfigured() }
     val ENV_PATH by lazy {
@@ -28,23 +28,21 @@ fun Project.configureEsbuild() {
         "$NODE_PATH$PATH_SEPARATOR$OLD_PATH"
     }
 
-    if (rootProject.tasks.findByName(npmInstallEsbuild) == null) {
-        rootProject.tasks.createThis<Exec>(npmInstallEsbuild) {
-            dependsOn("kotlinNodeJsSetup")
-            onlyIf { !esbuildCommand.exists() }
+    val npmInstallEsbuild = rootProject.tasks.findByName(npmInstallEsbuildTaskName) ?: rootProject.tasks.createThis<Exec>(npmInstallEsbuildTaskName) {
+        dependsOn("kotlinNodeJsSetup")
+        onlyIf { !esbuildCommand.exists() }
 
-            val esbuildVersion = korge.esbuildVersion
-            doFirst {
-                val npmCmd = arrayOf(
-                    File(env.nodeExecutable),
-                    File(env.nodeDir, "lib/node_modules/npm/bin/npm-cli.js").takeIf { it.exists() }
-                        ?: File(env.nodeDir, "node_modules/npm/bin/npm-cli.js").takeIf { it.exists() }
-                        ?: error("Can't find npm-cli.js in ${env.nodeDir} standard folders")
-                )
+        val esbuildVersion = korge.esbuildVersion
+        doFirst {
+            val npmCmd = arrayOf(
+                File(env.nodeExecutable),
+                File(env.nodeDir, "lib/node_modules/npm/bin/npm-cli.js").takeIf { it.exists() }
+                    ?: File(env.nodeDir, "node_modules/npm/bin/npm-cli.js").takeIf { it.exists() }
+                    ?: error("Can't find npm-cli.js in ${env.nodeDir} standard folders")
+            )
 
-                environment("PATH", ENV_PATH)
-                commandLine(*npmCmd, "-g", "install", "esbuild@$esbuildVersion", "--prefix", esbuildFolder, "--scripts-prepend-node-path", "true")
-            }
+            environment("PATH", ENV_PATH)
+            commandLine(*npmCmd, "-g", "install", "esbuild@$esbuildVersion", "--prefix", esbuildFolder, "--scripts-prepend-node-path", "true")
         }
     }
 
@@ -72,7 +70,7 @@ fun Project.configureEsbuild() {
 
     val browserPrepareEsbuildPrepare = tasks.createThis<Task>("browserPrepareEsbuildPrepare") {
         dependsOn(browserEsbuildResources)
-        dependsOn("::npmInstallEsbuild")
+        dependsOn(npmInstallEsbuild)
     }
 
     val browserPrepareEsbuildDebug = tasks.createThis<Task>("browserPrepareEsbuildDebug") {
