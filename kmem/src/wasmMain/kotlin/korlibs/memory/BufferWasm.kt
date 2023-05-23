@@ -1,6 +1,7 @@
 package korlibs.memory
 
 import korlibs.memory.internal.*
+import korlibs.memory.wasm.*
 import org.khronos.webgl.*
 
 actual class Buffer(val dataView: DataView) {
@@ -40,7 +41,9 @@ actual fun Buffer(size: Int, direct: Boolean): Buffer {
 }
 actual fun Buffer(array: ByteArray, offset: Int, size: Int): Buffer {
     checkNBufferWrap(array, offset, size)
-    return Buffer(DataView(array.unsafeCast2<Int8Array>().buffer, offset, size))
+
+    //return Buffer(DataView(array.unsafeCast2<Int8Array>().buffer, offset, size))
+    return Buffer(DataView(array.toInt8Array().buffer, offset, size))
 }
 actual val Buffer.byteOffset: Int get() = this.dataView.byteOffset
 actual val Buffer.sizeInBytes: Int get() = this.dataView.byteLength
