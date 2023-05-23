@@ -21,8 +21,8 @@ data class BlendMode(
     val factors: AGBlending,
     val name: String? = null,
 ) {
-    val _hashCode: Int = factors.hashCode() + name.hashCode() * 7
-    override fun hashCode(): Int = _hashCode
+    val __hashCode: Int = factors.hashCode() + name.hashCode() * 7
+    override fun hashCode(): Int = __hashCode
     override fun equals(other: Any?): Boolean = (this === other) || (other is BlendMode && this.factors == other.factors && name == other.name)
     override fun toString(): String = name ?: super.toString()
 

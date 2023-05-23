@@ -373,7 +373,7 @@ object HtmlSimpleSound {
 	}
     */
 
-	suspend fun loadSound(data: ByteArray): AudioBuffer? = loadSound(data.unsafeCast<Int8Array>().buffer, "ByteArray")
+	suspend fun loadSound(data: ByteArray): AudioBuffer? = loadSound(data.unsafeCast2<Int8Array>().buffer, "ByteArray")
 
 	suspend fun loadSound(url: String): AudioBuffer? = loadSound(url.uniVfs.readBytes())
 
@@ -389,7 +389,7 @@ object HtmlSimpleSound {
 
             if (ctx != null) {
                 // If already created the audio context, we try to resume it
-                (window.unsafeCast<WindowWithGlobalAudioContext>()).globalAudioContext.unsafeCast<BaseAudioContext?>()?.resume()
+                (window.unsafeCast<WindowWithGlobalAudioContext>()).globalAudioContext.unsafeCast2<BaseAudioContext?>()?.resume()
 
                 val source = ctx.createBufferSource()
 
