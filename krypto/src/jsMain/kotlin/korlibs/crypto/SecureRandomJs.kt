@@ -25,5 +25,5 @@ actual fun fillRandomBytes(array: ByteArray) {
 }
 
 actual fun seedExtraRandomBytes(array: ByteArray) {
-    // No implementation for this?
+    seedExtraRandomBytesDefault(array)
 }

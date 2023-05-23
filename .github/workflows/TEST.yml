@@ -150,6 +150,21 @@ jobs:
       - { name: Testing NodeJS, run: ./gradlew jsNodeTest }
       - { name: Testing Browser, run: ./gradlew jsBrowserTest }
 
+  test-wasm:
+    needs: changes
+    if: ${{ needs.changes.outputs.testJs == 'true' }}
+    timeout-minutes: 240
+    runs-on: ubuntu-latest
+    steps:
+      - { uses: actions/checkout@v3 }
+      - { name: Set up JDK, uses: actions/setup-java@v3, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
+      - { name: Install freeglut3 & openal, run: sudo apt-get update && sudo apt-get -y install freeglut3-dev libopenal-dev }
+      - { name: Gradle cache, uses: ./.github/actions/gradle-cache }
+      - { name: Grant execute permission for gradlew, run: chmod +x gradlew }
+      - { name: Start gradle, run: ./gradlew }
+      #- { name: Testing NodeJS, run: ./gradlew wasmNodeTest }
+      - { name: Testing Browser, run: ./gradlew wasmBrowserTest }
+
   test-android:
     needs: changes
     if: ${{ needs.changes.outputs.testAndroid == 'true' }}
