@@ -23,6 +23,7 @@ jobs:
     outputs:
       testJvm: ${{ steps.filter.outputs.jvm == 'true' || steps.filter.outputs.all == 'true' }}
       testJs: ${{ steps.filter.outputs.js == 'true' || steps.filter.outputs.all == 'true' }}
+      testWasm: ${{ steps.filter.outputs.wasm == 'true' || steps.filter.outputs.all == 'true' }}
       testAndroid: ${{ steps.filter.outputs.android == 'true' || steps.filter.outputs.all == 'true' }}
       testWindows: ${{ steps.filter.outputs.windows == 'true' || steps.filter.outputs.native == 'true' || steps.filter.outputs.all == 'true' || steps.filter.outputs.jvm == 'true' }}
       testLinux: ${{ steps.filter.outputs.linux == 'true' || steps.filter.outputs.native == 'true' || steps.filter.outputs.all == 'true' || steps.filter.outputs.jvm == 'true' }}
@@ -56,6 +57,8 @@ jobs:
               - '**/src/main/**'
             js:
               - '**/src/js*/**'
+            wasm:
+              - '**/src/wasm*/**'
             native:
               - '**/src/native*/**'
               - '**/src/concurrent*/**'
@@ -152,7 +155,7 @@ jobs:
 
   test-wasm:
     needs: changes
-    if: ${{ needs.changes.outputs.testJs == 'true' }}
+    if: ${{ needs.changes.outputs.testWasm == 'true' }}
     timeout-minutes: 240
     runs-on: ubuntu-latest
     steps:
