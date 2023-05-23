@@ -3,6 +3,7 @@ package korlibs.image.format
 import korlibs.image.bitmap.Bitmap
 import korlibs.image.bitmap.Bitmap32
 import korlibs.image.color.RgbaArray
+import korlibs.io.util.*
 import korlibs.memory.internal.*
 import org.khronos.webgl.*
 import org.w3c.dom.CanvasRenderingContext2D
@@ -27,7 +28,7 @@ object HtmlImage {
 		canvas: HTMLCanvasElementLike
 	): HTMLCanvasElementLike {
 		val pixelCount = bmpData.size
-		val ctx = canvas.getContext("2d").unsafeCast2<CanvasRenderingContext2D>()
+		val ctx = canvas.getContext("2d")!!.unsafeCast<CanvasRenderingContext2D>()
 		val idata = ctx.createImageData(bmpWidth.toDouble(), bmpHeight.toDouble())
 		val idataData = idata.data
 		var m = 0
@@ -52,9 +53,9 @@ object HtmlImage {
 		val height = canvas.height
 		val len = width * height
         if (width <= 0 || height <= 0) return
-        val ctx = canvas.getContext("2d").unsafeCast2<CanvasRenderingContext2D>()
+        val ctx = canvas.getContext("2d")!!.unsafeCast<CanvasRenderingContext2D>()
         val data = ctx.getImageData(0.0, 0.0, width.toDouble(), height.toDouble())
-        val idata = Int32Array(data.data.buffer).unsafeCast2<IntArray>()
+        val idata = Int32Array(data.data.buffer).toIntArray()
         korlibs.memory.arraycopy(idata, 0, out.ints, 0, len)
         //console.log(out);
 	}
@@ -70,7 +71,7 @@ object HtmlImage {
 	fun htmlCanvasToDataUrl(canvas: HTMLCanvasElementLike): String = canvas.toDataURL()
 
 	fun htmlCanvasClear(canvas: HTMLCanvasElementLike) {
-		val ctx = canvas.getContext("2d").unsafeCast2<CanvasRenderingContext2D>()
+		val ctx = canvas.getContext("2d")!!.unsafeCast<CanvasRenderingContext2D>()
 		ctx.clearRect(
 			0.0, 0.0, canvas.width.toDouble(), canvas.height.toDouble()
 		)

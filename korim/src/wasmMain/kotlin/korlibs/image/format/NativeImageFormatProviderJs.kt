@@ -60,25 +60,27 @@ private fun bswap32(v: IntArray, offset: Int, size: Int) {
     for (n in offset until offset + size) v[n] = bswap32(v[n])
 }
 
-open class HtmlNativeImage(val texSourceBase: TexImageSource, width: Int, height: Int)
+external interface TexImageSourceJs : TexImageSource, JsAny
+
+open class HtmlNativeImage(val texSourceBase: TexImageSourceJs, width: Int, height: Int)
     : NativeImage(width, height, texSourceBase, premultiplied = true) {
 	override val name: String get() = "HtmlNativeImage"
-    var texSource: TexImageSource = texSourceBase
+    var texSource: TexImageSourceJs = texSourceBase
         private set
-	val element: HTMLElement get() = texSource.unsafeCast2<HTMLElement>()
+	val element: HTMLElement get() = texSource.unsafeCast<HTMLElement>()
 
 	constructor(img: HTMLImageElementLike) : this(img, img.width, img.height)
 	constructor(canvas: HTMLCanvasElementLike) : this(canvas, canvas.width, canvas.height)
 
     val lazyCanvasElement: HTMLCanvasElementLike by lazy {
-        if (texSource.unsafeCast2<HTMLImageElementLike>().src != null) {
-            BrowserImage.imageToCanvas(texSource.unsafeCast2<HTMLImageElementLike>(), width, height)
+        if (texSource.unsafeCast<HTMLImageElementLike>().src != null) {
+            BrowserImage.imageToCanvas(texSource.unsafeCast<HTMLImageElementLike>(), width, height)
         } else {
-            texSource.unsafeCast2<HTMLCanvasElementLike>()
+            texSource.unsafeCast<HTMLCanvasElementLike>()
         }.also { texSource = it }
 	}
 
-    val ctx: CanvasRenderingContext2D by lazy { lazyCanvasElement.getContext("2d").unsafeCast2<CanvasRenderingContext2D>() }
+    val ctx: CanvasRenderingContext2D by lazy { lazyCanvasElement.getContext("2d")!!.unsafeCast<CanvasRenderingContext2D>() }
 
     private var lastRefresh = 0.0.milliseconds
     override fun readPixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: IntArray, offset: Int) {
@@ -96,7 +98,7 @@ open class HtmlNativeImage(val texSourceBase: TexImageSource, width: Int, height
             }
         }
         val idata = ctx.getImageData(x.toDouble(), y.toDouble(), width.toDouble(), height.toDouble())
-        val data = idata.data.buffer.asInt32Array().unsafeCast2<IntArray>()
+        val data = idata.data.buffer.asInt32Array().toIntArray()
         arraycopy(data, 0, out, offset, size)
         if (isBigEndian) bswap32(out, offset, size)
         if (!asumePremultiplied) {
@@ -108,7 +110,7 @@ open class HtmlNativeImage(val texSourceBase: TexImageSource, width: Int, height
         if (width <= 0 || height <= 0) return
         val size = width * height
         val idata = ctx.createImageData(width.toDouble(), height.toDouble())
-        val data = idata.data.buffer.asInt32Array().unsafeCast2<IntArray>()
+        val data = idata.data.buffer.asInt32Array().toIntArray()
         arraycopy(out, offset, data, 0, size)
         if (!asumePremultiplied) {
             depremultiply(RgbaPremultipliedArray(data), 0, RgbaArray(data), 0, width * height)
@@ -185,6 +187,8 @@ object HtmlNativeImageFormatProvider : NativeImageFormatProvider() {
 @JsFun("(ba) => { return (Buffer.from(ba.buffer)); }")
 private external fun toNodeJsBuffer(@Suppress("UNUSED_PARAMETER") ba: Int8Array): JsAny?
 
+external interface CanvasImageSourceJs : CanvasImageSource, JsAny
+
 // @TODO: BrowserImage and HtmlImage should be combined!
 @Suppress("unused")
 object BrowserImage {
@@ -206,9 +210,9 @@ object BrowserImage {
     fun imageToCanvas(img: HTMLImageElementLike, width: Int, height: Int): HTMLCanvasElementLike {
         val canvas = HtmlCanvas.createCanvas(width, height)
         //println("[onload.b]")
-        val ctx: CanvasRenderingContext2D = canvas.getContext("2d").unsafeCast2<CanvasRenderingContext2D>()
+        val ctx: CanvasRenderingContext2D = canvas.getContext("2d")!!.unsafeCast<CanvasRenderingContext2D>()
         //println("[onload.c]")
-        ctx.drawImage(img.unsafeCast2<CanvasImageSource>(), 0.0, 0.0)
+        ctx.drawImage(img.unsafeCast<CanvasImageSourceJs>(), 0.0, 0.0)
         return canvas
     }
 
@@ -244,7 +248,7 @@ class CanvasContext2dRenderer(private val canvas: HTMLCanvasElementLike) : Rende
 	override val width: Int get() = canvas.width.toInt()
 	override val height: Int get() = canvas.height.toInt()
 
-	val ctx = canvas.getContext("2d").unsafeCast2<CanvasRenderingContext2DEx>()
+	val ctx = canvas.getContext("2d")!!.unsafeCast<CanvasRenderingContext2DEx>()
 
     fun CanvasGradient.addColors(paint: GradientPaint): CanvasGradient {
         val grad = this
@@ -277,7 +281,7 @@ class CanvasContext2dRenderer(private val canvas: HTMLCanvasElementLike) : Rende
 				}
 			}
 			is BitmapPaint -> {
-				ctx.createPattern(this.bitmap.toHtmlNative().texSource.unsafeCast2<CanvasImageSource>(), when {
+				ctx.createPattern(this.bitmap.toHtmlNative().texSource.unsafeCast<CanvasImageSourceJs>(), when {
                     repeatX && repeatY -> "repeat"
                     repeatX -> "repeat-x"
                     repeatY -> "repeat-y"
@@ -389,7 +393,7 @@ class CanvasContext2dRenderer(private val canvas: HTMLCanvasElementLike) : Rende
 		try {
 			transform.run { ctx.setTransform(a.toDouble(), b.toDouble(), c.toDouble(), d.toDouble(), tx.toDouble(), ty.toDouble()) }
 			ctx.drawImage(
-				(image.ensureNative() as HtmlNativeImage).texSource.unsafeCast2<CanvasImageSource>(),
+				(image.ensureNative() as HtmlNativeImage).texSource.unsafeCast<CanvasImageSourceJs>(),
                 pos.xD, pos.yD, size.widthD, size.heightD
 			)
 		} finally {

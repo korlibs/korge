@@ -7,15 +7,17 @@ import org.w3c.dom.*
 import org.w3c.files.*
 import kotlinx.browser.*
 
-external interface HTMLCanvasElementLike : JsAny, TexImageSource {
+external interface RenderingContextJs : RenderingContext, JsAny
+
+external interface HTMLCanvasElementLike : TexImageSourceJs {
     val width: Int
     val height: Int
-    fun getContext(contextId: String, vararg arguments: JsAny?): RenderingContext?
+    fun getContext(contextId: String, vararg arguments: JsAny?): RenderingContextJs?
     fun toDataURL(type: String = definedExternally, quality: JsAny? = definedExternally): String
     fun toBlob(_callback: (Blob?) -> Unit, type: String = definedExternally, quality: JsAny? = definedExternally): Unit
 }
 
-external interface HTMLImageElementLike : TexImageSource, JsAny {
+external interface HTMLImageElementLike : TexImageSourceJs {
     val width: Int
     val height: Int
     val src: String?
