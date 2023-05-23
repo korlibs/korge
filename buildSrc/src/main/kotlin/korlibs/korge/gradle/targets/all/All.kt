@@ -26,7 +26,7 @@ object AddFreeCompilerArgs {
                     add("-Xskip-prerelease-check")
                 }
                 add("-Xno-param-assertions")
-                add("-Xopt-in=kotlinx.cinterop.ExperimentalForeignApi")
+                add("-opt-in=kotlinx.cinterop.ExperimentalForeignApi")
             }
         }
     }

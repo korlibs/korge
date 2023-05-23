@@ -22,7 +22,7 @@ fun Project.configureAndroidDirect(projectType: ProjectType, isKorge: Boolean) {
 
     //val android = project.extensions.getByName("android")
 
-    project.kotlin.android().apply {
+    project.kotlin.androidTarget().apply {
         publishAllLibraryVariants()
         publishLibraryVariantsGroupedByFlavor = true
         //this.attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.androidJvm)
@@ -41,6 +41,8 @@ fun Project.configureAndroidDirect(projectType: ProjectType, isKorge: Boolean) {
     //val generated = AndroidGenerated(korge)
 
     dependencies {
+        add("androidUnitTestImplementation", "org.jetbrains.kotlin:kotlin-test")
+        add("androidTestImplementation", "org.jetbrains.kotlin:kotlin-test")
         add("androidTestImplementation", "androidx.test:core:1.4.0")
         add("androidTestImplementation", "androidx.test.ext:junit:1.1.2")
         add("androidTestImplementation", "androidx.test.espresso:espresso-core:3.3.0")
