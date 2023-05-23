@@ -344,8 +344,8 @@ object RootKorlibsPlugin {
                             //this.
                             //this.applyBinaryen()
                             //nodejs { commonWebpackConfig { experiments = mutableSetOf("topLevelAwait") } }
-                            browser { commonWebpackConfig { experiments = mutableSetOf("topLevelAwait") } }
-                            //browser()
+                            //browser { commonWebpackConfig { experiments = mutableSetOf("topLevelAwait") } }
+                            browser()
                         }
                     }
                     js(org.jetbrains.kotlin.gradle.plugin.KotlinJsCompilerType.IR) {
