@@ -61,7 +61,7 @@ class AGMetal(private val view: MTKView) : AG() {
 
                 var currentBuffer = 0uL
                 vertexData.list.fastForEach{ buffer ->
-                    setVertexBuffer(buffer.buffer.toMetal.buffer, 0, currentBuffer)
+                    setVertexBuffer(buffer.buffer.toMetal.buffer, 0.convert(), currentBuffer)
                     currentBuffer += 1uL
                 }
 
@@ -79,7 +79,7 @@ class AGMetal(private val view: MTKView) : AG() {
                 //}
 
                 if (indices != null) {
-                    drawIndexedPrimitives(drawType.toMetal(), vertexCount.toULong(), indexType.toMetal(), indices.toMetal.buffer, 0)
+                    drawIndexedPrimitives(drawType.toMetal(), vertexCount.toULong(), indexType.toMetal(), indices.toMetal.buffer, 0.convert())
                 } else {
                     TODO("Not yet supported, rendering without vertex indexes")
                 }

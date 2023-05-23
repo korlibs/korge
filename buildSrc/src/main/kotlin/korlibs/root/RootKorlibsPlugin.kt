@@ -328,7 +328,6 @@ object RootKorlibsPlugin {
                     jvm {
                         compilations.allThis {
                             kotlinOptions.jvmTarget = ANDROID_JAVA_VERSION_STR
-                            compilerOptions.options.freeCompilerArgs.add("-Xno-param-assertions")
                             //kotlinOptions.freeCompilerArgs.add("-Xno-param-assertions")
                             //kotlinOptions.
 
@@ -338,6 +337,7 @@ object RootKorlibsPlugin {
                             // java.lang.AssertionError: expected:<null> but was:<mydata-111>
                             //kotlinOptions.useIR = true
                         }
+                        AddFreeCompilerArgs.addFreeCompilerArgs(project, this)
                     }
                     if (project.findProperty("enable.wasm") == "true") {
                         wasm {
