@@ -78,7 +78,7 @@ jobs:
   test-jvm:
     needs: changes
     if: ${{ needs.changes.outputs.testJvm == 'true' }}
-    timeout-minutes: 120
+    timeout-minutes: 240
     runs-on: ubuntu-latest
     env:
       ENABLE_BENCHMARKS: true
@@ -106,7 +106,7 @@ jobs:
   test-coverage:
     needs: changes
     if: ${{ needs.changes.outputs.testJvm == 'true' }}
-    timeout-minutes: 120
+    timeout-minutes: 240
     runs-on: ubuntu-latest
     env:
       DISABLE_HEADLESS_TEST: true
@@ -138,7 +138,7 @@ jobs:
   test-js:
     needs: changes
     if: ${{ needs.changes.outputs.testJs == 'true' }}
-    timeout-minutes: 120
+    timeout-minutes: 240
     runs-on: ubuntu-latest
     steps:
       - { uses: actions/checkout@v3 }
@@ -150,11 +150,10 @@ jobs:
       - { name: Testing NodeJS, run: ./gradlew jsNodeTest }
       - { name: Testing Browser, run: ./gradlew jsBrowserTest }
 
-
   test-android:
     needs: changes
     if: ${{ needs.changes.outputs.testAndroid == 'true' }}
-    timeout-minutes: 120
+    timeout-minutes: 240
     runs-on: macos-11
     #runs-on: ubuntu-latest
     steps:
@@ -175,7 +174,7 @@ jobs:
   test-native-ios:
     needs: changes
     if: ${{ needs.changes.outputs.testIos == 'true' }}
-    timeout-minutes: 120
+    timeout-minutes: 240
     runs-on: macos-11
     steps:
     - { uses: actions/checkout@v3 }
@@ -194,7 +193,7 @@ jobs:
   test-native-linux:
     needs: changes
     if: ${{ needs.changes.outputs.testLinux == 'true' }}
-    timeout-minutes: 120
+    timeout-minutes: 240
     runs-on: ubuntu-latest
     steps:
     - { uses: actions/checkout@v3 }
@@ -212,11 +211,13 @@ jobs:
     - { name: e2e test native, working-directory: e2e-test, run: ./gradlew checkReferencesNative --stacktrace }
     - { name: Archive E2E Test Results, if: failure(), uses: actions/upload-artifact@v3, with: { name: e2e-test-results-linux, retention-days: 21, path: "**/e2e-test/build/screenshots", if-no-files-found: ignore } }
     - { name: Testing Linux Arm64 Publishing, run: ./gradlew publishLinuxArm64PublicationToMavenLocal }
+    - { name: Publish JS, run: ./gradlew publishJsPublicationToMavenLocal }
+    - { name: e2e test JS, working-directory: e2e-test, run: ./gradlew browserReleaseEsbuild --stacktrace }
 
   test-native-macos:
     needs: changes
     if: ${{ needs.changes.outputs.testMacos == 'true' }}
-    timeout-minutes: 120
+    timeout-minutes: 240
     runs-on: macos-11
     #env:
     #  DISABLE_HEADLESS_TEST: true
@@ -234,11 +235,13 @@ jobs:
     - { name: e2e test, working-directory: e2e-test, run: ./gradlew checkReferencesNative --stacktrace }
     - { name: Archive E2E Test Results, if: failure(), uses: actions/upload-artifact@v3, with: { name: e2e-test-results-macos, retention-days: 21, path: "**/e2e-test/build/screenshots", if-no-files-found: ignore } }
     - { name: Publish Arm64, run: ./gradlew publishMacosArm64PublicationToMavenLocal }
+    - { name: Publish JS, run: ./gradlew publishJsPublicationToMavenLocal }
+    - { name: e2e test JS, working-directory: e2e-test, run: ./gradlew browserReleaseEsbuild --stacktrace }
 
   test-native-windows:
     needs: changes
     if: ${{ needs.changes.outputs.testWindows == 'true' }}
-    timeout-minutes: 120
+    timeout-minutes: 240
     runs-on: windows-latest
     env:
       DISABLE_JAVASCRIPT_TEST: true
@@ -258,3 +261,5 @@ jobs:
     - { name: Publish X64, shell: cmd, run: CALL gradlew.bat publishMingwX64PublicationToMavenLocal publishKotlinMultiplatformPublicationToMavenLocal }
     - { name: e2e test, shell: cmd, working-directory: e2e-test, run: CALL gradlew.bat checkReferencesNative --stacktrace }
     - { name: Archive E2E Test Results, if: failure(), uses: actions/upload-artifact@v3, with: { name: e2e-test-results-windows, retention-days: 21, path: "**/e2e-test/build/screenshots", if-no-files-found: ignore } }
+    - { name: Publish JS, run: ./gradlew publishJsPublicationToMavenLocal }
+    - { name: e2e test JS, working-directory: e2e-test, run: ./gradlew browserReleaseEsbuild --stacktrace }

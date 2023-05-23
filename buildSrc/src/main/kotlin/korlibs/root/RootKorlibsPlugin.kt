@@ -587,123 +587,6 @@ object RootKorlibsPlugin {
             project.apply {
 
                 project.tasks {
-                    // esbuild
-                    run {
-
-                        val userGradleFolder = File(System.getProperty("user.home"), ".gradle")
-
-                        val esbuildVersion = KorgeExtension.ESBUILD_DEFAULT_VERSION
-                        val wwwFolder = File(buildDir, "www")
-
-                        val esbuildFolder = File(if (userGradleFolder.isDirectory) userGradleFolder else rootProject.buildDir, "esbuild")
-                        val isWindows = org.apache.tools.ant.taskdefs.condition.Os.isFamily(org.apache.tools.ant.taskdefs.condition.Os.FAMILY_WINDOWS)
-                        val esbuildCmdUnix = File(esbuildFolder, "bin/esbuild")
-                        val esbuildCmdCheck = if (isWindows) File(esbuildFolder, "esbuild.cmd") else esbuildCmdUnix
-                        val esbuildCmd = if (isWindows) File(esbuildFolder, "node_modules/esbuild/esbuild.exe") else esbuildCmdUnix
-
-                        val npmInstallEsbuild = "npmInstallEsbuild"
-
-                        val env by lazy { org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin.apply(project.rootProject).requireConfigured() }
-                        val ENV_PATH by lazy {
-                            val NODE_PATH = File(env.nodeExecutable).parent
-                            val PATH_SEPARATOR = File.pathSeparator
-                            val OLD_PATH = System.getenv("PATH")
-                            "$NODE_PATH$PATH_SEPARATOR$OLD_PATH"
-                        }
-
-                        if (rootProject.tasks.findByName(npmInstallEsbuild) == null) {
-                            rootProject.tasks.createThis<Exec>(npmInstallEsbuild) {
-                                dependsOn("kotlinNodeJsSetup")
-                                onlyIf { !esbuildCmdCheck.exists() && !esbuildCmd.exists() }
-
-                                val esbuildVersion = esbuildVersion
-                                doFirst {
-                                    val npmCmd = arrayOf(
-                                        File(env.nodeExecutable),
-                                        File(env.nodeDir, "lib/node_modules/npm/bin/npm-cli.js").takeIf { it.exists() }
-                                            ?: File(env.nodeDir, "node_modules/npm/bin/npm-cli.js").takeIf { it.exists() }
-                                            ?: error("Can't find npm-cli.js in ${env.nodeDir} standard folders")
-                                    )
-
-                                    environment("PATH", ENV_PATH)
-                                    commandLine(
-                                        *npmCmd,
-                                        "-g",
-                                        "install",
-                                        "esbuild@$esbuildVersion",
-                                        "--prefix",
-                                        esbuildFolder,
-                                        "--scripts-prepend-node-path",
-                                        "true"
-                                    )
-                                }
-                            }
-                        }
-
-                        afterEvaluate {
-                            val browserEsbuildResources = tasks.createThis<Copy>("browserEsbuildResources") {
-                                duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-                                from(project.tasks.getByName("jsProcessResources").outputs.files)
-                                afterEvaluate {
-                                    //project.tasks.findByName(getKorgeProcessResourcesTaskName("js", "main"))?.outputs?.files?.let { from(it) }
-                                }
-                                //for (sourceSet in gkotlin.js().compilations.flatMap { it.kotlinSourceSets }) from(sourceSet.resources)
-                                into(wwwFolder)
-                            }
-                            val compileDevelopmentExecutableKotlinJs = "compileDevelopmentExecutableKotlinJs"
-                            for (variant in listOf("", "Debug")) {
-                                val runJs = createThis<Exec>("runJs$variant") {
-                                    group = "run"
-                                    //dependsOn("jsBrowserDevelopmentRun")
-                                    dependsOn(browserEsbuildResources)
-                                    dependsOn("::$npmInstallEsbuild")
-                                    dependsOn(compileDevelopmentExecutableKotlinJs)
-                                    //task.dependsOn(browserPrepareEsbuild)
-
-                                    val compileDevelopmentExecutableKotlinJsTask =
-                                        project.tasks.getByName(compileDevelopmentExecutableKotlinJs) as KotlinJsIrLink
-                                    //println("compileDevelopmentExecutableKotlinJs=$compileDevelopmentExecutableKotlinJsTask :: ${compileDevelopmentExecutableKotlinJsTask::class}")
-                                    //println(compileDevelopmentExecutableKotlinJsTask.outputFileProperty.get())
-                                    val jsPath = compileDevelopmentExecutableKotlinJsTask.outputFileProperty.get()
-
-                                    val output = File(wwwFolder, "${project.name}.js")
-                                    inputs.file(jsPath)
-                                    outputs.file(output)
-                                    //task.environment("PATH", ENV_PATH)
-                                    commandLine(ArrayList<Any>().apply {
-                                        add(esbuildCmd)
-                                        //add("--watch",)
-                                        add("--bundle")
-                                        //add("--minify")
-                                        //add("--sourcemap=external")
-                                        add(jsPath)
-                                        add("--outfile=$output")
-                                        // @TODO: Close this command on CTRL+C
-                                        //if (run) add("--servedir=$wwwFolder")
-                                    })
-
-                                    doLast {
-                                        runServer(!project.gradle.startParameter.isContinuous, debug = variant == "Debug")
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    val runJsWebpack = createThis<Task>("runJsWebpack") {
-                        group = "run"
-                        //dependsOn("jsBrowserDevelopmentRun")
-                        dependsOn("jsBrowserProductionRun")
-                    }
-
-                    val runNativeDebug = createThis<Task>("runNativeDebug") {
-                        group = "run"
-                        dependsOnNativeTask("Debug")
-                    }
-                    val runNativeRelease = createThis<Task>("runNativeRelease") {
-                        group = "run"
-                        dependsOnNativeTask("Release")
-                    }
                     if (!isWindows) {
                         afterEvaluate {
                             for (type in CrossExecType.VALID_LIST) {
@@ -855,6 +738,9 @@ object RootKorlibsPlugin {
                     }
                 }
             }
+
+            project.configureEsbuild()
+            project.configureJavascriptRun()
         }
     }
 
