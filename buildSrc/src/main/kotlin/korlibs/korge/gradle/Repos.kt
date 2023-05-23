@@ -23,6 +23,7 @@ fun Project.configureRepositories() {
             maven { it.url = uri("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/temporary") }
             maven { it.url = uri("https://maven.pkg.jetbrains.space/public/p/kotlinx-coroutines/maven") }
         }
+        maven { it.url = uri("https://maven.pkg.jetbrains.space/kotlin/p/wasm/experimental") }
         //println("kotlinVersion=$kotlinVersion")
 	}
 }
