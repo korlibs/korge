@@ -9,7 +9,7 @@ import kotlinx.browser.window
 private external val process: dynamic
 
 private val isNode = jsTypeOf(window) == "undefined"
-private val initialHrTime by klockAtomicLazy { process.hrtime() }
+private val initialHrTime by lazy { process.hrtime() }
 
 internal actual object KlockInternal {
     actual val currentTime: Double get() = (js("Date.now()").unsafeCast<Double>())

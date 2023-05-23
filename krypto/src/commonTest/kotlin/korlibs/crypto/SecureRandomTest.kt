@@ -1,6 +1,7 @@
 package korlibs.crypto
 
 import kotlin.test.Test
+import kotlin.test.Ignore
 import kotlin.test.assertNotEquals
 
 class SecureRandomTest {

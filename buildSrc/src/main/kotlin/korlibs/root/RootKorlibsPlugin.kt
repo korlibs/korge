@@ -339,6 +339,14 @@ object RootKorlibsPlugin {
                         }
                         AddFreeCompilerArgs.addFreeCompilerArgs(project, this)
                     }
+                    if (project.findProperty("enable.wasm") == "true") {
+                        wasm {
+                            //this.
+                            //this.applyBinaryen()
+                            //nodejs { commonWebpackConfig { experiments = mutableSetOf("topLevelAwait") } }
+                            browser { commonWebpackConfig { experiments = mutableSetOf("topLevelAwait") } }
+                        }
+                    }
                     js(org.jetbrains.kotlin.gradle.plugin.KotlinJsCompilerType.IR) {
                         browser {
                             compilations.allThis {
@@ -416,6 +424,16 @@ object RootKorlibsPlugin {
                                     implementation(kotlin("test-js"))
                                 } else {
                                     implementation(kotlin("stdlib-js"))
+                                }
+                            }
+                        }
+
+                        val wasm = createPairSourceSet("wasm", common) { test ->
+                            dependencies {
+                                if (test) {
+                                    implementation(kotlin("test-wasm"))
+                                } else {
+                                    implementation(kotlin("stdlib-wasm"))
                                 }
                             }
                         }
