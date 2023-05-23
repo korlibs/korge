@@ -5,7 +5,7 @@ import korlibs.korge.view.*
 import korlibs.render.*
 
 actual class NativeStorage actual constructor(val views: Views) : IStorageWithKeys {
-    private val context = (views.gameWindow as AndroidGameWindow).androidContext
+    private val context = views.gameWindow.gameWindowAndroidContext
     private val preferences = context.getSharedPreferences("KorgeNativeStorage", Context.MODE_PRIVATE)
 
     private inline fun edit(block: SharedPreferences.Editor.() -> Unit) {
@@ -16,7 +16,7 @@ actual class NativeStorage actual constructor(val views: Views) : IStorageWithKe
     }
 
     override fun toString(): String = "NativeStorage(${toMap()})"
-    actual override fun keys(): List<String> = preferences.getAll().keys.toList()
+    actual override fun keys(): List<String> = preferences.all.keys.toList()
 
     actual override fun set(key: String, value: String) {
         edit { putString(key, value) }
@@ -29,6 +29,6 @@ actual class NativeStorage actual constructor(val views: Views) : IStorageWithKe
 	}
 
 	actual override fun removeAll() {
-        edit { removeAll() }
+        edit { super.removeAll() }
 	}
 }

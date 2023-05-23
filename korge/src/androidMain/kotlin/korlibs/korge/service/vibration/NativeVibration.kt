@@ -5,6 +5,7 @@ import android.os.*
 import korlibs.time.*
 import korlibs.korge.android.*
 import korlibs.korge.view.*
+import korlibs.render.*
 import kotlin.math.*
 
 actual class NativeVibration actual constructor(views: Views) {

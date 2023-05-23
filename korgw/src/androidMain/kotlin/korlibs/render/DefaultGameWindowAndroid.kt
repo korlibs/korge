@@ -11,11 +11,17 @@ import kotlin.coroutines.*
 
 actual fun CreateDefaultGameWindow(config: GameWindowCreationConfig): GameWindow = TODO()
 
+interface AndroidContextHolder {
+    val androidContext: Context
+}
+
 abstract class BaseAndroidGameWindow(
     val config: GameWindowCreationConfig = GameWindowCreationConfig(),
-) : GameWindow() {
-    abstract val androidContext: Context
+) : GameWindow(), AndroidContextHolder {
+    abstract override val androidContext: Context
     abstract val androidView: View
+
+    override val androidContextAny: Any? get() = androidContext
 
     // @TODO: Cache somehow?
     override val pixelsPerInch: Float get() = androidContext.resources.displayMetrics.xdpi
@@ -89,6 +95,8 @@ abstract class BaseAndroidGameWindow(
     //    return result!!.getOrThrow()
     //}
 }
+
+val GameWindow.gameWindowAndroidContext: Context get() = androidContextAny as Context
 
 class AndroidGameWindow(val activity: KorgwActivity, config: GameWindowCreationConfig = activity.config) : BaseAndroidGameWindow(config) {
     override val androidContext get() = activity

@@ -21,6 +21,8 @@ import kotlinx.coroutines.*
 import kotlin.coroutines.*
 import kotlin.jvm.*
 
+expect fun enrichTestGameWindow(window: ViewsForTesting.TestGameWindow)
+
 open class ViewsForTesting(
     val frameTime: TimeSpan = 10.milliseconds,
     val windowSize: Size = DefaultViewport.SIZE,
@@ -38,6 +40,7 @@ open class ViewsForTesting(
     }
 	val dispatcher = FastGameWindowCoroutineDispatcher()
     inner class TestGameWindow(initialSize: Size, val dispatcher: FastGameWindowCoroutineDispatcher) : GameWindowLog() {
+        override var androidContextAny: Any? = null
         override val devicePixelRatio: Float get() = this@ViewsForTesting.devicePixelRatio
         override var width: Int = initialSize.width.toInt()
         override var height: Int = initialSize.height.toInt()
@@ -47,7 +50,9 @@ open class ViewsForTesting(
         return kind != AGBaseLog.Kind.SHADER
     }
 
-	val gameWindow = TestGameWindow(windowSize, dispatcher)
+	val gameWindow = TestGameWindow(windowSize, dispatcher).also {
+        enrichTestGameWindow(it)
+    }
     val ag: AG by lazy {
         createAg().also {
             it.mainFrameBuffer.setSize(0, 0, windowSize.width.toInt(), windowSize.height.toInt())
