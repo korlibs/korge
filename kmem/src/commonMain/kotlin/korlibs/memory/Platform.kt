@@ -42,11 +42,11 @@ interface Platform {
     val isNativeDesktop: Boolean get() = isNative && os.isDesktop
     val isJvm: Boolean get() = runtime.isJvm
 
-    val isJsShell: Boolean get() = rawPlatformName == "js-shell"
-    val isJsNodeJs: Boolean get() = rawPlatformName == "js-node"
-    val isJsDenoJs: Boolean get() = rawPlatformName == "js-deno"
-    val isJsBrowser: Boolean get() = rawPlatformName == "js-web"
-    val isJsWorker: Boolean get() = rawPlatformName == "js-worker"
+    val isJsShell: Boolean get() = rawPlatformName == "js-shell" || rawPlatformName == "wasm-shell"
+    val isJsNodeJs: Boolean get() = rawPlatformName == "js-node" || rawPlatformName == "wasm-node"
+    val isJsDenoJs: Boolean get() = rawPlatformName == "js-deno" || rawPlatformName == "wasm-deno"
+    val isJsBrowser: Boolean get() = rawPlatformName == "js-web" || rawPlatformName == "wasm-web"
+    val isJsWorker: Boolean get() = rawPlatformName == "js-worker" || rawPlatformName == "wasm-worker"
     val isJsBrowserOrWorker: Boolean get() = isJsBrowser || isJsWorker
 
 

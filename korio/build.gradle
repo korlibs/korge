@@ -1,7 +1,7 @@
 description = "I/O utilities for Kotlin"
 
 dependencies {
-	add("commonMainApi", libs.kotlinx.coroutines.core)
+    add("commonMainApi", project(":korcoutines"))
     add("commonMainApi", project(":klock"))
 	add("commonMainApi", project(":kds"))
 	add("commonMainApi", project(":kmem"))

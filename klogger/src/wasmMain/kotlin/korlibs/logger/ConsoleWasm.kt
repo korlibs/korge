@@ -2,10 +2,10 @@ package korlibs.logger
 
 @JsName("Console")
 internal open external class JsConsole {
-    fun error(vararg msg: Any?)
-    fun warn(vararg msg: Any?)
-    fun info(vararg msg: Any?)
-    fun log(vararg msg: Any?)
+    fun error(vararg msg: String)
+    fun warn(vararg msg: String)
+    fun info(vararg msg: String)
+    fun log(vararg msg: String)
 }
 
 internal external val console: JsConsole /* compiled code */
@@ -13,12 +13,12 @@ internal external val console: JsConsole /* compiled code */
 actual object Console : BaseConsole() {
     override fun logInternal(kind: Kind, vararg msg: Any?) {
         when (kind) {
-            Kind.ERROR -> console.error(*msg)
-            Kind.WARN -> console.warn(*msg)
-            Kind.INFO -> console.info(*msg)
-            Kind.DEBUG -> console.log(*msg)
-            Kind.TRACE -> console.log(*msg)
-            Kind.LOG -> console.log(*msg)
+            Kind.ERROR -> console.error(*msg.map { it.toString() }.toTypedArray())
+            Kind.WARN -> console.warn(*msg.map { it.toString() }.toTypedArray())
+            Kind.INFO -> console.info(*msg.map { it.toString() }.toTypedArray())
+            Kind.DEBUG -> console.log(*msg.map { it.toString() }.toTypedArray())
+            Kind.TRACE -> console.log(*msg.map { it.toString() }.toTypedArray())
+            Kind.LOG -> console.log(*msg.map { it.toString() }.toTypedArray())
         }
     }
 }
