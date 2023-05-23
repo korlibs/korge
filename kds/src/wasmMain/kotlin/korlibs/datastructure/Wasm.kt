@@ -94,26 +94,54 @@ actual inline fun <K, V> FastIdentityMap<K, V>.fastKeyForEach(callback: (key: K)
 
 //////////////
 
-@JsName("WeakMap")
-external class JsWeakMap {
-    fun has(k: Any?): Boolean
-    fun set(k: Any?, v: Any?): Unit
-    fun get(k: Any?): Any?
-    fun delete(k: Any?)
-}
+//@JsName("WeakMap")
+//external class JsWeakMap {
+//}
+//
+//@JsFun("(map, k) => { return map.has(k); }")
+//external fun JsWeakMap_has(map: JsWeakMap, k: Any?): Boolean
+//
+//@JsFun("(map, k) => { map.delete(k); }")
+//external fun JsWeakMap_delete(map: JsWeakMap, k: Any?)
+//
+//@JsFun("(map, k) => { return map.has(k); }")
+//external fun JsWeakMap_get(map: JsWeakMap, k: Any?): Any?
+//
+//@JsFun("(map, k, v) => { map.set(k, v); }")
+//external fun JsWeakMap_set(map: JsWeakMap, k: Any?, v: Any?): Boolean
+//actual class WeakMap<K : Any, V> {
+//    val wm = JsWeakMap()
+//
+//    actual operator fun contains(key: K): Boolean = JsWeakMap_has(wm, key)
+//    actual operator fun set(key: K, value: V) {
+//        if (key is String) error("Can't use String as WeakMap keys")
+//        JsWeakMap_set(wm, key, value)
+//    }
+//
+//    actual operator fun get(key: K): V? = JsWeakMap_get(wm, key).fastCastTo<V?>()
+//    actual fun remove(key: K) {
+//        JsWeakMap_delete(wm, key)
+//    }
+//
+//}
 
+// @TODO:
 actual class WeakMap<K : Any, V> {
-    val wm = JsWeakMap()
+    val wm = HashMap<K, V>()
 
-    actual operator fun contains(key: K): Boolean = wm.has(key)
-    actual operator fun set(key: K, value: V) {
-        if (key is String) error("Can't use String as WeakMap keys")
-        wm.set(key, value)
+    init {
+        println("WARNING! WeakMap not implemented in WASM just yet!")
     }
 
-    actual operator fun get(key: K): V? = wm.get(key).fastCastTo<V?>()
+    actual operator fun contains(key: K): Boolean = wm.contains(key)
+    actual operator fun set(key: K, value: V) {
+        if (key is String) error("Can't use String as WeakMap keys")
+        wm[key] = value
+    }
+
+    actual operator fun get(key: K): V? = wm[key]
     actual fun remove(key: K) {
-        wm.delete(key)
+        wm.remove(key)
     }
 
 }

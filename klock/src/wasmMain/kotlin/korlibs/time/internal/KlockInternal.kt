@@ -6,11 +6,16 @@ import korlibs.time.hr.HRTimeSpan
 import korlibs.time.minutes
 import kotlinx.browser.window
 
+private external class HRTime
+
+@JsFun("(time, index) => { return time[index] }")
+private external fun HRTime_get(time: HRTime, index: Int): Double
+
 @JsFun("() => { return process.hrtime(); }")
-private external fun process_hrtime(): Array<Double>
+private external fun process_hrtime(): HRTime
 
 @JsFun("(relative) => { return process.hrtime(relative); }")
-private external fun process_hrtime(relative: Array<Double>): Array<Double>
+private external fun process_hrtime(relative: HRTime): HRTime
 
 @JsFun("() => { return (typeof process === 'object' && typeof require === 'function'); }")
 private external fun isNodeJs(): Boolean
@@ -28,8 +33,8 @@ internal actual object KlockInternal {
 
     actual val hrNow: HRTimeSpan get() = when {
         isNodeJs() -> {
-            val result: Array<Double> = process_hrtime(initialHrTime)
-            HRTimeSpan.fromSeconds(result[0]) + HRTimeSpan.fromNanoseconds(result[1])
+            val result: HRTime = process_hrtime(initialHrTime)
+            HRTimeSpan.fromSeconds(HRTime_get(result, 0)) + HRTimeSpan.fromNanoseconds(HRTime_get(result, 1))
         }
         else -> {
             HRTimeSpan.fromMilliseconds(window.performance.now())
