@@ -6,31 +6,26 @@ import korlibs.datastructure.internal.*
 
 actual inline fun <T> Any?.fastCastTo(): T = this as T
 
-@JsName("Map")
-internal external class JsMap {
-    val size: Int
-    fun keys(): Array<String>
-    operator fun get(str: Any?): Any?
-}
-@JsName("Array")
-@PublishedApi
-internal external class JsArray<T> {
-    var length: Int
-    //@nativeGetter operator fun get(index: Int): T = definedExternally
-    //@nativeSetter operator fun set(index: Int, value: T): T = definedExternally
-    fun concat(vararg arrays: JsArray<T>): JsArray<T>
-    fun indexOf(e: T): Int
-    fun lastIndexOf(e: T): Int
-    fun splice(start: Int, deleteCount: Int, vararg items: T): JsArray<T>
-    fun unshift(vararg items: T)
-    fun push(vararg items: T)
-    fun shift(): T
-    fun pop(): T
-    companion object {
-        fun from(value: dynamic): Array<dynamic>
-    }
-}
-
+//@JsName("Map")
+//private external class JsMap { }
+//@JsName("Array")
+//@PublishedApi
+//internal external class JsArray<T> {
+//    var length: Int
+//    //@nativeGetter operator fun get(index: Int): T = definedExternally
+//    //@nativeSetter operator fun set(index: Int, value: T): T = definedExternally
+//    fun concat(vararg arrays: JsArray<T>): JsArray<T>
+//    fun indexOf(e: T): Int
+//    fun lastIndexOf(e: T): Int
+//    fun splice(start: Int, deleteCount: Int, vararg items: T): JsArray<T>
+//    fun unshift(vararg items: T)
+//    fun push(vararg items: T)
+//    fun shift(): T
+//    fun pop(): T
+//    companion object {
+//        fun from(value: dynamic): Array<dynamic>
+//    }
+//}
 
 actual typealias FastIntMap<T> = IntMap<T>
 
@@ -47,12 +42,13 @@ actual inline fun <T> FastIntMap<T>.fastKeyForEach(callback: (key: Int) -> Unit)
     (this as IntMap<T>).fastKeyForEach(callback)
 }
 
-/////////////////
+///////////
 
 actual class FastStringMap<T>(val dummy: Boolean) {
     //val map = LinkedHashMap<String, T>()
     val map = HashMap<String, T>()
 }
+
 actual inline fun <T> FastStringMap(): FastStringMap<T> = FastStringMap(true)
 actual val <T> FastStringMap<T>.size: Int get() = (this.map).size
 actual inline operator fun <T> FastStringMap<T>.get(key: String): T? = (this.map).get(key)
@@ -67,13 +63,14 @@ actual fun <T> FastStringMap<T>.putAll(other: FastStringMap<T>) {
         that[key] = other[key]
     }
 }
+
 actual inline fun <T> FastStringMap<T>.fastKeyForEach(callback: (key: String) -> Unit) {
     for (key in this.keys()) {
         callback(key)
     }
 }
 
-///////////////
+///////////
 
 actual class FastIdentityMap<K, V>(dummy: Boolean) {
     val map = SlowIdentityHashMap<K, V>()
@@ -99,10 +96,10 @@ actual inline fun <K, V> FastIdentityMap<K, V>.fastKeyForEach(callback: (key: K)
 
 @JsName("WeakMap")
 external class JsWeakMap {
-    fun has(k: dynamic): Boolean
-    fun set(k: dynamic, v: dynamic): Unit
-    fun get(k: dynamic): dynamic
-    fun delete(k: dynamic)
+    fun has(k: Any?): Boolean
+    fun set(k: Any?, v: Any?): Unit
+    fun get(k: Any?): Any?
+    fun delete(k: Any?)
 }
 
 actual class WeakMap<K : Any, V> {
@@ -114,26 +111,12 @@ actual class WeakMap<K : Any, V> {
         wm.set(key, value)
     }
 
-    actual operator fun get(key: K): V? = wm.get(key).unsafeCast<V?>()
+    actual operator fun get(key: K): V? = wm.get(key).fastCastTo<V?>()
     actual fun remove(key: K) {
         wm.delete(key)
     }
+
 }
-
-//@PublishedApi internal fun Array_from(value: dynamic): Array<dynamic> = JsArray.from(value)
-//@JsFun("(obj, index) => { return obj[index]; }")
-//@PublishedApi external internal fun <T> Array_get(array: JsArray<T>, index: Int): T
-//@JsFun("(obj, index, value) => { obj[index] = value; }")
-//@PublishedApi external internal fun <T> Array_set(array: JsArray<T>, index: Int, value: T): T
-//@PublishedApi internal inline operator fun <T> JsArray<T>.get(index: Int): T = Array_get(this, index)
-//@PublishedApi internal inline operator fun <T> JsArray<T>.set(index: Int, value: T): Unit { Array_set(this, index, value) }
-//@PublishedApi internal fun <T> JsArray.Companion.createEmpty(): JsArray<T> = js("([])").unsafeCast<JsArray<T>>()
-//external internal operator fun <T> JsArray<T>.get(index: Int): T = definedExternally
-//external internal operator fun <T> JsArray<T>.set(index: Int, value: T): T = definedExternally
-
-//@JsName("delete")
-//external fun jsDelete(v: dynamic): Unit
-
 
 //actual typealias FastArrayList<E> = ArrayList<E>
 public actual open class FastArrayList<E> internal constructor(
@@ -348,3 +331,5 @@ public actual open class FastArrayList<E> internal constructor(
     }
 }
 
+
+////////////
