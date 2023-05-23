@@ -43,7 +43,7 @@ fun Project.configureAndroidDirect(projectType: ProjectType, isKorge: Boolean) {
 
     dependencies {
         when {
-            KotlinVersion.fromString(BuildVersions.KOTLIN) >= KotlinVersion.fromString("1.9.0") -> {
+            SemVer(BuildVersions.KOTLIN) >= SemVer("1.9.0") -> {
                 add("androidUnitTestImplementation", "org.jetbrains.kotlin:kotlin-test")
             }
             else -> {
