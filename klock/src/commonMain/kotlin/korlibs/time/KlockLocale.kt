@@ -11,7 +11,6 @@ abstract class KlockLocale {
 	abstract val daysOfWeek: List<String>
 	abstract val months: List<String>
 	abstract val firstDayOfWeek: DayOfWeek
-    // @TODO: This allocates for each get, but Kotlin/Native by lazy or atomic refs are causing issues with this. So let's do this temporarily until a solution is found
     open val monthsShort: List<String> get() = months.map { it.substr(0, 3) }
     open val daysOfWeekShort: List<String> get() = daysOfWeek.map { it.substr(0, 3) }
 
