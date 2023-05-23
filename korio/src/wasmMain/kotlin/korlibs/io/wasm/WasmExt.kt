@@ -2,6 +2,10 @@ package korlibs.io.wasm
 
 import korlibs.memory.internal.*
 
+fun <T, R : JsAny?> List<T>.mapToJsArray(key: (T) -> R): JsArray<R> {
+    return jsArrayOf(*this.map { key(it) }.toTypedArray())
+}
+
 fun <T : JsAny?> jsArrayOf(vararg values: T): JsArray<T> {
     val array = JsArray<T>()
     //array.length = values.size
