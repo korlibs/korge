@@ -343,7 +343,8 @@ object RootKorlibsPlugin {
                         wasm {
                             //this.
                             //this.applyBinaryen()
-                            nodejs()
+                            //nodejs()
+                            browser()
                         }
                     }
                     js(org.jetbrains.kotlin.gradle.plugin.KotlinJsCompilerType.IR) {
@@ -423,6 +424,16 @@ object RootKorlibsPlugin {
                                     implementation(kotlin("test-js"))
                                 } else {
                                     implementation(kotlin("stdlib-js"))
+                                }
+                            }
+                        }
+
+                        val wasm = createPairSourceSet("wasm", common) { test ->
+                            dependencies {
+                                if (test) {
+                                    implementation(kotlin("test-wasm"))
+                                } else {
+                                    implementation(kotlin("stdlib-wasm"))
                                 }
                             }
                         }

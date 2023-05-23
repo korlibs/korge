@@ -1,11 +1,15 @@
 package korlibs.crypto
 
+import org.khronos.webgl.*
+
 actual fun fillRandomBytes(array: ByteArray) {
+    val temp = Int8Array(array.size)
     if (isNodeJs()) {
-        _fillRandomBytesNode(array)
+        _fillRandomBytesNode(temp)
     } else {
-        _fillRandomBytesBrowser(array)
+        _fillRandomBytesBrowser(temp)
     }
+    for (n in 0 until array.size) array[n] = temp[n]
 }
 
 actual fun seedExtraRandomBytes(array: ByteArray) {
@@ -19,10 +23,10 @@ private external fun isNodeJs(): Boolean
     require_node("crypto").randomFillSync(Uint8Array(array.buffer))
 }
 """)
-private external fun _fillRandomBytesNode(array: ByteArray)
+private external fun _fillRandomBytesNode(array: Int8Array)
 
 @JsFun("""(array) => {
     (globalThis || window || this).crypto.getRandomValues(array)
 }
 """)
-private external fun _fillRandomBytesBrowser(array: ByteArray)
+private external fun _fillRandomBytesBrowser(array: Int8Array)
