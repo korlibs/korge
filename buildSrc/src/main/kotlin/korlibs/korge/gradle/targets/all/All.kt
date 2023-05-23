@@ -1,6 +1,8 @@
 package korlibs.korge.gradle.targets.all
 
 import korlibs.*
+import korlibs.korge.gradle.*
+import korlibs.korge.gradle.util.*
 import org.gradle.api.*
 import org.jetbrains.kotlin.gradle.dsl.*
 import org.jetbrains.kotlin.gradle.plugin.*
@@ -20,10 +22,17 @@ object AddFreeCompilerArgs {
         target.compilations.configureEach { compilation ->
             val options = compilation.compilerOptions.options
             options.suppressWarnings.set(true)
-            if (project.findProperty("enableMFVC") == "true") {
-                options.freeCompilerArgs.apply {
+            options.freeCompilerArgs.apply {
+                if (project.findProperty("enableMFVC") == "true") {
                     add("-Xvalue-classes")
                     add("-Xskip-prerelease-check")
+                }
+                add("-Xno-param-assertions")
+                add("-opt-in=kotlinx.cinterop.ExperimentalForeignApi")
+                if (target.name == "mingwX64") {
+                    if (SemVer(BuildVersions.KOTLIN) >= SemVer("1.9.0")) {
+                        add("-Xpartial-linkage=disable") // https://youtrack.jetbrains.com/issue/KT-58837/Illegal-char-at-index-0-org.jetbrains.kotlinxatomicfu-cinterop-interop-CTypeDefinitions#focus=Comments-27-7362451.0-0
+                    }
                 }
             }
         }

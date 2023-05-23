@@ -146,7 +146,7 @@ class GdiRenderer(val bitmap: Bitmap32, val antialiasing: Boolean) : BufferedRen
                     it.biClrUsed = 0.convert()
                     it.biClrImportant = 0.convert()
                 }
-                SetDIBits(hdc, bmap, 0, height.convert(), dataPtr, bmpInfo.ptr, DIB_RGB_COLORS)
+                SetDIBits(hdc, bmap, 0.convert(), height.convert(), dataPtr, bmpInfo.ptr, DIB_RGB_COLORS.convert())
 
                 GdipCreateFromHDC(hdc, pgraphics).checkp("GdipCreateFromHDC")
                 val graphics = pgraphics[0]
@@ -309,7 +309,7 @@ class GdiRenderer(val bitmap: Bitmap32, val antialiasing: Boolean) : BufferedRen
                         if (clip != null) GdipDeletePath(clip).checkp("GdipDeletePath")
                         GdipFlush(graphics, FlushIntentionSync).checkp("GdipFlush")
 
-                        GetDIBits(hdc, bmap, 0, height.convert(), dataPtr, bmpInfo.ptr, DIB_RGB_COLORS)
+                        GetDIBits(hdc, bmap, 0.convert(), height.convert(), dataPtr, bmpInfo.ptr, DIB_RGB_COLORS.convert())
                     }
                 } finally {
                     GdipDeleteGraphics(graphics)

@@ -44,7 +44,7 @@ private fun Bitmap32.toWin32Icon(): HICON? {
 
         val lpBits = alloc<COpaquePointerVar>()
         val hdc = GetDC(null)
-        val hBitmap = CreateDIBSection(hdc, bi.ptr as CPointer<BITMAPINFO>, DIB_RGB_COLORS, lpBits.ptr, NULL, 0.convert())
+        val hBitmap = CreateDIBSection(hdc, bi.ptr as CPointer<BITMAPINFO>, DIB_RGB_COLORS.convert(), lpBits.ptr, NULL, 0.convert())
         val memdc = CreateCompatibleDC(null)
         ReleaseDC(null, hdc);
 
@@ -119,7 +119,7 @@ class WindowsGameWindow : EventLoopGameWindow() {
 
         // Windows 8.1
         if (GetDpiForMonitor != null) {
-            val monitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST)
+            val monitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST.convert())
             val dpiX = alloc<UIntVar>()
             val dpiY = alloc<UIntVar>()
             val result = GetDpiForMonitor!!(monitor, MDT_RAW_DPI, dpiX.ptr, dpiY.ptr)
@@ -537,7 +537,7 @@ fun WndProc(hWnd: HWND?, message: UINT, wParam: WPARAM, lParam: LPARAM): LRESULT
 
                 println("wglSwapIntervalEXT: $wglSwapIntervalEXT")
                 wglSwapIntervalEXT?.invoke(0)
-                glClear(0) // Required since wglMakeCurrent is in the windows package but requires openGL32.dll
+                glClear(0.convert()) // Required since wglMakeCurrent is in the windows package but requires openGL32.dll
 
                 println("GL_CONTEXT: ${windowsGameWindow.glRenderContext}")
             }

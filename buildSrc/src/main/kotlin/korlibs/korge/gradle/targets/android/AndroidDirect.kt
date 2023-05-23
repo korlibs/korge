@@ -22,14 +22,15 @@ fun Project.configureAndroidDirect(projectType: ProjectType, isKorge: Boolean) {
 
     //val android = project.extensions.getByName("android")
 
+    //project.kotlin.androidTarget().apply {
     project.kotlin.android().apply {
         publishAllLibraryVariants()
         publishLibraryVariantsGroupedByFlavor = true
         //this.attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.androidJvm)
         compilations.allThis {
             kotlinOptions.jvmTarget = ANDROID_JAVA_VERSION_STR
-            compilerOptions.options.freeCompilerArgs.add("-Xno-param-assertions")
         }
+        AddFreeCompilerArgs.addFreeCompilerArgs(project, this)
     }
 
     //if (isKorge) {
@@ -41,6 +42,16 @@ fun Project.configureAndroidDirect(projectType: ProjectType, isKorge: Boolean) {
     //val generated = AndroidGenerated(korge)
 
     dependencies {
+        when {
+            SemVer(BuildVersions.KOTLIN) >= SemVer("1.9.0") -> {
+                add("androidUnitTestImplementation", "org.jetbrains.kotlin:kotlin-test")
+            }
+            else -> {
+                add("androidTestImplementation", "org.jetbrains.kotlin:kotlin-test")
+            }
+        }
+
+        add("androidTestImplementation", "org.jetbrains.kotlin:kotlin-test")
         add("androidTestImplementation", "androidx.test:core:1.4.0")
         add("androidTestImplementation", "androidx.test.ext:junit:1.1.2")
         add("androidTestImplementation", "androidx.test.espresso:espresso-core:3.3.0")

@@ -13,7 +13,7 @@ fun GetErrorAsString(error: DWORD): String {
             (FORMAT_MESSAGE_ALLOCATE_BUFFER or FORMAT_MESSAGE_FROM_SYSTEM or FORMAT_MESSAGE_IGNORE_INSERTS).convert(),
             null, error,
             (LANG_NEUTRAL or (SUBLANG_DEFAULT shl 10)).convert(),
-            ptr.ptr.reinterpret(), 0, null
+            ptr.ptr.reinterpret(), 0.convert(), null
         )
         val out = ptr.value?.toKString() ?: ""
         LocalFree(ptr.ptr)
