@@ -1,13 +1,13 @@
 package korlibs.korcoutines
 
-import kotlin.coroutines.*
 import kotlin.test.*
 
-class SimpleTest {
+class KorCoutinesTest {
     @Test
     fun test() {
         kotlinx.coroutines.flow.flow<Int> {
             emit(0)
+            KorCoroutines
         }
     }
 }
