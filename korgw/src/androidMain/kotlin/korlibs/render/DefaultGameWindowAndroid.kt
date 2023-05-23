@@ -97,6 +97,7 @@ abstract class BaseAndroidGameWindow(
 }
 
 val GameWindow.gameWindowAndroidContext: Context get() = androidContextAny as Context
+val GameWindow.gameWindowAndroidContextOrNull: Context? get() = androidContextAny as? Context?
 
 class AndroidGameWindow(val activity: KorgwActivity, config: GameWindowCreationConfig = activity.config) : BaseAndroidGameWindow(config) {
     override val androidContext get() = activity
