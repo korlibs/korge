@@ -4,7 +4,6 @@ import korlibs.time.internal.BSearchResult
 import korlibs.time.internal.Serializable
 import korlibs.time.internal.fastForEach
 import korlibs.time.internal.genericBinarySearch
-import korlibs.time.internal.klockLazyOrGet
 
 // Properties:
 //  - ranges are sorted
@@ -19,7 +18,7 @@ data class DateTimeRangeSet private constructor(val dummy: Boolean, val ranges: 
     )
 
     /** Total time of all [ranges]. */
-	val size: TimeSpan by klockLazyOrGet {
+	val size: TimeSpan by lazy {
 		var out = 0.seconds
 		ranges.fastForEach { out += it.size }
 		out

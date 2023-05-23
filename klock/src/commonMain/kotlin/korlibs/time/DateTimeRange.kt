@@ -1,7 +1,6 @@
 package korlibs.time
 
 import korlibs.time.internal.Serializable
-import korlibs.time.internal.klockLazyOrGet
 
 /**
  * Represents a right-opened range between two dates.
@@ -28,7 +27,7 @@ data class DateTimeRange(val from: DateTime, val to: DateTime) : Comparable<Date
     /**
      * [DateTimeSpan] distance between two dates, month and year aware.
      */
-    val span: DateTimeSpan by klockLazyOrGet {
+    val span: DateTimeSpan by lazy {
         val reverse = to < from
         val rfrom = if (!reverse) from else to
         val rto = if (!reverse) to else from

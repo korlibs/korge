@@ -116,8 +116,8 @@ fun Project.configurePublishing(multiplatform: Boolean = true) {
                             it.url.set(project.getCustomProp("project.scm.url", defaultGitUrl))
                         }
                     }
-                    if (publication.pom.packaging == "aar") {
-                        publication.pom.withXml {
+                    publication.pom.withXml {
+                        if (publication.pom.packaging == "aar") {
                             //println("baseProjectName=$baseProjectName")
                             it.asNode().apply {
                                 val nodes: NodeList = this.getAt(QName("dependencies")).getAt("dependency").getAt("scope")
