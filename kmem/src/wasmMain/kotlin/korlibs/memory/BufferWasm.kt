@@ -40,7 +40,7 @@ actual fun Buffer(size: Int, direct: Boolean): Buffer {
 }
 actual fun Buffer(array: ByteArray, offset: Int, size: Int): Buffer {
     checkNBufferWrap(array, offset, size)
-    return Buffer(DataView(array.unsafeCast<Int8Array>().buffer, offset, size))
+    return Buffer(DataView(array.unsafeCast2<Int8Array>().buffer, offset, size))
 }
 actual val Buffer.byteOffset: Int get() = this.dataView.byteOffset
 actual val Buffer.sizeInBytes: Int get() = this.dataView.byteLength
@@ -77,12 +77,12 @@ fun ArrayBuffer.asInt32Array(): Int32Array = Int32Array(this)
 fun ArrayBuffer.asFloat32Array(): Float32Array = Float32Array(this)
 fun ArrayBuffer.asFloat64Array(): Float64Array = Float64Array(this)
 
-fun ArrayBuffer.asUByteArray(): UByteArray = asUint8Array().unsafeCast<ByteArray>().asUByteArray()
-fun ArrayBuffer.asByteArray(): ByteArray = asInt8Array().unsafeCast<ByteArray>()
-fun ArrayBuffer.asShortArray(): ShortArray = asInt16Array().unsafeCast<ShortArray>()
-fun ArrayBuffer.asIntArray(): IntArray = asInt32Array().unsafeCast<IntArray>()
-fun ArrayBuffer.asFloatArray(): FloatArray = asFloat32Array().unsafeCast<FloatArray>()
-fun ArrayBuffer.asDoubleArray(): DoubleArray = asFloat64Array().unsafeCast<DoubleArray>()
+fun ArrayBuffer.asUByteArray(): UByteArray = asUint8Array().unsafeCast2<ByteArray>().asUByteArray()
+fun ArrayBuffer.asByteArray(): ByteArray = asInt8Array().unsafeCast2<ByteArray>()
+fun ArrayBuffer.asShortArray(): ShortArray = asInt16Array().unsafeCast2<ShortArray>()
+fun ArrayBuffer.asIntArray(): IntArray = asInt32Array().unsafeCast2<IntArray>()
+fun ArrayBuffer.asFloatArray(): FloatArray = asFloat32Array().unsafeCast2<FloatArray>()
+fun ArrayBuffer.asDoubleArray(): DoubleArray = asFloat64Array().unsafeCast2<DoubleArray>()
 
 val Buffer.arrayUByte: Uint8Array get() = Uint8Array(this.buffer, byteOffset, sizeInBytes)
 val Buffer.arrayByte: Int8Array get() = Int8Array(buffer, byteOffset, sizeInBytes)
