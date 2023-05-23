@@ -27,6 +27,9 @@ object AddFreeCompilerArgs {
                 }
                 add("-Xno-param-assertions")
                 add("-opt-in=kotlinx.cinterop.ExperimentalForeignApi")
+                if (target.name == "mingwX64") {
+                    add("-Xpartial-linkage=disable") // https://youtrack.jetbrains.com/issue/KT-58837/Illegal-char-at-index-0-org.jetbrains.kotlinxatomicfu-cinterop-interop-CTypeDefinitions#focus=Comments-27-7362451.0-0
+                }
             }
         }
     }
