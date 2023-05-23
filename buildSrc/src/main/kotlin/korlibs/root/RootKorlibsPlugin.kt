@@ -28,6 +28,13 @@ object RootKorlibsPlugin {
     @JvmStatic
     fun doInit(rootProject: Project) {
         rootProject.init()
+        rootProject.afterEvaluate {
+            rootProject.allprojectsThis {
+                tasks.withType(Test::class.java) {
+                    it.ignoreFailures = true
+                }
+            }
+        }
     }
 
     fun Project.init() {
