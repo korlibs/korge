@@ -23,9 +23,16 @@ actual fun asyncEntryPoint(callback: suspend () -> Unit): dynamic = kotlin.js.Pr
 }
 */
 actual fun asyncEntryPoint(callback: suspend () -> Unit) {
-    promise(EmptyCoroutineContext) { callback() }
+    //promise(EmptyCoroutineContext) { callback() }
+    launchImmediately(EmptyCoroutineContext) {
+    //runBlockingNoJs(EmptyCoroutineContext) {
+        callback()
+    }
 }
 actual fun asyncTestEntryPoint(callback: suspend () -> Unit) {
-    promise { callback() }
-    TODO("Not returning the promise")
+    println("!!! asyncTestEntryPoint without returning a promise")
+    //runBlockingNoJs(EmptyCoroutineContext) {
+    launchImmediately(EmptyCoroutineContext) {
+        callback()
+    }
 }
