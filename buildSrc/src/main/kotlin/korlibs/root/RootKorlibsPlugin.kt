@@ -20,6 +20,8 @@ import org.gradle.api.tasks.*
 import org.gradle.api.tasks.testing.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import org.jetbrains.kotlin.gradle.targets.js.ir.*
+import org.jetbrains.kotlin.gradle.targets.js.npm.*
+import org.jetbrains.kotlin.gradle.targets.js.testing.*
 import org.jetbrains.kotlin.gradle.tasks.*
 import java.io.*
 import java.nio.file.*
@@ -353,6 +355,26 @@ object RootKorlibsPlugin {
                             //nodejs { commonWebpackConfig { experiments = mutableSetOf("topLevelAwait") } }
                             //browser { commonWebpackConfig { experiments = mutableSetOf("topLevelAwait") } }
                             browser()
+                        }
+                        val wasmBrowserTest = tasks.getByName("wasmBrowserTest") as KotlinJsTest
+                        // ~/projects/korge/build/js/packages/korge-root-klock-wasm-test
+                        wasmBrowserTest.doFirst {
+                            logger.info("!!!!! wasmBrowserTest PATCH :: $wasmBrowserTest : ${wasmBrowserTest::class.java}")
+
+                            val npmProjectDir = wasmBrowserTest.compilation.npmProject.dir
+                            val projectName = npmProjectDir.name
+                            val uninstantiatedMjs = File(npmProjectDir, "kotlin/$projectName.uninstantiated.mjs")
+
+                            logger.info("# Updating: $uninstantiatedMjs")
+
+                            try {
+                                uninstantiatedMjs.writeText(uninstantiatedMjs.readText().replace(
+                                    "'kotlin.test.jsThrow' : (jsException) => { throw e },",
+                                    "'kotlin.test.jsThrow' : (jsException) => { throw jsException },",
+                                ))
+                            } catch (e: Throwable) {
+                                e.printStackTrace()
+                            }
                         }
                     }
                     js(org.jetbrains.kotlin.gradle.plugin.KotlinJsCompilerType.IR) {
