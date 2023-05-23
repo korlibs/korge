@@ -343,8 +343,8 @@ object RootKorlibsPlugin {
                         wasm {
                             //this.
                             //this.applyBinaryen()
-                            //nodejs()
-                            browser()
+                            //nodejs { commonWebpackConfig { experiments = mutableSetOf("topLevelAwait") } }
+                            browser { commonWebpackConfig { experiments = mutableSetOf("topLevelAwait") } }
                         }
                     }
                     js(org.jetbrains.kotlin.gradle.plugin.KotlinJsCompilerType.IR) {
