@@ -20,11 +20,13 @@ object AddFreeCompilerArgs {
         target.compilations.configureEach { compilation ->
             val options = compilation.compilerOptions.options
             options.suppressWarnings.set(true)
-            if (project.findProperty("enableMFVC") == "true") {
-                options.freeCompilerArgs.apply {
+            options.freeCompilerArgs.apply {
+                if (project.findProperty("enableMFVC") == "true") {
                     add("-Xvalue-classes")
                     add("-Xskip-prerelease-check")
                 }
+                add("-Xno-param-assertions")
+                add("-Xopt-in=kotlinx.cinterop.ExperimentalForeignApi")
             }
         }
     }

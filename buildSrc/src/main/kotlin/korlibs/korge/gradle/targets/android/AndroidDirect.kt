@@ -28,8 +28,8 @@ fun Project.configureAndroidDirect(projectType: ProjectType, isKorge: Boolean) {
         //this.attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.androidJvm)
         compilations.allThis {
             kotlinOptions.jvmTarget = ANDROID_JAVA_VERSION_STR
-            compilerOptions.options.freeCompilerArgs.add("-Xno-param-assertions")
         }
+        AddFreeCompilerArgs.addFreeCompilerArgs(project, this)
     }
 
     //if (isKorge) {
