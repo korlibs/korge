@@ -7,6 +7,7 @@ import korlibs.logger.Logger
 import korlibs.io.async.launchImmediately
 import korlibs.io.file.std.uniVfs
 import korlibs.io.lang.*
+import korlibs.io.util.*
 import korlibs.memory.internal.*
 import kotlinx.browser.document
 import kotlinx.browser.window
@@ -373,7 +374,7 @@ object HtmlSimpleSound {
 	}
     */
 
-	suspend fun loadSound(data: ByteArray): AudioBuffer? = loadSound(data.unsafeCast2<Int8Array>().buffer, "ByteArray")
+	suspend fun loadSound(data: ByteArray): AudioBuffer? = loadSound(data.toInt8Array().buffer, "ByteArray")
 
 	suspend fun loadSound(url: String): AudioBuffer? = loadSound(url.uniVfs.readBytes())
 
@@ -389,7 +390,7 @@ object HtmlSimpleSound {
 
             if (ctx != null) {
                 // If already created the audio context, we try to resume it
-                (window.unsafeCast<WindowWithGlobalAudioContext>()).globalAudioContext.unsafeCast2<BaseAudioContext?>()?.resume()
+                (window.unsafeCast<WindowWithGlobalAudioContext>()).globalAudioContext?.unsafeCast<BaseAudioContext>()?.resume()
 
                 val source = ctx.createBufferSource()
 
@@ -434,7 +435,7 @@ external interface PannerNode : AudioNode {
     fun setOrientation(x: Double, y: Double, z: Double)
 }
 
-open external class BaseAudioContext {
+open external class BaseAudioContext : JsAny {
 	fun createScriptProcessor(
 		bufferSize: Int,
 		numberOfInputChannels: Int,
