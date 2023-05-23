@@ -3,9 +3,7 @@ package korlibs.memory.internal
 import korlibs.memory.Arch
 import korlibs.memory.Os
 import korlibs.memory.Runtime
-import org.khronos.webgl.Uint32Array
-import org.khronos.webgl.Uint8Array
-import org.khronos.webgl.get
+import org.khronos.webgl.*
 
 @JsFun("() => { return (typeof Deno === 'object' && Deno.statSync) }")
 internal external fun isDenoJs(): Boolean
@@ -23,7 +21,7 @@ internal actual val currentArch: Arch = Arch.UNKNOWN
 
 internal actual val currentRuntime: Runtime = Runtime.WASM
 internal actual val currentIsDebug: Boolean = false
-internal actual val currentIsLittleEndian: Boolean = Uint8Array(Uint32Array(arrayOf(0x11223344)).buffer)[0].toInt() == 0x44
+internal actual val currentIsLittleEndian: Boolean = Uint8Array(Uint32Array(1).also { it[0] = 0x11223344 }.buffer)[0].toInt() == 0x44
 internal actual val multithreadedSharedHeap: Boolean = false // Workers have different heaps
 
 internal actual val currentRawPlatformName: String = when {
