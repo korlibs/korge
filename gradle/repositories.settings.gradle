@@ -10,4 +10,5 @@ y.repositories {
     maven { url = x.uri("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev") }
     maven { url = x.uri("https://maven.pkg.jetbrains.space/public/p/kotlinx-coroutines/maven") }
     maven { url = x.uri("https://oss.sonatype.org/content/repositories/snapshots/") }
+    maven { url = x.uri("https://maven.pkg.jetbrains.space/kotlin/p/wasm/experimental") }
 }
