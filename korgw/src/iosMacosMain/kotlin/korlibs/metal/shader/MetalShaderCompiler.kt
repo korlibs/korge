@@ -64,7 +64,7 @@ private fun createPipelineState(
         val renderPipelineDescriptor = MTLRenderPipelineDescriptor().apply {
             setVertexFunction(vertexFunction)
             setFragmentFunction(fragmentFunction)
-            colorAttachments.objectAtIndexedSubscript(0)
+            colorAttachments.objectAtIndexedSubscript(0.convert())
                 .setPixelFormat(MTLPixelFormatBGRA8Unorm_sRGB)
         }
 
