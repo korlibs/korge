@@ -8,6 +8,7 @@ import korlibs.memory.*
 import korlibs.time.*
 import kotlin.math.*
 
+@Deprecated("")
 inline fun Container.cameraContainer(
     size: Size,
     clip: Boolean = true,
@@ -16,6 +17,7 @@ inline fun Container.cameraContainer(
     content: @ViewDslMarker Container.() -> Unit = {}
 ) = CameraContainer(size, clip, contentBuilder, block).addTo(this).also { content(it.content) }
 
+@Deprecated("")
 class CameraContainer(
     size: Size,
     clip: Boolean = true,

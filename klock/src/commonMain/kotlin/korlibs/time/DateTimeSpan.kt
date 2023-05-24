@@ -7,7 +7,6 @@ import korlibs.time.internal.MILLIS_PER_SECOND
 import korlibs.time.internal.MILLIS_PER_WEEK
 import korlibs.time.internal.Moduler
 import korlibs.time.internal.Serializable
-import korlibs.time.internal.klockLazyOrGet
 
 /**
  * Immutable structure representing a set of a [monthSpan] and a [timeSpan].
@@ -140,5 +139,5 @@ data class DateTimeSpan(
         }
     }
 
-    private val computed by klockLazyOrGet { ComputedTime(timeSpan) }
+    private val computed by lazy { ComputedTime(timeSpan) }
 }

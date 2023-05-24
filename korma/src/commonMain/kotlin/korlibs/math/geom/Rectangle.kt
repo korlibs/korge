@@ -4,12 +4,15 @@ import korlibs.math.annotations.*
 import korlibs.math.geom.shape.*
 import korlibs.math.geom.vector.*
 import korlibs.math.internal.*
-import korlibs.math.math.*
+import korlibs.math.interpolation.*
+import korlibs.math.isAlmostEquals
+import korlibs.math.roundDecimalPlaces
 import korlibs.memory.*
 import korlibs.memory.pack.*
 import kotlin.math.*
 
 //@KormaValueApi
+//inline class Rectangle(val data: Float4Pack) : Shape2D, Interpolable<Rectangle> {
 inline class Rectangle(val data: Float4Pack) : Shape2D {
     val int: RectangleInt get() = toInt()
 
@@ -51,6 +54,8 @@ inline class Rectangle(val data: Float4Pack) : Shape2D {
     fun toStringSize(): String = "Rectangle([${left.niceStr},${top.niceStr}],[${width.niceStr},${height.niceStr}])"
     fun toStringCompat(): String = "Rectangle(x=${left.niceStr}, y=${top.niceStr}, w=${width.niceStr}, h=${height.niceStr})"
 
+    //override fun interpolateWith(ratio: Ratio, other: Rectangle): Rectangle = interpolated(this, other, ratio)
+
     override fun toString(): String = when {
         isNIL -> "null"
         else -> "Rectangle(x=${x.niceStr}, y=${y.niceStr}, width=${width.niceStr}, height=${height.niceStr})"
@@ -73,6 +78,13 @@ inline class Rectangle(val data: Float4Pack) : Shape2D {
         fun fromBounds(left: Float, top: Float, right: Float, bottom: Float): Rectangle = fromBounds(left.toDouble(), top.toDouble(), right.toDouble(), bottom.toDouble())
         fun fromBounds(point1: Point, point2: Point): Rectangle = Rectangle(point1, (point2 - point1).toSize())
         fun isContainedIn(a: Rectangle, b: Rectangle): Boolean = a.x >= b.x && a.y >= b.y && a.x + a.width <= b.x + b.width && a.y + a.height <= b.y + b.height
+
+        fun interpolated(a: Rectangle, b: Rectangle, ratio: Ratio): Rectangle = Rectangle.fromBounds(
+            ratio.interpolate(a.left, b.left),
+            ratio.interpolate(a.top, b.top),
+            ratio.interpolate(a.right, b.right),
+            ratio.interpolate(a.bottom, b.bottom),
+        )
     }
 
     operator fun times(scale: Float): Rectangle = Rectangle(x * scale, y * scale, width * scale, height * scale)
@@ -117,7 +129,7 @@ inline class Rectangle(val data: Float4Pack) : Shape2D {
         val d1 = (p1 - p).lengthSquared
         val d2 = (p2 - p).lengthSquared
         val d3 = (p3 - p).lengthSquared
-        val dmin = min(d0, d1, d2, d3)
+        val dmin = korlibs.math.min(d0, d1, d2, d3)
         return when (dmin) {
             d0 -> p0
             d1 -> p1

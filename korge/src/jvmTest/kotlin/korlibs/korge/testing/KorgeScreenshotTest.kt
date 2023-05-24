@@ -79,4 +79,57 @@ class KorgeScreenshotTest {
         //assertScreenshot(rectContainer, "initial4")
     }
 
+    @Test
+    fun testContextLost() = korgeScreenshotTest(
+        Size(32, 32),
+        bgcolor = Colors.RED
+    ) {
+        val rect1 = solidRect(16, 16, Colors.GREEN).position(0, 0)
+        image(Bitmap32(16, 16, Colors.BLUE).premultipliedIfRequired()).position(16, 0)
+        assertScreenshot()
+        simulateContextLost()
+        assertScreenshot()
+    }
+
+    @Test
+    fun testContextLost2() = korgeScreenshotTest(
+        Size(32, 32),
+        bgcolor = Colors.RED
+    ) {
+        val rect = solidRect(16, 16, Colors.GREEN).position(0, 0)
+        //for (n in 0 until 32) solidRect(16, 16, Colors.GREEN.withR(n * 7)).position(n, 0)
+        //assertScreenshot()
+        //println("[1]")
+        simulateRenderFrame()
+        //println("[2]")
+        simulateContextLost()
+        //println("[3]")
+        val STEPS = 8
+        for (n in 0 .. STEPS) {
+            simulateRenderFrame()
+            rect.x = STEPS - n.toFloat()
+        }
+        //println("[4]")
+        assertScreenshot()
+        //println("[5]")
+    }
+
+    @Test
+    fun testMipmaps() = korgeScreenshotTest(
+        Size(32, 32),
+        bgcolor = Colors.BLUE
+    ) {
+        val bmp = Bitmap32(128, 128).context2d(antialiased = false) {
+            stroke(Colors.RED, lineWidth = 24f) {
+                circle(Point(64, 64), 45f)
+            }
+        }
+        val bmp1 = bmp.clone()
+        val bmp2 = bmp.clone().mipmaps(enable = true)
+
+        image(bmp1).scale(0.125).xy(0, 0)
+        image(bmp2).scale(0.125).xy(16, 0)
+
+        assertScreenshot(posterize = 4)
+    }
 }

@@ -54,63 +54,51 @@ fun View.renderFiltered(
 
     if (bounds.width <= 0.0 || bounds.height <= 0.0) return
 
-    ctx.matrixPool.alloc { tempMat2d ->
-        val tryFilterScale = Filter.discretizeFilterScale(kotlin.math.min(filterScale, filter.recommendedFilterScale))
-        //println("tryFilterScale=$tryFilterScale")
-        val texWidthNoBorder = (bounds.width * tryFilterScale).toInt().coerceAtLeast(1)
-        val texHeightNoBorder = (bounds.height * tryFilterScale).toInt().coerceAtLeast(1)
+    val tryFilterScale = Filter.discretizeFilterScale(kotlin.math.min(filterScale, filter.recommendedFilterScale))
+    //println("tryFilterScale=$tryFilterScale")
+    val texWidthNoBorder = (bounds.width * tryFilterScale).toInt().coerceAtLeast(1)
+    val texHeightNoBorder = (bounds.height * tryFilterScale).toInt().coerceAtLeast(1)
 
-        val realFilterScale: Float = (texWidthNoBorder.toFloat() / bounds.width).clamp(0.03125f, 1.0f)
+    val realFilterScale: Float = (texWidthNoBorder.toFloat() / bounds.width).clamp(0.03125f, 1.0f)
 
-        // This edge is meant to keep the edge pixels transparent, since we are using clamping to edge wrapping
-        // so for example the blur filter that reads outside [0, 1] bounds can read transparent pixels.
-        val edgeSize = when (VIEW_FILTER_TRANSPARENT_EDGE) {
-            true -> (1.0 / filterScale).toIntCeil().clamp(1, 8)
-            false -> 0
-        }
+    // This edge is meant to keep the edge pixels transparent, since we are using clamping to edge wrapping
+    // so for example the blur filter that reads outside [0, 1] bounds can read transparent pixels.
+    val edgeSize = when (VIEW_FILTER_TRANSPARENT_EDGE) {
+        true -> (1.0 / filterScale).toIntCeil().clamp(1, 8)
+        false -> 0
+    }
 
-        val texWidth = texWidthNoBorder + (edgeSize * 2)
-        val texHeight = texHeightNoBorder + (edgeSize * 2)
+    val texWidth = texWidthNoBorder + (edgeSize * 2)
+    val texHeight = texHeightNoBorder + (edgeSize * 2)
 
-        val addx = -bounds.x + edgeSize
-        val addy = -bounds.y + edgeSize
+    val addx = -bounds.x + edgeSize
+    val addy = -bounds.y + edgeSize
 
-        //println("FILTER: $texWidth, $texHeight : $globalMatrixInv, $globalMatrix, addx=$addx, addy=$addy, renderColorMulInt=$renderColorMulInt, blendMode=$blendMode")
-        //println("FILTER($this): $texWidth, $texHeight : bounds=${bounds} addx=$addx, addy=$addy, renderColorMul=$renderColorMul, blendMode=$blendMode")
+    //println("FILTER: $texWidth, $texHeight : $globalMatrixInv, $globalMatrix, addx=$addx, addy=$addy, renderColorMulInt=$renderColorMulInt, blendMode=$blendMode")
+    //println("FILTER($this): $texWidth, $texHeight : bounds=${bounds} addx=$addx, addy=$addy, renderColorMul=$renderColorMul, blendMode=$blendMode")
 
-        ctx.renderToTexture(texWidth, texHeight, render = {
-            tempMat2d.copyFrom(globalMatrixInv)
-            //tempMat2d.copyFrom(globalMatrix)
-            tempMat2d.translate(addx, addy)
-            tempMat2d.scale(realFilterScale)
-            //println("globalMatrixInv:$globalMatrixInv, tempMat2d=$tempMat2d")
-            //println("texWidth=$texWidth, texHeight=$texHeight, $bounds, addx=$addx, addy=$addy, globalMatrix=$globalMatrix, globalMatrixInv:$globalMatrixInv, tempMat2d=$tempMat2d")
-            @Suppress("DEPRECATION")
-            ctx.batch.setViewMatrixTemp(tempMat2d.immutable) {
-                // @TODO: Set blendMode to normal, colorMul to WHITE
-                //renderInternal(ctx)
-                if (first) {
-                    renderFirstPhase(ctx)
-                } else {
-                    renderNextPhase(ctx)
-                }
+    ctx.renderToTexture(texWidth, texHeight, render = {
+        val mat = globalMatrixInv.translated(addx, addy).scaled(realFilterScale)
+        //println("globalMatrixInv:$globalMatrixInv, tempMat2d=$tempMat2d")
+        //println("texWidth=$texWidth, texHeight=$texHeight, $bounds, addx=$addx, addy=$addy, globalMatrix=$globalMatrix, globalMatrixInv:$globalMatrixInv, tempMat2d=$tempMat2d")
+        @Suppress("DEPRECATION")
+        ctx.batch.setViewMatrixTemp(mat) {
+            // @TODO: Set blendMode to normal, colorMul to WHITE
+            //renderInternal(ctx)
+            if (first) {
+                renderFirstPhase(ctx)
+            } else {
+                renderNextPhase(ctx)
             }
-        }) { texture ->
-            //println("texWidthHeight=$texWidth,$texHeight")
-            tempMat2d.copyFrom(globalMatrix)
-            tempMat2d.pretranslate(-addx, -addy)
-            tempMat2d.prescale(1.0 / realFilterScale)
-            filter.render(
-                ctx,
-                tempMat2d.immutable,
-                texture,
-                texWidth,
-                texHeight,
-                renderColorMul,
-                blendMode,
-                realFilterScale
-            )
         }
+    }) { texture ->
+        //println("texWidthHeight=$texWidth,$texHeight")
+        val mat = globalMatrix.pretranslated(-addx, -addy).prescaled(1f / realFilterScale)
+        filter.render(
+            ctx, mat, texture,
+            texWidth, texHeight,
+            renderColorMul, blendMode, realFilterScale
+        )
     }
 }
 

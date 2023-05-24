@@ -21,6 +21,12 @@ open class AGObject : Closeable {
     internal var _cachedVersion: Int = -2
     internal var _version: Int = -1
 
+    internal fun _resetVersion() {
+        //_version = RESET_VERSION
+        markAsDirty()
+        _cachedVersion = _version - 1
+    }
+
     protected fun markAsDirty() {
         _version++
     }
@@ -32,8 +38,6 @@ open class AGObject : Closeable {
 }
 
 class AGBuffer : AGObject() {
-    internal var lastUploadedSize = 0
-
     var mem: Buffer? = null
         private set
 
@@ -47,7 +51,11 @@ class AGBuffer : AGObject() {
     fun upload(data: ShortArray, offset: Int = 0, length: Int = data.size - offset): AGBuffer = upload(Int16Buffer(data, offset, length).buffer)
     fun upload(data: Buffer, offset: Int, length: Int = data.size - offset): AGBuffer = upload(data.sliceWithSize(offset, length))
     fun upload(data: Buffer): AGBuffer {
-        if (this.mem != null && this.mem!!.sizeInBytes == data.sizeInBytes && arrayequal(this.mem!!, 0, data, 0, data.sizeInBytes)) return this
+        //println(data.sizeInBytes)
+        // Only check small buffers
+        if (data.sizeInBytes < 1024) {
+            if (this.mem != null && this.mem!!.sizeInBytes == data.sizeInBytes && arrayequal(this.mem!!, 0, data, 0, data.sizeInBytes)) return this
+        }
         //println("New Data!")
         mem = data.clone()
         markAsDirty()
@@ -57,13 +65,18 @@ class AGBuffer : AGObject() {
     val sizeInBytes: Int
         get() = mem?.sizeInBytes ?: 0
 
+    //private val id = LAST_ID.incrementAndGet()
+    //companion object { private val LAST_ID = KorAtomicInt(0) }
+    // init { printStackTrace() }
+
     override fun toString(): String = "AGBuffer(${mem?.sizeInBytes ?: 0})"
 
+    //override fun toString(): String = "AGBuffer[$id](${mem?.sizeInBytes ?: 0})"
 }
 
 data class AGTextureUnits(val textures: Array<AGTexture?>, val infos: AGTextureUnitInfoArray) {
     companion object {
-        val MAX_TEXTURE_UNITS = 14
+        val MAX_TEXTURE_UNITS = 8 // iOS only support 8 texture units on OpenGL
         val EMPTY get() = AGTextureUnits()
     }
     constructor(size: Int = MAX_TEXTURE_UNITS) : this(arrayOfNulls(size), AGTextureUnitInfoArray(size))
@@ -215,7 +228,7 @@ open class AGFrameBuffer(val base: AGFrameBufferBase, val id: Int = -1) : Closea
     var height = DEFAULT_INITIAL_HEIGHT
     var fullWidth = DEFAULT_INITIAL_WIDTH
     var fullHeight = DEFAULT_INITIAL_HEIGHT
-    private val _scissor = MRectangleInt()
+    private var _scissor = RectangleInt()
     var scissor: RectangleInt? = null
 
     open fun setSize(width: Int, height: Int) {

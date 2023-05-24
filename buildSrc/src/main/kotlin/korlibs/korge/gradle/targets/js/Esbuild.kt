@@ -15,11 +15,10 @@ fun Project.configureEsbuild() {
 
     val esbuildFolder = File(if (userGradleFolder.isDirectory) userGradleFolder else rootProject.buildDir, "esbuild")
     val isWindows = org.apache.tools.ant.taskdefs.condition.Os.isFamily(org.apache.tools.ant.taskdefs.condition.Os.FAMILY_WINDOWS)
-    val esbuildCmdUnix = File(esbuildFolder, "bin/esbuild")
-    val esbuildCmdCheck = if (isWindows) File(esbuildFolder, "esbuild.cmd") else esbuildCmdUnix
-    val esbuildCmd = if (isWindows) File(esbuildFolder, "node_modules/esbuild/esbuild.exe") else esbuildCmdUnix
+    val esbuildCommand = File(esbuildFolder, if (isWindows) "esbuild.cmd" else "bin/esbuild")
+    val esbuildCmd = if (isWindows) listOf("cmd.exe", "/c", esbuildCommand) else listOf(esbuildCommand)
 
-    val npmInstallEsbuild = "npmInstallEsbuild"
+    val npmInstallEsbuildTaskName = "npmInstallEsbuild"
 
     val env by lazy { org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin.apply(project.rootProject).requireConfigured() }
     val ENV_PATH by lazy {
@@ -29,27 +28,28 @@ fun Project.configureEsbuild() {
         "$NODE_PATH$PATH_SEPARATOR$OLD_PATH"
     }
 
-    if (rootProject.tasks.findByName(npmInstallEsbuild) == null) {
-        rootProject.tasks.createThis<Exec>(npmInstallEsbuild) {
-            dependsOn("kotlinNodeJsSetup")
-            onlyIf { !esbuildCmdCheck.exists() && !esbuildCmd.exists() }
+    val npmInstallEsbuild = rootProject.tasks.findByName(npmInstallEsbuildTaskName) ?: rootProject.tasks.createThis<Exec>(npmInstallEsbuildTaskName) {
+        dependsOn("kotlinNodeJsSetup")
+        onlyIf { !esbuildCommand.exists() }
 
-            val esbuildVersion = korge.esbuildVersion
-            doFirst {
-                val npmCmd = arrayOf(
-                    File(env.nodeExecutable),
-                    File(env.nodeDir, "lib/node_modules/npm/bin/npm-cli.js").takeIf { it.exists() }
-                        ?: File(env.nodeDir, "node_modules/npm/bin/npm-cli.js").takeIf { it.exists() }
-                        ?: error("Can't find npm-cli.js in ${env.nodeDir} standard folders")
-                )
+        val esbuildVersion = korge.esbuildVersion
+        doFirst {
+            val npmCmd = arrayOf(
+                File(env.nodeExecutable),
+                File(env.nodeDir, "lib/node_modules/npm/bin/npm-cli.js").takeIf { it.exists() }
+                    ?: File(env.nodeDir, "node_modules/npm/bin/npm-cli.js").takeIf { it.exists() }
+                    ?: error("Can't find npm-cli.js in ${env.nodeDir} standard folders")
+            )
 
-                environment("PATH", ENV_PATH)
-                commandLine(*npmCmd, "-g", "install", "esbuild@$esbuildVersion", "--prefix", esbuildFolder, "--scripts-prepend-node-path", "true")
-            }
+            environment("PATH", ENV_PATH)
+            commandLine(*npmCmd, "-g", "install", "esbuild@$esbuildVersion", "--prefix", esbuildFolder, "--scripts-prepend-node-path", "true")
         }
     }
 
     val browserEsbuildResources = tasks.createThis<Copy>("browserEsbuildResources") {
+        val korgeProcessResourcesTaskName = getKorgeProcessResourcesTaskName("js", "main")
+        dependsOn(korgeProcessResourcesTaskName)
+
         duplicatesStrategy = DuplicatesStrategy.EXCLUDE
         from(project.tasks.getByName("jsProcessResources").outputs.files)
         //afterEvaluate {
@@ -59,11 +59,18 @@ fun Project.configureEsbuild() {
         //}
         //for (sourceSet in gkotlin.js().compilations.flatMap { it.kotlinSourceSets }) from(sourceSet.resources)
         into(wwwFolder)
+        //afterEvaluate {
+        //    afterEvaluate {
+        //        val korgeGeneratedTask = project.tasks.findByName(korgeProcessResourcesTaskName) as? KorgeGenerateResourcesTask?
+        //        println("korgeGeneratedTaskName=$korgeGeneratedTask : korgeProcessResourcesTaskName=$korgeProcessResourcesTaskName")
+        //        korgeGeneratedTask?.addExcludeToCopyTask(this)
+        //    }
+        //}
     }
 
     val browserPrepareEsbuildPrepare = tasks.createThis<Task>("browserPrepareEsbuildPrepare") {
         dependsOn(browserEsbuildResources)
-        dependsOn("::npmInstallEsbuild")
+        dependsOn(npmInstallEsbuild)
     }
 
     val browserPrepareEsbuildDebug = tasks.createThis<Task>("browserPrepareEsbuildDebug") {
@@ -103,7 +110,7 @@ fun Project.configureEsbuild() {
                 outputs.file(output)
                 environment("PATH", ENV_PATH)
                 commandLine(ArrayList<Any>().apply {
-                    add(esbuildCmd)
+                    addAll(esbuildCmd)
                     //add("--watch",)
                     add("--bundle")
                     add("--minify")

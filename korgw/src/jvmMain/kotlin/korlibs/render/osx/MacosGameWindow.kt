@@ -144,8 +144,8 @@ class MacGameWindow(val checkGl: Boolean, val logGl: Boolean) : GameWindow() {
         glCtx?.setParameters()
 
         val point2 = NSPoint(point.x, rect.height - point.y)
-        val x = point2.x.toDouble()
-        val y = point2.y.toDouble()
+        val x = point2.x.toFloat()
+        val y = point2.y.toFloat()
         val button = MouseButton[buttonNumber.toInt()]
 
         //val res = NSClass("NSEvent").id.msgSend_stret(data, "mouseLocation")
@@ -224,7 +224,7 @@ class MacGameWindow(val checkGl: Boolean, val logGl: Boolean) : GameWindow() {
         renderOpengl()
     }
 
-    private var lastBackingScaleFactor = 0.0
+    private var lastBackingScaleFactor = 0f
 
     fun renderOpengl(update: Boolean = false) {
         // This allows to detect a change in the scale factor of the window without having to resize (changing resolution)
@@ -362,7 +362,7 @@ class MacGameWindow(val checkGl: Boolean, val logGl: Boolean) : GameWindow() {
 
     var glCtx: MacosGLContext? = null
 
-    val backingScaleFactor get() = if (window != 0L) window.msgSendCGFloat("backingScaleFactor").toDouble() else 1.0
+    val backingScaleFactor: Float get() = if (window != 0L) window.msgSendCGFloat("backingScaleFactor").toFloat() else 1f
 
     val timerCallback = object : Callback {
         fun callback() {

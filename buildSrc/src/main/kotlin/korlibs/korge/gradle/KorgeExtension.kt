@@ -1,6 +1,5 @@
 package korlibs.korge.gradle
 
-import korlibs.korge.gradle.bundle.KorgeBundles
 import korlibs.korge.gradle.targets.*
 import korlibs.korge.gradle.targets.android.*
 import korlibs.korge.gradle.targets.desktop.*
@@ -11,6 +10,7 @@ import korlibs.korge.gradle.util.*
 import org.gradle.api.*
 import java.io.*
 import groovy.text.*
+import korlibs.korge.gradle.processor.*
 import org.gradle.api.artifacts.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import java.net.*
@@ -21,6 +21,7 @@ import javax.naming.*
 import kotlin.collections.LinkedHashMap
 
 enum class Orientation(val lc: String) { DEFAULT("default"), LANDSCAPE("landscape"), PORTRAIT("portrait") }
+enum class DisplayCutout(val lc: String) { DEFAULT("default"), SHORT_EDGES("shortEdges"), NEVER("never"), ALWAYS("always") }
 
 class KorgePluginsContainer(val project: Project, val parentClassLoader: ClassLoader = KorgePluginsContainer::class.java.classLoader) {
     val globalParams = LinkedHashMap<String, String>()
@@ -88,6 +89,9 @@ open class KorgeExtension(
 	internal fun init(includeIndirectAndroid: Boolean, projectType: ProjectType) {
 	    this.includeIndirectAndroid = includeIndirectAndroid
         this.projectType = projectType
+        this.project.afterEvaluate {
+            implicitCheckVersion()
+        }
 	}
 
     companion object {
@@ -138,6 +142,40 @@ open class KorgeExtension(
   
     lateinit var projectType: ProjectType
         private set
+
+    private var _checkVersionOnce = false
+
+    /**
+     * This checks that you are using the latest version of KorGE
+     * once per day.
+     *
+     * This downloads the latest version and
+     * optionally when [telemetry] is set to true, or gradle property `korge.disable.telemetry` is set to true
+     * sends your current KorGE version, operating system, cpu architecture and a random, anonymous install UUID
+     * for statistical purposes.
+     *
+     * In the case you want the plugin to also notify you that a new version is available,
+     * you can set the [report] parameter to true.
+     *
+     * If you want to totally disable this check, you can by setting [check] to false.
+     *
+     * Have in mind that this check is a single small GET request once per day, it is anonymous,
+     * doesn't send any kind of personal data, and it greatly helps us to have statistics of how many people is using KorGE
+     * and which version. If you don't want to have the report once per day you can set report=false
+     */
+    fun checkVersion(check: Boolean = true, report: Boolean = true, telemetry: Boolean = project.findProperty("korge.disable.telemetry") != "true") {
+        if (!_checkVersionOnce) {
+            _checkVersionOnce = true
+            if (check) {
+                val thread = project.korgeCheckVersion(report, telemetry)
+                project.afterEvaluate { thread.join() }
+            }
+        }
+    }
+
+    internal fun implicitCheckVersion() {
+        checkVersion(check = true, report = false)
+    }
 
     /**
      * Configures JVM target
@@ -260,10 +298,16 @@ open class KorgeExtension(
         androidGradleDependency("org.jetbrains.kotlinx:kotlinx-serialization-json:${BuildVersions.KOTLIN_SERIALIZATION}")
     }
 
-    val bundles = KorgeBundles(project)
+    val resourceProcessors = arrayListOf<KorgeResourceProcessor>()
 
-    @JvmOverloads
-    fun bundle(uri: String, baseName: String? = null) = bundles.bundle(uri, baseName)
+    fun addResourceProcessor(processor: KorgeResourceProcessor) {
+        resourceProcessors += processor
+    }
+
+    //val bundles = KorgeBundles(project)
+
+    //@JvmOverloads
+    //fun bundle(uri: String, baseName: String? = null) = bundles.bundle(uri, baseName)
 
     val DEFAULT_JVM_TARGET = "1.8"
     //val DEFAULT_JVM_TARGET = "1.6"
@@ -286,6 +330,7 @@ open class KorgeExtension(
     var title: String? = null
 	var description: String = "description"
 	var orientation: Orientation = Orientation.DEFAULT
+    var displayCutout: DisplayCutout = DisplayCutout.DEFAULT
 
 	var copyright: String = "Copyright (c) ${Year.now().value} Unknown"
 
@@ -338,8 +383,6 @@ open class KorgeExtension(
     val newJsEnabled get() = project.findProperty("korge.enable.js") == "true" || System.getenv("KORGE_ENABLE_JS") == "true"
 
     var searchResourceProcessorsInMainSourceSet: Boolean = false
-    var enableKorgeResourceProcessing: Boolean = true
-    //var enableKorgeResourceProcessing: Boolean = false
 
     var icon: File? = project.projectDir["icon.png"]
     var banner: File? = project.projectDir["banner.png"]
@@ -348,7 +391,7 @@ open class KorgeExtension(
 
 	var gameCategory: GameCategory? = null
 
-	var fullscreen = true
+	var fullscreen: Boolean? = null
 
 	var backgroundColor: Int = 0xff000000.toInt()
 
@@ -428,7 +471,7 @@ open class KorgeExtension(
 
 	internal val defaultPluginsClassLoader by lazy { plugins.classLoader }
 
-    var androidReleaseSignStoreFile: String = "korge.keystore"
+    var androidReleaseSignStoreFile: String = "build/korge.keystore"
     var androidReleaseSignStorePassword: String = "password"
     var androidReleaseSignKeyAlias: String = "korge"
     var androidReleaseSignKeyPassword: String = "password"
@@ -468,18 +511,21 @@ open class KorgeExtension(
 		androidPermission("android.permission.VIBRATE")
 	}
 
-    fun admob(ADMOB_APP_ID: String) {
-        bundle("https://github.com/korlibs/korge-bundles.git::korge-admob::4ac7fcee689e1b541849cedd1e017016128624b9##2ca2bf24ab19e4618077f57092abfc8c5c8fba50b2797a9c6d0e139cd24d8b35")
-        config("ADMOB_APP_ID", ADMOB_APP_ID)
-    }
-
-    fun gameServices() {
-        bundle("https://github.com/korlibs/korge-bundles.git::korge-services::4ac7fcee689e1b541849cedd1e017016128624b9##392d5ed87428c7137ae40aa7a44f013dd1d759630dca64e151bbc546eb25e28e")
-    }
-
-    fun billing() {
-        bundle("https://github.com/korlibs/korge-bundles.git::korge-billing::4ac7fcee689e1b541849cedd1e017016128624b9##cbde3d386e8d792855b7ef64e5e700f43b7bb367aedc6a27198892e41d50844b")
-    }
+    //@Deprecated("")
+    //fun admob(ADMOB_APP_ID: String) {
+    //    bundle("https://github.com/korlibs/korge-bundles.git::korge-admob::4ac7fcee689e1b541849cedd1e017016128624b9##2ca2bf24ab19e4618077f57092abfc8c5c8fba50b2797a9c6d0e139cd24d8b35")
+    //    config("ADMOB_APP_ID", ADMOB_APP_ID)
+    //}
+    //
+    //@Deprecated("")
+    //fun gameServices() {
+    //    bundle("https://github.com/korlibs/korge-bundles.git::korge-services::4ac7fcee689e1b541849cedd1e017016128624b9##392d5ed87428c7137ae40aa7a44f013dd1d759630dca64e151bbc546eb25e28e")
+    //}
+    //
+    //@Deprecated("")
+    //fun billing() {
+    //    bundle("https://github.com/korlibs/korge-bundles.git::korge-billing::4ac7fcee689e1b541849cedd1e017016128624b9##cbde3d386e8d792855b7ef64e5e700f43b7bb367aedc6a27198892e41d50844b")
+    //}
 
     fun author(name: String, email: String, href: String) {
 		authorName = name

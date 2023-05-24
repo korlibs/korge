@@ -37,7 +37,7 @@ open class BrowserCanvasJsGameWindow(
         else -> tDevicePixelRatio
     }
     // @TODO: Improve this: https://gist.github.com/scryptonite/5242987
-    //override val pixelsPerInch: Double get() = 96.0 * devicePixelRatio
+    //override val pixelsPerInch: Float get() = 96f * devicePixelRatio
 
     override val ag: AGOpengl = AGWebgl(AGConfig(), canvas)
     override val dialogInterface: DialogInterfaceJs = DialogInterfaceJs()
@@ -98,8 +98,11 @@ open class BrowserCanvasJsGameWindow(
                         gamepad.rawButtons[BUTTONS_MAPPING[n].index] = controller.buttons[n].value.toFloat()
                     }
                     for (n in 0 until kotlin.math.min(controller.axes.length, AXES_MAPPING.size)) {
+                        val isX = n % 2 == 0
+                        val isY = !isX
                         val value = controller.axes[n].toFloat()
-                        gamepad.rawButtons[AXES_MAPPING[n].index] = GamepadInfo.withoutDeadRange(value, apply = n <= 3)
+                        val valueWithoutDeadRange = GamepadInfo.withoutDeadRange(value, apply = n <= 3)
+                        gamepad.rawButtons[AXES_MAPPING[n].index] = if (isY) -valueWithoutDeadRange else valueWithoutDeadRange
                     }
                     dispatchGamepadUpdateAdd(gamepad)
                 }
@@ -119,7 +122,7 @@ open class BrowserCanvasJsGameWindow(
         }
 
     @PublishedApi
-    internal var canvasRatio = 1f
+    internal var canvasRatio: Float = 1f
 
     private fun onResized() {
         isTouchDeviceCache = null
@@ -146,8 +149,8 @@ open class BrowserCanvasJsGameWindow(
         dispatchReshapeEvent(0, 0, canvas.width, canvas.height)
     }
 
-    inline fun transformEventX(x: Double): Double = x * canvasRatio
-    inline fun transformEventY(y: Double): Double = y * canvasRatio
+    inline fun transformEventX(x: Float): Float = x * canvasRatio
+    inline fun transformEventY(y: Float): Float = y * canvasRatio
 
     private fun keyEvent(me: KeyboardEvent) {
         val key = when (me.key) {
@@ -240,9 +243,8 @@ open class BrowserCanvasJsGameWindow(
                 val touchId = touch.identifier
                 touch(
                     id = touchId,
-                    x = transformEventX(touch.clientX.toDouble() - canvasBounds.left),
-                    y = transformEventY(touch.clientY.toDouble() - canvasBounds.top),
-                    force = touch.asDynamic().force.unsafeCast<Double?>() ?: 1.0,
+                    p = Point(transformEventX(touch.clientX.toFloat() - canvasBounds.left.toFloat()), transformEventY(touch.clientY.toFloat() - canvasBounds.top.toFloat())),
+                    force = touch.asDynamic().force.unsafeCast<Float?>() ?: 1f,
                     kind = Touch.Kind.FINGER
                 )
             }
@@ -254,8 +256,8 @@ open class BrowserCanvasJsGameWindow(
     private fun mouseEvent(e: MouseEvent, type: korlibs.event.MouseEvent.Type, pressingType: korlibs.event.MouseEvent.Type = type) {
         val canvasBounds = canvas.getBoundingClientRect()
 
-        val tx = transformEventX(e.clientX.toDouble() - canvasBounds.left).toInt()
-        val ty = transformEventY(e.clientY.toDouble() - canvasBounds.top).toInt()
+        val tx = transformEventX(e.clientX.toFloat() - canvasBounds.left.toFloat()).toInt()
+        val ty = transformEventY(e.clientY.toFloat() - canvasBounds.top.toFloat()).toInt()
         //console.log("mouseEvent", type.toString(), e.clientX, e.clientY, tx, ty)
         mouseEvent {
             this.type = if (e.buttons.toInt() != 0) pressingType else type
@@ -280,14 +282,14 @@ open class BrowserCanvasJsGameWindow(
 
                 //println("scrollDeltaMode: ${we.deltaMode}: $mode, ${we.deltaX}, ${we.deltaY}, ${we.deltaZ}")
 
-                val sensitivity = 0.05
+                val sensitivity = 0.05f
                 //val sensitivity = 0.1
 
                 this.setScrollDelta(
                     mode,
-                    x = we.deltaX * sensitivity,
-                    y = we.deltaY * sensitivity,
-                    z = we.deltaZ * sensitivity,
+                    x = we.deltaX.toFloat() * sensitivity,
+                    y = we.deltaY.toFloat() * sensitivity,
+                    z = we.deltaZ.toFloat() * sensitivity,
                 )
             }
         }
@@ -531,18 +533,18 @@ private external interface JsArray<T> {
 private inline operator fun <T> JsArray<T>.get(index: Int): T = this.asDynamic()[index]
 
 private external interface JsGamepadButton {
-    val value: Double
+    val value: Float
     val pressed: Boolean
 }
 
 private external interface JsGamePad {
-    val axes: JsArray<Double>
+    val axes: JsArray<Float>
     val buttons: JsArray<JsGamepadButton>
     val connected: Boolean
     val id: String
     val index: Int
     val mapping: String
-    val timestamp: Double
+    val timestamp: Float
 }
 
 @JsName("GamepadEvent")

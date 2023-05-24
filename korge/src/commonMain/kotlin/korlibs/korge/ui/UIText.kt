@@ -68,12 +68,12 @@ class UIText(
         bpressing = false
     }
 
-    private val textBounds = MRectangle()
+    private var textBounds = Rectangle()
 
     override fun renderInternal(ctx: RenderContext) {
         background.visible = bgcolor.a != 0
         background.colorMul = bgcolor
-        textBounds.setTo(0.0, 0.0, widthD, heightD)
+        textBounds = Rectangle(Point.ZERO, unscaledSize)
         textView.setFormat(face = styles.textFont, size = styles.textSize.toInt(), color = styles.textColor, align = styles.textAlignment)
         textView.setTextBounds(textBounds.immutable)
         //background.size(width, height)

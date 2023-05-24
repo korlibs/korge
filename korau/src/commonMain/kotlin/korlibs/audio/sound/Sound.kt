@@ -55,7 +55,9 @@ open class LazyNativeSoundProvider(val gen: () -> NativeSoundProvider) : NativeS
 open class NativeSoundProvider : Disposable {
 	open val target: String = "unknown"
 
-	open fun createPlatformAudioOutput(coroutineContext: CoroutineContext, freq: Int = 44100): PlatformAudioOutput = PlatformAudioOutput(coroutineContext, freq)
+    open var paused: Boolean = false
+
+    open fun createPlatformAudioOutput(coroutineContext: CoroutineContext, freq: Int = 44100): PlatformAudioOutput = PlatformAudioOutput(coroutineContext, freq)
 
     suspend fun createPlatformAudioOutput(freq: Int = 44100): PlatformAudioOutput = createPlatformAudioOutput(coroutineContextKt, freq)
 
@@ -319,7 +321,7 @@ abstract class Sound(val creationCoroutineContext: CoroutineContext) : SoundProp
 	open val length: TimeSpan = 0.seconds
     open val nchannels: Int get() = 1
 
-    fun playNoCancel(times: PlaybackTimes, startTime: TimeSpan = 0.seconds): SoundChannel = play(creationCoroutineContext + SupervisorJob(), times, startTime)
+    fun playNoCancel(times: PlaybackTimes = PlaybackTimes.ONE, startTime: TimeSpan = 0.seconds): SoundChannel = play(creationCoroutineContext + SupervisorJob(), times, startTime)
     fun playNoCancelForever(startTime: TimeSpan = 0.seconds): SoundChannel = play(creationCoroutineContext + SupervisorJob(), infinitePlaybackTimes, startTime)
 
     open fun play(coroutineContext: CoroutineContext, params: PlaybackParameters = PlaybackParameters.DEFAULT): SoundChannel = TODO()

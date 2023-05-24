@@ -2,17 +2,15 @@ package korlibs.korge.input
 
 import korlibs.korge.view.View
 import korlibs.korge.view.Views
-import korlibs.math.geom.MPoint
+import korlibs.math.geom.*
 import kotlin.math.abs
 
 data class SwipeInfo(
-    var dx: Double = 0.0,
-    var dy: Double = 0.0,
+    var delta: Vector2 = Vector2.ZERO,
     var direction: SwipeDirection
 ) {
-    fun setTo(dx: Double, dy: Double, direction: SwipeDirection): SwipeInfo {
-        this.dx = dx
-        this.dy = dy
+    fun setTo(delta: Vector2, direction: SwipeDirection): SwipeInfo {
+        this.delta = delta
         this.direction = direction
         return this
     }
@@ -37,26 +35,24 @@ fun <T : View> T.onSwipe(
     callback: suspend Views.(SwipeInfo) -> Unit
 ): T {
     var register = false
-    var sx = 0.0
-    var sy = 0.0
-    var cx = 0.0
-    var cy = 0.0
+    var sx = 0f
+    var sy = 0f
+    var cx = 0f
+    var cy = 0f
     var movedLeft = false
     var movedRight = false
     var movedTop = false
     var movedBottom = false
 
     val view = this
-    val mousePos = MPoint()
-    val swipeInfo = SwipeInfo(0.0, 0.0, SwipeDirection.TOP)
+    var mousePos = Point.ZERO
+    val swipeInfo = SwipeInfo(Vector2.ZERO, SwipeDirection.TOP)
 
     fun views() = view.stage!!.views
 
     fun updateMouse() {
         val views = views()
-        mousePos.setTo(
-            views.globalMousePos
-        )
+        mousePos = views.globalMousePos
     }
 
     fun updateCoordinates() {
@@ -70,7 +66,7 @@ fun <T : View> T.onSwipe(
 
     suspend fun triggerEvent(direction: SwipeDirection) {
         register = false
-        views().callback(swipeInfo.setTo(cx - sx, cy - sy, direction))
+        views().callback(swipeInfo.setTo(Vector2(cx - sx, cy - sy), direction))
     }
 
     suspend fun checkPositionOnMove() {

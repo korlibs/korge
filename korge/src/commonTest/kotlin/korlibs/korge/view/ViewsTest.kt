@@ -7,6 +7,7 @@ import korlibs.image.color.*
 import korlibs.io.util.*
 import korlibs.korge.tests.*
 import korlibs.korge.tween.*
+import korlibs.korge.view.align.*
 import korlibs.logger.*
 import korlibs.math.geom.*
 import korlibs.time.*
@@ -428,6 +429,18 @@ class ViewsTest : ViewsForTesting() {
             log.joinToString("\n")
         )
     }
+
+    @Test
+    fun testViewsResizedEvent() = viewsTest {
+        val out = arrayListOf<String>()
+        onStageResized { width, height -> out += "${width}x$height" }
+        assertEquals("1280x720", out.joinToString(","))
+        resizeGameWindow(1000, 500)
+        assertEquals("1280x720,1441x721", out.joinToString(","))
+        resizeGameWindow(800, 500)
+        assertEquals("1280x720,1441x721,1280x800", out.joinToString(","))
+    }
+
 
     //// sorted
 

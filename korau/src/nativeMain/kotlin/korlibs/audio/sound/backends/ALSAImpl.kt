@@ -7,7 +7,7 @@ import kotlinx.cinterop.*
 actual object ASoundImpl : ASound2 {
     override val initialized: Boolean get() = A2.initialized
 
-    override fun alloc_params(): Long = platform.posix.malloc(1024)!!.rawValue.toLong()
+    override fun alloc_params(): Long = platform.posix.malloc(1024.convert())!!.rawValue.toLong()
     override fun free_params(value: Long) = platform.posix.free(value.toCPointer<ByteVar>())
 
     override fun snd_pcm_open(name: String, stream: Int, mode: Int): Long {

@@ -24,17 +24,21 @@ interface IDefaultShaders {
 
 object ShaderIndices {
     // 6 Custom samplers
-    const val SAMPLER_INDEX0 = 0
-    const val SAMPLER_INDEX1 = 1
-    const val SAMPLER_INDEX2 = 2
-    const val SAMPLER_INDEX3 = 3
-    const val SAMPLER_INDEX4 = 4
-    const val SAMPLER_INDEX5 = 5
+    const val SAMPLER_INDEX0 = 0 // Reserved for users
+    const val SAMPLER_INDEX1 = 1 // Normal TEX
+    const val SAMPLER_INDEX2 = 2 // Extra TEX
+    const val SAMPLER_INDEX3 = 3 // MULTI TEX 0
+    const val SAMPLER_INDEX4 = 4 // MULTI TEX 1
+    const val SAMPLER_INDEX5 = 5 // MULTI TEX 2
+    const val SAMPLER_INDEX6 = 6 // MULTI TEX 3
+    const val SAMPLER_INDEX7 = 7 // Reserved for temporary stuff
+
+    const val SAMPLER_MAX_COUNT = 8 // Max number of samplers. Equivalent to minimum of GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS that is 8
 
     // Reserved sampler indices
-    const val SAMPLER_MTEX_INDEX = 6
-    const val SAMPLER_TEX_INDEX = 10
-    const val SAMPLER_TEXEX_INDEX = 11
+    const val SAMPLER_TEX_INDEX = SAMPLER_INDEX1
+    const val SAMPLER_TEXEX_INDEX = SAMPLER_INDEX2
+    const val SAMPLER_MTEX_INDEX = SAMPLER_INDEX3
 }
 
 object DefaultShaders {

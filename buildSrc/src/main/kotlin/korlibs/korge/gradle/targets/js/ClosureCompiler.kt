@@ -10,15 +10,24 @@ fun Project.configureClosureCompiler() {
     val jsBrowserEsbuildClosureCompiler = tasks.createThis<Task>("jsBrowserEsbuildClosureCompiler") {
         val browserReleaseEsbuild = tasks.getByName("browserReleaseEsbuild")
         val jsFile = browserReleaseEsbuild.outputs.files.first()
-        val jsMinFile = File(jsFile.parentFile, jsFile.nameWithoutExtension + ".min.js")
+        val jsFileMap = File(jsFile.parentFile, jsFile.nameWithoutExtension + ".js.map")
+        val jsBigFile = File(jsFile.parentFile, jsFile.nameWithoutExtension + ".big.js")
+        val jsBigFileMap = File(jsFile.parentFile, jsFile.nameWithoutExtension + ".big.js.map")
         group = "kotlin browser"
         dependsOn(browserReleaseEsbuild)
         inputs.file(jsFile)
         //task.outputs.file(jsMinFile)
         outputs.file(jsFile)
         doFirst {
-            compileJs(jsFile, jsFile)
-            //compileJs(jsFile, jsMinFile)
+            jsBigFile.writeBytes(jsFile.readBytes())
+            jsFile.delete()
+            if (jsFileMap.exists()) {
+                jsBigFileMap.writeBytes(jsFileMap.readBytes())
+                jsFileMap.delete()
+            }
+            compileJs(jsBigFile, jsFile, jsBigFileMap.exists())
+            jsBigFile.delete()
+            jsBigFileMap.delete()
             //jsFile.writeText(compileJs(jsFile.readText()) ?: error("Can't compile JS file due to an error"))
         }
     }
@@ -30,8 +39,28 @@ fun Project.configureClosureCompiler() {
 }
 
 
-private fun compileJs(input: File, output: File) {
-    val runner = object : CommandLineRunner(arrayOf("--warning_level", "QUIET", "--js", input.toString(), "--js_output_file", output.toString())) { }
+private fun compileJs(input: File, output: File, useSourceMap: Boolean) {
+    val runner = object : CommandLineRunner(ArrayList<String>().apply {
+        add("--warning_level"); add("QUIET")
+        add("--js"); add("$input")
+        if (useSourceMap) {
+            add("--create_source_map"); add("$output.map")
+            add("--apply_input_source_maps")
+        }
+        add("--js_output_file"); add("$output")
+    }.toTypedArray()) {
+        override fun createOptions(): CompilerOptions {
+            return super.createOptions().also {
+                it.setErrorHandler { level, error ->
+                    println("$level:$error")
+                }
+            }
+        }
+
+        override fun setRunOptions(options: CompilerOptions?) {
+            super.setRunOptions(options)
+        }
+    }
     runner.setExitCodeReceiver {
         if (it != 0) {
             error("Error compiling JS")

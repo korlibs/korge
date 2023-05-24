@@ -165,6 +165,7 @@ internal object Yaml {
             // Line start
             flush()
             val indentStr = readWhile(Char::isWhitespace).replace("\t", "     ")
+            if (indentStr.contains('\n')) continue@linestart  // ignore empty lines with possible additional indent
             val indent = indentStr.length
             if (indents.isEmpty() || indent > indents.last()) {
                 indents += indent

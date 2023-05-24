@@ -57,10 +57,10 @@ class DirectionalBlurFilter(
         }
     }
 
-    private val qfactor: Double = sqrt(2 * ln(255.0))
+    private val qfactor: Float = sqrt(2 * ln(255f))
 
     //private val rradius: Double get() = (radius * ln(radius).coerceAtLeast(1.0)).coerceAtLeast(0.0)
-    private val rradius: Double get() = (radius * qfactor)
+    private val rradius: Float get() = (radius * qfactor)
 
     // @TODO: Here we cannot do this, but we should be able to do this trick: https://www.rastergrid.com/blog/2010/09/efficient-gaussian-blur-with-linear-sampling/
     //override val recommendedFilterScale: Float get() = if (rradius <= 2.0) 1.0 else 1.0 / log2(rradius.coerceAtLeast(1.0))
@@ -74,7 +74,7 @@ class DirectionalBlurFilter(
         )
     }
 
-    private fun gaussian(x: Double, constant1: Double, constant2: Double): Double = constant1 * exp((-x * x) * constant2)
+    private fun gaussian(x: Float, constant1: Float, constant2: Float): Float = constant1 * exp((-x * x) * constant2)
 
     override fun updateUniforms(ctx: RenderContext, filterScale: Float) {
         val radius = this.rradius * filterScale
@@ -83,13 +83,13 @@ class DirectionalBlurFilter(
         val sigma = (radius + 1) / qfactor
         //val sigma = 128.0
         //println("radius=$radius, sigma=$sigma")
-        val constant1 = 1.0 / (sigma * sqrt(2.0 * PI))
-        val constant2 = 1.0 / (2.0 * sigma * sigma)
+        val constant1 = 1f / (sigma * sqrt(2f * PI.toFloat()))
+        val constant2 = 1f / (2f * sigma * sigma)
 
-        var scaleSum = 0.0
+        var scaleSum = 0f
         if (radius.isFinite()) {
             for (n in 0 until radius.toIntCeil()) {
-                val gauss = gaussian(n.toDouble(), constant1, constant2)
+                val gauss = gaussian(n.toFloat(), constant1, constant2)
                 scaleSum += if (n != 0) gauss * 2 else gauss
             }
         }
@@ -97,7 +97,7 @@ class DirectionalBlurFilter(
         //println("RADIUS: $radius")
         ctx[BlurUB].push {
             it[u_radius] = radius
-            it[u_constant1] = constant1 * (1.0 / scaleSum)
+            it[u_constant1] = constant1 * (1f / scaleSum)
             it[u_constant2] = constant2
             it[u_direction] = Point(angle.cosineF, angle.sineF)
         }

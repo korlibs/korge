@@ -340,7 +340,13 @@ fun <T : Bitmap> T.checkMatchDimensions(other: T): T {
     return other
 }
 
-/** Enable or disable mipmap generation for this [Bitmap] (Not used directly by KorIM, but KorGE) */
+/**
+ * Enable or disable mipmap generation for this [Bitmap]
+ *
+ * Import: For this to work, both [Bitmap.width] and [Bitmap.height] must be power of two: 2, 4, 8, ..., 512, 1024, ..., 4096
+ *
+ * (Not used directly by KorIM, but KorGE)
+ * */
 fun <T : Bitmap> T.mipmaps(enable: Boolean = true): T = this.apply { this.mipmaps = enable }
 
 var Bitmap.baseMipmapLevel: Int? by Extra.Property { null }

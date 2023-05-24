@@ -48,14 +48,15 @@ val VectorPath.cachedPoints: PointList by Extra.PropertyThis { this.getPoints2()
 inline fun buildVectorPath(out: VectorPath = VectorPath(), block: VectorPath.() -> Unit): VectorPath = out.apply(block)
 inline fun buildVectorPath(out: VectorPath = VectorPath(), winding: Winding = Winding.DEFAULT, block: VectorPath.() -> Unit): VectorPath = out.also { it.winding = winding }.apply(block)
 
-fun List<Shape2D>.toShape2d(): Shape2D = Shape2D(*this.toTypedArray())
-fun Shape2D.toShape2d(): Shape2D = this
+fun List<Shape2D>.toShape2D(): Shape2D = Shape2D(*this.toTypedArray())
+fun Shape2D.toShape2D(): Shape2D = this
 
-@Deprecated("Use Shape2D")
-typealias Shape2d = Shape2D
+@Deprecated("", ReplaceWith("toShape2D()")) fun List<Shape2D>.toShape2d(): Shape2D = toShape2D()
+@Deprecated("", ReplaceWith("toShape2D()")) fun Shape2D.toShape2d(): Shape2D = toShape2D()
 
 // RoundRectangle
 interface Shape2D {
+    val closed: Boolean get() = toVectorPath().isLastCommandClose
     val center: Point get() = getBounds().center
     val area: Float get() {
         val lazyVectorPath = toVectorPath()
@@ -92,7 +93,7 @@ interface Shape2D {
     //    TODO()
     //}
 
-    /** [ml] transformation matrix of this [Shape2d], [mr] transformation matrix of the point [p] */
+    /** [ml] transformation matrix of this [Shape2D], [mr] transformation matrix of the point [p] */
     @Deprecated("Untested yet")
     fun containsPoint(ml: Matrix, p: Point, mr: Matrix): Boolean {
         val mat = mr * ml.inverted()
@@ -100,14 +101,14 @@ interface Shape2D {
     }
 
     // @TODO: Check
-    /** [ml] transformation matrix of this [Shape2d], [mr] transformation matrix of the point [p] */
+    /** [ml] transformation matrix of this [Shape2D], [mr] transformation matrix of the point [p] */
     @Deprecated("Untested yet")
     fun distance(ml: Matrix, p: Point, mr: Matrix): Float {
         return (p.transformed(mr) - projectedPoint(ml, p, mr)).length
     }
 
     // @TODO: Check
-    /** [ml] transformation matrix of this [Shape2d], [mr] transformation matrix of the point [p] */
+    /** [ml] transformation matrix of this [Shape2D], [mr] transformation matrix of the point [p] */
     @Deprecated("Untested yet")
     fun normalVectorAt(ml: Matrix, p: Point, mr: Matrix): Point {
         val mat = mr * ml.inverted()
@@ -115,14 +116,14 @@ interface Shape2D {
     }
 
     // @TODO: Check
-    /** [ml] transformation matrix of this [Shape2d], [mr] transformation matrix of the point [p] */
+    /** [ml] transformation matrix of this [Shape2D], [mr] transformation matrix of the point [p] */
     @Deprecated("Untested yet")
     fun projectedPoint(ml: Matrix, p: Point, mr: Matrix): Point {
         val mat = mr * ml.inverted()
         return projectedPoint(p.transformed(mat)).transformed(ml)
     }
 
-    /** [ml] transformation matrix of this [Shape2d], [mr] transformation matrix of the shape [that] */
+    /** [ml] transformation matrix of this [Shape2D], [mr] transformation matrix of the shape [that] */
     fun intersectionsWith(ml: Matrix, that: Shape2D, mr: Matrix): PointList {
         val mat = mr * ml.inverted()
 
@@ -157,15 +158,15 @@ interface Shape2D {
 
     companion object {
         operator fun invoke(vararg shapes: Shape2D): Shape2D {
-            if (shapes.isEmpty()) return EmptyShape2d
+            if (shapes.isEmpty()) return EmptyShape2D
             if (shapes.size == 1) return shapes[0]
-            return CompoundShape2d(shapes.toList())
+            return CompoundShape2D(shapes.toList())
         }
 
         fun intersections(l: Shape2D, ml: Matrix, r: Shape2D, mr: Matrix): PointList = l.intersectionsWith(ml, r, mr)
 
         fun intersects(l: Shape2D, ml: Matrix, r: Shape2D, mr: Matrix): Boolean {
-            //println("Shape2d.intersects:"); println(" - l=$l[$ml]"); println(" - r=$r[$mr]")
+            //println("Shape2D.intersects:"); println(" - l=$l[$ml]"); println(" - r=$r[$mr]")
 
             if (ml.isNIL && mr.isNIL && l is Circle && r is Circle) return optimizedIntersect(l, ml, r, mr)
 
@@ -196,7 +197,9 @@ interface Shape2D {
     }
 }
 
-data class CompoundShape2d(val shapes: List<Shape2D>) : AbstractShape2D() {
+//@Deprecated("") typealias CompoundShape2d = CompoundShape2D
+
+data class CompoundShape2D(val shapes: List<Shape2D>) : AbstractShape2D() {
     override val lazyVectorPath: VectorPath by lazy {
         buildVectorPath { shapes.fastForEach { shape -> path(shape.toVectorPath()) } }
     }
@@ -236,7 +239,9 @@ data class CompoundShape2d(val shapes: List<Shape2D>) : AbstractShape2D() {
     override fun toVectorPath(): VectorPath = buildVectorPath { shapes.fastForEach { write(it.toVectorPath()) } }
 }
 
-object EmptyShape2d : Shape2D {
+//@Deprecated("") typealias EmptyShape2d = EmptyShape2D
+
+object EmptyShape2D : Shape2D {
     override val area: Float get() = 0f
     override val perimeter: Float get() = 0f
     override fun containsPoint(p: Point): Boolean = false
@@ -272,12 +277,10 @@ inline fun VectorPath.emitEdges(
 }
 
 
-
 fun PointList.toPolygon(out: VectorPath = VectorPath()): VectorPath = buildVectorPath(out) { polygon(this@toPolygon) }
 
-
-
-fun PointList.toShape2d(closed: Boolean = true): Shape2D {
+@Deprecated("", ReplaceWith("toShape2D(closed)")) fun PointList.toShape2d(closed: Boolean = true): Shape2D = toShape2D(closed)
+fun PointList.toShape2D(closed: Boolean = true): Shape2D {
     if (closed && this.size == 4) {
         val x0 = this.getX(0)
         val y0 = this.getY(0)
@@ -290,24 +293,27 @@ fun PointList.toShape2d(closed: Boolean = true): Shape2D {
     return if (closed) Polygon(this) else Polyline(this)
 }
 
-//fun VectorPath.toShape2dNew(closed: Boolean = true): Shape2d = VectorPath(this, closed)
-fun VectorPath.toShape2dNew(closed: Boolean = true): Shape2D = this
+//fun VectorPath.toShape2dNew(closed: Boolean = true): Shape2D = VectorPath(this, closed)
+@Deprecated("", ReplaceWith("toShape2DNew()")) fun VectorPath.toShape2dNew(closed: Boolean = true): Shape2D = toShape2DNew()
+fun VectorPath.toShape2DNew(closed: Boolean = true): Shape2D = this
 
-//fun VectorPath.toShape2d(closed: Boolean = true): Shape2d = toShape2dNew(closed)
-fun VectorPath.toShape2d(closed: Boolean = true): Shape2D = toShape2dOld(closed)
+//fun VectorPath.toShape2d(closed: Boolean = true): Shape2D = toShape2dNew(closed)
+@Deprecated("", ReplaceWith("toShape2D(closed)")) fun VectorPath.toShape2d(closed: Boolean = true): Shape2D = toShape2D(closed)
+fun VectorPath.toShape2D(closed: Boolean = true): Shape2D = toShape2DOld(closed)
 
-fun VectorPath.toShape2dOld(closed: Boolean = true): Shape2D {
+@Deprecated("", ReplaceWith("toShape2DOld(closed)")) fun VectorPath.toShape2dOld(closed: Boolean = true): Shape2D = toShape2DOld(closed)
+fun VectorPath.toShape2DOld(closed: Boolean = true): Shape2D {
     val items = toPathPointList().map { it.toShape2d(closed) }
     return when (items.size) {
-        0 -> EmptyShape2d
+        0 -> EmptyShape2D
         1 -> items.first()
-        else -> CompoundShape2d(items)
+        else -> CompoundShape2D(items)
     }
 }
 
 
-//fun Shape2d.getAllPoints(out: PointArrayList = PointArrayList()): PointArrayList = out.apply { for (path in this@getAllPoints.paths) add(path) }
-//fun Shape2d.toPolygon(): Shape2d.Polygon = if (this is Shape2d.Polygon) this else Shape2d.Polygon(this.getAllPoints())
+//fun Shape2D.getAllPoints(out: PointArrayList = PointArrayList()): PointArrayList = out.apply { for (path in this@getAllPoints.paths) add(path) }
+//fun Shape2D.toPolygon(): Shape2D.Polygon = if (this is Shape2D.Polygon) this else Shape2D.Polygon(this.getAllPoints())
 
 fun List<MPoint>.containsPoint(x: Double, y: Double): Boolean {
     var intersections = 0

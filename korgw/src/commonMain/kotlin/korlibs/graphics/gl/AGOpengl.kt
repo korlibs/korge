@@ -13,9 +13,13 @@ import korlibs.kgl.*
 import korlibs.memory.*
 
 //val ENABLE_UNIFORM_BLOCKS = Environment["ENABLE_UNIFORM_BLOCKS"] == "true"
-val ENABLE_UNIFORM_BLOCKS = true
+val ENABLE_UNIFORM_BLOCKS = Environment["DISABLE_UNIFORM_BLOCKS"] != "true"
+val ENABLE_VERTEX_ARRAY_OBJECTS = Environment["DISABLE_VERTEX_ARRAY_OBJECTS"] != "true"
+//val ENABLE_UNIFORM_BLOCKS = false
 
-class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
+class AGOpengl(val gl: KmlGl, var context: KmlGlContext? = null) : AG() {
+    val contextsToFree = linkedSetOf<KmlGlContext?>()
+
     class ShaderException(val str: String, val error: String, val errorInt: Int, val gl: KmlGl, val debugName: String?, val type: Int, val shaderReturnInt: Int) :
         RuntimeException("Error Compiling Shader : $debugName type=$type : ${errorInt.hex} : '$error' : source='$str', shaderReturnInt=$shaderReturnInt, gl.versionInt=${gl.versionInt}, gl.versionString='${gl.versionString}', gl=$gl")
 
@@ -33,6 +37,10 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
         gl.handleContextLost()
         gl.graphicExtensions // Ensure extensions are available outside the GL thread
         normalPrograms.clear()
+        resetObjects()
+        dynamicVaoGlId = -1
+        dynamicVaoContextVersion = -1
+        reallyIsVertexArraysSupported = true
         //externalPrograms.clear()
     }
 
@@ -49,7 +57,7 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
         //gl.finish()
         selectTextureUnitTemp(TEMP_TEXTURE_UNIT, setToNullLater = true) {
             textureBind(texture, AGTextureTargetKind.TEXTURE_2D)
-            if (!gl.variant.isWebGL) {
+            if (gl.variant.supportTextureLevel) {
                 gl.texParameteri(gl.TEXTURE_2D, KmlGl.TEXTURE_BASE_LEVEL, 0)
                 gl.texParameteri(gl.TEXTURE_2D, KmlGl.TEXTURE_MAX_LEVEL, 0)
             }
@@ -255,9 +263,9 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
             instances != 1 -> gl.drawArraysInstanced(drawType.toGl(), drawOffset, vertexCount, instances)
             else -> gl.drawArrays(drawType.toGl(), drawOffset, vertexCount)
         }
+        //println("/GLDRAW")
 
         //currentVertexData?.let { vaoUnuse(it) }
-
     }
 
     val glslConfig: GlslConfig by lazy { GlslConfig(gl.variant, gl) }
@@ -279,6 +287,16 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
         context?.set()
         gl.beforeDoRender(contextVersion)
 
+        resetObjects()
+        backBufferFrameBufferBinding = gl.getIntegerv(KmlGl.FRAMEBUFFER_BINDING)
+        gl.activeTexture(KmlGl.TEXTURE0)
+        if (gl.variant.supportTextureLevel) {
+            gl.texParameteri(gl.TEXTURE_2D, KmlGl.TEXTURE_BASE_LEVEL, 0)
+            gl.texParameteri(gl.TEXTURE_2D, KmlGl.TEXTURE_MAX_LEVEL, 0)
+        }
+    }
+
+    private fun resetObjects() {
         currentVertexData = null
         currentScissor = AGScissor.INVALID
         currentBlending = AGBlending.INVALID
@@ -289,16 +307,10 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
         currentRenderState = AGDepthAndFrontFace.INVALID
         currentTextureUnits.clear()
         currentProgram = null
-        backBufferFrameBufferBinding = gl.getIntegerv(KmlGl.FRAMEBUFFER_BINDING)
         _currentFrameBuffer = -1
         _currentTextureUnit = 0
         _currentViewportSize = AGSize.INVALID
         textureParams.fastForEach { it.reset() }
-        gl.activeTexture(KmlGl.TEXTURE0)
-        if (!gl.variant.isWebGL) {
-            gl.texParameteri(gl.TEXTURE_2D, KmlGl.TEXTURE_BASE_LEVEL, 0)
-            gl.texParameteri(gl.TEXTURE_2D, KmlGl.TEXTURE_MAX_LEVEL, 0)
-        }
     }
 
     override fun endFrame() {
@@ -374,6 +386,7 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
     }
 
     fun <T : AGObject> T.update(block: (T) -> Unit) {
+        //println("UPDATE $this: this._cachedVersion != this._version  :: ${this._cachedVersion} != ${this._version}")
         if (this._cachedVersion != this._version) {
             this._cachedVersion = this._version
             block(this)
@@ -391,22 +404,26 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
         updated?.value = false
         if (buffer == null) {
             gl.bindBuffer(target.toGl(), 0)
+            //println("BIND: $target : null")
             return null
         }
-        val bufferInfo = buffer.gl
-        if (!onlyUpdate) gl.bindBuffer(target.toGl(), bufferInfo.id)
+        val bufferInfo: GLBuffer = buffer.gl
+        if (!onlyUpdate) {
+            gl.bindBuffer(target.toGl(), bufferInfo.id)
+            //println("BIND: $target : $bufferInfo")
+        }
         buffer.update {
             //println("Updated buffer: ${buffer.identityHashCode()} $buffer, $target, $onlyUpdate")
             val mem = buffer.mem ?: Buffer(0)
             bufferInfo.estimatedBytes = mem.sizeInBytes.toLong()
             if (onlyUpdate) gl.bindBuffer(target.toGl(), bufferInfo.id)
-            if (buffer.lastUploadedSize < mem.sizeInBytes) {
-                buffer.lastUploadedSize = mem.sizeInBytes
+            if (bufferInfo.lastUploadedSize < mem.sizeInBytes) {
+                //println("UPLOAD FULL DATA buffer=$bufferInfo: uploadedSize=${bufferInfo.lastUploadedSize} = ${mem.sizeInBytes} : contextVersion=$contextVersion")
+                bufferInfo.lastUploadedSize = mem.sizeInBytes
                 gl.bufferData(target.toGl(), mem.sizeInBytes, mem, KmlGl.DYNAMIC_DRAW)
                 reallocated?.value = true
-                //println("UPLOAD FULL DATA")
             } else {
-                //println("UPDATES DATA")
+                //println("UPDATES PARTIAL DATA buffer=$bufferInfo, mem=${mem.sizeInBytes}, buffer=${bufferInfo.lastUploadedSize}")
                 gl.bufferSubData(target.toGl(), 0, mem.sizeInBytes, mem)
             }
             updated?.value = true
@@ -441,7 +458,7 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
     var dynamicVaoGlId = -1
     var dynamicVaoContextVersion = -1
 
-    var reallyIsVertexArraysSupported = true
+    var reallyIsVertexArraysSupported = ENABLE_VERTEX_ARRAY_OBJECTS
 
     fun vaoUse(vao: AGVertexArrayObject) {
         if (reallyIsVertexArraysSupported && gl.isVertexArraysSupported) {
@@ -518,7 +535,7 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
                         glElementType,
                         att.normalized,
                         totalSize,
-                        off.toLong()
+                        entry.baseOffset + off.toLong()
                     )
                     if (att.divisor != 0) {
                         gl.vertexAttribDivisor(loc, att.divisor)
@@ -812,8 +829,7 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
             if (glTex.cachedContentVersion != texBitmap.contentVersion || glTex.cachedAGContextVersion != contextVersion) {
                 glTex.cachedContentVersion = texBitmap.contentVersion
                 glTex.cachedAGContextVersion = contextVersion
-                tex._cachedVersion = -1
-                tex._version++
+                tex._resetVersion()
             }
             tex.update {
                 //gl.texImage2D(target.toGl(), 0, type, source.width, source.height, 0, type, KmlGl.UNSIGNED_BYTE, null)
@@ -862,11 +878,6 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
                         gl.pixelStorei(KmlGl.UNPACK_SWAP_BYTES, KmlGl.GTRUE)
                     }
 
-                    if (!gl.variant.isWebGL) {
-                        gl.texParameteri(texTarget, KmlGl.TEXTURE_BASE_LEVEL, 0)
-                        gl.texParameteri(texTarget, KmlGl.TEXTURE_MAX_LEVEL, 0)
-                    }
-
                     when (bmp) {
                         null -> gl.texImage2D(target.toGl(), 0, type, tex.width, tex.height, 0, type, KmlGl.UNSIGNED_BYTE, null)
                         is NativeImage -> if (bmp.area != 0) {
@@ -887,9 +898,11 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
 
                     totalSize += tex.width * tex.height * 4
 
+                    if (gl.variant.supportTextureLevel) {
+                        gl.texParameteri(KmlGl.TEXTURE_2D, KmlGl.TEXTURE_BASE_LEVEL, if (tex.mipmaps) tex.baseMipmapLevel ?: 0 else 0)
+                        gl.texParameteri(KmlGl.TEXTURE_2D, KmlGl.TEXTURE_MAX_LEVEL, if (tex.mipmaps) tex.maxMipmapLevel ?: 1000 else 0)
+                    }
                     if (tex.mipmaps) {
-                        tex.baseMipmapLevel?.let { gl.texParameteri(KmlGl.TEXTURE_2D, KmlGl.TEXTURE_BASE_LEVEL, it) }
-                        tex.maxMipmapLevel?.let { gl.texParameteri(KmlGl.TEXTURE_2D, KmlGl.TEXTURE_MAX_LEVEL, it) }
                         gl.generateMipmap(texTarget)
                     }
                 }
@@ -899,7 +912,8 @@ class AGOpengl(val gl: KmlGl, val context: KmlGlContext? = null) : AG() {
         }
     }
 
-    private val TEMP_TEXTURE_UNIT = 15
+    //private val TEMP_TEXTURE_UNIT = 15
+    private val TEMP_TEXTURE_UNIT = 7 // GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS might be 8
 
     fun textureSetFromFrameBuffer(tex: AGTexture, x: Int, y: Int, width: Int, height: Int) {
         selectTextureUnitTemp(TEMP_TEXTURE_UNIT, setToNullLater = true) {

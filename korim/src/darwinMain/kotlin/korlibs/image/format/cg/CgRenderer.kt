@@ -240,7 +240,7 @@ class CoreGraphicsRenderer(val bmp: Bitmap32, val antialiasing: Boolean) : korli
                                                     lineDashFloatArray.size.convert()
                                                 )
                                             } else {
-                                                CGContextSetLineDash(ctx, 0.0.cg, null, 0)
+                                                CGContextSetLineDash(ctx, 0.0.cg, null, 0.convert())
                                             }
                                             CGContextReplacePathWithStrokedPath(ctx)
                                         }

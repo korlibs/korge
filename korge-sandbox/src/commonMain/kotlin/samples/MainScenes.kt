@@ -4,6 +4,7 @@ import korlibs.image.color.*
 import korlibs.korge.input.*
 import korlibs.korge.scene.*
 import korlibs.korge.view.*
+import korlibs.korge.view.align.*
 
 class MainScenes : Scene() {
     override suspend fun SContainer.sceneMain() {

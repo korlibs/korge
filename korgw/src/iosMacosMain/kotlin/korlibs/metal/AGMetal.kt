@@ -77,6 +77,12 @@ class AGMetal(
                     setVertexBuffer(buffer, offset = 0uL, bufferLocation)
                 }
 
+                //var currentBuffer = 0uL
+                //vertexData.list.fastForEach{ buffer ->
+                //    setVertexBuffer(buffer.buffer.toMetal.buffer, 0.convert(), currentBuffer)
+                //    currentBuffer += 1uL
+                //}
+
                 uniformBlocks.fastForEachBlock { index, block, buffer, valueIndex ->
                     if (buffer == null) {
                         logger.warn { "empty buffer" }
@@ -97,6 +103,7 @@ class AGMetal(
                         indices.toMetal.buffer,
                         0
                     )
+                    //drawIndexedPrimitives(drawType.toMetal(), vertexCount.toULong(), indexType.toMetal(), indices.toMetal.buffer, 0.convert())
                 } else {
                     TODO("Not yet supported, rendering without vertex indexes")
                 }

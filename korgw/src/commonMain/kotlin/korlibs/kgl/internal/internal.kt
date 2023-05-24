@@ -60,9 +60,9 @@ internal class CachedFloat2(i1: Float, i2: Float) {
     }
 }
 
-//internal class CachedDouble(val initial: Double) {
+//internal class CachedFloat(val initial: Float) {
 //    var current = initial
-//    inline operator fun invoke(value: Double, callback: () -> Unit) {
+//    inline operator fun invoke(value: Float, callback: () -> Unit) {
 //        if (current != value) {
 //            current = value
 //            callback()

@@ -18,6 +18,7 @@ import korlibs.korge.ui.*
 import korlibs.korge.view.filter.*
 import korlibs.korge.view.property.*
 import korlibs.math.geom.*
+import korlibs.math.geom.collider.*
 import korlibs.math.geom.shape.*
 import korlibs.math.geom.vector.*
 import korlibs.math.interpolation.*
@@ -148,9 +149,9 @@ abstract class View internal constructor(
             if (_hitShape2d == null) {
                 if (_hitShape2d == null && hitShapes != null) _hitShape2d = hitShapes!!.toShape2d()
                 if (_hitShape2d == null && hitShape != null) _hitShape2d = hitShape!!.toShape2d()
-                //if (_hitShape2d == null) _hitShape2d = Shape2d.Rectangle(getLocalBounds())
+                //if (_hitShape2d == null) _hitShape2d = Shape2D.Rectangle(getLocalBounds())
             }
-            return _hitShape2d ?: EmptyShape2d
+            return _hitShape2d ?: EmptyShape2D
         }
         set(value) {
             _hitShape2d = value
@@ -190,6 +191,7 @@ abstract class View internal constructor(
 
     /** Property used for interpolable views like morph shapes, progress bars etc. */
     @ViewProperty(min = 0.0, max = 1.0, clampMin = false, clampMax = false)
+    // @TODO: Convert Float -> Ratio
     open var ratio: Float = 0f
 
     @PublishedApi internal var _index: Int = 0
@@ -270,12 +272,6 @@ abstract class View internal constructor(
             this._y = y
             invalidateMatrix()
         }
-    }
-
-    @Deprecated("Use pos instead")
-    fun getPosition(out: MPoint = MPoint()): MPoint {
-        out.copyFrom(out)
-        return out
     }
 
     @ViewProperty(min = -1000.0, max = +1000.0, name = "position")
@@ -616,7 +612,7 @@ abstract class View internal constructor(
             if (!validLocalMatrix) {
                 validLocalMatrix = true
                 _requireInvalidate = true
-                _localMatrix = Matrix.fromTransform(x, y, rotation, scaleX, scaleY, skewX, skewY)
+                _localMatrix = Matrix.fromTransform(x, y, rotation, scaleX, scaleY, skewX, skewY, 0f, 0f)
             }
             return _localMatrix
         }
@@ -1241,7 +1237,7 @@ abstract class View internal constructor(
     /** Returns the global bounds of this object. Note this incurs in allocations. Use [getGlobalBounds] (out) to avoid it */
     val globalBounds: Rectangle get() = getGlobalBounds()
 
-    /** Returns the global bounds of this object. Allows to specify an [out] [MRectangle] to prevent allocations. */
+    /** Returns the global bounds of this object. */
     //fun getGlobalBounds(out: Rectangle = Rectangle()): Rectangle = getBounds(root, out, inclusive = false)
     fun getGlobalBounds(includeFilters: Boolean = false): Rectangle = getBounds(root, inclusive = true, includeFilters = includeFilters)
 
@@ -1291,7 +1287,7 @@ abstract class View internal constructor(
     //}
 
     /**
-     * Get local bounds of the view. Allows to specify [out] [MRectangle] if you want to reuse an object.
+     * Get local bounds of the view.
      */
     fun getLocalBounds(doAnchoring: Boolean = true, includeFilters: Boolean = false): Rectangle {
         var out = cachedLocalBounds ?: getLocalBoundsInternal().also { cachedLocalBounds = it }
@@ -1356,13 +1352,13 @@ abstract class View internal constructor(
         this@apply.copyPropsFrom(this@View)
     }
 
-    fun globalLocalBoundsPointRatio(anchor: Anchor, out: MPoint = MPoint()): MPoint = globalLocalBoundsPointRatio(anchor.doubleX, anchor.doubleY, out)
+    fun globalLocalBoundsPointRatio(anchor: Anchor): Point = globalLocalBoundsPointRatio(anchor.doubleX, anchor.doubleY)
 
-    fun globalLocalBoundsPointRatio(ratioX: Double, ratioY: Double, out: MPoint = MPoint()): MPoint {
+    fun globalLocalBoundsPointRatio(ratioX: Double, ratioY: Double): Point {
         val bounds = getLocalBounds()
         val x = ratioX.toRatio().interpolate(bounds.left, bounds.right)
         val y = ratioY.toRatio().interpolate(bounds.top, bounds.bottom)
-        return out.setTo(localToGlobal(Point(x, y)))
+        return localToGlobal(Point(x, y))
     }
 
     fun getGlobalMatrixWithAnchor(): Matrix {
@@ -1805,144 +1801,6 @@ fun View.getPointRelativeTo(pos: Point, view: View): Point {
 fun View.getPointRelativeToInv(pos: Point, view: View): Point {
     return this.getConcatMatrix(view, inclusive = false).inverted().transform(pos)
 }
-
-/** Chainable method returning this that sets [this] View in the middle between [x1] and [x2] */
-fun <T : View> T.centerXBetween(x1: Double, x2: Double): T {
-    this.xD = (x2 + x1 - this.widthD) / 2
-    return this
-}
-fun <T : View> T.centerXBetween(x1: Float, x2: Float): T = centerXBetween(x1.toDouble(), x2.toDouble())
-fun <T : View> T.centerXBetween(x1: Int, x2: Int): T = centerXBetween(x1.toDouble(), x2.toDouble())
-
-/** Chainable method returning this that sets [this] View in the middle between [y1] and [y2] */
-fun <T : View> T.centerYBetween(y1: Double, y2: Double): T {
-    this.yD = (y2 + y1 - this.heightD) / 2
-    return this
-}
-fun <T : View> T.centerYBetween(y1: Float, y2: Float): T = centerYBetween(y1.toDouble(), y2.toDouble())
-fun <T : View> T.centerYBetween(y1: Int, y2: Int): T = centerYBetween(y1.toDouble(), y2.toDouble())
-
-/**
- * Chainable method returning this that sets [this] View
- * in the middle between [x1] and [x2] and in the middle between [y1] and [y2]
- */
-fun <T : View> T.centerBetween(x1: Double, y1: Double, x2: Double, y2: Double): T = this.centerXBetween(x1, x2).centerYBetween(y1, y2)
-fun <T : View> T.centerBetween(x1: Float, y1: Float, x2: Float, y2: Float): T = centerBetween(x1.toDouble(), y1.toDouble(), x2.toDouble(), y2.toDouble())
-fun <T : View> T.centerBetween(x1: Int, y1: Int, x2: Int, y2: Int): T = centerBetween(x1.toDouble(), y1.toDouble(), x2.toDouble(), y2.toDouble())
-
-/**
- * Chainable method returning this that sets [View.xD] so that
- * [this] View is centered on the [other] View horizontally
- */
-fun <T : View> T.centerXOn(other: View): T = this.alignX(other, 0.5, true)
-
-/**
- * Chainable method returning this that sets [View.yD] so that
- * [this] View is centered on the [other] View vertically
- */
-fun <T : View> T.centerYOn(other: View): T = this.alignY(other, 0.5, true)
-
-/**
- * Chainable method returning this that sets [View.xD] and [View.yD]
- * so that [this] View is centered on the [other] View
- */
-fun <T : View> T.centerOn(other: View): T = this.centerXOn(other).centerYOn(other)
-
-fun <T : View> T.centerXOnStage(): T = this.centerXOn(root)
-fun <T : View> T.centerYOnStage(): T = this.centerYOn(root)
-fun <T : View> T.centerOnStage(): T = this.centerXOnStage().centerYOnStage()
-
-fun <T : View> T.alignXY(other: View, ratio: Double, inside: Boolean, doX: Boolean, padding: Double = 0.0): T {
-    //val parent = this.parent
-    //val bounds = other.getBoundsNoAnchoring(this)
-    val bounds = other.getBoundsNoAnchoring(parent)
-    val localBounds = this.getLocalBounds()
-
-    //bounds.setTo(other.x, other.y, other.unscaledWidth, other.unscaledHeight)
-    val ratioM1_1 = (ratio * 2 - 1)
-    val rratioM1_1 = if (inside) ratioM1_1 else -ratioM1_1
-    val iratio = if (inside) ratio else 1.0 - ratio
-    //println("this: $this, other: $other, bounds=$bounds, scaledWidth=$scaledWidth, scaledHeight=$scaledHeight, width=$width, height=$height, scale=$scale, $scaleX, $scaleY")
-    if (doX) {
-        xD = (bounds.x + (bounds.width * ratio) - localBounds.left) - (this.scaledWidthD * iratio) - (padding * rratioM1_1)
-    } else {
-        yD = (bounds.y + (bounds.height * ratio) - localBounds.top) - (this.scaledHeightD * iratio) - (padding * rratioM1_1)
-    }
-    return this
-}
-
-fun <T : View> T.alignX(other: View, ratio: Double, inside: Boolean, padding: Double = 0.0): T {
-    return alignXY(other, ratio, inside, doX = true, padding = padding)
-}
-
-fun <T : View> T.alignY(other: View, ratio: Double, inside: Boolean, padding: Double = 0.0): T {
-    return alignXY(other, ratio, inside, doX = false, padding = padding)
-}
-
-/**
- * Chainable method returning this that sets [View.xD] so that
- * [this] View's left side is aligned with the [other] View's left side
- */
-// @TODO: What about rotations? we might need to adjust y too?
-fun <T : View> T.alignLeftToLeftOf(other: View, padding: Double = 0.0): T = alignX(other, 0.0, inside = true, padding = padding)
-fun <T : View> T.alignLeftToLeftOf(other: View, padding: Float): T = alignLeftToLeftOf(other, padding.toDouble())
-fun <T : View> T.alignLeftToLeftOf(other: View, padding: Int): T = alignLeftToLeftOf(other, padding.toDouble())
-
-/**
- * Chainable method returning this that sets [View.xD] so that
- * [this] View's left side is aligned with the [other] View's right side
- */
-fun <T : View> T.alignLeftToRightOf(other: View, padding: Double = 0.0): T = alignX(other, 1.0, inside = false, padding = padding)
-fun <T : View> T.alignLeftToRightOf(other: View, padding: Float): T = alignLeftToRightOf(other, padding.toDouble())
-fun <T : View> T.alignLeftToRightOf(other: View, padding: Int): T = alignLeftToRightOf(other, padding.toDouble())
-
-/**
- * Chainable method returning this that sets [View.xD] so that
- * [this] View's right side is aligned with the [other] View's left side
- */
-fun <T : View> T.alignRightToLeftOf(other: View, padding: Double = 0.0): T = alignX(other, 0.0, inside = false, padding = padding)
-fun <T : View> T.alignRightToLeftOf(other: View, padding: Float): T = alignRightToLeftOf(other, padding.toDouble())
-fun <T : View> T.alignRightToLeftOf(other: View, padding: Int): T = alignRightToLeftOf(other, padding.toDouble())
-
-/**
- * Chainable method returning this that sets [View.xD] so that
- * [this] View's right side is aligned with the [other] View's right side
- */
-fun <T : View> T.alignRightToRightOf(other: View, padding: Double = 0.0): T = alignX(other, 1.0, inside = true, padding = padding)
-fun <T : View> T.alignRightToRightOf(other: View, padding: Float): T = alignRightToRightOf(other, padding.toDouble())
-fun <T : View> T.alignRightToRightOf(other: View, padding: Int): T = alignRightToRightOf(other, padding.toDouble())
-
-/**
- * Chainable method returning this that sets [View.yD] so that
- * [this] View's top side is aligned with the [other] View's top side
- */
-fun <T : View> T.alignTopToTopOf(other: View, padding: Double = 0.0): T = alignY(other, 0.0, inside = true, padding = padding)
-fun <T : View> T.alignTopToTopOf(other: View, padding: Float): T = alignTopToTopOf(other, padding.toDouble())
-fun <T : View> T.alignTopToTopOf(other: View, padding: Int): T = alignTopToTopOf(other, padding.toDouble())
-
-/**
- * Chainable method returning this that sets [View.yD] so that
- * [this] View's top side is aligned with the [other] View's bottom side
- */
-fun <T : View> T.alignTopToBottomOf(other: View, padding: Double = 0.0): T = alignY(other, 1.0, inside = false, padding = padding)
-fun <T : View> T.alignTopToBottomOf(other: View, padding: Float): T = alignTopToBottomOf(other, padding.toDouble())
-fun <T : View> T.alignTopToBottomOf(other: View, padding: Int): T = alignTopToBottomOf(other, padding.toDouble())
-
-/**
- * Chainable method returning this that sets [View.yD] so that
- * [this] View's bottom side is aligned with the [other] View's top side
- */
-fun <T : View> T.alignBottomToTopOf(other: View, padding: Double = 0.0): T = alignY(other, 0.0, inside = false, padding = padding)
-fun <T : View> T.alignBottomToTopOf(other: View, padding: Float): T = alignBottomToTopOf(other, padding.toDouble())
-fun <T : View> T.alignBottomToTopOf(other: View, padding: Int): T = alignBottomToTopOf(other, padding.toDouble())
-
-/**
- * Chainable method returning this that sets [View.yD] so that
- * [this] View's bottom side is aligned with the [other] View's bottom side
- */
-fun <T : View> T.alignBottomToBottomOf(other: View, padding: Double = 0.0): T = alignY(other, 1.0, inside = true, padding = padding)
-fun <T : View> T.alignBottomToBottomOf(other: View, padding: Float): T = alignBottomToBottomOf(other, padding.toDouble())
-fun <T : View> T.alignBottomToBottomOf(other: View, padding: Int): T = alignBottomToBottomOf(other, padding.toDouble())
 
 /** Chainable method returning this that sets [View.rotation] */
 fun <T : View> T.rotation(rot: Angle): T {

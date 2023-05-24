@@ -346,9 +346,6 @@ data class PolylineShape constructor(
     val strokeInfo: StrokeInfo,
     override val globalAlpha: Float = 1f,
 ) : StyledShape {
-    private val tempBB = MBoundsBuilder()
-    private val tempRect = MRectangle()
-
     val thickness by strokeInfo::thickness
     val scaleMode by strokeInfo::scaleMode
     val startCaps by strokeInfo::startCap
@@ -430,8 +427,7 @@ class TextShape(
     override val clip: VectorPath?,
     val fill: Paint?,
     val stroke: Paint?,
-    val halign: HorizontalAlign = HorizontalAlign.LEFT,
-    val valign: VerticalAlign = VerticalAlign.TOP,
+    val align: TextAlignment = TextAlignment.TOP_LEFT,
     override val transform: Matrix = Matrix.IDENTITY,
     override val globalAlpha: Float = 1f,
 ) : StyledShape {
@@ -440,7 +436,7 @@ class TextShape(
     override fun getBounds(includeStrokes: Boolean): Rectangle =
         Rectangle.fromBounds(pos, Point(pos.x + fontSize * text.length, pos.y + fontSize)) // @TODO: this is not right since we don't have information about Glyph metrics
     override fun drawInternal(c: Context2d) {
-        c.font(font, halign, valign) {
+        c.font(font, align) {
             if (fill != null) c.fillText(text, pos)
             if (stroke != null) c.strokeText(text, pos)
         }
@@ -464,19 +460,19 @@ class TextShape(
                 "stroke" to (stroke?.toSvg(svg) ?: "none"),
                 "font-family" to font?.name,
                 "font-size" to "${fontSize}px",
-                "text-anchor" to when (halign) {
+                "text-anchor" to when (align.horizontal) {
                     HorizontalAlign.JUSTIFY -> "justify"
                     HorizontalAlign.LEFT -> "start"
                     HorizontalAlign.CENTER -> "middle"
                     HorizontalAlign.RIGHT -> "end"
-                    else -> "${(halign.ratio * 100)}%"
+                    else -> "${(align.horizontal.ratio * 100)}%"
                 },
-                "alignment-baseline" to when (valign) {
+                "alignment-baseline" to when (align.vertical) {
                     VerticalAlign.TOP -> "hanging"
                     VerticalAlign.MIDDLE -> "middle"
                     VerticalAlign.BASELINE -> "baseline"
                     VerticalAlign.BOTTOM -> "bottom"
-                    else -> "${(valign.ratio * 100)}%"
+                    else -> "${(align.vertical.ratio * 100)}%"
                 },
                 "transform" to transform.toSvg()
             ), listOf(
@@ -491,7 +487,7 @@ fun Shape.transformedShape(m: Matrix): Shape = when (this) {
     is CompoundShape -> CompoundShape(components.map { it.transformedShape(m) })
     is FillShape -> FillShape(path.applyTransform(m), clip?.applyTransform(m), paint, transform * m, globalAlpha)
     is PolylineShape -> PolylineShape(path.applyTransform(m), clip?.applyTransform(m), paint, transform * m, strokeInfo, globalAlpha)
-    is TextShape -> TextShape(text, pos, font, fontSize, clip?.applyTransform(m), fill, stroke, halign, valign, transform * m, globalAlpha)
+    is TextShape -> TextShape(text, pos, font, fontSize, clip?.applyTransform(m), fill, stroke, align, transform * m, globalAlpha)
     else -> TODO()
 }
 

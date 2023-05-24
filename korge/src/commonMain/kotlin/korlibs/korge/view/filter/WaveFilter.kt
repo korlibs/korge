@@ -44,7 +44,7 @@ class WaveFilter(
     override fun updateUniforms(ctx: RenderContext, filterScale: Float) {
         super.updateUniforms(ctx, filterScale)
         ctx[WaveUB].push {
-            it[u_Time] = time.seconds
+            it[u_Time] = time.seconds.toFloat()
             it[u_Amplitude] = amplitude
             it[u_crestDistance] = crestDistance
             it[u_cyclesPerSecond] = cyclesPerSecond
@@ -64,7 +64,7 @@ class WaveFilter(
 
     companion object : BaseProgramProvider() {
         override val fragment = FragmentShaderDefault {
-            SET(t_Temp0["xy"], sin((PI * 2f).lit * ((fragmentCoords / WaveUB.u_crestDistance) + WaveUB.u_Time * WaveUB.u_cyclesPerSecond)))
+            SET(t_Temp0["xy"], sin((PI.toFloat() * 2f).lit * ((fragmentCoords / WaveUB.u_crestDistance) + WaveUB.u_Time * WaveUB.u_cyclesPerSecond)))
             SET(out, tex(fragmentCoords - (t_Temp0["yx"] * WaveUB.u_Amplitude)))
         }
     }

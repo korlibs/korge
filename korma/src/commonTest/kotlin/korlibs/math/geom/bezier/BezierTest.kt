@@ -3,7 +3,7 @@ package korlibs.math.geom.bezier
 import korlibs.math.geom.*
 import korlibs.math.geom.shape.*
 import korlibs.math.geom.vector.*
-import korlibs.math.math.*
+import korlibs.math.roundDecimalPlaces
 import kotlin.math.*
 import kotlin.test.*
 

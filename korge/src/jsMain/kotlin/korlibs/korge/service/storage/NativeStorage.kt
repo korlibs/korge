@@ -1,40 +1,64 @@
 package korlibs.korge.service.storage
 
+import korlibs.io.*
+import korlibs.io.lang.*
+import korlibs.io.runtime.node.*
 import korlibs.korge.view.*
+import korlibs.memory.*
 import kotlinx.browser.*
-
-@JsName("Array")
-private external class JsArray<T> {
-    operator fun get(key: Int): T
-    val length: Int
-}
 
 @JsName("Object")
 private external object JsObject {
-    fun keys(): JsArray<dynamic>
+    fun keys(obj: dynamic): dynamic
 }
 
-actual class NativeStorage actual constructor(val views: Views) : IStorage {
+private val REQ get() = "req"
+private external val eval: dynamic
+private fun require_node(name: String): dynamic = korlibs.korge.service.storage.eval("(${REQ}uire('$name'))")
+
+actual class NativeStorage actual constructor(views: Views) : IStorageWithKeys by JSNativeStorage(views)
+
+fun JSNativeStorage(views: Views): IStorageWithKeys {
+    return when {
+        Platform.isJsNodeJs -> NodeJSNativeStorage(views)
+        else -> BrowserNativeStorage(views)
+    }
+}
+
+open class BrowserNativeStorage(val views: Views) : IStorageWithKeys {
     override fun toString(): String = "NativeStorage(${toMap()})"
 
-    actual fun keys(): List<String> {
-        val keys = JsObject.keys()
-        return (0 until keys.length).map { keys[it] }
+    companion object {
+        val PREFIX = "org.korge.storage."
+        fun getKey(key: String): String = "$PREFIX$key"
     }
 
-	actual override fun set(key: String, value: String) {
-		localStorage.setItem(key, value)
+    override fun keys(): List<String> {
+        val keys = JsObject.keys(localStorage)
+        return (0 until keys.length)
+            .map { keys[it].toString() }
+            .filter { it.startsWith(PREFIX) }
+            .map { it.removePrefix(PREFIX) }
+    }
+
+	override fun set(key: String, value: String) {
+		localStorage.setItem(getKey(key), value)
 	}
 
-	actual override fun getOrNull(key: String): String? {
-		return localStorage.getItem(key)
+	override fun getOrNull(key: String): String? = localStorage.getItem(getKey(key))
+
+	override fun remove(key: String) {
+		localStorage.removeItem(getKey(key))
 	}
 
-	actual override fun remove(key: String) {
-		localStorage.removeItem(key)
-	}
+	//actual override fun removeAll() { localStorage.clear() }
+}
 
-	actual override fun removeAll() {
-		localStorage.clear()
-	}
+
+open class NodeJSNativeStorage(views: Views) : FiledBasedNativeStorage(views) {
+    val fs by lazy { require_node("fs") }
+
+    override fun mkdirs(folder: String) = fs.mkdirSync(folder, jsObject("recursive" to true))
+    override fun saveStr(data: String) = fs.writeFileSync(gameStorageFile, data.toByteArray(UTF8))
+    override fun loadStr(): String = fs.readFileSync(gameStorageFile).unsafeCast<ByteArray>().toString(UTF8)
 }

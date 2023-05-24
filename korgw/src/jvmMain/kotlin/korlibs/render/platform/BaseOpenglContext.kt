@@ -16,7 +16,7 @@ import java.lang.reflect.Method
 
 interface BaseOpenglContext : Disposable {
     val isCore: Boolean get() = false
-    val scaleFactor: Double get() = 1.0
+    val scaleFactor: Float get() = 1f
     data class ContextInfo(
         var scissors: RectangleInt? = null,
         var viewport: RectangleInt? = null
@@ -103,14 +103,14 @@ fun glContextFromComponent(c: Component, gwconfig: GameWindowConfig): BaseOpengl
     }
 }
 
-fun getDisplayScalingFactor(component: Component): Double {
+fun getDisplayScalingFactor(component: Component): Float {
     val device = (component.graphicsConfiguration?.device ?: GraphicsEnvironment.getLocalGraphicsEnvironment().defaultScreenDevice)
     val getScaleFactorMethod: Method? = try { device.javaClass.getMethod("getScaleFactor") } catch (e: Throwable) { null }
 
-    val nativeScaleFactor = if (getScaleFactorMethod == null) null else {
+    val nativeScaleFactor: Float? = if (getScaleFactorMethod == null) null else {
         try {
             val scale: Any = getScaleFactorMethod.invoke(device)
-            ((scale as? Number)?.toDouble()) ?: 1.0
+            ((scale as? Number)?.toFloat()) ?: 1f
         } catch (e: Throwable) {
             if (e::class.qualifiedName != "java.lang.IllegalAccessException") {
                 e.printStackTrace()
@@ -120,5 +120,5 @@ fun getDisplayScalingFactor(component: Component): Double {
     }
 
     return nativeScaleFactor ?:
-        ((component.graphicsConfiguration ?: GraphicsEnvironment.getLocalGraphicsEnvironment().defaultScreenDevice.defaultConfiguration).defaultTransform.scaleX)
+        ((component.graphicsConfiguration ?: GraphicsEnvironment.getLocalGraphicsEnvironment().defaultScreenDevice.defaultConfiguration).defaultTransform.scaleX.toFloat())
 }

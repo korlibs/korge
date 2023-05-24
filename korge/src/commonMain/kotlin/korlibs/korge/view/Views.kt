@@ -80,11 +80,7 @@ class Views(
     val realSettingsFolder: String by lazy {
         when {
             settingsFolder != null -> settingsFolder!!
-            else -> when {
-                Platform.isMac -> "/Users/${Environment["USER"]}/Library/Preferences/$gameIdFolder"
-                Platform.isWindows -> "${Environment["APPDATA"]}/$gameIdFolder"
-                else -> "${Environment["HOME"]}/.config/$gameIdFolder"
-            }
+            else -> StandardPaths.appPreferencesFolder(gameIdFolder)
         }
     }
 
@@ -365,18 +361,17 @@ class Views(
 
         //println("virtualSize=$virtualSize, targetSize=$targetSize, actualVirtualBounds=${actualVirtualBounds}")
 
-        resizedEvent.apply {
-            this.width = actualSize.width
-            this.height = actualSize.height
-        }
-
-		stage.dispatch(resizedEvent)
-        dispatch(resizedEvent)
+		//stage.dispatch(resizedEvent)
+        dispatch(resizedEvent.also {
+            it.width = actualSize.width
+            it.height = actualSize.height
+        })
+        dispatch(viewsResizedEvent.also { it.size = virtualSize })
 
 		stage.invalidate()
 
 		//println("STAGE RESIZED: $this, virtualSize=$virtualSize, actualSize=$actualSize, targetSize=$targetSize, actualVirtualWidth=$actualVirtualWidth")
-	}
+    }
 
 	fun dispose() {
 	}
@@ -422,6 +417,7 @@ class Views(
 
     val debugSavedHandlers = Signal<SaveEvent>()
     val completedEditing = Signal<Unit>()
+    val viewFactories = ArrayList<ViewFactory>()
 
     fun debugSaveView(e: SaveEvent) {
         debugSavedHandlers(e)
@@ -449,6 +445,8 @@ class Views(
 
     //var viewExtraBuildDebugComponent = arrayListOf<(views: Views, view: View, container: UiContainer) -> Unit>()
 }
+
+data class ViewFactory(val name: String, val build: () -> View)
 
 fun viewsLog(callback: suspend Stage.(log: ViewsLog) -> Unit) = Korio {
     viewsLogSuspend(callback)

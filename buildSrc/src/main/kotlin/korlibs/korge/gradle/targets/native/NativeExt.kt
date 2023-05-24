@@ -8,8 +8,16 @@ import org.jetbrains.kotlin.gradle.tasks.*
 
 fun KotlinNativeCompilation.getLinkTask(kind: NativeOutputKind, type: NativeBuildType, project: Project): KotlinNativeLink {
 	val taskName = "link${type.name.toLowerCase().capitalize()}${kind.name.toLowerCase().capitalize()}${target.name.capitalize()}"
-	val tasks = (project.getTasksByName(taskName, true) + project.getTasksByName(taskName, false)).toList()
-	return (tasks.firstOrNull() as? KotlinNativeLink) ?: error("Can't find $taskName from $tasks from ${project.tasks.map { it.name }}")
+    val taskName2 = "link${target.name.capitalize()}"
+
+	val tasks = listOf(
+        project.getTasksByName(taskName, true),
+        project.getTasksByName(taskName, false),
+        project.getTasksByName(taskName2, true),
+        project.getTasksByName(taskName2, false),
+    ).flatMap { it }
+	return (tasks.firstOrNull() as? KotlinNativeLink)
+        ?: error("Can't find [$taskName or $taskName2] from $tasks from ${project.tasks.map { it.name }}")
 }
 
 fun KotlinNativeCompilation.getCompileTask(kind: NativeOutputKind, type: NativeBuildType, project: Project): Task {

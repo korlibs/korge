@@ -21,8 +21,8 @@ actual object WindowsRegistry : WindowsRegistryBase() {
     internal fun checkError(result: Int): Int {
         if (result != ERROR_SUCCESS) {
             memScoped {
-                val nameArray = allocArray<WCHARVar>(1024)
-                FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM, null, result.convert(), LANG_ENGLISH, nameArray, 1024, null)
+                val nameArray = allocArray<WCHARVar>(1024.convert())
+                FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM.convert(), null, result.convert(), LANG_ENGLISH.convert(), nameArray, 1024.convert(), null)
                 error("Error in Winreg (${result.hex}) [${nameArray.toKString()}]")
             }
         }
@@ -36,7 +36,7 @@ actual object WindowsRegistry : WindowsRegistryBase() {
         block: MemScope.(key: HKEY?) -> T
     ): T = memScoped {
         val key = alloc<HKEYVar>()
-        checkError(RegOpenKeyExW(root, keyPath, 0, (KEY_READ or extraOpenMode).convert(), key.ptr))
+        checkError(RegOpenKeyExW(root, keyPath, 0.convert(), (KEY_READ or extraOpenMode).convert(), key.ptr))
         try {
             block(key.value)
         } finally {
@@ -139,7 +139,7 @@ actual object WindowsRegistry : WindowsRegistryBase() {
         val (root, keyPath) = parsePathEx(path) ?: return false
         memScoped {
             val key = alloc<HKEYVar>()
-            val result = RegOpenKeyExW(root, keyPath, 0, KEY_READ.convert(), key.ptr)
+            val result = RegOpenKeyExW(root, keyPath, 0.convert(), KEY_READ.convert(), key.ptr)
             when (result) {
                 ERROR_SUCCESS -> return true.also { RegCloseKey(key.value) }
                 ERROR_FILE_NOT_FOUND -> return false
@@ -155,7 +155,7 @@ actual object WindowsRegistry : WindowsRegistryBase() {
             val phkResult = alloc<HKEYVar>()
             val lpdwDisposition = alloc<DWORDVar>()
             checkError(RegCreateKeyExW(
-                root, keyPath, 0, null, REG_OPTION_NON_VOLATILE, KEY_READ,
+                root, keyPath, 0.convert(), null, REG_OPTION_NON_VOLATILE.convert(), KEY_READ.convert(),
                 null, phkResult.ptr, lpdwDisposition.ptr
             ))
             checkError(RegCloseKey(phkResult.value))
@@ -188,7 +188,7 @@ actual object WindowsRegistry : WindowsRegistryBase() {
                 else -> TODO("Unimplemented setValue for type ${value::class}")
             }
             bytes.usePinned {
-                RegSetValueExW(hKey, valueName, 0, kind.convert(), it.startAddressOf.reinterpret(), it.get().size.convert())
+                RegSetValueExW(hKey, valueName, 0.convert(), kind.convert(), it.startAddressOf.reinterpret(), it.get().size.convert())
             }
         }
     }
@@ -199,7 +199,7 @@ actual object WindowsRegistry : WindowsRegistryBase() {
             val lpType = alloc<DWORDVar>()
             val lpcbData = alloc<DWORDVar>()
 
-            val rc = RegGetValueW(root, keyPath, valueName, RRF_RT_ANY, lpType.ptr, null, lpcbData.ptr)
+            val rc = RegGetValueW(root, keyPath, valueName, RRF_RT_ANY.convert(), lpType.ptr, null, lpcbData.ptr)
             val keyType = lpType.value.toInt()
             if (keyType == REG_NONE) return null
             if (rc != ERROR_SUCCESS && rc != ERROR_INSUFFICIENT_BUFFER) checkError(rc)
@@ -207,7 +207,7 @@ actual object WindowsRegistry : WindowsRegistryBase() {
             val byteSize = lpcbData.value.toInt()
             val byteData = allocArray<UByteVar>(byteSize + Short.SIZE_BYTES)
 
-            checkError(RegGetValueW(root, keyPath, valueName, RRF_RT_ANY, lpType.ptr, byteData, lpcbData.ptr))
+            checkError(RegGetValueW(root, keyPath, valueName, RRF_RT_ANY.convert(), lpType.ptr, byteData, lpcbData.ptr))
 
             return bytesToValue(byteData, byteSize, keyType)
         }

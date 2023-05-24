@@ -30,7 +30,7 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
 	val dheight = root.double("height", 128.0)
 	val viewBox = root.getString("viewBox") ?: "0 0 $dwidth $dheight"
 	val viewBoxNumbers = viewBox.split(' ').map { it.trim().toDoubleOrNull() ?: 0.0 }
-	val viewBoxRectangle = MRectangle(
+	val viewBoxRectangle = Rectangle(
 		viewBoxNumbers.getOrElse(0) { 0.0 },
 		viewBoxNumbers.getOrElse(1) { 0.0 },
 		viewBoxNumbers.getOrElse(2) { dwidth },

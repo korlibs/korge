@@ -7,8 +7,65 @@ import kotlin.jvm.*
 expect class Buffer {
     companion object {
         fun copy(src: Buffer, srcPosBytes: Int, dst: Buffer, dstPosBytes: Int, sizeInBytes: Int)
+        fun equals(src: Buffer, srcPosBytes: Int, dst: Buffer, dstPosBytes: Int, sizeInBytes: Int): Boolean
     }
 }
+internal fun Buffer.Companion.equalsCommon(
+    src: Buffer,
+    srcPosBytes: Int,
+    dst: Buffer,
+    dstPosBytes: Int,
+    sizeInBytes: Int,
+    use64: Boolean = true,
+): Boolean {
+    check(srcPosBytes + sizeInBytes <= src.sizeInBytes)
+    check(dstPosBytes + sizeInBytes <= dst.sizeInBytes)
+    //for (n in 0 until sizeInBytes) {
+    //    if (src.getUnalignedInt8(srcPosBytes + n) != dst.getUnalignedInt8(dstPosBytes + n)) return false
+    //}
+    //return true
+    var offset = 0
+    var remaining = sizeInBytes
+
+    if (use64) {
+        val WORD = 8
+        val words = remaining / WORD
+        remaining %= WORD
+        for (n in 0 until words) {
+            val v0 = src.getUnalignedInt64(srcPosBytes + offset + n * WORD)
+            val v1 = dst.getUnalignedInt64(dstPosBytes + offset + n * WORD)
+            if (v0 != v1) {
+                return false
+            }
+        }
+        offset += words * WORD
+    }
+    if (true) {
+        val WORD = 4
+        val words = remaining / WORD
+        remaining %= WORD
+        for (n in 0 until words) {
+            val v0 = src.getUnalignedInt32(srcPosBytes + offset + n * WORD)
+            val v1 = dst.getUnalignedInt32(dstPosBytes + offset + n * WORD)
+            if (v0 != v1) {
+                return false
+            }
+        }
+        offset += words * WORD
+    }
+
+    if (true) {
+        for (n in 0 until remaining) {
+            val v0 = src.getUnalignedInt8(srcPosBytes + offset + n)
+            val v1 = dst.getUnalignedInt8(dstPosBytes + offset + n)
+            if (v0 != v1) {
+                return false
+            }
+        }
+    }
+    return true
+}
+
 val Buffer.size: Int get() = sizeInBytes
 internal fun NBuffer_toString(buffer: Buffer): String = "Buffer(size=${buffer.size})"
 internal fun checkNBufferSize(size: Int) {

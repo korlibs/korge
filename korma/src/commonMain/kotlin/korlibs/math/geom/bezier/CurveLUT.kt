@@ -4,7 +4,7 @@ import korlibs.datastructure.*
 import korlibs.math.geom.*
 import korlibs.math.internal.*
 import korlibs.math.interpolation.*
-import korlibs.math.math.*
+import korlibs.math.roundDecimalPlaces
 import korlibs.memory.*
 
 data class CurveLUT(val curve: Curve, val points: PointArrayList, val ts: FloatArrayList, private val _estimatedLengths: FloatArrayList) {

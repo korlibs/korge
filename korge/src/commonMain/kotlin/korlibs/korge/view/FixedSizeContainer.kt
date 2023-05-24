@@ -37,8 +37,6 @@ open class FixedSizeContainer(
 
     private var renderingInternalRef = Ref(false)
 
-    private val tempRect = MRectangle()
-
     @OptIn(KorgeInternal::class)
     override fun renderInternal(ctx: RenderContext) {
         renderClipped(this, ctx, clip, renderingInternalRef) { super.renderInternal(ctx) }

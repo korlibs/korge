@@ -91,13 +91,6 @@ inline class AGBlendEquation(val ordinal: Int) {
         else -> unreachable
     }
 
-    fun apply(l: Double, r: Double): Double = when (this) {
-        ADD -> l + r
-        SUBTRACT -> l - r
-        REVERSE_SUBTRACT -> r - l
-        else -> unreachable
-    }
-
     fun apply(l: Float, r: Float): Float = when (this) {
         ADD -> l + r
         SUBTRACT -> l - r
@@ -156,17 +149,17 @@ inline class AGBlendFactor(val ordinal: Int) {
         else -> unreachable
     }
 
-    fun get(srcC: Double, srcA: Double, dstC: Double, dstA: Double): Double = when (this) {
+    fun get(srcC: Float, srcA: Float, dstC: Float, dstA: Float): Float = when (this) {
         DESTINATION_ALPHA -> dstA
         DESTINATION_COLOR -> dstC
-        ONE -> 1.0
-        ONE_MINUS_DESTINATION_ALPHA -> 1.0 - dstA
-        ONE_MINUS_DESTINATION_COLOR -> 1.0 - dstC
-        ONE_MINUS_SOURCE_ALPHA -> 1.0 - srcA
-        ONE_MINUS_SOURCE_COLOR -> 1.0 - srcC
+        ONE -> 1f
+        ONE_MINUS_DESTINATION_ALPHA -> 1f - dstA
+        ONE_MINUS_DESTINATION_COLOR -> 1f - dstC
+        ONE_MINUS_SOURCE_ALPHA -> 1f - srcA
+        ONE_MINUS_SOURCE_COLOR -> 1f - srcC
         SOURCE_ALPHA -> srcA
         SOURCE_COLOR -> srcC
-        ZERO -> 0.0
+        ZERO -> 0f
         else -> unreachable
     }
 }
@@ -321,11 +314,28 @@ inline class AGDrawType(val ordinal: Int) {
 
 /** Encoded in 2 bits */
 inline class AGIndexType(val ordinal: Int) {
+    val bytesSize: Int get() = when (this) {
+        NONE -> 0
+        UBYTE -> 1
+        USHORT -> 2
+        UINT -> 4
+        else -> -1
+    }
+
     companion object {
         val NONE = AGIndexType(0)
         val UBYTE = AGIndexType(1)
         val USHORT = AGIndexType(2)
         val UINT = AGIndexType(3) // https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/drawElements
+
+        fun fromBytesSize(bytesSize: Int): AGIndexType = when (bytesSize) {
+            0 -> NONE
+            1 -> UBYTE
+            2 -> USHORT
+            4 -> UINT
+            else -> AGIndexType(-1)
+        }
+        operator fun get(kind: VarKind): AGIndexType = fromBytesSize(kind.bytesSize)
     }
 
     override fun toString(): String = when (this) {
@@ -356,28 +366,34 @@ inline class AGBlending(val data: Int) {
     fun withDST(rgb: AGBlendFactor, a: AGBlendFactor = rgb): AGBlending = AGBlending(data.insert4(rgb.ordinal, 8).insert4(a.ordinal, 12))
     fun withEQ(rgb: AGBlendEquation, a: AGBlendEquation = rgb): AGBlending = AGBlending(data.insert2(rgb.ordinal, 16).insert2(a.ordinal, 18))
 
-    private fun applyColorComponent(srcC: Double, dstC: Double, srcA: Double, dstA: Double): Double {
-        return this.eqRGB.apply(srcC * this.srcRGB.get(srcC, srcA, dstC, dstA), dstC * this.dstRGB.get(srcC, srcA, dstC, dstA))
+    private fun applyColorComponent(srcC: Float, dstC: Float, srcA: Float, dstA: Float): Float {
+        return this.eqRGB.apply(
+            srcC * this.srcRGB.get(srcC, srcA, dstC, dstA),
+            dstC * this.dstRGB.get(srcC, srcA, dstC, dstA)
+        )
     }
 
-    private fun applyAlphaComponent(srcA: Double, dstA: Double): Double {
-        return eqRGB.apply(srcA * this.srcA.get(0.0, srcA, 0.0, dstA), dstA * this.dstA.get(0.0, srcA, 0.0, dstA))
+    private fun applyAlphaComponent(srcA: Float, dstA: Float): Float {
+        return eqRGB.apply(
+            srcA * this.srcA.get(0f, srcA, 0f, dstA),
+            dstA * this.dstA.get(0f, srcA, 0f, dstA)
+        )
     }
 
     fun apply(src: RGBAf, dst: RGBAf, out: RGBAf = RGBAf()): RGBAf {
-        out.rd = applyColorComponent(src.rd, dst.rd, src.ad, dst.ad)
-        out.gd = applyColorComponent(src.gd, dst.gd, src.ad, dst.ad)
-        out.bd = applyColorComponent(src.bd, dst.bd, src.ad, dst.ad)
-        out.ad = applyAlphaComponent(src.ad, dst.ad)
+        out.r = applyColorComponent(src.r, dst.r, src.a, dst.a)
+        out.g = applyColorComponent(src.g, dst.g, src.a, dst.a)
+        out.b = applyColorComponent(src.b, dst.b, src.a, dst.a)
+        out.a = applyAlphaComponent(src.a, dst.a)
         return out
     }
 
     fun apply(src: RGBA, dst: RGBA): RGBA {
-        val srcA = src.ad
-        val dstA = dst.ad
-        val r = applyColorComponent(src.rd, dst.rd, srcA, dstA)
-        val g = applyColorComponent(src.gd, dst.gd, srcA, dstA)
-        val b = applyColorComponent(src.bd, dst.bd, srcA, dstA)
+        val srcA = src.af
+        val dstA = dst.af
+        val r = applyColorComponent(src.rf, dst.rf, srcA, dstA)
+        val g = applyColorComponent(src.gf, dst.gf, srcA, dstA)
+        val b = applyColorComponent(src.bf, dst.bf, srcA, dstA)
         val a = applyAlphaComponent(srcA, dstA)
         return RGBA.float(r, g, b, a)
     }
@@ -560,14 +576,12 @@ inline class AGStencilOpFunc(val data: Int) {
 //    var scissor: AGScissor ; get() = AGScissor(data[5], data[6]) ; set(value) { data[5] = value.xy; data[6] = value.wh }
 //}
 
-fun MRectangle?.toAGScissor(): AGScissor {
+fun Rectangle?.toAGScissor(): AGScissor {
     if (this == null) return AGScissor.NIL
     return AGScissor(x.toInt(), y.toInt(), width.toInt(), height.toInt())
 }
-fun MBoundsBuilder.add(scissor: AGScissor) {
-    add(scissor.left, scissor.top)
-    add(scissor.right, scissor.bottom)
-}
+operator fun BoundsBuilder.plus(scissor: AGScissor): BoundsBuilder =
+    this + Point(scissor.left, scissor.top) + Point(scissor.right, scissor.bottom)
 
 inline class AGFrameBufferInfo(val data: Int) {
     val width: Int get() = data.extract14(0)
@@ -608,12 +622,9 @@ inline class AGScissor(val data: Short4Pack) {
     val isNIL: Boolean get() = this == NIL
     val isNotNIL: Boolean get() = !isNIL
 
-    //constructor(xy: Int, wh: Int) : this(short4PackOf(xy.toShort(), (xy ushr 16).toShort(), wh.toShort(), (wh ushr 16).toShort()))
     constructor(x: Int, y: Int, width: Int, height: Int) : this(short4PackOf(x.toShortClamped(), y.toShortClamped(), (x + width).toShortClamped(), (y + height).toShortClamped()))
     constructor(x: Float, y: Float, width: Float, height: Float) : this(x.toIntRound(), y.toIntRound(), width.toIntRound(), height.toIntRound())
-    constructor(x: Double, y: Double, width: Double, height: Double) : this(x.toIntRound(), y.toIntRound(), width.toIntRound(), height.toIntRound())
     constructor(rect: Rectangle) : this(rect.x.toIntRound(), rect.y.toIntRound(), rect.width.toIntRound(), rect.height.toIntRound())
-    //constructor(x: Double, y: Double, width: Double, height: Double) : this(x.toInt(), y.toInt(), width.toInt(), height.toInt())
 
     val left: Int get() = data.x.toInt()
     val top: Int get() = data.y.toInt()
@@ -636,7 +647,7 @@ inline class AGScissor(val data: Short4Pack) {
 
     companion object {
         fun fromBounds(left: Int, top: Int, right: Int, bottom: Int): AGScissor = AGScissor(left, top, right - left, bottom - top)
-        fun fromBounds(left: Double, top: Double, right: Double, bottom: Double): AGScissor = AGScissor(left, top, right - left, bottom - top)
+        fun fromBounds(left: Float, top: Float, right: Float, bottom: Float): AGScissor = AGScissor(left, top, right - left, bottom - top)
 
         val EMPTY = AGScissor(0, 0, 0, 0)
         val FULL = AGScissor.fromBounds(Int.MIN_VALUE, Int.MIN_VALUE, Int.MAX_VALUE, Int.MAX_VALUE)
@@ -679,10 +690,10 @@ fun AGScissor.applyMatrixBounds(m: Matrix): AGScissor {
     val y2 = m.transformY(left, bottom)
     val y3 = m.transformY(right, bottom)
     return AGScissor.fromBounds(
-        korlibs.math.math.min(x0, x1, x2, x3).toInt(),
-        korlibs.math.math.min(y0, y1, y2, y3).toInt(),
-        korlibs.math.math.max(x0, x1, x2, x3).toInt(),
-        korlibs.math.math.max(y0, y1, y2, y3).toInt(),
+        korlibs.math.min(x0, x1, x2, x3).toInt(),
+        korlibs.math.min(y0, y1, y2, y3).toInt(),
+        korlibs.math.max(x0, x1, x2, x3).toInt(),
+        korlibs.math.max(y0, y1, y2, y3).toInt(),
     )
 }
 
@@ -726,8 +737,9 @@ data class AGVertexArrayObject(
 data class AGVertexData(
     var layout: VertexLayout = VertexLayout(),
     val buffer: AGBuffer = AGBuffer(),
+    val baseOffset: Int = 0
 ) {
-    constructor(vararg attributes: Attribute, layoutSize: Int? = null) : this(VertexLayout(*attributes, layoutSize = layoutSize))
+    constructor(vararg attributes: Attribute, layoutSize: Int? = null, buffer: AGBuffer = AGBuffer(), baseOffset: Int = 0) : this(VertexLayout(*attributes, layoutSize = layoutSize), buffer = buffer, baseOffset = baseOffset)
 }
 
 sealed interface AGCommand {

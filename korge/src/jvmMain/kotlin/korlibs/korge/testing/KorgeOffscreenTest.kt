@@ -11,43 +11,55 @@ import korlibs.math.geom.*
 import korlibs.render.awt.*
 import kotlinx.coroutines.*
 
+internal fun createKmlGlContext(fboWidth: Int, fboHeight: Int): KmlGlContext {
+    val ctx = KmlGlContextDefault()
+    ctx.set()
+
+    val gl = ctx.gl
+
+    val GL_RGBA8 = 0x8058
+
+    // Build the texture that will serve as the color attachment for the framebuffer.
+    val colorRenderbuffer = gl.genRenderbuffer()
+    gl.bindRenderbuffer(KmlGl.RENDERBUFFER, colorRenderbuffer)
+    gl.renderbufferStorage(KmlGl.RENDERBUFFER, GL_RGBA8, fboWidth, fboHeight)
+    gl.bindRenderbuffer(KmlGl.RENDERBUFFER, 0)
+
+    // Build the texture that will serve as the depth attachment for the framebuffer.
+    val depthRenderbuffer = gl.genRenderbuffer()
+    gl.bindRenderbuffer(KmlGl.RENDERBUFFER, depthRenderbuffer)
+    gl.renderbufferStorage(KmlGl.RENDERBUFFER, KmlGl.DEPTH_COMPONENT, fboWidth, fboHeight)
+    gl.bindRenderbuffer(KmlGl.RENDERBUFFER, 0)
+
+    // Build the framebuffer.
+    val framebuffer = gl.genFramebuffer()
+    gl.bindFramebuffer(KmlGl.FRAMEBUFFER, framebuffer)
+    gl.framebufferRenderbuffer(KmlGl.FRAMEBUFFER, KmlGl.COLOR_ATTACHMENT0, KmlGl.RENDERBUFFER, colorRenderbuffer)
+    gl.framebufferRenderbuffer(KmlGl.FRAMEBUFFER, KmlGl.DEPTH_ATTACHMENT, KmlGl.RENDERBUFFER, depthRenderbuffer)
+
+    val status = gl.checkFramebufferStatus(KmlGl.FRAMEBUFFER)
+    //if (status != GL_FRAMEBUFFER_COMPLETE)
+    // Error
+
+    return ctx
+}
+
 fun suspendTestWithOffscreenAG(fboSize: Size, checkGl: Boolean = false, logGl: Boolean = false, callback: suspend CoroutineScope.(ag: AG) -> Unit) = suspendTest {
     val fboWidth = fboSize.width.toInt()
     val fboHeight = fboSize.height.toInt()
 
-    KmlGlContextDefault().use { ctx ->
+    val ctx = createKmlGlContext(fboWidth, fboHeight)
     //GLOBAL_HEADLESS_KML_CONTEXT.also { ctx ->
-        val ag = AGOpenglAWT(checkGl = checkGl, logGl = logGl, context = ctx)
+    val ag = AGOpenglAWT(checkGl = checkGl, logGl = logGl, context = ctx)
+    try {
+        ag.contextsToFree += ctx
         ag.mainFrameBuffer.setSize(fboWidth, fboHeight)
         ctx.set()
-        val gl = ag.gl
-
-        val GL_RGBA8 = 0x8058
-
-
-        // Build the texture that will serve as the color attachment for the framebuffer.
-        val color_renderbuffer = gl.genRenderbuffer()
-        gl.bindRenderbuffer(KmlGl.RENDERBUFFER, color_renderbuffer)
-        gl.renderbufferStorage(KmlGl.RENDERBUFFER, GL_RGBA8, fboWidth, fboHeight)
-        gl.bindRenderbuffer(KmlGl.RENDERBUFFER, 0)
-
-        // Build the texture that will serve as the depth attachment for the framebuffer.
-        val depth_renderbuffer = gl.genRenderbuffer()
-        gl.bindRenderbuffer(KmlGl.RENDERBUFFER, depth_renderbuffer)
-        gl.renderbufferStorage(KmlGl.RENDERBUFFER, KmlGl.DEPTH_COMPONENT, fboWidth, fboHeight)
-        gl.bindRenderbuffer(KmlGl.RENDERBUFFER, 0)
-
-        // Build the framebuffer.
-        val framebuffer = gl.genFramebuffer()
-        gl.bindFramebuffer(KmlGl.FRAMEBUFFER, framebuffer)
-        gl.framebufferRenderbuffer(KmlGl.FRAMEBUFFER, KmlGl.COLOR_ATTACHMENT0, KmlGl.RENDERBUFFER, color_renderbuffer)
-        gl.framebufferRenderbuffer(KmlGl.FRAMEBUFFER, KmlGl.DEPTH_ATTACHMENT, KmlGl.RENDERBUFFER, depth_renderbuffer)
-
-        val status = gl.checkFramebufferStatus(KmlGl.FRAMEBUFFER)
-        //if (status != GL_FRAMEBUFFER_COMPLETE)
-        // Error
 
         callback(ag)
+    } finally {
+        ag.contextsToFree.forEach { it?.unset(); it?.close() }
+        ag.contextsToFree.clear()
     }
 }
 

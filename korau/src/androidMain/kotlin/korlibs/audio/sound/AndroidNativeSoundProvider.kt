@@ -1,17 +1,13 @@
 package korlibs.audio.sound
 
-import android.annotation.*
 import android.content.*
 import android.media.*
-import android.media.AudioFormat
 import android.os.*
 import korlibs.datastructure.*
-import korlibs.time.*
-import korlibs.logger.*
-import korlibs.audio.format.*
-import korlibs.audio.format.mp3.*
+import korlibs.datastructure.lock.*
 import korlibs.io.android.*
 import korlibs.io.async.*
+import korlibs.time.*
 import kotlin.coroutines.*
 import kotlin.coroutines.cancellation.*
 
@@ -31,14 +27,24 @@ class AndroidNativeSoundProvider : NativeSoundProvider() {
     }
     //val audioSessionId get() = audioManager!!.generateAudioSessionId()
 
+    //private val activeOutputs = LinkedHashSet<AndroidPlatformAudioOutput>()
     private val threadPool = Pool { id ->
         //Console.info("Creating AudioThread[$id]")
         AudioThread(this, id = id).also { it.isDaemon = true }.also { it.start() }
     }
 
+    override var paused: Boolean = false
+        set(value) {
+            if (field != value) {
+                field = value
+                //(this as java.lang.Object).notifyAll()
+            }
+        }
+
     class AudioThread(val provider: AndroidNativeSoundProvider, var freq: Int = 44100, val id: Int = -1) : Thread() {
         var props: SoundProps = DummySoundProps
         val deque = AudioSamplesDeque(2)
+        val lock = Lock()
         @Volatile
         var running = true
 
@@ -87,7 +93,20 @@ class AndroidNativeSoundProvider : NativeSoundProvider() {
                     var paused = true
                     var lastVolume = Float.NaN
                     while (running) {
-                        val readCount = deque.read(temp)
+                        //println("Android sound thread running = ${currentThreadId} ${currentThreadName}")
+
+                        if (provider.paused) {
+                            at.stop()
+                            //at.pause()
+                            //at.flush()
+                            while (provider.paused && running) {
+                                //(provider as java.lang.Object).wait(10_000L)
+                                Thread.sleep(250L)
+                            }
+                            at.play()
+                        }
+
+                        val readCount = lock { deque.read(temp) }
                         if (at.state == AudioTrack.STATE_UNINITIALIZED) {
                             Thread.sleep(50L)
                             continue
@@ -153,41 +172,47 @@ class AndroidNativeSoundProvider : NativeSoundProvider() {
 
     override fun createPlatformAudioOutput(coroutineContext: CoroutineContext, freq: Int): PlatformAudioOutput {
         ensureAudioManager(coroutineContext)
+        return AndroidPlatformAudioOutput(coroutineContext, freq, this)
+    }
 
-        return object : PlatformAudioOutput(coroutineContext, freq) {
-            private var started = false
-            private var thread: AudioThread? = null
-            private val threadDeque get() = thread?.deque
+    class AndroidPlatformAudioOutput(coroutineContext: CoroutineContext, frequency: Int, val provider: AndroidNativeSoundProvider) : PlatformAudioOutput(coroutineContext, frequency) {
+        private var started = false
+        internal var thread: AudioThread? = null
+        private val threadDeque get() = thread?.deque
 
-            override val availableSamples: Int get() = threadDeque?.availableRead ?: 0
+        override val availableSamples: Int get() = threadDeque?.availableRead ?: 0
 
-            override suspend fun add(samples: AudioSamples, offset: Int, size: Int) {
-                while (thread == null) delay(10.milliseconds)
-                while (threadDeque!!.availableRead >= 44100) delay(1.milliseconds)
-                threadDeque!!.write(samples, offset, size)
-            }
+        override suspend fun add(samples: AudioSamples, offset: Int, size: Int) {
+            //println("AndroidPlatformAudioOutput.add")
+            while (thread == null) delay(10.milliseconds)
+            while (threadDeque!!.availableRead >= 44100) delay(1.milliseconds)
 
-            override fun start() {
-                if (started) return
-                started = true
-                launchImmediately(coroutineContext) {
-                    while (threadPool.totalItemsInUse >= MAX_CHANNELS) {
-                        delay(10.milliseconds)
-                    }
-                    thread = threadPool.alloc()
-                    thread?.props = this
-                    thread?.freq = freq
-                    threadDeque?.clear()
+            thread!!.lock { threadDeque!!.write(samples, offset, size) }
+        }
+
+        override fun start() {
+            if (started) return
+            started = true
+            launchImmediately(coroutineContext) {
+                while (provider.threadPool.totalItemsInUse >= MAX_CHANNELS) {
+                    delay(10.milliseconds)
                 }
+                thread = provider.threadPool.alloc()
+                thread?.props = this
+                thread?.freq = frequency
+                threadDeque?.clear()
             }
-            override fun stop() {
-                if (!started) return
-                started = false
-                if (thread != null) {
-                    threadPool.free(thread!!)
-                }
-                thread = null
+            //provider.activeOutputs += this
+        }
+
+        override fun stop() {
+            if (!started) return
+            //provider.activeOutputs -= this
+            started = false
+            if (thread != null) {
+                provider.threadPool.free(thread!!)
             }
+            thread = null
         }
     }
 }

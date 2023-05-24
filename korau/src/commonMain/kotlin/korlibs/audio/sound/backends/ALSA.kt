@@ -128,7 +128,7 @@ class ALSAPlatformAudioOutput(
         thread?.interrupt()
         if (!ASound2.initialized) return
 
-        if (pcm != null) {
+        if (pcm != 0L) {
             ASound2.snd_pcm_drain(pcm)
             ASound2.snd_pcm_close(pcm)
         }

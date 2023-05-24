@@ -150,7 +150,7 @@ class GamepadInfo(
     var connected: Boolean = false,
     var name: String? = null,
     var rawButtons: FloatArray = FloatArray(GameButton.MAX),
-    var batteryLevel: Double = 1.0,
+    var batteryLevel: Float = 1f,
     var name2: String = DEFAULT_NAME2,
     var batteryStatus: BatteryStatus = BatteryStatus.UNKNOWN,
 ) {
@@ -161,14 +161,11 @@ class GamepadInfo(
         const val MAX_CONTROLLERS = 4
         //const val MAX_CONTROLLERS = 8
 
-        const val DEAD_RANGE = 0.06f
+        //const val DEAD_RANGE = 0.06f
+        const val DEAD_RANGE = 0.075f
 
         fun withoutDeadRange(value: Float, margin: Float = DEAD_RANGE, apply: Boolean = true): Float {
             if (apply && value.absoluteValue < margin) return 0f
-            return value
-        }
-        fun withoutDeadRange(value: Double, margin: Double = DEAD_RANGE.toDouble(), apply: Boolean = true): Double {
-            if (apply && value.absoluteValue < margin) return 0.0
             return value
         }
     }
@@ -185,36 +182,34 @@ class GamepadInfo(
         arraycopy(that.rawButtons, 0, this.rawButtons, 0, min(this.rawButtons.size, that.rawButtons.size))
     }
 
-    val up: Boolean get() = this[GameButton.UP] != 0.0
-    val down: Boolean get() = this[GameButton.DOWN] != 0.0
-    val left: Boolean get() = this[GameButton.LEFT] != 0.0
-    val right: Boolean get() = this[GameButton.RIGHT] != 0.0
-    val start: Boolean get() = this[GameButton.START] != 0.0
-    val select: Boolean get() = this[GameButton.SELECT] != 0.0
-    val system: Boolean get() = this[GameButton.SYSTEM] != 0.0
+    val up: Boolean get() = this[GameButton.UP] != 0f
+    val down: Boolean get() = this[GameButton.DOWN] != 0f
+    val left: Boolean get() = this[GameButton.LEFT] != 0f
+    val right: Boolean get() = this[GameButton.RIGHT] != 0f
+    val start: Boolean get() = this[GameButton.START] != 0f
+    val select: Boolean get() = this[GameButton.SELECT] != 0f
+    val system: Boolean get() = this[GameButton.SYSTEM] != 0f
 
-    val north: Boolean get() = this[GameButton.BUTTON_NORTH] != 0.0
-    val west: Boolean get() = this[GameButton.BUTTON_WEST] != 0.0
-    val east: Boolean get() = this[GameButton.BUTTON_EAST] != 0.0
-    val south: Boolean get() = this[GameButton.BUTTON_SOUTH] != 0.0
+    val north: Boolean get() = this[GameButton.BUTTON_NORTH] != 0f
+    val west: Boolean get() = this[GameButton.BUTTON_WEST] != 0f
+    val east: Boolean get() = this[GameButton.BUTTON_EAST] != 0f
+    val south: Boolean get() = this[GameButton.BUTTON_SOUTH] != 0f
 
-    val lx: Double get() = this[GameButton.LX]
-    val ly: Double get() = this[GameButton.LY]
-    val rx: Double get() = this[GameButton.RX]
-    val ry: Double get() = this[GameButton.RY]
+    val lx: Float get() = this[GameButton.LX]
+    val ly: Float get() = this[GameButton.LY]
+    val rx: Float get() = this[GameButton.RX]
+    val ry: Float get() = this[GameButton.RY]
 
-    val l1: Boolean get() = this[GameButton.L1] != 0.0
-    val l2: Double get() = this[GameButton.L2]
-    val l3: Boolean get() = this[GameButton.L3] != 0.0
+    val l1: Boolean get() = this[GameButton.L1] != 0f
+    val l2: Float get() = this[GameButton.L2]
+    val l3: Boolean get() = this[GameButton.L3] != 0f
 
-    val r1: Boolean get() = this[GameButton.R1] != 0.0
-    val r2: Double get() = this[GameButton.R2]
-    val r3: Boolean get() = this[GameButton.R3] != 0.0
+    val r1: Boolean get() = this[GameButton.R1] != 0f
+    val r2: Float get() = this[GameButton.R2]
+    val r3: Boolean get() = this[GameButton.R3] != 0f
 
-    private val stick = Array(2) { MPoint() }
-
-    operator fun get(button: GameButton): Double = rawButtons[button.index].toDouble()
-    operator fun get(stick: GameStick): MPoint = this.stick[stick.id].setTo(getX(stick), getY(stick))
+    operator fun get(button: GameButton): Float = rawButtons[button.index].toFloat()
+    operator fun get(stick: GameStick): Point = Point(getX(stick), getY(stick))
     fun getX(stick: GameStick) = when (stick) {
         GameStick.LEFT -> get(GameButton.LX)
         GameStick.RIGHT -> get(GameButton.RX)
@@ -230,7 +225,7 @@ class GamepadInfo(
             var count = 0
             for (button in GameButton.values()) {
                 val value = this@GamepadInfo[button]
-                if (value != 0.0) {
+                if (value != 0f) {
                     if (count > 0) append(",")
                     append("$button=${value.niceStr}")
                     count++

@@ -69,7 +69,7 @@ class MacosGLContext(
         if (contentView != 0L) setView(contentView)
     }
 
-    override val scaleFactor: Double get() = if (window != 0L) window.msgSendCGFloat("backingScaleFactor").toDouble() else 1.0
+    override val scaleFactor: Float get() = if (window != 0L) window.msgSendCGFloat("backingScaleFactor").toFloat() else 1f
 
     override fun makeCurrent() {
         openGLContext.msgSend("makeCurrentContext")
@@ -191,7 +191,7 @@ class MacAWTOpenglContext(val gwconfig: GameWindowConfig, val c: Component, var 
         RectangleInt(), RectangleInt()
     )
 
-    override val scaleFactor: Double get() = getDisplayScalingFactor(c)
+    override val scaleFactor: Float get() = getDisplayScalingFactor(c)
 
     override fun useContext(g: Graphics, ag: AG, action: (Graphics, BaseOpenglContext.ContextInfo) -> Unit) {
         invokeWithOGLContextCurrentMethod.invoke(null, g, Runnable {

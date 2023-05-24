@@ -4,8 +4,9 @@ package korlibs.math.geom
 
 import korlibs.math.internal.*
 import korlibs.math.interpolation.*
-import korlibs.math.math.*
-import korlibs.math.math.isAlmostZero
+import korlibs.math.isAlmostEquals
+import korlibs.math.isAlmostZero
+import korlibs.math.roundDecimalPlaces
 import korlibs.memory.*
 import korlibs.memory.pack.*
 import kotlin.math.*
@@ -202,16 +203,32 @@ inline class Vector2 internal constructor(internal val raw: Float2Pack) {
         fun dot(aX: Float, aY: Float, bX: Float, bY: Float): Float = (aX * bX) + (aY * bY)
         fun dot(a: Vector2, b: Vector2): Float = dot(a.x, a.y, b.x, b.y)
 
-        fun isCollinear(xa: Float, ya: Float, x: Float, y: Float, xb: Float, yb: Float): Boolean =
-            (((x - xa) / (y - ya)) - ((xa - xb) / (ya - yb))).absoluteValue.isAlmostZero()
+        fun isCollinear(p1: Point, p2: Point, p3: Point): Boolean =
+            isCollinear(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y)
 
-        fun isCollinear(xa: Double, ya: Double, x: Double, y: Double, xb: Double, yb: Double): Boolean =
-            (((x - xa) / (y - ya)) - ((xa - xb) / (ya - yb))).absoluteValue.isAlmostZero()
+        fun isCollinear(p1x: Float, p1y: Float, p2x: Float, p2y: Float, p3x: Float, p3y: Float): Boolean {
+            val area2 = (p1x * (p2y - p3y) + p2x * (p3y - p1y) + p3x * (p1y - p2y)) // 2x triangle area
+            //println("($p1x, $p1y), ($p2x, $p2y), ($p3x, $p3y) :: area=$area2")
+            return area2.isAlmostZero()
+
+            //val div1 = (p2x - p1x) / (p2y - p1y)
+            //val div2 = (p1x - p3x) / (p1y - p3y)
+            //val result = (div1 - div2).absoluteValue
+            //println("result=$result, div1=$div1, div2=$div2, xa=$p1x, ya=$p1y, x=$p2x, y=$p2y, xb=$p3x, yb=$p3y")
+            //if (div1.isInfinite() != div2.isInfinite()) return false
+            //return result.isAlmostZero() || result.isInfinite()
+        }
+
+        fun isCollinear(xa: Double, ya: Double, x: Double, y: Double, xb: Double, yb: Double): Boolean = isCollinear(
+            xa.toFloat(), ya.toFloat(),
+            x.toFloat(), y.toFloat(),
+            xb.toFloat(), yb.toFloat(),
+        )
 
         fun isCollinear(xa: Int, ya: Int, x: Int, y: Int, xb: Int, yb: Int): Boolean = isCollinear(
-            xa.toDouble(), ya.toDouble(),
-            x.toDouble(), y.toDouble(),
-            xb.toDouble(), yb.toDouble(),
+            xa.toFloat(), ya.toFloat(),
+            x.toFloat(), y.toFloat(),
+            xb.toFloat(), yb.toFloat(),
         )
 
         // https://algorithmtutor.com/Computational-Geometry/Determining-if-two-consecutive-segments-turn-left-or-right/
@@ -225,11 +242,31 @@ inline class Vector2 internal constructor(internal val raw: Float2Pack) {
         fun crossProduct(p1: Vector2, p2: Vector2): Float = crossProduct(p1.x, p1.y, p2.x, p2.y)
 
         fun minComponents(p1: Vector2, p2: Vector2): Vector2 = Point(min(p1.x, p2.x), min(p1.y, p2.y))
-        fun minComponents(p1: Vector2, p2: Vector2, p3: Vector2): Vector2 = Point(min(p1.x, p2.x, p3.x), min(p1.y, p2.y, p3.y))
-        fun minComponents(p1: Vector2, p2: Vector2, p3: Vector2, p4: Vector2): Vector2 = Point(min(p1.x, p2.x, p3.x, p4.x), min(p1.y, p2.y, p3.y, p4.y))
+        fun minComponents(p1: Vector2, p2: Vector2, p3: Vector2): Vector2 = Point(
+            korlibs.math.min(p1.x, p2.x, p3.x),
+            korlibs.math.min(p1.y, p2.y, p3.y)
+        )
+        fun minComponents(p1: Vector2, p2: Vector2, p3: Vector2, p4: Vector2): Vector2 = Point(
+            korlibs.math.min(
+                p1.x,
+                p2.x,
+                p3.x,
+                p4.x
+            ), korlibs.math.min(p1.y, p2.y, p3.y, p4.y)
+        )
         fun maxComponents(p1: Vector2, p2: Vector2): Vector2 = Point(max(p1.x, p2.x), max(p1.y, p2.y))
-        fun maxComponents(p1: Vector2, p2: Vector2, p3: Vector2): Vector2 = Point(max(p1.x, p2.x, p3.x), max(p1.y, p2.y, p3.y))
-        fun maxComponents(p1: Vector2, p2: Vector2, p3: Vector2, p4: Vector2): Vector2 = Point(max(p1.x, p2.x, p3.x, p4.x), max(p1.y, p2.y, p3.y, p4.y))
+        fun maxComponents(p1: Vector2, p2: Vector2, p3: Vector2): Vector2 = Point(
+            korlibs.math.max(p1.x, p2.x, p3.x),
+            korlibs.math.max(p1.y, p2.y, p3.y)
+        )
+        fun maxComponents(p1: Vector2, p2: Vector2, p3: Vector2, p4: Vector2): Vector2 = Point(
+            korlibs.math.max(
+                p1.x,
+                p2.x,
+                p3.x,
+                p4.x
+            ), korlibs.math.max(p1.y, p2.y, p3.y, p4.y)
+        )
     }
 }
 

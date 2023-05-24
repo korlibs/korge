@@ -1,10 +1,10 @@
 package korlibs.image.atlas
 
-import korlibs.datastructure.ListReader
-import korlibs.image.format.ImageOrientation
+import korlibs.datastructure.*
+import korlibs.image.format.*
 import korlibs.io.dynamic.*
-import korlibs.io.serialization.json.Json
-import korlibs.io.serialization.xml.Xml
+import korlibs.io.serialization.json.*
+import korlibs.io.serialization.xml.*
 import korlibs.math.geom.*
 
 //e: java.lang.UnsupportedOperationException: Class literal annotation arguments are not yet supported: Factory
@@ -92,7 +92,7 @@ data class AtlasInfo(
         val imageOrientation: ImageOrientation = ImageOrientation.NORMAL,
     ) {
         @Deprecated("Use primary constructor")
-        constructor(
+        internal constructor(
             name: String,
             frame: RectangleInt,
             rotated: Boolean,
@@ -100,12 +100,12 @@ data class AtlasInfo(
             spriteSourceSize: RectangleInt,
             trimmed: Boolean,
             orig: SizeInt = SizeInt(0, 0),
-            offset: MPoint = MPoint(),
+            offset: Point = Point.ZERO,
         ) : this(
             name = name,
             frame = frame,
             virtFrame = when {
-                offset.x != 0.0 || offset.y != 0.0 || orig.width != 0 || orig.height != 0 ->
+                offset.x != 0f || offset.y != 0f || orig.width != 0 || orig.height != 0 ->
                     RectangleInt(offset.x.toInt(), offset.y.toInt(), orig.width, orig.height)
                 spriteSourceSize.x != 0 || spriteSourceSize.y != 0 || sourceSize.width != frame.height || sourceSize.height != frame.width ->
                     RectangleInt(spriteSourceSize.x, spriteSourceSize.y, sourceSize.width, sourceSize.height)
@@ -131,7 +131,7 @@ data class AtlasInfo(
         val orig: SizeInt get() = sourceSize
 
         @Deprecated("Use virtFrame", ReplaceWith("Point(virtFrame?.x ?: 0, virtFrame?.y ?: 0)"))
-        val offset: MPoint get() = MPoint(virtFrame?.x ?: 0, virtFrame?.y ?: 0)
+        val offset: Point get() = Point(virtFrame?.x ?: 0, virtFrame?.y ?: 0)
 
         // @TODO: Rename to path or name
         //@IgnoreSerialization
@@ -309,9 +309,9 @@ data class AtlasInfo(
             val r = ListReader(content.lines())
             var pageImage: Any? = null
 
-            fun String.point(): MPoint {
+            fun String.point(): Point {
                 val list = this.split(',', limit = 2)
-                return MPoint(list.first().trim().toInt(), list.last().trim().toInt())
+                return Point(list.first().trim().toInt(), list.last().trim().toInt())
             }
 
             fun String.size(): SizeInt = point().let { SizeInt(it.x.toInt(), it.y.toInt()) }
@@ -370,10 +370,10 @@ data class AtlasInfo(
                 } else {
                     val name = line
                     var rotate = false
-                    var xy = MPoint()
+                    var xy = Point.ZERO
                     var size = SizeInt(0, 0)
                     var orig = SizeInt(0, 0)
-                    var offset = MPoint()
+                    var offset = Point.ZERO
                     while (r.hasMore && r.peek().contains(':')) {
                         val (key, value) = r.read().trim().keyValue()
                         when (key) {

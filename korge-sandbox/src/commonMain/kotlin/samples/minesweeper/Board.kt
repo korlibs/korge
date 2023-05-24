@@ -6,6 +6,7 @@ import korlibs.image.text.*
 import korlibs.io.lang.*
 import korlibs.korge.render.*
 import korlibs.korge.view.*
+import korlibs.korge.view.align.*
 import korlibs.math.geom.*
 import korlibs.math.random.*
 import korlibs.time.*

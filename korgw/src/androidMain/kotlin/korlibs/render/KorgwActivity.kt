@@ -6,12 +6,10 @@ import android.os.*
 import android.util.*
 import android.view.*
 import android.view.KeyEvent
-import korlibs.datastructure.*
-import korlibs.kgl.*
-import korlibs.memory.KmemGC
-import korlibs.memory.hasBits
-import korlibs.graphics.gl.*
 import korlibs.event.*
+import korlibs.graphics.gl.*
+import korlibs.kgl.*
+import korlibs.memory.*
 import kotlin.coroutines.*
 
 abstract class KorgwActivity(
@@ -24,6 +22,7 @@ abstract class KorgwActivity(
     var mGLView: KorgwSurfaceView? = null
     lateinit var ag: AGOpengl
     open val agCheck: Boolean get() = false
+    //open val agCheck: Boolean get() = true
     open val agTrace: Boolean get() = false
 
     //init { setOnKeyListener(this) }
@@ -44,9 +43,18 @@ abstract class KorgwActivity(
         }
     }
 
+    fun Bundle.toMap(): Map<String, Any?> = this.keySet().associateWith { this.get(it) }
+
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        intent.extras?.get("sleepBeforeStart")?.toString()?.toLongOrNull()?.let {
+            Thread.sleep(it)
+            println("Slept $it milliseconds")
+        }
+        //Thread.sleep(100L)
+
+        println("intent.extras: ${intent.extras?.toMap()} : ${intent.extras}")
         println("---------------- KorgwActivity.onCreate(savedInstanceState=$savedInstanceState) -------------- : ${this.config}")
         Log.e("KorgwActivity", "onCreate")
         //println("KorgwActivity.onCreate")
@@ -57,6 +65,7 @@ abstract class KorgwActivity(
         ag = AGOpengl(KmlGlAndroid { mGLView?.clientVersion ?: -1 }.checkedIf(checked = agCheck).logIf(log = false))
 
         gameWindow.initializeAndroid()
+
         setContentView(mGLView)
 
         mGLView!!.onDraw.once {
@@ -133,24 +142,13 @@ abstract class KorgwActivity(
     fun makeFullscreen(value: Boolean) {
         try {
             runOnUiThread {
-                if (value) window.decorView.run {
-                    if (defaultUiVisibility == -1)
-                        defaultUiVisibility = systemUiVisibility
-                    val flags = (View.SYSTEM_UI_FLAG_FULLSCREEN
-                        or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                        or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                        or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                        or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                        or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY)
-                    systemUiVisibility = flags
-                    setOnSystemUiVisibilityChangeListener { visibility ->
-                        if ((visibility and View.SYSTEM_UI_FLAG_FULLSCREEN) == 0) {
-                            systemUiVisibility = flags
-                        }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                    val decor = window.decorView
+                    if (defaultUiVisibility == -1) defaultUiVisibility = decor.systemUiVisibility
+                    decor.systemUiVisibility = when (value) {
+                        true -> (View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_FULLSCREEN)
+                        else -> defaultUiVisibility
                     }
-                } else window.decorView.run {
-                    setOnSystemUiVisibilityChangeListener(null)
-                    systemUiVisibility = defaultUiVisibility
                 }
             }
         } catch (e: Throwable) {
@@ -158,31 +156,30 @@ abstract class KorgwActivity(
         }
     }
 
+    private inline fun delegateKeyEvent(event: KeyEvent, fallback: () -> Boolean): Boolean {
+        if (mGLView?.dispatchKeyEvent(event) == true) return true
+        return fallback()
+    }
 
-    override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean =
-        mGLView?.dispatchKeyEvent(event) ?: super.onKeyDown(keyCode, event)
+    override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean = delegateKeyEvent(event) { super.onKeyDown(keyCode, event) }
+    override fun onKeyUp(keyCode: Int, event: KeyEvent): Boolean = delegateKeyEvent(event) { super.onKeyUp(keyCode, event) }
+    override fun onKeyLongPress(keyCode: Int, event: KeyEvent): Boolean = delegateKeyEvent(event) { super.onKeyLongPress(keyCode, event) }
+    override fun onKeyMultiple(keyCode: Int, repeatCount: Int, event: KeyEvent): Boolean = delegateKeyEvent(event) { super.onKeyMultiple(keyCode, repeatCount, event) }
+    override fun onKeyShortcut(keyCode: Int, event: KeyEvent): Boolean = delegateKeyEvent(event) { super.onKeyShortcut(keyCode, event) }
 
-    override fun onKeyUp(keyCode: Int, event: KeyEvent): Boolean =
-        mGLView?.dispatchKeyEvent(event) ?: super.onKeyUp(keyCode, event)
+    override fun onTrackballEvent(event: MotionEvent): Boolean {
+        if (mGLView?.dispatchTrackballEvent(event) == true) return true
+        return super.onTrackballEvent(event)
+    }
 
-    override fun onKeyLongPress(keyCode: Int, event: KeyEvent): Boolean =
-        mGLView?.dispatchKeyEvent(event) ?: super.onKeyLongPress(keyCode, event)
-
-    override fun onKeyMultiple(keyCode: Int, repeatCount: Int, event: KeyEvent): Boolean =
-        mGLView?.dispatchKeyEvent(event) ?: super.onKeyMultiple(keyCode, repeatCount, event)
-
-    override fun onKeyShortcut(keyCode: Int, event: KeyEvent): Boolean =
-        mGLView?.dispatchKeyShortcutEvent(event) ?: super.onKeyShortcut(keyCode, event)
-
-    override fun onTrackballEvent(event: MotionEvent): Boolean =
-        mGLView?.dispatchTrackballEvent(event) ?: super.onTrackballEvent(event)
-
-    override fun onGenericMotionEvent(event: MotionEvent): Boolean =
-        mGLView?.dispatchGenericMotionEvent(event) ?: super.onGenericMotionEvent(event)
+    override fun onGenericMotionEvent(event: MotionEvent): Boolean {
+        if (mGLView?.dispatchGenericMotionEvent(event) == true) return true
+        return super.onGenericMotionEvent(event)
+    }
 
     override fun onBackPressed() {
         gameWindow.queue {
-            if (!gameWindow.dispatchKeyEventEx(korlibs.event.KeyEvent.Type.DOWN, 0, '\u0008', Key.BACKSPACE, KeyEvent.KEYCODE_BACK)) {
+            if (!gameWindow.dispatchKeyEventEx(korlibs.event.KeyEvent.Type.DOWN, 0, '\u0008', Key.BACK, KeyEvent.KEYCODE_BACK)) {
                 runOnUiThread {
                     super.onBackPressed()
                 }

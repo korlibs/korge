@@ -2,7 +2,7 @@ package korlibs.korge.tween
 
 import korlibs.io.util.toStringDecimal
 import korlibs.math.interpolation.*
-import korlibs.math.math.*
+import korlibs.math.isAlmostEquals
 import kotlin.test.*
 
 class V2Test {

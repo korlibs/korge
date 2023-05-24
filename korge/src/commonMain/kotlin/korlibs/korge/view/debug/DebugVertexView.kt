@@ -51,14 +51,14 @@ class DebugVertexView(pointsList: List<IVectorArrayList>, color: RGBA = Colors.W
     class Batch(val offset: Int, val count: Int)
     var buffer: FloatArray = floatArrayOf(0f, 0f, 100f, 0f, 0f, 100f, 100f, 100f)
     val batches = arrayListOf<Batch>()
-    private val bb = MBoundsBuilder()
+    private var bb = BoundsBuilder()
 
     private fun updatedPoints() {
         this.buffer = FloatArray(pointsList.sumOf { it.size } * 2)
         val buffer = this.buffer
         var n = 0
         batches.clear()
-        bb.reset()
+        bb = BoundsBuilder()
         pointsList.fastForEach { points ->
             batches.add(Batch(n / 2, points.size))
             if (points.dimensions >= 5) {
@@ -72,7 +72,7 @@ class DebugVertexView(pointsList: List<IVectorArrayList>, color: RGBA = Colors.W
                     val py = y + dy * scale
                     buffer[n++] = px
                     buffer[n++] = py
-                    bb.add(px, py)
+                    bb += Point(px, py)
                 }
             } else {
                 points.fastForEachGeneric {
@@ -80,13 +80,13 @@ class DebugVertexView(pointsList: List<IVectorArrayList>, color: RGBA = Colors.W
                     val y = this[it, 1]
                     buffer[n++] = x
                     buffer[n++] = y
-                    bb.add(x, y)
+                    bb += Point(x, y)
                 }
             }
         }
     }
 
-    override fun getLocalBoundsInternal() = bb.getBounds().immutable
+    override fun getLocalBoundsInternal() = bb.bounds
     //println("DebugVertexView.getLocalBoundsInternal:$out")
 
     override fun renderInternal(ctx: RenderContext) {

@@ -9,6 +9,8 @@ inline class GLVariant(val data: Int) {
     val version: Int get() = data.extract8(8)
     val os: Os get() = Os.VALUES.getOrNull(data.extract8(16)) ?: Os.UNKNOWN
 
+    val supportTextureLevel: Boolean get() = !isWebGL && !isES
+
     companion object {
         operator fun invoke(
             isES: Boolean = false,

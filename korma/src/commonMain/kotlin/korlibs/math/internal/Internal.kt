@@ -1,6 +1,7 @@
 package korlibs.math.internal
 
-import korlibs.math.math.*
+import korlibs.math.isAlmostEquals
+import korlibs.math.roundDecimalPlaces
 import kotlin.math.*
 
 //internal val Float.niceStr: String get() = if (almostEquals(this.toLong().toFloat(), this)) "${this.toLong()}" else "$this"

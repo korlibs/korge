@@ -5,7 +5,7 @@ import korlibs.memory.pack.*
 typealias PointInt = Vector2Int
 
 //@KormaValueApi
-inline class Vector2Int internal constructor(internal val raw: Int2Pack) {
+inline class Vector2Int(internal val raw: Int2Pack) {
     companion object {
         val ZERO = Vector2Int(0, 0)
     }
@@ -27,4 +27,6 @@ inline class Vector2Int internal constructor(internal val raw: Int2Pack) {
     operator fun times(that: Vector2Int): Vector2Int = Vector2Int(this.x * that.x, this.y * that.y)
     operator fun div(that: Vector2Int): Vector2Int = Vector2Int(this.x / that.x, this.y / that.y)
     operator fun rem(that: Vector2Int): Vector2Int = Vector2Int(this.x % that.x, this.y % that.y)
+
+    override fun toString(): String = "($x, $y)"
 }

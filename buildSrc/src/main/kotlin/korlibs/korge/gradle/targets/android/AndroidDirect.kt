@@ -22,14 +22,15 @@ fun Project.configureAndroidDirect(projectType: ProjectType, isKorge: Boolean) {
 
     //val android = project.extensions.getByName("android")
 
+    //project.kotlin.androidTarget().apply {
     project.kotlin.android().apply {
         publishAllLibraryVariants()
         publishLibraryVariantsGroupedByFlavor = true
         //this.attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.androidJvm)
         compilations.allThis {
             kotlinOptions.jvmTarget = ANDROID_JAVA_VERSION_STR
-            compilerOptions.options.freeCompilerArgs.add("-Xno-param-assertions")
         }
+        AddFreeCompilerArgs.addFreeCompilerArgs(project, this)
     }
 
     //if (isKorge) {
@@ -41,6 +42,17 @@ fun Project.configureAndroidDirect(projectType: ProjectType, isKorge: Boolean) {
     //val generated = AndroidGenerated(korge)
 
     dependencies {
+        when {
+            SemVer(BuildVersions.KOTLIN) >= SemVer("1.9.0") -> {
+                //add("androidUnitTestImplementation", "org.jetbrains.kotlin:kotlin-test")
+                add("androidTestImplementation", "org.jetbrains.kotlin:kotlin-test")
+            }
+            else -> {
+                add("androidTestImplementation", "org.jetbrains.kotlin:kotlin-test")
+            }
+        }
+
+        add("androidTestImplementation", "org.jetbrains.kotlin:kotlin-test")
         add("androidTestImplementation", "androidx.test:core:1.4.0")
         add("androidTestImplementation", "androidx.test.ext:junit:1.1.2")
         add("androidTestImplementation", "androidx.test.espresso:espresso-core:3.3.0")
@@ -56,7 +68,7 @@ fun Project.configureAndroidDirect(projectType: ProjectType, isKorge: Boolean) {
 
         (this as CommonExtension<*, *, *, *>).installation.apply {
             // @TODO: Android Build Gradle newer version
-            installOptions = listOf("-r")
+            installOptions("-r")
             timeOutInMs = project.korge.androidTimeoutMs
         }
 
@@ -105,21 +117,25 @@ fun Project.configureAndroidDirect(projectType: ProjectType, isKorge: Boolean) {
             //this.single().
             if (projectType.isExecutable) {
                 maybeCreate("debug").apply {
-                    isMinifyEnabled = false
                     signingConfig = signingConfigs.getByName("release")
+                    isMinifyEnabled = false
                 }
             }
             maybeCreate("release").apply {
-                isMinifyEnabled = true
-                proguardFiles(
-                    getDefaultProguardFile("proguard-android-optimize.txt"),
-                    "proguard-rules.pro"
-                )
-                File(rootDir, "proguard-rules.pro").takeIfExists()?.also {
-                    proguardFile(it)
-                }
-                //proguardFiles(getDefaultProguardFile(ProguardFiles.ProguardFile.OPTIMIZE.fileName), File(rootProject.rootDir, "proguard-rules.pro"))
                 signingConfig = signingConfigs.getByName("release")
+                if (projectType.isExecutable) {
+                    isMinifyEnabled = true // for libraries, this would make the library to be empty
+                    proguardFiles(
+                        getDefaultProguardFile("proguard-android-optimize.txt"),
+                        "proguard-rules.pro"
+                    )
+                    File(rootDir, "proguard-rules.pro").takeIfExists()?.also {
+                        proguardFile(it)
+                    }
+                    //proguardFiles(getDefaultProguardFile(ProguardFiles.ProguardFile.OPTIMIZE.fileName), File(rootProject.rootDir, "proguard-rules.pro"))
+                } else {
+                    isMinifyEnabled = false
+                }
             }
         }
 
@@ -134,10 +150,12 @@ fun Project.configureAndroidDirect(projectType: ProjectType, isKorge: Boolean) {
                 java.srcDirs(AndroidConfig.getAndroidSrcFolder(project, isKorge = isKorge))
                 res.srcDirs(AndroidConfig.getAndroidResFolder(project, isKorge = isKorge))
                 assets.srcDirs(
-                    "${project.projectDir}/src/commonMain/resources",
-                    "${project.projectDir}/src/androidMain/resources",
-                    "${project.projectDir}/src/main/resources",
-                    "${project.projectDir}/build/commonMain/korgeProcessedResources/metadata/main",
+                    "${project.buildDir}/processedResources/jvm/main",
+                    //"${project.projectDir}/src/commonMain/resources",
+                    //"${project.projectDir}/src/androidMain/resources",
+                    //"${project.projectDir}/src/main/resources",
+                    //"${project.projectDir}/build/commonMain/korgeProcessedResources/metadata/main",
+                    //"${project.projectDir}/build/korgeProcessedResources/android/main",
                 )
                 //assets.srcDirs(*resourcesSrcDirs.map { it.absoluteFile }.toTypedArray())
                 //java.srcDirs(*kotlinSrcDirs.map { it.absoluteFile }.toTypedArray())

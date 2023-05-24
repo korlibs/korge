@@ -70,8 +70,8 @@ class FloatBitmap32(
         val temp = RGBAf()
         forEach { n, x, y ->
             val c = getRgbaf(x, y, temp)
-            min = korlibs.math.math.min(min, c.r, c.g, c.b, c.a)
-            max = korlibs.math.math.max(max, c.r, c.g, c.b, c.a)
+            min = korlibs.math.min(min, c.r, c.g, c.b, c.a)
+            max = korlibs.math.max(max, c.r, c.g, c.b, c.a)
         }
         out[0] = min
         out[1] = max

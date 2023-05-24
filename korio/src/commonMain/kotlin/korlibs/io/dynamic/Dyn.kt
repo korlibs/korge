@@ -224,7 +224,7 @@ inline class Dyn(val value: Any?) : Comparable<Dyn> {
     operator fun set(key: Dyn, value: Dyn) = set(key.value, value.value)
     operator fun set(key: Any?, value: Dyn) = set(key, value.value)
     operator fun set(key: Any?, value: Any?) {
-        when (value) {
+        when (this.value) {
             is MutableMap<*, *> -> (this.value as MutableMap<Any?, Any?>)[key] = value
             is MutableList<*> -> (this.value as MutableList<Any?>)[key.dyn.toInt()] = value
             else -> dynApi.set(this.value, key.toString(), value)

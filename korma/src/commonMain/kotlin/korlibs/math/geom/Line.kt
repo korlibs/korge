@@ -1,13 +1,13 @@
 package korlibs.math.geom
 
+import korlibs.math.almostEquals
 import korlibs.memory.clamp
 import korlibs.memory.pack.*
 import korlibs.math.annotations.*
 import korlibs.math.geom.bezier.*
 import korlibs.math.geom.shape.*
 import korlibs.math.geom.vector.*
-import korlibs.math.math.*
-import korlibs.math.math.isAlmostZero
+import korlibs.math.isAlmostZero
 import kotlin.math.*
 
 //@KormaValueApi

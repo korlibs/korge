@@ -194,15 +194,6 @@ class RenderContext(
     @OptIn(KorgeInternal::class)
     inline fun useCtx2d(block: (RenderContext2D) -> Unit) { useBatcher(batch) { block(ctx2d) } }
 
-    /** Pool of [MMatrix] objects that could be used temporarily by renders */
-    val matrixPool = Pool(reset = { it.identity() }, preallocate = 8) { MMatrix() }
-    /** Pool of [MMatrix3D] objects that could be used temporarily by renders */
-    val matrix3DPool = Pool(reset = { it.identity() }, preallocate = 8) { MMatrix3D() }
-    /** Pool of [MPoint] objects that could be used temporarily by renders */
-    val pointPool = Pool(reset = { it.setTo(0, 0) }, preallocate = 8) { MPoint() }
-    /** Pool of [MRectangle] objects that could be used temporarily by renders */
-    val rectPool = Pool(reset = { it.setTo(0, 0, 0, 0) }, preallocate = 8) { MRectangle() }
-
     /**
      * Allows to toggle whether stencil-based masks are enabled or not.
      */

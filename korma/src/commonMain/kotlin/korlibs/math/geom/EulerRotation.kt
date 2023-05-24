@@ -1,6 +1,6 @@
 package korlibs.math.geom
 
-import korlibs.math.math.*
+import korlibs.math.normalizeAlmostZero
 import kotlin.math.*
 
 inline class EulerRotation internal constructor(private val data: Vector3) {
@@ -15,6 +15,7 @@ inline class EulerRotation internal constructor(private val data: Vector3) {
     override fun toString(): String = "EulerRotation(roll=$roll, pitch=$pitch, yaw=$yaw)"
 
     fun copy(roll: Angle = this.roll, pitch: Angle = this.pitch, yaw: Angle = this.yaw): EulerRotation = EulerRotation(roll, pitch, yaw)
+    constructor() : this(Angle.ZERO, Angle.ZERO, Angle.ZERO)
     constructor(roll: Angle, pitch: Angle, yaw: Angle) : this(Vector3(roll.ratio, pitch.ratio, yaw.ratio))
 
     fun toMatrix(): Matrix4 = toQuaternion().toMatrix()

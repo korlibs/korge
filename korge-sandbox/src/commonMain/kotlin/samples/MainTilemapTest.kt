@@ -9,6 +9,7 @@ import korlibs.io.util.*
 import korlibs.korge.input.*
 import korlibs.korge.scene.*
 import korlibs.korge.view.*
+import korlibs.korge.view.align.*
 import korlibs.korge.view.camera.*
 import korlibs.korge.view.tiles.*
 import korlibs.math.geom.*
@@ -55,9 +56,9 @@ class MainTilemapTest : Scene() {
 
         var wasDown = false
         val downVals = object {
-            var mouse: MPoint = MPoint()
+            var mouse: Point = Point.ZERO
             var camAngle: Angle = 0.degrees
-            var camPos: MPoint = MPoint()
+            var camPos: Point = Point.ZERO
         }
 
         addUpdater {
@@ -66,9 +67,9 @@ class MainTilemapTest : Scene() {
             if (isDown) {
                 if (!wasDown) {
                     wasDown = true
-                    downVals.mouse.copyFrom(input.mousePos)
+                    downVals.mouse = input.mousePos
                     downVals.camAngle = cameraContainer.cameraAngle
-                    downVals.camPos = MPoint(cameraContainer.cameraX, cameraContainer.cameraY)
+                    downVals.camPos = Point(cameraContainer.cameraX, cameraContainer.cameraY)
                 } else {
                     val rightMouse = (mouseButtons and 4) != 0
                     if (rightMouse) {
@@ -79,7 +80,7 @@ class MainTilemapTest : Scene() {
                         cameraContainer.cameraAngle = newAngle //downVals.camAngle - dy.degrees
                     } else { // leftMouse
                         val newCamPos =
-                            cameraContainer.content.globalToLocal(downVals.mouse.point) - cameraContainer.content.globalToLocal(input.mousePos) + downVals.camPos.point
+                            cameraContainer.content.globalToLocal(downVals.mouse) - cameraContainer.content.globalToLocal(input.mousePos) + downVals.camPos
                         cameraContainer.cameraX = newCamPos.xD
                         cameraContainer.cameraY = newCamPos.yD
                     }
@@ -106,9 +107,9 @@ class MainTilemapTest : Scene() {
     ): IntArray2 {
         val rand = Random(3)
         val mapValues2 = IntArray2(mapWidth, mapWidth, 0)
-        val center = MPoint(mapWidth / 2, mapWidth / 2)
+        val center = Point(mapWidth / 2, mapWidth / 2)
         for (x in 0 until mapWidth) for (y in 0 until mapWidth) {
-            val p = MPoint(x, y)
+            val p = Point(x, y)
             val dist = (p - center).length
             val onDisc = dist < mapWidth / 2
             val tooClose = dist < (mapWidth / 2) * 0.7

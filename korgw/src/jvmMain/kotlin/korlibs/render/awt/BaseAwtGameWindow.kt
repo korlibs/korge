@@ -47,7 +47,7 @@ abstract class BaseAwtGameWindow(
         return config.defaultTransform.scaleX.toFloat()
     }
 
-    //override val pixelsPerInch: Double by lazy(LazyThreadSafetyMode.PUBLICATION) {
+    //override val pixelsPerInch: Float by lazy(LazyThreadSafetyMode.PUBLICATION) {
     override val pixelsPerInch: Float get() {
         if (GraphicsEnvironment.isHeadless()) {
             return AG.defaultPixelsPerInch
@@ -68,7 +68,7 @@ abstract class BaseAwtGameWindow(
 
     abstract val component: Component
     abstract val contentComponent: Component
-    private var lastFactor = 0.0
+    private var lastFactor = 0f
 
     override val dialogInterface: DialogInterface = DialogInterfaceAwt { component }
 
@@ -316,7 +316,7 @@ abstract class BaseAwtGameWindow(
     private val macosGamepadEventAdapter by lazy { MacosGamepadEventAdapter() }
 
 
-    val frameScaleFactor: Double
+    val frameScaleFactor: Float
         get() {
             return getDisplayScalingFactor(component)
             //val res = frame.toolkit.getDesktopProperty("apple.awt.contentScaleFactor") as? Number
@@ -466,9 +466,9 @@ abstract class BaseAwtGameWindow(
                     y = sy.toInt(),
                     button = button,
                     buttons = 0,
-                    scrollDeltaX = 0.0,
-                    scrollDeltaY = 0.0,
-                    scrollDeltaZ = 0.0,
+                    scrollDeltaX = 0f,
+                    scrollDeltaY = 0f,
+                    scrollDeltaZ = 0f,
                     scrollDeltaMode = korlibs.event.MouseEvent.ScrollDeltaMode.PIXEL,
                     isShiftDown = modifiers hasFlags MouseEvent.SHIFT_DOWN_MASK,
                     isCtrlDown = modifiers hasFlags MouseEvent.CTRL_DOWN_MASK,
@@ -491,10 +491,10 @@ abstract class BaseAwtGameWindow(
                 //TODO: check this on linux and macos
                 //val scrollDelta = e.scrollAmount * e.preciseWheelRotation // * e.unitsToScroll
                 val osfactor = when {
-                    Platform.isMac -> 0.25
-                    else -> 1.0
+                    Platform.isMac -> 0.25f
+                    else -> 1.0f
                 }
-                val scrollDelta = e.preciseWheelRotation * osfactor
+                val scrollDelta = e.preciseWheelRotation.toFloat() * osfactor
 
                 val isShiftDown = modifiers hasFlags MouseEvent.SHIFT_DOWN_MASK
                 dispatchMouseEvent(
@@ -504,9 +504,9 @@ abstract class BaseAwtGameWindow(
                     y = sy.toInt(),
                     button = button,
                     buttons = 0,
-                    scrollDeltaX = if (isShiftDown) scrollDelta else 0.0,
-                    scrollDeltaY = if (isShiftDown) 0.0 else scrollDelta,
-                    scrollDeltaZ = 0.0,
+                    scrollDeltaX = if (isShiftDown) scrollDelta else 0f,
+                    scrollDeltaY = if (isShiftDown) 0f else scrollDelta,
+                    scrollDeltaZ = 0f,
                     scrollDeltaMode = korlibs.event.MouseEvent.ScrollDeltaMode.PIXEL,
                     isShiftDown = isShiftDown,
                     isCtrlDown = modifiers hasFlags MouseEvent.CTRL_DOWN_MASK,
@@ -729,7 +729,7 @@ abstract class BaseAwtGameWindow(
                             dispatch(gestureEvent.also {
                                 it.type = GestureEvent.Type.MAGNIFY
                                 it.id = 0
-                                it.amount = magnification.double
+                                it.amount = magnification.float
                             })
                         }
                     }
@@ -741,7 +741,7 @@ abstract class BaseAwtGameWindow(
                             dispatch(gestureEvent.also {
                                 it.type = GestureEvent.Type.ROTATE
                                 it.id = 0
-                                it.amount = rotation.double
+                                it.amount = rotation.float
                             })
                         }
                     }
@@ -751,13 +751,13 @@ abstract class BaseAwtGameWindow(
                             dispatch(gestureEvent.also {
                                 it.type = GestureEvent.Type.SWIPE
                                 it.id = 0
-                                it.amountX = 0.0
-                                it.amountY = 0.0
+                                it.amountX = 0f
+                                it.amountY = 0f
                                 when (method.name) {
-                                    "swipedUp" -> it.amountY = -1.0
-                                    "swipedDown" -> it.amountY = +1.0
-                                    "swipedLeft" -> it.amountX = -1.0
-                                    "swipedRight" -> it.amountX = +1.0
+                                    "swipedUp" -> it.amountY = -1f
+                                    "swipedDown" -> it.amountY = +1f
+                                    "swipedLeft" -> it.amountX = -1f
+                                    "swipedRight" -> it.amountX = +1f
                                 }
                             })
                         }

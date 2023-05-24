@@ -1,9 +1,11 @@
 package korlibs.korge.gradle.targets.android
 
+import korlibs.korge.gradle.*
 import korlibs.korge.gradle.targets.*
 import korlibs.korge.gradle.util.*
 import org.gradle.api.*
 import org.gradle.api.tasks.*
+import org.jetbrains.kotlin.gradle.dsl.*
 import java.io.*
 
 fun Project.installAndroidRun(dependsOnList: List<String>, direct: Boolean, isKorge: Boolean) {
@@ -19,10 +21,29 @@ fun Project.installAndroidRun(dependsOnList: List<String>, direct: Boolean, isKo
         }
     }
 
+    val hasKotlinMultiplatformExtension = project.extensions.findByType(KotlinMultiplatformExtension::class.java) != null
+    if (hasKotlinMultiplatformExtension) {
+        afterEvaluate {
+            //generateKorgeProcessedFromTask(null, "androidProcessResources")
+        }
+    }
+
+    //val generateAndroidProcessedResources = getKorgeProcessResourcesTaskName("jvm", "main")
+    val generateAndroidProcessedResources = getProcessResourcesTaskName("jvm", "main")
+
     afterEvaluate {
         for (Type in listOf("Debug", "Release")) {
+            //println("tasks.findByName(\"generate${Type}Assets\")=${tasks.findByName("generate${Type}Assets")}")
+            //println("tasks.findByName(\"package${Type}\")=${tasks.findByName("package${Type}")}")
+            if (hasKotlinMultiplatformExtension) {
+                tasks.findByName("generate${Type}Assets")?.dependsOn(generateAndroidProcessedResources)
+                tasks.findByName("package${Type}")?.dependsOn(generateAndroidProcessedResources)
+            }
+
             tasks.findByName("generate${Type}BuildConfig")?.dependsOn(createAndroidManifest)
             tasks.findByName("process${Type}MainManifest")?.dependsOn(createAndroidManifest)
+
+
             // Not required anymore
             //(tasks.getByName("install${Type}") as InstallVariantTask).apply { installOptions = listOf("-r") }
             //tasks.getByName("install${Type}").dependsOn("createAndroidManifest")
@@ -78,17 +99,22 @@ fun Project.installAndroidRun(dependsOnList: List<String>, direct: Boolean, isKo
                 doFirst {
                     execLogger {
                         it.commandLine(
-                            androidAdbPath, *extra, "shell", "am", "start", "-n",
-                            "$androidApplicationId/$androidApplicationId.MainActivity"
+                            androidAdbPath, *extra, "shell", "am", "start",
+                            "-e", "sleepBeforeStart", "300",
+                            "-n", "$androidApplicationId/$androidApplicationId.MainActivity"
                         )
                     }
                     val pid = run {
-                        for (n in 0 until 10) {
+                        val startTime = System.currentTimeMillis()
+                        while (true) {
+                            val currentTime = System.currentTimeMillis()
+                            val elapsedTime = currentTime - startTime
                             try {
                                 return@run execOutput(androidAdbPath, *extra, "shell", "pidof", androidApplicationId).trim()
                             } catch (e: Throwable) {
-                                Thread.sleep(500L)
-                                if (n == 9) throw e
+                                //e.printStackTrace()
+                                Thread.sleep(10L)
+                                if (elapsedTime >= 5000L) throw e
                             }
                         }
                     }

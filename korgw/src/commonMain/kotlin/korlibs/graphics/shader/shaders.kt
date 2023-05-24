@@ -18,6 +18,7 @@ import kotlin.collections.Iterable
 enum class VarKind(val bytesSize: Int) {
     //BYTE(1), UNSIGNED_BYTE(1), SHORT(2), UNSIGNED_SHORT(2), INT(4), FLOAT(4) // @TODO: This cause problems on Kotlin/Native Objective-C header.h
     TBOOL(1), TBYTE(1), TUNSIGNED_BYTE(1), TSHORT(2), TUNSIGNED_SHORT(2), TINT(4), TFLOAT(4)
+    //, TUNSIGNED_INT(4)
 }
 
 data class FuncDecl(
@@ -563,7 +564,8 @@ data class Program(val vertex: VertexShader, val fragment: FragmentShader, val n
             Func("refract", a, b, c)
 
         val Int.lit: IntLiteral get() = IntLiteral(this)
-        val Double.lit: FloatLiteral get() = FloatLiteral(this.toFloat())
+        @Deprecated("", ReplaceWith("this.toFloat().lit"))
+        val Double.lit: FloatLiteral get() = this.toFloat().lit
         val Float.lit: FloatLiteral get() = FloatLiteral(this)
         val Boolean.lit: BoolLiteral get() = BoolLiteral(this)
         //val Number.lit: Operand get() = this // @TODO: With Kotlin.JS you cannot differentiate Int, Float, Double with 'is'. Since it generates typeof $receiver === 'number' for all of them

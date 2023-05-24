@@ -19,9 +19,9 @@ import kotlin.math.*
  * [time] is the elapsed time of the animation
  */
 class FlagFilter(
-    amplitude: Double = 80.0,
-    crestCount: Double = 5.0,
-    cyclesPerSecond: Double = 2.0,
+    amplitude: Float = 80f,
+    crestCount: Float = 5f,
+    cyclesPerSecond: Float = 2f,
     time: TimeSpan = 0.seconds
 ) : ShaderFilter() {
     object FlagUB : UniformBlock(fixedLocation = 5) {
@@ -36,7 +36,7 @@ class FlagFilter(
             //val x01 = fragmentCoords01.x - (ceil(abs(u_amplitude)) / u_TextureSize.x)
             val x01 = createTemp(Float1)
             SET(x01, v_Tex01.x)
-            val offsetY = sin((x01 * FlagUB.u_crestCount - FlagUB.u_Time * FlagUB.u_cyclesPerSecond) * PI.lit) * FlagUB.u_amplitude * x01
+            val offsetY = sin((x01 * FlagUB.u_crestCount - FlagUB.u_Time * FlagUB.u_cyclesPerSecond) * PI.toFloat().lit) * FlagUB.u_amplitude * x01
             SET(out, tex(vec2(fragmentCoords.x, fragmentCoords.y - offsetY)))
             //BatchBuilder2D.DO_INPUT_OUTPUT(this, out)
         }
@@ -44,15 +44,15 @@ class FlagFilter(
 
     /** Maximum amplitude of the wave on the Y axis */
     @ViewProperty
-    var amplitude: Double = amplitude
+    var amplitude: Float = amplitude
 
     /** Number of wave crests in the X axis */
     @ViewProperty
-    var crestCount: Double = crestCount
+    var crestCount: Float = crestCount
 
     /** Number of repetitions of the animation per second */
     @ViewProperty
-    var cyclesPerSecond: Double = cyclesPerSecond
+    var cyclesPerSecond: Float = cyclesPerSecond
 
     /** The elapsed time for the animation */
     var time: TimeSpan = time
@@ -65,7 +65,7 @@ class FlagFilter(
             it[u_amplitude] = amplitude
             it[u_crestCount] = crestCount
             it[u_cyclesPerSecond] = cyclesPerSecond
-            it[u_Time] = time.seconds
+            it[u_Time] = time.seconds.toFloat()
         }
     }
 

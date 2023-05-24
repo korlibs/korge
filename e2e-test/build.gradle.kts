@@ -44,8 +44,6 @@ korge {
     //targetAndroidIndirect() // targetAndroidDirect()
     targetAndroid()
 
-    enableKorgeResourceProcessing = false
-
     jvmMainClassName = "RefMainKt"
 
     //entrypoint("CheckReferences", "CheckReferences")

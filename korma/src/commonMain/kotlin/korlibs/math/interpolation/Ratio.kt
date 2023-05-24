@@ -1,7 +1,7 @@
 package korlibs.math.interpolation
 
 import korlibs.memory.*
-import korlibs.math.math.*
+import korlibs.math.roundDecimalPlaces
 
 //inline class Ratio(val valueD: Double) : Comparable<Ratio> {
 //    constructor(ratio: Float) : this(ratio.toDouble())

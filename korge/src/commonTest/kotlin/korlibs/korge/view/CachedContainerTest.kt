@@ -40,7 +40,7 @@ class CachedContainerTest {
         val globalMatrix = Matrix.IDENTITY.scaled(2, 2).translated(50, 50)
         val globalMatrixInv = globalMatrix.inverted()
         val renderScale = 2.0
-        val lbounds = MPoint(10, 20)
+        val lbounds = Point(10, 20)
 
         val mat1 = globalMatrixInv
             .translated(-lbounds.x, -lbounds.y)

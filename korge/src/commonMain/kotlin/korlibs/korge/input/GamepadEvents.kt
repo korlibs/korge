@@ -5,6 +5,7 @@ import korlibs.datastructure.iterators.*
 import korlibs.event.*
 import korlibs.korge.view.*
 import korlibs.io.async.*
+import korlibs.math.geom.*
 import kotlin.jvm.*
 
 class GamePadEvents(val view: View) {
@@ -20,17 +21,17 @@ class GamePadEvents(val view: View) {
 	val button = Signal<GamePadButtonEvent>()
 	val connection = Signal<GamePadConnectionEvent>()
 
-	fun stick(callback: suspend (playerId: Int, stick: GameStick, x: Double, y: Double) -> Unit) {
+	fun stick(callback: suspend (playerId: Int, stick: GameStick, x: Float, y: Float) -> Unit) {
 		stick { e -> launchImmediately(coroutineContext) { callback(e.gamepad, e.stick, e.x, e.y) } }
 	}
 
-	fun button(callback: suspend (playerId: Int, pressed: Boolean, button: GameButton, value: Double) -> Unit) {
+	fun button(callback: suspend (playerId: Int, pressed: Boolean, button: GameButton, value: Float) -> Unit) {
 		button { e ->
             launchImmediately(coroutineContext) { callback(e.gamepad, e.type == GamePadButtonEvent.Type.DOWN, e.button, e.value) }
 		}
 	}
 
-	fun button(playerId: Int, callback: suspend (pressed: Boolean, button: GameButton, value: Double) -> Unit) {
+	fun button(playerId: Int, callback: suspend (pressed: Boolean, button: GameButton, value: Float) -> Unit) {
 		button { e ->
 			if (e.gamepad == playerId) launchImmediately(coroutineContext) { callback(e.type == GamePadButtonEvent.Type.DOWN, e.button, e.value) }
 		}
@@ -85,7 +86,7 @@ class GamePadEvents(val view: View) {
                         //println("CHANGED: button=$button: ${gamepad[button]}")
                         button(buttonEvent.apply {
                             this.gamepad = gamepad.index
-                            this.type = if (gamepad[button] != 0.0) GamePadButtonEvent.Type.DOWN else GamePadButtonEvent.Type.UP
+                            this.type = if (gamepad[button] != 0f) GamePadButtonEvent.Type.DOWN else GamePadButtonEvent.Type.UP
                             this.button = button
                             this.value = gamepad[button]
                         })
@@ -98,8 +99,7 @@ class GamePadEvents(val view: View) {
                         stick(stickEvent.apply {
                             this.gamepad = gamepad.index
                             this.stick = stick
-                            this.x = vector.x
-                            this.y = vector.y
+                            this.pos = vector
                         })
                     }
                 }
@@ -121,16 +121,17 @@ class GamePadEvents(val view: View) {
 data class GamePadStickEvent(
     var gamepad: Int = 0,
     var stick: GameStick = GameStick.LEFT,
-    var x: Double = 0.0,
-    var y: Double = 0.0
+    var pos: Vector2 = Vector2.ZERO,
 ) : TypedEvent<GamePadStickEvent>(GamePadStickEvent) {
+    val x: Float get() = pos.x
+    val y: Float get() = pos.y
+
     companion object : EventType<GamePadStickEvent>
 
     fun copyFrom(other: GamePadStickEvent) {
         this.gamepad = other.gamepad
         this.stick = other.stick
-        this.x = other.x
-        this.y = other.y
+        this.pos = other.pos
     }
 }
 
@@ -138,7 +139,7 @@ data class GamePadButtonEvent @JvmOverloads constructor(
     override var type: Type = Type.DOWN,
     var gamepad: Int = 0,
     var button: GameButton = GameButton.BUTTON_SOUTH,
-    var value: Double = 0.0
+    var value: Float = 0f
 ) : Event(), TEvent<GamePadButtonEvent> {
     //companion object : EventType<GamePadButtonEvent>
 

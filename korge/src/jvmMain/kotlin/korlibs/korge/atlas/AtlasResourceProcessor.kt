@@ -1,5 +1,6 @@
 package korlibs.korge.atlas
 
+/*
 import korlibs.korge.resources.ResourceProcessor
 import korlibs.image.atlas.*
 import korlibs.image.bitmap.slice
@@ -54,3 +55,4 @@ open class AtlasResourceProcessor : ResourceProcessor("atlas") {
         }
 	}
 }
+*/

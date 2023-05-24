@@ -198,10 +198,11 @@ open class UIButton(
 		bpressing = value
 	}
 
-	fun simulateDown(x: Double = 0.5, y: Double = 0.5) {
+    fun simulateDown(x: Float = 0.5f, y: Float = 0.5f) = simulateDown(Point(x, y))
+	fun simulateDown(p: Point) {
         if (bpressing) return
 		bpressing = true
-        updatedUIButton(down = true, px = x, py = y)
+        updatedUIButton(down = true, pos = p)
 	}
 
 	fun simulateUp() {
@@ -250,10 +251,10 @@ open class UIButton(
     }
 
     fun simulateClick(views: Views) {
-        touch.simulateTapAt(views, localToGlobal(Point(widthD * 0.5, heightD * 0.5)).mutable)
+        touch.simulateTapAt(views, localToGlobal(Point(width * 0.5f, height * 0.5f)))
     }
 
-    open fun updatedUIButton(down: Boolean? = null, over: Boolean? = null, px: Double = 0.0, py: Double = 0.0, immediate: Boolean = false) {
+    open fun updatedUIButton(down: Boolean? = null, over: Boolean? = null, pos: Point = Point.ZERO, immediate: Boolean = false) {
         val button = this
         if (!button.enabled) {
             //button.animStateManager.set(
@@ -273,7 +274,7 @@ open class UIButton(
             //        button::highlightAlpha[1.0],
             //        button::highlightPos[Point(px / button.width, py / button.height), Point(px / button.width, py / button.height)],
             //    ))
-            background.addHighlight(Point(px, py))
+            background.addHighlight(pos)
                 /*
             button.highlightPos.setTo(px / button.width, py / button.height)
             button.animatorEffects.tween(
@@ -333,7 +334,7 @@ open class UIButton(
 
     init {
         keys {
-            down(Key.SPACE, Key.RETURN) { if (this@UIButton.focused) simulateDown(0.5, 0.5) }
+            down(Key.SPACE, Key.RETURN) { if (this@UIButton.focused) simulateDown(0.5f, 0.5f) }
             up(Key.SPACE, Key.RETURN) {
                 if (bpressing) {
                     simulateUp()

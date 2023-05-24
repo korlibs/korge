@@ -1,7 +1,7 @@
 package korlibs.math.test
 
-import korlibs.math.math.normalizeZero
-import korlibs.math.math.roundDecimalPlaces
+import korlibs.math.normalizeZero
+import korlibs.math.roundDecimalPlaces
 import kotlin.math.absoluteValue
 import kotlin.math.min
 

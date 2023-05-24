@@ -6,6 +6,13 @@ import kotlin.random.Random
 expect fun fillRandomBytes(array: ByteArray)
 expect fun seedExtraRandomBytes(array: ByteArray)
 
+internal fun seedExtraRandomBytesDefault(array: ByteArray) {
+    for (v in array) {
+        val count = v.toInt() and 0xFF
+        fillRandomBytes(ByteArray(count))
+    }
+}
+
 object SecureRandom : Random() {
     fun addSeed(array: ByteArray) {
         seedExtraRandomBytes(array)

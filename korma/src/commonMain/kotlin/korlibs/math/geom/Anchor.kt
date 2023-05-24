@@ -25,6 +25,14 @@ inline class Anchor internal constructor(internal val raw: Float2Pack) : Interpo
     constructor(sx: Double, sy: Double) : this(sx.toFloat(), sy.toFloat())
     constructor(sx: Int, sy: Int) : this(sx.toFloat(), sy.toFloat())
 
+    fun withX(sx: Float): Anchor = Anchor(sx, sy)
+    fun withX(sx: Int): Anchor = Anchor(sx.toFloat(), sy)
+    fun withX(sx: Double): Anchor = Anchor(sx.toFloat(), sy)
+
+    fun withY(sy: Float): Anchor = Anchor(sx, sy)
+    fun withY(sy: Int): Anchor = Anchor(sx, sy.toFloat())
+    fun withY(sy: Double): Anchor = Anchor(sx, sy.toFloat())
+
     companion object {
         val TOP_LEFT: Anchor = Anchor(0f, 0f)
         val TOP_CENTER: Anchor = Anchor(.5f, 0f)

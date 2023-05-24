@@ -1,5 +1,6 @@
 package korlibs.korge
 
+import korlibs.audio.sound.*
 import korlibs.datastructure.iterators.*
 import korlibs.event.*
 import korlibs.graphics.log.*
@@ -34,10 +35,79 @@ data class KorgeDisplayMode(val scaleMode: ScaleMode, val scaleAnchor: Anchor, v
     companion object {
         val DEFAULT get() = CENTER
         val CENTER = KorgeDisplayMode(ScaleMode.SHOW_ALL, Anchor.CENTER, clipBorders = true)
+        //@Deprecated("Typically TOP_LEFT_NO_CLIP is better")
         val CENTER_NO_CLIP = KorgeDisplayMode(ScaleMode.SHOW_ALL, Anchor.CENTER, clipBorders = false)
+        val TOP_LEFT_NO_CLIP = KorgeDisplayMode(ScaleMode.SHOW_ALL, Anchor.TOP_LEFT, clipBorders = false)
         val NO_SCALE = KorgeDisplayMode(ScaleMode.NO_SCALE, Anchor.TOP_LEFT, clipBorders = false)
     }
 }
+
+@Target(AnnotationTarget.VALUE_PARAMETER)
+private annotation class DeprecatedParameter(
+    val reason: String
+)
+
+suspend fun Korge(
+    args: Array<String> = arrayOf(),
+    imageFormats: ImageFormat = RegisteredImageFormats,
+    gameWindow: GameWindow? = null,
+    //val eventDispatcher: EventDispatcher = gameWindow ?: DummyEventDispatcher, // Removed
+    mainSceneClass: KClass<out Scene>? = null,
+    timeProvider: TimeProvider = TimeProvider,
+    injector: AsyncInjector = AsyncInjector(),
+    configInjector: AsyncInjector.() -> Unit = {},
+    debug: Boolean = false,
+    trace: Boolean = false,
+    context: Any? = null,
+    fullscreen: Boolean? = null,
+    blocking: Boolean = true,
+    gameId: String = Korge.DEFAULT_GAME_ID,
+    settingsFolder: String? = null,
+    batchMaxQuads: Int = BatchBuilder2D.DEFAULT_BATCH_QUADS,
+    // @TODO: Why @Deprecated doesn't support AnnotationTarget.VALUE_PARAMETER???
+    @DeprecatedParameter("Use windowSize instead") windowWidth: Int = DefaultViewport.SIZE.width.toInt(),
+    @DeprecatedParameter("Use windowSize instead") windowHeight: Int = DefaultViewport.SIZE.height.toInt(),
+    windowSize: Size = Size(windowWidth, windowHeight),
+    @DeprecatedParameter("Use virtualSize instead") virtualWidth: Int = windowSize.width.toInt(),
+    @DeprecatedParameter("Use virtualSize instead") virtualHeight: Int = windowSize.height.toInt(),
+    virtualSize: Size = Size(virtualWidth, virtualHeight),
+    @DeprecatedParameter("Use displayMode instead") scaleMode: ScaleMode = ScaleMode.SHOW_ALL,
+    @DeprecatedParameter("Use displayMode instead") scaleAnchor: Anchor = Anchor.CENTER,
+    @DeprecatedParameter("Use displayMode instead") clipBorders: Boolean = true,
+    displayMode: KorgeDisplayMode = KorgeDisplayMode(scaleMode, scaleAnchor, clipBorders),
+    title: String = "Game",
+    @DeprecatedParameter("Use backgroundColor instead")
+    bgcolor: RGBA? = Colors.BLACK,
+    backgroundColor: RGBA? = bgcolor,
+    quality: GameWindow.Quality = GameWindow.Quality.PERFORMANCE,
+    icon: String? = null,
+    multithreaded: Boolean? = null,
+    forceRenderEveryFrame: Boolean = true,
+    main: (suspend Stage.() -> Unit) = {},
+    debugAg: Boolean = false,
+    debugFontExtraScale: Double = 1.0,
+    debugFontColor: RGBA = Colors.WHITE,
+    stageBuilder: (Views) -> Stage = { Stage(it) },
+    targetFps: Double = 0.0,
+    entry: suspend Stage.() -> Unit = {}
+): Unit = Korge(
+    args = args, imageFormats = imageFormats, gameWindow = gameWindow, mainSceneClass = mainSceneClass,
+    timeProvider = timeProvider, injector = injector, configInjector = configInjector, debug = debug,
+    trace = trace, context = context, fullscreen = fullscreen, blocking = blocking, gameId = gameId,
+    settingsFolder = settingsFolder, batchMaxQuads = batchMaxQuads,
+    windowSize = windowSize, virtualSize = virtualSize,
+    displayMode = displayMode, title = title, backgroundColor = backgroundColor, quality = quality,
+    icon = icon,
+    multithreaded = multithreaded,
+    forceRenderEveryFrame = forceRenderEveryFrame,
+    main = main,
+    debugAg = debugAg,
+    debugFontExtraScale = debugFontExtraScale,
+    debugFontColor = debugFontColor,
+    stageBuilder = stageBuilder,
+    unit = Unit,
+    targetFps = targetFps,
+).start(entry)
 
 data class Korge(
     val args: Array<String> = arrayOf(),
@@ -51,7 +121,7 @@ data class Korge(
     val debug: Boolean = false,
     val trace: Boolean = false,
     val context: Any? = null,
-    val fullscreen: Boolean = false,
+    val fullscreen: Boolean? = null,
     val blocking: Boolean = true,
     val gameId: String = DEFAULT_GAME_ID,
     val settingsFolder: String? = null,
@@ -86,7 +156,10 @@ data class Korge(
 
 suspend fun Korge(entry: suspend Stage.() -> Unit) { Korge().start(entry) }
 
-suspend fun Korge(config: KorgeConfig, entry: suspend Stage.() -> Unit) { config.start(entry) }
+// @TODO: Doesn't compile on WASM: https://youtrack.jetbrains.com/issue/KT-58859/WASM-e-java.util.NoSuchElementException-Key-VALUEPARAMETER-namethis-typekorlibs.korge.Korge-korlibs.korge.KorgeConfig-is-missing
+//suspend fun Korge(config: KorgeConfig, entry: suspend Stage.() -> Unit) { config.start(entry) }
+
+suspend fun KorgeWithConfig(config: KorgeConfig, entry: suspend Stage.() -> Unit) { config.start(entry) }
 
 /**
  * Entry point for games written in Korge.
@@ -105,7 +178,7 @@ object KorgeRunner {
         if (!Platform.isJsBrowser) {
             configureLoggerFromProperties(localCurrentDirVfs["klogger.properties"])
         }
-        val realGameWindow = (config.gameWindow ?: coroutineContext[GameWindow] ?: CreateDefaultGameWindow(GameWindowCreationConfig(multithreaded = multithreaded)))
+        val realGameWindow = (config.gameWindow ?: coroutineContext[GameWindow] ?: CreateDefaultGameWindow(GameWindowCreationConfig(multithreaded = multithreaded, fullscreen = config.fullscreen)))
         realGameWindow.bgcolor = config.backgroundColor ?: Colors.BLACK
         //println("Configure: ${width}x${height}")
         // @TODO: Configure should happen before loop. But we should ensure that all the korgw targets are ready for this
@@ -242,8 +315,8 @@ object KorgeRunner {
 
         val input = views.input
         val ag = views.ag
-        val downPos = MPoint()
-        val upPos = MPoint()
+        var downPos = Point.ZERO
+        var upPos = Point.ZERO
         var downTime = DateTime.EPOCH
         var moveTime = DateTime.EPOCH
         var upTime = DateTime.EPOCH
@@ -251,15 +324,13 @@ object KorgeRunner {
         val mouseTouchId = -1
         views.forceRenderEveryFrame = forceRenderEveryFrame
 
-        val tempXY: MPoint = MPoint()
-
         // devicePixelRatio might change at runtime by changing the resolution or changing the screen of the window
-        fun getRealXY(x: Double, y: Double, scaleCoords: Boolean): Point {
+        fun getRealXY(x: Float, y: Float, scaleCoords: Boolean): Point {
             return views.windowToGlobalCoords(Point(x, y))
         }
 
-        fun getRealX(x: Double, scaleCoords: Boolean): Double = if (scaleCoords) x * views.devicePixelRatio else x
-        fun getRealY(y: Double, scaleCoords: Boolean): Double = if (scaleCoords) y * views.devicePixelRatio else y
+        fun getRealX(x: Float, scaleCoords: Boolean): Float = if (scaleCoords) x * views.devicePixelRatio else x
+        fun getRealY(y: Float, scaleCoords: Boolean): Float = if (scaleCoords) y * views.devicePixelRatio else y
 
         /*
         fun updateTouch(id: Int, x: Double, y: Double, start: Boolean, end: Boolean) {
@@ -286,7 +357,7 @@ object KorgeRunner {
             input.setMouseGlobalPos(p, down = false)
             input.setMouseGlobalPos(p, down = true)
             views.mouseUpdated()
-            downPos.copyFrom(input.mousePos)
+            downPos = input.mousePos
             downTime = DateTime.now()
             input.mouseInside = true
         }
@@ -296,7 +367,7 @@ object KorgeRunner {
             input.toggleButton(button, false)
             input.setMouseGlobalPos(p, down = false)
             views.mouseUpdated()
-            upPos.copyFrom(views.input.mousePos)
+            upPos = views.input.mousePos
         }
 
         fun mouseMove(type: String, p: Point, inside: Boolean) {
@@ -328,7 +399,7 @@ object KorgeRunner {
             mouseTouchEvent.currentTime = DateTime.now()
             mouseTouchEvent.scaleCoords = false
             mouseTouchEvent.startFrame(type)
-            mouseTouchEvent.touch(button.id, p.xD, p.yD, status, kind = Touch.Kind.MOUSE, button = button)
+            mouseTouchEvent.touch(button.id, p, status, kind = Touch.Kind.MOUSE, button = button)
             mouseTouchEvent.endFrame()
             views.dispatch(mouseTouchEvent)
         }
@@ -336,7 +407,7 @@ object KorgeRunner {
         eventDispatcher.onEvents(*MouseEvent.Type.ALL) { e ->
             //println("MOUSE: $e")
             Korge.logger.trace { "eventDispatcher.addEventListener<MouseEvent>:$e" }
-            val p = getRealXY(e.x.toDouble(), e.y.toDouble(), e.scaleCoords)
+            val p = getRealXY(e.x.toFloat(), e.y.toFloat(), e.scaleCoords)
             when (e.type) {
                 MouseEvent.Type.DOWN -> {
                     mouseDown("mouseDown", p, e.button)
@@ -375,8 +446,14 @@ object KorgeRunner {
         }
 
         eventDispatcher.onEvents(*DropFileEvent.Type.ALL) { e -> views.dispatch(e) }
-        eventDispatcher.onEvent(ResumeEvent) { e -> views.dispatch(e) }
-        eventDispatcher.onEvent(PauseEvent) { e -> views.dispatch(e) }
+        eventDispatcher.onEvent(ResumeEvent) { e ->
+            views.dispatch(e)
+            nativeSoundProvider.paused = false
+        }
+        eventDispatcher.onEvent(PauseEvent) { e ->
+            views.dispatch(e)
+            nativeSoundProvider.paused = true
+        }
         eventDispatcher.onEvent(StopEvent) { e -> views.dispatch(e) }
         eventDispatcher.onEvent(DestroyEvent) { e ->
             try {
@@ -395,9 +472,7 @@ object KorgeRunner {
             input.updateTouches(e)
             val ee = input.touch
             for (t in ee.touches) {
-                val (x, y) = getRealXY(t.x, t.y, e.scaleCoords)
-                t.x = x.toDouble()
-                t.y = y.toDouble()
+                t.p = getRealXY(t.x, t.y, e.scaleCoords)
             }
             views.dispatch(ee)
 

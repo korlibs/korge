@@ -1,6 +1,5 @@
 import korlibs.time.*
 import korlibs.korge.*
-import korlibs.korge.component.docking.dockedTo
 import korlibs.korge.time.*
 import korlibs.korge.view.*
 import korlibs.korge.view.filter.*
@@ -13,7 +12,7 @@ import korlibs.io.lang.*
 import korlibs.io.serialization.json.Json
 import korlibs.math.geom.*
 
-suspend fun main() = Korge(windowSize = Size(768, 512), backgroundColor = Colors["#2b2b2b"]).start {
+suspend fun main() = Korge(windowSize = Size(768, 512), backgroundColor = Colors["#2b2b2b"]) {
     val exceptions = arrayListOf<Throwable>()
     try {
         // Test cases

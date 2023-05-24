@@ -1,25 +1,17 @@
 package korlibs.datastructure.lock
 
-import kotlinx.atomicfu.atomic
-import kotlinx.atomicfu.locks.SynchronizedObject
-import kotlinx.atomicfu.locks.withLock
 import platform.posix.pthread_self
+import kotlin.native.concurrent.*
 
-actual class Lock actual constructor() : SynchronizedObject() {
-	actual inline operator fun <T> invoke(callback: () -> T): T = withLock {
-        callback()
-    }
-}
-
-class FastReentrantLock constructor() {
-    @PublishedApi internal var locked = atomic(false)
+actual class Lock actual constructor() {
+    @PublishedApi internal var locked = AtomicInt(0)
     @PublishedApi internal var current: platform.posix.pthread_t? = null
 
     @PublishedApi internal fun lock(): Boolean {
         var initialThread = false
-        if (!locked.compareAndSet(false, true)) {
+        if (!locked.compareAndSet(0, 1)) {
             if (current != pthread_self()) {
-                while (!locked.compareAndSet(false, true)) {
+                while (!locked.compareAndSet(0, 1)) {
                     Unit // Should we try to sleep this thread and awake it later? If the lock is short, might not be needed
                 }
             }
@@ -33,13 +25,13 @@ class FastReentrantLock constructor() {
     @PublishedApi internal fun unlock(initialThread: Boolean) {
         if (initialThread) {
             current = null
-            while (!locked.compareAndSet(true, false)) {
+            while (!locked.compareAndSet(1, 0)) {
                 Unit // Should we try to sleep this thread and awake it later? If the lock is short, might not be needed
             }
         }
     }
 
-    inline operator fun <T> invoke(callback: () -> T): T {
+    actual inline operator fun <T> invoke(callback: () -> T): T {
         val initialThread = lock()
         try {
             return callback()
@@ -50,16 +42,16 @@ class FastReentrantLock constructor() {
 }
 
 actual class NonRecursiveLock actual constructor() {
-    @PublishedApi internal var locked = atomic(false)
+    @PublishedApi internal var locked = AtomicInt(0)
 
     fun lock() {
-        while (!locked.compareAndSet(false, true)) {
+        while (!locked.compareAndSet(0, 1)) {
             Unit // Should we try to sleep this thread and awake it later? If the lock is short, might not be needed
         }
     }
 
     fun unlock() {
-        while (!locked.compareAndSet(true, false)) {
+        while (!locked.compareAndSet(1, 0)) {
             Unit // Should we try to sleep this thread and awake it later? If the lock is short, might not be needed
         }
     }

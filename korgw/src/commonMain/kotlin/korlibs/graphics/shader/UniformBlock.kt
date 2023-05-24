@@ -4,7 +4,7 @@ import korlibs.graphics.*
 import korlibs.image.color.*
 import korlibs.io.lang.*
 import korlibs.math.geom.*
-import korlibs.math.math.*
+import korlibs.math.nextMultipleOf
 import korlibs.memory.*
 import korlibs.memory.dyn.*
 import kotlin.reflect.*
@@ -124,6 +124,7 @@ class UniformsRef(
         getOffset(uniform).also { buffer.setUnalignedInt32(it, value) }
     }
     operator fun set(uniform: TypedUniform<Float>, value: Boolean) = set(uniform, if (value) 1f else 0f)
+    @Deprecated("", ReplaceWith("set(uniform, value.toFloat())"))
     operator fun set(uniform: TypedUniform<Float>, value: Double) = set(uniform, value.toFloat())
     operator fun set(uniform: TypedUniform<Point>, value: Point) = set(uniform, value.x, value.y)
     operator fun set(uniform: TypedUniform<Point>, value: Size) = set(uniform, value.width, value.height)

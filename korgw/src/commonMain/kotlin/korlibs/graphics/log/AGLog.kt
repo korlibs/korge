@@ -17,8 +17,8 @@ open class ComposedAG(val agBase: AG, val agExtra: AG) : AG(), AGFeatures by agB
     }
 
     override val maxTextureSize: Size get() = agBase.maxTextureSize
-    override val devicePixelRatio: Double get() = agBase.devicePixelRatio
-    override val pixelsPerInch: Double get() = agBase.pixelsPerInch
+    override val devicePixelRatio: Float get() = agBase.devicePixelRatio
+    override val pixelsPerInch: Float get() = agBase.pixelsPerInch
 
     override fun beforeDoRender() {
         agBase.beforeDoRender()

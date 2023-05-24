@@ -1,9 +1,13 @@
 package korlibs.korge.test
 
+import korlibs.image.color.*
 import korlibs.image.font.*
+import korlibs.image.text.*
 import korlibs.io.file.std.*
 import korlibs.korge.testing.*
 import korlibs.korge.view.*
+import korlibs.korge.view.align.alignTopToBottomOf
+import korlibs.math.geom.*
 import org.junit.*
 
 class TtfFontTest {
@@ -25,5 +29,22 @@ class TtfFontTest {
         }
 
         assertScreenshot(c, "text", posterize = 5, includeBackground = false, psnr = 32.0)
+    }
+
+    @Test
+    fun testFillTextAlignmentWorks() = korgeScreenshotTest(Size(100, 100)) {
+        run {
+            val p = Point(50, 50)
+            graphics {
+                fill(Colors.RED) {
+                    rect(Rectangle.fromBounds(20, 20, 80, 80))
+                }
+
+                fillText("I", p, size = 60f, font = DefaultTtfFont, color = Colors.WHITE, align = TextAlignment.MIDDLE_CENTER)
+                drawText("L", p, size = 60f, font = DefaultTtfFont, fillStyle = Colors.PURPLE, align = TextAlignment.MIDDLE_CENTER)
+            }
+        }
+
+        assertScreenshot(posterize = 6)
     }
 }

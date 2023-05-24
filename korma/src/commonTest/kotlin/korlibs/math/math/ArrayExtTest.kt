@@ -1,5 +1,7 @@
 package korlibs.math.math
 
+import korlibs.math.maxOrElse
+import korlibs.math.minOrElse
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

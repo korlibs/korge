@@ -10,7 +10,7 @@ import korlibs.korge.view.*
 import korlibs.image.bitmap.*
 import korlibs.image.tiles.*
 import korlibs.math.geom.*
-import korlibs.math.math.*
+import korlibs.math.geom.collider.*
 import kotlin.math.*
 
 inline fun Container.tileMap(
@@ -178,6 +178,13 @@ class TileMap(
     private val tempX = FloatArray(4)
     private val tempY = FloatArray(4)
 
+    /**
+     * Each tile support an offset,
+     * if we are using maps that have tiles with offsets like in LDtk,
+     * we might need to set this to 1 or 2 depending on the specific case.
+     **/
+    var overdrawTiles = 0
+
     // @TODO: Use instanced rendering to support much more tiles at once
     private fun computeVertexIfRequired(ctx: RenderContext) {
         currentVirtualRect = Rectangle(ctx.virtualLeft, ctx.virtualTop, ctx.virtualRight, ctx.virtualBottom)
@@ -228,10 +235,10 @@ class TileMap(
 
         //println("currentVirtualRect=$currentVirtualRect, mx=[$mx0, $mx1, $mx2, $mx3], my=[$my0, $my1, $my2, $my3], pp0=$pp0, pp1=$pp1, pp2=$pp2, pp3=$pp3")
 
-        val ymin = min(my0, my1, my2, my3)
-        val ymax = max(my0, my1, my2, my3)
-        val xmin = min(mx0, mx1, mx2, mx3)
-        val xmax = max(mx0, mx1, mx2, mx3)
+        val ymin = korlibs.math.min(my0, my1, my2, my3)
+        val ymax = korlibs.math.max(my0, my1, my2, my3)
+        val xmin = korlibs.math.min(mx0, mx1, mx2, mx3)
+        val xmax = korlibs.math.max(mx0, mx1, mx2, mx3)
 
         //println("$xmin,$xmax")
 
@@ -239,10 +246,10 @@ class TileMap(
         val doRepeatY = repeatY != TileMapRepeat.NONE
         val doRepeatAny = doRepeatX || doRepeatY // Since if it is rotated, we might have problems. For no rotation we could repeat separately
 
-        val ymin2 = (if (doRepeatAny) ymin else ymin.clamp(stackedIntMap.startY, stackedIntMap.endY)) - 1
-        val ymax2 = (if (doRepeatAny) ymax else ymax.clamp(stackedIntMap.startY, stackedIntMap.endY)) + 1
-        val xmin2 = (if (doRepeatAny) xmin else xmin.clamp(stackedIntMap.startX, stackedIntMap.endX)) - 1
-        val xmax2 = (if (doRepeatAny) xmax else xmax.clamp(stackedIntMap.startX, stackedIntMap.endX)) + 1
+        val ymin2 = (if (doRepeatAny) ymin else ymin.clamp(stackedIntMap.startY, stackedIntMap.endY)) - 1 - overdrawTiles
+        val ymax2 = (if (doRepeatAny) ymax else ymax.clamp(stackedIntMap.startY, stackedIntMap.endY)) + 1 + overdrawTiles
+        val xmin2 = (if (doRepeatAny) xmin else xmin.clamp(stackedIntMap.startX, stackedIntMap.endX)) - 1 - overdrawTiles
+        val xmax2 = (if (doRepeatAny) xmax else xmax.clamp(stackedIntMap.startX, stackedIntMap.endX)) + 1 + overdrawTiles
 
         //println("xyminmax2=${xmin2},${ymin2} - ${xmax2},${ymax2}")
 

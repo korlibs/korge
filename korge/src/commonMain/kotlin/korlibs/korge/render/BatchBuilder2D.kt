@@ -4,16 +4,16 @@ package korlibs.korge.render
 
 import korlibs.datastructure.*
 import korlibs.datastructure.iterators.*
-import korlibs.logger.*
-import korlibs.memory.*
 import korlibs.graphics.*
 import korlibs.graphics.shader.*
-import korlibs.korge.internal.*
-import korlibs.korge.view.*
 import korlibs.image.bitmap.*
 import korlibs.image.color.*
 import korlibs.io.async.*
+import korlibs.korge.internal.*
+import korlibs.korge.view.*
+import korlibs.logger.*
 import korlibs.math.geom.*
+import korlibs.memory.*
 import kotlin.jvm.*
 import kotlin.math.*
 import kotlin.native.concurrent.*
@@ -91,7 +91,8 @@ class BatchBuilder2D(
 
     @PublishedApi internal var vertexPos = 0
     @PublishedApi internal var indexPos = 0
-    @PublishedApi internal var currentTexIndex = 0
+    //@PublishedApi internal var currentTexIndex = 0
+    @KorgeInternal var currentTexIndex = 0
 
     @PublishedApi internal var currentTexN: Array<AGTexture?> = Array(maxTextures) { null }
 
@@ -124,6 +125,7 @@ class BatchBuilder2D(
     }
 
     internal fun afterRender() {
+        //println("BatchBuilder2D.afterRender")
         buffers.reset()
     }
 
