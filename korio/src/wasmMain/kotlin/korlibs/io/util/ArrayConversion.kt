@@ -31,3 +31,15 @@ fun ByteArray.toInt8Array(): Int8Array {
 fun ByteArray.toUint8Array(): Uint8Array {
     return Uint8Array(toInt8Array().buffer)
 }
+
+fun Int32Array.toIntArray(): IntArray {
+    //val tout = this.asDynamic()
+    //if (tout is ByteArray) {
+    //    return tout.unsafeCast<ByteArray>()
+    //} else {
+    val out = IntArray(this.length)
+    for (n in out.indices) out[n] = this[n]
+    return out
+    //}
+}
+

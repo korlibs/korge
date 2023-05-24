@@ -7,6 +7,7 @@ import korlibs.logger.Logger
 import korlibs.io.async.launchImmediately
 import korlibs.io.file.std.uniVfs
 import korlibs.io.lang.*
+import korlibs.io.util.*
 import korlibs.memory.internal.*
 import kotlinx.browser.document
 import kotlinx.browser.window
@@ -27,6 +28,12 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 import kotlin.js.unsafeCast
+
+private external interface WindowExSetTimeout : JsAny {
+    fun setTimeout(block: () -> Unit, time: Int): Int
+}
+
+private val windowExSetTimeout get() = window.unsafeCast<WindowExSetTimeout>()
 
 class AudioBufferOrHTMLMediaElement(
     val audioBuffer: AudioBuffer?,
@@ -147,11 +154,11 @@ object HtmlSimpleSound {
                         val deferred = CompletableDeferred<Unit>()
                         //println("sourceNode: $sourceNode, ctx?.state=${ctx?.state}, buffer.duration=${buffer.duration}")
                         if (sourceNode == null || ctx?.state != "running") {
-                            window.setTimeout(
+                            windowExSetTimeout.setTimeout(
                                 {
                                     deferred.complete(Unit)
                                     null
-                                }.toJsReference(),
+                                },
                                 ((buffer.duration ?: 0.0) * 1000).toInt()
                             )
                         } else {
@@ -373,7 +380,7 @@ object HtmlSimpleSound {
 	}
     */
 
-	suspend fun loadSound(data: ByteArray): AudioBuffer? = loadSound(data.unsafeCast<Int8Array>().buffer, "ByteArray")
+	suspend fun loadSound(data: ByteArray): AudioBuffer? = loadSound(data.toInt8Array().buffer, "ByteArray")
 
 	suspend fun loadSound(url: String): AudioBuffer? = loadSound(url.uniVfs.readBytes())
 
@@ -389,7 +396,7 @@ object HtmlSimpleSound {
 
             if (ctx != null) {
                 // If already created the audio context, we try to resume it
-                (window.unsafeCast<WindowWithGlobalAudioContext>()).globalAudioContext.unsafeCast<BaseAudioContext?>()?.resume()
+                (window.unsafeCast<WindowWithGlobalAudioContext>()).globalAudioContext?.unsafeCast<BaseAudioContext>()?.resume()
 
                 val source = ctx.createBufferSource()
 
@@ -434,7 +441,7 @@ external interface PannerNode : AudioNode {
     fun setOrientation(x: Double, y: Double, z: Double)
 }
 
-open external class BaseAudioContext {
+open external class BaseAudioContext : JsAny {
 	fun createScriptProcessor(
 		bufferSize: Int,
 		numberOfInputChannels: Int,
