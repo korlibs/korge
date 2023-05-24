@@ -353,8 +353,8 @@ object RootKorlibsPlugin {
                             //this.
                             //this.applyBinaryen()
                             //nodejs { commonWebpackConfig { experiments = mutableSetOf("topLevelAwait") } }
-                            browser { commonWebpackConfig { experiments = mutableSetOf("topLevelAwait") } }
-                            //browser()
+                            //browser { commonWebpackConfig { experiments = mutableSetOf("topLevelAwait") } }
+                            browser()
                         }
                         val wasmBrowserTest = tasks.getByName("wasmBrowserTest") as KotlinJsTest
                         // ~/projects/korge/build/js/packages/korge-root-klock-wasm-test
