@@ -8,10 +8,10 @@ private external object JsObject {
     fun keys(): JsArray<JsString>
 }
 
-actual class NativeStorage actual constructor(val views: Views) : IStorage {
+actual class NativeStorage actual constructor(val views: Views) : IStorageWithKeys {
     override fun toString(): String = "NativeStorage(${toMap()})"
 
-    actual fun keys(): List<String> {
+    actual override fun keys(): List<String> {
         val keys = JsObject.keys()
         return (0 until keys.length).map { keys[it].toString() }
     }
