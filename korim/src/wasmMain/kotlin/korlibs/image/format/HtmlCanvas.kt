@@ -20,7 +20,7 @@ external interface HTMLCanvasElementLike : TexImageSourceJs {
 external interface HTMLImageElementLike : TexImageSourceJs {
     val width: Int
     val height: Int
-    val src: String?
+    val src: JsString?
 }
 
 object HtmlCanvas {

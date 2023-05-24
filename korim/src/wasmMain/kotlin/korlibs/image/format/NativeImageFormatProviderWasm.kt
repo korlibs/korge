@@ -73,7 +73,7 @@ open class HtmlNativeImage(val texSourceBase: TexImageSourceJs, width: Int, heig
 	constructor(canvas: HTMLCanvasElementLike) : this(canvas, canvas.width, canvas.height)
 
     val lazyCanvasElement: HTMLCanvasElementLike by lazy {
-        if (texSource.unsafeCast<HTMLImageElementLike>().src != null) {
+        if (texSource.hasAny("src")) {
             BrowserImage.imageToCanvas(texSource.unsafeCast<HTMLImageElementLike>(), width, height)
         } else {
             texSource.unsafeCast<HTMLCanvasElementLike>()
@@ -98,8 +98,12 @@ open class HtmlNativeImage(val texSourceBase: TexImageSourceJs, width: Int, heig
             }
         }
         val idata = ctx.getImageData(x.toDouble(), y.toDouble(), width.toDouble(), height.toDouble())
+        //val ints = idata.data.buffer.asInt32Array()
+        //for (n in 0 until size) out[offset + n] = ints[n]
+
         val data = idata.data.buffer.asInt32Array().toIntArray()
         arraycopy(data, 0, out, offset, size)
+
         if (isBigEndian) bswap32(out, offset, size)
         if (!asumePremultiplied) {
             premultiply(RgbaArray(out), offset, RgbaPremultipliedArray(out), offset, width * height)
