@@ -30,7 +30,7 @@ include(":ktruth")
 include(":korge-gradle-plugin")
 include(":korge-reload-agent")
 include(":korge-sandbox")
-if (enableMetalPlayground) {
+if (enableMetalPlayground && !inCI) {
     include(":osx-metal-playground")
 }
 
