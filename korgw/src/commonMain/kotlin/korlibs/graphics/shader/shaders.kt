@@ -109,6 +109,7 @@ enum class VarType(val kind: VarKind, val elementCount: Int, val isMatrix: Boole
     Bool3(VarKind.TBOOL, elementCount = 3),
     Bool4(VarKind.TBOOL, elementCount = 4),
 
+    @Deprecated("Use UByte4 instead")
     Byte4(VarKind.TUNSIGNED_BYTE, elementCount = 4), // OLD: Is this right?
 
 	SByte1(VarKind.TBYTE, elementCount = 1),
