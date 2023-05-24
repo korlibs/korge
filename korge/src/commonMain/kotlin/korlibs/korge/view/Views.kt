@@ -80,11 +80,7 @@ class Views constructor(
     val realSettingsFolder: String by lazy {
         when {
             settingsFolder != null -> settingsFolder!!
-            else -> when {
-                Platform.isMac -> "/Users/${Environment["USER"]}/Library/Preferences/$gameIdFolder"
-                Platform.isWindows -> "${Environment["APPDATA"]}/$gameIdFolder"
-                else -> "${Environment["HOME"]}/.config/$gameIdFolder"
-            }
+            else -> StandardPaths.appPreferencesFolder(gameIdFolder)
         }
     }
 
