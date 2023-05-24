@@ -244,6 +244,8 @@ open class GameWindow :
     GameWindowConfig,
     Extra by Extra.Mixin()
 {
+    open val androidContextAny: Any? get() = null
+
     sealed interface ICursor
 
     override val dialogInterface: DialogInterface get() = DialogInterface.Unsupported
