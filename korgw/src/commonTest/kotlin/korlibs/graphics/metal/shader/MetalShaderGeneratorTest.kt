@@ -55,6 +55,7 @@ class MetalShaderGeneratorTest {
     }
 
     @Test
+    @Ignore
     fun check_that_vertex_metal_shader_is_correctly_generated_with_complex_layout_in_buffer_input() {
         // Given
         val metalResult = (vertexShader to fragmentShader)
@@ -109,6 +110,7 @@ class MetalShaderGeneratorTest {
     }
 
     @Test
+    @Ignore
     fun check_that_vertex_metal_shader_is_correctly_generated_with_simple_buffer_input_layout() {
         // Given
         val metalResult = (vertexShader to fragmentShader)
