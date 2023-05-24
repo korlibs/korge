@@ -480,7 +480,6 @@ open class BrowserCanvasJsGameWindow(
         jsFrame = { step: Double ->
             window.requestAnimationFrame(jsFrame) // Execute first to prevent exceptions breaking the loop, not triggering again
             frame()
-            null
         }
     }
 

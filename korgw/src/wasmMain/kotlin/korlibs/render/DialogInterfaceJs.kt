@@ -8,6 +8,12 @@ import kotlinx.coroutines.*
 import org.w3c.dom.*
 import org.w3c.files.*
 
+private external interface WindowExSetTimeout : JsAny {
+    fun setTimeout(block: () -> Unit, time: Int): Int
+}
+
+private val windowExSetTimeout get() = window.unsafeCast<WindowExSetTimeout>()
+
 class DialogInterfaceJs : DialogInterface {
 
     override suspend fun browse(url: URL) {
@@ -51,10 +57,10 @@ class DialogInterfaceJs : DialogInterface {
         }
         document.body?.appendChild(input)
         input.click()
-        window.setTimeout({
+        windowExSetTimeout.setTimeout({
             document.body?.removeChild(input)
             null
-        }.toJsReference(), 100)
+        }, 100)
         return deferred.await()
     }
 }

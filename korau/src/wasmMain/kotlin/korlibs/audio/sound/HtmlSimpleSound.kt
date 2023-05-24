@@ -29,6 +29,12 @@ import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 import kotlin.js.unsafeCast
 
+private external interface WindowExSetTimeout : JsAny {
+    fun setTimeout(block: () -> Unit, time: Int): Int
+}
+
+private val windowExSetTimeout get() = window.unsafeCast<WindowExSetTimeout>()
+
 class AudioBufferOrHTMLMediaElement(
     val audioBuffer: AudioBuffer?,
     val htmlAudioElement: HTMLAudioElement?,
@@ -148,11 +154,11 @@ object HtmlSimpleSound {
                         val deferred = CompletableDeferred<Unit>()
                         //println("sourceNode: $sourceNode, ctx?.state=${ctx?.state}, buffer.duration=${buffer.duration}")
                         if (sourceNode == null || ctx?.state != "running") {
-                            window.setTimeout(
+                            windowExSetTimeout.setTimeout(
                                 {
                                     deferred.complete(Unit)
                                     null
-                                }.toJsReference(),
+                                },
                                 ((buffer.duration ?: 0.0) * 1000).toInt()
                             )
                         } else {
