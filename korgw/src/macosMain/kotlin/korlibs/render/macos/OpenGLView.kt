@@ -67,7 +67,7 @@ class OpenGLView(
         defaultGameWindow.dispatch(gestureEvent.also {
             it.type = GestureEvent.Type.MAGNIFY
             it.id = 0
-            it.amount = event.magnification()
+            it.amount = event.magnification().toFloat()
         })
         super.magnifyWithEvent(event)
     }
@@ -77,7 +77,7 @@ class OpenGLView(
         defaultGameWindow.dispatch(gestureEvent.also {
             it.type = GestureEvent.Type.ROTATE
             it.id = 0
-            it.amount = event.rotation.toDouble()
+            it.amount = event.rotation.toFloat()
         })
 
         super.rotateWithEvent(event)
@@ -87,8 +87,8 @@ class OpenGLView(
         defaultGameWindow.dispatch(gestureEvent.also {
             it.type = GestureEvent.Type.SWIPE
             it.id = 0
-            it.amountX = event.deltaX
-            it.amountY = event.deltaY
+            it.amountX = event.deltaX.toFloat()
+            it.amountY = event.deltaY.toFloat()
         })
         super.swipeWithEvent(event)
     }
@@ -97,7 +97,7 @@ class OpenGLView(
         defaultGameWindow.dispatch(gestureEvent.also {
             it.type = GestureEvent.Type.SMART_MAGNIFY
             it.id = 0
-            it.amount = 1.0
+            it.amount = 1f
         })
         super.smartMagnifyWithEvent(event)
     }
@@ -142,7 +142,7 @@ class OpenGLView(
                 MouseEvent.Type.SCROLL -> 0
                 else -> buttonMask(e.buttonMask.toInt())
             },
-            scrollDeltaX = -e.deltaX, scrollDeltaY = -e.deltaY, scrollDeltaZ = -e.deltaZ,
+            scrollDeltaX = -e.deltaX.toFloat(), scrollDeltaY = -e.deltaY.toFloat(), scrollDeltaZ = -e.deltaZ.toFloat(),
             isShiftDown = e.shift, isCtrlDown = e.ctrl, isAltDown = e.alt, isMetaDown = e.meta,
             scrollDeltaMode = MouseEvent.ScrollDeltaMode.PIXEL
         )
