@@ -7,14 +7,29 @@ internal fun Uint8Array.toByteArray(): ByteArray {
     return Int8Array(this.buffer).toByteArray()
 }
 internal fun Int8Array.toByteArray(): ByteArray {
-    //val tout = this.asDynamic()
-    //if (tout is ByteArray) {
-    //    return tout.unsafeCast<ByteArray>()
-    //} else {
     val out = ByteArray(this.length)
     for (n in out.indices) out[n] = this[n]
     return out
-    //}
+}
+internal fun Int16Array.toShortArray(): ShortArray {
+    val out = ShortArray(this.length)
+    for (n in out.indices) out[n] = this[n]
+    return out
+}
+internal fun Int32Array.toIntArray(): IntArray {
+    val out = IntArray(this.length)
+    for (n in out.indices) out[n] = this[n]
+    return out
+}
+internal fun Float32Array.toFloatArray(): FloatArray {
+    val out = FloatArray(this.length)
+    for (n in out.indices) out[n] = this[n]
+    return out
+}
+internal fun Float64Array.toDoubleArray(): DoubleArray {
+    val out = DoubleArray(this.length)
+    for (n in out.indices) out[n] = this[n]
+    return out
 }
 
 internal fun ByteArray.toInt8Array(): Int8Array {

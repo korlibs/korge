@@ -21,7 +21,7 @@ private external object JSON {
     fun stringify(obj: JsAny?): JsString
 }
 
-public external interface WebGLRenderingContextBase2 : WebGLRenderingContextBase {
+public external interface WebGLRenderingContextBase2 : WebGLRenderingContextBase, JsAny {
     fun drawArraysInstanced(mode: Int, first: Int, count: Int, instancecount: Int)
     fun drawElementsInstanced(mode: Int, count: Int, type: Int, indices: Int, instancecount: Int)
     fun vertexAttribDivisor(index: Int, divisor: Int)
@@ -38,13 +38,22 @@ public external interface WebGLRenderingContextBase2 : WebGLRenderingContextBase
 // https://github.com/shrekshao/MoveWebGL1EngineToWebGL2/blob/master/Move-a-WebGL-1-Engine-To-WebGL-2-Blog-1.md
 // https://webglstats.com/
 // https://caniuse.com/#feat=webgl
+
+external interface RenderingContextJs : RenderingContext, JsAny {
+
+}
+
+abstract external class HTMLCanvasElementJS : JsAny {
+    fun getContext(contextId: kotlin.String, vararg arguments: kotlin.js.JsAny?): RenderingContextJs?
+}
+
 class KmlGlJsCanvas(val canvas: HTMLCanvasElement, val glOpts: JsAny) : KmlGlWithExtensions() {
     var webglVersion = 1
     val gl: WebGLRenderingContextBase2 = (null
-            ?: canvas.getContext("webgl2", glOpts)?.also { webglVersion = 2 }
-            ?: canvas.getContext("webgl", glOpts)
-            ?: canvas.getContext("experimental-webgl", glOpts)
-        ).unsafeCast2<WebGLRenderingContextBase2?>()
+            ?: canvas.unsafeCast<HTMLCanvasElementJS>().getContext("webgl2", glOpts)?.also { webglVersion = 2 }
+            ?: canvas.unsafeCast<HTMLCanvasElementJS>().getContext("webgl", glOpts)
+            ?: canvas.unsafeCast<HTMLCanvasElementJS>().getContext("experimental-webgl", glOpts)
+        )?.unsafeCast<WebGLRenderingContextBase2>()
         ?.also {
             println("Created WebGL version=$webglVersion, opts=${JSON.stringify(glOpts)}")
         }

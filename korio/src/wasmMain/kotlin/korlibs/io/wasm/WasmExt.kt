@@ -22,7 +22,7 @@ fun <T : JsAny?> JsArray<T>.toList(): List<T> {
 inline fun <reified T : JsAny?> JsArray<T>.toTypedArray(): Array<T> {
     val out = Array<T?>(length) { null }
     for (n in 0 until length) out[n] = (this[n]!!)
-    return out.unsafeCast2()
+    return out as Array<T>
 }
 
 fun JsNumber.toLong(): Long = this.toDouble().toLong()
