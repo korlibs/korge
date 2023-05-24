@@ -2,7 +2,6 @@ plugins {
     kotlin("multiplatform")
 }
 
-
 kotlin {
 
     val arm64Target = macosArm64()
@@ -12,6 +11,7 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 implementation(project(":korgw"))
+                implementation(project(":korge"))
             }
         }
     }

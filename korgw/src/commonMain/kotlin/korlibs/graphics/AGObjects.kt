@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalUnsignedTypes::class)
+
 package korlibs.graphics
 
 import korlibs.graphics.gl.*
@@ -43,6 +45,7 @@ class AGBuffer : AGObject() {
     // @TODO: This will allow to upload chunks of uniform buffers for example.
     // glBufferData & glBufferSubData
     fun upload(data: ByteArray, offset: Int = 0, length: Int = data.size - offset): AGBuffer = upload(Int8Buffer(data, offset, length).buffer)
+    fun upload(data: UByteArray): AGBuffer = upload(Uint8Buffer(data).buffer)
     fun upload(data: FloatArray, offset: Int = 0, length: Int = data.size - offset): AGBuffer = upload(Float32Buffer(data, offset, length).buffer)
     fun upload(data: IntArray, offset: Int = 0, length: Int = data.size - offset): AGBuffer = upload(Int32Buffer(data, offset, length).buffer)
     fun upload(data: ShortArray, offset: Int = 0, length: Int = data.size - offset): AGBuffer = upload(Int16Buffer(data, offset, length).buffer)
@@ -59,11 +62,15 @@ class AGBuffer : AGObject() {
         return this
     }
 
+    val sizeInBytes: Int
+        get() = mem?.sizeInBytes ?: 0
+
     //private val id = LAST_ID.incrementAndGet()
     //companion object { private val LAST_ID = KorAtomicInt(0) }
     // init { printStackTrace() }
 
     override fun toString(): String = "AGBuffer(${mem?.sizeInBytes ?: 0})"
+
     //override fun toString(): String = "AGBuffer[$id](${mem?.sizeInBytes ?: 0})"
 }
 

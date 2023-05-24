@@ -32,7 +32,7 @@ private val logger = Logger("BatchBuilder2D")
  * by other renderers.
  */
 // @TODO: We could dynamically select a fragment shader based on the number of textures to reduce the numbers of IFs per pixel
-class BatchBuilder2D constructor(
+class BatchBuilder2D(
     @property:KorgeInternal
     val ctx: RenderContext,
     /** Maximum number of quads that could be drawn in a single batch.
@@ -565,7 +565,7 @@ class BatchBuilder2D constructor(
         @KorgeInternal
 		val a_ColMul: Attribute get() = DefaultShaders.a_Col
         @KorgeInternal
-		val a_ColAdd: Attribute = Attribute("a_Col2", VarType.Byte4, normalized = true, fixedLocation = 3)
+		val a_ColAdd: Attribute = Attribute("a_Col2", VarType.UByte4, normalized = true, fixedLocation = 3)
 
 		init { logger.trace { "BatchBuilder2D.Companion[1]" } }
 

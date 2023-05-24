@@ -1,9 +1,18 @@
 package korlibs.metal
 
+import korlibs.graphics.metal.shader.MetalShaderBufferInputLayouts
 import korlibs.graphics.shader.*
 import platform.Metal.*
 
-data class MetalProgram(
+internal data class MetalProgram(
     val renderPipelineState: MTLRenderPipelineStateProtocol,
-    val inputBuffers: List<VariableWithOffset>
-)
+    val inputBuffers: MetalShaderBufferInputLayouts
+) {
+    fun indexOfAttributeOnBuffer(attribute: List<Attribute>): ULong {
+        return inputBuffers.indexOf(attribute).toULong()
+    }
+
+    fun indexOfUniformOnBuffer(uniform: Uniform): ULong {
+        return inputBuffers.indexOf(listOf(uniform)).toULong()
+    }
+}
