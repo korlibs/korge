@@ -159,6 +159,11 @@ object RootKorlibsPlugin {
         )
 
         project.symlinktree(
+            fromFolder = File(rootProject.projectDir, "buildSrc/src/test/kotlin"),
+            intoFolder = File(rootProject.projectDir, "korge-gradle-plugin/build/testgen2")
+        )
+
+        project.symlinktree(
             fromFolder = File(rootProject.projectDir, "buildSrc/src/main/resources"),
             intoFolder = File(rootProject.projectDir, "korge-gradle-plugin/build/srcgen2res")
         )
