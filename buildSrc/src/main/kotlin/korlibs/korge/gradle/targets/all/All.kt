@@ -27,7 +27,9 @@ object AddFreeCompilerArgs {
                     add("-Xvalue-classes")
                     add("-Xskip-prerelease-check")
                 }
-                add("-Xno-param-assertions")
+                if (target.name == "android" || target.name == "jvm") {
+                    add("-Xno-param-assertions")
+                }
                 add("-opt-in=kotlinx.cinterop.ExperimentalForeignApi")
                 if (target.name == "mingwX64") {
                     if (SemVer(BuildVersions.KOTLIN) >= SemVer("1.9.0")) {
