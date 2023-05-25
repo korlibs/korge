@@ -20,6 +20,7 @@ dependencies {
     implementation(libs.gradle.publish.plugin)
     implementation(libs.kotlin.gradle.plugin)
     implementation(libs.android.build.gradle)
+    testImplementation("junit:junit:4.13")
 }
 
 Eval.xy(this, this, file("../gradle/repositories.settings.gradle").text)
