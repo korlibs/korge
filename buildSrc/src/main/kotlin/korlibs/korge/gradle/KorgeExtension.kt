@@ -419,6 +419,10 @@ open class KorgeExtension(
 
 	val extraEntryPoints = arrayListOf<Entrypoint>()
 
+    internal fun getAllEntryPoints(): List<Entrypoint> {
+        return listOf(Entrypoint("", realJvmMainClassName)) + extraEntryPoints
+    }
+
 	class Entrypoint(val name: String, val jvmMainClassName: String) {
 		val entryPoint = (jvmMainClassName.substringBeforeLast('.', "") + ".main").trimStart('.')
 	}

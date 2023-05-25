@@ -54,16 +54,6 @@ fun Project.configureJvm(projectType: ProjectType) {
 fun Project.configureJvmRunJvm(isRootKorlibs: Boolean) {
     val project = this
 
-    // https://www.baeldung.com/java-instrumentation
-    project.tasks.createThis<KorgeJavaExec>("runJvm") {
-        group = GROUP_KORGE_RUN
-        dependsOn("jvmMainClasses")
-        project.afterEvaluate {
-            val beforeJava9 = JvmAddOpens.beforeJava9
-            if (!beforeJava9) jvmArgs(project.korge.javaAddOpens)
-            mainClass.set(korge.realJvmMainClassName)
-        }
-    }
     val timeBeforeCompilationFile = File(project.buildDir, "timeBeforeCompilation")
 
     project.tasks.createThis<Task>("compileKotlinJvmAndNotifyBefore") {
@@ -92,40 +82,46 @@ fun Project.configureJvmRunJvm(isRootKorlibs: Boolean) {
         }
 
         project.afterEvaluate {
-            for (entry in korge.extraEntryPoints) {
-                project.tasks.createThis<KorgeJavaExec>("runJvm${entry.name.capitalize()}") {
+            // https://www.baeldung.com/java-instrumentation
+            for (entry in korge.getAllEntryPoints()) {
+                val capitalizedEntryName = entry.name.capitalize()
+                project.tasks.createThis<KorgeJavaExec>("runJvm${capitalizedEntryName}") {
                     group = GROUP_KORGE_RUN
                     dependsOn("jvmMainClasses")
                     mainClass.set(entry.jvmMainClassName)
+                    project.afterEvaluate {
+                        val beforeJava9 = JvmAddOpens.beforeJava9
+                        if (!beforeJava9) jvmArgs(project.korge.javaAddOpens)
+                    }
+                }
+                //for (enableRedefinition in listOf(false, true)) {
+                for (enableRedefinition in listOf(false)) {
+                    val taskName = when (enableRedefinition) {
+                        false -> "runJvm${capitalizedEntryName}Autoreload"
+                        true -> "runJvm${capitalizedEntryName}AutoreloadWithRedefinition"
+                    }
+                    project.tasks.createThis<KorgeJavaExecWithAutoreload>(taskName) {
+                        this.enableRedefinition = enableRedefinition
+                        group = GROUP_KORGE_RUN
+                        dependsOn("jvmMainClasses", "compileKotlinJvm")
+                        if (isRootKorlibs) {
+                            dependsOn(":korge-reload-agent:jar")
+                        }
+                        project.afterEvaluate {
+                            val beforeJava9 = JvmAddOpens.beforeJava9
+                            if (!beforeJava9) jvmArgs(project.korge.javaAddOpens)
+                            mainClass.set(korge.jvmMainClassName)
+                        }
+                    }
                 }
             }
+
         }
     }
 
     project.tasks.findByName("jvmJar")?.let {
         (it as Jar).apply {
             entryCompression = ZipEntryCompression.STORED
-        }
-    }
-
-    //for (enableRedefinition in listOf(false, true)) {
-    for (enableRedefinition in listOf(false)) {
-        val taskName = when (enableRedefinition) {
-            false -> "runJvmAutoreload"
-            true -> "runJvmAutoreloadWithRedefinition"
-        }
-        project.tasks.createThis<KorgeJavaExecWithAutoreload>(taskName) {
-            this.enableRedefinition = enableRedefinition
-            group = GROUP_KORGE_RUN
-            dependsOn("jvmMainClasses", "compileKotlinJvm")
-            if (isRootKorlibs) {
-                dependsOn(":korge-reload-agent:jar")
-            }
-            project.afterEvaluate {
-                val beforeJava9 = JvmAddOpens.beforeJava9
-                if (!beforeJava9) jvmArgs(project.korge.javaAddOpens)
-                mainClass.set(korge.jvmMainClassName)
-            }
         }
     }
 }
