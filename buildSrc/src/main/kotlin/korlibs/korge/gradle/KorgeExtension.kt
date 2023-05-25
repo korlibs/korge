@@ -145,6 +145,8 @@ open class KorgeExtension(
 
     private var _checkVersionOnce = false
 
+    var autoGenerateTypedResources: Boolean = true
+
     /**
      * This checks that you are using the latest version of KorGE
      * once per day.
