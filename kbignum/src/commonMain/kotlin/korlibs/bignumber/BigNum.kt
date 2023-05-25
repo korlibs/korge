@@ -3,16 +3,26 @@ package korlibs.bignumber
 import korlibs.bignumber.ranges.*
 import kotlin.math.*
 
+/**
+ * Represents a [BigNum],
+ * a numeric value with decimal places that is exact.
+ *
+ * There are no precision issues like happens with [Float] or [Double] floating point types.
+ */
 class BigNum(val int: BigInt, val scale: Int) : Comparable<BigNum> {
     init {
         //println("BigNum($int, $scale) == $this")
     }
 
     companion object {
+        /** Represents 0.0 as a [BigNum] */
         val ZERO = BigNum(BigInt(0), 0)
+        /** Represents 1.0 as a [BigNum] */
         val ONE = BigNum(BigInt(1), 0)
+        /** Represents 2.0 as a [BigNum] */
         val TWO = BigNum(BigInt(2), 0)
 
+        /** Creates a [BigNum] from a string [str] */
         operator fun invoke(str: String): BigNum {
             val str = str.lowercase()
             //val ss = if (str.contains('.')) str.trimEnd('0') else str
@@ -30,6 +40,14 @@ class BigNum(val int: BigInt, val scale: Int) : Comparable<BigNum> {
         }
     }
 
+    /**
+     * Converts the internal scale of this BigNum to [otherScale] while keeping the same value.
+     *
+     * For example:
+     * ```kotlin
+     * assertEquals("0.0010", "0.001".bn.convertToScale(4).toString())
+     * ```
+     */
     fun convertToScale(otherScale: Int): BigNum = when {
         this.scale == otherScale -> this
         otherScale > this.scale -> BigNum(int * (10.bi pow (otherScale - this.scale)), otherScale)
