@@ -353,6 +353,8 @@ open class GameWindow :
         set(value) = Unit
         get() = false
 
+    open var alwaysOnTop: Boolean = false
+
     override val key: CoroutineContext.Key<*> get() = CoroutineKey
     companion object CoroutineKey : CoroutineContext.Key<GameWindow> {
         const val DEFAULT_PREFERRED_FPS = 60
