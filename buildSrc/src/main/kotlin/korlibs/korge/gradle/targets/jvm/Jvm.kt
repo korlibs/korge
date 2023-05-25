@@ -71,6 +71,45 @@ fun Project.configureJvmRunJvm(isRootKorlibs: Boolean) {
         }
     }
 
+    // runJvm, runJvmAutoreload and variants for entrypoints
+    project.afterEvaluate {
+        // https://www.baeldung.com/java-instrumentation
+        for (entry in korge.getAllEntryPoints()) {
+            val capitalizedEntryName = entry.name.capitalize()
+            project.tasks.createThis<KorgeJavaExec>("runJvm${capitalizedEntryName}") {
+                group = GROUP_KORGE_RUN
+                dependsOn("jvmMainClasses")
+                mainClass.set(entry.jvmMainClassName)
+                val beforeJava9 = JvmAddOpens.beforeJava9
+                if (!beforeJava9) jvmArgs(project.korge.javaAddOpens)
+            }
+            //for (enableRedefinition in listOf(false, true)) {
+            for (enableRedefinition in listOf(false)) {
+                val taskName = when (enableRedefinition) {
+                    false -> "runJvm${capitalizedEntryName}Autoreload"
+                    true -> "runJvm${capitalizedEntryName}AutoreloadWithRedefinition"
+                }
+                project.tasks.createThis<KorgeJavaExecWithAutoreload>(taskName) {
+                    this.enableRedefinition = enableRedefinition
+                    group = GROUP_KORGE_RUN
+                    dependsOn("jvmMainClasses", "compileKotlinJvm")
+                    if (isRootKorlibs) {
+                        dependsOn(":korge-reload-agent:jar")
+                    }
+                    val beforeJava9 = JvmAddOpens.beforeJava9
+                    if (!beforeJava9) jvmArgs(project.korge.javaAddOpens)
+                    mainClass.set(korge.jvmMainClassName)
+                }
+            }
+        }
+    }
+
+    project.tasks.findByName("jvmJar")?.let {
+        (it as Jar).apply {
+            entryCompression = ZipEntryCompression.STORED
+        }
+    }
+
     if (!isRootKorlibs) {
         project.configurations
             .create(KORGE_RELOAD_AGENT_CONFIGURATION_NAME)
@@ -79,49 +118,6 @@ fun Project.configureJvmRunJvm(isRootKorlibs: Boolean) {
         //.setDescription("korge-reload-agent to be downloaded and used for this project.")
         project.dependencies {
             add(KORGE_RELOAD_AGENT_CONFIGURATION_NAME, "com.soywiz.korlibs.korge.reloadagent:korge-reload-agent:${BuildVersions.KORGE}")
-        }
-
-        project.afterEvaluate {
-            // https://www.baeldung.com/java-instrumentation
-            for (entry in korge.getAllEntryPoints()) {
-                val capitalizedEntryName = entry.name.capitalize()
-                project.tasks.createThis<KorgeJavaExec>("runJvm${capitalizedEntryName}") {
-                    group = GROUP_KORGE_RUN
-                    dependsOn("jvmMainClasses")
-                    mainClass.set(entry.jvmMainClassName)
-                    project.afterEvaluate {
-                        val beforeJava9 = JvmAddOpens.beforeJava9
-                        if (!beforeJava9) jvmArgs(project.korge.javaAddOpens)
-                    }
-                }
-                //for (enableRedefinition in listOf(false, true)) {
-                for (enableRedefinition in listOf(false)) {
-                    val taskName = when (enableRedefinition) {
-                        false -> "runJvm${capitalizedEntryName}Autoreload"
-                        true -> "runJvm${capitalizedEntryName}AutoreloadWithRedefinition"
-                    }
-                    project.tasks.createThis<KorgeJavaExecWithAutoreload>(taskName) {
-                        this.enableRedefinition = enableRedefinition
-                        group = GROUP_KORGE_RUN
-                        dependsOn("jvmMainClasses", "compileKotlinJvm")
-                        if (isRootKorlibs) {
-                            dependsOn(":korge-reload-agent:jar")
-                        }
-                        project.afterEvaluate {
-                            val beforeJava9 = JvmAddOpens.beforeJava9
-                            if (!beforeJava9) jvmArgs(project.korge.javaAddOpens)
-                            mainClass.set(korge.jvmMainClassName)
-                        }
-                    }
-                }
-            }
-
-        }
-    }
-
-    project.tasks.findByName("jvmJar")?.let {
-        (it as Jar).apply {
-            entryCompression = ZipEntryCompression.STORED
         }
     }
 }
