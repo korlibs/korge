@@ -4,6 +4,7 @@ import korlibs.memory.Platform
 import korlibs.event.*
 import korlibs.inject.AsyncInjector
 import korlibs.io.lang.Environment
+import korlibs.logger.*
 import kotlin.jvm.JvmStatic
 import kotlin.native.concurrent.ThreadLocal
 import kotlin.reflect.KClass
@@ -21,10 +22,12 @@ object KorgeReload {
     @Suppress("VARIABLE_IN_SINGLETON_WITHOUT_THREAD_LOCAL")
     private var KorgeReload_eventDispatcher: EventListener? = null
 
+    val logger = Logger("KorgeReload")
+
     @JvmStatic
     @Suppress("unused") // This is called from [korlibs.korge.reloadagent.KorgeReloadAgent]
     fun triggerReload(classes: List<String>, success: Boolean, rootFolders: List<String>) {
-        println("KorgeReloadAgent detected a class change. Reload: $classes")
+        logger.debug { "KorgeReloadAgent detected a class change. Reload: $classes" }
         KorgeReload_eventDispatcher?.dispatch(ReloadEvent(classes.toSet(), success, rootFolders))
     }
 

@@ -14,8 +14,10 @@ import kotlin.system.*
 internal actual val KorgeReloadInternal: KorgeReloadInternalImpl = KorgeReloadInternalJvm
 
 internal object KorgeReloadInternalJvm : KorgeReloadInternalImpl() {
+    val logger = Logger("KorgeReloadInternalJvm")
+
     override fun <T : Any> getReloadedClass(clazz: KClass<T>, context: ReloadClassContext): KClass<T> {
-        println("### KorgeReload_getReloadedClass: $clazz")
+        logger.debug { "### KorgeReload_getReloadedClass: $clazz" }
         val oldClass = clazz
         val newClass = KorgeReloadClassLoader(extraFolders = context.rootFolders).loadClass(oldClass.qualifiedName).kotlin as KClass<T>
         context.injector.jvmRemoveMappingsByClassName(context.refreshedClasses)
