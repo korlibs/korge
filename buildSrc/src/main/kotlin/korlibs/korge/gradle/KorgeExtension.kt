@@ -419,16 +419,20 @@ open class KorgeExtension(
 
 	val extraEntryPoints = arrayListOf<Entrypoint>()
 
-    internal fun getAllEntryPoints(): List<Entrypoint> {
-        return listOf(Entrypoint("", realJvmMainClassName)) + extraEntryPoints
+    internal fun getDefaultEntryPoint(): Entrypoint {
+        return Entrypoint("") { realJvmMainClassName }
     }
 
-	class Entrypoint(val name: String, val jvmMainClassName: String) {
-		val entryPoint = (jvmMainClassName.substringBeforeLast('.', "") + ".main").trimStart('.')
+    internal fun getAllEntryPoints(): List<Entrypoint> {
+        return listOf(getDefaultEntryPoint()) + extraEntryPoints
+    }
+
+	class Entrypoint(val name: String, val jvmMainClassName: () -> String) {
+		val entryPoint by lazy { (jvmMainClassName().substringBeforeLast('.', "") + ".main").trimStart('.') }
 	}
 
 	fun entrypoint(name: String, jvmMainClassName: String) {
-		extraEntryPoints.add(Entrypoint(name, jvmMainClassName))
+		extraEntryPoints.add(Entrypoint(name) { jvmMainClassName })
 	}
 
     var esbuildVersion: String = ESBUILD_DEFAULT_VERSION
