@@ -18,17 +18,18 @@ class TypedResourcesGenerator {
 
     fun generateForFolders(resourcesFolder: SFile): String {
         return Indenter {
-            line("import korlibs.audio.sound.Sound")
-            line("import korlibs.audio.sound.readSound")
             line("import korlibs.image.atlas.Atlas")
-            line("import korlibs.image.atlas.readAtlas")
             line("import korlibs.io.file.VfsFile")
             line("import korlibs.io.file.std.resourcesVfs")
+            line("import korlibs.image.atlas.readAtlas")
+            line("import korlibs.audio.sound.readSound")
             line("import korlibs.image.format.readBitmap")
             line("")
             line("// AUTO-GENERATED FILE! DO NOT MODIFY!")
             line("")
-            line("inline class TypedVfsFile<T>(val file: VfsFile)")
+            line("inline class TypedVfsFile(val __file: VfsFile)")
+            line("inline class TypedVfsFileBitmap(val __file: VfsFile) { suspend fun read(): korlibs.image.bitmap.Bitmap = this.__file.readBitmap() }")
+            line("inline class TypedVfsFileSound(val __file: VfsFile) { suspend fun read(): korlibs.audio.sound.Sound = this.__file.readSound() }")
             line("interface TypedAtlas<T>")
 
             data class AtlasInfo(val file: SFile, val className: String)
@@ -39,51 +40,60 @@ class TypedResourcesGenerator {
             val foldersToExplore = ArrayDeque<SFile>()
             foldersToExplore += resourcesFolder
 
-            while (foldersToExplore.isNotEmpty()) {
-                val folder = foldersToExplore.removeFirst()
-                if (folder in exploredFolders) continue
-                exploredFolders += folder
-                val files = folder.list()
-                line("")
-                line("object KR${folder.path.textCase().pascalCase()}") {
-                    line("val __file get() = resourcesVfs[\"${folder.path}\"]")
-                    for (file in files.sortedBy { it.name }.distinctBy { it.nameWithoutExtension.normalizeName().textCase().camelCase() }) {
-                        if (file.path == "") continue
-                        if (file.name.startsWith(".")) continue
-                        val path = file.path
-                        if (path.isEmpty()) continue
-                        val varName = file.nameWithoutExtension.normalizeName().textCase().camelCase()
-                        val fullVarName = file.path.normalizeName()
-                        val extension = File(path).extension.lowercase()
-                        //println("extension=$extension")
-                        var extraSuffix = ""
-                        val isDirectory = file.isDirectory()
-                        val type: String? = when (extension) {
-                            "png", "jpg" -> "korlibs.image.bitmap.Bitmap"
-                            "mp3", "wav" -> "korlibs.audio.sound.Sound"
-                            "atlas" -> {
-                                if (isDirectory) {
-                                    extraSuffix += ".json"
-                                    val className = "Atlas${fullVarName.textCase().pascalCase()}"
-                                    atlases += AtlasInfo(file, className)
-                                    "TypedAtlas<$className>"
-                                } else {
-                                    "korlibs.io.file.VfsFile"
+            line("")
+            line("object KR : __KR.KR")
+            line("")
+
+            line("object __KR") {
+                while (foldersToExplore.isNotEmpty()) {
+                    val folder = foldersToExplore.removeFirst()
+                    if (folder in exploredFolders) continue
+                    exploredFolders += folder
+                    val files = folder.list()
+                    line("")
+                    val classSuffix = folder.path.textCase().pascalCase()
+                    line("${if (classSuffix.isEmpty()) "interface" else "object"} KR$classSuffix") {
+                        line("val __file get() = resourcesVfs[\"${folder.path}\"]")
+                        for (file in files.sortedBy { it.name }
+                            .distinctBy { it.nameWithoutExtension.normalizeName().textCase().camelCase() }) {
+                            if (file.path == "") continue
+                            if (file.name.startsWith(".")) continue
+                            val path = file.path
+                            if (path.isEmpty()) continue
+                            val varName = file.nameWithoutExtension.normalizeName().textCase().camelCase()
+                            val fullVarName = file.path.normalizeName()
+                            val extension = File(path).extension.lowercase()
+                            //println("extension=$extension")
+                            var extraSuffix = ""
+                            val isDirectory = file.isDirectory()
+                            val type: String? = when (extension) {
+                                "png", "jpg" -> "TypedVfsFileBitmap"
+                                "mp3", "wav" -> "TypedVfsFileSound"
+                                "atlas" -> {
+                                    if (isDirectory) {
+                                        extraSuffix += ".json"
+                                        val className = "Atlas${fullVarName.textCase().pascalCase()}"
+                                        atlases += AtlasInfo(file, className)
+                                        "$className.TypedAtlas"
+                                    } else {
+                                        "TypedVfsFile"
+                                    }
+                                }
+
+                                else -> {
+                                    if (isDirectory) {
+                                        foldersToExplore += file
+                                        null
+                                    } else {
+                                        "TypedVfsFile"
+                                    }
                                 }
                             }
-                            else -> {
-                                if (isDirectory) {
-                                    foldersToExplore += file
-                                    null
-                                } else {
-                                    "korlibs.io.file.VfsFile"
-                                }
+                            val pathWithSuffix = "$path$extraSuffix"
+                            when {
+                                type != null -> line("val `$varName` get() = $type(resourcesVfs[\"$pathWithSuffix\"])")
+                                else -> line("val `$varName` get() = __KR.KR${file.path.textCase().pascalCase()}")
                             }
-                        }
-                        val pathWithSuffix = "$path$extraSuffix"
-                        when {
-                            type != null -> line("val `$varName` get() = TypedVfsFile<$type>(resourcesVfs[\"$pathWithSuffix\"])")
-                            else -> line("val `$varName` get() = KR${file.path.textCase().pascalCase()}")
                         }
                     }
                 }
@@ -91,9 +101,8 @@ class TypedResourcesGenerator {
 
             for (atlas in atlases) {
                 line("")
-                line("@kotlin.jvm.JvmName(\"read_TypedVfsFile_TypedAtlas_${atlas.className}\")")
-                line("suspend fun TypedVfsFile<TypedAtlas<${atlas.className}>>.read() = ${atlas.className}(this.file.readAtlas())")
                 line("inline class ${atlas.className}(val __atlas: korlibs.image.atlas.Atlas)") {
+                    line("inline class TypedAtlas(val __file: VfsFile) { suspend fun read(): ${atlas.className} = ${atlas.className}(this.__file.readAtlas()) }")
                     val atlasBaseDir = atlas.file
                     for (file in atlasBaseDir.list()) {
                         if (file.name.startsWith(".")) continue
@@ -104,12 +113,6 @@ class TypedResourcesGenerator {
                     }
                 }
             }
-            line("")
-            line("@kotlin.jvm.JvmName(\"read_TypedVfsFile_Bitmap\")")
-            line("suspend fun TypedVfsFile<korlibs.image.bitmap.Bitmap>.read() = this.file.readBitmap()")
-            line("@kotlin.jvm.JvmName(\"read_TypedVfsFile_Sound\")")
-            line("suspend fun TypedVfsFile<korlibs.audio.sound.Sound>.read() = this.file.readSound()")
-
         }
     }
 }
