@@ -3,6 +3,7 @@ package korlibs.datastructure
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
+
 class WeakPropertyTest {
 	class C {
 		val value = 1
