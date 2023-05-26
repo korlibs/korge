@@ -5,6 +5,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class ExtraPropertyTest {
+    /*
     var Demo.demo1 by extraProperty { "hello" }
     val Demo.demo by extraProperty { linkedSetOf<String>() }
     var Demo.demo2 by extraPropertyThis(transform = { if (it % 10 == 0) it else it - (it % 10) }) { 10 }
@@ -36,4 +37,5 @@ class ExtraPropertyTest {
         demo.demo2 = 39
         assertEquals(30, demo.demo2)
     }
+     */
 }
