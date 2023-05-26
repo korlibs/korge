@@ -1,7 +1,7 @@
 package korlibs.io.async
 
 import kotlinx.coroutines.*
-import kotlin.coroutines.*
+import kotlin.js.Promise
 
 /*
 actual fun asyncEntryPoint(callback: suspend () -> Unit): dynamic = kotlin.js.Promise<dynamic> { resolve, reject ->
@@ -20,5 +20,9 @@ actual fun asyncEntryPoint(callback: suspend () -> Unit): dynamic = kotlin.js.Pr
 	})
 }
 */
-actual fun asyncEntryPoint(callback: suspend () -> Unit): dynamic = GlobalScope.promise { callback() }
-actual fun asyncTestEntryPoint(callback: suspend () -> Unit): dynamic = GlobalScope.promise { callback() }
+
+@Suppress("ACTUAL_WITHOUT_EXPECT", "ACTUAL_TYPE_ALIAS_TO_CLASS_WITH_DECLARATION_SITE_VARIANCE")
+actual typealias AsyncEntryPointResult = Promise<Unit>
+
+actual fun asyncEntryPoint(callback: suspend () -> Unit): AsyncEntryPointResult = GlobalScope.promise { callback() }
+actual fun asyncTestEntryPoint(callback: suspend () -> Unit): AsyncEntryPointResult = GlobalScope.promise { callback() }

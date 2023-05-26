@@ -5,6 +5,9 @@ import korlibs.io.android.withAndroidContext
 import korlibs.io.dynamic.Dyn
 import kotlinx.coroutines.*
 
+@Suppress("ACTUAL_WITHOUT_EXPECT", "ACTUAL_TYPE_ALIAS_TO_CLASS_WITH_DECLARATION_SITE_VARIANCE")
+actual typealias AsyncEntryPointResult = Unit
+
 actual fun asyncEntryPoint(callback: suspend () -> Unit) {
 	CoroutineScope(Dispatchers.Main).launch {
 		callback()

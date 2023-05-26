@@ -64,8 +64,10 @@ fun <T> async(context: CoroutineContext, callback: suspend () -> T) = CoroutineS
 fun <T> asyncImmediately(context: CoroutineContext, callback: suspend () -> T) = CoroutineScope(context).asyncImmediately(callback)
 fun <T> asyncAsap(context: CoroutineContext, callback: suspend () -> T) = CoroutineScope(context).asyncAsap(callback)
 
-expect fun asyncEntryPoint(callback: suspend () -> Unit)
-expect fun asyncTestEntryPoint(callback: suspend () -> Unit)
+public expect class AsyncEntryPointResult
+
+expect fun asyncEntryPoint(callback: suspend () -> Unit): AsyncEntryPointResult
+expect fun asyncTestEntryPoint(callback: suspend () -> Unit): AsyncEntryPointResult
 
 val DEFAULT_SUSPEND_TEST_TIMEOUT = 20.seconds
 
