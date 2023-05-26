@@ -107,9 +107,21 @@ internal class LinuxJoyEventAdapter(val syncIO: SyncIO = SyncIO) : Closeable {
         private var running = true
         val readCount = KorAtomicInt(0)
         val once = CompletableDeferred<Unit>()
-        val dispatcher by lazy { Dispatchers.createSingleThreadedDispatcher("index").also {
-            it.dispatch(EmptyCoroutineContext, Runnable { threadMain() })
-        } }
+
+        // @TODO: This Hangs WASM
+        //val dispatcher: CoroutineDispatcher by lazy { Dispatchers.createSingleThreadedDispatcher("index").also {
+        //    it.dispatch(EmptyCoroutineContext, Runnable { threadMain() })
+        //} }
+
+        private var _dispatcher: CoroutineDispatcher? = null
+        val dispatcher: CoroutineDispatcher get() {
+            if (_dispatcher == null) {
+                _dispatcher = Dispatchers.createSingleThreadedDispatcher("index").also {
+                    it.dispatch(EmptyCoroutineContext, Runnable { threadMain() })
+                }
+            }
+            return _dispatcher!!
+        }
 
         fun threadMain() {
             val packet = ByteArray(8)
