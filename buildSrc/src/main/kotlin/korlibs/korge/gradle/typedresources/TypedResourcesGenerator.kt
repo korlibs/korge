@@ -27,6 +27,7 @@ class TypedResourcesGenerator {
             line("")
             line("// AUTO-GENERATED FILE! DO NOT MODIFY!")
             line("")
+            line("@Retention(AnnotationRetention.BINARY) annotation class ResourceVfsPath(val path: String)")
             line("inline class TypedVfsFile(val __file: VfsFile)")
             line("inline class TypedVfsFileBitmap(val __file: VfsFile) { suspend fun read(): korlibs.image.bitmap.Bitmap = this.__file.readBitmap() }")
             line("inline class TypedVfsFileSound(val __file: VfsFile) { suspend fun read(): korlibs.audio.sound.Sound = this.__file.readSound() }")
@@ -91,7 +92,7 @@ class TypedResourcesGenerator {
                             }
                             val pathWithSuffix = "$path$extraSuffix"
                             when {
-                                type != null -> line("val `$varName` get() = $type(resourcesVfs[\"$pathWithSuffix\"])")
+                                type != null -> line("@ResourceVfsPath(\"$pathWithSuffix\") val `$varName` get() = $type(resourcesVfs[\"$pathWithSuffix\"])")
                                 else -> line("val `$varName` get() = __KR.KR${file.path.textCase().pascalCase()}")
                             }
                         }
@@ -109,7 +110,7 @@ class TypedResourcesGenerator {
                         if (file.isDirectory()) continue
                         val pathDir = file.name
                         if (pathDir.toString().isEmpty()) continue
-                        line("val `${file.nameWithoutExtension.normalizeName()}` get() = __atlas[\"$pathDir\"]")
+                        line("@ResourceVfsPath(\"${file.path}\") val `${file.nameWithoutExtension.normalizeName()}` get() = __atlas[\"$pathDir\"]")
                     }
                 }
             }
