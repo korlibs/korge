@@ -8,7 +8,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class MultiThreadingTests {
-
     @Test
     fun testTemplateEvaluationOnBackgroundThread() = runBlocking {
         data class Model(val x: Int) : DynamicType<Model> by DynamicType({

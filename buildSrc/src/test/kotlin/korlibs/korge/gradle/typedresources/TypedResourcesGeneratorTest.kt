@@ -16,7 +16,7 @@ class TypedResourcesGeneratorTest {
                 "other/file.raw" to "",
             )
         )
-        println(generated)
+        //println(generated)
         assertEquals(
 """
 import korlibs.image.atlas.Atlas
