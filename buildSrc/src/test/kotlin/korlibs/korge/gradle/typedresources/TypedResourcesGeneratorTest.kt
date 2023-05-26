@@ -40,10 +40,10 @@ object __KR {
     
     interface KR {
         val __file get() = resourcesVfs[""]
-        val `gfx` get() = __KR.KRGfx
+        @ResourceVfsPath("gfx") val `gfx` get() = __KR.KRGfx
         @ResourceVfsPath("hello.png") val `hello` get() = TypedVfsFileBitmap(resourcesVfs["hello.png"])
-        val `other` get() = __KR.KROther
-        val `sfx` get() = __KR.KRSfx
+        @ResourceVfsPath("other") val `other` get() = __KR.KROther
+        @ResourceVfsPath("sfx") val `sfx` get() = __KR.KRSfx
     }
     
     object KRGfx {

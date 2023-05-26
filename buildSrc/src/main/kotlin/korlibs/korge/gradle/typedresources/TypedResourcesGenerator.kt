@@ -91,9 +91,10 @@ class TypedResourcesGenerator {
                                 }
                             }
                             val pathWithSuffix = "$path$extraSuffix"
+                            val annotation = "@ResourceVfsPath(\"$pathWithSuffix\")"
                             when {
-                                type != null -> line("@ResourceVfsPath(\"$pathWithSuffix\") val `$varName` get() = $type(resourcesVfs[\"$pathWithSuffix\"])")
-                                else -> line("val `$varName` get() = __KR.KR${file.path.textCase().pascalCase()}")
+                                type != null -> line("$annotation val `$varName` get() = $type(resourcesVfs[\"$pathWithSuffix\"])")
+                                else -> line("$annotation val `$varName` get() = __KR.KR${file.path.textCase().pascalCase()}")
                             }
                         }
                     }
@@ -105,7 +106,7 @@ class TypedResourcesGenerator {
                 line("inline class ${atlas.className}(val __atlas: korlibs.image.atlas.Atlas)") {
                     line("inline class TypedAtlas(val __file: VfsFile) { suspend fun read(): ${atlas.className} = ${atlas.className}(this.__file.readAtlas()) }")
                     val atlasBaseDir = atlas.file
-                    for (file in atlasBaseDir.list()) {
+                    for (file in atlasBaseDir.list().sortedBy { it.name }) {
                         if (file.name.startsWith(".")) continue
                         if (file.isDirectory()) continue
                         val pathDir = file.name
