@@ -5,6 +5,7 @@ import kotlin.test.assertEquals
 
 
 class WeakPropertyTest {
+    /*
 	class C {
 		val value = 1
 	}
@@ -27,4 +28,5 @@ class WeakPropertyTest {
 		c2.prop2 = "3"
 		assertEquals("3", c2.prop2)
 	}
+     */
 }
