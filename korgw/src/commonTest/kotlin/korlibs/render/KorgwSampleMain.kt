@@ -6,6 +6,7 @@ import korlibs.image.color.*
 import korlibs.io.*
 import korlibs.math.geom.*
 
+/*
 fun main(args: Array<String>) = Korio {
     CreateDefaultGameWindow().loop {
         configure(Size(640, 480), "hello", fullscreen = false)
@@ -25,3 +26,4 @@ fun main(args: Array<String>) = Korio {
         }
     }
 }
+*/
