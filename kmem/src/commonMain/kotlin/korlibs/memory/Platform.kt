@@ -41,6 +41,7 @@ interface Platform {
     val isNative: Boolean get() = runtime.isNative
     val isNativeDesktop: Boolean get() = isNative && os.isDesktop
     val isJvm: Boolean get() = runtime.isJvm
+    val isWasm: Boolean get() = runtime.isWasm
 
     val isJsShell: Boolean get() = rawPlatformName == "js-shell" || rawPlatformName == "wasm-shell"
     val isJsNodeJs: Boolean get() = rawPlatformName == "js-node" || rawPlatformName == "wasm-node"
