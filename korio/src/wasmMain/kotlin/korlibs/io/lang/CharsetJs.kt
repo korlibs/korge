@@ -5,23 +5,24 @@ import korlibs.memory.ByteArrayBuilder
 import org.khronos.webgl.ArrayBufferView
 import org.khronos.webgl.Uint8Array
 
-external class TextDecoder(charset: String) {
+external class TextDecoder(charset: String) : JsAny {
     val encoding: String
     fun decode(data: ArrayBufferView): String
 }
 
-external class TextEncoder(charset: String) {
+external class TextEncoder(charset: String) : JsAny {
     val encoding: String
     fun encode(data: String): Uint8Array
 }
 
+
 actual val platformCharsetProvider: CharsetProvider = CharsetProvider { normalizedName, name ->
     for (n in listOf(name, normalizedName)) {
         try {
-            val te = TextEncoder(n)
-            val td = TextDecoder(n)
+            val te = wrapWasmJsExceptions { TextEncoder(n) }
+            val td = wrapWasmJsExceptions { TextDecoder(n) }
             return@CharsetProvider JsCharset(te, td)
-        //} catch (e: dynamic) { // @TODO: Not working on WASM. Do we really have a Throwable from JS?
+            //} catch (e: dynamic) { // @TODO: Not working on WASM. Do we really have a Throwable from JS?
         } catch (e: Throwable) {
             continue
         }
