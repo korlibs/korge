@@ -14,7 +14,7 @@ val windowStyle = NSWindowStyleMaskTitled or NSWindowStyleMaskMiniaturizable or
 
 class MetalApplication(
     private val windowTitle: String,
-    private val rendererProvider: (MTLDeviceProtocol) -> Renderer
+    private val rendererProvider: (MTKView) -> Renderer
 ) {
 
     fun run() {
@@ -33,11 +33,11 @@ class MetalApplication(
 
             val window = NSWindow(windowRect, windowStyle, NSBackingStoreBuffered, false)
             val device = MTLCreateSystemDefaultDevice() ?: error("fail to create device")
-            val renderer = rendererProvider(device)
             val mtkView = MTKView(windowRect, device).apply {
                 colorPixelFormat = MTLPixelFormatBGRA8Unorm_sRGB
                 clearColor = MTLClearColorMake(0.0, 0.0, 0.0, 1.0)
             }
+            val renderer = rendererProvider(mtkView)
 
             application.delegate = object : NSObject(), NSApplicationDelegateProtocol {
 

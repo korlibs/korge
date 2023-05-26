@@ -14,4 +14,4 @@ object AGFactoryNative : AGFactory {
 	override fun createFastWindow(title: String, width: Int, height: Int): AGWindow = TODO()
 }
 
-fun AGNative(gl: KmlGl = korlibs.kgl.KmlGlNative()): AGOpengl = AGOpengl(gl)
+fun AGNative(gl: KmlGl = KmlGlNative()): AGOpengl = AGOpengl(gl)

@@ -23,6 +23,7 @@ import korlibs.korge.input.*
 import korlibs.korge.internal.*
 import korlibs.korge.render.*
 import korlibs.korge.stat.*
+import korlibs.logger.*
 import korlibs.math.geom.*
 import korlibs.memory.*
 import korlibs.render.*
@@ -37,7 +38,7 @@ import kotlin.coroutines.*
  * It contains information about the [coroutineContext], the [gameWindow], the [injector], the [input]
  * and contains a reference to the [root] [Stage] view.
  */
-class Views constructor(
+class Views(
     override val coroutineContext: CoroutineContext,
     val ag: AG,
     val injector: AsyncInjector,
@@ -397,10 +398,11 @@ class Views constructor(
     */
 
     val debugHighlighters = Signal<View?>()
+    val debugHightlightViewLogger = Logger("debugHightlightView")
 
     fun debugHightlightView(viewToHightlight: View?, onlyIfDebuggerOpened: Boolean = false) {
         if (onlyIfDebuggerOpened && !gameWindow.debug) return
-        println("debugHightlightView: $viewToHightlight")
+        debugHightlightViewLogger.debug { "debugHightlightView: $viewToHightlight" }
         debugHighlighters(viewToHightlight)
     }
 

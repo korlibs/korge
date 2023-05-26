@@ -1,5 +1,6 @@
 package korlibs.template
 
+import kotlinx.coroutines.test.*
 import kotlin.coroutines.AbstractCoroutineContextElement
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.ContinuationInterceptor
@@ -9,9 +10,7 @@ import kotlin.coroutines.intrinsics.startCoroutineUninterceptedOrReturn
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
-fun suspendTest(callback: suspend () -> Unit) {
-    runBlockingNoSuspensions(callback)
-}
+fun suspendTest(callback: suspend TestScope.() -> Unit): TestResult = runTest { callback() }
 
 fun <T : Any> runBlockingNoSuspensions(callback: suspend () -> T): T {
     var completed = false

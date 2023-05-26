@@ -26,7 +26,7 @@ object GIF : ImageFormat("gif") {
                 GifDec.gd_close_gif(gif)
             }
         } catch (e: Throwable) {
-            e.printStackTrace()
+            //e.printStackTrace()
             return null
         }
     }

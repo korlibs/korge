@@ -1,5 +1,6 @@
 package korlibs.korge.gradle
 
+import korlibs.korge.gradle.typedresources.*
 import korlibs.korge.gradle.module.*
 import korlibs.korge.gradle.targets.*
 import korlibs.korge.gradle.targets.all.*
@@ -77,6 +78,8 @@ class KorgeGradleApply(val project: Project, val projectType: ProjectType) {
 
             project.configureTests()
         }
+
+        project.configureTypedResourcesGenerator()
 	}
 
 	private fun Project.configureDependencies() {

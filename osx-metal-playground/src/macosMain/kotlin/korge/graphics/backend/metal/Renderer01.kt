@@ -1,21 +1,28 @@
+@file:OptIn(ExperimentalUnsignedTypes::class)
+
 package korge.graphics.backend.metal
 
-import korlibs.memory.*
 import korlibs.graphics.*
 import korlibs.graphics.shader.*
 import korlibs.math.geom.*
+import korlibs.memory.*
 import korlibs.metal.*
 import kotlinx.cinterop.*
 import platform.Metal.*
 import platform.MetalKit.*
 
-class Renderer01(device: MTLDeviceProtocol) : Renderer(device) {
+class Renderer01(view: MTKView, private val simple: Boolean) : Renderer() {
 
-    private var ag: AGMetal? = null
+    private var ag = AGMetal(view)
+    object uniformBlock : UniformBlock(fixedLocation = 0) {
+        val u_ProjMat by mat4()
+    }
 
     private val vertexShader = VertexShader {
         SET(DefaultShaders.v_Col, DefaultShaders.a_Col)
-        SET(out, DefaultShaders.u_ProjMat /* DefaultShaders.u_ViewMat*/ * vec4(DefaultShaders.a_Pos, 0f.lit, 1f.lit))
+        //SET(DefaultShaders.v_Col, vec4(1f.lit, 1f.lit, 1f.lit, 1f.lit))
+        //SET(out, vec4(DefaultShaders.a_Pos, 0f.lit, 1f.lit))
+        SET(out, uniformBlock.u_ProjMat /* DefaultShaders.u_ViewMat*/ * vec4(DefaultShaders.a_Pos, 0f.lit, 1f.lit))
         //SET(out, vec4(DefaultShaders.a_Pos, 0f.lit, 1f.lit))
 
         //SET(out, DefaultShaders.u_ProjMat * DefaultShaders.u_ViewMat * vec4(1f.lit, 1f.lit, 0f.lit, 1f.lit))
@@ -23,30 +30,86 @@ class Renderer01(device: MTLDeviceProtocol) : Renderer(device) {
 
     private val fragmentShader = FragmentShader {
         SET(out, DefaultShaders.v_Col)
+        //SET(out, vec4(1f.lit, 1f.lit, 1f.lit, 0f.lit))
     }
 
     private val program = Program(vertexShader, fragmentShader)
 
-    private val vertex1 = 200f
-    private val vertex2 = 0f
-    private val vertexData = AGVertexArrayObject(
+    private val vertex1 = 50f
+    private val vertex2 = 200f
+    private val colors = listOf(
+        ubyteArrayOf(255u, 255u, 255u, 255u), // White
+        ubyteArrayOf(255u, 0u, 0u, 255u), // Red
+        ubyteArrayOf(0u, 255u, 0u, 255u), // Blue
+        ubyteArrayOf(0u, 0u, 255u, 255u), // Green
+    )
+    private val vertices = listOf(
+        listOf(vertex1, vertex1),
+        listOf(vertex1, vertex2),
+        listOf(vertex2, vertex2),
+        listOf(vertex2, vertex1)
+    )
+
+    private val simpleVertexData = AGVertexArrayObject(
         AGVertexData(
             layout = VertexLayout(DefaultShaders.a_Col),
-            buffer = AGBuffer().upload(floatArrayOf(
-                1f, 1f, 1f, 0.0f, // White
-                1f, 0f, 0f, 0.0f, // Red
-                0f, 1f, 0.0f, 0.0f, // Blue
-                0f, 0.0f, 1f, 0.0f, // Green
-            ))
+            buffer = AGBuffer().apply {
+                upload(colors.flatten().toUByteArray())
+            }
         ),
         AGVertexData(
             layout = VertexLayout(DefaultShaders.a_Pos),
-            buffer = AGBuffer().upload(floatArrayOf(
-                vertex1, vertex1,
-                vertex2, vertex1,
-                vertex2, vertex2,
-                vertex1, vertex2
-            ))
+            buffer = AGBuffer().apply {
+                upload(vertices.flatten().toFloatArray())
+            }
+        )
+    )
+
+    private val complexVertexData = AGVertexArrayObject(
+        AGVertexData(
+            layout = VertexLayout(DefaultShaders.a_Col, DefaultShaders.a_Pos),
+            buffer = AGBuffer().apply {
+                Buffer(48).apply {
+                    var position = 0
+                    (0..3).forEach { index ->
+                        colors[index].forEach { color ->
+                            setUnalignedUInt8(position, color.toInt())
+                            position += 1
+                        }
+                        vertices[index].forEach { vertex ->
+                            println("vertex $vertex")
+                            setUnalignedFloat32(position, vertex)
+                            position += 4
+                        }
+                    }
+                    upload(this)
+                }.let {
+                    mem?.getUInt8(0).let { println(it) }
+                    mem?.getUInt8(1).let { println(it) }
+                    mem?.getUInt8(2).let { println(it) }
+                    mem?.getUInt8(3).let { println(it) }
+                    mem?.getUnalignedFloat32(4).let { println(it) }
+                    mem?.getUnalignedFloat32(8).let { println(it) }
+                    mem?.getUInt8(12 + 0).let { println(it) }
+                    mem?.getUInt8(12 + 1).let { println(it) }
+                    mem?.getUInt8(12 + 2).let { println(it) }
+                    mem?.getUInt8(12 + 3).let { println(it) }
+                    mem?.getUnalignedFloat32(12 + 4).let { println(it) }
+                    mem?.getUnalignedFloat32(12 + 8).let { println(it) }
+                    mem?.getUInt8(24 + 0).let { println(it) }
+                    mem?.getUInt8(24 + 1).let { println(it) }
+                    mem?.getUInt8(24 + 2).let { println(it) }
+                    mem?.getUInt8(24 + 3).let { println(it) }
+                    mem?.getUnalignedFloat32(24 + 4).let { println(it) }
+                    mem?.getUnalignedFloat32(24 + 8).let { println(it) }
+                    mem?.getUInt8(36 + 0).let { println(it) }
+                    mem?.getUInt8(36 + 1).let { println(it) }
+                    mem?.getUInt8(36 + 2).let { println(it) }
+                    mem?.getUInt8(36 + 3).let { println(it) }
+                    mem?.getUnalignedFloat32(36 + 4).let { println(it) }
+                    mem?.getUnalignedFloat32(36 + 8).let { println(it) }
+                }
+            }
         )
     )
 
@@ -57,19 +120,6 @@ class Renderer01(device: MTLDeviceProtocol) : Renderer(device) {
         val width = view.drawableSize.useContents { width }.toInt()
         val height = view.drawableSize.useContents { height }.toInt()
 
-        if (ag == null) {
-            ag = AGMetal(view)
-
-            MMatrix3D()
-                .setToOrtho(0f, width.toFloat(), 0f, height.toFloat(), -1f, +1f)
-                .also(::println)
-
-            MMatrix3D()
-                .setToOrtho(0f, width.toFloat(), 0f, height.toFloat(), -1f, +1f)
-                .transform(200f, 0f, 0f, 1f)
-                .also(::println)
-
-        }
         val frameBuffer = AGFrameBufferBase(false)
         val frameBufferInfo = AGFrameBufferInfo(0)
             .withSize(width, height)
@@ -78,10 +128,16 @@ class Renderer01(device: MTLDeviceProtocol) : Renderer(device) {
             .withHasStencil(true)
 
 
-        ag?.draw(
+        val uniformBlockBuffer = UniformBlockBuffer(uniformBlock)
+        val uniformBuffer = MMatrix3D()
+                .setToOrtho(0f, width.toFloat(), 0f, height.toFloat(), -1f, +1f)
+                .data
+                .let { AGBuffer().upload(it, 0, it.size) }
+
+        ag.draw(
             frameBuffer,
             frameBufferInfo,
-            vertexData,
+            if (simple) simpleVertexData else complexVertexData,
             program,
             drawType = AGDrawType.TRIANGLES,
             vertexCount = 6, // Draw 2 triangles
@@ -89,44 +145,18 @@ class Renderer01(device: MTLDeviceProtocol) : Renderer(device) {
             indexType = AGIndexType.USHORT,
             drawOffset = 0, // This value can be != of 0 ?
             blending = AGBlending.NORMAL, // Pure guess
-            uniforms = AGUniformValues().apply {
-                val floatBuffer = MMatrix3D()
-                    .setToOrtho(0f, width.toFloat(), 0f, height.toFloat(), -1f, +1f)
-                    .data
-                    .let { Float32Buffer(it, 0, it.size) }
-                values.add(
-                    AGUniformValue(
-                        DefaultShaders.u_ProjMat,
-                        floatBuffer.buffer,
-                        texture = null,
-                        AGTextureUnitInfo.INVALID
-                    )
-                )
-            }, // Not yet supported on shader generation
-            //AGUniformValues(
-            //  u_ProjMat=AGUniformValue[Uniform(u_ProjMat)][AGValue[Mat4]([[0.0015625, 0, 0, 0, 0, -0.0027777778, 0, 0, 0, 0, -1, 0, -1, 1, 0, 1]])],
-            //  u_ViewMat=AGUniformValue[Uniform(u_ViewMat)][AGValue[Mat4]([[1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]])],
-            //  u_Tex0=AGUniformValue[Uniform(u_Tex0)][AGValue[Sampler2D]([[-1],AGTexture(size=1,1,pre=true),AGTextureUnitInfo(wrap=CLAMP_TO_EDGE, linear=true, trilinear=true)])],
-            //  u_Tex1=AGUniformValue[Uniform(u_Tex1)][AGValue[Sampler2D]([[-1]])],
-            //  u_Tex2=AGUniformValue[Uniform(u_Tex2)][AGValue[Sampler2D]([[-1]])],
-            //  u_Tex3=AGUniformValue[Uniform(u_Tex3)][AGValue[Sampler2D]([[-1]])],
-            //  u_Radius=AGUniformValue[Uniform(u_Radius)][AGValue[Float4]([[6, 6, 6, 6]])],
-            //  u_Size=AGUniformValue[Uniform(u_Size)][AGValue[Float2]([[200, 32]])],
-            //  u_BackgroundColor=AGUniformValue[Uniform(u_BackgroundColor)][AGValue[Float4]([[1, 1, 1, 1]])],
-            //  u_HighlightPos=AGUniformValue[Uniform(u_HighlightPos)][AGValue[Float2]([[0, 0]])],
-            //  u_HighlightRadius=AGUniformValue[Uniform(u_HighlightRadius)][AGValue[Float1]([[0]])],
-            //  u_HighlightColor=AGUniformValue[Uniform(u_HighlightColor)][AGValue[Float4]([[1, 1, 1, 1]])],
-            //  u_BorderSizeHalf=AGUniformValue[Uniform(u_BorderSizeHalf)][AGValue[Float1]([[0.5]])],
-            //  u_BorderColor=AGUniformValue[Uniform(u_BorderColor)][AGValue[Float4]([[0.7411765, 0.7411765, 0.7411765, 1]])],
-            //  u_ShadowColor=AGUniformValue[Uniform(u_ShadowColor)][AGValue[Float4]([[0, 0, 0, 0.29803923]])],
-            //  u_ShadowOffset=AGUniformValue[Uniform(u_ShadowOffset)][AGValue[Float2]([[0, 0]])],
-            //  u_ShadowRadius=AGUniformValue[Uniform(u_ShadowRadius)][AGValue[Float1]([[10]])])
+            //uniformBlocks = UniformBlocksBuffersRef.EMPTY,
+            uniformBlocks = UniformBlocksBuffersRef(
+                blocks = arrayOf(uniformBlockBuffer),
+                buffers = arrayOf(uniformBuffer),
+                valueIndices = intArrayOf(0)
+            ),
             stencilRef = AGStencilReference.DEFAULT, // Pure guess
             stencilOpFunc = AGStencilOpFunc.DEFAULT, // Pure guess
             colorMask = AGColorMask.DEFAULT,// Pure guess
-            depthAndFrontFace= AGDepthAndFrontFace.DEFAULT,// Pure guess
-            scissor= AGScissor.FULL,// Pure guess
-            cullFace= AGCullFace.NONE,// Pure guess
+            depthAndFrontFace = AGDepthAndFrontFace.DEFAULT,// Pure guess
+            scissor = AGScissor.FULL,// Pure guess
+            cullFace = AGCullFace.NONE,// Pure guess
             instances = 1// Pure guess
         )
     }

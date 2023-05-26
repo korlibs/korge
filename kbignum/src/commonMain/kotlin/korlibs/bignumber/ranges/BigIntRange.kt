@@ -4,6 +4,8 @@ import korlibs.bignumber.BigInt
 import korlibs.bignumber.internal.getProgressionLastElement
 
 /**
+ * Represents an inclusive range between two [BigInt] between [start]..[endInclusive].
+ *
  * @see kotlin.ranges.IntRange
  */
 class BigIntRange(
@@ -39,6 +41,8 @@ class BigIntRange(
 }
 
 /**
+ * Represents an inclusive progression between two [BigInt] in the range [start]..[endInclusive] with a specific [step]
+ *
  * @see kotlin.ranges.IntProgression
  */
 open class BigIntProgression internal constructor(

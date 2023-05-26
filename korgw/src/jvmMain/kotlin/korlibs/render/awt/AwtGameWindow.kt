@@ -165,6 +165,12 @@ class AwtGameWindow(config: GameWindowCreationConfig) : BaseAwtGameWindow(AGOpen
         }
     }
 
+    override var alwaysOnTop: Boolean = false
+        set(value) {
+            field = value
+            frame.isAlwaysOnTop = value
+        }
+
     override var title: String
         get() = frame.title
         set(value) { frame.title = value }
