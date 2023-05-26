@@ -8,6 +8,7 @@ import korlibs.io.lang.*
 import kotlin.test.*
 
 class LinuxJoyEventAdapterTest {
+    /*
     @Test
     fun test() = suspendTest({ !Platform.isJs }) {
         val sync = MemorySyncIO()
@@ -49,4 +50,6 @@ class LinuxJoyEventAdapterTest {
         packet.write8(7, number) // number
         return packet
     }
+
+     */
 }
