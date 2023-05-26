@@ -8,8 +8,8 @@ import korlibs.io.lang.*
 import kotlin.test.*
 
 class LinuxJoyEventAdapterTest {
-    /*
     @Test
+    @Ignore // Hangs WASM target
     fun test() = suspendTest({ !Platform.isJs }) {
         val sync = MemorySyncIO()
         sync.writelink("/dev/input/by-id/usb-Xbox_Controller-joystick", "../js1")
@@ -50,6 +50,4 @@ class LinuxJoyEventAdapterTest {
         packet.write8(7, number) // number
         return packet
     }
-
-     */
 }
