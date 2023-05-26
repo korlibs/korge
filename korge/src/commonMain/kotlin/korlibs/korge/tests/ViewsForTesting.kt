@@ -335,8 +335,7 @@ open class ViewsForTesting(
         timeout: TimeSpan? = DEFAULT_SUSPEND_TEST_TIMEOUT,
         frameTime: TimeSpan = this.frameTime,
         crossinline block: suspend S.() -> Unit
-    ): Unit =
-        viewsTest(timeout, frameTime) {
+    ): AsyncEntryPointResult = viewsTest(timeout, frameTime) {
             config?.apply {
                 injector.configInjector()
             }
