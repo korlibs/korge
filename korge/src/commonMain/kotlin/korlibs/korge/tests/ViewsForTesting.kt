@@ -286,7 +286,7 @@ open class ViewsForTesting(
         //devicePixelRatio: Double = defaultDevicePixelRatio,
         forceRenderEveryFrame: Boolean = true,
         block: suspend Stage.() -> Unit
-    ): Unit = suspendTest(timeout = timeout, cond = cond) {
+    ): AsyncEntryPointResult = suspendTest(timeout = timeout, cond = cond) {
         viewsLog.init()
         this@ViewsForTesting.devicePixelRatio = devicePixelRatio
         //suspendTest(timeout = timeout, cond = { !OS.isAndroid && !OS.isJs && !OS.isNative }) {
