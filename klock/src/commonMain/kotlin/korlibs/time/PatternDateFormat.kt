@@ -102,7 +102,7 @@ data class PatternDateFormat @JvmOverloads constructor(
             "SSSSSSS" -> """(\d{7})"""
             "SSSSSSSS" -> """(\d{8})"""
             "SSSSSSSSS" -> """(\d{9})"""
-            "X", "XX", "XXX", "x", "xx", "xxx" -> """([\w:\+\-]+)"""
+            "X", "XX", "XXX", "x", "xx", "xxx", "Z" -> """([\w:\+\-]+)"""
             "a" -> """(\w+)"""
             " " -> """(\s+)"""
             else -> when {
@@ -244,24 +244,26 @@ data class PatternDateFormat @JvmOverloads constructor(
                         value.toInt()
                     }
                 }
-                "X", "XX", "XXX", "x", "xx", "xxx" -> when {
-                    name.startsWith("X") && value.first() == 'Z' -> offset = 0.hours
-                    name.startsWith("x") && value.first() == 'Z' -> {
-                        if (doThrow) throw RuntimeException("Zulu Time Zone is only accepted with X-XXX formats.") else return null
-                    }
-                    value.first() != 'Z' -> {
-                        val valueUnsigned = value.replace(":", "").removePrefix("-").removePrefix("+")
-                        val hours = when (name.length) {
-                            1 -> valueUnsigned.toInt()
-                            else -> valueUnsigned.take(2).toInt()
+                "X", "XX", "XXX", "x", "xx", "xxx" -> {
+                    when {
+                        name.startsWith("X") && value.first() == 'Z' -> offset = 0.hours
+                        name.startsWith("x") && value.first() == 'Z' -> {
+                            if (doThrow) throw RuntimeException("Zulu Time Zone is only accepted with X-XXX formats.") else return null
                         }
-                        val minutes = when (name.length) {
-                            1 -> 0
-                            else -> valueUnsigned.drop(2).toInt()
-                        }
-                        offset = hours.hours + minutes.minutes
-                        if (value.first() == '-') {
-                            offset = -offset
+                        value.first() != 'Z' -> {
+                            val valueUnsigned = value.replace(":", "").removePrefix("-").removePrefix("+")
+                            val hours = when (name.length) {
+                                1 -> valueUnsigned.toInt()
+                                else -> valueUnsigned.take(2).toInt()
+                            }
+                            val minutes = when (name.length) {
+                                1 -> 0
+                                else -> valueUnsigned.drop(2).toInt()
+                            }
+                            offset = hours.hours + minutes.minutes
+                            if (value.first() == '-') {
+                                offset = -offset
+                            }
                         }
                     }
                 }
