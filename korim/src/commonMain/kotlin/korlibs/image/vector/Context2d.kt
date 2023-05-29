@@ -318,13 +318,13 @@ open class Context2d(
 
     fun shear(sx: Double, sy: Double) = transform(1.0, sy, sx, 1.0, 0.0, 0.0)
 
-    var movePos: Point = Point()
+    override var lastMovePos: Point = Point()
     override var lastPos: Point = Point()
     override val totalPoints: Int get() = state.path.totalPoints
 
     override fun close() {
         state.path.close()
-        lastPos = movePos
+        lastPos = lastMovePos
     }
 
     private fun trans(p: Point): Point = state.transform.transform(p)
@@ -337,7 +337,7 @@ open class Context2d(
     override fun moveTo(p: Point) {
         state.path.moveTo(trans(p))
         lastPos = p
-        movePos = p
+        lastMovePos = p
     }
 
     override fun lineTo(p: Point) {

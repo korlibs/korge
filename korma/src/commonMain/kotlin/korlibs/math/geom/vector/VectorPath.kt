@@ -166,6 +166,7 @@ class VectorPath(
     }
 
     override var lastPos = Point()
+    override var lastMovePos = Point()
 
     override fun moveTo(p: Point) {
         if (commands.isNotEmpty() && commands.last() == Command.MOVE_TO) {
@@ -174,6 +175,7 @@ class VectorPath(
         commands.add(Command.MOVE_TO)
         data.add(p.xF, p.yF)
         lastPos = p
+        lastMovePos = p
         version++
     }
 
@@ -233,6 +235,7 @@ class VectorPath(
 
     override fun close() {
         commands.add(Command.CLOSE)
+        lastPos = lastMovePos
         version++
     }
 
