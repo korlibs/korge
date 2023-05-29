@@ -18,7 +18,7 @@ class JvmReferenceTest {
     fun klockParse(
         pattern: String,
         dateString: String
-    ): Long = DateFormat(pattern).parseUtc(dateString).unixMillisLong
+    ): Long = DateFormat(pattern).parseLocal(dateString).unixMillisLong
 
     @Test
     fun testJvmParse() {
@@ -33,11 +33,15 @@ class JvmReferenceTest {
     }
 
     @Test
-    fun testKlockParse() {
+    fun testKlockParseZ() {
         assertEquals(
             1676679000000L,
             klockParse("EEE MMM dd HH:mm:ss Z yyyy", "Sat Feb 18 00:10:00 +0000 2023")
         )
+    }
+
+    @Test
+    fun testKlockParseX() {
         assertEquals(
             1540124184000L,
             klockParse("EEE, dd MMM yyyy HH:mm:ss X", "Sun, 21 Oct 2018 12:16:24 +0300")
