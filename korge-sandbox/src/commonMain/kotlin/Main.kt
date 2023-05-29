@@ -1,6 +1,7 @@
 
 import korlibs.event.*
 import korlibs.image.color.*
+import korlibs.image.font.*
 import korlibs.image.format.*
 import korlibs.image.text.*
 import korlibs.image.vector.*
@@ -232,6 +233,9 @@ suspend fun main() = Korge(
     //vectorImage(SVG(UrlVfs("https://raw.githubusercontent.com/korlibs/korge-jitto/main/icons/jitto-new.svg").readString()).toShape())
     //vectorImage(SVG(resourcesVfs["jitto-new.svg"].readString()).toShape().scaled(0.1))
     //vectorImage(SVG(resourcesVfs["logos/jtransc.svg"].readString()).toShape().scaled(0.25))
+
+    //val helvetica = resourcesVfs["helvetica.otf"].readTtfFont()//.toLazyBitmapFont(16f)
+    //text("%#HELLO WORLD!", textSize = 65f, font = helvetica).xy(100, 100)
 }
 
 class Demo(val sceneBuilder: () -> Scene, val name: String = sceneBuilder()::class.portableSimpleName.removePrefix("Main")) {
