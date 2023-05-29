@@ -1,8 +1,12 @@
 
 import korlibs.event.*
 import korlibs.image.color.*
+import korlibs.image.format.*
 import korlibs.image.text.*
+import korlibs.image.vector.*
+import korlibs.image.vector.format.SVG
 import korlibs.io.async.*
+import korlibs.io.file.std.*
 import korlibs.io.lang.*
 import korlibs.korge.*
 import korlibs.korge.input.*
@@ -68,6 +72,7 @@ suspend fun main() = Korge(
     debug = false,
     forceRenderEveryFrame = false
 ) {
+    //return@Korge
     //sceneContainer().changeTo({MainSprites10k()}); return@start
     //sceneContainer().changeTo({MainGraphicsText()}); return@start
     //sceneContainer().changeTo({MainUI()}); return@start
@@ -223,6 +228,10 @@ suspend fun main() = Korge(
             Demo(::MainAseprite),
         )
     )
+
+    //vectorImage(SVG(UrlVfs("https://raw.githubusercontent.com/korlibs/korge-jitto/main/icons/jitto-new.svg").readString()).toShape())
+    //vectorImage(SVG(resourcesVfs["jitto-new.svg"].readString()).toShape().scaled(0.1))
+    //vectorImage(SVG(resourcesVfs["logos/jtransc.svg"].readString()).toShape().scaled(0.25))
 }
 
 class Demo(val sceneBuilder: () -> Scene, val name: String = sceneBuilder()::class.portableSimpleName.removePrefix("Main")) {
