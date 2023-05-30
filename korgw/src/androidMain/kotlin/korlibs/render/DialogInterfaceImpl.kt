@@ -34,41 +34,45 @@ class DialogInterfaceAndroid(val contextProvider: () -> Context) : DialogInterfa
 
     suspend fun alertConfirm(title: String, message: String, yes: String?, no: String?): Int {
         val deferred = CompletableDeferred<Int>()
-        val listener = android.content.DialogInterface.OnClickListener { dialog, which ->
-            deferred.complete(which)
+        runAndroidOnUiThread {
+            val listener = android.content.DialogInterface.OnClickListener { dialog, which ->
+                deferred.complete(which)
+            }
+            val dialog = AlertDialog.Builder(context)
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setTitle(title)
+                .setMessage(message)
+                .setCancelable(false)
+            if (yes != null) {
+                dialog.setPositiveButton(yes, listener)
+            }
+            if (no != null) {
+                dialog.setNegativeButton(no, listener)
+            }
+            dialog.show()
         }
-        val dialog = AlertDialog.Builder(context)
-            .setIcon(android.R.drawable.ic_dialog_alert)
-            .setTitle(title)
-            .setMessage(message)
-            .setCancelable(false)
-        if (yes != null) {
-            dialog.setPositiveButton(yes, listener)
-        }
-        if (no != null) {
-            dialog.setNegativeButton(no, listener)
-        }
-        dialog.show()
         return deferred.await()
     }
 
     override suspend fun prompt(message: String, default: String): String {
         val deferred = CompletableDeferred<String>()
-        val builder = AlertDialog.Builder(context)
-        builder.setTitle(message)
-        val input = EditText(context)
-        input.inputType = InputType.TYPE_CLASS_TEXT // InputType.TYPE_TEXT_VARIATION_PASSWORD
-        input.setText(default)
-        builder.setView(input)
-        builder.setCancelable(false)
-        builder.setPositiveButton("OK") { dialog, which ->
-            deferred.complete(input.text.toString())
+        runAndroidOnUiThread {
+            val builder = AlertDialog.Builder(context)
+            builder.setTitle(message)
+            val input = EditText(context)
+            input.inputType = InputType.TYPE_CLASS_TEXT // InputType.TYPE_TEXT_VARIATION_PASSWORD
+            input.setText(default)
+            builder.setView(input)
+            builder.setCancelable(false)
+            builder.setPositiveButton("OK") { dialog, which ->
+                deferred.complete(input.text.toString())
+            }
+            builder.setNegativeButton("Cancel") { dialog, which ->
+                dialog.cancel()
+                deferred.completeExceptionally(CancellationException())
+            }
+            builder.show()
         }
-        builder.setNegativeButton("Cancel") { dialog, which ->
-            dialog.cancel()
-            deferred.completeExceptionally(CancellationException())
-        }
-        builder.show()
         return deferred.await()
     }
 
