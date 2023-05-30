@@ -44,5 +44,5 @@ so you can propose a change.
 
 All the documentation is hosted at github using github pages and [jekyll](https://jekyllrb.com/):
 
-<https://github.com/korlibs/docs.korge.org>
+<https://github.com/korlibs/korge/tree/main/docs>
 
