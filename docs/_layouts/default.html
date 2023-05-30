@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<title>Korlibs: {{ page.title_prefix }} {% if page.title %}{{ page.title }}{% else %}{{ site.title }}{% endif %}</title>
+	<meta name="description" content="{% if page.excerpt %}{{ page.excerpt | strip_html | strip_newlines | truncate: 160 }}{% else %}{{ site.description }}{% endif %}">
+
+	<link rel="stylesheet" href="{{ '/css/main.css' | prepend: site.baseurl }}">
+	<link rel="stylesheet" href="{{ '/newsearch.css' | prepend: site.baseurl }}">
+
+	<link rel="icon" href="{{ "/i/icon.png" | prepend: site.baseurl }}" />
+
+	<link rel="canonical" href="{{ page.url | replace:'index.html','' | prepend: site.baseurl | prepend: site.url }}">
+	<link rel="alternate" type="application/rss+xml" title="{{ site.title }}" href="{{ '/feed.xml' | prepend: site.baseurl | prepend: site.url }}">
+
+</head>
+
+<body>
+
+{% include analytics.html %}
+
+{% capture toc %}
+{% include toc.html context="/" level=0 %}
+{% endcapture %}
+
+  <nav class="navbar navbar-default navbar-fixed-top">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <a class="navbar-brand" href="/" style="padding:10px;">
+            <!--
+          <img alt="Korlibs" src="/i/logos/korlibs.svg" width="32" height="32" style="display: inline;" />
+		      Korlibs
+		      -->
+            <img alt="Korlibs" src="/i/logos/korge.svg" width="32" height="32" style="display: inline;" />
+            Korlibs
+
+        </a>
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+      </div>
+
+      <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+        <ul class="nav navbar-nav navbar-right">
+            <li><a href="https://blog.korge.org/"><i class="fab fa-wordpress" aria-hidden="true"></i> Blog</a></li>
+            <li><a href="https://korge.org/"><i class="fa fa-gamepad" aria-hidden="true"></i> KorGE</a></li>
+            <li class="active"><a href="/"><i class="fa fa-book" aria-hidden="true"></i> Docs</a></li>
+            <li><a href="https://dokka.korge.org/"><i class="fa fa-book-open" aria-hidden="true"></i> Dokka</a></li>
+			<!--
+			<li><a href="/sponsor" style="color: #aa9258;"><i class="fa fa-star" aria-hidden="true"></i> Sponsor</a></li>
+			<li><a href="/korge_jam" style="color: #aa9258;"><i class="fa fa-trophy" aria-hidden="true"></i> 2nd Game JAM</a></li>
+			-->
+			<li><a href="https://discord.korge.org/"><i class="fab fa-discord" aria-hidden="true"></i> Discord</a></li>
+            <!--
+            <li><a href="https://slack.korge.org/"><i class="fab fa-slack" aria-hidden="true"></i> Slack</a></li>
+            -->
+			<!--
+			<li><a href="https://forum.korge.org/" target="_blank"><i class="fas fa-comments" aria-hidden="true"></i> Forum</a></li>
+			-->
+			<li><a href="https://youtube.korge.org/" target="_blank"><i class="fab fa-youtube" aria-hidden="true"></i></a></li>
+			<li><a href="https://twitter.com/KorgeGameEngine/" target="_blank"><i class="fab fa-twitter" aria-hidden="true"></i></a></li>
+            <li><a href="{{ site.project_url }}" target="_blank" rel="noopener"><i class="fab fa-github" aria-hidden="true"></i></a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div id="wrapper">
+    <div id="page-content-wrapper">
+      <aside id="page-content-search" style="margin-bottom:0.5em;">
+        <form role="search" action="/search">
+          <input type="search" class="form-control" placeholder="Search... (press 't' to focus)" id="searchq" name="q" />
+        </form>
+      </aside>
+      <article id="page-content-wrapper2">
+        <div class="container-fluid">
+          <div class="row">
+            <div class="col-lg-12" id="page-content2">
+              <div id="page-content">
+                  <div class="github_edit_page print_hide" style="float: right;position:relative;top:-0.6em;">
+                      <a href="https://github.com/korlibs/docs.korge.org/edit/master/{{ page.path }}" class="btn btn-default" target="_blank" rel="noopener">
+                          <i class="fab fa-github" aria-hidden="true" style="font-size:1.5em;"></i> Suggest Change / Typo
+                      </a>
+                  </div>
+                  <h1 class="{% if page.hide_title == true %}hide_title{% endif %}">{% if page.title_icon %}<i class="{{ page.title_icon }}" aria-hidden="true"></i> {% endif %}{{ page.title_prefix }} {{ page.title }}</h1>
+                  {% case page.status %}
+                    {% when 'todo' %}<div class="alert alert-warning" role="alert">This page has to be written</div>
+                    {% when 'outdated' %}<div class="alert alert-warning" role="alert">This page is outdated</div>
+                    {% when 'incomplete' %}<div class="alert alert-warning" role="alert">This page is incomplete</div>
+                    {% else %}
+                  {% endcase %}
+                  {{ content }}
+              </div>
+
+              {% unless hide_comments %}
+              {% if site.disqus_id %}
+              <div id="disqus_thread" class="print_hide" style="margin-top:80px;"></div>
+              <script type="text/javascript" id="disqus-script">
+                var disqus_config = function () {
+                  this.page.url = "{{ page.url | replace:'index.html','' | prepend: site.baseurl | prepend: site.url }}";
+                  this.page.identifier = "{{ page.url | replace:'index.html','' | prepend: site.baseurl | prepend: site.url }}";
+                };
+                (function() {
+                  var d = document, s = d.createElement('script');
+                  s.src = '//{{ site.disqus_id }}.disqus.com/embed.js';
+                  s.setAttribute('data-timestamp', +new Date());
+                  (d.head || d.body).appendChild(s);
+                })();
+              </script>
+              <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+              {% endif %}
+              {% endunless %}
+            </div>
+          </div>
+        </div>
+      </article>
+    </div>
+    <aside id="sidebar-wrapper" class="print_hide">
+      <div class="sidebar-nav" style="padding-top:16px;margin-bottom:1em;" >
+        {{ toc }}
+      </div>
+    </aside>
+  </div>
+
+
+<script src="{{ '/js/jquery-2.2.4.min.js' | prepend: site.baseurl }}" type="text/javascript" defer></script>
+<script src="{{ '/js/bootstrap.js' | prepend: site.baseurl }}" type="text/javascript" defer></script>
+<script src="{{ '/js/navigation.js' | prepend: site.baseurl }}" type="text/javascript" defer></script>
+<script src="{{ '/js/highlight/highlight.pack.js' | prepend: site.baseurl }}" type="text/javascript" defer onload="
+		window.addEventListener('DOMContentLoaded', () => {
+			document.querySelectorAll('pre code').forEach((block) => {
+				//console.log('pre code', block);
+				hljs.highlightBlock(block);
+			});
+		});
+	"></script>
+
+{% if page.support_diagram %}
+<script src="{{ '/js/lodash.min.js' | prepend: site.baseurl }}" type="text/javascript" defer></script>
+<script src="{{ '/js/dagre.min.js' | prepend: site.baseurl }}" type="text/javascript" defer></script>
+<script src="{{ '/js/nomnoml.js' | prepend: site.baseurl }}" type="text/javascript" defer></script>
+<script src="{{ '/js/replacer.js' | prepend: site.baseurl }}" type="text/javascript" defer></script>
+{% endif %}
+
+<!--
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/docsearch.js@2/dist/cdn/docsearch.min.js" defer onload="
+	window.addEventListener('DOMContentLoaded', () => {
+		// https://docsearch.algolia.com/docs/behavior/
+		window.algoliaSearch = docsearch({
+			apiKey: 'cab25d9fd75655af06ab7fda91cc79e6',
+			indexName: 'korlibs',
+			inputSelector: '#searchq',
+			debug: false,
+			algoliaOptions: {
+				hitsPerPage: 7,
+			},
+		});
+	});
+"></script>
+-->
+
+<script type="text/javascript" src="/newsearch.js" defer onload="
+	window.addEventListener('DOMContentLoaded', () => {
+		newSearchHook('#searchq', '/all.html?{{ site.time | date: '%s' }}')
+	});
+"></script>
+
+<script type="text/javascript">
+	window.addEventListener('DOMContentLoaded', () => {
+		document.addEventListener('keyup', (e) => {
+			const isInput = document.activeElement.tagName.toUpperCase() === 'INPUT';
+			if (e.key === 'Escape' && isInput) {
+				document.activeElement.blur();
+			}
+			if (e.key === 't' && !isInput) {
+				document.querySelector('#searchq').focus();
+				document.querySelector('#searchq').select();
+			}
+		});
+		document.querySelector('#searchq').addEventListener('focus', () => {
+			document.querySelector('#searchq').placeholder = 'Search... (type, then use \'↑\', \'↓\' and \'⏎\' to select results)';
+		});
+		document.querySelector('#searchq').addEventListener('blur', () => {
+			document.querySelector('#searchq').placeholder = 'Search... (press \'t\' to focus)';
+		});
+	})
+</script>
+
+</body>
+
+</html>

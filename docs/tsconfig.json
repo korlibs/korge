@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+	"module": "commonjs",
+	"noImplicitAny": true,
+	"removeComments": true,
+	"preserveConstEnums": true,
+	"lib": ["ES2020", "DOM"],
+	"target": "ES2020",
+	"strict": true,
+	"sourceMap": false
+  },
+  "files": [
+	"newsearch.ts"
+  ]
+}

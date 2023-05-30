@@ -1,0 +1,17 @@
+---
+layout: null
+noindex: true
+---
+
+{%- assign entries_unfiltered = site.pages | sort: "priority", "last" -%}
+{%- assign entries = entries_unfiltered | where_exp:"item","item.noindex != true" -%}
+{% for entry in entries %}
+!!!$PAGE$!!!{{ entry.url }}
+<html>
+<head><title>{{ entry.title_prefix }} {{ entry.title }}</title></head>
+<body>
+<h1>{{ entry.title_prefix }} {{ entry.title }}</h1>
+{{ entry.content | markdownify }}
+</body>
+</html>
+{% endfor %}

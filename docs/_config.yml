@@ -1,0 +1,28 @@
+title: Korlibs
+email: soywiz@gmail.com
+description: Modern Kotlin Common Libraries for Full Stack development
+analytics_id: G-KV32JER3MJ
+exclude:
+  - ".gradle"
+  - ".idea"
+  - ".sass-cache"
+  - ".vscode"
+  - "@old"
+baseurl: ""
+url: "https://korlibs.soywiz.com"
+doc_base_url: https://github.com/korlibs/korlibs.github.io
+blog_url: ""
+project_url: https://github.com/korlibs
+google_search_id: 001447907640164080602:ej0h0w0ufr0
+github_username:  korlibs
+# DISQUS is super intrusive lately
+#disqus_id: "korlibs-documentation"
+markdown: kramdown
+kramdown:
+  syntax_highlighter_opts:
+    disable : true
+sass:
+  sass_dir: css
+plugins:
+  #- jekyll-redirect-from
+  #- hook-add-last-modified-date
