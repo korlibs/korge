@@ -1,0 +1,21 @@
+---
+layout: null
+permalink: /sitemap.xml
+exclude: 'yes'
+---
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    {% assign rpages = ""|split:"," %}
+    {% assign rpages = rpages | concat: site.posts %}
+    {% assign rpages = rpages | concat: site.pages %}
+    {% for page in rpages %}
+    {% if page.layout != nil and page.layout != 'feed' %}
+    <url>
+        <loc>{{ site.url }}{{ page.url | remove: 'index.html' | xml_escape }}</loc>
+        {% assign last_mod = page.date | date_to_xmlschema %}
+        {% if last_mod %}<lastmod>{{ last_mod }}</lastmod>{% endif %}
+        <priority>{{ page.page_priority | default: "0.75" }}</priority>
+    </url>
+    {% endif %}
+    {% endfor %}
+</urlset>
