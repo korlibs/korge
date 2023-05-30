@@ -19,11 +19,29 @@ permissions:
 # However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
 concurrency:
   group: "pages"
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      docs: ${{ steps.filter.outputs.docs == 'true' }}
+    steps:
+      - uses: actions/checkout@v3
+        if: ${{ github.event_name != 'pull_request' }}
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          base: ${{ github.ref }}
+          filters: |
+            docs:
+              - '.github/workflows/PAGES.yml'
+              - 'docs/**'
+
   # Build job
   build:
+    needs: changes
+    if: ${{ needs.changes.outputs.docs == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
