@@ -15,7 +15,7 @@ fun Project.configureIdea() {
             module.excludeDirs = module.excludeDirs.also {
                 it.addAll(
                     listOf(
-                        ".gradle", ".idea", "gradle/wrapper", ".idea", "build", "@old", "_template",
+                        ".gradle", ".idea", "gradle/wrapper", ".idea", "build", "@old", "_template", "docs",
                         "kotlin-js-store",
                         "korge-gradle-plugin/build/srcgen2"
                     )
