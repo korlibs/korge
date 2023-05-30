@@ -132,3 +132,47 @@ rle.fastForEach { n, start, count, value ->
 // 1, start=1, count=3, value=B
 // 2, start=4, count=5, value=c
 ```
+
+## Historiogram
+
+Supports generating historiograms for `Int` values in the form of a pair of: value to frequency.
+
+### Generating a Historiogram from a slice of an `IntArray`
+
+If we have an IntArray, we can generate the historiogram with a one-liner, like this:
+
+```kotlin
+val frequencies = Historiogram.values(intArrayOf(1, 1, 5, 1, 9, 5))
+
+frequencies == intIntMapOf(
+    (1 to 3), 
+    (5 to 2), 
+    (9 to 1)
+)            
+```
+
+### Generating and updating a Historiogram
+
+In the case we can to keep track and iteratively update the mutable Historiogram, we can do the following:
+
+```kotlin
+val historiogram = Historiogram()
+
+historiogram.add(1)
+historiogram.add(2)
+historiogram.add(1)
+historiogram.addArray(intArrayOf(1, 4, 5))
+historiogram.addArray(intArrayOf(1, 4, 5), start = 1, end = 2)
+```
+
+Then we can get the historiogram as an `IntIntMap` with:
+
+```kotlin
+val frequencies = historiogram.getMapCopy()
+```
+
+We can also clone the historiogram at some point with:
+
+```kotlin
+val newHistoriogram = historiogram.clone()
+```
