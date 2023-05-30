@@ -6,6 +6,7 @@ import android.os.*
 import android.util.*
 import android.view.*
 import android.view.KeyEvent
+import android.widget.RelativeLayout
 import korlibs.event.*
 import korlibs.graphics.gl.*
 import korlibs.kgl.*
@@ -20,6 +21,7 @@ abstract class KorgwActivity(
 {
     var gameWindow: AndroidGameWindow = AndroidGameWindow(this, config)
     var mGLView: KorgwSurfaceView? = null
+    var layout: RelativeLayout? = null
     lateinit var ag: AGOpengl
     open val agCheck: Boolean get() = false
     //open val agCheck: Boolean get() = true
@@ -66,7 +68,16 @@ abstract class KorgwActivity(
 
         gameWindow.initializeAndroid()
 
-        setContentView(mGLView)
+        layout = RelativeLayout(this).also { layout ->
+            layout.addView(
+                mGLView,
+                RelativeLayout.LayoutParams(
+                    RelativeLayout.LayoutParams.WRAP_CONTENT,
+                    RelativeLayout.LayoutParams.WRAP_CONTENT
+                )
+            )
+        }
+        setContentView(layout)
 
         mGLView!!.onDraw.once {
             suspend {
