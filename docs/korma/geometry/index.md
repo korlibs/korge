@@ -167,14 +167,52 @@ assertEquals(
 )
 ```
 
-## Ray, Ray3D
+## Ray
+
+The `Ray` class represents an infinite Line starting in a specific `point` and in a `direction`.
+
+### Constructing `Ray`
+
+You can construct a Ray instance with:
 
 ```kotlin
-class Ray {
-	val point: Point
-	val direction: Vector2D
-}
+val ray: Ray = Ray.fromTwoPoints(Point(1, 1), Point(3, 1)) // A ray starting at 1,1 and going to the right
+val ray: Ray = Ray(point = Point(1, 1), direction = Vector2(1, 0)) // A ray starting at 1,1 and going to the right
+val ray: Ray = Ray(point = Point(1, 1), angle = 0.degrees) // A ray starting at 1,1 and going to the right
+```
 
+The angle represents: `0 degrees` is right, `90 degrees` down, `180 degrees` left, `270 degrees` up.
+
+### Getting the starting point and the direction
+
+You have `point` for the starting point, and `direction` (that is normalized) and `angle` representing the direction of the Ray.
+
+```kotlin
+val startPoint: Point = ray.point
+val normalizedDirection: Vector2 = ray.direction // direction.length will be ~1
+val angle: Angle = ray.angle // the angle: 0.degrees, right, 90.degrees down
+```
+
+### Transforming and converting the Ray
+
+You can apply an affine transformation to a `Ray` instance, and also we can convert it into a `Line` instance providing a length:
+
+```kotlin
+val newRay: Ray = ray.transformed(matrix) // Creates a new ray transformed
+val line: Line = ray.toLine(10f) // Creates a new line going from the start point of the ray to its direction with a length of 10f
+```
+
+### Checking for equality
+
+Since Ray uses floating point, it provides a way to check for equality using an epsilon value as tolerance:
+
+```koltin
+val isEquals: Boolean = ray1.isAlmostEquals(ray2, epsilon = 0.00001f)
+```
+
+## Ray3D
+
+```kotlin
 class Ray3D {
 	val pos: Vector3D
 	val dir: Vector3D
