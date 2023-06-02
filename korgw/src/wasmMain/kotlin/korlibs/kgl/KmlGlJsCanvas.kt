@@ -47,7 +47,7 @@ abstract external class HTMLCanvasElementJS : JsAny {
     fun getContext(contextId: kotlin.String, vararg arguments: kotlin.js.JsAny?): RenderingContextJs?
 }
 
-class KmlGlJsCanvas(val canvas: HTMLCanvasElement, val glOpts: JsAny) : KmlGlWithExtensions() {
+class KmlGlJsCanvas(val canvas: HTMLCanvasElement, val glOpts: JsAny) : KmlGl() {
     var webglVersion = 1
     val gl: WebGLRenderingContextBase2 = (null
             ?: canvas.unsafeCast<HTMLCanvasElementJS>().getContext("webgl2", glOpts)?.also { webglVersion = 2 }

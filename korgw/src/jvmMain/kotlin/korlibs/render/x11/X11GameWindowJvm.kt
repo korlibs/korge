@@ -1,9 +1,6 @@
 package korlibs.render.x11
 
-import korlibs.kgl.KmlGl
 import korlibs.kgl.checkedIf
-import korlibs.time.PerformanceCounter
-import korlibs.time.TimeSpan
 import korlibs.memory.dyn.*
 import korlibs.memory.toInt
 import korlibs.memory.write32LE
@@ -15,7 +12,6 @@ import korlibs.render.DialogInterface
 import korlibs.render.EventLoopGameWindow
 import korlibs.render.ZenityDialogs
 import korlibs.image.bitmap.Bitmap
-import korlibs.image.color.RGBA
 import com.sun.jna.*
 import com.sun.jna.platform.unix.X11.*
 

@@ -13,7 +13,7 @@ import korlibs.memory.*
 import korlibs.memory.Buffer
 import java.nio.*
 
-class KmlGlAndroid(val clientVersion: () -> Int) : KmlGlWithExtensions() {
+class KmlGlAndroid(val clientVersion: () -> Int) : KmlGl() {
     override val variant: GLVariant get() = GLVariant.ANDROID
 
     override fun activeTexture(texture: Int): Unit = glActiveTexture(texture)

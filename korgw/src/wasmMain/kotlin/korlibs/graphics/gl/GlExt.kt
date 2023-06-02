@@ -31,8 +31,8 @@ fun AGDefaultCanvas(): HTMLCanvasElement {
         ?: (document.createElement("canvas") as HTMLCanvasElement)
 }
 
-fun AGWebgl(config: AGConfig, canvas: HTMLCanvasElement = AGDefaultCanvas()): AGOpengl = AGOpengl(
-    KmlGlJsCanvas(
+fun AGWebgl(config: AGConfig, canvas: HTMLCanvasElement = AGDefaultCanvas()): AGOpengl {
+    val kmlGl: KmlGl = KmlGlJsCanvas(
         canvas, jsObject(
             "premultipliedAlpha" to false, // To be like the other targets
             "alpha" to false,
@@ -40,21 +40,22 @@ fun AGWebgl(config: AGConfig, canvas: HTMLCanvasElement = AGDefaultCanvas()): AG
             "antialias" to config.antialiasHint
         )
     )
-).also { ag ->
-    window.setAny("ag".toJsString(), ag.toJsReference())
+    return AGOpengl(kmlGl).also { ag ->
+        //window.setAny("ag".toJsString(), ag.toJsReference())
 
-    // https://www.khronos.org/webgl/wiki/HandlingContextLost
-    // https://gist.github.com/mattdesl/9995467
+        // https://www.khronos.org/webgl/wiki/HandlingContextLost
+        // https://gist.github.com/mattdesl/9995467
 
-    canvas.addEventListener("webglcontextlost", { e ->
-        //contextVersion++
-        e.preventDefault()
-        null
-    }, false.toJsBoolean())
+        canvas.addEventListener("webglcontextlost", { e ->
+            //contextVersion++
+            e.preventDefault()
+            null
+        }, false.toJsBoolean())
 
-    canvas.addEventListener("webglcontextrestored", { e ->
-        ag.contextLost()
-        //e.preventDefault()
-        null
-    }, false.toJsBoolean())
+        canvas.addEventListener("webglcontextrestored", { e ->
+            ag.contextLost()
+            //e.preventDefault()
+            null
+        }, false.toJsBoolean())
+    }
 }

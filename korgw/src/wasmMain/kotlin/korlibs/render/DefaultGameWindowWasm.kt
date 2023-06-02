@@ -414,8 +414,8 @@ open class BrowserCanvasJsGameWindow(
 
     init {
         window.unsafeCast<WindowEx>().canvas = canvas
-        window.unsafeCast<WindowEx>().ag = ag.toJsReference()
-        window.unsafeCast<WindowEx>().gl = ag.gl.toJsReference()
+        //window.unsafeCast<WindowEx>().ag = ag.toJsReference()
+        //window.unsafeCast<WindowEx>().gl = ag.gl.toJsReference()
         if (isCanvasCreatedAndHandled) {
             document.body?.appendChild(canvas)
             document.body?.style?.margin = "0px"
