@@ -14,6 +14,8 @@ priority: 2
 
 - [Tobse's HitKlack Remake](https://blog.korge.org/showcase-tobses-hitklack-remake/) ([play it NOW](https://tobsef.github.io/HitKlack/webstart/index.html)) ([code](https://github.com/TobseF/HitKlack))
 
+- [KorGE Chess](https://www.youtube.com/watch?v=mSK7ruZbam0&list=PLzb5P1l-LxelGV8bWyT7tnLsF96MQxqCM&index=4) ([code](https://github.com/korge-showcases/korge-chess))
+
 ## YouTube tutorials
 
 ### Korge main channel
