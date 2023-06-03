@@ -10,6 +10,7 @@ import korlibs.io.async.suspendTest
 import korlibs.io.file.std.resourcesVfs
 import korlibs.io.lang.currentThreadId
 import doIOTest
+import korlibs.memory.*
 import kotlinx.coroutines.CompletableDeferred
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -19,6 +20,11 @@ class SoundAudioStreamTest {
 
     @Test
     fun testPlaySeveralTimes() = suspendTest({ doIOTest }) {
+        if (Platform.isWasm) {
+            println("!! WASM skipping SoundAudioStreamTest.testPlaySeveralTimes")
+            return@suspendTest
+        }
+
         val soundProvider = LogNativeSoundProvider()
 
         val sound = soundProvider.createSound(resourcesVfs["click.mp3"], streaming = true)

@@ -7,12 +7,191 @@ package korlibs.kgl
 import korlibs.datastructure.*
 import korlibs.graphics.*
 import korlibs.graphics.shader.gl.*
+import korlibs.image.bitmap.*
+import korlibs.io.lang.*
+import korlibs.memory.*
 
-abstract class KmlGl : Extra by Extra.Mixin(), IKmlGl, AGFeatures {
+open class KmlGl : Extra by Extra.Mixin(), AGFeatures {
     @Deprecated("Replace with variant")
     open val gles: Boolean get() = false
 
-    abstract val variant: GLVariant
+    open fun activeTexture(texture: Int): Unit = TODO()
+    open fun attachShader(program: Int, shader: Int): Unit = TODO()
+    open fun bindAttribLocation(program: Int, index: Int, name: String): Unit = TODO()
+    open fun bindBuffer(target: Int, buffer: Int): Unit = TODO()
+    open fun bindFramebuffer(target: Int, framebuffer: Int): Unit = TODO()
+    open fun bindRenderbuffer(target: Int, renderbuffer: Int): Unit = TODO()
+    open fun bindTexture(target: Int, texture: Int): Unit = TODO()
+    open fun blendColor(red: Float, green: Float, blue: Float, alpha: Float): Unit = TODO()
+    open fun blendEquation(mode: Int): Unit = TODO()
+    open fun blendEquationSeparate(modeRGB: Int, modeAlpha: Int): Unit = TODO()
+    open fun blendFunc(sfactor: Int, dfactor: Int): Unit = TODO()
+    open fun blendFuncSeparate(sfactorRGB: Int, dfactorRGB: Int, sfactorAlpha: Int, dfactorAlpha: Int): Unit = TODO()
+    open fun bufferData(target: Int, size: Int, data: Buffer, usage: Int): Unit = TODO()
+    open fun bufferSubData(target: Int, offset: Int, size: Int, data: Buffer): Unit = TODO()
+    open fun checkFramebufferStatus(target: Int): Int = TODO()
+    open fun clear(mask: Int): Unit = TODO()
+    open fun clearColor(red: Float, green: Float, blue: Float, alpha: Float): Unit = TODO()
+    open fun clearDepthf(d: Float): Unit = TODO()
+    open fun clearStencil(s: Int): Unit = TODO()
+    open fun colorMask(red: Boolean, green: Boolean, blue: Boolean, alpha: Boolean): Unit = TODO()
+    open fun compileShader(shader: Int): Unit = TODO()
+    open fun compressedTexImage2D(target: Int, level: Int, internalformat: Int, width: Int, height: Int, border: Int, imageSize: Int, data: Buffer): Unit = TODO()
+    open fun compressedTexSubImage2D(target: Int, level: Int, xoffset: Int, yoffset: Int, width: Int, height: Int, format: Int, imageSize: Int, data: Buffer): Unit = TODO()
+    open fun copyTexImage2D(target: Int, level: Int, internalformat: Int, x: Int, y: Int, width: Int, height: Int, border: Int): Unit = TODO()
+    open fun copyTexSubImage2D(target: Int, level: Int, xoffset: Int, yoffset: Int, x: Int, y: Int, width: Int, height: Int): Unit = TODO()
+    open fun createProgram(): Int = TODO()
+    open fun createShader(type: Int): Int = TODO()
+    open fun cullFace(mode: Int): Unit = TODO()
+    open fun deleteBuffers(n: Int, items: Buffer): Unit = TODO()
+    open fun deleteFramebuffers(n: Int, items: Buffer): Unit = TODO()
+    open fun deleteProgram(program: Int): Unit = TODO()
+    open fun deleteRenderbuffers(n: Int, items: Buffer): Unit = TODO()
+    open fun deleteShader(shader: Int): Unit = TODO()
+    open fun deleteTextures(n: Int, items: Buffer): Unit = TODO()
+    open fun depthFunc(func: Int): Unit = TODO()
+    open fun depthMask(flag: Boolean): Unit = TODO()
+    open fun depthRangef(n: Float, f: Float): Unit = TODO()
+    open fun detachShader(program: Int, shader: Int): Unit = TODO()
+    open fun disable(cap: Int): Unit = TODO()
+    open fun disableVertexAttribArray(index: Int): Unit = TODO()
+    open fun drawArrays(mode: Int, first: Int, count: Int): Unit = TODO()
+    open fun drawElements(mode: Int, count: Int, type: Int, indices: Int): Unit = TODO()
+    open fun enable(cap: Int): Unit = TODO()
+    open fun enableVertexAttribArray(index: Int): Unit = TODO()
+    open fun finish(): Unit = TODO()
+    open fun flush(): Unit = TODO()
+    open fun framebufferRenderbuffer(target: Int, attachment: Int, renderbuffertarget: Int, renderbuffer: Int): Unit = TODO()
+    open fun framebufferTexture2D(target: Int, attachment: Int, textarget: Int, texture: Int, level: Int): Unit = TODO()
+    open fun frontFace(mode: Int): Unit = TODO()
+    open fun genBuffers(n: Int, buffers: Buffer): Unit = TODO()
+    open fun generateMipmap(target: Int): Unit = TODO()
+    open fun genFramebuffers(n: Int, framebuffers: Buffer): Unit = TODO()
+    open fun genRenderbuffers(n: Int, renderbuffers: Buffer): Unit = TODO()
+    open fun genTextures(n: Int, textures: Buffer): Unit = TODO()
+    open fun getActiveAttrib(program: Int, index: Int, bufSize: Int, length: Buffer, size: Buffer, type: Buffer, name: Buffer): Unit = TODO()
+    open fun getActiveUniform(program: Int, index: Int, bufSize: Int, length: Buffer, size: Buffer, type: Buffer, name: Buffer): Unit = TODO()
+    open fun getAttachedShaders(program: Int, maxCount: Int, count: Buffer, shaders: Buffer): Unit = TODO()
+    open fun getAttribLocation(program: Int, name: String): Int = TODO()
+    open fun getUniformLocation(program: Int, name: String): Int = TODO()
+    open fun getBooleanv(pname: Int, data: Buffer): Unit = TODO()
+    open fun getBufferParameteriv(target: Int, pname: Int, params: Buffer): Unit = TODO()
+    open fun getError(): Int = TODO()
+    open fun getFloatv(pname: Int, data: Buffer): Unit = TODO()
+    open fun getFramebufferAttachmentParameteriv(target: Int, attachment: Int, pname: Int, params: Buffer): Unit = TODO()
+    open fun getIntegerv(pname: Int, data: Buffer): Unit = TODO()
+    open fun getProgramInfoLog(program: Int, bufSize: Int, length: Buffer, infoLog: Buffer): Unit = TODO()
+    open fun getRenderbufferParameteriv(target: Int, pname: Int, params: Buffer): Unit = TODO()
+    open fun getProgramiv(program: Int, pname: Int, params: Buffer): Unit = TODO()
+    open fun getShaderiv(shader: Int, pname: Int, params: Buffer): Unit = TODO()
+    open fun getShaderInfoLog(shader: Int, bufSize: Int, length: Buffer, infoLog: Buffer): Unit = TODO()
+    open fun getShaderPrecisionFormat(shadertype: Int, precisiontype: Int, range: Buffer, precision: Buffer): Unit = TODO()
+    open fun getShaderSource(shader: Int, bufSize: Int, length: Buffer, source: Buffer): Unit = TODO()
+    open fun getString(name: Int): String = TODO()
+    open fun getTexParameterfv(target: Int, pname: Int, params: Buffer): Unit = TODO()
+    open fun getTexParameteriv(target: Int, pname: Int, params: Buffer): Unit = TODO()
+    open fun getUniformfv(program: Int, location: Int, params: Buffer): Unit = TODO()
+    open fun getUniformiv(program: Int, location: Int, params: Buffer): Unit = TODO()
+    open fun getVertexAttribfv(index: Int, pname: Int, params: Buffer): Unit = TODO()
+    open fun getVertexAttribiv(index: Int, pname: Int, params: Buffer): Unit = TODO()
+    open fun getVertexAttribPointerv(index: Int, pname: Int, pointer: Buffer): Unit = TODO()
+    open fun hint(target: Int, mode: Int): Unit = TODO()
+    open fun isBuffer(buffer: Int): Boolean = TODO()
+    open fun isEnabled(cap: Int): Boolean = TODO()
+    open fun isFramebuffer(framebuffer: Int): Boolean = TODO()
+    open fun isProgram(program: Int): Boolean = TODO()
+    open fun isRenderbuffer(renderbuffer: Int): Boolean = TODO()
+    open fun isShader(shader: Int): Boolean = TODO()
+    open fun isTexture(texture: Int): Boolean = TODO()
+    open fun lineWidth(width: Float): Unit = TODO()
+    open fun linkProgram(program: Int): Unit = TODO()
+    open fun pixelStorei(pname: Int, param: Int): Unit = TODO()
+    open fun polygonOffset(factor: Float, units: Float): Unit = TODO()
+    open fun readPixels(x: Int, y: Int, width: Int, height: Int, format: Int, type: Int, pixels: Buffer): Unit = TODO()
+    open fun releaseShaderCompiler(): Unit = TODO()
+    open fun renderbufferStorage(target: Int, internalformat: Int, width: Int, height: Int): Unit = TODO()
+    open fun sampleCoverage(value: Float, invert: Boolean): Unit = TODO()
+    open fun scissor(x: Int, y: Int, width: Int, height: Int): Unit = TODO()
+    open fun shaderBinary(count: Int, shaders: Buffer, binaryformat: Int, binary: Buffer, length: Int): Unit = TODO()
+    open fun shaderSource(shader: Int, string: String): Unit = TODO()
+    open fun stencilFunc(func: Int, ref: Int, mask: Int): Unit = TODO()
+    open fun stencilFuncSeparate(face: Int, func: Int, ref: Int, mask: Int): Unit = TODO()
+    open fun stencilMask(mask: Int): Unit = TODO()
+    open fun stencilMaskSeparate(face: Int, mask: Int): Unit = TODO()
+    open fun stencilOp(fail: Int, zfail: Int, zpass: Int): Unit = TODO()
+    open fun stencilOpSeparate(face: Int, sfail: Int, dpfail: Int, dppass: Int): Unit = TODO()
+    open fun texImage2D(target: Int, level: Int, internalformat: Int, width: Int, height: Int, border: Int, format: Int, type: Int, pixels: Buffer?): Unit = TODO()
+    open fun texImage2D(target: Int, level: Int, internalformat: Int, format: Int, type: Int, data: NativeImage): Unit = TODO()
+    open fun texParameterf(target: Int, pname: Int, param: Float): Unit = TODO()
+    open fun texParameterfv(target: Int, pname: Int, params: Buffer): Unit = TODO()
+    open fun texParameteri(target: Int, pname: Int, param: Int): Unit = TODO()
+    open fun texParameteriv(target: Int, pname: Int, params: Buffer): Unit = TODO()
+    open fun texSubImage2D(target: Int, level: Int, xoffset: Int, yoffset: Int, width: Int, height: Int, format: Int, type: Int, pixels: Buffer): Unit = TODO()
+    open fun uniform1f(location: Int, v0: Float): Unit = TODO()
+    open fun uniform1fv(location: Int, count: Int, value: Buffer): Unit = TODO()
+    open fun uniform1i(location: Int, v0: Int): Unit = TODO()
+    open fun uniform1iv(location: Int, count: Int, value: Buffer): Unit = TODO()
+    open fun uniform2f(location: Int, v0: Float, v1: Float): Unit = TODO()
+    open fun uniform2fv(location: Int, count: Int, value: Buffer): Unit = TODO()
+    open fun uniform2i(location: Int, v0: Int, v1: Int): Unit = TODO()
+    open fun uniform2iv(location: Int, count: Int, value: Buffer): Unit = TODO()
+    open fun uniform3f(location: Int, v0: Float, v1: Float, v2: Float): Unit = TODO()
+    open fun uniform3fv(location: Int, count: Int, value: Buffer): Unit = TODO()
+    open fun uniform3i(location: Int, v0: Int, v1: Int, v2: Int): Unit = TODO()
+    open fun uniform3iv(location: Int, count: Int, value: Buffer): Unit = TODO()
+    open fun uniform4f(location: Int, v0: Float, v1: Float, v2: Float, v3: Float): Unit = TODO()
+    open fun uniform4fv(location: Int, count: Int, value: Buffer): Unit = TODO()
+    open fun uniform4i(location: Int, v0: Int, v1: Int, v2: Int, v3: Int): Unit = TODO()
+    open fun uniform4iv(location: Int, count: Int, value: Buffer): Unit = TODO()
+    open fun uniformMatrix2fv(location: Int, count: Int, transpose: Boolean, value: Buffer): Unit = TODO()
+    open fun uniformMatrix3fv(location: Int, count: Int, transpose: Boolean, value: Buffer): Unit = TODO()
+    open fun uniformMatrix4fv(location: Int, count: Int, transpose: Boolean, value: Buffer): Unit = TODO()
+    open fun useProgram(program: Int): Unit = TODO()
+    open fun validateProgram(program: Int): Unit = TODO()
+    open fun vertexAttrib1f(index: Int, x: Float): Unit = TODO()
+    open fun vertexAttrib1fv(index: Int, v: Buffer): Unit = TODO()
+    open fun vertexAttrib2f(index: Int, x: Float, y: Float): Unit = TODO()
+    open fun vertexAttrib2fv(index: Int, v: Buffer): Unit = TODO()
+    open fun vertexAttrib3f(index: Int, x: Float, y: Float, z: Float): Unit = TODO()
+    open fun vertexAttrib3fv(index: Int, v: Buffer): Unit = TODO()
+    open fun vertexAttrib4f(index: Int, x: Float, y: Float, z: Float, w: Float): Unit = TODO()
+    open fun vertexAttrib4fv(index: Int, v: Buffer): Unit = TODO()
+    open fun vertexAttribPointer(index: Int, size: Int, type: Int, normalized: Boolean, stride: Int, pointer: Long): Unit = TODO()
+    open fun viewport(x: Int, y: Int, width: Int, height: Int): Unit = TODO()
+    fun enableDisable(cap: Int, enable: Boolean): Boolean {
+        if (enable) enable(cap) else disable(cap)
+        return enable
+    }
+    inline fun enableDisable(cap: Int, enable: Boolean, block: () -> Unit) {
+        if (enableDisable(cap, enable)) block()
+    }
+    fun enableDisableVertexAttribArray(index: Int, enable: Boolean) {
+        if (enable) enableVertexAttribArray(index) else disableVertexAttribArray(index)
+    }
+    // https://www.khronos.org/registry/webgl/extensions/ANGLE_instanced_arrays/
+    open fun drawArraysInstanced(mode: Int, first: Int, count: Int, instancecount: Int): Unit = unsupported("Not supported instanced drawing")
+    open fun drawElementsInstanced(mode: Int, count: Int, type: Int, indices: Int, instancecount: Int): Unit = unsupported("Not supported instanced drawing")
+    open fun vertexAttribDivisor(index: Int, divisor: Int): Unit = unsupported()
+    open fun renderbufferStorageMultisample(target: Int, samples: Int, internalformat: Int, width: Int, height: Int): Unit = unsupported("Not supported MSAA")
+    open fun texImage2DMultisample(target: Int, samples: Int, internalformat: Int, width: Int, height: Int, fixedsamplelocations: Boolean): Unit = unsupported("Not supported MSAA")
+
+    // UBO
+    // https://registry.khronos.org/OpenGL-Refpages/es3.0/html/glBindBufferRange.xhtml
+    // https://registry.khronos.org/OpenGL-Refpages/es3.0/html/glGetUniformBlockIndex.xhtml
+    // https://registry.khronos.org/OpenGL-Refpages/es3.0/html/glUniformBlockBinding.xhtml
+    open fun bindBufferRange(target: Int, index: Int, buffer: Int, offset: Int, size: Int): Unit = unsupported("Not supported uniform buffers ${this::class}")
+    open fun getUniformBlockIndex(program: Int, name: String): Int = unsupported("Not supported uniform buffers ${this::class}")
+    open fun uniformBlockBinding(program: Int, uniformBlockIndex: Int, uniformBlockBinding: Int): Unit = unsupported("Not supported uniform buffers ${this::class}")
+
+    // VAO
+    // https://registry.khronos.org/OpenGL-Refpages/gl4/html/glGenVertexArrays.xhtml
+    // https://registry.khronos.org/OpenGL-Refpages/gl4/html/glDeleteVertexArrays.xhtml
+    // https://registry.khronos.org/OpenGL-Refpages/gl4/html/glBindVertexArray.xhtml
+    open fun genVertexArrays(n: Int, arrays: Buffer): Unit = unsupported("Not supported vertex arrays ${this::class}")
+    open fun deleteVertexArrays(n: Int, arrays: Buffer): Unit = unsupported("Not supported vertex arrays ${this::class}")
+    open fun bindVertexArray(array: Int): Unit = unsupported("Not supported vertex arrays ${this::class}")
+
+    open val variant: GLVariant get() = GLVariant.DESKTOP_GENERIC
 
     open val root: KmlGl get() = this
     open var info: ContextInfo = ContextInfo()
@@ -332,6 +511,8 @@ abstract class KmlGl : Extra by Extra.Mixin(), IKmlGl, AGFeatures {
     inline val TEXTURE_2D_MULTISAMPLE: Int get() = KmlGl.TEXTURE_2D_MULTISAMPLE
 
     companion object {
+        const val GL_NUM_EXTENSIONS = 0x821D
+
         fun errorString(error: Int): String {
             return when (error) {
                 NO_ERROR -> "NO_ERROR"
@@ -680,15 +861,10 @@ abstract class KmlGl : Extra by Extra.Mixin(), IKmlGl, AGFeatures {
 
     open fun init() = Unit
     open fun handleContextLost() = Unit
-    override fun startFrame(): Unit = Unit
-    override fun endFrame(): Unit = Unit
+    open fun startFrame(): Unit = Unit
+    open fun endFrame(): Unit = Unit
     open fun beforeDoRender(contextVersion: Int): Unit = Unit
 
-    // https://www.khronos.org/registry/OpenGL/extensions/OES/OES_texture_float.txt
-    override val isFloatTextureSupported: Boolean get() = false
-}
-
-abstract class KmlGlWithExtensions : KmlGl() {
     open fun getStringi(name: Int, index: Int): String? = TODO()
 
     private var _extensions: Set<String>? = null
@@ -709,13 +885,12 @@ abstract class KmlGlWithExtensions : KmlGl() {
 
     override val graphicExtensions: Set<String> get() = extensions
 
+    //// https://www.khronos.org/registry/OpenGL/extensions/OES/OES_texture_float.txt
+    //override val isFloatTextureSupported: Boolean get() = false
+
     // https://www.khronos.org/registry/OpenGL/extensions/OES/OES_texture_float.txt
     override val isFloatTextureSupported: Boolean by lazy {
         //println("extensions: $extensions")
         "GL_OES_texture_float" in extensions || "GL_ARB_texture_float" in extensions
-    }
-
-    companion object {
-        const val GL_NUM_EXTENSIONS = 0x821D
     }
 }

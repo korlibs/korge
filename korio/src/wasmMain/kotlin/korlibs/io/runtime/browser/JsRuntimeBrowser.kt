@@ -29,6 +29,9 @@ external class JsNavigator {
 
 private external val navigator: JsNavigator // browser
 
+@JsFun("() => { return 'arraybuffer'; }")
+external private fun TYPE_ARRAYBUFFER(): XMLHttpRequestResponseType
+
 object JsRuntimeBrowser : JsRuntime() {
     val jsNavigator get() = navigator
 
@@ -60,10 +63,10 @@ object JsRuntimeBrowser : JsRuntime() {
         override suspend fun remove(key: String) = kotlinx.browser.localStorage.removeItem(key)
     }).root
     override fun tempVfs(): VfsFile = MemoryVfs()
-    override fun createHttpClient(): HttpClient = HttpClientBrowserJs()
+    override fun createHttpClient(): HttpClient = HttpClientBrowserWasm()
 }
 
-class HttpClientBrowserJs : HttpClient() {
+class HttpClientBrowserWasm : HttpClient() {
     override suspend fun requestInternal(
         method: Http.Method,
         url: String,
@@ -73,7 +76,8 @@ class HttpClientBrowserJs : HttpClient() {
         val deferred = CompletableDeferred<Response>(Job())
         val xhr = XMLHttpRequest()
         xhr.open(method.name, url, true)
-        xhr.responseType = XMLHttpRequestResponseType.ARRAYBUFFER
+        //xhr.responseType = XMLHttpRequestResponseType.ARRAYBUFFER // @TODO: Error calling this accessor
+        xhr.responseType = TYPE_ARRAYBUFFER()
 
         //println("HttpClientBrowserJs.requestInternal: $method, $url, $headers, $content")
 

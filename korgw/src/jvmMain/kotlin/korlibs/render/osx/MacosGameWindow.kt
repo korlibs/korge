@@ -1,9 +1,7 @@
 package korlibs.render.osx
 
-import korlibs.kgl.KmlGl
 import korlibs.kgl.checkedIf
 import korlibs.kgl.logIf
-import korlibs.memory.*
 import korlibs.memory.Platform
 import korlibs.memory.dyn.osx.*
 import korlibs.graphics.gl.AGOpengl

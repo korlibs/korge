@@ -25,7 +25,7 @@ class AGOpengl(val gl: KmlGl, var context: KmlGlContext? = null) : AG() {
 
     override val parentFeatures: AGFeatures get() = gl
 
-    protected val glGlobalState by lazy { GLGlobalState(gl, this) }
+    protected val glGlobalState = GLGlobalState(gl, this)
 
     //val queue = Deque<(gl: GL) -> Unit>()
 
@@ -33,6 +33,7 @@ class AGOpengl(val gl: KmlGl, var context: KmlGlContext? = null) : AG() {
     }
 
     override fun contextLost() {
+        val gl: KmlGl = this.gl
         super.contextLost()
         gl.handleContextLost()
         gl.graphicExtensions // Ensure extensions are available outside the GL thread
@@ -51,6 +52,7 @@ class AGOpengl(val gl: KmlGl, var context: KmlGlContext? = null) : AG() {
     fun createGlState() = KmlGlState(gl)
 
     override fun readToTexture(frameBuffer: AGFrameBufferBase, frameBufferInfo: AGFrameBufferInfo, texture: AGTexture, x: Int, y: Int, width: Int, height: Int) {
+        val gl: KmlGl = this.gl
         bindFrameBuffer(frameBuffer, frameBufferInfo)
         setScissorState(AGScissor.FULL, frameBuffer, frameBufferInfo)
         //gl.flush()
@@ -67,6 +69,7 @@ class AGOpengl(val gl: KmlGl, var context: KmlGlContext? = null) : AG() {
     }
 
     override fun clear(frameBuffer: AGFrameBufferBase, frameBufferInfo: AGFrameBufferInfo, color: RGBA, depth: Float, stencil: Int, clearColor: Boolean, clearDepth: Boolean, clearStencil: Boolean, scissor: AGScissor) {
+        val gl: KmlGl = this.gl
         bindFrameBuffer(frameBuffer, frameBufferInfo)
         //println("CLEAR: $color, $depth")
         setScissorState(scissor, frameBuffer, frameBufferInfo)
@@ -104,6 +107,7 @@ class AGOpengl(val gl: KmlGl, var context: KmlGlContext? = null) : AG() {
     var shadingLanguageVersion: String? = null
 
     private fun useProgram(program: Program) {
+        val gl: KmlGl = this.gl
         //val map = if (config.externalTextureSampler) externalPrograms else normalPrograms
         val map = normalPrograms
 
@@ -165,6 +169,8 @@ class AGOpengl(val gl: KmlGl, var context: KmlGlContext? = null) : AG() {
         cullFace: AGCullFace,
         instances: Int
     ) {
+        val gl: KmlGl = this.gl
+
         //println("newUniformBlocks=$newUniformBlocks")
         //println("textureUnits=$textureUnits")
 
@@ -284,6 +290,7 @@ class AGOpengl(val gl: KmlGl, var context: KmlGlContext? = null) : AG() {
     private var currentScissor: AGScissor = AGScissor.INVALID
 
     override fun startFrame() {
+        val gl: KmlGl = this.gl
         context?.set()
         gl.beforeDoRender(contextVersion)
 
@@ -400,6 +407,8 @@ class AGOpengl(val gl: KmlGl, var context: KmlGlContext? = null) : AG() {
         reallocated: Ref<Boolean>? = null,
         updated: Ref<Boolean>? = null,
     ): GLBuffer? {
+        val gl: KmlGl = this.gl
+
         reallocated?.value = false
         updated?.value = false
         if (buffer == null) {
@@ -451,16 +460,14 @@ class AGOpengl(val gl: KmlGl, var context: KmlGlContext? = null) : AG() {
         }
     }
 
-    class GLVAO(var vao: AGVertexArrayObject, var glId: Int = -1, var contextVersion: Int = -1)
-
-    var AGVertexArrayObject.gl: GLVAO by Extra.PropertyThis { GLVAO(this) }
-
     var dynamicVaoGlId = -1
     var dynamicVaoContextVersion = -1
 
     var reallyIsVertexArraysSupported = ENABLE_VERTEX_ARRAY_OBJECTS
 
     fun vaoUse(vao: AGVertexArrayObject) {
+        val gl: KmlGl = this.gl
+
         if (reallyIsVertexArraysSupported && gl.isVertexArraysSupported) {
             val vaoGl = vao.gl
             if (vao.isDynamic) {
@@ -495,6 +502,8 @@ class AGOpengl(val gl: KmlGl, var context: KmlGlContext? = null) : AG() {
     val bindBufferReallocated = Ref<Boolean>()
 
     fun _vaoUse(vao: AGVertexArrayObject, updateBuffersOnly: Boolean = false) {
+        val gl: KmlGl = this.gl
+
         //var locBitSet = 0
         if (updateBuffersOnly) {
             //gl.bindBuffer(AGBufferKind.VERTEX.toGl(), 0)
@@ -657,6 +666,7 @@ class AGOpengl(val gl: KmlGl, var context: KmlGlContext? = null) : AG() {
     private val tempData = Buffer(3 * 3 * 4)
 
     private fun writeUniform(uniform: Uniform, programInfo: GLProgramInfo, data: Buffer, source: String) {
+        val gl: KmlGl = this.gl
         val location = programInfo.getUniformLocation(gl, uniform.name)
         val uniformType = uniform.type
         val arrayCount = uniform.arrayCount
@@ -712,6 +722,7 @@ class AGOpengl(val gl: KmlGl, var context: KmlGlContext? = null) : AG() {
         magFilter: Int,
         dims: Int,
     ) {
+        val gl: KmlGl = this.gl
         val params = textureParams[_currentTextureUnit]
         //currentTextureUnits.infos[_currentTextureUnit] = params
 
@@ -768,6 +779,8 @@ class AGOpengl(val gl: KmlGl, var context: KmlGlContext? = null) : AG() {
     }
 
     override fun readToMemory(frameBuffer: AGFrameBufferBase, frameBufferInfo: AGFrameBufferInfo, x: Int, y: Int, width: Int, height: Int, data: Any, kind: AGReadKind) {
+        val gl: KmlGl = this.gl
+        
         bindFrameBuffer(frameBuffer, frameBufferInfo)
         val region = region(AGScissor(x, y, width, height), frameBuffer, frameBufferInfo)
 
@@ -822,6 +835,7 @@ class AGOpengl(val gl: KmlGl, var context: KmlGlContext? = null) : AG() {
     }
 
     fun textureBind(tex: AGTexture?, target: AGTextureTargetKind) {
+        val gl: KmlGl = this.gl
         val glTex = tex?.gl
         gl.bindTexture(target.toGl(), glTex?.id ?: 0)
 
@@ -918,6 +932,7 @@ class AGOpengl(val gl: KmlGl, var context: KmlGlContext? = null) : AG() {
     private val TEMP_TEXTURE_UNIT = 7 // GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS might be 8
 
     fun textureSetFromFrameBuffer(tex: AGTexture, x: Int, y: Int, width: Int, height: Int) {
+        val gl: KmlGl = this.gl
         selectTextureUnitTemp(TEMP_TEXTURE_UNIT, setToNullLater = true) {
             gl.bindTexture(gl.TEXTURE_2D, tex.gl.id)
             gl.copyTexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, x, y, width, height, 0)
@@ -965,6 +980,8 @@ class AGOpengl(val gl: KmlGl, var context: KmlGlContext? = null) : AG() {
     private var _currentFrameBuffer: Int = -1
 
     fun bindFrameBuffer(frameBuffer: AGFrameBufferBase, info: AGFrameBufferInfo) {
+        val gl: KmlGl = this.gl
+
         //println("bindFrameBuffer: $frameBuffer, info=$info")
         if (_currentViewportSize != info.size) {
             //println("viewport: 0, 0, ${info.width}, ${info.height}")
@@ -1043,6 +1060,7 @@ class AGOpengl(val gl: KmlGl, var context: KmlGlContext? = null) : AG() {
     private val AGTexture.gl: GLTexture get() = gl(glGlobalState)
 
     fun setDepthAndFrontFace(renderState: AGDepthAndFrontFace) {
+        val gl: KmlGl = this.gl
         if (currentRenderState != renderState) {
             currentRenderState = renderState
             gl.frontFace(renderState.frontFace.toGl())
@@ -1057,6 +1075,7 @@ class AGOpengl(val gl: KmlGl, var context: KmlGlContext? = null) : AG() {
     }
 
     fun setColorMaskState(colorMask: AGColorMask) {
+        val gl: KmlGl = this.gl
         if (currentColorMask != colorMask) {
             currentColorMask = colorMask
             gl.colorMask(colorMask.red, colorMask.green, colorMask.blue, colorMask.alpha)
@@ -1064,6 +1083,7 @@ class AGOpengl(val gl: KmlGl, var context: KmlGlContext? = null) : AG() {
     }
 
     fun setScissorState(scissor: AGScissor, frameBuffer: AGFrameBufferBase, frameBufferInfo: AGFrameBufferInfo) {
+        val gl: KmlGl = this.gl
         //println("scissor=$scissor, frameBuffer=${frameBuffer.isMain}, frameBufferInfo=$frameBufferInfo")
         val scissor = region(scissor, frameBuffer, frameBufferInfo)
         if (currentScissor != scissor) {
@@ -1107,3 +1127,8 @@ class AGOpengl(val gl: KmlGl, var context: KmlGlContext? = null) : AG() {
     //    return useExternalSampler
     //}
 }
+
+private class GLVAO(var vao: AGVertexArrayObject, var glId: Int = -1, var contextVersion: Int = -1)
+
+private var AGVertexArrayObject.gl: GLVAO by Extra.PropertyThis { GLVAO(this) }
+

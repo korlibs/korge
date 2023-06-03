@@ -7,7 +7,7 @@ import korlibs.image.bitmap.*
 import korlibs.kgl.*
 import korlibs.memory.*
 
-open class NativeKgl constructor(private val gl: INativeGL) : KmlGlWithExtensions() {
+open class NativeKgl constructor(private val gl: INativeGL) : KmlGl() {
     override val variant: GLVariant = GLVariant.JVM
 
     override fun activeTexture(texture: Int): Unit = gl.glActiveTexture(texture)

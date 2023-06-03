@@ -62,7 +62,7 @@ private fun bswap32(v: IntArray, offset: Int, size: Int) {
 
 external interface TexImageSourceJs : TexImageSource, JsAny
 
-open class HtmlNativeImage(val texSourceBase: TexImageSourceJs, width: Int, height: Int)
+open class WasmHtmlNativeImage(val texSourceBase: TexImageSourceJs, width: Int, height: Int)
     : NativeImage(width, height, texSourceBase, premultiplied = true) {
 	override val name: String get() = "HtmlNativeImage"
     var texSource: TexImageSourceJs = texSourceBase
@@ -73,14 +73,18 @@ open class HtmlNativeImage(val texSourceBase: TexImageSourceJs, width: Int, heig
 	constructor(canvas: HTMLCanvasElementLike) : this(canvas, canvas.width, canvas.height)
 
     val lazyCanvasElement: HTMLCanvasElementLike by lazy {
-        if (texSource.hasAny("src")) {
+        //if (texSource.hasAny("src")) {
+        if (texSource is HTMLImageElement) {
             BrowserImage.imageToCanvas(texSource.unsafeCast<HTMLImageElementLike>(), width, height)
         } else {
             texSource.unsafeCast<HTMLCanvasElementLike>()
         }.also { texSource = it }
 	}
 
-    val ctx: CanvasRenderingContext2D by lazy { lazyCanvasElement.getContext("2d")!!.unsafeCast<CanvasRenderingContext2D>() }
+    val ctx: CanvasRenderingContext2D by lazy {
+        //println("lazyCanvasElement: " + lazyCanvasElement)
+        lazyCanvasElement.getContext("2d")!!.unsafeCast<CanvasRenderingContext2D>()
+    }
 
     private var lastRefresh = 0.0.milliseconds
     override fun readPixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: IntArray, offset: Int) {
@@ -101,8 +105,9 @@ open class HtmlNativeImage(val texSourceBase: TexImageSourceJs, width: Int, heig
         //val ints = idata.data.buffer.asInt32Array()
         //for (n in 0 until size) out[offset + n] = ints[n]
 
-        val data = idata.data.buffer.asInt32Array().toIntArray()
+        val data = idata.data.buffer.asInt32Array()
         arraycopy(data, 0, out, offset, size)
+        //println("data=${data[0]}, size=$size, out[offset=$offset]=${out[offset]}")
 
         if (isBigEndian) bswap32(out, offset, size)
         if (!asumePremultiplied) {
@@ -113,13 +118,12 @@ open class HtmlNativeImage(val texSourceBase: TexImageSourceJs, width: Int, heig
     override fun writePixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: IntArray, offset: Int) {
         if (width <= 0 || height <= 0) return
         val size = width * height
+        val temp = IntArray(size)
+        arraycopy(out, offset, temp, 0, size)
+        if (!asumePremultiplied) depremultiply(RgbaPremultipliedArray(temp), 0, RgbaArray(temp), 0, size)
+        if (isBigEndian) bswap32(temp, 0, size)
         val idata = ctx.createImageData(width.toDouble(), height.toDouble())
-        val data = idata.data.buffer.asInt32Array().toIntArray()
-        arraycopy(out, offset, data, 0, size)
-        if (!asumePremultiplied) {
-            depremultiply(RgbaPremultipliedArray(data), 0, RgbaArray(data), 0, width * height)
-        }
-        if (isBigEndian) bswap32(data, 0, size)
+        arraycopy(temp, 0, idata.data.buffer.asInt32Array(), 0, size)
         ctx.putImageData(idata, x.toDouble(), y.toDouble())
     }
 
@@ -129,23 +133,23 @@ open class HtmlNativeImage(val texSourceBase: TexImageSourceJs, width: Int, heig
 
 object HtmlNativeImageFormatProvider : NativeImageFormatProvider() {
     override suspend fun decodeInternal(data: ByteArray, props: ImageDecodingProps): NativeImageResult {
-        return NativeImageResult(HtmlNativeImage(BrowserImage.decodeToCanvas(data, props)))
+        return NativeImageResult(WasmHtmlNativeImage(BrowserImage.decodeToCanvas(data, props)))
     }
 
     override suspend fun decodeInternal(vfs: Vfs, path: String, props: ImageDecodingProps): NativeImageResult {
         return NativeImageResult(when (vfs) {
             is LocalVfs -> {
                 //println("LOCAL: HtmlNativeImageFormatProvider: $vfs, $path")
-                HtmlNativeImage(BrowserImage.loadImage(path, props))
+                WasmHtmlNativeImage(BrowserImage.loadImage(path, props))
             }
             is UrlVfs -> {
                 val jsUrl = vfs.getFullUrl(path)
                 //println("URL: HtmlNativeImageFormatProvider: $vfs, $path : $jsUrl")
-                HtmlNativeImage(BrowserImage.loadImage(jsUrl, props))
+                WasmHtmlNativeImage(BrowserImage.loadImage(jsUrl, props))
             }
             else -> {
                 //println("OTHER: HtmlNativeImageFormatProvider: $vfs, $path")
-                HtmlNativeImage(BrowserImage.decodeToCanvas(vfs[path].readAll(), props))
+                WasmHtmlNativeImage(BrowserImage.decodeToCanvas(vfs[path].readAll(), props))
             }
         })
     }
@@ -155,11 +159,11 @@ object HtmlNativeImageFormatProvider : NativeImageFormatProvider() {
     }
 
     override fun create(width: Int, height: Int, premultiplied: Boolean?): NativeImage {
-		return HtmlNativeImage(HtmlCanvas.createCanvas(width, height))
+		return WasmHtmlNativeImage(HtmlCanvas.createCanvas(width, height))
 	}
 
 	override fun copy(bmp: Bitmap): NativeImage {
-		return HtmlNativeImage(HtmlImage.bitmapToHtmlCanvas(bmp.toBMP32()))
+		return WasmHtmlNativeImage(HtmlImage.bitmapToHtmlCanvas(bmp.toBMP32()))
 	}
 
 	override suspend fun display(bitmap: Bitmap, kind: Int) {
@@ -367,14 +371,20 @@ class CanvasContext2dRenderer(private val canvas: HTMLCanvasElementLike) : Rende
 		} else {
             ctx.lineWidth = state.lineWidth.toDouble()
 			ctx.lineJoin = when (state.lineJoin) {
-				LineJoin.BEVEL -> CanvasLineJoin.BEVEL
-				LineJoin.MITER -> CanvasLineJoin.MITER
-				LineJoin.ROUND -> CanvasLineJoin.ROUND
+				//LineJoin.BEVEL -> CanvasLineJoin.BEVEL // @TODO: WASM BUG
+				//LineJoin.MITER -> CanvasLineJoin.MITER // @TODO: WASM BUG
+				//LineJoin.ROUND -> CanvasLineJoin.ROUND // @TODO: WASM BUG
+                LineJoin.BEVEL -> "bevel".cast<CanvasLineJoin>()
+                LineJoin.MITER -> "miter".cast<CanvasLineJoin>()
+                LineJoin.ROUND -> "round".cast<CanvasLineJoin>()
 			}
 			ctx.lineCap = when (state.lineCap) {
-				LineCap.BUTT -> CanvasLineCap.BUTT
-				LineCap.ROUND -> CanvasLineCap.ROUND
-				LineCap.SQUARE -> CanvasLineCap.SQUARE
+				//LineCap.BUTT -> CanvasLineCap.BUTT // @TODO: WASM BUG
+				//LineCap.ROUND -> CanvasLineCap.ROUND // @TODO: WASM BUG
+				//LineCap.SQUARE -> CanvasLineCap.SQUARE // @TODO: WASM BUG
+                LineCap.BUTT -> "butt".cast<CanvasLineCap>()
+                LineCap.ROUND -> "round".cast<CanvasLineCap>()
+                LineCap.SQUARE -> "square".cast<CanvasLineCap>()
 			}
             ctx.strokeStyle = state.strokeStyle.toJsStr()
 		}
@@ -397,7 +407,7 @@ class CanvasContext2dRenderer(private val canvas: HTMLCanvasElementLike) : Rende
 		try {
 			transform.run { ctx.setTransform(a.toDouble(), b.toDouble(), c.toDouble(), d.toDouble(), tx.toDouble(), ty.toDouble()) }
 			ctx.drawImage(
-				(image.ensureNative() as HtmlNativeImage).texSource.unsafeCast<CanvasImageSourceJs>(),
+				(image.ensureNative() as WasmHtmlNativeImage).texSource.unsafeCast<CanvasImageSourceJs>(),
                 pos.xD, pos.yD, size.widthD, size.heightD
 			)
 		} finally {
@@ -456,8 +466,10 @@ class CanvasContext2dRenderer(private val canvas: HTMLCanvasElementLike) : Rende
 	}
 
     fun Winding.toCanvasFillRule() = when (this) {
-        Winding.NON_ZERO -> CanvasFillRule.NONZERO
-        Winding.EVEN_ODD -> CanvasFillRule.EVENODD
+        //Winding.NON_ZERO -> CanvasFillRule.NONZERO // @TODO: Circumvents WASM issue
+        //Winding.EVEN_ODD -> CanvasFillRule.EVENODD // @TODO: Circumvents WASM issue
+        Winding.NON_ZERO -> NONZERO() // @TODO: Circumvents WASM issue
+        Winding.EVEN_ODD -> EVENODD() // @TODO: Circumvents WASM issue
     }
 
     // @TODO: Do this
@@ -506,4 +518,10 @@ class CanvasContext2dRenderer(private val canvas: HTMLCanvasElementLike) : Rende
 		}
 	}
     */
+}
+
+@JsFun("() => { return 'nonzero'; }") external private fun NONZERO(): CanvasFillRule
+@JsFun("() => { return 'evenodd'; }") external private fun EVENODD(): CanvasFillRule
+fun <T : JsAny> String.cast(): T {
+    return this.toJsString().unsafeCast()
 }

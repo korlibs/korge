@@ -86,6 +86,8 @@ fun JsAny.setAny(key: String, value: JsAny?) = setAny(key.toJsString(), value)
 fun JsAny.setAny(key: JsAny?, value: JsAny?) = JsAny_set(this, key, value)
 
 fun JsAny.hasAny(key: Int): Boolean = JsAny_has(this, key.toJsNumber())
+// @TODO: Not working!
+@Deprecated("Not working!")
 fun JsAny.hasAny(key: String): Boolean = JsAny_has(this, key.toJsString())
 fun JsAny.hasAny(key: JsString): Boolean = JsAny_has(this, key)
 fun JsAny.hasAny(key: JsAny?): Boolean = JsAny_has(this, key)

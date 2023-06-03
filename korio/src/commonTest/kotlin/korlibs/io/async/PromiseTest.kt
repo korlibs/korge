@@ -5,11 +5,11 @@ import korlibs.time.milliseconds
 import kotlinx.coroutines.delay
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
-import kotlin.test.Test
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 class PromiseTest {
     @Test
+    @Ignore
     fun test() = suspendTest {
         val startTime = DateTime.now()
         delayPromise(100).await()

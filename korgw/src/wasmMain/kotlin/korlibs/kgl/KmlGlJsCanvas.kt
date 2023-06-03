@@ -47,7 +47,7 @@ abstract external class HTMLCanvasElementJS : JsAny {
     fun getContext(contextId: kotlin.String, vararg arguments: kotlin.js.JsAny?): RenderingContextJs?
 }
 
-class KmlGlJsCanvas(val canvas: HTMLCanvasElement, val glOpts: JsAny) : KmlGlWithExtensions() {
+class KmlGlJsCanvas(val canvas: HTMLCanvasElement, val glOpts: JsAny) : KmlGl() {
     var webglVersion = 1
     val gl: WebGLRenderingContextBase2 = (null
             ?: canvas.unsafeCast<HTMLCanvasElementJS>().getContext("webgl2", glOpts)?.also { webglVersion = 2 }
@@ -225,7 +225,7 @@ class KmlGlJsCanvas(val canvas: HTMLCanvasElement, val glOpts: JsAny) : KmlGlWit
     }
     override fun texImage2D(target: Int, level: Int, internalformat: Int, format: Int, type: Int, data: NativeImage): Unit {
         gl.pixelStorei(UNPACK_PREMULTIPLY_ALPHA_WEBGL, (!data.asumePremultiplied && data.premultiplied).toInt())
-        gl.texImage2D(target, level, internalformat, format, type, (data as HtmlNativeImage).texSource)
+        gl.texImage2D(target, level, internalformat, format, type, (data as WasmHtmlNativeImage).texSource)
         gl.pixelStorei(UNPACK_PREMULTIPLY_ALPHA_WEBGL, 0)
     }
     override fun texParameterf(target: Int, pname: Int, param: Float): Unit = gl.texParameterf(target, pname, param)

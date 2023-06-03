@@ -22,6 +22,7 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import org.jetbrains.kotlin.gradle.targets.js.ir.*
 import org.jetbrains.kotlin.gradle.targets.js.npm.*
 import org.jetbrains.kotlin.gradle.targets.js.testing.*
+import org.jetbrains.kotlin.gradle.targets.js.testing.karma.*
 import org.jetbrains.kotlin.gradle.tasks.*
 import java.io.*
 import java.nio.file.*
@@ -358,8 +359,16 @@ object RootKorlibsPlugin {
                             //this.
                             //this.applyBinaryen()
                             //nodejs { commonWebpackConfig { experiments = mutableSetOf("topLevelAwait") } }
-                            browser { commonWebpackConfig { experiments = mutableSetOf("topLevelAwait") } }
-                            //browser()
+                            //browser { commonWebpackConfig { experiments = mutableSetOf("topLevelAwait") } }
+                            browser {
+                                //commonWebpackConfig { experiments = mutableSetOf("topLevelAwait") }
+                                //testTask {
+                                //    it.useKarma {
+                                //        //useChromeHeadless()
+                                //        this.webpackConfig.configDirectory = File(rootProject.rootDir, "karma.config.d")
+                                //    }
+                                //}
+                            }
                         }
                         val wasmBrowserTest = tasks.getByName("wasmBrowserTest") as KotlinJsTest
                         // ~/projects/korge/build/js/packages/korge-root-klock-wasm-test
@@ -391,6 +400,17 @@ object RootKorlibsPlugin {
                         configureJSTestsOnce()
                     }
                     //configureJSTests()
+
+                    tasks.withType(KotlinJsTest::class.java).configureEach {
+                        it.onTestFrameworkSet { framework ->
+                            //println("onTestFrameworkSet: $it")
+                            if (framework is KotlinKarma) {
+                                File(rootProject.rootDir, "karma.config.d").takeIfExists()?.let {
+                                    framework.useConfigDirectory(it)
+                                }
+                            }
+                        }
+                    }
 
                     val desktopAndMobileTargets = ArrayList<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget>().apply {
                         if (doEnableKotlinNative) addAll(nativeTargets(project))
@@ -606,6 +626,49 @@ object RootKorlibsPlugin {
 
     fun Project.initSamples() {
         rootProject.samples {
+            if (project.findProperty("enable.wasm") == "true") {
+                kotlin {
+                    wasm {
+                        binaries.executable()
+                        browser {
+                            this.distribution {
+                            }
+                            //testTask {
+                            //    it.useKarma {
+                            //        //useChromeHeadless()
+                            //        this.webpackConfig.configDirectory = File(rootProject.rootDir, "karma.config.d")
+                            //    }
+                            //}
+                        }
+                    }
+                }
+                fun wasmCreateIndex(project: Project) {
+                    val compilation = project.kotlin.wasm().compilations["main"]!!
+                    val npmDir = compilation.npmProject.dir
+                    File(npmDir, "kotlin/index.html").also { it.parentFile.mkdirs() }.writeText(
+                        """
+                                <html>
+                                    <script type = 'module'>
+                                        import { instantiate } from "./${npmDir.name}.uninstantiated.mjs"
+                                        instantiate();
+                                    </script>
+                                </html>
+                            """.trimIndent()
+                    )
+                }
+                project.tasks.createThis<Task>("wasmCreateIndex") {
+                    doFirst {
+                        wasmCreateIndex(project)
+                    }
+                }
+                project.tasks.findByName("wasmBrowserDevelopmentRun")?.apply {
+                    dependsOn("wasmCreateIndex")
+                    doFirst { wasmCreateIndex(project) }
+                }
+                val task = project.tasks.createThis<Task>("runWasm") {
+                    dependsOn("wasmRun")
+                }
+            }
             // @TODO: Patch, because runDebugReleaseExecutableMacosArm64 is not created!
             if (isMacos && isArm && doEnableKotlinNative) {
                 project.afterEvaluate {

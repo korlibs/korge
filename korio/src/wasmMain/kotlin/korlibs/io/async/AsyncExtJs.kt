@@ -22,17 +22,21 @@ actual fun asyncEntryPoint(callback: suspend () -> Unit): dynamic = kotlin.js.Pr
 	})
 }
 */
-actual fun asyncEntryPoint(callback: suspend () -> Unit) {
-    //promise(EmptyCoroutineContext) { callback() }
-    launchImmediately(EmptyCoroutineContext) {
-    //runBlockingNoJs(EmptyCoroutineContext) {
-        callback()
+
+@Suppress("ACTUAL_WITHOUT_EXPECT", "ACTUAL_TYPE_ALIAS_TO_CLASS_WITH_DECLARATION_SITE_VARIANCE")
+@JsName("Promise")
+actual external class AsyncEntryPointResult(func: (resolve: (JsAny?) -> Unit, reject: (JsAny?) -> Unit) -> Unit)
+
+actual fun asyncEntryPoint(callback: suspend () -> Unit): AsyncEntryPointResult {
+    return AsyncEntryPointResult { resolve, reject ->
+        launchImmediately(EmptyCoroutineContext) {
+            try {
+                callback()
+                resolve(null)
+            } catch (e: Throwable) {
+                reject(e.toJsReference())
+            }
+        }
     }
 }
-actual fun asyncTestEntryPoint(callback: suspend () -> Unit) {
-    println("!!! asyncTestEntryPoint without returning a promise")
-    //runBlockingNoJs(EmptyCoroutineContext) {
-    launchImmediately(EmptyCoroutineContext) {
-        callback()
-    }
-}
+actual fun asyncTestEntryPoint(callback: suspend () -> Unit): AsyncEntryPointResult = asyncEntryPoint(callback)
