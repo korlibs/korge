@@ -1,0 +1,12 @@
+/.idea
+/.vscode
+/_site
+/.sass-cache
+/.jekyll-metadata
+/.jekyll-cache
+/.gradle
+/.idea
+*.iws
+*.iml
+*.ipr
+.DS_Store

@@ -11,6 +11,7 @@ import korlibs.math.geom.bezier.*
 interface VectorBuilder {
     val totalPoints: Int
     val lastPos: Point
+    val lastMovePos: Point
     fun moveTo(p: Point)
     fun lineTo(p: Point)
     fun quadTo(c: Point, a: Point) {
@@ -262,6 +263,7 @@ interface VectorBuilder {
         val parent = this
         return object : VectorBuilder {
             override val lastPos: Point get() = im.transform(parent.lastPos)
+            override val lastMovePos: Point get() = im.transform(parent.lastMovePos)
             override val totalPoints: Int = parent.totalPoints
 
             private fun t(p: Point): Point = m.transform(p)

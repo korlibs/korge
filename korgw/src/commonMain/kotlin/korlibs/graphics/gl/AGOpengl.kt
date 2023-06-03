@@ -630,8 +630,10 @@ class AGOpengl(val gl: KmlGl, var context: KmlGlContext? = null) : AG() {
             }
 
             val ref = glProgramInfo.uniforms[block.block.fixedLocation]
+                //?: return@fastForEachBlock
+                ?: error("Can't find uniform at ${block.block.fixedLocation} for program $program for block $block")
             val bufferMem = buffer!!.mem!!
-            val currentMem = ref!!.buffer
+            val currentMem = ref.buffer
             val ublock = ref.block
             if (valueIndex >= 0) {
                 if (!arrayequal(bufferMem, valueIndex, currentMem, 0, ublock.totalSize)) {

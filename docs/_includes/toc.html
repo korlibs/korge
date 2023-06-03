@@ -1,0 +1,49 @@
+{%- assign next_level = include.level + 1 -%}
+{%- assign entries_unfiltered = site.pages | sort: "priority", "last" -%}
+{%- assign entries = entries_unfiltered | where_exp:"item","item.disabled != true" -%}
+<ul>
+{%- for entry in entries -%}
+    {%- assign entry_url=entry.url -%}
+    {%- assign entry_url_size=entry_url|size -%}
+    {%- assign slug = entry_url | split: "/" | last -%}
+    {%- assign slug_size = slug|size -%}
+    {%- assign minus_slug_size = entry_url_size|minus:slug_size|minus:1 -%}
+    {%- assign current = entry_url | slice: 0,minus_slug_size -%}
+    {%- if page.url contains entry.url -%}
+    {%- assign is_active = true -%}
+    {%- else -%}
+    {%- assign is_active = false -%}
+    {%- endif -%}
+
+    {%- if current == include.context and entry.enabled != false -%}
+    <li class="{% if is_active %}active{% endif %} {{ entry.entryclass }}">
+        <a href="{{ entry.url | relative_url }}" class="{% if is_active %}active{% endif %} entry-item {% if entry.children and is_active %}active-children{% endif %}">
+            <span class="{% if entry.children %}children{% endif %} {% if is_active %}active{% else %}inactive{% endif %}"></span>
+            {%- if entry.fa-icon -%}
+            <i class="fa {{ entry.fa-icon }}"></i>&nbsp;
+            {%- endif -%}
+            {%- if entry.css-icon -%}
+            <i class="{{ entry.css-icon }}"></i>&nbsp;
+            {%- endif -%}
+            {{ entry.title }}
+            {% case entry.status %}
+                {% when "new" %}<span title="New Documentation">🆕</span>
+                {% when "updated" %}<span title="Updated">🌟</span>
+                {% when "outdated" %}<span title="Outdated Documentation">🕰</span>
+                {% when "incomplete" %}<span title="Partial Documentation" style="opacity: 0.3;">🧩</span>
+                {% when "experimental" %}<span title="Experimental">🛠</span>
+                {% when "todo" %}<span title="Missing Documentation">❓</span>
+            {% endcase %}
+        </a>
+		{% if include.description and entry.description %}
+		- {{ entry.description }}
+		{% endif %}
+
+        {%- if entry.children and (is_active or entry.always_open) -%}
+            {%- include toc.html context=entry.children level=next_level -%}
+        {%- endif -%}
+    </li>
+    {%- endif -%}
+
+{%- endfor -%}
+</ul>

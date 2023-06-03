@@ -403,6 +403,19 @@ class IntIntMap internal constructor(private var nbits: Int, private val loadFac
     private var growSize: Int = (capacity * loadFactor).toInt()
     var size: Int = 0; private set
 
+    fun clone(): IntIntMap {
+        val out = IntIntMap()
+        out.capacity = this.capacity
+        out.hasZero = this.hasZero
+        out.mask = this.mask
+        out.stashSize = this.stashSize
+        out._keys = this._keys.copyOf()
+        out._values = this._values.copyOf()
+        out.growSize = this.growSize
+        out.size = this.size
+        return out
+    }
+
     fun toMap(out: MutableMap<Int, Int> = linkedHashMapOf()): Map<Int, Int> {
         fastForEach { key, value -> out[key] = value }
         return out
@@ -597,7 +610,7 @@ class IntIntMap internal constructor(private var nbits: Int, private val loadFac
     }
 
     override fun equals(other: Any?): Boolean {
-        if (other !is IntMap<*>) return false
+        if (other !is IntIntMap) return false
         fastForEach { key, value -> if (other[key] != value) return false }
         return true
     }
@@ -612,6 +625,12 @@ class IntIntMap internal constructor(private var nbits: Int, private val loadFac
 fun <T> IntMap<T>.toMap(): Map<Int, T> = keys.associateWith { this[it].fastCastTo<T>() }
 
 fun <T> intMapOf(vararg pairs: Pair<Int, T>) = IntMap<T>(pairs.size).also { map ->
+    pairs.fastForEach {
+        map[it.first] = it.second
+    }
+}
+
+fun intIntMapOf(vararg pairs: Pair<Int, Int>): IntIntMap = IntIntMap(pairs.size).also { map ->
     pairs.fastForEach {
         map[it.first] = it.second
     }
