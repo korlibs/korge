@@ -42,15 +42,11 @@ fun Project.configureAndroidDirect(projectType: ProjectType, isKorge: Boolean) {
     //val generated = AndroidGenerated(korge)
 
     dependencies {
-        when {
-            SemVer(BuildVersions.KOTLIN) >= SemVer("1.9.0") -> {
-                //add("androidUnitTestImplementation", "org.jetbrains.kotlin:kotlin-test")
-                add("androidTestImplementation", "org.jetbrains.kotlin:kotlin-test")
-            }
-            else -> {
-                add("androidTestImplementation", "org.jetbrains.kotlin:kotlin-test")
-            }
+        if (SemVer(BuildVersions.KOTLIN) >= SemVer("1.9.0")) {
+            add("androidUnitTestImplementation", "org.jetbrains.kotlin:kotlin-test")
+            add("androidTestImplementation", "org.jetbrains.kotlin:kotlin-test")
         }
+        add("androidTestImplementation", "org.jetbrains.kotlin:kotlin-test")
 
         add("androidTestImplementation", "org.jetbrains.kotlin:kotlin-test")
         add("androidTestImplementation", "androidx.test:core:1.4.0")
