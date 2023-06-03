@@ -15,9 +15,9 @@ import korlibs.math.random.*
 import korlibs.time.*
 import kotlin.random.*
 
-class MainBVH : Scene() {
-    var SolidRect.movingDirection by extraProperty { -1 }
+private var SolidRect.movingDirection by extraProperty { -1 }
 
+class MainBVH : Scene() {
     override suspend fun SContainer.sceneMain() {
         val bvh = BVH2D<View>()
         val rand = Random(0)
