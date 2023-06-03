@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalForeignApi::class, ExperimentalForeignApi::class)
+
 package korlibs.metal
 
 import korlibs.graphics.*
@@ -91,7 +93,7 @@ class AGMetal(
                     val uniform = block.block.uniforms.map { it.uniform }.first()
                     val bufferLocation = currentProgram.indexOfUniformOnBuffer(uniform)
                     logger.trace { "$uniform will be bind at location $bufferLocation" }
-                    setVertexBuffer(buffer.toMetal.buffer, 0, bufferLocation)
+                    setVertexBuffer(buffer.toMetal.buffer, 0.convert(), bufferLocation)
                 }
 
                 if (indices != null) {
@@ -101,7 +103,7 @@ class AGMetal(
                         vertexCount.toULong(),
                         indexType.toMetal(),
                         indices.toMetal.buffer,
-                        0
+                        0.convert()
                     )
                     //drawIndexedPrimitives(drawType.toMetal(), vertexCount.toULong(), indexType.toMetal(), indices.toMetal.buffer, 0.convert())
                 } else {
