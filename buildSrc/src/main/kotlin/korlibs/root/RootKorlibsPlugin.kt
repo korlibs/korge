@@ -625,6 +625,43 @@ object RootKorlibsPlugin {
 
     fun Project.initSamples() {
         rootProject.samples {
+            if (project.findProperty("enable.wasm") == "true") {
+                kotlin {
+                    wasm {
+                        binaries.executable()
+                        browser {
+                            this.distribution {
+                            }
+                            //testTask {
+                            //    it.useKarma {
+                            //        //useChromeHeadless()
+                            //        this.webpackConfig.configDirectory = File(rootProject.rootDir, "karma.config.d")
+                            //    }
+                            //}
+                        }
+                    }
+                }
+                project.tasks.createThis<Task>("wasmCreateIndex") {
+                    doFirst {
+                        val compilation = kotlin.wasm().compilations["main"]!!
+                        val npmDir = compilation.npmProject.dir
+                        File(npmDir, "kotlin/index.html").writeText(
+                            """
+                                <html>
+                                    <script type = 'module'>
+                                        import { instantiate } from "./${npmDir.name}.uninstantiated.mjs"
+                                        instantiate();
+                                    </script>
+                                </html>
+                            """.trimIndent()
+                        )
+                    }
+                }
+                project.tasks.findByName("wasmBrowserDevelopmentRun")?.dependsOn("wasmCreateIndex")
+                val task = project.tasks.createThis<Task>("runWasm") {
+                    dependsOn("wasmRun")
+                }
+            }
             // @TODO: Patch, because runDebugReleaseExecutableMacosArm64 is not created!
             if (isMacos && isArm && doEnableKotlinNative) {
                 project.afterEvaluate {
