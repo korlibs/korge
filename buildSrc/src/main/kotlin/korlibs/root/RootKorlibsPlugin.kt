@@ -362,12 +362,15 @@ object RootKorlibsPlugin {
                             //browser { commonWebpackConfig { experiments = mutableSetOf("topLevelAwait") } }
                             browser {
                                 commonWebpackConfig { experiments = mutableSetOf("topLevelAwait") }
-                                //testTask {
-                                //    it.useKarma {
-                                //        //useChromeHeadless()
-                                //        this.webpackConfig.configDirectory = File(rootProject.rootDir, "karma.config.d")
-                                //    }
-                                //}
+                                testTask {
+                                    useKarma {
+                                        //useChromeHeadless()
+                                        //this.webpackConfig.configDirectory = File(rootProject.rootDir, "karma.config.d")
+                                        File(rootProject.rootDir, "karma.config.d").takeIfExists()?.let {
+                                            useConfigDirectory(it)
+                                        }
+                                    }
+                                }
                             }
                         }
                         val wasmBrowserTest = tasks.getByName("wasmBrowserTest") as KotlinJsTest
@@ -401,16 +404,16 @@ object RootKorlibsPlugin {
                     }
                     //configureJSTests()
 
-                    tasks.withType(KotlinJsTest::class.java).configureEach {
-                        it.onTestFrameworkSet { framework ->
-                            //println("onTestFrameworkSet: $it")
-                            if (framework is KotlinKarma) {
-                                File(rootProject.rootDir, "karma.config.d").takeIfExists()?.let {
-                                    framework.useConfigDirectory(it)
-                                }
-                            }
-                        }
-                    }
+                    //tasks.withType(KotlinJsTest::class.java).configureEach {
+                    //    it.onTestFrameworkSet { framework ->
+                    //        //println("onTestFrameworkSet: $it")
+                    //        if (framework is KotlinKarma) {
+                    //            File(rootProject.rootDir, "karma.config.d").takeIfExists()?.let {
+                    //                framework.useConfigDirectory(it)
+                    //            }
+                    //        }
+                    //    }
+                    //}
 
                     val desktopAndMobileTargets = ArrayList<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget>().apply {
                         if (doEnableKotlinNative) addAll(nativeTargets(project))
