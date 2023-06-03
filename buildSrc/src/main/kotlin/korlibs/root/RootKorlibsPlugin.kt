@@ -643,21 +643,6 @@ object RootKorlibsPlugin {
                         }
                     }
                 }
-                fun wasmCreateIndex(project: Project) {
-                    val compilation = project.kotlin.wasm().compilations["main"]!!
-                    val npmDir = compilation.npmProject.dir
-                    File(npmDir, "kotlin/index.html").also { it.parentFile.mkdirs() }.writeText(
-                        """
-                                <html>
-                                    <script type = 'module'>
-                                        import module from "./${npmDir.name}.mjs"
-                                        console.log(module)
-                                        //instantiate();
-                                    </script>
-                                </html>
-                            """.trimIndent()
-                    )
-                }
                 project.tasks.createThis<Task>("wasmCreateIndex") {
                     doFirst {
                         wasmCreateIndex(project)

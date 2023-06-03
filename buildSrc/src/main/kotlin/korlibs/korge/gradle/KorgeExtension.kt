@@ -198,6 +198,15 @@ open class KorgeExtension(
     }
 
     /**
+     * Configures WASM target
+     */
+    fun targetWasm(binaryen: Boolean = false) {
+        target("wasm") {
+            project.configureWasm(projectType, binaryen)
+        }
+    }
+
+    /**
      * Configures Desktop targets depending on the host:
      *
      * - mingwX64
