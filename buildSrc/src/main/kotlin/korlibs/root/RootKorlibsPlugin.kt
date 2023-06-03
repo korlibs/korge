@@ -630,6 +630,7 @@ object RootKorlibsPlugin {
                 kotlin {
                     wasm {
                         binaries.executable()
+                        //applyBinaryen()
                         browser {
                             this.distribution {
                             }
@@ -649,8 +650,9 @@ object RootKorlibsPlugin {
                         """
                                 <html>
                                     <script type = 'module'>
-                                        import { instantiate } from "./${npmDir.name}.uninstantiated.mjs"
-                                        instantiate();
+                                        import module from "./${npmDir.name}.mjs"
+                                        console.log(module)
+                                        //instantiate();
                                     </script>
                                 </html>
                             """.trimIndent()
