@@ -4,15 +4,14 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 
+private class C {
+    val value = 1
+}
+
+private var C.prop by WeakProperty { 0 }
+private var C.prop2 by WeakPropertyThis<C, String> { "${value * 2}" }
+
 class WeakPropertyTest {
-    /*
-	class C {
-		val value = 1
-	}
-
-	var C.prop by WeakProperty { 0 }
-	var C.prop2 by WeakPropertyThis<C, String> { "${value * 2}" }
-
 	@Test
 	fun name() {
 		val c1 = C()
@@ -28,5 +27,4 @@ class WeakPropertyTest {
 		c2.prop2 = "3"
 		assertEquals("3", c2.prop2)
 	}
-     */
 }
