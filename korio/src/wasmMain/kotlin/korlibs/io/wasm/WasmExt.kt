@@ -42,10 +42,11 @@ internal external fun JsAny_set(obj: JsAny, key: JsAny?, value: JsAny?)
 @JsFun("(obj, value) => { obj.push(value); }")
 internal external fun JsArray_push(obj: JsAny, value: JsAny?)
 
-@JsFun("(obj, key) => { obj[key] !== undefined; }")
+@JsFun("(obj, key) => { return obj[key] !== undefined; }")
 internal external fun JsAny_has(obj: JsAny, key: JsAny?): Boolean
 
-inline class JsDynamic(val value: JsAny?) {
+//inline class JsDynamic(val value: JsAny?) {
+class JsDynamic(val value: JsAny?) {
     inline fun <T : JsAny> unsafeCast(): T? = value?.unsafeCast<T>()
 
     override fun toString(): String = value.toString()

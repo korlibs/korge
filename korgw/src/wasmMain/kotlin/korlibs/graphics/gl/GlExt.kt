@@ -32,7 +32,7 @@ fun AGDefaultCanvas(): HTMLCanvasElement {
 }
 
 fun AGWebgl(config: AGConfig, canvas: HTMLCanvasElement = AGDefaultCanvas()): AGOpengl {
-    val kmlGl: KmlGl = KmlGlJsCanvas(
+    val kmlGl: KmlGl = KmlGlWasmCanvas(
         canvas, jsObject(
             "premultipliedAlpha" to false, // To be like the other targets
             "alpha" to false,

@@ -132,7 +132,7 @@ open class BrowserCanvasJsGameWindow(
             }
         //} catch (e: dynamic) { // @TODO: Check wasm
         } catch (e: Throwable) {
-            logger.error { e }
+            //logger.error { e }
         }
     }
 
