@@ -94,9 +94,8 @@ fun KotlinJsTargetDsl.configureJSTestsOnce() {
         testRuns.getByName(KotlinTargetWithTests.DEFAULT_TEST_RUN_NAME).executionTask.configure {
             it.useKarma {
                 useChromeHeadless()
-                val karmaConfigDFile = File(project.rootProject.rootDir, "karma.config.d")
-                if (karmaConfigDFile.exists()) {
-                    useConfigDirectory(karmaConfigDFile)
+                File(project.rootProject.rootDir, "karma.config.d").takeIfExists()?.let {
+                    useConfigDirectory(it)
                 }
             }
         }

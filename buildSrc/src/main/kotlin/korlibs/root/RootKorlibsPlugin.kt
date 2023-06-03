@@ -22,6 +22,7 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import org.jetbrains.kotlin.gradle.targets.js.ir.*
 import org.jetbrains.kotlin.gradle.targets.js.npm.*
 import org.jetbrains.kotlin.gradle.targets.js.testing.*
+import org.jetbrains.kotlin.gradle.targets.js.testing.karma.*
 import org.jetbrains.kotlin.gradle.tasks.*
 import java.io.*
 import java.nio.file.*
@@ -359,7 +360,14 @@ object RootKorlibsPlugin {
                             //this.applyBinaryen()
                             //nodejs { commonWebpackConfig { experiments = mutableSetOf("topLevelAwait") } }
                             //browser { commonWebpackConfig { experiments = mutableSetOf("topLevelAwait") } }
-                            browser()
+                            browser {
+                                //testTask {
+                                //    it.useKarma {
+                                //        //useChromeHeadless()
+                                //        this.webpackConfig.configDirectory = File(rootProject.rootDir, "karma.config.d")
+                                //    }
+                                //}
+                            }
                         }
                         val wasmBrowserTest = tasks.getByName("wasmBrowserTest") as KotlinJsTest
                         // ~/projects/korge/build/js/packages/korge-root-klock-wasm-test
@@ -391,6 +399,17 @@ object RootKorlibsPlugin {
                         configureJSTestsOnce()
                     }
                     //configureJSTests()
+
+                    tasks.withType(KotlinJsTest::class.java).configureEach {
+                        it.onTestFrameworkSet { framework ->
+                            //println("onTestFrameworkSet: $it")
+                            if (framework is KotlinKarma) {
+                                File(rootProject.rootDir, "karma.config.d").takeIfExists()?.let {
+                                    framework.useConfigDirectory(it)
+                                }
+                            }
+                        }
+                    }
 
                     val desktopAndMobileTargets = ArrayList<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget>().apply {
                         if (doEnableKotlinNative) addAll(nativeTargets(project))

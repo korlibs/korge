@@ -73,14 +73,18 @@ open class HtmlNativeImage(val texSourceBase: TexImageSourceJs, width: Int, heig
 	constructor(canvas: HTMLCanvasElementLike) : this(canvas, canvas.width, canvas.height)
 
     val lazyCanvasElement: HTMLCanvasElementLike by lazy {
-        if (texSource.hasAny("src")) {
+        //if (texSource.hasAny("src")) {
+        if (texSource is HTMLImageElement) {
             BrowserImage.imageToCanvas(texSource.unsafeCast<HTMLImageElementLike>(), width, height)
         } else {
             texSource.unsafeCast<HTMLCanvasElementLike>()
         }.also { texSource = it }
 	}
 
-    val ctx: CanvasRenderingContext2D by lazy { lazyCanvasElement.getContext("2d")!!.unsafeCast<CanvasRenderingContext2D>() }
+    val ctx: CanvasRenderingContext2D by lazy {
+        println("lazyCanvasElement: " + lazyCanvasElement)
+        lazyCanvasElement.getContext("2d")!!.unsafeCast<CanvasRenderingContext2D>()
+    }
 
     private var lastRefresh = 0.0.milliseconds
     override fun readPixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: IntArray, offset: Int) {
@@ -367,14 +371,20 @@ class CanvasContext2dRenderer(private val canvas: HTMLCanvasElementLike) : Rende
 		} else {
             ctx.lineWidth = state.lineWidth.toDouble()
 			ctx.lineJoin = when (state.lineJoin) {
-				LineJoin.BEVEL -> CanvasLineJoin.BEVEL
-				LineJoin.MITER -> CanvasLineJoin.MITER
-				LineJoin.ROUND -> CanvasLineJoin.ROUND
+				//LineJoin.BEVEL -> CanvasLineJoin.BEVEL // @TODO: WASM BUG
+				//LineJoin.MITER -> CanvasLineJoin.MITER // @TODO: WASM BUG
+				//LineJoin.ROUND -> CanvasLineJoin.ROUND // @TODO: WASM BUG
+                LineJoin.BEVEL -> "bevel".cast<CanvasLineJoin>()
+                LineJoin.MITER -> "miter".cast<CanvasLineJoin>()
+                LineJoin.ROUND -> "round".cast<CanvasLineJoin>()
 			}
 			ctx.lineCap = when (state.lineCap) {
-				LineCap.BUTT -> CanvasLineCap.BUTT
-				LineCap.ROUND -> CanvasLineCap.ROUND
-				LineCap.SQUARE -> CanvasLineCap.SQUARE
+				//LineCap.BUTT -> CanvasLineCap.BUTT // @TODO: WASM BUG
+				//LineCap.ROUND -> CanvasLineCap.ROUND // @TODO: WASM BUG
+				//LineCap.SQUARE -> CanvasLineCap.SQUARE // @TODO: WASM BUG
+                LineCap.BUTT -> "butt".cast<CanvasLineCap>()
+                LineCap.ROUND -> "round".cast<CanvasLineCap>()
+                LineCap.SQUARE -> "square".cast<CanvasLineCap>()
 			}
             ctx.strokeStyle = state.strokeStyle.toJsStr()
 		}
@@ -510,8 +520,8 @@ class CanvasContext2dRenderer(private val canvas: HTMLCanvasElementLike) : Rende
     */
 }
 
-@JsFun("() => { return 'nonzero'; }")
-external private fun NONZERO(): CanvasFillRule
-
-@JsFun("() => { return 'evenodd'; }")
-external private fun EVENODD(): CanvasFillRule
+@JsFun("() => { return 'nonzero'; }") external private fun NONZERO(): CanvasFillRule
+@JsFun("() => { return 'evenodd'; }") external private fun EVENODD(): CanvasFillRule
+fun <T : JsAny> String.cast(): T {
+    return this.toJsString().unsafeCast()
+}
