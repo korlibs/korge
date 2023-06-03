@@ -107,6 +107,7 @@ open class WasmHtmlNativeImage(val texSourceBase: TexImageSourceJs, width: Int, 
 
         val data = idata.data.buffer.asInt32Array()
         arraycopy(data, 0, out, offset, size)
+        //println("data=${data[0]}, size=$size, out[offset=$offset]=${out[offset]}")
 
         if (isBigEndian) bswap32(out, offset, size)
         if (!asumePremultiplied) {
@@ -117,16 +118,13 @@ open class WasmHtmlNativeImage(val texSourceBase: TexImageSourceJs, width: Int, 
     override fun writePixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: IntArray, offset: Int) {
         if (width <= 0 || height <= 0) return
         val size = width * height
+        val temp = IntArray(size)
+        arraycopy(out, offset, temp, 0, size)
+        if (!asumePremultiplied) depremultiply(RgbaPremultipliedArray(temp), 0, RgbaArray(temp), 0, size)
+        if (isBigEndian) bswap32(temp, 0, size)
         val idata = ctx.createImageData(width.toDouble(), height.toDouble())
-        idata.data.buffer.asInt32Array().useIntArray { data ->
-            arraycopy(out, offset, data, 0, size)
-            if (!asumePremultiplied) {
-                depremultiply(RgbaPremultipliedArray(data), 0, RgbaArray(data), 0, width * height)
-            }
-            if (isBigEndian) bswap32(data, 0, size)
-            ctx.putImageData(idata, x.toDouble(), y.toDouble())
-            Unit
-        }
+        arraycopy(temp, 0, idata.data.buffer.asInt32Array(), 0, size)
+        ctx.putImageData(idata, x.toDouble(), y.toDouble())
     }
 
     override fun getContext2d(antialiasing: Boolean): Context2d = Context2d(CanvasContext2dRenderer(lazyCanvasElement))

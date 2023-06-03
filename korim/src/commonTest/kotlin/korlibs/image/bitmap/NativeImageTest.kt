@@ -12,6 +12,7 @@ class NativeImageTest {
     fun test() = suspendTest {
         val bmp = NativeImage(4, 4)
         bmp.setRgbaRaw(0, 0, Colors.RED)
+        //println("bmp.getRgbaRaw(0, 0)=${bmp.getRgbaRaw(0, 0)}")
         assertEquals(Colors.RED, bmp.getRgbaRaw(0, 0))
         bmp.setRgbaRaw(1, 0, Colors.BLUE)
         bmp.setRgbaRaw(1, 1, Colors.GREEN)
