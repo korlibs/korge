@@ -105,27 +105,30 @@ open class BrowserCanvasJsGameWindow(
     @Suppress("UNUSED_PARAMETER")
     override fun updateGamepads() {
         try {
-            if (navigator.getGamepads != null) {
-                val gamepads = navigator.getGamepads!!().unsafeCast<JsArray<JsGamePad?>>()
-                dispatchGamepadUpdateStart()
-                for (gamepadId in 0 until gamepads.length) {
-                    val controller = gamepads[gamepadId] ?: continue
-                    if (controller.mapping != "standard") continue
-                    val gamepad = this@BrowserCanvasJsGameWindow.gamepad
-                    gamepad.name = controller.id
-                    for (n in 0 until kotlin.math.min(controller.buttons.length, BUTTONS_MAPPING.size)) {
-                        gamepad.rawButtons[BUTTONS_MAPPING[n].index] = controller.buttons[n]!!.value.toFloat()
+            wrapWasmJsExceptionsUnit {
+                if (navigator.getGamepads != null) {
+                    val gamepads = navigator.getGamepads!!().unsafeCast<JsArray<JsGamePad?>>()
+                    dispatchGamepadUpdateStart()
+                    for (gamepadId in 0 until gamepads.length) {
+                        val controller = gamepads[gamepadId] ?: continue
+                        if (controller.mapping != "standard") continue
+                        val gamepad = this@BrowserCanvasJsGameWindow.gamepad
+                        gamepad.name = controller.id
+                        for (n in 0 until kotlin.math.min(controller.buttons.length, BUTTONS_MAPPING.size)) {
+                            gamepad.rawButtons[BUTTONS_MAPPING[n].index] = controller.buttons[n]!!.value.toFloat()
+                        }
+                        for (n in 0 until kotlin.math.min(controller.axes.length, AXES_MAPPING.size)) {
+                            val isX = n % 2 == 0
+                            val isY = !isX
+                            val value = controller.axes[n].jsDyn.toFloat()
+                            val valueWithoutDeadRange = GamepadInfo.withoutDeadRange(value, apply = n <= 3)
+                            gamepad.rawButtons[AXES_MAPPING[n].index] =
+                                if (isY) -valueWithoutDeadRange else valueWithoutDeadRange
+                        }
+                        dispatchGamepadUpdateAdd(gamepad)
                     }
-                    for (n in 0 until kotlin.math.min(controller.axes.length, AXES_MAPPING.size)) {
-                        val isX = n % 2 == 0
-                        val isY = !isX
-                        val value = controller.axes[n].jsDyn.toFloat()
-                        val valueWithoutDeadRange = GamepadInfo.withoutDeadRange(value, apply = n <= 3)
-                        gamepad.rawButtons[AXES_MAPPING[n].index] = if (isY) -valueWithoutDeadRange else valueWithoutDeadRange
-                    }
-                    dispatchGamepadUpdateAdd(gamepad)
+                    dispatchGamepadUpdateEnd()
                 }
-                dispatchGamepadUpdateEnd()
             }
         //} catch (e: dynamic) { // @TODO: Check wasm
         } catch (e: Throwable) {
