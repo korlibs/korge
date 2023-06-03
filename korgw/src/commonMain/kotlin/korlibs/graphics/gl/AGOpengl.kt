@@ -460,10 +460,6 @@ class AGOpengl(val gl: KmlGl, var context: KmlGlContext? = null) : AG() {
         }
     }
 
-    class GLVAO(var vao: AGVertexArrayObject, var glId: Int = -1, var contextVersion: Int = -1)
-
-    var AGVertexArrayObject.gl: GLVAO by Extra.PropertyThis { GLVAO(this) }
-
     var dynamicVaoGlId = -1
     var dynamicVaoContextVersion = -1
 
@@ -1129,3 +1125,8 @@ class AGOpengl(val gl: KmlGl, var context: KmlGlContext? = null) : AG() {
     //    return useExternalSampler
     //}
 }
+
+private class GLVAO(var vao: AGVertexArrayObject, var glId: Int = -1, var contextVersion: Int = -1)
+
+private var AGVertexArrayObject.gl: GLVAO by Extra.PropertyThis { GLVAO(this) }
+
