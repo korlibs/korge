@@ -456,8 +456,10 @@ class CanvasContext2dRenderer(private val canvas: HTMLCanvasElementLike) : Rende
 	}
 
     fun Winding.toCanvasFillRule() = when (this) {
-        Winding.NON_ZERO -> CanvasFillRule.NONZERO
-        Winding.EVEN_ODD -> CanvasFillRule.EVENODD
+        //Winding.NON_ZERO -> CanvasFillRule.NONZERO // @TODO: Circumvents WASM issue
+        //Winding.EVEN_ODD -> CanvasFillRule.EVENODD // @TODO: Circumvents WASM issue
+        Winding.NON_ZERO -> NONZERO() // @TODO: Circumvents WASM issue
+        Winding.EVEN_ODD -> EVENODD() // @TODO: Circumvents WASM issue
     }
 
     // @TODO: Do this
@@ -507,3 +509,9 @@ class CanvasContext2dRenderer(private val canvas: HTMLCanvasElementLike) : Rende
 	}
     */
 }
+
+@JsFun("() => { return 'nonzero'; }")
+external private fun NONZERO(): CanvasFillRule
+
+@JsFun("() => { return 'evenodd'; }")
+external private fun EVENODD(): CanvasFillRule
