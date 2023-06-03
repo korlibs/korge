@@ -62,7 +62,7 @@ private fun bswap32(v: IntArray, offset: Int, size: Int) {
 
 external interface TexImageSourceJs : TexImageSource, JsAny
 
-open class HtmlNativeImage(val texSourceBase: TexImageSourceJs, width: Int, height: Int)
+open class WasmHtmlNativeImage(val texSourceBase: TexImageSourceJs, width: Int, height: Int)
     : NativeImage(width, height, texSourceBase, premultiplied = true) {
 	override val name: String get() = "HtmlNativeImage"
     var texSource: TexImageSourceJs = texSourceBase
@@ -82,7 +82,7 @@ open class HtmlNativeImage(val texSourceBase: TexImageSourceJs, width: Int, heig
 	}
 
     val ctx: CanvasRenderingContext2D by lazy {
-        println("lazyCanvasElement: " + lazyCanvasElement)
+        //println("lazyCanvasElement: " + lazyCanvasElement)
         lazyCanvasElement.getContext("2d")!!.unsafeCast<CanvasRenderingContext2D>()
     }
 
@@ -105,7 +105,7 @@ open class HtmlNativeImage(val texSourceBase: TexImageSourceJs, width: Int, heig
         //val ints = idata.data.buffer.asInt32Array()
         //for (n in 0 until size) out[offset + n] = ints[n]
 
-        val data = idata.data.buffer.asInt32Array().toIntArray()
+        val data = idata.data.buffer.asInt32Array()
         arraycopy(data, 0, out, offset, size)
 
         if (isBigEndian) bswap32(out, offset, size)
@@ -118,13 +118,15 @@ open class HtmlNativeImage(val texSourceBase: TexImageSourceJs, width: Int, heig
         if (width <= 0 || height <= 0) return
         val size = width * height
         val idata = ctx.createImageData(width.toDouble(), height.toDouble())
-        val data = idata.data.buffer.asInt32Array().toIntArray()
-        arraycopy(out, offset, data, 0, size)
-        if (!asumePremultiplied) {
-            depremultiply(RgbaPremultipliedArray(data), 0, RgbaArray(data), 0, width * height)
+        idata.data.buffer.asInt32Array().useIntArray { data ->
+            arraycopy(out, offset, data, 0, size)
+            if (!asumePremultiplied) {
+                depremultiply(RgbaPremultipliedArray(data), 0, RgbaArray(data), 0, width * height)
+            }
+            if (isBigEndian) bswap32(data, 0, size)
+            ctx.putImageData(idata, x.toDouble(), y.toDouble())
+            Unit
         }
-        if (isBigEndian) bswap32(data, 0, size)
-        ctx.putImageData(idata, x.toDouble(), y.toDouble())
     }
 
     override fun getContext2d(antialiasing: Boolean): Context2d = Context2d(CanvasContext2dRenderer(lazyCanvasElement))
@@ -133,23 +135,23 @@ open class HtmlNativeImage(val texSourceBase: TexImageSourceJs, width: Int, heig
 
 object HtmlNativeImageFormatProvider : NativeImageFormatProvider() {
     override suspend fun decodeInternal(data: ByteArray, props: ImageDecodingProps): NativeImageResult {
-        return NativeImageResult(HtmlNativeImage(BrowserImage.decodeToCanvas(data, props)))
+        return NativeImageResult(WasmHtmlNativeImage(BrowserImage.decodeToCanvas(data, props)))
     }
 
     override suspend fun decodeInternal(vfs: Vfs, path: String, props: ImageDecodingProps): NativeImageResult {
         return NativeImageResult(when (vfs) {
             is LocalVfs -> {
                 //println("LOCAL: HtmlNativeImageFormatProvider: $vfs, $path")
-                HtmlNativeImage(BrowserImage.loadImage(path, props))
+                WasmHtmlNativeImage(BrowserImage.loadImage(path, props))
             }
             is UrlVfs -> {
                 val jsUrl = vfs.getFullUrl(path)
                 //println("URL: HtmlNativeImageFormatProvider: $vfs, $path : $jsUrl")
-                HtmlNativeImage(BrowserImage.loadImage(jsUrl, props))
+                WasmHtmlNativeImage(BrowserImage.loadImage(jsUrl, props))
             }
             else -> {
                 //println("OTHER: HtmlNativeImageFormatProvider: $vfs, $path")
-                HtmlNativeImage(BrowserImage.decodeToCanvas(vfs[path].readAll(), props))
+                WasmHtmlNativeImage(BrowserImage.decodeToCanvas(vfs[path].readAll(), props))
             }
         })
     }
@@ -159,11 +161,11 @@ object HtmlNativeImageFormatProvider : NativeImageFormatProvider() {
     }
 
     override fun create(width: Int, height: Int, premultiplied: Boolean?): NativeImage {
-		return HtmlNativeImage(HtmlCanvas.createCanvas(width, height))
+		return WasmHtmlNativeImage(HtmlCanvas.createCanvas(width, height))
 	}
 
 	override fun copy(bmp: Bitmap): NativeImage {
-		return HtmlNativeImage(HtmlImage.bitmapToHtmlCanvas(bmp.toBMP32()))
+		return WasmHtmlNativeImage(HtmlImage.bitmapToHtmlCanvas(bmp.toBMP32()))
 	}
 
 	override suspend fun display(bitmap: Bitmap, kind: Int) {
@@ -407,7 +409,7 @@ class CanvasContext2dRenderer(private val canvas: HTMLCanvasElementLike) : Rende
 		try {
 			transform.run { ctx.setTransform(a.toDouble(), b.toDouble(), c.toDouble(), d.toDouble(), tx.toDouble(), ty.toDouble()) }
 			ctx.drawImage(
-				(image.ensureNative() as HtmlNativeImage).texSource.unsafeCast<CanvasImageSourceJs>(),
+				(image.ensureNative() as WasmHtmlNativeImage).texSource.unsafeCast<CanvasImageSourceJs>(),
                 pos.xD, pos.yD, size.widthD, size.heightD
 			)
 		} finally {

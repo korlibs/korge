@@ -43,3 +43,20 @@ fun Int32Array.toIntArray(): IntArray {
     //}
 }
 
+inline fun <T> Int32Array.useIntArray(block: (IntArray) -> T): T {
+    val buffer = this
+    val array = IntArray(buffer.length)
+    for (n in 0 until array.size) array[n] = buffer[n]
+    try {
+        return block(array)
+    } finally {
+        for (n in 0 until array.size) buffer[n] = array[n]
+    }
+}
+
+public fun arraycopy(src: Int32Array, srcPos: Int, dst: IntArray, dstPos: Int, size: Int) {
+    for (n in 0 until size) dst[dstPos + n] = src[srcPos + n]
+}
+public fun arraycopy(src: IntArray, srcPos: Int, dst: Int32Array, dstPos: Int, size: Int) {
+    for (n in 0 until size) dst[dstPos + n] = src[srcPos + n]
+}
