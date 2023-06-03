@@ -361,7 +361,7 @@ object RootKorlibsPlugin {
                             //nodejs { commonWebpackConfig { experiments = mutableSetOf("topLevelAwait") } }
                             //browser { commonWebpackConfig { experiments = mutableSetOf("topLevelAwait") } }
                             browser {
-                                commonWebpackConfig { experiments = mutableSetOf("topLevelAwait") }
+                                //commonWebpackConfig { experiments = mutableSetOf("topLevelAwait") }
                                 //testTask {
                                 //    it.useKarma {
                                 //        //useChromeHeadless()
@@ -642,12 +642,11 @@ object RootKorlibsPlugin {
                         }
                     }
                 }
-                project.tasks.createThis<Task>("wasmCreateIndex") {
-                    doFirst {
-                        val compilation = kotlin.wasm().compilations["main"]!!
-                        val npmDir = compilation.npmProject.dir
-                        File(npmDir, "kotlin/index.html").writeText(
-                            """
+                fun wasmCreateIndex(project: Project) {
+                    val compilation = project.kotlin.wasm().compilations["main"]!!
+                    val npmDir = compilation.npmProject.dir
+                    File(npmDir, "kotlin/index.html").also { it.parentFile.mkdirs() }.writeText(
+                        """
                                 <html>
                                     <script type = 'module'>
                                         import { instantiate } from "./${npmDir.name}.uninstantiated.mjs"
@@ -655,10 +654,17 @@ object RootKorlibsPlugin {
                                     </script>
                                 </html>
                             """.trimIndent()
-                        )
+                    )
+                }
+                project.tasks.createThis<Task>("wasmCreateIndex") {
+                    doFirst {
+                        wasmCreateIndex(project)
                     }
                 }
-                project.tasks.findByName("wasmBrowserDevelopmentRun")?.dependsOn("wasmCreateIndex")
+                project.tasks.findByName("wasmBrowserDevelopmentRun")?.apply {
+                    dependsOn("wasmCreateIndex")
+                    doFirst { wasmCreateIndex(project) }
+                }
                 val task = project.tasks.createThis<Task>("runWasm") {
                     dependsOn("wasmRun")
                 }
