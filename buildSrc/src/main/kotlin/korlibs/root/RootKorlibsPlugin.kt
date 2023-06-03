@@ -361,6 +361,7 @@ object RootKorlibsPlugin {
                             //nodejs { commonWebpackConfig { experiments = mutableSetOf("topLevelAwait") } }
                             //browser { commonWebpackConfig { experiments = mutableSetOf("topLevelAwait") } }
                             browser {
+                                commonWebpackConfig { experiments = mutableSetOf("topLevelAwait") }
                                 //testTask {
                                 //    it.useKarma {
                                 //        //useChromeHeadless()
