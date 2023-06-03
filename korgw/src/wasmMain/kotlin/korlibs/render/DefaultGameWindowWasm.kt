@@ -8,6 +8,7 @@ import korlibs.image.bitmap.*
 import korlibs.image.format.*
 import korlibs.io.async.*
 import korlibs.io.file.*
+import korlibs.io.util.*
 import korlibs.io.wasm.*
 import korlibs.kgl.*
 import korlibs.math.geom.*
@@ -62,7 +63,7 @@ open class BrowserCanvasJsGameWindow(
     fun is_touch_device(): Boolean {
         if (isTouchDeviceCache == null) {
             isTouchDeviceCache = try {
-                document.createEvent("TouchEvent")
+                wrapWasmJsExceptions { document.createEvent("TouchEvent") }
                 true
             //} catch (e: dynamic) { // WASM
             } catch (e: Throwable) { // WASM
