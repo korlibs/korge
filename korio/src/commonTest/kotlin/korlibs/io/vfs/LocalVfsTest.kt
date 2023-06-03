@@ -3,8 +3,7 @@ package korlibs.io.vfs
 import korlibs.memory.*
 import korlibs.io.async.*
 import korlibs.io.file.*
-import korlibs.io.file.std.localCurrentDirVfs
-import korlibs.io.file.std.tempVfs
+import korlibs.io.file.std.*
 import korlibs.io.lang.FileNotFoundException
 import korlibs.io.lang.UTF8
 import korlibs.io.lang.toString
@@ -103,5 +102,10 @@ class LocalVfsTest {
         } finally {
             file.delete()
         }
+    }
+
+    @Test
+    fun testReadResourceTxt() = suspendTest {
+        assertEquals("HELLO", resourcesVfs["resource.txt"].readString())
     }
 }
