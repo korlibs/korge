@@ -10,7 +10,7 @@ KGL, KorAG, KorEV, KorGW, KorUI
 
 [https://github.com/korlibs/korgw](https://github.com/korlibs/korgw)
 
-{% include stars.html project="korgw" %}
+{% include stars.html project="korge" central="com.soywiz.korlibs.korgw/korgw" %}
 
 {% include toc_include.md %}
 
