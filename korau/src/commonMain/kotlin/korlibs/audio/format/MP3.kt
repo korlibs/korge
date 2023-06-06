@@ -202,7 +202,7 @@ open class MP3Base : AudioFormat("mp3") {
 			val versions = arrayOf("2.5", "x", "2", "1")
 			val layers = intArrayOf(-1, 3, 2, 1)
 
-			val bitrates = mapOf(
+			val bitrates: Map<Int, IntArray> = mapOf(
                 getBitrateKey(1, 1) to intArrayOf(0, 32, 64, 96, 128, 160, 192, 224, 256, 288, 320, 352, 384, 416, 448),
                 getBitrateKey(1, 2) to intArrayOf(0, 32, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320, 384),
                 getBitrateKey(1, 3) to intArrayOf(0, 32, 40, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320),
@@ -252,8 +252,8 @@ open class MP3Base : AudioFormat("mp3") {
 				val bitrate_key = getBitrateKey(simple_version, layer)
 				val bitrate_idx = b2.extract(4, 4)
 
-				val bitrate = bitrates[bitrate_key]?.get(bitrate_idx) ?: 0
-				val sample_rate = sampleRates[version]?.get(b2.extract(2, 2)) ?: 0
+				val bitrate = bitrates[bitrate_key]?.getOrNull(bitrate_idx) ?: 0
+				val sample_rate = sampleRates[version]?.getOrNull(b2.extract(2, 2)) ?: 0
 				val padding_bit = b2.extract(1, 1)
 				val private_bit = b2.extract(0, 1)
 				val channelMode = ChannelMode.BY_ID[b3.extract(6, 2)]!!
@@ -274,6 +274,7 @@ open class MP3Base : AudioFormat("mp3") {
 			}
 
 			private fun framesize(layer: Int, bitrate: Int, sample_rate: Int, padding_bit: Int): Int {
+                if (sample_rate == 0) error("division by 0")
 				return if (layer == 1) {
 					((12 * bitrate * 1000 / sample_rate) + padding_bit) * 4
 				} else {

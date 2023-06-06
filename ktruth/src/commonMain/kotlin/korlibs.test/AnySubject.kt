@@ -5,7 +5,7 @@ import kotlin.contracts.contract
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 
-open class AnySubject<T : Any>(val subject: T) {
+open class AnySubject<T : Any?>(val subject: T) {
     fun isEqualTo(expected: T) {
         assertEquals(expected, subject)
     }

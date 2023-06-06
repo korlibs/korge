@@ -1,0 +1,6 @@
+{
+  "scripts": {
+    "start" : "jekyll s --watch --livereload",
+    "startIncremental" : "jekyll s --watch --livereload --incremental"
+  }
+}

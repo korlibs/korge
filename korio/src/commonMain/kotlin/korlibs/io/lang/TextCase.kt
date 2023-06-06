@@ -11,7 +11,7 @@ class TextCase(val words: List<String>) {
             //   - TEST-DEMO
             //   - helloWorld
             //   - HelloWorld
-            return TextCase(str.split(Regex("\\W+")))
+            return TextCase(str.replace('_', '-').split(Regex("\\W+")))
             //val out = arrayListOf<String>()
             //val sr = StrReader(str)
             //var lastLowerCase: Boolean? = null

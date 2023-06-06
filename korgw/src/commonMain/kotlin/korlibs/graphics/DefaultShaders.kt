@@ -68,7 +68,7 @@ object DefaultShaders {
 
 	val a_Pos: Attribute = Attribute("a_Pos", VarType.Float2, normalized = false, precision = Precision.HIGH, fixedLocation = 0)
 	val a_Tex: Attribute = Attribute("a_Tex", VarType.Float2, normalized = false, precision = Precision.MEDIUM, fixedLocation = 1)
-	val a_Col: Attribute = Attribute("a_Col", VarType.Byte4, normalized = true, precision = Precision.LOW, fixedLocation = 2)
+	val a_Col: Attribute = Attribute("a_Col", VarType.UByte4, normalized = true, precision = Precision.LOW, fixedLocation = 2)
 	val v_Tex: Varying = Varying("v_Tex", VarType.Float2, precision = Precision.MEDIUM)
 	val v_Col: Varying = Varying("v_Col", VarType.Float4)
 

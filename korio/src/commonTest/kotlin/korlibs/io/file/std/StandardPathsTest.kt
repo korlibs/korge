@@ -22,6 +22,13 @@ class StandardPathsTest {
         logger.debug { "temp=${temp}" }
     }
 
+    @Test
+    fun test2() {
+        // /Users/soywiz/Library/Developer/CoreSimulator/Devices/5FF29F5D-2E43-4994-991B-A8C4EC3F1677/data/Documents
+        // /Users/soywiz/Library/Developer/CoreSimulator/Devices/5FF29F5D-2E43-4994-991B-A8C4EC3F1677/data/Library/Preferences/myappid
+        println(StandardPaths.appPreferencesFolder("myappid"))
+    }
+
     /*
     JVM:
         cwd=/Users/soywiz/projects/korge/korio

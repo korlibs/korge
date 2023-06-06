@@ -181,6 +181,8 @@ class UniformsRef(
 }
 
 class UniformBlockBuffer<T : UniformBlock>(val block: T) {
+    override fun toString(): String = "UniformBlockBuffer($block)"
+
     companion object {
         inline fun <T : UniformBlock> single(block: T, gen: T.(UniformsRef) -> Unit): UniformBlockBuffer<T> =
             UniformBlockBuffer(block).also { it.reset() }.also { it.push { gen(it) } }

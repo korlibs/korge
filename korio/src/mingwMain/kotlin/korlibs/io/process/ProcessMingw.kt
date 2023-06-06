@@ -33,7 +33,7 @@ actual suspend fun posixExec(
             temp.usePinned { pin ->
                 val tempAddress = pin.addressOf(0)
                 while (true) {
-                    val result = fread(tempAddress, 1, temp.size.convert(), f).toLong()
+                    val result = fread(tempAddress, 1.convert(), temp.size.convert(), f).toLong()
                     //println("[WORKER] fread result $result")
                     if (result <= 0L) break
                     stdoutQueue.add(temp.copyOf(result.toInt()))

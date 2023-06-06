@@ -10,6 +10,17 @@ interface IStorage {
 	fun removeAll(): Unit
 }
 
+interface IStorageWithKeys : IStorage {
+    fun keys(): List<String>
+    fun toMap(): Map<String, String?> = keys().associateWith { getOrNull(it) }
+
+    override fun removeAll(): Unit {
+        for (key in keys().toList()) {
+            remove(key)
+        }
+    }
+}
+
 operator fun IStorage.contains(key: String): Boolean {
 	return getOrNull(key) != null
 }

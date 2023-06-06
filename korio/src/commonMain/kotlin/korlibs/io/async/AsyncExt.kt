@@ -64,8 +64,10 @@ fun <T> async(context: CoroutineContext, callback: suspend () -> T) = CoroutineS
 fun <T> asyncImmediately(context: CoroutineContext, callback: suspend () -> T) = CoroutineScope(context).asyncImmediately(callback)
 fun <T> asyncAsap(context: CoroutineContext, callback: suspend () -> T) = CoroutineScope(context).asyncAsap(callback)
 
-expect fun asyncEntryPoint(callback: suspend () -> Unit)
-expect fun asyncTestEntryPoint(callback: suspend () -> Unit)
+public expect class AsyncEntryPointResult
+
+expect fun asyncEntryPoint(callback: suspend () -> Unit): AsyncEntryPointResult
+expect fun asyncTestEntryPoint(callback: suspend () -> Unit): AsyncEntryPointResult
 
 val DEFAULT_SUSPEND_TEST_TIMEOUT = 20.seconds
 
@@ -74,7 +76,7 @@ fun suspendTest(timeout: TimeSpan?, callback: suspend CoroutineScope.() -> Unit)
 fun suspendTest(callback: suspend CoroutineScope.() -> Unit) = suspendTest(DEFAULT_SUSPEND_TEST_TIMEOUT, callback)
 fun suspendTest(cond: () -> Boolean, timeout: TimeSpan? = DEFAULT_SUSPEND_TEST_TIMEOUT, callback: suspend CoroutineScope.() -> Unit) = suspendTest(timeout) { if (cond()) callback() }
 fun suspendTestNoBrowser(callback: suspend CoroutineScope.() -> Unit) = suspendTest({ !Platform.isJsBrowser }, callback = callback)
-fun suspendTestNoJs(callback: suspend CoroutineScope.() -> Unit) = suspendTest({ !Platform.isJs }, callback = callback)
+fun suspendTestNoJs(callback: suspend CoroutineScope.() -> Unit) = suspendTest({ !Platform.isJs && !Platform.isWasm }, callback = callback)
 
 @ThreadLocal
 val DEBUG_ASYNC_LAUNCH_ERRORS by lazy { Environment["DEBUG_ASYNC_LAUNCH_ERRORS"] == "true" }

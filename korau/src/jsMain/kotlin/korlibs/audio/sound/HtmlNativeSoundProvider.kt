@@ -137,8 +137,8 @@ class AudioBufferSound(
         val nchannels = buffer.numberOfChannels
         val nsamples = buffer.length
         val data = AudioSamples(nchannels, nsamples)
-        var m = 0
         for (c in 0 until nchannels) {
+            var m = 0
             val channelF = buffer.getChannelData(c)
             for (n in 0 until nsamples) {
                 data[c][m++] = SampleConvert.floatToShort(channelF[n])

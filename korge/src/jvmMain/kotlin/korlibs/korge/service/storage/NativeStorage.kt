@@ -4,7 +4,7 @@ import korlibs.korge.view.*
 import java.io.*
 import java.util.*
 
-actual class NativeStorage actual constructor(val views: Views) : IStorage {
+actual class NativeStorage actual constructor(val views: Views) : IStorageWithKeys {
 	val props = Properties()
     val folder = File(views.realSettingsFolder).also { kotlin.runCatching { it.mkdirs() } }
     val file = File(folder, "game.jvm.storage")
@@ -15,7 +15,7 @@ actual class NativeStorage actual constructor(val views: Views) : IStorage {
 
     override fun toString(): String = "NativeStorage(${toMap()})"
 
-    actual fun keys(): List<String> = props.keys.toList().map { it.toString() }
+    actual override fun keys(): List<String> = props.keys.toList().map { it.toString() }
 
 	private fun load() {
         if (!file.exists()) return

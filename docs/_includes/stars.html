@@ -1,0 +1,10 @@
+<!-- Place this tag where you want the button to render. -->
+<div style="display:flex;">
+    <a class="github-button" href="https://github.com/korlibs/{{ include.project }}" data-color-scheme="no-preference: light; light: light; dark: dark;" data-size="large" data-show-count="true" aria-label="Star korlibs/{{ include.project }} on GitHub">Star</a>
+    {% if include.central %}
+    <a href="https://search.maven.org/artifact/{{ include.central }}" target="_blank"><img alt="Maven Central" src="https://img.shields.io/maven-central/v/{{ include.central }}"></a>
+    {% endif %}
+    <a href="https://discord.korge.org/"><img alt="Discord" src="https://img.shields.io/discord/728582275884908604?logo=discord&label=Discord" /></a>
+</div>
+<!-- Place this tag in your head or just before your close body tag. -->
+<script async defer src="https://buttons.github.io/buttons.js"></script>

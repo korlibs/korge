@@ -14,24 +14,28 @@ import kotlin.coroutines.resumeWithException
 import kotlin.js.JsName
 
 /**
- * An simple interface compatible with JS Promise used for interop. In other cases just use [CompletableDeferred] instead.
+ * A simple interface compatible with JS Promise used for interop. In other cases just use [CompletableDeferred] instead.
  */
 @JsName("Promise")
 @KorioExperimentalApi
+@Deprecated("Use CompletableDeferred instead")
 interface Promise<T> {
     @JsName("then")
     fun <S> then(onFulfilled: ((T) -> S)?, onRejected: ((Throwable) -> S)?): Promise<S>
 }
 
 /**
- * An simple interface compatible with JS Promise used for interop. In other cases just use [CompletableDeferred] instead.
+ * A simple interface compatible with JS Promise used for interop. In other cases just use [CompletableDeferred] instead.
  */
 @KorioExperimentalApi
+@Deprecated("Use CompletableDeferred instead")
 expect fun <T> Promise(coroutineContext: CoroutineContext = EmptyCoroutineContext, executor: (resolve: (T) -> Unit, reject: (Throwable) -> Unit) -> Unit): Promise<T>
 
 @KorioExperimentalApi
+@Deprecated("Use CompletableDeferred instead")
 suspend fun <T> SPromise(executor: (resolve: (T) -> Unit, reject: (Throwable) -> Unit) -> Unit): Promise<T> = Promise(coroutineContext, executor)
 
+@Deprecated("Use CompletableDeferred instead")
 internal class DeferredPromise<T>(
     val deferred: Deferred<T>,
     val coroutineContext: CoroutineContext
@@ -57,9 +61,12 @@ internal class DeferredPromise<T>(
     }
 }
 
+@Deprecated("Use CompletableDeferred instead")
 fun <T> Deferred<T>.toPromise(coroutineContext: CoroutineContext): Promise<T> = DeferredPromise(this, coroutineContext)
+@Deprecated("Use CompletableDeferred instead")
 suspend fun <T> Deferred<T>.toPromise(): Promise<T> = toPromise(coroutineContext)
 
+@Deprecated("Use CompletableDeferred instead")
 fun Job.toPromise(coroutineContext: CoroutineContext): Promise<Unit> {
     val deferred = CompletableDeferred<Unit>()
     this.invokeOnCompletion {
@@ -72,14 +79,17 @@ fun Job.toPromise(coroutineContext: CoroutineContext): Promise<Unit> {
     return deferred.toPromise(coroutineContext)
 }
 
+@Deprecated("Use CompletableDeferred instead")
 suspend fun Job.toPromise(): Promise<Unit> = toPromise(coroutineContext)
 
+@Deprecated("Use CompletableDeferred instead")
 fun <T> Promise<T>.toDeferred(): Deferred<T> {
     val out = CompletableDeferred<T>()
     this.then({ out.complete(it) }, { out.completeExceptionally(it) })
     return out
 }
 
+@Deprecated("Use CompletableDeferred instead")
 suspend fun <T> Promise<T>.await(): T = suspendCancellableCoroutine { c ->
     this.then({ c.resume(it) }, { c.resumeWithException(it) })
     //c.invokeOnCancellation { c.cancel() }

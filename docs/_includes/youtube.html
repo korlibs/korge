@@ -1,0 +1,19 @@
+<iframe id="video_{{ include.video_id }}" width="960" height="540" style="max-width: 100%; max-height: 100vh;" src="https://www.youtube.com/embed/{{ include.video_id }}" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+<script type="text/javascript">
+	(() => {
+		function adjust() {
+			setTimeout(() => {
+				const iframe = document.querySelector("#video_{{ include.video_id }}")
+				const res = iframe.clientWidth / 1.7777778
+				iframe.height = res
+				//iframe.style.height =
+				//console.warn(iframe.clientWidth, res, iframe.clientHeight)
+			}, 0)
+		}
+		window.addEventListener("resize", (e) => {
+			adjust()
+		})
+		adjust()
+	})()
+</script>

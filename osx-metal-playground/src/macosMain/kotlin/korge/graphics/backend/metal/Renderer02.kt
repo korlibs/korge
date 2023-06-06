@@ -1,16 +1,14 @@
 package korge.graphics.backend.metal
 
 import korlibs.graphics.*
-import korlibs.graphics.metal.shader.*
 import korlibs.graphics.shader.*
-import korlibs.graphics.shader.gl.*
 import kotlinx.cinterop.*
 import platform.Foundation.*
 import platform.Metal.*
 import platform.MetalKit.*
 import platform.posix.*
 
-class Renderer02(device: MTLDeviceProtocol) : Renderer(device) {
+class Renderer02 : Renderer() {
 
     private lateinit var samplerState: MTLSamplerStateProtocol
     private lateinit var vertexPositionsBuffer: MTLBufferProtocol
@@ -71,13 +69,13 @@ class Renderer02(device: MTLDeviceProtocol) : Renderer(device) {
 
     private fun buildShaders() = memScoped {
 
-        vertexShader.toNewGlslStringResult()
+        /*vertexShader.toNewGlslStringResult()
             .result
             .also(::println)
 
         fragmentShader.toNewGlslStringResult()
             .result
-            .also(::println)
+            .also(::println)*/
 
         var shaderSrc = """
                 #include <metal_stdlib>
@@ -113,9 +111,12 @@ class Renderer02(device: MTLDeviceProtocol) : Renderer(device) {
         """.trimIndent()
 
         //shaderSrc =
-        (vertexShader to fragmentShader).toNewMetalShaderStringResult()
+        /*(vertexShader to fragmentShader).toNewMetalShaderStringResult(MetalShaderBufferInputLayouts(
+            listOf(),
+            listOf()
+        ))
             .result
-            .also(::println)
+            .also(::println)*/
 
         val errorPtr = alloc<ObjCObjectVar<NSError?>>()
         val library = device.newLibraryWithSource(shaderSrc, null, errorPtr.ptr).let {

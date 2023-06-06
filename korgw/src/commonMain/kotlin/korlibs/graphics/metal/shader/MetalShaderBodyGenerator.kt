@@ -21,7 +21,7 @@ internal class MetalShaderBodyGenerator(
     }
 
     override fun visit(stm: Program.Stm.Discard) {
-        programIndenter.line("discard;")
+        programIndenter.line("discard_fragment();")
     }
 
     override fun visit(stm: Program.Stm.Break) {
@@ -91,11 +91,7 @@ internal class MetalShaderBodyGenerator(
             }
 
             else -> when (operand) {
-                DefaultShaders.a_Col, DefaultShaders.a_Pos, DefaultShaders.a_Tex -> when (kind) {
-                    ShaderType.VERTEX -> "${operand.name}[vertexId]"
-                    else -> operand.name
-                }
-                DefaultShaders.v_Col -> when (kind) {
+                is Varying -> when (kind) {
                     ShaderType.VERTEX -> "out.${operand.name}"
                     else -> "in.${operand.name}"
                 }
@@ -108,10 +104,6 @@ internal class MetalShaderBodyGenerator(
     override fun visit(temp: Temp): String {
         temps += temp
         return super.visit(temp)
-    }
-
-    override fun visit(output: Output): String {
-        return super.visit(output)
     }
 
     override fun visit(operand: Program.IntLiteral): String = "${operand.value}"

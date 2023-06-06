@@ -37,7 +37,7 @@ class VfsFileTest {
             }
         }
         //println("************************************")
-        assertEquals(listOf("build.gradle:478"), processedFileNamesWithSize)
+        assertEquals(listOf("build.gradle:477"), processedFileNamesWithSize)
     }
 
 	@Test

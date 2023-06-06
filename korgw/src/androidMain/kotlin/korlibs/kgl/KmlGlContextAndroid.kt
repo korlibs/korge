@@ -12,9 +12,13 @@ actual fun KmlGlContextDefault(window: Any?, parent: KmlGlContext?): KmlGlContex
 }
 
 fun getAndroidTestContext(): Context {
-    return Class.forName("android.app.Instrumentation").getMethod("getContext").invoke(
-        Class.forName("androidx.test.platform.app.InstrumentationRegistry").getMethod("getInstrumentation").invoke(null)
-    ) as Context
+    return Class.forName("android.app.Instrumentation")
+        .getMethod("getContext")
+        .invoke(
+            Class.forName("androidx.test.platform.app.InstrumentationRegistry")
+                .getMethod("getInstrumentation")
+                .invoke(null)
+        ) as Context
 }
 
 class AndroidKmlGlContext(window: Any?, parent: KmlGlContext?) : KmlGlContext(window, KmlGlAndroid({ 2 }), parent) {

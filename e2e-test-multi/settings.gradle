@@ -1,4 +1,6 @@
-pluginManagement { repositories {  mavenLocal(); mavenCentral(); google(); gradlePluginPortal()  }  }
+pluginManagement {
+    Eval.xy(this, it, file('../gradle/repositories.settings.gradle').text)
+}
 
 //plugins {
 //    //id("com.soywiz.kproject.settings") version "0.0.1-SNAPSHOT"

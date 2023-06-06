@@ -1,15 +1,22 @@
 package korlibs.metal
 
-import korlibs.memory.*
 import korlibs.graphics.*
+import korlibs.graphics.metal.shader.*
 import korlibs.graphics.shader.*
+import korlibs.logger.*
+import korlibs.memory.*
 import korlibs.metal.shader.*
 import kotlinx.cinterop.*
 import platform.Metal.*
 import platform.MetalKit.*
 
-class AGMetal(private val view: MTKView) : AG() {
+class AGMetal(
+    private val view: MTKView,
+    // TODO: fix support of vertex data with complex layouts to remove this
+    private val shouldFlattenVertexData: Boolean = true
+) : AG() {
 
+    private val logger = Logger("AGMetal")
     private val device = MTLCreateSystemDefaultDevice() ?: error("fail to create metal device")
     private val commandQueue = device.newCommandQueue() ?: error("fail to create metal command queue")
     private val programs = HashMap<Program, MetalProgram>()
@@ -40,8 +47,12 @@ class AGMetal(private val view: MTKView) : AG() {
     ) {
         autoreleasepool { // TODO: Check if that necessary
 
+            val intermediateVertexData = computeIntermediateVertexData(vertexData)
+
             val currentProgram = getProgram(
-                program
+                program,
+                intermediateVertexData,
+                uniformBlocks
             )
 
             val commandBuffer = commandQueue.commandBuffer() ?: error("fail to get command buffer")
@@ -59,27 +70,40 @@ class AGMetal(private val view: MTKView) : AG() {
                 //setFragmentTexture(texture, 0)
                 //setFragmentSamplerState(samplerState, 0)
 
-                var currentBuffer = 0uL
-                vertexData.list.fastForEach{ buffer ->
-                    setVertexBuffer(buffer.buffer.toMetal.buffer, 0, currentBuffer)
-                    currentBuffer += 1uL
+                intermediateVertexData.list.fastForEach { vertexDataUnit ->
+                    val bufferLocation = currentProgram.indexOfAttributeOnBuffer(vertexDataUnit.layout.items)
+                    logger.trace { "${vertexDataUnit.layout.items} will be bind at location $bufferLocation" }
+                    val buffer = vertexDataUnit.buffer.toMetal.buffer
+                    setVertexBuffer(buffer, offset = 0uL, bufferLocation)
                 }
+
+                //var currentBuffer = 0uL
+                //vertexData.list.fastForEach{ buffer ->
+                //    setVertexBuffer(buffer.buffer.toMetal.buffer, 0.convert(), currentBuffer)
+                //    currentBuffer += 1uL
+                //}
 
                 uniformBlocks.fastForEachBlock { index, block, buffer, valueIndex ->
-                    TODO()
+                    if (buffer == null) {
+                        logger.warn { "empty buffer" }
+                        return
+                    }
+                    val uniform = block.block.uniforms.map { it.uniform }.first()
+                    val bufferLocation = currentProgram.indexOfUniformOnBuffer(uniform)
+                    logger.trace { "$uniform will be bind at location $bufferLocation" }
+                    setVertexBuffer(buffer.toMetal.buffer, 0, bufferLocation)
                 }
-                //uniformBlocks.fastForEachUniform {
-                //    setVertexBuffer(it.data.toMetal.buffer, 0, currentBuffer)
-                //    currentBuffer += 1uL
-                //}
-
-                //uniforms.values.fastForEach { buffer ->
-                //    setVertexBuffer(buffer.data.toMetal.buffer, 0, currentBuffer)
-                //    currentBuffer += 1uL
-                //}
 
                 if (indices != null) {
-                    drawIndexedPrimitives(drawType.toMetal(), vertexCount.toULong(), indexType.toMetal(), indices.toMetal.buffer, 0)
+                    indices.mem!!.size
+                    drawIndexedPrimitives(
+                        drawType.toMetal(),
+                        vertexCount.toULong(),
+                        indexType.toMetal(),
+                        indices.toMetal.buffer,
+                        0
+                    )
+                    //drawIndexedPrimitives(drawType.toMetal(), vertexCount.toULong(), indexType.toMetal(), indices.toMetal.buffer, 0.convert())
                 } else {
                     TODO("Not yet supported, rendering without vertex indexes")
                 }
@@ -94,6 +118,11 @@ class AGMetal(private val view: MTKView) : AG() {
         }
     }
 
+    private fun computeIntermediateVertexData(vertexData: AGVertexArrayObject): AGVertexArrayObject = when (shouldFlattenVertexData) {
+            true -> vertexData.flatten()
+            false -> vertexData
+    }
+
 
     private val Buffer.toMetal: MTLBuffer
         get() = buffersv1
@@ -106,8 +135,33 @@ class AGMetal(private val view: MTKView) : AG() {
     private val AGBuffer.toMetal: MTLBuffer
         get() = (mem ?: error("cannot create buffer from null memory")).toMetal
 
-    private fun getProgram(program: Program) = programs
+    private fun getProgram(
+        program: Program,
+        vertexData: AGVertexArrayObject,
+        uniformBlocks: UniformBlocksBuffersRef
+    ) = programs
         .getOrPut(program) {
-            MetalShaderCompiler.compile(device, program)
+            MetalShaderCompiler.compile(
+                device,
+                program,
+                bufferInputLayouts = lazyMetalShaderBufferInputLayouts(
+                    vertexLayouts = vertexData.map { it.layout },
+                    uniforms = uniformBlocks.map()
+                )
+            )
         }
+}
+
+private fun AGVertexArrayObject.map(function: (AGVertexData) -> ProgramLayout<Attribute>): List<ProgramLayout<Attribute>> {
+    return mutableListOf<ProgramLayout<Attribute>>().apply {
+        list.fastForEach { input -> function(input).also { add(it) } }
+    }
+}
+
+private fun UniformBlocksBuffersRef.map(): List<Uniform> {
+    return mutableListOf<Uniform>().apply {
+        fastForEachBlock { _, block, _, _ ->
+            addAll(block.block.uniforms.map { it.uniform })
+        }
+    }
 }

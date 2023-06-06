@@ -34,6 +34,7 @@ fun DateFormat.parse(str: String, doAdjust: Boolean = true): DateTimeTz =
 fun DateFormat.parseDate(str: String): Date = parse(str).local.date
 
 fun DateFormat.parseUtc(str: String): DateTime = parse(str).utc
+fun DateFormat.parseLocal(str: String): DateTime = parse(str).local
 
 fun DateFormat.format(date: Double): String = format(DateTime.fromUnixMillis(date))
 fun DateFormat.format(date: Long): String = format(DateTime.fromUnixMillis(date))

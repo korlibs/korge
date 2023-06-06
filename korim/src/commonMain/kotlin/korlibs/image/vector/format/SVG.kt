@@ -228,16 +228,28 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
             }
         }
 
+        fun String.parseNumber(default: Float): Float {
+            val str = this.trim()
+            val scale = when {
+                str.endsWith("px") -> 1f
+                str.endsWith("pt") -> 1f
+                str.endsWith("em") -> 10f
+                str.endsWith("%") -> 0.01f
+                else -> 1f
+            }
+            return str.removeSuffix("px").removeSuffix("pt").removeSuffix("em").removeSuffix("%").toFloatOrNull()?.times(scale) ?: default
+        }
+
         open fun setCommonStyles(c: Context2d) {
             for ((key, it) in attributes) {
                 when (key) {
-                    "stroke-width" -> c.lineWidth = it.toFloatOrNull() ?: 1f
+                    "stroke-width" -> c.lineWidth = it.parseNumber(1f)
                     "stroke-linejoin" -> c.lineJoin = LineJoin[it]
                     "stroke-linecap" -> c.lineCap = LineCap[it]
                     "stroke" -> c.strokeStyle = parseFillStroke(c, it)
                     "opacity" -> c.globalAlpha *= opacity
-                    "fill-opacity" -> c.globalAlpha *= it.toFloatOrNull() ?: 1f // @TODO: Do this properly
-                    "stroke-opacity" -> c.globalAlpha *= it.toFloatOrNull() ?: 1f // @TODO: Do this properly
+                    "fill-opacity" -> c.globalAlpha *= it.parseNumber(1f) // @TODO: Do this properly
+                    "stroke-opacity" -> c.globalAlpha *= it.parseNumber(1f) // @TODO: Do this properly
                     "fill" -> c.fillStyle = parseFillStroke(c, it)
                     "font-size" -> c.fontSize = CSS.parseSizeAsFloat(it)
                     "font-family" -> c.font = c.fontRegistry?.get(it)
@@ -379,6 +391,7 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
         var y2 = xml.double("y2")
 
         override fun drawInternal(c: Context2d) {
+            //println("LINE: $x1, $y1, $x2, $y2: $attributes")
             c.beginPath()
             c.moveTo(Point(x1, y1))
             c.lineTo(Point(x2, y2))

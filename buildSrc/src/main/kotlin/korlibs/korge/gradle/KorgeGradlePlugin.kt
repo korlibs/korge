@@ -1,5 +1,6 @@
 package korlibs.korge.gradle
 
+import korlibs.korge.gradle.typedresources.*
 import korlibs.korge.gradle.module.*
 import korlibs.korge.gradle.targets.*
 import korlibs.korge.gradle.targets.all.*
@@ -7,6 +8,7 @@ import korlibs.korge.gradle.targets.jvm.*
 import korlibs.korge.gradle.targets.linux.LDLibraries
 import korlibs.korge.gradle.util.*
 import korlibs.*
+import korlibs.modules.*
 import org.gradle.api.*
 import org.gradle.api.Project
 import org.gradle.api.plugins.*
@@ -73,7 +75,11 @@ class KorgeGradleApply(val project: Project, val projectType: ProjectType) {
             project.configureDependencies()
             project.addGenResourcesTasks()
             project.enableFeaturesOnAllTargets()
+
+            project.configureTests()
         }
+
+        project.configureTypedResourcesGenerator()
 	}
 
 	private fun Project.configureDependencies() {

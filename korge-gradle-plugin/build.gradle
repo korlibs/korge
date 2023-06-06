@@ -59,6 +59,9 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
 kotlin.sourceSets.main.each {
     it.kotlin.srcDirs(new File(buildDir, "srcgen"), new File(buildDir, "srcgen2"))
 }
+kotlin.sourceSets.test.each {
+    it.kotlin.srcDirs(new File(buildDir, "testgen2"))
+}
 java.sourceSets.main.each {
     it.resources.srcDirs(new File(buildDir, "srcgen2res"))
 }
@@ -87,6 +90,7 @@ dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
     testImplementation("io.mockk:mockk:1.11.0")
+    testImplementation("junit:junit:4.13.2")
 
     //implementation(project(":korge-reload-agent"))
 }

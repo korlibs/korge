@@ -145,6 +145,8 @@ open class KorgeExtension(
 
     private var _checkVersionOnce = false
 
+    var autoGenerateTypedResources: Boolean = true
+
     /**
      * This checks that you are using the latest version of KorGE
      * once per day.
@@ -417,12 +419,20 @@ open class KorgeExtension(
 
 	val extraEntryPoints = arrayListOf<Entrypoint>()
 
-	class Entrypoint(val name: String, val jvmMainClassName: String) {
-		val entryPoint = (jvmMainClassName.substringBeforeLast('.', "") + ".main").trimStart('.')
+    internal fun getDefaultEntryPoint(): Entrypoint {
+        return Entrypoint("") { realJvmMainClassName }
+    }
+
+    internal fun getAllEntryPoints(): List<Entrypoint> {
+        return listOf(getDefaultEntryPoint()) + extraEntryPoints
+    }
+
+	class Entrypoint(val name: String, val jvmMainClassName: () -> String) {
+		val entryPoint by lazy { (jvmMainClassName().substringBeforeLast('.', "") + ".main").trimStart('.') }
 	}
 
 	fun entrypoint(name: String, jvmMainClassName: String) {
-		extraEntryPoints.add(Entrypoint(name, jvmMainClassName))
+		extraEntryPoints.add(Entrypoint(name) { jvmMainClassName })
 	}
 
     var esbuildVersion: String = ESBUILD_DEFAULT_VERSION

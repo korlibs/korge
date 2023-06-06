@@ -109,7 +109,7 @@ jobs:
       - { name: Set up JDK, uses: actions/setup-java@v3, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
       - run: sudo apt-get install xvfb
       - run: xvfb-run --auto-servernum ./gradlew --no-daemon checkReleasingMavenCentral
-      - run: xvfb-run --auto-servernum ./gradlew --no-daemon publishJsPublicationToMavenRepository publishAndroidPublicationToMavenRepository
+      - run: xvfb-run --auto-servernum ./gradlew --no-daemon publishWasmPublicationToMavenRepository publishJsPublicationToMavenRepository publishAndroidPublicationToMavenRepository
   publish-linux:
     runs-on: ubuntu-latest
     needs: [create-staging-repo]
