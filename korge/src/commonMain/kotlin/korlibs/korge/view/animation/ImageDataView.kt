@@ -2,6 +2,7 @@ package korlibs.korge.view.animation
 
 import korlibs.korge.view.*
 import korlibs.image.format.ImageData
+import korlibs.korge.view.property.*
 
 /**
  * With imageDataView it is possible to display an image inside a Container or View.
@@ -65,6 +66,7 @@ open class ImageDataView(
         return animationView.getLayer(name)
     }
 
+    @ViewProperty
     var smoothing: Boolean = true
         set(value) {
             if (field != value) {
@@ -81,6 +83,8 @@ open class ImageDataView(
             }
         }
 
+    @ViewProperty
+    @ViewPropertyProvider(AnimationProvider::class)
     var animation: String? = animation
         set(value) {
             if (field !== value) {
@@ -88,6 +92,10 @@ open class ImageDataView(
                 updatedDataAnimation()
             }
         }
+
+    object AnimationProvider : ViewPropertyProvider.ListImpl<ImageDataView, String>() {
+        override fun listProvider(instance: ImageDataView): List<String> = instance.animationNames.toList()
+    }
 
     val animationNames: Set<String> get() = data?.animationsByName?.keys ?: emptySet()
 
@@ -97,8 +105,11 @@ open class ImageDataView(
         this.smoothing = smoothing
     }
 
+    @ViewProperty
     fun play() { animationView.play() }
+    @ViewProperty
     fun stop() { animationView.stop() }
+    @ViewProperty
     fun rewind() { animationView.rewind() }
 
     private fun updatedDataAnimation() {

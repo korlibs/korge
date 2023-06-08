@@ -35,11 +35,6 @@ data class BlendMode(
     }
 
 
-    @Suppress("unused")
-    object Provider {
-        val ITEMS get() = STANDARD_LIST
-    }
-
     companion object {
         /** Mixes the source and destination colors using the source alpha value */
         val NORMAL = BlendMode(name = "NORMAL", factors = AGBlending.NORMAL_PRE)

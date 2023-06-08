@@ -9,10 +9,6 @@ class ScaleMode(
     operator fun invoke(item: Size, container: Size): Size = transform(item, container)
     operator fun invoke(item: SizeInt, container: SizeInt): SizeInt = transform(item.toFloat(), container.toFloat()).toInt()
 
-    object Provider {
-        @Suppress("unused") val LIST = listOf(COVER, SHOW_ALL, EXACT, NO_SCALE)
-    }
-
     companion object {
         val COVER: ScaleMode = ScaleMode("COVER") { i, c -> i * (c / i).toVector2().maxComponent() }
         val SHOW_ALL: ScaleMode = ScaleMode("SHOW_ALL") { i, c -> i * (c / i).toVector2().minComponent() }

@@ -89,8 +89,8 @@ class Convolute3Filter(
         }
     }
 
-    object KernelNameProvider {
-        val LIST = NAMED_KERNELS
+    object KernelNameProvider : ViewPropertyProvider.ItemsMapImpl<Matrix4>() {
+        override val ITEMS = NAMED_KERNELS
     }
 
     /** 3x3 matrix representing a convolution kernel */
