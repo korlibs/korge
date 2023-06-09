@@ -26,7 +26,13 @@ inline fun <reified T : Library> NativeLoad(name: String): T = Native.load(name,
 
 // https://developer.apple.com/documentation/objectivec/objective-c_runtime
 interface ObjectiveC : Library {
+    fun objc_copyProtocolList(outCount: IntArray): Pointer
+    fun protocol_getName(protocol: Long): String
+
     fun objc_getClass(name: String): Long
+
+    fun objc_getClassList(buffer: Pointer?, bufferCount: Int): Int
+
     fun objc_getProtocol(name: String): Long
 
     fun class_addProtocol(a: Long, b: Long): Long
@@ -60,10 +66,14 @@ interface ObjectiveC : Library {
     fun objc_msgSend(a: Long, b: Long, c: CharArray, len: Int): Long
      */
     fun method_getName(m: Long): Long
+    @NativeName("method_getName")
+    fun method_getNameString(m: Long): String
 
     fun sel_registerName(name: String): Long
 
     fun sel_getName(sel: Long): String
+    @NativeName("sel_getName")
+    fun sel_getNameString(sel: String): String
     fun objc_allocateClassPair(clazz: Long, name: String, extraBytes: Int): Long
     fun object_getIvar(obj: Long, ivar: Long): Long
 
@@ -84,6 +94,63 @@ interface ObjectiveC : Library {
     companion object : ObjectiveC by NativeLoad("objc") {
         //val NATIVE = NativeLibrary.getInstance("objc")
     }
+}
+
+data class ObjcMethodRef(val objcClass: ObjcClassRef, val ptr: Pointer) {
+    val name: String by lazy { ObjectiveC.method_getNameString(ptr.address) }
+    val selName: String by lazy { ObjectiveC.sel_getNameString(name) }
+
+    override fun toString(): String = "${objcClass.name}.$name"
+}
+
+data class ObjcProtocolRef(val ref: ID) {
+    val name: String by lazy { ObjectiveC.protocol_getName(ref) }
+
+    companion object {
+        fun listAll(): List<ObjcProtocolRef> {
+            val countPtr = IntArray(1)
+            val ptr = ObjectiveC.objc_copyProtocolList(countPtr)
+            val count = countPtr[0]
+            return (0 until count).map {
+                ObjcProtocolRef(ptr.getPointer((Native.LONG_SIZE * it).toLong()).address)
+            }
+        }
+    }
+
+    override fun toString(): String = "ObjcProtocol[$name]"
+}
+
+data class ObjcClassRef(val ref: ID) {
+    companion object {
+        fun listAll(): List<ObjcClassRef> = ObjectiveC.getAllClassIDs()
+        fun fromName(name: String): ObjcClassRef? = ObjectiveC.getClassByName(name)
+    }
+
+    val name: String by lazy { ObjectiveC.object_getClassName(ref) }
+
+    fun listMethods(): List<ObjcMethodRef> {
+        val nitemsPtr = IntArray(1)
+        val items2 = ObjectiveC.class_copyMethodList(ref, nitemsPtr)
+        val nitems = nitemsPtr[0]
+        return (0 until nitems).map {
+            ObjcMethodRef(this, items2.getPointer((Native.LONG_SIZE * it).toLong()))
+        }
+    }
+
+    override fun toString(): String = "ObjcClass[$name]"
+}
+
+fun ObjectiveC.getClassByName(name: String): ObjcClassRef? {
+    val id = ObjectiveC.objc_lookUpClass(name)
+    return if (id != 0L) ObjcClassRef(id) else null
+}
+
+fun ObjectiveC.getAllClassIDs(): List<ObjcClassRef> {
+    val total = objc_getClassList(null, 0)
+    val data = Memory((total * 8).toLong()).also { it.clear() }
+    //println(data.getLong(0L))
+    val total2 = objc_getClassList(data, total)
+    return (0 until total2).map { ObjcClassRef(data.getLong((it * 8).toLong())) }
 }
 
 @PublishedApi
