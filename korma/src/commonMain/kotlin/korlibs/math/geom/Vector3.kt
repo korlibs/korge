@@ -6,7 +6,17 @@ import korlibs.math.internal.*
 import korlibs.math.isAlmostEquals
 import kotlin.math.*
 
-inline class Vector3(val data: Float4Pack) {
+//inline class Vector3(val data: Float4Pack) {
+//data class Vector3(val x: Float, val y: Float, val z: Float, val w: Float) {
+data class Vector3(val x: Float, val y: Float, val z: Float) {
+    //operator fun component1(): Float = x
+    //operator fun component2(): Float = y
+    //operator fun component3(): Float = z
+    //fun copy(x: Float = this.x, y: Float = this.y, z: Float = this.z): Vector3 = Vector3(x, y, z)
+    //val x: Float get() = data.f0
+    //val y: Float get() = data.f1
+    //val z: Float get() = data.f2
+
     companion object {
         val ZERO = Vector3(0f, 0f, 0f)
         val ONE = Vector3(1f, 1f, 1f)
@@ -30,19 +40,9 @@ inline class Vector3(val data: Float4Pack) {
         fun lengthSq(x: Float, y: Float, z: Float): Float = x * x + y * y + z * z
     }
 
-    constructor(x: Float, y: Float, z: Float) : this(float4PackOf(x, y, z, 0f))
+    //constructor(x: Float, y: Float, z: Float) : this(float4PackOf(x, y, z, 0f))
     constructor(x: Int, y: Int, z: Int) : this(x.toFloat(), y.toFloat(), z.toFloat())
     constructor(x: Double, y: Double, z: Double) : this(x.toFloat(), y.toFloat(), z.toFloat())
-
-    operator fun component1(): Float = x
-    operator fun component2(): Float = y
-    operator fun component3(): Float = z
-
-    fun copy(x: Float = this.x, y: Float = this.y, z: Float = this.z): Vector3 = Vector3(x, y, z)
-
-    val x: Float get() = data.f0
-    val y: Float get() = data.f1
-    val z: Float get() = data.f2
 
     val lengthSquared: Float get() = (x * x) + (y * y) + (z * z)
     val length: Float get() = sqrt(lengthSquared)
