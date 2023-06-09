@@ -5,13 +5,21 @@ import kotlin.math.*
 
 // https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
 //@KormaValueApi
-inline class Quaternion private constructor(val data: Float4Pack) {
-    val x: Float get() = data.f0
-    val y: Float get() = data.f1
-    val z: Float get() = data.f2
-    val w: Float get() = data.f3
-    val vector: Vector4 get() = Vector4(data)
+data class Quaternion(val x: Float, val y: Float, val z: Float, val w: Float) {
+//inline class Quaternion private constructor(val data: Float4Pack) {
+//    constructor(x: Float, y: Float, z: Float, w: Float) : this(float4PackOf(x, y, z, w))
+//    val x: Float get() = data.f0
+//    val y: Float get() = data.f1
+//    val z: Float get() = data.f2
+//    val w: Float get() = data.f3
+//    operator fun component1(): Float = x
+//    operator fun component2(): Float = y
+//    operator fun component3(): Float = z
+//    operator fun component4(): Float = w
+
+    val vector: Vector4 get() = Vector4(x, y, z, w)
     val xyz: Vector3 get() = Vector3(x, y, z)
+    fun conjugate() = Quaternion(-x, -y, -z, w)
     operator fun get(index: Int): Float = when (index) {
         0 -> x
         1 -> y
@@ -23,14 +31,8 @@ inline class Quaternion private constructor(val data: Float4Pack) {
     val lengthSquared: Float get() = (x * x) + (y * y) + (z * z) + (w * w)
     val length: Float get() = sqrt(lengthSquared)
 
-    operator fun component1(): Float = x
-    operator fun component2(): Float = y
-    operator fun component3(): Float = z
-    operator fun component4(): Float = w
-
-    constructor(vector: Vector4, unit: Unit = Unit) : this(vector.data)
+    constructor(vector: Vector4, unit: Unit = Unit) : this(vector.x, vector.y, vector.z, vector.w)
     constructor() : this(0f, 0f, 0f, 1f)
-    constructor(x: Float, y: Float, z: Float, w: Float) : this(float4PackOf(x, y, z, w))
     constructor(x: Double, y: Double, z: Double, w: Double) : this(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat())
 
     fun toMatrix(): Matrix4 = Matrix4.multiply(
@@ -49,6 +51,11 @@ inline class Quaternion private constructor(val data: Float4Pack) {
     operator fun unaryMinus(): Quaternion = Quaternion(-x, -y, -z, -w)
     operator fun plus(other: Quaternion): Quaternion = Quaternion(x + other.x, y + other.y, z + other.z, w + other.w)
     operator fun minus(other: Quaternion): Quaternion = Quaternion(x - other.x, y - other.y, z - other.z, w - other.w)
+
+    fun scaled(scale: Float): Quaternion = Quaternion.interpolated(Quaternion.IDENTITY, this, scale)
+    fun scaled(scale: Double): Quaternion = scaled(scale.toFloat())
+    fun scaled(scale: Int): Quaternion = scaled(scale.toFloat())
+
     operator fun times(scale: Float): Quaternion = Quaternion(x * scale, y * scale, z * scale, w * scale)
     operator fun times(scale: Double): Quaternion = times(scale.toFloat())
     operator fun times(other: Quaternion): Quaternion {
@@ -77,9 +84,21 @@ inline class Quaternion private constructor(val data: Float4Pack) {
         }
     }
 
+    fun transform(v: Vector3): Vector3 {
+        // Create a pure quaternion from the vector
+        val q = this
+        val p = Quaternion(v.x, v.y, v.z, 0f)
+        // Multiply q by p, then by the conjugate of q
+        val resultQuaternion = q * p * q.conjugate()
+        // Return the vector part of the resulting quaternion
+        return Vector3(resultQuaternion.x, resultQuaternion.y, resultQuaternion.z)
+    }
+
     fun toEuler(): EulerRotation = toEuler(x, y, z, w)
 
     companion object {
+        val IDENTITY = Quaternion()
+
         fun dotProduct(l: Quaternion, r: Quaternion): Float = l.x * r.x + l.y * r.y + l.z * r.z + l.w * r.w
 
         inline fun func(callback: (Int) -> Float) = Quaternion(callback(0), callback(1), callback(2), callback(3))
@@ -117,6 +136,53 @@ inline class Quaternion private constructor(val data: Float4Pack) {
         }
 
         fun interpolated(left: Quaternion, right: Quaternion, t: Float): Quaternion = slerp(left, right, t)
+
+        fun fromVectors(v1: Vector3, v2: Vector3): Quaternion {
+            // Normalize input vectors
+            val start = v1.normalized()
+            val dest = v2.normalized()
+
+            val dot = start.dot(dest)
+
+            // If vectors are opposite
+            when {
+                dot < -0.9999999f -> {
+                    val tmp = Vector3(start.y, -start.x, 0f).normalized()
+                    return Quaternion(tmp.x, tmp.y, tmp.z, 0f)
+                }
+
+                dot > 0.9999999f -> {
+                    // If vectors are same
+                    return Quaternion()
+                }
+
+                else -> {
+                    val s = kotlin.math.sqrt((1 + dot) * 2)
+                    val invs = 1 / s
+
+                    val c = start.cross(dest)
+
+                    return Quaternion(
+                        c.x * invs,
+                        c.y * invs,
+                        c.z * invs,
+                        s * 0.5f,
+                    ).normalized()
+                }
+            }
+        }
+
+        fun fromAxisAngle(axis: Vector3, angle: Angle): Quaternion {
+            val naxis = axis.normalized()
+            val angle2 = angle / 2
+            val s = sin(angle2)
+            return Quaternion(
+                naxis.x * s,
+                naxis.y * s,
+                naxis.z * s,
+                cos(angle2)
+            )
+        }
 
         fun fromRotationMatrix(m: Matrix4): Quaternion {
             m.apply {
