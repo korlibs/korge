@@ -260,6 +260,16 @@ class AGMetalTest {
 
                 val MTLPixelFormatBGRA8Unorm = 80L
 
+                val MTLPrimitiveTypePoint = 0L
+                val MTLPrimitiveTypeLine = 1L
+                val MTLPrimitiveTypeLineStrip = 2L
+                val MTLPrimitiveTypeTriangle = 3L
+                val MTLPrimitiveTypeTriangleStrip = 4L
+
+                val MTLLoadActionDontCare = 0L
+                val MTLLoadActionLoad = 1L
+                val MTLLoadActionClear = 2L
+
                 if (device != null) {
                     val width = 50
                     val height = 50
@@ -298,35 +308,34 @@ class AGMetalTest {
                     }
                     println("vertexBuffer.contents=${vertexBuffer.contents}")
                     println("vertexBuffer.length=${vertexBuffer.length}")
-                    val library = device.newLibrary(
-                        NSString("""
-                            typedef struct {
-                                packed_float3 position;
-                                // [[flat]]
-                            } VertexInput;
-                            
-                            typedef struct {
-                                float4 position [[position]];
-                            } Varyings;
-                    
-                            vertex Varyings basic_vertex(
-                                unsigned int vid [[ vertex_id ]],
-                                const device VertexInput* vertex_array [[buffer(0)]]
-                            ) {
-                                Varyings out;
-                                auto input = vertex_array[vid];
-                                {
-                                    out.position = float4(input.position, 1.0); 
-                                }
-                                return out;
+                    val library = device.newLibrary(/*language=c*/NSString("""
+                        typedef struct {
+                            packed_float3 position;
+                            // [[flat]]
+                        } VertexInput;
+                        
+                        typedef struct {
+                            float4 position [[position]];
+                        } Varyings;
+                        
+                        vertex Varyings basic_vertex(
+                            unsigned int vid [[ vertex_id ]],
+                            const device VertexInput* vertex_array [[buffer(0)]]
+                        ) {
+                            Varyings out;
+                            auto input = vertex_array[vid];
+                            {
+                                out.position = float4(input.position, 1.0); 
                             }
-                            
-                            fragment half4 basic_fragment(
-                                Varyings in [[stage_in]]
-                            ) { // 1
-                              return half4(in.position.x / 100.0, in.position.y / 100.0, 1.0, 1.0);              // 2
-                            }
-                        """.trimIndent()), null, null)
+                            return out;
+                        }
+                        
+                        fragment half4 basic_fragment(
+                            Varyings in [[stage_in]]
+                        ) { // 1
+                          return half4(in.position.x / 100.0, in.position.y / 100.0, 1.0, 1.0);              // 2
+                        }
+                    """.trimIndent()), null, null)
 
                     println("library=$library")
                     val vertexFunction = library!!.newFunction(NSString("basic_vertex")) !!
@@ -350,8 +359,6 @@ class AGMetalTest {
                     val colorAttachment = renderPassDescriptor.colorAttachments.objectAtIndexedSubscript(0L)
                     //println("drawable?.texture=${drawable?.texture}")
                     colorAttachment.texture = drawable!!.texture
-                    val MTLLoadActionClear = 2L
-
                     colorAttachment.loadAction = MTLLoadActionClear
                     colorAttachment.clearColor = MTLClearColor.ByValue().also {
                         it.autoWrite()
@@ -375,33 +382,23 @@ class AGMetalTest {
                     val renderEncoder = commandBuffer.renderCommandEncoder(renderPassDescriptor) ?: TODO()
                     renderEncoder.setRenderPipelineState(pipelineState)
                     renderEncoder.setVertexBuffer(vertexBuffer, offset = 0, atIndex = 0)
-                    val MTLPrimitiveTypeTriangle = 3L
                     renderEncoder.drawPrimitives(primitiveType = MTLPrimitiveTypeTriangle, vertexStart = 0, vertexCount = 3, instanceCount = 1)
                     renderEncoder.endEncoding()
 
-                    /*
-                    renderEncoder.setVertexBuffer(vertexBuffer, offset = 0, atIndex = 0)
-                    println("renderEncoder=$renderEncoder")
-
-
-                     */
                     commandBuffer.presentDrawable(drawable)
                     commandBuffer.commit()
                     commandBuffer.waitUntilCompleted()
 
                     val dataOut = Memory((width * height * 4).toLong()).also { it.clear() }
-                    //dataOut.setInt(0L, 99999)
-                    //dataOut.setInt(0L, 99999)
 
-                    println("drawable!!.texture!!=${drawable!!.texture!!.width}x${drawable!!.texture!!.height}")
-
+                    println("drawable!!.texture!!=${drawable.texture!!.width}x${drawable.texture!!.height}")
                     println("MTLRegion.make2D(0L, 0L, width.toLong(), height.toLong())=${MTLRegion.make2D(0L, 0L, width.toLong(), height.toLong())}")
 
                     //println("drawable!!.texture!!.buffer=${drawable!!.texture!!.buffer}")
                     //println("drawable!!.texture!!.bufferOffset=${drawable!!.texture!!.bufferOffset}")
                     //println("drawable!!.texture!!.bufferBytesPerRow=${drawable!!.texture!!.bufferBytesPerRow}")
 
-                    drawable!!.texture!!.getBytes(
+                    drawable.texture!!.getBytes(
                         dataOut,
                         (width * 4).toLong(),
                         (width * height * 4).toLong(),
@@ -415,20 +412,6 @@ class AGMetalTest {
                     assertEquals(Colors["#376800"], bmp[0, 0])
                     assertEquals(Colors["#ff4141"], bmp[25, 25])
                     //runBlocking { bmp.showImageAndWait() }
-
-                    //drawable.texture.
-                }
-
-
-                //ObjcProtocolRef.fromName("MTLBuffer")!!.dumpKotlin()
-                //ObjcProtocolRef.fromName("MTLDevice")!!.dumpKotlin()
-                //ObjcProtocolRef.fromName("MTLLibrary")!!.dumpKotlin()
-                //ObjcClassRef.fromName("MTLRenderPipelineColorAttachmentDescriptor")!!.dumpKotlin()
-                //ObjcClassRef.fromName("MTLRenderPipelineDescriptor")!!.dumpKotlin()
-
-                fun dumpKotlin(name: String) {
-                    ObjcClassRef.fromName(name)?.dumpKotlin()
-                    ObjcProtocolRef.fromName(name)?.dumpKotlin()
                 }
 
                 //dumpKotlin("MTLCommandQueue")
@@ -436,45 +419,12 @@ class AGMetalTest {
                 //dumpKotlin("MTLCommandEncoder")
                 //dumpKotlin("MTLRenderCommandEncoder")
                 dumpKotlin("MTLTexture")
-
-
-                //ObjcClassRef.fromName("CAMetalLayer")!!.dumpKotlin()
-                //ObjcClassRef.fromName("CALayer")!!.dumpKotlin()
-                //ObjcClassRef.fromName("MTLRenderPassDescriptor")!!.dumpKotlin()
-
-
-                //ObjcClassRef.fromName("CAMetalLayer")!!.createInstance().asObjcDynamicInterface<CAMetal>()
-
-
-                /*
-                ObjcDynamicInterface.proxy(metalDevice, MTLDevice::class)
-                println(metalDevice?.address?.msgSend("hasUnifiedMemory"))
-
-                println(NSString(metalDevice?.address?.msgSend("name")).cString)
-                println(NSString(metalDevice?.address?.msgSend("architecture")?.msgSend("name")).cString)
-                //println()
-                val protocol = ObjcProtocolRef.getByName("MTLDevice")!!
-                protocol.dumpKotlin()
-                println("protocol=$protocol")
-                //println(protocol.ref.msgSend("name").toPointer().getString(0L))
-                //println(protocol.ref.msgSend("hasUnifiedMemory"))
-                //for (method in protocol.listMethods()) {
-                //    println(" - ${method}")
-                //}
-                println(ObjcProtocolRef.listAll())
-                println(ObjectiveC.getClassByName("_MTLDevice")!!.imageName)
-                /*
-                val MTLDevice = ObjectiveC.getClassByName("_MTLDevice")!!
-                //println(ObjectiveC.getAllClassIDs())
-                for (method in MTLDevice.listMethods()) {
-                    println("$method")
-                }
-
-                 */
-                //ObjectiveC.objc_getClass("")
-
-                 */
             }
         }
+    }
+
+    private fun dumpKotlin(name: String) {
+        ObjcClassRef.fromName(name)?.dumpKotlin()
+        ObjcProtocolRef.fromName(name)?.dumpKotlin()
     }
 }
