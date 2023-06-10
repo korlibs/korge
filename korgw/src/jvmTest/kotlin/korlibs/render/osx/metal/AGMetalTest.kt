@@ -1,65 +1,43 @@
 package korlibs.render.osx.metal
 
-import com.sun.jna.*
-import korlibs.datastructure.*
-import korlibs.image.bitmap.*
 import korlibs.image.color.*
-import korlibs.memory.Platform
+import korlibs.image.format.*
+import korlibs.memory.*
 import korlibs.memory.dyn.osx.*
+import kotlinx.coroutines.*
 import org.junit.Test
 import kotlin.test.*
 
 // https://developer.apple.com/documentation/objectivec/objective-c_runtime
 // https://github.com/korlibs/korge/discussions/1155
 class AGMetalTest {
-    private fun macTestWithAutoreleasePool(block: () -> Unit) {
-        if (!Platform.isMac) return
-        nsAutoreleasePool {
-            block()
-        }
-    }
-
     @Test
     fun test() = macTestWithAutoreleasePool{
         val device = MetalGlobals.MTLCreateSystemDefaultDevice()?.asObjcDynamicInterface<MTLDevice>()
             ?: error("Can't get MTLDevice")
 
-        val width = 50
-        val height = 50
         println("device.name=${device.name}")
         println("device.architecture.name=${device.architecture.name}")
         println("device.maxBufferLength=${device.maxBufferLength}")
 
+        val width = 50
+        val height = 50
+
         //NSClass("CAMetalLayer").alloc().msgSend("init").msgSend("setPixelFormat", 1L)
 
-        val layer = CAMetalLayer()
-        layer.setPixelFormat(MTLPixelFormatBGRA8Unorm)
-        layer.setDevice(device)
-        layer.setFramebufferOnly(false)
-        //layer.setFrame(CGRect.ByValue().also {
-        layer.setFrame(CGRect.ByValue().also {
-            it.x = 0.0
-            it.y = 0.0
-            it.width = width.toDouble()
-            it.height = height.toDouble()
-        }.also { it.write() })
-        //layer.pixelFormat = 1
-        //layer.setPixelFormat(1L)
-        println(layer.pixelFormat)
-        //println(layer.device)
-        println(layer.colorspace)
-        //println(layer.colorspace)
+        val layer = CAMetalLayer().also {
+            it.setPixelFormat(MTLPixelFormatBGRA8Unorm)
+            it.setDevice(device)
+            it.setFramebufferOnly(false)
+            it.setFrame(CGRect.make(0.0, 0.0, width.toDouble(), height.toDouble()))
+        }
 
         val data = floatArrayOf(0.0f,  1.0f, 0.0f, -1.0f, -1.0f, 0.0f, 1.0f, -1.0f, 0.0f)
-        val vertexBuffer = device.newBuffer(length = (data.size * Float.SIZE_BYTES).toLong(), options = 0L)
-        vertexBuffer.contents.let {
-            for (n in 0 until data.size) {
-                val v = data[n]
-                it.setFloat(n * 4L, v)
-            }
+        val vertexBuffer = device.newBuffer(length = (data.size * Float.SIZE_BYTES).toLong(), options = 0L).also {
+            it.contents.write(0L, data, 0, data.size)
         }
-        println("vertexBuffer.contents=${vertexBuffer.contents}")
-        println("vertexBuffer.length=${vertexBuffer.length}")
+        //println("vertexBuffer.contents=${vertexBuffer.contents}")
+        //println("vertexBuffer.length=${vertexBuffer.length}")
         val library = device.newLibrary(/*language=c*/NSString("""
             typedef struct {
                 packed_float3 position;
@@ -87,93 +65,60 @@ class AGMetalTest {
             ) { // 1
               return half4(in.position.x / 100.0, in.position.y / 100.0, 1.0, 1.0);              // 2
             }
-        """.trimIndent()), null, null)
+        """.trimIndent()), null, null) ?: error("Can't create MTLLibrary")
 
-        println("library=$library")
-        val vertexFunction = library!!.newFunction(NSString("basic_vertex")) !!
-        val fragmentFunction = library!!.newFunction(NSString("basic_fragment")) !!
+        val drawable = layer.nextDrawable() ?: error("Can't find nextDrawable")
+        val renderPassDescriptor = MTLRenderPassDescriptor().also {
+            it.colorAttachments.objectAtIndexedSubscript(0L).also {
+                it.texture = drawable.texture
+                it.loadAction = MTLLoadActionClear
+                it.clearColor = MTLClearColor.make(0.0, 104.0/255.0, 55.0/255.0, 1.0)
+            }
+        }
 
-        val pipelineStateDescriptor = MTLRenderPipelineDescriptor()
-        println("pipelineStateDescriptor=${pipelineStateDescriptor}")
-        println("pipelineStateDescriptor.vertexFunction=${pipelineStateDescriptor.vertexFunction}")
-        pipelineStateDescriptor.vertexFunction = vertexFunction
-        pipelineStateDescriptor.fragmentFunction = fragmentFunction
-        pipelineStateDescriptor.colorAttachments.objectAtIndexedSubscript(0).pixelFormat = MTLPixelFormatBGRA8Unorm
-        println("pipelineStateDescriptor.vertexFunction=${pipelineStateDescriptor.vertexFunction}")
-        println("pipelineStateDescriptor.fragmentFunction=${pipelineStateDescriptor.fragmentFunction}")
-        println("pipelineStateDescriptor.colorAttachments.objectAtIndexedSubscript(0).pixelFormat=${pipelineStateDescriptor.colorAttachments.objectAtIndexedSubscript(0).pixelFormat}")
+        val commandBuffer = device.newCommandQueue()!!.commandBuffer() ?: error("Can't create MTLCommandBuffer")
 
-        val pipelineState = device.newRenderPipelineState(pipelineStateDescriptor, error = null)!!
-        val commandQueue = device.newCommandQueue()!!
-
-        val drawable = layer.nextDrawable()
-        val renderPassDescriptor = MTLRenderPassDescriptor()
-        val colorAttachment = renderPassDescriptor.colorAttachments.objectAtIndexedSubscript(0L)
-        //println("drawable?.texture=${drawable?.texture}")
-        colorAttachment.texture = drawable!!.texture
-        colorAttachment.loadAction = MTLLoadActionClear
-        colorAttachment.clearColor = MTLClearColor.ByValue().also {
-            it.autoWrite()
-            it.red = 0.0
-            it.green = 104.0/255.0
-            it.blue = 55.0/255.0
-            it.alpha = 1.0
-        }.also { it.write() }
-
-        //println("colorAttachment=$colorAttachment")
-        println("renderPassDescriptor=$renderPassDescriptor")
-        println("drawable=$drawable")
-        println("commandQueue=$commandQueue")
-        println("pipelineState=$pipelineState")
-        println("vertexFunction=$vertexFunction")
-        println("fragmentFunction=$fragmentFunction")
-
-        val commandBuffer = commandQueue.commandBuffer() ?: TODO()
-        println("commandBuffer=$commandBuffer")
-
-        val renderEncoder = commandBuffer.renderCommandEncoder(renderPassDescriptor) ?: TODO()
-        renderEncoder.setRenderPipelineState(pipelineState)
-        renderEncoder.setVertexBuffer(vertexBuffer, offset = 0, atIndex = 0)
-        renderEncoder.drawPrimitives(primitiveType = MTLPrimitiveTypeTriangle, vertexStart = 0, vertexCount = 3, instanceCount = 1)
-        renderEncoder.endEncoding()
+        val renderEncoder = commandBuffer.renderCommandEncoder(renderPassDescriptor)?.also {
+            val pipelineStateDescriptor = MTLRenderPipelineDescriptor().also {
+                it.vertexFunction = library.newFunction(NSString("basic_vertex")) ?: error("Can't find basic_vertex")
+                it.fragmentFunction = library.newFunction(NSString("basic_fragment")) ?: error("Can't find basic_fragment")
+                it.colorAttachments.objectAtIndexedSubscript(0).pixelFormat = MTLPixelFormatBGRA8Unorm
+            }
+            it.setRenderPipelineState(device.newRenderPipelineState(pipelineStateDescriptor, error = null) ?: error("Can't create a MTLRenderPipelineState"))
+            it.setVertexBuffer(vertexBuffer, offset = 0, atIndex = 0)
+            it.drawPrimitives(primitiveType = MTLPrimitiveTypeTriangle, vertexStart = 0, vertexCount = 3, instanceCount = 1)
+            it.endEncoding()
+        } ?: error("Can't create MTLRenderCommandEncoder")
 
         commandBuffer.presentDrawable(drawable)
         commandBuffer.commit()
         commandBuffer.waitUntilCompleted()
 
-        val dataOut = Memory((width * height * 4).toLong()).also { it.clear() }
-
-        println("drawable!!.texture!!=${drawable.texture!!.width}x${drawable.texture!!.height}")
-        println("MTLRegion.make2D(0L, 0L, width.toLong(), height.toLong())=${MTLRegion.make2D(0L, 0L, width.toLong(), height.toLong())}")
-
-        //println("drawable!!.texture!!.buffer=${drawable!!.texture!!.buffer}")
-        //println("drawable!!.texture!!.bufferOffset=${drawable!!.texture!!.bufferOffset}")
-        //println("drawable!!.texture!!.bufferBytesPerRow=${drawable!!.texture!!.bufferBytesPerRow}")
-
-        drawable.texture!!.getBytes(
-            dataOut,
-            (width * 4).toLong(),
-            (width * height * 4).toLong(),
-            MTLRegion.make2D(0L, 0L, width.toLong(), height.toLong()),
-            0L,
-            0L
-        )
-        val dataPixels = IntArray2(width, height) { dataOut.getInt((4 * it).toLong()) }
-        val bmp = Bitmap32(width, height, RgbaArray(dataPixels.data))
+        val bmp = drawable.texture!!.readBitmap()
 
         assertEquals(Colors["#376800"], bmp[0, 0])
         assertEquals(Colors["#ff4141"], bmp[25, 25])
+        assertEquals(Colors["#ff7e04"], bmp[1, 49])
+        assertEquals(Colors["#ff7e41"], bmp[25, 49])
+        assertEquals(Colors["#ff7e7e"], bmp[49, 49])
         //runBlocking { bmp.showImageAndWait() }
 
-        //dumpKotlin("MTLCommandQueue")
-        //dumpKotlin("MTLCommandBuffer")
-        //dumpKotlin("MTLCommandEncoder")
-        //dumpKotlin("MTLRenderCommandEncoder")
-        dumpKotlin("MTLTexture")
+        //generateKotlinCode("MTLCommandQueue")
+        //generateKotlinCode("MTLCommandBuffer")
+        //generateKotlinCode("MTLCommandEncoder")
+        //generateKotlinCode("MTLRenderCommandEncoder")
+        generateKotlinCode("MTLTexture")
     }
 
-    private fun dumpKotlin(name: String) {
+    private fun generateKotlinCode(name: String) {
         ObjcClassRef.fromName(name)?.dumpKotlin()
         ObjcProtocolRef.fromName(name)?.dumpKotlin()
+    }
+
+    private fun macTestWithAutoreleasePool(block: () -> Unit) {
+        if (!Platform.isMac) return
+        nsAutoreleasePool {
+            block()
+        }
     }
 }

@@ -3,20 +3,7 @@ package korlibs.render.osx.metal
 import com.sun.jna.*
 import korlibs.memory.dyn.osx.*
 
-val MTLPixelFormatBGRA8Unorm = 80L
-
-val MTLPrimitiveTypePoint = 0L
-val MTLPrimitiveTypeLine = 1L
-val MTLPrimitiveTypeLineStrip = 2L
-val MTLPrimitiveTypeTriangle = 3L
-val MTLPrimitiveTypeTriangleStrip = 4L
-
-val MTLLoadActionDontCare = 0L
-val MTLLoadActionLoad = 1L
-val MTLLoadActionClear = 2L
-
 interface CoreGraphics : Library {
-
 }
 
 interface MetalGlobals : Library {
@@ -91,6 +78,18 @@ open class MTLSize : Structure {
 }
 
 open class MTLClearColor : Structure {
+    companion object {
+        fun make(red: Double, green: Double, blue: Double, alpha: Double): MTLClearColor.ByValue {
+            val it = MTLClearColor.ByValue()
+            it.red = red
+            it.green = green
+            it.blue = blue
+            it.alpha = alpha
+            it.write()
+            return it
+        }
+    }
+
     @JvmField var red: Double = 0.0
     @JvmField var green: Double = 0.0
     @JvmField var blue: Double = 0.0
@@ -243,4 +242,28 @@ open class CGRect : Structure {
 
     class ByReference : CGRect(), Structure.ByReference
     class ByValue : CGRect(), Structure.ByValue
+
+    companion object {
+        fun make(x: Double, y: Double, width: Double, height: Double): CGRect.ByValue {
+            val it = CGRect.ByValue()
+            it.x = 0.0
+            it.y = 0.0
+            it.width = width.toDouble()
+            it.height = height.toDouble()
+            it.write()
+            return it
+        }
+    }
 }
+
+val MTLPixelFormatBGRA8Unorm = 80L
+
+val MTLPrimitiveTypePoint = 0L
+val MTLPrimitiveTypeLine = 1L
+val MTLPrimitiveTypeLineStrip = 2L
+val MTLPrimitiveTypeTriangle = 3L
+val MTLPrimitiveTypeTriangleStrip = 4L
+
+val MTLLoadActionDontCare = 0L
+val MTLLoadActionLoad = 1L
+val MTLLoadActionClear = 2L
