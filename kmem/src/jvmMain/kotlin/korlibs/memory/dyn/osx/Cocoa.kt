@@ -108,6 +108,10 @@ interface ObjectiveC : Library {
     fun method_getTypeEncoding(ptr: Pointer): String
 
     fun class_createInstance(cls: ID, extraBytes: NativeLong): ID
+    fun class_copyPropertyList(cls: ID, outCountPtr: IntArray): Pointer
+    fun class_copyIvarList(cls: ID, outCountPtr: IntArray): Pointer
+    fun ivar_getName(ivar: Pointer?): String?
+    fun ivar_getTypeEncoding(ivar: Pointer?): String?
 
     companion object : ObjectiveC by NativeLoad("objc") {
         //val NATIVE = NativeLibrary.getInstance("objc")
@@ -277,7 +281,7 @@ interface ObjcDynamicInterface {
     companion object {
         inline fun <reified T : ObjcDynamicInterface> createNew(init: String = "init", vararg args: Any?): T = createNew(T::class.java, init, *args)
         fun <T : ObjcDynamicInterface> createNew(clazz: Class<T>, init: String = "init", vararg args: Any?): T {
-            val name = clazz.getDeclaredAnnotation(ObjcDesc::class.java)?.name ?: clazz.name
+            val name = clazz.getDeclaredAnnotation(ObjcDesc::class.java)?.name ?: clazz.simpleName
             return proxy(NSClass(name).alloc().msgSend(init, *args), clazz)
             //return proxy(NSClass(name).alloc(), clazz)
             //return proxy(ObjcClassRef.fromName(name)!!.createInstance(), clazz)
@@ -293,7 +297,11 @@ interface ObjcDynamicInterface {
                     return@newProxyInstance instance
                 }
                 if (method.name == "toString") {
-                    return@newProxyInstance "ObjcDynamicInterface($instance)"
+                    val classInstance = ObjectiveC.object_getClass(instance)
+                    val className = ObjectiveC.class_getName(classInstance)
+                    //val className = NSString(ObjectiveC.object_getClass(instance).msgSend("name")).cString
+                    //val className = "$classInstance"
+                    return@newProxyInstance "ObjcDynamicInterface[$className]($instance)"
                 }
                 val nargs = (args ?: emptyArray()).map {
                     when (it) {
@@ -304,7 +312,7 @@ interface ObjcDynamicInterface {
                 }.toTypedArray()
                 val name = method.getDeclaredAnnotation(ObjcDesc::class.java)?.name ?: method.name
                 val returnType = method.returnType
-                println(":: $clazz[$instance].$name : ${nargs.toList()}")
+                //println(":: $clazz[$instance].$name : ${nargs.toList()}")
                 if (returnType == Void::class.javaPrimitiveType) {
                     val res = instance.msgSendVoid(name, *nargs)
                     Unit
@@ -407,6 +415,8 @@ data class ObjcClassRef(val ref: ID) : ObjcProtocolClassBaseRef {
 
     fun dumpKotlin() {
         println("class $name : ObjcDynamicInterface {")
+        listIVars()
+        listProperties()
         for (method in listMethods()) {
             println("  " + createKotlinMethod(method.name, method.parsedTypes))
         }
@@ -423,6 +433,32 @@ data class ObjcClassRef(val ref: ID) : ObjcProtocolClassBaseRef {
         return (0 until nitems).map {
             ObjcMethodRef(this, items2.getPointer((Native.LONG_SIZE * it).toLong()))
         }
+    }
+
+    fun listProperties() {
+        val outCountPtr = IntArray(1)
+        val properties = ObjectiveC.class_copyPropertyList(ref, outCountPtr)
+        val outCount = outCountPtr[0]
+        for (n in 0 until outCount) {
+            val prop = properties.getPointer(n * 8L)
+            val propName = ObjectiveC.property_getName(prop.address)
+            val attributes = ObjectiveC.property_getAttributes(prop.address)
+            println("* $propName : $attributes")
+        }
+        //TODO("listProperties. outCount=$outCount")
+    }
+
+    fun listIVars() {
+        val outCountPtr = IntArray(1)
+        val ivars = ObjectiveC.class_copyIvarList(ref, outCountPtr)
+        val outCount = outCountPtr[0]
+        for (n in 0 until outCount) {
+            val ivar = ivars.getPointer(n * 8L)
+            val ivarName = ObjectiveC.ivar_getName(ivar)
+            val encoding = ObjectiveC.ivar_getTypeEncoding(ivar)
+            println("* ivar=$ivarName : $encoding")
+        }
+        //TODO("listIVars. outCount=$outCount")
     }
 
     override fun toString(): String = "ObjcClass[$name]"
@@ -522,7 +558,11 @@ class MyNSRect(pointer: KPointer? = null) : KStructure(pointer) {
     override fun toString(): String = "NSRect($x, $y, $width, $height)"
 }
 
-fun sel(name: String): Long = ObjectiveC.sel_registerName(name)
+fun sel(name: String): Long {
+    val value = ObjectiveC.sel_registerName(name)
+    if (value == 0L) error("Invalid selector '$name'")
+    return value
+}
 fun sel(name: ObjcSel): Long = name.id
 fun Long.msgSend(sel: ObjcSel, vararg args: Any?): Long = ObjectiveC.objc_msgSend(this, sel(sel), *args)
 fun Long.msgSend(sel: String, vararg args: Any?): Long = ObjectiveC.objc_msgSend(this, sel(sel), *args)

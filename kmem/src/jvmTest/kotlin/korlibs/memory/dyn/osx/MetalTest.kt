@@ -14,11 +14,23 @@ interface MetalGlobals : Library {
     fun MTLCreateSystemDefaultDevice(): Pointer?
 }
 
+// https://developer.apple.com/documentation/objectivec/objective-c_runtime
+// https://github.com/korlibs/korge/discussions/1155
+
 class MetalTest {
     interface MTLArchitecture : ObjcDynamicInterface {
         @get:ObjcDesc("name", "@16@0:8") val name: String
     }
+    interface MTLFunction : ObjcDynamicInterface {
+
+    }
     interface MTLLibrary : ObjcDynamicInterface {
+        @ObjcDesc("newFunctionWithName:", "@24@0:8@16") fun newFunction(name: NSString): MTLFunction?
+    }
+    interface MTLRenderPipelineState : ObjcDynamicInterface {
+
+    }
+    interface MTLCommandQueue : ObjcDynamicInterface {
 
     }
     interface MTLDevice : ObjcDynamicInterface {
@@ -26,15 +38,51 @@ class MetalTest {
         @get:ObjcDesc("name", "@16@0:8") val name: String
         @get:ObjcDesc("maxTransferRate", "Q16@0:8") val maxTransferRate: Long
         @get:ObjcDesc("maxBufferLength", "Q16@0:8") val maxBufferLength: Long
-        @get:ObjcDesc("newCommandQueue", "@16@0:8") val newCommandQueue: ID
+        @ObjcDesc("newCommandQueue", "@16@0:8") fun newCommandQueue(): MTLCommandQueue?
 
         @ObjcDesc("newBufferWithLength:options:", "@32@0:8Q16Q24") fun newBuffer(length: Long, options: Long): MTLBuffer
         @ObjcDesc("newLibraryWithSource:options:error:", "@40@0:8@16@24^@32") fun newLibrary(source: NSString, options: Pointer?, error: Pointer?): MTLLibrary?
+        @ObjcDesc("newRenderPipelineStateWithDescriptor:error:", "@32@0:8@16^@24") fun newRenderPipelineState(descriptor: MTLRenderPipelineDescriptor, error: Pointer?): MTLRenderPipelineState?
     }
 
     interface MTLBuffer : ObjcDynamicInterface {
         @get:ObjcDesc("length", "Q16@0:8") val length: Long
         @get:ObjcDesc("contents", "^v16@0:8") val contents: Pointer
+    }
+
+    interface MTLRenderPassDescriptor : ObjcDynamicInterface {
+        companion object {
+            operator fun invoke(): MTLRenderPassDescriptor = ObjcDynamicInterface.createNew<MTLRenderPassDescriptor>()
+        }
+    }
+
+    interface MTLRenderPipelineColorAttachmentDescriptor : ObjcDynamicInterface {
+        @get:ObjcDesc("pixelFormat", "Q16@0:8")
+        @set:ObjcDesc("setPixelFormat:", "Q16@0:8")
+        var pixelFormat: Long
+    }
+
+    interface MTLRenderPipelineColorAttachmentDescriptorArray : ObjcDynamicInterface {
+        @ObjcDesc("objectAtIndexedSubscript:", "@24@0:8Q16") fun objectAtIndexedSubscript(objectAtIndexedSubscript: Long): MTLRenderPipelineColorAttachmentDescriptor
+        @ObjcDesc("setObject:atIndexedSubscript:", "v32@0:8@16Q24") fun setObject(setObject: MTLRenderPipelineColorAttachmentDescriptor, atIndexedSubscript: Long): Unit
+    }
+
+    @ObjcDesc("MTLRenderPipelineDescriptor")
+    interface MTLRenderPipelineDescriptor : ObjcDynamicInterface {
+        companion object {
+            operator fun invoke(): MTLRenderPipelineDescriptor = ObjcDynamicInterface.createNew<MTLRenderPipelineDescriptor>()
+        }
+
+        @get:ObjcDesc("colorAttachments", "Q16@0:8") val colorAttachments: MTLRenderPipelineColorAttachmentDescriptorArray
+        @get:ObjcDesc("vertexFunction", "Q16@0:8") @set:ObjcDesc("setVertexFunction:", "Q16@0:8") var vertexFunction: MTLFunction?
+        @get:ObjcDesc("fragmentFunction", "Q16@0:8") @set:ObjcDesc("setFragmentFunction:", "Q16@0:8") var fragmentFunction: MTLFunction?
+
+        @ObjcDesc("setVertexPreloadedLibraries:", "v24@0:8@16") fun setVertexPreloadedLibraries(setVertexPreloadedLibraries: MTLFunction?): Unit
+        @ObjcDesc("setFragmentPreloadedLibraries:", "v24@0:8@16") fun setFragmentPreloadedLibraries(setFragmentPreloadedLibraries: MTLFunction?): Unit
+    }
+
+    interface CAMetalDrawable : ObjcDynamicInterface {
+
     }
 
     @ObjcDesc("CAMetalLayer")
@@ -46,10 +94,11 @@ class MetalTest {
         @get:ObjcDesc("pixelFormat") val pixelFormat: Long
         @get:ObjcDesc("device") val device: MTLDevice?
         @get:ObjcDesc("colorspace", "^{CGColorSpace=}16@0:8") val colorspace: Pointer
+        @ObjcDesc("nextDrawable", "@16@0:8") fun nextDrawable(): CAMetalDrawable?
         @ObjcDesc("setPixelFormat:", "v24@0:8Q16") fun setPixelFormat(setPixelFormat: Long): Unit
         @ObjcDesc("setDevice:", "v24@0:8@16") fun setDevice(device: MTLDevice?): Unit
         @ObjcDesc("setFramebufferOnly:", "v20@0:8B16") fun setFramebufferOnly(setFramebufferOnly: Boolean): Unit
-        @ObjcDesc("setFrame:", "v48@0:8{CGRect={CGPoint=dd}{CGSize=dd}}16") fun setFrame(frame: CGRect.ByValue): Unit
+        @ObjcDesc("setFrame:", "v48@0:8{CGRect={CGPoint=dd}{CGSize=dd}}16") fun setFrame(frame: CGRect): Unit
     }
 
     open class CGRect : Structure {
@@ -67,54 +116,64 @@ class MetalTest {
         class ByValue : CGRect(), Structure.ByValue
     }
 
+    fun <T> nsAutoreleasePool(block: () -> T): T {
+        val pool = NSClass("NSAutoreleasePool").alloc().msgSend("init")
+        try {
+            return block()
+        } finally {
+            pool.msgSend("release")
+        }
+    }
+
     @Test
     fun test() {
         // https://developer.apple.com/documentation/objectivec/objective-c_runtime
         // https://github.com/korlibs/korge/discussions/1155
         if (Platform.isMac) {
-            val cg = Native.load("/System/Library/Frameworks/CoreGraphics.framework/Versions/A/CoreGraphics", CoreGraphics::class.java)
-            val metal = Native.load("/System/Library/Frameworks/Metal.framework/Versions/A/Metal", MetalGlobals::class.java)
-            val device = metal.MTLCreateSystemDefaultDevice()?.asObjcDynamicInterface<MTLDevice>()
+            nsAutoreleasePool {
+                val cg = Native.load("/System/Library/Frameworks/CoreGraphics.framework/Versions/A/CoreGraphics", CoreGraphics::class.java)
+                val metal = Native.load("/System/Library/Frameworks/Metal.framework/Versions/A/Metal", MetalGlobals::class.java)
+                val device = metal.MTLCreateSystemDefaultDevice()?.asObjcDynamicInterface<MTLDevice>()
 
-            val MTLPixelFormatBGRA8Unorm = 80L
+                val MTLPixelFormatBGRA8Unorm = 80L
 
-            if (device != null) {
-                println(device.name)
-                println(device.architecture.name)
-                println(device.maxTransferRate)
-                println(device.maxBufferLength)
+                if (device != null) {
+                    println(device.name)
+                    println(device.architecture.name)
+                    println(device.maxTransferRate)
+                    println(device.maxBufferLength)
 
-                //NSClass("CAMetalLayer").alloc().msgSend("init").msgSend("setPixelFormat", 1L)
-                val pool = NSClass("NSAutoreleasePool").alloc().msgSend("init")
+                    //NSClass("CAMetalLayer").alloc().msgSend("init").msgSend("setPixelFormat", 1L)
 
-                val layer = CAMetalLayer()
-                layer.setPixelFormat(MTLPixelFormatBGRA8Unorm)
-                layer.setDevice(device)
-                layer.setFramebufferOnly(false)
-                layer.setFrame(CGRect.ByValue().also {
-                    it.x = 0.0
-                    it.y = 0.0
-                    it.width = 512.0
-                    it.height = 512.0
-                })
-                //layer.pixelFormat = 1
-                //layer.setPixelFormat(1L)
-                println(layer.pixelFormat)
-                //println(layer.device)
-                println(layer.colorspace)
-                //println(layer.colorspace)
+                    val layer = CAMetalLayer()
+                    layer.setPixelFormat(MTLPixelFormatBGRA8Unorm)
+                    layer.setDevice(device)
+                    layer.setFramebufferOnly(false)
+                    //layer.setFrame(CGRect.ByValue().also {
+                    layer.setFrame(CGRect.ByValue().also {
+                        it.x = 0.0
+                        it.y = 0.0
+                        it.width = 512.0
+                        it.height = 512.0
+                    }.also { it.write() })
+                    //layer.pixelFormat = 1
+                    //layer.setPixelFormat(1L)
+                    println(layer.pixelFormat)
+                    //println(layer.device)
+                    println(layer.colorspace)
+                    //println(layer.colorspace)
 
-                val data = floatArrayOf(0.0f,  1.0f, 0.0f, -1.0f, -1.0f, 0.0f, 1.0f, -1.0f, 0.0f)
-                val vertexBuffer = device.newBuffer(length = (data.size * Float.SIZE_BYTES).toLong(), options = 0L)
-                vertexBuffer.contents.let {
-                    for (n in 0 until data.size) {
-                        val v = data[n]
-                        it.setFloat(n * 8L, v)
+                    val data = floatArrayOf(0.0f,  1.0f, 0.0f, -1.0f, -1.0f, 0.0f, 1.0f, -1.0f, 0.0f)
+                    val vertexBuffer = device.newBuffer(length = (data.size * Float.SIZE_BYTES).toLong(), options = 0L)
+                    vertexBuffer.contents.let {
+                        for (n in 0 until data.size) {
+                            val v = data[n]
+                            it.setFloat(n * 8L, v)
+                        }
                     }
-                }
-                println(vertexBuffer.contents)
-                println(vertexBuffer.length)
-                val library = device.newLibrary(NSString("""
+                    println(vertexBuffer.contents)
+                    println(vertexBuffer.length)
+                    val library = device.newLibrary(NSString("""
                     typedef struct {
                         packed_float3 position;
                         // [[flat]]
@@ -143,49 +202,77 @@ class MetalTest {
                     }
                 """.trimIndent()), null, null)
 
-                println("library=$library")
+                    println("library=$library")
+                    val vertexFunction = library?.newFunction(NSString("basic_vertex"))
+                    val fragmentFunction = library?.newFunction(NSString("basic_fragment"))
 
-                //pool.autorelease()
-                pool.msgSend("release")
+                    val pipelineStateDescriptor = MTLRenderPipelineDescriptor()
+                    println("pipelineStateDescriptor=${pipelineStateDescriptor}")
+                    println("pipelineStateDescriptor.vertexFunction=${pipelineStateDescriptor.vertexFunction}")
+                    pipelineStateDescriptor.vertexFunction = vertexFunction
+                    pipelineStateDescriptor.fragmentFunction = fragmentFunction
+                    pipelineStateDescriptor.colorAttachments.objectAtIndexedSubscript(0).pixelFormat = MTLPixelFormatBGRA8Unorm
+                    println("pipelineStateDescriptor.vertexFunction=${pipelineStateDescriptor.vertexFunction}")
+                    println("pipelineStateDescriptor.colorAttachments.objectAtIndexedSubscript(0).pixelFormat=${pipelineStateDescriptor.colorAttachments.objectAtIndexedSubscript(0).pixelFormat}")
+
+                    val pipelineState = device.newRenderPipelineState(pipelineStateDescriptor, error = null)!!
+                    val commandQueue = device.newCommandQueue()!!
+
+                    val drawable = layer.nextDrawable()
+                    val renderPassDescriptor = MTLRenderPassDescriptor()
+                    //val colorAttachment = renderPassDescriptor.colorAttachments.objectAtIndexedSubscript(0.convert())
+
+                    println("drawable=$drawable")
+                    println("commandQueue=$commandQueue")
+                    println("pipelineState=$pipelineState")
+                    println("vertexFunction=$vertexFunction")
+                    println("fragmentFunction=$fragmentFunction")
+                }
+
+
+                //ObjcProtocolRef.fromName("MTLBuffer")!!.dumpKotlin()
+                //ObjcProtocolRef.fromName("MTLDevice")!!.dumpKotlin()
+                //ObjcProtocolRef.fromName("MTLLibrary")!!.dumpKotlin()
+                //ObjcClassRef.fromName("MTLRenderPipelineColorAttachmentDescriptor")!!.dumpKotlin()
+                ObjcClassRef.fromName("MTLRenderPipelineDescriptor")!!.dumpKotlin()
+
+                //ObjcClassRef.fromName("CAMetalLayer")!!.dumpKotlin()
+                //ObjcClassRef.fromName("CALayer")!!.dumpKotlin()
+                //ObjcClassRef.fromName("MTLRenderPassDescriptor")!!.dumpKotlin()
+
+
+                //ObjcClassRef.fromName("CAMetalLayer")!!.createInstance().asObjcDynamicInterface<CAMetal>()
+
+
+                /*
+                ObjcDynamicInterface.proxy(metalDevice, MTLDevice::class)
+                println(metalDevice?.address?.msgSend("hasUnifiedMemory"))
+
+                println(NSString(metalDevice?.address?.msgSend("name")).cString)
+                println(NSString(metalDevice?.address?.msgSend("architecture")?.msgSend("name")).cString)
+                //println()
+                val protocol = ObjcProtocolRef.getByName("MTLDevice")!!
+                protocol.dumpKotlin()
+                println("protocol=$protocol")
+                //println(protocol.ref.msgSend("name").toPointer().getString(0L))
+                //println(protocol.ref.msgSend("hasUnifiedMemory"))
+                //for (method in protocol.listMethods()) {
+                //    println(" - ${method}")
+                //}
+                println(ObjcProtocolRef.listAll())
+                println(ObjectiveC.getClassByName("_MTLDevice")!!.imageName)
+                /*
+                val MTLDevice = ObjectiveC.getClassByName("_MTLDevice")!!
+                //println(ObjectiveC.getAllClassIDs())
+                for (method in MTLDevice.listMethods()) {
+                    println("$method")
+                }
+
+                 */
+                //ObjectiveC.objc_getClass("")
+
+                 */
             }
-
-
-            //ObjcProtocolRef.fromName("MTLBuffer")!!.dumpKotlin()
-            ObjcProtocolRef.fromName("MTLDevice")!!.dumpKotlin()
-            //ObjcClassRef.fromName("CAMetalLayer")!!.dumpKotlin()
-            //ObjcClassRef.fromName("CALayer")!!.dumpKotlin()
-
-            //ObjcClassRef.fromName("CAMetalLayer")!!.createInstance().asObjcDynamicInterface<CAMetal>()
-
-
-            /*
-            ObjcDynamicInterface.proxy(metalDevice, MTLDevice::class)
-            println(metalDevice?.address?.msgSend("hasUnifiedMemory"))
-
-            println(NSString(metalDevice?.address?.msgSend("name")).cString)
-            println(NSString(metalDevice?.address?.msgSend("architecture")?.msgSend("name")).cString)
-            //println()
-            val protocol = ObjcProtocolRef.getByName("MTLDevice")!!
-            protocol.dumpKotlin()
-            println("protocol=$protocol")
-            //println(protocol.ref.msgSend("name").toPointer().getString(0L))
-            //println(protocol.ref.msgSend("hasUnifiedMemory"))
-            //for (method in protocol.listMethods()) {
-            //    println(" - ${method}")
-            //}
-            println(ObjcProtocolRef.listAll())
-            println(ObjectiveC.getClassByName("_MTLDevice")!!.imageName)
-            /*
-            val MTLDevice = ObjectiveC.getClassByName("_MTLDevice")!!
-            //println(ObjectiveC.getAllClassIDs())
-            for (method in MTLDevice.listMethods()) {
-                println("$method")
-            }
-
-             */
-            //ObjectiveC.objc_getClass("")
-
-             */
         }
     }
 }
