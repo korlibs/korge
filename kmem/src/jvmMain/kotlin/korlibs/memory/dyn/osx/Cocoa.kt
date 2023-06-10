@@ -671,6 +671,15 @@ open class NSClass(val name: String) : NSObject(ObjectiveC.objc_getClass(name)) 
     val OBJ_CLASS = id
 }
 
+fun <T> nsAutoreleasePool(block: () -> T): T {
+    val pool = NSClass("NSAutoreleasePool").alloc().msgSend("init")
+    try {
+        return block()
+    } finally {
+        pool.msgSend("release")
+    }
+}
+
 open class ObjcProtocol(val name: String) : NSObject(ObjectiveC.objc_getProtocol(name)) {
     val OBJ_PROTOCOL = id
 }
