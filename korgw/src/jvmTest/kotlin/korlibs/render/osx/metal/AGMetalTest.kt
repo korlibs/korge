@@ -35,6 +35,7 @@ class AGMetalTest {
         val data = floatArrayOf(0.0f,  1.0f, 0.0f, -1.0f, -1.0f, 0.0f, 1.0f, -1.0f, 0.0f)
         val vertexBuffer = device.newBuffer(length = (data.size * Float.SIZE_BYTES).toLong(), options = 0L).also {
             it.contents.write(0L, data, 0, data.size)
+            it.didModifyRange(NSRange.make(0L, data.size * 4L))
         }
         //println("vertexBuffer.contents=${vertexBuffer.contents}")
         //println("vertexBuffer.length=${vertexBuffer.length}")
@@ -94,6 +95,8 @@ class AGMetalTest {
         commandBuffer.commit()
         commandBuffer.waitUntilCompleted()
 
+        //vertexBuffer.dealloc()
+
         val bmp = drawable.texture!!.readBitmap()
 
         assertEquals(Colors["#376800"], bmp[0, 0])
@@ -103,11 +106,15 @@ class AGMetalTest {
         assertEquals(Colors["#ff7e7e"], bmp[49, 49])
         //runBlocking { bmp.showImageAndWait() }
 
+
         //generateKotlinCode("MTLCommandQueue")
         //generateKotlinCode("MTLCommandBuffer")
         //generateKotlinCode("MTLCommandEncoder")
         //generateKotlinCode("MTLRenderCommandEncoder")
-        generateKotlinCode("MTLTexture")
+        //generateKotlinCode("MTLTexture")
+        generateKotlinCode("MTLBuffer")
+
+
     }
 
     private fun generateKotlinCode(name: String) {
@@ -118,6 +125,7 @@ class AGMetalTest {
     private fun macTestWithAutoreleasePool(block: () -> Unit) {
         if (!Platform.isMac) return
         nsAutoreleasePool {
+        //run {
             block()
         }
     }

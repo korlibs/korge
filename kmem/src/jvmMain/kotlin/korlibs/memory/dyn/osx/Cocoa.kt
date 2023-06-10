@@ -280,6 +280,8 @@ object ObjcTypeParser {
 interface ObjcDynamicInterface {
     val __id: Long get() = TODO()
 
+    @ObjcDesc("dealloc", "v16@0:8") fun dealloc(): Unit
+
     companion object {
         inline fun <reified T : ObjcDynamicInterface> createNew(init: String = "init", vararg args: Any?): T = createNew(T::class.java, init, *args)
         fun <T : ObjcDynamicInterface> createNew(clazz: Class<T>, init: String = "init", vararg args: Any?): T {

@@ -152,6 +152,7 @@ interface MTLDevice : ObjcDynamicInterface {
 interface MTLBuffer : ObjcDynamicInterface {
     @get:ObjcDesc("length", "Q16@0:8") val length: Long
     @get:ObjcDesc("contents", "^v16@0:8") val contents: Pointer
+    @ObjcDesc("didModifyRange:", "v32@0:8{_NSRange=QQ}16") fun didModifyRange(didModifyRange: NSRange): Unit
 }
 
 interface MTLRenderPassColorAttachmentDescriptor : ObjcDynamicInterface {
@@ -250,6 +251,29 @@ open class CGRect : Structure {
             it.y = 0.0
             it.width = width.toDouble()
             it.height = height.toDouble()
+            it.write()
+            return it
+        }
+    }
+}
+
+open class NSRange : Structure {
+    override fun getFieldOrder() = listOf("location", "length")
+    @JvmField var location: Long = 0L
+    @JvmField var length: Long = 0L
+
+    constructor() : super() {}
+    constructor(peer: Pointer?) : super(peer) {}
+
+
+    class ByReference : NSRange(), Structure.ByReference
+    class ByValue : NSRange(), Structure.ByValue
+
+    companion object {
+        fun make(location: Long, length: Long): NSRange.ByValue {
+            val it = NSRange.ByValue()
+            it.location = location
+            it.length = length
             it.write()
             return it
         }
