@@ -87,6 +87,7 @@ interface ObjectiveC : Library {
     fun class_getName(clazz: ID): String
 
     fun object_getClassName(obj: ID): String
+    fun class_getImageName(obj: ID): String
 
     fun property_getName(prop: ID): String
     fun property_getAttributes(prop: ID): String
@@ -96,17 +97,49 @@ interface ObjectiveC : Library {
     }
 }
 
-data class ObjcMethodRef(val objcClass: ObjcClassRef, val ptr: Pointer) {
+data class ObjcMethodRef(val objcClass: ObjcProtocolClassBaseRef, val ptr: Pointer) {
     val name: String by lazy { ObjectiveC.method_getNameString(ptr.address) }
     val selName: String by lazy { ObjectiveC.sel_getNameString(name) }
 
     override fun toString(): String = "${objcClass.name}.$name"
 }
 
-data class ObjcProtocolRef(val ref: ID) {
-    val name: String by lazy { ObjectiveC.protocol_getName(ref) }
+interface ObjcProtocolClassBaseRef {
+    val name: String
+}
+
+data class ObjcMethodDescription(
+    val protocol: ObjcProtocolRef,
+    val id: NativeLong,
+    val types: List<Any?>
+) {
+    val name: String by lazy { ObjectiveC.sel_getName(id.toLong()) }
+    override fun toString(): String = "ObjcMethodDescription[$name]"
+}
+
+data class ObjcProtocolRef(val ref: ID) : ObjcProtocolClassBaseRef {
+    override val name: String by lazy { ObjectiveC.protocol_getName(ref) }
+
+    fun listMethods(): List<ObjcMethodDescription> {
+        val nitemsPtr = IntArray(1)
+        val items2 = ObjectiveC.protocol_copyMethodDescriptionList(ref, true, true, nitemsPtr)
+        val nitems = nitemsPtr[0]
+        val out = ArrayList<String>(nitems)
+        //println("nitems=$nitems")
+        return (0 until nitems).map { n ->
+            val namePtr = items2.getNativeLong((Native.LONG_SIZE * n * 2 + 0).toLong())
+            val typesPtr = items2.getNativeLong((Native.LONG_SIZE * n * 2 + 1).toLong())
+            ObjcMethodDescription(this, namePtr, emptyList())
+            //val typesStr = Pointer(typesPtr.toLong()).getString(0L)
+            //println("$selName: $typesStr")
+            //val selName = ObjectiveC.sel_getName(mname)
+        }
+    }
 
     companion object {
+        fun getByName(name: String): ObjcProtocolRef? =
+            ObjectiveC.objc_getProtocol(name).takeIf { it != 0L }?.let { ObjcProtocolRef(it) }
+
         fun listAll(): List<ObjcProtocolRef> {
             val countPtr = IntArray(1)
             val ptr = ObjectiveC.objc_copyProtocolList(countPtr)
@@ -120,13 +153,14 @@ data class ObjcProtocolRef(val ref: ID) {
     override fun toString(): String = "ObjcProtocol[$name]"
 }
 
-data class ObjcClassRef(val ref: ID) {
+data class ObjcClassRef(val ref: ID) : ObjcProtocolClassBaseRef {
     companion object {
         fun listAll(): List<ObjcClassRef> = ObjectiveC.getAllClassIDs()
         fun fromName(name: String): ObjcClassRef? = ObjectiveC.getClassByName(name)
     }
 
-    val name: String by lazy { ObjectiveC.object_getClassName(ref) }
+    override val name: String by lazy { ObjectiveC.object_getClassName(ref) }
+    val imageName: String by lazy { ObjectiveC.class_getImageName(ref) }
 
     fun listMethods(): List<ObjcMethodRef> {
         val nitemsPtr = IntArray(1)
@@ -266,6 +300,7 @@ fun Long.msgSend_stret(output: Any?, sel: String, vararg args: Any?) {
     if (isArm64) error("Not available on arm64")
     ObjectiveC.objc_msgSend_stret(output, this, sel(sel), *args)
 }
+fun Long.toPointer(): Pointer = Pointer(this)
 
 /*
 open class NSRECT : Structure {
@@ -312,6 +347,7 @@ open class NSObject(val id: Long) : IntegerType(8, id, false), NativeMapped {
 
 open class NSString(id: Long) : NSObject(id) {
     constructor() : this("")
+    constructor(id: Long?) : this(id ?: 0L)
     constructor(str: String) : this(OBJ_CLASS.msgSend("alloc").msgSend("initWithCharacters:length:", str.toCharArray(), str.length))
 
     //val length: Int get() = ObjectiveC.object_getIvar(this.id, LENGTH_ivar).toInt()
