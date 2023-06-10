@@ -3,6 +3,17 @@ package korlibs.render.osx.metal
 import com.sun.jna.*
 import korlibs.memory.dyn.osx.*
 
+val MTLPixelFormatBGRA8Unorm = 80L
+
+val MTLPrimitiveTypePoint = 0L
+val MTLPrimitiveTypeLine = 1L
+val MTLPrimitiveTypeLineStrip = 2L
+val MTLPrimitiveTypeTriangle = 3L
+val MTLPrimitiveTypeTriangleStrip = 4L
+
+val MTLLoadActionDontCare = 0L
+val MTLLoadActionLoad = 1L
+val MTLLoadActionClear = 2L
 
 interface CoreGraphics : Library {
 
@@ -14,6 +25,11 @@ interface MetalGlobals : Library {
     fun MTLCreateSystemDefaultDevice(): Pointer?
     //fun MTLClearColorMake(red: Double, green: Double, blue: Double, alpha: Double): MTLClearColor.ByValue
     //fun MTLRegionMake2D(x: Double, y: Double, width: Double, height: Double): MTLRegion.ByValue
+    companion object : MetalGlobals by Native.load("/System/Library/Frameworks/Metal.framework/Versions/A/Metal", MetalGlobals::class.java) {
+        init {
+            val cg = Native.load("/System/Library/Frameworks/CoreGraphics.framework/Versions/A/CoreGraphics", CoreGraphics::class.java)
+        }
+    }
 }
 
 open class MTLRegion : Structure {

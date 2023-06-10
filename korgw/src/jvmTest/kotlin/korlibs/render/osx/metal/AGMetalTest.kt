@@ -18,21 +18,7 @@ class AGMetalTest {
         // https://github.com/korlibs/korge/discussions/1155
 
         nsAutoreleasePool {
-            val cg = Native.load("/System/Library/Frameworks/CoreGraphics.framework/Versions/A/CoreGraphics", CoreGraphics::class.java)
-            val metal = Native.load("/System/Library/Frameworks/Metal.framework/Versions/A/Metal", MetalGlobals::class.java)
-            val device = metal.MTLCreateSystemDefaultDevice()?.asObjcDynamicInterface<MTLDevice>()
-
-            val MTLPixelFormatBGRA8Unorm = 80L
-
-            val MTLPrimitiveTypePoint = 0L
-            val MTLPrimitiveTypeLine = 1L
-            val MTLPrimitiveTypeLineStrip = 2L
-            val MTLPrimitiveTypeTriangle = 3L
-            val MTLPrimitiveTypeTriangleStrip = 4L
-
-            val MTLLoadActionDontCare = 0L
-            val MTLLoadActionLoad = 1L
-            val MTLLoadActionClear = 2L
+            val device = MetalGlobals.MTLCreateSystemDefaultDevice()?.asObjcDynamicInterface<MTLDevice>()
 
             if (device != null) {
                 val width = 50
