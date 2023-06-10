@@ -2,7 +2,6 @@ package korlibs.memory.dyn.osx
 
 import korlibs.memory.dyn.*
 import com.sun.jna.*
-import java.io.StringReader
 import java.lang.reflect.*
 import java.util.*
 import java.util.concurrent.*
@@ -56,6 +55,8 @@ interface ObjectiveC : Library {
     @NativeName("objc_msgSend")
     fun objc_msgSendInt(vararg args: Any?): Int
     @NativeName("objc_msgSend")
+    fun objc_msgSendVoid(vararg args: Any?): Unit
+    @NativeName("objc_msgSend")
     fun objc_msgSendCGFloat(vararg args: Any?): CGFloat
     @NativeName("objc_msgSend")
     fun objc_msgSendFloat(vararg args: Any?): Float
@@ -79,10 +80,10 @@ interface ObjectiveC : Library {
     fun method_getNameString(m: Long): String
 
     fun sel_registerName(name: String): Long
-
     fun sel_getName(sel: Long): String
     @NativeName("sel_getName")
     fun sel_getNameString(sel: String): String
+
     fun objc_allocateClassPair(clazz: Long, name: String, extraBytes: Int): Long
     fun object_getIvar(obj: Long, ivar: Long): Long
 
@@ -101,8 +102,12 @@ interface ObjectiveC : Library {
     fun property_getName(prop: ID): String
     fun property_getAttributes(prop: ID): String
 
-    fun method_getReturnType(id: NativeLong, dst: Pointer, dst_length: NativeLong)
     fun class_getInstanceMethod(cls: ID, id: NativeLong): NativeLong
+
+    fun method_getReturnType(id: NativeLong, dst: Pointer, dst_length: NativeLong)
+    fun method_getTypeEncoding(ptr: Pointer): String
+
+    fun class_createInstance(cls: ID, extraBytes: NativeLong): ID
 
     companion object : ObjectiveC by NativeLoad("objc") {
         //val NATIVE = NativeLibrary.getInstance("objc")
@@ -112,6 +117,8 @@ interface ObjectiveC : Library {
 data class ObjcMethodRef(val objcClass: ObjcProtocolClassBaseRef, val ptr: Pointer) {
     val name: String by lazy { ObjectiveC.method_getNameString(ptr.address) }
     val selName: String by lazy { ObjectiveC.sel_getNameString(name) }
+    val types: String by lazy { ObjectiveC.method_getTypeEncoding(ptr) }
+    val parsedTypes: ObjcMethodDesc by lazy { ObjcTypeParser.parse(types) }
 
     override fun toString(): String = "${objcClass.name}.$name"
 }
@@ -120,7 +127,7 @@ interface ObjcProtocolClassBaseRef {
     val name: String
 }
 
-annotation class ObjcDescriptor(val name: String, val types: String)
+annotation class ObjcDesc(val name: String, val types: String = "")
 
 data class ObjcMethodDescription(
     val protocol: ObjcProtocolRef,
@@ -133,24 +140,12 @@ data class ObjcMethodDescription(
 
     override fun toString(): String = "ObjcMethodDescription[$name$parsedTypes]"
     fun dumpKotlin() {
-        val parts = name.split(":")
-        val fullName = parts[0]
-        val firstArg = fullName.substringAfterLast("With").decapitalize(Locale.ENGLISH)
-        val baseName = fullName.substringBeforeLast("With")
-        val argNames = listOf(firstArg) + parts.drop(1)
-        val paramsWithNames = argNames.zip(parsedTypes.params.drop(2))
-        val paramsStr = paramsWithNames.joinToString(", ") { "${it.first}: ${it.second.type.toKotlinString()}" }
-        val returnTypeStr = parsedTypes.returnType.type.toKotlinString()
-        if (paramsWithNames.isEmpty()) {
-            println("  @get:ObjcDescriptor(\"$name\", \"$types\") val $baseName: $returnTypeStr")
-        } else {
-            println("  @ObjcDescriptor(\"$name\", \"$types\") fun $baseName($paramsStr): $returnTypeStr")
-        }
+        println("  " + createKotlinMethod(name, parsedTypes))
     }
 }
 
-data class ObjcMethodDesc(val returnType: ObjcParam, val params: List<ObjcParam>) {
-    constructor(all: List<ObjcParam>) : this(all.first(), all.drop(1))
+data class ObjcMethodDesc(val desc: String, val returnType: ObjcParam, val params: List<ObjcParam>) {
+    constructor(desc: String, all: List<ObjcParam>) : this(desc, all.first(), all.drop(1))
 }
 data class ObjcParam(val offset: Int, val type: ObjcType)
 
@@ -166,6 +161,10 @@ data class PointerObjcType(val base: ObjcType) : ObjcType {
 data class StructObjcType(val strName: String, val types: List<ObjcType>) : ObjcType {
     override fun toKotlinString(): String = "Struct"
 }
+data class FixedArrayObjcType(val count: Int, val type: ObjcType) : ObjcType {
+    override fun toKotlinString(): String = "FixedArray[$count]"
+}
+
 enum class PrimitiveObjcType : ObjcType {
     VOID, BOOL, ID, SEL, INT, UINT, NINT, NUINT, FLOAT, DOUBLE, BLOCK;
 
@@ -216,6 +215,7 @@ object ObjcTypeParser {
     fun parseType(str: StrReader): ObjcType {
         val c = str.readChar()
         return when (c) {
+            'V' -> PrimitiveObjcType.VOID // Class initializer
             'v' -> PrimitiveObjcType.VOID
             'B' -> PrimitiveObjcType.BOOL
             '@' -> {
@@ -236,6 +236,12 @@ object ObjcTypeParser {
                 str.skip()
                 StructObjcType(name, out)
             }
+            '[' -> {
+                val count = parseInt(str)
+                val type = parseType(str)
+                if (str.readChar() != ']') error("Invalid $str")
+                FixedArrayObjcType(count, type)
+            }
             ':' -> PrimitiveObjcType.SEL
             'i' -> PrimitiveObjcType.INT
             'I' -> PrimitiveObjcType.UINT
@@ -244,7 +250,7 @@ object ObjcTypeParser {
             '^' -> PointerObjcType(parseType(str))
             'r' -> ConstObjcType(parseType(str))
             'f' -> PrimitiveObjcType.FLOAT
-            //'F' -> PrimitiveObjcType.DOUBLE // Unchecked
+            'd' -> PrimitiveObjcType.DOUBLE
             else -> TODO("Not implemented '$c' in $str")
         }
     }
@@ -258,7 +264,7 @@ object ObjcTypeParser {
         while (str.hasMore) {
             out += parseParam(str)
         }
-        return ObjcMethodDesc(out)
+        return ObjcMethodDesc(str.str, out)
     }
     fun parse(str: String): ObjcMethodDesc = parse(StrReader(str))
 }
@@ -266,32 +272,55 @@ object ObjcTypeParser {
 // @TODO: Optimize this to be as fast as possible
 @Suppress("NewApi")
 interface ObjcDynamicInterface {
+    val __id: Long get() = TODO()
+
     companion object {
+        inline fun <reified T : ObjcDynamicInterface> createNew(init: String = "init", vararg args: Any?): T = createNew(T::class.java, init, *args)
+        fun <T : ObjcDynamicInterface> createNew(clazz: Class<T>, init: String = "init", vararg args: Any?): T {
+            val name = clazz.getDeclaredAnnotation(ObjcDesc::class.java)?.name ?: clazz.name
+            return proxy(NSClass(name).alloc().msgSend(init, *args), clazz)
+            //return proxy(NSClass(name).alloc(), clazz)
+            //return proxy(ObjcClassRef.fromName(name)!!.createInstance(), clazz)
+        }
+
         fun <T : ObjcDynamicInterface> proxy(instance: Pointer?, clazz: Class<T>): T {
             return proxy(instance?.address ?: 0L, clazz)
         }
         fun <T : ObjcDynamicInterface> proxy(instance: Long, clazz: Class<T>): T {
             return Proxy.newProxyInstance(clazz.classLoader, arrayOf(clazz)
             ) { proxy, method, args ->
-                val nargs = if (args != null) args else emptyArray()
-                val name = method.getDeclaredAnnotation(ObjcDescriptor::class.java)?.name ?: method.name
-                val returnType = method.returnType
-                when (returnType) {
-                    String::class.java, Boolean::class.java -> {
-                        val ret = instance.msgSend(name, *nargs)
-                        when (returnType) {
-                            String::class.java -> NSString(ret).cString
-                            Boolean::class.java -> ret != 0L
-                            else -> TODO()
-                        }
+                if (method.name == "get__id") {
+                    return@newProxyInstance instance
+                }
+                if (method.name == "toString") {
+                    return@newProxyInstance "ObjcDynamicInterface($instance)"
+                }
+                val nargs = (args ?: emptyArray()).map {
+                    when (it) {
+                        null -> 0L
+                        is ObjcDynamicInterface -> it.__id
+                        else -> it
                     }
-                    else -> {
-                        val res = instance.msgSend(name, *nargs)
-                        if (ObjcDynamicInterface::class.java.isAssignableFrom(returnType)) {
-                            ObjcDynamicInterface.proxy(res, returnType as Class<ObjcDynamicInterface>)
-                        } else {
-                            res
-                        }
+                }.toTypedArray()
+                val name = method.getDeclaredAnnotation(ObjcDesc::class.java)?.name ?: method.name
+                val returnType = method.returnType
+                println(":: $clazz[$instance].$name : ${nargs.toList()}")
+                if (returnType == Void::class.javaPrimitiveType) {
+                    val res = instance.msgSendVoid(name, *nargs)
+                    Unit
+                }
+                val res = instance.msgSend(name, *nargs)
+                if (ObjcDynamicInterface::class.java.isAssignableFrom(returnType)) {
+                    ObjcDynamicInterface.proxy(res, returnType as Class<ObjcDynamicInterface>)
+                } else {
+                    when (returnType) {
+                        String::class.java -> NSString(res).cString
+                        Boolean::class.java -> res != 0L
+                        Long::class.java -> res
+                        NativeLong::class.java -> NativeLong(res)
+                        Pointer::class.java -> Pointer(res)
+                        Void::class.javaPrimitiveType -> Unit
+                        else -> TODO()
                     }
                 }
             } as T
@@ -330,7 +359,7 @@ data class ObjcProtocolRef(val ref: ID) : ObjcProtocolClassBaseRef {
     }
 
     companion object {
-        fun getByName(name: String): ObjcProtocolRef? =
+        fun fromName(name: String): ObjcProtocolRef? =
             ObjectiveC.objc_getProtocol(name).takeIf { it != 0L }?.let { ObjcProtocolRef(it) }
 
         fun listAll(): List<ObjcProtocolRef> {
@@ -346,10 +375,42 @@ data class ObjcProtocolRef(val ref: ID) : ObjcProtocolClassBaseRef {
     override fun toString(): String = "ObjcProtocol[$name]"
 }
 
+private fun createKotlinMethod(
+    name: String, parsedTypes: ObjcMethodDesc,
+    setName: String? = null, setParsedTypes: ObjcMethodDesc? = null,
+): String {
+    val types = parsedTypes.desc
+    val parts = name.split(":")
+    val fullName = parts[0]
+    val firstArg = fullName.substringAfterLast("With").decapitalize(Locale.ENGLISH)
+    val baseName = fullName.substringBeforeLast("With")
+    val argNames = listOf(firstArg) + parts.drop(1)
+    val paramsWithNames = argNames.zip(parsedTypes.params.drop(2))
+    val paramsStr = paramsWithNames.joinToString(", ") { "${it.first}: ${it.second.type.toKotlinString()}" }
+    val returnTypeStr = parsedTypes.returnType.type.toKotlinString()
+    if (paramsWithNames.isEmpty() && parsedTypes.returnType.type != PrimitiveObjcType.VOID) {
+        return "@get:ObjcDesc(\"$name\", \"$types\") val $baseName: $returnTypeStr"
+    } else {
+        return "@ObjcDesc(\"$name\", \"$types\") fun $baseName($paramsStr): $returnTypeStr"
+    }
+}
+
 data class ObjcClassRef(val ref: ID) : ObjcProtocolClassBaseRef {
     companion object {
         fun listAll(): List<ObjcClassRef> = ObjectiveC.getAllClassIDs()
         fun fromName(name: String): ObjcClassRef? = ObjectiveC.getClassByName(name)
+    }
+
+    fun createInstance(extraBytes: Int = 0): ID {
+        return ObjectiveC.class_createInstance(ref, NativeLong(extraBytes.toLong()))
+    }
+
+    fun dumpKotlin() {
+        println("class $name : ObjcDynamicInterface {")
+        for (method in listMethods()) {
+            println("  " + createKotlinMethod(method.name, method.parsedTypes))
+        }
+        println("}")
     }
 
     override val name: String by lazy { ObjectiveC.object_getClassName(ref) }
@@ -467,6 +528,7 @@ fun Long.msgSend(sel: ObjcSel, vararg args: Any?): Long = ObjectiveC.objc_msgSen
 fun Long.msgSend(sel: String, vararg args: Any?): Long = ObjectiveC.objc_msgSend(this, sel(sel), *args)
 fun Long.msgSendInt(sel: ObjcSel, vararg args: Any?): Int = ObjectiveC.objc_msgSendInt(this, sel(sel), *args)
 fun Long.msgSendInt(sel: String, vararg args: Any?): Int = ObjectiveC.objc_msgSendInt(this, sel(sel), *args)
+fun Long.msgSendVoid(sel: String, vararg args: Any?): Unit = ObjectiveC.objc_msgSendVoid(this, sel(sel), *args)
 
 fun Long.msgSendFloat(sel: ObjcSel, vararg args: Any?): Float = ObjectiveC.objc_msgSendFloat(this, sel(sel), *args)
 fun Long.msgSendFloat(sel: String, vararg args: Any?): Float = ObjectiveC.objc_msgSendFloat(this, sel(sel), *args)
