@@ -16,13 +16,35 @@ interface MetalGlobals : Library {
 }
 
 class MetalTest {
+    interface MTLArchitecture : ObjcDynamicInterface {
+        @get:ObjcDescriptor("name", "@16@0:8") val name: String
+    }
+    interface MTLDevice : ObjcDynamicInterface {
+        @get:ObjcDescriptor("architecture", "@16@0:8") val architecture: MTLArchitecture
+        @get:ObjcDescriptor("name", "@16@0:8") val name: String
+        @get:ObjcDescriptor("maxTransferRate", "Q16@0:8") val maxTransferRate: Long
+        @get:ObjcDescriptor("maxBufferLength", "Q16@0:8") val maxBufferLength: Long
+        @get:ObjcDescriptor("newCommandQueue", "@16@0:8") val newCommandQueue: ID
+    }
     @Test
     fun test() {
         // https://developer.apple.com/documentation/objectivec/objective-c_runtime
         if (Platform.isMac) {
             val cg = Native.load("/System/Library/Frameworks/CoreGraphics.framework/Versions/A/CoreGraphics", CoreGraphics::class.java)
             val metal = Native.load("/System/Library/Frameworks/Metal.framework/Versions/A/Metal", MetalGlobals::class.java)
-            val metalDevice = metal.MTLCreateSystemDefaultDevice()
+            val metalDevice = metal.MTLCreateSystemDefaultDevice()?.asObjcDynamicInterface<MTLDevice>()
+
+            if (metalDevice != null) {
+                println(metalDevice.name)
+                println(metalDevice.architecture.name)
+                println(metalDevice.maxTransferRate)
+                println(metalDevice.maxBufferLength)
+            }
+
+            ObjcProtocolRef.getByName("MTLDevice")!!.dumpKotlin()
+
+            /*
+            ObjcDynamicInterface.proxy(metalDevice, MTLDevice::class)
             println(metalDevice?.address?.msgSend("hasUnifiedMemory"))
 
             println(NSString(metalDevice?.address?.msgSend("name")).cString)
@@ -47,6 +69,8 @@ class MetalTest {
 
              */
             //ObjectiveC.objc_getClass("")
+
+             */
         }
     }
 }

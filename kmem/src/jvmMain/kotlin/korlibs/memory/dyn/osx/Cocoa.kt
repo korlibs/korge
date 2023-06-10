@@ -3,10 +3,12 @@ package korlibs.memory.dyn.osx
 import korlibs.memory.dyn.*
 import com.sun.jna.*
 import java.io.StringReader
+import java.lang.reflect.*
 import java.util.*
 import java.util.concurrent.*
 import kotlin.collections.ArrayList
 import kotlin.collections.toString
+import kotlin.reflect.*
 import kotlin.text.Charsets
 import kotlin.text.toCharArray
 
@@ -118,6 +120,8 @@ interface ObjcProtocolClassBaseRef {
     val name: String
 }
 
+annotation class ObjcDescriptor(val name: String, val types: String)
+
 data class ObjcMethodDescription(
     val protocol: ObjcProtocolRef,
     val id: NativeLong,
@@ -135,7 +139,13 @@ data class ObjcMethodDescription(
         val baseName = fullName.substringBeforeLast("With")
         val argNames = listOf(firstArg) + parts.drop(1)
         val paramsWithNames = argNames.zip(parsedTypes.params.drop(2))
-        println("  fun $baseName(${paramsWithNames.joinToString(", ") { "${it.first}: ${it.second.type.toKotlinString()}" }}): ${parsedTypes.returnType.type.toKotlinString()}")
+        val paramsStr = paramsWithNames.joinToString(", ") { "${it.first}: ${it.second.type.toKotlinString()}" }
+        val returnTypeStr = parsedTypes.returnType.type.toKotlinString()
+        if (paramsWithNames.isEmpty()) {
+            println("  @get:ObjcDescriptor(\"$name\", \"$types\") val $baseName: $returnTypeStr")
+        } else {
+            println("  @ObjcDescriptor(\"$name\", \"$types\") fun $baseName($paramsStr): $returnTypeStr")
+        }
     }
 }
 
@@ -253,11 +263,50 @@ object ObjcTypeParser {
     fun parse(str: String): ObjcMethodDesc = parse(StrReader(str))
 }
 
+// @TODO: Optimize this to be as fast as possible
+@Suppress("NewApi")
+interface ObjcDynamicInterface {
+    companion object {
+        fun <T : ObjcDynamicInterface> proxy(instance: Pointer?, clazz: Class<T>): T {
+            return proxy(instance?.address ?: 0L, clazz)
+        }
+        fun <T : ObjcDynamicInterface> proxy(instance: Long, clazz: Class<T>): T {
+            return Proxy.newProxyInstance(clazz.classLoader, arrayOf(clazz)
+            ) { proxy, method, args ->
+                val nargs = if (args != null) args else emptyArray()
+                val name = method.getDeclaredAnnotation(ObjcDescriptor::class.java)?.name ?: method.name
+                val returnType = method.returnType
+                when (returnType) {
+                    String::class.java, Boolean::class.java -> {
+                        val ret = instance.msgSend(name, *nargs)
+                        when (returnType) {
+                            String::class.java -> NSString(ret).cString
+                            Boolean::class.java -> ret != 0L
+                            else -> TODO()
+                        }
+                    }
+                    else -> {
+                        val res = instance.msgSend(name, *nargs)
+                        if (ObjcDynamicInterface::class.java.isAssignableFrom(returnType)) {
+                            ObjcDynamicInterface.proxy(res, returnType as Class<ObjcDynamicInterface>)
+                        } else {
+                            res
+                        }
+                    }
+                }
+            } as T
+        }
+    }
+}
+
+inline fun <reified T : ObjcDynamicInterface> Long.asObjcDynamicInterface(): T = ObjcDynamicInterface.proxy(this, T::class.java)
+inline fun <reified T : ObjcDynamicInterface> Pointer.asObjcDynamicInterface(): T = ObjcDynamicInterface.proxy(this, T::class.java)
+
 data class ObjcProtocolRef(val ref: ID) : ObjcProtocolClassBaseRef {
     override val name: String by lazy { ObjectiveC.protocol_getName(ref) }
 
     fun dumpKotlin() {
-        println("interface $name {")
+        println("interface $name : ObjcDynamicInterface {")
         for (method in listMethods()) {
             method.dumpKotlin()
         }
