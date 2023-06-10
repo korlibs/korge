@@ -12,6 +12,79 @@ interface MetalGlobals : Library {
     ///System/Library/Frameworks/Metal.framework/Versions/A/Metal
     //fun _MTLCreateSystemDefaultDevice(): Pointer?
     fun MTLCreateSystemDefaultDevice(): Pointer?
+    //fun MTLClearColorMake(red: Double, green: Double, blue: Double, alpha: Double): MTLClearColor.ByValue
+    //fun MTLRegionMake2D(x: Double, y: Double, width: Double, height: Double): MTLRegion.ByValue
+}
+
+open class MTLRegion : Structure {
+    override fun getFieldOrder() = listOf("x", "y", "z", "width", "height", "depth")
+    companion object {
+        fun make2D(x: Double, y: Double, width: Double, height: Double): MTLRegion {
+            return MTLRegion.ByValue().also {
+                it.x = x
+                it.y = y
+                it.width = width
+                it.height = height
+            }.also { it.write() }
+        }
+    }
+    @JvmField var x: Double = 0.0
+    @JvmField var y: Double = 0.0
+    @JvmField var z: Double = 0.0
+    @JvmField var width: Double = 0.0
+    @JvmField var height: Double = 0.0
+    @JvmField var depth: Double = 0.0
+    //override fun getFieldOrder() = listOf("origin", "size")
+    //@JvmField var origin: MTLOrigin = MTLOrigin()
+    //@JvmField var size: MTLSize = MTLSize()
+
+    constructor() : super() {}
+    constructor(peer: Pointer?) : super(peer) {}
+
+
+    class ByReference : MTLRegion(), Structure.ByReference
+    class ByValue : MTLRegion(), Structure.ByValue
+}
+
+open class MTLOrigin : Structure {
+    override fun getFieldOrder() = listOf("x", "y", "z")
+    @JvmField var x: Double = 0.0
+    @JvmField var y: Double = 0.0
+    @JvmField var z: Double = 0.0
+
+    constructor() : super() {}
+    constructor(peer: Pointer?) : super(peer) {}
+
+    class ByReference : MTLOrigin(), Structure.ByReference
+    class ByValue : MTLOrigin(), Structure.ByValue
+}
+
+open class MTLSize : Structure {
+    override fun getFieldOrder() = listOf("width", "height", "depth")
+    @JvmField var width: Double = 0.0
+    @JvmField var height: Double = 0.0
+    @JvmField var depth: Double = 0.0
+
+    constructor() : super() {}
+    constructor(peer: Pointer?) : super(peer) {}
+
+    class ByReference : MTLSize(), Structure.ByReference
+    class ByValue : MTLSize(), Structure.ByValue
+}
+
+open class MTLClearColor : Structure {
+    @JvmField var red: Double = 0.0
+    @JvmField var green: Double = 0.0
+    @JvmField var blue: Double = 0.0
+    @JvmField var alpha: Double = 0.0
+
+    constructor() : super() {}
+    constructor(peer: Pointer?) : super(peer) {}
+
+    override fun getFieldOrder() = listOf("red", "green", "blue", "alpha")
+
+    class ByReference : MTLClearColor(), Structure.ByReference
+    class ByValue : MTLClearColor(), Structure.ByValue
 }
 
 // https://developer.apple.com/documentation/objectivec/objective-c_runtime
@@ -30,8 +103,23 @@ class MetalTest {
     interface MTLRenderPipelineState : ObjcDynamicInterface {
 
     }
-    interface MTLCommandQueue : ObjcDynamicInterface {
+    interface MTLCommandEncoder : ObjcDynamicInterface {
+        @ObjcDesc("endEncoding", "v16@0:8") fun endEncoding(): Unit
+    }
+    interface MTLRenderCommandEncoder : MTLCommandEncoder {
+        @ObjcDesc("setRenderPipelineState:", "v24@0:8@16") fun setRenderPipelineState(setRenderPipelineState: MTLRenderPipelineState?): Unit
+        @ObjcDesc("setVertexBuffer:offset:atIndex:", "v40@0:8@16Q24Q32") fun setVertexBuffer(setVertexBuffer: MTLBuffer?, offset: Long, atIndex: Long): Unit
+        @ObjcDesc("drawPrimitives:vertexStart:vertexCount:instanceCount:", "v48@0:8Q16Q24Q32Q40") fun drawPrimitives(primitiveType: Long, vertexStart: Long, vertexCount: Long, instanceCount: Long): Unit
 
+    }
+    interface MTLCommandBuffer : ObjcDynamicInterface {
+        @ObjcDesc("renderCommandEncoderWithDescriptor:", "@24@0:8@16") fun renderCommandEncoder(descriptor: MTLRenderPassDescriptor?): MTLRenderCommandEncoder?
+        @ObjcDesc("presentDrawable:", "v24@0:8@16") fun presentDrawable(presentDrawable: CAMetalDrawable?): Unit
+        @ObjcDesc("commit", "v16@0:8") fun commit(): Unit
+        @ObjcDesc("waitUntilCompleted", "v16@0:8") fun waitUntilCompleted(): Unit
+    }
+    interface MTLCommandQueue : ObjcDynamicInterface {
+        @ObjcDesc("commandBuffer", "@16@0:8") fun commandBuffer(): MTLCommandBuffer?
     }
     interface MTLDevice : ObjcDynamicInterface {
         @get:ObjcDesc("architecture", "@16@0:8") val architecture: MTLArchitecture
@@ -50,16 +138,28 @@ class MetalTest {
         @get:ObjcDesc("contents", "^v16@0:8") val contents: Pointer
     }
 
+    interface MTLRenderPassColorAttachmentDescriptor : ObjcDynamicInterface {
+        @get:ObjcDesc("texture", "Q16@0:8") @set:ObjcDesc("setTexture:", "Q16@0:8") var texture: MTLTexture?
+        @get:ObjcDesc("loadAction", "Q16@0:8") @set:ObjcDesc("setLoadAction:", "Q16@0:8") var loadAction: Long
+        @get:ObjcDesc("clearColor", "Q16@0:8") @set:ObjcDesc("setClearColor:", "Q16@0:8") var clearColor: MTLClearColor.ByValue
+    }
+
+    interface MTLRenderPassColorAttachmentDescriptorArray : ObjcDynamicInterface {
+        @ObjcDesc("objectAtIndexedSubscript:", "@24@0:8Q16") fun objectAtIndexedSubscript(objectAtIndexedSubscript: Long): MTLRenderPassColorAttachmentDescriptor
+        @ObjcDesc("setObject:atIndexedSubscript:", "v32@0:8@16Q24") fun setObject(setObject: MTLRenderPassColorAttachmentDescriptor, atIndexedSubscript: Long): Unit
+        @ObjcDesc("_descriptorAtIndex:", "@24@0:8Q16") fun _descriptorAtIndex(_descriptorAtIndex: Long): MTLRenderPassColorAttachmentDescriptor
+    }
+
     interface MTLRenderPassDescriptor : ObjcDynamicInterface {
         companion object {
             operator fun invoke(): MTLRenderPassDescriptor = ObjcDynamicInterface.createNew<MTLRenderPassDescriptor>()
         }
+        @get:ObjcDesc("colorAttachments") val colorAttachments: MTLRenderPassColorAttachmentDescriptorArray
     }
 
     interface MTLRenderPipelineColorAttachmentDescriptor : ObjcDynamicInterface {
-        @get:ObjcDesc("pixelFormat", "Q16@0:8")
-        @set:ObjcDesc("setPixelFormat:", "Q16@0:8")
-        var pixelFormat: Long
+        @get:ObjcDesc("pixelFormat", "Q16@0:8") @set:ObjcDesc("setPixelFormat:", "Q16@0:8") var pixelFormat: Long
+        @get:ObjcDesc("texture", "Q16@0:8") @set:ObjcDesc("setTexture:", "Q16@0:8") var texture: MTLTexture?
     }
 
     interface MTLRenderPipelineColorAttachmentDescriptorArray : ObjcDynamicInterface {
@@ -82,7 +182,12 @@ class MetalTest {
     }
 
     interface CAMetalDrawable : ObjcDynamicInterface {
+        @get:ObjcDesc("texture", "Q16@0:8") val texture: MTLTexture?
+    }
 
+    interface MTLTexture : ObjcDynamicInterface {
+        @ObjcDesc("getBytes:bytesPerRow:bytesPerImage:fromRegion:mipmapLevel:slice:", "v104@0:8^v16Q24Q32{?={?=QQQ}{?=QQQ}}40Q88Q96") fun getBytes(
+            getBytes: Pointer, bytesPerRow: Long, bytesPerImage: Long, fromRegion: MTLRegion?, mipmapLevel: Long, slice: Long): Unit
     }
 
     @ObjcDesc("CAMetalLayer")
@@ -138,10 +243,10 @@ class MetalTest {
                 val MTLPixelFormatBGRA8Unorm = 80L
 
                 if (device != null) {
-                    println(device.name)
-                    println(device.architecture.name)
-                    println(device.maxTransferRate)
-                    println(device.maxBufferLength)
+                    //println(device.name)
+                    //println(device.architecture.name)
+                    //println(device.maxTransferRate)
+                    //println(device.maxBufferLength)
 
                     //NSClass("CAMetalLayer").alloc().msgSend("init").msgSend("setPixelFormat", 1L)
 
@@ -220,13 +325,66 @@ class MetalTest {
 
                     val drawable = layer.nextDrawable()
                     val renderPassDescriptor = MTLRenderPassDescriptor()
-                    //val colorAttachment = renderPassDescriptor.colorAttachments.objectAtIndexedSubscript(0.convert())
+                    val colorAttachment = renderPassDescriptor.colorAttachments.objectAtIndexedSubscript(0L)
+                    //println("drawable?.texture=${drawable?.texture}")
+                    colorAttachment.texture = drawable!!.texture
+                    val MTLLoadActionClear = 2L
 
+                    colorAttachment.loadAction = MTLLoadActionClear
+                    colorAttachment.clearColor = MTLClearColor.ByValue().also {
+                        it.autoWrite()
+                        it.red = 0.0
+                        it.green = 104.0/255.0
+                        it.blue = 55.0/255.0
+                        it.alpha = 1.0
+                    }.also { it.write() }
+
+                    //println("colorAttachment=$colorAttachment")
+                    println("renderPassDescriptor=$renderPassDescriptor")
                     println("drawable=$drawable")
                     println("commandQueue=$commandQueue")
                     println("pipelineState=$pipelineState")
                     println("vertexFunction=$vertexFunction")
                     println("fragmentFunction=$fragmentFunction")
+
+                    val commandBuffer = commandQueue.commandBuffer() ?: TODO()
+                    println("commandBuffer=$commandBuffer")
+
+                    val renderEncoder = commandBuffer.renderCommandEncoder(renderPassDescriptor) ?: TODO()
+                    renderEncoder.setRenderPipelineState(pipelineState)
+                    renderEncoder.setVertexBuffer(vertexBuffer, offset = 0, atIndex = 0)
+                    val MTLPrimitiveTypeTriangle = 3L
+                    renderEncoder.drawPrimitives(primitiveType = MTLPrimitiveTypeTriangle, vertexStart = 0, vertexCount = 3, instanceCount = 1)
+                    renderEncoder.endEncoding()
+
+                    /*
+                    renderEncoder.setVertexBuffer(vertexBuffer, offset = 0, atIndex = 0)
+                    println("renderEncoder=$renderEncoder")
+
+
+                     */
+                    commandBuffer.presentDrawable(drawable)
+                    commandBuffer.commit()
+                    commandBuffer.waitUntilCompleted()
+
+                    val width = 512
+                    val height = 512
+                    val dataOut = Memory(512 * 512 * 4).also { it.clear() }
+
+                    drawable!!.texture!!.getBytes(
+                        dataOut,
+                        (width * 4).toLong(),
+                        (width * height * 4).toLong(),
+                        MTLRegion.make2D(0.0, 0.0, width.toDouble(), height.toDouble()),
+                        0L,
+                        0L
+                    )
+                    for (n in 0 until width * height) {
+                        val v = dataOut.getInt((4 * n).toLong())
+                        if (v != 0) println(v)
+                    }
+
+                    //drawable.texture.
                 }
 
 
@@ -234,7 +392,19 @@ class MetalTest {
                 //ObjcProtocolRef.fromName("MTLDevice")!!.dumpKotlin()
                 //ObjcProtocolRef.fromName("MTLLibrary")!!.dumpKotlin()
                 //ObjcClassRef.fromName("MTLRenderPipelineColorAttachmentDescriptor")!!.dumpKotlin()
-                ObjcClassRef.fromName("MTLRenderPipelineDescriptor")!!.dumpKotlin()
+                //ObjcClassRef.fromName("MTLRenderPipelineDescriptor")!!.dumpKotlin()
+
+                fun dumpKotlin(name: String) {
+                    ObjcClassRef.fromName(name)?.dumpKotlin()
+                    ObjcProtocolRef.fromName(name)?.dumpKotlin()
+                }
+
+                //dumpKotlin("MTLCommandQueue")
+                //dumpKotlin("MTLCommandBuffer")
+                //dumpKotlin("MTLCommandEncoder")
+                //dumpKotlin("MTLRenderCommandEncoder")
+                dumpKotlin("MTLTexture")
+
 
                 //ObjcClassRef.fromName("CAMetalLayer")!!.dumpKotlin()
                 //ObjcClassRef.fromName("CALayer")!!.dumpKotlin()

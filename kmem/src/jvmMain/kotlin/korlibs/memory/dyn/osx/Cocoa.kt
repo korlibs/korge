@@ -170,13 +170,14 @@ data class FixedArrayObjcType(val count: Int, val type: ObjcType) : ObjcType {
 }
 
 enum class PrimitiveObjcType : ObjcType {
-    VOID, BOOL, ID, SEL, INT, UINT, NINT, NUINT, FLOAT, DOUBLE, BLOCK;
+    VOID, BOOL, ID, SEL, BYTE, INT, UINT, NINT, NUINT, FLOAT, DOUBLE, BLOCK;
 
     override fun toKotlinString(): String = when (this) {
         VOID -> "Unit"
         BOOL -> "Boolean"
         ID -> "ID"
         SEL -> "SEL"
+        BYTE -> "Byte"
         INT -> "Int"
         UINT -> "UInt"
         NINT -> "NativeLong"
@@ -247,6 +248,7 @@ object ObjcTypeParser {
                 FixedArrayObjcType(count, type)
             }
             ':' -> PrimitiveObjcType.SEL
+            'C' -> PrimitiveObjcType.BYTE
             'i' -> PrimitiveObjcType.INT
             'I' -> PrimitiveObjcType.UINT
             'q' -> PrimitiveObjcType.NINT
@@ -313,10 +315,10 @@ interface ObjcDynamicInterface {
                 val name = method.getDeclaredAnnotation(ObjcDesc::class.java)?.name ?: method.name
                 val returnType = method.returnType
                 //println(":: $clazz[$instance].$name : ${nargs.toList()}")
-                if (returnType == Void::class.javaPrimitiveType) {
-                    val res = instance.msgSendVoid(name, *nargs)
-                    Unit
-                }
+                //if (returnType == Void::class.javaPrimitiveType) {
+                //    val res = instance.msgSendVoid(name, *nargs)
+                //    Unit
+                //}
                 val res = instance.msgSend(name, *nargs)
                 if (ObjcDynamicInterface::class.java.isAssignableFrom(returnType)) {
                     ObjcDynamicInterface.proxy(res, returnType as Class<ObjcDynamicInterface>)
@@ -328,6 +330,7 @@ interface ObjcDynamicInterface {
                         NativeLong::class.java -> NativeLong(res)
                         Pointer::class.java -> Pointer(res)
                         Void::class.javaPrimitiveType -> Unit
+                        Unit::class.java -> Unit
                         else -> TODO()
                     }
                 }
