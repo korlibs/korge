@@ -95,6 +95,7 @@ class AGMetalTest {
         commandBuffer.commit()
         commandBuffer.waitUntilCompleted()
 
+        //vertexBuffer.setPurgeableState(MTLPurgeableStateEmpty)
         //vertexBuffer.dealloc()
 
         val bmp = drawable.texture!!.readBitmap()
@@ -113,7 +114,7 @@ class AGMetalTest {
         //generateKotlinCode("MTLRenderCommandEncoder")
         //generateKotlinCode("MTLTexture")
         generateKotlinCode("MTLBuffer")
-
+        generateKotlinCode("MTLResource")
 
     }
 

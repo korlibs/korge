@@ -149,7 +149,18 @@ interface MTLDevice : ObjcDynamicInterface {
     @ObjcDesc("newRenderPipelineStateWithDescriptor:error:", "@32@0:8@16^@24") fun newRenderPipelineState(descriptor: MTLRenderPipelineDescriptor, error: Pointer?): MTLRenderPipelineState?
 }
 
-interface MTLBuffer : ObjcDynamicInterface {
+interface MTLResource : ObjcDynamicInterface {
+    @get:ObjcDesc("resourceOptions", "Q16@0:8") val resourceOptions: Long
+    @get:ObjcDesc("allocatedSize", "Q16@0:8") val allocatedSize: Long
+    @get:ObjcDesc("cpuCacheMode", "Q16@0:8") val cpuCacheMode: Long
+    @get:ObjcDesc("device", "@16@0:8") val device: MTLDevice?
+    @get:ObjcDesc("storageMode", "Q16@0:8") val storageMode: Long
+    @get:ObjcDesc("label", "@16@0:8") val label: NSString?
+    @ObjcDesc("setLabel:", "v24@0:8@16") fun setLabel(label: NSString?): Unit
+    @ObjcDesc("setPurgeableState:", "Q24@0:8Q16") fun setPurgeableState(state: Long): Long
+}
+
+interface MTLBuffer : MTLResource {
     @get:ObjcDesc("length", "Q16@0:8") val length: Long
     @get:ObjcDesc("contents", "^v16@0:8") val contents: Pointer
     @ObjcDesc("didModifyRange:", "v32@0:8{_NSRange=QQ}16") fun didModifyRange(didModifyRange: NSRange): Unit
@@ -202,7 +213,7 @@ interface CAMetalDrawable : ObjcDynamicInterface {
     @get:ObjcDesc("texture", "Q16@0:8") val texture: MTLTexture?
 }
 
-interface MTLTexture : ObjcDynamicInterface {
+interface MTLTexture : MTLResource {
     @ObjcDesc("getBytes:bytesPerRow:bytesPerImage:fromRegion:mipmapLevel:slice:", "v104@0:8^v16Q24Q32{?={?=QQQ}{?=QQQ}}40Q88Q96") fun getBytes(
         getBytes: Pointer, bytesPerRow: Long, bytesPerImage: Long, fromRegion: MTLRegion.ByValue, mipmapLevel: Long, slice: Long): Unit
     @get:ObjcDesc("width", "Q16@0:8") val width: Long
@@ -291,3 +302,8 @@ val MTLPrimitiveTypeTriangleStrip = 4L
 val MTLLoadActionDontCare = 0L
 val MTLLoadActionLoad = 1L
 val MTLLoadActionClear = 2L
+
+val MTLPurgeableStateKeepCurrent = 1L
+val MTLPurgeableStateNonVolatile = 2L
+val MTLPurgeableStateVolatile = 3L
+val MTLPurgeableStateEmpty = 4L
