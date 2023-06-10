@@ -1,8 +1,17 @@
-package korlibs.memory.dyn.osx
+package korlibs.render
 
 import com.sun.jna.*
+import korlibs.datastructure.*
+import korlibs.image.bitmap.*
+import korlibs.image.color.*
+import korlibs.image.format.*
 import korlibs.memory.Platform
+import korlibs.memory.dyn.osx.*
+import kotlinx.coroutines.*
+import org.junit.*
+import org.junit.Test
 import kotlin.test.*
+
 
 interface CoreGraphics : Library {
 
@@ -19,21 +28,23 @@ interface MetalGlobals : Library {
 open class MTLRegion : Structure {
     override fun getFieldOrder() = listOf("x", "y", "z", "width", "height", "depth")
     companion object {
-        fun make2D(x: Double, y: Double, width: Double, height: Double): MTLRegion {
+        fun make2D(x: Long, y: Long, width: Long, height: Long): MTLRegion.ByValue {
             return MTLRegion.ByValue().also {
                 it.x = x
                 it.y = y
                 it.width = width
                 it.height = height
-            }.also { it.write() }
+                it.autoWrite()
+                it.write()
+            }
         }
     }
-    @JvmField var x: Double = 0.0
-    @JvmField var y: Double = 0.0
-    @JvmField var z: Double = 0.0
-    @JvmField var width: Double = 0.0
-    @JvmField var height: Double = 0.0
-    @JvmField var depth: Double = 0.0
+    @JvmField var x: Long = 0L
+    @JvmField var y: Long = 0L
+    @JvmField var z: Long = 0L
+    @JvmField var width: Long = 0L
+    @JvmField var height: Long = 0L
+    @JvmField var depth: Long = 1L
     //override fun getFieldOrder() = listOf("origin", "size")
     //@JvmField var origin: MTLOrigin = MTLOrigin()
     //@JvmField var size: MTLSize = MTLSize()
@@ -90,7 +101,7 @@ open class MTLClearColor : Structure {
 // https://developer.apple.com/documentation/objectivec/objective-c_runtime
 // https://github.com/korlibs/korge/discussions/1155
 
-class MetalTest {
+class AGMetalTest {
     interface MTLArchitecture : ObjcDynamicInterface {
         @get:ObjcDesc("name", "@16@0:8") val name: String
     }
@@ -187,7 +198,14 @@ class MetalTest {
 
     interface MTLTexture : ObjcDynamicInterface {
         @ObjcDesc("getBytes:bytesPerRow:bytesPerImage:fromRegion:mipmapLevel:slice:", "v104@0:8^v16Q24Q32{?={?=QQQ}{?=QQQ}}40Q88Q96") fun getBytes(
-            getBytes: Pointer, bytesPerRow: Long, bytesPerImage: Long, fromRegion: MTLRegion?, mipmapLevel: Long, slice: Long): Unit
+            getBytes: Pointer, bytesPerRow: Long, bytesPerImage: Long, fromRegion: MTLRegion.ByValue, mipmapLevel: Long, slice: Long): Unit
+        @get:ObjcDesc("width", "Q16@0:8") val width: Long
+        @get:ObjcDesc("height", "Q16@0:8") val height: Long
+        @get:ObjcDesc("textureType", "Q16@0:8") val textureType: Long
+        @get:ObjcDesc("buffer", "@16@0:8") val buffer: MTLBuffer?
+        @get:ObjcDesc("bufferBytesPerRow", "Q16@0:8") val bufferBytesPerRow: Long
+        @get:ObjcDesc("bufferOffset", "Q16@0:8") val bufferOffset: Long
+        @get:ObjcDesc("depth", "Q16@0:8") val depth: Long
     }
 
     @ObjcDesc("CAMetalLayer")
@@ -243,6 +261,8 @@ class MetalTest {
                 val MTLPixelFormatBGRA8Unorm = 80L
 
                 if (device != null) {
+                    val width = 50
+                    val height = 50
                     //println(device.name)
                     //println(device.architecture.name)
                     //println(device.maxTransferRate)
@@ -258,8 +278,8 @@ class MetalTest {
                     layer.setFrame(CGRect.ByValue().also {
                         it.x = 0.0
                         it.y = 0.0
-                        it.width = 512.0
-                        it.height = 512.0
+                        it.width = width.toDouble()
+                        it.height = height.toDouble()
                     }.also { it.write() })
                     //layer.pixelFormat = 1
                     //layer.setPixelFormat(1L)
@@ -273,43 +293,44 @@ class MetalTest {
                     vertexBuffer.contents.let {
                         for (n in 0 until data.size) {
                             val v = data[n]
-                            it.setFloat(n * 8L, v)
+                            it.setFloat(n * 4L, v)
                         }
                     }
-                    println(vertexBuffer.contents)
-                    println(vertexBuffer.length)
-                    val library = device.newLibrary(NSString("""
-                    typedef struct {
-                        packed_float3 position;
-                        // [[flat]]
-                    } VertexInput;
+                    println("vertexBuffer.contents=${vertexBuffer.contents}")
+                    println("vertexBuffer.length=${vertexBuffer.length}")
+                    val library = device.newLibrary(
+                        NSString("""
+                            typedef struct {
+                                packed_float3 position;
+                                // [[flat]]
+                            } VertexInput;
+                            
+                            typedef struct {
+                                float4 position [[position]];
+                            } Varyings;
                     
-                    typedef struct {
-                        float4 position [[position]];
-                    } Varyings;
-            
-                    vertex Varyings basic_vertex(
-                        unsigned int vid [[ vertex_id ]],
-                        const device VertexInput* vertex_array [[buffer(0)]]
-                    ) {
-                        Varyings out;
-                        auto input = vertex_array[vid];
-                        {
-                            out.position = float4(input.position, 1.0); 
-                        }
-                        return out;
-                    }
-                    
-                    fragment half4 basic_fragment(
-                        Varyings in [[stage_in]]
-                    ) { // 1
-                      return half4(in.position.x / 100.0, in.position.y / 100.0, 1.0, 1.0);              // 2
-                    }
-                """.trimIndent()), null, null)
+                            vertex Varyings basic_vertex(
+                                unsigned int vid [[ vertex_id ]],
+                                const device VertexInput* vertex_array [[buffer(0)]]
+                            ) {
+                                Varyings out;
+                                auto input = vertex_array[vid];
+                                {
+                                    out.position = float4(input.position, 1.0); 
+                                }
+                                return out;
+                            }
+                            
+                            fragment half4 basic_fragment(
+                                Varyings in [[stage_in]]
+                            ) { // 1
+                              return half4(in.position.x / 100.0, in.position.y / 100.0, 1.0, 1.0);              // 2
+                            }
+                        """.trimIndent()), null, null)
 
                     println("library=$library")
-                    val vertexFunction = library?.newFunction(NSString("basic_vertex"))
-                    val fragmentFunction = library?.newFunction(NSString("basic_fragment"))
+                    val vertexFunction = library!!.newFunction(NSString("basic_vertex")) !!
+                    val fragmentFunction = library!!.newFunction(NSString("basic_fragment")) !!
 
                     val pipelineStateDescriptor = MTLRenderPipelineDescriptor()
                     println("pipelineStateDescriptor=${pipelineStateDescriptor}")
@@ -318,6 +339,7 @@ class MetalTest {
                     pipelineStateDescriptor.fragmentFunction = fragmentFunction
                     pipelineStateDescriptor.colorAttachments.objectAtIndexedSubscript(0).pixelFormat = MTLPixelFormatBGRA8Unorm
                     println("pipelineStateDescriptor.vertexFunction=${pipelineStateDescriptor.vertexFunction}")
+                    println("pipelineStateDescriptor.fragmentFunction=${pipelineStateDescriptor.fragmentFunction}")
                     println("pipelineStateDescriptor.colorAttachments.objectAtIndexedSubscript(0).pixelFormat=${pipelineStateDescriptor.colorAttachments.objectAtIndexedSubscript(0).pixelFormat}")
 
                     val pipelineState = device.newRenderPipelineState(pipelineStateDescriptor, error = null)!!
@@ -367,22 +389,32 @@ class MetalTest {
                     commandBuffer.commit()
                     commandBuffer.waitUntilCompleted()
 
-                    val width = 512
-                    val height = 512
-                    val dataOut = Memory(512 * 512 * 4).also { it.clear() }
+                    val dataOut = Memory((width * height * 4).toLong()).also { it.clear() }
+                    //dataOut.setInt(0L, 99999)
+                    //dataOut.setInt(0L, 99999)
+
+                    println("drawable!!.texture!!=${drawable!!.texture!!.width}x${drawable!!.texture!!.height}")
+
+                    println("MTLRegion.make2D(0L, 0L, width.toLong(), height.toLong())=${MTLRegion.make2D(0L, 0L, width.toLong(), height.toLong())}")
+
+                    //println("drawable!!.texture!!.buffer=${drawable!!.texture!!.buffer}")
+                    //println("drawable!!.texture!!.bufferOffset=${drawable!!.texture!!.bufferOffset}")
+                    //println("drawable!!.texture!!.bufferBytesPerRow=${drawable!!.texture!!.bufferBytesPerRow}")
 
                     drawable!!.texture!!.getBytes(
                         dataOut,
                         (width * 4).toLong(),
                         (width * height * 4).toLong(),
-                        MTLRegion.make2D(0.0, 0.0, width.toDouble(), height.toDouble()),
+                        MTLRegion.make2D(0L, 0L, width.toLong(), height.toLong()),
                         0L,
                         0L
                     )
-                    for (n in 0 until width * height) {
-                        val v = dataOut.getInt((4 * n).toLong())
-                        if (v != 0) println(v)
-                    }
+                    val dataPixels = IntArray2(width, height) { dataOut.getInt((4 * it).toLong()) }
+                    val bmp = Bitmap32(width, height, RgbaArray(dataPixels.data))
+
+                    assertEquals(Colors["#376800"], bmp[0, 0])
+                    assertEquals(Colors["#ff4141"], bmp[25, 25])
+                    //runBlocking { bmp.showImageAndWait() }
 
                     //drawable.texture.
                 }
