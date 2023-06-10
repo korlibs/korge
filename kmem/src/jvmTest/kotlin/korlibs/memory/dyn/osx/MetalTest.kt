@@ -29,12 +29,13 @@ class MetalTest {
             println(NSString(metalDevice?.address?.msgSend("architecture")?.msgSend("name")).cString)
             //println()
             val protocol = ObjcProtocolRef.getByName("MTLDevice")!!
+            protocol.dumpKotlin()
             println("protocol=$protocol")
             //println(protocol.ref.msgSend("name").toPointer().getString(0L))
             //println(protocol.ref.msgSend("hasUnifiedMemory"))
-            for (method in protocol.listMethods()) {
-                println(" - ${method}")
-            }
+            //for (method in protocol.listMethods()) {
+            //    println(" - ${method}")
+            //}
             println(ObjcProtocolRef.listAll())
             println(ObjectiveC.getClassByName("_MTLDevice")!!.imageName)
             /*

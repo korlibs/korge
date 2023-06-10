@@ -2,7 +2,10 @@ package korlibs.memory.dyn.osx
 
 import korlibs.memory.dyn.*
 import com.sun.jna.*
+import java.io.StringReader
+import java.util.*
 import java.util.concurrent.*
+import kotlin.collections.ArrayList
 import kotlin.collections.toString
 import kotlin.text.Charsets
 import kotlin.text.toCharArray
@@ -38,6 +41,10 @@ interface ObjectiveC : Library {
     fun class_addProtocol(a: Long, b: Long): Long
     fun class_copyMethodList(clazz: Long, items: IntArray): Pointer
 
+    // typedef struct objc_method_description {
+    //     SEL name;        // The name of the method
+    //     char *types;     // The types of the method arguments
+    // } MethodDescription;
     fun protocol_copyMethodDescriptionList(proto: Long, isRequiredMethod: Boolean, isInstanceMethod: Boolean, outCount: IntArray): Pointer
 
     fun objc_registerClassPair(cls: Long)
@@ -92,6 +99,9 @@ interface ObjectiveC : Library {
     fun property_getName(prop: ID): String
     fun property_getAttributes(prop: ID): String
 
+    fun method_getReturnType(id: NativeLong, dst: Pointer, dst_length: NativeLong)
+    fun class_getInstanceMethod(cls: ID, id: NativeLong): NativeLong
+
     companion object : ObjectiveC by NativeLoad("objc") {
         //val NATIVE = NativeLibrary.getInstance("objc")
     }
@@ -111,14 +121,148 @@ interface ObjcProtocolClassBaseRef {
 data class ObjcMethodDescription(
     val protocol: ObjcProtocolRef,
     val id: NativeLong,
-    val types: List<Any?>
+    val types: String
 ) {
+    val method by lazy { ObjectiveC.class_getInstanceMethod(protocol.ref, id) }
     val name: String by lazy { ObjectiveC.sel_getName(id.toLong()) }
-    override fun toString(): String = "ObjcMethodDescription[$name]"
+    val parsedTypes: ObjcMethodDesc by lazy { ObjcTypeParser.parse(types) }
+
+    override fun toString(): String = "ObjcMethodDescription[$name$parsedTypes]"
+    fun dumpKotlin() {
+        val parts = name.split(":")
+        val fullName = parts[0]
+        val firstArg = fullName.substringAfterLast("With").decapitalize(Locale.ENGLISH)
+        val baseName = fullName.substringBeforeLast("With")
+        val argNames = listOf(firstArg) + parts.drop(1)
+        val paramsWithNames = argNames.zip(parsedTypes.params.drop(2))
+        println("  fun $baseName(${paramsWithNames.joinToString(", ") { "${it.first}: ${it.second.type.toKotlinString()}" }}): ${parsedTypes.returnType.type.toKotlinString()}")
+    }
+}
+
+data class ObjcMethodDesc(val returnType: ObjcParam, val params: List<ObjcParam>) {
+    constructor(all: List<ObjcParam>) : this(all.first(), all.drop(1))
+}
+data class ObjcParam(val offset: Int, val type: ObjcType)
+
+interface ObjcType {
+    fun toKotlinString(): String
+}
+data class ConstObjcType(val base: ObjcType) : ObjcType {
+    override fun toKotlinString(): String = base.toKotlinString()
+}
+data class PointerObjcType(val base: ObjcType) : ObjcType {
+    override fun toKotlinString(): String = "Pointer"
+}
+data class StructObjcType(val strName: String, val types: List<ObjcType>) : ObjcType {
+    override fun toKotlinString(): String = "Struct"
+}
+enum class PrimitiveObjcType : ObjcType {
+    VOID, BOOL, ID, SEL, INT, UINT, NINT, NUINT, FLOAT, DOUBLE, BLOCK;
+
+    override fun toKotlinString(): String = when (this) {
+        VOID -> "Unit"
+        BOOL -> "Boolean"
+        ID -> "ID"
+        SEL -> "SEL"
+        INT -> "Int"
+        UINT -> "UInt"
+        NINT -> "NativeLong"
+        NUINT -> "NativeLong"
+        FLOAT -> "Float"
+        DOUBLE -> "Double"
+        BLOCK -> "(() -> Unit)"
+    }
+}
+
+data class StrReader(val str: String, var pos: Int = 0, var end: Int = str.length) {
+    val hasMore: Boolean get() = pos < end
+
+    fun peekChar(): Char = str.getOrElse(pos) { '\u0000' }
+    fun readChar(): Char = peekChar().also { skip() }
+    fun skip(count: Int = 1) {
+        pos += count
+    }
+    fun readUntil(cond: (Char) -> Boolean): String {
+        var out = ""
+        while (true) {
+            val c = peekChar()
+            if (!cond(c)) break
+            skip()
+            out += c
+        }
+        return out
+    }
+}
+
+object ObjcTypeParser {
+    fun parseInt(str: StrReader): Int {
+        var out = ""
+        while (str.peekChar().isDigit()) {
+            out += str.readChar()
+        }
+        return out.toIntOrNull() ?: -1
+    }
+
+    fun parseType(str: StrReader): ObjcType {
+        val c = str.readChar()
+        return when (c) {
+            'v' -> PrimitiveObjcType.VOID
+            'B' -> PrimitiveObjcType.BOOL
+            '@' -> {
+                if (str.peekChar() == '?') {
+                    str.skip()
+                    PrimitiveObjcType.BLOCK
+                } else {
+                    PrimitiveObjcType.ID
+                }
+            }
+            '{' -> {
+                val name = str.readUntil { it != '=' }
+                if (str.readChar() != '=') error("Invalid $str")
+                val out = arrayListOf<ObjcType>()
+                while (str.peekChar() != '}') {
+                    out += parseType(str)
+                }
+                str.skip()
+                StructObjcType(name, out)
+            }
+            ':' -> PrimitiveObjcType.SEL
+            'i' -> PrimitiveObjcType.INT
+            'I' -> PrimitiveObjcType.UINT
+            'q' -> PrimitiveObjcType.NINT
+            'Q' -> PrimitiveObjcType.NUINT
+            '^' -> PointerObjcType(parseType(str))
+            'r' -> ConstObjcType(parseType(str))
+            'f' -> PrimitiveObjcType.FLOAT
+            //'F' -> PrimitiveObjcType.DOUBLE // Unchecked
+            else -> TODO("Not implemented '$c' in $str")
+        }
+    }
+    fun parseParam(str: StrReader): ObjcParam {
+        val type = parseType(str)
+        val offset = parseInt(str)
+        return ObjcParam(offset, type)
+    }
+    fun parse(str: StrReader): ObjcMethodDesc {
+        val out = arrayListOf<ObjcParam>()
+        while (str.hasMore) {
+            out += parseParam(str)
+        }
+        return ObjcMethodDesc(out)
+    }
+    fun parse(str: String): ObjcMethodDesc = parse(StrReader(str))
 }
 
 data class ObjcProtocolRef(val ref: ID) : ObjcProtocolClassBaseRef {
     override val name: String by lazy { ObjectiveC.protocol_getName(ref) }
+
+    fun dumpKotlin() {
+        println("interface $name {")
+        for (method in listMethods()) {
+            method.dumpKotlin()
+        }
+        println("}")
+    }
 
     fun listMethods(): List<ObjcMethodDescription> {
         val nitemsPtr = IntArray(1)
@@ -128,9 +272,9 @@ data class ObjcProtocolRef(val ref: ID) : ObjcProtocolClassBaseRef {
         //println("nitems=$nitems")
         return (0 until nitems).map { n ->
             val namePtr = items2.getNativeLong((Native.LONG_SIZE * n * 2 + 0).toLong())
-            val typesPtr = items2.getNativeLong((Native.LONG_SIZE * n * 2 + 1).toLong())
-            ObjcMethodDescription(this, namePtr, emptyList())
-            //val typesStr = Pointer(typesPtr.toLong()).getString(0L)
+            val typesPtr = items2.getNativeLong((Native.LONG_SIZE * n * 2 + Native.LONG_SIZE).toLong())
+            val typesStr = typesPtr.toLong().toPointer().getString(0L)
+            ObjcMethodDescription(this, namePtr, typesStr)
             //println("$selName: $typesStr")
             //val selName = ObjectiveC.sel_getName(mname)
         }
