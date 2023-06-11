@@ -48,6 +48,14 @@ data class Vector3(val x: Float, val y: Float, val z: Float) {
     val length: Float get() = sqrt(lengthSquared)
     fun normalized(): Vector3 = this / length
 
+    // https://math.stackexchange.com/questions/13261/how-to-get-a-reflection-vector
+    // 𝑟=𝑑−2(𝑑⋅𝑛)𝑛
+    fun reflected(surfaceNormal: Vector3): Vector3 {
+        val d = this
+        val n = surfaceNormal
+        return d - 2f * (d dot n) * n
+    }
+
     operator fun get(index: Int): Float = when (index) {
         0 -> x
         1 -> y
@@ -69,6 +77,14 @@ data class Vector3(val x: Float, val y: Float, val z: Float) {
     operator fun div(v: Float): Vector3 = Vector3(this.x / v, this.y / v, this.z / v)
     operator fun rem(v: Float): Vector3 = Vector3(this.x % v, this.y % v, this.z % v)
 
+    operator fun times(v: Int): Vector3 = this * v.toFloat()
+    operator fun div(v: Int): Vector3 = this / v.toFloat()
+    operator fun rem(v: Int): Vector3 = this % v.toFloat()
+
+    operator fun times(v: Double): Vector3 = this * v.toFloat()
+    operator fun div(v: Double): Vector3 = this / v.toFloat()
+    operator fun rem(v: Double): Vector3 = this % v.toFloat()
+
     infix fun dot(v: Vector3): Float = (x * v.x) + (y * v.y) + (z * v.z)
     infix fun cross(v: Vector3): Vector3 = cross(this, v)
 
@@ -81,6 +97,10 @@ data class Vector3(val x: Float, val y: Float, val z: Float) {
     fun isAlmostEquals(other: Vector3, epsilon: Float = 0.00001f): Boolean =
         this.x.isAlmostEquals(other.x, epsilon) && this.y.isAlmostEquals(other.y, epsilon) && this.z.isAlmostEquals(other.z, epsilon)
 }
+
+operator fun Int.times(v: Vector3): Vector3 = v * this
+operator fun Float.times(v: Vector3): Vector3 = v * this
+operator fun Double.times(v: Vector3): Vector3 = v * this
 
 fun vec(x: Float, y: Float, z: Float): Vector3 = Vector3(x, y, z)
 fun vec3(x: Float, y: Float, z: Float): Vector3 = Vector3(x, y, z)
@@ -98,5 +118,4 @@ sealed interface IVector3 {
         2 -> z
         else -> 0f
     }
-
 }

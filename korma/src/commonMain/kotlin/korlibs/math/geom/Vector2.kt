@@ -73,6 +73,8 @@ inline class Vector2 internal constructor(internal val raw: Float2Pack) {
     inline operator fun times(that: Scale): Vector2 = Point(x * that.scaleX, y * that.scaleY)
     inline operator fun div(that: Vector2): Vector2 = Point(x / that.x, y / that.y)
     inline operator fun div(that: Size): Vector2 = Point(x / that.width, y / that.height)
+    inline operator fun rem(that: Vector2): Vector2 = Point(x % that.x, y % that.y)
+    inline operator fun rem(that: Size): Vector2 = Point(x % that.width, y % that.height)
 
     inline operator fun times(scale: Float): Vector2 = Point(x * scale, y * scale)
     inline operator fun times(scale: Double): Vector2 = this * scale.toFloat()
@@ -81,6 +83,10 @@ inline class Vector2 internal constructor(internal val raw: Float2Pack) {
     inline operator fun div(scale: Float): Vector2 = Point(x / scale, y / scale)
     inline operator fun div(scale: Double): Vector2 = this / scale.toFloat()
     inline operator fun div(scale: Int): Vector2 = this / scale.toDouble()
+
+    inline operator fun rem(scale: Float): Vector2 = Point(x % scale, y % scale)
+    inline operator fun rem(scale: Double): Vector2 = this % scale.toFloat()
+    inline operator fun rem(scale: Int): Vector2 = this % scale.toDouble()
 
     fun avgComponent(): Float = x * 0.5f + y * 0.5f
     fun minComponent(): Float = min(x, y)
@@ -140,6 +146,12 @@ inline class Vector2 internal constructor(internal val raw: Float2Pack) {
     val niceStr: String get() = "(${x.niceStr}, ${y.niceStr})"
     fun niceStr(decimalPlaces: Int): String = "(${x.niceStr(decimalPlaces)}, ${y.niceStr(decimalPlaces)})"
     override fun toString(): String = niceStr
+
+    fun Vector2.reflected(normal: Vector2): Vector2 {
+        val d = this
+        val n = normal
+        return d - 2f * (d dot n) * n
+    }
 
     /** Vector2 with inverted (1f / v) components to this */
     fun inv(): Vector2 = Vector2(1f / x, 1f / y)
@@ -290,6 +302,10 @@ internal inline fun getPolylineLength(size: Int, crossinline get: (n: Int) -> Po
     }
     return out
 }
+
+operator fun Int.times(v: Vector2): Vector2 = v * this
+operator fun Float.times(v: Vector2): Vector2 = v * this
+operator fun Double.times(v: Vector2): Vector2 = v * this
 
 fun PointList.getPolylineLength(): Double = getPolylineLength(size) { get(it) }
 fun List<Point>.getPolylineLength(): Double = getPolylineLength(size) { get(it) }
