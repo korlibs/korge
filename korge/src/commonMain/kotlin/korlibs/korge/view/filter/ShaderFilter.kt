@@ -19,7 +19,7 @@ import korlibs.memory.*
  * When building shaders by calling FragmentShader { ... }, you will have additionally access to:
  * [fragmentCoords], [fragmentCoords01] properties and [tex] method to be used inside the shader.
  */
-abstract class ShaderFilter : Filter {
+abstract class ShaderFilter : FilterWithFiltering {
     object TexInfoUB : UniformBlock(fixedLocation = 4) {
         val u_TextureSize by vec2()
         val u_MaxTexCoords by vec2()
@@ -73,7 +73,7 @@ abstract class ShaderFilter : Filter {
         override fun getProgram(): Program = _program
     }
 
-    var filtering = true
+    override var filtering = true
 
     private var textureSizeHolder = Point()
     private var textureMaxTexCoords = Point()

@@ -20,8 +20,10 @@ open class DropshadowFilter(
     var blurRadius: Float = 4f,
     @ViewProperty
     var smoothing: Boolean = true
-) : Filter {
+) : FilterWithFiltering {
     private val blur = BlurFilter(16f)
+
+    override var filtering: Boolean by blur::filtering
 
     override fun computeBorder(texWidth: Int, texHeight: Int): MarginInt {
         val out = blur.computeBorder(texWidth, texHeight)
