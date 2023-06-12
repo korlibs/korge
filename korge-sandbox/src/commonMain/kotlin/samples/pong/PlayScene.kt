@@ -5,6 +5,7 @@ import korlibs.image.color.*
 import korlibs.korge.input.*
 import korlibs.korge.scene.*
 import korlibs.korge.view.*
+import korlibs.time.*
 import kotlin.math.*
 import kotlin.random.Random.Default.nextDouble
 

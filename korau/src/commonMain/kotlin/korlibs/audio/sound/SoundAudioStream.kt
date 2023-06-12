@@ -1,13 +1,12 @@
 package korlibs.audio.sound
 
 import korlibs.datastructure.ConcurrentPool
-import korlibs.time.TimeSpan
-import korlibs.time.milliseconds
 import korlibs.memory.Platform
 import korlibs.io.async.delay
 import korlibs.io.async.launchAsap
 import korlibs.io.concurrent.createSingleThreadedDispatcher
 import korlibs.io.lang.Closeable
+import korlibs.time.*
 import kotlinx.coroutines.CloseableCoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi

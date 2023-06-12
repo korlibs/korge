@@ -77,7 +77,7 @@ typealias TimeSpan = kotlin.time.Duration
 
 fun TimeSpan(milliseconds: Double): TimeSpan = milliseconds.toDuration(DurationUnit.MILLISECONDS)
 
-val Duration.milliseconds: Double get() = this.inWholeNanoseconds / MILLIS_PER_NANOSECOND
+val Duration.milliseconds: Double get() = this.toDouble(DurationUnit.MILLISECONDS)
 
 /** Returns the total number of [nanoseconds] for this [TimeSpan] (1 / 1_000_000_000 [seconds]) */
 val Duration.nanoseconds: Double get() = this.milliseconds / MILLIS_PER_NANOSECOND
@@ -108,7 +108,8 @@ val Duration.millisecondsInt: Int get() = milliseconds.toInt()
 //override fun Duration.compareTo(other: TimeSpan): Int = this.milliseconds.compareTo(other.milliseconds)
 
 /** Return true if [Duration.NIL] */
-val Duration.isNil: Boolean get() = milliseconds.isNaN()
+//val Duration.isNil: Boolean get() = milliseconds.isNaN()
+val Duration.isNil: Boolean get() = this == Duration.NIL
 
 operator fun Duration.unaryMinus() = TimeSpan(-this.milliseconds)
 operator fun Duration.unaryPlus() = TimeSpan(+this.milliseconds)
@@ -133,6 +134,8 @@ operator fun Duration.div(other: TimeSpan): Float = (this.milliseconds / other.m
 operator fun Duration.rem(other: TimeSpan): TimeSpan = (this.milliseconds % other.milliseconds).milliseconds
 infix fun Duration.divFloat(other: TimeSpan): Float = (this.milliseconds / other.milliseconds).toFloat()
 infix fun Duration.umod(other: TimeSpan): TimeSpan = (this.milliseconds umod other.milliseconds).milliseconds
+
+fun Duration.toStringCompat(): String = "${milliseconds.niceStr}ms"
 
 private const val MILLIS_PER_MICROSECOND = 1.0 / 1000.0
 private const val MILLIS_PER_NANOSECOND = MILLIS_PER_MICROSECOND / 1000.0

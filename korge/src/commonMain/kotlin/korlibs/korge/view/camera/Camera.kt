@@ -188,7 +188,7 @@ class CameraContainer(
                 }
                 elapsedTime < transitionTime -> {
                     elapsedTime += it
-                    val ratio = (elapsedTime / transitionTime).coerceIn(0f, 1f)
+                    val ratio = (elapsedTime divFloat transitionTime).coerceIn(0f, 1f)
                     currentCamera.setToInterpolated(easing(ratio).toRatio(), sourceCamera, targetCamera)
                     /*
                     val ratioCamera = easing(ratio)

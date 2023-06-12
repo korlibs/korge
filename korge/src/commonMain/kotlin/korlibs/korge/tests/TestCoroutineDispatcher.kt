@@ -2,8 +2,7 @@ package korlibs.korge.tests
 
 import korlibs.datastructure.*
 import korlibs.datastructure.lock.NonRecursiveLock
-import korlibs.time.TimeSpan
-import korlibs.time.milliseconds
+import korlibs.time.*
 import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Delay

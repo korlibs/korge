@@ -124,8 +124,8 @@ class MainSpriteAnim : ScaledScene(512, 512) {
         addChild(player2)
 
         addUpdater { time ->
-            val scale = 16.milliseconds / time
-            val disp = 2 * scale
+            val scale = 16.milliseconds divFloat time
+            val disp = 2f * scale
             val keys = views.input.keys
 
             player1.handleKeys(keys, disp)

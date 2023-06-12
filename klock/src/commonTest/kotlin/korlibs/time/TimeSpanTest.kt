@@ -70,6 +70,14 @@ class TimeSpanTest {
     }
 
     @Test
+    fun testConvert() {
+        assertEquals(0.5, 0.5.milliseconds.milliseconds)
+        assertEquals(0.5.seconds, 0.5.seconds)
+        assertEquals(500.0, 0.5.seconds.milliseconds)
+        assertEquals(0.5, 0.5.seconds.seconds)
+    }
+
+    @Test
     fun remaining() {
         assertEquals(0.5.seconds, 0.5.seconds % 1.seconds)
         assertEquals(0.seconds, 1.seconds % 1.seconds)
@@ -100,7 +108,9 @@ class TimeSpanTest {
 
     @Test
     fun testToString() {
-        assertEquals("1000ms", 1.seconds.toString())
-        assertEquals("0.5ms", 0.5.milliseconds.toString())
+        //assertEquals("1000ms", 1.seconds.toString())
+        assertEquals("1s", 1.seconds.toString())
+        assertEquals("500us", 0.5.milliseconds.toString())
+        //assertEquals("0.5ms", 0.5.milliseconds.toString())
     }
 }

@@ -51,7 +51,7 @@ class TweenComponent(
         //println("TWEEN UPDATE[$this, $vs]: $elapsed + $dt")
         elapsed += dt
 
-        val ratio: Float = (elapsed / hrtime).clamp(0f, 1f)
+        val ratio: Float = (elapsed / hrtime).toFloat().clamp(0f, 1f)
         //println("$elapsed/$hrtime : $ratio")
         setTo(elapsed)
         callback(easing(ratio))
@@ -93,7 +93,7 @@ class TweenComponent(
 			val durationInTween = v.duration.coalesce { (hrtime - v.startTime) }
 			val elapsedInTween = (elapsed - v.startTime).clamp(0.0.milliseconds, durationInTween)
 			val ratioInTween = if (durationInTween <= TimeSpan.ZERO || elapsedInTween >= durationInTween) 1f else elapsedInTween / durationInTween
-            val easedRatioInTween = easing(ratioInTween)
+            val easedRatioInTween = easing(ratioInTween.toFloat())
             //println("easedRatioInTween: $easedRatioInTween, ratioInTween: $ratioInTween, durationInTween: $durationInTween, elapsedInTween: $elapsedInTween, elapsed: $elapsed")
 			v.set(easedRatioInTween.toRatio())
 		}

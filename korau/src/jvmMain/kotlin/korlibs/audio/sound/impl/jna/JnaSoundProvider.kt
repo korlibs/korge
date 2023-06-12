@@ -1,9 +1,6 @@
 package korlibs.audio.sound.impl.jna
 
 import korlibs.datastructure.Pool
-import korlibs.time.TimeSpan
-import korlibs.time.milliseconds
-import korlibs.time.seconds
 import korlibs.logger.Logger
 import korlibs.memory.clamp01
 import korlibs.audio.internal.coerceToShort
@@ -23,6 +20,7 @@ import korlibs.audio.sound.playingOrPaused
 import korlibs.io.async.delay
 import korlibs.io.async.launchImmediately
 import com.sun.jna.Pointer
+import korlibs.time.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import java.nio.ShortBuffer

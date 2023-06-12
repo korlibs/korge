@@ -10,7 +10,7 @@ val Int.fps get() = this.timesPerSecond
 fun <T : View> T.addUpdater(referenceFps: Frequency, first: Boolean = true, updatable: T.(scale: Float) -> Unit): Cancellable {
     val time = referenceFps.timeSpan
     return addUpdater(first) {
-        updatable(it / time)
+        updatable(it divFloat time)
     }
 }
 

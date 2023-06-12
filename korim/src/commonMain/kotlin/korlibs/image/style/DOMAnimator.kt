@@ -1,9 +1,8 @@
 package korlibs.image.style
 
-import korlibs.time.TimeSpan
-import korlibs.time.seconds
 import korlibs.image.annotation.KorimExperimental
 import korlibs.image.vector.format.SVG
+import korlibs.time.*
 
 @KorimExperimental
 class DOMAnimator(val dom: DOM) {

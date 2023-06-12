@@ -1,7 +1,7 @@
 package korlibs.audio.sound
 
-import korlibs.time.TimeSpan
 import korlibs.audio.internal.SampleConvert
+import korlibs.time.*
 import kotlin.math.PI
 import kotlin.math.sin
 

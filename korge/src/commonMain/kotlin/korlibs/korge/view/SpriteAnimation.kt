@@ -2,12 +2,12 @@ package korlibs.korge.view
 
 import korlibs.datastructure.FastArrayList
 import korlibs.datastructure.toFastList
-import korlibs.time.TimeSpan
 import korlibs.memory.umod
 import korlibs.image.atlas.Atlas
 import korlibs.image.bitmap.Bitmap
 import korlibs.image.bitmap.BmpSlice
 import korlibs.image.bitmap.slice
+import korlibs.time.*
 
 class SpriteAnimation constructor(
     val sprites: List<BmpSlice>,
