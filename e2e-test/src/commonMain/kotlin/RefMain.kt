@@ -95,14 +95,15 @@ object FiltersE2ETestCase : E2ETestCase() {
 
     override suspend fun Container.run() {
         println("LOADING IMAGE...")
-        val bitmap = resourcesVfs["korge.png"].readBitmap()
+        val bitmap = KR.gfx.korge.korge.read()
+        val bitmap2 = resourcesVfs["gfx/korge/korge.png"].readBitmap()
         println("PREPARING VIEWS...")
         image(bitmap).scale(.5).position(0, 0).addFilter(WaveFilter(time = 0.5.seconds, crestDistance = Vector2(256f, 128f)))
         image(bitmap).scale(.5).position(256, 0).addFilter(BlurFilter(radius = 6f))
         image(bitmap).scale(.5).position(512, 0).addFilter(TransitionFilter(TransitionFilter.Transition.SWEEP, reversed = false, spread = 1f, ratio = 0.5f))
-        image(bitmap).scale(.5).position(0, 256).addFilter(PageFilter(hratio = 0.5f, hamplitude1 = 20f))
-        image(bitmap).scale(.5).position(256, 256).addFilter(Convolute3Filter(Convolute3Filter.KERNEL_SHARPEN))
-        image(bitmap).scale(.5).position(512, 256).addFilter(SwizzleColorsFilter("bgga"))
+        image(bitmap2).scale(.5).position(0, 256).addFilter(PageFilter(hratio = 0.5f, hamplitude1 = 20f))
+        image(bitmap2).scale(.5).position(256, 256).addFilter(Convolute3Filter(Convolute3Filter.KERNEL_SHARPEN))
+        image(bitmap2).scale(.5).position(512, 256).addFilter(SwizzleColorsFilter("bgga"))
         println("VIEWS PREPARED")
     }
 }

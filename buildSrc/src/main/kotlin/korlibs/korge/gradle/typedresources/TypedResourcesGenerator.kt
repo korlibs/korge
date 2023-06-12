@@ -54,7 +54,7 @@ class TypedResourcesGenerator {
                     line("")
                     val classSuffix = folder.path.textCase().pascalCase()
                     line("${if (classSuffix.isEmpty()) "interface" else "object"} KR$classSuffix") {
-                        line("val __file get() = resourcesVfs[\"${folder.path}\"]")
+                        line("val __file get() = resourcesVfs[${folder.path.quoted}]")
                         for (file in files.sortedBy { it.name }
                             .distinctBy { it.nameWithoutExtension.normalizeName().textCase().camelCase() }) {
                             if (file.path == "") continue
@@ -91,9 +91,9 @@ class TypedResourcesGenerator {
                                 }
                             }
                             val pathWithSuffix = "$path$extraSuffix"
-                            val annotation = "@ResourceVfsPath(\"$pathWithSuffix\")"
+                            val annotation = "@ResourceVfsPath(${pathWithSuffix.quoted})"
                             when {
-                                type != null -> line("$annotation val `$varName` get() = $type(resourcesVfs[\"$pathWithSuffix\"])")
+                                type != null -> line("$annotation val `$varName` get() = $type(resourcesVfs[${pathWithSuffix.quoted}])")
                                 else -> line("$annotation val `$varName` get() = __KR.KR${file.path.textCase().pascalCase()}")
                             }
                         }
@@ -111,7 +111,7 @@ class TypedResourcesGenerator {
                         if (file.isDirectory()) continue
                         val pathDir = file.name
                         if (pathDir.toString().isEmpty()) continue
-                        line("@ResourceVfsPath(\"${file.path}\") val `${file.nameWithoutExtension.normalizeName()}` get() = __atlas[\"$pathDir\"]")
+                        line("@ResourceVfsPath(${file.path.quoted}) val `${file.nameWithoutExtension.normalizeName()}` get() = __atlas[${pathDir.quoted}]")
                     }
                 }
             }

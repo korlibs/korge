@@ -30,7 +30,7 @@ operator fun SFile.get(path: String): SFile? {
 
 class LocalSFile(val file: File, val base: File) : SFile {
     constructor(file: File) : this(file, file)
-    override val path: String by lazy { file.relativeTo(base).toString() }
+    override val path: String by lazy { file.relativeTo(base).toString().replace('\\', '/') }
     override val name: String get() = file.name
     override val parent: LocalSFile? get() = LocalSFile(file.parentFile, base)
     override fun mkdirs() { file.mkdirs() }
