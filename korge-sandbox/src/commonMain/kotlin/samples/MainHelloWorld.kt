@@ -14,12 +14,11 @@ import korlibs.image.bitmap.*
 import korlibs.math.geom.degrees
 import korlibs.math.interpolation.Easing
 
+// @TODO: We could autogenerate this via gradle
+private val korlibs.io.resources.ResourcesContainer.korge_png by resourceBitmap("korge.png")
+
 class MainHelloWorld : ScaledScene(512, 512) {
-    // @TODO: We could autogenerate this via gradle
-    val korlibs.io.resources.ResourcesContainer.korge_png by resourceBitmap("korge.png")
-
     override suspend fun SContainer.sceneMain() {
-
         gameWindow.icon = korge_png.get().bmp.toBMP32().scaled(32, 32)
 
         val minDegrees = (-16).degrees

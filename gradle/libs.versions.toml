@@ -9,6 +9,9 @@ proguard-gradle = "7.2.2"
 kotlin = "1.8.21"
 kotlinx-coroutines = "1.7.1"
 kotlinx-atomicfu = "0.20.2"
+kotlinx-serialization = "1.5.1"
+
+#maven { url = uri("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev") }
 
 # https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev/org/jetbrains/kotlin/kotlin-stdlib/
 #kotlin = "1.9.0-dev-6976"
@@ -18,8 +21,8 @@ kotlinx-atomicfu = "0.20.2"
 #kotlinx-atomicfu = "0.20.2-wasm0"
 # https://maven.pkg.jetbrains.space/kotlin/p/wasm/experimental/org/jetbrains/kotlinx/kotlinx-coroutines-core/
 #kotlinx-coroutines = "1.7.0-RC-wasm0"
+#kotlinx-serialization = "1.5.1-wasm0"
 
-kotlinx-serialization = "1.5.1"
 kotlinx-benchmark = "0.4.7"
 dokka = "1.8.10"
 kover = "0.6.1"

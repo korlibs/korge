@@ -19,6 +19,7 @@ import korlibs.time.*
 import kotlin.collections.random
 import kotlin.random.*
 
+/*
 class MainBunnymark : Scene() {
     // @TODO: We could autogenerate this via gradle
     val ResourcesContainer.korge_png by resourceBitmap("korge.png")
@@ -181,3 +182,4 @@ suspend fun main() {
 */
 
 }
+*/

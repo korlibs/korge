@@ -8,10 +8,8 @@ import korlibs.graphics.gl.*
 import korlibs.graphics.shader.gl.*
 import korlibs.image.bitmap.*
 import korlibs.image.format.*
-import korlibs.io.lang.*
 import korlibs.io.wasm.*
 import korlibs.memory.*
-import korlibs.memory.internal.*
 import kotlinx.browser.*
 import org.khronos.webgl.*
 import org.w3c.dom.*
@@ -47,7 +45,7 @@ abstract external class HTMLCanvasElementJS : JsAny {
     fun getContext(contextId: kotlin.String, vararg arguments: kotlin.js.JsAny?): RenderingContextJs?
 }
 
-class KmlGlJsCanvas(val canvas: HTMLCanvasElement, val glOpts: JsAny) : KmlGl() {
+class KmlGlWasmCanvas(val canvas: HTMLCanvasElement, val glOpts: JsAny) : KmlGl() {
     var webglVersion = 1
     val gl: WebGLRenderingContextBase2 = (null
             ?: canvas.unsafeCast<HTMLCanvasElementJS>().getContext("webgl2", glOpts)?.also { webglVersion = 2 }
@@ -87,9 +85,10 @@ class KmlGlJsCanvas(val canvas: HTMLCanvasElement, val glOpts: JsAny) : KmlGl() 
 		    if (freeList.isEmpty()) error("KmlGlJsCanvas.freeList is empty. (Probably allocating lots of OpenGL objects without releasing them)")
 		    val index = freeList.removeAt(freeList.size - 1)
             items[index] = this
+            //println("ALLOC: $this to index=$index, ${index.toJsNumber()}")
             this.setAny("id", index.toJsNumber())
 		}
-        return this.getAny("id")!!.unsafeCast<JsNumber>().toInt()
+        return this.getAny("id")!!.unsafeCast<JsNumber>().toIntAny()
 	}
 	private fun <T : JsAny> Int.get(): T? = if (this != 0) items[this]?.unsafeCast<T>() else null
     private fun <T : JsAny> Int.free(): T? = if (this != 0) { val out = items[this]?.unsafeCast<T>(); freeList += this; items[this] = null; out } else { null }
@@ -160,37 +159,37 @@ class KmlGlJsCanvas(val canvas: HTMLCanvasElement, val glOpts: JsAny) : KmlGl() 
         if (name !in prgUniforms) prgUniforms[name] = gl.getUniformLocation(prg.unsafeCast(), name).alloc().toJsNumber()
         return prgUniforms[name].toInt()
     }
-    override fun getBooleanv(pname: Int, data: Buffer) { data.arrayInt[0] = gl.getParameter(pname).jsDyn.toInt() }
-    override fun getBufferParameteriv(target: Int, pname: Int, params: Buffer) { params.arrayInt[0] = gl.getBufferParameter(target, pname).jsDyn.toInt() }
+    override fun getBooleanv(pname: Int, data: Buffer) { data.arrayInt[0] = gl.getParameter(pname).toIntAny() }
+    override fun getBufferParameteriv(target: Int, pname: Int, params: Buffer) { params.arrayInt[0] = gl.getBufferParameter(target, pname).toIntAny() }
     override fun getError(): Int = gl.getError()
-    override fun getFloatv(pname: Int, data: Buffer) { data.arrayFloat[0] = gl.getParameter(pname).jsDyn.toFloat() }
-    override fun getFramebufferAttachmentParameteriv(target: Int, attachment: Int, pname: Int, params: Buffer) { params.arrayInt[0] = gl.getFramebufferAttachmentParameter(target, attachment, pname).jsDyn.toInt() }
-    override fun getIntegerv(pname: Int, data: Buffer) { data.arrayInt[0] = gl.getParameter(pname).jsDyn.toInt() }
+    override fun getFloatv(pname: Int, data: Buffer) { data.arrayFloat[0] = gl.getParameter(pname).toFloatAny() }
+    override fun getFramebufferAttachmentParameteriv(target: Int, attachment: Int, pname: Int, params: Buffer) { params.arrayInt[0] = gl.getFramebufferAttachmentParameter(target, attachment, pname).toIntAny() }
+    override fun getIntegerv(pname: Int, data: Buffer) { data.arrayInt[0] = gl.getParameter(pname).toIntAny() }
     override fun getProgramInfoLog(program: Int, bufSize: Int, length: Buffer, infoLog: Buffer) { val str = gl.getProgramInfoLog(program.get()) ?: ""; length.arrayInt[0] = str.length; infoLog.putAsciiString(str) }
-    override fun getRenderbufferParameteriv(target: Int, pname: Int, params: Buffer) { params.arrayInt[0] = gl.getRenderbufferParameter(target, pname).jsDyn.toInt() }
+    override fun getRenderbufferParameteriv(target: Int, pname: Int, params: Buffer) { params.arrayInt[0] = gl.getRenderbufferParameter(target, pname).toIntAny() }
     override fun getProgramiv(program: Int, pname: Int, params: Buffer) {
                 when (pname) {
                     INFO_LOG_LENGTH -> params.arrayInt[0] = gl.getProgramInfoLog(program.get())?.length?.plus(1) ?: 1
-                    else -> params.arrayInt[0] = gl.getProgramParameter(program.get(), pname).jsDyn.toInt()
+                    else -> params.arrayInt[0] = gl.getProgramParameter(program.get(), pname).toIntAny()
                 }
             }
     override fun getShaderiv(shader: Int, pname: Int, params: Buffer) {
                 when (pname) {
                     INFO_LOG_LENGTH -> params.arrayInt[0] = gl.getShaderInfoLog(shader.get())?.length?.plus(1) ?: 1
-                    else -> params.arrayInt[0] = gl.getShaderParameter(shader.get(), pname).jsDyn.toInt()
+                    else -> params.arrayInt[0] = gl.getShaderParameter(shader.get(), pname).toIntAny()
                 }
             }
     override fun getShaderInfoLog(shader: Int, bufSize: Int, length: Buffer, infoLog: Buffer) { val str = gl.getShaderInfoLog(shader.get()) ?: ""; length.arrayInt[0] = str.length; infoLog.putAsciiString(str) }
     override fun getShaderPrecisionFormat(shadertype: Int, precisiontype: Int, range: Buffer, precision: Buffer) { val info = gl.getShaderPrecisionFormat(shadertype, precisiontype); if (info != null) { range.arrayInt[0] = info.rangeMin; range.arrayInt[1] = info.rangeMax; precision.arrayInt[0] = info.precision } }
     override fun getShaderSource(shader: Int, bufSize: Int, length: Buffer, source: Buffer) { val str = gl.getShaderSource(shader.get()) ?: ""; length.arrayInt[0] = str.length; source.putAsciiString(str) }
-    override fun getString(name: Int): String = gl.getParameter(name).jsDyn.toString()
-    override fun getTexParameterfv(target: Int, pname: Int, params: Buffer) { params.arrayFloat[0] = gl.getTexParameter(target, pname).jsDyn.toFloat() }
-    override fun getTexParameteriv(target: Int, pname: Int, params: Buffer) { params.arrayInt[0] = gl.getTexParameter(target, pname).jsDyn.toInt() }
-    override fun getUniformfv(program: Int, location: Int, params: Buffer) { params.arrayFloat[0] = gl.getUniform(program.get(), location.get()).jsDyn.toFloat() }
-    override fun getUniformiv(program: Int, location: Int, params: Buffer) { params.arrayInt[0] = gl.getUniform(program.get(), location.get()).jsDyn.toInt() }
-    override fun getVertexAttribfv(index: Int, pname: Int, params: Buffer) { params.arrayFloat[0] = gl.getVertexAttrib(index, pname).jsDyn.toFloat() }
-    override fun getVertexAttribiv(index: Int, pname: Int, params: Buffer) { params.arrayInt[0] = gl.getVertexAttrib(index, pname).jsDyn.toInt() }
-    override fun getVertexAttribPointerv(index: Int, pname: Int, pointer: Buffer) { pointer.arrayInt[0] = gl.getVertexAttrib(index, pname).jsDyn.toInt() }
+    override fun getString(name: Int): String = gl.getParameter(name).toString()
+    override fun getTexParameterfv(target: Int, pname: Int, params: Buffer) { params.arrayFloat[0] = gl.getTexParameter(target, pname).toFloatAny() }
+    override fun getTexParameteriv(target: Int, pname: Int, params: Buffer) { params.arrayInt[0] = gl.getTexParameter(target, pname).toIntAny() }
+    override fun getUniformfv(program: Int, location: Int, params: Buffer) { params.arrayFloat[0] = gl.getUniform(program.get(), location.get()).toFloatAny() }
+    override fun getUniformiv(program: Int, location: Int, params: Buffer) { params.arrayInt[0] = gl.getUniform(program.get(), location.get()).toIntAny() }
+    override fun getVertexAttribfv(index: Int, pname: Int, params: Buffer) { params.arrayFloat[0] = gl.getVertexAttrib(index, pname).toFloatAny() }
+    override fun getVertexAttribiv(index: Int, pname: Int, params: Buffer) { params.arrayInt[0] = gl.getVertexAttrib(index, pname).toIntAny() }
+    override fun getVertexAttribPointerv(index: Int, pname: Int, pointer: Buffer) { pointer.arrayInt[0] = gl.getVertexAttrib(index, pname).toIntAny() }
     override fun hint(target: Int, mode: Int): Unit = gl.hint(target, mode)
     override fun isBuffer(buffer: Int): Boolean = gl.isBuffer(buffer.get())
     override fun isEnabled(cap: Int): Boolean = gl.isEnabled(cap)
@@ -347,7 +346,7 @@ class KmlGlJsCanvas(val canvas: HTMLCanvasElement, val glOpts: JsAny) : KmlGl() 
     }
 }
 
-class WebGLExtension(val canvas: KmlGlJsCanvas, val name: String, val coreSince: Int = 1000, val functions: List<String> = emptyList(), val suffix: String = "") {
+class WebGLExtension(val canvas: KmlGlWasmCanvas, val name: String, val coreSince: Int = 1000, val functions: List<String> = emptyList(), val suffix: String = "") {
     private var _set: Boolean = false
     private var _value: JsAny? = null
     val value: JsAny?
@@ -369,6 +368,13 @@ class WebGLExtension(val canvas: KmlGlJsCanvas, val name: String, val coreSince:
 
     val supported: Boolean get() = (canvas.webglVersion >= coreSince) || (value != null)
 }
+
+private fun JsAny?.toIntAny(): Int = if (this == null) 0 else this.unsafeCast<JsNumber>().toInt()
+private fun JsAny?.toFloatAny(): Float = if (this == null) 0f else this.unsafeCast<JsNumber>().toDouble().toFloat()
+//private fun JsNumber?.toInt(): Int = TODO()
+//private fun JsNumber?.toFloat(): Float = TODO()
+private fun Boolean.toInt(): Int = if (this) 1 else 0
+
 
 external interface WebGLVertexArrayObject : JsAny
 

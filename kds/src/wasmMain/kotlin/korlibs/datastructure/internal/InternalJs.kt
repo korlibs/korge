@@ -20,8 +20,14 @@ package korlibs.datastructure.internal
 //    //return -1
 //}
 
+private val anyIdentityHashCodeOnce by lazy {
+    //console.error("!!!!! anyIdentityHashCode not implemented in WASM!")
+    println("!!!!! anyIdentityHashCode not implemented in WASM!")
+    Unit
+}
+
 internal actual fun anyIdentityHashCode(obj: Any?): Int {
     if (obj == null) return 0
-    println("anyIdentityHashCode not implemented in WASM!")
+    anyIdentityHashCodeOnce
     return -1
 }

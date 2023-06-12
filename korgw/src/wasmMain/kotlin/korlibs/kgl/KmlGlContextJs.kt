@@ -23,9 +23,9 @@ class WebGLContext(window: Any?, parent: KmlGlContext?) : KmlGlContext(window, c
     }
 
     companion object {
-        fun createJsCanvas(): KmlGlJsCanvas {
+        fun createJsCanvas(): KmlGlWasmCanvas {
             if (!Platform.isJsBrowser) error("Can't run WebGL outside a browser")
-            return KmlGlJsCanvas(document.createElement("canvas").unsafeCast<HTMLCanvasElement>(), jsObject())
+            return KmlGlWasmCanvas(document.createElement("canvas").unsafeCast<HTMLCanvasElement>(), jsObject())
         }
     }
 }

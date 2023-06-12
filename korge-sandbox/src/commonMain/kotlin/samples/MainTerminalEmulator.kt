@@ -11,6 +11,7 @@ import korlibs.image.format.*
 import korlibs.io.file.std.*
 import korlibs.math.geom.slice.*
 
+/*
 class MainTerminalEmulator : Scene() {
     override suspend fun SContainer.sceneMain() {
         container {
@@ -99,3 +100,4 @@ class MainTerminalEmulator : Scene() {
     }
 
 }
+*/
