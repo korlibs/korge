@@ -56,7 +56,7 @@ data class WTimeSpan(val value: TimeSpan) : Comparable<WTimeSpan>, Serializable 
     operator fun div(scale: Int): WTimeSpan = (value / scale).wrapped
     operator fun div(scale: Double): WTimeSpan = (value / scale).wrapped
 
-    operator fun div(other: WTimeSpan): Float = this.value / other.value
+    operator fun div(other: WTimeSpan): Float = this.value divFloat other.value
     operator fun rem(other: WTimeSpan): WTimeSpan = (this.value % other.value).wrapped
 
     companion object {
