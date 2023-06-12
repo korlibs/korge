@@ -26,10 +26,14 @@ fun vec2(x: Float, y: Float): Vector2 = Vector2(x, y)
 //data class Point(val x: Double, val y: Double) {
 // @JvmInline value
 //@KormaValueApi
-//data class Point(val x: Double, val y: Double) {
-inline class Vector2 internal constructor(internal val raw: Float2Pack) {
-    val x: Float get() = raw.f0
-    val y: Float get() = raw.f1
+data class Vector2(val x: Float, val y: Float) {
+//inline class Vector2 internal constructor(internal val raw: Float2Pack) {
+    //val x: Float get() = raw.f0
+    //val y: Float get() = raw.f1
+    //operator fun component1(): Float = x
+    //operator fun component2(): Float = y
+    //fun copy(x: Float = this.x, y: Float = this.y): Vector2 = Point(x, y)
+
 
     val xF: Float get() = x
     val yF: Float get() = y
@@ -37,15 +41,15 @@ inline class Vector2 internal constructor(internal val raw: Float2Pack) {
     val xD: Double get() = x.toDouble()
     val yD: Double get() = y.toDouble()
 
-    constructor(x: Float, y: Float) : this(float2PackOf(x, y))
-    constructor(x: Double, y: Double) : this(float2PackOf(x.toFloat(), y.toFloat()))
-    constructor(x: Int, y: Int) : this(float2PackOf(x.toFloat(), y.toFloat()))
+    //constructor(x: Float, y: Float) : this(float2PackOf(x, y))
+    constructor(x: Double, y: Double) : this(x.toFloat(), y.toFloat())
+    constructor(x: Int, y: Int) : this(x.toFloat(), y.toFloat())
 
-    constructor(x: Double, y: Int) : this(float2PackOf(x.toFloat(), y.toFloat()))
-    constructor(x: Int, y: Double) : this(float2PackOf(x.toFloat(), y.toFloat()))
+    constructor(x: Double, y: Int) : this(x.toFloat(), y.toFloat())
+    constructor(x: Int, y: Double) : this(x.toFloat(), y.toFloat())
 
-    constructor(x: Float, y: Int) : this(float2PackOf(x.toFloat(), y.toFloat()))
-    constructor(x: Int, y: Float) : this(float2PackOf(x.toFloat(), y.toFloat()))
+    constructor(x: Float, y: Int) : this(x.toFloat(), y.toFloat())
+    constructor(x: Int, y: Float) : this(x.toFloat(), y.toFloat())
 
     @Deprecated("")
     constructor(p: MPoint) : this(p.x.toFloat(), p.y.toFloat())
@@ -54,10 +58,6 @@ inline class Vector2 internal constructor(internal val raw: Float2Pack) {
     //constructor(x: Int, y: Int) : this(x.toDouble(), y.toDouble())
     //constructor(x: Float, y: Float) : this(x.toDouble(), y.toDouble())
 
-    operator fun component1(): Float = x
-    operator fun component2(): Float = y
-
-    fun copy(x: Float = this.x, y: Float = this.y): Vector2 = Point(x, y)
     fun copy(x: Double = this.xD, y: Double = this.yD): Vector2 = Point(x, y)
 
     inline operator fun unaryMinus(): Vector2 = Point(-x, -y)
