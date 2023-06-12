@@ -30,6 +30,7 @@ Jon-Carlos Rivera - imbcmdth@hotmail.com
 package korlibs.datastructure.ds
 
 import korlibs.datastructure.*
+import korlibs.datastructure.internal.*
 import kotlin.collections.HashMap
 import kotlin.collections.List
 import kotlin.collections.contains
@@ -39,11 +40,7 @@ import kotlin.collections.isNotEmpty
 import kotlin.collections.remove
 import kotlin.collections.removeLast
 import kotlin.collections.set
-import kotlin.math.abs
-import kotlin.math.floor
-import kotlin.math.max
-import kotlin.math.min
-import kotlin.math.pow
+import kotlin.math.*
 
 /**
  * A Bounding Volume Hierarchy implementation for arbitrary dimensions.
@@ -51,7 +48,7 @@ import kotlin.math.pow
  * @constructor
  */
 class BVH<T>(
-    val dimensions: Int = 2,
+    val dimensions: Int,
     width: Int = dimensions * 3,
     val allowUpdateObjects: Boolean = true
 ) : Iterable<BVH.Node<T>> {
@@ -64,44 +61,62 @@ class BVH<T>(
     private val minWidth = floor(maxWidth.toDouble() / this.dimensions).toInt()
 
     data class Node<T>(
-        var d: BVHIntervals,
+        var d: BVHRect,
         var id: String? = null,
         var nodes: FastArrayList<Node<T>>? = null,
         var value: T? = null,
     )
 
     class RemoveSubtreeRetObject<T>(
-        var d: BVHIntervals,
+        var d: BVHRect,
         var target: T? = null,
         var nodes: FastArrayList<Node<T>>? = null
     )
 
-    data class IntersectResult<T>(val intersect: Float, val obj: Node<T>)
+    data class IntersectResult<T>(
+        val ray: BVHRay,
+        val intersect: Float,
+        val obj: Node<T>,
+    ) {
+        val point: BVHVector by lazy {
+            BVHVector(FloatArray(ray.dimensions) { dim ->
+                ray.pos(dim) + ray.dir(dim) * intersect
+            })
+        }
+
+        val normal: BVHVector by lazy {
+            val bounds = obj.d
+            BVHVector(FloatArray(ray.dimensions) { dim ->
+                val bmin = bounds.min(dim)
+                val bmax = bounds.max(dim)
+                val p = point[dim]
+                if (bmin.isAlmostEquals(p) || p < bmin) -1f else if (bmax.isAlmostEquals(p) || p > bmax) +1f else 0f
+            })
+        }
+    }
 
     open class Comparators {
         companion object : Comparators()
 
-        fun overlap_intervals(a: BVHIntervals, b: BVHIntervals): Boolean {
-            var ret_val = true
+        fun overlap_intervals(a: BVHRect, b: BVHRect): Boolean {
             if (a.length != b.length) error("Not matching dimensions")
             for (i in 0 until a.length) {
-                ret_val = ret_val && (a.a(i) < (b.a(i) + b.b(i)) && (a.a(i) + a.b(i)) > b.a(i))
+                if (!(a.min(i) < b.max(i) && a.max(i) > b.min(i))) return false
             }
-            return ret_val
+            return true
         }
 
-        fun contains_intervals(a: BVHIntervals, b: BVHIntervals): Boolean {
-            var ret_val = true
+        fun contains_intervals(a: BVHRect, b: BVHRect): Boolean {
             if (a.length != b.length) error("Not matching dimensions")
             for (i in 0 until a.length) {
-                ret_val = ret_val && ((a.a(i) + a.b(i)) <= (b.a(i) + b.b(i)) && a.a(i) >= b.a(i))
+                if (!(a.max(i) <= b.max(i) && a.min(i) >= b.min(i))) return false
             }
-            return ret_val
+            return true
         }
     }
 
-    private fun _make_Empty(): BVHIntervals = BVHIntervals(this.dimensions)
-    private fun _make_Intervals(other: BVHIntervals, out: BVHIntervals = BVHIntervals(this.dimensions)) =
+    private fun _make_Empty(): BVHRect = BVHRect(BVHIntervals(this.dimensions))
+    private fun _make_Intervals(other: BVHRect, out: BVHRect = BVHRect(this.dimensions)) =
         out.copyFrom(other)
 
     // Start with an empty root-tree
@@ -120,15 +135,15 @@ class BVH<T>(
 	 * [ rectangle a ] = expand_rectangle(rectangle a, rectangle b)
 	 * @static function
 	 */
-    private fun _expand_intervals(a: BVHIntervals, b: BVHIntervals): BVHIntervals {
+    private fun _expand_intervals(a: BVHRect, b: BVHRect): BVHRect {
         for (i in 0 until this.dimensions) {
-            val a_a = a.a(i)
-            val b_a = b.a(i)
-            val a_b = a.b(i)
-            val b_b = b.b(i)
+            val a_a = a.min(i)
+            val b_a = b.min(i)
+            val a_b = a.size(i)
+            val b_b = b.size(i)
             val n = min(a_a, b_a)
-            a.b(i, max(a_a + a_b, b_a + b_b) - n)
-            a.a(i, n)
+            a.size(i, max(a_a + a_b, b_a + b_b) - n)
+            a.min(i, n)
         }
         return a
     }
@@ -141,8 +156,8 @@ class BVH<T>(
 	 */
     private fun _make_MBV(
         nodes: List<Node<T>>,
-        intervals: BVHIntervals?
-    ): BVHIntervals {
+        intervals: BVHRect?
+    ): BVHRect {
         //throw "_make_MBV: nodes must contain at least one object to bound!";
         if (nodes.isEmpty()) return _make_Empty()
 
@@ -158,11 +173,11 @@ class BVH<T>(
     // This is my special addition to the world of r-trees
     // every other (simple) method I found produced crap trees
     // this skews insertions to prefering squarer and emptier nodes
-    private fun _jons_ratio(intervals: BVHIntervals, count: Int): Double {
+    private fun _jons_ratio(intervals: BVHRect, count: Int): Double {
         // Area of new enlarged rectangle
         val dims = intervals.length
-        var sum = intervals.bSum()
-        val mul = intervals.bMult()
+        var sum = intervals.intervals.bSum()
+        val mul = intervals.intervals.bMult()
 
         sum /= dims
         val lgeo = mul / sum.pow(dims)
@@ -173,6 +188,8 @@ class BVH<T>(
         return (mul * count / lgeo)
     }
 
+    private fun BVHRect.checkDimensions() = checkDimensions(this@BVH.dimensions)
+    private fun BVHRay.checkDimensions() = checkDimensions(this@BVH.dimensions)
     private fun BVHIntervals.checkDimensions() = checkDimensions(this@BVH.dimensions)
 
     /* find the best specific node(s) for object to be deleted from
@@ -180,7 +197,7 @@ class BVH<T>(
      * @private
      */
     private fun _remove_subtree(
-        intervals: BVHIntervals?,
+        intervals: BVHRect?,
         obj: T?,
         root: Node<T>,
         comparators: Comparators = Comparators,
@@ -250,7 +267,9 @@ class BVH<T>(
                     i -= 1
                 }
             } else if (ret_obj.nodes != null) { // We are unsplitting
-                tree.nodes!!.removeAt(i + 1) // Remove unsplit node
+                if (tree.nodes!!.size >= i + 1) {
+                    tree.nodes!!.removeAt(i + 1) // Remove unsplit node
+                }
                 // ret_obj.nodes contains a list of elements removed from the tree so far
                 if (tree.nodes!!.isNotEmpty()) {
                     _make_MBV(tree.nodes!!, tree.d)
@@ -297,7 +316,7 @@ class BVH<T>(
 	 * @private
 	 */
     private fun _choose_leaf_subtree(
-        intervals: BVHIntervals,
+        intervals: BVHRect,
         root: Node<T>,
     ): FastArrayList<Node<T>> {
         var best_choice_index = -1
@@ -409,9 +428,9 @@ class BVH<T>(
             val l = nodes[i]
             //for (d = 0; d < _Dimensions; d++) {
             for (d in 0 until this.dimensions) {
-                if (l.d.a(d) > nodes[highest_low[d]].d.a(d)) {
+                if (l.d.min(d) > nodes[highest_low[d]].d.min(d)) {
                     highest_low[d] = i
-                } else if (l.d.a(d) + l.d.b(d) < nodes[lowest_high[d]].d.a(d) + nodes[lowest_high[d]].d.b(d)) {
+                } else if (l.d.min(d) + l.d.size(d) < nodes[lowest_high[d]].d.min(d) + nodes[lowest_high[d]].d.size(d)) {
                     lowest_high[d] = i
                 }
             }
@@ -422,7 +441,7 @@ class BVH<T>(
         //for (i = 0; i < _Dimensions; i++) {
         for (i in 0 until this.dimensions) {
             val difference =
-                abs((nodes[lowest_high[i]].d.a(i) + nodes[lowest_high[i]].d.b(i)) - nodes[highest_low[i]].d.a(i))
+                abs((nodes[lowest_high[i]].d.min(i) + nodes[lowest_high[i]].d.size(i)) - nodes[highest_low[i]].d.min(i))
             if (difference > last_difference) {
                 d = i
                 last_difference = difference
@@ -539,7 +558,7 @@ class BVH<T>(
         } while (tree_stack.isNotEmpty())
     }
 
-    fun envelope(): BVHIntervals {
+    fun envelope(): BVHRect {
         // Return a copy
         return _make_Intervals(this.root.d)
     }
@@ -547,9 +566,9 @@ class BVH<T>(
     // Intersect with overall tree bounding-box
     // Returns a segment contained within the pointing box
     private fun _intersect_Intervals(
-        ray: BVHIntervals,
-        intervals: BVHIntervals?
-    ): BVHIntervals? {
+        ray: BVHRay,
+        intervals: BVHRect?
+    ): BVHRect? {
         var ints = intervals
         if (ints == null) {
             ints = this.root.d // By default, use the scene bounding box
@@ -561,20 +580,20 @@ class BVH<T>(
 
         // Initialize values
         for (i in 0 until this.dimensions) {
-            parameters[0][i] = ints.a(i)
-            parameters[1][i] = ints.a(i) + ints.b(i)
+            parameters[0][i] = ints.min(i)
+            parameters[1][i] = ints.min(i) + ints.size(i)
 
-            val j = 1f / ray.b(i)
+            val j = 1f / ray.dir(i)
             inv_direction[i] = j
             sign[i] = if (j <= 0) 1 else 0
         }
 
-        var omin = (parameters[sign[0]][0] - ray.a(0)) * inv_direction[0]
-        var omax = (parameters[1 - sign[0]][0] - ray.a(0)) * inv_direction[0]
+        var omin = (parameters[sign[0]][0] - ray.pos(0)) * inv_direction[0]
+        var omax = (parameters[1 - sign[0]][0] - ray.pos(0)) * inv_direction[0]
 
         for (i in 1 until this.dimensions) {
-            val tmin = (parameters[sign[i]][i] - ray.a(i)) * inv_direction[i]
-            val tmax = (parameters[1 - sign[i]][i] - ray.a(i)) * inv_direction[i]
+            val tmin = (parameters[sign[i]][i] - ray.pos(i)) * inv_direction[i]
+            val tmax = (parameters[1 - sign[i]][i] - ray.pos(i)) * inv_direction[i]
 
             if ((omin > tmax) || (tmin > omax)) {
                 return null
@@ -595,8 +614,8 @@ class BVH<T>(
         val rs = _make_Empty()
 
         for (i in 0 until this.dimensions) {
-            rs.a(i, ray.a(i) + ray.b(i) * omin)
-            rs.b(i, ray.a(i) + ray.b(i) * omax)
+            rs.min(i, ray.pos(i) + ray.dir(i) * omin)
+            rs.size(i, ray.pos(i) + ray.dir(i) * omax)
         }
 
         return (rs)
@@ -607,7 +626,7 @@ class BVH<T>(
 	 * @private
 	 */
     private fun _intersect_subtree(
-        ray: BVHIntervals,
+        ray: BVHRay,
         return_array: FastArrayList<IntersectResult<T>> = fastArrayListOf(),
         root: Node<T> = this.root,
     ): FastArrayList<IntersectResult<T>> {
@@ -628,8 +647,22 @@ class BVH<T>(
                     if (ltree.nodes != null) { // Not a Leaf
                         hit_stack.add(ltree.nodes!!)
                     } else if (ltree.value != null) { // A Leaf !!
-                        val tmin = (intersect_points.a(0) - ray.a(0)) / ray.b(0)
-                        return_array.add(IntersectResult(intersect = tmin, obj = ltree))
+                        //val dimSizes = (0 until ray.dimensions).map { ray.size(it) }
+                        //println("dimSizes=$dimSizes")
+                        val dim = (0 until ray.dimensions).maxBy { ray.dir(it).absoluteValue }
+                        val raySize = ray.dir(dim)
+                        val imin = intersect_points.min(dim)
+                        val rmin = ray.pos(dim)
+                        val tminNum = imin - rmin
+                        val tmin = tminNum / raySize
+
+                        //println("dim=$dim, tminNum=$tminNum [$imin, $rmin], tminDen=$raySize : $tmin")
+
+                        return_array.add(IntersectResult(
+                            ray = ray,
+                            intersect = tmin,
+                            obj = ltree,
+                        ))
                     }
                 }
             }
@@ -643,7 +676,7 @@ class BVH<T>(
 	 * @private
 	 */
     private fun _search_subtree(
-        intervals: BVHIntervals,
+        intervals: BVHRect,
         comparators: Comparators,
         return_array: FastArrayList<Node<T>> = fastArrayListOf(),
         root: Node<T> = this.root,
@@ -659,8 +692,8 @@ class BVH<T>(
             val nodes = hit_stack.removeLast()
 
             //for (var i = nodes.length - 1; i >= 0; i--) {
-            for (i in nodes.size - 1 downTo 0) {
-                val ltree = nodes[i]
+            //nodes.fastForEachReverse { ltree ->
+            for (i in nodes.size - 1 downTo 0) { val ltree = nodes[i]
                 if (comparators.overlap_intervals(intervals, ltree.d)) {
                     if (ltree.nodes != null) { // Not a Leaf
                         hit_stack.add(ltree.nodes!!)
@@ -680,7 +713,7 @@ class BVH<T>(
 	 */
     @Suppress("unused")
     fun yieldTo(
-        intervals: BVHIntervals,
+        intervals: BVHRect,
         yield_leaf: (node: Node<T>) -> Unit,
         yield_node: (node: Node<T>) -> Unit,
         root: Node<T> = this.root,
@@ -709,8 +742,9 @@ class BVH<T>(
         } while (hit_stack.isNotEmpty())
     }
 
-
-    fun intersectRay(ray: BVHIntervals, intervals: BVHIntervals?) = _intersect_Intervals(ray, intervals)
+    @Deprecated("Use BVHRay signature")
+    fun intersectRay(ray: BVHIntervals, intervals: BVHRect?): BVHRect? = _intersect_Intervals(BVHRay(ray), intervals)
+    fun intersectRay(ray: BVHRay, intervals: BVHRect?): BVHRect? = _intersect_Intervals(ray, intervals)
 
     /* non-recursive intersect function
 	 * [ nodes | objects ] = NTree.intersect( options )
@@ -719,6 +753,11 @@ class BVH<T>(
     fun intersect(
         ray: BVHIntervals,
         return_array: FastArrayList<IntersectResult<T>> = fastArrayListOf(),
+    ) = _intersect_subtree(ray = BVHRay(ray), return_array = return_array, root = this.root)
+
+    fun intersect(
+        ray: BVHRay,
+        return_array: FastArrayList<IntersectResult<T>> = fastArrayListOf(),
     ) = _intersect_subtree(ray = ray, return_array = return_array, root = this.root)
 
 
@@ -726,8 +765,15 @@ class BVH<T>(
 	 * [ nodes | objects ] = NTree.search(intervals, [return node data], [array to fill])
 	 * @public
 	 */
+    @Deprecated("USe BVHRect signature")
     fun search(
         intervals: BVHIntervals,
+        return_array: FastArrayList<Node<T>> = fastArrayListOf(),
+        comparators: Comparators = Comparators,
+    ): FastArrayList<Node<T>> = search(BVHRect(intervals), return_array, comparators)
+
+    fun search(
+        intervals: BVHRect,
         return_array: FastArrayList<Node<T>> = fastArrayListOf(),
         comparators: Comparators = Comparators,
     ): FastArrayList<Node<T>> {
@@ -757,28 +803,48 @@ class BVH<T>(
         return findAll().mapNotNull { it.value }
     }
 
+    @Deprecated("Use BVHRect signature")
     fun searchValues(
         intervals: BVHIntervals,
         comparators: Comparators = Comparators,
+    ): List<T> = searchValues(BVHRect(intervals), comparators)
+
+    fun searchValues(
+        rect: BVHRect,
+        comparators: Comparators = Comparators,
     ): List<T> {
         return _search_subtree(
-            intervals = intervals,
+            intervals = rect,
             root = this.root,
             comparators = comparators
         ).mapNotNull { it.value }
     }
 
+    @Deprecated("USe BVHRect signature")
+    fun insertOrUpdate(
+        intervals: BVHIntervals,
+        obj: T,
+    ) = insertOrUpdate(BVHRect(intervals), obj)
+
     /* non-recursive insert function
 	 * [] = NTree.insert(intervals, object to insert)
 	 */
     fun insertOrUpdate(
-        intervals: BVHIntervals,
+        rect: BVHRect,
         obj: T,
     ) {
-        intervals.checkDimensions()
-        if (allowUpdateObjects) if (obj in objectToIntervalMap) remove(obj)
-        _insert_subtree(root = this.root, node = Node(d = intervals, value = obj))
-        if (allowUpdateObjects) objectToIntervalMap[obj] = intervals
+        rect.checkDimensions()
+        if (allowUpdateObjects) {
+            val oldIntervals = objectToIntervalMap[obj]
+            if (oldIntervals != null) {
+                if (rect == oldIntervals) {
+                    return
+                }
+                if (obj in objectToIntervalMap) remove(obj)
+            }
+        }
+        _insert_subtree(root = this.root, node = Node(d = rect, value = obj))
+        if (allowUpdateObjects) objectToIntervalMap[obj] = rect
     }
 
     fun remove(obj: T) {
@@ -787,20 +853,28 @@ class BVH<T>(
         if (intervals != null) remove(intervals, obj)
     }
 
-    fun getObjectBounds(obj: T): BVHIntervals? = objectToIntervalMap[obj]
+    fun getObjectBounds(obj: T): BVHIntervals? = objectToIntervalMap[obj]?.intervals
+    fun getObjectBoundsRect(obj: T): BVHRect? = objectToIntervalMap[obj]
 
     //private val objectToIntervalMap = FastIdentityMap<T, BVHIntervals>()
-    private val objectToIntervalMap = HashMap<T, BVHIntervals>()
+    private val objectToIntervalMap = HashMap<T, BVHRect>()
+
+    @Deprecated("Use BVHRect signature")
+    fun remove(
+        intervals: BVHIntervals,
+        obj: T? = null,
+        comparators: Comparators = Comparators,
+    ): FastArrayList<Node<T>> = remove(BVHRect(intervals), obj, comparators)
 
     /* non-recursive function that deletes a specific
 	 * [ number ] = NTree.remove(intervals, obj)
 	 */
     fun remove(
-        intervals: BVHIntervals,
+        rect: BVHRect,
         obj: T? = null,
         comparators: Comparators = Comparators,
     ): FastArrayList<Node<T>> {
-        intervals.checkDimensions()
+        rect.checkDimensions()
         return if (obj == null) { // Do area-wide delete
             val ret_array = fastArrayListOf<Node<T>>()
             do {
@@ -808,7 +882,7 @@ class BVH<T>(
                 ret_array.addAll(
                     _remove_subtree(
                         root = this.root,
-                        intervals = intervals,
+                        intervals = rect,
                         obj = null,
                         comparators = comparators
                     )
@@ -816,7 +890,7 @@ class BVH<T>(
             } while (numberdeleted != ret_array.size)
             ret_array
         } else { // Delete a specific item
-            _remove_subtree(root = this.root, intervals = intervals, obj = obj, comparators = comparators)
+            _remove_subtree(root = this.root, intervals = rect, obj = obj, comparators = comparators)
         }.also {
             if (allowUpdateObjects) {
                 it.fastForEach { node ->
@@ -837,23 +911,112 @@ class BVH<T>(
     }
 }
 
+data class BVHVector(val data: FloatArray) {
+    companion object {
+        operator fun invoke(vararg data: Float): BVHVector = BVHVector(data)
+        operator fun invoke(vararg data: Double): BVHVector = BVHVector(data.mapFloat { it.toFloat() })
+        operator fun invoke(vararg data: Int): BVHVector = BVHVector(data.mapFloat { it.toFloat() })
+    }
+    val dimensions: Int get() = data.size
+    fun checkDimensions(dims: Int) {
+        if (dims != this.dimensions) error("Expected $dims dimensions, but found $dimensions")
+    }
+
+    operator fun get(dim: Int): Float = data[dim]
+    @Deprecated("Mutable")
+    operator fun set(dim: Int, value: Float) {
+        data[dim] = value
+    }
+
+    override fun equals(other: Any?): Boolean = other is BVHVector && data.contentEquals(other.data)
+
+    override fun toString(): String = "BVHVector(${data.joinToString(", ") { it.niceStr }})"
+}
+
+private fun checkDimensions(actual: Int, expected: Int) {
+    if (actual != expected) error("element $actual doesn't match dimensions $expected")
+
+}
+
+inline class BVHRay(val intervals: BVHIntervals) {
+
+    fun checkDimensions(dimensions: Int) {
+        checkDimensions(this.dimensions, dimensions)
+    }
+
+    val data get() = intervals.data
+    fun copyFrom(other: BVHRay): BVHRay { intervals.copyFrom(other.intervals); return this }
+    fun clone() = BVHRay(BVHIntervals(data.copyOf()))
+    val length: Int get() = dimensions
+    val dimensions: Int get() = data.size / 2
+
+    fun pos(dim: Int): Float = data[dim * 2 + 0]
+    fun dir(dim: Int): Float = data[dim * 2 + 1]
+
+    val pos: BVHVector get() = BVHVector(FloatArray(dimensions) { pos(it) })
+    val dir: BVHVector get() = BVHVector(FloatArray(dimensions) { dir(it) })
+
+    override fun toString(): String = "BVHRay(pos=$pos, dir=$dir)"
+}
+
+inline class BVHRect(val intervals: BVHIntervals) {
+    constructor(dimensions: Int) : this(BVHIntervals(dimensions))
+
+    fun checkDimensions(dimensions: Int) {
+        checkDimensions(this.dimensions, dimensions)
+    }
+
+    val data get() = intervals.data
+    fun copyFrom(other: BVHRect): BVHRect { intervals.copyFrom(other.intervals); return this }
+    fun clone() = BVHRect(BVHIntervals(data.copyOf()))
+    val length: Int get() = dimensions
+    val dimensions: Int get() = data.size / 2
+
+    fun min(dim: Int): Float = data[dim * 2 + 0]
+    fun size(dim: Int): Float = data[dim * 2 + 1]
+    fun max(dim: Int): Float = min(dim) + size(dim)
+
+    fun min(dim: Int, value: Float) { data[dim * 2 + 0] = value }
+    fun size(dim: Int, value: Float) { data[dim * 2 + 1] = value }
+
+    val min: BVHVector get() = BVHVector(FloatArray(dimensions) { min(it) })
+    val size: BVHVector get() = BVHVector(FloatArray(dimensions) { size(it) })
+    val max: BVHVector get() = BVHVector(FloatArray(dimensions) { max(it) })
+
+    override fun toString(): String = "BVHRect(min=$min, max=$max)"
+}
+
+
 /**
  * In the format:
  *
+ * [x, width]
  * [x, width, y, height]
  * [x, width, y, height, z, depth]
+ *
+ * In the case of rays:
+ *
+ * [x, xDir]
+ * [x, xDir, y, yDir]
+ * [x, xDir, y, yDir, z, zDir]
  */
-@Suppress("INLINE_CLASS_DEPRECATED")
-inline class BVHIntervals(val data: FloatArray) {
+//@Suppress("INLINE_CLASS_DEPRECATED")
+data class BVHIntervals(val data: FloatArray) {
     constructor(dimensions: Int) : this(FloatArray(dimensions * 2))
 
+    private val cachedHashCode = data.contentHashCode()
+
+    override fun hashCode(): Int = cachedHashCode
+    override fun equals(other: Any?): Boolean = other is BVHIntervals && this.data.contentEquals(other.data)
+
     companion object {
+        operator fun invoke(vararg values: Double): BVHIntervals = BVHIntervals(values.mapFloat { it.toFloat() })
         operator fun invoke(vararg values: Float): BVHIntervals = BVHIntervals(values)
         operator fun invoke(vararg values: Int): BVHIntervals = BVHIntervals(FloatArray(values.size) { values[it].toFloat() })
     }
 
     fun checkDimensions(dimensions: Int) {
-        if (dimensions != length) error("element $length doesn't match dimensions $dimensions")
+        checkDimensions(this.dimensions, dimensions)
     }
 
     fun setTo(vararg values: Float) {
@@ -876,16 +1039,26 @@ inline class BVHIntervals(val data: FloatArray) {
         data[5] = b2
     }
 
-    val length get() = data.size / 2
-    fun a(index: Int): Float = data[index * 2 + 0]
-    fun a(index: Int, value: Float) { data[index * 2 + 0] = value }
+    val length: Int get() = data.size / 2
+    val dimensions: Int get() = length
 
-    fun b(index: Int): Float = data[index * 2 + 1]
+    fun a(index: Int): Float = min(index)
+    fun b(index: Int): Float = size(index)
+
+    @Deprecated("Mutable")
+    fun a(index: Int, value: Float) {
+        data[index * 2 + 0] = value
+    }
+    @Deprecated("Mutable")
     fun b(index: Int, value: Float) {
         data[index * 2 + 1] = value
     }
 
-    fun aPlusB(index: Int) = a(index) + b(index)
+    fun min(dim: Int): Float = data[dim * 2 + 0]
+    fun size(dim: Int): Float = data[dim * 2 + 1]
+    fun max(dim: Int): Float = min(dim) + size(dim)
+
+    fun aPlusB(index: Int) = min(index) + size(index)
 
     fun bSum(): Double {
         var result = 0.0
@@ -893,6 +1066,7 @@ inline class BVHIntervals(val data: FloatArray) {
         for (n in 0 until length) result += data[n * 2 + 1]
         return result
     }
+
     fun bMult(): Double {
         var result = 1.0
         val data = this.data
@@ -914,9 +1088,9 @@ inline class BVHIntervals(val data: FloatArray) {
             append('x' + n)
             append('=')
             append('(')
-            append(a(n))
+            append(min(n))
             append(',')
-            append(b(n))
+            append(size(n))
             append(')')
         }
         append(']')
