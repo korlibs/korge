@@ -3,7 +3,10 @@ package korlibs.korge.gradle.targets.js
 import korlibs.korge.gradle.gkotlin
 import korlibs.korge.gradle.kotlin
 import korlibs.korge.gradle.targets.*
+import korlibs.korge.gradle.targets.js.configureWasm
+import korlibs.korge.gradle.targets.wasm.*
 import korlibs.korge.gradle.util.*
+import korlibs.root.*
 import org.gradle.api.*
 import org.jetbrains.kotlin.gradle.targets.js.npm.*
 import java.io.*
@@ -11,14 +14,7 @@ import java.io.*
 fun Project.configureWasm(projectType: ProjectType, binaryen: Boolean = false) {
     if (gkotlin.targets.findByName("wasm") != null) return
 
-    gkotlin.apply {
-        wasm {
-            if (binaryen) applyBinaryen()
-            browser {
-                binaries.executable()
-            }
-        }
-    }
+    configureWasm(executable = true, binaryen = binaryen)
 
     if (projectType.isExecutable) {
 

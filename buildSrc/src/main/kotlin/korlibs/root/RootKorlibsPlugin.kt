@@ -8,8 +8,10 @@ import korlibs.korge.gradle.targets.all.*
 import korlibs.korge.gradle.targets.android.*
 import korlibs.korge.gradle.targets.ios.*
 import korlibs.korge.gradle.targets.js.*
+import korlibs.korge.gradle.targets.js.configureWasm
 import korlibs.korge.gradle.targets.jvm.*
 import korlibs.korge.gradle.targets.native.*
+import korlibs.korge.gradle.targets.wasm.*
 import korlibs.korge.gradle.util.*
 import korlibs.korge.gradle.util.create
 import korlibs.kotlin
@@ -355,21 +357,7 @@ object RootKorlibsPlugin {
                         AddFreeCompilerArgs.addFreeCompilerArgs(project, this)
                     }
                     if (project.findProperty("enable.wasm") == "true") {
-                        wasm {
-                            //this.
-                            //this.applyBinaryen()
-                            //nodejs { commonWebpackConfig { experiments = mutableSetOf("topLevelAwait") } }
-                            //browser { commonWebpackConfig { experiments = mutableSetOf("topLevelAwait") } }
-                            browser {
-                                //commonWebpackConfig { experiments = mutableSetOf("topLevelAwait") }
-                                //testTask {
-                                //    it.useKarma {
-                                //        //useChromeHeadless()
-                                //        this.webpackConfig.configDirectory = File(rootProject.rootDir, "karma.config.d")
-                                //    }
-                                //}
-                            }
-                        }
+                        configureWasm(executable = false)
                         val wasmBrowserTest = tasks.getByName("wasmBrowserTest") as KotlinJsTest
                         // ~/projects/korge/build/js/packages/korge-root-klock-wasm-test
                         wasmBrowserTest.doFirst {
@@ -627,22 +615,7 @@ object RootKorlibsPlugin {
     fun Project.initSamples() {
         rootProject.samples {
             if (project.findProperty("enable.wasm") == "true") {
-                kotlin {
-                    wasm {
-                        binaries.executable()
-                        //applyBinaryen()
-                        browser {
-                            this.distribution {
-                            }
-                            //testTask {
-                            //    it.useKarma {
-                            //        //useChromeHeadless()
-                            //        this.webpackConfig.configDirectory = File(rootProject.rootDir, "karma.config.d")
-                            //    }
-                            //}
-                        }
-                    }
-                }
+                configureWasm(executable = true)
                 project.tasks.createThis<Task>("wasmCreateIndex") {
                     doFirst {
                         wasmCreateIndex(project)
