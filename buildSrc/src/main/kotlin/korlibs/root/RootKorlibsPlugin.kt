@@ -106,8 +106,7 @@ object RootKorlibsPlugin {
 
     fun Project.initVersions() {
         allprojectsThis {
-            project.version = forcedVersion?.removePrefix("refs/tags/")?.removePrefix("v")?.removePrefix("w")
-                ?: project.version
+            project.version = getProjectForcedVersion()
         }
     }
 
@@ -992,6 +991,33 @@ val Project.nodeVersion: String get() = _libs["versions"]["node"].dynamicInvoke(
 val Project.androidBuildGradleVersion: String get() = _libs["versions"]["android"]["build"]["gradle"].dynamicInvoke("get").casted()
 val Project.realKotlinVersion: String get() = (System.getenv("FORCED_KOTLIN_VERSION") ?: kotlinVersion)
 val forcedVersion = System.getenv("FORCED_VERSION")
+
+fun Project.getForcedVersion(): String {
+    return forcedVersion
+        ?.removePrefix("refs/tags/")
+        ?.removePrefix("v")
+        ?.removePrefix("w")
+        ?: project.version.toString()
+}
+
+fun Project.getProjectForcedVersion(): String {
+    val res = when (this.name) {
+        "korge-gradle-plugin" -> getForcedVersionGradlePluginVersion()
+        else -> getForcedVersionLibrariesVersion()
+    }
+    if (System.getenv("FORCED_VERSION") != null) {
+        println(":: PROJECT: name=${project.name}, version=$res")
+    }
+    return res
+}
+
+fun Project.getForcedVersionGradlePluginVersion(): String {
+    return getForcedVersion().substringBefore("-only-gradle-plugin-")
+}
+
+fun Project.getForcedVersionLibrariesVersion(): String {
+    return getForcedVersion().substringAfter("-only-gradle-plugin-")
+}
 
 val Project.hasAndroidSdk by LazyExt { AndroidSdk.hasAndroidSdk(project) }
 val Project.enabledSandboxResourceProcessor: Boolean get() = rootProject.findProperty("enabledSandboxResourceProcessor") == "true"

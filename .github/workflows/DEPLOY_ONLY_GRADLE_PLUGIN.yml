@@ -1,0 +1,51 @@
+name: DEPLOY
+
+# tag: z4.0.5b-only-gradle-plugin-4.0.5
+# publishes gradle plugin '4.0.5b' pointing to '4.0.5' libraries
+on:
+  push:
+    tags:
+      - 'z*'
+
+env:
+  CI: true
+  FORCED_VERSION: ${{ github.ref }}
+  ORG_GRADLE_PROJECT_signingKey: ${{ secrets.ORG_GRADLE_PROJECT_SIGNINGKEY }}
+  ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.ORG_GRADLE_PROJECT_SIGNINGPASSWORD }}
+  SONATYPE_USERNAME: ${{ secrets.SONATYPEUSERNAME }}
+  SONATYPE_PASSWORD: ${{ secrets.SONATYPEPASSWORD }}
+  JAVA_VERSION: 11
+  JAVA_DISTRIBUTION: zulu
+
+jobs:
+  create-staging-repo:
+    runs-on: ubuntu-latest
+    outputs:
+      stagedRepositoryId: ${{ steps.createStagedRepositoryId.outputs.stagedRepositoryId }}
+    steps:
+      - uses: actions/checkout@v1
+      - { name: Set up JDK, uses: actions/setup-java@v3, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
+      - run: sudo apt-get install xvfb
+      - id: createStagedRepositoryId
+        run: xvfb-run --auto-servernum ./gradlew --no-daemon --info --stacktrace startReleasingMavenCentral
+
+  publish-gradle-plugin:
+    runs-on: ubuntu-latest
+    needs: [create-staging-repo]
+    env:
+      stagedRepositoryId: ${{needs.create-staging-repo.outputs.stagedRepositoryId}}
+    steps:
+      - uses: actions/checkout@v1
+      - { name: Set up JDK, uses: actions/setup-java@v3, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
+      - run: sudo apt-get install xvfb
+      - run: xvfb-run --auto-servernum ./gradlew --no-daemon :korge-gradle-plugin:publishPublicationToMavenRepository
+
+  publish-finalize:
+    runs-on: ubuntu-latest
+    needs: [publish-gradle-plugin]
+    env:
+      stagedRepositoryId: ${{needs.create-staging-repo.outputs.stagedRepositoryId}}
+    steps:
+      - uses: actions/checkout@v1
+      - { name: Set up JDK, uses: actions/setup-java@v3, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
+      - run: ./gradlew releaseMavenCentral
