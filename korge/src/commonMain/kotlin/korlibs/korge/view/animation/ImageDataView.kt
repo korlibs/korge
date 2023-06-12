@@ -3,6 +3,7 @@ package korlibs.korge.view.animation
 import korlibs.korge.view.*
 import korlibs.image.format.ImageData
 import korlibs.korge.view.property.*
+import korlibs.math.geom.*
 
 /**
  * With imageDataView it is possible to display an image inside a Container or View.
@@ -54,13 +55,15 @@ open class ImageDataView(
     animation: String? = null,
     playing: Boolean = false,
     smoothing: Boolean = true,
-) : Container() {
+) : Container(), PixelAnchorable, Anchorable {
     // Here we can create repeated in korge-parallax if required
     protected open fun createAnimationView(): ImageAnimationView<out SmoothedBmpSlice> {
         return imageAnimationView()
     }
 
     open val animationView: ImageAnimationView<out SmoothedBmpSlice> = createAnimationView()
+    override var anchorPixel: Point by animationView::anchorPixel
+    override var anchor: Anchor by animationView::anchor
 
     fun getLayer(name: String): View? {
         return animationView.getLayer(name)
