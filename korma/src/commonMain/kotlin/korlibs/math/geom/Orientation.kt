@@ -6,7 +6,21 @@ enum class Orientation(val value: Int) {
     CLOCK_WISE(+1), COUNTER_CLOCK_WISE(-1), COLLINEAR(0);
 
     companion object {
+        private const val EPSILONf: Float = 1e-4f
         private const val EPSILON: Double = 1e-7
+
+        //fun orient3d(v1: Vector3, v2: Vector3, v3: Vector3, epsilon: Float = EPSILONf): Orientation {
+        //    // vectors from v1 to v2 and from v1 to v3
+        //    val a = v2 - v1
+        //    val b = v3 - v1
+        //    val crossProduct = a.cross(b)
+        //    // check the direction of the cross product
+        //    return when {
+        //        abs(crossProduct.z) < epsilon -> Orientation.COLLINEAR
+        //        crossProduct.z < 0 -> Orientation.CLOCK_WISE
+        //        else -> Orientation.COUNTER_CLOCK_WISE
+        //    }
+        //}
 
         fun orient2d(pa: Point, pb: Point, pc: Point): Orientation = orient2d(pa.xD, pa.yD, pb.xD, pb.yD, pc.xD, pc.yD)
 

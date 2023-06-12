@@ -3,25 +3,31 @@ package korlibs.math.geom
 import korlibs.memory.pack.*
 
 /** Represents an infinite [Ray] starting at [point] in the specified [direction] with an [angle] */
-inline class Ray(val data: Float4Pack) {
+//inline class Ray(val data: Float4Pack) {
+data class Ray
+/** Constructs a [Ray] starting from [point] in the specified [direction] */
+private constructor(
+    /** Starting point */
+    val point: Point,
+    /** Normalized direction of the ray starting at [point] */
+    val direction: Vector2,
+) {
     companion object {
         /** Creates a ray starting in [start] and passing by [end] */
-        fun fromTwoPoints(start: Point, end: Point): Ray = Ray(start, end - start)
+        fun fromTwoPoints(start: Point, end: Point): Ray = Ray(start, end - start, Unit)
     }
 
-    /** Starting point */
-    val point: Point get() = Point(data.f0, data.f1)
-    /** Normalized direction of the ray starting at [point] */
-    val direction: Vector2 get() = Vector2(data.f2, data.f3)
+    //val point: Point get() = Point(data.f0, data.f1)
+    //val direction: Vector2 get() = Vector2(data.f2, data.f3)
     /** Angle between two points */
     val angle: Angle get() = direction.angle
 
     /** Constructs a [Ray] starting from [point] in the specified [direction] */
-    constructor(point: Point, direction: Vector2) : this(point, direction.normalized, Unit)
+    constructor(point: Point, direction: Vector2, unit: Unit = Unit) : this(point, direction.normalized)
     /** Constructs a [Ray] starting from [point] in the specified [angle] */
     constructor(point: Point, angle: Angle) : this(point, Vector2.polar(angle), Unit)
 
-    private constructor(point: Point, normalizedDirection: Vector2, unit: Unit) : this(float4PackOf(point.x, point.y, normalizedDirection.x, normalizedDirection.y))
+    //private constructor(point: Point, normalizedDirection: Vector2, unit: Unit) : this(point.x, point.y, normalizedDirection.x, normalizedDirection.y)
 
     /** Checks if [this] and [other]are equals with an [epsilon] difference */
     fun isAlmostEquals(other: Ray, epsilon: Float = 0.00001f): Boolean =
