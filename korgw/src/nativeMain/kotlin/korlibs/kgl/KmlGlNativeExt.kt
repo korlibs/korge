@@ -8,7 +8,7 @@ import korlibs.memory.*
 import kotlinx.cinterop.*
 import kotlin.reflect.*
 
-abstract class NativeBaseKmlGl : KmlGlWithExtensions() {
+abstract class NativeBaseKmlGl : KmlGl() {
     override val variant: GLVariant get() = GLVariant.DESKTOP
 
     val tempBufferAddress = NBufferTempAddress()

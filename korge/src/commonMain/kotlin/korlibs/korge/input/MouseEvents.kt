@@ -17,6 +17,12 @@ import kotlin.math.*
 import kotlin.native.concurrent.*
 import kotlin.reflect.*
 
+private var Input.mouseHitSearch by Extra.Property { false }
+private var Input.mouseHitResult by Extra.Property<View?> { null }
+private var Input.mouseHitResultUsed by Extra.Property<View?> { null }
+private var Views.mouseDebugHandlerOnce by Extra.Property { Once() }
+private var Views.mouseDebugLastFrameClicked by Extra.Property { false }
+
 @OptIn(KorgeInternal::class)
 class MouseEvents(val view: View) : Extra by Extra.Mixin(), Closeable {
     init {
@@ -24,12 +30,6 @@ class MouseEvents(val view: View) : Extra by Extra.Mixin(), Closeable {
     }
 
     companion object {
-        var Input.mouseHitSearch by Extra.Property { false }
-        var Input.mouseHitResult by Extra.Property<View?> { null }
-        var Input.mouseHitResultUsed by Extra.Property<View?> { null }
-        var Views.mouseDebugHandlerOnce by Extra.Property { Once() }
-        var Views.mouseDebugLastFrameClicked by Extra.Property { false }
-
         private fun mouseHitTest(views: Views): View? {
             if (!views.input.mouseHitSearch) {
                 views.input.mouseHitSearch = true

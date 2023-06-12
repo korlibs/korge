@@ -31,7 +31,7 @@ open class CGNativeImageFormatProvider : CGBaseNativeImageFormatProvider() {
                     CFDataCreate(null, dataPin.addressOf(0).reinterpret(), data.size.convert())
                 }
                 val imgSource = CGImageSourceCreateWithData(data = cfdata, options = null)
-                val props = CGImageSourceCopyPropertiesAtIndex(imgSource, 0, null)
+                val props = CGImageSourceCopyPropertiesAtIndex(imgSource, 0.convert(), null)
                     ?: error("Failed trying to read image in decodeHeaderInternal")
 
                 try {
@@ -82,9 +82,9 @@ open class CGNativeImageFormatProvider : CGBaseNativeImageFormatProvider() {
                             kCGImageSourceThumbnailMaxPixelSize,
                             CFNumberCreate(null, kCFNumberSInt32Type, maxSizePtr.ptr)
                         )
-                        CGImageSourceCreateThumbnailAtIndex(imgSource, 0, dict)
+                        CGImageSourceCreateThumbnailAtIndex(imgSource, 0.convert(), dict)
                     } else {
-                        CGImageSourceCreateImageAtIndex(imgSource, 0, dict)
+                        CGImageSourceCreateImageAtIndex(imgSource, 0.convert(), dict)
                     }
                     val iwidth = CGImageGetWidth(cgImage).toInt()
                     val iheight = CGImageGetHeight(cgImage).toInt()
@@ -123,7 +123,7 @@ open class CGNativeImageFormatProvider : CGBaseNativeImageFormatProvider() {
                             Bitmap32(iwidth, iheight, realPremultiplied).also { bmp ->
                                 bmp.ints.usePinned { pin ->
                                     val context = CGBitmapContextCreate(
-                                        pin.startAddressOf, iwidth.convert(), iheight.convert(), 8,
+                                        pin.startAddressOf, iwidth.convert(), iheight.convert(), 8.convert(),
                                         (iwidth * 4).convert(), colorSpace, alphaInfo
                                     )
                                         ?: error("Couldn't create context for $iwidth, $iheight, premultiplied=$premultiplied")
@@ -163,7 +163,7 @@ open class CGNativeImageFormatProvider : CGBaseNativeImageFormatProvider() {
             "image/jpeg", "image/jpg" -> kUTTypeJPEG
             //"image/heif", "image/heic" -> UTTypeHEIF
             else -> kUTTypePNG
-        }, 1, null)
+        }, 1.convert(), null)
             ?: error("Failed to create CGImageDestination")
 
         val imageProperties = CFDictionaryCreateMutable(null, 0, null, null)

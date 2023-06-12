@@ -126,7 +126,7 @@ open class UIButton(
     val textView = textBlock(richText ?: RichTextData(text, font = DefaultTtfFontAsBitmap), align = TextAlignment.MIDDLE_CENTER)
 
     @ViewProperty
-    @ViewPropertyProvider(TextAlignment.Provider::class)
+    @ViewPropertyProvider(TextAlignmentProvider::class)
     var textAlignment: TextAlignment by textView::align
 
     protected val iconView = image(Bitmaps.transparent)

@@ -29,7 +29,7 @@ class TextBlock(
     var text: RichTextData = text; set(value) { field = value; invalidateText() }
 
     @ViewProperty
-    @ViewPropertyProvider(TextAlignment.Provider::class)
+    @ViewPropertyProvider(TextAlignmentProvider::class)
     var align: TextAlignment = align; set(value) { field = value; invalidProps() }
 
     @ViewProperty

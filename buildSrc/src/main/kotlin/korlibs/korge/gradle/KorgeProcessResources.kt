@@ -63,11 +63,9 @@ fun Project.generateKorgeProcessedFromTask(task: ProcessResources) {
     korgeGeneratedTask.inputFolders = folders
     korgeGeneratedTask.resourceProcessors = korge.resourceProcessors
 
-    if (task != null) {
-        task.from(korgeGeneratedFolder)
-        task.dependsOn(korgeGeneratedTask)
-        korgeGeneratedTask.addToCopySpec(task)
-    }
+    task.from(korgeGeneratedFolder)
+    task.dependsOn(korgeGeneratedTask)
+    korgeGeneratedTask.addToCopySpec(task)
 }
 
 fun Project.addGenResourcesTasks() {
@@ -133,19 +131,28 @@ open class KorgeGenerateResourcesTask @Inject constructor(
     var skippedFiles: Set<String> = setOf()
 
     fun addToCopySpec(copy: CopySpec, addFrom: Boolean = true) {
-        if (addFrom) copy.from(korgeGeneratedFolder)
+        addToCopySpec(this.korgeGeneratedFolder, this.skippedFiles, copy, addFrom)
+    }
 
-        copy.exclude {
-            val relativeFile = File(it.relativePath.toString())
-            if (it.relativePath.startsWith('.')) return@exclude true
-            for (skippedFile in skippedFiles) {
-                //println("addExcludeToCopyTask: relativeFile=$relativeFile, skippedFile=$skippedFile")
-                if (relativeFile.startsWith(skippedFile)) {
-                    //println("!! EXCLUDED")
-                    return@exclude true
+    companion object {
+        fun addToCopySpec(korgeGeneratedFolder: File, skippedFiles: Set<String>, copy: CopySpec, addFrom: Boolean = true) {
+            //println("addToCopySpec.task=$task")
+            //println("addToCopySpec.copy=$copy")
+            //println("addToCopySpec.addFrom=$addFrom")
+            if (addFrom) copy.from(korgeGeneratedFolder)
+
+            copy.exclude {
+                val relativeFile = File(it.relativePath.toString())
+                if (it.relativePath.startsWith('.')) return@exclude true
+                for (skippedFile in skippedFiles) {
+                    //println("addExcludeToCopyTask: relativeFile=$relativeFile, skippedFile=$skippedFile")
+                    if (relativeFile.startsWith(skippedFile)) {
+                        //println("!! EXCLUDED")
+                        return@exclude true
+                    }
                 }
+                false
             }
-            false
         }
     }
 

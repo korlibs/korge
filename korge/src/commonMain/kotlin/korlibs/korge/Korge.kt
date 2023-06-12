@@ -156,7 +156,10 @@ data class Korge(
 
 suspend fun Korge(entry: suspend Stage.() -> Unit) { Korge().start(entry) }
 
-suspend fun Korge(config: KorgeConfig, entry: suspend Stage.() -> Unit) { config.start(entry) }
+// @TODO: Doesn't compile on WASM: https://youtrack.jetbrains.com/issue/KT-58859/WASM-e-java.util.NoSuchElementException-Key-VALUEPARAMETER-namethis-typekorlibs.korge.Korge-korlibs.korge.KorgeConfig-is-missing
+//suspend fun Korge(config: KorgeConfig, entry: suspend Stage.() -> Unit) { config.start(entry) }
+
+suspend fun KorgeWithConfig(config: KorgeConfig, entry: suspend Stage.() -> Unit) { config.start(entry) }
 
 /**
  * Entry point for games written in Korge.

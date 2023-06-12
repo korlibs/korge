@@ -15,7 +15,7 @@ interface DynamicShapeRegister<T> {
     fun register(callable: KCallable<*>): DynamicShapeRegister<T>
     fun register(name: String, callback: suspend T.(args: List<Any?>) -> Any?): DynamicShapeRegister<T>
     fun register(vararg items: KProperty<*>) = this.apply { for (item in items) register(item) }
-    fun register(vararg items: KCallable<*>) = this.apply { for (item in items) register(item) }
+    fun register(vararg items: KCallable<*>, dummy: Unit = Unit) = this.apply { for (item in items) register(item) }
 }
 
 

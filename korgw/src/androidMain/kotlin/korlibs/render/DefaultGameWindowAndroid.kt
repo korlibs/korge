@@ -2,20 +2,29 @@ package korlibs.render
 
 import android.app.*
 import android.content.*
+import android.os.*
 import android.view.*
 import android.view.inputmethod.*
 import korlibs.event.*
 import korlibs.graphics.*
 import korlibs.image.bitmap.*
+import kotlinx.coroutines.*
 import kotlin.coroutines.*
+
 
 actual fun CreateDefaultGameWindow(config: GameWindowCreationConfig): GameWindow = TODO()
 
+interface AndroidContextHolder {
+    val androidContext: Context
+}
+
 abstract class BaseAndroidGameWindow(
     val config: GameWindowCreationConfig = GameWindowCreationConfig(),
-) : GameWindow() {
-    abstract val androidContext: Context
+) : GameWindow(), AndroidContextHolder {
+    abstract override val androidContext: Context
     abstract val androidView: View
+
+    override val androidContextAny: Any? get() = androidContext
 
     // @TODO: Cache somehow?
     override val pixelsPerInch: Float get() = androidContext.resources.displayMetrics.xdpi
@@ -88,6 +97,22 @@ abstract class BaseAndroidGameWindow(
     //    semaphore.acquire()
     //    return result!!.getOrThrow()
     //}
+}
+
+val GameWindow.gameWindowAndroidContext: Context get() = androidContextAny as Context
+val GameWindow.gameWindowAndroidContextOrNull: Context? get() = androidContextAny as? Context?
+
+fun runAndroidOnUiThread(context: Context? = null, block: () -> Unit) {
+    //Looper.prepare()
+    Handler(context?.mainLooper ?: Looper.getMainLooper()).post(block)
+}
+
+suspend fun <T> runAndroidOnUiThreadSuspend(context: Context? = null, block: () -> T): T {
+    val deferred = CompletableDeferred<T>()
+    runAndroidOnUiThread(context) {
+        deferred.completeWith(runCatching { block() })
+    }
+    return deferred.await()
 }
 
 class AndroidGameWindow(val activity: KorgwActivity, config: GameWindowCreationConfig = activity.config) : BaseAndroidGameWindow(config) {

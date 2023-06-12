@@ -19,7 +19,30 @@ class MetalShaderGeneratorTest {
         val u_ColorModifier by vec4()
     }
 
-    val u_ColorModifier = UB.u_ColorModifier.uniform
+    private val simpleBufferInputLayouts = lazyMetalShaderBufferInputLayouts(
+        vertexLayouts = listOf(
+            VertexLayout(a_Pos),
+            VertexLayout(a_Tex),
+            VertexLayout(a_Col)
+        ),
+        uniforms = listOf(
+            u_ProjMat,
+            u_ViewMat,
+            UB.u_ColorModifier.uniform
+        )
+    ).value
+
+    private val bufferInputLayoutsWithComplexLayout = lazyMetalShaderBufferInputLayouts(
+        vertexLayouts = listOf(
+            VertexLayout(a_Pos),
+            VertexLayout(a_Tex, a_Col)
+        ),
+        uniforms = listOf(
+            u_ProjMat,
+            u_ViewMat,
+            UB.u_ColorModifier.uniform
+        )
+    ).value
 
     private val vertexShader = VertexShader {
         SET(v_Tex, a_Tex)
@@ -28,34 +51,99 @@ class MetalShaderGeneratorTest {
     }
 
     private val fragmentShader = FragmentShader {
-        SET(out, v_Col * u_ColorModifier)
+        SET(out, v_Col * UB.u_ColorModifier)
     }
 
     @Test
-    //@Ignore
-    fun checkThatVertexMetalShaderIsCorrectlyGenerated() {
-        val metalResult = (vertexShader to fragmentShader).toNewMetalShaderStringResult()
+    @Ignore
+    fun check_that_vertex_metal_shader_is_correctly_generated_with_complex_layout_in_buffer_input() {
+        // Given
+        val metalResult = (vertexShader to fragmentShader)
+            // When
+            .toNewMetalShaderStringResult(bufferInputLayoutsWithComplexLayout)
 
+        // Then
         assertThat(metalResult.result.trim()).isEqualTo("""
             #include <metal_stdlib>
             using namespace metal;
+            struct VertexInput {
+            	float2 a_Pos [[attribute(0)]];
+            	float2 a_Tex [[attribute(1)]];
+            	float4 a_Col [[attribute(2)]];
+            };
             struct v2f {
             	float2 v_Tex;
             	float4 v_Col;
             	float4 position [[position]];
             };
             vertex v2f vertexMain(
-            	uint vertexId [[vertex_id]],
-            	device const float2* a_Tex [[buffer(0)]],
-            	device const char4* a_Col [[buffer(1)]],
-            	device const float2* a_Pos [[buffer(2)]],
+            	VertexInput vertexInput [[stage_in]],
+            	constant float4x4& u_ProjMat [[buffer(2)]],
+            	constant float4x4& u_ViewMat [[buffer(3)]]
+            ) {
+            	v2f out;
+            	auto a_Pos = vertexInput.a_Pos;
+            	auto a_Tex = vertexInput.a_Tex;
+            	auto a_Col = vertexInput.a_Col;
+            	out.v_Tex = a_Tex;
+            	out.v_Col = a_Col;
+            	out.position = ((u_ProjMat * u_ViewMat) * float4(a_Pos, 0.0, 1.0));
+            	return out;
+            }
+            fragment float4 fragmentMain(
+            	v2f in [[stage_in]],
+            	constant float4& u_ColorModifier [[buffer(4)]]
+            ) {
+            	float4 out;
+            	out = (in.v_Col * u_ColorModifier);
+            	return out;
+            }
+        """.trimIndent())
+
+        assertThat(metalResult.inputBuffers).isEqualTo(listOf(
+            listOf(a_Pos),
+            listOf(a_Tex, a_Col),
+            listOf(u_ProjMat),
+            listOf(u_ViewMat),
+            listOf(UB.u_ColorModifier)
+        ))
+    }
+
+    @Test
+    @Ignore
+    fun check_that_vertex_metal_shader_is_correctly_generated_with_simple_buffer_input_layout() {
+        // Given
+        val metalResult = (vertexShader to fragmentShader)
+            // When
+            .toNewMetalShaderStringResult(simpleBufferInputLayouts)
+
+
+        // Then
+        assertThat(metalResult.result.trim()).isEqualTo("""
+            #include <metal_stdlib>
+            using namespace metal;
+            struct VertexInput {
+            	float2 a_Pos [[attribute(0)]];
+            	float2 a_Tex [[attribute(1)]];
+            	float4 a_Col [[attribute(2)]];
+            };
+            struct v2f {
+            	float2 v_Tex;
+            	float4 v_Col;
+            	float4 position [[position]];
+            };
+            vertex v2f vertexMain(
+            	VertexInput vertexInput [[stage_in]],
             	constant float4x4& u_ProjMat [[buffer(3)]],
             	constant float4x4& u_ViewMat [[buffer(4)]]
             ) {
             	v2f out;
-            	v_Tex = a_Tex[vertexId];
-            	out.v_Col = a_Col[vertexId];
-            	out.position = ((u_ProjMat * u_ViewMat) * float4(a_Pos[vertexId], 0.0, 1.0));
+            	auto a_Pos = vertexInput.a_Pos;
+            	auto a_Tex = vertexInput.a_Tex;
+            	auto a_Col = vertexInput.a_Col;
+            	out.v_Tex = a_Tex;
+            	out.v_Col = a_Col;
+            	out.position = ((u_ProjMat * u_ViewMat) * float4(a_Pos, 0.0, 1.0));
             	return out;
             }
             fragment float4 fragmentMain(
@@ -69,12 +157,12 @@ class MetalShaderGeneratorTest {
         """.trimIndent())
 
         assertThat(metalResult.inputBuffers).isEqualTo(listOf(
-            a_Tex,
-            a_Col,
-            a_Pos,
-            u_ProjMat,
-            u_ViewMat,
-            u_ColorModifier
+            listOf(a_Pos),
+            listOf(a_Tex),
+            listOf(a_Col),
+            listOf(u_ProjMat),
+            listOf(u_ViewMat),
+            listOf(UB.u_ColorModifier)
         ))
     }
 }

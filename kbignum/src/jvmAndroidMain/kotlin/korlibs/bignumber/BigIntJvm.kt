@@ -2,7 +2,14 @@ package korlibs.bignumber
 
 import java.math.*
 
-val BigInteger.bi get() = JvmBigInt(this)
+/** Converts a [BigInteger] into a [BigInt] ([JvmBigInt]) */
+val BigInteger.bi: JvmBigInt get() = JvmBigInt(this)
+
+/** Converts a [BigInt] into a [BigInteger] */
+fun BigInt.toBigInteger(): BigInteger = when (this) {
+    is JvmBigInt -> this.value
+    else -> BigInteger(this.toString())
+}
 
 actual val BigIntNativeFactory: BigIntConstructor = JvmBigInt
 

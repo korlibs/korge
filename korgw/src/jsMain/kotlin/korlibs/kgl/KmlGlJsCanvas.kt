@@ -17,7 +17,7 @@ import kotlin.math.*
 // https://github.com/shrekshao/MoveWebGL1EngineToWebGL2/blob/master/Move-a-WebGL-1-Engine-To-WebGL-2-Blog-1.md
 // https://webglstats.com/
 // https://caniuse.com/#feat=webgl
-class KmlGlJsCanvas(val canvas: HTMLCanvasElement, val glOpts: dynamic) : KmlGlWithExtensions() {
+class KmlGlJsCanvas(val canvas: HTMLCanvasElement, val glOpts: dynamic) : KmlGl() {
     var webglVersion = 1
     val gl: WebGLRenderingContext = (null
             ?: canvas.getContext("webgl2", glOpts)?.also { webglVersion = 2 }

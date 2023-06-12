@@ -230,6 +230,13 @@ class BigIntCompareWithJVMTestCommon : AbstractBigIntCompareWithJVMTest() {
     override fun testRightShift2() = testBinary { jvmL, jvmR, kL, kR ->
         Result(">>", "${jvmL / (1 shl 27).toBigInteger()}", "${kL shr 27}")
     }
+
+    @Test
+    fun testBidirectionalJVMBigIntegerConversion() {
+        val bigInt = BigInteger("0123456789".repeat(10))
+        assertEquals(bigInt, bigInt.bi.toBigInteger())
+        assertEquals(bigInt, CommonBigInt(bigInt.toString()).toBigInteger())
+    }
 }
 
 class BigIntCompareWithJVMTestJVM : AbstractBigIntCompareWithJVMTest() {

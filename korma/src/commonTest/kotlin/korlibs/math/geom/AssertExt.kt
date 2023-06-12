@@ -34,6 +34,7 @@ private fun <T : Any> T?.isAlmostEqualsGeneric(
     return when (e) {
         is Ray -> e.isAlmostEquals((a as? Ray?) ?: return false, absoluteTolerance.toFloat())
         is Point -> e.isAlmostEquals((a as? Point?) ?: return false, absoluteTolerance.toFloat())
+        is Vector3 -> e.isAlmostEquals((a as? Vector3?) ?: return false, absoluteTolerance.toFloat())
         is MPoint -> e.isAlmostEquals((a as? MPoint?) ?: return false, absoluteTolerance)
         is Float -> {
             if (a !is Float?) return false

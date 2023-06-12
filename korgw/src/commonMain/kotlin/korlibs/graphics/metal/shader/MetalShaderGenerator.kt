@@ -1,88 +1,92 @@
 package korlibs.graphics.metal.shader
 
-import korlibs.graphics.*
 import korlibs.graphics.shader.*
-import korlibs.graphics.shader.gl.*
-import korlibs.io.util.*
+import korlibs.graphics.shader.gl.GlobalsProgramVisitor
+import korlibs.io.util.Indenter
 
 internal const val vertexMainFunctionName = "vertexMain"
 internal const val fragmentMainFunctionName = "fragmentMain"
+private const val vertexInputStructureName = "VertexInput"
+internal const val vertexInputStructureDeclarationName = "vertexInput"
 
-class MetalShaderGenerator(
+internal class MetalShaderGenerator(
     private val vertexShader: VertexShader,
-    private val fragmentShader: FragmentShader
+    private val fragmentShader: FragmentShader,
+    private val bufferLayouts: MetalShaderBufferInputLayouts
 ) : BaseMetalShaderGenerator {
 
-    private val inputBuffers = mutableListOf<VariableWithOffset>()
+    private var attributeIndex = -1
+    private val vertexInstructions = vertexShader.stm
+    private val fragmentInstructions = fragmentShader.stm
+    private val vertexBodyGenerator = MetalShaderBodyGenerator(ShaderType.VERTEX)
+    private val fragmentBodyGenerator = MetalShaderBodyGenerator(ShaderType.FRAGMENT)
+    private val inputStructure by lazy {
+        bufferLayouts.vertexInputStructure
+            .map { (index, attributes) -> index to attributes.attributes.toMetalShaderStructureGeneratorAttributes(shouldAddAttributeNumber = true)}
+    }
+    private val vertexVisitor by lazy {
+        GlobalsProgramVisitor()
+            .also { it.visit(vertexInstructions) }
+    }
+    private val fragmentVisitor by lazy {
+        GlobalsProgramVisitor()
+            .also { it.visit(fragmentInstructions) }
+    }
+    private val varyings = computeVaryings()
+    private val attributes = bufferLayouts.attributes
+    private val vertexParameters by bufferLayouts.computeFunctionParameter(
+        vertexVisitor.uniforms.toList(),
+        vertexBodyGenerator
+    )
+    private val fragmentParameters by bufferLayouts.computeFunctionParameter(
+        fragmentVisitor.uniforms.toList(),
+        fragmentBodyGenerator
+    )
 
     data class Result(
         val result: String,
-        val inputBuffers: List<VariableWithOffset>
+        val inputBuffers: MetalShaderBufferInputLayouts
     )
 
-    fun generateResult(): Result = generateResult(vertexShader.functions + fragmentShader.functions)
-
-    private fun generateResult(customFunctions: List<FuncDecl>): Result {
-        val vertexInstructions = vertexShader.stm
-        val types = GlobalsProgramVisitor()
-
-        FuncDecl("main", VarType.TVOID, listOf(), vertexInstructions)
-            .also(types::visit)
+    fun generateResult(): Result  {
 
         val result = Indenter {
 
             addHeaders()
+            declareVertexInputStructure()
+            declareVertexOutputStructure()
 
-            declareVertexOutputStructure(types.varyings)
+            listFunctions()
+                .also { generationFunctions(it) }
 
-            customFunctions.filter { it.ref.name in types.funcRefs }
-                .reversed()
-                .distinctBy { it.ref.name }
-                .let { generationFunctions(it) }
-
-            generateVertexMainFunction(types.attributes, types.uniforms)
-                .also(inputBuffers::addAll)
-
+            generateVertexMainFunction()
             generateFragmentMainFunction()
-                .also(inputBuffers::addAll)
-
 
         }.toString()
 
         return Result(
             result,
-            inputBuffers.toList()
+            bufferLayouts
         )
     }
 
-    private fun Indenter.declareVertexOutputStructure(attributes: LinkedHashSet<Varying>) {
-        if (attributes.isEmpty()) return
-        val generator = MetalShaderBodyGenerator(ShaderType.VERTEX)
+    private fun listFunctions() = (vertexShader.functions + fragmentShader.functions)
 
-        "struct v2f"(expressionSuffix = ";") {
-            attributes.forEach {
-                val name = if (it == Output) "position [[position]]" else it.name
-                +"${generator.typeToString(it.type)} $name;"
-            }
-        }
-    }
+    private fun Indenter.declareVertexInputStructure() = MetalShaderStructureGenerator.generate(
+        indenter = this,
+        name = vertexInputStructureName,
+        attributes = attributes.toMetalShaderStructureGeneratorAttributes(true)
+    )
 
-    private fun Indenter.generateVertexMainFunction(
-        attributes: LinkedHashSet<Attribute>,
-        uniforms: LinkedHashSet<Uniform>
-    ): List<VariableWithOffset> {
-        val generator = MetalShaderBodyGenerator(ShaderType.VERTEX)
-        val inputBuffers = attributes.toList() + uniforms
+    private fun Indenter.declareVertexOutputStructure() = MetalShaderStructureGenerator.generate(
+        indenter = this,
+        name = "v2f",
+        attributes = varyings.toMetalShaderStructureGeneratorAttributes()
+    )
 
-        val parameters = listOf(("uint vertexId [[vertex_id]]")) +
-            inputBuffers.mapIndexed { index, variableWithOffset ->
-                val parameterModifier = when (variableWithOffset) {
-                    is Attribute -> "device const" to "*"
-                    else -> "constant" to "&"
-                }
+    private fun Indenter.generateVertexMainFunction() {
 
-                "${parameterModifier.first} ${generator.typeToString(variableWithOffset.type)}${parameterModifier.second} ${variableWithOffset.name} [[buffer($index)]]"
-            }
+        val parameters = listOf(("$vertexInputStructureName $vertexInputStructureDeclarationName [[stage_in]]")) + vertexParameters
 
         line("vertex v2f $vertexMainFunctionName(")
         indent {
@@ -92,36 +96,20 @@ class MetalShaderGenerator(
         }
         ")" {
             line("v2f out;")
-            generator.visit(vertexShader.stm)
-            line(generator.programIndenter)
+
+            bufferLayouts.convertInputBufferToLocalDeclarations(vertexVisitor.attributes.toList())
+                .forEach { line(it) }
+
+            vertexBodyGenerator.visit(vertexShader.stm)
+            line(vertexBodyGenerator.programIndenter)
             line("return out;")
         }
 
-        return inputBuffers
     }
 
-    private fun Indenter.generateFragmentMainFunction(): List<VariableWithOffset> {
+    private fun Indenter.generateFragmentMainFunction() {
 
-        val generator = MetalShaderBodyGenerator(ShaderType.FRAGMENT)
-        val fragmentInstructions = fragmentShader.stm
-        val types = GlobalsProgramVisitor()
-        FuncDecl("main", VarType.TVOID, listOf(), fragmentInstructions)
-            .also(types::visit)
-
-        val fragmentUniformInput = types.uniforms.toList()
-        val initialBufferIndex = inputBuffers.size
-
-        val parameters = listOf(("v2f in [[stage_in]]")) +
-            fragmentUniformInput.mapIndexed { indexOfUniform, uniform ->
-                val parameterModifier = when (uniform) {
-                    is Attribute -> "device const" to "*"
-                    else -> "constant" to "&"
-                }
-
-                val index = indexOfUniform + initialBufferIndex
-                "${parameterModifier.first} ${generator.typeToString(uniform.type)}${parameterModifier.second} ${uniform.name} [[buffer($index)]]"
-            }
-
+        val parameters = listOf(("v2f in [[stage_in]]"))  + fragmentParameters
 
         line("fragment float4 $fragmentMainFunctionName(")
         indent {
@@ -131,12 +119,11 @@ class MetalShaderGenerator(
         }
         line(")") {
             line("float4 out;")
-            generator.visit(fragmentShader.stm)
-            line(generator.programIndenter)
+            fragmentBodyGenerator.visit(fragmentShader.stm)
+            line(fragmentBodyGenerator.programIndenter)
             line("return out;")
         }
 
-        return fragmentUniformInput
     }
 
     private fun Indenter.generationFunctions(functions: List<FuncDecl>) {
@@ -148,21 +135,29 @@ class MetalShaderGenerator(
 
             line("${typeToString(function.rettype)} ${function.name}(${argsStrings.joinToString(", ")})") {
                 for (temp in generator.temps) {
-                    line(precitionToString(temp.precision) + typeToString(temp.type) + " " + temp.name + ";")
+                    line(precisionToString(temp.precision) + typeToString(temp.type) + " " + temp.name + ";")
                 }
                 line(generator.programIndenter)
             }
         }
     }
 
-}
+    private fun List<Variable>.toMetalShaderStructureGeneratorAttributes(shouldAddAttributeNumber: Boolean = false): List<MetalShaderStructureGenerator.Attribute> {
+        return map {
+            if (shouldAddAttributeNumber) {
+                attributeIndex += 1
+            }
 
-private fun Attribute.toMetalName(): String {
-    return when (this) {
-        DefaultShaders.a_Tex -> "texture"
-        DefaultShaders.a_Col -> "color"
-        DefaultShaders.a_Pos -> "position"
-        else -> error("unreachable statement")
+            MetalShaderStructureGenerator.Attribute(
+                type = vertexBodyGenerator.typeToString(it.type),
+                name = if (it == Output) "position" else it.name,
+                attribute = if (it == Output) "position" else if (shouldAddAttributeNumber) "attribute($attributeIndex)" else null
+            )
+        }
+    }
+
+    private fun computeVaryings(): List<Varying> {
+        return vertexVisitor.varyings.toList()
     }
 }
 

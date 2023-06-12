@@ -1,0 +1,143 @@
+{
+	"framesMap": {
+		"korge.png": {
+			"filename": "korge.png",
+			"frame": {
+				"x": 2,
+				"y": 2,
+				"w": 64,
+				"h": 64
+			},
+			"rotated": false,
+			"sourceSize": {
+				"w": 64,
+				"h": 64
+			},
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 64,
+				"h": 64
+			},
+			"trimmed": false
+		},
+		"korim.png": {
+			"filename": "korim.png",
+			"frame": {
+				"x": 2,
+				"y": 70,
+				"w": 64,
+				"h": 64
+			},
+			"rotated": false,
+			"sourceSize": {
+				"w": 64,
+				"h": 64
+			},
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 64,
+				"h": 64
+			},
+			"trimmed": false
+		},
+		"korau.png": {
+			"filename": "korau.png",
+			"frame": {
+				"x": 2,
+				"y": 138,
+				"w": 64,
+				"h": 64
+			},
+			"rotated": false,
+			"sourceSize": {
+				"w": 64,
+				"h": 64
+			},
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 64,
+				"h": 64
+			},
+			"trimmed": false
+		}
+	},
+	"frames": [
+		{
+			"filename": "korge.png",
+			"frame": {
+				"x": 2,
+				"y": 2,
+				"w": 64,
+				"h": 64
+			},
+			"rotated": false,
+			"sourceSize": {
+				"w": 64,
+				"h": 64
+			},
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 64,
+				"h": 64
+			},
+			"trimmed": false
+		},
+		{
+			"filename": "korim.png",
+			"frame": {
+				"x": 2,
+				"y": 70,
+				"w": 64,
+				"h": 64
+			},
+			"rotated": false,
+			"sourceSize": {
+				"w": 64,
+				"h": 64
+			},
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 64,
+				"h": 64
+			},
+			"trimmed": false
+		},
+		{
+			"filename": "korau.png",
+			"frame": {
+				"x": 2,
+				"y": 138,
+				"w": 64,
+				"h": 64
+			},
+			"rotated": false,
+			"sourceSize": {
+				"w": 64,
+				"h": 64
+			},
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 64,
+				"h": 64
+			},
+			"trimmed": false
+		}
+	],
+	"meta": {
+		"app": "korge",
+		"format": "RGBA8888",
+		"image": "logos.atlas.png",
+		"scale": 1.0,
+		"size": {
+			"w": 68,
+			"h": 204
+		},
+		"version": "1.0.0"
+	}
+}

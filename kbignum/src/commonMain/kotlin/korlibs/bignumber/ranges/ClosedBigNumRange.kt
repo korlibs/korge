@@ -3,6 +3,8 @@ package korlibs.bignumber.ranges
 import korlibs.bignumber.*
 
 /**
+ * Represents an inclusive range between two [BigNum] between [start]..[endInclusive].
+ *
  * @see kotlin.ranges.ClosedFloatRange
  */
 class ClosedBigNumRange(

@@ -244,6 +244,8 @@ open class GameWindow :
     GameWindowConfig,
     Extra by Extra.Mixin()
 {
+    open val androidContextAny: Any? get() = null
+
     sealed interface ICursor
 
     override val dialogInterface: DialogInterface get() = DialogInterface.Unsupported
@@ -350,6 +352,8 @@ open class GameWindow :
     open var keepScreenOn: Boolean
         set(value) = Unit
         get() = false
+
+    open var alwaysOnTop: Boolean = false
 
     override val key: CoroutineContext.Key<*> get() = CoroutineKey
     companion object CoroutineKey : CoroutineContext.Key<GameWindow> {

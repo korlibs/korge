@@ -3,6 +3,7 @@ package korlibs.io.file.std
 import korlibs.io.file.PathInfo
 import korlibs.io.file.parent
 import korlibs.io.lang.*
+import korlibs.memory.*
 
 /**
  * Contain standard paths to different parts of the operating system.
@@ -50,4 +51,13 @@ interface StandardPathsBase {
      * - /tmp
      */
     val temp: String get() = Environment.tempPath
+
+    /**
+     * Folder used to store preferences.
+     */
+    fun appPreferencesFolder(appId: String): String = when {
+        Platform.isMac -> "/Users/${Environment["USER"]}/Library/Preferences/$appId"
+        Platform.isWindows -> "${Environment["APPDATA"]}/$appId"
+        else -> "${Environment["HOME"]}/.config/$appId"
+    }
 }

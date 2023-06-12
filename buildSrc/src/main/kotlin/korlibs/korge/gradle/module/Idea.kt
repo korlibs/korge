@@ -15,9 +15,11 @@ fun Project.configureIdea() {
             module.excludeDirs = module.excludeDirs.also {
                 it.addAll(
                     listOf(
-                        ".gradle", ".idea", "gradle/wrapper", ".idea", "build", "@old", "_template",
+                        ".gradle", ".idea", "gradle/wrapper", ".idea", "build", "@old", "_template", "docs",
                         "kotlin-js-store",
-                        "korge-gradle-plugin/build/srcgen2"
+                        "korge-gradle-plugin/build/srcgen2",
+                        "e2e-test/.gradle", "e2e-test/.idea", "e2e-test/build",
+                        "e2e-test-multi/.gradle", "e2e-test-multi/.idea", "e2e-test-multi/build",
                     )
                         .map { file(it) }
                 )

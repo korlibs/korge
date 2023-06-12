@@ -9,7 +9,7 @@ import kotlin.test.*
 
 class LinuxJoyEventAdapterTest {
     @Test
-    fun test() = suspendTest({ !Platform.isJs }) {
+    fun test() = suspendTest({ !Platform.isJs && !Platform.isWasm }) {
         val sync = MemorySyncIO()
         sync.writelink("/dev/input/by-id/usb-Xbox_Controller-joystick", "../js1")
         sync.write("/dev/input/js1", byteArrayOf(
