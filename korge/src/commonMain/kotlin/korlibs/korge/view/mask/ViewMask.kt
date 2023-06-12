@@ -11,23 +11,38 @@ import kotlin.native.concurrent.*
 @ThreadLocal
 private var View.__mask: View? by extraProperty { null }
 
-fun <T : View> T.mask(mask: View?): T {
+@ThreadLocal
+private var View.__maskFiltering: Boolean by extraProperty { true }
+
+fun <T : View> T.mask(mask: View?, filtering: Boolean = true): T {
+    this.maskFiltering = filtering
     this.mask = mask
     return this
 }
 
+var View.maskFiltering: Boolean
+    get() = __maskFiltering
+    set(value) {
+        __maskFiltering = value
+        updatedMask()
+    }
 var View.mask: View?
     get() = __mask
     set(value) {
-        removeRenderPhaseOfType<ViewRenderPhaseMask>()
-        if (value != null) {
-            addRenderPhase(ViewRenderPhaseMask(value))
-        }
         __mask = value
+        updatedMask()
     }
 
+private fun View.updatedMask() {
+    val value = __mask
+    removeRenderPhaseOfType<ViewRenderPhaseMask>()
+    if (value != null) {
+        addRenderPhase(ViewRenderPhaseMask(value, __maskFiltering))
+    }
+}
+
 @OptIn(KoragExperimental::class)
-class ViewRenderPhaseMask(var mask: View) : ViewRenderPhase {
+class ViewRenderPhaseMask(var mask: View, var maskFiltering: Boolean) : ViewRenderPhase {
     companion object {
         const val PRIORITY = -100
     }
@@ -59,7 +74,7 @@ class ViewRenderPhaseMask(var mask: View) : ViewRenderPhase {
                 //batcher.drawQuad(Texture(viewFB), 300f, 200f, m = view.parent!!.globalMatrix)
                 batcher.temporalTextureUnit(DefaultShaders.u_Tex, viewFB.tex, DefaultShaders.u_TexEx, maskFB.tex) {
                     batcher.drawQuad(
-                        Texture(viewFB), m = mask.globalMatrix, program = DefaultShaders.MERGE_ALPHA_PROGRAM,
+                        Texture(viewFB), m = mask.globalMatrix, program = DefaultShaders.MERGE_ALPHA_PROGRAM, filtering = maskFiltering
                     )
                     //batcher.createBatchIfRequired()
                 }
