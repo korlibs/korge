@@ -997,6 +997,7 @@ fun Project.getForcedVersion(): String {
         ?.removePrefix("refs/tags/")
         ?.removePrefix("v")
         ?.removePrefix("w")
+        ?.removePrefix("z")
         ?: project.version.toString()
 }
 
