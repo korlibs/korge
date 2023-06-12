@@ -6,7 +6,17 @@ import korlibs.math.internal.*
 import korlibs.math.isAlmostEquals
 import kotlin.math.*
 
-inline class Vector3(val data: Float4Pack) {
+//inline class Vector3(val data: Float4Pack) {
+//data class Vector3(val x: Float, val y: Float, val z: Float, val w: Float) {
+data class Vector3(val x: Float, val y: Float, val z: Float) {
+    //operator fun component1(): Float = x
+    //operator fun component2(): Float = y
+    //operator fun component3(): Float = z
+    //fun copy(x: Float = this.x, y: Float = this.y, z: Float = this.z): Vector3 = Vector3(x, y, z)
+    //val x: Float get() = data.f0
+    //val y: Float get() = data.f1
+    //val z: Float get() = data.f2
+
     companion object {
         val ZERO = Vector3(0f, 0f, 0f)
         val ONE = Vector3(1f, 1f, 1f)
@@ -30,23 +40,21 @@ inline class Vector3(val data: Float4Pack) {
         fun lengthSq(x: Float, y: Float, z: Float): Float = x * x + y * y + z * z
     }
 
-    constructor(x: Float, y: Float, z: Float) : this(float4PackOf(x, y, z, 0f))
+    //constructor(x: Float, y: Float, z: Float) : this(float4PackOf(x, y, z, 0f))
     constructor(x: Int, y: Int, z: Int) : this(x.toFloat(), y.toFloat(), z.toFloat())
     constructor(x: Double, y: Double, z: Double) : this(x.toFloat(), y.toFloat(), z.toFloat())
-
-    operator fun component1(): Float = x
-    operator fun component2(): Float = y
-    operator fun component3(): Float = z
-
-    fun copy(x: Float = this.x, y: Float = this.y, z: Float = this.z): Vector3 = Vector3(x, y, z)
-
-    val x: Float get() = data.f0
-    val y: Float get() = data.f1
-    val z: Float get() = data.f2
 
     val lengthSquared: Float get() = (x * x) + (y * y) + (z * z)
     val length: Float get() = sqrt(lengthSquared)
     fun normalized(): Vector3 = this / length
+
+    // https://math.stackexchange.com/questions/13261/how-to-get-a-reflection-vector
+    // 𝑟=𝑑−2(𝑑⋅𝑛)𝑛
+    fun reflected(surfaceNormal: Vector3): Vector3 {
+        val d = this
+        val n = surfaceNormal
+        return d - 2f * (d dot n) * n
+    }
 
     operator fun get(index: Int): Float = when (index) {
         0 -> x
@@ -69,6 +77,14 @@ inline class Vector3(val data: Float4Pack) {
     operator fun div(v: Float): Vector3 = Vector3(this.x / v, this.y / v, this.z / v)
     operator fun rem(v: Float): Vector3 = Vector3(this.x % v, this.y % v, this.z % v)
 
+    operator fun times(v: Int): Vector3 = this * v.toFloat()
+    operator fun div(v: Int): Vector3 = this / v.toFloat()
+    operator fun rem(v: Int): Vector3 = this % v.toFloat()
+
+    operator fun times(v: Double): Vector3 = this * v.toFloat()
+    operator fun div(v: Double): Vector3 = this / v.toFloat()
+    operator fun rem(v: Double): Vector3 = this % v.toFloat()
+
     infix fun dot(v: Vector3): Float = (x * v.x) + (y * v.y) + (z * v.z)
     infix fun cross(v: Vector3): Vector3 = cross(this, v)
 
@@ -81,6 +97,10 @@ inline class Vector3(val data: Float4Pack) {
     fun isAlmostEquals(other: Vector3, epsilon: Float = 0.00001f): Boolean =
         this.x.isAlmostEquals(other.x, epsilon) && this.y.isAlmostEquals(other.y, epsilon) && this.z.isAlmostEquals(other.z, epsilon)
 }
+
+operator fun Int.times(v: Vector3): Vector3 = v * this
+operator fun Float.times(v: Vector3): Vector3 = v * this
+operator fun Double.times(v: Vector3): Vector3 = v * this
 
 fun vec(x: Float, y: Float, z: Float): Vector3 = Vector3(x, y, z)
 fun vec3(x: Float, y: Float, z: Float): Vector3 = Vector3(x, y, z)
@@ -98,5 +118,4 @@ sealed interface IVector3 {
         2 -> z
         else -> 0f
     }
-
 }

@@ -9,7 +9,7 @@ Library for dealing with Big Numbers both integral and decimal
 
 <https://github.com/korlibs/korge/tree/main/kbignum/>{:target=_blank}
 
-{% include stars.html project="korge" %}
+{% include stars.html project="korge" central="com.soywiz.korlibs.kbignum/kbignum" %}
 
 {% include toc_include.md %}
 

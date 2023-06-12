@@ -33,3 +33,14 @@ fun <T : Anchorable> T.anchor(ax: Int, ay: Int): T = anchor(Anchor(ax, ay))
 
 fun <T : Anchorable> T.center(): T = anchor(0.5f, 0.5f)
 val <T : Anchorable> T.centered: T get() = anchor(0.5f, 0.5f)
+
+interface PixelAnchorable {
+    @ViewProperty(name = "anchorPixel")
+    var anchorPixel: Point
+}
+
+fun <T : PixelAnchorable> T.anchorPixel(point: Point): T {
+    this.anchorPixel = point
+    return this
+}
+

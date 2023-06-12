@@ -4,9 +4,10 @@ import korlibs.math.annotations.*
 import korlibs.memory.pack.*
 
 //@KormaValueApi
-inline class Scale internal constructor(internal val raw: Float2Pack) {
-    val scaleX: Float get() = raw.f0
-    val scaleY: Float get() = raw.f1
+//inline class Scale internal constructor(internal val raw: Float2Pack) {
+data class Scale(val scaleX: Float, val scaleY: Float) {
+    //val scaleX: Float get() = raw.f0
+    //val scaleY: Float get() = raw.f1
     val scaleAvg: Float get() = scaleX * .5f + scaleY * .5f
 
     val avg: Float get() = scaleAvg
@@ -17,16 +18,20 @@ inline class Scale internal constructor(internal val raw: Float2Pack) {
     val scaleAvgD: Double get() = scaleAvg.toDouble()
 
     constructor() : this(1f, 1f)
-    constructor(scale: Float) : this(float2PackOf(scale, scale))
+    constructor(scale: Float) : this(scale, scale)
     constructor(scale: Double) : this(scale.toFloat())
     constructor(scale: Int) : this(scale.toFloat())
-    constructor(scaleX: Float, scaleY: Float) : this(float2PackOf(scaleX, scaleY))
+    //constructor(scaleX: Float, scaleY: Float) : this(float2PackOf(scaleX, scaleY))
     constructor(scaleX: Double, scaleY: Double) : this(scaleX.toFloat(), scaleY.toFloat())
     constructor(scaleX: Int, scaleY: Int) : this(scaleX.toFloat(), scaleY.toFloat())
 }
 
-fun Scale.toPoint(): Point = Point(raw)
-fun Scale.toVector2(): Vector2 = Vector2(raw)
+operator fun Vector2.times(other: Scale): Vector2 = Vector2(x * other.scaleX, y * other.scaleY)
+operator fun Vector2.div(other: Scale): Vector2 = Vector2(x / other.scaleX, y / other.scaleY)
+operator fun Vector2.rem(other: Scale): Vector2 = Vector2(x % other.scaleX, y % other.scaleY)
+
+fun Scale.toPoint(): Point = Point(scaleX, scaleY)
+fun Scale.toVector2(): Vector2 = Vector2(scaleX, scaleY)
 
 @KormaMutableApi
 sealed interface IScale {

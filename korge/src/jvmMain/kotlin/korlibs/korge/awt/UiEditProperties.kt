@@ -199,6 +199,15 @@ internal class UiEditProperties(app: UiApplication, view: View?, val views: View
             internalSet = { (prop as KMutableProperty1<Any, Any?>).set(instance, it) },
             internalGet = { (prop as KProperty1<Any, Any?>).get(instance) }
         )
+
+        prop?.findAnnotation<ViewPropertyProvider>()?.let { propertyProvider ->
+            val singletonClazz = propertyProvider.provider as KClass<Any>
+            val singletonInstance = singletonClazz.objectInstance as ViewPropertyProvider.Impl<Any, Any>
+            return UiListEditableValue<Any?>(app, {
+                singletonInstance.provider(instance).values.toList()
+            }, obs as ObservableProperty<Any?>)
+        }
+
         return when {
             type.isSubtypeOf(Pair::class.starProjectedType) -> {
                 val rprop = prop as KMutableProperty1<Any, Pair<Any, Any>>
@@ -301,17 +310,6 @@ internal class UiEditProperties(app: UiApplication, view: View?, val views: View
                     return UiContainer(app).also {
                         createPropsForInstance(obs.value, it)
                     }
-                }
-
-                prop?.findAnnotation<ViewPropertyProvider>()?.let { propertyProvider ->
-                    val singletonClazz = propertyProvider.provider as KClass<Any>
-                    for (member in singletonClazz.memberProperties) {
-                        val items = member.get(singletonClazz.objectInstance!!)
-                        if (items is Iterable<*>) {
-                            return UiListEditableValue<Any?>(app, { (member.get(singletonClazz.objectInstance!!) as Iterable<Any?>).toList() }, obs as ObservableProperty<Any?>)
-                        }
-                    }
-                    println("propertyProvider.provider.memberProperties=" + singletonClazz.memberProperties)
                 }
 
                 null

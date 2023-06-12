@@ -16,10 +16,7 @@ and to provide an API that is powerful, fun and easy to use.
 
 [https://github.com/korlibs/korge/tree/main/klock](https://github.com/korlibs/korge/tree/main/klock)
 
-{% include stars.html project="klock" %}
-
-[![Build Status](https://travis-ci.org/korlibs/klock.svg?branch=master)](https://travis-ci.org/korlibs/klock)
-[![Maven Version](https://img.shields.io/github/tag/korlibs/klock.svg?style=flat&label=maven)](http://search.maven.org/#search%7Cga%7C1%7Ca%3A%22klock%22)
+{% include stars.html project="korge" central="com.soywiz.korlibs.klock/klock" %}
 
 {% include toc_include.md %}
 

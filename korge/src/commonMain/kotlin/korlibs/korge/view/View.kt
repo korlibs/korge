@@ -240,12 +240,12 @@ abstract class View internal constructor(
         }
 
     /** Optional name of this view */
-    @ViewProperty()
+    @ViewProperty
     var name: String? = null
 
     /** The [BlendMode] used for this view [BlendMode.INHERIT] will use the ancestors [blendMode]s */
     @ViewProperty
-    @ViewPropertyProvider(provider = BlendMode.Provider::class)
+    @ViewPropertyProvider(provider = BlendModeProvider::class)
     var blendMode: BlendMode = BlendMode.INHERIT
         set(value) {
             if (field != value) {

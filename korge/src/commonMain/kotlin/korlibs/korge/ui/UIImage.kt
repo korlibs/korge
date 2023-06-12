@@ -40,7 +40,7 @@ class UIImage(
         }
 
     @ViewProperty
-    @ViewPropertyProvider(ScaleMode.Provider::class)
+    @ViewPropertyProvider(ScaleModeProvider::class)
     var scaleMode: ScaleMode = scaleMode
         set(value) {
             if (field !== value) {

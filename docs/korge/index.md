@@ -24,7 +24,7 @@ and an [IntellIJ plugin](https://plugins.jetbrains.com/plugin/9676-korge) to imp
 
 You can see a small presentation of KorGE here: <https://korge.org/>{:target="_blank"}
 
-{% include stars.html project="korge" %}
+{% include stars.html project="korge" central="com.soywiz.korlibs.korge.plugins/korge-gradle-plugin" %}
 
 <div style="clear:both;"></div>
 

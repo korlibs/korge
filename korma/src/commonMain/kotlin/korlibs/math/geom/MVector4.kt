@@ -6,7 +6,7 @@ import korlibs.math.internal.*
 import korlibs.math.interpolation.*
 import kotlin.math.*
 
-
+@Deprecated("")
 typealias MVector3D = MVector4
 
 /*

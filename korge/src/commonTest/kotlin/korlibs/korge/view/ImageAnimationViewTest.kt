@@ -81,9 +81,9 @@ class ImageAnimationViewTest {
     fun testNumberOfChildren() {
         // Test if correct number of layers are added as children to the Container
         anim.animation = animImages4Layers1
-        assertEquals(1, anim.children.size)
+        assertEquals(1, anim.numLayers)
         anim.animation = animImages6Layers2
-        assertEquals(2, anim.children.size)
+        assertEquals(2, anim.numLayers)
     }
 
     @Test
@@ -91,13 +91,13 @@ class ImageAnimationViewTest {
         // Test if the correct frame is set as first frame
         // Here we check if the corresponding targetX value was set as X position of the layer.
         anim.animation = animImages4Layers1
-        assertEquals(1, anim.children[0].xD.toInt())
+        assertEquals(1, anim.layers[0].xD.toInt())
         anim.direction = ImageAnimation.Direction.REVERSE
         anim.rewind()
-        assertEquals(4, anim.children[0].xD.toInt())
+        assertEquals(4, anim.layers[0].xD.toInt())
         anim.animation = animImages6Layers2
-        assertEquals(6, anim.children[0].xD.toInt())
-        assertEquals(60, anim.children[1].xD.toInt())
+        assertEquals(6, anim.layers[0].xD.toInt())
+        assertEquals(60, anim.layers[1].xD.toInt())
     }
 
 //        println("children: ${imageanimView.children.size}")

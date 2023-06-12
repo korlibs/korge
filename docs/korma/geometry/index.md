@@ -227,7 +227,7 @@ class Ray3D {
 fun Ray3D.intersectRayAABox1(box: AABB3D) : Boolean 
 ```
 
-## EulerRotation & Quaternion
+## EulerRotation
 
 ```kotlin
 
@@ -251,7 +251,30 @@ class EulerRotation {
     fun setTo(other: EulerRotation): EulerRotation
     fun toMatrix(out: Matrix3D = Matrix3D()): Matrix3D
 }
+```
 
+## Quaternion
+
+A Quaternion is a kind of vector that represent a rotation in a 3D space.
+It can be converted from/to EulerRotation, and can also be converted to/from a rotation Matrix4.
+
+### Constructing a Quaternion:
+
+The Quaternion identity (no rotation) can be obtained with:
+
+```kotlin
+Quaternion.IDENTITY
+```
+
+You can also construct it from two vectors: an original vector plus a resultant vector after the rotation. For example:
+
+```kotlin
+Quaternion.fromVectors(Vector3.UP, Vector3.RIGHT) // A Quaternion that would rotate to the right
+```
+
+### Code:
+
+```kotlin
 // https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
 class Quaternion {
     var x: Double = 0.0,

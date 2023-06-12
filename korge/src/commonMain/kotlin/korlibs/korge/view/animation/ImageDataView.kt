@@ -2,6 +2,8 @@ package korlibs.korge.view.animation
 
 import korlibs.korge.view.*
 import korlibs.image.format.ImageData
+import korlibs.korge.view.property.*
+import korlibs.math.geom.*
 
 /**
  * With imageDataView it is possible to display an image inside a Container or View.
@@ -53,18 +55,21 @@ open class ImageDataView(
     animation: String? = null,
     playing: Boolean = false,
     smoothing: Boolean = true,
-) : Container() {
+) : Container(), PixelAnchorable, Anchorable {
     // Here we can create repeated in korge-parallax if required
     protected open fun createAnimationView(): ImageAnimationView<out SmoothedBmpSlice> {
         return imageAnimationView()
     }
 
     open val animationView: ImageAnimationView<out SmoothedBmpSlice> = createAnimationView()
+    override var anchorPixel: Point by animationView::anchorPixel
+    override var anchor: Anchor by animationView::anchor
 
     fun getLayer(name: String): View? {
         return animationView.getLayer(name)
     }
 
+    @ViewProperty
     var smoothing: Boolean = true
         set(value) {
             if (field != value) {
@@ -81,6 +86,8 @@ open class ImageDataView(
             }
         }
 
+    @ViewProperty
+    @ViewPropertyProvider(AnimationProvider::class)
     var animation: String? = animation
         set(value) {
             if (field !== value) {
@@ -88,6 +95,10 @@ open class ImageDataView(
                 updatedDataAnimation()
             }
         }
+
+    object AnimationProvider : ViewPropertyProvider.ListImpl<ImageDataView, String>() {
+        override fun listProvider(instance: ImageDataView): List<String> = instance.animationNames.toList()
+    }
 
     val animationNames: Set<String> get() = data?.animationsByName?.keys ?: emptySet()
 
@@ -97,8 +108,11 @@ open class ImageDataView(
         this.smoothing = smoothing
     }
 
+    @ViewProperty
     fun play() { animationView.play() }
+    @ViewProperty
     fun stop() { animationView.stop() }
+    @ViewProperty
     fun rewind() { animationView.rewind() }
 
     private fun updatedDataAnimation() {

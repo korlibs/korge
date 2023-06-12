@@ -17,7 +17,7 @@ Also allows to use native image loaders for the fastest performance.
 
 [https://github.com/korlibs/korim](https://github.com/korlibs/korim)
 
-{% include stars.html project="korim" %}
+{% include stars.html project="korge" central="com.soywiz.korlibs.korim/korim" %}
 
 {% include toc_include.md %}
 

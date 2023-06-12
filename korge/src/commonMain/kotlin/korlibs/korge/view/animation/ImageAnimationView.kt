@@ -3,6 +3,7 @@ package korlibs.korge.view.animation
 import korlibs.datastructure.*
 import korlibs.datastructure.iterators.*
 import korlibs.time.*
+import korlibs.math.geom.*
 import korlibs.memory.*
 import korlibs.korge.view.*
 import korlibs.korge.view.tiles.*
@@ -25,7 +26,7 @@ open class ImageAnimationView<T: SmoothedBmpSlice>(
     animation: ImageAnimation? = null,
     direction: ImageAnimation.Direction? = null,
     val createImage: () -> T
-) : Container(), Playable {
+) : Container(), Playable, PixelAnchorable, Anchorable {
     private var nframes: Int = 1
 
     fun createTilemap(): TileMap = TileMap()
@@ -49,20 +50,35 @@ open class ImageAnimationView<T: SmoothedBmpSlice>(
             }
         }
 
+    internal val anchorContainer = container()
     private val computedDirection: ImageAnimation.Direction get() = direction ?: animation?.direction ?: ImageAnimation.Direction.FORWARD
-    private val layers = fastArrayListOf<View>()
-    private val layersByName = FastStringMap<View>()
+    internal val _layers = fastArrayListOf<View>()
+    private val _layersByName = FastStringMap<View>()
+    val layers: List<View> get() = _layers
+    //val layersByName: Map<String, View> get() = _layersByName
+    val numLayers: Int get() = _layers.size
+    fun getLayer(index: Int): View = _layers[index]
+    fun getLayer(name: String): View? = _layersByName[name]
     private var nextFrameIn = 0.milliseconds
     private var nextFrameIndex = 0
     private var dir = +1
 
-    fun getLayer(name: String): View? = layersByName[name]
+    override var anchorPixel: Point = Point.ZERO
+        set(value) {
+            field = value
+            anchorContainer.pos = -value
+        }
+    override var anchor: Anchor
+        get() = Anchor(anchorPixel.x / width, anchorPixel.y / height)
+        set(value) {
+            anchorPixel = Point(value.sx * width, value.sy * height)
+        }
 
     var smoothing: Boolean = true
         set(value) {
             if (field != value) {
                 field = value
-                layers.fastForEach {
+                _layers.fastForEach {
                     if (it is SmoothedBmpSlice) it.smoothing = value
                 }
             }
@@ -128,8 +144,8 @@ open class ImageAnimationView<T: SmoothedBmpSlice>(
                 onDestroyLayer?.invoke(layer as T)
             }
         }
-        layers.clear()
-        removeChildren()
+        _layers.clear()
+        anchorContainer.removeChildren()
         dir = +1
         val animation = this.animation
         if (animation != null) {
@@ -141,9 +157,9 @@ open class ImageAnimationView<T: SmoothedBmpSlice>(
                     ImageLayer.Type.TILEMAP -> createTilemap()
                     ImageLayer.Type.GROUP -> TODO()
                 }
-                layers.add(image)
-                layersByName[layer.name ?: "default"] = image
-                addChild(image as View)
+                _layers.add(image)
+                _layersByName[layer.name ?: "default"] = image
+                anchorContainer.addChild(image as View)
             }
         }
         setFirstFrame()

@@ -21,6 +21,22 @@ annotation class ViewProperty(
     val editable: Boolean = true,
 )
 
-annotation class ViewPropertyProvider(val provider: KClass<out Any>)
+annotation class ViewPropertyProvider(val provider: KClass<out ViewPropertyProvider.Impl<*, *>>) {
+    interface Impl<T, R> {
+        fun provider(instance: T): Map<String, R>
+    }
+    abstract class ListImpl<T, R> : Impl<T, R> {
+        final override fun provider(instance: T): Map<String, R> = listProvider(instance).associateBy { it.toString() }
+        abstract fun listProvider(instance: T): List<R>
+    }
+    abstract class ItemsImpl<R> : Impl<Any?, R> {
+        abstract val ITEMS: List<R>
+        final override fun provider(instance: Any?): Map<String, R> = ITEMS.associateBy { it.toString() }
+    }
+    abstract class ItemsMapImpl<R> : Impl<Any?, R> {
+        abstract val ITEMS: Map<String, R>
+        final override fun provider(instance: Any?): Map<String, R> = ITEMS
+    }
+}
 annotation class ViewPropertyFileRef(val extensions: Array<String>)
 annotation class ViewPropertySubTree()
