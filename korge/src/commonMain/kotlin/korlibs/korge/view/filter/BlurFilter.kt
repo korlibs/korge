@@ -9,9 +9,15 @@ class BlurFilter(
     expandBorder: Boolean = true,
     @ViewProperty
     var optimize: Boolean = true
-) : ComposedFilter() {
+) : ComposedFilter(), FilterWithFiltering {
     private val horizontal = DirectionalBlurFilter(angle = 0.degrees, radius, expandBorder).also { filters.add(it) }
     private val vertical = DirectionalBlurFilter(angle = 90.degrees, radius, expandBorder).also { filters.add(it) }
+    override var filtering: Boolean
+        get() = horizontal.filtering
+        set(value) {
+            horizontal.filtering = value
+            vertical.filtering = value
+        }
     @ViewProperty
     var expandBorder: Boolean
         get() = horizontal.expandBorder
