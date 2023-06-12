@@ -50,10 +50,15 @@ open class ImageAnimationView<T: SmoothedBmpSlice>(
             }
         }
 
-    private val anchorContainer = container()
+    internal val anchorContainer = container()
     private val computedDirection: ImageAnimation.Direction get() = direction ?: animation?.direction ?: ImageAnimation.Direction.FORWARD
-    private val layers = fastArrayListOf<View>()
-    private val layersByName = FastStringMap<View>()
+    internal val _layers = fastArrayListOf<View>()
+    private val _layersByName = FastStringMap<View>()
+    val layers: List<View> get() = _layers
+    //val layersByName: Map<String, View> get() = _layersByName
+    val numLayers: Int get() = _layers.size
+    fun getLayer(index: Int): View = _layers[index]
+    fun getLayer(name: String): View? = _layersByName[name]
     private var nextFrameIn = 0.milliseconds
     private var nextFrameIndex = 0
     private var dir = +1
@@ -69,13 +74,11 @@ open class ImageAnimationView<T: SmoothedBmpSlice>(
             anchorPixel = Point(value.sx * width, value.sy * height)
         }
 
-    fun getLayer(name: String): View? = layersByName[name]
-
     var smoothing: Boolean = true
         set(value) {
             if (field != value) {
                 field = value
-                layers.fastForEach {
+                _layers.fastForEach {
                     if (it is SmoothedBmpSlice) it.smoothing = value
                 }
             }
@@ -141,7 +144,7 @@ open class ImageAnimationView<T: SmoothedBmpSlice>(
                 onDestroyLayer?.invoke(layer as T)
             }
         }
-        layers.clear()
+        _layers.clear()
         anchorContainer.removeChildren()
         dir = +1
         val animation = this.animation
@@ -154,8 +157,8 @@ open class ImageAnimationView<T: SmoothedBmpSlice>(
                     ImageLayer.Type.TILEMAP -> createTilemap()
                     ImageLayer.Type.GROUP -> TODO()
                 }
-                layers.add(image)
-                layersByName[layer.name ?: "default"] = image
+                _layers.add(image)
+                _layersByName[layer.name ?: "default"] = image
                 anchorContainer.addChild(image as View)
             }
         }
