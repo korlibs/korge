@@ -35,7 +35,27 @@ data class Quaternion(val x: Float, val y: Float, val z: Float, val w: Float) {
     constructor() : this(0f, 0f, 0f, 1f)
     constructor(x: Double, y: Double, z: Double, w: Double) : this(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat())
 
-    fun toMatrix(): Matrix4 = Matrix4.multiply(
+    fun toMatrix(): Matrix4 {
+        val xx = x * x
+        val xy = x * y
+        val xz = x * z
+        val xw = x * w
+        val yy = y * y
+        val yz = y * z
+        val yw = y * w
+        val zz = z * z
+        val zw = z * w
+
+        return Matrix4.fromRows(
+            1 - 2 * (yy + zz), 2 * (xy - zw), 2 * (xz + yw), 0f,
+            2 * (xy + zw), 1 - 2 * (xx + zz), 2 * (yz - xw), 0f,
+            2 * (xz - yw), 2 * (yz + xw), 1 - 2 * (xx + yy), 0f,
+            0f, 0f, 0f, 1f
+        )
+    }
+
+    @Deprecated("Use toMatrix instead")
+    fun toMatrixInverted(): Matrix4 = Matrix4.multiply(
         // Left
         w, z, -y, x,
         -z, w, x, y,
