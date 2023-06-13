@@ -1,5 +1,6 @@
 package korlibs.memory.dyn
 
+import korlibs.memory.annotations.*
 import kotlin.math.max
 import kotlin.reflect.KProperty
 
@@ -104,9 +105,12 @@ open class KStructure(pointer: KPointer?) : KStructureBase() {
     //}
 }
 
+@OptIn(KmemExperimental::class)
 open class KMemLayoutBuilder {
-    private var offset = 0
-    private var maxAlign = 4
+    @KmemExperimental
+    var offset = 0
+    @KmemExperimental
+    var maxAlign = 4
 
     private fun align(size: Int): KMemLayoutBuilder {
         maxAlign = max(maxAlign, size)

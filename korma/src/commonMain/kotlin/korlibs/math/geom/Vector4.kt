@@ -25,6 +25,8 @@ inline class Vector4(val data: Float4Pack) {
 
         fun length(x: Float, y: Float, z: Float, w: Float): Float = sqrt(lengthSq(x, y, z, w))
         fun lengthSq(x: Float, y: Float, z: Float, w: Float): Float = x * x + y * y + z * z + w * w
+
+        inline fun func(func: (index: Int) -> Float): Vector4 = Vector4(func(0), func(1), func(2), func(3))
     }
 
     constructor(xyz: Vector3, w: Float) : this(float4PackOf(xyz.x, xyz.y, xyz.z, w))

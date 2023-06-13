@@ -29,10 +29,10 @@ class UniformBlocksBuffersRef(
 }
 
 @Suppress("unused")
-class TypedUniform<T>(name: String, val voffset: Int, var vindex: Int, val block: UniformBlock, type: VarType)
-    : VariableWithOffset(name, type, 1, Precision.DEFAULT)
+class TypedUniform<T>(name: String, val voffset: Int, var vindex: Int, val block: UniformBlock, type: VarType, arrayCount: Int)
+    : VariableWithOffset(name, type, arrayCount, Precision.DEFAULT)
 {
-    val uniform: Uniform = Uniform(name, type, 1, typedUniform = this)
+    val uniform: Uniform = Uniform(name, type, arrayCount, typedUniform = this)
     val varType: VarType get() = uniform.type
     operator fun getValue(thisRef: Any?, property: KProperty<*>): TypedUniform<T> = this
     override fun toString(): String = "TypedUniform(name='$name', offset=$voffset, type=$type)"
@@ -76,16 +76,44 @@ open class UniformBlock(val fixedLocation: Int) {
     // @TODO: Some problems implementing mat3 layout in UBOs
     protected fun mat3(name: String? = null): Gen<Matrix4> = gen(name, VarType.Mat3, 48, 16)
     protected fun mat4(name: String? = null): Gen<Matrix4> = gen(name, VarType.Mat4, 64, 16)
-    //protected fun <T> array(size: Int, gen: Gen<T>): Gen<Array<T>> = TODO()
+
+    protected fun <T> array(size: Int, gen: () -> Gen<T>): Gen<Array<T>> {
+        val offset = layout.offset
+        val maxAlign = layout.maxAlign
+        val dgen = try {
+            gen()
+        } finally {
+            layout.offset = offset
+            layout.maxAlign = maxAlign
+        }
+
+        return dgen.copy(
+            voffset = layout.rawAlloc(dgen.size * size, dgen.align),
+            arrayCount = size
+        ) as Gen<Array<T>>
+    }
+
+    /** Last element in a BufferBlock can be variable in size like `float variable_array[];` */
+    protected fun <T> lastVariadicArray(gen: () -> Gen<T>): Gen<Array<T>> = array(-1, gen)
 
     fun <T> gen(name: String? = null, type: VarType, size: Int, align: Int = size): Gen<T> =
-        Gen(this, name, layout.rawAlloc(size, align), lastIndex++, type)
+        Gen(this, name, layout.rawAlloc(size, align), lastIndex++, type, 1, size, align)
 
     override fun toString(): String = "UniformBlock[${this::class.portableSimpleName}][${uniforms.joinToString(", ")}, fixedLocation=$fixedLocation]"
 
-    class Gen<T>(val block: UniformBlock, var name: String?, val voffset: Int, val vindex: Int, val type: VarType) {
+    data class Gen<T>(
+        val block: UniformBlock,
+        var name: String?,
+        val voffset: Int,
+        val vindex: Int,
+        val type: VarType,
+        val arrayCount: Int = 1,
+        val size: Int,
+        val align: Int,
+    ) {
         val uniform: TypedUniform<T> by lazy {
-            TypedUniform<T>(name ?: "unknown${block.uniformCount}", voffset, vindex, block, type).also { block._items.add(it) }
+            //println("GENERATED UNIFORM: arrayCount=$arrayCount")
+            TypedUniform<T>(name ?: "unknown${block.uniformCount}", voffset, vindex, block, type, arrayCount).also { block._items.add(it) }
         }
 
         operator fun provideDelegate(block: UniformBlock, property: KProperty<*>): TypedUniform<T> {
@@ -141,16 +169,18 @@ class UniformsRef(
         }
     }
 
+    operator fun set(uniform: TypedUniform<Array<Vector4>>, value: Array<Vector4>) {
+        getOffset(uniform).also { for (n in value.indices) bufferSetFloat4(it + (n * 16), value[n]) }
+    }
+    operator fun set(uniform: TypedUniform<Array<Matrix4>>, value: Array<Matrix4>) {
+        getOffset(uniform).also { for (n in value.indices) bufferSetFloat16(it + (n * 64), value[n]) }
+    }
+
     fun set(uniform: TypedUniform<Matrix4>, value: Matrix4, indices: IntArray, max: Int = indices.size) {
-        getOffset(uniform).also {
-            //println("SET OFFSET: $it")
-            for (n in 0 until max) buffer.setUnalignedFloat32(it + n * 4, value.getAtIndex(indices[n]))
-        }
+        getOffset(uniform).also { bufferSetFloatNIndexed(it, indices, max) { value.getAtIndex(it) } }
     }
     fun set(uniform: TypedUniform<Matrix4>, value: FloatArray, indices: IntArray) {
-        getOffset(uniform).also {
-            for (n in 0 until indices.size) buffer.setUnalignedFloat32(it + n * 4, value[indices[n]])
-        }
+        getOffset(uniform).also { bufferSetFloatNIndexed(it, indices, value) }
     }
     operator fun set(uniform: TypedUniform<Float>, value: Float) {
         getOffset(uniform).also {
@@ -158,19 +188,57 @@ class UniformsRef(
         }
     }
     operator fun set(uniform: TypedUniform<Point>, x: Float, y: Float) {
-        getOffset(uniform).also {
-            buffer.setUnalignedFloat32(it + 0, x)
-            buffer.setUnalignedFloat32(it + 4, y)
-        }
+        getOffset(uniform).also { bufferSetFloat2(it, x, y) }
     }
     fun set(uniform: TypedUniform<Vector4>, x: Float, y: Float, z: Float, w: Float) {
-        getOffset(uniform).also {
-            buffer.setUnalignedFloat32(it + 0, x)
-            buffer.setUnalignedFloat32(it + 4, y)
-            buffer.setUnalignedFloat32(it + 8, z)
-            buffer.setUnalignedFloat32(it + 12, w)
+        getOffset(uniform).also { bufferSetFloat4(it, x, y, z, w) }
+    }
+
+
+    fun bufferSetFloat1(index: Int, v: Float) {
+        buffer.setUnalignedFloat32(index + 0, v)
+    }
+
+    fun bufferSetFloat2(index: Int, v: Vector2) = bufferSetFloat2(index, v.x, v.y)
+    fun bufferSetFloat2(index: Int, x: Float, y: Float) {
+        buffer.setUnalignedFloat32(index + 0, x)
+        buffer.setUnalignedFloat32(index + 4, y)
+    }
+
+    fun bufferSetFloat3(index: Int, v: Vector3) = bufferSetFloat3(index, v.x, v.y, v.z)
+    fun bufferSetFloat3(index: Int, x: Float, y: Float, z: Float) {
+        buffer.setUnalignedFloat32(index + 0, x)
+        buffer.setUnalignedFloat32(index + 4, y)
+        buffer.setUnalignedFloat32(index + 8, z)
+    }
+
+    fun bufferSetFloat4(index: Int, v: Vector4) = bufferSetFloat4(index, v.x, v.y, v.z, v.w)
+    fun bufferSetFloat4(index: Int, x: Float, y: Float, z: Float, w: Float) {
+        buffer.setUnalignedFloat32(index + 0, x)
+        buffer.setUnalignedFloat32(index + 4, y)
+        buffer.setUnalignedFloat32(index + 8, z)
+        buffer.setUnalignedFloat32(index + 12, w)
+    }
+
+    fun bufferSetFloat16(index: Int, value: Matrix4, indices: IntArray = Matrix4.INDICES_BY_COLUMNS_4x4) {
+        bufferSetFloatNIndexed(index, indices) { value.getAtIndex(it) }
+    }
+
+    fun bufferSetFloatN(index: Int, floats: FloatArray, size: Int, offset: Int = 0) {
+        for (n in 0 until size) {
+            buffer.setUnalignedFloat32(index + (n * 4), floats[offset + n])
         }
     }
+
+    inline fun bufferSetFloatNIndexed(index: Int, indices: IntArray, max: Int = indices.size, value: (Int) -> Float) {
+        for (n in 0 until max) buffer.setUnalignedFloat32(index + (n * 4), value(indices[n]))
+    }
+
+    fun bufferSetFloatNIndexed(index: Int, indices: IntArray, value: FloatArray, max: Int = indices.size) {
+        bufferSetFloatNIndexed(index, indices, max) { value[it] }
+    }
+
+
 
     //@Deprecated("")
     //fun set(uniform: TypedUniform<Int>, tex: AGTexture?, samplerInfo: AGTextureUnitInfo = AGTextureUnitInfo.DEFAULT) {
@@ -189,6 +257,7 @@ class UniformBlockBuffer<T : UniformBlock>(val block: T) {
     }
 
     val agBuffer = AGBuffer()
+    val blockSizeNoGlAlign = block.totalSizeNoGlAlign
     val blockSize = block.totalSize
     val texBlockSize = block.uniforms.size
     @PublishedApi internal var buffer = Buffer(blockSize * 1)

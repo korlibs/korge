@@ -587,8 +587,10 @@ data class Program(val vertex: VertexShader, val fragment: FragmentShader, val n
         fun vec4(vararg ops: Float): Operand = Vector(VarType.Float4, Array(ops.size) { ops[it].lit })
 
         //fun Operand.swizzle(swizzle: String): Operand = Swizzle(this, swizzle)
+
         operator fun Operand.get(index: Int): Operand {
             return when {
+                this is OperandWithArray -> ArrayAccess(this, index.lit)
                 this.type.isMatrix -> ArrayAccess(this, index.lit)
                 else -> when (index) {
                     0 -> this.x

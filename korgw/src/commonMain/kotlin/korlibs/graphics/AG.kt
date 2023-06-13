@@ -20,6 +20,16 @@ interface AGFeatures {
     val isStorageMultisampleSupported: Boolean get() = parentFeatures?.isStorageMultisampleSupported ?: false
     val isFloatTextureSupported: Boolean get() = parentFeatures?.isFloatTextureSupported ?: false
 
+    data class Immutable(
+        override val parentFeatures: AGFeatures? = null,
+        override val graphicExtensions: Set<String>  = emptySet(),
+        override val isInstancedSupported: Boolean = false,
+        override val isUniformBuffersSupported: Boolean = false,
+        override val isVertexArraysSupported: Boolean = false,
+        override val isStorageMultisampleSupported: Boolean = false,
+        override val isFloatTextureSupported: Boolean = false,
+    ) : AGFeatures
+
     open class Mutable(
         override var parentFeatures: AGFeatures? = null,
         override var graphicExtensions: Set<String>  = emptySet(),
@@ -28,8 +38,7 @@ interface AGFeatures {
         override var isVertexArraysSupported: Boolean = false,
         override var isStorageMultisampleSupported: Boolean = false,
         override var isFloatTextureSupported: Boolean = false,
-    ) : AGFeatures {
-    }
+    ) : AGFeatures
 }
 
 abstract class AG : AGFeatures, Extra by Extra.Mixin() {

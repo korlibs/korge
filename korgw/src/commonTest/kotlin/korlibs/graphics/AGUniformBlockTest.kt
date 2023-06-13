@@ -1,7 +1,10 @@
 package korlibs.graphics
 
+import korlibs.datastructure.*
 import korlibs.graphics.shader.*
+import korlibs.graphics.shader.gl.*
 import korlibs.math.geom.*
+import korlibs.memory.*
 import kotlin.test.*
 
 class AGUniformBlockTest {
@@ -21,6 +24,41 @@ class AGUniformBlockTest {
         //val uniform1 by bool4()
         //val uniform2 by short2()
         //val uniform3 by int()
+    }
+
+    object ArrayUniformUB : UniformBlock(fixedLocation = 2) {
+        val u_Vec4Array10 by array(3) { vec4() }
+        val u_BorderColor by vec4()
+    }
+
+    @Test
+    fun testArrayUB() {
+        assertEquals(
+            """
+                u_Vec4Array10:0
+                u_BorderColor:48
+            """.trimIndent(),
+            ArrayUniformUB.uniforms.joinToString("\n") { "${it.name}:${it.voffset}" }
+        )
+
+        val ubb = UniformBlockBuffer(ArrayUniformUB)
+
+        ubb.push {
+            it[u_BorderColor] = Vector4.func { 33f }
+            it[u_Vec4Array10] = Array(3) { N -> Vector4.func { it.toFloat() + (N * 10f) } }
+        }
+
+        assertEquals(
+            listOf(0.0, 1.0, 2.0, 3.0, 10.0, 11.0, 12.0, 13.0, 20.0, 21.0, 22.0, 23.0, 33.0, 33.0, 33.0, 33.0).map { it.toFloat() },
+            ubb.buffer.slice(0, ubb.blockSizeNoGlAlign).f32.toFloatArray().toList()
+        )
+
+        val str = FragmentShader {
+            SET(out, ArrayUniformUB.u_Vec4Array10[0])
+        }.toNewGlslString(GlslConfig.DEFAULT)
+        assertTrue { "uniform vec4 u_Vec4Array10[3];" in str }
+        assertTrue { "gl_FragColor = u_Vec4Array10[0];" in str }
+        //println("str=$str")
     }
 
     @Test
