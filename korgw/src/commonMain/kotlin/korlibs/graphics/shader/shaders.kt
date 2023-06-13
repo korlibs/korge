@@ -159,6 +159,9 @@ enum class VarType(val kind: VarKind, val elementCount: Int, val isMatrix: Boole
         @Deprecated("", ReplaceWith("VarType.Sampler2D", "korlibs.graphics.shader.VarType"))
         val TextureUnit get() = Sampler2D
 
+        fun BOOL(count: Int) =
+            when (count) { 0 -> TVOID; 1 -> Bool1; 2 -> Bool2; 3 -> Bool3; 4 -> Bool4; else -> invalidOp; }
+
         fun BYTE(count: Int) =
 			when (count) { 0 -> TVOID; 1 -> SByte1; 2 -> SByte2; 3 -> SByte3; 4 -> SByte4; else -> invalidOp; }
 
@@ -176,6 +179,9 @@ enum class VarType(val kind: VarKind, val elementCount: Int, val isMatrix: Boole
 
 		fun FLOAT(count: Int) =
 			when (count) { 0 -> TVOID; 1 -> Float1; 2 -> Float2; 3 -> Float3; 4 -> Float4; else -> invalidOp; }
+
+        fun MAT(count: Int) =
+            when (count) { 0 -> TVOID; 1 -> Float1; 2 -> Mat2; 3 -> Mat3; 4 -> Mat4; else -> invalidOp; }
 	}
 
 }
