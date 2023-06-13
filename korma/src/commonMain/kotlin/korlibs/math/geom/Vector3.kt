@@ -38,6 +38,8 @@ data class Vector3(val x: Float, val y: Float, val z: Float) {
 
         fun length(x: Float, y: Float, z: Float): Float = sqrt(lengthSq(x, y, z))
         fun lengthSq(x: Float, y: Float, z: Float): Float = x * x + y * y + z * z
+
+        inline fun func(func: (index: Int) -> Float): Vector3 = Vector3(func(0), func(1), func(2))
     }
 
     //constructor(x: Float, y: Float, z: Float) : this(float4PackOf(x, y, z, 0f))

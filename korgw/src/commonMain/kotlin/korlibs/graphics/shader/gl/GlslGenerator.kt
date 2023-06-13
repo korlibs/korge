@@ -32,6 +32,10 @@ data class GlslConfig constructor(
     //val useUniformBlocks: Boolean get() = false
 
     companion object {
+        val DEFAULT = GlslConfig(GLVariant.DESKTOP_GENERIC, AGFeatures.Immutable(
+            isUniformBuffersSupported = true,
+        ))
+
         val NAME: String = "GLSL"
         val DEFAULT_VERSION: Int = 100
         val FRAGCOLOR: String = "fragColor"

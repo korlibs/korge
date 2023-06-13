@@ -159,6 +159,9 @@ enum class VarType(val kind: VarKind, val elementCount: Int, val isMatrix: Boole
         @Deprecated("", ReplaceWith("VarType.Sampler2D", "korlibs.graphics.shader.VarType"))
         val TextureUnit get() = Sampler2D
 
+        fun BOOL(count: Int) =
+            when (count) { 0 -> TVOID; 1 -> Bool1; 2 -> Bool2; 3 -> Bool3; 4 -> Bool4; else -> invalidOp; }
+
         fun BYTE(count: Int) =
 			when (count) { 0 -> TVOID; 1 -> SByte1; 2 -> SByte2; 3 -> SByte3; 4 -> SByte4; else -> invalidOp; }
 
@@ -176,6 +179,9 @@ enum class VarType(val kind: VarKind, val elementCount: Int, val isMatrix: Boole
 
 		fun FLOAT(count: Int) =
 			when (count) { 0 -> TVOID; 1 -> Float1; 2 -> Float2; 3 -> Float3; 4 -> Float4; else -> invalidOp; }
+
+        fun MAT(count: Int) =
+            when (count) { 0 -> TVOID; 1 -> Float1; 2 -> Mat2; 3 -> Mat3; 4 -> Mat4; else -> invalidOp; }
 	}
 
 }
@@ -587,8 +593,10 @@ data class Program(val vertex: VertexShader, val fragment: FragmentShader, val n
         fun vec4(vararg ops: Float): Operand = Vector(VarType.Float4, Array(ops.size) { ops[it].lit })
 
         //fun Operand.swizzle(swizzle: String): Operand = Swizzle(this, swizzle)
+
         operator fun Operand.get(index: Int): Operand {
             return when {
+                this is OperandWithArray -> ArrayAccess(this, index.lit)
                 this.type.isMatrix -> ArrayAccess(this, index.lit)
                 else -> when (index) {
                     0 -> this.x
