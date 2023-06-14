@@ -76,8 +76,10 @@ fun NamedDomainObjectContainer<KotlinSourceSet>.createPairSourceSet(name: String
 
 data class PairSourceSet(val main: KotlinSourceSet, val test: KotlinSourceSet) {
     fun get(test: Boolean) = if (test) this.test else this.main
-    fun dependsOn(other: PairSourceSet) {
-        main.dependsOn(other.main)
-        test.dependsOn(other.test)
+    fun dependsOn(vararg others: PairSourceSet) {
+        for (other in others) {
+            main.dependsOn(other.main)
+            test.dependsOn(other.test)
+        }
     }
 }
