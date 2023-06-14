@@ -115,7 +115,8 @@ fun Project.configureNativeIosTvosRun(targetName: String) {
                 id = korge.id,
                 name = korge.name,
                 team = korge.iosDevelopmentTeam ?: korge.appleDevelopmentTeamId ?: iosSdkExt.appleGetDefaultDeveloperCertificateTeamId(),
-                combinedResourcesFolder = combinedResourcesFolder
+                combinedResourcesFolder = combinedResourcesFolder,
+                targetName = targetName
             )
 
             execLogger {

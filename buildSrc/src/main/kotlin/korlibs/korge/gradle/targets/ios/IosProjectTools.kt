@@ -1,9 +1,8 @@
 package korlibs.korge.gradle.targets.ios
 
-import korlibs.korge.gradle.korge
-import korlibs.korge.gradle.targets.getIconBytes
 import java.io.File
 import korlibs.korge.gradle.util.*
+import org.gradle.configurationcache.extensions.*
 
 object IosProjectTools {
     fun genBootstrapKt(entrypoint: String): String = """
@@ -203,8 +202,11 @@ object IosProjectTools {
         id: String,
         name: String,
         team: String?,
-        combinedResourcesFolder: File
+        combinedResourcesFolder: File,
+        targetName: String
     ) {
+        val targetNameCapitalized = targetName.capitalized()
+
         folder["project.yml"].ensureParents().writeText(Indenter {
             line("name: app")
             line("options:")
@@ -224,10 +226,10 @@ object IosProjectTools {
             indent {
                 for (debug in listOf(false, true)) {
                     val debugSuffix = if (debug) "Debug" else "Release"
-                    for (target in listOf("X64", "Arm64", "Arm32")) {
-                        line("app-$target-$debugSuffix:")
+                    for (arch in listOf("X64", "Arm64", "Arm32")) {
+                        line("app-$arch-$debugSuffix:")
                         indent {
-                            line("platform: iOS")
+                            line("platform: ${if (targetName == "ios") "iOS" else "tvOS"}")
                             line("type: application")
                             line("deploymentTarget: \"10.0\"")
                             line("sources:")
@@ -256,7 +258,7 @@ object IosProjectTools {
                                 line("  DEVELOPMENT_TEAM: $team")
                             }
                             line("dependencies:")
-                            line("  - framework: ../../bin/ios$target/${debugSuffix.toLowerCase()}Framework/GameMain.framework")
+                            line("  - framework: ../../bin/${targetName}$arch/${debugSuffix.toLowerCase()}Framework/GameMain.framework")
                         }
                     }
                 }
