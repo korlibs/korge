@@ -108,7 +108,7 @@ fun Project.configureNativeIosTvosRun(targetName: String) {
             //File(rootDir, "src/commonMain/resources").mkdirs()
 
             val folder = File(buildDir, "platforms/$targetName")
-            IosProjectTools.prepareKotlinNativeIosProject(folder)
+            IosProjectTools.prepareKotlinNativeIosProject(folder, targetName)
             IosProjectTools.prepareKotlinNativeIosProjectIcons(folder) { korge.getIconBytes(it) }
             IosProjectTools.prepareKotlinNativeIosProjectYml(
                 folder,

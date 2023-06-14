@@ -49,9 +49,26 @@ object IosProjectTools {
         @end
     """.trimIndent()
 
-    fun genLaunchScreenStoryboard(): String = """
+    fun genLaunchScreenStoryboard(targetName: String): String {
+        val documentType = when (targetName) {
+            "ios" -> "com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB"
+            "tvos" -> "com.apple.InterfaceBuilder.AppleTV.Storyboard"
+            else -> TODO()
+        }
+        val targetRuntime = when (targetName) {
+            "ios" -> "iOS.CocoaTouch"
+            "tvos" -> "AppleTV"
+            else -> TODO()
+        }
+        val (sizeWidth, sizeHeight) = when (targetName) {
+            "ios" -> 375 to 667
+            "tvos" -> 1920 to 1000
+            else -> TODO()
+        }
+
+        return """
         <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-        <document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="13122.16" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" launchScreen="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="01J-lp-oVM">
+        <document type="$documentType" version="3.0" toolsVersion="13122.16" targetRuntime="$targetRuntime" propertyAccessControl="none" useAutolayout="YES" launchScreen="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="01J-lp-oVM">
             <dependencies>
                 <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13104.12"/>
                 <capability name="Safe area layout guides" minToolsVersion="9.0"/>
@@ -63,7 +80,7 @@ object IosProjectTools {
                     <objects>
                         <viewController id="01J-lp-oVM" sceneMemberID="viewController">
                             <view key="view" contentMode="scaleToFill" id="Ze5-6b-2t3">
-                                <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                                <rect key="frame" x="0.0" y="0.0" width="$sizeWidth" height="$sizeHeight"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
@@ -76,10 +93,11 @@ object IosProjectTools {
             </scenes>
         </document>
     """.trimIndent()
+    }
 
-    fun prepareKotlinNativeIosProject(folder: File) {
+    fun prepareKotlinNativeIosProject(folder: File, targetName: String) {
         folder["app/main.m"].ensureParents().writeText(genMainObjC())
-        folder["app/Base.lproj/LaunchScreen.storyboard"].ensureParents().writeText(genLaunchScreenStoryboard())
+        folder["app/Base.lproj/LaunchScreen.storyboard"].ensureParents().writeText(genLaunchScreenStoryboard(targetName))
         folder["app/Assets.xcassets/Contents.json"].ensureParents().writeText("""
             {
               "info" : {
