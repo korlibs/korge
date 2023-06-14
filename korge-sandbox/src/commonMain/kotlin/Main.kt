@@ -134,7 +134,8 @@ suspend fun main() = Korge(
         //Demo(::MainGpuVectorRendering),
         //Demo(::MainColorTransformFilter),
         //Demo(::MainMasks),
-        Demo(::MainShape2dScene),
+        //Demo(::MainShape2dScene),
+        Demo(::MainSprites10k),
         //Demo(::MainStressMatrixMultiplication),
         //Demo(::MainSDF),
         listOf(
