@@ -503,9 +503,9 @@ object RootKorlibsPlugin {
                             }
 
                             val darwinMobile by lazy { createPairSourceSet("darwinMobile", darwin) }
-                            val iosTvos by lazy { createPairSourceSet("iosTvos", darwinMobile) }
+                            val iosTvos by lazy { createPairSourceSet("iosTvos", darwinMobile, iosTvosMacos) }
                             val watchos by lazy { createPairSourceSet("watchos", darwinMobile) }
-                            val tvos by lazy { createPairSourceSet("tvos", iosTvos, iosTvosMacos) }
+                            val tvos by lazy { createPairSourceSet("tvos", iosTvos) }
                             val ios by lazy { createPairSourceSet("ios", iosTvos, iosMacos) }
 
                             for (target in mobileTargets(project)) {

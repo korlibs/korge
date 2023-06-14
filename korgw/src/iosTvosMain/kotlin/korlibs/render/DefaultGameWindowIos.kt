@@ -19,6 +19,20 @@ import platform.GameController.*
 import platform.UIKit.*
 import platform.darwin.*
 
+expect val iosTvosTools: IosTvosToolsImpl
+
+open class IosTvosToolsImpl {
+    open fun applicationDidFinishLaunching(app: UIApplication, window: UIWindow) {
+        //window?.windowScene = windowScene
+    }
+
+    open fun viewDidLoad(view: GLKView?) {
+    }
+
+    open fun hapticFeedbackGenerate(kind: GameWindow.HapticFeedbackKind) {
+    }
+}
+
 // @TODO: Do not remove! Called from a generated .kt file : platforms/native-ios/bootstrap.kt
 @Suppress("unused", "UNUSED_PARAMETER")
 abstract class KorgwBaseNewAppDelegate {
@@ -41,10 +55,8 @@ abstract class KorgwBaseNewAppDelegate {
         viewController = ViewController(entry)
         window.rootViewController = viewController
         window.makeKeyAndVisible()
-        //window?.windowScene = windowScene
-        window.backgroundColor = UIColor.systemBackgroundColor
+        iosTvosTools.applicationDidFinishLaunching(app, window)
     }
-
 
     fun applicationDidEnterBackground(app: UIApplication) {
         logger.info {"applicationDidEnterBackground" }
@@ -190,7 +202,7 @@ class MyGLKViewController(val entry: suspend () -> Unit)  : GLKViewController(nu
 
     override fun viewDidLoad() {
         val view = this.view as? GLKView?
-        view?.multipleTouchEnabled = true
+        iosTvosTools.viewDidLoad(view)
         view?.drawableDepthFormat = GLKViewDrawableDepthFormat24
         view?.drawableStencilFormat = GLKViewDrawableStencilFormat8
         view?.context = EAGLContext(kEAGLRenderingAPIOpenGLES2)
@@ -604,16 +616,9 @@ open class IosGameWindow(
         textField.resignFirstResponder()
     }
 
-    val uiSelectionFeedbackGenerator by lazy { UISelectionFeedbackGenerator() }
-    val uiImpactFeedbackGenerator by lazy { UIImpactFeedbackGenerator() }
-
     override val hapticFeedbackGenerateSupport: Boolean get() = true
     override fun hapticFeedbackGenerate(kind: HapticFeedbackKind) {
-        when (kind) {
-            HapticFeedbackKind.GENERIC -> uiSelectionFeedbackGenerator.selectionChanged()
-            HapticFeedbackKind.ALIGNMENT -> uiSelectionFeedbackGenerator.selectionChanged()
-            HapticFeedbackKind.LEVEL_CHANGE -> uiImpactFeedbackGenerator.impactOccurred()
-        }
+        iosTvosTools.hapticFeedbackGenerate(kind)
     }
 }
 
