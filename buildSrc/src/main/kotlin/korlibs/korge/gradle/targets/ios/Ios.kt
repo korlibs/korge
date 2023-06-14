@@ -161,6 +161,19 @@ fun Project.configureNativeIosTvosRun(targetName: String) {
         }
     }
 
+    val installIosTvosDeploy = tasks.findByName("installIosDeploy") ?: tasks.createThis<Task>("installIosDeploy") {
+        onlyIf { !iosTvosDeployExt.isInstalled }
+        doFirst {
+            iosTvosDeployExt.installIfRequired()
+        }
+    }
+
+    val updateIosTvosDeploy = tasks.findByName("updateIosDeploy") ?: tasks.createThis<Task>("updateIosDeploy") {
+        doFirst {
+            iosTvosDeployExt.update()
+        }
+    }
+
     for (debug in listOf(false, true)) {
         val debugSuffix = if (debug) "Debug" else "Release"
         for (simulator in listOf(false, true)) {
@@ -190,6 +203,7 @@ fun Project.configureNativeIosTvosRun(targetName: String) {
             }
         }
 
+
         val installIosSimulator = tasks.createThis<Task>("install${targetNameCapitalized}Simulator$debugSuffix") {
             val buildTaskName = "${targetName}BuildSimulator$debugSuffix"
             group = GROUP_KORGE_INSTALL
@@ -205,7 +219,7 @@ fun Project.configureNativeIosTvosRun(targetName: String) {
         val installIosTvosDevice = tasks.createThis<Task>("install${targetNameCapitalized}Device$debugSuffix") {
             group = GROUP_KORGE_INSTALL
             val buildTaskName = "${targetName}BuildDevice$debugSuffix"
-            dependsOn("install${targetNameCapitalized}Deploy", buildTaskName)
+            dependsOn(installIosTvosDeploy, buildTaskName)
             doLast {
                 val appFolder = tasks.getByName(buildTaskName).outputs.files.first().parentFile
                 iosTvosDeployExt.command("--bundle", appFolder.absolutePath)
@@ -215,7 +229,7 @@ fun Project.configureNativeIosTvosRun(targetName: String) {
         val runIosDevice = tasks.createTyped<Exec>("run${targetNameCapitalized}Device$debugSuffix") {
             group = GROUP_KORGE_RUN
             val buildTaskName = "${targetName}BuildDevice$debugSuffix"
-            dependsOn("install${targetNameCapitalized}Deploy", buildTaskName)
+            dependsOn(installIosTvosDeploy, buildTaskName)
             doFirst {
                 val appFolder = tasks.getByName(buildTaskName).outputs.files.first().parentFile
                 iosTvosDeployExt.command("--noninteractive", "-d", "--bundle", appFolder.absolutePath)
@@ -244,16 +258,4 @@ fun Project.configureNativeIosTvosRun(targetName: String) {
         doLast { execLogger { it.commandLine("xcrun", "simctl", "erase", "all") } }
     }
 
-    tasks.createThis<Task>("install${targetNameCapitalized}Deploy") {
-        onlyIf { !iosTvosDeployExt.isInstalled }
-        doFirst {
-            iosTvosDeployExt.installIfRequired()
-        }
-    }
-
-    tasks.createThis<Task>("update${targetNameCapitalized}Deploy") {
-        doFirst {
-            iosTvosDeployExt.update()
-        }
-    }
 }
