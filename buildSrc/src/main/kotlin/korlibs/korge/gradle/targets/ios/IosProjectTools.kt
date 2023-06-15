@@ -1,9 +1,8 @@
 package korlibs.korge.gradle.targets.ios
 
-import korlibs.korge.gradle.korge
-import korlibs.korge.gradle.targets.getIconBytes
 import java.io.File
 import korlibs.korge.gradle.util.*
+import org.gradle.configurationcache.extensions.*
 
 object IosProjectTools {
     fun genBootstrapKt(entrypoint: String): String = """
@@ -50,9 +49,26 @@ object IosProjectTools {
         @end
     """.trimIndent()
 
-    fun genLaunchScreenStoryboard(): String = """
+    fun genLaunchScreenStoryboard(targetName: String): String {
+        val documentType = when (targetName) {
+            "ios" -> "com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB"
+            "tvos" -> "com.apple.InterfaceBuilder.AppleTV.Storyboard"
+            else -> TODO()
+        }
+        val targetRuntime = when (targetName) {
+            "ios" -> "iOS.CocoaTouch"
+            "tvos" -> "AppleTV"
+            else -> TODO()
+        }
+        val (sizeWidth, sizeHeight) = when (targetName) {
+            "ios" -> 375 to 667
+            "tvos" -> 1920 to 1000
+            else -> TODO()
+        }
+
+        return """
         <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-        <document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="13122.16" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" launchScreen="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="01J-lp-oVM">
+        <document type="$documentType" version="3.0" toolsVersion="13122.16" targetRuntime="$targetRuntime" propertyAccessControl="none" useAutolayout="YES" launchScreen="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="01J-lp-oVM">
             <dependencies>
                 <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13104.12"/>
                 <capability name="Safe area layout guides" minToolsVersion="9.0"/>
@@ -64,7 +80,7 @@ object IosProjectTools {
                     <objects>
                         <viewController id="01J-lp-oVM" sceneMemberID="viewController">
                             <view key="view" contentMode="scaleToFill" id="Ze5-6b-2t3">
-                                <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                                <rect key="frame" x="0.0" y="0.0" width="$sizeWidth" height="$sizeHeight"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
@@ -77,10 +93,11 @@ object IosProjectTools {
             </scenes>
         </document>
     """.trimIndent()
+    }
 
-    fun prepareKotlinNativeIosProject(folder: File) {
+    fun prepareKotlinNativeIosProject(folder: File, targetName: String) {
         folder["app/main.m"].ensureParents().writeText(genMainObjC())
-        folder["app/Base.lproj/LaunchScreen.storyboard"].ensureParents().writeText(genLaunchScreenStoryboard())
+        folder["app/Base.lproj/LaunchScreen.storyboard"].ensureParents().writeText(genLaunchScreenStoryboard(targetName))
         folder["app/Assets.xcassets/Contents.json"].ensureParents().writeText("""
             {
               "info" : {
@@ -203,8 +220,11 @@ object IosProjectTools {
         id: String,
         name: String,
         team: String?,
-        combinedResourcesFolder: File
+        combinedResourcesFolder: File,
+        targetName: String
     ) {
+        val targetNameCapitalized = targetName.capitalized()
+
         folder["project.yml"].ensureParents().writeText(Indenter {
             line("name: app")
             line("options:")
@@ -224,10 +244,10 @@ object IosProjectTools {
             indent {
                 for (debug in listOf(false, true)) {
                     val debugSuffix = if (debug) "Debug" else "Release"
-                    for (target in listOf("X64", "Arm64", "Arm32")) {
-                        line("app-$target-$debugSuffix:")
+                    for (arch in listOf("X64", "Arm64", "Arm32")) {
+                        line("app-$arch-$debugSuffix:")
                         indent {
-                            line("platform: iOS")
+                            line("platform: ${if (targetName == "ios") "iOS" else "tvOS"}")
                             line("type: application")
                             line("deploymentTarget: \"10.0\"")
                             line("sources:")
@@ -256,7 +276,7 @@ object IosProjectTools {
                                 line("  DEVELOPMENT_TEAM: $team")
                             }
                             line("dependencies:")
-                            line("  - framework: ../../bin/ios$target/${debugSuffix.toLowerCase()}Framework/GameMain.framework")
+                            line("  - framework: ../../bin/${targetName}$arch/${debugSuffix.toLowerCase()}Framework/GameMain.framework")
                         }
                     }
                 }

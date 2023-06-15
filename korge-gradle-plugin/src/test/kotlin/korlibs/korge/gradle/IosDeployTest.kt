@@ -21,12 +21,12 @@ class IosDeployTest : AbstractGradleIntegrationTest() {
             it.workingDir["build/Release"].also { it.mkdirs() }["ios-deploy"].writeText("")
             TestableExecResult("")
         }
-        assertEquals(project.iosDeployExt.isInstalled, false)
+        assertEquals(project.iosTvosDeployExt.isInstalled, false)
         assertEquals("", commandLog.joinToString(", "))
         run {
-            project.iosDeployExt.installIfRequired()
+            project.iosTvosDeployExt.installIfRequired()
         }
-        assertEquals(project.iosDeployExt.isInstalled, true)
+        assertEquals(project.iosTvosDeployExt.isInstalled, true)
         assertEquals("clone, xcodebuild", commandLog.joinToString(", "))
     }
 }
