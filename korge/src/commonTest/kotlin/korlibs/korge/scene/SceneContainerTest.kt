@@ -18,6 +18,12 @@ class SceneContainerTest : ViewsForTesting() {
 		}
 	}
 
+    inner class Scene0(
+        val info: SceneInfo
+    ) : MyLogScene() {
+        override val sceneName: String get() = "Scene0"
+    }
+
 	inner class Scene1(
 		val info: SceneInfo
 	) : MyLogScene() {
@@ -87,5 +93,37 @@ class SceneContainerTest : ViewsForTesting() {
         assertEquals(1f, transitionView.ratio)
         val endTime = time
         assertTrue { endTime - startTime in 0.5.seconds..0.75.seconds }
+    }
+
+    @Test
+    fun testChangeToPushTo() = viewsTest {
+        val sceneContainer = sceneContainer(views)
+
+        views.injector.mapPrototype { Scene0(get()) }
+
+        assertEquals(listOf(SceneContainer.VisitEntry(EmptyScene::class, emptyList())), sceneContainer.navigationEntries)
+
+        sceneContainer.pushTo<Scene0>(SceneInfo("test"))
+        assertEquals(2, sceneContainer.navigationEntries.size)
+        assertEquals("test", (sceneContainer.currentScene as Scene0).info.name)
+
+        sceneContainer.pushTo<Scene0>(SceneInfo("test2"))
+        assertEquals(3, sceneContainer.navigationEntries.size)
+        assertEquals("test2", (sceneContainer.currentScene as Scene0).info.name)
+
+        sceneContainer.back()
+        assertEquals(3, sceneContainer.navigationEntries.size)
+        assertEquals("test", (sceneContainer.currentScene as Scene0).info.name)
+
+        sceneContainer.forward()
+        assertEquals(3, sceneContainer.navigationEntries.size)
+        assertEquals("test2", (sceneContainer.currentScene as Scene0).info.name)
+    }
+
+    @Test
+    fun testNewChangeToSignature() = viewsTest {
+        val sceneContainer = sceneContainer(views)
+        val scene = sceneContainer.changeTo { Scene0(SceneInfo("test2")) }
+        assertEquals(scene, sceneContainer.currentScene)
     }
 }

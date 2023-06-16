@@ -6,8 +6,8 @@ fa-icon: fa-images
 priority: 20
 ---
 
-While you can create a small application in a few lines, when the application grows in size, you will want
-to follow some patterns to be able to split your application effectively.
+While you can create a small application in a few lines, when the application grows in size,
+you will want to follow some patterns to be able to split your application effectively.
 
 KorGE includes an asynchronous dependency injector and some tools like the modules and scenes to do so.
 
@@ -32,7 +32,8 @@ class MyScene : Scene() {
 }
 ```
 
-For simplicity, it is possible to only provide one of those methods. You can for example only use sceneMain in simple cases:
+For simplicity, it is possible to only provide one of those methods.
+You can for example only use sceneMain in simple cases:
 
 ```kotlin
 class MyScene : Scene() {
@@ -44,7 +45,8 @@ class MyScene : Scene() {
 
 ### SceneContainer
 
-`Scene`s must be added to a `SceneContainer`. `SceneContainer` is a `View`, so it can be attached to the scene graph.
+`Scene`s must be added to a `SceneContainer`. `SceneContainer` is a `View`,
+so it can be attached to the scene graph.
 
 ```kotlin
 fun main() = Korge {
@@ -56,7 +58,8 @@ fun main() = Korge {
 
 ### Changing to a Scene
 
-Once you have the SceneContainer view attached to the stage/scene graph, you can change it to actually show a specific Scene:
+Once you have the SceneContainer view attached to the stage/scene graph,
+you can change it to actually show a specific Scene:
 
 ```kotlin
 sceneContainer.changeTo({ MyScene() })
@@ -113,6 +116,19 @@ data class MySceneParameters(val levelName: String, val myid: String)
 data class MyScene(val service: MyService, val params: MySceneParameters)
 
 sceneContainer.changeTo<MyScene>(MySceneParameters("mylevelname", "myid"))
+```
+
+### Changing to another scene with same SceneContainer inside a Scene
+
+Scenes have a `sceneContainer` reference where it has been loaded.
+So it is possible do:
+
+```kotlin
+fun SContainer.sceneMain() {
+    uiButton("Change") {
+        onClick { sceneContainer.changeTo { AnotherScene() } }
+    }
+}
 ```
 
 ## Scene lifecycle
@@ -241,3 +257,25 @@ val TransitionFilter.Transition.DIAGONAL2
 val TransitionFilter.Transition.CIRCULAR
 val TransitionFilter.Transition.SWEEP
 ```
+
+## Navigation API
+
+In addition to changing the scene, it is also possible to have a
+navigation stack of scenes we can go forward and back. For example:
+
+```kotlin
+class AnotherScene1(val params: MySceneParameters) : Scene {}
+class AnotherScene2(val params: MySceneParameters) : Scene {}
+injector.mapPrototype { AnotherScene1(get()) }
+injector.mapPrototype { AnotherScene2(get()) }
+
+sceneContainer.pushTo<AnotherScene1>(MySceneParameters()) // AnotherScene1
+sceneContainer.pushTo<AnotherScene2>(MySceneParameters()) // AnotherScene2
+sceneContainer.back() // AnotherScene1
+sceneContainer.forward() // AnotherScene2
+
+println(sceneContainer.navigationEntries) // List<SceneContainer.VisitEntry>
+```
+
+This API is only available along the dependency injector.
+Since `back` and `forward` need to know how to construct and recreate the scenes from the injected parameters.
