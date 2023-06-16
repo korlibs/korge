@@ -1,6 +1,7 @@
 package korlibs.korge.input
 
 import korlibs.event.*
+import korlibs.io.lang.*
 import korlibs.korge.view.*
 
 /**
@@ -13,6 +14,5 @@ import korlibs.korge.view.*
  * * [DropFileEvent.Type.DROP] - When the drop is effectively performed. [DropFileEvent.files] should be set here.
  * * [DropFileEvent.Type.END] - When the drag is cancelled or have been executed already.
  */
-fun View.onDropFile(handler: (DropFileEvent) -> Unit) {
-    onEvents(*DropFileEvent.Type.ALL) { handler }
-}
+fun View.onDropFile(handler: (DropFileEvent) -> Unit): Closeable =
+    onEvents(*DropFileEvent.Type.ALL) { handler(it) }

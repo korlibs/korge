@@ -296,3 +296,39 @@ class GamePadEvents(override val view: View) : GamepadComponent {
 }
 
 ```
+
+## Handling Drag & Drop File Events
+
+It is possible to detect and react to drag & drop events inside KorGE.
+To do so, you can handle events of the type `DropFileEvent`.
+For simplicity, there is a method you can call from a view to register to DropFileEvent:
+
+```kotlin
+view.onDropFile {
+    when (it.type) {
+        DropFileEvent.Type.START -> dropFileRect.visible = true
+        DropFileEvent.Type.END -> dropFileRect.visible = false
+        DropFileEvent.Type.DROP -> {
+            launchImmediately {
+                it.files?.firstOrNull()?.let { loadFile(it) }
+            }
+        }
+    }
+}
+```
+
+Or if you want to register events directly:
+
+```kotlin
+onEvents(DropFileEvent.Type.START) { println("A file is being dragged into the window") }
+onEvents(DropFileEvent.Type.DROP) { println("A file has been successfully dropped in the window. Files: ${it.files}") }
+onEvents(DropFileEvent.Type.END) { println("The drag&drop finished either with or without drop") }
+```
+
+or:
+
+```kotlin
+onEvents(*DropFileEvent.Type.ALL) {
+    println("${it.type}")
+}
+```
