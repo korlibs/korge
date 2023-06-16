@@ -104,7 +104,7 @@ fun awtConvertImageIfRequired(image: BufferedImage): BufferedImage =
 fun Bitmap32.transferTo(out: BufferedImage): BufferedImage {
 	val ints = (out.raster.dataBuffer as DataBufferInt).data
 	arraycopy(this.ints, 0, ints, 0, this.width * this.height)
-	for (n in 0 until area) ints[n] = BGRA.rgbaToBgra(ints[n])
+    BGRA.rgbaToBgra(ints, 0, area)
 	out.flush()
 	return out
 }
@@ -147,6 +147,9 @@ suspend fun awtReadImageInWorker(data: ByteArray, props: ImageDecodingProps): Bu
 }
 
 suspend fun awtReadImageInWorker(file: File, props: ImageDecodingProps): BufferedImage = withContext(Dispatchers.ResourceDecoder) {
+    //val bytes = file.readBytes()
+    //ImageIOReadFormat(ByteArrayInputStream(file.readBytes()), props)
+    //ImageIOReadFormat(bytes, props)
     FileInputStream(file).use { ImageIOReadFormat(it, props) }
 }
 

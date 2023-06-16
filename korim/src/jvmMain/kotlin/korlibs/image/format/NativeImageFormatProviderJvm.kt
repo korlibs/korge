@@ -4,20 +4,50 @@ import korlibs.image.awt.*
 import korlibs.image.bitmap.*
 import korlibs.io.file.*
 import korlibs.io.file.std.*
+import korlibs.memory.*
+import java.awt.*
 import java.awt.image.*
 import java.io.*
+import javax.imageio.*
 import javax.imageio.ImageIO.*
 import kotlin.math.*
 
-actual val nativeImageFormatProvider: NativeImageFormatProvider = AwtNativeImageFormatProvider
 
-object AwtNativeImageFormatProvider : NativeImageFormatProvider() {
+actual val nativeImageFormatProvider: NativeImageFormatProvider by lazy {
+    when {
+        Platform.isMac -> CoreGraphicsImageFormatProvider // In MacOS native decoder is 2x~5x faster than the one in the JVM
+        else -> AwtNativeImageFormatProvider
+    }
+}
+
+open class AwtNativeImageFormatProvider : NativeImageFormatProvider() {
+    companion object : AwtNativeImageFormatProvider()
+
 	init {
 		// Try to detect junit and run then in headless mode
 		if (Thread.currentThread().stackTrace.contentDeepToString().contains("org.junit") && System.getenv("HEADLESS_TESTS") == "true") {
 			System.setProperty("java.awt.headless", "true")
 		}
 	}
+
+    override suspend fun decodeHeaderInternal(data: ByteArray): ImageInfo {
+        return ImageIO.createImageInputStream(data.inputStream()).use { `in` ->
+            val readers: Iterator<ImageReader> = getImageReaders(`in`)
+            if (readers.hasNext()) {
+                val reader: ImageReader = readers.next()
+                return try {
+                    reader.input = `in`
+                    ImageInfo {
+                        width = reader.getWidth(0)
+                        height = reader.getHeight(0)
+                    }
+                } finally {
+                    reader.dispose()
+                }
+            }
+            error("Can't decode image")
+        }
+    }
 
     override suspend fun decodeInternal(data: ByteArray, props: ImageDecodingProps): NativeImageResult {
         return AwtNativeImage(awtReadImageInWorker(data, props)).result(props)
