@@ -253,9 +253,9 @@ suspend fun Stage.demoSelector(default: Demo, all: List<Demo>) {
         if (demo != null) {
             comboBox.selectedItem = demo
             views.clearColor = DEFAULT_KORGE_BG_COLOR
-            container.changeTo({ injector ->
-                demo.sceneBuilder().also { it.init(injector) }
-            })
+            container.changeTo {
+                demo.sceneBuilder().also { it.init(this) }
+            }
         }
     }
 

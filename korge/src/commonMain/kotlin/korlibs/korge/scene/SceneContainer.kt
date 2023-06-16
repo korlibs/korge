@@ -92,7 +92,7 @@ class SceneContainer(
                     } as KClass<Scene>
 
                     val scene = changeTo(sceneClass, {
-                        it.get(sceneClass)
+                        get(sceneClass)
                             .also { newScene ->
                                 try {
                                     event.transferKeepProperties(scene, newScene)
@@ -180,10 +180,19 @@ class SceneContainer(
         time: TimeSpan = 0.seconds,
         transition: Transition = defaultTransition
 	): T {
-		visitPos++
-		setCurrent(VisitEntry(clazz, injects.toList()))
+        pushEntry(VisitEntry(clazz, injects.toList()))
 		return _changeTo(clazz, *injects, time = time, transition = transition)
 	}
+
+    //suspend inline fun <reified T : Scene> pushTo(
+    //    vararg injects: Any,
+    //    time: TimeSpan = 0.seconds,
+    //    transition: Transition = defaultTransition,
+    //    crossinline gen: suspend AsyncInjector.() -> T,
+    //): T {
+    //    pushEntry(VisitEntry(T::class, injects.toList()))
+    //    return changeTo(T::class, gen, injects = injects, time = time, transition = transition, remap = true)
+    //}
 
     /**
      * Changes to the [T] [clazz] [Scene], with a set of optional [injects] instances during [time] time, and with [transition].
@@ -200,6 +209,16 @@ class SceneContainer(
 	}
 
     suspend inline fun <reified T : Scene> changeTo(
+        vararg injects: Any,
+        time: TimeSpan = 0.seconds,
+        transition: Transition = defaultTransition,
+        crossinline gen: suspend AsyncInjector.() -> T,
+    ): T {
+        return changeTo(T::class, gen, injects = injects, time = time, transition = transition, remap = true)
+    }
+
+    @Deprecated("Use changeTo { ... }")
+    suspend inline fun <reified T : Scene> changeTo(
         crossinline gen: suspend (AsyncInjector) -> T,
         vararg injects: Any,
         time: TimeSpan = 0.seconds,
@@ -210,7 +229,7 @@ class SceneContainer(
 
     suspend inline fun <T : Scene> changeTo(
         clazz: KClass<T>,
-        crossinline gen: suspend (AsyncInjector) -> T,
+        crossinline gen: suspend AsyncInjector.() -> T,
         vararg injects: Any,
         time: TimeSpan = 0.seconds,
         transition: Transition = defaultTransition,
@@ -247,7 +266,7 @@ class SceneContainer(
         time: TimeSpan = 0.seconds,
         transition: Transition = defaultTransition
     ): T {
-        return changeTo(clazz, { it.get(clazz) }, *injects, time = time, transition = transition)
+        return changeTo(clazz, { get(clazz) }, *injects, time = time, transition = transition)
     }
 
     /** Check [Scene] for details of the lifecycle. */
@@ -315,7 +334,7 @@ class SceneContainer(
     }
 
 
-    private data class VisitEntry(val clazz: KClass<out Scene>, val injects: List<Any>)
+    data class VisitEntry(val clazz: KClass<out Scene>, val injects: List<Any>)
 
     companion object {
         val logger = Logger("SceneContainer")
@@ -323,13 +342,20 @@ class SceneContainer(
         private val EMPTY_VISIT_ENTRY = VisitEntry(EmptyScene::class, listOf())
     }
 
-    private val visitStack = arrayListOf<VisitEntry>(EMPTY_VISIT_ENTRY)
-    private var visitPos = 0
+    val navigationEntries: List<VisitEntry> get() = visitStack.toList()
+
+    @PublishedApi internal val visitStack = arrayListOf<VisitEntry>(EMPTY_VISIT_ENTRY)
+    @PublishedApi internal var visitPos = 0
 
     // https://developer.mozilla.org/en/docs/Web/API/History
 
-    private fun setCurrent(entry: VisitEntry) {
+    @PublishedApi internal fun setCurrent(entry: VisitEntry) {
         while (visitStack.size <= visitPos) visitStack.add(EMPTY_VISIT_ENTRY)
         visitStack[visitPos] = entry
+    }
+
+    @PublishedApi internal fun pushEntry(entry: VisitEntry) {
+        visitPos++
+        setCurrent(entry)
     }
 }
