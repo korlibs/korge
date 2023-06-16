@@ -199,3 +199,11 @@ internal class LocalVfsJvm : AsynchronousFileChannelVfs() {
         return arrayOf(SensitivityWatchEventModifier.HIGH)
     }
 }
+
+/*
+internal class LocalVfsJvm : BaseLocalVfsJvm() {
+    override fun watchModifiers(path: String): Array<WatchEvent.Modifier> {
+        return arrayOf(SensitivityWatchEventModifier.HIGH)
+    }
+}
+*/

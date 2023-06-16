@@ -79,23 +79,18 @@ fun Image.toBufferedImage(premultiplied: Boolean = true): BufferedImage {
 
 fun BufferedImage.toAwtNativeImage() = AwtNativeImage(this)
 
-class AwtNativeImage private constructor(val awtImage: BufferedImage, dummy: Unit) : NativeImage(awtImage.width, awtImage.height, awtImage, premultiplied = (awtImage.type == BufferedImage.TYPE_INT_ARGB_PRE)) {
-    init {
-        check((awtImage.type == BufferedImage.TYPE_INT_ARGB_PRE) || (awtImage.type == BufferedImage.TYPE_INT_ARGB))
-    }
-    val dataBuffer = awtImage.raster.dataBuffer as DataBufferInt
-    val awtData = dataBuffer.data
-    constructor(awtImage: BufferedImage) : this(awtConvertImageIfRequired(awtImage), Unit)
-	override val name: String get() = "AwtNativeImage"
-
-	override fun getContext2d(antialiasing: Boolean): Context2d = Context2d(AwtContext2dRender(awtImage, antialiasing))
+abstract class BaseAwtNativeImage(
+    width: Int, height: Int, data: Any?, premultiplied: Boolean
+) : NativeImage(width, height, data, premultiplied) {
+    abstract val awtData: IntArray
+    abstract val requireConv: Boolean
 
     override fun readPixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: IntArray, offset: Int) {
         for (y0 in 0 until height) {
             val iindex = index(x, y0 + y)
             val oindex = offset + (y0 * width)
             korlibs.memory.arraycopy(awtData, iindex, out, oindex, width)
-            conv(out, oindex, width)
+            if (requireConv) conv(out, oindex, width)
         }
     }
 
@@ -104,9 +99,13 @@ class AwtNativeImage private constructor(val awtImage: BufferedImage, dummy: Uni
             val iindex = index(x, y0 + y)
             val oindex = offset + (y0 * width)
             korlibs.memory.arraycopy(out, oindex, awtData, iindex, width)
-            conv(awtData, iindex, width)
+            if (requireConv) conv(awtData, iindex, width)
         }
     }
+
+    private fun argb2rgba(col: Int): Int = (col shl 8) or (col ushr 24)
+    private fun conv(data: Int) = BGRA.bgraToRgba(data)
+    private fun conv(data: IntArray, offset: Int, size: Int) = BGRA.bgraToRgba(data, offset, size)
 
     override fun setRgbaRaw(x: Int, y: Int, v: RGBA) { awtData[index(x, y)] = conv(v.value) }
     override fun getRgbaRaw(x: Int, y: Int): RGBA = RGBA(conv(awtData[index(x, y)]))
@@ -114,27 +113,41 @@ class AwtNativeImage private constructor(val awtImage: BufferedImage, dummy: Uni
     private val rbufferData: ByteBuffer by lazy { ByteBuffer.allocateDirect(width * height * 4) }
 
     private var rbufferVersion = -1
-	private val rbuffer: ByteBuffer get() {
+    private val rbuffer: ByteBuffer get() {
         if (rbufferVersion != contentVersion) {
             rbufferVersion = contentVersion
             rbufferData.also { buf ->
                 buf.clearSafe()
                 val ib = buf.asIntBuffer()
-                ib.put(dataBuffer.data)
-                for (n in 0 until area) ib.put(n, argb2rgba(ib.get(n)))
+                ib.put(awtData)
+                if (requireConv) for (n in 0 until area) ib.put(n, argb2rgba(ib.get(n)))
                 buf.positionSafe(width * height * 4)
                 buf.flipSafe()
             }
         }
         return rbufferData
-	}
-
-    private fun argb2rgba(col: Int): Int = (col shl 8) or (col ushr 24)
-
-    private fun conv(data: Int) = BGRA.bgraToRgba(data)
-    private fun conv(data: IntArray, offset: Int, size: Int) = BGRA.bgraToRgba(data, offset, size)
+    }
 
     val buffer: ByteBuffer get() = rbuffer.apply { (this as Buffer).rewind() }
+}
+
+//class BitmapAwtNativeImage(val bmp: Bitmap32) : BaseAwtNativeImage(bmp.width, bmp.height, bmp, bmp.premultiplied) {
+//    override val awtData: IntArray = bmp.ints
+//    override val requireConv: Boolean = false
+//    override val name: String get() = "BitmapAwtNativeImage"
+//}
+
+class AwtNativeImage private constructor(val awtImage: BufferedImage, dummy: Unit) : BaseAwtNativeImage(awtImage.width, awtImage.height, awtImage, premultiplied = (awtImage.type == BufferedImage.TYPE_INT_ARGB_PRE)) {
+    init {
+        check((awtImage.type == BufferedImage.TYPE_INT_ARGB_PRE) || (awtImage.type == BufferedImage.TYPE_INT_ARGB))
+    }
+    val dataBuffer = awtImage.raster.dataBuffer as DataBufferInt
+    override val awtData = dataBuffer.data
+    constructor(awtImage: BufferedImage) : this(awtConvertImageIfRequired(awtImage), Unit)
+	override val name: String get() = "AwtNativeImage"
+    override val requireConv: Boolean = true
+
+	override fun getContext2d(antialiasing: Boolean): Context2d = Context2d(AwtContext2dRender(awtImage, antialiasing))
 }
 
 //fun createRenderingHints(antialiasing: Boolean): RenderingHints = RenderingHints(mapOf<RenderingHints.Key, Any>())
