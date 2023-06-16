@@ -116,7 +116,9 @@ open class NativeKgl constructor(private val gl: INativeGL) : KmlGl() {
     override fun stencilOp(fail: Int, zfail: Int, zpass: Int): Unit = gl.glStencilOp(fail, zfail, zpass)
     override fun stencilOpSeparate(face: Int, sfail: Int, dpfail: Int, dppass: Int): Unit = gl.glStencilOpSeparate(face, sfail, dpfail, dppass)
     override fun texImage2D(target: Int, level: Int, internalformat: Int, width: Int, height: Int, border: Int, format: Int, type: Int, pixels: Buffer?): Unit = gl.glTexImage2D(target, level, internalformat, width, height, border, format, type, pixels?.nioBuffer)
-    override fun texImage2D(target: Int, level: Int, internalformat: Int, format: Int, type: Int, data: NativeImage): Unit = gl.glTexImage2D(target, level, internalformat, data.width, data.height, 0, format, type, (data as AwtNativeImage).buffer)
+    override fun texImage2D(target: Int, level: Int, internalformat: Int, format: Int, type: Int, data: NativeImage): Unit {
+        gl.glTexImage2D(target, level, internalformat, data.width, data.height, 0, format, type, (data as BaseAwtNativeImage).buffer)
+    }
     override fun texParameterf(target: Int, pname: Int, param: Float): Unit = gl.glTexParameterf(target, pname, param)
     override fun texParameterfv(target: Int, pname: Int, params: Buffer): Unit = gl.glTexParameterfv(target, pname, params.directFloatBuffer)
     override fun texParameteri(target: Int, pname: Int, param: Int): Unit = gl.glTexParameteri(target, pname, param)

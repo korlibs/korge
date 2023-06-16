@@ -20,4 +20,5 @@ class Stopwatch(val nanosecondProvider: () -> Double = { PerformanceCounter.nano
     val elapsedNanoseconds get() = if (running) clock - nanoseconds else nanoseconds
     val elapsedMicroseconds get() = elapsedNanoseconds * 1000
     val elapsed: TimeSpan get() = elapsedNanoseconds.nanoseconds
+    fun getElapsedAndRestart(): TimeSpan = elapsed.also { restart() }
 }
