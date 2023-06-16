@@ -7,6 +7,7 @@ import korlibs.graphics.gl.*
 import korlibs.image.bitmap.*
 import korlibs.image.format.*
 import korlibs.image.format.ns.*
+import korlibs.io.file.std.*
 import korlibs.io.lang.*
 import korlibs.math.geom.*
 import korlibs.math.geom.Size
@@ -35,6 +36,8 @@ private fun ByteArray.toNsData(): NSData {
 class MyNSWindow(contentRect: kotlinx.cinterop.CValue<platform.Foundation.NSRect /* = platform.CoreGraphics.CGRect */>, styleMask: platform.AppKit.NSWindowStyleMask /* = kotlin.ULong */, backing: platform.AppKit.NSBackingStoreType /* = kotlin.ULong */, defer: kotlin.Boolean) : NSWindow(
     contentRect, styleMask, backing, defer
 ) {
+
+
 }
 
 class MyNSOpenGLView(
@@ -42,6 +45,43 @@ class MyNSOpenGLView(
     frame: kotlinx.cinterop.CValue<platform.Foundation.NSRect /* = platform.CoreGraphics.CGRect */>,
     pixelFormat: platform.AppKit.NSOpenGLPixelFormat?
 ) : NSOpenGLView(frame, pixelFormat), NSTextInputProtocol {
+    fun postInitialize() {
+        registerForDraggedTypes(listOf(NSPasteboardTypeFileURL))
+    }
+
+    fun finishDragging(sender: NSDraggingInfoProtocol): Boolean {
+        val _items = sender.draggingPasteboard.readObjectsForClasses(listOf(NSClassFromString("NSURL")), null)
+        val items = _items as? NSArray? ?: return false
+        val itemsList = (0 until items.count.toInt()).map { items.objectAtIndex(it.convert()) }
+        val urls = itemsList.filterIsInstance<NSURL>().mapNotNull { it.path }.map { localVfs(it) }
+        //println("finishDragging: $urls")
+        defaultGameWindow.dispatchDropfileEvent(DropFileEvent.Type.DROP, urls)
+        return true
+    }
+
+    override fun draggingEnded(sender: NSDraggingInfoProtocol) {
+        //finishDragging(sender)
+        //println("draggingEnded")
+        defaultGameWindow.dispatchDropfileEvent(DropFileEvent.Type.END, null)
+    }
+
+    override fun draggingEntered(sender: NSDraggingInfoProtocol): NSDragOperation {
+        //println("draggingEntered")
+        defaultGameWindow.dispatchDropfileEvent(DropFileEvent.Type.START, null)
+        return NSDragOperationCopy
+    }
+
+    override fun performDragOperation(sender: NSDraggingInfoProtocol): Boolean {
+        //println("performDragOperation: $sender")
+        finishDragging(sender)
+        return super.performDragOperation(sender)
+    }
+
+    override fun draggingExited(sender: NSDraggingInfoProtocol?) {
+        //println("draggingExited")
+        super.draggingExited(sender)
+    }
+
     override fun acceptsFirstResponder(): Boolean = true
     override fun becomeFirstResponder(): Boolean = true
 
@@ -295,6 +335,8 @@ class MyNSOpenGLView(
     override fun selectedRange(): CValue<NSRange> = NSMakeRange(0u, 0u)//.also { println("selectedRange") }
     override fun unmarkText() = Unit//.also { println("unmarkText") }
     override fun validAttributesForMarkedText(): List<*>? = null//.also { println("validAttributesForMarkedText") }
+
+
 }
 
 class MyDefaultGameWindow : GameWindow() {
@@ -404,6 +446,7 @@ class MyDefaultGameWindow : GameWindow() {
         //openglView.setNextResponder(responder)
         //setNextResponder(responder)
         setIsVisible(false)
+        openglView.postInitialize()
     }
 
     // https://developer.apple.com/documentation/appkit/nscursor
