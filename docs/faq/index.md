@@ -59,18 +59,12 @@ pacman -S freeglut openal
 ## How do I include these libraries in my multiplatform projects?
 {:#include-multi}
 
-The libraries are multiplatform Kotlin projects that uses GRADLE_METADATA to detect supported platforms.
-They require Gradle 5.5.1 or greater. 
-
-### `settings.gradle`
-```groovy
-enableFeaturePreview('GRADLE_METADATA')
-```
+They require Gradle 7.6.1 or greater. 
 
 ### `build.gradle`
 ```groovy
 dependencies {
-    implementation("com.soywiz.korlibs.klock:klock:1.6.1")
+    implementation("com.soywiz.korlibs.klock:klock:4.0.6")
 }
 ```
 
@@ -81,13 +75,13 @@ dependencies {
 ```groovy
 dependencies {
     // ...
-    implementation("com.soywiz.korlibs.klock:klock-jvm:1.6.1")
+    implementation("com.soywiz.korlibs.klock:klock-jvm:4.0.6")
 }
 ```
 
 You might need to [disambiguate](https://kotlinlang.org/docs/reference/building-mpp-with-gradle.html#disambiguating-targets) in some cases:
 ```
-implementation("com.soywiz.korlibs.klock:klock-jvm:1.6.1") {
+implementation("com.soywiz.korlibs.klock:klock-jvm:4.0.6") {
     attributes {
         attribute(org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType.attribute, org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType.jvm)
     }
@@ -97,7 +91,55 @@ implementation("com.soywiz.korlibs.klock:klock-jvm:1.6.1") {
 ## Artifacts can't be resolved
 {:#unresolved}
 
-### Check that you are using at least Gradle 5.5.1
+### How can I update KorGE version?
+{:#update-korge}
+
+KorGE has several products:
+
+* [IntelliJ Plugin](https://plugins.jetbrains.com/plugin/9676-korge/versions)
+* [Gradle Plugin](https://central.sonatype.com/artifact/com.soywiz.korlibs.korge.plugins/korge-gradle-plugin/)
+* [KProject Plugin](https://central.sonatype.com/artifact/com.soywiz.kproject.settings/com.soywiz.kproject.settings.gradle.plugin/)
+* [Libraries](https://central.sonatype.com/artifact/com.soywiz.korlibs.korge2/korge/)
+
+Each product has its own versioning.
+
+IntelliJ updates the KorGE plugin automatically.
+
+Typically, the version you want to update is the `Gradle Plugin`.
+
+To update KorGE Gradle Plugin, check the `gradle/libs.versions.toml` file:
+
+```toml
+[plugins]
+korge = { id = "com.soywiz.korge", version = "4.0.6" }
+```
+
+or the `build.gradle.kts`:
+
+```kotlin
+import korlibs.korge.gradle.*
+
+plugins {
+    id("com.soywiz.korge") version "4.0.6"
+	//alias(libs.plugins.korge) // When using `gradle/libs.versions.toml`
+}
+```
+
+To update KProject you can check the `settings.gradle.kts`:
+
+```kotlin
+pluginManagement { repositories {  mavenLocal(); mavenCentral(); google(); gradlePluginPortal()  }  }
+
+plugins {
+    id("com.soywiz.kproject.settings") version "0.3.1"
+}
+```
+
+The libraries are automatically selected by the KorGE Gradle Plugin.
+Typically, they have the same version as the gradle plugin.
+But sometimes a quick Gradle Plugin update is done, so it might differ in some cases.
+
+### Check that you are using at least Gradle 7.6.1
 {:#unresolved-gradle}
 
 ```bash
@@ -107,7 +149,7 @@ implementation("com.soywiz.korlibs.klock:klock-jvm:1.6.1") {
 You can update it with:
 
 ```bash
-./gradlew wrapper --gradle-version=5.5.1
+./gradlew wrapper --gradle-version=7.6.1
 ```
 
 ## How do I get the current's device resolution on KorGE?
@@ -121,22 +163,18 @@ screen coordinates, but with the dimensions defined by you.
 
 ## Links
 
-### Slack
+### Discord
 
-* <https://slack.soywiz.com/>
+* <https://docs.korge.org/>
 
 ### GitHub
 
-* <https://github.com/korlibs/>
+* <https://github.com/korlibs/korge>
 
 ### GitHub Sponsors / Donations
 {:#github-sponsors}
 
 * <https://github.com/sponsors/soywiz/>
-
-### OpenCollective
-
-* <https://opencollective.com/korge>
 
 ## How are issues prioritized?
 
@@ -172,7 +210,7 @@ you have to replace it with `@OptIn(ExperimentalClass::class)` eg. `@OptIn(Exper
 
 Since this was not specified from the very beginning, we used up to three different pronunciations for it.
 
-The original pronounciation is like saying Jorge in Spanish but starting with K.
+The original pronunciation is like saying Jorge in Spanish but starting with K.
 
 Can you listen it here:
 
