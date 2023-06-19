@@ -3,6 +3,7 @@ package korlibs.math.geom
 import korlibs.memory.pack.*
 import korlibs.math.internal.*
 import korlibs.math.isAlmostEquals
+import korlibs.memory.*
 import kotlin.math.*
 
 //@KormaValueApi
@@ -93,6 +94,9 @@ inline class Vector4(val data: Float4Pack) {
     /** Vector4 with inverted (1f / v) components to this */
     fun inv(): Vector4 = Vector4(1f / x, 1f / y, 1f / z, 1f / w)
 
+    fun isNaN(): Boolean = this.x.isNaN() && this.y.isNaN() && this.z.isNaN() && this.w.isNaN()
+    val absoluteValue: Vector4 get() = Vector4(abs(x), abs(y), abs(z), abs(w))
+
     override fun toString(): String = "Vector4(${x.niceStr}, ${y.niceStr}, ${z.niceStr}, ${w.niceStr})"
 
     // @TODO: Should we scale Vector3 by w?
@@ -103,3 +107,10 @@ inline class Vector4(val data: Float4Pack) {
 
 fun vec(x: Float, y: Float, z: Float, w: Float): Vector4 = Vector4(x, y, z, w)
 fun vec4(x: Float, y: Float, z: Float, w: Float = 1f): Vector4 = Vector4(x, y, z, w)
+
+fun abs(a: Vector4): Vector4 = a.absoluteValue
+fun min(a: Vector4, b: Vector4): Vector4 = Vector4(min(a.x, b.x), min(a.y, b.y), min(a.z, b.z), min(a.w, b.w))
+fun max(a: Vector4, b: Vector4): Vector4 = Vector4(max(a.x, b.x), max(a.y, b.y), max(a.z, b.z), max(a.w, b.w))
+fun Vector4.clamp(min: Float, max: Float): Vector4 = Vector4(x.clamp(min, max), y.clamp(min, max), z.clamp(min, max), w.clamp(min, max))
+fun Vector4.clamp(min: Double, max: Double): Vector4 = clamp(min.toFloat(), max.toFloat())
+fun Vector4.clamp(min: Vector4, max: Vector4): Vector4 = Vector4(x.clamp(min.x, max.x), y.clamp(min.y, max.y), z.clamp(min.z, max.z), w.clamp(min.w, max.w))

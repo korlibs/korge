@@ -4,6 +4,7 @@ import korlibs.memory.pack.*
 import korlibs.math.annotations.*
 import korlibs.math.internal.*
 import korlibs.math.isAlmostEquals
+import korlibs.memory.*
 import kotlin.math.*
 
 //inline class Vector3(val data: Float4Pack) {
@@ -18,6 +19,8 @@ data class Vector3(val x: Float, val y: Float, val z: Float) {
     //val z: Float get() = data.f2
 
     companion object {
+        val NaN = Vector3(Float.NaN, Float.NaN, Float.NaN)
+
         val ZERO = Vector3(0f, 0f, 0f)
         val ONE = Vector3(1f, 1f, 1f)
 
@@ -93,6 +96,9 @@ data class Vector3(val x: Float, val y: Float, val z: Float) {
     /** Vector3 with inverted (1f / v) components to this */
     fun inv(): Vector3 = Vector3(1f / x, 1f / y, 1f / z)
 
+    fun isNaN(): Boolean = this.x.isNaN() && this.y.isNaN() && this.z.isNaN()
+    val absoluteValue: Vector3 get() = Vector3(abs(x), abs(y), abs(z))
+
     override fun toString(): String = "Vector3(${x.niceStr}, ${y.niceStr}, ${z.niceStr})"
 
     fun toVector4(w: Float = 1f): Vector4 = Vector4(x, y, z, w)
@@ -121,3 +127,15 @@ sealed interface IVector3 {
         else -> 0f
     }
 }
+
+fun abs(a: Vector3): Vector3 = a.absoluteValue
+fun min(a: Vector3, b: Vector3): Vector3 = Vector3(min(a.x, b.x), min(a.y, b.y), min(a.z, b.z))
+fun max(a: Vector3, b: Vector3): Vector3 = Vector3(max(a.x, b.x), max(a.y, b.y), max(a.z, b.z))
+fun Vector3.clamp(min: Float, max: Float): Vector3 = Vector3(x.clamp(min, max), y.clamp(min, max), z.clamp(min, max))
+fun Vector3.clamp(min: Double, max: Double): Vector3 = clamp(min.toFloat(), max.toFloat())
+fun Vector3.clamp(min: Vector3, max: Vector3): Vector3 = Vector3(x.clamp(min.x, max.x), y.clamp(min.y, max.y), z.clamp(min.z, max.z))
+
+//fun Vector3.toInt(): Vector3Int = Vector3Int(x.toInt(), y.toInt(), z.toInt())
+//fun Vector3.toIntCeil(): Vector3Int = Vector3Int(x.toIntCeil(), y.toIntCeil(), z.toIntCeil())
+//fun Vector3.toIntRound(): Vector3Int = Vector3Int(x.toIntRound(), y.toIntRound(), z.toIntRound())
+//fun Vector3.toIntFloor(): Vector3Int = Vector3Int(x.toIntFloor(), y.toIntFloor(), z.toIntFloor())
