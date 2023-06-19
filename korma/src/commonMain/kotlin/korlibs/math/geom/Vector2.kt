@@ -97,6 +97,7 @@ data class Vector2(val x: Float, val y: Float) {
     fun distanceTo(x: Int, y: Int): Float = this.distanceTo(x.toDouble(), y.toDouble())
     fun distanceTo(that: Vector2): Float = distanceTo(that.x, that.y)
 
+    infix fun cross(that: Vector2): Float = crossProduct(this, that)
     infix fun dot(that: Vector2): Float = ((this.x * that.x) + (this.y * that.y))
 
     fun angleTo(other: Vector2): Angle = Angle.between(this.x, this.y, other.x, other.y)
