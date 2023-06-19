@@ -108,10 +108,25 @@ view.keys {
     down { e -> /*...*/ }
     up { e -> /*...*/ }
 }
+
 // Matches just one key
 view.keys {
+    // Executes when the key is down. Depending on the platform this might trigger multiple events. Use justDown to trigger it only once.
     down(Key.LEFT) { e -> /*...*/ }
+    
+    // Executes when the key is up
     up(Key.LEFT) { e -> /*...*/ }
+
+    // Executes on every frame (be aware that fps might vary)
+    downFrame(Key.LEFT) { e -> /*...*/ }
+    // Executes every 16 milliseconds, when the key is down    
+    downFrame(Key.LEFT, 16.milliseconds) { e -> /*...*/ }
+    
+    // Executes only when the key was pressed once, then it won't be triggered again until released and pressed again
+    justDown(Key.LEFT) { e -> /*...*/ }
+    
+    // Useful for UIs, the code is executed every half a second at first, and then every 100 milliseconds doing an acceleration.
+    downRepeating(Key.LEFT) { e -> /*...*/ }
 }
 view.onKeyDown { e -> /*...*/ } // suspending block
 ```
