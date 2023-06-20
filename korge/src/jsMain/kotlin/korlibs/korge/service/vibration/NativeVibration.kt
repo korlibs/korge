@@ -1,6 +1,7 @@
 package korlibs.korge.service.vibration
 
 import korlibs.time.TimeSpan
+import korlibs.time.milliseconds
 import korlibs.korge.view.Views
 import kotlinx.browser.window
 
