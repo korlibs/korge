@@ -318,15 +318,15 @@ fun Iterable<Point>.bounds(): Rectangle {
     return bb.bounds
 }
 
-fun abs(a: Point): Point = a.absoluteValue
-fun min(a: Point, b: Point): Point = Point(min(a.x, b.x), min(a.y, b.y))
-fun max(a: Point, b: Point): Point = Point(max(a.x, b.x), max(a.y, b.y))
-fun Point.clamp(min: Float, max: Float): Point = Point(x.clamp(min, max), y.clamp(min, max))
-fun Point.clamp(min: Double, max: Double): Point = clamp(min.toFloat(), max.toFloat())
-fun Point.clamp(min: Point, max: Point): Point = Point(x.clamp(min.x, max.x), y.clamp(min.y, max.y))
+fun abs(a: Vector2): Vector2 = a.absoluteValue
+fun min(a: Vector2, b: Vector2): Vector2 = Vector2(min(a.x, b.x), min(a.y, b.y))
+fun max(a: Vector2, b: Vector2): Vector2 = Vector2(max(a.x, b.x), max(a.y, b.y))
+fun Vector2.clamp(min: Float, max: Float): Vector2 = Vector2(x.clamp(min, max), y.clamp(min, max))
+fun Vector2.clamp(min: Double, max: Double): Vector2 = clamp(min.toFloat(), max.toFloat())
+fun Vector2.clamp(min: Vector2, max: Vector2): Vector2 = Vector2(x.clamp(min.x, max.x), y.clamp(min.y, max.y))
 
-fun Point.toInt(): Vector2Int = Vector2Int(x.toInt(), y.toInt())
-fun Point.toIntCeil(): Vector2Int = Vector2Int(x.toIntCeil(), y.toIntCeil())
-fun Point.toIntRound(): Vector2Int = Vector2Int(x.toIntRound(), y.toIntRound())
-fun Point.toIntFloor(): Vector2Int = Vector2Int(x.toIntFloor(), y.toIntFloor())
-fun Vector2Int.toFloat(): Vector2 = Point(x, y)
+fun Vector2.toInt(): Vector2Int = Vector2Int(x.toInt(), y.toInt())
+fun Vector2.toIntCeil(): Vector2Int = Vector2Int(x.toIntCeil(), y.toIntCeil())
+fun Vector2.toIntRound(): Vector2Int = Vector2Int(x.toIntRound(), y.toIntRound())
+fun Vector2.toIntFloor(): Vector2Int = Vector2Int(x.toIntFloor(), y.toIntFloor())
+fun Vector2Int.toFloat(): Vector2 = Vector2(x, y)
