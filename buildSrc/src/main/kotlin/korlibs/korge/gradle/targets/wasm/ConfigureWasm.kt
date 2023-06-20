@@ -13,7 +13,7 @@ fun Project.configureWasm(executable: Boolean, binaryen: Boolean = false) {
             }
             //applyBinaryen()
             browser {
-                commonWebpackConfig { experiments = mutableSetOf("topLevelAwait") }
+                //commonWebpackConfig { experiments = mutableSetOf("topLevelAwait") }
                 if (executable) {
                     this.distribution {
                     }
