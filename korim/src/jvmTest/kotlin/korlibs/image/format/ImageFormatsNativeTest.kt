@@ -48,14 +48,4 @@ class ImageFormatsNativeTest {
         //showImageAndWait(bitmap)
         //File("c:/temp/logosvg.png").toVfs().writeBitmap(bitmap.toBMP32())
     }
-
-    @Test
-    fun testCoreGraphicsOnMac() = suspendTest {
-        if (!Platform.isMac) return@suspendTest
-
-        println(CoreGraphicsImageFormatProvider().decode(resourcesVfs["kotlin8.png"]))
-        println(measureTime {
-            CoreGraphicsImageFormatProvider().decode(localVfs("/Users/soywiz/projects/glTF-Sample-Models/2.0/ABeautifulGame/glTF/King_black_normal.jpg"))
-        })
-    }
 }

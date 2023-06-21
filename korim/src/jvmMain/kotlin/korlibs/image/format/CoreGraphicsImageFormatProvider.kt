@@ -120,67 +120,6 @@ open class CoreGraphicsImageFormatProvider : AwtNativeImageFormatProvider() {
         return res
     }
 
-    private fun _decodeInternal(data: ByteArray, props: ImageDecodingProps): NativeImageResult = nsAutoreleasePool {
-        //val p = Stopwatch()
-        //println(p.getElapsedAndRestart())
-
-        val dataCreate = CoreFoundation.CFDataCreate(null, data, data.size)
-        val imgSource = ImageIO.CGImageSourceCreateWithData(dataCreate, null)
-        val dict = CoreFoundation.CFDictionaryCreateMutable(null, 0, null, null)
-        CoreFoundation.CFDictionaryAddValue(dict, ImageIO.kCGImageSourceShouldCache!!.getPointer(0L), CoreFoundation.kCFBooleanFalse!!.getPointer(0L))
-        CoreFoundation.CFDictionaryAddValue(dict, ImageIO.kCGImageSourceCreateThumbnailWithTransform!!.getPointer(0L), CoreFoundation.kCFBooleanFalse!!.getPointer(0L))
-        CoreFoundation.CFDictionaryAddValue(dict, ImageIO.kCGImageSourceCreateThumbnailFromImageAlways!!.getPointer(0L), CoreFoundation.kCFBooleanTrue!!.getPointer(0L))
-        //println("PREPARE:" + p.getElapsedAndRestart())
-        val cgImage = ImageIO.CGImageSourceCreateImageAtIndex(imgSource, 0, dict)
-        //println("SOURCE:" + p.getElapsedAndRestart())
-
-        val width = CoreGraphics.CGImageGetWidth(cgImage)
-        val height = CoreGraphics.CGImageGetHeight(cgImage)
-
-        //println("CoreGraphics.kCGImageAlphaPremultipliedLast=${CoreGraphics.kCGImageAlphaPremultipliedLast}")
-        val realPremultiplied = true
-        val alphaInfo = when (realPremultiplied) {
-            true -> CoreGraphics.kCGImageAlphaPremultipliedLast
-            false -> CoreGraphics.kCGImageAlphaLast
-            //true -> CoreGraphics.kCGImageAlphaPremultipliedFirst
-            //false -> CoreGraphics.kCGImageAlphaFirst
-        }
-        val colorSpace = CoreGraphics.CGColorSpaceCreateDeviceRGB()
-
-        val pixels = Memory((width * height * 4).toLong())
-
-        val context = CoreGraphics.CGBitmapContextCreate(
-            pixels, width, height, 8,
-            (width * 4), colorSpace, alphaInfo
-        )
-
-        //val data = CoreGraphics.CGDataProviderCopyData(CoreGraphics.CGImageGetDataProvider(image))
-        //println("GET_DATA:" + p.getElapsedAndRestart())
-        //val pixels = CoreFoundation.CFDataGetBytePtr(data)
-
-
-        val rect = CGRect.make(0.0, 0.0, width.toDouble(), height.toDouble())
-        CoreGraphics.CGContextDrawImage(context, rect, cgImage)
-        CoreGraphics.CGContextFlush(context)
-
-        //println("GET_DATA:" + p.getElapsedAndRestart())
-
-        val bufferedImage = BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB_PRE)
-        val bufferedImageData = (bufferedImage.raster.dataBuffer as DataBufferInt).data
-        pixels.read(0L, bufferedImageData, 0, width * height)
-        BGRA.bgraToRgba(bufferedImageData)
-
-
-        //val bitmap = Bitmap32(width, height, premultiplied = true).also { bmp -> pixels!!.read(0L, bmp.ints, 0, width * height) }
-
-        //println("COPY:" + p.getElapsedAndRestart())
-
-        NativeImageResult(AwtNativeImage(bufferedImage))
-        //NativeImageResult(bitmap.toAwt().toAwtNativeImage())
-        //NativeImageResult(BitmapAwtNativeImage(bitmap))
-    }
-
-
     override suspend fun decodeInternal(vfs: Vfs, path: String, props: ImageDecodingProps): NativeImageResult {
         val finalFile = vfs.getUnderlyingUnscapedFile(path)
         if (finalFile.vfs is LocalVfs) {
@@ -221,5 +160,73 @@ open class CoreGraphicsImageFormatProvider : AwtNativeImageFormatProvider() {
         }
     }
 
+    private suspend fun _decodeInternal(data: ByteArray, props: ImageDecodingProps): NativeImageResult {
+        // Since we are decoding as premultiplied, we need a decoder that decodes un-multiplied
+        if (props.asumePremultiplied) {
+            return super.decodeInternal(data, props)
+        }
+
+        return nsAutoreleasePool {
+            //val p = Stopwatch()
+            //println(p.getElapsedAndRestart())
+
+            val dataCreate = CoreFoundation.CFDataCreate(null, data, data.size)
+            val imgSource = ImageIO.CGImageSourceCreateWithData(dataCreate, null)
+            val dict = CoreFoundation.CFDictionaryCreateMutable(null, 0, null, null)
+            CoreFoundation.CFDictionaryAddValue(dict, ImageIO.kCGImageSourceShouldCache!!.getPointer(0L), CoreFoundation.kCFBooleanFalse!!.getPointer(0L))
+            CoreFoundation.CFDictionaryAddValue(dict, ImageIO.kCGImageSourceCreateThumbnailWithTransform!!.getPointer(0L), CoreFoundation.kCFBooleanFalse!!.getPointer(0L))
+            CoreFoundation.CFDictionaryAddValue(dict, ImageIO.kCGImageSourceCreateThumbnailFromImageAlways!!.getPointer(0L), CoreFoundation.kCFBooleanTrue!!.getPointer(0L))
+            //println("PREPARE:" + p.getElapsedAndRestart())
+            val cgImage = ImageIO.CGImageSourceCreateImageAtIndex(imgSource, 0, dict)
+            //println("SOURCE:" + p.getElapsedAndRestart())
+
+            val width = CoreGraphics.CGImageGetWidth(cgImage)
+            val height = CoreGraphics.CGImageGetHeight(cgImage)
+
+            //println("CoreGraphics.kCGImageAlphaPremultipliedLast=${CoreGraphics.kCGImageAlphaPremultipliedLast}")
+            //val realPremultiplied = props.premultipliedSure
+            val realPremultiplied = true
+            val alphaInfo = when (realPremultiplied) {
+                true -> CoreGraphics.kCGImageAlphaPremultipliedLast
+                false -> CoreGraphics.kCGImageAlphaLast
+                //true -> CoreGraphics.kCGImageAlphaPremultipliedFirst
+                //false -> CoreGraphics.kCGImageAlphaFirst
+            }
+            val colorSpace = CoreGraphics.CGColorSpaceCreateDeviceRGB()
+
+            val pixels = Memory((width * height * 4).toLong()).also { it.clear() }
+
+            val context = CoreGraphics.CGBitmapContextCreate(
+                pixels, width, height, 8,
+                (width * 4), colorSpace, alphaInfo
+            )
+
+            //val data = CoreGraphics.CGDataProviderCopyData(CoreGraphics.CGImageGetDataProvider(image))
+            //println("GET_DATA:" + p.getElapsedAndRestart())
+            //val pixels = CoreFoundation.CFDataGetBytePtr(data)
+
+
+            val rect = CGRect.make(0.0, 0.0, width.toDouble(), height.toDouble())
+            CoreGraphics.CGContextDrawImage(context, rect, cgImage)
+            CoreGraphics.CGContextFlush(context)
+
+            //println("GET_DATA:" + p.getElapsedAndRestart())
+
+
+            val bufferedImage = BufferedImage(width, height, if (props.asumePremultiplied || realPremultiplied) BufferedImage.TYPE_INT_ARGB_PRE else BufferedImage.TYPE_INT_ARGB)
+            val bufferedImageData = (bufferedImage.raster.dataBuffer as DataBufferInt).data
+            pixels.read(0L, bufferedImageData, 0, width * height)
+            BGRA.bgraToRgba(bufferedImageData)
+
+
+            //val bitmap = Bitmap32(width, height, premultiplied = true).also { bmp -> pixels!!.read(0L, bmp.ints, 0, width * height) }
+
+            //println("COPY:" + p.getElapsedAndRestart())
+
+            NativeImageResult(AwtNativeImage(bufferedImage))
+            //NativeImageResult(bitmap.toAwt().toAwtNativeImage())
+            //NativeImageResult(BitmapAwtNativeImage(bitmap))
+        }
+    }
 }
 
