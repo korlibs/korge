@@ -46,16 +46,14 @@ import kotlin.math.*
  *
  * The equivalent old [Angle] constructor is now [Angle.fromRadians]
  *
- * In a reference system where X+ is right Y+ is up, angle cosines/sines angles advance counter-clock-wise:
- * * cosine(Vector2.UP), sine(Vector2.UP)
+ * Angles advance counter-clock-wise, starting with 0.degrees representing the right vector:
  *
- * 0.degrees represent right: cosine=1 sine=0
- * 90.degrees represents up: cosine=0 sine=1
- * 180.degrees represents left: cosine=-1 sine=0
- * 270.degrees represents down: cosine=0 sine=-1
+ * Depending on what the up vector means, then numeric values of sin might be negated.
  *
- * In a reference system where X+ is right, and Y+ is down, angle cosines/sines angles advance clock-wise:
- * * cosine(Vector2.SCREEN_UP), sine(Vector2.SCREEN_UP)
+ *   0.degrees represent right:    up=Vector2.UP: cos =+1, sin= 0 || up=Vector2.UP_SCREEN: cos =+1, sin= 0
+ *  90.degrees represents up:      up=Vector2.UP: cos = 0, sin=+1 || up=Vector2.UP_SCREEN: cos = 0, sin=-1
+ * 180.degrees represents left:    up=Vector2.UP: cos =-1, sin= 0 || up=Vector2.UP_SCREEN: cos =-1, sin= 0
+ * 270.degrees represents down:    up=Vector2.UP: cos = 0, sin=-1 || up=Vector2.UP_SCREEN: cos = 0, sin=+1
  */
 //@KormaValueApi
 inline class Angle @PublishedApi internal constructor(
