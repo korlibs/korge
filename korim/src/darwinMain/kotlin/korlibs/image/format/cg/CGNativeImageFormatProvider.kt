@@ -44,7 +44,6 @@ open class CGNativeImageFormatProvider : CGBaseNativeImageFormatProvider() {
                 }
             }
         }
-
     }
 
     //override fun createBitmapNativeImage(bmp: Bitmap) = BitmapNativeImage(bmp.toBMP32().premultipliedIfRequired())

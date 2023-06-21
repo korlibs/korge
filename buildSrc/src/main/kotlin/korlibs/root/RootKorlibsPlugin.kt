@@ -36,7 +36,7 @@ object RootKorlibsPlugin {
         rootProject.afterEvaluate {
             rootProject.allprojectsThis {
                 tasks.withType(Test::class.java) {
-                    it.ignoreFailures = true
+                    //it.ignoreFailures = true // This would cause the test to pass even if we have failing tests!
                 }
             }
         }
