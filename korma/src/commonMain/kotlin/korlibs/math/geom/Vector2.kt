@@ -167,6 +167,22 @@ data class Vector2(val x: Float, val y: Float) {
         val ZERO = Point(0f, 0f)
         val NaN = Point(Float.NaN, Float.NaN)
 
+        /** Mathematically typical LEFT, matching screen coordinates (-1, 0) */
+        val LEFT = Point(-1f, 0f)
+        /** Mathematically typical RIGHT, matching screen coordinates (+1, 0) */
+        val RIGHT = Point(+1f, 0f)
+
+        /** Mathematically typical UP (0, +1) */
+        val UP = Point(0f, +1f)
+        /** UP using screen coordinates as reference (0, -1) */
+        val UP_SCREEN = Point(0f, -1f)
+
+        /** Mathematically typical DOWN (0, -1) */
+        val DOWN = Point(0f, -1f)
+        /** DOWN using screen coordinates as reference (0, +1) */
+        val DOWN_SCREEN = Point(0f, +1f)
+
+
         //inline operator fun invoke(x: Int, y: Int): Vector2 = Point(x.toDouble(), y.toDouble())
         //inline operator fun invoke(x: Float, y: Float): Vector2 = Point(x.toDouble(), y.toDouble())
 

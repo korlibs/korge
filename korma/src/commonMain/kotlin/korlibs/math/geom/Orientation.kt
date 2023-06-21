@@ -30,9 +30,12 @@ enum class Orientation(val value: Int) {
         //}
 
         // @TODO: Should we provide an UP vector as reference instead? ie. Vector2(0, +1) or Vector2(0, -1), would make sense for 3d?
-        fun orient2d(pa: Point, pb: Point, pc: Point, yGoesUp: Boolean = true): Orientation = orient2d(pa.xD, pa.yD, pb.xD, pb.yD, pc.xD, pc.yD, yGoesUp = yGoesUp)
+        fun orient2d(pa: Point, pb: Point, pc: Point, up: Vector2 = Vector2.UP): Orientation {
+            return orient2d(pa.xD, pa.yD, pb.xD, pb.yD, pc.xD, pc.yD, up = up)
+        }
 
-        fun orient2d(paX: Double, paY: Double, pbX: Double, pbY: Double, pcX: Double, pcY: Double, epsilon: Double = EPSILON, yGoesUp: Boolean = true): Orientation {
+        fun orient2d(paX: Double, paY: Double, pbX: Double, pbY: Double, pcX: Double, pcY: Double, epsilon: Double = EPSILON, up: Vector2 = Vector2.UP): Orientation {
+            check(up.x == 0f && up.y.absoluteValue == 1f) { "up vector only supports (0, -1) and (0, +1) for now" }
             // Cross product
             val detleft: Double = (paX - pcX) * (pbY - pcY)
             val detright: Double = (paY - pcY) * (pbX - pcX)
@@ -43,14 +46,14 @@ enum class Orientation(val value: Int) {
                 v > 0 -> COUNTER_CLOCK_WISE
                 else -> CLOCK_WISE
             }
-            return if (yGoesUp) res else -res
+            return if (up.y > 0) res else -res
         }
 
         @Deprecated("", ReplaceWith(
-            "orient2d(paX, paY, pbX, pbY, pcX, pcY, epsilon, yGoesUp = false)",
+            "orient2d(paX, paY, pbX, pbY, pcX, pcY, epsilon, up = Vector2.UP_SCREEN)",
             "korlibs.math.geom.Orientation.Companion.orient2d"
         ))
         fun orient2dFixed(paX: Double, paY: Double, pbX: Double, pbY: Double, pcX: Double, pcY: Double, epsilon: Double = EPSILON): Orientation =
-            orient2d(paX, paY, pbX, pbY, pcX, pcY, epsilon, yGoesUp = false)
+            orient2d(paX, paY, pbX, pbY, pcX, pcY, epsilon, up = Vector2.UP_SCREEN)
     }
 }
