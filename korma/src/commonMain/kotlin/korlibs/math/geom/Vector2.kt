@@ -246,9 +246,15 @@ data class Vector2(val x: Float, val y: Float) {
 
         // https://algorithmtutor.com/Computational-Geometry/Determining-if-two-consecutive-segments-turn-left-or-right/
         /** < 0 left, > 0 right, 0 collinear */
-        fun orientation(p1: Vector2, p2: Vector2, p3: Vector2): Float = orientation(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y)
-        fun orientation(ax: Float, ay: Float, bx: Float, by: Float, cx: Float, cy: Float): Float = crossProduct(cx - ax, cy - ay, bx - ax, by - ay)
-        fun orientation(ax: Double, ay: Double, bx: Double, by: Double, cx: Double, cy: Double): Double = crossProduct(cx - ax, cy - ay, bx - ax, by - ay)
+        fun orientation(p1: Vector2, p2: Vector2, p3: Vector2, yGoesUp: Boolean = true): Float = orientation(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y, yGoesUp)
+        fun orientation(ax: Float, ay: Float, bx: Float, by: Float, cx: Float, cy: Float, yGoesUp: Boolean = true): Float {
+            val res = crossProduct(cx - ax, cy - ay, bx - ax, by - ay)
+            return if (yGoesUp) res else -res
+        }
+        fun orientation(ax: Double, ay: Double, bx: Double, by: Double, cx: Double, cy: Double, yGoesUp: Boolean = true): Double {
+            val res = crossProduct(cx - ax, cy - ay, bx - ax, by - ay)
+            return if (yGoesUp) res else -res
+        }
 
         fun crossProduct(ax: Float, ay: Float, bx: Float, by: Float): Float = (ax * by) - (bx * ay)
         fun crossProduct(ax: Double, ay: Double, bx: Double, by: Double): Double = (ax * by) - (bx * ay)
