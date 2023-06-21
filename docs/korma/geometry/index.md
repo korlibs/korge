@@ -13,27 +13,92 @@ KorMA provides some geometry utilities.
 
 ## Angle
 
-`Angle` is an inline class backed by a `Double` that represents an angle and that can give additional type safety and semantics to code. It can be constructed from and converted to `degrees` and `radians` and offer several utilities and operators related to angles:
+`Angle` is an inline class backed by a `Float` (when normalized being a ratio value between 0..1 instead of 0..PI2)
+that represents an angle and that can give additional type safety and semantics to code.
+It is stored as 0..1 to take advantage of this floating point range precision by using a Float.
+It can be constructed from and converted to `degrees` and `radians` and offer several
+utilities and operators related to angles:
+
+### Predefined angles:
 
 ```kotlin
-inline class Angle(val radians: Double)
+val EPSILON = Angle.fromRatio(0.00001f)
+val ZERO = 0.degrees
+val QUARTER = 90.degrees
+val HALF = 180.degrees
+val THREE_QUARTERS = 270.degrees
+val FULL = 360.degrees
+```
 
-fun cos(angle: Angle): Double
-fun sin(angle: Angle): Double
-fun tan(angle: Angle): Double
+### Constructing from ratio, radians or degrees
 
-inline val Number.degrees: Angle
-inline val Number.radians: Angle
+You can construct an Angle from a ratio, radians or degrees.
 
-val Angle.degrees: Double
-val Angle.radians: Double
+```kotlin
+val angle = Angle.fromRatio(0.5)
+val angle = Angle.fromRadians(PI)
+val angle = Angle.fromDegrees(180)
+```
 
+Or with numeric extension properties:
+
+```kotlin
+val angle = PI.radians
+val angle = 180.degrees
+```
+
+### Sine, Cosine & Tangent 
+
+You can get the cosine (X), sine (Y) or tangent (Y/X) with:
+
+```kotlin
+fun cos(angle: Angle, up: Vector2 = Vector2.UP): Float
+fun sin(angle: Angle, up: Vector2 = Vector2.UP): Float
+fun tan(angle: Angle, up: Vector2 = Vector2.UP): Float
+```
+
+```kotlin
+val x = angle.cosine
+val y = angle.sine
+val tan = angle.tangent
+```
+
+Since in KorGE, coordinates are X+ right, and Y+ down, while typical Y+ is up, you can provide a parameter to cosine to specify
+the vector representing up or what value would have y for 90.degrees:
+
+```kotlin
+val x = angle.cosine(Vector2.UP_SCREEN)
+val y = angle.sine(Vector2.UP_SCREEN)
+val tan = angle.tangent(Vector2.UP_SCREEN)
+```
+
+There are two standard provided up vectors `Vector2.UP` (Y+ up) and `Vector2.UP_SCREEN` (Y+ down)
+
+### Normalizing angle
+
+```kotlin
 val Angle.normalized: Angle
 ```
 
 ## Point and Matrix
 
 `Point` and `Matrix` are classes holding doubles (to get consistency among targets including JavaScript) that represent a 2D Point (with x and y) and a 2D Affine Transform Matrix (with a, b, c, d, tx and ty).
+Point is a typealias of `Vector2`.
+
+## Vector2
+
+### Polar coordinates
+
+You can construct a Vector2/Point from polar coordinates like:
+
+```kotlin
+Point.polar(Point(100, 100), 45.degrees, 50f, up = Vector2.UP_SCREEN) // (135.35535, 64.64466)
+Point.polar(Point(100, 100), 45.degrees, 50f, up = Vector2.UP)        // (135.35535, 135.35535)
+Point.polar(Point(100, 100), 45.degrees, 50f)                         // (135.35535, 135.35535)
+```
+
+The up vector is to determine where the up is, since by default it is going to be Y+ up,
+and that would be interpreted differently for drawn points in the case of KorGE since Y+ is down.
 
 ## Vector3D and Matrix3D
 

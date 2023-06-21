@@ -162,4 +162,31 @@ class AngleTest {
         assertEquals(180.degrees, Ratio.HALF.interpolateAngleDenormalized(350.degrees, (10).degrees))
         assertEquals(180.degrees, Ratio.HALF.interpolateAngleDenormalized(10.degrees, (350).degrees))
     }
+
+    @Test
+    fun testReferenceSystem() {
+        run {
+            assertEqualsFloat(listOf(1f, 0f), listOf(Angle.ZERO.cosine(), Angle.ZERO.sine()))
+            assertEqualsFloat(listOf(0f, 1f), listOf(Angle.QUARTER.cosine(), Angle.QUARTER.sine()))
+            assertEqualsFloat(listOf(-1f, 0f), listOf(Angle.HALF.cosine(), Angle.HALF.sine()))
+            assertEqualsFloat(listOf(0f, -1f), listOf(Angle.THREE_QUARTERS.cosine(), Angle.THREE_QUARTERS.sine()))
+        }
+        run {
+            val up = Vector2.UP
+            assertEqualsFloat(listOf(1f, 0f), listOf(Angle.ZERO.cosine(up), Angle.ZERO.sine(up)))
+            assertEqualsFloat(listOf(0f, 1f), listOf(Angle.QUARTER.cosine(up), Angle.QUARTER.sine(up)))
+            assertEqualsFloat(listOf(-1f, 0f), listOf(Angle.HALF.cosine(up), Angle.HALF.sine(up)))
+            assertEqualsFloat(listOf(0f, -1f), listOf(Angle.THREE_QUARTERS.cosine(up), Angle.THREE_QUARTERS.sine(up)))
+        }
+        run {
+            val up = Vector2.UP_SCREEN
+            assertEqualsFloat(listOf(1f, 0f), listOf(Angle.ZERO.cosine(up), Angle.ZERO.sine(up)))
+            assertEqualsFloat(listOf(0f, -1f), listOf(Angle.QUARTER.cosine(up), Angle.QUARTER.sine(up)))
+            assertEqualsFloat(listOf(-1f, 0f), listOf(Angle.HALF.cosine(up), Angle.HALF.sine(up)))
+            assertEqualsFloat(listOf(0f, +1f), listOf(Angle.THREE_QUARTERS.cosine(up), Angle.THREE_QUARTERS.sine(up)))
+        }
+        assertEqualsFloat(listOf(0.0, 1.0), listOf(Angle.QUARTER.cosineD(), Angle.QUARTER.sineD()))
+        assertEqualsFloat(listOf(0.0, 1.0), listOf(Angle.QUARTER.cosineD(Vector2.UP), Angle.QUARTER.sineD(Vector2.UP)))
+        assertEqualsFloat(listOf(0.0, -1.0), listOf(Angle.QUARTER.cosineD(Vector2.UP_SCREEN), Angle.QUARTER.sineD(Vector2.UP_SCREEN)))
+    }
 }

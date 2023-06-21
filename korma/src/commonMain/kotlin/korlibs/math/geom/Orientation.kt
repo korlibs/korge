@@ -5,6 +5,13 @@ import kotlin.math.*
 enum class Orientation(val value: Int) {
     CLOCK_WISE(+1), COUNTER_CLOCK_WISE(-1), COLLINEAR(0);
 
+    operator fun unaryMinus(): Orientation = when (this) {
+        CLOCK_WISE -> COUNTER_CLOCK_WISE
+        COUNTER_CLOCK_WISE -> CLOCK_WISE
+        COLLINEAR -> COLLINEAR
+    }
+    operator fun unaryPlus(): Orientation = this
+
     companion object {
         private const val EPSILONf: Float = 1e-4f
         private const val EPSILON: Double = 1e-7
@@ -22,30 +29,35 @@ enum class Orientation(val value: Int) {
         //    }
         //}
 
-        fun orient2d(pa: Point, pb: Point, pc: Point): Orientation = orient2d(pa.xD, pa.yD, pb.xD, pb.yD, pc.xD, pc.yD)
+        internal fun checkValidUpVector(up: Vector2) {
+            check(up.x == 0f && up.y.absoluteValue == 1f) { "up vector only supports (0, -1) and (0, +1) for now" }
+        }
 
-        fun orient2d(paX: Double, paY: Double, pbX: Double, pbY: Double, pcX: Double, pcY: Double, epsilon: Double = EPSILON): Orientation {
+        // @TODO: Should we provide an UP vector as reference instead? ie. Vector2(0, +1) or Vector2(0, -1), would make sense for 3d?
+        fun orient2d(pa: Point, pb: Point, pc: Point, up: Vector2 = Vector2.UP): Orientation {
+            return orient2d(pa.xD, pa.yD, pb.xD, pb.yD, pc.xD, pc.yD, up = up)
+        }
+
+        fun orient2d(paX: Double, paY: Double, pbX: Double, pbY: Double, pcX: Double, pcY: Double, epsilon: Double = EPSILON, up: Vector2 = Vector2.UP): Orientation {
+            checkValidUpVector(up)
+            // Cross product
             val detleft: Double = (paX - pcX) * (pbY - pcY)
             val detright: Double = (paY - pcY) * (pbX - pcX)
             val v: Double = detleft - detright
 
-            return when {
+            val res: Orientation = when {
                 v.absoluteValue < epsilon -> COLLINEAR
                 v > 0 -> COUNTER_CLOCK_WISE
                 else -> CLOCK_WISE
             }
+            return if (up.y > 0) res else -res
         }
 
-        fun orient2dFixed(paX: Double, paY: Double, pbX: Double, pbY: Double, pcX: Double, pcY: Double): Orientation {
-            val detleft: Double = (paX - pcX) * (pbY - pcY)
-            val detright: Double = (paY - pcY) * (pbX - pcX)
-            val v: Double = detleft - detright
-
-            return when {
-                (v > -EPSILON) && (v < EPSILON) -> COLLINEAR
-                v > 0 -> CLOCK_WISE
-                else -> COUNTER_CLOCK_WISE
-            }
-        }
+        @Deprecated("", ReplaceWith(
+            "orient2d(paX, paY, pbX, pbY, pcX, pcY, epsilon, up = Vector2.UP_SCREEN)",
+            "korlibs.math.geom.Orientation.Companion.orient2d"
+        ))
+        fun orient2dFixed(paX: Double, paY: Double, pbX: Double, pbY: Double, pcX: Double, pcY: Double, epsilon: Double = EPSILON): Orientation =
+            orient2d(paX, paY, pbX, pbY, pcX, pcY, epsilon, up = Vector2.UP_SCREEN)
     }
 }
