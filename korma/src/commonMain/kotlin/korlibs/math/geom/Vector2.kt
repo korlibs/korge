@@ -100,8 +100,9 @@ data class Vector2(val x: Float, val y: Float) {
     infix fun cross(that: Vector2): Float = crossProduct(this, that)
     infix fun dot(that: Vector2): Float = ((this.x * that.x) + (this.y * that.y))
 
-    fun angleTo(other: Vector2): Angle = Angle.between(this.x, this.y, other.x, other.y)
-    val angle: Angle get() = Angle.between(0f, 0f, this.x, this.y)
+    fun angleTo(other: Vector2, up: Vector2 = UP): Angle = Angle.between(this.x, this.y, other.x, other.y, up)
+    val angle: Angle get() = angle()
+    fun angle(up: Vector2 = UP): Angle = Angle.between(0f, 0f, this.x, this.y, up)
 
     inline fun deltaTransformed(m: Matrix): Vector2 = m.deltaTransform(this)
     inline fun transformed(m: Matrix): Vector2 = m.transform(this)
@@ -135,9 +136,9 @@ data class Vector2(val x: Float, val y: Float) {
     val intRound: Vector2Int get() = Vector2Int(x.roundToInt(), y.roundToInt())
 
     fun roundDecimalPlaces(places: Int): Vector2 = Point(x.roundDecimalPlaces(places), y.roundDecimalPlaces(places))
-    fun round(): Vector2 = Point(kotlin.math.round(x), kotlin.math.round(y))
-    fun ceil(): Vector2 = Point(kotlin.math.ceil(x), kotlin.math.ceil(y))
-    fun floor(): Vector2 = Point(kotlin.math.floor(x), kotlin.math.floor(y))
+    fun round(): Vector2 = Point(round(x), round(y))
+    fun ceil(): Vector2 = Point(ceil(x), ceil(y))
+    fun floor(): Vector2 = Point(floor(x), floor(y))
 
     //fun copy(x: Double = this.x, y: Double = this.y): Vector2 = Point(x, y)
 
@@ -188,26 +189,26 @@ data class Vector2(val x: Float, val y: Float) {
 
         //fun fromRaw(raw: Float2Pack) = Point(raw)
 
-        /** Constructs a point from polar coordinates determined by an [angle] and a [length]. Angle 0 is pointing to the right, and the direction is counter-clock-wise */
-        inline fun polar(x: Float, y: Float, angle: Angle, length: Float = 1f): Vector2 = Point(x + angle.cosineF * length, y + angle.sineF * length)
-        inline fun polar(x: Double, y: Double, angle: Angle, length: Float = 1f): Vector2 = Point(x + angle.cosineD * length, y + angle.sineD * length)
-        inline fun polar(base: Vector2, angle: Angle, length: Float = 1f): Vector2 = polar(base.x, base.y, angle, length)
-        inline fun polar(angle: Angle, length: Float = 1f): Vector2 = polar(0.0, 0.0, angle, length)
+        /** Constructs a point from polar coordinates determined by an [angle] and a [length]. Angle 0 is pointing to the right, and the direction is counter-clock-wise for up=UP and clock-wise for up=UP_SCREEN */
+        inline fun polar(x: Float, y: Float, angle: Angle, length: Float = 1f, up: Vector2 = UP): Vector2 = Point(x + angle.cosineF(up) * length, y + angle.sineF(up) * length)
+        inline fun polar(x: Double, y: Double, angle: Angle, length: Float = 1f, up: Vector2 = UP): Vector2 = Point(x + angle.cosineD(up) * length, y + angle.sineD(up) * length)
+        inline fun polar(base: Vector2, angle: Angle, length: Float = 1f, up: Vector2 = UP): Vector2 = polar(base.x, base.y, angle, length, up)
+        inline fun polar(angle: Angle, length: Float = 1f, up: Vector2 = UP): Vector2 = polar(0.0, 0.0, angle, length, up)
 
         inline fun middle(a: Vector2, b: Vector2): Vector2 = (a + b) * 0.5
 
-        fun angle(ax: Double, ay: Double, bx: Double, by: Double): Angle = Angle.between(ax, ay, bx, by)
-        fun angle(x1: Double, y1: Double, x2: Double, y2: Double, x3: Double, y3: Double): Angle = Angle.between(x1 - x2, y1 - y2, x1 - x3, y1 - y3)
+        fun angle(ax: Double, ay: Double, bx: Double, by: Double, up: Vector2 = UP): Angle = Angle.between(ax, ay, bx, by, up)
+        fun angle(x1: Double, y1: Double, x2: Double, y2: Double, x3: Double, y3: Double, up: Vector2 = UP): Angle = Angle.between(x1 - x2, y1 - y2, x1 - x3, y1 - y3, up)
 
-        fun angle(a: Vector2, b: Vector2): Angle = Angle.between(a, b)
-        fun angle(p1: Vector2, p2: Vector2, p3: Vector2): Angle = Angle.between(p1 - p2, p1 - p3)
+        fun angle(a: Vector2, b: Vector2, up: Vector2 = UP): Angle = Angle.between(a, b, up)
+        fun angle(p1: Vector2, p2: Vector2, p3: Vector2, up: Vector2 = UP): Angle = Angle.between(p1 - p2, p1 - p3, up)
 
-        fun angleArc(a: Vector2, b: Vector2): Angle = Angle.fromRadians(acos((a dot b) / (a.length * b.length)))
-        fun angleFull(a: Vector2, b: Vector2): Angle = Angle.between(a, b)
+        fun angleArc(a: Vector2, b: Vector2, up: Vector2 = UP): Angle = Angle.fromRadians(acos((a dot b) / (a.length * b.length))).adjustFromUp(up)
+        fun angleFull(a: Vector2, b: Vector2, up: Vector2 = UP): Angle = Angle.between(a, b, up)
 
-        fun distance(a: Double, b: Double): Double = kotlin.math.abs(a - b)
-        fun distance(x1: Double, y1: Double, x2: Double, y2: Double): Double = kotlin.math.hypot(x1 - x2, y1 - y2)
-        fun distance(x1: Float, y1: Float, x2: Float, y2: Float): Float = kotlin.math.hypot(x1 - x2, y1 - y2)
+        fun distance(a: Double, b: Double): Double = abs(a - b)
+        fun distance(x1: Double, y1: Double, x2: Double, y2: Double): Double = hypot(x1 - x2, y1 - y2)
+        fun distance(x1: Float, y1: Float, x2: Float, y2: Float): Float = hypot(x1 - x2, y1 - y2)
         fun distance(x1: Int, y1: Int, x2: Int, y2: Int): Float = distance(x1.toFloat(), y1.toFloat(), x2.toFloat(), y2.toFloat())
         fun distance(a: Vector2, b: Vector2): Float = distance(a.x, a.y, b.x, b.y)
         fun distance(a: Vector2Int, b: Vector2Int): Float = distance(a.x, a.y, b.x, b.y)
@@ -218,6 +219,7 @@ data class Vector2(val x: Float, val y: Float) {
         fun distanceSquared(x1: Float, y1: Float, x2: Float, y2: Float): Float = square(x1 - x2) + square(y1 - y2)
         fun distanceSquared(x1: Int, y1: Int, x2: Int, y2: Int): Int = square(x1 - x2) + square(y1 - y2)
 
+        @Deprecated("Likely searching for orientation")
         inline fun direction(a: Vector2, b: Vector2): Vector2 = b - a
 
         fun compare(l: Vector2, r: Vector2): Int = compare(l.x, l.y, r.x, r.y)
@@ -262,14 +264,16 @@ data class Vector2(val x: Float, val y: Float) {
 
         // https://algorithmtutor.com/Computational-Geometry/Determining-if-two-consecutive-segments-turn-left-or-right/
         /** < 0 left, > 0 right, 0 collinear */
-        fun orientation(p1: Vector2, p2: Vector2, p3: Vector2, yGoesUp: Boolean = true): Float = orientation(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y, yGoesUp)
-        fun orientation(ax: Float, ay: Float, bx: Float, by: Float, cx: Float, cy: Float, yGoesUp: Boolean = true): Float {
+        fun orientation(p1: Vector2, p2: Vector2, p3: Vector2, up: Vector2 = UP): Float = orientation(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y, up)
+        fun orientation(ax: Float, ay: Float, bx: Float, by: Float, cx: Float, cy: Float, up: Vector2 = UP): Float {
+            Orientation.checkValidUpVector(up)
             val res = crossProduct(cx - ax, cy - ay, bx - ax, by - ay)
-            return if (yGoesUp) res else -res
+            return if (up.y > 0f) res else -res
         }
-        fun orientation(ax: Double, ay: Double, bx: Double, by: Double, cx: Double, cy: Double, yGoesUp: Boolean = true): Double {
+        fun orientation(ax: Double, ay: Double, bx: Double, by: Double, cx: Double, cy: Double, up: Vector2 = UP): Double {
+            Orientation.checkValidUpVector(up)
             val res = crossProduct(cx - ax, cy - ay, bx - ax, by - ay)
-            return if (yGoesUp) res else -res
+            return if (up.y > 0f) res else -res
         }
 
         fun crossProduct(ax: Float, ay: Float, bx: Float, by: Float): Float = (ax * by) - (bx * ay)

@@ -29,13 +29,17 @@ enum class Orientation(val value: Int) {
         //    }
         //}
 
+        internal fun checkValidUpVector(up: Vector2) {
+            check(up.x == 0f && up.y.absoluteValue == 1f) { "up vector only supports (0, -1) and (0, +1) for now" }
+        }
+
         // @TODO: Should we provide an UP vector as reference instead? ie. Vector2(0, +1) or Vector2(0, -1), would make sense for 3d?
         fun orient2d(pa: Point, pb: Point, pc: Point, up: Vector2 = Vector2.UP): Orientation {
             return orient2d(pa.xD, pa.yD, pb.xD, pb.yD, pc.xD, pc.yD, up = up)
         }
 
         fun orient2d(paX: Double, paY: Double, pbX: Double, pbY: Double, pcX: Double, pcY: Double, epsilon: Double = EPSILON, up: Vector2 = Vector2.UP): Orientation {
-            check(up.x == 0f && up.y.absoluteValue == 1f) { "up vector only supports (0, -1) and (0, +1) for now" }
+            checkValidUpVector(up)
             // Cross product
             val detleft: Double = (paX - pcX) * (pbY - pcY)
             val detright: Double = (paY - pcY) * (pbX - pcX)

@@ -35,6 +35,12 @@ class PointTest {
         assertEquals(Point(4, 6), Point(1, 2) + Point(3, 4))
     }
 
+    @Test
+    fun testPolarConstruction() {
+        assertEqualsFloat(Point(10, 20), Point.polar(Point(10, 10), 90.degrees, 10f, up = Vector2.UP))
+        assertEqualsFloat(Point(10, 0), Point.polar(Point(10, 10), 90.degrees, 10f, up = Vector2.UP_SCREEN))
+    }
+
     private fun assertEquals(a: Point, b: Point, absoluteTolerance: Float = 1e-7f) {
         assertTrue("Point $a != $b absoluteTolerance=$absoluteTolerance") {
             a.x.isAlmostEquals(b.x, absoluteTolerance) &&
