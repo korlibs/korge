@@ -12,9 +12,9 @@ import kotlin.test.*
 // https://github.com/korlibs/korge/discussions/1155
 class AGMetalTest {
     @Test
-    fun test() = macTestWithAutoreleasePool{
+    fun test() = macTestWithAutoreleasePool {
         val device = MetalGlobals.MTLCreateSystemDefaultDevice()?.asObjcDynamicInterface<MTLDevice>()
-            ?: error("Can't get MTLDevice")
+            ?: return@macTestWithAutoreleasePool run { println("Skipping AGMetalTest since couldn't get metal device") }
 
         println("device.name=${device.name}")
         println("device.architecture.name=${device.architecture.name}")
