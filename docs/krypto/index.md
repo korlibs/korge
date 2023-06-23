@@ -7,7 +7,7 @@ priority: 950
 
 Krypto is a cryptography library for Multiplatform Kotlin 1.3.
 
-<https://github.com/korlibs/krypto>
+<https://github.com/korlibs/korge/tree/main/krypto>
 
 {% include stars.html project="korge" central="com.soywiz.korlibs.krypto/krypto" %}
 
