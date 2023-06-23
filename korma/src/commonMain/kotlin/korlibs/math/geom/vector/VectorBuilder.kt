@@ -231,6 +231,12 @@ interface VectorBuilder {
         for (i in 1 until path.size) lineTo(path[i])
         if (close) close()
     }
+    fun polygon(path: List<Point>, close: Boolean = true) = polygon(path.toPointArrayList(), close = close)
+    fun polygon(vararg path: Point, close: Boolean = true) = polygon(path.toPointArrayList(), close = close)
+
+    fun polyline(points: PointList, close: Boolean = false): Unit = polygon(points, close = close)
+    fun polyline(points: List<Point>, close: Boolean = false): Unit = polyline(points.toPointArrayList(), close = close)
+    fun polyline(vararg points: Point, close: Boolean = false): Unit = polyline(points.toPointArrayList(), close = close)
 
     fun moveToH(x: Float) = moveTo(Point(x, lastPos.yF))
     fun moveToV(y: Float) = moveTo(Point(lastPos.xF, y))
@@ -276,8 +282,6 @@ interface VectorBuilder {
     }
 
     fun <T> transformed(m: Matrix, block: VectorBuilder.() -> T): T = block(this.transformed(m))
-
-
 }
 
 private fun VectorBuilder._regularPolygonStar(

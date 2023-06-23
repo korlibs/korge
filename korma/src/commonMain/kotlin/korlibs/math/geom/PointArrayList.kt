@@ -76,14 +76,12 @@ fun PointList.mapPoints(gen: (p: Point) -> Point): PointList {
 }
 
 fun List<Point>.toPointArrayList(): PointArrayList = PointArrayList(size).also { for (p in this) it.add(p) }
+fun Array<out Point>.toPointArrayList(): PointArrayList = PointArrayList(size).also { for (p in this) it.add(p) }
 
 open class PointArrayList(capacity: Int = 7) : PointList, Extra by Extra.Mixin() {
     override var closed: Boolean = false
     private val data = FloatArrayList(capacity * 2)
     override val size get() = data.size / 2
-
-    fun isEmpty() = size == 0
-    fun isNotEmpty() = size != 0
 
     fun clear(): PointArrayList {
         data.clear()
