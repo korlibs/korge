@@ -280,6 +280,11 @@ data class Matrix4 private constructor(
         )
     }
 
+    fun isAlmostEquals(other: Matrix4, epsilon: Float = 0.00001f): Boolean = c0.isAlmostEquals(other.c0, epsilon)
+        && c1.isAlmostEquals(other.c1, epsilon)
+        && c2.isAlmostEquals(other.c2, epsilon)
+        && c3.isAlmostEquals(other.c3, epsilon)
+
     companion object {
         const val M00 = 0
         const val M10 = 1
