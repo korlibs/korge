@@ -42,6 +42,9 @@ data class Vector3(val x: Float, val y: Float, val z: Float) {
         fun length(x: Float, y: Float, z: Float): Float = sqrt(lengthSq(x, y, z))
         fun lengthSq(x: Float, y: Float, z: Float): Float = x * x + y * y + z * z
 
+        fun fromArray(array: FloatArray, offset: Int): Vector3 =
+            Vector3(array[offset + 0], array[offset + 1], array[offset + 2])
+
         inline fun func(func: (index: Int) -> Float): Vector3 = Vector3(func(0), func(1), func(2))
     }
 
