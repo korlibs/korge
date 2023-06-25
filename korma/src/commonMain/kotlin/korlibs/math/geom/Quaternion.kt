@@ -1,5 +1,6 @@
 package korlibs.math.geom
 
+import korlibs.math.*
 import korlibs.memory.pack.*
 import kotlin.math.*
 
@@ -36,6 +37,25 @@ data class Quaternion(val x: Float, val y: Float, val z: Float, val w: Float) {
     constructor(x: Double, y: Double, z: Double, w: Double) : this(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat())
 
     fun toMatrix(): Matrix4 {
+        val v = _toMatrix()
+        return Matrix4.fromRows(
+            v[0], v[1], v[2], 0f,
+            v[3], v[4], v[5], 0f,
+            v[6], v[7], v[8], 0f,
+            0f, 0f, 0f, 1f,
+        )
+    }
+
+    fun toMatrix3(): Matrix3 {
+        val v = _toMatrix()
+        return Matrix3.fromRows(
+            v[0], v[1], v[2],
+            v[3], v[4], v[5],
+            v[6], v[7], v[8],
+        )
+    }
+
+    private fun _toMatrix(): FloatArray {
         val xx = x * x
         val xy = x * y
         val xz = x * z
@@ -46,11 +66,10 @@ data class Quaternion(val x: Float, val y: Float, val z: Float, val w: Float) {
         val zz = z * z
         val zw = z * w
 
-        return Matrix4.fromRows(
-            1 - 2 * (yy + zz), 2 * (xy - zw), 2 * (xz + yw), 0f,
-            2 * (xy + zw), 1 - 2 * (xx + zz), 2 * (yz - xw), 0f,
-            2 * (xz - yw), 2 * (yz + xw), 1 - 2 * (xx + yy), 0f,
-            0f, 0f, 0f, 1f
+        return floatArrayOf(
+            1 - 2 * (yy + zz), 2 * (xy - zw), 2 * (xz + yw),
+            2 * (xy + zw), 1 - 2 * (xx + zz), 2 * (yz - xw),
+            2 * (xz - yw), 2 * (yz + xw), 1 - 2 * (xx + yy),
         )
     }
 
@@ -115,6 +134,11 @@ data class Quaternion(val x: Float, val y: Float, val z: Float, val w: Float) {
     }
 
     fun toEuler(): EulerRotation = toEuler(x, y, z, w)
+    fun isAlmostEquals(other: Quaternion, epsilon: Float = 0.00001f): Boolean =
+        this.x.isAlmostEquals(other.x, epsilon)
+            && this.y.isAlmostEquals(other.y, epsilon)
+            && this.z.isAlmostEquals(other.z, epsilon)
+            && this.w.isAlmostEquals(other.w, epsilon)
 
     companion object {
         val IDENTITY = Quaternion()
@@ -204,26 +228,40 @@ data class Quaternion(val x: Float, val y: Float, val z: Float, val w: Float) {
             )
         }
 
-        fun fromRotationMatrix(m: Matrix4): Quaternion {
-            m.apply {
-                val t = v00 + v11 + v22
-                return when {
-                    t > 0 -> {
-                        val s = .5f / sqrt(t + 1f)
-                        Quaternion(((v21 - v12) * s), ((v02 - v20) * s), ((v10 - v01) * s), (0.25f / s))
-                    }
-                    v00 > v11 && v00 > v22 -> {
-                        val s = 2f * sqrt(1f + v00 - v11 - v22)
-                        Quaternion((0.25f * s), ((v01 + v10) / s), ((v02 + v20) / s), ((v21 - v12) / s))
-                    }
-                    v11 > v22 -> {
-                        val s = 2f * sqrt(1f + v11 - v00 - v22)
-                        Quaternion(((v01 + v10) / s), (0.25f * s), ((v12 + v21) / s), ((v02 - v20) / s))
-                    }
-                    else -> {
-                        val s = 2f * sqrt(1f + v22 - v00 - v11)
-                        Quaternion(((v02 + v20) / s), ((v12 + v21) / s), (0.25f * s), ((v10 - v01) / s))
-                    }
+        fun fromRotationMatrix(m: Matrix4): Quaternion = fromRotationMatrix(
+            m.v00, m.v10, m.v20,
+            m.v01, m.v11, m.v21,
+            m.v02, m.v12, m.v22,
+        )
+
+        fun fromRotationMatrix(m: Matrix3): Quaternion = fromRotationMatrix(
+            m.v00, m.v10, m.v20,
+            m.v01, m.v11, m.v21,
+            m.v02, m.v12, m.v22,
+        )
+
+        fun fromRotationMatrix(
+            v00: Float, v10: Float, v20: Float,
+            v01: Float, v11: Float, v21: Float,
+            v02: Float, v12: Float, v22: Float,
+        ): Quaternion {
+            val t = v00 + v11 + v22
+            return when {
+                t > 0 -> {
+                    val s = .5f / sqrt(t + 1f)
+                    Quaternion(((v21 - v12) * s), ((v02 - v20) * s), ((v10 - v01) * s), (0.25f / s))
+                }
+                v00 > v11 && v00 > v22 -> {
+                    val s = 2f * sqrt(1f + v00 - v11 - v22)
+                    Quaternion((0.25f * s), ((v01 + v10) / s), ((v02 + v20) / s), ((v21 - v12) / s))
+                }
+                v11 > v22 -> {
+                    val s = 2f * sqrt(1f + v11 - v00 - v22)
+                    Quaternion(((v01 + v10) / s), (0.25f * s), ((v12 + v21) / s), ((v02 - v20) / s))
+                }
+                else -> {
+                    val s = 2f * sqrt(1f + v22 - v00 - v11)
+                    Quaternion(((v02 + v20) / s), ((v12 + v21) / s), (0.25f * s), ((v10 - v01) / s))
                 }
             }
         }

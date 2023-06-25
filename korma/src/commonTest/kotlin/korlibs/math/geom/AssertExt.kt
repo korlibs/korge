@@ -37,6 +37,7 @@ private fun <T : Any> T?.isAlmostEqualsGeneric(
         is Vector3 -> e.isAlmostEquals((a as? Vector3?) ?: return false, absoluteTolerance.toFloat())
         is Matrix3 -> e.isAlmostEquals((a as? Matrix3?) ?: return false, absoluteTolerance.toFloat())
         is Matrix4 -> e.isAlmostEquals((a as? Matrix4?) ?: return false, absoluteTolerance.toFloat())
+        is Quaternion -> e.isAlmostEquals((a as? Quaternion?) ?: return false, absoluteTolerance.toFloat())
         is MPoint -> e.isAlmostEquals((a as? MPoint?) ?: return false, absoluteTolerance)
         is Float -> {
             if (a !is Float?) return false

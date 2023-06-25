@@ -230,3 +230,5 @@ fun Matrix3.toMatrix4(): Matrix4 = Matrix4.fromRows(
     v20, v21, v22, 0f,
     0f, 0f, 0f, 1f,
 )
+
+fun Matrix3.toQuaternion(): Quaternion = Quaternion.fromRotationMatrix(this)

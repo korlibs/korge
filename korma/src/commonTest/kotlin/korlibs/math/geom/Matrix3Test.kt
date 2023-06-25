@@ -144,4 +144,18 @@ class Matrix3Test {
         assertEqualsFloat(1f, Matrix3.IDENTITY.determinant)
         assertEqualsFloat(96f, Matrix3.fromRows(1f, 2f, 3f, -4f, -5f, -6f, 7f, -8f, 9f).determinant)
     }
+
+    @Test
+    fun testQuaternion() {
+        val quat = Quaternion.fromEuler(30.degrees, 15.degrees, 90.degrees)
+        val vec = Vector3(1f, -2f, 3f)
+        assertEqualsFloat(
+            quat,
+            quat.toMatrix3().toQuaternion(),
+        )
+        assertEqualsFloat(
+            quat.transform(vec),
+            quat.toMatrix3().transform(vec)
+        )
+    }
 }
