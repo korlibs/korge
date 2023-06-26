@@ -35,7 +35,12 @@ private fun <T : Any> T?.isAlmostEqualsGeneric(
         is Ray -> e.isAlmostEquals((a as? Ray?) ?: return false, absoluteTolerance.toFloat())
         is Point -> e.isAlmostEquals((a as? Point?) ?: return false, absoluteTolerance.toFloat())
         is Vector3 -> e.isAlmostEquals((a as? Vector3?) ?: return false, absoluteTolerance.toFloat())
+        is Matrix3 -> e.isAlmostEquals((a as? Matrix3?) ?: return false, absoluteTolerance.toFloat())
+        is Matrix4 -> e.isAlmostEquals((a as? Matrix4?) ?: return false, absoluteTolerance.toFloat())
+        is Quaternion -> e.isAlmostEquals((a as? Quaternion?) ?: return false, absoluteTolerance.toFloat())
+        is EulerRotation -> e.isAlmostEquals((a as? EulerRotation?) ?: return false, absoluteTolerance.toFloat())
         is MPoint -> e.isAlmostEquals((a as? MPoint?) ?: return false, absoluteTolerance)
+        is Angle -> e.isAlmostEquals((a as? Angle?) ?: return false, absoluteTolerance.toFloat())
         is Float -> {
             if (a !is Float?) return false
             if (e.isNaN() && a.isNaN()) return true

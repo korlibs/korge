@@ -54,7 +54,11 @@ inline class Vector4(val data: Float4Pack) {
     val lengthSquared: Float get() = (x * x) + (y * y) + (z * z) + (w * w)
     val length: Float get() = sqrt(lengthSquared)
 
-    fun normalized(): Vector4 = this / length
+    fun normalized(): Vector4 {
+        val length = this.length
+        if (length == 0f) return Vector4.ZERO
+        return this / length
+    }
 
     operator fun get(index: Int): Float = when (index) {
         0 -> x
