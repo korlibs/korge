@@ -189,4 +189,36 @@ class AngleTest {
         assertEqualsFloat(listOf(0.0, 1.0), listOf(Angle.QUARTER.cosineD(Vector2.UP), Angle.QUARTER.sineD(Vector2.UP)))
         assertEqualsFloat(listOf(0.0, -1.0), listOf(Angle.QUARTER.cosineD(Vector2.UP_SCREEN), Angle.QUARTER.sineD(Vector2.UP_SCREEN)))
     }
+
+    @Test
+    fun testNormalizeHalf() {
+        assertEquals((-90).degrees, 270.degrees.normalizedHalf)
+        assertEquals(180.degrees, 180.degrees.normalizedHalf)
+        assertEquals((-179).degrees, 181.degrees.normalizedHalf)
+
+        assertEquals(0.degrees, (-360).degrees.normalizedHalf)
+        assertEquals(90.degrees, (-270).degrees.normalizedHalf)
+        assertEquals(180.degrees, (-180).degrees.normalizedHalf)
+        assertEquals((-90).degrees, (-90).degrees.normalizedHalf)
+        assertEquals(0.degrees, 0.degrees.normalizedHalf)
+        assertEquals(90.degrees, 90.degrees.normalizedHalf)
+        assertEquals(180.degrees, 180.degrees.normalizedHalf)
+        assertEquals((-90).degrees, 270.degrees.normalizedHalf)
+        assertEquals(0.degrees, 360.degrees.normalizedHalf)
+        assertEquals(0.degrees, 720.degrees.normalizedHalf)
+    }
+
+    @Test
+    fun testNormalize() {
+        assertEquals(0.degrees, (-360).degrees.normalized)
+        assertEquals(90.degrees, (-270).degrees.normalized)
+        assertEquals(180.degrees, (-180).degrees.normalized)
+        assertEquals(270.degrees, (-90).degrees.normalized)
+        assertEquals(0.degrees, 0.degrees.normalized)
+        assertEquals(90.degrees, 90.degrees.normalized)
+        assertEquals(180.degrees, 180.degrees.normalized)
+        assertEquals(270.degrees, 270.degrees.normalized)
+        assertEquals(0.degrees, 360.degrees.normalized)
+        assertEquals(0.degrees, 720.degrees.normalized)
+    }
 }
