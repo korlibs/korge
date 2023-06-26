@@ -10,7 +10,11 @@ class Vector4Test {
     @Test
     fun testToString() = assertEquals("Vector4(1, 2, 3, 4)", Vector4(1f, 2f, 3f, 4f).toString())
     @Test
-    fun testNormalized() = assertEquals(1f, Vector4(1f, 2f, 4f, 8f).normalized().length, 0.00001f)
+    fun testNormalized() {
+        assertEquals(1f, Vector4(1f, 2f, 4f, 8f).normalized().length, 0.00001f)
+        assertEquals(Vector4.ZERO, Vector4(0f, 0f, 0f, 0f).normalized())
+        assertEquals(0f, Vector4(0f, 0f, 0f, 0f).normalized().length, 0.00001f)
+    }
     @Test
     fun testEquals() {
         assertEquals(true, Vector4(1f, 2f, 3f, 4f) == Vector4(1f, 2f, 3f, 4f))
