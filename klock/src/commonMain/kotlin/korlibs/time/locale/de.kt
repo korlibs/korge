@@ -10,7 +10,7 @@ open class GermanKlockLocale : KlockLocale() {
 
     companion object : GermanKlockLocale() {
         private val NUM_TO_ORDINAL: Array<String> = arrayOf(
-            "index zero is invalid",
+            "nullte",
             "erste",
             "zweite",
             "dritte",
