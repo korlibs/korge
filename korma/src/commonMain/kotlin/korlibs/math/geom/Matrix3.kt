@@ -2,8 +2,11 @@ package korlibs.math.geom
 
 import kotlin.math.*
 
+/**
+ * Useful for representing rotations and scales.
+ */
 data class Matrix3 private constructor(
-    private val data: FloatArray,
+    internal val data: FloatArray,
 ) {
     override fun equals(other: Any?): Boolean = other is Matrix3 && this.data.contentEquals(other.data)
     override fun hashCode(): Int = data.contentHashCode()
@@ -45,6 +48,8 @@ data class Matrix3 private constructor(
     val r0: Vector3 get() = Vector3(v00, v01, v02)
     val r1: Vector3 get() = Vector3(v10, v11, v12)
     val r2: Vector3 get() = Vector3(v20, v21, v22)
+
+    fun v(index: Int): Float = data[index]
 
     fun r(row: Int): Vector3 = when (row) {
         0 -> r0
