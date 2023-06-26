@@ -1,9 +1,8 @@
 package korlibs.math.geom
 
-import korlibs.memory.pack.*
+import korlibs.math.*
 import korlibs.math.annotations.*
 import korlibs.math.internal.*
-import korlibs.math.isAlmostEquals
 import korlibs.memory.*
 import kotlin.math.*
 
@@ -34,9 +33,9 @@ data class Vector3(val x: Float, val y: Float, val z: Float) {
         operator fun invoke(): Vector3 = ZERO
 
         fun cross(a: Vector3, b: Vector3): Vector3 = Vector3(
-            (a.y * b.z - a.z * b.y),
-            (a.z * b.x - a.x * b.z),
-            (a.x * b.y - a.y * b.x),
+            ((a.y * b.z) - (a.z * b.y)),
+            ((a.z * b.x) - (a.x * b.z)),
+            ((a.x * b.y) - (a.y * b.x)),
         )
 
         fun length(x: Float, y: Float, z: Float): Float = sqrt(lengthSq(x, y, z))
@@ -54,7 +53,12 @@ data class Vector3(val x: Float, val y: Float, val z: Float) {
 
     val lengthSquared: Float get() = (x * x) + (y * y) + (z * z)
     val length: Float get() = sqrt(lengthSquared)
-    fun normalized(): Vector3 = this / length
+    fun normalized(): Vector3 {
+        val length = this.length
+        //if (length.isAlmostZero()) return Vector3.ZERO
+        if (length == 0f) return Vector3.ZERO
+        return this / length
+    }
 
     // https://math.stackexchange.com/questions/13261/how-to-get-a-reflection-vector
     // 𝑟=𝑑−2(𝑑⋅𝑛)𝑛
