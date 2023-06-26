@@ -10,6 +10,9 @@ import kotlin.math.*
 //@KormaExperimental
 //@KormaValueApi
 //inline class Matrix4 private constructor(
+/**
+ * Useful for representing complete transforms: rotations, scales, translations, projections, etc.
+ */
 data class Matrix4 private constructor(
     private val data: FloatArray,
     //val c0: Vector4, val c1: Vector4, val c2: Vector4, val c3: Vector4,
