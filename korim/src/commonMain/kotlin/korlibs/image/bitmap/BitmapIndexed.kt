@@ -1,12 +1,8 @@
 package korlibs.image.bitmap
 
-import korlibs.memory.UByteArrayInt
-import korlibs.memory.arraycopy
-import korlibs.memory.extract
-import korlibs.memory.ilog2
-import korlibs.memory.insert
 import korlibs.image.color.RGBA
 import korlibs.image.color.RgbaArray
+import korlibs.memory.*
 import kotlin.math.max
 
 abstract class BitmapIndexed(
@@ -103,7 +99,10 @@ abstract class BitmapIndexed(
         return maxRefColor + 1
     }
 
-	override fun toBMP32(): Bitmap32 = Bitmap32(width, height, premultiplied = premultiplied).also { outBmp ->
+    override fun contentEquals(other: Bitmap): Boolean = (other is BitmapIndexed) && (this.width == other.width) && (this.height == other.height) && data.contentEquals(other.data)
+    override fun contentHashCode(): Int = (width * 31 + height) + data.contentHashCode() + premultiplied.toInt()
+
+    override fun toBMP32(): Bitmap32 = Bitmap32(width, height, premultiplied = premultiplied).also { outBmp ->
         val out = outBmp.ints
         val pal = this@BitmapIndexed.palette.ints
         for (n in 0 until area) out[n] = pal[getIntIndex(n)]

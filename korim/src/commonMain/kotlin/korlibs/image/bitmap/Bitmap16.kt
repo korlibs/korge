@@ -1,12 +1,12 @@
 package korlibs.image.bitmap
 
-import korlibs.memory.arraycopy
 import korlibs.image.color.ColorFormat
 import korlibs.image.color.RGBA
 import korlibs.image.color.RGBA_4444
 import korlibs.image.color.packRGBA
 import korlibs.image.color.unpackToRGBA
 import korlibs.io.lang.assert
+import korlibs.memory.*
 
 class Bitmap16(
     width: Int,
@@ -42,5 +42,8 @@ class Bitmap16(
         }
 	}
 
-	override fun toString(): String = "Bitmap16($width, $height, format=$format)"
+    override fun contentEquals(other: Bitmap): Boolean = (other is Bitmap16) && (this.width == other.width) && (this.height == other.height) && data.contentEquals(other.data)
+    override fun contentHashCode(): Int = (width * 31 + height) + data.contentHashCode() + premultiplied.toInt()
+
+    override fun toString(): String = "Bitmap16($width, $height, format=$format)"
 }

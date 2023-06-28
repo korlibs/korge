@@ -122,6 +122,9 @@ class FloatBitmap32(
         }
     }
 
+    override fun contentEquals(other: Bitmap): Boolean = (other is FloatBitmap32) && (this.width == other.width) && (this.height == other.height) && data.contentEquals(other.data)
+    override fun contentHashCode(): Int = (width * 31 + height) + data.contentHashCode() + premultiplied.toInt()
+
     inline fun updateComponent(block: (component: Int, value: Float) -> Float): Unit {
         forEach { n, x, y ->
             setRgbaf(
