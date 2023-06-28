@@ -768,6 +768,10 @@ abstract class View internal constructor(
     }
 
     protected open fun onParentChanged() {
+        onAncestorChanged()
+    }
+
+    open fun onAncestorChanged() {
     }
 
     override fun invalidateRender() {

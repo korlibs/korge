@@ -54,7 +54,8 @@ open class UIView(
         parent?.onChildChangedSize(this)
 	}
 
-    override fun onParentChanged() {
+    override fun onAncestorChanged() {
+        super.onAncestorChanged()
         updateState()
     }
 

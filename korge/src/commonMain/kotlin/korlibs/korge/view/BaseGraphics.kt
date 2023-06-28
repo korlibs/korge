@@ -51,14 +51,38 @@ abstract class BaseGraphics(
         invalidateLocalBounds()
     }
 
-    @OptIn(KorgeExperimental::class)
-    override fun renderInternal(ctx: RenderContext) {
+    override fun onAncestorChanged() {
+        super.onAncestorChanged()
+        if (parent == null || stage == null) {
+            if (bitmap.base != Bitmaps.transparent.bmp) {
+                //println("REMOVED FROM STAGE! $bitmap")
+                bitmapsToRemove.add(bitmap.base)
+            }
+            clearBitmaps(onParentChanged = true)
+        }
+    }
+
+    private fun clearBitmaps(onParentChanged: Boolean = false) {
+        if (bitmapsToRemove.isEmpty()) return
+
+        if (onParentChanged) {
+            //println("clearBitmaps! onParentChanged=$onParentChanged : $bitmapsToRemove")
+        }
+
         bitmapsToRemove.fastForEach {
             if (it != Bitmaps.transparent.bmp) {
-                ctx.agBitmapTextureManager.removeBitmap(it, "BaseGraphics")
+                _ctx?.agBitmapTextureManager?.removeBitmap(it, "BaseGraphics")
             }
         }
         bitmapsToRemove.clear()
+    }
+
+    private var _ctx: RenderContext? = null
+
+    @OptIn(KorgeExperimental::class)
+    override fun renderInternal(ctx: RenderContext) {
+        _ctx = ctx
+        clearBitmaps(onParentChanged = false)
 
         if (redrawIfRequired()) {
             //ctx.coroutineContext.launchUnscoped { this.bitmap.bmpBase.writeTo(localVfs("/tmp/image.png"), PNG) }
