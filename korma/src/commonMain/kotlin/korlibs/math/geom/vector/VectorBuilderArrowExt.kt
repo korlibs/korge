@@ -1,5 +1,6 @@
 package korlibs.math.geom.vector
 
+import korlibs.math.annotations.*
 import korlibs.math.geom.*
 
 fun VectorBuilder.arrowTo(p: Point, capEnd: ArrowCap = ArrowCap.Line(null), capStart: ArrowCap = ArrowCap.NoCap) {
@@ -42,3 +43,18 @@ interface ArrowCap {
         override fun VectorBuilder.append(p0: Point, p1: Point, width: Float) = circle(p1, radius ?: (10f))
     }
 }
+
+/** Creates a polyline from [points] adding arrow caps ([capEnd] and [capStart]) in each segment. Useful for displaying directed graphs */
+fun VectorBuilder.polyArrows(points: PointList, capEnd: ArrowCap = ArrowCap.Line(), capStart: ArrowCap = ArrowCap.NoCap) {
+    if (points.isEmpty()) return
+    moveTo(points[0])
+    for (n in 1 until points.size) arrowTo(points[n], capEnd, capStart)
+}
+
+/** Creates a polyline from [points] adding arrow caps ([capEnd] and [capStart]) in each segment. Useful for displaying directed graphs */
+@OptIn(KormaExperimental::class)
+fun VectorBuilder.polyArrows(vararg points: Point, capEnd: ArrowCap = ArrowCap.Line(), capStart: ArrowCap = ArrowCap.NoCap) =
+    polyArrows(pointArrayListOf(*points), capEnd, capStart)
+/** Creates a polyline from [points] adding arrow caps ([capEnd] and [capStart]) in each segment. Useful for displaying directed graphs */
+fun VectorBuilder.polyArrows(points: List<Point>, capEnd: ArrowCap = ArrowCap.Line(), capStart: ArrowCap = ArrowCap.NoCap) =
+    polyArrows(points.toPointArrayList(), capEnd, capStart)

@@ -7,6 +7,9 @@ import korlibs.math.roundDecimalPlaces
 import kotlin.math.*
 
 sealed interface IVectorArrayList : Extra {
+    fun isEmpty(): Boolean = size == 0
+    fun isNotEmpty(): Boolean = size != 0
+
     val closed: Boolean
     val size: Int
     val dimensions: Int
