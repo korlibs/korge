@@ -771,7 +771,12 @@ abstract class View internal constructor(
         onAncestorChanged()
     }
 
-    open fun onAncestorChanged() {
+    //fun KorgeInternalApi._onAncestorChanged() {
+    internal fun _onAncestorChanged() {
+        onAncestorChanged()
+    }
+
+    protected open fun onAncestorChanged() {
     }
 
     override fun invalidateRender() {

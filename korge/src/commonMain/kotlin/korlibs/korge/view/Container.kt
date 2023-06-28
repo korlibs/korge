@@ -149,7 +149,8 @@ open class Container(
     override fun onAncestorChanged() {
         super.onAncestorChanged()
         forEachChild {
-            it.onAncestorChanged()
+            //it.apply { KorgeInternalApi._onAncestorChanged() }
+            it._onAncestorChanged()
         }
     }
     /**
