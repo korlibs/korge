@@ -146,6 +146,13 @@ open class Container(
     open fun onChildChangedSize(view: View) {
     }
 
+    override fun onAncestorChanged() {
+        super.onAncestorChanged()
+        forEachChild {
+            //it.apply { KorgeInternalApi._onAncestorChanged() }
+            it._onAncestorChanged()
+        }
+    }
     /**
      * Retrieves the index of a given child [View].
      */
