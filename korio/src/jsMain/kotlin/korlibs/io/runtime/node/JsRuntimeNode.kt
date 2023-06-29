@@ -22,6 +22,7 @@ import korlibs.io.runtime.JsRuntime
 import korlibs.io.stream.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.*
 import org.khronos.webgl.ArrayBuffer
 import org.khronos.webgl.Int8Array
 import org.khronos.webgl.Uint8Array
@@ -251,6 +252,7 @@ private external interface NodeFS {
     fun chmod(path: String, value: Int, callback: (Error?) -> Unit)
     fun open(path: String, cmode: String, callback: (Error?, NodeFD?) -> Unit)
     fun read(fd: NodeFD?, buffer: NodeJsBuffer, offset: Int, len: Int, position: Double, callback: (Error?, Int, NodeJsBuffer) -> Unit)
+    fun readdir(path: String, callback: (err: Error?, files: Array<String>) -> Unit)
     fun write(fd: NodeFD?, buffer: NodeJsBuffer, offset: Int, len: Int, position: Double, callback: (Error?, Int, NodeJsBuffer) -> Unit)
     fun ftruncate(fd: NodeFD?, length: Double, callback: (Error?) -> Unit)
     fun fstat(fd: NodeFD?, callback: (Error?, NodeFileStat) -> Unit)
@@ -288,6 +290,19 @@ private class NodeJsLocalVfs : LocalVfs() {
             if (err != null) deferred.completeExceptionally(err) else deferred.complete(Unit)
         }
         return deferred.await()
+    }
+
+    override suspend fun listFlow(path: String): Flow<VfsFile> {
+        val deferred = CompletableDeferred<Array<String>>()
+        nodeFS.readdir(path) { err, items ->
+            if (err != null) {
+                deferred.completeExceptionally(err)
+            } else {
+                deferred.complete(items)
+            }
+        }
+        val files: List<VfsFile> = deferred.await().map { this.file("$path/$it") }
+        return flowOf(*files.toTypedArray())
     }
 
     override suspend fun stat(path: String): VfsStat {
