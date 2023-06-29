@@ -10,6 +10,7 @@ import korlibs.io.lang.toString
 import korlibs.io.stream.readAll
 import korlibs.io.stream.slice
 import korlibs.io.util.expectException
+import kotlinx.coroutines.flow.*
 import kotlin.test.*
 
 class LocalVfsTest {
@@ -108,4 +109,18 @@ class LocalVfsTest {
     fun testReadResourceTxt() = suspendTest {
         assertEquals("HELLO", resourcesVfs["resource.txt"].readString())
     }
+
+    @Test
+    fun testListFlow() = suspendTest {
+        val cwd = localCurrentDirVfs
+        val list = cwd.list().toList()
+        // println(cwd.list().toList())
+        assertTrue("At least one file in the current directory $list") {
+            cwd.list().toList().isNotEmpty()
+        }
+        assertTrue("Checks that all the returned files are children of cwd") {
+            cwd.list().toList().all { it.parent == cwd }
+        }
+    }
+
 }
