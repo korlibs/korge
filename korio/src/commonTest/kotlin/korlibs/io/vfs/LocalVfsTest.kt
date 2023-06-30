@@ -114,8 +114,8 @@ class LocalVfsTest {
     fun testListFlow() = suspendTest {
         val cwd = localCurrentDirVfs
         val list = cwd.list().toList()
-        // println(cwd.list().toList())
-        assertTrue("At least one file in the current directory $list") {
+        //println(cwd.list().toList())
+        assertTrue("At least one file in the current directory $list in ${StandardPaths.cwd}") {
             cwd.list().toList().isNotEmpty()
         }
         assertTrue("Checks that all the returned files are children of cwd") {

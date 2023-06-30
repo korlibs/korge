@@ -1,27 +1,28 @@
 package korlibs.io.file.std
 
-import android.content.Context
-import android.os.Build
-import korlibs.io.android.androidContext
-import korlibs.io.file.Vfs
-import korlibs.io.file.VfsFile
-import korlibs.io.file.VfsOpenMode
-import korlibs.io.file.VfsStat
-import korlibs.io.net.doIo
-import korlibs.io.stream.AsyncStream
-import korlibs.io.stream.openAsync
-import korlibs.io.util.LONG_ZERO_TO_MAX_RANGE
-import korlibs.io.util.endExclusiveClamped
-import java.io.ByteArrayOutputStream
-import java.io.File
-import java.io.IOException
+import android.content.*
+import android.os.*
+import korlibs.io.android.*
+import korlibs.io.async.*
+import korlibs.io.file.*
+import korlibs.io.net.*
+import korlibs.io.stream.*
+import korlibs.io.util.*
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.*
+import java.io.*
 import java.net.URL
-import kotlin.math.min
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.asFlow
+import kotlin.math.*
 
-private val absoluteCwd by lazy { File(".").absolutePath }
+private var _vfsInitWithAndroidContextOnce: Boolean = false
+var absoluteCwd = File(".").absolutePath
 val tmpdir: String by lazy { System.getProperty("java.io.tmpdir") }
+
+fun vfsInitWithAndroidContextOnce(context: Context) {
+    if (_vfsInitWithAndroidContextOnce) return
+    _vfsInitWithAndroidContextOnce = true
+    absoluteCwd = context.applicationInfo.dataDir
+}
 
 class AndroidDeferredVfs(private val generate: (Context) -> VfsFile) : Vfs.Proxy() {
     private var _generated: VfsFile? = null
@@ -75,13 +76,13 @@ class AndroidResourcesVfs : Vfs() {
 
     override suspend fun listFlow(path: String): Flow<VfsFile> {
         val context = androidContext()
-        return doIo {
+        return flow<VfsFile> {
             val rpath = path.trim('/')
             val files = context.assets.list(rpath)?.toList() ?: emptyList()
             //println("AndroidResourcesVfs.listSimple: path=$path, rpath=$rpath")
             //println(" -> $files")
             files.map { file(it) }
-        }.asFlow()
+        }.flowOn(Dispatchers.CIO)
     }
 
     override suspend fun stat(path: String): VfsStat {

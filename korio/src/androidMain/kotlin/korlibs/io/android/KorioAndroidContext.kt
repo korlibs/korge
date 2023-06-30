@@ -1,6 +1,7 @@
 package korlibs.io.android
 
 import android.content.*
+import korlibs.io.file.std.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
 
@@ -11,8 +12,11 @@ import kotlin.coroutines.*
 class AndroidCoroutineContext(val context: Context) : CoroutineContext.Element {
 	object Key : CoroutineContext.Key<AndroidCoroutineContext>
 
-	override val key: CoroutineContext.Key<*> = Key
+    init {
+        vfsInitWithAndroidContextOnce(context)
+    }
 
+	override val key: CoroutineContext.Key<*> = Key
 }
 
 suspend fun <T> withAndroidContext(context: Context, callback: suspend CoroutineScope.() -> T): T {
