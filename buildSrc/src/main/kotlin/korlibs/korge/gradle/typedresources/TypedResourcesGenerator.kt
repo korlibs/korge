@@ -12,9 +12,17 @@ import java.io.*
 
 class TypedResourcesGenerator {
     companion object {
+        val STARTS_WITH_NUMBER = Regex("^\\d")
         val REGEX_NON_WORDS = Regex("\\W+")
     }
-    fun String.normalizeName(): String = this.replace(REGEX_NON_WORDS, "_").trim('_')
+    fun String.normalizeName(): String {
+        val res = this.replace(REGEX_NON_WORDS, "_").trim('_')
+        return if (STARTS_WITH_NUMBER.matchesAt(res, 0)) "n$res" else res
+    }
+
+    fun String.nameToVariable(): String {
+        return normalizeName().textCase().camelCase()
+    }
 
     fun generateForFolders(resourcesFolder: SFile): String {
         return Indenter {
@@ -56,12 +64,12 @@ class TypedResourcesGenerator {
                     line("${if (classSuffix.isEmpty()) "interface" else "object"} KR$classSuffix") {
                         line("val __file get() = resourcesVfs[${folder.path.quoted}]")
                         for (file in files.sortedBy { it.name }
-                            .distinctBy { it.nameWithoutExtension.normalizeName().textCase().camelCase() }) {
+                            .distinctBy { it.nameWithoutExtension.nameToVariable() }) {
                             if (file.path == "") continue
                             if (file.name.startsWith(".")) continue
                             val path = file.path
                             if (path.isEmpty()) continue
-                            val varName = file.nameWithoutExtension.normalizeName().textCase().camelCase()
+                            val varName = file.nameWithoutExtension.nameToVariable()
                             val fullVarName = file.path.normalizeName()
                             val extension = File(path).extension.lowercase()
                             //println("extension=$extension")

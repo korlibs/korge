@@ -13,10 +13,12 @@ class TypedResourcesGeneratorTest {
                 "sfx/sound.mp3" to "",
                 "gfx/demo.atlas/hello.png" to "",
                 "gfx/demo.atlas/world.png" to "",
+                "0000/1111/222a.png" to "",
                 "other/file.raw" to "",
             )
         )
-        //println(generated)
+        val generatedNormalized = generated.trim().replace("\t", "    ")
+        //println(generatedNormalized)
         assertEquals(
 """
 import korlibs.image.atlas.Atlas
@@ -40,10 +42,16 @@ object __KR {
     
     interface KR {
         val __file get() = resourcesVfs[""]
+        @ResourceVfsPath("0000") val `n0000` get() = __KR.KR0000
         @ResourceVfsPath("gfx") val `gfx` get() = __KR.KRGfx
         @ResourceVfsPath("hello.png") val `hello` get() = TypedVfsFileBitmap(resourcesVfs["hello.png"])
         @ResourceVfsPath("other") val `other` get() = __KR.KROther
         @ResourceVfsPath("sfx") val `sfx` get() = __KR.KRSfx
+    }
+    
+    object KR0000 {
+        val __file get() = resourcesVfs["0000"]
+        @ResourceVfsPath("0000/1111") val `n1111` get() = __KR.KR00001111
     }
     
     object KRGfx {
@@ -60,6 +68,11 @@ object __KR {
         val __file get() = resourcesVfs["sfx"]
         @ResourceVfsPath("sfx/sound.mp3") val `sound` get() = TypedVfsFileSound(resourcesVfs["sfx/sound.mp3"])
     }
+    
+    object KR00001111 {
+        val __file get() = resourcesVfs["0000/1111"]
+        @ResourceVfsPath("0000/1111/222a.png") val `n222a` get() = TypedVfsFileBitmap(resourcesVfs["0000/1111/222a.png"])
+    }
 }
 
 inline class AtlasGfxDemoAtlas(val __atlas: korlibs.image.atlas.Atlas) {
@@ -68,7 +81,7 @@ inline class AtlasGfxDemoAtlas(val __atlas: korlibs.image.atlas.Atlas) {
     @ResourceVfsPath("gfx/demo.atlas/world.png") val `world` get() = __atlas["world.png"]
 }
 """.trimIndent().trim(),
-            generated.trim().replace("\t", "    ")
+            generatedNormalized
         )
     }
 }
