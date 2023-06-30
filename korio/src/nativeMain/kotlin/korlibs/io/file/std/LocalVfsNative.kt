@@ -240,24 +240,21 @@ open class LocalVfsNativeBase(val async: Boolean = true) : LocalVfs() {
     }
 
     override suspend fun listFlow(path: String) = flow {
-        withContext(Dispatchers.CIO) {
-            val dir = opendir(resolve(path))
-            val out = ArrayList<VfsFile>()
-            if (dir != null) {
-                try {
-                    while (true) {
-                        val dent = readdir(dir) ?: break
-                        val name = dent.pointed.d_name.toKString()
-                        if (name != "." && name != "..") {
-                            emit(file("$path/$name"))
-                        }
+        val dir = opendir(resolve(path))
+        if (dir != null) {
+            try {
+                while (true) {
+                    val dent = readdir(dir) ?: break
+                    val name = dent.pointed.d_name.toKString()
+                    if (name != "." && name != "..") {
+                        emit(file("$path/$name"))
                     }
-                } finally {
-                    closedir(dir)
                 }
+            } finally {
+                closedir(dir)
             }
         }
-    }
+    }.flowOn(Dispatchers.CIO)
 
     override suspend fun mkdir(path: String, attributes: List<Attribute>): Boolean =
         posixMkdir(resolve(path), "0777".toInt(8).convert()) == 0
