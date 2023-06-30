@@ -36,7 +36,7 @@ class ALSAPlatformAudioOutput(
     val channels = 2
     private val lock = Lock()
     val sdeque = AudioSamplesDeque(channels)
-    var running = true
+    var running = false
     var thread: NativeThread? = null
     var pcm: Long = 0L
 
@@ -46,6 +46,9 @@ class ALSAPlatformAudioOutput(
 
     override suspend fun add(samples: AudioSamples, offset: Int, size: Int) {
         if (!ASound2.initialized) return super.add(samples, offset, size)
+        //if (!running) start()
+
+        if (!running) delay(10.milliseconds)
 
         while (running && lock { sdeque.availableRead > 4 * 1024 }) {
             delay(10.milliseconds)
@@ -54,8 +57,19 @@ class ALSAPlatformAudioOutput(
     }
 
     override fun start() {
+        lock {
+            if (running) {
+                //println("ALREADY STARTED!")
+                return
+            }
+            running = true
+        }
+        if (pcm != 0L) {
+            //println("STOPPING FIRST!")
+            stop()
+        }
+        //println("START!")
         sdeque.clear()
-        running = true
 
         if (!ASound2.initialized) return
 
@@ -63,9 +77,10 @@ class ALSAPlatformAudioOutput(
         //cmpPtr.setLong(0L, 0L)
         //println("ALSANativeSoundProvider.snd_pcm_open")
         pcm = ASound2.snd_pcm_open("default", ASound2.SND_PCM_STREAM_PLAYBACK, 0)
+        //println("ASound2.snd_pcm_open: ${pcm}")
 
         if (pcm == 0L) {
-            println("Can't initialize ALSA")
+            error("Can't initialize ALSA")
             return
         }
 
@@ -90,32 +105,38 @@ class ALSAPlatformAudioOutput(
             //println("ALSANativeSoundProvider: Started Sound thread!")
             val buff = ShortArray(frames * channels)
             val samples = AudioSamplesInterleaved(channels, frames)
-            mainLoop@ while (running) {
-                while (lock { sdeque.availableRead < frames }) {
-                    if (!running) break@mainLoop
-                    blockingSleep(1.milliseconds)
-                }
-                val readCount = lock { sdeque.read(samples, 0, frames) }
-                //println("ALSANativeSoundProvider: readCount=$readCount")
-                val panning = this@ALSAPlatformAudioOutput.panning.toFloat()
-                //val panning = -1f
-                //val panning = +0f
-                //val panning = +1f
-                val volume = this@ALSAPlatformAudioOutput.volume.toFloat().clamp01()
-                for (ch in 0 until channels) {
-                    val pan = (if (ch == 0) -panning else +panning) + 1f
-                    val npan = pan.clamp01()
-                    val rscale: Float = npan * volume
-                    //println("panning=$panning, volume=$volume, pan=$pan, npan=$npan, rscale=$rscale")
-                    for (n in 0 until readCount) {
-                        buff[n * channels + ch] = (samples[ch, n] * rscale).toInt().toShort()
+            try {
+                mainLoop@ while (running) {
+                    while (lock { sdeque.availableRead < frames }) {
+                        if (!running) break@mainLoop
+                        blockingSleep(1.milliseconds)
+                    }
+                    val readCount = lock { sdeque.read(samples, 0, frames) }
+                    //println("ALSANativeSoundProvider: readCount=$readCount")
+                    val panning = this@ALSAPlatformAudioOutput.panning.toFloat()
+                    //val panning = -1f
+                    //val panning = +0f
+                    //val panning = +1f
+                    val volume = this@ALSAPlatformAudioOutput.volume.toFloat().clamp01()
+                    for (ch in 0 until channels) {
+                        val pan = (if (ch == 0) -panning else +panning) + 1f
+                        val npan = pan.clamp01()
+                        val rscale: Float = npan * volume
+                        //println("panning=$panning, volume=$volume, pan=$pan, npan=$npan, rscale=$rscale")
+                        for (n in 0 until readCount) {
+                            buff[n * channels + ch] = (samples[ch, n] * rscale).toInt().toShort()
+                        }
+                    }
+                    val result = ASound2.snd_pcm_writei(pcm, buff, frames)
+                    //println("result=$result")
+                    if (result == -ASound2.EPIPE) {
+                        ASound2.snd_pcm_prepare(pcm)
                     }
                 }
-                val result = ASound2.snd_pcm_writei(pcm, buff, frames)
-                //println("result=$result")
-                if (result == -ASound2.EPIPE) {
-                    ASound2.snd_pcm_prepare(pcm)
-                }
+            } finally {
+                //println("COMPLETED: $pcm")
+                thread = null
+//                stop()
             }
         }.also {
             it.isDaemon = true
@@ -125,12 +146,12 @@ class ALSAPlatformAudioOutput(
 
     override fun stop() {
         running = false
-        thread?.interrupt()
-        if (!ASound2.initialized) return
 
         if (pcm != 0L) {
             ASound2.snd_pcm_drain(pcm)
             ASound2.snd_pcm_close(pcm)
+            //println("ASound2.snd_pcm_close: ${pcm}")
+            pcm = 0L
         }
     }
 }
