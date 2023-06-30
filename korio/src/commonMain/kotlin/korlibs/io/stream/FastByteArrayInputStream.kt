@@ -195,7 +195,7 @@ class FastByteArrayInputStream(val ba: ByteArray, offset: Int = 0, val start: In
 		val startOffset = offset
 		val index = ba.indexOf(0.toByte(), offset)
 		val end = if (index >= 0) index else ba.size
-		val str = ba.copyOfRange(startOffset, end - startOffset).toString(charset)
+		val str = ba.copyOfRange(startOffset, end).toString(charset)
 		offset = if (index >= 0) end + 1 else end
 		return str
 	}
