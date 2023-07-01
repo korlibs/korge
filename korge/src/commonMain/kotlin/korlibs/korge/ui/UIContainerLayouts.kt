@@ -106,6 +106,7 @@ open class UIContainer(size: Size) : UIBaseContainer(size) {
 
 abstract class UIBaseContainer(size: Size) : UIView(size) {
     override fun onChildAdded(view: View) {
+        super.onChildAdded(view)
         relayout()
     }
 
@@ -115,6 +116,7 @@ abstract class UIBaseContainer(size: Size) : UIView(size) {
     }
 
     override fun onSizeChanged() {
+        super.onSizeChanged()
         relayout()
     }
 
@@ -132,44 +134,73 @@ abstract class UIBaseContainer(size: Size) : UIView(size) {
 }
 
 inline fun Container.uiVerticalStack(
-    width: Float = UI_DEFAULT_SIZE.width,
+    width: Float? = null,
     padding: Float = UI_DEFAULT_PADDING,
     adjustSize: Boolean = true,
     block: @ViewDslMarker UIVerticalStack.() -> Unit = {}
 ) = UIVerticalStack(width, padding, adjustSize).addTo(this).apply(block)
 
 open class UIVerticalStack(
-    width: Float = UI_DEFAULT_SIZE.width,
+    forcedWidth: Float? = null,
     padding: Float = UI_DEFAULT_PADDING,
     adjustSize: Boolean = true,
-) : UIVerticalHorizontalStack(Size(width, 0f), padding, adjustSize) {
+) : UIVerticalHorizontalStack(Size(forcedWidth ?: 100f, 0f), padding, adjustSize) {
+    var forcedWidth: Float? = forcedWidth
+        set(value) {
+            if (field != value) {
+                field = value
+                relayout()
+                //(parent as? UIContainer?)?.relayout()
+            }
+        }
+
     override fun relayout() {
         var y = 0f
+        var bb = BoundsBuilder()
         forEachChild {
             it.y = y
-            if (adjustSize) it.scaledWidthD = widthD
+            if (adjustSize && forcedWidth != null) it.scaledWidthD = widthD
             y += it.height + padding
+            bb += it.getBounds(this@UIVerticalStack)
         }
-        unscaledHeight = y
+        unscaledSize = Size(if (forcedWidth == null) bb.xmax else forcedWidth!!, y)
     }
 }
 
 inline fun Container.uiHorizontalStack(
-    height: Float = UI_DEFAULT_SIZE.height,
+    height: Float? = null,
     padding: Float = UI_DEFAULT_PADDING,
     adjustHeight: Boolean = true,
     block: @ViewDslMarker UIHorizontalStack.() -> Unit = {}
 ) = UIHorizontalStack(height, padding, adjustHeight).addTo(this).apply(block)
 
-open class UIHorizontalStack(height: Float = UI_DEFAULT_SIZE.height, padding: Float = UI_DEFAULT_PADDING, adjustHeight: Boolean = true) : UIVerticalHorizontalStack(Size(0f, height), padding, adjustHeight) {
+open class UIHorizontalStack(
+    forcedHeight: Float? = null,
+    padding: Float = UI_DEFAULT_PADDING,
+    adjustHeight: Boolean = true
+) : UIVerticalHorizontalStack(Size(0f, forcedHeight ?: 32f), padding, adjustHeight) {
+    var forcedHeight: Float? = forcedHeight
+        set(value) {
+            if (field != value) {
+                field = value
+                relayout()
+                //(parent as? UIContainer?)?.relayout()
+            }
+        }
+
     override fun relayout() {
         var x = 0f
+        var bb = BoundsBuilder()
         forEachChild {
             it.x = x
-            if (adjustSize) it.scaledHeightD = heightD
+            if (adjustSize && forcedHeight != null) it.scaledHeightD = heightD
             x += it.width + padding
+            bb += it.getBounds(this@UIHorizontalStack)
         }
-        unscaledWidth = x
+        //println("forcedHeight=$forcedHeight!")
+        //val newUnscaledSize =
+        //println("UIHorizontalStack.relayout: unscaledSize=$unscaledSize, newUnscaledSize=$newUnscaledSize")
+        unscaledSize = Size(x, if (forcedHeight == null) bb.ymax else forcedHeight!!)
     }
 }
 

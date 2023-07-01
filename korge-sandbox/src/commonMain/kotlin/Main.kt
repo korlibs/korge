@@ -135,10 +135,12 @@ suspend fun main() = Korge(
         //Demo(::MainColorTransformFilter),
         //Demo(::MainMasks),
         //Demo(::MainShape2dScene),
-        Demo(::MainSprites10k),
+        Demo(::MainUIStacks),
+        //Demo(::MainSprites10k),
         //Demo(::MainStressMatrixMultiplication),
         //Demo(::MainSDF),
         listOf(
+            Demo(::MainUIStacks),
             Demo(::MainShape2dScene),
             Demo(::MainStressMatrixMultiplication),
             Demo(::MainStressButtons),
