@@ -26,24 +26,34 @@ class TypedResourcesGenerator {
 
     fun generateForFolders(resourcesFolder: SFile): String {
         return Indenter {
-            line("import korlibs.image.atlas.Atlas")
-            line("import korlibs.io.file.VfsFile")
-            line("import korlibs.io.file.std.resourcesVfs")
-            line("import korlibs.image.atlas.readAtlas")
-            line("import korlibs.audio.sound.readSound")
-            line("import korlibs.image.format.readBitmap")
+            line("import korlibs.audio.sound.*")
+            line("import korlibs.io.file.*")
+            line("import korlibs.io.file.std.*")
+            line("import korlibs.image.bitmap.*")
+            line("import korlibs.image.atlas.*")
+            line("import korlibs.image.font.*")
+            line("import korlibs.image.format.*")
             line("")
             line("// AUTO-GENERATED FILE! DO NOT MODIFY!")
             line("")
             line("@Retention(AnnotationRetention.BINARY) annotation class ResourceVfsPath(val path: String)")
             line("inline class TypedVfsFile(val __file: VfsFile)")
-            line("inline class TypedVfsFileBitmap(val __file: VfsFile) { suspend fun read(): korlibs.image.bitmap.Bitmap = this.__file.readBitmap() }")
-            line("inline class TypedVfsFileSound(val __file: VfsFile) { suspend fun read(): korlibs.audio.sound.Sound = this.__file.readSound() }")
+            line("inline class TypedVfsFileTTF(val __file: VfsFile) {")
+            line("  suspend fun read(): korlibs.image.font.TtfFont = this.__file.readTtfFont()")
+            line("}")
+            line("inline class TypedVfsFileBitmap(val __file: VfsFile) {")
+            line("  suspend fun read(): korlibs.image.bitmap.Bitmap = this.__file.readBitmap()")
+            line("  suspend fun readSlice(atlas: MutableAtlasUnit? = null, name: String? = null): BmpSlice = this.__file.readBitmapSlice(name, atlas)")
+            line("}")
+            line("inline class TypedVfsFileSound(val __file: VfsFile) {")
+            line("  suspend fun read(): korlibs.audio.sound.Sound = this.__file.readSound()")
+            line("}")
             line("interface TypedAtlas<T>")
 
-            data class AtlasInfo(val file: SFile, val className: String)
+            data class ExtraInfo(val file: SFile, val className: String)
 
-            val atlases = arrayListOf<AtlasInfo>()
+            val atlases = arrayListOf<ExtraInfo>()
+            val ases = arrayListOf<ExtraInfo>()
 
             val exploredFolders = LinkedHashSet<SFile>()
             val foldersToExplore = ArrayDeque<SFile>()
@@ -78,11 +88,17 @@ class TypedResourcesGenerator {
                             val type: String? = when (extension) {
                                 "png", "jpg" -> "TypedVfsFileBitmap"
                                 "mp3", "wav" -> "TypedVfsFileSound"
+                                "ttf", "otf" -> "TypedVfsFileTTF"
+                                "ase" -> {
+                                    val className = "Ase${fullVarName.textCase().pascalCase()}"
+                                    ases += ExtraInfo(file, className)
+                                    "$className.TypedAse"
+                                }
                                 "atlas" -> {
                                     if (isDirectory) {
                                         extraSuffix += ".json"
                                         val className = "Atlas${fullVarName.textCase().pascalCase()}"
-                                        atlases += AtlasInfo(file, className)
+                                        atlases += ExtraInfo(file, className)
                                         "$className.TypedAtlas"
                                     } else {
                                         "TypedVfsFile"
@@ -120,6 +136,51 @@ class TypedResourcesGenerator {
                         val pathDir = file.name
                         if (pathDir.toString().isEmpty()) continue
                         line("@ResourceVfsPath(${file.path.quoted}) val `${file.nameWithoutExtension.normalizeName()}` get() = __atlas[${pathDir.quoted}]")
+                    }
+                }
+            }
+
+            for (ase in ases) {
+                line("")
+                line("inline class ${ase.className}(val data: korlibs.image.format.ImageDataContainer)") {
+                    line("inline class TypedAse(val __file: VfsFile) { suspend fun read(atlas: korlibs.image.atlas.MutableAtlasUnit? = null): ${ase.className} = ${ase.className}(this.__file.readImageDataContainer(korlibs.image.format.ASE.toProps(), atlas)) }")
+                    val aseFile = ase.file
+
+                    try {
+                        val info = ASEInfo.getAseInfo(ase.file.readBytes())
+
+                        line("enum class TypedAnimation(val animationName: String)") {
+                            for (tag in info.tags) {
+                                line("${tag.tagName.nameToVariable().uppercase()}(${tag.tagName.quoted}),")
+                            }
+                            line(";")
+                            line("companion object") {
+                                line("val list: List<TypedAnimation> = values().toList()")
+                                for (tag in info.tags) {
+                                    line("val ${tag.tagName.nameToVariable().lowercase()}: TypedAnimation get() = TypedAnimation.${tag.tagName.nameToVariable().uppercase()}")
+                                }
+                            }
+                        }
+
+                        line("inline class TypedImageData(val data: ImageData)") {
+                            line("val animations: TypedAnimation.Companion get() = TypedAnimation")
+                        }
+
+                        line("val animations: TypedAnimation.Companion get() = TypedAnimation")
+                        line("val default: TypedImageData get() = TypedImageData(data.default)")
+                        for (slice in info.slices) {
+                            val varName = slice.sliceName.nameToVariable()
+                            line("val `$varName`: TypedImageData get() = TypedImageData(data[${slice.sliceName.quoted}]!!)")
+                        }
+                        // @TODO: We could
+
+                        //println("wizardFemale=${wizardFemale.imageDatasByName.keys}")
+                        //println("wizardFemale.animations=${wizardFemale.imageDatas.first().animationsByName.keys}")
+                    } catch (e: Throwable) {
+                        System.err.println("FILE: aseFile=$aseFile")
+                        e.printStackTrace()
+
+                        throw e // @TODO: Remove this
                     }
                 }
             }
