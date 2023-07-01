@@ -2,18 +2,15 @@
 
 package korlibs.audio.format
 
+import korlibs.crypto.internal.*
 import korlibs.datastructure.DoubleArrayList
 import korlibs.datastructure.binarySearch
 import korlibs.time.TimeSpan
 import korlibs.time.measureTimeWithResult
 import korlibs.time.microseconds
 import korlibs.time.seconds
-import korlibs.memory.UByteArrayInt
-import korlibs.memory.extract
-import korlibs.memory.readU8
 import korlibs.io.annotations.Keep
-import korlibs.io.lang.Charsets
-import korlibs.io.lang.invalidOp
+import korlibs.io.lang.*
 import korlibs.io.stream.AsyncStream
 import korlibs.io.stream.openSync
 import korlibs.io.stream.readBytesExact
@@ -21,6 +18,7 @@ import korlibs.io.stream.readBytesUpTo
 import korlibs.io.stream.readStream
 import korlibs.io.stream.readString
 import korlibs.io.stream.toSyncOrNull
+import korlibs.memory.*
 
 @Keep
 open class MP3 : MP3Base() {
@@ -28,20 +26,36 @@ open class MP3 : MP3Base() {
 }
 
 open class MP3Base : AudioFormat("mp3") {
-	override suspend fun tryReadInfo(data: AsyncStream, props: AudioDecodingProps): Info? = try {
-        val parser = Parser(data, data.getLength())
-        val (duration, decodingTime) = measureTimeWithResult {
-            when (props.exactTimings) {
-                null -> parser.getDurationExact() // Try to guess what's better based on VBR?
-                true -> parser.getDurationExact()
-                else -> parser.getDurationEstimate()
+	override suspend fun tryReadInfo(data: AsyncStream, props: AudioDecodingProps): Info? {
+        try {
+            val header = data.readBytesExact(4)
+            val h0 = header.toUByteArray()[0].toInt()
+            val h1 = header.toUByteArray()[1].toInt()
+            val h2 = header.toUByteArray()[2].toInt()
+
+            val isId3 = header.readStringz(0, 3) == "ID3"
+            val isSync = (h0 == 0xFF) &&
+                (((h1 and 0xF0) == 0xF0) || ((h1 and 0xFE) == 0xE2)) &&
+                (h1.extract2(1) != 0) &&
+                (h2.extract4(4) != 15) &&
+                (h2.extract2(2) != 3)
+
+            if (!isId3 && !isSync) return null
+
+            val parser = Parser(data, data.getLength())
+            val (duration, decodingTime) = measureTimeWithResult {
+                when (props.exactTimings) {
+                    null -> parser.getDurationExact() // Try to guess what's better based on VBR?
+                    true -> parser.getDurationExact()
+                    else -> parser.getDurationEstimate()
+                }
             }
+            return Info(duration, parser.info?.channelMode?.channels ?: 2, decodingTime)
+        } catch (e: Throwable) {
+            //e.printStackTrace()
+            return null
         }
-		Info(duration, parser.info?.channelMode?.channels ?: 2, decodingTime)
-	} catch (e: Throwable) {
-        //e.printStackTrace()
-		null
-	}
+    }
 
     class SeekingTable(
         val microseconds: DoubleArrayList,
