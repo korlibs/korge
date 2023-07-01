@@ -29,6 +29,14 @@ import kotlin.properties.*
 @ThreadLocal
 var GLOBAL_CHECK_GL = false
 
+data class WindowConfig(
+        val fullscreen : Boolean = false,
+        val undecorated : Boolean = false,
+        val transparent : Boolean = false,
+        val allowMinimize : Boolean = true,
+        val allowMaximize : Boolean = true,
+)
+
 data class GameWindowCreationConfig(
     val multithreaded: Boolean? = null,
     val hdr: Boolean? = null,
@@ -36,7 +44,7 @@ data class GameWindowCreationConfig(
     val checkGl: Boolean = false,
     val logGl: Boolean = false,
     val cacheGl: Boolean = false,
-    val fullscreen: Boolean? = null,
+    val windowConfig : WindowConfig = WindowConfig()
 )
 
 expect fun CreateDefaultGameWindow(config: GameWindowCreationConfig): GameWindow
@@ -959,16 +967,16 @@ fun GameWindow.mainLoop(entry: suspend GameWindow.() -> Unit) = Korio { loop(ent
 fun GameWindow.toggleFullScreen()  { fullscreen = !fullscreen }
 
 fun GameWindow.configure(
-    size: Size,
-    title: String? = "GameWindow",
-    icon: Bitmap? = null,
-    fullscreen: Boolean? = null,
-    bgcolor: RGBA = Colors.BLACK,
+        size: Size,
+        title: String? = "GameWindow",
+        icon: Bitmap? = null,
+        windowConfig: WindowConfig= WindowConfig(),
+        bgcolor: RGBA = Colors.BLACK,
 ) {
     this.setSize(size.width.toInt(), size.height.toInt())
     if (title != null) this.title = title
     this.icon = icon
-    if (fullscreen != null) this.fullscreen = fullscreen
+    if (fullscreen != null) this.fullscreen = windowConfig.fullscreen
     this.bgcolor = bgcolor
     this.visible = true
 }

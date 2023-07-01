@@ -60,6 +60,7 @@ class AwtGameWindow(config: GameWindowCreationConfig) : BaseAwtGameWindow(AGOpen
         init {
             isVisible = false
             ignoreRepaint = true
+            isUndecorated = config.windowConfig.undecorated
             //background = Color.black
             setBounds(0, 0, 640, 480)
             val frame = this

@@ -59,7 +59,8 @@ suspend fun Korge(
     debug: Boolean = false,
     trace: Boolean = false,
     context: Any? = null,
-    fullscreen: Boolean? = null,
+    @DeprecatedParameter("Use WindowConfig instead") fullscreen: Boolean = false,
+    windowConfig: WindowConfig = WindowConfig(),
     blocking: Boolean = true,
     gameId: String = Korge.DEFAULT_GAME_ID,
     settingsFolder: String? = null,
@@ -93,8 +94,8 @@ suspend fun Korge(
 ): Unit = Korge(
     args = args, imageFormats = imageFormats, gameWindow = gameWindow, mainSceneClass = mainSceneClass,
     timeProvider = timeProvider, injector = injector, configInjector = configInjector, debug = debug,
-    trace = trace, context = context, fullscreen = fullscreen, blocking = blocking, gameId = gameId,
-    settingsFolder = settingsFolder, batchMaxQuads = batchMaxQuads,
+    trace = trace, context = context, windowConfig = windowConfig, blocking = blocking,
+    gameId = gameId, settingsFolder = settingsFolder, batchMaxQuads = batchMaxQuads,
     windowSize = windowSize, virtualSize = virtualSize,
     displayMode = displayMode, title = title, backgroundColor = backgroundColor, quality = quality,
     icon = icon,
@@ -121,7 +122,7 @@ data class Korge(
     val debug: Boolean = false,
     val trace: Boolean = false,
     val context: Any? = null,
-    val fullscreen: Boolean? = null,
+    val windowConfig : WindowConfig = WindowConfig(),
     val blocking: Boolean = true,
     val gameId: String = DEFAULT_GAME_ID,
     val settingsFolder: String? = null,
@@ -178,7 +179,7 @@ object KorgeRunner {
         if (!Platform.isJsBrowser) {
             configureLoggerFromProperties(localCurrentDirVfs["klogger.properties"])
         }
-        val realGameWindow = (config.gameWindow ?: coroutineContext[GameWindow] ?: CreateDefaultGameWindow(GameWindowCreationConfig(multithreaded = multithreaded, fullscreen = config.fullscreen)))
+        val realGameWindow = (config.gameWindow ?: coroutineContext[GameWindow] ?: CreateDefaultGameWindow(GameWindowCreationConfig(multithreaded = multithreaded, windowConfig = config.windowConfig)))
         realGameWindow.bgcolor = config.backgroundColor ?: Colors.BLACK
         //println("Configure: ${width}x${height}")
         // @TODO: Configure should happen before loop. But we should ensure that all the korgw targets are ready for this
@@ -187,7 +188,7 @@ object KorgeRunner {
             val gameWindow = this
             if (Platform.isNative) println("Korui[0]")
             gameWindow.registerTime("configureGameWindow") {
-                realGameWindow.configure(windowSize, config.title, null, config.fullscreen, config.backgroundColor ?: Colors.BLACK)
+                realGameWindow.configure(windowSize, config.title, null, config.windowConfig, config.backgroundColor ?: Colors.BLACK)
             }
             gameWindow.registerTime("setIcon") {
                 try {
