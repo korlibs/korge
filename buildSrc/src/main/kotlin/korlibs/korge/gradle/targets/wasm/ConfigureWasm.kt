@@ -3,6 +3,8 @@ package korlibs.korge.gradle.targets.wasm
 import korlibs.*
 import org.gradle.api.*
 
+fun Project.isWasmEnabled(): Boolean = findProperty("enable.wasm") == "true"
+
 fun Project.configureWasm(executable: Boolean, binaryen: Boolean = false) {
     kotlin {
         wasm {
