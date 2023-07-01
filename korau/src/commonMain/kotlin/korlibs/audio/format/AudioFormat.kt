@@ -70,6 +70,8 @@ data class AudioDecodingProps(
     }
 }
 
+fun AudioFormat.toProps(): AudioDecodingProps = AudioDecodingProps(formats = this)
+
 data class AudioEncodingProps(
     val quality: Double = 0.84,
     val filename: String? = null
