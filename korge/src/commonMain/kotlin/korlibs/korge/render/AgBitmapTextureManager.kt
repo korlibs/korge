@@ -8,6 +8,7 @@ import korlibs.image.bitmap.*
 import korlibs.io.lang.*
 import korlibs.math.geom.*
 import korlibs.math.geom.slice.*
+import korlibs.memory.unit.*
 
 /**
  * Class in charge of automatically handling [AGTexture] <-> [Bitmap] conversion.
@@ -39,10 +40,22 @@ class AgBitmapTextureManager(
 	private val referencedBitmapsSinceGC = FastSmallSet<Bitmap>()
 	private var referencedBitmaps = FastArrayList<Bitmap>()
 
+    val numCachedBitmaps: Int get() = cachedBitmaps.size
+    val numReferencedBitmapsSinceGC: Int get() = referencedBitmapsSinceGC.size
+    val numReferencedBitmaps: Int get() = referencedBitmaps.size
+
+    override fun toString(): String = toStringStats()
+
+    fun toStringStats(): String =
+        "AgBitmapTextureManager(numCachedBitmaps=$numCachedBitmaps, numReferencedBitmapsSinceGC=$numReferencedBitmapsSinceGC, numReferencedBitmaps=$numReferencedBitmaps, maxCachedMemory=${ByteUnits.fromBytes(maxCachedMemory)}, managedTextureMemory=${ByteUnits.fromBytes(managedTextureMemory)})"
+
     /** Number of frames between each Texture Garbage Collection step */
     var framesBetweenGC: Int = 60
     var managedTextureMemory: Long = 0L
-        private set
+        private set (value) {
+            //if (field >= 0L && value < 0L) printStackTrace("OLD managedTextureMemory=$field -> $value")
+            field = value
+        }
     //var framesBetweenGC = 30 * 60 // 30 seconds
     //var framesBetweenGC = 360
 
@@ -56,13 +69,16 @@ class AgBitmapTextureManager(
         var textureBase: TextureBase = TextureBase(null, 0, 0)
 		val slices = FastIdentityMap<BitmapCoords, TextureCoords>()
         fun reset() {
+            usedMemory = 0
             textureBase.base = null
             textureBase.version = -1
             textureBase.width = 0
             textureBase.height = 0
             slices.clear()
         }
-	}
+
+        override fun toString(): String = "BitmapTextureInfo(textureBase=$textureBase, usedMemory=$usedMemory, slices=${slices.size})"
+    }
 
     private val textureInfoPool = Pool(reset = { it.reset() }) { BitmapTextureInfo() }
 	private val bitmapsToTextureBase = FastIdentityMap<Bitmap, BitmapTextureInfo>()
@@ -96,6 +112,7 @@ class AgBitmapTextureManager(
 
 		val textureInfo = bitmapsToTextureBase.getOrPut(bitmap) {
             textureInfoPool.alloc().also {
+                //println("ALLOC TEXTURE_INFO $it")
                 val base = it.textureBase
                 base.version = -1
                 base.base = AGTexture(targetKind = when (bitmap) {
@@ -116,6 +133,7 @@ class AgBitmapTextureManager(
         if (bitmap.contentVersion != base.version) {
             base.version = bitmap.contentVersion
             // @TODO: Use dirtyRegion to upload only a fragment of the image
+            //println("OLD VERSION: textureInfo.usedMemory=${textureInfo.usedMemory}")
             managedTextureMemory -= textureInfo.usedMemory
             try {
                 base.update(bitmap, bitmap.mipmaps, bitmap.baseMipmapLevel, bitmap.maxMipmapLevel)
@@ -186,24 +204,25 @@ class AgBitmapTextureManager(
         referencedBitmaps.fastForEach { bmp ->
             when {
                 bmp in referencedBitmapsSinceGC -> Unit // Keep normally
-                maxCachedMemory < this.managedTextureMemory -> removeBitmap(bmp, "GC")
+                maxCachedMemory < this.managedTextureMemory || managedTextureMemory < 0L -> removeBitmap(bmp, "GC")
                 else -> cachedBitmaps.add(bmp)
             }
         }
         referencedBitmaps.clear()
-        referencedBitmaps.addAll(referencedBitmapsSinceGC.items)
-        referencedBitmaps.addAll(cachedBitmaps.items)
+        //println("GC: $referencedBitmapsSinceGC")
+        referencedBitmapsSinceGC.fastForEach { referencedBitmaps.add(it) }
+        cachedBitmaps.fastForEach { referencedBitmaps.add(it) }
         referencedBitmapsSinceGC.clear()
 	}
 
     @KorgeExperimental
     fun removeBitmap(bmp: Bitmap, reason: String) {
         val info = bitmapsToTextureBase.getAndRemove(bmp) ?: return
+        managedTextureMemory -= info.usedMemory
         referencedBitmapsSinceGC.remove(bmp)
         if (cachedBitmapTextureInfo === info || cachedBitmapTextureInfo2 === info) clearFastCacheAccess()
         info.textureBase.close()
         textureInfoPool.free(info)
-        managedTextureMemory -= info.usedMemory
         cachedBitmaps.remove(bmp)
         //println("AgBitmapTextureManager.removeBitmap[$currentThreadId]:${bmp.size}, reason=$reason, textureInfoPool=${textureInfoPool.itemsInPool},${textureInfoPool.totalAllocatedItems}")
     }

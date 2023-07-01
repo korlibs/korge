@@ -10,6 +10,9 @@ import kotlin.math.*
 //@KormaExperimental
 //@KormaValueApi
 //inline class Matrix4 private constructor(
+/**
+ * Useful for representing complete transforms: rotations, scales, translations, projections, etc.
+ */
 data class Matrix4 private constructor(
     private val data: FloatArray,
     //val c0: Vector4, val c1: Vector4, val c2: Vector4, val c3: Vector4,
@@ -279,6 +282,11 @@ data class Matrix4 private constructor(
             (v01 * v12 * v20 - v02 * v11 * v20 + v02 * v10 * v21 - v00 * v12 * v21 - v01 * v10 * v22 + v00 * v11 * v22) * detInv
         )
     }
+
+    fun isAlmostEquals(other: Matrix4, epsilon: Float = 0.00001f): Boolean = c0.isAlmostEquals(other.c0, epsilon)
+        && c1.isAlmostEquals(other.c1, epsilon)
+        && c2.isAlmostEquals(other.c2, epsilon)
+        && c3.isAlmostEquals(other.c3, epsilon)
 
     companion object {
         const val M00 = 0

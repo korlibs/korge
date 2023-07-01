@@ -3,13 +3,13 @@ package korlibs.korge.render
 import korlibs.kgl.KmlGl
 import korlibs.kgl.KmlGlProxyLogToString
 import korlibs.graphics.gl.*
-import korlibs.graphics.log.AGLog
-import korlibs.image.bitmap.Bitmap32
-import korlibs.image.bitmap.ForcedTexNativeImage
-import korlibs.image.bitmap.sliceWithSize
+import korlibs.graphics.log.*
+import korlibs.image.bitmap.*
 import korlibs.image.color.Colors
+import korlibs.korge.annotations.*
 import kotlin.test.*
 
+@KorgeExperimental
 class AgBitmapTextureManagerTest {
     val ag = AGLog()
     val tm = AgBitmapTextureManager(ag)
@@ -136,5 +136,30 @@ class AgBitmapTextureManagerTest {
             """.trimIndent(),
             gl.log.joinToString("\n")
         )
+    }
+
+    @Test
+    fun testTotalMemory() {
+        val texs = AgBitmapTextureManager(AGDummy())
+        val bitmap = Bitmap32(64, 64)
+        val bitmapMem = (bitmap.area * 4).toLong()
+
+        assertEquals(0L, texs.managedTextureMemory)
+
+        texs.getTexture(bitmap.slice())
+        assertEquals(bitmapMem, texs.managedTextureMemory)
+
+        texs.removeBitmap(bitmap, "test")
+        texs.removeBitmap(bitmap, "test")
+        assertEquals(0, texs.managedTextureMemory)
+
+        texs.getTexture(bitmap.slice())
+        assertEquals(bitmapMem, texs.managedTextureMemory)
+
+        texs.gc()
+        assertEquals(bitmapMem, texs.managedTextureMemory)
+
+        texs.gc()
+        assertEquals(0L, texs.managedTextureMemory)
     }
 }

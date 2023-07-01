@@ -137,7 +137,13 @@ inline class Angle @PublishedApi internal constructor(
     fun isAlmostEquals(other: Angle, epsilon: Double): Boolean = isAlmostEquals(other, epsilon.toFloat())
     fun isAlmostZero(epsilon: Double): Boolean = isAlmostZero(epsilon.toFloat())
 
+    /** Normalize between 0..1  ... 0..(PI*2).radians ... 0..360.degrees */
     val normalized: Angle get() = fromRatio(ratioF umod 1f)
+    /** Normalize between -.5..+.5  ... -PI..+PI.radians ... -180..+180.degrees */
+    val normalizedHalf: Angle get() {
+        val res = normalized
+        return if (res > Angle.HALF) -Angle.FULL + res else res
+    }
 
     override operator fun compareTo(other: Angle): Int = this.ratio.compareTo(other.ratio)
 
@@ -183,6 +189,22 @@ inline class Angle @PublishedApi internal constructor(
         inline fun atan2(x: Float, y: Float, up: Vector2 = Vector2.UP): Angle = fromRadians(kotlin.math.atan2(x, y)).adjustFromUp(up)
         inline fun atan2(x: Double, y: Double, up: Vector2 = Vector2.UP): Angle = fromRadians(kotlin.math.atan2(x, y)).adjustFromUp(up)
         inline fun atan2(p: Point, up: Vector2 = Vector2.UP): Angle = atan2(p.xD, p.yD, up)
+
+        inline fun asin(v: Double): Angle = kotlin.math.asin(v).radians
+        inline fun asin(v: Float): Angle = kotlin.math.asin(v).radians
+
+        inline fun acos(v: Double): Angle = kotlin.math.acos(v).radians
+        inline fun acos(v: Float): Angle = kotlin.math.acos(v).radians
+
+        fun arcCosine(v: Double): Angle = kotlin.math.acos(v).radians
+        fun arcCosine(v: Float): Angle = kotlin.math.acos(v).radians
+
+        fun arcSine(v: Double): Angle = kotlin.math.asin(v).radians
+        fun arcSine(v: Float): Angle = kotlin.math.asin(v).radians
+
+        fun arcTangent(x: Double, y: Double): Angle = kotlin.math.atan2(x, y).radians
+        fun arcTangent(x: Float, y: Float): Angle = kotlin.math.atan2(x, y).radians
+        fun arcTangent(v: Vector2): Angle = kotlin.math.atan2(v.x, v.y).radians
 
         inline fun ratioToDegrees(ratio: Double): Double = ratio * 360.0
         inline fun ratioToRadians(ratio: Double): Double = ratio * PI2

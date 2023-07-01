@@ -389,8 +389,8 @@ class Bitmap32(
 	fun yCbCrToRgba(): Bitmap32 = clone().apply { yCbCrToRgbaInline() }
     fun yCbCrToRgbaInline() = updateColors { YCbCr(it.value).toRGBA() }
 
-    fun contentEquals(other: Any?): Boolean = (other is Bitmap32) && (this.width == other.width) && (this.height == other.height) && ints.contentEquals(other.ints)
-    fun contentHashCode(): Int = (width * 31 + height) + ints.contentHashCode() + premultiplied.toInt()
+    override fun contentEquals(other: Bitmap): Boolean = (other is Bitmap32) && (this.width == other.width) && (this.height == other.height) && ints.contentEquals(other.ints)
+    override fun contentHashCode(): Int = (width * 31 + height) + ints.contentHashCode() + premultiplied.toInt()
 
     // @TODO: Can't do this or won't be able to put Bitmaps on hashmaps
     //override fun equals(other: Any?): Boolean = (other is Bitmap32) && (this.width == other.width) && (this.height == other.height) && data.ints.contentEquals(other.data.ints)

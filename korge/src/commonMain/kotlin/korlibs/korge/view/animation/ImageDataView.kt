@@ -108,8 +108,21 @@ open class ImageDataView(
         this.smoothing = smoothing
     }
 
+    /** Play a specific animation */
+    fun play(name: String?) {
+        animation = name
+        play()
+    }
+
     @ViewProperty
     fun play() { animationView.play() }
+
+    /** Stops to a specific animation */
+    fun stop(name: String?) {
+        animation = name
+        stop()
+    }
+
     @ViewProperty
     fun stop() { animationView.stop() }
     @ViewProperty

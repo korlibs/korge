@@ -1,6 +1,8 @@
 package korlibs.math.geom
 
-import korlibs.memory.pack.*
+import korlibs.math.*
+import korlibs.math.interpolation.*
+import korlibs.math.isAlmostZero
 import kotlin.math.*
 
 // https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
@@ -36,6 +38,25 @@ data class Quaternion(val x: Float, val y: Float, val z: Float, val w: Float) {
     constructor(x: Double, y: Double, z: Double, w: Double) : this(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat())
 
     fun toMatrix(): Matrix4 {
+        val v = _toMatrix()
+        return Matrix4.fromRows(
+            v[0], v[1], v[2], 0f,
+            v[3], v[4], v[5], 0f,
+            v[6], v[7], v[8], 0f,
+            0f, 0f, 0f, 1f,
+        )
+    }
+
+    fun toMatrix3(): Matrix3 {
+        val v = _toMatrix()
+        return Matrix3.fromRows(
+            v[0], v[1], v[2],
+            v[3], v[4], v[5],
+            v[6], v[7], v[8],
+        )
+    }
+
+    private fun _toMatrix(): FloatArray {
         val xx = x * x
         val xy = x * y
         val xz = x * z
@@ -46,11 +67,10 @@ data class Quaternion(val x: Float, val y: Float, val z: Float, val w: Float) {
         val zz = z * z
         val zw = z * w
 
-        return Matrix4.fromRows(
-            1 - 2 * (yy + zz), 2 * (xy - zw), 2 * (xz + yw), 0f,
-            2 * (xy + zw), 1 - 2 * (xx + zz), 2 * (yz - xw), 0f,
-            2 * (xz - yw), 2 * (yz + xw), 1 - 2 * (xx + yy), 0f,
-            0f, 0f, 0f, 1f
+        return floatArrayOf(
+            1 - 2 * (yy + zz), 2 * (xy - zw), 2 * (xz + yw),
+            2 * (xy + zw), 1 - 2 * (xx + zz), 2 * (yz - xw),
+            2 * (xz - yw), 2 * (yz + xw), 1 - 2 * (xx + yy),
         )
     }
 
@@ -92,16 +112,13 @@ data class Quaternion(val x: Float, val y: Float, val z: Float, val w: Float) {
         return Quaternion(x / length, y / length, z / length, w / length)
     }
 
+    /** Also known as conjugate */
     fun inverted(): Quaternion {
         val q = this
         val lengthSquared = q.lengthSquared
-        return when (lengthSquared) {
-            0f -> {
-                val num = 1f / lengthSquared
-                Quaternion(q.x * -num, q.y * -num, q.z * -num, q.w * num)
-            }
-            else -> q
-        }
+        if (lengthSquared.isAlmostZero()) error("Zero quaternion doesn't have invesrse")
+        val num = 1f / lengthSquared
+        return Quaternion(q.x * -num, q.y * -num, q.z * -num, q.w * num)
     }
 
     fun transform(v: Vector3): Vector3 {
@@ -114,12 +131,26 @@ data class Quaternion(val x: Float, val y: Float, val z: Float, val w: Float) {
         return Vector3(resultQuaternion.x, resultQuaternion.y, resultQuaternion.z)
     }
 
-    fun toEuler(): EulerRotation = toEuler(x, y, z, w)
+    fun toEuler(config: EulerRotation.Config = EulerRotation.Config.DEFAULT): EulerRotation = EulerRotation.fromQuaternion(this, config)
+    fun isAlmostEquals(other: Quaternion, epsilon: Float = 0.00001f): Boolean =
+        this.x.isAlmostEquals(other.x, epsilon)
+            && this.y.isAlmostEquals(other.y, epsilon)
+            && this.z.isAlmostEquals(other.z, epsilon)
+            && this.w.isAlmostEquals(other.w, epsilon)
+
+    fun interpolated(other: Quaternion, t: Float): Quaternion = interpolated(this, other, t)
+    fun interpolated(other: Quaternion, t: Ratio): Quaternion = interpolated(this, other, t.toFloat())
+    fun angleTo(other: Quaternion): Angle = angleBetween(this, other)
 
     companion object {
         val IDENTITY = Quaternion()
 
         fun dotProduct(l: Quaternion, r: Quaternion): Float = l.x * r.x + l.y * r.y + l.z * r.z + l.w * r.w
+
+        fun angleBetween(a: Quaternion, b: Quaternion): Angle {
+            val dot = dotProduct(a, b)
+            return Angle.arcCosine(2 * (dot * dot) - 1)
+        }
 
         inline fun func(callback: (Int) -> Float) = Quaternion(callback(0), callback(1), callback(2), callback(3))
         inline fun func(l: Quaternion, r: Quaternion, func: (l: Float, r: Float) -> Float) = Quaternion(
@@ -157,10 +188,10 @@ data class Quaternion(val x: Float, val y: Float, val z: Float, val w: Float) {
 
         fun interpolated(left: Quaternion, right: Quaternion, t: Float): Quaternion = slerp(left, right, t)
 
-        fun fromVectors(v1: Vector3, v2: Vector3): Quaternion {
+        fun fromVectors(from: Vector3, to: Vector3): Quaternion {
             // Normalize input vectors
-            val start = v1.normalized()
-            val dest = v2.normalized()
+            val start = from.normalized()
+            val dest = to.normalized()
 
             val dot = start.dot(dest)
 
@@ -204,26 +235,61 @@ data class Quaternion(val x: Float, val y: Float, val z: Float, val w: Float) {
             )
         }
 
-        fun fromRotationMatrix(m: Matrix4): Quaternion {
-            m.apply {
-                val t = v00 + v11 + v22
-                return when {
-                    t > 0 -> {
-                        val s = .5f / sqrt(t + 1f)
-                        Quaternion(((v21 - v12) * s), ((v02 - v20) * s), ((v10 - v01) * s), (0.25f / s))
-                    }
-                    v00 > v11 && v00 > v22 -> {
-                        val s = 2f * sqrt(1f + v00 - v11 - v22)
-                        Quaternion((0.25f * s), ((v01 + v10) / s), ((v02 + v20) / s), ((v21 - v12) / s))
-                    }
-                    v11 > v22 -> {
-                        val s = 2f * sqrt(1f + v11 - v00 - v22)
-                        Quaternion(((v01 + v10) / s), (0.25f * s), ((v12 + v21) / s), ((v02 - v20) / s))
-                    }
-                    else -> {
-                        val s = 2f * sqrt(1f + v22 - v00 - v11)
-                        Quaternion(((v02 + v20) / s), ((v12 + v21) / s), (0.25f * s), ((v10 - v01) / s))
-                    }
+        // @TODO: Check
+        fun lookRotation(forward: Vector3, up: Vector3 = Vector3.UP): Quaternion {
+            //if (up == Vector3.UP) return fromVectors(Vector3.FORWARD, forward.normalized())
+            val z = forward.normalized()
+            val x = (up.normalized() cross z).normalized()
+
+            //println("x=$x, z=$z")
+            if (x.lengthSquared.isAlmostZero()) {
+                // COLLINEAR
+                return Quaternion.fromVectors(Vector3.FORWARD, z)
+            }
+
+            val y = z cross x
+            return fromRotationMatrix(Matrix3.fromColumns(x, y, z))
+        }
+
+        fun fromRotationMatrix(m: Matrix4): Quaternion = fromRotationMatrix(
+            m.v00, m.v10, m.v20,
+            m.v01, m.v11, m.v21,
+            m.v02, m.v12, m.v22,
+        )
+
+        fun fromRotationMatrix(m: Matrix3): Quaternion = fromRotationMatrix(
+            m.v00, m.v10, m.v20,
+            m.v01, m.v11, m.v21,
+            m.v02, m.v12, m.v22,
+        )
+
+        fun fromRotationMatrix(
+            v00: Float, v10: Float, v20: Float,
+            v01: Float, v11: Float, v21: Float,
+            v02: Float, v12: Float, v22: Float,
+        ): Quaternion {
+            val t = v00 + v11 + v22
+            //println("t=$t, v00=$v00, v11=$v11, v22=$v22")
+            return when {
+                t >= 0 -> {
+                    val s = .5f / sqrt(t + 1f)
+                    //println("[0]")
+                    Quaternion(((v21 - v12) * s), ((v02 - v20) * s), ((v10 - v01) * s), (0.25f / s))
+                }
+                v00 > v11 && v00 > v22 -> {
+                    val s = 2f * sqrt(1f + v00 - v11 - v22)
+                    //println("[1]")
+                    Quaternion((0.25f * s), ((v01 + v10) / s), ((v02 + v20) / s), ((v21 - v12) / s))
+                }
+                v11 > v22 -> {
+                    val s = 2f * sqrt(1f + v11 - v00 - v22)
+                    //println("[2]")
+                    Quaternion(((v01 + v10) / s), (.25f * s), ((v12 + v21) / s), ((v02 - v20) / s))
+                }
+                else -> {
+                    val s = 2f * sqrt(1f + v22 - v00 - v11)
+                    //println("[3]")
+                    Quaternion(((v02 + v20) / s), ((v12 + v21) / s), (.25f * s), ((v10 - v01) / s))
                 }
             }
         }
@@ -231,19 +297,30 @@ data class Quaternion(val x: Float, val y: Float, val z: Float, val w: Float) {
         fun fromEuler(e: EulerRotation): Quaternion = e.toQuaternion()
         fun fromEuler(roll: Angle, pitch: Angle, yaw: Angle): Quaternion = EulerRotation(roll, pitch, yaw).toQuaternion()
 
-        fun toEuler(x: Float, y: Float, z: Float, w: Float): EulerRotation {
-            val sinrCosp = +2.0 * (w * x + y * z)
-            val cosrCosp = +1.0 - 2.0 * (x * x + y * y)
-            val roll = atan2(sinrCosp, cosrCosp)
-            val sinp = +2.0 * (w * y - z * x)
-            val pitch = when {
-                abs(sinp) >= 1 -> if (sinp > 0) PI / 2 else -PI / 2
-                else -> asin(sinp)
-            }
-            val sinyCosp = +2.0 * (w * z + x * y)
-            val cosyCosp = +1.0 - 2.0 * (y * y + z * z)
-            val yaw = atan2(sinyCosp, cosyCosp)
-            return EulerRotation(roll.radians, pitch.radians, yaw.radians)
+        fun toEuler(x: Float, y: Float, z: Float, w: Float, config: EulerRotation.Config = EulerRotation.Config.DEFAULT): EulerRotation {
+            return EulerRotation.Companion.fromQuaternion(x, y, z, w, config)
+            /*
+            val t = y * x + z * w
+            // Gimbal lock, if any: positive (+1) for north pole, negative (-1) for south pole, zero (0) when no gimbal lock
+            val pole = if (t > 0.499f) 1 else if (t < -0.499f) -1 else 0
+            return EulerRotation(
+                roll = when (pole) {
+                    0 -> Angle.asin((2f * (w * x - z * y)).clamp(-1f, +1f))
+                    else -> (pole.toFloat() * PIF * .5f).radians
+                },
+                pitch = when (pole) {
+                    0 -> Angle.atan2(2f * (y * w + x * z), 1f - 2f * (y * y + x * x))
+                    else -> Angle.ZERO
+                },
+                yaw = when (pole) {
+                    0 -> Angle.atan2(2f * (w * z + y * x), 1f - 2f * (x * x + z * z))
+                    else -> Angle.atan2(y, w) * pole.toFloat() * 2f
+                },
+            )
+
+             */
         }
     }
 }
+
+fun Angle.Companion.between(a: Quaternion, b: Quaternion): Angle = Quaternion.angleBetween(a, b)

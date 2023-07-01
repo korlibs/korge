@@ -2,6 +2,7 @@ package korlibs.korge.gradle.targets.android
 
 import com.android.build.api.dsl.*
 import com.android.build.gradle.TestedExtension
+import com.android.build.gradle.tasks.*
 import korlibs.*
 import korlibs.korge.gradle.*
 import korlibs.korge.gradle.kotlin
@@ -9,6 +10,7 @@ import korlibs.korge.gradle.targets.*
 import korlibs.korge.gradle.targets.all.*
 import korlibs.korge.gradle.util.*
 import org.gradle.api.*
+import org.gradle.api.tasks.*
 import java.io.*
 
 fun Project.configureAndroidDirect(projectType: ProjectType, isKorge: Boolean) {
@@ -167,5 +169,23 @@ fun Project.configureAndroidDirect(projectType: ProjectType, isKorge: Boolean) {
 
     if (projectType.isExecutable) {
         installAndroidRun(listOf(), direct = true, isKorge = isKorge)
+    }
+
+    afterEvaluate {
+        val jvmProcessResources = tasks.findByName("jvmProcessResources") as? Copy?
+        if (jvmProcessResources != null) {
+            jvmProcessResources.duplicatesStrategy = org.gradle.api.file.DuplicatesStrategy.INCLUDE
+            val packageDebugAssets = tasks.findByName("packageDebugAssets") as MergeSourceSetFolders?
+            val packageReleaseAssets = tasks.findByName("packageReleaseAssets") as MergeSourceSetFolders?
+
+            // @TODO: Why is this required with Gradle 8.1.1?
+            //println("${project.path} :: $packageDebugAssets dependsOn $jvmProcessResources")
+            packageDebugAssets?.dependsOn(jvmProcessResources) // @TODO: <-- THIS
+            packageReleaseAssets?.dependsOn(jvmProcessResources) // @TODO: <-- THIS
+
+            // @TODO: Why is this required with Gradle 8.1.1?
+            //packageDebugAssets?.mustRunAfter(jvmProcessResources) // @TODO: <-- THIS
+            //packageReleaseAssets?.mustRunAfter(jvmProcessResources) // @TODO: <-- THIS
+        }
     }
 }

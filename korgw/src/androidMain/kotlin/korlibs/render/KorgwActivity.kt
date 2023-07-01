@@ -9,6 +9,7 @@ import android.view.KeyEvent
 import android.widget.RelativeLayout
 import korlibs.event.*
 import korlibs.graphics.gl.*
+import korlibs.io.file.std.*
 import korlibs.kgl.*
 import korlibs.memory.*
 import kotlin.coroutines.*
@@ -39,6 +40,7 @@ abstract class KorgwActivity(
     private var defaultUiVisibility = -1
 
     init {
+        vfsInitWithAndroidContextOnce(this)
         activityWithResult.activity = this
         gameWindow.onContinuousRenderModeUpdated = {
             mGLView?.continuousRenderMode = it

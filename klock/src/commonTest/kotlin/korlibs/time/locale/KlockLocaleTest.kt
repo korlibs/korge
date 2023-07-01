@@ -324,4 +324,17 @@ class KlockLocaleTest {
             assertEquals(it.key, KlockLocale.english.getDayByOrdinal(it.value))
         }
     }
+
+    @Test
+    fun testOrdinalsGerman() {
+        val germanOrdinalsMap = mapOf(0 to "nullte",  1 to "erste",  2 to "zweite",  3 to "dritte",  4 to "vierte", 5 to "fünfte", 6 to "sechste", 7 to "siebte",
+            8 to "achte", 9 to "neunte", 10 to "zehnte", 11 to "elfte", 12 to "zwölfte", 13 to "dreizehnte", 14 to "vierzehnte", 15 to "fünfzehnte",
+            16 to "sechzehnte", 17  to "siebzehnte", 18 to "achtzehnte", 19 to "neunzehnte", 20 to "zwanzigste", 21 to "einundzwanzigste",
+            22 to "zweiundzwanzigste", 23 to "dreiundzwanzigste", 24 to "vierundzwanzigste", 25 to "fünfundzwanzigste", 26 to "sechsundzwanzigste",
+            27 to "siebenundzwanzigste", 28 to "achtundzwanzigste", 29 to "neunundzwanzigste", 30 to "dreißigste", 31 to "einunddreißigste")
+        germanOrdinalsMap.forEach {
+            assertEquals(it.value, KlockLocale.german.getOrdinalByDay(it.key))
+            assertEquals(it.key, KlockLocale.german.getDayByOrdinal(it.value))
+        }
+    }
 }

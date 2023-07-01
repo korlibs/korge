@@ -182,6 +182,8 @@ abstract class Vfs : AsyncCloseable {
 
 	open suspend fun stat(path: String): VfsStat = createNonExistsStat(path)
 
+    private fun unsupported(): Nothing = korlibs.io.lang.unsupported("unsupported for ${this::class} : $this")
+
 	suspend fun listSimple(path: String): List<VfsFile> = this.listFlow(path).toList()
     open suspend fun listFlow(path: String): Flow<VfsFile> = unsupported()
 

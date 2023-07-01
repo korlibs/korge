@@ -61,6 +61,9 @@ abstract class NativeImage(width: Int, height: Int, val data: Any?, premultiplie
         writePixelsUnsafe(x0, 0, 1, height, tempInts, width)
     }
 
+    override fun contentEquals(other: Bitmap): Boolean = toBMP32().contentEquals(other)
+    override fun contentHashCode(): Int = toBMP32().contentHashCode()
+
     override fun createWithThisFormat(width: Int, height: Int): Bitmap = NativeImage(width, height)
     override fun toString(): String = "$name($width, $height)"
 }

@@ -2,7 +2,7 @@ package korlibs.io.async
 
 import android.content.Context
 import korlibs.io.android.withAndroidContext
-import korlibs.io.dynamic.Dyn
+import korlibs.io.file.std.*
 import kotlinx.coroutines.*
 
 @Suppress("ACTUAL_WITHOUT_EXPECT", "ACTUAL_TYPE_ALIAS_TO_CLASS_WITH_DECLARATION_SITE_VARIANCE")
@@ -21,7 +21,9 @@ actual fun asyncTestEntryPoint(callback: suspend () -> Unit) {
             getContextMethod.invoke(null) as Context
         }
         if (contextResult.isSuccess) {
-            withAndroidContext(contextResult.getOrThrow()) {
+            val context = contextResult.getOrThrow()
+            vfsInitWithAndroidContextOnce(context)
+            withAndroidContext(context) {
                 callback()
             }
         } else {

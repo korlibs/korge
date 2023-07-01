@@ -39,7 +39,7 @@ class AgBufferManager(
     }
 
     fun gc() {
-        delete(referencedBuffersSinceGC.items)
+        referencedBuffersSinceGC.fastForEach { delete(it) }
         referencedBuffersSinceGC.clear()
     }
 

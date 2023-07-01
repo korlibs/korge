@@ -1,10 +1,6 @@
 package korlibs.image.bitmap
 
 import korlibs.datastructure.*
-import korlibs.memory.clamp
-import korlibs.memory.fract
-import korlibs.memory.toIntCeil
-import korlibs.memory.toIntFloor
 import korlibs.image.color.Colors
 import korlibs.image.color.RGBA
 import korlibs.image.color.RGBAPremultiplied
@@ -16,6 +12,7 @@ import korlibs.image.vector.Context2d
 import korlibs.io.lang.invalidOp
 import korlibs.math.geom.*
 import korlibs.math.interpolation.*
+import korlibs.memory.*
 import kotlin.math.min
 
 abstract class Bitmap(
@@ -286,13 +283,23 @@ abstract class Bitmap(
 
     fun toBMP32IfRequired(): Bitmap32 = if (this is Bitmap32) this else this.toBMP32()
 
-    fun contentEquals(other: Bitmap): Boolean {
+    open fun contentEquals(other: Bitmap): Boolean {
         if (this.width != other.width) return false
         if (this.height != other.height) return false
         for (y in 0 until height) for (x in 0 until width) {
             if (this.getRgbaRaw(x, y) != other.getRgbaRaw(x, y)) return false
         }
         return true
+    }
+
+    open fun contentHashCode(): Int {
+        var v = 0
+        for (y in 0 until height) {
+            for (x in 0 until width) {
+                v += this.getRgbaRaw(x, y).value.hashCode() * (7 + x + y * 3)
+            }
+        }
+        return (width * 31 + height) + v + premultiplied.toInt()
     }
 
     open fun clone(): Bitmap {
