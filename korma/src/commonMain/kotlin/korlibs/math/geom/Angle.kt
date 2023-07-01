@@ -247,6 +247,8 @@ inline fun abs(angle: Angle): Angle = Angle.fromRatio(angle.ratio.absoluteValue)
 inline fun min(a: Angle, b: Angle): Angle = Angle.fromRatio(min(a.ratio, b.ratio))
 inline fun max(a: Angle, b: Angle): Angle = Angle.fromRatio(max(a.ratio, b.ratio))
 
+fun Angle.clamp(min: Angle, max: Angle): Angle = min(max(this, min), max)
+
 operator fun ClosedRange<Angle>.contains(angle: Angle): Boolean = angle.inBetween(this.start, this.endInclusive, inclusive = true)
 operator fun OpenRange<Angle>.contains(angle: Angle): Boolean = angle.inBetween(this.start, this.endExclusive, inclusive = false)
 infix fun Angle.until(other: Angle): OpenRange<Angle> = OpenRange(this, other)
