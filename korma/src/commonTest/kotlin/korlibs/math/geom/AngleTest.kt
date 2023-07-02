@@ -221,4 +221,15 @@ class AngleTest {
         assertEquals(0.degrees, 360.degrees.normalized)
         assertEquals(0.degrees, 720.degrees.normalized)
     }
+
+    @Test
+    fun testClamp() {
+        assertEquals((-30).degrees, (-45).degrees.clamp((-30).degrees, 30.degrees))
+        assertEquals((-30).degrees, (-30).degrees.clamp((-30).degrees, 30.degrees))
+        assertEquals((-20).degrees, (-20).degrees.clamp((-30).degrees, 30.degrees))
+        assertEquals(0.degrees, 0.degrees.clamp((-30).degrees, 30.degrees))
+        assertEquals(15.degrees, 15.degrees.clamp((-30).degrees, 30.degrees))
+        assertEquals(30.degrees, 30.degrees.clamp((-30).degrees, 30.degrees))
+        assertEquals(30.degrees, 45.degrees.clamp((-30).degrees, 30.degrees))
+    }
 }
