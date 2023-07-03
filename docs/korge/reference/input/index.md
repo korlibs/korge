@@ -347,3 +347,29 @@ onEvents(*DropFileEvent.Type.ALL) {
     println("${it.type}")
 }
 ```
+
+## Dragging Views
+
+In the case you want to make a view draggable. There is a `View.draggable` and `View.draggableCloseable` extensions:
+
+```kotlin
+val solidRect = solidRect(Size(100, 100), Colors.RED)
+val closeable = solidRect.draggableCloseable()
+```
+
+The Closeable version returns a Closeable instance allowing you to stop accepting the dragging after the close.
+
+![](view_dragging.gif)
+
+### Configure how dragging works
+
+It is possible to configure the dragging View mediator, like this:
+
+For example if you want only the dragging to work on the X or the Y you can set `autoMove = false`:
+
+```kotlin
+val closeable = solidRect.draggableCloseable(selector = solidRect, autoMove = false) { info: DraggableInfo ->
+    //info.view.pos = info.viewNextXY
+    info.view.x = info.viewNextXY.x
+}
+```
