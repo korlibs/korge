@@ -529,6 +529,10 @@ function createIndexFromParts(parts: string[]) {
 			.replace(/{%\s*include\s*(.*?)\s*%}/g, '')
 
 		const xmlDoc = parser.parseFromString(content, "text/html");
+        const baseElem = xmlDoc.createElement("base")
+        //console.log(`<base href="${url}t">`)
+        baseElem.href = url;
+        xmlDoc.head.appendChild(baseElem);
 		const indexer = new DocIndexer(index, url);
 		indexer.index(xmlDoc.documentElement)
 	}
@@ -698,7 +702,7 @@ async function newSearchHook(query: string, allLink: string = '/all.html') {
 			result.results.forEach((res) => {
 				const index = resultIndex++
 				const section = res.section;
-				const href =  `${res.doc.url}#${section.id}`
+				const href = `${res.doc.url}#${section.id}`
 				//console.log("->", `SCORE:`, res.score, res.section.titles, res.paragraph?.paragraph?.text)
 				const div = searchResults.createChild("a", (it) => {
 					it.href = href
@@ -710,9 +714,11 @@ async function newSearchHook(query: string, allLink: string = '/all.html') {
 						const sectionImage = section.anyImage;
 						if (sectionImage && !usedImages.has(sectionImage)) {
 							usedImages.add(sectionImage)
-							console.error("section.image", sectionImage)
+							console.error("section.image", sectionImage, "in", res.doc.url)
 							it.createChild("img", (it) => {
-								it.src = sectionImage
+                                //const sectionImageIsAbsolute = sectionImage.startsWith("/") || sectionImage.startsWith("http://") || sectionImage.startsWith("https://");
+                                //it.src = sectionImageIsAbsolute ? sectionImage : `${res.doc.url}/${sectionImage}`;
+                                it.src = sectionImage
 								it.style.display = 'block'
 								//it.style.width = "30%"
 								//it.style.height = "auto"

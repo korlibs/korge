@@ -472,6 +472,9 @@ function createIndexFromParts(parts) {
             .substr(breakPos + 1)
             .replace(/{%\s*include\s*(.*?)\s*%}/g, '');
         const xmlDoc = parser.parseFromString(content, "text/html");
+        const baseElem = xmlDoc.createElement("base");
+        baseElem.href = url;
+        xmlDoc.head.appendChild(baseElem);
         const indexer = new DocIndexer(index, url);
         indexer.index(xmlDoc.documentElement);
     }
@@ -621,7 +624,7 @@ async function newSearchHook(query, allLink = '/all.html') {
                         const sectionImage = section.anyImage;
                         if (sectionImage && !usedImages.has(sectionImage)) {
                             usedImages.add(sectionImage);
-                            console.error("section.image", sectionImage);
+                            console.error("section.image", sectionImage, "in", res.doc.url);
                             it.createChild("img", (it) => {
                                 it.src = sectionImage;
                                 it.style.display = 'block';
