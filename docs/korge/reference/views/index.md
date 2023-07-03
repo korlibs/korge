@@ -37,8 +37,9 @@ Then when **KorAG performs the rendering**, it starts drawing from the bottom to
 * **visible**
 * **alpha**
 * **blendingMode**
-* **speed**: Double -- controls the view's updating speed (being a ratio where 1 is 1x, 0.5 is 0.5x and 2 is 2x the speed)
+* **speed**: Float -- controls the view's updating speed (being a ratio where 1 is 1x, 0.5 is 0.5x and 2 is 2x the speed)
 * **colorMul**: [RGBA](/korim/#rgba)
+* **zIndex**: adjusts the order of the views inside their container
 
 ### Computed Properties
 
@@ -142,3 +143,35 @@ To save the whole screen:
 ```kotlin
 val bitmap: Bitmap32 = stage.renderToBitmap(stange.views)
 ```
+
+## Sorting/reordering views inside their container
+
+You can control the order in what the views are being displayed by creation order.
+Firstly created views are displayed in the back, while newly created views are displayed in the front.
+
+It is possible to readjust view order with the `zIndex` property. It is a float that serves as a score for sorting the views.
+By default, all views have a zIndex of 0f. Negative values go to the back, and positive values to the front relative to the views that have a `zIndex` of 0f.
+
+It is important to note that the zIndex is not global, but local to the parent container of the view.
+So if you need to sort several views, they must have a common parent to use the `zIndex` property.
+
+To illustrate this:
+
+```kotlin
+val boxGreen = solidRect(Size(100, 100), Colors.GREEN).xy(0, 0)
+val boxRed   = solidRect(Size(100, 100), Colors.RED  ).xy(25, 25)
+val boxBlue  = solidRect(Size(100, 100), Colors.BLUE ).xy(50, 50)
+```
+
+![zIndex0.png](zIndex0.png)
+
+And after setting their `zIndex`:
+
+```kotlin
+boxGreen.zIndex = +1f
+boxBlue.zIndex = -1f
+```
+
+![zIndex1.png](zIndex1.png)
+
+Now the green is in the top, while the blue is in the back. `boxRed` is in the middle since it has a zIndex of 0f.
