@@ -8,7 +8,7 @@ priority: 300
 
 ## DialogInterface
 
-### browse
+### `browse` to open an URL in the default internet browser
 
 In order to open a URL with the default user Internet Browser:
 
@@ -16,7 +16,7 @@ In order to open a URL with the default user Internet Browser:
 views.gameWindow.browse("https://korge.org/")
 ```
 
-### alert/alertError
+### `alert`/`alertError` to display a message
 
 To display an alert message or exception with a native dialog:
 
@@ -29,7 +29,7 @@ views.gameWindow.alertError(Exception("My error message"))
 
 ![img_4.jpg](img_4.jpg)
 
-### confirm
+### `confirm` to ask for a YES or NO
 
 To ask the user to confirm an action with a native dialog:
 
@@ -39,9 +39,9 @@ val result: Boolean = views.gameWindow.confirm("My message")
 
 ![img_1.jpg](img_1.jpg)
 
-### prompt
+### `prompt` to ask for a text
 
-To ask the user to input a string:
+You can use `prompt` to ask the user to type/prompt/input a string with a native dialog:
 
 ```kotlin
 val result: String = views.gameWindow.prompt("My title", "default")
@@ -49,11 +49,11 @@ val result: String = views.gameWindow.prompt("My title", "default")
 
 ![img_2.jpg](img_2.jpg)
 
-### close
+### `close` to close the window
 
 This will close the window.
 
-### openFileDialog
+### `openFileDialog` to open a native file dialog
 
 To ask the user to select to open one or more files, both for writing and/or reading with the native file dialog.
 
