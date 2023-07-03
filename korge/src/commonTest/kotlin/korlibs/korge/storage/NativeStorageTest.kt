@@ -23,4 +23,20 @@ class NativeStorageTest {
         assertEquals(0, demo.value)
         println("views.storage.toMap()=${views.storage.toMap()}")
     }
+
+    @Test
+    fun testProperty() {
+        val views = ViewsForTesting().views
+        views.storage.removeAll()
+        assertEquals("{}", "${views.storage.toMap()}")
+        var demo by views.storage.itemInt("hello", -1)
+        assertEquals(-1, demo)
+        //assertFailsWith<Throwable> { demo.value }
+        demo = 10
+        assertEquals(10, demo)
+        assertEquals("{hello=10}", "${views.storage.toMap()}")
+        views.storage.removeAll()
+        assertEquals(-1, demo)
+        assertEquals("{}", "${views.storage.toMap()}")
+    }
 }
