@@ -74,12 +74,6 @@ suspend fun main() = Korge(
     debug = false,
     forceRenderEveryFrame = false
 ) {
-    val music = resourcesVfs["sounds/Snowland.mp3"].readMusic()
-// val music = resourcesVfs["audio/music/${setup.resource}"].readSound()
-    music.volume = 0.1
-    music.play(infinitePlaybackTimes)
-
-    return@Korge
     //sceneContainer().changeTo({MainSprites10k()}); return@start
     //sceneContainer().changeTo({MainGraphicsText()}); return@start
     //sceneContainer().changeTo({MainUI()}); return@start
