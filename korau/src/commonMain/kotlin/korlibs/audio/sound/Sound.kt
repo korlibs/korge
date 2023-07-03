@@ -123,9 +123,11 @@ open class LogNativeSoundProvider : NativeSoundProvider() {
     ) : PlatformAudioOutput(coroutineContext, frequency) {
         val data = AudioSamplesDeque(2)
         override suspend fun add(samples: AudioSamples, offset: Int, size: Int) {
-            val addInfo = AddInfo(samples, offset, size)
+            val out = samples.clone()
+            out.scaleVolume(volume)
+            val addInfo = AddInfo(out, offset, size)
             onBeforeAdd(addInfo)
-            data.write(samples, offset, size)
+            data.write(out, offset, size)
             onAfterAdd(addInfo)
         }
         fun consumeToData(): AudioData = data.consumeToData(frequency)

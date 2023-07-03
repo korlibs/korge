@@ -1,12 +1,12 @@
 package korlibs.audio.sound
 
-import korlibs.datastructure.iterators.fastForEach
 import korlibs.memory.FastShortTransfer
 import korlibs.memory.arraycopy
 import korlibs.memory.arrayinterleave
 import korlibs.memory.clamp01
 import korlibs.audio.internal.SampleConvert
 import korlibs.audio.internal.coerceToShort
+import korlibs.datastructure.iterators.*
 import korlibs.io.lang.assert
 import kotlin.math.absoluteValue
 import kotlin.math.max
@@ -104,11 +104,20 @@ class AudioSamples(override val channels: Int, override val totalSamples: Int, v
     }
 
     fun scaleVolume(scale: Double): AudioSamples = scaleVolume(scale.toFloat())
+    fun scaleVolume(channelScales: DoubleArray): AudioSamples = scaleVolume(FloatArray(channelScales.size) { channelScales[it].toFloat() })
 
     fun scaleVolume(scale: Float): AudioSamples {
         data.fastForEach { channel ->
             for (n in channel.indices) {
                 channel[n] = (channel[n] * scale).toInt().coerceToShort()
+            }
+        }
+        return this
+    }
+    fun scaleVolume(channelScales: FloatArray): AudioSamples {
+        data.fastForEachWithIndex { ch, channel ->
+            for (n in channel.indices) {
+                channel[n] = (channel[n] * channelScales[ch]).toInt().coerceToShort()
             }
         }
         return this
@@ -123,6 +132,11 @@ class AudioSamples(override val channels: Int, override val totalSamples: Int, v
         for (ch in 0 until min(channels, that.channels)) {
             arraycopy(this.data[ch], 0, that.data[ch], 0, min(totalSamples, that.totalSamples))
         }
+    }
+
+    fun clone(out: AudioSamples = AudioSamples(channels, totalSamples, Array(data.size) { ShortArray(data[0].size) })) : AudioSamples {
+        this.copyTo(out)
+        return out
     }
 
     override fun hashCode(): Int = channels + totalSamples * 32 + data.contentDeepHashCode() * 64
