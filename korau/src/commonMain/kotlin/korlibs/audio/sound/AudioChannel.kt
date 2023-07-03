@@ -5,7 +5,9 @@ import korlibs.time.seconds
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
 
-class AudioChannel {
+class AudioChannel(
+    val nativeSoundProvider: NativeSoundProvider = korlibs.audio.sound.nativeSoundProvider
+) {
     private var channel: SoundChannel? = null
 
     val state get() = channel?.state ?: SoundChannelState.INITIAL

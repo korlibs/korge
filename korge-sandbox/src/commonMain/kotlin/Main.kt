@@ -1,4 +1,5 @@
 
+import korlibs.audio.sound.*
 import korlibs.event.*
 import korlibs.image.color.*
 import korlibs.image.font.*
@@ -73,7 +74,6 @@ suspend fun main() = Korge(
     debug = false,
     forceRenderEveryFrame = false
 ) {
-    //return@Korge
     //sceneContainer().changeTo({MainSprites10k()}); return@start
     //sceneContainer().changeTo({MainGraphicsText()}); return@start
     //sceneContainer().changeTo({MainUI()}); return@start
