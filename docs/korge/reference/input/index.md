@@ -319,18 +319,24 @@ To do so, you can handle events of the type `DropFileEvent`.
 For simplicity, there is a method you can call from a view to register to DropFileEvent:
 
 ```kotlin
-view.onDropFile {
+val dropFileRect = solidRect(Size(width, height), Colors.RED)
+    .visible(false)
+onDropFile {
     when (it.type) {
         DropFileEvent.Type.START -> dropFileRect.visible = true
         DropFileEvent.Type.END -> dropFileRect.visible = false
         DropFileEvent.Type.DROP -> {
             launchImmediately {
-                it.files?.firstOrNull()?.let { loadFile(it) }
+                it.files?.firstOrNull()?.let {
+                    image(it.readBitmap()).size(Size(width, height))
+                }
             }
         }
     }
 }
 ```
+
+![](file_drag_and_drop.gif)
 
 Or if you want to register events directly:
 
