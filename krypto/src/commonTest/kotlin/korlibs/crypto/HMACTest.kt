@@ -39,6 +39,23 @@ class HMACTest {
     }
 
     @Test
+    fun hmacSHA512() {
+        val data = ByteArray(16){(it + 1).toByte()}
+
+        var key = ByteArray(10){it.toByte()} // key length lt chunk size
+        var mac = HMAC.hmacSHA512(key, data)
+        assertEquals("b65aa1ddecc30fb251219d2ded1831db73a8dea36c304f640c1df7479d356b5cf908914000a438a7d6704420ec96727966166785e5d2ea3f7c05005911722b92", mac.hex)
+
+        key = ByteArray(128){it.toByte()} // key length eq chunk size
+        mac = HMAC.hmacSHA512(key, data)
+        assertEquals("4be6f955033d290e6a054143d1fe92b9badc827f7f87a4373189538a9bb7cd40670cc54d4787d0dcb2c61f6b24b5841581c23a3da82239c6436ce04f397109c5", mac.hex)
+
+        key = ByteArray(136){it.toByte()} // key length gt chunk size
+        mac = HMAC.hmacSHA512(key, data)
+        assertEquals("4043b5f4151a8e5aaedb7ea9efa452f872d43f850f9c5a8670ca1bf4e7214419129e53a51dfc641a5758cd5b72d21f17ad5f9391303d3ef91f6b074aa943c41c", mac.hex)
+    }
+
+    @Test
     fun hmacMD5() {
         val data = ByteArray(16){(it + 1).toByte()}
 
