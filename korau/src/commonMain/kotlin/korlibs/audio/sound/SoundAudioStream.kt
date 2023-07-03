@@ -38,7 +38,7 @@ class SoundAudioStream(
     @OptIn(ExperimentalStdlibApi::class)
     override fun play(coroutineContext: CoroutineContext, params: PlaybackParameters): SoundChannel {
         val nas: PlatformAudioOutput = soundProvider.createPlatformAudioOutput(coroutineContext, stream.rate)
-        nas.copySoundPropsFrom(params)
+        nas.copySoundPropsFromCombined(params, this)
         var playing = true
         var paused = false
         var newStream: AudioStream? = null
