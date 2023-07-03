@@ -55,7 +55,7 @@ This will close the window.
 
 ### openFileDialog
 
-To ask the user to select one or more files, for writing or reading.
+To ask the user to select to open one or more files, both for writing and/or reading with the native file dialog.
 
 ```kotlin
 val selectedFiles: List<VfsFile> = views.gameWindow.openFileDialog(FileFilter("Images" to listOf("*.jpg", "*.jpg")), write = false, multi = true, currentDir = null)
