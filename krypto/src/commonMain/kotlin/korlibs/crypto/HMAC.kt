@@ -9,6 +9,8 @@ class HMAC {
 
         fun hmacSHA256(key: ByteArray, data: ByteArray): Hash = hmac(key, data, SHA256())
 
+        fun hmacSHA512(key: ByteArray, data: ByteArray): Hash = hmac(key, data, SHA512())
+
         fun hmacMD5(key: ByteArray, data: ByteArray): Hash = hmac(key, data, MD5())
 
         internal fun hmac(key: ByteArray, data: ByteArray, hasher: Hasher): Hash {
