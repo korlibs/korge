@@ -95,7 +95,7 @@ class Views(
     var name: String? = null
     var currentVfs: VfsFile = resourcesVfs
     var imageFormats = RegisteredImageFormats
-	val renderContext = RenderContext(ag, this, gameWindow, stats, coroutineContext, batchMaxQuads)
+	val renderContext = RenderContext(ag, this, gameWindow, stats, coroutineContext, batchMaxQuads, gameWindow)
 	@Deprecated("") val agBitmapTextureManager get() = renderContext.agBitmapTextureManager
     @Deprecated("") val agBufferManager get() = renderContext.agBufferManager
 	var clearEachFrame = true
