@@ -143,3 +143,49 @@ ctx.flush(RenderContext.FlushKind.FULL)
 val frameBuffer = ctx.currentFrameBufferOrMain
 ctx.ag.draw(frameBuffer.base, frameBuffer.info, vertexData = ...)
 ```
+
+## Custom Rendering full example
+
+Here you can find a full example doing custom rendering, using both the batcher, render context2d, textures, etc.:
+
+```kotlin
+import korlibs.image.color.*
+import korlibs.image.font.*
+import korlibs.image.format.*
+import korlibs.io.file.std.*
+import korlibs.korge.*
+import korlibs.korge.render.*
+import korlibs.korge.scene.*
+import korlibs.korge.view.*
+import korlibs.math.geom.*
+
+suspend fun main() = Korge(windowSize = Size(512, 512), backgroundColor = Colors["#2b2b2b"]) {
+    val sceneContainer = sceneContainer()
+
+    sceneContainer.changeTo({ MyScene() })
+}
+
+class MyScene : Scene() {
+    override suspend fun SContainer.sceneMain() {
+        val img = resourcesVfs["korge.png"].readBitmapSlice()
+        var mx = 0f
+        addUpdater {
+            mx++
+        }
+        renderableView {
+            // Rendering code here:
+            val texs = ctx.agBitmapTextureManager
+
+            // Batcher:
+            ctx.useBatcher {
+                it.drawQuad(texs.getTexture(img))
+            }
+
+            // Drawer:
+            ctx2d.imageScale(texs.getTexture(img), 200.0, 200.0)
+            ctx2d.drawText("hello world", DefaultTtfFontAsBitmap)
+            ctx2d.ellipse(Point(200 + mx, 200), Size(120, 70), Colors.RED)
+        }
+    }
+}
+```
