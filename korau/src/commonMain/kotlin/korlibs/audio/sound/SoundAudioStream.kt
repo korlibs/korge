@@ -88,6 +88,7 @@ class SoundAudioStream(
                         }
                     } catch (e: CancellationException) {
                         // Do nothing
+                        nas.stop()
                         params.onCancel?.invoke()
                     } finally {
                         nas.wait()

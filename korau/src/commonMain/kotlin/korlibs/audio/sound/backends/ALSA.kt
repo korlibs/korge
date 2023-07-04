@@ -148,9 +148,8 @@ class ALSAPlatformAudioOutput(
         running = false
 
         if (pcm != 0L) {
-            ASound2.snd_pcm_drain(pcm)
+            ASound2.snd_pcm_drop(pcm)
             ASound2.snd_pcm_close(pcm)
-            //println("ASound2.snd_pcm_close: ${pcm}")
             pcm = 0L
         }
     }
@@ -181,6 +180,7 @@ interface ASound2 {
     fun snd_pcm_writei(pcm: Long, buffer: ShortArray, size: Int): Int = ERROR
     fun snd_pcm_prepare(pcm: Long): Int = ERROR
     fun snd_pcm_drain(pcm: Long): Int = ERROR
+    fun snd_pcm_drop(pcm: Long): Int = ERROR
     fun snd_pcm_close(pcm: Long): Int = ERROR
 
     companion object : ASound2 by ASoundImpl {

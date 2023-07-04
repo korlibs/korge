@@ -44,6 +44,7 @@ actual object ASoundImpl : ASound2 {
 
     override fun snd_pcm_prepare(pcm: Long): Int = A2.snd_pcm_prepare(pcm.toCPointer())
     override fun snd_pcm_drain(pcm: Long): Int = A2.snd_pcm_drain(pcm.toCPointer())
+    override fun snd_pcm_drop(pcm: Long): Int = A2.snd_pcm_drop(pcm.toCPointer())
     override fun snd_pcm_close(pcm: Long): Int = A2.snd_pcm_close(pcm.toCPointer())
 }
 
@@ -67,6 +68,7 @@ internal object A2 : DynamicLibrary("libasound.so.2") {
     val snd_pcm_writei by func<(pcm: COpaquePointer?, buffer: COpaquePointer?, size: Int) -> Int>()
     val snd_pcm_prepare by func<(pcm: COpaquePointer?) -> Int>()
     val snd_pcm_drain by func<(pcm: COpaquePointer?) -> Int>()
+    val snd_pcm_drop by func<(pcm: COpaquePointer?) -> Int>()
     val snd_pcm_close by func<(pcm: COpaquePointer?) -> Int>()
 
 }
