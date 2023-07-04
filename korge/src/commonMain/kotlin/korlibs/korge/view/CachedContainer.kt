@@ -38,7 +38,7 @@ open class CachedContainer(
     @property:ViewProperty
     var cache: Boolean = true,
     @property:ViewProperty
-    var expensiveScaling: Boolean = true,
+    var expensiveScaling: Boolean? = null,
 ) : Container(), InvalidateNotifier {
     //@ViewProperty
     //var cache: Boolean = cache
@@ -84,16 +84,21 @@ open class CachedContainer(
         val cache = _cacheTex!!
         ctx.refGcCloseable(cache)
 
-        val renderScale: Float = when (ctx.views?.gameWindow?.quality) {
+        val renderScale: Float = when (ctx.quality) {
             GameWindow.Quality.PERFORMANCE -> 1f
             else -> ctx.devicePixelRatio
         }
         //val renderScale = 1.0
 
+        val doExpensiveScaling = expensiveScaling ?: when(ctx.quality) {
+            GameWindow.Quality.PERFORMANCE -> false
+            else -> true
+        }
+
         if (dirty || scaledCache != renderScale) {
             scaledCache = renderScale
             lbounds = getLocalBounds(includeFilters = false)
-            windowLocalRatio = if (expensiveScaling) {
+            windowLocalRatio = if (doExpensiveScaling) {
                 windowBounds.size / lbounds.size
             } else {
                 Scale(1)
