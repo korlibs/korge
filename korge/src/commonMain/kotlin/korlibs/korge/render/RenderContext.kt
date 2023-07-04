@@ -44,7 +44,8 @@ class RenderContext(
     /** Object storing all the rendering [Stats] like number of batches, number of vertices etc. */
 	val stats: Stats = Stats(),
 	val coroutineContext: CoroutineContext = EmptyCoroutineContext,
-    val batchMaxQuads: Int = BatchBuilder2D.DEFAULT_BATCH_QUADS
+    val batchMaxQuads: Int = BatchBuilder2D.DEFAULT_BATCH_QUADS,
+    val windowConfig: GameWindowConfig = GameWindowConfig.Impl()
 ) :
     Extra by Extra.Mixin(),
     BoundsProvider by bp,
@@ -52,6 +53,8 @@ class RenderContext(
     DeviceDimensionsProvider by deviceDimensionsProvider,
     Closeable
 {
+    val quality: GameWindow.Quality get() = windowConfig.quality
+
     @PublishedApi internal val _buffers = AGProgramWithUniforms.BufferCache()
     private val _programs = FastIdentityMap<Program, AGProgramWithUniforms>()
 
