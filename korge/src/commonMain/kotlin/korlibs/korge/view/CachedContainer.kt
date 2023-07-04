@@ -36,7 +36,9 @@ open class FixedSizeCachedContainer(
 
 open class CachedContainer(
     @property:ViewProperty
-    var cache: Boolean = true
+    var cache: Boolean = true,
+    @property:ViewProperty
+    var expensiveScaling: Boolean = true,
 ) : Container(), InvalidateNotifier {
     //@ViewProperty
     //var cache: Boolean = cache
@@ -62,6 +64,7 @@ open class CachedContainer(
     private var dirty = true
     private var scaledCache = -1f
     private var lbounds = Rectangle()
+    private var windowLocalRatio: Scale = Scale(1)
 
     override fun invalidateRender() {
         super.invalidateRender()
@@ -90,16 +93,22 @@ open class CachedContainer(
         if (dirty || scaledCache != renderScale) {
             scaledCache = renderScale
             lbounds = getLocalBounds(includeFilters = false)
+            windowLocalRatio = if (expensiveScaling) {
+                windowBounds.size / lbounds.size
+            } else {
+                Scale(1)
+            }
+
             dirty = false
-            val texWidth = (lbounds.width * renderScale).toInt().coerceAtLeast(1)
-            val texHeight = (lbounds.height * renderScale).toInt().coerceAtLeast(1)
+            val texWidth = (lbounds.width * renderScale * windowLocalRatio.scaleX).toInt().coerceAtLeast(1)
+            val texHeight = (lbounds.height * renderScale * windowLocalRatio.scaleY).toInt().coerceAtLeast(1)
             cache.resize(texWidth, texHeight)
             ctx.flush()
             ctx.renderToFrameBuffer(cache.rb) {
                 //ctx.ag.clear(Colors.TRANSPARENT, clearColor = true)
                 ctx.setViewMatrixTemp(globalMatrixInv
                     .translated(-lbounds.x, -lbounds.y)
-                    .scaled(renderScale)
+                    .scaled(windowLocalRatio)
                 ) {
                     super.renderInternal(ctx)
                 }
@@ -111,7 +120,7 @@ open class CachedContainer(
                 cache.tex,
                 m = globalMatrix
                     .pretranslated(lbounds.x, lbounds.y)
-                    .prescaled(1.0 / renderScale)
+                    .prescaled(1.0 / windowLocalRatio.scaleX, 1.0 / windowLocalRatio.scaleY)
                 ,
                 colorMul = renderColorMul,
                 blendMode = blendMode,
