@@ -108,7 +108,7 @@ open class CachedContainer(
                 //ctx.ag.clear(Colors.TRANSPARENT, clearColor = true)
                 ctx.setViewMatrixTemp(globalMatrixInv
                     .translated(-lbounds.x, -lbounds.y)
-                    .scaled(windowLocalRatio)
+                    .scaled(renderScale * windowLocalRatio.scaleX, renderScale * windowLocalRatio.scaleY)
                 ) {
                     super.renderInternal(ctx)
                 }
@@ -120,7 +120,7 @@ open class CachedContainer(
                 cache.tex,
                 m = globalMatrix
                     .pretranslated(lbounds.x, lbounds.y)
-                    .prescaled(1.0 / windowLocalRatio.scaleX, 1.0 / windowLocalRatio.scaleY)
+                    .prescaled(1.0 / renderScale / windowLocalRatio.scaleX, 1.0 / renderScale / windowLocalRatio.scaleY)
                 ,
                 colorMul = renderColorMul,
                 blendMode = blendMode,
