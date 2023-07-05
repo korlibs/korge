@@ -47,6 +47,12 @@ actual object ASoundImpl : ASound2 {
         return tempOut.getInt(0L)
     }
 
+    override fun snd_pcm_delay(pcm: Long): Int {
+        val tempDelay = Memory(4).also { it.clear() }
+        A2.snd_pcm_delay(pcm.toCPointer(), tempDelay)
+        return tempDelay.getInt(0L)
+    }
+
     override fun snd_pcm_writei(pcm: Long, buffer: ShortArray, size: Int): Int {
         val mem = Memory((buffer.size * 2).toLong()).also { it.clear() }
         for (n in 0 until buffer.size) mem.setShort((n * 2).toLong(), buffer[n])
@@ -54,6 +60,7 @@ actual object ASoundImpl : ASound2 {
     }
 
     override fun snd_pcm_prepare(pcm: Long): Int = A2.snd_pcm_prepare(pcm.toCPointer())
+    override fun snd_pcm_drop(pcm: Long): Int = A2.snd_pcm_drop(pcm.toCPointer())
     override fun snd_pcm_drain(pcm: Long): Int = A2.snd_pcm_drain(pcm.toCPointer())
     override fun snd_pcm_close(pcm: Long): Int = A2.snd_pcm_close(pcm.toCPointer())
 }
@@ -76,6 +83,8 @@ object A2 {
     @JvmStatic external fun snd_pcm_writei(pcm: Pointer?, buffer: Pointer?, size: Int): Int
     @JvmStatic external fun snd_pcm_prepare(pcm: Pointer?): Int
     @JvmStatic external fun snd_pcm_drain(pcm: Pointer?): Int
+    @JvmStatic external fun snd_pcm_drop(pcm: Pointer?): Int
+    @JvmStatic external fun snd_pcm_delay(pcm: Pointer?, delay: Pointer?): Int
     @JvmStatic external fun snd_pcm_close(pcm: Pointer?): Int
 
     init {
