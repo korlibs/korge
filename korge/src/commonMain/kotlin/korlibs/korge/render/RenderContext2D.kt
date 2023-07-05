@@ -135,19 +135,18 @@ class RenderContext2D(
     }
 
     /** Translates the current transform matrix by [dx] and [dy] */
-	fun translate(dx: Double, dy: Double) {
-		m = m.pretranslated(dx, dy)
-	}
+    fun translate(p: Point) = translate(p.x, p.y)
+    fun translate(dx: Float, dy: Float) { m = m.pretranslated(dx, dy) }
+	fun translate(dx: Double, dy: Double) { m = m.pretranslated(dx, dy) }
 
     /** Scales the current transform matrix by [sx] and [sy] */
-	fun scale(sx: Double, sy: Double = sx) {
-		m = m.prescaled(sx, sy)
-	}
+    fun scale(s: Scale) = translate(s.scaleX, s.scaleY)
+    fun scale(sx: Float, sy: Float) { m = m.prescaled(sx, sy) }
+	fun scale(sx: Double, sy: Double) { m = m.prescaled(sx, sy) }
 
     /** Scales the current transform matrix by [scale] */
-	fun scale(scale: Double) {
-		m = m.prescaled(scale, scale)
-	}
+    fun scale(scale: Float) = scale(scale, scale)
+	fun scale(scale: Double) = scale(scale, scale)
 
     /** Rotates the current transform matrix by [angle] */
 	fun rotate(angle: Angle) {
@@ -255,14 +254,12 @@ class RenderContext2D(
 
     /** Renders a [texture] with the [blendMode] at [x], [y] scaling it by [scale].
      * The texture colors will be multiplied by [multiplyColor]. Since it is multiplicative, white won't cause any effect. */
-	fun imageScale(texture: Texture, x: Double, y: Double, scale: Double = 1.0, filtering: Boolean = this.filtering) {
+    fun imageScale(texture: Texture, pos: Point, scale: Float = 1f, filtering: Boolean = this.filtering) = imageScale(texture, pos.x, pos.y, scale, filtering)
+    fun imageScale(texture: Texture, x: Double, y: Double, scale: Double = 1.0, filtering: Boolean = this.filtering) = imageScale(texture, x.toFloat(), y.toFloat(), scale.toFloat(), filtering)
+	fun imageScale(texture: Texture, x: Float, y: Float, scale: Float = 1f, filtering: Boolean = this.filtering) {
 		//println(m)
 		batch.drawQuad(
-			texture,
-			x.toFloat(),
-			y.toFloat(),
-			(texture.width * scale).toFloat(),
-			(texture.height * scale).toFloat(),
+			texture, x, y, (texture.width * scale), (texture.height * scale),
             filtering = filtering,
 			m = m,
 			colorMul = multiplyColor,

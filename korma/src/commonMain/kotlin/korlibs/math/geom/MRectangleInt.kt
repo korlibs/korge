@@ -177,3 +177,7 @@ inline class MRectangleInt(val rect: MRectangle) {
     @KormaMutableApi val float: MRectangle get() = MRectangle(x, y, width, height)
     val value: Rectangle get() = Rectangle(x, y, width, height)
 }
+
+@Deprecated("")
+val RectangleInt.mutable: MRectangleInt get() = MRectangleInt(x, y, width, height)
+

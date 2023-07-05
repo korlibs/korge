@@ -3,11 +3,7 @@ package korlibs.math.geom
 import korlibs.memory.*
 import korlibs.memory.pack.*
 
-inline class PointFixed internal constructor(internal val raw: Int2Pack) {
-    val x: Fixed get() = Fixed.fromRaw(raw.i0)
-    val y: Fixed get() = Fixed.fromRaw(raw.i1)
-    constructor(x: Fixed, y: Fixed) : this(int2PackOf(x.raw, y.raw))
-
+data class PointFixed(val x: Fixed, val y: Fixed) {
     operator fun unaryMinus(): PointFixed = PointFixed(-this.x, -this.y)
     operator fun unaryPlus(): PointFixed = this
 

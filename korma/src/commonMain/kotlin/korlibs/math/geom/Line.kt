@@ -11,8 +11,7 @@ import korlibs.math.isAlmostZero
 import kotlin.math.*
 
 //@KormaValueApi
-//data class Line(val a: Point, val b: Point) {
-inline class Line internal constructor(val data: Float4Pack) : Shape2D {
+data class Line(val a: Vector2, val b: Vector2) : Shape2D {
     override val area: Float get() = 0f
     override val perimeter: Float get() = length
 
@@ -70,11 +69,7 @@ inline class Line internal constructor(val data: Float4Pack) : Shape2D {
     override fun toVectorPath(): VectorPath = buildVectorPath { moveTo(a); lineTo(b) }
     override fun containsPoint(p: Point): Boolean = false
 
-    val a: Point get() = Point(data.f0, data.f1)
-    val b: Point get() = Point(data.f2, data.f3)
-
     constructor() : this(Point(), Point())
-    constructor(a: Point, b: Point) : this(float4PackOf(a.x, a.y, b.x, b.y))
     constructor(x0: Double, y0: Double, x1: Double, y1: Double) : this(Point(x0, y0), Point(x1, y1))
     constructor(x0: Float, y0: Float, x1: Float, y1: Float) : this(Point(x0, y0), Point(x1, y1))
     constructor(x0: Int, y0: Int, x1: Int, y1: Int) : this(Point(x0, y0), Point(x1, y1))
@@ -142,8 +137,8 @@ inline class Line internal constructor(val data: Float4Pack) : Shape2D {
 
     override fun toString(): String = "Line($a, $b)"
 
-    val isNIL get() = data.f0.isNaN()
-    fun isNaN(): Boolean = data.f0.isNaN()
+    val isNIL get() = a.x.isNaN()
+    fun isNaN(): Boolean = a.y.isNaN()
 
     companion object {
         val ZERO = Line(Point.ZERO, Point.ZERO)
