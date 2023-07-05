@@ -1,25 +1,18 @@
 package korlibs.math.geom
 
-import korlibs.memory.pack.*
-
 //@KormaValueApi
-inline class RectangleInt(val data: Int4Pack) {
+data class RectangleInt(
+    val x: Int, val y: Int,
+    val width: Int, val height: Int,
+) {
     val float: Rectangle get() = Rectangle(x, y, width, height)
 
-    val position: Vector2Int get() = Vector2Int(data.i0, data.i1)
-    val size: SizeInt get() = SizeInt(data.i2, data.i3)
-
-    val x: Int get() = data.i0
-    val y: Int get() = data.i1
-    val width: Int get() = data.i2
-    val height: Int get() = data.i3
+    val position: Vector2Int get() = Vector2Int(x, y)
+    val size: SizeInt get() = SizeInt(width, height)
 
     val area: Int get() = width * height
     val isEmpty: Boolean get() = width == 0 && height == 0
     val isNotEmpty: Boolean get() = !isEmpty
-
-    @Deprecated("")
-    val mutable: MRectangleInt get() = MRectangleInt(x, y, width, height)
 
     val left: Int get() = x
     val top: Int get() = y
@@ -60,8 +53,7 @@ inline class RectangleInt(val data: Int4Pack) {
     fun contains(x: Int, y: Int): Boolean = contains(x.toFloat(), y.toFloat())
 
     constructor() : this(Vector2Int(), SizeInt())
-    constructor(position: Vector2Int, size: SizeInt) : this(int4PackOf(position.x, position.y, size.width, size.height))
-    constructor(x: Int, y: Int, width: Int, height: Int) : this(Vector2Int(x, y), SizeInt(width, height))
+    constructor(position: Vector2Int, size: SizeInt) : this(position.x, position.y, size.width, size.height)
 
     fun sliceWithBounds(left: Int, top: Int, right: Int, bottom: Int, clamped: Boolean = true): RectangleInt {
         val left = if (!clamped) left else left.coerceIn(0, this.width)

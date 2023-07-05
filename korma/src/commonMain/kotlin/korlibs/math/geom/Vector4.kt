@@ -7,7 +7,18 @@ import korlibs.memory.*
 import kotlin.math.*
 
 //@KormaValueApi
-inline class Vector4(val data: Float4Pack) {
+//inline class Vector4(val data: Float4) {
+data class Vector4(val x: Float, val y: Float, val z: Float, val w: Float) {
+    //operator fun component1(): Float = x
+    //operator fun component2(): Float = y
+    //operator fun component3(): Float = z
+    //operator fun component4(): Float = w
+    //val x: Float get() = data.f0
+    //val y: Float get() = data.f1
+    //val z: Float get() = data.f2
+    //val w: Float get() = data.f3
+    //fun copy(x: Float = this.x, y: Float = this.y, z: Float = this.z, w: Float = this.w): Vector4 = Vector4(x, y, z, w)
+
     companion object {
         val ZERO = Vector4(0f, 0f, 0f, 0f)
         val ONE = Vector4(1f, 1f, 1f, 1f)
@@ -30,20 +41,10 @@ inline class Vector4(val data: Float4Pack) {
         inline fun func(func: (index: Int) -> Float): Vector4 = Vector4(func(0), func(1), func(2), func(3))
     }
 
-    constructor(xyz: Vector3, w: Float) : this(float4PackOf(xyz.x, xyz.y, xyz.z, w))
-    constructor(x: Float, y: Float, z: Float, w: Float) : this(float4PackOf(x, y, z, w))
+    constructor(xyz: Vector3, w: Float) : this(xyz.x, xyz.y, xyz.z, w)
+    //constructor(x: Float, y: Float, z: Float, w: Float) : this(float4PackOf(x, y, z, w))
     constructor(x: Int, y: Int, z: Int, w: Int) : this(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat())
     constructor(x: Double, y: Double, z: Double, w: Double) : this(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat())
-
-    operator fun component1(): Float = x
-    operator fun component2(): Float = y
-    operator fun component3(): Float = z
-    operator fun component4(): Float = w
-
-    val x: Float get() = data.f0
-    val y: Float get() = data.f1
-    val z: Float get() = data.f2
-    val w: Float get() = data.f3
 
     val xyz: Vector3 get() = Vector3(x, y, z)
 
@@ -84,8 +85,6 @@ inline class Vector4(val data: Float4Pack) {
     
     infix fun dot(v: Vector4): Float = (x * v.x) + (y * v.y) + (z * v.z) + (w * v.w)
     //infix fun cross(v: Vector4): Vector4 = cross(this, v)
-
-    fun copy(x: Float = this.x, y: Float = this.y, z: Float = this.z, w: Float = this.w): Vector4 = Vector4(x, y, z, w)
 
     fun copyTo(out: FloatArray, offset: Int = 0): FloatArray {
         out[offset + 0] = x

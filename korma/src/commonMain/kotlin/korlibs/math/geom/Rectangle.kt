@@ -13,24 +13,25 @@ import kotlin.math.*
 
 //@KormaValueApi
 //inline class Rectangle(val data: Float4Pack) : Shape2D, Interpolable<Rectangle> {
-inline class Rectangle(val data: Float4Pack) : Shape2D {
+//inline class Rectangle(val data: Float4) : Shape2D {
+data class Rectangle(val x: Float, val y: Float, val width: Float, val height: Float) : Shape2D {
     val int: RectangleInt get() = toInt()
 
-    operator fun component1(): Float = x
-    operator fun component2(): Float = y
-    operator fun component3(): Float = width
-    operator fun component4(): Float = height
+    //operator fun component1(): Float = x
+    //operator fun component2(): Float = y
+    //operator fun component3(): Float = width
+    //operator fun component4(): Float = height
+    //val x: Float get() = data.f0
+    //val y: Float get() = data.f1
+    //val width: Float get() = data.f2
+    //val height: Float get() = data.f3
+    //fun copy(x: Float = this.x, y: Float = this.y, width: Float = this.width, height: Float = this.height): Rectangle = Rectangle(x, y, width, height)
 
     @Deprecated("", ReplaceWith("this")) fun clone(): Rectangle = this
     @Deprecated("", ReplaceWith("this")) val immutable: Rectangle get() = this
 
-    val position: Point get() = Point(data.f0, data.f1)
-    val size: Size get() = Size(data.f2, data.f3)
-
-    val x: Float get() = data.f0
-    val y: Float get() = data.f1
-    val width: Float get() = data.f2
-    val height: Float get() = data.f3
+    val position: Point get() = Point(x, y)
+    val size: Size get() = Size(width, height)
 
     val xD: Double get() = x.toDouble()
     val yD: Double get() = y.toDouble()
@@ -68,7 +69,7 @@ inline class Rectangle(val data: Float4Pack) : Shape2D {
         val NIL get() = NaN
 
         operator fun invoke(): Rectangle = ZERO
-        operator fun invoke(p: Point, s: Size): Rectangle = Rectangle(float4PackOf(p.x, p.y, s.width, s.height))
+        operator fun invoke(p: Point, s: Size): Rectangle = Rectangle(p.x, p.y, s.width, s.height)
         operator fun invoke(x: Int, y: Int, width: Int, height: Int): Rectangle = Rectangle(Point(x, y), Size(width, height))
         operator fun invoke(x: Float, y: Float, width: Float, height: Float): Rectangle = Rectangle(Point(x, y), Size(width, height))
         operator fun invoke(x: Double, y: Double, width: Double, height: Double): Rectangle = Rectangle(Point(x, y), Size(width, height))
@@ -223,9 +224,6 @@ inline class Rectangle(val data: Float4Pack) : Shape2D {
 
     fun expanded(border: MarginInt): Rectangle =
         fromBounds(left - border.left, top - border.top, right + border.right, bottom + border.bottom)
-
-    fun copy(x: Float = this.x, y: Float = this.y, width: Float = this.width, height: Float = this.height): Rectangle =
-        Rectangle(x, y, width, height)
 
     fun copyBounds(left: Float = this.left, top: Float = this.top, right: Float = this.right, bottom: Float = this.bottom): Rectangle =
         Rectangle.fromBounds(left, top, right, bottom)

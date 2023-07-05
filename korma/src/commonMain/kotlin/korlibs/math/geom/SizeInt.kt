@@ -2,7 +2,7 @@ package korlibs.math.geom
 
 import korlibs.memory.pack.*
 
-inline class SizeInt internal constructor(internal val raw: Int2Pack) {
+inline class SizeInt internal constructor(internal val raw: Int2) {
     operator fun component1(): Int = width
     operator fun component2(): Int = height
 

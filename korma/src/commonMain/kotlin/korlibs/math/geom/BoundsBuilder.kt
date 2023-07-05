@@ -46,11 +46,12 @@ inline class BoundsBuilder(val bounds: Rectangle) {
         return bb
     }
     operator fun plus(bb: BoundsBuilder): BoundsBuilder = this + bb.bounds
-    operator fun plus(rect: Rectangle?): BoundsBuilder = if (rect == null) this else plus(rect)
-    operator fun plus(rect: Rectangle): BoundsBuilder {
+    operator fun plus(rect: Rectangle?): BoundsBuilder {
+        if (rect == null) return this
         if (rect.isNIL) return this
         return this + rect.topLeft + rect.bottomRight
     }
+    //operator fun plus(rect: Rectangle): BoundsBuilder = TODO()
     operator fun plus(rects: List<Rectangle>): BoundsBuilder {
         var bb = this
         rects.fastForEach { bb += it }
