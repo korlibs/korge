@@ -33,6 +33,7 @@ class ALSAPlatformAudioOutput(
     coroutineContext: CoroutineContext,
     frequency: Int,
 ) : PlatformAudioOutput(coroutineContext, frequency) {
+    override var availableSamples: Int = 0
     val channels = 2
     private val lock = Lock()
     val sdeque = AudioSamplesDeque(channels)
@@ -45,7 +46,8 @@ class ALSAPlatformAudioOutput(
     }
 
     override suspend fun add(samples: AudioSamples, offset: Int, size: Int) {
-        if (!ASound2.initialized) return super.add(samples, offset, size)
+        if (size == 0) return
+        if (!ASound2.initialized) return super.add(samples, offset, samples.totalSamples)
         //if (!running) start()
 
         if (!running) delay(10.milliseconds)
@@ -53,7 +55,8 @@ class ALSAPlatformAudioOutput(
         while (running && lock { sdeque.availableRead > 4 * 1024 }) {
             delay(10.milliseconds)
         }
-        lock { sdeque.write(samples, offset, size) }
+        availableSamples += samples.totalSamples
+        lock { sdeque.write(samples, offset, samples.totalSamples) }
     }
 
     override fun start() {
@@ -70,6 +73,7 @@ class ALSAPlatformAudioOutput(
         }
         //println("START!")
         sdeque.clear()
+        availableSamples = 0
 
         if (!ASound2.initialized) return
 
@@ -132,11 +136,14 @@ class ALSAPlatformAudioOutput(
                     if (result == -ASound2.EPIPE) {
                         ASound2.snd_pcm_prepare(pcm)
                     }
+
+
+                    availableSamples -= samples.totalSamples
                 }
             } finally {
                 //println("COMPLETED: $pcm")
                 thread = null
-//                stop()
+                availableSamples = 0
             }
         }.also {
             it.isDaemon = true
@@ -150,6 +157,7 @@ class ALSAPlatformAudioOutput(
         if (pcm != 0L) {
             ASound2.snd_pcm_drop(pcm)
             ASound2.snd_pcm_close(pcm)
+            availableSamples = 0
             pcm = 0L
         }
     }
