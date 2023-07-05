@@ -5,6 +5,7 @@ import korlibs.math.*
 import korlibs.memory.*
 import korlibs.memory.isAlmostZero
 import korlibs.memory.isNanOrInfinite
+import kotlin.math.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -161,5 +162,37 @@ class MathTest {
         assertEquals(20, 16.closestMultipleOf(10))
         assertEquals(20, 19.closestMultipleOf(10))
         assertEquals(20, 21.closestMultipleOf(10))
+    }
+
+    @Test
+    @Suppress("DEPRECATION")
+    fun testSquaredSq() {
+        assertEquals(listOf(1, 4, 9), listOf(sq(1), sq(2), sq(3)))
+        assertEquals(listOf(1f, 4f, 9f), listOf(sq(1f), sq(2f), sq(3f)))
+        assertEquals(listOf(1.0, 4.0, 9.0), listOf(sq(1.0), sq(2.0), sq(3.0)))
+        assertEquals(listOf(0.25), listOf(sq(0.5)))
+    }
+
+    @Test
+    fun testSquared() {
+        assertEquals(listOf(1, 4, 9), listOf(1.squared(), 2.squared(), 3.squared()))
+        assertEquals(listOf(1f, 4f, 9f), listOf(1f.squared(), 2f.squared(), 3f.squared()))
+        assertEquals(listOf(1.0, 4.0, 9.0), listOf(1.0.squared(), 2.0.squared(), 3.0.squared()))
+        assertEquals(listOf(0.25), listOf(0.5.squared()))
+    }
+
+    @Test
+    fun testSignNonZero() {
+        assertEquals(listOf(-1,  0, +1), listOf((-4).sign, 0.sign, (+4).sign))
+        assertEquals(listOf(-1, -1, +1), listOf((-4).signM1, 0.signM1, (+4).signM1))
+        assertEquals(listOf(-1, +1, +1), listOf((-4).signP1, 0.signP1, (+4).signP1))
+
+        assertEquals(listOf(-1f,  0f, +1f), listOf((-4f).sign, 0f.sign, (+4f).sign))
+        assertEquals(listOf(-1f, -1f, +1f), listOf((-4f).signM1, 0f.signM1, (+4f).signM1))
+        assertEquals(listOf(-1f, +1f, +1f), listOf((-4f).signP1, 0f.signP1, (+4f).signP1))
+
+        assertEquals(listOf(-1.0,  0.0, +1.0), listOf((-4.0).sign, 0.0.sign, (+4.0).sign))
+        assertEquals(listOf(-1.0, -1.0, +1.0), listOf((-4.0).signM1, 0.0.signM1, (+4.0).signM1))
+        assertEquals(listOf(-1.0, +1.0, +1.0), listOf((-4.0).signP1, 0.0.signP1, (+4.0).signP1))
     }
 }
