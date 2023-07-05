@@ -1,10 +1,6 @@
 package korlibs.datastructure.extensions
 
-import korlibs.datastructure.mapWhile
-import korlibs.datastructure.mapWhileArray
-import korlibs.datastructure.mapWhileDouble
-import korlibs.datastructure.mapWhileFloat
-import korlibs.datastructure.mapWhileInt
+import korlibs.datastructure.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -22,5 +18,15 @@ class MapWhileTest {
     fun test2() {
         val iterator = listOf(1, 2, 3).iterator()
         assertEquals(listOf(1, 2, 3), mapWhile({ iterator.hasNext() }) { iterator.next()})
+    }
+
+    @Test
+    fun testNotNull() {
+        assertEquals(listOf(0, 1, 2), mapWhileNotNull { if (it >= 3) null else it })
+    }
+
+    @Test
+    fun testNotCheck() {
+        assertEquals(listOf(0, 1000, 2000), mapWhileCheck({ it < 3000 }) { it * 1000 })
     }
 }

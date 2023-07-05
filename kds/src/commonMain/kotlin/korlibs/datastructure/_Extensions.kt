@@ -14,6 +14,20 @@ inline fun mapWhileInt(cond: (index: Int) -> Boolean, gen: (Int) -> Int): IntArr
 inline fun mapWhileFloat(cond: (index: Int) -> Boolean, gen: (Int) -> Float): FloatArray = FloatArrayList().apply { while (cond(this.size)) this += gen(this.size) }.toFloatArray()
 inline fun mapWhileDouble(cond: (index: Int) -> Boolean, gen: (Int) -> Double): DoubleArray = DoubleArrayList().apply { while (cond(this.size)) this += gen(this.size) }.toDoubleArray()
 
+inline fun <reified T> mapWhileNotNull(gen: (Int) -> T?): List<T> = arrayListOf<T>().apply {
+    while (true) {
+        this += gen(this.size) ?: break
+    }
+}
+
+inline fun <reified T> mapWhileCheck(check: (T) -> Boolean, gen: (Int) -> T): List<T> = arrayListOf<T>().apply {
+    while (true) {
+        val res = gen(this.size)
+        if (!check(res)) break
+        this += res
+    }
+}
+
 fun <T> List<T>.getCyclic(index: Int): T = this[index umod this.size]
 fun <T> List<T>.getCyclicOrNull(index: Int): T? = if (this.isEmpty()) null else this.getOrNull(index umod this.size)
 fun <T> Array<T>.getCyclic(index: Int) = this[index umod this.size]
