@@ -149,6 +149,23 @@ internal inline fun array_indexOf(starting: Int, selfSize: Int, subSize: Int, cr
     return -1
 }
 
+@PublishedApi
+internal inline fun array_lastIndexOf(starting: Int, selfSize: Int, subSize: Int, crossinline equal: (n: Int, m: Int) -> Boolean): Int {
+    for (n in (selfSize - subSize - 1) downTo starting) {
+        var eq = 0
+        for (m in 0 until subSize) {
+            if (!equal(n + m, m)) {
+                break
+            }
+            eq++
+        }
+        if (eq == subSize) {
+            return n
+        }
+    }
+    return -1
+}
+
 public fun BooleanArray.indexOf(sub: BooleanArray, starting: Int = 0): Int = array_indexOf(starting, size, sub.size) { n, m -> this[n] == sub[m] }
 public fun ByteArray.indexOf(sub: ByteArray, starting: Int = 0): Int = array_indexOf(starting, size, sub.size) { n, m -> this[n] == sub[m] }
 public fun ShortArray.indexOf(sub: ShortArray, starting: Int = 0): Int = array_indexOf(starting, size, sub.size) { n, m -> this[n] == sub[m] }
@@ -158,6 +175,16 @@ public fun LongArray.indexOf(sub: LongArray, starting: Int = 0): Int = array_ind
 public fun FloatArray.indexOf(sub: FloatArray, starting: Int = 0): Int = array_indexOf(starting, size, sub.size) { n, m -> this[n] == sub[m] }
 public fun DoubleArray.indexOf(sub: DoubleArray, starting: Int = 0): Int = array_indexOf(starting, size, sub.size) { n, m -> this[n] == sub[m] }
 public fun <T> Array<T>.indexOf(sub: Array<T>, starting: Int = 0): Int = array_indexOf(starting, size, sub.size) { n, m -> this[n] == sub[m] }
+
+public fun BooleanArray.lastIndexOf(sub: BooleanArray, starting: Int = 0): Int = array_lastIndexOf(starting, size, sub.size) { n, m -> this[n] == sub[m] }
+public fun ByteArray.lastIndexOf(sub: ByteArray, starting: Int = 0): Int = array_lastIndexOf(starting, size, sub.size) { n, m -> this[n] == sub[m] }
+public fun ShortArray.lastIndexOf(sub: ShortArray, starting: Int = 0): Int = array_lastIndexOf(starting, size, sub.size) { n, m -> this[n] == sub[m] }
+public fun CharArray.lastIndexOf(sub: CharArray, starting: Int = 0): Int = array_lastIndexOf(starting, size, sub.size) { n, m -> this[n] == sub[m] }
+public fun IntArray.lastIndexOf(sub: IntArray, starting: Int = 0): Int = array_lastIndexOf(starting, size, sub.size) { n, m -> this[n] == sub[m] }
+public fun LongArray.lastIndexOf(sub: LongArray, starting: Int = 0): Int = array_lastIndexOf(starting, size, sub.size) { n, m -> this[n] == sub[m] }
+public fun FloatArray.lastIndexOf(sub: FloatArray, starting: Int = 0): Int = array_lastIndexOf(starting, size, sub.size) { n, m -> this[n] == sub[m] }
+public fun DoubleArray.lastIndexOf(sub: DoubleArray, starting: Int = 0): Int = array_lastIndexOf(starting, size, sub.size) { n, m -> this[n] == sub[m] }
+public fun <T> Array<T>.lastIndexOf(sub: Array<T>, starting: Int = 0): Int = array_lastIndexOf(starting, size, sub.size) { n, m -> this[n] == sub[m] }
 
 
 public fun arrayinterleave(
