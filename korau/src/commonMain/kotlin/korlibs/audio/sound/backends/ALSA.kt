@@ -55,8 +55,10 @@ class ALSAPlatformAudioOutput(
         while (running && lock { sdeque.availableRead > 4 * 1024 }) {
             delay(10.milliseconds)
         }
-        availableSamples += samples.totalSamples
-        lock { sdeque.write(samples, offset, samples.totalSamples) }
+        lock {
+            availableSamples += samples.totalSamples
+            sdeque.write(samples, offset, samples.totalSamples)
+        }
     }
 
     override fun start() {
@@ -73,7 +75,9 @@ class ALSAPlatformAudioOutput(
         }
         //println("START!")
         sdeque.clear()
-        availableSamples = 0
+        lock {
+            availableSamples = 0
+        }
 
         if (!ASound2.initialized) return
 
@@ -141,14 +145,16 @@ class ALSAPlatformAudioOutput(
                             blockingSleep(10.milliseconds)
                         }
                     }
-
-
-                    availableSamples -= samples.totalSamples
+                    lock {
+                        availableSamples -= samples.totalSamples
+                    }
                 }
             } finally {
                 //println("COMPLETED: $pcm")
                 thread = null
-                availableSamples = 0
+                lock {
+                    availableSamples = 0
+                }
             }
         }.also {
             it.isDaemon = true
@@ -162,7 +168,9 @@ class ALSAPlatformAudioOutput(
         if (pcm != 0L) {
             ASound2.snd_pcm_drop(pcm)
             ASound2.snd_pcm_close(pcm)
-            availableSamples = 0
+            lock {
+                availableSamples = 0
+            }
             pcm = 0L
         }
     }
