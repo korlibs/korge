@@ -38,6 +38,14 @@ actual object ASoundImpl : ASound2 {
         }
     }
 
+    override fun snd_pcm_delay(params: Long): Int {
+        memScoped {
+            val out = alloc<IntVar>()
+            A2.snd_pcm_delay(params.toCPointer(), out.ptr)
+            return out.value.toInt()
+        }
+    }
+
     override fun snd_pcm_writei(pcm: Long, buffer: ShortArray, size: Int): Int = buffer.usePinned {
         A2.snd_pcm_writei(pcm.toCPointer(), it.startAddressOf, size)
     }
@@ -69,6 +77,7 @@ internal object A2 : DynamicLibrary("libasound.so.2") {
     val snd_pcm_prepare by func<(pcm: COpaquePointer?) -> Int>()
     val snd_pcm_drain by func<(pcm: COpaquePointer?) -> Int>()
     val snd_pcm_drop by func<(pcm: COpaquePointer?) -> Int>()
+    val snd_pcm_delay by func<(pcm: COpaquePointer?, delay: COpaquePointer?) -> Int>()
     val snd_pcm_close by func<(pcm: COpaquePointer?) -> Int>()
 
 }

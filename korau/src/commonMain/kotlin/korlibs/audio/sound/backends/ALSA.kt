@@ -131,10 +131,15 @@ class ALSAPlatformAudioOutput(
                             buff[n * channels + ch] = (samples[ch, n] * rscale).toInt().toShort()
                         }
                     }
+                    if (!running) break
                     val result = ASound2.snd_pcm_writei(pcm, buff, frames)
                     //println("result=$result")
                     if (result == -ASound2.EPIPE) {
                         ASound2.snd_pcm_prepare(pcm)
+                    } else {
+                        while (running && ASound2.snd_pcm_delay(pcm) > frames) {
+                            blockingSleep(10.milliseconds)
+                        }
                     }
 
 
@@ -189,6 +194,7 @@ interface ASound2 {
     fun snd_pcm_prepare(pcm: Long): Int = ERROR
     fun snd_pcm_drain(pcm: Long): Int = ERROR
     fun snd_pcm_drop(pcm: Long): Int = ERROR
+    fun snd_pcm_delay(pcm: Long): Int = ERROR
     fun snd_pcm_close(pcm: Long): Int = ERROR
 
     companion object : ASound2 by ASoundImpl {
