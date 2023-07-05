@@ -149,7 +149,7 @@ data class Vector2(val x: Float, val y: Float) {
     fun niceStr(decimalPlaces: Int): String = "(${x.niceStr(decimalPlaces)}, ${y.niceStr(decimalPlaces)})"
     override fun toString(): String = niceStr
 
-    fun Vector2.reflected(normal: Vector2): Vector2 {
+    fun reflected(normal: Vector2): Vector2 {
         val d = this
         val n = normal
         return d - 2f * (d dot n) * n

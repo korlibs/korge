@@ -41,7 +41,40 @@ fun ln(v: Int): Int = ln(v.toDouble()).toInt()
 fun log2(v: Int): Int = log(v.toDouble(), 2.0).toInt()
 fun log10(v: Int): Int = log(v.toDouble(), 10.0).toInt()
 
+@Deprecated("", ReplaceWith("v.squared()"))
+fun sq(v: Int): Int = v.squared()
+@Deprecated("", ReplaceWith("v.squared()"))
+fun sq(v: Float): Float = v.squared()
+@Deprecated("", ReplaceWith("v.squared()"))
+fun sq(v: Double): Double = v.squared()
+
+/** Signs of the value. Zero will be converted into -1 */
+val Int.signM1: Int get() = signNonZeroM1(this)
+/** Signs of the value. Zero will be converted into -1 */
+val Float.signM1: Float get() = signNonZeroM1(this).toFloat()
+/** Signs of the value. Zero will be converted into -1 */
+val Double.signM1: Double get() = signNonZeroM1(this).toDouble()
+
+/** Signs of the value. Zero will be converted into +1 */
+val Int.signP1: Int get() = signNonZeroP1(this)
+/** Signs of the value. Zero will be converted into +1 */
+val Float.signP1: Float get() = signNonZeroP1(this).toFloat()
+/** Signs of the value. Zero will be converted into +1 */
+val Double.signP1: Double get() = signNonZeroP1(this).toDouble()
+
+/** Signs of the value. Zero will be converted into -1 */
+fun signNonZeroM1(x: Int): Int = if (x <= 0) -1 else +1
+/** Signs of the value. Zero will be converted into -1 */
+fun signNonZeroM1(x: Float): Int = if (x <= 0) -1 else +1
+/** Signs of the value. Zero will be converted into -1 */
 fun signNonZeroM1(x: Double): Int = if (x <= 0) -1 else +1
+
+
+/** Signs of the value. Zero will be converted into +1 */
+fun signNonZeroP1(x: Int): Int = if (x >= 0) +1 else -1
+/** Signs of the value. Zero will be converted into +1 */
+fun signNonZeroP1(x: Float): Int = if (x >= 0) +1 else -1
+/** Signs of the value. Zero will be converted into +1 */
 fun signNonZeroP1(x: Double): Int = if (x >= 0) +1 else -1
 
 //fun Double.isAlmostEquals(other: Double, epsilon: Double = 0.0001): Boolean = (this - other).absoluteValue < epsilon
@@ -81,6 +114,10 @@ fun Long.prevMultipleOf(multiple: Long) = if (this.isMultipleOf(multiple)) this 
 fun Double.isMultipleOf(multiple: Double) = multiple.isAlmostZero() || (this % multiple).isAlmostZero()
 fun Int.isMultipleOf(multiple: Int) = multiple == 0 || (this % multiple) == 0
 fun Long.isMultipleOf(multiple: Long) = multiple == 0L || (this % multiple) == 0L
+
+fun Double.squared(): Double = this * this
+fun Float.squared(): Float = this * this
+fun Int.squared(): Int = this * this
 
 fun min(a: Int, b: Int, c: Int) = min(min(a, b), c)
 fun min(a: Float, b: Float, c: Float) = min(min(a, b), c)

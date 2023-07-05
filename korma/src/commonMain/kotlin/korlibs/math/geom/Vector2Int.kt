@@ -1,7 +1,5 @@
 package korlibs.math.geom
 
-import korlibs.memory.pack.*
-
 typealias PointInt = Vector2Int
 
 //@KormaValueApi

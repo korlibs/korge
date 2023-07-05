@@ -50,4 +50,13 @@ class Vector2Test {
         assertEquals(true, Point.isCollinear(Point(0, 0), Point(0, 0), Point(0, 5)))
         assertEquals(true, Point.isCollinear(Point(0, 0), Point(0, 0), Point(5, 0)))
     }
+
+    @Test
+    fun testReflected() {
+        assertEquals(Vector2.DOWN, Vector2.UP.reflected(Vector2.DOWN))
+        assertEquals(Vector2.UP, Vector2.DOWN.reflected(Vector2.UP))
+        assertEquals(Vector2.DOWN, Vector2.UP.reflected(Vector2.UP))
+        assertEquals(Vector2.UP, Vector2.DOWN.reflected(Vector2.DOWN))
+        assertEquals(Vector2.polar((-45).degrees), Vector2.polar(45.degrees).reflected(Vector2.DOWN))
+    }
 }

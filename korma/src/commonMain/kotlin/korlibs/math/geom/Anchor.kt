@@ -1,19 +1,12 @@
 package korlibs.math.geom
 
-import korlibs.memory.pack.*
 import korlibs.math.interpolation.*
 
-//@KormaValueApi
-//data class Anchor(val sx: Double, val sy: Double) : Interpolable<Anchor> {
-inline class Anchor internal constructor(internal val raw: Float2Pack) : Interpolable<Anchor> {
-
+data class Anchor(val sx: Float, val sy: Float) : Interpolable<Anchor> {
     fun toVector(): Vector2 = Vector2(sx, sy)
 
-    val sx: Float get() = raw.f0
-    val sy: Float get() = raw.f1
-
-    val floatX: Float get() = raw.f0
-    val floatY: Float get() = raw.f1
+    val floatX: Float get() = sx
+    val floatY: Float get() = sy
 
     val doubleX: Double get() = sx.toDouble()
     val doubleY: Double get() = sy.toDouble()
@@ -21,7 +14,6 @@ inline class Anchor internal constructor(internal val raw: Float2Pack) : Interpo
     val ratioX: Ratio get() = sx.toRatio()
     val ratioY: Ratio get() = sy.toRatio()
 
-    constructor(sx: Float, sy: Float) : this(float2PackOf(sx, sy))
     constructor(sx: Double, sy: Double) : this(sx.toFloat(), sy.toFloat())
     constructor(sx: Int, sy: Int) : this(sx.toFloat(), sy.toFloat())
 
