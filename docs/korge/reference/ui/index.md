@@ -121,6 +121,12 @@ uiImage(Size(120f, 32f), KR.korge.read().slice(), scaleMode = ScaleMode.FIT, con
 
 ![img_14.png](img_14.png)
 
+## `UIWindow`
+
+A draggable, resizable and closeable window.
+
+![img_23.png](img_23.png)
+
 ## `UIProgressBar`
 
 ```kotlin
