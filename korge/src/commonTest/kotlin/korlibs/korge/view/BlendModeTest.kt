@@ -29,5 +29,7 @@ class BlendModeTest {
     @Test
     fun testInvert() {
         assertEquals(Colors["#000000ff"], BlendMode.INVERT.apply(Colors["#ffffffff"], Colors["#ffffff00"]))
+        assertEquals(Colors["#000000ff"], BlendMode.INVERT.apply(Colors["#ffffff00"], Colors["#ffffffff"]))
+        assertEquals(Colors["#00000000"], BlendMode.INVERT.apply(Colors["#ffffff00"], Colors["#ffffff00"]))
     }
 }
