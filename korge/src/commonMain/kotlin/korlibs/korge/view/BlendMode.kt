@@ -34,7 +34,6 @@ data class BlendMode(
         return factors.apply(src, dst)
     }
 
-
     companion object {
         /** Mixes the source and destination colors using the source alpha value */
         val NORMAL = BlendMode(name = "NORMAL", factors = AGBlending.NORMAL_PRE)
@@ -59,7 +58,13 @@ data class BlendMode(
                 AGBlendEquation.REVERSE_SUBTRACT
             )
         )
-        val INVERT = BlendMode(name = "INVERT", factors = AGBlending(AGBlendFactor.ONE_MINUS_DESTINATION_COLOR, AGBlendFactor.ZERO))
+        val INVERT = BlendMode(
+            name = "INVERT",
+            factors = AGBlending(
+                AGBlendFactor.ONE_MINUS_DESTINATION_COLOR, AGBlendFactor.ZERO,
+                AGBlendFactor.ONE, AGBlendFactor.ONE,
+            )
+        )
 
         // Unimplemented
         val LIGHTEN = BlendMode(

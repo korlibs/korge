@@ -164,4 +164,11 @@ class ReferenceGraphicsTest {
         }
         assertScreenshot(this, "blur", includeBackground = true)
     }
+
+    @Test
+    fun testInvertBlendingMode() = korgeScreenshotTest(Size(100, 100), bgcolor = Colors["#7f3faa"]) {
+        solidRect(75, 75, Colors.WHITE)
+        solidRect(75, 75, Colors.WHITE).xy(25, 25).blendMode(BlendMode.INVERT)
+        assertScreenshot(this, "invertBlend", includeBackground = true)
+    }
 }
