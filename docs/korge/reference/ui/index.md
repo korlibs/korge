@@ -125,7 +125,7 @@ uiImage(Size(120f, 32f), KR.korge.read().slice(), scaleMode = ScaleMode.FIT, con
 
 A draggable, resizable and closeable window.
 
-![img_23.png](img_23.png)
+![img_24.png](img_24.png)
 
 ## `UIProgressBar`
 
