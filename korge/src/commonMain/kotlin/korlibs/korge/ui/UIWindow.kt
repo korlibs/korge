@@ -5,6 +5,7 @@ import korlibs.image.color.*
 import korlibs.image.text.*
 import korlibs.korge.annotations.*
 import korlibs.korge.input.*
+import korlibs.korge.internal.*
 import korlibs.korge.render.*
 import korlibs.korge.tween.*
 import korlibs.korge.view.*
@@ -13,6 +14,7 @@ import korlibs.math.interpolation.*
 import korlibs.memory.*
 import korlibs.render.*
 import korlibs.time.*
+
 
 @KorgeExperimental
 inline fun Container.uiWindow(
@@ -52,7 +54,7 @@ class UIWindow(title: String, size: Size = Size(256, 256)) : UIContainer(size) {
     })
     private val titleContainer = fixedSizeContainer(Size(width, titleHeight))
     private val titleView = titleContainer.textBlock(RichTextData(title), align = TextAlignment.MIDDLE_LEFT).xy(12, 0).size(width, titleHeight)
-    private val closeButton = titleContainer.uiButton("X", size = Size(titleHeight - buttonSeparation * 2, titleHeight - buttonSeparation * 2)) {
+    private val closeButton = titleContainer.uiButton(icon = UIIcons.CROSS, size = Size(titleHeight - buttonSeparation * 2, titleHeight - buttonSeparation * 2)) {
         radiusRatio = Ratio.ONE
         elevation = false
         bgColorOut = MaterialColors.RED_600
@@ -72,8 +74,10 @@ class UIWindow(title: String, size: Size = Size(256, 256)) : UIContainer(size) {
     class ScaleHandler(val window: UIWindow, val anchor: Anchor) {
         val isCorner = (anchor.doubleX == anchor.doubleY)
 
+        @OptIn(KorgeUntested::class)
         val view = window.solidRect(Size.ZERO, Colors.TRANSPARENT) {
             val sh = this
+            val anchor = this@ScaleHandler.anchor
             anchor(Anchor.CENTER)
             cursor = GameWindow.Cursor.fromAnchorResize(anchor)
             // @TODO: clamping shouldn't affect (we should use it.start and get initial values to compute based on start and not on deltas)
@@ -88,7 +92,7 @@ class UIWindow(title: String, size: Size = Size(256, 256)) : UIContainer(size) {
                         }
                     }
 
-                    anchor.floatY > 0.5f -> {
+                    anchor.floatX > 0.5f -> {
                         bounds = bounds.copyBounds(right = it.cx)
                         bounds = bounds.copy(width = bounds.width.clamp(window.minWidth, window.maxWidth))
                     }
@@ -110,7 +114,10 @@ class UIWindow(title: String, size: Size = Size(256, 256)) : UIContainer(size) {
 
                     else -> Unit
                 }
-                window.setGlobalBounds(bounds.immutable)
+                window.setGlobalBounds(bounds)
+                if (it.end) {
+                    resized()
+                }
             }
         }
 
@@ -123,6 +130,10 @@ class UIWindow(title: String, size: Size = Size(256, 256)) : UIContainer(size) {
             0f -> -2f
             1f -> +2f
             else -> 0f
+        }
+
+        private fun resized() {
+            resized(window.widthD, window.heightD)
         }
 
         fun resized(width: Double, height: Double) {
