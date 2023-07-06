@@ -62,7 +62,7 @@ data class BlendMode(
             name = "INVERT",
             factors = AGBlending(
                 AGBlendFactor.ONE_MINUS_DESTINATION_COLOR, AGBlendFactor.ZERO,
-                AGBlendFactor.SOURCE_ALPHA, AGBlendFactor.ONE,
+                AGBlendFactor.ONE, AGBlendFactor.ONE,
             )
         )
 
