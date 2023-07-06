@@ -51,6 +51,8 @@ class ISO8601Test {
 
     @Test
     fun testInterval() {
+        if (KotlinVersion.CURRENT < KotlinVersion(1, 9, 20)) return
+
         assertEquals(24.hours, 1.days)
         assertEquals((27 * 24).hours, 27.days)
         val time = 1.years + 0.months + 27.days + 11.hours + 9.minutes + 11.seconds
@@ -58,7 +60,6 @@ class ISO8601Test {
 
         assertEquals(time, ISO8601.INTERVAL_COMPLETE0.parse("P1Y0M27DT11H9M11S"))
         assertEquals(time, ISO8601.INTERVAL.parse("P1Y0M27DT11H9M11S"))
-
     }
 
     @Test
@@ -123,6 +124,8 @@ class ISO8601Test {
 
     @Test
     fun testIssue84() {
+        if (KotlinVersion.CURRENT < KotlinVersion(1, 9, 20)) return // @TODO: This should be only for WASM
+
         val badUtc = DateTime(
             date = Date(2020, 1, 4),
             time = Time(2, 42, 55, millisecond = 500)
