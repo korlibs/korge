@@ -31,5 +31,7 @@ class BlendModeTest {
         assertEquals(Colors["#000000ff"], BlendMode.INVERT.apply(Colors["#ffffffff"], Colors["#ffffff00"]))
         assertEquals(Colors["#000000ff"], BlendMode.INVERT.apply(Colors["#ffffff00"], Colors["#ffffffff"]))
         assertEquals(Colors["#00000000"], BlendMode.INVERT.apply(Colors["#ffffff00"], Colors["#ffffff00"]))
+        assertEquals(Colors["#cc0000ff"], BlendMode.INVERT.apply(Colors["#ff000000"], Colors["#334455ff"]))
+        assertEquals(Colors["#ccbbaaff"], BlendMode.INVERT.apply(Colors["#ffffff00"], Colors["#334455ff"]))
     }
 }
