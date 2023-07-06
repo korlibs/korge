@@ -25,4 +25,9 @@ class BlendModeTest {
         assertEquals(Colors["#cb4c4cff"], BlendMode.ADD.apply(Colors["#4c4c4c4c"], Colors["#7f0000ff"]))
         assertEquals("Blending(outRGB = (srcRGB * 1) + (dstRGB * 1), outA = (srcA * 1) + (dstA * 1))", BlendMode.ADD.factors.toString())
     }
+
+    @Test
+    fun testInvert() {
+        assertEquals(Colors["#000000ff"], BlendMode.INVERT.apply(Colors["#ffffffff"], Colors["#ffffff00"]))
+    }
 }

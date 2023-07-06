@@ -1687,6 +1687,7 @@ inline fun <reified T : View> View.getDescendantsOfType() = this.descendantsWith
 /** Sets the position [point] of the view and returns this (chaineable). */
 inline fun <T : View> T.visible(visible: Boolean): T = this.also { it.visible = visible }
 inline fun <T : View> T.name(name: String?): T = this.also { it.name = name }
+inline fun <T : View> T.blendMode(blendMode: BlendMode): T = this.also { it.blendMode = blendMode }
 
 inline fun <T : View> T.hitShape(crossinline block: @ViewDslMarker VectorBuilder.() -> Unit): T {
     buildVectorPath { block() }.also {
