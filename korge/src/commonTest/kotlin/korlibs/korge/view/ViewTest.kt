@@ -2,6 +2,7 @@ package korlibs.korge.view
 
 import assertEqualsFloat
 import korlibs.image.bitmap.*
+import korlibs.io.lang.*
 import korlibs.korge.tests.*
 import korlibs.math.geom.*
 import kotlin.test.*
@@ -279,5 +280,29 @@ class ViewTest {
             """.trimIndent(),
             logs.joinToString("\n")
         )
+    }
+
+    @Test
+    fun testViewAddToItself() {
+        val text = Text("hello")
+        assertEquals(
+            "Can't addChild to itself",
+            assertFailsWith<InvalidOperationException> { text.addChild(text) }.message
+        )
+        assertNull(text.parent)
+    }
+
+    @Test
+    fun testViewCreateCycle() {
+        val container1 = Container()
+        val container2 = Container()
+        val container3 = Container()
+        container1.addChild(container2)
+        container2.addChild(container3)
+        assertEquals(
+            "Can't addChild to an ancestor",
+            assertFailsWith<InvalidOperationException> { container3.addChild(container1) }.message
+        )
+        assertNull(container1.parent)
     }
 }

@@ -3,6 +3,7 @@ package korlibs.korge.view
 import korlibs.datastructure.*
 import korlibs.datastructure.iterators.*
 import korlibs.event.*
+import korlibs.io.lang.*
 import korlibs.korge.internal.*
 import korlibs.korge.render.*
 import korlibs.korge.view.property.*
@@ -395,12 +396,21 @@ open class Container(
         stage?.views?.invalidatedView(this)
     }
 
+
+    internal fun checkValidChild(child: View) {
+        val parent = this
+        if (parent === child) invalidOp("Can't addChild to itself")
+        if (parent.hasAncestor(child)) invalidOp("Can't addChild to an ancestor")
+    }
+
     /**
      * Adds the [view] [View] as a child at a specific [index].
      *
      * Remarks: if [index] is outside bounds 0..[numChildren], it will be clamped to the nearest valid value.
      */
     fun addChildAt(view: View, index: Int) {
+        checkValidChild(view)
+
         view.parent?.invalidateZIndexChildren()
         view.removeFromParent()
         val aindex = index.clamp(0, this.numChildren)
