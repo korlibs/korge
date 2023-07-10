@@ -1,8 +1,23 @@
 package korlibs.korge.ui
 
-enum class UIDirection(val index: Int) {
-    HORIZONTAL(0), VERTICAL(1);
+/**
+ * Analogous to flex-direction: <https://developer.mozilla.org/en-US/docs/Web/CSS/flex-direction>
+ */
+enum class UIDirection(
+    val isHorizontal: Boolean = false,
+    val isVertical: Boolean = false,
+    val isReverse: Boolean = false,
+) {
+    ROW(isHorizontal = true),
+    COLUMN(isVertical = true),
+    ROW_REVERSE(isHorizontal = true, isReverse = true),
+    COLUMN_REVERSE(isVertical = true, isReverse = true),
+    ;
 
-    val isHorizontal get() = this == HORIZONTAL
-    val isVertical get() = this == VERTICAL
+    companion object {
+        @Deprecated("", ReplaceWith("ROW", "korlibs.korge.ui.UIDirection.ROW"))
+        val HORIZONTAL get() = ROW
+        @Deprecated("", ReplaceWith("COLUMN", "korlibs.korge.ui.UIDirection.COLUMN"))
+        val VERTICAL get() = COLUMN
+    }
 }
