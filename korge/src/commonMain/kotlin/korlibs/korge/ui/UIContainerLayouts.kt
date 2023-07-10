@@ -253,15 +253,15 @@ inline fun Container.uiGridFill(
     size: Size = Size(128, 128),
     cols: Int = 3,
     rows: Int = 3,
-    padding: Margin = Margin.ZERO,
+    spacing: Spacing = Spacing.ZERO,
     direction: UIDirection = UIDirection.ROW,
     block: @ViewDslMarker UIGridFill.() -> Unit = {}
-) = UIGridFill(size, cols, rows, padding, direction).addTo(this).apply(block)
+) = UIGridFill(size, cols, rows, spacing, direction).addTo(this).apply(block)
 
 open class UIGridFill(
     size: Size = Size(128, 128),
     cols: Int = 3, rows: Int = 3,
-    padding: Margin = Margin.ZERO,
+    spacing: Spacing = Spacing.ZERO,
     direction: UIDirection = UIDirection.ROW,
 ) : UIContainer(size) {
     @ViewProperty
@@ -269,15 +269,15 @@ open class UIGridFill(
     @ViewProperty
     var rows: Int by UIObservable(rows) { relayout() }
     @ViewProperty
-    var padding: Margin by UIObservable(padding) { relayout() }
+    var spacing: Spacing by UIObservable(spacing) { relayout() }
     @ViewProperty
     var direction: UIDirection by UIObservable(direction) { relayout() }
 
     override fun relayout() {
         val width = widthD
         val height = heightD
-        val paddingH = padding.leftPlusRight
-        val paddingV = padding.topPlusBottom
+        val paddingH = spacing.horizontal
+        val paddingV = spacing.vertical
         val elementHeight = (height - paddingV * (rows - 1)) / rows
         val elementWidth = (width - paddingH * (cols - 1)) / cols
         val elementHeightP = elementHeight + paddingV
