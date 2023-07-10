@@ -93,12 +93,21 @@ class UIContainerLayoutsTest {
                 (43, 0)-(43, 64)
                 (85, 64)-(43, 64)
                 (85, 0)-(43, 64)
+                - COLS: 3, ROWS: 2, padding: Margin(top=4, right=8, bottom=4, left=8), direction: ROW
+                (0, 0)-(32, 60)
+                (48, 0)-(32, 60)
+                (96, 0)-(32, 60)
+                (0, 68)-(32, 60)
+                (48, 68)-(32, 60)
+                (96, 68)-(32, 60)
             """.trimIndent(),
             listOf(
                 str(cols = 3, rows = 2, padding = Margin.ZERO, direction = UIDirection.ROW),
                 str(cols = 3, rows = 2, padding = Margin.ZERO, direction = UIDirection.ROW_REVERSE),
                 str(cols = 3, rows = 2, padding = Margin.ZERO, direction = UIDirection.COLUMN),
                 str(cols = 3, rows = 2, padding = Margin.ZERO, direction = UIDirection.COLUMN_REVERSE),
+
+                str(cols = 3, rows = 2, padding = Margin(vertical = 4f, horizontal = 8f), direction = UIDirection.ROW),
             ).joinToString("\n")
         )
     }
