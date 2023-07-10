@@ -12,6 +12,7 @@ import korlibs.io.async.*
 import korlibs.math.geom.*
 import korlibs.math.geom.vector.*
 import korlibs.crypto.encoding.*
+import korlibs.image.vector.*
 import kotlin.test.*
 
 class Bitmap32Context2dTest {
@@ -122,6 +123,24 @@ class Bitmap32Context2dTest {
             //bmp.showImageAndWait()
             assertEquals(color, bmp.toBMP32()[100, 10])
         }
+    }
+
+    @Test
+    fun testLineDash() = suspendTest {
+        val shape: Shape = buildShape {
+            stroke(Colors.WHITE, 4f, lineDash = floatArrayListOf(20f, 10f)) {
+                line(Point(0, 0), Point(100, 100))
+            }
+        }
+        Bitmap32(100, 100).context2d {
+            assertEquals(null, this.lineDash)
+            //this.draw(shape)
+            (shape as PolylineShape).setState(this)
+            assertEquals(4f, this.lineWidth)
+            assertEquals(floatArrayListOf(20f, 10f), this.lineDash)
+
+        }
+            //.showImageAndWait()
     }
 }
 
