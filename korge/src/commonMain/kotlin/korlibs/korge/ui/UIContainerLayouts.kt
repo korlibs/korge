@@ -1,6 +1,7 @@
 package korlibs.korge.ui
 
 import korlibs.korge.view.*
+import korlibs.korge.view.property.*
 import korlibs.math.geom.*
 
 /**
@@ -252,20 +253,52 @@ inline fun Container.uiGridFill(
     size: Size = Size(128, 128),
     cols: Int = 3,
     rows: Int = 3,
+    padding: Margin = Margin.ZERO,
+    direction: UIDirection = UIDirection.ROW,
     block: @ViewDslMarker UIGridFill.() -> Unit = {}
-) = UIGridFill(size, cols, rows).addTo(this).apply(block)
+) = UIGridFill(size, cols, rows, padding, direction).addTo(this).apply(block)
 
-open class UIGridFill(size: Size = Size(128, 128), cols: Int = 3, rows: Int = 3) : UIContainer(size) {
-    var cols: Int = cols
-    var rows: Int = rows
+open class UIGridFill(
+    size: Size = Size(128, 128),
+    cols: Int = 3, rows: Int = 3,
+    padding: Margin = Margin.ZERO,
+    direction: UIDirection = UIDirection.ROW,
+) : UIContainer(size) {
+    @ViewProperty
+    var cols: Int by UIObservable(cols) { relayout() }
+    @ViewProperty
+    var rows: Int by UIObservable(rows) { relayout() }
+    @ViewProperty
+    var padding: Margin by UIObservable(padding) { relayout() }
+    @ViewProperty
+    var direction: UIDirection by UIObservable(direction) { relayout() }
 
     override fun relayout() {
-        val elementHeight = heightD / rows
-        val elementWidth = widthD / cols
+        val width = widthD
+        val height = heightD
+        val paddingH = padding.leftPlusRight
+        val paddingV = padding.topPlusBottom
+        val elementHeight = (height - paddingV * (rows - 1)) / rows
+        val elementWidth = (width - paddingH * (cols - 1)) / cols
+        val elementHeightP = elementHeight + paddingV
+        val elementWidthP = elementWidth + paddingH
         forEachChildWithIndex { index, view ->
-            val ex = index % cols
-            val ey = index / cols
-            view.xy(ex * elementWidth, ey * elementHeight)
+            val ex: Int = when {
+                direction.isHorizontal -> index % cols
+                else -> index / rows
+            }
+            val ey: Int = when {
+                direction.isHorizontal -> index / cols
+                else -> index % rows
+            }
+
+            val px = ex * elementWidthP
+            val py = ey * elementHeightP
+
+            val rpx = if (direction.isHorizontal && direction.isReverse) width - px - elementWidth else px
+            val rpy = if (direction.isVertical && direction.isReverse) height - py - elementHeight else py
+
+            view.xy(rpx, rpy)
             view.size(elementWidth, elementHeight)
         }
     }
