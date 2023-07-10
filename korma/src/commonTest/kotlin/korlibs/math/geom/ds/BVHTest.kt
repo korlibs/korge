@@ -2,6 +2,7 @@ package korlibs.math.geom.ds
 
 import korlibs.datastructure.ds.*
 import korlibs.math.geom.*
+import korlibs.memory.*
 import kotlin.test.*
 
 class BVHTest {
@@ -43,6 +44,8 @@ class BVHTest {
 
     @Test
     fun testArrayOutOfBoundsBug() {
+        if (Platform.isWasm && KotlinVersion.CURRENT < KotlinVersion(1, 9, 20)) return // @TODO: This should be only for WASM
+
         val bvh = BVH2D<Int>()
         //bvh.insertOrUpdate()
         //println(BVHIntervals(223.99997,16.0, 191.99998,16.0))

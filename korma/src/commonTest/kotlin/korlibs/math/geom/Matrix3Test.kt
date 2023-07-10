@@ -1,6 +1,7 @@
 package korlibs.math.geom
 
 import korlibs.datastructure.*
+import korlibs.memory.*
 import kotlin.test.*
 
 class Matrix3Test {
@@ -86,6 +87,8 @@ class Matrix3Test {
 
     @Test
     fun testConstructorCols() {
+        if (Platform.isWasm && KotlinVersion.CURRENT < KotlinVersion(1, 9, 20)) return
+
         val m1 = Matrix3.fromColumns(
             Vector3(1f, 2f, 3f),
             Vector3(-4f, -5f, -6f),
