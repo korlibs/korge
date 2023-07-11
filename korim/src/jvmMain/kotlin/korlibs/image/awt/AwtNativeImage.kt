@@ -31,6 +31,7 @@ fun BufferedImage.cloneIfRequired(
     return clone(width, height, type)
 }
 
+@Suppress("SuspiciousIndentation")
 fun BufferedImage.clone(
     width: Int = this.width,
     height: Int = this.height,
