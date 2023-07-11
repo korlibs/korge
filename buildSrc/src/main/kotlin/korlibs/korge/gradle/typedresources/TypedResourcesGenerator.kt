@@ -166,11 +166,15 @@ class TypedResourcesGenerator {
                             line("val animations: TypedAnimation.Companion get() = TypedAnimation")
                         }
 
+                        val uniqueNames = UniqueNameGenerator()
+                        uniqueNames["animations"] // reserve names
+                        uniqueNames["default"] // reserve names
+
                         line("val animations: TypedAnimation.Companion get() = TypedAnimation")
                         line("val default: TypedImageData get() = TypedImageData(data.default)")
-                        for (slice in info.slices) {
-                            val varName = slice.sliceName.nameToVariable()
-                            line("val `$varName`: TypedImageData get() = TypedImageData(data[${slice.sliceName.quoted}]!!)")
+                        for (sliceName in info.slices.map { it.sliceName }.distinct()) {
+                            val varName = uniqueNames[sliceName.nameToVariable()]
+                            line("val `$varName`: TypedImageData get() = TypedImageData(data[${sliceName.quoted}]!!)")
                         }
                         // @TODO: We could
 
