@@ -1,6 +1,7 @@
 package korlibs.korge.input
 
 import korlibs.datastructure.*
+import korlibs.datastructure.iterators.*
 import korlibs.time.*
 import korlibs.memory.*
 import korlibs.event.*
@@ -35,75 +36,99 @@ class KeysEvents(val view: View) : Closeable {
     }
 
     /** Executes [callback] on each frame when [key] is being pressed. When [dt] is provided, the [callback] is executed at that [dt] steps. */
-    fun downFrame(key: Key, dt: TimeSpan = TimeSpan.NIL, callback: (ke: KeyEvent) -> Unit): Cancellable {
+    fun downFrame(keys: List<Key>, dt: TimeSpan = TimeSpan.NIL, callback: (ke: KeyEvent) -> Unit): Cancellable {
         val ke = KeyEvent()
         return view.addOptFixedUpdater(dt) { dt ->
             if (::views.isInitialized) {
-                val keys = views.keys
-                if (keys[key]) {
-                    callback(ke.setFromKeys(key, keys, dt))
-                }
-            }
-            //if (view.input)
-        }
-    }
-
-    fun justDown(key: Key, callback: (ke: KeyEvent) -> Unit): Cancellable {
-        val ke = KeyEvent()
-        return view.addUpdaterWithViews { views, dt ->
-            val keys = views.keys
-            if (keys.justPressed(key)) {
-                callback(ke.setFromKeys(key, keys, dt))
-            }
-            //if (view.input)
-        }
-    }
-
-    fun downRepeating(key: Key, maxDelay: TimeSpan = 500.milliseconds, minDelay: TimeSpan = 100.milliseconds, delaySteps: Int = 6, callback: suspend (ke: KeyEvent) -> Unit): Cancellable {
-        val ke = KeyEvent()
-        var currentStep = 0
-        var remainingTime = 0.milliseconds
-        return view.addUpdaterWithViews { views, dt ->
-            val keys = views.keys
-            if (keys[key]) {
-                remainingTime -= dt
-                if (remainingTime < 0.milliseconds) {
-                    val ratio = Ratio(currentStep, delaySteps).clamped
-                    currentStep++
-                    remainingTime += ratio.interpolate(maxDelay, minDelay)
-                    launchImmediately(views.coroutineContext) {
-                        callback(ke.setFromKeys(key, views.keys, dt))
+                val vkeys = views.keys
+                keys.fastForEach { key ->
+                    if (vkeys[key]) {
+                        callback(ke.setFromKeys(key, vkeys, dt))
                     }
                 }
-            } else {
-                currentStep = 0
-                remainingTime = 0.milliseconds
+            }
+            //if (view.input)
+        }
+    }
+    fun downFrame(vararg keys: Key, dt: TimeSpan = TimeSpan.NIL, callback: (ke: KeyEvent) -> Unit): Cancellable =
+        downFrame(keys.toList(), dt, callback)
+    fun downFrame(key: Key, dt: TimeSpan = TimeSpan.NIL, callback: (ke: KeyEvent) -> Unit): Cancellable =
+        downFrame(listOf(key), dt, callback)
+
+    fun justDown(keys: List<Key>, callback: (ke: KeyEvent) -> Unit): Cancellable {
+        val ke = KeyEvent()
+        return view.addUpdaterWithViews { views, dt ->
+            val vkeys = views.keys
+            keys.fastForEach { key ->
+                if (vkeys.justPressed(key)) {
+                    callback(ke.setFromKeys(key, vkeys, dt))
+                }
+            }
+            //if (view.input)
+        }
+    }
+
+    fun justDown(vararg keys: Key, callback: (ke: KeyEvent) -> Unit): Cancellable =
+        justDown(keys.toList(), callback)
+    fun justDown(key: Key, callback: (ke: KeyEvent) -> Unit): Cancellable =
+        justDown(listOf(key), callback)
+
+    fun downRepeating(keys: Set<Key>, maxDelay: TimeSpan = 500.milliseconds, minDelay: TimeSpan = 100.milliseconds, delaySteps: Int = 6, callback: suspend (ke: KeyEvent) -> Unit): Cancellable {
+        val keys = keys.toList()
+        val ke = KeyEvent()
+        val currentStep = IntArray(keys.size)
+        val remainingTime = Array(keys.size) { 0.milliseconds }
+        return view.addUpdaterWithViews { views, dt ->
+            val vkeys = views.keys
+            keys.fastForEachWithIndex { index, key ->
+                if (vkeys[key]) {
+                    remainingTime[index] -= dt
+                    if (remainingTime[index] < 0.milliseconds) {
+                        val ratio = Ratio(currentStep[index], delaySteps).clamped
+                        currentStep[index]++
+                        remainingTime[index] += ratio.interpolate(maxDelay, minDelay)
+                        launchImmediately(views.coroutineContext) {
+                            callback(ke.setFromKeys(key, views.keys, dt))
+                        }
+                    }
+                } else {
+                    currentStep[index] = 0
+                    remainingTime[index] = 0.milliseconds
+                }
             }
         }
     }
 
-    fun down(callback: suspend (key: KeyEvent) -> Unit): Closeable = onKeyDown { e -> callback(e) }
-    fun down(key: Key, callback: suspend (key: KeyEvent) -> Unit): Closeable = onKeyDown { e -> if (e.key == key) callback(e) }
-    fun down(vararg keys: Key, callback: suspend (key: KeyEvent) -> Unit): Closeable {
-        val keys = keys.toSet()
-        return onKeyDown { e -> if (e.key in keys) callback(e) }
-    }
+    fun downRepeating(vararg keys: Key, maxDelay: TimeSpan = 500.milliseconds, minDelay: TimeSpan = 100.milliseconds, delaySteps: Int = 6, callback: suspend (ke: KeyEvent) -> Unit): Cancellable =
+        downRepeating(keys.toSet(), maxDelay, minDelay, delaySteps, callback)
+    fun downRepeating(key: Key, maxDelay: TimeSpan = 500.milliseconds, minDelay: TimeSpan = 100.milliseconds, delaySteps: Int = 6, callback: suspend (ke: KeyEvent) -> Unit): Cancellable =
+        downRepeating(setOf(key), maxDelay, minDelay, delaySteps, callback)
 
-    fun downWithModifiers(key: Key, ctrl: Boolean? = null, shift: Boolean? = null, alt: Boolean? = null, meta: Boolean? = null, callback: suspend (key: KeyEvent) -> Unit): Closeable = onKeyDown { e ->
-        if (e.key == key && match(ctrl, e.ctrl) && match(shift, e.shift) && match(alt, e.alt) && match(meta, e.meta)) callback(e)
+    fun down(keys: Set<Key>, callback: suspend (key: KeyEvent) -> Unit): Closeable =
+        onKeyDown { if (it.key in keys) callback(it) }
+    fun down(callback: suspend (key: KeyEvent) -> Unit): Closeable = onKeyDown { callback(it) }
+    fun down(key: Key, callback: suspend (key: KeyEvent) -> Unit): Closeable = onKeyDown { if (it.key == key) callback(it) }
+    fun down(vararg keys: Key, callback: suspend (key: KeyEvent) -> Unit): Closeable = down(keys.toSet(), callback)
+
+    fun downWithModifiers(keys: Set<Key>, ctrl: Boolean? = null, shift: Boolean? = null, alt: Boolean? = null, meta: Boolean? = null, callback: suspend (key: KeyEvent) -> Unit): Closeable = onKeyDown { e ->
+        if (e.key in keys && match(ctrl, e.ctrl) && match(shift, e.shift) && match(alt, e.alt) && match(meta, e.meta)) callback(e)
     }
+    fun downWithModifiers(key: Key, ctrl: Boolean? = null, shift: Boolean? = null, alt: Boolean? = null, meta: Boolean? = null, callback: suspend (key: KeyEvent) -> Unit): Closeable =
+        downWithModifiers(setOf(key), ctrl, shift, alt, meta, callback)
+    fun downWithModifiers(vararg keys: Key, ctrl: Boolean? = null, shift: Boolean? = null, alt: Boolean? = null, meta: Boolean? = null, callback: suspend (key: KeyEvent) -> Unit): Closeable =
+        downWithModifiers(keys.toSet(), ctrl, shift, alt, meta, callback)
 
     private fun match(pattern: Boolean?, value: Boolean) = (pattern == null || value == pattern)
 
+    fun up(keys: Set<Key>, callback: suspend (key: KeyEvent) -> Unit): Closeable = onKeyUp { e -> if (e.key in keys) callback(e) }
     fun up(callback: suspend (key: KeyEvent) -> Unit): Closeable = onKeyUp { e -> callback(e) }
     fun up(key: Key, callback: suspend (key: KeyEvent) -> Unit): Closeable = onKeyUp { e -> if (e.key == key) callback(e) }
-    fun up(vararg keys: Key, callback: suspend (key: KeyEvent) -> Unit): Closeable {
-        val keys = keys.toSet()
-        return onKeyUp { e -> if (e.key in keys) callback(e) }
-    }
+    fun up(vararg keys: Key, callback: suspend (key: KeyEvent) -> Unit): Closeable = up(keys.toSet(), callback)
 
-    fun typed(callback: suspend (key: KeyEvent) -> Unit): Closeable = onKeyTyped { e -> callback(e) }
-    fun typed(key: Key, callback: suspend (key: KeyEvent) -> Unit): Closeable = onKeyTyped { e -> if (e.key == key) callback(e) }
+    fun typed(keys: Set<Key>, callback: suspend (key: KeyEvent) -> Unit): Closeable = onKeyTyped { if (it.key in keys) callback(it) }
+    fun typed(callback: suspend (key: KeyEvent) -> Unit): Closeable = onKeyTyped { callback(it) }
+    fun typed(key: Key, callback: suspend (key: KeyEvent) -> Unit): Closeable = onKeyTyped { if (it.key == key) callback(it) }
+    fun typed(vararg keys: Key, callback: suspend (key: KeyEvent) -> Unit): Closeable = typed(keys.toSet(), callback)
 
     val closeable = CancellableGroup()
 
