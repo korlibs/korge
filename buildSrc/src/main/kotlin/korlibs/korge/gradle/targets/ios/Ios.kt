@@ -9,12 +9,18 @@ import org.gradle.api.*
 import org.gradle.api.tasks.*
 import org.gradle.configurationcache.extensions.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
+import org.jetbrains.kotlin.gradle.plugin.mpp.apple.*
 import org.jetbrains.kotlin.gradle.tasks.*
 import java.io.*
 
 fun Project.configureNativeIos(projectType: ProjectType) {
     configureNativeIosTvos(projectType, "ios")
     configureNativeIosTvos(projectType, "tvos")
+}
+
+val Project.xcframework by projectExtension() {
+    //XCFramework("${targetName}Universal")
+    XCFramework()
 }
 
 fun Project.configureNativeIosTvos(projectType: ProjectType, targetName: String) {
@@ -39,13 +45,25 @@ fun Project.configureNativeIosTvos(projectType: ProjectType, targetName: String)
     }
 
 	kotlin.apply {
-		for (target in iosTvosTargets) {
+        val xcf = XCFramework("$targetName")
+        //val xcf = project.xcframework
+        //val xcf = XCFramework()
+
+        for (target in iosTvosTargets) {
             target.configureKotlinNativeTarget(project)
             //createCopyToExecutableTarget(target.name)
 			//for (target in listOf(iosX64())) {
 			target.also { target ->
 				//target.attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.native)
-				target.binaries { framework {  } }
+				target.binaries {
+                    framework {
+                        baseName = "GameMain"
+                        xcf.add(this)
+                        //export("com.soywiz.korlibs.korgw:korgw")
+                        //export("com.soywiz.korlibs.korge2:korge")
+                        embedBitcodeMode.set(Framework.BitcodeEmbeddingMode.BITCODE)
+                    }
+                }
 				target.compilations["main"].also { compilation ->
 					//for (type in listOf(NativeBuildType.DEBUG, NativeBuildType.RELEASE)) {
 					//	//getLinkTask(NativeOutputKind.FRAMEWORK, type).embedBitcode = Framework.BitcodeEmbeddingMode.DISABLE
@@ -55,20 +73,14 @@ fun Project.configureNativeIosTvos(projectType: ProjectType, targetName: String)
 
 					compilation.defaultSourceSet.kotlin.srcDir(platformNativeFolder)
 
-					afterEvaluate {
-						target.binaries {
-							for (binary in this) {
-								if (binary is Framework) {
-									binary.baseName = "GameMain"
-									binary.embedBitcode = Framework.BitcodeEmbeddingMode.DISABLE
-								}
-							}
-						}
-						for (type in listOf(NativeBuildType.DEBUG, NativeBuildType.RELEASE)) {
-							compilation.getCompileTask(NativeOutputKind.FRAMEWORK, type, project).dependsOn(prepareKotlinNativeBootstrapIosTvos)
-							compilation.getLinkTask(NativeOutputKind.FRAMEWORK, type, project).dependsOn("prepareKotlinNative${targetNameCapitalized}Project")
-						}
-					}
+                    if (projectType.isExecutable) {
+                        afterEvaluate {
+                            for (type in listOf(NativeBuildType.DEBUG, NativeBuildType.RELEASE)) {
+                                compilation.getCompileTask(NativeOutputKind.FRAMEWORK, type, project).dependsOn(prepareKotlinNativeBootstrapIosTvos)
+                                compilation.getLinkTask(NativeOutputKind.FRAMEWORK, type, project).dependsOn("prepareKotlinNative${targetNameCapitalized}Project")
+                            }
+                        }
+                    }
 				}
 			}
 		}

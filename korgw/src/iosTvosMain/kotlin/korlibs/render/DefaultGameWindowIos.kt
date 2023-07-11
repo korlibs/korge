@@ -5,6 +5,7 @@ import korlibs.event.*
 import korlibs.graphics.*
 import korlibs.graphics.gl.*
 import korlibs.image.format.cg.*
+import korlibs.io.*
 import korlibs.kgl.*
 import korlibs.logger.*
 import korlibs.math.geom.*
@@ -52,7 +53,7 @@ abstract class KorgwBaseNewAppDelegate {
         this.entry = entry
         window = UIWindow(frame = UIScreen.mainScreen.bounds)
         CreateInitialIosGameWindow(this)
-        viewController = ViewController(entry)
+        viewController = ViewController { entry() }
         window.rootViewController = viewController
         window.makeKeyAndVisible()
         iosTvosTools.applicationDidFinishLaunching(app, window)
@@ -103,11 +104,21 @@ abstract class KorgwBaseNewAppDelegate {
 //}
 
 @ExportObjCClass
-class ViewController(val entry: suspend () -> Unit) : GCEventViewController(null, null) {
+class ViewController(
+    val entry: suspend ViewController.() -> Unit
+) : GCEventViewController(null, null) {
     private val logger = Logger("ViewController")
     // Keep references to avoid collecting instances
     lateinit var glXViewController: MyGLKViewController
-    val gameWindow: IosGameWindow get() = MyIosGameWindow
+    var _gameWindow: IosGameWindow? = null
+    val gameWindow: IosGameWindow get() = _gameWindow ?: MyIosGameWindow
+
+    fun ensureDefaultGameWindow(): ViewController {
+        val gwin = IosGameWindow(null, { glXViewController })
+        _gameWindow = gwin
+        SetInitialIosGameWindow(gwin)
+        return this
+    }
 
     override fun viewDidLoad() {
         super.viewDidLoad()
@@ -115,7 +126,7 @@ class ViewController(val entry: suspend () -> Unit) : GCEventViewController(null
 
         logger.info { "ViewController!" }
 
-        glXViewController = MyGLKViewController(entry)
+        glXViewController = MyGLKViewController({ gameWindow }) { entry() }
         glXViewController.preferredFramesPerSecond = GameWindow.DEFAULT_PREFERRED_FPS.convert()
 
         val glView = glXViewController.view
@@ -187,12 +198,15 @@ class ViewController(val entry: suspend () -> Unit) : GCEventViewController(null
 
 @OptIn(UnsafeNumber::class)
 @ExportObjCClass
-class MyGLKViewController(val entry: suspend () -> Unit)  : GLKViewController(null, null) {
+class MyGLKViewController(
+    val gameWindowProvider: () -> IosGameWindow = { MyIosGameWindow },
+    val entry: suspend () -> Unit
+)  : GLKViewController(null, null) {
     private val logger = Logger("MyGLKViewController")
     var value = 0
     var initialized = false
     private var myContext: EAGLContext? = null
-    val gameWindow: IosGameWindow get() = MyIosGameWindow
+    val gameWindow: IosGameWindow get() = gameWindowProvider()
     val touches = arrayListOf<UITouch>()
     val touchesIds = arrayListOf<Int>()
     val freeIds = Pool { it }
@@ -214,11 +228,16 @@ class MyGLKViewController(val entry: suspend () -> Unit)  : GLKViewController(nu
     override fun glkView(view: GLKView, drawInRect: CValue<CGRect>) {
         if (!initialized) {
             initialized = true
-            val path = NSBundle.mainBundle.resourcePath
+            val path = nativeCwdOrNull()
             if (path != null) {
                 val rpath = "$path/include/app/resources"
-                NSFileManager.defaultManager.changeCurrentDirectoryPath(rpath)
-                korlibs.io.file.std.customCwd = rpath
+                if (NSFileManager().contentsOfDirectoryAtPath(rpath, null) != null) {
+                    println("glkView: Switching CWD to $rpath...")
+                    NSFileManager.defaultManager.changeCurrentDirectoryPath(rpath)
+                    korlibs.io.file.std.customCwd = rpath
+                } else {
+                    println("glkView: NOT switching CWD ($path doesn't exists)...")
+                }
             }
             //self.lastTouchId = 0;
 
@@ -627,9 +646,12 @@ private fun CreateInitialIosGameWindow(app: KorgwBaseNewAppDelegate): IosGameWin
     MyIosGameWindow = IosGameWindow({ app.window }, { app.viewController.glXViewController })
     return MyIosGameWindow
 }
+fun SetInitialIosGameWindow(gameWindow: IosGameWindow): IosGameWindow {
+    MyIosGameWindow = gameWindow
+    return gameWindow
+}
 
 actual fun CreateDefaultGameWindow(config: GameWindowCreationConfig): GameWindow = MyIosGameWindow
-
 
 /*
 

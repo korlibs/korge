@@ -5,4 +5,8 @@ import kotlinx.cinterop.*
 import platform.Foundation.*
 import platform.posix.*
 
-actual fun nativeCwd(): String = kotlinx.cinterop.autoreleasepool { platform.Foundation.NSBundle.mainBundle.resourcePath ?: posixRealpath(".") ?: "." }
+fun nativeCwdOrNull(): String? = kotlinx.cinterop.autoreleasepool {
+    platform.Foundation.NSBundle.mainBundle.resourcePath
+}
+actual fun nativeCwd(): String = nativeCwdOrNull() ?: posixRealpath(".") ?: "."
+

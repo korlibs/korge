@@ -1,0 +1,10 @@
+#!/bin/bash
+HOME=`echo ~` docker run --rm -it \
+	-v "$PWD:/work:delegated" \
+	-v "$HOME/.m2:/home/user/.wine/drive_c/users/user/.m2:delegated" \
+	-v "$HOME/.gradle:/home/user/.gradle-host:cached" \
+	-v "gradlew_gradle_win:/home/user/.wine/drive_c/users/user/.gradle:delegated" \
+	-v "gradlew_konan_win:/home/user/.wine/drive_c/users/user/.konan:delegated" \
+	soywiz/kotlin-native-win:java8 \
+	/bin/bash -c "cp -f /home/user/.gradle-host/gradle.properties /home/user/.wine/drive_c/users/user/.gradle/gradle.properties 2> /dev/null; winecmd gradlew.bat --no-daemon $*"
+

@@ -1,0 +1,14 @@
+/.gradle
+/.idea
+/build
+/modules
+/bundles
+/deps
+*.iml
+*.hprof
+*.log
+korge.keystore
+local.properties
+src/main/*
+.DS_Store
+
