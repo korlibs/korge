@@ -11,41 +11,27 @@ actual object ASoundImpl : ASound2 {
 
     override val initialized: Boolean get() = true
 
-    private val paramsAlloc = ConcurrentHashMap<Long, Memory>()
-
-    override fun alloc_params(): Long {
-        val params = Memory(1024).also { it.clear() }
-        paramsAlloc[params.address] = params
-        return params.address
-    }
-    override fun free_params(value: Long) {
-        val memory = paramsAlloc.remove(value)
-        memory?.clear()
-    }
-
     override fun snd_pcm_open(name: String, stream: Int, mode: Int): Long {
         val memory = Memory(16L).also { it.clear() }
         A2.snd_pcm_open(memory, name, stream, mode)
         return memory.getPointer(0L)?.address ?: 0L
     }
 
-    override fun snd_pcm_hw_params_any(pcm: Long, params: Long): Int = A2.snd_pcm_hw_params_any(pcm.toCPointer(), params.toCPointer())
-    override fun snd_pcm_hw_params_set_access(pcm: Long, params: Long, access: Int): Int = A2.snd_pcm_hw_params_set_access(pcm.toCPointer(), params.toCPointer(), access)
-    override fun snd_pcm_hw_params_set_format(pcm: Long, params: Long, format: Int): Int = A2.snd_pcm_hw_params_set_format(pcm.toCPointer(), params.toCPointer(), format)
-    override fun snd_pcm_hw_params_set_channels(pcm: Long, params: Long, channels: Int): Int = A2.snd_pcm_hw_params_set_channels(pcm.toCPointer(), params.toCPointer(), channels)
-    override fun snd_pcm_hw_params_set_rate(pcm: Long, params: Long, rate: Int, dir: Int): Int = A2.snd_pcm_hw_params_set_rate(pcm.toCPointer(), params.toCPointer(), rate, dir)
-    override fun snd_pcm_hw_params(pcm: Long, params: Long): Int = A2.snd_pcm_hw_params(pcm.toCPointer(), params.toCPointer())
+    override fun snd_pcm_set_params(
+        pcm: Long,
+        format: Int,
+        access: Int,
+        channels: Int,
+        rate: Int,
+        soft_resample: Int,
+        latency: Int
+    ): Int {
+        return A2.snd_pcm_set_params(pcm.toCPointer(), format, access, channels, rate, soft_resample, latency)
+    }
 
     override fun snd_pcm_name(pcm: Long): String = A2.snd_pcm_name(pcm.toCPointer()).toKString()
     override fun snd_pcm_state(pcm: Long): Int = A2.snd_pcm_state(pcm.toCPointer())
     override fun snd_pcm_state_name(state: Int): String = A2.snd_pcm_state_name(state).toKString()
-
-    override fun snd_pcm_hw_params_get_period_size(params: Long): Int {
-        val tempOut = Memory(4).also { it.clear() }
-        val tempDir = Memory(4).also { it.clear() }
-        A2.snd_pcm_hw_params_get_period_size(params.toCPointer(), tempOut, tempDir)
-        return tempOut.getInt(0L)
-    }
 
     override fun snd_pcm_delay(pcm: Long): Int {
         val tempDelay = Memory(4).also { it.clear() }
@@ -53,15 +39,20 @@ actual object ASoundImpl : ASound2 {
         return tempDelay.getInt(0L)
     }
 
-    override fun snd_pcm_writei(pcm: Long, buffer: ShortArray, size: Int): Int {
+    override fun snd_pcm_writei(pcm: Long, buffer: ShortArray, offset: Int, size: Int, nframes: Int): Int {
+        //println("PCM=$pcm, buffer=$buffer, offset=$offset, size=$size")
+        if (size == 0) return 0
         val mem = Memory((buffer.size * 2).toLong()).also { it.clear() }
-        for (n in 0 until buffer.size) mem.setShort((n * 2).toLong(), buffer[n])
-        return A2.snd_pcm_writei(pcm.toCPointer(), mem, size)
+        for (n in 0 until size) mem.setShort((n * 2).toLong(), buffer[offset + n])
+        //A2.snd_pcm_wait(pcm.toCPointer(), 100)
+        return A2.snd_pcm_writei(pcm.toCPointer(), mem, nframes)
     }
 
     override fun snd_pcm_prepare(pcm: Long): Int = A2.snd_pcm_prepare(pcm.toCPointer())
+    override fun snd_pcm_recover(pcm: Long, err: Int, silent: Int): Int = A2.snd_pcm_recover(pcm.toCPointer(), err, silent)
     override fun snd_pcm_drop(pcm: Long): Int = A2.snd_pcm_drop(pcm.toCPointer())
     override fun snd_pcm_drain(pcm: Long): Int = A2.snd_pcm_drain(pcm.toCPointer())
+    override fun snd_pcm_wait(pcm: Long, timeout: Int): Int = A2.snd_pcm_wait(pcm.toCPointer(), timeout)
     override fun snd_pcm_close(pcm: Long): Int = A2.snd_pcm_close(pcm.toCPointer())
 }
 
@@ -86,6 +77,18 @@ object A2 {
     @JvmStatic external fun snd_pcm_drop(pcm: Pointer?): Int
     @JvmStatic external fun snd_pcm_delay(pcm: Pointer?, delay: Pointer?): Int
     @JvmStatic external fun snd_pcm_close(pcm: Pointer?): Int
+    @JvmStatic external fun snd_pcm_set_params(
+        pcm: Pointer?,
+        format: Int,
+        access: Int,
+        channels: Int,
+        rate: Int,
+        softResample: Int,
+        latency: Int
+    ): Int
+
+    @JvmStatic external fun snd_pcm_wait(pcm: Pointer?, timeout: Int): Int
+    @JvmStatic external fun snd_pcm_recover(pcm: Pointer?, err: Int, silent: Int): Int
 
     init {
         Native.register("libasound.so.2")

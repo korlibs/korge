@@ -7,9 +7,6 @@ import kotlinx.cinterop.*
 actual object ASoundImpl : ASound2 {
     override val initialized: Boolean get() = A2.initialized
 
-    override fun alloc_params(): Long = platform.posix.malloc(1024.convert())!!.rawValue.toLong()
-    override fun free_params(value: Long) = platform.posix.free(value.toCPointer<ByteVar>())
-
     override fun snd_pcm_open(name: String, stream: Int, mode: Int): Long {
         return memScoped {
             val out = alloc<COpaquePointerVar>()
@@ -18,25 +15,9 @@ actual object ASoundImpl : ASound2 {
         }
     }
 
-    override fun snd_pcm_hw_params_any(pcm: Long, params: Long): Int = A2.snd_pcm_hw_params_any(pcm.toCPointer(), params.toCPointer())
-    override fun snd_pcm_hw_params_set_access(pcm: Long, params: Long, access: Int): Int = A2.snd_pcm_hw_params_set_access(pcm.toCPointer(), params.toCPointer(), access)
-    override fun snd_pcm_hw_params_set_format(pcm: Long, params: Long, format: Int): Int = A2.snd_pcm_hw_params_set_format(pcm.toCPointer(), params.toCPointer(), format)
-    override fun snd_pcm_hw_params_set_channels(pcm: Long, params: Long, channels: Int): Int = A2.snd_pcm_hw_params_set_channels(pcm.toCPointer(), params.toCPointer(), channels)
-    override fun snd_pcm_hw_params_set_rate(pcm: Long, params: Long, rate: Int, dir: Int): Int = A2.snd_pcm_hw_params_set_rate(pcm.toCPointer(), params.toCPointer(), rate, dir)
-    override fun snd_pcm_hw_params(pcm: Long, params: Long): Int = A2.snd_pcm_hw_params(pcm.toCPointer(), params.toCPointer())
-
     override fun snd_pcm_name(pcm: Long): String = A2.snd_pcm_name(pcm.toCPointer()).toKString()
     override fun snd_pcm_state(pcm: Long): Int = A2.snd_pcm_state(pcm.toCPointer())
     override fun snd_pcm_state_name(state: Int): String = A2.snd_pcm_state_name(state).toKString()
-
-    override fun snd_pcm_hw_params_get_period_size(params: Long): Int {
-        memScoped {
-            val out = alloc<IntVar>()
-            val dir = alloc<IntVar>()
-            A2.snd_pcm_hw_params_get_period_size(params.toCPointer(), out.ptr, dir.ptr)
-            return out.value.toInt()
-        }
-    }
 
     override fun snd_pcm_delay(params: Long): Int {
         memScoped {
@@ -46,14 +27,34 @@ actual object ASoundImpl : ASound2 {
         }
     }
 
-    override fun snd_pcm_writei(pcm: Long, buffer: ShortArray, size: Int): Int = buffer.usePinned {
-        A2.snd_pcm_writei(pcm.toCPointer(), it.startAddressOf, size)
+    override fun snd_pcm_writei(pcm: Long, buffer: ShortArray, offset: Int, size: Int, frames: Int): Int = buffer.usePinned {
+        A2.snd_pcm_writei(pcm.toCPointer(), it.addressOf(offset), frames)
     }
 
     override fun snd_pcm_prepare(pcm: Long): Int = A2.snd_pcm_prepare(pcm.toCPointer())
     override fun snd_pcm_drain(pcm: Long): Int = A2.snd_pcm_drain(pcm.toCPointer())
     override fun snd_pcm_drop(pcm: Long): Int = A2.snd_pcm_drop(pcm.toCPointer())
     override fun snd_pcm_close(pcm: Long): Int = A2.snd_pcm_close(pcm.toCPointer())
+
+    override fun snd_pcm_recover(pcm: Long, err: Int, silent: Int): Int {
+        return A2.snd_pcm_recover(pcm.toCPointer(), err, silent)
+    }
+
+    override fun snd_pcm_set_params(
+        pcm: Long,
+        format: Int,
+        acess: Int,
+        channels: Int,
+        rate: Int,
+        soft_resample: Int,
+        latency: Int
+    ): Int {
+        return A2.snd_pcm_set_params(pcm.toCPointer(), format, acess, channels, rate, soft_resample, latency)
+    }
+
+    override fun snd_pcm_wait(pcm: Long, timeout: Int): Int {
+        return A2.snd_pcm_wait(pcm.toCPointer(), timeout)
+    }
 }
 
 
@@ -79,5 +80,17 @@ internal object A2 : DynamicLibrary("libasound.so.2") {
     val snd_pcm_drop by func<(pcm: COpaquePointer?) -> Int>()
     val snd_pcm_delay by func<(pcm: COpaquePointer?, delay: COpaquePointer?) -> Int>()
     val snd_pcm_close by func<(pcm: COpaquePointer?) -> Int>()
+    val snd_pcm_wait by func<(pcm: COpaquePointer?, timeout: Int) -> Int>()
 
+    val snd_pcm_set_params by func<(
+        pcm: COpaquePointer?,
+        format: Int,
+        acess: Int,
+        channels: Int,
+        rate: Int,
+        softResample: Int,
+        latency: Int
+    ) -> Int>()
+
+    val snd_pcm_recover by func<(pcm: COpaquePointer?, err: Int, silent: Int) -> Int>()
 }
