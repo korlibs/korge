@@ -25,6 +25,14 @@ gradlePlugin {
 			description = "Multiplatform Game Engine for Kotlin"
 			implementationClass = "korlibs.korge.gradle.KorgeGradlePlugin"
 		}
+        create("korge-library") {
+            //PluginDeclaration decl = it
+            //id = "korlibs.korge"
+            id = "com.soywiz.korge.library"
+            displayName = "Korge"
+            description = "Multiplatform Game Engine for Kotlin"
+            implementationClass = "korlibs.korge.gradle.KorgeLibraryGradlePlugin"
+        }
 	}
 }
 

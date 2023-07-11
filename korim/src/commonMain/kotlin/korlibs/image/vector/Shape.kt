@@ -377,11 +377,19 @@ data class PolylineShape constructor(
         return bounds?.immutable ?: Rectangle.ZERO
     }
 
-    override fun drawInternal(c: Context2d) {
-		c.lineScaleMode = strokeInfo.scaleMode
-		c.lineWidth = strokeInfo.thickness
-		c.lineCap = strokeInfo.endCap
+    fun setState(c: Context2d) {
+        c.lineScaleMode = strokeInfo.scaleMode
+        c.lineWidth = strokeInfo.thickness
+        c.startLineCap = strokeInfo.startCap
+        c.endLineCap = strokeInfo.endCap
         c.lineJoin = strokeInfo.join
+        c.miterLimit = strokeInfo.miterLimit
+        c.lineDash = strokeInfo.dash
+        c.lineDashOffset = strokeInfo.dashOffset
+    }
+
+    override fun drawInternal(c: Context2d) {
+        setState(c)
 		c.stroke(paint)
 	}
 
