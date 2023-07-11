@@ -201,18 +201,26 @@ class InputKeys {
     fun justPressed(key: Key): Boolean = pressing[key.ordinal] && !pressingPrev[key.ordinal]
     fun justReleased(key: Key): Boolean = !pressing[key.ordinal] && pressingPrev[key.ordinal]
 
+    fun triggerKeyEvent(key: Key, up: Boolean, shift: Boolean = false, ctrl: Boolean = false, alt: Boolean = false, meta: Boolean = false) {
+        when (up) {
+            true -> pressing[key.ordinal] = false
+            false -> pressing[key.ordinal] = true
+        }
+
+        this.shift = shift || this[Key.LEFT_SHIFT] || this[Key.RIGHT_SHIFT]
+        this.ctrl = ctrl || this[Key.LEFT_CONTROL] || this[Key.RIGHT_CONTROL]
+        this.alt = alt || this[Key.LEFT_ALT] || this[Key.RIGHT_ALT]
+        this.meta = meta || this[Key.META]
+    }
+
     @KorgeInternal
     fun triggerKeyEvent(e: KeyEvent) {
         when (e.type) {
-            KeyEvent.Type.UP -> pressing[e.key.ordinal] = false
-            KeyEvent.Type.DOWN -> pressing[e.key.ordinal] = true
+            KeyEvent.Type.UP,  KeyEvent.Type.DOWN -> {
+                triggerKeyEvent(e.key, e.type == KeyEvent.Type.UP, shift, ctrl, alt, meta)
+            }
             else -> Unit
         }
-
-        shift = e.shift || this[Key.LEFT_SHIFT] || this[Key.RIGHT_SHIFT]
-        ctrl = e.ctrl || this[Key.LEFT_CONTROL] || this[Key.RIGHT_CONTROL]
-        alt = e.alt || this[Key.LEFT_ALT] || this[Key.RIGHT_ALT]
-        meta = e.meta || this[Key.META]
     }
 
     internal fun startFrame(delta: TimeSpan) {

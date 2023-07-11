@@ -1,10 +1,12 @@
 package korlibs.korge.input
 
-import korlibs.time.milliseconds
-import korlibs.event.Key
+import korlibs.event.*
+import korlibs.io.lang.*
 import korlibs.korge.tests.ViewsForTesting
 import korlibs.korge.time.delay
-import korlibs.korge.view.solidRect
+import korlibs.korge.view.*
+import korlibs.math.geom.*
+import korlibs.time.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -48,5 +50,58 @@ class KeysEventsTest : ViewsForTesting() {
         keyDown(Key.SPACE)
         delay(3000.milliseconds)
         assertEquals(21, calledTimes)
+    }
+
+    @Test
+    fun testDownRepeatingMultiple() {
+        val views = ViewsForTesting().views
+        var calledTimes = LinkedHashMap<Key, Int>()
+        var pos = Point.ZERO
+        val view = views.stage.solidRect(100, 100).apply {
+            keys {
+                downFrame(Key.LEFT, Key.RIGHT, Key.UP, Key.DOWN, dt = 100.milliseconds) {
+                    calledTimes.getOrPut(it.key) { 0 }
+                    calledTimes[it.key] = calledTimes[it.key]!! + 1
+                    when (it.key) {
+                        Key.LEFT -> pos += Vector2(-1, 0)
+                        Key.RIGHT -> pos += Vector2(+1, 0)
+                        Key.UP -> pos += Vector2(-1, 0)
+                        Key.DOWN -> pos += Vector2(+1, 0)
+                        else -> unreachable
+                    }
+                }
+            }
+        }
+        fun keyDown(key: Key) {
+            views.dispatch(KeyEvent(KeyEvent.Type.DOWN, key = key))
+        }
+        fun keyUp(key: Key) {
+            views.dispatch(KeyEvent(KeyEvent.Type.UP, key = key))
+        }
+        fun delay(time: TimeSpan) {
+            views.dispatch(UpdateEvent(time))
+        }
+
+        assertEquals(0, calledTimes[Key.RIGHT] ?: 0)
+        keyDown(Key.RIGHT)
+        delay(100.milliseconds)
+        assertEquals(1, calledTimes[Key.RIGHT])
+
+        for ((index, delay) in listOf(100, 100, 100).withIndex()) {
+            delay(delay.milliseconds)
+            assertEquals(index + 2, calledTimes[Key.RIGHT])
+        }
+        assertEquals(4, calledTimes[Key.RIGHT])
+
+        keyUp(Key.RIGHT)
+        keyDown(Key.LEFT)
+        delay(1000.milliseconds)
+        assertEquals(4, calledTimes[Key.RIGHT])
+        assertEquals(10, calledTimes[Key.LEFT])
+        calledTimes.clear()
+
+        keyDown(Key.UP)
+        delay(1000.milliseconds)
+        assertEquals(10, calledTimes[Key.UP])
     }
 }

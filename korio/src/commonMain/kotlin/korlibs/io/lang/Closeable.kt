@@ -92,8 +92,15 @@ fun CloseableCancellable(callback: (Throwable?) -> Unit): CloseableCancellable =
     override fun cancel(e: Throwable) = callback(e)
 }
 
-class CancellableGroup : CloseableCancellable {
+class CancellableGroup() : CloseableCancellable {
     private val cancellables = arrayListOf<Cancellable>()
+
+    constructor(vararg items: Cancellable) : this() {
+        items.fastForEach { this += it }
+    }
+    constructor(items: Iterable<Cancellable>) : this() {
+        for (it in items) this += it
+    }
 
     operator fun plusAssign(c: CloseableCancellable) {
         cancellables += c
