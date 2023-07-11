@@ -10,22 +10,32 @@ import korlibs.math.geom.*
 
 open class TypedEvent<T : BEvent>(open override var type: EventType<T>) : Event(), TEvent<T>
 
-open class Event {
+// @TODO: No override required!
+//open class Demo { var a: Int = 10 }
+//interface BDemo { val a: Int }
+//interface TBDemo<T : BDemo> : BDemo {}
+//class Test : Demo(), TBDemo<Test> {}
+
+abstract class Event {
     var target: Any? = null
-    var _stopPropagation = false
-    fun stopPropagation() {
-        _stopPropagation = true
+    fun stopPropagation(reason: Any? = null) {
+        throw StopPropagatingException(reason)
+    }
+    var defaultPrevented: Boolean = false
+    fun preventDefault(reason: Any? = null) {
+        defaultPrevented = true
     }
 }
 
-fun Event.preventDefault(reason: Any? = null): Nothing = throw PreventDefaultException(reason)
-fun preventDefault(reason: Any? = null): Nothing = throw PreventDefaultException(reason)
-
-class PreventDefaultException(val reason: Any? = null) : Exception()
+@Deprecated("") fun Event.preventDefault(reason: Any? = null): Nothing = throw PreventDefaultException(reason)
+@Deprecated("") fun preventDefault(reason: Any? = null): Nothing = throw PreventDefaultException(reason)
+@Deprecated("") class PreventDefaultException(val reason: Any? = null) : Exception()
+class StopPropagatingException(val reason: Any? = null) : Exception()
 
 interface BEvent {
     var target: Any?
     val type: EventType<out BEvent>
+    var defaultPrevented: Boolean
 }
 
 interface TEvent<T : BEvent> : BEvent {

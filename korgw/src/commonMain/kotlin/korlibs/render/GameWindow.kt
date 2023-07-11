@@ -392,7 +392,7 @@ open class GameWindow :
     protected val dropFileEvent = DropFileEvent()
 
     inline fun <T : Event> T.reset(block: T.() -> Unit = {}): T {
-        this._stopPropagation = false
+        this.defaultPrevented = false
         block(this)
         return this
     }
@@ -768,7 +768,7 @@ open class GameWindow :
                 this.str = str
             }
         })
-        return keyEvent._stopPropagation
+        return keyEvent.defaultPrevented
     }
 
     fun dispatchSimpleMouseEvent(
@@ -788,7 +788,6 @@ open class GameWindow :
             this.mouseButtons = this.mouseButtons.setBits(if (button != null) 1 shl button.ordinal else 0, type == MouseEvent.Type.DOWN)
         }
         dispatch(mouseEvent.reset {
-            this._stopPropagation = false
             this.type = type
             this.id = id
             this.x = x

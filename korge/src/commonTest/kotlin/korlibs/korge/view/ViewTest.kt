@@ -1,6 +1,7 @@
 package korlibs.korge.view
 
 import assertEqualsFloat
+import korlibs.event.*
 import korlibs.image.bitmap.*
 import korlibs.io.lang.*
 import korlibs.korge.tests.*
@@ -304,5 +305,23 @@ class ViewTest {
             assertFailsWith<InvalidOperationException> { container3.addChild(container1) }.message
         )
         assertNull(container1.parent)
+    }
+
+    @Test
+    fun testEventBubbles() {
+        val log = arrayListOf<String>()
+        val container = Container()
+        val child1 = container.container()
+        val child2 = child1.container()
+        container.onEvent(MyEvent) { log += "container" }
+        child1.onEvent(MyEvent) { log += "child1" }
+        child2.onEvent(MyEvent) { log += "child2" }
+        child2.dispatch(MyEvent())
+        assertEquals("child2,child1,container", log.joinToString(","))
+    }
+
+    class MyEvent : Event(), TEvent<MyEvent> {
+        override val type: EventType<MyEvent> = MyEvent
+        companion object : EventType<MyEvent>
     }
 }

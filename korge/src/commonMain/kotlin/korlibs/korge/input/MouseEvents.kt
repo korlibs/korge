@@ -398,7 +398,7 @@ class MouseEvents(val view: View) : Extra by Extra.Mixin(), Closeable {
                     if (isOver) {
                         click(this@MouseEvents)
                         if (click.listenerCount > 0) {
-                            preventDefault(view)
+                            event.stopPropagation(view)
                         }
                     }
                 }
