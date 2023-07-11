@@ -15,9 +15,8 @@ interface Disposable {
     }
 }
 
-interface Closeable {
-	fun close(): Unit
-
+@OptIn(ExperimentalStdlibApi::class)
+interface Closeable : AutoCloseable {
 	companion object {
 		operator fun invoke(callback: () -> Unit) = object : Closeable {
 			override fun close() = callback()
