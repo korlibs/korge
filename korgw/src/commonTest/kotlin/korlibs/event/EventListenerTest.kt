@@ -23,7 +23,7 @@ class EventListenerTest {
 
         override fun <T : BEvent> dispatchChildren(type: EventType<T>, event: T, result: EventResult?) {
             for (child in children) {
-                child.dispatch(type, event, result)
+                child.dispatchDown(type, event, result)
             }
         }
     }

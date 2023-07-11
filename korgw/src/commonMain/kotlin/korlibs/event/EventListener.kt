@@ -26,14 +26,24 @@ interface EventListener {
      * Dispatched a [event] of [type] that will execute all the handlers registered with [onEvents]
      * in this object and its children.
      */
-    fun <T : BEvent> dispatch(type: EventType<T>, event: T, result: EventResult? = null)
+    fun <T : BEvent> dispatch(type: EventType<T>, event: T, result: EventResult?, up: Boolean, down: Boolean): Boolean
+    fun <T : BEvent> dispatch(type: EventType<T>, event: T, result: EventResult? = null): Boolean
+        = dispatch(type, event, result, up = true, down = true)
+    fun <T : BEvent> dispatchDown(type: EventType<T>, event: T, result: EventResult? = null): Boolean
+        = dispatch(type, event, result, up = false, down = true)
+    fun <T : BEvent> dispatchUp(type: EventType<T>, event: T, result: EventResult? = null): Boolean
+        = dispatch(type, event, result, up = true, down = false)
 
-    fun <T : BEvent> dispatch(event: T): Unit = dispatch(event.fastCastTo<TEvent<T>>().type, event)
+    fun <T : BEvent> dispatch(event: T): Boolean = dispatch(event.fastCastTo<TEvent<T>>().type, event)
+
     fun <T : BEvent> dispatchWithResult(event: T, out: EventResult = EventResult()): EventResult {
         dispatch(event.fastCastTo<TEvent<T>>().type, event, out)
         return out
     }
 }
+
+fun <T : BEvent> EventListener.dispatchUp(event: T): Boolean = dispatchUp(event.fastCastTo<TEvent<T>>().type, event)
+fun <T : BEvent> EventListener.dispatchDown(event: T): Boolean = dispatchDown(event.fastCastTo<TEvent<T>>().type, event)
 
 
 data class EventResult(
@@ -174,19 +184,36 @@ open class BaseEventListener : EventListenerChildren, Extra {
         return __eventListeners?.get(type) as? ListenerNode<T>
     }
 
-    // , result: EventResult?
-    final override fun <T : BEvent> dispatch(type: EventType<T>, event: T, result: EventResult?) {
+    override fun <T : BEvent> dispatch(
+        type: EventType<T>,
+        event: T,
+        result: EventResult?,
+        up: Boolean,
+        down: Boolean
+    ): Boolean {
+        //event._preventDefault = false
         val eventListenerCount = onEventCount(type)
-        if (eventListenerCount <= 0) return
+        if (eventListenerCount <= 0) return false
 
-        dispatchChildren(type, event, result)
+        if (down) dispatchChildren(type, event, result)
 
         val listeners = getListenersForType(type)
         listeners?.listeners?.fastForEachWithTemp(listeners.temp) {
             it.func(event)
             result?.let { it.resultCount++ }
         }
+
+        if (up) dispatchParent(type, event, result)
+
         result?.let { it.iterationCount++ }
+        return event.defaultPrevented
+    }
+    // , result: EventResult?
+    final override fun <T : BEvent> dispatch(type: EventType<T>, event: T, result: EventResult?): Boolean = super.dispatch(type, event, result)
+    final override fun <T : BEvent> dispatch(event: T): Boolean = super.dispatch(event)
+    final override fun <T : BEvent> dispatchWithResult(event: T, out: EventResult): EventResult = super.dispatchWithResult(event, out)
+
+    open fun <T : BEvent> dispatchParent(type: EventType<T>, event: T, result: EventResult?) {
     }
 
     open fun <T : BEvent> dispatchChildren(type: EventType<T>, event: T, result: EventResult?) {

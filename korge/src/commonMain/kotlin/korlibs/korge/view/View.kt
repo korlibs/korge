@@ -1376,6 +1376,10 @@ abstract class View internal constructor(
         view.parent?.globalMatrix?.let { out *= it }
         return out
     }
+
+    override fun <T : BEvent> dispatchParent(type: EventType<T>, event: T, result: EventResult?) {
+        parent?.dispatchUp(type, event, result)
+    }
 }
 
 // Doesn't seem to work

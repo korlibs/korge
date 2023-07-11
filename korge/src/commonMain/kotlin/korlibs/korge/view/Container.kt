@@ -475,7 +475,7 @@ open class Container(
     override fun <T : BEvent> dispatchChildren(type: EventType<T>, event: T, result: EventResult?) {
         if (__tempDispatchChildren == null) __tempDispatchChildren = FastArrayList(children.size)
         __children.fastForEachWithTemp(__tempDispatchChildren!!) {
-            it.dispatch(type, event, result)
+            it.dispatchDown(type, event, result)
         }
     }
 }

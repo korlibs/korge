@@ -240,8 +240,15 @@ class Views(
 		resized()
 	}
 
-    override fun <T : BEvent> dispatch(event: T) {
-        super.dispatch(event)
+    override fun <T : BEvent> dispatch(
+        type: EventType<T>,
+        event: T,
+        result: EventResult?,
+        up: Boolean,
+        down: Boolean
+    ): Boolean {
+        event.defaultPrevented = false
+        val result = super.dispatch(type, event, result, up, down)
         val e = event
         e.target = views
         // @TODO: Remove this
@@ -255,10 +262,11 @@ class Views(
             }
         }
         try {
-            stage.dispatch(e)
-        } catch (e: PreventDefaultException) {
+            return stage.dispatch(e)
+        } catch (e: StopPropagatingException) {
             //println("PreventDefaultException.Reason: ${e.reason}")
         }
+        return result
     }
 
 	fun render() {
