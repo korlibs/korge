@@ -247,6 +247,7 @@ class Demo(val sceneBuilder: () -> Scene, val name: String = sceneBuilder()::cla
 
 suspend fun Stage.demoSelector(default: Demo, all: List<Demo>) {
     val container = sceneContainer(size = Size(width, height - 48f)) { }.xy(0, 48)
+    val containerFocus = container.makeFocusable()
 
     lateinit var comboBox: UIComboBox<Demo>
 
@@ -256,6 +257,7 @@ suspend fun Stage.demoSelector(default: Demo, all: List<Demo>) {
             comboBox.selectedItem = demo
             views.clearColor = DEFAULT_KORGE_BG_COLOR
             container.changeTo {
+                containerFocus.focus()
                 demo.sceneBuilder().also { it.init(this) }
             }
         }
