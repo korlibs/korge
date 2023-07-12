@@ -9,6 +9,7 @@ import com.sun.jna.Callback
 import com.sun.jna.Native
 import com.sun.jna.Pointer
 import com.sun.jna.Memory
+import kotlinx.coroutines.*
 import kotlin.coroutines.*
 
 
@@ -84,10 +85,11 @@ class JvmWaveOutPlatformAudioOutput(
         // @TODO: Get samples not reproduced
         //println("WAITING...")
         for (n in 0 until 1000) {
-            val currentPositionInSamples = WINMM.waveOutGetPositionInSamples(handle)
+            var currentPositionInSamples: Long = 0L
             var totalEmittedSamples: Long = 0L
             var availableRead = 0
             samplesLock {
+                currentPositionInSamples = WINMM.waveOutGetPositionInSamples(handle)
                 availableRead = this.availableRead
                 totalEmittedSamples = this.totalEmittedSamples
             }
@@ -144,9 +146,8 @@ class JvmWaveOutPlatformAudioOutput(
                     }
                 }
             } finally {
-                for (header in headers) {
-                    while (header.hdr.isInQueue) Thread.sleep(1L)
-                    header.dispose()
+                runBlocking {
+                    wait()
                 }
                 WINMM.waveOutReset(handle)
                 WINMM.waveOutClose(handle)
