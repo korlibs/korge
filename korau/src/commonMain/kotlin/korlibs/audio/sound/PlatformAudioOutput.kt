@@ -64,6 +64,19 @@ open class DequeBasedPlatformAudioOutput(
     protected fun readFloat(channel: Int): Float = lock { _readFloat(channel) }
     protected fun readShort(channel: Int): Short = lock { _readShort(channel) }
 
+    protected fun readShortsInterleaved(out: AudioSamplesInterleaved): Int {
+        lock {
+            val readCount = minOf(availableRead, out.totalSamples)
+            //val readCount = out.totalSamples
+            for (n in 0 until readCount) {
+                for (ch in 0 until nchannels) {
+                    out[ch, n] = _readShort(ch)
+                }
+            }
+            return readCount
+        }
+    }
+
     protected fun readFloats(channel: Int, out: FloatArray, offset: Int = 0, count: Int = out.size - offset) {
         lock {
             for (n in 0 until count) out[offset + n] = _readFloat(channel)

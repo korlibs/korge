@@ -4,7 +4,6 @@ import korlibs.datastructure.lock.*
 import korlibs.datastructure.thread.*
 import korlibs.time.*
 import korlibs.memory.*
-import korlibs.memory.dyn.*
 import korlibs.audio.sound.*
 import korlibs.io.async.*
 import kotlin.coroutines.*
@@ -32,128 +31,88 @@ class ALSAPlatformAudioOutput(
     val soundProvider: ALSANativeSoundProvider,
     coroutineContext: CoroutineContext,
     frequency: Int,
-) : PlatformAudioOutput(coroutineContext, frequency) {
-    override var availableSamples: Int = 0
-    val channels = 2
-    private val lock = Lock()
-    val sdeque = AudioSamplesDeque(channels)
+) : DequeBasedPlatformAudioOutput(coroutineContext, frequency) {
+    var nativeThread: NativeThread? = null
     var running = false
-    var thread: NativeThread? = null
+
     var pcm: Long = 0L
 
-    init {
-        start()
-    }
-
-    override suspend fun add(samples: AudioSamples, offset: Int, size: Int) {
-        if (size == 0) return
-        if (!ASound2.initialized) return super.add(samples, offset, samples.totalSamples)
-        //if (!running) start()
-
-        if (!running) delay(10.milliseconds)
-
-        while (running && lock { sdeque.availableRead > 4 * 1024 }) {
-            delay(10.milliseconds)
+    override suspend fun wait() {
+        running = false
+        //println("WAITING")
+        val time = measureTime {
+            while (pcm != 0L) {
+                delay(10.milliseconds)
+            }
         }
-        lock {
-            availableSamples += samples.totalSamples
-            sdeque.write(samples, offset, samples.totalSamples)
-        }
+        //println("WAITED: time=$time")
+        //super.wait()
     }
 
     override fun start() {
-        lock {
-            if (running) {
-                //println("ALREADY STARTED!")
-                return
+        if (running) return
+        running = true
+        nativeThread = NativeThread {
+
+            pcm = ASound2.snd_pcm_open("default", ASound2.SND_PCM_STREAM_PLAYBACK, 0)
+            if (pcm == 0L) {
+                error("Can't initialize ALSA")
+                running = false
+                return@NativeThread
             }
-            running = true
-        }
-        if (pcm != 0L) {
-            //println("STOPPING FIRST!")
-            stop()
-        }
-        //println("START!")
-        sdeque.clear()
-        lock {
-            availableSamples = 0
-        }
 
-        if (!ASound2.initialized) return
+            val latency = 50_000
+            ASound2.snd_pcm_set_params(
+                pcm,
+                ASound2.SND_PCM_FORMAT_S16_LE,
+                ASound2.SND_PCM_ACCESS_RW_INTERLEAVED,
+                nchannels,
+                frequency,
+                1,
+                latency
+            )
 
-        //cmpPtr.clear()
-        //cmpPtr.setLong(0L, 0L)
-        //println("ALSANativeSoundProvider.snd_pcm_open")
-        pcm = ASound2.snd_pcm_open("default", ASound2.SND_PCM_STREAM_PLAYBACK, 0)
-        //println("ASound2.snd_pcm_open: ${pcm}")
-
-        if (pcm == 0L) {
-            error("Can't initialize ALSA")
-            return
-        }
-
-        //println("ALSANativeSoundProvider.snd_pcm_open: pcm=$pcm")
-        val params = ASound2.alloc_params()
-        ASound2.snd_pcm_hw_params_any(pcm, params)
-        ASound2.snd_pcm_hw_params_set_access(pcm, params, ASound2.SND_PCM_ACCESS_RW_INTERLEAVED).also { if (it != 0) error("Error calling snd_pcm_hw_params_set_access=$it") }
-        ASound2.snd_pcm_hw_params_set_format(pcm, params, ASound2.SND_PCM_FORMAT_S16_LE).also { if (it != 0) error("Error calling snd_pcm_hw_params_set_format=$it") }
-        ASound2.snd_pcm_hw_params_set_channels(pcm, params, channels).also { if (it != 0) error("Error calling snd_pcm_hw_params_set_channels=$it") }
-        ASound2.snd_pcm_hw_params_set_rate(pcm, params, frequency, +1).also { if (it != 0) error("Error calling snd_pcm_hw_params_set_rate=$it") }
-        ASound2.snd_pcm_hw_params(pcm, params).also { if (it != 0) error("Error calling snd_pcm_hw_params=$it") }
-        //println(ASound2.snd_pcm_name(pcm))
-        //println(ASound2.snd_pcm_state_name(ASound2.snd_pcm_state(pcm)))
-        //val cchannels = ASound2.snd_pcm_hw_params_get_channels(params)
-        //val crate = ASound2.snd_pcm_hw_params_get_rate(params)
-        val frames = ASound2.snd_pcm_hw_params_get_period_size(params)
-        ASound2.free_params(params)
-        //val ptime = ASound2.snd_pcm_hw_params_get_period_time(params)
-        //val random = Random(0L)
-        //println("ALSANativeSoundProvider: Before starting Sound thread!")
-        thread = NativeThread {
-            //println("ALSANativeSoundProvider: Started Sound thread!")
-            val buff = ShortArray(frames * channels)
-            val samples = AudioSamplesInterleaved(channels, frames)
+            val temp = AudioSamplesInterleaved(nchannels, 1024)
             try {
-                mainLoop@ while (running) {
-                    while (lock { sdeque.availableRead < frames }) {
-                        if (!running) break@mainLoop
+                while (running) {
+                    val readCount = readShortsInterleaved(temp)
+
+                    if (readCount == 0) {
                         blockingSleep(1.milliseconds)
+                        continue
                     }
-                    val readCount = lock { sdeque.read(samples, 0, frames) }
-                    //println("ALSANativeSoundProvider: readCount=$readCount")
-                    val panning = this@ALSAPlatformAudioOutput.panning.toFloat()
-                    //val panning = -1f
-                    //val panning = +0f
-                    //val panning = +1f
-                    val volume = this@ALSAPlatformAudioOutput.volume.toFloat().clamp01()
-                    for (ch in 0 until channels) {
-                        val pan = (if (ch == 0) -panning else +panning) + 1f
-                        val npan = pan.clamp01()
-                        val rscale: Float = npan * volume
-                        //println("panning=$panning, volume=$volume, pan=$pan, npan=$npan, rscale=$rscale")
-                        for (n in 0 until readCount) {
-                            buff[n * channels + ch] = (samples[ch, n] * rscale).toInt().toShort()
+
+                    //println("readCount=$readCount")
+                    var offset = 0
+                    var pending = readCount
+                    while (pending > 0) {
+                        val written = ASound2.snd_pcm_writei(pcm, temp.data, offset * nchannels, pending * nchannels, pending)
+                        //println("offset=$offset, pending=$pending, written=$written")
+                        if (written == -ASound2.EPIPE) {
+                            //println("ALSA: EPIPE error")
+                            ASound2.snd_pcm_prepare(pcm)
+                            offset = 0
+                            pending = readCount
+                            continue
+                            //blockingSleep(1.milliseconds)
+                        } else if (written < 0) {
+                            println("ALSA: OTHER error: $written")
+                            blockingSleep(1.milliseconds)
+                            break
+                        } else {
+                            offset += written
+                            pending -= written
                         }
-                    }
-                    if (!running) break
-                    val result = ASound2.snd_pcm_writei(pcm, buff, frames)
-                    //println("result=$result")
-                    if (result == -ASound2.EPIPE) {
-                        ASound2.snd_pcm_prepare(pcm)
-                    } else {
-                        while (running && ASound2.snd_pcm_delay(pcm) > frames) {
-                            blockingSleep(10.milliseconds)
-                        }
-                    }
-                    lock {
-                        availableSamples -= samples.totalSamples
                     }
                 }
             } finally {
-                //println("COMPLETED: $pcm")
-                thread = null
-                lock {
-                    availableSamples = 0
+                //println("!!COMPLETED : pcm=$pcm")
+                if (pcm != 0L) {
+                    ASound2.snd_pcm_wait(pcm, 1000)
+                    ASound2.snd_pcm_drain(pcm)
+                    ASound2.snd_pcm_close(pcm)
+                    pcm = 0L
+                    //println("!!CLOSED = $pcm")
                 }
             }
         }.also {
@@ -164,15 +123,7 @@ class ALSAPlatformAudioOutput(
 
     override fun stop() {
         running = false
-
-        if (pcm != 0L) {
-            ASound2.snd_pcm_drop(pcm)
-            ASound2.snd_pcm_close(pcm)
-            lock {
-                availableSamples = 0
-            }
-            pcm = 0L
-        }
+        super.stop()
     }
 }
 
@@ -181,26 +132,16 @@ expect object ASoundImpl : ASound2
 interface ASound2 {
     val initialized: Boolean get() = false
 
-    fun alloc_params(): Long = 0L
-    fun free_params(value: Long) = Unit
-
     fun snd_pcm_open(name: String, stream: Int, mode: Int): Long = 0L
-    fun snd_pcm_hw_params_any(pcm: Long, params: Long): Int = ERROR
-    fun snd_pcm_hw_params_set_access(pcm: Long, params: Long, access: Int): Int = ERROR
-    fun snd_pcm_hw_params_set_format(pcm: Long, params: Long, format: Int): Int = ERROR
-    fun snd_pcm_hw_params_set_channels(pcm: Long, params: Long, channels: Int): Int = ERROR
-    fun snd_pcm_hw_params_set_rate(pcm: Long, params: Long, rate: Int, dir: Int): Int = ERROR
-    fun snd_pcm_hw_params(pcm: Long, params: Long): Int = ERROR
+    fun snd_pcm_set_params(pcm: Long, format: Int, acess: Int, channels: Int, rate: Int, soft_resample: Int, latency: Int): Int = ERROR
     fun snd_pcm_name(pcm: Long): String = ""
     fun snd_pcm_state(pcm: Long): Int = ERROR
     fun snd_pcm_state_name(state: Int): String = ""
-    //fun snd_pcm_hw_params_get_channels(params: Long): Int = ERROR
-    //fun snd_pcm_hw_params_get_rate(params: Long, dir: Long): Int = ERROR
-    fun snd_pcm_hw_params_get_period_size(params: Long): Int = ERROR
-    //fun snd_pcm_hw_params_get_period_time(params: Long, dir: Long): Int = ERROR
-    fun snd_pcm_writei(pcm: Long, buffer: ShortArray, size: Int): Int = ERROR
+    fun snd_pcm_writei(pcm: Long, buffer: ShortArray, offset: Int, size: Int, nframes: Int): Int = ERROR
     fun snd_pcm_prepare(pcm: Long): Int = ERROR
+    fun snd_pcm_recover(pcm: Long, err: Int, silent: Int): Int = ERROR
     fun snd_pcm_drain(pcm: Long): Int = ERROR
+    fun snd_pcm_wait(pcm: Long, timeout: Int): Int = ERROR
     fun snd_pcm_drop(pcm: Long): Int = ERROR
     fun snd_pcm_delay(pcm: Long): Int = ERROR
     fun snd_pcm_close(pcm: Long): Int = ERROR
