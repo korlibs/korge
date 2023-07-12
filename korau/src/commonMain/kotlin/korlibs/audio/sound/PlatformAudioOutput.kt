@@ -50,7 +50,7 @@ abstract class ThreadBasedPlatformAudioOutput(
     protected abstract fun write(data: AudioSamples, offset: Int, count: Int): Int
     protected abstract fun close()
 
-    override suspend fun wait() {
+    final override suspend fun wait() {
         while (totalPendingSamples > 0) {
             delay(1.milliseconds)
         }
@@ -76,7 +76,7 @@ abstract class ThreadBasedPlatformAudioOutput(
         }
     }
 
-    override fun start() {
+    final override fun start() {
         if (running) return
         running = true
         var opened = false
@@ -111,7 +111,7 @@ abstract class ThreadBasedPlatformAudioOutput(
         }
     }
 
-    override fun stop() {
+    final override fun stop() {
         running = false
     }
 }
@@ -169,9 +169,21 @@ open class DequeBasedPlatformAudioOutput(
         }
     }
 
-    protected fun readShorts(out: Array<ShortArray>, offset: Int = 0, count: Int = out[0].size - offset, nchannels: Int = out.size): Int {
+    protected fun readShortsPartial(out: Array<ShortArray>, offset: Int = 0, count: Int = out[0].size - offset, nchannels: Int = out.size): Int {
+        return _readShorts(out, offset, count, nchannels, fully = false)
+    }
+
+    protected fun readShortsFully(out: Array<ShortArray>, offset: Int = 0, count: Int = out[0].size - offset, nchannels: Int = out.size): Int {
+        return _readShorts(out, offset, count, nchannels, fully = true)
+    }
+
+    protected fun readShorts(out: Array<ShortArray>, offset: Int = 0, count: Int = out[0].size - offset, nchannels: Int = out.size) {
+        _readShorts(out, offset, count, nchannels, fully = true)
+    }
+
+    protected fun _readShorts(out: Array<ShortArray>, offset: Int = 0, count: Int = out[0].size - offset, nchannels: Int = out.size, fully: Boolean): Int {
         lock {
-            val totalRead = minOf(availableRead, count)
+            val totalRead = if (fully) count else minOf(availableRead, count)
 
             for (n in 0 until totalRead) {
                 for (ch in 0 until nchannels) {
@@ -183,8 +195,8 @@ open class DequeBasedPlatformAudioOutput(
         }
     }
 
-    protected fun readSamples(samples: AudioSamples, offset: Int = 0, count: Int = samples.totalSamples - offset): Int {
-        return readShorts(samples.data, offset, count)
+    protected fun readSamples(samples: AudioSamples, offset: Int = 0, count: Int = samples.totalSamples - offset, fully: Boolean = false): Int {
+        return _readShorts(samples.data, offset, count, fully = fully)
     }
 
     override val availableSamples: Int get() = lock { deque.availableRead }
