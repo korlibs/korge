@@ -3,6 +3,7 @@ layout: default
 title: Korlibs
 fa-icon: fa-home
 permalink: /
+useMermaid: true
 ---
 
 <img src="/i/logos/korlibs.svg" width="64" height="64" style="float:left;margin-right:16px;"/>
@@ -17,5 +18,60 @@ It's philosophy is: simple, small, powerful, cohesive, enjoyable, portable, mult
 
 Some of these libraries are tightly tied to provide an awesome experience.
 
-<embed src="korlibs-deps-tpl.svg" style="max-width:100%;background:transparent;" />
+<pre class="mermaid">
+flowchart TD
+kbignum["fa:fa-infinity kbignum"]
+klock["fa:fa-clock klock"]
+krypto["fa:fa-lock krypto"]
+klogger["fa:fa-newspaper klogger"]
+korte["fa:fa-align-justify korte"]
+kds["fa:fa-table kds"]
+korinject["fa:fa-network-wired korinject"]
+kmem["fa:fa-memory kmem"]
+korio["fa:fa-save korio"]
+korau["fa:fa-music korau"]
+korim["fa:fa-image korim"]
+korma["fa:fa-calculator korma"]
+korge["fa:fa-gamepad korge"]
 
+kotlinx.coroutines --> korcoroutines
+
+korcoroutines --> korio
+klock --> korio
+kds --> korio
+kmem --> korio
+krypto --> korio
+klogger --> korio
+
+kds --> korma
+jna --> kmem
+
+%% ktruth --> korim
+korma --> korim
+korio --> korim
+
+korim --> korgw
+
+korgw --> korge
+korau --> korge
+korinject --> korge
+korte --> korge
+
+korma --> korau
+korio --> korau
+
+click kbignum href "/kbignum/"
+click kds href "/kds/"
+click klock href "/klock/"
+click kmem href "/kmem/"
+click krypto href "/krypto/"
+click klogger href "/klogger/"
+click korma href "/korma/"
+click korio href "/korio/"
+click korau href "/korau/"
+click korim href "/korim/"
+click korinject href "/korinject/"
+click korte href "/korte/"
+click korge href "/korge/"
+
+</pre>

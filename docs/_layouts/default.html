@@ -17,6 +17,18 @@
 	<link rel="canonical" href="{{ page.url | replace:'index.html','' | prepend: site.baseurl | prepend: site.url }}">
 	<link rel="alternate" type="application/rss+xml" title="{{ site.title }}" href="{{ '/feed.xml' | prepend: site.baseurl | prepend: site.url }}">
 
+    {% if page.useMermaid %}
+    <!-- https://mermaid.live/ -->
+    <!-- https://mermaid.js.org/intro/ -->
+    <!--
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({ startOnLoad: true });
+    </script>
+    -->
+    <script src="/js/mermaid/mermaid.min.js"></script>
+    {% endif %}
+
     <!-- 2 -->
 </head>
 
