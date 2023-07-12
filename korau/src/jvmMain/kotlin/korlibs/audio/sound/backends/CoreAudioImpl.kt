@@ -105,8 +105,8 @@ private class JvmCoreAudioPlatformAudioOutput(
         val format = AudioStreamBasicDescription(Memory(40).also { it.clear() }.kpointer)
 
         format.mSampleRate = frequency.toDouble()
-        format.mFormatID = CoreAudioKit.kAudioFormatLinearPCM;
-        format.mFormatFlags = CoreAudioKit.kLinearPCMFormatFlagIsSignedInteger or CoreAudioKit.kAudioFormatFlagIsPacked;
+        format.mFormatID = CoreAudioKit.kAudioFormatLinearPCM
+        format.mFormatFlags = CoreAudioKit.kLinearPCMFormatFlagIsSignedInteger or CoreAudioKit.kAudioFormatFlagIsPacked
         format.mBitsPerChannel = (8 * Short.SIZE_BYTES)
         format.mChannelsPerFrame = nchannels
         format.mBytesPerFrame = (Short.SIZE_BYTES * format.mChannelsPerFrame)
