@@ -16,6 +16,17 @@ interface UIFocusable {
     val isFocusable: Boolean
     fun focusChanged(value: Boolean)
 }
+
+fun View.makeFocusable(tabIndex: Int = 0, onChanged: (value: Boolean) -> Unit = {}): UIFocusable {
+    focusable = object : UIFocusable {
+        override val UIFocusManager.Scope.focusView: View get() = this@makeFocusable
+        override var tabIndex: Int = tabIndex
+        override val isFocusable: Boolean get() = true
+        override fun focusChanged(value: Boolean) { onChanged(value) }
+    }
+    return focusable!!
+}
+
 var UIFocusable.focused: Boolean
     get() = UIFocusManager.Scope.focusView.stage?.uiFocusedView == this
     set(value) {
