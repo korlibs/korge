@@ -1,6 +1,6 @@
 ---
 layout: default
-title: "Macots"
+title: "Mascots"
 title_prefix: KorGE
 fa-icon: fa-paw
 priority: 2
