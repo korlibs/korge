@@ -40,7 +40,6 @@ abstract class KorgwActivity(
     private var defaultUiVisibility = -1
 
     init {
-        vfsInitWithAndroidContextOnce(this)
         activityWithResult.activity = this
         gameWindow.onContinuousRenderModeUpdated = {
             mGLView?.continuousRenderMode = it
@@ -51,6 +50,8 @@ abstract class KorgwActivity(
 
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        vfsInitWithAndroidContextOnce(this)
 
         intent.extras?.get("sleepBeforeStart")?.toString()?.toLongOrNull()?.let {
             Thread.sleep(it)
