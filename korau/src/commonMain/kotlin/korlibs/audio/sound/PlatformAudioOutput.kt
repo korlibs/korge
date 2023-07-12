@@ -1,12 +1,13 @@
 package korlibs.audio.sound
 
 import korlibs.datastructure.lock.NonRecursiveLock
-import korlibs.time.milliseconds
+import korlibs.datastructure.thread.*
 import korlibs.memory.clamp
 import korlibs.memory.clamp01
 import korlibs.memory.toShortClamped
 import korlibs.io.async.delay
 import korlibs.io.lang.Disposable
+import korlibs.time.*
 import kotlin.coroutines.CoroutineContext
 
 open class PlatformAudioOutput(
@@ -33,6 +34,86 @@ open class PlatformAudioOutput(
     }
 
     final override fun dispose() = stop()
+}
+
+abstract class ThreadBasedPlatformAudioOutput(
+    coroutineContext: CoroutineContext,
+    frequency: Int,
+) : DequeBasedPlatformAudioOutput(coroutineContext, frequency) {
+    var nativeThread: NativeThread? = null
+    var running = false
+
+    val totalPendingSamples: Long get() = availableSamples.toLong() + samplesPendingToPlay
+    protected abstract val samplesPendingToPlay: Long
+    protected open val chunkSize: Int get() = 1024
+    protected abstract fun open(frequency: Int, channels: Int)
+    protected abstract fun write(data: AudioSamples, offset: Int, count: Int): Int
+    protected abstract fun close()
+
+    final override suspend fun wait() {
+        while (totalPendingSamples > 0) {
+            delay(1.milliseconds)
+        }
+    }
+
+    protected fun writeFully(data: AudioSamples, count: Int) {
+        var offset = 0
+        var pending = count
+        var nonAdvancingCount = 0
+        while (pending > 0 && nonAdvancingCount < 10) {
+            val written = write(data, offset, pending)
+            if (written < 0) {
+                println("ThreadBasedPlatformAudioOutput.notFullyWritten: offset=$offset, pending=$pending, written=$written")
+                break
+            }
+            if (written == 0) {
+                println("ThreadBasedPlatformAudioOutput.nothingWritten: offset=$offset, pending=$pending, written=$written")
+                blockingSleep(1.milliseconds)
+                nonAdvancingCount++
+            }
+            offset += written
+            pending -= written
+        }
+    }
+
+    final override fun start() {
+        if (running) return
+        running = true
+        var opened = false
+        // @TODO: Use a thread pool to reuse audio threads?
+        nativeThread = NativeThread {
+            val temp = AudioSamples(nchannels, chunkSize)
+
+            try {
+                while (running) {
+                    val totalRead = readSamples(temp)
+                    if (totalRead == 0) {
+                        blockingSleep(1.milliseconds)
+                        continue
+                    }
+                    if (!opened) {
+                        opened = true
+                        open(frequency, nchannels)
+                    }
+
+                    writeFully(temp, totalRead)
+                }
+            } finally {
+                if (opened) {
+                    opened = false
+                    close()
+                }
+                running = false
+            }
+        }.also {
+            it.isDaemon = true
+            it.start()
+        }
+    }
+
+    final override fun stop() {
+        running = false
+    }
 }
 
 open class DequeBasedPlatformAudioOutput(
@@ -88,16 +169,37 @@ open class DequeBasedPlatformAudioOutput(
         }
     }
 
+    protected fun readShortsPartial(out: Array<ShortArray>, offset: Int = 0, count: Int = out[0].size - offset, nchannels: Int = out.size): Int {
+        return _readShorts(out, offset, count, nchannels, fully = false)
+    }
+
+    protected fun readShortsFully(out: Array<ShortArray>, offset: Int = 0, count: Int = out[0].size - offset, nchannels: Int = out.size): Int {
+        return _readShorts(out, offset, count, nchannels, fully = true)
+    }
+
     protected fun readShorts(out: Array<ShortArray>, offset: Int = 0, count: Int = out[0].size - offset, nchannels: Int = out.size) {
+        _readShorts(out, offset, count, nchannels, fully = true)
+    }
+
+    protected fun _readShorts(out: Array<ShortArray>, offset: Int = 0, count: Int = out[0].size - offset, nchannels: Int = out.size, fully: Boolean): Int {
         lock {
-            for (ch in 0 until nchannels) {
-                val outCh = out[ch]
-                for (n in 0 until count) outCh[offset + n] = _readShort(ch)
+            val totalRead = if (fully) count else minOf(availableRead, count)
+
+            for (n in 0 until totalRead) {
+                for (ch in 0 until nchannels) {
+                    out[ch][offset + n] = _readShort(ch)
+                }
             }
+
+            return totalRead
         }
     }
 
-    final override val availableSamples: Int get() = lock { deque.availableRead }
+    protected fun readSamples(samples: AudioSamples, offset: Int = 0, count: Int = samples.totalSamples - offset, fully: Boolean = false): Int {
+        return _readShorts(samples.data, offset, count, fully = fully)
+    }
+
+    override val availableSamples: Int get() = lock { deque.availableRead }
     final override suspend fun add(samples: AudioSamples, offset: Int, size: Int) {
         while (deque.availableRead >= 441 * 4) {
             delay(10.milliseconds)
