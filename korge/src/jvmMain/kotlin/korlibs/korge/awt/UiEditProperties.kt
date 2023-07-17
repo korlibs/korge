@@ -192,20 +192,36 @@ internal class UiEditProperties(app: UiApplication, view: View?, val views: View
         return UiFourItemEditableValue(app, vv[0], vv[1], vv[2], vv[3])
     }
 
+    class WrappedValue<T>(val value: T?) {
+        override fun toString(): String = if (value == null) "null" else "$value"
+    }
+
     fun createUiEditableValueFor(instance: Any, type: KType, viewProp: ViewProperty, prop: KProperty1<View, Any?>?, obs: ObservableProperty<*>? = null): UiComponent? {
         val name = prop?.name ?: "Unknown"
-        val obs = obs ?: ObservableProperty<Any?>(
+        val obs: ObservableProperty<Any?> = (obs ?: ObservableProperty<Any?>(
             name,
             internalSet = { (prop as KMutableProperty1<Any, Any?>).set(instance, it) },
             internalGet = { (prop as KProperty1<Any, Any?>).get(instance) }
-        )
+        )) as ObservableProperty<Any?>
 
         prop?.findAnnotation<ViewPropertyProvider>()?.let { propertyProvider ->
             val singletonClazz = propertyProvider.provider as KClass<Any>
             val singletonInstance = singletonClazz.objectInstance as ViewPropertyProvider.Impl<Any, Any>
-            return UiListEditableValue<Any?>(app, {
-                singletonInstance.provider(instance).values.toList()
-            }, obs as ObservableProperty<Any?>)
+
+            val obs2 = ObservableProperty<WrappedValue<Any?>?>(
+                obs.name,
+                internalSet = { obs.value = it?.value },
+                internalGet = { WrappedValue(obs.value) }
+            ) as ObservableProperty<Any?>
+
+            return UiListEditableValue<Any?>(
+                app,
+                {
+                    (singletonInstance.provider(instance).values.toList() + (if (type.isMarkedNullable) listOf(null) else emptyList()))
+                        .map { WrappedValue(it) }
+                },
+                obs2
+            )
         }
 
         return when {
