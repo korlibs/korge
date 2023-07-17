@@ -6,19 +6,28 @@ import korlibs.korge.time.*
 import korlibs.korge.ui.*
 import korlibs.korge.view.*
 import korlibs.image.color.*
+import korlibs.image.font.*
+import korlibs.image.text.*
+import korlibs.korge.*
+import korlibs.math.geom.*
 import korlibs.math.interpolation.*
 import korlibs.math.random.*
+import korlibs.memory.*
 import kotlin.random.*
 
 //class MainCache : ScaledScene(512, 512) {
 class MainCache : Scene() {
+    override suspend fun SContainer.sceneInit() {
+        setVirtualSize(Korge.DEFAULT_WINDOW_SIZE / 2)
+    }
+
     override suspend fun SContainer.sceneMain() {
         //val cached = CachedContainer().addTo(this)
         //val cached = container {  }
         val cached = cachedContainer {  }
         val random = Random(0L)
         for (n in 0 until 100_000) {
-            cached.solidRect(2, 2, random[Colors.RED, Colors.BLUE]).xy(2 * (n % 300), 2 * (n / 300))
+            cached.solidRect(1, 1, random[Colors.RED, Colors.BLUE]).xy((n % 300), (n / 300))
         }
         uiHorizontalStack {
             uiButton("Cached").clicked {
@@ -35,9 +44,37 @@ class MainCache : Scene() {
             println(cached.getChildAt(50000)._invalidateNotifier)
         }
 
+        uiHorizontalStack {
+            this.position(315, 0)
+
+            uiScrollable(size = Size(100, 100)) {
+                it.sampleTextBlock(RichTextData("Expensive Scaling: Default", font = DefaultTtfFontAsBitmap))
+            }
+
+            uiScrollable(size = Size(100, 100)) {
+                it.expensiveScaling = false
+                it.sampleTextBlock(RichTextData("Cheap Scaling: Opt-in", font = DefaultTtfFontAsBitmap))
+            }
+        }
 
         //timeout(1.seconds) {
         //    rect.color = Colors.BLUE
         //}
+    }
+
+    override suspend fun sceneAfterDestroy() {
+        super.sceneAfterDestroy()
+        setVirtualSize(Korge.DEFAULT_WINDOW_SIZE)
+    }
+
+    private fun setVirtualSize(size: Size) {
+        views.setVirtualSize(size.width.toIntCeil(), size.height.toIntCeil())
+    }
+
+    private fun Container.sampleTextBlock(richTextData: RichTextData): TextBlock {
+        return textBlock(align = TextAlignment.MIDDLE_CENTER, size = Size(100, 100)) {
+            text = richTextData
+            fill = Colors.WHITE
+        }
     }
 }
