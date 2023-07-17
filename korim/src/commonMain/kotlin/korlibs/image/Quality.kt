@@ -14,7 +14,7 @@ interface Quality {
         val HIGH: Quality = QualityImpl(.75f, "HIGH")
         val HIGHEST: Quality = QualityImpl(1f, "HIGHEST")
 
-        val LIST = listOf(LOW, MEDIUM, HIGH, HIGHEST)
+        val LIST = listOf(LOWEST, LOW, MEDIUM, HIGH, HIGHEST)
     }
 }
 
