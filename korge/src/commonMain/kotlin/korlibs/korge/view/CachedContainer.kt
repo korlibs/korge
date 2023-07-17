@@ -1,12 +1,14 @@
 package korlibs.korge.view
 
 import korlibs.datastructure.*
+import korlibs.image.*
 import korlibs.io.lang.*
 import korlibs.korge.internal.*
 import korlibs.korge.render.*
 import korlibs.korge.view.property.*
 import korlibs.math.geom.*
 import korlibs.render.*
+import kotlin.jvm.*
 
 inline fun Container.fixedSizeCachedContainer(size: Size, cache: Boolean = true, clip: Boolean = true, callback: @ViewDslMarker CachedContainer.() -> Unit = {}) =
     FixedSizeCachedContainer(size, cache, clip).addTo(this, callback)
@@ -35,11 +37,24 @@ open class FixedSizeCachedContainer(
 }
 
 open class CachedContainer(
+    /** Indicates if we are going to render this container into a texture, and reuse its content in following frames. */
     @property:ViewProperty
-    var cache: Boolean = true
+    var cache: Boolean = true,
+    /** Affects the size of the cached texture (bigger textures on hidpi screens for high quality and smaller for low quality), when null, uses the configured [GameWindow.quality]. */
+    renderQuality: Quality? = null,
 ) : Container(), InvalidateNotifier {
     //@ViewProperty
     //var cache: Boolean = cache
+
+    @property:ViewProperty
+    @property:ViewPropertyProvider(QualityProvider::class)
+    var renderQuality: Quality? = renderQuality
+        set(value) {
+            if (field != value) {
+                field = value
+                dirty = true
+            }
+        }
 
     inner class CacheTexture(val ctx: RenderContext) : Closeable {
         val rb = ctx.unsafeAllocateFrameBuffer(16, 16, onlyThisFrame = false)
@@ -62,6 +77,7 @@ open class CachedContainer(
     private var dirty = true
     private var scaledCache = -1f
     private var lbounds = Rectangle()
+    private var windowLocalRatio: Scale = Scale(1)
 
     override fun invalidateRender() {
         super.invalidateRender()
@@ -81,25 +97,32 @@ open class CachedContainer(
         val cache = _cacheTex!!
         ctx.refGcCloseable(cache)
 
-        val renderScale: Float = when (ctx.views?.gameWindow?.quality) {
+        val renderScale: Float = when (ctx.quality) {
             GameWindow.Quality.PERFORMANCE -> 1f
             else -> ctx.devicePixelRatio
         }
+
+        val doExpensiveScaling = !(renderQuality ?: ctx.quality).isLow
         //val renderScale = 1.0
 
         if (dirty || scaledCache != renderScale) {
             scaledCache = renderScale
             lbounds = getLocalBounds(includeFilters = false)
+            windowLocalRatio = when {
+                doExpensiveScaling -> (windowBounds.size / lbounds.size)
+                else -> Scale(1)
+            }
+
             dirty = false
-            val texWidth = (lbounds.width * renderScale).toInt().coerceAtLeast(1)
-            val texHeight = (lbounds.height * renderScale).toInt().coerceAtLeast(1)
+            val texWidth = (lbounds.width * renderScale * windowLocalRatio.scaleX).toInt().coerceAtLeast(1)
+            val texHeight = (lbounds.height * renderScale * windowLocalRatio.scaleY).toInt().coerceAtLeast(1)
             cache.resize(texWidth, texHeight)
             ctx.flush()
             ctx.renderToFrameBuffer(cache.rb) {
                 //ctx.ag.clear(Colors.TRANSPARENT, clearColor = true)
                 ctx.setViewMatrixTemp(globalMatrixInv
                     .translated(-lbounds.x, -lbounds.y)
-                    .scaled(renderScale)
+                    .scaled(renderScale * windowLocalRatio.scaleX, renderScale * windowLocalRatio.scaleY)
                 ) {
                     super.renderInternal(ctx)
                 }
@@ -111,7 +134,7 @@ open class CachedContainer(
                 cache.tex,
                 m = globalMatrix
                     .pretranslated(lbounds.x, lbounds.y)
-                    .prescaled(1.0 / renderScale)
+                    .prescaled(1.0 / (renderScale * windowLocalRatio.scaleX), 1.0 / (renderScale * windowLocalRatio.scaleY))
                 ,
                 colorMul = renderColorMul,
                 blendMode = blendMode,
