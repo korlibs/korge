@@ -28,4 +28,12 @@ class QualityTest {
             """.trimIndent()
         )
     }
+
+    @Test
+    fun testLevelsList() {
+        assertEquals(
+            listOf(Quality.LOWEST, Quality.LOW, Quality.MEDIUM, Quality.HIGH, Quality.HIGHEST),
+            Quality.LIST
+        )
+    }
 }
