@@ -167,6 +167,7 @@ suspend fun KorgeWithConfig(config: KorgeConfig, entry: suspend Stage.() -> Unit
  */
 object KorgeRunner {
     suspend operator fun invoke(config: Korge) {
+        println("KorgeRunner.invoke [a]")
         RegisteredImageFormats.register(config.imageFormats)
 
         val iconPath = config.icon
@@ -179,11 +180,14 @@ object KorgeRunner {
             configureLoggerFromProperties(localCurrentDirVfs["klogger.properties"])
         }
         val realGameWindow = (config.gameWindow ?: coroutineContext[GameWindow] ?: CreateDefaultGameWindow(GameWindowCreationConfig(multithreaded = multithreaded, fullscreen = config.fullscreen)))
+        println("KorgeRunner.invoke [b]")
         realGameWindow.bgcolor = config.backgroundColor ?: Colors.BLACK
         //println("Configure: ${width}x${height}")
         // @TODO: Configure should happen before loop. But we should ensure that all the korgw targets are ready for this
         //realGameWindow.configure(width, height, title, icon, fullscreen)
+        println("KorgeRunner.invoke [c]")
         realGameWindow.loop {
+            println("KorgeRunner.invoke [d]")
             val gameWindow = this
             if (Platform.isNative) println("Korui[0]")
             gameWindow.registerTime("configureGameWindow") {
@@ -209,6 +213,7 @@ object KorgeRunner {
 
             // Use this once Korgw is on 1.12.5
             //val views = Views(gameWindow.getCoroutineDispatcherWithCurrentContext() + SupervisorJob(), ag, injector, input, timeProvider, stats, gameWindow)
+            println("KorgeRunner.invoke [e]")
             val views: Views = Views(
                 coroutineContext = coroutineContext + gameWindow.coroutineDispatcher + AsyncInjectorContext(config.injector) + SupervisorJob(),
                 ag = if (config.debugAg) AGPrint() else ag,
@@ -222,8 +227,11 @@ object KorgeRunner {
                 batchMaxQuads = config.batchMaxQuads,
                 stageBuilder = config.stageBuilder
             ).also {
+                println("KorgeRunner.invoke [e1]")
                 it.init()
+                println("KorgeRunner.invoke [e2]")
             }
+            println("KorgeRunner.invoke [e3]")
 
             if (Platform.isJsBrowser) {
                 Dyn.global["views"] = views
@@ -243,6 +251,8 @@ object KorgeRunner {
             views.targetFps = config.targetFps
             //Korge.prepareViews(views, gameWindow, bgcolor != null, bgcolor ?: Colors.TRANSPARENT_BLACK)
 
+            println("KorgeRunner.invoke [f]")
+
             gameWindow.registerTime("prepareViews") {
                 prepareViews(
                     views,
@@ -255,6 +265,8 @@ object KorgeRunner {
                 )
             }
 
+            println("KorgeRunner.invoke [f2]")
+
             gameWindow.registerTime("completeViews") {
                 completeViews(views)
             }
@@ -265,6 +277,7 @@ object KorgeRunner {
                     if (config.mainSceneClass != null) {
                         views.stage.sceneContainer().changeTo(config.mainSceneClass)
                     }
+                    println("KorgeRunner.invoke !! BEFORE ENTRY: $entry")
                     entry(views.stage)
                     if (config.blocking) {
                         // @TODO: Do not complete to prevent job cancelation?
@@ -280,6 +293,9 @@ object KorgeRunner {
                 gameWindow.waitClose()
                 gameWindow.exit()
             }
+
+            println("KorgeRunner.invoke [g]")
+
         }
     }
 
