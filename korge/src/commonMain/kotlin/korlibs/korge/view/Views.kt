@@ -61,6 +61,8 @@ class Views(
     InvalidateNotifier,
     DeviceDimensionsProvider by gameWindow
 {
+    var quality by gameWindow::quality
+
     override val views = this
 
     var rethrowRenderError = false

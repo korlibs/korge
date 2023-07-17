@@ -1,5 +1,6 @@
 package korlibs.korge.view
 
+import korlibs.image.*
 import korlibs.image.text.*
 import korlibs.korge.view.property.*
 import korlibs.math.geom.*
@@ -23,4 +24,8 @@ object ScaleModeProvider : ViewPropertyProvider.ItemsImpl<ScaleMode>() {
 @Suppress("unused")
 object BlendModeProvider : ViewPropertyProvider.ItemsImpl<BlendMode>() {
     override val ITEMS get() = BlendMode.STANDARD_LIST
+}
+
+object QualityProvider : ViewPropertyProvider.ItemsImpl<Quality>() {
+    override val ITEMS get() = Quality.LIST
 }

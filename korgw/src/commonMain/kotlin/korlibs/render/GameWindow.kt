@@ -477,13 +477,13 @@ open class GameWindow :
      * [PERFORMANCE] will use lower resolutions, while [QUALITY] will use the devicePixelRatio
      * to render high quality images.
      */
-    enum class Quality {
+    enum class Quality(override val level: Float) : korlibs.image.Quality {
         /** Will render to lower resolutions, ignoring devicePixelRatio on retina-like screens */
-        PERFORMANCE,
+        PERFORMANCE(0f),
         /** Will render to higher resolutions, using devicePixelRatio on retina-like screens */
-        QUALITY,
+        QUALITY(1f),
         /** Will choose [PERFORMANCE] or [QUALITY] based on some heuristics */
-        AUTOMATIC;
+        AUTOMATIC(.5f);
 
         private val UPPER_BOUND_RENDERED_PIXELS = 4_000_000
 

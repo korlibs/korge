@@ -11,11 +11,13 @@ import kotlin.math.round
 fun Int.toStringUnsigned(radix: Int): String = this.toUInt().toString(radix)
 fun Long.toStringUnsigned(radix: Int): String = this.toULong().toString(radix)
 
-val Double.niceStr: String get() = buildString { appendNice(this@niceStr) }
-fun Double.niceStr(decimalPlaces: Int): String = roundDecimalPlaces(decimalPlaces).niceStr
+val Double.niceStr: String get() = niceStr(-1, zeroSuffix = false)
+fun Double.niceStr(decimalPlaces: Int): String = niceStr(decimalPlaces, zeroSuffix = false)
+fun Double.niceStr(decimalPlaces: Int, zeroSuffix: Boolean): String = buildString { appendNice(this@niceStr.roundDecimalPlaces(decimalPlaces), zeroSuffix = zeroSuffix) }
 
-val Float.niceStr: String get() = this.toDouble().niceStr
-fun Float.niceStr(decimalPlaces: Int): String = this.toDouble().niceStr(decimalPlaces)
+val Float.niceStr: String get() = niceStr(-1, zeroSuffix = false)
+fun Float.niceStr(decimalPlaces: Int): String = niceStr(decimalPlaces, zeroSuffix = false)
+fun Float.niceStr(decimalPlaces: Int, zeroSuffix: Boolean): String = buildString { appendNice(this@niceStr.roundDecimalPlaces(decimalPlaces), zeroSuffix = zeroSuffix) }
 
 //val Float.niceStr: String get() = buildString { appendNice(this@niceStr) }
 //fun Float.niceStr(decimalPlaces: Int): String = roundDecimalPlaces(decimalPlaces).niceStr
@@ -23,24 +25,35 @@ fun Float.niceStr(decimalPlaces: Int): String = this.toDouble().niceStr(decimalP
 private fun Double.isAlmostEquals(other: Double, epsilon: Double = 0.000001): Boolean = (this - other).absoluteValue < epsilon
 private fun Float.isAlmostEquals(other: Float, epsilon: Float = 0.000001f): Boolean = (this - other).absoluteValue < epsilon
 
-fun StringBuilder.appendNice(value: Double) {
+fun StringBuilder.appendNice(value: Double, zeroSuffix: Boolean): Unit {
     when {
         round(value).isAlmostEquals(value) -> when {
             value >= Int.MIN_VALUE.toDouble() && value <= Int.MAX_VALUE.toDouble() -> append(value.toInt())
             else -> append(value.toLong())
         }
-        else -> append(value)
+        else -> {
+            append(value)
+            return
+        }
     }
+    if (zeroSuffix) append(".0")
 }
-fun StringBuilder.appendNice(value: Float) {
+fun StringBuilder.appendNice(value: Float, zeroSuffix: Boolean): Unit {
     when {
         round(value).isAlmostEquals(value) -> when {
             value >= Int.MIN_VALUE.toFloat() && value <= Int.MAX_VALUE.toFloat() -> append(value.toInt())
             else -> append(value.toLong())
         }
-        else -> append(value)
+        else -> {
+            append(value)
+            return
+        }
     }
+    if (zeroSuffix) append(".0")
 }
+
+fun StringBuilder.appendNice(value: Double): Unit = appendNice(value, zeroSuffix = false)
+fun StringBuilder.appendNice(value: Float): Unit = appendNice(value, zeroSuffix = false)
 
 //private fun Double.normalizeZero(): Double = if (this.isAlmostZero()) 0.0 else this
 private val MINUS_ZERO_D = -0.0
