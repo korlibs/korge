@@ -36,9 +36,7 @@ open class FixedSizeCachedContainer(
 
 open class CachedContainer(
     @property:ViewProperty
-    var cache: Boolean = true,
-    @property:ViewProperty
-    var expensiveScaling: Boolean? = null,
+    var cache: Boolean = true
 ) : Container(), InvalidateNotifier {
     //@ViewProperty
     //var cache: Boolean = cache
@@ -64,7 +62,6 @@ open class CachedContainer(
     private var dirty = true
     private var scaledCache = -1f
     private var lbounds = Rectangle()
-    private var windowLocalRatio: Scale = Scale(1)
 
     override fun invalidateRender() {
         super.invalidateRender()
@@ -84,36 +81,25 @@ open class CachedContainer(
         val cache = _cacheTex!!
         ctx.refGcCloseable(cache)
 
-        val renderScale: Float = when (ctx.quality) {
+        val renderScale: Float = when (ctx.views?.gameWindow?.quality) {
             GameWindow.Quality.PERFORMANCE -> 1f
             else -> ctx.devicePixelRatio
         }
         //val renderScale = 1.0
 
-        val doExpensiveScaling = expensiveScaling ?: when(ctx.quality) {
-            GameWindow.Quality.PERFORMANCE -> false
-            else -> true
-        }
-
         if (dirty || scaledCache != renderScale) {
             scaledCache = renderScale
             lbounds = getLocalBounds(includeFilters = false)
-            windowLocalRatio = if (doExpensiveScaling) {
-                windowBounds.size / lbounds.size
-            } else {
-                Scale(1)
-            }
-
             dirty = false
-            val texWidth = (lbounds.width * renderScale * windowLocalRatio.scaleX).toInt().coerceAtLeast(1)
-            val texHeight = (lbounds.height * renderScale * windowLocalRatio.scaleY).toInt().coerceAtLeast(1)
+            val texWidth = (lbounds.width * renderScale).toInt().coerceAtLeast(1)
+            val texHeight = (lbounds.height * renderScale).toInt().coerceAtLeast(1)
             cache.resize(texWidth, texHeight)
             ctx.flush()
             ctx.renderToFrameBuffer(cache.rb) {
                 //ctx.ag.clear(Colors.TRANSPARENT, clearColor = true)
                 ctx.setViewMatrixTemp(globalMatrixInv
                     .translated(-lbounds.x, -lbounds.y)
-                    .scaled(renderScale * windowLocalRatio.scaleX, renderScale * windowLocalRatio.scaleY)
+                    .scaled(renderScale)
                 ) {
                     super.renderInternal(ctx)
                 }
@@ -125,7 +111,7 @@ open class CachedContainer(
                 cache.tex,
                 m = globalMatrix
                     .pretranslated(lbounds.x, lbounds.y)
-                    .prescaled(1.0 / renderScale / windowLocalRatio.scaleX, 1.0 / renderScale / windowLocalRatio.scaleY)
+                    .prescaled(1.0 / renderScale)
                 ,
                 colorMul = renderColorMul,
                 blendMode = blendMode,
