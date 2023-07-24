@@ -3,7 +3,7 @@ import korlibs.korge.gradle.targets.jvm.KorgeJavaExec
 description = "Multiplatform Game Engine written in Kotlin"
 
 korge {
-    entrypoint("JvmMain", "JvmMain")
+    entrypoint("Sandbox", "JvmMain")
 }
 
 dependencies {
