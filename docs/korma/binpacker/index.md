@@ -13,7 +13,7 @@ KorMA provides some utilities for bin packing.
 
 ## BinPacker
 
-`BinPacker` allows to place rectangles thighly packed without overlapping in a reduced space.
+`BinPacker` allows to place rectangles tightly packed without overlapping in a reduced space.
 A popular use case is generating atlases; packing several smaller images in a texture
 either at compilation time, or dynamically at runtime.
 
