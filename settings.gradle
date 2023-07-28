@@ -4,7 +4,7 @@ pluginManagement {
 
 rootProject.name = "${rootDir.name}-root"
 
-boolean isPropertyTrue(String name) {
+static boolean isPropertyTrue(String name) {
     return System.getenv(name) == "true" || System.getProperty(name) == "true"
 }
 

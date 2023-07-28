@@ -138,7 +138,7 @@ fun ImageIOReadFormat(s: InputStream, type: Int = AWT_INTERNAL_IMAGE_TYPE_PRE): 
         } finally {
             reader.dispose()
         }
-    }.cloneIfRequired(type = type) // Clone is not required since just read directly in the right format
+    }// .cloneIfRequired(type = type) // Clone is not required since just read directly in the right format
 
 fun awtReadImage(data: ByteArray): BufferedImage = ImageIOReadFormat(ByteArrayInputStream(data))
 
