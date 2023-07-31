@@ -1,13 +1,14 @@
 [versions]
 jna = "5.13.0"
 jcodec = "0.2.5"
+junit = "4.13.2"
 proguard-gradle = "7.2.2"
 
 #kotlin = "1.9.0-Beta"
 #kotlin = "1.8.255-SNAPSHOT"
 
 #kotlin = "1.9.0"
-kotlin = "1.8.22"
+kotlin = "1.9.0"
 kotlinx-coroutines = "1.7.2"
 kotlinx-atomicfu = "0.21.0"
 kotlinx-serialization = "1.5.1"
@@ -41,6 +42,7 @@ closure-compiler = "v20210808"
 # https://repo.maven.apache.org/maven2/org/jetbrains/intellij/deps/intellij-coverage-agent/
 
 [libraries]
+junit = { module = "junit:junit", version.ref = "junit" }
 kotlin-serialization = { module = "org.jetbrains.kotlin:kotlin-serialization", version.ref = "kotlin" }
 kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
