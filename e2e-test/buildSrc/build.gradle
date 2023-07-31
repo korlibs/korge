@@ -7,7 +7,7 @@ repositories {
     mavenCentral()
     google()
 }
-Eval.xy(this, this, file("../../gradle/repositories.settings.gradle.kts").text)
+Eval.xy(this, this, file("../../gradle/repositories.settings.gradle").text)
 
 dependencies {
     implementation("com.soywiz.korlibs.korim:korim-jvm:3.0.0")
