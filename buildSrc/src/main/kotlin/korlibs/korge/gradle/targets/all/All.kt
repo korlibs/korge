@@ -23,9 +23,9 @@ object AddFreeCompilerArgs {
             val options = compilation.compilerOptions.options
             options.suppressWarnings.set(true)
             options.freeCompilerArgs.apply {
+                add("-Xskip-prerelease-check")
                 if (project.findProperty("enableMFVC") == "true") {
                     add("-Xvalue-classes")
-                    add("-Xskip-prerelease-check")
                 }
                 if (target.name == "android" || target.name == "jvm") {
                     add("-Xno-param-assertions")
