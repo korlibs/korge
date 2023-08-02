@@ -56,3 +56,36 @@ Remember that the JS and the Common target doesn't support blocking calls neithe
 So when dealing with I/O you have to mark your functions as `suspend fun`.
 Fortunately Korlibs are designed to be asynchronous, and reading resources is already suspending.
 So you only have to propagate the suspend modifier when required and you are mostly safe here.
+
+## Create a Docker image
+
+To create a docker image use this Dockerfile (which is also included in the [korge-hello-world](https://github.com/korlibs/korge-hello-world){:target="_blank",:rel="noopener"} template):
+
+```dockerfile
+FROM gradle:8.2.1-jdk17-alpine as builder
+WORKDIR /home/gradle/app
+COPY --chown=gradle:gradle . /home/gradle/app
+# Install necessary graphic and audio libraries
+RUN apk add --no-cache freeglut-dev openal-soft-dev mesa-dri-gallium gcompat
+RUN gradle jsBrowserDistribution
+
+FROM node:18-alpine
+WORKDIR /app
+COPY --from=builder /home/gradle/app/build/distributions /app
+RUN npm install -g http-server
+EXPOSE 8080
+CMD ["http-server", "-p", "8080"]
+```
+
+You can build the image with: `docker build -t korge-hello-world .`
+To use the image with docker-compose:
+
+```yaml
+services:
+  my-app:
+    container_name: my-app
+    build: .
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+```
