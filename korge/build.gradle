@@ -10,7 +10,6 @@ project.ext.props = [
 ]
 
 dependencies {
-    implementation project(path: ':korim')
     add("commonMainApi", project(":korim"))
     add("commonMainApi", project(":korgw"))
 	add("commonMainApi", project(":korau"))
