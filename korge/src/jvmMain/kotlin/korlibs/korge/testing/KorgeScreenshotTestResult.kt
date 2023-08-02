@@ -1,5 +1,7 @@
 package korlibs.korge.testing
 
+import korlibs.image.bitmap.*
+
 sealed class KorgeScreenshotValidatorResult {
     object Success : KorgeScreenshotValidatorResult()
     data class Error(val errorMessaage: String) : KorgeScreenshotValidatorResult()

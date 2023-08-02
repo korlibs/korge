@@ -1,5 +1,11 @@
 package korlibs.korge.testing
 
+import korlibs.image.bitmap.*
+import korlibs.image.format.*
+import korlibs.io.file.std.*
+import korlibs.korge.view.*
+import korlibs.time.*
+import kotlinx.coroutines.sync.*
 
 data class KorgeScreenshotValidationSettings(
     val validators: List<KorgeScreenshotValidator> = listOf(
@@ -62,7 +68,7 @@ data class KorgeScreenshotTestingContext(
 
 class KorgeScreenshotTester(
     val views: Views,
-    val context: KorgeScreenshotTestingContext,
+    private val context: KorgeScreenshotTestingContext,
     private val defaultValidationSettings: KorgeScreenshotValidationSettings,
     // We will unlock this mutex after the test ends (via `endTest`).
     // This is to ensure that dependents have a safe way on waiting on the tester to finish.
@@ -82,9 +88,10 @@ class KorgeScreenshotTester(
     suspend fun recordGolden(
         view: View,
         goldenName: String,
-        settingOverride: KorgeScreenshotValidationSettings = defaultValidationSettings
+        settingOverride: KorgeScreenshotValidationSettings = defaultValidationSettings,
+        includeBackground: Boolean = true
     ) {
-        val bitmap = view.renderToBitmap(views)
+        val bitmap = view.renderToBitmap(views, includeBackground = includeBackground)
         require(!recordedGoldenNames.contains(goldenName)) {
             """
                 Golden collision for name: $goldenName
