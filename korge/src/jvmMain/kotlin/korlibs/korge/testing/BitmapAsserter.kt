@@ -7,6 +7,7 @@ import korlibs.image.bitmap.*
 import korlibs.image.color.*
 import korlibs.image.format.*
 import korlibs.io.lang.*
+import korlibs.korge.annotations.KorgeExperimental
 import korlibs.korge.view.*
 import java.awt.*
 import java.io.*
@@ -106,6 +107,7 @@ suspend fun OffscreenStage.simulateContextLost() {
     }
 }
 
+@OptIn(KorgeExperimental::class)
 suspend fun OffscreenStage.simulateRenderFrame(
     view: View = this,
     posterize: Int = 0,

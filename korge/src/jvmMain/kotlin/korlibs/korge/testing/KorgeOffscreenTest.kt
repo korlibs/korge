@@ -65,6 +65,8 @@ fun suspendTestWithOffscreenAG(fboSize: Size, checkGl: Boolean = false, logGl: B
 
 class OffscreenContext(val testClassName: String, val testMethodName: String) {
     companion object {
+        // IMPORTANT!!! This must be kept inline as we use the stacktrace to automatically detect
+        // the test method name.
         inline operator fun invoke(offset: Int = 0): OffscreenContext {
             val stack = Throwable().stackTrace[offset]
             return OffscreenContext(stack.className, stack.methodName)
@@ -72,7 +74,7 @@ class OffscreenContext(val testClassName: String, val testMethodName: String) {
     }
 }
 
-class OffscreenStage(views: Views, val offscreenContext: OffscreenContext) : Stage(views)
+class OffscreenStage(views: Views) : Stage(views)
 
 inline fun korgeScreenshotTest(
     windowSize: Size = Size(512, 512),
@@ -92,10 +94,10 @@ inline fun korgeScreenshotTest(
 
     var exception: Throwable? = null
     suspendTestWithOffscreenAG(windowSize, checkGl = checkGl, logGl = logGl) { ag ->
-        val korge = KorgeHeadless(KorgeConfig(
+        KorgeHeadless(KorgeConfig(
             windowSize = windowSize, virtualSize = virtualSize,
             backgroundColor = bgcolor,
-            stageBuilder = { OffscreenStage(it, offscreenContext) }
+            stageBuilder = { OffscreenStage(it) }
             ),
             ag = ag, devicePixelRatio = devicePixelRatio,
         ) {

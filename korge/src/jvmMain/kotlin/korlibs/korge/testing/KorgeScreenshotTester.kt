@@ -1,8 +1,10 @@
 package korlibs.korge.testing
 
 import korlibs.image.bitmap.*
+import korlibs.image.color.Colors
 import korlibs.image.format.*
 import korlibs.io.file.std.*
+import korlibs.korge.annotations.KorgeExperimental
 import korlibs.korge.view.*
 import korlibs.time.*
 import kotlinx.coroutines.sync.*
@@ -62,7 +64,6 @@ data class KorgeScreenshotTestingContext(
     companion object {
         val DATE_FORMAT = DateFormat("yyyy-dd-MM HH:mm:ss z")
         private const val LINE_BREAK_WIDTH = 100
-
     }
 }
 
@@ -84,14 +85,29 @@ class KorgeScreenshotTester(
     }
 
     // name: The name of the golden. (e.g: "cool_view").
-    //  Note: Do not add a file extension to the end.
+    // Note: You do not need to add a file extension to the end.
+    @OptIn(KorgeExperimental::class)
     suspend fun recordGolden(
         view: View,
         goldenName: String,
         settingOverride: KorgeScreenshotValidationSettings = defaultValidationSettings,
         includeBackground: Boolean = true
     ) {
-        val bitmap = view.renderToBitmap(views, includeBackground = includeBackground)
+//        val bitmap = view.renderToBitmap(views, includeBackground = includeBackground)
+        val bitmap = views.ag.startEndFrame {
+            //val currentFrameBuffer = views.renderContext.currentFrameBuffer
+            //Bitmap32(currentFrameBuffer.width, currentFrameBuffer.height).also { ag.readColor(currentFrameBuffer, it) }
+            views.renderContext.beforeRender()
+            try {
+                view.unsafeRenderToBitmapSync(
+                    views.renderContext,
+                    bgcolor = if (includeBackground) views.clearColor else Colors.TRANSPARENT,
+                    useTexture = true
+                ).depremultiplied().posterizeInplace(0)
+            } finally {
+                views.renderContext.afterRender()
+            }
+        }
         require(!recordedGoldenNames.contains(goldenName)) {
             """
                 Golden collision for name: $goldenName
