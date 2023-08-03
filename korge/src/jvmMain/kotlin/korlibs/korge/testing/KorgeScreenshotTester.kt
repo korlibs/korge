@@ -93,21 +93,7 @@ class KorgeScreenshotTester(
         settingOverride: KorgeScreenshotValidationSettings = defaultValidationSettings,
         includeBackground: Boolean = true
     ) {
-//        val bitmap = view.renderToBitmap(views, includeBackground = includeBackground)
-        val bitmap = views.ag.startEndFrame {
-            //val currentFrameBuffer = views.renderContext.currentFrameBuffer
-            //Bitmap32(currentFrameBuffer.width, currentFrameBuffer.height).also { ag.readColor(currentFrameBuffer, it) }
-            views.renderContext.beforeRender()
-            try {
-                view.unsafeRenderToBitmapSync(
-                    views.renderContext,
-                    bgcolor = if (includeBackground) views.clearColor else Colors.TRANSPARENT,
-                    useTexture = true
-                ).depremultiplied().posterizeInplace(0)
-            } finally {
-                views.renderContext.afterRender()
-            }
-        }
+        val bitmap = views.simulateRenderFrame(view, includeBackground = includeBackground)
         require(!recordedGoldenNames.contains(goldenName)) {
             """
                 Golden collision for name: $goldenName

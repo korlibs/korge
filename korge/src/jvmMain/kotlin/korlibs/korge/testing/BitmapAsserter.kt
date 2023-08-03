@@ -107,9 +107,16 @@ suspend fun OffscreenStage.simulateContextLost() {
     }
 }
 
-@OptIn(KorgeExperimental::class)
-suspend fun OffscreenStage.simulateRenderFrame(
+fun OffscreenStage.simulateRenderFrame(
     view: View = this,
+    posterize: Int = 0,
+    includeBackground: Boolean = true,
+    useTexture: Boolean = true,
+): Bitmap32 = views.simulateRenderFrame(view, posterize, includeBackground, useTexture)
+
+@OptIn(KorgeExperimental::class)
+fun Views.simulateRenderFrame(
+    view: View,
     posterize: Int = 0,
     includeBackground: Boolean = true,
     useTexture: Boolean = true,
@@ -117,7 +124,7 @@ suspend fun OffscreenStage.simulateRenderFrame(
     return views.ag.startEndFrame {
         //val currentFrameBuffer = views.renderContext.currentFrameBuffer
         //Bitmap32(currentFrameBuffer.width, currentFrameBuffer.height).also { ag.readColor(currentFrameBuffer, it) }
-        stage.views.renderContext.beforeRender()
+        views.renderContext.beforeRender()
         try {
             view.unsafeRenderToBitmapSync(
                 views.renderContext,
@@ -125,7 +132,7 @@ suspend fun OffscreenStage.simulateRenderFrame(
                 useTexture = useTexture
             ).depremultiplied().posterizeInplace(posterize)
         } finally {
-            stage.views.renderContext.afterRender()
+            views.renderContext.afterRender()
         }
     }
 }
