@@ -5,43 +5,46 @@ import kotlin.test.*
 import kotlin.time.*
 
 abstract class AbstractBigIntCompareWithJVMTest {
-	val intItems = listOf(
-		-9999999,
-		-8888888,
-		-0x10001,
-		-0x10000,
-		-0xFFFF,
-		-0xFFFE,
-		-1024,
-		-100,
-		-50,
-		-16,
-		-15,
-		-2,
-		-1,
-		0,
-		+1,
-		+2,
-		+15,
-		+16,
-		+50,
-		+100,
-		+1024,
-		+0xFFFE,
-		+0xFFFF,
-		+0x10000,
-		+0x10001,
-		+8888888,
-		+9999999
-	)
-    val stringItems = listOf<String>(
-        //"11111111111",
-        //"1234567890123456789",
-        //"9191291821821972198723892731927412419757607241902412742141904810123913021931",
-        //"121231246717581291824912849128509185124190310741841824712837131738172",
-    )
+	companion object {
+		private val intItems = listOf(
+			-9999999,
+			-8888888,
+			-0x10001,
+			-0x10000,
+			-0xFFFF,
+			-0xFFFE,
+			-1024,
+			-100,
+			-50,
+			-16,
+			-15,
+			-2,
+			-1,
+			0,
+			+1,
+			+2,
+			+15,
+			+16,
+			+50,
+			+100,
+			+1024,
+			+0xFFFE,
+			+0xFFFF,
+			+0x10000,
+			+0x10001,
+			+8888888,
+			+9999999
+		)
+		private val stringItems = listOf<String>(
+			//"11111111111",
+			//"1234567890123456789",
+			//"9191291821821972198723892731927412419757607241902412742141904810123913021931",
+			//"121231246717581291824912849128509185124190310741841824712837131738172",
+		)
 
-    val allItems = intItems.map { it.toString() } + stringItems
+		private val allItems = intItems.map { it.toString() } + stringItems
+	}
+
 
     data class ResultEx(val result: Result, val jvm: String, val kbignum: String)
     data class Result(val op: String, val jvm: String, val kbignum: String)
@@ -77,7 +80,7 @@ abstract class AbstractBigIntCompareWithJVMTest {
 
 	@Test
 	fun testLeftShift2() =
-		testBinary { jvmL, jvmR, kL, kR -> Result("<<", "${jvmL shl 1030}", "${kL shl 1030}") }
+		testBinary { jvmL, _, kL, _ -> Result("<<", "${jvmL shl 1030}", "${kL shl 1030}") }
 
 	@Test
     open fun testRightShift() = testBinary { jvmL, jvmR, kL, kR ->
@@ -182,7 +185,6 @@ abstract class AbstractBigIntCompareWithJVMTest {
         )
 	}
 
-    @OptIn(ExperimentalTime::class)
     @Test
     fun testMultComplexity() {
         //val debug = true
