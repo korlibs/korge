@@ -13,8 +13,8 @@ data class Margin(
     val bottom: Float,
     val left: Float,
 ) {
-    constructor(vertical: Float, horizontal: Float) : this(vertical, horizontal, vertical, horizontal)
-    constructor(margin: Float) : this(margin, margin, margin, margin)
+    constructor(vertical: Number, horizontal: Number) : this(vertical.toFloat(), horizontal.toFloat(), vertical.toFloat(), horizontal.toFloat())
+    constructor(margin: Number) : this(margin.toFloat(), margin.toFloat(), margin.toFloat(), margin.toFloat())
 
     operator fun plus(other: Margin): Margin = Margin(top + other.top, right + other.right, bottom + other.bottom, left + other.left)
     operator fun minus(other: Margin): Margin = Margin(top - other.top, right - other.right, bottom - other.bottom, left - other.left)
@@ -53,7 +53,7 @@ data class MarginInt(
     val bottom: Int,
     val left: Int,
 ) {
-    constructor(top: Short, right: Short, bottom: Short, left: Short) : this(top.toInt(), right.toInt(), bottom.toInt(), left.toInt())
+    constructor(top: Number, right: Number, bottom: Number, left: Number) : this(top.toInt(), right.toInt(), bottom.toInt(), left.toInt())
     constructor(vertical: Int, horizontal: Int) : this(vertical, horizontal, vertical, horizontal)
     constructor(margin: Int) : this(margin, margin, margin, margin)
 

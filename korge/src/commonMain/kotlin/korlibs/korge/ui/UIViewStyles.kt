@@ -1,6 +1,7 @@
 package korlibs.korge.ui
 
 import korlibs.image.color.*
+import korlibs.korge.annotations.KorgeExperimental
 import korlibs.korge.render.*
 import korlibs.korge.style.*
 import korlibs.math.geom.*
@@ -16,6 +17,7 @@ var ViewStyles.uiProgressBarRenderer: UIRenderer<UIProgressBar> by ViewStyle {
     materialRoundRect(0f, 0f, width, height, radius = RectCorners(3.0), color = it.styles.uiBackgroundColor)
     materialRoundRect(0f, 0f, width * it.ratio, height, radius = RectCorners(3.0), color = it.styles.uiSelectedColor)
 }
+@OptIn(KorgeExperimental::class)
 var ViewStyles.uiCheckboxButtonRenderer: UIRenderer<UIBaseCheckBox<*>> by ViewStyle {
     val extraPad = -0f
     val extraPad2 = extraPad * 2

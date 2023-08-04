@@ -9,20 +9,20 @@ import korlibs.memory.*
 
 inline fun Container.uiProgressBar(
     size: Size = Size(256, 24),
-    current: Float = 0f,
-    maximum: Float = 100f,
+    current: Number = 0f,
+    maximum: Number = 100f,
     block: @ViewDslMarker UIProgressBar.() -> Unit = {}
 ): UIProgressBar = UIProgressBar(size, current, maximum).addTo(this).apply(block)
 
 open class UIProgressBar(
     size: Size = Size(256, 24),
-    current: Float = 0f,
-    maximum: Float = 100f,
+    current: Number = 0f,
+    maximum: Number = 100f,
 ) : UIView(size), ViewLeaf {
     @ViewProperty(min = 0.0, max = 100.0)
-	var current: Float by uiObservable(current) { updateState() }
+	var current: Float by uiObservable(current.toFloat()) { updateState() }
     @ViewProperty(min = 0.0, max = 100.0)
-	var maximum: Float by uiObservable(maximum) { updateState() }
+	var maximum: Float by uiObservable(maximum.toFloat()) { updateState() }
 
 	override var ratio: Float
 		set(value) { current = value * maximum }

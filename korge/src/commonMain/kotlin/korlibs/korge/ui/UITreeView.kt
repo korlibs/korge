@@ -15,9 +15,10 @@ class UITreeViewNode<T>(val element: T, val items: List<UITreeViewNode<T>> = emp
 @KorgeExperimental
 class UITreeViewList<T>(
     val nodes: List<UITreeViewNode<T>> = listOf(),
-    override val height: Float = 20f,
+    height: Number = 20f,
     val genView: (T) -> View = { UIText("$it") }
 ) : UITreeViewProvider<UITreeViewNode<T>> {
+    override val height: Float = height.toFloat()
     override fun getNumChildren(node: UITreeViewNode<T>?): Int {
         if (node == null) return nodes.size
         return node.items.size

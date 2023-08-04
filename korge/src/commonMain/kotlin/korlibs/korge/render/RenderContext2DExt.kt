@@ -120,19 +120,19 @@ object MaterialRender {
 
 @KorgeExperimental
 fun RenderContext2D.materialRoundRect(
-    x: Float,
-    y: Float,
-    width: Float,
-    height: Float,
+    x: Number,
+    y: Number,
+    width: Number,
+    height: Number,
     color: RGBA = Colors.RED,
     radius: RectCorners = RectCorners.EMPTY,
     shadowOffset: Point = Point.ZERO,
     shadowColor: RGBA = Colors.BLACK,
-    shadowRadius: Float = 0f,
+    shadowRadius: Number = 0f,
     highlightPos: Point = Point.ZERO,
-    highlightRadius: Float = 0f,
+    highlightRadius: Number = 0f,
     highlightColor: RGBA = Colors.WHITE,
-    borderSize: Float = 0f,
+    borderSize: Number = 0f,
     borderColor: RGBA = Colors.WHITE,
     //colorMul: RGBA = Colors.WHITE,
 ) {
@@ -141,9 +141,9 @@ fun RenderContext2D.materialRoundRect(
         it[u_Size] = Size(width, height)
         it[u_BackgroundColor] = (color.premultipliedFast)
         it[u_HighlightPos] = (highlightPos * Size(width, height))
-        it[u_HighlightRadius] = (highlightRadius * kotlin.math.max(width, height) * 1.25).toFloat()
+        it[u_HighlightRadius] = (highlightRadius.toFloat() * kotlin.math.max(width.toFloat(), height.toFloat()) * 1.25).toFloat()
         it[u_HighlightColor] = (highlightColor.premultipliedFast)
-        it[u_BorderSizeHalf] = (borderSize * 0.5f)
+        it[u_BorderSizeHalf] = (borderSize.toFloat() * 0.5f)
         it[u_BorderColor] = (borderColor.premultipliedFast)
         it[u_ShadowColor] = (shadowColor.premultipliedFast)
         it[u_ShadowOffset] = (shadowOffset)
@@ -162,7 +162,7 @@ fun RenderContext2D.materialRoundRect(
     //    it[MaterialRender.u_ShadowOffset].set(shadowOffset)
     //    it[MaterialRender.u_ShadowRadius].set(shadowRadius)
     //}
-    quadPaddedCustomProgram(x, y, width, height, MaterialRender.PROGRAM, Margin((shadowRadius + shadowOffset.length)))
+    quadPaddedCustomProgram(x.toFloat(), y.toFloat(), width.toFloat(), height.toFloat(), MaterialRender.PROGRAM, Margin((shadowRadius.toFloat() + shadowOffset.length)))
 }
 
 @KorgeExperimental

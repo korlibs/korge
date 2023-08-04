@@ -9,13 +9,13 @@ import korlibs.memory.*
 @KorgeExperimental
 inline fun Container.uiVerticalList(
     provider: UIVerticalList.Provider,
-    width: Float = 256f,
+    width: Number = 256f,
     block: @ViewDslMarker Container.(UIVerticalList) -> Unit = {}
 ): UIVerticalList = UIVerticalList(provider, width)
     .addTo(this).also { block(it) }
 
 @KorgeExperimental
-open class UIVerticalList(provider: Provider, width: Float = 200f) : UIView(DEFAULT_SIZE.copy(width = width)) {
+open class UIVerticalList(provider: Provider, width: Number = 200f) : UIView(DEFAULT_SIZE.copy(width = width.toFloat())) {
     interface Provider {
         val numItems: Int
         val fixedHeight: Float?

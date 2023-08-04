@@ -7,7 +7,7 @@ import korlibs.math.geom.*
 inline fun Container.uiScrollableArea(
     size: Size = Size(256, 256),
     contentSize: Size = Size(512, 512),
-    buttonSize: Float = 32f,
+    buttonSize: Number = 32f,
     verticalScroll: Boolean = true,
     horizontalScroll: Boolean = true,
     config: UIScrollableArea.() -> Unit = {},
@@ -21,7 +21,7 @@ inline fun Container.uiScrollableArea(
 open class UIScrollableArea(
     size: Size = Size(256, 256),
     contentSize: Size = Size(512, 512),
-    buttonSize: Float = 32f,
+    buttonSize: Number = 32f,
     verticalScroll: Boolean = true,
     horizontalScroll: Boolean = true,
 ) : UIView(size) {

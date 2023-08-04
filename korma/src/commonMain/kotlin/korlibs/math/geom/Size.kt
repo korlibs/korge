@@ -39,8 +39,7 @@ data class Size(val width: Float, val height: Float) {//: Sizeable {
 
     //(val width: Double, val height: Double) {
     constructor() : this(0f, 0f)
-    constructor(width: Double, height: Double) : this(width.toFloat(), height.toFloat())
-    constructor(width: Int, height: Int) : this(width.toFloat(), height.toFloat())
+    constructor(width: Number, height: Number) : this(width.toFloat(), height.toFloat())
 
     operator fun unaryMinus(): Size = Size(-width, -height)
     operator fun unaryPlus(): Size = this
