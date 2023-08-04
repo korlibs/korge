@@ -1,8 +1,10 @@
 package korlibs.korge.testing
 
 import korlibs.image.bitmap.*
+import korlibs.image.color.Colors
 import korlibs.image.format.*
 import korlibs.io.file.std.*
+import korlibs.korge.annotations.KorgeExperimental
 import korlibs.korge.view.*
 import korlibs.time.*
 import kotlinx.coroutines.sync.*
@@ -62,7 +64,6 @@ data class KorgeScreenshotTestingContext(
     companion object {
         val DATE_FORMAT = DateFormat("yyyy-dd-MM HH:mm:ss z")
         private const val LINE_BREAK_WIDTH = 100
-
     }
 }
 
@@ -84,14 +85,15 @@ class KorgeScreenshotTester(
     }
 
     // name: The name of the golden. (e.g: "cool_view").
-    //  Note: Do not add a file extension to the end.
+    // Note: You do not need to add a file extension to the end.
+    @OptIn(KorgeExperimental::class)
     suspend fun recordGolden(
         view: View,
         goldenName: String,
         settingOverride: KorgeScreenshotValidationSettings = defaultValidationSettings,
         includeBackground: Boolean = true
     ) {
-        val bitmap = view.renderToBitmap(views, includeBackground = includeBackground)
+        val bitmap = views.simulateRenderFrame(view, includeBackground = includeBackground)
         require(!recordedGoldenNames.contains(goldenName)) {
             """
                 Golden collision for name: $goldenName

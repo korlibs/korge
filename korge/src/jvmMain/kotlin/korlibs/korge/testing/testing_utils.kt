@@ -39,9 +39,9 @@ inline fun korgeScreenshotTestV2(
         existingMain.invoke(this)
         callback(this, korgeScreenshotTester)
     })
-    suspendTest {
+    suspendTestWithOffscreenAG(fboSize = finalKorgeConfig.windowSize) suspendTest@{
         try {
-            finalKorgeConfig.start( entry = finalKorgeConfig.main)
+            KorgeHeadless.invoke(config = finalKorgeConfig, entry = finalKorgeConfig.main, ag = it)
         } catch (exception: HeadlessException) {
             // Running in a headless environment (e.g github tests).
             // Return to mark as passing.
@@ -79,7 +79,7 @@ inline fun korgeScreenshotTestV2(
                                 val fn = { headerText: String, bitmap: Bitmap? ->
                                     container {
                                         val headerText = if (bitmap == null) {
-                                            text("$headerText")
+                                            text(headerText)
                                         } else {
                                             text("$headerText (${bitmap.size.width.toInt()} x ${bitmap.size.height.toInt()})")
                                         }
@@ -119,7 +119,10 @@ inline fun korgeScreenshotTestV2(
 
                             val separator = "\n * "
                             viewsToAlign += container {
-                                val textResultString = testResult.validationErrors.joinToString(separator=separator, prefix=separator) {
+                                val textResultString = testResult.validationErrors.joinToString(
+                                    separator = separator,
+                                    prefix = separator
+                                ) {
                                     it.errorMessaage
                                 }
                                 text("Validation errors:$textResultString")
@@ -130,11 +133,11 @@ inline fun korgeScreenshotTestV2(
                                 onClick {
                                     val goldenFileNameWithExt =
                                         context.makeGoldenFileNameWithExtension(testResult.goldenName)
-                                    if (testResult.oldBitmap != null && testResult.newBitmap != null) {
+                                    if (testResult.newBitmap != null) {
                                         context.tempGoldensVfs[goldenFileNameWithExt].copyTo(
                                             context.testGoldensVfs[goldenFileNameWithExt]
                                         )
-                                    } else if (testResult.oldBitmap != null && testResult.newBitmap == null) {
+                                    } else {
                                         // Bitmap was deleted
                                         context.testGoldensVfs[goldenFileNameWithExt].delete()
                                     }
@@ -145,7 +148,6 @@ inline fun korgeScreenshotTestV2(
                             viewsToAlign.windowed(2) {
                                 it[1].alignTopToBottomOf(it[0])
                             }
-
 
                             val sectionBg =
                                 solidRect(scaledWidth, scaledHeight, Colors.DARKSLATEGRAY)
