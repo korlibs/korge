@@ -3,7 +3,7 @@ import korlibs.applyProjectProperties
 description = "Multiplatform Game Engine written in Kotlin"
 
 project.extensions.extraProperties.properties.apply {
-    applyProjectProperties()
+    applyProjectProperties("https://github.com/korlibs/klogger")
 }
 
 dependencies {

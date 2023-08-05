@@ -15,8 +15,8 @@ import java.io.*
 import java.net.*
 import java.util.zip.*
 
-fun MutableMap<String, Any>.applyProjectProperties() {
-    put("project.scm.url", "https://github.com/korlibs/klogger")
+fun MutableMap<String, Any>.applyProjectProperties(projectUrl: String) {
+    put("project.scm.url", projectUrl)
     put("project.license.name", "MIT License")
     put("project.license.url", "https://raw.githubusercontent.com/korlibs/korge/master/LICENSE")
     put("project.author.id", "soywiz")
