@@ -15,6 +15,15 @@ import java.io.*
 import java.net.*
 import java.util.zip.*
 
+fun MutableMap<String, Any>.applyProjectProperties() {
+    put("project.scm.url", "https://github.com/korlibs/klogger")
+    put("project.license.name", "MIT License")
+    put("project.license.url", "https://raw.githubusercontent.com/korlibs/korge/master/LICENSE")
+    put("project.author.id", "soywiz")
+    put("project.author.name", "Carlos Ballesteros Velasco")
+    put("project.author.email", "soywiz@gmail.com")
+}
+
 // Extensions
 operator fun File.get(name: String) = File(this, name)
 
