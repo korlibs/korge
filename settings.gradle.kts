@@ -26,7 +26,6 @@ val inCI = isPropertyTrue("CI")
 val disabledExtraKorgeLibs = isPropertyTrue("DISABLED_EXTRA_KORGE_LIBS")
 
 include(":korcoutines")
-include(":kbignum")
 include(":klock")
 include(":klogger")
 include(":korinject")
