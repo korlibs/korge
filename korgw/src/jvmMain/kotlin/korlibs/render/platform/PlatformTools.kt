@@ -15,6 +15,4 @@ annotation class NativeName(val name: String) {
     }
 }
 
-typealias NSRectPtr = Pointer
-
 inline fun <reified T : Library> NativeLoad(name: String) = Native.load(name, T::class.java, NativeName.OPTIONS) as T

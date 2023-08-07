@@ -15,7 +15,7 @@ import korlibs.image.bitmap.Bitmap
 import com.sun.jna.*
 import com.sun.jna.platform.unix.X11.*
 
-class X11GameWindow(val checkGl: Boolean) : EventLoopGameWindow() {
+class X11GameWindow(checkGl: Boolean) : EventLoopGameWindow() {
     override val dialogInterface: DialogInterface = ZenityDialogs()
 
     override val ag: AGOpengl = AGOpengl(X11KmlGl().checkedIf(checkGl))
