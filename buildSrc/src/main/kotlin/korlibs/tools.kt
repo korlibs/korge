@@ -15,7 +15,11 @@ import java.io.*
 import java.net.*
 import java.util.zip.*
 
-fun MutableMap<String, Any>.applyProjectProperties(projectUrl: String) {
+fun MutableMap<String, Any>.applyProjectProperties(
+    projectUrl: String,
+    licenseName: String,
+    licenseUrl: String
+) {
     put("project.scm.url", projectUrl)
     put("project.license.name", "MIT License")
     put("project.license.url", "https://raw.githubusercontent.com/korlibs/korge/master/LICENSE")
@@ -27,8 +31,17 @@ fun MutableMap<String, Any>.applyProjectProperties(projectUrl: String) {
 // Extensions
 operator fun File.get(name: String) = File(this, name)
 
-var File.bytes get() = this.readBytes(); set(value) { this.also { it.parentFile.mkdirs() }.writeBytes(value) }
-var File.text get() = this.readText(); set(value) { this.also { it.parentFile.mkdirs() }.writeText(value) }
+var File.bytes
+    get() = this.readBytes();
+    set(value) {
+        this.also { it.parentFile.mkdirs() }.writeBytes(value)
+    }
+var File.text
+    get() = this.readText();
+    set(value) {
+        this.also { it.parentFile.mkdirs() }.writeText(value)
+    }
+
 fun File.ensureParents() = this.apply { this.parentFile.mkdirs() }
 
 // File and archives

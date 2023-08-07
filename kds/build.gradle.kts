@@ -5,7 +5,10 @@ import korlibs.tasks
 description = "Kotlin Optimized Data Structures"
 
 project.extensions.extraProperties.properties.apply {
-    applyProjectProperties("https://github.com/korlibs/kds")
+    applyProjectProperties("https://github.com/korlibs/kds",
+        "CC0 1.0 Universal",
+        "https://raw.githubusercontent.com/korlibs/kds/master/LICENSE"
+        )
 }
 
 dependencies {
