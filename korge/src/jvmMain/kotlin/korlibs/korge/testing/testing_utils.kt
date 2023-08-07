@@ -3,6 +3,7 @@ package korlibs.korge.testing
 import korlibs.image.bitmap.*
 import korlibs.image.color.*
 import korlibs.io.async.*
+import korlibs.io.lang.Environment
 import korlibs.korge.*
 import korlibs.korge.annotations.*
 import korlibs.korge.input.*
@@ -25,11 +26,16 @@ inline fun korgeScreenshotTestV2(
     val throwable = Throwable()
     val testClassName = throwable.stackTrace[0].className
     val testMethodName = throwable.stackTrace[0].methodName
+    val context = KorgeScreenshotTestingContext(testClassName, testMethodName)
+    if (Environment["DISABLE_HEADLESS_TEST"] == "true") {
+        System.err.println("Ignoring test $context because env DISABLE_HEADLESS_TEST=true")
+        return
+    }
+
     val existingMain = korgeConfig.main
     val results = KorgeScreenshotTestResults(testMethodName)
     // Keep locked while tester is running
     val testingLock = Mutex(locked = true)
-    val context = KorgeScreenshotTestingContext(testClassName, testMethodName)
     val finalKorgeConfig = korgeConfig.copy(main = {
         context.init()
         val korgeScreenshotTester =
