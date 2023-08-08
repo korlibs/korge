@@ -110,7 +110,7 @@ tasks.withType(KotlinCompile::class) {
     kotlinOptions.suppressWarnings = true
 }
 
-val publishAllPublications = false
+//val publishAllPublications = false
 
 val publishJvmPublicationToMavenLocal = tasks.register("publishJvmPublicationToMavenLocal", Task::class) {
     group = "publishing"
