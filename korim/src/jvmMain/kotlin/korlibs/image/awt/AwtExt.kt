@@ -138,7 +138,9 @@ fun ImageIOReadFormat(s: InputStream, type: Int = AWT_INTERNAL_IMAGE_TYPE_PRE): 
         } finally {
             reader.dispose()
         }
-    }.cloneIfRequired(type = type) // Clone is not required since just read directly in the right format
+    }
+    // NOTE: This line seems to mess up grayscale jpeg images.
+    //.cloneIfRequired(type = type) // Clone is not required since just read directly in the right format
 
 fun awtReadImage(data: ByteArray): BufferedImage = ImageIOReadFormat(ByteArrayInputStream(data))
 
