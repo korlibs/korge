@@ -25,7 +25,7 @@ val Project.prepareKotlinNativeBootstrap: Task get() = tasks.createOnce("prepare
         val text = Indenter {
             //line("package korge.bootstrap")
             line("import ${korge.realEntryPoint}")
-            line("fun main(args: Array<String>): Unit = RootGameMain.runMain(args)")
+            line("fun main(args: Array<String> = arrayOf()): Unit = RootGameMain.runMain(args)")
             line("object RootGameMain") {
                 line("fun runMain() = runMain(arrayOf())")
                 line("@Suppress(\"UNUSED_PARAMETER\") fun runMain(args: Array<String>): Unit = korlibs.io.Korio { ${korge.realEntryPoint}() }")
