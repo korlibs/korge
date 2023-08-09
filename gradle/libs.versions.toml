@@ -6,10 +6,6 @@ jcodec = "0.2.5"
 junit = "4.13.2"
 proguard-gradle = "7.2.2"
 
-#kotlin = "1.9.0-Beta"
-#kotlin = "1.8.255-SNAPSHOT"
-
-#kotlin = "1.9.0"
 kotlin = "1.9.0"
 kotlinx-coroutines = "1.7.2"
 kotlinx-atomicfu = "0.21.0"
@@ -32,14 +28,9 @@ dokka = "1.8.10"
 kover = "0.6.1"
 kover-agent = "1.0.712"
 node = "16.9.1"
-#android-build-gradle = "7.4.2"
-#android-build-gradle = "8.0.0"
-#android-build-gradle = "7.4.0-beta02"
 android-build-gradle = "7.3.1"
-#android-build-gradle = "8.1.0-alpha04"
 gson = "2.10.1"
 gradle-publish-plugin = "1.1.0"
-#gradle-publish-plugin = "0.14.0"
 closure-compiler = "v20210808"
 # https://repo.maven.apache.org/maven2/org/jetbrains/intellij/deps/intellij-coverage-agent/
 
@@ -68,6 +59,7 @@ closure-compiler = { module = "com.google.javascript:closure-compiler", version.
 
 [bundles]
 jna = ["jna-core", "jna-platform"]
+kotlinx-coroutines = ["kotlinx-coroutines-core", "kotlinx-atomicfu"]
 
 #[plugins]
 #jmh = { id = "me.champeau.jmh", version = "0.6.5" }
