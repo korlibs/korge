@@ -607,37 +607,24 @@ class MyDefaultGameWindow : GameWindow() {
 
     override suspend fun loop(entry: suspend GameWindow.() -> Unit) = autoreleasepool {
         val agNativeComponent = Any()
-        val ag: AG = AGOpenglFactory.create(agNativeComponent).create(agNativeComponent, AGConfig())
 
         val ccontext = kotlin.coroutines.coroutineContext
         app.delegate = object : NSObject(), NSApplicationDelegateProtocol {
 
-            //private val openglView: AppNSOpenGLView
-
             override fun applicationShouldTerminateAfterLastWindowClosed(app: NSApplication): Boolean {
-                //println("applicationShouldTerminateAfterLastWindowClosed")
                 return true
             }
 
-            override fun applicationWillFinishLaunching(notification: NSNotification) {
-                //println("applicationWillFinishLaunching")
-                //window.makeKeyAndOrderFront(this)
-            }
+            override fun applicationWillFinishLaunching(notification: NSNotification) { }
 
             override fun applicationDidFinishLaunching(notification: NSNotification) {
-                //val data = decodeImageData(readBytes("icon.jpg"))
-                //println("${data.width}, ${data.height}")
                 app.mainMenu = NSMenu().apply {
-                    //this.autoenablesItems = true
                     addItem(NSMenuItem("Application", null, "").apply {
                         this.submenu = NSMenu().apply {
-                            //this.autoenablesItems = true
                             addItem(NSMenuItem("Quit", NSSelectorFromString(WinController::doTerminate.name), "q").apply {
                                 target = controller
-                                //enabled = true
                             })
                         }
-                        //enabled = true
                     })
                 }
 
@@ -648,16 +635,9 @@ class MyDefaultGameWindow : GameWindow() {
                 try {
                     macTrace("init[a] -- bb")
                     macTrace("init[b]")
-                    //println("KoruiWrap.pentry[0]")
-                    //launch(KoruiDispatcher) { // Doesn't work!
-                    //println("KoruiWrap.pentry[1]")
-                    //println("KoruiWrap.entry[0]")
-                    kotlinx.coroutines.GlobalScope.launch(getCoroutineDispatcherWithCurrentContext(ccontext)) {
+                    GlobalScope.launch(getCoroutineDispatcherWithCurrentContext(ccontext)) {
                         entry()
                     }
-                    //println("KoruiWrap.entry[1]")
-                    //}
-                    //println("KoruiWrap.pentry[2]")
 
                     doRender(update = true)
                     val useDisplayLink = Environment["MACOS_USE_DISPLAY_LINK"] != "false"
@@ -680,7 +660,6 @@ class MyDefaultGameWindow : GameWindow() {
             }
 
             fun createDisplayLink(): Boolean {
-                //println("createDisplayLink[1]")
                 return try {
                     checkDisplayLink(CVDisplayLinkCreateWithCGDisplay(CGMainDisplayID(), displayLink.ptr))
                     checkDisplayLink(CVDisplayLinkSetOutputCallback(displayLink.value, staticCFunction(::displayCallback), gameWindowStableRef.asCPointer()))
@@ -696,14 +675,10 @@ class MyDefaultGameWindow : GameWindow() {
             }
 
             private fun timer(timer: NSTimer?) {
-                //println("TIMER")
                 doRender(update = true)
             }
 
-            override fun applicationWillTerminate(notification: NSNotification) {
-                //println("applicationWillTerminate")
-                // Insert code here to tear down your application
-            }
+            override fun applicationWillTerminate(notification: NSNotification) { }
         }
 
         coroutineDispatcher.executePending(1.seconds)
