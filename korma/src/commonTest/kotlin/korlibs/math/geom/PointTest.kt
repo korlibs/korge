@@ -1,10 +1,8 @@
 package korlibs.math.geom
 
 import korlibs.math.*
-import korlibs.math.annotations.*
 import kotlin.test.*
 
-@OptIn(KormaExperimental::class)
 class PointTest {
     @Test
     fun testPointCreation() {

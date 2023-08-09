@@ -29,6 +29,8 @@ data class Vector2(val x: Float, val y: Float) {
     //fun copy(x: Float = this.x, y: Float = this.y): Vector2 = Point(x, y)
 
 
+    constructor(vector: Vector2): this(vector.x, vector.y)
+
     val xF: Float get() = x
     val yF: Float get() = y
 
