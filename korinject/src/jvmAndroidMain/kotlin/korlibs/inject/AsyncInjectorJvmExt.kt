@@ -21,7 +21,7 @@ suspend fun AsyncInjector.Companion.jvmFallback(
     kclazz: KClass<*>,
     ctx: AsyncInjector.RequestContext
 ): AsyncObjectProvider<*> {
-    return fallback(injector, kclazz, ctx)
+    return fallback(kclazz, ctx)
 }
 
 fun AsyncInjector.jvmRemoveMappingsByClassName(classNames: Set<String>) {
@@ -31,20 +31,15 @@ fun AsyncInjector.jvmRemoveMappingsByClassName(classNames: Set<String>) {
 }
 
 private suspend fun fallback(
-	injector: AsyncInjector,
-	kclazz: KClass<*>,
-	ctx: AsyncInjector.RequestContext
+    kclazz: KClass<*>,
+    ctx: AsyncInjector.RequestContext
 ): AsyncObjectProvider<*> {
-	val clazz = (kclazz as kotlin.reflect.KClass<*>).java
-
-    //println("Requested $clazz")
+	val clazz = kclazz.java
 
 	val isPrototype = clazz.getAnnotation(Prototype::class.java) != null
 	val isSingleton = clazz.getAnnotation(Singleton::class.java) != null
 	val isAsyncFactoryClass = clazz.getAnnotation(AsyncFactoryClass::class.java) != null
 
-    //println("isPrototype=$isPrototype, isSingleton=$isSingleton, isAsyncFactoryClass=$isAsyncFactoryClass")
-    //println(clazz.declaredAnnotations.toList())
 
 	val generator: suspend AsyncInjector.() -> Any? = {
 		try {
@@ -90,33 +85,6 @@ private suspend fun fallback(
 			constructor.isAccessible = true
 			val instance = constructor.newInstance(*out.toTypedArray())
 
-			// @TODO: Cache this!
-            val allDeclaredFields = clazz.allDeclaredFields
-			//for (field in allDeclaredFields.filter { it.getAnnotation(Inject::class.java) != null }) {
-			//	if (Modifier.isStatic(field.modifiers)) continue
-			//	var isOptional = false
-			//	val i = if (field.annotations.isNotEmpty()) {
-			//		val i = this.child()
-			//		for (annotation in field.annotations) {
-			//			when (annotation) {
-			//				is Optional -> isOptional = true
-			//				else -> i.mapInstance(annotation.annotationClass as KClass<Any>, annotation as Any)
-			//			}
-			//		}
-			//		i
-			//	} else {
-			//		this
-			//	}
-			//	field.isAccessible = true
-			//	val res = if (isOptional) {
-			//		if (i.has(field.type.kotlin)) i.get(field.type.kotlin, ctx) else null
-			//	} else {
-			//		i.get(field.type.kotlin, ctx)
-			//	}
-			//	allInstances.add(res)
-			//	field.set(instance, res)
-			//}
-
 			if (instance is AsyncDependency) instance.init()
 
 			for (createdInstance in allInstances) {
@@ -141,10 +109,6 @@ private suspend fun fallback(
 		isPrototype -> PrototypeAsyncObjectProvider(generator)
 		isSingleton -> SingletonAsyncObjectProvider(generator)
 		isAsyncFactoryClass -> FactoryAsyncObjectProvider(generator as suspend AsyncInjector.() -> AsyncFactory<Any?>)
-	//else -> invalidOp("Unmapped jvmAutomapping: $clazz")
 		else -> PrototypeAsyncObjectProvider(generator)
 	}
 }
-
-private val Class<*>.allDeclaredFields: List<Field>
-	get() = this.declaredFields.toList() + (this.superclass?.allDeclaredFields?.toList() ?: listOf<Field>())

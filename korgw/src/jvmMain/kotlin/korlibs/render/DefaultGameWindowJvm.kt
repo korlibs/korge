@@ -38,7 +38,6 @@ actual fun CreateDefaultGameWindow(config: GameWindowCreationConfig): GameWindow
 
     return when (engine) {
         "default" -> when {
-            //OS.isLinux -> X11GameWindow(checkGl)
             else -> AwtGameWindow(realConfig)
         }
         "jna" -> when {
@@ -51,9 +50,7 @@ actual fun CreateDefaultGameWindow(config: GameWindowCreationConfig): GameWindow
                     }
                 }
             }
-            //Platform.isLinux -> X11GameWindow(checkGl)
             Platform.isLinux -> AwtGameWindow(realConfig)
-            //Platform.isWindows -> korlibs.render.win32.Win32GameWindow()
             Platform.isWindows -> AwtGameWindow(realConfig)
             else -> X11GameWindow(checkGl)
         }
@@ -61,15 +58,6 @@ actual fun CreateDefaultGameWindow(config: GameWindowCreationConfig): GameWindow
             Platform.isMac && isOSXMainThread -> MacGameWindow(checkGl,logGl)
             else -> AwtGameWindow(realConfig)
         }
-        //"jogl" -> {
-        //    if (isOSXMainThread) {
-        //        println("-XstartOnFirstThread not supported via Jogl, switching to an experimental native jna-based implementation")
-        //        MacGameWindow()
-        //    } else {
-        //        // @TODO: Remove JoGL after a month once we ensure JNA/native versions work for everyone
-        //        JoglGameWindow()
-        //    }
-        //}
         // On mac you should install https://www.libsdl.org/release/SDL2-2.0.16.dmg on `/Library/Frameworks` or `~/Library/Frameworks`
         "sdl" -> {
             if (!isOSXMainThread) {
@@ -119,7 +107,6 @@ object TestGameWindow {
                     ag.clear(ag.mainFrameBuffer, RGBA(64, 96, step % 256, 255))
                     step++
                 }
-                //println("HELLO")
             }
         }
     }
