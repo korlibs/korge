@@ -15,7 +15,6 @@ dependencies {
     add("commonMainApi", project(":korgw"))
     add("commonMainApi", project(":korau"))
     add("commonMainApi", project(":korinject"))
-    commonMainApi(project(":korte"))
     jvmMainApi("org.jetbrains.kotlin:kotlin-reflect")
     jvmMainApi(libs.jackson.databind)
     jvmMainApi(libs.jackson.module.kotlin)
