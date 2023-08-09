@@ -11,7 +11,6 @@ import korlibs.io.file.*
 import korlibs.io.file.std.*
 import korlibs.io.lang.*
 import korlibs.math.geom.*
-import korlibs.math.geom.Point
 import java.awt.*
 import java.awt.Rectangle
 import java.awt.event.*
@@ -72,7 +71,7 @@ internal open class NativeUiFactory {
         var bounds: RectangleInt
             get() = RectangleInt(0, 0, 0, 0)
             set(value) = Unit
-        
+
         var parent: NativeContainer?
             get() = null
             set(value) {
@@ -94,7 +93,7 @@ internal open class NativeUiFactory {
 
         fun onMouseEvent(handler: (korlibs.event.MouseEvent) -> Unit): Disposable = Disposable { }
         fun onFocus(handler: (FocusEvent) -> Unit): Disposable = Disposable { }
-        fun onResize(handler: (ReshapeEvent) -> Unit): Disposable = Disposable { }
+        fun onResize(handler: (ReshapeEvent) -> Unit): AutoCloseable = AutoCloseable { }
 
         fun repaintAll() = Unit
         fun focus(focus: Boolean) = Unit
@@ -380,14 +379,14 @@ internal open class AwtComponent(override val factory: NativeUiFactory, override
 
     open val componentPane get() = component
 
-    override fun onResize(handler: (ReshapeEvent) -> Unit): Disposable {
+    override fun onResize(handler: (ReshapeEvent) -> Unit): AutoCloseable {
         val listener = object : ComponentAdapter() {
             override fun componentResized(e: ComponentEvent) {
                 handler(ReshapeEvent(component.x, component.y, componentPane.width, componentPane.height))
             }
         }
         component.addComponentListener(listener)
-        return Disposable {
+        return AutoCloseable {
             component.removeComponentListener(listener)
         }
     }

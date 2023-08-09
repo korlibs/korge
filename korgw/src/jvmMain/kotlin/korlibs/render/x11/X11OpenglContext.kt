@@ -14,7 +14,6 @@ class X11OpenglContext(val gwconfig: GameWindowConfig, val d: X11.Display?, val 
         const val GLX_SAMPLE_BUFFERS = 100000
         const val GLX_SAMPLES = 100001
 
-        @OptIn(ExperimentalStdlibApi::class)
         fun chooseVisuals(d: X11.Display?, scr: Int = X.XDefaultScreen(d)): XVisualInfo? {
             for (multisampling in listOf(true, false)) {
                 for (specifyRenderType in listOf(true, false)) {

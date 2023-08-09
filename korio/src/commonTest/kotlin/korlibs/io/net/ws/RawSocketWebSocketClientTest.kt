@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalStdlibApi::class)
+
 package korlibs.io.net.ws
 
 import korlibs.io.async.suspendTestNoJs

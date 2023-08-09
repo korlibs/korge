@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalStdlibApi::class)
+
 package korlibs.io.vfs
 
 import korlibs.io.async.suspendTest

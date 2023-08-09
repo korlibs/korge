@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalStdlibApi::class)
+
 package korlibs.audio.sound
 
 import korlibs.time.milliseconds
@@ -16,7 +18,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class SoundAudioStreamTest {
-    val logger = Logger("SoundAudioStreamTest")
+    private val logger = Logger("SoundAudioStreamTest")
 
     @Test
     fun testPlaySeveralTimes() = suspendTest({ doIOTest }) {

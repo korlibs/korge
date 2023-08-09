@@ -66,7 +66,7 @@ internal open class UiComponent(val app: UiApplication, val component: NativeUiF
     fun show() { visible = true }
     fun hide() { visible = false }
     fun onClick(block: (MouseEvent) -> Unit) = onMouseEvent { if (it.typeClick) block(it) }
-    fun onResize(handler: (ReshapeEvent) -> Unit): Disposable = component.onResize(handler)
+    fun onResize(handler: (ReshapeEvent) -> Unit): AutoCloseable = component.onResize(handler)
 
     fun repaintAll() = component.repaintAll()
     open fun updateUI() = component.updateUI()
