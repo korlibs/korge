@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalStdlibApi::class)
+
 package korlibs.audio.sound
 
 import korlibs.datastructure.Pool
@@ -5,7 +7,6 @@ import korlibs.time.milliseconds
 import korlibs.logger.Logger
 import korlibs.io.async.delay
 import korlibs.io.async.launchImmediately
-import korlibs.io.lang.Disposable
 import kotlinx.coroutines.CancellationException
 import kotlin.coroutines.CoroutineContext
 import kotlin.native.concurrent.ThreadLocal
@@ -19,19 +20,18 @@ private val Win32NativeSoundProvider_workerPool = Pool {
 }
 
 @ThreadLocal
-private val Win32NativeSoundProvider_WaveOutProcess = Pool<WaveOutProcess> {
+private val Win32NativeSoundProvider_WaveOutProcess = Pool {
     WaveOutProcess(44100, 2).start(Win32NativeSoundProvider_workerPool.alloc())
 }
 
-object Win32NativeSoundProvider : NativeSoundProvider(), Disposable {
+object Win32NativeSoundProvider : NativeSoundProvider(), AutoCloseable {
 
-    //val workerPool get() = Win32NativeSoundProvider_workerPool
     val workerPool get() = Win32NativeSoundProvider_WaveOutProcess
 
     override fun createPlatformAudioOutput(coroutineContext: CoroutineContext, freq: Int): PlatformAudioOutput =
         Win32PlatformAudioOutput(this, coroutineContext, freq)
 
-    override fun dispose() {
+    override fun close() {
         while (Win32NativeSoundProvider_workerPool.itemsInPool > 0) {
             Win32NativeSoundProvider_workerPool.alloc().requestTermination()
         }
