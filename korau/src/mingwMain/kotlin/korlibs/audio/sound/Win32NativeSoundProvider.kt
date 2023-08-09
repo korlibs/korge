@@ -14,7 +14,7 @@ import kotlin.native.concurrent.Worker
 actual val nativeSoundProvider: NativeSoundProvider = Win32NativeSoundProvider
 
 @ThreadLocal
-private val Win32NativeSoundProvider_workerPool = Pool<Worker> {
+private val Win32NativeSoundProvider_workerPool = Pool {
     Worker.start(name = "Win32NativeSoundProvider$it")
 }
 
@@ -47,7 +47,6 @@ class Win32PlatformAudioOutput(
     private val logger = Logger("Win32PlatformAudioInput")
 
     override val availableSamples: Int get() = if (process != null) (process!!.length - process!!.position).toInt() else 0
-        //.also { println("Win32PlatformAudioOutput.availableSamples. length=${process.length}, position=${process.position}, value=$it") }
 
     override var pitch: Double = 1.0
         set(value) {

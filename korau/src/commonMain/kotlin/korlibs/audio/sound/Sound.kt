@@ -1,29 +1,17 @@
+@file:OptIn(ExperimentalStdlibApi::class)
+
 package korlibs.audio.sound
 
-import korlibs.datastructure.Extra
-import korlibs.time.DateTime
-import korlibs.time.TimeSpan
-import korlibs.time.milliseconds
-import korlibs.time.seconds
-import korlibs.audio.format.AudioDecodingProps
-import korlibs.audio.format.AudioFormats
-import korlibs.audio.format.WAV
-import korlibs.audio.format.defaultAudioFormats
-import korlibs.io.async.Signal
-import korlibs.io.async.delay
-import korlibs.io.concurrent.atomic.korAtomic
-import korlibs.io.file.FinalVfsFile
-import korlibs.io.file.Vfs
-import korlibs.io.file.VfsFile
-import korlibs.io.file.baseName
-import korlibs.io.lang.Disposable
-import korlibs.io.lang.unsupported
-import korlibs.io.stream.AsyncStream
-import korlibs.io.stream.openAsync
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.SupervisorJob
-import kotlin.coroutines.CoroutineContext
-import kotlin.native.concurrent.ThreadLocal
+import korlibs.audio.format.*
+import korlibs.datastructure.*
+import korlibs.io.async.*
+import korlibs.io.file.*
+import korlibs.io.lang.*
+import korlibs.io.stream.*
+import korlibs.time.*
+import kotlinx.coroutines.*
+import kotlin.coroutines.*
+import kotlin.native.concurrent.*
 import kotlin.coroutines.coroutineContext as coroutineContextKt
 
 @ThreadLocal
@@ -49,10 +37,10 @@ open class LazyNativeSoundProvider(val gen: () -> NativeSoundProvider) : NativeS
     override suspend fun createSound(data: AudioData, formats: AudioFormats, streaming: Boolean, name: String): Sound =
         parent.createSound(data, formats, streaming, name)
 
-    override fun dispose() = parent.dispose()
+    override fun close() = parent.close()
 }
 
-open class NativeSoundProvider : Disposable {
+open class NativeSoundProvider : AutoCloseable {
 	open val target: String = "unknown"
 
     open var paused: Boolean = false
@@ -109,7 +97,7 @@ open class NativeSoundProvider : Disposable {
 
     suspend fun playAndWait(stream: AudioStream, params: PlaybackParameters = PlaybackParameters.DEFAULT) = createStreamingSound(stream).playAndWait(params)
 
-    override fun dispose() {
+    override fun close() {
     }
 }
 

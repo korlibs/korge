@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalStdlibApi::class)
+
 package korlibs.audio.sound
 
 import korlibs.datastructure.lock.NonRecursiveLock
@@ -6,14 +8,13 @@ import korlibs.memory.clamp
 import korlibs.memory.clamp01
 import korlibs.memory.toShortClamped
 import korlibs.io.async.delay
-import korlibs.io.lang.Disposable
 import korlibs.time.*
 import kotlin.coroutines.CoroutineContext
 
 open class PlatformAudioOutput(
     val coroutineContext: CoroutineContext,
     val frequency: Int
-) : Disposable, SoundProps {
+) : AutoCloseable, SoundProps {
 	open val availableSamples: Int = 0
     override var pitch: Double = 1.0
     override var volume: Double = 1.0
@@ -23,7 +24,7 @@ open class PlatformAudioOutput(
     }
 	suspend fun add(data: AudioData) = add(data.samples, 0, data.totalSamples)
 	open fun start() = Unit
-    //open fun pause() = unsupported()
+
 	open fun stop() = Unit
     // @TODO: We should week stop or dispose, but maybe not both
 
@@ -33,87 +34,7 @@ open class PlatformAudioOutput(
         }
     }
 
-    final override fun dispose() = stop()
-}
-
-abstract class ThreadBasedPlatformAudioOutput(
-    coroutineContext: CoroutineContext,
-    frequency: Int,
-) : DequeBasedPlatformAudioOutput(coroutineContext, frequency) {
-    var nativeThread: NativeThread? = null
-    var running = false
-
-    val totalPendingSamples: Long get() = availableSamples.toLong() + samplesPendingToPlay
-    protected abstract val samplesPendingToPlay: Long
-    protected open val chunkSize: Int get() = 1024
-    protected abstract fun open(frequency: Int, channels: Int)
-    protected abstract fun write(data: AudioSamples, offset: Int, count: Int): Int
-    protected abstract fun close()
-
-    final override suspend fun wait() {
-        while (totalPendingSamples > 0) {
-            delay(1.milliseconds)
-        }
-    }
-
-    protected fun writeFully(data: AudioSamples, count: Int) {
-        var offset = 0
-        var pending = count
-        var nonAdvancingCount = 0
-        while (pending > 0 && nonAdvancingCount < 10) {
-            val written = write(data, offset, pending)
-            if (written < 0) {
-                println("ThreadBasedPlatformAudioOutput.notFullyWritten: offset=$offset, pending=$pending, written=$written")
-                break
-            }
-            if (written == 0) {
-                println("ThreadBasedPlatformAudioOutput.nothingWritten: offset=$offset, pending=$pending, written=$written")
-                blockingSleep(1.milliseconds)
-                nonAdvancingCount++
-            }
-            offset += written
-            pending -= written
-        }
-    }
-
-    final override fun start() {
-        if (running) return
-        running = true
-        var opened = false
-        // @TODO: Use a thread pool to reuse audio threads?
-        nativeThread = NativeThread {
-            val temp = AudioSamples(nchannels, chunkSize)
-
-            try {
-                while (running) {
-                    val totalRead = readSamples(temp)
-                    if (totalRead == 0) {
-                        blockingSleep(1.milliseconds)
-                        continue
-                    }
-                    if (!opened) {
-                        opened = true
-                        open(frequency, nchannels)
-                    }
-
-                    writeFully(temp, totalRead)
-                }
-            } finally {
-                if (opened) {
-                    opened = false
-                    close()
-                }
-                running = false
-            }
-        }.also {
-            it.isDaemon = true
-            it.start()
-        }
-    }
-
-    final override fun stop() {
-        running = false
-    }
+    final override fun close() = stop()
 }
 
 open class DequeBasedPlatformAudioOutput(
