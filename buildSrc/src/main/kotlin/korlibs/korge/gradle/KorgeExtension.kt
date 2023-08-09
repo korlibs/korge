@@ -363,6 +363,7 @@ open class KorgeExtension(
         it["com.soywiz.korlibs.korinject:korinject"] = BuildVersions.KORLIBS
         it["com.soywiz.korlibs.korio:korio"] = BuildVersions.KORLIBS
         it["com.soywiz.korlibs.korma:korma"] = BuildVersions.KORLIBS
+        it["com.soywiz.korlibs.korte:korte"] = BuildVersions.KORLIBS
         it["com.soywiz.korlibs.krypto:krypto"] = BuildVersions.KORLIBS
         it["com.soywiz.korlibs.ktruth:ktruth"] = BuildVersions.KORLIBS
     }

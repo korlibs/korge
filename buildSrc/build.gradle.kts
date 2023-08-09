@@ -134,6 +134,7 @@ object BuildVersions {
     const val KORIM = "$projectVersion"
     const val KORAU = "$projectVersion"
     const val KORGW = "$projectVersion"
+    const val KORTE = "$projectVersion"
     const val KORGE = "$projectVersion"
 
     val ALL_PROPERTIES by lazy { listOf(::GIT, ::KRYPTO, ::KLOCK, ::KDS, ::KMEM, ::KORMA, ::KORIO, ::KORIM, ::KORAU, ::KORGW, ::KORGE, ::KOTLIN, ::JNA, ::COROUTINES, ::ANDROID_BUILD, ::KOTLIN_SERIALIZATION) }
