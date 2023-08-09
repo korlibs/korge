@@ -34,7 +34,6 @@ class ViewNode(val view: View?) : TreeNode {
     override fun isLeaf(): Boolean = (container == null) || (view is ViewLeaf)
     fun childrenList(): List<View> {
         if (view is ViewLeaf) return listOf()
-        //return container?.children?.filter { it !is DummyView } ?: EmptyList() // TOO SLOW
         return container?.children ?: emptyList()
     }
 
@@ -46,8 +45,6 @@ class ViewNode(val view: View?) : TreeNode {
     @OptIn(KorgeInternal::class)
     override fun children() = Vector<Any>(childrenList()).elements() as Enumeration<out TreeNode>
 }
-
-class ViewDebuggerChanged(val view: View?) : Event()
 
 fun TreePath.withTree(tree: JTree): TreePathWithTree = TreePathWithTree(this, tree)
 
@@ -96,7 +93,7 @@ class TreePathWithTree(val path: TreePath, val tree: JTree) : AbstractList<TreeP
     }
 }
 
-internal class ViewsDebuggerComponent constructor(
+internal class ViewsDebuggerComponent(
     val views: Views,
     val app: UiApplication,
     rootView: View? = views.stage,
