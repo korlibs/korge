@@ -17,10 +17,8 @@ typealias MVector2D = MPoint
 data class MPoint(
     var x: Double,
     var y: Double
-    //override var xf: Float,
-    //override var yf: Float
 ) : MutableInterpolable<MPoint>, Interpolable<MPoint>, Comparable<MPoint> {
-    //constructor(x: Double, y: Double) : this(x.toFloat(), y.toFloat())
+
     constructor(p: Point) : this(p.xD, p.yD)
     constructor(x: Float, y: Float) : this(x.toDouble(), y.toDouble())
     constructor(x: Int, y: Int) : this(x.toDouble(), y.toDouble())

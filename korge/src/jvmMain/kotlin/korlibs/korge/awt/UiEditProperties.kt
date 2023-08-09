@@ -688,7 +688,6 @@ internal class UiRowEditableValue(app: UiApplication, val labelText: String, val
         leftPadding.preferredSize(8.pt, 24.pt)
         label.preferredSize(100.pt, 24.pt)
         editor.preferredSize(100.percent - 100.pt - (8.pt * 2) - 8.pt, 24.pt)
-        //backgroundColor = Colors.RED
         addChild(leftPadding)
         addChild(label)
         addChild(editor)
@@ -697,7 +696,6 @@ internal class UiRowEditableValue(app: UiApplication, val labelText: String, val
                 editor.hideEditor()
             }
         }
-        //addChild(UiLabel(app).also { it.text = "text" }.also { it.bounds = RectangleInt(120, 0, 120, 32) })
     }
 }
 
@@ -712,16 +710,12 @@ internal class UiTextEditableValue(
         class FILE(val currentVfs: VfsFile, val filter: (VfsFile) -> Boolean) : Kind()
     }
 
-    var evalContext: () -> Any? = { null }
+
     val initial = prop.value
-    companion object {
-        //val MAX_WIDTH = 300
-        val MAX_WIDTH = 1000
-    }
+
 
     init {
         prop.onChange {
-            //println("prop.onChange: $it")
             if (current != it) {
                 setValue(it, setProperty = false)
             }

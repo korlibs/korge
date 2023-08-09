@@ -14,7 +14,7 @@ import kotlin.system.*
 internal actual val KorgeReloadInternal: KorgeReloadInternalImpl = KorgeReloadInternalJvm
 
 internal object KorgeReloadInternalJvm : KorgeReloadInternalImpl() {
-    val logger = Logger("KorgeReloadInternalJvm")
+    private val logger = Logger("KorgeReloadInternalJvm")
 
     override fun <T : Any> getReloadedClass(clazz: KClass<T>, context: ReloadClassContext): KClass<T> {
         logger.debug { "### KorgeReload_getReloadedClass: $clazz" }
@@ -27,20 +27,16 @@ internal object KorgeReloadInternalJvm : KorgeReloadInternalImpl() {
     }
 
     override fun transferKeepProperties(old: Any, new: Any) {
-        //println("transferKeepProperties: ${old::class.java}")
         val objectMapper = jacksonObjectMapper()
         for (newProp in new::class.memberProperties) {
             if (!newProp.hasAnnotation<KeepOnReload>()) continue
 
-            //println("- $prop : ${prop.annotations}")
             try {
                 val newProp = newProp as? KMutableProperty1<Any, Any>? ?: continue
                 val oldProp = old::class.memberProperties.firstOrNull { it.name == newProp.name } as? KMutableProperty1<Any, Any>? ?: continue
                 val oldClass = oldProp.returnType.jvmErasure
                 val newClass = newProp.returnType.jvmErasure
                 val oldValue = oldProp.get(old)
-                //println("   ** Trying to set $oldValue to $newProp")
-                //println("$oldClass -> $newClass")
 
                 val newValue = when {
                     oldClass == newClass -> oldValue
@@ -79,10 +75,7 @@ class KorgeReloadClassLoader(
             findLoadedClass(name)?.let {
                 return it
             }
-            //return findClass(name)
-            //println("CustomClassLoader.loadClass: $name")
-            //val packageName = name.substringBeforeLast('.')
-            //val baseClassName = name.substringAfterLast('.')
+
             for (folder in folders) {
                 val rname = File(folder, "${name.replace('.', '/')}.class")
                 if (rname.exists()) {

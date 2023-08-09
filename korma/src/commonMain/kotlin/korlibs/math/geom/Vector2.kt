@@ -23,9 +23,7 @@ fun vec2(x: Float, y: Float): Vector2 = Vector2(x, y)
 @Deprecated("", ReplaceWith("p", "korlibs.math.geom.Point")) fun Point(p: Vector2): Vector2 = p
 @Deprecated("", ReplaceWith("p", "korlibs.math.geom.Vector2")) fun Vector2(p: Vector2): Vector2 = p
 
-//data class Point(val x: Double, val y: Double) {
-// @JvmInline value
-//@KormaValueApi
+
 data class Vector2(val x: Float, val y: Float) {
 //inline class Vector2 internal constructor(internal val raw: Float2Pack) {
     //val x: Float get() = raw.f0

@@ -7,12 +7,9 @@ import korlibs.io.file.*
 import korlibs.io.lang.*
 import korlibs.math.geom.*
 
-//fun NativeUiFactory.createApp() = UiApplication(this)
-
-internal open class UiApplication constructor(val factory: NativeUiFactory) : Extra by Extra.Mixin() {
+internal open class UiApplication(val factory: NativeUiFactory) : Extra by Extra.Mixin() {
     fun wrapContainer(native: Any?): UiContainer = UiContainer(this, factory.wrapNativeContainer(native)).also { container ->
         container.onResize {
-            //println("wrapContainer.container.onResize: ${container.bounds}")
             container.relayout()
         }
     }
@@ -272,11 +269,9 @@ internal open class LineUiLayout(
             val main = size.getDirection(direction)
             val rev = size.getDirection(revDirection)
 
-            //println(main)
             sum += main + padding
             max = kotlin.math.max(max, rev)
         }
-        //println("${container.preferredSize} - ${container.minimumSize} - ${container.maximumSize}")
 
         return SizeInt(if (direction.horizontal) sum else max, if (direction.vertical) sum else max)
     }
@@ -301,7 +296,7 @@ internal open class LineUiLayout(
                 LayoutDirection.VERTICAL -> RectangleInt(0, cur, bounds.width, value)
                 LayoutDirection.HORIZONTAL -> RectangleInt(cur, 0, value, bounds.height)
             }
-            //println("$child: $childBounds")
+
             child.bounds = childBounds
             if (child is UiContainer) {
                 child.layout?.relayout(child)

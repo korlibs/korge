@@ -38,9 +38,6 @@ class GLCanvasKorge internal constructor(
 
     internal fun initNoWait(block: suspend Stage.() -> Unit = {}) {
         canvas.korge = this
-        //val deferred = CompletableDeferred<Stage>()
-        //val context = coroutineContext
-        //println("[a]")
         println("GLCanvasKorge.init[a]: ${Thread.currentThread()}")
         Thread {
             println("GLCanvasKorge.init[b]: ${Thread.currentThread()}")
@@ -50,7 +47,6 @@ class GLCanvasKorge internal constructor(
                     gameWindow = gameWindow,
                     main = {
                         println("GLCanvasKorge.init[d]: ${Thread.currentThread()}")
-                        //println("[A]")
                         this@GLCanvasKorge.stage = this@copy
                         config.main?.invoke(this)
                         block()
@@ -59,18 +55,14 @@ class GLCanvasKorge internal constructor(
             }
         }
             .also { it.isDaemon = true }
-            //.also { thread = it }
             .start()
         println("GLCanvasKorge.init[e]: ${Thread.currentThread()}")
     }
 
     internal suspend fun init() {
         initNoWait()
-        //println("[b]")
         while (!::stage.isInitialized) delay(1L)
         println("GLCanvasKorge.init[f]: ${Thread.currentThread()}")
-        //this@GLCanvasKorge.stage = deferred.await()
-        //println("[c]")
     }
 
     @Suppress("unused")
