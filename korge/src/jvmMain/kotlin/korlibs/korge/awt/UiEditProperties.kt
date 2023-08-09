@@ -2,22 +2,19 @@ package korlibs.korge.awt
 
 import korlibs.datastructure.*
 import korlibs.datastructure.iterators.*
-import korlibs.memory.*
 import korlibs.event.*
-import korlibs.korge.view.*
-import korlibs.korge.view.property.*
-import korlibs.korge.view.property.ObservableProperty
 import korlibs.image.bitmap.*
 import korlibs.image.color.*
 import korlibs.image.text.*
-import korlibs.io.async.*
 import korlibs.io.file.*
 import korlibs.io.util.*
+import korlibs.korge.view.*
+import korlibs.korge.view.property.*
 import korlibs.math.geom.*
-import korlibs.template.*
-import java.awt.Color
-import java.awt.Font
-import javax.swing.JLabel
+import korlibs.math.geom.Point
+import korlibs.memory.*
+import java.awt.*
+import javax.swing.*
 import kotlin.math.*
 import kotlin.reflect.*
 import kotlin.reflect.full.*
@@ -126,7 +123,7 @@ internal class UiEditProperties(app: UiApplication, view: View?, val views: View
         }
     }
 
-    fun setViewBase(view: View?) {
+    private fun setViewBase(view: View?) {
         propsContainer.removeChildren()
         currentView = view
         if (view != null) {
@@ -594,8 +591,7 @@ internal class UiNumberEditableValue(
         contentText.visible = true
         contentTextField.visible = false
         if (contentTextField.text.isNotEmpty()) {
-            val templateResult = runBlockingNoSuspensions { Template("{{ ${contentTextField.text} }}").invoke(evalContext()) }
-            setValue(templateResult.toDoubleOrNull() ?: 0.0)
+            setValue(contentTextField.text.toDoubleOrNull() ?: 0.0)
         }
         super.hideEditor()
     }
