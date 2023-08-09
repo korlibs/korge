@@ -72,7 +72,7 @@ internal open class NativeUiFactory {
         var bounds: RectangleInt
             get() = RectangleInt(0, 0, 0, 0)
             set(value) = Unit
-        //fun setBounds(x: Int, y: Int, width: Int, height: Int) = Unit
+        
         var parent: NativeContainer?
             get() = null
             set(value) {
@@ -473,7 +473,6 @@ internal open class AwtComboBox<T>(factory: NativeUiFactory, val comboBox: JComb
 
     override fun open() {
         comboBox.showPopup()
-        //println("ComboBox.open")
     }
 
     override fun close() {

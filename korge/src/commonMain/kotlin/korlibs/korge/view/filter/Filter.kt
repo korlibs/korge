@@ -1,10 +1,11 @@
+@file:OptIn(ExperimentalStdlibApi::class)
+
 package korlibs.korge.view.filter
 
 import korlibs.datastructure.*
 import korlibs.graphics.*
 import korlibs.graphics.annotation.*
 import korlibs.image.color.*
-import korlibs.io.lang.*
 import korlibs.korge.render.*
 import korlibs.korge.view.*
 import korlibs.math.geom.*
@@ -104,7 +105,7 @@ fun Filter.renderToTextureWithBorder(
     }
 }
 
-class RenderToTextureResult() : Disposable {
+class RenderToTextureResult : AutoCloseable {
     var filter: Filter? = null
     var newTexWidth: Int = 0
     var newTexHeight: Int = 0
@@ -139,7 +140,7 @@ class RenderToTextureResult() : Disposable {
         newtex = Texture(fb).sliceWithSize(0, 0, newTexWidth, newTexHeight)
     }
 
-    override fun dispose() {
+    override fun close() {
         if (fb == null || ctx == null) return
         fb?.let { ctx?.unsafeFreeFrameBuffer(it) }
         filter = null
@@ -189,4 +190,4 @@ fun Filter.expandedBorderRectangle(inp: Rectangle): Rectangle =
     inp.expanded(getBorder(inp.width.toIntCeil(), inp.height.toIntCeil()))
 
 @ThreadLocal
-val RenderContext.renderToTextureResultPool by Extra.Property { Pool({ it.dispose() }) { RenderToTextureResult() } }
+val RenderContext.renderToTextureResultPool by Extra.Property { Pool({ it.close() }) { RenderToTextureResult() } }
