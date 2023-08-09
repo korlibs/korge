@@ -2,7 +2,6 @@ package korlibs.korge.gradle
 
 import org.gradle.api.Project
 
-val Project.korteVersion get() = findProperty("korteVersion") ?: BuildVersions.KORTE
 val Project.klockVersion get() = findProperty("klockVersion") ?: BuildVersions.KLOCK
 val Project.kmemVersion get() = findProperty("kmemVersion") ?: BuildVersions.KMEM
 val Project.kryptoVersion get() = findProperty("kryptoVersion") ?: BuildVersions.KRYPTO
