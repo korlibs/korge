@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalStdlibApi::class)
+
 package korlibs.korge.view
 
 import korlibs.datastructure.*
@@ -56,7 +58,7 @@ class Views(
     CoroutineScope, ViewsContainer,
 	BoundsProvider by bp,
     DialogInterfaceProvider by gameWindow,
-    Closeable,
+        AutoCloseable,
     ResourcesContainer,
     InvalidateNotifier,
     DeviceDimensionsProvider by gameWindow

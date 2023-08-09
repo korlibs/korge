@@ -1,5 +1,7 @@
+@file:OptIn(ExperimentalStdlibApi::class)
+
 package samples
-import korlibs.korge.input.DraggableCloseable
+import korlibs.korge.input.DraggableAutoCloseable
 import korlibs.korge.input.draggableCloseable
 import korlibs.korge.scene.Scene
 import korlibs.korge.ui.uiCheckBox
@@ -10,7 +12,7 @@ class MainDraggable : Scene() {
     override suspend fun SContainer.sceneMain() {
         val draggableRect = solidRect(100, 100)
 
-        var closeable: DraggableCloseable? = null
+        var closeable: DraggableAutoCloseable? = null
 
         uiCheckBox(text = "Toggle dragging") {
             onChange {

@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalStdlibApi::class)
+
 package korlibs.korge.input
 
 import korlibs.datastructure.*
@@ -5,7 +7,6 @@ import korlibs.event.*
 import korlibs.image.bitmap.*
 import korlibs.image.color.*
 import korlibs.io.async.*
-import korlibs.io.lang.*
 import korlibs.io.util.*
 import korlibs.korge.bitmapfont.*
 import korlibs.korge.internal.*
@@ -24,7 +25,7 @@ private var Views.mouseDebugHandlerOnce by Extra.Property { Once() }
 private var Views.mouseDebugLastFrameClicked by Extra.Property { false }
 
 @OptIn(KorgeInternal::class)
-class MouseEvents(val view: View) : Extra by Extra.Mixin(), Closeable {
+class MouseEvents(val view: View) : Extra by Extra.Mixin(), AutoCloseable {
     init {
         view.mouseEnabled = true
     }
@@ -231,7 +232,7 @@ class MouseEvents(val view: View) : Extra by Extra.Mixin(), Closeable {
     internal inline fun _mouseEventCloseable(
         prop: KProperty1<MouseEvents, Signal<MouseEvents>>,
         noinline handler: suspend (MouseEvents) -> Unit
-    ): Closeable {
+    ): AutoCloseable {
         return prop.get(this)
             .add { launchImmediately(this.coroutineContext) { handler(it) } }
     }
@@ -572,7 +573,7 @@ inline fun <T : View> T.onOutOnOver(
     noinline out: @EventsDslMarker (MouseEvents) -> Unit,
     noinline over: @EventsDslMarker (MouseEvents) -> Unit
 ): T {
-    var component: Closeable? = null
+    var component: AutoCloseable? = null
     onOut { events ->
         component?.close()
         component = null
@@ -614,9 +615,9 @@ inline fun <T : View?> T.onScroll(noinline handler: @EventsDslMarker suspend (Mo
 
 fun ViewsContainer.installMouseDebugExtensionOnce() = MouseEvents.installDebugExtensionOnce(views)
 
-fun MouseEvents.doubleClick(callback: (MouseEvents) -> Unit): Closeable = multiClick(2, callback)
+fun MouseEvents.doubleClick(callback: (MouseEvents) -> Unit): AutoCloseable = multiClick(2, callback)
 
-fun MouseEvents.multiClick(count: Int, callback: (MouseEvents) -> Unit): Closeable {
+fun MouseEvents.multiClick(count: Int, callback: (MouseEvents) -> Unit): AutoCloseable {
     var clickCount = 0
     var lastClickTime = DateTime.EPOCH
     return this.click {

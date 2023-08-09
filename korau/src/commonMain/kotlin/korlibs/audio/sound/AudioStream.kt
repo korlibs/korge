@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalStdlibApi::class)
+
 package korlibs.audio.sound
 
 import korlibs.time.TimeSpan
@@ -9,13 +11,12 @@ import korlibs.audio.format.defaultAudioFormats
 import korlibs.io.file.VfsFile
 import korlibs.io.file.VfsOpenMode
 import korlibs.io.file.baseName
-import korlibs.io.lang.Closeable
 import kotlin.math.min
 
 abstract class AudioStream(
     val rate: Int,
     val channels: Int
-) : AudioStreamable, Closeable {
+) : AudioStreamable, AutoCloseable {
     open val finished = false
     open val totalLengthInSamples: Long? = null
     val totalLength get() = ((totalLengthInSamples ?: 0L).toDouble() / rate.toDouble()).seconds

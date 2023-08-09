@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalStdlibApi::class)
+
 package korlibs.io.file.std
 
 import korlibs.time.*
@@ -271,10 +273,10 @@ open class LocalVfsNativeBase(val async: Boolean = true) : LocalVfs() {
         platform.posix.rename(resolve(src), resolve(dst)) == 0
     }
 
-    override suspend fun watch(path: String, handler: (FileEvent) -> Unit): Closeable {
+    override suspend fun watch(path: String, handler: (FileEvent) -> Unit): AutoCloseable {
         // @TODO:
         println("TODO:LocalVfsNative.watch")
-        return DummyCloseable
+        return DummyAutoCloseable
     }
 
     override fun toString(): String = "LocalVfs"

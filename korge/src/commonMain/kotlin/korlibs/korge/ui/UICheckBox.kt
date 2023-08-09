@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalStdlibApi::class)
+
 package korlibs.korge.ui
 
 import korlibs.datastructure.*
@@ -124,7 +126,6 @@ open class UIBaseCheckBox<T : UIBaseCheckBox<T>>(
 
     var focusRatio: Double = 0.0; private set
     override fun focusChanged(value: Boolean) {
-        //println("focusChanged=$value")
         simpleAnimator.tween(this::focusRatio[value.toInt().toDouble()], time = 0.2.seconds)
     }
 

@@ -1,4 +1,4 @@
-@file:OptIn(KorgeInternal::class)
+@file:OptIn(KorgeInternal::class, ExperimentalStdlibApi::class)
 
 package korlibs.korge.view
 
@@ -1564,12 +1564,12 @@ fun <T : View> T.addFixedUpdater(
 inline fun <T : View> T.onFrame(noinline updatable: T.(dt: TimeSpan) -> Unit): Cancellable = addUpdater(updatable)
 
 fun <T : View> T.onNextFrame(block: T.(views: Views) -> Unit): CloseableCancellable {
-    var closeable: Closeable? = null
-    closeable = addUpdaterWithViews { views, _ ->
+    var autoCloseable: AutoCloseable? = null
+    autoCloseable = addUpdaterWithViews { views, _ ->
         block(views)
-        closeable?.close()
+        autoCloseable?.close()
     }
-    return closeable
+    return autoCloseable
 }
 
 

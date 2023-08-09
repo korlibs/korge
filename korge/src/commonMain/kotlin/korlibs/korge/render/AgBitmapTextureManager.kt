@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalStdlibApi::class)
+
 package korlibs.korge.render
 
 import korlibs.datastructure.*
@@ -29,10 +31,10 @@ import korlibs.memory.unit.*
  * even if they were not referenced in the past frames since GC.
  */
 // @TODO: Use [korlibs.datastructure.FastIdentityCacheMap]
-@OptIn(KorgeInternal::class, KorgeExperimental::class)
+@OptIn(KorgeExperimental::class)
 class AgBitmapTextureManager(
     val ag: AG
-) : Closeable {
+) : AutoCloseable {
     var maxCachedMemory = 0L
 
     /** Bitmaps to keep for some time even if not referenced in [framesBetweenGC] as long as the [maxCachedMemory] allows it */

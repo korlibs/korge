@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalStdlibApi::class)
+
 package korlibs.korge.time
 
 import korlibs.datastructure.*
@@ -8,17 +10,17 @@ import korlibs.korge.view.*
 import korlibs.io.lang.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
+import kotlin.jvm.*
 
-private typealias TimerCallback = (TimeSpan) -> Unit
-
-inline class TimerRef(val index: Int)
+@JvmInline
+value class TimerRef(val index: Int)
 
 class TimerComponents(val view: View) {
     private val _timers = arrayListOf<((TimeSpan) -> Unit)?>()
     private val _autoRemove = IntArrayList()
     private val _freeIndices = IntArrayList()
 
-    private var updater: Closeable? = null
+    private var updater: AutoCloseable? = null
 
     private fun ensureUpdater() {
         if (updater != null) return
@@ -59,7 +61,7 @@ class TimerComponents(val view: View) {
     suspend fun wait(time: TimeSpan): Unit = suspendCancellableCoroutine { c -> timeout(time) { c.resume(Unit) } }
     suspend fun waitFrame() = suspendCoroutine<Unit> { c -> addTimer(true) { c.resume(Unit) } }
 
-    private fun _interval(time: TimeSpan, repeat: Boolean, callback: () -> Unit = {}): Closeable {
+    private fun _interval(time: TimeSpan, repeat: Boolean, callback: () -> Unit = {}): AutoCloseable {
         var elapsed = 0.milliseconds
         var ref = TimerRef(-1)
         ref = addTimer(false) { dt ->
@@ -71,12 +73,16 @@ class TimerComponents(val view: View) {
                 if (!repeat) break
             }
         }
-        return Closeable { removeTimer(ref) }
+        return object : AutoCloseable {
+            override fun close() {
+                removeTimer(ref)
+            }
+        }
     }
 
-    fun timeout(time: TimeSpan, callback: () -> Unit = {}): Closeable = _interval(time, false, callback)
-    fun interval(time: TimeSpan, callback: () -> Unit = {}): Closeable = _interval(time, true, callback)
-    fun intervalAndNow(time: TimeSpan, callback: () -> Unit): Closeable {
+    fun timeout(time: TimeSpan, callback: () -> Unit = {}): AutoCloseable = _interval(time, false, callback)
+    fun interval(time: TimeSpan, callback: () -> Unit = {}): AutoCloseable = _interval(time, true, callback)
+    fun intervalAndNow(time: TimeSpan, callback: () -> Unit): AutoCloseable {
         callback()
         return interval(time, callback)
     }
@@ -84,9 +90,9 @@ class TimerComponents(val view: View) {
 
 val View.timers: TimerComponents by Extra.PropertyThis("__ViewTimerComponents") { TimerComponents(this) }
 
-fun View.timeout(time: TimeSpan, callback: () -> Unit): Closeable = this.timers.timeout(time, callback)
-fun View.interval(time: TimeSpan, callback: () -> Unit): Closeable = this.timers.interval(time, callback)
-fun View.intervalAndNow(time: TimeSpan, callback: () -> Unit): Closeable = this.timers.intervalAndNow(time, callback)
+fun View.timeout(time: TimeSpan, callback: () -> Unit): AutoCloseable = this.timers.timeout(time, callback)
+fun View.interval(time: TimeSpan, callback: () -> Unit): AutoCloseable = this.timers.interval(time, callback)
+fun View.intervalAndNow(time: TimeSpan, callback: () -> Unit): AutoCloseable = this.timers.intervalAndNow(time, callback)
 
 suspend fun View.delay(time: TimeSpan) = this.timers.wait(time)
 suspend fun View.delayFrame() = this.timers.waitFrame()

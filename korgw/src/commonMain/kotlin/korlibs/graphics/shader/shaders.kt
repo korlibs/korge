@@ -3,6 +3,7 @@
  */
 
 @file:Suppress("unused")
+@file:OptIn(ExperimentalStdlibApi::class)
 
 package korlibs.graphics.shader
 
@@ -378,7 +379,7 @@ inline fun Program.appendingFragment(extraName: String, block: Program.Builder.(
 
 data class UniformInProgram(val uniform: Uniform, val index: Int)
 
-data class Program(val vertex: VertexShader, val fragment: FragmentShader, val name: String = "program-${vertex.name}-${fragment.name}") : Closeable {
+data class Program(val vertex: VertexShader, val fragment: FragmentShader, val name: String = "program-${vertex.name}-${fragment.name}") : AutoCloseable {
 	val uniforms = (vertex.uniforms + fragment.uniforms)
     val typedUniforms = (vertex.typedUniforms + fragment.typedUniforms)
     val uniformBlocks = typedUniforms.map { it.block }.distinct()

@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalStdlibApi::class)
+
 package korlibs.io.stream
 
 import korlibs.datastructure.ByteArrayDeque
@@ -30,8 +32,7 @@ import korlibs.memory.writeArrayLE
 import korlibs.io.internal.bytesTempPool
 import korlibs.io.internal.smallBytesPool
 import korlibs.io.lang.Charset
-import korlibs.io.lang.Closeable
-import korlibs.io.lang.OptionalCloseable
+import korlibs.io.lang.OptionalAutoCloseable
 import korlibs.io.lang.UTF8
 import korlibs.io.lang.invalidOp
 import korlibs.io.lang.toByteArray
@@ -46,7 +47,7 @@ interface MarkableSyncInputStream : SyncInputStream {
     fun reset()
 }
 
-interface SyncInputStream : OptionalCloseable {
+interface SyncInputStream : OptionalAutoCloseable {
 	fun read(buffer: ByteArray, offset: Int = 0, len: Int = buffer.size - offset): Int
 	fun read(): Int = smallBytesPool.alloc { if (read(it, 0, 1) > 0) it[0].unsigned else -1 }
     fun skip(count: Int) {
@@ -54,7 +55,7 @@ interface SyncInputStream : OptionalCloseable {
     }
 }
 
-interface SyncOutputStream : OptionalCloseable {
+interface SyncOutputStream : OptionalAutoCloseable {
 	fun write(buffer: ByteArray, offset: Int = 0, len: Int = buffer.size - offset): Unit
 	fun write(byte: Int) = smallBytesPool.alloc { it[0] = byte.toByte(); write(it, 0, 1) }
 	fun flush() = Unit
@@ -77,7 +78,7 @@ interface SyncRAOutputStream {
 	fun flush(): Unit = Unit
 }
 
-open class SyncStreamBase : Closeable, SyncRAInputStream, SyncRAOutputStream, SyncLengthStream {
+open class SyncStreamBase : AutoCloseable, SyncRAInputStream, SyncRAOutputStream, SyncLengthStream {
     open val separateReadWrite: Boolean get() = false
 	val smallTemp = ByteArray(16)
     open val seekable get() = true
@@ -126,7 +127,7 @@ fun SyncInputStream.markable(): MarkableSyncInputStream = MarkableSyncStream(thi
 class SyncStream constructor(
     val base: SyncStreamBase,
     position: Long = 0L
-) : Extra by Extra.Mixin(), Closeable, SyncInputStream, SyncPositionStream, SyncOutputStream, SyncLengthStream, MarkableSyncInputStream {
+) : Extra by Extra.Mixin(), AutoCloseable, SyncInputStream, SyncPositionStream, SyncOutputStream, SyncLengthStream, MarkableSyncInputStream {
 	private val smallTemp = base.smallTemp
     private val separateReadWrite = base.separateReadWrite
 

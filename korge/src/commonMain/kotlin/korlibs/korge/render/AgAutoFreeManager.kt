@@ -1,31 +1,31 @@
+@file:OptIn(ExperimentalStdlibApi::class)
+
 package korlibs.korge.render
 
 import korlibs.datastructure.*
-import korlibs.graphics.*
-import korlibs.io.lang.*
 
 // @TODO: This is pretty generic, we could expose it elsewhere
 class AgAutoFreeManager(
-) : Closeable {
+) : AutoCloseable {
     class Entry(
-        var closeable: Closeable? = null,
+            var autoCloseable: AutoCloseable? = null,
     ) {
         fun closeAndReset() {
-            closeable?.close()
-            closeable = null
+            autoCloseable?.close()
+            autoCloseable = null
         }
         fun reset() {
-            closeable = null
+            autoCloseable = null
         }
     }
 
     private val entryPool = Pool(reset = { it.reset() }) { Entry() }
-    private val cachedCloseables = FastIdentityMap<Closeable?, Entry>()
+    private val cachedCloseables = FastIdentityMap<AutoCloseable?, Entry>()
     private val availableInLastGC = fastArrayListOf<Entry>()
 
-    fun reference(closeable: Closeable) {
-        cachedCloseables.getOrPut(closeable) {
-            entryPool.alloc().also { it.closeable = closeable }
+    fun reference(autoCloseable: AutoCloseable) {
+        cachedCloseables.getOrPut(autoCloseable) {
+            entryPool.alloc().also { it.autoCloseable = autoCloseable }
         }
     }
 
@@ -43,8 +43,8 @@ class AgAutoFreeManager(
     internal fun gc() {
         // Delete elements that didn't survive the last GC
         for (entry in availableInLastGC) {
-            if (!cachedCloseables.contains(entry.closeable)) {
-                entry.closeable?.close()
+            if (!cachedCloseables.contains(entry.autoCloseable)) {
+                entry.autoCloseable?.close()
                 entryPool.free(entry)
             }
         }

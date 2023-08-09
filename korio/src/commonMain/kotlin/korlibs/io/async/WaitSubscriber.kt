@@ -1,7 +1,8 @@
+@file:OptIn(ExperimentalStdlibApi::class)
+
 package korlibs.io.async
 
 import korlibs.io.lang.Cancellable
-import korlibs.io.lang.Closeable
 import korlibs.io.lang.cancel
 import korlibs.io.lang.cancellable
 import kotlinx.coroutines.CancellationException
@@ -23,5 +24,5 @@ suspend fun <T> waitSubscriber(block: ((T) -> Unit) -> Cancellable): T {
     }
 }
 
-suspend fun <T> waitSubscriberCloseable(block: ((T) -> Unit) -> Closeable): T =
+suspend fun <T> waitSubscriberCloseable(block: ((T) -> Unit) -> AutoCloseable): T =
     waitSubscriber { block(it).cancellable() }

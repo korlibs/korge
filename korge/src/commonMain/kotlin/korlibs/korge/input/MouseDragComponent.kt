@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalStdlibApi::class)
+
 package korlibs.korge.input
 
 import korlibs.time.DateTime
@@ -6,7 +8,6 @@ import korlibs.time.TimeSpan
 import korlibs.korge.view.View
 import korlibs.korge.view.Views
 import korlibs.korge.view.xy
-import korlibs.io.lang.Closeable
 import korlibs.math.geom.*
 
 open class MouseDragInfo(
@@ -83,22 +84,22 @@ enum class MouseDragState {
     val isEnd get() = this == END
 }
 
-data class OnMouseDragCloseable(
-    val onDownCloseable: Closeable,
-    val onUpAnywhereCloseable: Closeable,
-    val onMoveAnywhereCloseable: Closeable
-) : Closeable {
+data class OnMouseDragAutoCloseable(
+        val onDownAutoCloseable: AutoCloseable,
+        val onUpAnywhereAutoCloseable: AutoCloseable,
+        val onMoveAnywhereAutoCloseable: AutoCloseable
+) : AutoCloseable {
     override fun close() {
-        onDownCloseable.close()
-        onUpAnywhereCloseable.close()
-        onMoveAnywhereCloseable.close()
+        onDownAutoCloseable.close()
+        onUpAnywhereAutoCloseable.close()
+        onMoveAnywhereAutoCloseable.close()
     }
 }
 
 private fun <T : View> T.onMouseDragInternal(
     timeProvider: TimeProvider = TimeProvider, info:
     MouseDragInfo = MouseDragInfo(this), callback: Views.(MouseDragInfo) -> Unit
-): Pair<T, OnMouseDragCloseable> {
+): Pair<T, OnMouseDragAutoCloseable> {
     var dragging = false
     var sx = 0f
     var sy = 0f
@@ -142,25 +143,25 @@ private fun <T : View> T.onMouseDragInternal(
         callback(views(), info.set(dx, dy, state.isStart, state.isEnd, timeProvider.now(), sx, sy, cx, cy))
     }
 
-    lateinit var onDownCloseable: Closeable
-    lateinit var onUpAnywhereCloseable: Closeable
-    lateinit var onMoveAnywhereCloseable: Closeable
+    lateinit var onDownAutoCloseable: AutoCloseable
+    lateinit var onUpAnywhereAutoCloseable: AutoCloseable
+    lateinit var onMoveAnywhereAutoCloseable: AutoCloseable
     this.mouse {
-        onDownCloseable = onDownCloseable { handle(it, MouseDragState.START) }
-        onUpAnywhereCloseable = onUpAnywhereCloseable { handle(it, MouseDragState.END) }
-        onMoveAnywhereCloseable = onMoveAnywhereCloseable { handle(it, MouseDragState.DRAG) }
+        onDownAutoCloseable = onDownCloseable { handle(it, MouseDragState.START) }
+        onUpAnywhereAutoCloseable = onUpAnywhereCloseable { handle(it, MouseDragState.END) }
+        onMoveAnywhereAutoCloseable = onMoveAnywhereCloseable { handle(it, MouseDragState.DRAG) }
     }
-    return this to OnMouseDragCloseable(
-        onDownCloseable,
-        onUpAnywhereCloseable,
-        onMoveAnywhereCloseable
+    return this to OnMouseDragAutoCloseable(
+        onDownAutoCloseable,
+        onUpAnywhereAutoCloseable,
+        onMoveAnywhereAutoCloseable
     )
 }
 
 fun <T : View> T.onMouseDragCloseable(
     timeProvider: TimeProvider = TimeProvider, info:
     MouseDragInfo = MouseDragInfo(this), callback: Views.(MouseDragInfo) -> Unit
-): OnMouseDragCloseable = onMouseDragInternal(timeProvider, info, callback).second
+): OnMouseDragAutoCloseable = onMouseDragInternal(timeProvider, info, callback).second
 
 fun <T : View> T.onMouseDrag(
     timeProvider: TimeProvider = TimeProvider,
@@ -222,11 +223,11 @@ open class DraggableInfo(view: View) : MouseDragInfo(view) {
         }
 }
 
-data class DraggableCloseable(
-    val onMouseDragCloseable: Closeable
-): Closeable {
+data class DraggableAutoCloseable(
+    val onMouseDragAutoCloseable: AutoCloseable
+): AutoCloseable {
     override fun close() {
-        onMouseDragCloseable.close()
+        onMouseDragAutoCloseable.close()
     }
 }
 
@@ -234,7 +235,7 @@ private fun <T : View> T.draggableInternal(
     selector: View = this,
     autoMove: Boolean = true,
     onDrag: ((DraggableInfo) -> Unit)? = null
-): Pair<T, DraggableCloseable> {
+): Pair<T, DraggableAutoCloseable> {
     val view = this
     val info = DraggableInfo(view)
     val onMouseDragCloseable = selector.onMouseDragCloseable(info = info) {
@@ -254,14 +255,14 @@ private fun <T : View> T.draggableInternal(
         onDrag?.invoke(info)
         //println("DRAG: $dx, $dy, $start, $end")
     }
-    return this to DraggableCloseable(onMouseDragCloseable)
+    return this to DraggableAutoCloseable(onMouseDragCloseable)
 }
 
 fun <T : View> T.draggableCloseable(
     selector: View = this,
     autoMove: Boolean = true,
     onDrag: ((DraggableInfo) -> Unit)? = null
-): DraggableCloseable = draggableInternal(selector, autoMove, onDrag).second
+): DraggableAutoCloseable = draggableInternal(selector, autoMove, onDrag).second
 
 fun <T : View> T.draggable(
     selector: View = this,

@@ -1,6 +1,7 @@
+@file:OptIn(ExperimentalStdlibApi::class)
+
 package korlibs.io.concurrent
 
-import korlibs.io.lang.Closeable
 import kotlinx.coroutines.CloseableCoroutineDispatcher
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -14,7 +15,7 @@ expect fun Dispatchers.createFixedThreadDispatcher(name: String, threadCount: In
 fun Dispatchers.createSingleThreadedDispatcher(name: String): CoroutineDispatcher = createFixedThreadDispatcher(name, 1)
 
 fun Dispatchers.createRedirectedDispatcher(name: String, parent: CoroutineDispatcher): CoroutineDispatcher {
-    return object : CoroutineDispatcher(), Closeable {
+    return object : CoroutineDispatcher(), AutoCloseable {
         override fun close() = Unit
         override fun dispatch(context: CoroutineContext, block: Runnable) = parent.dispatch(context, block)
         @InternalCoroutinesApi
@@ -29,7 +30,7 @@ fun Dispatchers.createRedirectedDispatcher(name: String, parent: CoroutineDispat
 @Suppress("OPT_IN_USAGE")
 fun CoroutineDispatcher.close() {
     when (this) {
-        is Closeable -> this.close()
+        is AutoCloseable -> this.close()
         is CloseableCoroutineDispatcher -> this.close()
     }
 }

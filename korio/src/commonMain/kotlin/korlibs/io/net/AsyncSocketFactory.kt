@@ -1,10 +1,11 @@
+@file:OptIn(ExperimentalStdlibApi::class)
+
 package korlibs.io.net
 
 import korlibs.io.async.AsyncCloseable
 import korlibs.io.async.Signal
 import korlibs.io.async.launchImmediately
 import korlibs.io.concurrent.atomic.korAtomic
-import korlibs.io.lang.Closeable
 import korlibs.io.lang.IOException
 import korlibs.io.lang.printStackTraceWithExtraMessage
 import korlibs.io.stream.AsyncInputStream
@@ -99,7 +100,7 @@ interface AsyncServer : AsyncCloseable {
 
 	suspend fun accept(): AsyncClient
 
-	suspend fun listen(handler: suspend (AsyncClient) -> Unit): Closeable {
+	suspend fun listen(handler: suspend (AsyncClient) -> Unit): AutoCloseable {
 		val job = launchImmediately(coroutineContext) {
             try {
                 while (true) {
@@ -133,9 +134,10 @@ interface AsyncServer : AsyncCloseable {
                 //Console.error("AsyncServer.listen.finally")
             }
 		}
-		return Closeable {
-            //Console.error("AsyncServer.listen: Closing server...")
-            job.cancel()
+		return object : AutoCloseable {
+            override fun close() {
+                job.cancel()
+            }
         }
 	}
 

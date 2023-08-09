@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalStdlibApi::class)
+
 package samples.minesweeper
 
 import findCollision
@@ -12,7 +14,6 @@ import korlibs.korge.view.*
 import korlibs.image.format.*
 import korlibs.io.async.*
 import korlibs.io.file.std.*
-import korlibs.io.lang.Closeable
 import korlibs.io.lang.CancellableGroup
 import korlibs.math.geom.*
 import kotlinx.coroutines.*
@@ -110,7 +111,7 @@ val ScaledScene.key by Extra.PropertyThis<ScaledScene, KeyV> { KeyV(this) }
 val ScaledScene.mouseV by Extra.PropertyThis<ScaledScene, MouseV> { MouseV(this) }
 val ScaledScene.audioV by Extra.PropertyThis<ScaledScene, AudioV> { AudioV(this) }
 
-fun ScaledScene.registerProcessSystem(): Closeable {
+fun ScaledScene.registerProcessSystem(): AutoCloseable {
     val closeable = CancellableGroup()
 
     closeable += stage.onEvents(*MouseEvent.Type.ALL) { e ->

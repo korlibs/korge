@@ -1,4 +1,5 @@
 @file:Suppress("EXPERIMENTAL_FEATURE_WARNING")
+@file:OptIn(ExperimentalStdlibApi::class)
 
 package korlibs.io.file
 
@@ -259,7 +260,7 @@ data class VfsFile(
 		charset: Charset = UTF8
 	): Int = passthru(cmdAndArgs.toList(), env, charset)
 
-	suspend fun watch(handler: suspend (Vfs.FileEvent) -> Unit): Closeable {
+	suspend fun watch(handler: suspend (Vfs.FileEvent) -> Unit): AutoCloseable {
 		//val cc = coroutineContext
 		val cc = coroutineContext
 		return vfs.watch(this.path) { event -> launchImmediately(cc) { handler(event) } }
@@ -326,7 +327,6 @@ fun VfsFile.withOnce(once: suspend (VfsFile) -> Unit): VfsFile {
 fun VfsFile.toUnscaped() = FinalVfsFile(this)
 fun FinalVfsFile.toFile() = this.file
 
-//inline class FinalVfsFile(val file: VfsFile) {
 data class FinalVfsFile(val file: VfsFile) {
 	constructor(vfs: Vfs, path: String) : this(vfs[path])
 	val vfs: Vfs get() = file.vfs

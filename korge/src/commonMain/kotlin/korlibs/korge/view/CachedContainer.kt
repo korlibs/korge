@@ -1,14 +1,14 @@
+@file:OptIn(ExperimentalStdlibApi::class)
+
 package korlibs.korge.view
 
 import korlibs.datastructure.*
 import korlibs.image.*
-import korlibs.io.lang.*
 import korlibs.korge.internal.*
 import korlibs.korge.render.*
 import korlibs.korge.view.property.*
 import korlibs.math.geom.*
 import korlibs.render.*
-import kotlin.jvm.*
 
 inline fun Container.fixedSizeCachedContainer(size: Size, cache: Boolean = true, clip: Boolean = true, callback: @ViewDslMarker CachedContainer.() -> Unit = {}) =
     FixedSizeCachedContainer(size, cache, clip).addTo(this, callback)
@@ -56,7 +56,7 @@ open class CachedContainer(
             }
         }
 
-    inner class CacheTexture(val ctx: RenderContext) : Closeable {
+    inner class CacheTexture(val ctx: RenderContext) : AutoCloseable {
         val rb = ctx.unsafeAllocateFrameBuffer(16, 16, onlyThisFrame = false)
         val texBase = TextureBase(rb.tex, 16, 16)
         var tex = Texture(texBase)

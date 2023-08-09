@@ -1,4 +1,5 @@
 @file:Suppress("EXPERIMENTAL_FEATURE_WARNING")
+@file:OptIn(ExperimentalStdlibApi::class)
 
 package korlibs.io.file
 
@@ -13,6 +14,7 @@ import korlibs.io.stream.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlin.coroutines.*
+import kotlin.jvm.*
 import kotlin.math.min
 import kotlin.reflect.*
 
@@ -88,7 +90,8 @@ abstract class Vfs : AsyncCloseable {
 
     inline fun <reified T : Attribute> List<Attribute>.getOrNull(): T? = filterIsInstance<T>().firstOrNull()
 
-    inline class UnixPermission(val bits: Int) {
+    @JvmInline
+    value class UnixPermission(val bits: Int) {
         constructor(readable: Boolean = true, writable: Boolean = true, executable: Boolean = false) : this(
             0.insert(readable, 2).insert(writable, 1).insert(executable, 0)
         )
@@ -97,7 +100,8 @@ abstract class Vfs : AsyncCloseable {
         val readable: Boolean get() = bits.extract(2)
     }
 
-    inline class UnixPermissions(val bits: Int) : Attribute {
+    @JvmInline
+    value class UnixPermissions(val bits: Int) : Attribute {
         override fun toString(): String = ("0000" + bits.toString(8)).substr(-4)
 
         constructor(owner: UnixPermission, group: UnixPermission = owner, other: UnixPermission = UnixPermission(0), extra: Int = 0) : this(
@@ -168,7 +172,7 @@ abstract class Vfs : AsyncCloseable {
 		open(path, mode = VfsOpenMode.CREATE).use { this.setLength(size) }
 	}
 
-	open suspend fun setAttributes(path: String, attributes: List<Attribute>): Unit {
+	open suspend fun setAttributes(path: String, attributes: List<Attribute>) {
         attributes.getOrNull<UnixPermissions>()?.let {
             chmod(path, it)
         }
@@ -182,7 +186,7 @@ abstract class Vfs : AsyncCloseable {
 
 	open suspend fun stat(path: String): VfsStat = createNonExistsStat(path)
 
-    private fun unsupported(): Nothing = korlibs.io.lang.unsupported("unsupported for ${this::class} : $this")
+    private fun unsupported(): Nothing = unsupported("unsupported for ${this::class} : $this")
 
 	suspend fun listSimple(path: String): List<VfsFile> = this.listFlow(path).toList()
     open suspend fun listFlow(path: String): Flow<VfsFile> = unsupported()
@@ -206,8 +210,8 @@ abstract class Vfs : AsyncCloseable {
 		return true
 	}
 
-	open suspend fun watch(path: String, handler: (FileEvent) -> Unit): Closeable =
-		DummyCloseable
+	open suspend fun watch(path: String, handler: (FileEvent) -> Unit): AutoCloseable =
+		DummyAutoCloseable
 
 	open suspend fun touch(path: String, time: DateTime, atime: DateTime) = Unit
 
@@ -269,7 +273,7 @@ abstract class Vfs : AsyncCloseable {
         override suspend fun getAttributes(path: String) =
             initOnce().access(path).getAttributes()
 
-        override suspend fun chmod(path: String, mode: Vfs.UnixPermissions) =
+        override suspend fun chmod(path: String, mode: UnixPermissions) =
             initOnce().access(path).chmod(mode)
 
         override suspend fun mkdir(path: String, attributes: List<Attribute>): Boolean =
@@ -286,7 +290,7 @@ abstract class Vfs : AsyncCloseable {
 			return srcFile.renameTo(dstFile.path)
 		}
 
-		override suspend fun watch(path: String, handler: (FileEvent) -> Unit): Closeable {
+		override suspend fun watch(path: String, handler: (FileEvent) -> Unit): AutoCloseable {
 			initOnce()
 			return access(path).watch { e ->
 				launchImmediately(coroutineContext) {
@@ -391,12 +395,6 @@ class VfsCachedStatContext(val stat: VfsStat?) : CoroutineContext.Element {
 
     override val key get() = VfsCachedStatContext
 }
-
-//val VfsStat.createLocalDate: LocalDateTime get() = LocalDateTime.ofEpochSecond(createTime / 1000L, ((createTime % 1_000L) * 1_000_000L).toInt(), ZoneOffset.UTC)
-//val VfsStat.modifiedLocalDate: LocalDateTime get() = LocalDateTime.ofEpochSecond(modifiedTime / 1000L, ((modifiedTime % 1_000L) * 1_000_000L).toInt(), ZoneOffset.UTC)
-//val VfsStat.lastAccessLocalDate: LocalDateTime get() = LocalDateTime.ofEpochSecond(lastAccessTime / 1000L, ((lastAccessTime % 1_000L) * 1_000_000L).toInt(), ZoneOffset.UTC)
-
-//val INIT = Unit.apply { println("UTC_OFFSET: $UTC_OFFSET")  }
 
 val VfsStat.createDate: DateTime get() = createTime
 val VfsStat.modifiedDate: DateTime get() = modifiedTime

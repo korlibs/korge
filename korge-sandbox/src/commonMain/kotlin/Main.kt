@@ -1,3 +1,4 @@
+@file:OptIn(ExperimentalStdlibApi::class)
 
 import korlibs.audio.sound.*
 import korlibs.event.*

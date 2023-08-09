@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalStdlibApi::class)
+
 package korlibs.render.x11
 
 import korlibs.datastructure.*
@@ -5,7 +7,6 @@ import korlibs.datastructure.iterators.*
 import korlibs.time.*
 import korlibs.memory.*
 import korlibs.event.*
-import korlibs.io.async.*
 import korlibs.io.concurrent.*
 import korlibs.io.concurrent.atomic.*
 import korlibs.io.concurrent.atomic.KorAtomicInt
@@ -18,7 +19,7 @@ import kotlin.coroutines.*
 /**
  * <https://www.kernel.org/doc/Documentation/input/gamepad.txt>
  */
-internal class LinuxJoyEventAdapter(val syncIO: SyncIO = SyncIO) : Closeable {
+internal class LinuxJoyEventAdapter(val syncIO: SyncIO = SyncIO) : AutoCloseable {
     companion object {
         const val JS_EVENT_BUTTON = 0x01    /* button pressed/released */
         const val JS_EVENT_AXIS = 0x02    /* joystick moved */
@@ -90,7 +91,7 @@ internal class LinuxJoyEventAdapter(val syncIO: SyncIO = SyncIO) : Closeable {
         readers.clear()
     }
 
-    internal class X11JoystickReader(val info: DeviceInfo, val platformSyncIO: SyncIO) : Closeable {
+    internal class X11JoystickReader(val info: DeviceInfo, val platformSyncIO: SyncIO) : AutoCloseable {
         val index: Int = info.id
 
         private val buttonsPressure = FloatArray(GameButton.MAX)

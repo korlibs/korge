@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalStdlibApi::class)
+
 package korlibs.korge.input
 
 import korlibs.datastructure.*
@@ -13,7 +15,7 @@ import korlibs.io.lang.*
 import korlibs.math.interpolation.*
 import kotlin.native.concurrent.*
 
-class KeysEvents(val view: View) : Closeable {
+class KeysEvents(val view: View) : AutoCloseable {
     @PublishedApi
     internal lateinit var views: Views
     @PublishedApi
@@ -104,31 +106,31 @@ class KeysEvents(val view: View) : Closeable {
     fun downRepeating(key: Key, maxDelay: TimeSpan = 500.milliseconds, minDelay: TimeSpan = 100.milliseconds, delaySteps: Int = 6, callback: suspend (ke: KeyEvent) -> Unit): Cancellable =
         downRepeating(setOf(key), maxDelay, minDelay, delaySteps, callback)
 
-    fun down(keys: Set<Key>, callback: suspend (key: KeyEvent) -> Unit): Closeable =
+    fun down(keys: Set<Key>, callback: suspend (key: KeyEvent) -> Unit): AutoCloseable =
         onKeyDown { if (it.key in keys) callback(it) }
-    fun down(callback: suspend (key: KeyEvent) -> Unit): Closeable = onKeyDown { callback(it) }
-    fun down(key: Key, callback: suspend (key: KeyEvent) -> Unit): Closeable = onKeyDown { if (it.key == key) callback(it) }
-    fun down(vararg keys: Key, callback: suspend (key: KeyEvent) -> Unit): Closeable = down(keys.toSet(), callback)
+    fun down(callback: suspend (key: KeyEvent) -> Unit): AutoCloseable = onKeyDown { callback(it) }
+    fun down(key: Key, callback: suspend (key: KeyEvent) -> Unit): AutoCloseable = onKeyDown { if (it.key == key) callback(it) }
+    fun down(vararg keys: Key, callback: suspend (key: KeyEvent) -> Unit): AutoCloseable = down(keys.toSet(), callback)
 
-    fun downWithModifiers(keys: Set<Key>, ctrl: Boolean? = null, shift: Boolean? = null, alt: Boolean? = null, meta: Boolean? = null, callback: suspend (key: KeyEvent) -> Unit): Closeable = onKeyDown { e ->
+    fun downWithModifiers(keys: Set<Key>, ctrl: Boolean? = null, shift: Boolean? = null, alt: Boolean? = null, meta: Boolean? = null, callback: suspend (key: KeyEvent) -> Unit): AutoCloseable = onKeyDown { e ->
         if (e.key in keys && match(ctrl, e.ctrl) && match(shift, e.shift) && match(alt, e.alt) && match(meta, e.meta)) callback(e)
     }
-    fun downWithModifiers(key: Key, ctrl: Boolean? = null, shift: Boolean? = null, alt: Boolean? = null, meta: Boolean? = null, callback: suspend (key: KeyEvent) -> Unit): Closeable =
+    fun downWithModifiers(key: Key, ctrl: Boolean? = null, shift: Boolean? = null, alt: Boolean? = null, meta: Boolean? = null, callback: suspend (key: KeyEvent) -> Unit): AutoCloseable =
         downWithModifiers(setOf(key), ctrl, shift, alt, meta, callback)
-    fun downWithModifiers(vararg keys: Key, ctrl: Boolean? = null, shift: Boolean? = null, alt: Boolean? = null, meta: Boolean? = null, callback: suspend (key: KeyEvent) -> Unit): Closeable =
+    fun downWithModifiers(vararg keys: Key, ctrl: Boolean? = null, shift: Boolean? = null, alt: Boolean? = null, meta: Boolean? = null, callback: suspend (key: KeyEvent) -> Unit): AutoCloseable =
         downWithModifiers(keys.toSet(), ctrl, shift, alt, meta, callback)
 
     private fun match(pattern: Boolean?, value: Boolean) = (pattern == null || value == pattern)
 
-    fun up(keys: Set<Key>, callback: suspend (key: KeyEvent) -> Unit): Closeable = onKeyUp { e -> if (e.key in keys) callback(e) }
-    fun up(callback: suspend (key: KeyEvent) -> Unit): Closeable = onKeyUp { e -> callback(e) }
-    fun up(key: Key, callback: suspend (key: KeyEvent) -> Unit): Closeable = onKeyUp { e -> if (e.key == key) callback(e) }
-    fun up(vararg keys: Key, callback: suspend (key: KeyEvent) -> Unit): Closeable = up(keys.toSet(), callback)
+    fun up(keys: Set<Key>, callback: suspend (key: KeyEvent) -> Unit): AutoCloseable = onKeyUp { e -> if (e.key in keys) callback(e) }
+    fun up(callback: suspend (key: KeyEvent) -> Unit): AutoCloseable = onKeyUp { e -> callback(e) }
+    fun up(key: Key, callback: suspend (key: KeyEvent) -> Unit): AutoCloseable = onKeyUp { e -> if (e.key == key) callback(e) }
+    fun up(vararg keys: Key, callback: suspend (key: KeyEvent) -> Unit): AutoCloseable = up(keys.toSet(), callback)
 
-    fun typed(keys: Set<Key>, callback: suspend (key: KeyEvent) -> Unit): Closeable = onKeyTyped { if (it.key in keys) callback(it) }
-    fun typed(callback: suspend (key: KeyEvent) -> Unit): Closeable = onKeyTyped { callback(it) }
-    fun typed(key: Key, callback: suspend (key: KeyEvent) -> Unit): Closeable = onKeyTyped { if (it.key == key) callback(it) }
-    fun typed(vararg keys: Key, callback: suspend (key: KeyEvent) -> Unit): Closeable = typed(keys.toSet(), callback)
+    fun typed(keys: Set<Key>, callback: suspend (key: KeyEvent) -> Unit): AutoCloseable = onKeyTyped { if (it.key in keys) callback(it) }
+    fun typed(callback: suspend (key: KeyEvent) -> Unit): AutoCloseable = onKeyTyped { callback(it) }
+    fun typed(key: Key, callback: suspend (key: KeyEvent) -> Unit): AutoCloseable = onKeyTyped { if (it.key == key) callback(it) }
+    fun typed(vararg keys: Key, callback: suspend (key: KeyEvent) -> Unit): AutoCloseable = typed(keys.toSet(), callback)
 
     val closeable = CancellableGroup()
 

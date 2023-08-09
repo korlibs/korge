@@ -1,4 +1,4 @@
-@file:OptIn(KorgeInternal::class)
+@file:OptIn(KorgeInternal::class, ExperimentalStdlibApi::class)
 
 package korlibs.korge.render
 

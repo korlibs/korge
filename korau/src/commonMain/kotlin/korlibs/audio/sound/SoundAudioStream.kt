@@ -7,7 +7,6 @@ import korlibs.memory.Platform
 import korlibs.io.async.delay
 import korlibs.io.async.launchAsap
 import korlibs.io.concurrent.createSingleThreadedDispatcher
-import korlibs.io.lang.Closeable
 import kotlinx.coroutines.CloseableCoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -105,7 +104,7 @@ class SoundAudioStream(
                 ID_POOL.free(channelId)
                 when (dispatcher) {
                     is CloseableCoroutineDispatcher -> dispatcher.close()
-                    is Closeable -> dispatcher.close()
+                    is AutoCloseable -> dispatcher.close()
                 }
             }
         }

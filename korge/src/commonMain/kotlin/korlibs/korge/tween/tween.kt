@@ -1,10 +1,10 @@
 @file:Suppress("NOTHING_TO_INLINE")
+@file:OptIn(ExperimentalStdlibApi::class)
 
 package korlibs.korge.tween
 
 import korlibs.datastructure.iterators.*
 import korlibs.io.async.*
-import korlibs.io.lang.*
 import korlibs.korge.view.*
 import korlibs.math.interpolation.*
 import korlibs.memory.*
@@ -28,7 +28,7 @@ class TweenComponent(
 	var done = false
     var resumed = false
 
-    var updater: Closeable? = view.onEvent(UpdateEvent) { it -> _update(it.deltaTime) }
+    var updater: AutoCloseable? = view.onEvent(UpdateEvent) { it -> _update(it.deltaTime) }
 
 	init {
 
