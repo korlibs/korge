@@ -2,7 +2,6 @@ package korlibs.inject.util
 
 import korlibs.inject.*
 import kotlinx.coroutines.*
-import org.junit.*
 import org.junit.Test
 import java.io.*
 import kotlin.test.*
@@ -16,7 +15,6 @@ class JvmAutomappingTest {
         injector.get<ConfigService>()
         assertSame(injector.get<ConfigService>(), injector.get<ConfigService>())
         assertNotSame(injector.get<MyPrototype>(), injector.get<MyPrototype>())
-        Unit
     }
 
     class Folders(val a: File)
