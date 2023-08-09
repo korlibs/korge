@@ -246,30 +246,11 @@ private fun Bitmap32.scaled(width: Int, height: Int): Bitmap32 {
 }
 
 // https://www.khronos.org/opengl/wiki/Creating_an_OpenGL_Context_(WGL)
-class Win32OpenglContext(val gwconfig: GameWindowConfig, val hWnd: WinDef.HWND, val hDC: HDC, val doubleBuffered: Boolean = false, val component: Component? = null) : BaseOpenglContext {
-
-    //val pfd = WinGDI.PIXELFORMATDESCRIPTOR.ByReference().also { pfd ->
-    //    pfd.nSize = pfd.size().toShort()
-    //    pfd.nVersion = 1
-    //    pfd.dwFlags =
-    //        WinGDI.PFD_DRAW_TO_WINDOW or WinGDI.PFD_SUPPORT_OPENGL or (if (doubleBuffered) WinGDI.PFD_DOUBLEBUFFER else 0)
-    //    //pfd.dwFlags = WinGDI.PFD_DRAW_TO_WINDOW or WinGDI.PFD_SUPPORT_OPENGL;
-    //    pfd.iPixelType = WinGDI.PFD_TYPE_RGBA.toByte()
-    //    pfd.cColorBits = 24
-    //    pfd.cStencilBits = 8.toByte()
-    //    //pfd.cColorBits = 24
-    //    //pfd.cDepthBits = 16
-    //    //pfd.cDepthBits = 32
-    //    pfd.cDepthBits = 24
-    //}
-    //val pf = Win32.ChoosePixelFormat(hDC, pfd)
+class Win32OpenglContext(val gwconfig: GameWindowConfig, val hWnd: HWND, val hDC: HDC, val doubleBuffered: Boolean = false, val component: Component? = null) : BaseOpenglContext {
 
     var pf: Int = 0
     lateinit var pfd: WinGDI.PIXELFORMATDESCRIPTOR.ByReference
 
-    //hRC = wglCreateContextAttribsARB (hDC, null, attribs);
-
-    //val requestCoreProfile = false
     val requestCoreProfile = true
     var hRC: HGLRC? = null
 
@@ -356,7 +337,6 @@ class Win32OpenglContext(val gwconfig: GameWindowConfig, val hWnd: WinDef.HWND, 
     val GL_MULTISAMPLE = 0x809D
 
     override fun makeCurrent() {
-        //println("makeCurrent")
         makeCurrent(hDC, hRC)
         when (gwconfig.quality) {
             GameWindow.Quality.QUALITY -> DirectGL.glEnable(GL_MULTISAMPLE)
@@ -378,13 +358,11 @@ class Win32OpenglContext(val gwconfig: GameWindowConfig, val hWnd: WinDef.HWND, 
     }
 
     override fun swapBuffers() {
-        //println("swapBuffers")
         Win32.glFlush()
         Win32.SwapBuffers(hDC)
-        //Thread.sleep(16L)
     }
 
-    override fun dispose() {
+    override fun close() {
         releaseCurrent()
         Win32.ReleaseDC(hWnd, hDC)
         WGL.wglDeleteContext(hRC)
@@ -424,11 +402,11 @@ class Win32OpenglContext(val gwconfig: GameWindowConfig, val hWnd: WinDef.HWND, 
         val logger = Logger("Win32OpenglContext")
 
         operator fun invoke(c: Component, gwconfig: GameWindowConfig, doubleBuffered: Boolean = false): Win32OpenglContext {
-            val hWnd = WinDef.HWND(Native.getComponentPointer(c))
+            val hWnd = HWND(Native.getComponentPointer(c))
             return Win32OpenglContext(hWnd, gwconfig, doubleBuffered, c).init()
         }
 
-        operator fun invoke(hWnd: WinDef.HWND, gwconfig: GameWindowConfig, doubleBuffered: Boolean = false, c: Component? = null): Win32OpenglContext {
+        operator fun invoke(hWnd: HWND, gwconfig: GameWindowConfig, doubleBuffered: Boolean = false, c: Component? = null): Win32OpenglContext {
             val hDC = Win32.GetDC(hWnd)
             return Win32OpenglContext(gwconfig, hWnd, hDC, doubleBuffered, c).init()
         }

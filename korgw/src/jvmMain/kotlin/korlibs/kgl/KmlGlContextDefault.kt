@@ -38,12 +38,12 @@ class Win32KmlGlContextManaged(window: Any? = null, parent: KmlGlContext? = null
     override fun unset() = glCtx.releaseCurrent()
     override fun swap() = glCtx.swapBuffers()
     override fun close() {
-        glCtx.dispose()
-        win.dispose()
+        glCtx.close()
+        win.close()
     }
 }
 
-class Win32DummyWindow : Disposable {
+class Win32DummyWindow : AutoCloseable {
     val hWND = Win32.CreateWindowEx(
         0, dummyName, "Dummy OpenGL Window",
         0, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
@@ -68,7 +68,7 @@ class Win32DummyWindow : Disposable {
         //val hWND = HWND(Native.getWindowPointer(Window(Frame())))
     }
 
-    override fun dispose() {
+    override fun close() {
         Win32.ReleaseDC(hWND, hDC)
         Win32.DestroyWindow(hWND)
     }
@@ -377,18 +377,14 @@ open class MacKmlGlContextManaged(window: Any? = null, parent: KmlGlContext? = n
     override fun set() = glCtx.makeCurrent()
     override fun unset() = glCtx.releaseCurrent()
     override fun swap() = glCtx.swapBuffers()
-    override fun close() = glCtx.dispose()
+    override fun close() = glCtx.close()
 
-    //override fun set() = Unit
-    //override fun unset() = Unit
-    //override fun swap() = Unit
-    //override fun close() = Unit
 }
 
 
 // http://renderingpipeline.com/2012/05/windowless-opengl-on-macos-x/
 open class MacKmlGlContextRaw(window: Any? = null, parent: KmlGlContext? = null) : KmlGlContext(window, MacKmlGL(), parent) {
-    var ctx: com.sun.jna.Pointer? = run {
+    var ctx: Pointer? = run {
         val ctx = Memory(8L).also { it.clear() } // void**
         checkError("CGLCreateContext", MacGL.CGLCreateContext(pix, (parent as? MacKmlGlContextRaw)?.ctx, ctx))
         ctx.getPointer(0L)
