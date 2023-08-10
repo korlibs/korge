@@ -6,10 +6,8 @@ import kotlinx.coroutines.CancellationException
 // @TODO: Merge [Closeable], [Disposable] and [Cancellable]
 
 @Deprecated("use AutoCloseable from stdlib, this will be remove on 4.2")
-fun interface Disposable: Closeable {
+fun interface Disposable {
 	fun dispose()
-
-    override fun close() = dispose()
 
 }
 
