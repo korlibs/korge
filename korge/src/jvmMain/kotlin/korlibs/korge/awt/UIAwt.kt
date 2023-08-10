@@ -167,7 +167,7 @@ internal open class NativeUiFactory {
     interface NativeTextField : NativeComponent, NativeWithText {
         fun select(range: IntRange? = 0 until Int.MAX_VALUE): Unit = Unit
         fun focus(): Unit = Unit
-        fun onKeyEvent(block: (KeyEvent) -> Unit): Disposable = Disposable { }
+        fun onKeyEvent(block: (KeyEvent) -> Unit): AutoCloseable = AutoCloseable { }
     }
 
     interface NativeWithText : NativeComponent {
@@ -556,7 +556,7 @@ internal open class AwtTextField(factory: NativeUiFactory, val textField: JTextF
         }
     }
     override fun focus() = textField.requestFocus()
-    override fun onKeyEvent(block: (KeyEvent) -> Unit): Disposable {
+    override fun onKeyEvent(block: (KeyEvent) -> Unit): AutoCloseable {
         val event = KeyEvent()
 
         fun dispatch(e: java.awt.event.KeyEvent, type: KeyEvent.Type) {
@@ -577,7 +577,7 @@ internal open class AwtTextField(factory: NativeUiFactory, val textField: JTextF
             override fun keyReleased(e: java.awt.event.KeyEvent) = dispatch(e, KeyEvent.Type.UP)
         }
         textField.addKeyListener(listener)
-        return Disposable { textField.removeKeyListener(listener) }
+        return AutoCloseable { textField.removeKeyListener(listener) }
     }
 }
 

@@ -204,7 +204,7 @@ internal open class UiTextField(app: UiApplication, val textField: NativeUiFacto
     var text by textField::text
     fun select(range: IntRange? = 0 until Int.MAX_VALUE): Unit = textField.select(range)
     fun focus(): Unit = textField.focus()
-    fun onKeyEvent(block: (KeyEvent) -> Unit): Disposable = textField.onKeyEvent(block)
+    fun onKeyEvent(block: (KeyEvent) -> Unit): AutoCloseable = textField.onKeyEvent(block)
 }
 
 internal interface UiLayout {

@@ -10,8 +10,8 @@ class JvmReferenceTest {
         dateString: String
     ): Long {
         val formatter = DateTimeFormatter.ofPattern(pattern)
-        val dateTime = LocalDateTime.parse(dateString, formatter);
-        val timestampMillis = dateTime.toInstant(ZoneOffset.UTC).toEpochMilli();
+        val dateTime = LocalDateTime.parse(dateString, formatter)
+        val timestampMillis = dateTime.toInstant(ZoneOffset.UTC).toEpochMilli()
         return timestampMillis
     }
 
