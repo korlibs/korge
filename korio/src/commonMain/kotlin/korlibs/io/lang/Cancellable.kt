@@ -5,7 +5,7 @@ package korlibs.io.lang
 import korlibs.datastructure.iterators.fastForEach
 import kotlinx.coroutines.CancellationException
 
-// @TODO: Merge [Closeable], [Disposable] and [Cancellable]
+// @TODO: Merge [AutoCloseable] and [Cancellable]
 
 object DummyAutoCloseable : AutoCloseable {
     override fun close() = Unit
