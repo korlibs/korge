@@ -22,7 +22,7 @@ inline fun korgeScreenshotTestV2(
     settings: KorgeScreenshotValidationSettings = KorgeScreenshotValidationSettings(),
     crossinline callback: suspend Stage.(korgeScreenshotTester: KorgeScreenshotTester) -> Unit = {},
 ) {
-    System.setProperty("java.awt.headless", "false")
+//    System.setProperty("java.awt.headless", "false")
     val throwable = Throwable()
     val testClassName = throwable.stackTrace[0].className
     val testMethodName = throwable.stackTrace[0].methodName
