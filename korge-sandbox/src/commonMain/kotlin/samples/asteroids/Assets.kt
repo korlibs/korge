@@ -24,7 +24,7 @@ class Assets(val shipSize: Int = 24) {
             lineTo(Point(1.0, 1.0))
             lineTo(Point(0.5, 0.8))
             lineTo(Point(0.0, 1.0))
-            close()
+            closePath()
         }
 	}
 
@@ -48,7 +48,7 @@ class Assets(val shipSize: Int = 24) {
             lineTo(Point(1.0, 0.5))
             lineTo(Point(0.7, 1.0))
             lineTo(Point(0.3, 1.0))
-            close()
+            closePath()
         }
 	}
 }

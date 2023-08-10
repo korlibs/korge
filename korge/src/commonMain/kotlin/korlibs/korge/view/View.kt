@@ -885,7 +885,7 @@ abstract class View internal constructor(
                 lineTo(localToGlobal(Point(local.right, local.top)))
                 lineTo(localToGlobal(Point(local.right, local.bottom)))
                 lineTo(localToGlobal(Point(local.left, local.bottom)))
-                close()
+                closePath()
             }
             lines.drawVector(Colors.YELLOW) {
                 val anchorSize = 6f * ctx.views!!.windowToGlobalScaleAvg.toFloat()

@@ -69,7 +69,7 @@ class VectorTracer(
                             }
                         }
                     }
-                    close()
+                    closePath()
                 })
             }
         }

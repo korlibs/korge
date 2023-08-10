@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalStdlibApi::class)
+
 package korlibs.image.vector
 
 import korlibs.datastructure.*
@@ -7,7 +9,6 @@ import korlibs.image.font.*
 import korlibs.image.paint.*
 import korlibs.image.text.*
 import korlibs.image.vector.renderer.*
-import korlibs.io.lang.*
 import korlibs.math.geom.*
 import korlibs.math.geom.shape.*
 import korlibs.math.geom.vector.*
@@ -18,7 +19,7 @@ open class Context2d(
     val renderer: Renderer,
     val defaultFontRegistry: FontRegistry? = null,
     val defaultFont: Font? = null
-) : VectorBuilder, Disposable {
+) : VectorBuilder, AutoCloseable {
     var debug: Boolean
         get() = renderer.debug
         set(value) {
@@ -60,7 +61,7 @@ open class Context2d(
     open val width: Int get() = rendererWidth
     open val height: Int get() = rendererHeight
 
-    override fun dispose() {
+    override fun close() {
         rendererDispose()
     }
 
@@ -322,8 +323,8 @@ open class Context2d(
     override var lastPos: Point = Point()
     override val totalPoints: Int get() = state.path.totalPoints
 
-    override fun close() {
-        state.path.close()
+    override fun closePath() {
+        state.path.closePath()
         lastPos = lastMovePos
     }
 
@@ -740,7 +741,7 @@ private fun VectorBuilder.write(path: VectorPath) {
         lineTo = { lineTo(it) },
         quadTo = { c, a -> quadTo(c, a) },
         cubicTo = { c1, c2, a -> cubicTo(c1, c2, a) },
-        close = { close() }
+        close = { closePath() }
     )
 }
 
@@ -750,7 +751,7 @@ private fun VectorBuilder.write(path: VectorPath, m: Matrix) {
         lineTo = { lineTo(m.transform(it)) },
         quadTo = { c, a -> quadTo(m.transform(c), m.transform(a)) },
         cubicTo = { c1, c2, a -> cubicTo(m.transform(c1), m.transform(c2), m.transform(a)) },
-        close = { close() }
+        close = { closePath() }
     )
 }
 

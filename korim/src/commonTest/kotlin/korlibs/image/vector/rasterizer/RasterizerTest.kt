@@ -50,7 +50,7 @@ class RasterizerTest {
                 lineTo(Point(100, 0))
                 lineToV(100f)
                 lineToH(-100f)
-                close()
+                closePath()
             }
         }
         val shipSize = 24
@@ -60,7 +60,7 @@ class RasterizerTest {
                 lineTo(Point(shipSize, shipSize))
                 lineTo(Point(shipSize * 0.5, shipSize * 0.8))
                 lineTo(Point(0, shipSize))
-                close()
+                closePath()
             }
         }
         val bmp3 = Bitmap32Context2d(3, (shipSize * 0.3).toInt()) {
@@ -115,7 +115,7 @@ class RasterizerTest {
             lineTo(Point(150, 300))
             lineTo(Point(100, 250))
             //lineTo(150, 200)
-            close()
+            closePath()
             stroke()
 
             for (n in listOf(LineCap.BUTT, LineCap.ROUND, LineCap.SQUARE)) {

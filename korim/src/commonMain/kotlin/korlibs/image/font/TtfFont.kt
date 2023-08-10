@@ -2003,7 +2003,7 @@ abstract class BaseTtfFont(
                         }
                     }
 
-                    p.close()
+                    p.closePath()
                 }
             }
         }

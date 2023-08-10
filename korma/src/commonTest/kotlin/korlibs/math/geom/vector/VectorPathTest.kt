@@ -13,7 +13,7 @@ class VectorPathTest {
             lineTo(Point(100, 0))
             lineTo(Point(100, 100))
             lineTo(Point(0, 100))
-            close()
+            closePath()
         }
 
         assertEquals(true, g.containsPoint(50, 50))
@@ -43,13 +43,13 @@ class VectorPathTest {
         g.lineTo(Point(100, 0))
         g.lineTo(Point(100, 100))
         g.lineTo(Point(0, 100))
-        g.close()
+        g.closePath()
 
         g.moveTo(Point(75, 25))
         g.lineTo(Point(25, 25))
         g.lineTo(Point(25, 75))
         g.lineTo(Point(75, 75))
-        g.close()
+        g.closePath()
 
         assertEquals(false, g.containsPoint(50, 50))
         assertEquals(false, g.containsPoint(150, 50))
@@ -68,7 +68,7 @@ class VectorPathTest {
             lineTo(Point(0, +50))
             lineTo(Point(+50, 0))
             lineTo(Point(0, -50))
-            close()
+            closePath()
         }
         assertEquals(true, vp.containsPoint(0, 0))
         assertEquals(false, vp.containsPoint(-51, 0))
@@ -124,7 +124,7 @@ class VectorPathTest {
             lineTo(Point(2, 1))
             lineTo(Point(2, 2))
             lineTo(Point(1, 2))
-            close()
+            closePath()
         }).also {
             assertEquals(false, it.containsPoint(0.99, 0.99))
             //assertEquals(false, it.containsPoint(0.9999, 0.9999))
@@ -144,7 +144,7 @@ class VectorPathTest {
             lineTo(Point(+1, +1))
             lineTo(Point(-1, +1))
             lineTo(Point(-1, 0))
-            close()
+            closePath()
         }).also {
             assertEquals(true, it.containsPoint(0, 0))
         }
@@ -234,7 +234,7 @@ class VectorPathTest {
         buildVectorPath(VectorPath()) {
             moveTo(Point(100, 100))
             quadTo(Point(100, 200), Point(200, 200))
-            close()
+            closePath()
         }.visitEdgesSimple(
             { p0, p1 -> log.add("line(${p0.x.toInt()}, ${p0.y.toInt()}, ${p1.x.toInt()}, ${p1.y.toInt()})") },
             { p0, p1, p2, p3 -> log.add("cubic(${p0.x.toInt()}, ${p0.y.toInt()}, ${p1.x.toInt()}, ${p1.y.toInt()}, ${p2.x.toInt()}, ${p2.y.toInt()}, ${p3.x.toInt()}, ${p3.y.toInt()})") },

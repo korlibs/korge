@@ -89,7 +89,7 @@ class FontTest {
             moveTo(Point(0, 100))
             lineTo(Point(30, 10))
             lineTo(Point(60, 100))
-            close()
+            closePath()
             fill()
         }
 

@@ -7,16 +7,6 @@ import kotlinx.coroutines.CancellationException
 
 // @TODO: Merge [Closeable], [Disposable] and [Cancellable]
 
-interface Disposable {
-    fun dispose()
-
-    companion object {
-        operator fun invoke(callback: () -> Unit) = object : Disposable {
-            override fun dispose() = callback()
-        }
-    }
-}
-
 object DummyAutoCloseable : AutoCloseable {
     override fun close() = Unit
 }

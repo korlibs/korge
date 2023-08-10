@@ -179,7 +179,7 @@ fun List<Curve>.toVectorPath(out: VectorPath = VectorPath()): VectorPath {
         when (curves) {
             is Curves -> {
                 curves.beziers.fastForEach { bezier(it) }
-                if (curves.closed) out.close()
+                if (curves.closed) out.closePath()
             }
             is Bezier -> bezier(curves)
             else -> TODO()

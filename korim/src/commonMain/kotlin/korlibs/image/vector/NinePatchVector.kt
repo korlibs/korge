@@ -42,7 +42,7 @@ class NinePatchVector(
                 out.cubicTo(p[0], p[1], p[2])
             },
             close = {
-                out.close()
+                out.closePath()
             }
         )
         return out

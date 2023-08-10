@@ -233,7 +233,7 @@ class VectorPath(
         version++
     }
 
-    override fun close() {
+    override fun closePath() {
         commands.add(Command.CLOSE)
         lastPos = lastMovePos
         version++
@@ -470,7 +470,7 @@ fun VectorBuilder.write(path: VectorPath) {
         lineTo = { lineTo(it) },
         quadTo = { p1, p2 -> quadTo(p1, p2) },
         cubicTo = { p1, p2, p3 -> cubicTo(p1, p2, p3) },
-        close = { close() }
+        close = { closePath() }
     )
 }
 
@@ -490,7 +490,7 @@ fun VectorBuilder.write(path: VectorPath, m: Matrix = Matrix.NIL) {
         lineTo = { lineTo(it, m) },
         quadTo = { p1, p2 -> quadTo(p1, p2, m) },
         cubicTo = { p1, p2, p3 -> cubicTo(p1, p2, p3, m) },
-        close = { close() }
+        close = { closePath() }
     )
 }
 

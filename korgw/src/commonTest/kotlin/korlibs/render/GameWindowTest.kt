@@ -14,7 +14,7 @@ class GameWindowTest {
                 moveTo(Point(0, 0))
                 lineTo(Point(-32, -32))
                 lineTo(Point(+32, -32))
-                close()
+                closePath()
             }
         })
         val bitmap = cursor.createBitmap()

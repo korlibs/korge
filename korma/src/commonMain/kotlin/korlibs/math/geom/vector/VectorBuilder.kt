@@ -18,20 +18,10 @@ interface VectorBuilder {
         Bezier.quadToCubic(lastPos.x, lastPos.y, c.x, c.y, a.x, a.y) { _, _, cx1, cy1, cx2, cy2, x2, y2 ->
             cubicTo(Point(cx1, cy1), Point(cx2, cy2), Point(x2, y2))
         }
-        //val x1 = lastX
-        //val y1 = lastY
-        //val x2 = ax
-        //val y2 = ay
-        //val tt = (2.0 / 3.0)
-        //val cx1 = x1 + (tt * (cx - x1))
-        //val cy1 = y1 + (tt * (cy - y1))
-        //val cx2 = x2 + (tt * (cx - x2))
-        //val cy2 = y2 + (tt * (cy - y2))
-        //return cubicTo(cx1, cy1, cx2, cy2, x2, y2)
     }
 
     fun cubicTo(c1: Point, c2: Point, a: Point)
-    fun close()
+    fun closePath()
 
     fun moveTo(x: Float, y: Float) = moveTo(Point(x, y))
     fun moveTo(x: Double, y: Double) = moveTo(Point(x, y))
@@ -88,7 +78,7 @@ interface VectorBuilder {
         lineTo(Point(x + width, y))
         lineTo(Point(x + width, y + height))
         lineTo(Point(x, y + height))
-        close()
+        closePath()
     }
 
     fun rect(x: Float, y: Float, width: Float, height: Float) =
@@ -102,7 +92,7 @@ interface VectorBuilder {
         lineTo(Point(x, y + height))
         lineTo(Point(x + width, y + height))
         lineTo(Point(x + width, y))
-        close()
+        closePath()
     }
 
     fun roundRect(x: Double, y: Double, w: Double, h: Double, rtl: Double, rtr: Double, rbr: Double, rbl: Double) {
@@ -114,7 +104,7 @@ interface VectorBuilder {
             this.arcTo(Point(x + w, y + h), Point(x, y + h), rbr)
             this.arcTo(Point(x, y + h), Point(x, y), rbl)
             this.arcTo(Point(x, y), Point(x + w, y), rtl)
-            this.close()
+            this.closePath()
         }
     }
 
@@ -229,7 +219,7 @@ interface VectorBuilder {
     fun polygon(path: PointList, close: Boolean = true) {
         moveTo(path[0])
         for (i in 1 until path.size) lineTo(path[i])
-        if (close) close()
+        if (close) closePath()
     }
     fun polygon(path: List<Point>, close: Boolean = true) = polygon(path.toPointArrayList(), close = close)
     fun polygon(vararg path: Point, close: Boolean = true) = polygon(path.toPointArrayList(), close = close)
@@ -273,7 +263,7 @@ interface VectorBuilder {
             override val totalPoints: Int = parent.totalPoints
 
             private fun t(p: Point): Point = m.transform(p)
-            override fun close() = parent.close()
+            override fun closePath() = parent.closePath()
             override fun lineTo(p: Point) = parent.lineTo(t(p))
             override fun moveTo(p: Point) = parent.lineTo(t(p))
             override fun quadTo(c: Point, a: Point) = parent.quadTo(t(c), t(a))
@@ -302,5 +292,5 @@ private fun VectorBuilder._regularPolygonStar(
         val py = angle.sineD * radius
         if (n == 0) moveTo(Point(x + px, y + py)) else lineTo(Point(x + px, y + py))
     }
-    close()
+    closePath()
 }

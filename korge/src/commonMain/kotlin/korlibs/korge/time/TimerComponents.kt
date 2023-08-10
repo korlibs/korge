@@ -7,7 +7,6 @@ import korlibs.datastructure.iterators.*
 import korlibs.time.*
 import korlibs.memory.*
 import korlibs.korge.view.*
-import korlibs.io.lang.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
 import kotlin.jvm.*

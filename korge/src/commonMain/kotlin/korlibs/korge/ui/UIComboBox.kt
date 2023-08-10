@@ -91,7 +91,7 @@ open class UIComboBox<T>(
         moveTo(Point(0, 0))
         lineTo(Point(20, 0))
         lineTo(Point(10, 10))
-        close()
+        closePath()
     }, fill = MaterialColors.GRAY_700, renderer = GraphicsRenderer.SYSTEM).centered.position(width - 16.0, height * 0.5).scale(1.0, +1.0)
     //private val expandButton = uiButton(height, height, icon = comboBoxExpandIcon).position(width - height, 0.0)
     private val invisibleRect = solidRect(size, Colors.TRANSPARENT)
