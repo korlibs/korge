@@ -211,7 +211,7 @@ abstract class Vfs : AsyncCloseable {
 	}
 
 	open suspend fun watch(path: String, handler: (FileEvent) -> Unit): AutoCloseable =
-		DummyAutoCloseable
+        object : AutoCloseable { override fun close() { } }
 
 	open suspend fun touch(path: String, time: DateTime, atime: DateTime) = Unit
 

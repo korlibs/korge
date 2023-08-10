@@ -32,7 +32,6 @@ import korlibs.memory.writeArrayLE
 import korlibs.io.internal.bytesTempPool
 import korlibs.io.internal.smallBytesPool
 import korlibs.io.lang.Charset
-import korlibs.io.lang.OptionalAutoCloseable
 import korlibs.io.lang.UTF8
 import korlibs.io.lang.invalidOp
 import korlibs.io.lang.toByteArray
@@ -47,7 +46,7 @@ interface MarkableSyncInputStream : SyncInputStream {
     fun reset()
 }
 
-interface SyncInputStream : OptionalAutoCloseable {
+interface SyncInputStream : AutoCloseable {
 	fun read(buffer: ByteArray, offset: Int = 0, len: Int = buffer.size - offset): Int
 	fun read(): Int = smallBytesPool.alloc { if (read(it, 0, 1) > 0) it[0].unsigned else -1 }
     fun skip(count: Int) {
@@ -55,7 +54,7 @@ interface SyncInputStream : OptionalAutoCloseable {
     }
 }
 
-interface SyncOutputStream : OptionalAutoCloseable {
+interface SyncOutputStream : AutoCloseable {
 	fun write(buffer: ByteArray, offset: Int = 0, len: Int = buffer.size - offset): Unit
 	fun write(byte: Int) = smallBytesPool.alloc { it[0] = byte.toByte(); write(it, 0, 1) }
 	fun flush() = Unit
@@ -114,17 +113,21 @@ open class MarkableSyncStream(val inp: SyncInputStream) : MarkableSyncInputStrea
         }
         val out = inp.read(buffer, offset, len)
         if (markLimit > 0) {
-            val markRead = kotlin.math.min(markLimit, out)
+            val markRead = min(markLimit, out)
             markLimit -= markRead
             markTemp.write(buffer, offset, markRead)
         }
         return out
     }
+
+    override fun close() {
+        // Nothing to do here
+    }
 }
 
 fun SyncInputStream.markable(): MarkableSyncInputStream = MarkableSyncStream(this)
 
-class SyncStream constructor(
+class SyncStream(
     val base: SyncStreamBase,
     position: Long = 0L
 ) : Extra by Extra.Mixin(), AutoCloseable, SyncInputStream, SyncPositionStream, SyncOutputStream, SyncLengthStream, MarkableSyncInputStream {

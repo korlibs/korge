@@ -7,14 +7,6 @@ import kotlinx.coroutines.CancellationException
 
 // @TODO: Merge [AutoCloseable] and [Cancellable]
 
-object DummyAutoCloseable : AutoCloseable {
-    override fun close() = Unit
-}
-
-interface OptionalAutoCloseable : AutoCloseable {
-    override fun close(): Unit = Unit
-}
-
 fun interface Cancellable {
     fun cancel(e: Throwable)
 

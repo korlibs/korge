@@ -120,8 +120,7 @@ private suspend fun createJavaMp3DecoderStreamNoSeek(s: AsyncStream, props: Audi
     }
 
     fillSync()
-    //println(sync.readAll().toList())
-    //println("sync.availableRead=${sync.availableRead}")
+
     val data = JavaMp3Decoder.init(sync.markable()) ?: error("Not an mp3 file [2]")
     val samplesBuffer = data._samplesBuffer!!
     val samples = ShortArray(samplesBuffer.size / 2)

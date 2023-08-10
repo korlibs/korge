@@ -276,7 +276,7 @@ open class LocalVfsNativeBase(val async: Boolean = true) : LocalVfs() {
     override suspend fun watch(path: String, handler: (FileEvent) -> Unit): AutoCloseable {
         // @TODO:
         println("TODO:LocalVfsNative.watch")
-        return DummyAutoCloseable
+        return object : AutoCloseable { override fun close() { } }
     }
 
     override fun toString(): String = "LocalVfs"
