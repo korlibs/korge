@@ -5,20 +5,17 @@ import kotlinx.coroutines.CancellationException
 
 // @TODO: Merge [Closeable], [Disposable] and [Cancellable]
 
-interface Disposable {
+@Deprecated("use AutoCloseable from stdlib, this will be remove on 4.2")
+fun interface Disposable {
 	fun dispose()
 
-    companion object {
-        operator fun invoke(callback: () -> Unit) = object : Disposable {
-            override fun dispose() = callback()
-        }
-    }
 }
 
-interface Closeable {
-	fun close(): Unit
+@Deprecated("use AutoCloseable from stdlib, this will be remove on 4.2")
+@OptIn(ExperimentalStdlibApi::class)
+interface Closeable: AutoCloseable {
 
-	companion object {
+    companion object {
 		operator fun invoke(callback: () -> Unit) = object : Closeable {
 			override fun close() = callback()
 		}
@@ -34,16 +31,6 @@ interface OptionalCloseable : Closeable {
 	override fun close(): Unit = Unit
 }
 
-// Kotlin BUG : Exception in thread "AWT-EventQueue-0" java.lang.NoClassDefFoundError: korlibs/io/lang/CloseableKt$Closeable$1
-//fun Closeable(callback: () -> Unit) = object : Closeable {
-//	override fun close() = callback()
-//}
-
-//java.lang.NoClassDefFoundError: korlibs/io/lang/CloseableKt$Closeable$1 (wrong name: korlibs/io/lang/CloseableKt$closeable$1)
-//  at java.lang.ClassLoader.defineClass1(Native Method)
-//fun Iterable<Closeable>.closeable(): Closeable = Closeable {
-//	for (closeable in this@closeable) closeable.close()
-//}
 
 inline fun <TCloseable : Closeable, T : Any> TCloseable.use(callback: (TCloseable) -> T): T {
 	try {
@@ -54,12 +41,12 @@ inline fun <TCloseable : Closeable, T : Any> TCloseable.use(callback: (TCloseabl
 }
 
 fun interface Cancellable {
-	fun cancel(e: Throwable): Unit
-    //fun close() = this.cancel(CancellationException(""))
+	fun cancel(e: Throwable)
 
-	interface Listener {
-		fun onCancel(handler: (Throwable) -> Unit): Unit
-	}
+    @Deprecated("this will be remove on 4.2")
+    interface Listener {
+		fun onCancel(handler: (Throwable) -> Unit)
+    }
 
 	companion object {
 		operator fun invoke(callback: (Throwable) -> Unit) = Cancellable { e -> callback(e) }
@@ -131,7 +118,7 @@ class CancellableGroup() : CloseableCancellable {
         cancellables.cancel(e)
     }
 }
-
+@Deprecated("this will be remove on 4.2")
 suspend fun <T> AutoClose(callback: suspend (CancellableGroup) -> T): T {
     val group = CancellableGroup()
     try {
