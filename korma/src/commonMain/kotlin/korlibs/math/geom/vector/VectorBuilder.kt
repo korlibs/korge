@@ -31,7 +31,11 @@ interface VectorBuilder {
     }
 
     fun cubicTo(c1: Point, c2: Point, a: Point)
+
+    @Deprecated("this will be remove on 4.2.0, use closePath instead")
     fun close()
+
+    fun closePath() = close()
 
     fun moveTo(x: Float, y: Float) = moveTo(Point(x, y))
     fun moveTo(x: Double, y: Double) = moveTo(Point(x, y))
