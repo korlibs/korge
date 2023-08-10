@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalStdlibApi::class)
+
 package samples
 
 import korlibs.datastructure.*
@@ -121,7 +123,7 @@ class MainStrokesExperiment2 : Scene() {
                         quad -> quadTo(Point(endX - 50, endY - 50), Point(endX, endY))
                         else -> lineTo(Point(endX, endY))
                     }
-                    if (closed) this.close()
+                    if (closed) this.closePath()
                 }
                 //val path = buildVectorPath {
                 //    //this.circle(400, 300, 200)

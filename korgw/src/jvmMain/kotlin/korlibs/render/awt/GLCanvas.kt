@@ -55,7 +55,7 @@ open class GLCanvas constructor(checkGl: Boolean = true, val logGl: Boolean = fa
 
 
     override fun close() {
-        ctx?.dispose()
+        ctx?.close()
         ctx = null
     }
 

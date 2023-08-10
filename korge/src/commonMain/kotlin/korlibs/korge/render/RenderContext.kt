@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalStdlibApi::class)
+
 package korlibs.korge.render
 
 import korlibs.datastructure.*
@@ -51,7 +53,7 @@ class RenderContext(
     BoundsProvider by bp,
     AGFeatures by ag,
     DeviceDimensionsProvider by deviceDimensionsProvider,
-    Closeable
+        AutoCloseable
 {
     val quality: GameWindow.Quality get() = windowConfig.quality
 
@@ -312,13 +314,13 @@ class RenderContext(
     fun getTex(bmp: Bitmap): TextureBase = agBitmapTextureManager.getTextureBase(bmp)
 
     /**
-     * References a [closeable] for this frame that will be tracked in next frames.
+     * References a [autoCloseable] for this frame that will be tracked in next frames.
      * If after a period of time, this closeable has not been referenced in between frames,
-     * the [Closeable.close] method will be called so the object can be freed.
+     * the [AutoCloseable.close] method will be called so the object can be freed.
      *
      * This can be use for example to automatically manage temporal/cached textures.
      */
-    fun refGcCloseable(closeable: Closeable) = agAutoFreeManager.reference(closeable)
+    fun refGcCloseable(autoCloseable: AutoCloseable) = agAutoFreeManager.reference(autoCloseable)
 
     internal fun beforeRender() {
         batch.beforeRender()

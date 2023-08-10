@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalStdlibApi::class)
+
 package korlibs.event
 
 import korlibs.datastructure.*
@@ -12,9 +14,9 @@ interface EventListener {
     /**
      * Registers a [handler] block to be executed when an event of [type] is [dispatch]ed
      */
-    fun <T : BEvent> onEvent(type: EventType<T>, handler: (T) -> Unit): Closeable
+    fun <T : BEvent> onEvent(type: EventType<T>, handler: (T) -> Unit): AutoCloseable
 
-    fun <T : BEvent> onEvents(vararg etypes: EventType<out T>, handler: (T) -> Unit): Closeable {
+    fun <T : BEvent> onEvents(vararg etypes: EventType<out T>, handler: (T) -> Unit): AutoCloseable {
         if (etypes.isEmpty()) error("Must have at least one event type")
         val closeable = CancellableGroup()
         etypes.fastForEach { closeable += onEvent(it, handler) }

@@ -47,7 +47,7 @@ class Bitmap32Context2dTest {
                             moveTo(Point(8, 8))
                             quadTo(Point(40, 0), Point(64, 32))
                             lineTo(Point(8, 64))
-                            close()
+                            closePath()
 
                             //fillRect(8, 8, 32, 64)
                             rect(8, 8, 32, 64)

@@ -13,7 +13,7 @@ class VectorPathCrossModuleTest {
         buildVectorPath(VectorPath()) {
             moveTo(Point(100, 100))
             quadTo(Point(100, 200), Point(200, 200))
-            close()
+            closePath()
         }.visitEdgesSimple(
             { (x0, y0), (x1, y1) -> log.add("line(${x0.toInt()}, ${y0.toInt()}, ${x1.toInt()}, ${y1.toInt()})") },
             { (x0, y0), (x1, y1), (x2, y2), (x3, y3) -> log.add("cubic(${x0.toInt()}, ${y0.toInt()}, ${x1.toInt()}, ${y1.toInt()}, ${x2.toInt()}, ${y2.toInt()}, ${x3.toInt()}, ${y3.toInt()})") },

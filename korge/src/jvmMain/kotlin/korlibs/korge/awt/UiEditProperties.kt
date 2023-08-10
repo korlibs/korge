@@ -434,7 +434,7 @@ internal class UiCollapsibleSection(app: UiApplication, val name: String?, val c
                     moveTo(Point(-0.5, 0.0))
                     lineTo(Point(+0.5, 0.0))
                     lineTo(Point(0.0, 0.5))
-                    close()
+                    closePath()
                 }
             }
         }

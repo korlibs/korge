@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalStdlibApi::class)
+
 package korlibs.io.file.sync
 
 import korlibs.memory.*
@@ -90,7 +92,7 @@ class MemorySyncIO : SyncIO {
 
 data class SyncIOStat(val path: String, val isDirectory: Boolean, val size: Long)
 
-interface SyncIOFD : Closeable {
+interface SyncIOFD : AutoCloseable {
     var length: Long
     var position: Long
     fun write(data: ByteArray, offset: Int = 0, size: Int = data.size - offset): Int

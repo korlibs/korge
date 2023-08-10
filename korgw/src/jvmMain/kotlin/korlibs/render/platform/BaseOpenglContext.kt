@@ -14,7 +14,7 @@ import com.sun.jna.platform.unix.X11
 import java.awt.*
 import java.lang.reflect.Method
 
-interface BaseOpenglContext : Disposable {
+interface BaseOpenglContext : AutoCloseable {
     val isCore: Boolean get() = false
     val scaleFactor: Float get() = 1f
     data class ContextInfo(
@@ -48,20 +48,8 @@ interface BaseOpenglContext : Disposable {
     fun swapInterval(value: Int) {
     }
 
-    override fun dispose() = Unit
+    override fun close() = Unit
 }
-
-/*
-inline fun BaseOpenglContext.useContext(block: () -> Unit) {
-    makeCurrent()
-    try {
-        block()
-    } finally {
-        swapBuffers()
-        releaseCurrent()
-    }
-}
-*/
 
 object DummyOpenglContext : BaseOpenglContext {
     override fun makeCurrent() {

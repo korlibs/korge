@@ -374,7 +374,7 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
                 path.lineTo(Point(x, y))
                 edges++
             }
-            if (xml.nameLC == "polygon") path.close()
+            if (xml.nameLC == "polygon") path.closePath()
         }
 
         override fun drawInternal(c: Context2d) {

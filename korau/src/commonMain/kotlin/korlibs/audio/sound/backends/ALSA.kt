@@ -18,11 +18,7 @@ val alsaNativeSoundProvider: ALSANativeSoundProvider? by lazy {
 }
 
 class ALSANativeSoundProvider : NativeSoundProvider() {
-    init {
-        //println("ALSANativeSoundProvider.init")
-    }
     override fun createPlatformAudioOutput(coroutineContext: CoroutineContext, freq: Int): PlatformAudioOutput {
-        //println("ALSANativeSoundProvider.createPlatformAudioOutput(freq=$freq)")
         return ALSAPlatformAudioOutput(this, coroutineContext, freq)
     }
 }
@@ -39,14 +35,9 @@ class ALSAPlatformAudioOutput(
 
     override suspend fun wait() {
         running = false
-        //println("WAITING")
-        val time = measureTime {
             while (pcm != 0L) {
                 delay(10.milliseconds)
             }
-        }
-        //println("WAITED: time=$time")
-        //super.wait()
     }
 
     override fun start() {
@@ -56,9 +47,8 @@ class ALSAPlatformAudioOutput(
 
             pcm = ASound2.snd_pcm_open("default", ASound2.SND_PCM_STREAM_PLAYBACK, 0)
             if (pcm == 0L) {
-                error("Can't initialize ALSA")
                 running = false
-                return@NativeThread
+                error("Can't initialize ALSA")
             }
 
             val latency = 50_000

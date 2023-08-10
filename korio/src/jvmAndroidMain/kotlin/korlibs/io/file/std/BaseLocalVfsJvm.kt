@@ -3,7 +3,6 @@ package korlibs.io.file.std
 import korlibs.time.*
 import korlibs.io.async.*
 import korlibs.io.file.*
-import korlibs.io.lang.Closeable
 import korlibs.io.stream.*
 import korlibs.io.util.isAliveJre7
 import kotlinx.coroutines.*
@@ -209,16 +208,7 @@ internal open class BaseLocalVfsJvm : LocalVfs() {
         }
     }
 
-    /*
-    @OptIn(ExperimentalCoroutinesApi::class)
-    override suspend fun listFlow(path: String): kotlinx.coroutines.flow.Flow<VfsFile> = flow {
-        for (it in (File(path).listFiles() ?: emptyArray<File>())) {
-            emit(that.file("$path/${it.name}"))
-        }
-    }.flowOn(IOContext)
-    */
-
-    override suspend fun listFlow(path: String): kotlinx.coroutines.flow.Flow<VfsFile> = flow {
+    override suspend fun listFlow(path: String): Flow<VfsFile> = flow {
         for (it in (File(path).listFiles() ?: emptyArray<File>())) {
             emit(that.file("$path/${it.name}"))
         }
@@ -240,7 +230,7 @@ internal open class BaseLocalVfsJvm : LocalVfs() {
 
     protected open fun watchModifiers(path: String): Array<WatchEvent.Modifier> = emptyArray()
 
-    override suspend fun watch(path: String, handler: (FileEvent) -> Unit): Closeable {
+    override suspend fun watch(path: String, handler: (FileEvent) -> Unit): AutoCloseable {
         var running = true
         val fs = FileSystems.getDefault()
         val watcher = fs.newWatchService()
@@ -310,7 +300,7 @@ internal open class BaseLocalVfsJvm : LocalVfs() {
             }
         }
 
-        return Closeable {
+        return AutoCloseable {
             running = false
             registeredKey.cancel()
         }

@@ -39,7 +39,11 @@ fun InputStream.toSyncStream(): SyncInputStream {
 			if (size <= 0) return -1
 			return tempByte[0].unsigned
 		}
-	}
+
+        override fun close() {
+            // Nothing to do here
+        }
+    }
 }
 
 fun SyncStream.toInputStream(): InputStream {

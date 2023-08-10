@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalStdlibApi::class)
+
 package korlibs.korge.component
 
 import korlibs.datastructure.*
@@ -20,7 +22,7 @@ private class ViewStageComponent(val view: View) {
 private const val __VIEW_STAGE_COMPONENT_NAME = "__viewStageComponent"
 private val View.viewStageComponent by Extra.PropertyThis(__VIEW_STAGE_COMPONENT_NAME) { ViewStageComponent(this) }
 
-fun <T : View> T.onNewAttachDetach(onAttach: Views.(T) -> Unit = {}, onDetach: Views.(T) -> Unit = {}): Closeable {
+fun <T : View> T.onNewAttachDetach(onAttach: Views.(T) -> Unit = {}, onDetach: Views.(T) -> Unit = {}): AutoCloseable {
     val view = this
     val closeable = CancellableGroup()
     val viewStageComponent = this.viewStageComponent

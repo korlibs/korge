@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalStdlibApi::class)
+
 package korlibs.kgl
 
 import korlibs.io.lang.*
@@ -15,7 +17,7 @@ inline fun KmlGlContextDefaultTemp(block: (KmlGl) -> Unit) {
     }
 }
 
-abstract class KmlGlContext(val window: Any?, val gl: KmlGl, val parent: KmlGlContext? = null) : Closeable {
+abstract class KmlGlContext(val window: Any?, val gl: KmlGl, val parent: KmlGlContext? = null) : AutoCloseable {
     open fun set() {
     }
     open fun unset() {

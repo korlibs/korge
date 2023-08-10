@@ -367,7 +367,7 @@ object TtfCIDFont {
         fun VectorBuilder.cfrClose() {
             //println("Z".color(AnsiEscape.Color.RED))
             val lastPoint = this.lastPos
-            close()
+            closePath()
             moveTo(lastPoint)
         }
         fun VectorBuilder.cfrMoveTo(x: Double, y: Double) {

@@ -27,7 +27,7 @@ class Shape2DTest {
                 moveTo(Point(0, 0))
                 lineTo(Point(100, 0))
                 lineTo(Point(100, 100))
-                close()
+                closePath()
             }.toShape2D(closed = true).toString()
         )
     }
@@ -83,12 +83,12 @@ class Shape2DTest {
             lineTo(Point(200, 500))
             lineTo(Point(500, 500))
             lineTo(Point(200, 700))
-            close()
+            closePath()
 
             moveTo(Point(800, 600))
             lineTo(Point(900, 600))
             lineTo(Point(900, 400))
-            close()
+            closePath()
 
             moveTo(Point(800, 100))
             lineTo(Point(800, 110))

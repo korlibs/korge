@@ -246,7 +246,7 @@ object SvgPath {
                     }
                 }
 
-                'Z', 'z' -> out.close()
+                'Z', 'z' -> out.closePath()
                 else -> {
                     TODO("Unsupported command '$cmd' (${cmd.toInt()}) : Parsed: '${out.toSvgPathString()}', Original: '$d'")
                 }

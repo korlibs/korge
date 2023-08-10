@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalStdlibApi::class)
+
 package korlibs.render
 
 import korlibs.datastructure.*
@@ -13,7 +15,6 @@ import korlibs.io.*
 import korlibs.io.async.*
 import korlibs.io.experimental.*
 import korlibs.io.file.*
-import korlibs.io.lang.*
 import korlibs.logger.*
 import korlibs.math.geom.*
 import korlibs.memory.*
@@ -51,7 +52,7 @@ open class GameWindowCoroutineDispatcherSetNow : GameWindowCoroutineDispatcher()
 }
 
 @OptIn(InternalCoroutinesApi::class)
-open class GameWindowCoroutineDispatcher : CoroutineDispatcher(), Delay, Closeable {
+open class GameWindowCoroutineDispatcher : CoroutineDispatcher(), Delay, AutoCloseable {
     override fun dispatchYield(context: CoroutineContext, block: Runnable): Unit = dispatch(context, block)
 
     class TimedTask(val time: TimeSpan, val continuation: CancellableContinuation<Unit>?, val callback: Runnable?) {

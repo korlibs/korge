@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalStdlibApi::class)
+
 package samples.connect4
 
 import korlibs.datastructure.*

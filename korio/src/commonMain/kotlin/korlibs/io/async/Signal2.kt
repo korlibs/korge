@@ -1,13 +1,14 @@
+@file:OptIn(ExperimentalStdlibApi::class)
+
 package korlibs.io.async
 
 import korlibs.datastructure.iterators.fastIterateRemove
-import korlibs.io.lang.Closeable
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 
 abstract class BaseSignal2<T1, T2>(val onRegister: () -> Unit = {}) {
-    inner class Node(val once: Boolean, val item: (T1, T2) -> Unit) : Closeable {
+    inner class Node(val once: Boolean, val item: (T1, T2) -> Unit) : AutoCloseable {
         override fun close() {
             if (iterating > 0) {
                 handlersToRemove.add(this)
@@ -27,7 +28,7 @@ abstract class BaseSignal2<T1, T2>(val onRegister: () -> Unit = {}) {
     //fun add(handler: THandler): Closeable = _add(false, handler)
     //operator fun invoke(handler: THandler): Closeable = add(handler)
 
-    protected fun _add(once: Boolean, handler: (T1, T2) -> Unit): Closeable {
+    protected fun _add(once: Boolean, handler: (T1, T2) -> Unit): AutoCloseable {
         onRegister()
         val node = Node(once, handler)
         handlers.add(node)
@@ -59,12 +60,12 @@ abstract class BaseSignal2<T1, T2>(val onRegister: () -> Unit = {}) {
 }
 
 class Signal2<T1, T2>(onRegister: () -> Unit = {}) : BaseSignal2<T1, T2>(onRegister) {
-    fun once(handler: (T1, T2) -> Unit): Closeable = _add(true, handler)
-    fun add(handler: (T1, T2) -> Unit): Closeable = _add(false, handler)
-    operator fun invoke(handler: (T1, T2) -> Unit): Closeable = add(handler)
+    fun once(handler: (T1, T2) -> Unit): AutoCloseable = _add(true, handler)
+    fun add(handler: (T1, T2) -> Unit): AutoCloseable = _add(false, handler)
+    operator fun invoke(handler: (T1, T2) -> Unit): AutoCloseable = add(handler)
     operator fun invoke(value1: T1, value2: T2) = iterateCallbacks { it(value1, value2) }
     override suspend fun waitOneBase(): Pair<T1, T2> = suspendCancellableCoroutine { c ->
-        var close: Closeable? = null
+        var close: AutoCloseable? = null
         close = once { i1, i2 ->
             close?.close()
             c.resume(Pair(i1, i2))

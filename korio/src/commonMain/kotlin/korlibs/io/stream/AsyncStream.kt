@@ -1,4 +1,5 @@
 @file:Suppress("EXPERIMENTAL_FEATURE_WARNING")
+@file:OptIn(ExperimentalStdlibApi::class)
 
 package korlibs.io.stream
 
@@ -68,7 +69,6 @@ import korlibs.io.internal.BYTES_TEMP_SIZE
 import korlibs.io.internal.bytesTempPool
 import korlibs.io.internal.smallBytesPool
 import korlibs.io.lang.Charset
-import korlibs.io.lang.Closeable
 import korlibs.io.lang.EOFException
 import korlibs.io.lang.UTF8
 import korlibs.io.lang.invalidOp
@@ -82,13 +82,7 @@ import kotlin.math.max
 import kotlin.math.min
 import kotlin.native.concurrent.SharedImmutable
 
-//interface SmallTemp {
-//	val smallTemp: ByteArray
-//}
-
-//interface AsyncBaseStream : AsyncCloseable, SmallTemp {
-interface AsyncBaseStream : AsyncCloseable {
-}
+interface AsyncBaseStream : AsyncCloseable
 
 interface AsyncInputOpenable {
 	suspend fun openRead(): AsyncInputStream
@@ -529,7 +523,6 @@ internal suspend inline fun <R> AsyncInputStream.readSmallTempExact(size: Int, c
 
 private suspend fun AsyncInputStream.readTempExact(len: Int, temp: ByteArray): ByteArray =
 	temp.apply { readExact(temp, 0, len) }
-//suspend private fun AsyncInputStream.readTempExact(len: Int): ByteArray = readTempExact(len, BYTES_TEMP)
 
 suspend fun AsyncInputStream.read(data: ByteArray): Int = read(data, 0, data.size)
 suspend fun AsyncInputStream.read(data: UByteArray): Int = read(data.asByteArray(), 0, data.size)
@@ -845,7 +838,7 @@ fun SyncInputStream.toAsyncInputStream() = object : AsyncInputStreamWithLength {
 	val sync = this@toAsyncInputStream
 
 	override suspend fun read(buffer: ByteArray, offset: Int, len: Int): Int = sync.read(buffer, offset, len)
-	override suspend fun close() { (sync as? Closeable)?.close() }
+	override suspend fun close() { (sync as? AutoCloseable)?.close() }
 	override suspend fun getPosition(): Long = (sync as? SyncPositionStream)?.position ?: super.getPosition()
     override suspend fun getLength(): Long = (sync as? SyncLengthStream)?.length ?: super.getLength()
 }
@@ -854,7 +847,7 @@ fun SyncOutputStream.toAsyncOutputStream() = object : AsyncOutputStream {
 	override suspend fun write(buffer: ByteArray, offset: Int, len: Int): Unit =
 		this@toAsyncOutputStream.write(buffer, offset, len)
 
-	override suspend fun close() { (this@toAsyncOutputStream as? Closeable)?.close() }
+	override suspend fun close() { (this@toAsyncOutputStream as? AutoCloseable)?.close() }
 }
 
 fun AsyncStream.asVfsFile(name: String = "unknown.bin"): VfsFile = MemoryVfs(

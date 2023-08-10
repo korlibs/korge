@@ -1,12 +1,12 @@
 @file:Suppress("EXPERIMENTAL_FEATURE_WARNING")
+@file:OptIn(ExperimentalStdlibApi::class)
 
 package korlibs.io.async
 
 import korlibs.datastructure.FastArrayList
 import korlibs.datastructure.iterators.fastIterateRemove
+import korlibs.io.lang.*
 import korlibs.time.TimeSpan
-import korlibs.io.lang.Closeable
-import korlibs.io.lang.close
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Job
@@ -18,7 +18,7 @@ import kotlin.coroutines.resume
 
 
 abstract class BaseSignal<T, THandler>(val onRegister: () -> Unit = {}) {
-	inner class Node(val once: Boolean, val item: THandler) : Closeable {
+	inner class Node(val once: Boolean, val item: THandler) : AutoCloseable {
 		override fun close() {
 			if (iterating > 0) {
 				handlersToRemove.add(this)
@@ -39,7 +39,7 @@ abstract class BaseSignal<T, THandler>(val onRegister: () -> Unit = {}) {
 	//fun add(handler: THandler): Closeable = _add(false, handler)
 	//operator fun invoke(handler: THandler): Closeable = add(handler)
 
-	protected fun _add(once: Boolean, handler: THandler): Closeable {
+	protected fun _add(once: Boolean, handler: THandler): AutoCloseable {
 		onRegister()
 		val node = Node(once, handler)
 		handlers.add(node)
@@ -72,13 +72,13 @@ abstract class BaseSignal<T, THandler>(val onRegister: () -> Unit = {}) {
 }
 
 class AsyncSignal<T>(onRegister: () -> Unit = {}) : BaseSignal<T, suspend (T) -> Unit>(onRegister) {
-	fun once(handler: suspend (T) -> Unit): Closeable = _add(true, handler)
-	fun add(handler: suspend (T) -> Unit): Closeable = _add(false, handler)
-	operator fun invoke(handler: suspend (T) -> Unit): Closeable = add(handler)
+	fun once(handler: suspend (T) -> Unit): AutoCloseable = _add(true, handler)
+	fun add(handler: suspend (T) -> Unit): AutoCloseable = _add(false, handler)
+	operator fun invoke(handler: suspend (T) -> Unit): AutoCloseable = add(handler)
 
 	suspend operator fun invoke(value: T) = iterateCallbacks{ it(value) }
 	override suspend fun waitOneBase(): T = suspendCancellableCoroutine { c ->
-		var close: Closeable? = null
+		var close: AutoCloseable? = null
 		close = once {
 			close?.close()
 			c.resume(it)
@@ -90,18 +90,18 @@ class AsyncSignal<T>(onRegister: () -> Unit = {}) : BaseSignal<T, suspend (T) ->
 }
 
 class Signal<T>(onRegister: () -> Unit = {}) : BaseSignal<T, (T) -> Unit>(onRegister) {
-	fun once(handler: (T) -> Unit): Closeable = _add(true, handler)
-	fun add(handler: (T) -> Unit): Closeable = _add(false, handler)
-	operator fun invoke(handler: (T) -> Unit): Closeable = add(handler)
+	fun once(handler: (T) -> Unit): AutoCloseable = _add(true, handler)
+	fun add(handler: (T) -> Unit): AutoCloseable = _add(false, handler)
+	operator fun invoke(handler: (T) -> Unit): AutoCloseable = add(handler)
 	operator fun invoke(value: T) = iterateCallbacks { it(value) }
 	override suspend fun waitOneBase(): T= suspendCancellableCoroutine { c ->
-		var close: Closeable? = null
+		var close: AutoCloseable? = null
 		close = once {
 			close?.close()
 			c.resume(it)
 		}
 		c.invokeOnCancellation {
-			close?.close()
+            close.close()
 		}
 	}
 }
@@ -119,11 +119,6 @@ suspend operator fun AsyncSignal<Unit>.invoke() = invoke(Unit)
 
 //////////////////////////////////
 
-
-//class AsyncSignal<T>(context: CoroutineContext) {
-
-//}
-
 fun <TI, TO> Signal<TI>.mapSignal(transform: (TI) -> TO): Signal<TO> {
 	val out = Signal<TO>()
 	this.add { out(transform(it)) }
@@ -133,7 +128,7 @@ fun <TI, TO> Signal<TI>.mapSignal(transform: (TI) -> TO): Signal<TO> {
 operator fun Signal<Unit>.invoke() = invoke(Unit)
 
 suspend fun Iterable<Signal<*>>.waitOne(): Any? = suspendCancellableCoroutine { c ->
-	val closes = FastArrayList<Closeable>()
+	val closes = FastArrayList<AutoCloseable>()
 	for (signal in this) {
 		closes += signal.once {
 			closes.close()
@@ -148,7 +143,7 @@ suspend fun Iterable<Signal<*>>.waitOne(): Any? = suspendCancellableCoroutine { 
 
 fun <T> Signal<T>.waitOneAsync(): Deferred<T> {
 	val deferred = CompletableDeferred<T>(Job())
-	var close: Closeable? = null
+	var close: AutoCloseable? = null
 	close = once {
 		close?.close()
 		deferred.complete(it)
@@ -159,7 +154,7 @@ fun <T> Signal<T>.waitOneAsync(): Deferred<T> {
 	return deferred
 }
 
-suspend fun <T> Signal<T>.addSuspend(handler: suspend (T) -> Unit): Closeable {
+suspend fun <T> Signal<T>.addSuspend(handler: suspend (T) -> Unit): AutoCloseable {
 	val cc = coroutineContext
 	return this@addSuspend { value ->
 		launchImmediately(cc) {
@@ -168,7 +163,7 @@ suspend fun <T> Signal<T>.addSuspend(handler: suspend (T) -> Unit): Closeable {
 	}
 }
 
-fun <T> Signal<T>.addSuspend(context: CoroutineContext, handler: suspend (T) -> Unit): Closeable =
+fun <T> Signal<T>.addSuspend(context: CoroutineContext, handler: suspend (T) -> Unit): AutoCloseable =
 	this@addSuspend { value ->
 		launchImmediately(context) {
 			handler(value)
@@ -176,8 +171,8 @@ fun <T> Signal<T>.addSuspend(context: CoroutineContext, handler: suspend (T) -> 
 	}
 
 
-suspend fun <T> Signal<T>.waitOne(timeout: TimeSpan): T? = kotlinx.coroutines.suspendCancellableCoroutine { c ->
-	var close: Closeable? = null
+suspend fun <T> Signal<T>.waitOne(timeout: TimeSpan): T? = suspendCancellableCoroutine { c ->
+	var close: AutoCloseable? = null
 	var running = true
 
 	fun closeAll() {
@@ -241,9 +236,9 @@ suspend inline fun <T> Signal<T>.executeAndWaitSignal(callback: () -> Unit): T {
 	}
 }
 
-fun <T> Signal<T>.addCallInit(initial: T, handler: (T) -> Unit): Closeable {
+fun <T> Signal<T>.addCallInit(initial: T, handler: (T) -> Unit): AutoCloseable {
     handler(initial)
     return add(handler)
 }
 
-fun Signal<Unit>.addCallInit(handler: (Unit) -> Unit): Closeable = addCallInit(Unit, handler)
+fun Signal<Unit>.addCallInit(handler: (Unit) -> Unit): AutoCloseable = addCallInit(Unit, handler)

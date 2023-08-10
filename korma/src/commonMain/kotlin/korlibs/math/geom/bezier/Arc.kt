@@ -41,7 +41,7 @@ object Arc {
         out.cubicTo(Point(xm + ox, y), Point(xe, ym - oy), Point(xe, ym))
         out.cubicTo(Point(xe, ym + oy), Point(xm + ox, ye), Point(xm, ye))
         out.cubicTo(Point(xm - ox, ye), Point(x, ym + oy), Point(x, ym))
-        out.close()
+        out.closePath()
     }
 
     fun arcPath(out: VectorBuilder, p1: Point, p2: Point, radius: Float, counterclockwise: Boolean = false) {
@@ -99,7 +99,7 @@ object Arc {
             remainingAngle -= abs(a2 - a1)
             a1 = a2
         }
-        if (startAngle == endAngle && index != 0) out.close()
+        if (startAngle == endAngle && index != 0) out.closePath()
     }
 
     // c = √(a² + b²)

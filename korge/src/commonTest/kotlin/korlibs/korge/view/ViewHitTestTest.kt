@@ -4,7 +4,6 @@ import korlibs.korge.tests.*
 import korlibs.korge.ui.*
 import korlibs.image.color.*
 import korlibs.math.geom.*
-import korlibs.math.geom.vector.*
 import kotlin.test.*
 
 class ViewHitTestTest : ViewsForTesting() {
@@ -82,7 +81,7 @@ class Polygon(
                         lineTo(Point(x, y))
                     }
                 }
-                close()
+                closePath()
             }
         }
     }

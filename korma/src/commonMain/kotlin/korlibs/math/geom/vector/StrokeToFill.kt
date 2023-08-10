@@ -198,7 +198,7 @@ class StrokeToFill {
             val m = fillPointsRight.size - n - 1
             outFill.lineTo(Point(fillPointsRight.getX(m) * scale, fillPointsRight.getY(m) * scale))
         }
-        outFill.close()
+        outFill.closePath()
         outFill.winding = Winding.NON_ZERO
         //outFill.winding = Winding.EVEN_ODD
         strokePoints.clear()

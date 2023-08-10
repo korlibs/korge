@@ -14,7 +14,7 @@ class ShapeTest {
                 moveTo(Point(0, 0))
                 lineTo(Point(100, 100))
                 lineTo(Point(0, 100))
-                close()
+                closePath()
             },
             clip = null,
             paint = Colors.GREEN,

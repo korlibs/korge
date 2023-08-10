@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalStdlibApi::class)
+
 package korlibs.korge.component
 
 import korlibs.korge.input.mouse

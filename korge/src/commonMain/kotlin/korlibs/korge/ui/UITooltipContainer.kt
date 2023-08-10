@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalStdlibApi::class)
+
 package korlibs.korge.ui
 
 import korlibs.time.*
@@ -10,7 +12,6 @@ import korlibs.korge.tween.*
 import korlibs.korge.view.*
 import korlibs.image.color.*
 import korlibs.image.font.*
-import korlibs.io.lang.*
 import korlibs.math.geom.*
 
 @KorgeExperimental
@@ -34,7 +35,7 @@ class UITooltipContainer() : Container() {
     var tooltipOffsetX: Double = 0.0
     var tooltipOffsetY: Double = 4.0
 
-    private var visibleTimer: Closeable? = null
+    private var visibleTimer: AutoCloseable? = null
 
     fun disappear() {
         tooltip.visible = false

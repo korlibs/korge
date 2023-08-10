@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalStdlibApi::class)
+
 package korlibs.io.file.std
 
 import korlibs.time.DateTime
@@ -6,7 +8,6 @@ import korlibs.io.file.VfsFile
 import korlibs.io.file.VfsOpenMode
 import korlibs.io.file.VfsProcessHandler
 import korlibs.io.file.VfsStat
-import korlibs.io.lang.Closeable
 import korlibs.io.stream.AsyncInputStream
 import korlibs.io.stream.AsyncStream
 import korlibs.io.stream.AsyncStreamBase
@@ -125,7 +126,7 @@ class LogVfs(val parent: VfsFile) : Vfs.Proxy() {
 		return super.rename(src, dst)
 	}
 
-	override suspend fun watch(path: String, handler: (FileEvent) -> Unit): Closeable {
+	override suspend fun watch(path: String, handler: (FileEvent) -> Unit): AutoCloseable {
 		log += "watch($path)"
 		return super.watch(path, handler)
 	}

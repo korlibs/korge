@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalStdlibApi::class)
+
 package samples
 
 import korlibs.event.*
@@ -117,8 +119,8 @@ class MainTextMetrics : Scene() {
                 @Suppress("UNCHECKED_CAST") val rinfo = (info as SecInfo<Any>)
                 horizontal {
                     label("${info.name}:")
-                    val prop = korlibs.io.async.ObservableProperty(info.prop)
-                    @Suppress("UNCHECKED_CAST") val rprop = (prop as korlibs.io.async.ObservableProperty<Any>)
+                    val prop = ObservableProperty(info.prop)
+                    @Suppress("UNCHECKED_CAST") val rprop = prop
                     for (item in info.items) {
                         toggleButton(rinfo.convert(item)) {
                             prop.observeStart { this.pressed = (it == item) }
@@ -129,7 +131,7 @@ class MainTextMetrics : Scene() {
                     }
                 }
             }
-            val fontProp = korlibs.io.async.ObservableProperty(text1.font.getOrNull()!!).observeStart { text1.font = it }
+            val fontProp = ObservableProperty(text1.font.getOrNull()!!).observeStart { text1.font = it }
             horizontal {
                 label("Font:")
                 onDragAndDropFileEvent {
@@ -163,7 +165,7 @@ class MainTextMetrics : Scene() {
             }
             horizontal {
                 label("Text:")
-                val prop = korlibs.io.async.ObservableProperty(textStrs.values.first()).observeStart { text1.text = it }
+                val prop = ObservableProperty(textStrs.values.first()).observeStart { text1.text = it }
                 for ((key, value) in textStrs) {
                     toggleButton(key) {
                         prop.observeStart { this.pressed = (it == value) }

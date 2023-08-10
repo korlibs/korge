@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalUnsignedTypes::class)
+@file:OptIn(ExperimentalUnsignedTypes::class, ExperimentalStdlibApi::class)
 
 package korlibs.graphics
 
@@ -15,7 +15,7 @@ internal interface AGNativeObject {
     fun markToDelete()
 }
 
-open class AGObject : Closeable {
+open class AGObject : AutoCloseable {
     internal var _native: AGNativeObject? = null
     internal var _cachedContextVersion: Int = -1
     internal var _cachedVersion: Int = -2
@@ -143,7 +143,7 @@ inline class AGTextureUnitInfo private constructor(val data: Int) {
 
 class AGTexture(
     val targetKind: AGTextureTargetKind = AGTextureTargetKind.TEXTURE_2D
-) : AGObject(), Closeable {
+) : AGObject(), AutoCloseable {
     private val logger = Logger("AGTexture")
     var isFbo: Boolean = false
     var requestMipmaps: Boolean = false
@@ -206,7 +206,7 @@ open class AGFrameBufferBase(val isMain: Boolean) : AGObject() {
     override fun toString(): String = "AGFrameBufferBase(isMain=$isMain)"
 }
 
-open class AGFrameBuffer(val base: AGFrameBufferBase, val id: Int = -1) : Closeable {
+open class AGFrameBuffer(val base: AGFrameBufferBase, val id: Int = -1) : AutoCloseable {
     constructor(isMain: Boolean = false, id: Int = -1) : this(AGFrameBufferBase(isMain), id)
     val isTexture: Boolean get() = base.isTexture
     val isMain: Boolean get() = base.isMain

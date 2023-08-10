@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalStdlibApi::class)
+
 package samples.minesweeper
 
 import korlibs.datastructure.*

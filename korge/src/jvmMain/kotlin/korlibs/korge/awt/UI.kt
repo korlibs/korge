@@ -66,7 +66,7 @@ internal open class UiComponent(val app: UiApplication, val component: NativeUiF
     fun show() { visible = true }
     fun hide() { visible = false }
     fun onClick(block: (MouseEvent) -> Unit) = onMouseEvent { if (it.typeClick) block(it) }
-    fun onResize(handler: (ReshapeEvent) -> Unit): Disposable = component.onResize(handler)
+    fun onResize(handler: (ReshapeEvent) -> Unit): AutoCloseable = component.onResize(handler)
 
     fun repaintAll() = component.repaintAll()
     open fun updateUI() = component.updateUI()
@@ -204,7 +204,7 @@ internal open class UiTextField(app: UiApplication, val textField: NativeUiFacto
     var text by textField::text
     fun select(range: IntRange? = 0 until Int.MAX_VALUE): Unit = textField.select(range)
     fun focus(): Unit = textField.focus()
-    fun onKeyEvent(block: (KeyEvent) -> Unit): Disposable = textField.onKeyEvent(block)
+    fun onKeyEvent(block: (KeyEvent) -> Unit): AutoCloseable = textField.onKeyEvent(block)
 }
 
 internal interface UiLayout {
