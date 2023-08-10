@@ -9,7 +9,6 @@ import korlibs.image.bitmap.*
 import korlibs.image.color.*
 import korlibs.io.file.*
 import korlibs.io.file.std.*
-import korlibs.io.lang.*
 import korlibs.math.geom.*
 import java.awt.*
 import java.awt.Rectangle
@@ -48,7 +47,7 @@ internal open class NativeUiFactory {
         var checked: Boolean
             get() = false
             set(value) = Unit
-        fun onChange(block: () -> Unit) = Disposable { }
+        fun onChange(block: () -> Unit) = AutoCloseable { }
     }
 
     interface NativeComboBox<T> : NativeComponent {
@@ -62,7 +61,7 @@ internal open class NativeUiFactory {
 
         fun open(): Unit = Unit
         fun close(): Unit = Unit
-        fun onChange(block: () -> Unit) = Disposable { }
+        fun onChange(block: () -> Unit) = AutoCloseable { }
     }
 
     interface NativeComponent : Extra {
@@ -91,8 +90,8 @@ internal open class NativeUiFactory {
             get() = true
             set(value) = Unit
 
-        fun onMouseEvent(handler: (korlibs.event.MouseEvent) -> Unit): Disposable = Disposable { }
-        fun onFocus(handler: (FocusEvent) -> Unit): Disposable = Disposable { }
+        fun onMouseEvent(handler: (korlibs.event.MouseEvent) -> Unit): AutoCloseable = AutoCloseable { }
+        fun onFocus(handler: (FocusEvent) -> Unit): AutoCloseable = AutoCloseable { }
         fun onResize(handler: (ReshapeEvent) -> Unit): AutoCloseable = AutoCloseable { }
 
         fun repaintAll() = Unit
@@ -284,7 +283,7 @@ internal open class AwtComponent(override val factory: NativeUiFactory, override
 
     //var lastMouseEvent: java.awt.event.MouseEvent? = null
 
-    override fun onFocus(handler: (FocusEvent) -> Unit): Disposable {
+    override fun onFocus(handler: (FocusEvent) -> Unit): AutoCloseable {
         val event = korlibs.event.FocusEvent()
 
         fun dispatch(e: java.awt.event.FocusEvent, type: korlibs.event.FocusEvent.Type) {
@@ -296,7 +295,7 @@ internal open class AwtComponent(override val factory: NativeUiFactory, override
             override fun focusLost(e: java.awt.event.FocusEvent) = dispatch(e, FocusEvent.Type.BLUR)
         }
         component.addFocusListener(listener)
-        return Disposable {
+        return AutoCloseable {
             component.removeFocusListener(listener)
         }
     }
@@ -305,7 +304,7 @@ internal open class AwtComponent(override val factory: NativeUiFactory, override
         val blankCursor = Toolkit.getDefaultToolkit().createCustomCursor(BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB), java.awt.Point(0, 0), "blank cursor");
     }
 
-    override fun onMouseEvent(handler: (korlibs.event.MouseEvent) -> Unit): Disposable {
+    override fun onMouseEvent(handler: (korlibs.event.MouseEvent) -> Unit): AutoCloseable {
         val event = korlibs.event.MouseEvent()
 
         var lockingX = 0
@@ -371,7 +370,7 @@ internal open class AwtComponent(override val factory: NativeUiFactory, override
 
         component.addMouseListener(listener)
         component.addMouseMotionListener(listener)
-        return Disposable {
+        return AutoCloseable {
             component.removeMouseMotionListener(listener)
             component.removeMouseListener(listener)
         }
@@ -446,10 +445,10 @@ internal open class AwtCheckBox(factory: NativeUiFactory, val checkBox: JCheckBo
         get() = checkBox.isSelected
         set(value) { checkBox.isSelected = value }
 
-    override fun onChange(block: () -> Unit): Disposable {
+    override fun onChange(block: () -> Unit): AutoCloseable {
         val listener = ChangeListener { block() }
         checkBox.addChangeListener(listener)
-        return Disposable {
+        return AutoCloseable {
             checkBox.removeChangeListener(listener)
         }
     }
@@ -479,10 +478,10 @@ internal open class AwtComboBox<T>(factory: NativeUiFactory, val comboBox: JComb
     }
 
 
-    override fun onChange(block: () -> Unit): Disposable {
+    override fun onChange(block: () -> Unit): AutoCloseable {
         val listener = ActionListener { block() }
         comboBox.addActionListener(listener)
-        return Disposable {
+        return AutoCloseable {
             comboBox.removeActionListener(listener)
         }
     }

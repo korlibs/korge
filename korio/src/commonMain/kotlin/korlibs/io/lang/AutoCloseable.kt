@@ -45,14 +45,8 @@ fun Iterable<AutoCloseable>.close() {
     for (c in this) c.close()
 }
 
-fun Iterable<AutoCloseable>.closeable() = object : AutoCloseable {
-    override fun close() {
-        close()
-    }
-}
-
 fun AutoCloseable.cancellable() = Cancellable { this.close() }
-fun AutoCloseable.disposable() = Disposable { this.close() }
+
 fun Cancellable.closeable(e: () -> Throwable = { CancellationException("") }) = object : AutoCloseable {
     override fun close() {
         cancel(e())
