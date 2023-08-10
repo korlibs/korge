@@ -91,10 +91,6 @@ class CancellableGroup() : CloseableCancellable {
         cancellables += c
     }
 
-    fun addCloseable(c: AutoCloseable) {
-        cancellables += c.cancellable()
-    }
-
     override fun close() {
         cancel(kotlin.coroutines.cancellation.CancellationException())
     }
