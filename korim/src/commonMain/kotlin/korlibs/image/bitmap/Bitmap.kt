@@ -336,7 +336,7 @@ inline fun <T : Bitmap> T.context2d(antialiased: Boolean = true, doLock: Boolean
         try {
             callback(ctx)
         } finally {
-            ctx.dispose()
+            ctx.close()
         }
     }
     return this
