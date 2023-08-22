@@ -153,4 +153,11 @@ class XmlTest {
             xml.take(10).toList().joinToString("\n")
         )
     }
+
+    @Test
+    fun testEntities() {
+        assertEquals("&", Xml.Entities.decode("&amp;"))
+        assertEquals("’", Xml.Entities.decode("&#8217;"))
+        assertEquals("’", Xml.Entities.decode("&#x2019;"))
+    }
 }
