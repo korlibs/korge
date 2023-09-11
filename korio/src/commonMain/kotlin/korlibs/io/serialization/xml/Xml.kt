@@ -4,7 +4,7 @@ import korlibs.datastructure.flip
 import korlibs.datastructure.iterators.fastForEach
 import korlibs.datastructure.toCaseInsensitiveMap
 import korlibs.io.file.VfsFile
-import korlibs.io.lang.eachBuilder
+import korlibs.io.lang.*
 import korlibs.io.stream.*
 import korlibs.io.util.*
 import kotlin.collections.Iterable
@@ -253,7 +253,15 @@ data class Xml(
 				val value = r.readUntilIncluded(';') ?: ""
 				val full = "&$value"
 				when {
-					value.startsWith('#') -> append(value.substring(1, value.length - 1).toInt().toChar())
+					value.startsWith('#') -> {
+                        var base = 10
+                        var str = value.substring(1, value.length - 1)
+                        if(str.startsWith("x")) {
+                            base = 16
+                            str = str.substring(1)
+                        }
+                        append(str.toIntOrNull(base)?.toChar())
+                    }
 					entityToChar.contains(full) -> append(entityToChar[full])
 					else -> append(full)
 				}
