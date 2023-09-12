@@ -58,25 +58,53 @@ open class KorgwSurfaceView constructor(
     var updateTimerThread: Thread? = null
 
     override fun onAttachedToWindow() {
+        println("KorgwSurfaceView.onAttachedToWindow")
         super.onAttachedToWindow()
 
         val display: Display = (context.getSystemService(Context.WINDOW_SERVICE) as WindowManager).getDefaultDisplay()
         val refreshRating: Float = display.refreshRate
 
         updateTimerThread = thread(start = true, isDaemon = true, name = "korgw-updater") {
+            println("updateTimerThread=$updateTimerThread")
+            gameWindow.coroutineDispatcher.executePending(16.milliseconds)
             try {
                 while (true) {
+                    //println("updateTimerThread.loop")
                     val startTime = System.currentTimeMillis()
                     try {
                         if (!firstRender) {
+                            //println("updateTimerThread.loop.requestRender=!$firstRender")
                             requestRender()
+                            renderLock {
+                                //println("onAttachedToWindow.timer: continuousRenderMode=$continuousRenderMode")
+                                //if (!continuousRenderMode) {
+                                if (true) {
+                                    val frameStartTime = runPreFrame()
+                                    try {
+                                        //println("updateTimerThread.loop.frame")
+                                        gameWindow.frame(
+                                            frameStartTime = frameStartTime,
+                                            doUpdate = true,
+                                            doRender = false
+                                        )
+                                        //println("     --> gameWindow.mustTriggerRender=${gameWindow.mustTriggerRender}")
+                                        if (gameWindow.mustTriggerRender) {
+                                            requestRender()
+                                        }
+                                    } catch (e: Throwable) {
+                                        e.printStackTrace()
+                                    }
+                                }
+                            }
                         } else {
                             //queueEvent {
                             renderLock {
                                 //println("onAttachedToWindow.timer: continuousRenderMode=$continuousRenderMode")
-                                if (!continuousRenderMode) {
+                                //if (!continuousRenderMode) {
+                                if (true) {
                                     val frameStartTime = runPreFrame()
                                     try {
+                                        println("updateTimerThread.loop.frame")
                                         gameWindow.frame(
                                             frameStartTime = frameStartTime,
                                             doUpdate = true,

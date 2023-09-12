@@ -48,20 +48,30 @@ open class KorgeAndroidView @JvmOverloads constructor(
     }
 
     fun loadModule(config: KorgeConfig) {
+        println("KorgeAndroidView.loadModule[a]")
         unloadModule() // Unload module if already loaded
 
         agOpenGl = AGOpengl(KmlGlAndroid { mGLView?.clientVersion ?: -1 }.checkedIf(checked = false).logIf(log = false))
         gameWindow = AndroidGameWindowNoActivity(config.windowSize.width.toInt(), config.windowSize.height.toInt(), agOpenGl!!, context, this.config) { mGLView!! }
         mGLView = korlibs.render.KorgwSurfaceView(this, context, gameWindow!!, this.config)
 
+        println("KorgeAndroidView.loadModule[b]")
+
         addView(mGLView)
+
+        println("KorgeAndroidView.loadModule[b]")
 
         gameWindow?.let { gameWindow ->
             Korio(context) {
+                println("KorgeAndroidView.loadModule[d]")
+
                 try {
                     withAndroidContext(context) {
                         withContext(coroutineContext + gameWindow) {
+                            println("KorgeAndroidView.loadModule[e]")
+                            moduleLoaded = true
                             config.start()
+                            println("KorgeAndroidView.loadModule[f]")
                         }
                     }
                 } finally {
@@ -69,8 +79,6 @@ open class KorgeAndroidView @JvmOverloads constructor(
                 }
             }
         }
-
-        moduleLoaded = true
     }
 
     fun queueEvent(runnable: Runnable) {

@@ -8,6 +8,7 @@ import android.view.inputmethod.*
 import korlibs.event.*
 import korlibs.graphics.*
 import korlibs.image.bitmap.*
+import korlibs.io.async.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
 
@@ -97,6 +98,15 @@ abstract class BaseAndroidGameWindow(
     //    semaphore.acquire()
     //    return result!!.getOrThrow()
     //}
+
+    override suspend fun loop(entry: suspend GameWindow.() -> Unit) {
+        this.coroutineContext = kotlin.coroutines.coroutineContext
+        println("BaseAndroidGameWindow.DISPATCHER: $coroutineDispatcher")
+        println("BaseAndroidGameWindow.CONTEXT: $coroutineContext")
+        launchImmediately(getCoroutineDispatcherWithCurrentContext()) {
+            entry(this)
+        }
+    }
 }
 
 val GameWindow.gameWindowAndroidContext: Context get() = androidContextAny as Context
@@ -149,12 +159,6 @@ class AndroidGameWindow(val activity: KorgwActivity, config: GameWindowCreationC
     override fun setSize(width: Int, height: Int) {
     }
 
-
-    override suspend fun loop(entry: suspend GameWindow.() -> Unit) {
-        this.coroutineContext = kotlin.coroutines.coroutineContext
-        //println("CONTEXT: ${kotlin.coroutines.coroutineContext[AndroidCoroutineContext.Key]?.context}")
-        entry(this)
-    }
 }
 
 class AndroidGameWindowNoActivity(
@@ -185,9 +189,4 @@ class AndroidGameWindowNoActivity(
     override var quality: Quality
         get() = super.quality
         set(value) {}
-
-    override suspend fun loop(entry: suspend GameWindow.() -> Unit) {
-        this.coroutineContext = kotlin.coroutines.coroutineContext
-        entry(this)
-    }
 }
