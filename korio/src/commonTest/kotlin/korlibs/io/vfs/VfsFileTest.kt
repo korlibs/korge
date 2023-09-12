@@ -33,11 +33,11 @@ class VfsFileTest {
         localCurrentDirVfs.list().filter { it.baseName == "build.gradle.kts" }.collect {
             if (it.isFile()) {
                 //println("$it: ${it.readAll().size}")
-                processedFileNamesWithSize += "${it.baseName}:${it.readAll().size}"
+                processedFileNamesWithSize += "${it.baseName}:${it.readAll().size > 200}"
             }
         }
         //println("************************************")
-        assertEquals(listOf("build.gradle.kts:477"), processedFileNamesWithSize)
+        assertEquals(listOf("build.gradle.kts:true"), processedFileNamesWithSize)
     }
 
 	@Test

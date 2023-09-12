@@ -1,6 +1,5 @@
 description = "Mathematic library for Multiplatform Kotlin 1.3"
 
 dependencies {
-	add("commonMainApi", project(":kds"))
-    add("commonMainImplementation", project(":kmem"))
+	add("commonMainApi", project(":korge-foundation"))
 }

@@ -1,4 +1,0 @@
-description = "Pure Kotlin cryptography library"
-
-dependencies {
-}
