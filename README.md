@@ -1,4 +1,4 @@
-<h1 align="center">KorGE (Maintenance mode)</h1>
+<h1 align="center">KorGE</h1>
 <p align="center">Multiplatform Kotlin Game Engine</p>
 <!-- BADGES -->
 <p align="center">
@@ -19,16 +19,6 @@ in addition to ensure the continuity of the project, you will get exclusive cont
 </p>
 -->
 <!-- /SUPPORT -->
-
-## KorGE is now in maintenance mode
-
-**In maintenance mode. [Soywiz](https://github.com/soywiz) (the founder/primary lead/developer) has retired from maintaining this project (2023/07/27).** 
-
-Currently this project is only being maintained by a [handful of people](https://github.com/orgs/korlibs/teams/devs?query=role%3Amaintainer) who may/may not be as familiar with the architecture. 
-
-Do not expect any major updates in the future and expect less support if you do decide to use this project.
-
-We are open for pull requests if there are any issues you'd like to fix yourself.
 
 ## Info about the project:
 

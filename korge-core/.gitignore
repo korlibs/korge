@@ -1,0 +1,9 @@
+/.idea
+/.gradle
+/build
+/out
+/classes
+/web
+/__existing
+/node_modules
+/target
