@@ -15,7 +15,6 @@ benchmark.targets.register("jvm")
 //kotlin { js(IR) { nodejs() } }; benchmark.targets.register("js")
 
 dependencies {
-    add("commonMainApi", project(":korim"))
     add("commonMainApi", project(":korge"))
     add("commonMainApi", "org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.4.7")
 }
