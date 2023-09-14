@@ -17,57 +17,65 @@ internal actual fun syncExecNative(
 
     // Create pipes
     if (pipe(pipeStdin) == -1 || pipe(pipeStdout) == -1 || pipe(pipeStderr) == -1) {
-        perror("pipe");
-        exit(EXIT_FAILURE);
+        perror("pipe")
+        exit(EXIT_FAILURE)
     }
 
     val childPid = fork()
     if (childPid == -1) {
-        perror("fork");
-        exit(EXIT_FAILURE);
+        perror("fork")
+        exit(EXIT_FAILURE)
     }
 
     if (childPid == 0) {  // Child process
-        // Redirect stdin, stdout, and stderr to the pipes
-        dup2(pipeStdin[0], STDIN_FILENO);
-        dup2(pipeStdout[1], STDOUT_FILENO);
-        dup2(pipeStderr[1], STDERR_FILENO);
+        dup2(pipeStdin[0], STDIN_FILENO)
+        dup2(pipeStdout[1], STDOUT_FILENO)
+        dup2(pipeStderr[1], STDERR_FILENO)
 
-        // Close unused pipe ends
-        close(pipeStdin[1]);
-        close(pipeStdout[0]);
-        close(pipeStderr[0]);
+        close(pipeStdin[1])
+        close(pipeStdout[0])
+        close(pipeStderr[0])
 
-        // Execute desired program
+        memScoped {
+            fun MemScope.allocArrayOfStrings(strs: List<String>): CValuesRef<CPointerVar<ByteVar>> {
+                val out = allocArray<CPointerVar<ByteVar>>(strs.size + 1)
+                for (n in strs.indices) out[n] = strs[n].cstr.ptr
+                return out
+            }
+            execve(
+                commands[0],
+                allocArrayOfStrings(commands.drop(1)),
+                allocArrayOfStrings(envs.map { "${it.key}=${it.value}" }),
+            )
+        }
 
-        execlp(commands[0], commands.getOrNull(1), *commands.drop(minOf(commands.size, 2)).toTypedArray(), null);  // For example, run 'cat'
-
-        // If execlp fails
-        perror("execlp");
-        exit(EXIT_FAILURE);
+        perror("execlp")
+        exit(EXIT_FAILURE)
     }
+
+
     close(pipeStdin[0])
     close(pipeStdout[1])
     close(pipeStderr[1])
 
-    fun toSyncInputStream(__fd: Int): SyncInputStream {
+    fun toSyncInputStream(fd: Int): SyncInputStream {
         return object : SyncInputStream {
             override fun read(buffer: ByteArray, offset: Int, len: Int): Int {
                 if (len == 0) return 0
                 val read = buffer.usePinned {
-                    platform.posix.read(__fd, it.addressOf(offset), len.convert())
+                    read(fd, it.addressOf(offset), len.convert())
                 }
                 return read.toInt()
             }
         }
     }
 
-    fun toSyncOutputStream(__fd: Int): SyncOutputStream {
+    fun toSyncOutputStream(fd: Int): SyncOutputStream {
         return object : SyncOutputStream {
             override fun write(buffer: ByteArray, offset: Int, len: Int) {
                 if (len == 0) return
                 buffer.usePinned {
-                    platform.posix.write(__fd, it.addressOf(offset), len.convert())
+                    write(fd, it.addressOf(offset), len.convert())
                 }
             }
         }
