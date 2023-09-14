@@ -1,7 +1,7 @@
 package korlibs.memory.internal
 
 import android.os.*
-import korlibs.kmem.*
+import korlibs.korge_foundation.*
 import korlibs.memory.*
 import java.nio.*
 
