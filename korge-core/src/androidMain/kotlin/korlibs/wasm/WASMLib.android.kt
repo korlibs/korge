@@ -6,10 +6,13 @@ import korlibs.io.android.*
 import korlibs.io.lang.*
 
 actual open class WASMLib actual constructor(content: ByteArray) : IWASMLib, BaseWASMLib(content) {
+    val androidContextOpt: Context? get() = _context?.androidContextOrNull()
+
     val executor: AndroidWASMExecutor by lazy {
-        val _context = _context ?: error("Must call WASMLib.initOnce before calling any method")
-        AndroidWASMExecutor(_context.androidContext())
+        AndroidWASMExecutor(androidContextOpt ?: error("Must call WASMLib.initOnce with an android context on it (withAndroidContext()) before calling any method"))
     }
+
+    override val isAvailable: Boolean get() = androidContextOpt != null
 
     override fun readBytes(pos: Int, size: Int): ByteArray = executor.readBytes(pos, size)
     override fun writeBytes(pos: Int, data: ByteArray) = executor.writeBytes(pos, data)
