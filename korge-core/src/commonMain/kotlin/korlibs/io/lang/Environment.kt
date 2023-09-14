@@ -1,6 +1,7 @@
 package korlibs.io.lang
 
 import korlibs.datastructure.*
+import korlibs.memory.*
 import kotlin.collections.LinkedHashMap
 import kotlin.collections.Map
 import kotlin.collections.MutableMap
@@ -27,6 +28,8 @@ interface Environment {
     operator fun set(key: String, value: String)
     fun getAll(): Map<String, String>
     companion object : Environment {
+        val PATH_SEPARATOR: Char get() = if (Platform.isWindows) ';' else ':'
+
         // Uses querystring on JS/Browser, and proper env vars in the rest
         override operator fun get(key: String): String? = customEnvironments?.get(key) ?: EnvironmentInternal[key]
         operator override fun set(key: String, value: String) {
@@ -39,6 +42,8 @@ interface Environment {
         override fun getAll(): Map<String, String> = (customEnvironments ?: mapOf()) + EnvironmentInternal.getAll()
     }
 }
+
+val Environment.TEMP get() = this["TEMP"] ?: this["TMP"] ?: "/tmp"
 
 open class EnvironmentCustom(customEnvironments: Map<String, String> = LinkedHashMap()) : Environment {
     var customEnvironments = when (customEnvironments) {
