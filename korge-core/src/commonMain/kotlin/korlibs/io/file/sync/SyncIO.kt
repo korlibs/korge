@@ -5,9 +5,53 @@ import korlibs.io.file.*
 import korlibs.io.file.std.*
 import korlibs.io.lang.*
 
-internal expect val platformSyncIO: SyncIO
+@RequiresOptIn(level = RequiresOptIn.Level.ERROR)
+annotation class SyncIOAPI
+
+@SyncIOAPI
+expect val platformSyncIO: SyncIO
+
+class SyncIOFile(val impl: SyncIO, val fullPath: String) {
+    companion object {
+        @SyncIOAPI
+        operator fun invoke(path: String): SyncIOFile = SyncIOFile(platformSyncIO, path)
+    }
+
+    operator fun get(child: String): SyncIOFile = SyncIOFile(impl, "$fullPath/$child")
+
+    val name: String get() = PathInfo(fullPath).baseName
+    val path: String get() = PathInfo(fullPath).parent.fullPath
+    val parent: SyncIOFile get() = SyncIOFile(impl, path)
+
+    fun stat() = impl.stat(fullPath)
+
+    val isDirectory: Boolean get() = stat()?.isDirectory == true
+    fun exists(): Boolean = stat() != null
+
+    fun readBytes(): ByteArray = impl.readAllBytes(fullPath)
+    fun readString(): String = impl.readString(fullPath)
+
+    fun writeBytes(content: ByteArray) = impl.writeAllBytes(fullPath, content)
+    fun writeString(content: String) = impl.writeString(fullPath, content)
+
+    fun list(): List<SyncIOFile> = impl.list(fullPath).map { this[it] }
+
+    fun mkdir() = impl.mkdir(fullPath)
+    fun rmdir() = impl.rmdir(fullPath)
+    fun delete() = impl.delete(fullPath)
+    fun realpath() = impl.realpath(fullPath)
+    fun readlink() = impl.readlink(fullPath)
+    fun writelink(link: String?) = impl.writelink(fullPath, link)
+    fun open(mode: String) = impl.open(fullPath, mode)
+
+    //override fun toString(): String = "SyncIOFile($fullPath)[$impl]"
+    override fun toString(): String = "SyncIOFile($fullPath)"
+}
+
+fun SyncIO.file(path: String): SyncIOFile = SyncIOFile(this, path)
 
 interface SyncIO {
+    @SyncIOAPI
     companion object : SyncIO by platformSyncIO
 
     open fun realpath(path: String): String = path
@@ -20,7 +64,19 @@ interface SyncIO {
     open fun delete(path: String): Boolean = TODO()
     open fun list(path: String): List<String> = TODO()
 
-    fun write(path: String, data: ByteArray) {
+    fun readString(path: String): String = readAllBytes(path).decodeToString()
+    fun writeString(path: String, data: String) {
+        writeAllBytes(path, data.encodeToByteArray())
+    }
+    fun readAllBytes(path: String): ByteArray {
+        return open(path, "r").use { file ->
+            ByteArray(file.length.toInt()).also {
+                file.read(it)
+            }
+        }
+    }
+
+    fun writeAllBytes(path: String, data: ByteArray) {
         mkdir(PathInfo(path).parent.fullPathNormalized)
         open(path, "wb").use { it.write(data) }
     }
@@ -69,7 +125,9 @@ class MemorySyncIO : SyncIO {
         return NodeSyncIOFD(root.access(path, createFolders = write).followLinks())
     }
     override fun stat(path: String): SyncIOStat? {
-        val node = root.accessOrNull(path) ?: return null
+        val node = root.accessOrNull(path)
+        //println("STAT: $path : $node . isDirectory=${node?.isDirectory}")
+        if (node == null) return null
         return SyncIOStat(node.name, node.isDirectory, (node.data as? ByteArray?)?.size?.toLong() ?: 0L)
     }
 
