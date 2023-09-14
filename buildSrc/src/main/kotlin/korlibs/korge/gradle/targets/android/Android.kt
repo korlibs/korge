@@ -228,8 +228,8 @@ fun Project.getAndroidTargetSdkVersion(): Int = project.findProperty("android.ta
 //const val ANDROID_DEFAULT_MIN_SDK = 18
 //Suggestion: use a compatible library with a minSdk of at most 18, or increase this project's minSdk version to at least 26,
 const val ANDROID_DEFAULT_MIN_SDK = 26 // Android 8.0
-const val ANDROID_DEFAULT_COMPILE_SDK = 30
-const val ANDROID_DEFAULT_TARGET_SDK = 30
+const val ANDROID_DEFAULT_COMPILE_SDK = 33
+const val ANDROID_DEFAULT_TARGET_SDK = 33
 
 val ANDROID_JAVA_VERSION = JavaVersion.VERSION_1_8
 //val ANDROID_JAVA_VERSION = JavaVersion.VERSION_11
