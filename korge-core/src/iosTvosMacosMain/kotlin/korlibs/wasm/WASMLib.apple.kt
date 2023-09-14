@@ -1,7 +1,6 @@
 package korlibs.wasm
 
 import kotlinx.cinterop.*
-import platform.Foundation.*
 import platform.JavaScriptCore.*
 import platform.posix.*
 
@@ -12,8 +11,16 @@ actual open class WASMLib actual constructor(content: ByteArray) : BaseWASMLib(c
 
     override fun readBytes(pos: Int, size: Int): ByteArray = runner.readBytes(pos, size)
     override fun writeBytes(pos: Int, data: ByteArray) = runner.writeBytes(pos, data)
+    override fun invokeFunc(name: String, vararg params: Any?): Any? = runner.invokeFunction(name, *params)?.toAny()
 
-    //override fun invokeFunc(name: String, vararg params: Any?): Any? = runner.invokeFunction(name, *params)
+    fun JSValue.toAny(): Any? = when {
+        this.isNull -> null
+        this.isUndefined -> null
+        this.isString -> this.toString_()
+        this.isBoolean -> this.toBool()
+        this.isNumber -> this.toNumber()?.doubleValue
+        else -> this.toString_()
+    }
     //override fun invokeFuncIndirect(address: Int, vararg params: Any?): Any? = runner.invokeFuncIndirect(address, *params)
 
     override fun close() = runner.close()
@@ -64,7 +71,11 @@ class WASMRunner {
     }
     // @TODO: Polyfill
     fun loadWasmModule(wasmBytes: ByteArray) {
-        js.globalObject!!.setValue(js.createUint8Array(wasmBytes), "tempBytes")
+        js.globalObject!!.setObject(js.createUint8Array(wasmBytes), forKeyedSubscript = "tempBytes")
+
+        if (evaluateScript("WebAssembly").isUndefined) {
+
+        }
 
         evaluateScript("""
           globalThis.wasmInstance = new WebAssembly.Instance(new WebAssembly.Module(tempBytes), {
@@ -80,7 +91,7 @@ class WASMRunner {
     }
 
     fun writeBytes(ptr: Int, bytes: ByteArray) {
-        js.globalObject!!.setValue(js.createUint8Array(bytes), "tempBytes")
+        js.globalObject!!.setObject(js.createUint8Array(bytes), forKeyedSubscript = "tempBytes")
         evaluateScript("""
           new Uint8Array(globalThis.wasmInstance.exports.memory.buffer).set(tempBytes, $ptr);
           globalThis.tempBytes = undefined;

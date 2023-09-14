@@ -45,10 +45,9 @@ actual open class WASMLib actual constructor(content: ByteArray) : BaseWASMLib(c
 }
 
 class AndroidWASMExecutor(val context: Context) : Closeable {
-    private val sandbox by lazy {
+    private val sandbox: JavaScriptSandbox by lazy {
         //runBlocking { JavaScriptSandbox.createConnectedInstanceAsync(context).await(mainExecutor) }
-        JavaScriptSandbox.createConnectedInstanceAsync(context).get().also {
-        }
+        JavaScriptSandbox.createConnectedInstanceAsync(context).get()
     }
 
     private val _js by lazy {
