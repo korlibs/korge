@@ -1,5 +1,6 @@
 package korlibs.io.file.sync
 
+import korlibs.io.file.std.*
 import korlibs.io.stream.*
 import kotlinx.cinterop.*
 import platform.windows.*
@@ -36,7 +37,7 @@ internal actual fun syncExecNative(
     si.hStdError = hErrorWrite.value
 
     memScoped {
-        if (CreateProcess!!(null, "cmd.exe".wcstr.ptr, null, null, TRUE, 0.convert(), null, null, si.ptr, pi.ptr) == 0) {
+        if (CreateProcess!!(null, ShellArgs.buildShellExecCommandLine(commands).wcstr.ptr, null, null, TRUE, 0.convert(), null, null, si.ptr, pi.ptr) == 0) {
             error("CreateProcess failed (${GetLastError()})")
         }
     }
