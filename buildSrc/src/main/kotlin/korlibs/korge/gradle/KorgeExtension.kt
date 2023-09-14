@@ -349,6 +349,10 @@ open class KorgeExtension(
 	var supressWarnings: Boolean = false
 
     val versionSubstitutions = LinkedHashMap<String, String>().also {
+        //it["com.soywiz.korlibs.korge-test:korge-test"] = BuildVersions.KORLIBS
+        it["com.soywiz.korlibs.korge-core:korge-core"] = BuildVersions.KORLIBS
+        it["com.soywiz.korlibs.korge-platform:korge-platform"] = BuildVersions.KORLIBS
+
         it["com.soywiz.korlibs.kbignum:kbignum"] = BuildVersions.KORLIBS
         it["com.soywiz.korlibs.kds:kds"] = BuildVersions.KORLIBS
         it["com.soywiz.korlibs.klock:klock"] = BuildVersions.KORLIBS

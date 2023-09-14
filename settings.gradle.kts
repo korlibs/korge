@@ -25,30 +25,11 @@ fun isPropertyTrue(name: String): Boolean {
 val inCI = isPropertyTrue("CI")
 val disabledExtraKorgeLibs = isPropertyTrue("DISABLED_EXTRA_KORGE_LIBS")
 
-include(":korcoutines")
-include(":kbignum")
-include(":klock")
-include(":klogger")
-include(":korinject")
-include(":kmem")
-include(":kds")
-include(":korma")
-include(":krypto")
-include(":korte")
-include(":korio")
-include(":korim")
-include(":korau")
-include(":korgw")
+include(":korge-foundation")
+include(":korge-core")
 include(":korge")
-include(":ktruth")
 include(":korge-gradle-plugin")
 include(":korge-reload-agent")
 include(":korge-sandbox")
-if (enableMetalPlayground != "false" && !inCI) {
-    include(":osx-metal-playground")
-}
-
+include(":korge-benchmarks")
 //if (!inCI || System.getenv("ENABLE_BENCHMARKS") == "true") {
-if (System.getenv("ENABLE_BENCHMARKS") == "true") {
-    include(":korge-benchmarks")
-}

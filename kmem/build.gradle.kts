@@ -1,5 +1,0 @@
-description = "Memory utilities for Kotlin"
-
-dependencies {
-    add("jvmMainApi", libs.bundles.jna)
-}

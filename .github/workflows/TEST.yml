@@ -101,9 +101,9 @@ jobs:
     - { name: Archive Test Results, if: failure(), uses: actions/upload-artifact@v3, with: { name: screenshot-test-results-linux, retention-days: 21, path: "**/build/reports", if-no-files-found: ignore } }
     - { name: Check sandbox compiles, run: "./gradlew :korge-sandbox:jvmJar" }
     - { name: Publish to maven local, run: ./gradlew publishJvmLocal }
-    - { name: e2e test, working-directory: e2e-test, run: ./gradlew checkReferencesJvm --stacktrace }
-    - { name: Archive E2E Test Results, if: failure(), uses: actions/upload-artifact@v3, with: { name: e2e-test-results-linux-jvm, retention-days: 21, path: "**/e2e-test/build/screenshots", if-no-files-found: ignore } }
-    - { name: e2e multi test and hotreload, working-directory: e2e-test-multi, run: "./gradlew --watch-fs --warn --configuration-cache --configuration-cache-problems=warn compileKotlinJvm" }
+    - { name: e2e test, working-directory: e2e/e2e-test, run: ./gradlew checkReferencesJvm --stacktrace }
+    - { name: Archive E2E Test Results, if: failure(), uses: actions/upload-artifact@v3, with: { name: e2e-test-results-linux-jvm, retention-days: 21, path: "**/e2e/e2e-test/build/screenshots", if-no-files-found: ignore } }
+    - { name: e2e multi test and hotreload, working-directory: e2e/e2e-test-multi, run: "./gradlew --watch-fs --warn --configuration-cache --configuration-cache-problems=warn compileKotlinJvm" }
     - { name: Run benchmarks, run: "./gradlew :korge-benchmarks:jvmBenchmark" }
     #- { name: e2e test, uses: GabrielBB/xvfb-action@v1, with: { working-directory: e2e-test, run: ./gradlew checkReferencesJvm --stacktrace } }
 
@@ -227,11 +227,11 @@ jobs:
     - { name: Publish gradle plugin and reload agent, run: "./gradlew :korge-gradle-plugin:publishToMavenLocal :korge-reload-agent:publishToMavenLocal" }
     - { name: Publish X64, run: ./gradlew publishLinuxX64PublicationToMavenLocal publishKotlinMultiplatformPublicationToMavenLocal }
     - { name: Stop gradle daemon, run: ./gradlew --stop }
-    - { name: e2e test native, working-directory: e2e-test, run: ./gradlew checkReferencesNative --stacktrace }
-    - { name: Archive E2E Test Results, if: failure(), uses: actions/upload-artifact@v3, with: { name: e2e-test-results-linux, retention-days: 21, path: "**/e2e-test/build/screenshots", if-no-files-found: ignore } }
+    - { name: e2e test native, working-directory: e2e/e2e-test, run: ./gradlew checkReferencesNative --stacktrace }
+    - { name: Archive E2E Test Results, if: failure(), uses: actions/upload-artifact@v3, with: { name: e2e-test-results-linux, retention-days: 21, path: "**/e2e/e2e-test/build/screenshots", if-no-files-found: ignore } }
     - { name: Testing Linux Arm64 Publishing, run: ./gradlew publishLinuxArm64PublicationToMavenLocal }
     - { name: Publish JS, run: ./gradlew publishJsPublicationToMavenLocal }
-    - { name: e2e test JS, working-directory: e2e-test, run: ./gradlew browserReleaseEsbuild --stacktrace }
+    - { name: e2e test JS, working-directory: e2e/e2e-test, run: ./gradlew browserReleaseEsbuild --stacktrace }
 
   test-native-macos:
     needs: changes
@@ -251,11 +251,11 @@ jobs:
     - { name: Testing Kotlin/Native MacosX64, run: ./gradlew macosX64Test }
     - { name: Publish gradle plugin, run: "./gradlew :korge-gradle-plugin:publishToMavenLocal :korge-reload-agent:publishToMavenLocal" }
     - { name: Publish X64, run: ./gradlew publishMacosX64PublicationToMavenLocal publishKotlinMultiplatformPublicationToMavenLocal }
-    - { name: e2e test, working-directory: e2e-test, run: ./gradlew checkReferencesNative --stacktrace }
-    - { name: Archive E2E Test Results, if: failure(), uses: actions/upload-artifact@v3, with: { name: e2e-test-results-macos, retention-days: 21, path: "**/e2e-test/build/screenshots", if-no-files-found: ignore } }
+    - { name: e2e test, working-directory: e2e/e2e-test, run: ./gradlew checkReferencesNative --stacktrace }
+    - { name: Archive E2E Test Results, if: failure(), uses: actions/upload-artifact@v3, with: { name: e2e-test-results-macos, retention-days: 21, path: "**/e2e/e2e-test/build/screenshots", if-no-files-found: ignore } }
     - { name: Publish Arm64, run: ./gradlew publishMacosArm64PublicationToMavenLocal }
     - { name: Publish JS, run: ./gradlew publishJsPublicationToMavenLocal }
-    - { name: e2e test JS, working-directory: e2e-test, run: ./gradlew browserReleaseEsbuild --stacktrace }
+    - { name: e2e test JS, working-directory: e2e/e2e-test, run: ./gradlew browserReleaseEsbuild --stacktrace }
 
   test-native-windows:
     needs: changes
@@ -278,7 +278,7 @@ jobs:
     - { name: Testing Kotlin/Native MingwX64Test, shell: cmd, run: CALL gradlew.bat --no-parallel mingwX64Test }
     - { name: Publish gradle plugin, shell: cmd, run: "CALL gradlew.bat :korge-gradle-plugin:publishToMavenLocal :korge-reload-agent:publishToMavenLocal" }
     - { name: Publish X64, shell: cmd, run: CALL gradlew.bat publishMingwX64PublicationToMavenLocal publishKotlinMultiplatformPublicationToMavenLocal }
-    - { name: e2e test, shell: cmd, working-directory: e2e-test, run: CALL gradlew.bat checkReferencesNative --stacktrace }
-    - { name: Archive E2E Test Results, if: failure(), uses: actions/upload-artifact@v3, with: { name: e2e-test-results-windows, retention-days: 21, path: "**/e2e-test/build/screenshots", if-no-files-found: ignore } }
+    - { name: e2e test, shell: cmd, working-directory: e2e/e2e-test, run: CALL gradlew.bat checkReferencesNative --stacktrace }
+    - { name: Archive E2E Test Results, if: failure(), uses: actions/upload-artifact@v3, with: { name: e2e-test-results-windows, retention-days: 21, path: "**/e2e/e2e-test/build/screenshots", if-no-files-found: ignore } }
     - { name: Publish JS, run: ./gradlew publishJsPublicationToMavenLocal }
-    - { name: e2e test JS, working-directory: e2e-test, run: ./gradlew browserReleaseEsbuild --stacktrace }
+    - { name: e2e test JS, working-directory: e2e/e2e-test, run: ./gradlew browserReleaseEsbuild --stacktrace }

@@ -11,11 +11,9 @@ project.extensions.extraProperties.properties.apply {
 }
 
 dependencies {
-    add("commonMainApi", project(":korim"))
-    add("commonMainApi", project(":korgw"))
-    add("commonMainApi", project(":korau"))
-    add("commonMainApi", project(":korinject"))
-    commonMainApi(project(":korte"))
+    commonMainApi(project(":korge-core"))
+    commonMainApi(project(":korge-foundation"))
+    //commonTestApi(project(":korge-test"))
     jvmMainApi("org.jetbrains.kotlin:kotlin-reflect")
     jvmMainApi(libs.jackson.databind)
     jvmMainApi(libs.jackson.module.kotlin)
@@ -26,3 +24,5 @@ dependencies {
 
     //add("commonTestApi", "it.krzeminski.vis-assert:vis-assert:0.4.0-beta")
 }
+
+korlibs.NativeTools.configureCInteropLinux(project, "X11Embed")
