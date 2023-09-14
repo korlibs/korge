@@ -5,6 +5,16 @@ import java.lang.reflect.*
 import kotlin.reflect.*
 
 actual open class WASMLib actual constructor(content: ByteArray) : BaseWASMLib(content) {
+    val wasm: WasmRunJVMJIT by lazy {
+        WasmRunJVMOutput().generate(WasmReaderBinary().read(content.openSync()).toModule())
+    }
+
+    override fun readBytes(pos: Int, size: Int): ByteArray = wasm.readBytes(pos, size)
+    override fun writeBytes(pos: Int, data: ByteArray) = wasm.writeBytes(pos, data)
+    override fun invokeFunc(name: String, vararg params: Any?): Any? = wasm.invoke(name, *params)
+    override fun invokeFuncIndirect(address: Int, vararg params: Any?): Any? = wasm.invokeIndirect(address, *params)
+
+    /*
     val functionsNamed: Map<String, kotlin.Function<*>> by lazy {
         functions.associate { nfunc ->
             //val lib = NativeLibrary.getInstance("")
@@ -15,19 +25,6 @@ actual open class WASMLib actual constructor(content: ByteArray) : BaseWASMLib(c
     fun <T : kotlin.Function<*>> createFunction(funcName: String, type: KType): T {
         return _createWasmFunctionToPlainFunction(wasm, type, -1, funcName)
     }
-
-    val wasm: WasmRunJVMJIT by lazy {
-        WasmRunJVMOutput().generate(WasmReaderBinary().read(content.openSync()).toModule())
-    }
-
-    override fun readBytes(pos: Int, size: Int): ByteArray = wasm.readBytes(pos, size)
-    override fun writeBytes(pos: Int, data: ByteArray) = wasm.writeBytes(pos, data)
-    override fun allocBytes(bytes: ByteArray): Int = wasm.allocAndWrite(bytes)
-    override fun freeBytes(vararg ptrs: Int) = wasm.free(*ptrs)
-    override fun stackSave(): Int = wasm.stackSave()
-    override fun stackRestore(ptr: Int) = wasm.stackRestore(ptr)
-    override fun stackAlloc(size: Int): Int = wasm.stackAlloc(size)
-    override fun stackAllocAndWrite(bytes: ByteArray): Int = wasm.stackAllocAndWrite(bytes)
 
     override fun <T : Function<*>> funcPointer(address: Int, type: KType): T =
         _createWasmFunctionToPlainFunction(wasm, type, address, null)
@@ -55,6 +52,8 @@ actual open class WASMLib actual constructor(content: ByteArray) : BaseWASMLib(c
             }
         } as T
     }
+
+     */
 }
 
 /*
