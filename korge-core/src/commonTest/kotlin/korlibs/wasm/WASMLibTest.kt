@@ -7,7 +7,7 @@ import kotlin.test.*
 class WASMLibTest {
     @Test
     fun test() = suspendTest {
-        if (!IWASMLib.isAvailable) {
+        if (!ADDER.isAvailable) {
             println("WASM not available in this platform ${Platform.rawOsName}")
             return@suspendTest
         }

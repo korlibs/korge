@@ -7,23 +7,21 @@ import kotlin.coroutines.*
 expect open class WASMLib(content: ByteArray) : IWASMLib
 
 interface IWASMLib : Closeable {
-    companion object {
-        //val isAvailable get() = !Platform.isWatchos
-        val isAvailable get() = true
-    }
-
+    val isAvailable: Boolean get() = true
     val content: ByteArray
 
     fun initOnce(context: CoroutineContext) { }
-    fun invokeFuncFloat(name: String, vararg params: Any?): Float = (invokeFunc(name, *params) as Number).toFloat()
-    fun invokeFuncInt(name: String, vararg params: Any?): Int = (invokeFunc(name, *params) as Number).toInt()
-    fun invokeFuncUnit(name: String, vararg params: Any?): Unit { invokeFunc(name, *params) }
+    fun readBytes(pos: Int, size: Int): ByteArray = TODO()
+    fun writeBytes(pos: Int, data: ByteArray): Unit = TODO()
     fun invokeFunc(name: String, vararg params: Any?): Any? = TODO()
     fun invokeFuncIndirect(address: Int, vararg params: Any?): Any? = TODO()
 
-    open fun readBytes(pos: Int, size: Int): ByteArray {
-        TODO()
-    }
+    // EXTRA
+
+    fun invokeFuncFloat(name: String, vararg params: Any?): Float = (invokeFunc(name, *params) as Number).toFloat()
+    fun invokeFuncInt(name: String, vararg params: Any?): Int = (invokeFunc(name, *params) as Number).toInt()
+    fun invokeFuncUnit(name: String, vararg params: Any?): Unit { invokeFunc(name, *params) }
+
     fun readShorts(pos: Int, size: Int): ShortArray {
         val bytes = readBytes(pos, size * 2)
         return ShortArray(size) { bytes.readS16LE(it * 2).toShort() }
@@ -33,7 +31,6 @@ interface IWASMLib : Closeable {
         return IntArray(size) { bytes.readS32LE(it * 4) }
     }
 
-    open fun writeBytes(pos: Int, data: ByteArray): Unit = TODO()
     fun writeShorts(pos: Int, data: ShortArray) = writeBytes(pos, data.toByteArray())
     fun writeInts(pos: Int, data: IntArray) = writeBytes(pos, data.toByteArray())
 
@@ -44,10 +41,10 @@ interface IWASMLib : Closeable {
         for (n in 0 until this.size) out.write16LE(n * 4, this[n].toInt())
     }
 
-    open fun allocBytes(bytes: ByteArray): Int {
+    fun allocBytes(bytes: ByteArray): Int {
         return invokeFuncInt("malloc", bytes.size).also { writeBytes(it, bytes) }
     }
-    open fun freeBytes(vararg ptrs: Int) {
+    fun freeBytes(vararg ptrs: Int) {
         for (ptr in ptrs) invokeFunc("free", ptr)
     }
 
@@ -67,7 +64,6 @@ inline fun <T> IWASMLib.stackKeep(block: () -> T): T {
         stackRestore(ptr)
     }
 }
-
 
 abstract class BaseWASMLib(override val content: ByteArray) : IWASMLib {
     val loaded: Boolean get() = true
