@@ -18,7 +18,7 @@ import kotlin.coroutines.*
 /**
  * <https://www.kernel.org/doc/Documentation/input/gamepad.txt>
  */
-internal class LinuxJoyEventAdapter(val syncIO: SyncIO = SyncIO) : Closeable {
+internal class LinuxJoyEventAdapter @OptIn(SyncIOAPI::class) constructor(val syncIO: SyncIO = SyncIO) : Closeable {
     companion object {
         const val JS_EVENT_BUTTON = 0x01    /* button pressed/released */
         const val JS_EVENT_AXIS = 0x02    /* joystick moved */
