@@ -460,7 +460,7 @@ data class WasmFunc(
     val index: Int,
     val type: WasmType.Function,
     var code: WasmCode? = null,
-    var import: WasmImport? = null,
+    var fimport: WasmImport? = null,
     var export: WasmExport? = null,
     //var code2: WasmCode2? = null,
     val name2: String? = null
@@ -468,7 +468,7 @@ data class WasmFunc(
 
     var importFunc: (WasmRuntime.(Array<Any?>) -> Any?)? = null
 
-    override fun toString(): String = "WasmFunc[$index](type=$type, import=$import, code=$code)"
+    override fun toString(): String = "WasmFunc[$index](type=$type, import=$fimport, code=$code)"
 
     //fun getAst(wasm: WasmModule): Wast.Stm? = when {
     //    code != null -> {
@@ -483,8 +483,8 @@ data class WasmFunc(
     override val func = this
     val rlocals: List<WastLocal> by lazy { type.args + (code?.flatLocals ?: listOf()) }
 
-    override val name: String by lazy { name2 ?: import?.name ?: export?.name ?: "f$index" }
-    val rname: String by lazy { import?.name ?: export?.name ?: "f$index" }
+    override val name: String by lazy { name2 ?: fimport?.name ?: export?.name ?: "f$index" }
+    val rname: String by lazy { fimport?.name ?: export?.name ?: "f$index" }
 
     val ftype: FuncWithType by lazy { FuncWithType(name, type) }
     val fwt = WasmFuncWithType(name, type)
@@ -506,8 +506,8 @@ data class WasmGlobal(
     val index: Int = -1,
     val expr: WasmExpr? = null,
     //val ast: Wast.Stm? = null,
-    var import: WasmImport? = null,
-    val name: String = import?.name ?: "g$index"
+    var gimport: WasmImport? = null,
+    val name: String = gimport?.name ?: "g$index"
 ) {
     //val astGlobal = AstGlobal(name, globalType.type)
     //val name get() = import?.name ?: "g$index"

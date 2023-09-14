@@ -3,7 +3,6 @@ package korlibs.wasm
 import korlibs.wasm.WasmSType.*
 import korlibs.datastructure.*
 import korlibs.io.lang.*
-import korlibs.math.*
 import korlibs.memory.*
 import kotlin.rotateLeft
 import kotlin.rotateRight
@@ -209,7 +208,7 @@ class WasmRunInterpreter(val module: WasmModule, memPages: Int = 10, maxMemPages
         if (func.importFunc != null) {
             return func.importFunc?.invoke(this, params as Array<Any?>) ?: Unit
         }
-        val import = func.import
+        val import = func.fimport
         if (import != null) {
             func.importFunc = functions.get(import.moduleName)?.get(import.name) ?: error("Can't find imported function $import")
             return invoke(func, *params)

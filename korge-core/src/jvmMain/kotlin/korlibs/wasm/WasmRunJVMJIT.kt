@@ -384,7 +384,7 @@ class WasmRunJVMOutput(
                     Opcodes.INVOKESTATIC,
                     OUTPUT_CLASS_NAME,
                     func.getJvmName(),
-                    func.type.toJDescriptor(func.import != null),
+                    func.type.toJDescriptor(func.fimport != null),
                     false
                 )
                 context.stack(func.type.args.size, func.type.retType.toWasmSType())
@@ -948,7 +948,7 @@ class WasmRunJVMOutput(
                 val sretType = func.type.retType.toWasmSType()
                 val retType = sretType.toJava()
                 val argTypes = func.type.args.map { it.type.toJava() }.toTypedArray()
-                val import = func.import
+                val import = func.fimport
                 val methodName = func.getJvmName()
                 if (import != null) {
                     if (trace) println("FUNC<import>: $methodName : ${func.type}")
@@ -1093,7 +1093,7 @@ class WasmRunJVMOutput(
 
     fun WasmFunc.getJvmName(): String {
         val func = this
-        val import = func.import
+        val import = func.fimport
         if (import != null) {
             return "${import.moduleName}\$${import.name}"
         } else {

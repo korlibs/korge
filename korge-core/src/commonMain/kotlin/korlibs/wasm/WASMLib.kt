@@ -14,6 +14,7 @@ abstract class BaseWASMLib(val content: ByteArray) : Closeable {
         _context = context
     }
 
+    fun invokeFuncFloat(name: String, vararg params: Any?): Float = (invokeFunc(name, *params) as Number).toFloat()
     fun invokeFuncInt(name: String, vararg params: Any?): Int = (invokeFunc(name, *params) as Number).toInt()
     fun invokeFuncUnit(name: String, vararg params: Any?): Unit { invokeFunc(name, *params) }
 

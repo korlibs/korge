@@ -267,14 +267,14 @@ class WasmReaderBinary {
             INDEX_GLOBALS -> readGlobalType()
             else -> invalidOp("Unsupported import=$indexSpace")
         }
-        val import = WasmImport(moduleName, name, indexSpace, index, type)
+        val fimport = WasmImport(moduleName, name, indexSpace, index, type)
         when (indexSpace) {
             INDEX_FUNCTIONS -> functions[index] =
-                    WasmFunc(index, type as WasmType.Function, code = null, import = import)
-            INDEX_GLOBALS -> globals[index] = WasmGlobal(type as WasmType, index, expr = null, import = import)
+                    WasmFunc(index, type as WasmType.Function, code = null, fimport = fimport)
+            INDEX_GLOBALS -> globals[index] = WasmGlobal(type as WasmType, index, expr = null, gimport = fimport)
         }
         //println("$nm::$name = $type")
-        return import
+        return fimport
     }
 
 
