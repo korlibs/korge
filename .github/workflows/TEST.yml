@@ -74,7 +74,6 @@ jobs:
             ios:
               - '**/src/ios*/**'
               - '**/src/tvos*/**'
-              - '**/src/watchos*/**'
               - '**/src/darwin*/**'
               - '**/src/posix*/**'
 
@@ -204,7 +203,6 @@ jobs:
     - { name: Run ios simulator tests, run: ./gradlew iosX64Test }
     - { name: Archive Test Results, if: failure(), uses: actions/upload-artifact@v3, with: { name: screenshot-test-results-ios, retention-days: 21, path: "**/build/reports", if-no-files-found: ignore } }
     - { name: Check compilation of iOS targets, run: ./gradlew publishIosX64PublicationToMavenLocal publishIosArm64PublicationToMavenLocal }
-    - { name: Check compilation of watchOS targets, run: ./gradlew publishWatchosArm64PublicationToMavenLocal publishWatchosX64PublicationToMavenLocal }
     - { name: Check compilation of tvOS targets, run: ./gradlew publishTvosArm64PublicationToMavenLocal publishTvosX64PublicationToMavenLocal }
     #- { name: Check compilation of TvOS targets, run: ./gradlew publishTvosArm64PublicationToMavenLocal publishTvosX64PublicationToMavenLocal publishTvosSimulatorArm64PublicationToMavenLocal }
 

@@ -166,11 +166,8 @@ class KorgeBundles(val project: Project) {
                         if (target.isNativePosix) addSourcesAddSuffix("nativePosix")
                         if (target.isNativePosix && !target.isApple) addSourcesAddSuffix("nativePosixNonApple")
                         if (target.isApple) addSourcesAddSuffix("nativePosixApple")
-                        if (target.isIosTvosWatchos) addSourcesAddSuffix("iosWatchosTvosCommon")
-                        if (target.isWatchos) addSourcesAddSuffix("iosWatchosCommon")
                         if (target.isTvos) addSourcesAddSuffix("iosTvosCommon")
                         if (target.isMacos || target.isIosTvos) addSourcesAddSuffix("macosIosTvosCommon")
-                        if (target.isMacos || target.isIosWatchos) addSourcesAddSuffix("macosIosWatchosCommon")
                         if (target.isIos) addSourcesAddSuffix("iosCommon")
                     }
                 }

@@ -506,7 +506,6 @@ object RootKorlibsPlugin {
 
                             val darwinMobile by lazy { createPairSourceSet("darwinMobile", darwin) }
                             val iosTvos by lazy { createPairSourceSet("iosTvos", darwinMobile, iosTvosMacos) }
-                            val watchos by lazy { createPairSourceSet("watchos", darwinMobile) }
                             val tvos by lazy { createPairSourceSet("tvos", iosTvos) }
                             val ios by lazy { createPairSourceSet("ios", iosTvos, iosMacos) }
 
@@ -514,7 +513,6 @@ object RootKorlibsPlugin {
                                 val native = createPairSourceSet(target.name)
                                 when {
                                     target.isIos -> native.dependsOn(ios)
-                                    target.isWatchos -> native.dependsOn(watchos)
                                     target.isTvos -> native.dependsOn(tvos)
                                 }
                             }

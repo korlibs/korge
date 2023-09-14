@@ -14,7 +14,6 @@ val Project.doEnableKotlinNative: Boolean get() = supportKotlinNative && rootPro
 val Project.doEnableKotlinAndroid: Boolean get() = rootProject.findProperty("enableKotlinAndroid") == "true"
 val Project.doEnableKotlinMobile: Boolean get() = doEnableKotlinNative && rootProject.findProperty("enableKotlinMobile") == "true"
 val Project.doEnableKotlinMobileTvos: Boolean get() = doEnableKotlinMobile && rootProject.findProperty("enableKotlinMobileTvos") == "true"
-val Project.doEnableKotlinMobileWatchos: Boolean get() = doEnableKotlinMobile && rootProject.findProperty("enableKotlinMobileWatchos") == "true"
 
 val Project.hasAndroid get() = extensions.findByName("android") != null
 
@@ -58,9 +57,6 @@ fun org.jetbrains.kotlin.gradle.dsl.KotlinTargetContainerWithPresetFunctions.mob
 
     val out = arrayListOf<KotlinNativeTarget>()
     out.addAll(listOf(iosX64(), iosArm64(), iosSimulatorArm64()))
-    if (project.doEnableKotlinMobileWatchos) {
-        out.addAll(listOf(watchosX64(), watchosArm64(), watchosSimulatorArm64()))
-    }
     if (project.doEnableKotlinMobileTvos) {
         out.addAll(listOf(tvosX64(), tvosArm64(), tvosSimulatorArm64()))
     }

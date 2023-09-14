@@ -14,7 +14,6 @@ internal actual val currentOs: Os = when (Platform.osFamily) {
     OsFamily.ANDROID -> Os.ANDROID
     OsFamily.WASM -> Os.UNKNOWN
     OsFamily.TVOS -> Os.TVOS
-    OsFamily.WATCHOS -> Os.WATCHOS
 }
 
 @SharedImmutable

@@ -25,7 +25,7 @@ internal fun createNativeSystemFontProvider(coroutineContext: CoroutineContext, 
             Os.WINDOWS -> listOf("%WINDIR%\\Fonts", "%LOCALAPPDATA%\\Microsoft\\Windows\\Fonts")
             Os.LINUX -> listOf("/usr/share/fonts", "/usr/local/share/fonts", "~/.fonts")
             Os.MACOSX -> listOf("/System/Library/Fonts/", "/Library/Fonts/", "~/Library/Fonts/", "/Network/Library/Fonts/")
-            Os.IOS, Os.TVOS, Os.WATCHOS -> listOf("/System/Library/Fonts")
+            Os.IOS, Os.TVOS -> listOf("/System/Library/Fonts")
             Os.ANDROID -> listOf("/system/fonts", "/system/font", "/data/fonts")
             else -> listOf("/usr/share/fonts", "/usr/local/share/fonts", "~/.fonts")
         }

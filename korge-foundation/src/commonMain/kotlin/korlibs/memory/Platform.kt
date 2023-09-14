@@ -34,7 +34,6 @@ interface Platform {
 
     val isIos: Boolean get() = os.isIos
     val isAndroid: Boolean get() = os.isAndroid
-    val isWatchos: Boolean get() = os.isWatchos
     val isTvos: Boolean get() = os.isTvos
 
     val isJs: Boolean get() = runtime.isJs
