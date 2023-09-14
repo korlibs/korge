@@ -4,7 +4,7 @@ import kotlinx.cinterop.*
 import platform.JavaScriptCore.*
 import platform.posix.*
 
-actual open class WASMLib actual constructor(content: ByteArray) : BaseWASMLib(content) {
+actual open class WASMLib actual constructor(content: ByteArray) : IWASMLib, BaseWASMLib(content) {
     val runner = WASMRunner().also {
         it.loadWasmModule(content)
     }

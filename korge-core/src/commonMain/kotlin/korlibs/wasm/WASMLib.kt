@@ -4,46 +4,22 @@ import korlibs.io.lang.*
 import korlibs.memory.*
 import kotlin.coroutines.*
 
-expect open class WASMLib(content: ByteArray) : BaseWASMLib
+expect open class WASMLib(content: ByteArray) : IWASMLib
 
-abstract class BaseWASMLib(val content: ByteArray) : Closeable {
-    val loaded: Boolean get() = true
-    protected var _context: CoroutineContext? = null
-
-    open fun initOnce(context: CoroutineContext) {
-        _context = context
+interface IWASMLib : Closeable {
+    companion object {
+        //val isAvailable get() = !Platform.isWatchos
+        val isAvailable get() = true
     }
 
+    val content: ByteArray
+
+    fun initOnce(context: CoroutineContext) { }
     fun invokeFuncFloat(name: String, vararg params: Any?): Float = (invokeFunc(name, *params) as Number).toFloat()
     fun invokeFuncInt(name: String, vararg params: Any?): Int = (invokeFunc(name, *params) as Number).toInt()
     fun invokeFuncUnit(name: String, vararg params: Any?): Unit { invokeFunc(name, *params) }
-
-    open fun invokeFunc(name: String, vararg params: Any?): Any? {
-        TODO()
-    }
-
-    open fun invokeFuncIndirect(address: Int, vararg params: Any?): Any? {
-        TODO()
-    }
-
-
-    //inline fun <reified T : Function<*>> castToFunc(ptr: FFIPointer): T = sym.castToFunc(ptr, FuncInfo(typeOf<T>(), null))
-    protected fun finalize() {
-    }
-
-    //val memory: Buffer by lazy { sym.memory }
-
-    //val malloc: (Int) -> Int by func()
-    //val free: (Int) -> Unit by func()
-
-    inline fun <T> stackKeep(block: () -> T): T {
-        val ptr = stackSave()
-        try {
-            return block()
-        } finally {
-            stackRestore(ptr)
-        }
-    }
+    fun invokeFunc(name: String, vararg params: Any?): Any? = TODO()
+    fun invokeFuncIndirect(address: Int, vararg params: Any?): Any? = TODO()
 
     open fun readBytes(pos: Int, size: Int): ByteArray {
         TODO()
@@ -75,16 +51,31 @@ abstract class BaseWASMLib(val content: ByteArray) : Closeable {
         for (ptr in ptrs) invokeFunc("free", ptr)
     }
 
-    //val stackSave: () -> Int by func()
-    //val stackRestore: (ptr: Int) -> Unit by func()
-    //val stackAlloc: (size: Int) -> Int by func()
+    fun stackSave(): Int = invokeFuncInt("stackSave")
+    fun stackRestore(ptr: Int): Unit = invokeFuncUnit("stackRestore")
+    fun stackAlloc(size: Int): Int = invokeFuncInt("stackAlloc")
+    fun stackAllocAndWrite(bytes: ByteArray): Int = stackAlloc(bytes.size).also { writeBytes(it, bytes) }
+    fun stackAllocAndWrite(data: ShortArray): Int = stackAllocAndWrite(data.toByteArray())
+    fun stackAllocAndWrite(data: IntArray): Int = stackAllocAndWrite(data.toByteArray())
+}
 
-    open fun stackSave(): Int = invokeFuncInt("stackSave")
-    open fun stackRestore(ptr: Int): Unit = invokeFuncUnit("stackRestore")
-    open fun stackAlloc(size: Int): Int = invokeFuncInt("stackAlloc")
-    open fun stackAllocAndWrite(bytes: ByteArray): Int = stackAlloc(bytes.size).also { writeBytes(it, bytes) }
-    open fun stackAllocAndWrite(data: ShortArray): Int = stackAllocAndWrite(data.toByteArray())
-    open fun stackAllocAndWrite(data: IntArray): Int = stackAllocAndWrite(data.toByteArray())
+inline fun <T> IWASMLib.stackKeep(block: () -> T): T {
+    val ptr = stackSave()
+    try {
+        return block()
+    } finally {
+        stackRestore(ptr)
+    }
+}
+
+
+abstract class BaseWASMLib(override val content: ByteArray) : IWASMLib {
+    val loaded: Boolean get() = true
+    protected var _context: CoroutineContext? = null
+
+    override fun initOnce(context: CoroutineContext) {
+        _context = context
+    }
 
     /*
     companion object {

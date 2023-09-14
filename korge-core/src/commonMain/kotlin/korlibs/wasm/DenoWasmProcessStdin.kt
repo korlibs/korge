@@ -2,15 +2,18 @@ package korlibs.wasm
 
 import korlibs.datastructure.lock.*
 import korlibs.ffi.*
+import korlibs.io.file.sync.*
+import korlibs.io.lang.*
 import korlibs.io.serialization.json.*
+import korlibs.io.stream.*
 import korlibs.memory.*
-import java.io.*
 
-private val PATHS: List<String> by lazy { System.getenv("PATH").split(File.pathSeparatorChar) }
+private val PATHS: List<String> by lazy { (Environment["PATH"] ?: "").split(Environment.PATH_SEPARATOR) }
 
+@OptIn(SyncIOAPI::class)
 object DenoWasmProcessStdin {
-    val temp = System.getProperty("java.io.tmpdir")
-    val file = File("$temp/korge.wasm.js")
+    val temp = Environment.TEMP
+    val file = SyncIOFile("$temp/korge.wasm.js")
         .also { it.writeText(DenoWasmServerStdinCode) }
 
     val commands: List<String> by lazy {
@@ -18,12 +21,8 @@ object DenoWasmProcessStdin {
         ExecutableResolver.findInPaths("node", PATHS)?.let { return@lazy listOf(it, file.absolutePath) }
         emptyList()
     }
-    val process = ProcessBuilder(commands)
-        .redirectError(ProcessBuilder.Redirect.INHERIT)
-        //.also { println("WASM: $commands") }
-        .start()
-
-    val io = DenoWasmIO(process.outputStream, process.inputStream, Closeable { })
+    val process = SyncIO.exec(commands, mapOf())
+    val io = DenoWasmIO(process.stdin, process.stdout, Closeable { }, debug = Environment["DEBUG"] == "true")
     var lastId = 1
 
     fun open(wasmModuleBytes: ByteArray): DenoWASM {
@@ -59,14 +58,13 @@ class DenoWASM(val io: DenoWasmIO, val streamId: Int, val wasmModuleBytes: ByteA
 }
 
 class DenoWasmIO(
-    val output: OutputStream,
-    val input: InputStream,
-    val close: Closeable? = null,
+    val output: SyncOutputStream,
+    val input: SyncInputStream,
+    val _close: Closeable? = null,
     val debug: Boolean = true,
 ) {
-
     fun close() {
-        close?.close()
+        _close?.close()
     }
 
     fun loadWASM(streamId: Int, bytes: ByteArray) {
@@ -169,11 +167,11 @@ class DenoWasmIO(
         return out
     }
 
-    private fun InputStream.readBytesExact(size: Int): ByteArray {
+    private fun SyncInputStream.readBytesExact(size: Int): ByteArray {
         return readBytesExact(ByteArray(size))
     }
 
-    private fun InputStream.readBytesExact(b: ByteArray): ByteArray {
+    private fun SyncInputStream.readBytesExact(b: ByteArray): ByteArray {
         var offset = 0
         var remaining = b.size
         //println("readBytesExact[$remaining]")
@@ -202,15 +200,19 @@ const debug = debugEnv == "true";
 //const debug = true
 const fs = (isDeno) ? null : require('fs');
 
+if (debug) console.error('STARTED!', isDeno);
+
 function readSyncExact(reader, size) {
   if (size >= 32 * 1024 * 1024) throw new Error(`too big to read ${'$'}{size}`);
   var out = new Uint8Array(size);
   var pos = 0;
+if (debug) console.error('try_read', size)
   while (pos < size) {
     const chunk = out.subarray(pos)
     var read = isDeno
       ? reader.readSync(chunk)
       : fs.readSync(reader, chunk);
+    if (debug) console.error('read', read)
     if (read == null || read <= 0) throw Error("Broken pipe");
     pos += read;
   }

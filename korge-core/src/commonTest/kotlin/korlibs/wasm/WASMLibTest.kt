@@ -1,11 +1,16 @@
 package korlibs.wasm
 
+import korlibs.memory.*
 import korlibs.template.*
 import kotlin.test.*
 
 class WASMLibTest {
     @Test
     fun test() = suspendTest {
+        if (!IWASMLib.isAvailable) {
+            println("WASM not available in this platform ${Platform.rawOsName}")
+            return@suspendTest
+        }
         val adder = ADDER.also { it.initOnce(coroutineContext) }
         assertEquals(16, adder.add(7, 9))
     }

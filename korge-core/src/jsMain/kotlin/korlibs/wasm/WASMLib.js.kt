@@ -6,7 +6,7 @@ import kotlin.reflect.*
 
 private external val Deno: dynamic
 
-actual open class WASMLib actual constructor(content: ByteArray) : BaseWASMLib(content) {
+actual open class WASMLib actual constructor(content: ByteArray) : IWASMLib, BaseWASMLib(content) {
     private var _wasmExports: dynamic = null
 
     val wasmExports: dynamic

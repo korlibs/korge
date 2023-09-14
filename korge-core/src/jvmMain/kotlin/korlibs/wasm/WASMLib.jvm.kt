@@ -4,7 +4,10 @@ import korlibs.io.stream.*
 import java.lang.reflect.*
 import kotlin.reflect.*
 
-actual open class WASMLib actual constructor(content: ByteArray) : BaseWASMLib(content) {
+//actual open class WASMLib actual constructor(content: ByteArray) : IWASMLib by DenoWASMLib(content)
+
+//open class WASMLib2(content: ByteArray) : IWASMLib, BaseWASMLib(content) {
+actual open class WASMLib actual constructor(content: ByteArray) : IWASMLib, BaseWASMLib(content) {
     val wasm: WasmRunJVMJIT by lazy {
         WasmRunJVMOutput().generate(WasmReaderBinary().read(content.openSync()).toModule())
     }

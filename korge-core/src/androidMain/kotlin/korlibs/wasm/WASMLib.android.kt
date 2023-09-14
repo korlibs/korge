@@ -5,7 +5,7 @@ import androidx.javascriptengine.*
 import korlibs.io.android.*
 import korlibs.io.lang.*
 
-actual open class WASMLib actual constructor(content: ByteArray) : BaseWASMLib(content) {
+actual open class WASMLib actual constructor(content: ByteArray) : IWASMLib, BaseWASMLib(content) {
     val executor: AndroidWASMExecutor by lazy {
         val _context = _context ?: error("Must call WASMLib.initOnce before calling any method")
         AndroidWASMExecutor(_context.androidContext())
