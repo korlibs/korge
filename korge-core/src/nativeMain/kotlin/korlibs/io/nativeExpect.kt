@@ -10,7 +10,6 @@ val nativeOsfamilyName: String get() = when (Platform.osFamily) {
     OsFamily.ANDROID -> "android"
     OsFamily.WASM -> "wasm"
     OsFamily.TVOS -> "tvos"
-    OsFamily.WATCHOS -> "watchos"
     else -> "unknown"
 }
 

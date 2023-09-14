@@ -25,16 +25,13 @@ val KotlinTarget.isAndroid get() = name in setOf("android")
 val KotlinTarget.isJvmOrAndroid get() = isJvm || isAndroid
 val KotlinTarget.isIos get() = name.startsWith("ios")
 val KotlinTarget.isTvos get() = name.startsWith("tvos")
-val KotlinTarget.isWatchos get() = name.startsWith("watchos")
 val KotlinTarget.isMacos get() = name.startsWith("macos")
 val KotlinTarget.isLinux get() = name.startsWith("linux")
 val KotlinTarget.isMingw get() = name.startsWith("mingw")
 val KotlinTarget.isNativeDesktop get() = isMingw || isLinux || isMacos
-val KotlinTarget.isNativeMobile get() = isIos || isTvos || isWatchos
-val KotlinTarget.isApple get() = isIos || isTvos || isWatchos || isMacos
+val KotlinTarget.isNativeMobile get() = isIos || isTvos
+val KotlinTarget.isApple get() = isIos || isTvos || isMacos
 val KotlinTarget.isIosTvos get() = isIos || isTvos
-val KotlinTarget.isIosWatchos get() = isIos || isWatchos
-val KotlinTarget.isIosTvosWatchos get() = isIos || isTvos || isWatchos
 val KotlinTarget.isNativePosix get() = isApple || isLinux
 val KotlinTarget.isNative get() = isNativeDesktop || isNativeMobile
 
@@ -55,14 +52,12 @@ val KotlinTarget.isIosArm64: Boolean get() = this.name == "iosArm64"
 val KotlinTarget.isIosX64: Boolean get() = this.name == "iosX64"
 val KotlinTarget.isIosSimulatorArm64: Boolean get() = this.name == "iosSimulatorArm64"
 //val KotlinTarget.isIos: Boolean get() = isIosArm64 || isIosX64 || isIosSimulatorArm64
-val KotlinTarget.isWatchosArm64: Boolean get() = this.name == "watchosArm64"
-//val KotlinTarget.isWatchos: Boolean get() = isWatchosArm64
 val KotlinTarget.isTvosX64: Boolean get() = this.name == "tvosX64"
 val KotlinTarget.isTvosArm64: Boolean get() = this.name == "tvosArm64"
 //val KotlinTarget.isTvos: Boolean get() = isTvosX64 || isTvosArm64
 val KotlinTarget.isDesktop: Boolean get() = isWin || isLinux || isMacos
 val KotlinTarget.isPosix: Boolean get() = this is KotlinNativeTarget && !this.isWin
-//val KotlinTarget.isApple: Boolean get() = isMacos || isIos || isWatchos || isTvos
+//val KotlinTarget.isApple: Boolean get() = isMacos || isIos || isTvos
 
 fun NamedDomainObjectContainer<KotlinSourceSet>.createPairSourceSet(name: String, vararg dependencies: PairSourceSet, block: KotlinSourceSet.(test: Boolean) -> Unit = { }): PairSourceSet {
     val main = maybeCreate("${name}Main").apply { block(false) }

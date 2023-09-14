@@ -6,15 +6,14 @@ import korlibs.memory.Runtime
 
 @SharedImmutable
 internal actual val currentOs: Os = when (Platform.osFamily) {
-    OsFamily.UNKNOWN -> Os.UNKNOWN
     OsFamily.MACOSX -> Os.MACOSX
     OsFamily.IOS -> Os.IOS
     OsFamily.LINUX -> Os.LINUX
     OsFamily.WINDOWS -> Os.WINDOWS
     OsFamily.ANDROID -> Os.ANDROID
-    OsFamily.WASM -> Os.UNKNOWN
+    OsFamily.WASM -> Os.WASM
     OsFamily.TVOS -> Os.TVOS
-    OsFamily.WATCHOS -> Os.WATCHOS
+    else -> Os.UNKNOWN
 }
 
 @SharedImmutable
@@ -22,7 +21,6 @@ internal actual val currentRuntime: Runtime = Runtime.NATIVE
 
 @SharedImmutable
 internal actual val currentArch: Arch = when (Platform.cpuArchitecture) {
-    CpuArchitecture.UNKNOWN -> Arch.UNKNOWN
     CpuArchitecture.ARM32 -> Arch.ARM32
     CpuArchitecture.ARM64 -> Arch.ARM64
     CpuArchitecture.X86 -> Arch.X86
@@ -30,6 +28,7 @@ internal actual val currentArch: Arch = when (Platform.cpuArchitecture) {
     CpuArchitecture.MIPS32 -> Arch.MIPS32
     CpuArchitecture.MIPSEL32 -> Arch.MIPSEL32
     CpuArchitecture.WASM32 -> Arch.WASM32
+    else -> Arch.UNKNOWN
 }
 
 internal actual val currentIsDebug: Boolean get() = Platform.isDebugBinary

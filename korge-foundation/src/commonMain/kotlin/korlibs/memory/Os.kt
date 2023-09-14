@@ -3,7 +3,7 @@ package korlibs.memory
 import korlibs.memory.internal.*
 
 enum class Os {
-    UNKNOWN, MACOSX, IOS, LINUX, WINDOWS, ANDROID, TVOS, WATCHOS;
+    UNKNOWN, MACOSX, IOS, LINUX, WINDOWS, ANDROID, WASM, TVOS;
 
     val isWindows: Boolean get() = this == WINDOWS
     val isAndroid: Boolean get() = this == ANDROID
@@ -11,8 +11,7 @@ enum class Os {
     val isMac: Boolean get() = this == MACOSX
     val isIos: Boolean get() = this == IOS
     val isTvos: Boolean get() = this == TVOS
-    val isWatchos: Boolean get() = this == WATCHOS
-    val isAppleMobile: Boolean get() = isIos || isTvos || isWatchos
+    val isAppleMobile: Boolean get() = isIos || isTvos
     val isDesktop: Boolean get() = isLinux || isWindows || isMac
     val isMobile: Boolean get() = isAndroid || isAppleMobile
     val isApple: Boolean get() = isMac || isAppleMobile
