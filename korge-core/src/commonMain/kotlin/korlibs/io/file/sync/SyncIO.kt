@@ -4,6 +4,7 @@ import korlibs.memory.*
 import korlibs.io.file.*
 import korlibs.io.file.std.*
 import korlibs.io.lang.*
+import korlibs.io.stream.*
 
 @RequiresOptIn(level = RequiresOptIn.Level.ERROR)
 annotation class SyncIOAPI
@@ -23,6 +24,9 @@ class SyncIOFile(val impl: SyncIO, val fullPath: String) {
     val path: String get() = PathInfo(fullPath).parent.fullPath
     val parent: SyncIOFile get() = SyncIOFile(impl, path)
 
+    //val absolutePath: String get() = TODO()
+    val absolutePath: String get() = fullPath
+
     fun stat() = impl.stat(fullPath)
 
     val isDirectory: Boolean get() = stat()?.isDirectory == true
@@ -33,6 +37,7 @@ class SyncIOFile(val impl: SyncIO, val fullPath: String) {
 
     fun writeBytes(content: ByteArray) = impl.writeAllBytes(fullPath, content)
     fun writeString(content: String) = impl.writeString(fullPath, content)
+    fun writeText(content: String) = impl.writeString(fullPath, content)
 
     fun list(): List<SyncIOFile> = impl.list(fullPath).map { this[it] }
 
@@ -78,10 +83,26 @@ interface SyncIO {
 
     fun writeAllBytes(path: String, data: ByteArray) {
         mkdir(PathInfo(path).parent.fullPathNormalized)
-        open(path, "wb").use { it.write(data) }
+        //open(path, "wb").use { it.write(data) }
+        open(path, "rw").use { it.write(data) }
     }
     fun write(path: String, data: ByteArray) {
         writeAllBytes(path, data)
+    }
+
+    open fun exec(commands: List<String>, envs: Map<String, String>, cwd: String = "."): SyncExecProcess {
+        TODO()
+    }
+}
+
+open class SyncExecProcess(
+    val stdin: SyncOutputStream,
+    val stdout: SyncInputStream,
+    val stderr: SyncInputStream,
+) {
+    open val exitCode: Int get() = TODO()
+
+    open fun destroy() {
     }
 }
 

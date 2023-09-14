@@ -1,15 +1,18 @@
-package korlibs.io.process
+package korlibs.io.file.sync
 
-import korlibs.time.*
-import korlibs.memory.*
-import korlibs.io.async.*
-import korlibs.io.file.*
 import korlibs.io.file.std.*
 import kotlinx.cinterop.*
 import platform.posix.*
-import kotlin.collections.*
-import kotlin.*
 
+internal actual fun syncExecNative(
+    commands: List<String>,
+    envs: Map<String, String>,
+    cwd: String
+): SyncExecProcess {
+    TODO("Not yet implemented")
+}
+
+/*
 @OptIn(ExperimentalForeignApi::class)
 actual suspend fun posixExec(
     path: String, cmdAndArgs: List<String>, env: Map<String, String>, handler: VfsProcessHandler
@@ -43,6 +46,7 @@ actual suspend fun posixExec(
     waitpid(pid.convert(), status.ptr, 0.convert())
     status.value
 }
+*/
 
 @OptIn(ExperimentalForeignApi::class)
 fun sopen(vararg cmds: String, cwd: String, envs: Map<String, String> = mapOf()): Pair<CPointer<FILE>?, Long> = memScoped {
@@ -79,12 +83,12 @@ fun sopen(vararg cmds: String, cwd: String, envs: Map<String, String> = mapOf())
                 for (n in args.indices) vargs[n] = args[n].cstr.getPointer(this)
                 vargs[args.size] = null
                 execv(command, vargs)
-                _exit(127);
+                _exit(127)
             }
         }
     }
     //printf("GO!\n");
     /* parent */
-    close(fds[1]);
+    close(fds[1])
     return fdopen(fds[0], "r+") to pid.toLong()
 }

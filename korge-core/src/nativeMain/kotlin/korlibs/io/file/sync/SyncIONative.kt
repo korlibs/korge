@@ -1,10 +1,11 @@
 package korlibs.io.file.sync
 
-import korlibs.memory.*
 import korlibs.io.posix.*
+import korlibs.memory.*
 import kotlinx.cinterop.*
 import platform.posix.*
 
+@OptIn(ExperimentalForeignApi::class)
 actual val platformSyncIO: SyncIO = object : SyncIO {
     override fun realpath(path: String): String = posixRealpath(path)
     override fun readlink(path: String): String? = posixReadlink(path)
@@ -62,4 +63,10 @@ actual val platformSyncIO: SyncIO = object : SyncIO {
         }
         return out
     }
+
+    override fun exec(commands: List<String>, envs: Map<String, String>, cwd: String): SyncExecProcess {
+        return syncExecNative(commands, envs, cwd)
+    }
 }
+
+internal expect fun syncExecNative(commands: List<String>, envs: Map<String, String>, cwd: String): SyncExecProcess
