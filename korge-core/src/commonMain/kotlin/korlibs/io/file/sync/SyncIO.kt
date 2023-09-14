@@ -99,10 +99,13 @@ open class SyncExecProcess(
     val stdin: SyncOutputStream,
     val stdout: SyncInputStream,
     val stderr: SyncInputStream,
-) {
+) : Closeable {
     open val exitCode: Int get() = TODO()
 
     open fun destroy() {
+    }
+
+    override fun close() {
     }
 }
 

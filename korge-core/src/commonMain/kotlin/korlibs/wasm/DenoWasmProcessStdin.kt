@@ -31,6 +31,7 @@ object DenoWasmProcessStdin {
 
     fun close() {
         process.destroy()
+        process.close()
     }
 }
 
