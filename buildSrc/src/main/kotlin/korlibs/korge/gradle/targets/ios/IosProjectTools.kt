@@ -244,7 +244,7 @@ object IosProjectTools {
             indent {
                 for (debug in listOf(false, true)) {
                     val debugSuffix = if (debug) "Debug" else "Release"
-                    for (arch in listOf("X64", "Arm64", "Arm32")) {
+                    for (arch in listOf("X64", "Arm64")) {
                         line("app-$arch-$debugSuffix:")
                         indent {
                             line("platform: ${if (targetName == "ios") "iOS" else "tvOS"}")
