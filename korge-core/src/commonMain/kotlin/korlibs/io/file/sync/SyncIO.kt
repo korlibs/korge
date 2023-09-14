@@ -80,6 +80,9 @@ interface SyncIO {
         mkdir(PathInfo(path).parent.fullPathNormalized)
         open(path, "wb").use { it.write(data) }
     }
+    fun write(path: String, data: ByteArray) {
+        writeAllBytes(path, data)
+    }
 }
 
 class MemorySyncIO : SyncIO {
