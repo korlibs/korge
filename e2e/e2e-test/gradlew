@@ -1,2 +1,2 @@
 #!/bin/sh
-`dirname "$0"`/../gradlew $*
+`dirname "$0"`/../../gradlew $*
