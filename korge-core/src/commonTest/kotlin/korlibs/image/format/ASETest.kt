@@ -1,14 +1,12 @@
 package korlibs.image.format
 
-import korlibs.datastructure.ExtraTypeCreate
-import korlibs.datastructure.setExtra
-import korlibs.memory.*
-import korlibs.image.atlas.MutableAtlasUnit
+import korlibs.datastructure.*
+import korlibs.image.atlas.*
 import korlibs.image.bitmap.*
-import korlibs.io.async.suspendTest
-import korlibs.io.file.std.resourcesVfs
+import korlibs.io.async.*
+import korlibs.io.file.std.*
 import korlibs.math.geom.*
-import korlibs.test.*
+import korlibs.memory.*
 import kotlin.test.*
 
 class ASETest {
@@ -260,17 +258,14 @@ class ASETest {
 
         val layersAseIndexToName = ase.default.layers.map { it as ASE.AseLayer }
             .associate { it.originalAseIndex to it.name!! }
-        assertThat(layersAseIndexToName).containsExactly(
-            0, "visible1",
-            2, "visible2"
-        )
+        assertEquals("visible1", layersAseIndexToName[0])
+        assertEquals("visible2", layersAseIndexToName[2])
 
         val frameAseIndexToName = ase.default.frames.first().layerData.map { it.layer as ASE.AseLayer }
             .associate { it.originalAseIndex to it.name!! }
-        assertThat(frameAseIndexToName).containsExactly(
-            0, "visible1",
-            2, "visible2"
-        )
+
+        assertEquals("visible1", frameAseIndexToName[0])
+        assertEquals("visible2", frameAseIndexToName[2])
     }
 
     @Test
@@ -283,17 +278,13 @@ class ASETest {
 
         val aseIndexToName = ase.default.layers.map { it as ASE.AseLayer }
             .associate { it.originalAseIndex to it.name!! }
-        assertThat(aseIndexToName).containsExactly(
-            0, "visible1",
-            1, "hidden_layer",
-            2, "visible2"
-        )
+        assertEquals("visible1", aseIndexToName[0])
+        assertEquals("hidden_layer", aseIndexToName[1])
+        assertEquals("visible2", aseIndexToName[2])
         val frameAseIndexToName = ase.default.frames.first().layerData.map { it.layer as ASE.AseLayer }
             .associate { it.originalAseIndex to it.name!! }
-        assertThat(frameAseIndexToName).containsExactly(
-            0, "visible1",
-            1, "hidden_layer",
-            2, "visible2"
-        )
+        assertEquals("visible1", frameAseIndexToName[0])
+        assertEquals("hidden_layer", frameAseIndexToName[1])
+        assertEquals("visible2", frameAseIndexToName[2])
     }
 }

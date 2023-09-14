@@ -20,7 +20,7 @@ dependencies {
     add("jvmMainApi", libs.bundles.jna)
     add("commonMainApi", libs.kotlinx.coroutines.core)
     add("commonMainApi", libs.kotlinx.atomicfu)
-    add("commonTestApi", project(":korge-test"))
+    //add("commonTestApi", project(":korge-test"))
     add("commonTestApi", libs.kotlinx.coroutines.test)
 }
 

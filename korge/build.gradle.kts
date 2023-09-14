@@ -13,7 +13,7 @@ project.extensions.extraProperties.properties.apply {
 dependencies {
     commonMainApi(project(":korge-core"))
     commonMainApi(project(":korge-foundation"))
-    commonTestApi(project(":korge-test"))
+    //commonTestApi(project(":korge-test"))
     jvmMainApi("org.jetbrains.kotlin:kotlin-reflect")
     jvmMainApi(libs.jackson.databind)
     jvmMainApi(libs.jackson.module.kotlin)

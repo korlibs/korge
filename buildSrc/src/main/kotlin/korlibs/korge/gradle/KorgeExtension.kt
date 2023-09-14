@@ -349,7 +349,7 @@ open class KorgeExtension(
 	var supressWarnings: Boolean = false
 
     val versionSubstitutions = LinkedHashMap<String, String>().also {
-        it["com.soywiz.korlibs.korge-test:korge-test"] = BuildVersions.KORLIBS
+        //it["com.soywiz.korlibs.korge-test:korge-test"] = BuildVersions.KORLIBS
         it["com.soywiz.korlibs.korge-core:korge-core"] = BuildVersions.KORLIBS
         it["com.soywiz.korlibs.korge-platform:korge-platform"] = BuildVersions.KORLIBS
 
