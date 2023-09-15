@@ -1,6 +1,5 @@
 package korlibs.bignumber
 
-import korlibs.bignumber.internal.*
 import kotlin.test.*
 
 abstract class AbstractBigIntTest {
