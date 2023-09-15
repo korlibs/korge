@@ -1,11 +1,9 @@
 package korlibs.audio.sound.backends
 
-import korlibs.datastructure.lock.*
-import korlibs.datastructure.thread.*
-import korlibs.time.*
-import korlibs.memory.*
 import korlibs.audio.sound.*
+import korlibs.datastructure.thread.*
 import korlibs.io.async.*
+import korlibs.time.*
 import kotlin.coroutines.*
 
 val alsaNativeSoundProvider: ALSANativeSoundProvider? by lazy {

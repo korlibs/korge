@@ -1,6 +1,7 @@
+@file:OptIn(ExperimentalForeignApi::class)
+
 package korlibs.audio.sound.backends
 
-import korlibs.memory.*
 import korlibs.memory.dyn.*
 import kotlinx.cinterop.*
 
@@ -58,6 +59,7 @@ actual object ASoundImpl : ASound2 {
 }
 
 
+@OptIn(ExperimentalForeignApi::class)
 internal object A2 : DynamicLibrary("libasound.so.2") {
     inline val initialized: Boolean get() = isAvailable
     val snd_pcm_open by func<(pcmPtr: COpaquePointer?, name: CPointer<ByteVar>, stream: Int, mode: Int) -> Int>()

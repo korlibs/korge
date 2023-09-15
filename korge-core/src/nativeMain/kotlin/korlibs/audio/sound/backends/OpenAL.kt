@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalForeignApi::class)
+
 package korlibs.audio.sound.backends
 
 import korlibs.time.TimeSpan

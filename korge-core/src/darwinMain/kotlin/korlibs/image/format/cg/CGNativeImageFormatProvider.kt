@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalForeignApi::class)
+
 package korlibs.image.format.cg
 
 import cnames.structs.CGImage
@@ -17,7 +19,7 @@ import kotlin.ByteArray
 import kotlin.Int
 import kotlin.native.concurrent.*
 
-open class CGBaseNativeImageFormatProvider : StbImageNativeImageFormatProvider() {
+open class CGBaseNativeImageFormatProvider : BaseNativeImageFormatProvider() {
     companion object : CGBaseNativeImageFormatProvider()
     override fun createBitmapNativeImage(bmp: Bitmap): CoreGraphicsNativeImage = CoreGraphicsNativeImage(bmp.toBMP32().premultipliedIfRequired())
 }
@@ -50,7 +52,7 @@ open class CGNativeImageFormatProvider : CGBaseNativeImageFormatProvider() {
     override suspend fun decodeInternal(data: ByteArray, props: ImageDecodingProps): NativeImageResult {
         // Since we are decoding as premultiplied, we need a decoder that decodes un-multiplied
         if (props.asumePremultiplied) {
-            return super.decodeInternal(data, props)
+            return wrapNative(PNG.decode(data, props), props)
         }
 
         return withContext(Dispatchers.ResourceDecoder) {
