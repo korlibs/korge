@@ -11,8 +11,8 @@ import korlibs.io.lang.toString
 import korlibs.io.util.StrReader
 import korlibs.io.util.substringAfterOrNull
 import korlibs.io.util.substringBeforeOrNull
-import korlibs.crypto.encoding.Hex
-import korlibs.crypto.encoding.toBase64
+import korlibs.encoding.Hex
+import korlibs.encoding.toBase64
 
 data class URL private constructor(
 	val isOpaque: Boolean,

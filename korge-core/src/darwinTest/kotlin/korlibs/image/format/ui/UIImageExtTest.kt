@@ -4,7 +4,7 @@ import korlibs.image.bitmap.*
 import korlibs.image.color.*
 import korlibs.image.format.*
 import korlibs.image.format.cg.*
-import korlibs.crypto.encoding.*
+import korlibs.encoding.*
 import platform.Foundation.*
 import platform.UIKit.*
 import kotlin.test.*

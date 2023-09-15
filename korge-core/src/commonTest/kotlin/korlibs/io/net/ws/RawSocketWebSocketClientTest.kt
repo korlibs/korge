@@ -13,7 +13,7 @@ import korlibs.io.stream.toAsync
 import korlibs.io.stream.write16BE
 import korlibs.io.stream.writeBytes
 import korlibs.io.stream.writeString
-import korlibs.crypto.encoding.hex
+import korlibs.encoding.hex
 import kotlin.test.*
 
 class RawRawSocketWebSocketClient {

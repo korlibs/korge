@@ -1,8 +1,7 @@
 package korlibs.crypto
 
-import korlibs.crypto.internal.arraycopy
-import korlibs.crypto.internal.arrayxor
-import korlibs.crypto.internal.getIV
+import korlibs.memory.*
+import kotlin.experimental.*
 
 /**
  * Symmetric Cipher Mode
@@ -206,4 +205,19 @@ private abstract class CipherModeIVDE(name: String) : CipherModeIV(name) {
     final override fun coreDecrypt(pData: ByteArray, cipher: Cipher, ivb: ByteArray) = coreCrypt(pData, cipher, ivb)
 
     protected abstract fun coreCrypt(pData: ByteArray, cipher: Cipher, ivb: ByteArray)
+}
+
+private fun arrayxor(data: ByteArray, offset: Int, xor: ByteArray) {
+    for (n in xor.indices) data[offset + n] = data[offset + n] xor xor[n]
+}
+
+private fun arrayxor(data: ByteArray, offset: Int, size: Int, xor: ByteArray, xoroffset: Int) {
+    for (n in 0 until size) data[offset + n] = data[offset + n] xor xor[xoroffset + n]
+}
+
+private fun getIV(srcIV: ByteArray?, blockSize: Int): ByteArray {
+    if (srcIV == null) TODO("IV not provided")
+    if (srcIV.size < blockSize) throw IllegalArgumentException("Wrong IV length: must be $blockSize bytes long")
+    return srcIV.copyOf(blockSize)
+    //return ByteArray(blockSize).also { dstIV -> arraycopy(srcIV, 0, dstIV, 0, kotlin.math.min(srcIV.size, dstIV.size)) }
 }

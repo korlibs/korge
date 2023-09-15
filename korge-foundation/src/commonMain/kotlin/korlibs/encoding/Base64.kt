@@ -1,4 +1,6 @@
-package korlibs.crypto.encoding
+package korlibs.encoding
+
+import korlibs.encoding.*
 
 object Base64 {
     private val TABLE = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/="
@@ -23,6 +25,10 @@ object Base64 {
         val src = ByteArray(str.length) { str[it].code.toByte() }
         val dst = ByteArray(src.size)
         return dst.copyOf(decode(src, dst, url))
+    }
+
+    fun decode(ignoreSpaces: Boolean, str: String, url: Boolean = false): ByteArray {
+        return if (ignoreSpaces) Base64.decodeIgnoringSpaces(str, url) else Base64.decode(str, url)
     }
 
     /**
@@ -119,12 +125,8 @@ object Base64 {
         (readU8(index + 0) shl 16) or (readU8(index + 1) shl 8) or (readU8(index + 2) shl 0)
 }
 
-fun String.fromBase64IgnoreSpaces(url: Boolean = false): ByteArray =
-    Base64.decode(this.replace(" ", "").replace("\n", "").replace("\r", ""), url)
-
-fun String.fromBase64(ignoreSpaces: Boolean = false, url: Boolean = false): ByteArray =
-    if (ignoreSpaces) Base64.decodeIgnoringSpaces(this, url) else Base64.decode(this, url)
-
+fun String.fromBase64IgnoreSpaces(url: Boolean = false): ByteArray = Base64.decodeIgnoringSpaces(this, url)
+fun String.fromBase64(ignoreSpaces: Boolean = false, url: Boolean = false): ByteArray = Base64.decode(ignoreSpaces, this, url)
 fun ByteArray.toBase64(url: Boolean = false, doPadding: Boolean = false): String = Base64.encode(this, url, doPadding)
 val ByteArray.base64: String get() = Base64.encode(this)
 val ByteArray.base64Url: String get() = Base64.encode(this, true)

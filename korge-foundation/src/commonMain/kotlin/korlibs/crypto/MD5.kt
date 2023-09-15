@@ -1,6 +1,5 @@
 package korlibs.crypto
 
-import korlibs.crypto.internal.rotateLeft
 import kotlin.math.abs
 import kotlin.math.sin
 

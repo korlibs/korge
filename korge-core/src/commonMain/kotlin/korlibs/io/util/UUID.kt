@@ -4,7 +4,7 @@ import korlibs.memory.UByteArrayInt
 import korlibs.memory.asByteArray
 import korlibs.memory.asUByteArrayInt
 import korlibs.io.lang.invalidArg
-import korlibs.crypto.encoding.Hex
+import korlibs.encoding.Hex
 import kotlin.random.Random
 
 @Suppress("EXPERIMENTAL_API_USAGE")

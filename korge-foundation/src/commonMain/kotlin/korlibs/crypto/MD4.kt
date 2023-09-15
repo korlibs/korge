@@ -1,7 +1,5 @@
 package korlibs.crypto
 
-import korlibs.crypto.internal.rotateLeft
-
 class MD4 : Hasher(chunkSize = 64, digestSize = 16, "MD4") {
 
     companion object : HasherFactory("MD4", { MD4() }) {

@@ -12,7 +12,7 @@ import korlibs.io.stream.AsyncOutputStream
 import korlibs.io.stream.write32BE
 import korlibs.io.stream.write8
 import korlibs.io.util.checksum.Adler32
-import korlibs.crypto.encoding.hex
+import korlibs.encoding.hex
 
 @OptIn(KorioExperimentalApi::class)
 open class ZLib(val deflater: (windowBits: Int) -> CompressionMethod) : CompressionMethod {

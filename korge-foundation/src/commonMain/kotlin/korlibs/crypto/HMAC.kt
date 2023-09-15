@@ -1,6 +1,6 @@
 package korlibs.crypto
 
-import korlibs.crypto.internal.arraycopy
+import korlibs.memory.*
 
 class HMAC {
 

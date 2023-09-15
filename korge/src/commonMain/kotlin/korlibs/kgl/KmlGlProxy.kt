@@ -4,7 +4,7 @@
 
 package korlibs.kgl
 
-import korlibs.crypto.encoding.*
+import korlibs.encoding.*
 import korlibs.graphics.*
 import korlibs.graphics.shader.gl.*
 import korlibs.image.bitmap.*

@@ -1,6 +1,6 @@
 package korlibs.wasm
 
-import korlibs.crypto.encoding.*
+import korlibs.encoding.*
 import korlibs.datastructure.*
 import korlibs.memory.*
 

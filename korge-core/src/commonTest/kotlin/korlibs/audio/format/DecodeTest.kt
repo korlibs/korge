@@ -7,7 +7,7 @@ import korlibs.io.file.std.resourcesVfs
 import korlibs.io.stream.openAsync
 import korlibs.io.util.checksum.CRC32
 import korlibs.io.util.checksum.checksum
-import korlibs.crypto.encoding.hex
+import korlibs.encoding.hex
 import doIOTest
 import kotlin.test.assertEquals
 

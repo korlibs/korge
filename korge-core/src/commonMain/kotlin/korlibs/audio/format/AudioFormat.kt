@@ -4,7 +4,7 @@ package korlibs.audio.format
 
 import korlibs.audio.internal.*
 import korlibs.audio.sound.*
-import korlibs.crypto.encoding.*
+import korlibs.encoding.*
 import korlibs.datastructure.*
 import korlibs.io.file.*
 import korlibs.io.lang.*

@@ -6,7 +6,7 @@ import korlibs.io.file.*
 import korlibs.io.lang.*
 import korlibs.io.lang.ASCII
 import korlibs.io.stream.*
-import korlibs.crypto.encoding.*
+import korlibs.encoding.*
 import kotlin.coroutines.cancellation.*
 
 open class ImageFormats(formats: Iterable<ImageFormat>) : ImageFormat("") {

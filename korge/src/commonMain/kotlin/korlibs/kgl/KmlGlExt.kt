@@ -1,6 +1,6 @@
 package korlibs.kgl
 
-import korlibs.crypto.encoding.*
+import korlibs.encoding.*
 import korlibs.logger.*
 import korlibs.math.geom.*
 import korlibs.memory.*

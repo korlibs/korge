@@ -6,8 +6,8 @@ import korlibs.io.async.suspendTest
 import korlibs.io.file.std.resourcesVfs
 import korlibs.io.stream.openFastStream
 import korlibs.math.geom.vector.VectorPath
-import korlibs.crypto.encoding.unhex
-import korlibs.crypto.encoding.unhexIgnoreSpaces
+import korlibs.encoding.unhex
+import korlibs.encoding.unhexIgnoreSpaces
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull

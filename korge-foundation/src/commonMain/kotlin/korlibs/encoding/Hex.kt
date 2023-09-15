@@ -1,4 +1,4 @@
-package korlibs.crypto.encoding
+package korlibs.encoding
 
 object Hex {
     fun isHexDigit(c: Char): Boolean = decodeChar(c) >= 0
@@ -28,6 +28,13 @@ object Hex {
     fun decode(str: String, out: ByteArray = ByteArray(str.length / 2)): ByteArray =
         out.also { decode(str) { n, byte -> out[n] = byte } }
 
+    fun decodeIgnoreSpaces(str: String): ByteArray = buildString {
+        for (element in str) {
+            val c = element
+            if (c != ' ' && c != '\t' && c != '\n' && c != '\r') append(c)
+        }
+    }.unhex
+
     inline fun decode(str: String, out: (Int, Byte) -> Unit) {
         for (n in 0 until str.length / 2) {
             val c0 = decodeHexDigit(str[n * 2 + 0])
@@ -43,6 +50,17 @@ object Hex {
     fun encode(src: ByteArray, dst: Appendable) = encodeLower(src, dst)
     fun encodeLower(src: ByteArray, dst: Appendable) = encode(src, dst) { encodeCharLower(it) }
     fun encodeUpper(src: ByteArray, dst: Appendable) = encode(src, dst) { encodeCharUpper(it) }
+
+    fun shex(v: Byte): String = buildString(2) {
+        append(Hex.encodeCharUpper((v.toInt() ushr 4) and 0xF))
+        append(Hex.encodeCharUpper((v.toInt() ushr 0) and 0xF))
+    }
+    fun shex(v: Int): String = buildString(8) {
+        for (n in 0 until 8) {
+            val v = (v ushr ((7 - n) * 4)) and 0xF
+            append(Hex.encodeCharUpper(v))
+        }
+    }
 
     inline private fun encode(src: ByteArray, dst: Appendable, digits: (Int) -> Char) {
         for (n in src.indices) {
@@ -63,16 +81,13 @@ fun String.fromHex(): ByteArray = Hex.decode(this)
 val ByteArray.hexLower: String get() = Hex.encodeLower(this)
 val ByteArray.hexUpper: String get() = Hex.encodeUpper(this)
 
+fun ByteArray.toHexStringLower(): String = hexLower
+fun ByteArray.toHexStringUpper(): String = hexUpper
+
 fun Char.isHexDigit() = Hex.isHexDigit(this)
 
-val List<String>.unhexIgnoreSpaces get() = joinToString("").unhexIgnoreSpaces
-val String.unhexIgnoreSpaces: ByteArray get() = buildString {
-    val str = this@unhexIgnoreSpaces
-    for (n in 0 until str.length) {
-        val c = str[n]
-        if (c != ' ' && c != '\t' && c != '\n' && c != '\r') append(c)
-    }
-}.unhex
+val List<String>.unhexIgnoreSpaces get() = Hex.decodeIgnoreSpaces(joinToString(""))
+val String.unhexIgnoreSpaces: ByteArray get() = Hex.decodeIgnoreSpaces(this)
 val String.unhex get() = Hex.decode(this)
 val ByteArray.hex get() = Hex.encodeLower(this)
 
@@ -85,18 +100,7 @@ val Int.hex: String get() = "0x$shex"
  * Returns this number as a hexadecimal string in the format:
  * WWXXYYZZ
  */
-val Int.shex: String
-    get() = buildString(8) {
-        for (n in 0 until 8) {
-            val v = (this@shex ushr ((7 - n) * 4)) and 0xF
-            append(Hex.encodeCharUpper(v))
-        }
-    }
-
+val Int.shex: String get() = Hex.shex(this)
 
 val Byte.hex: String get() = "0x$shex"
-val Byte.shex: String
-    get() = buildString(2) {
-        append(Hex.encodeCharUpper((this@shex.toInt() ushr 4) and 0xF))
-        append(Hex.encodeCharUpper((this@shex.toInt() ushr 0) and 0xF))
-    }
+val Byte.shex: String get() = Hex.shex(this)

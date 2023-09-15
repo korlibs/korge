@@ -1,7 +1,7 @@
 package korlibs.io.lang
 
-import korlibs.crypto.encoding.hex
-import korlibs.crypto.encoding.hexLower
+import korlibs.encoding.hex
+import korlibs.encoding.hexLower
 import java.nio.charset.Charset
 import kotlin.test.Test
 import kotlin.test.assertEquals

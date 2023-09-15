@@ -6,9 +6,9 @@ import korlibs.io.lang.UTF8
 import korlibs.io.lang.toByteArray
 import korlibs.io.lang.toString
 import korlibs.io.util.encoding.encode
-import korlibs.crypto.encoding.Base64
-import korlibs.crypto.encoding.fromBase64
-import korlibs.crypto.encoding.toBase64
+import korlibs.encoding.Base64
+import korlibs.encoding.fromBase64
+import korlibs.encoding.toBase64
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue

@@ -12,7 +12,7 @@ import korlibs.io.async.suspendTestNoBrowser
 import korlibs.io.file.std.MemoryVfs
 import korlibs.io.stream.openAsync
 import korlibs.math.geom.*
-import korlibs.crypto.encoding.fromBase64
+import korlibs.encoding.fromBase64
 import kotlin.native.concurrent.ThreadLocal
 import kotlin.test.Test
 import kotlin.test.assertEquals

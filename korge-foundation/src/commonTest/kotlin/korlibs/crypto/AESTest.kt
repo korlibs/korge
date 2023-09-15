@@ -1,9 +1,9 @@
 package korlibs.crypto
 
 import korlibs.crypto.CipherPadding.Companion.NoPadding
-import korlibs.crypto.encoding.Hex
-import korlibs.crypto.encoding.hexLower
-import korlibs.crypto.encoding.unhex
+import korlibs.encoding.Hex
+import korlibs.encoding.hexLower
+import korlibs.encoding.unhex
 import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals

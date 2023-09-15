@@ -11,7 +11,7 @@ import korlibs.image.paint.*
 import korlibs.io.async.*
 import korlibs.math.geom.*
 import korlibs.math.geom.vector.*
-import korlibs.crypto.encoding.*
+import korlibs.encoding.*
 import korlibs.image.vector.*
 import kotlin.test.*
 

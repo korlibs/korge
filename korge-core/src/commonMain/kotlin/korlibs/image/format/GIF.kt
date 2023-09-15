@@ -10,7 +10,7 @@ import korlibs.io.stream.SyncStream
 import korlibs.io.stream.readBytes
 import korlibs.io.stream.readBytesExact
 import korlibs.io.stream.readU8
-import korlibs.crypto.encoding.hex
+import korlibs.encoding.hex
 import korlibs.util.format
 import kotlin.math.max
 import kotlin.math.min

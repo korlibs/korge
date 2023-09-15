@@ -3,7 +3,7 @@
 
 package korlibs.crypto
 
-import korlibs.crypto.encoding.Hex
+import korlibs.encoding.Hex
 
 @KryptoExperimental
 class SHA3_256 : SHA3(16, 256) {

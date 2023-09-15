@@ -1,6 +1,6 @@
 package korlibs.image.format
 
-import korlibs.crypto.encoding.*
+import korlibs.encoding.*
 import korlibs.datastructure.*
 import korlibs.image.bitmap.*
 import korlibs.image.color.*

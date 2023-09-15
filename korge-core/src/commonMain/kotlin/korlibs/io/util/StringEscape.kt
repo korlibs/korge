@@ -1,7 +1,7 @@
 package korlibs.io.util
 
 import korlibs.memory.extract
-import korlibs.crypto.encoding.Hex
+import korlibs.encoding.Hex
 
 fun String.escape(): String {
 	val out = StringBuilder()

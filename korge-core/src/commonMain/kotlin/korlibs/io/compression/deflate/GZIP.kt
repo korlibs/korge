@@ -10,7 +10,7 @@ import korlibs.io.stream.AsyncOutputStream
 import korlibs.io.stream.write32LE
 import korlibs.io.stream.write8
 import korlibs.io.util.checksum.CRC32
-import korlibs.crypto.encoding.hex
+import korlibs.encoding.hex
 
 open class GZIP(deflater: () -> CompressionMethod) : GZIPBase(true, deflater) {
 	companion object : GZIP({ Deflate }) {

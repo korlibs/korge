@@ -1,6 +1,6 @@
 package korlibs.crypto
 
-import korlibs.crypto.encoding.Hex
+import korlibs.encoding.Hex
 
 fun ByteArray.toHexString() = Hex.encode(this)
 fun ByteArray.toHexStringLower() = Hex.encodeLower(this)

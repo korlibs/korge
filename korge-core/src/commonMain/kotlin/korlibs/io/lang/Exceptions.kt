@@ -1,7 +1,7 @@
 package korlibs.io.lang
 
 import korlibs.logger.Console
-import korlibs.crypto.encoding.*
+import korlibs.encoding.*
 
 expect open class IOException(msg: String) : Exception
 expect open class EOFException(msg: String) : IOException

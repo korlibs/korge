@@ -2,7 +2,7 @@
 
 package korlibs.korge.view
 
-import korlibs.crypto.encoding.*
+import korlibs.encoding.*
 import korlibs.datastructure.*
 import korlibs.datastructure.iterators.*
 import korlibs.event.*

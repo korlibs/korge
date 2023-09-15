@@ -11,7 +11,7 @@ import korlibs.image.internal.sumPacked4MulR
 import korlibs.image.paint.Paint
 import korlibs.io.util.niceStr
 import korlibs.math.interpolation.*
-import korlibs.crypto.encoding.appendHexByte
+import korlibs.encoding.appendHexByte
 import korlibs.math.geom.*
 import kotlin.jvm.JvmName
 import kotlin.math.pow

@@ -8,7 +8,7 @@ import korlibs.io.lang.UTF8
 import korlibs.io.lang.toString
 import korlibs.io.stream.openAsync
 import korlibs.io.stream.readAll
-import korlibs.crypto.encoding.unhexIgnoreSpaces
+import korlibs.encoding.unhexIgnoreSpaces
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

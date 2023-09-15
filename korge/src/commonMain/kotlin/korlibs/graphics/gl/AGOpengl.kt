@@ -1,6 +1,6 @@
 package korlibs.graphics.gl
 
-import korlibs.crypto.encoding.*
+import korlibs.encoding.*
 import korlibs.datastructure.*
 import korlibs.datastructure.iterators.*
 import korlibs.graphics.*

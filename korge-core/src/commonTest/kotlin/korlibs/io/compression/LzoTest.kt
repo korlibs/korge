@@ -4,8 +4,8 @@ import korlibs.io.compression.lzo.LZO
 import korlibs.io.lang.UTF8
 import korlibs.io.lang.toByteArray
 import korlibs.io.lang.toString
-import korlibs.crypto.encoding.fromBase64
-import korlibs.crypto.encoding.unhex
+import korlibs.encoding.fromBase64
+import korlibs.encoding.unhex
 import korlibs.crypto.md5
 import korlibs.crypto.sha1
 import korlibs.crypto.sha256

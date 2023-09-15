@@ -1,6 +1,6 @@
 package korlibs.crypto
 
-import korlibs.crypto.encoding.ASCII
+import korlibs.encoding.ASCII
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

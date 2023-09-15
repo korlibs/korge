@@ -20,8 +20,8 @@ import korlibs.io.serialization.json.Json
 import korlibs.io.stream.AsyncStream
 import korlibs.io.stream.AsyncStreamBase
 import korlibs.io.stream.toAsyncStream
-import korlibs.crypto.encoding.hex
-import korlibs.crypto.encoding.unhex
+import korlibs.encoding.hex
+import korlibs.encoding.unhex
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
 import kotlin.math.max

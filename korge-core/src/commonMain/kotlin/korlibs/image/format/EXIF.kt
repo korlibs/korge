@@ -24,7 +24,7 @@ import korlibs.io.stream.skipToAlign
 import korlibs.io.stream.sliceHere
 import korlibs.io.stream.sliceStart
 import korlibs.io.stream.toAsyncStream
-import korlibs.crypto.encoding.hex
+import korlibs.encoding.hex
 
 // https://zpl.fi/exif-orientation-in-different-formats/
 // https://exiftool.org/TagNames/EXIF.html

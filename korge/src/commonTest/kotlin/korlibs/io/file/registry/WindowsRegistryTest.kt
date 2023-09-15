@@ -4,7 +4,7 @@ import korlibs.io.async.suspendTest
 import korlibs.io.file.Vfs
 import korlibs.io.file.baseName
 import korlibs.io.stream.openAsync
-import korlibs.crypto.encoding.hex
+import korlibs.encoding.hex
 import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals

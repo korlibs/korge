@@ -1,6 +1,6 @@
 package korlibs.korge.bitmapfont
 
-import korlibs.crypto.encoding.*
+import korlibs.encoding.*
 import korlibs.datastructure.*
 import korlibs.image.bitmap.*
 import korlibs.image.font.*

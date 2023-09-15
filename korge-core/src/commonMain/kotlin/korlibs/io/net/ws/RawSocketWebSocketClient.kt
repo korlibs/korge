@@ -19,7 +19,7 @@ import korlibs.io.stream.readLine
 import korlibs.io.stream.writeBytes
 import korlibs.io.util.buildList
 import korlibs.io.util.join
-import korlibs.crypto.encoding.toBase64
+import korlibs.encoding.toBase64
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlin.coroutines.CoroutineContext

@@ -1,6 +1,6 @@
 package korlibs.io.lang
 
-import korlibs.crypto.encoding.hex
+import korlibs.encoding.hex
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

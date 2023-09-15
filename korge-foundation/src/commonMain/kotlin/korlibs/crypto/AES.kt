@@ -1,10 +1,5 @@
 package korlibs.crypto
 
-import korlibs.crypto.internal.ext8
-import korlibs.crypto.internal.getInt
-import korlibs.crypto.internal.setInt
-import korlibs.crypto.internal.toIntArray
-
 @Suppress("UNUSED_CHANGED_VALUE")
 /**
  * Based on CryptoJS v3.1.2
@@ -208,3 +203,15 @@ class AES(val keyWords: IntArray) : Cipher {
             AES(key)[CipherMode.CTR, padding, iv].decrypt(data)
     }
 }
+
+private fun ByteArray.getu(offset: Int): Int = (this[offset].toInt() and 0xFF)
+private inline fun Int.ext8(offset: Int): Int = (this ushr offset) and 0xFF
+private fun ByteArray.toIntArray(): IntArray = IntArray(size / 4).also { for (n in it.indices) it[n] = getInt(n * 4) }
+private fun ByteArray.getInt(offset: Int): Int = (getu(offset + 0) shl 24) or (getu(offset + 1) shl 16) or (getu(offset + 2) shl 8) or (getu(offset + 3) shl 0)
+private fun ByteArray.setInt(offset: Int, value: Int) {
+    this[offset + 0] = ((value shr 24) and 0xFF).toByte()
+    this[offset + 1] = ((value shr 16) and 0xFF).toByte()
+    this[offset + 2] = ((value shr 8) and 0xFF).toByte()
+    this[offset + 3] = ((value shr 0) and 0xFF).toByte()
+}
+

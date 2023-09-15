@@ -1,6 +1,6 @@
 package korlibs.crypto
 
-import korlibs.crypto.internal.arraycopy
+import korlibs.memory.*
 
 // https://git.suckless.org/sbase/file/libutil/sha512.c.html
 // https://git.suckless.org/sbase/file/sha512.h.html

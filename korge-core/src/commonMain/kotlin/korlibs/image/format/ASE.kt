@@ -28,7 +28,7 @@ import korlibs.io.stream.readU16LE
 import korlibs.io.stream.readU32LE
 import korlibs.io.stream.readU8
 import korlibs.math.geom.slice.*
-import korlibs.crypto.encoding.hex
+import korlibs.encoding.hex
 import korlibs.math.geom.*
 
 // If this is true, only processes visible layers from the ASE file.

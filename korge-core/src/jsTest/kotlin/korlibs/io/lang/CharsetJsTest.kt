@@ -1,7 +1,7 @@
 package korlibs.io.lang
 
-import korlibs.crypto.encoding.hexLower
-import korlibs.crypto.encoding.unhex
+import korlibs.encoding.hexLower
+import korlibs.encoding.unhex
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

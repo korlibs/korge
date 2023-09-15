@@ -23,7 +23,7 @@ import korlibs.io.stream.write32LE
 import korlibs.io.stream.write8
 import korlibs.io.stream.writeBytes
 import korlibs.io.stream.writeString
-import korlibs.crypto.encoding.hex
+import korlibs.encoding.hex
 
 // @TODO: We might want to support a raw version without headers?
 open class LZO(val headerType: HeaderType = HeaderType.SHORT) : CompressionMethod {

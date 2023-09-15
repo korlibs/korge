@@ -22,7 +22,7 @@ import korlibs.io.stream.readU16LE
 import korlibs.io.stream.readU32LE
 import korlibs.io.stream.sliceStart
 import korlibs.io.stream.sliceWithSize
-import korlibs.crypto.encoding.hex
+import korlibs.encoding.hex
 import kotlin.math.max
 
 class ZipFile private constructor(
