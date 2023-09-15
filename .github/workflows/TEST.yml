@@ -105,6 +105,45 @@ jobs:
     #- { name: Run benchmarks, run: "./gradlew :korge-benchmarks:jvmBenchmark" }
     #- { name: e2e test, uses: GabrielBB/xvfb-action@v1, with: { working-directory: e2e-test, run: ./gradlew checkReferencesJvm --stacktrace } }
 
+  test-jvm-macos:
+    needs: changes
+    if: ${{ needs.changes.outputs.testMacos == 'true' }}
+    timeout-minutes: 240
+    runs-on: macos-11
+    #env:
+    #  DISABLE_HEADLESS_TEST: true
+    steps:
+      - { uses: actions/checkout@v3 }
+      - { name: Set up JDK, uses: actions/setup-java@v3, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
+      - { name: Gradle cache, uses: ./.github/actions/gradle-cache }
+      - { name: Grant execute permission for gradlew, run: chmod +x gradlew }
+      - { name: Start gradle, run: ./gradlew }
+      - { name: Testing JVM on MacosX64, run: ./gradlew jvmTest }
+      - { name: Archive Test Results, if: failure(), uses: actions/upload-artifact@v3, with: { name: screenshot-test-results-macos, retention-days: 21, path: "**/build/reports", if-no-files-found: ignore } }
+
+  test-jvm-windows:
+    needs: changes
+    if: ${{ needs.changes.outputs.testWindows == 'true' }}
+    timeout-minutes: 240
+    runs-on: windows-latest
+    env:
+      DISABLE_JAVASCRIPT_TEST: true
+      GRADLE_OPTS: -Dorg.gradle.daemon=false -Dkotlin.compiler.execution.strategy=in-process -Dorg.gradle.workers.max=3
+      DISABLE_KOTLIN_NATIVE: true
+    steps:
+      - { uses: actions/checkout@v3 }
+      - uses: denoland/setup-deno@v1
+        with:
+          deno-version: v1.x
+      - { name: Configure local.properties, run: "echo org.gradle.parallel=false >> local.properties" }
+      - { name: Download, shell: cmd, run: "curl -L -o opengl32-x64.zip https://github.com/korlibs/mesa-dist-win/releases/download/21.2.3/opengl32-x64.zip" }
+      - { name: unzip, shell: cmd, run: "unzip opengl32-x64.zip" }
+      - { name: unzip to korge, shell: cmd, run: "unzip opengl32-x64.zip -d korge" }
+      - { name: Set up JDK, uses: actions/setup-java@v3, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
+      - { name: Gradle cache, uses: ./.github/actions/gradle-cache }
+      - { name: Testing JVM on windows, shell: cmd, run: "CALL gradlew.bat jvmTest", env: { EGL_LOG_LEVEL: debug, LIBGL_DEBUG: verbose, LIBGL_ALWAYS_SOFTWARE: true, MESA_DEBUG: true } }
+      - { name: Archive Test Results, if: failure(), uses: actions/upload-artifact@v3, with: { name: screenshot-test-results-windows, retention-days: 21, path: "**/build/reports", if-no-files-found: ignore } }
+
   test-js:
     needs: changes
     if: ${{ needs.changes.outputs.testJs == 'true' }}
@@ -156,22 +195,6 @@ jobs:
           api-level: 21
           script: ./gradlew connectedCheck
 
-  test-macos:
-    needs: changes
-    if: ${{ needs.changes.outputs.testMacos == 'true' }}
-    timeout-minutes: 240
-    runs-on: macos-11
-    #env:
-    #  DISABLE_HEADLESS_TEST: true
-    steps:
-    - { uses: actions/checkout@v3 }
-    - { name: Set up JDK, uses: actions/setup-java@v3, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
-    - { name: Gradle cache, uses: ./.github/actions/gradle-cache }
-    - { name: Grant execute permission for gradlew, run: chmod +x gradlew }
-    - { name: Start gradle, run: ./gradlew }
-    - { name: Testing JVM on MacosX64, run: ./gradlew jvmTest }
-    - { name: Archive Test Results, if: failure(), uses: actions/upload-artifact@v3, with: { name: screenshot-test-results-macos, retention-days: 21, path: "**/build/reports", if-no-files-found: ignore } }
-
   test-ios:
     needs: changes
     if: ${{ needs.changes.outputs.testMacos == 'true' }}
@@ -188,26 +211,3 @@ jobs:
       - { name: Run ios simulator tests, run: ./gradlew iosX64Test }
       - { name: Check compilation of tvOS targets, run: ./gradlew publishTvosArm64PublicationToMavenLocal }
       - { name: Archive Test Results, if: failure(), uses: actions/upload-artifact@v3, with: { name: screenshot-test-results-macos, retention-days: 21, path: "**/build/reports", if-no-files-found: ignore } }
-
-  test-jvm-windows:
-    needs: changes
-    if: ${{ needs.changes.outputs.testWindows == 'true' }}
-    timeout-minutes: 240
-    runs-on: windows-latest
-    env:
-      DISABLE_JAVASCRIPT_TEST: true
-      GRADLE_OPTS: -Dorg.gradle.daemon=false -Dkotlin.compiler.execution.strategy=in-process -Dorg.gradle.workers.max=3
-      DISABLE_KOTLIN_NATIVE: true
-    steps:
-    - { uses: actions/checkout@v3 }
-    - uses: denoland/setup-deno@v1
-      with:
-        deno-version: v1.x
-    - { name: Configure local.properties, run: "echo org.gradle.parallel=false >> local.properties" }
-    - { name: Download, shell: cmd, run: "curl -L -o opengl32-x64.zip https://github.com/korlibs/mesa-dist-win/releases/download/21.2.3/opengl32-x64.zip" }
-    - { name: unzip, shell: cmd, run: "unzip opengl32-x64.zip" }
-    - { name: unzip to korge, shell: cmd, run: "unzip opengl32-x64.zip -d korge" }
-    - { name: Set up JDK, uses: actions/setup-java@v3, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
-    - { name: Gradle cache, uses: ./.github/actions/gradle-cache }
-    - { name: Testing JVM on windows, shell: cmd, run: "CALL gradlew.bat jvmTest", env: { EGL_LOG_LEVEL: debug, LIBGL_DEBUG: verbose, LIBGL_ALWAYS_SOFTWARE: true, MESA_DEBUG: true } }
-    - { name: Archive Test Results, if: failure(), uses: actions/upload-artifact@v3, with: { name: screenshot-test-results-windows, retention-days: 21, path: "**/build/reports", if-no-files-found: ignore } }
