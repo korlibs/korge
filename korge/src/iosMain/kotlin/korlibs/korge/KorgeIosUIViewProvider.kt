@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalForeignApi::class)
+
 package korlibs.korge
 
 import korlibs.korge.scene.*

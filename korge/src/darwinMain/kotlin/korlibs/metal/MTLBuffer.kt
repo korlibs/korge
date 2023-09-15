@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalForeignApi::class)
+
 package korlibs.metal
 
 import korlibs.logger.*
@@ -16,7 +18,9 @@ value class MTLBuffer internal constructor(val buffer: MTLBufferProtocol)
 
 private val logger by lazy { Logger("MTLBuffer") }
 
-expect fun MTLBuffer.didModifyFullRange()
+fun MTLBuffer.didModifyFullRange() {
+
+}
 
 fun MTLBuffer.insert(data: ByteArray) {
     data.usePinned {
