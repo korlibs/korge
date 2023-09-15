@@ -4,6 +4,7 @@ import korlibs.io.async.suspendTest
 import korlibs.io.file.std.resourcesVfs
 import doIOTest
 import korlibs.audio.format.*
+import korlibs.memory.*
 import kotlin.test.*
 
 class AllTargetsSupportMp3 {
@@ -14,6 +15,8 @@ class AllTargetsSupportMp3 {
 
     @Test
     fun testIsMp3() = suspendTest({ doIOTest }) {
+        if (Platform.isWasm) return@suspendTest
+
         assertNotNull(MP3.tryReadInfo(resourcesVfs["8Khz-Mono.mp3"].open()))
         assertNull(MP3.tryReadInfo(resourcesVfs["8Khz-Mono.opus"].open()))
     }

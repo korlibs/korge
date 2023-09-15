@@ -298,7 +298,7 @@ object RootKorlibsPlugin {
                     }
                     if (project.isWasmEnabled()) {
                         configureWasm(executable = false)
-                        val wasmBrowserTest = tasks.getByName("wasmBrowserTest") as KotlinJsTest
+                        val wasmBrowserTest = tasks.getByName("wasmJsBrowserTest") as KotlinJsTest
                         // ~/projects/korge/build/js/packages/korge-root-klock-wasm-test
                         wasmBrowserTest.doFirst {
                             logger.info("!!!!! wasmBrowserTest PATCH :: $wasmBrowserTest : ${wasmBrowserTest::class.java}")
