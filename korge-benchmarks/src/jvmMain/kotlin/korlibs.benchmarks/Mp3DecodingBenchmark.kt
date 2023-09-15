@@ -1,7 +1,6 @@
 package korlibs.benchmarks
 
-import korlibs.audio.format.mp3.*
-import korlibs.audio.format.mp3.javamp3.*
+import korlibs.audio.format.*
 import korlibs.io.async.*
 import korlibs.io.file.std.*
 import kotlinx.benchmark.*
@@ -21,16 +20,7 @@ class Mp3DecodingBenchmark {
         val bytes = resourcesVfs["mp31.mp3"].readBytes()
         //for (n in 0 until 100) {
         for (n in 0 until 100) {
-            val output = FastMP3Decoder.decode(bytes)
-        }
-    }
-
-    @Benchmark
-    fun testMiniMp3Java() = suspendTest {
-        val bytes = resourcesVfs["mp31.mp3"].readBytes()
-        //for (n in 0 until 100) {
-        for (n in 0 until 100) {
-            val output = JavaMp3AudioFormat.decode(bytes)
+            val output = MP3Decoder.decode(bytes)
         }
     }
 }

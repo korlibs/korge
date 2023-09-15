@@ -2,7 +2,6 @@ package samples
 
 import korlibs.time.seconds
 import korlibs.audio.format.AudioDecodingProps
-import korlibs.audio.format.mp3.javamp3.JavaMp3AudioFormat
 import korlibs.korge.scene.Scene
 import korlibs.korge.view.SContainer
 import korlibs.audio.sound.*
@@ -13,8 +12,6 @@ import korlibs.io.file.std.*
 
 class MainSound : Scene() {
     override suspend fun SContainer.sceneMain() {
-
-        //nativeSoundProvider.audioFormats.registerFirst(JavaMp3AudioFormat())
 
         val music = resourcesVfs["sounds/Snowland.mp3"].readMusic()
         //val music = resourcesVfs["sounds/click.wav"].readSound()

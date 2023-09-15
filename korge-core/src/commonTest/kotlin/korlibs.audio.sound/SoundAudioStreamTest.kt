@@ -2,9 +2,6 @@ package korlibs.audio.sound
 
 import korlibs.time.milliseconds
 import korlibs.logger.*
-import korlibs.audio.format.AudioFormats
-import korlibs.audio.format.WAV
-import korlibs.audio.format.mp3.FastMP3Decoder
 import korlibs.io.async.delay
 import korlibs.io.async.suspendTest
 import korlibs.io.file.std.resourcesVfs

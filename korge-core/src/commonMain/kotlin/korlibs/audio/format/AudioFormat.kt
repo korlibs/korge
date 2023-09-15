@@ -2,7 +2,6 @@
 
 package korlibs.audio.format
 
-import korlibs.audio.format.mp3.*
 import korlibs.audio.internal.*
 import korlibs.audio.sound.*
 import korlibs.crypto.encoding.*
@@ -156,4 +155,4 @@ class AudioFormats : AudioFormat() {
 suspend fun VfsFile.readSoundInfo(formats: AudioFormat = defaultAudioFormats, props: AudioDecodingProps = AudioDecodingProps.DEFAULT) =
 	this.openUse { formats.tryReadInfo(this, props) }
 
-fun standardAudioFormats(): AudioFormats = AudioFormats(WAV, FastMP3Decoder)
+fun standardAudioFormats(): AudioFormats = AudioFormats(WAV, MP3Decoder)

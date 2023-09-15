@@ -1,9 +1,7 @@
 package korlibs.audio.impl.jna
 
+import korlibs.audio.format.*
 import korlibs.time.seconds
-import korlibs.audio.format.AudioDecodingProps
-import korlibs.audio.format.mp3.MP3Decoder
-import korlibs.audio.format.readSoundInfo
 import korlibs.audio.sound.SoundChannelGroup
 import korlibs.audio.sound.attachTo
 import korlibs.audio.sound.await

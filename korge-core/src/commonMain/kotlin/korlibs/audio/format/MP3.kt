@@ -2,7 +2,6 @@
 
 package korlibs.audio.format
 
-import korlibs.crypto.internal.*
 import korlibs.datastructure.DoubleArrayList
 import korlibs.datastructure.binarySearch
 import korlibs.time.TimeSpan

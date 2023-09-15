@@ -1,6 +1,5 @@
 description = "Korge Core Libraries"
 
-korlibs.NativeTools.configureAllCInterop(project, "minimp3")
 korlibs.NativeTools.configureAllCInterop(project, "stb_vorbis")
 korlibs.NativeTools.configureAllCInterop(project, "stb_image")
 korlibs.NativeTools.configureCInteropWin32(project, "win32ssl")
