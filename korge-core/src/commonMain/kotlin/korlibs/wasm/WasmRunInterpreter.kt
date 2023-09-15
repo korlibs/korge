@@ -1324,3 +1324,17 @@ class WasmRunInterpreter(val module: WasmModule, memPages: Int = 10, maxMemPages
     }
 }
 
+
+class WasmInterpreterCode constructor(
+    val instructions: IntArray,
+    val intPool: IntArray,
+    val longPool: LongArray,
+    val floatPool: FloatArray,
+    val doublePool: DoubleArray,
+    val paramsSize: Int = -1,
+    val localSize: Int = -1,
+    val paramsCount: Int = -1,
+    val localsCount: Int = -1,
+    val localsOffsets: IntArray = IntArray(0),
+    val endStack: List<WasmType> = emptyList(),
+)
