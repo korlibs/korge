@@ -10,6 +10,7 @@ import kotlinx.coroutines.*
 import platform.posix.*
 
 // @TODO: Use a separate thread
+@OptIn(ExperimentalForeignApi::class)
 actual suspend fun posixExec(
     path: String, cmdAndArgs: List<String>, env: Map<String, String>, handler: VfsProcessHandler
 ): Int {

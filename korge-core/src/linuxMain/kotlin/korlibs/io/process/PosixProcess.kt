@@ -10,6 +10,7 @@ import platform.posix.*
 import kotlin.collections.*
 import kotlin.*
 
+@OptIn(ExperimentalForeignApi::class)
 actual suspend fun posixExec(
     path: String, cmdAndArgs: List<String>, env: Map<String, String>, handler: VfsProcessHandler
 ): Int = memScoped {
@@ -43,6 +44,7 @@ actual suspend fun posixExec(
     status.value
 }
 
+@OptIn(ExperimentalForeignApi::class)
 fun sopen(vararg cmds: String, cwd: String, envs: Map<String, String> = mapOf()): Pair<CPointer<FILE>?, Long> = memScoped {
     val fds = allocArray<IntVar>(2)
     if (socketpair(AF_UNIX, SOCK_STREAM, 0, fds) < 0) {

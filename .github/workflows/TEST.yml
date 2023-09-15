@@ -215,6 +215,9 @@ jobs:
     steps:
     - { uses: actions/checkout@v3 }
     - { name: Install freeglut3 & openal, run: sudo apt-get update && sudo apt-get -y install freeglut3-dev libopenal-dev xvfb }
+    - uses: denoland/setup-deno@v1
+      with:
+        deno-version: v1.x
     - { name: Run Xvfb in Background, run: "Xvfb :99 &" }
     - { name: Set up JDK, uses: actions/setup-java@v3, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
     - { name: Gradle cache, uses: ./.github/actions/gradle-cache }
@@ -265,6 +268,9 @@ jobs:
       GRADLE_OPTS: -Dorg.gradle.daemon=false -Dkotlin.compiler.execution.strategy=in-process -Dorg.gradle.workers.max=3
     steps:
     - { uses: actions/checkout@v3 }
+    - uses: denoland/setup-deno@v1
+      with:
+        deno-version: v1.x
     - { name: Configure local.properties, run: "echo org.gradle.parallel=false >> local.properties" }
     - { name: Download, shell: cmd, run: "curl -L -o opengl32-x64.zip https://github.com/korlibs/mesa-dist-win/releases/download/21.2.3/opengl32-x64.zip" }
     - { name: unzip, shell: cmd, run: "unzip opengl32-x64.zip" }

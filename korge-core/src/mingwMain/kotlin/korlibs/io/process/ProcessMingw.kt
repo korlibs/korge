@@ -1,15 +1,15 @@
 package korlibs.io.process
 
 import korlibs.datastructure.concurrent.*
-import korlibs.time.*
 import korlibs.io.async.*
 import korlibs.io.file.*
 import korlibs.io.file.std.*
+import korlibs.time.*
 import kotlinx.cinterop.*
 import kotlinx.coroutines.*
 import platform.posix.*
-import kotlin.native.concurrent.*
 
+@OptIn(ExperimentalForeignApi::class)
 actual suspend fun posixExec(
     path: String, cmdAndArgs: List<String>, env: Map<String, String>, handler: VfsProcessHandler
 ): Int {
