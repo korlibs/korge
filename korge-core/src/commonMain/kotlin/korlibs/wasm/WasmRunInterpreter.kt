@@ -14,38 +14,6 @@ class WasmRunInterpreter(val module: WasmModule, memPages: Int = 10, maxMemPages
     val stack = Buffer.allocDirect(1024)
     var trace = false
 
-    fun strlen(ptr: Int): Int {
-        var n = 0
-        while (memory.getUnalignedInt8(ptr + n) != 0.toByte()) n++
-        return n
-    }
-    fun strlen16(ptr: Int): Int {
-        var n = 0
-        while (memory.getUnalignedInt16(ptr + n) != 0.toShort()) n += 2
-        return n / 2
-    }
-
-    fun readStringz(ptr: Int): String {
-        if (ptr == 0) return "<null>"
-        return memory.getArrayInt8(ptr, ByteArray(strlen(ptr))).decodeToString()
-    }
-    fun readStringz16(ptr: Int): String {
-        if (ptr == 0) return "<null>"
-        var out = ""
-        var n = 0
-        while (true) {
-            val v = memory.getUnalignedInt16(ptr + n).toInt() and 0xFFFF
-            if (v == 0) break
-            out += v.toChar()
-            n += 2
-        }
-        return out
-    }
-
-    fun readString(ptr: Int): String {
-        return readStringz16(ptr)
-    }
-
     val stackAvailable get() = (stackPos - stackTop) + (refStack.size * 4)
 
     private fun popIndex(size: Int): Int {
@@ -191,15 +159,6 @@ class WasmRunInterpreter(val module: WasmModule, memPages: Int = 10, maxMemPages
         interpret(expr.interpreterCode)
     }
 
-    val functions = LinkedHashMap<String, LinkedHashMap<String, WasmRuntime.(Array<Any?>) -> Any?>>()
-
-    override val exported: Set<String> get() = functions.keys
-
-    override fun register(moduleName: String, name: String, func: WasmRuntime.(Array<Any?>) -> Any?) {
-        val moduleFunctions = functions.getOrPut(moduleName) { linkedMapOf() }
-        moduleFunctions[name] = func
-    }
-
     override operator fun invoke(funcName: String, vararg params: Any?): Any? {
         return invoke(module.exportsByName[funcName]?.obj as? WasmFunc? ?: error("Can't find function $funcName"), *params)
     }
@@ -297,6 +256,12 @@ class WasmRunInterpreter(val module: WasmModule, memPages: Int = 10, maxMemPages
         pushInt(block(l, r))
     }
 
+    inline fun binopFloatBool(block: (l: Float, r: Float) -> Boolean) {
+        val r = popFloat()
+        val l = popFloat()
+        pushInt(block(l, r))
+    }
+
     fun interpretOne(code: WasmInterpreterCode, index: Int): Int {
         if (index >= code.instructions.size) return -1
         val i = WasmIntInstruction(code.instructions[index])
@@ -353,7 +318,15 @@ class WasmRunInterpreter(val module: WasmModule, memPages: Int = 10, maxMemPages
                             else -> TODO("$i")
                         }
                     }
-                    F32 -> TODO("$i")
+                    F32 -> {
+                        val value = popFloat()
+                        val address = popInt() + param
+                        if (trace) println("SET_MEM: address=$address, value=$value")
+                        when (extra) {
+                            0 -> memory.setUnalignedFloat32(address, value)
+                            else -> TODO("$i")
+                        }
+                    }
                     F64 -> TODO("$i")
                     V128 -> TODO("$i")
                     ANYREF -> TODO()
@@ -408,7 +381,13 @@ class WasmRunInterpreter(val module: WasmModule, memPages: Int = 10, maxMemPages
                         val vTrue = popInt()
                         pushInt(if (result != 0) vTrue else vFalse)
                     }
-                    else -> TODO()
+                    F32 -> {
+                        val result = popInt()
+                        val vFalse = popFloat()
+                        val vTrue = popFloat()
+                        pushFloat(if (result != 0) vTrue else vFalse)
+                    }
+                    else -> TODO("$i")
                 }
             }
             //PUSH_CONST -> {
@@ -493,6 +472,9 @@ class WasmRunInterpreter(val module: WasmModule, memPages: Int = 10, maxMemPages
                                 WasmIntInstruction.EXTEND8_S -> pushInt(popInt().toByte().toInt())
                                 WasmIntInstruction.EXTEND16_S -> pushInt(popInt().toShort().toInt())
                                 WasmIntInstruction.EXTEND64_S -> pushInt(popLong().toInt())
+                                WasmIntInstruction.TRUNC_F32_S -> pushInt(Op_i32_trunc_s_f32(popFloat()))
+                                WasmIntInstruction.TRUNC_F32_U -> pushInt(Op_i32_trunc_u_f32(popFloat()))
+                                WasmIntInstruction.TRUNC_SAT_F64_S -> pushInt(Op_i32_trunc_sat_f64_s(popDouble()))
                                 WasmIntInstruction.TRUNC_SAT_F64_U -> pushInt(Op_i32_trunc_sat_f64_u(popDouble()))
                                 else -> unexpected("unsupported unop_cast $param")
                             }
@@ -569,6 +551,24 @@ class WasmRunInterpreter(val module: WasmModule, memPages: Int = 10, maxMemPages
                         WasmIntInstruction.BINOP_MUL -> binopFloat { l, r -> l * r }
                         WasmIntInstruction.BINOP_DIV_S -> binopFloat { l, r -> l / r }
                         WasmIntInstruction.BINOP_COPYSIGN -> binopFloat { l, r -> WasmRuntime.Op_f32_copysign(l, r) }
+                        WasmIntInstruction.BINOP_COMP -> when (param) {
+                            WasmIntInstruction.COMP_EQ -> binopFloatBool { l, r -> l == r }
+                            WasmIntInstruction.COMP_NE -> binopFloatBool { l, r -> l != r }
+                            WasmIntInstruction.COMP_LT_S -> binopFloatBool { l, r -> l < r }
+                            WasmIntInstruction.COMP_LE_S -> binopFloatBool { l, r -> l <= r }
+                            WasmIntInstruction.COMP_GT_S -> binopFloatBool { l, r -> l > r }
+                            WasmIntInstruction.COMP_GE_S -> binopFloatBool { l, r -> l >= r }
+                            else -> TODO("$i")
+                        }
+                        WasmIntInstruction.UNOP_CAST -> {
+                            when (i.param) {
+                                WasmIntInstruction.CAST_I32_U -> pushFloat(Op_f32_convert_u_i32(popInt()))
+                                WasmIntInstruction.CAST_I32_S -> pushFloat(Op_f32_convert_s_i32(popInt()))
+                                WasmIntInstruction.CAST_I64_U -> pushFloat(Op_f32_convert_u_i64(popLong()))
+                                WasmIntInstruction.CAST_I64_S -> pushFloat(Op_f32_convert_s_i64(popLong()))
+                                else -> TODO("$i")
+                            }
+                        }
                         else -> TODO("$i")
                     }
                     F64 -> {
@@ -653,7 +653,7 @@ class WasmRunInterpreter(val module: WasmModule, memPages: Int = 10, maxMemPages
 
 
     class WasmInterpreterInstructionWriter(val module: WasmModule) {
-        data class DeferredUpdateLabel(val label: LabelOrStructureControl, val instructionPtr: Int)
+        data class DeferredUpdateLabel(val label: LabelOrStructureControl, val instructionPtr: Int, val intPool: Boolean)
 
         interface LabelOrStructureControl {
             val pointer: Int
@@ -699,7 +699,11 @@ class WasmRunInterpreter(val module: WasmModule, memPages: Int = 10, maxMemPages
             for (deferred in deferredUpdateLabels) {
                 val pointer = deferred.label.pointer
                 if (pointer < 0) error("Invalid pointer for $deferred")
-                inst[deferred.instructionPtr] = WasmIntInstruction(inst[deferred.instructionPtr]).copy(param = pointer).raw
+                if (deferred.intPool) {
+                    intPool[deferred.instructionPtr] = pointer
+                } else {
+                    inst[deferred.instructionPtr] = WasmIntInstruction(inst[deferred.instructionPtr]).copy(param = pointer).raw
+                }
             }
         }
 
@@ -733,7 +737,7 @@ class WasmRunInterpreter(val module: WasmModule, memPages: Int = 10, maxMemPages
         }
 
         fun writeJump(kind: Int, label: LabelOrStructureControl) {
-            deferredUpdateLabels += DeferredUpdateLabel(label, inst.size)
+            deferredUpdateLabels += DeferredUpdateLabel(label, inst.size, intPool = false)
             inst.add(genINS(kind, WasmSType.VOID, 0))
         }
 
@@ -880,6 +884,10 @@ class WasmRunInterpreter(val module: WasmModule, memPages: Int = 10, maxMemPages
                         WasmOp.Op_f64_convert_i64_u -> writeINS(WasmIntInstruction.UNOP_CAST, F64, WasmIntInstruction.CAST_I64_U)
                         WasmOp.Op_f64_convert_i64_s -> writeINS(WasmIntInstruction.UNOP_CAST, F64, WasmIntInstruction.CAST_I64_S)
 
+                        WasmOp.Op_i32_trunc_f32_s -> writeINS(WasmIntInstruction.UNOP_CAST, I32, WasmIntInstruction.TRUNC_F32_S)
+                        WasmOp.Op_i32_trunc_f32_u -> writeINS(WasmIntInstruction.UNOP_CAST, I32, WasmIntInstruction.TRUNC_F32_U)
+                        WasmOp.Op_i32_trunc_f64_s -> writeINS(WasmIntInstruction.UNOP_CAST, I32, WasmIntInstruction.TRUNC_F64_S)
+                        WasmOp.Op_i32_trunc_f64_u -> writeINS(WasmIntInstruction.UNOP_CAST, I32, WasmIntInstruction.TRUNC_F64_U)
 
                         WasmOp.Op_i32_trunc_sat_f32_s -> writeINS(WasmIntInstruction.UNOP_CAST, I32, WasmIntInstruction.TRUNC_SAT_F32_S)
                         WasmOp.Op_i32_trunc_sat_f32_u -> writeINS(WasmIntInstruction.UNOP_CAST, I32, WasmIntInstruction.TRUNC_SAT_F32_U)
@@ -997,10 +1005,15 @@ class WasmRunInterpreter(val module: WasmModule, memPages: Int = 10, maxMemPages
                     writeJump(WasmIntInstruction.JUMP_IF, label = jumpLabel)
                 }
                 is WasmInstruction.br_table -> {
-                    //val labels = i.labels.map { controls[controls.size - 1 - it] }
-                    //val defaultLabel = controls[controls.size - 1 - i.default]
-                    //writeJump(WasmIntInstruction.JUMP_TABLE, label = defaultLabel)
-                    TODO("br_table")
+                    val labels = i.labels.map { controls[controls.size - 1 - it] }
+                    val defaultLabel = controls[controls.size - 1 - i.default]
+                    val indexIntPool = intPool.size
+                    intPool.add(labels.size)
+                    for (label in listOf(defaultLabel) + labels) {
+                        deferredUpdateLabels += DeferredUpdateLabel(label, intPool.size, intPool = true)
+                        intPool.add(0) // default + labels
+                    }
+                    writeINS(WasmIntInstruction.JUMP_TABLE, I32, indexIntPool)
                 }
                 is WasmInstruction.CALL -> {
                     writeINS(WasmIntInstruction.CALL, index = i.funcIdx)
@@ -1047,7 +1060,7 @@ class WasmRunInterpreter(val module: WasmModule, memPages: Int = 10, maxMemPages
                         }
                         is WasmInstruction.block -> if (i.b != WasmType.void) typeStack.add(i.b)
                         is WasmInstruction.IF -> if (i.b != WasmType.void) typeStack.add(i.b)
-                        is WasmInstruction.br, is WasmInstruction.br_if -> {
+                        is WasmInstruction.br, is WasmInstruction.br_if, is WasmInstruction.br_table -> {
                             Unit // @TODO?
                         }
                         is WasmInstruction.End -> {
@@ -1110,15 +1123,6 @@ class WasmRunInterpreter(val module: WasmModule, memPages: Int = 10, maxMemPages
             return WasmInterpreterCode(inst.toIntArray(), intPool.toIntArray(), longPool.toLongArray(), floatPool.toFloatArray(), doublePool.toDoubleArray())
         }
     }
-
-
-    class WasmInterpreterCode(
-        val instructions: IntArray,
-        val intPool: IntArray,
-        val longPool: LongArray,
-        val floatPool: FloatArray,
-        val doublePool: DoubleArray
-    )
 
     inline class WasmIntInstruction(val raw: Int) {
         val ins get() = raw.extract6(0)
@@ -1258,12 +1262,17 @@ class WasmRunInterpreter(val module: WasmModule, memPages: Int = 10, maxMemPages
 
             const val TRUNC_SAT_I32_S = 12
             const val TRUNC_SAT_I32_U = 13
-
             const val TRUNC_SAT_F32_S = 14
             const val TRUNC_SAT_F32_U = 15
-
             const val TRUNC_SAT_F64_S = 16
             const val TRUNC_SAT_F64_U = 17
+
+            const val TRUNC_I32_S = 18
+            const val TRUNC_I32_U = 19
+            const val TRUNC_F32_S = 20
+            const val TRUNC_F32_U = 21
+            const val TRUNC_F64_S = 22
+            const val TRUNC_F64_U = 23
 
             const val MEMOP_SIZE = 1
             const val MEMOP_GROW = 2
@@ -1349,4 +1358,17 @@ class WasmRunInterpreter(val module: WasmModule, memPages: Int = 10, maxMemPages
             }
         }
     }
+}
+
+class WasmInterpreterCode constructor(
+    val instructions: IntArray,
+    val intPool: IntArray,
+    val longPool: LongArray,
+    val floatPool: FloatArray,
+    val doublePool: DoubleArray,
+    val paramsSize: Int = -1,
+    val localSize: Int = -1,
+    val localsOffsets: IntArray = IntArray(0),
+    val endStack: List<WasmType> = emptyList(),
+) {
 }

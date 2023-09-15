@@ -13,6 +13,17 @@ open class WasmRuntime(val memSize: Int, val memMax: Int) {
     var memory = Buffer.allocDirect(memSize * PAGE_SIZE)
     val memoryNumPages: Int get() = memory.sizeInBytes / PAGE_SIZE
 
+    val functions = LinkedHashMap<String, LinkedHashMap<String, WasmRuntime.(Array<Any?>) -> Any?>>()
+    open val exported: Set<String> get() = functions.keys
+
+    open fun register(moduleName: String, name: String, func: WasmRuntime.(Array<Any?>) -> Any?) {
+        val moduleFunctions = functions.getOrPut(moduleName) { linkedMapOf() }
+        moduleFunctions[name] = func
+    }
+
+    open operator fun invoke(funcName: String, vararg params: Any?): Any? = TODO()
+    open fun invokeIndirect(index: Int, vararg params: Any?): Any? = TODO()
+
     fun writeBytes(ptr: Int, data: ByteArray) { memory.setArrayInt8(ptr, data) }
     fun readBytes(ptr: Int, out: ByteArray): ByteArray = memory.getArrayInt8(ptr, out)
     fun readBytes(ptr: Int, size: Int): ByteArray = readBytes(ptr, ByteArray(size))
@@ -27,10 +38,39 @@ open class WasmRuntime(val memSize: Int, val memMax: Int) {
     open fun close() {
     }
 
-    open val exported: Set<String> get() = emptySet<String>()
-    open fun register(moduleName: String, name: String, func: WasmRuntime.(Array<Any?>) -> Any?): Unit = TODO()
-    open operator fun invoke(funcName: String, vararg params: Any?): Any? = TODO()
-    open fun invokeIndirect(index: Int, vararg params: Any?): Any? = TODO()
+    fun strlen(ptr: Int): Int {
+        var n = 0
+        while (memory.getUnalignedInt8(ptr + n) != 0.toByte()) n++
+        return n
+    }
+    fun strlen16(ptr: Int): Int {
+        var n = 0
+        while (memory.getUnalignedInt16(ptr + n) != 0.toShort()) n += 2
+        return n / 2
+    }
+
+    fun readStringz(ptr: Int): String {
+        if (ptr == 0) return "<null>"
+        return memory.getArrayInt8(ptr, ByteArray(strlen(ptr))).decodeToString()
+    }
+    fun readStringz16(ptr: Int): String {
+        if (ptr == 0) return "<null>"
+        var out = ""
+        var n = 0
+        while (true) {
+            val v = memory.getUnalignedInt16(ptr + n).toInt() and 0xFFFF
+            if (v == 0) break
+            out += v.toChar()
+            n += 2
+        }
+        return out
+    }
+
+    fun readString(ptr: Int): String {
+        return readStringz16(ptr)
+    }
+
+
     companion object {
         const val PAGE_SIZE = 64 * 1024 // (1 shl 16)
 
@@ -97,30 +137,36 @@ open class WasmRuntime(val memSize: Int, val memMax: Int) {
 
         @JvmStatic fun create_unreachable_exception_instance(msg: String): Throwable = Exception("unreachable:$msg")
         @JvmStatic fun create_todo_exception_instance(): Throwable = NotImplementedError()
+        
+        inline fun checkAddr(addr: Int, offset: Int, runtime: WasmRuntime): Int {
+            return (addr + offset).also { 
+                if (it < 0 || it >= runtime.memory.sizeInBytes) error("Out of bounds addr=$addr, offset=$offset, memorySize=${runtime.memory.sizeInBytes}")
+            }
+        }
 
-        @JvmStatic fun Op_i32_load(addr: Int, offset: Int, runtime: WasmRuntime): Int = runtime.memory.getUnalignedInt32(addr + offset)
-        @JvmStatic fun Op_i32_load8_s(addr: Int, offset: Int, runtime: WasmRuntime): Int = runtime.memory.getUnalignedInt8(addr + offset).toInt()
-        @JvmStatic fun Op_i32_load8_u(addr: Int, offset: Int, runtime: WasmRuntime): Int = runtime.memory.getUnalignedUInt8(addr + offset).toInt()
-        @JvmStatic fun Op_i32_load16_s(addr: Int, offset: Int, runtime: WasmRuntime): Int = runtime.memory.getUnalignedInt16(addr + offset).toInt()
-        @JvmStatic fun Op_i32_load16_u(addr: Int, offset: Int, runtime: WasmRuntime): Int = runtime.memory.getUnalignedUInt16(addr + offset).toInt()
-        @JvmStatic fun Op_i64_load(addr: Int, offset: Int, runtime: WasmRuntime): Long = runtime.memory.getUnalignedInt64(addr + offset)
-        @JvmStatic fun Op_i64_load8_s(addr: Int, offset: Int, runtime: WasmRuntime): Long = runtime.memory.getUnalignedInt8(addr + offset).toLong()
-        @JvmStatic fun Op_i64_load8_u(addr: Int, offset: Int, runtime: WasmRuntime): Long = runtime.memory.getUnalignedUInt8(addr + offset).toLong()
-        @JvmStatic fun Op_i64_load16_s(addr: Int, offset: Int, runtime: WasmRuntime): Long = runtime.memory.getUnalignedInt16(addr + offset).toLong()
-        @JvmStatic fun Op_i64_load16_u(addr: Int, offset: Int, runtime: WasmRuntime): Long = runtime.memory.getUnalignedUInt16(addr + offset).toLong()
-        @JvmStatic fun Op_i64_load32_s(addr: Int, offset: Int, runtime: WasmRuntime): Long = runtime.memory.getUnalignedInt32(addr + offset).toLong()
-        @JvmStatic fun Op_i64_load32_u(addr: Int, offset: Int, runtime: WasmRuntime): Long = runtime.memory.getUnalignedInt32(addr + offset).toUInt().toLong()
-        @JvmStatic fun Op_f32_load(addr: Int, offset: Int, runtime: WasmRuntime): Float = runtime.memory.getUnalignedFloat32(addr + offset)
-        @JvmStatic fun Op_f64_load(addr: Int, offset: Int, runtime: WasmRuntime): Double = runtime.memory.getUnalignedFloat64(addr + offset)
-        @JvmStatic fun Op_i32_store(addr: Int, value: Int, offset: Int, runtime: WasmRuntime) = runtime.memory.setUnalignedInt32(addr + offset, value)
-        @JvmStatic fun Op_i32_store8(addr: Int, value: Int, offset: Int, runtime: WasmRuntime) = runtime.memory.setUnalignedInt8(addr + offset, value)
-        @JvmStatic fun Op_i32_store16(addr: Int, value: Int, offset: Int, runtime: WasmRuntime) = runtime.memory.setUnalignedInt16(addr + offset, value.toShort())
-        @JvmStatic fun Op_i64_store(addr: Int, value: Long, offset: Int, runtime: WasmRuntime) = runtime.memory.setUnalignedInt64(addr + offset, value)
-        @JvmStatic fun Op_i64_store8(addr: Int, value: Long, offset: Int, runtime: WasmRuntime) = runtime.memory.setUnalignedInt8(addr + offset, value.toInt())
-        @JvmStatic fun Op_i64_store16(addr: Int, value: Long, offset: Int, runtime: WasmRuntime) = runtime.memory.setUnalignedInt16(addr + offset, value.toShort())
-        @JvmStatic fun Op_i64_store32(addr: Int, value: Long, offset: Int, runtime: WasmRuntime) = runtime.memory.setUnalignedInt32(addr + offset, value.toInt())
-        @JvmStatic fun Op_f32_store(addr: Int, value: Float, offset: Int, runtime: WasmRuntime) = runtime.memory.setUnalignedFloat32(addr + offset, value)
-        @JvmStatic fun Op_f64_store(addr: Int, value: Double, offset: Int, runtime: WasmRuntime) = runtime.memory.setUnalignedFloat64(addr + offset, value)
+        @JvmStatic fun Op_i32_load(addr: Int, offset: Int, runtime: WasmRuntime): Int = runtime.memory.getUnalignedInt32(checkAddr(addr, offset, runtime))
+        @JvmStatic fun Op_i32_load8_s(addr: Int, offset: Int, runtime: WasmRuntime): Int = runtime.memory.getUnalignedInt8(checkAddr(addr, offset, runtime)).toInt()
+        @JvmStatic fun Op_i32_load8_u(addr: Int, offset: Int, runtime: WasmRuntime): Int = runtime.memory.getUnalignedUInt8(checkAddr(addr, offset, runtime)).toInt()
+        @JvmStatic fun Op_i32_load16_s(addr: Int, offset: Int, runtime: WasmRuntime): Int = runtime.memory.getUnalignedInt16(checkAddr(addr, offset, runtime)).toInt()
+        @JvmStatic fun Op_i32_load16_u(addr: Int, offset: Int, runtime: WasmRuntime): Int = runtime.memory.getUnalignedUInt16(checkAddr(addr, offset, runtime)).toInt()
+        @JvmStatic fun Op_i64_load(addr: Int, offset: Int, runtime: WasmRuntime): Long = runtime.memory.getUnalignedInt64(checkAddr(addr, offset, runtime))
+        @JvmStatic fun Op_i64_load8_s(addr: Int, offset: Int, runtime: WasmRuntime): Long = runtime.memory.getUnalignedInt8(checkAddr(addr, offset, runtime)).toLong()
+        @JvmStatic fun Op_i64_load8_u(addr: Int, offset: Int, runtime: WasmRuntime): Long = runtime.memory.getUnalignedUInt8(checkAddr(addr, offset, runtime)).toLong()
+        @JvmStatic fun Op_i64_load16_s(addr: Int, offset: Int, runtime: WasmRuntime): Long = runtime.memory.getUnalignedInt16(checkAddr(addr, offset, runtime)).toLong()
+        @JvmStatic fun Op_i64_load16_u(addr: Int, offset: Int, runtime: WasmRuntime): Long = runtime.memory.getUnalignedUInt16(checkAddr(addr, offset, runtime)).toLong()
+        @JvmStatic fun Op_i64_load32_s(addr: Int, offset: Int, runtime: WasmRuntime): Long = runtime.memory.getUnalignedInt32(checkAddr(addr, offset, runtime)).toLong()
+        @JvmStatic fun Op_i64_load32_u(addr: Int, offset: Int, runtime: WasmRuntime): Long = runtime.memory.getUnalignedInt32(checkAddr(addr, offset, runtime)).toUInt().toLong()
+        @JvmStatic fun Op_f32_load(addr: Int, offset: Int, runtime: WasmRuntime): Float = runtime.memory.getUnalignedFloat32(checkAddr(addr, offset, runtime))
+        @JvmStatic fun Op_f64_load(addr: Int, offset: Int, runtime: WasmRuntime): Double = runtime.memory.getUnalignedFloat64(checkAddr(addr, offset, runtime))
+        @JvmStatic fun Op_i32_store(addr: Int, value: Int, offset: Int, runtime: WasmRuntime) = runtime.memory.setUnalignedInt32(checkAddr(addr, offset, runtime), value)
+        @JvmStatic fun Op_i32_store8(addr: Int, value: Int, offset: Int, runtime: WasmRuntime) = runtime.memory.setUnalignedInt8(checkAddr(addr, offset, runtime), value)
+        @JvmStatic fun Op_i32_store16(addr: Int, value: Int, offset: Int, runtime: WasmRuntime) = runtime.memory.setUnalignedInt16(checkAddr(addr, offset, runtime), value.toShort())
+        @JvmStatic fun Op_i64_store(addr: Int, value: Long, offset: Int, runtime: WasmRuntime) = runtime.memory.setUnalignedInt64(checkAddr(addr, offset, runtime), value)
+        @JvmStatic fun Op_i64_store8(addr: Int, value: Long, offset: Int, runtime: WasmRuntime) = runtime.memory.setUnalignedInt8(checkAddr(addr, offset, runtime), value.toInt())
+        @JvmStatic fun Op_i64_store16(addr: Int, value: Long, offset: Int, runtime: WasmRuntime) = runtime.memory.setUnalignedInt16(checkAddr(addr, offset, runtime), value.toShort())
+        @JvmStatic fun Op_i64_store32(addr: Int, value: Long, offset: Int, runtime: WasmRuntime) = runtime.memory.setUnalignedInt32(checkAddr(addr, offset, runtime), value.toInt())
+        @JvmStatic fun Op_f32_store(addr: Int, value: Float, offset: Int, runtime: WasmRuntime) = runtime.memory.setUnalignedFloat32(checkAddr(addr, offset, runtime), value)
+        @JvmStatic fun Op_f64_store(addr: Int, value: Double, offset: Int, runtime: WasmRuntime) = runtime.memory.setUnalignedFloat64(checkAddr(addr, offset, runtime), value)
         @JvmStatic fun Op_i32_eqz(value: Int): Int = (value == 0).toInt()
         @JvmStatic fun Op_i32_eq(l: Int, r: Int): Int = (l == r).toInt()
         @JvmStatic fun Op_i32_ne(l: Int, r: Int): Int = (l != r).toInt()
@@ -246,6 +292,10 @@ open class WasmRuntime(val memSize: Int, val memMax: Int) {
         @JvmStatic fun Op_f64_floor(v: Double): Double = kotlin.math.floor(v)
         @JvmStatic fun Op_f64_trunc(v: Double): Double = v.toInt().toDouble() // @TODO: REVIEW!
         @JvmStatic fun Op_f64_nearest(v: Double): Double = v.toInt().toDouble() // @TODO: REVIEW!
+
+        @JvmStatic fun Op_memory_init(runtime: WasmRuntime): Unit {
+            TODO()
+        }
 
         @JvmStatic fun Op_memory_size(runtime: WasmRuntime): Int = runtime.memoryNumPages
         @JvmStatic fun Op_memory_grow(deltaPages: Int, runtime: WasmRuntime): Int {

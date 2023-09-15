@@ -12,11 +12,11 @@ import kotlin.reflect.*
 enum class WasmOp(
     val id: Int,
     val sname: String,
-    val istack: Int = -1,
-    val rstack: Int = -1,
+    val istack: Int = -1, // input stack
+    val rstack: Int = -1, // result/return/output stack
     val symbol: String = "<?>",
-    val itype: WasmSType = WasmSType.VOID,
-    val outType: WasmType = WasmType.void,
+    val itypeOpt: WasmSType? = null, // input types
+    val outType: WasmSType = WasmSType.VOID, // output type
     val kind: Kind
 ) {
     //Op_i32(0x7f),
@@ -29,7 +29,7 @@ enum class WasmOp(
 
 
     // Control flow operators
-    Op_unreachable(0x00, "unreachable", kind = Kind.FLOW),
+    Op_unreachable(0x00, "unreachable", 0, 0, kind = Kind.FLOW),
     Op_nop(0x01, "nop", kind = Kind.FLOW),
     Op_block(0x02, "block", kind = Kind.FLOW),
     Op_loop(0x03, "loop", kind = Kind.FLOW),
@@ -56,8 +56,6 @@ enum class WasmOp(
     Op_call_ref(0x14, "call_ref", -1, kind = Kind.CALL),
     Op_return_call_ref(0x15, "return_call_ref", -1, kind = Kind.CALL), // TAIL CALL PROPOSAL
 
-    Op_reserved_0x18(0x18, "reserved.0x18", -1, kind = Kind.RESERVED),
-
     Op_delegate(0x18, "delegate", -1, kind = Kind.EXCEPTION),
     Op_catch_all(0x19, "catch.all", -1, kind = Kind.EXCEPTION),
 
@@ -74,222 +72,222 @@ enum class WasmOp(
 
 
     // Memory-related operators
-    Op_i32_load(0x28, "i32.load", 1, 1, itype = WasmSType.I32, outType = WasmType.i32, kind = Kind.MEMORY_LOAD),
-    Op_i64_load(0x29, "i64.load", 1, 1, itype = WasmSType.I64, outType = WasmType.i64, kind = Kind.MEMORY_LOAD),
-    Op_f32_load(0x2a, "f32.load", 1, 1, itype = WasmSType.F32, outType = WasmType.f32, kind = Kind.MEMORY_LOAD),
-    Op_f64_load(0x2b, "f64.load", 1, 1, itype = WasmSType.F64, outType = WasmType.f64, kind = Kind.MEMORY_LOAD),
+    Op_i32_load(0x28, "i32.load", 1, 1, itypeOpt = WasmSType.I32, outType = WasmType.i32, kind = Kind.MEMORY_LOAD),
+    Op_i64_load(0x29, "i64.load", 1, 1, itypeOpt = WasmSType.I64, outType = WasmType.i64, kind = Kind.MEMORY_LOAD),
+    Op_f32_load(0x2a, "f32.load", 1, 1, itypeOpt = WasmSType.F32, outType = WasmType.f32, kind = Kind.MEMORY_LOAD),
+    Op_f64_load(0x2b, "f64.load", 1, 1, itypeOpt = WasmSType.F64, outType = WasmType.f64, kind = Kind.MEMORY_LOAD),
 
-    Op_i32_load8_s(0x2c, "i32.load8_s", 1, 1, itype = WasmSType.I32, outType = WasmType.i32, kind = Kind.MEMORY_LOAD),
-    Op_i32_load8_u(0x2d, "i32.load8_u", 1, 1, itype = WasmSType.I32, outType = WasmType.i32, kind = Kind.MEMORY_LOAD),
-    Op_i32_load16_s(0x2e, "i32.load16_s", 1, 1, itype = WasmSType.I32, outType = WasmType.i32, kind = Kind.MEMORY_LOAD),
-    Op_i32_load16_u(0x2f, "i32.load16_u", 1, 1, itype = WasmSType.I32, outType = WasmType.i32, kind = Kind.MEMORY_LOAD),
+    Op_i32_load8_s(0x2c, "i32.load8_s", 1, 1, itypeOpt = WasmSType.I32, outType = WasmType.i32, kind = Kind.MEMORY_LOAD),
+    Op_i32_load8_u(0x2d, "i32.load8_u", 1, 1, itypeOpt = WasmSType.I32, outType = WasmType.i32, kind = Kind.MEMORY_LOAD),
+    Op_i32_load16_s(0x2e, "i32.load16_s", 1, 1, itypeOpt = WasmSType.I32, outType = WasmType.i32, kind = Kind.MEMORY_LOAD),
+    Op_i32_load16_u(0x2f, "i32.load16_u", 1, 1, itypeOpt = WasmSType.I32, outType = WasmType.i32, kind = Kind.MEMORY_LOAD),
 
-    Op_i64_load8_s(0x30, "i64.load8_s", 1, 1, itype = WasmSType.I64, outType = WasmType.i64, kind = Kind.MEMORY_LOAD),
-    Op_i64_load8_u(0x31, "i64.load8_u", 1, 1, itype = WasmSType.I64, outType = WasmType.i64, kind = Kind.MEMORY_LOAD),
-    Op_i64_load16_s(0x32, "i64.load16_s", 1, 1, itype = WasmSType.I64, outType = WasmType.i64, kind = Kind.MEMORY_LOAD),
-    Op_i64_load16_u(0x33, "i64.load16_u", 1, 1, itype = WasmSType.I64, outType = WasmType.i64, kind = Kind.MEMORY_LOAD),
-    Op_i64_load32_s(0x34, "i64.load32_s", 1, 1, itype = WasmSType.I64, outType = WasmType.i64, kind = Kind.MEMORY_LOAD),
-    Op_i64_load32_u(0x35, "i64.load32_u", 1, 1, itype = WasmSType.I64, outType = WasmType.i64, kind = Kind.MEMORY_LOAD),
+    Op_i64_load8_s(0x30, "i64.load8_s", 1, 1, itypeOpt = WasmSType.I64, outType = WasmType.i64, kind = Kind.MEMORY_LOAD),
+    Op_i64_load8_u(0x31, "i64.load8_u", 1, 1, itypeOpt = WasmSType.I64, outType = WasmType.i64, kind = Kind.MEMORY_LOAD),
+    Op_i64_load16_s(0x32, "i64.load16_s", 1, 1, itypeOpt = WasmSType.I64, outType = WasmType.i64, kind = Kind.MEMORY_LOAD),
+    Op_i64_load16_u(0x33, "i64.load16_u", 1, 1, itypeOpt = WasmSType.I64, outType = WasmType.i64, kind = Kind.MEMORY_LOAD),
+    Op_i64_load32_s(0x34, "i64.load32_s", 1, 1, itypeOpt = WasmSType.I64, outType = WasmType.i64, kind = Kind.MEMORY_LOAD),
+    Op_i64_load32_u(0x35, "i64.load32_u", 1, 1, itypeOpt = WasmSType.I64, outType = WasmType.i64, kind = Kind.MEMORY_LOAD),
 
-    Op_i32_store(0x36, "i32.store", 2, 0, itype = WasmSType.I32, kind = Kind.MEMORY_STORE),
-    Op_i64_store(0x37, "i64.store", 2, 0, itype = WasmSType.I64, kind = Kind.MEMORY_STORE),
-    Op_f32_store(0x38, "f32.store", 2, 0, itype = WasmSType.F32, kind = Kind.MEMORY_STORE),
-    Op_f64_store(0x39, "f64.store", 2, 0, itype = WasmSType.F64, kind = Kind.MEMORY_STORE),
-    Op_i32_store8(0x3a, "i32.store8", 2, 0, itype = WasmSType.I32, kind = Kind.MEMORY_STORE),
-    Op_i32_store16(0x3b, "i32.store16", 2, 0, itype = WasmSType.I32, kind = Kind.MEMORY_STORE),
-    Op_i64_store8(0x3c, "i64.store8", 2, 0, itype = WasmSType.I64, kind = Kind.MEMORY_STORE),
-    Op_i64_store16(0x3d, "i64.store16", 2, 0, itype = WasmSType.I64, kind = Kind.MEMORY_STORE),
-    Op_i64_store32(0x3e, "i64.store32", 2, 0, itype = WasmSType.I64, kind = Kind.MEMORY_STORE),
+    Op_i32_store(0x36, "i32.store", 2, 0, itypeOpt = WasmSType.I32, kind = Kind.MEMORY_STORE),
+    Op_i64_store(0x37, "i64.store", 2, 0, itypeOpt = WasmSType.I64, kind = Kind.MEMORY_STORE),
+    Op_f32_store(0x38, "f32.store", 2, 0, itypeOpt = WasmSType.F32, kind = Kind.MEMORY_STORE),
+    Op_f64_store(0x39, "f64.store", 2, 0, itypeOpt = WasmSType.F64, kind = Kind.MEMORY_STORE),
+    Op_i32_store8(0x3a, "i32.store8", 2, 0, itypeOpt = WasmSType.I32, kind = Kind.MEMORY_STORE),
+    Op_i32_store16(0x3b, "i32.store16", 2, 0, itypeOpt = WasmSType.I32, kind = Kind.MEMORY_STORE),
+    Op_i64_store8(0x3c, "i64.store8", 2, 0, itypeOpt = WasmSType.I64, kind = Kind.MEMORY_STORE),
+    Op_i64_store16(0x3d, "i64.store16", 2, 0, itypeOpt = WasmSType.I64, kind = Kind.MEMORY_STORE),
+    Op_i64_store32(0x3e, "i64.store32", 2, 0, itypeOpt = WasmSType.I64, kind = Kind.MEMORY_STORE),
 
-    Op_memory_size(0x3f, "memory.size", 0, 1, itype = WasmSType.I32, outType = WasmType.i32, kind = Kind.MEMORY_OP),
-    Op_memory_grow(0x40, "memory.grow", 1, 1, itype = WasmSType.I32, outType = WasmType.i32, kind = Kind.MEMORY_OP),
+    Op_memory_size(0x3f, "memory.size", 0, 1, itypeOpt = WasmSType.I32, outType = WasmType.i32, kind = Kind.MEMORY_OP),
+    Op_memory_grow(0x40, "memory.grow", 1, 1, itypeOpt = WasmSType.I32, outType = WasmType.i32, kind = Kind.MEMORY_OP),
 
     // Constants opcodes
-    Op_i32_const(0x41, "i32.const", 0, 1, itype = WasmSType.I32, outType = WasmType.i32, kind = Kind.LITERAL),
-    Op_i64_const(0x42, "i64.const", 0, 1, itype = WasmSType.I64, outType = WasmType.i64, kind = Kind.LITERAL),
-    Op_f32_const(0x43, "f32.const", 0, 1, itype = WasmSType.F32, outType = WasmType.f32, kind = Kind.LITERAL),
-    Op_f64_const(0x44, "f64.const", 0, 1, itype = WasmSType.F64, outType = WasmType.f64, kind = Kind.LITERAL),
+    Op_i32_const(0x41, "i32.const", 0, 1, itypeOpt = WasmSType.I32, outType = WasmType.i32, kind = Kind.LITERAL),
+    Op_i64_const(0x42, "i64.const", 0, 1, itypeOpt = WasmSType.I64, outType = WasmType.i64, kind = Kind.LITERAL),
+    Op_f32_const(0x43, "f32.const", 0, 1, itypeOpt = WasmSType.F32, outType = WasmType.f32, kind = Kind.LITERAL),
+    Op_f64_const(0x44, "f64.const", 0, 1, itypeOpt = WasmSType.F64, outType = WasmType.f64, kind = Kind.LITERAL),
 
     // Comparison operators unop
-    Op_i32_eqz(0x45, "i32.eqz", 1, 1, itype = WasmSType.I32, outType = WasmType.i32, kind = Kind.UNOP),
-    Op_i64_eqz(0x50, "i64.eqz", 1, 1, itype = WasmSType.I64, outType = WasmType.i32, kind = Kind.UNOP),
+    Op_i32_eqz(0x45, "i32.eqz", 1, 1, itypeOpt = WasmSType.I32, outType = WasmType.i32, kind = Kind.UNOP),
+    Op_i64_eqz(0x50, "i64.eqz", 1, 1, itypeOpt = WasmSType.I64, outType = WasmType.i32, kind = Kind.UNOP),
 
     // Comparison operators
-    Op_i32_eq  (0x46, "i32.eq",   2, 1, "==", itype = WasmSType.I32, outType = WasmType.i32, kind = Kind.BINOP_COMP),
-    Op_i32_ne  (0x47, "i32.ne",   2, 1, "!=", itype = WasmSType.I32, outType = WasmType.i32, kind = Kind.BINOP_COMP),
-    Op_i32_lt_s(0x48, "i32.lt_s", 2, 1, "<s" , itype = WasmSType.I32, outType = WasmType.i32, kind = Kind.BINOP_COMP),
-    Op_i32_lt_u(0x49, "i32.lt_u", 2, 1, "<u" , itype = WasmSType.I32, outType = WasmType.i32, kind = Kind.BINOP_COMP),
-    Op_i32_gt_s(0x4a, "i32.gt_s", 2, 1, ">s" , itype = WasmSType.I32, outType = WasmType.i32, kind = Kind.BINOP_COMP),
-    Op_i32_gt_u(0x4b, "i32.gt_u", 2, 1, ">u" , itype = WasmSType.I32, outType = WasmType.i32, kind = Kind.BINOP_COMP),
-    Op_i32_le_s(0x4c, "i32.le_s", 2, 1, "<=s", itype = WasmSType.I32, outType = WasmType.i32, kind = Kind.BINOP_COMP),
-    Op_i32_le_u(0x4d, "i32.le_u", 2, 1, "<=u", itype = WasmSType.I32, outType = WasmType.i32, kind = Kind.BINOP_COMP),
-    Op_i32_ge_s(0x4e, "i32.ge_s", 2, 1, ">=s", itype = WasmSType.I32, outType = WasmType.i32, kind = Kind.BINOP_COMP),
-    Op_i32_ge_u(0x4f, "i32.ge_u", 2, 1, ">=u", itype = WasmSType.I32, outType = WasmType.i32, kind = Kind.BINOP_COMP),
+    Op_i32_eq  (0x46, "i32.eq",   2, 1, "==", itypeOpt = WasmSType.I32, outType = WasmType.i32, kind = Kind.BINOP_COMP),
+    Op_i32_ne  (0x47, "i32.ne",   2, 1, "!=", itypeOpt = WasmSType.I32, outType = WasmType.i32, kind = Kind.BINOP_COMP),
+    Op_i32_lt_s(0x48, "i32.lt_s", 2, 1, "<s" , itypeOpt = WasmSType.I32, outType = WasmType.i32, kind = Kind.BINOP_COMP),
+    Op_i32_lt_u(0x49, "i32.lt_u", 2, 1, "<u" , itypeOpt = WasmSType.I32, outType = WasmType.i32, kind = Kind.BINOP_COMP),
+    Op_i32_gt_s(0x4a, "i32.gt_s", 2, 1, ">s" , itypeOpt = WasmSType.I32, outType = WasmType.i32, kind = Kind.BINOP_COMP),
+    Op_i32_gt_u(0x4b, "i32.gt_u", 2, 1, ">u" , itypeOpt = WasmSType.I32, outType = WasmType.i32, kind = Kind.BINOP_COMP),
+    Op_i32_le_s(0x4c, "i32.le_s", 2, 1, "<=s", itypeOpt = WasmSType.I32, outType = WasmType.i32, kind = Kind.BINOP_COMP),
+    Op_i32_le_u(0x4d, "i32.le_u", 2, 1, "<=u", itypeOpt = WasmSType.I32, outType = WasmType.i32, kind = Kind.BINOP_COMP),
+    Op_i32_ge_s(0x4e, "i32.ge_s", 2, 1, ">=s", itypeOpt = WasmSType.I32, outType = WasmType.i32, kind = Kind.BINOP_COMP),
+    Op_i32_ge_u(0x4f, "i32.ge_u", 2, 1, ">=u", itypeOpt = WasmSType.I32, outType = WasmType.i32, kind = Kind.BINOP_COMP),
 
-    Op_i64_eq(0x51, "i64.eq", 2, 1, "=="    , itype = WasmSType.I64, outType = WasmType.i32, kind = Kind.BINOP_COMP),
-    Op_i64_ne(0x52, "i64.ne", 2, 1, "!="    , itype = WasmSType.I64, outType = WasmType.i32, kind = Kind.BINOP_COMP),
-    Op_i64_lt_s(0x53, "i64.lt_s", 2, 1, "<s" , itype = WasmSType.I64, outType = WasmType.i32, kind = Kind.BINOP_COMP),
-    Op_i64_lt_u(0x54, "i64.lt_u", 2, 1, "<u" , itype = WasmSType.I64, outType = WasmType.i32, kind = Kind.BINOP_COMP),
-    Op_i64_gt_s(0x55, "i64.gt_s", 2, 1, ">s" , itype = WasmSType.I64, outType = WasmType.i32, kind = Kind.BINOP_COMP),
-    Op_i64_gt_u(0x56, "i64.gt_u", 2, 1, ">u" , itype = WasmSType.I64, outType = WasmType.i32, kind = Kind.BINOP_COMP),
-    Op_i64_le_s(0x57, "i64.le_s", 2, 1, "<=s", itype = WasmSType.I64, outType = WasmType.i32, kind = Kind.BINOP_COMP),
-    Op_i64_le_u(0x58, "i64.le_u", 2, 1, "<=u", itype = WasmSType.I64, outType = WasmType.i32, kind = Kind.BINOP_COMP),
-    Op_i64_ge_s(0x59, "i64.ge_s", 2, 1, ">=s", itype = WasmSType.I64, outType = WasmType.i32, kind = Kind.BINOP_COMP),
-    Op_i64_ge_u(0x5a, "i64.ge_u", 2, 1, ">=u", itype = WasmSType.I64, outType = WasmType.i32, kind = Kind.BINOP_COMP),
+    Op_i64_eq(0x51, "i64.eq", 2, 1, "=="    , itypeOpt = WasmSType.I64, outType = WasmType.i32, kind = Kind.BINOP_COMP),
+    Op_i64_ne(0x52, "i64.ne", 2, 1, "!="    , itypeOpt = WasmSType.I64, outType = WasmType.i32, kind = Kind.BINOP_COMP),
+    Op_i64_lt_s(0x53, "i64.lt_s", 2, 1, "<s" , itypeOpt = WasmSType.I64, outType = WasmType.i32, kind = Kind.BINOP_COMP),
+    Op_i64_lt_u(0x54, "i64.lt_u", 2, 1, "<u" , itypeOpt = WasmSType.I64, outType = WasmType.i32, kind = Kind.BINOP_COMP),
+    Op_i64_gt_s(0x55, "i64.gt_s", 2, 1, ">s" , itypeOpt = WasmSType.I64, outType = WasmType.i32, kind = Kind.BINOP_COMP),
+    Op_i64_gt_u(0x56, "i64.gt_u", 2, 1, ">u" , itypeOpt = WasmSType.I64, outType = WasmType.i32, kind = Kind.BINOP_COMP),
+    Op_i64_le_s(0x57, "i64.le_s", 2, 1, "<=s", itypeOpt = WasmSType.I64, outType = WasmType.i32, kind = Kind.BINOP_COMP),
+    Op_i64_le_u(0x58, "i64.le_u", 2, 1, "<=u", itypeOpt = WasmSType.I64, outType = WasmType.i32, kind = Kind.BINOP_COMP),
+    Op_i64_ge_s(0x59, "i64.ge_s", 2, 1, ">=s", itypeOpt = WasmSType.I64, outType = WasmType.i32, kind = Kind.BINOP_COMP),
+    Op_i64_ge_u(0x5a, "i64.ge_u", 2, 1, ">=u", itypeOpt = WasmSType.I64, outType = WasmType.i32, kind = Kind.BINOP_COMP),
 
-    Op_f32_eq(0x5b, "f32.eq", 2, 1, "==", itype = WasmSType.F32, outType = WasmType.i32, kind = Kind.BINOP_COMP),
-    Op_f32_ne(0x5c, "f32.ne", 2, 1, "!=", itype = WasmSType.F32, outType = WasmType.i32, kind = Kind.BINOP_COMP),
-    Op_f32_lt(0x5d, "f32.lt", 2, 1, "<" , itype = WasmSType.F32, outType = WasmType.i32, kind = Kind.BINOP_COMP),
-    Op_f32_gt(0x5e, "f32.gt", 2, 1, ">" , itype = WasmSType.F32, outType = WasmType.i32, kind = Kind.BINOP_COMP),
-    Op_f32_le(0x5f, "f32.le", 2, 1, "<=", itype = WasmSType.F32, outType = WasmType.i32, kind = Kind.BINOP_COMP),
-    Op_f32_ge(0x60, "f32.ge", 2, 1, ">=", itype = WasmSType.F32, outType = WasmType.i32, kind = Kind.BINOP_COMP),
+    Op_f32_eq(0x5b, "f32.eq", 2, 1, "==", itypeOpt = WasmSType.F32, outType = WasmType.i32, kind = Kind.BINOP_COMP),
+    Op_f32_ne(0x5c, "f32.ne", 2, 1, "!=", itypeOpt = WasmSType.F32, outType = WasmType.i32, kind = Kind.BINOP_COMP),
+    Op_f32_lt(0x5d, "f32.lt", 2, 1, "<" , itypeOpt = WasmSType.F32, outType = WasmType.i32, kind = Kind.BINOP_COMP),
+    Op_f32_gt(0x5e, "f32.gt", 2, 1, ">" , itypeOpt = WasmSType.F32, outType = WasmType.i32, kind = Kind.BINOP_COMP),
+    Op_f32_le(0x5f, "f32.le", 2, 1, "<=", itypeOpt = WasmSType.F32, outType = WasmType.i32, kind = Kind.BINOP_COMP),
+    Op_f32_ge(0x60, "f32.ge", 2, 1, ">=", itypeOpt = WasmSType.F32, outType = WasmType.i32, kind = Kind.BINOP_COMP),
 
-    Op_f64_eq(0x61, "f64.eq", 2, 1, "==", itype = WasmSType.F64, outType = WasmType.i32, kind = Kind.BINOP_COMP),
-    Op_f64_ne(0x62, "f64.ne", 2, 1, "!=", itype = WasmSType.F64, outType = WasmType.i32, kind = Kind.BINOP_COMP),
-    Op_f64_lt(0x63, "f64.lt", 2, 1, "<" , itype = WasmSType.F64, outType = WasmType.i32, kind = Kind.BINOP_COMP),
-    Op_f64_gt(0x64, "f64.gt", 2, 1, ">" , itype = WasmSType.F64, outType = WasmType.i32, kind = Kind.BINOP_COMP),
-    Op_f64_le(0x65, "f64.le", 2, 1, "<=", itype = WasmSType.F64, outType = WasmType.i32, kind = Kind.BINOP_COMP),
-    Op_f64_ge(0x66, "f64.ge", 2, 1, ">=", itype = WasmSType.F64, outType = WasmType.i32, kind = Kind.BINOP_COMP),
+    Op_f64_eq(0x61, "f64.eq", 2, 1, "==", itypeOpt = WasmSType.F64, outType = WasmType.i32, kind = Kind.BINOP_COMP),
+    Op_f64_ne(0x62, "f64.ne", 2, 1, "!=", itypeOpt = WasmSType.F64, outType = WasmType.i32, kind = Kind.BINOP_COMP),
+    Op_f64_lt(0x63, "f64.lt", 2, 1, "<" , itypeOpt = WasmSType.F64, outType = WasmType.i32, kind = Kind.BINOP_COMP),
+    Op_f64_gt(0x64, "f64.gt", 2, 1, ">" , itypeOpt = WasmSType.F64, outType = WasmType.i32, kind = Kind.BINOP_COMP),
+    Op_f64_le(0x65, "f64.le", 2, 1, "<=", itypeOpt = WasmSType.F64, outType = WasmType.i32, kind = Kind.BINOP_COMP),
+    Op_f64_ge(0x66, "f64.ge", 2, 1, ">=", itypeOpt = WasmSType.F64, outType = WasmType.i32, kind = Kind.BINOP_COMP),
 
 
     // Numeric operators
 
     // int unary
-    Op_i32_clz(0x67, "i32.clz", 1, 1, itype = WasmSType.I32, outType = WasmType.i32, kind = Kind.UNOP),
-    Op_i32_ctz(0x68, "i32.ctz", 1, 1, itype = WasmSType.I32, outType = WasmType.i32, kind = Kind.UNOP),
-    Op_i32_popcnt(0x69, "i32.popcnt", 1, 1, itype = WasmSType.I32, outType = WasmType.i32, kind = Kind.UNOP),
+    Op_i32_clz(0x67, "i32.clz", 1, 1, itypeOpt = WasmSType.I32, outType = WasmType.i32, kind = Kind.UNOP),
+    Op_i32_ctz(0x68, "i32.ctz", 1, 1, itypeOpt = WasmSType.I32, outType = WasmType.i32, kind = Kind.UNOP),
+    Op_i32_popcnt(0x69, "i32.popcnt", 1, 1, itypeOpt = WasmSType.I32, outType = WasmType.i32, kind = Kind.UNOP),
 
     // int binary
-    Op_i32_add(0x6a, "i32.add", 2, 1, "+", itype = WasmSType.I32, outType = WasmType.i32, kind = Kind.BINOP),
-    Op_i32_sub(0x6b, "i32.sub", 2, 1, "-", itype = WasmSType.I32, outType = WasmType.i32, kind = Kind.BINOP),
-    Op_i32_mul(0x6c, "i32.mul", 2, 1, "*", itype = WasmSType.I32, outType = WasmType.i32, kind = Kind.BINOP),
-    Op_i32_div_s(0x6d, "i32.div_s", 2, 1, "/", itype = WasmSType.I32, outType = WasmType.i32, kind = Kind.BINOP),
-    Op_i32_div_u(0x6e, "i32.div_u", 2, 1, "/", itype = WasmSType.I32, outType = WasmType.i32, kind = Kind.BINOP),
-    Op_i32_rem_s(0x6f, "i32.rem_s", 2, 1, "%", itype = WasmSType.I32, outType = WasmType.i32, kind = Kind.BINOP),
-    Op_i32_rem_u(0x70, "i32.rem_u", 2, 1, "%", itype = WasmSType.I32, outType = WasmType.i32, kind = Kind.BINOP),
-    Op_i32_and(0x71, "i32.and", 2, 1, "&", itype = WasmSType.I32, outType = WasmType.i32, kind = Kind.BINOP),
-    Op_i32_or(0x72, "i32.or", 2, 1, "|", itype = WasmSType.I32, outType = WasmType.i32, kind = Kind.BINOP),
-    Op_i32_xor(0x73, "i32.xor", 2, 1, "^", itype = WasmSType.I32, outType = WasmType.i32, kind = Kind.BINOP),
-    Op_i32_shl(0x74, "i32.shl", 2, 1, "<<", itype = WasmSType.I32, outType = WasmType.i32, kind = Kind.BINOP),
-    Op_i32_shr_s(0x75, "i32.shr_s", 2, 1, ">>", itype = WasmSType.I32, outType = WasmType.i32, kind = Kind.BINOP),
-    Op_i32_shr_u(0x76, "i32.shr_u", 2, 1, ">>>", itype = WasmSType.I32, outType = WasmType.i32, kind = Kind.BINOP),
-    Op_i32_rotl(0x77, "i32.rotl", 2, 1, itype = WasmSType.I32, outType = WasmType.i32, kind = Kind.BINOP),
-    Op_i32_rotr(0x78, "i32.rotr", 2, 1, itype = WasmSType.I32, outType = WasmType.i32, kind = Kind.BINOP),
+    Op_i32_add(0x6a, "i32.add", 2, 1, "+", itypeOpt = WasmSType.I32, outType = WasmType.i32, kind = Kind.BINOP),
+    Op_i32_sub(0x6b, "i32.sub", 2, 1, "-", itypeOpt = WasmSType.I32, outType = WasmType.i32, kind = Kind.BINOP),
+    Op_i32_mul(0x6c, "i32.mul", 2, 1, "*", itypeOpt = WasmSType.I32, outType = WasmType.i32, kind = Kind.BINOP),
+    Op_i32_div_s(0x6d, "i32.div_s", 2, 1, "/", itypeOpt = WasmSType.I32, outType = WasmType.i32, kind = Kind.BINOP),
+    Op_i32_div_u(0x6e, "i32.div_u", 2, 1, "/", itypeOpt = WasmSType.I32, outType = WasmType.i32, kind = Kind.BINOP),
+    Op_i32_rem_s(0x6f, "i32.rem_s", 2, 1, "%", itypeOpt = WasmSType.I32, outType = WasmType.i32, kind = Kind.BINOP),
+    Op_i32_rem_u(0x70, "i32.rem_u", 2, 1, "%", itypeOpt = WasmSType.I32, outType = WasmType.i32, kind = Kind.BINOP),
+    Op_i32_and(0x71, "i32.and", 2, 1, "&", itypeOpt = WasmSType.I32, outType = WasmType.i32, kind = Kind.BINOP),
+    Op_i32_or(0x72, "i32.or", 2, 1, "|", itypeOpt = WasmSType.I32, outType = WasmType.i32, kind = Kind.BINOP),
+    Op_i32_xor(0x73, "i32.xor", 2, 1, "^", itypeOpt = WasmSType.I32, outType = WasmType.i32, kind = Kind.BINOP),
+    Op_i32_shl(0x74, "i32.shl", 2, 1, "<<", itypeOpt = WasmSType.I32, outType = WasmType.i32, kind = Kind.BINOP),
+    Op_i32_shr_s(0x75, "i32.shr_s", 2, 1, ">>", itypeOpt = WasmSType.I32, outType = WasmType.i32, kind = Kind.BINOP),
+    Op_i32_shr_u(0x76, "i32.shr_u", 2, 1, ">>>", itypeOpt = WasmSType.I32, outType = WasmType.i32, kind = Kind.BINOP),
+    Op_i32_rotl(0x77, "i32.rotl", 2, 1, itypeOpt = WasmSType.I32, outType = WasmType.i32, kind = Kind.BINOP),
+    Op_i32_rotr(0x78, "i32.rotr", 2, 1, itypeOpt = WasmSType.I32, outType = WasmType.i32, kind = Kind.BINOP),
 
     // long unary
-    Op_i64_clz(0x79, "i64.clz", 1, 1, itype = WasmSType.I64, outType = WasmType.i32, kind = Kind.UNOP),
-    Op_i64_ctz(0x7a, "i64.ctz", 1, 1, itype = WasmSType.I64, outType = WasmType.i32, kind = Kind.UNOP),
-    Op_i64_popcnt(0x7b, "i64.popcnt", 1, 1, itype = WasmSType.I64, outType = WasmType.i32, kind = Kind.UNOP),
+    Op_i64_clz(0x79, "i64.clz", 1, 1, itypeOpt = WasmSType.I64, outType = WasmType.i32, kind = Kind.UNOP),
+    Op_i64_ctz(0x7a, "i64.ctz", 1, 1, itypeOpt = WasmSType.I64, outType = WasmType.i32, kind = Kind.UNOP),
+    Op_i64_popcnt(0x7b, "i64.popcnt", 1, 1, itypeOpt = WasmSType.I64, outType = WasmType.i32, kind = Kind.UNOP),
 
     // long binary
-    Op_i64_add(0x7c, "i64.add", 2, 1, itype = WasmSType.I64, outType = WasmType.i64, kind = Kind.BINOP),
-    Op_i64_sub(0x7d, "i64.sub", 2, 1, itype = WasmSType.I64, outType = WasmType.i64, kind = Kind.BINOP),
-    Op_i64_mul(0x7e, "i64.mul", 2, 1, itype = WasmSType.I64, outType = WasmType.i64, kind = Kind.BINOP),
-    Op_i64_div_s(0x7f, "i64.div_s", 2, 1, itype = WasmSType.I64, outType = WasmType.i64, kind = Kind.BINOP),
-    Op_i64_div_u(0x80, "i64.div_u", 2, 1, itype = WasmSType.I64, outType = WasmType.i64, kind = Kind.BINOP),
-    Op_i64_rem_s(0x81, "i64.rem_s", 2, 1, itype = WasmSType.I64, outType = WasmType.i64, kind = Kind.BINOP),
-    Op_i64_rem_u(0x82, "i64.rem_u", 2, 1, itype = WasmSType.I64, outType = WasmType.i64, kind = Kind.BINOP),
-    Op_i64_and(0x83, "i64.and", 2, 1, itype = WasmSType.I64, outType = WasmType.i64, kind = Kind.BINOP),
-    Op_i64_or(0x84, "i64.or", 2, 1, itype = WasmSType.I64, outType = WasmType.i64, kind = Kind.BINOP),
-    Op_i64_xor(0x85, "i64.xor", 2, 1, itype = WasmSType.I64, outType = WasmType.i64, kind = Kind.BINOP),
-    Op_i64_shl(0x86, "i64.shl", 2, 1, itype = WasmSType.I64, outType = WasmType.i64, kind = Kind.BINOP),
-    Op_i64_shr_s(0x87, "i64.shr_s", 2, 1, itype = WasmSType.I64, outType = WasmType.i64, kind = Kind.BINOP),
-    Op_i64_shr_u(0x88, "i64.shr_u", 2, 1, itype = WasmSType.I64, outType = WasmType.i64, kind = Kind.BINOP),
-    Op_i64_rotl(0x89, "i64.rotl", 2, 1, itype = WasmSType.I64, outType = WasmType.i64, kind = Kind.BINOP),
-    Op_i64_rotr(0x8a, "i64.rotr", 2, 1, itype = WasmSType.I64, outType = WasmType.i64, kind = Kind.BINOP),
+    Op_i64_add(0x7c, "i64.add", 2, 1, itypeOpt = WasmSType.I64, outType = WasmType.i64, kind = Kind.BINOP),
+    Op_i64_sub(0x7d, "i64.sub", 2, 1, itypeOpt = WasmSType.I64, outType = WasmType.i64, kind = Kind.BINOP),
+    Op_i64_mul(0x7e, "i64.mul", 2, 1, itypeOpt = WasmSType.I64, outType = WasmType.i64, kind = Kind.BINOP),
+    Op_i64_div_s(0x7f, "i64.div_s", 2, 1, itypeOpt = WasmSType.I64, outType = WasmType.i64, kind = Kind.BINOP),
+    Op_i64_div_u(0x80, "i64.div_u", 2, 1, itypeOpt = WasmSType.I64, outType = WasmType.i64, kind = Kind.BINOP),
+    Op_i64_rem_s(0x81, "i64.rem_s", 2, 1, itypeOpt = WasmSType.I64, outType = WasmType.i64, kind = Kind.BINOP),
+    Op_i64_rem_u(0x82, "i64.rem_u", 2, 1, itypeOpt = WasmSType.I64, outType = WasmType.i64, kind = Kind.BINOP),
+    Op_i64_and(0x83, "i64.and", 2, 1, itypeOpt = WasmSType.I64, outType = WasmType.i64, kind = Kind.BINOP),
+    Op_i64_or(0x84, "i64.or", 2, 1, itypeOpt = WasmSType.I64, outType = WasmType.i64, kind = Kind.BINOP),
+    Op_i64_xor(0x85, "i64.xor", 2, 1, itypeOpt = WasmSType.I64, outType = WasmType.i64, kind = Kind.BINOP),
+    Op_i64_shl(0x86, "i64.shl", 2, 1, itypeOpt = WasmSType.I64, outType = WasmType.i64, kind = Kind.BINOP),
+    Op_i64_shr_s(0x87, "i64.shr_s", 2, 1, itypeOpt = WasmSType.I64, outType = WasmType.i64, kind = Kind.BINOP),
+    Op_i64_shr_u(0x88, "i64.shr_u", 2, 1, itypeOpt = WasmSType.I64, outType = WasmType.i64, kind = Kind.BINOP),
+    Op_i64_rotl(0x89, "i64.rotl", 2, 1, itypeOpt = WasmSType.I64, outType = WasmType.i64, kind = Kind.BINOP),
+    Op_i64_rotr(0x8a, "i64.rotr", 2, 1, itypeOpt = WasmSType.I64, outType = WasmType.i64, kind = Kind.BINOP),
 
     // float unary
-    Op_f32_abs(0x8b, "f32.abs", 1, 1, itype = WasmSType.F32, outType = WasmType.f32, kind = Kind.UNOP),
-    Op_f32_neg(0x8c, "f32.neg", 1, 1, itype = WasmSType.F32, outType = WasmType.f32, kind = Kind.UNOP),
-    Op_f32_ceil(0x8d, "f32.ceil", 1, 1, itype = WasmSType.F32, outType = WasmType.f32, kind = Kind.UNOP),
-    Op_f32_floor(0x8e, "f32.floor", 1, 1, itype = WasmSType.F32, outType = WasmType.f32, kind = Kind.UNOP),
-    Op_f32_trunc(0x8f, "f32.trunc", 1, 1, itype = WasmSType.F32, outType = WasmType.f32, kind = Kind.UNOP),
-    Op_f32_nearest(0x90, "f32.nearest", 1, 1, itype = WasmSType.F32, outType = WasmType.f32, kind = Kind.UNOP),
-    Op_f32_sqrt(0x91, "f32.sqrt", 1, 1, itype = WasmSType.F32, outType = WasmType.f32, kind = Kind.UNOP),
+    Op_f32_abs(0x8b, "f32.abs", 1, 1, itypeOpt = WasmSType.F32, outType = WasmType.f32, kind = Kind.UNOP),
+    Op_f32_neg(0x8c, "f32.neg", 1, 1, itypeOpt = WasmSType.F32, outType = WasmType.f32, kind = Kind.UNOP),
+    Op_f32_ceil(0x8d, "f32.ceil", 1, 1, itypeOpt = WasmSType.F32, outType = WasmType.f32, kind = Kind.UNOP),
+    Op_f32_floor(0x8e, "f32.floor", 1, 1, itypeOpt = WasmSType.F32, outType = WasmType.f32, kind = Kind.UNOP),
+    Op_f32_trunc(0x8f, "f32.trunc", 1, 1, itypeOpt = WasmSType.F32, outType = WasmType.f32, kind = Kind.UNOP),
+    Op_f32_nearest(0x90, "f32.nearest", 1, 1, itypeOpt = WasmSType.F32, outType = WasmType.f32, kind = Kind.UNOP),
+    Op_f32_sqrt(0x91, "f32.sqrt", 1, 1, itypeOpt = WasmSType.F32, outType = WasmType.f32, kind = Kind.UNOP),
 
     // float binary
-    Op_f32_add(0x92, "f32.add", 2, 1, itype = WasmSType.F32, outType = WasmType.f32, kind = Kind.BINOP),
-    Op_f32_sub(0x93, "f32.sub", 2, 1, itype = WasmSType.F32, outType = WasmType.f32, kind = Kind.BINOP),
-    Op_f32_mul(0x94, "f32.mul", 2, 1, itype = WasmSType.F32, outType = WasmType.f32, kind = Kind.BINOP),
-    Op_f32_div(0x95, "f32.div", 2, 1, itype = WasmSType.F32, outType = WasmType.f32, kind = Kind.BINOP),
-    Op_f32_min(0x96, "f32.min", 2, 1, itype = WasmSType.F32, outType = WasmType.f32, kind = Kind.BINOP),
-    Op_f32_max(0x97, "f32.max", 2, 1, itype = WasmSType.F32, outType = WasmType.f32, kind = Kind.BINOP),
-    Op_f32_copysign(0x98, "f32.copysign", 2, 1, itype = WasmSType.F32, outType = WasmType.f32, kind = Kind.BINOP),
+    Op_f32_add(0x92, "f32.add", 2, 1, itypeOpt = WasmSType.F32, outType = WasmType.f32, kind = Kind.BINOP),
+    Op_f32_sub(0x93, "f32.sub", 2, 1, itypeOpt = WasmSType.F32, outType = WasmType.f32, kind = Kind.BINOP),
+    Op_f32_mul(0x94, "f32.mul", 2, 1, itypeOpt = WasmSType.F32, outType = WasmType.f32, kind = Kind.BINOP),
+    Op_f32_div(0x95, "f32.div", 2, 1, itypeOpt = WasmSType.F32, outType = WasmType.f32, kind = Kind.BINOP),
+    Op_f32_min(0x96, "f32.min", 2, 1, itypeOpt = WasmSType.F32, outType = WasmType.f32, kind = Kind.BINOP),
+    Op_f32_max(0x97, "f32.max", 2, 1, itypeOpt = WasmSType.F32, outType = WasmType.f32, kind = Kind.BINOP),
+    Op_f32_copysign(0x98, "f32.copysign", 2, 1, itypeOpt = WasmSType.F32, outType = WasmType.f32, kind = Kind.BINOP),
 
     // double unary
-    Op_f64_abs(0x99, "f64.abs", 1, 1, itype = WasmSType.F64, outType = WasmType.f64, kind = Kind.UNOP),
-    Op_f64_neg(0x9a, "f64.neg", 1, 1, itype = WasmSType.F64, outType = WasmType.f64, kind = Kind.UNOP),
-    Op_f64_ceil(0x9b, "f64.ceil", 1, 1, itype = WasmSType.F64, outType = WasmType.f64, kind = Kind.UNOP),
-    Op_f64_floor(0x9c, "f64.floor", 1, 1, itype = WasmSType.F64, outType = WasmType.f64, kind = Kind.UNOP),
-    Op_f64_trunc(0x9d, "f64.trunc", 1, 1, itype = WasmSType.F64, outType = WasmType.f64, kind = Kind.UNOP),
-    Op_f64_nearest(0x9e, "f64.nearest", 1, 1, itype = WasmSType.F64, outType = WasmType.f64, kind = Kind.UNOP),
-    Op_f64_sqrt(0x9f, "f64.sqrt", 1, 1, itype = WasmSType.F64, outType = WasmType.f64, kind = Kind.UNOP),
+    Op_f64_abs(0x99, "f64.abs", 1, 1, itypeOpt = WasmSType.F64, outType = WasmType.f64, kind = Kind.UNOP),
+    Op_f64_neg(0x9a, "f64.neg", 1, 1, itypeOpt = WasmSType.F64, outType = WasmType.f64, kind = Kind.UNOP),
+    Op_f64_ceil(0x9b, "f64.ceil", 1, 1, itypeOpt = WasmSType.F64, outType = WasmType.f64, kind = Kind.UNOP),
+    Op_f64_floor(0x9c, "f64.floor", 1, 1, itypeOpt = WasmSType.F64, outType = WasmType.f64, kind = Kind.UNOP),
+    Op_f64_trunc(0x9d, "f64.trunc", 1, 1, itypeOpt = WasmSType.F64, outType = WasmType.f64, kind = Kind.UNOP),
+    Op_f64_nearest(0x9e, "f64.nearest", 1, 1, itypeOpt = WasmSType.F64, outType = WasmType.f64, kind = Kind.UNOP),
+    Op_f64_sqrt(0x9f, "f64.sqrt", 1, 1, itypeOpt = WasmSType.F64, outType = WasmType.f64, kind = Kind.UNOP),
 
     // double binary
-    Op_f64_add(0xa0, "f64.add", 2, 1, itype = WasmSType.F64, outType = WasmType.f64, kind = Kind.BINOP),
-    Op_f64_sub(0xa1, "f64.sub", 2, 1, itype = WasmSType.F64, outType = WasmType.f64, kind = Kind.BINOP),
-    Op_f64_mul(0xa2, "f64.mul", 2, 1, itype = WasmSType.F64, outType = WasmType.f64, kind = Kind.BINOP),
-    Op_f64_div(0xa3, "f64.div", 2, 1, itype = WasmSType.F64, outType = WasmType.f64, kind = Kind.BINOP),
-    Op_f64_min(0xa4, "f64.min", 2, 1, itype = WasmSType.F64, outType = WasmType.f64, kind = Kind.BINOP),
-    Op_f64_max(0xa5, "f64.max", 2, 1, itype = WasmSType.F64, outType = WasmType.f64, kind = Kind.BINOP),
-    Op_f64_copysign(0xa6, "f64.copysign", 2, 1, itype = WasmSType.F64, outType = WasmType.f64, kind = Kind.BINOP),
+    Op_f64_add(0xa0, "f64.add", 2, 1, itypeOpt = WasmSType.F64, outType = WasmType.f64, kind = Kind.BINOP),
+    Op_f64_sub(0xa1, "f64.sub", 2, 1, itypeOpt = WasmSType.F64, outType = WasmType.f64, kind = Kind.BINOP),
+    Op_f64_mul(0xa2, "f64.mul", 2, 1, itypeOpt = WasmSType.F64, outType = WasmType.f64, kind = Kind.BINOP),
+    Op_f64_div(0xa3, "f64.div", 2, 1, itypeOpt = WasmSType.F64, outType = WasmType.f64, kind = Kind.BINOP),
+    Op_f64_min(0xa4, "f64.min", 2, 1, itypeOpt = WasmSType.F64, outType = WasmType.f64, kind = Kind.BINOP),
+    Op_f64_max(0xa5, "f64.max", 2, 1, itypeOpt = WasmSType.F64, outType = WasmType.f64, kind = Kind.BINOP),
+    Op_f64_copysign(0xa6, "f64.copysign", 2, 1, itypeOpt = WasmSType.F64, outType = WasmType.f64, kind = Kind.BINOP),
 
     // Conversions
-    Op_i32_wrap_i64(0xa7, "i32.wrap_i64", 1, 1, itype = WasmSType.I64, outType = WasmType.i32, kind = Kind.UNOP),
-    Op_i32_trunc_f32_s(0xa8, "i32.trunc_f32_s", 1, 1, itype = WasmSType.F32, outType = WasmType.i32, kind = Kind.UNOP),
-    Op_i32_trunc_f32_u(0xa9, "i32.trunc_f32_u", 1, 1, itype = WasmSType.F32, outType = WasmType.i32, kind = Kind.UNOP),
-    Op_i32_trunc_f64_s(0xaa, "i32.trunc_f64_s", 1, 1, itype = WasmSType.F64, outType = WasmType.i32, kind = Kind.UNOP),
-    Op_i32_trunc_f64_u(0xab, "i32.trunc_f64_u", 1, 1, itype = WasmSType.F64, outType = WasmType.i32, kind = Kind.UNOP),
+    Op_i32_wrap_i64(0xa7, "i32.wrap_i64", 1, 1, itypeOpt = WasmSType.I64, outType = WasmType.i32, kind = Kind.UNOP),
+    Op_i32_trunc_f32_s(0xa8, "i32.trunc_f32_s", 1, 1, itypeOpt = WasmSType.F32, outType = WasmType.i32, kind = Kind.UNOP),
+    Op_i32_trunc_f32_u(0xa9, "i32.trunc_f32_u", 1, 1, itypeOpt = WasmSType.F32, outType = WasmType.i32, kind = Kind.UNOP),
+    Op_i32_trunc_f64_s(0xaa, "i32.trunc_f64_s", 1, 1, itypeOpt = WasmSType.F64, outType = WasmType.i32, kind = Kind.UNOP),
+    Op_i32_trunc_f64_u(0xab, "i32.trunc_f64_u", 1, 1, itypeOpt = WasmSType.F64, outType = WasmType.i32, kind = Kind.UNOP),
 
-    Op_i64_extend_i32_s(0xac, "i64.extend_i32_s", 1, 1, itype = WasmSType.I32, outType = WasmType.i64, kind = Kind.UNOP),
-    Op_i64_extend_i32_u(0xad, "i64.extend_i32_u", 1, 1, itype = WasmSType.I32, outType = WasmType.i64, kind = Kind.UNOP),
-    Op_i64_trunc_f32_s(0xae, "i64.trunc_f32_s", 1, 1, itype = WasmSType.F32, outType = WasmType.i64, kind = Kind.UNOP),
-    Op_i64_trunc_f32_u(0xaf, "i64.trunc_f32_u", 1, 1, itype = WasmSType.F32, outType = WasmType.i64, kind = Kind.UNOP),
-    Op_i64_trunc_f64_s(0xb0, "i64.trunc_f64_s", 1, 1, itype = WasmSType.F64, outType = WasmType.i64, kind = Kind.UNOP),
-    Op_i64_trunc_f64_u(0xb1, "i64.trunc_f64_u", 1, 1, itype = WasmSType.F64, outType = WasmType.i64, kind = Kind.UNOP),
+    Op_i64_extend_i32_s(0xac, "i64.extend_i32_s", 1, 1, itypeOpt = WasmSType.I32, outType = WasmType.i64, kind = Kind.UNOP),
+    Op_i64_extend_i32_u(0xad, "i64.extend_i32_u", 1, 1, itypeOpt = WasmSType.I32, outType = WasmType.i64, kind = Kind.UNOP),
+    Op_i64_trunc_f32_s(0xae, "i64.trunc_f32_s", 1, 1, itypeOpt = WasmSType.F32, outType = WasmType.i64, kind = Kind.UNOP),
+    Op_i64_trunc_f32_u(0xaf, "i64.trunc_f32_u", 1, 1, itypeOpt = WasmSType.F32, outType = WasmType.i64, kind = Kind.UNOP),
+    Op_i64_trunc_f64_s(0xb0, "i64.trunc_f64_s", 1, 1, itypeOpt = WasmSType.F64, outType = WasmType.i64, kind = Kind.UNOP),
+    Op_i64_trunc_f64_u(0xb1, "i64.trunc_f64_u", 1, 1, itypeOpt = WasmSType.F64, outType = WasmType.i64, kind = Kind.UNOP),
 
-    Op_f32_convert_i32_s(0xb2, "f32.convert_i32_s", 1, 1, itype = WasmSType.I32, outType = WasmType.f32, kind = Kind.UNOP),
-    Op_f32_convert_i32_u(0xb3, "f32.convert_i32_u", 1, 1, itype = WasmSType.I32, outType = WasmType.f32, kind = Kind.UNOP),
-    Op_f32_convert_i64_s(0xb4, "f32.convert_i64_s", 1, 1, itype = WasmSType.I64, outType = WasmType.f32, kind = Kind.UNOP),
-    Op_f32_convert_i64_u(0xb5, "f32.convert_i64_u", 1, 1, itype = WasmSType.I64, outType = WasmType.f32, kind = Kind.UNOP),
-    Op_f32_demote_f64(0xb6, "f32.demote_f64", 1, 1, itype = WasmSType.F64, outType = WasmType.f32, kind = Kind.UNOP),
-    Op_f64_convert_i32_s(0xb7, "f64.convert_i32_s", 1, 1, itype = WasmSType.I32, outType = WasmType.f64, kind = Kind.UNOP),
-    Op_f64_convert_i32_u(0xb8, "f64.convert_i32_u", 1, 1, itype = WasmSType.I32, outType = WasmType.f64, kind = Kind.UNOP),
-    Op_f64_convert_i64_s(0xb9, "f64.convert_i64_s", 1, 1, itype = WasmSType.I64, outType = WasmType.f64, kind = Kind.UNOP),
-    Op_f64_convert_i64_u(0xba, "f64.convert_i64_u", 1, 1, itype = WasmSType.I64, outType = WasmType.f64, kind = Kind.UNOP),
-    Op_f64_promote_f32(0xbb, "f64.promote_f32", 1, 1, itype = WasmSType.F32, outType = WasmType.f64, kind = Kind.UNOP),
+    Op_f32_convert_i32_s(0xb2, "f32.convert_i32_s", 1, 1, itypeOpt = WasmSType.I32, outType = WasmType.f32, kind = Kind.UNOP),
+    Op_f32_convert_i32_u(0xb3, "f32.convert_i32_u", 1, 1, itypeOpt = WasmSType.I32, outType = WasmType.f32, kind = Kind.UNOP),
+    Op_f32_convert_i64_s(0xb4, "f32.convert_i64_s", 1, 1, itypeOpt = WasmSType.I64, outType = WasmType.f32, kind = Kind.UNOP),
+    Op_f32_convert_i64_u(0xb5, "f32.convert_i64_u", 1, 1, itypeOpt = WasmSType.I64, outType = WasmType.f32, kind = Kind.UNOP),
+    Op_f32_demote_f64(0xb6, "f32.demote_f64", 1, 1, itypeOpt = WasmSType.F64, outType = WasmType.f32, kind = Kind.UNOP),
+    Op_f64_convert_i32_s(0xb7, "f64.convert_i32_s", 1, 1, itypeOpt = WasmSType.I32, outType = WasmType.f64, kind = Kind.UNOP),
+    Op_f64_convert_i32_u(0xb8, "f64.convert_i32_u", 1, 1, itypeOpt = WasmSType.I32, outType = WasmType.f64, kind = Kind.UNOP),
+    Op_f64_convert_i64_s(0xb9, "f64.convert_i64_s", 1, 1, itypeOpt = WasmSType.I64, outType = WasmType.f64, kind = Kind.UNOP),
+    Op_f64_convert_i64_u(0xba, "f64.convert_i64_u", 1, 1, itypeOpt = WasmSType.I64, outType = WasmType.f64, kind = Kind.UNOP),
+    Op_f64_promote_f32(0xbb, "f64.promote_f32", 1, 1, itypeOpt = WasmSType.F32, outType = WasmType.f64, kind = Kind.UNOP),
 
     // Reinterpretations
-    Op_i32_reinterpret_f32(0xbc, "i32.reinterpret_f32", 1, 1, itype = WasmSType.F32, outType = WasmType.i32, kind = Kind.UNOP),
-    Op_i64_reinterpret_f64(0xbd, "i64.reinterpret_f64", 1, 1, itype = WasmSType.F64, outType = WasmType.i64, kind = Kind.UNOP),
-    Op_f32_reinterpret_i32(0xbe, "f32.reinterpret_i32", 1, 1, itype = WasmSType.I32, outType = WasmType.f32, kind = Kind.UNOP),
-    Op_f64_reinterpret_i64(0xbf, "f64.reinterpret_i64", 1, 1, itype = WasmSType.I64, outType = WasmType.f64, kind = Kind.UNOP),
+    Op_i32_reinterpret_f32(0xbc, "i32.reinterpret_f32", 1, 1, itypeOpt = WasmSType.F32, outType = WasmType.i32, kind = Kind.UNOP),
+    Op_i64_reinterpret_f64(0xbd, "i64.reinterpret_f64", 1, 1, itypeOpt = WasmSType.F64, outType = WasmType.i64, kind = Kind.UNOP),
+    Op_f32_reinterpret_i32(0xbe, "f32.reinterpret_i32", 1, 1, itypeOpt = WasmSType.I32, outType = WasmType.f32, kind = Kind.UNOP),
+    Op_f64_reinterpret_i64(0xbf, "f64.reinterpret_i64", 1, 1, itypeOpt = WasmSType.I64, outType = WasmType.f64, kind = Kind.UNOP),
 
-    Op_i32_extend8_s(0xc0, "i32.extend8_s", 1, 1, itype = WasmSType.I32, outType = WasmType.i32, kind = Kind.UNOP),
-    Op_i32_extend16_s(0xc1, "i32.extend16_s", 1, 1, itype = WasmSType.I32, outType = WasmType.i32, kind = Kind.UNOP),
-    Op_i64_extend8_s(0xc2, "i64.extend8_s", 1, 1, itype = WasmSType.I32, outType = WasmType.i64, kind = Kind.UNOP),
-    Op_i64_extend16_s(0xc2, "i64.extend16_s", 1, 1, itype = WasmSType.I32, outType = WasmType.i64, kind = Kind.UNOP),
-    Op_i64_extend32_s(0xc2, "i64.extend32_s", 1, 1, itype = WasmSType.I32, outType = WasmType.i64, kind = Kind.UNOP),
+    Op_i32_extend8_s(0xc0, "i32.extend8_s", 1, 1, itypeOpt = WasmSType.I32, outType = WasmType.i32, kind = Kind.UNOP),
+    Op_i32_extend16_s(0xc1, "i32.extend16_s", 1, 1, itypeOpt = WasmSType.I32, outType = WasmType.i32, kind = Kind.UNOP),
+    Op_i64_extend8_s(0xc2, "i64.extend8_s", 1, 1, itypeOpt = WasmSType.I32, outType = WasmType.i64, kind = Kind.UNOP),
+    Op_i64_extend16_s(0xc3, "i64.extend16_s", 1, 1, itypeOpt = WasmSType.I32, outType = WasmType.i64, kind = Kind.UNOP),
+    Op_i64_extend32_s(0xc4, "i64.extend32_s", 1, 1, itypeOpt = WasmSType.I32, outType = WasmType.i64, kind = Kind.UNOP),
 
-    Op_ref_null(0xd0, "ref.null", 0, 1, itype = WasmSType.ANYREF, outType = WasmSType.ANYREF, kind = Kind.OTHER),
-    Op_ref_is_null(0xd1, "ref.is_null", 1, 1, itype = WasmSType.ANYREF, outType = WasmSType.I32, kind = Kind.UNOP),
+    Op_ref_null(0xd0, "ref.null", 0, 1, itypeOpt = WasmSType.ANYREF, outType = WasmSType.ANYREF, kind = Kind.OTHER),
+    Op_ref_is_null(0xd1, "ref.is_null", 1, 1, itypeOpt = WasmSType.ANYREF, outType = WasmSType.I32, kind = Kind.UNOP),
 
     // GC extensions: Multibyte instructions beginning with 0xFC.
     // https://github.com/WebAssembly/bulk-memory-operations/blob/dcaa1b6791401c29b67e8cd7929ec80949f1f849/proposals/bulk-memory-operations/Overview.md
 
-    Op_i32_trunc_sat_f32_s(0xFC00, "i32.trunc_sat_f32_s", 1, 1, itype = WasmSType.F32, outType = WasmSType.I32, kind = Kind.OTHER),
-    Op_i32_trunc_sat_f32_u(0xFC01, "i32.trunc_sat_f32_u", 1, 1, itype = WasmSType.F32, outType = WasmSType.I32, kind = Kind.OTHER),
-    Op_i32_trunc_sat_f64_s(0xFC02, "i32.trunc_sat_f64_s", 1, 1, itype = WasmSType.F64, outType = WasmSType.I32, kind = Kind.OTHER),
-    Op_i32_trunc_sat_f64_u(0xFC03, "i32.trunc_sat_f64_u", 1, 1, itype = WasmSType.F64, outType = WasmSType.I32, kind = Kind.OTHER),
-    Op_i64_trunc_sat_f32_s(0xFC04, "i64.trunc_sat_f32_s", 1, 1, itype = WasmSType.F32, outType = WasmSType.I64, kind = Kind.OTHER),
-    Op_i64_trunc_sat_f32_u(0xFC05, "i64.trunc_sat_f32_u", 1, 1, itype = WasmSType.F32, outType = WasmSType.I64, kind = Kind.OTHER),
-    Op_i64_trunc_sat_f64_s(0xFC06, "i64.trunc_sat_f64_s", 1, 1, itype = WasmSType.F64, outType = WasmSType.I64, kind = Kind.OTHER),
-    Op_i64_trunc_sat_f64_u(0xFC07, "i64.trunc_sat_f64_u", 1, 1, itype = WasmSType.F64, outType = WasmSType.I64, kind = Kind.OTHER),
+    Op_i32_trunc_sat_f32_s(0xFC00, "i32.trunc_sat_f32_s", 1, 1, itypeOpt = WasmSType.F32, outType = WasmSType.I32, kind = Kind.OTHER),
+    Op_i32_trunc_sat_f32_u(0xFC01, "i32.trunc_sat_f32_u", 1, 1, itypeOpt = WasmSType.F32, outType = WasmSType.I32, kind = Kind.OTHER),
+    Op_i32_trunc_sat_f64_s(0xFC02, "i32.trunc_sat_f64_s", 1, 1, itypeOpt = WasmSType.F64, outType = WasmSType.I32, kind = Kind.OTHER),
+    Op_i32_trunc_sat_f64_u(0xFC03, "i32.trunc_sat_f64_u", 1, 1, itypeOpt = WasmSType.F64, outType = WasmSType.I32, kind = Kind.OTHER),
+    Op_i64_trunc_sat_f32_s(0xFC04, "i64.trunc_sat_f32_s", 1, 1, itypeOpt = WasmSType.F32, outType = WasmSType.I64, kind = Kind.OTHER),
+    Op_i64_trunc_sat_f32_u(0xFC05, "i64.trunc_sat_f32_u", 1, 1, itypeOpt = WasmSType.F32, outType = WasmSType.I64, kind = Kind.OTHER),
+    Op_i64_trunc_sat_f64_s(0xFC06, "i64.trunc_sat_f64_s", 1, 1, itypeOpt = WasmSType.F64, outType = WasmSType.I64, kind = Kind.OTHER),
+    Op_i64_trunc_sat_f64_u(0xFC07, "i64.trunc_sat_f64_u", 1, 1, itypeOpt = WasmSType.F64, outType = WasmSType.I64, kind = Kind.OTHER),
 
-    Op_memory_init(0xFC08, "memory.init", 3, 0, itype = WasmSType.I32, outType = WasmType.i32, kind = Kind.OTHER),
-    Op_data_drop(0xFC09, "data.drop", 0, 0, itype = WasmSType.I32, outType = WasmType.i32, kind = Kind.OTHER),
-    Op_memory_copy(0xFC0A, "memory.copy", 3, 0, itype = WasmSType.I32, outType = WasmType.i32, kind = Kind.OTHER),
-    Op_memory_fill(0xFC0B, "memory.fill", 3, 0, itype = WasmSType.I32, outType = WasmType.i32, kind = Kind.OTHER),
+    Op_memory_init(0xFC08, "memory.init", 3, 0, itypeOpt = WasmSType.I32, outType = WasmType.i32, kind = Kind.OTHER),
+    Op_data_drop(0xFC09, "data.drop", 0, 0, itypeOpt = WasmSType.I32, outType = WasmType.i32, kind = Kind.OTHER),
+    Op_memory_copy(0xFC0A, "memory.copy", 3, 0, itypeOpt = WasmSType.I32, outType = WasmType.i32, kind = Kind.OTHER),
+    Op_memory_fill(0xFC0B, "memory.fill", 3, 0, itypeOpt = WasmSType.I32, outType = WasmType.i32, kind = Kind.OTHER),
 
     Op_table_init(0xFC0C, "table.init", -1, -1, kind = Kind.OTHER),
     Op_elem_drop(0xFC0D, "elem.drop", -1, -1, kind = Kind.OTHER),
@@ -298,6 +296,8 @@ enum class WasmOp(
     Op_table_size(0xFC10, "table.size", -1, -1, kind = Kind.OTHER),
     Op_table_fill(0xFC11, "table.fill", -1, -1, kind = Kind.OTHER),
     ;
+
+    val itype = itypeOpt ?: WasmSType.VOID
 
     enum class Kind(
         val memoryTransfer: Boolean = false
@@ -339,7 +339,7 @@ enum class WasmOp(
 
 sealed interface WasmInstruction {
     val op: WasmOp
-    val itype: WasmSType get() = op.itype
+    val itype: WasmSType get() = op.itype ?: WasmSType.VOID
 
     data object End : WasmInstruction {
         override val op: WasmOp = WasmOp.Op_end
@@ -403,11 +403,11 @@ sealed interface WasmInstruction {
         override val op: WasmOp = WasmOp.Op_return
     }
 
-    data class CALL(val funcIdx: Int) : WasmInstruction {
+    data class INVOKE(val name: String) : WasmInstruction {
         override val op: WasmOp = WasmOp.Op_call
     }
 
-    data class INVOKE(val name: String) : WasmInstruction {
+    data class CALL(val funcIdx: Int) : WasmInstruction {
         override val op: WasmOp = WasmOp.Op_call
     }
 
@@ -465,6 +465,15 @@ data class WasmFunc(
     //var code2: WasmCode2? = null,
     val name2: String? = null
 ) : WasmFuncRef {
+    companion object {
+        fun anonymousFunc(type: WasmType.Function, expr: WasmExpr): WasmFunc {
+            return WasmFunc(-1, type, code = WasmCode(
+                params = type.args,
+                locals = emptyList(),
+                body = expr
+            ))
+        }
+    }
 
     var importFunc: (WasmRuntime.(Array<Any?>) -> Any?)? = null
 
@@ -509,6 +518,7 @@ data class WasmGlobal(
     var gimport: WasmImport? = null,
     val name: String = gimport?.name ?: "g$index"
 ) {
+    var globalOffset = -1
     //val astGlobal = AstGlobal(name, globalType.type)
     //val name get() = import?.name ?: "g$index"
 }
@@ -528,7 +538,7 @@ data class WasmData(
 }
 
 class WasmCode constructor(val params: List<WastLocal>?, val locals: List<List<WastLocal>>, val body: WasmExpr) {
-    var interpreterCode: WasmRunInterpreter.WasmInterpreterCode? = null
+    var interpreterCode: WasmInterpreterCode? = null
     val flatLocals get() = locals.flatMap { it }
 }
 
@@ -571,8 +581,15 @@ class WasmModule constructor(
     val startFunc: Int = -1,
     val asserts: List<WasmAssert> = emptyList(),
 ) {
+    init {
+        var offset = 0
+        for (global in globals) {
+            global.globalOffset = offset
+            offset += global.globalType.toWasmSType().nbytes
+        }
+    }
     val exportsByName = exports.associateBy { it.name }
-    val functionsByName = functions.associateBy { it.name }
+    val functionsByName = functions.filter { it.export != null }.associateBy { it.export!!.name }
     val globalsByIndex = globals.associateBy { it.index }
     fun getFunction(item: Int): WasmFunc = functions[item]
     fun getFunction(item: String): WasmFunc = functionsByName[item] ?: error("Can't find function $item")
@@ -586,8 +603,15 @@ class WasmModule constructor(
 }
 
 
-enum class WasmSType(override val id: Int, override val signature: String) : WasmType {
-    VOID(0, "v"), I32(1, "i"), I64(2, "l"), F32(3, "f"), F64(4, "d"), V128(5, "8"), ANYREF(6, "R"), FUNCREF(7, "r")
+enum class WasmSType(override val id: Int, override val signature: String, val nbytes: Int) : WasmType {
+    VOID(0, "v", nbytes = 0),
+    I32(1, "i", nbytes = 4),
+    I64(2, "l", nbytes = 8),
+    F32(3, "f", nbytes = 4),
+    F64(4, "d", nbytes = 8),
+    V128(5, "8", nbytes = 16),
+    ANYREF(6, "R", nbytes = 4),
+    FUNCREF(7, "r", nbytes = 4);
 }
 
 fun WasmType.toWasmSType(): WasmSType {

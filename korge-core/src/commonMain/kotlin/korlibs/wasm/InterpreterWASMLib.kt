@@ -2,7 +2,7 @@ package korlibs.wasm
 
 import korlibs.io.stream.*
 
-open class InterpreterWASMLib(content: ByteArray) : WASMLib(content) {
+open class InterpreterWASMLib(content: ByteArray) : BaseWASMLib(content) {
     val interpreter = WasmRunInterpreter(WasmReaderBinary().read(content.openSync()).toModule())
 
     override fun invokeFunc(name: String, vararg params: Any?): Any? = interpreter.invoke(name, *params)

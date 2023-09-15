@@ -469,8 +469,8 @@ class WasmReaderBinary {
 
 class WasmExpr(val instructions: List<WasmInstruction>) {
     constructor(vararg instructions: WasmInstruction) : this(instructions.toList())
-    var interpreterCode: WasmRunInterpreter.WasmInterpreterCode? = null
-    override fun toString(): String = "WasmExpr[${instructions.size}]"
+    var interpreterCode: WasmInterpreterCode? = null
+    override fun toString(): String = "WasmExpr[${instructions.size}]{${instructions.joinToString(",") { "${it.op}" }}}"
 }
 
 val List<WasmExpr>.instructions: List<WasmInstruction> get() = flatMap { it.instructions }

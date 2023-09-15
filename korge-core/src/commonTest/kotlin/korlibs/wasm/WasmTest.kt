@@ -16,10 +16,6 @@ open class WasmTest {
     }
     @Test
     fun testMp3() = suspendTest {
-        if (interpreter) {
-            println("!!! ignorede testMp3 on interpreter")
-            return@suspendTest
-        }
         val MINIMP3_MAX_SAMPLES_PER_FRAME = (1152*2)
         val MP3_DEC_SIZE = 6668
 
@@ -77,7 +73,9 @@ open class WasmTest {
     @Test
     fun testFib() = suspendTest {
         val wasmModule = createModuleRuntime("wasm/fib.wasm")
-        wasmModule.register("log", "integer") { println(it[0]) }
+        wasmModule.register("log", "integer") {
+            //println(it[0])
+        }
         assertEquals(987, wasmModule.invoke("fib", 16))
     }
 
@@ -169,9 +167,10 @@ open class WasmTest {
     //    return wasmModule
     //}
 
-    protected suspend fun createModuleRuntimeInterpreter(file: String, loadTrace: Boolean = false, memPages: Int = 10, codeTrace: Boolean = false, validate: Boolean = true): WasmRunInterpreter {
+    protected suspend fun createModuleRuntimeInterpreter(file: String, loadTrace: Boolean = false, memPages: Int = 10, codeTrace: Boolean = false, validate: Boolean = true): WasmRuntime {
         val reader = WasmReaderBinary().doTrace(loadTrace).read(resourcesVfs[file].readBytes().openSync())
         return WasmRunInterpreter(reader.toModule(), memPages).also { it.trace = codeTrace }.initGlobals().also { int ->
+        //return WasmRunInterpreterNew(reader.toModule(), memPages).also { it.trace = codeTrace }.initGlobals().also { int ->
             int.register("env", "abort") {
                 val (msg, file, line, column) = it.map { it as Int }
                 error("abort: msg='${int.readStringz16(msg)}', file='${int.readStringz16(file as Int)}', line=$line, column=$column")
