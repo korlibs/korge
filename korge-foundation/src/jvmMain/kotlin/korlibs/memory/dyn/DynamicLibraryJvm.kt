@@ -4,7 +4,7 @@ import com.sun.jna.*
 import java.lang.reflect.*
 import kotlin.reflect.*
 
-actual inline fun <reified T : Function<*>> DynamicLibrary.func(name: String?): DynamicFunLibraryNotNull<T> = DynamicFun<T>(this, name, T::class, typeOf<T>())
+inline fun <reified T : Function<*>> DynamicLibrary.func(name: String? = null): DynamicFunLibraryNotNull<T> = DynamicFun<T>(this, name, T::class, typeOf<T>())
 //public fun <T : Function<*>> DynamicLibrary.funcNull(name: String? = null): DynamicFunLibraryNull<T> = DynamicFunLibraryNull<T>(this, name)
 
 //actual inline fun <reified T : Function<*>> DynamicLibrary.sfunc(name: String? = null): DynamicFunLibrary<T>
