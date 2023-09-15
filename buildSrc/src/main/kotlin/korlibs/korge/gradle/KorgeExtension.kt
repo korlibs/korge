@@ -137,9 +137,6 @@ open class KorgeExtension(
         }
     }
 
-    // https://github.com/JetBrains/kotlin/pull/4339
-    var mingwX64PatchedLegacyMemoryManager: Boolean = true
-  
     lateinit var projectType: ProjectType
         private set
 
@@ -207,34 +204,17 @@ open class KorgeExtension(
     }
 
     /**
-     * Configures Desktop targets depending on the host:
-     *
-     * - mingwX64
-     * - linuxX64
-     * - linuxArm64
-     * - macosX64
-     * - macosArm64
+     * Deprecated. Used to create K/N desktop executables.
      */
     fun targetDesktop() {
-        target("desktop") {
-            if (supportKotlinNative) {
-                project.configureNativeDesktop(projectType)
-            }
-        }
+        println("targetDesktop is deprecated")
     }
 
     /**
-     * Configure Desktop cross-targets:
-     *
-     * - Lima
-     * - Wine
+     * Deprecated. Used to create K/N desktop executables for other platforms.
      */
     fun targetDesktopCross() {
-        target("desktop-cross") {
-            if (supportKotlinNative) {
-                project.configureNativeDesktopCross()
-            }
-        }
+        println("targetDesktopCross is deprecated")
     }
 
     /**
@@ -567,7 +547,7 @@ open class KorgeExtension(
 		}
 	}
 
-	val ALL_NATIVE_TARGETS by lazy { listOf("iosArm64", "iosX64", "iosSimulatorArm64") + project.DESKTOP_NATIVE_TARGETS }
+	val ALL_NATIVE_TARGETS by lazy { listOf("iosArm64", "iosX64") }
 	//val ALL_TARGETS = listOf("android", "js", "jvm", "metadata") + ALL_NATIVE_TARGETS
 	val ALL_TARGETS by lazy { listOf("js", "jvm", "metadata") + ALL_NATIVE_TARGETS }
 

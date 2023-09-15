@@ -24,5 +24,3 @@ dependencies {
 
     //add("commonTestApi", "it.krzeminski.vis-assert:vis-assert:0.4.0-beta")
 }
-
-korlibs.NativeTools.configureCInteropLinux(project, "X11Embed")

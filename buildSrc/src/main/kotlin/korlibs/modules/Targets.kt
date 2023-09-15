@@ -17,52 +17,17 @@ val Project.doEnableKotlinMobileTvos: Boolean get() = doEnableKotlinMobile && ro
 
 val Project.hasAndroid get() = extensions.findByName("android") != null
 
-fun org.jetbrains.kotlin.gradle.dsl.KotlinTargetContainerWithPresetFunctions.currentPlatformNativeTarget(project: Project): org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget {
-    return when {
-        isWindows -> mingwX64()
-        isMacos -> if (isArm) macosArm64() else macosX64()
-        else -> linuxX64()
-    }
-}
-
-fun org.jetbrains.kotlin.gradle.dsl.KotlinTargetContainerWithPresetFunctions.nativeTargets(project: Project): List<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget> {
-    return when {
-        isWindows -> listOfNotNull(mingwX64()) + (when {
-            inCI -> emptyList()
-            else -> listOfNotNull(
-                linuxX64(),
-            )
-        })
-        isMacos -> listOfNotNull(
-            macosX64(), macosArm64(),
-        ) + (when {
-            inCI -> emptyList()
-            else -> listOfNotNull(
-                linuxX64(),
-                linuxArm64(),
-                mingwX64(),
-            )
-        })
-        else -> listOfNotNull(
-            linuxX64(),
-            linuxArm64(),
-            mingwX64(),
-            macosX64(), macosArm64(),
-        )
-    }
-}
-
 fun org.jetbrains.kotlin.gradle.dsl.KotlinTargetContainerWithPresetFunctions.mobileTargets(project: Project): List<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget> {
     if (!project.doEnableKotlinMobile) return listOf()
 
     val out = arrayListOf<KotlinNativeTarget>()
-    out.addAll(listOf(iosX64(), iosArm64(), iosSimulatorArm64()))
+    out.addAll(listOf(iosArm64()))
     if (project.doEnableKotlinMobileTvos) {
-        out.addAll(listOf(tvosX64(), tvosArm64(), tvosSimulatorArm64()))
+        out.addAll(listOf(tvosArm64()))
     }
     return out
 }
 
 fun org.jetbrains.kotlin.gradle.dsl.KotlinTargetContainerWithPresetFunctions.allNativeTargets(project: Project): List<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget> {
-    return nativeTargets(project) + mobileTargets(project)
+    return mobileTargets(project)
 }

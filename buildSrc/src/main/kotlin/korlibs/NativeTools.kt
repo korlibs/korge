@@ -1,42 +1,9 @@
 package korlibs
 
-import korlibs.korge.gradle.targets.isLinux
-import korlibs.korge.gradle.targets.isMingw
 import korlibs.modules.*
 import org.gradle.api.*
 
 object NativeTools {
-    @JvmStatic
-    fun configureCInteropWin32(project: Project, name: String) {
-        if (project.doEnableKotlinNative) {
-            project.kotlin {
-                for (target in nativeTargets(project)) {
-                    if (target.isMingw) {
-                        target.compilations["main"].cinterops {
-                            it.maybeCreate(name)
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-
-    @JvmStatic
-    fun configureCInteropLinux(project: Project, name: String) {
-        if (project.doEnableKotlinNative) {
-            project.kotlin {
-                for (target in nativeTargets(project)) {
-                    if (target.isLinux) {
-                        target.compilations["main"].cinterops {
-                            it.maybeCreate(name)
-                        }
-                    }
-                }
-            }
-        }
-    }
-
     @JvmStatic
     fun configureAllCInterop(project: Project, name: String) {
         if (project.doEnableKotlinNative) {

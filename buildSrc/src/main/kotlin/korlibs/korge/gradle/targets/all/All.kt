@@ -24,18 +24,9 @@ object AddFreeCompilerArgs {
             options.suppressWarnings.set(true)
             options.freeCompilerArgs.apply {
                 add("-Xskip-prerelease-check")
-                if (project.findProperty("enableMFVC") == "true") {
-                    add("-Xvalue-classes")
-                }
-                if (target.name == "android" || target.name == "jvm") {
-                    add("-Xno-param-assertions")
-                }
+                if (project.findProperty("enableMFVC") == "true") add("-Xvalue-classes")
+                if (target.name == "android" || target.name == "jvm") add("-Xno-param-assertions")
                 add("-opt-in=kotlinx.cinterop.ExperimentalForeignApi")
-                if (target.name == "mingwX64") {
-                    if (SemVer(BuildVersions.KOTLIN) >= SemVer("1.9.0")) {
-                        add("-Xpartial-linkage=disable") // https://youtrack.jetbrains.com/issue/KT-58837/Illegal-char-at-index-0-org.jetbrains.kotlinxatomicfu-cinterop-interop-CTypeDefinitions#focus=Comments-27-7362451.0-0
-                    }
-                }
             }
         }
     }

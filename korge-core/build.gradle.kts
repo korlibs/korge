@@ -1,9 +1,5 @@
 description = "Korge Core Libraries"
 
-korlibs.NativeTools.configureAllCInterop(project, "stb_vorbis")
-korlibs.NativeTools.configureAllCInterop(project, "stb_image")
-korlibs.NativeTools.configureCInteropWin32(project, "win32ssl")
-
 dependencies {
     add("androidMainApi", "androidx.javascriptengine:javascriptengine:1.0.0-alpha05")
     add("androidMainApi", "com.google.guava:guava:31.0.1-android")

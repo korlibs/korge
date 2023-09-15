@@ -1,2 +1,0 @@
-#!/bin/bash
-WINEDEBUG=-all wine cmd /c gradlew.bat $*
