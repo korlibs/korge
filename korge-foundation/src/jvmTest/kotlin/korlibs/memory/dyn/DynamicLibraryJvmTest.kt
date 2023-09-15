@@ -3,7 +3,7 @@ package korlibs.memory.dyn
 import korlibs.memory.*
 import kotlin.test.*
 
-class DynamicLibraryCommonTest {
+class DynamicLibraryJvmTest {
     //object C : DynamicLibrary(Platform.C_LIBRARY_NAME) {
     object C : DynamicLibrary("libSystem.dylib", "libc", "MSVCRT") {
         val strlen by func<(value: KPointer?) -> Int>()

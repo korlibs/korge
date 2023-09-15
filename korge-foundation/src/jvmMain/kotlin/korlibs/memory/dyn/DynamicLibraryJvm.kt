@@ -43,6 +43,7 @@ public open class DynamicFun<T : Function<*>>(
             retType.isAssignableFrom(Int::class.java) -> Proxy.newProxyInstance(classLoader, interfaces) { _, _, args -> func.invokeInt(convertArgs(args)) }
             retType.isAssignableFrom(Pointer::class.java) -> Proxy.newProxyInstance(classLoader, interfaces) { _, _, args -> func.invokePointer(convertArgs(args)) }
             retType.isAssignableFrom(KPointerTT::class.java) -> Proxy.newProxyInstance(classLoader, interfaces) { _, _, args -> KPointerTT<KPointed>(func.invokePointer(convertArgs(args))) }
+            retType.isAssignableFrom(KPointer::class.java) -> Proxy.newProxyInstance(classLoader, interfaces) { _, _, args -> KPointer(func.invokePointer(convertArgs(args)).address) }
             else -> Proxy.newProxyInstance(classLoader, interfaces) { _, _, args -> func.invokeDouble(args) }
         } as T))
     }
@@ -53,6 +54,7 @@ public open class DynamicFun<T : Function<*>>(
             val it = out[n]
             out[n] = when (it) {
                 is KPointerTT<*> -> it.ptr
+                is KPointer -> it.ptr
                 else -> it
             }
         }

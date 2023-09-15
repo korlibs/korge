@@ -2,8 +2,8 @@ package korlibs.memory.dyn
 
 import com.sun.jna.*
 
-public actual open class DynamicLibraryBase actual constructor(names: List<String>) : DynamicSymbolResolver {
-    val library: NativeLibrary? = run {
+public open class DynamicLibraryBase constructor(names: List<String>) : DynamicSymbolResolver {
+    private val library: NativeLibrary? = run {
         var ex: Throwable? = null
         for (name in names) {
             try {
@@ -19,11 +19,11 @@ public actual open class DynamicLibraryBase actual constructor(names: List<Strin
         null
     }
 
-    actual val isAvailable: Boolean get() = false
+    val isAvailable: Boolean get() = false
     override fun getSymbol(name: String): KPointer? {
-        return KPointerTT(library?.getGlobalVariableAddress(name))
+        return KPointer(library?.getGlobalVariableAddress(name)?.address ?: 0L)
     }
-    actual fun close() {
+    fun close() {
         library?.close()
     }
 }

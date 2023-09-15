@@ -8,8 +8,10 @@ import kotlin.reflect.*
 //actual open class WASMLib actual constructor(content: ByteArray) : IWASMLib by InterpreterWASMLib(content)
 
 //open class WASMLib2(content: ByteArray) : IWASMLib, BaseWASMLib(content) {
-actual open class WASMLib actual constructor(content: ByteArray) : IWASMLib, BaseWASMLib(content) {
-    val wasm: WasmRunJVMJIT by lazy {
+actual open class WASMLib actual constructor(content: ByteArray) : IWASMLib by JVMWasmLib(content)
+
+class JVMWasmLib(content: ByteArray) : IWASMLib, BaseWASMLib(content) {
+    private val wasm: WasmRunJVMJIT by lazy {
         WasmRunJVMOutput().generate(WasmReaderBinary().read(content.openSync()).toModule())
     }
 

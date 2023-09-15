@@ -1,7 +1,7 @@
 package korlibs.io.concurrent.atomic
 
 import korlibs.memory.*
-import kotlin.native.concurrent.*
+import kotlin.concurrent.*
 
 actual fun <T> korAtomic(initial: T): KorAtomicRef<T> = object : KorAtomicRef<T>(initial, true) {
     val ref = AtomicReference(initial)

@@ -5,13 +5,14 @@ import korlibs.io.util.*
 import com.sun.jna.Library
 import com.sun.jna.Native
 import com.sun.jna.Pointer
+import korlibs.memory.dyn.*
 
 internal class XInputEventAdapter {
     val input = XInput()
     val joy = Win32Joy()
     val common = Win32XInputEventAdapterCommon(
-        XInput { dwUserIndex, pState -> input?.XInputGetState(dwUserIndex, pState.pointer?.optr) ?: -1 },
-        Joy32 { uJoyID, pjc, cbjc -> joy?.joyGetDevCapsW(uJoyID, pjc.pointer?.optr, cbjc) ?: -1 }
+        XInput { dwUserIndex, pState -> input?.XInputGetState(dwUserIndex, pState.pointer?.ptr) ?: -1 },
+        Joy32 { uJoyID, pjc, cbjc -> joy?.joyGetDevCapsW(uJoyID, pjc.pointer?.ptr, cbjc) ?: -1 }
     )
 
     fun updateGamepadsWin32(emitter: GamepadInfoEmitter) {

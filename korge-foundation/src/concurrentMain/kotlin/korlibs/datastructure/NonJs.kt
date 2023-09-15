@@ -24,7 +24,7 @@ public actual open class FastArrayList<E> internal constructor(
      * @param initialCapacity initial capacity (ignored)
      */
     @Suppress("ACTUAL_FUNCTION_WITH_DEFAULT_ARGUMENTS")
-    public actual constructor(initialCapacity: Int = 16) : this(arrayOfNulls(initialCapacity), 0) {}
+    public actual constructor(initialCapacity: Int) : this(arrayOfNulls(initialCapacity), 0) {}
 
     /**
      * Creates an [FastArrayList] filled from the [elements] collection.

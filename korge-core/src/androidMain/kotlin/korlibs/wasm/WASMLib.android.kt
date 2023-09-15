@@ -5,10 +5,12 @@ import androidx.javascriptengine.*
 import korlibs.io.android.*
 import korlibs.io.lang.*
 
-actual open class WASMLib actual constructor(content: ByteArray) : IWASMLib, BaseWASMLib(content) {
-    val androidContextOpt: Context? get() = _context?.androidContextOrNull()
+actual open class WASMLib actual constructor(content: ByteArray) : IWASMLib by AndroidWASMLib(content)
 
-    val executor: AndroidWASMExecutor by lazy {
+class AndroidWASMLib(content: ByteArray) : IWASMLib, BaseWASMLib(content) {
+    private val androidContextOpt: Context? get() = _context?.androidContextOrNull()
+
+    private val executor: AndroidWASMExecutor by lazy {
         AndroidWASMExecutor(androidContextOpt ?: error("Must call WASMLib.initOnce with an android context on it (withAndroidContext()) before calling any method"))
     }
 

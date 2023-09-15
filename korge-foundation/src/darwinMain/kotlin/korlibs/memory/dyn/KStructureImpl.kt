@@ -6,29 +6,29 @@ import platform.posix.*
 actual class KArena actual constructor() {
     private val arena = Arena()
     actual fun allocBytes(size: Int): KPointer {
-        return arena.allocArray<ByteVar>(size).also {
+        return KPointer(arena.allocArray<ByteVar>(size).also {
             memset(it, 0, size.convert())
-        }
+        }.rawValue.toLong())
     }
     actual fun clear(): Unit = arena.clear()
 }
 
 actual val POINTER_SIZE: Int = sizeOf<COpaquePointerVar>().toInt()
 actual val LONG_SIZE: Int = 8
-//actual typealias KPointer = kotlin.native.internal.NativePtr
-actual typealias KPointed = CPointed
+/*
+actual typealias KPointer = kotlin.native.internal.NativePtr
+actual typealias KPointed = NativePointed
 actual typealias KPointerTT<T> = CPointer<T>
 actual typealias KFunctionTT<T> = CFunction<T>
 //@kotlinx.cinterop.UnsafeNumber actual typealias NativeLong = size_t
 
-actual abstract class KStructureBase {
-    actual abstract val pointer: KPointer?
-}
 actual fun KPointer(address: Long): KPointer = address.toCPointer<ByteVar>() as KPointer
 actual val KPointer.address: Long get() = this.toLong()
-inline fun <T : CPointed> KPointer?.toCPointer(): CPointer<T>? = interpretCPointer(this.rawValue)
+ */
 
-private inline fun <T : CPointed> KPointer.offset(offset: Int): CPointer<T> = interpretCPointer<T>(this.rawValue + offset.toLong())!!
+inline fun <T : CPointed> KPointer?.toCPointer(): CPointer<T>? = interpretCPointer(NativePtr.NULL + (this?.address ?: 0L))
+//private inline fun <T : CPointed> KPointer.offset(offset: Int): CPointer<T> = interpretCPointer<T>(this.rawValue + offset.toLong())!!
+private inline fun <T : CPointed> KPointer.offset(offset: Int): CPointer<T> = interpretCPointer<T>(NativePtr.NULL + this.address)!!
 
 actual fun KPointer.getByte(offset: Int): Byte = offset<ByteVar>(offset)[0]
 actual fun KPointer.setByte(offset: Int, value: Byte) { offset<ByteVar>(offset)[0] = value }

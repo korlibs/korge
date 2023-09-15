@@ -1,7 +1,10 @@
+@file:OptIn(ExperimentalNativeApi::class, ExperimentalNativeApi::class)
+
 package korlibs.memory
 
 import kotlinx.cinterop.*
 import platform.posix.*
+import kotlin.experimental.*
 
 actual class Buffer(val data: ByteArray, val offset: Int, val size: Int, dummy: Unit) {
     val end: Int = offset + size

@@ -1,6 +1,6 @@
 package korlibs.logger.atomic
 
-import kotlin.native.concurrent.*
+import kotlin.concurrent.*
 
 internal actual class KloggerAtomicRef<T> actual constructor(initial: T) {
     private val ref = AtomicReference(initial)

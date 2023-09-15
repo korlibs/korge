@@ -6,10 +6,12 @@ import kotlin.reflect.*
 
 private external val Deno: dynamic
 
-actual open class WASMLib actual constructor(content: ByteArray) : IWASMLib, BaseWASMLib(content) {
+actual open class WASMLib actual constructor(content: ByteArray) : IWASMLib by JSWASMLib(content)
+
+class JSWASMLib(content: ByteArray) : IWASMLib, BaseWASMLib(content) {
     private var _wasmExports: dynamic = null
 
-    val wasmExports: dynamic
+    private val wasmExports: dynamic
         get() {
             if (_wasmExports == null) {
                 _wasmExports = try {
@@ -37,13 +39,13 @@ actual open class WASMLib actual constructor(content: ByteArray) : IWASMLib, Bas
             return _wasmExports
         }
 
-    val mem: ArrayBuffer by lazy {
+    private val mem: ArrayBuffer by lazy {
         wasmExports.memory.buffer
     }
-    val u8: Uint8Array by lazy {
+    private val u8: Uint8Array by lazy {
         Uint8Array(mem)
     }
-    val dataView: DataView by lazy {
+    private val dataView: DataView by lazy {
         DataView(mem)
     }
 
