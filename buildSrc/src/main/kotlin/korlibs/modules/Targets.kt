@@ -21,7 +21,7 @@ fun org.jetbrains.kotlin.gradle.dsl.KotlinTargetContainerWithPresetFunctions.mob
     if (!project.doEnableKotlinMobile) return listOf()
 
     val out = arrayListOf<KotlinNativeTarget>()
-    out.addAll(listOf(iosArm64()))
+    out.addAll(listOf(iosArm64(), iosX64(), iosSimulatorArm64()))
     if (project.doEnableKotlinMobileTvos) {
         out.addAll(listOf(tvosArm64()))
     }

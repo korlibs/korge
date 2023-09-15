@@ -547,7 +547,7 @@ open class KorgeExtension(
 		}
 	}
 
-	val ALL_NATIVE_TARGETS by lazy { listOf("iosArm64", "iosX64") }
+	val ALL_NATIVE_TARGETS by lazy { listOf("iosArm64", "iosX64", "iosSimulatorArm64") }
 	//val ALL_TARGETS = listOf("android", "js", "jvm", "metadata") + ALL_NATIVE_TARGETS
 	val ALL_TARGETS by lazy { listOf("js", "jvm", "metadata") + ALL_NATIVE_TARGETS }
 
