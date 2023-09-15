@@ -83,7 +83,7 @@ jobs:
     timeout-minutes: 240
     runs-on: ubuntu-latest
     env:
-      ENABLE_BENCHMARKS: true
+      ENABLE_BENCHMARKS: false
     steps:
     - { uses: actions/checkout@v3 }
     #- { name: Configure local.properties, run: "echo org.gradle.parallel=true >> local.properties && echo org.gradle.workers.max=2 >> local.properties" }
