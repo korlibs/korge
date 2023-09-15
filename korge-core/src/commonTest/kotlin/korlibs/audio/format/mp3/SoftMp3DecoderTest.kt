@@ -54,18 +54,12 @@ class SoftMp3DecoderTest {
         )
     }
 
-    //@Test fun snowland() = suspendTest({ doIOTest }) {
-    @Test fun snowland() = suspendTest(timeout = 100.seconds) {
-        repeat(3) {
-            resourcesVfs["Snowland.mp3"].readAudioData(formats)
-            /*
-            assertEquals(
-                "2,48000,565920,36945a5c28a37e4f860b951fe397f03ba1bd187d",
-                resourcesVfs["Snowland.mp3"].readAudioData(formats).toFingerprintString(),
-            )
-
-             */
-        }
+    @Test fun snowland() = suspendTest({ doIOTest }) {
+    //@Test fun snowland() = suspendTest(timeout = 3.seconds) {
+        assertEquals(
+            "2,48000,565920,36945a5c28a37e4f860b951fe397f03ba1bd187d",
+            resourcesVfs["Snowland.mp3"].readAudioData(formats).toFingerprintString(),
+        )
     }
 
     fun AudioData.toFingerprintString(): String {
