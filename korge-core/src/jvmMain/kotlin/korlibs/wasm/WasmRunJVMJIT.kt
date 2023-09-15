@@ -1030,8 +1030,8 @@ class WasmRunJVMOutput(
             if (true) {
                 createMethod("run\$asserts", Void::class.javaPrimitiveType, "LWasmProgram;", isStatic = true, maxLocals = 3) {
                     if (module.asserts.isNotEmpty()) {
-                        constant(0); visitIntInsn(Opcodes.ISTORE, 1)
-                        constant(0); visitIntInsn(Opcodes.ISTORE, 2)
+                        constant(0); visitVarInsn(Opcodes.ISTORE, 1)
+                        constant(0); visitVarInsn(Opcodes.ISTORE, 2)
                         for (assert in module.asserts) {
                             when (assert) {
                                 is WasmAssertReturn -> {
@@ -1066,16 +1066,16 @@ class WasmRunJVMOutput(
                                         FUNCREF -> TODO()
                                     }
 
-                                    visitIntInsn(Opcodes.ILOAD, 1)
+                                    visitVarInsn(Opcodes.ILOAD, 1)
                                     visitInsn(Opcodes.IADD)
-                                    visitIntInsn(Opcodes.ISTORE, 1)
+                                    visitVarInsn(Opcodes.ISTORE, 1)
 
                                     visitIincInsn(2, 1)
                                 }
                             }
                         }
-                        visitIntInsn(Opcodes.ILOAD, 1)
-                        visitIntInsn(Opcodes.ILOAD, 2)
+                        visitVarInsn(Opcodes.ILOAD, 1)
+                        visitVarInsn(Opcodes.ILOAD, 2)
                         invoke(WasmRunJVMJIT[WasmRuntime::assert_summary])
                     }
                     ret()
