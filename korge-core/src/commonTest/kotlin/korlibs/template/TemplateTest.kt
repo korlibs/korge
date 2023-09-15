@@ -1,8 +1,8 @@
 package korlibs.template
 
-import korlibs.template.dynamic.DynamicContext
-import korlibs.template.dynamic.DynamicType
-import korlibs.template.dynamic.Mapper2
+import korlibs.template.dynamic.KorteDynamicContext
+import korlibs.template.dynamic.KorteDynamicType
+import korlibs.template.dynamic.KorteMapper2
 import korlibs.template.util.KorteDeferred
 import kotlin.js.JsName
 import kotlin.test.Test
@@ -11,26 +11,26 @@ import kotlin.test.assertEquals
 class TemplateTest : BaseTest() {
     //@Reflect
     data class Person(@JsName("name") val name: String, @JsName("surname") val surname: String) :
-        DynamicType<Person> by DynamicType({ register(Person::name, Person::surname) })
+        KorteDynamicType<Person> by KorteDynamicType({ register(Person::name, Person::surname) })
 
     @Test
     fun testDummy() = suspendTest {
-        assertEquals("hello", (Template("hello"))(null))
+        assertEquals("hello", (KorteTemplate("hello"))(null))
     }
 
     @Test
     fun testDoubleLiteral() = suspendTest {
-        assertEquals("1.1", (Template("{{ 1.1 }}"))(null))
+        assertEquals("1.1", (KorteTemplate("{{ 1.1 }}"))(null))
     }
 
     @Test
     fun testChunked() = suspendTest {
-        assertEquals("[[1, 2], [3, 4], [5]]", (Template("{{ [1, 2, 3, 4, 5]|chunked(2) }}"))(null))
+        assertEquals("[[1, 2], [3, 4], [5]]", (KorteTemplate("{{ [1, 2, 3, 4, 5]|chunked(2) }}"))(null))
     }
 
     @Test
     fun testSwitch() = suspendTest {
-        val template = Template(
+        val template = KorteTemplate(
             """
             {% switch value %}
             {% case "a" %}1
@@ -47,41 +47,41 @@ class TemplateTest : BaseTest() {
 
     @Test
     fun testSimple() = suspendTest {
-        assertEquals("hello soywiz", Template("hello {{ name }}")("name" to "soywiz"))
-        assertEquals("soywizsoywiz", Template("{{name}}{{ name }}")("name" to "soywiz"))
+        assertEquals("hello soywiz", KorteTemplate("hello {{ name }}")("name" to "soywiz"))
+        assertEquals("soywizsoywiz", KorteTemplate("{{name}}{{ name }}")("name" to "soywiz"))
     }
 
     @Test
     fun testAnd() = suspendTest {
-        assertEquals("true", Template("{{ 1 and 2 }}")())
-        assertEquals("false", Template("{{ 0 and 0 }}")())
-        assertEquals("false", Template("{{ 0 and 1 }}")())
-        assertEquals("false", Template("{{ 1 and 0 }}")())
+        assertEquals("true", KorteTemplate("{{ 1 and 2 }}")())
+        assertEquals("false", KorteTemplate("{{ 0 and 0 }}")())
+        assertEquals("false", KorteTemplate("{{ 0 and 1 }}")())
+        assertEquals("false", KorteTemplate("{{ 1 and 0 }}")())
     }
 
     @Test
     fun testOr() = suspendTest {
-        assertEquals("true", Template("{{ 1 or 2 }}")())
-        assertEquals("false", Template("{{ 0 or 0 }}")())
-        assertEquals("true", Template("{{ 0 or 1 }}")())
-        assertEquals("true", Template("{{ 1 or 0 }}")())
+        assertEquals("true", KorteTemplate("{{ 1 or 2 }}")())
+        assertEquals("false", KorteTemplate("{{ 0 or 0 }}")())
+        assertEquals("true", KorteTemplate("{{ 0 or 1 }}")())
+        assertEquals("true", KorteTemplate("{{ 1 or 0 }}")())
     }
 
     @Test
     fun testIn() = suspendTest {
-        assertEquals("true", Template("{{ 'soy' in name }}")("name" to "soywiz"))
-        assertEquals("false", Template("{{ 'demo' in name }}")("name" to "soywiz"))
+        assertEquals("true", KorteTemplate("{{ 'soy' in name }}")("name" to "soywiz"))
+        assertEquals("false", KorteTemplate("{{ 'demo' in name }}")("name" to "soywiz"))
     }
 
     @Test
     fun testContains() = suspendTest {
-        assertEquals("true", Template("{{ name contains 'soy' }}")("name" to "soywiz"))
-        assertEquals("false", Template("{{ name contains 'demo' }}")("name" to "soywiz"))
+        assertEquals("true", KorteTemplate("{{ name contains 'soy' }}")("name" to "soywiz"))
+        assertEquals("false", KorteTemplate("{{ name contains 'demo' }}")("name" to "soywiz"))
     }
 
     @Test
     fun testFor() = suspendTest {
-        val tpl = Template("{% for n in numbers %}{{ n }}{% end %}")
+        val tpl = KorteTemplate("{% for n in numbers %}{{ n }}{% end %}")
         assertEquals("", tpl("numbers" to listOf<Int>()))
         assertEquals("123", tpl("numbers" to listOf(1, 2, 3)))
     }
@@ -89,7 +89,7 @@ class TemplateTest : BaseTest() {
     @Test
     fun testForAdv() = suspendTest {
         val tpl =
-            Template("{% for n in numbers %}{{ n }}:{{ loop.index0 }}:{{ loop.index }}:{{ loop.revindex }}:{{ loop.revindex0 }}:{{ loop.first }}:{{ loop.last }}:{{ loop.length }}{{ '\\n' }}{% end %}")
+            KorteTemplate("{% for n in numbers %}{{ n }}:{{ loop.index0 }}:{{ loop.index }}:{{ loop.revindex }}:{{ loop.revindex0 }}:{{ loop.first }}:{{ loop.last }}:{{ loop.length }}{{ '\\n' }}{% end %}")
         assertEquals(
             """
 				a:0:1:2:3:true:false:3
@@ -102,20 +102,20 @@ class TemplateTest : BaseTest() {
 
     @Test
     fun testForMap() = suspendTest {
-        val tpl = Template("{% for k, v in map %}{{ k }}:{{v}}{% end %}")
+        val tpl = KorteTemplate("{% for k, v in map %}{{ k }}:{{v}}{% end %}")
         assertEquals("a:10b:c", tpl("map" to mapOf("a" to 10, "b" to "c")))
     }
 
     @Test
     fun testForElse() = suspendTest {
-        val tpl = Template("{% for n in numbers %}{{ n }}{% else %}none{% end %}")
+        val tpl = KorteTemplate("{% for n in numbers %}{{ n }}{% else %}none{% end %}")
         assertEquals("123", tpl("numbers" to listOf(1, 2, 3)))
         assertEquals("none", tpl("numbers" to listOf<Int>()))
     }
 
     @Test
     fun testForElse2() = suspendTest {
-        val tpl = Template("{% for n in numbers %}[{{ n }}]{% else %}none{% end %}")
+        val tpl = KorteTemplate("{% for n in numbers %}[{{ n }}]{% else %}none{% end %}")
         assertEquals("[1][2][3]", tpl("numbers" to listOf(1, 2, 3)))
         assertEquals("none", tpl("numbers" to listOf<Int>()))
     }
@@ -124,8 +124,8 @@ class TemplateTest : BaseTest() {
     fun testDebug() = suspendTest {
         var result: String? = null
         var stdout = ""
-        val tpl = Template("a {% debug 'hello ' + name %} b", TemplateConfig().apply {
-            this.debugPrintln = { stdout += "$it" }
+        val tpl = KorteTemplate("a {% debug 'hello ' + name %} b", KorteTemplateConfig().apply {
+            debugPrintln = { stdout += "$it" }
         })
         result = tpl("name" to "world")
         assertEquals("hello world", stdout.trim())
@@ -134,35 +134,35 @@ class TemplateTest : BaseTest() {
 
     @Test
     fun testCapture() = suspendTest {
-        assertEquals("REPEAT and REPEAT", Template("{% capture variable %}REPEAT{% endcapture %}{{ variable }} and {{ variable }}")())
+        assertEquals("REPEAT and REPEAT", KorteTemplate("{% capture variable %}REPEAT{% endcapture %}{{ variable }} and {{ variable }}")())
     }
 
     @Test
     fun testSimpleIf() = suspendTest {
-        assertEquals("true", Template("{% if cond %}true{% else %}false{% end %}")("cond" to 1))
-        assertEquals("false", Template("{% if cond %}true{% else %}false{% end %}")("cond" to 0))
-        assertEquals("true", Template("{% if cond %}true{% end %}")("cond" to 1))
-        assertEquals("", Template("{% if cond %}true{% end %}")("cond" to 0))
+        assertEquals("true", KorteTemplate("{% if cond %}true{% else %}false{% end %}")("cond" to 1))
+        assertEquals("false", KorteTemplate("{% if cond %}true{% else %}false{% end %}")("cond" to 0))
+        assertEquals("true", KorteTemplate("{% if cond %}true{% end %}")("cond" to 1))
+        assertEquals("", KorteTemplate("{% if cond %}true{% end %}")("cond" to 0))
     }
 
     @Test
     fun testSimpleUnless() = suspendTest {
-        assertEquals("1false", Template("{% unless cond %}1true{% else %}1false{% end %}")("cond" to 1))
-        assertEquals("2true", Template("{% unless cond %}2true{% else %}2false{% end %}")("cond" to 0))
-        assertEquals("3true", Template("{% unless !cond %}3true{% end %}")("cond" to 1))
-        assertEquals("4true", Template("{% unless cond %}4true{% end %}")("cond" to 0))
-        assertEquals("", Template("{% unless !cond %}5true{% end %}")("cond" to 0))
+        assertEquals("1false", KorteTemplate("{% unless cond %}1true{% else %}1false{% end %}")("cond" to 1))
+        assertEquals("2true", KorteTemplate("{% unless cond %}2true{% else %}2false{% end %}")("cond" to 0))
+        assertEquals("3true", KorteTemplate("{% unless !cond %}3true{% end %}")("cond" to 1))
+        assertEquals("4true", KorteTemplate("{% unless cond %}4true{% end %}")("cond" to 0))
+        assertEquals("", KorteTemplate("{% unless !cond %}5true{% end %}")("cond" to 0))
     }
 
     @Test
     fun testNot() = suspendTest {
-        assertEquals("true", Template("{% if not cond %}true{% end %}")("cond" to 0))
+        assertEquals("true", KorteTemplate("{% if not cond %}true{% end %}")("cond" to 0))
     }
 
     @Test
     fun testSimpleElseIf() = suspendTest {
         val tpl =
-            Template("{% if v == 1 %}one{% elseif v == 2 %}two{% elseif v < 5 %}less than five{% elseif v > 8 %}greater than eight{% else %}other{% end %}")
+            KorteTemplate("{% if v == 1 %}one{% elseif v == 2 %}two{% elseif v < 5 %}less than five{% elseif v > 8 %}greater than eight{% else %}other{% end %}")
         assertEquals("one", tpl("v" to 1))
         assertEquals("two", tpl("v" to 2))
         assertEquals("less than five", tpl("v" to 3))
@@ -174,41 +174,41 @@ class TemplateTest : BaseTest() {
 
     @Test
     fun testEval() = suspendTest {
-        assertEquals("-5", Template("{{ -(1 + 4) }}")(null))
-        assertEquals("false", Template("{{ 1 == 2 }}")(null))
-        assertEquals("true", Template("{{ 1 < 2 }}")(null))
-        assertEquals("true", Template("{{ 1 <= 1 }}")(null))
+        assertEquals("-5", KorteTemplate("{{ -(1 + 4) }}")(null))
+        assertEquals("false", KorteTemplate("{{ 1 == 2 }}")(null))
+        assertEquals("true", KorteTemplate("{{ 1 < 2 }}")(null))
+        assertEquals("true", KorteTemplate("{{ 1 <= 1 }}")(null))
     }
 
     @Test
     fun testExists() = suspendTest {
-        assertEquals("false", Template("{% if prop %}true{% else %}false{% end %}")(null))
-        assertEquals("true", Template("{% if prop %}true{% else %}false{% end %}")("prop" to "any"))
-        assertEquals("false", Template("{% if prop %}true{% else %}false{% end %}")("prop" to ""))
+        assertEquals("false", KorteTemplate("{% if prop %}true{% else %}false{% end %}")(null))
+        assertEquals("true", KorteTemplate("{% if prop %}true{% else %}false{% end %}")("prop" to "any"))
+        assertEquals("false", KorteTemplate("{% if prop %}true{% else %}false{% end %}")("prop" to ""))
     }
 
     @Test
     fun testIfBooleanLiterals() = suspendTest {
-        assertEquals("true", Template("{% if true %}true{% end %}")(null))
-        assertEquals("false", Template("{% if !false %}false{% end %}")(null))
+        assertEquals("true", KorteTemplate("{% if true %}true{% end %}")(null))
+        assertEquals("false", KorteTemplate("{% if !false %}false{% end %}")(null))
     }
 
     @Test
     fun testOverwriteFilter() = suspendTest {
-        assertEquals("HELLO", Template("{{ 'hello' | upper }}")(null))
-        assertEquals("[hello]", Template("{{ 'hello' | upper }}", TemplateConfig(extraFilters = listOf(Filter("upper") { "[" + subject.toDynamicString() + "]" })))(null))
+        assertEquals("HELLO", KorteTemplate("{{ 'hello' | upper }}")(null))
+        assertEquals("[hello]", KorteTemplate("{{ 'hello' | upper }}", KorteTemplateConfig(extraFilters = listOf(KorteFilter("upper") { "[" + subject.toDynamicString() + "]" })))(null))
     }
 
     @Test
     fun testCustomUnknownFilter() = suspendTest {
-        assertEquals("-ERROR-", Template("{{ 'hello' | asdasdasdasdas }}", TemplateConfig(extraFilters = listOf(Filter("unknown") { "-ERROR-" })))(null))
+        assertEquals("-ERROR-", KorteTemplate("{{ 'hello' | asdasdasdasdas }}", KorteTemplateConfig(extraFilters = listOf(KorteFilter("unknown") { "-ERROR-" })))(null))
     }
 
     @Test
     fun testForAccess() = suspendTest {
         assertEquals(
             ":Zard:Ballesteros",
-            Template("{% for n in persons %}:{{ n.surname }}{% end %}")(
+            KorteTemplate("{% for n in persons %}:{{ n.surname }}{% end %}")(
                 "persons" to listOf(
                     Person("Soywiz", "Zard"),
                     Person("Carlos", "Ballesteros")
@@ -217,7 +217,7 @@ class TemplateTest : BaseTest() {
         )
         assertEquals(
             "ZardBallesteros",
-            Template("{% for n in persons %}{{ n['sur'+'name'] }}{% end %}")(
+            KorteTemplate("{% for n in persons %}{{ n['sur'+'name'] }}{% end %}")(
                 "persons" to listOf(
                     Person(
                         "Soywiz",
@@ -228,7 +228,7 @@ class TemplateTest : BaseTest() {
         )
         assertEquals(
             "ZardBallesteros",
-            Template("{% for nin in persons %}{{ nin['sur'+'name'] }}{% end %}")(
+            KorteTemplate("{% for nin in persons %}{{ nin['sur'+'name'] }}{% end %}")(
                 "persons" to listOf(
                     Person(
                         "Soywiz",
@@ -241,185 +241,186 @@ class TemplateTest : BaseTest() {
 
     @Test
     fun testStrictEquality() = suspendTest {
-        assertEquals("false", Template("{{ '1' === 1 }}")())
-        assertEquals("true", Template("{{ '1' !== 1 }}")())
+        assertEquals("false", KorteTemplate("{{ '1' === 1 }}")())
+        assertEquals("true", KorteTemplate("{{ '1' !== 1 }}")())
     }
 
     @Test
     fun testEquality() = suspendTest {
-        assertEquals("true", Template("{{ '1' == 1 }}")())
-        assertEquals("false", Template("{{ '1' == 0 }}")())
+        assertEquals("true", KorteTemplate("{{ '1' == 1 }}")())
+        assertEquals("false", KorteTemplate("{{ '1' == 0 }}")())
     }
 
     @Test
     fun testFilters() = suspendTest {
-        assertEquals("CARLOS", Template("{{ name|upper }}")("name" to "caRLos"))
-        assertEquals("carlos", Template("{{ name|lower }}")("name" to "caRLos"))
-        assertEquals("Carlos", Template("{{ name|capitalize }}")("name" to "caRLos"))
-        assertEquals("Carlos", Template("{{ (name)|capitalize }}")("name" to "caRLos"))
-        assertEquals("Carlos", Template("{{ 'caRLos'|capitalize }}")(null))
-        assertEquals("hello KorTE", Template("{{'hello world' | replace('world', 'KorTE')}}")(null))
+        assertEquals("CARLOS", KorteTemplate("{{ name|upper }}")("name" to "caRLos"))
+        assertEquals("carlos", KorteTemplate("{{ name|lower }}")("name" to "caRLos"))
+        assertEquals("Carlos", KorteTemplate("{{ name|capitalize }}")("name" to "caRLos"))
+        assertEquals("Carlos", KorteTemplate("{{ (name)|capitalize }}")("name" to "caRLos"))
+        assertEquals("Carlos", KorteTemplate("{{ 'caRLos'|capitalize }}")(null))
+        assertEquals("hello KorTE", KorteTemplate("{{'hello world' | replace('world', 'KorTE')}}")(null))
     }
 
     @Test
     fun testFilterArgument() = suspendTest {
-        assertEquals("[car, los]", Template("{{ name | split: '|' }}")("name" to "car|los"))
+        assertEquals("[car, los]", KorteTemplate("{{ name | split: '|' }}")("name" to "car|los"))
     }
 
     @Test
     fun testArrayLiterals() = suspendTest {
-        assertEquals("1234", Template("{% for n in [1, 2, 3, 4] %}{{ n }}{% end %}")(null))
-        assertEquals("", Template("{% for n in [] %}{{ n }}{% end %}")(null))
-        assertEquals("1, 2, 3, 4", Template("{{ [1, 2, 3, 4]|join(', ') }}")(null))
+        assertEquals("1234", KorteTemplate("{% for n in [1, 2, 3, 4] %}{{ n }}{% end %}")(null))
+        assertEquals("", KorteTemplate("{% for n in [] %}{{ n }}{% end %}")(null))
+        assertEquals("1, 2, 3, 4", KorteTemplate("{{ [1, 2, 3, 4]|join(', ') }}")(null))
     }
 
     @Test
     fun testElvis() = suspendTest {
-        assertEquals("1", Template("{{ 1 ?: 2 }}")(null))
-        assertEquals("2", Template("{{ 0 ?: 2 }}")(null))
+        assertEquals("1", KorteTemplate("{{ 1 ?: 2 }}")(null))
+        assertEquals("2", KorteTemplate("{{ 0 ?: 2 }}")(null))
     }
 
     @Test
     fun testMerge() = suspendTest {
-        assertEquals("[1, 2, 3, 4]", Template("{{ [1, 2]|merge([3, 4]) }}")(null))
+        assertEquals("[1, 2, 3, 4]", KorteTemplate("{{ [1, 2]|merge([3, 4]) }}")(null))
     }
 
     @Test
     fun testJsonEncode() = suspendTest {
-        assertEquals("{\"a\":2}", Template("{{ {'a': 2}|json_encode()|raw }}")(null))
+        assertEquals("{\"a\":2}", KorteTemplate("{{ {'a': 2}|json_encode()|raw }}")(null))
     }
 
     @Test
     fun testComment() = suspendTest {
-        assertEquals("a", Template("{# {{ 1 }} #}a{# #}")(null))
+        assertEquals("a", KorteTemplate("{# {{ 1 }} #}a{# #}")(null))
     }
 
     @Test
     fun testFormat() = suspendTest {
-        assertEquals("hello test of 3", Template("{{ 'hello %s of %d'|format('test', 3) }}")(null))
+        assertEquals("hello test of 3", KorteTemplate("{{ 'hello %s of %d'|format('test', 3) }}")(null))
     }
 
     @Test
     fun testTernary() = suspendTest {
-        assertEquals("2", Template("{{ 1 ? 2 : 3 }}")(null))
-        assertEquals("3", Template("{{ 0 ? 2 : 3 }}")(null))
+        assertEquals("2", KorteTemplate("{{ 1 ? 2 : 3 }}")(null))
+        assertEquals("3", KorteTemplate("{{ 0 ? 2 : 3 }}")(null))
     }
 
     @Test
     fun testSet() = suspendTest {
-        assertEquals("1,2,3", Template("{% set a = [1,2,3] %}{{ a|join(',') }}")(null))
+        assertEquals("1,2,3", KorteTemplate("{% set a = [1,2,3] %}{{ a|join(',') }}")(null))
     }
 
     @Test
     fun testAccessGetter() = suspendTest {
         val success = "success!"
 
-        class Test1 : DynamicType<Test1> by DynamicType({ register(Test1::a) }) {
+        class Test1 : KorteDynamicType<Test1> by KorteDynamicType({ register(Test1::a) }) {
             @JsName("a")
             val a: String get() = success
         }
 
-        assertEquals(success, Template("{{ test.a }}")("test" to Test1()))
+        assertEquals(success, KorteTemplate("{{ test.a }}")("test" to Test1()))
     }
 
     @Test
     fun testCustomTag() = suspendTest {
-        class CustomNode(val text: String) : Block {
-            override suspend fun eval(context: Template.EvalContext) = context.write("CUSTOM($text)")
+        class CustomNode(val text: String) : KorteBlock {
+            override suspend fun eval(context: KorteTemplate.EvalContext) = context.write("CUSTOM($text)")
         }
 
-        val CustomTag = Tag("custom", setOf(), null) {
+        val CustomTag = KorteTag("custom", setOf(), null) {
             CustomNode(chunks.first().tag.content)
         }
 
         assertEquals(
             "CUSTOM(test)CUSTOM(demo)",
-            Template("{% custom test %}{% custom demo %}", TemplateConfig(extraTags = listOf(CustomTag))).invoke(null)
+            KorteTemplate("{% custom test %}{% custom demo %}", KorteTemplateConfig(extraTags = listOf(CustomTag)))
+                .invoke(null)
         )
     }
 
     @Test
     fun testSlice() = suspendTest {
         val map = linkedMapOf("v" to listOf(1, 2, 3, 4))
-        assertEquals("[1, 2, 3, 4]", Template("{{ v }}")(map))
-        assertEquals("[2, 3, 4]", Template("{{ v|slice(1) }}")(map))
-        assertEquals("[2, 3]", Template("{{ v|slice(1, 2) }}")(map))
-        assertEquals("ello", Template("{{ v|slice(1) }}")(mapOf("v" to "hello")))
-        assertEquals("el", Template("{{ v|slice(1, 2) }}")(mapOf("v" to "hello")))
+        assertEquals("[1, 2, 3, 4]", KorteTemplate("{{ v }}")(map))
+        assertEquals("[2, 3, 4]", KorteTemplate("{{ v|slice(1) }}")(map))
+        assertEquals("[2, 3]", KorteTemplate("{{ v|slice(1, 2) }}")(map))
+        assertEquals("ello", KorteTemplate("{{ v|slice(1) }}")(mapOf("v" to "hello")))
+        assertEquals("el", KorteTemplate("{{ v|slice(1, 2) }}")(mapOf("v" to "hello")))
     }
 
     @Test
     fun testReverse() = suspendTest {
         val map = linkedMapOf("v" to listOf(1, 2, 3, 4))
-        assertEquals("[4, 3, 2, 1]", Template("{{ v|reverse }}")(map))
-        assertEquals("olleh", Template("{{ v|reverse }}")(mapOf("v" to "hello")))
-        assertEquals("le", Template("{{ v|slice(1, 2)|reverse }}")(mapOf("v" to "hello")))
+        assertEquals("[4, 3, 2, 1]", KorteTemplate("{{ v|reverse }}")(map))
+        assertEquals("olleh", KorteTemplate("{{ v|reverse }}")(mapOf("v" to "hello")))
+        assertEquals("le", KorteTemplate("{{ v|slice(1, 2)|reverse }}")(mapOf("v" to "hello")))
     }
 
     @Test
     fun testObject() = suspendTest {
-        assertEquals("""{&quot;foo&quot;: 1, &quot;bar&quot;: 2}""", Template("{{ { 'foo': 1, 'bar': 2 } }}")())
+        assertEquals("""{&quot;foo&quot;: 1, &quot;bar&quot;: 2}""", KorteTemplate("{{ { 'foo': 1, 'bar': 2 } }}")())
     }
 
     @Test
     fun testFuncCycle() = suspendTest {
-        assertEquals("a", Template("{{ cycle(['a', 'b'], 2) }}")())
-        assertEquals("b", Template("{{ cycle(['a', 'b'], -1) }}")())
+        assertEquals("a", KorteTemplate("{{ cycle(['a', 'b'], 2) }}")())
+        assertEquals("b", KorteTemplate("{{ cycle(['a', 'b'], -1) }}")())
     }
 
     @Test
     fun testRange() = suspendTest {
-        assertEquals("[0, 1, 2, 3]", Template("{{ 0..3 }}")())
-        assertEquals("[0, 1, 2, 3]", Template("{{ range(0,3) }}")())
-        assertEquals("[0, 2]", Template("{{ range(0,3,2) }}")())
+        assertEquals("[0, 1, 2, 3]", KorteTemplate("{{ 0..3 }}")())
+        assertEquals("[0, 1, 2, 3]", KorteTemplate("{{ range(0,3) }}")())
+        assertEquals("[0, 2]", KorteTemplate("{{ range(0,3,2) }}")())
     }
 
     @Test
     fun testEscape() = suspendTest {
-        assertEquals("<b>&lt;a&gt;</b>", Template("<b>{{ a }}</b>")("a" to "<a>"))
-        assertEquals("<b><a></b>", Template("<b>{{ a|raw }}</b>")("a" to "<a>"))
-        assertEquals("<b>&lt;A&gt;</b>", Template("<b>{{ a|raw|upper }}</b>")("a" to "<a>"))
-        assertEquals("<b><A></b>", Template("<b>{{ a|upper|raw }}</b>")("a" to "<a>"))
+        assertEquals("<b>&lt;a&gt;</b>", KorteTemplate("<b>{{ a }}</b>")("a" to "<a>"))
+        assertEquals("<b><a></b>", KorteTemplate("<b>{{ a|raw }}</b>")("a" to "<a>"))
+        assertEquals("<b>&lt;A&gt;</b>", KorteTemplate("<b>{{ a|raw|upper }}</b>")("a" to "<a>"))
+        assertEquals("<b><A></b>", KorteTemplate("<b>{{ a|upper|raw }}</b>")("a" to "<a>"))
     }
 
     @Test
     fun testTrim() = suspendTest {
-        assertEquals("""a  1  b""", Template("a  {{ 1 }}  b")())
-        assertEquals("""a1  b""", Template("a  {{- 1 }}  b")())
-        assertEquals("""a  1b""", Template("a  {{ 1 -}}  b")())
-        assertEquals("""a1b""", Template("a  {{- 1 -}}  b")())
+        assertEquals("""a  1  b""", KorteTemplate("a  {{ 1 }}  b")())
+        assertEquals("""a1  b""", KorteTemplate("a  {{- 1 }}  b")())
+        assertEquals("""a  1b""", KorteTemplate("a  {{ 1 -}}  b")())
+        assertEquals("""a1b""", KorteTemplate("a  {{- 1 -}}  b")())
 
-        assertEquals("""a     b""", Template("a  {% set a=1 %}   b")())
-        assertEquals("""a   b""", Template("a  {%- set a=1 %}   b")())
-        assertEquals("""a  b""", Template("a  {% set a=1 -%}   b")())
-        assertEquals("""ab""", Template("a  {%- set a=1 -%}   b")())
+        assertEquals("""a     b""", KorteTemplate("a  {% set a=1 %}   b")())
+        assertEquals("""a   b""", KorteTemplate("a  {%- set a=1 %}   b")())
+        assertEquals("""a  b""", KorteTemplate("a  {% set a=1 -%}   b")())
+        assertEquals("""ab""", KorteTemplate("a  {%- set a=1 -%}   b")())
     }
 
     @Test
     fun testOperatorPrecedence() = suspendTest {
-        assertEquals("${4 + 5 * 7}", Template("{{ 4+5*7 }}")())
-        assertEquals("${4 * 5 + 7}", Template("{{ 4*5+7 }}")())
+        assertEquals("${4 + 5 * 7}", KorteTemplate("{{ 4+5*7 }}")())
+        assertEquals("${4 * 5 + 7}", KorteTemplate("{{ 4*5+7 }}")())
     }
 
     @Test
     fun testOperatorPrecedence2() = suspendTest {
-        assertEquals("${(4 + 5) * 7}", Template("{{ (4+5)*7 }}")())
-        assertEquals("${(4 * 5) + 7}", Template("{{ (4*5)+7 }}")())
-        assertEquals("${4 + (5 * 7)}", Template("{{ 4+(5*7) }}")())
-        assertEquals("${4 * (5 + 7)}", Template("{{ 4*(5+7) }}")())
+        assertEquals("${(4 + 5) * 7}", KorteTemplate("{{ (4+5)*7 }}")())
+        assertEquals("${(4 * 5) + 7}", KorteTemplate("{{ (4*5)+7 }}")())
+        assertEquals("${4 + (5 * 7)}", KorteTemplate("{{ 4+(5*7) }}")())
+        assertEquals("${4 * (5 + 7)}", KorteTemplate("{{ 4*(5+7) }}")())
     }
 
     @Test
     fun testOperatorPrecedence3() = suspendTest {
-        assertEquals("${-(4 + 5)}", Template("{{ -(4+5) }}")())
-        assertEquals("${+(4 + 5)}", Template("{{ +(4+5) }}")())
+        assertEquals("${-(4 + 5)}", KorteTemplate("{{ -(4+5) }}")())
+        assertEquals("${+(4 + 5)}", KorteTemplate("{{ +(4+5) }}")())
     }
 
     @Test
     fun testFrontMatter() = suspendTest {
         assertEquals(
             """hello""",
-            Template(
+            KorteTemplate(
                 """
 					---
 					title: hello
@@ -430,10 +431,10 @@ class TemplateTest : BaseTest() {
         )
     }
 
-    class TestMethods : DynamicType<TestMethods> by DynamicType({
+    class TestMethods : KorteDynamicType<TestMethods> by KorteDynamicType({
         register("mytest123") { mytest123() }
         register("sum") { sum(it[0].toDynamicInt(), it[1].toDynamicInt()) }
-    }), DynamicContext {
+    }), KorteDynamicContext {
         var field = 1
 
         suspend fun mytest123(): Int {
@@ -451,17 +452,17 @@ class TemplateTest : BaseTest() {
 
     @Test
     fun testSuspendClass1() = suspendTest {
-        assertEquals("""8""", Template("{{ v.mytest123 }}")("v" to TestMethods(), mapper = Mapper2))
+        assertEquals("""8""", KorteTemplate("{{ v.mytest123 }}")("v" to TestMethods(), mapper = KorteMapper2))
     }
 
     @Test
     fun testSuspendClass2() = suspendTest {
-        assertEquals("""8""", Template("{{ v.mytest123() }}")("v" to TestMethods(), mapper = Mapper2))
+        assertEquals("""8""", KorteTemplate("{{ v.mytest123() }}")("v" to TestMethods(), mapper = KorteMapper2))
     }
 
     @Test
     fun testSuspendClass3() = suspendTest {
-        assertEquals("""8""", Template("{{ v.sum(3, 5) }}")("v" to TestMethods(), mapper = Mapper2))
+        assertEquals("""8""", KorteTemplate("{{ v.sum(3, 5) }}")("v" to TestMethods(), mapper = KorteMapper2))
     }
 
     //@Test fun testStringInterpolation() = sync {
@@ -470,54 +471,54 @@ class TemplateTest : BaseTest() {
 
     @Test
     fun testConcatOperator() = suspendTest {
-        assertEquals("12", Template("{{ 1 ~ 2 }}")())
+        assertEquals("12", KorteTemplate("{{ 1 ~ 2 }}")())
     }
 
     @Test
     fun testUnknownFilter() = suspendTest {
-        expectException<KorteException>("Unknown filter 'unknownFilter' at template:1:6") { Template("{{ 'a'|unknownFilter }}")() }
+        expectException<KorteException>("Unknown filter 'unknownFilter' at template:1:6") { KorteTemplate("{{ 'a'|unknownFilter }}")() }
     }
 
     @Test
     fun testMissingFilterName() = suspendTest {
-        expectException<KorteException>("Missing filter name at template:1:6") { Template("{{ 'a'| }}")() }
+        expectException<KorteException>("Missing filter name at template:1:6") { KorteTemplate("{{ 'a'| }}")() }
     }
 
     @Test
     fun testCustomBlockWriter() = suspendTest {
-        val config = TemplateConfig().also {
+        val config = KorteTemplateConfig().also {
             it.replaceWriteBlockExpressionResult { value, previous ->
                 if (value == null) throw NullPointerException("null")
                 previous(value)
             }
         }
-        assertEquals("a", Template("{{ 'a' }}", config)())
-        expectException<NullPointerException>("null") { Template("{{ null }}", config)() }
+        assertEquals("a", KorteTemplate("{{ 'a' }}", config)())
+        expectException<NullPointerException>("null") { KorteTemplate("{{ null }}", config)() }
     }
 
     @Test
     fun testCustomVariablePreprocessor() = suspendTest {
-        val config = TemplateConfig().also {
+        val config = KorteTemplateConfig().also {
             it.replaceVariablePocessor { name, previous ->
                 previous(name) ?: throw NullPointerException("Variable: $name cannot be null.")
             }
         }
-        assertEquals("a", Template("{{ var1 }}", config)(mapOf("var1" to "a")))
-        expectException<NullPointerException>("Variable: var2 cannot be null.") { Template("{{ var2 }}", config)() }
+        assertEquals("a", KorteTemplate("{{ var1 }}", config)(mapOf("var1" to "a")))
+        expectException<NullPointerException>("Variable: var2 cannot be null.") { KorteTemplate("{{ var2 }}", config)() }
     }
 
-    @Test fun testInvalid1() = suspendTest { expectException<KorteException>("String literal not closed at template:1:3") { Template("{{ ' }}")() } }
-    @Test fun testInvalid2() = suspendTest { expectException<KorteException>("No expression at template:1:3") { Template("{{ }}")() } }
-    @Test fun testInvalid3() = suspendTest { expectException<KorteException>("Expected expression at template:1:5") { Template("{{ 1 + }}")() } }
-    @Test fun testInvalid4() = suspendTest { expectException<KorteException>("Unexpected token 'world' at template:1:13") { Template("{% set a = hello world %}")() } }
-    @Test fun testInvalid5() = suspendTest { expectException<KorteException>("Expected id at template:1:3") { Template("{% set %}")() } }
-    @Test fun testInvalid6() = suspendTest { expectException<KorteException>("Expected = but found end at template:1:3") { Template("{% set a %}")() } }
-    @Test fun testInvalid7() = suspendTest { expectException<KorteException>("Expected expression at template:1:5") { Template("{% set a = %}")() } }
+    @Test fun testInvalid1() = suspendTest { expectException<KorteException>("String literal not closed at template:1:3") { KorteTemplate("{{ ' }}")() } }
+    @Test fun testInvalid2() = suspendTest { expectException<KorteException>("No expression at template:1:3") { KorteTemplate("{{ }}")() } }
+    @Test fun testInvalid3() = suspendTest { expectException<KorteException>("Expected expression at template:1:5") { KorteTemplate("{{ 1 + }}")() } }
+    @Test fun testInvalid4() = suspendTest { expectException<KorteException>("Unexpected token 'world' at template:1:13") { KorteTemplate("{% set a = hello world %}")() } }
+    @Test fun testInvalid5() = suspendTest { expectException<KorteException>("Expected id at template:1:3") { KorteTemplate("{% set %}")() } }
+    @Test fun testInvalid6() = suspendTest { expectException<KorteException>("Expected = but found end at template:1:3") { KorteTemplate("{% set a %}")() } }
+    @Test fun testInvalid7() = suspendTest { expectException<KorteException>("Expected expression at template:1:5") { KorteTemplate("{% set a = %}")() } }
 
     @Test
     fun testImportMacros() = suspendTest {
-        val templates = Templates(
-            TemplateProvider(
+        val templates = KorteTemplates(
+            KorteTemplateProvider(
                 "root.html" to "{% import '_macros.html' as macros %}{{ macros.putUserLink('hello') }}",
                 "_macros.html" to "{% macro putUserLink(user) %}<a>{{ user }}</a>{% endmacro %}"
             )
@@ -533,8 +534,8 @@ class TemplateTest : BaseTest() {
                 <hello>&lt;WORLD&gt;</hello>
                 <hello><WORLD></hello>
             """.trimIndent(),
-            listOf(AutoEscapeMode.HTML, AutoEscapeMode.RAW)
-                .map { Template(template, TemplateConfig(autoEscapeMode = it))("test" to "<WORLD>") }
+            listOf(KorteAutoEscapeMode.HTML, KorteAutoEscapeMode.RAW)
+                .map { KorteTemplate(template, KorteTemplateConfig(autoEscapeMode = it))("test" to "<WORLD>") }
                 .joinToString("\n")
         )
     }

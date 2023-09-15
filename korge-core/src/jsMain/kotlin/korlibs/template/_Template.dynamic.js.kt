@@ -1,3 +1,5 @@
+@file:Suppress("PackageDirectoryMismatch")
+
 package korlibs.template.dynamic
 
 import kotlin.coroutines.resume
@@ -5,20 +7,20 @@ import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 import kotlin.reflect.KClass
 
-open class JsObjectMapper2 : ObjectMapper2 {
+open class JsObjectMapper2 : KorteObjectMapper2 {
     override fun hasProperty(instance: Any, key: String): Boolean {
-        if (instance is DynamicType<*>) return instance.dynamicShape.hasProp(key)
+        if (instance is KorteDynamicType<*>) return instance.dynamicShape.hasProp(key)
         val tof = jsTypeOf(instance.asDynamic()[key])
         return tof !== "undefined" && tof !== "function"
     }
 
     override fun hasMethod(instance: Any, key: String): Boolean {
-        if (instance is DynamicType<*>) return instance.dynamicShape.hasMethod(key)
+        if (instance is KorteDynamicType<*>) return instance.dynamicShape.hasMethod(key)
         return jsTypeOf(instance.asDynamic()[key]) !== "undefined"
     }
 
     override suspend fun invokeAsync(type: KClass<Any>, instance: Any?, key: String, args: List<Any?>): Any? {
-        if (instance is DynamicType<*>) return instance.dynamicShape.callMethod(instance, key, args)
+        if (instance is KorteDynamicType<*>) return instance.dynamicShape.callMethod(instance, key, args)
         val function = instance.asDynamic()[key] ?: return super.invokeAsync(type, instance, key, args)
         //val function = instance.asDynamic()[key] ?: return null
         return suspendCoroutine<Any?> { c ->
@@ -39,14 +41,14 @@ open class JsObjectMapper2 : ObjectMapper2 {
     }
 
     override suspend fun set(instance: Any, key: Any?, value: Any?) {
-        if (instance is DynamicType<*>) return instance.dynamicShape.setProp(instance, key, value)
+        if (instance is KorteDynamicType<*>) return instance.dynamicShape.setProp(instance, key, value)
         instance.asDynamic()[key] = value
     }
 
     override suspend fun get(instance: Any, key: Any?): Any? {
-        if (instance is DynamicType<*>) return instance.dynamicShape.getProp(instance, key)
+        if (instance is KorteDynamicType<*>) return instance.dynamicShape.getProp(instance, key)
         return instance.asDynamic()[key]
     }
 }
 
-actual val Mapper2: ObjectMapper2 = JsObjectMapper2()
+actual val KorteMapper2: KorteObjectMapper2 = JsObjectMapper2()

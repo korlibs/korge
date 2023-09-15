@@ -1,6 +1,6 @@
 package korlibs.template
 
-import korlibs.template.internal.Yaml
+import korlibs.io.serialization.yaml.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

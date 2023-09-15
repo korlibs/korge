@@ -1,41 +1,40 @@
 package korlibs.template
 
-import korlibs.template.dynamic.Dynamic2
-import korlibs.template.dynamic.DynamicContext
-import korlibs.template.internal.StrReader
-import korlibs.template.internal.isDigit
-import korlibs.template.internal.isLetterDigitOrUnderscore
-import korlibs.template.internal.unescape
-import korlibs.template.util.ListReader
+import korlibs.io.util.*
+import korlibs.template.dynamic.KorteDynamic2
+import korlibs.template.dynamic.KorteDynamicContext
+import korlibs.template.internal.KorteStrReader
+import korlibs.template.util.KorteListReader
 import kotlin.coroutines.cancellation.CancellationException
+import kotlin.text.isDigit
 
-interface ExprNode : DynamicContext {
-    suspend fun eval(context: Template.EvalContext): Any?
+interface KorteExprNode : KorteDynamicContext {
+    suspend fun eval(context: KorteTemplate.EvalContext): Any?
 
-    data class VAR(val name: String) : ExprNode {
-        override suspend fun eval(context: Template.EvalContext): Any? {
+    data class VAR(val name: String) : KorteExprNode {
+        override suspend fun eval(context: KorteTemplate.EvalContext): Any? {
             return context.config.variableProcessor(context, name)
         }
     }
 
-    data class LIT(val value: Any?) : ExprNode {
-        override suspend fun eval(context: Template.EvalContext): Any? = value
+    data class LIT(val value: Any?) : KorteExprNode {
+        override suspend fun eval(context: KorteTemplate.EvalContext): Any? = value
     }
 
-    data class ARRAY_LIT(val items: List<ExprNode>) : ExprNode {
-        override suspend fun eval(context: Template.EvalContext): Any? {
+    data class ARRAY_LIT(val items: List<KorteExprNode>) : KorteExprNode {
+        override suspend fun eval(context: KorteTemplate.EvalContext): Any? {
             return items.map { it.eval(context) }
         }
     }
 
-    data class OBJECT_LIT(val items: List<Pair<ExprNode, ExprNode>>) : ExprNode {
-        override suspend fun eval(context: Template.EvalContext): Any? {
+    data class OBJECT_LIT(val items: List<Pair<KorteExprNode, KorteExprNode>>) : KorteExprNode {
+        override suspend fun eval(context: KorteTemplate.EvalContext): Any? {
             return items.map { it.first.eval(context) to it.second.eval(context) }.toMap()
         }
     }
 
-    data class FILTER(val name: String, val expr: ExprNode, val params: List<ExprNode>, val tok: ExprNode.Token) : ExprNode {
-        override suspend fun eval(context: Template.EvalContext): Any? {
+    data class FILTER(val name: String, val expr: KorteExprNode, val params: List<KorteExprNode>, val tok: KorteExprNode.Token) : KorteExprNode {
+        override suspend fun eval(context: KorteTemplate.EvalContext): Any? {
             val filter = context.config.filters[name] ?: context.config.filters["unknown"] ?: context.config.unknownFilter
             return context.filterCtxPool.alloc {
                 it.tok = tok
@@ -48,16 +47,16 @@ interface ExprNode : DynamicContext {
         }
     }
 
-    data class ACCESS(val expr: ExprNode, val name: ExprNode) : ExprNode {
-        override suspend fun eval(context: Template.EvalContext): Any? {
+    data class ACCESS(val expr: KorteExprNode, val name: KorteExprNode) : KorteExprNode {
+        override suspend fun eval(context: KorteTemplate.EvalContext): Any? {
             val obj = expr.eval(context)
             val key = name.eval(context)
             return try {
-                return Dynamic2.accessAny(obj, key, context.mapper)
+                return KorteDynamic2.accessAny(obj, key, context.mapper)
             } catch (e: Throwable) {
                 if (e is CancellationException) throw e
                 try {
-                    Dynamic2.callAny(obj, "invoke", listOf(key), mapper = context.mapper)
+                    KorteDynamic2.callAny(obj, "invoke", listOf(key), mapper = context.mapper)
                 } catch (e: Throwable) {
                     if (e is CancellationException) throw e
                     null
@@ -66,24 +65,24 @@ interface ExprNode : DynamicContext {
         }
     }
 
-    data class CALL(val method: ExprNode, val args: List<ExprNode>) : ExprNode {
-        override suspend fun eval(context: Template.EvalContext): Any? {
+    data class CALL(val method: KorteExprNode, val args: List<KorteExprNode>) : KorteExprNode {
+        override suspend fun eval(context: KorteTemplate.EvalContext): Any? {
             val processedArgs = args.map { it.eval(context) }
             when (method) {
-                is ExprNode.ACCESS -> {
+                is KorteExprNode.ACCESS -> {
                     val obj = method.expr.eval(context)
                     val methodName = method.name.eval(context)
                     //println("" + obj + ":" + methodName)
                     if (obj is Map<*, *>) {
                         val k = obj[methodName]
-                        if (k is Template.DynamicInvokable) {
+                        if (k is KorteTemplate.DynamicInvokable) {
                             return k.invoke(context, processedArgs)
                         }
                     }
                     //return obj.dynamicCallMethod(methodName, *processedArgs.toTypedArray(), mapper = context.mapper)
-                    return Dynamic2.callAny(obj, methodName, processedArgs.toList(), mapper = context.mapper)
+                    return KorteDynamic2.callAny(obj, methodName, processedArgs.toList(), mapper = context.mapper)
                 }
-                is ExprNode.VAR -> {
+                is KorteExprNode.VAR -> {
                     val func = context.config.functions[method.name]
                     if (func != null) {
                         return func.eval(processedArgs, context)
@@ -91,24 +90,24 @@ interface ExprNode : DynamicContext {
                 }
             }
             //return method.eval(context).dynamicCall(processedArgs.toTypedArray(), mapper = context.mapper)
-            return Dynamic2.callAny(method.eval(context), processedArgs.toList(), mapper = context.mapper)
+            return KorteDynamic2.callAny(method.eval(context), processedArgs.toList(), mapper = context.mapper)
         }
     }
 
-    data class BINOP(val l: ExprNode, val r: ExprNode, val op: String) : ExprNode {
-        override suspend fun eval(context: Template.EvalContext): Any? {
+    data class BINOP(val l: KorteExprNode, val r: KorteExprNode, val op: String) : KorteExprNode {
+        override suspend fun eval(context: KorteTemplate.EvalContext): Any? {
             val lr = l.eval(context)
             val rr = r.eval(context)
             return when (op) {
                 "~" -> lr.toDynamicString() + rr.toDynamicString()
-                ".." -> DefaultFunctions.Range.eval(listOf(lr, rr), context)
-                else -> Dynamic2.binop(lr, rr, op)
+                ".." -> KorteDefaultFunctions.Range.eval(listOf(lr, rr), context)
+                else -> KorteDynamic2.binop(lr, rr, op)
             }
         }
     }
 
-    data class TERNARY(val cond: ExprNode, val etrue: ExprNode, val efalse: ExprNode) : ExprNode {
-        override suspend fun eval(context: Template.EvalContext): Any? {
+    data class TERNARY(val cond: KorteExprNode, val etrue: KorteExprNode, val efalse: KorteExprNode) : KorteExprNode {
+        override suspend fun eval(context: KorteTemplate.EvalContext): Any? {
             return if (cond.eval(context).toDynamicBool()) {
                 etrue.eval(context)
             } else {
@@ -117,48 +116,48 @@ interface ExprNode : DynamicContext {
         }
     }
 
-    data class UNOP(val r: ExprNode, val op: String) : ExprNode {
-        override suspend fun eval(context: Template.EvalContext): Any? {
+    data class UNOP(val r: KorteExprNode, val op: String) : KorteExprNode {
+        override suspend fun eval(context: KorteTemplate.EvalContext): Any? {
             return when (op) {
                 "", "+" -> r.eval(context)
-                else -> Dynamic2.unop(r.eval(context), op)
+                else -> KorteDynamic2.unop(r.eval(context), op)
             }
         }
     }
 
     companion object {
-        fun parse(tag: korlibs.template.Token.TTag): ExprNode = parse(tag.content, tag.posContext)
+        fun parse(tag: korlibs.template.KorteToken.TTag): KorteExprNode = parse(tag.content, tag.posContext)
 
-        fun parse(str: String, context: FilePosContext): ExprNode {
-            val tokens = ExprNode.Token.tokenize(str, context)
+        fun parse(str: String, context: KorteFilePosContext): KorteExprNode {
+            val tokens = KorteExprNode.Token.tokenize(str, context)
             if (tokens.list.isEmpty()) context.exception("No expression")
-            return ExprNode.parseFullExpr(tokens).also {
+            return KorteExprNode.parseFullExpr(tokens).also {
                 tokens.expectEnd()
             }
         }
 
-        fun parse(str: String, fileName: String = "expression"): ExprNode {
-            return ExprNode.parse(str, FilePosContext(FileContext(fileName, str), 1))
+        fun parse(str: String, fileName: String = "expression"): KorteExprNode {
+            return KorteExprNode.parse(str, KorteFilePosContext(KorteFileContext(fileName, str), 1))
         }
 
-        fun parseId(r: ListReader<Token>): String {
+        fun parseId(r: KorteListReader<Token>): String {
             return r.tryRead()?.text ?: (r.tryPrev() ?: r.ctx)?.exception("Expected id") ?: TODO()
         }
 
-        fun expect(r: ListReader<Token>, vararg tokens: String) {
+        fun expect(r: KorteListReader<Token>, vararg tokens: String) {
             val token = r.tryRead() ?: r.prevOrContext().exception("Expected ${tokens.joinToString(", ")} but found end")
             if (token.text !in tokens) token.exception("Expected ${tokens.joinToString(", ")} but found $token")
         }
 
-        fun parseFullExpr(r: ListReader<Token>): ExprNode {
+        fun parseFullExpr(r: KorteListReader<Token>): KorteExprNode {
             try {
-                val result = ExprNode.parseExpr(r)
+                val result = KorteExprNode.parseExpr(r)
                 if (r.hasMore) {
                     r.peek()
                         .exception("Expected expression at " + r.peek() + " :: " + r.list.map { it.text }.joinToString(""))
                 }
                 return result
-            } catch (e: ListReader.OutOfBoundsException) {
+            } catch (e: KorteListReader.OutOfBoundsException) {
                 r.list.last().exception("Incomplete expression")
             }
         }
@@ -183,11 +182,11 @@ interface ExprNode : DynamicContext {
 
         fun binopPr(str: String) = BINOPS[str] ?: 0
 
-        fun parseBinExpr(r: ListReader<Token>): ExprNode {
+        fun parseBinExpr(r: KorteListReader<Token>): KorteExprNode {
             var result = parseFinal(r)
             while (r.hasMore) {
                 //if (r.peek() !is ExprNode.Token.TOperator || r.peek().text !in ExprNode.BINOPS) break
-                if (r.peek().text !in ExprNode.BINOPS) break
+                if (r.peek().text !in KorteExprNode.BINOPS) break
                 val operator = r.read().text
                 val right = parseFinal(r)
                 if (result is BINOP) {
@@ -208,7 +207,7 @@ interface ExprNode : DynamicContext {
             return result
         }
 
-        fun parseTernaryExpr(r: ListReader<Token>): ExprNode {
+        fun parseTernaryExpr(r: KorteListReader<Token>): KorteExprNode {
             var left = this.parseBinExpr(r)
             if (r.hasMore) {
                 if (r.peek().text == "?") {
@@ -222,14 +221,14 @@ interface ExprNode : DynamicContext {
             return left
         }
 
-        fun parseExpr(r: ListReader<Token>): ExprNode {
+        fun parseExpr(r: KorteListReader<Token>): KorteExprNode {
             return parseTernaryExpr(r)
         }
 
-        private fun parseFinal(r: ListReader<Token>): ExprNode {
+        private fun parseFinal(r: KorteListReader<Token>): KorteExprNode {
             if (!r.hasMore) r.prevOrContext().exception("Expected expression")
-            val tok = r.peek().text.toUpperCase()
-            var construct: ExprNode = when (tok) {
+            val tok = r.peek().text.uppercase()
+            var construct: KorteExprNode = when (tok) {
                 "!", "~", "-", "+", "NOT" -> {
                     val op = tok
                     r.skip()
@@ -240,18 +239,19 @@ interface ExprNode : DynamicContext {
                         }
                     )
                 }
+
                 "(" -> {
                     r.read()
-                    val result = ExprNode.parseExpr(r)
+                    val result = KorteExprNode.parseExpr(r)
                     if (r.read().text != ")") throw RuntimeException("Expected ')'")
                     UNOP(result, "")
                 }
                 // Array literal
                 "[" -> {
                     r.read()
-                    val items = arrayListOf<ExprNode>()
+                    val items = arrayListOf<KorteExprNode>()
                     loop@ while (r.hasMore && r.peek().text != "]") {
-                        items += ExprNode.parseExpr(r)
+                        items += KorteExprNode.parseExpr(r)
                         when (r.peek().text) {
                             "," -> r.read()
                             "]" -> continue@loop
@@ -264,11 +264,11 @@ interface ExprNode : DynamicContext {
                 // Object literal
                 "{" -> {
                     r.read()
-                    val items = arrayListOf<Pair<ExprNode, ExprNode>>()
+                    val items = arrayListOf<Pair<KorteExprNode, KorteExprNode>>()
                     loop@ while (r.hasMore && r.peek().text != "}") {
-                        val k = ExprNode.parseFinal(r)
+                        val k = KorteExprNode.parseFinal(r)
                         r.expect(":")
-                        val v = ExprNode.parseExpr(r)
+                        val v = KorteExprNode.parseExpr(r)
                         items += k to v
                         when (r.peek().text) {
                             "," -> r.read()
@@ -279,9 +279,10 @@ interface ExprNode : DynamicContext {
                     r.expect("}")
                     OBJECT_LIT(items)
                 }
+
                 else -> {
                     // Number
-                    if (r.peek() is ExprNode.Token.TNumber) {
+                    if (r.peek() is KorteExprNode.Token.TNumber) {
                         val ntext = r.read().text
                         when (ntext.toDouble()) {
                             ntext.toIntOrNull()?.toDouble() -> LIT(ntext.toIntOrNull() ?: 0)
@@ -290,7 +291,7 @@ interface ExprNode : DynamicContext {
                         }
                     }
                     // String
-                    else if (r.peek() is ExprNode.Token.TString) {
+                    else if (r.peek() is KorteExprNode.Token.TString) {
                         LIT((r.read() as Token.TString).processedValue)
                     }
                     // ID
@@ -314,17 +315,19 @@ interface ExprNode : DynamicContext {
                         construct = ACCESS(construct, LIT(id))
                         continue@loop
                     }
+
                     "[" -> {
                         r.read()
-                        val expr = ExprNode.parseExpr(r)
+                        val expr = KorteExprNode.parseExpr(r)
                         construct = ACCESS(construct, expr)
                         val end = r.read()
                         if (end.text != "]") end.exception("Expected ']' but found $end")
                     }
+
                     "|" -> {
                         val tok = r.read()
                         val name = r.tryRead()?.text ?: ""
-                        val args = arrayListOf<ExprNode>()
+                        val args = arrayListOf<KorteExprNode>()
                         if (name.isEmpty()) tok.exception("Missing filter name")
                         if (r.hasMore) {
                             when (r.peek().text) {
@@ -332,7 +335,7 @@ interface ExprNode : DynamicContext {
                                 ":" -> {
                                     r.read()
                                     callargsloop@ while (r.hasMore) {
-                                        args += ExprNode.parseExpr(r)
+                                        args += KorteExprNode.parseExpr(r)
                                         if (r.hasMore && r.peek().text == ",") r.read()
                                     }
                                 }
@@ -340,7 +343,7 @@ interface ExprNode : DynamicContext {
                                 "(" -> {
                                     r.read()
                                     callargsloop@ while (r.hasMore && r.peek().text != ")") {
-                                        args += ExprNode.parseExpr(r)
+                                        args += KorteExprNode.parseExpr(r)
                                         when (r.expectPeek(",", ")").text) {
                                             "," -> r.read()
                                             ")" -> break@callargsloop
@@ -352,11 +355,12 @@ interface ExprNode : DynamicContext {
                         }
                         construct = FILTER(name, construct, args, tok)
                     }
+
                     "(" -> {
                         r.read()
-                        val args = arrayListOf<ExprNode>()
+                        val args = arrayListOf<KorteExprNode>()
                         callargsloop@ while (r.hasMore && r.peek().text != ")") {
-                            args += ExprNode.parseExpr(r)
+                            args += KorteExprNode.parseExpr(r)
                             when (r.expectPeek(",", ")").text) {
                                 "," -> r.read()
                                 ")" -> break@callargsloop
@@ -365,6 +369,7 @@ interface ExprNode : DynamicContext {
                         r.expect(")")
                         construct = CALL(construct, args)
                     }
+
                     else -> break@loop
                 }
             }
@@ -372,14 +377,14 @@ interface ExprNode : DynamicContext {
         }
     }
 
-    interface Token : TokenContext {
+    interface Token : KorteTokenContext {
         val text: String
 
-        data class TId(override val text: String) : ExprNode.Token, TokenContext by TokenContext.Mixin()
-        data class TNumber(override val text: String) : ExprNode.Token, TokenContext by TokenContext.Mixin()
-        data class TString(override val text: String, val processedValue: String) : ExprNode.Token, TokenContext by TokenContext.Mixin()
-        data class TOperator(override val text: String) : ExprNode.Token, TokenContext by TokenContext.Mixin()
-        data class TEnd(override val text: String = "") : ExprNode.Token, TokenContext by TokenContext.Mixin()
+        data class TId(override val text: String) : KorteExprNode.Token, KorteTokenContext by KorteTokenContext.Mixin()
+        data class TNumber(override val text: String) : KorteExprNode.Token, KorteTokenContext by KorteTokenContext.Mixin()
+        data class TString(override val text: String, val processedValue: String) : KorteExprNode.Token, KorteTokenContext by KorteTokenContext.Mixin()
+        data class TOperator(override val text: String) : KorteExprNode.Token, KorteTokenContext by KorteTokenContext.Mixin()
+        data class TEnd(override val text: String = "") : KorteExprNode.Token, KorteTokenContext by KorteTokenContext.Mixin()
 
         companion object {
             private val OPERATORS = setOf(
@@ -397,15 +402,15 @@ interface ExprNode : DynamicContext {
                 "="
             )
 
-            fun ExprNode.Token.annotate(context: FilePosContext, tpos: Int) = this.apply {
+            fun KorteExprNode.Token.annotate(context: KorteFilePosContext, tpos: Int) = this.apply {
                 pos = context.pos + tpos
                 file = context.file
             }
 
-            fun tokenize(str: String, context: FilePosContext): ListReader<Token> {
-                val r = StrReader(str)
-                val out = arrayListOf<ExprNode.Token>()
-                fun emit(str: ExprNode.Token, tpos: Int) {
+            fun tokenize(str: String, context: KorteFilePosContext): KorteListReader<Token> {
+                val r = KorteStrReader(str)
+                val out = arrayListOf<KorteExprNode.Token>()
+                fun emit(str: KorteExprNode.Token, tpos: Int) {
                     str.annotate(context, tpos)
                     out += str
                 }
@@ -416,47 +421,47 @@ interface ExprNode : DynamicContext {
                     val id = r.readWhile(Char::isLetterDigitOrUnderscore)
                     if (id.isNotEmpty()) {
                         if (id[0].isDigit()) {
-                            if (r.peek() == '.' && r.peek(2)[1].isDigit()) {
+                            if (r.peekChar() == '.' && r.peek(2)[1].isDigit()) {
                                 r.skip()
                                 val decimalPart = r.readWhile(Char::isLetterDigitOrUnderscore)
-                                emit(ExprNode.Token.TNumber("$id.$decimalPart"), dstart)
+                                emit(KorteExprNode.Token.TNumber("$id.$decimalPart"), dstart)
                             } else {
-                                emit(ExprNode.Token.TNumber(id), dstart)
+                                emit(KorteExprNode.Token.TNumber(id), dstart)
                             }
                         } else {
-                            emit(ExprNode.Token.TId(id), dstart)
+                            emit(KorteExprNode.Token.TId(id), dstart)
                         }
                     }
                     r.skipSpaces()
                     val dstart2 = r.pos
-                    if (r.peek(3) in ExprNode.Token.OPERATORS) emit(ExprNode.Token.TOperator(r.read(3)), dstart2)
-                    if (r.peek(2) in ExprNode.Token.OPERATORS) emit(ExprNode.Token.TOperator(r.read(2)), dstart2)
-                    if (r.peek(1) in ExprNode.Token.OPERATORS) emit(ExprNode.Token.TOperator(r.read(1)), dstart2)
-                    if (r.peek() == '\'' || r.peek() == '"') {
+                    if (r.peek(3) in KorteExprNode.Token.OPERATORS) emit(KorteExprNode.Token.TOperator(r.read(3)), dstart2)
+                    if (r.peek(2) in KorteExprNode.Token.OPERATORS) emit(KorteExprNode.Token.TOperator(r.read(2)), dstart2)
+                    if (r.peek(1) in KorteExprNode.Token.OPERATORS) emit(KorteExprNode.Token.TOperator(r.read(1)), dstart2)
+                    if (r.peekChar() == '\'' || r.peekChar() == '"') {
                         val dstart3 = r.pos
                         val strStart = r.read()
                         val strBody = r.readUntil(strStart) ?: context.withPosAdd(dstart3).exception("String literal not closed")
                         val strEnd = r.read()
-                        emit(ExprNode.Token.TString(strStart + strBody + strEnd, strBody.unescape()), dstart3)
+                        emit(KorteExprNode.Token.TString(strStart + strBody + strEnd, strBody.unescape()), dstart3)
                     }
                     val end = r.pos
                     if (end == start) {
-                        context.withPosAdd(end).exception("Don't know how to handle '${r.peek()}'")
+                        context.withPosAdd(end).exception("Don't know how to handle '${r.peekChar()}'")
                     }
                 }
                 val dstart = r.pos
                 //emit(ExprNode.Token.TEnd(), dstart)
-                return ListReader(out, ExprNode.Token.TEnd().annotate(context, dstart))
+                return KorteListReader(out, KorteExprNode.Token.TEnd().annotate(context, dstart))
             }
         }
     }
 }
 
-fun ListReader<ExprNode.Token>.expectEnd() {
+fun KorteListReader<KorteExprNode.Token>.expectEnd() {
     if (hasMore) peek().exception("Unexpected token '${peek().text}'")
 }
 
-fun ListReader<ExprNode.Token>.tryRead(vararg types: String): ExprNode.Token? {
+fun KorteListReader<KorteExprNode.Token>.tryRead(vararg types: String): KorteExprNode.Token? {
     val token = this.peek()
     if (token.text in types) {
         this.read()
@@ -466,21 +471,21 @@ fun ListReader<ExprNode.Token>.tryRead(vararg types: String): ExprNode.Token? {
     }
 }
 
-fun ListReader<ExprNode.Token>.expectPeek(vararg types: String): ExprNode.Token {
+fun KorteListReader<KorteExprNode.Token>.expectPeek(vararg types: String): KorteExprNode.Token {
     val token = this.peek()
     if (token.text !in types) throw RuntimeException("Expected ${types.joinToString(", ")} but found '${token.text}'")
     return token
 }
 
-fun ListReader<ExprNode.Token>.expect(vararg types: String): ExprNode.Token {
+fun KorteListReader<KorteExprNode.Token>.expect(vararg types: String): KorteExprNode.Token {
     val token = this.read()
     if (token.text !in types) throw RuntimeException("Expected ${types.joinToString(", ")}")
     return token
 }
 
-fun ListReader<ExprNode.Token>.parseExpr() = ExprNode.parseExpr(this)
-fun ListReader<ExprNode.Token>.parseId() = ExprNode.parseId(this)
-fun ListReader<ExprNode.Token>.parseIdList(): List<String> {
+fun KorteListReader<KorteExprNode.Token>.parseExpr() = KorteExprNode.parseExpr(this)
+fun KorteListReader<KorteExprNode.Token>.parseId() = KorteExprNode.parseId(this)
+fun KorteListReader<KorteExprNode.Token>.parseIdList(): List<String> {
     val ids = arrayListOf<String>()
     do {
         ids += parseId()

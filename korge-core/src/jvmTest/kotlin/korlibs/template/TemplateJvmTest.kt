@@ -22,7 +22,7 @@ class TemplateJvmTest {
         location.longitude = 2.0
         assertEquals(
             "1,2",
-            Template("{{ location.latitude }},{{ location.longitude }}")("location" to location)
+            KorteTemplate("{{ location.latitude }},{{ location.longitude }}")("location" to location)
         )
     }
 
@@ -37,7 +37,7 @@ class TemplateJvmTest {
 
         assertEquals(
             "test2,test3,test4,",
-            Template("{% for row in rows %}{% if row.date >= startDate && row.date < startDate.plusDays(days) %}{{ row.title }},{% endif %}{% endfor %}")("startDate" to startDate, "days" to days, "rows" to rows)
+            KorteTemplate("{% for row in rows %}{% if row.date >= startDate && row.date < startDate.plusDays(days) %}{{ row.title }},{% endif %}{% endfor %}")("startDate" to startDate, "days" to days, "rows" to rows)
         )
     }
 
@@ -63,7 +63,7 @@ class TemplateJvmTest {
     fun testGetter() = suspendTest {
         assertEquals(
             ",20,10",
-            Template("{{ data.a }},{{ data.b }},{{ data.c }}")("data" to Getter())
+            KorteTemplate("{{ data.a }},{{ data.b }},{{ data.c }}")("data" to Getter())
         )
     }
 
@@ -72,11 +72,11 @@ class TemplateJvmTest {
         val getter = GetterWithMap().also { it["a"] = "A"; it["b"] = "B" }
         assertEquals(
             "A,B,",
-            Template("{{ data.a }},{{ data.b }},{{ data.c }}")("data" to getter)
+            KorteTemplate("{{ data.a }},{{ data.b }},{{ data.c }}")("data" to getter)
         )
         assertEquals(
             "A,20,10",
-            Template("{{ data.a }},{{ data.b }},{{ data.c }}")("data" to getter, mapper = object : ObjectMapper2 by Mapper2 {
+            KorteTemplate("{{ data.a }},{{ data.b }},{{ data.c }}")("data" to getter, mapper = object : KorteObjectMapper2 by KorteMapper2 {
                 override suspend fun accessAny(instance: Any?, key: Any?): Any? {
                     return super.accessAnyObject(instance, key) ?: super.accessAny(instance, key)
                 }

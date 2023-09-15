@@ -1,9 +1,9 @@
+@file:Suppress("PackageDirectoryMismatch")
+
 package korlibs.template.dynamic
 
-import kotlin.native.concurrent.SharedImmutable
-
 // @TODO: Hopefully someday: https://github.com/Kotlin/kotlinx.serialization/tree/dev
-open class NativeObjectMapper2 : ObjectMapper2 {
+open class NativeObjectMapper2 : KorteObjectMapper2 {
     //override fun hasProperty(instance: Any, key: String): Boolean = TODO("Not supported in native yet")
     //override fun hasMethod(instance: Any, key: String): Boolean = TODO("Not supported in native yet")
     //override suspend fun invokeAsync(type: KClass<Any>, instance: Any?, key: String, args: List<Any?>) = TODO("Not supported in native yet")
@@ -11,5 +11,4 @@ open class NativeObjectMapper2 : ObjectMapper2 {
     //override suspend fun get(instance: Any, key: Any?): Any? = TODO("Not supported in native yet")
 }
 
-@SharedImmutable
-actual val Mapper2: ObjectMapper2 = NativeObjectMapper2()
+actual val KorteMapper2: KorteObjectMapper2 = NativeObjectMapper2()

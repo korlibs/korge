@@ -8,8 +8,8 @@ class TemplateInheritanceTest {
     fun simple() = suspendTest {
         assertEquals(
             "hello",
-            Templates(
-                TemplateProvider(
+            KorteTemplates(
+                KorteTemplateProvider(
                     "a" to "hello"
                 )
             ).get("a").invoke()
@@ -20,8 +20,8 @@ class TemplateInheritanceTest {
     fun block() = suspendTest {
         assertEquals(
             "hello",
-            Templates(
-                TemplateProvider(
+            KorteTemplates(
+                KorteTemplateProvider(
                     "a" to "{% block test %}hello{% end %}"
                 )
             ).get("a")()
@@ -30,8 +30,8 @@ class TemplateInheritanceTest {
 
     @Test
     fun extends() = suspendTest {
-        val template = Templates(
-            TemplateProvider(
+        val template = KorteTemplates(
+            KorteTemplateProvider(
                 "a" to """{% block test %}a{% end %}""",
                 "b" to """{% extends "a" %}{% block test %}b{% end %}"""
             )
@@ -46,8 +46,8 @@ class TemplateInheritanceTest {
     fun doubleExtends() = suspendTest {
         assertEquals(
             "c",
-            Templates(
-                TemplateProvider(
+            KorteTemplates(
+                KorteTemplateProvider(
                     "a" to """{% block test %}a{% end %}""",
                     "b" to """{% extends "a" %}{% block test %}b{% end %}""",
                     "c" to """{% extends "b" %}{% block test %}c{% end %}"""
@@ -60,8 +60,8 @@ class TemplateInheritanceTest {
     fun blockParent() = suspendTest {
         assertEquals(
             "<b><a>TEXT</a></b>",
-            Templates(
-                TemplateProvider(
+            KorteTemplates(
+                KorteTemplateProvider(
                     "a" to """{% block test %}<a>TEXT</a>{% end %}""",
                     "b" to """{% extends "a" %}{% block test %}<b>{{ parent() }}</b>{% end %}"""
                 )
@@ -73,8 +73,8 @@ class TemplateInheritanceTest {
     fun blockDoubleParent() = suspendTest {
         assertEquals(
             "<c><b><a>TEXT</a></b></c>",
-            Templates(
-                TemplateProvider(
+            KorteTemplates(
+                KorteTemplateProvider(
                     "a" to """{% block test %}<a>TEXT</a>{% end %}""",
                     "b" to """{% extends "a" %}{% block test %}<b>{{ parent() }}</b>{% end %}""",
                     "c" to """{% extends "b" %}{% block test %}<c>{{ parent() }}</c>{% end %}"""
@@ -87,8 +87,8 @@ class TemplateInheritanceTest {
     fun nestedBlocks() = suspendTest {
         assertEquals(
             "<root><left><L>left:LEFT</L></left><right><R>right:RIGHT</R></right></root>",
-            Templates(
-                TemplateProvider(
+            KorteTemplates(
+                KorteTemplateProvider(
                     "root" to """<root>{% block main %}test{% end %}</root>""",
                     "2column" to """{% extends "root" %}  {% block main %}<left>{% block left %}left{% end %}</left><right>{% block right %}right{% end %}</right>{% end %}  """,
                     "mypage" to """{% extends "2column" %}  {% block right %}<R>{{ parent() }}:RIGHT</R>{% end %}  {% block left %}<L>{{ parent() }}:LEFT</L>{% end %}  """
@@ -101,8 +101,8 @@ class TemplateInheritanceTest {
     fun doubleExtends2() = suspendTest {
         assertEquals(
             "abcc",
-            Templates(
-                TemplateProvider(
+            KorteTemplates(
+                KorteTemplateProvider(
                     "a" to """{% block b1 %}a{% end %}{% block b2 %}a{% end %}{% block b3 %}a{% end %}{% block b4 %}a{% end %}""",
                     "b" to """{% extends "a" %}{% block b2 %}b{% end %}{% block b4 %}b{% end %}""",
                     "c" to """{% extends "b" %}{% block b3 %}c{% end %}{% block b4 %}c{% end %}"""
@@ -115,8 +115,8 @@ class TemplateInheritanceTest {
     fun include() = suspendTest {
         assertEquals(
             "Hello World, Carlos.",
-            Templates(
-                TemplateProvider(
+            KorteTemplates(
+                KorteTemplateProvider(
                     "include" to """World""",
                     "username" to """Carlos""",
                     "main" to """Hello {% include "include" %}, {% include "username" %}."""
@@ -129,8 +129,8 @@ class TemplateInheritanceTest {
     fun includeWithParams() = suspendTest {
         assertEquals(
             "Hello World.",
-            Templates(
-                TemplateProvider(
+            KorteTemplates(
+                KorteTemplateProvider(
                     "include" to """{{ include.name }}""",
                     "main" to """Hello {% include "include" name="World" %}."""
                 )
@@ -142,8 +142,8 @@ class TemplateInheritanceTest {
     fun jekyllLayout() = suspendTest {
         assertEquals(
             "Hello Carlos.",
-            Templates(
-                TemplateProvider(
+            KorteTemplates(
+                KorteTemplateProvider(
                     "mylayout" to """Hello {{ content }}.""",
                     "main" to """
 					---
@@ -161,18 +161,18 @@ class TemplateInheritanceTest {
     fun jekyllLayoutEx() = suspendTest {
         assertEquals(
             "<html><div>side</div><div><h1>Content</h1></div></html>",
-            Templates(
-                NewTemplateProvider(
-                    "root" to TemplateContent("""
+            KorteTemplates(
+                KorteNewTemplateProvider(
+                    "root" to KorteTemplateContent("""
 					<html>{{ content }}</html>
                 """.trimIndent()),
-                    "twocolumns" to TemplateContent("""
+                    "twocolumns" to KorteTemplateContent("""
 					---
 					layout: root
 					---
 					<div>side</div><div>{{ content }}</div>
                 """.trimIndent()),
-                    "main" to TemplateContent("""
+                    "main" to KorteTemplateContent("""
 					---
 					layout: twocolumns
 					mycontent: Content
@@ -193,7 +193,7 @@ class TemplateInheritanceTest {
 
     @Test
     fun operatorPrecedence() = suspendTest {
-        assertEquals("true", Template("{{ 1 in [1, 2] }}")())
-        assertEquals("false", Template("{{ 3 in [1, 2] }}")())
+        assertEquals("true", KorteTemplate("{{ 1 in [1, 2] }}")())
+        assertEquals("false", KorteTemplate("{{ 3 in [1, 2] }}")())
     }
 }
