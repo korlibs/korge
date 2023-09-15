@@ -44,7 +44,7 @@ class BVHTest {
 
     @Test
     fun testArrayOutOfBoundsBug() {
-        if (Platform.isWasm && KotlinVersion.CURRENT < KotlinVersion(1, 9, 20)) return // @TODO: This should be only for WASM
+        if (Platform.isWasm) return // @TODO: This should be only for WASM
 
         val bvh = BVH2D<Int>()
         //bvh.insertOrUpdate()

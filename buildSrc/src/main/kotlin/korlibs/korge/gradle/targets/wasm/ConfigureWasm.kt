@@ -4,12 +4,12 @@ import korlibs.*
 import org.gradle.api.*
 
 //fun Project.isWasmEnabled(): Boolean = findProperty("enable.wasm") == "true"
-//fun Project.isWasmEnabled(): Boolean = true
-fun Project.isWasmEnabled(): Boolean = false
+fun Project.isWasmEnabled(): Boolean = true
+//fun Project.isWasmEnabled(): Boolean = false
 
 fun Project.configureWasm(executable: Boolean, binaryen: Boolean = false) {
     kotlin {
-        wasm {
+        wasmJs {
             if (binaryen) applyBinaryen()
 
             if (executable) {
@@ -28,6 +28,12 @@ fun Project.configureWasm(executable: Boolean, binaryen: Boolean = false) {
                 //        this.webpackConfig.configDirectory = File(rootProject.rootDir, "karma.config.d")
                 //    }
                 //}
+            }
+        }
+
+        sourceSets.maybeCreate("wasmJsTest").apply {
+            dependencies {
+                implementation("org.jetbrains.kotlin:kotlin-test-wasm-js")
             }
         }
     }

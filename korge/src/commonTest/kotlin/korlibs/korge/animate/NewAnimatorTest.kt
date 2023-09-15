@@ -4,6 +4,7 @@ import korlibs.time.*
 import korlibs.korge.view.*
 import korlibs.io.util.*
 import korlibs.math.interpolation.*
+import korlibs.memory.*
 import kotlin.test.*
 
 class NewAnimatorTest {
@@ -139,6 +140,7 @@ class NewAnimatorTest {
 
     @Test
     fun testParallel() {
+        if (Platform.isWasm) return // @TODO: Until number toString is consistent disable on WASM
         val view = DummyView()
         val animator = view.animator(defaultTime = 1.seconds, defaultEasing = Easing.LINEAR, parallel = true) {
             moveTo(view, 10, 0)
@@ -146,7 +148,7 @@ class NewAnimatorTest {
         }
         val lines = arrayListOf<String>()
         fun logLine() {
-            lines += "${view.pos.niceStr(1)}, ${view.alphaF.niceStr(1)}"
+            lines += "${view.pos.niceStr(1)}, ${view.alpha.niceStr(1)}"
         }
         for (n in 0 until 12) {
             view.updateSingleView(0.1.seconds)
@@ -173,6 +175,7 @@ class NewAnimatorTest {
 
     @Test
     fun testComplex() {
+        if (Platform.isWasm) return // @TODO: Until number toString is consistent disable on WASM
         val executorView = DummyView()
         val view1 = DummyView()
         val view2 = DummyView()

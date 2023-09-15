@@ -17,8 +17,8 @@ class SoundAudioStreamTest {
 
     @Test
     fun testPlaySeveralTimes() = suspendTest({ doIOTest }) {
-        if (Platform.isWasm) {
-            println("!! WASM skipping SoundAudioStreamTest.testPlaySeveralTimes")
+        if (Platform.isWasm) { // !! WASM skipping SoundAudioStreamTest.testPlaySeveralTimes
+            //println("!! WASM skipping SoundAudioStreamTest.testPlaySeveralTimes")
             return@suspendTest
         }
 

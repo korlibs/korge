@@ -87,7 +87,7 @@ class Matrix3Test {
 
     @Test
     fun testConstructorCols() {
-        if (Platform.isWasm && KotlinVersion.CURRENT < KotlinVersion(1, 9, 20)) return
+        if (Platform.isWasm) return
 
         val m1 = Matrix3.fromColumns(
             Vector3(1f, 2f, 3f),

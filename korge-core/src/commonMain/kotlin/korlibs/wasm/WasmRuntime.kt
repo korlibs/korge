@@ -1,3 +1,5 @@
+@file:OptIn(kotlin.ExperimentalStdlibApi::class)
+
 package korlibs.wasm
 
 import korlibs.logger.AnsiEscape.Companion.green
