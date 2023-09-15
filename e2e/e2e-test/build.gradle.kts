@@ -69,8 +69,20 @@ tasks {
             localOpengl32X64ZipFile.writeBytes(url.readBytes())
         }
     }
+    val unzipOpenglX64 by creating(Task::class) {
+        dependsOn(downloadOpenglMesaForWindows)
+        doLast {
+            if (!file("opengl32.dll").exists()) {
+                copy {
+                    from(zipTree(localOpengl32X64ZipFile))
+                    into(".")
+                }
+            }
+        }
+    }
 
     val runJvm = getByName("runJvm") as KorgeJavaExec
+    runJvm.dependsOn(unzipOpenglX64)
     runJvm.workingDir = File(buildDir, "bin/jvm").also { it.mkdirs() }
     runJvm.environment("OUTPUT_DIR", File(buildDir, "screenshots/jvm"))
 

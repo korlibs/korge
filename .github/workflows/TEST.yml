@@ -171,12 +171,13 @@ jobs:
     - { name: Start gradle, run: ./gradlew }
     - { name: Testing JVM on MacosX64, run: ./gradlew jvmTest }
     - { name: Archive Test Results, if: failure(), uses: actions/upload-artifact@v3, with: { name: screenshot-test-results-macos, retention-days: 21, path: "**/build/reports", if-no-files-found: ignore } }
-    - { name: Run ios simulator tests, run: ./gradlew iosX64Test }
-    - { name: Check compilation of tvOS targets, run: ./gradlew publishTvosArm64PublicationToMavenLocal }
+    - { name: Publish maven local, shell: cmd, run: "CALL gradlew.bat publishJvmLocal :korge-gradle-plugin:publishToMavenLocal :korge-reload-agent:publishToMavenLocal" }
     - { name: e2e test, working-directory: e2e/e2e-test, run: ./gradlew checkReferencesJvm --stacktrace }
     - { name: Archive E2E Test Results, if: failure(), uses: actions/upload-artifact@v3, with: { name: e2e-test-results-macos, retention-days: 21, path: "**/e2e/e2e-test/build/screenshots", if-no-files-found: ignore } }
     - { name: Publish JS, run: ./gradlew publishJsPublicationToMavenLocal }
     - { name: e2e test JS, working-directory: e2e/e2e-test, run: ./gradlew browserReleaseEsbuild --stacktrace }
+    - { name: Run ios simulator tests, run: ./gradlew iosX64Test }
+    - { name: Check compilation of tvOS targets, run: ./gradlew publishTvosArm64PublicationToMavenLocal }
 
   test-jvm-windows:
     needs: changes
