@@ -20,18 +20,10 @@ class QOITest {
     fun qoiTest() = suspendTestNoBrowser {
         RegisteredImageFormats.register(PNG) // Required for readBitmapOptimized
 
-        repeat(4) { resourcesVfs["testcard_rgba.png"].readBitmap() }
-        repeat(4) { resourcesVfs["testcard_rgba.png"].readBitmapNoNative(formats) }
-        repeat(4) { resourcesVfs["testcard_rgba.qoi"].readBitmapNoNative(formats) }
-
         val pngBytes = resourcesVfs["dice.png"].readBytes()
         val qoiBytes = resourcesVfs["dice.qoi"].readBytes()
 
-        val (expectedNative, expectedNativeTime) = measureTimeWithResult {
-            nativeImageFormatProvider.decode(
-                pngBytes
-            )
-        }
+        //val (expectedNative, expectedNativeTime) = measureTimeWithResult { nativeImageFormatProvider.decode(pngBytes) }
         val (expected, expectedTime) = measureTimeWithResult { PNG.decode(pngBytes) }
         val (output, outputTime) = measureTimeWithResult { QOI.decode(qoiBytes) }
 
