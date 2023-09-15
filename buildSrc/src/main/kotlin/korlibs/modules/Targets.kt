@@ -4,65 +4,27 @@ import org.gradle.api.*
 import korlibs.korge.gradle.targets.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 
-val Project.supportKotlinNative: Boolean get() {
-    // Linux and Windows ARM hosts doesn't have K/N toolchains
-    if ((isLinux || isWindows) && isArm) return false
-    return true
-}
+// Only mac has ios/tvos targets
+val Project.supportKotlinNative: Boolean get() = isMacos && System.getenv("DISABLE_KOTLIN_NATIVE") != "true"
 
-val Project.doEnableKotlinNative: Boolean get() = supportKotlinNative && rootProject.findProperty("enableKotlinNative") == "true"
-val Project.doEnableKotlinAndroid: Boolean get() = rootProject.findProperty("enableKotlinAndroid") == "true"
+val Project.doEnableKotlinNative: Boolean get() = supportKotlinNative
+val Project.doEnableKotlinAndroid: Boolean get() = rootProject.findProperty("enableKotlinAndroid") == "true" && System.getenv("DISABLE_KOTLIN_ANDROID") != "true"
 val Project.doEnableKotlinMobile: Boolean get() = doEnableKotlinNative && rootProject.findProperty("enableKotlinMobile") == "true"
 val Project.doEnableKotlinMobileTvos: Boolean get() = doEnableKotlinMobile && rootProject.findProperty("enableKotlinMobileTvos") == "true"
 
 val Project.hasAndroid get() = extensions.findByName("android") != null
 
-fun org.jetbrains.kotlin.gradle.dsl.KotlinTargetContainerWithPresetFunctions.currentPlatformNativeTarget(project: Project): org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget {
-    return when {
-        isWindows -> mingwX64()
-        isMacos -> if (isArm) macosArm64() else macosX64()
-        else -> linuxX64()
-    }
-}
-
-fun org.jetbrains.kotlin.gradle.dsl.KotlinTargetContainerWithPresetFunctions.nativeTargets(project: Project): List<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget> {
-    return when {
-        isWindows -> listOfNotNull(mingwX64()) + (when {
-            inCI -> emptyList()
-            else -> listOfNotNull(
-                linuxX64(),
-            )
-        })
-        isMacos -> listOfNotNull(
-            macosX64(), macosArm64(),
-        ) + (when {
-            inCI -> emptyList()
-            else -> listOfNotNull(
-                linuxX64(),
-                linuxArm64(),
-                mingwX64(),
-            )
-        })
-        else -> listOfNotNull(
-            linuxX64(),
-            linuxArm64(),
-            mingwX64(),
-            macosX64(), macosArm64(),
-        )
-    }
-}
-
 fun org.jetbrains.kotlin.gradle.dsl.KotlinTargetContainerWithPresetFunctions.mobileTargets(project: Project): List<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget> {
     if (!project.doEnableKotlinMobile) return listOf()
 
     val out = arrayListOf<KotlinNativeTarget>()
-    out.addAll(listOf(iosX64(), iosArm64(), iosSimulatorArm64()))
+    out.addAll(listOf(iosArm64(), iosX64(), iosSimulatorArm64()))
     if (project.doEnableKotlinMobileTvos) {
-        out.addAll(listOf(tvosX64(), tvosArm64(), tvosSimulatorArm64()))
+        out.addAll(listOf(tvosArm64(), tvosX64(), tvosSimulatorArm64()))
     }
     return out
 }
 
 fun org.jetbrains.kotlin.gradle.dsl.KotlinTargetContainerWithPresetFunctions.allNativeTargets(project: Project): List<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget> {
-    return nativeTargets(project) + mobileTargets(project)
+    return mobileTargets(project)
 }

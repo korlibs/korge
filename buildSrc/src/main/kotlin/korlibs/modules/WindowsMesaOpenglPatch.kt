@@ -21,20 +21,3 @@ fun Project.downloadOpenglMesaForWindows(): Task {
     }
     return rootProject.tasks.findByName("downloadOpenglMesaForWindows")!!
 }
-
-fun Project.attachMesaOpenglPatchToLink(linkTask: KotlinNativeLink) {
-    val unzipOpenglMingwX64 = tasks.createThis<Copy>("${linkTask.name}UnzipOpenglMingwX64") {
-        dependsOn(downloadOpenglMesaForWindows())
-        from(zipTree(localOpengl32X64ZipFile))
-        into(linkTask.binary.outputDirectory)
-    }
-
-    linkTask.dependsOn(unzipOpenglMingwX64)
-}
-
-fun Project.configureMingwX64TestWithMesa() {
-    //val mingwX64Test = tasks.findByName("mingwX64Test")
-    val linkTask = tasks.findByName("linkDebugTestMingwX64") as? KotlinNativeLink?
-    //println("linkTask=$linkTask")
-    linkTask?.let { attachMesaOpenglPatchToLink(it) }
-}

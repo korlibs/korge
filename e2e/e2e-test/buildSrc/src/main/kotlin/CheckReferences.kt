@@ -20,7 +20,7 @@ object CheckReferences {
             errors += error
         }
 
-        for (kind in listOf("jvm", "mingwx64", "linuxx64", "macosx64", "macosarm64")) {
+        for (kind in listOf("jvm")) {
             val generatedFolder = File(File(folder, "build/screenshots"), kind).absoluteFile
             val referenceFolder = File(folder, "references").absoluteFile
             if (!generatedFolder.exists()) {

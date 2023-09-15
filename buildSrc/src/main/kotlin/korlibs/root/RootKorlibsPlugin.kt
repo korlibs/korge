@@ -68,25 +68,7 @@ object RootKorlibsPlugin {
         initTests()
         initCrossTests()
         initAllTargets()
-        initPatchTests()
         initSamples()
-        //subprojectsThis {
-        //    tasks.withType(Copy::class.java) {
-        //        println("$it : ${it.outputs.files.files}")
-        //        if (it.name == "jsProcessResources") {
-        //            println(it.outputs.files.files)
-        //        }
-        //    }
-        //}
-        //korgeCheckVersion() // Do not check on the development plugin
-    }
-
-    fun Project.initPatchTests() {
-        subprojectsThis {
-            if (this.name == "korge") {
-                configureMingwX64TestWithMesa()
-            }
-        }
     }
 
     fun Project.initAllTargets() {
@@ -184,20 +166,6 @@ object RootKorlibsPlugin {
             }
             task.doLast { execThis { commandLine("systeminfo") } }
         }
-
-        rootProject.afterEvaluate {
-            subprojectsThis {
-                val linkDebugTestMingwX64 = project.tasks.findByName("linkDebugTestMingwX64")
-                if (linkDebugTestMingwX64 != null && isWindows && inCI) {
-                    linkDebugTestMingwX64.configureGCAndSystemInfo()
-                }
-
-                val mingwX64Test = project.tasks.findByName("mingwX64Test")
-                if (mingwX64Test != null && isWindows && inCI) {
-                    mingwX64Test.configureGCAndSystemInfo()
-                }
-            }
-        }
     }
 
     fun Project.initInstallAndCheckLinuxLibs() {
@@ -270,33 +238,6 @@ object RootKorlibsPlugin {
 
                 if (!isSample && rootProject.plugins.hasPlugin("org.jetbrains.dokka")) {
                     plugins.apply("org.jetbrains.dokka")
-
-                    /*
-                    tasks.dokkaHtml.configure {
-                        offlineMode.set(true)
-                    }
-
-                    dokkaHtml {
-                        // Used to prevent resolving package-lists online. When this option is set to true, only local files are resolved
-                        offlineMode.set(true)
-                    }
-
-                    tasks {
-                        val dokkaCopy = createThis<Task>("dokkaCopy") {
-                            dependsOn("dokkaHtml")
-                            doLast {
-                                val ffrom = File(project.buildDir, "dokka/html")
-                                val finto = File(project.rootProject.projectDir, "build/dokka-all/${project.name}")
-                                copy {
-                                    from(ffrom)
-                                    into(finto)
-                                }
-                                File(finto, "index-redirect.html").writeText("<meta http-equiv=\"refresh\" content=\"0; url=${project.name}\">\n")
-                            }
-                        }
-                    }
-
-                     */
                 }
 
                 if (mustPublish) {
@@ -400,7 +341,6 @@ object RootKorlibsPlugin {
                     }
 
                     val desktopAndMobileTargets = ArrayList<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget>().apply {
-                        if (doEnableKotlinNative) addAll(nativeTargets(project))
                         if (doEnableKotlinMobile) addAll(mobileTargets(project))
                     }.toList()
 
@@ -493,17 +433,6 @@ object RootKorlibsPlugin {
                             val macos by lazy { createPairSourceSet("macos", iosMacos) }
                             val mingw by lazy { createPairSourceSet("mingw", native) }
 
-                            val nativeTargets = nativeTargets(project)
-
-                            for (target in nativeTargets) {
-                                val native = createPairSourceSet(target.name)
-                                when {
-                                    target.isWin -> native.dependsOn(mingw)
-                                    target.isMacos -> native.dependsOn(macos)
-                                    target.isLinux -> native.dependsOn(linux)
-                                }
-                            }
-
                             val darwinMobile by lazy { createPairSourceSet("darwinMobile", darwin) }
                             val iosTvos by lazy { createPairSourceSet("iosTvos", darwinMobile, iosTvosMacos) }
                             val tvos by lazy { createPairSourceSet("tvos", iosTvos) }
@@ -517,44 +446,9 @@ object RootKorlibsPlugin {
                                 }
                             }
 
-                            /*
-                            for (baseName in listOf(
-                                "nativeInteropMain",
-                                "posixInteropMain",
-                                "darwinInteropMain",
-                                "linuxInteropMain",
-                            )) {
-                                val nativeInteropMainFolder = file("src/$baseName/kotlin")
-                                if (nativeInteropMainFolder.isDirectory) {
-                                    val currentNativeTarget = currentPlatformNativeTarget(project)
-                                    // @TODO: Copy instead of use the same source folder
-                                    for (target in allNativeTargets(project)) {
-                                        if (baseName.contains("posix", ignoreCase = true) && !target.isPosix) continue
-                                        if (baseName.contains("darwin", ignoreCase = true) && !target.isApple) continue
-                                        if (baseName.contains("linux", ignoreCase = true) && !target.isLinux) continue
-
-                                        val sourceSet = this@sourceSets.maybeCreate("${target.name}Main")
-                                        val folder = when {
-                                            target == currentNativeTarget -> nativeInteropMainFolder
-                                            else -> {
-                                                file("build/${baseName}Copy${target.name}").also { outFolder ->
-                                                    outFolder.mkdirs()
-                                                    sync {
-                                                        from(nativeInteropMainFolder)
-                                                        into(outFolder)
-                                                    }
-                                                }
-                                            }
-                                        }
-                                        sourceSet.kotlin.srcDir(folder)
-                                    }
-                                }
-                            }
-                            */
-
                             // Copy test resources
                             afterEvaluate {
-                                for (targetV in (nativeTargets + listOf(iosX64(), iosSimulatorArm64()))) {
+                                for (targetV in (listOf(iosX64(), iosSimulatorArm64()))) {
                                     val target = targetV.name
                                     val taskName = "copyResourcesToExecutable_$target"
                                     val targetTestTask = tasks.findByName("${target}Test") as? org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest? ?: continue
@@ -580,26 +474,6 @@ object RootKorlibsPlugin {
 
                                     targetTestTask.dependsOn(taskName)
                                     //println(".target=$target")
-                                    if (target == "mingwX64") {
-                                        afterEvaluate {
-                                            afterEvaluate {
-                                                tasks.findByName("mingwX64TestWine")?.let {
-                                                    //println("***************++")
-                                                    it?.dependsOn(taskName)
-                                                }
-                                            }
-                                        }
-                                    }
-                                    if (target == "linuxX64") {
-                                        afterEvaluate {
-                                            afterEvaluate {
-                                                tasks.findByName("linuxX64TestLima")?.let {
-                                                    //println("***************++")
-                                                    it?.dependsOn(taskName)
-                                                }
-                                            }
-                                        }
-                                    }
                                 }
                             }
                         }
@@ -627,27 +501,6 @@ object RootKorlibsPlugin {
                 }
                 val task = project.tasks.createThis<Task>("runWasm") {
                     dependsOn("wasmRun")
-                }
-            }
-            // @TODO: Patch, because runDebugReleaseExecutableMacosArm64 is not created!
-            if (isMacos && isArm && doEnableKotlinNative) {
-                project.afterEvaluate {
-                    project.tasks {
-                        for (kind in listOf("Debug", "Release")) {
-                            val linkTaskName = "link${kind}ExecutableMacosArm64"
-                            val runTaskName = "run${kind}ExecutableMacosArm64"
-                            val tryLinkTask = project.tasks.findByName(linkTaskName)
-                            val linkExecutableMacosArm64 = tryLinkTask as? org.jetbrains.kotlin.gradle.tasks.KotlinNativeLink?
-                                ?: error("$linkTaskName ($tryLinkTask) is not a KotlinNativeLink task in project $project")
-                            if (project.tasks.findByName(runTaskName) == null) {
-                                val runExecutableMacosArm64 = project.tasks.createThis<Exec>(runTaskName) {
-                                    dependsOn(linkExecutableMacosArm64)
-                                    group = "run"
-                                    commandLine(linkExecutableMacosArm64.binary.outputFile)
-                                }
-                            }
-                        }
-                    }
                 }
             }
 
@@ -740,93 +593,11 @@ object RootKorlibsPlugin {
                         )
                     }
                 }
-
-                if (doEnableKotlinNative) {
-                    for (target in nativeTargets(project)) {
-                        target.apply {
-                            binaries {
-                                executable {
-                                    entryPoint("entrypoint.main")
-                                }
-                            }
-                        }
-                    }
-
-                    val nativeDesktopFolder = File(project.buildDir, "platforms/nativeDesktop")
-                    //val nativeDesktopEntryPointSourceSet = kotlin.sourceSets.create("nativeDesktopEntryPoint")
-                    //nativeDesktopEntryPointSourceSet.kotlin.srcDir(nativeDesktopFolder)
-                    sourceSets.getByName("nativeMain") { it.kotlin.srcDir(nativeDesktopFolder) }
-
-                    val createEntryPointAdaptorNativeDesktop = tasks.createThis<Task>("createEntryPointAdaptorNativeDesktop") {
-                        val mainEntrypointFile = File(nativeDesktopFolder, "entrypoint/main.kt")
-
-                        outputs.file(mainEntrypointFile)
-
-                        // @TODO: Determine the package of the main file
-                        doLast {
-                            mainEntrypointFile.also { it.parentFile.mkdirs() }.writeText("""
-                                package entrypoint
-        
-                                import kotlinx.coroutines.*
-                                import main
-        
-                                fun main(args: Array<String>) {
-                                    runBlocking {
-                                        main()
-                                    }
-                                }
-                            """.trimIndent())
-                        }
-                    }
-
-                    //for (target in nativeDesktopTargets) {
-                    //target.compilations["main"].defaultSourceSet.dependsOn(nativeDesktopEntryPointSourceSet)
-                    //    target.compilations["main"].defaultSourceSet.kotlin.srcDir(nativeDesktopFolder)
-                    //}
-
-                    for (target in nativeTargets(project)) {
-                        for (binary in target.binaries) {
-                            val compilation = binary.compilation
-                            val copyResourcesTask = tasks.createThis<Copy>("copyResources${target.name.capitalize()}${binary.name.capitalize()}") {
-                                //dependsOn(getKorgeProcessResourcesTaskName(target, compilation))
-                                group = "resources"
-                                val isDebug = binary.buildType == org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType.DEBUG
-                                val isTest = binary.outputKind == org.jetbrains.kotlin.gradle.plugin.mpp.NativeOutputKind.TEST
-                                val compilation = if (isTest) target.compilations.findByName("test")!! else target.compilations.findByName("main")!!
-                                //target.compilations.first().allKotlinSourceSets
-                                val sourceSet = compilation.defaultSourceSet
-                                from(sourceSet.resources)
-                                from(sourceSet.dependsOn.map { it.resources })
-                                into(binary.outputDirectory)
-                            }
-
-                            //compilation.compileKotlinTask.dependsOn(copyResourcesTask)
-                            binary.linkTask.dependsOn(copyResourcesTask)
-                            binary.compilation.compileKotlinTask.dependsOn(createEntryPointAdaptorNativeDesktop)
-                        }
-                    }
-                }
             }
 
             project.configureEsbuild()
             project.configureJavascriptRun()
         }
-    }
-
-    fun runNativeTaskNameWin(kind: String): String {
-        return "run${kind}ExecutableMingwX64"
-    }
-
-    fun runNativeTaskName(kind: String): String {
-        return when {
-            isWindows -> runNativeTaskNameWin(kind)
-            isMacos -> if (isArm) "run${kind}ExecutableMacosArm64" else "run${kind}ExecutableMacosX64"
-            else -> "run${kind}ExecutableLinuxX64"
-        }
-    }
-
-    fun Task.dependsOnNativeTask(kind: String) {
-        dependsOn(runNativeTaskName(kind))
     }
 
     //println("currentJavaVersion=${korlibs.currentJavaVersion()}")

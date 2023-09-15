@@ -46,7 +46,6 @@ korge {
 
     targetJvm()
     targetJs()
-    targetDesktop()
     targetIos()
     //targetAndroidIndirect() // targetAndroidDirect()
     targetAndroid()
@@ -70,26 +69,22 @@ tasks {
             localOpengl32X64ZipFile.writeBytes(url.readBytes())
         }
     }
-
-    val linkDebugExecutableMingwX64 = findByName("linkDebugExecutableMingwX64") as? KotlinNativeLink?
-    if (linkDebugExecutableMingwX64 != null) {
-        val upzipOpenglMingwX64 by creating(Copy::class) {
-            dependsOn(downloadOpenglMesaForWindows)
-            from(zipTree(localOpengl32X64ZipFile))
-            into(linkDebugExecutableMingwX64.binary.outputDirectory)
+    val unzipOpenglX64 by creating(Task::class) {
+        dependsOn(downloadOpenglMesaForWindows)
+        doLast {
+            if (!file("opengl32.dll").exists()) {
+                copy {
+                    from(zipTree(localOpengl32X64ZipFile))
+                    into(".")
+                }
+            }
         }
-
-        linkDebugExecutableMingwX64.dependsOn(upzipOpenglMingwX64)
     }
+
     val runJvm = getByName("runJvm") as KorgeJavaExec
+    runJvm.dependsOn(unzipOpenglX64)
     runJvm.workingDir = File(buildDir, "bin/jvm").also { it.mkdirs() }
     runJvm.environment("OUTPUT_DIR", File(buildDir, "screenshots/jvm"))
-
-    val checkReferencesNative by creating(Task::class) {
-        doLast {
-            CheckReferences.main(project.projectDir)
-        }
-    }
 
     val checkReferencesJvm by creating(Task::class) {
         doLast {
@@ -103,15 +98,5 @@ tasks {
             CheckReferences.main(project.projectDir, update = true)
         }
         dependsOn("runJvm")
-    }
-
-    afterEvaluate {
-        val isArm = com.soywiz.kmem.Platform.arch == com.soywiz.kmem.Arch.ARM64
-        for (target in listOf("mingwX64", "linuxX64", if (isArm) "macosArm64" else "macosX64")) {
-        //for (target in listOf("mingwX64", "linuxX64", "macosX64")) {
-            val runTask = (findByName("runNative${target.capitalize()}Debug") as? Exec?) ?: continue
-            runTask.environment("OUTPUT_DIR", File(buildDir, "screenshots/${target.toLowerCase()}"))
-            checkReferencesNative.dependsOn(runTask)
-        }
     }
 }
