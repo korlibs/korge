@@ -4,6 +4,14 @@ import korlibs.crypto.encoding.*
 import korlibs.datastructure.*
 import korlibs.memory.*
 
+// @TODO: Change stack-based to register based operations:
+// example:
+//   MUL(A, B, C) :: A = B * C
+// instead of:
+//   PUSH(B)
+//   PUSH(C)
+//   MUL()
+
 class WasmRunInterpreterNew(val module: WasmModule, memPages: Int = 10, maxMemPages: Int = 0x10000) : WasmRuntime(memPages, maxMemPages) {
     val globalsI = IntArray(module.globals.size)
     val globalsF = FloatArray(module.globals.size)
@@ -103,6 +111,42 @@ class WasmRunInterpreterNew(val module: WasmModule, memPages: Int = 10, maxMemPa
         val l = popI32()
         pushI32(func(l, r))
     }
+    inline fun unopI32_bool(func: (it: Int) -> Boolean): Boolean {
+        val it = popI32()
+        return func(it)
+    }
+    inline fun unopF32_bool(func: (it: Float) -> Boolean): Boolean {
+        val it = popF32()
+        return func(it)
+    }
+    inline fun unopI64_bool(func: (it: Long) -> Boolean): Boolean {
+        val it = popI64()
+        return func(it)
+    }
+    inline fun unopF64_bool(func: (it: Double) -> Boolean): Boolean {
+        val it = popF64()
+        return func(it)
+    }
+    inline fun binopI32_bool(func: (l: Int, r: Int) -> Boolean): Boolean {
+        val r = popI32()
+        val l = popI32()
+        return func(l, r)
+    }
+    inline fun binopF32_bool(func: (l: Float, r: Float) -> Boolean): Boolean {
+        val r = popF32()
+        val l = popF32()
+        return func(l, r)
+    }
+    inline fun binopF64_bool(func: (l: Double, r: Double) -> Boolean): Boolean {
+        val r = popF64()
+        val l = popF64()
+        return func(l, r)
+    }
+    inline fun binopI64_bool(func: (l: Long, r: Long) -> Boolean): Boolean {
+        val r = popI64()
+        val l = popI64()
+        return func(l, r)
+    }
     inline fun binopI64_int(func: (l: Long, r: Long) -> Int) {
         val r = popI64()
         val l = popI64()
@@ -175,6 +219,7 @@ class WasmRunInterpreterNew(val module: WasmModule, memPages: Int = 10, maxMemPa
             val i = instructions[index]
             val op = i and 0xFFF
             val param = i shr 12
+            //instructionsHistoriogram[op]++
             if (trace) println("OP: ${op.hex}, param=$param : ${WasmOp.getOrNull(op)}")
             instructionsExecuted++
             when (op) {
@@ -454,6 +499,41 @@ class WasmRunInterpreterNew(val module: WasmModule, memPages: Int = 10, maxMemPa
                         continue
                     }
                 }
+                WasmFastInstructions.Op_goto_if_not_i32_eqz  -> if (!unopI32_bool { it == 0 }) { index = param; continue }
+                WasmFastInstructions.Op_goto_if_not_i32_eq   -> if (!binopI32_bool { l, r -> l == r }) { index = param; continue }
+                WasmFastInstructions.Op_goto_if_not_i32_ne   -> if (!binopI32_bool { l, r -> l != r }) { index = param; continue }
+                WasmFastInstructions.Op_goto_if_not_i32_lt_s -> if (!binopI32_bool { l, r -> l < r }) { index = param; continue }
+                WasmFastInstructions.Op_goto_if_not_i32_lt_u -> if (!binopI32_bool { l, r -> l.toUInt() < r.toUInt() }) { index = param; continue }
+                WasmFastInstructions.Op_goto_if_not_i32_gt_s -> if (!binopI32_bool { l, r -> l > r }) { index = param; continue }
+                WasmFastInstructions.Op_goto_if_not_i32_gt_u -> if (!binopI32_bool { l, r -> l.toUInt() > r.toUInt() }) { index = param; continue }
+                WasmFastInstructions.Op_goto_if_not_i32_le_s -> if (!binopI32_bool { l, r -> l <= r }) { index = param; continue }
+                WasmFastInstructions.Op_goto_if_not_i32_le_u -> if (!binopI32_bool { l, r -> l.toUInt() <= r.toUInt() }) { index = param; continue }
+                WasmFastInstructions.Op_goto_if_not_i32_ge_s -> if (!binopI32_bool { l, r -> l >= r }) { index = param; continue }
+                WasmFastInstructions.Op_goto_if_not_i32_ge_u -> if (!binopI32_bool { l, r -> l.toUInt() >= r.toUInt() }) { index = param; continue }
+                WasmFastInstructions.Op_goto_if_not_i64_eqz -> if (!unopI64_bool { it == 0L }) { index = param; continue }
+                WasmFastInstructions.Op_goto_if_not_i64_eq -> if (!binopI64_bool { l, r -> l == r }) { index = param; continue }
+                WasmFastInstructions.Op_goto_if_not_i64_ne -> if (!binopI64_bool { l, r -> l != r }) { index = param; continue }
+                WasmFastInstructions.Op_goto_if_not_i64_lt_s -> if (!binopI64_bool { l, r -> l < r }) { index = param; continue }
+                WasmFastInstructions.Op_goto_if_not_i64_lt_u -> if (!binopI64_bool { l, r -> l.toULong() < r.toULong() }) { index = param; continue }
+                WasmFastInstructions.Op_goto_if_not_i64_gt_s -> if (!binopI64_bool { l, r -> l > r }) { index = param; continue }
+                WasmFastInstructions.Op_goto_if_not_i64_gt_u -> if (!binopI64_bool { l, r -> l.toULong() > r.toULong() }) { index = param; continue }
+                WasmFastInstructions.Op_goto_if_not_i64_le_s -> if (!binopI64_bool { l, r -> l <= r }) { index = param; continue }
+                WasmFastInstructions.Op_goto_if_not_i64_le_u -> if (!binopI64_bool { l, r -> l.toULong() <= r.toULong() }) { index = param; continue }
+                WasmFastInstructions.Op_goto_if_not_i64_ge_s -> if (!binopI64_bool { l, r -> l >= r }) { index = param; continue }
+                WasmFastInstructions.Op_goto_if_not_i64_ge_u -> if (!binopI64_bool { l, r -> l.toULong() >= r.toULong() }) { index = param; continue }
+                WasmFastInstructions.Op_goto_if_not_f32_eq -> if (!binopF32_bool { l, r -> l == r }) { index = param; continue }
+                WasmFastInstructions.Op_goto_if_not_f32_ne -> if (!binopF32_bool { l, r -> l != r }) { index = param; continue }
+                WasmFastInstructions.Op_goto_if_not_f32_lt -> if (!binopF32_bool { l, r -> l < r }) { index = param; continue }
+                WasmFastInstructions.Op_goto_if_not_f32_gt -> if (!binopF32_bool { l, r -> l > r }) { index = param; continue }
+                WasmFastInstructions.Op_goto_if_not_f32_le -> if (!binopF32_bool { l, r -> l <= r }) { index = param; continue }
+                WasmFastInstructions.Op_goto_if_not_f32_ge -> if (!binopF32_bool { l, r -> l >= r }) { index = param; continue }
+                WasmFastInstructions.Op_goto_if_not_f64_eq -> if (!binopF64_bool { l, r -> l == r }) { index = param; continue }
+                WasmFastInstructions.Op_goto_if_not_f64_ne -> if (!binopF64_bool { l, r -> l != r }) { index = param; continue }
+                WasmFastInstructions.Op_goto_if_not_f64_lt -> if (!binopF64_bool { l, r -> l < r }) { index = param; continue }
+                WasmFastInstructions.Op_goto_if_not_f64_gt -> if (!binopF64_bool { l, r -> l > r }) { index = param; continue }
+                WasmFastInstructions.Op_goto_if_not_f64_le -> if (!binopF64_bool { l, r -> l <= r }) { index = param; continue }
+                WasmFastInstructions.Op_goto_if_not_f64_ge -> if (!binopF64_bool { l, r -> l >= r }) { index = param; continue }
+
                 WasmFastInstructions.Op_goto_table -> {
                     val value = popI32()
                     val nlabels = code.intPool[param]
@@ -657,12 +737,24 @@ class WasmRunInterpreterNew(val module: WasmModule, memPages: Int = 10, maxMemPa
                         }
                     }
                     is WasmInstruction.InsConstFloat -> {
-                        param = poolFloats.size
-                        poolFloats += i.value
+                        val ivalue = i.value.toInt()
+                        if (ivalue.toFloat() == i.value && ivalue in -500_000..500_000) {
+                            param = ivalue
+                            newOp = WasmFastInstructions.Op_f32_short_const
+                        } else {
+                            param = poolFloats.size
+                            poolFloats += i.value
+                        }
                     }
                     is WasmInstruction.InsConstDouble -> {
-                        param = poolDoubles.size
-                        poolDoubles += i.value
+                        val ivalue = i.value.toInt()
+                        if (ivalue.toDouble() == i.value && ivalue in -500_000..500_000) {
+                            param = ivalue
+                            newOp = WasmFastInstructions.Op_f64_short_const
+                        } else {
+                            param = poolDoubles.size
+                            poolDoubles += i.value
+                        }
                     }
                     is WasmInstruction.RETURN -> {
                         when (context.retType.toWasmSType()) {
@@ -849,6 +941,51 @@ class WasmRunInterpreterNew(val module: WasmModule, memPages: Int = 10, maxMemPa
 
             override fun visitGoto(label: WasmCodeVisitor.Label, cond: Boolean?, context: WasmCodeVisitor.Context) {
                 //println("visitGoto: label=$label, cond=$cond")
+                if (cond == false && instructions.isNotEmpty()) {
+                    val lastOp = instructions.last() and 0xFFF
+                    val replace = when (lastOp) {
+                        WasmFastInstructions.Op_i32_eqz -> WasmFastInstructions.Op_goto_if_not_i32_eqz
+                        WasmFastInstructions.Op_i32_eq -> WasmFastInstructions.Op_goto_if_not_i32_eq
+                        WasmFastInstructions.Op_i32_ne -> WasmFastInstructions.Op_goto_if_not_i32_ne
+                        WasmFastInstructions.Op_i32_lt_s -> WasmFastInstructions.Op_goto_if_not_i32_lt_s
+                        WasmFastInstructions.Op_i32_lt_u -> WasmFastInstructions.Op_goto_if_not_i32_lt_u
+                        WasmFastInstructions.Op_i32_gt_s -> WasmFastInstructions.Op_goto_if_not_i32_gt_s
+                        WasmFastInstructions.Op_i32_gt_u -> WasmFastInstructions.Op_goto_if_not_i32_gt_u
+                        WasmFastInstructions.Op_i32_le_s -> WasmFastInstructions.Op_goto_if_not_i32_le_s
+                        WasmFastInstructions.Op_i32_le_u -> WasmFastInstructions.Op_goto_if_not_i32_le_u
+                        WasmFastInstructions.Op_i32_ge_s -> WasmFastInstructions.Op_goto_if_not_i32_ge_s
+                        WasmFastInstructions.Op_i32_ge_u -> WasmFastInstructions.Op_goto_if_not_i32_ge_u
+                        WasmFastInstructions.Op_i64_eqz -> WasmFastInstructions.Op_goto_if_not_i64_eqz
+                        WasmFastInstructions.Op_i64_eq -> WasmFastInstructions.Op_goto_if_not_i64_eq
+                        WasmFastInstructions.Op_i64_ne -> WasmFastInstructions.Op_goto_if_not_i64_ne
+                        WasmFastInstructions.Op_i64_lt_s -> WasmFastInstructions.Op_goto_if_not_i64_lt_s
+                        WasmFastInstructions.Op_i64_lt_u -> WasmFastInstructions.Op_goto_if_not_i64_lt_u
+                        WasmFastInstructions.Op_i64_gt_s -> WasmFastInstructions.Op_goto_if_not_i64_gt_s
+                        WasmFastInstructions.Op_i64_gt_u -> WasmFastInstructions.Op_goto_if_not_i64_gt_u
+                        WasmFastInstructions.Op_i64_le_s -> WasmFastInstructions.Op_goto_if_not_i64_le_s
+                        WasmFastInstructions.Op_i64_le_u -> WasmFastInstructions.Op_goto_if_not_i64_le_u
+                        WasmFastInstructions.Op_i64_ge_s -> WasmFastInstructions.Op_goto_if_not_i64_ge_s
+                        WasmFastInstructions.Op_i64_ge_u -> WasmFastInstructions.Op_goto_if_not_i64_ge_u
+                        WasmFastInstructions.Op_f32_eq -> WasmFastInstructions.Op_goto_if_not_f32_eq
+                        WasmFastInstructions.Op_f32_ne -> WasmFastInstructions.Op_goto_if_not_f32_ne
+                        WasmFastInstructions.Op_f32_lt -> WasmFastInstructions.Op_goto_if_not_f32_lt
+                        WasmFastInstructions.Op_f32_gt -> WasmFastInstructions.Op_goto_if_not_f32_gt
+                        WasmFastInstructions.Op_f32_le -> WasmFastInstructions.Op_goto_if_not_f32_le
+                        WasmFastInstructions.Op_f32_ge -> WasmFastInstructions.Op_goto_if_not_f32_ge
+                        WasmFastInstructions.Op_f64_eq -> WasmFastInstructions.Op_goto_if_not_f64_eq
+                        WasmFastInstructions.Op_f64_ne -> WasmFastInstructions.Op_goto_if_not_f64_ne
+                        WasmFastInstructions.Op_f64_lt -> WasmFastInstructions.Op_goto_if_not_f64_lt
+                        WasmFastInstructions.Op_f64_gt -> WasmFastInstructions.Op_goto_if_not_f64_gt
+                        WasmFastInstructions.Op_f64_le -> WasmFastInstructions.Op_goto_if_not_f64_le
+                        WasmFastInstructions.Op_f64_ge -> WasmFastInstructions.Op_goto_if_not_f64_ge
+                        else -> null
+                    }
+                    if (replace != null) {
+                        patches += Patch(label, instrutionIndex = instructions.size - 1)
+                        instructions[instructions.size - 1] = replace
+                        return
+                    }
+                }
                 patches += Patch(label, instrutionIndex = instructions.size)
                 instructions += ins(when (cond) {
                     null -> WasmFastInstructions.Op_goto
@@ -1130,6 +1267,42 @@ class WasmRunInterpreterNew(val module: WasmModule, memPages: Int = 10, maxMemPa
         const val Op_f32_select = 0x192
         const val Op_f64_select = 0x193
         const val Op_v128_select = 0x194
+
+        const val Op_goto_if_not_i32_eqz = 0x1a0
+        const val Op_goto_if_not_i32_eq =  0x1a1
+        const val Op_goto_if_not_i32_ne =  0x1a2
+        const val Op_goto_if_not_i32_lt_s = 0x1a3
+        const val Op_goto_if_not_i32_lt_u = 0x1a4
+        const val Op_goto_if_not_i32_gt_s = 0x1a5
+        const val Op_goto_if_not_i32_gt_u = 0x1a6
+        const val Op_goto_if_not_i32_le_s = 0x1a7
+        const val Op_goto_if_not_i32_le_u = 0x1a8
+        const val Op_goto_if_not_i32_ge_s = 0x1a9
+        const val Op_goto_if_not_i32_ge_u = 0x1aa
+        const val Op_goto_if_not_i64_eqz = 0x1ab
+        const val Op_goto_if_not_i64_eq = 0x1ac
+        const val Op_goto_if_not_i64_ne = 0x1ad
+        const val Op_goto_if_not_i64_lt_s = 0x1ae
+        const val Op_goto_if_not_i64_lt_u = 0x1af
+        const val Op_goto_if_not_i64_gt_s = 0x1b0
+        const val Op_goto_if_not_i64_gt_u = 0x1b1
+        const val Op_goto_if_not_i64_le_s = 0x1b2
+        const val Op_goto_if_not_i64_le_u = 0x1b3
+        const val Op_goto_if_not_i64_ge_s = 0x1b4
+        const val Op_goto_if_not_i64_ge_u = 0x1b5
+        const val Op_goto_if_not_f32_eq = 0x1b6
+        const val Op_goto_if_not_f32_ne = 0x1b7
+        const val Op_goto_if_not_f32_lt = 0x1b8
+        const val Op_goto_if_not_f32_gt = 0x1b9
+        const val Op_goto_if_not_f32_le = 0x1ba
+        const val Op_goto_if_not_f32_ge = 0x1bb
+        const val Op_goto_if_not_f64_eq = 0x1bc
+        const val Op_goto_if_not_f64_ne = 0x1bd
+        const val Op_goto_if_not_f64_lt = 0x1be
+        const val Op_goto_if_not_f64_gt = 0x1bf
+        const val Op_goto_if_not_f64_le = 0x1c0
+        const val Op_goto_if_not_f64_ge = 0x1c1
+
         const val Op_i32_trunc_sat_f32_s = 0x200 // 0xFCxx instructions moved to 0x2xx
         const val Op_i32_trunc_sat_f32_u = 0x201
         const val Op_i32_trunc_sat_f64_s = 0x202

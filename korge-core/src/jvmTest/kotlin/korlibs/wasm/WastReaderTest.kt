@@ -55,7 +55,7 @@ open class WastReaderTest {
     @Ignore @Test fun testFunc_ptrs() = runAssetsWast("wasm/test-core/func_ptrs.wast")
     @Ignore @Test fun testGlobal() = runAssetsWast("wasm/test-core/global.wast")
     @Test fun testI32() = runAssetsWast("wasm/test-core/i32.wast")
-    @Ignore @Test fun testI64() = runAssetsWast("wasm/test-core/i64.wast")
+    @Test fun testI64() = runAssetsWast("wasm/test-core/i64.wast")
     @Ignore @Test fun testIf() = runAssetsWast("wasm/test-core/if.wast")
     @Ignore @Test fun testImports() = runAssetsWast("wasm/test-core/imports.wast")
     @Ignore @Test fun testInline_module() = runAssetsWast("wasm/test-core/inline-module.wast")
@@ -195,8 +195,8 @@ open class WastReaderTest {
     }
 
     open fun runModule(module: WasmModule, codeTrace: Boolean) {
-        WasmRunInterpreter(module).initGlobals().runAsserts()
-        //WasmRunInterpreterNew(module).initGlobals().runAsserts()
+        //WasmRunInterpreter(module).initGlobals().runAsserts()
+        WasmRunInterpreterNew(module).initGlobals().runAsserts()
         //WasmRunJVMJIT.build(module, codeTrace = codeTrace).invoke("run\$asserts")
     }
 

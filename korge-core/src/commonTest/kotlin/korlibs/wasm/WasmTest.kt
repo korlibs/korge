@@ -14,10 +14,12 @@ open class WasmTest {
         val module = createModuleRuntime("wasm/mandelbrot.wasm", codeTrace = false)
         //println("instructionsExecuted: ${module.instructionsExecuted}")
         //for (n in 0 until 10) {
+        run {
             module.invoke("update", 100, 100, 5)
+            //for ((op, count) in module.instructionsHistoriogram.withIndex().sortedByDescending { it.value }) if (count != 0) println("op[${op.hex}] = $count")
             //println("instructionsExecuted: ${module.instructionsExecuted}")
             //module.trace = true
-        //}
+        }
     }
     @Test
     fun testMp3() = suspendTest {

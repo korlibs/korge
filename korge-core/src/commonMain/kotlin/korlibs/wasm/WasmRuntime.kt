@@ -11,6 +11,7 @@ open class WasmRuntime(val memSize: Int, val memMax: Int) {
     var usedClassMemory = 0
     var trace = false
 
+    //var instructionsHistoriogram = IntArray(0x1000)
     var instructionsExecuted = 0L
     var memory = Buffer.allocDirect(memSize * PAGE_SIZE)
     val memoryNumPages: Int get() = memory.sizeInBytes / PAGE_SIZE
