@@ -196,7 +196,7 @@ open class WastReaderTest {
 
     open fun runModule(module: WasmModule, codeTrace: Boolean) {
         //WasmRunInterpreter(module).initGlobals().runAsserts()
-        WasmRunInterpreterNew(module).initGlobals().runAsserts()
+        WasmRunInterpreter(module).initGlobals().runAsserts()
         //WasmRunJVMJIT.build(module, codeTrace = codeTrace).invoke("run\$asserts")
     }
 

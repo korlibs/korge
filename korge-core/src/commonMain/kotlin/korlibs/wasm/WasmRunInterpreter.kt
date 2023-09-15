@@ -1,620 +1,56 @@
 package korlibs.wasm
 
-import korlibs.wasm.WasmSType.*
+import korlibs.crypto.encoding.*
 import korlibs.datastructure.*
-import korlibs.io.lang.*
 import korlibs.memory.*
-import kotlin.rotateLeft
-import kotlin.rotateRight
+
+// @TODO: Change stack-based to register based operations:
+// example:
+//   MUL(A, B, C) :: A = B * C
+// instead of:
+//   PUSH(B)
+//   PUSH(C)
+//   MUL()
 
 class WasmRunInterpreter(val module: WasmModule, memPages: Int = 10, maxMemPages: Int = 0x10000) : WasmRuntime(memPages, maxMemPages) {
-    var stackTop = 0
+    val globalsI = IntArray(module.globals.size)
+    val globalsF = FloatArray(module.globals.size)
+    val globalsD = DoubleArray(module.globals.size)
+    val globalsL = LongArray(module.globals.size)
+
+    //val globals = Buffer.allocDirect(module.globals.maxOfOrNull { it.globalOffset + 16 } ?: 0)
+    //val stack = Buffer.allocDirect(16 * 1024)
+    val stackI = IntArray(4 * 1024)
+    val stackF = FloatArray(4 * 1024)
+    val stackD = DoubleArray(4 * 1024)
+    val stackL = LongArray(4 * 1024)
+
+    var localsPos = 0
     var stackPos = 0
-    val refStack = arrayListOf<Any?>()
-    val stack = Buffer.allocDirect(1024)
-
-    val stackAvailable get() = (stackPos - stackTop) + (refStack.size * 4)
-
-    private fun popIndex(size: Int): Int {
-        if (stackAvailable < size) error("Can't pop stackTop=$stackTop, stackPos=$stackPos")
-        stackPos -= size
-        return stackPos
-    }
-    private fun pushIndex(size: Int): Int = stackPos.also { stackPos += size }
-
-    fun pushInt(v: Boolean) = pushInt(v.toInt())
-    fun pushInt(v: Int) = stack.setUnalignedInt32(pushIndex(4), v)
-    fun pushLong(v: Long) = stack.setUnalignedInt64(pushIndex(8), v)
-    fun pushFloat(v: Float) = stack.setUnalignedFloat32(pushIndex(4), v)
-    fun pushDouble(v: Double) = stack.setUnalignedFloat64(pushIndex(8), v)
-    fun pushRef(v: Any?) = refStack.add(v)
-
-    fun popBool(): Boolean = popInt() != 0
-    fun popInt(): Int = stack.getUnalignedInt32(popIndex(4))
-    fun popLong(): Long = stack.getUnalignedInt64(popIndex(8))
-    fun popFloat(): Float = stack.getUnalignedFloat32(popIndex(4))
-    fun popDouble(): Double = stack.getUnalignedFloat64(popIndex(8))
-    fun popRef(): Any? = refStack.removeLast()
-
-    fun popWithType(type: WasmSType): Any {
-        return when (type) {
-            VOID -> Unit
-            I32 -> popInt()
-            I64 -> popLong()
-            F32 -> popFloat()
-            F64 -> popDouble()
-            V128 -> TODO()
-            ANYREF -> TODO()
-            FUNCREF -> TODO()
-        }
-    }
-    fun pushWithType(type: WasmSType, value: Any?) {
-        when (type) {
-            VOID -> Unit
-            I32 -> pushInt(value as Int)
-            I64 -> pushLong(value as Long)
-            F32 -> pushFloat(value as Float)
-            F64 -> pushDouble(value as Double)
-            V128 -> TODO()
-            ANYREF, FUNCREF -> pushRef(value)
-        }
-    }
-
-    class Value(val type: WasmSType, val id: Int) {
-        var i32: Int = 0
-        var i64: Long = 0
-        var f32: Float = 0f
-        var f64: Double = 0.0
-        var ref: Any? = null
-
-        var value: Any?
-            get() = when (type) {
-                I32 -> i32
-                I64 -> i64
-                F32 -> f32
-                F64 -> f64
-                ANYREF, FUNCREF -> ref
-                else -> Unit
-            }
-            set(value) = when (type) {
-                I32 -> i32 = value as Int
-                I64 -> i64 = value as Long
-                F32 -> f32 = value as Float
-                F64 -> f64 = value as Double
-                ANYREF, FUNCREF -> ref = value
-                else -> Unit
-            }
-
-        override fun toString(): String = "Value[$id][$type]=$value"
-    }
-
-    var locals: List<Value> = emptyList()
-    val globals = module.globals.map { Value(it.globalType.toWasmSType(), it.index) }
-
-    fun setValueFromStack(value: Value, consume: Boolean = true) {
-        when (value.type) {
-            I32 -> {
-                value.i32 = popInt()
-                if (!consume) pushInt(value.i32)
-            }
-            I64 -> {
-                value.i64 = popLong()
-                if (!consume) pushLong(value.i64)
-            }
-            F32 -> {
-                value.f32 = popFloat()
-                if (!consume) pushFloat(value.f32)
-            }
-            F64 -> {
-                value.f64 = popDouble()
-                if (!consume) pushDouble(value.f64)
-            }
-            ANYREF, FUNCREF -> {
-                value.ref = popRef()
-                if (!consume) pushRef(value.ref)
-            }
-            else -> TODO("${value.type} : $value")
-        }
-    }
-
-    fun pushValue(g: Value) {
-        when (g.type) {
-            I32 -> pushInt(g.i32)
-            I64 -> pushLong(g.i64)
-            F32 -> pushFloat(g.f32)
-            F64 -> pushDouble(g.f64)
-            else -> TODO()
-        }
-    }
 
     fun initGlobals(): WasmRunInterpreter {
-        if (trace) println("INIT MEMORIES:")
+        //println("GLOBALS: ${globals.sizeInBytes}")
         for (data in module.datas) {
-            interpret(data.e)
-            val address = popInt()
-            if (trace) println(" MEM[${data.memindex}][${data.index}][$address] -> ${data.data.size}")
-            memory.setArrayInt8(address, data.data)
+            val e = data.e ?: continue
+            eval(e, WasmType.Function(listOf(), listOf(WasmSType.I32)))
+            val index = popI32()
+            //println("DATA[index=$index] = bytes:${data.data.size}, stack=$stackPos")
+            memory.setArrayInt8(index, data.data)
         }
-        if (trace) println("INIT GLOBALS:")
-        for ((index, global) in module.globals.withIndex()) {
-            if (trace) println("GLOBAL: $global")
-            interpret(global.expr)
-            val global = globals[index]
-            setValueFromStack(global)
-            if (trace) println(" -> $global")
+        for (global in module.globals) {
+            if (global.expr != null) {
+                eval(global.expr, WasmType.Function(listOf(), listOf(global.globalType)))
+                //println("; stack=$stackPos, global.globalType=${global.globalType}")
+                val value = popType(global.globalType.toWasmSType())
+                setGlobal(global, value)
+                //println("SET GLOBAL[${global.globalOffset}] = $value ; stack=$stackPos")
+            }
         }
-        if (trace) println("INIT FUNC ${module.startFunc}:")
         if (module.startFunc >= 0) {
+            //println("INVOKE INIT: ${module.startFunc}")
             invoke(module.functions[module.startFunc])
         }
         return this
-    }
-
-    fun interpret(expr: WasmExpr?) {
-        if (expr == null) return
-        if (expr.interpreterCode == null) {
-            expr.interpreterCode = WasmInterpreterInstructionWriter(module).write(expr).toCode()
-        }
-        interpret(expr.interpreterCode)
-    }
-
-    override operator fun invoke(funcName: String, vararg params: Any?): Any? {
-        return invoke(module.exportsByName[funcName]?.obj as? WasmFunc? ?: error("Can't find function $funcName"), *params)
-    }
-
-    operator fun invoke(func: WasmFunc, vararg params: Any?): Any? {
-        if (func.importFunc != null) {
-            return func.importFunc?.invoke(this, params as Array<Any?>) ?: Unit
-        }
-        val import = func.fimport
-        if (import != null) {
-            func.importFunc = functions.get(import.moduleName)?.get(import.name) ?: error("Can't find imported function $import")
-            return invoke(func, *params)
-        }
-        if (func.code == null) error("Code is null in $func")
-        if (func.code?.interpreterCode == null) {
-            func.code?.interpreterCode = WasmInterpreterInstructionWriter(module).write(func).toCode()
-        }
-        val oldlocals = locals.toList()
-        val oldStackTop = stackTop
-
-        stackTop = stackPos
-        //println(func.rlocals)
-        locals = func.rlocals.withIndex().map { (index, it) -> Value(it.type.toWasmSType(), index) }
-        for ((index, param) in params.withIndex()) {
-            locals[index].value = param
-        }
-        //println(func.code?.body)
-        interpret(func.code?.interpreterCode!!, 0)
-        if (trace) println("FUNC stackPos: $stackPos")
-        val res: Any? = when (func.type.retType.toWasmSType()) {
-            VOID -> Unit
-            I32 -> popInt()
-            I64 -> popLong()
-            F32 -> popFloat()
-            F64 -> popDouble()
-            V128 -> TODO()
-            ANYREF, FUNCREF -> popRef()
-        }
-        if (trace) println("FUNC RES: $res ${if (res != null) res::class else null}")
-
-        stackTop = oldStackTop
-        locals = oldlocals
-
-        return res
-    }
-
-    fun interpret(code: WasmInterpreterCode?, index: Int = 0) {
-        if (code == null) return
-        var index = index
-        var instructionsExecuted = 0
-        while (index >= 0) {
-            index = interpretOne(code, index)
-            instructionsExecuted++
-        }
-        this.instructionsExecuted += instructionsExecuted
-    }
-
-    inline fun binopInt(block: (l: Int, r: Int) -> Int) {
-        val r = popInt()
-        val l = popInt()
-        pushInt(block(l, r))
-    }
-
-    inline fun binopIntBool(reason: String? = null, block: (l: Int, r: Int) -> Boolean) {
-        val r = popInt()
-        val l = popInt()
-        if (trace && reason != null) println(" -- BINOP: $reason l=$l, r=$r")
-        pushInt(block(l, r))
-    }
-
-    inline fun binopLong(block: (l: Long, r: Long) -> Long) {
-        val r = popLong()
-        val l = popLong()
-        pushLong(block(l, r))
-    }
-
-    inline fun binopFloat(block: (l: Float, r: Float) -> Float) {
-        val r = popFloat()
-        val l = popFloat()
-        pushFloat(block(l, r))
-    }
-
-    inline fun binopDouble(block: (l: Double, r: Double) -> Double) {
-        val r = popDouble()
-        val l = popDouble()
-        pushDouble(block(l, r))
-    }
-
-    inline fun binopLongBool(block: (l: Long, r: Long) -> Boolean) {
-        val r = popLong()
-        val l = popLong()
-        pushInt(block(l, r))
-    }
-
-    inline fun binopDoubleBool(block: (l: Double, r: Double) -> Boolean) {
-        val r = popDouble()
-        val l = popDouble()
-        pushInt(block(l, r))
-    }
-
-    inline fun binopFloatBool(block: (l: Float, r: Float) -> Boolean) {
-        val r = popFloat()
-        val l = popFloat()
-        pushInt(block(l, r))
-    }
-
-    fun interpretOne(code: WasmInterpreterCode, index: Int): Int {
-        if (index >= code.instructions.size) return -1
-        val i = WasmIntInstruction(code.instructions[index])
-        if (trace) println("I[$index]: $i")
-        val ins = i.ins
-        val kind = i.kind
-        val extra = i.extra
-        val param = i.param
-
-        when (ins) {
-            WasmIntInstruction.GET_GLOBAL -> {
-                pushValue(globals[param])
-                if (trace) println("  -> GET_GLOBAL: ${globals[param]}")
-            }
-            WasmIntInstruction.SET_GLOBAL -> {
-                setValueFromStack(globals[param])
-                if (trace) println("  -> SET_GLOBAL: ${globals[param]}")
-            }
-            WasmIntInstruction.GET_LOCAL -> {
-                pushValue(locals[param])
-                if (trace) println("  -> GET_LOCAL: ${locals[param]}")
-            }
-            WasmIntInstruction.SET_LOCAL -> {
-                setValueFromStack(locals[param])
-                if (trace) println("  -> SET_LOCAL: ${locals[param]}")
-            }
-            WasmIntInstruction.TEE_LOCAL -> {
-                setValueFromStack(locals[param])
-                pushValue(locals[param])
-                if (trace) println("  -> TEE_LOCAL: ${locals[param]}")
-            }
-            WasmIntInstruction.SET_MEM -> {
-                when (kind) {
-                    VOID -> TODO("$i")
-                    I32 -> {
-                        val value = popInt()
-                        val base = popInt()
-                        val offset = param
-                        val address = base + offset
-                        if (trace) println("SET_MEM: address=$address ($base + $offset), value=$value")
-                        when (extra) {
-                            WasmIntInstruction.EXTEND8_S -> memory.setUnalignedInt8(address, value)
-                            WasmIntInstruction.EXTEND16_S -> memory.setUnalignedInt16(address, value.toShort())
-                            WasmIntInstruction.EXTEND_NONE, WasmIntInstruction.EXTEND32_S -> memory.setUnalignedInt32(address, value)
-                            else -> TODO("$i : extra=$extra")
-                        }
-                    }
-                    I64 -> {
-                        val value = popLong()
-                        val address = popInt() + param
-                        if (trace) println("SET_MEM: address=$address, value=$value")
-                        when (extra) {
-                            0 -> memory.setUnalignedInt64(address, value)
-                            else -> TODO("$i")
-                        }
-                    }
-                    F32 -> {
-                        val value = popFloat()
-                        val address = popInt() + param
-                        if (trace) println("SET_MEM: address=$address, value=$value")
-                        when (extra) {
-                            0 -> memory.setUnalignedFloat32(address, value)
-                            else -> TODO("$i")
-                        }
-                    }
-                    F64 -> TODO("$i")
-                    V128 -> TODO("$i")
-                    ANYREF -> TODO()
-                    FUNCREF -> TODO()
-                }
-            }
-            WasmIntInstruction.GET_MEM -> {
-                val address = popInt() + param
-                when (kind) {
-                    VOID -> TODO("$i")
-                    I32 -> when (extra) {
-                        WasmIntInstruction.EXTEND_NONE, WasmIntInstruction.EXTEND32_S -> pushInt(memory.getUnalignedInt32(address))
-                        WasmIntInstruction.EXTEND8_S -> pushInt(memory.getUnalignedInt8(address).toInt())
-                        WasmIntInstruction.EXTEND8_U -> pushInt(memory.getUnalignedUInt8(address).toInt())
-                        WasmIntInstruction.EXTEND16_S -> pushInt(memory.getUnalignedInt16(address).toInt())
-                        WasmIntInstruction.EXTEND16_U -> pushInt(memory.getUnalignedUInt16(address).toInt())
-                        else -> TODO("$i : extra=$extra")
-                    }
-                    I64 -> when (extra) {
-                        WasmIntInstruction.EXTEND_NONE, WasmIntInstruction.EXTEND64_S -> pushLong(memory.getUnalignedInt64(address))
-                        WasmIntInstruction.EXTEND8_S -> pushLong(memory.getUnalignedInt8(address).toLong())
-                        WasmIntInstruction.EXTEND8_U -> pushLong(memory.getUnalignedUInt8(address).toLong())
-                        WasmIntInstruction.EXTEND16_S -> pushLong(memory.getUnalignedInt16(address).toLong())
-                        WasmIntInstruction.EXTEND16_U -> pushLong(memory.getUnalignedUInt16(address).toLong())
-                        WasmIntInstruction.EXTEND32_S -> pushLong(memory.getUnalignedInt32(address).toLong())
-                        WasmIntInstruction.EXTEND32_U -> pushLong(memory.getUnalignedInt32(address).toUInt().toLong())
-                        else -> TODO("$i : extra=$extra")
-                    }
-                    F32 -> pushFloat(memory.getUnalignedFloat32(address))
-                    F64 -> pushDouble(memory.getUnalignedFloat64(address))
-                    V128 -> TODO("$i")
-                    ANYREF -> TODO()
-                    FUNCREF -> TODO()
-                }
-            }
-            WasmIntInstruction.JUMP -> {
-                return param
-            }
-            WasmIntInstruction.JUMP_IF -> {
-                val result = popInt()
-                if (result != 0) return param
-            }
-            WasmIntInstruction.JUMP_IF_NOT -> {
-                val result = popInt()
-                if (result == 0) return param
-            }
-            WasmIntInstruction.SELECT -> {
-                when (kind) {
-                    I32 -> {
-                        val result = popInt()
-                        val vFalse = popInt()
-                        val vTrue = popInt()
-                        pushInt(if (result != 0) vTrue else vFalse)
-                    }
-                    F32 -> {
-                        val result = popInt()
-                        val vFalse = popFloat()
-                        val vTrue = popFloat()
-                        pushFloat(if (result != 0) vTrue else vFalse)
-                    }
-                    else -> TODO("$i")
-                }
-            }
-            //PUSH_CONST -> {
-            //    when (kind) {
-            //        I32 -> pushInt(code.intPool[param])
-            //        I64 -> pushLong(code.longPool[param])
-            //        F32 -> pushFloat(code.floatPool[param])
-            //        F64 -> pushDouble(code.doublePool[param])
-            //        else -> unreachable
-            //    }
-            //}
-            else -> {
-                when (kind) {
-                    I32 -> when (ins) {
-                        WasmIntInstruction.PUSH_CONST -> pushInt(code.intPool[param])
-                        WasmIntInstruction.PUSH_CONST_SHORT -> pushInt(param)
-                        WasmIntInstruction.BINOP_ADD -> binopInt { l, r -> (l + r).also { if (trace) println(" --[ADD] $l + $r == ${l + r}") } }
-                        WasmIntInstruction.BINOP_SUB -> binopInt { l, r -> (l - r).also { if (trace) println(" --[SUB] $l - $r == ${l - r}") } }
-                        WasmIntInstruction.BINOP_MUL -> binopInt { l, r -> l * r }
-                        WasmIntInstruction.BINOP_DIV_S -> binopInt { l, r -> l / r }
-                        WasmIntInstruction.BINOP_DIV_U -> binopInt { l, r -> (l.toUInt() / r.toUInt()).toInt() }
-                        WasmIntInstruction.BINOP_REM_S -> binopInt { l, r -> l % r }
-                        WasmIntInstruction.BINOP_REM_U -> binopInt { l, r -> (l.toUInt() % r.toUInt()).toInt() }
-                        WasmIntInstruction.BINOP_AND -> binopInt { l, r -> (l and r).also { if (trace) println(" --[AND] $l & $r == ${l and r}") } }
-                        WasmIntInstruction.BINOP_OR -> binopInt { l, r -> l or r }
-                        WasmIntInstruction.BINOP_XOR -> binopInt { l, r -> l xor r }
-                        WasmIntInstruction.BINOP_SHL -> binopInt { l, r -> l shl r }
-                        WasmIntInstruction.BINOP_SHR_S -> binopInt { l, r -> l shr r }
-                        WasmIntInstruction.BINOP_SHR_U -> binopInt { l, r -> l ushr r }
-                        WasmIntInstruction.BINOP_ROTL -> binopInt { l, r -> l.rotateLeft(r) }
-                        WasmIntInstruction.BINOP_ROTR -> binopInt { l, r -> l.rotateRight(r) }
-                        WasmIntInstruction.BINOP_COMP_ZERO -> pushInt(popInt() == 0)
-                        WasmIntInstruction.BINOP_COMP -> {
-                            when (param) {
-                                WasmIntInstruction.COMP_EQ -> binopIntBool { l, r -> l == r }
-                                WasmIntInstruction.COMP_NE -> binopIntBool { l, r -> l != r }
-                                WasmIntInstruction.COMP_LT_U -> binopIntBool("<u") { l, r -> (l.toUInt() < r.toUInt()).also { if (trace) println("  -- COMP_LT_U: ${l.toUInt()} < ${r.toUInt()}") } }
-                                WasmIntInstruction.COMP_LE_U -> binopIntBool { l, r -> l.toUInt() <= r.toUInt() }
-                                WasmIntInstruction.COMP_GT_U -> binopIntBool { l, r -> l.toUInt() > r.toUInt() }
-                                WasmIntInstruction.COMP_GE_U -> binopIntBool { l, r -> l.toUInt() >= r.toUInt() }
-                                WasmIntInstruction.COMP_LT_S -> binopIntBool { l, r -> l < r }
-                                WasmIntInstruction.COMP_LE_S -> binopIntBool { l, r -> l <= r }
-                                WasmIntInstruction.COMP_GT_S -> binopIntBool { l, r -> l > r }
-                                WasmIntInstruction.COMP_GE_S -> binopIntBool { l, r -> l >= r }
-                                else -> TODO("$i")
-                            }
-                        }
-                        WasmIntInstruction.RETURN -> {
-                            return -1
-                        }
-                        WasmIntInstruction.CALL -> {
-                            val func = module.functions[i.param]
-                            val params = func.type.args.reversed().map { popWithType(it.type.toWasmSType()) }.reversed()
-                            if (trace) {
-                                println("CALLING: $params : ${params.map { it::class }} : $func")
-                            }
-                            val res = invoke(func, *params.toTypedArray())
-                            pushWithType(func.type.retType.toWasmSType(), res)
-                        }
-                        WasmIntInstruction.MEM_OP -> {
-                            when (extra) {
-                                WasmIntInstruction.MEMOP_SIZE -> {
-                                    pushInt(WasmRuntime.Op_memory_size(this))
-                                }
-                                WasmIntInstruction.MEMOP_FILL -> {
-                                    val count = popInt()
-                                    val value = popInt()
-                                    val dst = popInt()
-                                    WasmRuntime.Op_memory_fill(dst, value, count, this)
-                                }
-                                WasmIntInstruction.MEMOP_COPY -> {
-                                    val count = popInt()
-                                    val src = popInt()
-                                    val dst = popInt()
-                                    WasmRuntime.Op_memory_copy(dst, src, count, this)
-                                }
-                                else -> TODO("MEM_OP: $extra")
-                            }
-                        }
-                        WasmIntInstruction.UNOP_CAST -> {
-                            when (param) {
-                                WasmIntInstruction.EXTEND8_S -> pushInt(popInt().toByte().toInt())
-                                WasmIntInstruction.EXTEND16_S -> pushInt(popInt().toShort().toInt())
-                                WasmIntInstruction.EXTEND64_S -> pushInt(popLong().toInt())
-                                WasmIntInstruction.TRUNC_F32_S -> pushInt(Op_i32_trunc_s_f32(popFloat()))
-                                WasmIntInstruction.TRUNC_F32_U -> pushInt(Op_i32_trunc_u_f32(popFloat()))
-                                WasmIntInstruction.TRUNC_SAT_F64_S -> pushInt(Op_i32_trunc_sat_f64_s(popDouble()))
-                                WasmIntInstruction.TRUNC_SAT_F64_U -> pushInt(Op_i32_trunc_sat_f64_u(popDouble()))
-                                else -> unexpected("unsupported unop_cast $param")
-                            }
-                        }
-                        WasmIntInstruction.UNOP_CLZ -> pushInt(WasmRuntime.Op_i32_clz(popInt()))
-                        WasmIntInstruction.UNOP_CTZ -> pushInt(WasmRuntime.Op_i32_ctz(popInt()))
-                        WasmIntInstruction.UNOP_POPCNT -> pushInt(WasmRuntime.Op_i32_popcnt(popInt()))
-                        WasmIntInstruction.UNREACHABLE -> {
-                            println("!!UNREACHABLE!!")
-                            //TODO("Unreachable")
-                        }
-                        WasmIntInstruction.DROP -> popInt()
-                        else -> TODO("$i")
-                    }
-
-                    I64 -> when (ins) {
-                        WasmIntInstruction.PUSH_CONST -> pushLong(code.longPool[param])
-                        WasmIntInstruction.PUSH_CONST_SHORT -> pushLong(param.toLong())
-                        WasmIntInstruction.BINOP_ADD -> binopLong { l, r -> l + r }
-                        WasmIntInstruction.BINOP_SUB -> binopLong { l, r -> l - r }
-                        WasmIntInstruction.BINOP_MUL -> binopLong { l, r -> l * r }
-                        WasmIntInstruction.BINOP_DIV_S -> binopLong { l, r -> l / r }
-                        WasmIntInstruction.BINOP_DIV_U -> binopLong { l, r -> (l.toULong() / r.toULong()).toLong() }
-                        WasmIntInstruction.BINOP_REM_S -> binopLong { l, r -> l % r }
-                        WasmIntInstruction.BINOP_REM_U -> binopLong { l, r -> (l.toULong() % r.toULong()).toLong() }
-                        WasmIntInstruction.BINOP_AND -> binopLong { l, r -> l and r }
-                        WasmIntInstruction.BINOP_OR -> binopLong { l, r -> l or r }
-                        WasmIntInstruction.BINOP_XOR -> binopLong { l, r -> l xor r }
-                        WasmIntInstruction.BINOP_SHL -> binopLong { l, r -> l shl r.toInt() }
-                        WasmIntInstruction.BINOP_SHR_S -> binopLong { l, r -> l shr r.toInt() }
-                        WasmIntInstruction.BINOP_SHR_U -> binopLong { l, r -> l ushr r.toInt() }
-                        WasmIntInstruction.BINOP_ROTL -> binopLong { l, r -> WasmRuntime.Op_i64_rotl(l, r) }
-                        WasmIntInstruction.BINOP_ROTR -> binopLong { l, r -> WasmRuntime.Op_i64_rotr(l, r) }
-                        WasmIntInstruction.BINOP_COMP_ZERO -> pushInt(popLong() == 0L)
-                        WasmIntInstruction.BINOP_COMP -> when (param) {
-                            WasmIntInstruction.COMP_EQ -> binopLongBool { l, r -> l == r }
-                            WasmIntInstruction.COMP_NE -> binopLongBool { l, r -> l != r }
-                            WasmIntInstruction.COMP_LT_U -> binopLongBool { l, r -> l.toULong() < r.toULong() }
-                            WasmIntInstruction.COMP_LE_U -> binopLongBool { l, r -> l.toULong() <= r.toULong() }
-                            WasmIntInstruction.COMP_GT_U -> binopLongBool { l, r -> l.toULong() > r.toULong() }
-                            WasmIntInstruction.COMP_GE_U -> binopLongBool { l, r -> l.toULong() >= r.toULong() }
-                            WasmIntInstruction.COMP_LT_S -> binopLongBool { l, r -> l < r }
-                            WasmIntInstruction.COMP_LE_S -> binopLongBool { l, r -> l <= r }
-                            WasmIntInstruction.COMP_GT_S -> binopLongBool { l, r -> l > r }
-                            WasmIntInstruction.COMP_GE_S -> binopLongBool { l, r -> l >= r }
-                            else -> TODO("$i")
-                        }
-                        WasmIntInstruction.RETURN -> {
-                            return -1
-                        }
-                        WasmIntInstruction.UNOP_CAST -> {
-                            when (param) {
-                                WasmIntInstruction.EXTEND8_S -> pushLong(popInt().toByte().toLong())
-                                WasmIntInstruction.EXTEND16_S -> pushLong(popInt().toShort().toLong())
-                                WasmIntInstruction.EXTEND32_S -> pushLong(popInt().toLong())
-                                WasmIntInstruction.EXTEND32_U -> pushLong(popInt().toLong() and 0xFFFFFFFFL)
-                                else -> unexpected("error UNOP_CAST $param")
-                            }
-                        }
-                        WasmIntInstruction.UNOP_CLZ -> pushLong(WasmRuntime.Op_i64_clz(popLong()))
-                        WasmIntInstruction.UNOP_CTZ -> pushLong(WasmRuntime.Op_i64_ctz(popLong()))
-                        WasmIntInstruction.UNOP_POPCNT -> pushLong(WasmRuntime.Op_i64_popcnt(popLong()))
-                        WasmIntInstruction.UNOP_REINTERPRET -> pushLong(popLong())
-                        else -> TODO("$i")
-                    }
-                    F32 -> when (ins) {
-                        WasmIntInstruction.PUSH_CONST -> pushFloat(code.floatPool[param])
-                        WasmIntInstruction.UNOP_ABS -> pushFloat(WasmRuntime.Op_f32_abs(popFloat()))
-                        WasmIntInstruction.UNOP_NEG -> pushFloat(WasmRuntime.Op_f32_neg(popFloat()))
-                        WasmIntInstruction.BINOP_MAX -> binopFloat { l, r -> kotlin.math.max(l, r) }
-                        WasmIntInstruction.BINOP_MIN -> binopFloat { l, r -> kotlin.math.min(l, r) }
-                        WasmIntInstruction.BINOP_ADD -> binopFloat { l, r -> l + r }
-                        WasmIntInstruction.BINOP_SUB -> binopFloat { l, r -> l - r }
-                        WasmIntInstruction.BINOP_MUL -> binopFloat { l, r -> l * r }
-                        WasmIntInstruction.BINOP_DIV_S -> binopFloat { l, r -> l / r }
-                        WasmIntInstruction.BINOP_COPYSIGN -> binopFloat { l, r -> WasmRuntime.Op_f32_copysign(l, r) }
-                        WasmIntInstruction.BINOP_COMP -> when (param) {
-                            WasmIntInstruction.COMP_EQ -> binopFloatBool { l, r -> l == r }
-                            WasmIntInstruction.COMP_NE -> binopFloatBool { l, r -> l != r }
-                            WasmIntInstruction.COMP_LT_S -> binopFloatBool { l, r -> l < r }
-                            WasmIntInstruction.COMP_LE_S -> binopFloatBool { l, r -> l <= r }
-                            WasmIntInstruction.COMP_GT_S -> binopFloatBool { l, r -> l > r }
-                            WasmIntInstruction.COMP_GE_S -> binopFloatBool { l, r -> l >= r }
-                            else -> TODO("$i")
-                        }
-                        WasmIntInstruction.UNOP_CAST -> {
-                            when (i.param) {
-                                WasmIntInstruction.CAST_I32_U -> pushFloat(Op_f32_convert_u_i32(popInt()))
-                                WasmIntInstruction.CAST_I32_S -> pushFloat(Op_f32_convert_s_i32(popInt()))
-                                WasmIntInstruction.CAST_I64_U -> pushFloat(Op_f32_convert_u_i64(popLong()))
-                                WasmIntInstruction.CAST_I64_S -> pushFloat(Op_f32_convert_s_i64(popLong()))
-                                else -> TODO("$i")
-                            }
-                        }
-                        else -> TODO("$i")
-                    }
-                    F64 -> {
-                        when (ins) {
-                            WasmIntInstruction.PUSH_CONST -> pushDouble(code.doublePool[param])
-                            WasmIntInstruction.BINOP_MAX -> binopDouble { l, r -> kotlin.math.max(l, r) }
-                            WasmIntInstruction.BINOP_MIN -> binopDouble { l, r -> kotlin.math.min(l, r) }
-                            WasmIntInstruction.BINOP_ADD -> binopDouble { l, r -> l + r }
-                            WasmIntInstruction.BINOP_SUB -> binopDouble { l, r -> l - r }
-                            WasmIntInstruction.BINOP_MUL -> binopDouble { l, r -> l * r }
-                            WasmIntInstruction.BINOP_DIV_S -> binopDouble { l, r -> l / r }
-                            WasmIntInstruction.BINOP_COMP -> when (param) {
-                                WasmIntInstruction.COMP_EQ -> binopDoubleBool { l, r -> l == r }
-                                WasmIntInstruction.COMP_NE -> binopDoubleBool { l, r -> l != r }
-                                WasmIntInstruction.COMP_LT_S -> binopDoubleBool { l, r -> l < r }
-                                WasmIntInstruction.COMP_LE_S -> binopDoubleBool { l, r -> l <= r }
-                                WasmIntInstruction.COMP_GT_S -> binopDoubleBool { l, r -> l > r }
-                                WasmIntInstruction.COMP_GE_S -> binopDoubleBool { l, r -> l >= r }
-                                else -> TODO("$i")
-                            }
-                            WasmIntInstruction.UNOP_CAST -> {
-                                when (i.param) {
-                                    WasmIntInstruction.CAST_I32_U -> pushDouble(Op_f64_convert_u_i32(popInt()))
-                                    WasmIntInstruction.CAST_I32_S -> pushDouble(Op_f64_convert_s_i32(popInt()))
-                                    WasmIntInstruction.CAST_I64_U -> pushDouble(Op_f64_convert_u_i64(popLong()))
-                                    WasmIntInstruction.CAST_I64_S -> pushDouble(Op_f64_convert_s_i64(popLong()))
-                                    else -> TODO("$i")
-                                }
-                            }
-                            WasmIntInstruction.UNOP_REINTERPRET -> pushDouble(popDouble())
-                            else -> TODO("$i")
-                        }
-                    }
-                    VOID -> TODO("$i")
-                    V128 -> TODO("$i")
-                    ANYREF, FUNCREF -> when (ins) {
-                        WasmIntInstruction.PUSH_CONST_NULL -> pushRef(null)
-                        else -> TODO("$i")
-                    }
-                }
-            }
-        }
-
-        return index + 1
     }
 
     fun runAsserts() {
@@ -625,754 +61,1266 @@ class WasmRunInterpreter(val module: WasmModule, memPages: Int = 10, maxMemPages
                 is WasmAssertReturn -> {
                     val msg = assert.msg
                     stackPos = 0
-                    interpret(assert.actual)
-                    interpret(assert.expect)
+                    val typeActual = eval(assert.actual, WasmType.Function(listOf(), listOf(WasmSType.I32)))
+                    val typeExpect = eval(assert.expect, WasmType.Function(listOf(), listOf(WasmSType.I32)))
                     total++
-                    //println("stackAvailable=$stackAvailable")
-                    when {
-                        refStack.size >= 1 -> {
-                            val actual = popRef()
-                            val expect = popRef()
-                            failed += WasmRuntime.assert_return_ref(actual, expect, msg)
-                        }
-                        stackAvailable / 2 == 4 -> {
-                            val actual = popInt()
-                            val expect = popInt()
-                            failed += WasmRuntime.assert_return_i32(actual, expect, msg)
-                        }
-                        stackAvailable / 2 == 8 || stackAvailable / 2 == 10 -> {
-                            val actual = popLong()
-                            val expect = popLong()
-                            failed += WasmRuntime.assert_return_i64(actual, expect, msg)
-                        }
-                        else -> TODO("stackAvailable / 2=${stackAvailable / 2}")
-                    }
+                    check(typeActual == typeExpect)
+                    //println("stackPos=$stackPos, assert.actual[$typeActual]=${assert.actual}, assert.expect[$typeExpect]=${assert.expect}")
+                    val expect = popType(typeExpect.first().toWasmSType())
+                    val actual = popType(typeActual.first().toWasmSType())
+                    failed += WasmRuntime.assert_return_any(actual, expect, msg)
                 }
             }
         }
         WasmRuntime.assert_summary(failed, total)
     }
 
+    fun eval(expr: WasmExpr?, type: WasmType.Function): List<WasmType> {
+        if (expr == null) return emptyList()
+        val code = compile(WasmFunc.anonymousFunc(type, expr), implicitReturn = false)
+        //println(code.instructions.toList().map { it and 0xFFF })
+        this.evalInstructions(code, 0)
+        return code.endStack
+    }
 
-    class WasmInterpreterInstructionWriter(val module: WasmModule) {
-        data class DeferredUpdateLabel(val label: LabelOrStructureControl, val instructionPtr: Int, val intPool: Boolean)
-
-        interface LabelOrStructureControl {
-            val pointer: Int
+    fun WasmFunc.getInterprerCode(): WasmInterpreterCode? {
+        if (code == null) return null
+        if (code?.interpreterCode == null) {
+            code?.interpreterCode = compile(this, implicitReturn = true)
         }
+        return code?.interpreterCode
+    }
 
-        class Label(val index: Int) : LabelOrStructureControl {
-            var stack = listOf<WasmType>()
-            override var pointer: Int = -1
-
-            override fun toString(): String = "Label[$index](pointer=$pointer)"
-        }
-
-        class StructureControl(val level: Int, val kind: Kind) : LabelOrStructureControl {
-            enum class Kind { BLOCK, LOOP, IF, FUNC }
-
-            override fun toString(): String = "StructureControl[$level]($kind, start=$start, end=$end, pointer=$pointer)"
-
-            var start = -1
-            var end = -1
-            override val pointer: Int get() = when (kind) {
-                Kind.BLOCK -> end
-                Kind.LOOP -> start
-                Kind.IF -> end
-                Kind.FUNC -> end
-            }
-        }
-
-        val controls = arrayListOf<StructureControl>()
-
-        val allLabels = arrayListOf<Label>()
-        val labels = arrayListOf<Label>()
-        val inst = IntArrayList()
-        val intPool = IntArrayList()
-        val longPool = arrayListOf<Long>()
-        val floatPool = FloatArrayList()
-        val doublePool = DoubleArrayList()
-        val current: Int get() = inst.size
-        var locals: List<WastLocal> = emptyList()
-        val typeStack = arrayListOf<WasmType>()
-        val deferredUpdateLabels = arrayListOf<DeferredUpdateLabel>()
-
-        fun finalize() {
-            for (deferred in deferredUpdateLabels) {
-                val pointer = deferred.label.pointer
-                if (pointer < 0) error("Invalid pointer for $deferred")
-                if (deferred.intPool) {
-                    intPool[deferred.instructionPtr] = pointer
-                } else {
-                    inst[deferred.instructionPtr] = WasmIntInstruction(inst[deferred.instructionPtr]).copy(param = pointer).raw
-                }
-            }
-        }
-
-        fun Label.set(): Label {
-            this.pointer = current
-            return this
-        }
-
-        fun popLabel(): Label {
-            return labels.removeLast()
-        }
-
-        fun createLabel(): Label {
-            val label = Label(labels.size - 1)
-            allLabels.add(label)
-            return label
-        }
-
-        fun pushLabel(): Label {
-            val label = createLabel()
-            labels.add(label)
-            return label
-        }
-
-        fun genINS(kind: Int, type: WasmSType, index: Int = 0, extra: Int = 0): Int {
-            return WasmIntInstruction(kind, type, index, extra).raw
-        }
-
-        fun writeINS(kind: Int, type: WasmSType = I32, index: Int = 0, extra: Int = 0) {
-            inst.add(genINS(kind, type, index, extra))
-        }
-
-        fun writeJump(kind: Int, label: LabelOrStructureControl) {
-            deferredUpdateLabels += DeferredUpdateLabel(label, inst.size, intPool = false)
-            inst.add(genINS(kind, WasmSType.VOID, 0))
-        }
-
-        fun getGlobalType(index: Int): WasmType = module.globals[index].globalType
-        fun getLocalType(index: Int): WasmType = locals[index].type
-
-        fun removeStack(i: WasmInstruction): List<WasmType> {
-            val removed = arrayListOf<WasmType>()
-            when {
-                i.op.istack > 0 -> {
-                    repeat(i.op.istack) {
-                        if (typeStack.isEmpty()) error("Empty stack at $i")
-                        removed += typeStack.removeLast()
-                    }
-                }
-                i.op.istack == 0 -> Unit
-                else -> {
-                    when (i) {
-                        is WasmInstruction.block -> {
-                            Unit
-                        }
-                        is WasmInstruction.IF -> {
-                            Unit
-                        }
-                        is WasmInstruction.loop -> {
-                            Unit // @TODO: What to do here?
-                        }
-                        is WasmInstruction.br -> {
-                            Unit // @TODO: What to do here?
-                        }
-                        is WasmInstruction.br_table -> {
-                            Unit // @TODO: What to do here?
-                        }
-                        is WasmInstruction.br_if -> {
-                            Unit // @TODO: What to do here?
-                        }
-                        is WasmInstruction.End -> {
-                            Unit // @TODO: What to do here?
-                        }
-                        is WasmInstruction.CALL -> {
-                            val callTypes = module.functions[i.funcIdx].type.args.map { it.type }
-                            repeat(callTypes.size) {
-                                removed += typeStack.removeLast()
-                            }
-                        }
-                        is WasmInstruction.RETURN -> {
-                            repeat(typeStack.size) {
-                                removed += typeStack.removeLast()
-                            }
-                        }
-                        is WasmInstruction.unreachable -> {
-                            Unit
-                        }
-                        is WasmInstruction.nop -> {
-                            Unit
-                        }
-                        else -> TODO("$i")
-                    }
-                    //TODO("$i")
-                }
-            }
-            return removed
-        }
-
-        fun write(i: WasmInstruction, level: Int): Boolean {
-            //println("INSTRUCTION[$level][${labels.size}]: $i")
-            var doContinue = true
-            val removed = removeStack(i)
-
-            when (i) {
-                is WasmInstruction.Ins -> {
-                    when (i.op) {
-                        WasmOp.Op_i32_sub, WasmOp.Op_i64_sub, WasmOp.Op_f32_sub, WasmOp.Op_f64_sub -> writeINS(WasmIntInstruction.BINOP_SUB, i.itype, 0)
-                        WasmOp.Op_i32_add, WasmOp.Op_i64_add, WasmOp.Op_f32_add, WasmOp.Op_f64_add -> writeINS(WasmIntInstruction.BINOP_ADD, i.itype, 0)
-                        WasmOp.Op_i32_mul, WasmOp.Op_i64_mul, WasmOp.Op_f32_mul, WasmOp.Op_f64_mul -> writeINS(WasmIntInstruction.BINOP_MUL, i.itype, 0)
-                        WasmOp.Op_i32_div_s, WasmOp.Op_i64_div_s, WasmOp.Op_f32_div, WasmOp.Op_f64_div -> writeINS(WasmIntInstruction.BINOP_DIV_S, i.itype, 0)
-                        WasmOp.Op_i32_div_u, WasmOp.Op_i64_div_u -> writeINS(WasmIntInstruction.BINOP_DIV_U, i.itype, 0)
-                        WasmOp.Op_i32_rem_s, WasmOp.Op_i64_rem_s -> writeINS(WasmIntInstruction.BINOP_REM_S, i.itype, 0)
-                        WasmOp.Op_i32_rem_u, WasmOp.Op_i64_rem_u -> writeINS(WasmIntInstruction.BINOP_REM_U, i.itype, 0)
-                        WasmOp.Op_i32_and, WasmOp.Op_i64_and -> writeINS(WasmIntInstruction.BINOP_AND, i.itype, 0)
-                        WasmOp.Op_i32_shr_u, WasmOp.Op_i64_shr_u -> writeINS(WasmIntInstruction.BINOP_SHR_U, i.itype, 0)
-                        WasmOp.Op_i32_shr_s, WasmOp.Op_i64_shr_s -> writeINS(WasmIntInstruction.BINOP_SHR_S, i.itype, 0)
-                        WasmOp.Op_i32_shl, WasmOp.Op_i64_shl -> writeINS(WasmIntInstruction.BINOP_SHL, i.itype, 0)
-                        WasmOp.Op_i32_rotl, WasmOp.Op_i64_rotl -> writeINS(WasmIntInstruction.BINOP_ROTL, i.itype, 0)
-                        WasmOp.Op_i32_rotr, WasmOp.Op_i64_rotr -> writeINS(WasmIntInstruction.BINOP_ROTR, i.itype, 0)
-                        WasmOp.Op_i32_or, WasmOp.Op_i64_or -> writeINS(WasmIntInstruction.BINOP_OR, i.itype, 0)
-                        WasmOp.Op_i32_xor, WasmOp.Op_i64_xor -> writeINS(WasmIntInstruction.BINOP_XOR, i.itype, 0)
-                        WasmOp.Op_i32_ctz, WasmOp.Op_i64_ctz -> writeINS(WasmIntInstruction.UNOP_CTZ, i.itype, 0)
-                        WasmOp.Op_i32_clz, WasmOp.Op_i64_clz -> writeINS(WasmIntInstruction.UNOP_CLZ, i.itype, 0)
-                        WasmOp.Op_i32_popcnt, WasmOp.Op_i64_popcnt -> writeINS(WasmIntInstruction.UNOP_POPCNT, i.itype, 0)
-
-                        WasmOp.Op_f32_max, WasmOp.Op_f64_max -> writeINS(WasmIntInstruction.BINOP_MAX, i.itype, 0)
-                        WasmOp.Op_f32_min, WasmOp.Op_f64_min -> writeINS(WasmIntInstruction.BINOP_MIN, i.itype, 0)
-                        WasmOp.Op_f32_neg, WasmOp.Op_f64_neg -> writeINS(WasmIntInstruction.UNOP_NEG, i.itype, 0)
-                        WasmOp.Op_f32_abs, WasmOp.Op_f64_abs -> writeINS(WasmIntInstruction.UNOP_ABS, i.itype, 0)
-
-                        WasmOp.Op_i32_eq, WasmOp.Op_i32_ne, WasmOp.Op_i32_lt_u, WasmOp.Op_i32_le_u, WasmOp.Op_i32_gt_u,
-                        WasmOp.Op_i32_ge_u, WasmOp.Op_i32_lt_s, WasmOp.Op_i32_le_s, WasmOp.Op_i32_gt_s, WasmOp.Op_i32_ge_s,
-                        WasmOp.Op_i64_eq, WasmOp.Op_i64_ne, WasmOp.Op_i64_lt_u, WasmOp.Op_i64_le_u, WasmOp.Op_i64_gt_u,
-                        WasmOp.Op_i64_ge_u, WasmOp.Op_i64_lt_s, WasmOp.Op_i64_le_s, WasmOp.Op_i64_gt_s, WasmOp.Op_i64_ge_s,
-                        WasmOp.Op_f32_eq, WasmOp.Op_f32_ne, WasmOp.Op_f32_lt, WasmOp.Op_f32_le, WasmOp.Op_f32_gt,
-                        WasmOp.Op_f32_ge, WasmOp.Op_f64_eq, WasmOp.Op_f64_ne, WasmOp.Op_f64_lt, WasmOp.Op_f64_le,
-                        WasmOp.Op_f64_gt, WasmOp.Op_f64_ge -> {
-                            writeINS(WasmIntInstruction.BINOP_COMP, i.itype, WasmIntInstruction.compFromStr(i.op.symbol))
-                        }
-
-                        WasmOp.Op_i32_eqz, WasmOp.Op_i64_eqz -> {
-                            writeINS(WasmIntInstruction.BINOP_COMP_ZERO, i.itype, 0)
-                        }
-
-                        WasmOp.Op_select -> {
-                            writeINS(WasmIntInstruction.SELECT, removed[1].toWasmSType(), 0)
-                            //println("removed=$removed")
-                        }
-                        WasmOp.Op_drop -> {
-                            writeINS(WasmIntInstruction.DROP, removed[0].toWasmSType(), 0)
-                        }
-                        WasmOp.Op_i64_extend8_s, WasmOp.Op_i64_extend16_s, WasmOp.Op_i64_extend32_s, WasmOp.Op_i64_extend_i32_u, WasmOp.Op_i64_extend_i32_s -> {
-                            writeINS(WasmIntInstruction.UNOP_CAST, I64, when (i.op) {
-                                WasmOp.Op_i64_extend8_s -> WasmIntInstruction.EXTEND8_S
-                                WasmOp.Op_i64_extend16_s -> WasmIntInstruction.EXTEND16_S
-                                WasmOp.Op_i64_extend32_s -> WasmIntInstruction.EXTEND32_S
-                                WasmOp.Op_i64_extend_i32_u -> WasmIntInstruction.EXTEND32_U
-                                WasmOp.Op_i64_extend_i32_s -> WasmIntInstruction.EXTEND32_S
-                                else -> unreachable
-                            })
-                        }
-                        WasmOp.Op_i32_extend8_s, WasmOp.Op_i32_extend16_s, WasmOp.Op_i32_wrap_i64 -> {
-                            writeINS(WasmIntInstruction.UNOP_CAST, I32, when (i.op) {
-                                WasmOp.Op_i32_extend8_s -> WasmIntInstruction.EXTEND8_S
-                                WasmOp.Op_i32_extend16_s -> WasmIntInstruction.EXTEND16_S
-                                WasmOp.Op_i32_wrap_i64 -> WasmIntInstruction.EXTEND64_S
-                                else -> unreachable
-                            })
-                        }
-
-                        WasmOp.Op_f32_convert_i32_u -> writeINS(WasmIntInstruction.UNOP_CAST, F32, WasmIntInstruction.CAST_I32_U)
-                        WasmOp.Op_f32_convert_i32_s -> writeINS(WasmIntInstruction.UNOP_CAST, F32, WasmIntInstruction.CAST_I32_S)
-                        WasmOp.Op_f32_convert_i64_u -> writeINS(WasmIntInstruction.UNOP_CAST, F32, WasmIntInstruction.CAST_I64_U)
-                        WasmOp.Op_f32_convert_i64_s -> writeINS(WasmIntInstruction.UNOP_CAST, F32, WasmIntInstruction.CAST_I64_S)
-
-                        WasmOp.Op_f64_convert_i32_u -> writeINS(WasmIntInstruction.UNOP_CAST, F64, WasmIntInstruction.CAST_I32_U)
-                        WasmOp.Op_f64_convert_i32_s -> writeINS(WasmIntInstruction.UNOP_CAST, F64, WasmIntInstruction.CAST_I32_S)
-                        WasmOp.Op_f64_convert_i64_u -> writeINS(WasmIntInstruction.UNOP_CAST, F64, WasmIntInstruction.CAST_I64_U)
-                        WasmOp.Op_f64_convert_i64_s -> writeINS(WasmIntInstruction.UNOP_CAST, F64, WasmIntInstruction.CAST_I64_S)
-
-                        WasmOp.Op_i32_trunc_f32_s -> writeINS(WasmIntInstruction.UNOP_CAST, I32, WasmIntInstruction.TRUNC_F32_S)
-                        WasmOp.Op_i32_trunc_f32_u -> writeINS(WasmIntInstruction.UNOP_CAST, I32, WasmIntInstruction.TRUNC_F32_U)
-                        WasmOp.Op_i32_trunc_f64_s -> writeINS(WasmIntInstruction.UNOP_CAST, I32, WasmIntInstruction.TRUNC_F64_S)
-                        WasmOp.Op_i32_trunc_f64_u -> writeINS(WasmIntInstruction.UNOP_CAST, I32, WasmIntInstruction.TRUNC_F64_U)
-
-                        WasmOp.Op_i32_trunc_sat_f32_s -> writeINS(WasmIntInstruction.UNOP_CAST, I32, WasmIntInstruction.TRUNC_SAT_F32_S)
-                        WasmOp.Op_i32_trunc_sat_f32_u -> writeINS(WasmIntInstruction.UNOP_CAST, I32, WasmIntInstruction.TRUNC_SAT_F32_U)
-                        WasmOp.Op_i32_trunc_sat_f64_s -> writeINS(WasmIntInstruction.UNOP_CAST, I32, WasmIntInstruction.TRUNC_SAT_F64_S)
-                        WasmOp.Op_i32_trunc_sat_f64_u -> writeINS(WasmIntInstruction.UNOP_CAST, I32, WasmIntInstruction.TRUNC_SAT_F64_U)
-
-                        WasmOp.Op_i32_reinterpret_f32 -> writeINS(WasmIntInstruction.UNOP_REINTERPRET, I32)
-                        WasmOp.Op_f32_reinterpret_i32 -> writeINS(WasmIntInstruction.UNOP_REINTERPRET, F32)
-                        WasmOp.Op_i64_reinterpret_f64 -> writeINS(WasmIntInstruction.UNOP_REINTERPRET, I64)
-                        WasmOp.Op_f64_reinterpret_i64 -> writeINS(WasmIntInstruction.UNOP_REINTERPRET, F64)
-
-                        WasmOp.Op_f32_copysign -> writeINS(WasmIntInstruction.BINOP_COPYSIGN, F32)
-
-                        else -> TODO("$i : ${i::class}")
-                    }
-                }
-                is WasmInstruction.InsMemarg -> {
-                    when (i.op) {
-                        WasmOp.Op_i32_load, WasmOp.Op_i64_load, WasmOp.Op_f32_load, WasmOp.Op_f64_load -> {
-                            writeINS(WasmIntInstruction.GET_MEM, i.op.itype, i.offset, extra = WasmIntInstruction.EXTEND_NONE)
-                        }
-                        WasmOp.Op_i32_load8_s -> writeINS(WasmIntInstruction.GET_MEM, i.op.itype, i.offset, extra = WasmIntInstruction.EXTEND8_S)
-                        WasmOp.Op_i32_load8_u -> writeINS(WasmIntInstruction.GET_MEM, i.op.itype, i.offset, extra = WasmIntInstruction.EXTEND8_U)
-                        WasmOp.Op_i32_load16_s -> writeINS(WasmIntInstruction.GET_MEM, i.op.itype, i.offset, extra = WasmIntInstruction.EXTEND16_S)
-                        WasmOp.Op_i32_load16_u -> writeINS(WasmIntInstruction.GET_MEM, i.op.itype, i.offset, extra = WasmIntInstruction.EXTEND16_U)
-
-                        WasmOp.Op_i64_load8_s -> writeINS(WasmIntInstruction.GET_MEM, i.op.itype, i.offset, extra = WasmIntInstruction.EXTEND8_S)
-                        WasmOp.Op_i64_load8_u -> writeINS(WasmIntInstruction.GET_MEM, i.op.itype, i.offset, extra = WasmIntInstruction.EXTEND8_U)
-                        WasmOp.Op_i64_load16_s -> writeINS(WasmIntInstruction.GET_MEM, i.op.itype, i.offset, extra = WasmIntInstruction.EXTEND16_S)
-                        WasmOp.Op_i64_load16_u -> writeINS(WasmIntInstruction.GET_MEM, i.op.itype, i.offset, extra = WasmIntInstruction.EXTEND16_U)
-                        WasmOp.Op_i64_load32_s -> writeINS(WasmIntInstruction.GET_MEM, i.op.itype, i.offset, extra = WasmIntInstruction.EXTEND32_S)
-                        WasmOp.Op_i64_load32_u -> writeINS(WasmIntInstruction.GET_MEM, i.op.itype, i.offset, extra = WasmIntInstruction.EXTEND32_U)
-
-                        WasmOp.Op_i32_store, WasmOp.Op_i64_store, WasmOp.Op_f32_store, WasmOp.Op_f64_store -> {
-                            writeINS(WasmIntInstruction.SET_MEM, i.op.itype, i.offset, extra = WasmIntInstruction.EXTEND_NONE)
-                        }
-                        WasmOp.Op_i32_store8 -> writeINS(WasmIntInstruction.SET_MEM, I32, i.offset, extra = WasmIntInstruction.EXTEND8_S)
-                        WasmOp.Op_i32_store16 -> writeINS(WasmIntInstruction.SET_MEM, I32, i.offset, extra = WasmIntInstruction.EXTEND16_S)
-
-                        else -> TODO("${i.op}")
-                    }
-                }
-                is WasmInstruction.InsInt -> {
-                    when (i.op) {
-                        WasmOp.Op_global_get, WasmOp.Op_global_set -> {
-                            val op = if (i.op == WasmOp.Op_global_get) WasmIntInstruction.GET_GLOBAL else WasmIntInstruction.SET_GLOBAL
-                            writeINS(op, module.globals[i.param].globalType.toWasmSType(), i.param)
-                        }
-                        WasmOp.Op_local_tee, WasmOp.Op_local_set, WasmOp.Op_local_get -> {
-                            val localType = locals[i.param].type.toWasmSType()
-                            val iop = when (i.op) {
-                                WasmOp.Op_local_get -> WasmIntInstruction.GET_LOCAL
-                                WasmOp.Op_local_set -> WasmIntInstruction.SET_LOCAL
-                                WasmOp.Op_local_tee -> WasmIntInstruction.TEE_LOCAL
-                                else -> TODO()
-                            }
-                            writeINS(iop, localType, i.param)
-                        }
-                        WasmOp.Op_memory_copy -> writeINS(WasmIntInstruction.MEM_OP, I32, 0, WasmIntInstruction.MEMOP_COPY)
-                        WasmOp.Op_memory_fill -> writeINS(WasmIntInstruction.MEM_OP, I32, 0, WasmIntInstruction.MEMOP_FILL)
-                        WasmOp.Op_memory_size -> writeINS(WasmIntInstruction.MEM_OP, I32, i.param, extra = WasmIntInstruction.MEMOP_SIZE)
-                        WasmOp.Op_memory_grow -> writeINS(WasmIntInstruction.MEM_OP, I32, i.param, extra = WasmIntInstruction.MEMOP_GROW)
-
-                        else -> TODO("$i : ${i::class}")
-                    }
-                }
-                is WasmInstruction.InsConstInt -> {
-                    if (i.value >= -524287 && i.value <= 524287) {
-                        writeINS(WasmIntInstruction.PUSH_CONST_SHORT, i.type, i.value)
-                    } else {
-                        writeINS(WasmIntInstruction.PUSH_CONST, i.type, intPool.size).also { intPool.add(i.value) }
-                    }
-                }
-                is WasmInstruction.InsConstLong -> {
-                    if (i.value >= -524287L && i.value <= 524287L) {
-                        writeINS(WasmIntInstruction.PUSH_CONST_SHORT, i.type, i.value.toInt())
-                    } else {
-                        writeINS(WasmIntInstruction.PUSH_CONST, i.type, longPool.size).also { longPool.add(i.value) }
-                    }
-                }
-                is WasmInstruction.InsConstFloat -> writeINS(WasmIntInstruction.PUSH_CONST, F32, floatPool.size).also { floatPool.add(i.value) }
-                is WasmInstruction.InsConstDouble -> writeINS(WasmIntInstruction.PUSH_CONST, F64, doublePool.size).also { doublePool.add(i.value) }
-                is WasmInstruction.block -> {
-                    val label = pushLabel()
-                    write(i.expr, level + 1, StructureControl.Kind.BLOCK, typeStack.toList())
-                    label.set()
-                    popLabel()
-                }
-                is WasmInstruction.loop -> {
-                    val label = pushLabel()
-                    label.stack = typeStack.toList()
-                    label.set()
-                    write(i.expr, level + 1, StructureControl.Kind.LOOP, typeStack.toList())
-                    popLabel()
-                }
-                is WasmInstruction.IF -> {
-                    val endLabel = createLabel()
-                    val elseLabel = createLabel()
-
-                    endLabel.stack = typeStack.toList() + i.b
-
-                    writeJump(WasmIntInstruction.JUMP_IF_NOT, label = elseLabel)
-                    write(i.btrue, level + 1, StructureControl.Kind.IF, typeStack.toList())
-                    writeJump(WasmIntInstruction.JUMP, label = endLabel)
-                    elseLabel.set()
-                    write(i.bfalse, level + 1, StructureControl.Kind.IF, typeStack.toList())
-                    endLabel.set()
-                }
-                is WasmInstruction.br -> {
-                    val jumpLabel = controls[controls.size - 1 - i.label]
-                    writeJump(WasmIntInstruction.JUMP, label = jumpLabel)
-                }
-                is WasmInstruction.br_if -> {
-                    val jumpLabel = controls[controls.size - 1 - i.label]
-                    writeJump(WasmIntInstruction.JUMP_IF, label = jumpLabel)
-                }
-                is WasmInstruction.br_table -> {
-                    val labels = i.labels.map { controls[controls.size - 1 - it] }
-                    val defaultLabel = controls[controls.size - 1 - i.default]
-                    val indexIntPool = intPool.size
-                    intPool.add(labels.size)
-                    for (label in listOf(defaultLabel) + labels) {
-                        deferredUpdateLabels += DeferredUpdateLabel(label, intPool.size, intPool = true)
-                        intPool.add(0) // default + labels
-                    }
-                    writeINS(WasmIntInstruction.JUMP_TABLE, I32, indexIntPool)
-                }
-                is WasmInstruction.CALL -> {
-                    writeINS(WasmIntInstruction.CALL, index = i.funcIdx)
-                }
-                is WasmInstruction.End -> {
-                    doContinue = false
-                }
-                is WasmInstruction.unreachable -> {
-                    writeINS(WasmIntInstruction.UNREACHABLE)
-                }
-                is WasmInstruction.RETURN -> {
-                    writeINS(WasmIntInstruction.RETURN)
-                }
-                is WasmInstruction.InsType -> {
-                    when (i.op) {
-                        WasmOp.Op_ref_null -> writeINS(WasmIntInstruction.PUSH_CONST_NULL, i.param.toWasmSType())
-                        else -> TODO()
-                    }
-                }
-                is WasmInstruction.nop -> {
-                    Unit
-                }
-                else -> TODO("$i : ${i::class}")
-            }
-
-            when {
-                i.op.rstack == 1 && i.op.outType != WasmType.void -> typeStack.add(i.op.outType)
-                i.op.rstack == 0 -> Unit
-                else -> {
-                    when (i) {
-                        is WasmInstruction.Ins -> {
-                            when (i.op) {
-                                WasmOp.Op_select -> typeStack.add(removed[1])
-                                WasmOp.Op_drop -> Unit
-                                else -> TODO("${i.op}")
-                            }
-                        }
-                        is WasmInstruction.InsInt -> {
-                            when (i.op) {
-                                WasmOp.Op_global_get -> typeStack.add(getGlobalType(i.param))
-                                WasmOp.Op_local_get, WasmOp.Op_local_tee -> typeStack.add(getLocalType(i.param))
-                                else -> TODO("${i.op}")
-                            }
-                        }
-                        is WasmInstruction.block -> if (i.b != WasmType.void) typeStack.add(i.b)
-                        is WasmInstruction.IF -> if (i.b != WasmType.void) typeStack.add(i.b)
-                        is WasmInstruction.br, is WasmInstruction.br_if, is WasmInstruction.br_table -> {
-                            Unit // @TODO?
-                        }
-                        is WasmInstruction.End -> {
-                            Unit // @TODO?
-                        }
-                        is WasmInstruction.loop -> {
-                            Unit // @TODO?
-                        }
-                        is WasmInstruction.CALL -> {
-                            val retType = module.functions[i.funcIdx].type.retType
-                            if (retType != WasmType.void) typeStack.add(retType)
-                        }
-                        is WasmInstruction.unreachable -> {
-                            Unit // @TODO?
-                        }
-                        is WasmInstruction.RETURN -> {
-                            Unit // @TODO?
-                            doContinue = false
-                        }
-                        is WasmInstruction.nop -> {
-                            Unit
-                        }
-                        else -> TODO("${i.op} : ${i::class}")
-                    }
-
-                }
-            }
-
-            return doContinue
-        }
-
-        fun write(expr: WasmExpr?, level: Int = 0, kind: StructureControl.Kind = StructureControl.Kind.FUNC, stack: List<WasmType> = emptyList()): WasmInterpreterInstructionWriter {
-            if (expr == null) return this
-            val oldStack = this.typeStack.toList()
-            this.typeStack.clear()
-            this.typeStack.addAll(stack)
-            val control = StructureControl(level, kind)
-            controls.add(control)
-            control.start = inst.size
-            for (i in expr.instructions) {
-                if (!write(i, level)) break
-            }
-            control.end = inst.size
-            controls.removeLast()
-
-            this.typeStack.clear()
-            this.typeStack.addAll(oldStack)
-            return this
-        }
-
-        fun write(func: WasmFunc?, finalize: Boolean = true): WasmInterpreterInstructionWriter {
-            if (func == null) return this
-            locals = func.rlocals
-            write(func.code?.body, 0, StructureControl.Kind.FUNC, emptyList())
-            if (finalize) finalize()
-            return this
-        }
-
-        fun toCode(): WasmInterpreterCode {
-            return WasmInterpreterCode(inst.toIntArray(), intPool.toIntArray(), longPool.toLongArray(), floatPool.toFloatArray(), doublePool.toDoubleArray())
+    fun invoke(func: WasmFunc) {
+        val code = func.getInterprerCode()
+        if (code != null) {
+            // Allocate space for locals
+            localsPos += 0
+            //stackPos += code.localSize
+            stackPos += code.localsCount
+            this.evalInstructions(code, 0)
+            //println("code.interpreterCode=${fcode.interpreterCode}")
+        } else {
+            val efunc = functions[func.name]
+            TODO("efunc=$efunc")
         }
     }
 
-    inline class WasmIntInstruction(val raw: Int) {
-        val ins get() = raw.extract6(0)
-        val kind get() = WasmSType.entries[raw.extract3(6)]
-        val extra get() = raw.extract3(9)
-        val param get() = raw.extractSigned(12, 20)
+    inline fun binopI32(func: (l: Int, r: Int) -> Int) {
+        val r = popI32()
+        val l = popI32()
+        pushI32(func(l, r))
+    }
+    inline fun unopI32_bool(func: (it: Int) -> Boolean): Boolean {
+        val it = popI32()
+        return func(it)
+    }
+    inline fun unopF32_bool(func: (it: Float) -> Boolean): Boolean {
+        val it = popF32()
+        return func(it)
+    }
+    inline fun unopI64_bool(func: (it: Long) -> Boolean): Boolean {
+        val it = popI64()
+        return func(it)
+    }
+    inline fun unopF64_bool(func: (it: Double) -> Boolean): Boolean {
+        val it = popF64()
+        return func(it)
+    }
+    inline fun binopI32_bool(func: (l: Int, r: Int) -> Boolean): Boolean {
+        val r = popI32()
+        val l = popI32()
+        return func(l, r)
+    }
+    inline fun binopF32_bool(func: (l: Float, r: Float) -> Boolean): Boolean {
+        val r = popF32()
+        val l = popF32()
+        return func(l, r)
+    }
+    inline fun binopF64_bool(func: (l: Double, r: Double) -> Boolean): Boolean {
+        val r = popF64()
+        val l = popF64()
+        return func(l, r)
+    }
+    inline fun binopI64_bool(func: (l: Long, r: Long) -> Boolean): Boolean {
+        val r = popI64()
+        val l = popI64()
+        return func(l, r)
+    }
+    inline fun binopI64_int(func: (l: Long, r: Long) -> Int) {
+        val r = popI64()
+        val l = popI64()
+        pushI32(func(l, r))
+    }
+    inline fun binopF32_int(func: (l: Float, r: Float) -> Int) {
+        val r = popF32()
+        val l = popF32()
+        pushI32(func(l, r))
+    }
+    inline fun binopF64_int(func: (l: Double, r: Double) -> Int) {
+        val r = popF64()
+        val l = popF64()
+        pushI32(func(l, r))
+    }
+    inline fun unopI32(func: (it: Int) -> Int) = pushI32(func(popI32()))
+    inline fun unopI64(func: (it: Long) -> Long) = pushI64(func(popI64()))
+    inline fun unopF32(func: (it: Float) -> Float) = pushF32(func(popF32()))
+    inline fun unopF64(func: (it: Double) -> Double) = pushF64(func(popF64()))
 
-        override fun toString(): String {
-            return buildString {
-                append("Instruction(")
-                append(ioName(ins))
-                append(", ")
-                append(kind)
-                append(", ")
-                append(extra)
-                append(", ")
-                append(param)
-                if (ins == BINOP_COMP) {
-                    append(": ")
-                    append(compName(param))
+    inline fun binopF32(func: (l: Float, r: Float) -> Float) {
+        val r = popF32()
+        val l = popF32()
+        pushF32(func(l, r))
+    }
+
+    inline fun binopF64(func: (l: Double, r: Double) -> Double) {
+        val r = popF64()
+        val l = popF64()
+        pushF64(func(l, r))
+    }
+
+    inline fun binopI64(func: (l: Long, r: Long) -> Long) {
+        val r = popI64()
+        val l = popI64()
+        pushI64(func(l, r))
+    }
+
+    fun readTypes(types: List<WasmType>): Array<Any?> {
+        return types.reversed().map { popType(it.toWasmSType()) }.reversed().toTypedArray()
+    }
+
+    private fun callFunc(func: WasmFunc) {
+        val code = func.getInterprerCode()
+        if (code != null) {
+            //println(" ::: localsPos=$localsPos, stackPos=$stackPos")
+            val oldLocalsPos = localsPos
+
+            //localsPos = stackPos - code.paramsSize
+            //stackPos = localsPos + code.localSize
+
+            localsPos = stackPos - code.paramsCount
+            stackPos = localsPos + code.localsCount
+
+            invoke(func)
+            localsPos = oldLocalsPos
+            //stackPos = oldLocalsPos
+        } else {
+            val fimport = func.fimport ?: error("Not body and not an import")
+            val result = functions[fimport.moduleName]?.get(fimport.name)?.invoke(this, readTypes(func.type.args.map { it.type }))
+            pushType(func.type.retType.toWasmSType(), result)
+        }
+    }
+
+    private fun evalInstructions(code: WasmInterpreterCode, index: Int) {
+        var index = index
+        val instructions = code.instructions
+        var instructionsExecuted = 0
+        loop@while (index in instructions.indices) {
+            val i = instructions[index]
+            val op = i and 0xFFF
+            val param = i shr 12
+            //instructionsHistoriogram[op]++
+            if (trace) println("OP: ${op.hex}, param=$param : ${WasmOp.getOrNull(op)}")
+            instructionsExecuted++
+            when (op) {
+                WasmFastInstructions.Op_try -> TODO()
+                WasmFastInstructions.Op_catch -> TODO()
+                WasmFastInstructions.Op_throw -> TODO()
+                WasmFastInstructions.Op_rethrow -> TODO()
+                WasmFastInstructions.Op_call -> {
+                    val func = module.functions[param]
+                    callFunc(func)
                 }
-                append(")")
+                WasmFastInstructions.Op_call_indirect -> {
+                    val index = popI32()
+                    val func = module.tables.first().items[index] as WasmFunc
+                    callFunc(func)
+                }
+                WasmFastInstructions.Op_return_call -> TODO() // tail-call
+                WasmFastInstructions.Op_return_call_indirect -> TODO() // tail-call
+                WasmFastInstructions.Op_call_ref -> TODO()
+                WasmFastInstructions.Op_return_call_ref -> TODO()
+                WasmFastInstructions.Op_delegate -> TODO()
+                WasmFastInstructions.Op_catch_all -> TODO()
+                WasmFastInstructions.Op_i32_load -> pushI32(Op_i32_load(popI32(), param, this))
+                WasmFastInstructions.Op_i64_load -> pushI64(Op_i64_load(popI32(), param, this))
+                WasmFastInstructions.Op_f32_load -> pushF32(Op_f32_load(popI32(), param, this))
+                WasmFastInstructions.Op_f64_load -> pushF64(Op_f64_load(popI32(), param, this))
+                WasmFastInstructions.Op_i32_load8_s -> pushI32(Op_i32_load8_s(popI32(), param, this))
+                WasmFastInstructions.Op_i32_load8_u -> pushI32(Op_i32_load8_u(popI32(), param, this))
+                WasmFastInstructions.Op_i32_load16_s -> pushI32(Op_i32_load16_s(popI32(), param, this))
+                WasmFastInstructions.Op_i32_load16_u -> pushI32(Op_i32_load16_u(popI32(), param, this))
+                WasmFastInstructions.Op_i64_load8_s -> pushI64(Op_i64_load8_s(popI32(), param, this))
+                WasmFastInstructions.Op_i64_load8_u -> pushI64(Op_i64_load8_u(popI32(), param, this))
+                WasmFastInstructions.Op_i64_load16_s -> pushI64(Op_i64_load16_s(popI32(), param, this))
+                WasmFastInstructions.Op_i64_load16_u -> pushI64(Op_i64_load16_u(popI32(), param, this))
+                WasmFastInstructions.Op_i64_load32_s -> pushI64(Op_i64_load32_s(popI32(), param, this))
+                WasmFastInstructions.Op_i64_load32_u -> pushI64(Op_i64_load32_u(popI32(), param, this))
+                WasmFastInstructions.Op_i32_store -> { val value = popI32(); val base = popI32(); Op_i32_store(base, value, param, this) }
+                WasmFastInstructions.Op_i64_store -> { val value = popI64(); val base = popI32(); Op_i64_store(base, value, param, this) }
+                WasmFastInstructions.Op_f32_store -> { val value = popF32(); val base = popI32(); Op_f32_store(base, value, param, this) }
+                WasmFastInstructions.Op_f64_store -> { val value = popF64(); val base = popI32(); Op_f64_store(base, value, param, this) }
+                WasmFastInstructions.Op_i32_store8 -> { val value = popI32(); val base = popI32(); Op_i32_store8(base, value, param, this) }
+                WasmFastInstructions.Op_i32_store16 -> { val value = popI32(); val base = popI32(); Op_i32_store16(base, value, param, this) }
+                WasmFastInstructions.Op_i64_store8 -> { val value = popI64(); val base = popI32(); Op_i64_store8(base, value, param, this) }
+                WasmFastInstructions.Op_i64_store16 -> { val value = popI64(); val base = popI32(); Op_i64_store16(base, value, param, this) }
+                WasmFastInstructions.Op_i64_store32 -> { val value = popI64(); val base = popI32(); Op_i64_store32(base, value, param, this) }
+                WasmFastInstructions.Op_memory_size -> pushI32(Op_memory_size(this))
+                WasmFastInstructions.Op_memory_grow -> Op_memory_grow(popI32(), this)
+                WasmFastInstructions.Op_i32_const -> pushI32(code.intPool[param])
+                WasmFastInstructions.Op_i64_const -> pushI64(code.longPool[param])
+                WasmFastInstructions.Op_f32_const -> pushF32(code.floatPool[param])
+                WasmFastInstructions.Op_f64_const -> pushF64(code.doublePool[param])
+                WasmFastInstructions.Op_i32_eqz -> unopI32 { Op_i32_eqz(it) }
+                WasmFastInstructions.Op_i32_eq -> binopI32 { l, r -> Op_i32_eq(l, r) }
+                WasmFastInstructions.Op_i32_ne -> binopI32 { l, r -> Op_i32_ne(l, r) }
+                WasmFastInstructions.Op_i32_lt_s -> binopI32 { l, r ->
+                    Op_i32_lt_s(l, r).also {
+                        if (trace) println("l:$l < r:$r == $it")
+                    }
+                }
+                WasmFastInstructions.Op_i32_lt_u -> binopI32 { l, r -> Op_i32_lt_u(l, r) }
+                WasmFastInstructions.Op_i32_gt_s -> binopI32 { l, r -> Op_i32_gt_s(l, r) }
+                WasmFastInstructions.Op_i32_gt_u -> binopI32 { l, r ->
+                    Op_i32_gt_u(l, r).also {
+                        if (trace) println("l:$l >u r:$r == $it")
+                    }
+                }
+                WasmFastInstructions.Op_i32_le_s -> binopI32 { l, r -> Op_i32_le_s(l, r) }
+                WasmFastInstructions.Op_i32_le_u -> binopI32 { l, r -> Op_i32_le_u(l, r) }
+                WasmFastInstructions.Op_i32_ge_s -> binopI32 { l, r -> Op_i32_ge_s(l, r) }
+                WasmFastInstructions.Op_i32_ge_u -> binopI32 { l, r -> Op_i32_ge_u(l, r) }
+                WasmFastInstructions.Op_i64_eqz -> pushI32(Op_i64_eqz(popI64()))
+                WasmFastInstructions.Op_i64_eq -> binopI64_int { l, r -> Op_i64_eq(l, r) }
+                WasmFastInstructions.Op_i64_ne -> binopI64_int { l, r -> Op_i64_ne(l, r) }
+                WasmFastInstructions.Op_i64_lt_s -> binopI64_int { l, r -> Op_i64_lt_s(l, r) }
+                WasmFastInstructions.Op_i64_lt_u -> binopI64_int { l, r -> Op_i64_lt_u(l, r) }
+                WasmFastInstructions.Op_i64_gt_s -> binopI64_int { l, r -> Op_i64_gt_s(l, r) }
+                WasmFastInstructions.Op_i64_gt_u -> binopI64_int { l, r -> Op_i64_gt_u(l, r) }
+                WasmFastInstructions.Op_i64_le_s -> binopI64_int { l, r -> Op_i64_le_s(l, r) }
+                WasmFastInstructions.Op_i64_le_u -> binopI64_int { l, r -> Op_i64_le_u(l, r) }
+                WasmFastInstructions.Op_i64_ge_s -> binopI64_int { l, r -> Op_i64_ge_s(l, r) }
+                WasmFastInstructions.Op_i64_ge_u -> binopI64_int { l, r -> Op_i64_ge_u(l, r) }
+                WasmFastInstructions.Op_f32_eq -> binopF32_int { l, r -> Op_f32_eq(l, r) }
+                WasmFastInstructions.Op_f32_ne -> binopF32_int { l, r -> Op_f32_ne(l, r) }
+                WasmFastInstructions.Op_f32_lt -> binopF32_int { l, r -> Op_f32_lt(l, r) }
+                WasmFastInstructions.Op_f32_gt -> binopF32_int { l, r -> Op_f32_gt(l, r) }
+                WasmFastInstructions.Op_f32_le -> binopF32_int { l, r -> Op_f32_le(l, r) }
+                WasmFastInstructions.Op_f32_ge -> binopF32_int { l, r -> Op_f32_ge(l, r) }
+                WasmFastInstructions.Op_f64_eq -> binopF64_int { l, r -> Op_f64_eq(l, r) }
+                WasmFastInstructions.Op_f64_ne -> binopF64_int { l, r -> Op_f64_ne(l, r) }
+                WasmFastInstructions.Op_f64_lt -> binopF64_int { l, r -> Op_f64_lt(l, r) }
+                WasmFastInstructions.Op_f64_gt -> binopF64_int { l, r -> Op_f64_gt(l, r) }
+                WasmFastInstructions.Op_f64_le -> binopF64_int { l, r -> Op_f64_le(l, r) }
+                WasmFastInstructions.Op_f64_ge -> binopF64_int { l, r -> Op_f64_ge(l, r) }
+                WasmFastInstructions.Op_i32_clz -> unopI32 { Op_i32_clz(it) }
+                WasmFastInstructions.Op_i32_ctz -> unopI32 { Op_i32_ctz(it) }
+                WasmFastInstructions.Op_i32_popcnt -> unopI32 { Op_i32_popcnt(it) }
+                WasmFastInstructions.Op_i32_add -> binopI32 { l, r ->
+                    //println("add: $l + $r :: ${l + r}")
+                    l + r
+                }
+                WasmFastInstructions.Op_i32_sub -> binopI32 { l, r -> l - r }
+                WasmFastInstructions.Op_i32_mul -> binopI32 { l, r -> l * r }
+                WasmFastInstructions.Op_i32_div_s -> binopI32 { l, r -> l / r }
+                WasmFastInstructions.Op_i32_div_u -> binopI32 { l, r -> Op_i32_div_u(l, r) }
+                WasmFastInstructions.Op_i32_rem_s -> binopI32 { l, r -> l % r }
+                WasmFastInstructions.Op_i32_rem_u -> binopI32 { l, r -> Op_i32_rem_u(l, r) }
+                WasmFastInstructions.Op_i32_and -> binopI32 { l, r -> l and r }
+                WasmFastInstructions.Op_i32_or -> binopI32 { l, r -> l or r }
+                WasmFastInstructions.Op_i32_xor -> binopI32 { l, r -> l xor r }
+                WasmFastInstructions.Op_i32_shl -> binopI32 { l, r -> l shl r }
+                WasmFastInstructions.Op_i32_shr_s -> binopI32 { l, r -> l shr r }
+                WasmFastInstructions.Op_i32_shr_u -> binopI32 { l, r -> l ushr r }
+                WasmFastInstructions.Op_i32_rotl -> binopI32 { l, r -> Op_i32_rotl(l, r) }
+                WasmFastInstructions.Op_i32_rotr -> binopI32 { l, r -> Op_i32_rotr(l, r) }
+                WasmFastInstructions.Op_i64_clz -> unopI64 { Op_i64_clz(it) }
+                WasmFastInstructions.Op_i64_ctz -> unopI64 { Op_i64_ctz(it) }
+                WasmFastInstructions.Op_i64_popcnt -> unopI64 { Op_i64_popcnt(it) }
+                WasmFastInstructions.Op_i64_add -> binopI64 { l, r -> l + r }
+                WasmFastInstructions.Op_i64_sub -> binopI64 { l, r -> (l - r) }
+                WasmFastInstructions.Op_i64_mul -> binopI64 { l, r -> (l * r) }
+                WasmFastInstructions.Op_i64_div_s -> binopI64 { l, r -> (l / r) }
+                WasmFastInstructions.Op_i64_div_u -> binopI64 { l, r -> Op_i64_div_u(l, r) }
+                WasmFastInstructions.Op_i64_rem_s -> binopI64 { l, r -> (l % r) }
+                WasmFastInstructions.Op_i64_rem_u -> binopI64 { l, r -> Op_i64_rem_u(l, r) }
+                WasmFastInstructions.Op_i64_and -> binopI64 { l, r -> (l and r) }
+                WasmFastInstructions.Op_i64_or -> binopI64 { l, r -> (l or r) }
+                WasmFastInstructions.Op_i64_xor -> binopI64 { l, r -> (l xor r) }
+                WasmFastInstructions.Op_i64_shl -> binopI64 { l, r -> (l shl r.toInt()) }
+                WasmFastInstructions.Op_i64_shr_s -> binopI64 { l, r -> (l shr r.toInt()) }
+                WasmFastInstructions.Op_i64_shr_u -> binopI64 { l, r -> (l ushr r.toInt()) }
+                WasmFastInstructions.Op_i64_rotl -> binopI64 { l, r -> Op_i64_rotl(l, r) }
+                WasmFastInstructions.Op_i64_rotr -> binopI64 { l, r -> Op_i64_rotr(l, r) }
+                WasmFastInstructions.Op_f32_abs -> unopF32 { Op_f32_abs(it) }
+                WasmFastInstructions.Op_f32_neg -> unopF32 { Op_f32_neg(it) }
+                WasmFastInstructions.Op_f32_ceil -> unopF32 { Op_f32_ceil(it) }
+                WasmFastInstructions.Op_f32_floor -> unopF32 { Op_f32_floor(it) }
+                WasmFastInstructions.Op_f32_trunc -> unopF32 { Op_f32_trunc(it) }
+                WasmFastInstructions.Op_f32_nearest -> unopF32 { Op_f32_nearest(it) }
+                WasmFastInstructions.Op_f32_sqrt -> unopF32 { Op_f32_sqrt(it) }
+                WasmFastInstructions.Op_f32_add -> binopF32 { l, r -> l + r }
+                WasmFastInstructions.Op_f32_sub -> binopF32 { l, r -> l - r }
+                WasmFastInstructions.Op_f32_mul -> binopF32 { l, r -> l * r }
+                WasmFastInstructions.Op_f32_div -> binopF32 { l, r -> l / r }
+                WasmFastInstructions.Op_f32_min -> binopF32 { l, r -> Op_f32_min(l, r) }
+                WasmFastInstructions.Op_f32_max -> binopF32 { l, r -> Op_f32_max(l, r) }
+                WasmFastInstructions.Op_f32_copysign -> binopF32 { l, r -> Op_f32_copysign(l, r) }
+                WasmFastInstructions.Op_f64_abs -> unopF64 { Op_f64_abs(it) }
+                WasmFastInstructions.Op_f64_neg -> unopF64 { Op_f64_neg(it) }
+                WasmFastInstructions.Op_f64_ceil -> unopF64 { Op_f64_ceil(it) }
+                WasmFastInstructions.Op_f64_floor -> unopF64 { Op_f64_floor(it) }
+                WasmFastInstructions.Op_f64_trunc -> unopF64 { Op_f64_trunc(it) }
+                WasmFastInstructions.Op_f64_nearest -> unopF64 { Op_f64_nearest(it) }
+                WasmFastInstructions.Op_f64_sqrt -> unopF64 { Op_f64_sqrt(it) }
+                WasmFastInstructions.Op_f64_add -> binopF64 { l, r -> l + r }
+                WasmFastInstructions.Op_f64_sub -> binopF64 { l, r -> l - r }
+                WasmFastInstructions.Op_f64_mul -> binopF64 { l, r -> l * r }
+                WasmFastInstructions.Op_f64_div -> binopF64 { l, r -> l / r }
+                WasmFastInstructions.Op_f64_min -> binopF64 { l, r -> Op_f64_min(l, r) }
+                WasmFastInstructions.Op_f64_max -> binopF64 { l, r -> Op_f64_max(l, r) }
+                WasmFastInstructions.Op_f64_copysign -> binopF64 { l, r -> Op_f64_copysign(l, r) }
+                WasmFastInstructions.Op_i32_wrap_i64 -> pushI32(Op_i32_wrap_i64(popI64()))
+                WasmFastInstructions.Op_i32_trunc_f32_s -> pushI32(Op_i32_trunc_s_f32(popF32()))
+                WasmFastInstructions.Op_i32_trunc_f32_u -> pushI32(Op_i32_trunc_u_f32(popF32()))
+                WasmFastInstructions.Op_i32_trunc_f64_s -> pushI32(Op_i32_trunc_s_f64(popF64()))
+                WasmFastInstructions.Op_i32_trunc_f64_u -> pushI32(Op_i32_trunc_u_f64(popF64()))
+                WasmFastInstructions.Op_i64_extend_i32_s -> pushI64(Op_i64_extend_i32_s(popI32()))
+                WasmFastInstructions.Op_i64_extend_i32_u -> pushI64(Op_i64_extend_i32_u(popI32()))
+                WasmFastInstructions.Op_i64_trunc_f32_s -> pushI64(Op_i64_trunc_s_f32(popF32()))
+                WasmFastInstructions.Op_i64_trunc_f32_u -> pushI64(Op_i64_trunc_u_f32(popF32()))
+                WasmFastInstructions.Op_i64_trunc_f64_s -> pushI64(Op_i64_trunc_s_f64(popF64()))
+                WasmFastInstructions.Op_i64_trunc_f64_u -> pushI64(Op_i64_trunc_u_f64(popF64()))
+                WasmFastInstructions.Op_f32_convert_i32_s -> pushF32(Op_f32_convert_s_i32(popI32()))
+                WasmFastInstructions.Op_f32_convert_i32_u -> pushF32(Op_f32_convert_u_i32(popI32()))
+                WasmFastInstructions.Op_f32_convert_i64_s -> pushF32(Op_f32_convert_s_i64(popI64()))
+                WasmFastInstructions.Op_f32_convert_i64_u -> pushF32(Op_f32_convert_u_i64(popI64()))
+                WasmFastInstructions.Op_f32_demote_f64 -> pushF32(Op_f32_demote_f64(popF64()))
+                WasmFastInstructions.Op_f64_convert_i32_s -> pushF64(Op_f64_convert_s_i32(popI32()))
+                WasmFastInstructions.Op_f64_convert_i32_u -> pushF64(Op_f64_convert_u_i32(popI32()))
+                WasmFastInstructions.Op_f64_convert_i64_s -> pushF64(Op_f64_convert_s_i64(popI64()))
+                WasmFastInstructions.Op_f64_convert_i64_u -> pushF64(Op_f64_convert_u_i64(popI64()))
+                WasmFastInstructions.Op_f64_promote_f32 -> pushF64(Op_f64_promote_f32(popF32()))
+                WasmFastInstructions.Op_i32_reinterpret_f32 -> pushI32(Op_i32_reinterpret_f32(popF32()))
+                WasmFastInstructions.Op_i64_reinterpret_f64 -> pushI64(Op_i64_reinterpret_f64(popF64()))
+                WasmFastInstructions.Op_f32_reinterpret_i32 -> pushF32(Op_f32_reinterpret_i32(popI32()))
+                WasmFastInstructions.Op_f64_reinterpret_i64 -> pushF64(Op_f64_reinterpret_i64(popI64()))
+                WasmFastInstructions.Op_i32_extend8_s -> pushI32(Op_i32_extend8_s(popI32()))
+                WasmFastInstructions.Op_i32_extend16_s -> pushI32(Op_i32_extend16_s(popI32()))
+                WasmFastInstructions.Op_i64_extend8_s -> pushI64(Op_i64_extend8_s(popI64()))
+                WasmFastInstructions.Op_i64_extend16_s -> pushI64(Op_i64_extend16_s(popI64()))
+                WasmFastInstructions.Op_i64_extend32_s -> pushI64(Op_i64_extend32_s(popI64()))
+                WasmFastInstructions.Op_ref_null -> TODO()
+                WasmFastInstructions.Op_ref_is_null -> TODO()
+
+                WasmFastInstructions.Op_i32_drop -> stackPos--
+                WasmFastInstructions.Op_i64_drop -> stackPos--
+                WasmFastInstructions.Op_f32_drop -> stackPos--
+                WasmFastInstructions.Op_f64_drop -> stackPos--
+                WasmFastInstructions.Op_v128_drop -> stackPos--
+
+                //WasmFastInstructions.Op_i32_drop -> popIndex(4)
+                //WasmFastInstructions.Op_i64_drop -> popIndex(8)
+                //WasmFastInstructions.Op_f32_drop -> popIndex(4)
+                //WasmFastInstructions.Op_f64_drop -> popIndex(8)
+                //WasmFastInstructions.Op_v128_drop -> popIndex(16)
+
+                WasmFastInstructions.Op_i32_local_get -> {
+                    //println("LOCAL[$param] == ${getLocalI32(param)} :: localsPos=$localsPos")
+                    pushI32(getLocalI32(param))
+                }
+                WasmFastInstructions.Op_i64_local_get -> pushI64(getLocalI64(param))
+                WasmFastInstructions.Op_f32_local_get -> pushF32(getLocalF32(param))
+                WasmFastInstructions.Op_f64_local_get -> pushF64(getLocalF64(param))
+                WasmFastInstructions.Op_v128_local_get -> TODO()
+                WasmFastInstructions.Op_i32_local_set -> setLocalI32(param, popI32())
+                WasmFastInstructions.Op_i64_local_set -> setLocalI64(param, popI64())
+                WasmFastInstructions.Op_f32_local_set -> setLocalF32(param, popF32())
+                WasmFastInstructions.Op_f64_local_set -> setLocalF64(param, popF64())
+                WasmFastInstructions.Op_v128_local_set -> TODO()
+                WasmFastInstructions.Op_i32_local_tee -> pushI32(setLocalI32(param, popI32()))
+                WasmFastInstructions.Op_i64_local_tee -> pushI64(setLocalI64(param, popI64()))
+                WasmFastInstructions.Op_f32_local_tee -> pushF32(setLocalF32(param, popF32()))
+                WasmFastInstructions.Op_f64_local_tee -> pushF64(setLocalF64(param, popF64()))
+                WasmFastInstructions.Op_v128_local_tee -> TODO()
+                WasmFastInstructions.Op_i32_global_get -> pushI32(globalsI[param])
+                WasmFastInstructions.Op_i64_global_get -> pushI64(globalsL[param])
+                WasmFastInstructions.Op_f32_global_get -> pushF32(globalsF[param])
+                WasmFastInstructions.Op_f64_global_get -> pushF64(globalsD[param])
+                WasmFastInstructions.Op_v128_global_get -> TODO()
+                WasmFastInstructions.Op_i32_global_set -> globalsI[param] = popI32()
+                WasmFastInstructions.Op_i64_global_set -> globalsL[param] = popI64()
+                WasmFastInstructions.Op_f32_global_set -> globalsF[param] = popF32()
+                WasmFastInstructions.Op_f64_global_set -> globalsD[param] = popF64()
+
+                //WasmFastInstructions.Op_i32_global_get -> pushI32(globals.getUnalignedInt32(param))
+                //WasmFastInstructions.Op_i64_global_get -> pushI64(globals.getUnalignedInt64(param))
+                //WasmFastInstructions.Op_f32_global_get -> pushF32(globals.getUnalignedFloat32(param))
+                //WasmFastInstructions.Op_f64_global_get -> pushF64(globals.getUnalignedFloat64(param))
+                //WasmFastInstructions.Op_v128_global_get -> TODO()
+                //WasmFastInstructions.Op_i32_global_set -> globals.setUnalignedInt32(param, popI32())
+                //WasmFastInstructions.Op_i64_global_set -> globals.setUnalignedInt64(param, popI64())
+                //WasmFastInstructions.Op_f32_global_set -> globals.setUnalignedFloat32(param, popF32())
+                //WasmFastInstructions.Op_f64_global_set -> globals.setUnalignedFloat64(param, popF64())
+                WasmFastInstructions.Op_v128_global_set -> TODO()
+                WasmFastInstructions.Op_i32_return -> { val v = popI32(); stackPos = localsPos; pushI32(v); break@loop }
+                WasmFastInstructions.Op_i64_return -> { val v = popI64(); stackPos = localsPos; pushI64(v); break@loop }
+                WasmFastInstructions.Op_f32_return -> { val v = popF32(); stackPos = localsPos; pushF32(v); break@loop }
+                WasmFastInstructions.Op_f64_return -> { val v = popF64(); stackPos = localsPos; pushF64(v); break@loop }
+                WasmFastInstructions.Op_v128_return -> TODO()
+                WasmFastInstructions.Op_void_return -> { stackPos = localsPos; break@loop }
+
+                WasmFastInstructions.Op_i32_select -> { val v = popI32(); binopI32 { l, r -> if (v != 0) l else r } }
+                WasmFastInstructions.Op_i64_select -> { val v = popI32(); binopI64 { l, r -> if (v != 0) l else r } }
+                WasmFastInstructions.Op_f32_select -> { val v = popI32(); binopF32 { l, r -> if (v != 0) l else r } }
+                WasmFastInstructions.Op_f64_select -> { val v = popI32(); binopF64 { l, r -> if (v != 0) l else r } }
+                WasmFastInstructions.Op_v128_select -> TODO()
+
+                WasmFastInstructions.Op_i32_short_const -> pushI32(param)
+                WasmFastInstructions.Op_i64_short_const -> pushI64(param.toLong())
+                WasmFastInstructions.Op_f32_short_const -> pushF32(param.toFloat())
+                WasmFastInstructions.Op_f64_short_const -> pushF64(param.toDouble())
+                WasmFastInstructions.Op_goto -> {
+                    index = param
+                    continue
+                }
+                WasmFastInstructions.Op_goto_if -> {
+                    val res = popI32()
+                    if (res != 0) {
+                        index = param
+                        continue
+                    }
+                }
+                WasmFastInstructions.Op_goto_if_not -> {
+                    val res = popI32()
+                    //println("goto_if_not: res=$res")
+                    if (res == 0) {
+                        index = param
+                        continue
+                    }
+                }
+                WasmFastInstructions.Op_goto_if_not_i32_eqz  -> if (!unopI32_bool { it == 0 }) { index = param; continue }
+                WasmFastInstructions.Op_goto_if_not_i32_eq   -> if (!binopI32_bool { l, r -> l == r }) { index = param; continue }
+                WasmFastInstructions.Op_goto_if_not_i32_ne   -> if (!binopI32_bool { l, r -> l != r }) { index = param; continue }
+                WasmFastInstructions.Op_goto_if_not_i32_lt_s -> if (!binopI32_bool { l, r -> l < r }) { index = param; continue }
+                WasmFastInstructions.Op_goto_if_not_i32_lt_u -> if (!binopI32_bool { l, r -> l.toUInt() < r.toUInt() }) { index = param; continue }
+                WasmFastInstructions.Op_goto_if_not_i32_gt_s -> if (!binopI32_bool { l, r -> l > r }) { index = param; continue }
+                WasmFastInstructions.Op_goto_if_not_i32_gt_u -> if (!binopI32_bool { l, r -> l.toUInt() > r.toUInt() }) { index = param; continue }
+                WasmFastInstructions.Op_goto_if_not_i32_le_s -> if (!binopI32_bool { l, r -> l <= r }) { index = param; continue }
+                WasmFastInstructions.Op_goto_if_not_i32_le_u -> if (!binopI32_bool { l, r -> l.toUInt() <= r.toUInt() }) { index = param; continue }
+                WasmFastInstructions.Op_goto_if_not_i32_ge_s -> if (!binopI32_bool { l, r -> l >= r }) { index = param; continue }
+                WasmFastInstructions.Op_goto_if_not_i32_ge_u -> if (!binopI32_bool { l, r -> l.toUInt() >= r.toUInt() }) { index = param; continue }
+                WasmFastInstructions.Op_goto_if_not_i64_eqz -> if (!unopI64_bool { it == 0L }) { index = param; continue }
+                WasmFastInstructions.Op_goto_if_not_i64_eq -> if (!binopI64_bool { l, r -> l == r }) { index = param; continue }
+                WasmFastInstructions.Op_goto_if_not_i64_ne -> if (!binopI64_bool { l, r -> l != r }) { index = param; continue }
+                WasmFastInstructions.Op_goto_if_not_i64_lt_s -> if (!binopI64_bool { l, r -> l < r }) { index = param; continue }
+                WasmFastInstructions.Op_goto_if_not_i64_lt_u -> if (!binopI64_bool { l, r -> l.toULong() < r.toULong() }) { index = param; continue }
+                WasmFastInstructions.Op_goto_if_not_i64_gt_s -> if (!binopI64_bool { l, r -> l > r }) { index = param; continue }
+                WasmFastInstructions.Op_goto_if_not_i64_gt_u -> if (!binopI64_bool { l, r -> l.toULong() > r.toULong() }) { index = param; continue }
+                WasmFastInstructions.Op_goto_if_not_i64_le_s -> if (!binopI64_bool { l, r -> l <= r }) { index = param; continue }
+                WasmFastInstructions.Op_goto_if_not_i64_le_u -> if (!binopI64_bool { l, r -> l.toULong() <= r.toULong() }) { index = param; continue }
+                WasmFastInstructions.Op_goto_if_not_i64_ge_s -> if (!binopI64_bool { l, r -> l >= r }) { index = param; continue }
+                WasmFastInstructions.Op_goto_if_not_i64_ge_u -> if (!binopI64_bool { l, r -> l.toULong() >= r.toULong() }) { index = param; continue }
+                WasmFastInstructions.Op_goto_if_not_f32_eq -> if (!binopF32_bool { l, r -> l == r }) { index = param; continue }
+                WasmFastInstructions.Op_goto_if_not_f32_ne -> if (!binopF32_bool { l, r -> l != r }) { index = param; continue }
+                WasmFastInstructions.Op_goto_if_not_f32_lt -> if (!binopF32_bool { l, r -> l < r }) { index = param; continue }
+                WasmFastInstructions.Op_goto_if_not_f32_gt -> if (!binopF32_bool { l, r -> l > r }) { index = param; continue }
+                WasmFastInstructions.Op_goto_if_not_f32_le -> if (!binopF32_bool { l, r -> l <= r }) { index = param; continue }
+                WasmFastInstructions.Op_goto_if_not_f32_ge -> if (!binopF32_bool { l, r -> l >= r }) { index = param; continue }
+                WasmFastInstructions.Op_goto_if_not_f64_eq -> if (!binopF64_bool { l, r -> l == r }) { index = param; continue }
+                WasmFastInstructions.Op_goto_if_not_f64_ne -> if (!binopF64_bool { l, r -> l != r }) { index = param; continue }
+                WasmFastInstructions.Op_goto_if_not_f64_lt -> if (!binopF64_bool { l, r -> l < r }) { index = param; continue }
+                WasmFastInstructions.Op_goto_if_not_f64_gt -> if (!binopF64_bool { l, r -> l > r }) { index = param; continue }
+                WasmFastInstructions.Op_goto_if_not_f64_le -> if (!binopF64_bool { l, r -> l <= r }) { index = param; continue }
+                WasmFastInstructions.Op_goto_if_not_f64_ge -> if (!binopF64_bool { l, r -> l >= r }) { index = param; continue }
+
+                WasmFastInstructions.Op_goto_table -> {
+                    val value = popI32()
+                    val nlabels = code.intPool[param]
+                    if (value in 0 until nlabels) {
+                        index = code.intPool[param + 2 + value]
+                    } else {
+                        index = code.intPool[param + 1]
+                    }
+                    continue
+                }
+                WasmFastInstructions.Op_i32_trunc_sat_f32_s -> pushI32(Op_i32_trunc_sat_f32_s(popF32()))
+                WasmFastInstructions.Op_i32_trunc_sat_f32_u -> pushI32(Op_i32_trunc_sat_f32_u(popF32()))
+                WasmFastInstructions.Op_i32_trunc_sat_f64_s -> pushI32(Op_i32_trunc_sat_f64_s(popF64()))
+                WasmFastInstructions.Op_i32_trunc_sat_f64_u -> pushI32(Op_i32_trunc_sat_f64_u(popF64()))
+                WasmFastInstructions.Op_i64_trunc_sat_f32_s -> pushI64(Op_i64_trunc_sat_f32_s(popF32()))
+                WasmFastInstructions.Op_i64_trunc_sat_f32_u -> pushI64(Op_i64_trunc_sat_f32_u(popF32()))
+                WasmFastInstructions.Op_i64_trunc_sat_f64_s -> pushI64(Op_i64_trunc_sat_f64_s(popF64()))
+                WasmFastInstructions.Op_i64_trunc_sat_f64_u -> pushI64(Op_i64_trunc_sat_f64_u(popF64()))
+                WasmFastInstructions.Op_memory_init -> TODO()
+                WasmFastInstructions.Op_data_drop -> TODO()
+                WasmFastInstructions.Op_memory_copy -> TODO()
+                WasmFastInstructions.Op_memory_fill -> TODO()
+                WasmFastInstructions.Op_table_init -> TODO()
+                WasmFastInstructions.Op_elem_drop -> TODO()
+                WasmFastInstructions.Op_table_copy -> TODO()
+                WasmFastInstructions.Op_table_grow -> TODO()
+                WasmFastInstructions.Op_table_size -> TODO()
+                WasmFastInstructions.Op_table_fill -> TODO()
+                else -> TODO("op=$op, param=$param, i=$i")
+            }
+            index++
+        }
+        this.instructionsExecuted += instructionsExecuted
+    }
+
+    fun pushType(type: WasmSType, value: Any?) {
+        when (type) {
+            WasmSType.VOID -> Unit
+            WasmSType.I32 -> pushI32(value as Int)
+            WasmSType.I64 -> pushI64(value as Long)
+            WasmSType.F32 -> pushF32(value as Float)
+            WasmSType.F64 -> pushF64(value as Double)
+            WasmSType.V128 -> TODO()
+            WasmSType.ANYREF -> TODO()
+            WasmSType.FUNCREF -> TODO()
+        }
+    }
+
+    fun pushI32(value: Int) { stackI[stackPos++] = value }
+    fun pushF32(value: Float) { stackF[stackPos++] = value }
+    fun pushI64(value: Long) { stackL[stackPos++] = value }
+    fun pushF64(value: Double) { stackD[stackPos++] = value }
+    fun popI32(): Int = stackI[--stackPos]
+    fun popF32(): Float = stackF[--stackPos]
+    fun popI64(): Long = stackL[--stackPos]
+    fun popF64(): Double = stackD[--stackPos]
+    fun getLocalI32(offset: Int): Int = stackI[localsPos + offset]
+    fun getLocalI64(offset: Int): Long = stackL[localsPos + offset]
+    fun getLocalF32(offset: Int): Float = stackF[localsPos + offset]
+    fun getLocalF64(offset: Int): Double = stackD[localsPos + offset]
+    fun setLocalI32(offset: Int, value: Int): Int = value.also { stackI[localsPos + offset] = value }
+    fun setLocalI64(offset: Int, value: Long): Long = value.also { stackL[localsPos + offset] = value }
+    fun setLocalF32(offset: Int, value: Float): Float = value.also { stackF[localsPos + offset] = value }
+    fun setLocalF64(offset: Int, value: Double): Double = value.also { stackD[localsPos + offset] = value }
+
+    //inline fun pushIndex(size: Int): Int = stackPos.also { stackPos += size }
+    //inline fun popIndex(size: Int): Int { stackPos -= size; return stackPos }
+    //fun pushI32(value: Int) { stack.setUnalignedInt32(pushIndex(4), value) }
+    //fun pushF32(value: Float) { stack.setUnalignedFloat32(pushIndex(4), value) }
+    //fun pushI64(value: Long) { stack.setUnalignedInt64(pushIndex(8), value) }
+    //fun pushF64(value: Double) { stack.setUnalignedFloat64(pushIndex(8), value) }
+    //fun popI32(): Int = stack.getUnalignedInt32(popIndex(4))
+    //fun popF32(): Float = stack.getUnalignedFloat32(popIndex(4))
+    //fun popI64(): Long = stack.getUnalignedInt64(popIndex(8))
+    //fun popF64(): Double = stack.getUnalignedFloat64(popIndex(8))
+    //fun getLocalI32(offset: Int): Int = stack.getUnalignedInt32(localsPos + offset)
+    //fun getLocalI64(offset: Int): Long = stack.getUnalignedInt64(localsPos + offset)
+    //fun getLocalF32(offset: Int): Float = stack.getUnalignedFloat32(localsPos + offset)
+    //fun getLocalF64(offset: Int): Double = stack.getUnalignedFloat64(localsPos + offset)
+    //fun setLocalI32(offset: Int, value: Int): Int = value.also { stack.setUnalignedInt32(localsPos + offset, value) }
+    //fun setLocalI64(offset: Int, value: Long): Long = value.also { stack.setUnalignedInt64(localsPos + offset, value) }
+    //fun setLocalF32(offset: Int, value: Float): Float = value.also { stack.setUnalignedFloat32(localsPos + offset, value) }
+    //fun setLocalF64(offset: Int, value: Double): Double = value.also { stack.setUnalignedFloat64(localsPos + offset, value) }
+
+    fun setLocal(type: WasmSType, offset: Int, value: Any?) {
+        when (type) {
+            WasmSType.VOID -> TODO()
+            WasmSType.I32 -> setLocalI32(offset, value as Int)
+            WasmSType.I64 -> setLocalI64(offset, value as Long)
+            WasmSType.F32 -> setLocalF32(offset, value as Float)
+            WasmSType.F64 -> setLocalF64(offset, value as Double)
+            WasmSType.V128 -> TODO()
+            WasmSType.ANYREF -> TODO()
+            WasmSType.FUNCREF -> TODO()
+        }
+    }
+
+    fun setGlobal(global: WasmGlobal, value: Any?) {
+        when (global.globalType.toWasmSType()) {
+            WasmSType.VOID -> TODO()
+            WasmSType.I32 -> globalsI[global.index] = value as Int
+            WasmSType.I64 -> globalsL[global.index] = value as Long
+            WasmSType.F32 -> globalsF[global.index] = value as Float
+            WasmSType.F64 -> globalsD[global.index] = value as Double
+            //WasmSType.I32 -> globals.setUnalignedInt32(global.globalOffset, value as Int)
+            //WasmSType.I64 -> globals.setUnalignedInt64(global.globalOffset, value as Long)
+            //WasmSType.F32 -> globals.setUnalignedFloat32(global.globalOffset, value as Float)
+            //WasmSType.F64 -> globals.setUnalignedFloat64(global.globalOffset, value as Double)
+            WasmSType.V128 -> TODO()
+            WasmSType.ANYREF -> TODO()
+            WasmSType.FUNCREF -> TODO()
+        }
+    }
+
+    fun popType(type: WasmSType): Any? {
+        return when (type) {
+            WasmSType.VOID -> Unit
+            WasmSType.I32 -> popI32()
+            WasmSType.I64 -> popI64()
+            WasmSType.F32 -> popF32()
+            WasmSType.F64 -> popF64()
+            WasmSType.V128 -> TODO()
+            WasmSType.ANYREF -> TODO()
+            WasmSType.FUNCREF -> TODO()
+        }
+    }
+
+    override fun invoke(funcName: String, vararg params: Any?): Any? {
+        //arrayfill(stackI, 0)
+        //arrayfill(stackF, 0f)
+        //arrayfill(stackL, 0L)
+        //arrayfill(stackD, 0.0)
+        val func = module.functionsByName[funcName] ?: error("Can't find '$funcName' in ${module.functionsByName.keys}")
+        val code = func.getInterprerCode() ?: error("Function '$funcName' doesn't have body")
+        for ((index, arg) in func.type.args.withIndex()) {
+            //val offset = code.localsOffsets[index]
+            val offset = index
+            setLocal(arg.stype, offset, params[index])
+        }
+        //stackPos += code.localSize
+        stackPos += code.localsCount
+        //println("localsPos=$localsPos, stackPos=$stackPos")
+        invoke(func)
+        return popType(func.type.retType.toWasmSType())
+    }
+
+    override fun invokeIndirect(index: Int, vararg params: Any?): Any? {
+        return super.invokeIndirect(index, *params)
+    }
+
+    fun compile(func: WasmFunc, implicitReturn: Boolean): WasmInterpreterCode {
+        class Patch(val label: WasmCodeVisitor.Label, val intIndex: Int = -1, val instrutionIndex: Int = -1)
+
+        val poolLongs = arrayListOf<Long>()
+        val poolInts = intArrayListOf()
+        val poolFloats = floatArrayListOf()
+        val poolDoubles = doubleArrayListOf()
+        val instructions = intArrayListOf()
+        val patches = arrayListOf<Patch>()
+        var localsOffset = -1
+        var context: WasmCodeVisitor.Context = WasmCodeVisitor.Context(func, module)
+
+        fun ins(op: Int, param: Int = 0): Int {
+            check(op == (op and 0xFFF))
+            check(param == ((param shl 12) shr 12))
+            if (op == 2775) {
+                TODO()
+            }
+            return (op and 0xFFF) or (param shl 12)
+        }
+
+        func.accept(module, implicitReturn, object : WasmCodeVisitor {
+            override fun visit(i: WasmInstruction, context: WasmCodeVisitor.Context) {
+                val op = i.op
+                val opHI = op.id ushr 8
+                val opLO = op.id and 0xFF
+                var newOp = when (opHI) {
+                    0x00 -> op.id
+                    0xFC -> 0x200 + opLO
+                    else -> TODO()
+                }
+                var param = 0
+
+                when (i) {
+                    is WasmInstruction.InsConstLong -> {
+                        if (i.value in -500_000L..500_000L) {
+                            param = i.value.toInt()
+                            newOp = WasmFastInstructions.Op_i64_short_const
+                        } else {
+                            param = poolLongs.size
+                            poolLongs += i.value
+                        }
+                    }
+                    is WasmInstruction.InsConstInt -> {
+                        if (i.value in -500_000..500_000) {
+                            param = i.value
+                            newOp = WasmFastInstructions.Op_i32_short_const
+                        } else {
+                            param = poolInts.size
+                            poolInts += i.value
+                        }
+                    }
+                    is WasmInstruction.InsConstFloat -> {
+                        val ivalue = i.value.toInt()
+                        if (ivalue.toFloat() == i.value && ivalue in -500_000..500_000) {
+                            param = ivalue
+                            newOp = WasmFastInstructions.Op_f32_short_const
+                        } else {
+                            param = poolFloats.size
+                            poolFloats += i.value
+                        }
+                    }
+                    is WasmInstruction.InsConstDouble -> {
+                        val ivalue = i.value.toInt()
+                        if (ivalue.toDouble() == i.value && ivalue in -500_000..500_000) {
+                            param = ivalue
+                            newOp = WasmFastInstructions.Op_f64_short_const
+                        } else {
+                            param = poolDoubles.size
+                            poolDoubles += i.value
+                        }
+                    }
+                    is WasmInstruction.RETURN -> {
+                        when (context.retType.toWasmSType()) {
+                            WasmSType.VOID -> newOp = WasmFastInstructions.Op_void_return
+                            WasmSType.I32 -> newOp = WasmFastInstructions.Op_i32_return
+                            WasmSType.I64 -> newOp = WasmFastInstructions.Op_i64_return
+                            WasmSType.F32 -> newOp = WasmFastInstructions.Op_f32_return
+                            WasmSType.F64 -> newOp = WasmFastInstructions.Op_f64_return
+                            WasmSType.V128 -> newOp = WasmFastInstructions.Op_v128_return
+                            WasmSType.ANYREF -> TODO()
+                            WasmSType.FUNCREF -> TODO()
+                            else -> TODO()
+                        }
+                    }
+                    is WasmInstruction.InsMemarg -> {
+                        param = i.offset
+                    }
+                    is WasmInstruction.InsInt -> {
+                        when (i.op) {
+                            WasmOp.Op_local_get -> {
+                                //param = context.localsMemOffset[i.param]
+                                param = i.param
+                                when (context.lastInstructionOutputType) {
+                                    WasmSType.I32 -> newOp = WasmFastInstructions.Op_i32_local_get
+                                    WasmSType.I64 -> newOp = WasmFastInstructions.Op_i64_local_get
+                                    WasmSType.F32 -> newOp = WasmFastInstructions.Op_f32_local_get
+                                    WasmSType.F64 -> newOp = WasmFastInstructions.Op_f64_local_get
+                                    WasmSType.V128 -> newOp = WasmFastInstructions.Op_v128_local_get
+                                    WasmSType.ANYREF -> TODO("$i")
+                                    WasmSType.FUNCREF -> TODO("$i")
+                                    WasmSType.VOID -> TODO("$i")
+                                }
+                            }
+                            WasmOp.Op_local_tee -> {
+                                //param = context.localsMemOffset[i.param]
+                                param = i.param
+                                when (context.lastInstructionOutputType) {
+                                    WasmSType.I32 -> newOp = WasmFastInstructions.Op_i32_local_tee
+                                    WasmSType.I64 -> newOp = WasmFastInstructions.Op_i64_local_tee
+                                    WasmSType.F32 -> newOp = WasmFastInstructions.Op_f32_local_tee
+                                    WasmSType.F64 -> newOp = WasmFastInstructions.Op_f64_local_tee
+                                    WasmSType.V128 -> newOp = WasmFastInstructions.Op_v128_local_tee
+                                    WasmSType.ANYREF -> TODO("$i")
+                                    WasmSType.FUNCREF -> TODO("$i")
+                                    WasmSType.VOID -> TODO("$i")
+                                }
+                            }
+                            WasmOp.Op_local_set -> {
+                                //param = context.localsMemOffset[i.param]
+                                param = i.param
+                                when (context.lastInstructionOutputType) {
+                                    WasmSType.I32 -> newOp = WasmFastInstructions.Op_i32_local_set
+                                    WasmSType.I64 -> newOp = WasmFastInstructions.Op_i64_local_set
+                                    WasmSType.F32 -> newOp = WasmFastInstructions.Op_f32_local_set
+                                    WasmSType.F64 -> newOp = WasmFastInstructions.Op_f64_local_set
+                                    WasmSType.V128 -> newOp = WasmFastInstructions.Op_v128_local_set
+                                    WasmSType.ANYREF -> TODO("$i")
+                                    WasmSType.FUNCREF -> TODO("$i")
+                                    WasmSType.VOID -> TODO("$i")
+                                }
+                            }
+                            WasmOp.Op_global_get -> {
+                                //param = module.globals[i.param].globalOffset
+                                param = module.globals[i.param].index
+                                when (context.lastInstructionOutputType) {
+                                    WasmSType.I32 -> newOp = WasmFastInstructions.Op_i32_global_get
+                                    WasmSType.I64 -> newOp = WasmFastInstructions.Op_i64_global_get
+                                    WasmSType.F32 -> newOp = WasmFastInstructions.Op_f32_global_get
+                                    WasmSType.F64 -> newOp = WasmFastInstructions.Op_f64_global_get
+                                    WasmSType.V128 -> newOp = WasmFastInstructions.Op_v128_global_get
+                                    WasmSType.ANYREF -> TODO("$i")
+                                    WasmSType.FUNCREF -> TODO("$i")
+                                    WasmSType.VOID -> TODO("$i")
+                                }
+                            }
+                            WasmOp.Op_global_set -> {
+                                //param = module.globals[i.param].globalOffset
+                                param = module.globals[i.param].index
+                                when (context.lastInstructionType) {
+                                    WasmSType.I32 -> newOp = WasmFastInstructions.Op_i32_global_set
+                                    WasmSType.I64 -> newOp = WasmFastInstructions.Op_i64_global_set
+                                    WasmSType.F32 -> newOp = WasmFastInstructions.Op_f32_global_set
+                                    WasmSType.F64 -> newOp = WasmFastInstructions.Op_f64_global_set
+                                    WasmSType.V128 -> newOp = WasmFastInstructions.Op_v128_global_set
+                                    WasmSType.ANYREF -> TODO("$i")
+                                    WasmSType.FUNCREF -> TODO("$i")
+                                    WasmSType.VOID -> TODO("$i")
+                                }
+                            }
+                            WasmOp.Op_memory_copy, WasmOp.Op_memory_init, WasmOp.Op_memory_grow, WasmOp.Op_memory_fill, WasmOp.Op_memory_size -> {
+                                Unit
+                            }
+                            else -> TODO("$i")
+                        }
+                    }
+                    is WasmInstruction.Ins -> {
+                        when (i.op) {
+                            WasmOp.Op_drop -> {
+                                when (context.lastInstructionType) {
+                                    WasmSType.I32 -> newOp = WasmFastInstructions.Op_i32_drop
+                                    WasmSType.I64 -> newOp = WasmFastInstructions.Op_i64_drop
+                                    WasmSType.F32 -> newOp = WasmFastInstructions.Op_f32_drop
+                                    WasmSType.F64 -> newOp = WasmFastInstructions.Op_f64_drop
+                                    WasmSType.V128 -> newOp = WasmFastInstructions.Op_v128_drop
+                                    WasmSType.ANYREF -> TODO("$i")
+                                    WasmSType.FUNCREF -> TODO("$i")
+                                    WasmSType.VOID -> TODO("$i")
+                                }
+                            }
+                            WasmOp.Op_select -> {
+                                when (context.lastInstructionOutputType) {
+                                    WasmSType.I32 -> newOp = WasmFastInstructions.Op_i32_select
+                                    WasmSType.I64 -> newOp = WasmFastInstructions.Op_i64_select
+                                    WasmSType.F32 -> newOp = WasmFastInstructions.Op_f32_select
+                                    WasmSType.F64 -> newOp = WasmFastInstructions.Op_f64_select
+                                    WasmSType.V128 -> newOp = WasmFastInstructions.Op_v128_select
+                                    WasmSType.ANYREF -> TODO("$i")
+                                    WasmSType.FUNCREF -> TODO("$i")
+                                    WasmSType.VOID -> TODO("$i")
+                                }
+                            }
+                            else -> Unit
+                        }
+                    }
+                    is WasmInstruction.CALL -> {
+                        param = i.funcIdx
+                    }
+                    is WasmInstruction.CALL_INDIRECT -> {
+                        param = i.typeIdx
+                    }
+                    is WasmInstruction.unreachable -> Unit
+                    else -> TODO("$i")
+                }
+
+                instructions += ins(newOp, param)
+            }
+
+            override fun visitFuncStart(ctx: WasmCodeVisitor.Context) {
+                context = ctx
+                for (n in ctx.func.type.args.size until ctx.func.rlocals.size) {
+                    val type = ctx.func.rlocals[n].stype
+                    when (type) {
+                        WasmSType.VOID -> TODO()
+                        WasmSType.I32 -> {
+                            instructions += ins(WasmFastInstructions.Op_i32_short_const, 0)
+                            instructions += ins(WasmFastInstructions.Op_i32_local_set, n)
+                        }
+                        WasmSType.I64 -> {
+                            instructions += ins(WasmFastInstructions.Op_i64_short_const, 0)
+                            instructions += ins(WasmFastInstructions.Op_i64_local_set, n)
+                        }
+                        WasmSType.F32 -> {
+                            instructions += ins(WasmFastInstructions.Op_f32_short_const, 0)
+                            instructions += ins(WasmFastInstructions.Op_f32_local_set, n)
+                        }
+                        WasmSType.F64 -> {
+                            instructions += ins(WasmFastInstructions.Op_f64_short_const, 0)
+                            instructions += ins(WasmFastInstructions.Op_f64_local_set, n)
+                        }
+                        WasmSType.V128 -> TODO()
+                        WasmSType.ANYREF -> TODO()
+                        WasmSType.FUNCREF -> TODO()
+                    }
+                }
+            }
+
+            override fun visitFuncEnd(context: WasmCodeVisitor.Context) {
+                localsOffset = context.localsOffset
+            }
+
+            override fun visitGotoTable(
+                labels: List<WasmCodeVisitor.Label>,
+                default: WasmCodeVisitor.Label,
+                context: WasmCodeVisitor.Context
+            ) {
+                val tableIndex = poolInts.size
+                poolInts.add(labels.size)
+                for (label in listOf(default) + labels) {
+                    patches += Patch(label, intIndex = poolInts.size)
+                    poolInts.add(0)
+                }
+                instructions += ins(WasmFastInstructions.Op_goto_table, tableIndex)
+            }
+
+            override fun visitGoto(label: WasmCodeVisitor.Label, cond: Boolean?, context: WasmCodeVisitor.Context) {
+                //println("visitGoto: label=$label, cond=$cond")
+                if (cond == false && instructions.isNotEmpty()) {
+                    val lastOp = instructions.last() and 0xFFF
+                    val replace = when (lastOp) {
+                        WasmFastInstructions.Op_i32_eqz -> WasmFastInstructions.Op_goto_if_not_i32_eqz
+                        WasmFastInstructions.Op_i32_eq -> WasmFastInstructions.Op_goto_if_not_i32_eq
+                        WasmFastInstructions.Op_i32_ne -> WasmFastInstructions.Op_goto_if_not_i32_ne
+                        WasmFastInstructions.Op_i32_lt_s -> WasmFastInstructions.Op_goto_if_not_i32_lt_s
+                        WasmFastInstructions.Op_i32_lt_u -> WasmFastInstructions.Op_goto_if_not_i32_lt_u
+                        WasmFastInstructions.Op_i32_gt_s -> WasmFastInstructions.Op_goto_if_not_i32_gt_s
+                        WasmFastInstructions.Op_i32_gt_u -> WasmFastInstructions.Op_goto_if_not_i32_gt_u
+                        WasmFastInstructions.Op_i32_le_s -> WasmFastInstructions.Op_goto_if_not_i32_le_s
+                        WasmFastInstructions.Op_i32_le_u -> WasmFastInstructions.Op_goto_if_not_i32_le_u
+                        WasmFastInstructions.Op_i32_ge_s -> WasmFastInstructions.Op_goto_if_not_i32_ge_s
+                        WasmFastInstructions.Op_i32_ge_u -> WasmFastInstructions.Op_goto_if_not_i32_ge_u
+                        WasmFastInstructions.Op_i64_eqz -> WasmFastInstructions.Op_goto_if_not_i64_eqz
+                        WasmFastInstructions.Op_i64_eq -> WasmFastInstructions.Op_goto_if_not_i64_eq
+                        WasmFastInstructions.Op_i64_ne -> WasmFastInstructions.Op_goto_if_not_i64_ne
+                        WasmFastInstructions.Op_i64_lt_s -> WasmFastInstructions.Op_goto_if_not_i64_lt_s
+                        WasmFastInstructions.Op_i64_lt_u -> WasmFastInstructions.Op_goto_if_not_i64_lt_u
+                        WasmFastInstructions.Op_i64_gt_s -> WasmFastInstructions.Op_goto_if_not_i64_gt_s
+                        WasmFastInstructions.Op_i64_gt_u -> WasmFastInstructions.Op_goto_if_not_i64_gt_u
+                        WasmFastInstructions.Op_i64_le_s -> WasmFastInstructions.Op_goto_if_not_i64_le_s
+                        WasmFastInstructions.Op_i64_le_u -> WasmFastInstructions.Op_goto_if_not_i64_le_u
+                        WasmFastInstructions.Op_i64_ge_s -> WasmFastInstructions.Op_goto_if_not_i64_ge_s
+                        WasmFastInstructions.Op_i64_ge_u -> WasmFastInstructions.Op_goto_if_not_i64_ge_u
+                        WasmFastInstructions.Op_f32_eq -> WasmFastInstructions.Op_goto_if_not_f32_eq
+                        WasmFastInstructions.Op_f32_ne -> WasmFastInstructions.Op_goto_if_not_f32_ne
+                        WasmFastInstructions.Op_f32_lt -> WasmFastInstructions.Op_goto_if_not_f32_lt
+                        WasmFastInstructions.Op_f32_gt -> WasmFastInstructions.Op_goto_if_not_f32_gt
+                        WasmFastInstructions.Op_f32_le -> WasmFastInstructions.Op_goto_if_not_f32_le
+                        WasmFastInstructions.Op_f32_ge -> WasmFastInstructions.Op_goto_if_not_f32_ge
+                        WasmFastInstructions.Op_f64_eq -> WasmFastInstructions.Op_goto_if_not_f64_eq
+                        WasmFastInstructions.Op_f64_ne -> WasmFastInstructions.Op_goto_if_not_f64_ne
+                        WasmFastInstructions.Op_f64_lt -> WasmFastInstructions.Op_goto_if_not_f64_lt
+                        WasmFastInstructions.Op_f64_gt -> WasmFastInstructions.Op_goto_if_not_f64_gt
+                        WasmFastInstructions.Op_f64_le -> WasmFastInstructions.Op_goto_if_not_f64_le
+                        WasmFastInstructions.Op_f64_ge -> WasmFastInstructions.Op_goto_if_not_f64_ge
+                        else -> null
+                    }
+                    if (replace != null) {
+                        patches += Patch(label, instrutionIndex = instructions.size - 1)
+                        instructions[instructions.size - 1] = replace
+                        return
+                    }
+                }
+                patches += Patch(label, instrutionIndex = instructions.size)
+                instructions += ins(when (cond) {
+                    null -> WasmFastInstructions.Op_goto
+                    true -> WasmFastInstructions.Op_goto_if
+                    false -> WasmFastInstructions.Op_goto_if_not
+                }, 0)
+            }
+
+            override fun visitLabel(label: WasmCodeVisitor.Label, context: WasmCodeVisitor.Context) {
+                label.target = instructions.size
+            }
+        })
+
+        for (patch in patches) {
+            val intIndex = patch.intIndex
+            val instrutionIndex = patch.instrutionIndex
+            if (instrutionIndex >= 0) {
+                instructions[instrutionIndex] = ins(instructions[instrutionIndex] and 0xFFF, patch.label.target)
+            }
+            if (intIndex >= 0) {
+                poolInts[intIndex] = patch.label.target
             }
         }
 
-        fun copy(
-            ins: Int = this.ins,
-            kind: WasmSType = this.kind,
-            param: Int = this.param,
-            extra: Int = this.extra,
-        ): WasmIntInstruction = WasmIntInstruction(ins, kind, param, extra)
+        return WasmInterpreterCode(
+            instructions.toIntArray(),
+            poolInts.toIntArray(),
+            poolLongs.toLongArray(),
+            poolFloats.toFloatArray(),
+            poolDoubles.toDoubleArray(),
+            localSize = localsOffset,
+            localsOffsets = context.localsMemOffset,
+            paramsSize = context.paramsOffset,
+            paramsCount = context.func.type.args.size,
+            localsCount = context.funcLocals.size,
+            endStack = context.stack,
+        )
+    }
 
-        companion object {
-            fun Int.fitsIn(bits: Int): Boolean {
-                val rest = this ushr bits
-                return rest == 0
-            }
-            fun Int.fitsInSigned(bits: Int): Boolean {
-                val rest = this ushr bits
-                return rest == 0 || rest == (32 - bits).mask()
-            }
 
-            operator fun invoke(ins: Int, kind: WasmSType, param: Int, extra: Int): WasmIntInstruction {
-                check(ins.fitsIn(6)) { "ins: $ins" }
-                check(kind.id.fitsIn(3)) { "kind: $kind" }
-                check(extra.fitsIn(3)) { "extra: $extra" }
-                check(param.fitsInSigned(20)) { "param: $param" }
-                val res = 0
-                    .insert6(ins, 0)
-                    .insert3(kind.id, 6)
-                    .insert3(extra, 9)
-                    .insert(param, 12, 20)
+    // Fast instructions for a switch
+    object WasmFastInstructions {
+        const val Op_unreachable = 0x00
+        const val Op_nop = 0x01
+        const val Op_block = 0x02
+        const val Op_loop = 0x03
+        const val Op_if = 0x04
+        const val Op_else = 0x05
+        const val Op_try = 0x06
+        const val Op_catch = 0x07
+        const val Op_throw = 0x08
+        const val Op_rethrow = 0x09
+        const val Op_reserved_0x0a = 0x0a
+        const val Op_end = 0x0b
+        const val Op_br = 0x0c
+        const val Op_br_if = 0x0d
+        const val Op_br_table = 0x0e
+        const val Op_return = 0x0f
+        const val Op_call = 0x10
+        const val Op_call_indirect = 0x11
+        const val Op_return_call = 0x12
+        const val Op_return_call_indirect = 0x13
+        const val Op_call_ref = 0x14
+        const val Op_return_call_ref = 0x15
+        const val Op_delegate = 0x18
+        const val Op_catch_all = 0x19
+        const val Op_drop = 0x1a
+        const val Op_select = 0x1b
+        const val Op_local_get = 0x20
+        const val Op_local_set = 0x21
+        const val Op_local_tee = 0x22
+        const val Op_global_get = 0x23
+        const val Op_global_set = 0x24
+        const val Op_i32_load = 0x28
+        const val Op_i64_load = 0x29
+        const val Op_f32_load = 0x2a
+        const val Op_f64_load = 0x2b
+        const val Op_i32_load8_s = 0x2c
+        const val Op_i32_load8_u = 0x2d
+        const val Op_i32_load16_s = 0x2e
+        const val Op_i32_load16_u = 0x2f
+        const val Op_i64_load8_s = 0x30
+        const val Op_i64_load8_u = 0x31
+        const val Op_i64_load16_s = 0x32
+        const val Op_i64_load16_u = 0x33
+        const val Op_i64_load32_s = 0x34
+        const val Op_i64_load32_u = 0x35
+        const val Op_i32_store = 0x36
+        const val Op_i64_store = 0x37
+        const val Op_f32_store = 0x38
+        const val Op_f64_store = 0x39
+        const val Op_i32_store8 = 0x3a
+        const val Op_i32_store16 = 0x3b
+        const val Op_i64_store8 = 0x3c
+        const val Op_i64_store16 = 0x3d
+        const val Op_i64_store32 = 0x3e
+        const val Op_memory_size = 0x3f
+        const val Op_memory_grow = 0x40
+        const val Op_i32_const = 0x41
+        const val Op_i64_const = 0x42
+        const val Op_f32_const = 0x43
+        const val Op_f64_const = 0x44
+        const val Op_i32_eqz = 0x45
+        const val Op_i32_eq =  0x46
+        const val Op_i32_ne =  0x47
+        const val Op_i32_lt_s = 0x48
+        const val Op_i32_lt_u = 0x49
+        const val Op_i32_gt_s = 0x4a
+        const val Op_i32_gt_u = 0x4b
+        const val Op_i32_le_s = 0x4c
+        const val Op_i32_le_u = 0x4d
+        const val Op_i32_ge_s = 0x4e
+        const val Op_i32_ge_u = 0x4f
+        const val Op_i64_eqz = 0x50
+        const val Op_i64_eq = 0x51
+        const val Op_i64_ne = 0x52
+        const val Op_i64_lt_s = 0x53
+        const val Op_i64_lt_u = 0x54
+        const val Op_i64_gt_s = 0x55
+        const val Op_i64_gt_u = 0x56
+        const val Op_i64_le_s = 0x57
+        const val Op_i64_le_u = 0x58
+        const val Op_i64_ge_s = 0x59
+        const val Op_i64_ge_u = 0x5a
+        const val Op_f32_eq = 0x5b
+        const val Op_f32_ne = 0x5c
+        const val Op_f32_lt = 0x5d
+        const val Op_f32_gt = 0x5e
+        const val Op_f32_le = 0x5f
+        const val Op_f32_ge = 0x60
+        const val Op_f64_eq = 0x61
+        const val Op_f64_ne = 0x62
+        const val Op_f64_lt = 0x63
+        const val Op_f64_gt = 0x64
+        const val Op_f64_le = 0x65
+        const val Op_f64_ge = 0x66
+        const val Op_i32_clz = 0x67
+        const val Op_i32_ctz = 0x68
+        const val Op_i32_popcnt = 0x69
+        const val Op_i32_add = 0x6a
+        const val Op_i32_sub = 0x6b
+        const val Op_i32_mul = 0x6c
+        const val Op_i32_div_s = 0x6d
+        const val Op_i32_div_u = 0x6e
+        const val Op_i32_rem_s = 0x6f
+        const val Op_i32_rem_u = 0x70
+        const val Op_i32_and = 0x71
+        const val Op_i32_or = 0x72
+        const val Op_i32_xor = 0x73
+        const val Op_i32_shl = 0x74
+        const val Op_i32_shr_s = 0x75
+        const val Op_i32_shr_u = 0x76
+        const val Op_i32_rotl = 0x77
+        const val Op_i32_rotr = 0x78
+        const val Op_i64_clz = 0x79
+        const val Op_i64_ctz = 0x7a
+        const val Op_i64_popcnt = 0x7b
+        const val Op_i64_add = 0x7c
+        const val Op_i64_sub = 0x7d
+        const val Op_i64_mul = 0x7e
+        const val Op_i64_div_s = 0x7f
+        const val Op_i64_div_u = 0x80
+        const val Op_i64_rem_s = 0x81
+        const val Op_i64_rem_u = 0x82
+        const val Op_i64_and = 0x83
+        const val Op_i64_or = 0x84
+        const val Op_i64_xor = 0x85
+        const val Op_i64_shl = 0x86
+        const val Op_i64_shr_s = 0x87
+        const val Op_i64_shr_u = 0x88
+        const val Op_i64_rotl = 0x89
+        const val Op_i64_rotr = 0x8a
+        const val Op_f32_abs = 0x8b
+        const val Op_f32_neg = 0x8c
+        const val Op_f32_ceil = 0x8d
+        const val Op_f32_floor = 0x8e
+        const val Op_f32_trunc = 0x8f
+        const val Op_f32_nearest = 0x90
+        const val Op_f32_sqrt = 0x91
+        const val Op_f32_add = 0x92
+        const val Op_f32_sub = 0x93
+        const val Op_f32_mul = 0x94
+        const val Op_f32_div = 0x95
+        const val Op_f32_min = 0x96
+        const val Op_f32_max = 0x97
+        const val Op_f32_copysign = 0x98
+        const val Op_f64_abs = 0x99
+        const val Op_f64_neg = 0x9a
+        const val Op_f64_ceil = 0x9b
+        const val Op_f64_floor = 0x9c
+        const val Op_f64_trunc = 0x9d
+        const val Op_f64_nearest = 0x9e
+        const val Op_f64_sqrt = 0x9f
+        const val Op_f64_add = 0xa0
+        const val Op_f64_sub = 0xa1
+        const val Op_f64_mul = 0xa2
+        const val Op_f64_div = 0xa3
+        const val Op_f64_min = 0xa4
+        const val Op_f64_max = 0xa5
+        const val Op_f64_copysign = 0xa6
+        const val Op_i32_wrap_i64 = 0xa7
+        const val Op_i32_trunc_f32_s = 0xa8
+        const val Op_i32_trunc_f32_u = 0xa9
+        const val Op_i32_trunc_f64_s = 0xaa
+        const val Op_i32_trunc_f64_u = 0xab
+        const val Op_i64_extend_i32_s = 0xac
+        const val Op_i64_extend_i32_u = 0xad
+        const val Op_i64_trunc_f32_s = 0xae
+        const val Op_i64_trunc_f32_u = 0xaf
+        const val Op_i64_trunc_f64_s = 0xb0
+        const val Op_i64_trunc_f64_u = 0xb1
+        const val Op_f32_convert_i32_s = 0xb2
+        const val Op_f32_convert_i32_u = 0xb3
+        const val Op_f32_convert_i64_s = 0xb4
+        const val Op_f32_convert_i64_u = 0xb5
+        const val Op_f32_demote_f64 = 0xb6
+        const val Op_f64_convert_i32_s = 0xb7
+        const val Op_f64_convert_i32_u = 0xb8
+        const val Op_f64_convert_i64_s = 0xb9
+        const val Op_f64_convert_i64_u = 0xba
+        const val Op_f64_promote_f32 = 0xbb
+        const val Op_i32_reinterpret_f32 = 0xbc
+        const val Op_i64_reinterpret_f64 = 0xbd
+        const val Op_f32_reinterpret_i32 = 0xbe
+        const val Op_f64_reinterpret_i64 = 0xbf
+        const val Op_i32_extend8_s = 0xc0
+        const val Op_i32_extend16_s = 0xc1
+        const val Op_i64_extend8_s = 0xc2
+        const val Op_i64_extend16_s = 0xc3
+        const val Op_i64_extend32_s = 0xc4
+        const val Op_ref_null = 0xd0
+        const val Op_ref_is_null = 0xd1
+        const val Op_i32_drop = 0x100 // local & global instructions one per type at 0x1xx
+        const val Op_i64_drop = 0x101
+        const val Op_f32_drop = 0x102
+        const val Op_f64_drop = 0x103
+        const val Op_v128_drop = 0x104
+        const val Op_i32_local_get = 0x110
+        const val Op_i64_local_get = 0x111
+        const val Op_f32_local_get = 0x112
+        const val Op_f64_local_get = 0x113
+        const val Op_v128_local_get = 0x114
+        const val Op_i32_local_set = 0x120
+        const val Op_i64_local_set = 0x121
+        const val Op_f32_local_set = 0x122
+        const val Op_f64_local_set = 0x123
+        const val Op_v128_local_set = 0x124
+        const val Op_i32_local_tee = 0x130
+        const val Op_i64_local_tee = 0x131
+        const val Op_f32_local_tee = 0x132
+        const val Op_f64_local_tee = 0x133
+        const val Op_v128_local_tee = 0x134
+        const val Op_i32_global_get = 0x140
+        const val Op_i64_global_get = 0x141
+        const val Op_f32_global_get = 0x142
+        const val Op_f64_global_get = 0x143
+        const val Op_v128_global_get = 0x144
+        const val Op_i32_global_set = 0x150
+        const val Op_i64_global_set = 0x151
+        const val Op_f32_global_set = 0x152
+        const val Op_f64_global_set = 0x153
+        const val Op_v128_global_set = 0x154
+        const val Op_i32_return = 0x160
+        const val Op_i64_return = 0x161
+        const val Op_f32_return = 0x162
+        const val Op_f64_return = 0x163
+        const val Op_v128_return = 0x164
+        const val Op_void_return = 0x165
+        const val Op_i32_short_const = 0x170
+        const val Op_i64_short_const = 0x171
+        const val Op_f32_short_const = 0x172
+        const val Op_f64_short_const = 0x173
+        const val Op_goto = 0x180
+        const val Op_goto_if = 0x181
+        const val Op_goto_if_not = 0x182
+        const val Op_goto_table = 0x183
+        const val Op_i32_select = 0x190
+        const val Op_i64_select = 0x191
+        const val Op_f32_select = 0x192
+        const val Op_f64_select = 0x193
+        const val Op_v128_select = 0x194
 
-                return WasmIntInstruction(res)
-            }
+        const val Op_goto_if_not_i32_eqz = 0x1a0
+        const val Op_goto_if_not_i32_eq =  0x1a1
+        const val Op_goto_if_not_i32_ne =  0x1a2
+        const val Op_goto_if_not_i32_lt_s = 0x1a3
+        const val Op_goto_if_not_i32_lt_u = 0x1a4
+        const val Op_goto_if_not_i32_gt_s = 0x1a5
+        const val Op_goto_if_not_i32_gt_u = 0x1a6
+        const val Op_goto_if_not_i32_le_s = 0x1a7
+        const val Op_goto_if_not_i32_le_u = 0x1a8
+        const val Op_goto_if_not_i32_ge_s = 0x1a9
+        const val Op_goto_if_not_i32_ge_u = 0x1aa
+        const val Op_goto_if_not_i64_eqz = 0x1ab
+        const val Op_goto_if_not_i64_eq = 0x1ac
+        const val Op_goto_if_not_i64_ne = 0x1ad
+        const val Op_goto_if_not_i64_lt_s = 0x1ae
+        const val Op_goto_if_not_i64_lt_u = 0x1af
+        const val Op_goto_if_not_i64_gt_s = 0x1b0
+        const val Op_goto_if_not_i64_gt_u = 0x1b1
+        const val Op_goto_if_not_i64_le_s = 0x1b2
+        const val Op_goto_if_not_i64_le_u = 0x1b3
+        const val Op_goto_if_not_i64_ge_s = 0x1b4
+        const val Op_goto_if_not_i64_ge_u = 0x1b5
+        const val Op_goto_if_not_f32_eq = 0x1b6
+        const val Op_goto_if_not_f32_ne = 0x1b7
+        const val Op_goto_if_not_f32_lt = 0x1b8
+        const val Op_goto_if_not_f32_gt = 0x1b9
+        const val Op_goto_if_not_f32_le = 0x1ba
+        const val Op_goto_if_not_f32_ge = 0x1bb
+        const val Op_goto_if_not_f64_eq = 0x1bc
+        const val Op_goto_if_not_f64_ne = 0x1bd
+        const val Op_goto_if_not_f64_lt = 0x1be
+        const val Op_goto_if_not_f64_gt = 0x1bf
+        const val Op_goto_if_not_f64_le = 0x1c0
+        const val Op_goto_if_not_f64_ge = 0x1c1
 
-            const val UNREACHABLE = 0
-
-            const val GET_GLOBAL = 1
-            const val SET_GLOBAL = 2
-            const val GET_LOCAL = 3
-            const val SET_LOCAL = 4
-            const val TEE_LOCAL = 5
-            const val GET_MEM = 6
-            const val SET_MEM = 7
-
-            const val JUMP = 8
-            const val JUMP_IF = 9
-            const val JUMP_IF_NOT = 10
-            const val SELECT = 11
-            const val DROP = 12
-            const val CALL = 13
-
-            const val PUSH_CONST = 14
-            const val PUSH_CONST_SHORT = 15
-
-            const val RETURN = 16
-            const val MEM_OP = 17
-
-            const val PUSH_CONST_NULL = 18
-
-            const val JUMP_TABLE = 19
-
-            const val BINOP_ADD = 30
-            const val BINOP_SUB = 31
-            const val BINOP_MUL = 32
-            const val BINOP_DIV_S = 33
-            const val BINOP_DIV_U = 34
-            const val BINOP_REM_S = 35
-            const val BINOP_REM_U = 36
-            const val BINOP_SHL = 37
-            const val BINOP_SHR_S = 38
-            const val BINOP_SHR_U = 39
-            const val BINOP_AND = 40
-            const val BINOP_OR = 41
-            const val BINOP_XOR = 42
-            const val BINOP_ROTL = 43
-            const val BINOP_ROTR = 44
-            const val BINOP_MAX = 45
-            const val BINOP_MIN = 46
-            const val UNOP_CTZ = 47
-            const val UNOP_CLZ = 48
-            const val UNOP_ABS = 49
-            const val UNOP_NEG = 50
-            const val UNOP_POPCNT = 51
-            const val BINOP_COMP = 52
-            const val BINOP_COMP_ZERO = 53
-            const val UNOP_CAST = 54
-            const val BINOP_COPYSIGN = 55
-            const val UNOP_REINTERPRET = 56
-
-            const val COMP_EQ = 0
-            const val COMP_NE = 1
-            const val COMP_LT_U = 2
-            const val COMP_LE_U = 3
-            const val COMP_GT_U = 4
-            const val COMP_GE_U = 5
-            const val COMP_LT_S = 6
-            const val COMP_LE_S = 7
-            const val COMP_GT_S = 8
-            const val COMP_GE_S = 9
-
-            const val EXTEND_NONE = 0
-            const val EXTEND8_S = 1
-            const val EXTEND8_U = 2
-            const val EXTEND16_S = 3
-            const val EXTEND16_U = 4
-            const val EXTEND32_S = 5
-            const val EXTEND32_U = 6
-            const val EXTEND64_S = 7
-
-            const val CAST_I32_S = 8
-            const val CAST_I32_U = 9
-
-            const val CAST_I64_S = 10
-            const val CAST_I64_U = 11
-
-            const val TRUNC_SAT_I32_S = 12
-            const val TRUNC_SAT_I32_U = 13
-            const val TRUNC_SAT_F32_S = 14
-            const val TRUNC_SAT_F32_U = 15
-            const val TRUNC_SAT_F64_S = 16
-            const val TRUNC_SAT_F64_U = 17
-
-            const val TRUNC_I32_S = 18
-            const val TRUNC_I32_U = 19
-            const val TRUNC_F32_S = 20
-            const val TRUNC_F32_U = 21
-            const val TRUNC_F64_S = 22
-            const val TRUNC_F64_U = 23
-
-            const val MEMOP_SIZE = 1
-            const val MEMOP_GROW = 2
-            const val MEMOP_COPY = 3
-            const val MEMOP_FILL = 4
-
-            fun ioName(id: Int): String = when (id) {
-                RETURN -> "RETURN"
-                GET_GLOBAL -> "GET_GLOBAL"
-                SET_GLOBAL -> "SET_GLOBAL"
-                GET_LOCAL -> "GET_LOCAL"
-                SET_LOCAL -> "SET_LOCAL"
-                TEE_LOCAL -> "TEE_LOCAL"
-                GET_MEM -> "GET_MEM"
-                SET_MEM -> "SET_MEM"
-                PUSH_CONST -> "PUSH_CONST"
-                PUSH_CONST_SHORT -> "PUSH_CONST_SHORT"
-                PUSH_CONST_NULL -> "PUSH_CONST_NULL"
-                BINOP_ADD -> "BINOP_ADD"
-                BINOP_SUB -> "BINOP_SUB"
-                BINOP_MUL -> "BINOP_MUL"
-                BINOP_DIV_S -> "BINOP_DIV_S"
-                BINOP_DIV_U -> "BINOP_DIV_U"
-                BINOP_REM_S -> "BINOP_REM_S"
-                BINOP_REM_U -> "BINOP_REM_U"
-                BINOP_SHL -> "BINOP_SHL"
-                BINOP_SHR_S -> "BINOP_SHR_S"
-                BINOP_SHR_U -> "BINOP_SHR_U"
-                BINOP_AND -> "BINOP_AND"
-                BINOP_OR -> "BINOP_OR"
-                BINOP_XOR -> "BINOP_XOR"
-                BINOP_ROTL -> "BINOP_ROTL"
-                BINOP_ROTR -> "BINOP_ROTR"
-                BINOP_MAX -> "BINOP_MAX"
-                BINOP_MIN -> "BINOP_MIN"
-                BINOP_COPYSIGN -> "BINOP_COPYSIGN"
-                UNOP_CTZ -> "UNOP_CTZ"
-                UNOP_CLZ -> "UNOP_CLZ"
-                UNOP_ABS -> "UNOP_ABS"
-                UNOP_NEG -> "UNOP_NEG"
-                UNOP_POPCNT -> "UNOP_POPCNT"
-                BINOP_COMP -> "BINOP_COMP"
-                BINOP_COMP_ZERO -> "BINOP_COMP_ZERO"
-                UNOP_REINTERPRET -> "UNOP_REINTERPRET"
-                JUMP -> "JUMP"
-                JUMP_IF -> "JUMP_IF"
-                JUMP_IF_NOT -> "JUMP_IF_NOT"
-                SELECT -> "SELECT"
-                DROP -> "DROP"
-                CALL -> "CALL"
-                UNREACHABLE -> "UNREACHABLE"
-                MEM_OP -> "MEM_OP"
-                UNOP_CAST -> "UNOP_CAST"
-                else -> "UNKNOWN$id"
-            }
-
-            fun compName(id: Int): String = when (id) {
-                COMP_EQ -> "=="
-                COMP_NE -> "!="
-                COMP_LT_U -> "<u"
-                COMP_LE_U -> "<=u"
-                COMP_GT_U -> ">u"
-                COMP_GE_U -> ">=u"
-                COMP_LT_S -> "<"
-                COMP_LE_S -> "<="
-                COMP_GT_S -> ">"
-                COMP_GE_S -> ">="
-                else -> "?$id"
-            }
-
-            fun compFromStr(str: String): Int = when (str) {
-                "==" -> COMP_EQ
-                "!=" -> COMP_NE
-                "<", "<s" -> COMP_LT_S
-                "<=", "<=s" -> COMP_LE_S
-                ">", ">s" -> COMP_GT_S
-                ">=", ">=s" -> COMP_GE_S
-                "<u" -> COMP_LT_U
-                "<=u" -> COMP_LE_U
-                ">u" -> COMP_GT_U
-                ">=u" -> COMP_GE_U
-                else -> TODO("$str")
-            }
-        }
+        const val Op_i32_trunc_sat_f32_s = 0x200 // 0xFCxx instructions moved to 0x2xx
+        const val Op_i32_trunc_sat_f32_u = 0x201
+        const val Op_i32_trunc_sat_f64_s = 0x202
+        const val Op_i32_trunc_sat_f64_u = 0x203
+        const val Op_i64_trunc_sat_f32_s = 0x204
+        const val Op_i64_trunc_sat_f32_u = 0x205
+        const val Op_i64_trunc_sat_f64_s = 0x206
+        const val Op_i64_trunc_sat_f64_u = 0x207
+        const val Op_memory_init = 0x208
+        const val Op_data_drop = 0x209
+        const val Op_memory_copy = 0x20A
+        const val Op_memory_fill = 0x20B
+        const val Op_table_init = 0x20C
+        const val Op_elem_drop = 0x20D
+        const val Op_table_copy = 0x20E
+        const val Op_table_grow = 0x20F
+        const val Op_table_size = 0x210
+        const val Op_table_fill = 0x211
     }
 }
 
-class WasmInterpreterCode constructor(
-    val instructions: IntArray,
-    val intPool: IntArray,
-    val longPool: LongArray,
-    val floatPool: FloatArray,
-    val doublePool: DoubleArray,
-    val paramsSize: Int = -1,
-    val localSize: Int = -1,
-    val paramsCount: Int = -1,
-    val localsCount: Int = -1,
-    val localsOffsets: IntArray = IntArray(0),
-    val endStack: List<WasmType> = emptyList(),
-) {
-}
