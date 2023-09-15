@@ -1,8 +1,5 @@
 package korlibs.logger
 
-import korlibs.logger.atomic.*
-import korlibs.logger.internal.*
-
 /**
  * Utility to log messages.
  *
@@ -40,13 +37,13 @@ class Logger private constructor(val name: String, val normalizedName: String, v
     val isLocalOutputSet: Boolean get() = optOutput != null
 
     companion object {
-        private val Logger_loggers: AtomicMap<String, Logger> = AtomicMap(emptyMap())
+        private val Logger_loggers = HashMap<String, Logger>()
 
         /** The default [Level] used for all [Logger] that doesn't have its [Logger.level] set */
-        var defaultLevel: Level? by KloggerAtomicRef(null)
+        var defaultLevel: Level? = null
 
         /** The default [Output] used for all [Logger] that doesn't have its [Logger.output] set */
-        var defaultOutput: Output by KloggerAtomicRef(DefaultLogOutput)
+        var defaultOutput: Output = DefaultLogOutput
 
         /** Gets a [Logger] from its [name] */
         operator fun invoke(name: String): Logger {
@@ -56,7 +53,7 @@ class Logger private constructor(val name: String, val normalizedName: String, v
                 miniEnvironmentVariablesUC["LOG_$normalizedName"]?.also {
                     logger.level = Level[it]
                 }
-                if (Logger_loggers.value.isEmpty()) {
+                if (Logger_loggers.isEmpty()) {
                     miniEnvironmentVariablesUC["LOG_LEVEL"]?.also {
                         defaultLevel = Level[it]
                     }
@@ -151,9 +148,14 @@ fun Logger.setLevel(level: Logger.Level): Logger = this.apply { this.level = lev
 /** Sets the [Logger.output] */
 fun Logger.setOutput(output: Logger.Output): Logger = this.apply { this.output = output }
 
-private typealias AtomicMap<K, V> = KloggerAtomicRef<Map<K, V>>
+internal expect val miniEnvironmentVariables: Map<String, String> //= mapOf()
+private var _miniEnvironmentVariablesUC: Map<String, String>? = null
 
-private inline operator fun <K, V> AtomicMap<K, V>.get(key: K) = value[key]
-private inline operator fun <K, V> AtomicMap<K, V>.set(key: K, value: V) {
-    this.update { HashMap(it).also { nmap -> nmap[key] = value } }
+internal val miniEnvironmentVariablesUC: Map<String, String> get() {
+    if (_miniEnvironmentVariablesUC == null) {
+        _miniEnvironmentVariablesUC = miniEnvironmentVariables.mapKeys { it.key.uppercase() }
+    }
+    return _miniEnvironmentVariablesUC!!
 }
+
+expect object DefaultLogOutput : Logger.Output

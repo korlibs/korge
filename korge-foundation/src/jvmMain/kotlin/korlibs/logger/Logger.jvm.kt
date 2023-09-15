@@ -2,6 +2,25 @@ package korlibs.logger
 
 import java.util.logging.Level
 
+actual object Console : BaseConsole() {
+    override fun logInternal(kind: Kind, vararg msg: Any?) {
+        val stream = if (kind == Kind.ERROR) System.err else System.out
+        stream.println(logToString(kind, *msg))
+    }
+
+    override fun logToString(kind: Kind, vararg msg: Any?): String = buildString {
+        val color = kind.color
+        if (color != null) appendFgColor(color)
+        append('#')
+        append(Thread.currentThread().id)
+        append(": ")
+        msg.joinTo(this, ", ")
+        if (color != null) appendReset()
+    }
+}
+
+internal actual val miniEnvironmentVariables: Map<String, String> by lazy { System.getenv() }
+
 actual object DefaultLogOutput : Logger.Output {
     override fun output(logger: Logger, level: Logger.Level, msg: Any?) {
         if (logger.nativeLogger == null) {

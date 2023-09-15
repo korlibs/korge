@@ -1,11 +1,12 @@
 package korlibs.logger.test
 
+import korlibs.datastructure.atomic.*
 import korlibs.logger.Logger
-import korlibs.logger.atomic.KloggerAtomicRef
+import korlibs.memory.atomic.*
 import kotlin.test.*
 
 class LoggerTest {
-	private val out = KloggerAtomicRef(listOf<String>())
+	private val out = arrayListOf<String>()
 
 	@Test
 	fun simple() {
@@ -14,20 +15,20 @@ class LoggerTest {
 		val logger = Logger("demo")
 		logger.output = object : Logger.Output {
 			override fun output(logger: Logger, level: Logger.Level, msg: Any?) {
-				out.update { it + "${logger.name}: $level: $msg" }
+				out += "${logger.name}: $level: $msg"
 			}
 		}
 		logger.level = Logger.Level.INFO
 		logger.warn { "mywarn" }
 		logger.info { "myinfo" }
 		logger.trace { "mytrace" }
-		assertEquals(listOf("demo: WARN: mywarn", "demo: INFO: myinfo"), out.value)
+		assertEquals(listOf("demo: WARN: mywarn", "demo: INFO: myinfo"), out)
 
 		logger.level = Logger.Level.WARN
 		logger.warn { "mywarn" }
 		logger.info { "myinfo" }
 		logger.trace { "mytrace" }
-		assertEquals(listOf("demo: WARN: mywarn", "demo: INFO: myinfo", "demo: WARN: mywarn"), out.value)
+		assertEquals(listOf("demo: WARN: mywarn", "demo: INFO: myinfo", "demo: WARN: mywarn"), out)
 	}
 
     @Test
