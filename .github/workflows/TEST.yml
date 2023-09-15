@@ -142,6 +142,8 @@ jobs:
     timeout-minutes: 240
     runs-on: macos-11
     #runs-on: ubuntu-latest
+    env:
+      DISABLE_KOTLIN_NATIVE: true
     steps:
       - { uses: actions/checkout@v3 }
       - { name: Set up JDK, uses: actions/setup-java@v3, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
@@ -199,5 +201,6 @@ jobs:
     - { name: Gradle cache, uses: ./.github/actions/gradle-cache }
     - { name: Testing JVM on windows, shell: cmd, run: "CALL gradlew.bat jvmTest", env: { EGL_LOG_LEVEL: debug, LIBGL_DEBUG: verbose, LIBGL_ALWAYS_SOFTWARE: true, MESA_DEBUG: true } }
     - { name: Archive Test Results, if: failure(), uses: actions/upload-artifact@v3, with: { name: screenshot-test-results-windows, retention-days: 21, path: "**/build/reports", if-no-files-found: ignore } }
+    - { name: Publish maven local, shell: cmd, run: "CALL gradlew.bat publishJvmLocal :korge-gradle-plugin:publishToMavenLocal :korge-reload-agent:publishToMavenLocal" }
     - { name: e2e test, shell: cmd, working-directory: e2e/e2e-test, run: CALL gradlew.bat checkReferencesJvm --stacktrace }
     - { name: Archive E2E Test Results, if: failure(), uses: actions/upload-artifact@v3, with: { name: e2e-test-results-windows, retention-days: 21, path: "**/e2e/e2e-test/build/screenshots", if-no-files-found: ignore } }
