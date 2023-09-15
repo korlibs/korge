@@ -30,7 +30,9 @@ include(":korge-core")
 include(":korge")
 include(":korge-gradle-plugin")
 include(":korge-reload-agent")
-include(":korge-sandbox")
+if (System.getenv("DISABLE_SANDBOX") != "true") {
+    include(":korge-sandbox")
+}
 if (!inCI || System.getenv("ENABLE_BENCHMARKS") == "true") {
     include(":korge-benchmarks")
 }

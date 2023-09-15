@@ -11,6 +11,7 @@ import org.gradle.api.*
 import java.io.*
 import groovy.text.*
 import korlibs.korge.gradle.processor.*
+import korlibs.modules.*
 import org.gradle.api.artifacts.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import java.net.*
@@ -368,7 +369,7 @@ open class KorgeExtension(
 	var authorEmail = "unknown@unknown"
 	var authorHref = "http://localhost"
 
-	val nativeEnabled = (project.findProperty("disable.kotlin.native") != "true") && (System.getenv("DISABLE_KOTLIN_NATIVE") != "true")
+	val nativeEnabled = project.supportKotlinNative
 
     val newDesktopEnabled get() = project.findProperty("korge.enable.desktop") == "true" || System.getenv("KORGE_ENABLE_DESKTOP") == "true"
     val newAndroidEnabled get() = project.findProperty("korge.enable.android") == "true" || System.getenv("KORGE_ENABLE_ANDROID") == "true"

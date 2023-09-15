@@ -4,13 +4,10 @@ import org.gradle.api.*
 import korlibs.korge.gradle.targets.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 
-val Project.supportKotlinNative: Boolean get() {
-    // Linux and Windows ARM hosts doesn't have K/N toolchains
-    if ((isLinux || isWindows) && isArm) return false
-    return true
-}
+// Only mac has ios/tvos targets
+val Project.supportKotlinNative: Boolean get() = isMacos && System.getenv("DISABLE_KOTLIN_NATIVE") != "true"
 
-val Project.doEnableKotlinNative: Boolean get() = supportKotlinNative && rootProject.findProperty("enableKotlinNative") == "true" && System.getenv("DISABLE_KOTLIN_NATIVE") != "true"
+val Project.doEnableKotlinNative: Boolean get() = supportKotlinNative
 val Project.doEnableKotlinAndroid: Boolean get() = rootProject.findProperty("enableKotlinAndroid") == "true" && System.getenv("DISABLE_KOTLIN_ANDROID") != "true"
 val Project.doEnableKotlinMobile: Boolean get() = doEnableKotlinNative && rootProject.findProperty("enableKotlinMobile") == "true"
 val Project.doEnableKotlinMobileTvos: Boolean get() = doEnableKotlinMobile && rootProject.findProperty("enableKotlinMobileTvos") == "true"
