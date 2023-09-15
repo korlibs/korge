@@ -6,6 +6,7 @@ import korlibs.io.lang.*
 import korlibs.math.geom.*
 import korlibs.math.nextMultipleOf
 import korlibs.memory.*
+import korlibs.memory.annotations.*
 import korlibs.memory.dyn.*
 import kotlin.reflect.*
 
@@ -36,6 +37,24 @@ class TypedUniform<T>(name: String, val voffset: Int, var vindex: Int, val block
     val varType: VarType get() = uniform.type
     operator fun getValue(thisRef: Any?, property: KProperty<*>): TypedUniform<T> = this
     override fun toString(): String = "TypedUniform(name='$name', offset=$voffset, type=$type)"
+}
+
+@OptIn(KmemExperimental::class)
+private class KMemLayoutBuilder {
+    @KmemExperimental
+    var offset = 0
+    @KmemExperimental
+    var maxAlign = 4
+    private fun align(size: Int): KMemLayoutBuilder {
+        maxAlign = kotlin.math.max(maxAlign, size)
+        while (this.offset % size != 0) this.offset++
+        return this
+    }
+    val size: Int by lazy {
+        align(maxAlign)
+        offset
+    }
+    fun rawAlloc(size: Int, align: Int = size): Int = align(align).offset.also { this.offset += size }
 }
 
 open class UniformBlock(val fixedLocation: Int) {

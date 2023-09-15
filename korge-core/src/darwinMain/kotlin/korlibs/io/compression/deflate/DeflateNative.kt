@@ -1,20 +1,18 @@
+@file:OptIn(ExperimentalNativeApi::class)
+
 package korlibs.io.compression.deflate
 
-import korlibs.datastructure.*
+import korlibs.io.compression.*
+import korlibs.io.compression.util.*
+import korlibs.io.experimental.*
+import korlibs.io.lang.*
+import korlibs.io.stream.*
 import korlibs.time.*
 import kotlinx.cinterop.*
 import platform.posix.*
 import platform.zlib.*
-import kotlin.math.*
-import korlibs.memory.*
-import korlibs.memory.*
-import korlibs.io.compression.*
-import korlibs.io.compression.util.*
-import korlibs.io.stream.*
-import korlibs.io.experimental.*
-import korlibs.io.lang.*
 import kotlin.assert
-import kotlin.math.*
+import kotlin.experimental.*
 
 //actual fun Deflate(windowBits: Int): CompressionMethod = DeflatePortable(windowBits)
 actual fun Deflate(windowBits: Int): CompressionMethod = DeflateNative(windowBits)
@@ -82,7 +80,7 @@ fun DeflateNative(windowBits: Int): CompressionMethod = object : CompressionMeth
                                     inflateTime += measureTime {
                                         ret = inflate(strm.ptr, Z_NO_FLUSH)
                                     }
-                                    assert(ret != Z_STREAM_ERROR)
+                                    check(ret != Z_STREAM_ERROR)
                                     when (ret) {
                                         Z_NEED_DICT -> ret = Z_DATA_ERROR
                                         Z_DATA_ERROR -> error("data error")
@@ -156,7 +154,7 @@ fun DeflateNative(windowBits: Int): CompressionMethod = object : CompressionMeth
 								strm.avail_out = CHUNK.convert()
 								strm.next_out = out.reinterpret()
 								ret = deflate(strm.ptr, if (finalize) Z_FINISH else Z_NO_FLUSH)
-								assert(ret != Z_STREAM_ERROR)
+								check(ret != Z_STREAM_ERROR)
 								when (ret) {
 									Z_NEED_DICT -> ret = Z_DATA_ERROR
 									Z_DATA_ERROR -> error("data error")
@@ -166,7 +164,7 @@ fun DeflateNative(windowBits: Int): CompressionMethod = object : CompressionMeth
 								output.write(outArray, 0, have)
 							} while (strm.avail_out == 0u)
 
-							assert(strm.avail_in == 0u)
+                            check(strm.avail_in == 0u)
 
 						} while (!finalize && ret != Z_STREAM_END)
 					}

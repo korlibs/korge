@@ -1,5 +1,8 @@
+@file:OptIn(ExperimentalNativeApi::class)
+
 package korlibs.datastructure
 
+import kotlin.experimental.*
 import kotlin.native.identityHashCode
 import kotlin.native.ref.WeakReference
 

@@ -1,5 +1,9 @@
+@file:OptIn(ExperimentalNativeApi::class)
+
 package korlibs.datastructure.iterators
 
+import kotlin.concurrent.AtomicInt
+import kotlin.experimental.*
 import kotlin.math.*
 import kotlin.native.concurrent.*
 
@@ -33,7 +37,7 @@ actual inline fun parallelForeach(count: Int, crossinline block: (n: Int) -> Uni
                         block(n)
                     }
                 } finally {
-                    exec.increment()
+                    exec.getAndIncrement()
                 }
             }
         }

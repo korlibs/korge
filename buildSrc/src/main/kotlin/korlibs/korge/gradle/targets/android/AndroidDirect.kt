@@ -24,8 +24,8 @@ fun Project.configureAndroidDirect(projectType: ProjectType, isKorge: Boolean) {
 
     //val android = project.extensions.getByName("android")
 
-    //project.kotlin.androidTarget().apply {
-    project.kotlin.android().apply {
+    project.kotlin.androidTarget().apply {
+    //project.kotlin.android().apply {
         publishAllLibraryVariants()
         publishLibraryVariantsGroupedByFlavor = true
         //this.attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.androidJvm)

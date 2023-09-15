@@ -1,4 +1,8 @@
+@file:OptIn(ExperimentalNativeApi::class)
+
 package korlibs.io
+
+import kotlin.experimental.*
 
 expect fun nativeCwd(): String
 

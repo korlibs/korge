@@ -16,6 +16,9 @@ import platform.CoreGraphics.*
 import platform.posix.*
 import kotlin.math.*
 
+fun test() {
+}
+
 //fun transferBitmap32CGImageRef(bmp: Bitmap32, image: CGImageRef?, toBitmap: Boolean) {
 //    val width = CGImageGetWidth(image).toInt()
 //    val height = CGImageGetHeight(image).toInt()
@@ -89,10 +92,10 @@ fun transferBitmap32CGContext(bmp: Bitmap32, ctx: CGContextRef?, toBitmap: Boole
 /**
  * Returned image must be deallocated with [CGImageRelease]
  */
-fun transferBitmap32ToCGImage(bmp: Bitmap32, colorSpace: CPointer<CGColorSpace>? = null): CGImageRef? {
+fun transferBitmap32ToCGImage(bmp: Bitmap32, colorSpace: CGColorSpaceRef? = null): CGImageRef? {
     val allocColorSpace = if (colorSpace == null) CGColorSpaceCreateDeviceRGB() else null
 
-    val imageCtx: CPointer<CGContext>? = CGBitmapContextCreate(
+    val imageCtx: CGContextRef? = CGBitmapContextCreate(
         null, bmp.width.convert(), bmp.height.convert(),
         8.convert(), 0.convert(), colorSpace ?: allocColorSpace,
         CGImageAlphaInfo.kCGImageAlphaPremultipliedLast.value
@@ -135,7 +138,7 @@ class CoreGraphicsRenderer(val bmp: Bitmap32, val antialiasing: Boolean) : korli
     fun Matrix.toCGAffineTransform() = CGAffineTransformMake(a.cg, b.cg, c.cg, d.cg, tx.cg, ty.cg)
     fun MMatrix.toCGAffineTransform() = CGAffineTransformMake(a.cg, b.cg, c.cg, d.cg, tx.cg, ty.cg)
 
-    private fun cgDrawBitmap(bmp: Bitmap32, ctx: CGContextRef?, colorSpace: CPointer<CGColorSpace>?, tiled: Boolean = false) {
+    private fun cgDrawBitmap(bmp: Bitmap32, ctx: CGContextRef?, colorSpace: CGColorSpaceRef?, tiled: Boolean = false) {
         val image = transferBitmap32ToCGImage(bmp, colorSpace)
         try {
             val rect = CGRectMakeExt(0, 0, bmp.width, bmp.height)
@@ -160,7 +163,7 @@ class CoreGraphicsRenderer(val bmp: Bitmap32, val antialiasing: Boolean) : korli
                     //val colorSpace = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB)
                     val colorSpace = CGColorSpaceCreateDeviceRGB()
                     try {
-                        val ctx: CPointer<CGContext>? = CGBitmapContextCreate(
+                        val ctx: CGContextRef? = CGBitmapContextCreate(
                             dataPin.addressOf(0), bmp.width.convert(), bmp.height.convert(),
                             8.convert(), (bmp.width * 4).convert(), colorSpace,
                             CGImageAlphaInfo.kCGImageAlphaPremultipliedLast.value
@@ -174,7 +177,7 @@ class CoreGraphicsRenderer(val bmp: Bitmap32, val antialiasing: Boolean) : korli
                             //    cgDrawBitmap(bmp, ctx, colorSpace)
                             //}
 
-                            fun visitCgContext(ctx: CPointer<CGContext>?, path: VectorPath) {
+                            fun visitCgContext(ctx: CGContextRef?, path: VectorPath) {
                                 path.visitCmds(
                                     moveTo = { (x, y) -> CGContextMoveToPoint(ctx, x.cg, y.cg) },
                                     lineTo = { (x, y) -> CGContextAddLineToPoint(ctx, x.cg, y.cg) },
@@ -359,7 +362,7 @@ internal class Releases {
     }
 }
 
-internal fun RGBA.toCgColor(releases: Releases, space: CGColorSpaceRef?): CPointer<CGColor>? = memScoped {
+internal fun RGBA.toCgColor(releases: Releases, space: CGColorSpaceRef?): CGColorRef? = memScoped {
     // Not available on iOS
     //CGColorCreateGenericRGB(color.rd.cg, color.gd.cg, color.bd.cg, color.ad.cg)
     val data = allocArray<CGFloatVar>(4)

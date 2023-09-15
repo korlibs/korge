@@ -4,8 +4,10 @@ import kotlinx.cinterop.*
 import platform.JavaScriptCore.*
 import platform.posix.*
 
-actual open class WASMLib actual constructor(content: ByteArray) : IWASMLib, BaseWASMLib(content) {
-    val runner = WASMRunner().also {
+actual open class WASMLib actual constructor(content: ByteArray) : IWASMLib by NativeWASMLib(content)
+
+class NativeWASMLib(content: ByteArray) : IWASMLib, BaseWASMLib(content) {
+    private val runner = WASMRunner().also {
         it.loadWasmModule(content)
     }
 
@@ -13,7 +15,7 @@ actual open class WASMLib actual constructor(content: ByteArray) : IWASMLib, Bas
     override fun writeBytes(pos: Int, data: ByteArray) = runner.writeBytes(pos, data)
     override fun invokeFunc(name: String, vararg params: Any?): Any? = runner.invokeFunction(name, *params)?.toAny()
 
-    fun JSValue.toAny(): Any? = when {
+    private fun JSValue.toAny(): Any? = when {
         this.isNull -> null
         this.isUndefined -> null
         this.isString -> this.toString_()

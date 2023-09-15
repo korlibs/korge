@@ -1,6 +1,6 @@
 package korlibs.datastructure.atomic
 
-import kotlin.native.concurrent.*
+import kotlin.concurrent.*
 
 // @TODO: Use AtomicReference
 actual class KdsAtomicRef<T> actual constructor(initial: T) {

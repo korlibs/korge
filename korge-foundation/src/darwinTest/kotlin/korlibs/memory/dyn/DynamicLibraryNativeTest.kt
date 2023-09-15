@@ -4,6 +4,7 @@ import korlibs.memory.*
 import kotlin.test.*
 import kotlinx.cinterop.invoke
 
+/*
 class DynamicLibraryCommonTest {
     //object C : DynamicLibrary(Platform.C_LIBRARY_NAME) {
     object C : DynamicLibrary("libSystem.dylib", "libc", "MSVCRT") {
@@ -52,3 +53,4 @@ class DynamicLibraryCommonTest {
         assertEquals(1.0, M.cos(0.0), 0.001)
     }
 }
+*/

@@ -158,7 +158,7 @@ public actual open class FastArrayList<E> internal constructor(@PublishedApi int
     @PublishedApi inline internal val jsArray: JsArray<E> get() = __array.unsafeCast<JsArray<E>>()
     public actual constructor() : this(emptyArray())
     @Suppress("ACTUAL_FUNCTION_WITH_DEFAULT_ARGUMENTS")
-    public actual constructor(initialCapacity: Int = 0) : this(emptyArray())
+    public actual constructor(initialCapacity: Int) : this(emptyArray())
     public actual constructor(elements: Collection<E>) : this(elements.toTypedArray<Any?>().unsafeCast<Array<E>>()) {}
     public actual fun trimToSize() {}
     public actual fun ensureCapacity(minCapacity: Int) {}

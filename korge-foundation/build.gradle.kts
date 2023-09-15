@@ -19,7 +19,7 @@ dependencies {
     //add("jvmTestApi", "org.ow2.asm:asm:8.0.1")
     add("jvmMainApi", libs.bundles.jna)
     add("commonMainApi", libs.kotlinx.coroutines.core)
-    add("commonMainApi", libs.kotlinx.atomicfu)
+    //add("commonMainApi", libs.kotlinx.atomicfu)
     //add("commonTestApi", project(":korge-test"))
     add("commonTestApi", libs.kotlinx.coroutines.test)
 }

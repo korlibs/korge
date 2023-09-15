@@ -1,6 +1,6 @@
 package korlibs.datastructure.concurrent
 
-import kotlin.native.concurrent.AtomicReference
+import kotlin.concurrent.AtomicReference
 
 class ConcurrentDeque<T : Any> {
     private val items = AtomicReference<List<T>>(emptyList<T>())

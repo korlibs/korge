@@ -1,7 +1,7 @@
 package korlibs.datastructure.lock
 
 import platform.posix.pthread_self
-import kotlin.native.concurrent.*
+import kotlin.concurrent.*
 
 actual class Lock actual constructor() {
     @PublishedApi internal var locked = AtomicInt(0)
