@@ -49,8 +49,8 @@ interface IWASMLib : Closeable {
     }
 
     fun stackSave(): Int = invokeFuncInt("stackSave")
-    fun stackRestore(ptr: Int): Unit = invokeFuncUnit("stackRestore")
-    fun stackAlloc(size: Int): Int = invokeFuncInt("stackAlloc")
+    fun stackRestore(ptr: Int): Unit = invokeFuncUnit("stackRestore", ptr)
+    fun stackAlloc(size: Int): Int = invokeFuncInt("stackAlloc", size)
     fun stackAllocAndWrite(bytes: ByteArray): Int = stackAlloc(bytes.size).also { writeBytes(it, bytes) }
     fun stackAllocAndWrite(data: ShortArray): Int = stackAllocAndWrite(data.toByteArray())
     fun stackAllocAndWrite(data: IntArray): Int = stackAllocAndWrite(data.toByteArray())
