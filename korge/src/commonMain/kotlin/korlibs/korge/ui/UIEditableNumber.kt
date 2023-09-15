@@ -102,7 +102,7 @@ class UIEditableNumber(value: Double = 0.0, min: Double = 0.0, max: Double = 1.0
             }
             val dist = (max - min).absoluteValue
             this@UIEditableNumber.value = (start + dist * (it.dx / (width * 2)))
-            it.mouseEvents.stopPropagation()
+            it.mouseEvents.preventDefault()
         }
     }
 }

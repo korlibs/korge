@@ -484,7 +484,7 @@ class TextEditController(
                 if (focused && it.pressing) {
                     dragging = true
                     selectionEnd = getIndexAtPos(it.currentPosLocal)
-                    it.stopPropagation()
+                    it.preventDefault()
                 }
             }
             upOutside {

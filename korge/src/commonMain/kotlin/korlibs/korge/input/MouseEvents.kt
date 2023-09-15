@@ -324,6 +324,9 @@ class MouseEvents(val view: View) : Extra by Extra.Mixin(), Closeable {
     fun stopPropagation() {
         currentEvent?.stopPropagation()
     }
+    fun preventDefault() {
+        currentEvent?.preventDefault()
+    }
 
     val isOver: Boolean get() = hitTest?.hasAncestor(view) ?: false
     var lastEventSet = false
