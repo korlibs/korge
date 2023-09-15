@@ -1,6 +1,5 @@
 package korlibs.bignumber
 
-import korlibs.bignumber.internal.*
 import kotlin.math.*
 import kotlin.time.*
 
@@ -62,7 +61,7 @@ class CommonBigInt private constructor(val data: UInt16ArrayZeroPad, override va
 
 	fun countBits(): Int {
 		var count = 0
-		for (n in 0 until data.size) count += data[n].bitCount()
+        for (n in 0 until data.size) count += data[n].countOneBits()
 		return count
 	}
 
@@ -73,7 +72,7 @@ class CommonBigInt private constructor(val data: UInt16ArrayZeroPad, override va
             val dataN = data[data.size - n - 1]
             if (dataN != 0) {
                 //println("dataN: $dataN : trailingZeros=${dataN.trailingZeros()}")
-                return (16 * n) + (dataN.leadingZeros() - 16)
+                return (16 * n) + (dataN.countLeadingZeroBits() - 16)
             }
         }
         return maxBits
@@ -85,7 +84,7 @@ class CommonBigInt private constructor(val data: UInt16ArrayZeroPad, override va
         for (n in 0 until data.size) {
             val dataN = data[n]
             if (dataN != 0) {
-                return 16 * n + dataN.trailingZeros()
+                return 16 * n + dataN.countTrailingZeroBits()
             }
         }
 		return maxBits

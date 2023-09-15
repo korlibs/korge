@@ -1,7 +1,40 @@
+@file:Suppress("PackageDirectoryMismatch")
+
 package korlibs.bignumber.ranges
 
-import korlibs.bignumber.BigInt
-import korlibs.bignumber.internal.getProgressionLastElement
+import korlibs.bignumber.*
+
+/**
+ * Represents an inclusive range between two [BigNum] between [start]..[endInclusive].
+ *
+ * @see kotlin.ranges.ClosedFloatRange
+ */
+class ClosedBigNumRange(
+    override val start: BigNum,
+    override val endInclusive: BigNum
+) : ClosedRange<BigNum> {
+
+    @Suppress("ConvertTwoComparisonsToRangeCheck")
+    override fun contains(value: BigNum): Boolean = value >= start && value <= endInclusive
+
+    /**
+     * @see kotlin.ranges.ClosedFloatRange.isEmpty
+     */
+    @Suppress("SimplifyNegatedBinaryExpression")
+    override fun isEmpty(): Boolean = !(start <= endInclusive)
+
+    override fun equals(other: Any?): Boolean {
+        return other is ClosedBigNumRange && (isEmpty() && other.isEmpty() ||
+            start == other.start && endInclusive == other.endInclusive)
+    }
+
+    override fun hashCode(): Int {
+        return if (isEmpty()) -1 else 31 * start.hashCode() + endInclusive.hashCode()
+    }
+
+    override fun toString(): String = "$start..$endInclusive"
+}
+
 
 /**
  * Represents an inclusive range between two [BigInt] between [start]..[endInclusive].
@@ -106,4 +139,29 @@ class BigIntProgressionIterator(first: BigInt, last: BigInt, val step: BigInt) :
         }
         return value
     }
+}
+
+
+/**
+ * @see kotlin.internal.mod
+ */
+private fun mod(a: BigInt, b: BigInt): BigInt {
+    val mod = a % b
+    return if (mod >= BigInt.ZERO) mod else mod + b
+}
+
+/**
+ * @see kotlin.internal.differenceModulo
+ */
+private fun differenceModulo(a: BigInt, b: BigInt, c: BigInt): BigInt {
+    return mod(mod(a, c) - mod(b, c), c)
+}
+
+/**
+ * @see kotlin.internal.getProgressionLastElement
+ */
+internal fun getProgressionLastElement(start: BigInt, end: BigInt, step: BigInt): BigInt = when {
+    step > BigInt.ZERO -> if (start >= end) end else end - differenceModulo(end, start, step)
+    step < BigInt.ZERO -> if (start <= end) end else end + differenceModulo(start, end, -step)
+    else -> throw IllegalArgumentException("Step is zero.")
 }

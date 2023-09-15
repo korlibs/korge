@@ -1,6 +1,7 @@
-package korlibs.bignumber.internal
+package korlibs.bignumber
 
 import korlibs.bignumber.*
+import korlibs.bignumber.ranges.*
 import kotlin.test.*
 
 class ProgressionUtilTest {
