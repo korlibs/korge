@@ -222,10 +222,10 @@ open class NBufferTestBase {
             data[n + 8] = n * 16 + n
         }
         assertEquals("00010203040506070011223344556677", buffer.hex())
-        assertEquals("7766554433221100", i64[1].asLittle().toStringUnsigned(16))
-        assertEquals("7060504", i32[0].asLittle().toStringUnsigned(16))
-        assertEquals("504", i16[0].asLittle().toInt().toStringUnsigned(16))
-        assertEquals("4", i8[0].asLittle().toInt().toStringUnsigned(16))
+        assertEquals("7766554433221100", i64[1].asLittle().toULong().toString(16))
+        assertEquals("7060504", i32[0].asLittle().toULong().toString(16))
+        assertEquals("504", i16[0].asLittle().toInt().toULong().toString(16))
+        assertEquals("4", i8[0].asLittle().toInt().toULong().toString(16))
     }
 
     @Test

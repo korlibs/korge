@@ -8,7 +8,6 @@ import korlibs.io.file.VfsOpenMode
 import korlibs.io.file.VfsStat
 import korlibs.io.file.useVfs
 import korlibs.io.lang.ASCII
-import korlibs.io.lang.format
 import korlibs.io.lang.invalidOp
 import korlibs.io.stream.AsyncStream
 import korlibs.io.stream.SyncStream
@@ -29,6 +28,7 @@ import korlibs.io.stream.readU16LE
 import korlibs.io.stream.readU8
 import korlibs.io.stream.skipToAlign
 import korlibs.io.stream.sliceWithSize
+import korlibs.util.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.flow
 

@@ -1,5 +1,6 @@
 package korlibs.io.lang
 
+import korlibs.util.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

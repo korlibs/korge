@@ -8,6 +8,7 @@ import korlibs.memory.*
 import korlibs.template.dynamic.KorteDynamic2
 import korlibs.template.internal.*
 import korlibs.template.internal.korteExtraProperty
+import korlibs.util.*
 import kotlin.coroutines.cancellation.*
 import kotlin.math.absoluteValue
 import kotlin.math.ceil

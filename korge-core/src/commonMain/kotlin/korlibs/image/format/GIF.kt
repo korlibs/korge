@@ -6,12 +6,12 @@ import korlibs.image.color.Colors
 import korlibs.image.color.RGBA
 import korlibs.image.color.RgbaArray
 import korlibs.image.color.arraycopy
-import korlibs.io.lang.format
 import korlibs.io.stream.SyncStream
 import korlibs.io.stream.readBytes
 import korlibs.io.stream.readBytesExact
 import korlibs.io.stream.readU8
 import korlibs.crypto.encoding.hex
+import korlibs.util.format
 import kotlin.math.max
 import kotlin.math.min
 

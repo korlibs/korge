@@ -1,9 +1,9 @@
 package samples
 
-import korlibs.io.lang.*
 import korlibs.korge.scene.*
 import korlibs.korge.ui.*
 import korlibs.korge.view.*
+import korlibs.util.*
 
 class MainStressButtons : Scene() {
     override suspend fun SContainer.sceneMain() {

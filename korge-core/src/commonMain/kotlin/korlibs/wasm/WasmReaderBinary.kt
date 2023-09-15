@@ -2,6 +2,7 @@ package korlibs.wasm
 
 import korlibs.io.lang.*
 import korlibs.io.stream.*
+import korlibs.util.*
 
 // https://webassembly.github.io/spec/core/_download/WebAssembly.pdf
 class WasmReaderBinary {

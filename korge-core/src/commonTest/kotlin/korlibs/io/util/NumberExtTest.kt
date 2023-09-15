@@ -3,7 +3,7 @@ package korlibs.io.util
 import korlibs.memory.insert
 import korlibs.memory.nextAlignedTo
 import korlibs.memory.prevAlignedTo
-import korlibs.io.lang.format
+import korlibs.util.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
