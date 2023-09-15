@@ -1,14 +1,24 @@
 package korlibs.wasm
 
+import korlibs.crypto.encoding.*
 import korlibs.datastructure.*
 import korlibs.memory.*
 
 class WasmRunInterpreterNew(val module: WasmModule, memPages: Int = 10, maxMemPages: Int = 0x10000) : WasmRuntime(memPages, maxMemPages) {
-    val globals = Buffer.allocDirect(module.globals.maxOfOrNull { it.globalOffset + 16 } ?: 0)
-    val stack = Buffer.allocDirect(16 * 1024)
+    val globalsI = IntArray(module.globals.size)
+    val globalsF = FloatArray(module.globals.size)
+    val globalsD = DoubleArray(module.globals.size)
+    val globalsL = LongArray(module.globals.size)
+
+    //val globals = Buffer.allocDirect(module.globals.maxOfOrNull { it.globalOffset + 16 } ?: 0)
+    //val stack = Buffer.allocDirect(16 * 1024)
+    val stackI = IntArray(4 * 1024)
+    val stackF = FloatArray(4 * 1024)
+    val stackD = DoubleArray(4 * 1024)
+    val stackL = LongArray(4 * 1024)
+
     var localsPos = 0
     var stackPos = 0
-    var trace = false
 
     fun initGlobals(): WasmRunInterpreterNew {
         //println("GLOBALS: ${globals.sizeInBytes}")
@@ -74,25 +84,18 @@ class WasmRunInterpreterNew(val module: WasmModule, memPages: Int = 10, maxMemPa
     }
 
     fun invoke(func: WasmFunc) {
-        val fcode = func.code ?: return
         val code = func.getInterprerCode()
         if (code != null) {
             // Allocate space for locals
             localsPos += 0
-            stackPos += code.localSize
+            //stackPos += code.localSize
+            stackPos += code.localsCount
             this.evalInstructions(code, 0)
             //println("code.interpreterCode=${fcode.interpreterCode}")
         } else {
             val efunc = functions[func.name]
             TODO("efunc=$efunc")
         }
-    }
-
-    inline fun triopI32(func: (l: Int, r: Int, v: Int) -> Int) {
-        val v = popI32()
-        val r = popI32()
-        val l = popI32()
-        pushI32(func(l, r, v))
     }
 
     inline fun binopI32(func: (l: Int, r: Int) -> Int) {
@@ -147,10 +150,13 @@ class WasmRunInterpreterNew(val module: WasmModule, memPages: Int = 10, maxMemPa
         if (code != null) {
             //println(" ::: localsPos=$localsPos, stackPos=$stackPos")
             val oldLocalsPos = localsPos
-            localsPos = stackPos - code.paramsSize
-            stackPos = localsPos + code.localSize
-            //arrayfill(stack, 0, localsPos + code.paramsSize, stackPos)
-            //println("Invoking localsPos=$localsPos, stackPos=$stackPos, f=$func")
+
+            //localsPos = stackPos - code.paramsSize
+            //stackPos = localsPos + code.localSize
+
+            localsPos = stackPos - code.paramsCount
+            stackPos = localsPos + code.localsCount
+
             invoke(func)
             localsPos = oldLocalsPos
             //stackPos = oldLocalsPos
@@ -164,10 +170,13 @@ class WasmRunInterpreterNew(val module: WasmModule, memPages: Int = 10, maxMemPa
     private fun evalInstructions(code: WasmInterpreterCode, index: Int) {
         var index = index
         val instructions = code.instructions
-        while (index in instructions.indices) {
+        var instructionsExecuted = 0
+        loop@while (index in instructions.indices) {
             val i = instructions[index]
             val op = i and 0xFFF
             val param = i shr 12
+            if (trace) println("OP: ${op.hex}, param=$param : ${WasmOp.getOrNull(op)}")
+            instructionsExecuted++
             when (op) {
                 WasmFastInstructions.Op_try -> TODO()
                 WasmFastInstructions.Op_catch -> TODO()
@@ -220,10 +229,18 @@ class WasmRunInterpreterNew(val module: WasmModule, memPages: Int = 10, maxMemPa
                 WasmFastInstructions.Op_i32_eqz -> unopI32 { Op_i32_eqz(it) }
                 WasmFastInstructions.Op_i32_eq -> binopI32 { l, r -> Op_i32_eq(l, r) }
                 WasmFastInstructions.Op_i32_ne -> binopI32 { l, r -> Op_i32_ne(l, r) }
-                WasmFastInstructions.Op_i32_lt_s -> binopI32 { l, r -> Op_i32_lt_s(l, r) }
+                WasmFastInstructions.Op_i32_lt_s -> binopI32 { l, r ->
+                    Op_i32_lt_s(l, r).also {
+                        if (trace) println("l:$l < r:$r == $it")
+                    }
+                }
                 WasmFastInstructions.Op_i32_lt_u -> binopI32 { l, r -> Op_i32_lt_u(l, r) }
                 WasmFastInstructions.Op_i32_gt_s -> binopI32 { l, r -> Op_i32_gt_s(l, r) }
-                WasmFastInstructions.Op_i32_gt_u -> binopI32 { l, r -> Op_i32_gt_u(l, r) }
+                WasmFastInstructions.Op_i32_gt_u -> binopI32 { l, r ->
+                    Op_i32_gt_u(l, r).also {
+                        if (trace) println("l:$l >u r:$r == $it")
+                    }
+                }
                 WasmFastInstructions.Op_i32_le_s -> binopI32 { l, r -> Op_i32_le_s(l, r) }
                 WasmFastInstructions.Op_i32_le_u -> binopI32 { l, r -> Op_i32_le_u(l, r) }
                 WasmFastInstructions.Op_i32_ge_s -> binopI32 { l, r -> Op_i32_ge_s(l, r) }
@@ -350,11 +367,19 @@ class WasmRunInterpreterNew(val module: WasmModule, memPages: Int = 10, maxMemPa
                 WasmFastInstructions.Op_i64_extend32_s -> pushI64(Op_i64_extend32_s(popI64()))
                 WasmFastInstructions.Op_ref_null -> TODO()
                 WasmFastInstructions.Op_ref_is_null -> TODO()
-                WasmFastInstructions.Op_i32_drop -> popIndex(4)
-                WasmFastInstructions.Op_i64_drop -> popIndex(8)
-                WasmFastInstructions.Op_f32_drop -> popIndex(4)
-                WasmFastInstructions.Op_f64_drop -> popIndex(8)
-                WasmFastInstructions.Op_v128_drop -> popIndex(16)
+
+                WasmFastInstructions.Op_i32_drop -> stackPos--
+                WasmFastInstructions.Op_i64_drop -> stackPos--
+                WasmFastInstructions.Op_f32_drop -> stackPos--
+                WasmFastInstructions.Op_f64_drop -> stackPos--
+                WasmFastInstructions.Op_v128_drop -> stackPos--
+
+                //WasmFastInstructions.Op_i32_drop -> popIndex(4)
+                //WasmFastInstructions.Op_i64_drop -> popIndex(8)
+                //WasmFastInstructions.Op_f32_drop -> popIndex(4)
+                //WasmFastInstructions.Op_f64_drop -> popIndex(8)
+                //WasmFastInstructions.Op_v128_drop -> popIndex(16)
+
                 WasmFastInstructions.Op_i32_local_get -> {
                     //println("LOCAL[$param] == ${getLocalI32(param)} :: localsPos=$localsPos")
                     pushI32(getLocalI32(param))
@@ -373,31 +398,43 @@ class WasmRunInterpreterNew(val module: WasmModule, memPages: Int = 10, maxMemPa
                 WasmFastInstructions.Op_f32_local_tee -> pushF32(setLocalF32(param, popF32()))
                 WasmFastInstructions.Op_f64_local_tee -> pushF64(setLocalF64(param, popF64()))
                 WasmFastInstructions.Op_v128_local_tee -> TODO()
-                WasmFastInstructions.Op_i32_global_get -> pushI32(globals.getUnalignedInt32(param))
-                WasmFastInstructions.Op_i64_global_get -> pushI64(globals.getUnalignedInt64(param))
-                WasmFastInstructions.Op_f32_global_get -> pushF32(globals.getUnalignedFloat32(param))
-                WasmFastInstructions.Op_f64_global_get -> pushF64(globals.getUnalignedFloat64(param))
+                WasmFastInstructions.Op_i32_global_get -> pushI32(globalsI[param])
+                WasmFastInstructions.Op_i64_global_get -> pushI64(globalsL[param])
+                WasmFastInstructions.Op_f32_global_get -> pushF32(globalsF[param])
+                WasmFastInstructions.Op_f64_global_get -> pushF64(globalsD[param])
                 WasmFastInstructions.Op_v128_global_get -> TODO()
-                WasmFastInstructions.Op_i32_global_set -> globals.setUnalignedInt32(param, popI32())
-                WasmFastInstructions.Op_i64_global_set -> globals.setUnalignedInt64(param, popI64())
-                WasmFastInstructions.Op_f32_global_set -> globals.setUnalignedFloat32(param, popF32())
-                WasmFastInstructions.Op_f64_global_set -> globals.setUnalignedFloat64(param, popF64())
-                WasmFastInstructions.Op_v128_global_set -> TODO()
-                WasmFastInstructions.Op_i32_return -> { val v = popI32(); stackPos = localsPos; pushI32(v); return }
-                WasmFastInstructions.Op_i64_return -> { val v = popI64(); stackPos = localsPos; pushI64(v); return }
-                WasmFastInstructions.Op_f32_return -> { val v = popF32(); stackPos = localsPos; pushF32(v); return }
-                WasmFastInstructions.Op_f64_return -> { val v = popF64(); stackPos = localsPos; pushF64(v); return }
-                WasmFastInstructions.Op_v128_return -> TODO()
-                WasmFastInstructions.Op_void_return -> { stackPos = localsPos; return }
+                WasmFastInstructions.Op_i32_global_set -> globalsI[param] = popI32()
+                WasmFastInstructions.Op_i64_global_set -> globalsL[param] = popI64()
+                WasmFastInstructions.Op_f32_global_set -> globalsF[param] = popF32()
+                WasmFastInstructions.Op_f64_global_set -> globalsD[param] = popF64()
 
-                WasmFastInstructions.Op_i32_select -> triopI32 { l, r, v -> if (v != 0) l else r }
-                WasmFastInstructions.Op_i64_select -> TODO()
-                WasmFastInstructions.Op_f32_select -> TODO()
-                WasmFastInstructions.Op_f64_select -> TODO()
+                //WasmFastInstructions.Op_i32_global_get -> pushI32(globals.getUnalignedInt32(param))
+                //WasmFastInstructions.Op_i64_global_get -> pushI64(globals.getUnalignedInt64(param))
+                //WasmFastInstructions.Op_f32_global_get -> pushF32(globals.getUnalignedFloat32(param))
+                //WasmFastInstructions.Op_f64_global_get -> pushF64(globals.getUnalignedFloat64(param))
+                //WasmFastInstructions.Op_v128_global_get -> TODO()
+                //WasmFastInstructions.Op_i32_global_set -> globals.setUnalignedInt32(param, popI32())
+                //WasmFastInstructions.Op_i64_global_set -> globals.setUnalignedInt64(param, popI64())
+                //WasmFastInstructions.Op_f32_global_set -> globals.setUnalignedFloat32(param, popF32())
+                //WasmFastInstructions.Op_f64_global_set -> globals.setUnalignedFloat64(param, popF64())
+                WasmFastInstructions.Op_v128_global_set -> TODO()
+                WasmFastInstructions.Op_i32_return -> { val v = popI32(); stackPos = localsPos; pushI32(v); break@loop }
+                WasmFastInstructions.Op_i64_return -> { val v = popI64(); stackPos = localsPos; pushI64(v); break@loop }
+                WasmFastInstructions.Op_f32_return -> { val v = popF32(); stackPos = localsPos; pushF32(v); break@loop }
+                WasmFastInstructions.Op_f64_return -> { val v = popF64(); stackPos = localsPos; pushF64(v); break@loop }
+                WasmFastInstructions.Op_v128_return -> TODO()
+                WasmFastInstructions.Op_void_return -> { stackPos = localsPos; break@loop }
+
+                WasmFastInstructions.Op_i32_select -> { val v = popI32(); binopI32 { l, r -> if (v != 0) l else r } }
+                WasmFastInstructions.Op_i64_select -> { val v = popI32(); binopI64 { l, r -> if (v != 0) l else r } }
+                WasmFastInstructions.Op_f32_select -> { val v = popI32(); binopF32 { l, r -> if (v != 0) l else r } }
+                WasmFastInstructions.Op_f64_select -> { val v = popI32(); binopF64 { l, r -> if (v != 0) l else r } }
                 WasmFastInstructions.Op_v128_select -> TODO()
 
                 WasmFastInstructions.Op_i32_short_const -> pushI32(param)
                 WasmFastInstructions.Op_i64_short_const -> pushI64(param.toLong())
+                WasmFastInstructions.Op_f32_short_const -> pushF32(param.toFloat())
+                WasmFastInstructions.Op_f64_short_const -> pushF64(param.toDouble())
                 WasmFastInstructions.Op_goto -> {
                     index = param
                     continue
@@ -449,10 +486,8 @@ class WasmRunInterpreterNew(val module: WasmModule, memPages: Int = 10, maxMemPa
             }
             index++
         }
+        this.instructionsExecuted += instructionsExecuted
     }
-
-    inline fun pushIndex(size: Int): Int = stackPos.also { stackPos += size }
-    inline fun popIndex(size: Int): Int { stackPos -= size; return stackPos }
 
     fun pushType(type: WasmSType, value: Any?) {
         when (type) {
@@ -467,25 +502,41 @@ class WasmRunInterpreterNew(val module: WasmModule, memPages: Int = 10, maxMemPa
         }
     }
 
-    fun pushI32(value: Int) { stack.setUnalignedInt32(pushIndex(4), value) }
-    fun pushF32(value: Float) { stack.setUnalignedFloat32(pushIndex(4), value) }
-    fun pushI64(value: Long) { stack.setUnalignedInt64(pushIndex(8), value) }
-    fun pushF64(value: Double) { stack.setUnalignedFloat64(pushIndex(8), value) }
+    fun pushI32(value: Int) { stackI[stackPos++] = value }
+    fun pushF32(value: Float) { stackF[stackPos++] = value }
+    fun pushI64(value: Long) { stackL[stackPos++] = value }
+    fun pushF64(value: Double) { stackD[stackPos++] = value }
+    fun popI32(): Int = stackI[--stackPos]
+    fun popF32(): Float = stackF[--stackPos]
+    fun popI64(): Long = stackL[--stackPos]
+    fun popF64(): Double = stackD[--stackPos]
+    fun getLocalI32(offset: Int): Int = stackI[localsPos + offset]
+    fun getLocalI64(offset: Int): Long = stackL[localsPos + offset]
+    fun getLocalF32(offset: Int): Float = stackF[localsPos + offset]
+    fun getLocalF64(offset: Int): Double = stackD[localsPos + offset]
+    fun setLocalI32(offset: Int, value: Int): Int = value.also { stackI[localsPos + offset] = value }
+    fun setLocalI64(offset: Int, value: Long): Long = value.also { stackL[localsPos + offset] = value }
+    fun setLocalF32(offset: Int, value: Float): Float = value.also { stackF[localsPos + offset] = value }
+    fun setLocalF64(offset: Int, value: Double): Double = value.also { stackD[localsPos + offset] = value }
 
-    fun popI32(): Int = stack.getUnalignedInt32(popIndex(4))
-    fun popF32(): Float = stack.getUnalignedFloat32(popIndex(4))
-    fun popI64(): Long = stack.getUnalignedInt64(popIndex(8))
-    fun popF64(): Double = stack.getUnalignedFloat64(popIndex(8))
-
-    fun getLocalI32(offset: Int): Int = stack.getUnalignedInt32(localsPos + offset)
-    fun getLocalI64(offset: Int): Long = stack.getUnalignedInt64(localsPos + offset)
-    fun getLocalF32(offset: Int): Float = stack.getUnalignedFloat32(localsPos + offset)
-    fun getLocalF64(offset: Int): Double = stack.getUnalignedFloat64(localsPos + offset)
-
-    fun setLocalI32(offset: Int, value: Int): Int = value.also { stack.setUnalignedInt32(localsPos + offset, value) }
-    fun setLocalI64(offset: Int, value: Long): Long = value.also { stack.setUnalignedInt64(localsPos + offset, value) }
-    fun setLocalF32(offset: Int, value: Float): Float = value.also { stack.setUnalignedFloat32(localsPos + offset, value) }
-    fun setLocalF64(offset: Int, value: Double): Double = value.also { stack.setUnalignedFloat64(localsPos + offset, value) }
+    //inline fun pushIndex(size: Int): Int = stackPos.also { stackPos += size }
+    //inline fun popIndex(size: Int): Int { stackPos -= size; return stackPos }
+    //fun pushI32(value: Int) { stack.setUnalignedInt32(pushIndex(4), value) }
+    //fun pushF32(value: Float) { stack.setUnalignedFloat32(pushIndex(4), value) }
+    //fun pushI64(value: Long) { stack.setUnalignedInt64(pushIndex(8), value) }
+    //fun pushF64(value: Double) { stack.setUnalignedFloat64(pushIndex(8), value) }
+    //fun popI32(): Int = stack.getUnalignedInt32(popIndex(4))
+    //fun popF32(): Float = stack.getUnalignedFloat32(popIndex(4))
+    //fun popI64(): Long = stack.getUnalignedInt64(popIndex(8))
+    //fun popF64(): Double = stack.getUnalignedFloat64(popIndex(8))
+    //fun getLocalI32(offset: Int): Int = stack.getUnalignedInt32(localsPos + offset)
+    //fun getLocalI64(offset: Int): Long = stack.getUnalignedInt64(localsPos + offset)
+    //fun getLocalF32(offset: Int): Float = stack.getUnalignedFloat32(localsPos + offset)
+    //fun getLocalF64(offset: Int): Double = stack.getUnalignedFloat64(localsPos + offset)
+    //fun setLocalI32(offset: Int, value: Int): Int = value.also { stack.setUnalignedInt32(localsPos + offset, value) }
+    //fun setLocalI64(offset: Int, value: Long): Long = value.also { stack.setUnalignedInt64(localsPos + offset, value) }
+    //fun setLocalF32(offset: Int, value: Float): Float = value.also { stack.setUnalignedFloat32(localsPos + offset, value) }
+    //fun setLocalF64(offset: Int, value: Double): Double = value.also { stack.setUnalignedFloat64(localsPos + offset, value) }
 
     fun setLocal(type: WasmSType, offset: Int, value: Any?) {
         when (type) {
@@ -503,10 +554,14 @@ class WasmRunInterpreterNew(val module: WasmModule, memPages: Int = 10, maxMemPa
     fun setGlobal(global: WasmGlobal, value: Any?) {
         when (global.globalType.toWasmSType()) {
             WasmSType.VOID -> TODO()
-            WasmSType.I32 -> globals.setUnalignedInt32(global.globalOffset, value as Int)
-            WasmSType.I64 -> globals.setUnalignedInt64(global.globalOffset, value as Long)
-            WasmSType.F32 -> globals.setUnalignedFloat32(global.globalOffset, value as Float)
-            WasmSType.F64 -> globals.setUnalignedFloat64(global.globalOffset, value as Double)
+            WasmSType.I32 -> globalsI[global.index] = value as Int
+            WasmSType.I64 -> globalsL[global.index] = value as Long
+            WasmSType.F32 -> globalsF[global.index] = value as Float
+            WasmSType.F64 -> globalsD[global.index] = value as Double
+            //WasmSType.I32 -> globals.setUnalignedInt32(global.globalOffset, value as Int)
+            //WasmSType.I64 -> globals.setUnalignedInt64(global.globalOffset, value as Long)
+            //WasmSType.F32 -> globals.setUnalignedFloat32(global.globalOffset, value as Float)
+            //WasmSType.F64 -> globals.setUnalignedFloat64(global.globalOffset, value as Double)
             WasmSType.V128 -> TODO()
             WasmSType.ANYREF -> TODO()
             WasmSType.FUNCREF -> TODO()
@@ -527,13 +582,20 @@ class WasmRunInterpreterNew(val module: WasmModule, memPages: Int = 10, maxMemPa
     }
 
     override fun invoke(funcName: String, vararg params: Any?): Any? {
+        //arrayfill(stackI, 0)
+        //arrayfill(stackF, 0f)
+        //arrayfill(stackL, 0L)
+        //arrayfill(stackD, 0.0)
         val func = module.functionsByName[funcName] ?: error("Can't find '$funcName' in ${module.functionsByName.keys}")
         val code = func.getInterprerCode() ?: error("Function '$funcName' doesn't have body")
         for ((index, arg) in func.type.args.withIndex()) {
-            val offset = code.localsOffsets[index]
+            //val offset = code.localsOffsets[index]
+            val offset = index
             setLocal(arg.stype, offset, params[index])
         }
-        stackPos += code.localSize
+        //stackPos += code.localSize
+        stackPos += code.localsCount
+        //println("localsPos=$localsPos, stackPos=$stackPos")
         invoke(func)
         return popType(func.type.retType.toWasmSType())
     }
@@ -621,7 +683,8 @@ class WasmRunInterpreterNew(val module: WasmModule, memPages: Int = 10, maxMemPa
                     is WasmInstruction.InsInt -> {
                         when (i.op) {
                             WasmOp.Op_local_get -> {
-                                param = context.localsMemOffset[i.param]
+                                //param = context.localsMemOffset[i.param]
+                                param = i.param
                                 when (context.lastInstructionOutputType) {
                                     WasmSType.I32 -> newOp = WasmFastInstructions.Op_i32_local_get
                                     WasmSType.I64 -> newOp = WasmFastInstructions.Op_i64_local_get
@@ -634,7 +697,8 @@ class WasmRunInterpreterNew(val module: WasmModule, memPages: Int = 10, maxMemPa
                                 }
                             }
                             WasmOp.Op_local_tee -> {
-                                param = context.localsMemOffset[i.param]
+                                //param = context.localsMemOffset[i.param]
+                                param = i.param
                                 when (context.lastInstructionOutputType) {
                                     WasmSType.I32 -> newOp = WasmFastInstructions.Op_i32_local_tee
                                     WasmSType.I64 -> newOp = WasmFastInstructions.Op_i64_local_tee
@@ -647,7 +711,8 @@ class WasmRunInterpreterNew(val module: WasmModule, memPages: Int = 10, maxMemPa
                                 }
                             }
                             WasmOp.Op_local_set -> {
-                                param = context.localsMemOffset[i.param]
+                                //param = context.localsMemOffset[i.param]
+                                param = i.param
                                 when (context.lastInstructionOutputType) {
                                     WasmSType.I32 -> newOp = WasmFastInstructions.Op_i32_local_set
                                     WasmSType.I64 -> newOp = WasmFastInstructions.Op_i64_local_set
@@ -660,7 +725,8 @@ class WasmRunInterpreterNew(val module: WasmModule, memPages: Int = 10, maxMemPa
                                 }
                             }
                             WasmOp.Op_global_get -> {
-                                param = module.globals[i.param].globalOffset
+                                //param = module.globals[i.param].globalOffset
+                                param = module.globals[i.param].index
                                 when (context.lastInstructionOutputType) {
                                     WasmSType.I32 -> newOp = WasmFastInstructions.Op_i32_global_get
                                     WasmSType.I64 -> newOp = WasmFastInstructions.Op_i64_global_get
@@ -673,7 +739,8 @@ class WasmRunInterpreterNew(val module: WasmModule, memPages: Int = 10, maxMemPa
                                 }
                             }
                             WasmOp.Op_global_set -> {
-                                param = module.globals[i.param].globalOffset
+                                //param = module.globals[i.param].globalOffset
+                                param = module.globals[i.param].index
                                 when (context.lastInstructionType) {
                                     WasmSType.I32 -> newOp = WasmFastInstructions.Op_i32_global_set
                                     WasmSType.I64 -> newOp = WasmFastInstructions.Op_i64_global_set
@@ -735,6 +802,31 @@ class WasmRunInterpreterNew(val module: WasmModule, memPages: Int = 10, maxMemPa
 
             override fun visitFuncStart(ctx: WasmCodeVisitor.Context) {
                 context = ctx
+                for (n in ctx.func.type.args.size until ctx.func.rlocals.size) {
+                    val type = ctx.func.rlocals[n].stype
+                    when (type) {
+                        WasmSType.VOID -> TODO()
+                        WasmSType.I32 -> {
+                            instructions += ins(WasmFastInstructions.Op_i32_short_const, 0)
+                            instructions += ins(WasmFastInstructions.Op_i32_local_set, n)
+                        }
+                        WasmSType.I64 -> {
+                            instructions += ins(WasmFastInstructions.Op_i64_short_const, 0)
+                            instructions += ins(WasmFastInstructions.Op_i64_local_set, n)
+                        }
+                        WasmSType.F32 -> {
+                            instructions += ins(WasmFastInstructions.Op_f32_short_const, 0)
+                            instructions += ins(WasmFastInstructions.Op_f32_local_set, n)
+                        }
+                        WasmSType.F64 -> {
+                            instructions += ins(WasmFastInstructions.Op_f64_short_const, 0)
+                            instructions += ins(WasmFastInstructions.Op_f64_local_set, n)
+                        }
+                        WasmSType.V128 -> TODO()
+                        WasmSType.ANYREF -> TODO()
+                        WasmSType.FUNCREF -> TODO()
+                    }
+                }
             }
 
             override fun visitFuncEnd(context: WasmCodeVisitor.Context) {
@@ -790,6 +882,8 @@ class WasmRunInterpreterNew(val module: WasmModule, memPages: Int = 10, maxMemPa
             localSize = localsOffset,
             localsOffsets = context.localsMemOffset,
             paramsSize = context.paramsOffset,
+            paramsCount = context.func.type.args.size,
+            localsCount = context.funcLocals.size,
             endStack = context.stack,
         )
     }
@@ -1025,6 +1119,8 @@ class WasmRunInterpreterNew(val module: WasmModule, memPages: Int = 10, maxMemPa
         const val Op_void_return = 0x165
         const val Op_i32_short_const = 0x170
         const val Op_i64_short_const = 0x171
+        const val Op_f32_short_const = 0x172
+        const val Op_f64_short_const = 0x173
         const val Op_goto = 0x180
         const val Op_goto_if = 0x181
         const val Op_goto_if_not = 0x182

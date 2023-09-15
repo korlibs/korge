@@ -331,6 +331,7 @@ enum class WasmOp(
         val OPS_BY_SNAME = values().associateBy { it.sname }
         operator fun get(index: Int): WasmOp = OPS_BY_ID[index] ?: invalidOp("Invalid OP ${index.hex}")
         operator fun get(name: String): WasmOp = OPS_BY_SNAME[name] ?: invalidOp("Invalid OP '$name'")
+        fun getOrNull(id: Int): WasmOp? = OPS_BY_ID[id]
         fun getOrNull(name: String): WasmOp? = OPS_BY_SNAME[name]
         operator fun invoke(index: Int): WasmOp = this[index]
         operator fun invoke(name: String): WasmOp = this[name]

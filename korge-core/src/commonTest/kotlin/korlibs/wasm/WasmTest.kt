@@ -12,7 +12,12 @@ open class WasmTest {
     @Test
     fun testMandelbrot() = suspendTest {
         val module = createModuleRuntime("wasm/mandelbrot.wasm", codeTrace = false)
-        module.invoke("update", 100, 100, 5)
+        //println("instructionsExecuted: ${module.instructionsExecuted}")
+        //for (n in 0 until 10) {
+            module.invoke("update", 100, 100, 5)
+            //println("instructionsExecuted: ${module.instructionsExecuted}")
+            //module.trace = true
+        //}
     }
     @Test
     fun testMp3() = suspendTest {
@@ -169,8 +174,8 @@ open class WasmTest {
 
     protected suspend fun createModuleRuntimeInterpreter(file: String, loadTrace: Boolean = false, memPages: Int = 10, codeTrace: Boolean = false, validate: Boolean = true): WasmRuntime {
         val reader = WasmReaderBinary().doTrace(loadTrace).read(resourcesVfs[file].readBytes().openSync())
-        return WasmRunInterpreter(reader.toModule(), memPages).also { it.trace = codeTrace }.initGlobals().also { int ->
-        //return WasmRunInterpreterNew(reader.toModule(), memPages).also { it.trace = codeTrace }.initGlobals().also { int ->
+        //return WasmRunInterpreter(reader.toModule(), memPages).also { it.trace = codeTrace }.initGlobals().also { int ->
+        return WasmRunInterpreterNew(reader.toModule(), memPages).also { it.trace = codeTrace }.initGlobals().also { int ->
             int.register("env", "abort") {
                 val (msg, file, line, column) = it.map { it as Int }
                 error("abort: msg='${int.readStringz16(msg)}', file='${int.readStringz16(file as Int)}', line=$line, column=$column")

@@ -9,7 +9,9 @@ import kotlin.rotateRight
 
 open class WasmRuntime(val memSize: Int, val memMax: Int) {
     var usedClassMemory = 0
+    var trace = false
 
+    var instructionsExecuted = 0L
     var memory = Buffer.allocDirect(memSize * PAGE_SIZE)
     val memoryNumPages: Int get() = memory.sizeInBytes / PAGE_SIZE
 

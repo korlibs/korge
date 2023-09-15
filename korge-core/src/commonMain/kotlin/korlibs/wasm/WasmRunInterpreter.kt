@@ -12,7 +12,6 @@ class WasmRunInterpreter(val module: WasmModule, memPages: Int = 10, maxMemPages
     var stackPos = 0
     val refStack = arrayListOf<Any?>()
     val stack = Buffer.allocDirect(1024)
-    var trace = false
 
     val stackAvailable get() = (stackPos - stackTop) + (refStack.size * 4)
 
@@ -208,9 +207,12 @@ class WasmRunInterpreter(val module: WasmModule, memPages: Int = 10, maxMemPages
     fun interpret(code: WasmInterpreterCode?, index: Int = 0) {
         if (code == null) return
         var index = index
+        var instructionsExecuted = 0
         while (index >= 0) {
             index = interpretOne(code, index)
+            instructionsExecuted++
         }
+        this.instructionsExecuted += instructionsExecuted
     }
 
     inline fun binopInt(block: (l: Int, r: Int) -> Int) {
@@ -1368,6 +1370,8 @@ class WasmInterpreterCode constructor(
     val doublePool: DoubleArray,
     val paramsSize: Int = -1,
     val localSize: Int = -1,
+    val paramsCount: Int = -1,
+    val localsCount: Int = -1,
     val localsOffsets: IntArray = IntArray(0),
     val endStack: List<WasmType> = emptyList(),
 ) {
