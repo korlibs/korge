@@ -28,7 +28,7 @@ suspend fun main() = Korge(Korge.Config(module = MyModule))
 object MyModule : Module() {
     override val mainScene = MyScene1::class
 
-    override suspend fun AsyncInjector.configure(): Unit {
+    override suspend fun Injector.configure(): Unit {
         mapInstance(MyDependency("HELLO WORLD"))
         mapPrototype { MyScene1(get()) }
     }
@@ -52,7 +52,7 @@ It allows to load all kind of resources asynchronously from different sources an
 * And using KorAU can load sound and music files
 
 It [defines `Scene` that act as a controller](/korge/basics/scene) and a way to split the application in smaller parts.
-It uses the `AsyncInjector` from Korio as an [IoC](https://en.wikipedia.org/wiki/Inversion_of_control) mechanism to declare dependencies to Scenes.
+It uses the `Injector` from Korio as an [IoC](https://en.wikipedia.org/wiki/Inversion_of_control) mechanism to declare dependencies to Scenes.
 
 Optionally (not imposed) it can use the Korio's `Bus` for communicating different parts of the application.
 

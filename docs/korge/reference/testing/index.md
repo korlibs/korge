@@ -91,7 +91,7 @@ class MyViewsTest : ViewsForTesting() {
 ```kotlin
 class MySceneTest : ViewsForTesting() {
     object DummyModule : Module() {
-        override suspend fun AsyncInjector.configure() {
+        override suspend fun Injector.configure() {
             mapSingleton {
                 MyDependency()
             }

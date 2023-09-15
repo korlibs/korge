@@ -149,14 +149,15 @@ suspend fun OffscreenStage.assertScreenshot(
     testIndex++
     val updateTestRef = Environment["UPDATE_TEST_REF"] == "true"
     val interactive = Environment["INTERACTIVE_SCREENSHOT"] == "true"
-    val context = injector.getSyncOrNull<OffscreenContext>() ?: OffscreenContext()
+    val context = injector.getOrNull<OffscreenContext>() ?: OffscreenContext()
     val outFile = File("src/jvmTest/screenshots/${context.testClassName.replace(".", "/")}/${context.testMethodName}_$name.png")
     val actualBitmap = simulateRenderFrame(view, posterize, includeBackground, useTexture)
 
     var updateReference = updateTestRef
     if (outFile.exists()) {
         //val expectedBitmap = runBlockingNoJs { outFile.toVfs().readNativeImage(ImageDecodingProps.DEFAULT_STRAIGHT).toBMP32() }
-        val expectedBitmap = runBlockingNoJs { PNG.decode(outFile.readBytes(), ImageDecodingProps.DEFAULT_STRAIGHT).toBMP32() }
+        val expectedBitmap =
+            runBlockingNoJs { PNG.decode(outFile.readBytes(), ImageDecodingProps.DEFAULT_STRAIGHT).toBMP32() }
         //val ref = referenceBitmap.scaleLinear(scale, scale)
         //val act = actualBitmap.scaleLinear(scale)
         val result = BitmapComparer.compare(expectedBitmap, actualBitmap)
@@ -166,7 +167,11 @@ suspend fun OffscreenStage.assertScreenshot(
                 updateReference = false
             }
             if (!similar && interactive) {
-                updateReference = showBitmapDiffDialog(expectedBitmap, actualBitmap, "Bitmaps are not equal $expectedBitmap-$actualBitmap\n$result\n${result.error}")
+                updateReference = showBitmapDiffDialog(
+                    expectedBitmap,
+                    actualBitmap,
+                    "Bitmaps are not equal $expectedBitmap-$actualBitmap\n$result\n${result.error}"
+                )
             }
             if (!updateReference) {
                 val baseName = "${context.testClassName}_${context.testMethodName}_$name"
@@ -175,10 +180,20 @@ suspend fun OffscreenStage.assertScreenshot(
                 val actualFile = File(base, "$baseName.actual.png")
                 val diffFile = File(base, "$baseName.diff.png")
                 if (!similar) {
-                    expectedFile.writeBytes(PNG.encode(expectedBitmap.toBitmap8Or32(), ImageEncodingProps(quality = 1.0)))
+                    expectedFile.writeBytes(
+                        PNG.encode(
+                            expectedBitmap.toBitmap8Or32(),
+                            ImageEncodingProps(quality = 1.0)
+                        )
+                    )
                     actualFile.writeBytes(PNG.encode(actualBitmap.toBitmap8Or32(), ImageEncodingProps(quality = 1.0)))
                     kotlin.runCatching {
-                        diffFile.writeBytes(PNG.encode(Bitmap32.diffEx(actualBitmap, expectedBitmap), ImageEncodingProps(quality = 1.0)))
+                        diffFile.writeBytes(
+                            PNG.encode(
+                                Bitmap32.diffEx(actualBitmap, expectedBitmap),
+                                ImageEncodingProps(quality = 1.0)
+                            )
+                        )
                     }
                 }
                 assert(similar) {

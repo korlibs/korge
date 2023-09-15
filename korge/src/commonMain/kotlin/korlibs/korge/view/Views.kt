@@ -41,7 +41,7 @@ import kotlin.coroutines.*
 class Views(
     override val coroutineContext: CoroutineContext,
     val ag: AG,
-    val injector: AsyncInjector,
+    val injector: Injector,
     val input: Input,
     val timeProvider: TimeProvider,
     val stats: Stats,
@@ -474,14 +474,14 @@ open class GameWindowLog : GameWindow() {
 
 class ViewsLog constructor(
 	override val coroutineContext: CoroutineContext,
-	val injector: AsyncInjector = AsyncInjector(),
+	val injector: Injector = Injector(),
 	val ag: AG = AGLog(),
 	val input: Input = Input(),
 	val timeProvider: TimeProvider = TimeProvider,
 	val stats: Stats = Stats(),
 	val gameWindow: GameWindow = GameWindowLog()
 ) : CoroutineScope {
-	val views: Views = Views(coroutineContext + AsyncInjectorContext(injector), ag, injector, input, timeProvider, stats, gameWindow).also {
+	val views: Views = Views(coroutineContext + InjectorContext(injector), ag, injector, input, timeProvider, stats, gameWindow).also {
 	    it.rethrowRenderError = true
     }
     val stage: Stage get() = views.stage
@@ -503,9 +503,9 @@ val ViewsContainer.ag: AG get() = views.ag
 
 data class KorgeFileLoaderTester<T>(
 	val name: String,
-	val tester: suspend (s: FastByteArrayInputStream, injector: AsyncInjector) -> KorgeFileLoader<T>?
+	val tester: suspend (s: FastByteArrayInputStream, injector: Injector) -> KorgeFileLoader<T>?
 ) {
-	suspend operator fun invoke(s: FastByteArrayInputStream, injector: AsyncInjector) = tester(s, injector)
+	suspend operator fun invoke(s: FastByteArrayInputStream, injector: Injector) = tester(s, injector)
 	override fun toString(): String = "KorgeFileTester(\"$name\")"
 }
 
@@ -513,7 +513,7 @@ data class KorgeFileLoader<T>(val name: String, val loader: suspend VfsFile.(Fas
 	override fun toString(): String = "KorgeFileLoader(\"$name\")"
 }
 
-//suspend val AsyncInjector.views: Views get() = this.get<Views>()
+//suspend val Injector.views: Views get() = this.get<Views>()
 
 /////////////////////////
 /////////////////////////

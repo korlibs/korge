@@ -29,7 +29,7 @@ open class Stage internal constructor(override val views: Views) : FixedSizeCont
 
     val keys: InputKeys get() = views.input.keys
     val input: Input get() = views.input
-    val injector: AsyncInjector get() = views.injector
+    val injector: Injector get() = views.injector
     val ag: AG get() = views.ag
     val gameWindow: GameWindow get() = views.gameWindow
     override val resources get() = views.resources

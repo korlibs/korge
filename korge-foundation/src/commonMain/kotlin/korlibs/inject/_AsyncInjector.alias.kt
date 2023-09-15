@@ -1,30 +1,50 @@
 package korlibs.inject
 
+@Deprecated("", replaceWith = ReplaceWith("Injector", "korlibs.inject.Injector"))
+typealias AsyncInjector = Injector
+
+@Deprecated("", replaceWith = ReplaceWith("InjectorFactory<T>", "korlibs.inject.InjectorFactory"))
+typealias AsyncFactory<T> = InjectorFactory<T>
+
+@Deprecated("", replaceWith = ReplaceWith("InjectorDependency", "korlibs.inject.InjectorDependency"))
+typealias InjectorAsyncDependency = InjectorDependency
+@Deprecated("", replaceWith = ReplaceWith("InjectorDependency", "korlibs.inject.InjectorDependency"))
+typealias AsyncDependency = InjectorDependency
+
+@Deprecated("", replaceWith = ReplaceWith("PrototypeObjectProvider", "korlibs.inject.PrototypeObjectProvider"))
+typealias PrototypeAsyncObjectProvider<T> = PrototypeObjectProvider<T>
+@Deprecated("", replaceWith = ReplaceWith("SingletonObjectProvider", "korlibs.inject.SingletonObjectProvider"))
+typealias SingletonAsyncObjectProvider<T> = SingletonObjectProvider<T>
+@Deprecated("", replaceWith = ReplaceWith("FactoryObjectProvider", "korlibs.inject.FactoryObjectProvider"))
+typealias FactoryAsyncObjectProvider<T> = FactoryObjectProvider<T>
+
+
+/*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
 import kotlin.reflect.*
 
 interface AsyncObjectProvider<T> {
-    suspend fun get(injector: AsyncInjector): T
+    suspend fun get(injector: Injector): T
     suspend fun deinit()
 }
 
-class PrototypeAsyncObjectProvider<T>(val generator: suspend AsyncInjector.() -> T) : AsyncObjectProvider<T> {
-    override suspend fun get(injector: AsyncInjector): T = injector.created(generator(injector))
+class PrototypeAsyncObjectProvider<T>(val generator: suspend Injector.() -> T) : AsyncObjectProvider<T> {
+    override suspend fun get(injector: Injector): T = injector.created(generator(injector))
     override suspend fun deinit() = Unit
     override fun toString(): String = "PrototypeAsyncObjectProvider()"
 }
 
-class FactoryAsyncObjectProvider<T>(val generator: suspend AsyncInjector.() -> AsyncFactory<T>) :
+class FactoryAsyncObjectProvider<T>(val generator: suspend Injector.() -> AsyncFactory<T>) :
     AsyncObjectProvider<T> {
-    override suspend fun get(injector: AsyncInjector): T = injector.created(generator(injector).create())
+    override suspend fun get(injector: Injector): T = injector.created(generator(injector).create())
     override suspend fun deinit() = Unit
     override fun toString(): String = "FactoryAsyncObjectProvider()"
 }
 
-class SingletonAsyncObjectProvider<T>(val generator: suspend AsyncInjector.() -> T) : AsyncObjectProvider<T> {
+class SingletonAsyncObjectProvider<T>(val generator: suspend Injector.() -> T) : AsyncObjectProvider<T> {
     var value: T? = null
-    override suspend fun get(injector: AsyncInjector): T {
+    override suspend fun get(injector: Injector): T {
         if (value == null) value = injector.created(generator(injector))
         return value!!
     }
@@ -36,24 +56,24 @@ class SingletonAsyncObjectProvider<T>(val generator: suspend AsyncInjector.() ->
 }
 
 class InstanceAsyncObjectProvider<T>(val instance: T) : AsyncObjectProvider<T> {
-    override suspend fun get(injector: AsyncInjector): T = instance
+    override suspend fun get(injector: Injector): T = instance
     override suspend fun deinit() {
         (instance as? AsyncDestructor?)?.deinit()
     }
     override fun toString(): String = "InstanceAsyncObjectProvider($instance)"
 }
 
-class AsyncInjector(val parent: AsyncInjector? = null, val level: Int = 0) {
+class Injector(val parent: Injector? = null, val level: Int = 0) {
     companion object {}
     suspend inline fun <reified T : Any> getWith(vararg instances: Any): T = getWith(T::class, *instances)
     suspend inline fun <reified T : Any> get(): T = get<T>(T::class)
     suspend inline fun <reified T : Any> getOrNull(): T? = getOrNull<T>(T::class)
-    inline fun <reified T : Any> mapInstance(instance: T): AsyncInjector = mapInstance(T::class, instance)
-    inline fun <reified T : Any> mapFactory(noinline gen: suspend AsyncInjector.() -> AsyncFactory<T>) =
+    inline fun <reified T : Any> mapInstance(instance: T): Injector = mapInstance(T::class, instance)
+    inline fun <reified T : Any> mapFactory(noinline gen: suspend Injector.() -> AsyncFactory<T>) =
         mapFactory(T::class, gen)
 
-    inline fun <reified T : Any> mapSingleton(noinline gen: suspend AsyncInjector.() -> T) = mapSingleton(T::class, gen)
-    inline fun <reified T : Any> mapPrototype(noinline gen: suspend AsyncInjector.() -> T) = mapPrototype(T::class, gen)
+    inline fun <reified T : Any> mapSingleton(noinline gen: suspend Injector.() -> T) = mapSingleton(T::class, gen)
+    inline fun <reified T : Any> mapPrototype(noinline gen: suspend Injector.() -> T) = mapPrototype(T::class, gen)
 
     fun removeMapping(clazz: KClass<*>) {
         providersByClass.remove(clazz)
@@ -63,10 +83,10 @@ class AsyncInjector(val parent: AsyncInjector? = null, val level: Int = 0) {
     var fallbackProvider: (suspend (clazz: kotlin.reflect.KClass<*>, ctx: RequestContext) -> AsyncObjectProvider<*>)? = null
     val providersByClass = LinkedHashMap<kotlin.reflect.KClass<*>, AsyncObjectProvider<*>>()
 
-    val root: AsyncInjector = parent?.root ?: this
+    val root: Injector = parent?.root ?: this
     val nearestFallbackProvider get() = fallbackProvider ?: parent?.fallbackProvider
 
-    fun child() = AsyncInjector(this, level + 1)
+    fun child() = Injector(this, level + 1)
 
     suspend fun <T : Any> getWith(clazz: KClass<T>, vararg instances: Any): T {
         val c = child()
@@ -85,30 +105,30 @@ class AsyncInjector(val parent: AsyncInjector? = null, val level: Int = 0) {
         parent?.dump()
     }
 
-    fun <T : Any> mapInstance(clazz: KClass<T>, instance: T): AsyncInjector = this.apply {
+    fun <T : Any> mapInstance(clazz: KClass<T>, instance: T): Injector = this.apply {
         providersByClass[clazz] = InstanceAsyncObjectProvider<T>(instance)
     }
 
-    fun <T : Any> mapFactory(clazz: KClass<T>, gen: suspend AsyncInjector.() -> AsyncFactory<T>): AsyncInjector =
+    fun <T : Any> mapFactory(clazz: KClass<T>, gen: suspend Injector.() -> AsyncFactory<T>): Injector =
         this.apply {
             providersByClass[clazz] = FactoryAsyncObjectProvider<T>(gen)
         }
 
-    fun <T : Any> mapSingleton(clazz: KClass<T>, gen: suspend AsyncInjector.() -> T): AsyncInjector = this.apply {
+    fun <T : Any> mapSingleton(clazz: KClass<T>, gen: suspend Injector.() -> T): Injector = this.apply {
         providersByClass[clazz] = SingletonAsyncObjectProvider<T>(gen)
     }
 
-    fun <T : Any> mapPrototype(clazz: KClass<T>, gen: suspend AsyncInjector.() -> T): AsyncInjector = this.apply {
+    fun <T : Any> mapPrototype(clazz: KClass<T>, gen: suspend Injector.() -> T): Injector = this.apply {
         providersByClass[clazz] = PrototypeAsyncObjectProvider<T>(gen)
     }
 
     init {
-        mapInstance(AsyncInjector::class, this)
+        mapInstance(Injector::class, this)
     }
 
     data class RequestContext(val initialClazz: KClass<*>)
 
-    fun getClassDefiner(clazz: KClass<*>): AsyncInjector? {
+    fun getClassDefiner(clazz: KClass<*>): Injector? {
         if (clazz in providersByClass) return this
         return parent?.getClassDefiner(clazz)
     }
@@ -127,7 +147,7 @@ class AsyncInjector(val parent: AsyncInjector? = null, val level: Int = 0) {
         clazz: KClass<T>,
         ctx: RequestContext = RequestContext(clazz)
     ): AsyncObjectProvider<T> =
-        getProviderOrNull<T>(clazz, ctx) ?: throw AsyncInjector.NotMappedException(
+        getProviderOrNull<T>(clazz, ctx) ?: throw Injector.NotMappedException(
             clazz, ctx.initialClazz, ctx, "Class '$clazz' doesn't have constructors $ctx"
         )
 
@@ -181,7 +201,7 @@ class AsyncInjector(val parent: AsyncInjector? = null, val level: Int = 0) {
         val msg: String = "Not mapped $clazz requested by $requestedByClass in $ctx"
     ) : RuntimeException(msg)
 
-    override fun toString(): String = "AsyncInjector(level=$level)"
+    override fun toString(): String = "Injector(level=$level)"
 
     suspend internal fun <T> created(instance: T): T {
         if (instance is AsyncDependency) instance.init()
@@ -225,5 +245,21 @@ interface AsyncDestructor {
 }
 
 interface InjectorAsyncDependency {
-    suspend fun init(injector: AsyncInjector): Unit
+    suspend fun init(injector: Injector): Unit
 }
+
+suspend fun <T> withInjector(injector: Injector, block: suspend () -> T): T =
+    withContext(AsyncInjectorContext(injector)) {
+        block()
+    }
+
+suspend fun injector(): Injector =
+    coroutineContext[AsyncInjectorContext]?.injector
+        ?: error("Injector not in the context, please call withInjector function")
+
+class AsyncInjectorContext(val injector: Injector) : CoroutineContext.Element {
+    companion object : CoroutineContext.Key<AsyncInjectorContext>
+
+    override val key get() = AsyncInjectorContext
+}
+*/

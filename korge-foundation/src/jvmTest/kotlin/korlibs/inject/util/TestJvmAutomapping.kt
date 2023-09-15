@@ -10,7 +10,7 @@ import kotlin.test.*
 class JvmAutomappingTest {
     @Test
     fun test() = runBlocking {
-        val injector = AsyncInjector().jvmAutomapping()
+        val injector = Injector().jvmAutomapping()
         injector.mapInstance(Folders(File(".")))
         injector.get<ConfigService>()
         assertSame(injector.get<ConfigService>(), injector.get<ConfigService>())

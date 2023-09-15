@@ -331,7 +331,7 @@ open class ViewsForTesting(
     @Suppress("UNCHECKED_CAST")
     inline fun <reified S : Scene> sceneTest(
         config: Korge? = null,
-        noinline configureInjector: AsyncInjector.() -> Unit = {},
+        noinline configureInjector: Injector.() -> Unit = {},
         timeout: TimeSpan? = DEFAULT_SUSPEND_TEST_TIMEOUT,
         frameTime: TimeSpan = this.frameTime,
         crossinline block: suspend S.() -> Unit

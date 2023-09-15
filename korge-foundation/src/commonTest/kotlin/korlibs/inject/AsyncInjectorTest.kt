@@ -12,7 +12,7 @@ class AsyncInjectorTest {
 
 	@Test
 	fun testSimple() = suspendTest {
-		val inject = AsyncInjector()
+		val inject = Injector()
 		inject.mapInstance(Int::class, 10)
 		assertEquals(10, inject.get(Int::class))
 	}
@@ -25,7 +25,7 @@ class AsyncInjectorTest {
 		}
 
 		val holder = Holder()
-		val inject = AsyncInjector()
+		val inject = Injector()
 		inject.mapSingleton(A::class) { A(get(Holder::class)) }
 		inject.mapInstance(Holder::class, holder)
 		val a0 = inject.get(A::class)
@@ -53,7 +53,7 @@ class AsyncInjectorTest {
 
 	@kotlin.test.Test
 	fun testPrototype() = suspendTest {
-		val inject = AsyncInjector()
+		val inject = Injector()
 		inject.mapInstance(Counter())
 		inject.mapPrototype(PrototypeA::class) { PrototypeA(get()) }
 		val a0 = inject.get(PrototypeA::class)
@@ -64,7 +64,7 @@ class AsyncInjectorTest {
 
 	@kotlin.test.Test
 	fun testPrototypeSingleton() = suspendTest {
-		val inject = AsyncInjector()
+		val inject = Injector()
 		inject.mapInstance(Counter())
 		inject.mapPrototype(PrototypeA::class) { PrototypeA(get()) }
 		inject.mapSingleton(SingletonS::class) { SingletonS(get()) }
@@ -80,14 +80,14 @@ class AsyncInjectorTest {
 	//annotation class Path(val path: String)
 	data class VPath(val path: String)
 
-	fun AsyncInjector.mapPath(path: String) = mapInstance(VPath::class, VPath("path"))
+	fun Injector.mapPath(path: String) = mapInstance(VPath::class, VPath("path"))
 
 	// e: java.lang.UnsupportedOperationException: Class literal annotation arguments are not yet supported: BitmapFontLoader
 	//@AsyncFactoryClass(BitmapFontLoader::class)
 	class BitmapFont(val path: String)
 
-	class BitmapFontLoader(val path: VPath) : AsyncFactory<BitmapFont> {
-		override suspend fun create() = BitmapFont(path.path)
+	class BitmapFontLoader(val path: VPath) : InjectorFactory<BitmapFont> {
+		override fun create() = BitmapFont(path.path)
 	}
 
 	@kotlin.test.Test
@@ -98,12 +98,12 @@ class AsyncInjectorTest {
 		) : InjectorAsyncDependency {
 			lateinit var font: BitmapFont
 
-			override suspend fun init(injector: AsyncInjector) {
+			override fun init(injector: Injector) {
 				font = injector.getWith(VPath("path/to/font"))
 			}
 		}
 
-		val inject = AsyncInjector()
+		val inject = Injector()
 		inject.mapFactory(BitmapFont::class) { BitmapFontLoader(get()) }
 		inject.mapSingleton(Demo::class) { Demo() }
 		val demo = inject.get(Demo::class)
@@ -122,8 +122,8 @@ class AsyncInjectorTest {
 		val pathA: Path2A?,
 		//@Optional
 		val pathB: Path2B?
-	) : AsyncFactory<BitmapFont2> {
-		override suspend fun create(): BitmapFont2 = when {
+	) : InjectorFactory<BitmapFont2> {
+		override fun create(): BitmapFont2 = when {
 			pathA != null -> BitmapFont2(pathA.path1)
 			pathB != null -> BitmapFont2(pathB.path2)
 			else -> throw RuntimeException("Boath pathA and pathB are null")
@@ -137,14 +137,14 @@ class AsyncInjectorTest {
 	//		lateinit var fontA: BitmapFont2
 	//		lateinit var fontB: BitmapFont2
 //
-	//		suspend override fun init(injector: AsyncInjector) {
+	//		suspend override fun init(injector: Injector) {
 	//			fontA = injector.getPath("path/to/font/A")
 	//			fontB = injector.getPath("path/to/font/B")
 	//		}
 	//	}
 //
 //
-	//	val inject = AsyncInjector()
+	//	val inject = Injector()
 	//	inject.mapFactory { BitmapFontLoader2(getOrNull(), getOrNull()) }
 	//	inject.mapSingleton { Demo2() }
 	//	val demo = inject.get<Demo2>()
@@ -152,18 +152,18 @@ class AsyncInjectorTest {
 	//	assertEquals("path/to/font/B", demo.fontB.path)
 	//}
 
-	//@Inject lateinit var injector: AsyncInjector
+	//@Inject lateinit var injector: Injector
 
 	@kotlin.test.Test
 	// @TODO: Check why this fails on Kotlin.JS!
 	fun testInjectAnnotation() = suspendTestIgnoreJs {
 		val holder = Holder()
 
-		open class Base : InjectorAsyncDependency {
-			lateinit var injector: AsyncInjector; private set
+		open class Base : InjectorDependency {
+			lateinit var injector: Injector; private set
 			lateinit var holder: Holder; private set
 
-			override suspend fun init(injector: AsyncInjector) {
+			override fun init(injector: Injector) {
 				this.injector = injector
 				this.holder = injector.get(Holder::class)
 				//holder.log += "Base.init<" + injector.get<Int>() + ">" // Not working with Kotlin.JS
@@ -175,13 +175,13 @@ class AsyncInjectorTest {
 		class Demo(
 			val a: Int
 		) : Base() {
-			override suspend fun init(injector: AsyncInjector) {
+			override fun init(injector: Injector) {
 				super.init(injector)
 				holder.log += "Demo.init<$a>"
 			}
 		}
 
-		val inject = AsyncInjector().mapInstance(Holder::class, holder)
+		val inject = Injector().mapInstance(Holder::class, holder)
 		inject.mapInstance(Int::class, 10)
 		// Not working with Kotlin.JS
 		//inject.mapSingleton<Demo> { val demo = Demo(get()); demo.injector = get(); demo.holder = get(); demo } // Not working with Kotlin.JS
@@ -198,7 +198,7 @@ class AsyncInjectorTest {
 			var a = 10
 		}
 
-		val injector = AsyncInjector()
+		val injector = Injector()
 
 		//injector.mapSingleton { MySingleton() }
 		//injector.child().get<MySingleton>().a = 20
@@ -213,12 +213,12 @@ class AsyncInjectorTest {
 	fun testNotMapped() = suspendTest {
 		// @TODO: Not working with Kotlin.JS
 
-		//expectException<AsyncInjector.NotMappedException> {
+		//expectException<Injector.NotMappedException> {
 		//	data class Unmapped(val name: String)
 		//	@Singleton
 		//	class MySingleton(val unmapped: Unmapped)
 //
-		//	val injector = AsyncInjector()
+		//	val injector = Injector()
 		//	injector.mapSingleton { MySingleton(get()) }
 		//	injector.child().get<MySingleton>()
 		//}
@@ -227,12 +227,12 @@ class AsyncInjectorTest {
 		//@Singleton
 		class MySingleton(val unmapped: Unmapped)
 
-		assertFailsWith<AsyncInjector.NotMappedException> {
+		assertFailsWith<Injector.NotMappedException> {
 
 			// @TODO: kotlin-native bug
 			////error: compilation failed: org.jetbrains.kotlin.ir.declarations.impl.IrFunctionImpl@5b34e7bd
 			////
-			////* Source files: AsyncInjector.kt, Korinject.kt, KorinjectVersion.kt, AsyncInjectorTest.kt, expectException.kt, syncTest.kt, syncTestImpl.kt, syncTestImplNative.kt
+			////* Source files: Injector.kt, Korinject.kt, KorinjectVersion.kt, AsyncInjectorTest.kt, expectException.kt, syncTest.kt, syncTestImpl.kt, syncTestImplNative.kt
 			////* Compiler version info: Konan: 0.8.2-dev / Kotlin: 1.2.70
 			////* Output kind: PROGRAM
 			////
@@ -244,7 +244,7 @@ class AsyncInjectorTest {
 			////@Singleton
 			//class MySingleton(val unmapped: Unmapped)
 
-			val injector = AsyncInjector()
+			val injector = Injector()
 			injector.mapSingleton(MySingleton::class) { MySingleton(get(Unmapped::class)) }
 			injector.child().get(MySingleton::class)
 		}
@@ -257,7 +257,7 @@ class AsyncInjectorTest {
 		//@Singleton
 		class MySingleton(val mapped: Mapped)
 
-		val injector = AsyncInjector()
+		val injector = Injector()
 		injector.mapSingleton(MySingleton::class) { MySingleton(get()) }
 		injector.child()
 			.mapInstance(Mapped::class, Mapped("hello"))
@@ -267,24 +267,27 @@ class AsyncInjectorTest {
     @Test
     fun testGetSync() {
         var n = 0
-        val injector = AsyncInjector()
+        val injector = Injector()
         injector.mapPrototype { n++ }
-        assertEquals(0, injector.getSync<Int>())
-        assertEquals(1, injector.getSync<Int>())
+        assertEquals(0, injector.get<Int>())
+        assertEquals(1, injector.get(Int::class))
     }
 
+    /*
     @Test
+    @Ignore
     fun testGetSyncSuspending() {
-        val injector = AsyncInjector()
+        val injector = Injector()
         injector.mapPrototype { delay(5000L); 0 }
-        val error = assertFailsWith<RuntimeException> { injector.getSync<Int>() }
+        val error = assertFailsWith<RuntimeException> { injector.get(Int::class) }
         assertTrue { error.message!!.contains("synchronously") }
     }
+    */
 
     @Test
     fun testHas() = suspendTest {
         var n = 0
-        val injector = AsyncInjector()
+        val injector = Injector()
         injector.mapPrototype { n++ }
         assertEquals(true, injector.has(Int::class))
         assertEquals(false, injector.has(String::class))
@@ -293,12 +296,12 @@ class AsyncInjectorTest {
 
     @Test
     fun testToString() = suspendTest {
-        val injector = AsyncInjector()
-        assertEquals("AsyncInjector(level=0)", injector.toString())
-        assertEquals("AsyncInjector(level=1)", injector.child().toString())
+        val injector = Injector()
+        assertEquals("Injector(level=0)", injector.toString())
+        assertEquals("Injector(level=1)", injector.child().toString())
 
     }
 }
 
-private suspend inline fun <reified T : Any> AsyncInjector.getPath(path: String) =
+private suspend inline fun <reified T : Any> Injector.getPath(path: String) =
 	getWith<T>(AsyncInjectorTest.VPath(path))

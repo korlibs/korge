@@ -3,7 +3,7 @@ package korlibs.korge
 import korlibs.korge.scene.Scene
 import korlibs.korge.tests.ViewsForTesting
 import korlibs.korge.view.SContainer
-import korlibs.inject.AsyncInjector
+import korlibs.inject.Injector
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -20,7 +20,7 @@ class ViewsForTestingTest : ViewsForTesting() {
         }
     }
 
-    fun AsyncInjector.mapCommon() {
+    fun Injector.mapCommon() {
         mapSingleton {
             Dependency()
         }

@@ -32,8 +32,8 @@ import kotlin.coroutines.*
  * - ## New scene is returned
  */
 abstract class Scene : InjectorAsyncDependency, ViewsContainer, CoroutineScope, ResourcesContainer, Extra by Extra.Mixin() {
-    /** A child [AsyncInjector] for this instance. Set by the [init] method. */
-	lateinit var injector: AsyncInjector
+    /** A child [Injector] for this instance. Set by the [init] method. */
+	lateinit var injector: Injector
     /** The [Views] singleton of the application. Set by the [init] method. */
 	override lateinit var views: Views
     /** The [SceneContainer] [View] that contains this [Scene]. Set by the [init] method. */
@@ -54,7 +54,7 @@ abstract class Scene : InjectorAsyncDependency, ViewsContainer, CoroutineScope, 
 	val root get() = _sceneViewContainer
 
 	protected val cancellables = CancellableGroup()
-    override val coroutineContext by lazy { views.coroutineContext + AsyncInjectorContext(injector) + Job(views.coroutineContext[Job.Key]) }
+    override val coroutineContext by lazy { views.coroutineContext + InjectorContext(injector) + Job(views.coroutineContext[Job.Key]) }
 	val sceneView: SContainer by lazy {
         createSceneView(sceneContainer.size).apply {
             _sceneViewContainer += this
@@ -71,7 +71,7 @@ abstract class Scene : InjectorAsyncDependency, ViewsContainer, CoroutineScope, 
      * This method will be called by the [SceneContainer] that will display this [Scene].
      * This will set the [injector], [views], [sceneContainer] and [resourcesRoot].
      */
-    final override suspend fun init(injector: AsyncInjector) {
+    final override fun init(injector: Injector) {
 		this.injector = injector
 		this.views = injector.get()
 		this.sceneContainer = injector.get()

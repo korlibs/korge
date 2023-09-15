@@ -6,8 +6,7 @@ import korlibs.event.*
 import korlibs.graphics.log.*
 import korlibs.image.color.*
 import korlibs.image.format.*
-import korlibs.inject.AsyncInjector
-import korlibs.inject.AsyncInjectorContext
+import korlibs.inject.*
 import korlibs.io.async.*
 import korlibs.io.dynamic.*
 import korlibs.io.file.std.*
@@ -54,8 +53,8 @@ suspend fun Korge(
     //val eventDispatcher: EventDispatcher = gameWindow ?: DummyEventDispatcher, // Removed
     mainSceneClass: KClass<out Scene>? = null,
     timeProvider: TimeProvider = TimeProvider,
-    injector: AsyncInjector = AsyncInjector(),
-    configInjector: AsyncInjector.() -> Unit = {},
+    injector: Injector = Injector(),
+    configInjector: Injector.() -> Unit = {},
     debug: Boolean = false,
     trace: Boolean = false,
     context: Any? = null,
@@ -116,8 +115,8 @@ data class Korge(
     //val eventDispatcher: EventDispatcher = gameWindow ?: DummyEventDispatcher, // Removed
     val mainSceneClass: KClass<out Scene>? = null,
     val timeProvider: TimeProvider = TimeProvider,
-    val injector: AsyncInjector = AsyncInjector(),
-    val configInjector: AsyncInjector.() -> Unit = {},
+    val injector: Injector = Injector(),
+    val configInjector: Injector.() -> Unit = {},
     val debug: Boolean = false,
     val trace: Boolean = false,
     val context: Any? = null,
@@ -210,7 +209,7 @@ object KorgeRunner {
             // Use this once Korgw is on 1.12.5
             //val views = Views(gameWindow.getCoroutineDispatcherWithCurrentContext() + SupervisorJob(), ag, injector, input, timeProvider, stats, gameWindow)
             val views: Views = Views(
-                coroutineContext = coroutineContext + gameWindow.coroutineDispatcher + AsyncInjectorContext(config.injector) + SupervisorJob(),
+                coroutineContext = coroutineContext + gameWindow.coroutineDispatcher + InjectorContext(config.injector) + SupervisorJob(),
                 ag = if (config.debugAg) AGPrint() else ag,
                 injector = config.injector,
                 input = input,
@@ -297,7 +296,7 @@ object KorgeRunner {
         bgcolor: RGBA = Colors.TRANSPARENT,
         fixedSizeStep: TimeSpan = TimeSpan.NIL,
         forceRenderEveryFrame: Boolean = true,
-        configInjector: AsyncInjector.() -> Unit = {},
+        configInjector: Injector.() -> Unit = {},
     ): CompletableDeferred<Unit> {
         KorgeReload.registerEventDispatcher(eventDispatcher)
 
@@ -599,7 +598,7 @@ object KorgeRunner {
         fixedSizeStep: TimeSpan = TimeSpan.NIL,
         waitForFirstRender: Boolean = true,
         forceRenderEveryFrame: Boolean = true,
-        configInjector: AsyncInjector.() -> Unit
+        configInjector: Injector.() -> Unit
     ) {
         val firstRenderDeferred =
             prepareViewsBase(views, eventDispatcher, clearEachFrame, bgcolor, fixedSizeStep, forceRenderEveryFrame, configInjector)

@@ -2,14 +2,14 @@ package korlibs.korge
 
 import korlibs.memory.Platform
 import korlibs.event.*
-import korlibs.inject.AsyncInjector
+import korlibs.inject.Injector
 import korlibs.io.lang.Environment
 import korlibs.logger.*
 import kotlin.jvm.JvmStatic
 import kotlin.native.concurrent.ThreadLocal
 import kotlin.reflect.KClass
 
-class ReloadClassContext(val injector: AsyncInjector, val refreshedClasses: Set<String>, val rootFolders: List<String>)
+class ReloadClassContext(val injector: Injector, val refreshedClasses: Set<String>, val rootFolders: List<String>)
 
 internal open class KorgeReloadInternalImpl {
     open fun <T : Any> getReloadedClass(clazz: KClass<T>, context: ReloadClassContext): KClass<T> = clazz
@@ -55,7 +55,7 @@ data class ReloadEvent(
     companion object : EventType<ReloadEvent>
 
     val doFullReload: Boolean get() = !reloadSuccess
-    fun <T : Any> getReloadedClass(clazz: KClass<T>, injector: AsyncInjector): KClass<T> = KorgeReloadInternal.getReloadedClass(clazz, ReloadClassContext(injector, refreshedClasses, rootFolders))
+    fun <T : Any> getReloadedClass(clazz: KClass<T>, injector: Injector): KClass<T> = KorgeReloadInternal.getReloadedClass(clazz, ReloadClassContext(injector, refreshedClasses, rootFolders))
     fun transferKeepProperties(old: Any, new: Any) = KorgeReloadInternal.transferKeepProperties(old, new)
 }
 

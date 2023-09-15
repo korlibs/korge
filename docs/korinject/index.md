@@ -18,7 +18,7 @@ Portable Kotlin Common library to do asynchronous dependency injection.
 An injector allow to hold instances, singletons and class constructions, so it allows to access instances later.
 
 ```kotlin
-val injector = AsyncInjector()
+val injector = Injector()
 ```
 
 ### Creating a child injector
@@ -82,28 +82,28 @@ val nullable: MyClass? = injector.getOrNull<MyClass>()
 ## API
 
 ```kotlin
-class AsyncInjector(val parent: AsyncInjector? = null, val level: Int = 0) {
+class Injector(val parent: Injector? = null, val level: Int = 0) {
     suspend inline fun <reified T : Any> getWith(vararg instances: Any): T
     suspend inline fun <reified T : Any> get(): T
     suspend inline fun <reified T : Any> getOrNull(): T?
 
-    inline fun <reified T : Any> mapInstance(instance: T): AsyncInjector
-    inline fun <reified T : Any> mapFactory(noinline gen: suspend AsyncInjector.() -> AsyncFactory<T>)
-    inline fun <reified T : Any> mapSingleton(noinline gen: suspend AsyncInjector.() -> T)
-    inline fun <reified T : Any> mapPrototype(noinline gen: suspend AsyncInjector.() -> T)
+    inline fun <reified T : Any> mapInstance(instance: T): Injector
+    inline fun <reified T : Any> mapFactory(noinline gen: suspend Injector.() -> AsyncFactory<T>)
+    inline fun <reified T : Any> mapSingleton(noinline gen: suspend Injector.() -> T)
+    inline fun <reified T : Any> mapPrototype(noinline gen: suspend Injector.() -> T)
 
-    fun <T : Any> mapInstance(clazz: KClass<T>, instance: T): AsyncInjector
-    fun <T : Any> mapFactory(clazz: KClass<T>, gen: suspend AsyncInjector.() -> AsyncFactory<T>): AsyncInjector 
-    fun <T : Any> mapSingleton(clazz: KClass<T>, gen: suspend AsyncInjector.() -> T): AsyncInjector
-    fun <T : Any> mapPrototype(clazz: KClass<T>, gen: suspend AsyncInjector.() -> T): AsyncInjector
+    fun <T : Any> mapInstance(clazz: KClass<T>, instance: T): Injector
+    fun <T : Any> mapFactory(clazz: KClass<T>, gen: suspend Injector.() -> AsyncFactory<T>): Injector 
+    fun <T : Any> mapSingleton(clazz: KClass<T>, gen: suspend Injector.() -> T): Injector
+    fun <T : Any> mapPrototype(clazz: KClass<T>, gen: suspend Injector.() -> T): Injector
 
     var fallbackProvider: (suspend (clazz: kotlin.reflect.KClass<*>, ctx: RequestContext) -> AsyncObjectProvider<*>)?
     val providersByClass: LinkedHashMap<kotlin.reflect.KClass<*>, AsyncObjectProvider<*>>()
 
-    val root: AsyncInjector = parent?.root ?: this
+    val root: Injector = parent?.root ?: this
     val nearestFallbackProvider get() = fallbackProvider ?: parent?.fallbackProvider
 
-    fun child(): AsyncInjector
+    fun child(): Injector
 
     suspend fun <T : Any> getWith(clazz: KClass<T>, vararg instances: Any): T
 
@@ -137,7 +137,7 @@ interface AsyncDependency {
 }
 
 interface InjectorAsyncDependency {
-    suspend fun init(injector: AsyncInjector): Unit
+    suspend fun init(injector: Injector): Unit
 }
 ```
 
@@ -154,13 +154,13 @@ interface InjectedHandler {
 annotation class AsyncFactoryClass(val clazz: KClass<out AsyncFactory<*>>)
 
 interface AsyncObjectProvider<T> {
-    suspend fun get(injector: AsyncInjector): T
+    suspend fun get(injector: Injector): T
 }
 
-class PrototypeAsyncObjectProvider<T>(val generator: suspend AsyncInjector.() -> T) : AsyncObjectProvider<T>
-class FactoryAsyncObjectProvider<T>(val generator: suspend AsyncInjector.() -> AsyncFactory<T>) :
+class PrototypeAsyncObjectProvider<T>(val generator: suspend Injector.() -> T) : AsyncObjectProvider<T>
+class FactoryAsyncObjectProvider<T>(val generator: suspend Injector.() -> AsyncFactory<T>) :
     AsyncObjectProvider<T>
-class SingletonAsyncObjectProvider<T>(val generator: suspend AsyncInjector.() -> T) : AsyncObjectProvider<T> {
+class SingletonAsyncObjectProvider<T>(val generator: suspend Injector.() -> T) : AsyncObjectProvider<T> {
     var value: T? = null
 }
 class InstanceAsyncObjectProvider<T>(val instance: T) : AsyncObjectProvider<T>

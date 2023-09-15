@@ -6,7 +6,7 @@ import kotlin.test.*
 class AsyncInjectorSuspendContextTest {
     @Test
     fun testWithInjectorStoresInjectorInTheContext() = suspendTest {
-        val injector = AsyncInjector()
+        val injector = Injector()
         val string = "hello"
         injector.mapInstance(string)
         val result = withInjector(injector) {
@@ -17,7 +17,7 @@ class AsyncInjectorSuspendContextTest {
 
     @Test
     fun testWithoutInjector() = suspendTest {
-        val injector = AsyncInjector()
+        val injector = Injector()
         val string = "hello"
         injector.mapInstance(string)
         assertFailsWith<IllegalStateException> {

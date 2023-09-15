@@ -50,7 +50,7 @@ suspend inline fun Container.sceneContainer(
 
 /**
  * A [Container] [View] that can hold [Scene]s controllers and contains a history.
- * It changes between scene objects by using the [AsyncInjector] and allow to use [Transition]s for the change.
+ * It changes between scene objects by using the [Injector] and allow to use [Transition]s for the change.
  * You can apply a easing to the [Transition] by calling [Transition.withEasing].
  */
 class SceneContainer(
@@ -188,7 +188,7 @@ class SceneContainer(
     //    vararg injects: Any,
     //    time: TimeSpan = 0.seconds,
     //    transition: Transition = defaultTransition,
-    //    crossinline gen: suspend AsyncInjector.() -> T,
+    //    crossinline gen: suspend Injector.() -> T,
     //): T {
     //    pushEntry(VisitEntry(T::class, injects.toList()))
     //    return changeTo(T::class, gen, injects = injects, time = time, transition = transition, remap = true)
@@ -212,14 +212,14 @@ class SceneContainer(
         vararg injects: Any,
         time: TimeSpan = 0.seconds,
         transition: Transition = defaultTransition,
-        crossinline gen: suspend AsyncInjector.() -> T,
+        crossinline gen: Injector.() -> T,
     ): T {
         return changeTo(T::class, gen, injects = injects, time = time, transition = transition, remap = true)
     }
 
     @Deprecated("Use changeTo { ... }")
     suspend inline fun <reified T : Scene> changeTo(
-        crossinline gen: suspend (AsyncInjector) -> T,
+        crossinline gen: (Injector) -> T,
         vararg injects: Any,
         time: TimeSpan = 0.seconds,
         transition: Transition = defaultTransition
@@ -229,13 +229,13 @@ class SceneContainer(
 
     suspend inline fun <T : Scene> changeTo(
         clazz: KClass<T>,
-        crossinline gen: suspend AsyncInjector.() -> T,
+        crossinline gen: Injector.() -> T,
         vararg injects: Any,
         time: TimeSpan = 0.seconds,
         transition: Transition = defaultTransition,
         remap: Boolean = false
     ): T {
-        val sceneInjector: AsyncInjector =
+        val sceneInjector: Injector =
             views.injector.child()
                 .mapInstance(SceneContainer::class, this@SceneContainer)
                 .mapInstance(Resources::class, Resources(coroutineContext, views.globalResources.root, views.globalResources))
