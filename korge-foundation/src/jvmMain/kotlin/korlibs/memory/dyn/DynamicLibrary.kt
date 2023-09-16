@@ -1,7 +1,6 @@
 package korlibs.memory.dyn
 
-import korlibs.memory.atomic.KmemAtomicRef
-import kotlin.reflect.KProperty
+import kotlin.reflect.*
 
 public open class DynamicLibrary(vararg names: String?) : DynamicLibraryBase(names.filterNotNull()) {
 }
@@ -11,19 +10,19 @@ public fun interface DynamicSymbolResolver {
 }
 
 public abstract class DynamicFunBase<T : Function<*>>(public val name: String? = null) {
-    private var _set = KmemAtomicRef(false)
-    private var _value = KmemAtomicRef<KPointer?>(null)
+    private var _set = false
+    private var _value: KPointer? = null
 
     protected fun getFuncName(property: KProperty<*>): String = name ?: property.name.removeSuffix("Ext")
 
     protected abstract fun getProcAddress(name: String): KPointer?
 
     protected fun _getValue(property: KProperty<*>): KPointer? {
-        if (!_set.value) {
-            _value.value = getProcAddress(getFuncName(property))
-            _set.value = true
+        if (!_set) {
+            _value = getProcAddress(getFuncName(property))
+            _set = true
         }
-        return _value.value
+        return _value
     }
 }
 

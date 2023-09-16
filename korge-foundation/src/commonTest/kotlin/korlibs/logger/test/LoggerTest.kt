@@ -1,8 +1,6 @@
 package korlibs.logger.test
 
-import korlibs.datastructure.atomic.*
 import korlibs.logger.Logger
-import korlibs.memory.atomic.*
 import kotlin.test.*
 
 class LoggerTest {
