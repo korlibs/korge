@@ -83,6 +83,10 @@ jobs:
     if: ${{ needs.changes.outputs.testJvm == 'true' }}
     timeout-minutes: 240
     runs-on: ubuntu-latest
+    env:
+      DISABLE_JAVASCRIPT_TEST: true
+      DISABLE_ANDROID: true
+      DISABLE_SANDBOX: true
     steps:
     - { uses: actions/checkout@v3 }
     #- { name: Configure local.properties, run: "echo org.gradle.parallel=true >> local.properties && echo org.gradle.workers.max=2 >> local.properties" }
@@ -90,7 +94,7 @@ jobs:
     - { name: Install freeglut3 & openal, run: sudo apt-get update && sudo apt-get -y install freeglut3-dev libopenal-dev xvfb }
     - { name: Run Xvfb in Background, run: "Xvfb :99 &" }
     - { name: Set up JDK, uses: actions/setup-java@v3, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
-    - { name: Gradle cache, uses: ./.github/actions/gradle-cache }
+    - { name: Gradle cache, uses: ./.github/actions/gradle-cache, with: { subplatform: "jvm-linux" } }
     - { name: Grant execute permission for gradlew, run: chmod +x gradlew }
     - { name: Start gradle, run: ./gradlew --stacktrace }
     #- { name: Testing buildSrc, run: "./gradlew :buildSrc:test" }
@@ -110,12 +114,14 @@ jobs:
     if: ${{ needs.changes.outputs.testMacos == 'true' }}
     timeout-minutes: 240
     runs-on: macos-11
-    #env:
-    #  DISABLE_HEADLESS_TEST: true
+    env:
+      DISABLE_JAVASCRIPT_TEST: true
+      DISABLE_ANDROID: true
+      DISABLE_SANDBOX: true
     steps:
       - { uses: actions/checkout@v3 }
       - { name: Set up JDK, uses: actions/setup-java@v3, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
-      - { name: Gradle cache, uses: ./.github/actions/gradle-cache }
+      - { name: Gradle cache, uses: ./.github/actions/gradle-cache, with: { subplatform: "jvm-macos" } }
       - { name: Grant execute permission for gradlew, run: chmod +x gradlew }
       - { name: Start gradle, run: ./gradlew }
       - { name: Testing JVM on MacosX64, run: ./gradlew jvmTest }
@@ -130,6 +136,8 @@ jobs:
       DISABLE_JAVASCRIPT_TEST: true
       GRADLE_OPTS: -Dorg.gradle.daemon=false -Dkotlin.compiler.execution.strategy=in-process -Dorg.gradle.workers.max=3
       DISABLE_KOTLIN_NATIVE: true
+      DISABLE_ANDROID: true
+      DISABLE_SANDBOX: true
     steps:
       - { uses: actions/checkout@v3 }
       - uses: denoland/setup-deno@v1
@@ -140,7 +148,7 @@ jobs:
       - { name: unzip, shell: cmd, run: "unzip opengl32-x64.zip" }
       - { name: unzip to korge, shell: cmd, run: "unzip opengl32-x64.zip -d korge" }
       - { name: Set up JDK, uses: actions/setup-java@v3, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
-      - { name: Gradle cache, uses: ./.github/actions/gradle-cache }
+      - { name: Gradle cache, uses: ./.github/actions/gradle-cache, with: { subplatform: "jvm-windows" } }
       - { name: Testing JVM on windows, shell: cmd, run: "CALL gradlew.bat jvmTest", env: { EGL_LOG_LEVEL: debug, LIBGL_DEBUG: verbose, LIBGL_ALWAYS_SOFTWARE: true, MESA_DEBUG: true } }
       - { name: Archive Test Results, if: failure(), uses: actions/upload-artifact@v3, with: { name: screenshot-test-results-windows, retention-days: 21, path: "**/build/reports", if-no-files-found: ignore } }
 
@@ -149,11 +157,15 @@ jobs:
     if: ${{ needs.changes.outputs.testJs == 'true' }}
     timeout-minutes: 240
     runs-on: ubuntu-latest
+    env:
+      DISABLE_KOTLIN_NATIVE: true
+      DISABLE_ANDROID: true
+      DISABLE_SANDBOX: true
     steps:
       - { uses: actions/checkout@v3 }
       - { name: Set up JDK, uses: actions/setup-java@v3, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
       - { name: Install freeglut3 & openal, run: sudo apt-get update && sudo apt-get -y install freeglut3-dev libopenal-dev }
-      - { name: Gradle cache, uses: ./.github/actions/gradle-cache }
+      - { name: Gradle cache, uses: ./.github/actions/gradle-cache, with: { subplatform: "js-linux" } }
       - { name: Grant execute permission for gradlew, run: chmod +x gradlew }
       - { name: Start gradle, run: ./gradlew }
       - { name: Testing NodeJS, run: ./gradlew jsNodeTest }
@@ -164,10 +176,14 @@ jobs:
    if: ${{ needs.changes.outputs.testWasm == 'true' }}
    timeout-minutes: 240
    runs-on: ubuntu-latest
+   env:
+     DISABLE_KOTLIN_NATIVE: true
+     DISABLE_ANDROID: true
+     DISABLE_SANDBOX: true
    steps:
      - { uses: actions/checkout@v3 }
      - { name: Set up JDK, uses: actions/setup-java@v3, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
-     - { name: Gradle cache, uses: ./.github/actions/gradle-cache }
+     - { name: Gradle cache, uses: ./.github/actions/gradle-cache, with: { subplatform: "wasm-linux" } }
      - { name: Grant execute permission for gradlew, run: chmod +x gradlew }
      - { name: Start gradle, run: ./gradlew }
      # This hangs in korge-core, so for now just compiling without running tests:
@@ -185,7 +201,7 @@ jobs:
       DISABLE_SANDBOX: true
     steps:
       - { uses: actions/checkout@v3 }
-      - { name: Gradle cache, uses: ./.github/actions/gradle-cache }
+      - { name: Gradle cache, uses: ./.github/actions/gradle-cache, with: { subplatform: "android-linux" } }
       - { name: Set up JDK, uses: actions/setup-java@v3, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
       - { name: Grant execute permission for gradlew, run: chmod +x gradlew }
       - { name: Start gradle, run: ./gradlew }
@@ -200,12 +216,13 @@ jobs:
     if: ${{ needs.changes.outputs.testMacos == 'true' }}
     timeout-minutes: 240
     runs-on: macos-11
-    #env:
-    #  DISABLE_HEADLESS_TEST: true
+    env:
+      DISABLE_ANDROID: true
+      DISABLE_SANDBOX: true
     steps:
       - { uses: actions/checkout@v3 }
       - { name: Set up JDK, uses: actions/setup-java@v3, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
-      - { name: Gradle cache, uses: ./.github/actions/gradle-cache }
+      - { name: Gradle cache, uses: ./.github/actions/gradle-cache, with: { subplatform: "ios-macos" } }
       - { name: Grant execute permission for gradlew, run: chmod +x gradlew }
       - { name: Start gradle, run: ./gradlew }
       - { name: Run ios simulator tests, run: ./gradlew iosX64Test }
