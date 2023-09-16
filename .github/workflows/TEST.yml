@@ -86,7 +86,6 @@ jobs:
     env:
       DISABLE_JAVASCRIPT_TEST: true
       DISABLE_ANDROID: true
-      DISABLE_SANDBOX: true
     steps:
     - { uses: actions/checkout@v3 }
     #- { name: Configure local.properties, run: "echo org.gradle.parallel=true >> local.properties && echo org.gradle.workers.max=2 >> local.properties" }
