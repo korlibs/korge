@@ -164,11 +164,10 @@ jobs:
       - { uses: actions/checkout@v3 }
       - { name: Set up JDK, uses: actions/setup-java@v3, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
       - { name: Install freeglut3 & openal, run: sudo apt-get update && sudo apt-get -y install freeglut3-dev libopenal-dev }
-      - { name: Gradle cache, uses: ./.github/actions/gradle-cache, with: { subplatform: "js-linux" } }
-      - { name: Grant execute permission for gradlew, run: chmod +x gradlew }
-      - { name: Start gradle, run: ./gradlew }
-      - { name: Testing NodeJS, run: ./gradlew jsNodeTest }
-      - { name: Testing Browser, run: ./gradlew jsBrowserTest }
+      - name: Build with Gradle
+        uses: gradle/gradle-build-action@ef76a971e2fa3f867b617efd72f2fbd72cf6f8bc # v2.8.0
+        with:
+          arguments: "--parallel jsNodeTest jsBrowserTest"
 
   test-wasm:
    needs: changes
