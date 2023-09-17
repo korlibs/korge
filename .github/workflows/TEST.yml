@@ -93,15 +93,15 @@ jobs:
     - { name: Install freeglut3 & openal, run: sudo apt-get update && sudo apt-get -y install freeglut3-dev libopenal-dev xvfb }
     - { name: Run Xvfb in Background, run: "Xvfb :99 &" }
     - { name: Set up JDK, uses: actions/setup-java@v3, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
-    - { name: Gradle cache, uses: ./.github/actions/gradle-cache, with: { subplatform: "jvm-linux" } }
-    - { name: Grant execute permission for gradlew, run: chmod +x gradlew }
+    - name: Setup Gradle
+      uses: gradle/gradle-build-action@v2
     - { name: Start gradle, run: ./gradlew --stacktrace }
     #- { name: Testing buildSrc, run: "./gradlew :buildSrc:test" }
     - { name: Building classes, run: ./gradlew  --stacktrace --parallel compileTestKotlinJvm }
     - { name: Testing JVM, run: "./gradlew --stacktrace --parallel jvmTest", env: { EGL_LOG_LEVEL: debug, LIBGL_DEBUG: verbose, LIBGL_ALWAYS_SOFTWARE: true, MESA_DEBUG: true } }
     - { name: Archive Test Results, if: failure(), uses: actions/upload-artifact@v3, with: { name: screenshot-test-results-linux, retention-days: 21, path: "**/build/reports", if-no-files-found: ignore } }
     - { name: Check sandbox compiles, run: "./gradlew :korge-sandbox:jvmJar" }
-    - { name: Publish to maven local, run: ./gradlew publishJvmLocal }
+    - { name: Publish to maven local, run: ./gradlew --parallel publishJvmLocal }
     - { name: e2e test, working-directory: e2e/e2e-test, run: ./gradlew checkReferencesJvm --stacktrace }
     - { name: Archive E2E Test Results, if: failure(), uses: actions/upload-artifact@v3, with: { name: e2e-test-results-linux-jvm, retention-days: 21, path: "**/e2e/e2e-test/build/screenshots", if-no-files-found: ignore } }
     - { name: e2e multi test and hotreload, working-directory: e2e/e2e-test-multi, run: "./gradlew --watch-fs --warn --configuration-cache --configuration-cache-problems=warn compileKotlinJvm" }
