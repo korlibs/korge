@@ -131,9 +131,22 @@ subprojects {
             //useCommonJs()
             //nodejs()
             useEsModules()
-            nodejs {
-            }
             browser {
+                //testTask { useKarma { useChromeHeadless() } }
+                testRuns.getByName(KotlinTargetWithTests.DEFAULT_TEST_RUN_NAME).executionTask.configure {
+                    useKarma {
+                        useChromeHeadless()
+                        File(project.rootProject.rootDir, "karma.config.d").takeIf { it.exists() }?.let {
+                            useConfigDirectory(it)
+                        }
+                    }
+                }
+            }
+            nodejs {
+                //testTask { useMocha() }
+                testRuns.getByName(KotlinTargetWithTests.DEFAULT_TEST_RUN_NAME).executionTask.configure {
+                    useMocha()
+                }
             }
             compilations.all {
                 kotlinOptions.suppressWarnings = true

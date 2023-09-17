@@ -72,7 +72,6 @@ tasks {
 
     val publishJvmLocal by creating {
         dependsOn("publishJvmPublicationToMavenLocal")
-        dependsOn("publishKotlinMultiplatformPublicationToMavenLocal")
     }
 }
 
