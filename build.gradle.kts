@@ -131,6 +131,8 @@ subprojects {
             //useCommonJs()
             //nodejs()
             useEsModules()
+            nodejs {
+            }
             browser {
             }
             compilations.all {
@@ -253,11 +255,15 @@ subprojects {
                 androidMain.dependsOn(concurrentMain)
             }
         }
+    }
 
-        tasks {
-            val jvmTestProcessResources by getting(Copy::class) {
-                this.duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-            }
+    tasks {
+        val jvmTestProcessResources by getting(Copy::class) {
+            this.duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+        }
+        val publishJvmLocal by creating {
+            dependsOn("publishJvmPublicationToMavenLocal")
+            dependsOn("publishKotlinMultiplatformPublicationToMavenLocal")
         }
     }
 

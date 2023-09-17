@@ -46,6 +46,7 @@ java {
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile::class).all {
     kotlinOptions {
+        suppressWarnings = true
         jvmTarget = jversion.get()
         //sourceCompatibility = jversion
         //apiVersion = "1.7"
@@ -90,11 +91,6 @@ dependencies {
     //implementation(project(":korge-reload-agent"))
 }
 
-
-tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile::class).configureEach {
-    kotlinOptions.suppressWarnings = true
-}
-
 //def publishAllPublications = false
 
 val publishJvmPublicationToMavenLocal = tasks.register("publishJvmPublicationToMavenLocal", Task::class) {
@@ -118,9 +114,17 @@ afterEvaluate {
     }
 }
 
-val jvmTest = tasks.register("jvmTest", Task::class) {
-    dependsOn("test")
+tasks {
+    val jvmTest by registering {
+        dependsOn("test")
+    }
+
+    val publishJvmLocal by creating {
+        dependsOn("publishJvmPublicationToMavenLocal")
+        dependsOn("publishKotlinMultiplatformPublicationToMavenLocal")
+    }
 }
+
 
 //korlibs.NativeTools.groovyConfigurePublishing(project, false)
 //korlibs.NativeTools.groovyConfigureSigning(project)

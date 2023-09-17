@@ -51,11 +51,6 @@ publishing {
     }
 }
 
-val publishJvmPublicationToMavenLocal = tasks.register("publishJvmPublicationToMavenLocal", Task::class) {
-    group = "publishing"
-    dependsOn("publishMavenPublicationToMavenLocal")
-}
-
 afterEvaluate {
     if (tasks.findByName("publishMavenPublicationToMavenRepository") != null) {
         tasks.register("publishJvmPublicationToMavenRepository", Task::class) {
@@ -64,6 +59,23 @@ afterEvaluate {
         }
     }
 }
+
+tasks {
+    val publishJvmPublicationToMavenLocal by registering {
+        group = "publishing"
+        dependsOn("publishMavenPublicationToMavenLocal")
+    }
+
+    val jvmTest by registering {
+        dependsOn("test")
+    }
+
+    val publishJvmLocal by creating {
+        dependsOn("publishJvmPublicationToMavenLocal")
+        dependsOn("publishKotlinMultiplatformPublicationToMavenLocal")
+    }
+}
+
 
 /*
 korlibs.NativeTools.groovyConfigurePublishing(project, false)
