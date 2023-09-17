@@ -13,8 +13,8 @@ import org.jetbrains.kotlin.gradle.plugin.*
 //    }
 //}
 val isSandbox = project.name == "korge-sandbox"
-val enableAndroid = true
-val enableNative = true
+val enableAndroid = System.getenv("DISABLE_ANDROID") != "true"
+val enableNative = System.getenv("DISABLE_KOTLIN_NATIVE") != "true"
 
 plugins {
     id("publishing")
