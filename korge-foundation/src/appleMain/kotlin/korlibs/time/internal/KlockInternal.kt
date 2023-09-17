@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalForeignApi::class)
+
 package korlibs.time.internal
 
 import korlibs.time.*

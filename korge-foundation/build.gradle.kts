@@ -1,15 +1,11 @@
-import korlibs.applyProjectProperties
-import korlibs.korge.gradle.generate.TemplateGenerator
-import korlibs.tasks
-
 description = "Korge Foundation Libraries"
 
-project.extensions.extraProperties.properties.apply {
-    applyProjectProperties("https://github.com/korlibs/korge/korge-foundation",
-        "Apache 2.0",
-        "https://raw.githubusercontent.com/korlibs/korge/master/korge-foundation/LICENSE"
-    )
-}
+//project.extensions.extraProperties.properties.apply {
+//    applyProjectProperties("https://github.com/korlibs/korge/korge-foundation",
+//        "Apache 2.0",
+//        "https://raw.githubusercontent.com/korlibs/korge/master/korge-foundation/LICENSE"
+//    )
+//}
 
 dependencies {
     //add("commonMainImplementation", "org.jetbrains.kotlinx:atomicfu:${libs.versions.kotlinx.atomicfu.get()}")
@@ -26,6 +22,7 @@ dependencies {
 
 //korlibs.korge.gradle.generate.TemplateGenerator.synchronize(new File(projectDir, "template"))
 
+/*
 fun doGenerateKdsTemplates() {
     TemplateGenerator.synchronizeNew(File(projectDir, "src/commonMain/kotlin/korlibs/datastructure/Deque.kt"), true, true, true, true, true, true, true, false)
     TemplateGenerator.synchronizeNew(File(projectDir, "src/commonMain/kotlin/korlibs/datastructure/Array2.kt"), true, true, true, true, true, true, true, true)
@@ -42,3 +39,4 @@ task("generateKdsTemplates") {
 afterEvaluate {
     doGenerateKdsTemplates()
 }
+*/

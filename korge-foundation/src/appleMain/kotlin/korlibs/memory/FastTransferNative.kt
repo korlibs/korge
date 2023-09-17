@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalForeignApi::class)
+
 package korlibs.memory
 
 import kotlinx.cinterop.*

@@ -1,5 +1,4 @@
 pluginManagement {
-    //    Eval.xy(this, it, file('./gradle/repositories.settings.gradle').text)
     repositories {
         mavenLocal()
         mavenCentral()
@@ -33,6 +32,6 @@ include(":korge-reload-agent")
 if (System.getenv("DISABLE_SANDBOX") != "true") {
     include(":korge-sandbox")
 }
-if (!inCI || System.getenv("ENABLE_BENCHMARKS") == "true") {
-    include(":korge-benchmarks")
-}
+//if (!inCI || System.getenv("ENABLE_BENCHMARKS") == "true") {
+//    include(":korge-benchmarks")
+//}

@@ -1,17 +1,17 @@
-import korlibs.korge.gradle.targets.jvm.KorgeJavaExec
-
 description = "Multiplatform Game Engine written in Kotlin"
-
-korge {
-    entrypoint("Sandbox", "JvmMain")
-}
 
 dependencies {
 	add("commonMainApi", project(":korge"))
 }
 
+/*
 tasks.register("runJvmAwtSandbox", KorgeJavaExec) {
     it.group = "run"
     it.dependsOn("jvmMainClasses")
     it.mainClass.set("AwtSandboxSample")
 }
+
+korge {
+    entrypoint("Sandbox", "JvmMain")
+}
+*/

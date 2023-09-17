@@ -6,6 +6,7 @@ jcodec = "0.2.5"
 junit = "4.13.2"
 proguard-gradle = "7.2.2"
 asm = "9.5"
+javaVersion = "1.8"
 
 #kotlin = "1.9.0-Beta"
 #kotlin = "1.8.255-SNAPSHOT"
@@ -73,5 +74,6 @@ closure-compiler = { module = "com.google.javascript:closure-compiler", version.
 [bundles]
 jna = ["jna-core", "jna-platform"]
 
-#[plugins]
+[plugins]
+kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 #jmh = { id = "me.champeau.jmh", version = "0.6.5" }
