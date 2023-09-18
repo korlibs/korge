@@ -12,6 +12,7 @@ import korlibs.io.lang.*
 import korlibs.io.util.*
 import korlibs.logger.*
 import korlibs.memory.*
+import korlibs.number.*
 
 open class KmlGlProxy(parent: KmlGl) : KmlGlFastProxy(parent) {
     fun Int32Buffer.toRealString(size: Int = this.size): String = buildString {

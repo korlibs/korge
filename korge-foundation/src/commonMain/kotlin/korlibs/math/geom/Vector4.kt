@@ -1,8 +1,8 @@
 package korlibs.math.geom
 
-import korlibs.math.internal.*
 import korlibs.math.isAlmostEquals
 import korlibs.memory.*
+import korlibs.number.*
 import kotlin.math.*
 
 //@KormaValueApi

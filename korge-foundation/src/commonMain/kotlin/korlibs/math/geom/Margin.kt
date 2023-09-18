@@ -1,6 +1,5 @@
 package korlibs.math.geom
 
-import korlibs.math.internal.*
 import korlibs.number.*
 
 /**

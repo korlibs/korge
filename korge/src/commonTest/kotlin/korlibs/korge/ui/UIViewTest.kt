@@ -3,6 +3,7 @@ package korlibs.korge.ui
 import korlibs.io.util.*
 import korlibs.korge.view.*
 import korlibs.math.geom.*
+import korlibs.number.*
 import kotlin.test.*
 
 class UIViewTest {

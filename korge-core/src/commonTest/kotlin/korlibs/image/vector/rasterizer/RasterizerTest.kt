@@ -7,6 +7,7 @@ import korlibs.io.util.*
 import korlibs.math.geom.*
 import korlibs.math.geom.vector.*
 import korlibs.math.interpolation.*
+import korlibs.number.*
 import kotlin.test.*
 
 class RasterizerTest {

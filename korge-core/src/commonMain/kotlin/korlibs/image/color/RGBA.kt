@@ -1,21 +1,15 @@
 package korlibs.image.color
 
-import korlibs.datastructure.GenericListIterator
-import korlibs.datastructure.GenericSubList
-import korlibs.memory.*
-import korlibs.image.internal.d2i
-import korlibs.image.internal.f2i
-import korlibs.image.internal.packIntClamped
-import korlibs.image.internal.packIntUnchecked
-import korlibs.image.internal.sumPacked4MulR
-import korlibs.image.paint.Paint
-import korlibs.io.util.niceStr
-import korlibs.math.interpolation.*
-import korlibs.encoding.appendHexByte
+import korlibs.datastructure.*
+import korlibs.encoding.*
+import korlibs.image.internal.*
+import korlibs.image.paint.*
 import korlibs.math.geom.*
-import kotlin.jvm.JvmName
-import kotlin.math.pow
-import kotlin.math.roundToInt
+import korlibs.math.interpolation.*
+import korlibs.memory.*
+import korlibs.number.*
+import kotlin.jvm.*
+import kotlin.math.*
 
 inline class RGBA(val value: Int) : Comparable<RGBA>, Interpolable<RGBA>, Paint {
     override fun clone(): Paint = this

@@ -8,24 +8,11 @@ import korlibs.image.paint.*
 import korlibs.image.text.*
 import korlibs.image.vector.format.*
 import korlibs.io.serialization.xml.*
-import korlibs.io.util.niceStr
 import korlibs.math.geom.*
 import korlibs.math.geom.bezier.*
 import korlibs.math.geom.vector.*
-import kotlin.collections.List
-import kotlin.collections.Map
-import kotlin.collections.any
-import kotlin.collections.arrayListOf
-import kotlin.collections.buildList
-import kotlin.collections.filter
-import kotlin.collections.first
-import kotlin.collections.joinToString
-import kotlin.collections.linkedMapOf
-import kotlin.collections.listOf
-import kotlin.collections.map
-import kotlin.collections.mapOf
-import kotlin.collections.plus
-import kotlin.collections.plusAssign
+import korlibs.number.*
+import kotlin.collections.*
 import kotlin.math.*
 
 /*

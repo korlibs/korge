@@ -1,6 +1,6 @@
 package korlibs.math.geom
 
-import korlibs.math.internal.*
+import korlibs.number.*
 
 data class Spacing(
     val vertical: Float,

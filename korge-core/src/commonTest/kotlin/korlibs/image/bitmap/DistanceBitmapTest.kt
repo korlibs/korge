@@ -7,6 +7,7 @@ import korlibs.io.util.*
 import korlibs.math.geom.*
 import korlibs.math.geom.shape.*
 import korlibs.math.geom.vector.*
+import korlibs.number.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

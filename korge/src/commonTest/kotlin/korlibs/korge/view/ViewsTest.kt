@@ -10,6 +10,7 @@ import korlibs.korge.tween.*
 import korlibs.korge.view.align.*
 import korlibs.logger.*
 import korlibs.math.geom.*
+import korlibs.number.*
 import korlibs.time.*
 import kotlin.test.*
 

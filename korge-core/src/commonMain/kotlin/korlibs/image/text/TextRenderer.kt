@@ -10,6 +10,7 @@ import korlibs.io.util.*
 import korlibs.math.geom.*
 import korlibs.math.geom.bezier.*
 import korlibs.math.geom.vector.*
+import korlibs.number.*
 import kotlin.math.*
 import kotlin.native.concurrent.*
 

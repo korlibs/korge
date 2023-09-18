@@ -2,6 +2,7 @@ package korlibs.image.font
 
 import korlibs.io.util.*
 import korlibs.math.geom.*
+import korlibs.number.*
 import kotlin.math.*
 
 /**

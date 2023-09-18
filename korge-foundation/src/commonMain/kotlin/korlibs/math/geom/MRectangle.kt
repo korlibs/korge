@@ -2,10 +2,10 @@ package korlibs.math.geom
 
 import korlibs.datastructure.*
 import korlibs.math.annotations.*
-import korlibs.math.internal.*
 import korlibs.math.interpolation.*
 import korlibs.math.isAlmostEquals
 import korlibs.math.roundDecimalPlaces
+import korlibs.number.*
 
 @KormaMutableApi
 @Deprecated("Use Rectangle")

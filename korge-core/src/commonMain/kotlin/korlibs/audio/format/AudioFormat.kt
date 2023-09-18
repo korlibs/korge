@@ -9,6 +9,7 @@ import korlibs.datastructure.*
 import korlibs.io.file.*
 import korlibs.io.lang.*
 import korlibs.io.stream.*
+import korlibs.number.*
 import korlibs.time.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.cancellation.CancellationException

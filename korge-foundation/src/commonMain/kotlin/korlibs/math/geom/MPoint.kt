@@ -1,13 +1,12 @@
 package korlibs.math.geom
 
 import korlibs.datastructure.*
+import korlibs.math.*
 import korlibs.math.annotations.*
-import korlibs.math.internal.*
 import korlibs.math.interpolation.*
-import korlibs.math.isAlmostEquals
 import korlibs.math.isAlmostZero
-import korlibs.math.roundDecimalPlaces
 import korlibs.memory.*
+import korlibs.number.*
 import kotlin.math.*
 
 typealias MVector2D = MPoint

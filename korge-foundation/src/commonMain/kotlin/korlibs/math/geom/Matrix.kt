@@ -2,9 +2,9 @@
 
 package korlibs.math.geom
 
-import korlibs.math.internal.*
+import korlibs.math.*
 import korlibs.math.interpolation.*
-import korlibs.math.isAlmostEquals
+import korlibs.number.*
 import kotlin.math.*
 
 //@KormaValueApi

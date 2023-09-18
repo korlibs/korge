@@ -2,12 +2,12 @@
 
 package korlibs.math.geom
 
-import korlibs.math.internal.*
 import korlibs.math.interpolation.*
 import korlibs.math.isAlmostEquals
 import korlibs.math.isAlmostZero
 import korlibs.math.roundDecimalPlaces
 import korlibs.memory.*
+import korlibs.number.*
 import kotlin.math.*
 
 typealias Point = Vector2

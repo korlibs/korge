@@ -1,9 +1,9 @@
 package korlibs.image.color
 
 import korlibs.memory.clamp
-import korlibs.io.util.niceStr
 import korlibs.math.interpolation.*
 import korlibs.encoding.shex
+import korlibs.number.*
 
 data class ColorTransformMul(
     private var _r: Float = 1f,

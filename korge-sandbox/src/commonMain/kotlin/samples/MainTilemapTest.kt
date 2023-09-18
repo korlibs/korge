@@ -14,6 +14,7 @@ import korlibs.korge.view.camera.*
 import korlibs.korge.view.tiles.*
 import korlibs.math.geom.*
 import korlibs.math.geom.MPoint.Companion.Zero
+import korlibs.number.*
 import kotlin.math.*
 import kotlin.random.*
 

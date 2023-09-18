@@ -5,6 +5,7 @@ import korlibs.datastructure.iterators.*
 import korlibs.memory.*
 import korlibs.io.util.*
 import korlibs.math.geom.*
+import korlibs.number.*
 import kotlin.jvm.*
 import kotlin.math.*
 
