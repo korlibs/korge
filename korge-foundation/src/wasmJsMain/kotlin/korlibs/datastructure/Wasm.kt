@@ -2,7 +2,7 @@
 
 package korlibs.datastructure
 
-import korlibs.datastructure.internal.*
+import korlibs.memory.*
 
 actual inline fun <T> Any?.fastCastTo(): T = this as T
 

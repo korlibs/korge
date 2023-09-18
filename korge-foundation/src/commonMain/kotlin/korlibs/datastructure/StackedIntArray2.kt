@@ -1,6 +1,7 @@
 package korlibs.datastructure
 
 import korlibs.datastructure.internal.*
+import korlibs.memory.*
 
 interface IStackedIntArray2 {
     /** Annotation of where in [startX] this stack would be placed in a bigger container, not used for set or get methods */

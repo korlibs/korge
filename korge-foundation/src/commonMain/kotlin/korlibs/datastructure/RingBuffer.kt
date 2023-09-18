@@ -1,9 +1,9 @@
 package korlibs.datastructure
 
 import korlibs.datastructure.internal.KdsInternalApi
-import korlibs.datastructure.internal.arraycopy
 import korlibs.datastructure.internal.equaler
 import korlibs.datastructure.internal.hashCoder
+import korlibs.memory.*
 import kotlin.jvm.JvmOverloads
 import kotlin.math.min
 
