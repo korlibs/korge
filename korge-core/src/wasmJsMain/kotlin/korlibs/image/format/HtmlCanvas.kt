@@ -1,11 +1,9 @@
 package korlibs.image.format
 
-import korlibs.memory.*
-import korlibs.io.util.*
-import org.khronos.webgl.*
+import korlibs.platform.*
+import kotlinx.browser.*
 import org.w3c.dom.*
 import org.w3c.files.*
-import kotlinx.browser.*
 
 external interface RenderingContextJs : RenderingContext, JsAny
 
