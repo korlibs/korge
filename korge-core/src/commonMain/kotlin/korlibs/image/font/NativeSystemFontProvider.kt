@@ -9,7 +9,7 @@ import korlibs.io.file.std.*
 import korlibs.io.lang.*
 import korlibs.logger.*
 import korlibs.math.geom.*
-import korlibs.memory.*
+import korlibs.platform.*
 import korlibs.time.*
 import kotlinx.coroutines.*
 import kotlin.collections.component1

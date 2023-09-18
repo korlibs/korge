@@ -7,6 +7,7 @@ import korlibs.io.concurrent.atomic.*
 import korlibs.memory.*
 import kotlinx.cinterop.*
 import kotlin.reflect.*
+import korlibs.platform.Platform
 
 abstract class NativeBaseKmlGl : KmlGl() {
     override val variant: GLVariant get() = GLVariant.DESKTOP
@@ -31,7 +32,7 @@ abstract class NativeBaseKmlGl : KmlGl() {
     override fun clear(mask: Int): Unit = tempBufferAddress { glClearExt(mask.convert()) }
     override fun clearColor(red: Float, green: Float, blue: Float, alpha: Float): Unit = tempBufferAddress { glClearColorExt(red, green, blue, alpha) }
     override fun clearDepthf(d: Float): Unit = tempBufferAddress {
-        if (Platform.os.isWindows) glClearDepthExt(d) else glClearDepthfExt(d)
+        if (korlibs.platform.Platform.os.isWindows) glClearDepthExt(d) else glClearDepthfExt(d)
     }
     override fun clearStencil(s: Int): Unit = tempBufferAddress { glClearStencilExt(s.convert()) }
     override fun colorMask(red: Boolean, green: Boolean, blue: Boolean, alpha: Boolean): Unit = tempBufferAddress { glColorMaskExt(red.toInt().convert(), green.toInt().convert(), blue.toInt().convert(), alpha.toInt().convert()) }

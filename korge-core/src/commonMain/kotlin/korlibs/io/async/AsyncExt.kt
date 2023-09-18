@@ -1,24 +1,12 @@
 package korlibs.io.async
 
-import korlibs.time.TimeSpan
-import korlibs.time.seconds
-import korlibs.logger.Logger
-import korlibs.memory.*
-import korlibs.io.lang.Environment
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.CoroutineStart
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.async
-import kotlinx.coroutines.completeWith
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
-import kotlin.coroutines.Continuation
-import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.startCoroutine
-import kotlin.native.concurrent.ThreadLocal
+import korlibs.io.lang.*
+import korlibs.logger.*
+import korlibs.platform.*
+import korlibs.time.*
+import kotlinx.coroutines.*
+import kotlin.coroutines.*
+import kotlin.native.concurrent.*
 
 private val logger = Logger("AsyncExt")
 

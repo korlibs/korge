@@ -8,6 +8,7 @@ import korlibs.io.file.*
 import korlibs.io.file.std.*
 import korlibs.math.geom.*
 import korlibs.memory.*
+import korlibs.platform.*
 import kotlin.test.*
 
 class NativeRenderTest {

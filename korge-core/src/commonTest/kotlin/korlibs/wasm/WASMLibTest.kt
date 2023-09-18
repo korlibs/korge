@@ -1,6 +1,6 @@
 package korlibs.wasm
 
-import korlibs.memory.*
+import korlibs.platform.*
 import korlibs.template.*
 import kotlin.test.*
 

@@ -1,6 +1,6 @@
 package korlibs.korge
 
-import korlibs.memory.Platform
+import korlibs.platform.Platform
 import korlibs.event.*
 import korlibs.inject.Injector
 import korlibs.io.lang.Environment

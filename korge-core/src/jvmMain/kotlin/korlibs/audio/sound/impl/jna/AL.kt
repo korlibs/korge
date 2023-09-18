@@ -6,6 +6,7 @@ import korlibs.io.lang.Environment
 import korlibs.io.time.traceTime
 import com.sun.jna.Native
 import com.sun.jna.Pointer
+import korlibs.platform.*
 import java.io.File
 import java.net.URL
 import java.nio.Buffer

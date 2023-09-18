@@ -5,6 +5,7 @@ import korlibs.io.lang.*
 import korlibs.io.runtime.node.*
 import korlibs.korge.view.*
 import korlibs.memory.*
+import korlibs.platform.*
 import kotlinx.browser.*
 
 @JsName("Object")

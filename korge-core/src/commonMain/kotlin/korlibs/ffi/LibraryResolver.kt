@@ -4,7 +4,7 @@ import korlibs.io.file.sync.SyncIO
 import korlibs.io.file.sync.SyncIOAPI
 import korlibs.io.file.sync.file
 import korlibs.io.file.sync.platformSyncIO
-import korlibs.memory.Platform
+import korlibs.platform.Platform
 
 open class LibraryResolver(val fs: SyncIO, val platform: Platform) {
     val ldLibraries by lazy { LDLibraries(fs) }

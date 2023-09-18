@@ -1,6 +1,5 @@
 package korlibs.io.vfs
 
-import korlibs.memory.*
 import korlibs.io.async.suspendTest
 import korlibs.io.file.std.LocalVfs
 import korlibs.io.file.std.MemoryVfs
@@ -14,6 +13,7 @@ import korlibs.io.file.std.uniVfs
 import korlibs.io.lang.InvalidOperationException
 import korlibs.io.net.http.LogHttpClient
 import korlibs.io.util.expectException
+import korlibs.platform.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue

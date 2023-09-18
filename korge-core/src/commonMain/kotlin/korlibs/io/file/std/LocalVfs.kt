@@ -1,6 +1,6 @@
 package korlibs.io.file.std
 
-import korlibs.memory.Platform
+import korlibs.platform.Platform
 import korlibs.io.file.Vfs
 import korlibs.io.file.VfsFile
 import korlibs.io.file.withOnce

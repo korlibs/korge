@@ -12,6 +12,7 @@ import korlibs.io.concurrent.atomic.KorAtomicInt
 import korlibs.io.file.*
 import korlibs.io.file.sync.*
 import korlibs.io.lang.*
+import korlibs.platform.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
 

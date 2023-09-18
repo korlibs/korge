@@ -6,6 +6,7 @@ import korlibs.image.bitmap.NativeImageOrBitmap32
 import korlibs.image.bitmap.context2d
 import korlibs.image.color.Colors
 import korlibs.io.async.suspendTest
+import korlibs.platform.*
 import kotlin.test.Test
 
 class GradientTest {

@@ -7,6 +7,7 @@ import korlibs.korge.internal.*
 import korlibs.korge.render.*
 import korlibs.math.roundDecimalPlaces
 import korlibs.memory.*
+import korlibs.platform.*
 import korlibs.time.*
 
 @OptIn(KorgeInternal::class)

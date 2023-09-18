@@ -2,11 +2,11 @@ package korlibs.event
 
 import korlibs.datastructure.*
 import korlibs.datastructure.iterators.*
-import korlibs.time.*
-import korlibs.memory.*
 import korlibs.io.file.*
 import korlibs.io.util.*
 import korlibs.math.geom.*
+import korlibs.platform.*
+import korlibs.time.*
 
 open class TypedEvent<T : BEvent>(open override var type: EventType<T>) : Event(), TEvent<T>
 

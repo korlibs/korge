@@ -3,6 +3,7 @@ package korlibs.render.awt
 import korlibs.kgl.*
 import korlibs.memory.*
 import korlibs.graphics.gl.AGOpengl
+import korlibs.platform.*
 import korlibs.render.*
 import korlibs.render.osx.MacKmlGL
 import korlibs.render.win32.Win32KmlGl

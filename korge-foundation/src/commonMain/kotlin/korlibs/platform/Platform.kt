@@ -1,6 +1,4 @@
-package korlibs.memory
-
-import korlibs.memory.internal.*
+package korlibs.platform
 
 interface Platform {
     // Endianness

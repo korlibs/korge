@@ -1,13 +1,10 @@
 @file:OptIn(ExperimentalNativeApi::class)
 
-package korlibs.memory.internal
+package korlibs.platform
 
-import korlibs.memory.Arch
-import korlibs.memory.Os
-import korlibs.memory.Runtime
 import kotlin.experimental.*
 
-internal actual val currentOs: Os = when (Platform.osFamily) {
+internal actual val currentOs: Os = when (kotlin.native.Platform.osFamily) {
     OsFamily.MACOSX -> Os.MACOSX
     OsFamily.IOS -> Os.IOS
     OsFamily.LINUX -> Os.LINUX
@@ -20,7 +17,7 @@ internal actual val currentOs: Os = when (Platform.osFamily) {
 
 internal actual val currentRuntime: Runtime = Runtime.NATIVE
 
-internal actual val currentArch: Arch = when (Platform.cpuArchitecture) {
+internal actual val currentArch: Arch = when (kotlin.native.Platform.cpuArchitecture) {
     CpuArchitecture.ARM32 -> Arch.ARM32
     CpuArchitecture.ARM64 -> Arch.ARM64
     CpuArchitecture.X86 -> Arch.X86
@@ -31,8 +28,8 @@ internal actual val currentArch: Arch = when (Platform.cpuArchitecture) {
     else -> Arch.UNKNOWN
 }
 
-internal actual val currentIsDebug: Boolean get() = Platform.isDebugBinary
-internal actual val currentIsLittleEndian: Boolean get() = Platform.isLittleEndian
+internal actual val currentIsDebug: Boolean get() = kotlin.native.Platform.isDebugBinary
+internal actual val currentIsLittleEndian: Boolean get() = kotlin.native.Platform.isLittleEndian
 internal actual val multithreadedSharedHeap: Boolean = true
 internal actual val currentRawPlatformName: String = "native-$currentOs-$currentArch-$currentBuildVariant"
 internal actual val currentRawOsName: String = "$currentOs"

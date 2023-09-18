@@ -1,6 +1,6 @@
 package korlibs.memory
 
-import korlibs.memory.internal.*
+import korlibs.platform.*
 import kotlin.byteArrayOf
 import kotlin.test.*
 

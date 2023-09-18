@@ -5,6 +5,7 @@ import korlibs.io.async.suspendTest
 import korlibs.io.file.baseName
 import korlibs.io.file.extensionLC
 import korlibs.io.file.std.resourcesVfs
+import korlibs.platform.*
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.toList
 import kotlin.test.Test

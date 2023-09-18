@@ -2,7 +2,7 @@ package korlibs.io.concurrent
 
 import korlibs.datastructure.algo.Historiogram
 import korlibs.time.milliseconds
-import korlibs.memory.Platform
+import korlibs.platform.Platform
 import korlibs.io.async.delay
 import korlibs.io.async.suspendTest
 import korlibs.io.lang.currentThreadId

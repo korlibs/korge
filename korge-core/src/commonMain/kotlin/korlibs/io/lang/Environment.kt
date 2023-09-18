@@ -1,17 +1,9 @@
 package korlibs.io.lang
 
 import korlibs.datastructure.*
-import korlibs.memory.*
-import kotlin.collections.LinkedHashMap
-import kotlin.collections.Map
-import kotlin.collections.MutableMap
-import kotlin.collections.map
-import kotlin.collections.mapOf
-import kotlin.collections.plus
+import korlibs.platform.*
 import kotlin.collections.set
-import kotlin.collections.toMap
-import kotlin.collections.toMutableMap
-import kotlin.native.concurrent.ThreadLocal
+import kotlin.native.concurrent.*
 
 internal expect object EnvironmentInternal {
 	// Uses querystring on JS/Browser, and proper env vars in the rest

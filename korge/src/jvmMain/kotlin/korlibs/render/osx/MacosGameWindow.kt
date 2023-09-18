@@ -2,7 +2,7 @@ package korlibs.render.osx
 
 import korlibs.kgl.checkedIf
 import korlibs.kgl.logIf
-import korlibs.memory.Platform
+import korlibs.platform.Platform
 import korlibs.memory.dyn.osx.*
 import korlibs.graphics.gl.AGOpengl
 import korlibs.event.Key

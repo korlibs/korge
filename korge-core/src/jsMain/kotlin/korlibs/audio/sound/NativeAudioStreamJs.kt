@@ -9,6 +9,7 @@ import korlibs.audio.internal.write
 import korlibs.io.async.delay
 import korlibs.io.lang.Cancellable
 import korlibs.io.lang.cancel
+import korlibs.platform.*
 import kotlinx.browser.document
 import kotlin.coroutines.CoroutineContext
 

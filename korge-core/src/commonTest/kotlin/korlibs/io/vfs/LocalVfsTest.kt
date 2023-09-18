@@ -10,6 +10,7 @@ import korlibs.io.lang.toString
 import korlibs.io.stream.readAll
 import korlibs.io.stream.slice
 import korlibs.io.util.expectException
+import korlibs.platform.*
 import kotlinx.coroutines.flow.*
 import kotlin.test.*
 

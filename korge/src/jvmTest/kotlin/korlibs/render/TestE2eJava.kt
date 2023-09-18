@@ -5,6 +5,7 @@ import korlibs.graphics.*
 import korlibs.image.bitmap.*
 import korlibs.image.color.*
 import korlibs.memory.*
+import korlibs.platform.*
 import kotlinx.coroutines.*
 import java.awt.*
 import kotlin.test.*

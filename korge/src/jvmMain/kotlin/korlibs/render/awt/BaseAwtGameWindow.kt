@@ -12,7 +12,7 @@ import korlibs.io.dynamic.*
 import korlibs.kgl.*
 import korlibs.math.geom.*
 import korlibs.memory.*
-import korlibs.memory.Platform
+import korlibs.platform.Platform
 import korlibs.memory.dyn.osx.*
 import korlibs.render.*
 import korlibs.render.osx.*

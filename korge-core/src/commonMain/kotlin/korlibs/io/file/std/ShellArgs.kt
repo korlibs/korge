@@ -1,6 +1,6 @@
 package korlibs.io.file.std
 
-import korlibs.memory.*
+import korlibs.platform.*
 
 
 // @TODO: DRY, try to use buildShellExecCommandLineArray

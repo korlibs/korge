@@ -9,6 +9,7 @@ import korlibs.io.async.suspendTest
 import korlibs.io.file.std.resourcesVfs
 import korlibs.io.lang.assert
 import korlibs.math.geom.*
+import korlibs.platform.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

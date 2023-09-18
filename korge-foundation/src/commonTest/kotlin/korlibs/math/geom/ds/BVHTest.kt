@@ -3,6 +3,7 @@ package korlibs.math.geom.ds
 import korlibs.datastructure.ds.*
 import korlibs.math.geom.*
 import korlibs.memory.*
+import korlibs.platform.*
 import kotlin.test.*
 
 class BVHTest {

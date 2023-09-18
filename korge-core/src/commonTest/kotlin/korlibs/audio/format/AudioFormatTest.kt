@@ -5,6 +5,7 @@ import korlibs.memory.*
 import korlibs.io.async.suspendTest
 import korlibs.io.file.std.resourcesVfs
 import doIOTest
+import korlibs.platform.*
 import kotlin.test.assertEquals
 
 class AudioFormatTest {

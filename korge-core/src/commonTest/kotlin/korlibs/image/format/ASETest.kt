@@ -7,6 +7,7 @@ import korlibs.io.async.*
 import korlibs.io.file.std.*
 import korlibs.math.geom.*
 import korlibs.memory.*
+import korlibs.platform.*
 import kotlin.test.*
 
 class ASETest {

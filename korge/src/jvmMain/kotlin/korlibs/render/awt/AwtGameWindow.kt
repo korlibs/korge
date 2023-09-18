@@ -10,6 +10,7 @@ import korlibs.io.dynamic.*
 import korlibs.io.file.std.*
 import korlibs.io.util.*
 import korlibs.math.geom.*
+import korlibs.platform.*
 import java.awt.*
 import java.awt.datatransfer.*
 import java.awt.dnd.*

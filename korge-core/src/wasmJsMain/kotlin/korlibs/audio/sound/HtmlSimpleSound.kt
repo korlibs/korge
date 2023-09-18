@@ -8,7 +8,6 @@ import korlibs.io.async.launchImmediately
 import korlibs.io.file.std.uniVfs
 import korlibs.io.lang.*
 import korlibs.io.util.*
-import korlibs.memory.internal.*
 import kotlinx.browser.document
 import kotlinx.browser.window
 import kotlinx.coroutines.CancellationException

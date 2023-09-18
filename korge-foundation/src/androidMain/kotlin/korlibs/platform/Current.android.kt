@@ -1,4 +1,4 @@
-package korlibs.memory.internal
+package korlibs.platform
 
 import android.os.*
 import korlibs.korge_foundation.*

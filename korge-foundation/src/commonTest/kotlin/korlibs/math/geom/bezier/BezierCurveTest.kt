@@ -4,6 +4,7 @@ import korlibs.datastructure.*
 import korlibs.math.geom.*
 import korlibs.math.roundDecimalPlaces
 import korlibs.memory.*
+import korlibs.platform.*
 import kotlin.test.*
 
 class BezierCurveTest {

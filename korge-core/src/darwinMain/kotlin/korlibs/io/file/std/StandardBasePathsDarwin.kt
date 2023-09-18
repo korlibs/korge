@@ -4,7 +4,7 @@ import korlibs.io.*
 import korlibs.io.file.PathInfo
 import korlibs.io.file.parent
 import korlibs.io.posix.posixRealpath
-import korlibs.memory.Platform
+import korlibs.platform.Platform
 import kotlinx.cinterop.*
 import platform.Foundation.*
 

@@ -3,6 +3,7 @@ package korlibs.image.bitmap
 import korlibs.memory.*
 import korlibs.image.color.*
 import korlibs.io.async.*
+import korlibs.platform.*
 import kotlin.test.*
 
 class Context2DCommonTest {

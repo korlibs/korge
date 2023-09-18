@@ -4,6 +4,7 @@ import korlibs.time.*
 import korlibs.memory.*
 import korlibs.io.*
 import korlibs.io.util.*
+import korlibs.platform.*
 import kotlin.test.*
 
 class PromiseJsTest {

@@ -1,6 +1,5 @@
 package korlibs.memory
 
-import korlibs.memory.internal.byteArrayOf
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

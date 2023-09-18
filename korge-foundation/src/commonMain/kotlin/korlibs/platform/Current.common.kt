@@ -1,9 +1,4 @@
-package korlibs.memory.internal
-
-import korlibs.memory.Arch
-import korlibs.memory.BuildVariant
-import korlibs.memory.Os
-import korlibs.memory.Runtime
+package korlibs.platform
 
 internal expect val currentOs: Os
 internal expect val currentRuntime: Runtime

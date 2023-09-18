@@ -1,6 +1,6 @@
 package korlibs.io.compression
 
-import korlibs.memory.Platform
+import korlibs.platform.Platform
 import korlibs.io.async.suspendTest
 import korlibs.io.compression.deflate.Deflate
 import korlibs.io.compression.deflate.DeflatePortable

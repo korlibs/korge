@@ -15,7 +15,7 @@ import korlibs.io.wasm.*
 import korlibs.math.geom.*
 import korlibs.math.geom.vector.*
 import korlibs.memory.*
-import korlibs.memory.internal.*
+import korlibs.platform.*
 import korlibs.time.*
 import kotlinx.browser.*
 import kotlinx.coroutines.*
