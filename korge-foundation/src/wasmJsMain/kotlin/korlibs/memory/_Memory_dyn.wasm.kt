@@ -1,6 +1,6 @@
-package korlibs.memory.dyn
+@file:Suppress("PackageDirectoryMismatch")
 
-import korlibs.memory.*
+package korlibs.memory.dyn
 
 actual class KArena actual constructor() {
     //actual fun allocBytes(size: Int): KPointer = KPointer(ByteArray(size))

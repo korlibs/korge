@@ -1,6 +1,5 @@
 package korlibs.audio.sound
 
-import korlibs.memory.FastShortTransfer
 import korlibs.memory.arraycopy
 import korlibs.memory.arrayinterleave
 import korlibs.memory.clamp01
@@ -31,11 +30,10 @@ internal fun AudioSamples.resample(scale: Double, totalSamples: Int = (this.tota
     val iscale = 1.0 / scale
     for (c in 0 until channels) {
         val inpc = this[c]
-        fastShortTransfer.use(out[c]) { outc ->
-            for (n in 0 until totalSamples) {
-                // @TODO: Increase quality
-                outc[n] = inpc[(n * iscale).toInt()]
-            }
+        val outc = out[c]
+        for (n in 0 until totalSamples) {
+            // @TODO: Increase quality
+            outc[n] = inpc[(n * iscale).toInt()]
         }
     }
     return out
@@ -90,9 +88,6 @@ class AudioSamplesProcessor(val channels: Int, val totalSamples: Int, val data: 
 }
 
 class AudioSamples(override val channels: Int, override val totalSamples: Int, val data: Array<ShortArray> = Array(channels) { ShortArray(totalSamples) }) : IAudioSamples {
-    //val interleaved by lazy { interleaved() }
-    internal val fastShortTransfer = FastShortTransfer()
-
     operator fun get(channel: Int): ShortArray = data[channel]
 
     override operator fun get(channel: Int, sample: Int): Short = data[channel][sample]
@@ -147,8 +142,6 @@ class AudioSamples(override val channels: Int, override val totalSamples: Int, v
 
 class AudioSamplesInterleaved(override val channels: Int, override val totalSamples: Int, val data: ShortArray = ShortArray(totalSamples * channels)) : IAudioSamples {
     //val separared by lazy { separated() }
-    internal val fastShortTransfer = FastShortTransfer()
-
     private fun index(channel: Int, sample: Int): Int = (sample * channels) + channel
     override operator fun get(channel: Int, sample: Int): Short = data[index(channel, sample)]
     override operator fun set(channel: Int, sample: Int, value: Short) { data[index(channel, sample)] = value }
@@ -173,17 +166,15 @@ fun AudioSamples.interleaved(out: AudioSamplesInterleaved = AudioSamplesInterlea
             this.data[0], 0,
             this.data[1], 0,
             totalSamples,
-            out.fastShortTransfer
         )
         else -> {
-            out.fastShortTransfer.use(out.data) { outData ->
-                val channels = channels
-                for (c in 0 until channels) {
-                    var m = c
-                    for (n in 0 until totalSamples) {
-                        outData[m] = this[c, n]
-                        m += channels
-                    }
+            val outData = out.data
+            val channels = channels
+            for (c in 0 until channels) {
+                var m = c
+                for (n in 0 until totalSamples) {
+                    outData[m] = this[c, n]
+                    m += channels
                 }
             }
         }
@@ -197,14 +188,13 @@ fun IAudioSamples.interleaved(out: AudioSamplesInterleaved = AudioSamplesInterle
         is AudioSamples -> this.interleaved(out)
         is AudioSamplesInterleaved -> arraycopy(this.data, 0, out.data, 0, totalSamples * channels)
         else -> {
-            out.fastShortTransfer.use(out.data) { outData ->
-                val channels = channels
-                for (c in 0 until channels) {
-                    var m = c
-                    for (n in 0 until totalSamples) {
-                        outData[m] = this[c, n]
-                        m += channels
-                    }
+            val outData = out.data
+            val channels = channels
+            for (c in 0 until channels) {
+                var m = c
+                for (n in 0 until totalSamples) {
+                    outData[m] = this[c, n]
+                    m += channels
                 }
             }
         }
@@ -221,17 +211,16 @@ fun AudioSamplesInterleaved.applyProps(speed: Double, panning: Double, volume: D
     val rratio = ((((panning + 1.0) / 2.0).clamp01()) * volume).toFloat()
     val lratio = ((1.0 - rratio) * volume).toFloat()
 
-    out.fastShortTransfer.use(out.data) { outData ->
-        var m = 0
-        if (channels == 2) {
-            for (n in 0 until out.totalSamples) {
-                outData[m++] = (outData[(n * speedf).toInt() * 2 + 0] * lratio).toInt().toShort()
-                outData[m++] = (outData[(n * speedf).toInt() * 2 + 1] * rratio).toInt().toShort()
-            }
-        } else {
-            for (n in out.data.indices) {
-                outData[m++] = (outData[(n * speedf).toInt()] * lratio).toInt().toShort()
-            }
+    val outData = out.data
+    var m = 0
+    if (channels == 2) {
+        for (n in 0 until out.totalSamples) {
+            outData[m++] = (outData[(n * speedf).toInt() * 2 + 0] * lratio).toInt().toShort()
+            outData[m++] = (outData[(n * speedf).toInt() * 2 + 1] * rratio).toInt().toShort()
+        }
+    } else {
+        for (n in out.data.indices) {
+            outData[m++] = (outData[(n * speedf).toInt()] * lratio).toInt().toShort()
         }
     }
 
