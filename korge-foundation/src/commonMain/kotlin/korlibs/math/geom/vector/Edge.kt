@@ -2,7 +2,6 @@ package korlibs.math.geom.vector
 
 import korlibs.math.annotations.*
 import korlibs.math.geom.*
-import korlibs.math.internal.*
 import kotlin.math.*
 
 @Suppress("DuplicatedCode")
@@ -39,6 +38,8 @@ class MEdge {
             val Dy: Double = b.by.toDouble()
             return getIntersectXY(Ax, Ay, Bx, By, Cx, Cy, Dx, Dy)?.let { Vector2Int(floorCeil(it.xD).toInt(), floorCeil(it.yD).toInt()) }
         }
+
+        @PublishedApi internal fun floorCeil(v: Double): Double = if (v < 0.0) ceil(v) else floor(v)
 
         fun getIntersectXY(Ax: Double, Ay: Double, Bx: Double, By: Double, Cx: Double, Cy: Double, Dx: Double, Dy: Double): Point? {
             return MLine.getIntersectXY(Ax, Ay, Bx, By, Cx, Cy, Dx, Dy)

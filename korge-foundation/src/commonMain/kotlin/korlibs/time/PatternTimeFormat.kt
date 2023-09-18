@@ -1,11 +1,11 @@
 package korlibs.time
 
+import korlibs.math.*
 import korlibs.time.internal.MicroStrReader
 import korlibs.time.internal.Serializable
 import korlibs.time.internal.increment
 import korlibs.time.internal.padded
 import korlibs.time.internal.substr
-import korlibs.time.internal.umod
 import kotlin.math.log10
 import kotlin.math.pow
 

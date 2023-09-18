@@ -1,5 +1,7 @@
 package korlibs.time.internal
 
+import korlibs.math.*
+import korlibs.time.internal.clamp
 import kotlin.math.abs
 import kotlin.math.absoluteValue
 import kotlin.math.floor
@@ -52,21 +54,6 @@ internal fun String.splitKeep(regex: Regex): List<String> {
     return out
 }
 
-internal infix fun Int.umod(that: Int): Int {
-    val remainder = this % that
-    return when {
-        remainder < 0 -> remainder + that
-        else -> remainder
-    }
-}
-
-internal infix fun Double.umod(that: Double): Double {
-    val remainder = this % that
-    return when {
-        remainder < 0 -> remainder + that
-        else -> remainder
-    }
-}
 
 internal fun Double.toInt2(): Int = if (this < 0.0) floor(this).toInt() else this.toInt()
 internal fun Double.toIntMod(mod: Int): Int = (this umod mod.toDouble()).toInt2()

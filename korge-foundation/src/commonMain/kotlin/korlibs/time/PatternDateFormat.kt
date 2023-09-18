@@ -1,12 +1,12 @@
 package korlibs.time
 
+import korlibs.math.*
 import korlibs.time.internal.MicroStrReader
 import korlibs.time.internal.Serializable
 import korlibs.time.internal.increment
 import korlibs.time.internal.padded
 import korlibs.time.internal.readTimeZoneOffset
 import korlibs.time.internal.substr
-import korlibs.time.internal.umod
 import kotlin.jvm.JvmOverloads
 import kotlin.math.absoluteValue
 import kotlin.math.log10

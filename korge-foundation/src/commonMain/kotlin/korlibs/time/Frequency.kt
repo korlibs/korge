@@ -1,9 +1,9 @@
 package korlibs.time
 
+import korlibs.math.*
 import korlibs.time.hr.hr
 import kotlin.jvm.JvmInline
 import korlibs.time.internal.Serializable
-import korlibs.time.internal.umod
 
 val TimeSpan.hz get() = timesPerSecond
 val Int.hz get() = timesPerSecond
