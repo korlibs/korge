@@ -5,9 +5,9 @@ import korlibs.image.annotation.*
 import korlibs.image.color.*
 import korlibs.io.lang.*
 import korlibs.io.util.*
+import korlibs.math.*
 import korlibs.math.geom.*
 import korlibs.math.interpolation.*
-import korlibs.memory.*
 import korlibs.time.*
 import kotlin.collections.component1
 import kotlin.collections.component2

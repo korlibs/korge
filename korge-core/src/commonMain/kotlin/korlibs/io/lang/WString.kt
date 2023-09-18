@@ -1,6 +1,6 @@
 package korlibs.io.lang
 
-import korlibs.memory.clamp
+import korlibs.math.clamp
 
 // @TODO: UTf-8 variant with seeking points?
 // @TODO: trying to be more space efficient for long strings?

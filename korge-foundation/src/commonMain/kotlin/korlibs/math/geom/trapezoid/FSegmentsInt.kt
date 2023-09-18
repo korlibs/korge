@@ -2,7 +2,7 @@ package korlibs.math.geom.trapezoid
 
 import korlibs.datastructure.*
 import korlibs.datastructure.iterators.*
-import korlibs.memory.*
+import korlibs.math.*
 
 class FSegmentsInt(capacity: Int = 5) {
     companion object {

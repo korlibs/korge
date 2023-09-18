@@ -3,8 +3,8 @@ package korlibs.korge.view
 import korlibs.graphics.*
 import korlibs.graphics.shader.*
 import korlibs.korge.render.*
+import korlibs.math.*
 import korlibs.math.geom.*
-import korlibs.memory.*
 
 open class ShadedView(
     program: Program,

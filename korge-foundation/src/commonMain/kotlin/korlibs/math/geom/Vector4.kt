@@ -1,7 +1,6 @@
 package korlibs.math.geom
 
-import korlibs.math.isAlmostEquals
-import korlibs.memory.*
+import korlibs.math.*
 import korlibs.number.*
 import kotlin.math.*
 

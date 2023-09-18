@@ -4,8 +4,8 @@ import korlibs.datastructure.ByteArrayDeque
 import korlibs.datastructure.Extra
 import korlibs.memory.ByteArrayBuilder
 import korlibs.memory.arraycopy
-import korlibs.memory.clamp
-import korlibs.memory.nextAlignedTo
+import korlibs.math.clamp
+import korlibs.math.nextAlignedTo
 import korlibs.memory.readCharArrayBE
 import korlibs.memory.readCharArrayLE
 import korlibs.memory.readDoubleArrayBE
@@ -23,8 +23,8 @@ import korlibs.memory.reinterpretAsFloat
 import korlibs.memory.reinterpretAsInt
 import korlibs.memory.reinterpretAsLong
 import korlibs.memory.signExtend
-import korlibs.memory.toIntSafe
-import korlibs.memory.unsigned
+import korlibs.math.toIntSafe
+import korlibs.math.unsigned
 import korlibs.memory.writeArrayBE
 import korlibs.memory.writeArrayLE
 import korlibs.io.internal.bytesTempPool

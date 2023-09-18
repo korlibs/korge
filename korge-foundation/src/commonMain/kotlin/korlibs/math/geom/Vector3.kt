@@ -2,7 +2,6 @@ package korlibs.math.geom
 
 import korlibs.math.*
 import korlibs.math.annotations.*
-import korlibs.memory.*
 import korlibs.number.*
 import kotlin.math.*
 

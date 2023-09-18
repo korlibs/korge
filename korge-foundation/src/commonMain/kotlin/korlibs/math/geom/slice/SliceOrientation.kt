@@ -1,6 +1,7 @@
 package korlibs.math.geom.slice
 
 import korlibs.datastructure.*
+import korlibs.math.*
 import korlibs.memory.*
 import korlibs.math.geom.*
 

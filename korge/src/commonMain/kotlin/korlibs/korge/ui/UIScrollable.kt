@@ -10,9 +10,9 @@ import korlibs.korge.internal.*
 import korlibs.korge.render.*
 import korlibs.korge.view.*
 import korlibs.korge.view.property.*
+import korlibs.math.*
 import korlibs.math.geom.*
 import korlibs.math.interpolation.*
-import korlibs.memory.*
 import korlibs.time.*
 import kotlin.math.*
 

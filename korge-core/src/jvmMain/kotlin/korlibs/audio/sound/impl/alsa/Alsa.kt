@@ -2,13 +2,13 @@ package korlibs.audio.sound.impl.alsa
 
 import korlibs.datastructure.lock.*
 import korlibs.time.*
-import korlibs.memory.*
 import korlibs.audio.sound.*
 import korlibs.io.async.*
 import korlibs.io.file.std.*
 import com.sun.jna.Memory
 import com.sun.jna.Native
 import com.sun.jna.Pointer
+import korlibs.math.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
 

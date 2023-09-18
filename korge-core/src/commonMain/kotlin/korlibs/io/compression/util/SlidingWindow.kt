@@ -1,6 +1,6 @@
 package korlibs.io.compression.util
 
-import korlibs.memory.unsigned
+import korlibs.math.unsigned
 
 internal class SlidingWindow(val nbits: Int) {
 	val data = ByteArray(1 shl nbits)

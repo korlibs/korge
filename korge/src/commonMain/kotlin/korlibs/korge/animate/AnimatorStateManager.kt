@@ -3,11 +3,11 @@ package korlibs.korge.animate
 import korlibs.datastructure.*
 import korlibs.datastructure.iterators.*
 import korlibs.time.*
-import korlibs.memory.*
 import korlibs.korge.annotations.*
 import korlibs.korge.tween.*
 import korlibs.korge.view.*
 import korlibs.io.lang.*
+import korlibs.math.*
 import korlibs.math.interpolation.*
 import kotlin.reflect.*
 

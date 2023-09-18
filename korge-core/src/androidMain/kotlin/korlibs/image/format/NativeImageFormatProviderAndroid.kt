@@ -15,9 +15,9 @@ import korlibs.image.color.*
 import korlibs.image.paint.*
 import korlibs.image.vector.*
 import korlibs.io.android.*
+import korlibs.math.*
 import korlibs.math.geom.*
 import korlibs.math.geom.vector.*
-import korlibs.memory.*
 import kotlinx.coroutines.*
 import java.io.*
 

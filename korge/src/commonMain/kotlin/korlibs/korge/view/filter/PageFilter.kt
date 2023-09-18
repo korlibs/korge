@@ -4,8 +4,8 @@ import korlibs.graphics.*
 import korlibs.graphics.shader.*
 import korlibs.korge.render.*
 import korlibs.korge.view.property.*
+import korlibs.math.*
 import korlibs.math.geom.*
-import korlibs.memory.*
 import kotlin.math.*
 
 /**

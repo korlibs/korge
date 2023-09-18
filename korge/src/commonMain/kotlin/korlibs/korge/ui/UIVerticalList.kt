@@ -3,8 +3,8 @@ package korlibs.korge.ui
 import korlibs.korge.annotations.*
 import korlibs.korge.render.*
 import korlibs.korge.view.*
+import korlibs.math.*
 import korlibs.math.geom.*
-import korlibs.memory.*
 
 @KorgeExperimental
 inline fun Container.uiVerticalList(

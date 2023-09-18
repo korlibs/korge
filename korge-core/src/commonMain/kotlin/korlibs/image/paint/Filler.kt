@@ -1,6 +1,6 @@
 package korlibs.image.paint
 
-import korlibs.memory.clamp01
+import korlibs.math.clamp01
 import korlibs.image.bitmap.*
 import korlibs.image.color.Colors
 import korlibs.image.color.RGBA

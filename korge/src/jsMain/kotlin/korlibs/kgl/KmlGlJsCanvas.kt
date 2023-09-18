@@ -8,6 +8,7 @@ import korlibs.graphics.gl.*
 import korlibs.graphics.shader.gl.*
 import korlibs.image.bitmap.*
 import korlibs.image.format.*
+import korlibs.math.*
 import korlibs.memory.*
 import kotlinx.browser.*
 import org.khronos.webgl.*

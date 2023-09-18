@@ -3,6 +3,7 @@
 
 package korlibs.memory
 
+import korlibs.math.*
 import kotlin.rotateLeft as rotateLeftKotlin
 import kotlin.rotateRight as rotateRightKotlin
 

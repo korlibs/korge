@@ -5,7 +5,7 @@ import korlibs.time.TimeSpan
 import korlibs.time.milliseconds
 import korlibs.time.seconds
 import korlibs.logger.Logger
-import korlibs.memory.clamp01
+import korlibs.math.clamp01
 import korlibs.audio.internal.coerceToShort
 import korlibs.audio.sound.AudioData
 import korlibs.audio.sound.AudioSamples

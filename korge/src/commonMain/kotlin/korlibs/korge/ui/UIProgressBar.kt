@@ -4,8 +4,8 @@ import korlibs.korge.render.*
 import korlibs.korge.style.*
 import korlibs.korge.view.*
 import korlibs.korge.view.property.*
+import korlibs.math.*
 import korlibs.math.geom.*
-import korlibs.memory.*
 
 inline fun Container.uiProgressBar(
     size: Size = Size(256, 24),

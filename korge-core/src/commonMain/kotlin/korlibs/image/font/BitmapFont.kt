@@ -16,6 +16,7 @@ import korlibs.io.lang.*
 import korlibs.io.serialization.json.*
 import korlibs.io.serialization.xml.*
 import korlibs.io.util.*
+import korlibs.math.*
 import korlibs.math.geom.*
 import korlibs.memory.*
 import kotlin.collections.component1

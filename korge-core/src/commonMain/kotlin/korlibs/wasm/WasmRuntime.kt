@@ -4,6 +4,7 @@ package korlibs.wasm
 
 import korlibs.logger.AnsiEscape.Companion.green
 import korlibs.logger.AnsiEscape.Companion.red
+import korlibs.math.*
 import korlibs.memory.*
 import kotlin.jvm.*
 import kotlin.rotateLeft

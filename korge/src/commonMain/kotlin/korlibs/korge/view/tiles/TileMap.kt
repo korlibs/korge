@@ -9,6 +9,7 @@ import korlibs.korge.render.*
 import korlibs.korge.view.*
 import korlibs.image.bitmap.*
 import korlibs.image.tiles.*
+import korlibs.math.*
 import korlibs.math.geom.*
 import korlibs.math.geom.collider.*
 import kotlin.math.*

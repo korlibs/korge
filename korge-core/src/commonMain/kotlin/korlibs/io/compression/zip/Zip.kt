@@ -2,8 +2,8 @@ package korlibs.io.compression.zip
 
 import korlibs.time.DateTime
 import korlibs.memory.extract
-import korlibs.memory.toIntClamp
-import korlibs.memory.unsigned
+import korlibs.math.toIntClamp
+import korlibs.math.unsigned
 import korlibs.io.file.PathInfo
 import korlibs.io.file.baseName
 import korlibs.io.file.getPathFullComponents

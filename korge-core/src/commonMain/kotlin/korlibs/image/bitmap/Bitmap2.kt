@@ -1,6 +1,6 @@
 package korlibs.image.bitmap
 
-import korlibs.memory.divCeil
+import korlibs.math.divCeil
 import korlibs.image.color.RgbaArray
 
 class Bitmap2(

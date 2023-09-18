@@ -4,6 +4,7 @@ import korlibs.memory.*
 import korlibs.memory.dyn.*
 import korlibs.event.*
 import korlibs.io.lang.*
+import korlibs.math.*
 
 internal class Win32XInputEventAdapterCommon(val xinput: XInput?, val joy: Joy32?) {
     private val controllers = Array(GamepadInfo.MAX_CONTROLLERS) { GamepadInfo(it) }

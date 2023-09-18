@@ -5,9 +5,9 @@ import korlibs.image.bitmap.*
 import korlibs.image.color.*
 import korlibs.image.paint.*
 import korlibs.image.vector.rasterizer.*
+import korlibs.math.*
 import korlibs.math.geom.shape.*
 import korlibs.math.geom.vector.*
-import korlibs.memory.*
 import kotlin.math.*
 
 // References:

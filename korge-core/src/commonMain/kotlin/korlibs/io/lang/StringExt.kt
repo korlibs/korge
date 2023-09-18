@@ -1,7 +1,7 @@
 package korlibs.io.lang
 
 import korlibs.memory.ByteArrayBuilder
-import korlibs.memory.clamp
+import korlibs.math.clamp
 import korlibs.io.util.quote
 import korlibs.util.format as format2
 

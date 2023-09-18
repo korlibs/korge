@@ -3,7 +3,7 @@
 package korlibs.io.util
 
 import korlibs.math.*
-import korlibs.memory.isNanOrInfinite
+import korlibs.math.isNanOrInfinite
 import kotlin.math.*
 
 private fun Double.isAlmostEquals(other: Double, epsilon: Double = 0.000001): Boolean = (this - other).absoluteValue < epsilon

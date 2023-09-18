@@ -2,6 +2,7 @@ package korlibs.math.geom.vector
 
 import korlibs.datastructure.*
 import korlibs.datastructure.iterators.*
+import korlibs.math.*
 import korlibs.math.annotations.*
 import korlibs.math.geom.*
 import korlibs.math.geom.bezier.*

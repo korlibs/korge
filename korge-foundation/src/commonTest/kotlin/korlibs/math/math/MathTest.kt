@@ -2,9 +2,8 @@ package korlibs.math.math
 
 import korlibs.datastructure.rotated
 import korlibs.math.*
-import korlibs.memory.*
-import korlibs.memory.isAlmostZero
-import korlibs.memory.isNanOrInfinite
+import korlibs.math.isAlmostZero
+import korlibs.math.isNanOrInfinite
 import kotlin.math.*
 import kotlin.test.Test
 import kotlin.test.assertEquals

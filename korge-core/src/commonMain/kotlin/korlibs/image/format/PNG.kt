@@ -26,6 +26,7 @@ import korlibs.io.stream.write8
 import korlibs.io.stream.writeBytes
 import korlibs.io.util.checksum.CRC32
 import korlibs.encoding.hex
+import korlibs.math.*
 import kotlin.math.*
 
 @Suppress("MemberVisibilityCanBePrivate")

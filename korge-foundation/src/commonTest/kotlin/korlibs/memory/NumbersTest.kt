@@ -1,5 +1,6 @@
 package korlibs.memory
 
+import korlibs.math.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue

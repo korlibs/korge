@@ -5,7 +5,6 @@ import korlibs.math.*
 import korlibs.math.annotations.*
 import korlibs.math.interpolation.*
 import korlibs.math.isAlmostZero
-import korlibs.memory.*
 import korlibs.number.*
 import kotlin.math.*
 

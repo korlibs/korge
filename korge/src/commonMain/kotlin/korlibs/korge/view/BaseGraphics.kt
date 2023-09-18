@@ -5,8 +5,8 @@ import korlibs.image.bitmap.*
 import korlibs.image.vector.*
 import korlibs.korge.annotations.*
 import korlibs.korge.render.*
+import korlibs.math.*
 import korlibs.math.geom.*
-import korlibs.memory.*
 import kotlin.math.*
 
 abstract class BaseGraphics(

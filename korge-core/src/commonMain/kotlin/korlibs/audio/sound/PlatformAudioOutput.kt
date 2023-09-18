@@ -2,9 +2,9 @@ package korlibs.audio.sound
 
 import korlibs.datastructure.lock.NonRecursiveLock
 import korlibs.datastructure.thread.*
-import korlibs.memory.clamp
-import korlibs.memory.clamp01
-import korlibs.memory.toShortClamped
+import korlibs.math.clamp
+import korlibs.math.clamp01
+import korlibs.math.toShortClamped
 import korlibs.io.async.delay
 import korlibs.io.lang.Disposable
 import korlibs.time.*

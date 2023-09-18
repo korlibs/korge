@@ -2,7 +2,7 @@ package korlibs.render.x11
 
 import korlibs.kgl.checkedIf
 import korlibs.memory.dyn.*
-import korlibs.memory.toInt
+import korlibs.math.toInt
 import korlibs.memory.write32LE
 import korlibs.graphics.gl.AGOpengl
 import korlibs.event.Key

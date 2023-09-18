@@ -1,7 +1,7 @@
 package korlibs.io.compression.deflate
 
 import korlibs.memory.FixedSizeByteArrayBuilder
-import korlibs.memory.unsigned
+import korlibs.math.unsigned
 import korlibs.io.compression.CompressionContext
 import korlibs.io.compression.CompressionMethod
 import korlibs.io.compression.util.BitReader

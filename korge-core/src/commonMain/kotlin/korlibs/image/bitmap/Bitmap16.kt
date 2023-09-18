@@ -6,6 +6,7 @@ import korlibs.image.color.RGBA_4444
 import korlibs.image.color.packRGBA
 import korlibs.image.color.unpackToRGBA
 import korlibs.io.lang.assert
+import korlibs.math.*
 import korlibs.memory.*
 
 class Bitmap16(

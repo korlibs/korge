@@ -1,10 +1,10 @@
 package korlibs.math.geom.bezier
 
 import korlibs.datastructure.*
+import korlibs.math.*
 import korlibs.math.geom.*
 import korlibs.math.geom.vector.*
 import korlibs.math.interpolation.*
-import korlibs.memory.*
 import kotlin.math.*
 
 // @TODO

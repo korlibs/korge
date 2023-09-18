@@ -4,7 +4,7 @@ package korlibs.image.bitmap.effect
 
 import korlibs.memory.arraycopy
 import korlibs.memory.readU8
-import korlibs.memory.toIntFloor
+import korlibs.math.toIntFloor
 import korlibs.image.bitmap.Bitmap32
 import korlibs.image.bitmap.Bitmap8
 import korlibs.image.bitmap.BitmapChannel

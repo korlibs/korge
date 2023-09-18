@@ -1,6 +1,6 @@
 package korlibs.image.vector
 
-import korlibs.memory.clampUByte
+import korlibs.math.clampUByte
 import korlibs.image.color.RgbaPremultipliedArray
 import korlibs.image.color.mix
 

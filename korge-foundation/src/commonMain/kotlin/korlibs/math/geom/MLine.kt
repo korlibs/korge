@@ -1,9 +1,7 @@
 package korlibs.math.geom
 
-import korlibs.math.almostEquals
+import korlibs.math.*
 import korlibs.math.annotations.*
-import korlibs.memory.*
-import korlibs.memory.isAlmostZero
 
 @KormaMutableApi
 @Deprecated("Use Line instead")

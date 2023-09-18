@@ -1,14 +1,13 @@
 package samples
 
 import korlibs.korge.scene.Scene
-import korlibs.memory.*
 import korlibs.event.*
 import korlibs.korge.input.*
 import korlibs.korge.view.*
 import korlibs.image.color.*
 import korlibs.io.util.toStringDecimal
+import korlibs.math.*
 import korlibs.math.geom.*
-import korlibs.math.geom.vector.*
 import kotlin.math.*
 
 class MainOnScreenController : Scene() {

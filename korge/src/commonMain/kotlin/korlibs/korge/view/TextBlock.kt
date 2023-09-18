@@ -7,8 +7,8 @@ import korlibs.image.text.*
 import korlibs.korge.render.*
 import korlibs.korge.ui.*
 import korlibs.korge.view.property.*
+import korlibs.math.*
 import korlibs.math.geom.*
-import korlibs.memory.*
 
 inline fun Container.textBlock(
     text: RichTextData = RichTextData("", textSize = 16f, font = DefaultTtfFontAsBitmap),

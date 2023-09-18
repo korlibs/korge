@@ -6,6 +6,7 @@ import korlibs.datastructure.*
 import korlibs.datastructure.iterators.*
 import korlibs.memory.*
 import korlibs.event.*
+import korlibs.math.*
 
 class AndroidGameController {
     private val activeGamepads = IntMap<GamepadInfo>()

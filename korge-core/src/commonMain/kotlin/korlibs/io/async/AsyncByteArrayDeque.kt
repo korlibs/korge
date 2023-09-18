@@ -3,7 +3,7 @@ package korlibs.io.async
 import korlibs.datastructure.ByteArrayDeque
 import korlibs.datastructure.ChunkedByteDeque
 import korlibs.time.milliseconds
-import korlibs.memory.ilog2
+import korlibs.math.ilog2
 import korlibs.io.lang.OutOfBoundsException
 import korlibs.io.stream.AsyncInputStream
 import korlibs.io.stream.AsyncOutputStream

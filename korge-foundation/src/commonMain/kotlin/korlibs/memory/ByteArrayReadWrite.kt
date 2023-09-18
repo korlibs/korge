@@ -1,5 +1,6 @@
 package korlibs.memory
 
+import korlibs.math.*
 import korlibs.number.*
 
 /////////////////////////////////////////

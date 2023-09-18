@@ -2,7 +2,7 @@ package korlibs.image.format
 
 import korlibs.datastructure.*
 import korlibs.time.milliseconds
-import korlibs.memory.clamp
+import korlibs.math.clamp
 import korlibs.memory.extract
 import korlibs.memory.hasBitSet
 import korlibs.memory.readIntArray

@@ -1,6 +1,6 @@
 package korlibs.image.format
 
-import korlibs.memory.unsigned
+import korlibs.math.unsigned
 import korlibs.image.bitmap.Bitmap32
 import korlibs.image.color.RGBA
 import korlibs.io.lang.invalidOp

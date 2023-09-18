@@ -1,7 +1,7 @@
 package korlibs.korge.render
 
-import korlibs.memory.isPowerOfTwo
-import korlibs.memory.nextPowerOfTwo
+import korlibs.math.isPowerOfTwo
+import korlibs.math.nextPowerOfTwo
 import korlibs.image.bitmap.Bitmap32
 
 /**

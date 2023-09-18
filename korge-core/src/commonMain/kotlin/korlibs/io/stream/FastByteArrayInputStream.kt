@@ -1,7 +1,7 @@
 package korlibs.io.stream
 
 import korlibs.memory.arraycopy
-import korlibs.memory.nextAlignedTo
+import korlibs.math.nextAlignedTo
 import korlibs.memory.readByteArray
 import korlibs.memory.readCharArrayBE
 import korlibs.memory.readCharArrayLE

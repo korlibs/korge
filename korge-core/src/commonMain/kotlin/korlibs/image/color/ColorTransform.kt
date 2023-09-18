@@ -1,6 +1,6 @@
 package korlibs.image.color
 
-import korlibs.memory.clamp
+import korlibs.math.clamp
 import korlibs.math.interpolation.*
 import korlibs.encoding.shex
 import korlibs.number.*

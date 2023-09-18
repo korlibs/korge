@@ -2,6 +2,7 @@
 
 package korlibs.memory
 
+import korlibs.math.*
 import kotlin.jvm.*
 
 expect class Buffer {

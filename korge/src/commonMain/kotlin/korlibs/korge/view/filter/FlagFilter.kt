@@ -1,11 +1,11 @@
 package korlibs.korge.view.filter
 
 import korlibs.time.*
-import korlibs.memory.*
 import korlibs.graphics.*
 import korlibs.graphics.shader.*
 import korlibs.korge.render.*
 import korlibs.korge.view.property.*
+import korlibs.math.*
 import korlibs.math.geom.*
 import kotlin.math.*
 

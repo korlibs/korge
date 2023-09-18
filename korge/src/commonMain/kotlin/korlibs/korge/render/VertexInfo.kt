@@ -3,6 +3,7 @@ package korlibs.korge.render
 import korlibs.memory.*
 import korlibs.image.color.Colors
 import korlibs.image.color.RGBA
+import korlibs.math.*
 import korlibs.math.geom.*
 import korlibs.number.*
 

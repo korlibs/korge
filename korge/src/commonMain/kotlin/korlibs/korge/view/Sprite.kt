@@ -1,7 +1,7 @@
 package korlibs.korge.view
 
 import korlibs.time.*
-import korlibs.memory.umod
+import korlibs.math.umod
 import korlibs.image.bitmap.*
 import korlibs.io.async.Signal
 import korlibs.math.geom.*

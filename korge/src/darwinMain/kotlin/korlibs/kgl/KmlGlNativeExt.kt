@@ -4,6 +4,7 @@ import korlibs.graphics.shader.gl.*
 import korlibs.image.bitmap.*
 import korlibs.image.format.*
 import korlibs.io.concurrent.atomic.*
+import korlibs.math.*
 import korlibs.memory.*
 import kotlinx.cinterop.*
 import kotlin.reflect.*

@@ -1,8 +1,8 @@
 package korlibs.image.bitmap
 
 import korlibs.datastructure.*
-import korlibs.memory.clamp01
-import korlibs.memory.convertRange
+import korlibs.math.clamp01
+import korlibs.math.convertRange
 import korlibs.image.color.RGBA
 import korlibs.image.color.RgbaArray
 import korlibs.io.lang.assert

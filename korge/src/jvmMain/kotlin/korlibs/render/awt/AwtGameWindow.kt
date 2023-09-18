@@ -1,6 +1,5 @@
 package korlibs.render.awt
 
-import korlibs.memory.*
 import korlibs.event.*
 import korlibs.render.*
 import korlibs.render.platform.*
@@ -8,7 +7,7 @@ import korlibs.image.awt.*
 import korlibs.image.bitmap.*
 import korlibs.io.dynamic.*
 import korlibs.io.file.std.*
-import korlibs.io.util.*
+import korlibs.math.*
 import korlibs.math.geom.*
 import korlibs.platform.*
 import java.awt.*

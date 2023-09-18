@@ -2,9 +2,9 @@ package korlibs.korge.view.camera
 
 import korlibs.io.async.*
 import korlibs.korge.view.*
+import korlibs.math.*
 import korlibs.math.geom.*
 import korlibs.math.interpolation.*
-import korlibs.memory.*
 import korlibs.time.*
 import kotlin.math.*
 

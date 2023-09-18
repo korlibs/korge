@@ -1,10 +1,10 @@
 package korlibs.math.geom.trapezoid
 
 import korlibs.datastructure.iterators.*
+import korlibs.math.*
 import korlibs.math.geom.*
 import korlibs.math.geom.bezier.*
 import korlibs.math.geom.vector.*
-import korlibs.memory.*
 import kotlin.math.*
 
 /*

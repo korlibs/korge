@@ -1,7 +1,7 @@
 package samples
 
 import korlibs.memory.arraycopy
-import korlibs.memory.clamp
+import korlibs.math.clamp
 import korlibs.audio.sound.AudioSamples
 import korlibs.audio.sound.nativeSoundProvider
 import korlibs.korge.scene.Scene

@@ -1,8 +1,8 @@
 package korlibs.image.bitmap
 
 import korlibs.memory.arraycopy
-import korlibs.memory.clamp
-import korlibs.memory.toInt
+import korlibs.math.clamp
+import korlibs.math.toInt
 import korlibs.image.annotation.KorimInternal
 import korlibs.image.color.*
 import korlibs.image.vector.Bitmap32Context2d

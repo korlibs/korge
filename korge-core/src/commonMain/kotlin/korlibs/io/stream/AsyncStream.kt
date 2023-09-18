@@ -8,8 +8,8 @@ import korlibs.datastructure.iterators.fastForEach
 import korlibs.memory.ByteArrayBuilder
 import korlibs.platform.Endian
 import korlibs.memory.arraycopy
-import korlibs.memory.clamp
-import korlibs.memory.nextAlignedTo
+import korlibs.math.clamp
+import korlibs.math.nextAlignedTo
 import korlibs.memory.readCharArrayBE
 import korlibs.memory.readCharArrayLE
 import korlibs.memory.readDoubleArrayBE
@@ -39,8 +39,8 @@ import korlibs.memory.readU24BE
 import korlibs.memory.readU24LE
 import korlibs.memory.readU32BE
 import korlibs.memory.readU32LE
-import korlibs.memory.toIntClamp
-import korlibs.memory.unsigned
+import korlibs.math.toIntClamp
+import korlibs.math.unsigned
 import korlibs.memory.write16BE
 import korlibs.memory.write16LE
 import korlibs.memory.write24BE

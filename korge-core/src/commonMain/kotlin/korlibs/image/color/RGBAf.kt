@@ -1,7 +1,7 @@
 package korlibs.image.color
 
+import korlibs.math.*
 import korlibs.math.geom.*
-import korlibs.memory.*
 import korlibs.number.*
 
 //inline class RGBAf private constructor(

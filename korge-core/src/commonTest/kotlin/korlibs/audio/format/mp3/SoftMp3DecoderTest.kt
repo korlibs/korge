@@ -6,7 +6,7 @@ import korlibs.crypto.*
 import korlibs.io.async.*
 import korlibs.io.file.std.*
 import korlibs.logger.*
-import korlibs.memory.*
+import korlibs.math.*
 import korlibs.time.*
 import kotlin.test.*
 

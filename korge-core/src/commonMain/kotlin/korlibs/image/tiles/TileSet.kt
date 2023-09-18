@@ -3,8 +3,8 @@ package korlibs.image.tiles
 import korlibs.datastructure.*
 import korlibs.datastructure.iterators.fastForEachWithIndex
 import korlibs.time.TimeSpan
-import korlibs.memory.nextPowerOfTwo
-import korlibs.memory.toIntCeil
+import korlibs.math.nextPowerOfTwo
+import korlibs.math.toIntCeil
 import korlibs.image.bitmap.*
 import korlibs.math.geom.*
 import kotlin.math.sqrt

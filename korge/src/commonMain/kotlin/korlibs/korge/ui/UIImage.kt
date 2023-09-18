@@ -5,8 +5,8 @@ import korlibs.image.color.*
 import korlibs.korge.render.*
 import korlibs.korge.view.*
 import korlibs.korge.view.property.*
+import korlibs.math.*
 import korlibs.math.geom.*
-import korlibs.memory.*
 
 inline fun Container.uiImage(
     size: Size = UI_DEFAULT_SIZE,

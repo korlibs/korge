@@ -1,6 +1,6 @@
 package korlibs.io.concurrent.atomic
 
-import korlibs.memory.*
+import korlibs.math.*
 import kotlin.concurrent.*
 
 actual fun <T> korAtomic(initial: T): KorAtomicRef<T> = object : KorAtomicRef<T>(initial, true) {

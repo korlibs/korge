@@ -1,7 +1,7 @@
 package korlibs.image.vector
 
-import korlibs.memory.clamp
-import korlibs.memory.toIntCeil
+import korlibs.math.clamp
+import korlibs.math.toIntCeil
 import korlibs.image.bitmap.Bitmap
 import korlibs.image.bitmap.BitmapWithHotspot
 import korlibs.image.bitmap.NativeImageOrBitmap32

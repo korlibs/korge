@@ -1,5 +1,6 @@
 package korlibs.image.vector
 
+import korlibs.math.*
 import korlibs.memory.*
 import korlibs.math.geom.*
 

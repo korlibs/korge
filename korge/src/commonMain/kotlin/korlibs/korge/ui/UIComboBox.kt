@@ -12,10 +12,10 @@ import korlibs.korge.input.*
 import korlibs.korge.render.*
 import korlibs.korge.tween.*
 import korlibs.korge.view.*
+import korlibs.math.*
 import korlibs.math.geom.*
 import korlibs.math.geom.shape.*
 import korlibs.math.interpolation.*
-import korlibs.memory.*
 import korlibs.time.*
 import kotlin.native.concurrent.*
 

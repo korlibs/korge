@@ -1,8 +1,8 @@
 package korlibs.memory.numeric
 
-import korlibs.memory.isAlignedTo
-import korlibs.memory.nextAlignedTo
-import korlibs.memory.prevAlignedTo
+import korlibs.math.isAlignedTo
+import korlibs.math.nextAlignedTo
+import korlibs.math.prevAlignedTo
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

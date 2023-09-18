@@ -2,10 +2,10 @@ package korlibs.math.geom.bezier
 
 import korlibs.datastructure.*
 import korlibs.datastructure.iterators.*
+import korlibs.math.*
 import korlibs.math.annotations.*
 import korlibs.math.geom.*
 import korlibs.math.geom.vector.*
-import korlibs.memory.*
 import kotlin.jvm.*
 
 @JvmName("ListCurves_toCurves")

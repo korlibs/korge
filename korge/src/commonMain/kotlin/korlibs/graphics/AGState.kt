@@ -5,6 +5,7 @@ import korlibs.datastructure.iterators.*
 import korlibs.graphics.shader.*
 import korlibs.image.color.*
 import korlibs.io.lang.*
+import korlibs.math.*
 import korlibs.math.geom.*
 import korlibs.memory.*
 

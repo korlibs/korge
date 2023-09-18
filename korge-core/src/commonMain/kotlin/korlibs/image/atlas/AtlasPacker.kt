@@ -1,7 +1,7 @@
 package korlibs.image.atlas
 
 import korlibs.datastructure.iterators.fastForEach
-import korlibs.memory.nextPowerOfTwo
+import korlibs.math.nextPowerOfTwo
 import korlibs.image.bitmap.*
 import korlibs.math.geom.*
 import korlibs.math.geom.binpack.BinPacker

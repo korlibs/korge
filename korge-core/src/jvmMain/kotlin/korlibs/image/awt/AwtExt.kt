@@ -4,6 +4,7 @@ import korlibs.image.bitmap.*
 import korlibs.image.color.*
 import korlibs.image.format.*
 import korlibs.io.async.*
+import korlibs.math.*
 import korlibs.math.awt.*
 import korlibs.math.geom.*
 import korlibs.memory.*

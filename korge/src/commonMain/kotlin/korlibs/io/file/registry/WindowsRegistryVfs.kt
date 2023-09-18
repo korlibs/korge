@@ -1,6 +1,6 @@
 package korlibs.io.file.registry
 
-import korlibs.memory.toIntClamp
+import korlibs.math.toIntClamp
 import korlibs.io.file.Vfs
 import korlibs.io.file.VfsFile
 import korlibs.io.file.VfsOpenMode

@@ -1,9 +1,9 @@
 package korlibs.image.bitmap
 
-import korlibs.memory.*
 import korlibs.image.color.Colors
 import korlibs.image.color.RGBA
 import korlibs.image.color.RgbaArray
+import korlibs.math.*
 
 class Bitmap1(
 	width: Int,

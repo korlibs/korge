@@ -4,6 +4,7 @@ import korlibs.datastructure.*
 import korlibs.encoding.*
 import korlibs.image.internal.*
 import korlibs.image.paint.*
+import korlibs.math.*
 import korlibs.math.geom.*
 import korlibs.math.interpolation.*
 import korlibs.memory.*

@@ -1,6 +1,6 @@
 package korlibs.image.color
 
-import korlibs.memory.clampUByte
+import korlibs.math.clampUByte
 import korlibs.memory.extract8
 import korlibs.image.internal.packIntClamped
 

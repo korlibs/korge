@@ -7,6 +7,7 @@ package korlibs.kgl
 import korlibs.graphics.shader.gl.*
 import korlibs.image.bitmap.*
 import korlibs.image.format.*
+import korlibs.math.*
 import korlibs.memory.*
 import kotlinx.cinterop.*
 import platform.gles3.*

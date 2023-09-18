@@ -8,9 +8,9 @@ import korlibs.korge.render.*
 import korlibs.korge.style.*
 import korlibs.korge.ui.UIOldScrollBar.Direction
 import korlibs.korge.view.*
+import korlibs.math.*
 import korlibs.math.geom.*
 import korlibs.math.geom.slice.*
-import korlibs.memory.*
 import kotlin.math.*
 
 @Deprecated("Use UINewScrollable")

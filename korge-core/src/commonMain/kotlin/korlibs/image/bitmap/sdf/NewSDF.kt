@@ -4,6 +4,7 @@ import korlibs.datastructure.*
 import korlibs.memory.*
 import korlibs.image.bitmap.*
 import korlibs.image.color.*
+import korlibs.math.*
 
 // Based on Tiny-SDF: https://github.com/mapbox/tiny-sdf/
 object NewSDF {

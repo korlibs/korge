@@ -1,12 +1,9 @@
 package korlibs.template
 
-import korlibs.io.lang.*
 import korlibs.io.serialization.json.*
 import korlibs.io.util.*
 import korlibs.math.*
-import korlibs.memory.*
 import korlibs.template.dynamic.KorteDynamic2
-import korlibs.template.internal.*
 import korlibs.template.internal.korteExtraProperty
 import korlibs.util.*
 import kotlin.coroutines.cancellation.*

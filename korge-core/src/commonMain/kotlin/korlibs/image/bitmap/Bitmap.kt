@@ -10,6 +10,7 @@ import korlibs.image.color.asPremultiplied
 import korlibs.image.format.*
 import korlibs.image.vector.Context2d
 import korlibs.io.lang.invalidOp
+import korlibs.math.*
 import korlibs.math.geom.*
 import korlibs.math.interpolation.*
 import korlibs.memory.*

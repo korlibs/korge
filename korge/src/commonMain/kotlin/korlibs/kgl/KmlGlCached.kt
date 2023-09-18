@@ -5,7 +5,7 @@ import korlibs.kgl.internal.CachedFloat2
 import korlibs.kgl.internal.CachedInt
 import korlibs.kgl.internal.CachedInt2
 import korlibs.kgl.internal.CachedInt4
-import korlibs.memory.toInt
+import korlibs.math.toInt
 
 class KmlGlCached(parent: KmlGl) : KmlGlFastProxy(parent) {
 	private var lastLineWidth = CachedFloat(-1f)

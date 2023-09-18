@@ -2,7 +2,7 @@ package korlibs.audio.sound
 
 import korlibs.memory.arraycopy
 import korlibs.memory.arrayinterleave
-import korlibs.memory.clamp01
+import korlibs.math.clamp01
 import korlibs.audio.internal.SampleConvert
 import korlibs.audio.internal.coerceToShort
 import korlibs.datastructure.iterators.*

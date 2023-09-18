@@ -2,7 +2,7 @@ package korlibs.korge.animate
 
 import korlibs.time.milliseconds
 import korlibs.time.seconds
-import korlibs.memory.toIntRound
+import korlibs.math.toIntRound
 import korlibs.korge.tests.ViewsForTesting
 import korlibs.korge.tween._interpolateAngle
 import korlibs.korge.tween.denormalized

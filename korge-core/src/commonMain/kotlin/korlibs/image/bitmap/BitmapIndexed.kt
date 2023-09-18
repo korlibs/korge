@@ -2,6 +2,7 @@ package korlibs.image.bitmap
 
 import korlibs.image.color.RGBA
 import korlibs.image.color.RgbaArray
+import korlibs.math.*
 import korlibs.memory.*
 import kotlin.math.max
 

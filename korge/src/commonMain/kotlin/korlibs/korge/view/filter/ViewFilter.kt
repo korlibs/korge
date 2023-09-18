@@ -3,7 +3,7 @@ package korlibs.korge.view.filter
 import korlibs.datastructure.*
 import korlibs.korge.render.*
 import korlibs.korge.view.*
-import korlibs.memory.*
+import korlibs.math.*
 import kotlin.native.concurrent.*
 
 /**

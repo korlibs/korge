@@ -2,8 +2,8 @@ package korlibs.io.compression.util
 
 import korlibs.datastructure.RingBuffer
 import korlibs.datastructure.internal.KdsInternalApi
-import korlibs.memory.ilog2
-import korlibs.memory.nextPowerOfTwo
+import korlibs.math.ilog2
+import korlibs.math.nextPowerOfTwo
 import korlibs.memory.readS32BE
 import korlibs.memory.readS32LE
 import korlibs.memory.readU16LE

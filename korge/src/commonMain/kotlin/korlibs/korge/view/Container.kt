@@ -7,8 +7,8 @@ import korlibs.io.lang.*
 import korlibs.korge.internal.*
 import korlibs.korge.render.*
 import korlibs.korge.view.property.*
+import korlibs.math.*
 import korlibs.math.geom.*
-import korlibs.memory.*
 
 /** Creates a new [Container], allowing to configure with [callback], and attaches the newly created container to the receiver this [Container] */
 inline fun Container.container(cull: Boolean = false, callback: @ViewDslMarker Container.() -> Unit = {}) =

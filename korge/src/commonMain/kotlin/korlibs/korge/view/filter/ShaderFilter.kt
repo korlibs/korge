@@ -8,6 +8,7 @@ import korlibs.korge.view.*
 import korlibs.korge.view.filter.ShaderFilter.Companion.fragmentCoords
 import korlibs.korge.view.filter.ShaderFilter.Companion.fragmentCoords01
 import korlibs.korge.view.filter.ShaderFilter.Companion.tex
+import korlibs.math.*
 import korlibs.math.geom.*
 import korlibs.memory.*
 

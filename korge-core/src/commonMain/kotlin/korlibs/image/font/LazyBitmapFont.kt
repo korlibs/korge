@@ -6,8 +6,8 @@ import korlibs.image.atlas.*
 import korlibs.image.bitmap.*
 import korlibs.image.color.*
 import korlibs.image.vector.*
+import korlibs.math.*
 import korlibs.math.geom.*
-import korlibs.memory.*
 
 class LazyBitmapFont(
     val font: VectorFont,

@@ -1,11 +1,9 @@
 package korlibs.math.geom.bezier
 
 import korlibs.datastructure.*
+import korlibs.math.*
 import korlibs.math.geom.*
-import korlibs.math.internal.*
 import korlibs.math.interpolation.*
-import korlibs.math.roundDecimalPlaces
-import korlibs.memory.*
 import korlibs.number.*
 
 data class CurveLUT(val curve: Curve, val points: PointArrayList, val ts: FloatArrayList, private val _estimatedLengths: FloatArrayList) {

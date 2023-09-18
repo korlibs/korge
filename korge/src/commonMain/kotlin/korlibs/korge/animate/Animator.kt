@@ -6,10 +6,10 @@ import korlibs.io.async.*
 import korlibs.io.lang.*
 import korlibs.korge.tween.*
 import korlibs.korge.view.*
+import korlibs.math.*
 import korlibs.math.geom.*
 import korlibs.math.geom.vector.*
 import korlibs.math.interpolation.*
-import korlibs.memory.*
 import korlibs.time.*
 import kotlinx.coroutines.*
 import kotlin.math.*

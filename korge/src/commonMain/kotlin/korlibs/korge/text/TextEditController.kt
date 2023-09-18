@@ -14,9 +14,9 @@ import korlibs.korge.time.*
 import korlibs.korge.ui.*
 import korlibs.korge.view.*
 import korlibs.korge.view.debug.*
+import korlibs.math.*
 import korlibs.math.geom.*
 import korlibs.math.geom.bezier.*
-import korlibs.memory.*
 import korlibs.platform.*
 import korlibs.render.*
 import korlibs.time.*

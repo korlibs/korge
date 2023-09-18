@@ -1,6 +1,6 @@
 package korlibs.math.geom
 
-import korlibs.memory.*
+import korlibs.math.*
 import kotlin.math.*
 
 /**

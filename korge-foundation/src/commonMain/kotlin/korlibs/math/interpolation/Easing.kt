@@ -1,8 +1,8 @@
 package korlibs.math.interpolation
 
+import korlibs.math.*
 import korlibs.math.geom.*
 import korlibs.math.geom.bezier.*
-import korlibs.memory.*
 import kotlin.math.*
 
 private inline fun combine(it: Float, start: Easing, end: Easing) =

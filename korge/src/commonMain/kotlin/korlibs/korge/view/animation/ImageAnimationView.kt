@@ -4,12 +4,12 @@ import korlibs.datastructure.*
 import korlibs.datastructure.iterators.*
 import korlibs.time.*
 import korlibs.math.geom.*
-import korlibs.memory.*
 import korlibs.korge.view.*
 import korlibs.korge.view.tiles.*
 import korlibs.image.bitmap.*
 import korlibs.image.format.*
 import korlibs.image.tiles.*
+import korlibs.math.*
 
 inline fun Container.imageAnimationView(
     animation: ImageAnimation? = null,

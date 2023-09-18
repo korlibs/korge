@@ -1,6 +1,6 @@
 package korlibs.korge.awt
 
-import korlibs.memory.*
+import korlibs.math.*
 import kotlin.math.*
 
 //sealed class Length : Comparable<Length> {

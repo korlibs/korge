@@ -9,9 +9,9 @@ import korlibs.korge.internal.*
 import korlibs.korge.render.*
 import korlibs.korge.tween.*
 import korlibs.korge.view.*
+import korlibs.math.*
 import korlibs.math.geom.*
 import korlibs.math.interpolation.*
-import korlibs.memory.*
 import korlibs.render.*
 import korlibs.time.*
 

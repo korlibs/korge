@@ -3,6 +3,7 @@ package korlibs.image.bitmap
 import korlibs.memory.*
 import korlibs.image.color.*
 import korlibs.image.format.*
+import korlibs.math.*
 import korlibs.math.geom.*
 import korlibs.math.geom.slice.*
 
