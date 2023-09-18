@@ -1,7 +1,6 @@
 package korlibs.math.geom
 
 import korlibs.memory.*
-import korlibs.memory.pack.*
 import korlibs.math.internal.*
 
 /**

@@ -1,7 +1,6 @@
 package korlibs.math.geom
 
 import korlibs.math.geom.shape.*
-import korlibs.memory.pack.*
 
 //inline class Sphere3D private constructor(private val data: Float4) : Shape3D {
 data class Sphere3D(override val center: Vector3, val radius: Float) : Shape3D {

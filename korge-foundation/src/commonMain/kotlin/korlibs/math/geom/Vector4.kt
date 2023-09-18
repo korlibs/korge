@@ -1,6 +1,5 @@
 package korlibs.math.geom
 
-import korlibs.memory.pack.*
 import korlibs.math.internal.*
 import korlibs.math.isAlmostEquals
 import korlibs.memory.*
