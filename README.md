@@ -11,13 +11,10 @@
 Accepting Donations/Sponsorship via Bitcoin: `bc1qfmnd2jazh6czsuvvvy5rc3fxwsfvj6e8zwesdg`
 
 <!-- SUPPORT -->
-<!--
 <h2 align="center">Support korge</h2>
 <p align="center">
 If you like korge, or want your company logo here, please consider <a href="https://github.com/sponsors/soywiz">becoming a GitHub sponsor ★</a>,<br />
-in addition to ensure the continuity of the project, you will get exclusive content.
 </p>
--->
 <!-- /SUPPORT -->
 
 ## Info about the project:
@@ -32,8 +29,8 @@ KorGE is a modern multiplatform game engine for Kotlin. Features include:
   * Live-debug your games
 * 100% Kotlin
   * KorGE is fully written in Kotlin and designed from the ground up to embrace modern and easy coding styles
-* Real native multiplatform
-  * KorGE gradle plugin allows to target each platform natively: JVM for Android, JS for the Web and native code for iOS and Desktop
+* Multiplatform
+  * KorGE gradle plugin allows to target the following platforms: JVM for Android, JS & WASM for the Web, native code for iOS, and JVM/JS for Desktop
 * Quick installation
   * Install the KorGE IntelliJ Plugin or clone the “Hello World!” project and start making your own game in less than a minute
 * Fully productive
@@ -47,7 +44,7 @@ For more information, visit:
 
 * <https://korge.org/>
 * <https://docs.korge.org/>
-* <https://forum.korge.org/>
+* <https://discord.korge.org/>
 
 ## Usage:
 
@@ -69,115 +66,14 @@ you can make experiments there:
 ```shell script
 ./gradlew :korge-sandbox:runJvm
 ./gradlew :korge-sandbox:runJs
-./gradlew :korge-sandbox:runNativeDebug
-./gradlew :korge-sandbox:runNativeRelease
 ./gradlew :korge-sandbox:runAndroidRelease
 ./gradlew :korge-sandbox:runIosDeviceRelease
 ```
 
-## KorGE Samples
-
-* <https://github.com/korlibs/korge-samples>
-* <https://github.com/korlibs/korge-samples-ext>
-
-## KorGE Modules
+## KorGE Store
 
 Traditionally all the KorGE modules were published to central and their source code was available here,
-now they are available via kproject in these repositories:
+now they are available via kproject in separate repositories.
+You can find a catalog of all the published extensions here:
 
-### UI
-
-* <https://github.com/korlibs/korge-compose>
-
-### Physics
-
-* <https://github.com/korlibs/korge-box2d>
-* <https://github.com/korlibs/korge-ext/tree/main/korge-collision> (Simple collisions)
-
-### ECS
-
-* <https://github.com/korlibs/korge-fleks>
-
-### Animations
-
-* Basic Tweens & animators (Integrated in KorGE)
-* <https://github.com/korlibs/korge-swf>
-
-### Skeletal Libraries
-
-* <https://github.com/korlibs/korge-dragonbones>
-* <https://github.com/korlibs/korge-spine>
-
-### TileMaps / Level Loading
-
-* Basic TileSet + TileMap functionality (Integrated in KorGE)
-* <https://github.com/korlibs/korge-ldtk>
-* <https://github.com/korlibs/korge-tiled>
-
-### Image Formats
-
-* PNG, QOI, ASE, PSD, Native Decoders (Integrated in KorGE)
-* <https://github.com/korlibs/korge-image-formats/tree/main/korim-jpeg> (Pure Kotlin JPEG Encoder/Decoder)
-* <https://github.com/korlibs/korge-image-formats/tree/main/korim-qr> (Pure Kotlin QR Generator)
-
-### AudioFormats
-
-* MP3, WAV (Integrated in KorGE)
-* <https://github.com/korlibs/korge-audio-formats> (MOD, XM, S3M, MIDI (WIP), OPUS (WIP))
-
-## Scripting
-
-* <https://github.com/korlibs/korge-luak> (LUA)
-
-## Video
-
-* <https://github.com/korlibs/korge-video>
-
-## I18N
-
-* <https://github.com/korlibs/korge-ext/tree/main/korge-i18n> (I18N support)
-
-## Algorithms
-
-* <https://github.com/korlibs/korge-ext/tree/main/korma-astar> (AStar (A*) for finding paths in 2D grids)
-
-## 3D
-
-* <https://github.com/korlibs/korge-k3d/> (3D support on top of KorGE)
-
-## Particles
-
-* <https://github.com/korlibs/korge-particles/> (Particles support in `.pex` format)
-
-## Other
-
-* <https://github.com/korlibs/korge-lipsync> (Rhubarb LipSync integration with resource processor)
-* <https://github.com/korlibs/korge-parallax> (Pseudo 3D Parallax Effect)
-* <https://github.com/korlibs/korge-ext/tree/main/korge-docking> (Docking to window corners `dockedTo`)
-* <https://github.com/korlibs/korge-ext/tree/main/korge-ktree> (Old KTree serialization)
-* <https://github.com/korlibs/korge-ext/tree/main/korge-masked-view> (Old Masked View (now we can use `view.mask`))
-* <https://github.com/korlibs/korge-ext/tree/main/korge-text2> (Old Text engine)
-* <https://github.com/korlibs/korge-ext/tree/main/korge-bus> (Bus / SyncBus)
-* <https://github.com/korlibs/korge-ext/tree/main/korge-frameblock> (`frameBlock(60.fps) { while (true) frame() }` utility function)
-* <https://github.com/korlibs/korge-ext/tree/main/korge-length> (Support physical-based units: cm, inches, percentages, etc.)
-* <https://github.com/korlibs/korge-ext/tree/main/korge-shape-ext> (Support triangulation, spatial pathfinding, TRA* & shape2d operations)
-* <https://github.com/korlibs/korge-ext/tree/main/korge-bus> (A Message Bus implementation)
-
-## Monetization
-
-* <https://github.com/korlibs/korge-monetization/tree/main/korge-admob> (Admob integration)
-
-## Mascots
-
-* <https://github.com/korlibs/korge-jitto> (Jitto, the programmatic logo and mascot)
-* <https://github.com/korlibs/korge-mascots> (Koral & Gest)
-
-## Starter Kits / Templates
-
-* <https://github.com/korlibs/korge-hello-world> (Simple Hello World)
-* <https://github.com/korlibs/korge-hello-world-client-server> (Client + Ktor Server + Common module)
-* <https://github.com/korlibs/korge-fleks-hello-world> (Fleks Hello World)
-* <https://github.com/korlibs/korge-starter-kit-rpg> (RPG Starter Kit)
-* <https://github.com/korlibs/korge-starter-kit-platformer> (Platformer Starter Kit)
-* <https://github.com/korlibs/korge-starter-kit-pointandclickadventure> (Point & Click Adventure Starter Kit)
-
+<https://store.korge.org/>
