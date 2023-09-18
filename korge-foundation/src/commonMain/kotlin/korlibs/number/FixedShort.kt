@@ -1,5 +1,6 @@
-package korlibs.memory
+package korlibs.number
 
+import korlibs.memory.*
 import kotlin.math.*
 
 /**

@@ -1,5 +1,7 @@
 package korlibs.memory
 
+import korlibs.number.*
+
 public class ByteArrayReader(public val data: ByteArray, public val start: Int, public val size: Int = 0) {
     private var offset = start
     public val remaining: Int get() = size - offset

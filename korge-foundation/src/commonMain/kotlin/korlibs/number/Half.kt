@@ -1,6 +1,8 @@
 @file:Suppress("EXPERIMENTAL_FEATURE_WARNING", "NOTHING_TO_INLINE")
 
-package korlibs.memory
+package korlibs.number
+
+import korlibs.memory.*
 
 /**
  * Represents a floating point value of 16 bits. Also known as Half-precision floating-point format (IEEE 754-2008).

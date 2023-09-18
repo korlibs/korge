@@ -1,5 +1,6 @@
-package korlibs.memory
+package korlibs.number
 
+import korlibs.memory.*
 import korlibs.memory.annotations.KmemExperimental
 import kotlin.math.ceil
 import kotlin.math.floor

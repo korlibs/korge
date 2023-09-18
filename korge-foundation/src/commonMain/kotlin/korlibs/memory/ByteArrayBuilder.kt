@@ -1,5 +1,6 @@
 package korlibs.memory
 
+import korlibs.number.*
 import kotlin.math.max
 
 /**
