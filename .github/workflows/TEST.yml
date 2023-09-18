@@ -93,15 +93,13 @@ jobs:
     - { name: Install freeglut3 & openal, run: sudo apt-get update && sudo apt-get -y install freeglut3-dev libopenal-dev xvfb }
     - { name: Run Xvfb in Background, run: "Xvfb :99 &" }
     - { name: Set up JDK, uses: actions/setup-java@v3, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
-    - { name: Gradle cache, uses: ./.github/actions/gradle-cache, with: { subplatform: "jvm-linux" } }
-    - { name: Grant execute permission for gradlew, run: chmod +x gradlew }
+    - { name: Prepare Gradle, uses: gradle/gradle-build-action@ef76a971e2fa3f867b617efd72f2fbd72cf6f8bc } # v2.8.0
     - { name: Start gradle, run: ./gradlew --stacktrace }
-    #- { name: Testing buildSrc, run: "./gradlew :buildSrc:test" }
     - { name: Building classes, run: ./gradlew  --stacktrace --parallel compileTestKotlinJvm }
     - { name: Testing JVM, run: "./gradlew --stacktrace --parallel jvmTest", env: { EGL_LOG_LEVEL: debug, LIBGL_DEBUG: verbose, LIBGL_ALWAYS_SOFTWARE: true, MESA_DEBUG: true } }
     - { name: Archive Test Results, if: failure(), uses: actions/upload-artifact@v3, with: { name: screenshot-test-results-linux, retention-days: 21, path: "**/build/reports", if-no-files-found: ignore } }
     - { name: Check sandbox compiles, run: "./gradlew :korge-sandbox:jvmJar" }
-    - { name: Publish to maven local, run: ./gradlew publishJvmLocal }
+    - { name: Publish to maven local, run: ./gradlew --parallel publishJvmLocal }
     - { name: e2e test, working-directory: e2e/e2e-test, run: ./gradlew checkReferencesJvm --stacktrace }
     - { name: Archive E2E Test Results, if: failure(), uses: actions/upload-artifact@v3, with: { name: e2e-test-results-linux-jvm, retention-days: 21, path: "**/e2e/e2e-test/build/screenshots", if-no-files-found: ignore } }
     - { name: e2e multi test and hotreload, working-directory: e2e/e2e-test-multi, run: "./gradlew --watch-fs --warn --configuration-cache --configuration-cache-problems=warn compileKotlinJvm" }
@@ -120,8 +118,7 @@ jobs:
     steps:
       - { uses: actions/checkout@v3 }
       - { name: Set up JDK, uses: actions/setup-java@v3, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
-      - { name: Gradle cache, uses: ./.github/actions/gradle-cache, with: { subplatform: "jvm-macos" } }
-      - { name: Grant execute permission for gradlew, run: chmod +x gradlew }
+      - { name: Prepare Gradle, uses: gradle/gradle-build-action@ef76a971e2fa3f867b617efd72f2fbd72cf6f8bc } # v2.8.0
       - { name: Start gradle, run: ./gradlew }
       - { name: Testing JVM on MacosX64, run: ./gradlew jvmTest }
       - { name: Archive Test Results, if: failure(), uses: actions/upload-artifact@v3, with: { name: screenshot-test-results-macos, retention-days: 21, path: "**/build/reports", if-no-files-found: ignore } }
@@ -147,8 +144,8 @@ jobs:
       - { name: unzip, shell: cmd, run: "unzip opengl32-x64.zip" }
       - { name: unzip to korge, shell: cmd, run: "unzip opengl32-x64.zip -d korge" }
       - { name: Set up JDK, uses: actions/setup-java@v3, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
-      - { name: Gradle cache, uses: ./.github/actions/gradle-cache, with: { subplatform: "jvm-windows" } }
-      - { name: Testing JVM on windows, shell: cmd, run: "CALL gradlew.bat jvmTest", env: { EGL_LOG_LEVEL: debug, LIBGL_DEBUG: verbose, LIBGL_ALWAYS_SOFTWARE: true, MESA_DEBUG: true } }
+      - { name: Prepare Gradle, uses: gradle/gradle-build-action@ef76a971e2fa3f867b617efd72f2fbd72cf6f8bc } # v2.8.0
+      - { name: Testing JVM on windows, shell: cmd, run: "CALL gradlew.bat --parallel jvmTest", env: { EGL_LOG_LEVEL: debug, LIBGL_DEBUG: verbose, LIBGL_ALWAYS_SOFTWARE: true, MESA_DEBUG: true } }
       - { name: Archive Test Results, if: failure(), uses: actions/upload-artifact@v3, with: { name: screenshot-test-results-windows, retention-days: 21, path: "**/build/reports", if-no-files-found: ignore } }
 
   test-js:
@@ -164,30 +161,27 @@ jobs:
       - { uses: actions/checkout@v3 }
       - { name: Set up JDK, uses: actions/setup-java@v3, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
       - { name: Install freeglut3 & openal, run: sudo apt-get update && sudo apt-get -y install freeglut3-dev libopenal-dev }
-      - { name: Gradle cache, uses: ./.github/actions/gradle-cache, with: { subplatform: "js-linux" } }
-      - { name: Grant execute permission for gradlew, run: chmod +x gradlew }
-      - { name: Start gradle, run: ./gradlew }
-      - { name: Testing NodeJS, run: ./gradlew jsNodeTest }
-      - { name: Testing Browser, run: ./gradlew jsBrowserTest }
+      - name: Build with Gradle
+        uses: gradle/gradle-build-action@ef76a971e2fa3f867b617efd72f2fbd72cf6f8bc # v2.8.0
+        with:
+          arguments: "--parallel jsNodeTest jsBrowserTest"
 
   test-wasm:
-   needs: changes
-   if: ${{ needs.changes.outputs.testWasm == 'true' }}
-   timeout-minutes: 240
-   runs-on: ubuntu-latest
-   env:
-     DISABLE_KOTLIN_NATIVE: true
-     DISABLE_ANDROID: true
-     DISABLE_SANDBOX: true
-   steps:
-     - { uses: actions/checkout@v3 }
-     - { name: Set up JDK, uses: actions/setup-java@v3, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
-     - { name: Gradle cache, uses: ./.github/actions/gradle-cache, with: { subplatform: "wasm-linux" } }
-     - { name: Grant execute permission for gradlew, run: chmod +x gradlew }
-     - { name: Start gradle, run: ./gradlew }
-     # This hangs in korge-core, so for now just compiling without running tests:
-     #- { name: Testing Browser, run: ./gradlew wasmJsTest }
-     - { name: Testing Browser, run: ./gradlew compileKotlinWasmJs }
+    needs: changes
+    if: ${{ needs.changes.outputs.testWasm == 'true' }}
+    timeout-minutes: 240
+    runs-on: ubuntu-latest
+    env:
+      DISABLE_KOTLIN_NATIVE: true
+      DISABLE_ANDROID: true
+      DISABLE_SANDBOX: true
+    steps:
+      - { uses: actions/checkout@v3 }
+      - { name: Set up JDK, uses: actions/setup-java@v3, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
+      - name: Build with Gradle
+        uses: gradle/gradle-build-action@ef76a971e2fa3f867b617efd72f2fbd72cf6f8bc # v2.8.0
+        with:
+          arguments: "--parallel compileTestKotlinWasmJs"
 
   test-android:
     needs: changes
@@ -200,10 +194,8 @@ jobs:
       DISABLE_SANDBOX: true
     steps:
       - { uses: actions/checkout@v3 }
-      - { name: Gradle cache, uses: ./.github/actions/gradle-cache, with: { subplatform: "android-linux" } }
       - { name: Set up JDK, uses: actions/setup-java@v3, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
-      - { name: Grant execute permission for gradlew, run: chmod +x gradlew }
-      - { name: Start gradle, run: ./gradlew }
+      - { name: Prepare Gradle, uses: gradle/gradle-build-action@ef76a971e2fa3f867b617efd72f2fbd72cf6f8bc } # v2.8.0
       - name: Run Android Connected Tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
@@ -221,8 +213,7 @@ jobs:
     steps:
       - { uses: actions/checkout@v3 }
       - { name: Set up JDK, uses: actions/setup-java@v3, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
-      - { name: Gradle cache, uses: ./.github/actions/gradle-cache, with: { subplatform: "ios-macos" } }
-      - { name: Grant execute permission for gradlew, run: chmod +x gradlew }
+      - { name: Prepare Gradle, uses: gradle/gradle-build-action@ef76a971e2fa3f867b617efd72f2fbd72cf6f8bc } # v2.8.0
       - { name: Start gradle, run: ./gradlew }
       - { name: Run ios simulator tests, run: ./gradlew iosX64Test }
       #- { name: Check compilation of tvOS targets, run: ./gradlew publishTvosArm64PublicationToMavenLocal }
