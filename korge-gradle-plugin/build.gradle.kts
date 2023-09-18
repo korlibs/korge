@@ -1,9 +1,11 @@
+import korlibs.korge.gradle.targets.android.*
+
 plugins {
-    id "java"
-    id "java-gradle-plugin"
-    id "maven-publish"
-    id "com.gradle.plugin-publish"
-    id "org.jetbrains.kotlin.jvm"
+    id("java")
+    id("java-gradle-plugin")
+    id("maven-publish")
+    id("com.gradle.plugin-publish")
+    id("org.jetbrains.kotlin.jvm")
 }
 
 description = "Multiplatform Game Engine written in Kotlin"
@@ -47,31 +49,29 @@ afterEvaluate {
 }
 */
 
-def jversion = korlibs.korge.gradle.targets.android.AndroidKt.GRADLE_JAVA_VERSION_STR
+val jversion = GRADLE_JAVA_VERSION_STR
 
 java {
-    sourceCompatibility = jversion
-    targetCompatibility = jversion
+    setSourceCompatibility(jversion)
+    setTargetCompatibility(jversion)
 }
 
-tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile::class).all {
     kotlinOptions {
         jvmTarget = jversion
-        sourceCompatibility = jversion
         apiVersion = "1.7"
         languageVersion = "1.7"
-		//jvmTarget = "1.6"
     }
 }
 
-kotlin.sourceSets.main.each {
-    it.kotlin.srcDirs(new File(buildDir, "srcgen"), new File(buildDir, "srcgen2"))
+kotlin.sourceSets.main.configure {
+    kotlin.srcDirs(File(buildDir, "srcgen"), File(buildDir, "srcgen2"))
 }
-kotlin.sourceSets.test.each {
-    it.kotlin.srcDirs(new File(buildDir, "testgen2"))
+kotlin.sourceSets.test.configure {
+    kotlin.srcDirs(File(buildDir, "testgen2"))
 }
-java.sourceSets.main.each {
-    it.resources.srcDirs(new File(buildDir, "srcgen2res"))
+java.sourceSets.main.configure {
+    resources.srcDirs(File(buildDir, "srcgen2res"))
 }
 
 korlibs.NativeTools.groovyConfigurePublishing(project, false)
@@ -103,13 +103,13 @@ dependencies {
     //implementation(project(":korge-reload-agent"))
 }
 
-tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile::class).configureEach {
     kotlinOptions.suppressWarnings = true
 }
 
 //def publishAllPublications = false
 
-def publishJvmPublicationToMavenLocal = tasks.register("publishJvmPublicationToMavenLocal", Task) {
+val publishJvmPublicationToMavenLocal = tasks.register("publishJvmPublicationToMavenLocal", Task::class) {
     group = "publishing"
     //dependsOn(publishAllPublications ? "publishToMavenLocal" : "publishPluginMavenPublicationToMavenLocal")
     dependsOn("publishPluginMavenPublicationToMavenLocal")
@@ -122,7 +122,7 @@ afterEvaluate {
     //def publishTaskOrNull = tasks.findByName(publishAllPublications ? "publishAllPublicationsToMavenRepository" : "publishPluginMavenPublicationToMavenRepository")
 
     if (tasks.findByName("publishKorgePluginMarkerMavenPublicationToMavenRepository") != null) {
-        def publishJvmPublicationToMavenRepository = tasks.register("publishJvmPublicationToMavenRepository", Task) {
+        val publishJvmPublicationToMavenRepository = tasks.register("publishJvmPublicationToMavenRepository", Task::class) {
             group = "publishing"
             dependsOn("publishPluginMavenPublicationToMavenRepository")
             dependsOn("publishKorgePluginMarkerMavenPublicationToMavenRepository")
@@ -130,6 +130,6 @@ afterEvaluate {
     }
 }
 
-def jvmTest = tasks.register("jvmTest", Task) {
+val jvmTest = tasks.register("jvmTest", Task::class) {
     dependsOn("test")
 }
