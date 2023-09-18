@@ -1,7 +1,13 @@
+@file:Suppress("PackageDirectoryMismatch")
+
 package korlibs.memory.unit
 
 import kotlin.math.pow
 import kotlin.math.roundToInt
+
+fun test() {
+
+}
 
 inline class ByteUnits private constructor(val bytes: Double) {
     val bytesLong: Long get() = bytes.toLong()

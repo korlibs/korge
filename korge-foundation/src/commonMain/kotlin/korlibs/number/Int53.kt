@@ -1,7 +1,6 @@
 package korlibs.number
 
 import korlibs.memory.*
-import korlibs.memory.annotations.KmemExperimental
 import kotlin.math.ceil
 import kotlin.math.floor
 
@@ -9,7 +8,7 @@ import kotlin.math.floor
  * Represents and integral value of 52-bits + sign using a Double as internal representation.
  * Trying to avoid allocations on the JS target by not using [Long] when 53 bits is enough.
  */
-@KmemExperimental
+@Deprecated("")
 public inline class Int53(public val value: Double) : Comparable<Int53> {
     public companion object {
         // Double.fromBits(0x000FFFFFFFFFFFFFL)
@@ -102,15 +101,9 @@ public inline class Int53(public val value: Double) : Comparable<Int53> {
     override fun toString(): String = value.toLong().toString().removeSuffix(".0")
 }
 
-@KmemExperimental
 public inline fun String.toInt53(): Int53 = this.toDouble().toInt53()
-@KmemExperimental
 public inline fun String.toInt53OrNull(): Int53? = this.toDoubleOrNull()?.toInt53()
-@KmemExperimental
 public inline fun Int.toInt53(): Int53 = Int53.fromDoubleClamped(this.toDouble())
-@KmemExperimental
 public inline fun Double.toInt53(): Int53 = Int53.fromDoubleClamped(this)
-@KmemExperimental
 public inline fun Long.toInt53(): Int53 = Int53.fromDoubleClamped(this.toDouble())
-@KmemExperimental
 public inline fun Number.toInt53(): Int53 = Int53.fromDoubleClamped(this.toDouble())

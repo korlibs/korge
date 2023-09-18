@@ -1,10 +1,6 @@
 package korlibs.memory.dyn
 
-import com.sun.jna.FromNativeContext
-import com.sun.jna.Memory
-import com.sun.jna.NativeMapped
-import com.sun.jna.Pointer
-import korlibs.memory.annotations.*
+import com.sun.jna.*
 import kotlin.math.*
 import kotlin.reflect.*
 
@@ -62,12 +58,11 @@ open class KStructure(var pointer: KPointer?) : NativeMapped {
 }
 
 
-@OptIn(KmemExperimental::class)
 open class KMemLayoutBuilder {
-    @KmemExperimental
     var offset = 0
-    @KmemExperimental
+        internal set
     var maxAlign = 4
+        internal set
 
     private fun align(size: Int): KMemLayoutBuilder {
         maxAlign = max(maxAlign, size)
