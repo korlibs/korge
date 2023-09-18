@@ -9,6 +9,7 @@ import korlibs.io.util.*
 import korlibs.math.geom.*
 import korlibs.math.geom.slice.*
 import korlibs.math.geom.vector.*
+import korlibs.platform.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

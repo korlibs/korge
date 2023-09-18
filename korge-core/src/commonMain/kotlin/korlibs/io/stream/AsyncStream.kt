@@ -6,7 +6,7 @@ import korlibs.datastructure.ByteArrayDeque
 import korlibs.datastructure.Extra
 import korlibs.datastructure.iterators.fastForEach
 import korlibs.memory.ByteArrayBuilder
-import korlibs.memory.Endian
+import korlibs.platform.Endian
 import korlibs.memory.arraycopy
 import korlibs.memory.clamp
 import korlibs.memory.nextAlignedTo

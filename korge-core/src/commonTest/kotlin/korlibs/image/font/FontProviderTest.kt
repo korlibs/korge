@@ -1,8 +1,6 @@
 package korlibs.image.font
 
-import korlibs.memory.Os
-import korlibs.memory.Platform
-import korlibs.memory.Runtime
+import korlibs.platform.*
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.test.Test
 import kotlin.test.assertEquals

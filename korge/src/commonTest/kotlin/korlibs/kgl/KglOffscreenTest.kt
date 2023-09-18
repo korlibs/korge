@@ -1,6 +1,7 @@
 package korlibs.kgl
 
 import korlibs.memory.*
+import korlibs.platform.*
 import kotlin.test.*
 
 class KglOffScreenTest {

@@ -11,6 +11,7 @@ import korlibs.io.lang.*
 import korlibs.math.geom.*
 import com.sun.jna.Native
 import com.sun.jna.platform.unix.X11
+import korlibs.platform.*
 import java.awt.*
 import java.lang.reflect.Method
 

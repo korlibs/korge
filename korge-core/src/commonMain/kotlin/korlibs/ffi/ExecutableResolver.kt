@@ -2,6 +2,7 @@ package korlibs.ffi
 
 import korlibs.io.file.sync.*
 import korlibs.memory.*
+import korlibs.platform.*
 
 open class ExecutableResolver(val fs: SyncIO) {
     @OptIn(SyncIOAPI::class)

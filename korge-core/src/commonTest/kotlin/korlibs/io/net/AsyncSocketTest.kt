@@ -5,6 +5,7 @@ import korlibs.io.async.launchImmediately
 import korlibs.io.async.suspendTestNoBrowser
 import korlibs.io.stream.readBytesExact
 import korlibs.io.stream.writeBytes
+import korlibs.platform.*
 import kotlinx.coroutines.CompletableDeferred
 import kotlin.test.Test
 import kotlin.test.assertEquals

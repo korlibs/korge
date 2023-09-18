@@ -1,6 +1,7 @@
 package korlibs.memory.dyn
 
 import korlibs.memory.*
+import korlibs.platform.*
 import kotlin.test.*
 
 class DynamicLibraryJvmTest {

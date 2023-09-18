@@ -3,6 +3,7 @@ package korlibs.io.file.registry
 import korlibs.memory.*
 import korlibs.io.util.*
 import com.sun.jna.platform.win32.*
+import korlibs.platform.*
 
 actual object WindowsRegistry : WindowsRegistryBase() {
     override val isSupported: Boolean get() = Platform.isWindows

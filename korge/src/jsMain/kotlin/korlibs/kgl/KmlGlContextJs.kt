@@ -2,6 +2,7 @@ package korlibs.kgl
 
 import korlibs.memory.*
 import korlibs.graphics.gl.*
+import korlibs.platform.*
 import kotlinx.browser.*
 import org.w3c.dom.*
 

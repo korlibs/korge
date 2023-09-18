@@ -22,6 +22,7 @@ import korlibs.korge.view.*
 import korlibs.logger.*
 import korlibs.math.geom.*
 import korlibs.memory.*
+import korlibs.platform.*
 import korlibs.render.*
 import korlibs.time.*
 import kotlinx.coroutines.*

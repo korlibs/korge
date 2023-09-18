@@ -1,7 +1,7 @@
 package korlibs.memory
 
-import korlibs.memory.internal.*
 import korlibs.memory.wasm.*
+import korlibs.platform.*
 import org.khronos.webgl.*
 
 actual class Buffer(val dataView: DataView) {

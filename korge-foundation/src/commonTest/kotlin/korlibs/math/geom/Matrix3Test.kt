@@ -2,6 +2,7 @@ package korlibs.math.geom
 
 import korlibs.datastructure.*
 import korlibs.memory.*
+import korlibs.platform.*
 import kotlin.test.*
 
 class Matrix3Test {

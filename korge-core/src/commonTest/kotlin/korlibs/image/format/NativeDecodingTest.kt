@@ -6,6 +6,7 @@ import korlibs.image.bitmap.*
 import korlibs.image.color.*
 import korlibs.io.async.*
 import korlibs.io.file.std.*
+import korlibs.platform.*
 import kotlin.test.*
 
 class NativeDecodingTest {

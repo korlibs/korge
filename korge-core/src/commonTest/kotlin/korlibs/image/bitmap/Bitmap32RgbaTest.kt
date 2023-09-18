@@ -1,15 +1,11 @@
 package korlibs.image.bitmap
 
-import korlibs.memory.*
-import korlibs.image.color.Colors
-import korlibs.image.format.ImageDecodingProps
-import korlibs.image.format.PNG
-import korlibs.image.format.readBitmapNoNative
-import korlibs.image.format.readBitmap
-import korlibs.io.async.suspendTestNoBrowser
-import korlibs.io.file.std.resourcesVfs
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import korlibs.image.color.*
+import korlibs.image.format.*
+import korlibs.io.async.*
+import korlibs.io.file.std.*
+import korlibs.platform.*
+import kotlin.test.*
 
 class Bitmap32RgbaTest {
     @Test

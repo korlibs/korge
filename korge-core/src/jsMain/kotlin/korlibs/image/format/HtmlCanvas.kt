@@ -2,6 +2,7 @@ package korlibs.image.format
 
 import korlibs.memory.*
 import korlibs.io.util.*
+import korlibs.platform.*
 import org.khronos.webgl.*
 import org.w3c.dom.*
 import org.w3c.files.*

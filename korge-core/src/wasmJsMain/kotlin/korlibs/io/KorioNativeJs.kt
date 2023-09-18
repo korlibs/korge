@@ -1,12 +1,11 @@
 package korlibs.io
 
-import korlibs.io.runtime.browser.JsRuntimeBrowser
+import korlibs.io.runtime.browser.*
 import korlibs.io.wasm.*
-import korlibs.memory.*
+import korlibs.platform.*
 import org.w3c.dom.*
 import org.w3c.dom.events.*
 import org.w3c.performance.*
-import kotlinx.browser.*
 import kotlin.collections.set
 
 abstract external class GlobalScope : EventTarget, WindowOrWorkerGlobalScope, GlobalPerformance, JsAny {

@@ -17,6 +17,7 @@ import korlibs.korge.view.debug.*
 import korlibs.math.geom.*
 import korlibs.math.geom.bezier.*
 import korlibs.memory.*
+import korlibs.platform.*
 import korlibs.render.*
 import korlibs.time.*
 import kotlin.math.*

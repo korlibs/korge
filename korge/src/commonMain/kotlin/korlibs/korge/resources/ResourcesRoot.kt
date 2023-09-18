@@ -5,6 +5,7 @@ import korlibs.inject.*
 import korlibs.io.file.*
 import korlibs.io.file.std.*
 import korlibs.io.resources.*
+import korlibs.platform.*
 
 //@Singleton
 class ResourcesRoot : InjectorDependency {

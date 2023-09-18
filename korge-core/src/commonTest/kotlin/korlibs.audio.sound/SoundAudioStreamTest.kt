@@ -8,6 +8,7 @@ import korlibs.io.file.std.resourcesVfs
 import korlibs.io.lang.currentThreadId
 import doIOTest
 import korlibs.memory.*
+import korlibs.platform.*
 import kotlinx.coroutines.CompletableDeferred
 import kotlin.test.Test
 import kotlin.test.assertEquals

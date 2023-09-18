@@ -10,6 +10,7 @@ import korlibs.io.lang.*
 import korlibs.io.stream.readString
 import korlibs.io.stream.writeString
 import korlibs.io.util.UUID
+import korlibs.platform.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.take

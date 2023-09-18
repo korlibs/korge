@@ -5,6 +5,7 @@ import korlibs.korge.view.*
 import korlibs.io.util.*
 import korlibs.math.interpolation.*
 import korlibs.memory.*
+import korlibs.platform.*
 import kotlin.test.*
 
 class NewAnimatorTest {

@@ -1,6 +1,7 @@
 package korlibs.math.geom
 
 import korlibs.memory.*
+import korlibs.platform.*
 import kotlin.test.*
 
 class MarginTest {

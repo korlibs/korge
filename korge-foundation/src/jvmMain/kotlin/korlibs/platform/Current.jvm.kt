@@ -1,8 +1,5 @@
-package korlibs.memory.internal
+package korlibs.platform
 
-import korlibs.memory.Arch
-import korlibs.memory.Os
-import korlibs.memory.Runtime
 import java.lang.management.ManagementFactory
 import java.nio.ByteOrder
 

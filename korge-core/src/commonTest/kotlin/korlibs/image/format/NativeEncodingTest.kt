@@ -1,11 +1,11 @@
 package korlibs.image.format
 
-import korlibs.memory.*
 import korlibs.image.bitmap.*
 import korlibs.image.color.*
 import korlibs.io.async.*
 import korlibs.io.stream.*
 import korlibs.math.geom.*
+import korlibs.platform.*
 import kotlin.test.*
 
 class NativeEncodingTest {

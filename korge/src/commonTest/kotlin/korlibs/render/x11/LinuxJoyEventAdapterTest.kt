@@ -5,6 +5,7 @@ import korlibs.event.*
 import korlibs.io.async.*
 import korlibs.io.file.sync.*
 import korlibs.io.lang.*
+import korlibs.platform.*
 import kotlin.test.*
 
 class LinuxJoyEventAdapterTest {

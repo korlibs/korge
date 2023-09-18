@@ -1,6 +1,5 @@
 package korlibs.io.compression
 
-import korlibs.memory.*
 import korlibs.io.compression.deflate.Deflate
 import korlibs.io.compression.deflate.DeflatePortable
 import korlibs.io.compression.deflate.GZIP
@@ -13,6 +12,7 @@ import korlibs.io.util.checksum.compute
 import korlibs.encoding.fromBase64
 import korlibs.encoding.fromBase64IgnoreSpaces
 import korlibs.encoding.unhexIgnoreSpaces
+import korlibs.platform.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue

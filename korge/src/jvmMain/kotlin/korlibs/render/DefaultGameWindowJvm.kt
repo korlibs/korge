@@ -10,6 +10,7 @@ import korlibs.render.osx.initializeMacOnce
 import korlibs.render.osx.isOSXMainThread
 import korlibs.render.x11.X11GameWindow
 import korlibs.image.color.RGBA
+import korlibs.platform.*
 import kotlinx.coroutines.runBlocking
 
 actual fun CreateDefaultGameWindow(config: GameWindowCreationConfig): GameWindow {

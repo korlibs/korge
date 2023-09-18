@@ -1,9 +1,8 @@
 package korlibs.io.file.std
 
-import korlibs.io.file.PathInfo
-import korlibs.io.file.parent
+import korlibs.io.file.*
 import korlibs.io.lang.*
-import korlibs.memory.*
+import korlibs.platform.*
 
 /**
  * Contain standard paths to different parts of the operating system.

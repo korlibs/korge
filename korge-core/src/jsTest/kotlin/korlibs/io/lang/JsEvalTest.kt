@@ -2,6 +2,7 @@ package korlibs.io.lang
 
 import korlibs.memory.*
 import korlibs.io.*
+import korlibs.platform.*
 import kotlin.test.*
 
 class JsEvalTest {

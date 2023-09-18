@@ -1,6 +1,4 @@
-package korlibs.memory
-
-import korlibs.memory.internal.currentArch
+package korlibs.platform
 
 enum class Arch(val bits: Int, val isArm: Boolean = false, val isX86OrX64: Boolean = false, val isMips: Boolean = false, val isWasm: Boolean = false, val isPowerPC: Boolean = false) {
     UNKNOWN(-1),

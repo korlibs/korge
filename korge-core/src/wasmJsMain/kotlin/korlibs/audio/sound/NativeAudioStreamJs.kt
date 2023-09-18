@@ -1,17 +1,14 @@
 package korlibs.audio.sound
 
-import korlibs.datastructure.FloatArrayDeque
-import korlibs.time.milliseconds
-import korlibs.time.seconds
-import korlibs.memory.*
-import korlibs.audio.internal.SampleConvert
-import korlibs.audio.internal.write
-import korlibs.io.async.delay
-import korlibs.io.lang.Cancellable
-import korlibs.io.lang.cancel
-import kotlinx.browser.document
+import korlibs.audio.internal.*
+import korlibs.datastructure.*
+import korlibs.io.async.*
+import korlibs.io.lang.*
+import korlibs.platform.*
+import korlibs.time.*
+import kotlinx.browser.*
 import org.khronos.webgl.*
-import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.*
 
 actual val nativeSoundProvider: NativeSoundProvider by lazy {
     if (Platform.isJsBrowser) {

@@ -1,6 +1,6 @@
 package korlibs.korge
 
-import korlibs.memory.Platform
+import korlibs.platform.Platform
 import korlibs.io.dynamic.*
 import java.util.*
 import kotlin.system.exitProcess

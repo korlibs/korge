@@ -10,6 +10,7 @@ import korlibs.io.async.*
 import korlibs.io.file.*
 import korlibs.math.geom.*
 import korlibs.memory.*
+import korlibs.platform.*
 import kotlinx.browser.*
 import kotlinx.coroutines.*
 import org.w3c.dom.*

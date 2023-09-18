@@ -1,7 +1,7 @@
 package korlibs.image.format
 
 import korlibs.logger.Logger
-import korlibs.memory.Endian
+import korlibs.platform.Endian
 import korlibs.memory.readS32
 import korlibs.memory.readU16
 import korlibs.io.async.runBlockingNoSuspensions

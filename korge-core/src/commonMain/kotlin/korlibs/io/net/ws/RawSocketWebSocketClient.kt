@@ -20,6 +20,7 @@ import korlibs.io.stream.writeBytes
 import korlibs.io.util.buildList
 import korlibs.io.util.join
 import korlibs.encoding.toBase64
+import korlibs.platform.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlin.coroutines.CoroutineContext

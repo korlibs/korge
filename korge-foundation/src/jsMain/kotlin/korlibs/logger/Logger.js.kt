@@ -1,6 +1,6 @@
 package korlibs.logger
 
-import korlibs.memory.internal.*
+import korlibs.platform.*
 import kotlinx.browser.document
 
 actual object Console : BaseConsole() {

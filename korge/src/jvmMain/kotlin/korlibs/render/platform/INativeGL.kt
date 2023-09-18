@@ -6,7 +6,7 @@ import com.sun.jna.*
 import korlibs.io.lang.*
 import korlibs.io.time.*
 import korlibs.logger.*
-import korlibs.memory.Platform
+import korlibs.platform.Platform
 import korlibs.memory.dyn.*
 import korlibs.render.win32.*
 import java.io.*

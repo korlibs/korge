@@ -1,10 +1,10 @@
 package korlibs.audio.sound
 
-import korlibs.io.async.suspendTest
-import korlibs.io.file.std.resourcesVfs
 import doIOTest
 import korlibs.audio.format.*
-import korlibs.memory.*
+import korlibs.io.async.*
+import korlibs.io.file.std.*
+import korlibs.platform.*
 import kotlin.test.*
 
 class AllTargetsSupportMp3 {

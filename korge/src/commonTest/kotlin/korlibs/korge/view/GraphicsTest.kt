@@ -9,7 +9,7 @@ import korlibs.korge.render.*
 import korlibs.math.geom.*
 import korlibs.math.geom.bezier.*
 import korlibs.math.geom.vector.*
-import korlibs.memory.*
+import korlibs.platform.*
 import kotlin.test.*
 
 class GraphicsTest {

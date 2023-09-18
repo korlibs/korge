@@ -1,6 +1,7 @@
 package korlibs.graphics.shader.gl
 
 import korlibs.memory.*
+import korlibs.platform.*
 
 inline class GLVariant(val data: Int) {
     val isES: Boolean get() = data.extractBool(0)

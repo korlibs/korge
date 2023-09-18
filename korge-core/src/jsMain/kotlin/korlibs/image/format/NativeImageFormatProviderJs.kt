@@ -13,6 +13,7 @@ import korlibs.io.file.std.*
 import korlibs.math.geom.*
 import korlibs.math.geom.vector.*
 import korlibs.memory.*
+import korlibs.platform.*
 import korlibs.time.*
 import kotlinx.browser.*
 import kotlinx.coroutines.*

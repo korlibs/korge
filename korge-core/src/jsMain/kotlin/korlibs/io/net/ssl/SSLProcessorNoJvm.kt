@@ -1,6 +1,5 @@
 package korlibs.io.net.ssl
 
-import korlibs.memory.*
-import korlibs.io.util.*
+import korlibs.platform.*
 
 actual fun DefaultSSLProcessor(): SSLProcessor = TODO("DefaultSSLProcessor not implemented in ${Platform.rawOsName}")

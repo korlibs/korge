@@ -5,6 +5,7 @@ import korlibs.image.bitmap.*
 import korlibs.io.file.*
 import korlibs.io.file.std.*
 import korlibs.memory.*
+import korlibs.platform.*
 import java.awt.*
 import java.awt.image.*
 import java.io.*

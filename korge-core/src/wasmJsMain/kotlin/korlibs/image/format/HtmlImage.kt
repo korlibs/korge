@@ -4,7 +4,6 @@ import korlibs.image.bitmap.Bitmap
 import korlibs.image.bitmap.Bitmap32
 import korlibs.image.color.RgbaArray
 import korlibs.io.util.*
-import korlibs.memory.internal.*
 import org.khronos.webgl.*
 import org.w3c.dom.CanvasRenderingContext2D
 

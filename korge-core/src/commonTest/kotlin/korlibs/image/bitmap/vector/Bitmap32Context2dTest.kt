@@ -13,6 +13,7 @@ import korlibs.math.geom.*
 import korlibs.math.geom.vector.*
 import korlibs.encoding.*
 import korlibs.image.vector.*
+import korlibs.platform.*
 import kotlin.test.*
 
 class Bitmap32Context2dTest {
