@@ -1,3 +1,5 @@
+import korlibs.korge.gradle.targets.android.*
+
 plugins {
     //id "kotlin" version "1.6.21"
     id("kotlin")
@@ -19,14 +21,19 @@ tasks.jar {
     }
 }
 
+val jversion = GRADLE_JAVA_VERSION_STR
+
+java {
+    setSourceCompatibility(jversion)
+    setTargetCompatibility(jversion)
+}
+
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile::class).all {
     kotlinOptions {
-        jvmTarget = "1.8"
-        //sourceCompatibility = "1.8"
+        jvmTarget = jversion
         apiVersion = "1.6"
         languageVersion = "1.6"
         suppressWarnings = true
-        //jvmTarget = "1.6"
     }
 }
 
