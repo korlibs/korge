@@ -1,28 +1,28 @@
 plugins {
     //id "kotlin" version "1.6.21"
-    id "kotlin"
+    id("kotlin")
     //id "org.jetbrains.kotlin.jvm"
-    id "maven-publish"
+    id("maven-publish")
 }
 
 description = "Multiplatform Game Engine written in Kotlin"
 group = "com.soywiz.korlibs.korge.reloadagent"
 
-jar {
+tasks.jar {
     manifest {
         attributes(
-            "Agent-Class": "korlibs.korge.reloadagent.KorgeReloadAgent",
-            "Premain-Class": "korlibs.korge.reloadagent.KorgeReloadAgent",
-            "Can-Redefine-Classes": true,
-            "Can-Retransform-Classes": true
+            "Agent-Class" to "korlibs.korge.reloadagent.KorgeReloadAgent",
+            "Premain-Class" to "korlibs.korge.reloadagent.KorgeReloadAgent",
+            "Can-Redefine-Classes" to true,
+            "Can-Retransform-Classes" to true
         )
     }
 }
 
-tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile::class).all {
     kotlinOptions {
         jvmTarget = "1.8"
-        sourceCompatibility = "1.8"
+        //sourceCompatibility = "1.8"
         apiVersion = "1.6"
         languageVersion = "1.6"
         suppressWarnings = true
@@ -32,23 +32,23 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
 
 publishing {
     publications {
-        maven(MavenPublication) {
-            groupId = group
-            artifactId = 'korge-reload-agent'
+        maybeCreate("maven", MavenPublication::class).apply {
+            groupId = group.toString()
+            artifactId = "korge-reload-agent"
             version = version
-            from components.kotlin
+            from(components["kotlin"])
         }
     }
 }
 
-def publishJvmPublicationToMavenLocal = tasks.register("publishJvmPublicationToMavenLocal", Task) {
+val publishJvmPublicationToMavenLocal = tasks.register("publishJvmPublicationToMavenLocal", Task::class) {
     group = "publishing"
     dependsOn("publishMavenPublicationToMavenLocal")
 }
 
 afterEvaluate {
     if (tasks.findByName("publishMavenPublicationToMavenRepository") != null) {
-        tasks.register("publishJvmPublicationToMavenRepository", Task) {
+        tasks.register("publishJvmPublicationToMavenRepository", Task::class) {
             group = "publishing"
             dependsOn("publishMavenPublicationToMavenRepository")
         }
