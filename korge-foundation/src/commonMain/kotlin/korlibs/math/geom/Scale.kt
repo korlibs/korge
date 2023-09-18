@@ -1,7 +1,6 @@
 package korlibs.math.geom
 
 import korlibs.math.annotations.*
-import korlibs.memory.pack.*
 
 //@KormaValueApi
 //inline class Scale internal constructor(internal val raw: Float2Pack) {

@@ -1,7 +1,5 @@
 package korlibs.math.geom
 
-import korlibs.memory.pack.*
-
 /** Represents an infinite [Ray] starting at [point] in the specified [direction] with an [angle] */
 //inline class Ray(val data: Float4Pack) {
 data class Ray

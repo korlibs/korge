@@ -8,7 +8,6 @@ import korlibs.math.isAlmostEquals
 import korlibs.math.isAlmostZero
 import korlibs.math.roundDecimalPlaces
 import korlibs.memory.*
-import korlibs.memory.pack.*
 import kotlin.math.*
 
 typealias Point = Vector2

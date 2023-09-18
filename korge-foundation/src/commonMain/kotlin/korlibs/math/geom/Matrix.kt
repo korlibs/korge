@@ -5,7 +5,6 @@ package korlibs.math.geom
 import korlibs.math.internal.*
 import korlibs.math.interpolation.*
 import korlibs.math.isAlmostEquals
-import korlibs.memory.pack.*
 import kotlin.math.*
 
 //@KormaValueApi
@@ -19,13 +18,14 @@ import kotlin.math.*
 //) {
 
 // a, b, c, d, tx and ty are BFloat21
-inline class Matrix(val data: BFloat6Pack) {
-    val a: Float get() = data.bf0
-    val b: Float get() = data.bf1
-    val c: Float get() = data.bf2
-    val d: Float get() = data.bf3
-    val tx: Float get() = data.bf4
-    val ty: Float get() = data.bf5
+data class Matrix(
+    val a: Float,
+    val b: Float,
+    val c: Float,
+    val d: Float,
+    val tx: Float = 0f,
+    val ty: Float = 0f,
+) {
     //private val twobits: Int get() = data.twobits
 
     @Deprecated("", ReplaceWith("this")) val immutable: Matrix get() = this
@@ -34,15 +34,10 @@ inline class Matrix(val data: BFloat6Pack) {
     val mutableOrNull: MMatrix? get() = if (isNIL) null else MMatrix(a, b, c, d, tx, ty)
 
     //constructor() : this(1f, 0f, 0f, 1f, 0f, 0f)
-    constructor(a: Float, b: Float, c: Float, d: Float, tx: Float = 0f, ty: Float = 0f) :
-        this(bfloat6PackOf(a, b, c, d, tx, ty))
     constructor(a: Double, b: Double, c: Double, d: Double, tx: Double, ty: Double) :
         this(a.toFloat(), b.toFloat(), c.toFloat(), d.toFloat(), tx.toFloat(), ty.toFloat())
     constructor(a: Int, b: Int, c: Int, d: Int, tx: Int, ty: Int) :
         this(a.toFloat(), b.toFloat(), c.toFloat(), d.toFloat(), tx.toFloat(), ty.toFloat())
-
-    fun copy(a: Float = this.a, b: Float = this.b, c: Float = this.c, d: Float = this.d, tx: Float = this.tx, ty: Float = this.ty): Matrix =
-        Matrix(a, b, c, d, tx, ty)
 
     operator fun times(other: Matrix): Matrix = Matrix.multiply(this, other)
     operator fun times(scale: Float): Matrix = Matrix(a * scale, b * scale, c * scale, d * scale, tx * scale, ty * scale)
@@ -204,8 +199,8 @@ inline class Matrix(val data: BFloat6Pack) {
     fun preconcated(other: Matrix): Matrix = this * other
 
     companion object {
-        val IDENTITY = Matrix(bfloat6PackOf(1f, 0f, 0f, 1f, 0f, 0f))
-        val NIL = Matrix(bfloat6PackOf(Float.NaN, Float.NaN, Float.NaN, Float.NaN, Float.NaN, Float.NaN))
+        val IDENTITY = Matrix(1f, 0f, 0f, 1f, 0f, 0f)
+        val NIL = Matrix(Float.NaN, Float.NaN, Float.NaN, Float.NaN, Float.NaN, Float.NaN)
         val NaN = NIL
 
         //@Deprecated("", ReplaceWith("korlibs.math.geom.Matrix.IDENTITY", "korlibs.math.geom.Matrix"))
@@ -308,30 +303,16 @@ inline class Matrix(val data: BFloat6Pack) {
 }
 
 //@KormaValueApi
-inline class MatrixTransform(
-    val raw: BFloat3Half4Pack
-    //val x: Float = 0f, val y: Float = 0f,
-    //val scaleX: Float = 1f, val scaleY: Float = 1f,
-    //val skewX: Angle = Angle.ZERO, val skewY: Angle = Angle.ZERO,
-    //val rotation: Angle = Angle.ZERO
+data class MatrixTransform(
+    val x: Float = 0f, val y: Float = 0f,
+    val scaleX: Float = 1f, val scaleY: Float = 1f,
+    val skewX: Angle = Angle.ZERO, val skewY: Angle = Angle.ZERO,
+    val rotation: Angle = Angle.ZERO
 ) {
-    val x: Float get() = raw.b0
-    val y: Float get() = raw.b1
-    val rotation: Angle get() = Angle.fromRatio(raw.b2)
-    val scaleX: Float get() = raw.hf0
-    val scaleY: Float get() = raw.hf1
-    val skewX: Angle get() = Angle.fromRatio(raw.hf2)
-    val skewY: Angle get() = Angle.fromRatio(raw.hf3)
     val scale: Scale get() = Scale(scaleX, scaleY)
 
     override fun toString(): String = "MatrixTransform(x=${x.niceStr}, y=${y.niceStr}, scaleX=${scaleX}, scaleY=${scaleY}, skewX=${skewX}, skewY=${skewY}, rotation=${rotation})"
 
-    constructor(
-        x: Float = 0f, y: Float = 0f,
-        scaleX: Float = 1f, scaleY: Float = 1f,
-        skewX: Angle = Angle.ZERO, skewY: Angle = Angle.ZERO,
-        rotation: Angle = Angle.ZERO
-    ) : this(bfloat3Half4PackOf(x, y, rotation.ratioF, scaleX, scaleY, skewX.ratioF, skewY.ratioF))
     constructor() : this(0f, 0f, 1f, 1f, Angle.ZERO, Angle.ZERO, Angle.ZERO)
     constructor(
         x: Double, y: Double,
