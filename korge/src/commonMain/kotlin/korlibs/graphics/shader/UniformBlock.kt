@@ -6,8 +6,6 @@ import korlibs.io.lang.*
 import korlibs.math.geom.*
 import korlibs.math.nextMultipleOf
 import korlibs.memory.*
-import korlibs.memory.annotations.*
-import korlibs.memory.dyn.*
 import kotlin.reflect.*
 
 class UniformBlocksBuffersRef(
@@ -39,11 +37,8 @@ class TypedUniform<T>(name: String, val voffset: Int, var vindex: Int, val block
     override fun toString(): String = "TypedUniform(name='$name', offset=$voffset, type=$type)"
 }
 
-@OptIn(KmemExperimental::class)
 private class KMemLayoutBuilder {
-    @KmemExperimental
     var offset = 0
-    @KmemExperimental
     var maxAlign = 4
     private fun align(size: Int): KMemLayoutBuilder {
         maxAlign = kotlin.math.max(maxAlign, size)
