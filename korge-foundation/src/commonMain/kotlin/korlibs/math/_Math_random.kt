@@ -1,3 +1,5 @@
+@file:Suppress("PackageDirectoryMismatch")
+
 package korlibs.math.random
 
 import korlibs.math.geom.*
@@ -7,7 +9,7 @@ import kotlin.random.Random
 
 fun Random.ints(): Sequence<Int> = sequence { while (true) yield(nextInt()) }
 fun Random.ints(from: Int, until: Int): Sequence<Int> = sequence { while (true) yield(nextInt(from, until)) }
-fun Random.ints(range: IntRange): Sequence<Int> = ints(range.start, range.endInclusive + 1)
+fun Random.ints(range: IntRange): Sequence<Int> = ints(range.first, range.last + 1)
 
 fun Random.doubles(): Sequence<Double> = sequence { while (true) yield(nextDouble()) }
 fun Random.floats(): Sequence<Float> = sequence { while (true) yield(nextFloat()) }
@@ -27,8 +29,8 @@ operator fun Random.get(min: Ratio, max: Ratio): Ratio = Ratio(get(min.valueD, m
 operator fun Random.get(min: Double, max: Double): Double = min + nextDouble() * (max - min)
 operator fun Random.get(min: Float, max: Float): Float = min + nextFloat() * (max - min)
 operator fun Random.get(min: Int, max: Int): Int = min + nextInt(max - min)
-operator fun Random.get(range: IntRange): Int = range.start + this.nextInt(range.endInclusive - range.start + 1)
-operator fun Random.get(range: LongRange): Long = range.start + this.nextLong() % (range.endInclusive - range.start + 1)
+operator fun Random.get(range: IntRange): Int = range.first + this.nextInt(range.last - range.first + 1)
+operator fun Random.get(range: LongRange): Long = range.first + this.nextLong() % (range.last - range.first + 1)
 operator fun <T : Interpolable<T>> Random.get(l: T, r: T): T = (this.nextDoubleInclusive()).toRatio().interpolate(l, r)
 operator fun Random.get(l: Angle, r: Angle): Angle = this.nextRatioInclusive().interpolateAngleDenormalized(l, r)
 operator fun <T> Random.get(list: List<T>): T = list[this[list.indices]]
@@ -42,7 +44,7 @@ fun <T> Random.shuffledWeighted(weights: Map<T, Double>): List<T> = shuffledWeig
 fun <T> Random.shuffledWeighted(values: List<T>, weights: List<Double>): List<T> = shuffledWeighted(RandomWeights(values, weights))
 fun <T> Random.shuffledWeighted(weights: RandomWeights<T>): List<T> {
     val randoms = (0 until weights.items.size).map { -(nextDouble().pow(1.0 / weights.normalizedWeights[it])) }
-    val sortedIndices = (0 until weights.items.size).sortedWith(Comparator { a, b -> randoms[a].compareTo(randoms[b]) })
+    val sortedIndices = (0 until weights.items.size).sortedWith { a, b -> randoms[a].compareTo(randoms[b]) }
     return sortedIndices.map { weights.items[it] }
 }
 

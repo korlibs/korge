@@ -1,5 +1,8 @@
+@file:Suppress("PackageDirectoryMismatch")
+
 package korlibs.math.interpolation
 
+import korlibs.datastructure.*
 import korlibs.math.*
 import korlibs.math.geom.*
 import korlibs.math.geom.bezier.*
@@ -311,4 +314,95 @@ private enum class Easings : Easing {
     };
 
     override fun toString(): String = super.toString().replace('_', '-').lowercase()
+}
+
+
+
+interface Interpolable<T> {
+    fun interpolateWith(ratio: Ratio, other: T): T
+}
+
+interface MutableInterpolable<T> {
+    fun setToInterpolated(ratio: Ratio, l: T, r: T): T
+}
+
+fun Ratio.interpolate(l: Point, r: Point): Point = Point(interpolate(l.x, r.x), interpolate(l.y, r.y))
+fun Ratio.interpolate(l: Size, r: Size): Size = Size(interpolate(l.width, r.width), interpolate(l.height, r.height))
+fun Ratio.interpolate(l: Scale, r: Scale): Scale = Scale(interpolate(l.scaleX, r.scaleX), interpolate(l.scaleY, r.scaleY))
+fun Ratio.interpolate(l: Float, r: Float): Float = (l + (r - l) * valueF)
+fun Ratio.interpolate(l: Double, r: Double): Double = (l + (r - l) * valueD)
+fun Ratio.interpolate(l: Int, r: Int): Int = (l + (r - l) * valueD).toInt()
+fun Ratio.interpolate(l: Long, r: Long): Long = (l + (r - l) * valueD).toLong()
+fun <T> Ratio.interpolate(l: Interpolable<T>, r: Interpolable<T>): T = l.interpolateWith(this, r.fastCastTo<T>())
+fun <T : Interpolable<T>> Ratio.interpolate(l: T, r: T): T = l.interpolateWith(this, r)
+
+fun Ratio.interpolate(l: Matrix, r: Matrix): Matrix = Matrix.interpolated(l, r, this)
+fun Ratio.interpolate(l: MatrixTransform, r: MatrixTransform): MatrixTransform = MatrixTransform.interpolated(l, r, this)
+fun Ratio.interpolate(l: Rectangle, r: Rectangle): Rectangle = Rectangle.interpolated(l, r, this)
+
+
+
+//inline class Ratio(val valueD: Double) : Comparable<Ratio> {
+//    constructor(ratio: Float) : this(ratio.toDouble())
+//    val value: Double get() = valueD
+//    val valueF: Float get() = value.toFloat()
+inline class Ratio(val valueF: Float) : Comparable<Ratio> {
+    constructor(ratio: Double) : this(ratio.toFloat())
+    val value: Float get() = valueF
+    //val value: Double get() = valueD
+    val valueD: Double get() = valueF.toDouble()
+
+    fun toFloat(): Float = valueF
+    fun toDouble(): Double = valueD
+
+    constructor(value: Int, maximum: Int) : this(value.toFloat() / maximum.toFloat())
+    constructor(value: Float, maximum: Float) : this(value / maximum)
+    constructor(value: Double, maximum: Double) : this(value / maximum)
+
+    val clamped: Ratio get() = Ratio(value.clamp01())
+
+    fun roundDecimalPlaces(places: Int): Ratio = Ratio(value.roundDecimalPlaces(places))
+
+    fun convertToRange(min: Float, max: Float): Float = valueF.convertRange(0f, 1f, min, max)
+    fun convertToRange(min: Double, max: Double): Double = valueD.convertRange(0.0, 1.0, min, max)
+    fun convertToRange(min: Ratio, max: Ratio): Ratio = Ratio(valueD.convertRange(0.0, 1.0, min.valueD, max.valueD))
+
+    override fun compareTo(other: Ratio): Int = value.compareTo(other.value)
+
+    fun isNaN(): Boolean = value.isNaN()
+
+    companion object {
+        val ZERO = Ratio(0f)
+        val QUARTER = Ratio(.25f)
+        val HALF = Ratio(.5f)
+        val ONE = Ratio(1f)
+        val NaN = Ratio(Float.NaN)
+
+        inline fun forEachRatio(steps: Int, include0: Boolean = true, include1: Boolean = true, block: (ratio: Ratio) -> Unit) {
+            val NS = steps - 1
+            val NSf = NS.toFloat()
+            val start = if (include0) 0 else 1
+            val end = if (include1) NS else NS - 1
+            for (n in start..end) {
+                val ratio = n.toFloat() / NSf
+                block(ratio.toRatio())
+            }
+        }
+    }
+}
+
+@Deprecated("", ReplaceWith("this")) fun Ratio.toRatio(): Ratio = this
+
+fun Float.toRatio(): Ratio = Ratio(this)
+fun Double.toRatio(): Ratio = Ratio(this)
+
+fun Float.toRatio(max: Float): Ratio = Ratio(this, max)
+fun Double.toRatio(max: Double): Ratio = Ratio(this, max)
+
+fun min(a: Ratio, b: Ratio): Ratio = Ratio(kotlin.math.min(a.value, b.value))
+fun max(a: Ratio, b: Ratio): Ratio = Ratio(kotlin.math.max(a.value, b.value))
+fun Ratio.clamp(min: Ratio, max: Ratio): Ratio = when {
+    this < min -> min
+    this > max -> max
+    else -> this
 }

@@ -1,3 +1,5 @@
+@file:Suppress("PackageDirectoryMismatch")
+
 package korlibs.math.segment
 
 import korlibs.datastructure.BSearchResult
