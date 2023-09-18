@@ -36,33 +36,6 @@ internal fun Int.clamp(min: Int, max: Int): Int = if (this < min) min else if (t
 internal fun Int.cycle(min: Int, max: Int): Int = ((this - min) umod (max - min + 1)) + min
 internal fun Int.cycleSteps(min: Int, max: Int): Int = (this - min) / (max - min + 1)
 
-internal fun String.splitKeep(regex: Regex): List<String> {
-    val str = this
-    val out = arrayListOf<String>()
-    var lastPos = 0
-    for (part in regex.findAll(this)) {
-        val prange = part.range
-        if (lastPos != prange.start) {
-            out += str.substring(lastPos, prange.start)
-        }
-        out += str.substring(prange)
-        lastPos = prange.endInclusive + 1
-    }
-    if (lastPos != str.length) {
-        out += str.substring(lastPos)
-    }
-    return out
-}
-
-
-internal fun Double.toInt2(): Int = if (this < 0.0) floor(this).toInt() else this.toInt()
-internal fun Double.toIntMod(mod: Int): Int = (this umod mod.toDouble()).toInt2()
-
-internal infix fun Int.div2(other: Int): Int = when {
-    this < 0 || this % other == 0 -> this / other
-    else -> (this / other) - 1
-}
-
 internal class Moduler(val value: Double) {
     private var avalue = abs(value)
     private val sign = sign(value)
@@ -79,5 +52,3 @@ internal class Moduler(val value: Double) {
     fun int(count: Int): Int = int(count.toDouble())
     fun int(count: Float): Int = int(count.toDouble())
 }
-
-internal infix fun Double.intDiv(other: Double) = floor(this / other)
