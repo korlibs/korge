@@ -1,36 +1,6 @@
 package korlibs.math.internal
 
-import korlibs.math.isAlmostEquals
-import korlibs.math.roundDecimalPlaces
 import kotlin.math.*
-
-//internal val Float.niceStr: String get() = if (almostEquals(this.toLong().toFloat(), this)) "${this.toLong()}" else "$this"
-//internal val Double.niceStr: String get() = if (almostEquals(this.toLong().toDouble(), this)) "${this.toLong()}" else "$this"
-
-internal val Float.niceStr: String get() = buildString { appendNice(this@niceStr) }
-internal val Double.niceStr: String get() = buildString { appendNice(this@niceStr) }
-internal fun Float.niceStr(decimalPlaces: Int): String = roundDecimalPlaces(decimalPlaces).niceStr
-internal fun Double.niceStr(decimalPlaces: Int): String = roundDecimalPlaces(decimalPlaces).niceStr
-
-internal fun StringBuilder.appendNice(value: Double) {
-    when {
-        round(value).isAlmostEquals(value) -> when {
-            value >= Int.MIN_VALUE.toDouble() && value <= Int.MAX_VALUE.toDouble() -> append(value.toInt())
-            else -> append(value.toLong())
-        }
-        else -> append(value)
-    }
-}
-
-internal fun StringBuilder.appendNice(value: Float) {
-    when {
-        round(value).isAlmostEquals(value) -> when {
-            value >= Int.MIN_VALUE.toFloat() && value <= Int.MAX_VALUE.toFloat() -> append(value.toInt())
-            else -> append(value.toLong())
-        }
-        else -> append(value)
-    }
-}
 
 @PublishedApi internal infix fun Int.umod(other: Int): Int {
     val remainder = this % other

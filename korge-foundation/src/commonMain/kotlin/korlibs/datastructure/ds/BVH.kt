@@ -31,6 +31,8 @@ package korlibs.datastructure.ds
 
 import korlibs.datastructure.*
 import korlibs.datastructure.internal.*
+import korlibs.math.*
+import korlibs.number.*
 import kotlin.collections.HashMap
 import kotlin.collections.List
 import kotlin.collections.contains

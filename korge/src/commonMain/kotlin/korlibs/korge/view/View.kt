@@ -23,6 +23,7 @@ import korlibs.math.geom.shape.*
 import korlibs.math.geom.vector.*
 import korlibs.math.interpolation.*
 import korlibs.memory.*
+import korlibs.number.*
 import korlibs.time.*
 import kotlin.jvm.*
 import kotlin.math.*

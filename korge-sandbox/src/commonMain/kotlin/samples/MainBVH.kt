@@ -12,6 +12,7 @@ import korlibs.math.geom.ds.*
 import korlibs.math.geom.shape.*
 import korlibs.math.geom.vector.*
 import korlibs.math.random.*
+import korlibs.number.*
 import korlibs.time.*
 import kotlin.random.*
 

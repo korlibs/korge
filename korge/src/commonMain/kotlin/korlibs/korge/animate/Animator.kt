@@ -227,7 +227,7 @@ open class Animator @PublishedApi internal constructor(
         private val toRemove = fastArrayListOf<NewAnimatorNode>()
 
         override fun update(dt: TimeSpan): TimeSpan {
-            var dt = dt * speed
+            var dt = if (speed != 1.0) dt * speed else dt
 
             //println("UPDATE!!: dt=$dt")
             ensureInit()

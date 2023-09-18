@@ -1,10 +1,11 @@
 package korlibs.math.geom
 
 import korlibs.math.geom.range.*
-import korlibs.math.internal.*
 import korlibs.math.interpolation.*
 import korlibs.math.isAlmostEquals
 import korlibs.math.roundDecimalPlaces
+import korlibs.memory.*
+import korlibs.number.*
 import kotlin.math.*
 
 @PublishedApi internal const val PIF = (PI).toFloat()

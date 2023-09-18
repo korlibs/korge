@@ -2,8 +2,8 @@ package korlibs.math.geom
 
 import korlibs.math.almostEquals
 import korlibs.math.annotations.*
-import korlibs.math.internal.*
 import korlibs.math.interpolation.*
+import korlibs.number.*
 import kotlin.math.*
 
 @Deprecated("")

@@ -1,9 +1,9 @@
 package korlibs.math.geom.bezier
 
 import korlibs.math.geom.*
-import korlibs.math.internal.*
 import korlibs.math.roundDecimalPlaces
 import korlibs.memory.*
+import korlibs.number.*
 
 data class CurveSplit(
     val base: Bezier,

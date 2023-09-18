@@ -1,6 +1,6 @@
 package korlibs.math.geom.range
 
-import korlibs.math.internal.*
+import korlibs.number.*
 
 data class DoubleRangeExclusive(val start: Double, val endExclusive: Double) {
     val length: Double get() = endExclusive - start

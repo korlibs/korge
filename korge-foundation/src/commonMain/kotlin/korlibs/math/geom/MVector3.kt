@@ -1,10 +1,10 @@
 package korlibs.math.geom
 
 import korlibs.math.annotations.KormaMutableApi
-import korlibs.math.internal.niceStr
 import korlibs.math.interpolation.interpolate
 import korlibs.math.interpolation.toRatio
 import korlibs.math.almostEquals
+import korlibs.number.*
 import kotlin.math.sqrt
 
 @KormaMutableApi

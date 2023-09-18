@@ -3,7 +3,6 @@ package korlibs.io.lang
 import korlibs.memory.ByteArrayBuilder
 import korlibs.memory.clamp
 import korlibs.io.util.quote
-import korlibs.io.util.toStringUnsigned
 import korlibs.util.format as format2
 
 operator fun String.Companion.invoke(arrays: IntArray, offset: Int = 0, size: Int = arrays.size - offset): String {

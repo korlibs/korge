@@ -3,11 +3,11 @@ package korlibs.math.geom
 import korlibs.math.annotations.*
 import korlibs.math.geom.shape.*
 import korlibs.math.geom.vector.*
-import korlibs.math.internal.*
 import korlibs.math.interpolation.*
 import korlibs.math.isAlmostEquals
 import korlibs.math.roundDecimalPlaces
 import korlibs.memory.*
+import korlibs.number.*
 import kotlin.math.*
 
 //@KormaValueApi

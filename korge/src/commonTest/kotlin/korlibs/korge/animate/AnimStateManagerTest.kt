@@ -4,6 +4,7 @@ import korlibs.time.*
 import korlibs.korge.tween.*
 import korlibs.korge.view.*
 import korlibs.io.util.*
+import korlibs.number.*
 import kotlin.test.*
 
 class AnimStateManagerTest {

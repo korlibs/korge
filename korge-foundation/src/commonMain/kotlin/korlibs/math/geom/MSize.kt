@@ -1,11 +1,11 @@
 package korlibs.math.geom
 
 import korlibs.math.annotations.KormaMutableApi
-import korlibs.math.internal.niceStr
 import korlibs.math.interpolation.Interpolable
 import korlibs.math.interpolation.MutableInterpolable
 import korlibs.math.interpolation.Ratio
 import korlibs.math.interpolation.interpolate
+import korlibs.number.*
 
 @KormaMutableApi
 @Deprecated("Use Size instead")

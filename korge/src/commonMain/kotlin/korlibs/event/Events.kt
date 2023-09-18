@@ -3,8 +3,8 @@ package korlibs.event
 import korlibs.datastructure.*
 import korlibs.datastructure.iterators.*
 import korlibs.io.file.*
-import korlibs.io.util.*
 import korlibs.math.geom.*
+import korlibs.number.*
 import korlibs.platform.*
 import korlibs.time.*
 

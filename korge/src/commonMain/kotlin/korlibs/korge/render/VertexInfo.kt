@@ -3,8 +3,8 @@ package korlibs.korge.render
 import korlibs.memory.*
 import korlibs.image.color.Colors
 import korlibs.image.color.RGBA
-import korlibs.io.util.niceStr
 import korlibs.math.geom.*
+import korlibs.number.*
 
 data class VertexInfo(
     var x: Float = 0f,

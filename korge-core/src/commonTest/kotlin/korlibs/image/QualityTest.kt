@@ -1,6 +1,7 @@
 package korlibs.image
 
 import korlibs.io.util.*
+import korlibs.number.*
 import kotlin.test.*
 
 class QualityTest {

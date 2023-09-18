@@ -8,6 +8,7 @@ import korlibs.io.annotations.*
 import korlibs.io.util.*
 import korlibs.math.geom.*
 import com.sun.jna.*
+import korlibs.number.*
 import kotlin.reflect.*
 
 //fun main() {

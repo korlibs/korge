@@ -7,6 +7,7 @@ import korlibs.korge.render.*
 import korlibs.korge.view.filter.*
 import korlibs.korge.view.property.*
 import korlibs.math.geom.*
+import korlibs.number.*
 
 inline fun Container.fixedSizeContainer(
     size: Size,
