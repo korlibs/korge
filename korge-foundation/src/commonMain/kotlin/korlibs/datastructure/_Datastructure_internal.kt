@@ -1,5 +1,7 @@
 package korlibs.datastructure.internal
 
+internal expect fun anyIdentityHashCode(obj: Any?): Int
+
 @Retention(value = AnnotationRetention.BINARY)
 @RequiresOptIn(level = RequiresOptIn.Level.WARNING)
 public annotation class KdsInternalApi

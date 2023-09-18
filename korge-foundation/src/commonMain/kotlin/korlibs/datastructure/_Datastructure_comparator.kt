@@ -1,3 +1,5 @@
+@file:Suppress("PackageDirectoryMismatch")
+
 package korlibs.datastructure.comparator
 
 object ComparatorComparable : Comparator<Comparable<Any>> {

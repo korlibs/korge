@@ -1,6 +1,6 @@
 package korlibs.korge.view.filter
 
-import korlibs.datastructure.*
+import korlibs.datastructure.lock.*
 import korlibs.graphics.shader.*
 import korlibs.korge.view.property.*
 
@@ -20,7 +20,8 @@ class SwizzleColorsFilter(initialSwizzle: String = "rgba") : ShaderFilter() {
             }
         }
 
-        private val CACHE = CopyOnWriteFrozenMap<String, SwizzleProgram>()
+        private val lock = Lock()
+        private val CACHE = LinkedHashMap<String, SwizzleProgram>()
     }
 
     var _programProvider: ProgramProvider? = null
@@ -41,7 +42,7 @@ class SwizzleColorsFilter(initialSwizzle: String = "rgba") : ShaderFilter() {
 
     override val programProvider: ProgramProvider get() {
         if (_programProvider == null) {
-            _programProvider = CACHE.getOrPut(swizzle) { SwizzleProgram(swizzle) }
+            _programProvider = lock { CACHE.getOrPut(swizzle) { SwizzleProgram(swizzle) } }
         }
         return _programProvider!!
     }
