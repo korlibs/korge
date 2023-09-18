@@ -1,3 +1,5 @@
+import korlibs.korge.gradle.targets.all.AddFreeCompilerArgs
+
 plugins {
     id("org.jetbrains.kotlin.multiplatform")
     id("org.jetbrains.kotlinx.benchmark") version libs.versions.kotlinx.benchmark
@@ -8,8 +10,10 @@ allOpen {
     annotation("org.openjdk.jmh.annotations.State")
 }
 
-kotlin.jvm {
-    korlibs.korge.gradle.targets.all.AddFreeCompilerArgs.addFreeCompilerArgs(project, it)
+kotlin {
+    jvm {
+        AddFreeCompilerArgs.addFreeCompilerArgs(project, this)
+    }
 }
 benchmark.targets.register("jvm")
 //kotlin { js(IR) { nodejs() } }; benchmark.targets.register("js")
