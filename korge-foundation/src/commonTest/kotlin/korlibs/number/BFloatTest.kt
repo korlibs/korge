@@ -1,4 +1,4 @@
-package korlibs.memory
+package korlibs.number
 
 import kotlin.test.*
 

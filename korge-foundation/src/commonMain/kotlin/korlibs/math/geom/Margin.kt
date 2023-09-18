@@ -1,7 +1,7 @@
 package korlibs.math.geom
 
-import korlibs.memory.*
 import korlibs.math.internal.*
+import korlibs.number.*
 
 /**
  * A [top], [right], [bottom], [left] pack with FixedShort (16-bit) in the range of +-3275.9 (3.3 integer digits + 1 decimal digit)

@@ -1,4 +1,4 @@
-package korlibs.memory
+package korlibs.number
 
 internal inline class BFloat @PublishedApi internal constructor(val rawBits: Int) {
     companion object {
