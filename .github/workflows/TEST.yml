@@ -88,7 +88,6 @@ jobs:
       DISABLE_ANDROID: true
     steps:
     - { uses: actions/checkout@v3 }
-    #- { name: Configure local.properties, run: "echo org.gradle.parallel=true >> local.properties && echo org.gradle.workers.max=2 >> local.properties" }
     - { name: Configure local.properties, run: "echo org.gradle.parallel=true >> local.properties" }
     - { name: Install freeglut3 & openal, run: sudo apt-get update && sudo apt-get -y install freeglut3-dev libopenal-dev xvfb }
     - { name: Run Xvfb in Background, run: "Xvfb :99 &" }
@@ -103,8 +102,6 @@ jobs:
     - { name: e2e test, working-directory: e2e/e2e-test, run: ./gradlew checkReferencesJvm --stacktrace }
     - { name: Archive E2E Test Results, if: failure(), uses: actions/upload-artifact@v3, with: { name: e2e-test-results-linux-jvm, retention-days: 21, path: "**/e2e/e2e-test/build/screenshots", if-no-files-found: ignore } }
     - { name: e2e multi test and hotreload, working-directory: e2e/e2e-test-multi, run: "./gradlew --watch-fs --warn --configuration-cache --configuration-cache-problems=warn compileKotlinJvm" }
-    #- { name: Run benchmarks, run: "./gradlew :korge-benchmarks:jvmBenchmark" }
-    #- { name: e2e test, uses: GabrielBB/xvfb-action@v1, with: { working-directory: e2e-test, run: ./gradlew checkReferencesJvm --stacktrace } }
 
   test-jvm-macos:
     needs: changes
@@ -148,9 +145,9 @@ jobs:
       - { name: Testing JVM on windows, shell: cmd, run: "CALL gradlew.bat --parallel jvmTest", env: { EGL_LOG_LEVEL: debug, LIBGL_DEBUG: verbose, LIBGL_ALWAYS_SOFTWARE: true, MESA_DEBUG: true } }
       - { name: Archive Test Results, if: failure(), uses: actions/upload-artifact@v3, with: { name: screenshot-test-results-windows, retention-days: 21, path: "**/build/reports", if-no-files-found: ignore } }
 
-  test-js:
+  test-js-wasm:
     needs: changes
-    if: ${{ needs.changes.outputs.testJs == 'true' }}
+    if: ${{ needs.changes.outputs.testJs == 'true' || needs.changes.outputs.testWasm == 'true' }}
     timeout-minutes: 240
     runs-on: ubuntu-latest
     env:
@@ -161,27 +158,9 @@ jobs:
       - { uses: actions/checkout@v3 }
       - { name: Set up JDK, uses: actions/setup-java@v3, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
       - { name: Install freeglut3 & openal, run: sudo apt-get update && sudo apt-get -y install freeglut3-dev libopenal-dev }
-      - name: Build with Gradle
-        uses: gradle/gradle-build-action@ef76a971e2fa3f867b617efd72f2fbd72cf6f8bc # v2.8.0
-        with:
-          arguments: "--parallel jsNodeTest jsBrowserTest"
-
-  test-wasm:
-    needs: changes
-    if: ${{ needs.changes.outputs.testWasm == 'true' }}
-    timeout-minutes: 240
-    runs-on: ubuntu-latest
-    env:
-      DISABLE_KOTLIN_NATIVE: true
-      DISABLE_ANDROID: true
-      DISABLE_SANDBOX: true
-    steps:
-      - { uses: actions/checkout@v3 }
-      - { name: Set up JDK, uses: actions/setup-java@v3, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
-      - name: Build with Gradle
-        uses: gradle/gradle-build-action@ef76a971e2fa3f867b617efd72f2fbd72cf6f8bc # v2.8.0
-        with:
-          arguments: "--parallel compileTestKotlinWasmJs"
+      - { name: Prepare Gradle, uses: gradle/gradle-build-action@ef76a971e2fa3f867b617efd72f2fbd72cf6f8bc } # v2.8.0
+      - { name: Compile WASM, run: ./gradlew --parallel compileTestKotlinWasmJs }
+      - { name: Test JS, run: ./gradlew --parallel jsNodeTest jsBrowserTest }
 
   test-android:
     needs: changes
