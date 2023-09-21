@@ -1,3 +1,5 @@
+@file:Suppress("PackageDirectoryMismatch")
+
 package korlibs.io.serialization.csv
 
 import korlibs.io.util.StrReader
