@@ -11,6 +11,7 @@ import korlibs.io.async.*
 import korlibs.io.dynamic.*
 import korlibs.io.file.std.*
 import korlibs.io.resources.*
+import korlibs.io.worker.*
 import korlibs.korge.input.*
 import korlibs.korge.internal.*
 import korlibs.korge.logger.*
@@ -166,7 +167,7 @@ suspend fun KorgeWithConfig(config: KorgeConfig, entry: suspend Stage.() -> Unit
  * You have to call the [Korge] method by either providing some parameters, or a [Korge.Config] object.
  */
 object KorgeRunner {
-    suspend operator fun invoke(config: Korge) {
+    suspend operator fun invoke(config: Korge) = Worker.init {
         RegisteredImageFormats.register(config.imageFormats)
 
         val iconPath = config.icon
