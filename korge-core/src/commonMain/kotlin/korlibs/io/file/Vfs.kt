@@ -2,14 +2,14 @@
 
 package korlibs.io.file
 
-import korlibs.time.*
-import korlibs.logger.*
-import korlibs.memory.*
 import korlibs.io.async.*
 import korlibs.io.experimental.*
 import korlibs.io.file.std.*
 import korlibs.io.lang.*
 import korlibs.io.stream.*
+import korlibs.logger.*
+import korlibs.memory.*
+import korlibs.time.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlin.coroutines.*
@@ -313,17 +313,20 @@ abstract class Vfs : AsyncCloseable {
 }
 
 enum class VfsOpenMode(
-	val cmode: String,
-	val write: Boolean,
-	val createIfNotExists: Boolean = false,
-	val truncate: Boolean = false
+    val cmode: String,
+    val write: Boolean,
+    val createIfNotExists: Boolean = false,
+    val truncate: Boolean = false,
+    val read: Boolean = true,
+    val append: Boolean = false,
+    val createNew: Boolean = false,
 ) {
-	READ("rb", write = false),
-	WRITE("r+b", write = true, createIfNotExists = true),
-	APPEND("a+b", write = true, createIfNotExists = true),
-	CREATE_OR_TRUNCATE("w+b", write = true, createIfNotExists = true, truncate = true),
-	CREATE("w+b", write = true, createIfNotExists = true),
-	CREATE_NEW("w+b", write = true);
+    READ("rb", write = false),
+    WRITE("r+b", write = true, createIfNotExists = true),
+    APPEND("a+b", write = true, createIfNotExists = true, append = true),
+    CREATE_OR_TRUNCATE("w+b", write = true, createIfNotExists = true, truncate = true),
+    CREATE("w+b", write = true, createIfNotExists = true),
+    CREATE_NEW("w+b", write = true);
 }
 
 //"r"	Open for reading only. Invoking any of the write methods of the resulting object will cause an IOException to be thrown.
