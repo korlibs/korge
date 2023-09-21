@@ -1,3 +1,5 @@
+@file:Suppress("PackageDirectoryMismatch")
+
 package korlibs.io.serialization.yaml
 
 import korlibs.datastructure.ListReader
