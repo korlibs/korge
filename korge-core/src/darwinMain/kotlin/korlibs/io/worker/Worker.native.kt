@@ -2,9 +2,9 @@ package korlibs.io.worker
 
 import korlibs.datastructure.thread.*
 import korlibs.io.lang.*
-import kotlinx.atomicfu.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.*
+import kotlin.concurrent.*
 import kotlin.reflect.*
 
 actual annotation class WorkerExport()
@@ -62,7 +62,7 @@ internal actual val workerImpl: _WorkerImpl = object : _WorkerImpl() {
         //super.destroyWorker(worker)
     }
 
-    private var lastId = atomic(0)
+    private var lastId = AtomicInt(0)
 
     override suspend fun <T : WorkerTask> execute(
         worker: Any?,

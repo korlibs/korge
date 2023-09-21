@@ -1,9 +1,9 @@
 package korlibs.io.worker
 
-import kotlinx.atomicfu.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.*
 import java.io.Closeable
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.concurrent.*
 import kotlin.reflect.*
 
@@ -56,7 +56,7 @@ internal actual val workerImpl: _WorkerImpl = object : _WorkerImpl() {
         //super.destroyWorker(worker)
     }
 
-    private var lastId = atomic(0)
+    private var lastId = AtomicInteger(0)
 
     override suspend fun <T : WorkerTask> execute(
         worker: Any?,

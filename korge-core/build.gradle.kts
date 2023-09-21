@@ -5,7 +5,7 @@ dependencies {
     add("androidMainApi", "com.google.guava:guava:31.0.1-android")
     add("commonMainApi", project(":korge-foundation"))
     add("commonMainApi", libs.kotlinx.coroutines.core)
-    add("commonMainApi", libs.kotlinx.atomicfu)
+    //add("commonMainApi", libs.kotlinx.atomicfu)
     //add("commonTestApi", project(":korge-test"))
     add("commonTestApi", libs.kotlinx.coroutines.test)
     add("jvmMainApi", libs.asm.core)
