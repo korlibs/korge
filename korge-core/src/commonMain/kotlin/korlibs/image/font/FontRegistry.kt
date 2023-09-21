@@ -1,6 +1,6 @@
 package korlibs.image.font
 
-import korlibs.datastructure.CopyOnWriteFrozenMap
+import korlibs.datastructure.lock.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
 import kotlin.native.concurrent.ThreadLocal
@@ -27,10 +27,11 @@ fun SystemFontRegistry(coroutineContext: CoroutineContext): DefaultFontRegistry 
 suspend fun SystemFontRegistry(): DefaultFontRegistry = SystemFontRegistry(coroutineContext)
 
 open class DefaultFontRegistry(val coroutineContext: CoroutineContext) : FontRegistry {
-    private val registeredFonts = CopyOnWriteFrozenMap<String?, Font>()
+    private val lock = Lock()
+    private val registeredFonts = LinkedHashMap<String?, Font>()
     fun normalizeName(name: String?) = name?.toLowerCase()?.trim()
-    fun register(font: Font, name: String = font.name) = font.also { registeredFonts[normalizeName(name)] = it }
-    fun unregister(name: String) = registeredFonts.remove(name)
+    fun register(font: Font, name: String = font.name): Font = lock { font.also { registeredFonts[normalizeName(name)] = it } }
+    fun unregister(name: String): Font? = lock { registeredFonts.remove(name) }
     inline fun <T> registerTemporarily(font: Font, name: String = font.name, block: () -> T): T {
         register(font, name)
         try {
@@ -39,7 +40,9 @@ open class DefaultFontRegistry(val coroutineContext: CoroutineContext) : FontReg
             unregister(name)
         }
     }
-    override operator fun get(name: String?): Font = registeredFonts[normalizeName(name)] ?: SystemFont(name ?: "default", coroutineContext)
+    override operator fun get(name: String?): Font {
+        return lock { registeredFonts[normalizeName(name)] ?: SystemFont(name ?: "default", coroutineContext) }
+    }
 }
 
 fun <T : Font> T.register(registry: DefaultFontRegistry, name: String = this.name): T = this.also { registry.register(it, name) }

@@ -1,6 +1,7 @@
 package korlibs.datastructure
 
 import korlibs.datastructure.internal.*
+import korlibs.math.*
 import kotlin.experimental.*
 
 /**

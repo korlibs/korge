@@ -1,3 +1,5 @@
+@file:Suppress("PackageDirectoryMismatch")
+
 package korlibs.datastructure.random
 
 import kotlin.native.concurrent.ThreadLocal

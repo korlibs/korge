@@ -1,3 +1,5 @@
+@file:Suppress("PackageDirectoryMismatch")
+
 package korlibs.datastructure.map
 
 import kotlin.collections.set

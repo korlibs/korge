@@ -1,12 +1,11 @@
 package korlibs.korge.service.storage
 
 import korlibs.datastructure.*
-import korlibs.datastructure.atomic.*
-import korlibs.io.lang.*
+import korlibs.datastructure.lock.*
 import korlibs.io.serialization.json.*
-import korlibs.korge.view.Views
-import korlibs.korge.view.ViewsContainer
-import kotlin.native.concurrent.ThreadLocal
+import korlibs.korge.view.*
+import kotlin.collections.*
+import kotlin.native.concurrent.*
 
 /** Cross-platform way of synchronously storing small data */
 //expect fun NativeStorage(views: Views): IStorageWithKeys
@@ -35,48 +34,49 @@ abstract class FiledBasedNativeStorage(val views: Views) : IStorageWithKeys {
     protected abstract fun saveStr(data: String)
     protected abstract fun loadStr(): String
 
-    private var map = KdsAtomicRef<CopyOnWriteFrozenMap<String, String>?>(null)
+    private val lock = Lock()
+    private var map: MutableMap<String, String>? = null
 
     override fun toString(): String = "NativeStorage(${toMap()})"
-    override fun keys(): List<String> {
+    override fun keys(): List<String> = lock {
         ensureMap()
-        return map.value?.keys?.toList() ?: emptyList()
+        return map!!.keys.toList()
     }
 
-    private fun ensureMap(): CopyOnWriteFrozenMap<String, String> {
-        if (map.value == null) {
-            map.value = CopyOnWriteFrozenMap()
+    private fun ensureMap(): MutableMap<String, String> {
+        if (map == null) {
+            map = LinkedHashMap()
             val str = kotlin.runCatching { loadStr() }.getOrNull()
-            if (str != null && str.isNotEmpty()) {
+            if (!str.isNullOrEmpty()) {
                 try {
-                    map.value!!.putAll(str.fromJson() as Map<String, String>)
+                    map!!.putAll(str.fromJson() as Map<String, String>)
                 } catch (e: Throwable) {
                     e.printStackTrace()
                 }
             }
         }
-        return map.value!!
+        return map!!
     }
 
-    private fun save() {
+    private fun save() = lock {
         saveStr(ensureMap().toJson())
     }
 
-    override fun set(key: String, value: String) {
+    override fun set(key: String, value: String) = lock {
         ensureMap()[key] = value
         save()
     }
 
-    override fun getOrNull(key: String): String? {
+    override fun getOrNull(key: String): String? = lock {
         return ensureMap()[key]
     }
 
-    override fun remove(key: String) {
+    override fun remove(key: String) = lock {
         ensureMap().remove(key)
         save()
     }
 
-    override fun removeAll() {
+    override fun removeAll() = lock {
         ensureMap().clear()
         save()
     }

@@ -1,7 +1,6 @@
 package korlibs.io.lang
 
-import korlibs.datastructure.CopyOnWriteFrozenMap
-import korlibs.io.file.VfsFile
+import korlibs.io.file.*
 import kotlin.collections.component1
 import kotlin.collections.component2
 import kotlin.collections.set
@@ -11,7 +10,7 @@ expect object SystemProperties : Properties
 open class Properties(map: Map<String, String>? = null) {
     //private val map = FastStringMap<String>()
     // This is required to work with K/N memory model
-    private val map = CopyOnWriteFrozenMap<String, String>().also {
+    private val map = LinkedHashMap<String, String>().also {
         if (map != null) it.putAll(map)
     }
 

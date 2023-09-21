@@ -1,3 +1,5 @@
+@file:Suppress("PackageDirectoryMismatch")
+
 package korlibs.datastructure.fakemutable
 
 class FakeMutableMap<K, V>(val map: Map<K, V>) : MutableMap<K, V>, Map<K, V> by map {

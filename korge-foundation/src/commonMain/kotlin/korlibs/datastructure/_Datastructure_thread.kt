@@ -1,3 +1,5 @@
+@file:Suppress("PackageDirectoryMismatch")
+
 package korlibs.datastructure.thread
 
 expect class NativeThread(code: () -> Unit) {
