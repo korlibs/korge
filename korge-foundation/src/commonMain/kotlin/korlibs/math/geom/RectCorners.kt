@@ -1,7 +1,5 @@
 package korlibs.math.geom
 
-import korlibs.memory.*
-
 //@KormaValueApi
 data class RectCorners(
     val topLeft: Float,
