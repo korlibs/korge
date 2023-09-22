@@ -1,12 +1,9 @@
 package korlibs.io.util
 
-import korlibs.time.milliseconds
-import korlibs.io.async.AsyncCache
-import korlibs.io.async.AsyncCacheGen
-import korlibs.io.async.delay
-import korlibs.io.async.suspendTest
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import korlibs.io.async.*
+import korlibs.time.*
+import kotlinx.coroutines.*
+import kotlin.test.*
 
 class AsyncCacheTest {
 	@Test

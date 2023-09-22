@@ -1,46 +1,16 @@
 package korlibs.io.net.http
 
-import korlibs.time.seconds
-import korlibs.logger.Logger
-import korlibs.io.async.AsyncQueue
-import korlibs.io.async.AsyncSignal
-import korlibs.io.async.Signal
-import korlibs.io.async.asyncImmediately
-import korlibs.io.async.delay
-import korlibs.io.async.invoke
-import korlibs.io.async.launchImmediately
-import korlibs.io.lang.Charsets
-import korlibs.io.lang.IOException
-import korlibs.io.lang.UTF8
-import korlibs.io.lang.printStackTraceWithExtraMessage
-import korlibs.io.lang.toByteArray
-import korlibs.io.lang.toString
-import korlibs.io.net.AsyncAddress
-import korlibs.io.net.AsyncClient
-import korlibs.io.net.AsyncSocketFactory
-import korlibs.io.net.URL
-import korlibs.io.net.asyncSocketFactory
-import korlibs.io.net.createClient
-import korlibs.io.net.ws.WsCloseInfo
-import korlibs.io.net.ws.WsFrame
-import korlibs.io.net.ws.WsOpcode
-import korlibs.io.stream.AsyncBufferedInputStream
-import korlibs.io.stream.AsyncInputStreamWithLength
-import korlibs.io.stream.AsyncOutputStream
-import korlibs.io.stream.bufferedInput
-import korlibs.io.stream.copyTo
-import korlibs.io.stream.readBytesUpToFirst
-import korlibs.io.stream.readLine
-import korlibs.io.stream.writeString
-import korlibs.crypto.sha1
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.withContext
-import kotlin.coroutines.coroutineContext
-import kotlin.math.min
+import korlibs.crypto.*
+import korlibs.io.async.*
+import korlibs.io.lang.*
+import korlibs.io.net.*
+import korlibs.io.net.ws.*
+import korlibs.io.stream.*
+import korlibs.logger.*
+import korlibs.time.*
+import kotlinx.coroutines.*
+import kotlin.coroutines.*
+import kotlin.math.*
 
 open class HttpPortable(
     private val factory: AsyncSocketFactory = asyncSocketFactory

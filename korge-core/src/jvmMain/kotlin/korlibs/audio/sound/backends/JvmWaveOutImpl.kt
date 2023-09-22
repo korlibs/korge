@@ -1,17 +1,13 @@
 package korlibs.audio.sound.backends
 
+import com.sun.jna.*
+import korlibs.audio.sound.*
 import korlibs.datastructure.thread.*
 import korlibs.memory.*
 import korlibs.memory.dyn.*
 import korlibs.time.*
-import korlibs.audio.sound.*
-import com.sun.jna.Callback
-import com.sun.jna.Native
-import com.sun.jna.Pointer
-import com.sun.jna.Memory
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
-
 
 val jvmWaveOutNativeSoundProvider: NativeSoundProvider? by lazy {
     JvmWaveOutNativeSoundProvider()
@@ -95,7 +91,7 @@ class JvmWaveOutPlatformAudioOutput(
             }
             //println("availableRead=$availableRead, waveOutGetPosition=$currentPositionInSamples, totalEmittedSamples=$totalEmittedSamples")
             if (availableRead <= 0 && currentPositionInSamples >= totalEmittedSamples) break
-            korlibs.io.async.delay(1.milliseconds)
+            delay(1.milliseconds)
         }
         //println("DONE WAITING")
     }

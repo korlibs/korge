@@ -3,9 +3,6 @@ package korlibs.time
 import korlibs.math.*
 import korlibs.time.DateTime.Companion.EPOCH
 import korlibs.time.internal.*
-import korlibs.time.internal.clamp
-import korlibs.time.internal.cycle
-import korlibs.time.internal.cycleSteps
 import kotlin.jvm.JvmInline
 import kotlin.math.*
 
@@ -458,6 +455,3 @@ fun DateTime.clamp(min: DateTime, max: DateTime): DateTime = when {
     this > max -> max
     else -> this
 }
-
-private fun Double.toInt2(): Int = if (this < 0.0) floor(this).toInt() else this.toInt()
-private fun Double.toIntMod(mod: Int): Int = (this umod mod.toDouble()).toInt2()

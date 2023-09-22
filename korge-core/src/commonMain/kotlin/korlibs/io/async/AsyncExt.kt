@@ -59,7 +59,7 @@ expect fun asyncTestEntryPoint(callback: suspend () -> Unit): AsyncEntryPointRes
 
 val DEFAULT_SUSPEND_TEST_TIMEOUT = 20.seconds
 
-fun suspendTest(timeout: TimeSpan?, callback: suspend CoroutineScope.() -> Unit) = asyncTestEntryPoint { if (timeout != null) withTimeout(timeout) { callback() } else coroutineScope { callback() } }
+fun suspendTest(timeout: TimeSpan?, callback: suspend CoroutineScope.() -> Unit) = asyncTestEntryPoint { if (timeout != null) withTimeoutNullable(timeout) { callback() } else coroutineScope { callback() } }
 //fun suspendTest(timeout: TimeSpan?, callback: suspend CoroutineScope.() -> Unit) = asyncEntryPoint { coroutineScope { callback() } }
 fun suspendTest(callback: suspend CoroutineScope.() -> Unit) = suspendTest(DEFAULT_SUSPEND_TEST_TIMEOUT, callback)
 fun suspendTest(cond: () -> Boolean, timeout: TimeSpan? = DEFAULT_SUSPEND_TEST_TIMEOUT, callback: suspend CoroutineScope.() -> Unit) = suspendTest(timeout) { if (cond()) callback() }

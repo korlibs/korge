@@ -1,3 +1,5 @@
+@file:Suppress("PackageDirectoryMismatch")
+
 package korlibs.time.benchmark
 
 import korlibs.time.Stopwatch

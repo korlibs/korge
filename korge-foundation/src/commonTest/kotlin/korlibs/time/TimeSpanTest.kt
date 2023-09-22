@@ -65,8 +65,8 @@ class TimeSpanTest {
 
     @Test
     fun ratio() {
-        assertEquals(0.5f, 0.5.seconds / 1.seconds)
-        assertEquals(5.0f, 10.seconds / 2000.milliseconds)
+        assertEquals(0.5, 0.5.seconds / 1.seconds)
+        assertEquals(5.0, 10.seconds / 2000.milliseconds)
     }
 
     @Test
@@ -102,7 +102,7 @@ class TimeSpanTest {
 
     @Test
     fun testToString() {
-        assertEquals("1000ms", 1.seconds.toString())
-        assertEquals("0.5ms", 0.5.milliseconds.toString())
+        assertEquals("1s", 1.seconds.toString())
+        assertEquals("500us", 0.5.milliseconds.toString())
     }
 }

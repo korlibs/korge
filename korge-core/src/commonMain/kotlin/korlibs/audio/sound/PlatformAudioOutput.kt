@@ -1,14 +1,12 @@
 package korlibs.audio.sound
 
-import korlibs.datastructure.lock.NonRecursiveLock
+import korlibs.datastructure.lock.*
 import korlibs.datastructure.thread.*
-import korlibs.math.clamp
-import korlibs.math.clamp01
-import korlibs.math.toShortClamped
-import korlibs.io.async.delay
-import korlibs.io.lang.Disposable
+import korlibs.io.lang.*
+import korlibs.math.*
 import korlibs.time.*
-import kotlin.coroutines.CoroutineContext
+import kotlinx.coroutines.*
+import kotlin.coroutines.*
 
 open class PlatformAudioOutput(
     val coroutineContext: CoroutineContext,
@@ -56,6 +54,7 @@ abstract class ThreadBasedPlatformAudioOutput(
         }
     }
 
+    @OptIn(ExperimentalStdlibApi::class)
     protected fun writeFully(data: AudioSamples, count: Int) {
         var offset = 0
         var pending = count
@@ -76,6 +75,7 @@ abstract class ThreadBasedPlatformAudioOutput(
         }
     }
 
+    @OptIn(ExperimentalStdlibApi::class)
     final override fun start() {
         if (running) return
         running = true

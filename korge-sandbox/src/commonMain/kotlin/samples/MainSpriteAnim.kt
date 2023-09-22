@@ -128,8 +128,8 @@ class MainSpriteAnim : ScaledScene(512, 512) {
             val disp = 2 * scale
             val keys = views.input.keys
 
-            player1.handleKeys(keys, disp)
-            player2.handleKeys(keys, disp)
+            player1.handleKeys(keys, disp.toFloat())
+            player2.handleKeys(keys, disp.toFloat())
 
             if (keys[Key.L]) { player1.playAnimationLooped(spriteAnimationDown, 100.milliseconds) }
             if (keys[Key.T]) { player1.playAnimation(spriteAnimation = spriteAnimationDown, times = 3, spriteDisplayTime = 200.milliseconds) }

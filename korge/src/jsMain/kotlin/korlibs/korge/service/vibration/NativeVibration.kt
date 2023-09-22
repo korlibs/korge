@@ -1,8 +1,8 @@
 package korlibs.korge.service.vibration
 
-import korlibs.time.TimeSpan
-import korlibs.korge.view.Views
-import kotlinx.browser.window
+import korlibs.korge.view.*
+import korlibs.time.*
+import kotlinx.browser.*
 
 actual class NativeVibration actual constructor(val views: Views) {
 

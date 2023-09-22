@@ -1,11 +1,12 @@
 package korlibs.audio.sound.fade
 
-import korlibs.datastructure.*
-import korlibs.time.*
 import korlibs.audio.sound.*
+import korlibs.datastructure.*
 import korlibs.io.async.*
 import korlibs.math.*
 import korlibs.math.interpolation.*
+import korlibs.time.*
+import kotlinx.coroutines.*
 import kotlin.native.concurrent.*
 
 val DEFAULT_FADE_TIME get() = 0.5.seconds

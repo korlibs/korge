@@ -1,7 +1,6 @@
 package korlibs.time
 
 import korlibs.math.*
-import korlibs.time.hr.hr
 import kotlin.jvm.JvmInline
 import korlibs.time.internal.Serializable
 
@@ -41,5 +40,4 @@ value class Frequency(val hertz: Double) : Comparable<Frequency>, Serializable {
     infix fun umod(other: Frequency): Frequency = Frequency(this.hertz umod other.hertz)
 
     val timeSpan get() = (1.0 / this.hertz).seconds
-    val hrTimeSpan get() = (1.0 / this.hertz).seconds.hr
 }
