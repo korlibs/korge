@@ -1,35 +1,17 @@
 package korlibs.audio.sound.impl.jna
 
-import korlibs.datastructure.Pool
-import korlibs.time.TimeSpan
-import korlibs.time.milliseconds
-import korlibs.time.seconds
-import korlibs.logger.Logger
-import korlibs.math.clamp01
-import korlibs.audio.internal.coerceToShort
-import korlibs.audio.sound.AudioData
-import korlibs.audio.sound.AudioSamples
-import korlibs.audio.sound.DummySoundChannel
-import korlibs.audio.sound.NativeSoundProvider
-import korlibs.audio.sound.PlatformAudioOutput
-import korlibs.audio.sound.PlaybackParameters
-import korlibs.audio.sound.Sound
-import korlibs.audio.sound.SoundChannel
-import korlibs.audio.sound.SoundChannelState
-import korlibs.audio.sound.SoundProps
-import korlibs.audio.sound.copyOfRange
-import korlibs.audio.sound.copySoundPropsFromCombined
-import korlibs.audio.sound.playingOrPaused
-import korlibs.io.async.delay
-import korlibs.io.async.launchImmediately
-import com.sun.jna.Pointer
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.delay
-import java.nio.ShortBuffer
-import kotlin.coroutines.ContinuationInterceptor
-import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.coroutineContext
-import kotlin.math.sqrt
+import com.sun.jna.*
+import korlibs.audio.internal.*
+import korlibs.audio.sound.*
+import korlibs.datastructure.*
+import korlibs.io.async.*
+import korlibs.logger.*
+import korlibs.math.*
+import korlibs.time.*
+import kotlinx.coroutines.*
+import java.nio.*
+import kotlin.coroutines.*
+import kotlin.math.*
 
 class OpenALException(message: String) : RuntimeException(message)
 

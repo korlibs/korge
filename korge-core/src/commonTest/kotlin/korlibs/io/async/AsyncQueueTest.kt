@@ -1,9 +1,8 @@
 package korlibs.io.async
 
-import korlibs.time.milliseconds
-import kotlinx.coroutines.CompletableDeferred
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import korlibs.time.*
+import kotlinx.coroutines.*
+import kotlin.test.*
 
 class AsyncQueueTest {
 	@Test

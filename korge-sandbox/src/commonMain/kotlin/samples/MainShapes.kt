@@ -2,9 +2,8 @@ package samples
 
 import korlibs.image.color.*
 import korlibs.io.async.*
-import korlibs.io.async.delay
 import korlibs.korge.input.*
-import korlibs.korge.scene.Scene
+import korlibs.korge.scene.*
 import korlibs.korge.view.*
 import korlibs.math.geom.*
 import korlibs.time.*

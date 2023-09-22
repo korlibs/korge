@@ -14,7 +14,6 @@ import korlibs.korge.render.*
 import korlibs.korge.scene.*
 import korlibs.korge.view.*
 import korlibs.math.geom.*
-import korlibs.memory.*
 import korlibs.platform.*
 import korlibs.render.*
 import korlibs.time.*
@@ -315,7 +314,7 @@ open class ViewsForTesting(
 		})
 
         //println("[a0]")
-		withTimeout(timeout ?: TimeSpan.NIL) {
+		withTimeoutNullable(timeout ?: TimeSpan.NIL) {
             //println("[a1]")
 			while (!completed) {
                 //println("FRAME")

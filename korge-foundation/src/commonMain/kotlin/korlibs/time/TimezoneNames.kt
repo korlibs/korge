@@ -15,7 +15,9 @@ data class TimezoneNames(val namesToOffsets: Map<String, TimeSpan>) : Serializab
 			"PDT" to (-7).hours,
 			"PST" to (-8).hours,
 			"GMT" to 0.hours,
-			"UTC" to 0.hours
+			"UTC" to 0.hours,
+            "CET" to (+1).hours,
+            "CEST" to (+2).hours,
 		)
 	}
 }

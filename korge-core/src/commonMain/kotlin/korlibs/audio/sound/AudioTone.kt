@@ -1,9 +1,8 @@
 package korlibs.audio.sound
 
-import korlibs.time.TimeSpan
-import korlibs.audio.internal.SampleConvert
-import kotlin.math.PI
-import kotlin.math.sin
+import korlibs.audio.internal.*
+import korlibs.time.*
+import kotlin.math.*
 
 object AudioTone {
     fun generate(length: TimeSpan, freq: Double, rate: Int = 44100): AudioData {

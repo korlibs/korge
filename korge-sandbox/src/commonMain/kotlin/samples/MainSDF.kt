@@ -6,6 +6,7 @@ import korlibs.korge.render.*
 import korlibs.korge.scene.*
 import korlibs.korge.view.*
 import korlibs.math.geom.*
+import korlibs.time.*
 import kotlin.math.*
 
 class MainSDF : Scene() {

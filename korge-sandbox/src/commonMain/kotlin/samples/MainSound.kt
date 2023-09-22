@@ -1,14 +1,10 @@
 package samples
 
-import korlibs.time.seconds
-import korlibs.audio.format.AudioDecodingProps
-import korlibs.korge.scene.Scene
-import korlibs.korge.view.SContainer
 import korlibs.audio.sound.*
-import korlibs.korge.tween.get
-import korlibs.korge.tween.tween
-import korlibs.io.async.delay
 import korlibs.io.file.std.*
+import korlibs.korge.scene.*
+import korlibs.korge.view.*
+import korlibs.time.*
 
 class MainSound : Scene() {
     override suspend fun SContainer.sceneMain() {

@@ -1,19 +1,10 @@
 package korlibs.korge.tests
 
 import korlibs.datastructure.*
-import korlibs.datastructure.lock.NonRecursiveLock
-import korlibs.time.TimeSpan
-import korlibs.time.milliseconds
-import kotlinx.coroutines.CancellableContinuation
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Delay
-import kotlinx.coroutines.InternalCoroutinesApi
-import kotlinx.coroutines.Runnable
-import kotlin.coroutines.Continuation
-import kotlin.coroutines.ContinuationInterceptor
-import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.resume
-import kotlin.coroutines.startCoroutine
+import korlibs.datastructure.lock.*
+import korlibs.time.*
+import kotlinx.coroutines.*
+import kotlin.coroutines.*
 
 @OptIn(InternalCoroutinesApi::class)
 @Deprecated("")

@@ -20,8 +20,7 @@ import korlibs.io.lang.Disposable
 import korlibs.io.lang.unsupported
 import korlibs.io.stream.AsyncStream
 import korlibs.io.stream.openAsync
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.native.concurrent.ThreadLocal
 import kotlin.coroutines.coroutineContext as coroutineContextKt

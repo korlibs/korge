@@ -1,31 +1,19 @@
 package korlibs.io.net.ws
 
-import korlibs.time.DateTime
-import korlibs.time.milliseconds
+import korlibs.encoding.*
+import korlibs.io.async.*
+import korlibs.io.experimental.*
+import korlibs.io.lang.*
+import korlibs.io.net.*
+import korlibs.io.net.http.*
+import korlibs.io.stream.*
+import korlibs.io.util.*
 import korlibs.memory.*
-import korlibs.io.async.delay
-import korlibs.io.async.launchImmediately
-import korlibs.io.experimental.KorioInternal
-import korlibs.io.lang.UTF8
-import korlibs.io.lang.readString
-import korlibs.io.lang.toByteArray
-import korlibs.io.lang.toString
-import korlibs.io.net.AsyncClient
-import korlibs.io.net.URL
-import korlibs.io.net.http.Http
-import korlibs.io.net.http.HttpClient
-import korlibs.io.stream.AsyncInputStream
-import korlibs.io.stream.readLine
-import korlibs.io.stream.writeBytes
-import korlibs.io.util.buildList
-import korlibs.io.util.join
-import korlibs.encoding.toBase64
 import korlibs.platform.*
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.Job
-import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.coroutineContext
-import kotlin.random.Random
+import korlibs.time.*
+import kotlinx.coroutines.*
+import kotlin.coroutines.*
+import kotlin.random.*
 
 suspend fun RawSocketWebSocketClient(
     url: String,

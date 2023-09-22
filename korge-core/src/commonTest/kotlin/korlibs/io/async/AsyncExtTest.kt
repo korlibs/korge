@@ -1,6 +1,7 @@
 package korlibs.io.async
 
 import korlibs.time.*
+import kotlinx.coroutines.*
 import kotlin.test.*
 
 class AsyncExtTest {

@@ -2,8 +2,8 @@ package korlibs.audio.sound.backends
 
 import korlibs.audio.sound.*
 import korlibs.datastructure.thread.*
-import korlibs.io.async.*
 import korlibs.time.*
+import kotlinx.coroutines.*
 import kotlin.coroutines.*
 
 val alsaNativeSoundProvider: ALSANativeSoundProvider? by lazy {
@@ -47,6 +47,7 @@ class ALSAPlatformAudioOutput(
         //super.wait()
     }
 
+    @OptIn(ExperimentalStdlibApi::class)
     override fun start() {
         if (running) return
         running = true

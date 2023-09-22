@@ -1,10 +1,9 @@
+@file:Suppress("PackageDirectoryMismatch")
+
 package korlibs.time.internal
 
-import korlibs.time.DateTime
-import korlibs.time.TimeSpan
-import korlibs.time.hr.HRTimeSpan
-import korlibs.time.minutes
-import kotlinx.browser.window
+import korlibs.time.*
+import kotlinx.browser.*
 
 private external class HRTime
 
@@ -31,13 +30,13 @@ private val initialHrTime by lazy { process_hrtime() }
 internal actual object KlockInternal {
     actual val currentTime: Double get() = Date_now()
 
-    actual val hrNow: HRTimeSpan get() = when {
+    actual val now: TimeSpan get() = when {
         isNodeJs() -> {
             val result: HRTime = process_hrtime(initialHrTime)
-            HRTimeSpan.fromSeconds(HRTime_get(result, 0)) + HRTimeSpan.fromNanoseconds(HRTime_get(result, 1))
+            TimeSpan.fromSeconds(HRTime_get(result, 0)) + TimeSpan.fromNanoseconds(HRTime_get(result, 1))
         }
         else -> {
-            HRTimeSpan.fromMilliseconds(window.performance.now())
+            TimeSpan.fromMilliseconds(window.performance.now())
         }
     }
 
@@ -45,7 +44,7 @@ internal actual object KlockInternal {
         return Date_localTimezoneOffsetMinutes(time.unixMillisDouble).minutes
     }
 
-    actual fun sleep(time: HRTimeSpan) {
+    actual fun sleep(time: TimeSpan) {
         spinlock(time)
     }
 }

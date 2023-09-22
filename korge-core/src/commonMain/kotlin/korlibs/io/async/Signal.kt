@@ -2,19 +2,13 @@
 
 package korlibs.io.async
 
-import korlibs.datastructure.FastArrayList
-import korlibs.datastructure.iterators.fastIterateRemove
-import korlibs.time.TimeSpan
-import korlibs.io.lang.Closeable
-import korlibs.io.lang.close
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.channels.ReceiveChannel
-import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.coroutineContext
-import kotlin.coroutines.resume
+import korlibs.datastructure.*
+import korlibs.datastructure.iterators.*
+import korlibs.io.lang.*
+import korlibs.time.*
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.*
+import kotlin.coroutines.*
 
 
 abstract class BaseSignal<T, THandler>(val onRegister: () -> Unit = {}) {

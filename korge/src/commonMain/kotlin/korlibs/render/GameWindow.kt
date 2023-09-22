@@ -17,8 +17,7 @@ import korlibs.io.lang.*
 import korlibs.logger.*
 import korlibs.math.geom.*
 import korlibs.memory.*
-import korlibs.render.GameWindow.Quality.PERFORMANCE
-import korlibs.render.GameWindow.Quality.QUALITY
+import korlibs.render.GameWindow.Quality.*
 import korlibs.render.internal.*
 import korlibs.time.*
 import kotlinx.coroutines.*
@@ -116,6 +115,7 @@ open class GameWindowCoroutineDispatcher : CoroutineDispatcher(), Delay, Closeab
     var maxAllocatedTimeForTasksPerFrame: TimeSpan? = null
 
     /** On JS this cannot work, because it requires the real event loop to be reached */
+    @OptIn(ExperimentalStdlibApi::class)
     @KoragExperimental
     open fun <T> runBlockingNoJs(coroutineContext: CoroutineContext, block: suspend () -> T): T {
         var completed = false
@@ -923,6 +923,7 @@ open class EventLoopGameWindow : GameWindow() {
         }
     }
 
+    @OptIn(ExperimentalStdlibApi::class)
     fun sleepNextFrame() {
         val now = PerformanceCounter.reference
         val frameTime = (1.toDouble() / fps.toDouble()).seconds
@@ -941,6 +942,7 @@ open class EventLoopGameWindow : GameWindow() {
         }
     }
 
+    @OptIn(ExperimentalStdlibApi::class)
     protected fun doSmallSleep() {
         if (!vsync) {
             blockingSleep(0.1.milliseconds)
