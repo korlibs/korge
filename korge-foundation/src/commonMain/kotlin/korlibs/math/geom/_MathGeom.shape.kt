@@ -1,3 +1,5 @@
+@file:Suppress("PackageDirectoryMismatch")
+
 package korlibs.math.geom.shape
 
 import korlibs.datastructure.*
@@ -519,4 +521,9 @@ fun VectorPath.getPoints2List(): List<PointArrayList> {
     }
     flush()
     return out
+}
+
+interface Shape3D {
+    val center: Vector3
+    val volume: Float
 }
