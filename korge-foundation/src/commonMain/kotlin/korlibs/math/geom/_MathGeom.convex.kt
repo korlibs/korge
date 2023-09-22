@@ -1,9 +1,11 @@
+@file:Suppress("PackageDirectoryMismatch")
+
 package korlibs.math.geom.convex
 
+import korlibs.math.*
 import korlibs.math.geom.*
 import korlibs.math.geom.bezier.*
 import korlibs.math.geom.vector.*
-import korlibs.math.isAlmostEquals
 import kotlin.math.*
 
 object Convex {
