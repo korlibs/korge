@@ -27,8 +27,8 @@ class KorgeHeadlessTest {
 
             while (true) {
                 //println("STEP")
-                image.tween(image::rotation[minDegrees], time = 0.5.seconds, easing = Easing.EASE_IN_OUT)
-                image.tween(image::rotation[maxDegrees], time = 0.5.seconds, easing = Easing.EASE_IN_OUT)
+                image.tween(image::rotation[minDegrees], time = 0.05.seconds, easing = Easing.EASE_IN_OUT)
+                image.tween(image::rotation[maxDegrees], time = 0.05.seconds, easing = Easing.EASE_IN_OUT)
                 views.gameWindow.close() // We close the window, finalizing the test here
             }
         }
