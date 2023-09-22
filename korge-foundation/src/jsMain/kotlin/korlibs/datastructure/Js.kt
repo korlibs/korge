@@ -2,30 +2,11 @@
 
 package korlibs.datastructure
 
+import korlibs.js.*
+
 actual inline fun <T> Any?.fastCastTo(): T = this.unsafeCast<T>()
 
 actual class FastIntMap<T>(dummy: Boolean)
-
-@JsName("Map")
-private external class JsMap { }
-@JsName("Array")
-@PublishedApi
-internal external class JsArray<T> {
-    var length: Int
-    //@nativeGetter operator fun get(index: Int): T = definedExternally
-    //@nativeSetter operator fun set(index: Int, value: T): T = definedExternally
-    fun concat(vararg arrays: JsArray<T>): JsArray<T>
-    fun indexOf(e: T): Int
-    fun lastIndexOf(e: T): Int
-    fun splice(start: Int, deleteCount: Int, vararg items: T): JsArray<T>
-    fun unshift(vararg items: T)
-    fun push(vararg items: T)
-    fun shift(): T
-    fun pop(): T
-    companion object {
-        fun from(value: dynamic): Array<dynamic>
-    }
-}
 
 
 actual fun <T> FastIntMap(): FastIntMap<T> = JsMap().asDynamic()
@@ -119,14 +100,6 @@ actual inline fun <K, V> FastIdentityMap<K, V>.fastKeyForEach(callback: (key: K)
 
 //////////////
 
-@JsName("WeakMap")
-external class JsWeakMap {
-    fun has(k: dynamic): Boolean
-    fun set(k: dynamic, v: dynamic): Unit
-    fun get(k: dynamic): dynamic
-    fun delete(k: dynamic)
-}
-
 actual class WeakMap<K : Any, V> {
     val wm = JsWeakMap()
 
@@ -143,18 +116,9 @@ actual class WeakMap<K : Any, V> {
 
 }
 
-@PublishedApi internal fun Array_from(value: dynamic): Array<dynamic> = JsArray.from(value)
-@PublishedApi internal inline operator fun <T> JsArray<T>.get(index: Int): T = asDynamic()[index]
-@PublishedApi internal inline operator fun <T> JsArray<T>.set(index: Int, value: T): Unit { asDynamic()[index] = value }
-@PublishedApi internal fun <T> JsArray.Companion.createEmpty(): JsArray<T> = js("([])").unsafeCast<JsArray<T>>()
-//external internal operator fun <T> JsArray<T>.get(index: Int): T = definedExternally
-//external internal operator fun <T> JsArray<T>.set(index: Int, value: T): T = definedExternally
 
-//@JsName("delete")
-//external fun jsDelete(v: dynamic): Unit
-
-
-public actual open class FastArrayList<E> internal constructor(@PublishedApi internal val __array: Array<E>) : AbstractMutableList<E>(), MutableListEx<E>, RandomAccess {
+public actual open class FastArrayList<E> internal constructor(@PublishedApi internal val __array: Array<E>) : AbstractMutableList<E>(),
+    MutableListEx<E>, RandomAccess {
     @PublishedApi inline internal val jsArray: JsArray<E> get() = __array.unsafeCast<JsArray<E>>()
     public actual constructor() : this(emptyArray())
     @Suppress("ACTUAL_FUNCTION_WITH_DEFAULT_ARGUMENTS")

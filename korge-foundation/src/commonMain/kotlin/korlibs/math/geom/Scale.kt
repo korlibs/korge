@@ -52,27 +52,3 @@ fun Vector2.toScale(): Scale = Scale(x, y)
 
 fun Scale.toPoint(): Point = Point(scaleX, scaleY)
 fun Scale.toVector2(): Vector2 = Vector2(scaleX, scaleY)
-
-/////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////
-
-@KormaMutableApi
-sealed interface IScale {
-    val scaleX: Double
-    val scaleY: Double
-}
-
-@KormaMutableApi
-data class MScale(
-    override var scaleX: Double,
-    override var scaleY: Double,
-) : IScale {
-    constructor() : this(1.0, 1.0)
-}
-
-fun Scale.toMutable(out: MScale = MScale()): MScale {
-    out.scaleX = scaleXD
-    out.scaleY = scaleYD
-    return out
-}
-fun MScale.toImmutable(): Scale = Scale(scaleX, scaleY)
