@@ -8,7 +8,6 @@ import korlibs.korge.gradle.targets.all.*
 import korlibs.korge.gradle.targets.android.*
 import korlibs.korge.gradle.targets.ios.*
 import korlibs.korge.gradle.targets.js.*
-import korlibs.korge.gradle.targets.js.configureWasm
 import korlibs.korge.gradle.targets.jvm.*
 import korlibs.korge.gradle.targets.native.*
 import korlibs.korge.gradle.targets.wasm.*
@@ -21,10 +20,10 @@ import org.gradle.api.file.*
 import org.gradle.api.tasks.*
 import org.gradle.api.tasks.testing.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
-import org.jetbrains.kotlin.gradle.targets.js.ir.*
 import org.jetbrains.kotlin.gradle.targets.js.npm.*
 import org.jetbrains.kotlin.gradle.targets.js.testing.*
 import org.jetbrains.kotlin.gradle.targets.js.testing.karma.*
+import org.jetbrains.kotlin.gradle.targets.js.testing.mocha.*
 import org.jetbrains.kotlin.gradle.tasks.*
 import java.io.*
 import java.nio.file.*
@@ -331,10 +330,17 @@ object RootKorlibsPlugin {
 
                     tasks.withType(KotlinJsTest::class.java).configureEach {
                         it.onTestFrameworkSet { framework ->
-                            //println("onTestFrameworkSet: $it")
-                            if (framework is KotlinKarma) {
-                                File(rootProject.rootDir, "karma.config.d").takeIfExists()?.let {
-                                    framework.useConfigDirectory(it)
+                            //println("onTestFrameworkSet: $it : $framework")
+                            when (framework) {
+                                is KotlinMocha -> {
+                                    framework.timeout = "20s"
+                                }
+                                is KotlinKarma -> {
+                                    File(rootProject.rootDir, "karma.config.d").takeIfExists()?.let {
+                                        //println("  -> $it")
+                                        framework.useConfigDirectory(it)
+                                        //println("       ")
+                                    }
                                 }
                             }
                         }
