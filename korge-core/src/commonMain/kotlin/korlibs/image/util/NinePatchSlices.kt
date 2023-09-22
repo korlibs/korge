@@ -1,7 +1,7 @@
 package korlibs.image.util
 
 import korlibs.datastructure.*
-import korlibs.math.geom.range.*
+import korlibs.math.range.*
 
 class NinePatchSlices private constructor(val ranges: List<FloatRangeExclusive>, dummy: Unit) {
     constructor(ranges: List<FloatRangeExclusive>) : this(ranges.sortedBy { it.start }, Unit)
