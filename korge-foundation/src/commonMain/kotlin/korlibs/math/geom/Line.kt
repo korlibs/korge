@@ -1,13 +1,12 @@
 package korlibs.math.geom
 
-import korlibs.math.almostEquals
-import korlibs.math.clamp
-import korlibs.math.annotations.*
-import korlibs.math.geom.bezier.*
-import korlibs.math.geom.shape.*
-import korlibs.math.geom.vector.*
-import korlibs.math.isAlmostZero
-import kotlin.math.*
+import korlibs.math.*
+import korlibs.math.annotations.KormaExperimental
+import korlibs.math.geom.bezier.Bezier
+import korlibs.math.geom.shape.Shape2D
+import korlibs.math.geom.shape.buildVectorPath
+import korlibs.math.geom.vector.VectorPath
+import kotlin.math.sign
 
 //@KormaValueApi
 data class Line(val a: Vector2, val b: Vector2) : Shape2D {
@@ -169,5 +168,4 @@ data class Line(val a: Vector2, val b: Vector2) : Shape2D {
         fun getIntersectXY(a: Point, b: Point, c: Point, d: Point): Point? =
             getIntersectXY(a.x, a.y, b.x, b.y, c.x, c.y, d.x, d.y)
     }
-
 }

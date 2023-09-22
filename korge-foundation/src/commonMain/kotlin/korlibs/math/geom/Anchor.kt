@@ -66,3 +66,40 @@ data class Anchor(val sx: Float, val sy: Float) : Interpolable<Anchor> {
 
 operator fun Size.times(anchor: Anchor): Point = this.toVector() * anchor.toVector()
 //operator fun SizeInt.times(anchor: Anchor): PointInt = (this.toVector().toFloat() * anchor.toVector()).toInt()
+
+data class Anchor3(val sx: Float, val sy: Float, val sz: Float) : Interpolable<Anchor3> {
+    fun toVector(): Vector3 = Vector3(sx, sy, sz)
+
+    val floatX: Float get() = sx
+    val floatY: Float get() = sy
+    val floatZ: Float get() = sz
+
+    val doubleX: Double get() = sx.toDouble()
+    val doubleY: Double get() = sy.toDouble()
+    val doubleZ: Double get() = sz.toDouble()
+
+    val ratioX: Ratio get() = sx.toRatio()
+    val ratioY: Ratio get() = sy.toRatio()
+    val ratioZ: Ratio get() = sz.toRatio()
+
+    constructor(sx: Double, sy: Double, sz: Double) : this(sx.toFloat(), sy.toFloat(), sz.toFloat())
+    constructor(sx: Int, sy: Int, sz: Int) : this(sx.toFloat(), sy.toFloat(), sz.toFloat())
+
+    fun withX(sx: Float): Anchor3 = Anchor3(sx, sy, sz)
+    fun withX(sx: Int): Anchor3 = Anchor3(sx.toFloat(), sy, sz)
+    fun withX(sx: Double): Anchor3 = Anchor3(sx.toFloat(), sy, sz)
+
+    fun withY(sy: Float): Anchor3 = Anchor3(sx, sy, sz)
+    fun withY(sy: Int): Anchor3 = Anchor3(sx, sy.toFloat(), sz)
+    fun withY(sy: Double): Anchor3 = Anchor3(sx, sy.toFloat(), sz)
+
+    fun withZ(sz: Float): Anchor3 = Anchor3(sx, sy, sz)
+    fun withZ(sz: Int): Anchor3 = Anchor3(sx, sy, sz.toFloat())
+    fun withZ(sz: Double): Anchor3 = Anchor3(sx, sy, sz.toFloat())
+
+    override fun interpolateWith(ratio: Ratio, other: Anchor3): Anchor3 = Anchor3(
+        ratio.interpolate(this.sx, other.sx),
+        ratio.interpolate(this.sy, other.sy),
+        ratio.interpolate(this.sz, other.sz),
+    )
+}

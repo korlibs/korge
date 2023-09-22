@@ -1,11 +1,9 @@
 package korlibs.image.util
 
 import korlibs.datastructure.*
-import korlibs.datastructure.doubleArrayListOf
 import korlibs.math.geom.*
-import korlibs.math.geom.range.until
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import korlibs.math.range.*
+import kotlin.test.*
 
 class NinePatchToolsTest {
     @Test

@@ -1,5 +1,7 @@
 package korlibs.math.geom
 
+import korlibs.math.annotations.*
+
 /** Represents an infinite [Ray] starting at [point] in the specified [direction] with an [angle] */
 //inline class Ray(val data: Float4Pack) {
 data class Ray
@@ -38,4 +40,45 @@ private constructor(
     fun toLine(length: Float = 100000f): Line = Line(point, point + direction * length)
 
     override fun toString(): String = "Ray($point, $angle)"
+}
+
+data class Ray3D(val pos: Vector3, val dir: Vector3) {//: Shape3D {
+    //override val center: Vector3 get() = pos
+    //override val volume: Float = 0f
+}
+
+@KormaMutableApi
+fun Ray3D.intersectRayAABox1(box: AABB3D) : Boolean {
+    val ray = this
+    // r.dir is unit direction vector of ray
+    val dirfrac = ray.dir.inv()
+    // lb is the corner of AABB with minimal coordinates - left bottom, rt is maximal corner
+    // r.org is origin of ray
+    val t1 = (box.min.x - ray.pos.x) * dirfrac.x
+    val t2 = (box.max.x - ray.pos.x) * dirfrac.x
+    val t3 = (box.min.y - ray.pos.y) * dirfrac.y
+    val t4 = (box.max.y - ray.pos.y) * dirfrac.y
+    val t5 = (box.min.z - ray.pos.z) * dirfrac.z
+    val t6 = (box.max.z - ray.pos.z) * dirfrac.z
+
+    val tmin =
+        kotlin.math.max(kotlin.math.max(kotlin.math.min(t1, t2), kotlin.math.min(t3, t4)), kotlin.math.min(t5, t6))
+    val tmax =
+        kotlin.math.min(kotlin.math.min(kotlin.math.max(t1, t2), kotlin.math.max(t3, t4)), kotlin.math.max(t5, t6))
+
+    // if tmax < 0, ray (line) is intersecting AABB, but whole AABB is behing us
+    if (tmax < 0) {
+        val t = tmax
+        return false
+    }
+
+    // if tmin > tmax, ray doesn't intersect AABB
+    if (tmin > tmax) {
+        val t = tmax
+        return false
+    }
+
+    val t = tmin
+    return true
+
 }

@@ -1,8 +1,30 @@
 package korlibs.math.geom
 
+import korlibs.math.geom.bezier.*
 import korlibs.math.geom.shape.*
 import korlibs.math.geom.vector.*
 import kotlin.math.*
+
+data class Circle(override val center: Point, val radius: Float) : AbstractShape2D() {
+    override val lazyVectorPath: VectorPath by lazy { buildVectorPath { circle(this@Circle.center, this@Circle.radius) } }
+
+    constructor(x: Float, y: Float, radius: Float) : this(Point(x, y), radius)
+
+    override val area: Float get() = (PIF * radius * radius)
+    override val perimeter: Float get() = (PI2F * radius)
+    override fun distance(p: Point): Float = (p - center).length - radius
+    override fun normalVectorAt(p: Point): Vector2 = (p - center).normalized
+
+    val radiusSquared: Float get() = radius * radius
+
+    fun distanceToCenterSquared(p: Point): Float = Point.distanceSquared(p, center)
+    // @TODO: Check if inside the circle
+    fun distanceClosestSquared(p: Point): Float = distanceToCenterSquared(p) - radiusSquared
+    // @TODO: Check if inside the circle
+    fun distanceFarthestSquared(p: Point): Float = distanceToCenterSquared(p) + radiusSquared
+    override fun projectedPoint(p: Point): Point = Point.polar(center, Angle.between(center, p), radius)
+    override fun containsPoint(p: Point): Boolean = (p - center).length <= radius
+}
 
 data class Ellipse(override val center: Point, val radius: Size) : Shape2D {
     override val area: Float get() = (PI * radius.widthD * radius.heightD).toFloat()
@@ -80,4 +102,25 @@ data class Ellipse(override val center: Point, val radius: Size) : Shape2D {
             return currentPoint
         }
     }
+}
+
+data class Polygon(val points: PointList) : AbstractShape2D() {
+    override val lazyVectorPath: VectorPath by lazy { buildVectorPath { polygon(points, close = true) }  }
+}
+
+data class Polyline(val points: PointList) : AbstractShape2D() {
+    override val lazyVectorPath: VectorPath by lazy { buildVectorPath { polygon(points, close = false) }  }
+}
+
+data class RoundRectangle(val rect: Rectangle, val corners: RectCorners) : AbstractShape2D() {
+    private fun areaQuarter(radius: Float): Float = Arc.length(radius, Angle.QUARTER)
+    private fun areaComplementaryQuarter(radius: Float): Float = (radius * radius) - areaQuarter(radius)
+    override val lazyVectorPath: VectorPath by lazy { buildVectorPath { roundRect(this@RoundRectangle) } }
+
+    override val area: Float get() = rect.area - (
+        areaComplementaryQuarter(corners.topLeft) +
+            areaComplementaryQuarter(corners.topRight) +
+            areaComplementaryQuarter(corners.bottomLeft) +
+            areaComplementaryQuarter(corners.bottomRight)
+        )
 }

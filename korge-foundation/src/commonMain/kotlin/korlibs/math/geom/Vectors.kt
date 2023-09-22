@@ -3,10 +3,20 @@
 package korlibs.math.geom
 
 import korlibs.math.*
+import korlibs.math.annotations.*
 import korlibs.math.interpolation.*
 import korlibs.number.*
 import kotlin.math.*
 
+data class Vec2d(val x: Double, val y: Double)
+typealias Vec2f = Vector2
+typealias Vec2i = PointInt
+data class Vec3d(val x: Double, val y: Double, val z: Double)
+typealias Vec3f = Vector3
+data class Vec3i(val x: Int, val y: Int, val z: Int)
+data class Vec4d(val x: Double, val y: Double, val z: Double, val w: Double)
+typealias Vec4f = Vector4
+typealias Vec4i = Vector4Int
 typealias Point = Vector2
 
 fun vec(x: Float, y: Float): Vector2 = Vector2(x, y)
@@ -352,3 +362,304 @@ fun Vector2.toIntCeil(): Vector2Int = Vector2Int(x.toIntCeil(), y.toIntCeil())
 fun Vector2.toIntRound(): Vector2Int = Vector2Int(x.toIntRound(), y.toIntRound())
 fun Vector2.toIntFloor(): Vector2Int = Vector2Int(x.toIntFloor(), y.toIntFloor())
 fun Vector2Int.toFloat(): Vector2 = Vector2(x, y)
+
+typealias PointInt = Vector2Int
+
+//@KormaValueApi
+data class Vector2Int(val x: Int, val y: Int) {
+    //operator fun component1(): Int = x
+    //operator fun component2(): Int = y
+    //fun copy(x: Int = this.x, y: Int = this.y): Vector2Int = Vector2Int(x, y)
+
+//inline class Vector2Int(internal val raw: Int2Pack) {
+
+    companion object {
+        val ZERO = Vector2Int(0, 0)
+    }
+
+    //val x: Int get() = raw.i0
+    //val y: Int get() = raw.i1
+
+    constructor() : this(0, 0)
+    //constructor(x: Int, y: Int) : this(int2PackOf(x, y))
+
+    val mutable: MPointInt get() = MPointInt(x, y)
+
+    operator fun plus(that: Vector2Int): Vector2Int = Vector2Int(this.x + that.x, this.y + that.y)
+    operator fun minus(that: Vector2Int): Vector2Int = Vector2Int(this.x - that.x, this.y - that.y)
+    operator fun times(that: Vector2Int): Vector2Int = Vector2Int(this.x * that.x, this.y * that.y)
+    operator fun div(that: Vector2Int): Vector2Int = Vector2Int(this.x / that.x, this.y / that.y)
+    operator fun rem(that: Vector2Int): Vector2Int = Vector2Int(this.x % that.x, this.y % that.y)
+
+    override fun toString(): String = "($x, $y)"
+}
+
+//inline class Vector3(val data: Float4Pack) {
+//data class Vector3(val x: Float, val y: Float, val z: Float, val w: Float) {
+data class Vector3(val x: Float, val y: Float, val z: Float) {
+    //operator fun component1(): Float = x
+    //operator fun component2(): Float = y
+    //operator fun component3(): Float = z
+    //fun copy(x: Float = this.x, y: Float = this.y, z: Float = this.z): Vector3 = Vector3(x, y, z)
+    //val x: Float get() = data.f0
+    //val y: Float get() = data.f1
+    //val z: Float get() = data.f2
+
+    companion object {
+        val NaN = Vector3(Float.NaN, Float.NaN, Float.NaN)
+
+        val ZERO = Vector3(0f, 0f, 0f)
+        val ONE = Vector3(1f, 1f, 1f)
+
+        val FORWARD	= Vector3(0f, 0f, 1f)
+        val BACK = Vector3(0f, 0f, -1f)
+        val LEFT = Vector3(-1f, 0f, 0f)
+        val RIGHT = Vector3(1f, 0f, 0f)
+        val UP = Vector3(0f, 1f, 0f)
+        val DOWN = Vector3(0f, -1f, 0f)
+
+        operator fun invoke(): Vector3 = ZERO
+
+        fun cross(a: Vector3, b: Vector3): Vector3 = Vector3(
+            ((a.y * b.z) - (a.z * b.y)),
+            ((a.z * b.x) - (a.x * b.z)),
+            ((a.x * b.y) - (a.y * b.x)),
+        )
+
+        fun length(x: Float, y: Float, z: Float): Float = sqrt(lengthSq(x, y, z))
+        fun lengthSq(x: Float, y: Float, z: Float): Float = x * x + y * y + z * z
+
+        fun fromArray(array: FloatArray, offset: Int): Vector3 =
+            Vector3(array[offset + 0], array[offset + 1], array[offset + 2])
+
+        inline fun func(func: (index: Int) -> Float): Vector3 = Vector3(func(0), func(1), func(2))
+    }
+
+    //constructor(x: Float, y: Float, z: Float) : this(float4PackOf(x, y, z, 0f))
+    constructor(x: Int, y: Int, z: Int) : this(x.toFloat(), y.toFloat(), z.toFloat())
+    constructor(x: Double, y: Double, z: Double) : this(x.toFloat(), y.toFloat(), z.toFloat())
+
+    val lengthSquared: Float get() = (x * x) + (y * y) + (z * z)
+    val length: Float get() = sqrt(lengthSquared)
+    fun normalized(): Vector3 {
+        val length = this.length
+        //if (length.isAlmostZero()) return Vector3.ZERO
+        if (length == 0f) return Vector3.ZERO
+        return this / length
+    }
+
+    // https://math.stackexchange.com/questions/13261/how-to-get-a-reflection-vector
+    // 𝑟=𝑑−2(𝑑⋅𝑛)𝑛
+    fun reflected(surfaceNormal: Vector3): Vector3 {
+        val d = this
+        val n = surfaceNormal
+        return d - 2f * (d dot n) * n
+    }
+
+    operator fun get(index: Int): Float = when (index) {
+        0 -> x
+        1 -> y
+        2 -> z
+        else -> throw IndexOutOfBoundsException()
+    }
+
+    operator fun unaryPlus(): Vector3 = this
+    operator fun unaryMinus(): Vector3 = Vector3(-this.x, -this.y, -this.z)
+
+    operator fun plus(v: Vector3): Vector3 = Vector3(this.x + v.x, this.y + v.y, this.z + v.z)
+    operator fun minus(v: Vector3): Vector3 = Vector3(this.x - v.x, this.y - v.y, this.z - v.z)
+
+    operator fun times(v: Vector3): Vector3 = Vector3(this.x * v.x, this.y * v.y, this.z * v.z)
+    operator fun div(v: Vector3): Vector3 = Vector3(this.x / v.x, this.y / v.y, this.z / v.z)
+    operator fun rem(v: Vector3): Vector3 = Vector3(this.x % v.x, this.y % v.y, this.z % v.z)
+
+    operator fun times(v: Float): Vector3 = Vector3(this.x * v, this.y * v, this.z * v)
+    operator fun div(v: Float): Vector3 = Vector3(this.x / v, this.y / v, this.z / v)
+    operator fun rem(v: Float): Vector3 = Vector3(this.x % v, this.y % v, this.z % v)
+
+    operator fun times(v: Int): Vector3 = this * v.toFloat()
+    operator fun div(v: Int): Vector3 = this / v.toFloat()
+    operator fun rem(v: Int): Vector3 = this % v.toFloat()
+
+    operator fun times(v: Double): Vector3 = this * v.toFloat()
+    operator fun div(v: Double): Vector3 = this / v.toFloat()
+    operator fun rem(v: Double): Vector3 = this % v.toFloat()
+
+    infix fun dot(v: Vector3): Float = (x * v.x) + (y * v.y) + (z * v.z)
+    infix fun cross(v: Vector3): Vector3 = cross(this, v)
+
+    /** Vector3 with inverted (1f / v) components to this */
+    fun inv(): Vector3 = Vector3(1f / x, 1f / y, 1f / z)
+
+    fun isNaN(): Boolean = this.x.isNaN() && this.y.isNaN() && this.z.isNaN()
+    val absoluteValue: Vector3 get() = Vector3(abs(x), abs(y), abs(z))
+
+    override fun toString(): String = "Vector3(${x.niceStr}, ${y.niceStr}, ${z.niceStr})"
+
+    fun toVector4(w: Float = 1f): Vector4 = Vector4(x, y, z, w)
+    fun isAlmostEquals(other: Vector3, epsilon: Float = 0.00001f): Boolean =
+        this.x.isAlmostEquals(other.x, epsilon) && this.y.isAlmostEquals(other.y, epsilon) && this.z.isAlmostEquals(other.z, epsilon)
+}
+
+operator fun Int.times(v: Vector3): Vector3 = v * this
+operator fun Float.times(v: Vector3): Vector3 = v * this
+operator fun Double.times(v: Vector3): Vector3 = v * this
+
+fun vec(x: Float, y: Float, z: Float): Vector3 = Vector3(x, y, z)
+fun vec3(x: Float, y: Float, z: Float): Vector3 = Vector3(x, y, z)
+
+@KormaMutableApi
+@Deprecated("")
+sealed interface IVector3 {
+    val x: Float
+    val y: Float
+    val z: Float
+
+    operator fun get(index: Int): Float = when (index) {
+        0 -> x
+        1 -> y
+        2 -> z
+        else -> 0f
+    }
+}
+
+fun abs(a: Vector3): Vector3 = a.absoluteValue
+fun min(a: Vector3, b: Vector3): Vector3 = Vector3(min(a.x, b.x), min(a.y, b.y), min(a.z, b.z))
+fun max(a: Vector3, b: Vector3): Vector3 = Vector3(max(a.x, b.x), max(a.y, b.y), max(a.z, b.z))
+fun Vector3.clamp(min: Float, max: Float): Vector3 = Vector3(x.clamp(min, max), y.clamp(min, max), z.clamp(min, max))
+fun Vector3.clamp(min: Double, max: Double): Vector3 = clamp(min.toFloat(), max.toFloat())
+fun Vector3.clamp(min: Vector3, max: Vector3): Vector3 = Vector3(x.clamp(min.x, max.x), y.clamp(min.y, max.y), z.clamp(min.z, max.z))
+
+//fun Vector3.toInt(): Vector3Int = Vector3Int(x.toInt(), y.toInt(), z.toInt())
+//fun Vector3.toIntCeil(): Vector3Int = Vector3Int(x.toIntCeil(), y.toIntCeil(), z.toIntCeil())
+//fun Vector3.toIntRound(): Vector3Int = Vector3Int(x.toIntRound(), y.toIntRound(), z.toIntRound())
+//fun Vector3.toIntFloor(): Vector3Int = Vector3Int(x.toIntFloor(), y.toIntFloor(), z.toIntFloor())
+
+//@KormaValueApi
+//inline class Vector4(val data: Float4) {
+data class Vector4(val x: Float, val y: Float, val z: Float, val w: Float) {
+    //operator fun component1(): Float = x
+    //operator fun component2(): Float = y
+    //operator fun component3(): Float = z
+    //operator fun component4(): Float = w
+    //val x: Float get() = data.f0
+    //val y: Float get() = data.f1
+    //val z: Float get() = data.f2
+    //val w: Float get() = data.f3
+    //fun copy(x: Float = this.x, y: Float = this.y, z: Float = this.z, w: Float = this.w): Vector4 = Vector4(x, y, z, w)
+
+    companion object {
+        val ZERO = Vector4(0f, 0f, 0f, 0f)
+        val ONE = Vector4(1f, 1f, 1f, 1f)
+
+        operator fun invoke(): Vector4 = Vector4.ZERO
+
+        //fun cross(a: Vector4, b: Vector4): Vector4 = Vector4(
+        //    (a.y * b.z - a.z * b.y),
+        //    (a.z * b.x - a.x * b.z),
+        //    (a.x * b.y - a.y * b.x),
+        //    1f
+        //)
+
+        //fun cross(v1: Vector4, v2: Vector4, v3: Vector4): Vector4 = TODO()
+        fun fromArray(array: FloatArray, offset: Int = 0): Vector4 = Vector4(array[offset + 0], array[offset + 1], array[offset + 2], array[offset + 3])
+
+        fun length(x: Float, y: Float, z: Float, w: Float): Float = sqrt(lengthSq(x, y, z, w))
+        fun lengthSq(x: Float, y: Float, z: Float, w: Float): Float = x * x + y * y + z * z + w * w
+
+        inline fun func(func: (index: Int) -> Float): Vector4 = Vector4(func(0), func(1), func(2), func(3))
+    }
+
+    constructor(xyz: Vector3, w: Float) : this(xyz.x, xyz.y, xyz.z, w)
+    //constructor(x: Float, y: Float, z: Float, w: Float) : this(float4PackOf(x, y, z, w))
+    constructor(x: Int, y: Int, z: Int, w: Int) : this(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat())
+    constructor(x: Double, y: Double, z: Double, w: Double) : this(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat())
+
+    val xyz: Vector3 get() = Vector3(x, y, z)
+
+    val length3Squared: Float get() = (x * x) + (y * y) + (z * z)
+    /** Only taking into accoount x, y, z */
+    val length3: Float get() = sqrt(length3Squared)
+
+    val lengthSquared: Float get() = (x * x) + (y * y) + (z * z) + (w * w)
+    val length: Float get() = sqrt(lengthSquared)
+
+    fun normalized(): Vector4 {
+        val length = this.length
+        if (length == 0f) return Vector4.ZERO
+        return this / length
+    }
+
+    operator fun get(index: Int): Float = when (index) {
+        0 -> x
+        1 -> y
+        2 -> z
+        3 -> w
+        else -> throw IndexOutOfBoundsException()
+    }
+
+    operator fun unaryPlus(): Vector4 = this
+    operator fun unaryMinus(): Vector4 = Vector4(-x, -y, -z, -w)
+
+    operator fun plus(v: Vector4): Vector4 = Vector4(x + v.x, y + v.y, z + v.z, w + v.w)
+    operator fun minus(v: Vector4): Vector4 = Vector4(x - v.x, y - v.y, z - v.z, w - v.w)
+
+    operator fun times(v: Vector4): Vector4 = Vector4(x * v.x, y * v.y, z * v.z, w * v.w)
+    operator fun div(v: Vector4): Vector4 = Vector4(x / v.x, y / v.y, z / v.z, w / v.w)
+    operator fun rem(v: Vector4): Vector4 = Vector4(x % v.x, y % v.y, z % v.z, w % v.w)
+
+    operator fun times(v: Float): Vector4 = Vector4(x * v, y * v, z * v, w * v)
+    operator fun div(v: Float): Vector4 = Vector4(x / v, y / v, z / v, w / v)
+    operator fun rem(v: Float): Vector4 = Vector4(x % v, y % v, z % v, w % v)
+
+    infix fun dot(v: Vector4): Float = (x * v.x) + (y * v.y) + (z * v.z) + (w * v.w)
+    //infix fun cross(v: Vector4): Vector4 = cross(this, v)
+
+    fun copyTo(out: FloatArray, offset: Int = 0): FloatArray {
+        out[offset + 0] = x
+        out[offset + 1] = y
+        out[offset + 2] = z
+        out[offset + 3] = w
+        return out
+    }
+
+    /** Vector4 with inverted (1f / v) components to this */
+    fun inv(): Vector4 = Vector4(1f / x, 1f / y, 1f / z, 1f / w)
+
+    fun isNaN(): Boolean = this.x.isNaN() && this.y.isNaN() && this.z.isNaN() && this.w.isNaN()
+    val absoluteValue: Vector4 get() = Vector4(abs(x), abs(y), abs(z), abs(w))
+
+    override fun toString(): String = "Vector4(${x.niceStr}, ${y.niceStr}, ${z.niceStr}, ${w.niceStr})"
+
+    // @TODO: Should we scale Vector3 by w?
+    fun toVector3(): Vector3 = Vector3(x, y, z)
+    fun isAlmostEquals(other: Vector4, epsilon: Float = 0.00001f): Boolean =
+        this.x.isAlmostEquals(other.x, epsilon) && this.y.isAlmostEquals(other.y, epsilon) && this.z.isAlmostEquals(other.z, epsilon) && this.w.isAlmostEquals(other.w, epsilon)
+}
+
+fun vec(x: Float, y: Float, z: Float, w: Float): Vector4 = Vector4(x, y, z, w)
+fun vec4(x: Float, y: Float, z: Float, w: Float = 1f): Vector4 = Vector4(x, y, z, w)
+
+fun abs(a: Vector4): Vector4 = a.absoluteValue
+fun min(a: Vector4, b: Vector4): Vector4 = Vector4(min(a.x, b.x), min(a.y, b.y), min(a.z, b.z), min(a.w, b.w))
+fun max(a: Vector4, b: Vector4): Vector4 = Vector4(max(a.x, b.x), max(a.y, b.y), max(a.z, b.z), max(a.w, b.w))
+fun Vector4.clamp(min: Float, max: Float): Vector4 = Vector4(x.clamp(min, max), y.clamp(min, max), z.clamp(min, max), w.clamp(min, max))
+fun Vector4.clamp(min: Double, max: Double): Vector4 = clamp(min.toFloat(), max.toFloat())
+fun Vector4.clamp(min: Vector4, max: Vector4): Vector4 = Vector4(x.clamp(min.x, max.x), y.clamp(min.y, max.y), z.clamp(min.z, max.z), w.clamp(min.w, max.w))
+
+data class Vector4Int(val x: Int, val y: Int, val z: Int, val w: Int) {
+}
+
+data class PointFixed(val x: Fixed, val y: Fixed) {
+    operator fun unaryMinus(): PointFixed = PointFixed(-this.x, -this.y)
+    operator fun unaryPlus(): PointFixed = this
+
+    operator fun plus(that: PointFixed): PointFixed = PointFixed(this.x + that.x, this.y + that.y)
+    operator fun minus(that: PointFixed): PointFixed = PointFixed(this.x - that.x, this.y - that.y)
+    operator fun times(that: PointFixed): PointFixed = PointFixed(this.x * that.x, this.y * that.y)
+    operator fun times(that: Fixed): PointFixed = PointFixed(this.x * that, this.y * that)
+    operator fun div(that: PointFixed): PointFixed = PointFixed(this.x / that.x, this.y / that.y)
+    operator fun rem(that: PointFixed): PointFixed = PointFixed(this.x % that.x, this.y % that.y)
+
+    override fun toString(): String = "($x, $y)"
+}
