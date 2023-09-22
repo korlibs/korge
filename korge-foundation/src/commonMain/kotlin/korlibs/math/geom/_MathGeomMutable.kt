@@ -1997,6 +1997,19 @@ val Matrix4.mutable: MMatrix4 get() = MMatrix4().setColumns4x4(copyToColumns(), 
 
 typealias MVector2D = MPoint
 
+@Deprecated("Allocates") val MPoint.int: MPointInt get() = MPointInt(this.x.toInt(), this.y.toInt())
+@Deprecated("Allocates") val MPointInt.double: MPoint get() = MPoint(x.toDouble(), y.toDouble())
+
+@Deprecated("")
+fun Point.toMPoint(out: MPoint = MPoint()): MPoint = out.setTo(x, y)
+@Deprecated("")
+fun Point.mutable(out: MPoint = MPoint()): MPoint = out.setTo(x, y)
+@Deprecated("")
+val Point.mutable: MPoint get() = mutable()
+
+@Deprecated("")
+fun Point(p: MPoint): Point = Point(p.x.toFloat(), p.y.toFloat())
+
 @KormaMutableApi
 @Deprecated("Use Point instead")
 data class MPoint(
@@ -2272,6 +2285,8 @@ fun Iterable<MPoint>.bounds(out: MRectangle = MRectangle(), bb: MBoundsBuilder =
 fun min(a: MPoint, b: MPoint, out: MPoint = MPoint()): MPoint = out.setTo(kotlin.math.min(a.x, b.x), kotlin.math.min(a.y, b.y))
 fun max(a: MPoint, b: MPoint, out: MPoint = MPoint()): MPoint = out.setTo(kotlin.math.max(a.x, b.x), kotlin.math.max(a.y, b.y))
 fun MPoint.clamp(min: Double, max: Double, out: MPoint = MPoint()): MPoint = out.setTo(x.clamp(min, max), y.clamp(min, max))
+
+val Vector2Int.mutable: MPointInt get() = MPointInt(x, y)
 
 @KormaMutableApi
 @Deprecated("Use PointInt instead")
@@ -2961,6 +2976,21 @@ interface MSizeable {
 @KormaMutableApi
 @Deprecated("")
 fun mvec(x: Float, y: Float, z: Float): MVector3 = MVector3(x, y, z)
+
+@KormaMutableApi
+@Deprecated("")
+sealed interface IVector3 {
+    val x: Float
+    val y: Float
+    val z: Float
+
+    operator fun get(index: Int): Float = when (index) {
+        0 -> x
+        1 -> y
+        2 -> z
+        else -> 0f
+    }
+}
 
 @KormaMutableApi
 @Deprecated("")
