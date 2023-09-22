@@ -8,8 +8,9 @@ import korlibs.datastructure.lock.*
 import korlibs.io.android.*
 import korlibs.io.async.*
 import korlibs.time.*
+import kotlinx.coroutines.*
 import kotlin.coroutines.*
-import kotlin.coroutines.cancellation.*
+import kotlin.coroutines.cancellation.CancellationException
 
 actual val nativeSoundProvider: NativeSoundProvider by lazy { AndroidNativeSoundProvider() }
 
