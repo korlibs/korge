@@ -5,6 +5,7 @@ package korlibs.math.geom.slice
 import korlibs.datastructure.*
 import korlibs.math.*
 import korlibs.math.geom.*
+import korlibs.memory.*
 
 data class RectCoords(
     override val tlX: Float, override val tlY: Float,
