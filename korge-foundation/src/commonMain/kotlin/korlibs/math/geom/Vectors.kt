@@ -3,7 +3,6 @@
 package korlibs.math.geom
 
 import korlibs.math.*
-import korlibs.math.annotations.*
 import korlibs.math.interpolation.*
 import korlibs.number.*
 import kotlin.math.*
@@ -57,8 +56,6 @@ data class Vector2(val x: Float, val y: Float) {
     constructor(x: Float, y: Int) : this(x.toFloat(), y.toFloat())
     constructor(x: Int, y: Float) : this(x.toFloat(), y.toFloat())
 
-    @Deprecated("")
-    constructor(p: MPoint) : this(p.x.toFloat(), p.y.toFloat())
     //constructor(p: Vector2) : this(p.raw)
     constructor() : this(0f, 0f)
     //constructor(x: Int, y: Int) : this(x.toDouble(), y.toDouble())
@@ -315,16 +312,6 @@ data class Vector2(val x: Float, val y: Float) {
     }
 }
 
-@Deprecated("Allocates") val MPoint.int: MPointInt get() = MPointInt(this.x.toInt(), this.y.toInt())
-@Deprecated("Allocates") val MPointInt.double: MPoint get() = MPoint(x.toDouble(), y.toDouble())
-
-@Deprecated("")
-fun Point.toMPoint(out: MPoint = MPoint()): MPoint = out.setTo(x, y)
-@Deprecated("")
-fun Point.mutable(out: MPoint = MPoint()): MPoint = out.setTo(x, y)
-@Deprecated("")
-val Point.mutable: MPoint get() = mutable()
-
 internal inline fun getPolylineLength(size: Int, crossinline get: (n: Int) -> Point): Double {
     var out = 0.0
     var prev = Point.ZERO
@@ -382,8 +369,6 @@ data class Vector2Int(val x: Int, val y: Int) {
 
     constructor() : this(0, 0)
     //constructor(x: Int, y: Int) : this(int2PackOf(x, y))
-
-    val mutable: MPointInt get() = MPointInt(x, y)
 
     operator fun plus(that: Vector2Int): Vector2Int = Vector2Int(this.x + that.x, this.y + that.y)
     operator fun minus(that: Vector2Int): Vector2Int = Vector2Int(this.x - that.x, this.y - that.y)
@@ -507,21 +492,6 @@ operator fun Double.times(v: Vector3): Vector3 = v * this
 
 fun vec(x: Float, y: Float, z: Float): Vector3 = Vector3(x, y, z)
 fun vec3(x: Float, y: Float, z: Float): Vector3 = Vector3(x, y, z)
-
-@KormaMutableApi
-@Deprecated("")
-sealed interface IVector3 {
-    val x: Float
-    val y: Float
-    val z: Float
-
-    operator fun get(index: Int): Float = when (index) {
-        0 -> x
-        1 -> y
-        2 -> z
-        else -> 0f
-    }
-}
 
 fun abs(a: Vector3): Vector3 = a.absoluteValue
 fun min(a: Vector3, b: Vector3): Vector3 = Vector3(min(a.x, b.x), min(a.y, b.y), min(a.z, b.z))
