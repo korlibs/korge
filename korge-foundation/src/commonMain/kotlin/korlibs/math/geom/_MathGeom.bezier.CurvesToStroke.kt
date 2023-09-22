@@ -1,3 +1,5 @@
+@file:Suppress("PackageDirectoryMismatch")
+
 package korlibs.math.geom.bezier
 
 import korlibs.datastructure.*

@@ -1,3 +1,5 @@
+@file:Suppress("PackageDirectoryMismatch")
+
 package korlibs.math.geom.bezier
 
 import korlibs.datastructure.*
@@ -5,10 +7,141 @@ import korlibs.datastructure.iterators.*
 import korlibs.math.geom.*
 import korlibs.math.interpolation.*
 import korlibs.math.*
+import korlibs.math.annotations.*
+import korlibs.math.geom.convex.*
+import korlibs.math.geom.shape.*
+import korlibs.math.geom.vector.*
 import korlibs.math.isAlmostZero
 import korlibs.memory.*
+import korlibs.number.*
 import kotlin.contracts.*
+import kotlin.jvm.*
 import kotlin.math.*
+import kotlin.native.concurrent.*
+
+object Arc {
+    // http://hansmuller-flex.blogspot.com/2011/04/approximating-circular-arc-with-cubic.html
+    //val K = (4.0 / 3.0) * (sqrt(2.0) - 1.0)
+    const val K = 0.5522847498307933
+
+    fun area(radius: Float, angle: Angle): Float = (PIF * radius * radius) * angle.ratioF
+    fun length(radius: Float, angle: Angle): Float = PI2F * radius * angle.ratioF
+
+    fun arcToPath(out: VectorBuilder, a: Point, c: Point, r: Double) {
+        if (out.isEmpty()) out.moveTo(a)
+        val b = out.lastPos
+        val AB = b - a
+        val AC = c - a
+        val angle = Point.angleArc(AB, AC).radiansD * 0.5
+        val x = r * sin((PI / 2.0) - angle) / sin(angle)
+        val A = a + AB.unit * x
+        val B = a + AC.unit * x
+        out.lineTo(A)
+        out.quadTo(a, B)
+    }
+
+    fun ellipsePath(out: VectorBuilder, p: Point, rsize: Size) {
+        val (x, y) = p
+        val (rw, rh) = rsize
+        val k = K.toFloat()
+        val ox = (rw / 2) * k
+        val oy = (rh / 2) * k
+        val xe = x + rw
+        val ye = y + rh
+        val xm = x + rw / 2
+        val ym = y + rh / 2
+        out.moveTo(Point(x, ym))
+        out.cubicTo(Point(x, ym - oy), Point(xm - ox, y), Point(xm, y))
+        out.cubicTo(Point(xm + ox, y), Point(xe, ym - oy), Point(xe, ym))
+        out.cubicTo(Point(xe, ym + oy), Point(xm + ox, ye), Point(xm, ye))
+        out.cubicTo(Point(xm - ox, ye), Point(x, ym + oy), Point(x, ym))
+        out.close()
+    }
+
+    fun arcPath(out: VectorBuilder, p1: Point, p2: Point, radius: Float, counterclockwise: Boolean = false) {
+        val circleCenter = findArcCenter(p1, p2, radius)
+        arcPath(out, circleCenter, radius, Angle.between(circleCenter, p1), Angle.between(circleCenter, p2), counterclockwise)
+    }
+
+    fun arcPath(out: VectorBuilder, center: Point, r: Float, start: Angle, end: Angle, counterclockwise: Boolean = false) {
+        val (x, y) = center
+        // http://hansmuller-flex.blogspot.com.es/2011/04/approximating-circular-arc-with-cubic.html
+        val startAngle = start.normalized
+        val endAngle1 = end.normalized
+        val endAngle = if (endAngle1 < startAngle) (endAngle1 + Angle.FULL) else endAngle1
+        var remainingAngle = min(Angle.FULL, abs(endAngle - startAngle))
+        //println("remainingAngle=$remainingAngle")
+        if (remainingAngle.absoluteValue < Angle.EPSILON && start != end) remainingAngle = Angle.FULL
+        val sgn1 = if (startAngle < endAngle) +1 else -1
+        val sgn = if (counterclockwise) -sgn1 else sgn1
+        if (counterclockwise) {
+            remainingAngle = Angle.FULL - remainingAngle
+            if (remainingAngle.absoluteValue < Angle.EPSILON && start != end) remainingAngle = Angle.FULL
+        }
+        var a1 = startAngle
+        var index = 0
+
+        //println("start=$start, end=$end, startAngle=$startAngle, remainingAngle=$remainingAngle")
+
+        while (remainingAngle > Angle.EPSILON) {
+            val a2 = a1 + min(remainingAngle, Angle.QUARTER) * sgn
+
+            val a = (a2 - a1) / 2.0
+            val x4 = r * a.cosineD
+            val y4 = r * a.sineD
+            val x1 = x4
+            val y1 = -y4
+            val f = K * a.tangentD
+            val x2 = x1 + f * y4
+            val y2 = y1 + f * x4
+            val x3 = x2
+            val y3 = -y2
+            val ar = a + a1
+            val cos_ar = ar.cosineD
+            val sin_ar = ar.sineD
+
+            if (index == 0) {
+                out.moveTo(Point(x + r * a1.cosineD, y + r * a1.sineD))
+            }
+            out.cubicTo(
+                Point(x + x2 * cos_ar - y2 * sin_ar, y + x2 * sin_ar + y2 * cos_ar),
+                Point(x + x3 * cos_ar - y3 * sin_ar, y + x3 * sin_ar + y3 * cos_ar),
+                Point(x + r * a2.cosineD, y + r * a2.sineD),
+            )
+            //println(" - ARC: $a1-$a2")
+            index++
+            remainingAngle -= abs(a2 - a1)
+            a1 = a2
+        }
+        if (startAngle == endAngle && index != 0) out.close()
+    }
+
+    // c = √(a² + b²)
+    // b = √(c² - a²)
+    private fun triangleFindSideFromSideAndHypot(side: Float, hypot: Float): Float =
+        kotlin.math.sqrt(hypot * hypot - side * side)
+
+    fun findArcCenter(p1: Point, p2: Point, radius: Float): Point {
+        val tangent = p2 - p1
+        val normal = tangent.toNormal().normalized
+        val mid = (p1 + p2) / 2.0
+        val lineLen = triangleFindSideFromSideAndHypot(Point.distance(p1, mid), radius)
+        return mid + normal * lineLen
+    }
+
+    fun createArc(p1: Point, p2: Point, radius: Float, counterclockwise: Boolean = false): Curves =
+        buildVectorPath { arcPath(this, p1, p2, radius, counterclockwise) }.toCurves()
+
+    fun createEllipse(p: Point, radius: Size): Curves =
+        buildVectorPath { ellipsePath(this, p, radius) }.toCurves()
+
+    fun createCircle(p: Point, radius: Float): Curves =
+        buildVectorPath { arc(p, radius, Angle.ZERO, Angle.FULL) }.toCurves()
+
+    fun createArc(p: Point, r: Float, start: Angle, end: Angle, counterclockwise: Boolean = false): Curves =
+        buildVectorPath { arcPath(this, p, r, start, end, counterclockwise) }.toCurves()
+
+}
 
 /**
  * Port of the operations of the library Bezier.JS with some adjustments,
@@ -1288,3 +1421,494 @@ class Bezier private constructor(val points: PointList, dummy: Unit) : Curve {
 
 fun Line.toBezier(): Bezier = Bezier(Point(x0, y0), Point(x1, y1))
 fun MLine.toBezier(): Bezier = Bezier(Point(x0, y0), Point(x1, y1))
+
+interface Curve {
+    val order: Int
+    fun getBounds(): Rectangle
+    fun normal(t: Float): Point
+    fun tangent(t: Float): Point
+    fun calc(t: Float): Point
+    fun ratioFromLength(length: Float): Float = TODO()
+    val length: Float
+    // @TODO: We should probably have a function to get ratios in the function to place the points maybe based on inflection points?
+    fun recommendedDivisions(): Int = DEFAULT_STEPS
+    fun calcOffset(t: Float, offset: Float): Point = calc(t) + normal(t) * offset
+
+
+    companion object {
+        const val DEFAULT_STEPS = 100
+    }
+}
+
+@PublishedApi
+internal fun Curve._getPoints(count: Int = this.recommendedDivisions(), equidistant: Boolean = false, out: PointArrayList = PointArrayList()): PointList {
+    val curveLength = length
+    Ratio.forEachRatio(count) { ratio ->
+        val t = if (equidistant) ratioFromLength(ratio.toFloat() * curveLength) else ratio.toFloat()
+        //println("${this::class.simpleName}: ratio: $ratio, point=$point")
+        out.add(calc(t))
+    }
+    return out
+}
+
+fun Curve.getPoints(count: Int = this.recommendedDivisions(), out: PointArrayList = PointArrayList()): PointList {
+    return _getPoints(count, equidistant = false, out = out)
+}
+
+fun Curve.getEquidistantPoints(count: Int = this.recommendedDivisions(), out: PointArrayList = PointArrayList()): PointList {
+    return _getPoints(count, equidistant = true, out = out)
+}
+
+data class CurveLUT(val curve: Curve, val points: PointArrayList, val ts: FloatArrayList, private val _estimatedLengths: FloatArrayList) {
+    constructor(curve: Curve, capacity: Int) : this(
+        curve,
+        PointArrayList(capacity),
+        FloatArrayList(capacity),
+        FloatArrayList(capacity)
+    )
+
+    val estimatedLengths: FloatArrayList
+        get() {
+            if (_estimatedLengths.isEmpty()) {
+                _estimatedLengths.add(0f)
+            }
+            while (_estimatedLengths.size < size) {
+                val pos = _estimatedLengths.size
+                val prev = _estimatedLengths.last()
+                _estimatedLengths.add(prev + Point.distance(points[pos - 1], points[pos]))
+            }
+            return _estimatedLengths
+        }
+    val estimatedLength: Float get() = estimatedLengths.last()
+    val steps: Int get() = points.size - 1
+    val size: Int get() = points.size
+
+    fun clear() {
+        points.clear()
+        ts.clear()
+        _estimatedLengths.clear()
+    }
+
+    fun add(t: Float, p: Point) {
+        points.add(p)
+        ts.add(t)
+    }
+
+    class ClosestResult(val mdistSq: Float, val mpos: Int) {
+        val mdist: Float get() = kotlin.math.sqrt(mdistSq)
+    }
+
+    fun closest(point: Point): ClosestResult {
+        var mdistSq: Float = Float.POSITIVE_INFINITY
+        var mpos: Int = 0
+        for (n in 0 until size) {
+            val d = Point.distanceSquared(this.points[n], point).toFloat()
+            if (d < mdistSq) {
+                mdistSq = d
+                mpos = n
+            }
+        }
+        return ClosestResult(mdistSq = mdistSq, mpos = mpos)
+    }
+
+    data class Estimation(var point: Point = Point(), var ratio: Float = 0f, var length: Float = 0f) {
+        fun roundDecimalDigits(places: Int): Estimation = Estimation(point.roundDecimalPlaces(places), ratio.roundDecimalPlaces(places), length.roundDecimalPlaces(places))
+        override fun toString(): String = "Estimation(point=${point.niceStr}, ratio=${ratio.niceStr}, length=${length.niceStr})"
+    }
+
+    fun Estimation.setAtIndexRatio(index: Int, ratio: Float): Estimation {
+        val ratio0 = ts[index]
+        //println("estimatedLengths=$estimatedLengths")
+        val length0 = estimatedLengths[index]
+        val point0 = points[index]
+        if (ratio == 0f) {
+            this.ratio = ratio0
+            this.length = length0
+            this.point = point0
+        } else {
+            val ratio1 = ts[index + 1]
+            val length1 = estimatedLengths[index + 1]
+            val point1 = points[index + 1]
+            this.ratio = ratio.toRatio().interpolate(ratio0, ratio1)
+            this.length = ratio.toRatio().interpolate(length0, length1)
+            this.point = ratio.toRatio().interpolate(point0, point1)
+        }
+
+        return this
+    }
+
+    private fun estimateAt(
+        values: FloatArrayList,
+        value: Float,
+        out: Estimation = Estimation()
+    ): Estimation {
+        val result = values.binarySearch(value)
+        if (result.found) return out.setAtIndexRatio(result.index, 0f)
+        val index = result.nearIndex
+        if (value <= 0.0) return out.setAtIndexRatio(0, 0f)
+        if (index >= values.size - 1) return out.setAtIndexRatio(points.size - 1, 0f)
+        // @TODO: Since we have the curve, we can try to be more accurate and actually find a better point between found points
+        val ratio0 = values[index]
+        val ratio1 = values[index + 1]
+        val ratio = value.convertRange(ratio0, ratio1, 0f, 1f)
+        return out.setAtIndexRatio(index, ratio)
+    }
+
+    fun estimateAtT(t: Float, out: Estimation = Estimation()): Estimation {
+        return estimateAt(ts, t, out)
+    }
+
+    fun estimateAtEquidistantRatio(ratio: Float, out: Estimation = Estimation()): Estimation {
+        return estimateAtLength(estimatedLength * ratio, out)
+    }
+
+    fun estimateAtLength(length: Float, out: Estimation = Estimation()): Estimation {
+        return estimateAt(estimatedLengths, length, out)
+    }
+
+    fun toEquidistantLUT(out: CurveLUT = CurveLUT(curve, points.size)): CurveLUT {
+        val steps = this.steps
+        val length = estimatedLength
+        val result = Estimation()
+        Ratio.forEachRatio(steps) { ratio ->
+            val len = ratio.convertToRange(0f, length)
+            val est = estimateAtLength(len, result)
+            add(est.ratio, est.point)
+        }
+        return out
+    }
+
+    override fun toString(): String =
+        "CurveLUT[$curve](${
+            (0 until size).joinToString(", ") {
+                "${ts[it]},len=${estimatedLengths[it]}: ${points[it]}"
+            }
+        })"
+}
+
+@JvmName("ListCurves_toCurves")
+fun List<Curves>.toCurves(closed: Boolean = this.last().closed) = Curves(this.flatMap { it.beziers }, closed)
+@JvmName("ListCurve_toCurves")
+fun List<Bezier>.toCurves(closed: Boolean) = Curves(this, closed)
+
+fun Curves.toCurves(closed: Boolean) = this
+fun Bezier.toCurves(closed: Boolean) = Curves(listOf(this), closed)
+
+data class Curves(val beziers: List<Bezier>, val closed: Boolean) : Curve, Extra by Extra.Mixin() {
+    var assumeConvex: Boolean = false
+
+    /**
+     * All [beziers] in this set are contiguous
+     */
+    val contiguous by lazy {
+        for (n in 1 until beziers.size) {
+            val curr = beziers[n - 1]
+            val next = beziers[n]
+            if (!curr.points.last.isAlmostEquals(next.points.first)) return@lazy false
+            //if (!curr.points.lastX.isAlmostEquals(next.points.firstX)) return@lazy false
+            //if (!curr.points.lastY.isAlmostEquals(next.points.firstY)) return@lazy false
+        }
+        return@lazy true
+    }
+
+    constructor(vararg curves: Bezier, closed: Boolean = false) : this(curves.toList(), closed)
+
+    override val order: Int get() = -1
+
+    data class CurveInfo(
+        val index: Int,
+        val curve: Bezier,
+        val startLength: Float,
+        val endLength: Float,
+        val bounds: Rectangle,
+    ) {
+        fun contains(length: Float): Boolean = length in startLength..endLength
+
+        val length: Float get() = endLength - startLength
+    }
+
+    val infos: List<CurveInfo> by lazy {
+        var pos = 0f
+        beziers.mapIndexed { index, curve ->
+            val start = pos
+            pos += curve.length
+            CurveInfo(index, curve, start, pos, curve.getBounds())
+        }
+
+    }
+    override val length: Float by lazy { infos.sumOfFloat { it.length } }
+
+    val CurveInfo.startRatio: Float get() = this.startLength / this@Curves.length
+    val CurveInfo.endRatio: Float get() = this.endLength / this@Curves.length
+
+    override fun getBounds(): Rectangle {
+        var bb = BoundsBuilder()
+        infos.fastForEach { bb += it.bounds }
+        return bb.bounds
+    }
+
+    @PublishedApi
+    internal fun findInfo(t: Float): CurveInfo {
+        val pos = t * length
+        val index = infos.binarySearch {
+            when {
+                it.contains(pos) -> 0
+                it.endLength < pos -> -1
+                else -> +1
+            }
+        }
+        if (t < 0.0) return infos.first()
+        if (t > 1.0) return infos.last()
+        return infos.getOrNull(index) ?: error("OUTSIDE")
+    }
+
+    @PublishedApi
+    internal inline fun <T> findTInCurve(t: Float, block: (info: CurveInfo, ratioInCurve: Float) -> T): T {
+        val pos = t * length
+        val info = findInfo(t)
+        val posInCurve = pos - info.startLength
+        val ratioInCurve = posInCurve / info.length
+        return block(info, ratioInCurve)
+    }
+
+    override fun calc(t: Float): Point =
+        findTInCurve(t) { info, ratioInCurve -> info.curve.calc(ratioInCurve) }
+
+    override fun normal(t: Float): Point =
+        findTInCurve(t) { info, ratioInCurve -> info.curve.normal(ratioInCurve) }
+
+    override fun tangent(t: Float): Point =
+        findTInCurve(t) { info, ratioInCurve -> info.curve.tangent(ratioInCurve) }
+
+    override fun ratioFromLength(length: Float): Float {
+        if (length <= 0f) return 0f
+        if (length >= this.length) return 1f
+
+        val curveIndex = infos.binarySearch {
+            when {
+                it.endLength < length -> -1
+                it.startLength > length -> +1
+                else -> 0
+            }
+        }
+        val index = if (curveIndex < 0) -curveIndex + 1 else curveIndex
+        if (curveIndex < 0) {
+            //infos.fastForEach { println("it=$it") }
+            //println("length=${this.length}, requestedLength = $length, curveIndex=$curveIndex")
+            return Float.NaN
+        } // length not in curve!
+        val info = infos[index]
+        val lengthInCurve = length - info.startLength
+        val ratioInCurve = info.curve.ratioFromLength(lengthInCurve)
+        return ratioInCurve.convertRange(0f, 1f, info.startRatio, info.endRatio)
+    }
+
+    fun splitLeftByLength(len: Float): Curves = splitLeft(ratioFromLength(len))
+    fun splitRightByLength(len: Float): Curves = splitRight(ratioFromLength(len))
+    fun splitByLength(len0: Float, len1: Float): Curves = split(ratioFromLength(len0), ratioFromLength(len1))
+
+    fun splitLeft(t: Float): Curves = split(0f, t)
+    fun splitRight(t: Float): Curves = split(t, 1f)
+
+    fun split(t0: Float, t1: Float): Curves {
+        if (t0 > t1) return split(t1, t0)
+        check(t0 <= t1)
+
+        if (t0 == t1) return Curves(emptyList(), closed = false)
+
+        return Curves(findTInCurve(t0) { info0, ratioInCurve0 ->
+            findTInCurve(t1) { info1, ratioInCurve1 ->
+                if (info0.index == info1.index) {
+                    listOf(info0.curve.split(ratioInCurve0, ratioInCurve1).curve)
+                } else {
+                    buildList {
+                        if (ratioInCurve0 != 1f) add(info0.curve.splitRight(ratioInCurve0).curve)
+                        for (index in info0.index + 1 until info1.index) add(infos[index].curve)
+                        if (ratioInCurve1 != 0f) add(info1.curve.splitLeft(ratioInCurve1).curve)
+                    }
+                }
+            }
+        }, closed = false)
+    }
+
+    fun roundDecimalPlaces(places: Int): Curves = Curves(beziers.map { it.roundDecimalPlaces(places) }, closed)
+}
+
+fun Curve.toVectorPath(out: VectorPath = VectorPath()): VectorPath = listOf(this).toVectorPath(out)
+
+fun List<Curve>.toVectorPath(out: VectorPath = VectorPath()): VectorPath {
+    var first = true
+
+    fun bezier(bezier: Bezier) {
+        val points = bezier.points
+        if (first) {
+            out.moveTo(points.first)
+            first = false
+        }
+        when (bezier.order) {
+            1 -> out.lineTo(points[1])
+            2 -> out.quadTo(points[1], points[2])
+            3 -> out.cubicTo(points[1], points[2], points[3])
+            else -> TODO()
+        }
+    }
+
+    fastForEach { curves ->
+        when (curves) {
+            is Curves -> {
+                curves.beziers.fastForEach { bezier(it) }
+                if (curves.closed) out.close()
+            }
+            is Bezier -> bezier(curves)
+            else -> TODO()
+        }
+    }
+
+    return out
+}
+
+inline fun List<Curves>.fastForEachBezier(block: (Bezier) -> Unit) {
+    this.fastForEach { it.beziers.fastForEach(block) }
+}
+
+@KormaExperimental
+@KormaMutableApi
+fun Curves.toNonCurveSimplePointList(out: PointArrayList = PointArrayList()): PointList? {
+    val curves = this
+    val beziers = curves.beziers//.flatMap { it.toSimpleList() }.map { it.curve }
+    val epsilon = 0.0001f
+    beziers.fastForEach { bezier ->
+        if (bezier.inflections().isNotEmpty()) return null
+        val points = bezier.points
+        points.fastForEach { p ->
+            if (out.isEmpty() || !out.last.isAlmostEquals(p, epsilon)) {
+                out.add(p)
+            }
+        }
+        //println("bezier=$bezier")
+        //out.add(points, 0, points.size - 1)
+    }
+    if (out.last.isAlmostEquals(out.first, epsilon)) {
+        out.removeAt(out.size - 1)
+    }
+    return out
+}
+
+@ThreadLocal
+val Curves.isConvex: Boolean by extraPropertyThis { this.assumeConvex || Convex.isConvex(this) }
+
+fun Curves.toDashes(pattern: FloatArray?, offset: Float = 0f): List<Curves> {
+    if (pattern == null) return listOf(this)
+
+    check(!pattern.all { it <= 0.0 })
+    val length = this.length
+    var current = offset
+    var dashNow = true
+    var index = 0
+    val out = arrayListOf<Curves>()
+    while (current < length) {
+        val len = pattern.getCyclic(index++)
+        if (dashNow) {
+            out += splitByLength(current, (current + len))
+        }
+        current += len
+        dashNow = !dashNow
+    }
+    return out
+}
+
+/*
+import korlibs.math.geom.*
+
+object SegmentEmitter {
+    inline fun emit(
+        segments: Int,
+        crossinline curveGen: (p: MPoint, t: Double) -> MPoint,
+        crossinline gen: (p0: MPoint, p1: MPoint) -> Unit,
+        p1: MPoint = MPoint(),
+        p2: MPoint = MPoint()
+    ) {
+        val dt = 1.0 / segments
+        for (n in 0 until segments) {
+            p1.copyFrom(p2)
+            p2.copyFrom(curveGen(p2, dt * n))
+            if (n > 1) gen(p1, p2)
+        }
+    }
+}
+*/
+
+data class CurveSplit(
+    val base: Bezier,
+    val left: SubBezier,
+    val right: SubBezier,
+    val t: Float,
+    val hull: PointList?
+) {
+    val leftCurve: Bezier get() = left.curve
+    val rightCurve: Bezier get() = right.curve
+
+    fun roundDecimalPlaces(places: Int) = CurveSplit(
+        base.roundDecimalPlaces(places),
+        left.roundDecimalPlaces(places),
+        right.roundDecimalPlaces(places),
+        t.roundDecimalPlaces(places),
+        hull?.roundDecimalPlaces(places)
+    )
+}
+
+class SubBezier(val curve: Bezier, val t1: Float, val t2: Float, val parent: Bezier?) {
+    constructor(curve: Bezier) : this(curve, 0f, 1f, null)
+
+    val boundingBox: Rectangle get() = curve.boundingBox
+
+    companion object {
+        private val LEFT = listOf(null, null, intArrayOf(0, 3, 5), intArrayOf(0, 4, 7, 9))
+        private val RIGHT = listOf(null, null, intArrayOf(5, 4, 2), intArrayOf(9, 8, 6, 3))
+
+        private fun BezierCurveFromIndices(indices: IntArray, points: PointList): Bezier {
+            val p = PointArrayList(indices.size)
+            for (index in indices) p.add(points, index)
+            return Bezier(p)
+        }
+    }
+
+    fun calc(t: Float): Point = curve.calc(t.convertRange(t1, t2, 0f, 1f))
+
+    private fun _split(t: Float, hull: PointList?, left: Boolean): SubBezier {
+        val rt = t.convertRange(0f, 1f, t1, t2)
+        val rt1: Float = if (left) t1 else rt
+        val rt2: Float = if (left) rt else t2
+        // Line
+        val curve = if (curve.order < 2) {
+            val p1 = calc(rt1)
+            val p2 = calc(rt2)
+            Bezier(p1, p2)
+        } else {
+            val indices = if (left) LEFT else RIGHT
+            BezierCurveFromIndices(indices[curve.order]!!, hull!!)
+        }
+        return SubBezier(curve, rt1, rt2, parent)
+    }
+
+    private fun _splitLeft(t: Float, hull: PointList? = curve.hullOrNull(t)): SubBezier = _split(t, hull, left = true)
+    private fun _splitRight(t: Float, hull: PointList? = curve.hullOrNull(t)): SubBezier = _split(t, hull, left = false)
+
+    fun splitLeft(t: Float): SubBezier = _splitLeft(t)
+    fun splitRight(t: Float): SubBezier = _splitRight(t)
+
+    fun split(t: Float): CurveSplit {
+        val hull = curve.hullOrNull(t)
+        return CurveSplit(
+            base = curve,
+            t = t,
+            left = _splitLeft(t, hull),
+            right = _splitRight(t, hull),
+            hull = hull
+        )
+    }
+
+    override fun toString(): String = "SubBezier[${t1.niceStr}..${t2.niceStr}]($curve)"
+    fun roundDecimalPlaces(places: Int): SubBezier =
+        SubBezier(curve.roundDecimalPlaces(places), t1.roundDecimalPlaces(places), t2.roundDecimalPlaces(places), parent?.roundDecimalPlaces(places))
+}
