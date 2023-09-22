@@ -1,3 +1,5 @@
+@file:Suppress("PackageDirectoryMismatch")
+
 package korlibs.math.geom.vector
 
 import korlibs.datastructure.*
