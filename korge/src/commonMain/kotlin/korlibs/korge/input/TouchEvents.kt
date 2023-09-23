@@ -2,11 +2,11 @@ package korlibs.korge.input
 
 import korlibs.datastructure.*
 import korlibs.datastructure.iterators.*
-import korlibs.time.*
 import korlibs.event.*
-import korlibs.korge.view.*
 import korlibs.io.async.*
+import korlibs.korge.view.*
 import korlibs.math.geom.*
+import korlibs.time.*
 
 class TouchEvents(val view: View) {
     data class Info(
@@ -23,15 +23,15 @@ class TouchEvents(val view: View) {
 
         lateinit var views: Views
 
-        @Deprecated("") val localX: Float get() = local.x
-        @Deprecated("") val localY: Float get() = local.y
-        @Deprecated("") val startLocalX: Float get() = startLocal.x
-        @Deprecated("") val startLocalY: Float get() = startLocal.y
+        @Deprecated("") val localX: Double get() = local.x
+        @Deprecated("") val localY: Double get() = local.y
+        @Deprecated("") val startLocalX: Double get() = startLocal.x
+        @Deprecated("") val startLocalY: Double get() = startLocal.y
 
-        @Deprecated("") val globalX: Float get() = global.x
-        @Deprecated("") val globalY: Float get() = global.y
-        @Deprecated("") val startGlobalX: Float get() = startGlobal.x
-        @Deprecated("") val startGlobalY: Float get() = startGlobal.y
+        @Deprecated("") val globalX: Double get() = global.x
+        @Deprecated("") val globalY: Double get() = global.y
+        @Deprecated("") val startGlobalX: Double get() = startGlobal.x
+        @Deprecated("") val startGlobalY: Double get() = startGlobal.y
 
         override fun toString(): String = "Touch[$id](${localX.toInt()}, ${localY.toInt()})"
     }

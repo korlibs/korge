@@ -46,18 +46,18 @@ fun TouchEvents.swipeRecognizer(
 data class ScaleRecognizerInfo(
     // True when the gesture starts
     var started: Boolean = false,
-    // True when the gestuer ends
+    // True when the gesture ends
     var completed: Boolean = true,
-    var start: Float = 0f,
-    var current: Float = 0f,
+    var start: Double = 0.0,
+    var current: Double = 0.0,
 ) {
-    val ratio: Float get() = current / start
+    val ratio: Double get() = current / start
 }
 
 fun TouchEvents.scaleRecognizer(
     start: ScaleRecognizerInfo.() -> Unit = {},
-    end: ScaleRecognizerInfo.(ratio: Float) -> Unit = {},
-    block: ScaleRecognizerInfo.(ratio: Float) -> Unit
+    end: ScaleRecognizerInfo.(ratio: Double) -> Unit = {},
+    block: ScaleRecognizerInfo.(ratio: Double) -> Unit
 ) {
     val info = ScaleRecognizerInfo()
     updateAll {

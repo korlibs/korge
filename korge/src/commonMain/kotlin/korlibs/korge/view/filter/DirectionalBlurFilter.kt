@@ -76,8 +76,8 @@ class DirectionalBlurFilter(
 
     private fun gaussian(x: Float, constant1: Float, constant2: Float): Float = constant1 * exp((-x * x) * constant2)
 
-    override fun updateUniforms(ctx: RenderContext, filterScale: Float) {
-        val radius = this.rradius * filterScale
+    override fun updateUniforms(ctx: RenderContext, filterScale: Double) {
+        val radius = (this.rradius * filterScale).toFloat()
         //println("rradius=$rradius")
         //val sigma = max(radius / 3.0, 0.9)
         val sigma = (radius + 1) / qfactor

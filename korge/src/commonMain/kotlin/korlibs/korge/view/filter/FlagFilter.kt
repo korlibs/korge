@@ -1,12 +1,12 @@
 package korlibs.korge.view.filter
 
-import korlibs.time.*
 import korlibs.graphics.*
 import korlibs.graphics.shader.*
 import korlibs.korge.render.*
 import korlibs.korge.view.property.*
 import korlibs.math.*
 import korlibs.math.geom.*
+import korlibs.time.*
 import kotlin.math.*
 
 /**
@@ -59,7 +59,7 @@ class FlagFilter(
 
     override val programProvider: ProgramProvider get() = FlagFilter
 
-    override fun updateUniforms(ctx: RenderContext, filterScale: Float) {
+    override fun updateUniforms(ctx: RenderContext, filterScale: Double) {
         super.updateUniforms(ctx, filterScale)
         ctx[FlagUB].push {
             it[u_amplitude] = amplitude

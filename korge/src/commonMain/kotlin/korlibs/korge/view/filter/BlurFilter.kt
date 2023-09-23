@@ -32,7 +32,7 @@ class BlurFilter(
             horizontal.radius = radius
             vertical.radius = radius
         }
-    override val recommendedFilterScale: Float get() = if (!optimize || radius <= 2.0) 1f else 1f / log2(radius.toFloat() * 0.5f)
+    override val recommendedFilterScale: Double get() = if (!optimize || radius <= 2.0) 1.0 else 1.0 / log2(radius * 0.5)
 
     override val isIdentity: Boolean get() = radius == 0f
 }

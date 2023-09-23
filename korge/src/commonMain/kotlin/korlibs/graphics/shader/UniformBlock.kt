@@ -171,8 +171,10 @@ class UniformsRef(
     operator fun set(uniform: TypedUniform<Vector2F>, value: Vector2F) = set(uniform, value.x, value.y)
     operator fun set(uniform: TypedUniform<Vector2F>, value: Point) = set(uniform, value.x.toFloat(), value.y.toFloat())
     operator fun set(uniform: TypedUniform<Vector2F>, value: Size) = set(uniform, value.width.toFloat(), value.height.toFloat())
-    operator fun set(uniform: TypedUniform<Point>, value: Point) = set(uniform, value.x, value.y)
-    operator fun set(uniform: TypedUniform<Point>, value: Size) = set(uniform, value.width, value.height)
+
+    //operator fun set(uniform: TypedUniform<Point>, value: Point) = set(uniform, value.x, value.y)
+    //operator fun set(uniform: TypedUniform<Point>, value: Size) = set(uniform, value.width, value.height)
+
     operator fun set(uniform: TypedUniform<Vector4F>, value: RGBA) = set(uniform, value.rf, value.gf, value.bf, value.af)
     operator fun set(uniform: TypedUniform<Vector4F>, value: RGBAPremultiplied) = set(uniform, value.rf, value.gf, value.bf, value.af)
     operator fun set(uniform: TypedUniform<Vector4F>, value: ColorAdd) = set(uniform, value.rf, value.gf, value.bf, value.af)
@@ -204,12 +206,8 @@ class UniformsRef(
             buffer.setUnalignedFloat32(it + 0, value)
         }
     }
-    operator fun set(uniform: TypedUniform<Point>, x: Double, y: Double) {
-        getOffset(uniform).also { bufferSetFloat2(it, x.toFloat(), y.toFloat()) }
-    }
-    operator fun set(uniform: TypedUniform<Point>, x: Float, y: Float) {
-        getOffset(uniform).also { bufferSetFloat2(it, x, y) }
-    }
+    //operator fun set(uniform: TypedUniform<Point>, x: Double, y: Double) { getOffset(uniform).also { bufferSetFloat2(it, x.toFloat(), y.toFloat()) } }
+    //operator fun set(uniform: TypedUniform<Point>, x: Float, y: Float) { getOffset(uniform).also { bufferSetFloat2(it, x, y) } }
     operator fun set(uniform: TypedUniform<Vector2F>, x: Float, y: Float) {
         getOffset(uniform).also { bufferSetFloat2(it, x, y) }
     }

@@ -16,7 +16,7 @@ inline fun Container.ellipse(
     radius: Size = Size(16, 16),
     fill: Paint = Colors.WHITE,
     stroke: Paint = Colors.WHITE,
-    strokeThickness: Float = 0f,
+    strokeThickness: Double = 0.0,
     autoScaling: Boolean = true,
     callback: @ViewDslMarker Ellipse.() -> Unit = {}
 ): Ellipse = Ellipse(radius, fill, stroke, strokeThickness, autoScaling).addTo(this, callback)
@@ -29,7 +29,7 @@ open class Ellipse(
     radius: Size = Size(16, 16),
     fill: Paint = Colors.WHITE,
     stroke: Paint = Colors.WHITE,
-    strokeThickness: Float = 0f,
+    strokeThickness: Double = 0.0,
     autoScaling: Boolean = true,
 ) : ShapeView(shape = VectorPath(), fill = fill, stroke = stroke, strokeThickness = strokeThickness, autoScaling = autoScaling) {
     /** Radius of the circle */

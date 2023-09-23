@@ -629,6 +629,7 @@ data class AGScissor private constructor(
 
     constructor(x: Int, y: Int, width: Int, height: Int) : this(x.toShortClamped(), y.toShortClamped(), (x + width).toShortClamped(), (y + height).toShortClamped())
     constructor(x: Float, y: Float, width: Float, height: Float) : this(x.toIntRound(), y.toIntRound(), width.toIntRound(), height.toIntRound())
+    constructor(x: Double, y: Double, width: Double, height: Double) : this(x.toIntRound(), y.toIntRound(), width.toIntRound(), height.toIntRound())
     constructor(rect: Rectangle) : this(rect.x.toIntRound(), rect.y.toIntRound(), rect.width.toIntRound(), rect.height.toIntRound())
 
     val left: Int get() = _left.toInt()

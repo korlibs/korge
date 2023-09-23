@@ -82,7 +82,7 @@ open class UIComboBox<T>(
         //it.elevation = false
         it.textColor = MaterialColors.GRAY_800
         it.background.borderColor = MaterialColors.GRAY_400
-        it.background.borderSize = 1f
+        it.background.borderSize = 1.0
         it.isFocusable = false
     }
     private val expandButtonIcon = shapeView(buildVectorPath {
@@ -125,7 +125,7 @@ open class UIComboBox<T>(
             val it = UIButton(richText = richText, size = Size(width, itemHeight)).apply {
                 this.textAlignment = TextAlignment.MIDDLE_LEFT
                 this.textView.padding = Margin(0f, 8f)
-                this.radius = 0f
+                this.radius = 0.0
                 this.bgColorOut = MaterialColors.GRAY_50
                 this.bgColorOver = MaterialColors.GRAY_400
                 this.bgColorSelected = MaterialColors.LIGHT_BLUE_A100
@@ -232,7 +232,7 @@ open class UIComboBox<T>(
                 itemsViewBackground.scaleY = 1.0
                 expandButtonIcon.scaleY = -1.0
                 selectedButton.background.borderColor = MaterialColors.BLUE_300
-                selectedButton.background.borderSize = 2f
+                selectedButton.background.borderSize = 2.0
             } else {
                 itemsView.alphaF = 0f
                 itemsView.scaleY = 0.0
@@ -296,7 +296,7 @@ open class UIComboBox<T>(
                 itemsViewBackground.scaleY = 0.0
                 expandButtonIcon.scaleY = +1.0
                 selectedButton.background.borderColor = MaterialColors.GRAY_400
-                selectedButton.background.borderSize = 1f
+                selectedButton.background.borderSize = 1.0
                 itemsView.visible = false
                 changeParent(set = false)
             } else {

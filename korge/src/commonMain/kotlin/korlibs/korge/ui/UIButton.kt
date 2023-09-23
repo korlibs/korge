@@ -157,7 +157,7 @@ open class UIButton(
         background.size(width, height)
         //background.setSize(width, height)
         background.radius = RectCorners(this.radius)
-        background.shadowRadius = if (elevation) 10f else 0f
+        background.shadowRadius = if (elevation) 10.0 else 0.0
         //textView.setSize(width, height)
 
         textView.size(width, height)

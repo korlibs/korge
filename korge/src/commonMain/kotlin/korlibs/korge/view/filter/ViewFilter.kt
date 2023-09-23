@@ -41,7 +41,7 @@ class ViewRenderPhaseFilter(var filter: Filter? = null) : ViewRenderPhase {
 
 /** Usually a value between [0.0, 1.0] */
 @ThreadLocal
-var View.filterScale: Float by extraPropertyThis(transform = { Filter.discretizeFilterScale(it) }) { 1f }
+var View.filterScale: Double by extraPropertyThis(transform = { Filter.discretizeFilterScale(it) }) { 1.0 }
 
 //internal const val VIEW_FILTER_TRANSPARENT_EDGE = true
 internal const val VIEW_FILTER_TRANSPARENT_EDGE = false
@@ -102,13 +102,13 @@ fun View.renderFiltered(
     }
 }
 
-inline fun <T : View> T.filterScale(scale: Float): T {
+inline fun <T : View> T.filterScale(scale: Double): T {
     filterScale = scale
     return this
 }
 
-inline fun <T : View> T.filters(vararg filters: Filter, filterScale: Float = this.filterScale): T = filters(filters.toList(), filterScale)
-inline fun <T : View> T.filters(filters: List<Filter>, filterScale: Float = this.filterScale): T {
+inline fun <T : View> T.filters(vararg filters: Filter, filterScale: Double = this.filterScale): T = filters(filters.toList(), filterScale)
+inline fun <T : View> T.filters(filters: List<Filter>, filterScale: Double = this.filterScale): T {
     this.filter = ComposedFilter.combine(null, filters)
     this.filterScale = filterScale
     return this

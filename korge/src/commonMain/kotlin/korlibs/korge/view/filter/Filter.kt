@@ -26,8 +26,8 @@ import kotlin.native.concurrent.*
  */
 interface Filter {
     companion object {
-        private val VALID_FILTER_SCALES = floatArrayOf(0.03125f, 0.0625f, 0.125f, 0.25f, 0.5f, 0.75f, 1.0f)
-        fun discretizeFilterScale(scale: Float): Float {
+        private val VALID_FILTER_SCALES = doubleArrayOf(0.03125, 0.0625, 0.125, 0.25, 0.5, 0.75, 1.0)
+        fun discretizeFilterScale(scale: Double): Double {
             //return scale.clamp(0.03125, 1.5)
             return VALID_FILTER_SCALES.minByOrNull { (scale - it).absoluteValue }!!
         }

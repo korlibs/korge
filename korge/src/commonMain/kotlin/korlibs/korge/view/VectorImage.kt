@@ -1,11 +1,11 @@
 package korlibs.korge.view
 
-import korlibs.korge.render.*
-import korlibs.korge.view.property.*
 import korlibs.image.color.*
 import korlibs.image.format.*
 import korlibs.image.vector.*
 import korlibs.io.file.*
+import korlibs.korge.render.*
+import korlibs.korge.view.property.*
 import korlibs.math.geom.*
 
 inline fun Container.vectorImage(shape: SizedDrawable, autoScaling: Boolean = true, callback: @ViewDslMarker VectorImage.() -> Unit = {}): VectorImage = VectorImage(shape, autoScaling).addTo(this, callback).apply { redrawIfRequired() }
@@ -24,7 +24,7 @@ class VectorImage(
                 field = value
                 dirty()
                 redrawIfRequired()
-                scaleD = 1.0
+                scaleXY = 1.0
             }
         }
 

@@ -49,7 +49,7 @@ class NinePatch(
 		val xscale = gm.a
 		val yscale = gm.d
 
-		bounds = RectangleInt(0, 0, (widthD * xscale).toInt(), (heightD * yscale).toInt())
+		bounds = RectangleInt(0, 0, (width * xscale).toInt(), (height * yscale).toInt())
 
         val m = gm.prescaled(1.0 / xscale, 1.0 / yscale)
 
@@ -109,7 +109,7 @@ class NinePatch(
         renderedVersion++
     }
 
-	override fun getLocalBoundsInternal() = Rectangle(0.0, 0.0, widthD, heightD)
+	override fun getLocalBoundsInternal() = Rectangle(0.0, 0.0, width, height)
 
     override suspend fun forceLoadSourceFile(views: Views, currentVfs: VfsFile, sourceFile: String?) {
         baseForceLoadSourceFile(views, currentVfs, sourceFile)

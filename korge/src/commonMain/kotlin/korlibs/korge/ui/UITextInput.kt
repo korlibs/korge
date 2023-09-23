@@ -43,7 +43,7 @@ class UITextInput(initialText: String = "", size: Size = Size(128, 24)) :
     //init { uiScrollable {  } }
 
     var text: String by controller::text
-    var textSize: Float by controller::textSize
+    var textSize: Double by controller::textSize
     var font: Font by controller::font
     val onReturnPressed: Signal<TextEditController> by controller::onReturnPressed
     val onEscPressed: Signal<TextEditController> by controller::onEscPressed

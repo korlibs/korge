@@ -1,9 +1,8 @@
 package korlibs.korge.input
 
-import korlibs.korge.view.View
-import korlibs.korge.view.Views
+import korlibs.korge.view.*
 import korlibs.math.geom.*
-import kotlin.math.abs
+import kotlin.math.*
 
 data class SwipeInfo(
     var delta: Vector2F = Vector2F.ZERO,
@@ -35,10 +34,10 @@ fun <T : View> T.onSwipe(
     callback: suspend Views.(SwipeInfo) -> Unit
 ): T {
     var register = false
-    var sx = 0f
-    var sy = 0f
-    var cx = 0f
-    var cy = 0f
+    var sx = 0.0
+    var sy = 0.0
+    var cx = 0.0
+    var cy = 0.0
     var movedLeft = false
     var movedRight = false
     var movedTop = false

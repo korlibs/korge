@@ -73,7 +73,7 @@ class ColorMatrixFilter(colorMatrix: Matrix4, blendRatio: Float = 1f) : ShaderFi
 
     override val programProvider: ProgramProvider get() = ColorMatrixFilter
 
-    override fun updateUniforms(ctx: RenderContext, filterScale: Float) {
+    override fun updateUniforms(ctx: RenderContext, filterScale: Double) {
         ctx[ColorMatrixUB].push {
             it[u_ColorMatrix] = colorMatrix
             it[u_BlendRatio] = blendRatio

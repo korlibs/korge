@@ -12,8 +12,8 @@ import korlibs.korge.view.property.*
 class TransitionFilter(
     var transition: Transition = Transition.CIRCULAR,
     reversed: Boolean = false,
-    spread: Float = 1f,
-    ratio: Float = 1f,
+    spread: Double = 1.0,
+    ratio: Double = 1.0,
     filtering: Boolean = false,
 ) : ShaderFilter() {
     class Transition(val bmp: Bitmap) {
@@ -77,11 +77,11 @@ class TransitionFilter(
     @ViewProperty
     var reversed: Boolean = reversed
     @ViewProperty
-    var spread: Float = spread
+    var spread: Double = spread
     @ViewProperty
-    var ratio: Float = ratio
+    var ratio: Double = ratio
 
-    override fun updateUniforms(ctx: RenderContext, filterScale: Float) {
+    override fun updateUniforms(ctx: RenderContext, filterScale: Double) {
         ctx[TransitionUB].push {
             it[u_Reversed] = reversed
             it[u_Spread] = spread

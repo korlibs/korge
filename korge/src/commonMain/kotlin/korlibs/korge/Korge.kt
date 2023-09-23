@@ -326,12 +326,12 @@ object KorgeRunner {
         views.forceRenderEveryFrame = forceRenderEveryFrame
 
         // devicePixelRatio might change at runtime by changing the resolution or changing the screen of the window
-        fun getRealXY(x: Float, y: Float, scaleCoords: Boolean): Point {
+        fun getRealXY(x: Double, y: Double, scaleCoords: Boolean): Point {
             return views.windowToGlobalCoords(Point(x, y))
         }
 
-        fun getRealX(x: Float, scaleCoords: Boolean): Float = if (scaleCoords) x * views.devicePixelRatio else x
-        fun getRealY(y: Float, scaleCoords: Boolean): Float = if (scaleCoords) y * views.devicePixelRatio else y
+        fun getRealX(x: Double, scaleCoords: Boolean): Double = if (scaleCoords) x * views.devicePixelRatio else x
+        fun getRealY(y: Double, scaleCoords: Boolean): Double = if (scaleCoords) y * views.devicePixelRatio else y
 
         /*
         fun updateTouch(id: Int, x: Double, y: Double, start: Boolean, end: Boolean) {
@@ -408,7 +408,7 @@ object KorgeRunner {
         eventDispatcher.onEvents(*MouseEvent.Type.ALL) { e ->
             //println("MOUSE: $e")
             Korge.logger.trace { "eventDispatcher.addEventListener<MouseEvent>:$e" }
-            val p = getRealXY(e.x.toFloat(), e.y.toFloat(), e.scaleCoords)
+            val p = getRealXY(e.x.toDouble(), e.y.toDouble(), e.scaleCoords)
             when (e.type) {
                 MouseEvent.Type.DOWN -> {
                     mouseDown("mouseDown", p, e.button)
@@ -473,7 +473,7 @@ object KorgeRunner {
             input.updateTouches(e)
             val ee = input.touch
             for (t in ee.touches) {
-                t.p = getRealXY(t.x, t.y, e.scaleCoords)
+                t.p = getRealXY(t.x.toDouble(), t.y.toDouble(), e.scaleCoords)
             }
             views.dispatch(ee)
 

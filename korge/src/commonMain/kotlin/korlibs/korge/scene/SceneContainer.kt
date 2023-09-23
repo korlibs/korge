@@ -33,7 +33,7 @@ inline fun Container.sceneContainer(
     val (width, height) = size
     var rwidth = width
     var rheight = height
-    if (width == 0f && height == 0f) {
+    if (width == 0.0 && height == 0.0) {
         val base = this.findFirstAscendant { it is FixedSizeContainer } as? FixedSizeContainer?
         rwidth = base?.width ?: views.stage.width
         rheight = base?.height ?: views.stage.height
@@ -307,7 +307,7 @@ class SceneContainer(
         if (time > 0.seconds) {
             transitionView.tween(transitionView::ratio[0.0, 1.0], time = time)
         } else {
-            transitionView.ratio = 1f
+            transitionView.ratio = 1.0
         }
 
         transitionView.endTransition()

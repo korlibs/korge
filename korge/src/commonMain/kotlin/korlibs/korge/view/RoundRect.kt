@@ -15,7 +15,7 @@ inline fun Container.roundRect(
     radius: RectCorners,
     fill: Paint = Colors.WHITE,
     stroke: Paint = Colors.WHITE,
-    strokeThickness: Float = 0f,
+    strokeThickness: Double = 0.0,
     autoScaling: Boolean = true,
     callback: @ViewDslMarker RoundRect.() -> Unit = {}
 ) = RoundRect(size, radius, fill, stroke, strokeThickness, autoScaling).addTo(this, callback)
@@ -28,7 +28,7 @@ class RoundRect(
     radius: RectCorners,
     fill: Paint = Colors.WHITE,
     stroke: Paint = Colors.WHITE,
-    strokeThickness: Float = 0f,
+    strokeThickness: Double = 0.0,
     autoScaling: Boolean = true
 ) : ShapeView(shape = VectorPath(), fill = fill, stroke = stroke, strokeThickness = strokeThickness, autoScaling = autoScaling) {
 
@@ -45,7 +45,7 @@ class RoundRect(
     private fun updateGraphics() {
         updatePath {
             clear()
-            roundRect(RoundRectangle(Rectangle(0f, 0f, this@RoundRect.width, this@RoundRect.height), radius))
+            roundRect(RoundRectangle(Rectangle(0.0, 0.0, this@RoundRect.width, this@RoundRect.height), radius))
             assumeConvex = true // Optimization to avoid computing convexity
         }
     }

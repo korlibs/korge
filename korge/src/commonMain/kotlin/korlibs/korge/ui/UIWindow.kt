@@ -42,7 +42,7 @@ class UIWindow(title: String, size: Size = Size(256, 256)) : UIContainer(size) {
         radius = RectCorners(12.0)
         colorMul = if (isFocused) Colors["#394674"] else Colors["#999"]
         shadowColor = Colors.BLACK.withAd(0.9)
-        shadowRadius = 20f
+        shadowRadius = 20.0
     }
     private val bg = renderableView(size, ViewRenderer {
         val isFocused = this@UIWindow.isFocused

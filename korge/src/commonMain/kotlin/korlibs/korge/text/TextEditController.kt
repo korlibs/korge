@@ -17,6 +17,7 @@ import korlibs.korge.view.debug.*
 import korlibs.math.*
 import korlibs.math.geom.*
 import korlibs.math.geom.bezier.*
+import korlibs.math.interpolation.*
 import korlibs.platform.*
 import korlibs.render.*
 import korlibs.time.*
@@ -129,7 +130,7 @@ class TextEditController(
             updateCaretPosition()
         }
 
-    var textSize: Float
+    var textSize: Double
         get() = textView.textSize
         set(value) {
             textView.textSize = value
@@ -250,7 +251,7 @@ class TextEditController(
             val last = (range.first >= this.text.length)
             val caret = getCaretAtIndex(range.first)
             val sign = if (last) -1.0 else +1.0
-            val normal = caret.normal(0f) * (2.0 * sign)
+            val normal = caret.normal(Ratio.ZERO) * (2.0 * sign)
             val p0 = caret.points.first
             val p1 = caret.points.last
             array.add(p0)
