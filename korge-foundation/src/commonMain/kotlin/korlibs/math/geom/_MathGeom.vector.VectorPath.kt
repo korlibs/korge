@@ -25,14 +25,14 @@ interface IVectorPath : VectorBuilder {
 @OptIn(KormaExperimental::class)
 class VectorPath(
     val commands: IntArrayList = IntArrayList(),
-    val data: FloatArrayList = FloatArrayList(),
+    val data: DoubleArrayList = DoubleArrayList(),
     var winding: Winding = Winding.DEFAULT,
     var optimize: Boolean = true,
 ) : AbstractShape2D(), IVectorPath, Extra by Extra.Mixin() {
     var assumeConvex: Boolean = false
     var version: Int = 0
 
-    fun clone(): VectorPath = VectorPath(IntArrayList(commands), FloatArrayList(data), winding)
+    fun clone(): VectorPath = VectorPath(IntArrayList(commands), DoubleArrayList(data), winding)
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         return other is VectorPath && this.commands == other.commands && this.data == other.data && this.winding == other.winding
@@ -174,7 +174,7 @@ class VectorPath(
             if (lastPos == p) return
         }
         commands.add(Command.MOVE_TO)
-        data.add(p.xF, p.yF)
+        data.add(p.x, p.y)
         lastPos = p
         lastMovePos = p
         version++
@@ -250,10 +250,10 @@ class VectorPath(
 
     override fun getBounds(): Rectangle = (BoundsBuilder() + this).bounds
 
-    override val area: Float get() {
+    override val area: Double get() {
         var sum = 0.0
         trapezoids.trapezoids(winding).fastForEach { sum += it.area / trapezoids.scaleSq }
-        return sum.toFloat()
+        return sum
     }
     override val lazyVectorPath: VectorPath get() = this
 
@@ -265,7 +265,7 @@ class VectorPath(
     // I run a semi-infinite ray horizontally (increasing x, fixed y) out from the test point, and count how many edges it crosses.
     // At each crossing, the ray switches between inside and outside. This is called the Jordan curve theorem.
     fun containsPoint(x: Double, y: Double): Boolean = trapezoids.containsPoint(x, y, this.winding)
-    override fun containsPoint(p: Point): Boolean = containsPoint(p.xD, p.yD, this.winding)
+    override fun containsPoint(p: Point): Boolean = containsPoint(p.x, p.y, this.winding)
     fun containsPoint(p: MPoint): Boolean = containsPoint(p.x, p.y, this.winding)
     fun containsPoint(x: Int, y: Int): Boolean = containsPoint(x.toDouble(), y.toDouble())
     fun containsPoint(x: Float, y: Float): Boolean = containsPoint(x.toDouble(), y.toDouble())

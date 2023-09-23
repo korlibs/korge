@@ -19,22 +19,22 @@ import kotlin.math.*
  * [time] is the elapsed time of the animation
  */
 class WaveFilter(
-    amplitude: Vector2 = Vector2(10f, 10f),
-    crestDistance: Vector2 = Vector2(16f, 16f),
-	cyclesPerSecond: Vector2 = Vector2(1f, 1f),
-	time: TimeSpan = 0.seconds
+    amplitude: Vector2F = Vector2F(10f, 10f),
+    crestDistance: Vector2F = Vector2F(16f, 16f),
+    cyclesPerSecond: Vector2F = Vector2F(1f, 1f),
+    time: TimeSpan = 0.seconds
 ) : ShaderFilter() {
     /** Maximum amplitude of the wave on the X,Y axis */
     @ViewProperty
-	var amplitude: Vector2 = amplitude
+	var amplitude: Vector2F = amplitude
 
     /** Distance between crests in the X,Y axis */
     @ViewProperty
-	var crestDistance: Vector2 = crestDistance
+	var crestDistance: Vector2F = crestDistance
 
     /** Number of repetitions of the animation on the X,Y axis per second */
     @ViewProperty
-	var cyclesPerSecond: Vector2 = cyclesPerSecond
+	var cyclesPerSecond: Vector2F = cyclesPerSecond
 
     /** The elapsed time for the animation */
     @ViewProperty

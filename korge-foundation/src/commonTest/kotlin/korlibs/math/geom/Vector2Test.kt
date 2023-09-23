@@ -53,10 +53,10 @@ class Vector2Test {
 
     @Test
     fun testReflected() {
-        assertEquals(Vector2.DOWN, Vector2.UP.reflected(Vector2.DOWN))
-        assertEquals(Vector2.UP, Vector2.DOWN.reflected(Vector2.UP))
-        assertEquals(Vector2.DOWN, Vector2.UP.reflected(Vector2.UP))
-        assertEquals(Vector2.UP, Vector2.DOWN.reflected(Vector2.DOWN))
-        assertEquals(Vector2.polar((-45).degrees), Vector2.polar(45.degrees).reflected(Vector2.DOWN))
+        assertEquals(Vector2F.DOWN, Vector2F.UP.reflected(Vector2F.DOWN))
+        assertEquals(Vector2F.UP, Vector2F.DOWN.reflected(Vector2F.UP))
+        assertEquals(Vector2F.DOWN, Vector2F.UP.reflected(Vector2F.UP))
+        assertEquals(Vector2F.UP, Vector2F.DOWN.reflected(Vector2F.DOWN))
+        assertEquals(Vector2F.polar((-45).degrees), Vector2F.polar(45.degrees).reflected(Vector2F.DOWN))
     }
 }

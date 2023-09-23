@@ -329,10 +329,10 @@ fun SliceCoords.transformed(m: Matrix): RectCoords = RectCoords(
 
 fun SliceCoords.transformed(m: Matrix4): RectCoords {
     // @TODO: This allocates
-    val v1 = m.transform(Vector4(tlX, tlY, 0f, 1f))
-    val v2 = m.transform(Vector4(trX, trY, 0f, 1f))
-    val v3 = m.transform(Vector4(brX, brY, 0f, 1f))
-    val v4 = m.transform(Vector4(blX, blY, 0f, 1f))
+    val v1 = m.transform(Vector4F(tlX, tlY, 0f, 1f))
+    val v2 = m.transform(Vector4F(trX, trY, 0f, 1f))
+    val v3 = m.transform(Vector4F(brX, brY, 0f, 1f))
+    val v4 = m.transform(Vector4F(blX, blY, 0f, 1f))
     return RectCoords(v1.x, v1.y, v2.x, v2.y, v3.x, v3.y, v4.x, v4.y)
 }
 

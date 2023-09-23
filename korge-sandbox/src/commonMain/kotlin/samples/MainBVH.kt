@@ -3,7 +3,6 @@ package samples
 import korlibs.datastructure.*
 import korlibs.image.color.*
 import korlibs.image.font.*
-import korlibs.io.util.*
 import korlibs.korge.input.*
 import korlibs.korge.scene.*
 import korlibs.korge.view.*
@@ -81,7 +80,7 @@ class MainBVH : Scene() {
             val mousePos = localMousePos(views)
             val angle = Point.angleFull(center, mousePos)
             //println("center=$center, mousePos=$mousePos, angle = $angle")
-            dir = Vector2(angle.cosineD, angle.sineD)
+            dir = Vector2F(angle.cosineD, angle.sineD)
             ray = Ray(center, dir)
             rayLine.setPoints(center, center + (dir * 1000))
 

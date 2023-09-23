@@ -12,7 +12,7 @@ class MatrixTest {
             .pretranslated(Point(10, 10))
             .prescaled(Scale(2, 3))
             .prerotated(90.degrees)
-        assertEquals(Vector2Int(10, 40), matrix.transform(Point(10, 0)).toIntRound())
+        assertEquals(Vector2I(10, 40), matrix.transform(Point(10, 0)).toIntRound())
     }
 
 

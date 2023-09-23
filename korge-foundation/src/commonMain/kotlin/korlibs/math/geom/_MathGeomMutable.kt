@@ -1,11 +1,10 @@
+@file:Suppress("DEPRECATION")
+
 package korlibs.math.geom
 
 import korlibs.datastructure.*
 import korlibs.math.*
 import korlibs.math.annotations.*
-import korlibs.math.geom.abs
-import korlibs.math.geom.cos
-import korlibs.math.geom.sin
 import korlibs.math.interpolation.*
 import korlibs.number.*
 import kotlin.math.*
@@ -157,10 +156,10 @@ data class MLine(var a: Point, var b: Point) {
     fun clone(): MLine = MLine(a, b)
     fun flipped(): MLine = MLine(b, a)
 
-    val minX: Double get() = kotlin.math.min(a.xD, b.xD)
-    val maxX: Double get() = kotlin.math.max(a.xD, b.xD)
-    val minY: Double get() = kotlin.math.min(a.yD, b.yD)
-    val maxY: Double get() = kotlin.math.max(a.yD, b.yD)
+    val minX: Double get() = kotlin.math.min(a.x, b.x)
+    val maxX: Double get() = kotlin.math.max(a.x, b.x)
+    val minY: Double get() = kotlin.math.min(a.y, b.y)
+    val maxY: Double get() = kotlin.math.max(a.y, b.y)
 
     fun round(): MLine {
         a.round()
@@ -168,7 +167,7 @@ data class MLine(var a: Point, var b: Point) {
         return this
     }
 
-    fun setTo(a: Point, b: Point): MLine = setTo(a.xD, a.yD, b.xD, b.yD)
+    fun setTo(a: Point, b: Point): MLine = setTo(a.x, a.y, b.x, b.y)
     fun setTo(a: MPoint, b: MPoint): MLine = setTo(a.x, a.y, b.x, b.y)
 
     fun setTo(x0: Double, y0: Double, x1: Double, y1: Double): MLine {
@@ -178,7 +177,7 @@ data class MLine(var a: Point, var b: Point) {
     }
 
     fun setToPolar(x: Double, y: Double, angle: Angle, length: Double = 1.0): MLine {
-        setTo(x, y, x + angle.cosineD * length, y + angle.sineD * length)
+        setTo(x, y, x + angle.cosine * length, y + angle.sine * length)
         return this
     }
 
@@ -191,9 +190,9 @@ data class MLine(var a: Point, var b: Point) {
         val v = a
         val w = b
         val l2 = Point.distanceSquared(v, w)
-        if (l2 == 0.0f) return Point.distanceSquared(p, a).toDouble()
-        val t = (Point.dot(p - v, w - v) / l2).clamp(0.0f, 1.0f).toDouble()
-        return Point.distance(p, v + (w - v) * t).toDouble()
+        if (l2 == 0.0) return Point.distanceSquared(p, a)
+        val t = (Point.dot(p - v, w - v) / l2).clamp(0.0, 1.0)
+        return Point.distance(p, v + (w - v) * t)
     }
 
     @KormaExperimental
@@ -222,10 +221,10 @@ data class MLine(var a: Point, var b: Point) {
     constructor(x0: Float, y0: Float, x1: Float, y1: Float) : this(MPoint(x0, y0), MPoint(x1, y1))
     constructor(x0: Int, y0: Int, x1: Int, y1: Int) : this(MPoint(x0, y0), MPoint(x1, y1))
 
-    val x0: Double get() = a.xD
-    val y0: Double get() = a.yD
-    val x1: Double get() = b.xD
-    val y1: Double get() = b.yD
+    val x0: Double get() = a.x
+    val y0: Double get() = a.y
+    val x1: Double get() = b.x
+    val y1: Double get() = b.y
 
     val delta: Point get() = b - a
     val dx: Double get() = x1 - x0
@@ -249,7 +248,7 @@ data class MLine(var a: Point, var b: Point) {
     fun getSegmentIntersectionPoint(line: MLine): Point? {
         val out = getIntersectXY(x0, y0, x1, y1, line.x0, line.y0, line.x1, line.y1)
         if (out != null) {
-            if (this.containsBoundsXY(out.xD, out.yD) && line.containsBoundsXY(out.xD, out.yD)) {
+            if (this.containsBoundsXY(out.x, out.y) && line.containsBoundsXY(out.x, out.y)) {
                 return out
             }
         }
@@ -282,8 +281,8 @@ data class MLine(var a: Point, var b: Point) {
 
     companion object {
         fun fromPointAndDirection(point: Point, direction: Point, scale: Double = 1.0, out: MLine = MLine()): MLine =
-            out.setTo(point.xD, point.yD, point.x + direction.x * scale, point.y + direction.y * scale)
-        fun fromPointAngle(point: Point, angle: Angle, length: Double = 1.0, out: MLine = MLine()): MLine = out.setToPolar(point.xD, point.yD, angle, length)
+            out.setTo(point.x, point.y, point.x + direction.x * scale, point.y + direction.y * scale)
+        fun fromPointAngle(point: Point, angle: Angle, length: Double = 1.0, out: MLine = MLine()): MLine = out.setToPolar(point.x, point.y, angle, length)
         fun fromPointAndDirection(point: MPoint, direction: MPoint, scale: Double = 1.0, out: MLine = MLine()): MLine = out.setTo(point.x, point.y, point.x + direction.x * scale, point.y + direction.y * scale)
         fun fromPointAngle(point: MPoint, angle: Angle, length: Double = 1.0, out: MLine = MLine()): MLine = out.setToPolar(point.x, point.y, angle, length)
 
@@ -305,7 +304,7 @@ data class MLine(var a: Point, var b: Point) {
         }
 
         fun getIntersectXY(a: Point, b: Point, c: Point, d: Point): Point? =
-            getIntersectXY(a.xD, a.yD, b.xD, b.yD, c.xD, c.yD, d.xD, d.yD)
+            getIntersectXY(a.x, a.y, b.x, b.y, c.x, c.y, d.x, d.y)
     }
 }
 
@@ -359,7 +358,7 @@ fun MLine.Companion.projectedPoint(
     return Point((v1x + (projLenOfLine * e1x) / lenLineE1), (v1y + (projLenOfLine * e1y) / lenLineE1))
 }
 
-fun MLine.Companion.projectedPoint(v1: Point, v2: Point, point: Point): Point = projectedPoint(v1.xD, v1.yD, v2.xD, v2.yD, point.xD, point.yD)
+fun MLine.Companion.projectedPoint(v1: Point, v2: Point, point: Point): Point = projectedPoint(v1.x, v1.y, v2.x, v2.y, point.x, point.y)
 
 fun MLine.Companion.lineIntersectionPoint(l1: MLine, l2: MLine): Point? = l1.getLineIntersectionPoint(l2)
 
@@ -504,10 +503,10 @@ data class MMatrix(
     }
 
     fun skew(skewX: Angle, skewY: Angle): MMatrix {
-        val sinX = sind(skewX)
-        val cosX = cosd(skewX)
-        val sinY = sind(skewY)
-        val cosY = cosd(skewY)
+        val sinX = sin(skewX)
+        val cosX = cos(skewX)
+        val sinY = sin(skewY)
+        val cosY = cos(skewY)
 
         return this.setTo(
             a * cosY - b * sinX,
@@ -648,10 +647,10 @@ data class MMatrix(
         pivotY: Double = 0.0,
     ): MMatrix {
         // +0.0 drops the negative -0.0
-        this.a = cosd(rotation + skewY) * scaleX + 0.0
-        this.b = sind(rotation + skewY) * scaleX + 0.0
-        this.c = -sind(rotation - skewX) * scaleY + 0.0
-        this.d = cosd(rotation - skewX) * scaleY + 0.0
+        this.a = cos(rotation + skewY) * scaleX + 0.0
+        this.b = sin(rotation + skewY) * scaleX + 0.0
+        this.c = -sin(rotation - skewX) * scaleY + 0.0
+        this.d = cos(rotation - skewX) * scaleY + 0.0
 
         if (pivotX == 0.0 && pivotY == 0.0) {
             this.tx = x
@@ -982,26 +981,26 @@ class MMatrix4 {
 
     operator fun get(row: Int, column: Int): Float = getIndex(MMatrix4.columnMajorIndex(row, column))
 
-    fun copyToFloatWxH(out: FloatArray, rows: Int, columns: Int, order: MajorOrder) {
+    fun copyToFloatWxH(out: FloatArray, rows: Int, columns: Int, order: MatrixMajorOrder) {
         copyToFloatWxH(out, rows, columns, order, 0)
     }
 
-    fun copyToFloatWxH(out: FloatArray, rows: Int, columns: Int, order: MajorOrder, offset: Int) {
+    fun copyToFloatWxH(out: FloatArray, rows: Int, columns: Int, order: MatrixMajorOrder, offset: Int) {
         var n = offset
-        if (order == MajorOrder.ROW) {
+        if (order == MatrixMajorOrder.ROW) {
             for (column in 0 until columns) for (row in 0 until rows) out[n++] = getIndex(MMatrix4.rowMajorIndex(row, column))
         } else {
             for (column in 0 until columns) for (row in 0 until rows) out[n++] = getIndex(MMatrix4.columnMajorIndex(row, column))
         }
     }
 
-    fun copyToFloat2x2(out: FloatArray, order: MajorOrder) = copyToFloatWxH(out, 2, 2, order, 0)
-    fun copyToFloat3x3(out: FloatArray, order: MajorOrder) = copyToFloatWxH(out, 3, 3, order, 0)
-    fun copyToFloat4x4(out: FloatArray, order: MajorOrder) = copyToFloatWxH(out, 4, 4, order, 0)
+    fun copyToFloat2x2(out: FloatArray, order: MatrixMajorOrder) = copyToFloatWxH(out, 2, 2, order, 0)
+    fun copyToFloat3x3(out: FloatArray, order: MatrixMajorOrder) = copyToFloatWxH(out, 3, 3, order, 0)
+    fun copyToFloat4x4(out: FloatArray, order: MatrixMajorOrder) = copyToFloatWxH(out, 4, 4, order, 0)
 
-    fun copyToFloat2x2(out: FloatArray, order: MajorOrder, offset: Int) = copyToFloatWxH(out, 2, 2, order, offset)
-    fun copyToFloat3x3(out: FloatArray, order: MajorOrder, offset: Int) = copyToFloatWxH(out, 3, 3, order, offset)
-    fun copyToFloat4x4(out: FloatArray, order: MajorOrder, offset: Int) = copyToFloatWxH(out, 4, 4, order, offset)
+    fun copyToFloat2x2(out: FloatArray, order: MatrixMajorOrder, offset: Int) = copyToFloatWxH(out, 2, 2, order, offset)
+    fun copyToFloat3x3(out: FloatArray, order: MatrixMajorOrder, offset: Int) = copyToFloatWxH(out, 3, 3, order, offset)
+    fun copyToFloat4x4(out: FloatArray, order: MatrixMajorOrder, offset: Int) = copyToFloatWxH(out, 4, 4, order, offset)
 
     companion object {
         const val M00 = 0
@@ -1164,7 +1163,7 @@ class MMatrix4 {
 
         fun rowMajorIndex(row: Int, column: Int) = row * 4 + column
         fun columnMajorIndex(row: Int, column: Int) = column * 4 + row
-        fun index(row: Int, column: Int, order: MajorOrder) = if (order == MajorOrder.ROW) rowMajorIndex(row, column) else columnMajorIndex(row, column)
+        fun index(row: Int, column: Int, order: MatrixMajorOrder) = if (order == MatrixMajorOrder.ROW) rowMajorIndex(row, column) else columnMajorIndex(row, column)
 
         fun multiply(left: FloatArray, right: FloatArray, out: FloatArray = FloatArray(16)): FloatArray {
             for (row in 0 until 4) {
@@ -1425,8 +1424,8 @@ class MMatrix4 {
     fun setToShear(x: Int, y: Int, z: Int) = setToShear(x.toFloat(), y.toFloat(), z.toFloat())
 
     fun setToRotationX(angle: Angle): MMatrix4 {
-        val c = cosd(angle).toFloat()
-        val s = sind(angle).toFloat()
+        val c = cos(angle).toFloat()
+        val s = sin(angle).toFloat()
         return this.setRows(
             1f, 0f, 0f, 0f,
             0f, c, - s, 0f,
@@ -1436,8 +1435,8 @@ class MMatrix4 {
     }
 
     fun setToRotationY(angle: Angle): MMatrix4 {
-        val c = cosd(angle).toFloat()
-        val s = sind(angle).toFloat()
+        val c = cos(angle).toFloat()
+        val s = sin(angle).toFloat()
         return this.setRows(
             c, 0f, s, 0f,
             0f, 1f, 0f, 0f,
@@ -1447,8 +1446,8 @@ class MMatrix4 {
     }
 
     fun setToRotationZ(angle: Angle): MMatrix4 {
-        val c = cosd(angle).toFloat()
-        val s = sind(angle).toFloat()
+        val c = cos(angle).toFloat()
+        val s = sin(angle).toFloat()
         return this.setRows(
             c, - s, 0f, 0f,
             s, c, 0f, 0f,
@@ -1464,8 +1463,8 @@ class MMatrix4 {
         val nx = x * norm
         val ny = y * norm
         val nz = z * norm
-        val c = cosd(angle)
-        val s = sind(angle)
+        val c = cos(angle)
+        val s = sin(angle)
         val t = 1 - c
         val tx = t * nx
         val ty = t * ny
@@ -1648,7 +1647,7 @@ class MMatrix4 {
 
 
     fun setToPerspective(fovy: Angle, aspect: Float, zNear: Float, zFar: Float): MMatrix4 {
-        val top = kotlin.math.tan(fovy.radians / 2f) * zNear
+        val top = (kotlin.math.tan(fovy.radians / 2f) * zNear).toFloat()
         val bottom = -1.0f * top
         val left = aspect * bottom
         val right = aspect * top
@@ -1985,8 +1984,8 @@ fun MMatrix.toMatrix4(out: MMatrix4 = MMatrix3D()): MMatrix4 = out.setRows(
 fun Matrix.toMatrix4(): Matrix4 {
     if (this.isNIL) return Matrix4.IDENTITY
     return Matrix4.fromRows(
-        a, c, 0f, tx,
-        b, d, 0f, ty,
+        a.toFloat(), c.toFloat(), 0f, tx.toFloat(),
+        b.toFloat(), d.toFloat(), 0f, ty.toFloat(),
         0f, 0f, 1f, 0f,
         0f, 0f, 0f, 1f
     )
@@ -2019,7 +2018,7 @@ data class MPoint(
     //override var yf: Float
 ) : MutableInterpolable<MPoint>, Interpolable<MPoint>, Comparable<MPoint> {
     //constructor(x: Double, y: Double) : this(x.toFloat(), y.toFloat())
-    constructor(p: Point) : this(p.xD, p.yD)
+    constructor(p: Point) : this(p.x, p.y)
     constructor(x: Float, y: Float) : this(x.toDouble(), y.toDouble())
     constructor(x: Int, y: Int) : this(x.toDouble(), y.toDouble())
 
@@ -2067,10 +2066,10 @@ data class MPoint(
 
     /** Updates a point from polar coordinates determined by an [angle] and a [length]. Angle 0 is pointing to the right, and the direction is counter-clock-wise */
     fun setToPolar(angle: Angle, length: Double = 1.0): MPoint = setToPolar(0.0, 0.0, angle, length)
-    fun setToPolar(base: Point, angle: Angle, length: Float = 1f): MPoint = setToPolar(base.x, base.y, angle, length)
+    fun setToPolar(base: Point, angle: Angle, length: Float = 1f): MPoint = setToPolar(base.x.toFloat(), base.y.toFloat(), angle, length)
     fun setToPolar(base: MPoint, angle: Angle, length: Double = 1.0): MPoint = setToPolar(base.x, base.y, angle, length)
-    fun setToPolar(x: Double, y: Double, angle: Angle, length: Double = 1.0): MPoint = setTo(x + angle.cosineD * length, y + angle.sineD * length)
-    fun setToPolar(x: Float, y: Float, angle: Angle, length: Float = 1f): MPoint = setTo(x + angle.cosineF * length, y + angle.sineF * length)
+    fun setToPolar(x: Double, y: Double, angle: Angle, length: Double = 1.0): MPoint = setTo(x + angle.cosine * length, y + angle.sine * length)
+    fun setToPolar(x: Float, y: Float, angle: Angle, length: Float = 1f): MPoint = setTo(x + angle.cosine * length, y + angle.sine * length)
 
     /** Rotates the vector/point -90 degrees (not normalizing it) */
     fun setToNormal(): MPoint = setTo(-this.y, this.x)
@@ -2131,7 +2130,7 @@ data class MPoint(
     fun distanceTo(that: MPoint): Double = distanceTo(that.x, that.y)
 
     fun angleTo(other: MPoint): Angle = Angle.between(this.x, this.y, other.x, other.y)
-    fun angleTo(other: Point): Angle = Angle.between(this.x, this.y, other.xD, other.yD)
+    fun angleTo(other: Point): Angle = Angle.between(this.x, this.y, other.x, other.y)
 
     fun transformed(mat: MMatrix, out: MPoint = MPoint()): MPoint = out.setToTransform(mat, this)
     operator fun get(index: Int): Double = when (index) {
@@ -2211,7 +2210,7 @@ data class MPoint(
         fun middle(a: MPoint, b: MPoint): MPoint = MPoint((a.x + b.x) * 0.5, (a.y + b.y) * 0.5)
 
         /** Constructs a point from polar coordinates determined by an [angle] and a [length]. Angle 0 is pointing to the right, and the direction is counter-clock-wise */
-        fun fromPolar(x: Double, y: Double, angle: Angle, length: Double = 1.0, out: MPoint = MPoint()): MPoint = out.setTo(x + angle.cosineD * length, y + angle.sineD * length)
+        fun fromPolar(x: Double, y: Double, angle: Angle, length: Double = 1.0, out: MPoint = MPoint()): MPoint = out.setTo(x + angle.cosine * length, y + angle.sine * length)
         fun fromPolar(angle: Angle, length: Double = 1.0, out: MPoint = MPoint()): MPoint = fromPolar(0.0, 0.0, angle, length, out)
         fun fromPolar(base: MPoint, angle: Angle, length: Double = 1.0, out: MPoint = MPoint()): MPoint = fromPolar(base.x, base.y, angle, length, out)
 
@@ -2286,14 +2285,14 @@ fun min(a: MPoint, b: MPoint, out: MPoint = MPoint()): MPoint = out.setTo(kotlin
 fun max(a: MPoint, b: MPoint, out: MPoint = MPoint()): MPoint = out.setTo(kotlin.math.max(a.x, b.x), kotlin.math.max(a.y, b.y))
 fun MPoint.clamp(min: Double, max: Double, out: MPoint = MPoint()): MPoint = out.setTo(x.clamp(min, max), y.clamp(min, max))
 
-val Vector2Int.mutable: MPointInt get() = MPointInt(x, y)
+val Vector2I.mutable: MPointInt get() = MPointInt(x, y)
 
 @KormaMutableApi
 @Deprecated("Use PointInt instead")
 inline class MPointInt(val p: MPoint) : Comparable<MPointInt>, MutableInterpolable<MPointInt> {
     override fun compareTo(other: MPointInt): Int = compare(this.x, this.y, other.x, other.y)
 
-    val point: Vector2Int get() = Vector2Int(x, y)
+    val point: Vector2I get() = Vector2I(x, y)
 
     companion object {
         operator fun invoke(): MPointInt = MPointInt(0, 0)
@@ -2547,8 +2546,8 @@ data class MRectangle(
         setToAnchoredRectangle(item.immutable, anchor, container)
 
     fun setToAnchoredRectangle(item: Size, anchor: Anchor, container: MRectangle): MRectangle = setTo(
-        (container.x + anchor.doubleX * (container.width - item.width)).toFloat(),
-        (container.y + anchor.doubleY * (container.height - item.height)).toFloat(),
+        (container.x + anchor.doubleX * (container.width - item.width)),
+        (container.y + anchor.doubleY * (container.height - item.height)),
         item.width,
         item.height
     )
@@ -2726,7 +2725,7 @@ inline class MRectangleInt(val rect: MRectangle) {
     operator fun contains(v: MSizeInt): Boolean = contains(v.immutable)
     operator fun contains(that: Point) = contains(that.x, that.y)
     operator fun contains(that: MPoint) = contains(that.x, that.y)
-    operator fun contains(that: Vector2Int) = contains(that.x, that.y)
+    operator fun contains(that: Vector2I) = contains(that.x, that.y)
     operator fun contains(that: MPointInt) = contains(that.x, that.y)
     fun contains(x: Double, y: Double) = (x >= left && x < right) && (y >= top && y < bottom)
     fun contains(x: Float, y: Float) = contains(x.toDouble(), y.toDouble())
@@ -3001,7 +3000,7 @@ class MVector3 : IVector3 {
     override var y: Float get() = data[1]; set(value) { data[1] = value }
     override var z: Float get() = data[2]; set(value) { data[2] = value }
 
-    val vector: Vector3 get() = Vector3(x, y, z)
+    val vector: Vector3F get() = Vector3F(x, y, z)
 
     val lengthSquared: Float get() = (x * x) + (y * y) + (z * z)
     val length: Float get() = sqrt(lengthSquared)
@@ -3229,3 +3228,17 @@ fun Scale.toMutable(out: MScale = MScale()): MScale {
     return out
 }
 fun MScale.toImmutable(): Scale = Scale(scaleX, scaleY)
+
+val Size.mutable: MSize get() = MSize(width, height)
+
+val MSize.immutable: Size get() = Size(width, height)
+
+fun MSize.asInt(): MSizeInt = MSizeInt(this)
+fun MSizeInt.asDouble(): MSize = this.float
+
+fun MPoint.asSize(): MSize = MSize(this)
+
+@Deprecated("")
+val Rectangle.mutable: MRectangle get() = MRectangle(x, y, width, height)
+@Deprecated("")
+fun Rectangle.mutable(out: MRectangle = MRectangle()): MRectangle = out.copyFrom(this)

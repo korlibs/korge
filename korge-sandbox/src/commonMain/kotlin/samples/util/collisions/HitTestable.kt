@@ -35,7 +35,7 @@ fun View.moveWithHitTestable(collision: HitTestable, dx: Double, dy: Double, hit
     char.y = oldY
 }
 
-fun View.moveWithCollisions(collision: List<View>, delta: Vector2, kind: CollisionKind = CollisionKind.SHAPE) {
+fun View.moveWithCollisions(collision: List<View>, delta: Vector2F, kind: CollisionKind = CollisionKind.SHAPE) {
     return moveWithCollisions(collision, delta.x, delta.y, kind)
 }
 

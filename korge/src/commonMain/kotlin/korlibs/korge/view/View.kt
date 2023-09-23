@@ -258,15 +258,15 @@ abstract class View internal constructor(
     /** Computed [speed] combining all the speeds from ancestors */
     val globalSpeed: Float get() = if (parent != null) parent!!.globalSpeed * speed else speed
 
-    protected var _x: Float = 0f
-    protected var _y: Float = 0f
-    private var _scaleX: Float = 1f
-    private var _scaleY: Float = 1f
+    protected var _x: Double = 0.0
+    protected var _y: Double = 0.0
+    private var _scaleX: Double = 1.0
+    private var _scaleY: Double = 1.0
     private var _skewX: Angle = Angle.ZERO
     private var _skewY: Angle = Angle.ZERO
     private var _rotation: Angle = Angle.ZERO
 
-    private fun setXY(x: Float, y: Float) {
+    private fun setXY(x: Double, y: Double) {
         ensureTransform()
         if (this._x != x || this._y != y) {
             this._x = x
@@ -281,7 +281,7 @@ abstract class View internal constructor(
         set(value) = setXY(value.x, value.y)
 
     /** Local X position of this view */
-    var x: Float
+    var x: Double
         get() {
             ensureTransform()
             return _x
@@ -289,32 +289,30 @@ abstract class View internal constructor(
         set(v) { setXY(v, y) }
 
     /** Local Y position of this view */
-    var y: Float
+    var y: Double
         get() {
             ensureTransform()
             return _y
         }
         set(v) { setXY(x, v) }
 
-    /** Local X position of this view */
-    var xD: Double get() = x.toDouble() ; set(v) { x = v.toFloat() }
-    /** Local Y position of this view */
-    var yD: Double get() = y.toDouble() ; set(v) { y = v.toFloat() }
+    ///** Local X position of this view */
+    //var xD: Double get() = x.toDouble() ; set(v) { x = v.toDouble() }
+    ///** Local Y position of this view */
+    //var yD: Double get() = y.toDouble() ; set(v) { y = v.toDouble() }
 
-    private var _zIndex: Float = 0f
+    private var _zIndex: Double = 0.0
 
     // @TODO: Instead of resort everytime that something changes, let's keep an index in the zIndex collection
     //@PublishedApi internal var _zIndexIndex: Int = 0
 
     @ViewProperty
-    var zIndex: Float
+    var zIndex: Double
         get() = _zIndex
         set(v) {
             parent?.updatedChildZIndex(this, _zIndex, v)
             _zIndex = v
         }
-
-    var zIndexD: Double get() = zIndex.toDouble() ; set(v) { zIndex = v.toFloat() }
 
     /*
     var xf: Float get() = x.toFloat() ; set(v) { x = v.toDouble() }
@@ -332,27 +330,26 @@ abstract class View internal constructor(
     var scalef: Float get() = scale.toFloat() ; set(v) { scale = v.toDouble() }
     */
 
-    var scaleAvg: Float
+    var scaleAvg: Double
         get() = scale.scaleAvg
         set(value) {
             scale = Scale(value, value)
         }
 
     /** Local scaling in the X axis of this view */
-    var scaleX: Float
+    var scaleX: Double
         get() { ensureTransform(); return _scaleX }
         set(v) { ensureTransform(); if (_scaleX != v) { _scaleX = v; invalidateMatrix() } }
 
     /** Local scaling in the Y axis of this view */
-    var scaleY: Float
+    var scaleY: Double
         get() { ensureTransform(); return _scaleY }
         set(v) { ensureTransform(); if (_scaleY != v) { _scaleY = v; invalidateMatrix() } }
 
-    /** Local scaling in the X axis of this view */
-    var scaleXD: Double get() = scaleX.toDouble(); set(value) { scaleX = value.toFloat() }
-
-    /** Local scaling in the Y axis of this view */
-    var scaleYD: Double get() = scaleY.toDouble(); set(value) { scaleY = value.toFloat() }
+    ///** Local scaling in the X axis of this view */
+    //var scaleXD: Double get() = scaleX.toDouble(); set(value) { scaleX = value.toDouble() }
+    ///** Local scaling in the Y axis of this view */
+    //var scaleYD: Double get() = scaleY.toDouble(); set(value) { scaleY = value.toDouble() }
 
     @ViewProperty(name = "type", order = -1000, editable = false)
     private val __type: String
@@ -366,14 +363,14 @@ abstract class View internal constructor(
             scaleY = value.scaleY
         }
 
-    var scaleXY: Float
-        get() = (scaleX + scaleY) / 2f
+    var scaleXY: Double
+        get() = (scaleX + scaleY) / 2.0
         set(v) { scaleX = v; scaleY = v }
 
-    /** Allows to change [scaleXD] and [scaleYD] at once. Returns the mean value of x and y scales. */
-    var scaleD: Double
-        get() = (scaleXD + scaleYD) / 2f
-        set(v) { scaleXD = v; scaleYD = v }
+    ///** Allows to change [scaleXD] and [scaleYD] at once. Returns the mean value of x and y scales. */
+    //var scaleD: Double
+    //    get() = (scaleXD + scaleYD) / 2f
+    //    set(v) { scaleXD = v; scaleYD = v }
 
     /** Local skewing in the X axis of this view */
     var skewX: Angle
@@ -410,18 +407,18 @@ abstract class View internal constructor(
         set(value) {
             val size = this.size
             scale = Scale(
-                (if (scaleX == 0f) 1f else scaleX) * (value.width / size.width),
-                (if (scaleY == 0f) 1f else scaleY) * (value.height / size.height)
+                (if (scaleX == 0.0) 1.0 else scaleX) * (value.width / size.width),
+                (if (scaleY == 0.0) 1.0 else scaleY) * (value.height / size.height)
             )
         }
-    var unscaledWidth: Float
+    var unscaledWidth: Double
         get() = unscaledSize.width
         set(value) { unscaledSize = unscaledSize.copy(width = value) }
-    var unscaledHeight: Float
+    var unscaledHeight: Double
         get() = unscaledSize.height
         set(value) { unscaledSize = unscaledSize.copy(height = value) }
-    var unscaledWidthD: Double get() = unscaledWidth.toDouble() ; set(value) { unscaledWidth = value.toFloat() }
-    var unscaledHeightD: Double get() = unscaledHeight.toDouble() ; set(value) { unscaledHeight = value.toFloat() }
+    //var unscaledWidthD: Double get() = unscaledWidth.toDouble() ; set(value) { unscaledWidth = value.todo() }
+    //var unscaledHeightD: Double get() = unscaledHeight.toDouble() ; set(value) { unscaledHeight = value.toFloat() }
 
 
     @ViewProperty(min = -1000.0, max = +1000.0, name = "size")
@@ -429,15 +426,15 @@ abstract class View internal constructor(
         get() = unscaledSize * scale
         set(value) {
             unscaledSize = Size(
-                if (scaleX == 0f) value.width else value.width / scaleX,
-                if (scaleY == 0f) value.height else value.height / scaleY,
+                if (scaleX == 0.0) value.width else value.width / scaleX,
+                if (scaleY == 0.0) value.height else value.height / scaleY,
             )
         }
 
-    var scaledWidth: Float get() = scaledSize.width ;set(value) { scaledSize = scaledSize.copy(width = value) }
-    var scaledHeight: Float get() = scaledSize.height ; set(value) { scaledSize = scaledSize.copy(height = value) }
-    var scaledWidthD: Double get() = scaledWidth.toDouble() ; set(value) { scaledWidth = value.toFloat() }
-    var scaledHeightD: Double get() = scaledHeight.toDouble() ; set(value) { scaledHeight = value.toFloat() }
+    var scaledWidth: Double get() = scaledSize.width ;set(value) { scaledSize = scaledSize.copy(width = value) }
+    var scaledHeight: Double get() = scaledSize.height ; set(value) { scaledSize = scaledSize.copy(height = value) }
+    //var scaledWidthD: Double get() = scaledWidth.toDouble() ; set(value) { scaledWidth = value.toFloat() }
+    //var scaledHeightD: Double get() = scaledHeight.toDouble() ; set(value) { scaledHeight = value.toFloat() }
 
     /**
      * Changes the [width] of this view. Generically, this means adjusting the [scaleX] of the view to match that size using the current bounds,
@@ -445,7 +442,7 @@ abstract class View internal constructor(
      *
      * To mutate use [unscaledWidth] or [scaledWidth].
      */
-    var width: Float get() = unscaledWidth ; set(value) { unscaledWidth = value }
+    var width: Double get() = unscaledWidth ; set(value) { unscaledWidth = value }
 
     /**
      * Changes the [height] of this view. Generically, this means adjusting the [scaleY] of the view to match that size using the current bounds,
@@ -453,10 +450,10 @@ abstract class View internal constructor(
      *
      * To mutate use [unscaledHeight] or [scaledHeight].
      */
-    var height: Float get() = unscaledHeight ; set(value) { unscaledHeight = value }
+    var height: Double get() = unscaledHeight ; set(value) { unscaledHeight = value }
 
-    var widthD: Double get() = unscaledWidth.toDouble() ; set(value) { unscaledWidth = value.toFloat() }
-    var heightD: Double get() = unscaledHeight.toDouble() ; set(value) { unscaledHeight = value.toFloat() }
+    //var widthD: Double get() = unscaledWidth.toDouble() ; set(value) { unscaledWidth = value.toFloat() }
+    //var heightD: Double get() = unscaledHeight.toDouble() ; set(value) { unscaledHeight = value.toFloat() }
 
     /**
      * The multiplicative [RGBA] color.
@@ -482,7 +479,13 @@ abstract class View internal constructor(
      * Equivalent to [ColorTransform.mA] + [View.invalidate]
      */
     @ViewProperty(min = 0.0, max = 1.0, clampMin = true, clampMax = true)
-    var alpha: Float
+    var alpha: Double
+        get() = alphaF.toDouble()
+        set(v) {
+            alphaF = v.toFloat()
+        }
+
+    var alphaF: Float
         get() = _colorTransform.a
         set(v) {
             if (_colorTransform.a != v) {
@@ -490,14 +493,6 @@ abstract class View internal constructor(
                 invalidateColorTransform()
             }
         }
-
-    var alphaD: Double
-        get() = alphaF.toDouble()
-        set(value) {
-            alphaF = value.toFloat()
-        }
-
-    var alphaF: Float by this::alpha
 
 
     /** Alias for [colorMul] to make this familiar to people coming from other engines. */
@@ -613,7 +608,7 @@ abstract class View internal constructor(
             if (!validLocalMatrix) {
                 validLocalMatrix = true
                 _requireInvalidate = true
-                _localMatrix = Matrix.fromTransform(x, y, rotation, scaleX, scaleY, skewX, skewY, 0f, 0f)
+                _localMatrix = Matrix.fromTransform(x, y, rotation, scaleX, scaleY, skewX, skewY, 0.0, 0.0)
             }
             return _localMatrix
         }
@@ -889,7 +884,7 @@ abstract class View internal constructor(
                 close()
             }
             lines.drawVector(Colors.YELLOW) {
-                val anchorSize = 6f * ctx.views!!.windowToGlobalScaleAvg.toFloat()
+                val anchorSize = 6.0 * ctx.views!!.windowToGlobalScaleAvg
                 circle(localToGlobal(local.topLeft), anchorSize)
                 circle(localToGlobal(local.topRight), anchorSize)
                 circle(localToGlobal(local.bottomRight), anchorSize)
@@ -915,10 +910,10 @@ abstract class View internal constructor(
     @Suppress("RemoveCurlyBracesFromTemplate")
     override fun toString(): String {
         var out = this::class.portableSimpleName
-        if (x != 0f || y != 0f) out += ":pos=(${x.str},${y.str})"
-        if (scaleX != 1f || scaleY != 1f) out += ":scale=(${scaleXD.str},${scaleYD.str})"
-        if (skewX != Angle.ZERO || skewY != Angle.ZERO) out += ":skew=(${skewX.degreesD.str},${skewY.degreesD.str})"
-        if (rotation.absoluteValue != Angle.ZERO) out += ":rotation=(${rotation.degreesD.str}º)"
+        if (x != 0.0 || y != 0.0) out += ":pos=(${x.str},${y.str})"
+        if (scaleX != 1.0 || scaleY != 1.0) out += ":scale=(${scaleX.str},${scaleY.str})"
+        if (skewX != Angle.ZERO || skewY != Angle.ZERO) out += ":skew=(${skewX.degrees.str},${skewY.degrees.str})"
+        if (rotation.absoluteValue != Angle.ZERO) out += ":rotation=(${rotation.degrees.str}º)"
         if (name != null) out += ":name=($name)"
         if (blendMode != BlendMode.INHERIT) out += ":blendMode=($blendMode)"
         if (!visible) out += ":visible=$visible"
@@ -1149,8 +1144,8 @@ abstract class View internal constructor(
      */
     open fun reset() {
         _localMatrix = Matrix.IDENTITY
-        _x = 0f; _y = 0f
-        _scaleX = 1f; _scaleY = 1f
+        _x = 0.0; _y = 0.0
+        _scaleX = 1.0; _scaleY = 1.0
         _skewX = 0.0.radians; _skewY = 0.0.radians
         _rotation = 0.0.radians
         validLocalMatrix = false
@@ -1362,7 +1357,7 @@ abstract class View internal constructor(
         this@apply.copyPropsFrom(this@View)
     }
 
-    fun globalLocalBoundsPointRatio(anchor: Anchor): Point = globalLocalBoundsPointRatio(anchor.doubleX, anchor.doubleY)
+    fun globalLocalBoundsPointRatio(anchor: Anchor): Point = globalLocalBoundsPointRatio(anchor.sx, anchor.sy)
 
     fun globalLocalBoundsPointRatio(ratioX: Double, ratioY: Double): Point {
         val bounds = getLocalBounds()
@@ -1703,8 +1698,8 @@ inline fun <T : View> T.hitShape(crossinline block: @ViewDslMarker VectorBuilder
 
 fun <T : View> T.sizeScaled(size: Size): T {
     this.size = (Size(
-        if (scaleX == 0f) size.width else size.width / scaleX,
-        if (scaleY == 0f) size.height else size.height / scaleY,
+        if (scaleX == 0.0) size.width else size.width / scaleX,
+        if (scaleY == 0.0) size.height else size.height / scaleY,
     ))
     return this
 }
@@ -1782,14 +1777,14 @@ fun <T : View> T.bounds(left: Double, top: Double, right: Double, bottom: Double
 fun <T : View> T.bounds(rect: Rectangle): T = bounds(rect.left.toDouble(), rect.top.toDouble(), rect.right.toDouble(), rect.bottom.toDouble())
 
 fun <T : View> T.positionX(x: Double): T {
-    this.xD = x
+    this.x = x
     return this
 }
 fun <T : View> T.positionX(x: Float): T = positionX(x.toDouble())
 fun <T : View> T.positionX(x: Int): T = positionX(x.toDouble())
 
 fun <T : View> T.positionY(y: Double): T {
-    this.yD = y
+    this.y = y
     return this
 }
 fun <T : View> T.positionY(y: Float): T = positionY(y.toDouble())
@@ -1832,8 +1827,8 @@ fun <T : View> T.skew(sx: Angle, sy: Angle): T {
 
 /** Chainable method returning this that sets [View.scaleXD] and [View.scaleYD] */
 fun <T : View> T.scale(sx: Double, sy: Double = sx): T {
-    this.scaleXD = sx
-    this.scaleYD = sy
+    this.scaleX = sx
+    this.scaleY = sy
     return this
 }
 fun <T : View> T.scale(sx: Float, sy: Float = sx): T = scale(sx.toDouble(), sy.toDouble())
@@ -1853,12 +1848,12 @@ fun <T : View> T.alpha(alpha: Float): T {
 fun <T : View> T.alpha(alpha: Double): T = alpha(alpha.toFloat())
 fun <T : View> T.alpha(alpha: Int): T = alpha(alpha.toFloat())
 
-fun <T : View> T.zIndex(index: Float): T {
+fun <T : View> T.zIndex(index: Double): T {
     this.zIndex = index
     return this
 }
-fun <T : View> T.zIndex(index: Double): T = zIndex(index.toFloat())
-fun <T : View> T.zIndex(index: Int): T = zIndex(index.toFloat())
+fun <T : View> T.zIndex(index: Float): T = zIndex(index.toDouble())
+fun <T : View> T.zIndex(index: Int): T = zIndex(index.toDouble())
 
 typealias ViewDslMarker = korlibs.math.annotations.ViewDslMarker
 // @TODO: This causes issues having to put some explicit this@ when it shouldn't be required
@@ -1961,19 +1956,19 @@ sealed class ScalingOption {
 fun <T : View> T.scaleWhileMaintainingAspect(scalingOption: ScalingOption): T {
     val scaleValue = when (scalingOption) {
         is ScalingOption.ByHeight -> {
-            scalingOption.height / this.scaledHeightD
+            scalingOption.height / this.scaledHeight
         }
         is ScalingOption.ByWidth -> {
-            scalingOption.width / this.scaledWidthD
+            scalingOption.width / this.scaledWidth
         }
         is ScalingOption.ByWidthAndHeight -> {
-            val scaledByWidth = scalingOption.width / this.scaledWidthD
-            val scaledByHeight = scalingOption.height / this.scaledHeightD
+            val scaledByWidth = scalingOption.width / this.scaledWidth
+            val scaledByHeight = scalingOption.height / this.scaledHeight
             kotlin.math.min(scaledByHeight, scaledByWidth)
         }
     }
-    this.scaledHeightD = this.scaledHeightD * scaleValue
-    this.scaledWidthD = this.scaledWidthD * scaleValue
+    this.scaledHeight = this.scaledHeight * scaleValue
+    this.scaledWidth = this.scaledWidth * scaleValue
     return this
 }
 

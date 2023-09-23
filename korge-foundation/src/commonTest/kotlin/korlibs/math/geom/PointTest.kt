@@ -37,8 +37,8 @@ class PointTest {
 
     @Test
     fun testPolarConstruction() {
-        assertEqualsFloat(Point(10, 20), Point.polar(Point(10, 10), 90.degrees, 10f, up = Vector2.UP))
-        assertEqualsFloat(Point(10, 0), Point.polar(Point(10, 10), 90.degrees, 10f, up = Vector2.UP_SCREEN))
+        assertEqualsFloat(Point(10, 20), Point.polar(Point(10, 10), 90.degrees, 10f, up = Vector2F.UP))
+        assertEqualsFloat(Point(10, 0), Point.polar(Point(10, 10), 90.degrees, 10f, up = Vector2F.UP_SCREEN))
     }
 
     private fun assertEquals(a: Point, b: Point, absoluteTolerance: Float = 1e-7f) {

@@ -8,17 +8,17 @@ import korlibs.math.geom.*
 import kotlin.collections.set
 
 class BinPacker(val size: Size, val algo: Algo = MaxRects(size)) {
-    val width: Float get() = size.width
-    val height: Float get() = size.height
+    val width: Double get() = size.width
+    val height: Double get() = size.height
 
     interface Algo {
         fun add(size: Size): Rectangle?
     }
 
-    class Result<T>(val maxWidth: Float, val maxHeight: Float, val items: List<Pair<T, Rectangle?>>) {
-        private val rectanglesNotNull = items.map { it.second }.filterNotNull()
-        val width: Float = rectanglesNotNull.map { it.right }.maxOrNull() ?: 0f
-        val height: Float = rectanglesNotNull.map { it.bottom }.maxOrNull() ?: 0f
+    class Result<T>(val maxWidth: Double, val maxHeight: Double, val items: List<Pair<T, Rectangle?>>) {
+        private val rectanglesNotNull = items.mapNotNull { it.second }
+        val width: Double = rectanglesNotNull.maxOfOrNull { it.right } ?: 0.0
+        val height: Double = rectanglesNotNull.maxOfOrNull { it.bottom } ?: 0.0
         val rects: List<Rectangle?> get() = items.map { it.second }
         val rectsStr: String get() = rects.toString()
     }
@@ -75,7 +75,7 @@ class BinPacker(val size: Size, val algo: Algo = MaxRects(size)) {
             sortedItems.fastForEach {
                 val size = getSize(it)
                 if (size.width > maxWidth || size.height > maxHeight) {
-                    throw ImageDoNotFitException(size.widthD, size.heightD, currentBinPacker)
+                    throw ImageDoNotFitException(size.width, size.height, currentBinPacker)
                 }
             }
 
@@ -142,7 +142,7 @@ class MaxRects(maxSize: Size) : BinPacker.Algo {
         if (width <= 0.0 && height <= 0.0) return Rectangle(0, 0, 0, 0)
         val newNode = quickFindPositionForNewNodeBestAreaFit(width, height)
 
-        if (newNode.height == 0f) return null
+        if (newNode.height == 0.0) return null
 
         var numRectanglesToProcess = freeRectangles.size
         var i = 0
@@ -159,7 +159,7 @@ class MaxRects(maxSize: Size) : BinPacker.Algo {
         return newNode
     }
 
-    private fun quickFindPositionForNewNodeBestAreaFit(width: Float, height: Float): Rectangle {
+    private fun quickFindPositionForNewNodeBestAreaFit(width: Double, height: Double): Rectangle {
         var score = Double.MAX_VALUE
         var areaFit: Double
         var bestNode = Rectangle()

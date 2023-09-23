@@ -13,9 +13,9 @@ import korlibs.math.geom.vector.*
  */
 @OptIn(KorgeInternal::class)
 open class RectBase(
-	anchor: Anchor = Anchor.TOP_LEFT,
-	hitShape: VectorPath? = null,
-	var smoothing: Boolean = true
+    anchor: Anchor = Anchor.TOP_LEFT,
+    hitShape: VectorPath? = null,
+    var smoothing: Boolean = true
 ) : View(), Anchorable {
     init {
         this.hitShape = hitShape

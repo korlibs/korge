@@ -9,6 +9,7 @@ import korlibs.math.annotations.*
 import korlibs.math.geom.*
 import korlibs.math.geom.bezier.*
 import korlibs.math.geom.shape.*
+import korlibs.math.interpolation.*
 import korlibs.memory.*
 
 // @TODO: Implement LineCap + LineJoin
@@ -23,7 +24,7 @@ class StrokeToFill {
     private var startCap: LineCap = LineCap.BUTT
     private var endCap: LineCap = LineCap.BUTT
     private var joins: LineJoin = LineJoin.BEVEL
-    private var miterLimit: Float = 4f // ratio of the width
+    private var miterLimit: Double = 4.0 // ratio of the width
     internal val strokePoints = PointIntArrayList(1024)
     internal val doJointList = IntArrayList(1024)
     internal val fillPoints = Array(2) { PointIntArrayList(1024) }
@@ -39,8 +40,8 @@ class StrokeToFill {
     private val currEdgeRight = MEdge()
 
     internal fun MEdge.setEdgeDisplaced(edge: MEdge, width: Int, angle: Angle): MEdge = this.apply {
-        val ldx = (width * angle.cosineD)
-        val ldy = (width * angle.sineD)
+        val ldx = (width * angle.cosine)
+        val ldy = (width * angle.sine)
         this.setTo((edge.ax + ldx).toInt(), (edge.ay + ldy).toInt(), (edge.bx + ldx).toInt(), (edge.by + ldy).toInt(), edge.wind)
     }
 
@@ -51,7 +52,7 @@ class StrokeToFill {
     internal fun PointIntArrayList.addEdgePointAB(e: MEdge, point: EdgePoint) = if (point == EdgePoint.A) addEdgePointA(e) else addEdgePointB(e)
     internal fun PointIntArrayList.add(e: Point) { add(e.x.toInt(), e.y.toInt()) }
 
-    internal fun doJoin(out: PointIntArrayList, mainPrev: MEdge, mainCurr: MEdge, prev: MEdge, curr: MEdge, join: LineJoin, miterLimit: Float, scale: Float, forcedMiter: Boolean) {
+    internal fun doJoin(out: PointIntArrayList, mainPrev: MEdge, mainCurr: MEdge, prev: MEdge, curr: MEdge, join: LineJoin, miterLimit: Double, scale: Double, forcedMiter: Boolean) {
         val rjoin = if (forcedMiter) LineJoin.MITER else join
         when (rjoin) {
             LineJoin.MITER -> {
@@ -78,9 +79,9 @@ class StrokeToFill {
                     for (n in 0..count) {
                         out.add(Bezier.quadCalc(
                             Point(prev.bx.toDouble(), prev.by.toDouble()),
-                            Point(i.xD, i.yD),
+                            Point(i.x, i.y),
                             Point(curr.ax.toDouble(), curr.ay.toDouble()),
-                            n.toFloat() / count
+                            Ratio(n.toDouble() / count)
                         ))
                     }
                 } else {
@@ -91,7 +92,7 @@ class StrokeToFill {
         }
     }
 
-    internal fun doCap(l: PointIntArrayList, r: PointIntArrayList, left: MEdge, right: MEdge, epoint: EdgePoint, cap: LineCap, scale: Float) {
+    internal fun doCap(l: PointIntArrayList, r: PointIntArrayList, left: MEdge, right: MEdge, epoint: EdgePoint, cap: LineCap, scale: Double) {
         val angle = if (epoint == EdgePoint.A) -left.angle else +left.angle
         val lx = left.getX(epoint.n)
         val ly = left.getY(epoint.n)
@@ -103,8 +104,8 @@ class StrokeToFill {
                 r.add(rx, ry)
             }
             LineCap.ROUND, LineCap.SQUARE -> {
-                val ax = (angle.cosineD * weight / 2).toInt()
-                val ay = (angle.sineD * weight / 2).toInt()
+                val ax = (angle.cosine * weight / 2).toInt()
+                val ay = (angle.sine * weight / 2).toInt()
                 val lx2 = lx + ax
                 val ly2 = ly + ay
                 val rx2 = rx + ax
@@ -117,14 +118,14 @@ class StrokeToFill {
                     l.add(lx, ly)
                     for (n in 0 .. count) {
                         val m = if (epoint == EdgePoint.A) n else count - n
-                        val ratio = m.toDouble() / count
+                        val ratio = Ratio(m.toDouble() / count)
                         r.add(
                             Bezier.cubicCalc(
                                 Point(lx.toDouble(), ly.toDouble()),
                                 Point(lx2.toDouble(), ly2.toDouble()),
                                 Point(rx2.toDouble(), ry2.toDouble()),
                                 Point(rx.toDouble(), ry.toDouble()),
-                                ratio.toFloat()
+                                ratio
                             )
                         )
                     }
@@ -133,7 +134,7 @@ class StrokeToFill {
         }
     }
 
-    internal fun computeStroke(scale: Float, closed: Boolean) {
+    internal fun computeStroke(scale: Double, closed: Boolean) {
         if (strokePoints.isEmpty()) return
 
         val weightD2 = weight / 2
@@ -209,7 +210,7 @@ class StrokeToFill {
     }
 
 
-    fun set(outFill: VectorPath, weight: Int, startCap: LineCap, endCap: LineCap, joins: LineJoin, miterLimit: Float) {
+    fun set(outFill: VectorPath, weight: Int, startCap: LineCap, endCap: LineCap, joins: LineJoin, miterLimit: Double) {
         this.outFill = outFill
         this.weight = weight
         this.startCap = startCap
@@ -220,10 +221,10 @@ class StrokeToFill {
 
     fun strokeFill(
         stroke: VectorPath,
-        lineWidth: Float, joins: LineJoin, startCap: LineCap, endCap: LineCap, miterLimit: Float, outFill: VectorPath
+        lineWidth: Double, joins: LineJoin, startCap: LineCap, endCap: LineCap, miterLimit: Double, outFill: VectorPath
     ) {
         val scale = RastScale.RAST_FIXED_SCALE
-        val iscale = 1f / RastScale.RAST_FIXED_SCALE
+        val iscale = 1.0 / RastScale.RAST_FIXED_SCALE
         set(outFill, (lineWidth * scale).toInt(), startCap, endCap, joins, miterLimit)
         stroke.emitPoints2(
             flush = { close ->
@@ -234,7 +235,7 @@ class StrokeToFill {
             }
         ) { p, move ->
             if (move) computeStroke(iscale, false)
-            strokePoints.add((p.xD * scale).toInt(), (p.yD * scale).toInt())
+            strokePoints.add((p.x * scale).toInt(), (p.y * scale).toInt())
             doJointList.add(0)
         }
         computeStroke(iscale, false)
@@ -257,19 +258,19 @@ fun VectorPath.strokeToFill(
 )
 
 fun VectorPath.strokeToFill(
-    lineWidth: Float,
+    lineWidth: Double,
     joins: LineJoin = LineJoin.MITER,
     startCap: LineCap = LineCap.BUTT,
     endCap: LineCap = startCap,
-    miterLimit: Float = 4f,
-    lineDash: IFloatArrayList? = null,
-    lineDashOffset: Float = 0f,
+    miterLimit: Double = 4.0,
+    lineDash: DoubleList? = null,
+    lineDashOffset: Double = 0.0,
     temp: StrokeToFill = StrokeToFill(),
     outFill: VectorPath = VectorPath(winding = Winding.NON_ZERO),
 ): VectorPath {
     val strokePaths = when {
         lineDash != null -> this.toCurvesList()
-            .flatMap { it.toDashes(lineDash.toFloatArray(), lineDashOffset) }
+            .flatMap { it.toDashes(lineDash.toDoubleArray(), lineDashOffset) }
             .map { it.toVectorPath() }
         else -> listOf(this)
     }

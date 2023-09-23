@@ -57,7 +57,7 @@ enum class HitTestDirection {
 
     companion object {
         fun fromPoint(point: Point): HitTestDirection {
-            if (point.x == 0f && point.y == 0f) return ANY
+            if (point.x == 0.0 && point.y == 0.0) return ANY
             return fromAngle(Point.ZERO.angleTo(point))
         }
         fun fromAngle(angle: Angle): HitTestDirection {

@@ -4,14 +4,13 @@ package korlibs.math.geom.bezier
 
 import korlibs.datastructure.*
 import korlibs.datastructure.iterators.*
-import korlibs.math.geom.*
-import korlibs.math.interpolation.*
 import korlibs.math.*
 import korlibs.math.annotations.*
+import korlibs.math.geom.*
 import korlibs.math.geom.convex.*
 import korlibs.math.geom.shape.*
 import korlibs.math.geom.vector.*
-import korlibs.math.isAlmostZero
+import korlibs.math.interpolation.*
 import korlibs.memory.*
 import korlibs.number.*
 import kotlin.contracts.*
@@ -24,15 +23,15 @@ object Arc {
     //val K = (4.0 / 3.0) * (sqrt(2.0) - 1.0)
     const val K = 0.5522847498307933
 
-    fun area(radius: Float, angle: Angle): Float = (PIF * radius * radius) * angle.ratioF
-    fun length(radius: Float, angle: Angle): Float = PI2F * radius * angle.ratioF
+    fun area(radius: Double, angle: Angle): Double = (PI * radius * radius) * angle.ratio
+    fun length(radius: Double, angle: Angle): Double = PI2 * radius * angle.ratio
 
     fun arcToPath(out: VectorBuilder, a: Point, c: Point, r: Double) {
         if (out.isEmpty()) out.moveTo(a)
         val b = out.lastPos
         val AB = b - a
         val AC = c - a
-        val angle = Point.angleArc(AB, AC).radiansD * 0.5
+        val angle = Point.angleArc(AB, AC).radians * 0.5
         val x = r * sin((PI / 2.0) - angle) / sin(angle)
         val A = a + AB.unit * x
         val B = a + AC.unit * x
@@ -58,12 +57,12 @@ object Arc {
         out.close()
     }
 
-    fun arcPath(out: VectorBuilder, p1: Point, p2: Point, radius: Float, counterclockwise: Boolean = false) {
+    fun arcPath(out: VectorBuilder, p1: Point, p2: Point, radius: Double, counterclockwise: Boolean = false) {
         val circleCenter = findArcCenter(p1, p2, radius)
         arcPath(out, circleCenter, radius, Angle.between(circleCenter, p1), Angle.between(circleCenter, p2), counterclockwise)
     }
 
-    fun arcPath(out: VectorBuilder, center: Point, r: Float, start: Angle, end: Angle, counterclockwise: Boolean = false) {
+    fun arcPath(out: VectorBuilder, center: Point, r: Double, start: Angle, end: Angle, counterclockwise: Boolean = false) {
         val (x, y) = center
         // http://hansmuller-flex.blogspot.com.es/2011/04/approximating-circular-arc-with-cubic.html
         val startAngle = start.normalized
@@ -87,26 +86,26 @@ object Arc {
             val a2 = a1 + min(remainingAngle, Angle.QUARTER) * sgn
 
             val a = (a2 - a1) / 2.0
-            val x4 = r * a.cosineD
-            val y4 = r * a.sineD
+            val x4 = r * a.cosine
+            val y4 = r * a.sine
             val x1 = x4
             val y1 = -y4
-            val f = K * a.tangentD
+            val f = K * a.tangent
             val x2 = x1 + f * y4
             val y2 = y1 + f * x4
             val x3 = x2
             val y3 = -y2
             val ar = a + a1
-            val cos_ar = ar.cosineD
-            val sin_ar = ar.sineD
+            val cos_ar = ar.cosine
+            val sin_ar = ar.sine
 
             if (index == 0) {
-                out.moveTo(Point(x + r * a1.cosineD, y + r * a1.sineD))
+                out.moveTo(Point(x + r * a1.cosine, y + r * a1.sine))
             }
             out.cubicTo(
                 Point(x + x2 * cos_ar - y2 * sin_ar, y + x2 * sin_ar + y2 * cos_ar),
                 Point(x + x3 * cos_ar - y3 * sin_ar, y + x3 * sin_ar + y3 * cos_ar),
-                Point(x + r * a2.cosineD, y + r * a2.sineD),
+                Point(x + r * a2.cosine, y + r * a2.sine),
             )
             //println(" - ARC: $a1-$a2")
             index++
@@ -118,10 +117,10 @@ object Arc {
 
     // c = √(a² + b²)
     // b = √(c² - a²)
-    private fun triangleFindSideFromSideAndHypot(side: Float, hypot: Float): Float =
+    private fun triangleFindSideFromSideAndHypot(side: Double, hypot: Double): Double =
         kotlin.math.sqrt(hypot * hypot - side * side)
 
-    fun findArcCenter(p1: Point, p2: Point, radius: Float): Point {
+    fun findArcCenter(p1: Point, p2: Point, radius: Double): Point {
         val tangent = p2 - p1
         val normal = tangent.toNormal().normalized
         val mid = (p1 + p2) / 2.0
@@ -129,16 +128,16 @@ object Arc {
         return mid + normal * lineLen
     }
 
-    fun createArc(p1: Point, p2: Point, radius: Float, counterclockwise: Boolean = false): Curves =
+    fun createArc(p1: Point, p2: Point, radius: Double, counterclockwise: Boolean = false): Curves =
         buildVectorPath { arcPath(this, p1, p2, radius, counterclockwise) }.toCurves()
 
     fun createEllipse(p: Point, radius: Size): Curves =
         buildVectorPath { ellipsePath(this, p, radius) }.toCurves()
 
-    fun createCircle(p: Point, radius: Float): Curves =
+    fun createCircle(p: Point, radius: Double): Curves =
         buildVectorPath { arc(p, radius, Angle.ZERO, Angle.FULL) }.toCurves()
 
-    fun createArc(p: Point, r: Float, start: Angle, end: Angle, counterclockwise: Boolean = false): Curves =
+    fun createArc(p: Point, r: Double, start: Angle, end: Angle, counterclockwise: Boolean = false): Curves =
         buildVectorPath { arcPath(this, p, r, start, end, counterclockwise) }.toCurves()
 
 }
@@ -163,10 +162,10 @@ class Bezier private constructor(val points: PointList, dummy: Unit) : Curve {
      * Gets a list of [isSimple] bezier sub bezier curves.
      */
     fun toSimpleList(): List<SubBezier> = reduce()
-    fun scaleSimple(d: Float): Bezier = scaleSimple { d }
-    fun scaleSimple(d0: Float, d1: Float): Bezier = scaleSimple { if (it < 0.5) d0 else d1 }
+    fun scaleSimple(d: Double): Bezier = scaleSimple { d }
+    fun scaleSimple(d0: Double, d1: Double): Bezier = scaleSimple { if (it < 0.5) d0 else d1 }
     /** Computes the point of the curve at [t] */
-    operator fun get(t: Float): Point = compute(t)
+    operator fun get(t: Ratio): Point = compute(t)
 
     @Deprecated("", ReplaceWith("this"))
     fun clone(): Bezier = this
@@ -176,7 +175,7 @@ class Bezier private constructor(val points: PointList, dummy: Unit) : Curve {
     override fun getBounds(): Rectangle = boundingBox
     fun getBounds(m: Matrix): Rectangle = _getBoundingBox(m)
 
-    override fun calc(t: Float): Point = this.compute(t)
+    override fun calc(t: Ratio): Point = this.compute(t)
 
     override fun equals(other: Any?): Boolean = other is Bezier && this.points == other.points
     override fun hashCode(): Int = points.hashCode()
@@ -194,8 +193,8 @@ class Bezier private constructor(val points: PointList, dummy: Unit) : Curve {
     val extrema: Extrema by lazy {
         val out = (0 until dims).map { dim ->
             //println("extrema dim=$dim, p=${p.toList()}, droots=${droots(p).toList()}")
-            var out = droots(dpoints[0].getComponentList(dim).mapFloat { it })
-            if (order == 3) out = combineSmallDistinctSorted(out, droots(dpoints[1].getComponentList(dim).mapFloat { it }))
+            var out = droots(dpoints[0].getComponentList(dim).mapDouble { it })
+            if (order == 3) out = combineSmallDistinctSorted(out, droots(dpoints[1].getComponentList(dim)))
             out
         }
         Extrema(out[0], out[1])
@@ -208,17 +207,17 @@ class Bezier private constructor(val points: PointList, dummy: Unit) : Curve {
     val boundingBox: Rectangle by lazy { _getBoundingBox(Matrix.NIL) }
 
     private fun _getBoundingBox(m: Matrix = Matrix.NIL): Rectangle {
-        var xmin = 0f
-        var ymin = 0f
-        var xmax = 0f
-        var ymax = 0f
+        var xmin = 0.0
+        var ymin = 0.0
+        var xmax = 0.0
+        var ymax = 0.0
         for (n in 0..1) {
             //println("extrema=$extrema")
             val ext = extrema.dimt01(n)
-            var min = Float.POSITIVE_INFINITY
-            var max = Float.NEGATIVE_INFINITY
+            var min = Double.POSITIVE_INFINITY
+            var max = Double.NEGATIVE_INFINITY
             ext.fastForEach { t ->
-                val p = get(t)
+                val p = get(Ratio(t))
                 val value = when (n) {
                     0 -> p.transformX(m)
                     else -> p.transformY(m)
@@ -242,11 +241,11 @@ class Bezier private constructor(val points: PointList, dummy: Unit) : Curve {
     }
 
     /** Calculates the length of this curve .*/
-    override val length: Float by lazy {
-        val z = 0.5f
-        var sum = 0.0f
+    override val length: Double by lazy {
+        val z = 0.5
+        var sum = 0.0
         for (i in T_VALUES.indices) {
-            val t: Float = z * T_VALUES[i] + z
+            val t: Ratio = Ratio(z * T_VALUES[i] + z)
             val temp = derivative(t)
             sum += C_VALUES[i] * temp.length
         }
@@ -260,7 +259,7 @@ class Bezier private constructor(val points: PointList, dummy: Unit) : Curve {
 
     val isLinear: Boolean by lazy {
         val baseLength = (points[order] - points[0]).length
-        (0 until aligned.size).sumOfFloat { aligned.getY(it).absoluteValue } < baseLength / 50f
+        (0 until aligned.size).sumOfDouble { aligned.getY(it).absoluteValue } < baseLength / 50.0
     }
 
     /**
@@ -277,27 +276,24 @@ class Bezier private constructor(val points: PointList, dummy: Unit) : Curve {
             val a2 = angle(this.points[0], this.points[3], this.points[2])
             if ((a1 > 0f && a2 < 0f) || (a1 < 0f && a2 > 0f)) return@lazy false
         }
-        val n1 = this.normal(0f)
-        val n2 = this.normal(1f)
+        val n1 = this.normal(Ratio.ZERO)
+        val n2 = this.normal(Ratio.ONE)
         val s = n1.x * n2.x + n1.y * n2.y
         //if (this._3d) s += n1.z * n2.z
         abs(acos(s)) < PI / 3.0
     }
 
-    override fun ratioFromLength(length: Float): Float {
+    override fun ratioFromLength(length: Double): Ratio {
         return lut.estimateAtLength(length).ratio
     }
 
     fun getLUT(steps: Int = 100, out: CurveLUT = CurveLUT(this, steps + 1)): CurveLUT {
         out.clear()
-        for (n in 0..steps) {
-            val t = n.toFloat() / steps.toFloat()
-            out.add(t, compute(t))
-        }
+        Ratio.forEachRatio(steps) { t -> out.add(t, compute(t)) }
         return out
     }
 
-    private fun findNearestLine(pX: Float, pY: Float, aX: Float, aY: Float, bX: Float, bY: Float, out: ProjectedPoint = ProjectedPoint()): ProjectedPoint {
+    private fun findNearestLine(pX: Double, pY: Double, aX: Double, aY: Double, bX: Double, bY: Double, out: ProjectedPoint = ProjectedPoint()): ProjectedPoint {
         out.bezier = this
 
         val atobX = bX - aX
@@ -306,10 +302,10 @@ class Bezier private constructor(val points: PointList, dummy: Unit) : Curve {
         val atopX = pX - aX
         val atopY = pY - aY
 
-        val len: Float = atobX * atobX + atobY * atobY
-        val dot: Float = atopX * atobX + atopY * atobY
+        val len: Double = atobX * atobX + atobY * atobY
+        val dot: Double = atopX * atobX + atopY * atobY
 
-        val t: Float = min(1f, max(0f, dot / len))
+        val t: Ratio = min(1.0, max(0.0, dot / len)).toRatio()
         //dot = ( bX - aX ) * ( pY - aY ) - ( bY - aY ) * ( pX - aX );
         out.p = Point(aX + atobX * t, aY + atobY * t)
         out.t = t
@@ -326,12 +322,12 @@ class Bezier private constructor(val points: PointList, dummy: Unit) : Curve {
         }
 
         val LUT = this.lut
-        val l = LUT.steps.toFloat()
+        val l = LUT.steps.toDouble()
         val closest = LUT.closest(point)
         val mpos = closest.mpos
-        val t1: Float = (mpos - 1) / l
-        val t2: Float = (mpos + 1) / l
-        val step: Float = 0.1f / l
+        val t1: Double = (mpos - 1) / l
+        val t2: Double = (mpos + 1) / l
+        val step: Double = 0.1 / l
 
         // step 2: fine check
         var mdistSq = closest.mdistSq
@@ -339,8 +335,8 @@ class Bezier private constructor(val points: PointList, dummy: Unit) : Curve {
         var ft = t
         mdistSq += 1
         while (t < t2 + step) {
-            val p: Point = this.compute(t)
-            val d: Float = Point.distanceSquared(point, p)
+            val p: Point = this.compute(t.toRatio())
+            val d: Double = Point.distanceSquared(point, p)
             if (d < mdistSq) {
                 mdistSq = d
                 ft = t
@@ -348,19 +344,19 @@ class Bezier private constructor(val points: PointList, dummy: Unit) : Curve {
             }
             t += step
         }
-        out.p = this.compute(ft)
+        out.p = this.compute(ft.toRatio())
         out.t = when {
-            ft < 0 -> 0f
-            ft > 1 -> 1f
-            else -> ft
+            ft < 0 -> Ratio.ZERO
+            ft > 1 -> Ratio.ONE
+            else -> ft.toRatio()
         }
         out.dSq = mdistSq
         return out
     }
 
-    data class ProjectedPoint(var p: Point = Point(), var t: Float = 0f, var dSq: Float = 0f) {
+    data class ProjectedPoint(var p: Point = Point(), var t: Ratio = Ratio.ZERO, var dSq: Double = 0.0) {
         lateinit var bezier: Bezier
-        val d: Float get() = sqrt(dSq)
+        val d: Double get() = sqrt(dSq)
         val normal: Point get() = bezier.normal(t)
         fun roundDecimalPlaces(places: Int): ProjectedPoint = ProjectedPoint(
             p.roundDecimalPlaces(places),
@@ -368,17 +364,17 @@ class Bezier private constructor(val points: PointList, dummy: Unit) : Curve {
             dSq.roundDecimalPlaces(places)
         ).also { it.bezier = bezier }
 
-        fun isAlmostEquals(other: ProjectedPoint, epsilon: Float = 0.01f): Boolean =
-            this.p.isAlmostEquals(other.p, epsilon) && this.t.isAlmostEquals(other.t, epsilon) && this.dSq.isAlmostEquals(other.dSq, epsilon)
+        fun isAlmostEquals(other: ProjectedPoint, epsilon: Double = 0.001): Boolean =
+            this.p.isAlmostEquals(other.p, epsilon) && this.t.isAlmostEquals(other.t, epsilon.toRatio()) && this.dSq.isAlmostEquals(other.dSq, epsilon)
 
     }
 
-    //private var BezierCurve._t1: Float by Extra.Property { 0.0 }
-    //private var BezierCurve._t2: Float by Extra.Property { 0.0 }
+    //private var BezierCurve._t1: Double by Extra.Property { 0.0 }
+    //private var BezierCurve._t2: Double by Extra.Property { 0.0 }
 
     /** Returns the [t] values where the curve changes its sign */
-    fun inflections(): FloatArray {
-        if (points.size < 4) return EMPTY_FLOAT_ARRAY
+    fun inflections(): DoubleArray {
+        if (points.size < 4) return EMPTY_DOUBLE_ARRAY
 
         // FIXME: TODO: add in inflection abstraction for quartic+ curves?
         //val p = align(points, Line(points.firstX, points.firstY, points.lastX, points.lastY))
@@ -390,46 +386,46 @@ class Bezier private constructor(val points: PointList, dummy: Unit) : Curve {
         val b = p3.x * p1.y
         val c = p1.x * p2.y
         val d = p3.x * p2.y
-        val v1: Float = 18f * (-3f * a + 2f * b + 3f * c - d)
-        val v2: Float = 18f * (3f * a - b - 3f * c)
-        val v3: Float = 18f * (c - a)
+        val v1: Double = 18.0 * (-3.0 * a + 2.0 * b + 3.0 * c - d)
+        val v2: Double = 18.0 * (3.0 * a - b - 3.0 * c)
+        val v3: Double = 18.0 * (c - a)
 
-        if (v1.isAlmostEquals(0f)) {
-            if (!v2.isAlmostEquals(0f)) {
+        if (v1.isAlmostZero()) {
+            if (!v2.isAlmostZero()) {
                 val t = -v3 / v2
-                if (t in 0.0..1.0) return floatArrayOf(t)
+                if (t in 0.0..1.0) return doubleArrayOf(t)
             }
-            return EMPTY_FLOAT_ARRAY
+            return EMPTY_DOUBLE_ARRAY
         }
-        val d2: Float = 2f * v1
-        if (d2.isAlmostEquals(0f)) return EMPTY_FLOAT_ARRAY
-        val trm: Float = v2 * v2 - 4f * v1 * v3
-        if (trm < 0) return EMPTY_FLOAT_ARRAY
-        val sq: Float = kotlin.math.sqrt(trm)
-        val out0: Float = (sq - v2) / d2
-        val out1: Float = -(v2 + sq) / d2
-        val out = FloatArrayList(2)
+        val d2: Double = 2.0 * v1
+        if (d2.isAlmostEquals(0.0)) return EMPTY_DOUBLE_ARRAY
+        val trm: Double = v2 * v2 - 4f * v1 * v3
+        if (trm < 0) return EMPTY_DOUBLE_ARRAY
+        val sq: Double = kotlin.math.sqrt(trm)
+        val out0: Double = (sq - v2) / d2
+        val out1: Double = -(v2 + sq) / d2
+        val out = DoubleArrayList(2)
         if (out0 in 0f..1f) out.add(out0)
         if (out1 in 0f..1f) out.add(out1)
-        return out.toFloatArray()
+        return out.toDoubleArray()
     }
 
     fun reduce(): List<SubBezier> {
         if (isLinear) return listOf(SubBezier(this))
 
-        val step = 0.01f
+        val step = Ratio(0.01)
         val pass1 = arrayListOf<SubBezier>()
         val pass2 = arrayListOf<SubBezier>()
         // first pass: split on extrema
         var extrema = this.extrema.allt
 
-        if (extrema.indexOfFirst { it == 0f } < 0) extrema = floatArrayOf(0f) + extrema
-        if (extrema.indexOfFirst { it == 1f } < 0) extrema += floatArrayOf(1f)
+        if (extrema.indexOfFirst { it == 0.0 } < 0) extrema = doubleArrayOf(0.0) + extrema
+        if (extrema.indexOfFirst { it == 1.0 } < 0) extrema += doubleArrayOf(1.0)
 
         run {
-            var t1 = extrema[0]
+            var t1 = extrema[0].toRatio()
             for (i in 1 until extrema.size) {
-                val t2 = extrema[i]
+                val t2 = extrema[i].toRatio()
                 val segment = this.split(t1, t2)
                 pass1.add(segment)
                 t1 = t2
@@ -439,11 +435,11 @@ class Bezier private constructor(val points: PointList, dummy: Unit) : Curve {
         // second pass: further reduce these segments to simple segments
         for (p1Curve in pass1) {
             val p1 = p1Curve.curve
-            var t1 = 0f
-            var t2 = 0f
-            while (t2 <= 1) {
+            var t1 = Ratio.ZERO
+            var t2 = Ratio.ZERO
+            while (t2 <= Ratio.ONE) {
                 t2 = t1 + step
-                while (t2 <= 1 + step) {
+                while (t2 <= Ratio.ONE + step) {
                     var segment = p1.split(t1, t2)
                     if (!segment.curve.isSimple) {
                         t2 -= step
@@ -455,8 +451,8 @@ class Bezier private constructor(val points: PointList, dummy: Unit) : Curve {
                         pass2.add(
                             SubBezier(
                                 segment.curve,
-                                map(t1, 0f, 1f, p1Curve.t1, p1Curve.t2),
-                                map(t2, 0f, 1f, p1Curve.t1, p1Curve.t2),
+                                map(t1, Ratio.ZERO, Ratio.ONE, p1Curve.t1, p1Curve.t2),
+                                map(t2, Ratio.ZERO, Ratio.ONE, p1Curve.t1, p1Curve.t2),
                                 this
                             )
                         )
@@ -466,12 +462,12 @@ class Bezier private constructor(val points: PointList, dummy: Unit) : Curve {
                     t2 += step
                 }
             }
-            if (t1 < 1.0) {
-                val segment = p1.split(t1, 1f)
+            if (t1 < Ratio.ONE) {
+                val segment = p1.split(t1, Ratio.ONE)
                 pass2.add(
                     SubBezier(
                         segment.curve,
-                        map(t1, 0f, 1f, p1Curve.t1, p1Curve.t2),
+                        map(t1, Ratio.ZERO, Ratio.ONE, p1Curve.t1, p1Curve.t2),
                         p1Curve.t2,
                         this
                     )
@@ -496,14 +492,14 @@ class Bezier private constructor(val points: PointList, dummy: Unit) : Curve {
      * taken together, form a single continuous curve equivalent
      * to what a theoretical offset curve would be.
      */
-    fun offset(d: Float): List<Bezier> =
+    fun offset(d: Double): List<Bezier> =
         this.toSimpleList().map { it.curve.scaleSimple { d } }
 
     /**
      * A coordinate is returned, representing the point on the curve at
      * [t]=..., offset along its normal by a distance [d]
      */
-    fun offset(t: Float, d: Float): Point {
+    fun offset(t: Ratio, d: Double): Point {
         val pos = calc(t)
         val normal = normal(t)
         return pos + normal * d
@@ -519,28 +515,28 @@ class Bezier private constructor(val points: PointList, dummy: Unit) : Curve {
      * You can call [isSimple] to check if this is suitable,
      * and [toSimpleList] to get a list of simple curves.
      */
-    fun scaleSimple(d: (Float) -> Float): Bezier {
-        val r0 = d(0f)
-        val r1 = d(1f)
+    fun scaleSimple(d: (Double) -> Double): Bezier {
+        val r0 = d(0.0)
+        val r1 = d(1.0)
 
         if (isLinear) {
-            val nv = this.normal(0f)
+            val nv = this.normal(Ratio.ZERO)
             return Bezier(
                 this.points[0] + (nv * r0),
                 this.points[1] + (nv * r1),
             )
         }
 
-        val c0 = calc(0f)
-        val c1 = calc(1f)
-        val n0 = normal(0f)
-        val n1 = normal(1f)
-        val v = listOf(this.offset(0f, 10f), this.offset(1f, 10f))
+        val c0 = calc(Ratio.ZERO)
+        val c1 = calc(Ratio.ONE)
+        val n0 = normal(Ratio.ZERO)
+        val n1 = normal(Ratio.ONE)
+        val v = listOf(this.offset(Ratio.ZERO, 10.0), this.offset(Ratio.ONE, 10.0))
         val o = lli4(v[0], c0, v[1], c1)
             ?: error("cannot scale this curve. Try reducing it first.")
         val np = PointArrayList(this.points.size)
 
-        val singleDist = r0 == r1 && r0 == d(.5f)
+        val singleDist = r0 == r1 && r0 == d(.5)
 
         // move all points by distance 'd' wrt the origin 'o',
         // and move end points by fixed distance along normal.
@@ -553,7 +549,7 @@ class Bezier private constructor(val points: PointList, dummy: Unit) : Curve {
                         singleDist -> {
                             val t = n - 1
                             val p = np[t * order]
-                            val d = this.derivative(t.toFloat())
+                            val d = this.derivative(t.toDouble().toRatio())
                             val p2 = Point(p.x + d.x, p.y + d.y)
                             np.add(lli4(p, p2, o, points[t + 1]) ?: error("Invalid curve"))
                         }
@@ -561,7 +557,7 @@ class Bezier private constructor(val points: PointList, dummy: Unit) : Curve {
                             val t = n - 1
                             val p = points[t + 1]
                             val ov = p - o
-                            var rc = d((t + 1) / order.toFloat())
+                            var rc = d((t + 1) / order.toDouble())
                             if (!clockwise) rc = -rc
                             np.add(p + (ov.normalized * rc))
                         }
@@ -587,7 +583,7 @@ class Bezier private constructor(val points: PointList, dummy: Unit) : Curve {
         return Bezier(np)
     }
 
-    fun selfIntersections(threshold: Float = .5f, out: FloatArrayList = FloatArrayList()): FloatArrayList {
+    fun selfIntersections(threshold: Double = .5, out: DoubleArrayList = DoubleArrayList()): DoubleArrayList {
         val reduced = this.reduce()
         val len = reduced.size - 2
         val results = out
@@ -596,37 +592,37 @@ class Bezier private constructor(val points: PointList, dummy: Unit) : Curve {
             val left = reduced.slice(i until i + 1)
             val right = reduced.slice(i + 2 until reduced.size)
             val result = curveintersects(left, right, threshold)
-            results.add(result.mapFloat { it.first })
+            results.add(result.mapDouble { it.first.toDouble() })
         }
         return results
     }
 
-    fun intersections(line: Line): FloatArray {
-        val minX: Float = line.minX
-        val minY: Float = line.minY
-        val maxX: Float = line.maxX
-        val maxY: Float = line.maxY
+    fun intersections(line: Line): DoubleArray {
+        val minX: Double = line.minX
+        val minY: Double = line.minY
+        val maxX: Double = line.maxX
+        val maxY: Double = line.maxY
         return roots(this.points, line).filter { t ->
-            val p = this.get(t)
+            val p = this.get(t.toRatio())
             between(p.x, minX, maxX) && between(p.y, minY, maxY)
-        }.toFloatArray()
+        }.toDoubleArray()
     }
 
-    fun intersections(curve: Bezier, threshold: Float = .5f): List<Pair<Float, Float>> =
+    fun intersections(curve: Bezier, threshold: Double = 0.5): List<Pair<Ratio, Ratio>> =
         curveintersects(this.reduce(), curve.reduce(), threshold)
 
     /** Computes the point of the curve at [t] */
-    fun compute(t: Float): Point = compute(t, this.points)
+    fun compute(t: Ratio): Point = compute(t, this.points)
 
     /** The derivate vector of the curve at [t] (normalized when [normalize] is set to true) */
-    fun derivative(t: Float, normalize: Boolean = false): Point {
+    fun derivative(t: Ratio, normalize: Boolean = false): Point {
         var out = compute(t, dpoints[0])
-        if ((t == 0f || t == 1f) && out.lengthSquared.isAlmostZero()) {
+        if ((t == Ratio.ZERO || t == Ratio.ONE) && out.lengthSquared.isAlmostZero()) {
             for (n in 0 until 10) {
-                val newT = 10f.pow(-(10 - n))
-                val nt = if (t == 1f) 1f - newT else newT
+                val newT = 10.0.pow(-(10 - n))
+                val nt = if (t == Ratio.ONE) 1.0 - newT else newT
                 //println("newT=$newT, nt=$nt")
-                out = compute(nt, dpoints[0])
+                out = compute(Ratio(nt), dpoints[0])
                 if (!out.lengthSquared.isAlmostZero()) break
             }
         }
@@ -635,20 +631,20 @@ class Bezier private constructor(val points: PointList, dummy: Unit) : Curve {
     }
 
     /** The normal vector of the curve at [t] (normalized when [normalize] is set to true) */
-    fun normal(t: Float, normalize: Boolean = true): Point = derivative(t, normalize).toNormal()
-    override fun normal(t: Float): Point = normal(t, normalize = true)
-    override fun tangent(t: Float): Point = derivative(t, normalize = true)
+    fun normal(t: Ratio, normalize: Boolean = true): Point = derivative(t, normalize).toNormal()
+    override fun normal(t: Ratio): Point = normal(t, normalize = true)
+    override fun tangent(t: Ratio): Point = derivative(t, normalize = true)
 
-    fun hull(t: Float, out: PointArrayList = PointArrayList()): PointList {
+    fun hull(t: Ratio, out: PointArrayList = PointArrayList()): PointList {
         if (order < 2) error("Can't compute hull of order=$order < 2")
         return hullOrNull(t, out)!!
     }
 
-    fun curvature(t: Float, kOnly: Boolean = false): Curvature {
+    fun curvature(t: Ratio, kOnly: Boolean = false): Curvature {
         return curvature(t, dpoints[0], dpoints[1], dims, kOnly)
     }
 
-    fun hullOrNull(t: Float, out: PointArrayList = PointArrayList()): PointList? {
+    fun hullOrNull(t: Ratio, out: PointArrayList = PointArrayList()): PointList? {
         if (order < 2) return null
         var p = this.points
         out.add(p, 0)
@@ -670,21 +666,21 @@ class Bezier private constructor(val points: PointList, dummy: Unit) : Curve {
         return out
     }
 
-    fun split(t0: Float, t1: Float): SubBezier =
-        SubBezier(splitRight(t0).splitLeft(map(t1, t0, 1f, 0f, 1f)).curve, t0, t1, this)
+    fun split(t0: Ratio, t1: Ratio): SubBezier =
+        SubBezier(splitRight(t0).splitLeft(map(t1, t0, Ratio.ONE, Ratio.ZERO, Ratio.ONE)).curve, t0, t1, this)
 
-    fun split(t: Float): CurveSplit = SubBezier(this).split(t)
-    fun splitLeft(t: Float): SubBezier = SubBezier(this).splitLeft(t)
-    fun splitRight(t: Float): SubBezier = SubBezier(this).splitRight(t)
+    fun split(t: Ratio): CurveSplit = SubBezier(this).split(t)
+    fun splitLeft(t: Ratio): SubBezier = SubBezier(this).splitLeft(t)
+    fun splitRight(t: Ratio): SubBezier = SubBezier(this).splitRight(t)
 
-    class Extrema(val xt: FloatArray, val yt: FloatArray) {
-        val allt: FloatArray by lazy { combineSmallDistinctSorted(xt, yt) }
+    class Extrema(val xt: DoubleArray, val yt: DoubleArray) {
+        val allt: DoubleArray by lazy { combineSmallDistinctSorted(xt, yt) }
 
-        val xt01 by lazy { floatArrayOf(0f, *xt, 1f) }
-        val yt01 by lazy { floatArrayOf(0f, *yt, 1f) }
+        val xt01 by lazy { doubleArrayOf(0.0, *xt, 1.0) }
+        val yt01 by lazy { doubleArrayOf(0.0, *yt, 1.0) }
 
-        fun dimt(index: Int): FloatArray = if (index == 0) xt else yt
-        fun dimt01(index: Int): FloatArray = if (index == 0) xt01 else yt01
+        fun dimt(index: Int): DoubleArray = if (index == 0) xt else yt
+        fun dimt01(index: Int): DoubleArray = if (index == 0) xt01 else yt01
 
         override fun equals(other: Any?): Boolean =
             other is Extrema && this.xt.contentEquals(other.xt) && this.yt.contentEquals(other.yt)
@@ -694,10 +690,10 @@ class Bezier private constructor(val points: PointList, dummy: Unit) : Curve {
     }
 
     data class Curvature(
-        val k: Float = 0f,
-        val r: Float = 0f,
-        val dk: Float = 0f,
-        val adk: Float = 0f,
+        val k: Double = 0.0,
+        val r: Double = 0.0,
+        val dk: Double = 0.0,
+        val adk: Double = 0.0,
     )
 
     fun toLine(): Line = Line(points[0], points[order])
@@ -750,12 +746,12 @@ class Bezier private constructor(val points: PointList, dummy: Unit) : Curve {
         return toSimpleList().map { it.curve.toQuad() }
     }
 
-    fun outline(d1: Float, d2: Float = d1, d3: Float = d1, d4: Float = d2): Curves {
+    fun outline(d1: Double, d2: Double = d1, d3: Double = d1, d4: Double = d2): Curves {
         if (this.isLinear) {
             // TODO: find the actual extrema, because they might
             //       be before the start, or past the end.
 
-            val n = this.normal(0f)
+            val n = this.normal(Ratio.ZERO)
             val start = this.points[0]
             val end = this.points[this.points.size - 1]
 
@@ -786,14 +782,14 @@ class Bezier private constructor(val points: PointList, dummy: Unit) : Curve {
         val tlen = this.length
         val graduated = d3 != d1 && d4 != d2
 
-        var alen = 0f
+        var alen = 0.0
 
-        fun linearDistanceFunction(s: Float, e: Float, tlen: Float, alen: Float, slen: Float): (Float) -> Float =
-            fun (v: Float): Float {
+        fun linearDistanceFunction(s: Double, e: Double, tlen: Double, alen: Double, slen: Double): (Double) -> Double =
+            fun (v: Double): Double {
                 val f1 = alen / tlen
                 val f2 = (alen + slen) / tlen
                 val d = e - s
-                return map(v, 0f, 1f, s + f1 * d, s + f2 * d);
+                return v.toDouble().convertRange(0.0, 1.0, s + f1 * d, s + f2 * d)
             }
 
         // form curve oulines
@@ -829,7 +825,7 @@ class Bezier private constructor(val points: PointList, dummy: Unit) : Curve {
         return (listOf(ls) + fcurves + le + bcurves).toCurves(closed = true)
     }
 
-    fun translate(dx: Float, dy: Float): Bezier =
+    fun translate(dx: Double, dy: Double): Bezier =
         Bezier(points.mapPoints { p -> p + Point(dx, dy) })
 
     fun transform(m: Matrix): Bezier =
@@ -858,7 +854,7 @@ class Bezier private constructor(val points: PointList, dummy: Unit) : Curve {
             0.028531388628933663f, 0.028531388628933663f, 0.0123412297999872f, 0.0123412297999872f
         )
 
-        private fun curvature(t: Float, d1: PointList, d2: PointList, dims: Int, kOnly: Boolean = false): Curvature {
+        private fun curvature(t: Ratio, d1: PointList, d2: PointList, dims: Int, kOnly: Boolean = false): Curvature {
             val d = compute(t, d1)
             val dd = compute(t, d2)
             val qdsum = d.x * d.x + d.y * d.y
@@ -878,15 +874,15 @@ class Bezier private constructor(val points: PointList, dummy: Unit) : Curve {
                 //pow(qdsum + d.z * d.z, 3.0 / 2.0);
                 TODO()
             } else {
-                qdsum.pow(3f / 2f)
+                qdsum.pow(3.0 / 2.0)
             }
 
-            if (num == 0.0f || dnm == 0.0f) {
-                return Curvature(k = 0f, r = 0f)
+            if (num == 0.0 || dnm == 0.0) {
+                return Curvature(k = 0.0, r = 0.0)
             }
 
-            val k = (num / dnm).toFloat()
-            val r = (dnm / num).toFloat()
+            val k = (num / dnm).toDouble()
+            val r = (dnm / num).toDouble()
 
             // We're also computing the derivative of kappa, because
             // there is value in knowing the rate of change for the
@@ -896,8 +892,8 @@ class Bezier private constructor(val points: PointList, dummy: Unit) : Curve {
                 !kOnly -> {
                     // compute k'(t) based on the interval before, and after it,
                     // to at least try to not introduce forward/backward pass bias.
-                    val pk = curvature(t - 0.001f, d1, d2, dims, true).k
-                    val nk = curvature(t + 0.001f, d1, d2, dims, true).k
+                    val pk = curvature(t - Ratio(0.001), d1, d2, dims, true).k
+                    val nk = curvature(t + Ratio(0.001), d1, d2, dims, true).k
                     val dk = (nk - k + (k - pk)) / 2
                     val adk = (abs(nk - k) + abs(k - pk)) / 2
                     Curvature(k, r, dk, adk)
@@ -908,8 +904,8 @@ class Bezier private constructor(val points: PointList, dummy: Unit) : Curve {
             }
         }
 
-        val Rectangle.midX: Float get() = (left + right) * 0.5f
-        val Rectangle.midY: Float get() = (top + bottom) * 0.5f
+        val Rectangle.midX: Double get() = (left + right) * 0.5
+        val Rectangle.midY: Double get() = (top + bottom) * 0.5
 
         private fun bboxoverlap(a: Rectangle, b: Rectangle): Boolean {
             return !((abs(a.midX - b.midX) >= ((a.width + b.width) / 2f)) || (abs(a.midY - b.midY) >= ((a.height + b.height) / 2f)))
@@ -926,7 +922,7 @@ class Bezier private constructor(val points: PointList, dummy: Unit) : Curve {
             //return true;
         }
 
-        private fun map(v: Float, ds: Float, de: Float, ts: Float, te: Float): Float {
+        private fun map(v: Ratio, ds: Ratio, de: Ratio, ts: Ratio, te: Ratio): Ratio {
             return v.convertRange(ds, de, ts, te)
             //val d1 = de - ds
             //val d2 = te - ts
@@ -935,7 +931,7 @@ class Bezier private constructor(val points: PointList, dummy: Unit) : Curve {
             //return ts + d2 * r
         }
 
-        private fun angle(o: Point, v1: Point, v2: Point): Float {
+        private fun angle(o: Point, v1: Point, v2: Point): Double {
             val dx1 = v1.x - o.x
             val dy1 = v1.y - o.y
             val dx2 = v2.x - o.x
@@ -945,19 +941,19 @@ class Bezier private constructor(val points: PointList, dummy: Unit) : Curve {
             return atan2(cross, dot)
         }
 
-        private fun compute(t: Float, points: PointList): Point {
+        private fun compute(t: Ratio, points: PointList): Point {
             val p = points
             val order = p.size - 1
-            if (t == 0f) return p[0]
-            if (t == 1f) return p[order]
+            if (t == Ratio.ZERO) return p[0]
+            if (t == Ratio.ONE) return p[order]
             if (order == 0) return p[0]
-            val mt = 1 - t
+            val mt = (Ratio.ONE - t).toDouble()
             val mt2 = mt * mt
-            val t2 = t * t
+            val t2 = (t * t).toDouble()
             return when (order) {
                 1 -> {
                     //println("compute: t=$t, mt=$mt")
-                    (p[0] * mt) + (p[1] * t)
+                    (p[0] * mt) + (p[1] * t.toDouble())
                 }
                 2 -> {
                     val a = mt2
@@ -994,7 +990,7 @@ class Bezier private constructor(val points: PointList, dummy: Unit) : Curve {
             return out
         }
 
-        private fun crt(v: Float): Float = if (v < 0f) -(-v).pow(1f / 3f) else v.pow(1f / 3f)
+        private fun crt(v: Double): Double = if (v < 0.0) -(-v).pow(1.0 / 3.0) else v.pow(1.0 / 3.0)
 
         private fun align(
             points: PointList,
@@ -1015,60 +1011,60 @@ class Bezier private constructor(val points: PointList, dummy: Unit) : Curve {
             return out
         }
 
-        private const val tau: Float = (PI * 2f).toFloat()
+        private const val tau: Double = PI2
 
-        private fun between(v: Float, min: Float, max: Float): Boolean =
+        private fun between(v: Double, min: Double, max: Double): Boolean =
             ((min <= v) && (v <= max)) || v.isAlmostEquals(min) || v.isAlmostEquals(max)
 
         private val X_AXIS = Line(0, 0, 1, 0)
 
-        private fun roots(points: PointList, line: Line = X_AXIS): FloatArray {
+        private fun roots(points: PointList, line: Line = X_AXIS): DoubleArray {
             val order = points.size - 1
             val aligned = align(points, line)
 
             if (order == 2) {
-                val a: Float = aligned.getY(0).toFloat()
-                val b: Float = aligned.getY(1).toFloat()
-                val c: Float = aligned.getY(2).toFloat()
-                val d: Float = a - 2f * b + c
-                if (d != 0f) {
+                val a: Double = aligned.getY(0)
+                val b: Double = aligned.getY(1)
+                val c: Double = aligned.getY(2)
+                val d: Double = a - 2f * b + c
+                if (d != 0.0) {
                     val m1 = -kotlin.math.sqrt(b * b - a * c)
                     val m2 = -a + b
                     val v1 = -(m1 + m2) / d
                     val v2 = -(-m1 + m2) / d
-                    return floatArrayOfValid01(v1, v2)
-                } else if (b != c && d == 0f) {
-                    return floatArrayOfValid01((2 * b - c) / (2 * b - 2 * c))
+                    return doubleArrayOfValid01(v1, v2)
+                } else if (b != c && d == 0.0) {
+                    return doubleArrayOfValid01((2 * b - c) / (2 * b - 2 * c))
                 }
-                return floatArrayOfValid01()
+                return doubleArrayOfValid01()
             }
 
             // see http://www.trans4mind.com/personal_development/mathematics/polynomials/cubicAlgebra.htm
-            val pa: Float = aligned.getY(0)
-            val pb: Float = aligned.getY(1)
-            val pc: Float = aligned.getY(2)
-            val pd: Float = aligned.getY(3)
+            val pa: Double = aligned.getY(0)
+            val pb: Double = aligned.getY(1)
+            val pc: Double = aligned.getY(2)
+            val pd: Double = aligned.getY(3)
 
-            val d: Float = -pa + 3 * pb - 3 * pc + pd
-            var a: Float = 3 * pa - 6 * pb + 3 * pc
-            var b: Float = -3 * pa + 3 * pb
-            var c: Float = pa
+            val d: Double = -pa + 3 * pb - 3 * pc + pd
+            var a: Double = 3 * pa - 6 * pb + 3 * pc
+            var b: Double = -3 * pa + 3 * pb
+            var c: Double = pa
 
-            if (d.isAlmostEquals(0f)) {
+            if (d.isAlmostZero()) {
                 // this is not a cubic curve.
-                if (a.isAlmostEquals(0f)) {
+                if (a.isAlmostZero()) {
                     // in fact, this is not a quadratic curve either.
-                    if (b.isAlmostEquals(0f)) {
+                    if (b.isAlmostZero()) {
                         // in fact in fact, there are no solutions.
-                        return floatArrayOfValid01()
+                        return doubleArrayOfValid01()
                     }
                     // linear solution:
-                    return floatArrayOfValid01(-c / b)
+                    return doubleArrayOfValid01(-c / b)
                 }
                 // quadratic solution:
                 val q = kotlin.math.sqrt(b * b - 4 * a * c)
                 val a2 = 2 * a
-                return floatArrayOfValid01((q - b) / a2, (-b - q) / a2)
+                return doubleArrayOfValid01((q - b) / a2, (-b - q) / a2)
             }
 
             // at this point, we know we need a cubic solution:
@@ -1077,69 +1073,69 @@ class Bezier private constructor(val points: PointList, dummy: Unit) : Curve {
             b /= d
             c /= d
 
-            val p: Float = (3 * b - a * a) / 3f
-            val p3: Float = p / 3f
-            val q: Float = (2 * a * a * a - 9 * a * b + 27 * c) / 27f
-            val q2: Float = q / 2f
-            val discriminant: Float = q2 * q2 + p3 * p3 * p3
+            val p: Double = (3 * b - a * a) / 3.0
+            val p3: Double = p / 3.0
+            val q: Double = (2 * a * a * a - 9 * a * b + 27 * c) / 27.0
+            val q2: Double = q / 2f
+            val discriminant: Double = q2 * q2 + p3 * p3 * p3
 
             if (discriminant < 0) {
-                val mp3: Float = -p / 3f
-                val mp33: Float = mp3 * mp3 * mp3
-                val r: Float = kotlin.math.sqrt(mp33)
-                val t: Float = -q / (2f * r)
-                val cosphi: Float = if (t < -1f) -1f else if (t > 1f) 1f else t
-                val phi: Float = acos(cosphi)
-                val crtr: Float = crt(r)
-                val t1: Float = 2 * crtr
-                val x1: Float = t1 * cos(phi / 3f) - a / 3f
-                val x2: Float = t1 * cos((phi + tau) / 3f) - a / 3f
-                val x3: Float = t1 * cos((phi + 2 * tau) / 3f) - a / 3f
-                return floatArrayOfValid01(x1, x2, x3)
-            } else if (discriminant == 0f) {
+                val mp3: Double = -p / 3f
+                val mp33: Double = mp3 * mp3 * mp3
+                val r: Double = kotlin.math.sqrt(mp33)
+                val t: Double = -q / (2f * r)
+                val cosphi: Double = if (t < -1f) -1.0 else if (t > 1.0) 1.0 else t
+                val phi: Double = acos(cosphi)
+                val crtr: Double = crt(r)
+                val t1: Double = 2 * crtr
+                val x1: Double = t1 * cos(phi / 3f) - a / 3f
+                val x2: Double = t1 * cos((phi + tau) / 3f) - a / 3f
+                val x3: Double = t1 * cos((phi + 2 * tau) / 3f) - a / 3f
+                return doubleArrayOfValid01(x1, x2, x3)
+            } else if (discriminant == 0.0) {
                 val u1 = if (q2 < 0) crt(-q2) else -crt(q2)
                 val x1 = 2f * u1 - a / 3f
                 val x2 = -u1 - a / 3f
-                return floatArrayOfValid01(x1, x2)
+                return doubleArrayOfValid01(x1, x2)
             } else {
                 val sd = kotlin.math.sqrt(discriminant)
                 val u1 = crt(-q2 + sd)
                 val v1 = crt(q2 + sd)
-                return floatArrayOfValid01(u1 - v1 - a / 3f)
+                return doubleArrayOfValid01(u1 - v1 - a / 3f)
             }
         }
 
-        private fun droots(p: FloatArray): FloatArray {
+        private fun droots(p: DoubleArray): DoubleArray {
             when (p.size) {
                 3 -> {
                     val a = p[0]
                     val b = p[1]
                     val c = p[2]
                     val d = a - 2 * b + c
-                    if (d != 0f) {
+                    if (d != 0.0) {
                         val m1 = -kotlin.math.sqrt(b * b - a * c)
                         val m2 = -a + b
                         val v1 = -(m1 + m2) / d
                         val v2 = -(-m1 + m2) / d
-                        return floatArrayOfValid01(v1, v2)
-                    } else if (b != c && d == 0f) {
-                        return floatArrayOfValid01((2f * b - c) / (2f * (b - c)))
+                        return doubleArrayOfValid01(v1, v2)
+                    } else if (b != c && d == 0.0) {
+                        return doubleArrayOfValid01((2f * b - c) / (2f * (b - c)))
                     }
                 }
                 2 -> {
                     val a = p[0]
                     val b = p[1]
-                    if (a != b) return floatArrayOfValid01(a / (a - b))
+                    if (a != b) return doubleArrayOfValid01(a / (a - b))
                 }
                 else -> {
                 }
             }
-            return floatArrayOfValid01()
+            return doubleArrayOfValid01()
         }
 
-        private val EMPTY_FLOAT_ARRAY = FloatArray(0)
+        private val EMPTY_DOUBLE_ARRAY = DoubleArray(0)
 
-        private fun floatArrayOfValid01(v1: Float = Float.NaN, v2: Float = Float.NaN, v3: Float = Float.NaN): FloatArray {
+        private fun doubleArrayOfValid01(v1: Double = Double.NaN, v2: Double = Double.NaN, v3: Double = Double.NaN): DoubleArray {
             val v1Valid = v1 in 0.0..1.0
             val v2Valid = v2 in 0.0..1.0
             val v3Valid = v3 in 0.0..1.0
@@ -1147,9 +1143,9 @@ class Bezier private constructor(val points: PointList, dummy: Unit) : Curve {
             if (v1Valid) validCount++
             if (v2Valid) validCount++
             if (v3Valid) validCount++
-            if (validCount == 0) return EMPTY_FLOAT_ARRAY
+            if (validCount == 0) return EMPTY_DOUBLE_ARRAY
             var index = 0
-            val out = FloatArray(validCount)
+            val out = DoubleArray(validCount)
             if (v1Valid) out[index++] = v1.normalizeZero()
             if (v2Valid) out[index++] = v2.normalizeZero()
             if (v3Valid) out[index++] = v3.normalizeZero()
@@ -1159,8 +1155,8 @@ class Bezier private constructor(val points: PointList, dummy: Unit) : Curve {
         private fun curveintersects(
             c1: List<SubBezier>,
             c2: List<SubBezier>,
-            threshold: Float = 0.5f
-        ): List<Pair<Float, Float>> {
+            threshold: Double = 0.5
+        ): List<Pair<Ratio, Ratio>> {
             val pairs = arrayListOf<Pair<SubBezier, SubBezier>>()
             // step 1: pair off any overlapping segments
             c1.fastForEach { l ->
@@ -1177,11 +1173,11 @@ class Bezier private constructor(val points: PointList, dummy: Unit) : Curve {
         private fun pairiteration(
             c1: SubBezier,
             c2: SubBezier,
-            threshold: Float = 0.5f
-        ): List<Pair<Float, Float>> {
+            threshold: Double = 0.5
+        ): List<Pair<Ratio, Ratio>> {
             val c1b = c1.boundingBox
             val c2b = c2.boundingBox
-            val r = 100000f
+            val r = 100000.0
 
             if (
                 c1b.width.absoluteValue + c1b.height.absoluteValue < threshold &&
@@ -1189,14 +1185,14 @@ class Bezier private constructor(val points: PointList, dummy: Unit) : Curve {
             ) {
                 return listOf(
                     Pair(
-                        (((r * (c1.t1 + c1.t2)) / 2.0).toInt()).toFloat() / r,
-                        (((r * (c2.t1 + c2.t2)) / 2.0).toInt()).toFloat() / r
+                        Ratio((((r * (c1.t1 + c1.t2)) / 2.0).toInt()).toDouble() / r),
+                        Ratio((((r * (c2.t1 + c2.t2)) / 2.0).toInt()).toDouble() / r)
                     )
                 )
             }
 
-            val cc1 = c1.split(.5f)
-            val cc2 = c2.split(.5f)
+            val cc1 = c1.split(Ratio.HALF)
+            val cc2 = c2.split(Ratio.HALF)
             val pairs2 = listOf(
                 Pair(cc1.left, cc2.left),
                 Pair(cc1.left, cc2.right),
@@ -1208,7 +1204,7 @@ class Bezier private constructor(val points: PointList, dummy: Unit) : Curve {
                 bboxoverlap(pair.first.curve.boundingBox, pair.second.curve.boundingBox)
             }
 
-            val results = arrayListOf<Pair<Float, Float>>()
+            val results = arrayListOf<Pair<Ratio, Ratio>>()
 
             if (pairs.isEmpty()) return results
 
@@ -1221,9 +1217,9 @@ class Bezier private constructor(val points: PointList, dummy: Unit) : Curve {
             return results.distinct()
         }
 
-        private fun lli8(x1: Float, y1: Float, x2: Float, y2: Float, x3: Float, y3: Float, x4: Float, y4: Float): Point? {
+        private fun lli8(x1: Double, y1: Double, x2: Double, y2: Double, x3: Double, y3: Double, x4: Double, y4: Double): Point? {
             val d = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4)
-            if (d == 0f) return null
+            if (d == 0.0) return null
             val nx = (x1 * y2 - y1 * x2) * (x3 - x4) - (x1 - x2) * (x3 * y4 - y3 * x4)
             val ny = (x1 * y2 - y1 * x2) * (y3 - y4) - (y1 - y2) * (x3 * y4 - y3 * x4)
             return Point(nx / d, ny / d)
@@ -1232,8 +1228,8 @@ class Bezier private constructor(val points: PointList, dummy: Unit) : Curve {
         private fun lli4(p1: Point, p2: Point, p3: Point, p4: Point): Point? =
             lli8(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y, p4.x, p4.y)
 
-        fun cubicFromPoints(S: Point, B: Point, E: Point, t: Float = 0.5f, d1: Float? = null): Bezier {
-            val abc = getABC(3, S, B, E, t);
+        fun cubicFromPoints(S: Point, B: Point, E: Point, t: Double = 0.5, d1: Double? = null): Bezier {
+            val abc = getABC(3, S, B, E, t)
             val d1 = d1 ?: dist(B, abc.C)
             val d2 = (d1 * (1 - t)) / t
 
@@ -1259,16 +1255,16 @@ class Bezier private constructor(val points: PointList, dummy: Unit) : Curve {
             return Bezier(S, nc1, nc2, E)
         }
 
-        fun quadraticFromPoints(p1: Point, p2: Point, p3: Point, t: Float = .5f): Bezier {
+        fun quadraticFromPoints(p1: Point, p2: Point, p3: Point, t: Double = 0.5): Bezier {
             // shortcuts, although they're really dumb
-            if (t == 0f) return Bezier(p2, p2, p3)
-            if (t == 1f) return Bezier(p1, p2, p2)
+            if (t == 0.0) return Bezier(p2, p2, p3)
+            if (t == 1.0) return Bezier(p1, p2, p2)
             // real fitting.
             val abc = Bezier.getABC(2, p1, p2, p3, t);
             return Bezier(p1, abc.A, p3);
         }
 
-        private fun getABC(order: Int, S: Point, B: Point, E: Point, t: Float = 0.5f): ABCResult {
+        private fun getABC(order: Int, S: Point, B: Point, E: Point, t: Double = 0.5): ABCResult {
             val u = projectionratio(t, order)
             val um = 1.0 - u
             val C = Point(
@@ -1291,52 +1287,52 @@ class Bezier private constructor(val points: PointList, dummy: Unit) : Curve {
             val E: Point,
         )
 
-        private fun projectionratio(t: Float = 0.5f, n: Int): Float {
+        private fun projectionratio(t: Double = 0.5, n: Int): Double {
             // see u(t) note on http://pomax.github.io/bezierinfo/#abc
-            if (n != 2 && n != 3) return Float.NaN
-            if (t == 0f || t == 1f) return t
+            if (n != 2 && n != 3) return Double.NaN
+            if (t == 0.0 || t == 1.0) return t
             val top = (1 - t).pow(n)
             val bottom = t.pow(n) + top
             return top / bottom
         }
 
-        private fun abcratio(t: Float, n: Int): Float {
+        private fun abcratio(t: Double, n: Int): Double {
             // see ratio(t) note on http://pomax.github.io/bezierinfo/#abc
-            if (n != 2 && n != 3) return Float.NaN
-            if (t == 0f || t == 1f) return t
+            if (n != 2 && n != 3) return Double.NaN
+            if (t == 0.0 || t == 1.0) return t
             val bottom = (t).pow(n) + (1 - t).pow(n)
             val top = bottom - 1
             return abs(top / bottom)
         }
 
-        private fun dist(p1: Point, p2: Point): Float {
+        private fun dist(p1: Point, p2: Point): Double {
             val dx = p1.x - p2.x
             val dy = p1.y - p2.y
-            return kotlin.math.sqrt(dx * dx + dy * dy).toFloat()
+            return kotlin.math.sqrt(dx * dx + dy * dy)
         }
 
-        private fun combineSmallDistinctSorted(a: FloatArray, b: FloatArray): FloatArray {
-            val out = FloatArrayList(a.size + b.size)
+        private fun combineSmallDistinctSorted(a: DoubleArray, b: DoubleArray): DoubleArray {
+            val out = DoubleArrayList(a.size + b.size)
             out.add(a)
             b.fastForEach { if (!out.contains(it)) out.add(it) }
             out.sort()
-            return out.toFloatArray()
+            return out.toDoubleArray()
         }
 
         private fun makeline(p1: Point, p2: Point): Bezier = Bezier(p1, (p1 + p2) / 2, p2)
 
         @OptIn(ExperimentalContracts::class)
         inline fun <T> quadCalc(
-            x0: Float, y0: Float,
-            xc: Float, yc: Float,
-            x1: Float, y1: Float,
-            t: Float,
-            emit: (x: Float, y: Float) -> T
+            x0: Double, y0: Double,
+            xc: Double, yc: Double,
+            x1: Double, y1: Double,
+            t: Ratio,
+            emit: (x: Double, y: Double) -> T
         ): T {
             contract {
                 callsInPlace(emit, InvocationKind.EXACTLY_ONCE)
             }
-            val t1 = (1 - t)
+            val t1 = (1 - t.toDouble())
             val a = t1 * t1
             val c = t * t
             val b = 2 * t1 * t
@@ -1348,10 +1344,10 @@ class Bezier private constructor(val points: PointList, dummy: Unit) : Curve {
 
         @OptIn(ExperimentalContracts::class)
         inline fun <T> cubicCalc(
-            x0: Float, y0: Float, x1: Float, y1: Float,
-            x2: Float, y2: Float, x3: Float, y3: Float,
-            t: Float,
-            emit: (x: Float, y: Float) -> T
+            x0: Double, y0: Double, x1: Double, y1: Double,
+            x2: Double, y2: Double, x3: Double, y3: Double,
+            t: Ratio,
+            emit: (x: Double, y: Double) -> T
         ): T {
             contract {
                 callsInPlace(emit, InvocationKind.EXACTLY_ONCE)
@@ -1376,7 +1372,7 @@ class Bezier private constructor(val points: PointList, dummy: Unit) : Curve {
 
         fun cubicCalc(
             p0: Point, p1: Point, p2: Point, p3: Point,
-            t: Float
+            t: Ratio
         ): Point {
             var out: Point
             cubicCalc(p0.x, p0.y, p1.x, p1.y, p2.x, p2.y, p3.x, p3.y, t) { x, y -> out = Point(x, y) }
@@ -1387,24 +1383,24 @@ class Bezier private constructor(val points: PointList, dummy: Unit) : Curve {
             p: Point,
             c: Point,
             a: Point,
-            t: Float,
+            t: Ratio,
         ): Point {
             var out: Point
             quadCalc(p.x, p.y, c.x, c.y, a.x, a.y, t) { x, y -> out = Point(x, y) }
             return out
         }
 
-        @PublishedApi internal fun quadToCubic1(v0: Point, v1: Point): Point = v0 + (v1 - v0) * (2f / 3f)
-        @PublishedApi internal fun quadToCubic2(v1: Point, v2: Point): Point = v2 + (v1 - v2) * (2f / 3f)
+        @PublishedApi internal fun quadToCubic1(v0: Point, v1: Point): Point = Point(quadToCubic1(v0.x, v0.y), quadToCubic1(v0.x, v1.y))
+        @PublishedApi internal fun quadToCubic2(v1: Point, v2: Point): Point = Point(quadToCubic2(v1.x, v2.y), quadToCubic2(v1.x, v2.y))
 
-        @PublishedApi internal fun quadToCubic1(v0: Float, v1: Float): Float = v0 + (v1 - v0) * (2f / 3f)
-        @PublishedApi internal fun quadToCubic2(v1: Float, v2: Float): Float = v2 + (v1 - v2) * (2f / 3f)
+        @PublishedApi internal fun quadToCubic1(v0: Double, v1: Double): Double = v0 + (v1 - v0) * (2f / 3f)
+        @PublishedApi internal fun quadToCubic2(v1: Double, v2: Double): Double = v2 + (v1 - v2) * (2f / 3f)
 
         //@InlineOnly
         @OptIn(ExperimentalContracts::class)
         inline fun <T> quadToCubic(
-            x0: Float, y0: Float, xc: Float, yc: Float, x1: Float, y1: Float,
-            bezier: (qx0: Float, qy0: Float, qx1: Float, qy1: Float, qx2: Float, qy2: Float, qx3: Float, qy3: Float) -> T
+            x0: Double, y0: Double, xc: Double, yc: Double, x1: Double, y1: Double,
+            bezier: (qx0: Double, qy0: Double, qx1: Double, qy1: Double, qx2: Double, qy2: Double, qx3: Double, qy3: Double) -> T
         ): T {
             contract {
                 callsInPlace(bezier, InvocationKind.EXACTLY_ONCE)
@@ -1425,15 +1421,14 @@ fun MLine.toBezier(): Bezier = Bezier(Point(x0, y0), Point(x1, y1))
 interface Curve {
     val order: Int
     fun getBounds(): Rectangle
-    fun normal(t: Float): Point
-    fun tangent(t: Float): Point
-    fun calc(t: Float): Point
-    fun ratioFromLength(length: Float): Float = TODO()
-    val length: Float
+    fun normal(t: Ratio): Point
+    fun tangent(t: Ratio): Point
+    fun calc(t: Ratio): Point
+    fun ratioFromLength(length: Double): Ratio = TODO()
+    val length: Double
     // @TODO: We should probably have a function to get ratios in the function to place the points maybe based on inflection points?
     fun recommendedDivisions(): Int = DEFAULT_STEPS
-    fun calcOffset(t: Float, offset: Float): Point = calc(t) + normal(t) * offset
-
+    fun calcOffset(t: Ratio, offset: Double): Point = calc(t) + normal(t) * offset
 
     companion object {
         const val DEFAULT_STEPS = 100
@@ -1444,7 +1439,7 @@ interface Curve {
 internal fun Curve._getPoints(count: Int = this.recommendedDivisions(), equidistant: Boolean = false, out: PointArrayList = PointArrayList()): PointList {
     val curveLength = length
     Ratio.forEachRatio(count) { ratio ->
-        val t = if (equidistant) ratioFromLength(ratio.toFloat() * curveLength) else ratio.toFloat()
+        val t = if (equidistant) ratioFromLength(ratio.toDouble() * curveLength) else ratio
         //println("${this::class.simpleName}: ratio: $ratio, point=$point")
         out.add(calc(t))
     }
@@ -1459,18 +1454,18 @@ fun Curve.getEquidistantPoints(count: Int = this.recommendedDivisions(), out: Po
     return _getPoints(count, equidistant = true, out = out)
 }
 
-data class CurveLUT(val curve: Curve, val points: PointArrayList, val ts: FloatArrayList, private val _estimatedLengths: FloatArrayList) {
+data class CurveLUT(val curve: Curve, val points: PointArrayList, val ts: DoubleArrayList, private val _estimatedLengths: DoubleArrayList) {
     constructor(curve: Curve, capacity: Int) : this(
         curve,
         PointArrayList(capacity),
-        FloatArrayList(capacity),
-        FloatArrayList(capacity)
+        DoubleArrayList(capacity),
+        DoubleArrayList(capacity)
     )
 
-    val estimatedLengths: FloatArrayList
+    val estimatedLengths: DoubleArrayList
         get() {
             if (_estimatedLengths.isEmpty()) {
-                _estimatedLengths.add(0f)
+                _estimatedLengths.add(0.0)
             }
             while (_estimatedLengths.size < size) {
                 val pos = _estimatedLengths.size
@@ -1479,7 +1474,7 @@ data class CurveLUT(val curve: Curve, val points: PointArrayList, val ts: FloatA
             }
             return _estimatedLengths
         }
-    val estimatedLength: Float get() = estimatedLengths.last()
+    val estimatedLength: Double get() = estimatedLengths.last()
     val steps: Int get() = points.size - 1
     val size: Int get() = points.size
 
@@ -1489,20 +1484,20 @@ data class CurveLUT(val curve: Curve, val points: PointArrayList, val ts: FloatA
         _estimatedLengths.clear()
     }
 
-    fun add(t: Float, p: Point) {
+    fun add(t: Ratio, p: Point) {
         points.add(p)
-        ts.add(t)
+        ts.add(t.toDouble())
     }
 
-    class ClosestResult(val mdistSq: Float, val mpos: Int) {
-        val mdist: Float get() = kotlin.math.sqrt(mdistSq)
+    class ClosestResult(val mdistSq: Double, val mpos: Int) {
+        val mdist: Double get() = kotlin.math.sqrt(mdistSq)
     }
 
     fun closest(point: Point): ClosestResult {
-        var mdistSq: Float = Float.POSITIVE_INFINITY
+        var mdistSq: Double = Double.POSITIVE_INFINITY
         var mpos: Int = 0
         for (n in 0 until size) {
-            val d = Point.distanceSquared(this.points[n], point).toFloat()
+            val d = Point.distanceSquared(this.points[n], point)
             if (d < mdistSq) {
                 mdistSq = d
                 mpos = n
@@ -1511,22 +1506,22 @@ data class CurveLUT(val curve: Curve, val points: PointArrayList, val ts: FloatA
         return ClosestResult(mdistSq = mdistSq, mpos = mpos)
     }
 
-    data class Estimation(var point: Point = Point(), var ratio: Float = 0f, var length: Float = 0f) {
+    data class Estimation(var point: Point = Point(), var ratio: Ratio = Ratio.ZERO, var length: Double = 0.0) {
         fun roundDecimalDigits(places: Int): Estimation = Estimation(point.roundDecimalPlaces(places), ratio.roundDecimalPlaces(places), length.roundDecimalPlaces(places))
         override fun toString(): String = "Estimation(point=${point.niceStr}, ratio=${ratio.niceStr}, length=${length.niceStr})"
     }
 
-    fun Estimation.setAtIndexRatio(index: Int, ratio: Float): Estimation {
-        val ratio0 = ts[index]
+    fun Estimation.setAtIndexRatio(index: Int, ratio: Double): Estimation {
+        val ratio0 = ts[index].toRatio()
         //println("estimatedLengths=$estimatedLengths")
         val length0 = estimatedLengths[index]
         val point0 = points[index]
-        if (ratio == 0f) {
+        if (ratio == 0.0) {
             this.ratio = ratio0
             this.length = length0
             this.point = point0
         } else {
-            val ratio1 = ts[index + 1]
+            val ratio1 = ts[index + 1].toRatio()
             val length1 = estimatedLengths[index + 1]
             val point1 = points[index + 1]
             this.ratio = ratio.toRatio().interpolate(ratio0, ratio1)
@@ -1538,31 +1533,31 @@ data class CurveLUT(val curve: Curve, val points: PointArrayList, val ts: FloatA
     }
 
     private fun estimateAt(
-        values: FloatArrayList,
-        value: Float,
+        values: DoubleArrayList,
+        value: Double,
         out: Estimation = Estimation()
     ): Estimation {
         val result = values.binarySearch(value)
-        if (result.found) return out.setAtIndexRatio(result.index, 0f)
+        if (result.found) return out.setAtIndexRatio(result.index, 0.0)
         val index = result.nearIndex
-        if (value <= 0.0) return out.setAtIndexRatio(0, 0f)
-        if (index >= values.size - 1) return out.setAtIndexRatio(points.size - 1, 0f)
+        if (value <= 0.0) return out.setAtIndexRatio(0, 0.0)
+        if (index >= values.size - 1) return out.setAtIndexRatio(points.size - 1, 0.0)
         // @TODO: Since we have the curve, we can try to be more accurate and actually find a better point between found points
         val ratio0 = values[index]
         val ratio1 = values[index + 1]
-        val ratio = value.convertRange(ratio0, ratio1, 0f, 1f)
+        val ratio = value.convertRange(ratio0, ratio1, 0.0, 1.0)
         return out.setAtIndexRatio(index, ratio)
     }
 
-    fun estimateAtT(t: Float, out: Estimation = Estimation()): Estimation {
+    fun estimateAtT(t: Double, out: Estimation = Estimation()): Estimation {
         return estimateAt(ts, t, out)
     }
 
-    fun estimateAtEquidistantRatio(ratio: Float, out: Estimation = Estimation()): Estimation {
+    fun estimateAtEquidistantRatio(ratio: Ratio, out: Estimation = Estimation()): Estimation {
         return estimateAtLength(estimatedLength * ratio, out)
     }
 
-    fun estimateAtLength(length: Float, out: Estimation = Estimation()): Estimation {
+    fun estimateAtLength(length: Double, out: Estimation = Estimation()): Estimation {
         return estimateAt(estimatedLengths, length, out)
     }
 
@@ -1571,7 +1566,7 @@ data class CurveLUT(val curve: Curve, val points: PointArrayList, val ts: FloatA
         val length = estimatedLength
         val result = Estimation()
         Ratio.forEachRatio(steps) { ratio ->
-            val len = ratio.convertToRange(0f, length)
+            val len = ratio.convertToRange(0.0, length)
             val est = estimateAtLength(len, result)
             add(est.ratio, est.point)
         }
@@ -1618,17 +1613,17 @@ data class Curves(val beziers: List<Bezier>, val closed: Boolean) : Curve, Extra
     data class CurveInfo(
         val index: Int,
         val curve: Bezier,
-        val startLength: Float,
-        val endLength: Float,
+        val startLength: Double,
+        val endLength: Double,
         val bounds: Rectangle,
     ) {
-        fun contains(length: Float): Boolean = length in startLength..endLength
+        fun contains(length: Double): Boolean = length in startLength..endLength
 
-        val length: Float get() = endLength - startLength
+        val length: Double get() = endLength - startLength
     }
 
     val infos: List<CurveInfo> by lazy {
-        var pos = 0f
+        var pos = 0.0
         beziers.mapIndexed { index, curve ->
             val start = pos
             pos += curve.length
@@ -1636,10 +1631,10 @@ data class Curves(val beziers: List<Bezier>, val closed: Boolean) : Curve, Extra
         }
 
     }
-    override val length: Float by lazy { infos.sumOfFloat { it.length } }
+    override val length: Double by lazy { infos.sumOfDouble { it.length } }
 
-    val CurveInfo.startRatio: Float get() = this.startLength / this@Curves.length
-    val CurveInfo.endRatio: Float get() = this.endLength / this@Curves.length
+    val CurveInfo.startRatio: Ratio get() = Ratio(this.startLength / this@Curves.length)
+    val CurveInfo.endRatio: Ratio get() = Ratio(this.endLength / this@Curves.length)
 
     override fun getBounds(): Rectangle {
         var bb = BoundsBuilder()
@@ -1648,7 +1643,7 @@ data class Curves(val beziers: List<Bezier>, val closed: Boolean) : Curve, Extra
     }
 
     @PublishedApi
-    internal fun findInfo(t: Float): CurveInfo {
+    internal fun findInfo(t: Ratio): CurveInfo {
         val pos = t * length
         val index = infos.binarySearch {
             when {
@@ -1657,32 +1652,32 @@ data class Curves(val beziers: List<Bezier>, val closed: Boolean) : Curve, Extra
                 else -> +1
             }
         }
-        if (t < 0.0) return infos.first()
-        if (t > 1.0) return infos.last()
+        if (t < Ratio.ZERO) return infos.first()
+        if (t > Ratio.ONE) return infos.last()
         return infos.getOrNull(index) ?: error("OUTSIDE")
     }
 
     @PublishedApi
-    internal inline fun <T> findTInCurve(t: Float, block: (info: CurveInfo, ratioInCurve: Float) -> T): T {
+    internal inline fun <T> findTInCurve(t: Ratio, block: (info: CurveInfo, ratioInCurve: Ratio) -> T): T {
         val pos = t * length
         val info = findInfo(t)
         val posInCurve = pos - info.startLength
-        val ratioInCurve = posInCurve / info.length
+        val ratioInCurve = Ratio(posInCurve / info.length)
         return block(info, ratioInCurve)
     }
 
-    override fun calc(t: Float): Point =
-        findTInCurve(t) { info, ratioInCurve -> info.curve.calc(ratioInCurve) }
+    override fun calc(t: Ratio): Point =
+        findTInCurve(t) { info, ratioInCurve -> info.curve.calc(ratioInCurve.toRatio()) }
 
-    override fun normal(t: Float): Point =
+    override fun normal(t: Ratio): Point =
         findTInCurve(t) { info, ratioInCurve -> info.curve.normal(ratioInCurve) }
 
-    override fun tangent(t: Float): Point =
+    override fun tangent(t: Ratio): Point =
         findTInCurve(t) { info, ratioInCurve -> info.curve.tangent(ratioInCurve) }
 
-    override fun ratioFromLength(length: Float): Float {
-        if (length <= 0f) return 0f
-        if (length >= this.length) return 1f
+    override fun ratioFromLength(length: Double): Ratio {
+        if (length <= 0.0) return Ratio.ZERO
+        if (length >= this.length) return Ratio.ONE
 
         val curveIndex = infos.binarySearch {
             when {
@@ -1695,22 +1690,22 @@ data class Curves(val beziers: List<Bezier>, val closed: Boolean) : Curve, Extra
         if (curveIndex < 0) {
             //infos.fastForEach { println("it=$it") }
             //println("length=${this.length}, requestedLength = $length, curveIndex=$curveIndex")
-            return Float.NaN
+            return Ratio.NaN
         } // length not in curve!
         val info = infos[index]
         val lengthInCurve = length - info.startLength
         val ratioInCurve = info.curve.ratioFromLength(lengthInCurve)
-        return ratioInCurve.convertRange(0f, 1f, info.startRatio, info.endRatio)
+        return ratioInCurve.convertRange(Ratio.ZERO, Ratio.ONE, info.startRatio, info.endRatio)
     }
 
-    fun splitLeftByLength(len: Float): Curves = splitLeft(ratioFromLength(len))
-    fun splitRightByLength(len: Float): Curves = splitRight(ratioFromLength(len))
-    fun splitByLength(len0: Float, len1: Float): Curves = split(ratioFromLength(len0), ratioFromLength(len1))
+    fun splitLeftByLength(len: Double): Curves = splitLeft(ratioFromLength(len))
+    fun splitRightByLength(len: Double): Curves = splitRight(ratioFromLength(len))
+    fun splitByLength(len0: Double, len1: Double): Curves = split(ratioFromLength(len0), ratioFromLength(len1))
 
-    fun splitLeft(t: Float): Curves = split(0f, t)
-    fun splitRight(t: Float): Curves = split(t, 1f)
+    fun splitLeft(t: Ratio): Curves = split(Ratio.ZERO, t)
+    fun splitRight(t: Ratio): Curves = split(t, Ratio.ONE)
 
-    fun split(t0: Float, t1: Float): Curves {
+    fun split(t0: Ratio, t1: Ratio): Curves {
         if (t0 > t1) return split(t1, t0)
         check(t0 <= t1)
 
@@ -1722,9 +1717,9 @@ data class Curves(val beziers: List<Bezier>, val closed: Boolean) : Curve, Extra
                     listOf(info0.curve.split(ratioInCurve0, ratioInCurve1).curve)
                 } else {
                     buildList {
-                        if (ratioInCurve0 != 1f) add(info0.curve.splitRight(ratioInCurve0).curve)
+                        if (ratioInCurve0 != Ratio.ONE) add(info0.curve.splitRight(ratioInCurve0).curve)
                         for (index in info0.index + 1 until info1.index) add(infos[index].curve)
-                        if (ratioInCurve1 != 0f) add(info1.curve.splitLeft(ratioInCurve1).curve)
+                        if (ratioInCurve1 != Ratio.ZERO) add(info1.curve.splitLeft(ratioInCurve1).curve)
                     }
                 }
             }
@@ -1776,7 +1771,7 @@ inline fun List<Curves>.fastForEachBezier(block: (Bezier) -> Unit) {
 fun Curves.toNonCurveSimplePointList(out: PointArrayList = PointArrayList()): PointList? {
     val curves = this
     val beziers = curves.beziers//.flatMap { it.toSimpleList() }.map { it.curve }
-    val epsilon = 0.0001f
+    val epsilon = 0.00001
     beziers.fastForEach { bezier ->
         if (bezier.inflections().isNotEmpty()) return null
         val points = bezier.points
@@ -1797,7 +1792,7 @@ fun Curves.toNonCurveSimplePointList(out: PointArrayList = PointArrayList()): Po
 @ThreadLocal
 val Curves.isConvex: Boolean by extraPropertyThis { this.assumeConvex || Convex.isConvex(this) }
 
-fun Curves.toDashes(pattern: FloatArray?, offset: Float = 0f): List<Curves> {
+fun Curves.toDashes(pattern: DoubleArray?, offset: Double = 0.0): List<Curves> {
     if (pattern == null) return listOf(this)
 
     check(!pattern.all { it <= 0.0 })
@@ -1842,7 +1837,7 @@ data class CurveSplit(
     val base: Bezier,
     val left: SubBezier,
     val right: SubBezier,
-    val t: Float,
+    val t: Ratio,
     val hull: PointList?
 ) {
     val leftCurve: Bezier get() = left.curve
@@ -1857,8 +1852,8 @@ data class CurveSplit(
     )
 }
 
-class SubBezier(val curve: Bezier, val t1: Float, val t2: Float, val parent: Bezier?) {
-    constructor(curve: Bezier) : this(curve, 0f, 1f, null)
+class SubBezier(val curve: Bezier, val t1: Ratio, val t2: Ratio, val parent: Bezier?) {
+    constructor(curve: Bezier) : this(curve, Ratio.ZERO, Ratio.ONE, null)
 
     val boundingBox: Rectangle get() = curve.boundingBox
 
@@ -1873,12 +1868,12 @@ class SubBezier(val curve: Bezier, val t1: Float, val t2: Float, val parent: Bez
         }
     }
 
-    fun calc(t: Float): Point = curve.calc(t.convertRange(t1, t2, 0f, 1f))
+    fun calc(t: Ratio): Point = curve.calc(t.convertRange(t1, t2, Ratio.ZERO, Ratio.ONE))
 
-    private fun _split(t: Float, hull: PointList?, left: Boolean): SubBezier {
-        val rt = t.convertRange(0f, 1f, t1, t2)
-        val rt1: Float = if (left) t1 else rt
-        val rt2: Float = if (left) rt else t2
+    private fun _split(t: Ratio, hull: PointList?, left: Boolean): SubBezier {
+        val rt: Ratio = t.convertRange(Ratio.ZERO, Ratio.ONE, t1, t2)
+        val rt1: Ratio = if (left) t1 else rt
+        val rt2: Ratio = if (left) rt else t2
         // Line
         val curve = if (curve.order < 2) {
             val p1 = calc(rt1)
@@ -1891,13 +1886,13 @@ class SubBezier(val curve: Bezier, val t1: Float, val t2: Float, val parent: Bez
         return SubBezier(curve, rt1, rt2, parent)
     }
 
-    private fun _splitLeft(t: Float, hull: PointList? = curve.hullOrNull(t)): SubBezier = _split(t, hull, left = true)
-    private fun _splitRight(t: Float, hull: PointList? = curve.hullOrNull(t)): SubBezier = _split(t, hull, left = false)
+    private fun _splitLeft(t: Ratio, hull: PointList? = curve.hullOrNull(t)): SubBezier = _split(t, hull, left = true)
+    private fun _splitRight(t: Ratio, hull: PointList? = curve.hullOrNull(t)): SubBezier = _split(t, hull, left = false)
 
-    fun splitLeft(t: Float): SubBezier = _splitLeft(t)
-    fun splitRight(t: Float): SubBezier = _splitRight(t)
+    fun splitLeft(t: Ratio): SubBezier = _splitLeft(t)
+    fun splitRight(t: Ratio): SubBezier = _splitRight(t)
 
-    fun split(t: Float): CurveSplit {
+    fun split(t: Ratio): CurveSplit {
         val hull = curve.hullOrNull(t)
         return CurveSplit(
             base = curve,
@@ -1908,7 +1903,7 @@ class SubBezier(val curve: Bezier, val t1: Float, val t2: Float, val parent: Bez
         )
     }
 
-    override fun toString(): String = "SubBezier[${t1.niceStr}..${t2.niceStr}]($curve)"
+    override fun toString(): String = "SubBezier[${t1.toDouble().niceStr}..${t2.toDouble().niceStr}]($curve)"
     fun roundDecimalPlaces(places: Int): SubBezier =
         SubBezier(curve.roundDecimalPlaces(places), t1.roundDecimalPlaces(places), t2.roundDecimalPlaces(places), parent?.roundDecimalPlaces(places))
 }

@@ -350,7 +350,7 @@ open class Container(
     @PublishedApi internal val __childrenZIndex = FastArrayList<View>()
 
     @PublishedApi internal fun shouldSortChildren(): Boolean {
-        __children.fastForEach { if (it.zIndex != 0f) { return true } }
+        __children.fastForEach { if (it.zIndex != 0.0) { return true } }
         return false
     }
 
@@ -383,7 +383,7 @@ open class Container(
     }
 
     // @TODO: Instead of resort everytime that something changes, let's keep an index in the zIndex collection
-    @PublishedApi internal fun updatedChildZIndex(child: View, oldZIndex: Float, newZIndex: Float) {
+    @PublishedApi internal fun updatedChildZIndex(child: View, oldZIndex: Double, newZIndex: Double) {
         if (child.parent != this) return
         __childrenZIndexValidOrder = false
         invalidateContainer()

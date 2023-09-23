@@ -2,15 +2,18 @@ package korlibs.math.geom
 
 import korlibs.math.annotations.*
 
+typealias Ray = Ray2D
+typealias Ray2 = Ray
+
 /** Represents an infinite [Ray] starting at [point] in the specified [direction] with an [angle] */
 //inline class Ray(val data: Float4Pack) {
-data class Ray
+data class Ray2D
 /** Constructs a [Ray] starting from [point] in the specified [direction] */
 private constructor(
     /** Starting point */
     val point: Point,
     /** Normalized direction of the ray starting at [point] */
-    val direction: Vector2,
+    val direction: Vector2D,
 ) {
     companion object {
         /** Creates a ray starting in [start] and passing by [end] */
@@ -23,32 +26,34 @@ private constructor(
     val angle: Angle get() = direction.angle
 
     /** Constructs a [Ray] starting from [point] in the specified [direction] */
-    constructor(point: Point, direction: Vector2, unit: Unit = Unit) : this(point, direction.normalized)
+    constructor(point: Point, direction: Vector2D, unit: Unit = Unit) : this(point, direction.normalized)
     /** Constructs a [Ray] starting from [point] in the specified [angle] */
-    constructor(point: Point, angle: Angle) : this(point, Vector2.polar(angle), Unit)
+    constructor(point: Point, angle: Angle) : this(point, Vector2D.polar(angle), Unit)
 
     //private constructor(point: Point, normalizedDirection: Vector2, unit: Unit) : this(point.x, point.y, normalizedDirection.x, normalizedDirection.y)
 
     /** Checks if [this] and [other]are equals with an [epsilon] difference */
-    fun isAlmostEquals(other: Ray, epsilon: Float = 0.00001f): Boolean =
+    fun isAlmostEquals(other: Ray, epsilon: Double = 0.00001): Boolean =
         this.point.isAlmostEquals(other.point, epsilon) && this.direction.isAlmostEquals(other.direction, epsilon)
 
     /** Checks if [this] and [other]are equals with an [epsilon] tolerance */
     fun transformed(m: Matrix): Ray = Ray(m.transform(point), m.deltaTransform(direction).normalized)
 
     /** Converts this [Ray] into a [Line] of a specific [length] starting by [point] */
-    fun toLine(length: Float = 100000f): Line = Line(point, point + direction * length)
+    fun toLine(length: Double = 100000.0): Line = Line(point, point + direction * length)
 
     override fun toString(): String = "Ray($point, $angle)"
 }
 
-data class Ray3D(val pos: Vector3, val dir: Vector3) {//: Shape3D {
+typealias Ray3 = Ray3F
+
+data class Ray3F(val pos: Vector3F, val dir: Vector3F) {//: Shape3D {
     //override val center: Vector3 get() = pos
     //override val volume: Float = 0f
 }
 
 @KormaMutableApi
-fun Ray3D.intersectRayAABox1(box: AABB3D) : Boolean {
+fun Ray3F.intersectRayAABox1(box: AABB3D) : Boolean {
     val ray = this
     // r.dir is unit direction vector of ray
     val dirfrac = ray.dir.inv()

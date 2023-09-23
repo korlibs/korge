@@ -6,10 +6,10 @@ import korlibs.math.geom.*
 import kotlin.math.abs
 
 data class SwipeInfo(
-    var delta: Vector2 = Vector2.ZERO,
+    var delta: Vector2F = Vector2F.ZERO,
     var direction: SwipeDirection
 ) {
-    fun setTo(delta: Vector2, direction: SwipeDirection): SwipeInfo {
+    fun setTo(delta: Vector2F, direction: SwipeDirection): SwipeInfo {
         this.delta = delta
         this.direction = direction
         return this
@@ -46,7 +46,7 @@ fun <T : View> T.onSwipe(
 
     val view = this
     var mousePos = Point.ZERO
-    val swipeInfo = SwipeInfo(Vector2.ZERO, SwipeDirection.TOP)
+    val swipeInfo = SwipeInfo(Vector2F.ZERO, SwipeDirection.TOP)
 
     fun views() = view.stage!!.views
 
@@ -66,7 +66,7 @@ fun <T : View> T.onSwipe(
 
     suspend fun triggerEvent(direction: SwipeDirection) {
         register = false
-        views().callback(swipeInfo.setTo(Vector2(cx - sx, cy - sy), direction))
+        views().callback(swipeInfo.setTo(Vector2F(cx - sx, cy - sy), direction))
     }
 
     suspend fun checkPositionOnMove() {

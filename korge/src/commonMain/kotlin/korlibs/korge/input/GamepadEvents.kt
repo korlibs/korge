@@ -121,7 +121,7 @@ class GamePadEvents(val view: View) {
 data class GamePadStickEvent(
     var gamepad: Int = 0,
     var stick: GameStick = GameStick.LEFT,
-    var pos: Vector2 = Vector2.ZERO,
+    var pos: Vector2F = Vector2F.ZERO,
 ) : TypedEvent<GamePadStickEvent>(GamePadStickEvent) {
     val x: Float get() = pos.x
     val y: Float get() = pos.y

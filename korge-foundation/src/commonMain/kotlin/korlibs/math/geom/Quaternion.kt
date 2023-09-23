@@ -19,8 +19,8 @@ data class Quaternion(val x: Float, val y: Float, val z: Float, val w: Float) {
 //    operator fun component3(): Float = z
 //    operator fun component4(): Float = w
 
-    val vector: Vector4 get() = Vector4(x, y, z, w)
-    val xyz: Vector3 get() = Vector3(x, y, z)
+    val vector: Vector4F get() = Vector4F(x, y, z, w)
+    val xyz: Vector3F get() = Vector3F(x, y, z)
     fun conjugate() = Quaternion(-x, -y, -z, w)
     operator fun get(index: Int): Float = when (index) {
         0 -> x
@@ -33,7 +33,7 @@ data class Quaternion(val x: Float, val y: Float, val z: Float, val w: Float) {
     val lengthSquared: Float get() = (x * x) + (y * y) + (z * z) + (w * w)
     val length: Float get() = sqrt(lengthSquared)
 
-    constructor(vector: Vector4, unit: Unit = Unit) : this(vector.x, vector.y, vector.z, vector.w)
+    constructor(vector: Vector4F, unit: Unit = Unit) : this(vector.x, vector.y, vector.z, vector.w)
     constructor() : this(0f, 0f, 0f, 1f)
     constructor(x: Double, y: Double, z: Double, w: Double) : this(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat())
 
@@ -101,14 +101,14 @@ data class Quaternion(val x: Float, val y: Float, val z: Float, val w: Float) {
     operator fun times(other: Quaternion): Quaternion {
         val left = this
         val right = other
-        return Quaternion(Vector4(
-            (left.xyz * right.w) + (right.xyz * left.w) + Vector3.cross(left.xyz, right.xyz),
+        return Quaternion(Vector4F(
+            (left.xyz * right.w) + (right.xyz * left.w) + Vector3F.cross(left.xyz, right.xyz),
             left.w * right.w - left.xyz.dot(right.xyz)
         ))
     }
 
     fun normalized(): Quaternion {
-        val length = 1f / Vector4(x, y, z, w).length
+        val length = 1f / Vector4F(x, y, z, w).length
         return Quaternion(x / length, y / length, z / length, w / length)
     }
 
@@ -121,14 +121,14 @@ data class Quaternion(val x: Float, val y: Float, val z: Float, val w: Float) {
         return Quaternion(q.x * -num, q.y * -num, q.z * -num, q.w * num)
     }
 
-    fun transform(v: Vector3): Vector3 {
+    fun transform(v: Vector3F): Vector3F {
         // Create a pure quaternion from the vector
         val q = this
         val p = Quaternion(v.x, v.y, v.z, 0f)
         // Multiply q by p, then by the conjugate of q
         val resultQuaternion = q * p * q.conjugate()
         // Return the vector part of the resulting quaternion
-        return Vector3(resultQuaternion.x, resultQuaternion.y, resultQuaternion.z)
+        return Vector3F(resultQuaternion.x, resultQuaternion.y, resultQuaternion.z)
     }
 
     fun toEuler(config: EulerRotation.Config = EulerRotation.Config.DEFAULT): EulerRotation = EulerRotation.fromQuaternion(this, config)
@@ -188,7 +188,7 @@ data class Quaternion(val x: Float, val y: Float, val z: Float, val w: Float) {
 
         fun interpolated(left: Quaternion, right: Quaternion, t: Float): Quaternion = slerp(left, right, t)
 
-        fun fromVectors(from: Vector3, to: Vector3): Quaternion {
+        fun fromVectors(from: Vector3F, to: Vector3F): Quaternion {
             // Normalize input vectors
             val start = from.normalized()
             val dest = to.normalized()
@@ -198,7 +198,7 @@ data class Quaternion(val x: Float, val y: Float, val z: Float, val w: Float) {
             // If vectors are opposite
             when {
                 dot < -0.9999999f -> {
-                    val tmp = Vector3(start.y, -start.x, 0f).normalized()
+                    val tmp = Vector3F(start.y, -start.x, 0f).normalized()
                     return Quaternion(tmp.x, tmp.y, tmp.z, 0f)
                 }
 
@@ -223,7 +223,7 @@ data class Quaternion(val x: Float, val y: Float, val z: Float, val w: Float) {
             }
         }
 
-        fun fromAxisAngle(axis: Vector3, angle: Angle): Quaternion {
+        fun fromAxisAngle(axis: Vector3F, angle: Angle): Quaternion {
             val naxis = axis.normalized()
             val angle2 = angle / 2
             val s = sin(angle2)
@@ -236,7 +236,7 @@ data class Quaternion(val x: Float, val y: Float, val z: Float, val w: Float) {
         }
 
         // @TODO: Check
-        fun lookRotation(forward: Vector3, up: Vector3 = Vector3.UP): Quaternion {
+        fun lookRotation(forward: Vector3F, up: Vector3F = Vector3F.UP): Quaternion {
             //if (up == Vector3.UP) return fromVectors(Vector3.FORWARD, forward.normalized())
             val z = forward.normalized()
             val x = (up.normalized() cross z).normalized()
@@ -244,7 +244,7 @@ data class Quaternion(val x: Float, val y: Float, val z: Float, val w: Float) {
             //println("x=$x, z=$z")
             if (x.lengthSquared.isAlmostZero()) {
                 // COLLINEAR
-                return Quaternion.fromVectors(Vector3.FORWARD, z)
+                return Quaternion.fromVectors(Vector3F.FORWARD, z)
             }
 
             val y = z cross x

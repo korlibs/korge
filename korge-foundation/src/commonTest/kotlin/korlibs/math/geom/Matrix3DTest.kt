@@ -80,18 +80,18 @@ class Matrix3DTest {
         val floats2 = FloatArray(10)
         val floats3 = FloatArray(17)
 
-        mat.copyToFloat3x3(floats, MajorOrder.ROW)
+        mat.copyToFloat3x3(floats, MatrixMajorOrder.ROW)
         assertEquals(listOf(-1f, -2f, -3f, -4f, -5f, -6f, -7f, -8f, -9f), floats.toList())
 
-        mat.copyToFloat3x3(floats2, MajorOrder.ROW, 1)
+        mat.copyToFloat3x3(floats2, MatrixMajorOrder.ROW, 1)
         assertEquals(listOf(0f, -1f, -2f, -3f, -4f, -5f, -6f, -7f, -8f, -9f), floats2.toList())
 
-        mat.copyToFloat3x3(floats2, MajorOrder.COLUMN, 1)
+        mat.copyToFloat3x3(floats2, MatrixMajorOrder.COLUMN, 1)
         assertEquals(listOf(0f, -1f, -4f, -7f, -2f, -5f, -8f, -3f, -6f, -9f), floats2.toList())
 
-        mat.copyToFloat4x4(floats3, MajorOrder.ROW, 1)
+        mat.copyToFloat4x4(floats3, MatrixMajorOrder.ROW, 1)
         assertEquals(listOf(0f, -1f, -2f, -3f, -11f, -4f, -5f, -6f, -12f, -7f, -8f, -9f, -13f, -14f, -15f, -16f, -17f), floats3.toList())
-        mat.copyToFloat4x4(floats3, MajorOrder.COLUMN, 0)
+        mat.copyToFloat4x4(floats3, MatrixMajorOrder.COLUMN, 0)
         assertEquals(listOf(-1f, -4f, -7f, -14f, -2f, -5f, -8f, -15f, -3f, -6f, -9f, -16f, -11f, -12f, -13f, -17f, -17f), floats3.toList())
     }
 

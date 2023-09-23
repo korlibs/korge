@@ -63,10 +63,10 @@ class KeysEventsTest : ViewsForTesting() {
                     calledTimes.getOrPut(it.key) { 0 }
                     calledTimes[it.key] = calledTimes[it.key]!! + 1
                     when (it.key) {
-                        Key.LEFT -> pos += Vector2(-1, 0)
-                        Key.RIGHT -> pos += Vector2(+1, 0)
-                        Key.UP -> pos += Vector2(-1, 0)
-                        Key.DOWN -> pos += Vector2(+1, 0)
+                        Key.LEFT -> pos += Vector2F(-1, 0)
+                        Key.RIGHT -> pos += Vector2F(+1, 0)
+                        Key.UP -> pos += Vector2F(-1, 0)
+                        Key.DOWN -> pos += Vector2F(+1, 0)
                         else -> unreachable
                     }
                 }

@@ -1,30 +1,32 @@
 package korlibs.math.geom
 
 import korlibs.math.*
-import korlibs.math.annotations.KormaExperimental
-import korlibs.math.geom.bezier.Bezier
-import korlibs.math.geom.shape.Shape2D
-import korlibs.math.geom.shape.buildVectorPath
-import korlibs.math.geom.vector.VectorPath
-import kotlin.math.sign
+import korlibs.math.annotations.*
+import korlibs.math.geom.bezier.*
+import korlibs.math.geom.shape.*
+import korlibs.math.geom.vector.*
+import kotlin.math.*
+
+typealias Line2 = Line
+typealias Line = Line2D
 
 //@KormaValueApi
-data class Line(val a: Vector2, val b: Vector2) : Shape2D {
-    override val area: Float get() = 0f
-    override val perimeter: Float get() = length
+data class Line2D(val a: Vector2D, val b: Vector2D) : Shape2D {
+    override val area: Double get() = 0.0
+    override val perimeter: Double get() = length
 
-    override fun normalVectorAt(p: Point): Vector2 {
+    override fun normalVectorAt(p: Point): Vector2D {
         val projected = projectedPoint(p)
         return (b - a).toNormal().normalized * Point.crossProduct(projected, p).sign
     }
 
-    override val center: Point get() = (a + b) * 0.5f
+    override val center: Point get() = (a + b) * 0.5
     fun toRay(): Ray = Ray(a, (b - a).normalized)
 
-    val xmin: Float get() = kotlin.math.min(x0, x1)
-    val xmax: Float get() = kotlin.math.max(x0, x1)
-    val ymin: Float get() = kotlin.math.min(y0, y1)
-    val ymax: Float get() = kotlin.math.max(y0, y1)
+    val xmin: Double get() = kotlin.math.min(x0, x1)
+    val xmax: Double get() = kotlin.math.max(x0, x1)
+    val ymin: Double get() = kotlin.math.min(y0, y1)
+    val ymax: Double get() = kotlin.math.max(y0, y1)
 
     override fun projectedPoint(p: Point): Point {
         return projectedPointOutsideSegment(p).clamp(Point(xmin, ymin), Point(xmax, ymax))
@@ -52,7 +54,7 @@ data class Line(val a: Vector2, val b: Vector2) : Shape2D {
 
         // What happens if lenLineE1 or lenLineE2 are zero?, it would be a division by zero.
         // Does that mean that the point is on the line, and we should use it?
-        if (lenLineE1 == 0f || lenLineE2 == 0f) {
+        if (lenLineE1 == 0.0 || lenLineE2 == 0.0) {
             return Point(px, py)
         }
 
@@ -75,32 +77,32 @@ data class Line(val a: Vector2, val b: Vector2) : Shape2D {
     inline fun flipped(): Line = Line(b, a)
     fun toBezier(): Bezier = Bezier(a, b)
 
-    val x0: Float get() = a.x
-    val y0: Float get() = a.y
+    val x0: Double get() = a.x
+    val y0: Double get() = a.y
 
-    val x1: Float get() = b.x
-    val y1: Float get() = b.y
+    val x1: Double get() = b.x
+    val y1: Double get() = b.y
 
-    val dx: Float get() = x1 - x0
-    val dy: Float get() = y1 - y0
+    val dx: Double get() = x1 - x0
+    val dy: Double get() = y1 - y0
 
     val min: Point get() = Point(minX, minY)
-    val minX: Float get() = kotlin.math.min(a.x, b.x)
-    val minY: Float get() = kotlin.math.min(a.y, b.y)
+    val minX: Double get() = kotlin.math.min(a.x, b.x)
+    val minY: Double get() = kotlin.math.min(a.y, b.y)
 
     val max: Point get() = Point(maxX, maxY)
-    val maxX: Float get() = kotlin.math.max(a.x, b.x)
-    val maxY: Float get() = kotlin.math.max(a.y, b.y)
+    val maxX: Double get() = kotlin.math.max(a.x, b.x)
+    val maxY: Double get() = kotlin.math.max(a.y, b.y)
 
     fun round(): Line = Line(a.round(), b.round())
     fun directionVector(): Point = Point(dx, dy)
 
-    fun getMinimumDistance(p: Point): Float {
+    fun getMinimumDistance(p: Point): Double {
         val v = a
         val w = b
         val l2 = Point.distanceSquared(v, w)
-        if (l2 == 0f) return Point.distanceSquared(p, a)
-        val t = (Point.dot(p - v, w - v) / l2).clamp(0f, 1f)
+        if (l2 == 0.0) return Point.distanceSquared(p, a)
+        val t = (Point.dot(p - v, w - v) / l2).clamp(0.0, 1.0)
         return Point.distance(p, v + (w - v) * t)
     }
 
@@ -111,13 +113,13 @@ data class Line(val a: Vector2, val b: Vector2) : Shape2D {
         return Line(x0 - dx * scale, y0 - dy * scale, x1 + dx * scale, y1 + dy * scale)
     }
 
-    fun containsX(x: Float): Boolean = (x in x0..x1) || (x in x1..x0) || (almostEquals(x, x0)) || (almostEquals(x, x1))
-    fun containsY(y: Float): Boolean = (y in y0..y1) || (y in y1..y0) || (almostEquals(y, y0)) || (almostEquals(y, y1))
-    fun containsBoundsXY(x: Float, y: Float): Boolean = containsX(x) && containsY(y)
+    fun containsX(x: Double): Boolean = (x in x0..x1) || (x in x1..x0) || (almostEquals(x, x0)) || (almostEquals(x, x1))
+    fun containsY(y: Double): Boolean = (y in y0..y1) || (y in y1..y0) || (almostEquals(y, y0)) || (almostEquals(y, y1))
+    fun containsBoundsXY(x: Double, y: Double): Boolean = containsX(x) && containsY(y)
 
     val angle: Angle get() = Angle.between(a, b)
-    val length: Float get() = Point.distance(a, b)
-    val lengthSquared: Float get() = Point.distanceSquared(a, b)
+    val length: Double get() = Point.distance(a, b)
+    val lengthSquared: Double get() = Point.distanceSquared(a, b)
 
     fun getLineIntersectionPoint(line: Line): Point? =
         getIntersectXY(x0, y0, x1, y1, line.x0, line.y0, line.x1, line.y1)
@@ -143,14 +145,14 @@ data class Line(val a: Vector2, val b: Vector2) : Shape2D {
         val NaN = Line(Point.NaN, Point.NaN)
         val NIL: Line get() = NaN
 
-        fun fromPointAndDirection(point: Point, direction: Point, scale: Float = 1f): Line =
+        fun fromPointAndDirection(point: Point, direction: Point, scale: Double = 1.0): Line =
             Line(point, point + direction * scale)
-        fun fromPointAngle(point: Point, angle: Angle, length: Float = 1f): Line =
+        fun fromPointAngle(point: Point, angle: Angle, length: Double = 1.0): Line =
             Line(point, Point.polar(angle, length))
 
         fun length(Ax: Double, Ay: Double, Bx: Double, By: Double): Double = kotlin.math.hypot(Bx - Ax, By - Ay)
 
-        inline fun getIntersectXY(Ax: Float, Ay: Float, Bx: Float, By: Float, Cx: Float, Cy: Float, Dx: Float, Dy: Float): Point? {
+        inline fun getIntersectXY(Ax: Double, Ay: Double, Bx: Double, By: Double, Cx: Double, Cy: Double, Dx: Double, Dy: Double): Point? {
             val a1 = By - Ay
             val b1 = Ax - Bx
             val c1 = a1 * (Ax) + b1 * (Ay)

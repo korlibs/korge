@@ -9,6 +9,7 @@ import korlibs.math.annotations.*
 import korlibs.math.geom.*
 import korlibs.math.geom.bezier.*
 import korlibs.math.geom.vector.*
+import korlibs.math.interpolation.*
 import kotlin.jvm.*
 import kotlin.math.*
 
@@ -74,9 +75,9 @@ fun List<TrapezoidInt>.pointInside(x: Int, y: Int, assumeSorted: Boolean = false
 }
 
 data class TriangleInt(
-    val p0: Vector2Int,
-    val p1: Vector2Int,
-    val p2: Vector2Int,
+    val p0: Vector2I,
+    val p1: Vector2I,
+    val p2: Vector2I,
 )
 
 @KormaMutableApi
@@ -403,17 +404,16 @@ fun VectorPath.toSegments(scale: Int = 1): FSegmentsInt {
     fun emit(p0: Point, p1: Point) {
         //println("EMIT")
         segments.add(
-            (p0.xD * scale).toIntRound(), (p0.yD * scale).toIntRound(),
-            (p1.xD * scale).toIntRound(), (p1.yD * scale).toIntRound()
+            (p0.x * scale).toIntRound(), (p0.y * scale).toIntRound(),
+            (p1.x * scale).toIntRound(), (p1.y * scale).toIntRound()
         )
     }
     fun emit(bezier: Bezier) {
         val len = bezier.length.toIntRound().coerceIn(2, 20)
         var oldPos = Point()
-        for (n in 0 .. len) {
-            val ratio = n.toFloat() / len
+        Ratio.forEachRatio(len) { ratio ->
             val p = bezier.calc(ratio)
-            if (n > 0) {
+            if (ratio > Ratio.ZERO) {
                 emit(oldPos, p)
             }
             oldPos = p
@@ -446,7 +446,7 @@ fun FTrapezoidsInt.triangulate(out: FTrianglesInt = FTrianglesInt()): FTriangles
 
 // @TODO: What about [Line]?
 data class SegmentInt(
-    val p0: Vector2Int, val p1: Vector2Int
+    val p0: Vector2I, val p1: Vector2I
 )
 
 @KormaMutableApi

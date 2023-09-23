@@ -3,22 +3,22 @@ package korlibs.render
 import korlibs.graphics.*
 
 interface DeviceDimensionsProvider {
-    val devicePixelRatio: Float get() = 1f
+    val devicePixelRatio: Double get() = 1.0
     /** Approximate on iOS */
-    val pixelsPerInch: Float get() = (96f * devicePixelRatio)
+    val pixelsPerInch: Double get() = (96.0 * devicePixelRatio)
     /** Approximate on iOS */
-    val pixelsPerCm: Float get() = (pixelsPerInch / INCH_TO_CM)
+    val pixelsPerCm: Double get() = (pixelsPerInch / INCH_TO_CM)
 
-    val pixelsPerLogicalInchRatio: Float get() = (pixelsPerInch / AG.defaultPixelsPerInch)
+    val pixelsPerLogicalInchRatio: Double get() = (pixelsPerInch / AG.defaultPixelsPerInch)
 
 
     // Use this in the debug handler, while allowing people to access raw devicePixelRatio without the noise of window scaling
     // I really dont know if "/" or "*" or right but in my mathematical mind "pixelsPerLogicalInchRatio" must increase and not decrease the scale
     // maybe it is pixelsPerLogicalInchRatio / devicePixelRatio ?
-    open val computedPixelRatio: Float get() = devicePixelRatio * pixelsPerLogicalInchRatio
+    open val computedPixelRatio: Double get() = devicePixelRatio * pixelsPerLogicalInchRatio
 
     companion object {
-        val INCH_TO_CM = 2.54f
+        val INCH_TO_CM: Double = 2.54
     }
 
     object DEFAULT : DeviceDimensionsProvider

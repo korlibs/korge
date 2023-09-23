@@ -36,7 +36,7 @@ class MainMasks : Scene() {
         roundRect(Size(100, 100), RectCorners(16f)).xy(15, 15)
             .backdropFilters(ColorMatrixFilter(ColorMatrixFilter.GRAYSCALE_MATRIX))
             .backdropFilters(BlurFilter())
-            .backdropFilters(WaveFilter(crestDistance = Vector2(50.0, 25.0), time = 0.seconds).also { filter ->
+            .backdropFilters(WaveFilter(crestDistance = Vector2F(50.0, 25.0), time = 0.seconds).also { filter ->
                 addUpdater { filter.time += it }
             })
 

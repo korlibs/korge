@@ -9,13 +9,13 @@ import korlibs.korge.view.*
 import korlibs.math.geom.*
 
 inline fun Container.debugVertexView(
-    pointsList: List<IVectorArrayList> = listOf(),
+    pointsList: List<IDoubleVectorArrayList> = listOf(),
     color: RGBA = Colors.WHITE,
     type: AGDrawType = AGDrawType.TRIANGLE_STRIP,
     callback: @ViewDslMarker DebugVertexView.() -> Unit = {}
 ): DebugVertexView = DebugVertexView(pointsList, color, type).addTo(this, callback)
 
-class DebugVertexView(pointsList: List<IVectorArrayList>, color: RGBA = Colors.WHITE, type: AGDrawType = AGDrawType.TRIANGLE_STRIP) : View() {
+class DebugVertexView(pointsList: List<IDoubleVectorArrayList>, color: RGBA = Colors.WHITE, type: AGDrawType = AGDrawType.TRIANGLE_STRIP) : View() {
     init {
         colorMul = color
     }
@@ -39,7 +39,7 @@ class DebugVertexView(pointsList: List<IVectorArrayList>, color: RGBA = Colors.W
         )
     }
 
-    var pointsList: List<IVectorArrayList> = pointsList
+    var pointsList: List<IDoubleVectorArrayList> = pointsList
         set(value) {
             if (field !== value) {
                 field = value

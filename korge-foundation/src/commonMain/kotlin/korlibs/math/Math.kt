@@ -3,6 +3,9 @@ package korlibs.math
 import korlibs.memory.*
 import kotlin.math.*
 
+const val PIF = PI.toFloat()
+const val PI2F = (PI * 2).toFloat()
+
 fun Double.betweenInclusive(min: Double, max: Double): Boolean = (this >= min) && (this <= max)
 
 fun almostEquals(a: Float, b: Float) = almostZero(a - b)

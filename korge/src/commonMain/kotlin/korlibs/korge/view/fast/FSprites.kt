@@ -99,7 +99,7 @@ open class FSprites(val maxSize: Int) {
 
     class FViewInfo(val nTexs: Int) {
         val texs: Array<Bitmap> = Array(nTexs) { Bitmaps.white.bmp }
-        val u_i_texSizeDataN: Array<Vector2> = Array(texs.size) { Vector2() }
+        val u_i_texSizeDataN: Array<Vector2F> = Array(texs.size) { Vector2F() }
         val olds: Array<FloatArray?> = arrayOfNulls<FloatArray>(texs.size)
         val program = vprograms.getOrElse(texs.size) { error("Only supported up to $MAX_SUPPORTED_TEXTURES textures") }
     }
@@ -153,7 +153,7 @@ open class FSprites(val maxSize: Int) {
                 for (n in 0 until texs.size) {
                     val tex = texs[n]
                     val ttex = ctx.agBitmapTextureManager.getTextureBase(tex)
-                    u_i_texSizeDataN[n] = Vector2(1f / ttex.width.toFloat(), 1f / ttex.height.toFloat())
+                    u_i_texSizeDataN[n] = Vector2F(1f / ttex.width.toFloat(), 1f / ttex.height.toFloat())
                     textureUnits.set(BatchBuilder2D.u_TexN[n], ttex.base, AGTextureUnitInfo(linear = smoothing))
                     //println(ttex.base)
                 }

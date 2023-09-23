@@ -8,10 +8,12 @@ import korlibs.math.interpolation.*
 import korlibs.number.*
 import kotlin.math.*
 
+typealias Rectangle = RectangleD
+
 //@KormaValueApi
 //inline class Rectangle(val data: Float4Pack) : Shape2D, Interpolable<Rectangle> {
 //inline class Rectangle(val data: Float4) : Shape2D {
-data class Rectangle(val x: Float, val y: Float, val width: Float, val height: Float) : Shape2D {
+data class RectangleD(val x: Double, val y: Double, val width: Double, val height: Double) : Shape2D {
     val int: RectangleInt get() = toInt()
 
     //operator fun component1(): Float = x
@@ -42,7 +44,7 @@ data class Rectangle(val x: Float, val y: Float, val width: Float, val height: F
     val isNIL: Boolean get() = isNaN
     val isNotNIL: Boolean get() = !isNIL
 
-    fun isAlmostEquals(other: Rectangle, epsilon: Float = 0.01f): Boolean =
+    fun isAlmostEquals(other: Rectangle, epsilon: Double = 0.0001): Boolean =
         this.x.isAlmostEquals(other.x, epsilon) &&
             this.y.isAlmostEquals(other.y, epsilon) &&
             this.width.isAlmostEquals(other.width, epsilon) &&
@@ -85,36 +87,45 @@ data class Rectangle(val x: Float, val y: Float, val width: Float, val height: F
         )
     }
 
-    operator fun times(scale: Float): Rectangle = Rectangle(x * scale, y * scale, width * scale, height * scale)
-    operator fun times(scale: Double): Rectangle = this * scale.toFloat()
-    operator fun times(scale: Int): Rectangle = this * scale.toFloat()
+    operator fun times(scale: Double): Rectangle = Rectangle(x * scale, y * scale, width * scale, height * scale)
+    operator fun times(scale: Float): Rectangle = times(scale.toDouble())
+    operator fun times(scale: Int): Rectangle = times(scale.toDouble())
 
-    operator fun div(scale: Float): Rectangle = Rectangle(x / scale, y / scale, width / scale, height / scale)
-    operator fun div(scale: Double): Rectangle = this / scale.toFloat()
-    operator fun div(scale: Int): Rectangle = this / scale.toFloat()
+    operator fun div(scale: Double): Rectangle = Rectangle(x / scale, y / scale, width / scale, height / scale)
+    operator fun div(scale: Float): Rectangle = div(scale.toDouble())
+    operator fun div(scale: Int): Rectangle = div(scale.toDouble())
 
     operator fun contains(that: Point): Boolean = contains(that.x, that.y)
-    operator fun contains(that: Vector2Int): Boolean = contains(that.x, that.y)
-    fun contains(x: Float, y: Float): Boolean = (x >= left && x < right) && (y >= top && y < bottom)
-    fun contains(x: Double, y: Double): Boolean = contains(x.toFloat(), y.toFloat())
-    fun contains(x: Int, y: Int): Boolean = contains(x.toFloat(), y.toFloat())
+    operator fun contains(that: Vector2F): Boolean = contains(that.x, that.y)
+    operator fun contains(that: Vector2I): Boolean = contains(that.x, that.y)
+    fun contains(x: Double, y: Double): Boolean = (x >= left && x < right) && (y >= top && y < bottom)
+    fun contains(x: Float, y: Float): Boolean = contains(x.toDouble(), y.toDouble())
+    fun contains(x: Int, y: Int): Boolean = contains(x.toDouble(), y.toDouble())
 
-    override val area: Float get() = width * height
-    override val perimeter: Float get() = (width + height) * 2
+    override val area: Double get() = width * height
+    override val perimeter: Double get() = (width + height) * 2
 
     override fun containsPoint(p: Point): Boolean = (p.x >= left && p.x < right) && (p.y >= top && p.y < bottom)
-    override fun toVectorPath(): VectorPath = buildVectorPath { rect(this@Rectangle) }
-    override fun distance(p: Point): Float {
+    override fun toVectorPath(): VectorPath = buildVectorPath { rect(this@RectangleD) }
+    override fun distance(p: Point): Double {
         val p = p - center
-        val b = Vector2(width * 0.5, height * 0.5)
+        val b = Vector2D(width * 0.5, height * 0.5)
         val d = p.absoluteValue - b
-        return max(d, Vector2.ZERO).length + min(max(d.x, d.y), 0f)
+        return max(d, Vector2D.ZERO).length + min(max(d.x, d.y), 0.0)
     }
 
-    override fun normalVectorAt(p: Point): Vector2 {
+    override fun normalVectorAt(p: Point): Vector2D {
         val pp = projectedPoint(p)
-        val x = if (pp.x == left) -1f else if (pp.x == right) +1f else 0f
-        val y = if (pp.y == top) -1f else if (pp.y == bottom) +1f else 0f
+        val x = when (pp.x) {
+            left -> -1.0
+            right -> +1.0
+            else -> 0.0
+        }
+        val y = when (pp.y) {
+            top -> -1.0
+            bottom -> +1.0
+            else -> 0.0
+        }
         return Point(x, y).normalized
     }
 
@@ -151,25 +162,21 @@ data class Rectangle(val x: Float, val y: Float, val width: Float, val height: F
         //}
     }
 
-    val isEmpty: Boolean get() = width == 0f && height == 0f
+    val isEmpty: Boolean get() = width == 0.0 && height == 0.0
     val isNotEmpty: Boolean get() = !isEmpty
-    @Deprecated("")
-    val mutable: MRectangle get() = MRectangle(x, y, width, height)
-    @Deprecated("")
-    fun mutable(out: MRectangle = MRectangle()): MRectangle = out.copyFrom(this)
 
-    val left: Float get() = x
-    val top: Float get() = y
-    val right: Float get() = x + width
-    val bottom: Float get() = y + height
+    val left: Double get() = x
+    val top: Double get() = y
+    val right: Double get() = x + width
+    val bottom: Double get() = y + height
 
     val topLeft: Point get() = Point(left, top)
     val topRight: Point get() = Point(right, top)
     val bottomLeft: Point get() = Point(left, bottom)
     val bottomRight: Point get() = Point(right, bottom)
 
-    val centerX: Float get() = (right + left) * 0.5f
-    val centerY: Float get() = (bottom + top) * 0.5f
+    val centerX: Double get() = (right + left) * 0.5
+    val centerY: Double get() = (bottom + top) * 0.5
     override val center: Point get() = Point(centerX, centerY)
 
     /**
@@ -222,7 +229,7 @@ data class Rectangle(val x: Float, val y: Float, val width: Float, val height: F
     fun expanded(border: MarginInt): Rectangle =
         fromBounds(left - border.left, top - border.top, right + border.right, bottom + border.bottom)
 
-    fun copyBounds(left: Float = this.left, top: Float = this.top, right: Float = this.right, bottom: Float = this.bottom): Rectangle =
+    fun copyBounds(left: Double = this.left, top: Double = this.top, right: Double = this.right, bottom: Double = this.bottom): Rectangle =
         Rectangle.fromBounds(left, top, right, bottom)
 
     fun translated(delta: Point): Rectangle = copy(x = this.x + delta.x, y = this.y + delta.y)
@@ -255,10 +262,10 @@ data class Rectangle(val x: Float, val y: Float, val width: Float, val height: F
 
 fun Iterable<Rectangle>.bounds(): Rectangle {
     var first = true
-    var left = 0f
-    var right = 0f
-    var top = 0f
-    var bottom = 0f
+    var left = 0.0
+    var right = 0.0
+    var top = 0.0
+    var bottom = 0.0
     for (r in this) {
         if (first) {
             left = r.left
@@ -288,14 +295,16 @@ fun Rectangle.place(item: Size, anchor: Anchor, scale: ScaleMode): Rectangle {
 //    return RectangleInt(p, outSize)
 //}
 
+typealias RectangleInt = RectangleI
+
 //@KormaValueApi
-data class RectangleInt(
+data class RectangleI(
     val x: Int, val y: Int,
     val width: Int, val height: Int,
 ) {
     val float: Rectangle get() = Rectangle(x, y, width, height)
 
-    val position: Vector2Int get() = Vector2Int(x, y)
+    val position: Vector2I get() = Vector2I(x, y)
     val size: SizeInt get() = SizeInt(width, height)
 
     val area: Int get() = width * height
@@ -307,24 +316,23 @@ data class RectangleInt(
     val right: Int get() = x + width
     val bottom: Int get() = y + height
 
-    val topLeft: Vector2Int get() = Vector2Int(left, top)
-    val topRight: Vector2Int get() = Vector2Int(right, top)
-    val bottomLeft: Vector2Int get() = Vector2Int(left, bottom)
-    val bottomRight: Vector2Int get() = Vector2Int(right, bottom)
+    val topLeft: Vector2I get() = Vector2I(left, top)
+    val topRight: Vector2I get() = Vector2I(right, top)
+    val bottomLeft: Vector2I get() = Vector2I(left, bottom)
+    val bottomRight: Vector2I get() = Vector2I(right, bottom)
 
     val centerX: Int get() = ((right + left) * 0.5f).toInt()
     val centerY: Int get() = ((bottom + top) * 0.5f).toInt()
-    val center: Vector2Int get() = Vector2Int(centerX, centerY)
+    val center: Vector2I get() = Vector2I(centerX, centerY)
 
-    fun toFloat(): Rectangle = Rectangle(position.toFloat(), size.toFloat())
+    fun toFloat(): Rectangle = Rectangle(position.toDouble(), size.toDouble())
 
-    operator fun times(scale: Float): RectangleInt = RectangleInt(
+    operator fun times(scale: Double): RectangleInt = RectangleInt(
         (x * scale).toInt(), (y * scale).toInt(),
         (width * scale).toInt(), (height * scale).toInt()
     )
-
-    operator fun times(scale: Double): RectangleInt = this * scale.toFloat()
-    operator fun times(scale: Int): RectangleInt = this * scale.toFloat()
+    operator fun times(scale: Float): RectangleInt = this * scale.toDouble()
+    operator fun times(scale: Int): RectangleInt = this * scale.toDouble()
 
     operator fun div(scale: Float): RectangleInt = RectangleInt(
         (x / scale).toInt(), (y / scale).toInt(),
@@ -335,13 +343,13 @@ data class RectangleInt(
     operator fun div(scale: Int): RectangleInt = this / scale.toFloat()
 
     operator fun contains(that: Point): Boolean = contains(that.x, that.y)
-    operator fun contains(that: Vector2Int): Boolean = contains(that.x, that.y)
+    operator fun contains(that: Vector2I): Boolean = contains(that.x, that.y)
     fun contains(x: Float, y: Float): Boolean = (x >= left && x < right) && (y >= top && y < bottom)
     fun contains(x: Double, y: Double): Boolean = contains(x.toFloat(), y.toFloat())
     fun contains(x: Int, y: Int): Boolean = contains(x.toFloat(), y.toFloat())
 
-    constructor() : this(Vector2Int(), SizeInt())
-    constructor(position: Vector2Int, size: SizeInt) : this(position.x, position.y, size.width, size.height)
+    constructor() : this(Vector2I(), SizeInt())
+    constructor(position: Vector2I, size: SizeInt) : this(position.x, position.y, size.width, size.height)
 
     fun sliceWithBounds(left: Int, top: Int, right: Int, bottom: Int, clamped: Boolean = true): RectangleInt {
         val left = if (!clamped) left else left.coerceIn(0, this.width)
@@ -367,7 +375,7 @@ data class RectangleInt(
             kotlin.math.max(a.bottom, b.bottom)
         )
 
-        fun fromBounds(topLeft: Vector2Int, bottomRight: Vector2Int): RectangleInt = RectangleInt(topLeft, (bottomRight - topLeft).toSize())
-        fun fromBounds(left: Int, top: Int, right: Int, bottom: Int): RectangleInt = fromBounds(Vector2Int(left, top), Vector2Int(right, bottom))
+        fun fromBounds(topLeft: Vector2I, bottomRight: Vector2I): RectangleInt = RectangleInt(topLeft, (bottomRight - topLeft).toSize())
+        fun fromBounds(left: Int, top: Int, right: Int, bottom: Int): RectangleInt = fromBounds(Vector2I(left, top), Vector2I(right, bottom))
     }
 }

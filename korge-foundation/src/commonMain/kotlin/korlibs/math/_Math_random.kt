@@ -4,8 +4,8 @@ package korlibs.math.random
 
 import korlibs.math.geom.*
 import korlibs.math.interpolation.*
-import kotlin.math.pow
-import kotlin.random.Random
+import kotlin.math.*
+import kotlin.random.*
 
 fun Random.ints(): Sequence<Int> = sequence { while (true) yield(nextInt()) }
 fun Random.ints(from: Int, until: Int): Sequence<Int> = sequence { while (true) yield(nextInt(from, until)) }
@@ -25,7 +25,7 @@ fun Random.nextDoubleInclusive() = (this.nextInt(0x1000001).toDouble() / 0x10000
 fun Random.nextRatio(): Ratio = nextDouble().toRatio()
 fun Random.nextRatioInclusive(): Ratio = nextDoubleInclusive().toRatio()
 
-operator fun Random.get(min: Ratio, max: Ratio): Ratio = Ratio(get(min.valueD, max.valueD))
+operator fun Random.get(min: Ratio, max: Ratio): Ratio = Ratio(get(min.value, max.value))
 operator fun Random.get(min: Double, max: Double): Double = min + nextDouble() * (max - min)
 operator fun Random.get(min: Float, max: Float): Float = min + nextFloat() * (max - min)
 operator fun Random.get(min: Int, max: Int): Int = min + nextInt(max - min)

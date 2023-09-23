@@ -112,7 +112,7 @@ abstract class BaseTtfFont(
             //println("bitmapEntry=$bitmapEntry")
             val scaleX = unitsPerEm.toDouble() / bitmapEntry.info.ppemX.toDouble()
             val scaleY = unitsPerEm.toDouble() / bitmapEntry.info.ppemY.toDouble()
-            path.bitmapOffset = Vector2(
+            path.bitmapOffset = Vector2F(
                 0.0,
                 ((-bitmapEntry.height - bitmapEntry.descender) * scaleY),
             )

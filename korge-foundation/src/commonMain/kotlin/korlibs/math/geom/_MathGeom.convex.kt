@@ -5,7 +5,7 @@ package korlibs.math.geom.convex
 import korlibs.math.geom.*
 import korlibs.math.geom.bezier.*
 import korlibs.math.geom.vector.*
-import korlibs.math.isAlmostEquals
+import korlibs.math.interpolation.*
 import kotlin.math.*
 
 object Convex {
@@ -90,7 +90,7 @@ object Convex {
             angle_sum += Angle.fromRadians(angle)
             // Check that the total number of full turns is plus-or-minus 1
         }
-        return 1f.isAlmostEquals(angle_sum.ratio.toFloat().absoluteValue)
+        return Ratio.ONE.isAlmostEquals(angle_sum.ratio.absoluteValue)
     }
 
     /*

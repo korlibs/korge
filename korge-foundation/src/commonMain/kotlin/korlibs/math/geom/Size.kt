@@ -3,44 +3,36 @@ package korlibs.math.geom
 import korlibs.number.*
 import kotlin.math.*
 
+typealias Size = Size2D
+typealias Size3 = Size2F
+
+data class Size2F(val width: Float, val height: Float)
+data class Size3F(val width: Float, val height: Float, val depth: Float)
+data class Size3D(val width: Double, val height: Double, val depth: Double)
+
 /**
  * A class representing a size with a [width] and a [height] as Float.
  */
-//@KormaExperimental
-//@KormaValueApi
-//inline class Size internal constructor(internal val raw: Float2Pack) {//: Sizeable {
-data class Size(val width: Float, val height: Float) {//: Sizeable {
-    //val width: Float get() = raw.f0
-    //val height: Float get() = raw.f1
-    //operator fun component1(): Float = width
-    //operator fun component2(): Float = height
-    //fun copy(width: Float = this.width, height: Float = this.height): Size = Size(width, height)
-    //constructor(width: Float, height: Float) : this(float2PackOf(width, height))
-
+data class Size2D(val width: Double, val height: Double) {//: Sizeable {
     companion object {
-        val ZERO = Size(0f, 0f)
+        val ZERO = Size(0.0, 0.0)
         fun square(value: Int): Size = Size(value, value)
         fun square(value: Double): Size = Size(value, value)
     }
 
-    fun isEmpty(): Boolean = width == 0f || height == 0f
+    fun isEmpty(): Boolean = width == 0.0 || height == 0.0
 
-    fun avgComponent(): Float = width * 0.5f + height * 0.5f
-    fun minComponent(): Float = min(width, height)
-    fun maxComponent(): Float = max(width, height)
+    fun avgComponent(): Double = width * 0.5 + height * 0.5
+    fun minComponent(): Double = min(width, height)
+    fun maxComponent(): Double = max(width, height)
 
-    val widthF: Float get() = width
-    val heightF: Float get() = height
-    val widthD: Double get() = width.toDouble()
-    val heightD: Double get() = height.toDouble()
-
-    val area: Float get() = width * height
-    val perimeter: Float get() = width * 2 + height * 2
+    val area: Double get() = width * height
+    val perimeter: Double get() = width * 2 + height * 2
 
     //(val width: Double, val height: Double) {
-    constructor() : this(0f, 0f)
-    constructor(width: Double, height: Double) : this(width.toFloat(), height.toFloat())
-    constructor(width: Int, height: Int) : this(width.toFloat(), height.toFloat())
+    constructor() : this(0.0, 0.0)
+    constructor(width: Float, height: Float) : this(width.toDouble(), height.toDouble())
+    constructor(width: Int, height: Int) : this(width.toDouble(), height.toDouble())
 
     operator fun unaryMinus(): Size = Size(-width, -height)
     operator fun unaryPlus(): Size = this
@@ -48,7 +40,7 @@ data class Size(val width: Float, val height: Float) {//: Sizeable {
     operator fun minus(other: Size): Size = Size(width - other.width, height - other.height)
     operator fun plus(other: Size): Size = Size(width + other.width, height + other.height)
     operator fun times(scale: Scale): Size = Size(width * scale.scaleX, height * scale.scaleY)
-    operator fun times(scale: Vector2): Size = Size(width * scale.x, height * scale.y)
+    operator fun times(scale: Vector2F): Size = Size(width * scale.x, height * scale.y)
     operator fun times(s: Float): Size = Size(width * s, height * s)
     operator fun times(s: Double): Size = times(s.toFloat())
     operator fun times(s: Int): Size = times(s.toFloat())
@@ -62,30 +54,25 @@ data class Size(val width: Float, val height: Float) {//: Sizeable {
     override fun toString(): String = "Size(width=${width.niceStr}, height=${height.niceStr})"
 }
 
-operator fun Vector2.plus(other: Size): Vector2 = Vector2(x + other.width, y + other.height)
-operator fun Vector2.minus(other: Size): Vector2 = Vector2(x - other.width, y - other.height)
-operator fun Vector2.times(other: Size): Vector2 = Vector2(x * other.width, y * other.height)
-operator fun Vector2.div(other: Size): Vector2 = Vector2(x / other.width, y / other.height)
-operator fun Vector2.rem(other: Size): Vector2 = Vector2(x % other.width, y % other.height)
+operator fun Vector2D.plus(other: Size): Vector2D = Vector2D(x + other.width, y + other.height)
+operator fun Vector2D.minus(other: Size): Vector2D = Vector2D(x - other.width, y - other.height)
+operator fun Vector2D.times(other: Size): Vector2D = Vector2D(x * other.width, y * other.height)
+operator fun Vector2D.div(other: Size): Vector2D = Vector2D(x / other.width, y / other.height)
+operator fun Vector2D.rem(other: Size): Vector2D = Vector2D(x % other.width, y % other.height)
 
-
-val Size.mutable: MSize get() = MSize(width, height)
-
-val MSize.immutable: Size get() = Size(width, height)
-
-fun MSize.asInt(): MSizeInt = MSizeInt(this)
-fun MSizeInt.asDouble(): MSize = this.float
-
-fun MPoint.asSize(): MSize = MSize(this)
+operator fun Vector2F.plus(other: Size): Vector2F = Vector2F(x + other.width, y + other.height)
+operator fun Vector2F.minus(other: Size): Vector2F = Vector2F(x - other.width, y - other.height)
+operator fun Vector2F.times(other: Size): Vector2F = Vector2F(x * other.width, y * other.height)
+operator fun Vector2F.div(other: Size): Vector2F = Vector2F(x / other.width, y / other.height)
+operator fun Vector2F.rem(other: Size): Vector2F = Vector2F(x % other.width, y % other.height)
 
 fun Point.toSize(): Size = Size(x, y)
-fun Vector2Int.toSize(): SizeInt = SizeInt(x, y)
 
 fun Size.toInt(): SizeInt = SizeInt(width.toInt(), height.toInt())
-fun SizeInt.toFloat(): Size = Size(width.toFloat(), height.toFloat())
-fun SizeInt.toVector(): Vector2Int = Vector2Int(width, height)
 fun Size.toPoint(): Point = Point(width, height)
-fun Size.toVector(): Vector2 = Vector2(width, height)
+fun Size.toVector(): Vector2D = Vector2D(width, height)
+fun Size.toVector2D(): Vector2D = Vector2D(width, height)
+fun Size.toVector2F(): Vector2F = Vector2F(width, height)
 
 interface Sizeable {
     val size: Size
@@ -107,6 +94,8 @@ interface SizeableInt {
     }
 }
 
+typealias SizeI = SizeInt
+
 data class SizeInt(val width: Int, val height: Int) {
     constructor() : this(0, 0)
 
@@ -125,7 +114,7 @@ data class SizeInt(val width: Int, val height: Int) {
     operator fun times(s: Float): SizeInt = SizeInt((width * s).toInt(), (height * s).toInt())
     operator fun times(s: Double): SizeInt = times(s.toFloat())
     operator fun times(s: Int): SizeInt = times(s.toFloat())
-    operator fun times(scale: Vector2): SizeInt = SizeInt((width * scale.x).toInt(), (height * scale.y).toInt())
+    operator fun times(scale: Vector2F): SizeInt = SizeInt((width * scale.x).toInt(), (height * scale.y).toInt())
     operator fun times(scale: Scale): SizeInt = SizeInt((width * scale.scaleX).toInt(), (height * scale.scaleY).toInt())
 
     operator fun div(other: SizeInt): SizeInt = SizeInt(width / other.width, height / other.height)
@@ -134,14 +123,25 @@ data class SizeInt(val width: Int, val height: Int) {
     operator fun div(s: Int): SizeInt = div(s.toFloat())
 }
 
-operator fun Vector2.plus(other: SizeInt): Vector2 = Vector2(x + other.width, y + other.height)
-operator fun Vector2.minus(other: SizeInt): Vector2 = Vector2(x - other.width, y - other.height)
-operator fun Vector2.times(other: SizeInt): Vector2 = Vector2(x * other.width, y * other.height)
-operator fun Vector2.div(other: SizeInt): Vector2 = Vector2(x / other.width, y / other.height)
-operator fun Vector2.rem(other: SizeInt): Vector2 = Vector2(x % other.width, y % other.height)
+fun Vector2I.toSize(): SizeInt = SizeInt(x, y)
+fun SizeInt.toFloat(): Size = Size(width.toFloat(), height.toFloat())
+fun SizeInt.toDouble(): Size = Size(width.toDouble(), height.toDouble())
+fun SizeInt.toVector(): Vector2I = Vector2I(width, height)
 
-operator fun Vector2Int.plus(other: SizeInt): Vector2Int = Vector2Int(x + other.width, y + other.height)
-operator fun Vector2Int.minus(other: SizeInt): Vector2Int = Vector2Int(x - other.width, y - other.height)
-operator fun Vector2Int.times(other: SizeInt): Vector2Int = Vector2Int(x * other.width, y * other.height)
-operator fun Vector2Int.div(other: SizeInt): Vector2Int = Vector2Int(x / other.width, y / other.height)
-operator fun Vector2Int.rem(other: SizeInt): Vector2Int = Vector2Int(x % other.width, y % other.height)
+operator fun Vector2D.plus(other: SizeInt): Vector2D = Vector2D(x + other.width, y + other.height)
+operator fun Vector2D.minus(other: SizeInt): Vector2D = Vector2D(x - other.width, y - other.height)
+operator fun Vector2D.times(other: SizeInt): Vector2D = Vector2D(x * other.width, y * other.height)
+operator fun Vector2D.div(other: SizeInt): Vector2D = Vector2D(x / other.width, y / other.height)
+operator fun Vector2D.rem(other: SizeInt): Vector2D = Vector2D(x % other.width, y % other.height)
+
+operator fun Vector2F.plus(other: SizeInt): Vector2F = Vector2F(x + other.width, y + other.height)
+operator fun Vector2F.minus(other: SizeInt): Vector2F = Vector2F(x - other.width, y - other.height)
+operator fun Vector2F.times(other: SizeInt): Vector2F = Vector2F(x * other.width, y * other.height)
+operator fun Vector2F.div(other: SizeInt): Vector2F = Vector2F(x / other.width, y / other.height)
+operator fun Vector2F.rem(other: SizeInt): Vector2F = Vector2F(x % other.width, y % other.height)
+
+operator fun Vector2I.plus(other: SizeInt): Vector2I = Vector2I(x + other.width, y + other.height)
+operator fun Vector2I.minus(other: SizeInt): Vector2I = Vector2I(x - other.width, y - other.height)
+operator fun Vector2I.times(other: SizeInt): Vector2I = Vector2I(x * other.width, y * other.height)
+operator fun Vector2I.div(other: SizeInt): Vector2I = Vector2I(x / other.width, y / other.height)
+operator fun Vector2I.rem(other: SizeInt): Vector2I = Vector2I(x % other.width, y % other.height)

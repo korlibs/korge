@@ -96,7 +96,7 @@ data class MouseEvent(
     var scrollDeltaMode: ScrollDeltaMode = ScrollDeltaMode.LINE
 ) : Event(), TEvent<MouseEvent> {
     //companion object : EventType<MouseEvent>
-    val pos: Vector2Int get() = Vector2Int(x, y)
+    val pos: Vector2I get() = Vector2I(x, y)
 
     var component: Any? = null
 

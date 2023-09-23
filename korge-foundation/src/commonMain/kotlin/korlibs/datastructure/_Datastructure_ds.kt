@@ -33,14 +33,6 @@ Jon-Carlos Rivera - imbcmdth@hotmail.com
 import korlibs.datastructure.*
 import korlibs.math.*
 import korlibs.number.*
-import kotlin.collections.HashMap
-import kotlin.collections.List
-import kotlin.collections.contains
-import kotlin.collections.copyInto
-import kotlin.collections.copyOf
-import kotlin.collections.isNotEmpty
-import kotlin.collections.remove
-import kotlin.collections.removeLast
 import kotlin.collections.set
 import kotlin.math.*
 
@@ -77,22 +69,22 @@ class BVH<T>(
 
     data class IntersectResult<T>(
         val ray: BVHRay,
-        val intersect: Float,
+        val intersect: Double,
         val obj: Node<T>,
     ) {
         val point: BVHVector by lazy {
-            BVHVector(FloatArray(ray.dimensions) { dim ->
+            BVHVector(DoubleArray(ray.dimensions) { dim ->
                 ray.pos(dim) + ray.dir(dim) * intersect
             })
         }
 
         val normal: BVHVector by lazy {
             val bounds = obj.d
-            BVHVector(FloatArray(ray.dimensions) { dim ->
+            BVHVector(DoubleArray(ray.dimensions) { dim ->
                 val bmin = bounds.min(dim)
                 val bmax = bounds.max(dim)
                 val p = point[dim]
-                if (bmin.isAlmostEquals(p) || p < bmin) -1f else if (bmax.isAlmostEquals(p) || p > bmax) +1f else 0f
+                if (bmin.isAlmostEquals(p) || p < bmin) -1.0 else if (bmax.isAlmostEquals(p) || p > bmax) +1.0 else 0.0
             })
         }
     }
@@ -439,7 +431,7 @@ class BVH<T>(
         }
 
         var d = 0
-        var last_difference = 0f
+        var last_difference = 0.0
         //for (i = 0; i < _Dimensions; i++) {
         for (i in 0 until this.dimensions) {
             val difference =
@@ -575,9 +567,9 @@ class BVH<T>(
         if (ints == null) {
             ints = this.root.d // By default, use the scene bounding box
         }
-        val parameters = Array(2) { FloatArray(this.dimensions) }
+        val parameters = Array(2) { DoubleArray(this.dimensions) }
         // inv_direction and sign can be pre-computed per ray
-        val inv_direction = FloatArray(this.dimensions)
+        val inv_direction = DoubleArray(this.dimensions)
         val sign = IntArray(this.dimensions)
 
         // Initialize values
@@ -585,7 +577,7 @@ class BVH<T>(
             parameters[0][i] = ints.min(i)
             parameters[1][i] = ints.min(i) + ints.size(i)
 
-            val j = 1f / ray.dir(i)
+            val j = 1.0 / ray.dir(i)
             inv_direction[i] = j
             sign[i] = if (j <= 0) 1 else 0
         }
@@ -612,7 +604,7 @@ class BVH<T>(
             return null
         }
         if (omin < 0 && omax < 0) return null
-        if (omin < 0) omin = 0f
+        if (omin < 0) omin = 0.0
         val rs = _make_Empty()
 
         for (i in 0 until this.dimensions) {
@@ -913,20 +905,20 @@ class BVH<T>(
     }
 }
 
-data class BVHVector(val data: FloatArray) {
+data class BVHVector(val data: DoubleArray) {
     companion object {
-        operator fun invoke(vararg data: Float): BVHVector = BVHVector(data)
-        operator fun invoke(vararg data: Double): BVHVector = BVHVector(data.mapFloat { it.toFloat() })
-        operator fun invoke(vararg data: Int): BVHVector = BVHVector(data.mapFloat { it.toFloat() })
+        operator fun invoke(vararg data: Float): BVHVector = BVHVector(data.mapDouble { it.toDouble() })
+        operator fun invoke(vararg data: Double): BVHVector = BVHVector(data)
+        operator fun invoke(vararg data: Int): BVHVector = BVHVector(data.mapDouble { it.toDouble() })
     }
     val dimensions: Int get() = data.size
     fun checkDimensions(dims: Int) {
         if (dims != this.dimensions) error("Expected $dims dimensions, but found $dimensions")
     }
 
-    operator fun get(dim: Int): Float = data[dim]
+    operator fun get(dim: Int): Double = data[dim]
     @Deprecated("Mutable")
-    operator fun set(dim: Int, value: Float) {
+    operator fun set(dim: Int, value: Double) {
         data[dim] = value
     }
 
@@ -952,11 +944,11 @@ inline class BVHRay(val intervals: BVHIntervals) {
     val length: Int get() = dimensions
     val dimensions: Int get() = data.size / 2
 
-    fun pos(dim: Int): Float = data[dim * 2 + 0]
-    fun dir(dim: Int): Float = data[dim * 2 + 1]
+    fun pos(dim: Int): Double = data[dim * 2 + 0]
+    fun dir(dim: Int): Double = data[dim * 2 + 1]
 
-    val pos: BVHVector get() = BVHVector(FloatArray(dimensions) { pos(it) })
-    val dir: BVHVector get() = BVHVector(FloatArray(dimensions) { dir(it) })
+    val pos: BVHVector get() = BVHVector(DoubleArray(dimensions) { pos(it) })
+    val dir: BVHVector get() = BVHVector(DoubleArray(dimensions) { dir(it) })
 
     override fun toString(): String = "BVHRay(pos=$pos, dir=$dir)"
 }
@@ -974,16 +966,16 @@ inline class BVHRect(val intervals: BVHIntervals) {
     val length: Int get() = dimensions
     val dimensions: Int get() = data.size / 2
 
-    fun min(dim: Int): Float = data[dim * 2 + 0]
-    fun size(dim: Int): Float = data[dim * 2 + 1]
-    fun max(dim: Int): Float = min(dim) + size(dim)
+    fun min(dim: Int): Double = data[dim * 2 + 0]
+    fun size(dim: Int): Double = data[dim * 2 + 1]
+    fun max(dim: Int): Double = min(dim) + size(dim)
 
-    fun min(dim: Int, value: Float) { data[dim * 2 + 0] = value }
-    fun size(dim: Int, value: Float) { data[dim * 2 + 1] = value }
+    fun min(dim: Int, value: Double) { data[dim * 2 + 0] = value }
+    fun size(dim: Int, value: Double) { data[dim * 2 + 1] = value }
 
-    val min: BVHVector get() = BVHVector(FloatArray(dimensions) { min(it) })
-    val size: BVHVector get() = BVHVector(FloatArray(dimensions) { size(it) })
-    val max: BVHVector get() = BVHVector(FloatArray(dimensions) { max(it) })
+    val min: BVHVector get() = BVHVector(DoubleArray(dimensions) { min(it) })
+    val size: BVHVector get() = BVHVector(DoubleArray(dimensions) { size(it) })
+    val max: BVHVector get() = BVHVector(DoubleArray(dimensions) { max(it) })
 
     override fun toString(): String = "BVHRect(min=$min, max=$max)"
 }
@@ -1003,8 +995,8 @@ inline class BVHRect(val intervals: BVHIntervals) {
  * [x, xDir, y, yDir, z, zDir]
  */
 //@Suppress("INLINE_CLASS_DEPRECATED")
-data class BVHIntervals(val data: FloatArray) {
-    constructor(dimensions: Int) : this(FloatArray(dimensions * 2))
+data class BVHIntervals(val data: DoubleArray) {
+    constructor(dimensions: Int) : this(DoubleArray(dimensions * 2))
 
     private val cachedHashCode = data.contentHashCode()
 
@@ -1012,27 +1004,27 @@ data class BVHIntervals(val data: FloatArray) {
     override fun equals(other: Any?): Boolean = other is BVHIntervals && this.data.contentEquals(other.data)
 
     companion object {
-        operator fun invoke(vararg values: Double): BVHIntervals = BVHIntervals(values.mapFloat { it.toFloat() })
-        operator fun invoke(vararg values: Float): BVHIntervals = BVHIntervals(values)
-        operator fun invoke(vararg values: Int): BVHIntervals = BVHIntervals(FloatArray(values.size) { values[it].toFloat() })
+        operator fun invoke(vararg values: Double): BVHIntervals = BVHIntervals(values)
+        operator fun invoke(vararg values: Float): BVHIntervals = BVHIntervals(values.mapDouble { it.toDouble() })
+        operator fun invoke(vararg values: Int): BVHIntervals = BVHIntervals(DoubleArray(values.size) { values[it].toDouble() })
     }
 
     fun checkDimensions(dimensions: Int) {
         checkDimensions(this.dimensions, dimensions)
     }
 
-    fun setTo(vararg values: Float) {
+    fun setTo(vararg values: Double) {
         values.copyInto(data)
     }
 
-    fun setTo(a0: Float, b0: Float, a1: Float, b1: Float) {
+    fun setTo(a0: Double, b0: Double, a1: Double, b1: Double) {
         data[0] = a0
         data[1] = b0
         data[2] = a1
         data[3] = b1
     }
 
-    fun setTo(a0: Float, b0: Float, a1: Float, b1: Float, a2: Float, b2: Float) {
+    fun setTo(a0: Double, b0: Double, a1: Double, b1: Double, a2: Double, b2: Double) {
         data[0] = a0
         data[1] = b0
         data[2] = a1
@@ -1044,21 +1036,21 @@ data class BVHIntervals(val data: FloatArray) {
     val length: Int get() = data.size / 2
     val dimensions: Int get() = length
 
-    fun a(index: Int): Float = min(index)
-    fun b(index: Int): Float = size(index)
+    fun a(index: Int): Double = min(index)
+    fun b(index: Int): Double = size(index)
 
     @Deprecated("Mutable")
-    fun a(index: Int, value: Float) {
+    fun a(index: Int, value: Double) {
         data[index * 2 + 0] = value
     }
     @Deprecated("Mutable")
-    fun b(index: Int, value: Float) {
+    fun b(index: Int, value: Double) {
         data[index * 2 + 1] = value
     }
 
-    fun min(dim: Int): Float = data[dim * 2 + 0]
-    fun size(dim: Int): Float = data[dim * 2 + 1]
-    fun max(dim: Int): Float = min(dim) + size(dim)
+    fun min(dim: Int): Double = data[dim * 2 + 0]
+    fun size(dim: Int): Double = data[dim * 2 + 1]
+    fun max(dim: Int): Double = min(dim) + size(dim)
 
     fun aPlusB(index: Int) = min(index) + size(index)
 

@@ -14,7 +14,7 @@ class OrientationTest {
     @Test
     fun testOrientation() {
         assertEquals(Orientation.CLOCK_WISE, Orientation.orient2d(Point(0, 0), Point(0, 100), Point(100, 0)))
-        assertEquals(Orientation.COUNTER_CLOCK_WISE, Orientation.orient2d(Point(0, 0), Point(0, 100), Point(100, 0), up = Vector2.UP_SCREEN))
+        assertEquals(Orientation.COUNTER_CLOCK_WISE, Orientation.orient2d(Point(0, 0), Point(0, 100), Point(100, 0), up = Vector2F.UP_SCREEN))
     }
 
 

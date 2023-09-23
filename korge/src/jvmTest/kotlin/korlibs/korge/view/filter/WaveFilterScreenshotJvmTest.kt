@@ -10,7 +10,7 @@ class WaveFilterScreenshotJvmTest {
     @Test
     fun test() = korgeScreenshotTest(Size(150, 150)) {
         solidRect(50, 50, Colors.GREEN).xy(50, 50)
-            .filters(WaveFilter(amplitude = Vector2(15, 10), crestDistance = Vector2(25.0, 10.0)))
+            .filters(WaveFilter(amplitude = Vector2F(15, 10), crestDistance = Vector2F(25.0, 10.0)))
 
         assertScreenshot()
     }

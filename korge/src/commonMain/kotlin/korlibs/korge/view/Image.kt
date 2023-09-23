@@ -10,7 +10,7 @@ import korlibs.math.geom.*
 import korlibs.math.geom.vector.*
 
 inline fun Container.image(
-	texture: Resourceable<out BaseBmpSlice>, anchor: Anchor = Anchor.TOP_LEFT, callback: @ViewDslMarker Image.() -> Unit = {}
+    texture: Resourceable<out BaseBmpSlice>, anchor: Anchor = Anchor.TOP_LEFT, callback: @ViewDslMarker Image.() -> Unit = {}
 ): Image = Image(texture, anchor).addTo(this, callback)
 
 inline fun Container.image(
@@ -18,7 +18,7 @@ inline fun Container.image(
 ): Image = Image(texture, anchor).addTo(this, callback)
 
 inline fun Container.image(
-	texture: Bitmap, anchor: Anchor = Anchor.TOP_LEFT, callback: @ViewDslMarker Image.() -> Unit = {}
+    texture: Bitmap, anchor: Anchor = Anchor.TOP_LEFT, callback: @ViewDslMarker Image.() -> Unit = {}
 ): Image = Image(texture, anchor).addTo(this, callback)
 
 //typealias Sprite = Image
@@ -121,10 +121,10 @@ interface SmoothedBmpSlice {
 }
 
 class Image(
-	bitmap: Resourceable<out BitmapCoords>,
+    bitmap: Resourceable<out BitmapCoords>,
     anchor: Anchor = Anchor.TOP_LEFT,
-	hitShape: VectorPath? = null,
-	smoothing: Boolean = true
+    hitShape: VectorPath? = null,
+    smoothing: Boolean = true
 ) : BaseImage(bitmap, anchor, hitShape, smoothing), ViewFileRef by ViewFileRef.Mixin(), SmoothedBmpSlice {
     constructor(
         bitmap: BitmapCoords,
@@ -139,10 +139,10 @@ class Image(
     private var imageSourceFile: String? by this::sourceFile
 
     constructor(
-		bitmap: Bitmap,
+        bitmap: Bitmap,
         anchor: Anchor = Anchor.TOP_LEFT,
-		hitShape: VectorPath? = null,
-		smoothing: Boolean = true
+        hitShape: VectorPath? = null,
+        smoothing: Boolean = true
 	) : this(bitmap.slice(), anchor, hitShape, smoothing)
 
     override fun createInstance(): View = Image(bitmap, anchor, hitShape, smoothing)

@@ -30,8 +30,8 @@ fun SizeInt.fitTo(container: SizeInt): SizeInt = applyScaleMode(container, Scale
 fun Size.applyScaleMode(container: Rectangle, mode: ScaleMode, anchor: Anchor): Rectangle {
     val outSize = this.applyScaleMode(container.size, mode)
     return Rectangle(
-        (container.x + anchor.doubleX * (container.width - outSize.width)).toFloat(),
-        (container.y + anchor.doubleY * (container.height - outSize.height)).toFloat(),
+        (container.x + anchor.sx * (container.width - outSize.width)),
+        (container.y + anchor.sy * (container.height - outSize.height)),
         outSize.width,
         outSize.height
     )

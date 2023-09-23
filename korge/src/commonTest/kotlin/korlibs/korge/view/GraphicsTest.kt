@@ -4,7 +4,6 @@ import assertEqualsFloat
 import korlibs.graphics.log.*
 import korlibs.image.color.*
 import korlibs.io.async.*
-import korlibs.io.util.*
 import korlibs.korge.render.*
 import korlibs.math.geom.*
 import korlibs.math.geom.bezier.*
