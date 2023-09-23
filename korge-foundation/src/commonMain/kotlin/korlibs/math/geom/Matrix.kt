@@ -65,12 +65,12 @@ data class Matrix(
         if (this.isNIL) return p
         return Vector2D(
             transformX(p.x, p.y),
-            transformX(p.y, p.y),
+            transformY(p.y, p.y),
         )
     }
 
     @Deprecated("", ReplaceWith("transform(p).x")) fun transformX(p: Point): Double = transformX(p.x, p.y)
-    @Deprecated("", ReplaceWith("transform(p).y")) fun transformY(p: Point): Double = transformX(p.x, p.y)
+    @Deprecated("", ReplaceWith("transform(p).y")) fun transformY(p: Point): Double = transformY(p.x, p.y)
 
     @Deprecated("", ReplaceWith("transform(p).x")) fun transformX(x: Float, y: Float): Float = transformX(x.toDouble(), y.toDouble()).toFloat()
     @Deprecated("", ReplaceWith("transform(p).y")) fun transformY(x: Float, y: Float): Float = transformY(x.toDouble(), y.toDouble()).toFloat()
@@ -79,7 +79,7 @@ data class Matrix(
     @Deprecated("", ReplaceWith("transform(p).y")) fun transformY(x: Double, y: Double): Double = this.d * y + this.b * x + this.ty
 
     @Deprecated("", ReplaceWith("transform(p).x")) fun transformX(x: Int, y: Int): Double = transformX(x.toDouble(), y.toDouble())
-    @Deprecated("", ReplaceWith("transform(p).y")) fun transformY(x: Int, y: Int): Double = transformX(x.toDouble(), y.toDouble())
+    @Deprecated("", ReplaceWith("transform(p).y")) fun transformY(x: Int, y: Int): Double = transformY(x.toDouble(), y.toDouble())
 
     fun deltaTransform(p: Vector2F): Vector2F = Vector2F((p.x * a) + (p.y * c), (p.x * b) + (p.y * d))
     fun deltaTransform(p: Vector2D): Vector2D = Vector2D((p.x * a) + (p.y * c), (p.x * b) + (p.y * d))
