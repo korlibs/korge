@@ -1,8 +1,7 @@
 package korlibs.image.util
 
 import korlibs.math.geom.*
-import kotlin.math.absoluteValue
-import kotlin.math.sign
+import kotlin.math.*
 
 data class NinePatchSlices2D(val x: NinePatchSlices, val y: NinePatchSlices) {
     constructor() : this(NinePatchSlices(), NinePatchSlices())
@@ -11,9 +10,9 @@ data class NinePatchSlices2D(val x: NinePatchSlices, val y: NinePatchSlices) {
     ) {
         val widthRatio = newSize.width / oldSize.width
         val heightRatio = newSize.height / oldSize.height
-        val iscale: Float = when {
+        val iscale: Double = when {
             newSize.width < oldSize.width || newSize.height < oldSize.height -> minOf(widthRatio.absoluteValue, heightRatio.absoluteValue)
-            else -> 1f
+            else -> 1.0
         }
         x.transform1DInplace(oldSize.width, newSize.width, positions.size, get = { positions[it].x }, set = { index, value -> positions.setX(index, value) }, iscale = iscale * newSize.width.sign)
         y.transform1DInplace(oldSize.height, newSize.height, positions.size, get = { positions[it].y }, set = { index, value -> positions.setY(index, value) }, iscale = iscale * newSize.height.sign)

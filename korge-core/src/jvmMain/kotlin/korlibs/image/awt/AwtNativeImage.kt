@@ -12,7 +12,7 @@ import korlibs.math.geom.vector.*
 import korlibs.memory.*
 import java.awt.*
 import java.awt.Rectangle
-import java.awt.RenderingHints.KEY_ANTIALIASING
+import java.awt.RenderingHints.*
 import java.awt.geom.*
 import java.awt.image.*
 import java.nio.*
@@ -209,20 +209,20 @@ class AwtContext2dRender(val awtImage: BufferedImage, val antialiasing: Boolean 
 		this.visitCmds(
             moveTo = {
                 //flush()
-                polyline.moveTo(it.xD, it.yD)
+                polyline.moveTo(it.x, it.y)
                 //kotlin.io.println("moveTo: $x, $y")
             },
             lineTo = {
-                polyline.lineTo(it.xD, it.yD)
+                polyline.lineTo(it.x, it.y)
                 //kotlin.io.println("lineTo: $x, $y")
                 parts++
             },
             quadTo = { c, a ->
-                polyline.quadTo(c.xD, c.yD, a.xD, a.yD)
+                polyline.quadTo(c.x, c.y, a.x, a.y)
                 parts++
             },
             cubicTo = { c1, c2, a ->
-                polyline.curveTo(c1.xD, c1.yD, c2.xD, c2.yD, a.xD, a.yD)
+                polyline.curveTo(c1.x, c1.y, c2.x, c2.y, a.x, a.y)
                 parts++
             },
             close = {

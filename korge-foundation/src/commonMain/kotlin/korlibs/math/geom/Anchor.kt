@@ -11,7 +11,6 @@ data class Anchor2D(val sx: Double, val sy: Double) : Interpolable<Anchor> {
     val ratioX: Ratio get() = sx.toRatio()
     val ratioY: Ratio get() = sy.toRatio()
 
-    constructor(sx: Ratio, sy: Ratio) : this(sx.toDouble(), sy.toDouble())
     constructor(sx: Float, sy: Float) : this(sx.toDouble(), sy.toDouble())
     constructor(sx: Int, sy: Int) : this(sx.toDouble(), sy.toDouble())
 
@@ -22,6 +21,8 @@ data class Anchor2D(val sx: Double, val sy: Double) : Interpolable<Anchor> {
     inline fun withY(ratioY: Ratio): Anchor = Anchor(sx, ratioY.toDouble())
 
     companion object {
+        inline operator fun invoke(sx: Ratio, sy: Ratio): Anchor2D = Anchor2D(sx.toDouble(), sy.toDouble())
+
         val TOP_LEFT: Anchor = Anchor(0f, 0f)
         val TOP_CENTER: Anchor = Anchor(.5f, 0f)
         val TOP_RIGHT: Anchor = Anchor(1f, 0f)

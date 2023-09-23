@@ -30,8 +30,8 @@ object SvgPath {
         }
 
         fun n(): Double = readNumber()
-        fun nX(relative: Boolean): Double = if (relative) out.lastPos.xD + readNumber() else readNumber()
-        fun nY(relative: Boolean): Double = if (relative) out.lastPos.yD + readNumber() else readNumber()
+        fun nX(relative: Boolean): Double = if (relative) out.lastPos.x + readNumber() else readNumber()
+        fun nY(relative: Boolean): Double = if (relative) out.lastPos.y + readNumber() else readNumber()
 
         fun readNextTokenCmd(): Char? {
             while (tl.hasMore) {
@@ -65,8 +65,8 @@ object SvgPath {
                 }
 
                 'L', 'l' -> while (isNextNumber()) out.rLineTo(Point(n(), n()), relative)
-                'H', 'h' -> while (isNextNumber()) out.rLineToH(n().toFloat(), relative)
-                'V', 'v' -> while (isNextNumber()) out.rLineToV(n().toFloat(), relative)
+                'H', 'h' -> while (isNextNumber()) out.rLineToH(n(), relative)
+                'V', 'v' -> while (isNextNumber()) out.rLineToV(n(), relative)
                 'Q', 'q' -> while (isNextNumber()) {
                     val cx = nX(relative)
                     val cy = nY(relative)
@@ -105,8 +105,8 @@ object SvgPath {
                         val x = nX(relative)
                         val y = nY(relative)
 
-                        val x1 = if (lastCurve) out.lastPos.xD * 2 - lastCX else out.lastPos.xD
-                        val y1 = if (lastCurve) out.lastPos.yD * 2 - lastCY else out.lastPos.yD
+                        val x1 = if (lastCurve) out.lastPos.x * 2 - lastCX else out.lastPos.x
+                        val y1 = if (lastCurve) out.lastPos.y * 2 - lastCY else out.lastPos.y
 
                         lastCX = x2
                         lastCY = y2
@@ -121,8 +121,8 @@ object SvgPath {
                     while (isNextNumber()) {
                         val x2 = nX(relative)
                         val y2 = nY(relative)
-                        val cx = if (lastCurve) out.lastPos.xD * 2 - lastCX else out.lastPos.xD
-                        val cy = if (lastCurve) out.lastPos.yD * 2 - lastCY else out.lastPos.yD
+                        val cx = if (lastCurve) out.lastPos.x * 2 - lastCX else out.lastPos.x
+                        val cy = if (lastCurve) out.lastPos.y * 2 - lastCY else out.lastPos.y
                         //println("[$cmd]: $lastX, $lastY, $cx, $cy, $x2, $y2 :: $lastX - $lastCX :: $cx :: $lastCurve :: $lastCmd")
                         lastCX = cx
                         lastCY = cy
@@ -143,13 +143,13 @@ object SvgPath {
                     val rotx = readNumber() / 180.0 * PI        // x rotation angle
                     val fa = if ((readNumber().absoluteValue) > EPSILON) 1 else 0    // Large arc
                     val fs = if ((readNumber().absoluteValue) > EPSILON) 1 else 0    // Sweep direction
-                    val x1 = out.lastPos.xD                            // start point
-                    val y1 = out.lastPos.yD                          // end point
+                    val x1 = out.lastPos.x                            // start point
+                    val y1 = out.lastPos.y                          // end point
                     val x2 = nX(relative)
                     val y2 = nY(relative)
 
-                    var dx = x1 - x2
-                    var dy = y1 - y2
+                    var dx: Double = x1 - x2
+                    var dy: Double = y1 - y2
 
                     val d = hypot(dx, dy)
                     if (d < EPSILON || rx < EPSILON || ry < EPSILON) {
@@ -162,8 +162,8 @@ object SvgPath {
                         // Convert to center point parameterization.
                         // http://www.w3.org/TR/SVG11/implnote.html#ArcImplementationNotes
                         // 1) Compute x1', y1'
-                        val x1p = cosrx * dx / 2.0f + sinrx * dy / 2.0f
-                        val y1p = -sinrx * dx / 2.0f + cosrx * dy / 2.0f
+                        val x1p = cosrx * dx / 2.0 + sinrx * dy / 2.0
+                        val y1p = -sinrx * dx / 2.0 + cosrx * dy / 2.0
                         var d = sqr(x1p) / sqr(rx) + sqr(y1p) / sqr(ry)
                         if (d > 1) {
                             d = sqr(d)
@@ -256,7 +256,7 @@ object SvgPath {
         return out
     }
 
-    private fun sqr(v: Double) = v * v
+    private fun sqr(v: Double): Double = v * v
     private fun vmag(x: Double, y: Double): Double = sqrt(x * x + y * y)
     private fun vecrat(ux: Double, uy: Double, vx: Double, vy: Double): Double =
         (ux * vx + uy * vy) / (vmag(ux, uy) * vmag(vx, vy))

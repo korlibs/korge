@@ -22,7 +22,7 @@ fun VectorPath.sdf(data: FloatArray2): FloatArray2 {
         for (x in 0 until data.width) {
             p = Point(x + 0.5, y + 0.5)
             val inside = path.containsPoint(p)
-            var min = Float.POSITIVE_INFINITY
+            var min = Double.POSITIVE_INFINITY
             curvesList.fastForEach { curves ->
                 //curves.beziers.size
                 curves.beziers.fastForEachWithIndex { index, edge ->
@@ -147,7 +147,7 @@ class ProjectCurvesLookup(val beziers: List<Bezier>) {
         }
 
         // Cull Beziers whose nearest point is farther than the found farthest nearest point
-        var bminDistSq = Float.POSITIVE_INFINITY
+        var bminDistSq = Double.POSITIVE_INFINITY
         var out = Point()
         //val keep = beziers.filter { it.outerCircle.distanceClosestSquared(point) <= minDistSq }
         //println("keep=${keep.size}, total=${beziers.size}")
