@@ -73,19 +73,19 @@ data class TextAlignment(
     override fun toString(): String = "${vertical}_$horizontal"
 }
 
-inline class VerticalAlign(val ratio: Float) : EnumLike<VerticalAlign> {
-    val ratioFake get() = if (this == BASELINE) 1f else ratio
-    val ratioFake0 get() = if (this == BASELINE) 0f else ratio
+inline class VerticalAlign(val ratio: Double) : EnumLike<VerticalAlign> {
+    val ratioFake: Double get() = if (this == BASELINE) 1.0 else ratio
+    val ratioFake0: Double get() = if (this == BASELINE) 0.0 else ratio
 
     object Provider {
         val ITEMS: List<VerticalAlign> get() = ALL
     }
 
     companion object {
-        val TOP = VerticalAlign(0f)
-        val MIDDLE = VerticalAlign(0.5f)
-        val BOTTOM = VerticalAlign(1f)
-        val BASELINE = VerticalAlign(Float.POSITIVE_INFINITY) // Special
+        val TOP = VerticalAlign(0.0)
+        val MIDDLE = VerticalAlign(0.5)
+        val BOTTOM = VerticalAlign(1.0)
+        val BASELINE = VerticalAlign(Double.POSITIVE_INFINITY) // Special
         private val values = arrayOf(TOP, MIDDLE, BASELINE, BOTTOM)
 
         val CENTER get() = MIDDLE
@@ -98,22 +98,22 @@ inline class VerticalAlign(val ratio: Float) : EnumLike<VerticalAlign> {
             "CENTER", "MIDDLE" -> MIDDLE
             "BOTTOM" -> BOTTOM
             "BASELINE" -> BASELINE
-            else -> VerticalAlign(str.substringAfter('(').substringBefore(')').toFloatOrNull() ?: 0f)
+            else -> VerticalAlign(str.substringAfter('(').substringBefore(')').toDoubleOrNull() ?: 0.0)
         }
     }
 
-    fun getOffsetY(height: Float, baseline: Float): Float = when (this) {
+    fun getOffsetY(height: Double, baseline: Double): Double = when (this) {
         BASELINE -> baseline
         else -> -height * ratio
     }
 
-    fun getOffsetYRespectBaseline(glyph: GlyphMetrics, font: FontMetrics): Float = when (this) {
-        BASELINE -> 0f
+    fun getOffsetYRespectBaseline(glyph: GlyphMetrics, font: FontMetrics): Double = when (this) {
+        BASELINE -> 0.0
         else -> ratio.toRatio().interpolate(font.top, font.bottom)
     }
 
-    fun getOffsetYRespectBaseline(font: FontMetrics, totalHeight: Float): Float = when (this) {
-        BASELINE -> 0f
+    fun getOffsetYRespectBaseline(font: FontMetrics, totalHeight: Double): Double = when (this) {
+        BASELINE -> 0.0
         else -> ratio.toRatio().interpolate(font.top, font.top - totalHeight)
     }
 
@@ -128,14 +128,14 @@ inline class VerticalAlign(val ratio: Float) : EnumLike<VerticalAlign> {
     }
 }
 
-inline class HorizontalAlign(val ratio: Float) : EnumLike<HorizontalAlign> {
-    val ratioFake get() = if (this == JUSTIFY) 0f else ratio
+inline class HorizontalAlign(val ratio: Double) : EnumLike<HorizontalAlign> {
+    val ratioFake: Double get() = if (this == JUSTIFY) 0.0 else ratio
 
     companion object {
-        val JUSTIFY = HorizontalAlign(-1f / 2048f)
-        val LEFT = HorizontalAlign(0.0f)
-        val CENTER = HorizontalAlign(0.5f)
-        val RIGHT = HorizontalAlign(1.0f)
+        val JUSTIFY = HorizontalAlign(-1.0 / 2048.0)
+        val LEFT = HorizontalAlign(0.0)
+        val CENTER = HorizontalAlign(0.5)
+        val RIGHT = HorizontalAlign(1.0)
 
         private val values = arrayOf(LEFT, CENTER, RIGHT, JUSTIFY)
         val ALL = values.toList()
@@ -146,14 +146,14 @@ inline class HorizontalAlign(val ratio: Float) : EnumLike<HorizontalAlign> {
             "CENTER" -> CENTER
             "RIGHT" -> RIGHT
             "JUSTIFY" -> JUSTIFY
-            else -> HorizontalAlign(str.substringAfter('(').substringBefore(')').toFloatOrNull() ?: 0f)
+            else -> HorizontalAlign(str.substringAfter('(').substringBefore(')').toDoubleOrNull() ?: 0.0)
         }
     }
 
-    fun getOffsetX(min: Float, max: Float): Float = getOffsetX(max - min) + min
+    fun getOffsetX(min: Double, max: Double): Double = getOffsetX(max - min) + min
 
-    fun getOffsetX(width: Float): Float = when (this) {
-        JUSTIFY -> 0f
+    fun getOffsetX(width: Double): Double = when (this) {
+        JUSTIFY -> 0.0
         else -> width * ratio
     }
 

@@ -33,7 +33,7 @@ open class UIView(
         }
     }
 
-    override fun getLocalBoundsInternal(): Rectangle = Rectangle(0.0, 0.0, widthD, heightD)
+    override fun getLocalBoundsInternal(): Rectangle = Rectangle(0.0, 0.0, width, height)
 
     open var enabled: Boolean
 		get() = mouseEnabled
@@ -92,7 +92,7 @@ open class UIView(
 
             iconView.bitmap = bmp
             iconView.anchor(anchor)
-            iconView.position(width * anchor.doubleX, height * anchor.doubleY)
+            iconView.position(width * anchor.sx, height * anchor.sy)
             iconView.scale(iconScale, iconScale)
         }
     }

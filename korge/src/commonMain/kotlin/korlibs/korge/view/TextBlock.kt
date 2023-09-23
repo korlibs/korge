@@ -11,7 +11,7 @@ import korlibs.math.*
 import korlibs.math.geom.*
 
 inline fun Container.textBlock(
-    text: RichTextData = RichTextData("", textSize = 16f, font = DefaultTtfFontAsBitmap),
+    text: RichTextData = RichTextData("", textSize = 16.0, font = DefaultTtfFontAsBitmap),
     align: TextAlignment = TextAlignment.TOP_LEFT,
     size: Size = Size(100, 100),
     block: @ViewDslMarker TextBlock.() -> Unit = {}
@@ -19,7 +19,7 @@ inline fun Container.textBlock(
     = TextBlock(text, align, size).addTo(this, block)
 
 class TextBlock(
-    text: RichTextData = RichTextData("", textSize = 16f, font = DefaultTtfFontAsBitmap),
+    text: RichTextData = RichTextData("", textSize = 16.0, font = DefaultTtfFontAsBitmap),
     align: TextAlignment = TextAlignment.TOP_LEFT,
     size: Size = Size(100, 100),
 ) : UIView(size), ViewLeaf {
@@ -90,7 +90,7 @@ class TextBlock(
     private fun ensureTexture() {
         if (!dirty) return
         dirty = false
-        val bmp = NativeImage(widthD.toIntCeil(), heightD.toIntCeil())
+        val bmp = NativeImage(width.toIntCeil(), height.toIntCeil())
         //println("ensureTexture: bmp=$bmp")
         if (image == null) {
             image = image(Bitmaps.transparent)
@@ -114,7 +114,7 @@ class TextBlock(
         if (allBitmap == true) {
             if (dirty || placements == null) {
                 dirty = false
-                placements = text.place(Rectangle(padding.left, padding.top, (widthD - padding.right).toFloat(), (heightD - padding.bottom).toFloat()), wordWrap, includePartialLines, ellipsis, fill, stroke, align, includeFirstLineAlways = includeFirstLineAlways)
+                placements = text.place(Rectangle(padding.left, padding.top, (width - padding.right), (height - padding.bottom)), wordWrap, includePartialLines, ellipsis, fill, stroke, align, includeFirstLineAlways = includeFirstLineAlways)
             }
             image?.removeFromParent()
             image = null

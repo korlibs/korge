@@ -82,8 +82,8 @@ class UIMaterialLayer(
             ctx2d.materialRoundRect(
                 x = 0f,
                 y = 0f,
-                width = width,
-                height = height,
+                width = width.toFloat(),
+                height = height.toFloat(),
                 color = bgColor,
                 radius = radius,
                 shadowOffset = shadowOffset,
@@ -100,8 +100,8 @@ class UIMaterialLayer(
                 ctx2d.materialRoundRect(
                     x = 0f,
                     y = 0f,
-                    width = width,
-                    height = height,
+                    width = width.toFloat(),
+                    height = height.toFloat(),
                     color = Colors.TRANSPARENT,
                     radius = radius,
                     highlightPos = it.pos,

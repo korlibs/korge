@@ -70,16 +70,16 @@ class DebugVertexView(pointsList: List<IDoubleVectorArrayList>, color: RGBA = Co
                     val scale = this[it, 4]
                     val px = x + dx * scale
                     val py = y + dy * scale
-                    buffer[n++] = px
-                    buffer[n++] = py
+                    buffer[n++] = px.toFloat()
+                    buffer[n++] = py.toFloat()
                     bb += Point(px, py)
                 }
             } else {
                 points.fastForEachGeneric {
                     val x = this[it, 0]
                     val y = this[it, 1]
-                    buffer[n++] = x
-                    buffer[n++] = y
+                    buffer[n++] = x.toFloat()
+                    buffer[n++] = y.toFloat()
                     bb += Point(x, y)
                 }
             }

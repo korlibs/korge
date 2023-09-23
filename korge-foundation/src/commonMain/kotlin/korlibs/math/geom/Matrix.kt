@@ -23,11 +23,6 @@ data class Matrix(
 ) {
     //private val twobits: Int get() = data.twobits
 
-    @Deprecated("", ReplaceWith("this")) val immutable: Matrix get() = this
-    val mutable: MMatrix get() = MMatrix(a, b, c, d, tx, ty)
-    @Deprecated("")
-    val mutableOrNull: MMatrix? get() = if (isNIL) null else MMatrix(a, b, c, d, tx, ty)
-
     //constructor() : this(1f, 0f, 0f, 1f, 0f, 0f)
     constructor(a: Float, b: Float, c: Float, d: Float, tx: Float, ty: Float) :
         this(a.toDouble(), b.toDouble(), c.toDouble(), d.toDouble(), tx.toDouble(), ty.toDouble())

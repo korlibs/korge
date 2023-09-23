@@ -18,15 +18,15 @@ interface Paint {
 data class Stroke(val paint: Paint, val info: StrokeInfo) {
     constructor(
         paint: Paint,
-        thickness: Float = 1f,
+        thickness: Double = 1.0,
         pixelHinting: Boolean = false,
         scaleMode: LineScaleMode = LineScaleMode.NORMAL,
         startCap: LineCap = LineCap.BUTT,
         endCap: LineCap = LineCap.BUTT,
         join: LineJoin = LineJoin.MITER,
-        miterLimit: Float = 20f,
-        dash: IFloatArrayList? = null,
-        dashOffset: Float = 0f
+        miterLimit: Double = 20.0,
+        dash: DoubleList? = null,
+        dashOffset: Double = 0.0
     ) : this(paint, StrokeInfo(
         thickness = thickness,
         pixelHinting = pixelHinting,

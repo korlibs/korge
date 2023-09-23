@@ -102,8 +102,8 @@ open class BaseImage(
     open val frameWidth: Float get() = baseBitmap.frameWidth.toFloat()
     open val frameHeight: Float get() = baseBitmap.frameHeight.toFloat()
 
-    open val anchorDispXNoOffset: Float get() = (anchor.sx * frameWidth)
-    open val anchorDispYNoOffset: Float get() = (anchor.sy * frameHeight)
+    open val anchorDispXNoOffset: Float get() = (anchor.sx * frameWidth).toFloat()
+    open val anchorDispYNoOffset: Float get() = (anchor.sy * frameHeight).toFloat()
 
     override val anchorDispX: Float get() = (anchorDispXNoOffset - frameOffsetX)
     override val anchorDispY: Float get() = (anchorDispYNoOffset - frameOffsetY)
@@ -157,10 +157,10 @@ class Image(
         //println("### Trying to load sourceImage=$sourceImage")
         try {
             bitmap = currentVfs["$sourceFile"].readBitmapSlice()
-            scaleD = 1.0
+            scaleXY = 1.0
         } catch (e: Throwable) {
             bitmap = Bitmaps.white
-            scaleD = 100.0
+            scaleXY = 100.0
         }
     }
 }

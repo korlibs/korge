@@ -228,14 +228,14 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
             }
         }
 
-        fun String.parseNumber(default: Float): Float {
+        fun String.parseNumber(default: Double): Double {
             val str = this.trim()
             val scale = when {
-                str.endsWith("px") -> 1f
-                str.endsWith("pt") -> 1f
-                str.endsWith("em") -> 10f
-                str.endsWith("%") -> 0.01f
-                else -> 1f
+                str.endsWith("px") -> 1.0
+                str.endsWith("pt") -> 1.0
+                str.endsWith("em") -> 10.0
+                str.endsWith("%") -> 0.01
+                else -> 1.0
             }
             return str.removeSuffix("px").removeSuffix("pt").removeSuffix("em").removeSuffix("%").toFloatOrNull()?.times(scale) ?: default
         }
@@ -243,15 +243,15 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
         open fun setCommonStyles(c: Context2d) {
             for ((key, it) in attributes) {
                 when (key) {
-                    "stroke-width" -> c.lineWidth = it.parseNumber(1f)
+                    "stroke-width" -> c.lineWidth = it.parseNumber(1.0)
                     "stroke-linejoin" -> c.lineJoin = LineJoin[it]
                     "stroke-linecap" -> c.lineCap = LineCap[it]
                     "stroke" -> c.strokeStyle = parseFillStroke(c, it)
                     "opacity" -> c.globalAlpha *= opacity
-                    "fill-opacity" -> c.globalAlpha *= it.parseNumber(1f) // @TODO: Do this properly
-                    "stroke-opacity" -> c.globalAlpha *= it.parseNumber(1f) // @TODO: Do this properly
+                    "fill-opacity" -> c.globalAlpha *= it.parseNumber(1.0) // @TODO: Do this properly
+                    "stroke-opacity" -> c.globalAlpha *= it.parseNumber(1.0) // @TODO: Do this properly
                     "fill" -> c.fillStyle = parseFillStroke(c, it)
-                    "font-size" -> c.fontSize = CSS.parseSizeAsFloat(it)
+                    "font-size" -> c.fontSize = CSS.parseSizeAsDouble(it)
                     "font-family" -> c.font = c.fontRegistry?.get(it)
                     "text-anchor" -> c.horizontalAlign = when (it.lowercase().trim()) {
                         "left" -> HorizontalAlign.LEFT
@@ -342,7 +342,7 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
         var radius = xml.double("r")
 
         override fun drawInternal(c: Context2d) {
-            c.circle(Point(cx, cy), radius.toFloat())
+            c.circle(Point(cx, cy), radius)
         }
     }
 

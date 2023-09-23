@@ -26,17 +26,17 @@ inline fun Container.uiWindow(
 
 @KorgeExperimental
 class UIWindow(title: String, size: Size = Size(256, 256)) : UIContainer(size) {
-    private val titleHeight = 32f
-    private val buttonSeparation = 6f
+    private val titleHeight = 32.0
+    private val buttonSeparation = 6.0
     val isFocused get() = this.index == (parent?.numChildren ?: 0) -1
     private val colorBg = Colors["#6f6e85"]
     private val colorBgTitle = Colors["#6f6e85"]
     private val borderColorFocused = Colors["#471175"]
     private val borderColorNoFocused = Colors.BLACK
-    var minWidth = 128f
-    var minHeight = 64f
-    var maxWidth = 4096f
-    var maxHeight = 4096f
+    var minWidth = 128.0
+    var minHeight = 64.0
+    var maxWidth = 4096.0
+    var maxHeight = 4096.0
 
     private val bgMaterial = uiMaterialLayer(size) {
         radius = RectCorners(12.0)
@@ -62,7 +62,7 @@ class UIWindow(title: String, size: Size = Size(256, 256)) : UIContainer(size) {
         onClick { closeAnimated() }
     }
     var title: String by titleView::plainText
-    val container = uiScrollable(Size(width, height - titleHeight)).position(0f, titleHeight).also {
+    val container = uiScrollable(Size(width, height - titleHeight)).position(0.0, titleHeight).also {
         it.backgroundColor = Colors["#161a1d"]
     }
     var isCloseable: Boolean = true
@@ -72,7 +72,7 @@ class UIWindow(title: String, size: Size = Size(256, 256)) : UIContainer(size) {
         }
 
     class ScaleHandler(val window: UIWindow, val anchor: Anchor) {
-        val isCorner = (anchor.doubleX == anchor.doubleY)
+        val isCorner = (anchor.sx == anchor.sy)
 
         @OptIn(KorgeUntested::class)
         val view = window.solidRect(Size.ZERO, Colors.TRANSPARENT) {
@@ -85,14 +85,14 @@ class UIWindow(title: String, size: Size = Size(256, 256)) : UIContainer(size) {
                 val obounds: Rectangle = window.getGlobalBounds()
                 var bounds: Rectangle = obounds
                 when {
-                    anchor.floatX < 0.5f -> {
+                    anchor.sx < 0.5f -> {
                         bounds = bounds.copyBounds(left = it.cx)
                         if (bounds.width !in window.minWidth..window.maxWidth) {
                             bounds = bounds.copyBounds(left = obounds.left)
                         }
                     }
 
-                    anchor.floatX > 0.5f -> {
+                    anchor.sx > 0.5f -> {
                         bounds = bounds.copyBounds(right = it.cx)
                         bounds = bounds.copy(width = bounds.width.clamp(window.minWidth, window.maxWidth))
                     }
@@ -121,19 +121,19 @@ class UIWindow(title: String, size: Size = Size(256, 256)) : UIContainer(size) {
             }
         }
 
-        private fun getExpectedX(): Float = window.width * anchor.floatX + when (anchor.floatX) {
-            0f -> -2f
-            1f -> +2f
-            else -> 0f
+        private fun getExpectedX(): Double = window.width * anchor.sx + when (anchor.sx) {
+            0.0 -> -2.0
+            1.0 -> +2.0
+            else -> 0.0
         }
-        private fun getExpectedY(): Float = window.height * anchor.floatY + when (anchor.floatY) {
-            0f -> -2f
-            1f -> +2f
-            else -> 0f
+        private fun getExpectedY(): Double = window.height * anchor.sy + when (anchor.sy) {
+            0.0 -> -2.0
+            1.0 -> +2.0
+            else -> 0.0
         }
 
         private fun resized() {
-            resized(window.widthD, window.heightD)
+            resized(window.width, window.height)
         }
 
         fun resized(width: Double, height: Double) {
@@ -141,11 +141,11 @@ class UIWindow(title: String, size: Size = Size(256, 256)) : UIContainer(size) {
                 .position(getExpectedX(), getExpectedY())
                 .size(
                     when {
-                        anchor.doubleX == 0.5 -> width
+                        anchor.sx == 0.5 -> width
                         //corner -> 14.0
                         else -> 10.0
                     }, when {
-                        anchor.doubleY == 0.5 -> height
+                        anchor.sy == 0.5 -> height
                         //corner -> 14.0
                         else -> 10.0
                     }
@@ -230,12 +230,12 @@ class UIWindow(title: String, size: Size = Size(256, 256)) : UIContainer(size) {
     }
 
     override fun onSizeChanged() {
-        bgMaterial.size(widthD, heightD)
-        bg.size(widthD, heightD)
+        bgMaterial.size(width, height)
+        bg.size(width, height)
         titleContainer.size(width, titleHeight)
-        container.size(widthD, heightD - titleHeight)
+        container.size(width, height - titleHeight)
         closeButton.position(width - titleHeight - buttonSeparation, buttonSeparation)
-        scaleHandlers.fastForEach { it.resized(widthD, heightD) }
+        scaleHandlers.fastForEach { it.resized(width, height) }
     }
 
     fun close() {

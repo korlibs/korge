@@ -82,8 +82,8 @@ open class UIBaseCheckBox<T : UIBaseCheckBox<T>>(
 
     override fun updateState() {
         super.updateState()
-        val width = this.widthD
-        val height = this.heightD
+        val width = this.width
+        val height = this.height
 
         textView.text = RichTextData(textView.text.text, RichTextData.Style(
             font = styles.textFont,

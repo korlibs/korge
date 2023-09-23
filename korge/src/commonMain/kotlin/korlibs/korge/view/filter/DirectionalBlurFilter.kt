@@ -69,8 +69,8 @@ class DirectionalBlurFilter(
         if (!expandBorder) return MarginInt.ZERO
         val radius = this.rradius
         return MarginInt(
-            (angle.sineD.absoluteValue * radius).toIntCeil(),//.coerceAtMost(texWidth),
-            (angle.cosineD.absoluteValue * radius).toIntCeil(),//.coerceAtMost(texHeight),
+            (angle.sine.absoluteValue * radius).toIntCeil(),//.coerceAtMost(texWidth),
+            (angle.cosine.absoluteValue * radius).toIntCeil(),//.coerceAtMost(texHeight),
         )
     }
 
@@ -99,7 +99,7 @@ class DirectionalBlurFilter(
             it[u_radius] = radius
             it[u_constant1] = constant1 * (1f / scaleSum)
             it[u_constant2] = constant2
-            it[u_direction] = Point(angle.cosineF, angle.sineF)
+            it[u_direction] = Point(angle.cosine, angle.sine)
         }
     }
 

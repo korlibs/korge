@@ -61,8 +61,8 @@ abstract class Scene : InjectorAsyncDependency, ViewsContainer, CoroutineScope, 
         }
     }
 
-    open val sceneWidth: Int get() = sceneView.widthD.toInt()
-    open val sceneHeight: Int get() = sceneView.heightD.toInt()
+    open val sceneWidth: Int get() = sceneView.width.toInt()
+    open val sceneHeight: Int get() = sceneView.height.toInt()
 
     override val resources: Resources by lazy { injector.getSync() }
 	protected open fun createSceneView(size: Size): SContainer = SContainer(size)
@@ -151,7 +151,7 @@ abstract class Scene : InjectorAsyncDependency, ViewsContainer, CoroutineScope, 
 @Deprecated("")
 abstract class OldScaledScene : Scene() {
 	open val sceneSize: Size = Size(320, 240)
-	open val sceneScale: Float = 2f
+	open val sceneScale: Double = 2.0
 	open val sceneFiltering: Boolean = false
 
 	override fun createSceneView(size: Size): SContainer = ScaleView(
@@ -219,7 +219,7 @@ abstract class ScaledScene(
 
     private fun onSizeChanged(sceneView: SContainer, size: Size) {
         val (width, height) = size
-        val out = Rectangle(0f, 0f, width, height).place(Size(sceneWidth, sceneHeight), sceneAnchor, sceneScaleMode)
+        val out = Rectangle(0.0, 0.0, width, height).place(Size(sceneWidth, sceneHeight), sceneAnchor, sceneScaleMode)
         sceneView
             .size(sceneWidth, sceneHeight)
             .xy(out.x, out.y)

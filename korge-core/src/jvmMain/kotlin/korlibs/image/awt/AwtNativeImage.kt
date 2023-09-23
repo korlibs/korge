@@ -447,7 +447,7 @@ class AwtContext2dRender(val awtImage: BufferedImage, val antialiasing: Boolean 
 			g.paint = state.strokeStyle.toAwt(awtTransform)
 		}
 		val comp = AlphaComposite.SRC_OVER
-		g.composite = if (state.globalAlpha == 1f) AlphaComposite.getInstance(comp) else AlphaComposite.getInstance(
+		g.composite = if (state.globalAlpha == 1.0) AlphaComposite.getInstance(comp) else AlphaComposite.getInstance(
             comp,
             state.globalAlpha.toFloat()
         )

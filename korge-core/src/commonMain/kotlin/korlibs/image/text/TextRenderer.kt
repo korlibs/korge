@@ -6,7 +6,6 @@ import korlibs.image.color.*
 import korlibs.image.font.*
 import korlibs.image.paint.*
 import korlibs.io.lang.*
-import korlibs.io.util.*
 import korlibs.math.geom.*
 import korlibs.math.geom.bezier.*
 import korlibs.math.geom.vector.*
@@ -16,22 +15,22 @@ import kotlin.native.concurrent.*
 
 interface ITextRendererActions {
     var pos: Point
-    val lineHeight: Float
+    val lineHeight: Double
     var currentLineNum: Int
     var transform: Matrix
 
-    fun getKerning(leftCodePoint: Int, rightCodePoint: Int): Float
+    fun getKerning(leftCodePoint: Int, rightCodePoint: Int): Double
     fun getGlyphMetrics(reader: WStringReader?, codePoint: Int): GlyphMetrics
     fun reset() {
         pos = Point.ZERO
     }
-    fun setFont(font: Font, size: Float)
+    fun setFont(font: Font, size: Double)
     fun put(reader: WStringReader, codePoint: Int): GlyphMetrics
-    fun advance(x: Float) {
-        pos += Point(x, 0f)
+    fun advance(x: Double) {
+        pos += Point(x, 0.0)
     }
-    fun newLine(y: Float, end: Boolean) {
-        pos = Point(0f, this.pos.y + y)
+    fun newLine(y: Double, end: Boolean) {
+        pos = Point(0.0, this.pos.y + y)
         currentLineNum++
     }
 }
@@ -40,12 +39,12 @@ abstract class TextRendererActions : ITextRendererActions {
     protected val glyphPath = GlyphPath()
     protected val glyphMetrics = GlyphMetrics()
     val fontMetrics = FontMetrics()
-    override val lineHeight: Float get() = fontMetrics.lineHeight
+    override val lineHeight: Double get() = fontMetrics.lineHeight
     override var currentLineNum: Int = 0
     lateinit var font: Font; private set
-    var fontSize: Float = 0f; private set
+    var fontSize: Double = 0.0; private set
 
-    override fun setFont(font: Font, size: Float) {
+    override fun setFont(font: Font, size: Double) {
         this.font = font
         this.fontSize = size
         font.getFontMetrics(size, fontMetrics)
@@ -63,11 +62,11 @@ abstract class TextRendererActions : ITextRendererActions {
 
     abstract override fun put(reader: WStringReader, codePoint: Int): GlyphMetrics
 
-    override fun getKerning(leftCodePoint: Int, rightCodePoint: Int): Float =
+    override fun getKerning(leftCodePoint: Int, rightCodePoint: Int): Double =
         font.getKerning(fontSize, leftCodePoint, rightCodePoint)
 }
 
-fun <T> TextRenderer<T>.measure(text: T, size: Float, defaultFont: Font): BoundBuilderTextRendererActions {
+fun <T> TextRenderer<T>.measure(text: T, size: Double, defaultFont: Font): BoundBuilderTextRendererActions {
     val actions = BoundBuilderTextRendererActions()
     invoke(actions, text, size, defaultFont)
     return actions
@@ -83,23 +82,23 @@ class BoundBuilderTextRendererActions : TextRendererActions() {
     val lines = arrayListOf<LineStats>()
     var current = LineStats()
 
-    val totalMaxLineHeight: Float get() = lines.sumOf { it.maxLineHeight.toDouble() }.toFloat()
+    val totalMaxLineHeight: Double get() = lines.sumOf { it.maxLineHeight.toDouble() }
 
-    fun getAlignX(align: HorizontalAlign, line: Int): Float {
-        val line = lines.getOrNull(line) ?: return align.getOffsetX(0f)
+    fun getAlignX(align: HorizontalAlign, line: Int): Double {
+        val line = lines.getOrNull(line) ?: return align.getOffsetX(0.0)
         return align.getOffsetX(line.maxX)
     }
-    fun getAlignY(align: VerticalAlign, fontMetrics: FontMetrics): Float =
+    fun getAlignY(align: VerticalAlign, fontMetrics: FontMetrics): Double =
         align.getOffsetYRespectBaseline(fontMetrics, totalMaxLineHeight)
 
     data class LineStats(
-        var maxLineHeight: Float = 0f,
-        var maxX: Float = 0f,
+        var maxLineHeight: Double = 0.0,
+        var maxX: Double = 0.0,
         var bounds: BoundsBuilder = BoundsBuilder(),
     ) {
-        fun getAlignX(align: HorizontalAlign): Float = align.getOffsetX(maxX) + bounds.xminOr(0f)
+        fun getAlignX(align: HorizontalAlign): Double = align.getOffsetX(maxX) + bounds.xminOr(0.0)
 
-        fun advance(dx: Float) {
+        fun advance(dx: Double) {
             maxX += dx
         }
 
@@ -111,13 +110,13 @@ class BoundBuilderTextRendererActions : TextRendererActions() {
         }
 
         fun reset() {
-            maxX = 0f
+            maxX = 0.0
             bounds = BoundsBuilder.EMPTY
-            maxLineHeight = 0f
+            maxLineHeight = 0.0
         }
     }
 
-    private fun add(x: Float, y: Float) {
+    private fun add(x: Double, y: Double) {
         //val itransform = transform.inverted()
         val rx = this.pos.x + transform.transformX(x, y)
         val ry = this.pos.y + transform.transformY(x, y)
@@ -159,12 +158,12 @@ class BoundBuilderTextRendererActions : TextRendererActions() {
         return g
     }
 
-    override fun advance(x: Float) {
+    override fun advance(x: Double) {
         super.advance(x)
         current.advance(x)
     }
 
-    override fun newLine(y: Float, end: Boolean) {
+    override fun newLine(y: Double, end: Boolean) {
         super.newLine(y, end)
         currentLine++
         current.metrics(fontMetrics)
@@ -180,16 +179,16 @@ class Text2TextRendererActions : TextRendererActions() {
     val verticalAlign: VerticalAlign get() = align.vertical
     val horizontalAlign: HorizontalAlign get() = align.horizontal
     private val arrayTex = arrayListOf<BmpSlice>()
-    private val arrayX = floatArrayListOf()
-    private val arrayY = floatArrayListOf()
-    private val arraySX = floatArrayListOf()
-    private val arraySY = floatArrayListOf()
-    private val arrayRot = floatArrayListOf()
+    private val arrayX = doubleArrayListOf()
+    private val arrayY = doubleArrayListOf()
+    private val arraySX = doubleArrayListOf()
+    private val arraySY = doubleArrayListOf()
+    private val arrayRot = doubleArrayListOf()
     val arrayMetrics = VectorArrayList(dimensions = 4)
     private var tr = MatrixTransform()
     val size get() = arrayX.size
 
-    data class LineInfo(var maxTop: Float = 0f, var minBottom: Float = 0f, var maxLineHeight: Float = 0f)
+    data class LineInfo(var maxTop: Double = 0.0, var minBottom: Double = 0.0, var maxLineHeight: Double = 0.0)
 
     fun getLineInfos(): List<LineInfo> {
         val out = arrayListOf<LineInfo>(LineInfo())
@@ -226,18 +225,18 @@ class Text2TextRendererActions : TextRendererActions() {
 
     data class Entry(
         var tex: BmpSlice = Bitmaps.transparent,
-        var x: Float = 0f,
-        var y: Float = 0f,
-        var sx: Float = 1f,
-        var sy: Float = 1f,
+        var x: Double = 0.0,
+        var y: Double = 0.0,
+        var sx: Double = 1.0,
+        var sy: Double = 1.0,
         var rot: Angle = 0.radians
     ) {
         override fun toString(): String = buildString {
             append("Entry(")
             append("'${tex.name}', ${x.toInt()}, ${y.toInt()}, ${tex.width}, ${tex.height}")
-            if (sx != 1f) append(", sx=${sx.niceStr}")
-            if (sy != 1f) append(", sy=${sy.niceStr}")
-            if (rot != 0.radians) append(", rot=${rot.degreesD.niceStr}")
+            if (sx != 1.0) append(", sx=${sx.niceStr}")
+            if (sy != 1.0) append(", sy=${sy.niceStr}")
+            if (rot != 0.radians) append(", rot=${rot.degrees.niceStr}")
             append(")")
         }
     }
@@ -270,8 +269,8 @@ class Text2TextRendererActions : TextRendererActions() {
         val bf = font as BitmapFont
         val m = reader.keep { getGlyphMetrics(reader, codePoint) }
         val g = bf[codePoint]
-        val x: Float = g.xoffset.toFloat()
-        val y: Float = g.yoffset.toFloat() - when (verticalAlign) {
+        val x: Double = g.xoffset.toDouble()
+        val y: Double = g.yoffset.toDouble() - when (verticalAlign) {
             VerticalAlign.BASELINE -> bf.base
             else -> bf.lineHeight * verticalAlign.ratio
         }
@@ -285,9 +284,9 @@ class Text2TextRendererActions : TextRendererActions() {
         arrayY.add(this.pos.y + transform.transformY(x, y) * fontScale)
         arraySX.add(tr.scaleX * fontScale)
         arraySY.add(tr.scaleY * fontScale)
-        arrayRot.add(tr.rotation.ratio)
+        arrayRot.add(tr.rotation.ratio.toDouble())
         arrayMetrics.add(
-            currentLineNum.toFloat(),
+            currentLineNum.toDouble(),
             fontMetrics.top,
             fontMetrics.bottom,
             fontMetrics.lineHeight,
@@ -298,10 +297,10 @@ class Text2TextRendererActions : TextRendererActions() {
 
 interface TextRenderer<T> {
     val version: Int get() = 0
-    fun ITextRendererActions.run(text: T, size: Float, defaultFont: Font): Unit
+    fun ITextRendererActions.run(text: T, size: Double, defaultFont: Font): Unit
 }
 
-operator fun <T> TextRenderer<T>.invoke(actions: ITextRendererActions, text: T, size: Float, defaultFont: Font) {
+operator fun <T> TextRenderer<T>.invoke(actions: ITextRendererActions, text: T, size: Double, defaultFont: Font) {
     actions.apply { run(text, size, defaultFont) }
 }
 
@@ -334,7 +333,7 @@ fun <T> TextRenderer<T>.transformed(transformation: (ITextRendererActions) -> IT
 
 fun <T> TextRenderer<T>.withSpacing(spacing: Float): TransformedTextRenderer<T> =
     transformed { original -> object : ITextRendererActions by original {
-        override fun advance(x: Float) {
+        override fun advance(x: Double) {
             super.advance(x + spacing)
         }
     } }
@@ -344,7 +343,7 @@ open class TransformedTextRenderer<T>(
     val transformation: (ITextRendererActions) -> ITextRendererActions
 ) : TextRenderer<T> {
     override val version: Int get() = original.version
-    override fun ITextRendererActions.run(text: T, size: Float, defaultFont: Font) =
+    override fun ITextRendererActions.run(text: T, size: Double, defaultFont: Font) =
         original.invoke(transformation(this), text, size, defaultFont)
 }
 
@@ -366,11 +365,11 @@ inline fun <reified T> DefaultTextRenderer() = when (T::class) {
 
 fun CreateWStringTextRenderer(
     getVersion: () -> Int = { 0 },
-    handler: ITextRendererActions.(reader: WStringReader, c: Int, g: GlyphMetrics, advance: Float) -> Unit
+    handler: ITextRendererActions.(reader: WStringReader, c: Int, g: GlyphMetrics, advance: Double) -> Unit
 ): TextRenderer<WString> = object : TextRenderer<WString> {
     override val version: Int get() = getVersion()
 
-    override fun ITextRendererActions.run(text: WString, size: Float, defaultFont: Font) {
+    override fun ITextRendererActions.run(text: WString, size: Double, defaultFont: Font) {
         reset()
         setFont(defaultFont, size)
         val reader = WStringReader(text)
@@ -397,14 +396,14 @@ fun CreateWStringTextRenderer(
 
 fun CreateStringTextRenderer(
     getVersion: () -> Int = { 0 },
-    handler: ITextRendererActions.(reader: WStringReader, c: Int, g: GlyphMetrics, advance: Float) -> Unit
+    handler: ITextRendererActions.(reader: WStringReader, c: Int, g: GlyphMetrics, advance: Double) -> Unit
 ): TextRenderer<String> = object : TextRenderer<String> {
     val wstring = CreateWStringTextRenderer(getVersion) { text, c, g, advance ->
         handler(this, text, c, g, advance)
     }
     override val version: Int get() = wstring.version
 
-    override fun ITextRendererActions.run(text: String, size: Float, defaultFont: Font) {
+    override fun ITextRendererActions.run(text: String, size: Double, defaultFont: Font) {
         wstring.apply {
             run(WString(text), size, defaultFont)
         }
@@ -424,7 +423,7 @@ val DefaultStringTextRenderer: TextRenderer<String> = CreateStringTextRenderer {
 }
 
 fun <T> VectorBuilder.text(
-    text: T, font: VectorFont, textSize: Float = 16f,
+    text: T, font: VectorFont, textSize: Double = 16.0,
     pos: Point = Point.ZERO,
     align: TextAlignment = TextAlignment.BASELINE_LEFT,
     renderer: TextRenderer<T> = DefaultStringTextRenderer as TextRenderer<T>,

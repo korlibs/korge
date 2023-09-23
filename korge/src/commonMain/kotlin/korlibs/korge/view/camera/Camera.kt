@@ -31,7 +31,7 @@ class CameraContainer(
 
     class ContentContainer(val cameraContainer: CameraContainer) : FixedSizeContainer(cameraContainer.size), Reference {
         //out.setTo(0, 0, cameraContainer.width, cameraContainer.height)
-        override fun getLocalBoundsInternal() = Rectangle(0.0, 0.0, widthD, heightD)
+        override fun getLocalBoundsInternal() = Rectangle(0.0, 0.0, width, height)
     }
 
     val content: Container by lazy { contentBuilder(this) }
@@ -92,7 +92,7 @@ class CameraContainer(
     val onCompletedTransition = Signal<Unit>()
 
     fun getCurrentCamera(out: Camera = Camera()): Camera = out.copyFrom(currentCamera)
-    fun getDefaultCamera(out: Camera = Camera()): Camera = out.setTo(x = widthD / 2.0, y = heightD / 2.0, anchorX = 0.5, anchorY = 0.5)
+    fun getDefaultCamera(out: Camera = Camera()): Camera = out.setTo(x = width / 2.0, y = height / 2.0, anchorX = 0.5, anchorY = 0.5)
 
     companion object {
         fun getCameraRect(rect: Rectangle, scaleMode: ScaleMode = ScaleMode.SHOW_ALL, cameraWidth: Double, cameraHeight: Double, cameraAnchorX: Double, cameraAnchorY: Double, out: Camera = Camera()): Camera {
@@ -110,7 +110,7 @@ class CameraContainer(
         }
     }
 
-    fun getCameraRect(rect: Rectangle, scaleMode: ScaleMode = ScaleMode.SHOW_ALL, out: Camera = Camera()): Camera = getCameraRect(rect, scaleMode, widthD, heightD, cameraAnchorX, cameraAnchorY, out)
+    fun getCameraRect(rect: Rectangle, scaleMode: ScaleMode = ScaleMode.SHOW_ALL, out: Camera = Camera()): Camera = getCameraRect(rect, scaleMode, width, height, cameraAnchorX, cameraAnchorY, out)
     fun getCameraToFit(rect: Rectangle, out: Camera = Camera()): Camera = getCameraRect(rect, ScaleMode.SHOW_ALL, out)
     fun getCameraToCover(rect: Rectangle, out: Camera = Camera()): Camera = getCameraRect(rect, ScaleMode.COVER, out)
 
@@ -125,8 +125,8 @@ class CameraContainer(
         following = view
         if (setImmediately) {
             val point = getFollowingXY()
-            cameraX = point.xD
-            cameraY = point.yD
+            cameraX = point.x
+            cameraY = point.y
             sourceCamera.x = cameraX
             sourceCamera.y = cameraY
         }
@@ -164,8 +164,8 @@ class CameraContainer(
     }
 
     fun getFollowingXY(): Point {
-        val followGlobalX = following!!.globalPos.xD
-        val followGlobalY = following!!.globalPos.yD
+        val followGlobalX = following!!.globalPos.x
+        val followGlobalY = following!!.globalPos.y
         return content.globalToLocal(Point(followGlobalX, followGlobalY))
     }
 
@@ -177,8 +177,8 @@ class CameraContainer(
             when {
                 following != null -> {
                     val point = getFollowingXY()
-                    cameraX = 0.1.toRatio().interpolate(currentCamera.x, point.xD)
-                    cameraY = 0.1.toRatio().interpolate(currentCamera.y, point.yD)
+                    cameraX = 0.1.toRatio().interpolate(currentCamera.x, point.x)
+                    cameraY = 0.1.toRatio().interpolate(currentCamera.y, point.y)
                     sourceCamera.x = cameraX
                     sourceCamera.y = cameraY
                     //cameraX = 0.0
@@ -216,18 +216,18 @@ class CameraContainer(
         val realScaleX = cameraZoom
         val realScaleY = cameraZoom
 
-        val contentContainerX = widthD * cameraAnchorX
-        val contentContainerY = heightD * cameraAnchorY
+        val contentContainerX = width * cameraAnchorX
+        val contentContainerY = height * cameraAnchorY
 
         //println("content=${content.getLocalBoundsOptimized()}, contentContainer=${contentContainer.getLocalBoundsOptimized()}, cameraViewportBounds=$cameraViewportBounds")
 
-        content.xD = if (clampToBounds) -cameraX.clamp(contentContainerX + cameraViewportBounds.left, contentContainerX + cameraViewportBounds.width - widthD) else -cameraX
-        content.yD = if (clampToBounds) -cameraY.clamp(contentContainerY + cameraViewportBounds.top, contentContainerY + cameraViewportBounds.height - heightD) else -cameraY
-        contentContainer.xD = contentContainerX
-        contentContainer.yD = contentContainerY
+        content.x = if (clampToBounds) -cameraX.clamp(contentContainerX + cameraViewportBounds.left, contentContainerX + cameraViewportBounds.width - width) else -cameraX
+        content.y = if (clampToBounds) -cameraY.clamp(contentContainerY + cameraViewportBounds.top, contentContainerY + cameraViewportBounds.height - height) else -cameraY
+        contentContainer.x = contentContainerX
+        contentContainer.y = contentContainerY
         contentContainer.rotation = cameraAngle
-        contentContainer.scaleXD = realScaleX
-        contentContainer.scaleYD = realScaleY
+        contentContainer.scaleX = realScaleX
+        contentContainer.scaleY = realScaleY
     }
 
     fun setZoomAt(anchor: MPoint, zoom: Double) = setZoomAt(anchor.x, anchor.y, zoom)
@@ -240,10 +240,10 @@ class CameraContainer(
     fun setAnchorPosKeepingPos(anchor: MPoint) = setAnchorPosKeepingPos(anchor.x, anchor.y)
 
     fun setAnchorPosKeepingPos(anchorX: Double, anchorY: Double) {
-        setAnchorRatioKeepingPos(anchorX / widthD, anchorY / heightD)
+        setAnchorRatioKeepingPos(anchorX / width, anchorY / height)
     }
     fun setAnchorRatioKeepingPos(ratioX: Double, ratioY: Double) {
-        currentCamera.setAnchorRatioKeepingPos(ratioX, ratioY, widthD, heightD)
+        currentCamera.setAnchorRatioKeepingPos(ratioX, ratioY, width, height)
         sync()
     }
 }
@@ -302,7 +302,7 @@ data class Camera(
 
     override fun setToInterpolated(ratio: Ratio, l: Camera, r: Camera): Camera {
         // Adjust based on the zoom changes
-        val posRatio = posEasing(l.zoom, r.zoom, l.x, r.x, ratio.valueD)
+        val posRatio = posEasing(l.zoom, r.zoom, l.x, r.x, ratio.value)
 
         return setTo(
             posRatio.toRatio().interpolate(l.x, r.x),

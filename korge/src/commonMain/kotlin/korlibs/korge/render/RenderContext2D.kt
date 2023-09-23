@@ -44,8 +44,8 @@ class RenderContext2D(
     val ctx: RenderContext get() = batch.ctx
 
     var size: Size = Size(0, 0)
-    val width: Float get() = size.width
-    val height: Float get() = size.height
+    val width: Double get() = size.width
+    val height: Double get() = size.height
 
     inline fun getTexture(slice: BmpSlice): TextureCoords = agBitmapTextureManager.getTexture(slice)
 
@@ -157,10 +157,10 @@ class RenderContext2D(
     fun rect(rect: Rectangle, color: RGBA = this.multiplyColor, filtering: Boolean = this.filtering, bmp: BmpSlice = Bitmaps.white, program: Program? = null) {
         batch.drawQuad(
             getTexture(bmp),
-            rect.x,
-            rect.y,
-            rect.width,
-            rect.height,
+            rect.x.toFloat(),
+            rect.y.toFloat(),
+            rect.width.toFloat(),
+            rect.height.toFloat(),
             filtering = filtering,
             m = m,
             colorMul = color,
@@ -172,10 +172,10 @@ class RenderContext2D(
     /** Renders a colored rectangle with the [multiplyColor] with the [blendMode] at [x], [y] of size [width]x[height] */
     fun rectOutline(rect: Rectangle, border: Float = 1f, color: RGBA = this.multiplyColor, filtering: Boolean = this.filtering) {
         val (x, y, width, height) = rect
-        rect(Rectangle(x, y, width, border), color, filtering)
-        rect(Rectangle(x, y, border, height), color, filtering)
-        rect(Rectangle(x + width - border, y, border, height), color, filtering)
-        rect(Rectangle(x, y + height - border, width, border), color, filtering)
+        rect(Rectangle(x, y, width, border.toDouble()), color, filtering)
+        rect(Rectangle(x, y, border.toDouble(), height), color, filtering)
+        rect(Rectangle(x + width - border, y, border.toDouble(), height), color, filtering)
+        rect(Rectangle(x, y + height - border, width, border.toDouble()), color, filtering)
     }
 
     fun ellipse(center: Point, radius: Size, color: RGBA = this.multiplyColor, filtering: Boolean = this.filtering) {
@@ -184,7 +184,7 @@ class RenderContext2D(
         }, color, filtering)
     }
 
-    fun ellipseOutline(center: Point, radius: Size, lineWidth: Float = 1f, color: RGBA = this.multiplyColor, filtering: Boolean = this.filtering) {
+    fun ellipseOutline(center: Point, radius: Size, lineWidth: Double = 1.0, color: RGBA = this.multiplyColor, filtering: Boolean = this.filtering) {
         simplePath(buildVectorPath(VectorPath()) {
             this.ellipse(center, radius)
         }.strokeToFill(lineWidth), color, filtering)
@@ -225,15 +225,15 @@ class RenderContext2D(
             //    premultiplied = baseBitmap.base.premultiplied, wrap = wrapTexture
             //)
 
-            val L = (x - padding.left)
-            val T = (y - padding.top)
-            val R = (width + padding.leftPlusRight)
-            val B = (height + padding.topPlusBottom)
+            val L = (x - padding.left).toFloat()
+            val T = (y - padding.top).toFloat()
+            val R = (width + padding.leftPlusRight).toFloat()
+            val B = (height + padding.topPlusBottom).toFloat()
 
-            val l = -padding.left
-            val t = -padding.top
-            val r = (width + padding.right)
-            val b = (height + padding.bottom)
+            val l = -padding.left.toFloat()
+            val t = -padding.top.toFloat()
+            val r = (width + padding.right).toFloat()
+            val b = (height + padding.bottom).toFloat()
 
             val vertices = TexturedVertexArray(6, TexturedVertexArray.QUAD_INDICES)
             vertices.quad(
@@ -254,8 +254,12 @@ class RenderContext2D(
 
     /** Renders a [texture] with the [blendMode] at [x], [y] scaling it by [scale].
      * The texture colors will be multiplied by [multiplyColor]. Since it is multiplicative, white won't cause any effect. */
-    fun imageScale(texture: Texture, pos: Point, scale: Float = 1f, filtering: Boolean = this.filtering) = imageScale(texture, pos.x, pos.y, scale, filtering)
-    fun imageScale(texture: Texture, x: Double, y: Double, scale: Double = 1.0, filtering: Boolean = this.filtering) = imageScale(texture, x.toFloat(), y.toFloat(), scale.toFloat(), filtering)
+    fun imageScale(texture: Texture, pos: Point, scale: Double = 1.0, filtering: Boolean = this.filtering) {
+        imageScale(texture, pos.x, pos.y, scale, filtering)
+    }
+    fun imageScale(texture: Texture, x: Double, y: Double, scale: Double = 1.0, filtering: Boolean = this.filtering) {
+        imageScale(texture, x.toFloat(), y.toFloat(), scale.toFloat(), filtering)
+    }
 	fun imageScale(texture: Texture, x: Float, y: Float, scale: Float = 1f, filtering: Boolean = this.filtering) {
 		//println(m)
 		batch.drawQuad(
@@ -290,14 +294,14 @@ class RenderContext2D(
     @PublishedApi internal fun getTransformedScissor(scissor: AGScissor): AGScissor {
         val tl = m.transform(Point(scissor.left, scissor.top))
         val br = m.transform(Point(scissor.right, scissor.bottom))
-        return AGScissor.fromBounds(tl.x, tl.y, br.x, br.y)
+        return AGScissor.fromBounds(tl.x.toFloat(), tl.y.toFloat(), br.x.toFloat(), br.y.toFloat())
     }
 }
 
 inline fun View.renderCtx2d(ctx: RenderContext, crossinline block: (RenderContext2D) -> Unit) {
     ctx.useCtx2d { context ->
         context.keep {
-            context.size = Size(this@renderCtx2d.widthD, this@renderCtx2d.heightD)
+            context.size = Size(this@renderCtx2d.width, this@renderCtx2d.height)
             context.blendMode = renderBlendMode
             context.multiplyColor = renderColorMul
             context.setMatrix(globalMatrix)

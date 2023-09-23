@@ -11,7 +11,7 @@ import korlibs.math.geom.*
 
 class LazyBitmapFont(
     val font: VectorFont,
-    override val fontSize: Float,
+    override val fontSize: Double,
     override val distanceField: String? = null,
 ) : BitmapFont, Extra by Extra.Mixin() {
     val atlas = MutableAtlasUnit(border = 2, width = 1024, height = 1024).also {
@@ -20,8 +20,8 @@ class LazyBitmapFont(
 
     private val vfontMetrics = font.getFontMetrics(fontSize)
 
-    override val lineHeight: Float = vfontMetrics.lineHeight
-    override val base: Float = vfontMetrics.baseline
+    override val lineHeight: Double = vfontMetrics.lineHeight
+    override val base: Double = vfontMetrics.baseline
     override val glyphs: IntMap<BitmapFont.Glyph> = IntMap()
     override val kernings: IntMap<BitmapFont.Kerning> = IntMap()
     override val anyGlyph: BitmapFont.Glyph by lazy {
@@ -40,16 +40,16 @@ class LazyBitmapFont(
             baseline = vfontMetrics.baseline,
             descent = descent,
             bottom = descent,
-            lineGap = 0f,
-            unitsPerEm = 0f,
+            lineGap = 0.0,
+            unitsPerEm = 0.0,
             maxWidth = vfontMetrics.maxWidth,
         )
     }
-    override val naturalNonExistantGlyphMetrics: GlyphMetrics = GlyphMetrics(fontSize, false, 0, Rectangle(), 0f)
+    override val naturalNonExistantGlyphMetrics: GlyphMetrics = GlyphMetrics(fontSize, false, 0, Rectangle(), 0.0)
 
     override fun getKerning(first: Int, second: Int): BitmapFont.Kerning? {
         val kerning = font.getKerning(fontSize, first, second)
-        return if (kerning == 0f) null else kernings.getOrPut(BitmapFont.Kerning.buildKey(first, second)) {
+        return if (kerning == 0.0) null else kernings.getOrPut(BitmapFont.Kerning.buildKey(first, second)) {
             BitmapFont.Kerning(first, second, kerning.toInt())
         }
     }
@@ -119,7 +119,7 @@ class LazyBitmapFont(
     }
 }
 
-fun VectorFont.toLazyBitmapFont(fontSize: Float, distanceField: String? = null): LazyBitmapFont =
+fun VectorFont.toLazyBitmapFont(fontSize: Double, distanceField: String? = null): LazyBitmapFont =
     LazyBitmapFont(this, fontSize, distanceField)
 
 /**
@@ -127,11 +127,11 @@ fun VectorFont.toLazyBitmapFont(fontSize: Float, distanceField: String? = null):
  * generate and cache glyphs as required.
  */
 val VectorFont.lazyBitmap: LazyBitmapFont by Extra.PropertyThis {
-    this.toLazyBitmapFont(32f, distanceField = null)
+    this.toLazyBitmapFont(32.0, distanceField = null)
 }
 
 val VectorFont.lazyBitmapSDF: LazyBitmapFont by Extra.PropertyThis {
-    this.toLazyBitmapFont(32f, distanceField = "sdf")
+    this.toLazyBitmapFont(32.0, distanceField = "sdf")
 }
 
 /**

@@ -14,6 +14,7 @@ import korlibs.math.geom.Line
 import korlibs.math.geom.bezier.*
 import korlibs.math.geom.shape.*
 import korlibs.math.geom.vector.*
+import korlibs.math.interpolation.*
 import korlibs.time.measureTime
 import kotlin.math.absoluteValue
 
@@ -123,8 +124,8 @@ open class GpuShapeView(
     val shapeHeight: Double get() = shapeBounds.height.toDouble()
     private var lastCommandWasClipped: Boolean = false
 
-    override val anchorDispX: Float get() = shapeBounds.width * anchor.sx
-    override val anchorDispY: Float get() = shapeBounds.height * anchor.sy
+    override val anchorDispX: Float get() = shapeBounds.width.toFloat() * anchor.sx.toFloat()
+    override val anchorDispY: Float get() = shapeBounds.height.toFloat() * anchor.sy.toFloat()
 
     private fun invalidateShape() {
         renderCount = 0
@@ -180,7 +181,7 @@ open class GpuShapeView(
     private var cachedScale: Float = Float.NaN
 
     override fun renderInternal(ctx: RenderContext) {
-        globalScale = globalMatrix.toTransform().scaleAvg * ctx.bp.globalToWindowScaleAvg
+        globalScale = (globalMatrix.toTransform().scaleAvg * ctx.bp.globalToWindowScaleAvg).toFloat()
         //globalScale = ctx.bp.globalToWindowScaleAvg
         if (cachedScale != globalScale) {
             invalidateShape()
@@ -243,7 +244,7 @@ open class GpuShapeView(
                     shape.transform,
                     shape.path,
                     shape.paint,
-                    shape.globalAlpha,
+                    shape.globalAlpha.toFloat(),
                     shape.strokeInfo,
                 )
             }
@@ -272,7 +273,7 @@ open class GpuShapeView(
         fun p0(index: Int) = if (index == 0) s0 else e0
         fun p1(index: Int) = if (index == 0) s1 else e1
 
-        fun setTo(s: Point, e: Point, lineWidth: Float) {
+        fun setTo(s: Point, e: Point, lineWidth: Double) {
             this.s = s
             this.e = e
             line = Line(s, e)
@@ -294,10 +295,10 @@ open class GpuShapeView(
 
     private fun pointsAdd(p1: Point, p2: Point, lineWidth: Float) {
         //val lineWidth = 0f
-        val p1x = p1.x
-        val p1y = p1.y
-        val p2x = p2.x
-        val p2y = p2.y
+        val p1x = p1.x.toFloat()
+        val p1y = p1.y.toFloat()
+        val p2x = p2.x.toFloat()
+        val p2y = p2.y.toFloat()
         gpuShapeViewCommands.addVertex(p1x, p1y, len = -lineWidth, maxLen = lineWidth)
         gpuShapeViewCommands.addVertex(p2x, p2y, len = +lineWidth, maxLen = lineWidth)
     }
@@ -310,8 +311,7 @@ open class GpuShapeView(
         start: Boolean = true,
     ) {
         val NPOINTS = 15
-        for (i in 0..NPOINTS) {
-            val ratio = i.toFloat() / NPOINTS.toFloat()
+        Ratio.forEachRatio(NPOINTS) { ratio ->
             val pos = when {
                 start -> Bezier.cubicCalc(p0, p0s, p1s, p1, ratio)
                 else -> Bezier.cubicCalc(p1, p1s, p0s, p0, ratio)
@@ -367,7 +367,11 @@ open class GpuShapeView(
 
                 //println("x=$x, y=$y, len=$len, maxLen=$maxLen")
 
-                gpuShapeViewCommands.addVertex(px, py, if (antialiased) len else 0f, if (antialiased) maxLen else BIG_MAX_LEN)
+                gpuShapeViewCommands.addVertex(
+                    px.toFloat(), py.toFloat(),
+                    if (antialiased) len.toFloat() else 0f,
+                    if (antialiased) maxLen.toFloat() else BIG_MAX_LEN
+                )
             }
 
             val endIndex = gpuShapeViewCommands.verticesEnd()
@@ -376,7 +380,7 @@ open class GpuShapeView(
                 stateTransform = stateTransform,
                 paint = paint,
                 globalAlpha = globalAlpha,
-                lineWidth = strokeInfo.thickness,
+                lineWidth = strokeInfo.thickness.toFloat(),
             )
 
             //gpuShapeViewCommands.setScissor(null)
@@ -404,17 +408,17 @@ open class GpuShapeView(
         //val isStripAndAntialiased = isStrip
 
         if (!isStrip) {
-            gpuShapeViewCommands.addVertex(xMid, yMid, len = 0f, maxLen = BIG_MAX_LEN)
+            gpuShapeViewCommands.addVertex(xMid.toFloat(), yMid.toFloat(), len = 0f, maxLen = BIG_MAX_LEN)
         }
         for (n in 0 until points.size + 1) {
             val p = points[n % points.size]
             val (x, y) = p
-            val len = if (isStripAndAntialiased) Point.distance(p, pMid) else 0f
-            val maxLen = if (isStripAndAntialiased) len else BIG_MAX_LEN
+            val len = if (isStripAndAntialiased) Point.distance(p, pMid) else 0.0
+            val maxLen = if (isStripAndAntialiased) len else BIG_MAX_LEN.toDouble()
             if (isStrip) {
-                gpuShapeViewCommands.addVertex(xMid, yMid, len = 0f, maxLen = maxLen)
+                gpuShapeViewCommands.addVertex(xMid.toFloat(), yMid.toFloat(), len = 0f, maxLen = maxLen.toFloat())
             }
-            gpuShapeViewCommands.addVertex(x, y, len = len, maxLen = maxLen)
+            gpuShapeViewCommands.addVertex(x.toFloat(), y.toFloat(), len = len.toFloat(), maxLen = maxLen.toFloat())
         }
         val vertexEnd = gpuShapeViewCommands.verticesEnd()
         //println("bb.getBounds()=${bb.getBounds()} - ${bb.getBounds().toAGScissor()}")
@@ -456,7 +460,7 @@ open class GpuShapeView(
         //println("maxRenderCount=$maxRenderCount")
         //println("renderCount=$renderCount")
         val paintShader = GpuShapeViewPrograms.paintToShaderInfo(
-            shape.transform, shape.paint, shape.globalAlpha,
+            shape.transform, shape.paint, shape.globalAlpha.toFloat(),
             lineWidth = 10000000f,
         ) ?: return
 
@@ -579,14 +583,14 @@ open class GpuShapeView(
                 stateTransform = shape.transform,
                 strokePath = shape.path,
                 paint = shape.paint,
-                globalAlpha = shape.globalAlpha,
+                globalAlpha = shape.globalAlpha.toFloat(),
                 strokeInfo = StrokeInfo(
-                    thickness = (1.6f / globalScale),
+                    thickness = (1.6 / globalScale),
                     scaleMode = LineScaleMode.NONE,
                     startCap = LineCap.BUTT,
                     endCap = LineCap.BUTT,
                     join = LineJoin.MITER,
-                    miterLimit = 5.0f,
+                    miterLimit = 5.0,
                 ),
                 forceClosed = true,
                 stencilOpFunc = if (!drawFill) AGStencilOpFunc.DEFAULT else AGStencilOpFunc.DEFAULT.withEnabled(true).withCompareMode(stencilCompare.inverted()),

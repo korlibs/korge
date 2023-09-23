@@ -135,18 +135,18 @@ abstract class UIBaseContainer(size: Size) : UIView(size) {
 }
 
 inline fun Container.uiVerticalStack(
-    width: Float? = null,
-    padding: Float = UI_DEFAULT_PADDING,
+    width: Double? = null,
+    padding: Double = UI_DEFAULT_PADDING,
     adjustSize: Boolean = true,
     block: @ViewDslMarker UIVerticalStack.() -> Unit = {}
 ) = UIVerticalStack(width, padding, adjustSize).addTo(this).apply(block)
 
 open class UIVerticalStack(
-    forcedWidth: Float? = null,
-    padding: Float = UI_DEFAULT_PADDING,
+    forcedWidth: Double? = null,
+    padding: Double = UI_DEFAULT_PADDING,
     adjustSize: Boolean = true,
-) : UIVerticalHorizontalStack(Size(forcedWidth ?: 100f, 0f), padding, adjustSize) {
-    var forcedWidth: Float? = forcedWidth
+) : UIVerticalHorizontalStack(Size(forcedWidth ?: 100.0, 0.0), padding, adjustSize) {
+    var forcedWidth: Double? = forcedWidth
         set(value) {
             if (field != value) {
                 field = value
@@ -156,11 +156,11 @@ open class UIVerticalStack(
         }
 
     override fun relayout() {
-        var y = 0f
+        var y = 0.0
         var bb = BoundsBuilder()
         forEachChild {
             it.y = y
-            if (adjustSize && forcedWidth != null) it.scaledWidthD = widthD
+            if (adjustSize && forcedWidth != null) it.scaledWidth = width
             y += it.height + padding
             bb += it.getBounds(this@UIVerticalStack)
         }
@@ -169,18 +169,18 @@ open class UIVerticalStack(
 }
 
 inline fun Container.uiHorizontalStack(
-    height: Float? = null,
-    padding: Float = UI_DEFAULT_PADDING,
+    height: Double? = null,
+    padding: Double = UI_DEFAULT_PADDING,
     adjustHeight: Boolean = true,
     block: @ViewDslMarker UIHorizontalStack.() -> Unit = {}
 ) = UIHorizontalStack(height, padding, adjustHeight).addTo(this).apply(block)
 
 open class UIHorizontalStack(
-    forcedHeight: Float? = null,
-    padding: Float = UI_DEFAULT_PADDING,
+    forcedHeight: Double? = null,
+    padding: Double = UI_DEFAULT_PADDING,
     adjustHeight: Boolean = true
-) : UIVerticalHorizontalStack(Size(0f, forcedHeight ?: 32f), padding, adjustHeight) {
-    var forcedHeight: Float? = forcedHeight
+) : UIVerticalHorizontalStack(Size(0.0, forcedHeight ?: 32.0), padding, adjustHeight) {
+    var forcedHeight: Double? = forcedHeight
         set(value) {
             if (field != value) {
                 field = value
@@ -190,11 +190,11 @@ open class UIHorizontalStack(
         }
 
     override fun relayout() {
-        var x = 0f
+        var x = 0.0
         var bb = BoundsBuilder()
         forEachChild {
             it.x = x
-            if (adjustSize && forcedHeight != null) it.scaledHeightD = heightD
+            if (adjustSize && forcedHeight != null) it.scaledHeight = height
             x += it.width + padding
             bb += it.getBounds(this@UIHorizontalStack)
         }
@@ -205,8 +205,8 @@ open class UIHorizontalStack(
     }
 }
 
-abstract class UIVerticalHorizontalStack(size: Size = UI_DEFAULT_SIZE, padding: Float = UI_DEFAULT_PADDING, val adjustSize: Boolean) : UIContainer(size) {
-    var padding: Float = padding
+abstract class UIVerticalHorizontalStack(size: Size = UI_DEFAULT_SIZE, padding: Double = UI_DEFAULT_PADDING, val adjustSize: Boolean) : UIContainer(size) {
+    var padding: Double = padding
         set(value) {
             field = value
             relayout()
@@ -223,8 +223,8 @@ open class UIHorizontalFill(size: Size = Size(128, 20)) : UIContainer(size) {
         var x = 0.0
         val elementWidth = width / numChildren
         forEachChild {
-            it.xD = x
-            it.scaledHeightD = heightD
+            it.x = x
+            it.scaledHeight = height
             it.unscaledWidth = elementWidth
             x += elementWidth
         }
@@ -241,8 +241,8 @@ open class UIVerticalFill(size: Size = Size(128, 128)) : UIContainer(size) {
         var y = 0.0
         val elementHeight = height / numChildren
         forEachChild {
-            it.yD = y
-            it.scaledWidthD = widthD
+            it.y = y
+            it.scaledWidth = width
             it.unscaledHeight = elementHeight
             y += elementHeight
         }
@@ -274,8 +274,8 @@ open class UIGridFill(
     var direction: UIDirection by UIObservable(direction) { relayout() }
 
     override fun relayout() {
-        val width = widthD
-        val height = heightD
+        val width = width
+        val height = height
         val paddingH = spacing.horizontal
         val paddingV = spacing.vertical
         val elementHeight = (height - paddingV * (rows - 1)) / rows
@@ -311,8 +311,8 @@ inline fun Container.uiFillLayeredContainer(
 
 open class UIFillLayeredContainer(size: Size = Size(128, 20)) : UIContainer(size) {
     override fun relayout() {
-        val width = this.widthD
-        val height = this.heightD
+        val width = this.width
+        val height = this.height
         forEachChild {
             it.xy(0, 0)
             it.size(width, height)

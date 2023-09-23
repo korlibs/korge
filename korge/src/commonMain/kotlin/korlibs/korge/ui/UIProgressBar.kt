@@ -9,22 +9,22 @@ import korlibs.math.geom.*
 
 inline fun Container.uiProgressBar(
     size: Size = Size(256, 24),
-    current: Float = 0f,
-    maximum: Float = 100f,
+    current: Double = 0.0,
+    maximum: Double = 100.0,
     block: @ViewDslMarker UIProgressBar.() -> Unit = {}
 ): UIProgressBar = UIProgressBar(size, current, maximum).addTo(this).apply(block)
 
 open class UIProgressBar(
     size: Size = Size(256, 24),
-    current: Float = 0f,
-    maximum: Float = 100f,
+    current: Double = 0.0,
+    maximum: Double = 100.0,
 ) : UIView(size), ViewLeaf {
     @ViewProperty(min = 0.0, max = 100.0)
-	var current: Float by uiObservable(current) { updateState() }
+	var current: Double by uiObservable(current) { updateState() }
     @ViewProperty(min = 0.0, max = 100.0)
-	var maximum: Float by uiObservable(maximum) { updateState() }
+	var maximum: Double by uiObservable(maximum) { updateState() }
 
-	override var ratio: Float
+	override var ratio: Double
 		set(value) { current = value * maximum }
 		get() = (current / maximum).clamp01()
 

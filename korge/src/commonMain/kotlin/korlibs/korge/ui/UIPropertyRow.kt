@@ -83,7 +83,7 @@ fun UIEditableIntPropsList(vararg mut: KMutableProperty0<Int>, min: Int = 0, max
 @KorgeExperimental
 fun UIEditableAnglePropsList(vararg mut: KMutableProperty0<Angle>, min: Angle = -360.degrees, max: Angle = +360.degrees, clamped: Boolean = true): Array<UIEditableNumberProps> {
     return mut.map { mut ->
-        UIEditableNumberProps(UIProperty(set = { mut.set(it.degrees) }, get = { mut.get().degreesD }), min.degreesD, max.degreesD, 0, clamped)
+        UIEditableNumberProps(UIProperty(set = { mut.set(it.degrees) }, get = { mut.get().degrees }), min.degrees, max.degrees, 0, clamped)
     }.toTypedArray()
 }
 

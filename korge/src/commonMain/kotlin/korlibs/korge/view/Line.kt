@@ -1,9 +1,7 @@
 package korlibs.korge.view
 
-import korlibs.korge.render.RenderContext
-import korlibs.korge.render.useLineBatcher
-import korlibs.image.color.Colors
-import korlibs.image.color.RGBA
+import korlibs.image.color.*
+import korlibs.korge.render.*
 import korlibs.math.geom.*
 
 inline fun Container.line(a: Point, b: Point, color: RGBA = Colors.WHITE, callback: @ViewDslMarker Line.() -> Unit = {})
@@ -17,10 +15,10 @@ class Line(
     color: RGBA = Colors.WHITE,
 ) : View() {
     var p1: Point by ::pos
-    var x1: Float get() = x ; set(value) { x = value }
-    var y1: Float get() = y ; set(value) { y = value }
-    var x2: Float get() = p2.x ; set(value) { p2 = p2.copy(x = value) }
-    var y2: Float get() = p2.y ; set(value) { p2 = p2.copy(y = value) }
+    var x1: Double get() = x ; set(value) { x = value }
+    var y1: Double get() = y ; set(value) { y = value }
+    var x2: Double get() = p2.x ; set(value) { p2 = p2.copy(x = value) }
+    var y2: Double get() = p2.y ; set(value) { p2 = p2.copy(y = value) }
 
     init {
         pos = p1
@@ -36,7 +34,7 @@ class Line(
         ctx.useLineBatcher { lines ->
             lines.drawWithGlobalMatrix(globalMatrix) {
                 val col = renderColorMul
-                lines.line(0f, 0f, x2 - x1, y2 - y1, col, col)
+                lines.line(0.0, 0.0, x2 - x1, y2 - y1, col, col)
             }
         }
     }

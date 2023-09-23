@@ -374,6 +374,12 @@ fun MLine.projectedPoint(point: Point): Point = MLine.projectedPoint(a, b, point
 
 val MMatrix?.immutable: Matrix get() = if (this == null) Matrix.NIL else Matrix(a, b, c, d, tx, ty)
 
+@Deprecated("", ReplaceWith("this")) val Matrix.immutable: Matrix get() = this
+val Matrix.mutable: MMatrix get() = MMatrix(a, b, c, d, tx, ty)
+@Deprecated("")
+val Matrix.mutableOrNull: MMatrix? get() = if (isNIL) null else MMatrix(a, b, c, d, tx, ty)
+
+
 @KormaMutableApi
 @Deprecated("Use Matrix")
 data class MMatrix(

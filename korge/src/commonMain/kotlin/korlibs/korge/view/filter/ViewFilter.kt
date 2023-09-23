@@ -59,7 +59,7 @@ fun View.renderFiltered(
     val texWidthNoBorder = (bounds.width * tryFilterScale).toInt().coerceAtLeast(1)
     val texHeightNoBorder = (bounds.height * tryFilterScale).toInt().coerceAtLeast(1)
 
-    val realFilterScale: Float = (texWidthNoBorder.toFloat() / bounds.width).clamp(0.03125f, 1.0f)
+    val realFilterScale: Double = (texWidthNoBorder.toFloat() / bounds.width).clamp(0.03125, 1.0)
 
     // This edge is meant to keep the edge pixels transparent, since we are using clamping to edge wrapping
     // so for example the blur filter that reads outside [0, 1] bounds can read transparent pixels.

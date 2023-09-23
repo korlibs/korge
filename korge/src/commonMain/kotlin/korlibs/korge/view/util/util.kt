@@ -1,6 +1,6 @@
 package korlibs.korge.view.util
 
-import korlibs.korge.view.View
+import korlibs.korge.view.*
 
 
 // Distributes an iterable of views evenly across a provided bounding width.
@@ -18,14 +18,14 @@ fun distributeEvenlyHorizontally(views: Iterable<View>, boundingWidth: Double) {
     val originView = views.first()
 
     var remainingWidthToDistribute = boundingWidth
-    views.forEach { remainingWidthToDistribute -= it.scaledWidthD }
+    views.forEach { remainingWidthToDistribute -= it.scaledWidth }
 
     val padding = remainingWidthToDistribute / (views.count() - 1)
 
     var offset = 0.0
     for (view in views) {
-        view.xD = originView.xD + offset
-        offset += view.scaledWidthD + padding
+        view.x = originView.x + offset
+        offset += view.scaledWidth + padding
     }
 }
 
@@ -47,9 +47,9 @@ fun distributeEvenlyHorizontally(views: Iterable<View>, boundingWidth: Double) {
 fun distributeEvenlyHorizontally(views: Iterable<View>) {
     val originView = views.first()
     val rightMostX = views.maxOf {
-        it.xD + it.scaledWidthD
+        it.x + it.scaledWidth
     }
-    distributeEvenlyHorizontally(views, rightMostX - originView.xD)
+    distributeEvenlyHorizontally(views, rightMostX - originView.x)
 }
 
 // Distributes an iterable of views evenly across a provided bounding height.
@@ -67,14 +67,14 @@ fun distributeEvenlyVertically(views: Iterable<View>, boundingHeight: Double) {
     val originView = views.first()
 
     var remainingHeightToDistribute = boundingHeight
-    views.forEach { remainingHeightToDistribute -= it.scaledHeightD }
+    views.forEach { remainingHeightToDistribute -= it.scaledHeight }
 
     val padding = remainingHeightToDistribute / (views.count() - 1)
 
     var offset = 0.0
     for (view in views) {
-        view.yD = originView.yD + offset
-        offset += view.scaledHeightD + padding
+        view.y = originView.y + offset
+        offset += view.scaledHeight + padding
     }
 }
 
@@ -100,7 +100,7 @@ fun distributeEvenlyVertically(views: Iterable<View>, boundingHeight: Double) {
 fun distributeEvenlyVertically(views: Iterable<View>) {
     val originView = views.first()
     val bottomMostY = views.maxOf {
-        it.yD + it.scaledHeightD
+        it.y + it.scaledHeight
     }
-    distributeEvenlyVertically(views, bottomMostY - originView.yD)
+    distributeEvenlyVertically(views, bottomMostY - originView.y)
 }

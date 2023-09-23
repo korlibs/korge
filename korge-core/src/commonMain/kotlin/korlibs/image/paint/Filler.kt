@@ -1,12 +1,9 @@
 package korlibs.image.paint
 
-import korlibs.math.clamp01
 import korlibs.image.bitmap.*
-import korlibs.image.color.Colors
-import korlibs.image.color.RGBA
-import korlibs.image.color.RGBAPremultiplied
-import korlibs.image.color.RgbaPremultipliedArray
+import korlibs.image.color.*
 import korlibs.image.vector.*
+import korlibs.math.*
 import korlibs.math.geom.*
 
 abstract class BaseFiller {
@@ -94,7 +91,7 @@ class BitmapFiller : BaseFiller() {
         val mat = compTrans
         val p = mat.transform(Point(x, y)) * Point(iTexWidth, iTexHeight)
         val t = cycle.apply(p) * Point(texWidth, texHeight)
-        return if (linear) lookupLinear(t.x, t.y).premultiplied else lookupNearest(t.x, t.y).premultiplied
+        return if (linear) lookupLinear(t.x.toFloat(), t.y.toFloat()).premultiplied else lookupNearest(t.x.toFloat(), t.y.toFloat()).premultiplied
     }
 }
 

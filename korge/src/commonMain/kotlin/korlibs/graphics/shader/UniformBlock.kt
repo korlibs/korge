@@ -168,13 +168,16 @@ class UniformsRef(
     operator fun set(uniform: TypedUniform<Float>, value: Boolean) = set(uniform, if (value) 1f else 0f)
     @Deprecated("", ReplaceWith("set(uniform, value.toFloat())"))
     operator fun set(uniform: TypedUniform<Float>, value: Double) = set(uniform, value.toFloat())
+    operator fun set(uniform: TypedUniform<Vector2F>, value: Vector2F) = set(uniform, value.x, value.y)
+    operator fun set(uniform: TypedUniform<Vector2F>, value: Point) = set(uniform, value.x.toFloat(), value.y.toFloat())
+    operator fun set(uniform: TypedUniform<Vector2F>, value: Size) = set(uniform, value.width.toFloat(), value.height.toFloat())
     operator fun set(uniform: TypedUniform<Point>, value: Point) = set(uniform, value.x, value.y)
     operator fun set(uniform: TypedUniform<Point>, value: Size) = set(uniform, value.width, value.height)
     operator fun set(uniform: TypedUniform<Vector4F>, value: RGBA) = set(uniform, value.rf, value.gf, value.bf, value.af)
     operator fun set(uniform: TypedUniform<Vector4F>, value: RGBAPremultiplied) = set(uniform, value.rf, value.gf, value.bf, value.af)
     operator fun set(uniform: TypedUniform<Vector4F>, value: ColorAdd) = set(uniform, value.rf, value.gf, value.bf, value.af)
     operator fun set(uniform: TypedUniform<Vector4F>, value: Vector4F) = set(uniform, value.x, value.y, value.z, value.w)
-    operator fun set(uniform: TypedUniform<Vector4F>, value: RectCorners) = set(uniform, value.bottomRight, value.topRight, value.bottomLeft, value.topLeft)
+    operator fun set(uniform: TypedUniform<Vector4F>, value: RectCorners) = set(uniform, value.bottomRight.toFloat(), value.topRight.toFloat(), value.bottomLeft.toFloat(), value.topLeft.toFloat())
     operator fun set(uniform: TypedUniform<Matrix4>, value: Matrix4) {
         when (uniform.type) {
             VarType.Mat4 -> set(uniform, value, Matrix4.INDICES_BY_COLUMNS_4x4)
@@ -201,7 +204,13 @@ class UniformsRef(
             buffer.setUnalignedFloat32(it + 0, value)
         }
     }
+    operator fun set(uniform: TypedUniform<Point>, x: Double, y: Double) {
+        getOffset(uniform).also { bufferSetFloat2(it, x.toFloat(), y.toFloat()) }
+    }
     operator fun set(uniform: TypedUniform<Point>, x: Float, y: Float) {
+        getOffset(uniform).also { bufferSetFloat2(it, x, y) }
+    }
+    operator fun set(uniform: TypedUniform<Vector2F>, x: Float, y: Float) {
         getOffset(uniform).also { bufferSetFloat2(it, x, y) }
     }
     fun set(uniform: TypedUniform<Vector4F>, x: Float, y: Float, z: Float, w: Float) {

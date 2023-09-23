@@ -94,18 +94,18 @@ class UISlider(
             valueChanged()
         }
 
-    private val maxXPos: Double get() = (bg.widthD - button.widthD)
+    private val maxXPos: Double get() = (bg.width - button.width)
 
     //val clampedValue: Int get() = value.clamp(min, max)
 
     private fun reposition() {
-        this@UISlider.button.xD = value.convertRange(min, max, 0.0, maxXPos).toDouble()
+        this@UISlider.button.x = value.convertRange(min, max, 0.0, maxXPos).toDouble()
     }
 
     override fun onSizeChanged() {
-        bg.size(widthD - 16.0, heightD)
-        button.size(heightD, heightD)
-        text.xy(widthD - 16.0, 0.0)
+        bg.size(width - 16.0, height)
+        button.size(height, height)
+        text.xy(width - 16.0, 0.0)
         reposition()
     }
 
@@ -121,7 +121,7 @@ class UISlider(
 
     init {
         this.onMouseDrag {
-            this@UISlider.value = (localMousePos(views).x - button.widthD / 2).convertRange(0.0, maxXPos, this@UISlider.min, this@UISlider.max)
+            this@UISlider.value = (localMousePos(views).x - button.width / 2).convertRange(0.0, maxXPos, this@UISlider.min, this@UISlider.max)
         }
     }
 }

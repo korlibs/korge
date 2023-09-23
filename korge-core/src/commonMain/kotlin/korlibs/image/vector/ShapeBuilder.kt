@@ -12,13 +12,13 @@ fun VectorPath.toFillShape(paint: Paint): Shape = buildShape { fill(paint) { wri
 fun VectorPath.toStrokeShape(paint: Paint, info: StrokeInfo = StrokeInfo()): Shape = buildShape { stroke(paint, info) { write(this@toStrokeShape) } }
 fun VectorPath.toStrokeShape(
     paint: Paint,
-    thickness: Float = 1f,
+    thickness: Double = 1.0,
     pixelHinting: Boolean = false,
     scaleMode: LineScaleMode = LineScaleMode.NORMAL,
     startCap: LineCap = LineCap.BUTT,
     endCap: LineCap = LineCap.BUTT,
     lineJoin: LineJoin = LineJoin.MITER,
-    miterLimit: Float = 20f
+    miterLimit: Double = 20.0
 ): Shape = buildShape { stroke(paint, StrokeInfo(thickness, pixelHinting, scaleMode, startCap, endCap, lineJoin, miterLimit)) { write(this@toStrokeShape) } }
 
 @OptIn(ExperimentalContracts::class)
@@ -69,7 +69,7 @@ open class ShapeBuilder(width: Int?, height: Int?) : Context2d(DummyRenderer), D
         }
     }
 
-    override fun rendererRenderSystemText(state: State, font: Font?, fontSize: Float, text: String, pos: Point, fill: Boolean) {
+    override fun rendererRenderSystemText(state: State, font: Font?, fontSize: Double, text: String, pos: Point, fill: Boolean) {
         shapes += TextShape(
             text = text,
             pos = pos,

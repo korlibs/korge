@@ -35,7 +35,7 @@ interface Filter {
 
     val allFilters: List<Filter> get() = listOf(this)
 
-    val recommendedFilterScale: Float get() = 1f
+    val recommendedFilterScale: Double get() = 1.0
 
     /**
      * The number of pixels the passed texture should be bigger at each direction: left, right, top, left.
@@ -57,7 +57,7 @@ interface Filter {
         texHeight: Int,
         renderColorMul: RGBA,
         blendMode: BlendMode,
-        filterScale: Float,
+        filterScale: Double,
     )
 }
 
@@ -72,7 +72,7 @@ fun Filter.renderToTextureWithBorder(
     texture: Texture,
     texWidth: Int,
     texHeight: Int,
-    filterScale: Float,
+    filterScale: Double,
     block: (texture: Texture, matrix: Matrix) -> Unit,
 ) {
     val filter = this
@@ -110,7 +110,7 @@ class RenderToTextureResult() : Disposable {
     var newTexHeight: Int = 0
     var borderLeft: Int = 0
     var borderTop: Int = 0
-    var filterScale: Float = 1f
+    var filterScale: Double = 1.0
     var matrix = Matrix.IDENTITY
     var texture: Texture? = null
     var fb: AGFrameBuffer? = null
@@ -157,7 +157,7 @@ fun Filter.renderToTextureWithBorderUnsafe(
     texture: Texture,
     texWidth: Int,
     texHeight: Int,
-    filterScale: Float,
+    filterScale: Double,
     result: RenderToTextureResult = RenderToTextureResult()
 ): RenderToTextureResult {
     val filter = this

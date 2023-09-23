@@ -62,7 +62,7 @@ data class StrokeInfo(
     val endCap: LineCap = LineCap.BUTT,
     val join: LineJoin = LineJoin.MITER,
     val miterLimit: Double = 20.0,
-    val dash: IDoubleArrayList? = null,
+    val dash: DoubleList? = null,
     val dashOffset: Double = 0.0
 )
 

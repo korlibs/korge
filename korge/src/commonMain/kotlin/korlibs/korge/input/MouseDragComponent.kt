@@ -1,26 +1,22 @@
 package korlibs.korge.input
 
-import korlibs.time.DateTime
-import korlibs.time.TimeProvider
-import korlibs.time.TimeSpan
-import korlibs.korge.view.View
-import korlibs.korge.view.Views
-import korlibs.korge.view.xy
-import korlibs.io.lang.Closeable
+import korlibs.io.lang.*
+import korlibs.korge.view.*
 import korlibs.math.geom.*
+import korlibs.time.*
 
 open class MouseDragInfo(
     val view: View,
-    var dx: Float = 0f,
-    var dy: Float = 0f,
+    var dx: Double = 0.0,
+    var dy: Double = 0.0,
     var start: Boolean = false,
     var end: Boolean = false,
     var startTime: DateTime = DateTime.EPOCH,
     var time: DateTime = DateTime.EPOCH,
-    var sx: Float = 0f,
-    var sy: Float = 0f,
-    var cx: Float = 0f,
-    var cy: Float = 0f,
+    var sx: Double = 0.0,
+    var sy: Double = 0.0,
+    var cx: Double = 0.0,
+    var cy: Double = 0.0,
 ) {
     override fun toString(): String = "MouseDragInfo(start=$start, end=$end, sx=$sx, sy=$sy, cx=$cx, cy=$cy)"
 
@@ -28,33 +24,33 @@ open class MouseDragInfo(
     val elapsed: TimeSpan get() = time - startTime
 
     val localDXY: Point get() = localDXY(view)
-    @Deprecated("") val localDX: Float get() = localDX(view)
-    @Deprecated("") val localDY: Float get() = localDY(view)
+    @Deprecated("") val localDX: Double get() = localDX(view)
+    @Deprecated("") val localDY: Double get() = localDY(view)
 
     fun localDXY(view: View): Point = view.parent?.globalToLocalDelta(Point(0.0, 0.0), Point(dx, dy)) ?: Point(dx, dy)
-    @Deprecated("") fun localDX(view: View): Float = localDXY(view).x
-    @Deprecated("") fun localDY(view: View): Float = localDXY(view).y
+    @Deprecated("") fun localDX(view: View): Double = localDXY(view).x
+    @Deprecated("") fun localDY(view: View): Double = localDXY(view).y
 
-    private var lastDx: Float = Float.NaN
-    private var lastDy: Float = Float.NaN
+    private var lastDx: Double = Double.NaN
+    private var lastDy: Double = Double.NaN
 
-    var deltaDx: Float = 0f
-    var deltaDy: Float = 0f
+    var deltaDx: Double = 0.0
+    var deltaDy: Double = 0.0
 
     fun reset() {
-        lastDx = Float.NaN
-        lastDy = Float.NaN
-        deltaDx = 0f
-        deltaDy = 0f
-        dx = 0f
-        dy = 0f
-        sx = 0f
-        sy = 0f
-        cx = 0f
-        cy = 0f
+        lastDx = Double.NaN
+        lastDy = Double.NaN
+        deltaDx = 0.0
+        deltaDy = 0.0
+        dx = 0.0
+        dy = 0.0
+        sx = 0.0
+        sy = 0.0
+        cx = 0.0
+        cy = 0.0
     }
 
-    fun set(dx: Float, dy: Float, start: Boolean, end: Boolean, time: DateTime, sx: Float, sy: Float, cx: Float, cy: Float): MouseDragInfo {
+    fun set(dx: Double, dy: Double, start: Boolean, end: Boolean, time: DateTime, sx: Double, sy: Double, cx: Double, cy: Double): MouseDragInfo {
         this.dx = dx
         this.dy = dy
         this.sx = sx
@@ -100,10 +96,10 @@ private fun <T : View> T.onMouseDragInternal(
     MouseDragInfo = MouseDragInfo(this), callback: Views.(MouseDragInfo) -> Unit
 ): Pair<T, OnMouseDragCloseable> {
     var dragging = false
-    var sx = 0f
-    var sy = 0f
-    var cx = 0f
-    var cy = 0f
+    var sx = 0.0
+    var sy = 0.0
+    var cx = 0.0
+    var cy = 0.0
     val view = this
 
     var mousePos = Point()
@@ -171,12 +167,12 @@ fun <T : View> T.onMouseDrag(
 open class DraggableInfo(view: View) : MouseDragInfo(view) {
     var viewStartXY = Point()
 
-    var viewStartX: Float
+    var viewStartX: Double
         get() = viewStartXY.x;
         set(value) {
             viewStartXY = viewStartXY.copy(x = value)
         }
-    var viewStartY: Float
+    var viewStartY: Double
         get() = viewStartXY.y;
         set(value) {
             viewStartXY = viewStartXY.copy(y = value)
@@ -184,12 +180,12 @@ open class DraggableInfo(view: View) : MouseDragInfo(view) {
 
     var viewPrevXY = Point()
 
-    var viewPrevX: Float
+    var viewPrevX: Double
         get() = viewPrevXY.x;
         set(value) {
             viewPrevXY = viewPrevXY.copy(x = value)
         }
-    var viewPrevY: Float
+    var viewPrevY: Double
         get() = viewPrevXY.y;
         set(value) {
             viewPrevXY = viewPrevXY.copy(y = value)
@@ -197,12 +193,12 @@ open class DraggableInfo(view: View) : MouseDragInfo(view) {
 
     var viewNextXY = Point()
 
-    var viewNextX: Float
+    var viewNextX: Double
         get() = viewNextXY.x;
         set(value) {
             viewNextXY = viewNextXY.copy(x = value)
         }
-    var viewNextY: Float
+    var viewNextY: Double
         get() = viewNextXY.y;
         set(value) {
             viewNextXY = viewNextXY.copy(y = value)
@@ -210,12 +206,12 @@ open class DraggableInfo(view: View) : MouseDragInfo(view) {
 
     var viewDeltaXY = Point.ZERO
 
-    var viewDeltaX: Float
+    var viewDeltaX: Double
         get() = viewDeltaXY.x;
         set(value) {
             viewDeltaXY = viewDeltaXY.copy(x = value)
         }
-    var viewDeltaY: Float
+    var viewDeltaY: Double
         get() = viewDeltaXY.y;
         set(value) {
             viewDeltaXY = viewDeltaXY.copy(y = value)

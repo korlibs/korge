@@ -142,8 +142,8 @@ abstract class BaseGraphics(
         return true
     }
 
-    var realImageScaleX = 1f
-    var realImageScaleY = 1f
+    var realImageScaleX = 1.0
+    var realImageScaleY = 1.0
 
     protected abstract fun drawShape(ctx: Context2d) // this@BaseGraphics.compoundShape.draw(this)
     protected abstract fun getShapeBounds(includeStrokes: Boolean): Rectangle // shapes.fastForEach { it.addBounds(bb) }
@@ -155,21 +155,21 @@ abstract class BaseGraphics(
 
     //val fillWidth get() = (bitmap.width - EXTRA_PIXELS).toDouble() / realImageScaleX
     //val fillHeight get() = (bitmap.height - EXTRA_PIXELS).toDouble() / realImageScaleY
-    val fillWidth: Float get() = _getLocalBoundsInternal(strokes = renderBoundsStrokes).width
-    val fillHeight: Float get() = _getLocalBoundsInternal(strokes = renderBoundsStrokes).height
+    val fillWidth: Double get() = _getLocalBoundsInternal(strokes = renderBoundsStrokes).width
+    val fillHeight: Double get() = _getLocalBoundsInternal(strokes = renderBoundsStrokes).height
 
     private val bitmapWidth: Float get() = bitmap.width.toFloat()
     private val bitmapHeight: Float get() = bitmap.height.toFloat()
 
-    final override val bwidth: Float get() = bitmapWidth / realImageScaleX
-    final override val bheight: Float get() = bitmapHeight / realImageScaleY
+    final override val bwidth: Float get() = (bitmapWidth / realImageScaleX).toFloat()
+    final override val bheight: Float get() = (bitmapHeight / realImageScaleY).toFloat()
     final override val frameWidth: Float get() = bwidth
     final override val frameHeight: Float get() = bheight
 
-    final override val anchorDispX: Float get() = (anchor.sx * bwidth)
-    final override val anchorDispY: Float get() = (anchor.sy * bheight)
-    override val sLeft: Float get() = _getLocalBoundsInternal(strokes = renderBoundsStrokes).x
-    override val sTop: Float get() = _getLocalBoundsInternal(strokes = renderBoundsStrokes).y
+    final override val anchorDispX: Float get() = (anchor.sx * bwidth).toFloat()
+    final override val anchorDispY: Float get() = (anchor.sy * bheight).toFloat()
+    override val sLeft: Float get() = _getLocalBoundsInternal(strokes = renderBoundsStrokes).x.toFloat()
+    override val sTop: Float get() = _getLocalBoundsInternal(strokes = renderBoundsStrokes).y.toFloat()
 
     internal val _sLeft get() = sLeft
     internal val _sTop get() = sTop
@@ -209,16 +209,16 @@ abstract class BaseGraphics(
     fun getLocalBoundsInternalNoAnchor(includeStrokes: Boolean): Rectangle = boundsUnsafe(includeStrokes)
 
     internal class InternalViewAutoscaling {
-        var renderedAtScaleXInv = 1f; private set
-        var renderedAtScaleYInv = 1f; private set
-        var renderedAtScaleX = 1f; private set
-        var renderedAtScaleY = 1f; private set
-        var renderedAtScaleXY = 1f; private set
+        var renderedAtScaleXInv = 1.0; private set
+        var renderedAtScaleYInv = 1.0; private set
+        var renderedAtScaleX = 1.0; private set
+        var renderedAtScaleY = 1.0; private set
+        var renderedAtScaleXY = 1.0; private set
         private var matrixTransform = MatrixTransform()
 
         fun onRender(autoScaling: Boolean, autoScalingPrecise: Boolean, globalMatrix: Matrix): Boolean {
             if (autoScaling) {
-                matrixTransform = globalMatrix.immutable.toTransform()
+                matrixTransform = globalMatrix.toTransform()
                 //val sx = kotlin.math.abs(matrixTransform.scaleX / this.scaleX)
                 //val sy = kotlin.math.abs(matrixTransform.scaleY / this.scaleY)
 
@@ -240,17 +240,17 @@ abstract class BaseGraphics(
                     renderedAtScaleX = sx
                     renderedAtScaleY = sy
                     renderedAtScaleXY = sxy
-                    renderedAtScaleXInv = 1f / sx
-                    renderedAtScaleYInv = 1f / sy
+                    renderedAtScaleXInv = 1.0 / sx
+                    renderedAtScaleYInv = 1.0 / sy
                     //println("renderedAtScale: $renderedAtScaleX, $renderedAtScaleY")
                     return true
                 }
             } else {
-                renderedAtScaleX = 1f
-                renderedAtScaleY = 1f
-                renderedAtScaleXY = 1f
-                renderedAtScaleXInv = 1f
-                renderedAtScaleYInv = 1f
+                renderedAtScaleX = 1.0
+                renderedAtScaleY = 1.0
+                renderedAtScaleXY = 1.0
+                renderedAtScaleXInv = 1.0
+                renderedAtScaleYInv = 1.0
             }
             return false
         }

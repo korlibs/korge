@@ -109,7 +109,7 @@ class Convolute3Filter(
         return MarginInt(dist.toIntCeil())
     }
 
-    override fun updateUniforms(ctx: RenderContext, filterScale: Float) {
+    override fun updateUniforms(ctx: RenderContext, filterScale: Double) {
         super.updateUniforms(ctx, filterScale)
         ctx[ConvoluteUB].push {
             it[u_ApplyAlpha] = applyAlpha

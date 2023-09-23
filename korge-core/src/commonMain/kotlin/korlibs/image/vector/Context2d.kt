@@ -43,7 +43,7 @@ open class Context2d(
     protected open fun rendererRenderSystemText(
         state: State,
         font: Font?,
-        fontSize: Float,
+        fontSize: Double,
         text: String,
         pos: Point,
         fill: Boolean
@@ -112,22 +112,22 @@ open class Context2d(
         var clip: VectorPath? = null,
         var path: VectorPath = VectorPath(),
         var lineScaleMode: LineScaleMode = LineScaleMode.NORMAL,
-        var lineWidth: Float = 1f,
+        var lineWidth: Double = 1.0,
         var startLineCap: LineCap = LineCap.BUTT,
         var endLineCap: LineCap = LineCap.BUTT,
         var lineJoin: LineJoin = LineJoin.MITER,
-        var miterLimit: Float = 10f,
+        var miterLimit: Double = 10.0,
         var strokeStyle: Paint = DefaultPaint,
         var fillStyle: Paint = DefaultPaint,
         var fontRegistry: FontRegistry? = null,
         var font: Font? = null,
-        var fontSize: Float = 24f,
+        var fontSize: Double = 24.0,
         var verticalAlign: VerticalAlign = VerticalAlign.BASELINE,
         var horizontalAlign: HorizontalAlign = HorizontalAlign.LEFT,
-        var globalAlpha: Float = 1f,
+        var globalAlpha: Double = 1.0,
         var globalCompositeOperation: CompositeOperation = CompositeMode.SOURCE_OVER,
-        var lineDash: IFloatArrayList? = null,
-        var lineDashOffset: Float = 0f,
+        var lineDash: DoubleList? = null,
+        var lineDashOffset: Double = 0.0,
     ) {
         val transformTransform by lazy { transform.toTransform() }
         val scaledLineWidth get() = lineWidth * transformTransform.scaleAvg.absoluteValue.toFloat()
@@ -162,9 +162,9 @@ open class Context2d(
     private val stack = Stack<State>()
 
     var lineScaleMode: LineScaleMode ; get() = state.lineScaleMode ; set(value) { state.lineScaleMode = value }
-    var lineWidth: Float ; get() = state.lineWidth ; set(value) { state.lineWidth = value }
+    var lineWidth: Double ; get() = state.lineWidth ; set(value) { state.lineWidth = value }
     var lineCap: LineCap ; get() = state.lineCap ; set(value) { state.lineCap = value }
-    var miterLimit: Float ; get() = state.miterLimit ; set(value) { state.miterLimit = value }
+    var miterLimit: Double ; get() = state.miterLimit ; set(value) { state.miterLimit = value }
     var startLineCap: LineCap ; get() = state.startLineCap ; set(value) { state.startLineCap = value }
     var endLineCap: LineCap ; get() = state.endLineCap ; set(value) { state.endLineCap = value }
     var lineJoin: LineJoin ; get() = state.lineJoin ; set(value) { state.lineJoin = value }
@@ -173,7 +173,7 @@ open class Context2d(
     var fontRegistry: FontRegistry? ; get() = state.fontRegistry ; set(value) { state.fontRegistry = value }
     var font: Font? ; get() = state.font ; set(value) { state.font = value }
     var fontName: String? ; get() = font?.name ; set(value) { font = fontRegistry?.get(value) }
-    var fontSize: Float ; get() = state.fontSize ; set(value) { state.fontSize = value }
+    var fontSize: Double ; get() = state.fontSize ; set(value) { state.fontSize = value }
     var verticalAlign: VerticalAlign; get() = state.verticalAlign ; set(value) { state.verticalAlign = value }
     var horizontalAlign: HorizontalAlign; get() = state.horizontalAlign ; set(value) { state.horizontalAlign = value }
     var alignment: TextAlignment
@@ -182,12 +182,12 @@ open class Context2d(
             horizontalAlign = value.horizontal
             verticalAlign = value.vertical
         }
-    var globalAlpha: Float ; get() = state.globalAlpha ; set(value) { state.globalAlpha = value }
+    var globalAlpha: Double ; get() = state.globalAlpha ; set(value) { state.globalAlpha = value }
     var globalCompositeOperation: CompositeOperation ; get() = state.globalCompositeOperation ; set(value) { state.globalCompositeOperation = value }
-    var lineDash: IFloatArrayList?; get() = state.lineDash ; set(value) { state.lineDash = value }
-    var lineDashOffset: Float; get() = state.lineDashOffset ; set(value) { state.lineDashOffset = value }
+    var lineDash: DoubleList?; get() = state.lineDash ; set(value) { state.lineDash = value }
+    var lineDashOffset: Double; get() = state.lineDashOffset ; set(value) { state.lineDashOffset = value }
 
-    inline fun lineDash(lineDash: IFloatArrayList?, lineDashOffset: Float = 0f, callback: () -> Unit) {
+    inline fun lineDash(lineDash: DoubleList?, lineDashOffset: Double = 0.0, callback: () -> Unit) {
         val oldLineDash = this.lineDash
         val oldLineDashOffset = this.lineDashOffset
         this.lineDash = lineDash
@@ -223,7 +223,7 @@ open class Context2d(
     inline fun font(
         font: Font? = this.font,
         align: TextAlignment = this.alignment,
-        size: Float = this.fontSize,
+        size: Double = this.fontSize,
         callback: () -> Unit
     ) {
         val oldFont = this.font
@@ -428,12 +428,12 @@ open class Context2d(
 
     inline fun stroke(
         paint: Paint,
-        lineWidth: Float = this.lineWidth,
+        lineWidth: Double = this.lineWidth,
         lineCap: LineCap = this.lineCap,
         lineJoin: LineJoin = this.lineJoin,
-        miterLimit: Float = this.miterLimit,
-        lineDash: IFloatArrayList? = this.lineDash,
-        lineDashOffset: Float = this.lineDashOffset,
+        miterLimit: Double = this.miterLimit,
+        lineDash: DoubleList? = this.lineDash,
+        lineDashOffset: Double = this.lineDashOffset,
         begin: Boolean = true,
         callback: () -> Unit = {}
     ) {
@@ -625,7 +625,7 @@ open class Context2d(
     fun getTextBounds(
         text: String,
         out: TextMetrics = TextMetrics(),
-        fontSize: Float = this.fontSize,
+        fontSize: Double = this.fontSize,
         renderer: TextRenderer<String> = DefaultStringTextRenderer,
         align: TextAlignment = this.alignment,
     ): TextMetrics {
@@ -643,7 +643,7 @@ open class Context2d(
         text: String,
         pos: Point,
         font: Font? = this.font,
-        size: Float = this.fontSize,
+        size: Double = this.fontSize,
         align: TextAlignment = this.alignment,
         color: Paint? = null
     ) {
@@ -658,7 +658,7 @@ open class Context2d(
         paint: Paint? = null, // Deprecated parameter
 
         font: Font? = this.font,
-        size: Float = this.fontSize,
+        size: Double = this.fontSize,
         renderer: TextRenderer<T> = DefaultStringTextRenderer as TextRenderer<T>,
         align: TextAlignment = this.alignment,
         outMetrics: TextMetricsResult? = null,

@@ -1,8 +1,8 @@
 package korlibs.korge.awt
 
-import korlibs.korge.view.*
 import korlibs.io.async.*
 import korlibs.io.serialization.xml.*
+import korlibs.korge.view.*
 
 internal open class ViewsDebuggerActions(val views: Views) {
     var componentOrNull: ViewsDebuggerComponent? = null
@@ -119,8 +119,8 @@ internal open class ViewsDebuggerActions(val views: Views) {
         val view = selectedView
         val increment = if (shift) 10.0 else 1.0
         if (view != null) {
-            view.xD += dx * increment
-            view.yD += dy * increment
+            view.x += dx * increment
+            view.y += dy * increment
         }
         save("Move", view)
     }

@@ -375,18 +375,18 @@ class BatchBuilder2D(
         val f32 = vertices.f32
         var idx = idx
 
-        val ma = matrix.a
-        val mb = matrix.b
-        val mc = matrix.c
-        val md = matrix.d
-        val mtx = matrix.tx
-        val mty = matrix.ty
+        val ma = matrix.a.toFloat()
+        val mb = matrix.b.toFloat()
+        val mc = matrix.c.toFloat()
+        val md = matrix.d.toFloat()
+        val mtx = matrix.tx.toFloat()
+        val mty = matrix.ty.toFloat()
 
         for (n in 0 until vcount) {
             val p = Point(f32[idx + 0], f32[idx + 1])
             val pt = Matrix.transform(ma, mb, mc, md, mtx, mty, p)
-            f32[idx + 0] = pt.x
-            f32[idx + 1] = pt.y
+            f32[idx + 0] = pt.x.toFloat()
+            f32[idx + 1] = pt.y.toFloat()
             idx += VERTEX_INDEX_SIZE
         }
     }

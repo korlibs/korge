@@ -31,6 +31,6 @@ class NinePatchShapeView(
 
     override fun onSizeChanged() {
         super.onSizeChanged()
-        graphics.shape = shape.transform(Size(widthD, heightD))
+        graphics.shape = shape.transform(Size(width, height))
     }
 }

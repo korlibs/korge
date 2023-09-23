@@ -44,8 +44,8 @@ open class ComposedFilter private constructor(
 
     override val allFilters: List<Filter> get() = filters.flatMap { it.allFilters }
 
-    override val recommendedFilterScale: Float get() {
-        var out = 1f
+    override val recommendedFilterScale: Double get() {
+        var out = 1.0
         filters.fastForEach { out *= it.recommendedFilterScale  }
         return out
     }
@@ -76,7 +76,7 @@ open class ComposedFilter private constructor(
         texHeight: Int,
         renderColorMul: RGBA,
         blendMode: BlendMode,
-        filterScale: Float,
+        filterScale: Double,
 	) {
         var mat = matrix
         var tex = texture

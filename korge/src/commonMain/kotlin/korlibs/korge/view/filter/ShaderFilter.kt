@@ -103,10 +103,10 @@ abstract class ShaderFilter : FilterWithFiltering {
     }
 
     //@CallSuper
-    protected open fun updateUniforms(ctx: RenderContext, filterScale: Float) {
+    protected open fun updateUniforms(ctx: RenderContext, filterScale: Double) {
     }
 
-    private fun _restoreUniforms(ctx: RenderContext, filterScale: Float) {
+    private fun _restoreUniforms(ctx: RenderContext, filterScale: Double) {
         resetTex.fastForEachOneBits {
             ctx.textureUnits.copyFrom(oldTextureUnits, it)
             oldTextureUnits.set(it, null)
@@ -115,7 +115,7 @@ abstract class ShaderFilter : FilterWithFiltering {
     }
 
     private fun _updateUniforms(
-        ctx: RenderContext, filterScale: Float, texture: Texture,
+        ctx: RenderContext, filterScale: Double, texture: Texture,
         texWidth: Int,
         texHeight: Int,
     ) {
@@ -156,7 +156,7 @@ abstract class ShaderFilter : FilterWithFiltering {
         texHeight: Int,
         renderColorMul: RGBA,
         blendMode: BlendMode,
-        filterScale: Float,
+        filterScale: Double,
     ) {
         if (isIdentity) return IdentityFilter.render(
             ctx,

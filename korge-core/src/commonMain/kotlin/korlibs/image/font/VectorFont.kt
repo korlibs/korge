@@ -7,11 +7,11 @@ import korlibs.io.lang.*
 import korlibs.math.geom.*
 
 interface VectorFont : Font {
-    fun getGlyphPath(size: Float, codePoint: Int, path: GlyphPath = GlyphPath(), reader: WStringReader? = null): GlyphPath?
+    fun getGlyphPath(size: Double, codePoint: Int, path: GlyphPath = GlyphPath(), reader: WStringReader? = null): GlyphPath?
 
     override fun renderGlyph(
         ctx: Context2d,
-        size: Float,
+        size: Double,
         codePoint: Int,
         pos: Point,
         fill: Boolean?,
@@ -61,13 +61,13 @@ data class VectorFontList(val list: List<VectorFont>) : VectorFont, Extra by Ext
 
     private val temp = GlyphPath()
 
-    override fun getGlyphPath(size: Float, codePoint: Int, path: GlyphPath, reader: WStringReader?): GlyphPath? =
+    override fun getGlyphPath(size: Double, codePoint: Int, path: GlyphPath, reader: WStringReader?): GlyphPath? =
         list.firstNotNullOfOrNull { it.getGlyphPath(size, codePoint, path, reader) }
 
-    override fun getFontMetrics(size: Float, metrics: FontMetrics): FontMetrics =
+    override fun getFontMetrics(size: Double, metrics: FontMetrics): FontMetrics =
         list.first().getFontMetrics(size, metrics)
 
-    override fun getGlyphMetrics(size: Float, codePoint: Int, metrics: GlyphMetrics, reader: WStringReader?): GlyphMetrics {
+    override fun getGlyphMetrics(size: Double, codePoint: Int, metrics: GlyphMetrics, reader: WStringReader?): GlyphMetrics {
         list.fastForEach { font ->
             if (font.getGlyphPath(size, codePoint, temp, reader) != null) {
                 return font.getGlyphMetrics(size, codePoint, metrics, reader)
@@ -76,7 +76,7 @@ data class VectorFontList(val list: List<VectorFont>) : VectorFont, Extra by Ext
         return list.first().getGlyphMetrics(size, codePoint, metrics, reader)
     }
 
-    override fun getKerning(size: Float, leftCodePoint: Int, rightCodePoint: Int): Float =
+    override fun getKerning(size: Double, leftCodePoint: Int, rightCodePoint: Int): Double =
         list.first().getKerning(size, leftCodePoint, rightCodePoint)
 
 }

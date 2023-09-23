@@ -53,7 +53,7 @@ open class Ellipse(
     private fun updateGraphics() {
         updatePath {
             clear()
-            ellipse(Point(0, 0), Size(this@Ellipse.widthD, this@Ellipse.heightD))
+            ellipse(Point(0, 0), Size(this@Ellipse.width, this@Ellipse.height))
         }
     }
 }

@@ -5,7 +5,7 @@ import korlibs.korge.view.*
 
 /** Chainable method returning this that sets [this] View in the middle between [x1] and [x2] */
 fun <T : View> T.centerXBetween(x1: Double, x2: Double): T {
-    this.xD = (x2 + x1 - this.widthD) / 2
+    this.x = (x2 + x1 - this.width) / 2
     return this
 }
 fun <T : View> T.centerXBetween(x1: Float, x2: Float): T = centerXBetween(x1.toDouble(), x2.toDouble())
@@ -13,7 +13,7 @@ fun <T : View> T.centerXBetween(x1: Int, x2: Int): T = centerXBetween(x1.toDoubl
 
 /** Chainable method returning this that sets [this] View in the middle between [y1] and [y2] */
 fun <T : View> T.centerYBetween(y1: Double, y2: Double): T {
-    this.yD = (y2 + y1 - this.heightD) / 2
+    this.y = (y2 + y1 - this.height) / 2
     return this
 }
 fun <T : View> T.centerYBetween(y1: Float, y2: Float): T = centerYBetween(y1.toDouble(), y2.toDouble())
@@ -61,9 +61,9 @@ fun <T : View> T.alignXY(other: View, ratio: Double, inside: Boolean, doX: Boole
     val iratio = if (inside) ratio else 1.0 - ratio
     //println("this: $this, other: $other, bounds=$bounds, scaledWidth=$scaledWidth, scaledHeight=$scaledHeight, width=$width, height=$height, scale=$scale, $scaleX, $scaleY")
     if (doX) {
-        xD = (bounds.x + (bounds.width * ratio) - localBounds.left) - (this.scaledWidthD * iratio) - (padding * rratioM1_1)
+        x = (bounds.x + (bounds.width * ratio) - localBounds.left) - (this.scaledWidth * iratio) - (padding * rratioM1_1)
     } else {
-        yD = (bounds.y + (bounds.height * ratio) - localBounds.top) - (this.scaledHeightD * iratio) - (padding * rratioM1_1)
+        y = (bounds.y + (bounds.height * ratio) - localBounds.top) - (this.scaledHeight * iratio) - (padding * rratioM1_1)
     }
     return this
 }
