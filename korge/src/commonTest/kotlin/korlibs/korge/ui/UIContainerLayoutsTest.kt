@@ -39,7 +39,7 @@ class UIContainerLayoutsTest {
             """.trimIndent()
         )
 
-        hs1.forcedHeight = 32f
+        hs1.forcedHeight = 32.0
 
         assertEquals(
             """

@@ -347,7 +347,7 @@ open class Text(
                         it.smoothing = smoothing
                         it.bitmap = entry.tex
                         it.pos = Point(entry.x + dx, entry.y + dy)
-                        it.scale = Scale(entry.sx, entry.sy)
+                        it.scaleXY = Scale(entry.sx, entry.sy)
                         it.rotation = entry.rot
                     }
 

@@ -2,9 +2,9 @@
 
 package korlibs.korge.view
 
-import korlibs.encoding.*
 import korlibs.datastructure.*
 import korlibs.datastructure.iterators.*
+import korlibs.encoding.*
 import korlibs.event.*
 import korlibs.image.color.*
 import korlibs.image.vector.*
@@ -330,11 +330,12 @@ abstract class View internal constructor(
     var scalef: Float get() = scale.toFloat() ; set(v) { scale = v.toDouble() }
     */
 
-    var scaleAvg: Double
-        get() = scale.scaleAvg
-        set(value) {
-            scale = Scale(value, value)
-        }
+    var scale: Double
+        get() = scaleXY.scaleAvg
+        set(v) { scaleXY = Scale(v, v) }
+
+    @Deprecated("", ReplaceWith("this.scale"))
+    var scaleAvg: Double by ::scale
 
     /** Local scaling in the X axis of this view */
     var scaleX: Double
@@ -356,16 +357,12 @@ abstract class View internal constructor(
         get() = this::class.simpleName ?: "Unknown"
 
     @ViewProperty(min = 0.0, max = 1.0)
-    var scale: Scale
+    var scaleXY: Scale
         get() = Scale(scaleX, scaleY)
         set(value) {
             scaleX = value.scaleX
             scaleY = value.scaleY
         }
-
-    var scaleXY: Double
-        get() = (scaleX + scaleY) / 2.0
-        set(v) { scaleX = v; scaleY = v }
 
     ///** Allows to change [scaleXD] and [scaleYD] at once. Returns the mean value of x and y scales. */
     //var scaleD: Double
@@ -406,7 +403,7 @@ abstract class View internal constructor(
         get() = getLocalBounds().size
         set(value) {
             val size = this.size
-            scale = Scale(
+            scaleXY = Scale(
                 (if (scaleX == 0.0) 1.0 else scaleX) * (value.width / size.width),
                 (if (scaleY == 0.0) 1.0 else scaleY) * (value.height / size.height)
             )

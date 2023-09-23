@@ -7,7 +7,7 @@ class ShapeViewTest {
     @Test
     fun testShapeViewBounds() {
         for (renderer in GraphicsRenderer.values()) {
-            val view = ShapeView(strokeThickness = 1f)
+            val view = ShapeView(strokeThickness = 1.0)
             view.renderer = renderer
             view.updatePath {
                 clear()

@@ -169,11 +169,11 @@ open class UIVerticalStack(
 }
 
 inline fun Container.uiHorizontalStack(
-    height: Double? = null,
-    padding: Double = UI_DEFAULT_PADDING,
+    height: Number? = null,
+    padding: Number = UI_DEFAULT_PADDING,
     adjustHeight: Boolean = true,
     block: @ViewDslMarker UIHorizontalStack.() -> Unit = {}
-) = UIHorizontalStack(height, padding, adjustHeight).addTo(this).apply(block)
+) = UIHorizontalStack(height?.toDouble(), padding.toDouble(), adjustHeight).addTo(this).apply(block)
 
 open class UIHorizontalStack(
     forcedHeight: Double? = null,

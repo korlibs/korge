@@ -2,13 +2,12 @@ package korlibs.korge.input
 
 import korlibs.event.*
 import korlibs.io.lang.*
-import korlibs.korge.tests.ViewsForTesting
-import korlibs.korge.time.delay
+import korlibs.korge.tests.*
+import korlibs.korge.time.*
 import korlibs.korge.view.*
 import korlibs.math.geom.*
 import korlibs.time.*
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import kotlin.test.*
 
 class KeysEventsTest : ViewsForTesting() {
     @Test
@@ -63,10 +62,10 @@ class KeysEventsTest : ViewsForTesting() {
                     calledTimes.getOrPut(it.key) { 0 }
                     calledTimes[it.key] = calledTimes[it.key]!! + 1
                     when (it.key) {
-                        Key.LEFT -> pos += Vector2F(-1, 0)
-                        Key.RIGHT -> pos += Vector2F(+1, 0)
-                        Key.UP -> pos += Vector2F(-1, 0)
-                        Key.DOWN -> pos += Vector2F(+1, 0)
+                        Key.LEFT -> pos += Vector2D(-1, 0)
+                        Key.RIGHT -> pos += Vector2D(+1, 0)
+                        Key.UP -> pos += Vector2D(-1, 0)
+                        Key.DOWN -> pos += Vector2D(+1, 0)
                         else -> unreachable
                     }
                 }

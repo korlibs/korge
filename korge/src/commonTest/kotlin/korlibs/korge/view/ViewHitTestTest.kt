@@ -1,8 +1,8 @@
 package korlibs.korge.view
 
+import korlibs.image.color.*
 import korlibs.korge.tests.*
 import korlibs.korge.ui.*
-import korlibs.image.color.*
 import korlibs.math.geom.*
 import korlibs.math.geom.vector.*
 import kotlin.test.*
@@ -73,8 +73,8 @@ class Polygon(
             fill(Colors.WHITE) {
                 for (n in 0 until polygon.sides) {
                     val angle = ((360.degrees * n) / polygon.sides) - 90.degrees
-                    val x = polygon.radius * angle.cosineD
-                    val y = polygon.radius * angle.sineD
+                    val x = polygon.radius * angle.cosine
+                    val y = polygon.radius * angle.sine
                     //println("$x, $y")
                     if (n == 0) {
                         moveTo(Point(x, y))
