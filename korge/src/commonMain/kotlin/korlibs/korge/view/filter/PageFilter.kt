@@ -12,15 +12,15 @@ import kotlin.math.*
  * A filter that simulates a page of a book.
  */
 class PageFilter(
-    hratio: Float = 0f,
-    hamplitude0: Float = 0f,
-    hamplitude1: Float = 10f,
-    hamplitude2: Float = 0f,
+    hratio: Double = 0.0,
+    hamplitude0: Double = 0.0,
+    hamplitude1: Double = 10.0,
+    hamplitude2: Double = 0.0,
 
-    vratio: Float = 0.5f,
-    vamplitude0: Float = 0f,
-    vamplitude1: Float = 0f,
-    vamplitude2: Float = 0f
+    vratio: Double = 0.5,
+    vamplitude0: Double = 0.0,
+    vamplitude1: Double = 0.0,
+    vamplitude2: Double = 0.0,
 ) : ShaderFilter() {
     object PageUB : UniformBlock(fixedLocation = 5) {
         val u_Offset by vec2()
@@ -53,22 +53,22 @@ class PageFilter(
     }
 
     @ViewProperty
-    var hratio: Float = hratio
+    var hratio: Double = hratio
     @ViewProperty
-    var hamplitude0: Float = hamplitude0
+    var hamplitude0: Double = hamplitude0
     @ViewProperty
-    var hamplitude1: Float = hamplitude1
+    var hamplitude1: Double = hamplitude1
     @ViewProperty
-    var hamplitude2: Float = hamplitude2
+    var hamplitude2: Double = hamplitude2
 
     @ViewProperty
-    var vratio: Float = vratio
+    var vratio: Double = vratio
     @ViewProperty
-    var vamplitude0: Float = vamplitude0
+    var vamplitude0: Double = vamplitude0
     @ViewProperty
-    var vamplitude1: Float = vamplitude1
+    var vamplitude1: Double = vamplitude1
     @ViewProperty
-    var vamplitude2: Float = vamplitude2
+    var vamplitude2: Double = vamplitude2
 
     override val programProvider: ProgramProvider get() = PageFilter
 

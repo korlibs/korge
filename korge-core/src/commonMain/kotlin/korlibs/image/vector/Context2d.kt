@@ -428,24 +428,24 @@ open class Context2d(
 
     inline fun stroke(
         paint: Paint,
-        lineWidth: Double = this.lineWidth,
+        lineWidth: Number = this.lineWidth,
         lineCap: LineCap = this.lineCap,
         lineJoin: LineJoin = this.lineJoin,
-        miterLimit: Double = this.miterLimit,
+        miterLimit: Number = this.miterLimit,
         lineDash: DoubleList? = this.lineDash,
-        lineDashOffset: Double = this.lineDashOffset,
+        lineDashOffset: Number = this.lineDashOffset,
         begin: Boolean = true,
         callback: () -> Unit = {}
     ) {
         if (begin) beginPath()
         callback()
         keep {
-            this.lineWidth = lineWidth
+            this.lineWidth = lineWidth.toDouble()
             this.lineCap = lineCap
             this.lineJoin = lineJoin
-            this.miterLimit = miterLimit
+            this.miterLimit = miterLimit.toDouble()
             this.lineDash = lineDash
-            this.lineDashOffset = lineDashOffset
+            this.lineDashOffset = lineDashOffset.toDouble()
             stroke(paint)
         }
     }
@@ -643,11 +643,11 @@ open class Context2d(
         text: String,
         pos: Point,
         font: Font? = this.font,
-        size: Double = this.fontSize,
+        size: Number = this.fontSize,
         align: TextAlignment = this.alignment,
         color: Paint? = null
     ) {
-        this.drawText(text, pos, fill = true, size = size, align = align, fillStyle = color, font = font)
+        this.drawText(text, pos, fill = true, size = size.toDouble(), align = align, fillStyle = color, font = font)
     }
 
     fun <T> drawText(

@@ -1228,9 +1228,10 @@ class Bezier private constructor(val points: PointList, dummy: Unit) : Curve {
         private fun lli4(p1: Point, p2: Point, p3: Point, p4: Point): Point? =
             lli8(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y, p4.x, p4.y)
 
-        fun cubicFromPoints(S: Point, B: Point, E: Point, t: Double = 0.5, d1: Double? = null): Bezier {
+        fun cubicFromPoints(S: Point, B: Point, E: Point, t: Ratio = Ratio.HALF, d1: Double? = null): Bezier {
             val abc = getABC(3, S, B, E, t)
             val d1 = d1 ?: dist(B, abc.C)
+            val t = t.toDouble()
             val d2 = (d1 * (1 - t)) / t
 
             val selen = dist(S, E)
@@ -1255,18 +1256,18 @@ class Bezier private constructor(val points: PointList, dummy: Unit) : Curve {
             return Bezier(S, nc1, nc2, E)
         }
 
-        fun quadraticFromPoints(p1: Point, p2: Point, p3: Point, t: Double = 0.5): Bezier {
+        fun quadraticFromPoints(p1: Point, p2: Point, p3: Point, t: Ratio = Ratio.HALF): Bezier {
             // shortcuts, although they're really dumb
-            if (t == 0.0) return Bezier(p2, p2, p3)
-            if (t == 1.0) return Bezier(p1, p2, p2)
+            if (t == Ratio.ZERO) return Bezier(p2, p2, p3)
+            if (t == Ratio.ONE) return Bezier(p1, p2, p2)
             // real fitting.
             val abc = Bezier.getABC(2, p1, p2, p3, t);
             return Bezier(p1, abc.A, p3);
         }
 
-        private fun getABC(order: Int, S: Point, B: Point, E: Point, t: Double = 0.5): ABCResult {
+        private fun getABC(order: Int, S: Point, B: Point, E: Point, t: Ratio = Ratio.HALF): ABCResult {
             val u = projectionratio(t, order)
-            val um = 1.0 - u
+            val um = Ratio.ONE - u
             val C = Point(
                 u * S.x + um * E.x,
                 u * S.y + um * E.y,
@@ -1287,22 +1288,24 @@ class Bezier private constructor(val points: PointList, dummy: Unit) : Curve {
             val E: Point,
         )
 
-        private fun projectionratio(t: Double = 0.5, n: Int): Double {
+        private fun projectionratio(t: Ratio = Ratio.HALF, n: Int): Ratio {
             // see u(t) note on http://pomax.github.io/bezierinfo/#abc
-            if (n != 2 && n != 3) return Double.NaN
-            if (t == 0.0 || t == 1.0) return t
+            if (n != 2 && n != 3) return Ratio.NaN
+            if (t == Ratio.ZERO || t == Ratio.ONE) return t
+            val t = t.toDouble()
             val top = (1 - t).pow(n)
             val bottom = t.pow(n) + top
-            return top / bottom
+            return (top / bottom).toRatio()
         }
 
-        private fun abcratio(t: Double, n: Int): Double {
+        private fun abcratio(t: Ratio, n: Int): Ratio {
             // see ratio(t) note on http://pomax.github.io/bezierinfo/#abc
-            if (n != 2 && n != 3) return Double.NaN
-            if (t == 0.0 || t == 1.0) return t
+            if (n != 2 && n != 3) return Ratio.NaN
+            if (t == Ratio.ZERO || t == Ratio.ONE) return t
+            val t = t.toDouble()
             val bottom = (t).pow(n) + (1 - t).pow(n)
             val top = bottom - 1
-            return abs(top / bottom)
+            return abs(top / bottom).toRatio()
         }
 
         private fun dist(p1: Point, p2: Point): Double {

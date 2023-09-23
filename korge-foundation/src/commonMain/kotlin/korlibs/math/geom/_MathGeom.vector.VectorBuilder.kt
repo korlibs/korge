@@ -155,7 +155,7 @@ interface VectorBuilder {
     fun circle(circle: Circle) = circle(circle.center, circle.radius)
     fun circleHole(circle: Circle) = circleHole(circle.center, circle.radius)
 
-    fun circle(center: Point, radius: Double) = arc(center, radius, Angle.ZERO, Angle.FULL)
+    fun circle(center: Point, radius: Double): Unit = arc(center, radius, Angle.ZERO, Angle.FULL)
     fun circleHole(center: Point, radius: Double) = arc(center, radius, Angle.ZERO, Angle.FULL, counterclockwise = true)
 
     fun ellipse(bounds: Rectangle) = ellipse(bounds.center, bounds.size / 2)
@@ -285,6 +285,9 @@ interface VectorBuilder {
 
     fun <T> transformed(m: Matrix, block: VectorBuilder.() -> T): T = block(this.transformed(m))
 }
+
+inline fun VectorBuilder.circle(center: Point, radius: Number): Unit = circle(center, radius.toDouble())
+inline fun VectorBuilder.circleHole(center: Point, radius: Number) = circleHole(center, radius.toDouble())
 
 private fun VectorBuilder._regularPolygonStar(
     points: Int,

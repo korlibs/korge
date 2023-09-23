@@ -18,6 +18,14 @@ class UITreeViewList<T>(
     override val height: Double = 20.0,
     val genView: (T) -> View = { UIText("$it") }
 ) : UITreeViewProvider<UITreeViewNode<T>> {
+    companion object {
+        inline operator fun <T> invoke(
+            nodes: List<UITreeViewNode<T>> = listOf(),
+            height: Number = 20.0,
+            noinline genView: (T) -> View = { UIText("$it") }
+        ): UITreeViewList<T> = UITreeViewList(nodes, height.toDouble(), genView)
+    }
+
     override fun getNumChildren(node: UITreeViewNode<T>?): Int {
         if (node == null) return nodes.size
         return node.items.size

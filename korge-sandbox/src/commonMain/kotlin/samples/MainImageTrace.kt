@@ -1,10 +1,10 @@
 package samples
 
-import korlibs.korge.scene.*
-import korlibs.korge.view.*
 import korlibs.image.bitmap.*
 import korlibs.image.bitmap.trace.*
 import korlibs.image.color.*
+import korlibs.korge.scene.*
+import korlibs.korge.view.*
 import korlibs.math.geom.*
 import korlibs.math.geom.vector.*
 
@@ -16,10 +16,10 @@ class MainImageTrace : Scene() {
                 rectHole(Rectangle.fromBounds(6, 6, 9, 12))
                 rectHole(Rectangle.fromBounds(10, 5, 15, 12))
                 rect(Rectangle.fromBounds(50, 2, 68, 18))
-                circle(Point(100, 100), 60f)
-                circle(Point(100, 100), 30f)
+                circle(Point(100, 100), 60.0)
+                circle(Point(100, 100), 30.0)
                 roundRect(200, 50, 50, 50, 5, 5)
-                circle(Point(140, 100), 30f)
+                circle(Point(140, 100), 30.0)
             }
         }
         val path = bmp.trace()

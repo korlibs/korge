@@ -10,7 +10,7 @@ import org.junit.*
 class MaskAndBackdropFilterScreenshotJvmTest {
     @Test
     fun test() = korgeScreenshotTest(Size(100, 100)) {
-        solidRect(widthD, heightD, Colors.GREEN)
+        solidRect(width, height, Colors.GREEN)
 
         //val fill1 = LinearGradientPaint(0, 0, 100, 100).add(0.0, Colors.RED).add(1.0, Colors.BLUE)
         val maskView = fastEllipse(Size(100, 100)).xy(25, 25).visible(false)

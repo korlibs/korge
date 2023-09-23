@@ -77,7 +77,7 @@ class MainEditor : Scene() {
             uiSpacing()
             uiRadioButton(group = group)
         }
-        uiVerticalStack(padding = 4f) {
+        uiVerticalStack(padding = 4.0) {
             xy(800, 100)
             uiButton("BUTTON")
             uiButton("NAME")
@@ -101,13 +101,13 @@ class MainEditor : Scene() {
         uiWindow("Properties", Size(300f, 100f)) {
             //it.isCloseable = false
             it.container.mobileBehaviour = false
-            it.container.overflowRate = 0f
-            uiVerticalStack(300f, padding = 4f) {
+            it.container.overflowRate = 0.0
+            uiVerticalStack(300.0, padding = 4.0) {
                 uiText("Properties").styles { textColor = Colors.RED }
-                uiPropertyNumberRow("Alpha", *UIEditableNumberPropsList(solidRect::alphaF))
-                uiPropertyNumberRow("Position", *UIEditableNumberPropsList(solidRect::x, solidRect::y, min = -1024f, max = +1024f, clamped = false))
-                uiPropertyNumberRow("Size", *UIEditableNumberPropsList(solidRect::unscaledWidth, solidRect::unscaledHeight, min = -1024f, max = +1024f, clamped = false))
-                uiPropertyNumberRow("Scale", *UIEditableNumberPropsList(solidRect::scaleX, solidRect::scaleY, min = -1f, max = +1f, clamped = false))
+                uiPropertyNumberRow("Alpha", *UIEditableNumberPropsList(solidRect::alpha))
+                uiPropertyNumberRow("Position", *UIEditableNumberPropsList(solidRect::x, solidRect::y, min = -1024.0, max = +1024.0, clamped = false))
+                uiPropertyNumberRow("Size", *UIEditableNumberPropsList(solidRect::unscaledWidth, solidRect::unscaledHeight, min = -1024.0, max = +1024.0, clamped = false))
+                uiPropertyNumberRow("Scale", *UIEditableNumberPropsList(solidRect::scaleX, solidRect::scaleY, min = -1.0, max = +1.0, clamped = false))
                 uiPropertyNumberRow("Rotation", *UIEditableNumberPropsList(solidRect::rotationDeg, min = -360.0, max = +360.0, clamped = true))
                 val skewProp = uiPropertyNumberRow("Skew", *UIEditableNumberPropsList(solidRect::skewXDeg, solidRect::skewYDeg, min = -360.0, max = +360.0, clamped = true))
                 append(UIPropertyRow("Visible")) {
@@ -133,7 +133,7 @@ class MainEditor : Scene() {
         }
 
         renderableView(Size(width, height)) {
-            ctx2d.materialRoundRect(0f, 0f, 64f, 64f, radius = RectCorners(32.0, 16.0, 8.0, 0.0))
+            ctx2d.materialRoundRect(0.0, 0.0, 64.0, 64.0, radius = RectCorners(32.0, 16.0, 8.0, 0.0))
         }.xy(500, 500)
 
         val richTextData = RichTextData.fromHTML("hello world,<br /><br />this is a long test to see how <font size=24 color='red'><b><i>rich text</i></b></font> <b color=yellow>works</b>! And <i>see</i> if this is going to show ellipsis if the text is too long")
@@ -148,8 +148,8 @@ class MainEditor : Scene() {
         }
 
         textBlock.simpleAnimator.sequence(looped = true) {
-            tween(textBlock::unscaledWidthD[300.0], time = 5.seconds)
-            tween(textBlock::unscaledWidthD[1.0], time = 5.seconds)
+            tween(textBlock::unscaledWidth[300.0], time = 5.seconds)
+            tween(textBlock::unscaledWidth[1.0], time = 5.seconds)
         }
 
         /*
@@ -168,15 +168,15 @@ class MainEditor : Scene() {
 }
 
 private var View.rotationDeg: Double
-    get() = rotation.degreesD
+    get() = rotation.degrees
     set(value) { rotation = value.degrees }
 
 private var View.skewXDeg: Double
-    get() = skewX.degreesD
+    get() = skewX.degrees
     set(value) { skewX = value.degrees }
 
 private var View.skewYDeg: Double
-    get() = skewY.degreesD
+    get() = skewY.degrees
     set(value) { skewY = value.degrees }
 
 private fun Container.mybutton(font: Font): View {

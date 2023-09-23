@@ -1,17 +1,15 @@
 package samples
 
-import korlibs.time.timesPerSecond
-import korlibs.korge.scene.ScaledScene
-import korlibs.korge.view.SContainer
-import korlibs.korge.view.position
-import korlibs.korge.view.solidRect
-import korlibs.image.color.Colors
-import korlibs.io.async.launchImmediately
-import korlibs.math.geom.MPoint
+import korlibs.image.color.*
+import korlibs.io.async.*
+import korlibs.korge.scene.*
+import korlibs.korge.view.*
+import korlibs.math.geom.*
 import korlibs.math.interpolation.*
-import korlibs.math.random.get
+import korlibs.math.random.*
+import korlibs.time.*
 import util.*
-import kotlin.random.Random
+import kotlin.random.*
 
 class MainCoroutine : ScaledScene(512, 512) {
     override suspend fun SContainer.sceneMain() {
@@ -27,14 +25,14 @@ class MainCoroutine : ScaledScene(512, 512) {
                         val targetX = random[0, 512].toDouble()
                         val targetY = random[0, 512].toDouble()
 
-                        while (MPoint.distance(view.xD, view.yD, targetX, targetY) > 5.0) {
+                        while (Point.distance(view.x, view.y, targetX, targetY) > 5.0) {
                             when {
-                                view.xD < targetX -> view.xD += 2
-                                view.xD > targetX -> view.xD -= 2
+                                view.x < targetX -> view.x += 2
+                                view.x > targetX -> view.x -= 2
                             }
                             when {
-                                view.yD < targetY -> view.yD += 2
-                                view.yD > targetY -> view.yD -= 2
+                                view.y < targetY -> view.y += 2
+                                view.y > targetY -> view.y -= 2
                             }
                             frame()
                         }

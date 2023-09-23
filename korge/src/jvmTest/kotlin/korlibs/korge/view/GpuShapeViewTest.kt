@@ -13,7 +13,7 @@ class GpuShapeViewTest {
     fun test() = korgeScreenshotTest(Size(450, 200)) {
         gpuShapeView {
             it.antialiased = true
-            it.alpha = 0.75f
+            it.alpha = 0.75
             val paint1 = createLinearGradient(0, 0, 200, 200).add(0.0, Colors.BLUE.withAd(0.9)).add(1.0, Colors.WHITE.withAd(0.7))
             translate(60f, 70f) {
                 fill(paint1, winding = Winding.EVEN_ODD) {
@@ -36,7 +36,7 @@ class GpuShapeViewTest {
     @Test
     fun test2() = korgeScreenshotTest(Size(20, 20)) {
         gpuShapeView {
-            fillStroke(fill = Colors.TRANSPARENT_WHITE, stroke = Stroke(Colors.GREEN, thickness = 2f)) {
+            fillStroke(fill = Colors.TRANSPARENT_WHITE, stroke = Stroke(Colors.GREEN, thickness = 2.0)) {
                 rect(.0, .0, 10.0, 10.0)
             }
         }
@@ -79,7 +79,7 @@ class GpuShapeViewTest {
     fun testMultiTextures() = korgeScreenshotTest(Size(450, 200), checkGl = false) {
         gpuShapeView {
             it.antialiased = true
-            it.alpha = 0.75f
+            it.alpha = 0.75
             val paint1 = createLinearGradient(0, 0, 200, 0).add(0.0, Colors.BLUE.withAd(0.9)).add(1.0, Colors.WHITE.withAd(0.7))
             fill(paint1, winding = Winding.EVEN_ODD) {
                 rect(0, 0, 100, 100)
@@ -88,7 +88,7 @@ class GpuShapeViewTest {
         gpuShapeView {
             it.xy(100, 0)
             it.antialiased = true
-            it.alpha = 0.75f
+            it.alpha = 0.75
             val paint1 = createLinearGradient(0, 0, 200, 0).add(0.0, Colors.GREEN.withAd(0.9)).add(1.0, Colors.PURPLE.withAd(0.7))
             fill(paint1, winding = Winding.EVEN_ODD) {
                 rect(0, 0, 100, 100)

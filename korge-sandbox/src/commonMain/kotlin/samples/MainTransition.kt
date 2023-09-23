@@ -13,7 +13,7 @@ class MainTransition : Scene() {
         transition.startNewTransition(SolidRect(100, 100, Colors.BLUE), MaskTransition(
             TransitionFilter.Transition.CIRCULAR
         ))
-        transition.ratio = 0.5f
+        transition.ratio = 0.5
         transition.filters(DropshadowFilter(shadowColor = Colors.PURPLE))
 
         solidRect(100, 100, Colors.GREEN).filters(DropshadowFilter(shadowColor = Colors.PURPLE))

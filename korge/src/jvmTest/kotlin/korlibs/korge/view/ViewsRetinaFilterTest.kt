@@ -11,7 +11,7 @@ class ViewsRetinaFilterTest {
     @Test
     fun test() = korgeScreenshotTest(
         windowSize = Size(100, 100),
-        devicePixelRatio = 2f,
+        devicePixelRatio = 2.0,
     ) {
         val container = container {
             image(Bitmap32(50, 50, Colors.RED.premultiplied))

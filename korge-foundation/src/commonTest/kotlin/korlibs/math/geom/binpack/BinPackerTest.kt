@@ -1,8 +1,7 @@
 package korlibs.math.geom.binpack
 
 import korlibs.math.geom.*
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import kotlin.test.*
 
 class BinPackerTest {
     @Test
@@ -23,15 +22,15 @@ class BinPackerTest {
         )
         assertEquals(4, packs.size)
 
-        assertEquals(10f, packs.first().width)
-        assertEquals(10f, packs.first().height)
-        assertEquals(10f, packs.first().maxWidth)
-        assertEquals(10f, packs.first().maxHeight)
+        assertEquals(10.0, packs.first().width)
+        assertEquals(10.0, packs.first().height)
+        assertEquals(10.0, packs.first().maxWidth)
+        assertEquals(10.0, packs.first().maxHeight)
 
-        assertEquals(10f, packs.last().width)
-        assertEquals(10f, packs.last().height)
-        assertEquals(10f, packs.last().maxWidth)
-        assertEquals(10f, packs.last().maxHeight)
+        assertEquals(10.0, packs.last().width)
+        assertEquals(10.0, packs.last().height)
+        assertEquals(10.0, packs.last().maxWidth)
+        assertEquals(10.0, packs.last().maxHeight)
 
         assertEquals("[Rectangle(x=0, y=0, width=10, height=10)]", packs[0].rectsStr)
         assertEquals(

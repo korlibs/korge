@@ -1,15 +1,13 @@
 package korlibs.image.bitmap
 
-import korlibs.logger.*
 import korlibs.image.vector.*
-import korlibs.io.async.suspendTest
+import korlibs.io.async.*
 import korlibs.io.util.*
+import korlibs.logger.*
 import korlibs.math.geom.*
 import korlibs.math.geom.shape.*
-import korlibs.math.geom.vector.*
 import korlibs.number.*
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import kotlin.test.*
 
 class DistanceBitmapTest {
     val logger = Logger("DistanceBitmapTest")
@@ -83,7 +81,7 @@ class DistanceBitmapTest {
     @Test
     fun testVectorSDF() {
         val path = buildVectorPath {
-            this.circle(Point(5, 5), 5f)
+            this.circle(Point(5, 5), 5.0)
         }
         val sdf = path.sdf(10, 10)
         val msdf = path.msdf(10, 10)

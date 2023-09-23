@@ -1,16 +1,14 @@
 package samples
 
-import korlibs.time.*
 import korlibs.event.*
+import korlibs.image.color.*
+import korlibs.io.async.*
 import korlibs.korge.animate.*
 import korlibs.korge.input.*
-import korlibs.korge.scene.ScaledScene
-import korlibs.korge.view.SContainer
-import korlibs.korge.view.position
-import korlibs.korge.view.solidRect
-import korlibs.image.color.Colors
-import korlibs.io.async.*
-import kotlinx.coroutines.Job
+import korlibs.korge.scene.*
+import korlibs.korge.view.*
+import korlibs.time.*
+import kotlinx.coroutines.*
 
 class MainAnimations : ScaledScene(512, 512) {
     override suspend fun SContainer.sceneMain() {
@@ -52,8 +50,8 @@ class MainAnimations : ScaledScene(512, 512) {
                         }
                         parallel {
                             //rect1.moveTo(0, 150)
-                            moveToWithSpeed(rect1, widthD - 100, 0.0)
-                            moveToWithSpeed(rect2, 0.0, heightD - 100 - 100)
+                            moveToWithSpeed(rect1, width - 100, 0.0)
+                            moveToWithSpeed(rect2, 0.0, height - 100 - 100)
                             //rect1.moveTo(0, height - 100)
                         }
                         block {
@@ -61,8 +59,8 @@ class MainAnimations : ScaledScene(512, 512) {
                         }
                         parallel {
                             //rect1.moveTo(0, 150)
-                            moveTo(rect1, widthD - 100, heightD - 100)
-                            moveTo(rect2, widthD - 100, heightD - 100)
+                            moveTo(rect1, width - 100, height - 100)
+                            moveTo(rect2, width - 100, height - 100)
                             //rect1.moveTo(0, height - 100)
                         }
                         block {

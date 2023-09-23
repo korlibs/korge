@@ -361,8 +361,11 @@ inline class Ratio(val value: Double) : Comparable<Ratio> {
     operator fun unaryMinus(): Ratio = Ratio(-this.value)
     operator fun plus(that: Ratio): Ratio = Ratio(this.value + that.value)
     operator fun minus(that: Ratio): Ratio = Ratio(this.value - that.value)
+
     operator fun times(that: Ratio): Ratio = Ratio(this.value * that.value)
     operator fun div(that: Ratio): Ratio = Ratio(this.value / that.value)
+    operator fun times(that: Double): Double = (this.value * that)
+    operator fun div(that: Double): Double = (this.value / that)
 
     val absoluteValue: Ratio get() = Ratio(value.absoluteValue)
     val clamped: Ratio get() = Ratio(value.clamp01())

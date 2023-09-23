@@ -52,9 +52,12 @@ open class BVH1D<T>(
 }
 
 data class Segment1D(val start: Double, val end: Double) {
+    constructor(start: Float, end: Float) : this(start.toDouble(), end.toDouble())
     val size: Double get() = end - start
 }
-data class Ray1D(val start: Double, val dir: Double)
+data class Ray1D(val start: Double, val dir: Double) {
+    constructor(start: Float, dir: Float) : this(start.toDouble(), dir.toDouble())
+}
 
 fun Segment1D.toBVH(): BVHRect = BVHRect(BVHIntervals(start, size))
 fun Ray1D.toBVH(): BVHRay = BVHRay(BVHIntervals(start, dir))

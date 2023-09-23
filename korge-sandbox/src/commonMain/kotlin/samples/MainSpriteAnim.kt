@@ -72,10 +72,10 @@ class MainSpriteAnim : ScaledScene(512, 512) {
         ) : Sprite(spriteAnimation) {
 
             private val assignments = listOf(
-                KeyAssignment(upKey, spriteAnimationUp) { yD -= it },
-                KeyAssignment(downKey, spriteAnimationDown) { yD += it },
-                KeyAssignment(leftKey, spriteAnimationLeft) { xD -= it },
-                KeyAssignment(rightKey, spriteAnimationRight) { xD += it },
+                KeyAssignment(upKey, spriteAnimationUp) { y -= it },
+                KeyAssignment(downKey, spriteAnimationDown) { y += it },
+                KeyAssignment(leftKey, spriteAnimationLeft) { x -= it },
+                KeyAssignment(rightKey, spriteAnimationRight) { x += it },
             )
 
             /** Allows to know the appropriate moment to stop the movement animation. */
@@ -133,7 +133,7 @@ class MainSpriteAnim : ScaledScene(512, 512) {
 
             if (keys[Key.L]) { player1.playAnimationLooped(spriteAnimationDown, 100.milliseconds) }
             if (keys[Key.T]) { player1.playAnimation(spriteAnimation = spriteAnimationDown, times = 3, spriteDisplayTime = 200.milliseconds) }
-            if (keys[Key.C]) { player1.playAnimationForDuration(1.seconds, spriteAnimationDown); player1.yD -= 2 }
+            if (keys[Key.C]) { player1.playAnimationForDuration(1.seconds, spriteAnimationDown); player1.y -= 2 }
             if (keys[Key.ESCAPE]) { player1.stopAnimation() }
         }
         /*onKeyDown {

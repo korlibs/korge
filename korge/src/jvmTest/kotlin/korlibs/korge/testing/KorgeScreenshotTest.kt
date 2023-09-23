@@ -24,7 +24,7 @@ class KorgeScreenshotTest {
                     val endAngle = kotlin.math.PI +(kotlin.math.PI * j) / 2 // End point on circle
                     val counterclockwise = i % 2 == 1 // Draw counterclockwise
 
-                    ctx.arc(Point(x, y), radius.toFloat(), startAngle.radians, endAngle.radians, counterclockwise)
+                    ctx.arc(Point(x, y), radius.toDouble(), startAngle.radians, endAngle.radians, counterclockwise)
 
                     if (i > 1) {
                         ctx.fill()
@@ -48,7 +48,7 @@ class KorgeScreenshotTest {
         val rect1 = solidRect(100, 100, Colors.RED) {
             rotation = maxDegrees
             anchor(.5, .5)
-            scaleD = 0.8
+            scaleAvg = 0.8
             position(200, 200)
         }
 
@@ -57,7 +57,7 @@ class KorgeScreenshotTest {
         val rect2 = solidRect(150, 150, Colors.YELLOW) {
             rotation = maxDegrees
             anchor(.5, .5)
-            scaleD = 0.8
+            scaleAvg = 0.8
             position(350, 350)
         }
 
@@ -66,7 +66,7 @@ class KorgeScreenshotTest {
         val rect3 = solidRect(150, 150, Colors.GREEN) {
             rotation = maxDegrees
             anchor(.5, .5)
-            scaleD = 0.8
+            scaleAvg = 0.8
             position(100, 350)
         }
 
@@ -108,7 +108,7 @@ class KorgeScreenshotTest {
         val STEPS = 8
         for (n in 0 .. STEPS) {
             simulateRenderFrame()
-            rect.x = STEPS - n.toFloat()
+            rect.x = (STEPS - n.toFloat()).toDouble()
         }
         //println("[4]")
         assertScreenshot()
@@ -122,7 +122,7 @@ class KorgeScreenshotTest {
     ) {
         val bmp = Bitmap32(128, 128).context2d(antialiased = false) {
             stroke(Colors.RED, lineWidth = 24f) {
-                circle(Point(64, 64), 45f)
+                circle(Point(64, 64), 45.0)
             }
         }
         val bmp1 = bmp.clone()

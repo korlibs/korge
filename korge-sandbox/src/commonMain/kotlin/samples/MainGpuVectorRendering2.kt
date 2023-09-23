@@ -32,9 +32,9 @@ class MainGpuVectorRendering2 : Scene() {
             //val shape = graphics({
             shape = gpuShapeView({
                 //val lineWidth = 6.12123231 * 2
-                val lineWidth = 12f
-                val width = 300f
-                val height = 300f
+                val lineWidth = 12.0
+                val width = 300.0
+                val height = 300.0
                 //rotation = 180.degrees
                 this.stroke(mainStrokePaint, lineWidth = lineWidth, lineJoin = LineJoin.MITER, lineCap = LineCap.BUTT) {
                     //this.fill(mainStrokePaint) {

@@ -6,7 +6,7 @@ import korlibs.image.text.*
 import korlibs.io.file.std.*
 import korlibs.korge.testing.*
 import korlibs.korge.view.*
-import korlibs.korge.view.align.alignTopToBottomOf
+import korlibs.korge.view.align.*
 import korlibs.math.geom.*
 import org.junit.*
 
@@ -40,8 +40,8 @@ class TtfFontTest {
                     rect(Rectangle.fromBounds(20, 20, 80, 80))
                 }
 
-                fillText("I", p, size = 60f, font = DefaultTtfFont, color = Colors.WHITE, align = TextAlignment.MIDDLE_CENTER)
-                drawText("L", p, size = 60f, font = DefaultTtfFont, fillStyle = Colors.PURPLE, align = TextAlignment.MIDDLE_CENTER)
+                fillText("I", p, size = 60.0, font = DefaultTtfFont, color = Colors.WHITE, align = TextAlignment.MIDDLE_CENTER)
+                drawText("L", p, size = 60.0, font = DefaultTtfFont, fillStyle = Colors.PURPLE, align = TextAlignment.MIDDLE_CENTER)
             }
         }
 

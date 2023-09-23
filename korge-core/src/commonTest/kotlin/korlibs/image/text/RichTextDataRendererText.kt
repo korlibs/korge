@@ -12,11 +12,11 @@ class RichTextDataRendererText {
         val nativeImage = NativeImage(512, 512)
         nativeImage.context2d {
             val textBounds = Rectangle(50, 50, 150, 100)
-            stroke(Colors.BLUE, lineWidth = 2f) {
+            stroke(Colors.BLUE, lineWidth = 2.0) {
                 rect(textBounds)
             }
             drawRichText(
-                RichTextData.fromHTML("hello world<br /><br /> this is a long test", style = RichTextData.Style.DEFAULT.copy(textSize = 24f)),
+                RichTextData.fromHTML("hello world<br /><br /> this is a long test", style = RichTextData.Style.DEFAULT.copy(textSize = 24.0)),
                 bounds = textBounds,
                 ellipsis = "...",
                 fill = Colors.RED,

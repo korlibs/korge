@@ -18,14 +18,14 @@ class MarginTest {
         assertEquals((15.1f).toFixedShort(), margin.horizontalFixed)
         assertEquals((-3.1f).toFixedShort(), margin.verticalFixed)
 
-        assertEquals((1.1f), margin.top, 0.001f)
-        assertEquals((-3.2f), margin.right, 0.001f)
-        assertEquals((-7.3f), margin.bottom, 0.001f)
-        assertEquals((33.4f), margin.left, 0.001f)
-        assertEquals((30.2f), margin.leftPlusRight, 0.001f)
-        assertEquals((-6.2f), margin.topPlusBottom, 0.001f)
-        assertEquals((15.1f), margin.horizontal, 0.001f)
-        assertEquals((-3.1f), margin.vertical, 0.001f)
+        assertEquals((1.1), margin.top, 0.001)
+        assertEquals((-3.2), margin.right, 0.001)
+        assertEquals((-7.3), margin.bottom, 0.001)
+        assertEquals((33.4), margin.left, 0.001)
+        assertEquals((30.2), margin.leftPlusRight, 0.001)
+        assertEquals((-6.2), margin.topPlusBottom, 0.001)
+        assertEquals((15.1), margin.horizontal, 0.001)
+        assertEquals((-3.1), margin.vertical, 0.001)
 
     }
 

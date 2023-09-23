@@ -3,7 +3,6 @@ package korlibs.image.vector.rasterizer
 import korlibs.image.bitmap.*
 import korlibs.image.color.*
 import korlibs.io.async.*
-import korlibs.io.util.*
 import korlibs.math.geom.*
 import korlibs.math.geom.vector.*
 import korlibs.math.interpolation.*
@@ -49,14 +48,14 @@ class RasterizerTest {
             ) {
                 moveTo(Point(0, 25))
                 lineTo(Point(100, 0))
-                lineToV(100f)
-                lineToH(-100f)
+                lineToV(100.0)
+                lineToH(-100.0)
                 close()
             }
         }
         val shipSize = 24
         val bmp2 = Bitmap32Context2d(shipSize, shipSize) {
-            stroke(Colors.RED, lineWidth = shipSize * 0.05f, lineCap = LineCap.ROUND) {
+            stroke(Colors.RED, lineWidth = shipSize * 0.05, lineCap = LineCap.ROUND) {
                 moveTo(Point(shipSize * 0.5, 0.0))
                 lineTo(Point(shipSize, shipSize))
                 lineTo(Point(shipSize * 0.5, shipSize * 0.8))
@@ -65,11 +64,11 @@ class RasterizerTest {
             }
         }
         val bmp3 = Bitmap32Context2d(3, (shipSize * 0.3).toInt()) {
-            lineWidth = 1f
+            lineWidth = 1.0
             lineCap = LineCap.ROUND
             stroke(Colors.WHITE) {
                 moveTo(Point(width / 2, 0))
-                lineToV(height.toFloat())
+                lineToV(height.toDouble())
             }
         }
         //bmp1.showImageAndWait()
@@ -82,7 +81,7 @@ class RasterizerTest {
         // https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/lineJoin
         val bmp = NativeImageOrBitmap32(500, 500, native = false).context2d {
             //val bmp = NativeImageOrBitmap32(150, 150, native = true).context2d {
-            lineWidth = 10f
+            lineWidth = 10.0
             for ((i, lineJoin) in listOf(LineJoin.ROUND, LineJoin.BEVEL, LineJoin.MITER).withIndex()) {
                 this.lineJoin = lineJoin
                 keep {
@@ -107,7 +106,7 @@ class RasterizerTest {
             beginPath()
             //lineJoin = LineJoin.MITER
             lineJoin = LineJoin.BEVEL
-            circle(Point(250, 200), 30f)
+            circle(Point(250, 200), 30.0)
             stroke()
 
             beginPath()
@@ -152,7 +151,7 @@ class RasterizerTest {
                     stroke(RGBA.interpolate(colorA, colorB, Ratio(n.toDouble(), 360.0))) {
                         beginPath()
                         moveTo(Point(0, 0))
-                        lineTo(Point(n.degrees.cosineD * radius, n.degrees.sineD * radius))
+                        lineTo(Point(n.degrees.cosine * radius, n.degrees.sine * radius))
                     }
                 }
             }
@@ -160,13 +159,13 @@ class RasterizerTest {
             // https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/strokeStyle
             keep {
                 translate(300, 300)
-                lineWidth = 1f
+                lineWidth = 1.0
                 for (i in 0 until 6) {
                     for (j in 0 until 6) {
                         strokeStyle = korlibs.image.paint.ColorPaint(RGBA(0, (255 - 42.5 * i).toInt(), (255 - 42.5 * j).toInt(), 255))
                         beginPath();
                         //arc(12.5 + j * 25, 12.5 + i * 25, 10.0, 0.0, PI * 2, true)
-                        arc(Point(12.5 + j * 25, 12.5 + i * 25), 10f, 0.degrees, 360.degrees)
+                        arc(Point(12.5 + j * 25, 12.5 + i * 25), 10.0, 0.degrees, 360.degrees)
                         stroke();
                     }
                 }
@@ -180,7 +179,7 @@ class RasterizerTest {
         val bmp = NativeImageOrBitmap32(500, 500, native = false).context2d {
             beginPath()
             lineCap = LineCap.SQUARE
-            lineWidth = 30f
+            lineWidth = 30.0
             moveTo(Point(200, 200))
             lineTo(Point(300, 100))
             stroke()

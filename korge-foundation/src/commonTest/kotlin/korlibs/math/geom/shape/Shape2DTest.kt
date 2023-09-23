@@ -115,7 +115,7 @@ class Shape2DTest {
         fun approx(start: Boolean, end: Boolean) = arrayListOf<String>().also { out ->
             approximateCurve(
                 10,
-                { ratio, get -> get(Point(ratio * 100, -ratio * 100)) },
+                { ratio, get -> get(Point(ratio * 100.0, -ratio * 100.0)) },
                 { (x, y) -> out.add("(${x.toInt()},${y.toInt()})") },
                 start, end
             )

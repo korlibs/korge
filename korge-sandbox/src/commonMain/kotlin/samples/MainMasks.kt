@@ -18,14 +18,14 @@ import korlibs.time.*
 class MainMasks : Scene() {
     override suspend fun SContainer.sceneMain() {
         filter = IdentityFilter
-        scaleD = 0.9
+        scaleAvg = 0.9
         //y -= 32.0
 
-        solidRect(widthD, heightD, Colors.GREEN)
+        solidRect(width, height, Colors.GREEN)
 
         val fill1 = LinearGradientPaint(0, 0, 200, 200).add(Colors.RED, Colors.BLUE)
         var maskView = fastEllipse(Size(100.0, 100.0)).xy(50, 50).visible(false)
-        val circle1 = circle(100f, fill = fill1)
+        val circle1 = circle(100.0, fill = fill1)
             //val circle1 = solidRect(200, 200, Colors.PURPLE)
             .filters(DropshadowFilter())
             //.filters(BlurFilter())
@@ -36,7 +36,7 @@ class MainMasks : Scene() {
         roundRect(Size(100, 100), RectCorners(16f)).xy(15, 15)
             .backdropFilters(ColorMatrixFilter(ColorMatrixFilter.GRAYSCALE_MATRIX))
             .backdropFilters(BlurFilter())
-            .backdropFilters(WaveFilter(crestDistance = Vector2F(50.0, 25.0), time = 0.seconds).also { filter ->
+            .backdropFilters(WaveFilter(crestDistance = Vector2D(50.0, 25.0), time = 0.seconds).also { filter ->
                 addUpdater { filter.time += it }
             })
 
@@ -52,12 +52,12 @@ class MainMasks : Scene() {
         })
         */
 
-        val circle3 = circle(100f, fill = fill1).centered
+        val circle3 = circle(100.0, fill = fill1).centered
         launchImmediately {
-            val width = this.widthD
-            val height = this.heightD
+            val width = this.width
+            val height = this.height
             val path = buildVectorPath(VectorPath()) {
-                circle(Point(width * 0.5, height * 0.5), 300f)
+                circle(Point(width * 0.5, height * 0.5), 300.0)
             }
             animate(looped = true) {
                 tween(circle3::pos[path], time = 2.seconds, easing = Easing.LINEAR)

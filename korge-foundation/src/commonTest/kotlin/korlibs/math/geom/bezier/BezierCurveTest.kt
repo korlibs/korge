@@ -1,9 +1,9 @@
 package korlibs.math.geom.bezier
 
 import korlibs.datastructure.*
+import korlibs.math.*
 import korlibs.math.geom.*
-import korlibs.math.roundDecimalPlaces
-import korlibs.memory.*
+import korlibs.math.interpolation.*
 import korlibs.platform.*
 import kotlin.test.*
 
@@ -12,7 +12,7 @@ class BezierCurveTest {
     fun testBezierSimple() {
         val curve = Bezier(Point(0, 0), Point(-50, -200), Point(150, 150), Point(110, 120))
         assertEquals(
-            Bezier.ProjectedPoint(p=Point(-6.66, -31.89), t=.06f, dSq=181.61f),
+            Bezier.ProjectedPoint(p=Point(-6.66, -31.89), t=.06f.toRatio(), dSq=181.61),
             curve.project(Point(-20, -30)).roundDecimalPlaces(2)
         )
     }
@@ -25,17 +25,17 @@ class BezierCurveTest {
         //val curve = Bezier(PointArrayList(Point(0, 0), Point(100, 100), Point(250, 300)))
         assertEqualsFloat("[(0, 0), (-50, -200), (150, 150), (110, 120)]", curve.points.toString())
         assertEqualsFloat("[[(-150, -600), (600, 1050), (-120, -90)], [(1500, 3300), (-1440, -2280)], [(-2940, -5580)]]", curve.dpoints.toString())
-        assertEqualsFloat(Point(-150, -600), curve.derivative(0.0f))
-        assertEqualsFloat(Point(232.5, 352.5), curve.derivative(0.5f))
-        assertEqualsFloat(Point(-120, -90), curve.derivative(1.0f))
+        assertEqualsFloat(Point(-150, -600), curve.derivative(0.0f.toRatio()))
+        assertEqualsFloat(Point(232.5, 352.5), curve.derivative(0.5f.toRatio()))
+        assertEqualsFloat(Point(-120, -90), curve.derivative(1.0f.toRatio()))
 
-        assertEqualsFloat(Point(0.97, -0.24), curve.normal(0.0f).roundDecimalPlaces(2))
-        assertEqualsFloat(Point(-0.83, 0.55), curve.normal(0.5f).roundDecimalPlaces(2))
-        assertEqualsFloat(Point(0.6, -0.8), curve.normal(1.0f))
+        assertEqualsFloat(Point(0.97, -0.24), curve.normal(0.0f.toRatio()).roundDecimalPlaces(2))
+        assertEqualsFloat(Point(-0.83, 0.55), curve.normal(0.5f.toRatio()).roundDecimalPlaces(2))
+        assertEqualsFloat(Point(0.6, -0.8), curve.normal(1.0f.toRatio()))
 
-        assertEqualsFloat(Point(0, 0), curve.compute(0.0f))
-        assertEqualsFloat(Point(51.25, -3.75), curve.compute(0.5f))
-        assertEqualsFloat(Point(110, 120), curve.compute(1.0f))
+        assertEqualsFloat(Point(0, 0), curve.compute(0.0f.toRatio()))
+        assertEqualsFloat(Point(51.25, -3.75), curve.compute(0.5f.toRatio()))
+        assertEqualsFloat(Point(110, 120), curve.compute(1.0f.toRatio()))
 
         assertEqualsFloat(292.8273626504729f, curve.length, 0.01)
         assertEqualsFloat(
@@ -55,20 +55,20 @@ class BezierCurveTest {
         )
         assertEqualsFloat(
             pointArrayListOf(Point(0, 0), Point(-50, -200), Point(150, 150), Point(110, 120), Point(-25, -100), Point(50, -25), Point(130, 135), Point(12.5, -62.5), Point(90, 55), Point(51.25, -3.75)),
-            curve.hull(0.5f)
+            curve.hull(0.5f.toRatio())
         )
         assertEqualsFloat(
-            Bezier.ProjectedPoint(p=Point(-6.66, -31.89), t=0.06f, dSq=181.61f),
+            Bezier.ProjectedPoint(p=Point(-6.66, -31.89), t=0.06f.toRatio(), dSq=181.61),
             curve.project(Point(-20, -30)).roundDecimalPlaces(2)
         )
         assertEqualsFloat(
             "CurveSplit(base=Bezier([(0, 0), (-50, -200), (150, 150), (110, 120)]), left=SubBezier[0..0.5](Bezier([(0, 0), (-25, -100), (12.5, -62.5), (51.25, -3.75)])), right=SubBezier[0.5..1](Bezier([(51.25, -3.75), (90, 55), (130, 135), (110, 120)])), t=0.5, hull=[(0, 0), (-50, -200), (150, 150), (110, 120), (-25, -100), (50, -25), (130, 135), (12.5, -62.5), (90, 55), (51.25, -3.75)])",
-            curve.split(0.5f).roundDecimalPlaces(2).toString()
+            curve.split(0.5f.toRatio()).roundDecimalPlaces(2).toString()
         )
 
         assertEqualsFloat(
             Bezier(Point(1.72, -61.41), Point(23.91, -52.97), Point(77.97, 34.84), Point(102.66, 85.78)),
-            curve.split(0.25f, 0.75f).curve,
+            curve.split(0.25f.toRatio(), 0.75f.toRatio()).curve,
             absoluteTolerance = 0.1
         )
         assertEqualsFloat(
@@ -140,7 +140,7 @@ class BezierCurveTest {
 
         val curve = Bezier(Point(100, 25), Point(10, 90), Point(110, 100), Point(150, 195))
         assertEquals(101, curve.lut.size)
-        assertEquals(213.86206312975315f, curve.length, 0.001f)
+        assertEquals(213.86206312975315, curve.length, 0.001)
 
         //println(curve.lut.estimatedLengths.toString())
         assertEquals(
@@ -159,11 +159,11 @@ class BezierCurveTest {
             //    CurveLUT.Estimation(point=Point(150, 195), ratio=1.0, length=213.8574065019019),
             //),
             listOf(
-                curve.lut.estimateAtLength(-10f),
-                curve.lut.estimateAtLength(10f),
-                curve.lut.estimateAtLength(100f),
-                curve.lut.estimateAtLength(200f),
-                curve.lut.estimateAtLength(10000f),
+                curve.lut.estimateAtLength(-10.0),
+                curve.lut.estimateAtLength(10.0),
+                curve.lut.estimateAtLength(100.0),
+                curve.lut.estimateAtLength(200.0),
+                curve.lut.estimateAtLength(10000.0),
             ).map { it.roundDecimalDigits(2) }.joinToString("\n")
         )
     }
@@ -181,16 +181,16 @@ class BezierCurveTest {
     }
     @Test
     fun testCurvature() {
-        val result = Bezier(Point(0,0), Point(0,-50), Point(50,-50), Point(50,0)).curvature(0.1f)
-        assertEquals(0.019829466587348795f, result.k, 0.001f)
-        assertEquals(50.43000000000001f, result.r, 0.001f)
-        assertEquals(0.00007738330725929297f, result.dk, 0.001f)
-        assertEquals(0.00007738330725929297f, result.adk, 0.001f)
+        val result = Bezier(Point(0,0), Point(0,-50), Point(50,-50), Point(50,0)).curvature(0.1.toRatio())
+        assertEquals(0.019829466587348795, result.k, 0.001)
+        assertEquals(50.43000000000001, result.r, 0.001)
+        assertEquals(0.00007738330725929297, result.dk, 0.001)
+        assertEquals(0.00007738330725929297, result.adk, 0.001)
     }
 
     @Test
     fun testOffset() {
-        val curves = Bezier(Point(0, 0), Point(0, -50), Point(50, -50), Point(50, 0)).offset(10f)
+        val curves = Bezier(Point(0, 0), Point(0, -50), Point(50, -50), Point(50, 0)).offset(10.0)
         assertEquals(
             listOf(
                 Bezier(Point(10.0, 0.0), Point(10.0, -13.09), Point(22.67, -13.20), Point(5.03, 8.64)),
@@ -223,9 +223,9 @@ class BezierCurveTest {
 
         assertEquals(
             listOf(
-                listOf(0f, .5f, 1f),
-                listOf(0f, .5f, 1f),
-                listOf(0f),
+                listOf(0.0, .5, 1.0),
+                listOf(0.0, .5, 1.0),
+                listOf(0.0),
             ),
             listOf(extrema.allt.toList(), extrema.xt.toList(), extrema.yt.toList())
         )
@@ -250,7 +250,7 @@ class BezierCurveTest {
     fun testProjectsOntoTheCorrectOnCurvePoint() {
         val b = Bezier(Point(0, 0), Point(100, 0), Point(100, 100))
         assertEqualsFloat(
-            Bezier.ProjectedPoint(p = Point(75, 25), t = .5f, dSq = 50f),
+            Bezier.ProjectedPoint(p = Point(75, 25), t = .5f.toRatio(), dSq = 50.0),
             b.project(Point(80, 20)),
             0.1
         )

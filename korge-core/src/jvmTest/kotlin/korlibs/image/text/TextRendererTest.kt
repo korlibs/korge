@@ -10,7 +10,7 @@ class TextRendererTest {
     fun test() = suspendTest {
         val font = resourcesVfs["font/segment7.fnt"].readBitmapFont()
         val actions = Text2TextRendererActions()
-        DefaultStringTextRenderer.invoke(actions, "42:10", 92f, font)
+        DefaultStringTextRenderer.invoke(actions, "42:10", 92.0, font)
         assertEquals(
             """
                 Entry('glyph-4', 5, 2, 45, 70)

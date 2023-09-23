@@ -16,12 +16,12 @@ class RichTextDataPlacementTest {
         //result.bmp.showImageAndWait()
 
         val fonts = listOf(
-            resourcesVfs["fnt/SaniTrixieSans.ttf"].readTtfFont().toLazyBitmapFont(42f, distanceField = null),
+            resourcesVfs["fnt/SaniTrixieSans.ttf"].readTtfFont().toLazyBitmapFont(42.0, distanceField = null),
             resourcesVfs["msdf/SaniTrixieSans.json"].readBitmapFont(),
             resourcesVfs["fnt/SaniTrixieSans.fnt"].readBitmapFont()
         )
 
-        val texts = fonts.map { RichTextData("HELLO WORLD", font = it, textSize = 32f) }
+        val texts = fonts.map { RichTextData("HELLO WORLD", font = it, textSize = 32.0) }
 
         val placements = texts.map { it.place(Rectangle(0, 0, 300, 100), align = TextAlignment.MIDDLE_CENTER) }
 

@@ -53,7 +53,7 @@ val DEFAULT_KORGE_BG_COLOR = Colors.DARKCYAN.mix(Colors.BLACK, 0.8.toRatio())
 
 fun Stage.notification(message: String) {
     stage.text(message, alignment = TextAlignment.BOTTOM_CENTER).also { text ->
-        text.alpha = 0f
+        text.alpha = 0.0
         text.alignBottomToBottomOf(stage, 16).centerXOn(stage)
         launchImmediately {
             while (true) {

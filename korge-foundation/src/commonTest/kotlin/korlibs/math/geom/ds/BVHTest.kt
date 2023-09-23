@@ -15,7 +15,7 @@ class BVHTest {
         tree.insertOrUpdate(Rectangle(50, 50, 20, 20), "2")
         //tree.remove(Rectangle(20, 15, 20, 20), "1")
 
-        val intersection = tree.intersect(Ray(Point(25, 100), Vector2F(0, -1)))
+        val intersection = tree.intersect(Ray(Point(25, 100), Vector2D(0, -1)))
         val rectSearch = tree.search(Rectangle(0, 0, 60, 60))
 
         //assertEquals(1, intersection.size)
@@ -98,14 +98,14 @@ class BVHTest {
         val demo = BVH2D<String>()
         demo.insertOrUpdate(Rectangle(0f, 0f, 20f, 10f), "hello")
 
-        assertEquals(listOf(90f), demo.intersect(Ray(Point(10f, 100f), Vector2F(0f, -2f))).map { it.intersect })
-        assertEquals(listOf(90f), demo.intersect(Ray(Point(10f, 100f), Vector2F(0f, -1f))).map { it.intersect })
-        assertEquals(listOf(100f), demo.intersect(Ray(Point(10f, -100f), Vector2F(0f, +1f))).map { it.intersect })
-        assertEquals(listOf(), demo.intersect(Ray(Point(10f, -100f), Vector2F(0f, -1f))).map { it.intersect })
+        assertEquals(listOf(90.0), demo.intersect(Ray(Point(10f, 100f), Vector2D(0f, -2f))).map { it.intersect })
+        assertEquals(listOf(90.0), demo.intersect(Ray(Point(10f, 100f), Vector2D(0f, -1f))).map { it.intersect })
+        assertEquals(listOf(100.0), demo.intersect(Ray(Point(10f, -100f), Vector2D(0f, +1f))).map { it.intersect })
+        assertEquals(listOf(), demo.intersect(Ray(Point(10f, -100f), Vector2D(0f, -1f))).map { it.intersect })
 
-        assertEquals(listOf(80f), demo.intersect(Ray(Point(100f, 10f), Vector2F(-1f, 0f))).map { it.intersect })
-        assertEquals(listOf(100f), demo.intersect(Ray(Point(-100f, 10f), Vector2F(+1f, 0f))).map { it.intersect })
-        assertEquals(listOf(), demo.intersect(Ray(Point(-100f, 10f), Vector2F(-1f, 0f))).map { it.intersect })
+        assertEquals(listOf(80.0), demo.intersect(Ray(Point(100f, 10f), Vector2D(-1f, 0f))).map { it.intersect })
+        assertEquals(listOf(100.0), demo.intersect(Ray(Point(-100f, 10f), Vector2D(+1f, 0f))).map { it.intersect })
+        assertEquals(listOf(), demo.intersect(Ray(Point(-100f, 10f), Vector2D(-1f, 0f))).map { it.intersect })
     }
 
     @Test
@@ -113,8 +113,8 @@ class BVHTest {
         val demo = BVH2D<String>()
         demo.insertOrUpdate(Rectangle(0f, 0f, 10f, 10f), "hello")
 
-        assertEquals(listOf(BVHVector(5f, 10f), BVHVector(0f, 1f)), demo.intersect(Ray(Point(5f, 100f), Vector2F(0f, -2f))).flatMap { listOf(it.point, it.normal) })
-        assertEquals(listOf(BVHVector(10f, 10f), BVHVector(1f, 1f)), demo.intersect(Ray(Point(10f, 100f), Vector2F(0f, -2f))).flatMap { listOf(it.point, it.normal) })
-        assertEquals(listOf(BVHVector(5f, 5f), BVHVector(0f, 0f)), demo.intersect(Ray(Point(5f, 5f), Vector2F(0f, -2f))).flatMap { listOf(it.point, it.normal) })
+        assertEquals(listOf(BVHVector(5f, 10f), BVHVector(0f, 1f)), demo.intersect(Ray(Point(5f, 100f), Vector2D(0f, -2f))).flatMap { listOf(it.point, it.normal) })
+        assertEquals(listOf(BVHVector(10f, 10f), BVHVector(1f, 1f)), demo.intersect(Ray(Point(10f, 100f), Vector2D(0f, -2f))).flatMap { listOf(it.point, it.normal) })
+        assertEquals(listOf(BVHVector(5f, 5f), BVHVector(0f, 0f)), demo.intersect(Ray(Point(5f, 5f), Vector2D(0f, -2f))).flatMap { listOf(it.point, it.normal) })
     }
 }

@@ -230,6 +230,6 @@ class InputKeys {
         arraycopy(pressing, 0, pressingPrev, 0, pressing.size)
     }
 
-    fun getDeltaAxis(minus1: Key, plus1: Key): Float =
-        if (this[minus1]) -1f else if (this[plus1]) +1f else 0f
+    fun getDeltaAxis(minus1: Key, plus1: Key): Double =
+        if (this[minus1]) -1.0 else if (this[plus1]) +1.0 else 0.0
 }

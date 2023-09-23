@@ -10,17 +10,17 @@ import korlibs.math.geom.*
 
 open class DropshadowFilter(
     @ViewProperty
-    var dropX: Float = 10f,
+    var dropX: Double = 10.0,
     @ViewProperty
-    var dropY: Float = 10f,
+    var dropY: Double = 10.0,
     @ViewProperty
     var shadowColor: RGBA = Colors.BLACK.withAd(0.75),
     @ViewProperty
-    var blurRadius: Float = 4f,
+    var blurRadius: Double = 4.0,
     @ViewProperty
     var smoothing: Boolean = true
 ) : FilterWithFiltering {
-    private val blur = BlurFilter(16f)
+    private val blur = BlurFilter(16.0)
 
     override var filtering: Boolean by blur::filtering
 

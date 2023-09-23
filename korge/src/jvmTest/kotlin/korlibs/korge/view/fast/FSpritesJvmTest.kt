@@ -34,7 +34,7 @@ class FSpritesJvmTest : ViewsForTesting(log = true) {
         image(bmp).xy(0, 0)
         image(bmp) {
             xy(0, 10)
-            alpha = .5f
+            alpha = .5
         }
 
         val fSprites = FSprites(2)

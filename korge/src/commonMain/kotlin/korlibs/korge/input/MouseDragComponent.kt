@@ -204,7 +204,7 @@ open class DraggableInfo(view: View) : MouseDragInfo(view) {
             viewNextXY = viewNextXY.copy(y = value)
         }
 
-    var viewDeltaXY = Point.ZERO
+    var viewDeltaXY: Vector2D = Point.ZERO
 
     var viewDeltaX: Double
         get() = viewDeltaXY.x;

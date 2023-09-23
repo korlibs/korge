@@ -17,7 +17,7 @@ class CurvesToStrokeExTest {
 
     @Test
     fun testStroke() {
-        val stroke = path.toStrokePointsList(StrokeInfo(thickness = 10f))
+        val stroke = path.toStrokePointsList(StrokeInfo(thickness = 10.0))
         logger.debug { stroke }
     }
 
@@ -40,6 +40,6 @@ class CurvesToStrokeExTest {
     }
 
     fun pathPoints(join: LineJoin, block: VectorBuilder.() -> Unit): VectorArrayList =
-        buildVectorPath { block() }.toStrokePointsList(StrokeInfo(thickness = 10f, join = join), mode = StrokePointsMode.SCALABLE_POS_NORMAL_WIDTH).first().vector.clone().roundDecimalPlaces(2)
+        buildVectorPath { block() }.toStrokePointsList(StrokeInfo(thickness = 10.0, join = join), mode = StrokePointsMode.SCALABLE_POS_NORMAL_WIDTH).first().vector.clone().roundDecimalPlaces(2)
 
 }

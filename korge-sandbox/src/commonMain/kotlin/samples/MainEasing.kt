@@ -12,17 +12,17 @@ import kotlinx.coroutines.*
 class MainEasing : Scene() {
     override suspend fun SContainer.sceneMain() {
         var ballTween: Job? = null
-        val ball = circle(64f, Colors.PURPLE).xy(64, 64)
+        val ball = circle(64.0, Colors.PURPLE).xy(64, 64)
 
         fun renderEasing(easing: Easing): View {
             return Container().apply {
                 val bg = solidRect(64, -64, Colors.BLACK.withAd(0.2))
                 graphics { shape ->
-                    stroke(Colors.RED, lineWidth = 4f) {
+                    stroke(Colors.RED, lineWidth = 4.0) {
                         this.line(Point(0, 0), Point(0, -64))
                         this.line(Point(0, 0), Point(64, 0))
                     }
-                    stroke(Colors.WHITE, lineWidth = 2f) {
+                    stroke(Colors.WHITE, lineWidth = 2.0) {
                         var first = true
                         //val overflow = 8
                         val overflow = 0
@@ -40,8 +40,8 @@ class MainEasing : Scene() {
                         }
                     }
                 }.addTo(this)
-                val textSize = 10f
-                text("$easing", textSize = textSize).xy(0f, textSize)
+                val textSize = 10.0
+                text("$easing", textSize = textSize).xy(0.0, textSize)
                 onOver { bg.color = Colors.BLACK.withAd(1.0) }
                 onOut { bg.color = Colors.BLACK.withAd(0.2) }
                 onClick {

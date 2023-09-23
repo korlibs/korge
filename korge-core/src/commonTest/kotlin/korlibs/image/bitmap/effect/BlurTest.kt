@@ -11,7 +11,7 @@ class BlurTest {
     fun test() = suspendTest {
         val bmpWithDropShadow = Bitmap32(100, 100, premultiplied = true).context2d {
             fill(Colors.RED) {
-                circle(Point(50, 50), 40f)
+                circle(Point(50, 50), 40.0)
             }
         }.dropShadowInplace(0, 0, 5, Colors.BLUE)
         //bmpWithDropShadow.showImageAndWait()

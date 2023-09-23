@@ -3,29 +3,29 @@ package korlibs.math.geom
 import kotlin.test.*
 
 class RayTest {
-    val ray = Ray(Point(100, 100), Vector2F(+1, 0))
+    val ray = Ray(Point(100, 100), Vector2D(+1, 0))
 
     @Test
     fun testConstructAngle() {
         Ray(Point(1, 1), 0.degrees).also { ray ->
             assertEqualsFloat(Point(1, 1), ray.point)
-            assertEqualsFloat(Vector2F(1, 0), ray.direction)
+            assertEqualsFloat(Vector2D(1, 0), ray.direction)
         }
         Ray(Point(1, 1), Angle.QUARTER).also { ray ->
             assertEqualsFloat(Point(1, 1), ray.point)
-            assertEqualsFloat(Vector2F(0, 1), ray.direction)
+            assertEqualsFloat(Vector2D(0, 1), ray.direction)
         }
     }
 
     @Test
     fun testTransformed() {
-        assertEqualsFloat(Ray(Point(200, 100), Vector2F(+1, 0)), ray.transformed(Matrix.IDENTITY.translated(100, 0)))
-        assertEqualsFloat(Ray(Point(-100, 100), Vector2F(0f, +1f)), ray.transformed(Matrix.IDENTITY.rotated(90.degrees)))
+        assertEqualsFloat(Ray(Point(200, 100), Vector2D(+1, 0)), ray.transformed(Matrix.IDENTITY.translated(100, 0)))
+        assertEqualsFloat(Ray(Point(-100, 100), Vector2D(0f, +1f)), ray.transformed(Matrix.IDENTITY.rotated(90.degrees)))
     }
 
     @Test
     fun testToLine() {
-        assertEqualsFloat(Line(Point(100, 100), Point(200f, 100f)), ray.toLine(100f))
+        assertEqualsFloat(Line(Point(100, 100), Point(200f, 100f)), ray.toLine(100.0))
     }
 
     @Test

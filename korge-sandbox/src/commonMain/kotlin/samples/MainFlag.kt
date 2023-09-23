@@ -1,14 +1,14 @@
 package samples
 
-import korlibs.time.*
-import korlibs.event.Key
-import korlibs.korge.input.keys
-import korlibs.korge.scene.ScaledScene
-import korlibs.korge.view.*
-import korlibs.korge.view.filter.*
+import korlibs.event.*
 import korlibs.image.color.*
 import korlibs.image.format.*
 import korlibs.io.file.std.*
+import korlibs.korge.input.*
+import korlibs.korge.scene.*
+import korlibs.korge.view.*
+import korlibs.korge.view.filter.*
+import korlibs.time.*
 
 class MainFlag : ScaledScene(592, 592) {
     override suspend fun SContainer.sceneMain() {
@@ -26,7 +26,7 @@ class MainFlag : ScaledScene(592, 592) {
         // Flag
         image(bitmap) {
             position(40, 40)
-            scaleYD = 0.5
+            scaleY = 0.5
             filter = flagFilter
         }
 

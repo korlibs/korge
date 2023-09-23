@@ -105,11 +105,11 @@ class PlayScene() : Scene() {
 			addUpdater {
 				// move the paddle up or down as long as it doesn't leaves the bounds of the game window
 				val keys = views.input.keys
-				if (keys[Key.W] && yD > 0) {
-					yD -= paddleMoveSpeed
+				if (keys[Key.W] && y > 0) {
+					y -= paddleMoveSpeed
 				}
-				if (keys[Key.S] && yD < sceneHeight - paddleHeight) {
-					yD += paddleMoveSpeed
+				if (keys[Key.S] && y < sceneHeight - paddleHeight) {
+					y += paddleMoveSpeed
 				}
 			}
 		}
@@ -120,16 +120,16 @@ class PlayScene() : Scene() {
 			addUpdater {
 				// move the paddle up or down as long as it doesn't leaves the bounds of the game window
 				val keys = views.input.keys
-				if (keys[Key.UP] && yD > 0) {
-					yD -= paddleMoveSpeed
+				if (keys[Key.UP] && y > 0) {
+					y -= paddleMoveSpeed
 				}
-				if (keys[Key.DOWN] && yD < sceneHeight - paddleHeight) {
-					yD += paddleMoveSpeed
+				if (keys[Key.DOWN] && y < sceneHeight - paddleHeight) {
+					y += paddleMoveSpeed
 				}
 			}
 		}
 
-		val ball = circle(ballRadius.toFloat(), Colors.WHITE) {
+		val ball = circle(ballRadius.toDouble(), Colors.WHITE) {
 			position(ballPosXAtStart, ballPosYAtStart)
 
 			// mutable data defining the ball state
@@ -138,8 +138,8 @@ class PlayScene() : Scene() {
 
 			// function to reset the ball
 			fun resetRound() {
-				xD = ballPosXAtStart
-				yD = ballPosYAtStart
+				x = ballPosXAtStart
+				y = ballPosYAtStart
 				spd = ballSpeedAtStart
 				ang = nextDouble() * 2 * PI
 
@@ -152,31 +152,31 @@ class PlayScene() : Scene() {
 				if (playState == GameStates.Playing) {
 
 					// convert the ball's velocity vector (speed, angle) to a point to move to
-					xD += spd * cos(ang) * it.seconds;
-					yD += spd * sin(ang) * it.seconds;
+					x += spd * cos(ang) * it.seconds
+					y += spd * sin(ang) * it.seconds
 
 					// if the ball hits the paddles, flip its direction and increase speed
-					if ((xD < paddleLeft.xD + 10 && yD > paddleLeft.yD && yD < paddleLeft.yD + 100) ||
-						(xD > paddleRight.xD - 20 && yD > paddleRight.yD && yD < paddleRight.yD + 100)) {
+					if ((x < paddleLeft.x + 10 && y > paddleLeft.y && y < paddleLeft.y + 100) ||
+						(x > paddleRight.x - 20 && y > paddleRight.y && y < paddleRight.y + 100)) {
 						spd += ballSpeedIncrease
 						ang = PI - ang
 					}
 
 					// if ball hits the walls, flip its direction and increase speed
-					if (yD < 0 || yD > sceneHeight - 20) {
+					if (y < 0 || y > sceneHeight - 20) {
 						spd += 10
 						ang *= -1
 					}
 
 					// if ball goes through the vertical walls/goalpost, handle scoring and reset the round
-					if (xD < -20) {
+					if (x < -20) {
 						// Reset the Ball
 						resetRound()
 
 						// Update the score
 						scorePlayerRight++
 						scoredYellText.text = "Right SCORED!!!"
-					} else if (xD > sceneWidth) {
+					} else if (x > sceneWidth) {
 						// Reset the Ball
 						resetRound()
 

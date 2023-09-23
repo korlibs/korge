@@ -15,7 +15,7 @@ class ScaleTest {
     @Test
     fun testConversion() {
         assertEquals(Scale(2f, 3f), Vector2F(2f, 3f).toScale())
-        assertEquals(Vector2F(2f, 3f), Scale(2f, 3f).toVector2())
+        assertEquals(Vector2D(2f, 3f), Scale(2f, 3f).toVector2())
         assertEquals(MScale(2.0, 3.0), Scale(2f, 3f).toMutable())
         assertEquals(Scale(2f, 3f), MScale(2.0, 3.0).toImmutable())
         run {
@@ -29,15 +29,15 @@ class ScaleTest {
     fun testProperties() {
         val scale = Scale(2f, 4f)
 
-        assertEquals(3f, scale.avg)
-        assertEquals(3f, scale.scaleAvg)
-        assertEquals(2f, scale.scaleX)
-        assertEquals(4f, scale.scaleY)
+        assertEquals(3.0, scale.avg)
+        assertEquals(3.0, scale.scaleAvg)
+        assertEquals(2.0, scale.scaleX)
+        assertEquals(4.0, scale.scaleY)
 
-        assertEquals(3.0, scale.avgD)
-        assertEquals(3.0, scale.scaleAvgD)
-        assertEquals(2.0, scale.scaleXD)
-        assertEquals(4.0, scale.scaleYD)
+        assertEquals(3.0, scale.avg)
+        assertEquals(3.0, scale.scaleAvg)
+        assertEquals(2.0, scale.scaleX)
+        assertEquals(4.0, scale.scaleY)
     }
 
     @Test

@@ -20,12 +20,12 @@ class MainTextBounds : Scene() {
     var align = TextAlignment.BASELINE_CENTER
     //val vfont get() = DefaultTtfFont
     val vfont get() = playfairDisplayTTF
-    val bmpFont by lazy { vfont.toBitmapFont(16f) }
+    val bmpFont by lazy { vfont.toBitmapFont(16.0) }
     var wrap = Wrap.NO
 
     fun Container.reload() {
         removeChildren()
-        val fontSize = 128f
+        val fontSize = 128.0
         //val text = "HÉLLO\nji!"
         val text = "¡Everyone's got\na story s t st to to tell!"
         //val text = "¡¿"
@@ -36,7 +36,7 @@ class MainTextBounds : Scene() {
             .let {
                 when (wrap) {
                     Wrap.NO -> it
-                    Wrap.CIRCLE -> it.aroundPath(buildVectorPath { this.circle(Point(0, 0), 256f) })
+                    Wrap.CIRCLE -> it.aroundPath(buildVectorPath { this.circle(Point(0, 0), 256.0) })
                 }
             }
 
@@ -47,7 +47,7 @@ class MainTextBounds : Scene() {
             text(
                 text, fontSize, font = vfont, alignment = align, renderer = renderer,
                 fill = Colors.YELLOW,
-                stroke = Stroke(Colors.RED, thickness = 3f, dash = floatArrayListOf(50f, 50f))
+                stroke = Stroke(Colors.RED, thickness = 3.0, dash = doubleArrayListOf(50.0, 50.0))
             )//.also { it.zIndex = 1.0 }
             graphics {
                 println("MainTextBounds: ----------------------")

@@ -109,17 +109,18 @@ interface BitmapFont : Font {
         getTextScale(size) * (getKerning(leftCodePoint, rightCodePoint)?.amount?.toDouble() ?: 0.0)
 
     companion object {
-        operator fun invoke(
-            fontSize: Double,
-            lineHeight: Double,
-            base: Double,
+        inline operator fun invoke(
+            fontSize: Number,
+            lineHeight: Number,
+            base: Number,
             glyphs: IntMap<Glyph>,
             kernings: IntMap<Kerning>,
             name: String = "BitmapFont",
             distanceField: String? = null,
-        ): BitmapFont = BitmapFontImpl(fontSize,
-            lineHeight,
-            base,
+        ): BitmapFont = BitmapFontImpl(
+            fontSize.toDouble(),
+            lineHeight.toDouble(),
+            base.toDouble(),
             glyphs,
             kernings,
             name,
@@ -201,7 +202,8 @@ interface BitmapFont : Font {
     }
 }
 
-private class BitmapFontImpl constructor(
+@PublishedApi
+internal class BitmapFontImpl constructor(
     override val fontSize: Double,
     override val lineHeight: Double,
     override val base: Double,
@@ -457,14 +459,14 @@ fun Bitmap32.drawText(
     this.fillText(str, pos)
 }
 
-fun Font.toBitmapFont(
-    fontSize: Double,
+inline fun Font.toBitmapFont(
+    fontSize: Number,
     chars: CharacterSet = CharacterSet.LATIN_ALL,
     fontName: String = this.name,
     paint: Paint = Colors.WHITE,
     mipmaps: Boolean = true,
     effect: BitmapEffect? = null,
-): BitmapFont = BitmapFont(this, fontSize, chars, fontName, paint, mipmaps, effect)
+): BitmapFont = BitmapFont(this, fontSize.toDouble(), chars, fontName, paint, mipmaps, effect)
 
 suspend fun BitmapFont.writeToFile(out: VfsFile, writeBitmap: Boolean = true) {
     val font = this

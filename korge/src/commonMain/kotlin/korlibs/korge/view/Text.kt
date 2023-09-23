@@ -33,7 +33,7 @@ text2("Hello World!", color = Colors.RED, font = font, renderer = CreateStringTe
 }).position(100, 100)
 */
 inline fun Container.text(
-    text: String, textSize: Double = Text.DEFAULT_TEXT_SIZE,
+    text: String, textSize: Number = Text.DEFAULT_TEXT_SIZE,
     color: RGBA = Colors.WHITE, font: Resourceable<out Font> = DefaultTtfFontAsBitmap,
     alignment: TextAlignment = TextAlignment.TOP_LEFT,
     renderer: TextRenderer<String> = DefaultStringTextRenderer,
@@ -41,7 +41,7 @@ inline fun Container.text(
     fill: Paint? = null, stroke: Stroke? = null,
     block: @ViewDslMarker Text.() -> Unit = {}
 ): Text
-    = Text(text, textSize, color, font, alignment, renderer, autoScaling, fill, stroke).addTo(this, block)
+    = Text(text, textSize.toDouble(), color, font, alignment, renderer, autoScaling, fill, stroke).addTo(this, block)
 
 open class Text(
     text: String, textSize: Double = DEFAULT_TEXT_SIZE,

@@ -49,9 +49,9 @@ class MainGpuVectorRendering3 : Scene() {
 
         //val strokeInfo = StrokeInfo(thickness = 10.0, join = LineJoin.MITER)
         for ((index, strokeInfo) in listOf(
-            StrokeInfo(thickness = 10f, join = LineJoin.BEVEL),
-            StrokeInfo(thickness = 10f, join = LineJoin.MITER),
-            StrokeInfo(thickness = 10f, join = LineJoin.ROUND),
+            StrokeInfo(thickness = 10.0, join = LineJoin.BEVEL),
+            StrokeInfo(thickness = 10.0, join = LineJoin.MITER),
+            StrokeInfo(thickness = 10.0, join = LineJoin.ROUND),
         ).withIndex()) {
             val sx = index * 430 + 15
 
@@ -123,17 +123,17 @@ class MainGpuVectorRendering3 : Scene() {
             })
 
             debugPath("Circle", getPos(0, 4), strokeInfo, buildVectorPath {
-                circle(Point(50.0, 50.0), 50.0f)
+                circle(Point(50.0, 50.0), 50.0)
             })
 
             debugPath("Arc", getPos(1, 4), strokeInfo, buildVectorPath {
-                arc(Point(50.0, 50.0), 50f, (-64).degrees, (+180).degrees)
+                arc(Point(50.0, 50.0), 50.0, (-64).degrees, (+180).degrees)
             })
 
             debugPath("Shape", getPos(2, 4), strokeInfo, buildVectorPath {
                 pathSvg(
                     "m262.15-119.2s2.05-8-2.35-3.6c0,0-6.4,5.2-13.2,5.2,0,0-13.2,2-17.2,14,0,0-3.6,24.4,3.6,29.6,0,0,4.4,6.8,10.8,0.8s20.35-33.6,18.35-46z",
-                    Matrix.fromTransform(x = -200f, y = 150f).scaled(1.2f)
+                    Matrix.fromTransform(x = -200.0, y = 150.0).scaled(1.2f)
                 )
             })
         }

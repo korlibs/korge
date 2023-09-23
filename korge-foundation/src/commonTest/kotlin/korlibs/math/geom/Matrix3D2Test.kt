@@ -84,9 +84,9 @@ class Matrix3D2Test {
 
     fun assertEquals(a: EulerRotation, b: EulerRotation, delta: Double = 0.01) {
         assertTrue("$a\n$b\na!=b // delta=$delta") {
-            abs(a.x.degreesD - b.x.degreesD) <= delta &&
-                abs(a.y.degreesD - b.y.degreesD) <= delta &&
-                abs(a.z.degreesD - b.z.degreesD) <= delta
+            abs(a.x.degrees - b.x.degrees) <= delta &&
+                abs(a.y.degrees - b.y.degrees) <= delta &&
+                abs(a.z.degrees - b.z.degrees) <= delta
         }
     }
 

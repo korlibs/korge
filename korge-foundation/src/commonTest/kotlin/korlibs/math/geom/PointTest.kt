@@ -13,7 +13,7 @@ class PointTest {
         assertEquals("(1, 2)", Point(1, 2).toString())
         assertEquals("(1, 2)", Point(1.0, 2.0).toString())
         assertEquals("(1, 2)", Point(1f, 2f).toString())
-        assertEquals("(1, 2)", Point(Point(1, 2)).toString())
+        assertEquals("(1, 2)", Point(1, 2).toString())
     }
 
     @Test
@@ -37,11 +37,11 @@ class PointTest {
 
     @Test
     fun testPolarConstruction() {
-        assertEqualsFloat(Point(10, 20), Point.polar(Point(10, 10), 90.degrees, 10f, up = Vector2F.UP))
-        assertEqualsFloat(Point(10, 0), Point.polar(Point(10, 10), 90.degrees, 10f, up = Vector2F.UP_SCREEN))
+        assertEqualsFloat(Point(10, 20), Point.polar(Point(10, 10), 90.degrees, 10.0, up = Vector2D.UP))
+        assertEqualsFloat(Point(10, 0), Point.polar(Point(10, 10), 90.degrees, 10.0, up = Vector2D.UP_SCREEN))
     }
 
-    private fun assertEquals(a: Point, b: Point, absoluteTolerance: Float = 1e-7f) {
+    private fun assertEquals(a: Point, b: Point, absoluteTolerance: Double = 1e-7) {
         assertTrue("Point $a != $b absoluteTolerance=$absoluteTolerance") {
             a.x.isAlmostEquals(b.x, absoluteTolerance) &&
                 a.y.isAlmostEquals(b.y, absoluteTolerance)

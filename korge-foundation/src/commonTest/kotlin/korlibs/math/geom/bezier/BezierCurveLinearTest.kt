@@ -1,6 +1,7 @@
 package korlibs.math.geom.bezier
 
 import korlibs.math.geom.*
+import korlibs.math.interpolation.*
 import kotlin.test.*
 
 class BezierCurveLinearTest {
@@ -13,6 +14,6 @@ class BezierCurveLinearTest {
 
     @Test
     fun testMidpointIsIndeedTheMidpoint() {
-        assertEquals(Point(50, 50), b.compute(0.5f))
+        assertEquals(Point(50, 50), b.compute(0.5.toRatio()))
     }
 }

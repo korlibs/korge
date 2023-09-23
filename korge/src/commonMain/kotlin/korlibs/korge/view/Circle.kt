@@ -13,14 +13,14 @@ import korlibs.math.geom.vector.*
  * The [callback] allows to configure the [Circle] instance.
  */
 inline fun Container.circle(
-    radius: Double = 16.0,
+    radius: Number = 16.0,
     fill: Paint = Colors.WHITE,
     stroke: Paint = Colors.WHITE,
-    strokeThickness: Double = 0.0,
+    strokeThickness: Number = 0.0,
     autoScaling: Boolean = true,
     renderer: GraphicsRenderer = GraphicsRenderer.GPU,
     callback: @ViewDslMarker korlibs.korge.view.Circle.() -> Unit = {}
-): korlibs.korge.view.Circle = korlibs.korge.view.Circle(radius, fill, stroke, strokeThickness, autoScaling, renderer).addTo(this, callback)
+): korlibs.korge.view.Circle = korlibs.korge.view.Circle(radius.toDouble(), fill, stroke, strokeThickness.toDouble(), autoScaling, renderer).addTo(this, callback)
 
 /**
  * A [CpuGraphics] class that automatically keeps a circle shape with [radius] and [color].

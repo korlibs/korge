@@ -13,9 +13,9 @@ class MainCircles : Scene() {
     override suspend fun SContainer.sceneMain() {
         // @TODO: USe BVH2D to limit collision view checkings
         lateinit var collisionViews: List<View>
-        val rect1 = circle(50f, fill = Colors.RED).xy(300, 300).centered
-        val rect1b = circle(50f, fill = Colors.RED).xy(520, 300).centered
-        val rect2 = circle(50f, fill = Colors.GREEN).xy(120, 0).draggable(autoMove = false) {
+        val rect1 = circle(50.0, fill = Colors.RED).xy(300, 300).centered
+        val rect1b = circle(50.0, fill = Colors.RED).xy(520, 300).centered
+        val rect2 = circle(50.0, fill = Colors.GREEN).xy(120, 0).draggable(autoMove = false) {
             //it.view.xy(it.viewPrevXY)
             it.view.moveWithCollisions(collisionViews, it.viewDeltaXY)
         }

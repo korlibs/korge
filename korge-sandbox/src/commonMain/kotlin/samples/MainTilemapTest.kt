@@ -5,7 +5,6 @@ import korlibs.image.atlas.*
 import korlibs.image.bitmap.*
 import korlibs.image.color.*
 import korlibs.image.tiles.*
-import korlibs.io.util.*
 import korlibs.korge.input.*
 import korlibs.korge.scene.*
 import korlibs.korge.view.*
@@ -13,7 +12,6 @@ import korlibs.korge.view.align.*
 import korlibs.korge.view.camera.*
 import korlibs.korge.view.tiles.*
 import korlibs.math.geom.*
-import korlibs.math.geom.MPoint.Companion.Zero
 import korlibs.number.*
 import kotlin.math.*
 import kotlin.random.*
@@ -29,7 +27,7 @@ class MainTilemapTest : Scene() {
         lateinit var tilemap: TileMap
 
         //filters(IdentityFilter)
-        solidRect(widthD, heightD, Colors["#3e0000"])
+        solidRect(width, height, Colors["#3e0000"])
         val cameraContainer = cameraContainer(Size(width, height)) {
             tilemap = tileMap(donutMap, tileSet).centerOn(this)
         }//.filters(BlurFilter())
@@ -74,16 +72,16 @@ class MainTilemapTest : Scene() {
                 } else {
                     val rightMouse = (mouseButtons and 4) != 0
                     if (rightMouse) {
-                        val downAngle = Zero.angleTo(downVals.mouse)
-                        val mouseAngle = Zero.angleTo(input.mousePos)
+                        val downAngle = Point.ZERO.angleTo(downVals.mouse)
+                        val mouseAngle = Point.ZERO.angleTo(input.mousePos)
                         val newAngle = downVals.camAngle - (downAngle - mouseAngle)
                         val dy = downVals.mouse.y - input.mousePos.y
                         cameraContainer.cameraAngle = newAngle //downVals.camAngle - dy.degrees
                     } else { // leftMouse
                         val newCamPos =
                             cameraContainer.content.globalToLocal(downVals.mouse) - cameraContainer.content.globalToLocal(input.mousePos) + downVals.camPos
-                        cameraContainer.cameraX = newCamPos.xD
-                        cameraContainer.cameraY = newCamPos.yD
+                        cameraContainer.cameraX = newCamPos.x
+                        cameraContainer.cameraY = newCamPos.y
                     }
                 }
             }

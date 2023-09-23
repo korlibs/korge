@@ -1,25 +1,15 @@
 package samples
 
-import korlibs.time.seconds
-import korlibs.time.timesPerSecond
+import korlibs.image.format.*
+import korlibs.io.file.std.*
 import korlibs.korge.input.*
-import korlibs.korge.scene.ScaledScene
-import korlibs.korge.tween.get
-import korlibs.korge.tween.tween
-import korlibs.korge.ui.uiButton
-import korlibs.korge.view.Image
-import korlibs.korge.view.SContainer
-import korlibs.korge.view.addFixedUpdater
-import korlibs.korge.view.anchor
-import korlibs.korge.view.container
-import korlibs.korge.view.image
-import korlibs.korge.view.position
-import korlibs.korge.view.scale
-import korlibs.korge.view.text
-import korlibs.image.format.readBitmap
-import korlibs.io.file.std.resourcesVfs
+import korlibs.korge.scene.*
+import korlibs.korge.tween.*
+import korlibs.korge.ui.*
+import korlibs.korge.view.*
 import korlibs.math.geom.*
-import korlibs.math.interpolation.Easing
+import korlibs.math.interpolation.*
+import korlibs.time.*
 
 class MainGestures : ScaledScene(512, 512) {
 //class MainGestures : Scene() {
@@ -41,7 +31,7 @@ class MainGestures : ScaledScene(512, 512) {
 
         gestures {
             onMagnify {
-                image.scaleD += it.amount * image.scaleD
+                image.scaleAvg += it.amount * image.scaleAvg
             }
             onRotate {
                 image.rotation += 5.degrees * it.amount
@@ -53,9 +43,9 @@ class MainGestures : ScaledScene(512, 512) {
             var startRotation = 0.degrees
 
             scaleRecognizer(start = {
-                startImageRatio = image.scaleD
+                startImageRatio = image.scaleAvg
             }) {
-                image.scaleD = startImageRatio * this.ratio
+                image.scaleAvg = startImageRatio * this.ratio
             }
 
             rotationRecognizer(start = {

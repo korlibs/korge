@@ -24,7 +24,7 @@ class ReferenceGraphicsTest {
         }
 
         // Circle Graphics
-        circle(64f, fill = Colors.RED, stroke = Colors.BLUE, strokeThickness = 32f).xy(50, 50).centered.rotation(30.degrees)
+        circle(64.0, fill = Colors.RED, stroke = Colors.BLUE, strokeThickness = 32.0).xy(50, 50).centered.rotation(30.degrees)
 
         val bmp = BitmapSlice(
             Bitmap32(64, 64) { x, y -> Colors.PURPLE }.premultipliedIfRequired(),
@@ -86,7 +86,7 @@ class ReferenceGraphicsTest {
                     rectHole(40, 40, 80, 80)
                 }
                 fill(Colors.YELLOW) {
-                    this.circle(Point(100, 100), 40f)
+                    this.circle(Point(100, 100), 40.0)
                     //rect(-100, -100, 500, 500)
                     //rectHole(40, 40, 320, 320)
                 }
@@ -100,7 +100,7 @@ class ReferenceGraphicsTest {
                 translate(100, 20)
                 scale(2.0)
                 run {
-                    globalAlpha = 0.75f
+                    globalAlpha = 0.75
                     fillStyle = BitmapPaint(
                         korgeBitmap,
                         MMatrix().translate(50, 50).scale(0.125).immutable,
@@ -111,27 +111,27 @@ class ReferenceGraphicsTest {
                 }
 
                 run {
-                    globalAlpha = 0.9f
+                    globalAlpha = 0.9
                     fillStyle =
                         //createLinearGradient(150.0, 0.0, 200.0, 50.0)
                         createLinearGradient(0.0, 0.0, 100.0, 100.0, transform = Matrix().scaled(0.5).pretranslated(300, 0))
                             //.addColorStop(0.0, Colors.BLACK).addColorStop(1.0, Colors.WHITE)
                             .addColorStop(0.0, Colors.RED).addColorStop(0.5, Colors.GREEN).addColorStop(1.0, Colors.BLUE)
                     clip({
-                        circle(Point(150, 50), 50f)
+                        circle(Point(150, 50), 50.0)
                     }, {
                         fillRect(100.0, 0.0, 100.0, 100.0)
                     })
                 }
                 run {
-                    globalAlpha = 0.9f
+                    globalAlpha = 0.9
                     fillStyle =
                         createRadialGradient(150,150,30, 130,180,70)
                             .addColorStop(0.0, Colors.RED).addColorStop(0.5, Colors.GREEN).addColorStop(1.0, Colors.BLUE)
                     fillRect(100.0, 100.0, 100.0, 100.0)
                 }
                 run {
-                    globalAlpha = 0.9f
+                    globalAlpha = 0.9
                     fillStyle =
                         createSweepGradient(175, 100)
                             .addColorStop(0.0, Colors.RED).addColorStop(0.5, Colors.PURPLE).addColorStop(1.0, Colors.YELLOW)
@@ -150,8 +150,8 @@ class ReferenceGraphicsTest {
     @Test
     fun testGpuShapeViewFilter() = korgeScreenshotTest(Size(400, 400)) {
         container {
-            scaleAvg = 1.2f
-            circle(100f).xy(100, 100).filters(DropshadowFilter())
+            scaleAvg = 1.2
+            circle(100.0).xy(100, 100).filters(DropshadowFilter())
         }
         assertScreenshot(posterize = 6)
     }
@@ -160,7 +160,7 @@ class ReferenceGraphicsTest {
     //@Ignore
     fun testBlurFilterInEmptyContainer() = korgeScreenshotTest(Size(512, 512)) {
         val view = solidRect(100, 100) {
-            filter = BlurFilter(4f)
+            filter = BlurFilter(4.0)
         }
         assertScreenshot(this, "blur", includeBackground = true)
     }

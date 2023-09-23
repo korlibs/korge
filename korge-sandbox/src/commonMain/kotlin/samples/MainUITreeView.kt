@@ -1,13 +1,8 @@
 package samples
 
-import korlibs.korge.scene.Scene
-import korlibs.korge.ui.UIText
-import korlibs.korge.ui.UITreeViewList
-import korlibs.korge.ui.UITreeViewNode
-import korlibs.korge.ui.tooltip
-import korlibs.korge.ui.uiTooltipContainer
-import korlibs.korge.ui.uiTreeView
-import korlibs.korge.view.SContainer
+import korlibs.korge.scene.*
+import korlibs.korge.ui.*
+import korlibs.korge.view.*
 
 class MainUITreeView : Scene() {
     override suspend fun SContainer.sceneMain() {
@@ -50,7 +45,7 @@ class MainUITreeView : Scene() {
                     UITreeViewNode("hello"),
                     UITreeViewNode("hello"),
                     UITreeViewNode("hello"),
-                ), height = 16f, genView = {
+                ), height = 16.0, genView = {
                     UIText("$it").tooltip(tooltips, "Tooltip for $it")
                 })
             )

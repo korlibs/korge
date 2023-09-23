@@ -13,7 +13,7 @@ class DirectionalBlurFilter(
     @ViewProperty
     var angle: Angle = 0.degrees,
     @ViewProperty
-    var radius: Float = 4f,
+    var radius: Double = 4.0,
     @ViewProperty
     var expandBorder: Boolean = true
 ) : ShaderFilter() {
@@ -60,7 +60,7 @@ class DirectionalBlurFilter(
     private val qfactor: Float = sqrt(2 * ln(255f))
 
     //private val rradius: Double get() = (radius * ln(radius).coerceAtLeast(1.0)).coerceAtLeast(0.0)
-    private val rradius: Float get() = (radius * qfactor)
+    private val rradius: Double get() = (radius * qfactor)
 
     // @TODO: Here we cannot do this, but we should be able to do this trick: https://www.rastergrid.com/blog/2010/09/efficient-gaussian-blur-with-linear-sampling/
     //override val recommendedFilterScale: Float get() = if (rradius <= 2.0) 1.0 else 1.0 / log2(rradius.coerceAtLeast(1.0))
@@ -105,5 +105,5 @@ class DirectionalBlurFilter(
 
     override val programProvider: ProgramProvider get() = DirectionalBlurFilter
 
-    override val isIdentity: Boolean get() = radius == 0f
+    override val isIdentity: Boolean get() = radius == 0.0
 }

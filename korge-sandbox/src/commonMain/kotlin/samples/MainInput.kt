@@ -9,7 +9,7 @@ class MainInput : Scene() {
     override suspend fun SContainer.sceneMain() {
         var line = 0
         val font = views.debugBmpFont
-        fun textLine(text: String) = text(text, font = font, textSize = 8f).position(2, line++ * 12 + 5).apply { smoothing = false }
+        fun textLine(text: String) = text(text, font = font, textSize = 8.0).position(2, line++ * 12 + 5).apply { smoothing = false }
         fun nowTime() = DateTime.now().local.format(DateFormat("HH:mm:ss.SSS"))
 
         textLine("Events :")

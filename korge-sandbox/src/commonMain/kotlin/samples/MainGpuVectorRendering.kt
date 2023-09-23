@@ -127,7 +127,7 @@ class MainGpuVectorRendering : Scene() {
                         rectHole(40, 40, 80, 80)
                     }
                     fill(Colors.YELLOW) {
-                        this.circle(Point(100, 100), 40f)
+                        this.circle(Point(100, 100), 40.0)
                         //rect(-100, -100, 500, 500)
                         //rectHole(40, 40, 320, 320)
                     }
@@ -136,7 +136,7 @@ class MainGpuVectorRendering : Scene() {
                         //rect(-100, -100, 500, 500)
                         //rectHole(40, 40, 320, 320)
                     }
-                    stroke(Colors.GREEN, StrokeInfo(thickness = 5f, startCap = LineCap.ROUND, endCap = LineCap.ROUND, dash = floatArrayListOf(15f, 10f), dashOffset = 8f)) {
+                    stroke(Colors.GREEN, StrokeInfo(thickness = 5.0, startCap = LineCap.ROUND, endCap = LineCap.ROUND, dash = doubleArrayListOf(15.0, 10.0), dashOffset = 8.0)) {
                         regularPolygon(6, 30.0, x = 100.0, y = 100.0)
                     }
                 }
@@ -145,7 +145,7 @@ class MainGpuVectorRendering : Scene() {
                 translate(100, 20)
                 scale(2.0)
                 if (PAINT_BITMAP) {
-                    globalAlpha = 0.75f
+                    globalAlpha = 0.75
                     fillStyle = BitmapPaint(
                         korgeBitmap,
                         MMatrix().translate(50, 50).scale(0.125).immutable,
@@ -156,27 +156,27 @@ class MainGpuVectorRendering : Scene() {
                 }
 
                 if (PAINT_LINEAR_GRADIENT) {
-                    globalAlpha = 0.9f
+                    globalAlpha = 0.9
                     fillStyle =
                         //createLinearGradient(150.0, 0.0, 200.0, 50.0)
                         createLinearGradient(0.0, 0.0, 100.0, 100.0, transform = Matrix().scaled(0.5).pretranslated(300, 0))
                             //.addColorStop(0.0, Colors.BLACK).addColorStop(1.0, Colors.WHITE)
                             .addColorStop(0.0, Colors.RED).addColorStop(0.5, Colors.GREEN).addColorStop(1.0, Colors.BLUE)
                     clip({
-                        circle(Point(150, 50), 50f)
+                        circle(Point(150, 50), 50.0)
                     }, {
                         fillRect(100.0, 0.0, 100.0, 100.0)
                     })
                 }
                 if (PAINT_RADIAL_GRADIENT) {
-                    globalAlpha = 0.9f
+                    globalAlpha = 0.9
                     fillStyle =
                         createRadialGradient(150,150,30, 130,180,70)
                             .addColorStop(0.0, Colors.RED).addColorStop(0.5, Colors.GREEN).addColorStop(1.0, Colors.BLUE)
                     fillRect(100.0, 100.0, 100.0, 100.0)
                 }
                 if (PAINT_RADIAL_GRADIENT) {
-                    globalAlpha = 0.9f
+                    globalAlpha = 0.9
                     fillStyle =
                         createSweepGradient(175, 100)
                             .addColorStop(0.0, Colors.RED).addColorStop(0.5, Colors.PURPLE).addColorStop(1.0, Colors.YELLOW)
@@ -186,7 +186,7 @@ class MainGpuVectorRendering : Scene() {
             if (PAINT_TEXT) {
                 keep {
                     font = DefaultTtfFont
-                    fontSize = 16f
+                    fontSize = 16.0
                     fillStyle = Colors.WHITE
                     alignment = TextAlignment.TOP_LEFT
                     fillText("HELLO WORLD ($kind)", Point(0, 16))

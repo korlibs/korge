@@ -1,20 +1,21 @@
 package korlibs.math.geom.bezier
 
+import korlibs.math.*
 import korlibs.math.geom.*
 import korlibs.math.geom.shape.*
 import korlibs.math.geom.vector.*
-import korlibs.math.roundDecimalPlaces
+import korlibs.math.interpolation.*
 import kotlin.math.*
 import kotlin.test.*
 
 class BezierTest {
     @Test
     fun testLength() {
-        assertEquals(100f, Bezier(Point(0, 0), Point(50, 0), Point(100, 0)).length, 0.001f)
+        assertEquals(100.0, Bezier(Point(0, 0), Point(50, 0), Point(100, 0)).length, 0.001)
         val bezier = Bezier(Point(0, 0), Point(50, 0), Point(100, 0))
-        assertEquals(100f, bezier.length, 0.001f)
+        assertEquals(100.0, bezier.length, 0.001)
         val bezier2 = Bezier(Point(0, 0), Point(100, 0), Point(100, 100))
-        assertEquals(162.32f, bezier2.length.roundDecimalPlaces(2), 0.001f)
+        assertEquals(162.32, bezier2.length.roundDecimalPlaces(2), 0.001)
     }
 
     @Test
@@ -25,7 +26,7 @@ class BezierTest {
             quadTo(Point(400.0, 400.0), Point(200.0, 200.0))
         }
         val curves = path.getCurves()
-        assertEquals(590f, curves.length, 0.4f)
+        assertEquals(590.0, curves.length, 0.4)
         assertEqualsFloat(Rectangle(200, 100, 200, 180), curves.getBounds(), 0.1)
         assertEquals(
             """
@@ -70,6 +71,6 @@ class BezierTest {
     @Test
     fun testTangent() {
         val bezier = Bezier(Point(74.58, 36.96), Point(74.58, 36.96), Point(77.04, 27.36), Point(71.76, 32.64))
-        assertEquals(Point(0.2482, -0.9687), bezier.tangent(0f).roundDecimalPlaces(4))
+        assertEquals(Point(0.2482, -0.9687), bezier.tangent(Ratio.ZERO).roundDecimalPlaces(4))
     }
 }

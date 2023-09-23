@@ -5,7 +5,7 @@ import korlibs.math.geom.*
 import kotlin.math.*
 
 class BlurFilter(
-    radius: Float = 4f,
+    radius: Double = 4.0,
     expandBorder: Boolean = true,
     @ViewProperty
     var optimize: Boolean = true
@@ -26,7 +26,7 @@ class BlurFilter(
             vertical.expandBorder = value
         }
     @ViewProperty
-    var radius: Float = radius
+    var radius: Double = radius
         set(value) {
             field = value
             horizontal.radius = radius
@@ -34,5 +34,5 @@ class BlurFilter(
         }
     override val recommendedFilterScale: Double get() = if (!optimize || radius <= 2.0) 1.0 else 1.0 / log2(radius * 0.5)
 
-    override val isIdentity: Boolean get() = radius == 0f
+    override val isIdentity: Boolean get() = radius == 0.0
 }

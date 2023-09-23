@@ -8,6 +8,7 @@ import korlibs.korge.tween.*
 import korlibs.korge.view.*
 import korlibs.math.geom.*
 import korlibs.math.geom.bezier.*
+import korlibs.math.interpolation.*
 import korlibs.math.random.*
 import korlibs.time.*
 import kotlin.random.*
@@ -31,31 +32,31 @@ class MainBezier : Scene() {
                 //val curve = Bezier.Quad(bez.p1, bez.p2, bez.p3)
                 val curve = Bezier(bez.p1, bez.p2, bez.p3, bez.p4)
 
-                stroke(Colors.WHITE, lineWidth = 4.0f) {
+                stroke(Colors.WHITE, lineWidth = 4.0) {
                     beginPath()
                     curve(curve)
                 }
 
-                stroke(Colors.DIMGREY, lineWidth = 1.6f) {
+                stroke(Colors.DIMGREY, lineWidth = 1.6) {
                     moveTo(bez.p1)
                     lineTo(bez.p2)
                     lineTo(bez.p3)
                     lineTo(bez.p4)
                 }
-                stroke(Colors.PURPLE, lineWidth = 2.0f) {
+                stroke(Colors.PURPLE, lineWidth = 2.0) {
                     for (n in 0..50) {
-                        val p = curve.calc(n.toFloat() / 50f)
-                        this.circle(p, 1f)
+                        val p = curve.calc(Ratio(n.toFloat() / 50f))
+                        this.circle(p, 1.0)
                     }
                 }
 
                 //stroke(Colors.YELLOW, lineWidth = 2.0) {
                 fill(Colors.YELLOW) {
-                    this.circle(bez.p1, 8f)
-                    this.circle(bez.p2, 4f)
-                    this.circle(bez.p1, 4f)
-                    this.circle(bez.p3, 4f)
-                    this.circle(bez.p4, 4f)
+                    this.circle(bez.p1, 8.0)
+                    this.circle(bez.p2, 4.0)
+                    this.circle(bez.p1, 4.0)
+                    this.circle(bez.p3, 4.0)
+                    this.circle(bez.p4, 4.0)
                 }
 
                 //fill(Colors.YELLOW) { this.circle(bez.p1, 8.0) }
@@ -64,7 +65,7 @@ class MainBezier : Scene() {
                 //fill(Colors.YELLOW) { this.circle(bez.p3, 4.0) }
                 //fill(Colors.YELLOW) { this.circle(bez.p4, 4.0) }
 
-                stroke(Colors.RED, lineWidth = 2.0f) {
+                stroke(Colors.RED, lineWidth = 2.0) {
                     rect(curve.getBounds())
                 }
             }

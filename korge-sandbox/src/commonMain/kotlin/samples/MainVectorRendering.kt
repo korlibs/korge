@@ -18,7 +18,7 @@ class MainVectorRendering : Scene() {
             //val bitmap2 = Bitmap32(512, 512).context2d {
             translate(100, 100)
             scale(2.0)
-            globalAlpha = 0.75f
+            globalAlpha = 0.75
             fillStyle = BitmapPaint(korgeBitmap, Matrix.IDENTITY.translated(50, 50), cycleX = CycleMethod.REPEAT, cycleY = CycleMethod.REPEAT)
             /*
             fillStyle = createLinearGradient(0.0, 0.0, 200.0, 200.0, transform = Matrix().scale(0.5).pretranslate(30, 30))

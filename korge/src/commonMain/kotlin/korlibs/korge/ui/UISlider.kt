@@ -46,7 +46,7 @@ class UISlider(
     val button = solidRect(size, Colors.DARKGREY)
     val text = text("", alignment = TextAlignment.TOP_LEFT, color = Colors.BLACK)
 
-    val onChange: Signal<Float> = Signal()
+    val onChange: Signal<Double> = Signal()
 
     @ViewProperty
     var min: Double = min.toDouble()
@@ -83,7 +83,7 @@ class UISlider(
                 field = rvalue
                 reposition()
                 valueChanged()
-                onChange(rvalue.toFloat())
+                onChange(rvalue)
             }
         }
 
@@ -126,7 +126,7 @@ class UISlider(
     }
 }
 
-fun <T : UISlider> T.changed(block: (Float) -> Unit): T {
+fun <T : UISlider> T.changed(block: (Double) -> Unit): T {
     onChange.add(block)
     return this
 }

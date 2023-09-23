@@ -24,9 +24,9 @@ data class Matrix(
     //private val twobits: Int get() = data.twobits
 
     //constructor() : this(1f, 0f, 0f, 1f, 0f, 0f)
-    constructor(a: Float, b: Float, c: Float, d: Float, tx: Float, ty: Float) :
+    constructor(a: Float, b: Float, c: Float, d: Float, tx: Float = 0f, ty: Float = 0f) :
         this(a.toDouble(), b.toDouble(), c.toDouble(), d.toDouble(), tx.toDouble(), ty.toDouble())
-    constructor(a: Int, b: Int, c: Int, d: Int, tx: Int, ty: Int) :
+    constructor(a: Int, b: Int, c: Int, d: Int, tx: Int = 0, ty: Int = 0) :
         this(a.toDouble(), b.toDouble(), c.toDouble(), d.toDouble(), tx.toDouble(), ty.toDouble())
 
     operator fun times(other: Matrix): Matrix = Matrix.multiply(this, other)

@@ -83,6 +83,7 @@ class CSS(val allRules: List<IRuleSet>, unit: Unit = Unit) {
         }
 
         fun getAt(ratio: Ratio, out: InterpolationResult = InterpolationResult()): InterpolationResult = getAt(ratio.toFloat(), out)
+        fun getAt(ratio: Double, out: InterpolationResult = InterpolationResult()): InterpolationResult = getAt(ratio.toFloat(), out)
 
         // @TODO: Optimize: bisect
         fun getAt(ratio: Float, out: InterpolationResult = InterpolationResult()): InterpolationResult {
