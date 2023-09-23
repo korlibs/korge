@@ -2523,8 +2523,8 @@ data class MRectangle(
         out: MRectangle = MRectangle()
     ): MRectangle {
         val (ow, oh) = scale.transform(Size(width, height), Size(this.width, this.height))
-        val x = (this.width - ow) * anchor.doubleX
-        val y = (this.height - oh) * anchor.doubleY
+        val x = (this.width - ow) * anchor.sx
+        val y = (this.height - oh) * anchor.sy
         return out.setTo(x, y, ow.toDouble(), oh.toDouble())
     }
 
@@ -2546,8 +2546,8 @@ data class MRectangle(
         setToAnchoredRectangle(item.immutable, anchor, container)
 
     fun setToAnchoredRectangle(item: Size, anchor: Anchor, container: MRectangle): MRectangle = setTo(
-        (container.x + anchor.doubleX * (container.width - item.width)),
-        (container.y + anchor.doubleY * (container.height - item.height)),
+        (container.x + anchor.sx * (container.width - item.width)),
+        (container.y + anchor.sy * (container.height - item.height)),
         item.width,
         item.height
     )
@@ -2635,11 +2635,11 @@ data class MRectangle(
         }
     }
 
-    fun expand(left: Float, top: Float, right: Float, bottom: Float): MRectangle =
+    fun expand(left: Double, top: Double, right: Double, bottom: Double): MRectangle =
         this.setToBounds(this.left - left, this.top - top, this.right + right, this.bottom + bottom)
 
-    fun expand(left: Int, top: Int, right: Int, bottom: Int): MRectangle =
-        expand(left.toFloat(), top.toFloat(), right.toFloat(), bottom.toFloat())
+    inline fun expand(left: Number, top: Number, right: Number, bottom: Number): MRectangle =
+        expand(left.toDouble(), top.toDouble(), right.toDouble(), bottom.toDouble())
 
     fun expand(margin: Margin): MRectangle =
         expand(margin.left, margin.top, margin.right, margin.bottom)
@@ -2777,14 +2777,14 @@ inline class MRectangleInt(val rect: MRectangle) {
         anchor: Anchor,
         out: MRectangleInt = MRectangleInt()
     ): MRectangleInt = out.setTo(
-        ((container.width - this.width) * anchor.doubleX).toInt(),
-        ((container.height - this.height) * anchor.doubleY).toInt(),
+        ((container.width - this.width) * anchor.sx).toInt(),
+        ((container.height - this.height) * anchor.sy).toInt(),
         width,
         height
     )
 
     fun getAnchorPosition(anchor: Anchor, out: MPointInt = MPointInt()): MPointInt =
-        out.setTo((x + width * anchor.doubleX).toInt(), (y + height * anchor.doubleY).toInt())
+        out.setTo((x + width * anchor.sx).toInt(), (y + height * anchor.sy).toInt())
 
     val center: MPoint get() = anchor(0.5, 0.5).double
     inline fun anchor(ax: Number, ay: Number): MPointInt = anchor(ax.toDouble(), ay.toDouble())
@@ -2942,8 +2942,8 @@ inline class MSizeInt(val float: MSize) {
 
     fun anchoredIn(container: MRectangleInt, anchor: Anchor, out: MRectangleInt = MRectangleInt()): MRectangleInt {
         return out.setTo(
-            ((container.width - this.width) * anchor.doubleX).toInt(),
-            ((container.height - this.height) * anchor.doubleY).toInt(),
+            ((container.width - this.width) * anchor.sx).toInt(),
+            ((container.height - this.height) * anchor.sy).toInt(),
             width,
             height
         )
@@ -2955,7 +2955,7 @@ inline class MSizeInt(val float: MSize) {
     operator fun times(v: Float) = this * v.toDouble()
 
     fun getAnchorPosition(anchor: Anchor, out: MPointInt = MPointInt(0, 0)): MPointInt =
-        out.setTo((width * anchor.doubleX).toInt(), (height * anchor.doubleY).toInt())
+        out.setTo((width * anchor.sx).toInt(), (height * anchor.sy).toInt())
 
     var width: Int
         set(value) { float.width = value.toDouble() }
@@ -3223,8 +3223,8 @@ data class MScale(
 }
 
 fun Scale.toMutable(out: MScale = MScale()): MScale {
-    out.scaleX = scaleXD
-    out.scaleY = scaleYD
+    out.scaleX = scaleX
+    out.scaleY = scaleY
     return out
 }
 fun MScale.toImmutable(): Scale = Scale(scaleX, scaleY)
