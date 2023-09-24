@@ -420,9 +420,9 @@ object RootKorlibsPlugin {
                             val wasm = createPairSourceSet("wasmJs", common) { test ->
                                 dependencies {
                                     if (test) {
-                                        implementation(kotlin("test-wasm"))
+                                        implementation(kotlin("test-wasm-js"))
                                     } else {
-                                        implementation(kotlin("stdlib-wasm"))
+                                        implementation(kotlin("stdlib-wasm-js"))
                                     }
                                 }
                             }
