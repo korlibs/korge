@@ -14,8 +14,8 @@ group = "com.soywiz.korlibs.korge.plugins"
 //this.name = "korlibs.korge.gradle.plugin"
 
 gradlePlugin {
-    website = "https://korge.soywiz.com/"
-    vcsUrl = "https://github.com/korlibs/korge-plugins"
+    website.set("https://korge.soywiz.com/")
+    vcsUrl.set("https://github.com/korlibs/korge-plugins")
     //tags = ["korge", "game", "engine", "game engine", "multiplatform", "kotlin"]
 
 	plugins {
