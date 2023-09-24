@@ -25,7 +25,7 @@ open class Stage internal constructor(override val views: Views) : FixedSizeCont
 {
     override var clip: Boolean by views::clipBorders
 
-    override var unscaledSize: Size by views::virtualSizeFloat
+    override var unscaledSize: Size by views::virtualSizeDouble
 
     val keys: InputKeys get() = views.input.keys
     val input: Input get() = views.input
@@ -71,8 +71,8 @@ open class Stage internal constructor(override val views: Views) : FixedSizeCont
     private var virtualSize: Point
         get() = Point(views.virtualWidthDouble, views.virtualHeightDouble)
         set(value) {
-            views.virtualWidthFloat = value.x
-            views.virtualHeightFloat = value.y
+            views.virtualWidthDouble = value.x
+            views.virtualHeightDouble = value.y
             views.gameWindow.queue {
                 views.resized()
             }

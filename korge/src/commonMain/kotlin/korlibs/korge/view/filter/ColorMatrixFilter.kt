@@ -16,13 +16,17 @@ import korlibs.math.geom.*
  * - [ColorMatrixFilter.GRAYSCALE_MATRIX] - Used to make the colors grey
  * - [ColorMatrixFilter.IDENTITY_MATRIX]  - Doesn't modify the colors at all
  */
-class ColorMatrixFilter(colorMatrix: Matrix4, blendRatio: Float = 1f) : ShaderFilter() {
+class ColorMatrixFilter(colorMatrix: Matrix4, blendRatio: Double = 1.0) : ShaderFilter() {
     object ColorMatrixUB : UniformBlock(fixedLocation = 5) {
         val u_ColorMatrix by mat4()
         val u_BlendRatio by float()
     }
 
 	companion object : BaseProgramProvider() {
+        inline operator fun invoke(colorMatrix: Matrix4, blendRatio: Number): ColorMatrixFilter {
+            return ColorMatrixFilter(colorMatrix, blendRatio.toDouble())
+        }
+
         /** A Matrix usable for [colorMatrix] that will transform any color into grayscale */
 		val GRAYSCALE_MATRIX = Matrix4.fromColumns(
 			0.33f, 0.33f, 0.33f, 0f,
@@ -69,11 +73,11 @@ class ColorMatrixFilter(colorMatrix: Matrix4, blendRatio: Float = 1f) : ShaderFi
      * - Values between [0 and 1] would be an interpolation between those colors.
      * */
     @ViewProperty
-	var blendRatio: Float = blendRatio
+	var blendRatio: Double = blendRatio
 
     override val programProvider: ProgramProvider get() = ColorMatrixFilter
 
-    override fun updateUniforms(ctx: RenderContext, filterScale: Float) {
+    override fun updateUniforms(ctx: RenderContext, filterScale: Double) {
         ctx[ColorMatrixUB].push {
             it[u_ColorMatrix] = colorMatrix
             it[u_BlendRatio] = blendRatio

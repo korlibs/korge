@@ -1,6 +1,5 @@
 package korlibs.graphics
 
-import korlibs.datastructure.*
 import korlibs.graphics.shader.*
 import korlibs.graphics.shader.gl.*
 import korlibs.math.geom.*
@@ -44,8 +43,8 @@ class AGUniformBlockTest {
         val ubb = UniformBlockBuffer(ArrayUniformUB)
 
         ubb.push {
-            it[u_BorderColor] = Vector4.func { 33f }
-            it[u_Vec4Array10] = Array(3) { N -> Vector4.func { it.toFloat() + (N * 10f) } }
+            it[u_BorderColor] = Vector4F.func { 33f }
+            it[u_Vec4Array10] = Array(3) { N -> Vector4F.func { it.toFloat() + (N * 10f) } }
         }
 
         assertEquals(

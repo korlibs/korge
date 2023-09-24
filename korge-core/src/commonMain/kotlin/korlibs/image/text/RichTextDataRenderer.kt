@@ -12,7 +12,7 @@ data class RichTextDataPlacements(
     data class Placement(
         val text: String,
         val pos: Point,
-        val size: Float,
+        val size: Double,
         val font: Font,
         val fillStyle: Paint?,
         val stroke: Stroke?,
@@ -36,7 +36,7 @@ fun RichTextData.place(
     if (text.lines.isEmpty()) return out
 
     val rtext = text.limit(
-        (if (wordWrap) bounds.width else Float.POSITIVE_INFINITY).toFloat(),
+        (if (wordWrap) bounds.width else Double.POSITIVE_INFINITY).toDouble(),
         includePartialLines = includePartialLines,
         maxHeight = bounds.height,
         ellipsis = ellipsis,
@@ -44,7 +44,7 @@ fun RichTextData.place(
         includeFirstLineAlways = includeFirstLineAlways
     )
     //var y = bounds.y + rtext.lines.first().maxHeight
-    val totalHeight = if (rtext.lines.isNotEmpty()) rtext.lines.dropLast(1).sumOf { it.maxLineHeight.toDouble() }.toFloat() + rtext.lines.last().maxHeight else 0f
+    val totalHeight = if (rtext.lines.isNotEmpty()) rtext.lines.dropLast(1).sumOf { it.maxLineHeight } + rtext.lines.last().maxHeight else 0.0
 
     var y = bounds.y + ((bounds.height - totalHeight) * align.vertical.ratioFake0)
 

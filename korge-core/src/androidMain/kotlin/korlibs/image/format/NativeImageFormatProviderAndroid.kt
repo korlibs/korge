@@ -240,10 +240,10 @@ class AndroidContext2dRenderer(val bmp: android.graphics.Bitmap, val antialiasin
         }
         //kotlin.io.println("Path:")
         this.visitCmds(
-            moveTo = { (x, y) -> out.moveTo(x, y) },
-            lineTo = { (x, y) -> out.lineTo(x, y) },
-            quadTo = { (cx, cy), (ax, ay) -> out.quadTo(cx, cy, ax, ay) },
-            cubicTo = { (cx1, cy1), (cx2, cy2), (ax, ay) -> out.cubicTo(cx1, cy1, cx2, cy2, ax, ay) },
+            moveTo = { (x, y) -> out.moveTo(x.toFloat(), y.toFloat()) },
+            lineTo = { (x, y) -> out.lineTo(x.toFloat(), y.toFloat()) },
+            quadTo = { (cx, cy), (ax, ay) -> out.quadTo(cx.toFloat(), cy.toFloat(), ax.toFloat(), ay.toFloat()) },
+            cubicTo = { (cx1, cy1), (cx2, cy2), (ax, ay) -> out.cubicTo(cx1.toFloat(), cy1.toFloat(), cx2.toFloat(), cy2.toFloat(), ax.toFloat(), ay.toFloat()) },
             close = { out.close() }
         )
         //kotlin.io.println("/Path")
@@ -315,16 +315,15 @@ class AndroidContext2dRenderer(val bmp: android.graphics.Bitmap, val antialiasin
         }
     }
 
-    fun korlibs.math.geom.MMatrix.toAndroid() = android.graphics.Matrix().setTo(this)
     fun korlibs.math.geom.Matrix.toAndroid() = android.graphics.Matrix().setTo(this)
 
     fun android.graphics.Matrix.setTo(m: korlibs.math.geom.Matrix) = this.apply {
-        matrixValues[Matrix.MSCALE_X] = m.a
-        matrixValues[Matrix.MSKEW_X] = m.b
-        matrixValues[Matrix.MSKEW_Y] = m.c
-        matrixValues[Matrix.MSCALE_Y] = m.d
-        matrixValues[Matrix.MTRANS_X] = m.tx
-        matrixValues[Matrix.MTRANS_Y] = m.ty
+        matrixValues[Matrix.MSCALE_X] = m.a.toFloat()
+        matrixValues[Matrix.MSKEW_X] = m.b.toFloat()
+        matrixValues[Matrix.MSKEW_Y] = m.c.toFloat()
+        matrixValues[Matrix.MSCALE_Y] = m.d.toFloat()
+        matrixValues[Matrix.MTRANS_X] = m.tx.toFloat()
+        matrixValues[Matrix.MTRANS_Y] = m.ty.toFloat()
         matrixValues[Matrix.MPERSP_0] = 0f
         matrixValues[Matrix.MPERSP_1] = 0f
         matrixValues[Matrix.MPERSP_2] = 1f
@@ -364,7 +363,7 @@ class AndroidContext2dRenderer(val bmp: android.graphics.Bitmap, val antialiasin
             paint.style = if (fill) Paint.Style.FILL else android.graphics.Paint.Style.STROKE
             paint.strokeCap = state.lineCap.toAndroid()
             paint.strokeJoin = state.lineJoin.toAndroid()
-            convertPaint(state.fillOrStrokeStyle(fill), state.transform, paint, state.globalAlpha.clamp01())
+            convertPaint(state.fillOrStrokeStyle(fill), state.transform, paint, state.globalAlpha.clamp01().toFloat())
             paint.pathEffect = when {
                 state.lineDash != null -> DashPathEffect(state.lineDash!!.mapFloat { it.toFloat() }.toFloatArray(), state.lineDashOffset.toFloat())
                 else -> null

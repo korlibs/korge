@@ -44,14 +44,14 @@ object DebugBitmapFont {
 @ThreadLocal // It is mutable because of the Extra, so can't use SharedImmutable
 val debugBmpFont: BitmapFont by lazy {
     val tex = PNG.decode(DebugBitmapFont.DEBUG_FONT_BYTES).toBMP32().premultiplied().slice()
-    val fntAdvance = 7f
-    val fntWidth = 8f
-    val fntHeight = 8f
+    val fntAdvance = 7.0
+    val fntWidth = 8.0
+    val fntHeight = 8.0
 
-    val fntBlockX = 2f
-    val fntBlockY = 2f
-    val fntBlockWidth = 12f
-    val fntBlockHeight = 12f
+    val fntBlockX = 2.0
+    val fntBlockY = 2.0
+    val fntBlockWidth = 12.0
+    val fntBlockHeight = 12.0
 
     BitmapFont(fntHeight, fntHeight, fntHeight, (0 until 256).associateWith {
         val x = it % 16

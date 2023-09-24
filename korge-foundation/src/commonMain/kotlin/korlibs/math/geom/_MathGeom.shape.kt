@@ -7,6 +7,7 @@ import korlibs.datastructure.iterators.*
 import korlibs.math.geom.*
 import korlibs.math.geom.bezier.*
 import korlibs.math.geom.vector.*
+import korlibs.math.interpolation.*
 import kotlin.math.*
 
 interface WithHitShape2D {
@@ -17,12 +18,12 @@ abstract class AbstractShape2D : Shape2D {
     abstract protected val lazyVectorPath: VectorPath
     override fun toVectorPath(): VectorPath = lazyVectorPath
 
-    override fun distance(p: Point): Float = (p - projectedPoint(p)).length * insideSign(p)
-    override fun normalVectorAt(p: Point): Vector2 = -projectedPointExt(p, normal = true)
+    override fun distance(p: Point): Double = (p - projectedPoint(p)).length * insideSign(p)
+    override fun normalVectorAt(p: Point): Vector2D = -projectedPointExt(p, normal = true)
     override fun projectedPoint(p: Point): Point = projectedPointExt(p, normal = false)
-    protected fun insideSign(p: Point): Float = if (containsPoint(p)) -1f else +1f
+    protected fun insideSign(p: Point): Double = if (containsPoint(p)) -1.0 else +1.0
     protected fun projectedPointExt(p: Point, normal: Boolean): Point {
-        var length = Float.POSITIVE_INFINITY
+        var length = Double.POSITIVE_INFINITY
         var pp = Point()
         var n = Point()
         toVectorPath().getCurvesList().fastForEach { it.beziers.fastForEach {
@@ -60,20 +61,20 @@ fun Shape2D.toShape2D(): Shape2D = this
 interface Shape2D {
     val closed: Boolean get() = toVectorPath().isLastCommandClose
     val center: Point get() = getBounds().center
-    val area: Float get() {
+    val area: Double get() {
         val lazyVectorPath = toVectorPath()
-        return if (lazyVectorPath.isLastCommandClose) lazyVectorPath.area else 0f
+        return if (lazyVectorPath.isLastCommandClose) lazyVectorPath.area else 0.0
     }
-    val perimeter: Float get() {
-        var sum: Double = 0.0
+    val perimeter: Double get() {
+        var sum = 0.0
         toVectorPath().getCurvesList().fastForEach { sum += it.length }
-        return sum.toFloat()
+        return sum
     }
 
     /** Compute the distance to the shortest point to the edge (SDF). Negative inside. Positive outside. */
-    fun distance(p: Point): Float = (p - projectedPoint(p)).length
+    fun distance(p: Point): Double = (p - projectedPoint(p)).length
     /** Returns the normal vector to the shortest point to the edge */
-    fun normalVectorAt(p: Point): Vector2
+    fun normalVectorAt(p: Point): Vector2D
     /** Point projected to the closest edge */
     fun projectedPoint(p: Point): Point
 
@@ -105,7 +106,7 @@ interface Shape2D {
     // @TODO: Check
     /** [ml] transformation matrix of this [Shape2D], [mr] transformation matrix of the point [p] */
     @Deprecated("Untested yet")
-    fun distance(ml: Matrix, p: Point, mr: Matrix): Float {
+    fun distance(ml: Matrix, p: Point, mr: Matrix): Double {
         return (p.transformed(mr) - projectedPoint(ml, p, mr)).length
     }
 
@@ -206,8 +207,8 @@ data class CompoundShape2D(val shapes: List<Shape2D>) : AbstractShape2D() {
         buildVectorPath { shapes.fastForEach { shape -> path(shape.toVectorPath()) } }
     }
 
-    override val area: Float get() = shapes.sumOfFloat { it.area }
-    override val perimeter: Float get() = shapes.sumOfFloat { it.perimeter }
+    override val area: Double get() = shapes.sumOfDouble { it.area }
+    override val perimeter: Double get() = shapes.sumOfDouble { it.perimeter }
 
     override fun intersectionsWith(ml: Matrix, that: Shape2D, mr: Matrix): PointList {
         val out = PointArrayList()
@@ -218,7 +219,7 @@ data class CompoundShape2D(val shapes: List<Shape2D>) : AbstractShape2D() {
     }
 
     fun findClosestShape(p: Point): Shape2D? {
-        var minDistance = Float.POSITIVE_INFINITY
+        var minDistance = Double.POSITIVE_INFINITY
         var shape: Shape2D? = null
         shapes.fastForEach {
             val dist = it.distance(p)
@@ -231,8 +232,8 @@ data class CompoundShape2D(val shapes: List<Shape2D>) : AbstractShape2D() {
     }
 
     override fun projectedPoint(p: Point): Point = findClosestShape(p)?.projectedPoint(p) ?: Point.NaN
-    override fun distance(p: Point): Float = findClosestShape(p)?.distance(p) ?: Float.POSITIVE_INFINITY
-    override fun normalVectorAt(p: Point): Vector2 = findClosestShape(p)?.normalVectorAt(p) ?: Vector2.NaN
+    override fun distance(p: Point): Double = findClosestShape(p)?.distance(p) ?: Double.POSITIVE_INFINITY
+    override fun normalVectorAt(p: Point): Vector2D = findClosestShape(p)?.normalVectorAt(p) ?: Vector2D.NaN
 
     override fun containsPoint(p: Point): Boolean {
         shapes.fastForEach { if (it.containsPoint(p)) return true }
@@ -244,14 +245,14 @@ data class CompoundShape2D(val shapes: List<Shape2D>) : AbstractShape2D() {
 //@Deprecated("") typealias EmptyShape2d = EmptyShape2D
 
 object EmptyShape2D : Shape2D {
-    override val area: Float get() = 0f
-    override val perimeter: Float get() = 0f
+    override val area: Double get() = 0.0
+    override val perimeter: Double get() = 0.0
     override fun containsPoint(p: Point): Boolean = false
     override fun toVectorPath(): VectorPath = buildVectorPath { }
     override val center: Point get() = Point.ZERO
-    override fun distance(p: Point): Float = Float.POSITIVE_INFINITY
-    override fun normalVectorAt(p: Point): Vector2 = Vector2.NaN
-    override fun projectedPoint(p: Point): Point = Vector2.NaN
+    override fun distance(p: Point): Double = Double.POSITIVE_INFINITY
+    override fun normalVectorAt(p: Point): Vector2D = Vector2D.NaN
+    override fun projectedPoint(p: Point): Point = Vector2D.NaN
 }
 
 inline fun VectorPath.emitEdges(
@@ -336,13 +337,13 @@ private fun intersectionsWithLine(
 
 private fun Matrix.tx(x: Double, y: Double): Double = if (this.isNotNIL) this.transformX(x, y) else x
 private fun Matrix.ty(x: Double, y: Double): Double = if (this.isNotNIL) this.transformY(x, y) else y
-private fun Matrix.dtx(x: Double, y: Double): Double = if (this.isNotNIL) this.deltaTransform(Point(x, y)).x.toDouble() else x
-private fun Matrix.dty(x: Double, y: Double): Double = if (this.isNotNIL) this.deltaTransform(Point(x, y)).y.toDouble() else y
+private fun Matrix.dtx(x: Double, y: Double): Double = if (this.isNotNIL) this.deltaTransform(Point(x, y)).x else x
+private fun Matrix.dty(x: Double, y: Double): Double = if (this.isNotNIL) this.deltaTransform(Point(x, y)).y else y
 
-private fun Matrix.tx(x: Float, y: Float): Float = if (this.isNotNIL) this.transformX(x, y) else x
-private fun Matrix.ty(x: Float, y: Float): Float = if (this.isNotNIL) this.transformY(x, y) else y
-private fun Matrix.dtx(x: Float, y: Float): Float = if (this.isNotNIL) this.deltaTransform(Point(x, y)).x else x
-private fun Matrix.dty(x: Float, y: Float): Float = if (this.isNotNIL) this.deltaTransform(Point(x, y)).y else y
+private fun Matrix.tx(x: Float, y: Float): Float = tx(x.toDouble(), y.toDouble()).toFloat()
+private fun Matrix.ty(x: Float, y: Float): Float = ty(x.toDouble(), y.toDouble()).toFloat()
+private fun Matrix.dtx(x: Float, y: Float): Float = dtx(x.toDouble(), y.toDouble()).toFloat()
+private fun Matrix.dty(x: Float, y: Float): Float = dty(x.toDouble(), y.toDouble()).toFloat()
 
 private fun optimizedIntersect(l: Circle, r: Circle): Boolean =
     Point.distance(l.center, r.center) < (l.radius + r.radius)
@@ -387,7 +388,7 @@ inline fun VectorPath.emitPoints2(
         },
         cubicTo = { c0, c1, a ->
             val sum = Point.distance(l, c0) + Point.distance(c0, c1) + Point.distance(c1, a)
-            approximateCurve(sum.toInt(), { ratio, get -> get(Bezier.cubicCalc(l, c0, c1, a, ratio.toFloat())) }, { emit(it, false) })
+            approximateCurve(sum.toInt(), { ratio, get -> get(Bezier.cubicCalc(l, c0, c1, a, ratio)) }, { emit(it, false) })
             l = a
             joint(false)
         },
@@ -402,7 +403,7 @@ inline fun VectorPath.emitPoints2(
 
 @PublishedApi internal inline fun approximateCurve(
     curveSteps: Int,
-    compute: (ratio: Float, get: (Point) -> Unit) -> Unit,
+    compute: (ratio: Ratio, get: (Point) -> Unit) -> Unit,
     crossinline emit: (Point) -> Unit,
     includeStart: Boolean = false,
     includeEnd: Boolean = true,
@@ -412,11 +413,11 @@ inline fun VectorPath.emitPoints2(
     var lastPos = Point()
     var prevPos = Point()
     var emittedCount = 0
-    compute(0f) { lastPos = it }
+    compute(Ratio.ZERO) { lastPos = it }
     val nStart = if (includeStart) 0 else 1
     val nEnd = if (includeEnd) rcurveSteps else rcurveSteps - 1
     for (n in nStart .. nEnd) {
-        val ratio = n * dt
+        val ratio = Ratio(n * dt)
         //println("ratio: $ratio")
         compute(ratio) {
             //if (emittedCount == 0) {
@@ -444,13 +445,15 @@ inline fun VectorPath.emitPoints2(
             l = it
         },
         quadTo = { c, a ->
-            val dt = 1f / curveSteps
-            for (n in 1 .. curveSteps) emit(Bezier.quadCalc(l, c, a, n * dt))
+            Ratio.forEachRatio(curveSteps, include0 = false) {
+                emit(Bezier.quadCalc(l, c, a, it))
+            }
             l = a
         },
         cubicTo = { c1,c2, a ->
-            val dt = 1f / curveSteps
-            for (n in 1 .. curveSteps) emit(Bezier.cubicCalc(l, c1, c2, a, (n * dt)))
+            Ratio.forEachRatio(curveSteps, include0 = false) {
+                emit(Bezier.cubicCalc(l, c1, c2, a, it))
+            }
             l = a
         },
         close = { flush(true) }
@@ -524,6 +527,6 @@ fun VectorPath.getPoints2List(): List<PointArrayList> {
 }
 
 interface Shape3D {
-    val center: Vector3
+    val center: Vector3F
     val volume: Float
 }

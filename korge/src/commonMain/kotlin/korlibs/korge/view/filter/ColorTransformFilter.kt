@@ -2,9 +2,9 @@ package korlibs.korge.view.filter
 
 import korlibs.graphics.*
 import korlibs.graphics.shader.*
+import korlibs.image.color.*
 import korlibs.korge.render.*
 import korlibs.korge.view.property.*
-import korlibs.image.color.*
 
 /**
  * A [Filter] applying a multiplicative and additive color transformation to the view.
@@ -40,7 +40,7 @@ class ColorTransformFilter(colorTransform: ColorTransform) : ShaderFilter() {
 
     override val programProvider: ProgramProvider get() = ColorTransformFilter
 
-    override fun updateUniforms(ctx: RenderContext, filterScale: Float) {
+    override fun updateUniforms(ctx: RenderContext, filterScale: Double) {
         super.updateUniforms(ctx, filterScale)
         ctx[ColorTransformUB].push {
             it[u_ColorMul] = colorMul

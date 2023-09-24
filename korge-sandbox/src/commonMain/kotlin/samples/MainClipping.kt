@@ -38,11 +38,11 @@ class MainClipping : Scene() {
                 solidRect(512, 512, Colors.BLUE)
             }
         }, MaskTransition(TransitionFilter.Transition.CIRCULAR))
-        tv.ratio = 0.5f
+        tv.ratio = 0.5
         addChild(tv)
 
         gpuShapeView({
-            stroke(Colors.GREEN, lineWidth = 2f) {
+            stroke(Colors.GREEN, lineWidth = 2.0) {
                 rect(0.0, 0.0, views.virtualWidthDouble, views.virtualHeightDouble)
             }
         })
@@ -51,7 +51,7 @@ class MainClipping : Scene() {
             //val escale = 1.1
             val escale = 1.0
             val container = Container().apply {
-                yD = views.virtualHeightDouble; scaleYD = -1.0 * escale; scaleXD = escale
+                y = views.virtualHeightDouble; scaleY = -1.0 * escale; scaleX = escale
                 clipContainer(Size(150, 100)) {
                     xy(75, 50)
                     solidRect(300, 400)
@@ -67,8 +67,8 @@ class MainClipping : Scene() {
                     container2.addChild(image(container.unsafeRenderToBitmapSync(views.renderContext).also {
                         it.updateColors { if (it.a == 0) Colors.RED else it }
                     }).also {
-                        it.x = 300f
-                        it.yD = views.virtualHeightDouble - it.bitmap.height - 50 * escale
+                        it.x = 300.0
+                        it.y = views.virtualHeightDouble - it.bitmap.height - 50 * escale
                     })
                 }
             }

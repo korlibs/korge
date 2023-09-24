@@ -1,9 +1,9 @@
 package korlibs.image.font
 
 import korlibs.datastructure.*
-import korlibs.logger.*
 import korlibs.io.lang.*
 import korlibs.io.stream.*
+import korlibs.logger.*
 import korlibs.math.*
 import korlibs.math.geom.*
 import korlibs.math.geom.vector.*
@@ -385,8 +385,8 @@ object TtfCIDFont {
         fun VectorBuilder.cfrCubicTo(cx1: Double, cy1: Double, cx2: Double, cy2: Double, ax: Double, ay: Double) {
             //rCubicTo(ax, ay, cx1, cy1, cx2, cy2)
 
-            val fcx1 = lastPos.xD + cx1
-            val fcy1 = lastPos.yD + cy1
+            val fcx1 = lastPos.x + cx1
+            val fcy1 = lastPos.y + cy1
 
             val fcx2 = fcx1 + cx2
             val fcy2 = fcy1 + cy2

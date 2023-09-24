@@ -82,18 +82,18 @@ abstract class BaseTtfFont(
     fun getAllBytes() = s.getAllBytes()
     fun getAllBytesUnsafe() = s.getBackingArrayUnsafe()
 
-    override fun getFontMetrics(size: Float, metrics: FontMetrics): FontMetrics =
+    override fun getFontMetrics(size: Double, metrics: FontMetrics): FontMetrics =
         metrics.copyFromNewSize(this.fontMetrics1px, size)
 
-    override fun getGlyphMetrics(size: Float, codePoint: Int, metrics: GlyphMetrics, reader: WStringReader?): GlyphMetrics =
+    override fun getGlyphMetrics(size: Double, codePoint: Int, metrics: GlyphMetrics, reader: WStringReader?): GlyphMetrics =
         metrics.copyFromNewSize(getGlyphByReader(reader, codePoint)?.metrics1px ?: nonExistantGlyphMetrics1px, size, codePoint)
 
-    override fun getKerning(size: Float, leftCodePoint: Int, rightCodePoint: Int): Float {
+    override fun getKerning(size: Double, leftCodePoint: Int, rightCodePoint: Int): Double {
         // @TODO: Kerning information not read yet. Not implemented
-        return 0f
+        return 0.0
     }
 
-    override fun getGlyphPath(size: Float, codePoint: Int, path: GlyphPath, reader: WStringReader?): GlyphPath? {
+    override fun getGlyphPath(size: Double, codePoint: Int, path: GlyphPath, reader: WStringReader?): GlyphPath? {
         val spos = reader?.position
         val codePointPeek = reader?.peek(0)
         val g = getGlyphByReader(reader, codePoint, cache = true) ?: return null
@@ -112,7 +112,7 @@ abstract class BaseTtfFont(
             //println("bitmapEntry=$bitmapEntry")
             val scaleX = unitsPerEm.toDouble() / bitmapEntry.info.ppemX.toDouble()
             val scaleY = unitsPerEm.toDouble() / bitmapEntry.info.ppemY.toDouble()
-            path.bitmapOffset = Vector2(
+            path.bitmapOffset = Vector2D(
                 0.0,
                 ((-bitmapEntry.height - bitmapEntry.descender) * scaleY),
             )
@@ -127,9 +127,9 @@ abstract class BaseTtfFont(
         return path
     }
 
-    protected fun getTextScale(size: Float): Float {
+    protected fun getTextScale(size: Double): Double {
         //return size / (yMax - yMin).toDouble()
-        return size / unitsPerEm.toFloat()
+        return size / unitsPerEm.toDouble()
     }
 
     class NamesInfo {
@@ -249,7 +249,7 @@ abstract class BaseTtfFont(
     val substitutionsCodePoints = IntMap<SubstitutionInfo>()
 
     lateinit var fontMetrics1px: FontMetrics; private set
-    protected val nonExistantGlyphMetrics1px = GlyphMetrics(1f, false, 0, Rectangle(), 0f)
+    protected val nonExistantGlyphMetrics1px = GlyphMetrics(1.0, false, 0, Rectangle(), 0.0)
     var isOpenType = false
 
     val ttfName: String get() = namesi.ttfName
@@ -314,8 +314,8 @@ abstract class BaseTtfFont(
         //}
 
         fontMetrics1px = FontMetrics().also {
-            val scale = getTextScale(1f)
-            it.size = 1f
+            val scale = getTextScale(1.0)
+            it.size = 1.0
             it.top = (this.yMax) * scale
             it.ascent = this.ascender * scale
             it.baseline = 0f * scale
@@ -1874,7 +1874,7 @@ abstract class BaseTtfFont(
                 }
             }
 
-            val size = unitsPerEm.toFloat()
+            val size = unitsPerEm.toDouble()
             val scale = getTextScale(size)
             GlyphMetrics(size, true, -1, Rectangle.fromBounds(
                 xMin * scale, yMin * scale,
@@ -1894,7 +1894,7 @@ abstract class BaseTtfFont(
 
         override val paths = refs.map { ref ->
             val gpath = ref.glyph.path.path
-            GlyphGraphicsPath(ref.glyph.index, VectorPath(IntArrayList(gpath.commands.size), FloatArrayList(gpath.data.size))).also { out ->
+            GlyphGraphicsPath(ref.glyph.index, VectorPath(IntArrayList(gpath.commands.size), DoubleArrayList(gpath.data.size))).also { out ->
                 val m = Matrix()
                     .scaled(ref.scaleX, ref.scaleY)
                     .translated(ref.x, -ref.y)
@@ -1912,7 +1912,7 @@ abstract class BaseTtfFont(
                 dataSize += gpath.path.data.size
             }
 
-            GlyphGraphicsPath(index, VectorPath(IntArrayList(commandsSize), FloatArrayList(dataSize))).also { out ->
+            GlyphGraphicsPath(index, VectorPath(IntArrayList(commandsSize), DoubleArrayList(dataSize))).also { out ->
                 paths.fastForEach { out.path.write(it.path) }
             }
         }
@@ -1958,7 +1958,7 @@ abstract class BaseTtfFont(
                 dataSize += 2 + (csize * 8) // Bigger than required
             }
 
-            GlyphGraphicsPath(index, VectorPath(IntArrayList(commandSize), FloatArrayList(dataSize))).also { p ->
+            GlyphGraphicsPath(index, VectorPath(IntArrayList(commandSize), DoubleArrayList(dataSize))).also { p ->
                 //println("flags.size: ${flags.size}, contoursIndices.size=${contoursIndices.size}, xPos.size=${xPos.size}, yPos.size=${yPos.size}")
                 //assert(flags.size == contoursIndices.size)
                 //assert(xPos.size == contoursIndices.size)

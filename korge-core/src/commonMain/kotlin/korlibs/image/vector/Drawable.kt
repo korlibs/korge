@@ -1,11 +1,7 @@
 package korlibs.image.vector
 
-import korlibs.math.clamp
-import korlibs.math.toIntCeil
-import korlibs.image.bitmap.Bitmap
-import korlibs.image.bitmap.BitmapWithHotspot
-import korlibs.image.bitmap.NativeImageOrBitmap32
-import korlibs.image.bitmap.context2d
+import korlibs.image.bitmap.*
+import korlibs.math.*
 import korlibs.math.geom.*
 
 interface Drawable {
@@ -41,20 +37,20 @@ interface BoundsDrawable : SizedDrawable {
 
 fun BoundsDrawable.renderWithHotspot(scale: Double? = null, fit: Size? = null, native: Boolean = true): BitmapWithHotspot<Bitmap> {
     val bounds = this.bounds
-    val rscale: Float = when {
+    val rscale: Double = when {
         fit != null -> {
             val size2 = ScaleMode.FIT(bounds.size, fit)
             kotlin.math.min(size2.width / bounds.width, size2.height / bounds.height)
         }
-        scale != null -> scale.toFloat()
-        else -> 1f
+        scale != null -> scale.toDouble()
+        else -> 1.0
     }
     val image = NativeImageOrBitmap32((bounds.width * rscale).toIntCeil(), (bounds.height * rscale).toIntCeil(), premultiplied = true, native = native).context2d {
         scale(rscale)
         translate(-bounds.x, -bounds.y)
         draw(this@renderWithHotspot)
     }
-    return BitmapWithHotspot(image, Vector2Int(
+    return BitmapWithHotspot(image, Vector2I(
         (-bounds.left * rscale).toInt().clamp(0, image.width - 1),
         (-bounds.top * rscale).toInt().clamp(0, image.height - 1),
     ))

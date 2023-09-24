@@ -35,7 +35,7 @@ class MainVectorNinePatch : Scene() {
         //))
 
         addUpdater {
-            view.size(mousePos.xD, mousePos.yD)
+            view.size(mousePos.x, mousePos.y)
         }
     }
 }

@@ -66,8 +66,8 @@ class NativeImageTest {
     fun testNativeVectorRenderingEvenOdd() {
         val image = buildShape {
             fill(Colors.RED, winding = Winding.EVEN_ODD) {
-                circle(Point(50, 50), 50f)
-                circle(Point(50, 50), 25f)
+                circle(Point(50, 50), 50.0)
+                circle(Point(50, 50), 25.0)
             }
         }.render()
         assertEquals(SizeInt(100, 100), image.size)
@@ -79,8 +79,8 @@ class NativeImageTest {
     fun testNativeVectorRenderingNonZero() {
         val image = buildShape {
             fill(Colors.RED, winding = Winding.NON_ZERO) {
-                circle(Point(50, 50), 50f)
-                circle(Point(50, 50), 25f)
+                circle(Point(50, 50), 50.0)
+                circle(Point(50, 50), 25.0)
             }
         }.render()
         assertEquals(SizeInt(100, 100), image.size)

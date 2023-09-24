@@ -77,15 +77,15 @@ open class UniformBlock(val fixedLocation: Int) {
     protected fun int(name: String? = null): Gen<Int> = gen(name, VarType.SInt1, 4, 4)
     protected fun float(name: String? = null): Gen<Float> = gen(name, VarType.Float1, 4, 4)
 
-    protected fun ivec2(name: String? = null): Gen<Vector2Int> = gen(name, VarType.SInt2, 8, 8)
-    protected fun vec2(name: String? = null): Gen<Vector2> = gen(name, VarType.Float2, 8, 8)
+    protected fun ivec2(name: String? = null): Gen<Vector2I> = gen(name, VarType.SInt2, 8, 8)
+    protected fun vec2(name: String? = null): Gen<Vector2F> = gen(name, VarType.Float2, 8, 8)
 
     // @TODO: Some drivers get this wrong
     //protected fun ivec3(name: String? = null): Gen<Vector3> = gen(name, VarType.Float3, 16, 16)
     //protected fun vec3(name: String? = null): Gen<Vector3> = gen(name, VarType.Float3, 16, 16)
 
-    protected fun ivec4(name: String? = null): Gen<Vector4Int> = gen(name, VarType.SInt4, 16, 16)
-    protected fun vec4(name: String? = null): Gen<Vector4> = gen(name, VarType.Float4, 16, 16)
+    protected fun ivec4(name: String? = null): Gen<Vector4I> = gen(name, VarType.SInt4, 16, 16)
+    protected fun vec4(name: String? = null): Gen<Vector4F> = gen(name, VarType.Float4, 16, 16)
 
     // @TODO: Some problems implementing mat3 layout in UBOs
     protected fun mat3(name: String? = null): Gen<Matrix4> = gen(name, VarType.Mat3, 48, 16)
@@ -157,24 +157,28 @@ class UniformsRef(
     // @TODO: Remaining get functions
     operator fun get(uniform: TypedUniform<Int>): Int = getOffset(uniform).let { buffer.getUnalignedInt32(it) }
     operator fun get(uniform: TypedUniform<Float>): Float = getOffset(uniform).let { buffer.getUnalignedFloat32(it + 0) }
-    operator fun get(uniform: TypedUniform<Vector2>): Vector2 = getOffset(uniform).let { Vector2(buffer.getUnalignedFloat32(it + 0), buffer.getUnalignedFloat32(it + 4)) }
-    operator fun get(uniform: TypedUniform<Vector3>): Vector3 = getOffset(uniform).let { Vector3(buffer.getUnalignedFloat32(it + 0), buffer.getUnalignedFloat32(it + 4), buffer.getUnalignedFloat32(it + 8)) }
-    operator fun get(uniform: TypedUniform<Vector4>): Vector4 = getOffset(uniform).let { Vector4(buffer.getUnalignedFloat32(it + 0), buffer.getUnalignedFloat32(it + 4), buffer.getUnalignedFloat32(it + 8), buffer.getUnalignedFloat32(it + 12)) }
+    operator fun get(uniform: TypedUniform<Vector2F>): Vector2F = getOffset(uniform).let { Vector2F(buffer.getUnalignedFloat32(it + 0), buffer.getUnalignedFloat32(it + 4)) }
+    operator fun get(uniform: TypedUniform<Vector3F>): Vector3F = getOffset(uniform).let { Vector3F(buffer.getUnalignedFloat32(it + 0), buffer.getUnalignedFloat32(it + 4), buffer.getUnalignedFloat32(it + 8)) }
+    operator fun get(uniform: TypedUniform<Vector4F>): Vector4F = getOffset(uniform).let { Vector4F(buffer.getUnalignedFloat32(it + 0), buffer.getUnalignedFloat32(it + 4), buffer.getUnalignedFloat32(it + 8), buffer.getUnalignedFloat32(it + 12)) }
     //operator fun get(uniform: TypedUniform<Matrix4>): Matrix4 = TODO()
 
     operator fun set(uniform: TypedUniform<Int>, value: Int) {
         getOffset(uniform).also { buffer.setUnalignedInt32(it, value) }
     }
     operator fun set(uniform: TypedUniform<Float>, value: Boolean) = set(uniform, if (value) 1f else 0f)
-    @Deprecated("", ReplaceWith("set(uniform, value.toFloat())"))
     operator fun set(uniform: TypedUniform<Float>, value: Double) = set(uniform, value.toFloat())
-    operator fun set(uniform: TypedUniform<Point>, value: Point) = set(uniform, value.x, value.y)
-    operator fun set(uniform: TypedUniform<Point>, value: Size) = set(uniform, value.width, value.height)
-    operator fun set(uniform: TypedUniform<Vector4>, value: RGBA) = set(uniform, value.rf, value.gf, value.bf, value.af)
-    operator fun set(uniform: TypedUniform<Vector4>, value: RGBAPremultiplied) = set(uniform, value.rf, value.gf, value.bf, value.af)
-    operator fun set(uniform: TypedUniform<Vector4>, value: ColorAdd) = set(uniform, value.rf, value.gf, value.bf, value.af)
-    operator fun set(uniform: TypedUniform<Vector4>, value: Vector4) = set(uniform, value.x, value.y, value.z, value.w)
-    operator fun set(uniform: TypedUniform<Vector4>, value: RectCorners) = set(uniform, value.bottomRight, value.topRight, value.bottomLeft, value.topLeft)
+    operator fun set(uniform: TypedUniform<Vector2F>, value: Vector2F) = set(uniform, value.x, value.y)
+    operator fun set(uniform: TypedUniform<Vector2F>, value: Point) = set(uniform, value.x.toFloat(), value.y.toFloat())
+    operator fun set(uniform: TypedUniform<Vector2F>, value: Size) = set(uniform, value.width.toFloat(), value.height.toFloat())
+
+    //operator fun set(uniform: TypedUniform<Point>, value: Point) = set(uniform, value.x, value.y)
+    //operator fun set(uniform: TypedUniform<Point>, value: Size) = set(uniform, value.width, value.height)
+
+    operator fun set(uniform: TypedUniform<Vector4F>, value: RGBA) = set(uniform, value.rf, value.gf, value.bf, value.af)
+    operator fun set(uniform: TypedUniform<Vector4F>, value: RGBAPremultiplied) = set(uniform, value.rf, value.gf, value.bf, value.af)
+    operator fun set(uniform: TypedUniform<Vector4F>, value: ColorAdd) = set(uniform, value.rf, value.gf, value.bf, value.af)
+    operator fun set(uniform: TypedUniform<Vector4F>, value: Vector4F) = set(uniform, value.x, value.y, value.z, value.w)
+    operator fun set(uniform: TypedUniform<Vector4F>, value: RectCorners) = set(uniform, value.bottomRight.toFloat(), value.topRight.toFloat(), value.bottomLeft.toFloat(), value.topLeft.toFloat())
     operator fun set(uniform: TypedUniform<Matrix4>, value: Matrix4) {
         when (uniform.type) {
             VarType.Mat4 -> set(uniform, value, Matrix4.INDICES_BY_COLUMNS_4x4)
@@ -183,7 +187,7 @@ class UniformsRef(
         }
     }
 
-    operator fun set(uniform: TypedUniform<Array<Vector4>>, value: Array<Vector4>) {
+    operator fun set(uniform: TypedUniform<Array<Vector4F>>, value: Array<Vector4F>) {
         getOffset(uniform).also { for (n in value.indices) bufferSetFloat4(it + (n * 16), value[n]) }
     }
     operator fun set(uniform: TypedUniform<Array<Matrix4>>, value: Array<Matrix4>) {
@@ -201,10 +205,12 @@ class UniformsRef(
             buffer.setUnalignedFloat32(it + 0, value)
         }
     }
-    operator fun set(uniform: TypedUniform<Point>, x: Float, y: Float) {
+    //operator fun set(uniform: TypedUniform<Point>, x: Double, y: Double) { getOffset(uniform).also { bufferSetFloat2(it, x.toFloat(), y.toFloat()) } }
+    //operator fun set(uniform: TypedUniform<Point>, x: Float, y: Float) { getOffset(uniform).also { bufferSetFloat2(it, x, y) } }
+    operator fun set(uniform: TypedUniform<Vector2F>, x: Float, y: Float) {
         getOffset(uniform).also { bufferSetFloat2(it, x, y) }
     }
-    fun set(uniform: TypedUniform<Vector4>, x: Float, y: Float, z: Float, w: Float) {
+    fun set(uniform: TypedUniform<Vector4F>, x: Float, y: Float, z: Float, w: Float) {
         getOffset(uniform).also { bufferSetFloat4(it, x, y, z, w) }
     }
 
@@ -213,20 +219,20 @@ class UniformsRef(
         buffer.setUnalignedFloat32(index + 0, v)
     }
 
-    fun bufferSetFloat2(index: Int, v: Vector2) = bufferSetFloat2(index, v.x, v.y)
+    fun bufferSetFloat2(index: Int, v: Vector2F) = bufferSetFloat2(index, v.x, v.y)
     fun bufferSetFloat2(index: Int, x: Float, y: Float) {
         buffer.setUnalignedFloat32(index + 0, x)
         buffer.setUnalignedFloat32(index + 4, y)
     }
 
-    fun bufferSetFloat3(index: Int, v: Vector3) = bufferSetFloat3(index, v.x, v.y, v.z)
+    fun bufferSetFloat3(index: Int, v: Vector3F) = bufferSetFloat3(index, v.x, v.y, v.z)
     fun bufferSetFloat3(index: Int, x: Float, y: Float, z: Float) {
         buffer.setUnalignedFloat32(index + 0, x)
         buffer.setUnalignedFloat32(index + 4, y)
         buffer.setUnalignedFloat32(index + 8, z)
     }
 
-    fun bufferSetFloat4(index: Int, v: Vector4) = bufferSetFloat4(index, v.x, v.y, v.z, v.w)
+    fun bufferSetFloat4(index: Int, v: Vector4F) = bufferSetFloat4(index, v.x, v.y, v.z, v.w)
     fun bufferSetFloat4(index: Int, x: Float, y: Float, z: Float, w: Float) {
         buffer.setUnalignedFloat32(index + 0, x)
         buffer.setUnalignedFloat32(index + 4, y)

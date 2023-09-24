@@ -4,8 +4,7 @@ import CollisionKind
 import korlibs.datastructure.iterators.*
 import korlibs.korge.view.*
 import korlibs.math.geom.*
-import korlibs.math.geom.collider.HitTestable
-import korlibs.math.geom.collider.HitTestDirection
+import korlibs.math.geom.collider.*
 
 private val MOVE_ANGLES = arrayOf(0.degrees, 5.degrees, 10.degrees, 15.degrees, 20.degrees, 30.degrees, 45.degrees, 60.degrees, 80.degrees, 85.degrees)
 private val MOVE_SCALES = arrayOf(+1.0, -1.0)
@@ -35,11 +34,11 @@ fun View.moveWithHitTestable(collision: HitTestable, dx: Double, dy: Double, hit
     char.y = oldY
 }
 
-fun View.moveWithCollisions(collision: List<View>, delta: Vector2, kind: CollisionKind = CollisionKind.SHAPE) {
+fun View.moveWithCollisions(collision: List<View>, delta: Vector2D, kind: CollisionKind = CollisionKind.SHAPE) {
     return moveWithCollisions(collision, delta.x, delta.y, kind)
 }
 
-fun View.moveWithCollisions(collision: List<View>, dx: Float, dy: Float, kind: CollisionKind = CollisionKind.SHAPE) {
+fun View.moveWithCollisions(collision: List<View>, dx: Double, dy: Double, kind: CollisionKind = CollisionKind.SHAPE) {
     val char = this
     val deltaXY = Point(dx, dy)
     val angle = Angle.between(Point.ZERO, deltaXY)

@@ -236,8 +236,8 @@ object GpuShapeViewPrograms {
                     //println("mat=${mat.toMatrix4()}")
                     //println("stateTransform=$stateTransform")
                     it[u_Transform] = mat.toMatrix4()
-                    it[u_Gradientp0] = Vector4(paint.x0.toFloat(), paint.y0.toFloat(), paint.r0.toFloat(), 1f)
-                    it[u_Gradientp1] = Vector4(paint.x1.toFloat(), paint.y1.toFloat(), paint.r1.toFloat(), 1f)
+                    it[u_Gradientp0] = Vector4F(paint.x0.toFloat(), paint.y0.toFloat(), paint.r0.toFloat(), 1f)
+                    it[u_Gradientp1] = Vector4F(paint.x1.toFloat(), paint.y1.toFloat(), paint.r1.toFloat(), 1f)
                     it[u_GlobalAlpha] = globalAlpha.toFloat()
                     //it[u_LineWidth] = lineWidth.toFloat()
                 },

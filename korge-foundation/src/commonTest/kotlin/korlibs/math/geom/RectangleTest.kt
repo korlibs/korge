@@ -1,9 +1,6 @@
 package korlibs.math.geom
 
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 class RectangleTest {
     @Test
@@ -173,9 +170,9 @@ class RectangleTest {
         val rect = Rectangle(1, 2, 3, 4)
         assertEquals(Point(1, 2), rect.position)
         assertEquals(Size(3, 4), rect.size)
-        assertEquals(1f, rect.x)
-        assertEquals(2f, rect.y)
-        assertEquals(3f, rect.width)
-        assertEquals(4f, rect.height)
+        assertEquals(1.0, rect.x)
+        assertEquals(2.0, rect.y)
+        assertEquals(3.0, rect.width)
+        assertEquals(4.0, rect.height)
     }
 }

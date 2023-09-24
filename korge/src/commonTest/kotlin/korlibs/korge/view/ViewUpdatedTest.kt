@@ -10,10 +10,10 @@ import kotlin.test.*
 class ViewUpdatedTest {
     @Test
     fun testStandard() = updatePropertyTest({ solidRect(10.0, 10.0) }) {
-        assertUpdatedOnce(view::xD, 11.0)
-        assertUpdatedOnce(view::yD, 12.0)
-        assertUpdatedOnce(view::scaleXD, 2.0)
-        assertUpdatedOnce(view::scaleYD, 4.0)
+        assertUpdatedOnce(view::x, 11.0)
+        assertUpdatedOnce(view::y, 12.0)
+        assertUpdatedOnce(view::scaleX, 2.0)
+        assertUpdatedOnce(view::scaleY, 4.0)
         assertUpdatedOnce(view::alphaF, 0.5f)
         assertUpdatedOnce(view::colorMul, Colors.BLUE)
         assertUpdatedOnce(view::rotation, 45.degrees)
@@ -24,8 +24,8 @@ class ViewUpdatedTest {
 
     @Test
     fun testSolidRect() = updatePropertyTest({ solidRect(10.0, 10.0) }) {
-        assertUpdatedOnce(view::unscaledWidthD, 5.0)
-        assertUpdatedOnce(view::unscaledHeightD, 5.0)
+        assertUpdatedOnce(view::unscaledWidth, 5.0)
+        assertUpdatedOnce(view::unscaledHeight, 5.0)
         assertUpdatedOnce(view::color, Colors.RED)
         assertUpdatedOnce(view::anchor, Anchor(0.5, 0.75))
         assertUpdatedOnce(view::whiteBitmap, Bitmap32(1, 1, RGBAPremultiplied(-1)).slice())

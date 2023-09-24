@@ -2,30 +2,27 @@ package korlibs.math.geom
 
 import korlibs.math.interpolation.*
 
-data class Anchor(val sx: Float, val sy: Float) : Interpolable<Anchor> {
-    fun toVector(): Vector2 = Vector2(sx, sy)
+typealias Anchor = Anchor2D
+typealias Anchor3 = Anchor3F
 
-    val floatX: Float get() = sx
-    val floatY: Float get() = sy
-
-    val doubleX: Double get() = sx.toDouble()
-    val doubleY: Double get() = sy.toDouble()
+data class Anchor2D(val sx: Double, val sy: Double) : Interpolable<Anchor> {
+    fun toVector(): Vector2D = Vector2D(sx, sy)
 
     val ratioX: Ratio get() = sx.toRatio()
     val ratioY: Ratio get() = sy.toRatio()
 
-    constructor(sx: Double, sy: Double) : this(sx.toFloat(), sy.toFloat())
-    constructor(sx: Int, sy: Int) : this(sx.toFloat(), sy.toFloat())
+    constructor(sx: Float, sy: Float) : this(sx.toDouble(), sy.toDouble())
+    constructor(sx: Int, sy: Int) : this(sx.toDouble(), sy.toDouble())
 
-    fun withX(sx: Float): Anchor = Anchor(sx, sy)
-    fun withX(sx: Int): Anchor = Anchor(sx.toFloat(), sy)
-    fun withX(sx: Double): Anchor = Anchor(sx.toFloat(), sy)
+    inline fun withX(sx: Number): Anchor = Anchor(sx.toDouble(), sy)
+    inline fun withY(sy: Number): Anchor = Anchor(sx, sy.toDouble())
 
-    fun withY(sy: Float): Anchor = Anchor(sx, sy)
-    fun withY(sy: Int): Anchor = Anchor(sx, sy.toFloat())
-    fun withY(sy: Double): Anchor = Anchor(sx, sy.toFloat())
+    inline fun withX(ratioX: Ratio): Anchor = Anchor(ratioX.toDouble(), sy)
+    inline fun withY(ratioY: Ratio): Anchor = Anchor(sx, ratioY.toDouble())
 
     companion object {
+        inline operator fun invoke(sx: Ratio, sy: Ratio): Anchor2D = Anchor2D(sx.toDouble(), sy.toDouble())
+
         val TOP_LEFT: Anchor = Anchor(0f, 0f)
         val TOP_CENTER: Anchor = Anchor(.5f, 0f)
         val TOP_RIGHT: Anchor = Anchor(1f, 0f)
@@ -67,8 +64,8 @@ data class Anchor(val sx: Float, val sy: Float) : Interpolable<Anchor> {
 operator fun Size.times(anchor: Anchor): Point = this.toVector() * anchor.toVector()
 //operator fun SizeInt.times(anchor: Anchor): PointInt = (this.toVector().toFloat() * anchor.toVector()).toInt()
 
-data class Anchor3(val sx: Float, val sy: Float, val sz: Float) : Interpolable<Anchor3> {
-    fun toVector(): Vector3 = Vector3(sx, sy, sz)
+data class Anchor3F(val sx: Float, val sy: Float, val sz: Float) : Interpolable<Anchor3F> {
+    fun toVector(): Vector3F = Vector3F(sx, sy, sz)
 
     val floatX: Float get() = sx
     val floatY: Float get() = sy
@@ -85,19 +82,19 @@ data class Anchor3(val sx: Float, val sy: Float, val sz: Float) : Interpolable<A
     constructor(sx: Double, sy: Double, sz: Double) : this(sx.toFloat(), sy.toFloat(), sz.toFloat())
     constructor(sx: Int, sy: Int, sz: Int) : this(sx.toFloat(), sy.toFloat(), sz.toFloat())
 
-    fun withX(sx: Float): Anchor3 = Anchor3(sx, sy, sz)
-    fun withX(sx: Int): Anchor3 = Anchor3(sx.toFloat(), sy, sz)
-    fun withX(sx: Double): Anchor3 = Anchor3(sx.toFloat(), sy, sz)
+    fun withX(sx: Float): Anchor3F = Anchor3F(sx, sy, sz)
+    fun withX(sx: Int): Anchor3F = Anchor3F(sx.toFloat(), sy, sz)
+    fun withX(sx: Double): Anchor3F = Anchor3F(sx.toFloat(), sy, sz)
 
-    fun withY(sy: Float): Anchor3 = Anchor3(sx, sy, sz)
-    fun withY(sy: Int): Anchor3 = Anchor3(sx, sy.toFloat(), sz)
-    fun withY(sy: Double): Anchor3 = Anchor3(sx, sy.toFloat(), sz)
+    fun withY(sy: Float): Anchor3F = Anchor3F(sx, sy, sz)
+    fun withY(sy: Int): Anchor3F = Anchor3F(sx, sy.toFloat(), sz)
+    fun withY(sy: Double): Anchor3F = Anchor3F(sx, sy.toFloat(), sz)
 
-    fun withZ(sz: Float): Anchor3 = Anchor3(sx, sy, sz)
-    fun withZ(sz: Int): Anchor3 = Anchor3(sx, sy, sz.toFloat())
-    fun withZ(sz: Double): Anchor3 = Anchor3(sx, sy, sz.toFloat())
+    fun withZ(sz: Float): Anchor3F = Anchor3F(sx, sy, sz)
+    fun withZ(sz: Int): Anchor3F = Anchor3F(sx, sy, sz.toFloat())
+    fun withZ(sz: Double): Anchor3F = Anchor3F(sx, sy, sz.toFloat())
 
-    override fun interpolateWith(ratio: Ratio, other: Anchor3): Anchor3 = Anchor3(
+    override fun interpolateWith(ratio: Ratio, other: Anchor3F): Anchor3F = Anchor3F(
         ratio.interpolate(this.sx, other.sx),
         ratio.interpolate(this.sy, other.sy),
         ratio.interpolate(this.sz, other.sz),

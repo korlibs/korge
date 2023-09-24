@@ -1,10 +1,8 @@
 package korlibs.korge.view
 
-import korlibs.korge.render.RenderContext
-import korlibs.korge.render.useLineBatcher
-import korlibs.image.color.Colors
-import korlibs.image.color.RGBA
-import korlibs.math.geom.vector.VectorPath
+import korlibs.image.color.*
+import korlibs.korge.render.*
+import korlibs.math.geom.vector.*
 
 inline fun Container.outline(vectorPath: VectorPath, x: Double = 0.0, y: Double = 0.0, color: RGBA = Colors.WHITE, callback: @ViewDslMarker Outline.() -> Unit = {})
     = Outline(vectorPath, x, y, color).addTo(this, callback)
@@ -22,8 +20,8 @@ class Outline(
         }
 
     init {
-        this.xD = x
-        this.yD = y
+        this.x = x
+        this.y = y
         colorMul = color
     }
 

@@ -120,25 +120,25 @@ object MaterialRender {
 
 @KorgeExperimental
 fun RenderContext2D.materialRoundRect(
-    x: Float,
-    y: Float,
-    width: Float,
-    height: Float,
+    x: Double,
+    y: Double,
+    width: Double,
+    height: Double,
     color: RGBA = Colors.RED,
     radius: RectCorners = RectCorners.EMPTY,
     shadowOffset: Point = Point.ZERO,
     shadowColor: RGBA = Colors.BLACK,
-    shadowRadius: Float = 0f,
+    shadowRadius: Double = 0.0,
     highlightPos: Point = Point.ZERO,
-    highlightRadius: Float = 0f,
+    highlightRadius: Double = 0.0,
     highlightColor: RGBA = Colors.WHITE,
-    borderSize: Float = 0f,
+    borderSize: Double = 0.0,
     borderColor: RGBA = Colors.WHITE,
     //colorMul: RGBA = Colors.WHITE,
 ) {
     ctx[MaterialRender.MaterialBlockUB].push(deduplicate = true) {
         it[u_Radius] = radius
-        it[u_Size] = Size(width, height)
+        it[u_Size] = Vector2F(width, height)
         it[u_BackgroundColor] = (color.premultipliedFast)
         it[u_HighlightPos] = (highlightPos * Size(width, height))
         it[u_HighlightRadius] = (highlightRadius * kotlin.math.max(width, height) * 1.25).toFloat()
@@ -162,7 +162,7 @@ fun RenderContext2D.materialRoundRect(
     //    it[MaterialRender.u_ShadowOffset].set(shadowOffset)
     //    it[MaterialRender.u_ShadowRadius].set(shadowRadius)
     //}
-    quadPaddedCustomProgram(x, y, width, height, MaterialRender.PROGRAM, Margin((shadowRadius + shadowOffset.length)))
+    quadPaddedCustomProgram(x.toFloat(), y.toFloat(), width.toFloat(), height.toFloat(), MaterialRender.PROGRAM, Margin((shadowRadius + shadowOffset.length)))
 }
 
 @KorgeExperimental
@@ -202,7 +202,7 @@ fun RenderContext2D.drawText(
 fun RenderContext2D.drawText(
     text: String,
     font: BitmapFont,
-    textSize: Float = 16f,
+    textSize: Double = 16.0,
     pos: Point = Point.ZERO,
     color: RGBA = Colors.WHITE,
     baseline: Boolean = false,
@@ -212,7 +212,7 @@ fun RenderContext2D.drawText(
 ) {
     val scale = font.getTextScale(textSize)
     var sx = pos.x
-    val sy = pos.y + if (baseline) -font.base * scale else 0f
+    val sy = pos.y + if (baseline) -font.base * scale else 0.0
     //println("multiplyColor=$multiplyColor")
     var n = 0
     for (char in text) {

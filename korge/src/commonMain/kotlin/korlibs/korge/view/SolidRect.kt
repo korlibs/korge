@@ -36,8 +36,8 @@ class SolidRect(size: Size, color: RGBA = Colors.WHITE) : RectBase() {
             invalidateRender()
         }
 
-    override val bwidth: Float get() = width
-    override val bheight: Float get() = height
+    override val bwidth: Float get() = width.toFloat()
+    override val bheight: Float get() = height.toFloat()
 
     /**
      * Allows to store a white bitmap in an atlas along for example a bitmap font to render this rect

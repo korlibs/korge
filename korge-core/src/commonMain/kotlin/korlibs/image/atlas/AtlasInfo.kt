@@ -105,7 +105,7 @@ data class AtlasInfo(
             name = name,
             frame = frame,
             virtFrame = when {
-                offset.x != 0f || offset.y != 0f || orig.width != 0 || orig.height != 0 ->
+                offset.x != 0.0 || offset.y != 0.0 || orig.width != 0 || orig.height != 0 ->
                     RectangleInt(offset.x.toInt(), offset.y.toInt(), orig.width, orig.height)
                 spriteSourceSize.x != 0 || spriteSourceSize.y != 0 || sourceSize.width != frame.height || sourceSize.height != frame.width ->
                     RectangleInt(spriteSourceSize.x, spriteSourceSize.y, sourceSize.width, sourceSize.height)

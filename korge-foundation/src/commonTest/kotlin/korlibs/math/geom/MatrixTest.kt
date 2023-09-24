@@ -12,7 +12,7 @@ class MatrixTest {
             .pretranslated(Point(10, 10))
             .prescaled(Scale(2, 3))
             .prerotated(90.degrees)
-        assertEquals(Vector2Int(10, 40), matrix.transform(Point(10, 0)).toIntRound())
+        assertEquals(Vector2I(10, 40), matrix.transform(Point(10, 0)).toIntRound())
     }
 
 
@@ -46,12 +46,12 @@ class MatrixTest {
     @Test
     fun identity() {
         var m = Matrix.IDENTITY
-        assertEquals(1f, m.a)
-        assertEquals(0f, m.b)
-        assertEquals(0f, m.c)
-        assertEquals(1f, m.d)
-        assertEquals(0f, m.tx)
-        assertEquals(0f, m.ty)
+        assertEquals(1.0, m.a)
+        assertEquals(0.0, m.b)
+        assertEquals(0.0, m.c)
+        assertEquals(1.0, m.d)
+        assertEquals(0.0, m.tx)
+        assertEquals(0.0, m.ty)
         m = Matrix(2, 2, 2, 2, 2, 2)
         assertEquals(Matrix(2, 2, 2, 2, 2, 2), m)
         m = Matrix.IDENTITY
@@ -76,7 +76,7 @@ class MatrixTest {
 
     @Test
     fun transform2() {
-        assertEquals(Matrix(2, 0, 0, 3, 10, 20), MatrixTransform(10f, 20f, scaleX = 2f, scaleY = 3f).toMatrix())
+        assertEquals(Matrix(2, 0, 0, 3, 10, 20), MatrixTransform(10.0, 20.0, scaleX = 2.0, scaleY = 3.0).toMatrix())
 
         // @TODO: Kotlin.JS BUG (missing arguments are NaN or undefined but it works fine on JVM)
         //val t1 = Matrix.Transform(10, 20, scaleX = 2, scaleY = 3, rotation = 90.degrees)
@@ -92,7 +92,7 @@ class MatrixTest {
 
     @Test
     fun transform3() {
-        val t = MatrixTransform(rotation = -(91.degrees), scaleX = 1.3f, scaleY = 1.3f)
+        val t = MatrixTransform(rotation = -(91.degrees), scaleX = 1.3, scaleY = 1.3)
         assertEqualsFloat(t, MatrixTransform.fromMatrix(t.toMatrix()), 0.1)
     }
 

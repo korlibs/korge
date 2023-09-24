@@ -29,7 +29,7 @@ class MainTweenPoint : Scene() {
                 quadTo(Point(400.0, 400.0), Point(200.0, 200.0))
             }
             val curves = path.getCurves()
-            cpuGraphics(path.toStrokeShape(Colors.RED, thickness = 2f))
+            cpuGraphics(path.toStrokeShape(Colors.RED, thickness = 2.0))
             image(tex).scale(0.2)
             launch {
                 while (true) {

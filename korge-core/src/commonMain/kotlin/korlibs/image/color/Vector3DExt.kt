@@ -8,4 +8,4 @@ fun RGBA.toPremultipliedVector3D(out: MVector4 = MVector4()): MVector4 = out.set
 fun RGBA.toVector3D(out: MVector4 = MVector4()): MVector4 = out.setTo(rf, gf, bf, af)
 fun RGBAPremultiplied.toVector3D(out: MVector4 = MVector4()): MVector4 = out.setTo(rf, gf, bf, af)
 
-fun RGBAPremultiplied.toVector4(): Vector4 = Vector4(rf, gf, bf, af)
+fun RGBAPremultiplied.toVector4(): Vector4F = Vector4F(rf, gf, bf, af)

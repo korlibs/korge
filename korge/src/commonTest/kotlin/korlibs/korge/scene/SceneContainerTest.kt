@@ -74,7 +74,7 @@ class SceneContainerTest : ViewsForTesting() {
         sceneContainer.changeTo({ EmptyScene() }, time = 0.5.seconds, transition = MaskTransition(TransitionFilter.Transition.HORIZONTAL))
         val transitionView = sceneContainer.firstChild as TransitionView
         assertEquals("MaskTransition", transitionView.transition.toString())
-        assertEquals(1f, transitionView.ratio)
+        assertEquals(1.0, transitionView.ratio)
         val endTime = time
         assertTrue { endTime - startTime in 0.5.seconds..0.75.seconds }
     }
@@ -90,7 +90,7 @@ class SceneContainerTest : ViewsForTesting() {
         sceneContainer.changeTo<EmptyScene>(time = 0.5.seconds, transition = MaskTransition(TransitionFilter.Transition.HORIZONTAL))
         val transitionView = sceneContainer.firstChild as TransitionView
         assertEquals("MaskTransition", transitionView.transition.toString())
-        assertEquals(1f, transitionView.ratio)
+        assertEquals(1.0, transitionView.ratio)
         val endTime = time
         assertTrue { endTime - startTime in 0.5.seconds..0.75.seconds }
     }

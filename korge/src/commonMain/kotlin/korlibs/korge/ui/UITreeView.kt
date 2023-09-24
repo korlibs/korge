@@ -15,9 +15,17 @@ class UITreeViewNode<T>(val element: T, val items: List<UITreeViewNode<T>> = emp
 @KorgeExperimental
 class UITreeViewList<T>(
     val nodes: List<UITreeViewNode<T>> = listOf(),
-    override val height: Float = 20f,
+    override val height: Double = 20.0,
     val genView: (T) -> View = { UIText("$it") }
 ) : UITreeViewProvider<UITreeViewNode<T>> {
+    companion object {
+        inline operator fun <T> invoke(
+            nodes: List<UITreeViewNode<T>> = listOf(),
+            height: Number = 20.0,
+            noinline genView: (T) -> View = { UIText("$it") }
+        ): UITreeViewList<T> = UITreeViewList(nodes, height.toDouble(), genView)
+    }
+
     override fun getNumChildren(node: UITreeViewNode<T>?): Int {
         if (node == null) return nodes.size
         return node.items.size
@@ -38,7 +46,7 @@ fun <T> UITreeViewProvider<T>.getChildrenList(node: T?): List<T> = List(getNumCh
 
 @KorgeExperimental
 interface UITreeViewProvider<T> {
-    val height: Float
+    val height: Double
     fun getNumChildren(node: T?): Int
     fun getChildAt(node: T?, index: Int): T
     fun getViewForNode(node: T): View
@@ -46,7 +54,7 @@ interface UITreeViewProvider<T> {
     object Dummy : UITreeViewProvider<Any> {
         operator fun <T> invoke(): UITreeViewProvider<T> = Dummy as UITreeViewProvider<T>
 
-        override val height: Float get() = 0f
+        override val height: Double get() = 0.0
 
         override fun getNumChildren(node: Any?): Int = 0
         override fun getChildAt(node: Any?, index: Int): Any = Unit
@@ -66,15 +74,15 @@ private class UITreeViewVerticalListProviderAdapter<T>(val provider: UITreeViewP
     private var selectedBackground: View? = null
 
     override val numItems: Int get() = items.size
-    override val fixedHeight: Float get() = provider.height
+    override val fixedHeight: Double get() = provider.height
 
-    override fun getItemHeight(index: Int): Float = fixedHeight
+    override fun getItemHeight(index: Int): Double = fixedHeight
     override fun getItemView(index: Int, vlist: UIVerticalList): View {
         val node = items[index]
         val childCount = provider.getNumChildren(node.value)
         val container = UIFillLayeredContainer()
         val background = container.solidRect(10, 10, Colors.TRANSPARENT)
-        val stack = container.uiHorizontalStack(padding = 2f)
+        val stack = container.uiHorizontalStack(padding = 2.0)
         val child = provider.getViewForNode(node.value)
         stack.solidRect(10 * node.indentation, 10, Colors.TRANSPARENT)
         val rect = stack.solidRect(10, 10, Colors.TRANSPARENT)

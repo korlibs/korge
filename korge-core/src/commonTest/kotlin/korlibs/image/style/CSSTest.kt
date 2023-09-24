@@ -1,9 +1,11 @@
 package korlibs.image.style
 
+import korlibs.image.annotation.*
 import korlibs.logger.*
 import korlibs.math.geom.*
 import kotlin.test.*
 
+@OptIn(KorimExperimental::class)
 class CSSTest {
     val logger = Logger("CSSTest")
 

@@ -1,11 +1,11 @@
 package samples
 
-import korlibs.korge.scene.Scene
 import korlibs.event.*
-import korlibs.korge.input.*
-import korlibs.korge.view.*
 import korlibs.image.color.*
-import korlibs.io.util.toStringDecimal
+import korlibs.io.util.*
+import korlibs.korge.input.*
+import korlibs.korge.scene.*
+import korlibs.korge.view.*
 import korlibs.math.*
 import korlibs.math.geom.*
 import kotlin.math.*
@@ -41,11 +41,11 @@ class MainOnScreenController : Scene() {
             container {
                 position(radius * 1.1, height - radius * 1.1)
                 graphics { g ->
-                    fill(Colors.BLACK) { circle(Point(0, 0), radius.toFloat()) }
+                    fill(Colors.BLACK) { circle(Point(0, 0), radius) }
                     g.alpha(0.2)
                 }
                 ball = graphics { g ->
-                    fill(Colors.WHITE) { circle(Point(0, 0), (radius * 0.7).toFloat()) }
+                    fill(Colors.WHITE) { circle(Point(0, 0), (radius * 0.7)) }
                     g.alpha(0.2)
                 }
             }
@@ -69,7 +69,7 @@ class MainOnScreenController : Scene() {
             for (n in 0 until 2) {
                 graphics { g ->
                     g.position(width - radius * 1.1 - (diameter * n), height - radius * 1.1)
-                    fill(Colors.WHITE) { circle(Point(0, 0), (radius * 0.7).toFloat()) }
+                    fill(Colors.WHITE) { circle(Point(0, 0), (radius * 0.7)) }
                     g.alpha(0.2)
                     g.decorateButton(n)
                 }
@@ -79,7 +79,7 @@ class MainOnScreenController : Scene() {
             var start = Point(0, 0)
 
             view.onEvents(*MouseEvent.Type.ALL) { event ->
-                val p = view.globalMatrixInv.transform(event.pos.toFloat())
+                val p = view.globalMatrixInv.transform(event.pos.toDouble())
 
                 when (event.type) {
                     MouseEvent.Type.DOWN -> {
@@ -94,11 +94,11 @@ class MainOnScreenController : Scene() {
                             val deltaY = p.y - start.y
                             val length = hypot(deltaX, deltaY)
                             val maxLength = radius * 0.3f
-                            val lengthClamped = length.clamp(0f, maxLength.toFloat())
+                            val lengthClamped = length.clamp(0.0, maxLength)
                             val angle = Angle.between(start, p)
-                            ball.position(cosd(angle) * lengthClamped, sind(angle) * lengthClamped)
+                            ball.position(cos(angle) * lengthClamped, sin(angle) * lengthClamped)
                             val lengthNormalized = lengthClamped / maxLength
-                            onStick(cosd(angle) * lengthNormalized, sind(angle) * lengthNormalized)
+                            onStick(cos(angle) * lengthNormalized, sin(angle) * lengthNormalized)
                         }
                     }
                     MouseEvent.Type.UP -> {

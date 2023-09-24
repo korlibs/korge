@@ -3,14 +3,17 @@ package korlibs.math.geom
 import korlibs.number.*
 
 data class Spacing(
-    val vertical: Float,
-    val horizontal: Float
+    val vertical: Double,
+    val horizontal: Double
 ) {
-    constructor(spacing: Float) : this(spacing, spacing)
+    companion object {
+        val ZERO = Spacing(0.0, 0.0)
+
+        inline operator fun invoke(spacing: Number): Spacing = Spacing(spacing.toDouble(), spacing.toDouble())
+        inline operator fun invoke(vertical: Number, horizontal: Number): Spacing = Spacing(vertical.toDouble(), horizontal.toDouble())
+    }
+
+    constructor(spacing: Double) : this(spacing, spacing)
 
     override fun toString(): String = "Spacing(vertical=${vertical.niceStr}, horizontal=${horizontal.niceStr})"
-
-    companion object {
-        val ZERO = Spacing(0f, 0f)
-    }
 }

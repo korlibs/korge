@@ -9,7 +9,6 @@ import korlibs.io.async.*
 import korlibs.io.file.std.*
 import korlibs.logger.*
 import korlibs.math.geom.*
-import korlibs.memory.*
 import korlibs.platform.*
 import kotlin.test.*
 
@@ -83,7 +82,7 @@ class FontTest {
 
         val img1 = Bitmap32(128, 128, premultiplied = false).context2d {
             //rect(0, 0, 50, 50)
-            circle(Point(25, 50), 30f)
+            circle(Point(25, 50), 30.0)
             clip()
             beginPath()
 
@@ -113,7 +112,7 @@ class FontTest {
         //}.showImageAndWait()
 
         //val result = font.renderTextToBitmap(48.0, "Helló World!", paint, nativeRendering = false, renderer = CreateStringTextRenderer { text, n, c, c1, g, advance ->
-        val result = font.renderTextToBitmap(48f, "Helló World!", paint, nativeRendering = false, renderer = CreateStringTextRenderer { reader, c, g, advance ->
+        val result = font.renderTextToBitmap(48.0, "Helló World!", paint, nativeRendering = false, renderer = CreateStringTextRenderer { reader, c, g, advance ->
         //val result = font.renderTextToBitmap(24.0, "llll", ColorPaint(Colors.RED), renderer = CreateStringTextRenderer { text, n, c, c1, g, advance ->
         //val result = font.renderTextToBitmap(24.0, "Hello World!", renderer = CreateStringTextRenderer { text, n, c, c1, g, advance ->
             //dy = -n.toDouble()
@@ -132,8 +131,8 @@ class FontTest {
     @Test
     fun testDefaultFont() {
         val font = DefaultTtfFont
-        val fmetrics = font.getFontMetrics(16f)
-        val gmetrics = font.getGlyphMetrics(16f, 'k'.code)
+        val fmetrics = font.getFontMetrics(16.0)
+        val gmetrics = font.getGlyphMetrics(16.0, 'k'.code)
         assertEquals(
             """
                 FontMetrics(size=16, top=14.8, ascent=14.8, baseline=0, descent=-3.1, bottom=-3.1, lineGap=0.4, unitsPerEm=16, maxWidth=21.5, lineHeight=18.4)
@@ -167,7 +166,7 @@ class FontTest {
         val text1 = "Hello : jworld"
         val text2 = "Hello : jworld\ntest"
         fun metrics(text: String, align: TextAlignment): TextMetrics =
-            DefaultTtfFont.getTextBounds(16f, text, align = align).round()
+            DefaultTtfFont.getTextBounds(16.0, text, align = align).round()
         assertEquals(
             """
                 [0]left:     TextMetrics[0, 0, 0, 18][0, 18]
@@ -197,7 +196,7 @@ class FontTest {
                 [2]middle:   ${metrics(text2, TextAlignment.MIDDLE_LEFT)}
                 [2]baseline: ${metrics(text2, TextAlignment.BASELINE_LEFT)}
                 [2]bottom:   ${metrics(text2, TextAlignment.BOTTOM_LEFT)}
-                ${DefaultTtfFont.getTextBounds(64f, "jHello : Worljg").bounds.int}
+                ${DefaultTtfFont.getTextBounds(64.0, "jHello : Worljg").bounds.int}
             """.trimIndent()
         )
     }

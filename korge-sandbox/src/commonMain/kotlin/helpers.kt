@@ -27,19 +27,19 @@ suspend fun Stage.demoSelector(default: Demo, all: List<Demo>) {
         }
     }
 
-    uiHorizontalStack(padding = 8f) {
+    uiHorizontalStack(padding = 8.0) {
         alignLeftToLeftOf(this@demoSelector.stage, padding = 8.0).alignTopToTopOf(this@demoSelector.stage, padding = 8.0)
-        comboBox = uiComboBox<Demo>(size = UI_DEFAULT_SIZE.copy(width = 200f), items = (listOf(default) + all).distinctBy { it.name }.sortedBy { it.name }) {
+        comboBox = uiComboBox<Demo>(size = UI_DEFAULT_SIZE.copy(width = 200.0), items = (listOf(default) + all).distinctBy { it.name }.sortedBy { it.name }) {
             this.viewportHeight = 600
             this.onSelectionUpdate.add {
                 //println(it)
                 launchImmediately { setDemo(it.selectedItem!!) }
             }
         }
-        uiCheckBox(size = UI_DEFAULT_SIZE.copy(width = 200f), text = "forceRenderEveryFrame", checked = views.forceRenderEveryFrame) {
+        uiCheckBox(size = UI_DEFAULT_SIZE.copy(width = 200.0), text = "forceRenderEveryFrame", checked = views.forceRenderEveryFrame) {
             onChange { views.forceRenderEveryFrame = it.checked }
         }
-        uiCheckBox(size = UI_DEFAULT_SIZE.copy(width = 150f), text = "toggleDebug", checked = views.debugViews) {
+        uiCheckBox(size = UI_DEFAULT_SIZE.copy(width = 150.0), text = "toggleDebug", checked = views.debugViews) {
             onChange { views.debugViews = it.checked }
         }
     }

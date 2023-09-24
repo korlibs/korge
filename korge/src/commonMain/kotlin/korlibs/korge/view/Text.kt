@@ -33,7 +33,7 @@ text2("Hello World!", color = Colors.RED, font = font, renderer = CreateStringTe
 }).position(100, 100)
 */
 inline fun Container.text(
-    text: String, textSize: Float = Text.DEFAULT_TEXT_SIZE,
+    text: String, textSize: Number = Text.DEFAULT_TEXT_SIZE,
     color: RGBA = Colors.WHITE, font: Resourceable<out Font> = DefaultTtfFontAsBitmap,
     alignment: TextAlignment = TextAlignment.TOP_LEFT,
     renderer: TextRenderer<String> = DefaultStringTextRenderer,
@@ -41,10 +41,10 @@ inline fun Container.text(
     fill: Paint? = null, stroke: Stroke? = null,
     block: @ViewDslMarker Text.() -> Unit = {}
 ): Text
-    = Text(text, textSize, color, font, alignment, renderer, autoScaling, fill, stroke).addTo(this, block)
+    = Text(text, textSize.toDouble(), color, font, alignment, renderer, autoScaling, fill, stroke).addTo(this, block)
 
 open class Text(
-    text: String, textSize: Float = DEFAULT_TEXT_SIZE,
+    text: String, textSize: Double = DEFAULT_TEXT_SIZE,
     color: RGBA = Colors.WHITE, font: Resourceable<out Font> = DefaultTtfFontAsBitmap,
     alignment: TextAlignment = TextAlignment.TOP_LEFT,
     renderer: TextRenderer<String> = DefaultStringTextRenderer,
@@ -52,7 +52,7 @@ open class Text(
     fill: Paint? = null, stroke: Stroke? = null,
 ) : Container(), IText, ViewLeaf {
     companion object {
-        val DEFAULT_TEXT_SIZE = 16f
+        val DEFAULT_TEXT_SIZE = 16.0
         val DEFAULT_AUTO_SCALING = true
     }
 
@@ -95,14 +95,14 @@ open class Text(
     }
 
     @ViewProperty(min = 1.0, max = 300.0)
-    var textSize: Float = textSize; set(value) {
+    var textSize: Double = textSize; set(value) {
         if (field != value) {
             field = value
             version++
             invalidate()
         }
     }
-    var fontSize: Float by ::textSize
+    var fontSize: Double by ::textSize
 
     var renderer: TextRenderer<String> = renderer; set(value) {
         if (field != value) {
@@ -186,7 +186,7 @@ open class Text(
 
     fun setFormat(face: Resourceable<out Font>? = this.font, size: Int = this.textSize.toInt(), color: RGBA = this.color, align: TextAlignment = this.alignment) {
         this.font = face ?: DefaultTtfFontAsBitmap
-        this.textSize = size.toFloat()
+        this.textSize = size.toDouble()
         this.color = color
         this.alignment = align
     }
@@ -225,7 +225,7 @@ open class Text(
         val tva = tva
         if (tva != null) {
             tempMatrix.copyFrom(globalMatrix)
-            tempMatrix.pretranslate(container.xD, container.yD)
+            tempMatrix.pretranslate(container.x, container.y)
             ctx.useBatcher { batch ->
                 val bmpfont = font as BitmapFont
                 val tex = bmpfont.baseBmp
@@ -330,8 +330,8 @@ open class Text(
 
                     //val dx = (-_textBounds.width - textWidth) * horizontalAlign.ratio
                     val dx = _textBounds.x
-                    val dy: Float = when (verticalAlign) {
-                        VerticalAlign.BASELINE -> 0f
+                    val dy: Double = when (verticalAlign) {
+                        VerticalAlign.BASELINE -> 0.0
                         VerticalAlign.TOP -> firstLineInfos.maxTop
                         else -> firstLineInfos.maxTop - (totalHeight) * verticalAlign.ratioFake
                     }
@@ -347,7 +347,7 @@ open class Text(
                         it.smoothing = smoothing
                         it.bitmap = entry.tex
                         it.pos = Point(entry.x + dx, entry.y + dy)
-                        it.scale = Scale(entry.sx, entry.sy)
+                        it.scaleXY = Scale(entry.sx, entry.sy)
                         it.rotation = entry.rot
                     }
 
@@ -425,7 +425,7 @@ open class Text(
 
     var useNativeRendering: Boolean = true
 
-    private fun setContainerPosition(pos: Point, baseline: Float) {
+    private fun setContainerPosition(pos: Point, baseline: Double) {
         val (x, y) = pos
         if (autoSize) {
             setRealContainerPosition(x, y)
@@ -437,7 +437,7 @@ open class Text(
         }
     }
 
-    private fun setRealContainerPosition(x: Float, y: Float) {
+    private fun setRealContainerPosition(x: Double, y: Double) {
         container.position(x, y)
     }
 

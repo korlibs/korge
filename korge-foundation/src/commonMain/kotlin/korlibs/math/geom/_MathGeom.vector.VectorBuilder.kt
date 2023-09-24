@@ -127,7 +127,7 @@ interface VectorBuilder {
     }
 
     fun roundRect(x: Double, y: Double, w: Double, h: Double, rx: Double, ry: Double = rx) {
-        val r = if (w < 2 * rx) w / 2f else if (h < 2 * rx) h / 2f else rx
+        val r = if (w < 2 * rx) w / 2.0 else if (h < 2 * rx) h / 2.0 else rx
         roundRect(x, y, w, h, r, r, r, r)
     }
 
@@ -150,13 +150,13 @@ interface VectorBuilder {
 
     fun write(curves: List<Curves>) = write(curves.toVectorPath())
     fun write(curves: Curves) = write(curves.toVectorPath())
-    fun arc(center: Point, r: Float, start: Angle, end: Angle, counterclockwise: Boolean = false) = Arc.arcPath(this, center, r, start, end, counterclockwise)
+    fun arc(center: Point, r: Double, start: Angle, end: Angle, counterclockwise: Boolean = false) = Arc.arcPath(this, center, r, start, end, counterclockwise)
 
     fun circle(circle: Circle) = circle(circle.center, circle.radius)
     fun circleHole(circle: Circle) = circleHole(circle.center, circle.radius)
 
-    fun circle(center: Point, radius: Float) = arc(center, radius, Angle.ZERO, Angle.FULL)
-    fun circleHole(center: Point, radius: Float) = arc(center, radius, Angle.ZERO, Angle.FULL, counterclockwise = true)
+    fun circle(center: Point, radius: Double): Unit = arc(center, radius, Angle.ZERO, Angle.FULL)
+    fun circleHole(center: Point, radius: Double) = arc(center, radius, Angle.ZERO, Angle.FULL, counterclockwise = true)
 
     fun ellipse(bounds: Rectangle) = ellipse(bounds.center, bounds.size / 2)
     fun ellipse(ellipse: Ellipse) = ellipse(ellipse.center, ellipse.radius)
@@ -219,9 +219,9 @@ interface VectorBuilder {
      *
      * */
     fun parallelogram(bounds: Rectangle, angle: Angle = 30.degrees, direction: Boolean = true) {
-        val dx: Float = angle.sine * bounds.height
-        val dx0: Float = if (direction) 0f else dx
-        val dx1: Float = if (direction) dx else 0f
+        val dx: Double = angle.sine * bounds.height
+        val dx0: Double = if (direction) 0.0 else dx
+        val dx1: Double = if (direction) dx else 0.0
         moveTo(Point(bounds.left - dx0, bounds.top))
         lineTo(Point(bounds.right + dx1, bounds.top))
         lineTo(Point(bounds.right + dx0, bounds.bottom))
@@ -240,16 +240,16 @@ interface VectorBuilder {
     fun polyline(points: List<Point>, close: Boolean = false): Unit = polyline(points.toPointArrayList(), close = close)
     fun polyline(vararg points: Point, close: Boolean = false): Unit = polyline(points.toPointArrayList(), close = close)
 
-    fun moveToH(x: Float) = moveTo(Point(x, lastPos.yF))
-    fun moveToV(y: Float) = moveTo(Point(lastPos.xF, y))
-    fun lineToH(x: Float) = lineTo(Point(x, lastPos.yF))
-    fun lineToV(y: Float) = lineTo(Point(lastPos.xF, y))
-    fun rMoveToH(x: Float) = rMoveTo(Point(x, 0f))
-    fun rMoveToV(y: Float) = rMoveTo(Point(0f, y))
-    fun rLineToH(x: Float) = rLineTo(Point(x, 0f))
-    fun rLineToV(y: Float) = rLineTo(Point(0f, y))
-    fun rMoveToHV(value: Float, horizontal: Boolean) = if (horizontal) rMoveToH(value) else rMoveToV(value)
-    fun rLineToHV(value: Float, horizontal: Boolean) = if (horizontal) rLineToH(value) else rLineToV(value)
+    fun moveToH(x: Double) = moveTo(Point(x, lastPos.y))
+    fun moveToV(y: Double) = moveTo(Point(lastPos.x, y))
+    fun lineToH(x: Double) = lineTo(Point(x, lastPos.y))
+    fun lineToV(y: Double) = lineTo(Point(lastPos.x, y))
+    fun rMoveToH(x: Double) = rMoveTo(Point(x, 0.0))
+    fun rMoveToV(y: Double) = rMoveTo(Point(0.0, y))
+    fun rLineToH(x: Double) = rLineTo(Point(x, 0.0))
+    fun rLineToV(y: Double) = rLineTo(Point(0.0, y))
+    fun rMoveToHV(value: Double, horizontal: Boolean) = if (horizontal) rMoveToH(value) else rMoveToV(value)
+    fun rLineToHV(value: Double, horizontal: Boolean) = if (horizontal) rLineToH(value) else rLineToV(value)
     fun rMoveTo(delta: Point) = moveTo(this.lastPos + delta)
     fun rLineTo(delta: Point) = lineTo(this.lastPos + delta)
     fun rQuadTo(c: Point, a: Point) = quadTo(this.lastPos + c, this.lastPos + a)
@@ -261,10 +261,10 @@ interface VectorBuilder {
     fun rQuadTo(c: Point, a: Point, relative: Boolean) = if (relative) rQuadTo(c, a) else quadTo(c, a)
     fun rLineTo(a: Point, relative: Boolean) = if (relative) rLineTo(a) else lineTo(a)
     fun rMoveTo(a: Point, relative: Boolean) = if (relative) rMoveTo(a) else moveTo(a)
-    fun rMoveToH(x: Float, relative: Boolean) = if (relative) rMoveToH(x) else moveToH(x)
-    fun rMoveToV(y: Float, relative: Boolean) = if (relative) rMoveToV(y) else moveToV(y)
-    fun rLineToH(x: Float, relative: Boolean) = if (relative) rLineToH(x) else lineToH(x)
-    fun rLineToV(y: Float, relative: Boolean) = if (relative) rLineToV(y) else lineToV(y)
+    fun rMoveToH(x: Double, relative: Boolean) = if (relative) rMoveToH(x) else moveToH(x)
+    fun rMoveToV(y: Double, relative: Boolean) = if (relative) rMoveToV(y) else moveToV(y)
+    fun rLineToH(x: Double, relative: Boolean) = if (relative) rLineToH(x) else lineToH(x)
+    fun rLineToV(y: Double, relative: Boolean) = if (relative) rLineToV(y) else lineToV(y)
 
     fun transformed(m: Matrix): VectorBuilder {
         val im = m.inverted()
@@ -286,6 +286,9 @@ interface VectorBuilder {
     fun <T> transformed(m: Matrix, block: VectorBuilder.() -> T): T = block(this.transformed(m))
 }
 
+inline fun VectorBuilder.circle(center: Point, radius: Number): Unit = circle(center, radius.toDouble())
+inline fun VectorBuilder.circleHole(center: Point, radius: Number) = circleHole(center, radius.toDouble())
+
 private fun VectorBuilder._regularPolygonStar(
     points: Int,
     radiusSmall: Double = 20.0,
@@ -300,8 +303,8 @@ private fun VectorBuilder._regularPolygonStar(
         val realAngle = if (hole) -baseAngle else baseAngle
         val angle = realAngle - Angle.QUARTER + rotated
         val radius = if (n % 2 == 0) radiusSmall else radiusBig
-        val px = angle.cosineD * radius
-        val py = angle.sineD * radius
+        val px = angle.cosine * radius
+        val py = angle.sine * radius
         if (n == 0) moveTo(Point(x + px, y + py)) else lineTo(Point(x + px, y + py))
     }
     close()
@@ -310,8 +313,8 @@ private fun VectorBuilder._regularPolygonStar(
 fun VectorBuilder.arrowTo(p: Point, capEnd: ArrowCap = ArrowCap.Line(null), capStart: ArrowCap = ArrowCap.NoCap) {
     val p0 = this.lastPos
     lineTo(p)
-    capStart.apply { append(p, p0, 2f) }
-    capEnd.apply { append(p0, p, 2f) }
+    capStart.apply { append(p, p0, 2.0) }
+    capEnd.apply { append(p0, p, 2.0) }
 }
 
 fun VectorBuilder.arrow(p0: Point, p1: Point, capEnd: ArrowCap = ArrowCap.Line(null), capStart: ArrowCap = ArrowCap.NoCap) {
@@ -321,19 +324,19 @@ fun VectorBuilder.arrow(p0: Point, p1: Point, capEnd: ArrowCap = ArrowCap.Line(n
 
 interface ArrowCap {
     val filled: Boolean
-    fun VectorBuilder.append(p0: Point, p1: Point, width: Float)
+    fun VectorBuilder.append(p0: Point, p1: Point, width: Double)
     object NoCap : ArrowCap {
         override val filled: Boolean get() = false
-        override fun VectorBuilder.append(p0: Point, p1: Point, width: Float) = Unit
+        override fun VectorBuilder.append(p0: Point, p1: Point, width: Double) = Unit
     }
-    abstract class BaseStrokedCap(val capLen: Float? = null, val cross: Boolean) : ArrowCap {
+    abstract class BaseStrokedCap(val capLen: Double? = null, val cross: Boolean) : ArrowCap {
         override val filled: Boolean get() = false
-        override fun VectorBuilder.append(p0: Point, p: Point, width: Float) {
-            val capLen = capLen ?: (10f)
-            if (capLen <= 0.01f) return
+        override fun VectorBuilder.append(p0: Point, p: Point, width: Double) {
+            val capLen = capLen ?: (10.0)
+            if (capLen <= 0.01) return
             val angle = p0.angleTo(p)
-            val p1 = Vector2.Companion.polar(p, angle - 60.degrees - 90.degrees, capLen)
-            val p2 = Vector2.Companion.polar(p, angle + 60.degrees + 90.degrees, capLen)
+            val p1 = Vector2D.polar(p, angle - 60.degrees - 90.degrees, capLen)
+            val p2 = Vector2D.polar(p, angle + 60.degrees + 90.degrees, capLen)
             if (cross) {
                 lineTo(p1); lineTo(p2); lineTo(p)
             } else {
@@ -341,10 +344,10 @@ interface ArrowCap {
             }
         }
     }
-    class Line(capLen: Float? = null, override val filled: Boolean = false) : BaseStrokedCap(capLen, cross = false)
-    class Cross(capLen: Float? = null, override val filled: Boolean = true) : BaseStrokedCap(capLen, cross = true)
-    class Rounded(val radius: Float? = null, override val filled: Boolean = false) : ArrowCap {
-        override fun VectorBuilder.append(p0: Point, p1: Point, width: Float) = circle(p1, radius ?: (10f))
+    class Line(capLen: Double? = null, override val filled: Boolean = false) : BaseStrokedCap(capLen, cross = false)
+    class Cross(capLen: Double? = null, override val filled: Boolean = true) : BaseStrokedCap(capLen, cross = true)
+    class Rounded(val radius: Double? = null, override val filled: Boolean = false) : ArrowCap {
+        override fun VectorBuilder.append(p0: Point, p1: Point, width: Double) = circle(p1, radius ?: (10.0))
     }
 }
 

@@ -1,7 +1,7 @@
 package korlibs.korge.component
 
-import korlibs.korge.input.mouse
-import korlibs.korge.view.View
+import korlibs.korge.input.*
+import korlibs.korge.view.*
 
 fun <T : View> T.decorateOutOver(onEvent: (view: T, over: Boolean) -> Unit = { view, over -> }): T {
     val view = this
@@ -14,6 +14,6 @@ fun <T : View> T.decorateOutOver(onEvent: (view: T, over: Boolean) -> Unit = { v
     return this
 }
 
-fun <T : View> T.decorateOutOverAlpha(alpha: (over: Boolean) -> Float = { if (it) 1.0f else 0.75f }): T {
-    return decorateOutOver { view, over -> view.alphaF = alpha(over) }
+fun <T : View> T.decorateOutOverAlpha(alpha: (over: Boolean) -> Double = { if (it) 1.0 else 0.75 }): T {
+    return decorateOutOver { view, over -> view.alpha = alpha(over) }
 }

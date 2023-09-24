@@ -64,7 +64,7 @@ open class UIComboBox<T>(
         }
     var items: List<T> by uiObservable(items) { updateItems() }
     //var itemHeight by uiObservable(height) { updateItemsSize() }
-    val itemHeight: Float get() = height
+    val itemHeight: Double get() = height
     var viewportHeight by uiObservable(196) { onSizeChanged() }
     var filter: String = ""
         set(value) {
@@ -82,7 +82,7 @@ open class UIComboBox<T>(
         //it.elevation = false
         it.textColor = MaterialColors.GRAY_800
         it.background.borderColor = MaterialColors.GRAY_400
-        it.background.borderSize = 1f
+        it.background.borderSize = 1.0
         it.isFocusable = false
     }
     private val expandButtonIcon = shapeView(buildVectorPath {
@@ -94,17 +94,17 @@ open class UIComboBox<T>(
     //private val expandButton = uiButton(height, height, icon = comboBoxExpandIcon).position(width - height, 0.0)
     private val invisibleRect = solidRect(size, Colors.TRANSPARENT)
 
-    private val itemsViewBackground = uiMaterialLayer(Size(size.width, 128f)) {
+    private val itemsViewBackground = uiMaterialLayer(Size(size.width, 128.0)) {
         radius = RectCorners(0.0, 0.0, 9.0, 9.0)
-        zIndex = -1000f
+        zIndex = -1000.0
     }
-    private val itemsView = uiScrollable(Size(size.width, 128f)).also {
+    private val itemsView = uiScrollable(Size(size.width, 128.0)).also {
         it.backgroundColor = Colors.TRANSPARENT
     }
     private val verticalList = itemsView.container.uiVerticalList(object : UIVerticalList.Provider {
         override val numItems: Int = items.size
-        override val fixedHeight: Float = itemHeight
-        override fun getItemHeight(index: Int): Float = fixedHeight
+        override val fixedHeight: Double = itemHeight
+        override fun getItemHeight(index: Int): Double = fixedHeight
         override fun getItemView(index: Int, vlist: UIVerticalList): View {
             val itemText = items[index].toString()
             val richText = when {
@@ -125,7 +125,7 @@ open class UIComboBox<T>(
             val it = UIButton(richText = richText, size = Size(width, itemHeight)).apply {
                 this.textAlignment = TextAlignment.MIDDLE_LEFT
                 this.textView.padding = Margin(0f, 8f)
-                this.radius = 0f
+                this.radius = 0.0
                 this.bgColorOut = MaterialColors.GRAY_50
                 this.bgColorOver = MaterialColors.GRAY_400
                 this.bgColorSelected = MaterialColors.LIGHT_BLUE_A100
@@ -151,7 +151,7 @@ open class UIComboBox<T>(
         verticalList.updateList()
         itemsView.ensureRectIsVisible(
             Rectangle(
-                0f, verticalList.provider.getItemY(index),
+                0.0, verticalList.provider.getItemY(index),
                 width,
                 verticalList.provider.getItemHeight(index)
             )
@@ -204,8 +204,8 @@ open class UIComboBox<T>(
             itemsViewBackground.removeFromParent()
             itemsView.removeFromParent()
         }
-        itemsView.zIndex = +100001f
-        itemsViewBackground.zIndex = +100000f
+        itemsView.zIndex = +100001.0
+        itemsViewBackground.zIndex = +100000.0
     }
 
     fun open(immediate: Boolean = false) {
@@ -227,24 +227,24 @@ open class UIComboBox<T>(
             itemsViewBackground.visible = true
             if (immediate) {
                 itemsView.alphaF = 1.0f
-                itemsView.scaleYD = 1.0
+                itemsView.scaleY = 1.0
                 itemsViewBackground.alphaF = 1f
-                itemsViewBackground.scaleY = 1f
-                expandButtonIcon.scaleYD = -1.0
+                itemsViewBackground.scaleY = 1.0
+                expandButtonIcon.scaleY = -1.0
                 selectedButton.background.borderColor = MaterialColors.BLUE_300
-                selectedButton.background.borderSize = 2f
+                selectedButton.background.borderSize = 2.0
             } else {
                 itemsView.alphaF = 0f
-                itemsView.scaleY = 0f
+                itemsView.scaleY = 0.0
                 itemsViewBackground.alphaF = 0f
-                itemsViewBackground.scaleY = 0f
+                itemsViewBackground.scaleY = 0.0
                 simpleAnimator.cancel().sequence {
                     tween(
                         itemsView::alpha[0.0f, 1.0f],
-                        itemsView::scaleYD[0.0, 1.0],
+                        itemsView::scaleY[0.0, 1.0],
                         itemsViewBackground::alpha[0.0f, 1.0f],
-                        itemsViewBackground::scaleYD[0.0, 1.0],
-                        expandButtonIcon::scaleYD[-1.0],
+                        itemsViewBackground::scaleY[0.0, 1.0],
+                        expandButtonIcon::scaleY[-1.0],
                         selectedButton.background::borderColor[MaterialColors.BLUE_300],
                         selectedButton.background::borderSize[2.0],
                         time = 0.25.seconds,
@@ -257,13 +257,13 @@ open class UIComboBox<T>(
 
         //itemsView.size(width, viewportHeight.toDouble()).position(0.0, height)
         itemsView
-            .size(widthD, viewportHeight.toDouble())
-            .globalPos(localToGlobal(Point(0.0, heightD + 8.0)))
+            .size(width, viewportHeight.toDouble())
+            .globalPos(localToGlobal(Point(0.0, height + 8.0)))
         itemsViewBackground
-            .size(widthD, itemsView.heightD + 16)
-            .globalPos(localToGlobal(Point(0.0, heightD)))
+            .size(width, itemsView.height + 16)
+            .globalPos(localToGlobal(Point(0.0, height)))
         verticalList
-            .size(widthD, verticalList.heightD)
+            .size(width, verticalList.height)
 
         verticalList.invalidateList()
 
@@ -291,12 +291,12 @@ open class UIComboBox<T>(
         if (isOpened) {
             if (immediate) {
                 itemsView.alphaF = 0.0f
-                itemsView.scaleYD = 0.0
+                itemsView.scaleY = 0.0
                 itemsViewBackground.alphaF = 0.0f
-                itemsViewBackground.scaleYD = 0.0
-                expandButtonIcon.scaleYD = +1.0
+                itemsViewBackground.scaleY = 0.0
+                expandButtonIcon.scaleY = +1.0
                 selectedButton.background.borderColor = MaterialColors.GRAY_400
-                selectedButton.background.borderSize = 1f
+                selectedButton.background.borderSize = 1.0
                 itemsView.visible = false
                 changeParent(set = false)
             } else {
@@ -326,7 +326,7 @@ open class UIComboBox<T>(
     private fun updateItemsSize() {
         itemsView.container.forEachChildWithIndex { index, child ->
             child.scaledHeight = itemHeight
-            child.position(0f, index * itemHeight)
+            child.position(0.0, index * itemHeight)
         }
     }
 
@@ -372,10 +372,10 @@ open class UIComboBox<T>(
         //expandButton.simulatePressing(showItems)
         //expandButton.icon = if (showItems) comboBoxShrinkIcon else comboBoxExpandIcon
         //expandButtonIcon.bitmap = if (showItems) comboBoxShrinkIcon else comboBoxExpandIcon
-        invisibleRect.size(widthD, heightD)
-        selectedButton.size(widthD, heightD)
+        invisibleRect.size(width, height)
+        selectedButton.size(width, height)
         selectedButton.text = selectedItem?.toString() ?: ""
-        expandButtonIcon.position(widthD - 16.0, heightD * 0.5)
+        expandButtonIcon.position(width - 16.0, height * 0.5)
         //expandButton.position(width - height, 0.0).size(height, height)
     }
 

@@ -1,7 +1,7 @@
 package korlibs.image.format
 
-import korlibs.encoding.*
 import korlibs.datastructure.*
+import korlibs.encoding.*
 import korlibs.image.bitmap.*
 import korlibs.image.color.*
 import korlibs.image.font.*
@@ -256,17 +256,11 @@ class CanvasContext2dRenderer(private val canvas: HTMLCanvasElementLike) : Rende
 			is ColorPaint -> this.color.htmlColor
 			is GradientPaint -> {
 				when (kind) {
-					GradientKind.LINEAR -> {
-						ctx.createLinearGradient(this.x0, this.y0, this.x1, this.y1).addColors(this)
-					}
-                    GradientKind.RADIAL -> {
-						ctx.createRadialGradient(this.x0, this.y0, this.r0, this.x1, this.y1, this.r1).addColors(this)
-					}
-                    GradientKind.SWEEP -> {
-                        when {
-                            ctx.createConicGradient != undefined -> ctx.createConicGradient(this.startAngle.radiansD, this.x0, this.y0).unsafeCast<CanvasGradient>().addColors(this)
-                            else -> "fuchsia"
-                        }
+					GradientKind.LINEAR -> ctx.createLinearGradient(this.x0, this.y0, this.x1, this.y1).addColors(this)
+                    GradientKind.RADIAL -> ctx.createRadialGradient(this.x0, this.y0, this.r0, this.x1, this.y1, this.r1).addColors(this)
+                    GradientKind.SWEEP -> when {
+                        ctx.createConicGradient != undefined -> ctx.createConicGradient(this.startAngle.radians, this.x0, this.y0).unsafeCast<CanvasGradient>().addColors(this)
+                        else -> "fuchsia"
                     }
 				}
 			}
@@ -384,7 +378,7 @@ class CanvasContext2dRenderer(private val canvas: HTMLCanvasElementLike) : Rende
 			transform.run { ctx.setTransform(a.toDouble(), b.toDouble(), c.toDouble(), d.toDouble(), tx.toDouble(), ty.toDouble()) }
 			ctx.drawImage(
 				(image.ensureNative() as HtmlNativeImage).texSource.unsafeCast<CanvasImageSource>(),
-                pos.xD, pos.yD, size.widthD, size.heightD
+                pos.x, pos.y, size.width, size.height
 			)
 		} finally {
 			ctx.restore()

@@ -2,6 +2,7 @@ package korlibs.image.style
 
 import korlibs.image.annotation.*
 import korlibs.image.vector.format.*
+import korlibs.math.interpolation.*
 import korlibs.time.*
 
 @KorimExperimental
@@ -37,7 +38,7 @@ class DOMAnimator(val dom: DOM) {
                 val animation = css.animationsById[ani.name] ?: return@let
                 //println("animation = $animation")
                 val ratio = (time % ani.duration) / ani.duration
-                val results = animation.getAt(ratio)
+                val results = animation.getAt(ratio.toRatio())
                 element.setPropertyInterpolated(results)
             }
             for (decl in decls.declarations) {

@@ -1,26 +1,26 @@
 package korlibs.korge.view.filter
 
 import korlibs.graphics.shader.*
+import korlibs.image.color.*
 import korlibs.korge.render.*
 import korlibs.korge.view.*
 import korlibs.korge.view.property.*
-import korlibs.image.color.*
 import korlibs.math.*
 import korlibs.math.geom.*
 
 open class DropshadowFilter(
     @ViewProperty
-    var dropX: Float = 10f,
+    var dropX: Double = 10.0,
     @ViewProperty
-    var dropY: Float = 10f,
+    var dropY: Double = 10.0,
     @ViewProperty
     var shadowColor: RGBA = Colors.BLACK.withAd(0.75),
     @ViewProperty
-    var blurRadius: Float = 4f,
+    var blurRadius: Double = 4.0,
     @ViewProperty
     var smoothing: Boolean = true
 ) : FilterWithFiltering {
-    private val blur = BlurFilter(16f)
+    private val blur = BlurFilter(16.0)
 
     override var filtering: Boolean by blur::filtering
 
@@ -43,7 +43,7 @@ open class DropshadowFilter(
         texHeight: Int,
         renderColorMul: RGBA,
         blendMode: BlendMode,
-        filterScale: Float,
+        filterScale: Double,
     ) {
         //println(blur.border)
         blur.radius = blurRadius
@@ -82,5 +82,17 @@ open class DropshadowFilter(
             SET(out, out * BatchBuilder2D.v_ColMul)
             IF(out["a"] le 0f.lit) { DISCARD() }
         }
+
+        inline operator fun invoke(
+            dropX: Number = 10.0,
+            dropY: Number = 10.0,
+            shadowColor: RGBA = Colors.BLACK.withAd(0.75),
+            blurRadius: Number = 4.0,
+            smoothing: Boolean = true
+        ): DropshadowFilter = DropshadowFilter(
+            dropX.toDouble(), dropY.toDouble(),
+            shadowColor, blurRadius.toDouble(),
+            smoothing
+        )
     }
 }

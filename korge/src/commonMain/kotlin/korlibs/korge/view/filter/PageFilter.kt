@@ -12,15 +12,15 @@ import kotlin.math.*
  * A filter that simulates a page of a book.
  */
 class PageFilter(
-    hratio: Float = 0f,
-    hamplitude0: Float = 0f,
-    hamplitude1: Float = 10f,
-    hamplitude2: Float = 0f,
+    hratio: Double = 0.0,
+    hamplitude0: Double = 0.0,
+    hamplitude1: Double = 10.0,
+    hamplitude2: Double = 0.0,
 
-    vratio: Float = 0.5f,
-    vamplitude0: Float = 0f,
-    vamplitude1: Float = 0f,
-    vamplitude2: Float = 0f
+    vratio: Double = 0.5,
+    vamplitude0: Double = 0.0,
+    vamplitude1: Double = 0.0,
+    vamplitude2: Double = 0.0,
 ) : ShaderFilter() {
     object PageUB : UniformBlock(fixedLocation = 5) {
         val u_Offset by vec2()
@@ -29,6 +29,20 @@ class PageFilter(
     }
 
     companion object : BaseProgramProvider() {
+        inline operator fun invoke(
+            hratio: Number = 0.0,
+            hamplitude0: Number = 0.0,
+            hamplitude1: Number = 10.0,
+            hamplitude2: Number = 0.0,
+            vratio: Number = 0.5,
+            vamplitude0: Number = 0.0,
+            vamplitude1: Number = 0.0,
+            vamplitude2: Number = 0.0,
+        ): PageFilter = PageFilter(
+            hratio.toDouble(), hamplitude0.toDouble(),
+            hamplitude1.toDouble(), hamplitude2.toDouble(), vratio.toDouble(),
+            vamplitude0.toDouble(), vamplitude1.toDouble(), vamplitude2.toDouble()
+        )
 
         private fun Program.Builder.sin01(arg: Operand) = sin(arg * (PI.toFloat().lit * 0.5f.lit))
         override val fragment = FragmentShaderDefault {
@@ -53,22 +67,22 @@ class PageFilter(
     }
 
     @ViewProperty
-    var hratio: Float = hratio
+    var hratio: Double = hratio.toDouble()
     @ViewProperty
-    var hamplitude0: Float = hamplitude0
+    var hamplitude0: Double = hamplitude0.toDouble()
     @ViewProperty
-    var hamplitude1: Float = hamplitude1
+    var hamplitude1: Double = hamplitude1.toDouble()
     @ViewProperty
-    var hamplitude2: Float = hamplitude2
+    var hamplitude2: Double = hamplitude2.toDouble()
 
     @ViewProperty
-    var vratio: Float = vratio
+    var vratio: Double = vratio.toDouble()
     @ViewProperty
-    var vamplitude0: Float = vamplitude0
+    var vamplitude0: Double = vamplitude0.toDouble()
     @ViewProperty
-    var vamplitude1: Float = vamplitude1
+    var vamplitude1: Double = vamplitude1.toDouble()
     @ViewProperty
-    var vamplitude2: Float = vamplitude2
+    var vamplitude2: Double = vamplitude2.toDouble()
 
     override val programProvider: ProgramProvider get() = PageFilter
 
@@ -76,7 +90,7 @@ class PageFilter(
         return MarginInt(max(max(abs(hamplitude0), abs(hamplitude1)), abs(hamplitude2)).toIntCeil())
     }
 
-    override fun updateUniforms(ctx: RenderContext, filterScale: Float) {
+    override fun updateUniforms(ctx: RenderContext, filterScale: Double) {
         super.updateUniforms(ctx, filterScale)
 
         ctx[PageUB].push {

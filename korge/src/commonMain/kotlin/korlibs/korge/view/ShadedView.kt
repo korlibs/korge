@@ -21,8 +21,8 @@ open class ShadedView(
             dirtyVertices = true
         }
 
-    override val bwidth: Float get() = widthD.toFloat()
-    override val bheight: Float get() = heightD.toFloat()
+    override val bwidth: Float get() = width.toFloat()
+    override val bheight: Float get() = height.toFloat()
 
     init {
         this.program = program

@@ -16,8 +16,8 @@ class NinePatchShapeTest {
         val ninePatch = shape.toNinePatchFromGuides(guideColor = Colors.FUCHSIA)
         assertEquals(Size(128, 128), ninePatch.size)
         assertEquals(NinePatchSlices2D(
-            NinePatchSlices(30f until 33f, 80f until 100f),
-            NinePatchSlices(40f until 80f)
+            NinePatchSlices(30.0 until 33.0, 80.0 until 100.0),
+            NinePatchSlices(40.0 until 80.0)
         ), ninePatch.slices)
         assertTrue { ninePatch.shape is FillShape }
         assertEquals(

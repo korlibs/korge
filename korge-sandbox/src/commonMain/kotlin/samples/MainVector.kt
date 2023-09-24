@@ -41,10 +41,10 @@ class MainVector : ScaledScene(1280, 720) {
                                 //clip({ circle(0.0, 0.0, 64.0) }) {
                                 stroke(
                                     RGBA.interpolate(Colors.GREEN, Colors.BLUE, ratio.toRatio()),
-                                    StrokeInfo(thickness = 1f + ratio * 6, startCap = lineCap, endCap = lineCap)
+                                    StrokeInfo(thickness = 1.0 + ratio * 6, startCap = lineCap, endCap = lineCap)
                                 ) {
                                     moveTo(Point(0, 0))
-                                    lineTo(Point(angle.cosineD * radius, angle.sineD * radius))
+                                    lineTo(Point(angle.cosine * radius, angle.sine * radius))
                                 }
                                 //}
                             }

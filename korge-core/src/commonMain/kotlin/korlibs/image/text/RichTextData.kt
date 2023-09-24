@@ -16,7 +16,7 @@ data class RichTextData(
     constructor(
         text: String,
         font: Font = Style.DEFAULT.font,
-        textSize: Float = Style.DEFAULT.textSize,
+        textSize: Double = Style.DEFAULT.textSize,
         italic: Boolean = Style.DEFAULT.italic,
         bold: Boolean = Style.DEFAULT.bold,
         underline: Boolean = Style.DEFAULT.underline,
@@ -51,9 +51,9 @@ data class RichTextData(
         val defaultStyle: Style by lazy { nodes.filterIsInstance<TextNode>().firstOrNull()?.style ?: defaultLineStyle ?: Style.DEFAULT }
         val defaultLastStyle: Style by lazy { nodes.filterIsInstance<TextNode>().lastOrNull()?.style ?: defaultLineStyle ?: Style.DEFAULT }
         val text: String by lazy { nodes.joinToString("") { it.text ?: "" } }
-        val width: Float by lazy { if (nodes.isNotEmpty()) nodes.sumOf { it.width.toDouble() }.toFloat() else 0f }
-        val maxLineHeight: Float by lazy { if (nodes.isNotEmpty()) nodes.maxOf { it.lineHeight } else TextNode("", defaultStyle).lineHeight }
-        val maxHeight: Float by lazy { if (nodes.isNotEmpty()) nodes.maxOf { it.height } else TextNode("", defaultStyle).height }
+        val width: Double by lazy { if (nodes.isNotEmpty()) nodes.sumOf { it.width } else 0.0 }
+        val maxLineHeight: Double by lazy { if (nodes.isNotEmpty()) nodes.maxOf { it.lineHeight } else TextNode("", defaultStyle).lineHeight }
+        val maxHeight: Double by lazy { if (nodes.isNotEmpty()) nodes.maxOf { it.height } else TextNode("", defaultStyle).height }
         val allFonts: Set<Font> by lazy {
             mutableSetOf<Font>().also {
                 for (node in nodes) {
@@ -101,19 +101,16 @@ data class RichTextData(
     }
 
     interface Node {
-        fun withStyle(style: Style): Node {
-            return this
-        }
-
+        fun withStyle(style: Style): Node = this
         val text: String?
-        val width: Float
-        val height: Float
-        val lineHeight: Float get() = height
+        val width: Double
+        val height: Double
+        val lineHeight: Double get() = height
     }
 
     data class Style(
         val font: Font,
-        val textSize: Float = 16f,
+        val textSize: Double = 16.0,
         val italic: Boolean = false,
         val bold: Boolean = false,
         val underline: Boolean = false,
@@ -121,7 +118,7 @@ data class RichTextData(
         val canBreak: Boolean = true,
     ) {
         companion object {
-            val DEFAULT = Style(textSize = 16f, font = DefaultTtfFont)
+            val DEFAULT = Style(textSize = 16.0, font = DefaultTtfFont)
         }
     }
 
@@ -136,16 +133,16 @@ data class RichTextData(
         override fun withStyle(style: Style): TextNode = TextNode(text, style)
 
         val bounds: TextMetrics by lazy { style.font.getTextBounds(style.textSize, text) }
-        override val width: Float get() = bounds.width
-        override val lineHeight: Float get() = bounds.lineHeight
-        override val height: Float get() = bounds.ascent //- bounds.descent
+        override val width: Double get() = bounds.width
+        override val lineHeight: Double get() = bounds.lineHeight
+        override val height: Double get() = bounds.ascent //- bounds.descent
     }
 
     fun trimSpaces(): RichTextData = RichTextData(lines.map { it.trimSpaces() })
 
     fun limit(
-        maxLineWidth: Float = Float.POSITIVE_INFINITY,
-        maxHeight: Float = Float.POSITIVE_INFINITY,
+        maxLineWidth: Double = Double.POSITIVE_INFINITY,
+        maxHeight: Double = Double.POSITIVE_INFINITY,
         includePartialLines: Boolean = true,
         ellipsis: String? = null,
         trimSpaces: Boolean = false,
@@ -153,15 +150,15 @@ data class RichTextData(
     ): RichTextData {
         var out = this
         var removedWords = false
-        if (maxLineWidth != Float.POSITIVE_INFINITY) {
+        if (maxLineWidth != Double.POSITIVE_INFINITY) {
             out = out.wordWrap(maxLineWidth)
         }
-        if (maxHeight != Float.POSITIVE_INFINITY) {
+        if (maxHeight != Double.POSITIVE_INFINITY) {
             out = out.limitHeight(maxHeight, includePartialLines = includePartialLines, includeFirstLineAlways = includeFirstLineAlways).also {
                 if (it != out) removedWords = true
             }
         }
-        if (maxLineWidth != Float.POSITIVE_INFINITY && ellipsis != null && removedWords && out.lines.isNotEmpty()) {
+        if (maxLineWidth != Double.POSITIVE_INFINITY && ellipsis != null && removedWords && out.lines.isNotEmpty()) {
             val line = out.lines.last()
             val lastLine = fitEllipsis(maxLineWidth, out.lines.last(), TextNode(ellipsis, line.defaultLastStyle))
             out = RichTextData(out.dropLast(1) + lastLine)
@@ -172,8 +169,8 @@ data class RichTextData(
         return out
     }
 
-    fun limitHeight(maxHeight: Float, includePartialLines: Boolean = true, includeFirstLineAlways: Boolean = true): RichTextData {
-        var currentHeight = 0f
+    fun limitHeight(maxHeight: Double, includePartialLines: Boolean = true, includeFirstLineAlways: Boolean = true): RichTextData {
+        var currentHeight = 0.0
         val outLines = arrayListOf<Line>()
         for (line in lines) {
             currentHeight += line.maxLineHeight
@@ -188,10 +185,10 @@ data class RichTextData(
         return RichTextData(outLines)
     }
 
-    fun wordWrap(maxLineWidth: Float, splitLetters: Boolean = false): RichTextData {
-        val maxLineWidth = maxLineWidth.coerceAtLeast(0.1f)
+    fun wordWrap(maxLineWidth: Double, splitLetters: Boolean = false): RichTextData {
+        val maxLineWidth = maxLineWidth.coerceAtLeast(0.1)
         val outLines = arrayListOf<Line>()
-        var currentLineWidth: Float = 0f
+        var currentLineWidth: Double = 0.0
         val currentLine = arrayListOf<Node>()
 
         fun addNode(node: Node) {
@@ -211,7 +208,7 @@ data class RichTextData(
             if (currentLine.isEmpty()) return
             outLines += Line(currentLine.toList())
             currentLine.clear()
-            currentLineWidth = 0f
+            currentLineWidth = 0.0
         }
 
         done@for (line in lines) {
@@ -265,7 +262,7 @@ data class RichTextData(
     companion object {
         internal fun Node.nonBreakable(): Node = if (this is TextNode) this.copy(style = style.copy(canBreak = false)) else this
 
-        internal fun fitEllipsis(maxLineWidth: Float, line: Line, addNode: Node = TextNode("...", line.defaultLastStyle)): Line {
+        internal fun fitEllipsis(maxLineWidth: Double, line: Line, addNode: Node = TextNode("...", line.defaultLastStyle)): Line {
             val chunk = RichTextData(Line(listOf(addNode.nonBreakable()) + line.nodes)).wordWrap(maxLineWidth, splitLetters = true)
             val nodes = chunk.lines.first().nodes
             return Line(nodes.drop(1) + nodes.first())

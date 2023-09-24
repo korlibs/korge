@@ -30,7 +30,7 @@ class MainUIStacks : Scene() {
             }
         }
 
-        hs.forcedHeight = 32f
+        hs.forcedHeight = 32.0
         hs2.solidRect(100, 100, Colors.BLUE)
         hs3.solidRect(100, 100, Colors.YELLOW)
 

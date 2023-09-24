@@ -30,72 +30,72 @@ class MainMSDF : Scene() {
 
         image(outputPng) {
             xy(196 * 0, 0)
-            scaleAvg = 3.0f
+            scaleAvg = 3.0
         }
 
         image(outputPng) {
             xy(196 * 1, 0)
-            scaleAvg = 3.0f
+            scaleAvg = 3.0
             program = MsdfRender.PROGRAM_MSDF
         }
         image(outputPng) {
             xy(196 * 1, 50)
-            scaleAvg = 1.5f
+            scaleAvg = 1.5
             program = MsdfRender.PROGRAM_MSDF
         }
         image(outputPng) {
             xy(196 * 1, 100)
-            scaleAvg = 0.5f
+            scaleAvg = 0.5
             program = MsdfRender.PROGRAM_MSDF
         }
         image(outputPng) {
             xy(196 * 1, 150)
-            scaleAvg = 0.25f
+            scaleAvg = 0.25
             program = MsdfRender.PROGRAM_MSDF
         }
         image(outputPng) {
             xy(196 * 1, 175)
-            scaleAvg = 0.15f
+            scaleAvg = 0.15
             program = MsdfRender.PROGRAM_MSDF
         }
         image(outputPng) {
             xy(196 * 1, 200)
-            scaleAvg = 0.1f
+            scaleAvg = 0.1
             program = MsdfRender.PROGRAM_MSDF
         }
 
         image(msdfBitmap) {
             xy(196 * 2, 0)
-            scaleAvg = 3.0f
+            scaleAvg = 3.0
         }
 
         image(msdfBitmap) {
             xy(196 * 3, 0)
-            scaleAvg = 3.0f
+            scaleAvg = 3.0
             program = MsdfRender.PROGRAM_MSDF
         }
 
         image(DefaultTtfFontAsBitmap.atlas.bitmap) {
             xy(196 * 0, 256)
-            scaleAvg = 2f
+            scaleAvg = 2.0
             program = MsdfRender.PROGRAM_MSDF
         }
 
         image(DefaultTtfFontAsBitmap.atlas.bitmap) {
             xy(196 * 2, 256)
-            scaleAvg = 0.5f
+            scaleAvg = 0.5
             program = MsdfRender.PROGRAM_MSDF
         }
 
         image(DefaultTtfFontAsBitmap.atlas.bitmap) {
             xy(196 * 3, 256)
-            scaleAvg = 0.25f
+            scaleAvg = 0.25
             program = MsdfRender.PROGRAM_MSDF
         }
 
         image(DefaultTtfFontAsBitmap.atlas.bitmap) {
             xy(196 * 4, 256)
-            scaleAvg = 2f
+            scaleAvg = 2.0
         }
 
         //val font1 = resourcesVfs["msdf/SaniTrixieSans.fnt"].readBitmapFont()
@@ -119,13 +119,13 @@ class MainMSDF : Scene() {
                 xy(400, 200 + 150 * n)
                 solidRect(300, 100, Colors.DARKGREY)
                 if (n == 0) {
-                    text("HELLO WORLD áéúóúñ cooool", textSize = 32f, font = font1).also {
+                    text("HELLO WORLD áéúóúñ cooool", textSize = 32.0, font = font1).also {
                         it.setTextBounds(Rectangle(0, 0, 300, 100))
                         it.alignment = TextAlignment.MIDDLE_CENTER
                     }
                 } else {
                     //textBlock(RichTextData("HELLO WORLD aeioun coooool", font = font2, textSize = 32.0)).also {
-                    val tb = textBlock(RichTextData("HELLO WORLD áéúóúñ cooool", font = font2, textSize = 32f)).also {
+                    val tb = textBlock(RichTextData("HELLO WORLD áéúóúñ cooool", font = font2, textSize = 32.0)).also {
                         it.size(300.0, 100.0)
                         it.align = TextAlignment.MIDDLE_CENTER
                     }
@@ -134,9 +134,9 @@ class MainMSDF : Scene() {
                         var toggle = true
                         down(Key.RETURN) {
                             tb.text = if (toggle) {
-                                RichTextData("HELLO WORLD", font = font1, textSize = 32f)
+                                RichTextData("HELLO WORLD", font = font1, textSize = 32.0)
                             } else {
-                                RichTextData("HELLO WORLD", font = font2, textSize = 32f)
+                                RichTextData("HELLO WORLD", font = font2, textSize = 32.0)
                             }
                             toggle = !toggle
                         }
@@ -152,7 +152,7 @@ class MainMSDF : Scene() {
             //ctx2d.drawText("HELLO WORLD!", font1, textSize = 128.0)
             ctx2d.drawText(RichTextData.fromHTML(
                 "HELLO, World! <b>this</b> is a test!",
-                RichTextData.Style(textSize = 64f, font = font2, color = Colors.WHITE)
+                RichTextData.Style(textSize = 64.0, font = font2, color = Colors.WHITE)
             ))
         })
 

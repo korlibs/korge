@@ -8,7 +8,6 @@ import korlibs.korge.render.*
 import korlibs.korge.view.property.*
 import korlibs.math.geom.*
 import korlibs.render.*
-import kotlin.jvm.*
 
 inline fun Container.fixedSizeCachedContainer(size: Size, cache: Boolean = true, clip: Boolean = true, callback: @ViewDslMarker CachedContainer.() -> Unit = {}) =
     FixedSizeCachedContainer(size, cache, clip).addTo(this, callback)
@@ -26,7 +25,7 @@ open class FixedSizeCachedContainer(
 ) : CachedContainer(cache), View.Reference {
     override var unscaledSize: Size = size
 
-    override fun getLocalBoundsInternal(): Rectangle = Rectangle(0f, 0f, width, height)
+    override fun getLocalBoundsInternal(): Rectangle = Rectangle(0.0, 0.0, width, height)
 
     private var renderingInternalRef = Ref(false)
 
@@ -75,7 +74,7 @@ open class CachedContainer(
 
     private var _cacheTex: CacheTexture? = null
     private var dirty = true
-    private var scaledCache = -1f
+    private var scaledCache = -1.0
     private var lbounds = Rectangle()
     private var windowLocalRatio: Scale = Scale(1)
 
@@ -97,8 +96,8 @@ open class CachedContainer(
         val cache = _cacheTex!!
         ctx.refGcCloseable(cache)
 
-        val renderScale: Float = when (ctx.quality) {
-            GameWindow.Quality.PERFORMANCE -> 1f
+        val renderScale: Double = when (ctx.quality) {
+            GameWindow.Quality.PERFORMANCE -> 1.0
             else -> ctx.devicePixelRatio
         }
 

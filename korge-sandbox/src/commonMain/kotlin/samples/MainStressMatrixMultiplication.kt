@@ -13,9 +13,9 @@ class MainStressMatrixMultiplication : Scene() {
             var N = 1_000
             var step = 0
             addUpdater {
-                var sum = 0f
+                var sum = 0.0
                 for (n in 0 until N) {
-                    val mat = this.localMatrix * this@sceneMain.localMatrix * this@MainStressMatrixMultiplication.stage.localMatrix * Matrix().scaled(n.toFloat()).translated(xD.toFloat() * 10f, yD.toFloat() * -20f)
+                    val mat = this.localMatrix * this@sceneMain.localMatrix * this@MainStressMatrixMultiplication.stage.localMatrix * Matrix().scaled(n.toFloat()).translated(x.toFloat() * 10f, y.toFloat() * -20f)
                     sum += mat.a + mat.b + mat.c + mat.d + mat.tx + mat.ty
                 }
                 text.text = "result: $sum, $step"

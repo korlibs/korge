@@ -1,6 +1,7 @@
 package korlibs.math.geom.bezier
 
 import korlibs.math.geom.*
+import korlibs.math.interpolation.*
 import kotlin.test.*
 
 class BezierCurveCubicTest {
@@ -13,7 +14,7 @@ class BezierCurveCubicTest {
 
     @Test
     fun testHastheCorrectApproximateLength() {
-        assertEquals(2.0f, b.length, 0.0001f)
+        assertEquals(2.0, b.length, 0.0001)
     }
 
     @Test
@@ -27,16 +28,16 @@ class BezierCurveCubicTest {
             b.dpoints
         )
 
-        assertEquals(Point(0, 3), b.derivative(0.0f))
-        assertEquals(Point(1.5, 0.0), b.derivative(0.5f))
-        assertEquals(Point(0, -3), b.derivative(1.0f))
+        assertEquals(Point(0, 3), b.derivative(Ratio.ZERO))
+        assertEquals(Point(1.5, 0.0), b.derivative(Ratio.HALF))
+        assertEquals(Point(0, -3), b.derivative(Ratio.ONE))
     }
 
     @Test
     fun testHasTheExpectedNormals() {
-        assertEquals(Point(-1, 0), b.normal(0.0f))
-        assertEquals(Point(-0.0, 1.0), b.normal(0.5f))
-        assertEquals(Point(1.0, 0.0), b.normal(1.0f))
+        assertEqualsFloat(Point(-1, 0), b.normal(Ratio.ZERO))
+        assertEqualsFloat(Point(-0.0, 1.0), b.normal(Ratio.HALF))
+        assertEqualsFloat(Point(1.0, 0.0), b.normal(Ratio.ONE))
     }
 
     @Test
@@ -68,16 +69,16 @@ class BezierCurveCubicTest {
                 Bezier(Point(0.0, 0.0), Point(55.56, 11.11), Point(88.89, 44.44), Point(100.0, 100.0)),
                 b.roundDecimalPlaces(2)
             )
-            val midpoint = b[0.5f]
-            assertEquals(midpoint.xD, M.xD, 0.001)
-            assertEquals(midpoint.yD, M.yD, 0.001)
+            val midpoint = b[0.5f.toRatio()]
+            assertEquals(midpoint.x, M.x, 0.001)
+            assertEquals(midpoint.y, M.y, 0.001)
         }
         run {
-            val t = 0.25f
+            val t = 0.25f.toRatio()
             val b = Bezier.cubicFromPoints(pts[0], pts[1], pts[2], t)
             val quarterpoint = b[t]
-            assertEquals(quarterpoint.xD, M.xD, 0.001)
-            assertEquals(quarterpoint.yD, M.yD, 0.001)
+            assertEquals(quarterpoint.x, M.x, 0.001)
+            assertEquals(quarterpoint.y, M.y, 0.001)
         }
     }
 }

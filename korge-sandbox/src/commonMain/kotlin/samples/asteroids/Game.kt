@@ -7,9 +7,7 @@ import korlibs.image.font.*
 import korlibs.io.async.*
 import korlibs.korge.tween.*
 import korlibs.korge.view.*
-import korlibs.korge.view.align.alignTopToBottomOf
-import korlibs.korge.view.align.centerOnStage
-import korlibs.korge.view.align.centerXOnStage
+import korlibs.korge.view.align.*
 import korlibs.math.geom.*
 import korlibs.math.random.*
 import korlibs.time.*
@@ -69,7 +67,7 @@ class Game(val scene: MainAsteroids) {
         with(sceneView) {
             val bullet = image(assets.bulletBitmap)
                 .center()
-                .position(ship.image.xD, ship.image.yD)
+                .position(ship.image.x, ship.image.y)
                 .rotation(ship.image.rotation)
                 .advance(assets.shipSize * 0.75)
 
@@ -84,7 +82,7 @@ class Game(val scene: MainAsteroids) {
                 val scale = it / 16.milliseconds
                 bullet.advance(+3.0 * scale)
                 // If the bullet flies off the screen, discard it
-                if (bullet.xD < -BULLET_SIZE || bullet.yD < -BULLET_SIZE || bullet.xD > WIDTH + BULLET_SIZE || bullet.yD > HEIGHT + BULLET_SIZE) {
+                if (bullet.x < -BULLET_SIZE || bullet.y < -BULLET_SIZE || bullet.x > WIDTH + BULLET_SIZE || bullet.y > HEIGHT + BULLET_SIZE) {
                     bullet.removeFromParent()
                 }
             }
@@ -96,8 +94,8 @@ class Game(val scene: MainAsteroids) {
         repeat(NUMBER_OF_ASTEROIDS) {
             val asteroid = spawnAsteroid(0.0, 0.0)
             do {
-                asteroid.xD = random[0.0, WIDTH.toDouble()]
-                asteroid.yD = random[0.0, HEIGHT.toDouble()]
+                asteroid.x = random[0.0, WIDTH.toDouble()]
+                asteroid.y = random[0.0, HEIGHT.toDouble()]
                 asteroid.angle = random[0.0, 360.0].degrees
             } while (asteroid.collidesWith(ship) || ship.distanceTo(asteroid) < 100.0)
         }
@@ -119,7 +117,7 @@ class Game(val scene: MainAsteroids) {
                 overlay.tween(overlay::color[Colors.RED.withA(64)], time = 300.milliseconds)
             }
 
-            val gameOverText = text("GAME OVER", 64f, font = DefaultTtfFont)
+            val gameOverText = text("GAME OVER", 64.0, font = DefaultTtfFont)
                 .centerOnStage()
 
             text("Press R to restart")
@@ -151,11 +149,11 @@ class Game(val scene: MainAsteroids) {
     }
 }
 
-fun View.distanceTo(other: View) = MPoint.distance(xD, yD, other.xD, other.yD)
+fun View.distanceTo(other: View): Double = Point.distance(x, y, other.x, other.y)
 
 fun View.advance(amount: Double, rot: Angle = (-90).degrees) = this.apply {
-    xD += (this.rotation + rot).cosineD * amount
-    yD += (this.rotation + rot).sineD * amount
+    x += (this.rotation + rot).cosine * amount
+    y += (this.rotation + rot).sine * amount
 }
 
 // A dummy throwable to cancel updatables

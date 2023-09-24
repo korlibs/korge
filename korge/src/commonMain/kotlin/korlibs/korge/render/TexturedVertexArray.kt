@@ -80,7 +80,7 @@ class TexturedVertexArray(vcount: Int, val indices: ShortArray, icount: Int = in
 
     @PublishedApi internal var offset = 0
 
-    fun set(index: Int, p: Point, tex: Point, colMul: RGBA) = set(index, p.x, p.y, tex.x, tex.y, colMul)
+    fun set(index: Int, p: Point, tex: Point, colMul: RGBA) = set(index, p.x.toFloat(), p.y.toFloat(), tex.x.toFloat(), tex.y.toFloat(), colMul)
 
     fun set(index: Int, x: Float, y: Float, u: Float, v: Float, colMul: RGBA) {
         select(index).setX(x).setY(y).setU(u).setV(v).setCMul(colMul)
@@ -181,17 +181,17 @@ class TexturedVertexArray(vcount: Int, val indices: ShortArray, icount: Int = in
         val y3 = matrix.transformYf(x, yh)
         */
 
-        val af = matrix.a
-        val cf = matrix.c
-        val txf = matrix.tx
+        val af = matrix.a.toFloat()
+        val cf = matrix.c.toFloat()
+        val txf = matrix.tx.toFloat()
         val x0 = af * x + cf * y + txf
         val x1 = af * xw + cf * y + txf
         val x2 = af * xw + cf * yh + txf
         val x3 = af * x + cf * yh + txf
 
-        val df = matrix.d
-        val bf = matrix.b
-        val tyf = matrix.ty
+        val df = matrix.d.toFloat()
+        val bf = matrix.b.toFloat()
+        val tyf = matrix.ty.toFloat()
         val y0 = df * y + bf * x + tyf
         val y1 = df * y + bf * xw + tyf
         val y2 = df * yh + bf * xw + tyf

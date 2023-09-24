@@ -7,7 +7,7 @@ import korlibs.math.geom.*
 inline fun Container.uiScrollableArea(
     size: Size = Size(256, 256),
     contentSize: Size = Size(512, 512),
-    buttonSize: Float = 32f,
+    buttonSize: Double = 32.0,
     verticalScroll: Boolean = true,
     horizontalScroll: Boolean = true,
     config: UIScrollableArea.() -> Unit = {},
@@ -21,7 +21,7 @@ inline fun Container.uiScrollableArea(
 open class UIScrollableArea(
     size: Size = Size(256, 256),
     contentSize: Size = Size(512, 512),
-    buttonSize: Float = 32f,
+    buttonSize: Double = 32.0,
     verticalScroll: Boolean = true,
     horizontalScroll: Boolean = true,
 ) : UIView(size) {
@@ -36,10 +36,10 @@ open class UIScrollableArea(
     var verticalScroll by uiObservable(verticalScroll) { onSizeChanged() }
     var horizontalScroll by uiObservable(horizontalScroll) { onSizeChanged() }
 
-    var stepRatio by uiObservable(0.125f) { onSizeChanged() }
+    var stepRatio by uiObservable(0.125) { onSizeChanged() }
 
-    val viewportWidth: Float get() = if (verticalScroll) width - buttonSize else width
-    val viewportHeight: Float get() = if (horizontalScroll) height - buttonSize else height
+    val viewportWidth: Double get() = if (verticalScroll) width - buttonSize else width
+    val viewportHeight: Double get() = if (horizontalScroll) height - buttonSize else height
     val viewportSize: Size get() = Size(viewportWidth, viewportHeight)
 
     val clipContainer = clipContainer(viewportSize)
@@ -70,11 +70,11 @@ open class UIScrollableArea(
         container.size(contentWidth, contentHeight)
 
         horScrollBar.size(viewportWidth, buttonSize)
-        horScrollBar.position(0.0, heightD - buttonSize)
+        horScrollBar.position(0.0, height - buttonSize)
         horScrollBar.visible = horizontalScroll
 
         verScrollBar.size(buttonSize, viewportHeight)
-        verScrollBar.position(widthD - buttonSize, 0.0)
+        verScrollBar.position(width - buttonSize, 0.0)
         verScrollBar.visible = verticalScroll
     }
 

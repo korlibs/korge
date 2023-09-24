@@ -9,13 +9,13 @@ import korlibs.korge.view.*
 import korlibs.math.geom.*
 
 inline fun Container.debugVertexView(
-    pointsList: List<IVectorArrayList> = listOf(),
+    pointsList: List<DoubleVectorList> = listOf(),
     color: RGBA = Colors.WHITE,
     type: AGDrawType = AGDrawType.TRIANGLE_STRIP,
     callback: @ViewDslMarker DebugVertexView.() -> Unit = {}
 ): DebugVertexView = DebugVertexView(pointsList, color, type).addTo(this, callback)
 
-class DebugVertexView(pointsList: List<IVectorArrayList>, color: RGBA = Colors.WHITE, type: AGDrawType = AGDrawType.TRIANGLE_STRIP) : View() {
+class DebugVertexView(pointsList: List<DoubleVectorList>, color: RGBA = Colors.WHITE, type: AGDrawType = AGDrawType.TRIANGLE_STRIP) : View() {
     init {
         colorMul = color
     }
@@ -39,7 +39,7 @@ class DebugVertexView(pointsList: List<IVectorArrayList>, color: RGBA = Colors.W
         )
     }
 
-    var pointsList: List<IVectorArrayList> = pointsList
+    var pointsList: List<DoubleVectorList> = pointsList
         set(value) {
             if (field !== value) {
                 field = value
@@ -70,16 +70,16 @@ class DebugVertexView(pointsList: List<IVectorArrayList>, color: RGBA = Colors.W
                     val scale = this[it, 4]
                     val px = x + dx * scale
                     val py = y + dy * scale
-                    buffer[n++] = px
-                    buffer[n++] = py
+                    buffer[n++] = px.toFloat()
+                    buffer[n++] = py.toFloat()
                     bb += Point(px, py)
                 }
             } else {
                 points.fastForEachGeneric {
                     val x = this[it, 0]
                     val y = this[it, 1]
-                    buffer[n++] = x
-                    buffer[n++] = y
+                    buffer[n++] = x.toFloat()
+                    buffer[n++] = y.toFloat()
                     bb += Point(x, y)
                 }
             }

@@ -10,7 +10,7 @@ class UiLayoutTest : ViewsForTesting() {
     fun test() = viewsTest {
         lateinit var rect1: View
         lateinit var rect2: View
-        val stack = uiHorizontalStack(100f) {
+        val stack = uiHorizontalStack(100.0) {
             rect1 = solidRect(50, 50)
             rect2 = solidRect(50, 50)
         }

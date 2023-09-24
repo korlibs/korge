@@ -12,7 +12,6 @@ import korlibs.math.geom.*
 import korlibs.math.geom.bezier.*
 import korlibs.math.geom.vector.*
 import korlibs.number.*
-import kotlin.collections.*
 import kotlin.math.*
 
 /*
@@ -151,7 +150,7 @@ interface StyledShape : Shape {
 	val clip: VectorPath?
 	val paint: Paint
 	val transform: Matrix
-    val globalAlpha: Float
+    val globalAlpha: Double
 
     fun getUntransformedPath(): VectorPath? {
         return path?.clone()?.applyTransform(transform.inverted())
@@ -300,7 +299,7 @@ data class FillShape(
     override val clip: VectorPath?,
     override val paint: Paint,
     override val transform: Matrix = Matrix.IDENTITY,
-    override val globalAlpha: Float = 1f,
+    override val globalAlpha: Double = 1.0,
 ) : StyledShape {
     val pathCurvesList: List<Curves> by lazy {
         //println("Computed pathCurves for path=$path")
@@ -331,7 +330,7 @@ data class PolylineShape constructor(
     override val paint: Paint,
     override val transform: Matrix,
     val strokeInfo: StrokeInfo,
-    override val globalAlpha: Float = 1f,
+    override val globalAlpha: Double = 1.0,
 ) : StyledShape {
     val thickness by strokeInfo::thickness
     val scaleMode by strokeInfo::scaleMode
@@ -418,13 +417,13 @@ class TextShape(
     val text: String,
     val pos: Point,
     val font: Font?,
-    val fontSize: Float,
+    val fontSize: Double,
     override val clip: VectorPath?,
     val fill: Paint?,
     val stroke: Paint?,
     val align: TextAlignment = TextAlignment.TOP_LEFT,
     override val transform: Matrix = Matrix.IDENTITY,
-    override val globalAlpha: Float = 1f,
+    override val globalAlpha: Double = 1.0,
 ) : StyledShape {
     override val paint: Paint get() = fill ?: stroke ?: NonePaint
 
@@ -449,8 +448,8 @@ class TextShape(
     override fun buildSvg(svg: SvgBuilder) {
         svg.nodes += Xml.Tag(
             "text", mapOf(
-                "x" to pos.xD,
-                "y" to pos.yD,
+                "x" to pos.x,
+                "y" to pos.y,
                 "fill" to (fill?.toSvg(svg) ?: "none"),
                 "stroke" to (stroke?.toSvg(svg) ?: "none"),
                 "font-family" to font?.name,

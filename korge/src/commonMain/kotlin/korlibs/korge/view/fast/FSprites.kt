@@ -64,7 +64,7 @@ open class FSprites(val maxSize: Int) {
 
     var FSprite.colorMul: RGBA get() = RGBA(icolorMul32[index]) ; set(value) { icolorMul32[index] = value.value }
 
-    var FSprite.angle: Angle get() = radiansf.radians ; set(value) { radiansf = value.radians }
+    var FSprite.angle: Angle get() = radiansf.radians ; set(value) { radiansf = value.radians.toFloat() }
 
     var FSprite.anchorX: Float get() = unpackAnchorComponent(anchorRaw ushr 0) ; set(value) { anchorRaw = packAnchorComponent(value) or (anchorRaw and 0xFFFF.inv()) }
     var FSprite.anchorY: Float get() = unpackAnchorComponent(anchorRaw ushr 16) ; set(value) { anchorRaw = (packAnchorComponent(value) shl 16) or (anchorRaw and 0xFFFF) }
@@ -99,7 +99,7 @@ open class FSprites(val maxSize: Int) {
 
     class FViewInfo(val nTexs: Int) {
         val texs: Array<Bitmap> = Array(nTexs) { Bitmaps.white.bmp }
-        val u_i_texSizeDataN: Array<Vector2> = Array(texs.size) { Vector2() }
+        val u_i_texSizeDataN: Array<Vector2F> = Array(texs.size) { Vector2F() }
         val olds: Array<FloatArray?> = arrayOfNulls<FloatArray>(texs.size)
         val program = vprograms.getOrElse(texs.size) { error("Only supported up to $MAX_SUPPORTED_TEXTURES textures") }
     }
@@ -153,7 +153,7 @@ open class FSprites(val maxSize: Int) {
                 for (n in 0 until texs.size) {
                     val tex = texs[n]
                     val ttex = ctx.agBitmapTextureManager.getTextureBase(tex)
-                    u_i_texSizeDataN[n] = Vector2(1f / ttex.width.toFloat(), 1f / ttex.height.toFloat())
+                    u_i_texSizeDataN[n] = Vector2F(1f / ttex.width.toFloat(), 1f / ttex.height.toFloat())
                     textureUnits.set(BatchBuilder2D.u_TexN[n], ttex.base, AGTextureUnitInfo(linear = smoothing))
                     //println(ttex.base)
                 }

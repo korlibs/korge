@@ -51,10 +51,13 @@ open class BVH1D<T>(
     }
 }
 
-data class Segment1D(val start: Float, val end: Float) {
-    val size: Float get() = end - start
+data class Segment1D(val start: Double, val end: Double) {
+    constructor(start: Float, end: Float) : this(start.toDouble(), end.toDouble())
+    val size: Double get() = end - start
 }
-data class Ray1D(val start: Float, val dir: Float)
+data class Ray1D(val start: Double, val dir: Double) {
+    constructor(start: Float, dir: Float) : this(start.toDouble(), dir.toDouble())
+}
 
 fun Segment1D.toBVH(): BVHRect = BVHRect(BVHIntervals(start, size))
 fun Ray1D.toBVH(): BVHRay = BVHRay(BVHIntervals(start, dir))
@@ -111,9 +114,9 @@ fun Ray.toBVH(out: BVHIntervals = BVHIntervals(2)): BVHRay {
     return BVHRay(out)
 }
 fun BVHRay.toRay(): Ray = Ray(pos.toVector2(), dir.toVector2())
-fun BVHVector.toVector2(): Vector2 {
+fun BVHVector.toVector2(): Vector2D {
     checkDimensions(2)
-    return Vector2(this[0], this[1])
+    return Vector2D(this[0], this[1])
 }
 
 /**
@@ -125,12 +128,12 @@ open class BVH3D<T>(
 ) {
     val bvh = BVH<T>(dimensions = 3, allowUpdateObjects = allowUpdateObjects)
 
-    fun intersectRay(ray: Ray3D, rect: AABB3D? = null): BVHRect? = bvh.intersectRay(ray.toBVH(), rect?.toBVH())
+    fun intersectRay(ray: Ray3F, rect: AABB3D? = null): BVHRect? = bvh.intersectRay(ray.toBVH(), rect?.toBVH())
 
     fun envelope(): AABB3D = bvh.envelope().toAABB3D()
 
     fun intersect(
-        ray: Ray3D,
+        ray: Ray3F,
         return_array: FastArrayList<BVH.IntersectResult<T>> = fastArrayListOf(),
     ): FastArrayList<BVH.IntersectResult<T>> = bvh.intersect(ray.toBVH(), return_array)
 
@@ -147,20 +150,20 @@ open class BVH3D<T>(
     }
 }
 
-fun BVHIntervals.toAABB3D(): AABB3D = AABB3D(Vector3(min(0), min(1), min(2)), Vector3(aPlusB(0), aPlusB(1), aPlusB(2)))
+fun BVHIntervals.toAABB3D(): AABB3D = AABB3D(Vector3F(min(0), min(1), min(2)), Vector3F(aPlusB(0), aPlusB(1), aPlusB(2)))
 fun BVHRect.toAABB3D(): AABB3D = AABB3D(min.toVector3(), max.toVector3())
 fun AABB3D.toBVH(out: BVHIntervals = BVHIntervals(3)): BVHRect {
-    out.setTo(minX, sizeX, minY, sizeY, minZ, sizeZ)
+    out.setTo(minX.toDouble(), sizeX.toDouble(), minY.toDouble(), sizeY.toDouble(), minZ.toDouble(), sizeZ.toDouble())
     return BVHRect(out)
 }
-fun Ray3D.toBVH(out: BVHIntervals = BVHIntervals(3)): BVHRay {
-    out.setTo(pos.x, dir.x, pos.y, dir.y, pos.z, dir.z)
+fun Ray3F.toBVH(out: BVHIntervals = BVHIntervals(3)): BVHRay {
+    out.setTo(pos.x.toDouble(), dir.x.toDouble(), pos.y.toDouble(), dir.y.toDouble(), pos.z.toDouble(), dir.z.toDouble())
     return BVHRay(out)
 }
-fun BVHRay.toRay3D(): Ray3D {
-    return Ray3D(this.pos.toVector3(), this.pos.toVector3())
+fun BVHRay.toRay3D(): Ray3F {
+    return Ray3F(this.pos.toVector3(), this.pos.toVector3())
 }
-fun BVHVector.toVector3(): Vector3 {
+fun BVHVector.toVector3(): Vector3F {
     checkDimensions(3)
-    return Vector3(this[0], this[1], this[2])
+    return Vector3F(this[0], this[1], this[2])
 }

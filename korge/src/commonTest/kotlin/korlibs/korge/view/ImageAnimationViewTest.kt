@@ -1,14 +1,10 @@
 package korlibs.korge.view
 
-import korlibs.time.milliseconds
-import korlibs.korge.view.animation.ImageAnimationView
-import korlibs.image.bitmap.Bitmaps
-import korlibs.image.format.ImageAnimation
-import korlibs.image.format.ImageFrame
-import korlibs.image.format.ImageFrameLayer
-import korlibs.image.format.ImageLayer
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import korlibs.image.bitmap.*
+import korlibs.image.format.*
+import korlibs.korge.view.animation.*
+import korlibs.time.*
+import kotlin.test.*
 
 class ImageAnimationViewTest {
     private val animImages4Layers1 = ImageAnimation(
@@ -91,13 +87,13 @@ class ImageAnimationViewTest {
         // Test if the correct frame is set as first frame
         // Here we check if the corresponding targetX value was set as X position of the layer.
         anim.animation = animImages4Layers1
-        assertEquals(1, anim.layers[0].xD.toInt())
+        assertEquals(1, anim.layers[0].x.toInt())
         anim.direction = ImageAnimation.Direction.REVERSE
         anim.rewind()
-        assertEquals(4, anim.layers[0].xD.toInt())
+        assertEquals(4, anim.layers[0].x.toInt())
         anim.animation = animImages6Layers2
-        assertEquals(6, anim.layers[0].xD.toInt())
-        assertEquals(60, anim.layers[1].xD.toInt())
+        assertEquals(6, anim.layers[0].x.toInt())
+        assertEquals(60, anim.layers[1].x.toInt())
     }
 
 //        println("children: ${imageanimView.children.size}")

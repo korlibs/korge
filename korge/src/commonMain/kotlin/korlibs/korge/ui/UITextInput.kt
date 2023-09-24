@@ -36,14 +36,14 @@ class UITextInput(initialText: String = "", size: Size = Size(128, 24)) :
     var skin by bg::viewRenderer
     private val container = clipContainer(Size.ZERO)
     //private val container = fixedSizeContainer(width - 4.0, height - 4.0).position(2.0, 3.0)
-    private val textView = container.text(initialText, 16f, color = Colors.BLACK, font = DefaultTtfFontAsBitmap)
+    private val textView = container.text(initialText, 16.0, color = Colors.BLACK, font = DefaultTtfFontAsBitmap)
     //private val textView = container.text(initialText, 16.0, color = Colors.BLACK, font = DefaultTtfFont)
     val controller = TextEditController(textView, textView, this, bg)
 
     //init { uiScrollable {  } }
 
     var text: String by controller::text
-    var textSize: Float by controller::textSize
+    var textSize: Double by controller::textSize
     var font: Font by controller::font
     val onReturnPressed: Signal<TextEditController> by controller::onReturnPressed
     val onEscPressed: Signal<TextEditController> by controller::onEscPressed
@@ -63,8 +63,8 @@ class UITextInput(initialText: String = "", size: Size = Size(128, 24)) :
         }
 
     override fun onSizeChanged() {
-        bg.size(widthD, heightD)
-        container.bounds(Rectangle(0.0, 0.0, widthD, heightD).without(padding))
+        bg.size(width, height)
+        container.bounds(Rectangle(0.0, 0.0, width, height).without(padding))
     }
 
     init {
@@ -81,5 +81,5 @@ class UITextInput(initialText: String = "", size: Size = Size(128, 24)) :
 }
 
 var ViewStyles.uiTextInputBackgroundRender: ViewRenderer by ViewStyle(ViewRenderer {
-    ctx2d.rect(Rectangle(0f, 0f, width, height), Colors.WHITE)
+    ctx2d.rect(Rectangle(0.0, 0.0, width, height), Colors.WHITE)
 })

@@ -129,7 +129,7 @@ class Bitmap32Context2dTest {
     @Test
     fun testLineDash() = suspendTest {
         val shape: Shape = buildShape {
-            stroke(Colors.WHITE, 4f, lineDash = floatArrayListOf(20f, 10f)) {
+            stroke(Colors.WHITE, 4.0, lineDash = doubleArrayListOf(20.0, 10.0)) {
                 line(Point(0, 0), Point(100, 100))
             }
         }
@@ -137,8 +137,8 @@ class Bitmap32Context2dTest {
             assertEquals(null, this.lineDash)
             //this.draw(shape)
             (shape as PolylineShape).setState(this)
-            assertEquals(4f, this.lineWidth)
-            assertEquals(floatArrayListOf(20f, 10f), this.lineDash)
+            assertEquals(4.0, this.lineWidth)
+            assertEquals(doubleArrayListOf(20.0, 10.0), this.lineDash)
 
         }
             //.showImageAndWait()

@@ -30,13 +30,13 @@ suspend fun korge() = Korge(quality = GameWindow.Quality.PERFORMANCE, title = "U
         enable()
     }
 
-    uiOldScrollBar(Size(256f, 32f), 0f, 32f, 64f) {
+    uiOldScrollBar(Size(256f, 32f), 0.0, 32.0, 64.0) {
         position(64, 64)
         onChange {
             //println(it.ratio)
         }
     }
-    uiOldScrollBar(Size(32f, 256f), 0f, 16f, 64f) {
+    uiOldScrollBar(Size(32f, 256f), 0.0, 16.0, 64.0) {
         position(64, 128)
         onChange {
             //println(it.ratio)
@@ -61,7 +61,7 @@ suspend fun korge() = Korge(quality = GameWindow.Quality.PERFORMANCE, title = "U
 
     val progress = uiProgressBar {
         position(64, 32)
-        current = 0.5f
+        current = 0.5
     }
 
     /*

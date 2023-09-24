@@ -31,10 +31,10 @@ open class Camera : Container(), View.Reference {
 
     override var unscaledSize: Size
         //get() = Size((referenceParent?.width ?: 100f) * globalTransform.scaleAvg, (referenceParent?.height ?: 100f) * globalTransform.scaleAvg)
-        get() = Size((referenceParent?.width ?: 100f), (referenceParent?.height ?: 100f))
+        get() = Size((referenceParent?.width ?: 100.0), (referenceParent?.height ?: 100.0))
         set(_) = Unit
 
-    override fun getLocalBoundsInternal() = Rectangle(0f, 0f, width, height)
+    override fun getLocalBoundsInternal() = Rectangle(0.0, 0.0, width, height)
 
 	fun getLocalMatrixFittingGlobalRect(rect: Rectangle): Matrix {
 		val destinationBounds = rect

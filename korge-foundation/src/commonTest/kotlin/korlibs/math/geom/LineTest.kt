@@ -12,8 +12,8 @@ class LineTest {
         assertEquals(true, line1.intersectsSegment(line2))
         assertEqualsFloat(38.0, line1.length)
         assertEqualsFloat(64.0, line2.length, absoluteTolerance = tolerance)
-        assertEqualsFloat(180.0, line1.angle.degreesD, absoluteTolerance = tolerance)
-        assertEqualsFloat(222.95459151111274, line2.angle.degreesD, absoluteTolerance = tolerance)
+        assertEqualsFloat(180.0, line1.angle.degrees, absoluteTolerance = tolerance)
+        assertEqualsFloat(222.95459151111274, line2.angle.degrees, absoluteTolerance = tolerance)
         assertEqualsFloat(Point(260.0, 158.0), line1.getSegmentIntersectionPoint(line2)?.round())
     }
 

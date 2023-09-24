@@ -14,7 +14,7 @@ object UIIcons {
 
     val CROSS = createIcon {
         val padding = 8
-        stroke(Colors.WHITE, lineWidth = 4f) {
+        stroke(Colors.WHITE, lineWidth = 4.0) {
             line(Point(padding, padding), Point(32 - padding, 32 - padding))
             line(Point(32 - padding, padding), Point(padding, 32 - padding))
         }

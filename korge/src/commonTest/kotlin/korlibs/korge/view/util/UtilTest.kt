@@ -1,9 +1,8 @@
 package korlibs.korge.view.util
 
-import korlibs.korge.view.SolidRect
-import korlibs.math.isAlmostEquals
-import kotlin.test.Test
-import kotlin.test.assertTrue
+import korlibs.korge.view.*
+import korlibs.math.*
+import kotlin.test.*
 
 internal class UtilTest {
     @Test
@@ -11,13 +10,13 @@ internal class UtilTest {
         val rect1 = SolidRect(100.0, 100.0)
 
         assertTrue {
-            rect1.xD.isAlmostEquals(0.0)
+            rect1.x.isAlmostEquals(0.0)
         }
 
         distributeEvenlyHorizontally(listOf(rect1), 300.0)
 
         assertTrue {
-            rect1.xD.isAlmostEquals(0.0)
+            rect1.x.isAlmostEquals(0.0)
         }
     }
 
@@ -27,19 +26,19 @@ internal class UtilTest {
         val rect2 = SolidRect(100.0, 100.0)
 
         assertTrue {
-            rect1.xD.isAlmostEquals(0.0)
+            rect1.x.isAlmostEquals(0.0)
         }
         assertTrue {
-            rect2.xD.isAlmostEquals(0.0)
+            rect2.x.isAlmostEquals(0.0)
         }
 
         distributeEvenlyHorizontally(listOf(rect1, rect2), 300.0)
 
         assertTrue {
-            rect1.xD.isAlmostEquals(0.0)
+            rect1.x.isAlmostEquals(0.0)
         }
         assertTrue {
-            rect2.xD.isAlmostEquals(200.0)
+            rect2.x.isAlmostEquals(200.0)
         }
     }
 
@@ -50,13 +49,13 @@ internal class UtilTest {
         val rect3 = SolidRect(100.0, 100.0)
 
         assertTrue {
-            rect1.xD.isAlmostEquals(0.0)
+            rect1.x.isAlmostEquals(0.0)
         }
         assertTrue {
-            rect2.xD.isAlmostEquals(0.0)
+            rect2.x.isAlmostEquals(0.0)
         }
         assertTrue {
-            rect3.xD.isAlmostEquals(0.0)
+            rect3.x.isAlmostEquals(0.0)
         }
 
         distributeEvenlyHorizontally(listOf(rect1, rect2, rect3), 1000.0)
@@ -69,13 +68,13 @@ internal class UtilTest {
         // 100 (rect 3)
 
         assertTrue {
-            rect1.xD.isAlmostEquals(0.0)
+            rect1.x.isAlmostEquals(0.0)
         }
         assertTrue {
-            rect2.xD.isAlmostEquals(400.0)
+            rect2.x.isAlmostEquals(400.0)
         }
         assertTrue {
-            rect3.xD.isAlmostEquals(900.0)
+            rect3.x.isAlmostEquals(900.0)
         }
     }
 
@@ -86,13 +85,13 @@ internal class UtilTest {
         val rect3 = SolidRect(100.0, 100.0)
 
         assertTrue {
-            rect1.xD.isAlmostEquals(0.0)
+            rect1.x.isAlmostEquals(0.0)
         }
         assertTrue {
-            rect2.xD.isAlmostEquals(0.0)
+            rect2.x.isAlmostEquals(0.0)
         }
         assertTrue {
-            rect3.xD.isAlmostEquals(0.0)
+            rect3.x.isAlmostEquals(0.0)
         }
 
         distributeEvenlyHorizontally(listOf(rect1, rect3, rect2), 1000.0)
@@ -104,13 +103,13 @@ internal class UtilTest {
         // 200 (rect 2)
 
         assertTrue {
-            rect1.xD.isAlmostEquals(0.0)
+            rect1.x.isAlmostEquals(0.0)
         }
         assertTrue {
-            rect3.xD.isAlmostEquals(400.0)
+            rect3.x.isAlmostEquals(400.0)
         }
         assertTrue {
-            rect2.xD.isAlmostEquals(800.0)
+            rect2.x.isAlmostEquals(800.0)
         }
     }
 
@@ -119,17 +118,17 @@ internal class UtilTest {
         val rect1 = SolidRect(100.0, 100.0)
         val rect2 = SolidRect(200.0, 200.0)
         val rect3 = SolidRect(100.0, 100.0).apply {
-            xD = 900.0
+            x = 900.0
         }
 
         assertTrue {
-            rect1.xD.isAlmostEquals(0.0)
+            rect1.x.isAlmostEquals(0.0)
         }
         assertTrue {
-            rect2.xD.isAlmostEquals(0.0)
+            rect2.x.isAlmostEquals(0.0)
         }
         assertTrue {
-            rect3.xD.isAlmostEquals(900.0)
+            rect3.x.isAlmostEquals(900.0)
         }
 
         distributeEvenlyHorizontally(listOf(rect1, rect2, rect3), 1000.0)
@@ -142,28 +141,28 @@ internal class UtilTest {
         // 100 (rect 3)
 
         assertTrue {
-            rect1.xD.isAlmostEquals(0.0)
+            rect1.x.isAlmostEquals(0.0)
         }
         assertTrue {
-            rect2.xD.isAlmostEquals(400.0)
+            rect2.x.isAlmostEquals(400.0)
         }
         assertTrue {
-            rect3.xD.isAlmostEquals(900.0)
+            rect3.x.isAlmostEquals(900.0)
         }
     }
 
     @Test
     fun distributeEvenlyHorizontally_offsetBasedOnFirstView() {
         val rect1 = SolidRect(100.0, 100.0).apply {
-            xD = 100.0
+            x = 100.0
         }
         val rect2 = SolidRect(100.0, 100.0)
 
         assertTrue {
-            rect1.xD.isAlmostEquals(100.0)
+            rect1.x.isAlmostEquals(100.0)
         }
         assertTrue {
-            rect2.xD.isAlmostEquals(0.0)
+            rect2.x.isAlmostEquals(0.0)
         }
 
         distributeEvenlyHorizontally(listOf(rect1, rect2), 300.0)
@@ -175,10 +174,10 @@ internal class UtilTest {
         // 100 (rect 2)
 
         assertTrue {
-            rect1.xD.isAlmostEquals(100.0)
+            rect1.x.isAlmostEquals(100.0)
         }
         assertTrue {
-            rect2.xD.isAlmostEquals(300.0)
+            rect2.x.isAlmostEquals(300.0)
         }
     }
 
@@ -187,13 +186,13 @@ internal class UtilTest {
         val rect1 = SolidRect(100.0, 100.0)
 
         assertTrue {
-            rect1.xD.isAlmostEquals(0.0)
+            rect1.x.isAlmostEquals(0.0)
         }
 
         distributeEvenlyVertically(listOf(rect1), 300.0)
 
         assertTrue {
-            rect1.yD.isAlmostEquals(0.0)
+            rect1.y.isAlmostEquals(0.0)
         }
     }
 
@@ -203,19 +202,19 @@ internal class UtilTest {
         val rect2 = SolidRect(100.0, 100.0)
 
         assertTrue {
-            rect1.yD.isAlmostEquals(0.0)
+            rect1.y.isAlmostEquals(0.0)
         }
         assertTrue {
-            rect2.yD.isAlmostEquals(0.0)
+            rect2.y.isAlmostEquals(0.0)
         }
 
         distributeEvenlyVertically(listOf(rect1, rect2), 300.0)
 
         assertTrue {
-            rect1.yD.isAlmostEquals(0.0)
+            rect1.y.isAlmostEquals(0.0)
         }
         assertTrue {
-            rect2.yD.isAlmostEquals(200.0)
+            rect2.y.isAlmostEquals(200.0)
         }
     }
 
@@ -226,13 +225,13 @@ internal class UtilTest {
         val rect3 = SolidRect(100.0, 100.0)
 
         assertTrue {
-            rect1.yD.isAlmostEquals(0.0)
+            rect1.y.isAlmostEquals(0.0)
         }
         assertTrue {
-            rect2.yD.isAlmostEquals(0.0)
+            rect2.y.isAlmostEquals(0.0)
         }
         assertTrue {
-            rect3.yD.isAlmostEquals(0.0)
+            rect3.y.isAlmostEquals(0.0)
         }
 
         distributeEvenlyVertically(listOf(rect1, rect2, rect3), 1000.0)
@@ -245,13 +244,13 @@ internal class UtilTest {
         // 100 (rect 3)
 
         assertTrue {
-            rect1.yD.isAlmostEquals(0.0)
+            rect1.y.isAlmostEquals(0.0)
         }
         assertTrue {
-            rect2.yD.isAlmostEquals(400.0)
+            rect2.y.isAlmostEquals(400.0)
         }
         assertTrue {
-            rect3.yD.isAlmostEquals(900.0)
+            rect3.y.isAlmostEquals(900.0)
         }
     }
 
@@ -262,13 +261,13 @@ internal class UtilTest {
         val rect3 = SolidRect(100.0, 100.0)
 
         assertTrue {
-            rect1.yD.isAlmostEquals(0.0)
+            rect1.y.isAlmostEquals(0.0)
         }
         assertTrue {
-            rect2.yD.isAlmostEquals(0.0)
+            rect2.y.isAlmostEquals(0.0)
         }
         assertTrue {
-            rect3.yD.isAlmostEquals(0.0)
+            rect3.y.isAlmostEquals(0.0)
         }
 
         distributeEvenlyVertically(listOf(rect1, rect3, rect2), 1000.0)
@@ -280,13 +279,13 @@ internal class UtilTest {
         // 200 (rect 2)
 
         assertTrue {
-            rect1.yD.isAlmostEquals(0.0)
+            rect1.y.isAlmostEquals(0.0)
         }
         assertTrue {
-            rect3.yD.isAlmostEquals(400.0)
+            rect3.y.isAlmostEquals(400.0)
         }
         assertTrue {
-            rect2.yD.isAlmostEquals(800.0)
+            rect2.y.isAlmostEquals(800.0)
         }
     }
 
@@ -295,17 +294,17 @@ internal class UtilTest {
         val rect1 = SolidRect(100.0, 100.0)
         val rect2 = SolidRect(200.0, 200.0)
         val rect3 = SolidRect(100.0, 100.0).apply {
-            yD = 900.0
+            y = 900.0
         }
 
         assertTrue {
-            rect1.yD.isAlmostEquals(0.0)
+            rect1.y.isAlmostEquals(0.0)
         }
         assertTrue {
-            rect2.yD.isAlmostEquals(0.0)
+            rect2.y.isAlmostEquals(0.0)
         }
         assertTrue {
-            rect3.yD.isAlmostEquals(900.0)
+            rect3.y.isAlmostEquals(900.0)
         }
 
         distributeEvenlyVertically(listOf(rect1, rect2, rect3))
@@ -318,28 +317,28 @@ internal class UtilTest {
         // 100 (rect 3)
 
         assertTrue {
-            rect1.yD.isAlmostEquals(0.0)
+            rect1.y.isAlmostEquals(0.0)
         }
         assertTrue {
-            rect2.yD.isAlmostEquals(400.0)
+            rect2.y.isAlmostEquals(400.0)
         }
         assertTrue {
-            rect3.yD.isAlmostEquals(900.0)
+            rect3.y.isAlmostEquals(900.0)
         }
     }
 
     @Test
     fun distributeEvenlyVertically_offsetBasedOnFirstView() {
         val rect1 = SolidRect(100.0, 100.0).apply {
-            yD = 100.0
+            y = 100.0
         }
         val rect2 = SolidRect(100.0, 100.0)
 
         assertTrue {
-            rect1.yD.isAlmostEquals(100.0)
+            rect1.y.isAlmostEquals(100.0)
         }
         assertTrue {
-            rect2.yD.isAlmostEquals(0.0)
+            rect2.y.isAlmostEquals(0.0)
         }
 
         distributeEvenlyVertically(listOf(rect1, rect2), 300.0)
@@ -351,10 +350,10 @@ internal class UtilTest {
         // 100 (rect 2)
 
         assertTrue {
-            rect1.yD.isAlmostEquals(100.0)
+            rect1.y.isAlmostEquals(100.0)
         }
         assertTrue {
-            rect2.yD.isAlmostEquals(300.0)
+            rect2.y.isAlmostEquals(300.0)
         }
     }
 }

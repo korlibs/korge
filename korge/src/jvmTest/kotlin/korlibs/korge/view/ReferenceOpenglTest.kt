@@ -23,9 +23,9 @@ class ReferenceOpenglTest {
             xy(300, 300)
             val shape = gpuShapeView({
                 //val lineWidth = 6.12123231 * 2
-                val lineWidth = 12f
-                val width = 300f
-                val height = 300f
+                val lineWidth = 12.0
+                val width = 300.0
+                val height = 300.0
                 //rotation = 180.degrees
                 this.stroke(Colors.WHITE.withAf(.5f), lineWidth = lineWidth, lineJoin = LineJoin.MITER, lineCap = LineCap.BUTT) {
                     this.rect(

@@ -96,7 +96,7 @@ data class MouseEvent(
     var scrollDeltaMode: ScrollDeltaMode = ScrollDeltaMode.LINE
 ) : Event(), TEvent<MouseEvent> {
     //companion object : EventType<MouseEvent>
-    val pos: Vector2Int get() = Vector2Int(x, y)
+    val pos: Vector2I get() = Vector2I(x, y)
 
     var component: Any? = null
 
@@ -186,8 +186,8 @@ data class Touch(
     var kind: Kind = Kind.FINGER,
     var button: MouseButton = MouseButton.LEFT,
 ) : Extra by Extra.Mixin() {
-    val x: Float get() = p.x
-    val y: Float get() = p.y
+    val x: Double get() = p.x
+    val y: Double get() = p.y
 
     enum class Status { ADD, KEEP, REMOVE }
     enum class Kind { FINGER, MOUSE, STYLUS, ERASER, UNKNOWN }

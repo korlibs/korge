@@ -27,7 +27,7 @@ open class ViewsForTesting(
     val frameTime: TimeSpan = 10.milliseconds,
     val windowSize: Size = DefaultViewport.SIZE,
     val virtualSize: Size = windowSize,
-    val defaultDevicePixelRatio: Float = 1f,
+    val defaultDevicePixelRatio: Double = 1.0,
     val log: Boolean = false,
 ) {
 	val startTime = DateTime(0.0)
@@ -41,7 +41,7 @@ open class ViewsForTesting(
 	val dispatcher = FastGameWindowCoroutineDispatcher()
     inner class TestGameWindow(initialSize: Size, val dispatcher: FastGameWindowCoroutineDispatcher) : GameWindowLog() {
         override var androidContextAny: Any? = null
-        override val devicePixelRatio: Float get() = this@ViewsForTesting.devicePixelRatio
+        override val devicePixelRatio: Double get() = this@ViewsForTesting.devicePixelRatio
         override var width: Int = initialSize.width.toInt()
         override var height: Int = initialSize.height.toInt()
         override val coroutineDispatcher = dispatcher

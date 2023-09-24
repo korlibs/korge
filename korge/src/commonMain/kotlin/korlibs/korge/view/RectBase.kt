@@ -13,9 +13,9 @@ import korlibs.math.geom.vector.*
  */
 @OptIn(KorgeInternal::class)
 open class RectBase(
-	anchor: Anchor = Anchor.TOP_LEFT,
-	hitShape: VectorPath? = null,
-	var smoothing: Boolean = true
+    anchor: Anchor = Anchor.TOP_LEFT,
+    hitShape: VectorPath? = null,
+    var smoothing: Boolean = true
 ) : View(), Anchorable {
     init {
         this.hitShape = hitShape
@@ -38,8 +38,8 @@ open class RectBase(
     protected open val bwidth: Float get() = 0f
 	protected open val bheight: Float get() = 0f
 
-    override val anchorDispX: Float get() = (anchor.sx * bwidth)
-    override val anchorDispY: Float get() = (anchor.sy * bheight)
+    override val anchorDispX: Float get() = (anchor.sx * bwidth).toFloat()
+    override val anchorDispY: Float get() = (anchor.sy * bheight).toFloat()
 
     protected open val sLeft: Float get() = -anchorDispX
 	protected open val sTop: Float get() = -anchorDispY

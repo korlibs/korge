@@ -8,7 +8,7 @@ import korlibs.util.*
 class MainStressButtons : Scene() {
     override suspend fun SContainer.sceneMain() {
         container {
-            scaleAvg = .5f
+            scaleAvg = .5
             uiVerticalStack {
                 //for (row in 0 until 20) {
                 for (row in 0 until 40) {

@@ -1,27 +1,17 @@
 package korlibs.math.geom
 
-//@KormaValueApi
 data class RectCorners(
-    val topLeft: Float,
-    val topRight: Float,
-    val bottomRight: Float,
-    val bottomLeft: Float,
+    val topLeft: Double,
+    val topRight: Double,
+    val bottomRight: Double,
+    val bottomLeft: Double,
 ) {
     companion object {
-        val EMPTY = RectCorners(0f)
+        val EMPTY = RectCorners(0)
+
+        inline operator fun invoke(corner: Number): RectCorners = RectCorners(corner.toDouble(), corner.toDouble(), corner.toDouble(), corner.toDouble())
+        inline operator fun invoke(topLeftBottomRight: Number, topRightAndBottomLeft: Number): RectCorners = RectCorners(topLeftBottomRight.toDouble(), topRightAndBottomLeft.toDouble(), topLeftBottomRight.toDouble(), topRightAndBottomLeft.toDouble())
+        inline operator fun invoke(topLeft: Number, topRightAndBottomLeft: Number, bottomRight: Number): RectCorners = RectCorners(topLeft.toDouble(), topRightAndBottomLeft.toDouble(), bottomRight.toDouble(), topRightAndBottomLeft.toDouble())
+        inline operator fun invoke(topLeft: Number, topRight: Number, bottomRight: Number, bottomLeft: Number): RectCorners = RectCorners(topLeft.toDouble(), topRight.toDouble(), bottomRight.toDouble(), bottomLeft.toDouble())
     }
-
-    constructor(corner: Int) : this(corner, corner, corner, corner)
-    constructor(topLeftBottomRight: Int, topRightAndBottomLeft: Int) : this(topLeftBottomRight, topRightAndBottomLeft, topLeftBottomRight, topRightAndBottomLeft)
-    constructor(topLeft: Int, topRightAndBottomLeft: Int, bottomRight: Int) : this(topLeft, topRightAndBottomLeft, bottomRight, topRightAndBottomLeft)
-    constructor(topLeft: Int, topRight: Int, bottomRight: Int, bottomLeft: Int) : this(topLeft.toFloat(), topRight.toFloat(), bottomRight.toFloat(), bottomLeft.toFloat())
-
-    constructor(corner: Float) : this(corner, corner, corner, corner)
-    constructor(topLeftBottomRight: Float, topRightAndBottomLeft: Float) : this(topLeftBottomRight, topRightAndBottomLeft, topLeftBottomRight, topRightAndBottomLeft)
-    constructor(topLeft: Float, topRightAndBottomLeft: Float, bottomRight: Float) : this(topLeft, topRightAndBottomLeft, bottomRight, topRightAndBottomLeft)
-
-    constructor(corner: Double) : this(corner.toFloat())
-    constructor(topLeftBottomRight: Double, topRightAndBottomLeft: Double) : this(topLeftBottomRight.toFloat(), topRightAndBottomLeft.toFloat())
-    constructor(topLeft: Double, topRightAndBottomLeft: Double, bottomRight: Double) : this(topLeft.toFloat(), topRightAndBottomLeft.toFloat(), bottomRight.toFloat())
-    constructor(topLeft: Double, topRight: Double, bottomRight: Double, bottomLeft: Double) : this(topLeft.toFloat(), topRight.toFloat(), bottomRight.toFloat(), bottomLeft.toFloat())
 }

@@ -68,8 +68,8 @@ class Views(
     var rethrowRenderError = false
     var forceRenderEveryFrame: Boolean by gameWindow::continuousRenderMode
 
-    val virtualPixelsPerInch: Float get() = pixelsPerInch / globalToWindowScaleAvg
-    val virtualPixelsPerCm: Float get() = virtualPixelsPerInch / DeviceDimensionsProvider.INCH_TO_CM
+    val virtualPixelsPerInch: Double get() = pixelsPerInch / globalToWindowScaleAvg
+    val virtualPixelsPerCm: Double get() = virtualPixelsPerInch / DeviceDimensionsProvider.INCH_TO_CM
 
     internal val resizedEvent = ReshapeEvent(0, 0)
     internal val updateEvent = UpdateEvent()
@@ -127,12 +127,17 @@ class Views(
     var virtualWidthDouble: Double get() = virtualWidth.toDouble() ; set(value) { virtualWidth = value.toInt() }
     var virtualHeightDouble: Double get() = virtualHeight.toDouble() ; set(value) { virtualHeight = value.toInt() }
 
-    var virtualWidthFloat: Float get() = virtualWidth.toFloat() ; set(value) { virtualWidth = value.toInt() }
-    var virtualHeightFloat: Float get() = virtualHeight.toFloat() ; set(value) { virtualHeight = value.toInt() }
-    var virtualSizeFloat: Size get() = Size(virtualWidthFloat, virtualHeightFloat); set(value) {
-        virtualWidthFloat = value.width
-        virtualHeightFloat = value.height
+    var virtualSizeDouble: Size get() = Size(virtualWidthDouble, virtualHeightDouble); set(value) {
+        virtualWidthDouble = value.width
+        virtualHeightDouble = value.height
     }
+
+    //var virtualWidthFloat: Float get() = virtualWidth.toFloat() ; set(value) { virtualWidth = value.toInt() }
+    //var virtualHeightFloat: Float get() = virtualHeight.toFloat() ; set(value) { virtualHeight = value.toInt() }
+    //var virtualSizeFloat: Size get() = Size(virtualWidthFloat, virtualHeightFloat); set(value) {
+    //    virtualWidthFloat = value.width
+    //    virtualHeightFloat = value.height
+    //}
 
     private val closeables = arrayListOf<AsyncCloseable>()
 
@@ -593,14 +598,14 @@ interface BoundsProvider {
         bounds.transformed(globalToWindowMatrix)
 
     val windowToGlobalScale: Scale get() = windowToGlobalTransform.scale
-    val windowToGlobalScaleX: Float get() = windowToGlobalTransform.scale.scaleX
-    val windowToGlobalScaleY: Float get() = windowToGlobalTransform.scale.scaleY
-    val windowToGlobalScaleAvg: Float get() = windowToGlobalTransform.scale.scaleAvg
+    val windowToGlobalScaleX: Double get() = windowToGlobalTransform.scale.scaleX
+    val windowToGlobalScaleY: Double get() = windowToGlobalTransform.scale.scaleY
+    val windowToGlobalScaleAvg: Double get() = windowToGlobalTransform.scale.scaleAvg
 
     val globalToWindowScale: Scale get() = globalToWindowTransform.scale
-    val globalToWindowScaleX: Float get() = globalToWindowTransform.scaleX
-    val globalToWindowScaleY: Float get() = globalToWindowTransform.scaleY
-    val globalToWindowScaleAvg: Float get() = globalToWindowTransform.scaleAvg
+    val globalToWindowScaleX: Double get() = globalToWindowTransform.scaleX
+    val globalToWindowScaleY: Double get() = globalToWindowTransform.scaleY
+    val globalToWindowScaleAvg: Double get() = globalToWindowTransform.scaleAvg
 
     fun windowToGlobalCoords(pos: Point): Point = windowToGlobalMatrix.transform(pos)
     fun globalToWindowCoords(pos: Point): Point = globalToWindowMatrix.transform(pos)
@@ -635,8 +640,8 @@ fun BoundsProvider.setBoundsInfo(
     globalToWindowMatrix = Matrix.IDENTITY
         .prescaled(ratioX, ratioY)
         .pretranslated(
-            ((actualVirtualWidth - reqVirtualSize.width) * anchor.doubleX).toIntRound().toDouble(),
-            ((actualVirtualHeight - reqVirtualSize.height) * anchor.doubleY).toIntRound().toDouble(),
+            ((actualVirtualWidth - reqVirtualSize.width) * anchor.sx).toIntRound().toDouble(),
+            ((actualVirtualHeight - reqVirtualSize.height) * anchor.sy).toIntRound().toDouble(),
         )
     windowToGlobalMatrix = globalToWindowMatrix.inverted()
     globalToWindowTransform = globalToWindowMatrix.toTransform()

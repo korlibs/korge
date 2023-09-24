@@ -7,8 +7,8 @@ class Matrix4Test {
     fun test() {
         val matrix = Matrix4.IDENTITY * -2f
         assertEquals(
-            Vector4(-2f, -4f, -6f, -8f),
-            matrix.transformTransposed(Vector4(1, 2, 3, 4))
+            Vector4F(-2f, -4f, -6f, -8f),
+            matrix.transformTransposed(Vector4F(1, 2, 3, 4))
         )
 
         assertEquals(

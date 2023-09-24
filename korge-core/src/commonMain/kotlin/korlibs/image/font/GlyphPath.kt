@@ -12,7 +12,7 @@ data class GlyphPath(
     var bitmapOffset: Point = Point(0, 0),
     var bitmapScale: Scale = Scale(1, 1),
     var transform: Matrix = Matrix(),
-    var scale: Float = 1f
+    var scale: Double = 1.0
 ) : Drawable {
     val isOnlyPath get() = bitmap == null && colorShape == null
 

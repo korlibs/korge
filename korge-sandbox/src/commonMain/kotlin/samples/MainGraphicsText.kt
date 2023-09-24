@@ -36,17 +36,17 @@ class MainGraphicsText : Scene() {
         //val font = resourcesVfs["Radicalis.ttf"].readTtfFont()
 
         graphics {
-            fillStroke(Colors.WHITE, Stroke(Colors.RED, thickness = 5f)) {
+            fillStroke(Colors.WHITE, Stroke(Colors.RED, thickness = 5.0)) {
                 //rect(0, 0, 100, 100)
-                text("Hello World!", font = this@MainGraphicsText.vfont, textSize = 128f, align = this@MainGraphicsText.align)
+                text("Hello World!", font = this@MainGraphicsText.vfont, textSize = 128.0, align = this@MainGraphicsText.align)
             }
             fill(Colors.GREEN) {
-                circle(Point(0, 0), 10f)
+                circle(Point(0, 0), 10.0)
             }
             //drawText("hello", font = DefaultTtfFont, x = 50.0)
         }
             //.filters(IdentityFilter)
-            .filters(DropshadowFilter(dropX = 200f))
+            .filters(DropshadowFilter(dropX = 200.0))
             .xy(200, 200)
         /*
         graphics { fill(Colors.RED) { circle(0, 0, 10) } }.xy(100, 100)

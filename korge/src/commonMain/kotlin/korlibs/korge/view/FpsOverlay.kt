@@ -67,7 +67,7 @@ internal fun ViewsContainer.installFpsDebugOverlay() {
 
         fun drawTextWithShadow(text: String, x: Int, y: Int) {
             //ctx.drawText(debugBmpFont, fontSize, text, x = x + 1, y = y + 1, colMul = Colors.BLACK, filtering = false, m = matrix)
-            ctx.drawText(debugBmpFont, fontSize, text, x = x, y = y, colMul = ctx.debugExtraFontColor, filtering = false, m = matrix.immutable, blendMode = BlendMode.INVERT)
+            ctx.drawText(debugBmpFont, fontSize, text, x = x, y = y, colMul = ctx.debugExtraFontColor, filtering = false, m = matrix, blendMode = BlendMode.INVERT)
         }
 
         //val stats = ctx.ag.getStats()
@@ -161,7 +161,7 @@ private class TimeSlidingWindow(val capacity: Int) {
 
     val size get() = deque.size
 
-    val avg: TimeSpan get() = (totalMicroseconds.toDouble() / deque.size).microseconds
+    val avg: TimeSpan get() = if (deque.size == 0) 0.seconds else (totalMicroseconds.toDouble() / deque.size).microseconds
     // @TODO: Can we compute this incrementally?
     val min: TimeSpan get() = deque.minOrNull()?.microseconds ?: 1.microseconds
     val max: TimeSpan get() = deque.maxOrNull()?.microseconds ?: 1.microseconds

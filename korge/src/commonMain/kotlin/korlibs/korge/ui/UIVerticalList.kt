@@ -9,24 +9,24 @@ import korlibs.math.geom.*
 @KorgeExperimental
 inline fun Container.uiVerticalList(
     provider: UIVerticalList.Provider,
-    width: Float = 256f,
+    width: Double = 256.0,
     block: @ViewDslMarker Container.(UIVerticalList) -> Unit = {}
 ): UIVerticalList = UIVerticalList(provider, width)
     .addTo(this).also { block(it) }
 
 @KorgeExperimental
-open class UIVerticalList(provider: Provider, width: Float = 200f) : UIView(DEFAULT_SIZE.copy(width = width)) {
+open class UIVerticalList(provider: Provider, width: Double = 200.0) : UIView(DEFAULT_SIZE.copy(width = width)) {
     interface Provider {
         val numItems: Int
-        val fixedHeight: Float?
-        fun getItemY(index: Int): Float = (fixedHeight ?: 20f) * index
-        fun getItemHeight(index: Int): Float
+        val fixedHeight: Double?
+        fun getItemY(index: Int): Double = (fixedHeight ?: 20.0) * index
+        fun getItemHeight(index: Int): Double
         fun getItemView(index: Int, vlist: UIVerticalList): View
 
         object Dummy : Provider {
             override val numItems: Int get() = 0
-            override val fixedHeight: Float? = null
-            override fun getItemHeight(index: Int): Float = 0f
+            override val fixedHeight: Double? = null
+            override fun getItemHeight(index: Int): Double = 0.0
             override fun getItemView(index: Int, vlist: UIVerticalList): View = DummyView()
         }
     }
@@ -54,7 +54,7 @@ open class UIVerticalList(provider: Provider, width: Float = 200f) : UIView(DEFA
         super.renderInternal(ctx)
     }
 
-    private fun getIndexAtY(y: Float): Int {
+    private fun getIndexAtY(y: Double): Int {
         val index = y / (provider.fixedHeight?.toFloat() ?: 20f)
         return index.toInt()
     }
@@ -104,13 +104,13 @@ open class UIVerticalList(provider: Provider, width: Float = 200f) : UIView(DEFA
             if (numItems > 0) {
                 for (index in fromIndex until numItems) {
                     val view = viewsByIndex.getOrPut(index) {
-                        val itemHeight = provider.getItemHeight(index)
+                        val itemHeight: Double = provider.getItemHeight(index)
                         provider.getItemView(index, this)
                             .also { addChild(it) }
-                            .position(0f, provider.getItemY(index))
+                            .position(0.0, provider.getItemY(index))
                             .size(width, itemHeight)
                     }
-                    view.zIndex = index.toFloat()
+                    view.zIndex = index.toDouble()
                     toIndex = index
 
                     //val localViewY = view.localToGlobalY(0.0, view.height)
@@ -118,7 +118,7 @@ open class UIVerticalList(provider: Provider, width: Float = 200f) : UIView(DEFA
                     //println(":: ${view.localToGlobalY(0.0, view.height)}, ${area.bottom}")
 
                     //if (view.localToRenderY(0.0, view.height) >= area.bottom) {
-                    if (view.localToGlobal(Point(0.0, view.heightD)).yD >= area.bottom) {
+                    if (view.localToGlobal(Point(0.0, view.height)).y >= area.bottom) {
                         //if (view.localToWindowY(stage!!.views, 0.0, view.height) >= area.bottom) {
                         //if (false) {
                         //println("localViewY=localViewY, globalY=${view.localToGlobalY(0.0, view.height)}")

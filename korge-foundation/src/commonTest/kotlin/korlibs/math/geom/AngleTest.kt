@@ -27,11 +27,11 @@ class AngleTest {
         assertEquals((-350).degrees, 0.degrees - 350.degrees)
         assertEquals(180.degrees, 90.degrees * 2)
         assertEquals(45.degrees, 90.degrees / 2)
-        assertEquals(2f, 90.degrees / 45.degrees)
+        assertEquals(2.0, 90.degrees / 45.degrees)
 
         assertEquals(0.degrees, (360 * 2.0).degrees.normalized)
-        assertEquals(0.0, (360 * 2.0).degrees.normalized.degreesD)
-        assertEquals(0.0, (360 * 2.0).degrees.normalized.radiansD)
+        assertEquals(0.0, (360 * 2.0).degrees.normalized.degrees)
+        assertEquals(0.0, (360 * 2.0).degrees.normalized.radians)
 
         assertEquals((-90).degrees, -(90.degrees))
         assertEquals((+90).degrees, +(90.degrees))
@@ -50,9 +50,9 @@ class AngleTest {
         //assertEquals(1.0f, sin(90.degrees))
         //assertEquals(1.0f, tan(45.degrees))
 
-        assertEquals(0.0, cosd(90.degrees))
-        assertEquals(1.0, sind(90.degrees))
-        assertEquals(1.0, tand(45.degrees))
+        assertEquals(0.0, cos(90.degrees))
+        assertEquals(1.0, sin(90.degrees))
+        assertEquals(1.0, tan(45.degrees))
     }
 
     @Test
@@ -109,9 +109,9 @@ class AngleTest {
     fun testProperties() {
         //assertEquals(0.0f, 0.degrees.sineF)
         //assertEquals(1.0f, 0.degrees.cosineF)
-        assertEquals(0.0, 0.degrees.sineD)
-        assertEquals(1.0, 0.degrees.cosineD)
-        assertTrue(0.degrees.tangentD.isAlmostZero())
+        assertEquals(0.0, 0.degrees.sine)
+        assertEquals(1.0, 0.degrees.cosine)
+        assertTrue(0.degrees.tangent.isAlmostZero())
     }
 
     @Test
@@ -138,7 +138,7 @@ class AngleTest {
 
     // @TODO: Required to avoid: java.lang.AssertionError: expected:<3.141592653589793> but was:<Angle(180.0)>
     private fun assertEquals(a: Angle, b: Angle) {
-        assertEquals(a.degreesD, b.degreesD)
+        assertEquals(a.degrees, b.degrees)
     }
 
     private fun assertEquals(l: Double, r: Double, epsilon: Double = 0.0001) {
@@ -166,28 +166,28 @@ class AngleTest {
     @Test
     fun testReferenceSystem() {
         run {
-            assertEqualsFloat(listOf(1f, 0f), listOf(Angle.ZERO.cosine(), Angle.ZERO.sine()))
-            assertEqualsFloat(listOf(0f, 1f), listOf(Angle.QUARTER.cosine(), Angle.QUARTER.sine()))
-            assertEqualsFloat(listOf(-1f, 0f), listOf(Angle.HALF.cosine(), Angle.HALF.sine()))
-            assertEqualsFloat(listOf(0f, -1f), listOf(Angle.THREE_QUARTERS.cosine(), Angle.THREE_QUARTERS.sine()))
+            assertEqualsFloat(listOf(1.0, 0.0), listOf(Angle.ZERO.cosine(), Angle.ZERO.sine()))
+            assertEqualsFloat(listOf(0.0, 1.0), listOf(Angle.QUARTER.cosine(), Angle.QUARTER.sine()))
+            assertEqualsFloat(listOf(-1.0, 0.0), listOf(Angle.HALF.cosine(), Angle.HALF.sine()))
+            assertEqualsFloat(listOf(0.0, -1.0), listOf(Angle.THREE_QUARTERS.cosine(), Angle.THREE_QUARTERS.sine()))
         }
         run {
-            val up = Vector2.UP
-            assertEqualsFloat(listOf(1f, 0f), listOf(Angle.ZERO.cosine(up), Angle.ZERO.sine(up)))
-            assertEqualsFloat(listOf(0f, 1f), listOf(Angle.QUARTER.cosine(up), Angle.QUARTER.sine(up)))
-            assertEqualsFloat(listOf(-1f, 0f), listOf(Angle.HALF.cosine(up), Angle.HALF.sine(up)))
-            assertEqualsFloat(listOf(0f, -1f), listOf(Angle.THREE_QUARTERS.cosine(up), Angle.THREE_QUARTERS.sine(up)))
+            val up = Vector2D.UP
+            assertEqualsFloat(listOf(1.0, 0.0), listOf(Angle.ZERO.cosine(up), Angle.ZERO.sine(up)))
+            assertEqualsFloat(listOf(0.0, 1.0), listOf(Angle.QUARTER.cosine(up), Angle.QUARTER.sine(up)))
+            assertEqualsFloat(listOf(-1.0, 0.0), listOf(Angle.HALF.cosine(up), Angle.HALF.sine(up)))
+            assertEqualsFloat(listOf(0.0, -1.0), listOf(Angle.THREE_QUARTERS.cosine(up), Angle.THREE_QUARTERS.sine(up)))
         }
         run {
-            val up = Vector2.UP_SCREEN
-            assertEqualsFloat(listOf(1f, 0f), listOf(Angle.ZERO.cosine(up), Angle.ZERO.sine(up)))
-            assertEqualsFloat(listOf(0f, -1f), listOf(Angle.QUARTER.cosine(up), Angle.QUARTER.sine(up)))
-            assertEqualsFloat(listOf(-1f, 0f), listOf(Angle.HALF.cosine(up), Angle.HALF.sine(up)))
-            assertEqualsFloat(listOf(0f, +1f), listOf(Angle.THREE_QUARTERS.cosine(up), Angle.THREE_QUARTERS.sine(up)))
+            val up = Vector2D.UP_SCREEN
+            assertEqualsFloat(listOf(1.0, 0.0), listOf(Angle.ZERO.cosine(up), Angle.ZERO.sine(up)))
+            assertEqualsFloat(listOf(0.0, -1.0), listOf(Angle.QUARTER.cosine(up), Angle.QUARTER.sine(up)))
+            assertEqualsFloat(listOf(-1.0, 0.0), listOf(Angle.HALF.cosine(up), Angle.HALF.sine(up)))
+            assertEqualsFloat(listOf(0.0, +1.0), listOf(Angle.THREE_QUARTERS.cosine(up), Angle.THREE_QUARTERS.sine(up)))
         }
-        assertEqualsFloat(listOf(0.0, 1.0), listOf(Angle.QUARTER.cosineD(), Angle.QUARTER.sineD()))
-        assertEqualsFloat(listOf(0.0, 1.0), listOf(Angle.QUARTER.cosineD(Vector2.UP), Angle.QUARTER.sineD(Vector2.UP)))
-        assertEqualsFloat(listOf(0.0, -1.0), listOf(Angle.QUARTER.cosineD(Vector2.UP_SCREEN), Angle.QUARTER.sineD(Vector2.UP_SCREEN)))
+        assertEqualsFloat(listOf(0.0, 1.0), listOf(Angle.QUARTER.cosine(), Angle.QUARTER.sine()))
+        assertEqualsFloat(listOf(0.0, 1.0), listOf(Angle.QUARTER.cosine(Vector2D.UP), Angle.QUARTER.sine(Vector2D.UP)))
+        assertEqualsFloat(listOf(0.0, -1.0), listOf(Angle.QUARTER.cosine(Vector2D.UP_SCREEN), Angle.QUARTER.sine(Vector2D.UP_SCREEN)))
     }
 
     @Test

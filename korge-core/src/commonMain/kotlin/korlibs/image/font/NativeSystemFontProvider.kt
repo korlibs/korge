@@ -74,16 +74,16 @@ open class NativeSystemFontProvider {
         return mapOf()
     }
 
-    open fun getSystemFontGlyph(systemFont: SystemFont, size: Float, codePoint: Int, path: GlyphPath = GlyphPath(), reader: WStringReader? = null): GlyphPath? {
+    open fun getSystemFontGlyph(systemFont: SystemFont, size: Double, codePoint: Int, path: GlyphPath = GlyphPath(), reader: WStringReader? = null): GlyphPath? {
         return null
     }
 
-    open fun getSystemFontMetrics(systemFont: SystemFont, size: Float, metrics: FontMetrics) {
+    open fun getSystemFontMetrics(systemFont: SystemFont, size: Double, metrics: FontMetrics) {
         val ascentRatio = 0.8f
         metrics.size = size
         metrics.top = size * ascentRatio
         metrics.ascent = metrics.top
-        metrics.baseline = 0f
+        metrics.baseline = 0.0
         metrics.descent = -size * (1f - ascentRatio)
         metrics.bottom = metrics.descent
         metrics.maxWidth = size
@@ -91,17 +91,17 @@ open class NativeSystemFontProvider {
 
     open fun getSystemFontGlyphMetrics(
         systemFont: SystemFont,
-        size: Float,
+        size: Double,
         codePoint: Int,
         metrics: GlyphMetrics,
         reader: WStringReader? = null
     ) {
         metrics.existing = false
-        metrics.bounds = Rectangle(0f, 0f, size, size)
+        metrics.bounds = Rectangle(0.0, 0.0, size, size)
         metrics.xadvance = size
     }
 
-    open fun getSystemFontKerning(systemFont: SystemFont, size: Float, leftCodePoint: Int, rightCodePoint: Int) : Float = 0f
+    open fun getSystemFontKerning(systemFont: SystemFont, size: Double, leftCodePoint: Int, rightCodePoint: Int) : Double = 0.0
 }
 
 // Windows: C:\Windows\Fonts (%DRIVE%)
@@ -222,20 +222,20 @@ abstract class TtfNativeSystemFontProvider() : NativeSystemFontProvider() {
 
     override fun getSystemFontGlyph(
         systemFont: SystemFont,
-        size: Float,
+        size: Double,
         codePoint: Int,
         path: GlyphPath,
         reader: WStringReader?
     ): GlyphPath? =
         ttf(systemFont).getGlyphPath(size, codePoint, path, reader)
 
-    override fun getSystemFontMetrics(systemFont: SystemFont, size: Float, metrics: FontMetrics) {
+    override fun getSystemFontMetrics(systemFont: SystemFont, size: Double, metrics: FontMetrics) {
         ttf(systemFont).getFontMetrics(size, metrics)
     }
 
     override fun getSystemFontGlyphMetrics(
         systemFont: SystemFont,
-        size: Float,
+        size: Double,
         codePoint: Int,
         metrics: GlyphMetrics,
         reader: WStringReader?,
@@ -245,10 +245,10 @@ abstract class TtfNativeSystemFontProvider() : NativeSystemFontProvider() {
 
     override fun getSystemFontKerning(
         systemFont: SystemFont,
-        size: Float,
+        size: Double,
         leftCodePoint: Int,
         rightCodePoint: Int
-    ): Float = ttf(systemFont).getKerning(size, leftCodePoint, rightCodePoint)
+    ): Double = ttf(systemFont).getKerning(size, leftCodePoint, rightCodePoint)
 }
 
 open class FallbackNativeSystemFontProvider(val ttf: TtfFont) : TtfNativeSystemFontProvider() {

@@ -26,10 +26,10 @@ class TTfTest {
     @Test
     fun testLigatureAdvancementBug() = suspendTest {
         val font = resourcesVfs["PlayfairDisplay-BoldItalic.ttf"].readTtfFont()
-        fun res(str: String, reader: Boolean = true): Pair<Float, Int> {
+        fun res(str: String, reader: Boolean = true): Pair<Double, Int> {
             val rreader = WStringReader(str)
             val res = font.getGlyphMetrics(
-                100f,
+                100.0,
                 rreader.peek().codePoint,
                 reader = if (reader) rreader else null
             )
@@ -37,15 +37,15 @@ class TTfTest {
         }
 
         res("s", reader = false).also { (advance, pos) ->
-            assertEquals(42f, advance, absoluteTolerance = 0.1f)
+            assertEquals(42.0, advance, absoluteTolerance = 0.1)
             assertEquals(0, pos)
         }
         res("t", reader = false).also { (advance, pos) ->
-            assertEquals(35.3f, advance, absoluteTolerance = 0.1f)
+            assertEquals(35.3, advance, absoluteTolerance = 0.1)
             assertEquals(0, pos)
         }
         res("st", reader = true).also { (advance, pos) ->
-            assertEquals(76.4f, advance, absoluteTolerance = 0.1f)
+            assertEquals(76.4, advance, absoluteTolerance = 0.1)
             assertEquals(2, pos)
         }
     }

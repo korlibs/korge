@@ -10,8 +10,8 @@ class RandomLight(
 	parent: Container,
 	light: BmpSlice
 ) : Process(parent) {
-	var w2: Double = stage.widthD / 2
-	var h2: Double = stage.heightD / 2
+	var w2: Double = stage.width / 2
+	var h2: Double = stage.height / 2
 	val random = Random
 	var sx: Double = 0.0
 	var sy: Double = 0.0
@@ -37,9 +37,9 @@ class RandomLight(
 
 		while (true) {
 			rotation += inca.degrees
-			xD = w2 - cosd(rotation) * w2 * excx + sx
-			yD = h2 - sind(rotation) * h2 * excy + sy
-			scaleD = 1 + (cosd(rotation) / 6) * incs
+			x = w2 - cos(rotation) * w2 * excx + sx
+			y = h2 - sin(rotation) * h2 * excy + sy
+			scaleAvg = 1 + (cos(rotation) / 6) * incs
 
             //println("FRAME! $x -> $x2")
 

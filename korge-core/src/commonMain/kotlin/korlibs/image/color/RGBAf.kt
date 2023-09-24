@@ -79,7 +79,7 @@ inline class RGBAf(val data: FloatArray) {
     fun setToMultiply(r: Float, g: Float, b: Float, a: Float) = setTo(this.r * r, this.g * g, this.b * b, this.a * a)
 
     fun toRGBA(): RGBA = rgba
-    fun toVector(): Vector4 = Vector4(r, g, b, a)
+    fun toVector(): Vector4F = Vector4F(r, g, b, a)
 
     fun setToIdentity() = setTo(1f, 1f, 1f, 1f)
 

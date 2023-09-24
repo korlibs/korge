@@ -3,6 +3,9 @@ package korlibs.math
 import korlibs.memory.*
 import kotlin.math.*
 
+const val PIF = PI.toFloat()
+const val PI2F = (PI * 2).toFloat()
+
 fun Double.betweenInclusive(min: Double, max: Double): Boolean = (this >= min) && (this <= max)
 
 fun almostEquals(a: Float, b: Float) = almostZero(a - b)
@@ -20,7 +23,7 @@ fun Float.roundDecimalPlaces(places: Int): Float {
 fun Double.roundDecimalPlaces(places: Int): Double {
     if (places < 0) return this
     val placesFactor: Double = 10.0.pow(places.toDouble())
-    return kotlin.math.round(this * placesFactor) / placesFactor
+    return round(this * placesFactor) / placesFactor
 }
 //fun Double.normalizeZero(): Double = if (this.isAlmostZero()) 0.0 else this
 private val MINUS_ZERO_D = -0.0

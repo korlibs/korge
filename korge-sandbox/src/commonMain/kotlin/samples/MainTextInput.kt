@@ -28,25 +28,25 @@ class MainTextInput : Scene() {
         val font = DefaultTtfFont.withFallback(emojiFont)
 
         uiTextInput("HELLO", size = Size(256f, 64f)) {
-            this.textSize = 40f
+            this.textSize = 40.0
             this.font = font
             this.softKeyboardReturnKeyType = SoftKeyboardReturnKeyType.NEXT
         }.xy(200, 100)
 
         uiTextInput("1234", size = Size(256f, 64f)) {
-            this.textSize = 40f
+            this.textSize = 40.0
             this.font = font
             this.softKeyboardType = SoftKeyboardType.NUMBER_PAD
             this.softKeyboardReturnKeyType = SoftKeyboardReturnKeyType.EMERGENCY_CALL
         }.xy(200, 200)
 
         uiTextInput("test@gmail.com", size = Size(256f, 64f)) {
-            this.textSize = 40f
+            this.textSize = 40.0
             this.font = font
             this.softKeyboardType = SoftKeyboardType.EMAIL_ADDRESS
         }.xy(200, 300)
 
-        val textPath = buildVectorPath { circle(Point(0, 0), 100f) }
+        val textPath = buildVectorPath { circle(Point(0, 0), 100.0) }
 
         text(
             "HELLO WORLD",

@@ -1,6 +1,5 @@
 package korlibs.image.font
 
-import korlibs.io.util.*
 import korlibs.math.geom.*
 import korlibs.number.*
 import kotlin.math.*
@@ -24,38 +23,38 @@ import kotlin.math.*
  */
 data class FontMetrics(
     /** size of the font metric, typically [top] - [bottom] */
-    var size: Float = 0f,
+    var size: Double = 0.0,
     /** maximum top for any character like É  */
-    var top: Float = 0f,
+    var top: Double = 0.0,
     /** ascent part of E */
-    var ascent: Float = 0f,
+    var ascent: Double = 0.0,
     /** base of 'E' */
-    var baseline: Float = 0f, // Should be 0.0
+    var baseline: Double = 0.0, // Should be 0.0
     /** lower part of 'j' */
-    var descent: Float = 0f,
+    var descent: Double = 0.0,
     /** lowest part without the gap */
-    var bottom: Float = 0f,
+    var bottom: Double = 0.0,
     /** extra height, line-gap */
-    var lineGap: Float = 0f,
+    var lineGap: Double = 0.0,
     /** maximum number of width */
-    var maxWidth: Float = 0f,
+    var maxWidth: Double = 0.0,
     /** units per EM (historically 'M' width) */
-    var unitsPerEm: Float = 0f,
+    var unitsPerEm: Double = 0.0,
 ) {
     /** Top-most part of the glyphs */
-    val rtop: Float get() = max(ascent, top)
+    val rtop: Double get() = max(ascent, top)
     /** Bottom-most part of the glyphs (without the [lineGap] between lines) */
-    val rbottom: Float get() = min(descent, bottom)
+    val rbottom: Double get() = min(descent, bottom)
 
-    val lineHeightWithoutGap: Float get() = rtop - rbottom
+    val lineHeightWithoutGap: Double get() = rtop - rbottom
 
     /** Total size of a line including from [top] to [bottom] + [lineGap] */
-    val lineHeight: Float get() = lineHeightWithoutGap + lineGap // Including gap!
+    val lineHeight: Double get() = lineHeightWithoutGap + lineGap // Including gap!
 
-    fun copyFrom(other: FontMetrics): FontMetrics = this.copyFromScaled(other, 1f)
-    fun copyFromNewSize(other: FontMetrics, size: Float): FontMetrics = this.copyFromScaled(other, size / other.size)
+    fun copyFrom(other: FontMetrics): FontMetrics = this.copyFromScaled(other, 1.0)
+    fun copyFromNewSize(other: FontMetrics, size: Double): FontMetrics = this.copyFromScaled(other, size / other.size)
 
-    fun copyFromScaled(other: FontMetrics, scale: Float): FontMetrics {
+    fun copyFromScaled(other: FontMetrics, scale: Double): FontMetrics {
         this.size = other.size * scale
         this.top = other.top * scale
         this.ascent = other.ascent * scale
@@ -87,31 +86,31 @@ data class FontMetrics(
     }
 
     fun clone(): FontMetrics = copy()
-    fun cloneScaled(scale: Float): FontMetrics = copy().copyFromScaled(this, scale)
-    fun cloneWithNewSize(size: Float): FontMetrics = copy().copyFromNewSize(this, size)
+    fun cloneScaled(scale: Double): FontMetrics = copy().copyFromScaled(this, scale)
+    fun cloneWithNewSize(size: Double): FontMetrics = copy().copyFromNewSize(this, size)
 }
 
 data class GlyphMetrics(
-    var size: Float = 0f,
+    var size: Double = 0.0,
     var existing: Boolean = false,
     var codePoint: Int = 0,
     var bounds: Rectangle = Rectangle(),
-    var xadvance: Float = 0f,
+    var xadvance: Double = 0.0,
 ) {
-    val right: Float get() = bounds.right
-    val bottom: Float get() = bounds.bottom
-    val left: Float get() = bounds.left
-    val top: Float get() = bounds.top
-    val width: Float get() = bounds.width
-    val height: Float get() = bounds.height
+    val right: Double get() = bounds.right
+    val bottom: Double get() = bounds.bottom
+    val left: Double get() = bounds.left
+    val top: Double get() = bounds.top
+    val width: Double get() = bounds.width
+    val height: Double get() = bounds.height
     //val size: Size get() = bounds.size
 
-    fun clone() = copy(bounds = bounds.clone())
+    fun clone(): GlyphMetrics = copy(bounds = bounds.clone())
 
-    fun copyFromNewSize(other: GlyphMetrics, size: Float, codePoint: Int = other.codePoint): GlyphMetrics =
+    fun copyFromNewSize(other: GlyphMetrics, size: Double, codePoint: Int = other.codePoint): GlyphMetrics =
         this.copyFromScaled(other, size / other.size, codePoint)
 
-    fun copyFromScaled(other: GlyphMetrics, scale: Float, codePoint: Int = other.codePoint): GlyphMetrics {
+    fun copyFromScaled(other: GlyphMetrics, scale: Double, codePoint: Int = other.codePoint): GlyphMetrics {
         this.size = other.size
         this.existing = other.existing
         this.codePoint = codePoint
@@ -138,20 +137,20 @@ data class TextMetrics constructor(
 ) {
     val firstLineBounds: Rectangle get() = lineBounds.firstOrNull() ?: Rectangle.ZERO
 
-    val left: Float get() = bounds.left
-    val top: Float get() = bounds.top
-    val right: Float get() = bounds.right
-    val bottom: Float get() = bounds.bottom
-    val width: Float get() = bounds.width
-    val height: Float get() = bounds.height
+    val left: Double get() = bounds.left
+    val top: Double get() = bounds.top
+    val right: Double get() = bounds.right
+    val bottom: Double get() = bounds.bottom
+    val width: Double get() = bounds.width
+    val height: Double get() = bounds.height
 
-    val drawLeft: Float get() = -left
-    val drawTop: Float get() = (firstLineBounds.height + firstLineBounds.top)
+    val drawLeft: Double get() = -left
+    val drawTop: Double get() = (firstLineBounds.height + firstLineBounds.top)
 
-    val ascent: Float get() = fontMetrics.ascent
-    val descent: Float get() = fontMetrics.descent
-    val lineHeight: Float get() = fontMetrics.lineHeight
-    val allLineHeight: Float get() = lineHeight * nlines
+    val ascent: Double get() = fontMetrics.ascent
+    val descent: Double get() = fontMetrics.descent
+    val lineHeight: Double get() = fontMetrics.lineHeight
+    val allLineHeight: Double get() = lineHeight * nlines
 
     fun round(): TextMetrics {
         bounds = bounds.rounded()

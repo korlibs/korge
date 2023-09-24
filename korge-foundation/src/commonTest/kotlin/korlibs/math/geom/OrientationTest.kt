@@ -1,7 +1,6 @@
 package korlibs.math.geom
 
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import kotlin.test.*
 
 class OrientationTest {
     @Test
@@ -14,7 +13,7 @@ class OrientationTest {
     @Test
     fun testOrientation() {
         assertEquals(Orientation.CLOCK_WISE, Orientation.orient2d(Point(0, 0), Point(0, 100), Point(100, 0)))
-        assertEquals(Orientation.COUNTER_CLOCK_WISE, Orientation.orient2d(Point(0, 0), Point(0, 100), Point(100, 0), up = Vector2.UP_SCREEN))
+        assertEquals(Orientation.COUNTER_CLOCK_WISE, Orientation.orient2d(Point(0, 0), Point(0, 100), Point(100, 0), up = Vector2D.UP_SCREEN))
     }
 
 

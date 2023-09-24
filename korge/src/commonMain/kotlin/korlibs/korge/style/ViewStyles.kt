@@ -1,11 +1,11 @@
 package korlibs.korge.style
 
 import korlibs.datastructure.*
-import korlibs.korge.ui.*
-import korlibs.korge.view.*
 import korlibs.image.color.*
 import korlibs.image.font.*
 import korlibs.image.text.*
+import korlibs.korge.ui.*
+import korlibs.korge.view.*
 import kotlin.reflect.*
 
 val View.styles: ViewStyles by Extra.PropertyThis { ViewStyles(this) }
@@ -23,7 +23,7 @@ class ViewStyles(val view: View) {
 }
 
 var ViewStyles.textFont: Font by ViewStyle(DefaultTtfFontAsBitmap)
-var ViewStyles.textSize: Float by ViewStyle(16f)
+var ViewStyles.textSize: Double by ViewStyle(16.0)
 var ViewStyles.textColor: RGBA by ViewStyle(Colors.WHITE)
 var ViewStyles.buttonBackColor: RGBA by ViewStyle(Colors.DARKGRAY)
 var ViewStyles.textAlignment: TextAlignment by ViewStyle(TextAlignment.TOP_LEFT)

@@ -12,7 +12,7 @@ import korlibs.time.*
 class MainTransitionFilter : ScaledScene(768, 512) {
     override suspend fun SContainer.sceneMain() {
         val bitmap = resourcesVfs["korge.png"].readBitmap()
-        val transition = TransitionFilter(TransitionFilter.Transition.SWEEP, reversed = false, spread = 1f, ratio = 0.5f)
+        val transition = TransitionFilter(TransitionFilter.Transition.SWEEP, reversed = false, spread = 1.0, ratio = 0.5)
 
         image(transition.transition.bmp)
 

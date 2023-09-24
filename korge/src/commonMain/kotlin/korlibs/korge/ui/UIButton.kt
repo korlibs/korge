@@ -46,19 +46,19 @@ open class UIButton(
 	var forcePressed = false
 
     private var _radiusRatio: Ratio = Ratio.NaN
-    private var _radius: Float = 6f
+    private var _radius: Double = 6.0
 
-    private val halfSide: Int get() = min(widthD, heightD).toInt() / 2
+    private val halfSide: Int get() = min(width, height).toInt() / 2
 
     var radiusRatio: Ratio
-        get() = if (!_radiusRatio.isNaN()) _radiusRatio else Ratio(_radius, halfSide.toFloat())
+        get() = if (!_radiusRatio.isNaN()) _radiusRatio else Ratio(_radius, halfSide.toDouble())
         set(value) {
             _radiusRatio = value
-            _radius = Float.NaN
+            _radius = Double.NaN
             setInitialState()
         }
 
-    var radius: Float
+    var radius: Double
         get() = if (!_radius.isNaN()) _radius else _radiusRatio.value * halfSide
         set(value) {
             _radius = value
@@ -117,7 +117,7 @@ open class UIButton(
 
     //protected val textShadowView = text("", 16.0)
     @ViewProperty(min = 1.0, max = 300.0)
-    var textSize: Float
+    var textSize: Double
         get() = richText.defaultStyle.textSize
         set(value) {
             richText = richText.withStyle(richText.defaultStyle.copy(textSize = value))
@@ -152,12 +152,12 @@ open class UIButton(
         }
 
     private fun setInitialState() {
-        val width = widthD
-        val height = heightD
+        val width = this.width
+        val height = this.height
         background.size(width, height)
         //background.setSize(width, height)
         background.radius = RectCorners(this.radius)
-        background.shadowRadius = if (elevation) 10f else 0f
+        background.shadowRadius = if (elevation) 10.0 else 0.0
         //textView.setSize(width, height)
 
         textView.size(width, height)
@@ -198,7 +198,7 @@ open class UIButton(
 		bpressing = value
 	}
 
-    fun simulateDown(x: Float = 0.5f, y: Float = 0.5f) = simulateDown(Point(x, y))
+    fun simulateDown(x: Double = 0.5, y: Double = 0.5) = simulateDown(Point(x, y))
 	fun simulateDown(p: Point) {
         if (bpressing) return
 		bpressing = true
@@ -334,7 +334,7 @@ open class UIButton(
 
     init {
         keys {
-            down(Key.SPACE, Key.RETURN) { if (this@UIButton.focused) simulateDown(0.5f, 0.5f) }
+            down(Key.SPACE, Key.RETURN) { if (this@UIButton.focused) simulateDown(0.5, 0.5) }
             up(Key.SPACE, Key.RETURN) {
                 if (bpressing) {
                     simulateUp()

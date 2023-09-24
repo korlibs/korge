@@ -4,11 +4,11 @@ import assertEqualsFloat
 import korlibs.graphics.log.*
 import korlibs.image.color.*
 import korlibs.io.async.*
-import korlibs.io.util.*
 import korlibs.korge.render.*
 import korlibs.math.geom.*
 import korlibs.math.geom.bezier.*
 import korlibs.math.geom.vector.*
+import korlibs.math.interpolation.*
 import korlibs.number.*
 import korlibs.platform.*
 import kotlin.test.*
@@ -50,16 +50,16 @@ class GraphicsTest {
                 rect(0, 0, 100, 100)
             }
         }.also { g ->
-            assertEquals(100.0, g.widthD)
-            assertEquals(100.0, g.heightD)
+            assertEquals(100.0, g.width)
+            assertEquals(100.0, g.height)
         }
         CpuGraphics().updateShape {
             fill(Colors.RED) {
                 rect(10, 10, 100, 100)
             }
         }.also { g ->
-            assertEquals(100.0, g.widthD)
-            assertEquals(100.0, g.heightD)
+            assertEquals(100.0, g.width)
+            assertEquals(100.0, g.height)
         }
     }
 
@@ -141,7 +141,7 @@ class GraphicsTest {
             stroke(Colors.WHITE, info = StrokeInfo(thickness = 2f)) {
                 cubic(p0, p1, p2, p3)
             }
-            val ratio = 0.3f
+            val ratio = 0.3.toRatio()
 
             val cubic2 = Bezier(p0, p1, p2, p3).split(ratio).leftCurve
             val cubic3 = Bezier(p0, p1, p2, p3).split(ratio).rightCurve
@@ -160,7 +160,7 @@ class GraphicsTest {
     @Test
     fun testScale() {
         val container = Container()
-        container.scaleD = 2.0
+        container.scale = 2.0
         val graphics = CpuGraphics(autoScaling = true).addTo(container)
         graphics.updateShape(redrawNow = true) { fill(Colors.RED) { rect(50, 50, 100, 100) } }
         graphics.anchor(Anchor(0.75, 0.5))

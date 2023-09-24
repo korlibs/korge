@@ -15,10 +15,10 @@ class MainConnect4 : ScaledScene(448, 384) {
     override suspend fun SContainer.sceneMain() {
         //sceneContainer.setSize(300.0, 300.0)
         val redChip = Bitmap32Context2d(64, 64) {
-            fill(Colors.RED) { circle(Point(32, 32), 26f) }
+            fill(Colors.RED) { circle(Point(32, 32), 26.0) }
         }
         val yellowChip = Bitmap32Context2d(64, 64) {
-            fill(Colors.YELLOW) { circle(Point(32, 32), 26f) }
+            fill(Colors.YELLOW) { circle(Point(32, 32), 26.0) }
         }
         val emptyChip = Bitmap32Context2d(64, 64) {
         }
@@ -36,7 +36,7 @@ class MainConnect4 : ScaledScene(448, 384) {
                 rect(0.0, 0.0, width.toDouble(), height.toDouble())
                 for (row in 0 until nrows) {
                     for (col in 0 until ncols) {
-                        circle(Point(32.0 + col * 64, 32.0 + row * 64), 24f)
+                        circle(Point(32.0 + col * 64, 32.0 + row * 64), 24.0)
                     }
                 }
             }

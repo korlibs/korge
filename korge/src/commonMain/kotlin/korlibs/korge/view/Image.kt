@@ -10,7 +10,7 @@ import korlibs.math.geom.*
 import korlibs.math.geom.vector.*
 
 inline fun Container.image(
-	texture: Resourceable<out BaseBmpSlice>, anchor: Anchor = Anchor.TOP_LEFT, callback: @ViewDslMarker Image.() -> Unit = {}
+    texture: Resourceable<out BaseBmpSlice>, anchor: Anchor = Anchor.TOP_LEFT, callback: @ViewDslMarker Image.() -> Unit = {}
 ): Image = Image(texture, anchor).addTo(this, callback)
 
 inline fun Container.image(
@@ -18,7 +18,7 @@ inline fun Container.image(
 ): Image = Image(texture, anchor).addTo(this, callback)
 
 inline fun Container.image(
-	texture: Bitmap, anchor: Anchor = Anchor.TOP_LEFT, callback: @ViewDslMarker Image.() -> Unit = {}
+    texture: Bitmap, anchor: Anchor = Anchor.TOP_LEFT, callback: @ViewDslMarker Image.() -> Unit = {}
 ): Image = Image(texture, anchor).addTo(this, callback)
 
 //typealias Sprite = Image
@@ -102,8 +102,8 @@ open class BaseImage(
     open val frameWidth: Float get() = baseBitmap.frameWidth.toFloat()
     open val frameHeight: Float get() = baseBitmap.frameHeight.toFloat()
 
-    open val anchorDispXNoOffset: Float get() = (anchor.sx * frameWidth)
-    open val anchorDispYNoOffset: Float get() = (anchor.sy * frameHeight)
+    open val anchorDispXNoOffset: Float get() = (anchor.sx * frameWidth).toFloat()
+    open val anchorDispYNoOffset: Float get() = (anchor.sy * frameHeight).toFloat()
 
     override val anchorDispX: Float get() = (anchorDispXNoOffset - frameOffsetX)
     override val anchorDispY: Float get() = (anchorDispYNoOffset - frameOffsetY)
@@ -121,10 +121,10 @@ interface SmoothedBmpSlice {
 }
 
 class Image(
-	bitmap: Resourceable<out BitmapCoords>,
+    bitmap: Resourceable<out BitmapCoords>,
     anchor: Anchor = Anchor.TOP_LEFT,
-	hitShape: VectorPath? = null,
-	smoothing: Boolean = true
+    hitShape: VectorPath? = null,
+    smoothing: Boolean = true
 ) : BaseImage(bitmap, anchor, hitShape, smoothing), ViewFileRef by ViewFileRef.Mixin(), SmoothedBmpSlice {
     constructor(
         bitmap: BitmapCoords,
@@ -139,10 +139,10 @@ class Image(
     private var imageSourceFile: String? by this::sourceFile
 
     constructor(
-		bitmap: Bitmap,
+        bitmap: Bitmap,
         anchor: Anchor = Anchor.TOP_LEFT,
-		hitShape: VectorPath? = null,
-		smoothing: Boolean = true
+        hitShape: VectorPath? = null,
+        smoothing: Boolean = true
 	) : this(bitmap.slice(), anchor, hitShape, smoothing)
 
     override fun createInstance(): View = Image(bitmap, anchor, hitShape, smoothing)
@@ -157,10 +157,10 @@ class Image(
         //println("### Trying to load sourceImage=$sourceImage")
         try {
             bitmap = currentVfs["$sourceFile"].readBitmapSlice()
-            scaleD = 1.0
+            scale = 1.0
         } catch (e: Throwable) {
             bitmap = Bitmaps.white
-            scaleD = 100.0
+            scale = 100.0
         }
     }
 }

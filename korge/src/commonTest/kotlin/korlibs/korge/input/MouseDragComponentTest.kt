@@ -13,11 +13,11 @@ class MouseDragComponentTest : ViewsForTesting(
 ) {
     @Test
     fun testStageScale() = viewsTest {
-        assertEquals(1.0, stage.scaleD)
+        assertEquals(1.0, stage.scale)
         assertEquals(Matrix.IDENTITY, stage.localMatrix)
-        assertEquals(1f, views.devicePixelRatio)
-        assertEquals(.5f, views.windowToGlobalScaleX)
-        assertEquals(2f, views.globalToWindowScaleX)
+        assertEquals(1.0, views.devicePixelRatio)
+        assertEquals(.5, views.windowToGlobalScaleX)
+        assertEquals(2.0, views.globalToWindowScaleX)
     }
 
     @Test

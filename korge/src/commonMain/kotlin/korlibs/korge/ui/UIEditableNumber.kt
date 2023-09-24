@@ -42,8 +42,8 @@ class UIEditableNumber(value: Double = 0.0, min: Double = 0.0, max: Double = 1.0
 
     override fun onSizeChanged() {
         super.onSizeChanged()
-        textView.size(widthD, heightD)
-        textInputView.size(widthD, heightD)
+        textView.size(width, height)
+        textInputView.size(width, height)
     }
 
     private fun getValueText(value: Double = this.value): String {

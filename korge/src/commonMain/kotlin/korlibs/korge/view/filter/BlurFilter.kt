@@ -5,11 +5,19 @@ import korlibs.math.geom.*
 import kotlin.math.*
 
 class BlurFilter(
-    radius: Float = 4f,
+    radius: Double = 4.0,
     expandBorder: Boolean = true,
     @ViewProperty
     var optimize: Boolean = true
 ) : ComposedFilter(), FilterWithFiltering {
+    companion object {
+        inline operator fun invoke(
+            radius: Number,
+            expandBorder: Boolean = true,
+            optimize: Boolean = true
+        ): BlurFilter = BlurFilter(radius.toDouble(), expandBorder, optimize)
+    }
+
     private val horizontal = DirectionalBlurFilter(angle = 0.degrees, radius, expandBorder).also { filters.add(it) }
     private val vertical = DirectionalBlurFilter(angle = 90.degrees, radius, expandBorder).also { filters.add(it) }
     override var filtering: Boolean
@@ -26,13 +34,13 @@ class BlurFilter(
             vertical.expandBorder = value
         }
     @ViewProperty
-    var radius: Float = radius
+    var radius: Double = radius
         set(value) {
             field = value
             horizontal.radius = radius
             vertical.radius = radius
         }
-    override val recommendedFilterScale: Float get() = if (!optimize || radius <= 2.0) 1f else 1f / log2(radius.toFloat() * 0.5f)
+    override val recommendedFilterScale: Double get() = if (!optimize || radius <= 2.0) 1.0 else 1.0 / log2(radius * 0.5)
 
-    override val isIdentity: Boolean get() = radius == 0f
+    override val isIdentity: Boolean get() = radius == 0.0
 }

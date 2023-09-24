@@ -6,7 +6,7 @@ import kotlin.math.*
 /**
  * Rotations around Z axis, then X axis, then Y axis in that order.
  */
-inline class EulerRotation private constructor(val data: Vector4) {
+inline class EulerRotation private constructor(val data: Vector4F) : IsAlmostEqualsF<EulerRotation> {
     val config: Config get() = Config(data.w.toInt())
     val order: Order get() = config.order
     val coordinateSystem: CoordinateSystem get() = config.coordinateSystem
@@ -85,14 +85,14 @@ inline class EulerRotation private constructor(val data: Vector4) {
     fun copy(roll: Angle = this.roll, pitch: Angle = this.pitch, yaw: Angle = this.yaw): EulerRotation = EulerRotation(roll, pitch, yaw)
     constructor() : this(Angle.ZERO, Angle.ZERO, Angle.ZERO)
     constructor(roll: Angle, pitch: Angle, yaw: Angle, config: Config = Config.DEFAULT)
-        : this(Vector4(roll.ratio, pitch.ratio, yaw.ratio, config.id.toFloat()))
+        : this(Vector4F(roll.ratio.toFloat(), pitch.ratio.toFloat(), yaw.ratio.toFloat(), config.id.toFloat()))
 
     fun normalized(): EulerRotation = EulerRotation(roll.normalized, pitch.normalized, yaw.normalized)
     fun normalizedHalf(): EulerRotation = EulerRotation(roll.normalizedHalf, pitch.normalizedHalf, yaw.normalizedHalf)
 
     fun toMatrix(): Matrix4 = toQuaternion().toMatrix()
     fun toQuaternion(): Quaternion = _toQuaternion(x, y, z, config)
-    fun isAlmostEquals(other: EulerRotation, epsilon: Float = 0.00001f): Boolean =
+    override fun isAlmostEquals(other: EulerRotation, epsilon: Float): Boolean =
         this.data.isAlmostEquals(other.data, epsilon)
 
     companion object {

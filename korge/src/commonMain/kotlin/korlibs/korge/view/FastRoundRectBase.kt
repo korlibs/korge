@@ -17,9 +17,9 @@ abstract class FastRoundRectBase(
         ctx[SDFUB].push {
             it[u_Corners] = cornersRatio
             it[u_Scale] = when {
-                !doScale || widthD == heightD -> Point(1f, 1f)
-                widthD > heightD -> Point(widthD / heightD, 1.0)
-                else -> Point(1.0, heightD / widthD)
+                !doScale || width == height -> Point(1.0, 1.0)
+                width > height -> Point(width / height, 1.0)
+                else -> Point(1.0, height / width)
             }
         }
         super.renderInternal(ctx)

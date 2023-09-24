@@ -6,19 +6,19 @@ inline class BoundsBuilder(val bounds: Rectangle) {
     val isEmpty: Boolean get() = bounds.isNIL
     val isNotEmpty: Boolean get() = bounds.isNotNIL
 
-    val xmin: Float get() = kotlin.math.min(bounds.left, bounds.right)
-    val xmax: Float get() = kotlin.math.max(bounds.left, bounds.right)
-    val ymin: Float get() = kotlin.math.min(bounds.top, bounds.bottom)
-    val ymax: Float get() = kotlin.math.max(bounds.top, bounds.bottom)
+    val xmin: Double get() = kotlin.math.min(bounds.left, bounds.right)
+    val xmax: Double get() = kotlin.math.max(bounds.left, bounds.right)
+    val ymin: Double get() = kotlin.math.min(bounds.top, bounds.bottom)
+    val ymax: Double get() = kotlin.math.max(bounds.top, bounds.bottom)
 
     /** Minimum value found for X. [default] if ![hasPoints] */
-    fun xminOr(default: Float = 0f): Float = if (hasPoints) xmin else default
+    fun xminOr(default: Double = 0.0): Double = if (hasPoints) xmin else default
     /** Maximum value found for X. [default] if ![hasPoints] */
-    fun xmaxOr(default: Float = 0f): Float = if (hasPoints) xmax else default
+    fun xmaxOr(default: Double = 0.0): Double = if (hasPoints) xmax else default
     /** Minimum value found for Y. [default] if ![hasPoints] */
-    fun yminOr(default: Float = 0f): Float = if (hasPoints) ymin else default
+    fun yminOr(default: Double = 0.0): Double = if (hasPoints) ymin else default
     /** Maximum value found for Y. [default] if ![hasPoints] */
-    fun ymaxOr(default: Float = 0f): Float = if (hasPoints) ymax else default
+    fun ymaxOr(default: Double = 0.0): Double = if (hasPoints) ymax else default
 
     val hasPoints: Boolean get() = isNotEmpty
 

@@ -34,16 +34,16 @@ open class ChartBars(val list: List<DataPoint>) : Chart() {
         color: RGBA,
         width: Float = 1.2f
     ) {
-        lineWidth = width
+        lineWidth = width.toDouble()
         beginPath()
         moveTo(Point(x0, y0))
         lineTo(Point(x1, y1))
         stroke(createColor(color))
     }
 
-    private fun Context2d.renderRefLine(rect: Rectangle, y: Float, value: String, important: Boolean) {
+    private fun Context2d.renderRefLine(rect: Rectangle, y: Double, value: String, important: Boolean) {
         val x = rect.left
-        renderLine(x, y, rect.right, y, if (important) Colors.BLACK else Colors.DARKGREY)
+        renderLine(x.toFloat(), y.toFloat(), rect.right.toFloat(), y.toFloat(), if (important) Colors.BLACK else Colors.DARKGREY)
         fillText(
             value,
             Point(x - 2, y),
@@ -52,8 +52,8 @@ open class ChartBars(val list: List<DataPoint>) : Chart() {
         )
     }
 
-    val DataPoint.ratio get() = values.first() / maxValue
-    val DataPoint.rRatio get() = values.first() / rMaxValue
+    val DataPoint.ratio: Double get() = values.first() / maxValue
+    val DataPoint.rRatio: Double get() = values.first() / rMaxValue
 
     private fun Context2d.renderReferenceLines(rect: Rectangle) {
         for (n in 0 until 5) {

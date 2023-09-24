@@ -17,7 +17,7 @@ class MainNinePatch : Scene() {
         }
         np.mouse {
             moveAnywhere {
-                np.unscaledSize = it.currentPosLocal.clamp(Vector2(16f, 16f), Vector2(width, height)).toSize()
+                np.unscaledSize = it.currentPosLocal.clamp(Vector2D(16f, 16f), Vector2D(width, height)).toSize()
             }
         }
     }

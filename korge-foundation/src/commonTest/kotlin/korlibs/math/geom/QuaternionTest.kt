@@ -5,35 +5,35 @@ import kotlin.test.*
 class QuaternionTest {
     @Test
     fun testTransformMatrix() {
-        assertEqualsFloat(Vector3.RIGHT, Quaternion.fromVectors(Vector3.UP, Vector3.RIGHT).toMatrix().transform(Vector3.UP))
+        assertEqualsFloat(Vector3F.RIGHT, Quaternion.fromVectors(Vector3F.UP, Vector3F.RIGHT).toMatrix().transform(Vector3F.UP))
     }
 
     @Test
     fun testTransformQuat() {
-        assertEqualsFloat(Vector3.RIGHT, Quaternion.fromVectors(Vector3.UP, Vector3.RIGHT).transform(Vector3.UP))
+        assertEqualsFloat(Vector3F.RIGHT, Quaternion.fromVectors(Vector3F.UP, Vector3F.RIGHT).transform(Vector3F.UP))
     }
 
     @Test
     fun testScaled() {
-        assertEqualsFloat(Vector3.UP, Quaternion.fromVectors(Vector3.UP, Vector3.RIGHT).scaled(0f).transform(Vector3.UP))
-        assertEqualsFloat(Vector3.RIGHT, Quaternion.fromVectors(Vector3.UP, Vector3.RIGHT).scaled(1f).transform(Vector3.UP))
-        assertEqualsFloat(Vector3.LEFT, Quaternion.fromVectors(Vector3.UP, Vector3.RIGHT).scaled(-1f).transform(Vector3.UP))
-        assertEqualsFloat(Vector3.DOWN, Quaternion.fromVectors(Vector3.UP, Vector3.RIGHT).scaled(2f).transform(Vector3.UP))
+        assertEqualsFloat(Vector3F.UP, Quaternion.fromVectors(Vector3F.UP, Vector3F.RIGHT).scaled(0f).transform(Vector3F.UP))
+        assertEqualsFloat(Vector3F.RIGHT, Quaternion.fromVectors(Vector3F.UP, Vector3F.RIGHT).scaled(1f).transform(Vector3F.UP))
+        assertEqualsFloat(Vector3F.LEFT, Quaternion.fromVectors(Vector3F.UP, Vector3F.RIGHT).scaled(-1f).transform(Vector3F.UP))
+        assertEqualsFloat(Vector3F.DOWN, Quaternion.fromVectors(Vector3F.UP, Vector3F.RIGHT).scaled(2f).transform(Vector3F.UP))
     }
 
     @Test
     fun testInverse() {
         assertEqualsFloat(
             Quaternion.IDENTITY,
-            Quaternion.fromVectors(Vector3.UP, Vector3.RIGHT) * Quaternion.fromVectors(Vector3.UP, Vector3.RIGHT).inverted()
+            Quaternion.fromVectors(Vector3F.UP, Vector3F.RIGHT) * Quaternion.fromVectors(Vector3F.UP, Vector3F.RIGHT).inverted()
         )
         assertEqualsFloat(
-            Quaternion.fromVectors(Vector3.UP, Vector3.LEFT),
-            Quaternion.fromVectors(Vector3.UP, Vector3.RIGHT).inverted()
+            Quaternion.fromVectors(Vector3F.UP, Vector3F.LEFT),
+            Quaternion.fromVectors(Vector3F.UP, Vector3F.RIGHT).inverted()
         )
         assertEqualsFloat(
-            Quaternion.fromVectors(Vector3.UP, Vector3.RIGHT),
-            Quaternion.fromVectors(Vector3.UP, Vector3.LEFT).inverted()
+            Quaternion.fromVectors(Vector3F.UP, Vector3F.RIGHT),
+            Quaternion.fromVectors(Vector3F.UP, Vector3F.LEFT).inverted()
         )
     }
 
@@ -42,8 +42,8 @@ class QuaternionTest {
         assertEqualsFloat(
             90.degrees,
             Angle.between(
-                Quaternion.fromVectors(Vector3.UP, Vector3.UP),
-                Quaternion.fromVectors(Vector3.UP, Vector3.RIGHT) * 1f
+                Quaternion.fromVectors(Vector3F.UP, Vector3F.UP),
+                Quaternion.fromVectors(Vector3F.UP, Vector3F.RIGHT) * 1f
             )
         )
         assertEqualsFloat(
@@ -51,8 +51,8 @@ class QuaternionTest {
             Angle.between(
                 Quaternion.IDENTITY,
                 Quaternion.interpolated(
-                    Quaternion.fromVectors(Vector3.UP, Vector3.UP),
-                    Quaternion.fromVectors(Vector3.UP, Vector3.RIGHT),
+                    Quaternion.fromVectors(Vector3F.UP, Vector3F.UP),
+                    Quaternion.fromVectors(Vector3F.UP, Vector3F.RIGHT),
                     .5f
                 )
             )
@@ -60,9 +60,9 @@ class QuaternionTest {
         assertEqualsFloat(
             90.degrees,
             Quaternion.IDENTITY.angleTo(
-                Quaternion.fromVectors(Vector3.UP, Vector3.UP)
+                Quaternion.fromVectors(Vector3F.UP, Vector3F.UP)
                     .interpolated(
-                        Quaternion.fromVectors(Vector3.UP, Vector3.DOWN),
+                        Quaternion.fromVectors(Vector3F.UP, Vector3F.DOWN),
                         .5f
                     )
             )
@@ -169,22 +169,22 @@ class QuaternionTest {
     fun testLookRotation() {
         assertEqualsFloat(
             EulerRotation(0.degrees, 270.degrees, 0.degrees),
-            Quaternion.lookRotation(Vector3.LEFT, Vector3.UP).toEuler(EulerRotation.Config.UNITY).normalized(),
+            Quaternion.lookRotation(Vector3F.LEFT, Vector3F.UP).toEuler(EulerRotation.Config.UNITY).normalized(),
         )
         assertEqualsFloat(
             EulerRotation(0.degrees, (90).degrees, 0.degrees),
-            Quaternion.lookRotation(Vector3.RIGHT).toEuler(EulerRotation.Config.UNITY).normalized(),
+            Quaternion.lookRotation(Vector3F.RIGHT).toEuler(EulerRotation.Config.UNITY).normalized(),
         )
         assertEqualsFloat(Quaternion(0f, 0f, 0f, 1f), Quaternion.IDENTITY)
-        assertEqualsFloat(Quaternion(0f, 1f, 0f, 0f), Quaternion.lookRotation(Vector3.BACK))
+        assertEqualsFloat(Quaternion(0f, 1f, 0f, 0f), Quaternion.lookRotation(Vector3F.BACK))
         assertEqualsFloat(
             EulerRotation(0.degrees, (180).degrees, 0.degrees),
-            Quaternion.lookRotation(Vector3.BACK).toEuler(EulerRotation.Config.UNITY).normalized(),
+            Quaternion.lookRotation(Vector3F.BACK).toEuler(EulerRotation.Config.UNITY).normalized(),
         )
         //println("Quaternion.fromVectors(Vector3.UP, Vector3.FORWARD)=${Quaternion.fromVectors(Vector3.UP, Vector3.FORWARD)}")
         assertEqualsFloat(
             EulerRotation(90.degrees, 0.degrees, 0.degrees),
-            Quaternion.fromVectors(Vector3.UP, Vector3.FORWARD).toEuler(EulerRotation.Config.UNITY).normalized(),
+            Quaternion.fromVectors(Vector3F.UP, Vector3F.FORWARD).toEuler(EulerRotation.Config.UNITY).normalized(),
         )
     }
 
@@ -193,15 +193,15 @@ class QuaternionTest {
     fun testLookRotation2() {
         assertEqualsFloat(
             EulerRotation((-90).degrees, 0.degrees, 0.degrees),
-            Quaternion.lookRotation(Vector3.UP, Vector3.DOWN).toEuler(EulerRotation.Config.UNITY).normalized(),
+            Quaternion.lookRotation(Vector3F.UP, Vector3F.DOWN).toEuler(EulerRotation.Config.UNITY).normalized(),
         )
         assertEqualsFloat(
             Quaternion(.5f, -.5f, -.5f, .5f),
-            Quaternion.lookRotation(Vector3.LEFT, Vector3.FORWARD),
+            Quaternion.lookRotation(Vector3F.LEFT, Vector3F.FORWARD),
         )
         assertEqualsFloat(
             EulerRotation((-90).degrees, 0.degrees, 90.degrees),
-            Quaternion.lookRotation(Vector3.LEFT, Vector3.FORWARD).toEuler(EulerRotation.Config.UNITY).normalized(),
+            Quaternion.lookRotation(Vector3F.LEFT, Vector3F.FORWARD).toEuler(EulerRotation.Config.UNITY).normalized(),
         )
     }
 }

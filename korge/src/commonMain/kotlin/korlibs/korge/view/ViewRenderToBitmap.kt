@@ -15,7 +15,7 @@ private val logger = Logger("RenderToBitmap")
  * Asynchronously renders this [View] (with the provided [views]) to a [Bitmap32] and returns it.
  * The rendering will happen before the next frame.
  */
-suspend fun View.renderToBitmap(views: Views? = this.stage?.views, region: Rectangle? = null, scale: Float = 1f, outPoint: Ref<Point>? = null, includeBackground: Boolean = false): Bitmap32 {
+suspend fun View.renderToBitmap(views: Views? = this.stage?.views, region: Rectangle? = null, scale: Double = 1.0, outPoint: Ref<Point>? = null, includeBackground: Boolean = false): Bitmap32 {
     if (views == null) {
         logger.warn { "View.renderToBitmap Views not specified" }
         return Bitmap32(1, 1, Colors.TRANSPARENT.premultiplied)
@@ -39,7 +39,7 @@ suspend fun View.renderToBitmap(views: Views? = this.stage?.views, region: Recta
 fun View.unsafeRenderToBitmapSync(
     ctx: RenderContext,
     region: Rectangle? = null,
-    scale: Float = 1f,
+    scale: Double = 1.0,
     outPoint: Ref<Point>? = null,
     useTexture: Boolean = true,
     bgcolor: RGBA = Colors.TRANSPARENT

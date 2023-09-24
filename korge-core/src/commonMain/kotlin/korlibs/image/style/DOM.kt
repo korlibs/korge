@@ -3,6 +3,7 @@ package korlibs.image.style
 import korlibs.datastructure.iterators.*
 import korlibs.image.annotation.*
 import korlibs.math.geom.*
+import korlibs.math.interpolation.*
 import kotlin.jvm.*
 import kotlin.reflect.*
 
@@ -41,10 +42,10 @@ open class DOM(val css: CSS) {
         }
         class RatioMapping(
             override val name: String,
-            override val property: KMutableProperty1<DomElement, Float?>
-        ) : Mapping<Float?> {
+            override val property: KMutableProperty1<DomElement, Double?>
+        ) : Mapping<Double?> {
             override fun set(element: DomElement, prop: String, value: Any?) {
-                property.set(element, getRatio(prop, value))
+                property.set(element, getRatio(prop, value).toDouble())
             }
         }
         class MatrixMapping(
@@ -58,8 +59,8 @@ open class DOM(val css: CSS) {
 
         val mappings = HashMap<String, Mapping<*>>()
         @JvmName("addRatio")
-        fun add(name: String, property: KMutableProperty1<out DomElement, out Float?>): DomPropertyMapping = this.apply { mappings[name] = RatioMapping(name,
-            property as KMutableProperty1<DomElement, Float?>
+        fun add(name: String, property: KMutableProperty1<out DomElement, out Double?>): DomPropertyMapping = this.apply { mappings[name] = RatioMapping(name,
+            property as KMutableProperty1<DomElement, Double?>
         ) }
         @JvmName("addMatrix")
         fun add(name: String, property: KMutableProperty1<out DomElement, out Matrix>): DomPropertyMapping = this.apply { mappings[name] = MatrixMapping(name,
@@ -138,12 +139,12 @@ open class DOM(val css: CSS) {
             is CSS.Expression -> value.matrix
             else -> Matrix.IDENTITY
         }
-        fun getRatio(prop: String, value: Any?): Float = when (value) {
-            is Float -> value
-            is Double -> value.toFloat()
+        fun getRatio(prop: String, value: Any?): Ratio = when (value) {
+            is Float -> value.toRatio()
+            is Double -> value.toRatio()
             is CSS.InterpolationResult -> value.getRatio(prop)
             is CSS.Expression -> value.ratio
-            else -> 0f
+            else -> Ratio.ZERO
         }
     }
 }

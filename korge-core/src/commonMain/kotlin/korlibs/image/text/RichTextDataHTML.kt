@@ -30,7 +30,7 @@ fun RichTextData.Companion.fromHTML(
             bold = if (node.nameLC == "b" || node.nameLC == "strong") true else style.bold,
             italic = if (node.nameLC == "i" || node.nameLC == "em") true else style.italic,
             underline = if (node.nameLC == "u") true else style.underline,
-            textSize = node.floatNull("size") ?: style.textSize,
+            textSize = node.doubleNull("size") ?: style.textSize,
             color = node.strNull("color")?.let { Colors[it] } ?: style.color,
         )
 

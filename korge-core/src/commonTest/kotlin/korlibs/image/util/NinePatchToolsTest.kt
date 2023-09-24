@@ -8,22 +8,22 @@ import kotlin.test.*
 class NinePatchToolsTest {
     @Test
     fun testTransform1D() {
-        val result = NinePatchSlices(4f until 9f).transform1D(
+        val result = NinePatchSlices(4.0 until 9.0).transform1D(
             listOf(
-                floatArrayListOf(1f),
-                floatArrayListOf(5f),
-                floatArrayListOf(10f),
-                floatArrayListOf(15f),
+                doubleArrayListOf(1.0),
+                doubleArrayListOf(5.0),
+                doubleArrayListOf(10.0),
+                doubleArrayListOf(15.0),
             ),
-            oldLen = 15f,
-            newLen = 32f
+            oldLen = 15.0,
+            newLen = 32.0,
         )
         assertEquals(
             listOf(
-                floatArrayListOf(1f),
-                floatArrayListOf(8.4f),
-                floatArrayListOf(27f),
-                floatArrayListOf(32f),
+                doubleArrayListOf(1.0),
+                doubleArrayListOf(8.4),
+                doubleArrayListOf(27.0),
+                doubleArrayListOf(32.0),
             ),
             result.toList()
         )
@@ -32,8 +32,8 @@ class NinePatchToolsTest {
     @Test
     fun testTransform2D() {
         val result = NinePatchSlices2D(
-            x = NinePatchSlices(4f until 9f),
-            y = NinePatchSlices(4f until 9f),
+            x = NinePatchSlices(4.0 until 9.0),
+            y = NinePatchSlices(4.0 until 9.0),
         ).transform2D(
             listOf(
                 pointArrayListOf(Point(1, 1)),
@@ -48,7 +48,7 @@ class NinePatchToolsTest {
         assertEquals(
             listOf(
                 pointArrayListOf(Point(1, 1)),
-                pointArrayListOf(Point(8.4f, 14.8f)),
+                pointArrayListOf(Point(8.4, 14.8)),
                 pointArrayListOf(Point(27, 59)),
                 pointArrayListOf(Point(32, 64)),
             ),

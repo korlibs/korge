@@ -2,15 +2,11 @@ package korlibs.korge.awt
 
 import korlibs.datastructure.*
 import korlibs.event.Event
-import korlibs.image.bitmap.*
-import korlibs.image.color.*
 import korlibs.io.async.*
 import korlibs.korge.internal.*
 import korlibs.korge.view.*
 import korlibs.korge.view.Container
-import korlibs.korge.view.Ellipse
-import korlibs.korge.view.Image
-import korlibs.math.geom.*
+import korlibs.math.geom.Point
 import java.awt.*
 import java.awt.event.*
 import java.awt.event.KeyEvent
@@ -195,7 +191,7 @@ internal class ViewsDebuggerComponent constructor(
                                 it.isEnabled = isContainer
                                 it.addActionListener {
                                     actions.attachNewView(factory.build().also {
-                                        it.globalPos = Vector2(views.virtualWidthFloat * 0.5f, views.virtualHeightFloat * 0.5f)
+                                        it.globalPos = Point(views.virtualWidthDouble * 0.5, views.virtualHeightDouble * 0.5)
                                     })
                                 }
                             })

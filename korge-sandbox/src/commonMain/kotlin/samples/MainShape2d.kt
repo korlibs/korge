@@ -26,7 +26,7 @@ class MainShape2dScene : Scene() {
         val cursorShape = buildVectorPath { star(7, 10.0, 16.0) }
 
         val shapes = listOf(
-            Circle(Point(100, 100), radius = 50f),
+            Circle(Point(100, 100), radius = 50),
             Ellipse(Point(100, 100), radius = Size(50f, 30f)),
             Rectangle(50, 50, 250, 100),
             RoundRectangle(Rectangle(50, 50, 250, 100), RectCorners(10f, 15f, 20f, 30f)),
@@ -44,7 +44,7 @@ class MainShape2dScene : Scene() {
 
             //println("intersections=$intersections")
 
-            gpuShapeView.alpha = if (intersects) 1f else 0.5f
+            gpuShapeView.alpha = if (intersects) 1.0 else 0.5
             //println("intersects=$intersects")
             try {
                 cursor.pos = pos
@@ -53,7 +53,7 @@ class MainShape2dScene : Scene() {
                 projected.pos = projectedPos
                 normalVectorView.pos = projectedPos
                 normalVectorView.updateShape {
-                    stroke(Colors.GREEN, lineWidth = 4f) {
+                    stroke(Colors.GREEN, lineWidth = 4.0) {
                         moveTo(0, 0)
                         lineTo(shape.normalVectorAt(pos) * 10)
                     }
@@ -61,7 +61,7 @@ class MainShape2dScene : Scene() {
                 annotationsView.updateShape {
                     intersections.fastForEach { p ->
                         fill(Colors.RED) {
-                            circle(p, 4f)
+                            circle(p, 4.0)
                         }
                     }
                 }
@@ -75,7 +75,7 @@ class MainShape2dScene : Scene() {
                 if (vectorPath.isLastCommandClose) {
                     fill(Colors.WHITE) { path(vectorPath) }
                 } else {
-                    stroke(Colors.WHITE, lineWidth = 4f) { path(vectorPath) }
+                    stroke(Colors.WHITE, lineWidth = 4.0) { path(vectorPath) }
                 }
             }
             textAreaView.text = "area: ${shape.area}"

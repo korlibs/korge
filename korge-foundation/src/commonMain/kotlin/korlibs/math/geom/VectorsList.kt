@@ -7,15 +7,13 @@ import korlibs.math.annotations.*
 import korlibs.number.*
 import kotlin.math.*
 
-sealed interface PointList : IVectorArrayList, Extra {
+sealed interface PointList : DoubleVectorList, Extra {
     override val dimensions: Int get() = 2
-    override fun get(index: Int, dim: Int): Float = if (dim == 0) getX(index) else getY(index)
-    @Deprecated("")
-    fun getX(index: Int): Float
-    @Deprecated("")
-    fun getY(index: Int): Float
+    //override fun get(index: Int, dim: Int): Double
+    fun getX(index: Int): Double = get(index, 0)
+    fun getY(index: Int): Double = get(index, 1)
 
-    operator fun get(index: Int): Point = Point(getX(index), getY(index))
+    operator fun get(index: Int): Point = Point(get(index, 0), get(index, 1))
 
     fun toList(): List<Point> = ArrayList<Point>(this.size).also { out -> fastForEach { out.add(it) } }
 
@@ -26,7 +24,7 @@ sealed interface PointList : IVectorArrayList, Extra {
 
 //fun IPointArrayList.getComponent(index: Int, component: Int): Double = if (component == 0) getX(index) else getY(index)
 
-    fun getComponentList(component: Int, out: FloatArray = FloatArray(size)): FloatArray {
+    fun getComponentList(component: Int, out: DoubleArray = DoubleArray(size)): DoubleArray {
         for (n in 0 until size) out[n] = get(n, component)
         return out
     }
@@ -34,15 +32,18 @@ sealed interface PointList : IVectorArrayList, Extra {
     val first: Point get() = get(0)
     val last: Point get() = get(size - 1)
 
-    fun orientation(): Orientation {
+    fun orientationScreen(): Orientation = orientationWithUp(Vector2D.UP_SCREEN)
+    fun orientationStd(): Orientation = orientationWithUp(Vector2D.UP)
+
+    fun orientationWithUp(up: Vector2D): Orientation {
         if (size < 3) return Orientation.COLLINEAR
-        return Orientation.orient2dFixed(getX(0).toDouble(), getY(0).toDouble(), getX(1).toDouble(), getY(1).toDouble(), getX(2).toDouble(), getY(2).toDouble())
+        return Orientation.orient2d(getX(0), getY(0), getX(1), getY(1), getX(2), getY(2))
     }
 
     operator fun contains(p: Point): Boolean = contains(p.x, p.y)
-    fun contains(x: Double, y: Double): Boolean = contains(x.toFloat(), y.toFloat())
-    fun contains(x: Int, y: Int): Boolean = contains(x.toFloat(), y.toFloat())
-    fun contains(x: Float, y: Float): Boolean {
+    fun contains(x: Float, y: Float): Boolean = contains(x.toDouble(), y.toDouble())
+    fun contains(x: Int, y: Int): Boolean = contains(x.toDouble(), y.toDouble())
+    fun contains(x: Double, y: Double): Boolean {
         for (n in 0 until size) if (getX(n) == x && getY(n) == y) return true
         return false
     }
@@ -56,7 +57,6 @@ sealed interface PointList : IVectorArrayList, Extra {
         it.add(this)
         it.add(other)
     }
-
 }
 
 fun PointArrayList.setToRoundDecimalPlaces(places: Int): PointArrayList {
@@ -82,8 +82,18 @@ fun Array<out Point>.toPointArrayList(): PointArrayList = PointArrayList(size).a
 
 open class PointArrayList(capacity: Int = 7) : PointList, Extra by Extra.Mixin() {
     override var closed: Boolean = false
-    private val data = FloatArrayList(capacity * 2)
-    override val size get() = data.size / 2
+    private val data = DoubleArrayList(capacity * 2)
+    override val size: Int get() = data.size / 2
+
+
+
+    override fun get(index: Int, dim: Int): Double = data.getAt(index(index, dim))
+    override fun getX(index: Int): Double = data.getAt(index(index, 0))
+    override fun getY(index: Int): Double = data.getAt(index(index, 1))
+    override fun get(index: Int): Point {
+        val i = index(index, 0)
+        return Point(data.getAt(i), data.getAt(i + 1))
+    }
 
     fun clear(): PointArrayList {
         data.clear()
@@ -124,18 +134,18 @@ open class PointArrayList(capacity: Int = 7) : PointList, Extra by Extra.Mixin()
     /**
      * Adds points with [values] in the format of interleaved (x, y) values.
      */
-    fun addRaw(vararg values: Double) = addRaw(*values.mapFloat { it.toFloat() })
+    fun addRaw(vararg values: Float) = addRaw(*values.mapDouble { it.toDouble() })
 
-    fun addRaw(vararg values: Float) {
+    fun addRaw(vararg values: Double) {
         check(values.size % 2 == 0) { "values not multiple of 2 (x, y) but '${values.size}'" }
         data.add(values)
     }
 
-    fun add(x: Float, y: Float): PointArrayList {
+    fun add(x: Double, y: Double): PointArrayList {
         data.add(x, y)
         return this
     }
-    fun add(x: Double, y: Double) = add(x.toFloat(), y.toFloat())
+    fun add(x: Float, y: Float) = add(x.toDouble(), y.toDouble())
     fun add(x: Int, y: Int) = add(x.toDouble(), y.toDouble())
 
     operator fun plusAssign(other: Point): Unit { add(other) }
@@ -162,20 +172,13 @@ open class PointArrayList(capacity: Int = 7) : PointList, Extra by Extra.Mixin()
 
     private fun index(index: Int, offset: Int): Int = index * 2 + offset
 
-    override fun getX(index: Int): Float = data.getAt(index(index, 0))
-    override fun getY(index: Int): Float = data.getAt(index(index, 1))
-    override fun get(index: Int): Point {
-        val i = index(index, 0)
-        return Point(data.getAt(i), data.getAt(i + 1))
-    }
-
     fun insertAt(index: Int, p: PointArrayList): PointArrayList {
         data.insertAt(index(index, 0), p.data.data, 0, p.data.size)
         return this
     }
 
-    fun insertAt(index: Int, x: Float, y: Float): PointArrayList {
-        data.insertAt(index(index, 0), x.toFloat(), y.toFloat())
+    fun insertAt(index: Int, x: Double, y: Double): PointArrayList {
+        data.insertAt(index(index, 0), x, y)
         return this
     }
 
@@ -192,20 +195,17 @@ open class PointArrayList(capacity: Int = 7) : PointList, Extra by Extra.Mixin()
         removeAt(size - 1)
     }
 
-    fun setX(index: Int, x: Float) { data[index(index, 0)] = x }
-    fun setX(index: Int, x: Int) = setX(index, x.toFloat())
-    fun setX(index: Int, x: Double) = setX(index, x.toFloat())
+    fun setX(index: Int, x: Float) = setX(index, x.toDouble())
+    fun setX(index: Int, x: Int) = setX(index, x.toDouble())
+    fun setX(index: Int, x: Double) { data[index(index, 0)] = x }
 
-    fun setY(index: Int, y: Float) { data[index(index, 1)] = y }
-    fun setY(index: Int, y: Int) = setY(index, y.toFloat())
-    fun setY(index: Int, y: Double) = setY(index, y.toFloat())
+    fun setY(index: Int, y: Float) = setY(index, y.toDouble())
+    fun setY(index: Int, y: Int) = setY(index, y.toDouble())
+    fun setY(index: Int, y: Double) { data[index(index, 1)] = y }
 
-    fun setXY(index: Int, x: Float, y: Float) {
-        data[index(index, 0)] = x
-        data[index(index, 1)] = y
-    }
-    fun setXY(index: Int, x: Int, y: Int) = setXY(index, x.toFloat(), y.toFloat())
-    fun setXY(index: Int, x: Double, y: Double) = setXY(index, x.toFloat(), y.toFloat())
+    fun setXY(index: Int, x: Float, y: Float) = setXY(index, x.toDouble(), y.toDouble())
+    fun setXY(index: Int, x: Int, y: Int) = setXY(index, x.toDouble(), y.toDouble())
+    fun setXY(index: Int, x: Double, y: Double) { data[index(index, 0)] = x; data[index(index, 1)] = y }
     fun setXY(index: Int, p: Point) = setXY(index, p.x, p.y)
     operator fun set(index: Int, p: Point) = setXY(index, p.x, p.y)
 
@@ -314,7 +314,7 @@ open class PointIntArrayList(capacity: Int = 7) : PointIntList, Extra by Extra.M
         xList += x
         yList += y
     }
-    fun add(p: Vector2Int) = add(p.x, p.y)
+    fun add(p: Vector2I) = add(p.x, p.y)
     fun add(p: PointIntList) = this.apply { p.fastForEach { x, y -> add(x, y) } }
     fun addReverse(p: PointIntList) = this.apply { p.fastForEachReverse { x, y -> add(x, y) } }
 
@@ -402,152 +402,162 @@ inline fun PointIntList.fastForEachReverse(block: (x: Int, y: Int) -> Unit) {
 fun List<PointList>.flatten(): PointList =
     PointArrayList(this.sumOf { it.size }).also { out -> this.fastForEach { out.add(it) } }
 
-sealed interface IVectorArrayList : Extra {
+sealed interface DoubleVectorList : Extra, IsAlmostEquals<DoubleVectorList> {
     fun isEmpty(): Boolean = size == 0
     fun isNotEmpty(): Boolean = size != 0
 
     val closed: Boolean
     val size: Int
     val dimensions: Int
-    operator fun get(index: Int, dim: Int): Float
-    fun getGeneric(index: Int): GenericVector = GenericVector(dimensions, FloatArray(dimensions) { get(index, it) })
+    operator fun get(index: Int, dim: Int): Double
+    fun getGeneric(index: Int): GenericDoubleVector = GenericDoubleVector(dimensions, DoubleArray(dimensions) { get(index, it) })
+
+    override fun isAlmostEquals(other: DoubleVectorList, epsilon: Double): Boolean {
+        if (this.size != other.size) return false
+        if (this.dimensions != other.dimensions) return false
+        for (dim in 0 until dimensions) for (n in 0 until size) {
+            if (!this[n, dim].isAlmostEquals(other[n, dim], epsilon)) return false
+        }
+        return true
+    }
 }
 
-inline fun IVectorArrayList.getOrElse(index: Int, dim: Int, default: Float = 0f): Float {
+inline fun DoubleVectorList.getOrElse(index: Int, dim: Int, default: Double = 0.0): Double {
     if (index < 0 || index >= size) return default
     if (dim < 0 || dim >= dimensions) return default
     return this[index, dim]
 }
 
-inline fun <T : IVectorArrayList> T.fastForEachGeneric(block: T.(n: Int) -> Unit): Unit {
+inline fun <T : DoubleVectorList> T.fastForEachGeneric(block: T.(n: Int) -> Unit): Unit {
     for (n in 0 until size) {
         block(this, n)
     }
 }
 
-fun IVectorArrayList.getX(index: Int): Float = get(index, 0)
-fun IVectorArrayList.getY(index: Int): Float = get(index, 1)
-fun IVectorArrayList.getZ(index: Int): Float = get(index, 2)
+fun DoubleVectorList.getX(index: Int): Double = get(index, 0)
+fun DoubleVectorList.getY(index: Int): Double = get(index, 1)
+fun DoubleVectorList.getZ(index: Int): Double = get(index, 2)
 
-class VectorArrayList(
+class DoubleVectorArrayList(
     override val dimensions: Int,
     capacity: Int = 7,
-) : IVectorArrayList, Extra by Extra.Mixin() {
-    val data = FloatArrayList(capacity * dimensions)
+) : DoubleVectorList, Extra by Extra.Mixin() {
+    val data = DoubleArrayList(capacity * dimensions)
 
     override var closed: Boolean = false
     override val size: Int get() = data.size / dimensions
 
-    override fun get(index: Int, dim: Int): Float = data[index * dimensions + dim]
-    override fun getGeneric(index: Int): GenericVector = GenericVector(dimensions, data.data, index * dimensions)
+    override fun get(index: Int, dim: Int): Double = data[index * dimensions + dim]
+    override fun getGeneric(index: Int): GenericDoubleVector = GenericDoubleVector(dimensions, data.data, index * dimensions)
 
     private fun checkDimensions(dim: Int) {
         if (dim != dimensions) error("Invalid dimensions $dim != $dimensions")
     }
 
-    operator fun set(index: Int, dim: Int, value: Float) {
+    operator fun set(index: Int, dim: Int, value: Double) {
         data[index * dimensions + dim] = value
     }
     private inline fun setInternal(dims: Int, index: Int, block: (Int) -> Unit) {
         checkDimensions(dims)
         block(index * dims)
     }
-    fun set(index: Int, vararg values: Float) {
+    fun set(index: Int, vararg values: Double) {
         val rindex = index * dimensions
         for (n in 0 until dimensions) data[rindex + n] = values[n]
     }
-    fun set(index: Int, v0: Double) = set(index, v0.toFloat())
-    fun set(index: Int, v0: Double, v1: Double) = set(index, v0.toFloat(), v1.toFloat())
-    fun set(index: Int, v0: Double, v1: Double, v2: Double) = set(index, v0.toFloat(), v1.toFloat(), v2.toFloat())
-    fun set(index: Int, v0: Double, v1: Double, v2: Double, v3: Double) = set(index, v0.toFloat(), v1.toFloat(), v2.toFloat(), v3.toFloat())
-    fun set(index: Int, v0: Double, v1: Double, v2: Double, v3: Double, v4: Double) = set(index, v0.toFloat(), v1.toFloat(), v2.toFloat(), v3.toFloat(), v4.toFloat())
-    fun set(index: Int, v0: Double, v1: Double, v2: Double, v3: Double, v4: Double, v5: Double) = set(index, v0.toFloat(), v1.toFloat(), v2.toFloat(), v3.toFloat(), v4.toFloat(), v5.toFloat())
+    fun set(index: Int, v0: Float) = set(index, v0.toDouble())
+    fun set(index: Int, v0: Float, v1: Float) = set(index, v0.toDouble(), v1.toDouble())
+    fun set(index: Int, v0: Float, v1: Float, v2: Float) = set(index, v0.toDouble(), v1.toDouble(), v2.toDouble())
+    fun set(index: Int, v0: Float, v1: Float, v2: Float, v3: Float) = set(index, v0.toDouble(), v1.toDouble(), v2.toDouble(), v3.toDouble())
+    fun set(index: Int, v0: Float, v1: Float, v2: Float, v3: Float, v4: Float) = set(index, v0.toDouble(), v1.toDouble(), v2.toDouble(), v3.toDouble(), v4.toDouble())
+    fun set(index: Int, v0: Float, v1: Float, v2: Float, v3: Float, v4: Float, v5: Float) = set(index, v0.toDouble(), v1.toDouble(), v2.toDouble(), v3.toDouble(), v4.toDouble(), v5.toDouble())
 
-    fun set(index: Int, v0: Float) = setInternal(1, index) { data[it] = v0 }
-    fun set(index: Int, v0: Float, v1: Float) = setInternal(2, index) { data[it] = v0; data[it + 1] = v1 }
-    fun set(index: Int, v0: Float, v1: Float, v2: Float) = setInternal(3, index) { data[it] = v0; data[it + 1] = v1; data[it + 2] = v2 }
-    fun set(index: Int, v0: Float, v1: Float, v2: Float, v3: Float) = setInternal(4, index) { data[it] = v0; data[it + 1] = v1; data[it + 2] = v2; data[it + 3] = v3 }
-    fun set(index: Int, v0: Float, v1: Float, v2: Float, v3: Float, v4: Float) = setInternal(5, index) { data[it] = v0; data[it + 1] = v1; data[it + 2] = v2; data[it + 3] = v3; data[it + 4] = v4 }
-    fun set(index: Int, v0: Float, v1: Float, v2: Float, v3: Float, v4: Float, v5: Float) = setInternal(6, index) { data[it] = v0; data[it + 1] = v1; data[it + 2] = v2; data[it + 3] = v3; data[it + 4] = v4; data[it + 5] = v5 }
+    fun set(index: Int, v0: Double) = setInternal(1, index) { data[it] = v0 }
+    fun set(index: Int, v0: Double, v1: Double) = setInternal(2, index) { data[it] = v0; data[it + 1] = v1 }
+    fun set(index: Int, v0: Double, v1: Double, v2: Double) = setInternal(3, index) { data[it] = v0; data[it + 1] = v1; data[it + 2] = v2 }
+    fun set(index: Int, v0: Double, v1: Double, v2: Double, v3: Double) = setInternal(4, index) { data[it] = v0; data[it + 1] = v1; data[it + 2] = v2; data[it + 3] = v3 }
+    fun set(index: Int, v0: Double, v1: Double, v2: Double, v3: Double, v4: Double) = setInternal(5, index) { data[it] = v0; data[it + 1] = v1; data[it + 2] = v2; data[it + 3] = v3; data[it + 4] = v4 }
+    fun set(index: Int, v0: Double, v1: Double, v2: Double, v3: Double, v4: Double, v5: Double) = setInternal(6, index) { data[it] = v0; data[it + 1] = v1; data[it + 2] = v2; data[it + 3] = v3; data[it + 4] = v4; data[it + 5] = v5 }
 
     fun set(index: Int, values: DoubleArray, offset: Int = 0) {
         val rindex = index * dimensions
-        for (n in 0 until dimensions) data[rindex + n] = values[offset + n].toFloat()
+        for (n in 0 until dimensions) data[rindex + n] = values[offset + n]
     }
     fun set(index: Int, values: FloatArray, offset: Int = 0) {
         val rindex = index * dimensions
-        for (n in 0 until dimensions) data[rindex + n] = values[offset + n]
+        for (n in 0 until dimensions) data[rindex + n] = values[offset + n].toDouble()
     }
-    fun set(index: Int, vector: GenericVector) {
+    fun set(index: Int, vector: GenericDoubleVector) {
         set(index, vector.data, vector.offset)
     }
-    fun set(index: Int, vector: IGenericVector) {
+    fun set(index: Int, vector: IGenericDoubleVector) {
         val rindex = index * dimensions
         for (n in 0 until dimensions) data[rindex + n] = vector.get(n)
     }
-    fun add(values: DoubleArrayList, offset: Int = 0, count: Int = 1) = add(values.data, offset, count)
-    fun add(values: DoubleArray, offset: Int = 0, count: Int = 1) {
+    fun add(values: FloatArrayList, offset: Int = 0, count: Int = 1) = add(values.data, offset, count)
+    fun add(values: FloatArray, offset: Int = 0, count: Int = 1) {
         val itemCount = dimensions * count
-        data.add(values.slice(offset until (offset + itemCount)).mapFloat { it.toFloat() }.toFloatArray(), 0, itemCount)
+        for (n in 0 until count) add(values[offset + n])
+        //data.add(values.slice(offset until (offset + itemCount)).mapDouble { it.toDouble() }.toDoubleArray(), 0, itemCount)
     }
 
-    fun add(values: FloatArrayList, offset: Int = 0, count: Int = 1) = add(values.data, offset, count)
-    fun add(values: FloatArray, offset: Int = 0, count: Int = 1) { data.add(values, offset, dimensions * count) }
+    fun add(values: DoubleArrayList, offset: Int = 0, count: Int = 1) = add(values.data, offset, count)
+    fun add(values: DoubleArray, offset: Int = 0, count: Int = 1) { data.add(values, offset, dimensions * count) }
 
-    fun add(v0: Float) = checkDimensions(1).also { data.add(v0) }
-    fun add(v0: Float, v1: Float) = checkDimensions(2).also { data.add(v0, v1) }
-    fun add(v0: Float, v1: Float, v2: Float) = checkDimensions(3).also { data.add(v0, v1, v2) }
-    fun add(v0: Float, v1: Float, v2: Float, v3: Float) = checkDimensions(4).also { data.add(v0, v1, v2, v3) }
-    fun add(v0: Float, v1: Float, v2: Float, v3: Float, v4: Float) = checkDimensions(5).also { data.add(v0, v1, v2, v3, v4) }
-    fun add(v0: Float, v1: Float, v2: Float, v3: Float, v4: Float, v5: Float) = checkDimensions(6).also { data.add(v0, v1, v2, v3, v4, v5) }
-    fun add(vararg values: Float) = checkDimensions(values.size).also { data.add(values) }
+    fun add(v0: Double) = checkDimensions(1).also { data.add(v0) }
+    fun add(v0: Double, v1: Double) = checkDimensions(2).also { data.add(v0, v1) }
+    fun add(v0: Double, v1: Double, v2: Double) = checkDimensions(3).also { data.add(v0, v1, v2) }
+    fun add(v0: Double, v1: Double, v2: Double, v3: Double) = checkDimensions(4).also { data.add(v0, v1, v2, v3) }
+    fun add(v0: Double, v1: Double, v2: Double, v3: Double, v4: Double) = checkDimensions(5).also { data.add(v0, v1, v2, v3, v4) }
+    fun add(v0: Double, v1: Double, v2: Double, v3: Double, v4: Double, v5: Double) = checkDimensions(6).also { data.add(v0, v1, v2, v3, v4, v5) }
+    fun add(vararg values: Double) = checkDimensions(values.size).also { data.add(values) }
     
-    fun add(v0: Double) = add(v0.toFloat())
-    fun add(v0: Double, v1: Double) = add(v0.toFloat(), v1.toFloat())
-    fun add(v0: Double, v1: Double, v2: Double) = add(v0.toFloat(), v1.toFloat(), v2.toFloat())
-    fun add(v0: Double, v1: Double, v2: Double, v3: Double) = add(v0.toFloat(), v1.toFloat(), v2.toFloat(), v3.toFloat())
-    fun add(v0: Double, v1: Double, v2: Double, v3: Double, v4: Double) = add(v0.toFloat(), v1.toFloat(), v2.toFloat(), v3.toFloat(), v4.toFloat())
-    fun add(v0: Double, v1: Double, v2: Double, v3: Double, v4: Double, v5: Double) = add(v0.toFloat(), v1.toFloat(), v2.toFloat(), v3.toFloat(), v4.toFloat(), v5.toFloat())
-    fun add(vararg values: Double) = checkDimensions(values.size).also { for (n in 0 until values.size) data.add(values[n].toFloat()) }
+    fun add(v0: Float) = add(v0.toDouble())
+    fun add(v0: Float, v1: Float) = add(v0.toDouble(), v1.toDouble())
+    fun add(v0: Float, v1: Float, v2: Float) = add(v0.toDouble(), v1.toDouble(), v2.toDouble())
+    fun add(v0: Float, v1: Float, v2: Float, v3: Float) = add(v0.toDouble(), v1.toDouble(), v2.toDouble(), v3.toDouble())
+    fun add(v0: Float, v1: Float, v2: Float, v3: Float, v4: Float) = add(v0.toDouble(), v1.toDouble(), v2.toDouble(), v3.toDouble(), v4.toDouble())
+    fun add(v0: Float, v1: Float, v2: Float, v3: Float, v4: Float, v5: Float) = add(v0.toDouble(), v1.toDouble(), v2.toDouble(), v3.toDouble(), v4.toDouble(), v5.toDouble())
+    fun add(vararg values: Float) = checkDimensions(values.size).also { for (n in 0 until values.size) data.add(values[n].toDouble()) }
     
-    fun add(vector: GenericVector) {
+    fun add(vector: GenericDoubleVector) {
         add(vector.data, vector.offset)
     }
-    fun add(vector: IGenericVector) {
+    fun add(vector: IGenericDoubleVector) {
         for (n in 0 until dimensions) data.add(vector[n])
     }
 
     fun vectorToStringBuilder(index: Int, out: StringBuilder, roundDecimalPlaces: Int? = null) {
         out.appendGenericArray(dimensions) {
-            val v = this@VectorArrayList[index, it].toDouble()
+            val v = this@DoubleVectorArrayList[index, it].toDouble()
             appendNice(if (roundDecimalPlaces != null) v.roundDecimalPlaces(roundDecimalPlaces) else v)
         }
     }
 
     fun vectorToString(index: Int): String = buildString { vectorToStringBuilder(index, this) }
 
-    override fun equals(other: Any?): Boolean = other is VectorArrayList && this.dimensions == other.dimensions && this.data == other.data
+    override fun equals(other: Any?): Boolean = other is DoubleVectorArrayList && this.dimensions == other.dimensions && this.data == other.data
     override fun hashCode(): Int = data.hashCode()
 
     override fun toString(): String = toString(roundDecimalPlaces = null)
 
     fun toString(roundDecimalPlaces: Int? = null): String = buildString {
-        append("VectorArrayList[${this@VectorArrayList.size}](\n")
-        for (n in 0 until this@VectorArrayList.size) {
+        append("VectorArrayList[${this@DoubleVectorArrayList.size}](\n")
+        for (n in 0 until this@DoubleVectorArrayList.size) {
             if (n != 0) append(", \n")
             append("   ")
-            this@VectorArrayList.vectorToStringBuilder(n, this, roundDecimalPlaces)
+            this@DoubleVectorArrayList.vectorToStringBuilder(n, this, roundDecimalPlaces)
         }
         append("\n)")
     }
 
-    fun add(other: VectorArrayList, index: Int, count: Int = 1) {
+    fun add(other: DoubleVectorArrayList, index: Int, count: Int = 1) {
         add(other.data.data, index * dimensions, count)
     }
 
-    fun clone(): VectorArrayList = VectorArrayList(dimensions, this.size).also { it.add(this, 0, size) }
+    fun clone(): DoubleVectorArrayList = DoubleVectorArrayList(dimensions, this.size).also { it.add(this, 0, size) }
 
-    fun roundDecimalPlaces(places: Int): VectorArrayList {
+    fun roundDecimalPlaces(places: Int): DoubleVectorArrayList {
         for (n in 0 until data.size) data[n] = data[n].roundDecimalPlaces(places)
         return this
     }
@@ -557,42 +567,42 @@ class VectorArrayList(
     }
 }
 
-fun <T> IVectorArrayList.mapVector(block: (list: IVectorArrayList, index: Int) -> T): List<T> {
+fun <T> DoubleVectorList.mapVector(block: (list: DoubleVectorList, index: Int) -> T): List<T> {
     val out = fastArrayListOf<T>()
     for (n in 0 until size) out.add(block(this, n))
     return out
 }
 
-fun vectorArrayListOf(vararg vectors: IGenericVector, dimensions: Int = vectors.first().dimensions): VectorArrayList =
-    VectorArrayList(dimensions, vectors.size).also { array -> vectors.fastForEach { array.add(it) } }
+fun vectorDoubleArrayListOf(vararg vectors: IGenericDoubleVector, dimensions: Int = vectors.first().dimensions): DoubleVectorArrayList =
+    DoubleVectorArrayList(dimensions, vectors.size).also { array -> vectors.fastForEach { array.add(it) } }
 
-fun vectorArrayListOf(vararg vectors: GenericVector, dimensions: Int = vectors.first().dimensions): VectorArrayList =
-    VectorArrayList(dimensions, vectors.size).also { array -> vectors.fastForEach { array.add(it) } }
+fun vectorDoubleArrayListOf(vararg vectors: GenericDoubleVector, dimensions: Int = vectors.first().dimensions): DoubleVectorArrayList =
+    DoubleVectorArrayList(dimensions, vectors.size).also { array -> vectors.fastForEach { array.add(it) } }
 
-fun vectorArrayListOf(vararg data: Float, dimensions: Int): VectorArrayList {
+fun vectorDoubleArrayListOf(vararg data: Double, dimensions: Int): DoubleVectorArrayList {
     if (data.size % dimensions != 0) error("${data.size} is not multiple of $dimensions")
-    val out = VectorArrayList(dimensions, data.size / dimensions)
+    val out = DoubleVectorArrayList(dimensions, data.size / dimensions)
     out.data.add(data)
     return out
 }
-fun vectorArrayListOf(vararg data: Double, dimensions: Int): VectorArrayList =
-    vectorArrayListOf(*data.mapFloat { it.toFloat() }, dimensions = dimensions)
-fun vectorArrayListOf(vararg data: Int, dimensions: Int): VectorArrayList =
-    vectorArrayListOf(*data.mapFloat { it.toFloat() }, dimensions = dimensions)
+fun vectorDoubleArrayListOf(vararg data: Float, dimensions: Int): DoubleVectorArrayList =
+    vectorDoubleArrayListOf(*data.mapDouble { it.toDouble() }, dimensions = dimensions)
+fun vectorDoubleArrayListOf(vararg data: Int, dimensions: Int): DoubleVectorArrayList =
+    vectorDoubleArrayListOf(*data.mapDouble { it.toDouble() }, dimensions = dimensions)
 
-sealed interface IGenericVector {
+sealed interface IGenericDoubleVector {
     val dimensions: Int
-    operator fun get(dim: Int): Float
-    operator fun set(dim: Int, value: Float)
+    operator fun get(dim: Int): Double
+    operator fun set(dim: Int, value: Double)
 }
 
-val IGenericVector.length: Double get() {
+val IGenericDoubleVector.length: Double get() {
     var ssum = 0.0
     for (n in 0 until dimensions) ssum += this[n]
     return sqrt(ssum)
 }
 
-fun IGenericVector.toStringBuilder(out: StringBuilder) {
+fun IGenericDoubleVector.toStringBuilder(out: StringBuilder) {
     out.appendGenericArray(dimensions) { appendNice(this@toStringBuilder[it]) }
 }
 
@@ -606,13 +616,13 @@ fun IGenericVector.toStringBuilder(out: StringBuilder) {
 }
 
 // @TODO: Potential candidate for value class when multiple values are supported
-class GenericVector(override val dimensions: Int, val data: FloatArray, val offset: Int = 0) : IGenericVector {
-    constructor(vararg data: Double) : this(data.size, data.mapFloat { it.toFloat() })
-    constructor(vararg data: Float) : this(data.size, data)
-    constructor(vararg data: Int) : this(data.size, data.mapFloat { it.toFloat() })
+class GenericDoubleVector(override val dimensions: Int, val data: DoubleArray, val offset: Int = 0) : IGenericDoubleVector {
+    constructor(vararg data: Double) : this(data.size, data)
+    constructor(vararg data: Float) : this(data.size, data.mapDouble { it.toDouble() })
+    constructor(vararg data: Int) : this(data.size, data.mapDouble { it.toDouble() })
 
-    override operator fun get(dim: Int): Float = data[offset + dim]
-    override operator fun set(dim: Int, value: Float) { data[offset + dim] = value }
+    override operator fun get(dim: Int): Double = data[offset + dim]
+    override operator fun set(dim: Int, value: Double) { data[offset + dim] = value }
 
     override fun toString(): String = buildString { toStringBuilder(this) }
 }

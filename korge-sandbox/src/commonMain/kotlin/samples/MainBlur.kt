@@ -16,11 +16,11 @@ import kotlin.reflect.*
 
 class MainBlur : Scene() {
     override suspend fun SContainer.sceneMain() {
-        solidRect(views.stage.widthD, views.stage.heightD, Colors.WHITE)
+        solidRect(views.stage.width, views.stage.height, Colors.WHITE)
         val bitmap = resourcesVfs["korim.png"].readBitmap()
 
-        val initialBlur = 6f
-        var filterScale = 1f
+        val initialBlur = 6.0
+        var filterScale = 1.0
         fun <T : View> T.bindScale(): T {
             addUpdater { this.filterScale = filterScale }
             return this
@@ -28,7 +28,7 @@ class MainBlur : Scene() {
 
         val blur1 = BlurFilter(initialBlur)
         val blur2 = BlurFilter(initialBlur)
-        val radiusProps = fastArrayListOf<KMutableProperty0<Float>>()
+        val radiusProps = fastArrayListOf<KMutableProperty0<Double>>()
 
         addUpdater {
             //blur2.radius = blur1.radius
@@ -37,7 +37,7 @@ class MainBlur : Scene() {
             //println(blur1.radius)
         }
 
-        fun bindRadius(prop: KMutableProperty0<Float>) = radiusProps.add(prop)
+        fun bindRadius(prop: KMutableProperty0<Double>) = radiusProps.add(prop)
         fun DirectionalBlurFilter.bindRadius() = also { bindRadius(it::radius) }
         fun BlurFilter.bindRadius() = also { bindRadius(it::radius) }
 
@@ -67,13 +67,13 @@ class MainBlur : Scene() {
             .bindScale()
         //.visible(false)
 
-        val dropshadowFilter = DropshadowFilter(blurRadius = 1f, shadowColor = Colors.RED.withAd(0.3))
+        val dropshadowFilter = DropshadowFilter(blurRadius = 1.0, shadowColor = Colors.RED.withAd(0.3))
         image(bitmap).xy(500, 100).filters(dropshadowFilter).bindScale()
 
-        val colorMatrixFilter = ColorMatrixFilter(ColorMatrixFilter.SEPIA_MATRIX, blendRatio = 0.5f)
+        val colorMatrixFilter = ColorMatrixFilter(ColorMatrixFilter.SEPIA_MATRIX, blendRatio = 0.5)
         image(bitmap).xy(500, 250).filters(colorMatrixFilter).bindScale()
 
-        val transitionFilter = TransitionFilter(TransitionFilter.Transition.CIRCULAR, reversed = false, ratio = 0.5f, spread = 0.2f)
+        val transitionFilter = TransitionFilter(TransitionFilter.Transition.CIRCULAR, reversed = false, ratio = 0.5, spread = 0.2)
         image(bitmap).xy(370, 250).filters(transitionFilter).bindScale()
 
         val pageFilter = PageFilter()
@@ -87,7 +87,7 @@ class MainBlur : Scene() {
 
         image(bitmap).xy(900, 600).filters(blur1, waveFilter, blur1, pageFilter).bindScale()
 
-        uiVerticalStack(padding = 2f, width = 370f) {
+        uiVerticalStack(padding = 2.0, width = 370.0) {
             xy(50, 400)
             uiHorizontalFill {
                 uiText("Blur radius").styles { textColor = Colors.BLACK }

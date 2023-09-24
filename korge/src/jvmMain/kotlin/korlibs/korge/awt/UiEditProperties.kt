@@ -236,9 +236,9 @@ internal class UiEditProperties(app: UiApplication, view: View?, val views: View
                 UiTwoItemEditableValue(app, vv[0], vv[1])
             }
             type.isSubtypeOf(MPoint::class.starProjectedType) -> createPair({ MPoint(it.x, it.y) }, { Two(it.x, it.y) }, instance, prop, viewProp)
-            type.isSubtypeOf(Point::class.starProjectedType) -> createPair({ Point(it.x, it.y) }, { Two(it.xD, it.yD) }, instance, prop, viewProp)
-            type.isSubtypeOf(Size::class.starProjectedType) -> createPair({ Size(it.x, it.y) }, { Two(it.widthD, it.heightD) }, instance, prop, viewProp)
-            type.isSubtypeOf(Scale::class.starProjectedType) -> createPair({ Scale(it.x, it.y) }, { Two(it.scaleXD, it.scaleYD) }, instance, prop, viewProp)
+            type.isSubtypeOf(Point::class.starProjectedType) -> createPair({ Point(it.x, it.y) }, { Two(it.x, it.y) }, instance, prop, viewProp)
+            type.isSubtypeOf(Size::class.starProjectedType) -> createPair({ Size(it.x, it.y) }, { Two(it.width, it.height) }, instance, prop, viewProp)
+            type.isSubtypeOf(Scale::class.starProjectedType) -> createPair({ Scale(it.x, it.y) }, { Two(it.scaleX, it.scaleY) }, instance, prop, viewProp)
             type.isSubtypeOf(Anchor::class.starProjectedType) -> createPair({ Anchor(it.x, it.y) }, { Two(it.sx.toDouble(), it.sy.toDouble()) }, instance, prop, viewProp)
             type.isSubtypeOf(IntRange::class.starProjectedType) -> {
                 @Suppress("UNCHECKED_CAST")
@@ -261,7 +261,7 @@ internal class UiEditProperties(app: UiApplication, view: View?, val views: View
                 UiNumberEditableValue(app, robs, viewProp.min, viewProp.max, viewProp.clampMin, viewProp.clampMax, 0)
             }
             type.isSubtypeOf(Boolean::class.starProjectedType) -> UiBooleanEditableValue(app, obs as ObservableProperty<Boolean>)
-            type.isSubtypeOf(Angle::class.starProjectedType) -> createOne({ it.degrees }, { it.degreesD }, obs, viewProp, rangeMin = -360.0, rangeMax = +360.0, clampMin = true, clampMax = true)
+            type.isSubtypeOf(Angle::class.starProjectedType) -> createOne({ it.degrees }, { it.degrees }, obs, viewProp, rangeMin = -360.0, rangeMax = +360.0, clampMin = true, clampMax = true)
             type.isSubtypeOf(String::class.starProjectedType.withNullability(true)) -> {
                 if (!viewProp.editable) {
                     prop as KProperty1<Any, String?>

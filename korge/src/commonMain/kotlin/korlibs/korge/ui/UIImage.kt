@@ -69,17 +69,19 @@ class UIImage(
 
             // @TODO: Can we generalize this to be placed in KorMA?
             val bitmapSize = bitmap.bounds.size.toFloat()
-            val finalRect = bitmapSize.applyScaleMode(Rectangle(0.0, 0.0, widthD, heightD), scaleMode, contentAnchor)
+            val width = this.width
+            val height = this.height
+            val finalRect = bitmapSize.applyScaleMode(Rectangle(0.0, 0.0, width, height), scaleMode, contentAnchor)
 
-            val realL = finalRect.left.clamp(0f, widthD.toFloat())
-            val realT = finalRect.top.clamp(0f, heightD.toFloat())
-            val realR = finalRect.right.clamp(0f, widthD.toFloat())
-            val realB = finalRect.bottom.clamp(0f, heightD.toFloat())
+            val realL = finalRect.left.clamp(0.0, width).toFloat()
+            val realT = finalRect.top.clamp(0.0, height).toFloat()
+            val realR = finalRect.right.clamp(0.0, width).toFloat()
+            val realB = finalRect.bottom.clamp(0.0, height).toFloat()
 
-            val ratioL = realL.convertRange(finalRect.left, finalRect.right, 0f, 1f)
-            val ratioR = realR.convertRange(finalRect.left, finalRect.right, 0f, 1f)
-            val ratioT = realT.convertRange(finalRect.top, finalRect.bottom, 0f, 1f)
-            val ratioB = realB.convertRange(finalRect.top, finalRect.bottom, 0f, 1f)
+            val ratioL = realL.convertRange(finalRect.left.toFloat(), finalRect.right.toFloat(), 0f, 1f)
+            val ratioR = realR.convertRange(finalRect.left.toFloat(), finalRect.right.toFloat(), 0f, 1f)
+            val ratioT = realT.convertRange(finalRect.top.toFloat(), finalRect.bottom.toFloat(), 0f, 1f)
+            val ratioB = realB.convertRange(finalRect.top.toFloat(), finalRect.bottom.toFloat(), 0f, 1f)
 
             //println("finalRect=$finalRect, ratioL=$ratioL, ratioR=$ratioR, ratioT=$ratioT, ratioB=$ratioB")
 
@@ -106,8 +108,8 @@ class UIImage(
                 ctx.getTex(Bitmaps.white),
                 0f,
                 0f,
-                widthD.toFloat(),
-                heightD.toFloat(),
+                width.toFloat(),
+                height.toFloat(),
                 globalMatrix,
                 colorMul = bgcolor
             )

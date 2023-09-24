@@ -37,9 +37,9 @@ class MainUI : Scene() {
             this.textFont = resourcesVfs["uifont.fnt"].readBitmapFont()
         }
 
-        uiVerticalStack(padding = 8f, adjustSize = true) {
+        uiVerticalStack(padding = 8.0, adjustSize = true) {
             position(128, 128)
-            width = 256f
+            width = 256.0
 
             uiButton(size = Size(256, 32)) {
                 text = "Disabled Button"
@@ -101,7 +101,7 @@ class MainUI : Scene() {
 
         val progress = uiProgressBar {
             position(64, 32)
-            current = 0.5f
+            current = 0.5
         }
         val job = launchImmediately {
             while (true) {
@@ -109,7 +109,7 @@ class MainUI : Scene() {
                 tween(progress::ratio[1.0, 0.0], time = 1.seconds, easing = Easing.EASE_IN_OUT)
             }
         }
-        uiButton("Stop Progress").position(Point(64 + progress.widthD, 32.0)).mouse { onClick { job.cancel() } }
+        uiButton("Stop Progress").position(Point(64 + progress.width, 32.0)).mouse { onClick { job.cancel() } }
 
     }
 }

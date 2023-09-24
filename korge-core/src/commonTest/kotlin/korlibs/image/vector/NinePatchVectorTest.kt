@@ -2,7 +2,6 @@ package korlibs.image.vector
 
 import korlibs.math.geom.*
 import korlibs.math.geom.shape.*
-import korlibs.math.geom.vector.*
 import kotlin.test.*
 
 class NinePatchVectorTest {

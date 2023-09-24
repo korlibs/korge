@@ -1,19 +1,14 @@
 package korlibs.korge.animate
 
-import korlibs.time.milliseconds
-import korlibs.time.seconds
-import korlibs.math.toIntRound
-import korlibs.korge.tests.ViewsForTesting
-import korlibs.korge.tween._interpolateAngle
-import korlibs.korge.tween.denormalized
-import korlibs.korge.tween.get
-import korlibs.korge.tween.tween
+import korlibs.image.color.*
+import korlibs.korge.tests.*
+import korlibs.korge.tween.*
 import korlibs.korge.view.*
-import korlibs.image.color.Colors
-import korlibs.math.geom.degrees
+import korlibs.math.*
+import korlibs.math.geom.*
 import korlibs.math.interpolation.*
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import korlibs.time.*
+import kotlin.test.*
 
 class AnimatorTest : ViewsForTesting() {
     @Test
@@ -25,7 +20,7 @@ class AnimatorTest : ViewsForTesting() {
             moveBy(view, y = +100.0)
             block { log += "${view.pos}" }
             moveBy(view, x = +10.0)
-            moveTo(view, x = { view.xD + 10 })
+            moveTo(view, x = { view.x + 10 })
         }
         assertEquals("(120, 100)", view.pos.toString())
         assertEquals("[(100, 100)]", log.toString())
@@ -50,7 +45,7 @@ class AnimatorTest : ViewsForTesting() {
         val view = solidRect(10, 10, Colors.RED)
         val log = arrayListOf<Int>()
         tween(view::rotation[350.0.degrees, 10.0.degrees], time = 1.seconds, easing = Easing.LINEAR) {
-            log += view.rotation.degreesD.toIntRound()
+            log += view.rotation.degrees.toIntRound()
         }
         assertEquals("350,352,354,356,358,0,2,4,6,8,10", log.joinToString(","))
     }
@@ -60,7 +55,7 @@ class AnimatorTest : ViewsForTesting() {
         val view = solidRect(10, 10, Colors.RED)
         val log = arrayListOf<Int>()
         tween(view::rotation[350.0.degrees, 10.0.degrees].denormalized(), time = 1.seconds, easing = Easing.LINEAR) {
-            log += view.rotation.degreesD.toIntRound()
+            log += view.rotation.degrees.toIntRound()
         }
         assertEquals("350,316,282,248,214,180,146,112,78,44,10", log.joinToString(","))
     }

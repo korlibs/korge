@@ -41,7 +41,7 @@ class ViewRenderPhaseFilter(var filter: Filter? = null) : ViewRenderPhase {
 
 /** Usually a value between [0.0, 1.0] */
 @ThreadLocal
-var View.filterScale: Float by extraPropertyThis(transform = { Filter.discretizeFilterScale(it) }) { 1f }
+var View.filterScale: Double by extraPropertyThis(transform = { Filter.discretizeFilterScale(it) }) { 1.0 }
 
 //internal const val VIEW_FILTER_TRANSPARENT_EDGE = true
 internal const val VIEW_FILTER_TRANSPARENT_EDGE = false
@@ -59,7 +59,7 @@ fun View.renderFiltered(
     val texWidthNoBorder = (bounds.width * tryFilterScale).toInt().coerceAtLeast(1)
     val texHeightNoBorder = (bounds.height * tryFilterScale).toInt().coerceAtLeast(1)
 
-    val realFilterScale: Float = (texWidthNoBorder.toFloat() / bounds.width).clamp(0.03125f, 1.0f)
+    val realFilterScale: Double = (texWidthNoBorder.toFloat() / bounds.width).clamp(0.03125, 1.0)
 
     // This edge is meant to keep the edge pixels transparent, since we are using clamping to edge wrapping
     // so for example the blur filter that reads outside [0, 1] bounds can read transparent pixels.
@@ -102,15 +102,15 @@ fun View.renderFiltered(
     }
 }
 
-inline fun <T : View> T.filterScale(scale: Float): T {
+inline fun <T : View> T.filterScale(scale: Double): T {
     filterScale = scale
     return this
 }
 
-inline fun <T : View> T.filters(vararg filters: Filter, filterScale: Float = this.filterScale): T = filters(filters.toList(), filterScale)
-inline fun <T : View> T.filters(filters: List<Filter>, filterScale: Float = this.filterScale): T {
+inline fun <T : View> T.filters(vararg filters: Filter, filterScale: Number = this.filterScale): T = filters(filters.toList(), filterScale.toDouble())
+inline fun <T : View> T.filters(filters: List<Filter>, filterScale: Number = this.filterScale): T {
     this.filter = ComposedFilter.combine(null, filters)
-    this.filterScale = filterScale
+    this.filterScale = filterScale.toDouble()
     return this
 }
 

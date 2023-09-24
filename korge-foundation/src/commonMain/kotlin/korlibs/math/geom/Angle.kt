@@ -6,15 +6,13 @@ import korlibs.math.range.*
 import korlibs.number.*
 import kotlin.math.*
 
-@PublishedApi internal const val PIF = (PI).toFloat()
 @PublishedApi internal const val PI2 = PI * 2.0
-@PublishedApi internal const val PI2F = (PI * 2f).toFloat()
 @PublishedApi internal const val DEG2RAD = PI / 180.0
 @PublishedApi internal const val RAD2DEG = 180.0 / PI
 
 @PublishedApi internal fun Angle_shortDistanceTo(from: Angle, to: Angle): Angle {
-    val r0 = from.ratioF umod 1f
-    val r1 = to.ratioF umod 1f
+    val r0 = from.ratio.toDouble() umod 1.0
+    val r1 = to.ratio.toDouble() umod 1.0
     val diff = (r1 - r0 + 0.5) % 1.0 - 0.5
     return if (diff < -0.5) Angle.fromRatio(diff + 1.0) else Angle.fromRatio(diff)
 }
@@ -28,12 +26,12 @@ import kotlin.math.*
     }
 }
 
-@PublishedApi internal fun Angle_between(x0: Double, y0: Double, x1: Double, y1: Double, up: Vector2 = Vector2.UP): Angle {
+@PublishedApi internal fun Angle_between(x0: Double, y0: Double, x1: Double, y1: Double, up: Vector2D = Vector2D.UP): Angle {
     val angle = Angle.atan2(y1 - y0, x1 - x0)
     return (if (angle < Angle.ZERO) angle + Angle.FULL else angle).adjustFromUp(up)
 }
 
-@PublishedApi internal fun Angle.adjustFromUp(up: Vector2): Angle {
+@PublishedApi internal fun Angle.adjustFromUp(up: Vector2D): Angle {
     Orientation.checkValidUpVector(up)
     return if (up.y > 0) this else -this
 }
@@ -57,61 +55,41 @@ import kotlin.math.*
 //@KormaValueApi
 inline class Angle @PublishedApi internal constructor(
     /** [0..1] ratio -> [0..360] degrees */
-    val ratioF: Float
-) : Comparable<Angle> {
-    val ratio: Float get() = ratioF
-    val ratioD: Double get() = ratioF.toDouble()
-
-    val radians: Float get() = ratioToRadians(ratioF)
-    val degrees: Float get() = ratioToDegrees(ratioF)
+    val radians: Double
+) : Comparable<Angle>, IsAlmostEquals<Angle> {
+    @PublishedApi inline internal val internal: Double get() = radians
 
     /** [0..PI * 2] radians -> [0..360] degrees */
-    val radiansD: Double get() = ratioToRadians(ratioD)
+    val ratio: Ratio get() = radiansToRatio(radians)
     /** [0..360] degrees -> [0..PI * 2] radians -> [0..1] ratio */
-    val degreesD: Double get() = ratioToDegrees(ratioD)
+    val degrees: Double get() = radiansToDegrees(radians)
 
-    val cosine: Float get() = kotlin.math.cos(radians)
-    val sine: Float get() = kotlin.math.sin(radians)
-    val tangent: Float get() = kotlin.math.tan(radians)
+    val cosine: Double get() = kotlin.math.cos(radians)
+    val sine: Double get() = kotlin.math.sin(radians)
+    val tangent: Double get() = kotlin.math.tan(radians)
 
-    val cosineD: Double get() = kotlin.math.cos(radiansD)
-    val sineD: Double get() = kotlin.math.sin(radiansD)
-    val tangentD: Double get() = kotlin.math.tan(radiansD)
+    fun cosine(up: Vector2D = Vector2D.UP): Double = adjustFromUp(up).cosine
+    fun sine(up: Vector2D = Vector2D.UP): Double = adjustFromUp(up).sine
+    fun tangent(up: Vector2D = Vector2D.UP): Double = adjustFromUp(up).tangent
 
-    val cosineF: Float get() = kotlin.math.cos(radians)
-    val sineF: Float get() = kotlin.math.sin(radians)
-    val tangentF: Float get() = kotlin.math.tan(radians)
-
-    fun cosine(up: Vector2 = Vector2.UP): Float = cosineF(up)
-    fun sine(up: Vector2 = Vector2.UP): Float = sineF(up)
-    fun tangent(up: Vector2 = Vector2.UP): Float = tangentF(up)
-
-    fun cosineD(up: Vector2 = Vector2.UP): Double = adjustFromUp(up).cosineD
-    fun sineD(up: Vector2 = Vector2.UP): Double = adjustFromUp(up).sineD
-    fun tangentD(up: Vector2 = Vector2.UP): Double = adjustFromUp(up).tangentD
-
-    fun cosineF(up: Vector2 = Vector2.UP): Float = adjustFromUp(up).cosineF
-    fun sineF(up: Vector2 = Vector2.UP): Float = adjustFromUp(up).sineF
-    fun tangentF(up: Vector2 = Vector2.UP): Float = adjustFromUp(up).tangentF
-
-    val absoluteValue: Angle get() = fromRatio(ratioF.absoluteValue)
+    val absoluteValue: Angle get() = Angle(internal.absoluteValue)
     fun shortDistanceTo(other: Angle): Angle = Angle.shortDistanceTo(this, other)
     fun longDistanceTo(other: Angle): Angle = Angle.longDistanceTo(this, other)
 
-    operator fun times(scale: Double): Angle = fromRatio(this.ratioF * scale)
-    operator fun div(scale: Double): Angle = fromRatio(this.ratioF / scale)
-    operator fun times(scale: Float): Angle = fromRatio(this.ratioF * scale)
-    operator fun div(scale: Float): Angle = fromRatio(this.ratioF / scale)
-    operator fun times(scale: Int): Angle = fromRatio(this.ratioF * scale)
-    operator fun div(scale: Int): Angle = fromRatio(this.ratioF / scale)
-    operator fun rem(angle: Angle): Angle = fromRatio(this.ratioF % angle.ratioF)
-    infix fun umod(angle: Angle): Angle = fromRatio(this.ratioF umod angle.ratioF)
+    operator fun times(scale: Double): Angle = Angle(this.internal * scale)
+    operator fun div(scale: Double): Angle = Angle(this.internal / scale)
+    operator fun times(scale: Float): Angle = Angle(this.internal * scale)
+    operator fun div(scale: Float): Angle = Angle(this.internal / scale)
+    operator fun times(scale: Int): Angle = Angle(this.internal * scale)
+    operator fun div(scale: Int): Angle = Angle(this.internal / scale)
+    operator fun rem(angle: Angle): Angle = Angle(this.internal % angle.internal)
+    infix fun umod(angle: Angle): Angle = Angle(this.internal umod angle.internal)
 
-    operator fun div(other: Angle): Float = this.ratioF / other.ratioF // Ratio
-    operator fun plus(other: Angle): Angle = fromRatio(this.ratioF + other.ratioF)
-    operator fun minus(other: Angle): Angle = fromRatio(this.ratioF - other.ratioF)
-    operator fun unaryMinus(): Angle = fromRatio(-ratioF)
-    operator fun unaryPlus(): Angle = fromRatio(+ratioF)
+    operator fun div(other: Angle): Double = this.internal / other.internal // Ratio
+    operator fun plus(other: Angle): Angle = Angle(this.internal + other.internal)
+    operator fun minus(other: Angle): Angle = Angle(this.internal - other.internal)
+    operator fun unaryMinus(): Angle = Angle(-internal)
+    operator fun unaryPlus(): Angle = Angle(+internal)
 
     fun inBetweenInclusive(min: Angle, max: Angle): Boolean = inBetween(min, max, inclusive = true)
     fun inBetweenExclusive(min: Angle, max: Angle): Boolean = inBetween(min, max, inclusive = false)
@@ -130,14 +108,11 @@ inline class Angle @PublishedApi internal constructor(
         }
     }
 
-    fun isAlmostEquals(other: Angle, epsilon: Float = 0.001f): Boolean = this.ratioF.isAlmostEquals(other.ratioF, epsilon)
-    fun isAlmostZero(epsilon: Float = 0.001f): Boolean = isAlmostEquals(ZERO, epsilon)
-
-    fun isAlmostEquals(other: Angle, epsilon: Double): Boolean = isAlmostEquals(other, epsilon.toFloat())
-    fun isAlmostZero(epsilon: Double): Boolean = isAlmostZero(epsilon.toFloat())
+    override fun isAlmostEquals(other: Angle, epsilon: Double): Boolean = this.radians.isAlmostEquals(other.radians, epsilon)
+    fun isAlmostZero(epsilon: Double = 0.001): Boolean = isAlmostEquals(ZERO, epsilon)
 
     /** Normalize between 0..1  ... 0..(PI*2).radians ... 0..360.degrees */
-    val normalized: Angle get() = fromRatio(ratioF umod 1f)
+    val normalized: Angle get() = fromRatio(ratio.toDouble() umod 1.0)
     /** Normalize between -.5..+.5  ... -PI..+PI.radians ... -180..+180.degrees */
     val normalizedHalf: Angle get() {
         val res = normalized
@@ -156,38 +131,39 @@ inline class Angle @PublishedApi internal constructor(
     //    return 0
     //}
 
-    override fun toString(): String = "${degreesD.roundDecimalPlaces(2).niceStr}.degrees"
+    override fun toString(): String = "${degrees.roundDecimalPlaces(2).niceStr}.degrees"
 
     @Suppress("MemberVisibilityCanBePrivate")
     companion object {
-        val EPSILON = Angle(0.00001f)
-        val ZERO = Angle(0.0f)
-        val QUARTER = Angle(0.25f)
-        val HALF = Angle(0.5f)
-        val THREE_QUARTERS = Angle(0.75f)
-        val FULL = Angle(1.0f)
+        val EPSILON = Angle.fromRatio(0.00001)
+        val ZERO = Angle.fromRatio(0.0)
+        val QUARTER = Angle.fromRatio(0.25)
+        val HALF = Angle.fromRatio(0.5)
+        val THREE_QUARTERS = Angle.fromRatio(0.75)
+        val FULL = Angle.fromRatio(1.0)
 
-        inline fun fromRatio(ratio: Float): Angle = Angle(ratio)
-        inline fun fromRatio(ratio: Double): Angle = Angle(ratio.toFloat())
+        inline fun fromRatio(ratio: Float): Angle = Angle(ratioToRadians(ratio.toRatio()))
+        inline fun fromRatio(ratio: Double): Angle = Angle(ratioToRadians(ratio.toRatio()))
+        inline fun fromRatio(ratio: Ratio): Angle = Angle(ratioToRadians(ratio))
 
-        inline fun fromRadians(radians: Double): Angle = fromRatio(radiansToRatio(radians))
-        inline fun fromRadians(radians: Float) = fromRadians(radians.toDouble())
-        inline fun fromRadians(radians: Int) = fromRadians(radians.toDouble())
+        inline fun fromRadians(radians: Double): Angle = Angle(radians)
+        inline fun fromRadians(radians: Float) = Angle(radians.toDouble())
+        inline fun fromRadians(radians: Int) = Angle(radians.toDouble())
 
-        inline fun fromDegrees(degrees: Double): Angle = fromRatio(degreesToRatio(degrees))
-        inline fun fromDegrees(degrees: Float) = fromDegrees(degrees.toDouble())
-        inline fun fromDegrees(degrees: Int) = fromDegrees(degrees.toDouble())
+        inline fun fromDegrees(degrees: Double): Angle = Angle(degreesToRadians(degrees))
+        inline fun fromDegrees(degrees: Float) = Angle(degreesToRadians(degrees.toDouble()))
+        inline fun fromDegrees(degrees: Int) = Angle(degreesToRadians(degrees.toDouble()))
 
         @Deprecated("", ReplaceWith("Angle.fromRatio(ratio).cosineD"))
-        inline fun cos01(ratio: Double): Double = Angle.fromRatio(ratio).cosineD
+        inline fun cos01(ratio: Double): Double = Angle.fromRatio(ratio).cosine
         @Deprecated("", ReplaceWith("Angle.fromRatio(ratio).sineD"))
-        inline fun sin01(ratio: Double): Double = Angle.fromRatio(ratio).sineD
+        inline fun sin01(ratio: Double): Double = Angle.fromRatio(ratio).sine
         @Deprecated("", ReplaceWith("Angle.fromRatio(ratio).tangentD"))
-        inline fun tan01(ratio: Double): Double = Angle.fromRatio(ratio).tangentD
+        inline fun tan01(ratio: Double): Double = Angle.fromRatio(ratio).tangent
 
-        inline fun atan2(x: Float, y: Float, up: Vector2 = Vector2.UP): Angle = fromRadians(kotlin.math.atan2(x, y)).adjustFromUp(up)
-        inline fun atan2(x: Double, y: Double, up: Vector2 = Vector2.UP): Angle = fromRadians(kotlin.math.atan2(x, y)).adjustFromUp(up)
-        inline fun atan2(p: Point, up: Vector2 = Vector2.UP): Angle = atan2(p.xD, p.yD, up)
+        inline fun atan2(x: Float, y: Float, up: Vector2D = Vector2D.UP): Angle = fromRadians(kotlin.math.atan2(x, y)).adjustFromUp(up)
+        inline fun atan2(x: Double, y: Double, up: Vector2D = Vector2D.UP): Angle = fromRadians(kotlin.math.atan2(x, y)).adjustFromUp(up)
+        inline fun atan2(p: Point, up: Vector2D = Vector2D.UP): Angle = atan2(p.x, p.y, up)
 
         inline fun asin(v: Double): Angle = kotlin.math.asin(v).radians
         inline fun asin(v: Float): Angle = kotlin.math.asin(v).radians
@@ -203,48 +179,46 @@ inline class Angle @PublishedApi internal constructor(
 
         fun arcTangent(x: Double, y: Double): Angle = kotlin.math.atan2(x, y).radians
         fun arcTangent(x: Float, y: Float): Angle = kotlin.math.atan2(x, y).radians
-        fun arcTangent(v: Vector2): Angle = kotlin.math.atan2(v.x, v.y).radians
+        fun arcTangent(v: Vector2F): Angle = kotlin.math.atan2(v.x, v.y).radians
 
-        inline fun ratioToDegrees(ratio: Double): Double = ratio * 360.0
-        inline fun ratioToRadians(ratio: Double): Double = ratio * PI2
-        inline fun degreesToRatio(degrees: Double): Double = degrees / 360.0
-        inline fun radiansToRatio(radians: Double): Double = radians / PI2
+        inline fun ratioToDegrees(ratio: Ratio): Double = ratio * 360.0
+        inline fun ratioToRadians(ratio: Ratio): Double = ratio * PI2
 
-        inline fun degreesToRatio(degrees: Float): Float = degrees / 360f
-        inline fun radiansToRatio(radians: Float): Float = radians / PI2F
-        inline fun ratioToDegrees(ratio: Float): Float = ratio * 360f
-        inline fun ratioToRadians(ratio: Float): Float = ratio * PI2F
+        inline fun degreesToRatio(degrees: Double): Ratio = Ratio(degrees / 360.0)
+        inline fun degreesToRadians(degrees: Double): Double = degrees * DEG2RAD
+
+        inline fun radiansToRatio(radians: Double): Ratio = Ratio(radians / PI2)
+        inline fun radiansToDegrees(radians: Double): Double = radians * RAD2DEG
 
         inline fun shortDistanceTo(from: Angle, to: Angle): Angle = Angle_shortDistanceTo(from, to)
         inline fun longDistanceTo(from: Angle, to: Angle): Angle = Angle_longDistanceTo(from, to)
-        inline fun between(x0: Double, y0: Double, x1: Double, y1: Double, up: Vector2 = Vector2.UP): Angle = Angle_between(x0, y0, x1, y1, up)
+        inline fun between(x0: Double, y0: Double, x1: Double, y1: Double, up: Vector2D = Vector2D.UP): Angle = Angle_between(x0, y0, x1, y1, up)
 
-        inline fun between(x0: Int, y0: Int, x1: Int, y1: Int, up: Vector2 = Vector2.UP): Angle = between(x0.toDouble(), y0.toDouble(), x1.toDouble(), y1.toDouble(), up)
-        inline fun between(x0: Float, y0: Float, x1: Float, y1: Float, up: Vector2 = Vector2.UP): Angle = between(x0.toDouble(), y0.toDouble(), x1.toDouble(), y1.toDouble(), up)
-        inline fun between(p0: Point, p1: Point, up: Vector2 = Vector2.UP): Angle = between(p0.x, p0.y, p1.x, p1.y, up)
+        inline fun between(x0: Int, y0: Int, x1: Int, y1: Int, up: Vector2D = Vector2D.UP): Angle = between(x0.toDouble(), y0.toDouble(), x1.toDouble(), y1.toDouble(), up)
+        inline fun between(x0: Float, y0: Float, x1: Float, y1: Float, up: Vector2D = Vector2D.UP): Angle = between(x0.toDouble(), y0.toDouble(), x1.toDouble(), y1.toDouble(), up)
 
-        inline fun between(ox: Double, oy: Double, x1: Double, y1: Double, x2: Double, y2: Double, up: Vector2 = Vector2.UP): Angle = between(x1 - ox, y1 - oy, x2 - ox, y2 - oy, up)
-        inline fun between(ox: Float, oy: Float, x1: Float, y1: Float, x2: Float, y2: Float, up: Vector2 = Vector2.UP): Angle = between(x1 - ox, y1 - oy, x2 - ox, y2 - oy, up)
+        inline fun between(p0: Point, p1: Point, up: Vector2D = Vector2D.UP): Angle = between(p0.x, p0.y, p1.x, p1.y, up)
+        inline fun between(p0: Vector2F, p1: Vector2F, up: Vector2D = Vector2D.UP): Angle = between(p0.x, p0.y, p1.x, p1.y, up)
 
-        inline fun between(o: Point, v1: Point, v2: Point, up: Vector2 = Vector2.UP): Angle = between(o.x, o.y, v1.x, v1.y, v2.x, v2.y, up)
+        inline fun between(ox: Double, oy: Double, x1: Double, y1: Double, x2: Double, y2: Double, up: Vector2D = Vector2D.UP): Angle = between(x1 - ox, y1 - oy, x2 - ox, y2 - oy, up)
+        inline fun between(ox: Float, oy: Float, x1: Float, y1: Float, x2: Float, y2: Float, up: Vector2D = Vector2D.UP): Angle = between(x1 - ox, y1 - oy, x2 - ox, y2 - oy, up)
+
+        inline fun between(o: Point, v1: Point, v2: Point, up: Vector2D = Vector2D.UP): Angle = between(o.x, o.y, v1.x, v1.y, v2.x, v2.y, up)
+        inline fun between(o: Vector2F, v1: Vector2F, v2: Vector2F, up: Vector2D = Vector2D.UP): Angle = between(o.x, o.y, v1.x, v1.y, v2.x, v2.y, up)
     }
 }
 
-inline fun cos(angle: Angle, up: Vector2 = Vector2.UP): Float = angle.cosine(up)
-inline fun sin(angle: Angle, up: Vector2 = Vector2.UP): Float = angle.sine(up)
-inline fun tan(angle: Angle, up: Vector2 = Vector2.UP): Float = angle.tangent(up)
+inline fun cos(angle: Angle, up: Vector2D = Vector2D.UP): Double = angle.cosine(up)
+inline fun sin(angle: Angle, up: Vector2D = Vector2D.UP): Double = angle.sine(up)
+inline fun tan(angle: Angle, up: Vector2D = Vector2D.UP): Double = angle.tangent(up)
 
-inline fun cosd(angle: Angle, up: Vector2 = Vector2.UP): Double = angle.cosineD(up)
-inline fun sind(angle: Angle, up: Vector2 = Vector2.UP): Double = angle.sineD(up)
-inline fun tand(angle: Angle, up: Vector2 = Vector2.UP): Double = angle.tangentD(up)
+inline fun cosf(angle: Angle, up: Vector2D = Vector2D.UP): Float = angle.cosine(up).toFloat()
+inline fun sinf(angle: Angle, up: Vector2D = Vector2D.UP): Float = angle.sine(up).toFloat()
+inline fun tanf(angle: Angle, up: Vector2D = Vector2D.UP): Float = angle.tangent(up).toFloat()
 
-inline fun cosf(angle: Angle, up: Vector2 = Vector2.UP): Float = angle.cosineF(up)
-inline fun sinf(angle: Angle, up: Vector2 = Vector2.UP): Float = angle.sineF(up)
-inline fun tanf(angle: Angle, up: Vector2 = Vector2.UP): Float = angle.tangentF(up)
-
-inline fun abs(angle: Angle): Angle = Angle.fromRatio(angle.ratio.absoluteValue)
-inline fun min(a: Angle, b: Angle): Angle = Angle.fromRatio(min(a.ratio, b.ratio))
-inline fun max(a: Angle, b: Angle): Angle = Angle.fromRatio(max(a.ratio, b.ratio))
+inline fun abs(angle: Angle): Angle = angle.absoluteValue
+inline fun min(a: Angle, b: Angle): Angle = Angle(min(a.internal, b.internal))
+inline fun max(a: Angle, b: Angle): Angle = Angle(max(a.internal, b.internal))
 
 fun Angle.clamp(min: Angle, max: Angle): Angle = min(max(this, min), max)
 

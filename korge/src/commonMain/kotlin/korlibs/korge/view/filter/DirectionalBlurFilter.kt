@@ -13,7 +13,7 @@ class DirectionalBlurFilter(
     @ViewProperty
     var angle: Angle = 0.degrees,
     @ViewProperty
-    var radius: Float = 4f,
+    var radius: Double = 4.0,
     @ViewProperty
     var expandBorder: Boolean = true
 ) : ShaderFilter() {
@@ -25,6 +25,12 @@ class DirectionalBlurFilter(
     }
 
     companion object : BaseProgramProvider() {
+        inline operator fun invoke(
+            angle: Angle = 0.degrees,
+            radius: Number = 4.0,
+            expandBorder: Boolean = true
+        ): DirectionalBlurFilter = DirectionalBlurFilter(angle, radius.toDouble(), expandBorder)
+
         override val fragment = FragmentShaderDefault {
             val loopLen = createTemp(Int1)
             val gaussianResult = createTemp(Float1)
@@ -60,7 +66,7 @@ class DirectionalBlurFilter(
     private val qfactor: Float = sqrt(2 * ln(255f))
 
     //private val rradius: Double get() = (radius * ln(radius).coerceAtLeast(1.0)).coerceAtLeast(0.0)
-    private val rradius: Float get() = (radius * qfactor)
+    private val rradius: Double get() = (radius * qfactor)
 
     // @TODO: Here we cannot do this, but we should be able to do this trick: https://www.rastergrid.com/blog/2010/09/efficient-gaussian-blur-with-linear-sampling/
     //override val recommendedFilterScale: Float get() = if (rradius <= 2.0) 1.0 else 1.0 / log2(rradius.coerceAtLeast(1.0))
@@ -69,15 +75,15 @@ class DirectionalBlurFilter(
         if (!expandBorder) return MarginInt.ZERO
         val radius = this.rradius
         return MarginInt(
-            (angle.sineD.absoluteValue * radius).toIntCeil(),//.coerceAtMost(texWidth),
-            (angle.cosineD.absoluteValue * radius).toIntCeil(),//.coerceAtMost(texHeight),
+            (angle.sine.absoluteValue * radius).toIntCeil(),//.coerceAtMost(texWidth),
+            (angle.cosine.absoluteValue * radius).toIntCeil(),//.coerceAtMost(texHeight),
         )
     }
 
     private fun gaussian(x: Float, constant1: Float, constant2: Float): Float = constant1 * exp((-x * x) * constant2)
 
-    override fun updateUniforms(ctx: RenderContext, filterScale: Float) {
-        val radius = this.rradius * filterScale
+    override fun updateUniforms(ctx: RenderContext, filterScale: Double) {
+        val radius = (this.rradius * filterScale).toFloat()
         //println("rradius=$rradius")
         //val sigma = max(radius / 3.0, 0.9)
         val sigma = (radius + 1) / qfactor
@@ -99,11 +105,11 @@ class DirectionalBlurFilter(
             it[u_radius] = radius
             it[u_constant1] = constant1 * (1f / scaleSum)
             it[u_constant2] = constant2
-            it[u_direction] = Point(angle.cosineF, angle.sineF)
+            it[u_direction] = Point(angle.cosine, angle.sine)
         }
     }
 
     override val programProvider: ProgramProvider get() = DirectionalBlurFilter
 
-    override val isIdentity: Boolean get() = radius == 0f
+    override val isIdentity: Boolean get() = radius == 0.0
 }

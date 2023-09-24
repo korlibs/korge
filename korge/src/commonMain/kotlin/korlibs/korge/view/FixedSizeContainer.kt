@@ -1,7 +1,6 @@
 package korlibs.korge.view
 
 import korlibs.datastructure.*
-import korlibs.io.util.*
 import korlibs.korge.internal.*
 import korlibs.korge.render.*
 import korlibs.korge.view.filter.*
@@ -28,7 +27,7 @@ open class FixedSizeContainer(
 ) : Container(), View.Reference {
     override var unscaledSize: Size = size
 
-    override fun getLocalBoundsInternal() = Rectangle(0f, 0f, width, height)
+    override fun getLocalBoundsInternal() = Rectangle(0.0, 0.0, width, height)
 
     override fun toString(): String {
         var out = super.toString()
@@ -50,7 +49,7 @@ open class FixedSizeContainer(
             }
             if (clip) {
                 val m = view.globalMatrix
-                val hasRotation = m.b != 0f || m.c != 0f
+                val hasRotation = m.b != 0.0 || m.c != 0.0
                 //val hasNegativeScale = m.a < 0.0 || m.d < 0.0
                 //if (hasRotation || hasNegativeScale) {
                 if (hasRotation) {

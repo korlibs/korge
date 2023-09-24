@@ -3,7 +3,6 @@ package samples
 import korlibs.datastructure.*
 import korlibs.image.color.*
 import korlibs.image.font.*
-import korlibs.io.util.*
 import korlibs.korge.input.*
 import korlibs.korge.scene.*
 import korlibs.korge.view.*
@@ -24,8 +23,8 @@ class MainBVH : Scene() {
         val rand = Random(0)
         val rects = arrayListOf<SolidRect>()
         for (n in 0 until 2_000) {
-            val x = rand[0.0, widthD]
-            val y = rand[0.0, heightD]
+            val x = rand[0.0, width]
+            val y = rand[0.0, height]
             val width = rand[1.0, 50.0]
             val height = rand[1.0, 50.0]
             val view = solidRect(width, height, rand[Colors.RED, Colors.BLUE]).xy(x, y)
@@ -39,14 +38,14 @@ class MainBVH : Scene() {
                 if (view.x < 0) {
                     view.movingDirection = +1
                 }
-                if (view.xD > stage!!.widthD) {
+                if (view.x > stage!!.width) {
                     view.movingDirection = -1
                 }
-                view.xD += view.movingDirection
+                view.x += view.movingDirection
                 bvh.insertOrUpdate(view.getBounds(this), view)
             }
         }
-        val center = Point(widthD / 2, heightD / 2)
+        val center = Point(width / 2, height / 2)
         var dir = Point(-1, -1)
         var ray = Ray(center, dir)
         val statusText = text("", font = DefaultTtfFontAsBitmap)
@@ -61,7 +60,7 @@ class MainBVH : Scene() {
             var allObjectsSize = 0
             var rayObjectsSize = 0
             var rectangleObjectsSize = 0
-            val allObjects = bvh.search(Rectangle(0.0, 0.0, widthD, heightD))
+            val allObjects = bvh.search(Rectangle(0.0, 0.0, width, height))
             val time = measureTime {
                 val rayObjects = bvh.intersect(ray)
                 val rectangleObjects = bvh.search(selectedRectangle)
@@ -81,7 +80,7 @@ class MainBVH : Scene() {
             val mousePos = localMousePos(views)
             val angle = Point.angleFull(center, mousePos)
             //println("center=$center, mousePos=$mousePos, angle = $angle")
-            dir = Vector2(angle.cosineD, angle.sineD)
+            dir = Vector2D(angle.cosine, angle.sine)
             ray = Ray(center, dir)
             rayLine.setPoints(center, center + (dir * 1000))
 

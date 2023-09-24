@@ -29,11 +29,11 @@ class MainStrokesExperiment3 : Scene() {
             val points = path.toCurves().toNonCurveSimplePointList()
             val path2 = points?.toPolygon()
 
-            stroke(Colors.BLUE, StrokeInfo(thickness = 3f)) {
+            stroke(Colors.BLUE, StrokeInfo(thickness = 3.0)) {
                 path(path)
             }
 
-            stroke(Colors.RED, StrokeInfo(thickness = 2f)) {
+            stroke(Colors.RED, StrokeInfo(thickness = 2.0)) {
                 path(path2)
             }
 
@@ -71,7 +71,7 @@ class MainStrokesExperiment2 : Scene() {
     override suspend fun SContainer.sceneMain() {
         val path = buildVectorPath {}
         val curves = path.getCurves()
-        val points = curves.toStrokePointsList(10f, mode = StrokePointsMode.SCALABLE_POS_NORMAL_WIDTH)
+        val points = curves.toStrokePointsList(10.0, mode = StrokePointsMode.SCALABLE_POS_NORMAL_WIDTH)
         //addChild(DebugVertexView(points.vector, type = AGDrawType.LINE_STRIP).also { it.color = Colors.WHITE })
         val dbv = debugVertexView(points.map { it.vector }, type = AGDrawType.TRIANGLE_STRIP) { color = Colors.WHITE }
         val dbv3 = debugVertexView(type = AGDrawType.LINE_STRIP) { color = Colors.BLUE.withAd(0.1) }
@@ -80,8 +80,8 @@ class MainStrokesExperiment2 : Scene() {
         //val dbv4 = graphics {  }
 
         var alternate = false
-        var pathScale = 1f
-        var strokeWidth = 20f
+        var pathScale = 1.0
+        var strokeWidth = 20.0
         var debug = true
         var closed = false
         var quad = false
@@ -107,11 +107,11 @@ class MainStrokesExperiment2 : Scene() {
         launchImmediately {
             while (true) {
                 if (alternate) {
-                    startX = this@MainStrokesExperiment2.stage.mousePos.xD
-                    startY = this@MainStrokesExperiment2.stage.mousePos.yD
+                    startX = this@MainStrokesExperiment2.stage.mousePos.x
+                    startY = this@MainStrokesExperiment2.stage.mousePos.y
                 } else {
-                    endX = this@MainStrokesExperiment2.stage.mousePos.xD
-                    endY = this@MainStrokesExperiment2.stage.mousePos.yD
+                    endX = this@MainStrokesExperiment2.stage.mousePos.x
+                    endY = this@MainStrokesExperiment2.stage.mousePos.y
                 }
 
                 val path = buildVectorPath {
@@ -143,13 +143,13 @@ class MainStrokesExperiment2 : Scene() {
                 //dbv.points = curves.toStrokePoints(5.0, endCap = LineCap.ROUND, startCap = LineCap.ROUND, mode = StrokePointsMode.SCALABLE_POS_NORMAL_WIDTH).vector
                 //dbv.points = curves.toStrokePoints(5.0, endCap = LineCap.ROUND, startCap = LineCap.ROUND, mode = StrokePointsMode.SCALABLE_POS_NORMAL_WIDTH).also {
                 val pointsInfoList = curves
-                    .toStrokePointsList(strokeWidth, mode = StrokePointsMode.SCALABLE_POS_NORMAL_WIDTH, lineDash = if (dashes) floatArrayListOf(30f, 10f) else null, generateDebug = debug)
+                    .toStrokePointsList(strokeWidth, mode = StrokePointsMode.SCALABLE_POS_NORMAL_WIDTH, lineDash = if (dashes) doubleArrayListOf(30.0, 10.0) else null, generateDebug = debug)
                 dbv.pointsList = pointsInfoList.map { it.vector }
                 dbv3.pointsList = pointsInfoList.map { it.vector }
                 dbv4.updateShape {
                     pointsInfoList.fastForEach { pointsInfo ->
                         pointsInfo.debugSegments.fastForEach { line ->
-                            stroke(Colors.GREEN, lineWidth = 1.5f) {
+                            stroke(Colors.GREEN, lineWidth = 1.5) {
                                 //println("line=$line")
                                 this.line(line.a, line.b)
                             }
@@ -209,7 +209,7 @@ class MainStrokesExperiment : Scene() {
         }
         //.applyTransform(Matrix().translate(-100, -200))
         val curves = path.getCurves()
-        val points = curves.toStrokePointsList(10f, mode = StrokePointsMode.SCALABLE_POS_NORMAL_WIDTH)
+        val points = curves.toStrokePointsList(10.0, mode = StrokePointsMode.SCALABLE_POS_NORMAL_WIDTH)
         //Bezier(10.0, 10.0).inflections()
         //points.scale(2.0)
 
@@ -217,16 +217,16 @@ class MainStrokesExperiment : Scene() {
 
         addChild(DebugVertexView(points.map { it.vector }).also { it.color = Colors.WHITE })
 
-        fun generateDashes(offset: Float): Container = Container().apply {
+        fun generateDashes(offset: Double): Container = Container().apply {
             addChild(DebugVertexView(curves
-                .toDashes(floatArrayOf(180f, 50f), offset = offset)
-                .toStrokePointsList(20f)
+                .toDashes(doubleArrayOf(180.0, 50.0), offset = offset)
+                .toStrokePointsList(20.0)
                 .map { it.vector }
             ).also { it.color = Colors.BLUEVIOLET })
         }
 
         class OffsetInfo {
-            var offset = 0f
+            var offset = 0.0
         }
 
         val container = container {
@@ -257,7 +257,7 @@ class MainStrokesExperiment : Scene() {
             cpuGraphics {
                 stroke(Colors.GREEN, StrokeInfo(thickness = 2f)) {
                     Ratio.forEachRatio(200) { ratio ->
-                        val t = curves.ratioFromLength(ratio.convertToRange(0f, curves.length))
+                        val t = curves.ratioFromLength(ratio.convertToRange(0.0, curves.length))
                         //println("t=$t")
                         val p = curves.calc(t)
                         val n = curves.normal(t)
@@ -267,7 +267,7 @@ class MainStrokesExperiment : Scene() {
                 fill(Colors.RED) {
                     this.text(
                         "Hello, this is a test. Oh nice! Text following paths! How cool is that? Really cool? or not at all?\nCOOL, COOL, COOL, let's rock this path a bit more because it is cool, yeah!",
-                        DefaultTtfFont, textSize = 32f, pos = Point.ZERO, renderer = DefaultStringTextRenderer.aroundPath(path)
+                        DefaultTtfFont, textSize = 32.0, pos = Point.ZERO, renderer = DefaultStringTextRenderer.aroundPath(path)
                     )
                 }
             }

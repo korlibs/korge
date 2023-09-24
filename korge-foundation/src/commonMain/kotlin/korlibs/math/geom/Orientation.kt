@@ -13,7 +13,6 @@ enum class Orientation(val value: Int) {
     operator fun unaryPlus(): Orientation = this
 
     companion object {
-        private const val EPSILONf: Float = 1e-4f
         private const val EPSILON: Double = 1e-7
 
         //fun orient3d(v1: Vector3, v2: Vector3, v3: Vector3, epsilon: Float = EPSILONf): Orientation {
@@ -29,16 +28,16 @@ enum class Orientation(val value: Int) {
         //    }
         //}
 
-        internal fun checkValidUpVector(up: Vector2) {
-            check(up.x == 0f && up.y.absoluteValue == 1f) { "up vector only supports (0, -1) and (0, +1) for now" }
+        internal fun checkValidUpVector(up: Vector2D) {
+            check(up.x == 0.0 && up.y.absoluteValue == 1.0) { "up vector only supports (0, -1) and (0, +1) for now" }
         }
 
         // @TODO: Should we provide an UP vector as reference instead? ie. Vector2(0, +1) or Vector2(0, -1), would make sense for 3d?
-        fun orient2d(pa: Point, pb: Point, pc: Point, up: Vector2 = Vector2.UP): Orientation {
-            return orient2d(pa.xD, pa.yD, pb.xD, pb.yD, pc.xD, pc.yD, up = up)
+        fun orient2d(pa: Point, pb: Point, pc: Point, up: Vector2D = Vector2D.UP): Orientation {
+            return orient2d(pa.x, pa.y, pb.x, pb.y, pc.x, pc.y, up = up)
         }
 
-        fun orient2d(paX: Double, paY: Double, pbX: Double, pbY: Double, pcX: Double, pcY: Double, epsilon: Double = EPSILON, up: Vector2 = Vector2.UP): Orientation {
+        fun orient2d(paX: Double, paY: Double, pbX: Double, pbY: Double, pcX: Double, pcY: Double, epsilon: Double = EPSILON, up: Vector2D = Vector2D.UP): Orientation {
             checkValidUpVector(up)
             // Cross product
             val detleft: Double = (paX - pcX) * (pbY - pcY)
@@ -52,12 +51,5 @@ enum class Orientation(val value: Int) {
             }
             return if (up.y > 0) res else -res
         }
-
-        @Deprecated("", ReplaceWith(
-            "orient2d(paX, paY, pbX, pbY, pcX, pcY, epsilon, up = Vector2.UP_SCREEN)",
-            "korlibs.math.geom.Orientation.Companion.orient2d"
-        ))
-        fun orient2dFixed(paX: Double, paY: Double, pbX: Double, pbY: Double, pcX: Double, pcY: Double, epsilon: Double = EPSILON): Orientation =
-            orient2d(paX, paY, pbX, pbY, pcX, pcY, epsilon, up = Vector2.UP_SCREEN)
     }
 }

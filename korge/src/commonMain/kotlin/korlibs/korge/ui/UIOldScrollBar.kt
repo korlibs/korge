@@ -6,7 +6,7 @@ import korlibs.io.async.*
 import korlibs.korge.input.*
 import korlibs.korge.render.*
 import korlibs.korge.style.*
-import korlibs.korge.ui.UIOldScrollBar.Direction
+import korlibs.korge.ui.UIOldScrollBar.*
 import korlibs.korge.view.*
 import korlibs.math.*
 import korlibs.math.geom.*
@@ -16,11 +16,11 @@ import kotlin.math.*
 @Deprecated("Use UINewScrollable")
 inline fun Container.uiOldScrollBar(
     size: Size,
-    current: Float = 0f,
-    pageSize: Float = 1f,
-    totalSize: Float = 10f,
-    buttonSize: Float = 32f,
-    stepSize: Float = pageSize / 10f,
+    current: Double = 0.0,
+    pageSize: Double = 1.0,
+    totalSize: Double = 10.0,
+    buttonSize: Double = 32.0,
+    stepSize: Double = pageSize / 10.0,
     direction: Direction = Direction.auto(size),
     block: @ViewDslMarker UIOldScrollBar.() -> Unit = {}
 ): UIOldScrollBar = UIOldScrollBar(size, current, pageSize, totalSize, buttonSize, stepSize, direction).addTo(this).apply(block)
@@ -28,11 +28,11 @@ inline fun Container.uiOldScrollBar(
 @Deprecated("Use UINewScrollable")
 open class UIOldScrollBar(
     size: Size,
-    current: Float,
-    pageSize: Float,
-    totalSize: Float,
-    buttonSize: Float = 32f,
-    var stepSize: Float = pageSize / 10f,
+    current: Double,
+    pageSize: Double,
+    totalSize: Double,
+    buttonSize: Double = 32.0,
+    var stepSize: Double = pageSize / 10.0,
     direction: Direction = Direction.auto(size)
 ) : UIView(size) {
 
@@ -64,14 +64,14 @@ open class UIOldScrollBar(
     val isHorizontal get() = direction == Direction.Horizontal
     val isVertical get() = direction == Direction.Vertical
 
-    val buttonWidth: Float get() = if (!buttonVisible) 0f else if (isHorizontal) buttonSize else width
-    val buttonHeight: Float get() = if (!buttonVisible) 0f else if (isHorizontal) height else buttonSize
-    val trackWidth: Float get() = if (isHorizontal) width - buttonWidth * 2 else width
-    val trackHeight: Float get() = if (isHorizontal) height else height - buttonHeight * 2
+    val buttonWidth: Double get() = if (!buttonVisible) 0.0 else if (isHorizontal) buttonSize else width
+    val buttonHeight: Double get() = if (!buttonVisible) 0.0 else if (isHorizontal) height else buttonSize
+    val trackWidth: Double get() = if (isHorizontal) width - buttonWidth * 2 else width
+    val trackHeight: Double get() = if (isHorizontal) height else height - buttonHeight * 2
 
     val onChange = Signal<UIOldScrollBar>()
 
-    override var ratio: Float
+    override var ratio: Double
         get() = (current / (totalSize - pageSize)).clamp01()
         set(value) {
             current = value.clamp01() * (totalSize - pageSize)
@@ -108,8 +108,8 @@ open class UIOldScrollBar(
             changeCurrent(pos.sign * 0.8f * this.pageSize)
         }
 
-        var initRatio = 0f
-        var startRatio = 0f
+        var initRatio = 0.0
+        var startRatio = 0.0
         thumb.onMouseDrag {
             val lmouse = background.localMousePos(views)
             val curPosition = if (isHorizontal) lmouse.x else lmouse.y
@@ -124,30 +124,30 @@ open class UIOldScrollBar(
         }
     }
 
-    protected fun changeCurrent(value: Float) {
-        current = (current + value).clamp(0f, totalSize - pageSize)
+    protected fun changeCurrent(value: Double) {
+        current = (current + value).clamp(0.0, totalSize - pageSize)
     }
 
     protected fun reshape() {
         if (isHorizontal) {
-            background.position(buttonWidth, 0f).size(trackWidth, trackHeight)
+            background.position(buttonWidth, 0.0).size(trackWidth, trackHeight)
             upButton.position(0, 0).size(buttonWidth, buttonHeight)
-            downButton.position(widthD - buttonWidth, 0.0).size(buttonWidth, buttonHeight)
+            downButton.position(width - buttonWidth, 0.0).size(buttonWidth, buttonHeight)
         } else {
-            background.position(0f, buttonHeight).size(trackWidth, trackHeight)
+            background.position(0.0, buttonHeight).size(trackWidth, trackHeight)
             upButton.position(0, 0).size(buttonWidth, buttonHeight)
-            downButton.position(0.0, heightD - buttonHeight).size(buttonWidth, buttonHeight)
+            downButton.position(0.0, height - buttonHeight).size(buttonWidth, buttonHeight)
         }
         updatePosition()
     }
 
     protected fun updatePosition() {
         if (isHorizontal) {
-            val thumbWidth = (trackWidth * (pageSize / totalSize)).clamp(4f, trackWidth)
-            thumb.position(buttonWidth + (trackWidth - thumbWidth) * ratio, 0f).size(thumbWidth, trackHeight)
+            val thumbWidth = (trackWidth * (pageSize / totalSize)).clamp(4.0, trackWidth)
+            thumb.position(buttonWidth + (trackWidth - thumbWidth) * ratio, 0.0).size(thumbWidth, trackHeight)
         } else {
-            val thumbHeight = (trackHeight * (pageSize / totalSize)).clamp(4f, trackHeight)
-            thumb.position(0f, buttonHeight + (trackHeight - thumbHeight) * ratio).size(trackWidth, thumbHeight)
+            val thumbHeight = (trackHeight * (pageSize / totalSize)).clamp(4.0, trackHeight)
+            thumb.position(0.0, buttonHeight + (trackHeight - thumbHeight) * ratio).size(trackWidth, thumbHeight)
         }
         onChange(this)
     }
