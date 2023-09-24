@@ -392,7 +392,7 @@ object RootKorlibsPlugin {
                         }
 
                         if (hasAndroid) {
-                            val android = createPairSourceSet("android", jvmAndroid) { test ->
+                            val android = createPairSourceSet("android", jvmAndroid, doTest = false) { test ->
                                 dependencies {
                                     if (test) {
                                         //implementation(kotlin("test"))
@@ -417,12 +417,12 @@ object RootKorlibsPlugin {
                         }
 
                         if (project.isWasmEnabled()) {
-                            val wasm = createPairSourceSet("wasm", common) { test ->
+                            val wasm = createPairSourceSet("wasmJs", common) { test ->
                                 dependencies {
                                     if (test) {
-                                        implementation(kotlin("test-wasm"))
+                                        implementation(kotlin("test-wasm-js"))
                                     } else {
-                                        implementation(kotlin("stdlib-wasm"))
+                                        implementation(kotlin("stdlib-wasm-js"))
                                     }
                                 }
                             }
