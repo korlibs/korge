@@ -144,6 +144,7 @@ data class GradientPaint(
     fun fillColors(out: RgbaArray): Unit = _fillColors(out.ints, stops, colors, premultiplied = false)
     fun fillColors(out: RgbaPremultipliedArray): Unit = _fillColors(out.ints, stops, colors, premultiplied = true)
 
+    fun addColorStop(stop: Ratio, color: RGBA): GradientPaint = addColorStop(stop.toDouble(), color)
     fun addColorStop(stop: Double, color: RGBA): GradientPaint = add(stop, color)
     inline fun addColorStop(stop: Number, color: RGBA): GradientPaint = add(stop.toDouble(), color)
 

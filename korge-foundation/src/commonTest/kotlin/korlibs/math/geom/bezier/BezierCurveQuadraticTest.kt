@@ -32,9 +32,9 @@ class BezierCurveQuadraticTest {
 
     @Test
     fun testHasTheExpectedNormals() {
-        assertEquals(Point(-0.8944271909999159, 0.4472135954999579), b.normal(Ratio.ZERO))
-        assertEquals(Point(-0.0, 1.0), b.normal(Ratio.HALF))
-        assertEquals(Point(0.8944271909999159, 0.4472135954999579), b.normal(Ratio.ONE))
+        assertEqualsFloat(Point(-0.8944271909999159, 0.4472135954999579), b.normal(Ratio.ZERO))
+        assertEqualsFloat(Point(-0.0, 1.0), b.normal(Ratio.HALF))
+        assertEqualsFloat(Point(0.8944271909999159, 0.4472135954999579), b.normal(Ratio.ONE))
     }
 
     @Test

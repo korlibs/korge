@@ -7,7 +7,7 @@ import korlibs.math.annotations.*
 import korlibs.number.*
 import kotlin.math.*
 
-sealed interface PointList : IDoubleVectorArrayList, Extra {
+sealed interface PointList : DoubleVectorList, Extra {
     override val dimensions: Int get() = 2
     //override fun get(index: Int, dim: Int): Double
     fun getX(index: Int): Double = get(index, 0)
@@ -402,7 +402,7 @@ inline fun PointIntList.fastForEachReverse(block: (x: Int, y: Int) -> Unit) {
 fun List<PointList>.flatten(): PointList =
     PointArrayList(this.sumOf { it.size }).also { out -> this.fastForEach { out.add(it) } }
 
-sealed interface IDoubleVectorArrayList : Extra {
+sealed interface DoubleVectorList : Extra, IsAlmostEquals<DoubleVectorList> {
     fun isEmpty(): Boolean = size == 0
     fun isNotEmpty(): Boolean = size != 0
 
@@ -411,28 +411,37 @@ sealed interface IDoubleVectorArrayList : Extra {
     val dimensions: Int
     operator fun get(index: Int, dim: Int): Double
     fun getGeneric(index: Int): GenericDoubleVector = GenericDoubleVector(dimensions, DoubleArray(dimensions) { get(index, it) })
+
+    override fun isAlmostEquals(other: DoubleVectorList, epsilon: Double): Boolean {
+        if (this.size != other.size) return false
+        if (this.dimensions != other.dimensions) return false
+        for (dim in 0 until dimensions) for (n in 0 until size) {
+            if (!this[n, dim].isAlmostEquals(other[n, dim], epsilon)) return false
+        }
+        return true
+    }
 }
 
-inline fun IDoubleVectorArrayList.getOrElse(index: Int, dim: Int, default: Double = 0.0): Double {
+inline fun DoubleVectorList.getOrElse(index: Int, dim: Int, default: Double = 0.0): Double {
     if (index < 0 || index >= size) return default
     if (dim < 0 || dim >= dimensions) return default
     return this[index, dim]
 }
 
-inline fun <T : IDoubleVectorArrayList> T.fastForEachGeneric(block: T.(n: Int) -> Unit): Unit {
+inline fun <T : DoubleVectorList> T.fastForEachGeneric(block: T.(n: Int) -> Unit): Unit {
     for (n in 0 until size) {
         block(this, n)
     }
 }
 
-fun IDoubleVectorArrayList.getX(index: Int): Double = get(index, 0)
-fun IDoubleVectorArrayList.getY(index: Int): Double = get(index, 1)
-fun IDoubleVectorArrayList.getZ(index: Int): Double = get(index, 2)
+fun DoubleVectorList.getX(index: Int): Double = get(index, 0)
+fun DoubleVectorList.getY(index: Int): Double = get(index, 1)
+fun DoubleVectorList.getZ(index: Int): Double = get(index, 2)
 
-class VectorArrayList(
+class DoubleVectorArrayList(
     override val dimensions: Int,
     capacity: Int = 7,
-) : IDoubleVectorArrayList, Extra by Extra.Mixin() {
+) : DoubleVectorList, Extra by Extra.Mixin() {
     val data = DoubleArrayList(capacity * dimensions)
 
     override var closed: Boolean = false
@@ -520,35 +529,35 @@ class VectorArrayList(
 
     fun vectorToStringBuilder(index: Int, out: StringBuilder, roundDecimalPlaces: Int? = null) {
         out.appendGenericArray(dimensions) {
-            val v = this@VectorArrayList[index, it].toDouble()
+            val v = this@DoubleVectorArrayList[index, it].toDouble()
             appendNice(if (roundDecimalPlaces != null) v.roundDecimalPlaces(roundDecimalPlaces) else v)
         }
     }
 
     fun vectorToString(index: Int): String = buildString { vectorToStringBuilder(index, this) }
 
-    override fun equals(other: Any?): Boolean = other is VectorArrayList && this.dimensions == other.dimensions && this.data == other.data
+    override fun equals(other: Any?): Boolean = other is DoubleVectorArrayList && this.dimensions == other.dimensions && this.data == other.data
     override fun hashCode(): Int = data.hashCode()
 
     override fun toString(): String = toString(roundDecimalPlaces = null)
 
     fun toString(roundDecimalPlaces: Int? = null): String = buildString {
-        append("VectorArrayList[${this@VectorArrayList.size}](\n")
-        for (n in 0 until this@VectorArrayList.size) {
+        append("VectorArrayList[${this@DoubleVectorArrayList.size}](\n")
+        for (n in 0 until this@DoubleVectorArrayList.size) {
             if (n != 0) append(", \n")
             append("   ")
-            this@VectorArrayList.vectorToStringBuilder(n, this, roundDecimalPlaces)
+            this@DoubleVectorArrayList.vectorToStringBuilder(n, this, roundDecimalPlaces)
         }
         append("\n)")
     }
 
-    fun add(other: VectorArrayList, index: Int, count: Int = 1) {
+    fun add(other: DoubleVectorArrayList, index: Int, count: Int = 1) {
         add(other.data.data, index * dimensions, count)
     }
 
-    fun clone(): VectorArrayList = VectorArrayList(dimensions, this.size).also { it.add(this, 0, size) }
+    fun clone(): DoubleVectorArrayList = DoubleVectorArrayList(dimensions, this.size).also { it.add(this, 0, size) }
 
-    fun roundDecimalPlaces(places: Int): VectorArrayList {
+    fun roundDecimalPlaces(places: Int): DoubleVectorArrayList {
         for (n in 0 until data.size) data[n] = data[n].roundDecimalPlaces(places)
         return this
     }
@@ -558,27 +567,27 @@ class VectorArrayList(
     }
 }
 
-fun <T> IDoubleVectorArrayList.mapVector(block: (list: IDoubleVectorArrayList, index: Int) -> T): List<T> {
+fun <T> DoubleVectorList.mapVector(block: (list: DoubleVectorList, index: Int) -> T): List<T> {
     val out = fastArrayListOf<T>()
     for (n in 0 until size) out.add(block(this, n))
     return out
 }
 
-fun vectorDoubleArrayListOf(vararg vectors: IGenericDoubleVector, dimensions: Int = vectors.first().dimensions): VectorArrayList =
-    VectorArrayList(dimensions, vectors.size).also { array -> vectors.fastForEach { array.add(it) } }
+fun vectorDoubleArrayListOf(vararg vectors: IGenericDoubleVector, dimensions: Int = vectors.first().dimensions): DoubleVectorArrayList =
+    DoubleVectorArrayList(dimensions, vectors.size).also { array -> vectors.fastForEach { array.add(it) } }
 
-fun vectorDoubleArrayListOf(vararg vectors: GenericDoubleVector, dimensions: Int = vectors.first().dimensions): VectorArrayList =
-    VectorArrayList(dimensions, vectors.size).also { array -> vectors.fastForEach { array.add(it) } }
+fun vectorDoubleArrayListOf(vararg vectors: GenericDoubleVector, dimensions: Int = vectors.first().dimensions): DoubleVectorArrayList =
+    DoubleVectorArrayList(dimensions, vectors.size).also { array -> vectors.fastForEach { array.add(it) } }
 
-fun vectorDoubleArrayListOf(vararg data: Double, dimensions: Int): VectorArrayList {
+fun vectorDoubleArrayListOf(vararg data: Double, dimensions: Int): DoubleVectorArrayList {
     if (data.size % dimensions != 0) error("${data.size} is not multiple of $dimensions")
-    val out = VectorArrayList(dimensions, data.size / dimensions)
+    val out = DoubleVectorArrayList(dimensions, data.size / dimensions)
     out.data.add(data)
     return out
 }
-fun vectorDoubleArrayListOf(vararg data: Float, dimensions: Int): VectorArrayList =
+fun vectorDoubleArrayListOf(vararg data: Float, dimensions: Int): DoubleVectorArrayList =
     vectorDoubleArrayListOf(*data.mapDouble { it.toDouble() }, dimensions = dimensions)
-fun vectorDoubleArrayListOf(vararg data: Int, dimensions: Int): VectorArrayList =
+fun vectorDoubleArrayListOf(vararg data: Int, dimensions: Int): DoubleVectorArrayList =
     vectorDoubleArrayListOf(*data.mapDouble { it.toDouble() }, dimensions = dimensions)
 
 sealed interface IGenericDoubleVector {

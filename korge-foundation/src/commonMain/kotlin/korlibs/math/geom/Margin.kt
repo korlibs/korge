@@ -1,5 +1,6 @@
 package korlibs.math.geom
 
+import korlibs.math.*
 import korlibs.number.*
 
 /**
@@ -10,7 +11,7 @@ data class Margin(
     val right: Double,
     val bottom: Double,
     val left: Double,
-) {
+) : IsAlmostEquals<Margin> {
     companion object {
         val ZERO = Margin(0.0, 0.0, 0.0, 0.0)
 
@@ -26,6 +27,13 @@ data class Margin(
     operator fun minus(other: Margin): Margin = Margin(top - other.top, right - other.right, bottom - other.bottom, left - other.left)
 
     val isNotZero: Boolean get() = top != 0.0 || left != 0.0 || right != 0.0 || bottom != 0.0
+
+    override fun isAlmostEquals(other: Margin, epsilon: Double): Boolean =
+        this.left.isAlmostEquals(other.left, epsilon) &&
+            this.right.isAlmostEquals(other.right, epsilon) &&
+            this.top.isAlmostEquals(other.top, epsilon) &&
+            this.bottom.isAlmostEquals(other.bottom, epsilon)
+    fun isAlmostZero(epsilon: Double = 0.000001): Boolean = isAlmostEquals(ZERO, epsilon)
 
     val topFixed: FixedShort get() = top.toFixedShort()
     val rightFixed: FixedShort get() = right.toFixedShort()

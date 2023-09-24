@@ -1,5 +1,6 @@
 package korlibs.math.geom.shape
 
+import korlibs.math.*
 import korlibs.math.geom.*
 import korlibs.math.geom.vector.*
 import korlibs.number.*
@@ -116,7 +117,7 @@ class Shape2DTest {
             approximateCurve(
                 10,
                 { ratio, get -> get(Point(ratio * 100.0, -ratio * 100.0)) },
-                { (x, y) -> out.add("(${x.toInt()},${y.toInt()})") },
+                { (x, y) -> out.add("(${x.toIntRound()},${y.toIntRound()})") },
                 start, end
             )
         }.joinToString(" ")

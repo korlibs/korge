@@ -35,9 +35,9 @@ class BezierCurveCubicTest {
 
     @Test
     fun testHasTheExpectedNormals() {
-        assertEquals(Point(-1, 0), b.normal(Ratio.ZERO))
-        assertEquals(Point(-0.0, 1.0), b.normal(Ratio.HALF))
-        assertEquals(Point(1.0, 0.0), b.normal(Ratio.ONE))
+        assertEqualsFloat(Point(-1, 0), b.normal(Ratio.ZERO))
+        assertEqualsFloat(Point(-0.0, 1.0), b.normal(Ratio.HALF))
+        assertEqualsFloat(Point(1.0, 0.0), b.normal(Ratio.ONE))
     }
 
     @Test

@@ -32,11 +32,11 @@ class RayTest {
     fun testFromTwoPoints() {
         Ray.fromTwoPoints(Point(1, 0), Point(3, 0)).also { ray ->
             assertEqualsFloat(Point(1, 0), ray.point)
-            assertEqualsFloat(Vector2F(1, 0), ray.direction)
+            assertEqualsFloat(Vector2D(1, 0), ray.direction)
         }
         Ray.fromTwoPoints(Point(10, 10), Point(10, 7)).also { ray ->
             assertEqualsFloat(Point(10, 10), ray.point)
-            assertEqualsFloat(Vector2F(0, -1), ray.direction)
+            assertEqualsFloat(Vector2D(0, -1), ray.direction)
         }
         Ray.fromTwoPoints(Point(1, 1), Point(3, 3)).also { ray ->
             assertEqualsFloat(Point(1, 1), ray.point)

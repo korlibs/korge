@@ -48,7 +48,7 @@ class NinePatchToolsTest {
         assertEquals(
             listOf(
                 pointArrayListOf(Point(1, 1)),
-                pointArrayListOf(Point(8.4f, 14.8f)),
+                pointArrayListOf(Point(8.4, 14.8)),
                 pointArrayListOf(Point(27, 59)),
                 pointArrayListOf(Point(32, 64)),
             ),

@@ -184,7 +184,7 @@ class Text2TextRendererActions : TextRendererActions() {
     private val arraySX = doubleArrayListOf()
     private val arraySY = doubleArrayListOf()
     private val arrayRot = doubleArrayListOf()
-    val arrayMetrics = VectorArrayList(dimensions = 4)
+    val arrayMetrics = DoubleVectorArrayList(dimensions = 4)
     private var tr = MatrixTransform()
     val size get() = arrayX.size
 

@@ -13,7 +13,7 @@ typealias Rectangle = RectangleD
 //@KormaValueApi
 //inline class Rectangle(val data: Float4Pack) : Shape2D, Interpolable<Rectangle> {
 //inline class Rectangle(val data: Float4) : Shape2D {
-data class RectangleD(val x: Double, val y: Double, val width: Double, val height: Double) : Shape2D {
+data class RectangleD(val x: Double, val y: Double, val width: Double, val height: Double) : Shape2D, IsAlmostEquals<RectangleD> {
     val int: RectangleInt get() = toInt()
 
     //operator fun component1(): Float = x
@@ -44,7 +44,7 @@ data class RectangleD(val x: Double, val y: Double, val width: Double, val heigh
     val isNIL: Boolean get() = isNaN
     val isNotNIL: Boolean get() = !isNIL
 
-    fun isAlmostEquals(other: Rectangle, epsilon: Double = 0.0001): Boolean =
+    override fun isAlmostEquals(other: Rectangle, epsilon: Double): Boolean =
         this.x.isAlmostEquals(other.x, epsilon) &&
             this.y.isAlmostEquals(other.y, epsilon) &&
             this.width.isAlmostEquals(other.width, epsilon) &&

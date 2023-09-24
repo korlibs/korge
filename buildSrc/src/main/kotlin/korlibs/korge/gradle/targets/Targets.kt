@@ -1,9 +1,8 @@
 package korlibs.korge.gradle.targets
 
-import org.apache.tools.ant.taskdefs.condition.Os
+import org.apache.tools.ant.taskdefs.condition.*
 import org.gradle.api.*
 import org.jetbrains.kotlin.gradle.plugin.*
-import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 
 val supportKotlinNative: Boolean get() {
     // Linux and Windows ARM hosts doesn't have K/N toolchains
@@ -20,9 +19,9 @@ val inCI: Boolean get() = !System.getenv("CI").isNullOrBlank() || !System.getPro
 val KotlinTarget.isIos get() = name.startsWith("ios")
 val KotlinTarget.isTvos get() = name.startsWith("tvos")
 
-fun NamedDomainObjectContainer<KotlinSourceSet>.createPairSourceSet(name: String, vararg dependencies: PairSourceSet, block: KotlinSourceSet.(test: Boolean) -> Unit = { }): PairSourceSet {
+fun NamedDomainObjectContainer<KotlinSourceSet>.createPairSourceSet(name: String, vararg dependencies: PairSourceSet, doTest: Boolean = true, block: KotlinSourceSet.(test: Boolean) -> Unit = { }): PairSourceSet {
     val main = maybeCreate("${name}Main").apply { block(false) }
-    val test = maybeCreate("${name}Test").apply { block(true) }
+    val test = if (doTest) maybeCreate("${name}Test").apply { block(true) } else null
     return PairSourceSet(main, test).also {
         for (dependency in dependencies) {
             it.dependsOn(dependency)
@@ -30,12 +29,12 @@ fun NamedDomainObjectContainer<KotlinSourceSet>.createPairSourceSet(name: String
     }
 }
 
-data class PairSourceSet(val main: KotlinSourceSet, val test: KotlinSourceSet) {
+data class PairSourceSet(val main: KotlinSourceSet, val test: KotlinSourceSet?) {
     fun get(test: Boolean) = if (test) this.test else this.main
     fun dependsOn(vararg others: PairSourceSet) {
         for (other in others) {
             main.dependsOn(other.main)
-            test.dependsOn(other.test)
+            other.test?.let { test?.dependsOn(it) }
         }
     }
 }

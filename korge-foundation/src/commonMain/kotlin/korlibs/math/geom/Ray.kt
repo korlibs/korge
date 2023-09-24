@@ -1,5 +1,6 @@
 package korlibs.math.geom
 
+import korlibs.math.*
 import korlibs.math.annotations.*
 
 typealias Ray = Ray2D
@@ -14,7 +15,7 @@ private constructor(
     val point: Point,
     /** Normalized direction of the ray starting at [point] */
     val direction: Vector2D,
-) {
+) : IsAlmostEquals<Ray2D> {
     companion object {
         /** Creates a ray starting in [start] and passing by [end] */
         fun fromTwoPoints(start: Point, end: Point): Ray = Ray(start, end - start, Unit)
@@ -33,7 +34,7 @@ private constructor(
     //private constructor(point: Point, normalizedDirection: Vector2, unit: Unit) : this(point.x, point.y, normalizedDirection.x, normalizedDirection.y)
 
     /** Checks if [this] and [other]are equals with an [epsilon] difference */
-    fun isAlmostEquals(other: Ray, epsilon: Double = 0.00001): Boolean =
+    override fun isAlmostEquals(other: Ray, epsilon: Double): Boolean =
         this.point.isAlmostEquals(other.point, epsilon) && this.direction.isAlmostEquals(other.direction, epsilon)
 
     /** Checks if [this] and [other]are equals with an [epsilon] tolerance */

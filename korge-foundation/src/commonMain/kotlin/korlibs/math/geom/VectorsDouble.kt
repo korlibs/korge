@@ -12,7 +12,7 @@ typealias Point3 = Vector3D
 data class Vector3D(val x: Double, val y: Double, val z: Double)
 data class Vector4D(val x: Double, val y: Double, val z: Double, val w: Double)
 
-data class Vector2D(val x: Double, val y: Double) {
+data class Vector2D(val x: Double, val y: Double) : IsAlmostEquals<Vector2D> {
     //constructor(x: Float, y: Float) : this(float2PackOf(x, y))
     constructor(x: Float, y: Float) : this(x.toDouble(), y.toDouble())
     constructor(x: Int, y: Int) : this(x.toDouble(), y.toDouble())
@@ -24,7 +24,7 @@ data class Vector2D(val x: Double, val y: Double) {
     constructor(x: Int, y: Float) : this(x.toDouble(), y.toDouble())
 
     //constructor(p: Vector2) : this(p.raw)
-    constructor() : this(0f, 0f)
+    constructor() : this(0.0, 0.0)
     //constructor(x: Int, y: Int) : this(x.toDouble(), y.toDouble())
     //constructor(x: Float, y: Float) : this(x.toDouble(), y.toDouble())
 
@@ -112,7 +112,7 @@ data class Vector2D(val x: Double, val y: Double) {
 
     //fun copy(x: Double = this.x, y: Double = this.y): Vector2 = Vector2D(x, y)
 
-    fun isAlmostEquals(other: Vector2D, epsilon: Double = 0.0000001): Boolean =
+    override fun isAlmostEquals(other: Vector2D, epsilon: Double): Boolean =
         this.x.isAlmostEquals(other.x, epsilon) && this.y.isAlmostEquals(other.y, epsilon)
 
     val niceStr: String get() = "(${x.niceStr}, ${y.niceStr})"

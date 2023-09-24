@@ -14,6 +14,7 @@ import korlibs.logger.*
 import korlibs.math.geom.*
 import korlibs.math.geom.shape.*
 import korlibs.math.geom.vector.*
+import korlibs.math.interpolation.*
 import korlibs.time.*
 import kotlin.collections.set
 
@@ -130,11 +131,11 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
 
         val paint = g
 
-        fun parseStops(xml: Xml): List<Pair<Float, RGBA>> {
-            val out = arrayListOf<Pair<Float, RGBA>>()
+        fun parseStops(xml: Xml): List<Pair<Ratio, RGBA>> {
+            val out = arrayListOf<Pair<Ratio, RGBA>>()
             for (stop in xml.children("stop")) {
                 val info = SVG.parseAttributesAndStyles(stop)
-                var offset = 0f
+                var offset = Ratio.ZERO
                 var colorStop = SVG.ColorDefaultBlack.defaultColor
                 var alphaStop = 1f
                 for ((key, value) in info) {
@@ -185,7 +186,7 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
 
         val attributes: Map<String, String> = parseAttributesAndStyles(xml)
         var transform: Matrix = attributes["transform"]?.let { CSS.parseTransform(it) } ?: Matrix.IDENTITY
-        var opacity: Float = attributes["opacity"]?.toFloatOrNull() ?: 1f
+        var opacity: Double = attributes["opacity"]?.toDoubleOrNull() ?: 1.0
 
         val children = xml.allNodeChildren.mapNotNull {
             createSvgElementFromXml(it)

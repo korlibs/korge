@@ -39,7 +39,7 @@ class CurvesToStrokeExTest {
         )
     }
 
-    fun pathPoints(join: LineJoin, block: VectorBuilder.() -> Unit): VectorArrayList =
+    fun pathPoints(join: LineJoin, block: VectorBuilder.() -> Unit): DoubleVectorArrayList =
         buildVectorPath { block() }.toStrokePointsList(StrokeInfo(thickness = 10.0, join = join), mode = StrokePointsMode.SCALABLE_POS_NORMAL_WIDTH).first().vector.clone().roundDecimalPlaces(2)
 
 }

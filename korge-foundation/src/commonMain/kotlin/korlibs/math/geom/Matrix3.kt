@@ -2,6 +2,7 @@
 
 package korlibs.math.geom
 
+import korlibs.math.*
 import kotlin.math.*
 
 /**
@@ -9,7 +10,7 @@ import kotlin.math.*
  */
 data class Matrix3 private constructor(
     internal val data: FloatArray,
-) {
+) : IsAlmostEqualsF<Matrix3> {
     override fun equals(other: Any?): Boolean = other is Matrix3 && this.data.contentEquals(other.data)
     override fun hashCode(): Int = data.contentHashCode()
 
@@ -135,7 +136,7 @@ data class Matrix3 private constructor(
 
     fun transposed(): Matrix3 = Matrix3.fromColumns(r0, r1, r2)
 
-    fun isAlmostEquals(other: Matrix3, epsilon: Float = 0.00001f): Boolean = c0.isAlmostEquals(other.c0, epsilon)
+    override fun isAlmostEquals(other: Matrix3, epsilon: Float): Boolean = c0.isAlmostEquals(other.c0, epsilon)
         && c1.isAlmostEquals(other.c1, epsilon)
         && c2.isAlmostEquals(other.c2, epsilon)
 

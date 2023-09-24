@@ -1,8 +1,7 @@
 package korlibs.math.geom
 
-import korlibs.datastructure.*
 import korlibs.math.*
-import korlibs.math.geom.bezier.*
+import kotlin.math.*
 import kotlin.test.*
 
 fun <
@@ -25,6 +24,15 @@ T> assertEqualsFloat(
     }
 }
 
+private fun toNumberList(v: Any): List<Number> {
+    return when (v) {
+        is IntArray -> v.map { it.toDouble() }
+        is FloatArray -> v.map { it.toDouble() }
+        is DoubleArray -> v.map { it }
+        else -> TODO()
+    }
+}
+
 private fun <T : Any> T?.isAlmostEqualsGeneric(
     a: T?,
     absoluteTolerance: Double = 0.00001,
@@ -32,34 +40,14 @@ private fun <T : Any> T?.isAlmostEqualsGeneric(
     val e = this
     if (e == null || a == null) return (e == null) && (a == null)
     return when (e) {
-        is Ray -> e.isAlmostEquals((a as? Ray?) ?: return false, absoluteTolerance)
-        is Point -> e.isAlmostEquals((a as? Point?) ?: return false, absoluteTolerance)
-        is Vector3F -> e.isAlmostEquals((a as? Vector3F?) ?: return false, absoluteTolerance.toFloat())
-        is Matrix3 -> e.isAlmostEquals((a as? Matrix3?) ?: return false, absoluteTolerance.toFloat())
-        is Matrix4 -> e.isAlmostEquals((a as? Matrix4?) ?: return false, absoluteTolerance.toFloat())
-        is Quaternion -> e.isAlmostEquals((a as? Quaternion?) ?: return false, absoluteTolerance.toFloat())
-        is EulerRotation -> e.isAlmostEquals((a as? EulerRotation?) ?: return false, absoluteTolerance.toFloat())
-        is MPoint -> e.isAlmostEquals((a as? MPoint?) ?: return false, absoluteTolerance)
-        is Angle -> e.isAlmostEquals((a as? Angle?) ?: return false, absoluteTolerance)
-        is Float -> {
-            if (a !is Float?) return false
-            if (e.isNaN() && a.isNaN()) return true
-            e.isAlmostEquals(a, absoluteTolerance.toFloat())
+        is Number -> when {
+            a !is Number? -> false
+            e.toDouble().isNaN() && a.toDouble().isNaN() -> true
+            else -> e.toDouble().isAlmostEquals(a.toDouble(), absoluteTolerance)
         }
-        is Double -> {
-            if (a !is Double?) return false
-            if (e.isNaN() && a.isNaN()) return true
-            e.isAlmostEquals(a, absoluteTolerance)
-        }
-        is Matrix -> e.isAlmostEquals((a as Matrix), absoluteTolerance)
-        is MatrixTransform -> e.isAlmostEquals((a as MatrixTransform), absoluteTolerance)
-        is Rectangle -> e.isAlmostEquals((a as Rectangle), absoluteTolerance)
-        is MRectangle -> e.isAlmostEquals((a as MRectangle), absoluteTolerance)
-        is Bezier -> e.points.isAlmostEqualsGeneric((a as? Bezier)?.points, absoluteTolerance)
-        is Bezier.ProjectedPoint -> e.isAlmostEquals((a as Bezier.ProjectedPoint), absoluteTolerance)
-        is PointList -> e.toList().isAlmostEqualsGeneric((a as? PointList)?.toList(), absoluteTolerance)
-        is FloatArrayList -> e.toList().isAlmostEqualsGeneric((a as? FloatArrayList)?.toList(), absoluteTolerance)
-        is DoubleArrayList -> e.toList().isAlmostEqualsGeneric((a as? DoubleArrayList)?.toList(), absoluteTolerance)
+        is IntArray, is FloatArray, is DoubleArray -> toNumberList(e).isAlmostEqualsGeneric(toNumberList(a), absoluteTolerance)
+        is IsAlmostEquals<*> -> (e as IsAlmostEquals<Any>).isAlmostEquals(a, absoluteTolerance)
+        is IsAlmostEqualsF<*> -> (e as IsAlmostEqualsF<Any>).isAlmostEquals(a, sqrt(absoluteTolerance).toFloat())
         is List<*> -> {
             if (a !is List<*>?) return false
             if (e.size != a.size) return false

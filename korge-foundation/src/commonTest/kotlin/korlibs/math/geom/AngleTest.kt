@@ -166,24 +166,24 @@ class AngleTest {
     @Test
     fun testReferenceSystem() {
         run {
-            assertEqualsFloat(listOf(1f, 0f), listOf(Angle.ZERO.cosine(), Angle.ZERO.sine()))
-            assertEqualsFloat(listOf(0f, 1f), listOf(Angle.QUARTER.cosine(), Angle.QUARTER.sine()))
-            assertEqualsFloat(listOf(-1f, 0f), listOf(Angle.HALF.cosine(), Angle.HALF.sine()))
-            assertEqualsFloat(listOf(0f, -1f), listOf(Angle.THREE_QUARTERS.cosine(), Angle.THREE_QUARTERS.sine()))
+            assertEqualsFloat(listOf(1.0, 0.0), listOf(Angle.ZERO.cosine(), Angle.ZERO.sine()))
+            assertEqualsFloat(listOf(0.0, 1.0), listOf(Angle.QUARTER.cosine(), Angle.QUARTER.sine()))
+            assertEqualsFloat(listOf(-1.0, 0.0), listOf(Angle.HALF.cosine(), Angle.HALF.sine()))
+            assertEqualsFloat(listOf(0.0, -1.0), listOf(Angle.THREE_QUARTERS.cosine(), Angle.THREE_QUARTERS.sine()))
         }
         run {
             val up = Vector2D.UP
-            assertEqualsFloat(listOf(1f, 0f), listOf(Angle.ZERO.cosine(up), Angle.ZERO.sine(up)))
-            assertEqualsFloat(listOf(0f, 1f), listOf(Angle.QUARTER.cosine(up), Angle.QUARTER.sine(up)))
-            assertEqualsFloat(listOf(-1f, 0f), listOf(Angle.HALF.cosine(up), Angle.HALF.sine(up)))
-            assertEqualsFloat(listOf(0f, -1f), listOf(Angle.THREE_QUARTERS.cosine(up), Angle.THREE_QUARTERS.sine(up)))
+            assertEqualsFloat(listOf(1.0, 0.0), listOf(Angle.ZERO.cosine(up), Angle.ZERO.sine(up)))
+            assertEqualsFloat(listOf(0.0, 1.0), listOf(Angle.QUARTER.cosine(up), Angle.QUARTER.sine(up)))
+            assertEqualsFloat(listOf(-1.0, 0.0), listOf(Angle.HALF.cosine(up), Angle.HALF.sine(up)))
+            assertEqualsFloat(listOf(0.0, -1.0), listOf(Angle.THREE_QUARTERS.cosine(up), Angle.THREE_QUARTERS.sine(up)))
         }
         run {
             val up = Vector2D.UP_SCREEN
-            assertEqualsFloat(listOf(1f, 0f), listOf(Angle.ZERO.cosine(up), Angle.ZERO.sine(up)))
-            assertEqualsFloat(listOf(0f, -1f), listOf(Angle.QUARTER.cosine(up), Angle.QUARTER.sine(up)))
-            assertEqualsFloat(listOf(-1f, 0f), listOf(Angle.HALF.cosine(up), Angle.HALF.sine(up)))
-            assertEqualsFloat(listOf(0f, +1f), listOf(Angle.THREE_QUARTERS.cosine(up), Angle.THREE_QUARTERS.sine(up)))
+            assertEqualsFloat(listOf(1.0, 0.0), listOf(Angle.ZERO.cosine(up), Angle.ZERO.sine(up)))
+            assertEqualsFloat(listOf(0.0, -1.0), listOf(Angle.QUARTER.cosine(up), Angle.QUARTER.sine(up)))
+            assertEqualsFloat(listOf(-1.0, 0.0), listOf(Angle.HALF.cosine(up), Angle.HALF.sine(up)))
+            assertEqualsFloat(listOf(0.0, +1.0), listOf(Angle.THREE_QUARTERS.cosine(up), Angle.THREE_QUARTERS.sine(up)))
         }
         assertEqualsFloat(listOf(0.0, 1.0), listOf(Angle.QUARTER.cosine(), Angle.QUARTER.sine()))
         assertEqualsFloat(listOf(0.0, 1.0), listOf(Angle.QUARTER.cosine(Vector2D.UP), Angle.QUARTER.sine(Vector2D.UP)))

@@ -20,7 +20,7 @@ import kotlin.math.*
 data class Matrix(
     val a: Double, val b: Double, val c: Double, val d: Double,
     val tx: Double = 0.0, val ty: Double = 0.0
-) {
+) : IsAlmostEquals<Matrix> {
     //private val twobits: Int get() = data.twobits
 
     //constructor() : this(1f, 0f, 0f, 1f, 0f, 0f)
@@ -65,7 +65,7 @@ data class Matrix(
         if (this.isNIL) return p
         return Vector2D(
             transformX(p.x, p.y),
-            transformY(p.y, p.y),
+            transformY(p.x, p.y),
         )
     }
 
@@ -85,9 +85,8 @@ data class Matrix(
     fun deltaTransform(p: Vector2D): Vector2D = Vector2D((p.x * a) + (p.y * c), (p.x * b) + (p.y * d))
 
     fun rotated(angle: Angle): Matrix {
-        val theta = angle.radians
-        val cos = cos(theta)
-        val sin = sin(theta)
+        val cos = cos(angle)
+        val sin = sin(angle)
 
         val a1 = this.a * cos - this.b * sin
         val b = (this.a * sin + this.b * cos)
@@ -100,6 +99,7 @@ data class Matrix(
         val tx1 = this.tx * cos - this.ty * sin
         val ty = (this.tx * sin + this.ty * cos)
         val tx = tx1
+
         return Matrix(a, b, c, d, tx, ty)
     }
 
@@ -191,7 +191,7 @@ data class Matrix(
 
     override fun toString(): String = "Matrix(${a.niceStr}, ${b.niceStr}, ${c.niceStr}, ${d.niceStr}, ${tx.niceStr}, ${ty.niceStr})"
 
-    fun isAlmostEquals(other: Matrix, epsilon: Double = 0.00001): Boolean = isAlmostEquals(this, other, epsilon)
+    override fun isAlmostEquals(other: Matrix, epsilon: Double): Boolean = isAlmostEquals(this, other, epsilon)
     fun isAlmostIdentity(epsilon: Double = 0.00001): Boolean = isAlmostEquals(this, IDENTITY, epsilon)
 
     // @TODO: Is this order correct?
@@ -307,7 +307,7 @@ data class MatrixTransform(
     val scaleX: Double = 1.0, val scaleY: Double = 1.0,
     val skewX: Angle = Angle.ZERO, val skewY: Angle = Angle.ZERO,
     val rotation: Angle = Angle.ZERO
-) {
+) : IsAlmostEquals<MatrixTransform> {
     val scale: Scale get() = Scale(scaleX, scaleY)
 
     override fun toString(): String = "MatrixTransform(x=${x.niceStr}, y=${y.niceStr}, scaleX=${scaleX}, scaleY=${scaleY}, skewX=${skewX}, skewY=${skewY}, rotation=${rotation})"
@@ -383,7 +383,7 @@ data class MatrixTransform(
                 && a.rotation.isAlmostEquals(b.rotation, epsilon)
     }
 
-    fun isAlmostEquals(other: MatrixTransform, epsilon: Double = 0.0001): Boolean = isAlmostEquals(this, other, epsilon)
+    override fun isAlmostEquals(other: MatrixTransform, epsilon: Double): Boolean = isAlmostEquals(this, other, epsilon)
 
     val scaleAvg: Double get() = (scaleX + scaleY) * 0.5
 

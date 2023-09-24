@@ -380,6 +380,8 @@ inline class Ratio(val value: Double) : Comparable<Ratio> {
 
     fun isNaN(): Boolean = value.isNaN()
 
+    override fun toString(): String = "$value"
+
     companion object {
         val ZERO = Ratio(0.0)
         val QUARTER = Ratio(.25)

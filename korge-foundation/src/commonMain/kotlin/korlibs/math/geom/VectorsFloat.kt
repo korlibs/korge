@@ -328,7 +328,7 @@ fun Vector2F.toIntRound(): Vector2I = Vector2I(x.toIntRound(), y.toIntRound())
 fun Vector2F.toIntFloor(): Vector2I = Vector2I(x.toIntFloor(), y.toIntFloor())
 
 
-data class Vector3F(val x: Float, val y: Float, val z: Float) {
+data class Vector3F(val x: Float, val y: Float, val z: Float) : IsAlmostEqualsF<Vector3F> {
     companion object {
         val NaN = Vector3F(Float.NaN, Float.NaN, Float.NaN)
 
@@ -421,8 +421,10 @@ data class Vector3F(val x: Float, val y: Float, val z: Float) {
     override fun toString(): String = "Vector3(${x.niceStr}, ${y.niceStr}, ${z.niceStr})"
 
     fun toVector4(w: Float = 1f): Vector4F = Vector4F(x, y, z, w)
-    fun isAlmostEquals(other: Vector3F, epsilon: Float = 0.00001f): Boolean =
-        this.x.isAlmostEquals(other.x, epsilon) && this.y.isAlmostEquals(other.y, epsilon) && this.z.isAlmostEquals(other.z, epsilon)
+    override fun isAlmostEquals(other: Vector3F, epsilon: Float): Boolean =
+        this.x.isAlmostEquals(other.x, epsilon) &&
+            this.y.isAlmostEquals(other.y, epsilon) &&
+            this.z.isAlmostEquals(other.z, epsilon)
 }
 
 operator fun Int.times(v: Vector3F): Vector3F = v * this

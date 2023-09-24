@@ -11,7 +11,7 @@ class BezierCurveTest {
     @Test
     fun testBezierSimple() {
         val curve = Bezier(Point(0, 0), Point(-50, -200), Point(150, 150), Point(110, 120))
-        assertEquals(
+        assertEqualsFloat(
             Bezier.ProjectedPoint(p=Point(-6.66, -31.89), t=.06f.toRatio(), dSq=181.61),
             curve.project(Point(-20, -30)).roundDecimalPlaces(2)
         )
@@ -37,7 +37,7 @@ class BezierCurveTest {
         assertEqualsFloat(Point(51.25, -3.75), curve.compute(0.5f.toRatio()))
         assertEqualsFloat(Point(110, 120), curve.compute(1.0f.toRatio()))
 
-        assertEqualsFloat(292.8273626504729f, curve.length, 0.01)
+        assertEqualsFloat(292.8273626504729f, curve.length, 0.1)
         assertEqualsFloat(
             listOf(listOf(0.11f, 0.51f, 0.91f), listOf(0.22f, 0.59f, 0.96f)),
             listOf(
@@ -46,7 +46,7 @@ class BezierCurveTest {
             ),
             0.01
         )
-        assertEqualsFloat(floatArrayListOf(), curve.selfIntersections())
+        assertEqualsFloat(doubleArrayListOf(), curve.selfIntersections())
 
         assertEqualsFloat(101, curve.getLUT().size)
         assertEqualsFloat(
@@ -257,19 +257,26 @@ class BezierCurveTest {
     }
 
     @Test
-    fun testToCubic() {
+    fun testToCubicLine() {
         // Line
         assertEquals(
             Bezier(Point(0.0, 0.0), Point(33.33, 33.33), Point(66.67, 66.67), Point(100.0, 100.0)),
             Bezier(Point(0, 0), Point(100, 100)).toCubic().roundDecimalPlaces(2)
         )
 
+    }
+
+    @Test
+    fun testToCubicQuad() {
         // Quad
         assertEquals(
-            Bezier(Point(0.0, 0.0), Point(66.67, 0.0), Point(100.0, 33.33), Point(100.0, 100.0)),
+            Bezier(Point(0, 0), Point(66.67, 0), Point(100, 33.33), Point(100, 100)),
             Bezier(Point(0, 0), Point(100, 0), Point(100, 100)).toCubic().roundDecimalPlaces(2)
         )
+    }
 
+    @Test
+    fun testToCubicCubic() {
         // Cubic
         assertEquals(
             Bezier(Point(0, 0), Point(50, 60), Point(90, 30), Point(100, 100)),

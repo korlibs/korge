@@ -7,7 +7,7 @@ import kotlin.math.*
 
 // https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
 //@KormaValueApi
-data class Quaternion(val x: Float, val y: Float, val z: Float, val w: Float) {
+data class Quaternion(val x: Float, val y: Float, val z: Float, val w: Float) : IsAlmostEqualsF<Quaternion> {
 //inline class Quaternion private constructor(val data: Float4Pack) {
 //    constructor(x: Float, y: Float, z: Float, w: Float) : this(float4PackOf(x, y, z, w))
 //    val x: Float get() = data.f0
@@ -132,7 +132,7 @@ data class Quaternion(val x: Float, val y: Float, val z: Float, val w: Float) {
     }
 
     fun toEuler(config: EulerRotation.Config = EulerRotation.Config.DEFAULT): EulerRotation = EulerRotation.fromQuaternion(this, config)
-    fun isAlmostEquals(other: Quaternion, epsilon: Float = 0.00001f): Boolean =
+    override fun isAlmostEquals(other: Quaternion, epsilon: Float): Boolean =
         this.x.isAlmostEquals(other.x, epsilon)
             && this.y.isAlmostEquals(other.y, epsilon)
             && this.z.isAlmostEquals(other.z, epsilon)

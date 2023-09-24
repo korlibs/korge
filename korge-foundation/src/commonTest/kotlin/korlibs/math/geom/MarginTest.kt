@@ -37,23 +37,24 @@ class MarginTest {
         }
         assertEquals(
             "Margin(top=1.1, right=-3.2, bottom=-7.3, left=33.4)",
-            Margin(1.1f, -3.2f, -7.3f, 33.4f).toString()
+            Margin(1.1, -3.2, -7.3, 33.4).toString()
         )
     }
 
     @Test
     fun testPlus() {
         assertEquals(
-            Margin(1.1f, 2.2f, 3.3f, 4.4f),
-            Margin(1f, 2f, 3f, 4f) + Margin(.1f, .2f, .3f, .4f)
+            Margin(1.1, 2.2, 3.3, 4.4),
+            Margin(1, 2, 3, 4) + Margin(.1, .2, .3, .4)
         )
     }
 
     @Test
     fun testMinus() {
-        assertEquals(
-            Margin(0.9f, 1.8f, 2.7f, 3.6f),
-            Margin(1f, 2f, 3f, 4f) - Margin(.1f, .2f, .3f, .4f)
+        assertEqualsFloat(
+            Margin(0.9, 1.8, 2.7, 3.6),
+            Margin(1, 2, 3, 4) - Margin(.1, .2, .3, .4),
+            0.0001
         )
     }
 }

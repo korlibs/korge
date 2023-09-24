@@ -1,25 +1,22 @@
 package korlibs.korge.gradle
 
+import groovy.text.*
+import korlibs.korge.gradle.processor.*
 import korlibs.korge.gradle.targets.*
 import korlibs.korge.gradle.targets.android.*
-import korlibs.korge.gradle.targets.desktop.*
 import korlibs.korge.gradle.targets.ios.*
 import korlibs.korge.gradle.targets.js.*
 import korlibs.korge.gradle.targets.jvm.*
 import korlibs.korge.gradle.util.*
-import org.gradle.api.*
-import java.io.*
-import groovy.text.*
-import korlibs.korge.gradle.processor.*
 import korlibs.modules.*
+import org.gradle.api.*
 import org.gradle.api.artifacts.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
+import java.io.*
 import java.net.*
 import java.time.*
-import java.util.*
-import javax.inject.Inject
+import javax.inject.*
 import javax.naming.*
-import kotlin.collections.LinkedHashMap
 
 enum class Orientation(val lc: String) { DEFAULT("default"), LANDSCAPE("landscape"), PORTRAIT("portrait") }
 enum class DisplayCutout(val lc: String) { DEFAULT("default"), SHORT_EDGES("shortEdges"), NEVER("never"), ALWAYS("always") }
@@ -199,7 +196,7 @@ open class KorgeExtension(
      * Configures WASM target
      */
     fun targetWasm(binaryen: Boolean = false) {
-        target("wasm") {
+        target("wasmJs") {
             project.configureWasm(projectType, binaryen)
         }
     }

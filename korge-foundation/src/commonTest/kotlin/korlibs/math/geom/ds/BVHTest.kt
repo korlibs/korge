@@ -22,7 +22,7 @@ class BVHTest {
         //assertEquals(2, rectSearch.size)
 
         assertEquals(listOf("1"), intersection.map { it.obj.value }.sortedBy { it })
-        assertEqualsFloat(listOf(65f), intersection.map { it.intersect }.sorted())
+        assertEqualsFloat(listOf(65.0), intersection.map { it.intersect }.sorted())
         assertEquals(listOf("1", "2"), rectSearch.map { it.value }.sortedBy { it })
 
         //tree.debug()

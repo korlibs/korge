@@ -56,7 +56,7 @@ import kotlin.math.*
 inline class Angle @PublishedApi internal constructor(
     /** [0..1] ratio -> [0..360] degrees */
     val radians: Double
-) : Comparable<Angle> {
+) : Comparable<Angle>, IsAlmostEquals<Angle> {
     @PublishedApi inline internal val internal: Double get() = radians
 
     /** [0..PI * 2] radians -> [0..360] degrees */
@@ -108,7 +108,7 @@ inline class Angle @PublishedApi internal constructor(
         }
     }
 
-    fun isAlmostEquals(other: Angle, epsilon: Double = 0.001): Boolean = this.radians.isAlmostEquals(other.radians, epsilon)
+    override fun isAlmostEquals(other: Angle, epsilon: Double): Boolean = this.radians.isAlmostEquals(other.radians, epsilon)
     fun isAlmostZero(epsilon: Double = 0.001): Boolean = isAlmostEquals(ZERO, epsilon)
 
     /** Normalize between 0..1  ... 0..(PI*2).radians ... 0..360.degrees */

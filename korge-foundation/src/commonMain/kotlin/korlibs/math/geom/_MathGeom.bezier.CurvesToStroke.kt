@@ -24,7 +24,7 @@ enum class StrokePointsMode {
  * it is possible to later scale the stroke without regenerating it by adjusting the [scale] component
  */
 interface StrokePoints {
-    val vector: VectorArrayList
+    val vector: DoubleVectorArrayList
     val debugPoints: PointList
     val debugSegments: List<MLine>
     val mode: StrokePointsMode
@@ -46,7 +46,7 @@ class StrokePointsBuilder(
 ) : StrokePoints {
     val NSTEPS = 20
 
-    override val vector: VectorArrayList = VectorArrayList(dimensions = when (mode) {
+    override val vector: DoubleVectorArrayList = DoubleVectorArrayList(dimensions = when (mode) {
         StrokePointsMode.SCALABLE_POS_NORMAL_WIDTH -> 6 // x, y, dx, dy, dist, distMax
         StrokePointsMode.NON_SCALABLE_POS -> 2 // x, y
     })

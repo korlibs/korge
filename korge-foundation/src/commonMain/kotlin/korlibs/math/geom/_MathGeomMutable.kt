@@ -2022,7 +2022,7 @@ data class MPoint(
     var y: Double
     //override var xf: Float,
     //override var yf: Float
-) : MutableInterpolable<MPoint>, Interpolable<MPoint>, Comparable<MPoint> {
+) : MutableInterpolable<MPoint>, Interpolable<MPoint>, Comparable<MPoint>, IsAlmostEquals<MPoint> {
     //constructor(x: Double, y: Double) : this(x.toFloat(), y.toFloat())
     constructor(p: Point) : this(p.x, p.y)
     constructor(x: Float, y: Float) : this(x.toDouble(), y.toDouble())
@@ -2038,7 +2038,7 @@ data class MPoint(
     fun transformY(m: MMatrix?): Double = m?.transformY(this) ?: y
     val mutable: MPoint get() = MPoint(x, y)
     val immutable: Point get() = Point(x, y)
-    fun isAlmostEquals(other: MPoint, epsilon: Double = 0.000001): Boolean =
+    override fun isAlmostEquals(other: MPoint, epsilon: Double): Boolean =
         this.x.isAlmostEquals(other.x, epsilon) && this.y.isAlmostEquals(other.y, epsilon)
 
     fun clear() = setToZero()
@@ -2339,7 +2339,7 @@ fun MPointInt.asDouble(): MPoint = this.p
 data class MRectangle(
     var x: Double, var y: Double,
     var width: Double, var height: Double
-) : MutableInterpolable<MRectangle>, Interpolable<MRectangle>, Sizeable, MSizeable {
+) : MutableInterpolable<MRectangle>, Interpolable<MRectangle>, Sizeable, MSizeable, IsAlmostEquals<MRectangle> {
 
     operator fun contains(that: Point) = contains(that.x, that.y)
     operator fun contains(that: MPoint) = contains(that.x, that.y)
@@ -2360,7 +2360,7 @@ data class MRectangle(
 
     val center: Point get() = Point((right + left) * 0.5, (bottom + top) * 0.5)
 
-    fun isAlmostEquals(other: MRectangle, epsilon: Double = 0.001): Boolean =
+    override fun isAlmostEquals(other: MRectangle, epsilon: Double): Boolean =
         this.x.isAlmostEquals(other.x, epsilon) &&
             this.y.isAlmostEquals(other.y, epsilon) &&
             this.width.isAlmostEquals(other.width, epsilon) &&

@@ -1,5 +1,6 @@
 package korlibs.math.geom
 
+import korlibs.math.*
 import korlibs.memory.*
 import kotlin.math.*
 
@@ -22,7 +23,7 @@ data class Matrix4 private constructor(
     //val v01: Float, val v11: Float, val v21: Float, val v31: Float,
     //val v02: Float, val v12: Float, val v22: Float, val v32: Float,
     //val v03: Float, val v13: Float, val v23: Float, val v33: Float,
-) {
+) : IsAlmostEqualsF<Matrix4> {
     init {
         check(data.size == 16)
     }
@@ -284,10 +285,11 @@ data class Matrix4 private constructor(
         )
     }
 
-    fun isAlmostEquals(other: Matrix4, epsilon: Float = 0.00001f): Boolean = c0.isAlmostEquals(other.c0, epsilon)
-        && c1.isAlmostEquals(other.c1, epsilon)
-        && c2.isAlmostEquals(other.c2, epsilon)
-        && c3.isAlmostEquals(other.c3, epsilon)
+    override fun isAlmostEquals(other: Matrix4, epsilon: Float): Boolean =
+        c0.isAlmostEquals(other.c0, epsilon) &&
+            c1.isAlmostEquals(other.c1, epsilon) &&
+            c2.isAlmostEquals(other.c2, epsilon) &&
+            c3.isAlmostEquals(other.c3, epsilon)
 
     companion object {
         const val M00 = 0

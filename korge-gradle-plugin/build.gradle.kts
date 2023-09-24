@@ -65,13 +65,13 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile::class).all {
 }
 
 kotlin.sourceSets.main.configure {
-    kotlin.srcDirs(File(buildDir, "srcgen"), File(buildDir, "srcgen2"))
+    kotlin.srcDirs(File(projectDir, "build/srcgen"), File(projectDir, "build/srcgen2"))
 }
 kotlin.sourceSets.test.configure {
-    kotlin.srcDirs(File(buildDir, "testgen2"))
+    kotlin.srcDirs(File(projectDir, "build/testgen2"))
 }
 java.sourceSets.main.configure {
-    resources.srcDirs(File(buildDir, "srcgen2res"))
+    resources.srcDirs(File(projectDir, "build/srcgen2res"))
 }
 
 korlibs.NativeTools.groovyConfigurePublishing(project, false)
@@ -122,6 +122,7 @@ afterEvaluate {
     //def publishTaskOrNull = tasks.findByName(publishAllPublications ? "publishAllPublicationsToMavenRepository" : "publishPluginMavenPublicationToMavenRepository")
 
     if (tasks.findByName("publishKorgePluginMarkerMavenPublicationToMavenRepository") != null) {
+        @Suppress("UNUSED_VARIABLE")
         val publishJvmPublicationToMavenRepository = tasks.register("publishJvmPublicationToMavenRepository", Task::class) {
             group = "publishing"
             dependsOn("publishPluginMavenPublicationToMavenRepository")
