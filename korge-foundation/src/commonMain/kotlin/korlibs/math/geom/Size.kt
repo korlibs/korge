@@ -15,6 +15,7 @@ data class Size3D(val width: Double, val height: Double, val depth: Double)
  */
 data class Size2D(val width: Double, val height: Double) {//: Sizeable {
     companion object {
+        inline operator fun invoke(width: Number, height: Number): Size2D = Size2D(width.toDouble(), height.toDouble())
         val ZERO = Size(0.0, 0.0)
         fun square(value: Int): Size = Size(value, value)
         fun square(value: Double): Size = Size(value, value)
