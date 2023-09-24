@@ -27,7 +27,7 @@ abstract class BaseAndroidGameWindow(
     override val androidContextAny: Any? get() = androidContext
 
     // @TODO: Cache somehow?
-    override val pixelsPerInch: Float get() = androidContext.resources.displayMetrics.xdpi
+    override val pixelsPerInch: Double get() = androidContext.resources.displayMetrics.xdpi.toDouble()
 
     val context get() = androidContext
     var coroutineContext: CoroutineContext? = null

@@ -1,7 +1,6 @@
 package korlibs.image.format
 
 import korlibs.encoding.*
-import korlibs.datastructure.*
 import korlibs.image.bitmap.*
 import korlibs.image.color.*
 import korlibs.image.font.*
@@ -25,7 +24,6 @@ import org.w3c.dom.*
 import org.w3c.dom.url.*
 import org.w3c.files.*
 import kotlin.coroutines.*
-import kotlin.js.unsafeCast
 import kotlin.math.*
 
 actual val nativeImageFormatProvider: NativeImageFormatProvider = when {
@@ -282,7 +280,7 @@ class CanvasContext2dRenderer(private val canvas: HTMLCanvasElementLike) : Rende
 					}
                     GradientKind.SWEEP -> {
                         when {
-                            ctx.createConicGradient != null -> ctx.createConicGradient!!(this.startAngle.radiansD, this.x0, this.y0).unsafeCast<CanvasGradient>().addColors(this)
+                            ctx.createConicGradient != null -> ctx.createConicGradient!!(this.startAngle.radians, this.x0, this.y0).unsafeCast<CanvasGradient>().addColors(this)
                             else -> "fuchsia".toJsString()
                         }
                     }
@@ -408,7 +406,7 @@ class CanvasContext2dRenderer(private val canvas: HTMLCanvasElementLike) : Rende
 			transform.run { ctx.setTransform(a.toDouble(), b.toDouble(), c.toDouble(), d.toDouble(), tx.toDouble(), ty.toDouble()) }
 			ctx.drawImage(
 				(image.ensureNative() as WasmHtmlNativeImage).texSource.unsafeCast<CanvasImageSourceJs>(),
-                pos.xD, pos.yD, size.widthD, size.heightD
+                pos.x, pos.y, size.width, size.height
 			)
 		} finally {
 			ctx.restore()

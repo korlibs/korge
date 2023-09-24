@@ -365,7 +365,7 @@ open class IosGameWindow(
     override val ag: AG = AGOpengl(KmlGlNative().checkedIf(checked = false))
     //override val ag: AG = AGOpengl(KmlGlNative().checkedIf(checked = true, printStackTrace = true))
 
-    override val pixelsPerInch: Float get() = UIScreen.mainScreen.scale.toFloat() * 160f
+    override val pixelsPerInch: Double get() = UIScreen.mainScreen.scale * 160.0
 
     val window: UIWindow get() = windowProvider?.invoke()
         ?: UIApplication.sharedApplication.keyWindow
@@ -436,9 +436,7 @@ open class IosGameWindow(
         override fun closestPositionToPoint(point: CValue<CGPoint>): UITextPosition? = null
         override fun closestPositionToPoint(point: CValue<CGPoint>, withinRange: UITextRange): UITextPosition? = null
         override fun comparePosition(position: UITextPosition, toPosition: UITextPosition): NSComparisonResult = 0
-        override fun firstRectForRange(range: UITextRange): CValue<CGRect> =
-            CGRectMakeExt(0.0, 0.0, 128.0, 32.0)
-
+        override fun firstRectForRange(range: UITextRange): CValue<CGRect> = CGRectMakeExt(0.0, 0.0, 128.0, 32.0)
         override fun inputDelegate(): UITextInputDelegateProtocol? = null
         override fun markedTextRange(): UITextRange? = null
         override fun markedTextStyle(): Map<Any?, *>? = null

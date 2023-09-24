@@ -12,7 +12,6 @@ import korlibs.io.util.*
 import korlibs.io.wasm.*
 import korlibs.kgl.*
 import korlibs.math.geom.*
-import korlibs.memory.*
 import kotlinx.browser.*
 import kotlinx.coroutines.*
 import org.w3c.dom.*
@@ -47,11 +46,11 @@ open class JsGameWindow : GameWindow() {
 open class BrowserCanvasJsGameWindow(
     val canvas: HTMLCanvasElement = AGDefaultCanvas()
 ) : JsGameWindow() {
-    val tDevicePixelRatio: Float get() = window.devicePixelRatio.toFloat()
-    override val devicePixelRatio: Float get() = when {
-        tDevicePixelRatio <= 0f -> 1f
-        tDevicePixelRatio.isNaN() -> 1f
-        tDevicePixelRatio.isInfinite() -> 1f
+    val tDevicePixelRatio: Double get() = window.devicePixelRatio.toDouble()
+    override val devicePixelRatio: Double get() = when {
+        tDevicePixelRatio <= 0f -> 1.0
+        tDevicePixelRatio.isNaN() -> 1.0
+        tDevicePixelRatio.isInfinite() -> 1.0
         else -> tDevicePixelRatio
     }
     // @TODO: Improve this: https://gist.github.com/scryptonite/5242987
@@ -150,7 +149,7 @@ open class BrowserCanvasJsGameWindow(
     private fun onResized() {
         isTouchDeviceCache = null
         if (isCanvasCreatedAndHandled) {
-            val scale = quality.computeTargetScale(window.innerWidth, window.innerHeight, devicePixelRatio)
+            val scale = quality.computeTargetScale(window.innerWidth, window.innerHeight, devicePixelRatio.toFloat())
             val canvasWidth = (window.innerWidth * scale).toInt()
             val canvasHeight = (window.innerHeight * scale).toInt()
             canvas.width = canvasWidth
