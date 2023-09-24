@@ -29,6 +29,20 @@ class PageFilter(
     }
 
     companion object : BaseProgramProvider() {
+        inline operator fun invoke(
+            hratio: Number = 0.0,
+            hamplitude0: Number = 0.0,
+            hamplitude1: Number = 10.0,
+            hamplitude2: Number = 0.0,
+            vratio: Number = 0.5,
+            vamplitude0: Number = 0.0,
+            vamplitude1: Number = 0.0,
+            vamplitude2: Number = 0.0,
+        ): PageFilter = PageFilter(
+            hratio.toDouble(), hamplitude0.toDouble(),
+            hamplitude1.toDouble(), hamplitude2.toDouble(), vratio.toDouble(),
+            vamplitude0.toDouble(), vamplitude1.toDouble(), vamplitude2.toDouble()
+        )
 
         private fun Program.Builder.sin01(arg: Operand) = sin(arg * (PI.toFloat().lit * 0.5f.lit))
         override val fragment = FragmentShaderDefault {
@@ -53,22 +67,22 @@ class PageFilter(
     }
 
     @ViewProperty
-    var hratio: Double = hratio
+    var hratio: Double = hratio.toDouble()
     @ViewProperty
-    var hamplitude0: Double = hamplitude0
+    var hamplitude0: Double = hamplitude0.toDouble()
     @ViewProperty
-    var hamplitude1: Double = hamplitude1
+    var hamplitude1: Double = hamplitude1.toDouble()
     @ViewProperty
-    var hamplitude2: Double = hamplitude2
+    var hamplitude2: Double = hamplitude2.toDouble()
 
     @ViewProperty
-    var vratio: Double = vratio
+    var vratio: Double = vratio.toDouble()
     @ViewProperty
-    var vamplitude0: Double = vamplitude0
+    var vamplitude0: Double = vamplitude0.toDouble()
     @ViewProperty
-    var vamplitude1: Double = vamplitude1
+    var vamplitude1: Double = vamplitude1.toDouble()
     @ViewProperty
-    var vamplitude2: Double = vamplitude2
+    var vamplitude2: Double = vamplitude2.toDouble()
 
     override val programProvider: ProgramProvider get() = PageFilter
 

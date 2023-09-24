@@ -12,8 +12,8 @@ fun Float.niceStr(decimalPlaces: Int, zeroSuffix: Boolean = false): String = bui
 fun StringBuilder.appendNice(value: Double, zeroSuffix: Boolean = false): Unit {
     when {
         round(value).isAlmostEquals(value) -> when {
-            value >= Int.MIN_VALUE.toDouble() && value <= Int.MAX_VALUE.toDouble() -> append(value.toInt())
-            else -> append(value.toLong())
+            value >= Int.MIN_VALUE.toDouble() && value <= Int.MAX_VALUE.toDouble() -> append(round(value).toInt())
+            else -> append(round(value).toLong())
         }
         else -> {
             append(value)

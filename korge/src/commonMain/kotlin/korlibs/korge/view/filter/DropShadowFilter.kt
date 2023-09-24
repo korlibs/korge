@@ -82,5 +82,17 @@ open class DropshadowFilter(
             SET(out, out * BatchBuilder2D.v_ColMul)
             IF(out["a"] le 0f.lit) { DISCARD() }
         }
+
+        inline operator fun invoke(
+            dropX: Number = 10.0,
+            dropY: Number = 10.0,
+            shadowColor: RGBA = Colors.BLACK.withAd(0.75),
+            blurRadius: Number = 4.0,
+            smoothing: Boolean = true
+        ): DropshadowFilter = DropshadowFilter(
+            dropX.toDouble(), dropY.toDouble(),
+            shadowColor, blurRadius.toDouble(),
+            smoothing
+        )
     }
 }

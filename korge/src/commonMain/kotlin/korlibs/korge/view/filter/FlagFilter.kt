@@ -19,9 +19,9 @@ import kotlin.math.*
  * [time] is the elapsed time of the animation
  */
 class FlagFilter(
-    amplitude: Float = 80f,
-    crestCount: Float = 5f,
-    cyclesPerSecond: Float = 2f,
+    amplitude: Double = 80.0,
+    crestCount: Double = 5.0,
+    cyclesPerSecond: Double = 2.0,
     time: TimeSpan = 0.seconds
 ) : ShaderFilter() {
     object FlagUB : UniformBlock(fixedLocation = 5) {
@@ -32,6 +32,13 @@ class FlagFilter(
     }
 
     companion object : BaseProgramProvider() {
+        inline operator fun invoke(
+            amplitude: Number = 80.0,
+            crestCount: Number = 5.0,
+            cyclesPerSecond: Number = 2.0,
+            time: TimeSpan = 0.seconds
+        ): FlagFilter = FlagFilter(amplitude.toDouble(), crestCount.toDouble(), cyclesPerSecond.toDouble(), time)
+
         override val fragment: FragmentShader = FragmentShaderDefault {
             //val x01 = fragmentCoords01.x - (ceil(abs(u_amplitude)) / u_TextureSize.x)
             val x01 = createTemp(Float1)
@@ -44,15 +51,15 @@ class FlagFilter(
 
     /** Maximum amplitude of the wave on the Y axis */
     @ViewProperty
-    var amplitude: Float = amplitude
+    var amplitude: Double = amplitude.toDouble()
 
     /** Number of wave crests in the X axis */
     @ViewProperty
-    var crestCount: Float = crestCount
+    var crestCount: Double = crestCount.toDouble()
 
     /** Number of repetitions of the animation per second */
     @ViewProperty
-    var cyclesPerSecond: Float = cyclesPerSecond
+    var cyclesPerSecond: Double = cyclesPerSecond.toDouble()
 
     /** The elapsed time for the animation */
     var time: TimeSpan = time

@@ -30,8 +30,8 @@ data class Matrix(
         this(a.toDouble(), b.toDouble(), c.toDouble(), d.toDouble(), tx.toDouble(), ty.toDouble())
 
     operator fun times(other: Matrix): Matrix = Matrix.multiply(this, other)
-    operator fun times(scale: Float): Matrix = Matrix(a * scale, b * scale, c * scale, d * scale, tx * scale, ty * scale)
-    operator fun times(scale: Double): Matrix = times(scale.toFloat())
+    operator fun times(scale: Double): Matrix = Matrix(a * scale, b * scale, c * scale, d * scale, tx * scale, ty * scale)
+    operator fun times(scale: Float): Matrix = times(scale.toDouble())
 
     //val isNIL: Boolean get() = this == NIL
     val isNIL: Boolean get() = this.a.isNaN()

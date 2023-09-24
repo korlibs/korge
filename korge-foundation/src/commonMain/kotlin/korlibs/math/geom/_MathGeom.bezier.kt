@@ -31,8 +31,8 @@ object Arc {
         val b = out.lastPos
         val AB = b - a
         val AC = c - a
-        val angle = Point.angleArc(AB, AC).radians * 0.5
-        val x = r * sin((PI / 2.0) - angle) / sin(angle)
+        val angle = Point.angleArc(AB, AC) * 0.5
+        val x = r * sin(Angle.QUARTER - angle) / sin(angle)
         val A = a + AB.unit * x
         val B = a + AC.unit * x
         out.lineTo(A)

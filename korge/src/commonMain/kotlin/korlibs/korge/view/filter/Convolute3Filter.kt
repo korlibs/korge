@@ -15,7 +15,7 @@ class Convolute3Filter(
     /** 3x3 matrix representing a convolution kernel */
     var kernel: Matrix4,
     /** Distance between the origin pixel for sampling for edges */
-    dist: Float = 1f,
+    dist: Double = 1.0,
     applyAlpha: Boolean = false
 ) : ShaderFilter() {
     object ConvoluteUB : UniformBlock(fixedLocation = 5) {
@@ -25,6 +25,14 @@ class Convolute3Filter(
     }
 
     companion object : BaseProgramProvider() {
+        inline operator fun invoke(
+            /** 3x3 matrix representing a convolution kernel */
+            kernel: Matrix4,
+            /** Distance between the origin pixel for sampling for edges */
+            dist: Number = 1.0,
+            applyAlpha: Boolean = false
+        ): Convolute3Filter = Convolute3Filter(kernel, dist.toDouble(), applyAlpha)
+
         /** A Gaussian Blur Kernel. This [Matrix4] can be used as [kernel] for [Convolute3Filter] */
         val KERNEL_GAUSSIAN_BLUR: Matrix4 = Matrix4.fromRows3x3(
             1f, 2f, 1f,
@@ -98,7 +106,7 @@ class Convolute3Filter(
     var weights: Matrix4 = kernel
     /** Distance between the origin pixel for sampling for edges */
     @ViewProperty
-    var dist: Float = dist
+    var dist: Double = dist
     /** Whether or not kernel must be applied to the alpha component */
     @ViewProperty
     var applyAlpha: Boolean = applyAlpha

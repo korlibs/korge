@@ -23,7 +23,7 @@ fun Float.roundDecimalPlaces(places: Int): Float {
 fun Double.roundDecimalPlaces(places: Int): Double {
     if (places < 0) return this
     val placesFactor: Double = 10.0.pow(places.toDouble())
-    return kotlin.math.round(this * placesFactor) / placesFactor
+    return round(this * placesFactor) / placesFactor
 }
 //fun Double.normalizeZero(): Double = if (this.isAlmostZero()) 0.0 else this
 private val MINUS_ZERO_D = -0.0

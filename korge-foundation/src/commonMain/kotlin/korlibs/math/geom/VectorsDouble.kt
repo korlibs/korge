@@ -46,16 +46,16 @@ data class Vector2D(val x: Double, val y: Double) : IsAlmostEquals<Vector2D> {
     inline operator fun rem(that: Vector2D): Vector2D = Vector2D(x % that.x, y % that.y)
     inline operator fun rem(that: Size): Vector2D = Vector2D(x % that.width, y % that.height)
 
-    inline operator fun times(scale: Float): Vector2D = Vector2D(x * scale, y * scale)
-    inline operator fun times(scale: Double): Vector2D = this * scale.toFloat()
+    inline operator fun times(scale: Double): Vector2D = Vector2D(x * scale, y * scale)
+    inline operator fun times(scale: Float): Vector2D = this * scale.toDouble()
     inline operator fun times(scale: Int): Vector2D = this * scale.toDouble()
 
-    inline operator fun div(scale: Float): Vector2D = Vector2D(x / scale, y / scale)
-    inline operator fun div(scale: Double): Vector2D = this / scale.toFloat()
+    inline operator fun div(scale: Double): Vector2D = Vector2D(x / scale, y / scale)
+    inline operator fun div(scale: Float): Vector2D = this / scale.toDouble()
     inline operator fun div(scale: Int): Vector2D = this / scale.toDouble()
 
-    inline operator fun rem(scale: Float): Vector2D = Vector2D(x % scale, y % scale)
-    inline operator fun rem(scale: Double): Vector2D = this % scale.toFloat()
+    inline operator fun rem(scale: Double): Vector2D = Vector2D(x % scale, y % scale)
+    inline operator fun rem(scale: Float): Vector2D = this % scale.toDouble()
     inline operator fun rem(scale: Int): Vector2D = this % scale.toDouble()
 
     fun avgComponent(): Double = x * 0.5 + y * 0.5
@@ -180,7 +180,7 @@ data class Vector2D(val x: Double, val y: Double) : IsAlmostEquals<Vector2D> {
         fun distance(a: Double, b: Double): Double = abs(a - b)
         fun distance(x1: Double, y1: Double, x2: Double, y2: Double): Double = hypot(x1 - x2, y1 - y2)
         fun distance(x1: Float, y1: Float, x2: Float, y2: Float): Double = hypot(x1 - x2, y1 - y2).toDouble()
-        fun distance(x1: Int, y1: Int, x2: Int, y2: Int): Double = distance(x1.toFloat(), y1.toFloat(), x2.toFloat(), y2.toFloat())
+        fun distance(x1: Int, y1: Int, x2: Int, y2: Int): Double = hypot(x1.toDouble() - x2.toDouble(), y1.toDouble() - y2.toDouble())
         fun distance(a: Vector2D, b: Vector2D): Double = distance(a.x, a.y, b.x, b.y)
         fun distance(a: Vector2I, b: Vector2I): Double = distance(a.x, a.y, b.x, b.y)
 
@@ -208,7 +208,7 @@ data class Vector2D(val x: Double, val y: Double) : IsAlmostEquals<Vector2D> {
         fun isCollinear(p1: Point, p2: Point, p3: Point): Boolean =
             isCollinear(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y)
 
-        fun isCollinear(p1x: Float, p1y: Float, p2x: Float, p2y: Float, p3x: Float, p3y: Float): Boolean {
+        fun isCollinear(p1x: Double, p1y: Double, p2x: Double, p2y: Double, p3x: Double, p3y: Double): Boolean {
             val area2 = (p1x * (p2y - p3y) + p2x * (p3y - p1y) + p3x * (p1y - p2y)) // 2x triangle area
             //println("($p1x, $p1y), ($p2x, $p2y), ($p3x, $p3y) :: area=$area2")
             return area2.isAlmostZero()
@@ -221,16 +221,16 @@ data class Vector2D(val x: Double, val y: Double) : IsAlmostEquals<Vector2D> {
             //return result.isAlmostZero() || result.isInfinite()
         }
 
-        fun isCollinear(xa: Double, ya: Double, x: Double, y: Double, xb: Double, yb: Double): Boolean = isCollinear(
-            xa.toFloat(), ya.toFloat(),
-            x.toFloat(), y.toFloat(),
-            xb.toFloat(), yb.toFloat(),
+        fun isCollinear(xa: Float, ya: Float, x: Float, y: Float, xb: Float, yb: Float): Boolean = isCollinear(
+            xa.toDouble(), ya.toDouble(),
+            x.toDouble(), y.toDouble(),
+            xb.toDouble(), yb.toDouble(),
         )
 
         fun isCollinear(xa: Int, ya: Int, x: Int, y: Int, xb: Int, yb: Int): Boolean = isCollinear(
-            xa.toFloat(), ya.toFloat(),
-            x.toFloat(), y.toFloat(),
-            xb.toFloat(), yb.toFloat(),
+            xa.toDouble(), ya.toDouble(),
+            x.toDouble(), y.toDouble(),
+            xb.toDouble(), yb.toDouble(),
         )
 
         // https://algorithmtutor.com/Computational-Geometry/Determining-if-two-consecutive-segments-turn-left-or-right/

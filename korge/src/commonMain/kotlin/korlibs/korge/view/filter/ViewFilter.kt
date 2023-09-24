@@ -107,10 +107,10 @@ inline fun <T : View> T.filterScale(scale: Double): T {
     return this
 }
 
-inline fun <T : View> T.filters(vararg filters: Filter, filterScale: Double = this.filterScale): T = filters(filters.toList(), filterScale)
-inline fun <T : View> T.filters(filters: List<Filter>, filterScale: Double = this.filterScale): T {
+inline fun <T : View> T.filters(vararg filters: Filter, filterScale: Number = this.filterScale): T = filters(filters.toList(), filterScale.toDouble())
+inline fun <T : View> T.filters(filters: List<Filter>, filterScale: Number = this.filterScale): T {
     this.filter = ComposedFilter.combine(null, filters)
-    this.filterScale = filterScale
+    this.filterScale = filterScale.toDouble()
     return this
 }
 

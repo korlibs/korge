@@ -127,7 +127,7 @@ interface VectorBuilder {
     }
 
     fun roundRect(x: Double, y: Double, w: Double, h: Double, rx: Double, ry: Double = rx) {
-        val r = if (w < 2 * rx) w / 2f else if (h < 2 * rx) h / 2f else rx
+        val r = if (w < 2 * rx) w / 2.0 else if (h < 2 * rx) h / 2.0 else rx
         roundRect(x, y, w, h, r, r, r, r)
     }
 

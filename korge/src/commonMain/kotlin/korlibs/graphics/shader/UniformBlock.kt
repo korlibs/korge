@@ -166,7 +166,6 @@ class UniformsRef(
         getOffset(uniform).also { buffer.setUnalignedInt32(it, value) }
     }
     operator fun set(uniform: TypedUniform<Float>, value: Boolean) = set(uniform, if (value) 1f else 0f)
-    @Deprecated("", ReplaceWith("set(uniform, value.toFloat())"))
     operator fun set(uniform: TypedUniform<Float>, value: Double) = set(uniform, value.toFloat())
     operator fun set(uniform: TypedUniform<Vector2F>, value: Vector2F) = set(uniform, value.x, value.y)
     operator fun set(uniform: TypedUniform<Vector2F>, value: Point) = set(uniform, value.x.toFloat(), value.y.toFloat())

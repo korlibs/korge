@@ -23,6 +23,10 @@ class ColorMatrixFilter(colorMatrix: Matrix4, blendRatio: Double = 1.0) : Shader
     }
 
 	companion object : BaseProgramProvider() {
+        inline operator fun invoke(colorMatrix: Matrix4, blendRatio: Number): ColorMatrixFilter {
+            return ColorMatrixFilter(colorMatrix, blendRatio.toDouble())
+        }
+
         /** A Matrix usable for [colorMatrix] that will transform any color into grayscale */
 		val GRAYSCALE_MATRIX = Matrix4.fromColumns(
 			0.33f, 0.33f, 0.33f, 0f,

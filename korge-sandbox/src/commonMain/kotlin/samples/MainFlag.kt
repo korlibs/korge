@@ -43,12 +43,12 @@ class MainFlag : ScaledScene(592, 592) {
         keys {
             down {
                 when (it.key) {
-                    Key.LEFT -> flagFilter.amplitude = max(0f, flagFilter.amplitude - 5)
-                    Key.RIGHT -> flagFilter.amplitude = min(100f, flagFilter.amplitude + 5)
-                    Key.DOWN -> flagFilter.crestCount = max(0f, flagFilter.crestCount - 0.5f)
-                    Key.UP -> flagFilter.crestCount = min(10f, flagFilter.crestCount + 0.5f)
-                    Key.PLUS, Key.RIGHT_BRACKET, Key.CLOSE_BRACKET -> flagFilter.cyclesPerSecond = min(10f, flagFilter.cyclesPerSecond + 0.5f)
-                    Key.MINUS, Key.LEFT_BRACKET, Key.OPEN_BRACKET -> flagFilter.cyclesPerSecond = max(0f, flagFilter.cyclesPerSecond - 0.5f)
+                    Key.LEFT -> flagFilter.amplitude = kotlin.math.max(0.0, flagFilter.amplitude - 5)
+                    Key.RIGHT -> flagFilter.amplitude = kotlin.math.min(100.0, flagFilter.amplitude + 5)
+                    Key.DOWN -> flagFilter.crestCount = kotlin.math.max(0.0, flagFilter.crestCount - 0.5)
+                    Key.UP -> flagFilter.crestCount = kotlin.math.min(10.0, flagFilter.crestCount + 0.5)
+                    Key.PLUS, Key.RIGHT_BRACKET, Key.CLOSE_BRACKET -> flagFilter.cyclesPerSecond = kotlin.math.min(10.0, flagFilter.cyclesPerSecond + 0.5)
+                    Key.MINUS, Key.LEFT_BRACKET, Key.OPEN_BRACKET -> flagFilter.cyclesPerSecond = kotlin.math.max(0.0, flagFilter.cyclesPerSecond - 0.5)
                     else -> Unit
                 }
                 println("amplitude = ${flagFilter.amplitude}, crestCount = ${flagFilter.crestCount}, cyclesPerSecond = ${flagFilter.cyclesPerSecond}")

@@ -10,6 +10,14 @@ class BlurFilter(
     @ViewProperty
     var optimize: Boolean = true
 ) : ComposedFilter(), FilterWithFiltering {
+    companion object {
+        inline operator fun invoke(
+            radius: Number,
+            expandBorder: Boolean = true,
+            optimize: Boolean = true
+        ): BlurFilter = BlurFilter(radius.toDouble(), expandBorder, optimize)
+    }
+
     private val horizontal = DirectionalBlurFilter(angle = 0.degrees, radius, expandBorder).also { filters.add(it) }
     private val vertical = DirectionalBlurFilter(angle = 90.degrees, radius, expandBorder).also { filters.add(it) }
     override var filtering: Boolean

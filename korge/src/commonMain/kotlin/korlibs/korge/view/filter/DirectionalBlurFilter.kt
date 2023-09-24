@@ -25,6 +25,12 @@ class DirectionalBlurFilter(
     }
 
     companion object : BaseProgramProvider() {
+        inline operator fun invoke(
+            angle: Angle = 0.degrees,
+            radius: Number = 4.0,
+            expandBorder: Boolean = true
+        ): DirectionalBlurFilter = DirectionalBlurFilter(angle, radius.toDouble(), expandBorder)
+
         override val fragment = FragmentShaderDefault {
             val loopLen = createTemp(Int1)
             val gaussianResult = createTemp(Float1)
