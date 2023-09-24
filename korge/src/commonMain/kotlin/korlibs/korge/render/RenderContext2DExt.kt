@@ -143,7 +143,7 @@ fun RenderContext2D.materialRoundRect(
         it[u_HighlightPos] = (highlightPos * Size(width, height))
         it[u_HighlightRadius] = (highlightRadius * kotlin.math.max(width, height) * 1.25).toFloat()
         it[u_HighlightColor] = (highlightColor.premultipliedFast)
-        it[u_BorderSizeHalf] = (borderSize * 0.5f)
+        it[u_BorderSizeHalf] = (borderSize * 0.5)
         it[u_BorderColor] = (borderColor.premultipliedFast)
         it[u_ShadowColor] = (shadowColor.premultipliedFast)
         it[u_ShadowOffset] = (shadowOffset)

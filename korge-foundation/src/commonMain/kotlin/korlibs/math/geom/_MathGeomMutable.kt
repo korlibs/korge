@@ -2205,6 +2205,7 @@ data class MPoint(
         operator fun invoke(xy: Int): MPoint = MPoint(xy.toDouble(), xy.toDouble())
         operator fun invoke(xy: Float): MPoint = MPoint(xy.toDouble(), xy.toDouble())
         operator fun invoke(xy: Double): MPoint = MPoint(xy, xy)
+        inline operator fun invoke(x: Number, y: Number): MPoint = MPoint(x.toDouble(), y.toDouble())
 
         /** Constructs a point from polar coordinates determined by an [angle] and a [length]. Angle 0 is pointing to the right, and the direction is counter-clock-wise */
         inline operator fun invoke(angle: Angle, length: Double = 1.0): MPoint = fromPolar(angle, length)

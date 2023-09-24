@@ -7,12 +7,12 @@ import korlibs.math.geom.*
 inline fun Container.uiScrollableArea(
     size: Size = Size(256, 256),
     contentSize: Size = Size(512, 512),
-    buttonSize: Double = 32.0,
+    buttonSize: Number = 32.0,
     verticalScroll: Boolean = true,
     horizontalScroll: Boolean = true,
     config: UIScrollableArea.() -> Unit = {},
     block: @ViewDslMarker Container.(UIScrollableArea) -> Unit = {}
-): UIScrollableArea = UIScrollableArea(size, contentSize, buttonSize, verticalScroll, horizontalScroll)
+): UIScrollableArea = UIScrollableArea(size, contentSize, buttonSize.toDouble(), verticalScroll, horizontalScroll)
     .addTo(this).apply(config).also { block(it.container, it) }
 
 // @TODO: Optimize this!

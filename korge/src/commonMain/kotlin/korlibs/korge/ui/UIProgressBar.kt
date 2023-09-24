@@ -9,10 +9,10 @@ import korlibs.math.geom.*
 
 inline fun Container.uiProgressBar(
     size: Size = Size(256, 24),
-    current: Double = 0.0,
-    maximum: Double = 100.0,
+    current: Number = 0.0,
+    maximum: Number = 100.0,
     block: @ViewDslMarker UIProgressBar.() -> Unit = {}
-): UIProgressBar = UIProgressBar(size, current, maximum).addTo(this).apply(block)
+): UIProgressBar = UIProgressBar(size, current.toDouble(), maximum.toDouble()).addTo(this).apply(block)
 
 open class UIProgressBar(
     size: Size = Size(256, 24),
