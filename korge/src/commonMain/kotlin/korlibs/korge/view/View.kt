@@ -420,7 +420,7 @@ abstract class View internal constructor(
 
     @ViewProperty(min = -1000.0, max = +1000.0, name = "size")
     var scaledSize: Size
-        get() = unscaledSize * scale
+        get() = Size(scaledWidth, scaledHeight)
         set(value) {
             unscaledSize = Size(
                 if (scaleX == 0.0) value.width else value.width / scaleX,
@@ -428,10 +428,8 @@ abstract class View internal constructor(
             )
         }
 
-    var scaledWidth: Double get() = scaledSize.width ;set(value) { scaledSize = scaledSize.copy(width = value) }
-    var scaledHeight: Double get() = scaledSize.height ; set(value) { scaledSize = scaledSize.copy(height = value) }
-    //var scaledWidthD: Double get() = scaledWidth.toDouble() ; set(value) { scaledWidth = value.toFloat() }
-    //var scaledHeightD: Double get() = scaledHeight.toDouble() ; set(value) { scaledHeight = value.toFloat() }
+    var scaledWidth: Double get() = unscaledWidth * scaleX ; set(value) { unscaledWidth = if (scaleX == 0.0) value else value / scaleX }
+    var scaledHeight: Double get() = unscaledHeight * scaleY ; set(value) { unscaledHeight = if (scaleY == 0.0) value else value / scaleY }
 
     /**
      * Changes the [width] of this view. Generically, this means adjusting the [scaleX] of the view to match that size using the current bounds,
