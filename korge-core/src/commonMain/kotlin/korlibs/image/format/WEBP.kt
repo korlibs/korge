@@ -1,6 +1,5 @@
 package korlibs.image.format
 
-import korlibs.crypto.*
 import korlibs.encoding.*
 import korlibs.image.bitmap.*
 import korlibs.io.compression.*
@@ -52,7 +51,7 @@ private class WebpWASM(bytes: ByteArray) : korlibs.wasm.WASMLib(bytes) {
     fun decodeWebpBytes(bytes: ByteArray): Bitmap32? {
         val memTemp = allocBytes(16)
         val dataPtr = allocBytes(bytes)
-        println("${bytes.md5()}, dataPtr=$dataPtr, bytes.size=${bytes.size}, memTemp=$memTemp")
+        //println("${bytes.md5()}, dataPtr=$dataPtr, bytes.size=${bytes.size}, memTemp=$memTemp")
         val decodedPtr = decode(dataPtr, bytes.size, memTemp, memTemp + 4)
         val buffer = Buffer(readBytes(memTemp, 8))
         val width = buffer.getInt32(0)

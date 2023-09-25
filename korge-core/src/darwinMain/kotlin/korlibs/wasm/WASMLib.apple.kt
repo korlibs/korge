@@ -1,5 +1,6 @@
 package korlibs.wasm
 
+import korlibs.memory.*
 import kotlinx.cinterop.*
 import platform.JavaScriptCore.*
 import platform.posix.*
@@ -65,7 +66,9 @@ class WASMRunner {
         val len = typedArray.objectForKeyedSubscript("length")!!.toInt32()
         val ptr = JSObjectGetTypedArrayBytesPtr(ctxRef, typedArray.JSValueRef_, null)
         val bytes = ByteArray(len)
-        bytes.usePinned { memcpy(it.addressOf(0), ptr, bytes.size.convert()) }
+        if (len > 0) {
+            bytes.usePinned { memcpy(it.startAddressOf, ptr, bytes.size.convert()) }
+        }
         //println("len=$len")
         return bytes
     }
@@ -96,7 +99,7 @@ class WASMRunner {
           new Uint8Array(globalThis.wasmInstance.exports.memory.buffer).set(tempBytes, $ptr);
           globalThis.tempBytes = undefined;
         """.trimIndent()).also {
-            println("eval=$it")
+            //println("eval=$it")
         }
     }
 
