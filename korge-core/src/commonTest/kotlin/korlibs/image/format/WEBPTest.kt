@@ -5,12 +5,17 @@ import korlibs.io.file.std.*
 import kotlin.test.*
 
 class WEBPTest {
-    val WEBPDecoder = ImageDecodingProps(format = WEBP, preferKotlinDecoder = true)
+    @Test
+    fun test1() = suspendTest {
+        WEBP()
+        val bmp = resourcesVfs["Exif5-2x.webp"].readBitmap(ImageDecodingProps(format = WEBP(), preferKotlinDecoder = true))
+        assertEquals("256x256", "${bmp.size}")
+    }
 
     @Test
-    fun testPremultiplied() = suspendTest {
-        WEBP.initOnce(coroutineContext)
-        val bmp = resourcesVfs["Exif5-2x.webp"].readBitmap(WEBPDecoder)
+    fun test2() = suspendTest {
+        WEBP()
+        val bmp = WEBP().decode(resourcesVfs["Exif5-2x.webp"])
         assertEquals("256x256", "${bmp.size}")
     }
 }
