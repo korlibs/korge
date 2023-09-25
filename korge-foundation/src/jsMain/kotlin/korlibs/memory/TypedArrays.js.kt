@@ -6,6 +6,16 @@ actual typealias BufferDataSource = org.khronos.webgl.BufferDataSource
 actual typealias ArrayBuffer = org.khronos.webgl.ArrayBuffer
 actual typealias ArrayBufferView = org.khronos.webgl.ArrayBufferView
 
+actual fun ArrayBufferDirect(size: Int): ArrayBuffer = ArrayBuffer(size)
+actual fun ArrayBufferWrap(data: ByteArray): ArrayBuffer {
+    val int8Array = data.unsafeCast<Int8Array>()
+    check(int8Array.byteOffset == 0)
+    return int8Array.buffer
+}
+internal actual fun ArrayBuffer_copy(src: ArrayBuffer, srcPos: Int, dst: ArrayBuffer, dstPos: Int, length: Int) {
+    Int8Array(dst, dstPos, length).set(Int8Array(src, srcPos, length), 0)
+}
+
 actual inline fun ArrayBuffer.uint8ClampedArray(byteOffset: Int, length: Int): Uint8ClampedArray = org.khronos.webgl.Uint8ClampedArray(this, byteOffset, length)
 actual inline fun ArrayBuffer.uint8Array(byteOffset: Int, length: Int): Uint8Array = org.khronos.webgl.Uint8Array(this, byteOffset, length)
 actual inline fun ArrayBuffer.uint16Array(byteOffset: Int, length: Int): Uint16Array = org.khronos.webgl.Uint16Array(this, byteOffset, length)

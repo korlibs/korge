@@ -144,6 +144,55 @@ class TypedArraysTest {
         assertEquals(-2L, values[1])
     }
 
+    @Test
+    fun testSet() {
+        val values = Int64Array(2)
+        val ints = values.asInt8Array().subarray(4).asInt32Array()
+        ints[1] = -2
+        ints[2] = -1
+        assertEquals(0L, values[0])
+        assertEquals(-2L, values[1])
+    }
+
+    @Test
+    fun testArrays() {
+        val buffer = ArrayBuffer(24)
+        val s8 = Int8Array(buffer, 1)
+        val s16 = Int16Array(buffer, 2)
+        val s32 = Int32Array(buffer, 4)
+        val s64 = Int64Array(buffer, 8)
+        val f32 = Float32Array(buffer, 4)
+        val f64 = Float64Array(buffer, 0)
+        f64[0] = 1.0
+        s64[1] = 2L
+        f32[2] = 3f
+        s32[3] = 4
+        s16[7] = 5
+        s8[9] = 6
+        assertEquals("000000000000f03f00000600000040400500000000000000", buffer.int8Array().toByteArray().hex)
+    }
+
+    @Test
+    fun testExtract() {
+        assertEquals(ubyteArrayOf(1u, 2u, 3u, 4u).toList(), ubyteArrayOf(1u, 2u, 3u, 4u).toUint8ClampedArray().toUByteArray().toList())
+        assertEquals(ubyteArrayOf(1u, 2u, 3u, 4u).toList(), ubyteArrayOf(1u, 2u, 3u, 4u).toUint8Array().toUByteArray().toList())
+        assertEquals(ushortArrayOf(1u, 2u, 3u, 4u).toList(), ushortArrayOf(1u, 2u, 3u, 4u).toUint16Array().toUShortArray().toList())
+        assertEquals(byteArrayOf(1, 2, 3, 4).toList(), byteArrayOf(1, 2, 3, 4).toInt8Array().toByteArray().toList())
+        assertEquals(shortArrayOf(1, 2, 3, 4).toList(), shortArrayOf(1, 2, 3, 4).toInt16Array().toShortArray().toList())
+        assertEquals(intArrayOf(1, 2, 3, 4).toList(), intArrayOf(1, 2, 3, 4).toInt32Array().toIntArray().toList())
+        assertEquals(longArrayOf(1, 2, 3, 4).toList(), longArrayOf(1, 2, 3, 4).toInt64Array().toLongArray().toList())
+        assertEquals(floatArrayOf(1f, 2f, 3f, 4f).toList(), floatArrayOf(1f, 2f, 3f, 4f).toFloat32Array().toFloatArray().toList())
+        assertEquals(doubleArrayOf(1.0, 2.0, 3.0, 4.0).toList(), doubleArrayOf(1.0, 2.0, 3.0, 4.0).toFloat64Array().toDoubleArray().toList())
+    }
+
+    @Test
+    fun testCopy() {
+        val src = Int8Array(4, direct = true) { (10 + it).toByte() }
+        val dst = ArrayBufferDirect(16).int16Array()
+        dst.set(src.subarray(1), 3)
+        assertEquals("0000000000000b0c0d00000000000000", dst.asInt8Array().toByteArray().hex)
+    }
+
     val Int8Array.bytes: ByteArray get() = toByteArray()
     val ArrayBufferView.info: String get() = "$byteOffset/$byteLength"
 }

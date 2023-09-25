@@ -20,6 +20,12 @@ actual interface ArrayBufferView : BufferDataSource {
 
 val ArrayBufferView.data: ByteArray get() = buffer.data
 
+actual fun ArrayBufferDirect(size: Int): ArrayBuffer = ArrayBuffer(size)
+actual fun ArrayBufferWrap(data: ByteArray): ArrayBuffer = ArrayBuffer(data)
+internal actual fun ArrayBuffer_copy(src: ArrayBuffer, srcPos: Int, dst: ArrayBuffer, dstPos: Int, length: Int) {
+    arraycopy(src.data, srcPos, dst.data, dstPos, length)
+}
+
 actual inline fun ArrayBuffer.uint8ClampedArray(byteOffset: Int, length: Int): Uint8ClampedArray = Uint8ClampedArray(this, byteOffset, length)
 actual inline fun ArrayBuffer.uint8Array(byteOffset: Int, length: Int): Uint8Array = Uint8Array(this, byteOffset, length)
 actual inline fun ArrayBuffer.uint16Array(byteOffset: Int, length: Int): Uint16Array = Uint16Array(this, byteOffset, length)

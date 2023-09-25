@@ -10,7 +10,7 @@ actual interface BufferDataSource
 // Invariants: mark <= position <= limit <= capacity
 actual class ArrayBuffer(val buffer: ByteBuffer) : BufferDataSource {
     init { buffer.order(ByteOrder.LITTLE_ENDIAN) }
-    actual constructor(length: Int) : this(ByteBuffer.allocateDirect(length))
+    actual constructor(length: Int) : this(ByteBuffer.allocate(length))
     actual val byteLength: Int get() = buffer.limit() - buffer.position()
 }
 
@@ -18,6 +18,43 @@ actual interface ArrayBufferView : BufferDataSource {
     actual val buffer: ArrayBuffer
     actual val byteOffset: Int
     actual val byteLength: Int
+}
+
+private fun java.nio.Buffer.positionSafe(newPosition: Int) {
+    position(newPosition)
+}
+
+private fun java.nio.Buffer.limitSafe(newLimit: Int) {
+    limit(newLimit)
+}
+
+private fun java.nio.Buffer.flipSafe() {
+    flip()
+}
+
+private fun java.nio.Buffer.clearSafe() {
+    clear()
+}
+
+private fun java.nio.ByteBuffer.slicedBuffer(offset: Int, size: Int): ByteBuffer {
+    return this.duplicate().also {
+        it.order(ByteOrder.nativeOrder())
+        it.positionSafe(offset)
+        it.limitSafe(offset + size)
+    }
+}
+
+actual fun ArrayBufferDirect(size: Int): ArrayBuffer = ArrayBuffer(ByteBuffer.allocateDirect(size))
+actual fun ArrayBufferWrap(data: ByteArray): ArrayBuffer = ArrayBuffer(ByteBuffer.wrap(data))
+internal actual fun ArrayBuffer_copy(src: ArrayBuffer, srcPos: Int, dst: ArrayBuffer, dstPos: Int, length: Int) {
+    val srcBuf = src.buffer
+    val dstBuf = dst.buffer
+
+    if (!srcBuf.isDirect && !dstBuf.isDirect) {
+        System.arraycopy(srcBuf.array(), srcPos, dstBuf.array(), dstPos, length)
+        return
+    }
+    dst.buffer.slicedBuffer(dstPos, length).put(src.buffer.slicedBuffer(srcPos, length))
 }
 
 val ArrayBufferView.jbuffer: ByteBuffer get() = buffer.buffer
