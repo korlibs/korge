@@ -1,4 +1,4 @@
-package korlibs.audio.sound.backends
+package korlibs.audio.sound.backend
 
 import com.sun.jna.*
 import korlibs.audio.sound.*

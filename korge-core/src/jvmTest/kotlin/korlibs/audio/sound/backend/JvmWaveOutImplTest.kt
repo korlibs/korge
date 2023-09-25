@@ -1,4 +1,4 @@
-package korlibs.audio.sound.backends
+package korlibs.audio.sound.backend
 
 import korlibs.audio.sound.*
 import korlibs.io.file.std.*
