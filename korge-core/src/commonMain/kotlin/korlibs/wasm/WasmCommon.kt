@@ -501,8 +501,8 @@ data class WasmFunc(
 
     val exportName: String? get() = exports.firstOrNull()?.name
 
-    override val name: String by lazy { name2 ?: fimport?.name ?: exportName ?: "f$index" }
-    val rname: String by lazy { fimport?.name ?: exportName ?: "f$index" }
+    override val name: String get() = name2 ?: fimport?.name ?: exportName ?: "f$index"
+    val rname: String get() = fimport?.name ?: exportName ?: "f$index"
 
     val ftype: FuncWithType by lazy { FuncWithType(name, type) }
     val fwt = WasmFuncWithType(name, type)

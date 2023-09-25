@@ -50,6 +50,7 @@ class WasmReaderText {
             val funcIndex = builder.funcs.size
             val code = WasmCode(params, listOf(justLocals), WasmExpr(instructions))
             val export = (funcName ?: exportName)?.let { WasmExport(it, -1, -1, null) }
+            //println("export=$export")
             val func = WasmFunc(funcIndex, funcType, code = code).also { it.addExport(export) }
             return func
         }
@@ -384,7 +385,7 @@ class WasmReaderText {
             "invoke", "call" -> {
                 val funcName = expr.valueParams.first().value
                 val fnc = currentModule.funcsByName[funcName]
-                    ?: run { println(currentModule.funcsByName.keys); error("Can't find function '$funcName'") }
+                    ?: run { println(currentModule.funcsByName.keys); error("Can't find function '$funcName' in ${currentModule.funcsByName.keys}") }
                 return WasmExpr(readExprParams(expr, func).instructions + WasmInstruction.CALL(fnc.index))
             }
             "call_indirect" -> {
