@@ -1,14 +1,6 @@
 package korlibs.io.compression.lzo
 
-import korlibs.memory.arraycopy
-import korlibs.memory.readS32LE
-import korlibs.memory.readS64LE
-import korlibs.memory.readU16LE
-import korlibs.memory.readU32LE
-import korlibs.memory.readU8
-import korlibs.memory.write16LE
-import korlibs.memory.write64LE
-import korlibs.memory.write8
+import korlibs.memory.*
 
 object LzoRawCompressor {
     const val LAST_LITERAL_SIZE = 5
@@ -76,9 +68,9 @@ object LzoRawCompressor {
 
         // First Byte
         // put position in hash
-        table[hash(inputBase.readS64LE(input), mask)] = (input - inputAddress)
+        table[hash(inputBase.getS64LE(input), mask)] = (input - inputAddress)
         input++
-        var nextHash = hash(inputBase.readS64LE(input), mask)
+        var nextHash = hash(inputBase.getS64LE(input), mask)
         var done = false
         var firstLiteral = true
         do {
@@ -100,15 +92,15 @@ object LzoRawCompressor {
 
                 // get position on hash
                 matchIndex = inputAddress + table[hash]
-                nextHash = hash(inputBase.readS64LE(nextInputIndex), mask)
+                nextHash = hash(inputBase.getS64LE(nextInputIndex), mask)
 
                 // put position on hash
                 table[hash] = (input - inputAddress)
-            } while (inputBase.readS32LE(matchIndex) != inputBase.readS32LE(input) || matchIndex + MAX_DISTANCE < input
+            } while (inputBase.getS32LE(matchIndex) != inputBase.getS32LE(input) || matchIndex + MAX_DISTANCE < input
             )
 
             // catch up
-            while (input > anchor && matchIndex > inputAddress && inputBase.readU8(input - 1) == inputBase.readU8(
+            while (input > anchor && matchIndex > inputAddress && inputBase.getU8(input - 1) == inputBase.getU8(
                     matchIndex - 1
                 )
             ) {
@@ -139,15 +131,15 @@ object LzoRawCompressor {
                 }
                 val position = input - 2
 
-                table[hash(inputBase.readS64LE(position), mask)] = (position - inputAddress)
+                table[hash(inputBase.getS64LE(position), mask)] = (position - inputAddress)
 
                 // Test next position
-                val hash = hash(inputBase.readS64LE(input), mask)
+                val hash = hash(inputBase.getS64LE(input), mask)
                 matchIndex = inputAddress + table[hash]
                 table[hash] = (input - inputAddress)
-                if (matchIndex + MAX_DISTANCE < input || inputBase.readS32LE(matchIndex) != inputBase.readS32LE(input)) {
+                if (matchIndex + MAX_DISTANCE < input || inputBase.getS32LE(matchIndex) != inputBase.getS32LE(input)) {
                     input++
-                    nextHash = hash(inputBase.readS64LE(input), mask)
+                    nextHash = hash(inputBase.getS64LE(input), mask)
                     break
                 }
 
@@ -166,7 +158,7 @@ object LzoRawCompressor {
 
         // first, compare long at a time
         while (current < matchLimit - (LzoConstants.SIZE_OF_LONG - 1)) {
-            val diff: Long = inputBase.readS64LE(matchStart) xor inputBase.readS64LE(current)
+            val diff: Long = inputBase.getS64LE(matchStart) xor inputBase.getS64LE(current)
             if (diff != 0L) {
                 current += (diff.countTrailingZeroBits() shr 3)
                 return (current - start)
@@ -174,21 +166,21 @@ object LzoRawCompressor {
             current += LzoConstants.SIZE_OF_LONG
             matchStart += LzoConstants.SIZE_OF_LONG
         }
-        if (current < matchLimit - (LzoConstants.SIZE_OF_INT - 1) && inputBase.readU32LE(matchStart) == inputBase.readU32LE(
+        if (current < matchLimit - (LzoConstants.SIZE_OF_INT - 1) && inputBase.getU32LE(matchStart) == inputBase.getU32LE(
                 current
             )
         ) {
             current += LzoConstants.SIZE_OF_INT
             matchStart += LzoConstants.SIZE_OF_INT
         }
-        if (current < matchLimit - (LzoConstants.SIZE_OF_SHORT - 1) && inputBase.readU16LE(matchStart) == inputBase.readU16LE(
+        if (current < matchLimit - (LzoConstants.SIZE_OF_SHORT - 1) && inputBase.getU16LE(matchStart) == inputBase.getU16LE(
                 current
             )
         ) {
             current += LzoConstants.SIZE_OF_SHORT
             matchStart += LzoConstants.SIZE_OF_SHORT
         }
-        if (current < matchLimit && inputBase.readU8(matchStart) == inputBase.readU8(current)
+        if (current < matchLimit && inputBase.getU8(matchStart) == inputBase.getU8(current)
         ) {
             ++current
         }
@@ -210,8 +202,8 @@ object LzoRawCompressor {
 
         // write stop command
         // this is a 0b0001_HMMM command with a zero match offset
-        outputBase.write8(output++, 17)
-        outputBase.write16LE(output, 0)
+        outputBase.set8(output++, 17)
+        outputBase.set16LE(output, 0)
         output += LzoConstants.SIZE_OF_SHORT
         return output
     }
@@ -229,7 +221,7 @@ object LzoRawCompressor {
         output = encodeLiteralLength(firstLiteral, outputBase, output, literalLength)
         val outputLimit = output + literalLength
         do {
-            outputBase.write64LE(output, inputBase.readS64LE(input))
+            outputBase.set64LE(output, inputBase.getS64LE(input))
             input += LzoConstants.SIZE_OF_LONG
             output += LzoConstants.SIZE_OF_LONG
         } while (output < outputLimit)
@@ -245,23 +237,23 @@ object LzoRawCompressor {
         var output = output
         var length = length
         if (firstLiteral && length < 0xFF - 17) {
-            outBase.write8(output++, (length + 17))
+            outBase.set8(output++, (length + 17))
         } else if (length < 4) {
             // Small literals are encoded in the low two bits trailer of the previous command.  The
             // trailer is a little endian short, so we need to adjust the byte 2 back in the output.
-            outBase.write8(output - 2, outBase.readU8(output - 2) or length)
+            outBase.set8(output - 2, outBase.getU8(output - 2) or length)
         } else {
             length -= 3
             if (length > RUN_MASK) {
-                outBase.write8(output++, 0)
+                outBase.set8(output++, 0)
                 var remaining = length - RUN_MASK
                 while (remaining > 255) {
-                    outBase.write8(output++, 0)
+                    outBase.set8(output++, 0)
                     remaining -= 255
                 }
-                outBase.write8(output++, remaining)
+                outBase.set8(output++, remaining)
             } else {
-                outBase.write8(output++, length)
+                outBase.set8(output++, length)
             }
         }
         return output
@@ -280,8 +272,8 @@ object LzoRawCompressor {
             // encodes matchLength and matchOffset - 1
             matchLength--
             matchOffset--
-            outputBase.write8(output++, (matchLength shl 5 or (matchOffset and 7 shl 2)))
-            outputBase.write8(output++, (matchOffset ushr 3))
+            outputBase.set8(output++, (matchLength shl 5 or (matchOffset and 7 shl 2)))
+            outputBase.set8(output++, (matchOffset ushr 3))
             return output
         }
 
@@ -305,7 +297,7 @@ object LzoRawCompressor {
     }
 
     private fun encodeOffset(outputBase: ByteArray, outputAddress: Int, offset: Int): Int {
-        outputBase.write16LE(outputAddress, (offset shl 2))
+        outputBase.set16LE(outputAddress, (offset shl 2))
         return outputAddress + 2
     }
 
@@ -318,20 +310,20 @@ object LzoRawCompressor {
     ): Int {
         var output = output
         if (matchLength <= baseMatchLength) {
-            outputBase.write8(output++, command or matchLength)
+            outputBase.set8(output++, command or matchLength)
         } else {
-            outputBase.write8(output++, command)
+            outputBase.set8(output++, command)
             var remaining = (matchLength - baseMatchLength).toLong()
             while (remaining > 510) {
-                outputBase.write16LE(output, 0)
+                outputBase.set16LE(output, 0)
                 output += LzoConstants.SIZE_OF_SHORT
                 remaining -= 510
             }
             if (remaining > 255) {
-                outputBase.write8(output++, 0)
+                outputBase.set8(output++, 0)
                 remaining -= 255
             }
-            outputBase.write8(output++, remaining)
+            outputBase.set8(output++, remaining)
         }
         return output
     }

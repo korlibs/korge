@@ -3,10 +3,6 @@ package korlibs.image.format
 import korlibs.datastructure.*
 import korlibs.time.milliseconds
 import korlibs.math.clamp
-import korlibs.memory.extract
-import korlibs.memory.hasBitSet
-import korlibs.memory.readIntArray
-import korlibs.memory.readIntArrayLE
 import korlibs.image.bitmap.*
 import korlibs.image.color.Colors
 import korlibs.image.color.RGBA
@@ -30,6 +26,7 @@ import korlibs.io.stream.readU8
 import korlibs.math.geom.slice.*
 import korlibs.encoding.hex
 import korlibs.math.geom.*
+import korlibs.memory.*
 
 // If this is true, only processes visible layers from the ASE file.
 // Otherwise, will process invisible layers as well.
@@ -382,7 +379,7 @@ object ASE : ImageFormatWithContainer("ase") {
                                         Bitmap32(
                                             width,
                                             height,
-                                            RgbaArray(udata.readIntArray(0, width * height, true))
+                                            RgbaArray(udata.getS32Array(0, width * height, true))
                                         ).also {
                                             if (props.premultipliedSure) it.premultiplyInplaceIfRequired()
                                         }
@@ -415,7 +412,7 @@ object ASE : ImageFormatWithContainer("ase") {
                                 val compressedData = cs.readAvailable()
                                     .uncompress(ZLib, tilesWidth * tilesHeight * bytesPerTile)
                                 val data = when (bitsPerTile) {
-                                    32 -> compressedData.readIntArrayLE(0, tilesWidth * tilesHeight)
+                                    32 -> compressedData.getS32LEArray(0, tilesWidth * tilesHeight)
                                     else -> TODO("Only supported 32-bits per tile")
                                 }
                                 AseTilemapCell(
@@ -583,7 +580,7 @@ object ASE : ImageFormatWithContainer("ase") {
                             val compressedData =
                                 cs.readBytesExact(compressedDataLength) // (Tile Width) x (Tile Height x Number of Tiles)
                             val data = compressedData.uncompress(ZLib)
-                            val ints = data.readIntArrayLE(0, tileWidth * tileHeight * ntiles)
+                            val ints = data.getS32LEArray(0, tileWidth * tileHeight * ntiles)
                             val bitmap =
                                 Bitmap32(tileWidth, tileHeight * ntiles, RgbaArray(ints)).also {
                                     if (props.premultipliedSure) it.premultiplyInplaceIfRequired()

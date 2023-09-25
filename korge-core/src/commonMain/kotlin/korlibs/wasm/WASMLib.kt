@@ -24,21 +24,21 @@ interface IWASMLib : Closeable {
 
     fun readShorts(pos: Int, size: Int): ShortArray {
         val bytes = readBytes(pos, size * 2)
-        return ShortArray(size) { bytes.readS16LE(it * 2).toShort() }
+        return ShortArray(size) { bytes.getS16LE(it * 2).toShort() }
     }
     fun readInts(pos: Int, size: Int): IntArray {
         val bytes = readBytes(pos, size * 4)
-        return IntArray(size) { bytes.readS32LE(it * 4) }
+        return IntArray(size) { bytes.getS32LE(it * 4) }
     }
 
     fun writeShorts(pos: Int, data: ShortArray) = writeBytes(pos, data.toByteArray())
     fun writeInts(pos: Int, data: IntArray) = writeBytes(pos, data.toByteArray())
 
     fun ShortArray.toByteArray(): ByteArray = ByteArray(this.size * 2).also { out ->
-        for (n in indices) out.write16LE(n * 2, this[n].toInt())
+        for (n in indices) out.set16LE(n * 2, this[n].toInt())
     }
     fun IntArray.toByteArray(): ByteArray = ByteArray(this.size * 4).also { out ->
-        for (n in indices) out.write16LE(n * 4, this[n].toInt())
+        for (n in indices) out.set16LE(n * 4, this[n].toInt())
     }
 
     fun allocBytes(size: Int): Int = invokeFuncInt("malloc", size)

@@ -50,7 +50,7 @@ open class WasmTest {
             val samplesData = module.stackAlloc(MINIMP3_MAX_SAMPLES_PER_FRAME * 2)
             val info = module.stackAlloc(6 * 4)
             val result = module("mp3dec_decode_frame", decoder, mp3Data, mp3Bytes.size, samplesData, info) as Int
-            val infos = module.readBytes(info, 6 * 4).readIntArrayLE(0, 6).toList()
+            val infos = module.readBytes(info, 6 * 4).getS32LEArray(0, 6).toList()
             println("mp3dec_decode_frame(decoder=$decoder, mp3Data=$mp3Data, mp3Bytes.size=${mp3Bytes.size}, samplesData=$samplesData, info=$info) ::: result=$result, infos=$infos")
             module.stackRestore(stack)
         }

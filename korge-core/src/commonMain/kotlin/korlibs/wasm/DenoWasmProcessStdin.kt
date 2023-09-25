@@ -80,51 +80,59 @@ class DenoWasmIO(
 
     fun writeBytes(streamId: Int, ptr: Int, bytes: ByteArray) {
         val payload = ByteArray(4 + bytes.size)
-        payload.write32LE(0, ptr)
-        payload.writeBytes(4, bytes)
+        payload.set32LE(0, ptr)
+        payload.setBytes(4, bytes)
         writeReadMessage(1010, streamId, payload)
         if (debug) println("CMD:writeBytes:ptr=$ptr, bytes=${bytes.size}")
     }
 
     fun allocAndWrite(streamId: Int, bytes: ByteArray): Int {
-        return writeReadMessage(1011, streamId, bytes).readS32LE(0)
+        return writeReadMessage(1011, streamId, bytes).getS32LE(0)
     }
+
     fun free(streamId: Int, vararg ptrs: Int) {
         val payload = ByteArray(ptrs.size * 4)
         for (n in 0 until ptrs.size) {
-            payload.write32LE(n * 4, ptrs[n])
+            payload.set32LE(n * 4, ptrs[n])
         }
         writeReadMessage(1012, streamId, payload)
         if (debug) println("CMD:free:ptrs=${ptrs.toList()}")
     }
 
     fun stackSave(streamId: Int): Int {
-        return writeReadMessage(1013, streamId, ByteArray(0)).readS32LE(0)
+        return writeReadMessage(1013, streamId, ByteArray(0)).getS32LE(0)
     }
+
     fun stackRestore(streamId: Int, ptr: Int) {
         val payload = ByteArray(4)
-        payload.write32LE(0, ptr)
+        payload.set32LE(0, ptr)
         writeReadMessage(1014, streamId, payload)
     }
+
     fun stackAlloc(streamId: Int, size: Int): Int {
         val payload = ByteArray(4)
-        payload.write32LE(0, size)
-        return writeReadMessage(1015, streamId, payload).readS32LE(0)
+        payload.set32LE(0, size)
+        return writeReadMessage(1015, streamId, payload).getS32LE(0)
     }
+
     fun stackAllocAndWrite(streamId: Int, bytes: ByteArray): Int {
-        return writeReadMessage(1016, streamId, bytes).readS32LE(0)
+        return writeReadMessage(1016, streamId, bytes).getS32LE(0)
     }
 
     fun readBytes(streamId: Int, ptr: Int, len: Int): ByteArray {
         val payload = ByteArray(8)
-        payload.write32LE(0, ptr)
-        payload.write32LE(4, len)
+        payload.set32LE(0, ptr)
+        payload.set32LE(4, len)
         if (debug) println("CMD:readBytes:ptr=$ptr,len=$len")
         return writeReadMessage(1020, streamId, payload)
     }
 
     fun executeFunction(streamId: Int, name: String, vararg params: Any?): Any? {
-        val resultBytes = writeReadMessage(1030, streamId, Json.stringify(mapOf("func" to name, "params" to params.toList())).encodeToByteArray())
+        val resultBytes = writeReadMessage(
+            1030,
+            streamId,
+            Json.stringify(mapOf("func" to name, "params" to params.toList())).encodeToByteArray()
+        )
         if (debug) println("CMD:executeFunction:name=$name, params=${params.toList()}")
         //return if (resultBytes.isEmpty()) null else Json.parse(resultBytes.decodeToString())
         return if (resultBytes.isEmpty()) Unit else Json.parse(resultBytes.decodeToString()).also {
@@ -133,7 +141,11 @@ class DenoWasmIO(
     }
 
     fun executeFunctionIndirect(streamId: Int, address: Int, vararg params: Any?): Any? {
-        val resultBytes = writeReadMessage(1030, streamId, Json.stringify(mapOf("indirect" to address, "params" to params.toList())).encodeToByteArray())
+        val resultBytes = writeReadMessage(
+            1030,
+            streamId,
+            Json.stringify(mapOf("indirect" to address, "params" to params.toList())).encodeToByteArray()
+        )
         val data = resultBytes.decodeToString()
         if (debug) println("CMD:executeFunctionIndirect:address=$address, params=${params.toList()}")
         return Json.parse(data)
@@ -148,9 +160,9 @@ class DenoWasmIO(
 
     private fun _writeMessage(type: Int, streamId: Int, payload: ByteArray) {
         val buffer = ByteArray(12)
-        buffer.write32LE(0, type)
-        buffer.write32LE(4, streamId)
-        buffer.write32LE(8, payload.size)
+        buffer.set32LE(0, type)
+        buffer.set32LE(4, streamId)
+        buffer.set32LE(8, payload.size)
         //println("writeMessage: type=$type, payload=${payload.size}")
         //socket.channel.write(arrayOf(buffer, ByteBuffer.wrap(payload)))
         output.write(buffer)
@@ -161,7 +173,7 @@ class DenoWasmIO(
     private fun _readMessage(type: Int): ByteArray {
         //println(" -- readMessage type=$type")
         val sizeBuffer = input.readBytesExact(4)
-        val len = sizeBuffer.readS32LE(0)
+        val len = sizeBuffer.getS32LE(0)
         //println(" -- readMessage: len=$len")
         val out = input.readBytesExact(len)
         //println(" --> ${out.size}")

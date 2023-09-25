@@ -174,27 +174,27 @@ open class MP3Base : AudioFormat("mp3") {
 
 			if (b.readString(3, Charsets.LATIN1) == "ID3") {
                 val bb = b.readBytesExact(7)
-				val id3v2_major_version = bb.readU8(0)
-				val id3v2_minor_version = bb.readU8(1)
-				val id3v2_flags = bb.readU8(2)
-				val z0 = bb.readU8(3)
-				val z1 = bb.readU8(4)
-				val z2 = bb.readU8(5)
-				val z3 = bb.readU8(6)
+                val id3v2_major_version = bb.getU8(0)
+                val id3v2_minor_version = bb.getU8(1)
+                val id3v2_flags = bb.getU8(2)
+                val z0 = bb.getU8(3)
+                val z1 = bb.getU8(4)
+                val z2 = bb.getU8(5)
+                val z3 = bb.getU8(6)
 
                 val flag_unsynchronisation = id3v2_flags.extract(7)
                 val flag_extended_header = id3v2_flags.extract(6)
                 val flag_experimental_ind = id3v2_flags.extract(5)
                 val flag_footer_present = id3v2_flags.extract(4)
 
-				if (((z0 and 0x80) == 0) && ((z1 and 0x80) == 0) && ((z2 and 0x80) == 0) && ((z3 and 0x80) == 0)) {
-					val header_size = 10
-					val tag_size =
-						((z0 and 0x7f) * 2097152) + ((z1 and 0x7f) * 16384) + ((z2 and 0x7f) * 128) + (z3 and 0x7f)
-					val footer_size = if (flag_footer_present) 10 else 0
-					return (header_size + tag_size + footer_size).toLong()//bytes to skip
-				}
-			}
+                if (((z0 and 0x80) == 0) && ((z1 and 0x80) == 0) && ((z2 and 0x80) == 0) && ((z3 and 0x80) == 0)) {
+                    val header_size = 10
+                    val tag_size =
+                        ((z0 and 0x7f) * 2097152) + ((z1 and 0x7f) * 16384) + ((z2 and 0x7f) * 128) + (z3 and 0x7f)
+                    val footer_size = if (flag_footer_present) 10 else 0
+                    return (header_size + tag_size + footer_size).toLong()//bytes to skip
+                }
+            }
 			return 0L
 		}
 

@@ -1,14 +1,7 @@
 package korlibs.io.compression.lzo
 
-import korlibs.memory.arraycopy
-import korlibs.memory.readS64LE
-import korlibs.memory.readU16LE
-import korlibs.memory.readU32LE
-import korlibs.memory.readU8
-import korlibs.memory.write32LE
-import korlibs.memory.write64LE
-import korlibs.memory.write8
 import korlibs.io.lang.MalformedInputException
+import korlibs.memory.*
 
 object LzoRawDecompressor {
     private val DEC_32_TABLE = intArrayOf(4, 1, 2, 1, 4, 4, 4, 4)
@@ -42,7 +35,7 @@ object LzoRawDecompressor {
                     throw MalformedInputException(input - inputAddress)
                 }
 
-                val command: Int = inputBase.readU8(input++)
+                val command: Int = inputBase.getU8(input++)
                 // Commands are described using a bit pattern notation:
                 // 0: bit is not set
                 // 1: bit is set
@@ -73,7 +66,7 @@ object LzoRawDecompressor {
                         if (literalLength == 0) {
                             literalLength = 15
                             var nextByte = 0
-                            while (input < inputLimit && inputBase.readU8(input++).also {
+                            while (input < inputLimit && inputBase.getU8(input++).also {
                                     nextByte = it
                                 } == 0
                             ) {
@@ -98,7 +91,7 @@ object LzoRawDecompressor {
                             throw MalformedInputException(input - inputAddress)
                         }
                         matchOffset = command and 12 ushr 2
-                        matchOffset = matchOffset or (inputBase.readU8(input++) shl 2)
+                        matchOffset = matchOffset or (inputBase.getU8(input++) shl 2)
 
                         // literal length :: 2 bits :: valid range [0..3]
                         //   [0..1] from command [0..1]
@@ -118,7 +111,7 @@ object LzoRawDecompressor {
                             throw MalformedInputException(input - inputAddress)
                         }
                         matchOffset = command and 12 ushr 2
-                        matchOffset = matchOffset or (inputBase.readU8(input++) shl 2)
+                        matchOffset = matchOffset or (inputBase.getU8(input++) shl 2)
                         matchOffset = matchOffset or 2048
 
                         // literal length :: 2 bits :: valid range [0..3]
@@ -139,7 +132,7 @@ object LzoRawDecompressor {
                     if (matchLength == 0) {
                         matchLength = 7
                         var nextByte = 0
-                        while (input < inputLimit && inputBase.readU8(input++).also {
+                        while (input < inputLimit && inputBase.getU8(input++).also {
                                 nextByte = it
                             } == 0) {
                             matchLength += 255
@@ -153,7 +146,7 @@ object LzoRawDecompressor {
                         throw MalformedInputException(input - inputAddress)
                     }
 
-                    val trailer: Int = inputBase.readU16LE(input)
+                    val trailer: Int = inputBase.getU16LE(input)
                     input += LzoConstants.SIZE_OF_SHORT
 
                     // copy offset :: 16 bits :: valid range [16383..49151]
@@ -181,7 +174,7 @@ object LzoRawDecompressor {
                     if (matchLength == 0) {
                         matchLength = 31
                         var nextByte = 0
-                        while (input < inputLimit && inputBase.readU8(input++).also {
+                        while (input < inputLimit && inputBase.getU8(input++).also {
                                 nextByte = it
                             } == 0) {
                             matchLength += 255
@@ -195,7 +188,7 @@ object LzoRawDecompressor {
                         throw MalformedInputException(input - inputAddress)
                     }
 
-                    val trailer: Int = inputBase.readU16LE(input)
+                    val trailer: Int = inputBase.getU16LE(input)
                     input += LzoConstants.SIZE_OF_SHORT
 
                     // copy offset :: 14 bits :: valid range [0..16383]
@@ -222,7 +215,7 @@ object LzoRawDecompressor {
                     }
                     matchOffset = command and 28 ushr 2
                     matchOffset =
-                        matchOffset or (inputBase.readU8(input++) shl 3)
+                        matchOffset or (inputBase.getU8(input++) shl 3)
 
                     // literal length :: 2 bits :: valid range [0..3]
                     //   [0..1] from command [0..1]
@@ -244,7 +237,7 @@ object LzoRawDecompressor {
                     if (output > fastOutputLimit) {
                         // slow match copy
                         while (output < matchOutputLimit) {
-                            outputBase.write8(output++, outputBase.readU8(matchAddress++))
+                            outputBase.set8(output++, outputBase.getU8(matchAddress++))
                         }
                     } else {
                         // copy repeated sequence
@@ -252,17 +245,17 @@ object LzoRawDecompressor {
                             // 8 bytes apart so that we can copy long-at-a-time below
                             val increment32 = DEC_32_TABLE[matchOffset]
                             val decrement64 = DEC_64_TABLE[matchOffset]
-                            outputBase.write8(output + 0, outputBase.readU8(matchAddress + 0))
-                            outputBase.write8(output + 1, outputBase.readU8(matchAddress + 1))
-                            outputBase.write8(output + 2, outputBase.readU8(matchAddress + 2))
-                            outputBase.write8(output + 3, outputBase.readU8(matchAddress + 3))
+                            outputBase.set8(output + 0, outputBase.getU8(matchAddress + 0))
+                            outputBase.set8(output + 1, outputBase.getU8(matchAddress + 1))
+                            outputBase.set8(output + 2, outputBase.getU8(matchAddress + 2))
+                            outputBase.set8(output + 3, outputBase.getU8(matchAddress + 3))
                             output += LzoConstants.SIZE_OF_INT
                             matchAddress += increment32
-                            outputBase.write32LE(output, outputBase.readU32LE(matchAddress))
+                            outputBase.set32LE(output, outputBase.getU32LE(matchAddress))
                             output += LzoConstants.SIZE_OF_INT
                             matchAddress -= decrement64
                         } else {
-                            outputBase.write64LE(output, outputBase.readS64LE(matchAddress))
+                            outputBase.set64LE(output, outputBase.getS64LE(matchAddress))
                             matchAddress += LzoConstants.SIZE_OF_LONG
                             output += LzoConstants.SIZE_OF_LONG
                         }
@@ -271,16 +264,16 @@ object LzoRawDecompressor {
                                 throw MalformedInputException(input - inputAddress)
                             }
                             while (output < fastOutputLimit) {
-                                outputBase.write64LE(output, outputBase.readS64LE(matchAddress))
+                                outputBase.set64LE(output, outputBase.getS64LE(matchAddress))
                                 matchAddress += LzoConstants.SIZE_OF_LONG
                                 output += LzoConstants.SIZE_OF_LONG
                             }
                             while (output < matchOutputLimit) {
-                                outputBase.write8(output++, outputBase.readU8(matchAddress++))
+                                outputBase.set8(output++, outputBase.getU8(matchAddress++))
                             }
                         } else {
                             while (output < matchOutputLimit) {
-                                outputBase.write64LE(output, outputBase.readS64LE(matchAddress))
+                                outputBase.set64LE(output, outputBase.getS64LE(matchAddress))
                                 matchAddress += LzoConstants.SIZE_OF_LONG
                                 output += LzoConstants.SIZE_OF_LONG
                             }
@@ -303,7 +296,7 @@ object LzoRawDecompressor {
                 } else {
                     // fast copy. We may over-copy but there's enough room in input and output to not overrun them
                     do {
-                        outputBase.write64LE(output, inputBase.readS64LE(input))
+                        outputBase.set64LE(output, inputBase.getS64LE(input))
                         input += LzoConstants.SIZE_OF_LONG
                         output += LzoConstants.SIZE_OF_LONG
                     } while (output < literalOutputLimit)

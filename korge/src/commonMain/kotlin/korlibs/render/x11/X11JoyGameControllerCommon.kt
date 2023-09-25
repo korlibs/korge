@@ -132,10 +132,10 @@ internal class LinuxJoyEventAdapter @OptIn(SyncIOAPI::class) constructor(val syn
                     val raf = platformSyncIO.open("/dev/input/js$index", "r")
                     while (running) {
                         if (raf.read(packet) == 8) {
-                            val time = packet.readS32(0, isLittleEndian)
-                            val value = packet.readS16(4, isLittleEndian)
-                            val type = packet.readU8(6)
-                            val number = packet.readU8(7)
+                            val time = packet.getS32(0, isLittleEndian)
+                            val value = packet.getS16(4, isLittleEndian)
+                            val type = packet.getU8(6)
+                            val number = packet.getU8(7)
 
                             //println("JS_EVENT: time=$time, value=$value, type=$type, number=$number")
 
@@ -157,10 +157,12 @@ internal class LinuxJoyEventAdapter @OptIn(SyncIOAPI::class) constructor(val syn
                                         buttonsPressure[GameButton.LEFT.index] = (fvalue < 0f).toInt().toFloat()
                                         buttonsPressure[GameButton.RIGHT.index] = (fvalue > 0f).toInt().toFloat()
                                     }
+
                                     GameButton.DPADY -> {
                                         buttonsPressure[GameButton.UP.index] = (fvalue < 0f).toInt().toFloat()
                                         buttonsPressure[GameButton.DOWN.index] = (fvalue > 0f).toInt().toFloat()
                                     }
+
                                     else -> {
                                         buttonsPressure[button.index] = when (button) {
                                             GameButton.LX, GameButton.RX -> GamepadInfo.withoutDeadRange(+fvalue)

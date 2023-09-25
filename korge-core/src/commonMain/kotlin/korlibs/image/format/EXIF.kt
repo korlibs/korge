@@ -2,8 +2,6 @@ package korlibs.image.format
 
 import korlibs.logger.Logger
 import korlibs.platform.Endian
-import korlibs.memory.readS32
-import korlibs.memory.readU16
 import korlibs.io.async.runBlockingNoSuspensions
 import korlibs.io.file.VfsFile
 import korlibs.io.file.VfsOpenMode
@@ -25,6 +23,7 @@ import korlibs.io.stream.sliceHere
 import korlibs.io.stream.sliceStart
 import korlibs.io.stream.toAsyncStream
 import korlibs.encoding.hex
+import korlibs.memory.*
 
 // https://zpl.fi/exif-orientation-in-different-formats/
 // https://exiftool.org/TagNames/EXIF.html
@@ -101,12 +100,18 @@ object EXIF {
             val dataFormat = DataFormat[s.readU16(endian)]
             val nComponent = s.readS32(endian)
             if (debug) {
-                logger.error { "tagPos=${tagPos.hex}, tagNumber=${tagNumber.hex}, dataFormat=$dataFormat, nComponent=$nComponent, size=${dataFormat.indexBytes(nComponent)}" }
+                logger.error {
+                    "tagPos=${tagPos.hex}, tagNumber=${tagNumber.hex}, dataFormat=$dataFormat, nComponent=$nComponent, size=${
+                        dataFormat.indexBytes(
+                            nComponent
+                        )
+                    }"
+                }
             }
             val data: ByteArray = s.readBytesExact(dataFormat.indexBytes(nComponent))
 
-            fun readUShort(index: Int): Int = data.readU16(index * 2, little = endian.isLittle)
-            fun readInt(index: Int): Int = data.readS32(index * 4, little = endian.isLittle)
+            fun readUShort(index: Int): Int = data.getU16(index * 2, little = endian.isLittle)
+            fun readInt(index: Int): Int = data.getS32(index * 4, little = endian.isLittle)
 
             if (debug) {
                 if (dataFormat == DataFormat.STRING) {

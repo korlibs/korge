@@ -1,7 +1,7 @@
 package korlibs.memory
 
 import korlibs.number.*
-import kotlin.math.max
+import kotlin.math.*
 
 /**
  * Analogous to [StringBuilder] but for [ByteArray]. Allows to [append] values to end calling [toByteArray].
@@ -72,29 +72,29 @@ public class ByteArrayBuilder(public var data: ByteArray, size: Int = data.size,
 
     public fun s8(v: Int): ByteArrayBuilder = appendByte(v)
 
-    public fun s16(v: Int, little: Boolean): ByteArrayBuilder = this.apply { prepare(2) { data.write16(_size, v, little) } }
-    public fun s16LE(v: Int): ByteArrayBuilder = this.apply { prepare(2) { data.write16LE(_size, v) } }
-    public fun s16BE(v: Int): ByteArrayBuilder = this.apply { prepare(2) { data.write16BE(_size, v) } }
+    public fun s16(v: Int, little: Boolean): ByteArrayBuilder = this.apply { prepare(2) { data.set16(_size, v, little) } }
+    public fun s16LE(v: Int): ByteArrayBuilder = this.apply { prepare(2) { data.set16LE(_size, v) } }
+    public fun s16BE(v: Int): ByteArrayBuilder = this.apply { prepare(2) { data.set16BE(_size, v) } }
 
-    public fun s24(v: Int, little: Boolean): ByteArrayBuilder = this.apply { prepare(3) { data.write24(_size, v, little) } }
-    public fun s24LE(v: Int): ByteArrayBuilder = this.apply { prepare(3) { data.write24LE(_size, v) } }
-    public fun s24BE(v: Int): ByteArrayBuilder = this.apply { prepare(3) { data.write24BE(_size, v) } }
+    public fun s24(v: Int, little: Boolean): ByteArrayBuilder = this.apply { prepare(3) { data.set24(_size, v, little) } }
+    public fun s24LE(v: Int): ByteArrayBuilder = this.apply { prepare(3) { data.set24LE(_size, v) } }
+    public fun s24BE(v: Int): ByteArrayBuilder = this.apply { prepare(3) { data.set24BE(_size, v) } }
 
-    public fun s32(v: Int, little: Boolean): ByteArrayBuilder = this.apply { prepare(4) { data.write32(_size, v, little) } }
-    public fun s32LE(v: Int): ByteArrayBuilder = this.apply { prepare(4) { data.write32LE(_size, v) } }
-    public fun s32BE(v: Int): ByteArrayBuilder = this.apply { prepare(4) { data.write32BE(_size, v) } }
+    public fun s32(v: Int, little: Boolean): ByteArrayBuilder = this.apply { prepare(4) { data.set32(_size, v, little) } }
+    public fun s32LE(v: Int): ByteArrayBuilder = this.apply { prepare(4) { data.set32LE(_size, v) } }
+    public fun s32BE(v: Int): ByteArrayBuilder = this.apply { prepare(4) { data.set32BE(_size, v) } }
 
-    public fun f16(v: Half, little: Boolean): ByteArrayBuilder = this.apply { prepare(2) { data.writeF16(_size, v, little) } }
-    public fun f16LE(v: Half): ByteArrayBuilder = this.apply { prepare(2) { data.writeF16LE(_size, v) } }
-    public fun f16BE(v: Half): ByteArrayBuilder = this.apply { prepare(2) { data.writeF16BE(_size, v) } }
+    public fun f16(v: Half, little: Boolean): ByteArrayBuilder = this.apply { prepare(2) { data.setF16(_size, v, little) } }
+    public fun f16LE(v: Half): ByteArrayBuilder = this.apply { prepare(2) { data.setF16LE(_size, v) } }
+    public fun f16BE(v: Half): ByteArrayBuilder = this.apply { prepare(2) { data.setF16BE(_size, v) } }
 
-    public fun f32(v: Float, little: Boolean): ByteArrayBuilder = this.apply { prepare(4) { data.writeF32(_size, v, little) } }
-    public fun f32LE(v: Float): ByteArrayBuilder = this.apply { prepare(4) { data.writeF32LE(_size, v) } }
-    public fun f32BE(v: Float): ByteArrayBuilder = this.apply { prepare(4) { data.writeF32BE(_size, v) } }
+    public fun f32(v: Float, little: Boolean): ByteArrayBuilder = this.apply { prepare(4) { data.setF32(_size, v, little) } }
+    public fun f32LE(v: Float): ByteArrayBuilder = this.apply { prepare(4) { data.setF32LE(_size, v) } }
+    public fun f32BE(v: Float): ByteArrayBuilder = this.apply { prepare(4) { data.setF32BE(_size, v) } }
 
-    public fun f64(v: Double, little: Boolean): ByteArrayBuilder = this.apply { prepare(8) { data.writeF64(_size, v, little) } }
-    public fun f64LE(v: Double): ByteArrayBuilder = this.apply { prepare(8) { data.writeF64LE(_size, v) } }
-    public fun f64BE(v: Double): ByteArrayBuilder = this.apply { prepare(8) { data.writeF64BE(_size, v) } }
+    public fun f64(v: Double, little: Boolean): ByteArrayBuilder = this.apply { prepare(8) { data.setF64(_size, v, little) } }
+    public fun f64LE(v: Double): ByteArrayBuilder = this.apply { prepare(8) { data.setF64LE(_size, v) } }
+    public fun f64BE(v: Double): ByteArrayBuilder = this.apply { prepare(8) { data.setF64BE(_size, v) } }
 
     public fun clear() {
         _size = 0

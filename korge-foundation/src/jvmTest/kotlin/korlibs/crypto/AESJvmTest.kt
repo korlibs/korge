@@ -1,9 +1,8 @@
 package korlibs.crypto
 
-import javax.crypto.spec.IvParameterSpec
-import javax.crypto.spec.SecretKeySpec
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import korlibs.encoding.*
+import javax.crypto.spec.*
+import kotlin.test.*
 
 class AESJvmTest {
     val MODES = listOf(

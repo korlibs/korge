@@ -4,9 +4,6 @@ import korlibs.datastructure.RingBuffer
 import korlibs.datastructure.internal.KdsInternalApi
 import korlibs.math.ilog2
 import korlibs.math.nextPowerOfTwo
-import korlibs.memory.readS32BE
-import korlibs.memory.readS32LE
-import korlibs.memory.readU16LE
 import korlibs.io.experimental.KorioExperimentalApi
 import korlibs.io.lang.ASCII
 import korlibs.io.lang.toString
@@ -17,6 +14,7 @@ import korlibs.io.stream.AsyncOutputStream
 import korlibs.io.stream.MemorySyncStreamToByteArray
 import korlibs.io.stream.write8
 import korlibs.io.stream.writeBytes
+import korlibs.memory.*
 import kotlin.math.max
 import kotlin.math.min
 
@@ -157,17 +155,17 @@ open class BitReader constructor(
         return out
     }
 	fun su8(): Int = discardBits()._su8()
-	fun su16LE(): Int {
+    fun su16LE(): Int {
         sbytes_noalign(2, temp)
-        return temp.readU16LE(0)
+        return temp.getU16LE(0)
     }
-	fun su32LE(): Int {
+    fun su32LE(): Int {
         sbytes_noalign(4, temp)
-        return temp.readS32LE(0)
+        return temp.getS32LE(0)
     }
-	fun su32BE(): Int {
+    fun su32BE(): Int {
         sbytes_noalign(4, temp)
-        return temp.readS32BE(0)
+        return temp.getS32BE(0)
     }
 
 	private val temp = ByteArray(4)

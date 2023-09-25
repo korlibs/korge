@@ -3,11 +3,7 @@ package korlibs.io.lang
 import korlibs.datastructure.IntIntMap
 import korlibs.datastructure.iterators.fastForEach
 import korlibs.datastructure.lock.NonRecursiveLock
-import korlibs.memory.ByteArrayBuilder
-import korlibs.memory.extract
-import korlibs.memory.insert
-import korlibs.memory.readS16
-import korlibs.memory.write16
+import korlibs.memory.*
 import kotlin.math.min
 import kotlin.native.concurrent.SharedImmutable
 import kotlin.native.concurrent.ThreadLocal
@@ -227,8 +223,8 @@ class UTF16Charset(val le: Boolean) : Charset("UTF-16-" + (if (le) "LE" else "BE
 	override fun decode(out: StringBuilder, src: ByteArray, start: Int, end: Int): Int {
         var consumed = 0
 		for (n in start until end step 2) {
-		    val char = src.readS16(n, le).toChar()
-		    out.append(char)
+            val char = src.getS16(n, le).toChar()
+            out.append(char)
             consumed += 2
         }
         return consumed
@@ -236,10 +232,10 @@ class UTF16Charset(val le: Boolean) : Charset("UTF-16-" + (if (le) "LE" else "BE
 
 	override fun encode(out: ByteArrayBuilder, src: CharSequence, start: Int, end: Int) {
 		val temp = ByteArray(2)
-		for (n in start until end) {
-			temp.write16(0, src[n].code, le)
-			out.append(temp)
-		}
+        for (n in start until end) {
+            temp.set16(0, src[n].code, le)
+            out.append(temp)
+        }
 	}
 }
 

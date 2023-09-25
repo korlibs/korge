@@ -1,10 +1,10 @@
 package korlibs.render.x11
 
-import korlibs.memory.*
 import korlibs.event.*
 import korlibs.io.async.*
 import korlibs.io.file.sync.*
 import korlibs.io.lang.*
+import korlibs.memory.*
 import korlibs.platform.*
 import kotlin.test.*
 
@@ -13,9 +13,16 @@ class LinuxJoyEventAdapterTest {
     fun test() = suspendTest({ !Platform.isJs && !Platform.isWasm }) {
         val sync = MemorySyncIO()
         sync.writelink("/dev/input/by-id/usb-Xbox_Controller-joystick", "../js1")
-        sync.write("/dev/input/js1", byteArrayOf(
-            *packet(time = 0, type = LinuxJoyEventAdapter.JS_EVENT_BUTTON, value = Short.MAX_VALUE.toInt(), number = 0), // A
-        ))
+        sync.write(
+            "/dev/input/js1", byteArrayOf(
+                *packet(
+                    time = 0,
+                    type = LinuxJoyEventAdapter.JS_EVENT_BUTTON,
+                    value = Short.MAX_VALUE.toInt(),
+                    number = 0
+                ), // A
+            )
+        )
         val logs = arrayListOf<String>()
         LinuxJoyEventAdapter(sync).use { adapter ->
             val dispatcher = BaseEventListener()
@@ -44,10 +51,10 @@ class LinuxJoyEventAdapterTest {
 
     private fun packet(time: Int, value: Int, type: Int, number: Int): ByteArray {
         val packet = ByteArray(8)
-        packet.write32LE(0, time) // time
-        packet.write16LE(4, value) // value
-        packet.write8(6, type) // type
-        packet.write8(7, number) // number
+        packet.set32LE(0, time) // time
+        packet.set16LE(4, value) // value
+        packet.set8(6, type) // type
+        packet.set8(7, number) // number
         return packet
     }
 }

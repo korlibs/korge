@@ -3,7 +3,6 @@ package korlibs.render.x11
 import korlibs.kgl.checkedIf
 import korlibs.memory.dyn.*
 import korlibs.math.toInt
-import korlibs.memory.write32LE
 import korlibs.graphics.gl.AGOpengl
 import korlibs.event.Key
 import korlibs.event.MouseButton
@@ -14,6 +13,7 @@ import korlibs.render.ZenityDialogs
 import korlibs.image.bitmap.Bitmap
 import com.sun.jna.*
 import com.sun.jna.platform.unix.X11.*
+import korlibs.memory.*
 
 class X11GameWindow(checkGl: Boolean) : EventLoopGameWindow() {
     override val dialogInterface: DialogInterface = ZenityDialogs()
@@ -67,8 +67,8 @@ class X11GameWindow(checkGl: Boolean) : EventLoopGameWindow() {
         val bmp = value.toBMP32()
         val VSIZE = NativeLong.SIZE
         val bytes = ByteArray((bmp.area + 2) * VSIZE)
-        bytes.write32LE(0, bmp.width)
-        bytes.write32LE(VSIZE, bmp.height)
+        bytes.set32LE(0, bmp.width)
+        bytes.set32LE(VSIZE, bmp.height)
         for (n in 0 until bmp.area) {
             val pos = VSIZE * (2 + n)
             val c = bmp.getRgbaAtIndex(n)

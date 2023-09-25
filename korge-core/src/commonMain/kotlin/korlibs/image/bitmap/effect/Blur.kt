@@ -2,14 +2,10 @@
 
 package korlibs.image.bitmap.effect
 
-import korlibs.memory.arraycopy
-import korlibs.memory.readU8
-import korlibs.math.toIntFloor
-import korlibs.image.bitmap.Bitmap32
-import korlibs.image.bitmap.Bitmap8
-import korlibs.image.bitmap.BitmapChannel
-import kotlin.math.round
-import kotlin.math.sqrt
+import korlibs.image.bitmap.*
+import korlibs.math.*
+import korlibs.memory.*
+import kotlin.math.*
 
 fun Bitmap32.blur(r: Int): Bitmap32 {
     val out = Bitmap32(width + r * 2, height + r * 2, premultiplied = this.premultiplied)
@@ -77,20 +73,20 @@ private fun boxBlurH(scl: ByteArray, tcl: ByteArray, w: Int, h: Int, r: Int) {
         var ti = i * w
         var li = ti
         var ri = ti + r
-        val fv = scl.readU8(ti)
-        val lv = scl.readU8(ti + w - 1)
+        val fv = scl.getU8(ti)
+        val lv = scl.getU8(ti + w - 1)
         var v = (r + 1) * fv
-        for (j in 0 until r) v += scl.readU8(ti + j)
+        for (j in 0 until r) v += scl.getU8(ti + j)
         for (j in 0..r) {
-            v += scl.readU8(ri++) - fv
+            v += scl.getU8(ri++) - fv
             tcl[ti++] = (v / arr).toByte()
         }
         for (j in r + 1 until w - r) {
-            v += scl.readU8(ri++) - scl.readU8(li++)
+            v += scl.getU8(ri++) - scl.getU8(li++)
             tcl[ti++] = (v / arr).toByte()
         }
         for (j in w - r until w) {
-            v += lv - scl.readU8(li++)
+            v += lv - scl.getU8(li++)
             tcl[ti++] = (v / arr).toByte()
         }
     }
@@ -102,25 +98,25 @@ private fun boxBlurT(scl: ByteArray, tcl: ByteArray, w: Int, h: Int, r: Int) {
         var ti = i
         var li = ti
         var ri = ti + r * w
-        val fv = scl.readU8(ti)
-        val lv = scl.readU8(ti + w * (h - 1))
+        val fv = scl.getU8(ti)
+        val lv = scl.getU8(ti + w * (h - 1))
         var v = (r + 1) * fv
-        for (j in 0 until r) v += scl.readU8(ti + j * w)
+        for (j in 0 until r) v += scl.getU8(ti + j * w)
         for (j in 0..r) {
-            v += scl.readU8(ri) - fv
+            v += scl.getU8(ri) - fv
             tcl[ti] = (v / arr).toByte()
             ri += w
             ti += w
         }
         for (j in r + 1 until h - r) {
-            v += scl.readU8(ri) - scl.readU8(li)
+            v += scl.getU8(ri) - scl.getU8(li)
             tcl[ti] = (v / arr).toByte()
             li += w
             ri += w
             ti += w
         }
         for (j in h - r until h) {
-            v += lv - scl.readU8(li)
+            v += lv - scl.getU8(li)
             tcl[ti] = (v / arr).toByte()
             li += w
             ti += w
