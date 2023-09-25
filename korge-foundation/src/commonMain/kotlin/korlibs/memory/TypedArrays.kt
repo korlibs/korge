@@ -24,12 +24,19 @@ fun ArrayBuffer(size: Int, direct: Boolean): ArrayBuffer = if (direct) ArrayBuff
 expect fun ArrayBufferDirect(size: Int): ArrayBuffer
 expect fun ArrayBufferWrap(data: ByteArray): ArrayBuffer
 internal expect fun ArrayBuffer_copy(src: ArrayBuffer, srcPos: Int, dst: ArrayBuffer, dstPos: Int, length: Int)
-
-fun ArrayBuffer.readBytes(bytes: ByteArray, start: Int = 0, end: Int = bytes.size, offset: Int = 0) {
-    ArrayBuffer_copy(ArrayBufferWrap(bytes), start, this, offset, end - start)
+fun arraycopy(src: ArrayBuffer, srcPos: Int, dst: ArrayBuffer, dstPos: Int, length: Int) {
+    ArrayBuffer_copy(src, srcPos, dst, dstPos, length)
 }
-fun ArrayBuffer.writeBytes(bytes: ByteArray, start: Int = 0, end: Int = bytes.size, offset: Int = 0) {
-    ArrayBuffer_copy(this, offset, ArrayBufferWrap(bytes), start, end - start)
+fun arraycopy(src: ByteArray, srcPos: Int, dst: ArrayBuffer, dstPos: Int, length: Int) {
+    ArrayBuffer_copy(ArrayBufferWrap(src), srcPos, dst, dstPos, length)
+}
+fun arraycopy(src: ArrayBuffer, srcPos: Int, dst: ByteArray, dstPos: Int, length: Int) {
+    ArrayBuffer_copy(src, srcPos, ArrayBufferWrap(dst), dstPos, length)
+}
+
+fun ArrayBuffer.readBytes(start: Int = 0, length: Int = byteLength - start, outOffset: Int = 0, out: ByteArray = ByteArray(outOffset + length)): ByteArray {
+    arraycopy(this, start, out, outOffset, length)
+    return out
 }
 
 fun ArrayBufferView.setByteOffset(typedArray: ArrayBufferView, targetOffsetBytes: Int = 0) =
@@ -45,14 +52,33 @@ fun Int64Array.set(typedArray: ArrayBufferView, targetOffset: Int = 0) = setByte
 fun Float32Array.set(typedArray: ArrayBufferView, targetOffset: Int = 0) = setByteOffset(typedArray, targetOffset * 4)
 fun Float64Array.set(typedArray: ArrayBufferView, targetOffset: Int = 0) = setByteOffset(typedArray, targetOffset * 8)
 
-fun Uint8ClampedArray.subarray(begin: Int, end: Int = length): Uint8ClampedArray = Uint8ClampedArray(buffer, byteOffset + begin * 1, end - begin)
-fun Uint8Array.subarray(begin: Int, end: Int = length): Uint8Array = Uint8Array(buffer, byteOffset + begin * 1, end - begin)
-fun Uint16Array.subarray(begin: Int, end: Int = length): Uint16Array = Uint16Array(buffer, byteOffset + begin * 2, end - begin)
-fun Int8Array.subarray(begin: Int, end: Int = length): Int8Array = Int8Array(buffer, byteOffset + begin * 1, end - begin)
-fun Int16Array.subarray(begin: Int, end: Int = length): Int16Array = Int16Array(buffer, byteOffset + begin * 2, end - begin)
-fun Int32Array.subarray(begin: Int, end: Int = length): Int32Array = Int32Array(buffer, byteOffset + begin * 4, end - begin)
-fun Float32Array.subarray(begin: Int, end: Int = length): Float32Array = Float32Array(buffer, byteOffset + begin * 4, end - begin)
-fun Float64Array.subarray(begin: Int, end: Int = length): Float64Array = Float64Array(buffer, byteOffset + begin * 8, end - begin)
+fun Uint8ClampedArray.subarray(begin: Int = 0, end: Int = length): Uint8ClampedArray = Uint8ClampedArray(buffer, byteOffset + begin * 1, end - begin)
+fun Uint8Array.subarray(begin: Int = 0, end: Int = length): Uint8Array = Uint8Array(buffer, byteOffset + begin * 1, end - begin)
+fun Uint16Array.subarray(begin: Int = 0, end: Int = length): Uint16Array = Uint16Array(buffer, byteOffset + begin * 2, end - begin)
+fun Int8Array.subarray(begin: Int = 0, end: Int = length): Int8Array = Int8Array(buffer, byteOffset + begin * 1, end - begin)
+fun Int16Array.subarray(begin: Int = 0, end: Int = length): Int16Array = Int16Array(buffer, byteOffset + begin * 2, end - begin)
+fun Int32Array.subarray(begin: Int = 0, end: Int = length): Int32Array = Int32Array(buffer, byteOffset + begin * 4, end - begin)
+fun Float32Array.subarray(begin: Int = 0, end: Int = length): Float32Array = Float32Array(buffer, byteOffset + begin * 4, end - begin)
+fun Float64Array.subarray(begin: Int = 0, end: Int = length): Float64Array = Float64Array(buffer, byteOffset + begin * 8, end - begin)
+
+fun ArrayBuffer.clone(): ArrayBuffer = ArrayBufferWrap(readBytes())
+fun Uint8ClampedArray.clone(): Uint8ClampedArray = Uint8ClampedArray(ArrayBufferWrap(buffer.readBytes(byteOffset, byteLength)))
+fun Uint8Array.clone(): Uint8Array = Uint8Array(ArrayBufferWrap(buffer.readBytes(byteOffset, byteLength)))
+fun Uint16Array.clone(): Uint16Array = Uint16Array(ArrayBufferWrap(buffer.readBytes(byteOffset, byteLength)))
+fun Int8Array.clone(): Int8Array = Int8Array(ArrayBufferWrap(buffer.readBytes(byteOffset, byteLength)))
+fun Int16Array.clone(): Int16Array = Int16Array(ArrayBufferWrap(buffer.readBytes(byteOffset, byteLength)))
+fun Int32Array.clone(): Int32Array = Int32Array(ArrayBufferWrap(buffer.readBytes(byteOffset, byteLength)))
+fun Float32Array.clone(): Float32Array = Float32Array(ArrayBufferWrap(buffer.readBytes(byteOffset, byteLength)))
+fun Float64Array.clone(): Float64Array = Float64Array(ArrayBufferWrap(buffer.readBytes(byteOffset, byteLength)))
+
+fun Uint8ClampedArray.subarraySize(begin: Int = 0, size: Int = length - begin): Uint8ClampedArray = subarray(begin, begin + size)
+fun Uint8Array.subarraySize(begin: Int = 0, size: Int = length - begin): Uint8Array = subarray(begin, begin + size)
+fun Uint16Array.subarraySize(begin: Int = 0, size: Int = length - begin): Uint16Array = subarray(begin, begin + size)
+fun Int8Array.subarraySize(begin: Int = 0, size: Int = length - begin): Int8Array = subarray(begin, begin + size)
+fun Int16Array.subarraySize(begin: Int = 0, size: Int = length - begin): Int16Array = subarray(begin, begin + size)
+fun Int32Array.subarraySize(begin: Int = 0, size: Int = length - begin): Int32Array = subarray(begin, begin + size)
+fun Float32Array.subarraySize(begin: Int = 0, size: Int = length - begin): Float32Array = subarray(begin, begin + size)
+fun Float64Array.subarraySize(begin: Int = 0, size: Int = length - begin): Float64Array = subarray(begin, begin + size)
 
 fun ArrayBufferView.asUint8ClampedArray(): Uint8ClampedArray = Uint8ClampedArray(buffer, byteOffset, byteLength / 1)
 fun ArrayBufferView.asUint8Array(): Uint8Array = Uint8Array(buffer, byteOffset, byteLength / 1)
@@ -257,7 +283,7 @@ inline fun Float32Array(size: Int, direct: Boolean = false, block: (Int) -> Floa
 inline fun Float64Array(size: Int, direct: Boolean = false, block: (Int) -> Double): Float64Array = Float64Array(size, direct).also { for (n in 0 until size) it[n] = block(n) }
 
 fun ByteArray.toInt8Array(): Int8Array = ArrayBufferWrap(this.copyOf()).int8Array()
-fun Int8Array.toByteArray(): ByteArray = ByteArray(length) { this[it] }
+fun Int8Array.toByteArray(): ByteArray = buffer.readBytes(byteOffset, byteLength)
 
 fun UByteArray.toUint8ClampedArray(direct: Boolean = false): Uint8ClampedArray = Uint8ClampedArray(size, direct) { this[it].toInt() }
 fun UByteArray.toUint8Array(direct: Boolean = false): Uint8Array = Uint8Array(size, direct) { this[it].toInt() }
