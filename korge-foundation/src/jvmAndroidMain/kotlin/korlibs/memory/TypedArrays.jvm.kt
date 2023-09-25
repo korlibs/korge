@@ -34,81 +34,67 @@ actual inline fun ArrayBuffer.dataView(byteOffset: Int, length: Int): DataView =
 
 actual class Int8Array(override val buffer: ArrayBuffer, override val byteOffset: Int, actual val length: Int) : ArrayBufferView {
     override val byteLength: Int get() = length * 1
-    fun offset(index: Int): Int = byteOffset + index * 1
     actual constructor(length: Int) : this(ArrayBuffer(length), 0, length)
 }
 actual class Int16Array(override val buffer: ArrayBuffer, override val byteOffset: Int, actual val length: Int) : ArrayBufferView {
     override val byteLength: Int get() = length * 2
-    fun offset(index: Int): Int = byteOffset + index * 2
     actual constructor(length: Int) : this(ArrayBuffer(length * 2), 0, length)
 }
 actual class Int32Array(override val buffer: ArrayBuffer, override val byteOffset: Int, actual val length: Int) : ArrayBufferView {
     override val byteLength: Int get() = length * 4
-    fun offset(index: Int): Int = byteOffset + index * 4
     actual constructor(length: Int) : this(ArrayBuffer(length * 4), 0, length)
 }
 actual class Float32Array(override val buffer: ArrayBuffer, override val byteOffset: Int, actual val length: Int) : ArrayBufferView {
     override val byteLength: Int get() = length * 4
-    fun offset(index: Int): Int = byteOffset + index * 4
     actual constructor(length: Int) : this(ArrayBuffer(length * 4), 0, length)
 }
 actual class Float64Array(override val buffer: ArrayBuffer, override val byteOffset: Int, actual val length: Int) : ArrayBufferView {
     override val byteLength: Int get() = length * 8
-    fun offset(index: Int): Int = byteOffset + index * 8
     actual constructor(length: Int) : this(ArrayBuffer(length * 8), 0, length)
 }
 actual class Uint8ClampedArray(override val buffer: ArrayBuffer, override val byteOffset: Int, actual val length: Int) : ArrayBufferView {
     override val byteLength: Int get() = length * 1
-    fun offset(index: Int): Int = byteOffset + index * 1
     actual constructor(length: Int) : this(ArrayBuffer(length * 1), 0, length)
 }
 actual class Uint8Array(override val buffer: ArrayBuffer, override val byteOffset: Int, actual val length: Int) : ArrayBufferView {
     override val byteLength: Int get() = length * 1
-    fun offset(index: Int): Int = byteOffset + index * 1
     actual constructor(length: Int) : this(ArrayBuffer(length * 1), 0, length)
 }
 actual class Uint16Array(override val buffer: ArrayBuffer, override val byteOffset: Int, actual val length: Int) : ArrayBufferView {
     override val byteLength: Int get() = length * 2
-    fun offset(index: Int): Int = byteOffset + index * 2
     actual constructor(length: Int) : this(ArrayBuffer(length * 2), 0, length)
 }
 actual class DataView(override val buffer: ArrayBuffer, override val byteOffset: Int, override val byteLength: Int) : ArrayBufferView {
     val bufferLE = jbuffer.slice().order(ByteOrder.LITTLE_ENDIAN)
     val bufferBE = jbuffer.slice().order(ByteOrder.BIG_ENDIAN)
     fun jbuffer(littleEndian: Boolean): ByteBuffer = if (littleEndian) bufferLE else bufferBE
-    fun offset(offset: Int, size: Int): Int {
-        if (offset < 0 || offset + size > byteLength) {
-            error("Offset is outside the bounds of the DataView")
-        }
-        return byteOffset + offset
-    }
 }
 
-actual inline fun DataView.getInt8(byteOffset: Int): Byte = bufferLE.get(offset(byteOffset, 1))
-actual inline fun DataView.getInt16(byteOffset: Int, littleEndian: Boolean): Short = jbuffer(littleEndian).getShort(offset(byteOffset, 2))
-actual inline fun DataView.getInt32(byteOffset: Int, littleEndian: Boolean): Int = jbuffer(littleEndian).getInt(offset(byteOffset, 4))
-actual inline fun DataView.getFloat32(byteOffset: Int, littleEndian: Boolean): Float = jbuffer(littleEndian).getFloat(offset(byteOffset, 4))
-actual inline fun DataView.getFloat64(byteOffset: Int, littleEndian: Boolean): Double = jbuffer(littleEndian).getDouble(offset(byteOffset, 8))
-actual inline fun DataView.setInt8(byteOffset: Int, value: Byte) { bufferLE.put(offset(byteOffset, 1), value) }
-actual inline fun DataView.setInt16(byteOffset: Int, value: Short, littleEndian: Boolean) { jbuffer(littleEndian).putShort(offset(byteOffset, 2), value) }
-actual inline fun DataView.setInt32(byteOffset: Int, value: Int, littleEndian: Boolean) { jbuffer(littleEndian).putInt(offset(byteOffset, 4), value) }
-actual inline fun DataView.setFloat32(byteOffset: Int, value: Float, littleEndian: Boolean) { jbuffer(littleEndian).putFloat(offset(byteOffset, 4), value) }
-actual inline fun DataView.setFloat64(byteOffset: Int, value: Double, littleEndian: Boolean) { jbuffer(littleEndian).putDouble(offset(byteOffset, 8), value) }
+actual inline fun DataView.getInt8(byteOffset: Int): Byte = bufferLE.get(byteOffset(byteOffset, 1))
+actual inline fun DataView.getInt16(byteOffset: Int, littleEndian: Boolean): Short = jbuffer(littleEndian).getShort(byteOffset(byteOffset, 2))
+actual inline fun DataView.getInt32(byteOffset: Int, littleEndian: Boolean): Int = jbuffer(littleEndian).getInt(byteOffset(byteOffset, 4))
+actual inline fun DataView.getFloat32(byteOffset: Int, littleEndian: Boolean): Float = jbuffer(littleEndian).getFloat(byteOffset(byteOffset, 4))
+actual inline fun DataView.getFloat64(byteOffset: Int, littleEndian: Boolean): Double = jbuffer(littleEndian).getDouble(byteOffset(byteOffset, 8))
+actual inline fun DataView.setInt8(byteOffset: Int, value: Byte) { bufferLE.put(byteOffset(byteOffset, 1), value) }
+actual inline fun DataView.setInt16(byteOffset: Int, value: Short, littleEndian: Boolean) { jbuffer(littleEndian).putShort(byteOffset(byteOffset, 2), value) }
+actual inline fun DataView.setInt32(byteOffset: Int, value: Int, littleEndian: Boolean) { jbuffer(littleEndian).putInt(byteOffset(byteOffset, 4), value) }
+actual inline fun DataView.setFloat32(byteOffset: Int, value: Float, littleEndian: Boolean) { jbuffer(littleEndian).putFloat(byteOffset(byteOffset, 4), value) }
+actual inline fun DataView.setFloat64(byteOffset: Int, value: Double, littleEndian: Boolean) { jbuffer(littleEndian).putDouble(byteOffset(byteOffset, 8), value) }
 
-actual operator fun Int8Array.get(index: Int): Byte = jbuffer.get(offset(index))
-actual operator fun Int16Array.get(index: Int): Short = jbuffer.getShort(offset(index))
-actual operator fun Int32Array.get(index: Int): Int = jbuffer.getInt(offset(index))
-actual operator fun Float32Array.get(index: Int): Float = jbuffer.getFloat(offset(index))
-actual operator fun Float64Array.get(index: Int): Double = jbuffer.getDouble(offset(index))
-actual operator fun Uint8ClampedArray.get(index: Int): Int = jbuffer.get(offset(index)).toInt() and 0xFF
-actual operator fun Uint8Array.get(index: Int): Int = jbuffer.get(offset(index)).toInt() and 0xFF
-actual operator fun Uint16Array.get(index: Int): Int = jbuffer.getShort(offset(index)).toInt() and 0xFFFF
+actual operator fun Int8Array.get(index: Int): Byte = jbuffer.get(byteOffset(index))
+actual operator fun Int16Array.get(index: Int): Short = jbuffer.getShort(byteOffset(index))
+actual operator fun Int32Array.get(index: Int): Int = jbuffer.getInt(byteOffset(index))
+actual operator fun Float32Array.get(index: Int): Float = jbuffer.getFloat(byteOffset(index))
+actual operator fun Float64Array.get(index: Int): Double = jbuffer.getDouble(byteOffset(index))
+actual operator fun Uint8ClampedArray.get(index: Int): Int = jbuffer.get(byteOffset(index)).toInt() and 0xFF
+actual operator fun Uint8Array.get(index: Int): Int = jbuffer.get(byteOffset(index)).toInt() and 0xFF
+actual operator fun Uint16Array.get(index: Int): Int = jbuffer.getShort(byteOffset(index)).toInt() and 0xFFFF
 
-actual operator fun Int8Array.set(index: Int, value: Byte) { jbuffer.put(offset(index), value) }
-actual operator fun Int16Array.set(index: Int, value: Short) { jbuffer.putShort(offset(index), value) }
-actual operator fun Int32Array.set(index: Int, value: Int) { jbuffer.putInt(offset(index), value) }
-actual operator fun Float32Array.set(index: Int, value: Float) { jbuffer.putFloat(offset(index), value) }
-actual operator fun Float64Array.set(index: Int, value: Double) { jbuffer.putDouble(offset(index), value) }
-actual operator fun Uint8ClampedArray.set(index: Int, value: Int) { jbuffer.put(offset(index), value.clamp(0, 255).toByte()) }
-actual operator fun Uint8Array.set(index: Int, value: Int) { jbuffer.put(offset(index), value.toByte()) }
-actual operator fun Uint16Array.set(index: Int, value: Int) { jbuffer.putShort(offset(index), value.toShort()) }
+actual operator fun Int8Array.set(index: Int, value: Byte) { jbuffer.put(byteOffset(index), value) }
+actual operator fun Int16Array.set(index: Int, value: Short) { jbuffer.putShort(byteOffset(index), value) }
+actual operator fun Int32Array.set(index: Int, value: Int) { jbuffer.putInt(byteOffset(index), value) }
+actual operator fun Float32Array.set(index: Int, value: Float) { jbuffer.putFloat(byteOffset(index), value) }
+actual operator fun Float64Array.set(index: Int, value: Double) { jbuffer.putDouble(byteOffset(index), value) }
+actual operator fun Uint8ClampedArray.set(index: Int, value: Int) { jbuffer.put(byteOffset(index), value.clamp(0, 255).toByte()) }
+actual operator fun Uint8Array.set(index: Int, value: Int) { jbuffer.put(byteOffset(index), value.toByte()) }
+actual operator fun Uint16Array.set(index: Int, value: Int) { jbuffer.putShort(byteOffset(index), value.toShort()) }

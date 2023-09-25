@@ -47,6 +47,24 @@ fun Int32Array.subarray(begin: Int, end: Int = length): Int32Array = Int32Array(
 fun Float32Array.subarray(begin: Int, end: Int = length): Float32Array = Float32Array(buffer, byteOffset + begin * 4, end - begin)
 fun Float64Array.subarray(begin: Int, end: Int = length): Float64Array = Float64Array(buffer, byteOffset + begin * 8, end - begin)
 
+private fun ArrayBufferView._offsetS(index: Int, size: Int): Int {
+    val roffset = index * size
+    if (roffset !in 0 .. (byteLength - size)) error("Out of bounds")
+    return (byteOffset + roffset)
+}
+@PublishedApi internal fun Uint8ClampedArray.byteOffset(index: Int): Int = _offsetS(index, 1)
+@PublishedApi internal fun Uint8Array.byteOffset(index: Int): Int = _offsetS(index, 1)
+@PublishedApi internal fun Uint16Array.byteOffset(index: Int): Int = _offsetS(index, 2)
+@PublishedApi internal fun Int8Array.byteOffset(index: Int): Int = _offsetS(index, 1)
+@PublishedApi internal fun Int16Array.byteOffset(index: Int): Int = _offsetS(index, 2)
+@PublishedApi internal fun Int32Array.byteOffset(index: Int): Int = _offsetS(index, 4)
+@PublishedApi internal fun Float32Array.byteOffset(index: Int): Int = _offsetS(index, 4)
+@PublishedApi internal fun Float64Array.byteOffset(index: Int): Int = _offsetS(index, 8)
+@PublishedApi internal fun DataView.byteOffset(offset: Int, size: Int): Int {
+    if (offset < 0 || offset + size > byteLength) error("Offset is outside the bounds of the DataView")
+    return byteOffset + offset
+}
+
 expect inline fun ArrayBuffer.uint8ClampedArray(byteOffset: Int, length: Int = this.byteLength - byteOffset): Uint8ClampedArray
 expect inline fun ArrayBuffer.uint8Array(byteOffset: Int, length: Int = this.byteLength - byteOffset): Uint8Array
 expect inline fun ArrayBuffer.uint16Array(byteOffset: Int, length: Int = (this.byteLength - byteOffset) / 2): Uint16Array
