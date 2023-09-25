@@ -118,7 +118,7 @@ class RawSocketWebSocketClient(
                 val frame = readWsFrameOrNull() ?: break
 
                 if (frame.type == WsOpcode.Close) {
-                    val closeReason = if (frame.data.size >= 2) frame.data.readU16BE(0) else CloseReasons.UNEXPECTED
+                    val closeReason = if (frame.data.size >= 2) frame.data.getU16BE(0) else CloseReasons.UNEXPECTED
                     val closeMessage = if (frame.data.size >= 3) frame.data.readString(2, frame.data.size - 2) else null
                     close = CloseInfo(closeReason, closeMessage, true)
                     break@loop

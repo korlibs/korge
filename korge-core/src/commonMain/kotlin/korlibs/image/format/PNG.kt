@@ -192,14 +192,14 @@ object PNG : ImageFormat("png") {
             if (bmp32 != null) {
                 for (x in 0 until width) {
                     val c = bmp32.getRgbaAtIndex(index + x)
-                    curr.data.write8(pos++, c.r)
-                    curr.data.write8(pos++, c.g)
-                    curr.data.write8(pos++, c.b)
-                    curr.data.write8(pos++, c.a)
+                    curr.data.set8(pos++, c.r)
+                    curr.data.set8(pos++, c.g)
+                    curr.data.set8(pos++, c.b)
+                    curr.data.set8(pos++, c.a)
                 }
             } else if (bmp8 != null) {
                 for (x in 0 until width) {
-                    curr.data.write8(pos++, bmp8.getIntIndex(index + x))
+                    curr.data.set8(pos++, bmp8.getIntIndex(index + x))
                 }
             }
 

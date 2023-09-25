@@ -1,6 +1,5 @@
 package korlibs.io.compression
 
-import korlibs.memory.readIntArrayLE
 import korlibs.io.compression.deflate.Deflate
 import korlibs.io.compression.deflate.DeflatePortable
 import korlibs.io.compression.deflate.GZIP
@@ -10,6 +9,7 @@ import korlibs.io.lang.UTF8
 import korlibs.io.lang.toByteArray
 import korlibs.io.lang.toString
 import korlibs.encoding.fromBase64
+import korlibs.memory.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -27,26 +27,26 @@ class CompressionJvmTest {
 			"1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111" +
 			"111111111111111111111111111111"
 
-	@Test
-	fun gzip() {
-		val data = compressedData
-		val res = data.uncompress(GZIPNoCrc)
-		val res2 = res.readIntArrayLE(0, 4096 / 4)
-		val actualData = res2.toList().joinToString("")
-		if (expectedData != actualData) {
-			println("EX: $expectedData")
-			println("AC: $actualData")
-		}
-		assertEquals(expectedData, actualData)
-	}
+    @Test
+    fun gzip() {
+        val data = compressedData
+        val res = data.uncompress(GZIPNoCrc)
+        val res2 = res.getS32LEArray(0, 4096 / 4)
+        val actualData = res2.toList().joinToString("")
+        if (expectedData != actualData) {
+            println("EX: $expectedData")
+            println("AC: $actualData")
+        }
+        assertEquals(expectedData, actualData)
+    }
 
-	@Test
-	fun gzip2() {
-		val data = compressedData
-		val res = data.uncompress(GZIPNoCrc)
-		val res2 = res.readIntArrayLE(0, 4096 / 4)
-		assertEquals(expectedData, res2.toList().joinToString(""))
-	}
+    @Test
+    fun gzip2() {
+        val data = compressedData
+        val res = data.uncompress(GZIPNoCrc)
+        val res2 = res.getS32LEArray(0, 4096 / 4)
+        assertEquals(expectedData, res2.toList().joinToString(""))
+    }
 
 	@Test
 	fun compressGzipNoCrcSync() = compressSync(GZIPNoCrc)

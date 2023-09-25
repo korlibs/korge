@@ -62,9 +62,15 @@ open class WAV : AudioFormat("wav") {
             val availableSamples = bytes.size / bytesPerSample / channels
             for (channel in 0 until channels) {
                 when (bytesPerSample) {
-                    1 -> readBlock(channel, channels, availableSamples, bytesPerSample, out, offset) { ((bytes.readU8(it) - 128) * 255).coerceToShort() }
-                    2 -> readBlock(channel, channels, availableSamples, bytesPerSample, out, offset) { (bytes.readS16LE(it).toShort()) }
-                    3 -> readBlock(channel, channels, availableSamples, bytesPerSample, out, offset) { (bytes.readS24LE(it) ushr 8).toShort() }
+                    1 -> readBlock(channel, channels, availableSamples, bytesPerSample, out, offset) { ((bytes.getU8(it) - 128) * 255).coerceToShort() }
+                    2 -> readBlock(channel, channels, availableSamples, bytesPerSample, out, offset) {
+                        (bytes.getS16LE(
+                            it
+                        ).toShort()) }
+                    3 -> readBlock(channel, channels, availableSamples, bytesPerSample, out, offset) {
+                        (bytes.getS24LE(
+                            it
+                        ) ushr 8).toShort() }
                     else -> invalidOp("Unsupported bytesPerSample=$bytesPerSample")
                 }
             }

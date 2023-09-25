@@ -17,11 +17,14 @@ open class WasmRunJVMJIT(memSize: Int, memMax: Int) : WasmRuntime(memSize, memMa
     // TODO make this an inline class wrapping an integer referencing to some address in a Buffer/Memory?
     // Alternatively allocate two I64 in the stack/locals
     class V128(val data: ByteArray) {
-        init { check(data.size == 16) }
-        fun i(index: Int): Int = data.readS32LE(index * 4)
-        fun l(index: Int): Long = data.readS64LE(index * 8)
-        fun f(index: Int): Float = data.readF32LE(index * 4)
-        fun d(index: Int): Double = data.readF64LE(index * 8)
+        init {
+            check(data.size == 16)
+        }
+
+        fun i(index: Int): Int = data.getS32LE(index * 4)
+        fun l(index: Int): Long = data.getS64LE(index * 8)
+        fun f(index: Int): Float = data.getF32LE(index * 4)
+        fun d(index: Int): Double = data.getF64LE(index * 8)
     }
 
     /*

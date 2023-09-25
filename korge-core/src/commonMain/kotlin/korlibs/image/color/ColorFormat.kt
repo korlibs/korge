@@ -1,21 +1,7 @@
 package korlibs.image.color
 
-import korlibs.memory.extractScaledFF
-import korlibs.memory.extractScaledFFDefault
-import korlibs.memory.insertScaledFF
-import korlibs.memory.readS32BE
-import korlibs.memory.readS32LE
-import korlibs.memory.readU16BE
-import korlibs.memory.readU16LE
-import korlibs.memory.readU24BE
-import korlibs.memory.readU24LE
-import korlibs.memory.write16BE
-import korlibs.memory.write16LE
-import korlibs.memory.write24BE
-import korlibs.memory.write24LE
-import korlibs.memory.write32BE
-import korlibs.memory.write32LE
-import korlibs.image.bitmap.Bitmap32
+import korlibs.image.bitmap.*
+import korlibs.memory.*
 
 interface ColorFormat {
     val bpp: Int
@@ -109,9 +95,9 @@ fun ColorFormat.decode(
     littleEndian: Boolean = true
 ) {
     val readFunc = when (bpp) {
-        16 -> if (littleEndian) ByteArray::readU16LE else ByteArray::readU16BE
-        24 -> if (littleEndian) ByteArray::readU24LE else ByteArray::readU24BE
-        32 -> if (littleEndian) ByteArray::readS32LE else ByteArray::readS32BE
+        16 -> if (littleEndian) ByteArray::getU16LE else ByteArray::getU16BE
+        24 -> if (littleEndian) ByteArray::getU24LE else ByteArray::getU24BE
+        32 -> if (littleEndian) ByteArray::getS32LE else ByteArray::getS32BE
         else -> throw IllegalArgumentException("Unsupported bpp $bpp")
     }
     decodeInternal(data, dataOffset, out, outOffset, size, readFunc)
@@ -165,9 +151,9 @@ fun ColorFormat.encode(
         val c = colors[io++]
         val ec = pack(c.r, c.g, c.b, c.a)
         when (bpp) {
-            16 -> if (littleEndian) out.write16LE(oo, ec) else out.write16BE(oo, ec)
-            24 -> if (littleEndian) out.write24LE(oo, ec) else out.write24BE(oo, ec)
-            32 -> if (littleEndian) out.write32LE(oo, ec) else out.write32BE(oo, ec)
+            16 -> if (littleEndian) out.set16LE(oo, ec) else out.set16BE(oo, ec)
+            24 -> if (littleEndian) out.set24LE(oo, ec) else out.set24BE(oo, ec)
+            32 -> if (littleEndian) out.set32LE(oo, ec) else out.set32BE(oo, ec)
             else -> throw IllegalArgumentException("Unsupported bpp $bpp")
         }
         oo += Bpp

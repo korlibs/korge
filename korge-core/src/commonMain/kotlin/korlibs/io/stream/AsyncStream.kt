@@ -2,85 +2,21 @@
 
 package korlibs.io.stream
 
-import korlibs.datastructure.ByteArrayDeque
-import korlibs.datastructure.Extra
-import korlibs.datastructure.iterators.fastForEach
-import korlibs.memory.ByteArrayBuilder
-import korlibs.platform.Endian
-import korlibs.memory.arraycopy
-import korlibs.math.clamp
-import korlibs.math.nextAlignedTo
-import korlibs.memory.readCharArrayBE
-import korlibs.memory.readCharArrayLE
-import korlibs.memory.readDoubleArrayBE
-import korlibs.memory.readDoubleArrayLE
-import korlibs.memory.readF32BE
-import korlibs.memory.readF32LE
-import korlibs.memory.readF64BE
-import korlibs.memory.readF64LE
-import korlibs.memory.readFloatArrayBE
-import korlibs.memory.readFloatArrayLE
-import korlibs.memory.readIntArrayBE
-import korlibs.memory.readIntArrayLE
-import korlibs.memory.readLongArrayLE
-import korlibs.memory.readS16BE
-import korlibs.memory.readS16LE
-import korlibs.memory.readS24BE
-import korlibs.memory.readS24LE
-import korlibs.memory.readS32BE
-import korlibs.memory.readS32LE
-import korlibs.memory.readS64BE
-import korlibs.memory.readS64LE
-import korlibs.memory.readShortArrayBE
-import korlibs.memory.readShortArrayLE
-import korlibs.memory.readU16BE
-import korlibs.memory.readU16LE
-import korlibs.memory.readU24BE
-import korlibs.memory.readU24LE
-import korlibs.memory.readU32BE
-import korlibs.memory.readU32LE
-import korlibs.math.toIntClamp
-import korlibs.math.unsigned
-import korlibs.memory.write16BE
-import korlibs.memory.write16LE
-import korlibs.memory.write24BE
-import korlibs.memory.write24LE
-import korlibs.memory.write32BE
-import korlibs.memory.write32LE
-import korlibs.memory.write64BE
-import korlibs.memory.write64LE
-import korlibs.memory.writeArrayBE
-import korlibs.memory.writeArrayLE
-import korlibs.memory.writeF32BE
-import korlibs.memory.writeF32LE
-import korlibs.memory.writeF64BE
-import korlibs.memory.writeF64LE
-import korlibs.io.async.AsyncByteArrayDeque
-import korlibs.io.async.AsyncByteArrayDequeChunked
-import korlibs.io.async.AsyncCloseable
-import korlibs.io.async.AsyncThread
-import korlibs.io.async.launchImmediately
-import korlibs.io.async.use
-import korlibs.io.file.VfsFile
-import korlibs.io.file.VfsOpenMode
-import korlibs.io.file.std.MemoryVfs
-import korlibs.io.internal.BYTES_TEMP_SIZE
-import korlibs.io.internal.bytesTempPool
-import korlibs.io.internal.smallBytesPool
-import korlibs.io.lang.Charset
-import korlibs.io.lang.Closeable
-import korlibs.io.lang.EOFException
-import korlibs.io.lang.UTF8
-import korlibs.io.lang.invalidOp
-import korlibs.io.lang.toByteArray
-import korlibs.io.lang.toBytez
-import korlibs.io.lang.toString
-import korlibs.io.util.indexOf
-import kotlinx.coroutines.Job
-import kotlin.coroutines.coroutineContext
-import kotlin.math.max
-import kotlin.math.min
-import kotlin.native.concurrent.SharedImmutable
+import korlibs.datastructure.*
+import korlibs.datastructure.iterators.*
+import korlibs.io.async.*
+import korlibs.io.file.*
+import korlibs.io.file.std.*
+import korlibs.io.internal.*
+import korlibs.io.lang.*
+import korlibs.io.util.*
+import korlibs.math.*
+import korlibs.memory.*
+import korlibs.platform.*
+import kotlinx.coroutines.*
+import kotlin.coroutines.*
+import kotlin.math.*
+import kotlin.native.concurrent.*
 
 //interface SmallTemp {
 //	val smallTemp: ByteArray
@@ -587,24 +523,24 @@ suspend fun AsyncInputStream.readBytesExact(len: Int): ByteArray = ByteArray(len
 suspend fun AsyncInputStream.readU8(): Int = read()
 
 suspend fun AsyncInputStream.readS8(): Int = read().toByte().toInt()
-suspend fun AsyncInputStream.readU16LE(): Int = readSmallTempExact(2) { readU16LE(0) }
-suspend fun AsyncInputStream.readU24LE(): Int = readSmallTempExact(3) { readU24LE(0) }
-suspend fun AsyncInputStream.readU32LE(): Long = readSmallTempExact(4) { readU32LE(0) }
-suspend fun AsyncInputStream.readS16LE(): Int = readSmallTempExact(2) { readS16LE(0) }
-suspend fun AsyncInputStream.readS24LE(): Int = readSmallTempExact(3) { readS24LE(0) }
-suspend fun AsyncInputStream.readS32LE(): Int = readSmallTempExact(4) { readS32LE(0) }
-suspend fun AsyncInputStream.readS64LE(): Long = readSmallTempExact(8) { readS64LE(0) }
-suspend fun AsyncInputStream.readF32LE(): Float = readSmallTempExact(4) { readF32LE(0) }
-suspend fun AsyncInputStream.readF64LE(): Double = readSmallTempExact(8) { readF64LE(0) }
-suspend fun AsyncInputStream.readU16BE(): Int = readSmallTempExact(2) { readU16BE(0) }
-suspend fun AsyncInputStream.readU24BE(): Int = readSmallTempExact(3) { readU24BE(0) }
-suspend fun AsyncInputStream.readU32BE(): Long = readSmallTempExact(4) { readU32BE(0) }
-suspend fun AsyncInputStream.readS16BE(): Int = readSmallTempExact(2) { readS16BE(0) }
-suspend fun AsyncInputStream.readS24BE(): Int = readSmallTempExact(3) { readS24BE(0) }
-suspend fun AsyncInputStream.readS32BE(): Int = readSmallTempExact(4) { readS32BE(0) }
-suspend fun AsyncInputStream.readS64BE(): Long = readSmallTempExact(8) { readS64BE(0) }
-suspend fun AsyncInputStream.readF32BE(): Float = readSmallTempExact(4) { readF32BE(0) }
-suspend fun AsyncInputStream.readF64BE(): Double = readSmallTempExact(8) { readF64BE(0) }
+suspend fun AsyncInputStream.readU16LE(): Int = readSmallTempExact(2) { getU16LE(0) }
+suspend fun AsyncInputStream.readU24LE(): Int = readSmallTempExact(3) { getU24LE(0) }
+suspend fun AsyncInputStream.readU32LE(): Long = readSmallTempExact(4) { getU32LE(0) }
+suspend fun AsyncInputStream.readS16LE(): Int = readSmallTempExact(2) { getS16LE(0) }
+suspend fun AsyncInputStream.readS24LE(): Int = readSmallTempExact(3) { getS24LE(0) }
+suspend fun AsyncInputStream.readS32LE(): Int = readSmallTempExact(4) { getS32LE(0) }
+suspend fun AsyncInputStream.readS64LE(): Long = readSmallTempExact(8) { getS64LE(0) }
+suspend fun AsyncInputStream.readF32LE(): Float = readSmallTempExact(4) { getF32LE(0) }
+suspend fun AsyncInputStream.readF64LE(): Double = readSmallTempExact(8) { getF64LE(0) }
+suspend fun AsyncInputStream.readU16BE(): Int = readSmallTempExact(2) { getU16BE(0) }
+suspend fun AsyncInputStream.readU24BE(): Int = readSmallTempExact(3) { getU24BE(0) }
+suspend fun AsyncInputStream.readU32BE(): Long = readSmallTempExact(4) { getU32BE(0) }
+suspend fun AsyncInputStream.readS16BE(): Int = readSmallTempExact(2) { getS16BE(0) }
+suspend fun AsyncInputStream.readS24BE(): Int = readSmallTempExact(3) { getS24BE(0) }
+suspend fun AsyncInputStream.readS32BE(): Int = readSmallTempExact(4) { getS32BE(0) }
+suspend fun AsyncInputStream.readS64BE(): Long = readSmallTempExact(8) { getS64BE(0) }
+suspend fun AsyncInputStream.readF32BE(): Float = readSmallTempExact(4) { getF32BE(0) }
+suspend fun AsyncInputStream.readF64BE(): Double = readSmallTempExact(8) { getF64BE(0) }
 
 suspend fun AsyncInputStream.readU16(endian: Endian): Int = if (endian == Endian.LITTLE_ENDIAN) readU16LE() else readU16BE()
 suspend fun AsyncInputStream.readU24(endian: Endian): Int = if (endian == Endian.LITTLE_ENDIAN) readU24LE() else readU24BE()
@@ -661,18 +597,32 @@ suspend fun AsyncInputStream.skip(count: Int) {
 }
 
 suspend fun AsyncInputStream.readUByteArray(count: Int): UByteArray = readBytesExact(count).asUByteArray()
-suspend fun AsyncInputStream.readShortArrayLE(count: Int): ShortArray = readBytesExact(count * 2).readShortArrayLE(0, count)
-suspend fun AsyncInputStream.readShortArrayBE(count: Int): ShortArray = readBytesExact(count * 2).readShortArrayBE(0, count)
-suspend fun AsyncInputStream.readCharArrayLE(count: Int): CharArray = readBytesExact(count * 2).readCharArrayLE(0, count)
-suspend fun AsyncInputStream.readCharArrayBE(count: Int): CharArray = readBytesExact(count * 2).readCharArrayBE(0, count)
-suspend fun AsyncInputStream.readIntArrayLE(count: Int): IntArray = readBytesExact(count * 4).readIntArrayLE(0, count)
-suspend fun AsyncInputStream.readIntArrayBE(count: Int): IntArray = readBytesExact(count * 4).readIntArrayBE(0, count)
-suspend fun AsyncInputStream.readLongArrayLE(count: Int): LongArray = readBytesExact(count * 8).readLongArrayLE(0, count)
-suspend fun AsyncInputStream.readLongArrayBE(count: Int): LongArray = readBytesExact(count * 8).readLongArrayLE(0, count)
-suspend fun AsyncInputStream.readFloatArrayLE(count: Int): FloatArray = readBytesExact(count * 4).readFloatArrayLE(0, count)
-suspend fun AsyncInputStream.readFloatArrayBE(count: Int): FloatArray = readBytesExact(count * 4).readFloatArrayBE(0, count)
-suspend fun AsyncInputStream.readDoubleArrayLE(count: Int): DoubleArray = readBytesExact(count * 8).readDoubleArrayLE(0, count)
-suspend fun AsyncInputStream.readDoubleArrayBE(count: Int): DoubleArray = readBytesExact(count * 8).readDoubleArrayBE(0, count)
+suspend fun AsyncInputStream.readShortArrayLE(count: Int): ShortArray = readBytesExact(count * 2).getS16LEArray(
+    0,
+    count
+)
+suspend fun AsyncInputStream.readShortArrayBE(count: Int): ShortArray = readBytesExact(count * 2).getS16BEArray(
+    0,
+    count
+)
+suspend fun AsyncInputStream.readCharArrayLE(count: Int): CharArray = readBytesExact(count * 2).getU16LEArray(0, count)
+suspend fun AsyncInputStream.readCharArrayBE(count: Int): CharArray = readBytesExact(count * 2).getU16BEArray(0, count)
+suspend fun AsyncInputStream.readIntArrayLE(count: Int): IntArray = readBytesExact(count * 4).getS32LEArray(0, count)
+suspend fun AsyncInputStream.readIntArrayBE(count: Int): IntArray = readBytesExact(count * 4).getS32BEArray(0, count)
+suspend fun AsyncInputStream.readLongArrayLE(count: Int): LongArray = readBytesExact(count * 8).getS64LEArray(0, count)
+suspend fun AsyncInputStream.readLongArrayBE(count: Int): LongArray = readBytesExact(count * 8).getS64LEArray(0, count)
+suspend fun AsyncInputStream.readFloatArrayLE(count: Int): FloatArray = readBytesExact(count * 4).getF32LEArray(
+    0,
+    count
+)
+suspend fun AsyncInputStream.readFloatArrayBE(count: Int): FloatArray = readBytesExact(count * 4).getF32BEArray(
+    0,
+    count
+)
+suspend fun AsyncInputStream.readDoubleArrayLE(count: Int): DoubleArray =
+    readBytesExact(count * 8).getF64LEArray(0, count)
+suspend fun AsyncInputStream.readDoubleArrayBE(count: Int): DoubleArray =
+    readBytesExact(count * 8).getF64BEArray(0, count)
 
 suspend fun AsyncInputStream.readShortArray(count: Int, endian: Endian): ShortArray = if (endian.isLittle) readShortArrayLE(count) else readShortArrayBE(count)
 suspend fun AsyncInputStream.readCharArray(count: Int, endian: Endian): CharArray = if (endian.isLittle) readCharArrayLE(count) else readCharArrayBE(count)
@@ -694,21 +644,21 @@ suspend fun AsyncOutputStream.writeTempBytes(size: Int, block: ByteArray.() -> U
 suspend fun AsyncOutputStream.writeBytes(data: ByteArray): Unit = write(data, 0, data.size)
 suspend fun AsyncOutputStream.writeBytes(data: ByteArray, position: Int, length: Int): Unit = write(data, position, length)
 suspend fun AsyncOutputStream.write8(v: Int): Unit = write(v)
-suspend fun AsyncOutputStream.write16LE(v: Int): Unit = smallBytesPool.alloc { it.write16LE(0, v); write(it, 0, 2) }
-suspend fun AsyncOutputStream.write24LE(v: Int): Unit = smallBytesPool.alloc { it.write24LE(0, v); write(it, 0, 3) }
-suspend fun AsyncOutputStream.write32LE(v: Int): Unit = smallBytesPool.alloc { it.write32LE(0, v); write(it, 0, 4) }
-suspend fun AsyncOutputStream.write32LE(v: Long): Unit = smallBytesPool.alloc { it.write32LE(0, v); write(it, 0, 4) }
-suspend fun AsyncOutputStream.write64LE(v: Long): Unit = smallBytesPool.alloc { it.write64LE(0, v); write(it, 0, 8) }
-suspend fun AsyncOutputStream.writeF32LE(v: Float): Unit = smallBytesPool.alloc { it.writeF32LE(0, v); write(it, 0, 4) }
-suspend fun AsyncOutputStream.writeF64LE(v: Double): Unit = smallBytesPool.alloc { it.writeF64LE(0, v); write(it, 0, 8) }
+suspend fun AsyncOutputStream.write16LE(v: Int): Unit = smallBytesPool.alloc { it.set16LE(0, v); write(it, 0, 2) }
+suspend fun AsyncOutputStream.write24LE(v: Int): Unit = smallBytesPool.alloc { it.set24LE(0, v); write(it, 0, 3) }
+suspend fun AsyncOutputStream.write32LE(v: Int): Unit = smallBytesPool.alloc { it.set32LE(0, v); write(it, 0, 4) }
+suspend fun AsyncOutputStream.write32LE(v: Long): Unit = smallBytesPool.alloc { it.set32LE(0, v); write(it, 0, 4) }
+suspend fun AsyncOutputStream.write64LE(v: Long): Unit = smallBytesPool.alloc { it.set64LE(0, v); write(it, 0, 8) }
+suspend fun AsyncOutputStream.writeF32LE(v: Float): Unit = smallBytesPool.alloc { it.setF32LE(0, v); write(it, 0, 4) }
+suspend fun AsyncOutputStream.writeF64LE(v: Double): Unit = smallBytesPool.alloc { it.setF64LE(0, v); write(it, 0, 8) }
 
-suspend fun AsyncOutputStream.write16BE(v: Int): Unit = smallBytesPool.alloc { it.write16BE(0, v); write(it, 0, 2) }
-suspend fun AsyncOutputStream.write24BE(v: Int): Unit = smallBytesPool.alloc { it.write24BE(0, v); write(it, 0, 3) }
-suspend fun AsyncOutputStream.write32BE(v: Int): Unit = smallBytesPool.alloc { it.write32BE(0, v); write(it, 0, 4) }
-suspend fun AsyncOutputStream.write32BE(v: Long): Unit = smallBytesPool.alloc { it.write32BE(0, v); write(it, 0, 4) }
-suspend fun AsyncOutputStream.write64BE(v: Long): Unit = smallBytesPool.alloc { it.write64BE(0, v); write(it, 0, 8) }
-suspend fun AsyncOutputStream.writeF32BE(v: Float): Unit = smallBytesPool.alloc { it.writeF32BE(0, v); write(it, 0, 4) }
-suspend fun AsyncOutputStream.writeF64BE(v: Double): Unit = smallBytesPool.alloc { it.writeF64BE(0, v); write(it, 0, 8) }
+suspend fun AsyncOutputStream.write16BE(v: Int): Unit = smallBytesPool.alloc { it.set16BE(0, v); write(it, 0, 2) }
+suspend fun AsyncOutputStream.write24BE(v: Int): Unit = smallBytesPool.alloc { it.set24BE(0, v); write(it, 0, 3) }
+suspend fun AsyncOutputStream.write32BE(v: Int): Unit = smallBytesPool.alloc { it.set32BE(0, v); write(it, 0, 4) }
+suspend fun AsyncOutputStream.write32BE(v: Long): Unit = smallBytesPool.alloc { it.set32BE(0, v); write(it, 0, 4) }
+suspend fun AsyncOutputStream.write64BE(v: Long): Unit = smallBytesPool.alloc { it.set64BE(0, v); write(it, 0, 8) }
+suspend fun AsyncOutputStream.writeF32BE(v: Float): Unit = smallBytesPool.alloc { it.setF32BE(0, v); write(it, 0, 4) }
+suspend fun AsyncOutputStream.writeF64BE(v: Double): Unit = smallBytesPool.alloc { it.setF64BE(0, v); write(it, 0, 8) }
 
 fun SyncStream.toAsync(): AsyncStream = this.base.toAsync().toAsyncStream(this.position)
 fun SyncStreamBase.toAsync(): AsyncStreamBase = when (this) {
@@ -791,18 +741,18 @@ fun AsyncStream.skipToAlign(alignment: Int) { position = position.nextAlignedTo(
 fun AsyncStream.skipToAlign(alignment: Int, offset: Int) { position = (position + offset).nextAlignedTo(alignment.toLong()) - offset }
 suspend fun AsyncStream.truncate() = setLength(position)
 
-suspend fun AsyncOutputStream.writeCharArrayLE(array: CharArray) = writeTempBytes(array.size * 2) { writeArrayLE(0, array) }
-suspend fun AsyncOutputStream.writeShortArrayLE(array: ShortArray) = writeTempBytes(array.size * 2) { writeArrayLE(0, array) }
-suspend fun AsyncOutputStream.writeIntArrayLE(array: IntArray) = writeTempBytes(array.size * 4) { writeArrayLE(0, array) }
-suspend fun AsyncOutputStream.writeLongArrayLE(array: LongArray) = writeTempBytes(array.size * 8) { writeArrayLE(0, array) }
-suspend fun AsyncOutputStream.writeFloatArrayLE(array: FloatArray) = writeTempBytes(array.size * 4) { writeArrayLE(0, array) }
-suspend fun AsyncOutputStream.writeDoubleArrayLE(array: DoubleArray) = writeTempBytes(array.size * 8) { writeArrayLE(0, array) }
-suspend fun AsyncOutputStream.writeCharArrayBE(array: CharArray) = writeTempBytes(array.size * 2) { writeArrayBE(0, array) }
-suspend fun AsyncOutputStream.writeShortArrayBE(array: ShortArray) = writeTempBytes(array.size * 2) { writeArrayBE(0, array) }
-suspend fun AsyncOutputStream.writeIntArrayBE(array: IntArray) = writeTempBytes(array.size * 4) { writeArrayBE(0, array) }
-suspend fun AsyncOutputStream.writeLongArrayBE(array: LongArray) = writeTempBytes(array.size * 8) { writeArrayBE(0, array) }
-suspend fun AsyncOutputStream.writeFloatArrayBE(array: FloatArray) = writeTempBytes(array.size * 4) { writeArrayBE(0, array) }
-suspend fun AsyncOutputStream.writeDoubleArrayBE(array: DoubleArray) = writeTempBytes(array.size * 8) { writeArrayBE(0, array) }
+suspend fun AsyncOutputStream.writeCharArrayLE(array: CharArray) = writeTempBytes(array.size * 2) { setArrayLE(0, array) }
+suspend fun AsyncOutputStream.writeShortArrayLE(array: ShortArray) = writeTempBytes(array.size * 2) { setArrayLE(0, array) }
+suspend fun AsyncOutputStream.writeIntArrayLE(array: IntArray) = writeTempBytes(array.size * 4) { setArrayLE(0, array) }
+suspend fun AsyncOutputStream.writeLongArrayLE(array: LongArray) = writeTempBytes(array.size * 8) { setArrayLE(0, array) }
+suspend fun AsyncOutputStream.writeFloatArrayLE(array: FloatArray) = writeTempBytes(array.size * 4) { setArrayLE(0, array) }
+suspend fun AsyncOutputStream.writeDoubleArrayLE(array: DoubleArray) = writeTempBytes(array.size * 8) { setArrayLE(0, array) }
+suspend fun AsyncOutputStream.writeCharArrayBE(array: CharArray) = writeTempBytes(array.size * 2) { setArrayBE(0, array) }
+suspend fun AsyncOutputStream.writeShortArrayBE(array: ShortArray) = writeTempBytes(array.size * 2) { setArrayBE(0, array) }
+suspend fun AsyncOutputStream.writeIntArrayBE(array: IntArray) = writeTempBytes(array.size * 4) { setArrayBE(0, array) }
+suspend fun AsyncOutputStream.writeLongArrayBE(array: LongArray) = writeTempBytes(array.size * 8) { setArrayBE(0, array) }
+suspend fun AsyncOutputStream.writeFloatArrayBE(array: FloatArray) = writeTempBytes(array.size * 4) { setArrayBE(0, array) }
+suspend fun AsyncOutputStream.writeDoubleArrayBE(array: DoubleArray) = writeTempBytes(array.size * 8) { setArrayBE(0, array) }
 
 suspend fun AsyncInputStream.readUntil(endByte: Byte, limit: Int = 0x1000, temp: ByteArray = ByteArray(1)): ByteArray {
 	val out = ByteArrayBuilder()
