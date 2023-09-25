@@ -96,5 +96,5 @@ actual operator fun Int32Array.set(index: Int, value: Int) { data.set32LE(byteOf
 actual operator fun Float32Array.set(index: Int, value: Float) { data.setF32LE(byteOffset(index), value) }
 actual operator fun Float64Array.set(index: Int, value: Double) { data.setF64LE(byteOffset(index), value) }
 actual operator fun Uint8ClampedArray.set(index: Int, value: Int) { data.set(byteOffset(index), value.clamp(0, 255).toByte()) }
-actual operator fun Uint8Array.set(index: Int, value: Int) { data.set(byteOffset(index), value.clamp(0, 255).toByte()) }
+actual operator fun Uint8Array.set(index: Int, value: Int) { data.set(byteOffset(index), value.toByte()) }
 actual operator fun Uint16Array.set(index: Int, value: Int) { data.set16LE(byteOffset(index), value) }
