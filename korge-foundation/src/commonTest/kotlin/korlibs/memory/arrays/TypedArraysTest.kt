@@ -134,6 +134,16 @@ class TypedArraysTest {
         assertEquals(v1, data.getS64LE(8))
     }
 
+    @Test
+    fun testAs() {
+        val values = Int64Array(2)
+        val ints = values.asInt8Array().subarray(4).asInt32Array()
+        ints[1] = -2
+        ints[2] = -1
+        assertEquals(0L, values[0])
+        assertEquals(-2L, values[1])
+    }
+
     val Int8Array.bytes: ByteArray get() = toByteArray()
     val ArrayBufferView.info: String get() = "$byteOffset/$byteLength"
 }

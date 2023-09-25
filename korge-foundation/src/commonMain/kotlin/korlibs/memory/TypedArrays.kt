@@ -47,6 +47,15 @@ fun Int32Array.subarray(begin: Int, end: Int = length): Int32Array = Int32Array(
 fun Float32Array.subarray(begin: Int, end: Int = length): Float32Array = Float32Array(buffer, byteOffset + begin * 4, end - begin)
 fun Float64Array.subarray(begin: Int, end: Int = length): Float64Array = Float64Array(buffer, byteOffset + begin * 8, end - begin)
 
+fun ArrayBufferView.asUint8ClampedArray(): Uint8ClampedArray = Uint8ClampedArray(buffer, byteOffset, byteLength / 1)
+fun ArrayBufferView.asUint8Array(): Uint8Array = Uint8Array(buffer, byteOffset, byteLength / 1)
+fun ArrayBufferView.asUint16Array(): Uint16Array = Uint16Array(buffer, byteOffset, byteLength / 2)
+fun ArrayBufferView.asInt8Array(): Int8Array = Int8Array(buffer, byteOffset, byteLength / 1)
+fun ArrayBufferView.asInt16Array(): Int16Array = Int16Array(buffer, byteOffset, byteLength / 2)
+fun ArrayBufferView.asInt32Array(): Int32Array = Int32Array(buffer, byteOffset, byteLength / 4)
+fun ArrayBufferView.asFloat32Array(): Float32Array = Float32Array(buffer, byteOffset, byteLength / 4)
+fun ArrayBufferView.asFloat64Array(): Float64Array = Float64Array(buffer, byteOffset, byteLength / 8)
+
 private fun ArrayBufferView._offsetS(index: Int, size: Int): Int {
     val roffset = index * size
     if (roffset !in 0 .. (byteLength - size)) error("Out of bounds")
