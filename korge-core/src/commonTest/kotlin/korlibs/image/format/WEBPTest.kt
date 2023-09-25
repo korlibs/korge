@@ -5,7 +5,7 @@ import korlibs.io.file.std.*
 import kotlin.test.*
 
 class WEBPTest {
-    val WEBPDecoder = ImageDecodingProps(format = WEBP)
+    val WEBPDecoder = ImageDecodingProps(format = WEBP, preferKotlinDecoder = true)
 
     @Test
     fun testPremultiplied() = suspendTest {

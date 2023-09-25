@@ -50,7 +50,7 @@ class WasmReaderText {
             val funcIndex = builder.funcs.size
             val code = WasmCode(params, listOf(justLocals), WasmExpr(instructions))
             val export = (funcName ?: exportName)?.let { WasmExport(it, -1, -1, null) }
-            val func = WasmFunc(funcIndex, funcType, code = code, export = export)
+            val func = WasmFunc(funcIndex, funcType, code = code).also { it.addExport(export) }
             return func
         }
 
@@ -235,7 +235,7 @@ class WasmReaderText {
                         type = vtype.value
                     }
                 }
-                val table = WasmType.TableType(WasmType.Limit(0), WasmFunc::class)
+                val table = WasmType.TableType(WasmType.Limit(0), WasmFuncRef::class)
                 builder.addTable(table, name)
                 when (type) {
                     "funcref" -> {
@@ -244,8 +244,8 @@ class WasmReaderText {
                                 "elem" -> {
                                     val elemName = param.valueParams.first().value
                                     val func = builder.funcsByName[elemName] ?: error("Can't find func '$elemName'")
-                                    table.items.add(func)
-                                    //TODO("elemName=$elemName, func=$func")
+                                    //table.items.add(func)
+                                    TODO("elemName=$elemName, func=$func")
                                 }
                                 else -> TODO()
                             }

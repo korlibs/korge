@@ -1,7 +1,7 @@
 package korlibs.wasm
 
-import korlibs.encoding.*
 import korlibs.datastructure.*
+import korlibs.encoding.*
 import korlibs.memory.*
 
 // @TODO: Change stack-based to register based operations:
@@ -12,7 +12,7 @@ import korlibs.memory.*
 //   PUSH(C)
 //   MUL()
 
-class WasmRunInterpreter(val module: WasmModule, memPages: Int = 10, maxMemPages: Int = 0x10000) : WasmRuntime(memPages, maxMemPages) {
+class WasmRunInterpreter(val module: WasmModule, memPages: Int = 10, maxMemPages: Int = 0x10000) : WasmRuntime(module, memPages, maxMemPages) {
     val globalsI = IntArray(module.globals.size)
     val globalsF = FloatArray(module.globals.size)
     val globalsD = DoubleArray(module.globals.size)
@@ -20,26 +20,43 @@ class WasmRunInterpreter(val module: WasmModule, memPages: Int = 10, maxMemPages
 
     //val globals = Buffer.allocDirect(module.globals.maxOfOrNull { it.globalOffset + 16 } ?: 0)
     //val stack = Buffer.allocDirect(16 * 1024)
-    val stackI = IntArray(4 * 1024)
-    val stackF = FloatArray(4 * 1024)
-    val stackD = DoubleArray(4 * 1024)
-    val stackL = LongArray(4 * 1024)
+    val MAX_STACK = 2048
+    //val MAX_STACK = 128 * 1024
+    val stackI = IntArray(MAX_STACK)
+    val stackF = FloatArray(MAX_STACK)
+    val stackD = DoubleArray(MAX_STACK)
+    val stackL = LongArray(MAX_STACK)
 
     var localsPos = 0
     var stackPos = 0
 
+    class WasmFuncCallInt(val interpreter: WasmRunInterpreter, val func: WasmFunc) : WasmFuncCall {
+        override fun invoke(runtime: WasmRuntime, args: Array<Any?>): Any? {
+            return interpreter.callFunc(func)
+            //TODO("Not yet implemented ${args.toList()}, func=$func")
+        }
+    }
+
     fun initGlobals(): WasmRunInterpreter {
         //println("GLOBALS: ${globals.sizeInBytes}")
+        for (element in module.elements) {
+            val e = element.expr ?: continue
+            eval(e, WasmType.Function(listOf(), listOf(WasmSType.I32)), WasmDebugContext("element", element.tableIdx))
+            val index = popI32()
+            element.getFunctions(module).forEachIndexed { idx, wasmFunc ->
+                tables[element.tableIdx].elements[index + idx] = WasmFuncCallInt(this, wasmFunc)
+            }
+        }
         for (data in module.datas) {
             val e = data.e ?: continue
-            eval(e, WasmType.Function(listOf(), listOf(WasmSType.I32)))
+            eval(e, WasmType.Function(listOf(), listOf(WasmSType.I32)), WasmDebugContext("data", data.index))
             val index = popI32()
             //println("DATA[index=$index] = bytes:${data.data.size}, stack=$stackPos")
             memory.setArrayInt8(index, data.data)
         }
         for (global in module.globals) {
             if (global.expr != null) {
-                eval(global.expr, WasmType.Function(listOf(), listOf(global.globalType)))
+                eval(global.expr, WasmType.Function(listOf(), listOf(global.globalType)), WasmDebugContext("global", global.index))
                 //println("; stack=$stackPos, global.globalType=${global.globalType}")
                 val value = popType(global.globalType.toWasmSType())
                 setGlobal(global, value)
@@ -61,8 +78,8 @@ class WasmRunInterpreter(val module: WasmModule, memPages: Int = 10, maxMemPages
                 is WasmAssertReturn -> {
                     val msg = assert.msg
                     stackPos = 0
-                    val typeActual = eval(assert.actual, WasmType.Function(listOf(), listOf(WasmSType.I32)))
-                    val typeExpect = eval(assert.expect, WasmType.Function(listOf(), listOf(WasmSType.I32)))
+                    val typeActual = eval(assert.actual, WasmType.Function(listOf(), listOf(WasmSType.I32)), WasmDebugContext("assertActual", total))
+                    val typeExpect = eval(assert.expect, WasmType.Function(listOf(), listOf(WasmSType.I32)), WasmDebugContext("assertExpect", total))
                     total++
                     check(typeActual == typeExpect)
                     //println("stackPos=$stackPos, assert.actual[$typeActual]=${assert.actual}, assert.expect[$typeExpect]=${assert.expect}")
@@ -75,9 +92,9 @@ class WasmRunInterpreter(val module: WasmModule, memPages: Int = 10, maxMemPages
         WasmRuntime.assert_summary(failed, total)
     }
 
-    fun eval(expr: WasmExpr?, type: WasmType.Function): List<WasmType> {
+    fun eval(expr: WasmExpr?, type: WasmType.Function, debug: WasmDebugContext): List<WasmType> {
         if (expr == null) return emptyList()
-        val code = compile(WasmFunc.anonymousFunc(type, expr), implicitReturn = false)
+        val code = compile(WasmFunc.anonymousFunc(type, expr), implicitReturn = false, debug = debug)
         //println(code.instructions.toList().map { it and 0xFFF })
         this.evalInstructions(code, 0)
         return code.endStack
@@ -86,7 +103,7 @@ class WasmRunInterpreter(val module: WasmModule, memPages: Int = 10, maxMemPages
     fun WasmFunc.getInterprerCode(): WasmInterpreterCode? {
         if (code == null) return null
         if (code?.interpreterCode == null) {
-            code?.interpreterCode = compile(this, implicitReturn = true)
+            code?.interpreterCode = compile(this, implicitReturn = true, debug = WasmDebugContext(this.name, this.index))
         }
         return code?.interpreterCode
     }
@@ -206,7 +223,9 @@ class WasmRunInterpreter(val module: WasmModule, memPages: Int = 10, maxMemPages
             //stackPos = oldLocalsPos
         } else {
             val fimport = func.fimport ?: error("Not body and not an import")
-            val result = functions[fimport.moduleName]?.get(fimport.name)?.invoke(this, readTypes(func.type.args.map { it.type }))
+            val ffunc = functions[fimport.moduleName]?.get(fimport.name) ?: error("Can't find function $fimport")
+            val args = readTypes(func.type.args.map { it.type })
+            val result = ffunc.invoke(this, args)
             pushType(func.type.retType.toWasmSType(), result)
         }
     }
@@ -220,7 +239,7 @@ class WasmRunInterpreter(val module: WasmModule, memPages: Int = 10, maxMemPages
             val op = i and 0xFFF
             val param = i shr 12
             //instructionsHistoriogram[op]++
-            if (trace) println("OP: ${op.hex}, param=$param : ${WasmOp.getOrNull(op)}")
+            if (trace) println("OP[${code.debug.name}][$index]: ${op.hex}, param=$param : ${WasmFastInstructions.NAME_FROM_OP[op]}, localsPos=$localsPos, stack=${stackPos}")
             instructionsExecuted++
             when (op) {
                 WasmFastInstructions.Op_try -> TODO()
@@ -232,9 +251,28 @@ class WasmRunInterpreter(val module: WasmModule, memPages: Int = 10, maxMemPages
                     callFunc(func)
                 }
                 WasmFastInstructions.Op_call_indirect -> {
-                    val index = popI32()
-                    val func = module.tables.first().items[index] as WasmFunc
-                    callFunc(func)
+                    val tableIdx = 0 // @TODO: Check pass table index as param
+                    val ntype = module.types[param]
+                    val funcType = ntype.type as WasmType.Function
+                    val funcIndex = popI32()
+                    val item = tables[tableIdx].elements[funcIndex] ?: error("null function at table=$tableIdx, funcIndex=$funcIndex, funcType=$funcType")
+                    val params = arrayOfNulls<Any?>(funcType.args.size)
+                    for (n in 0 until funcType.args.size) {
+                        val arg = funcType.args[funcType.args.size - 1 - n]
+                        when (arg.stype) {
+                            WasmSType.VOID -> TODO()
+                            WasmSType.I32 -> params[n] = popI32()
+                            WasmSType.I64 -> params[n] = popI64()
+                            WasmSType.F32 -> params[n] = popF32()
+                            WasmSType.F64 -> params[n] = popF64()
+                            WasmSType.V128 -> TODO()
+                            WasmSType.ANYREF -> TODO()
+                            WasmSType.FUNCREF -> TODO()
+                        }
+                    }
+                    val res = item.invoke(this, params)
+                    println("!!INDIRECT")
+                    pushType(funcType.retType.toWasmSType(), res)
                 }
                 WasmFastInstructions.Op_return_call -> TODO() // tail-call
                 WasmFastInstructions.Op_return_call_indirect -> TODO() // tail-call
@@ -572,10 +610,10 @@ class WasmRunInterpreter(val module: WasmModule, memPages: Int = 10, maxMemPages
     fun pushType(type: WasmSType, value: Any?) {
         when (type) {
             WasmSType.VOID -> Unit
-            WasmSType.I32 -> pushI32(value as Int)
-            WasmSType.I64 -> pushI64(value as Long)
-            WasmSType.F32 -> pushF32(value as Float)
-            WasmSType.F64 -> pushF64(value as Double)
+            WasmSType.I32 -> pushI32((value as? Int) ?: 0)
+            WasmSType.I64 -> pushI64((value as? Long) ?: 0L)
+            WasmSType.F32 -> pushF32((value as? Float) ?: 0f)
+            WasmSType.F64 -> pushF64((value as? Double) ?: 0.0)
             WasmSType.V128 -> TODO()
             WasmSType.ANYREF -> TODO()
             WasmSType.FUNCREF -> TODO()
@@ -684,7 +722,7 @@ class WasmRunInterpreter(val module: WasmModule, memPages: Int = 10, maxMemPages
         return super.invokeIndirect(index, *params)
     }
 
-    fun compile(func: WasmFunc, implicitReturn: Boolean): WasmInterpreterCode {
+    fun compile(func: WasmFunc, implicitReturn: Boolean, debug: WasmDebugContext): WasmInterpreterCode {
         class Patch(val label: WasmCodeVisitor.Label, val intIndex: Int = -1, val instrutionIndex: Int = -1)
 
         val poolLongs = arrayListOf<Long>()
@@ -1022,6 +1060,7 @@ class WasmRunInterpreter(val module: WasmModule, memPages: Int = 10, maxMemPages
             paramsCount = context.func.type.args.size,
             localsCount = context.funcLocals.size,
             endStack = context.stack,
+            debug = debug
         )
     }
 
@@ -1267,7 +1306,6 @@ class WasmRunInterpreter(val module: WasmModule, memPages: Int = 10, maxMemPages
         const val Op_f32_select = 0x192
         const val Op_f64_select = 0x193
         const val Op_v128_select = 0x194
-
         const val Op_goto_if_not_i32_eqz = 0x1a0
         const val Op_goto_if_not_i32_eq =  0x1a1
         const val Op_goto_if_not_i32_ne =  0x1a2
@@ -1302,7 +1340,6 @@ class WasmRunInterpreter(val module: WasmModule, memPages: Int = 10, maxMemPages
         const val Op_goto_if_not_f64_gt = 0x1bf
         const val Op_goto_if_not_f64_le = 0x1c0
         const val Op_goto_if_not_f64_ge = 0x1c1
-
         const val Op_i32_trunc_sat_f32_s = 0x200 // 0xFCxx instructions moved to 0x2xx
         const val Op_i32_trunc_sat_f32_u = 0x201
         const val Op_i32_trunc_sat_f64_s = 0x202
@@ -1321,11 +1358,308 @@ class WasmRunInterpreter(val module: WasmModule, memPages: Int = 10, maxMemPages
         const val Op_table_grow = 0x20F
         const val Op_table_size = 0x210
         const val Op_table_fill = 0x211
+
+        val OP_FROM_NAME = mapOf(
+            "Op_unreachable" to 0x00,
+            "Op_nop" to 0x01,
+            "Op_block" to 0x02,
+            "Op_loop" to 0x03,
+            "Op_if" to 0x04,
+            "Op_else" to 0x05,
+            "Op_try" to 0x06,
+            "Op_catch" to 0x07,
+            "Op_throw" to 0x08,
+            "Op_rethrow" to 0x09,
+            "Op_reserved_0x0a" to 0x0a,
+            "Op_end" to 0x0b,
+            "Op_br" to 0x0c,
+            "Op_br_if" to 0x0d,
+            "Op_br_table" to 0x0e,
+            "Op_return" to 0x0f,
+            "Op_call" to 0x10,
+            "Op_call_indirect" to 0x11,
+            "Op_return_call" to 0x12,
+            "Op_return_call_indirect" to 0x13,
+            "Op_call_ref" to 0x14,
+            "Op_return_call_ref" to 0x15,
+            "Op_delegate" to 0x18,
+            "Op_catch_all" to 0x19,
+            "Op_drop" to 0x1a,
+            "Op_select" to 0x1b,
+            "Op_local_get" to 0x20,
+            "Op_local_set" to 0x21,
+            "Op_local_tee" to 0x22,
+            "Op_global_get" to 0x23,
+            "Op_global_set" to 0x24,
+            "Op_i32_load" to 0x28,
+            "Op_i64_load" to 0x29,
+            "Op_f32_load" to 0x2a,
+            "Op_f64_load" to 0x2b,
+            "Op_i32_load8_s" to 0x2c,
+            "Op_i32_load8_u" to 0x2d,
+            "Op_i32_load16_s" to 0x2e,
+            "Op_i32_load16_u" to 0x2f,
+            "Op_i64_load8_s" to 0x30,
+            "Op_i64_load8_u" to 0x31,
+            "Op_i64_load16_s" to 0x32,
+            "Op_i64_load16_u" to 0x33,
+            "Op_i64_load32_s" to 0x34,
+            "Op_i64_load32_u" to 0x35,
+            "Op_i32_store" to 0x36,
+            "Op_i64_store" to 0x37,
+            "Op_f32_store" to 0x38,
+            "Op_f64_store" to 0x39,
+            "Op_i32_store8" to 0x3a,
+            "Op_i32_store16" to 0x3b,
+            "Op_i64_store8" to 0x3c,
+            "Op_i64_store16" to 0x3d,
+            "Op_i64_store32" to 0x3e,
+            "Op_memory_size" to 0x3f,
+            "Op_memory_grow" to 0x40,
+            "Op_i32_const" to 0x41,
+            "Op_i64_const" to 0x42,
+            "Op_f32_const" to 0x43,
+            "Op_f64_const" to 0x44,
+            "Op_i32_eqz" to 0x45,
+            "Op_i32_eq" to  0x46,
+            "Op_i32_ne" to  0x47,
+            "Op_i32_lt_s" to 0x48,
+            "Op_i32_lt_u" to 0x49,
+            "Op_i32_gt_s" to 0x4a,
+            "Op_i32_gt_u" to 0x4b,
+            "Op_i32_le_s" to 0x4c,
+            "Op_i32_le_u" to 0x4d,
+            "Op_i32_ge_s" to 0x4e,
+            "Op_i32_ge_u" to 0x4f,
+            "Op_i64_eqz" to 0x50,
+            "Op_i64_eq" to 0x51,
+            "Op_i64_ne" to 0x52,
+            "Op_i64_lt_s" to 0x53,
+            "Op_i64_lt_u" to 0x54,
+            "Op_i64_gt_s" to 0x55,
+            "Op_i64_gt_u" to 0x56,
+            "Op_i64_le_s" to 0x57,
+            "Op_i64_le_u" to 0x58,
+            "Op_i64_ge_s" to 0x59,
+            "Op_i64_ge_u" to 0x5a,
+            "Op_f32_eq" to 0x5b,
+            "Op_f32_ne" to 0x5c,
+            "Op_f32_lt" to 0x5d,
+            "Op_f32_gt" to 0x5e,
+            "Op_f32_le" to 0x5f,
+            "Op_f32_ge" to 0x60,
+            "Op_f64_eq" to 0x61,
+            "Op_f64_ne" to 0x62,
+            "Op_f64_lt" to 0x63,
+            "Op_f64_gt" to 0x64,
+            "Op_f64_le" to 0x65,
+            "Op_f64_ge" to 0x66,
+            "Op_i32_clz" to 0x67,
+            "Op_i32_ctz" to 0x68,
+            "Op_i32_popcnt" to 0x69,
+            "Op_i32_add" to 0x6a,
+            "Op_i32_sub" to 0x6b,
+            "Op_i32_mul" to 0x6c,
+            "Op_i32_div_s" to 0x6d,
+            "Op_i32_div_u" to 0x6e,
+            "Op_i32_rem_s" to 0x6f,
+            "Op_i32_rem_u" to 0x70,
+            "Op_i32_and" to 0x71,
+            "Op_i32_or" to 0x72,
+            "Op_i32_xor" to 0x73,
+            "Op_i32_shl" to 0x74,
+            "Op_i32_shr_s" to 0x75,
+            "Op_i32_shr_u" to 0x76,
+            "Op_i32_rotl" to 0x77,
+            "Op_i32_rotr" to 0x78,
+            "Op_i64_clz" to 0x79,
+            "Op_i64_ctz" to 0x7a,
+            "Op_i64_popcnt" to 0x7b,
+            "Op_i64_add" to 0x7c,
+            "Op_i64_sub" to 0x7d,
+            "Op_i64_mul" to 0x7e,
+            "Op_i64_div_s" to 0x7f,
+            "Op_i64_div_u" to 0x80,
+            "Op_i64_rem_s" to 0x81,
+            "Op_i64_rem_u" to 0x82,
+            "Op_i64_and" to 0x83,
+            "Op_i64_or" to 0x84,
+            "Op_i64_xor" to 0x85,
+            "Op_i64_shl" to 0x86,
+            "Op_i64_shr_s" to 0x87,
+            "Op_i64_shr_u" to 0x88,
+            "Op_i64_rotl" to 0x89,
+            "Op_i64_rotr" to 0x8a,
+            "Op_f32_abs" to 0x8b,
+            "Op_f32_neg" to 0x8c,
+            "Op_f32_ceil" to 0x8d,
+            "Op_f32_floor" to 0x8e,
+            "Op_f32_trunc" to 0x8f,
+            "Op_f32_nearest" to 0x90,
+            "Op_f32_sqrt" to 0x91,
+            "Op_f32_add" to 0x92,
+            "Op_f32_sub" to 0x93,
+            "Op_f32_mul" to 0x94,
+            "Op_f32_div" to 0x95,
+            "Op_f32_min" to 0x96,
+            "Op_f32_max" to 0x97,
+            "Op_f32_copysign" to 0x98,
+            "Op_f64_abs" to 0x99,
+            "Op_f64_neg" to 0x9a,
+            "Op_f64_ceil" to 0x9b,
+            "Op_f64_floor" to 0x9c,
+            "Op_f64_trunc" to 0x9d,
+            "Op_f64_nearest" to 0x9e,
+            "Op_f64_sqrt" to 0x9f,
+            "Op_f64_add" to 0xa0,
+            "Op_f64_sub" to 0xa1,
+            "Op_f64_mul" to 0xa2,
+            "Op_f64_div" to 0xa3,
+            "Op_f64_min" to 0xa4,
+            "Op_f64_max" to 0xa5,
+            "Op_f64_copysign" to 0xa6,
+            "Op_i32_wrap_i64" to 0xa7,
+            "Op_i32_trunc_f32_s" to 0xa8,
+            "Op_i32_trunc_f32_u" to 0xa9,
+            "Op_i32_trunc_f64_s" to 0xaa,
+            "Op_i32_trunc_f64_u" to 0xab,
+            "Op_i64_extend_i32_s" to 0xac,
+            "Op_i64_extend_i32_u" to 0xad,
+            "Op_i64_trunc_f32_s" to 0xae,
+            "Op_i64_trunc_f32_u" to 0xaf,
+            "Op_i64_trunc_f64_s" to 0xb0,
+            "Op_i64_trunc_f64_u" to 0xb1,
+            "Op_f32_convert_i32_s" to 0xb2,
+            "Op_f32_convert_i32_u" to 0xb3,
+            "Op_f32_convert_i64_s" to 0xb4,
+            "Op_f32_convert_i64_u" to 0xb5,
+            "Op_f32_demote_f64" to 0xb6,
+            "Op_f64_convert_i32_s" to 0xb7,
+            "Op_f64_convert_i32_u" to 0xb8,
+            "Op_f64_convert_i64_s" to 0xb9,
+            "Op_f64_convert_i64_u" to 0xba,
+            "Op_f64_promote_f32" to 0xbb,
+            "Op_i32_reinterpret_f32" to 0xbc,
+            "Op_i64_reinterpret_f64" to 0xbd,
+            "Op_f32_reinterpret_i32" to 0xbe,
+            "Op_f64_reinterpret_i64" to 0xbf,
+            "Op_i32_extend8_s" to 0xc0,
+            "Op_i32_extend16_s" to 0xc1,
+            "Op_i64_extend8_s" to 0xc2,
+            "Op_i64_extend16_s" to 0xc3,
+            "Op_i64_extend32_s" to 0xc4,
+            "Op_ref_null" to 0xd0,
+            "Op_ref_is_null" to 0xd1,
+            "Op_i32_drop" to 0x100,
+            "Op_i64_drop" to 0x101,
+            "Op_f32_drop" to 0x102,
+            "Op_f64_drop" to 0x103,
+            "Op_v128_drop" to 0x104,
+            "Op_i32_local_get" to 0x110,
+            "Op_i64_local_get" to 0x111,
+            "Op_f32_local_get" to 0x112,
+            "Op_f64_local_get" to 0x113,
+            "Op_v128_local_get" to 0x114,
+            "Op_i32_local_set" to 0x120,
+            "Op_i64_local_set" to 0x121,
+            "Op_f32_local_set" to 0x122,
+            "Op_f64_local_set" to 0x123,
+            "Op_v128_local_set" to 0x124,
+            "Op_i32_local_tee" to 0x130,
+            "Op_i64_local_tee" to 0x131,
+            "Op_f32_local_tee" to 0x132,
+            "Op_f64_local_tee" to 0x133,
+            "Op_v128_local_tee" to 0x134,
+            "Op_i32_global_get" to 0x140,
+            "Op_i64_global_get" to 0x141,
+            "Op_f32_global_get" to 0x142,
+            "Op_f64_global_get" to 0x143,
+            "Op_v128_global_get" to 0x144,
+            "Op_i32_global_set" to 0x150,
+            "Op_i64_global_set" to 0x151,
+            "Op_f32_global_set" to 0x152,
+            "Op_f64_global_set" to 0x153,
+            "Op_v128_global_set" to 0x154,
+            "Op_i32_return" to 0x160,
+            "Op_i64_return" to 0x161,
+            "Op_f32_return" to 0x162,
+            "Op_f64_return" to 0x163,
+            "Op_v128_return" to 0x164,
+            "Op_void_return" to 0x165,
+            "Op_i32_short_const" to 0x170,
+            "Op_i64_short_const" to 0x171,
+            "Op_f32_short_const" to 0x172,
+            "Op_f64_short_const" to 0x173,
+            "Op_goto" to 0x180,
+            "Op_goto_if" to 0x181,
+            "Op_goto_if_not" to 0x182,
+            "Op_goto_table" to 0x183,
+            "Op_i32_select" to 0x190,
+            "Op_i64_select" to 0x191,
+            "Op_f32_select" to 0x192,
+            "Op_f64_select" to 0x193,
+            "Op_v128_select" to 0x194,
+            "Op_goto_if_not_i32_eqz" to 0x1a0,
+            "Op_goto_if_not_i32_eq" to  0x1a1,
+            "Op_goto_if_not_i32_ne" to  0x1a2,
+            "Op_goto_if_not_i32_lt_s" to 0x1a3,
+            "Op_goto_if_not_i32_lt_u" to 0x1a4,
+            "Op_goto_if_not_i32_gt_s" to 0x1a5,
+            "Op_goto_if_not_i32_gt_u" to 0x1a6,
+            "Op_goto_if_not_i32_le_s" to 0x1a7,
+            "Op_goto_if_not_i32_le_u" to 0x1a8,
+            "Op_goto_if_not_i32_ge_s" to 0x1a9,
+            "Op_goto_if_not_i32_ge_u" to 0x1aa,
+            "Op_goto_if_not_i64_eqz" to 0x1ab,
+            "Op_goto_if_not_i64_eq" to 0x1ac,
+            "Op_goto_if_not_i64_ne" to 0x1ad,
+            "Op_goto_if_not_i64_lt_s" to 0x1ae,
+            "Op_goto_if_not_i64_lt_u" to 0x1af,
+            "Op_goto_if_not_i64_gt_s" to 0x1b0,
+            "Op_goto_if_not_i64_gt_u" to 0x1b1,
+            "Op_goto_if_not_i64_le_s" to 0x1b2,
+            "Op_goto_if_not_i64_le_u" to 0x1b3,
+            "Op_goto_if_not_i64_ge_s" to 0x1b4,
+            "Op_goto_if_not_i64_ge_u" to 0x1b5,
+            "Op_goto_if_not_f32_eq" to 0x1b6,
+            "Op_goto_if_not_f32_ne" to 0x1b7,
+            "Op_goto_if_not_f32_lt" to 0x1b8,
+            "Op_goto_if_not_f32_gt" to 0x1b9,
+            "Op_goto_if_not_f32_le" to 0x1ba,
+            "Op_goto_if_not_f32_ge" to 0x1bb,
+            "Op_goto_if_not_f64_eq" to 0x1bc,
+            "Op_goto_if_not_f64_ne" to 0x1bd,
+            "Op_goto_if_not_f64_lt" to 0x1be,
+            "Op_goto_if_not_f64_gt" to 0x1bf,
+            "Op_goto_if_not_f64_le" to 0x1c0,
+            "Op_goto_if_not_f64_ge" to 0x1c1,
+            "Op_i32_trunc_sat_f32_s" to 0x200,
+            "Op_i32_trunc_sat_f32_u" to 0x201,
+            "Op_i32_trunc_sat_f64_s" to 0x202,
+            "Op_i32_trunc_sat_f64_u" to 0x203,
+            "Op_i64_trunc_sat_f32_s" to 0x204,
+            "Op_i64_trunc_sat_f32_u" to 0x205,
+            "Op_i64_trunc_sat_f64_s" to 0x206,
+            "Op_i64_trunc_sat_f64_u" to 0x207,
+            "Op_memory_init" to 0x208,
+            "Op_data_drop" to 0x209,
+            "Op_memory_copy" to 0x20A,
+            "Op_memory_fill" to 0x20B,
+            "Op_table_init" to 0x20C,
+            "Op_elem_drop" to 0x20D,
+            "Op_table_copy" to 0x20E,
+            "Op_table_grow" to 0x20F,
+            "Op_table_size" to 0x210,
+            "Op_table_fill" to 0x211,
+        )
+
+        val NAME_FROM_OP = OP_FROM_NAME.flip()
     }
 }
 
+data class WasmDebugContext(val name: String, val index: Int)
 
-class WasmInterpreterCode constructor(
+data class WasmInterpreterCode constructor(
     val instructions: IntArray,
     val intPool: IntArray,
     val longPool: LongArray,
@@ -1337,4 +1671,5 @@ class WasmInterpreterCode constructor(
     val localsCount: Int = -1,
     val localsOffsets: IntArray = IntArray(0),
     val endStack: List<WasmType> = emptyList(),
+    val debug: WasmDebugContext
 )

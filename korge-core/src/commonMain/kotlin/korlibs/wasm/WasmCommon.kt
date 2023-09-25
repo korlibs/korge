@@ -462,10 +462,16 @@ data class WasmFunc(
     val type: WasmType.Function,
     var code: WasmCode? = null,
     var fimport: WasmImport? = null,
-    var export: WasmExport? = null,
+    //var export: WasmExport? = null,
     //var code2: WasmCode2? = null,
     val name2: String? = null
 ) : WasmFuncRef {
+    val exports = arrayListOf<WasmExport>()
+
+    fun addExport(export: WasmExport?) {
+        export?.let { this.exports += it }
+    }
+
     companion object {
         fun anonymousFunc(type: WasmType.Function, expr: WasmExpr): WasmFunc {
             return WasmFunc(-1, type, code = WasmCode(
@@ -493,8 +499,10 @@ data class WasmFunc(
     override val func = this
     val rlocals: List<WastLocal> by lazy { type.args + (code?.flatLocals ?: listOf()) }
 
-    override val name: String by lazy { name2 ?: fimport?.name ?: export?.name ?: "f$index" }
-    val rname: String by lazy { fimport?.name ?: export?.name ?: "f$index" }
+    val exportName: String? get() = exports.firstOrNull()?.name
+
+    override val name: String by lazy { name2 ?: fimport?.name ?: exportName ?: "f$index" }
+    val rname: String by lazy { fimport?.name ?: exportName ?: "f$index" }
 
     val ftype: FuncWithType by lazy { FuncWithType(name, type) }
     val fwt = WasmFuncWithType(name, type)
@@ -567,7 +575,22 @@ data class WasmElement(
     val expr: WasmExpr? = null,
     //val exprAst: Wast.Expr? = null
 ) {
+    val size: Int get() = funcIdxs?.size ?: funcNames?.size ?: 0
     val funcRefs: List<Any> = (funcIdxs ?: funcNames)!!
+
+    fun getFunctions(module: WasmModule): List<WasmFunc> {
+        return (0 until size).map { get(module, it) }
+    }
+
+    fun get(module: WasmModule, index: Int): WasmFunc {
+        funcNames?.get(index)?.let {
+            return module.functionsByName[it] ?: error("Can't find function '$it'")
+        }
+        funcIdxs?.get(index)?.let {
+            return module.functions[it]
+        }
+        TODO("Can't find function at index=$index")
+    }
 }
 
 class WasmModule constructor(
@@ -590,7 +613,8 @@ class WasmModule constructor(
         }
     }
     val exportsByName = exports.associateBy { it.name }
-    val functionsByName = functions.filter { it.export != null }.associateBy { it.export!!.name }
+    //val functionsByName = functions.filter { it.export != null }.associateBy { it.export!!.name }
+    val functionsByName = exports.associate { it.name to functions[it.idx] }
     val globalsByIndex = globals.associateBy { it.index }
     fun getFunction(item: Int): WasmFunc = functions[item]
     fun getFunction(item: String): WasmFunc = functionsByName[item] ?: error("Can't find function $item")
@@ -716,9 +740,7 @@ sealed interface WasmType {
     //    override val signature: String = "g${type.signature}${if (mutable) "m" else "i"}"
     //}
 
-    data class TableType<T : Any>(var limit: Limit, val clazz: KClass<T>) {
-        val items = arrayListOf<T>()
-    }
+    data class TableType<T : Any> constructor(var limit: Limit, val clazz: KClass<T>)
 
     companion object {
         val void = WasmSType.VOID
