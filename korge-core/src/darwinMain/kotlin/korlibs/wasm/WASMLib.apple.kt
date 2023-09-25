@@ -29,9 +29,7 @@ class NativeWASMLib(content: ByteArray) : IWASMLib, BaseWASMLib(content) {
 
     //override fun <T> symGet(name: String, type: KType): T = super.symGet(name, type)
     //override fun <T : Function<*>> funcPointer(address: Int, type: KType): T = super.funcPointer(address, type)
-
 }
-
 
 @OptIn(ExperimentalForeignApi::class)
 class WASMRunner {
@@ -76,10 +74,10 @@ class WASMRunner {
         js.globalObject!!.setObject(js.createUint8Array(wasmBytes), forKeyedSubscript = "tempBytes")
 
         if (evaluateScript("WebAssembly").isUndefined) {
-
+            evaluateScript(WASMJSPolyfill)
         }
 
-        evaluateScript("""
+        evaluateScript(/* language=javascript */ """
           globalThis.wasmInstance = new WebAssembly.Instance(new WebAssembly.Module(tempBytes), {
             "wasi_snapshot_preview1": {
               proc_exit: () => console.error(arguments),
