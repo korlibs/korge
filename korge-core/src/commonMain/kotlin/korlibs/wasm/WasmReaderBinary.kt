@@ -311,7 +311,7 @@ class WasmReaderBinary {
         val export = WasmExport(name, tid, idx, obj)
 
         if (tid == 0) {
-            functions[idx]?.export = export
+            functions[idx]?.addExport(export)
         }
 
         //println("export[$name] = $tid[$idx] -- $obj")
