@@ -138,6 +138,20 @@ expect operator fun Uint8ClampedArray.set(index: Int, value: Int)
 expect operator fun Uint8Array.set(index: Int, value: Int)
 expect operator fun Uint16Array.set(index: Int, value: Int)
 
+operator fun Int64Array.get(index: Int): Long {
+    return Long.fromLowHigh(ints[index * 2 + 0], ints[index * 2 + 1])
+}
+operator fun Int64Array.set(index: Int, value: Long) {
+    ints[index * 2 + 0] = value.low
+    ints[index * 2 + 1] = value.high
+}
+
+class Int64Array(override val buffer: ArrayBuffer, override val byteOffset: Int = 0, val length: Int = (buffer.byteLength - byteOffset) / 8, unit: Unit = Unit) : ArrayBufferView {
+    val ints = Int32Array(buffer, byteOffset, length * 2)
+    override val byteLength: Int = length * 8
+    constructor(length: Int) : this(ArrayBuffer(length * 8))
+}
+
 fun Int8Array(buffer: ArrayBuffer, byteOffset: Int = 0, length: Int = buffer.byteLength - byteOffset, unit: Unit = Unit): Int8Array = buffer.int8Array(byteOffset, length)
 fun Int16Array(buffer: ArrayBuffer, byteOffset: Int = 0, length: Int = buffer.byteLength - byteOffset, unit: Unit = Unit): Int16Array = buffer.int16Array(byteOffset, length)
 fun Int32Array(buffer: ArrayBuffer, byteOffset: Int = 0, length: Int = buffer.byteLength - byteOffset, unit: Unit = Unit): Int32Array = buffer.int32Array(byteOffset, length)

@@ -120,6 +120,20 @@ class TypedArraysTest {
         assertEquals("e8fffe0a009c18", Int8Array(data.buffer).bytes.hex)
     }
 
+    @Test
+    fun testInt64Array() {
+        val values = Int64Array(2)
+        val data = DataView(values.buffer)
+        val v0 = -1L
+        val v1 = 1100277060986L
+        values[0] = v0
+        assertEquals(v0, values[0])
+        assertEquals(v0, data.getS64LE(0))
+        values[1] = v1
+        assertEquals(v1, values[1])
+        assertEquals(v1, data.getS64LE(8))
+    }
+
     val Int8Array.bytes: ByteArray get() = toByteArray()
     val ArrayBufferView.info: String get() = "$byteOffset/$byteLength"
 }

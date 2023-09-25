@@ -62,8 +62,7 @@ actual class Uint16Array(override val buffer: ArrayBuffer, override val byteOffs
     override val byteLength: Int get() = length * 2
     actual constructor(length: Int) : this(ArrayBuffer(length * 2), 0, length)
 }
-actual class DataView(override val buffer: ArrayBuffer, override val byteOffset: Int, override val byteLength: Int) : ArrayBufferView {
-}
+actual class DataView(override val buffer: ArrayBuffer, override val byteOffset: Int, override val byteLength: Int) : ArrayBufferView
 
 actual fun DataView.getInt8(byteOffset: Int): Byte = data.getS8(byteOffset(byteOffset, 1)).toByte()
 actual fun DataView.getInt16(byteOffset: Int, littleEndian: Boolean): Short = data.getS16(byteOffset(byteOffset, 2), littleEndian).toShort()
