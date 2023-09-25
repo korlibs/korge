@@ -10,7 +10,7 @@ import kotlin.jvm.*
 import kotlin.rotateLeft
 import kotlin.rotateRight
 
-open class WasmRuntime(val memSize: Int, val memMax: Int) {
+open class WasmRuntime(module: WasmModule, val memSize: Int, val memMax: Int) {
     var usedClassMemory = 0
     var trace = false
 
@@ -18,6 +18,22 @@ open class WasmRuntime(val memSize: Int, val memMax: Int) {
     var instructionsExecuted = 0L
     var memory = Buffer.allocDirect(memSize * PAGE_SIZE)
     val memoryNumPages: Int get() = memory.sizeInBytes / PAGE_SIZE
+
+    interface WasmFuncCall {
+        operator fun invoke(runtime: WasmRuntime, args: Array<Any?>): Any?
+    }
+
+    class WasmTable(val limit: WasmType.Limit) {
+        var elements: Array<WasmFuncCall?> = arrayOfNulls(limit.min)
+
+        fun tableEnsureSize(size: Int) {
+            if (size > elements.size) {
+                elements = elements.copyOf(size)
+            }
+        }
+    }
+
+    val tables = module.tables.map { WasmTable(it.limit) }
 
     val functions = LinkedHashMap<String, LinkedHashMap<String, WasmRuntime.(Array<Any?>) -> Any?>>()
     open val exported: Set<String> get() = functions.keys
@@ -143,7 +159,12 @@ open class WasmRuntime(val memSize: Int, val memMax: Int) {
 
         @JvmStatic fun create_unreachable_exception_instance(msg: String): Throwable = Exception("unreachable:$msg")
         @JvmStatic fun create_todo_exception_instance(): Throwable = NotImplementedError()
-        
+        @JvmStatic fun create_unknown_indirect_function(index: Int, msg: String): Throwable = Exception("Unknown indirect function at index $index, msg='$msg'")
+        @JvmStatic fun call_indirect(tableIndex: Int, index: Int, args: Array<Any?>, runtime: WasmRuntime): Any? {
+            val func = runtime.tables[tableIndex].elements[index] ?: error("call_indirect: tableIndex=$tableIndex, func=$index, args=${args.toList()}")
+            return func.invoke(runtime, args)
+        }
+
         inline fun checkAddr(addr: Int, offset: Int, runtime: WasmRuntime): Int {
             return (addr + offset).also { 
                 if (it < 0 || it >= runtime.memory.sizeInBytes) error("Out of bounds addr=$addr, offset=$offset, memorySize=${runtime.memory.sizeInBytes}")

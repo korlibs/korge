@@ -122,6 +122,8 @@ data class SizeInt(val width: Int, val height: Int) {
     operator fun div(s: Float): SizeInt = SizeInt((width / s).toInt(), (height / s).toInt())
     operator fun div(s: Double): SizeInt = div(s.toFloat())
     operator fun div(s: Int): SizeInt = div(s.toFloat())
+
+    override fun toString(): String = "${width}x${height}"
 }
 
 fun Vector2I.toSize(): SizeInt = SizeInt(x, y)

@@ -43,6 +43,9 @@ internal external fun JsArray_push(obj: JsAny, value: JsAny?)
 @JsFun("(obj, key) => { return obj[key] !== undefined; }")
 internal external fun JsAny_has(obj: JsAny, key: JsAny?): Boolean
 
+@JsFun("(obj, key, params) => { return obj[key].apply(obj, params); }")
+internal external fun JsAny_invokeApply(obj: JsAny, key: JsAny?, params: JsArray<JsAny?>): JsAny?
+
 //inline class JsDynamic(val value: JsAny?) {
 class JsDynamic(val value: JsAny?) {
     inline fun <T : JsAny> unsafeCast(): T? = value?.unsafeCast<T>()
@@ -90,6 +93,8 @@ fun JsAny.hasAny(key: Int): Boolean = JsAny_has(this, key.toJsNumber())
 fun JsAny.hasAny(key: String): Boolean = JsAny_has(this, key.toJsString())
 fun JsAny.hasAny(key: JsString): Boolean = JsAny_has(this, key)
 fun JsAny.hasAny(key: JsAny?): Boolean = JsAny_has(this, key)
+
+fun JsAny.dynamicInvoke(key: JsString, params: JsArray<JsAny?>): JsAny? = JsAny_invokeApply(this, key, params)
 
 @JsFun("() => { return {}; }")
 external fun jsEmptyObj(): JsAny

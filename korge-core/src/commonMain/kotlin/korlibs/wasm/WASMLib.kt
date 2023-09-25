@@ -69,6 +69,7 @@ abstract class BaseWASMLib(override val content: ByteArray) : IWASMLib {
     protected var _context: CoroutineContext? = null
 
     override fun initOnce(context: CoroutineContext) {
+        super.initOnce(context)
         _context = context
     }
 

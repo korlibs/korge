@@ -12,12 +12,6 @@ class WasmJVMTest : WasmTest() {
     @Test
     fun testJvm() = suspendTest {
     }
-
-    override suspend fun createModuleRuntime(file: String, loadTrace: Boolean, memPages: Int, codeTrace: Boolean, validate: Boolean): WasmRuntime {
-        val reader = WasmReaderBinary().also { it.doTrace = loadTrace }.read(resourcesVfs[file].readBytes().openSync())
-        val wasmModule = WasmRunJVMOutput().also { it.trace = codeTrace; it.validate = validate }.generate(reader.toModule())
-        return wasmModule
-    }
 }
 
 open class WasmTest {
@@ -64,12 +58,29 @@ open class WasmTest {
     @Test
     fun testWebp() = suspendTest {
         //for (n in 0 until 10000) createJIT("webp.wasm", codeTrace = false, validate = false)
-        val module = createModuleRuntime("wasm/webp.wasm", codeTrace = false, validate = false)
+        //val module = createModuleRuntime("wasm/webp.wasm", loadTrace = false, codeTrace = true, validate = false)
+        val module = createModuleRuntime("wasm/webp.wasm", loadTrace = false, codeTrace = false, validate = false)
+        //val module = createModuleRuntime("wasm/webp-O0-full.wasm", loadTrace = true, codeTrace = false, validate = false)
+        //val module = createModuleRuntime("wasm/webp-O0-full.wasm", loadTrace = false, codeTrace = false, validate = false)
         //val module = createJIT("webp.wasm", codeTrace = true, validate = true)
         //val module = createJIT("webp.wasm", codeTrace = false)
         val webpBytes = resourcesVfs["wasm/webp.webp"].readBytes()
         val ptr = module.invoke("malloc", webpBytes.size) as Int
         module.memory.setArrayInt8(ptr, webpBytes)
+
+        if (interpreter) {
+            println("SKIPPING Webp decoding with WASM interpreter")
+        } else {
+            val memTemp = module.allocAndWrite(ByteArray(16))
+            val output = module.invoke("decode", ptr, webpBytes.size, memTemp, memTemp + 4) as Int
+            val width = module.memory.getUnalignedInt32(memTemp + 0)
+            val height = module.memory.getUnalignedInt32(memTemp + 4)
+            assertNotEquals(0, output)
+            assertEquals(100792, output)
+            assertEquals("32x32", "${width}x${height}")
+
+            //for (n in 0 until 100) module.invoke("decode", ptr, webpBytes.size, memTemp, memTemp + 4) as Int
+        }
 
         //repeat(100) {
         run {
@@ -178,15 +189,18 @@ open class WasmTest {
     }
 
     protected open suspend fun createModuleRuntime(file: String, loadTrace: Boolean = false, memPages: Int = 10, codeTrace: Boolean = false, validate: Boolean = true): WasmRuntime {
-        //return createModuleRuntimeJVM(file, loadTrace, memPages, codeTrace, validate)
-        return createModuleRuntimeInterpreter(file, loadTrace, memPages, codeTrace, validate)
+        if (interpreter) {
+            return createModuleRuntimeInterpreter(file, loadTrace, memPages, codeTrace, validate)
+        } else {
+            return createModuleRuntimeJVM(file, loadTrace, memPages, codeTrace, validate)
+        }
     }
 
-    //protected suspend fun createModuleRuntimeJVM(file: String, loadTrace: Boolean = false, memPages: Int = 10, codeTrace: Boolean = false, validate: Boolean = true): WasmRuntime {
-    //    val reader = WasmReaderBinary().also { it.doTrace = loadTrace }.read(resourcesVfs[file].readBytes().openSync())
-    //    val wasmModule = WasmRunJVMOutput().also { it.trace = codeTrace; it.validate = validate }.generate(reader.toModule())
-    //    return wasmModule
-    //}
+    protected suspend fun createModuleRuntimeJVM(file: String, loadTrace: Boolean = false, memPages: Int = 10, codeTrace: Boolean = false, validate: Boolean = true): WasmRuntime {
+        val reader = WasmReaderBinary().also { it.doTrace = loadTrace }.read(resourcesVfs[file].readBytes().openSync())
+        val wasmModule = WasmRunJVMOutput().also { it.trace = codeTrace; it.validate = validate }.generate(reader.toModule())
+        return wasmModule
+    }
 
     protected suspend fun createModuleRuntimeInterpreter(file: String, loadTrace: Boolean = false, memPages: Int = 10, codeTrace: Boolean = false, validate: Boolean = true): WasmRuntime {
         val reader = WasmReaderBinary().doTrace(loadTrace).read(resourcesVfs[file].readBytes().openSync())
@@ -197,6 +211,10 @@ open class WasmTest {
                     val (msg, file, line, column) = it.map { it as Int }
                     error("abort: msg='${int.readStringz16(msg)}', file='${int.readStringz16(file as Int)}', line=$line, column=$column")
                 }
+                int.register("wasi_snapshot_preview1", "proc_exit") { TODO("proc_exit: ${it.toList()}") }
+                int.register("wasi_snapshot_preview1", "fd_close") { TODO("fd_close: ${it.toList()}") }
+                int.register("wasi_snapshot_preview1", "fd_write") { TODO("fd_write: ${it.toList()}") }
+                int.register("wasi_snapshot_preview1", "fd_seek") { TODO("fd_seek: ${it.toList()}") }
             }
     }
 }

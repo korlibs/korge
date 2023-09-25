@@ -1,18 +1,22 @@
 package korlibs.wasm
 
+import korlibs.ffi.*
 import korlibs.math.*
-import korlibs.wasm.*
-import korlibs.wasm.WasmSType.*
 import korlibs.memory.*
+import korlibs.wasm.*
+import korlibs.wasm.WasmRunJVMOutput.Companion.isStatic
+import korlibs.wasm.WasmSType.*
 import org.objectweb.asm.*
 import org.objectweb.asm.Type
 import org.objectweb.asm.util.*
 import java.io.*
+import java.lang.invoke.*
 import java.lang.reflect.*
 import java.security.*
+import kotlin.jvm.functions.*
 import kotlin.reflect.*
 
-open class WasmRunJVMJIT(memSize: Int, memMax: Int) : WasmRuntime(memSize, memMax) {
+open class WasmRunJVMJIT(module: WasmModule, memSize: Int, memMax: Int) : WasmRuntime(module, memSize, memMax) {
 
     // TODO make this an inline class wrapping an integer referencing to some address in a Buffer/Memory?
     // Alternatively allocate two I64 in the stack/locals
@@ -46,9 +50,12 @@ open class WasmRunJVMJIT(memSize: Int, memMax: Int) : WasmRuntime(memSize, memMa
     }
      */
 
-    val declaredMethodsByName by lazy {
+    val declaredMethodsByName: Map<String, Method> by lazy {
         //(this::class.java.declaredMethods + WasmRuntime::class.java.declaredMethods).associateBy { it.name }
-        this::class.java.declaredMethods.associateBy { it.name }
+        this::class.java.declaredMethods.filter {
+            //println("${it.name} : ${it.declaringClass}")
+            it.isStatic()
+        }.associateBy { it.name }
     }
 
     override val exported: Set<String> get() = declaredMethodsByName.keys
@@ -71,6 +78,24 @@ open class WasmRunJVMJIT(memSize: Int, memMax: Int) : WasmRuntime(memSize, memMa
     fun invokeImport(module: String, funcName: String, params: Array<Any?>): Any? {
         val func = imports[module]?.get(funcName) ?: error("Can't find method $module\$$funcName")
         return func.invoke(this, params)
+    }
+
+    class MethodWasmFuncCall(val obj: Any?, val method: Method?, val methodName: String) : WasmFuncCall {
+        override operator fun invoke(runtime: WasmRuntime, args: Array<Any?>): Any? {
+            if (method == null) error("Can't find method '$methodName'")
+            //println("method=$method, args=${args.toList()}")
+            return method.invoke(obj, *args, runtime)
+        }
+    }
+
+    fun setElements(elements: java.util.ArrayList<WasmRunJVMOutput.ElementInfo>) {
+        for (element in elements) {
+            val out = tables[element.tableIndex].elements
+            for (n in 0 until element.elements.size) {
+                val elem = element.elements[n]
+                out[element.index + n] = MethodWasmFuncCall(null, this.declaredMethodsByName[elem.funcName] ?: error("Can't find $elem"), elem.funcName)
+            }
+        }
     }
 
     companion object {
@@ -188,6 +213,7 @@ class WasmRunJVMOutput(
         }
         val runtimeLocalIndex: Int = addLocal(null, LocalKind.RUNTIME)
         val longTempIndex: Int = addLocal(I64, LocalKind.TEMP)
+        val longTemp: LocalInfo = locals[longTempIndex]
 
         fun getLocalIndex(index: Int, managed: Boolean = true): Int = if (managed) locals[index].index else index
 
@@ -402,6 +428,7 @@ class WasmRunJVMOutput(
                     Opcodes.INVOKESTATIC,
                     OUTPUT_CLASS_NAME, "call\$indirect", funcType.getJvmDescriptor(Int::class.javaPrimitiveType!!, OUTPUT_CLASS_NAME), false
                 )
+                //println("CALL_INDIRECT: $funcType : context.module.tables=${context.module.tables.size}, table=${table.items.size}")
                 context.stack(funcType.args.size + 1, funcType.retType.toWasmSType())
 
                 //invoke(WasmRuntime[WasmRuntime::create_todo_exception_instance])
@@ -860,7 +887,14 @@ class WasmRunJVMOutput(
     val WasmGlobal.functionType: WasmType.Function get() = WasmType.Function(listOf(), listOf(globalType))
     val WasmGlobal.getterGlobalName: String get() = "gen\$${name}"
 
+    data class ElementItem(val func: WasmFunc, val funcName: String)
+    data class ElementInfo(val tableIndex: Int, val index: Int, val elements: List<ElementItem>)
+
     fun generate(module: WasmModule): WasmRunJVMJIT {
+        val interpreter = WasmRunInterpreter(module)
+
+        val elements = arrayListOf<ElementInfo>()
+
         var usedClassMemory = 0
         val clazz = createClass(OUTPUT_CLASS_NAME, WasmRunJVMJIT::class.java, doTrace = trace, doValidate = validate, handleBytes = {
             usedClassMemory += it.size
@@ -875,12 +909,13 @@ class WasmRunJVMOutput(
                 //}
             }
 
-            createConstructor() {
+            createConstructor(WasmModule::class.java) {
                 _aload(0)
                 val memory = module.memories.firstOrNull() ?: WasmType.Limit(0, null)
+                _aload(1)
                 constant(memory.min)
                 constant(memory.max ?: 0x10000)
-                constructor(WasmRunJVMJIT::class.java.getDeclaredConstructor(Int::class.javaPrimitiveType, Int::class.javaPrimitiveType))
+                constructor(WasmRunJVMJIT::class.java.getDeclaredConstructor(WasmModule::class.java, Int::class.javaPrimitiveType, Int::class.javaPrimitiveType))
                 //for (global in module.globals) {
                 //    if (global.expr != null) {
                 //        _aload(0)
@@ -891,6 +926,16 @@ class WasmRunJVMOutput(
                 //        this.setWasmGlobal(global)
                 //    }
                 //}
+                for ((index, element) in module.elements.withIndex()) {
+                    if (element.expr == null) continue
+                    interpreter.eval(element.expr, WasmType.Function(listOf(), listOf(I32)), WasmDebugContext("elem", index))
+                    val index = interpreter.popI32()
+                    // Index
+                    generateExpr(element.expr, GenMethodContext("element${index}", this@createConstructor, WasmFunc(-1, WasmType.Function(listOf(), listOf())), module), 0, implicitReturn = false)
+
+                    elements += ElementInfo(element.tableIdx, index, element.getFunctions(module).map { ElementItem(it, it.getJvmName()) })
+                }
+
                 for (global in module.globals) {
                     if (trace) println("GLOBAL: $global")
                     if (global.expr == null) continue
@@ -900,52 +945,95 @@ class WasmRunJVMOutput(
                     setWasmGlobal(global)
                 }
 
+                val MAX_CHUNK_SIZE = (32 * 1024)
                 for (data in module.datas) {
                     if (trace) println("DATA: $data")
                     // Address
                     generateExpr(data.e!!, GenMethodContext("data${data.index}", this@createConstructor, WasmFunc(-1, WasmType.Function(listOf(), listOf(WasmType.i32))), module), 0, implicitReturn = false)
-                    constant(data.data.toBinaryString())
-                    constant(data.data.size) // bytes
-                    _aload(0) // runtime
-                    invoke(WasmRunJVMJIT[WasmRuntime::set_memory])
+
+                    val nchunks = data.data.size divCeil MAX_CHUNK_SIZE
+                    repeat(nchunks - 1) { visitInsn(Opcodes.DUP) }
+                    for (n in 0 until nchunks) {
+                        val offset = n * MAX_CHUNK_SIZE
+                        constant(offset)
+                        iadd()
+
+                        val chunk = data.data.sliceArray(offset until minOf(data.data.size, offset + MAX_CHUNK_SIZE))
+
+                        //println("offset=$offset, data.data=${chunk.size}")
+                        constant(chunk.toBinaryString())
+                        constant(chunk.size) // bytes
+                        _aload(0) // runtime
+                        invoke(WasmRunJVMJIT[WasmRuntime::set_memory])
+                    }
                 }
 
                 ret()
             }
 
-            for (table in (module.tables.filter { it.clazz == WasmFunc::class } as List<WasmType.TableType<WasmFunc>>)) {
-                for ((type, funcs) in table.items.withIndex().groupBy { it.value.type }) {
-                    val functionType = WasmType.Function((type.args.map { it.type } + I32).withIndex().map { (index, it) -> WastLocal(index, it) }, listOf(type.retType))
-                    createMethod("call\$indirect", type.retType.toJava(), *type.args.map { it.type.toJava() }.toTypedArray(), Int::class.javaPrimitiveType, "LWasmProgram;", isStatic = true) {
-                        //ret(type.retType.toWasmSType())
-                        val indexIndex = type.args.size
-                        val runtimeIndex = type.args.size + 1
-                        val context = GenMethodContext("call\$indirect", this, WasmFunc(-1, functionType), module)
-                        for (n in 0 until type.args.size) {
-                            context.load(n, type.args[n].stype)
-                        }
-                        context.aload(runtimeIndex)
+            for (ntype in module.types) {
+                val type = ntype.type as WasmType.Function
+                val functionType = WasmType.Function((type.args.map { it.type } + I32).withIndex().map { (index, it) -> WastLocal(index, it) }, listOf(type.retType))
+                createMethod("call\$indirect", type.retType.toJava(), *type.args.map { it.type.toJava() }.toTypedArray(), Int::class.javaPrimitiveType, "LWasmProgram;", isStatic = true) {
+                    //ret(type.retType.toWasmSType())
+                    val indexIndex = type.args.size
+                    val runtimeIndex = type.args.size + 1
+                    val context = GenMethodContext("call\$indirect", this, WasmFunc(-1, functionType), module)
 
-                        for ((indexInTable, func) in funcs) {
-                            context.iload(indexIndex)
-                            constant(indexInTable)
+                    // Create array
+                    constant(type.args.size)
+                    visitTypeInsn(Opcodes.ANEWARRAY, "java/lang/Object")
+                    context.astore(context.longTempIndex)
 
-                            IF(Opcodes.IF_ICMPEQ) {
-                                visitMethodInsn(
-                                    Opcodes.INVOKESTATIC,
-                                    OUTPUT_CLASS_NAME, func.getJvmName(), func.type.getJvmDescriptor(OUTPUT_CLASS_NAME), false
-                                )
-                                ret(func.type.retType.toWasmSType())
-                            }
-                        }
-                        invoke(WasmRunJVMJIT[WasmRuntime::create_todo_exception_instance])
-                        visitInsn(Opcodes.ATHROW)
+                    //for (n in 0 until type.args.size) {
+                    for (n in 0 until type.args.size) {
+                        val stype = type.args[n].stype
+                        // Array
+                        context.aload(context.longTempIndex)
+                        // Index
+                        constant(n)
+                        // Boxed Value
+                        context.load(n, stype); boxType(stype)
+                        //visitTypeInsn(Opcodes.CHECKCAST, "java/lang/Object")
+                        visitInsn(Opcodes.AASTORE)
                     }
+
+                    //for ((indexInTable, funcRef) in funcRefs) {
+                    //    val func = funcRef?.func ?: continue
+                    //    context.iload(indexIndex)
+                    //    constant(indexInTable)
+                    //    IF(Opcodes.IF_ICMPEQ) {
+                    //        visitMethodInsn(
+                    //            Opcodes.INVOKESTATIC,
+                    //            OUTPUT_CLASS_NAME, func.getJvmName(), func.type.getJvmDescriptor(OUTPUT_CLASS_NAME), false
+                    //        )
+                    //        ret(func.type.retType.toWasmSType())
+                    //    }
+                    //}
+                    //val indices = funcRefs.map { it.index }
+                    //println("GENERATE CALL_INDIRECT: $type : indices=$indices : funcs=${funcRefs.map { it.value.name }}")
+
+                    constant(0) // Table index
+                    context.iload(indexIndex)
+                    context.aload(context.longTempIndex)
+                    context.aload(runtimeIndex)
+                    //constant("type=$type, indices=${indices}")
+                    //constant("type=$type")
+                    invoke(WasmRunJVMJIT[WasmRuntime::call_indirect])
+                    unboxType(functionType.retType.toWasmSType())
+                    ret(functionType.retType.toWasmSType())
+
+                    //visitInsn(Opcodes.ATHROW)
                 }
-                //module.types
-                //for (item in table.items) {
-                //}
             }
+            //for (table in (module.tables.filter { it.clazz == WasmFuncRef::class } as List<WasmType.TableType<WasmFuncRef>>)) {
+            //    for ((type, funcRefs) in table.items.withIndex().groupBy { it.value?.func?.type }) {
+            //        if (type == null) continue
+            //    }
+            //    //module.types
+            //    //for (item in table.items) {
+            //    //}
+            //}
 
             for (func in module.functions) {
                 val sretType = func.type.retType.toWasmSType()
@@ -975,16 +1063,7 @@ class WasmRunJVMOutput(
 
                             // Boxed Value
                             context.load(index, type.stype)
-                            when (type.stype) {
-                                VOID -> TODO()
-                                I32 -> visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Integer", "valueOf", "(I)Ljava/lang/Integer;", false)
-                                I64 -> visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Long", "valueOf", "(J)Ljava/lang/Long;", false)
-                                F32 -> visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Float", "valueOf", "(F)Ljava/lang/Float;", false)
-                                F64 -> visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Double", "valueOf", "(D)Ljava/lang/Double;", false)
-                                V128 -> TODO("v128")
-                                ANYREF -> TODO()
-                                FUNCREF -> TODO()
-                            }
+                            boxType(type.stype)
 
                             // Store Array[index] = BoxedInteger
                             visitInsn(Opcodes.AASTORE)
@@ -1023,6 +1102,7 @@ class WasmRunJVMOutput(
                 } else {
                     //createMethod(func.export?.name ?: func.name, func.type.retType.toJava(), *argTypes, WasmJIT::class.java, isStatic = true) {
                     if (trace) println("FUNC<code>: $methodName : ${func.type}")
+                    //println("FUNC[${func.index}]: $methodName : ${func.type}")
                     createMethod(methodName, retType, *argTypes, "LWasmProgram;", isStatic = true) {
                         generateFunc(func, module)
                     }
@@ -1086,10 +1166,11 @@ class WasmRunJVMOutput(
             }
         }
 
-        val instance = clazz.getDeclaredConstructor().newInstance()
+        val instance = clazz.getDeclaredConstructor(WasmModule::class.java).newInstance(module)
         //println(clazz.declaredMethods.toList())
         //println(clazz.declaredMethods.firstOrNull { it.name == "fib" }!!.invoke(null, 16))
         return (instance as WasmRunJVMJIT).also {
+            it.setElements(elements)
             it.usedClassMemory = usedClassMemory
         }
     }
@@ -1100,7 +1181,7 @@ class WasmRunJVMOutput(
         if (import != null) {
             return "${import.moduleName}\$${import.name}"
         } else {
-            return (func.export?.name ?: func.name).replace(".", "\$")
+            return (func.exportName ?: func.name).replace(".", "\$")
         }
     }
 
@@ -1124,6 +1205,32 @@ class WasmRunJVMOutput(
             global.name,
             global.globalType.toJDescriptor()
         )
+    }
+
+    fun MethodVisitor.boxType(stype: WasmSType) {
+        when (stype) {
+            VOID -> TODO()
+            I32 -> visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Integer", "valueOf", "(I)Ljava/lang/Integer;", false)
+            I64 -> visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Long", "valueOf", "(J)Ljava/lang/Long;", false)
+            F32 -> visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Float", "valueOf", "(F)Ljava/lang/Float;", false)
+            F64 -> visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Double", "valueOf", "(D)Ljava/lang/Double;", false)
+            V128 -> TODO("v128")
+            ANYREF -> TODO()
+            FUNCREF -> TODO()
+        }
+    }
+
+    fun MethodVisitor.unboxType(stype: WasmSType) {
+        when (stype) {
+            VOID -> visitInsn(Opcodes.POP)
+            I32 -> { visitTypeInsn(Opcodes.CHECKCAST, "java/lang/Integer"); visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/Integer", "intValue", "()I", false) }
+            I64 -> { visitTypeInsn(Opcodes.CHECKCAST, "java/lang/Long"); visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/Long", "longValue", "()J", false) }
+            F32 -> { visitTypeInsn(Opcodes.CHECKCAST, "java/lang/Float"); visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/Float", "floatValue", "()F", false) }
+            F64 -> { visitTypeInsn(Opcodes.CHECKCAST, "java/lang/Double"); visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/Double", "doubleValue", "()D", false) }
+            V128 -> TODO("v128")
+            ANYREF -> TODO()
+            FUNCREF -> TODO()
+        }
     }
 
     fun WasmType.toJava(): Class<*> {
@@ -1252,6 +1359,10 @@ class WasmRunJVMOutput(
             when {
                 value is Int && value in Byte.MIN_VALUE..Byte.MAX_VALUE -> visitIntInsn(Opcodes.BIPUSH, value)
                 value is Int && value in Short.MIN_VALUE..Short.MAX_VALUE -> visitIntInsn(Opcodes.SIPUSH, value)
+                value is String -> {
+                    if (value.length >= 32768) TODO("String constant too long: ${value.length}")
+                    visitLdcInsn(value)
+                }
                 else -> {
                     visitLdcInsn(value)
                 }
