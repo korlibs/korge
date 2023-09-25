@@ -35,15 +35,14 @@ interface IWASMLib : Closeable {
     fun writeInts(pos: Int, data: IntArray) = writeBytes(pos, data.toByteArray())
 
     fun ShortArray.toByteArray(): ByteArray = ByteArray(this.size * 2).also { out ->
-        for (n in 0 until this.size) out.write16LE(n * 2, this[n].toInt())
+        for (n in indices) out.write16LE(n * 2, this[n].toInt())
     }
     fun IntArray.toByteArray(): ByteArray = ByteArray(this.size * 4).also { out ->
-        for (n in 0 until this.size) out.write16LE(n * 4, this[n].toInt())
+        for (n in indices) out.write16LE(n * 4, this[n].toInt())
     }
 
-    fun allocBytes(bytes: ByteArray): Int {
-        return invokeFuncInt("malloc", bytes.size).also { writeBytes(it, bytes) }
-    }
+    fun allocBytes(size: Int): Int = invokeFuncInt("malloc", size)
+    fun allocBytes(bytes: ByteArray): Int = allocBytes(bytes.size).also { writeBytes(it, bytes) }
     fun freeBytes(vararg ptrs: Int) {
         for (ptr in ptrs) invokeFunc("free", ptr)
     }
