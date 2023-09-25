@@ -1,7 +1,7 @@
 package korlibs.memory
 
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import korlibs.encoding.*
+import kotlin.test.*
 
 class ByteArrayReadWriteTest {
     @Test
