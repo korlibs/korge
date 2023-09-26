@@ -9,7 +9,7 @@ plugins {
 }
 
 description = "Multiplatform Game Engine written in Kotlin"
-group = RootKorlibsPlugin.KORGE_GROUP
+group = RootKorlibsPlugin.KORGE_RELOAD_AGENT_GROUP
 
 tasks.jar {
     manifest {

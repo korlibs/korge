@@ -333,7 +333,7 @@ open class KorgeExtension(
         it["${RootKorlibsPlugin.KORGE_GROUP}:korge-root"] = BuildVersions.KORGE
         it["${RootKorlibsPlugin.KORGE_GROUP}:korge-core"] = BuildVersions.KORGE
         it["${RootKorlibsPlugin.KORGE_GROUP}:korge-platform"] = BuildVersions.KORGE
-        it["${RootKorlibsPlugin.KORGE_GROUP}:korge-reload-agent"] = BuildVersions.KORGE
+        it["${RootKorlibsPlugin.KORGE_RELOAD_AGENT_GROUP}:korge-reload-agent"] = BuildVersions.KORGE
         it["${RootKorlibsPlugin.KORGE_GRADLE_PLUGIN_GROUP}:korge-gradle-plugin"] = BuildVersions.KORGE
     }
 

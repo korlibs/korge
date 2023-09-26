@@ -30,6 +30,7 @@ import java.nio.file.*
 
 object RootKorlibsPlugin {
     val KORGE_GROUP = "com.soywiz.korge"
+    val KORGE_RELOAD_AGENT_GROUP = "com.soywiz.korge"
     val KORGE_GRADLE_PLUGIN_GROUP = "com.soywiz.korlibs.korge.plugins"
 
     @JvmStatic
