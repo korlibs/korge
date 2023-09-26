@@ -4,6 +4,7 @@ import com.sun.jna.*
 import com.sun.jna.Function
 import korlibs.io.file.sync.*
 import korlibs.memory.*
+import korlibs.memory.arrays.*
 import kotlinx.coroutines.*
 import java.lang.reflect.*
 import java.util.concurrent.*
@@ -56,7 +57,7 @@ fun <T : kotlin.Function<*>> createJNAFunctionToPlainFunc(func: Function, type: 
         val targs = (args ?: emptyArray()).map {
             when (it) {
                 is FFIPointerArray -> it.data
-                is Buffer -> it.buffer
+                is Buffer -> it.data.jbuffer
                 else -> it
             }
         }.toTypedArray()

@@ -117,7 +117,7 @@ private fun preprocessFunc(type: KType, func: dynamic, name: String?): dynamic {
                 v = (v.toString() + "\u0000").encodeToByteArray()
             }
             if (v is FFIPointerArray) v = v.data
-            if (v is Buffer) v = v.dataView
+            if (v is Buffer) v = v.data
             if (v is Boolean) v = if (v) 1 else 0
             if (v is Long) v = (v as Long).toJsBigInt()
             //console.log("param", n, v)

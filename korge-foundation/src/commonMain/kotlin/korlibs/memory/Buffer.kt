@@ -6,7 +6,7 @@ import korlibs.math.*
 import korlibs.memory.arrays.*
 import kotlin.jvm.*
 
-inline class Buffer(val data: DataView) {
+class Buffer(val data: DataView) {
     constructor(size: Int, direct: Boolean = false) : this(ArrayBuffer(size, direct).dataView())
     constructor(array: ByteArray, offset: Int = 0, size: Int = array.size - offset) : this(
         ArrayBufferWrap(array).dataView(offset, size)
@@ -36,7 +36,23 @@ inline class Buffer(val data: DataView) {
         return sliceInternal(start, end)
     }
 
-// Unaligned versions
+    // @TODO: Optimize by using words instead o bytes
+    override fun hashCode(): Int {
+        var h = 1
+        for (n in 0 until size) h = 31 * h + data.getS8(n)
+        return h
+    }
+
+    // @TODO: Optimize by using words instead o bytes
+    override fun equals(other: Any?): Boolean {
+        if (other !is Buffer || this.size != other.size) return false
+        val t = this.data
+        val o = other.data
+        for (n in 0 until size) if (t.getS8(n) != o.getS8(n)) return false
+        return true
+    }
+
+    // Unaligned versions
 
     fun getUnalignedUInt8(byteOffset: Int): Int = getUnalignedInt8(byteOffset).toInt() and 0xFF
     fun getUnalignedUInt16(byteOffset: Int): Int = getUnalignedInt16(byteOffset).toInt() and 0xFFFF
