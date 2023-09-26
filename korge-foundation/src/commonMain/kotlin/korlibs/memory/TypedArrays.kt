@@ -24,6 +24,50 @@ fun ArrayBuffer(size: Int, direct: Boolean): ArrayBuffer = if (direct) ArrayBuff
 expect fun ArrayBufferDirect(size: Int): ArrayBuffer
 expect fun ArrayBufferWrap(data: ByteArray): ArrayBuffer
 internal expect fun ArrayBuffer_copy(src: ArrayBuffer, srcPos: Int, dst: ArrayBuffer, dstPos: Int, length: Int)
+internal expect fun ArrayBuffer_equals(src: ArrayBuffer, srcPos: Int, dst: ArrayBuffer, dstPos: Int, length: Int): Boolean
+
+internal fun ArrayBuffer_equals_common(
+    src: ArrayBuffer,
+    srcPosBytes: Int,
+    dst: ArrayBuffer,
+    dstPosBytes: Int,
+    sizeInBytes: Int,
+): Boolean {
+    check(srcPosBytes + sizeInBytes <= src.byteLength)
+    check(dstPosBytes + sizeInBytes <= dst.byteLength)
+
+    val srcDV = src.dataView(srcPosBytes, sizeInBytes)
+    val dstDV = dst.dataView(dstPosBytes, sizeInBytes)
+
+    var offset = 0
+    var remaining = sizeInBytes
+
+    if (true) {
+        val WORD = 4
+        val words = remaining / WORD
+        remaining %= WORD
+        for (n in 0 until words) {
+            val v0 = srcDV.getS32LE(offset + n * WORD)
+            val v1 = dstDV.getS32LE(offset + n * WORD)
+            if (v0 != v1) {
+                return false
+            }
+        }
+        offset += words * WORD
+    }
+
+    if (true) {
+        for (n in 0 until remaining) {
+            val v0 = srcDV.getS8(offset + n)
+            val v1 = dstDV.getS8(offset + n)
+            if (v0 != v1) {
+                return false
+            }
+        }
+    }
+    return true
+}
+
 fun arraycopy(src: ArrayBuffer, srcPos: Int, dst: ArrayBuffer, dstPos: Int, length: Int) {
     ArrayBuffer_copy(src, srcPos, dst, dstPos, length)
 }
@@ -38,6 +82,8 @@ fun ArrayBuffer.readBytes(start: Int = 0, length: Int = byteLength - start, outO
     arraycopy(this, start, out, outOffset, length)
     return out
 }
+
+fun ArrayBufferView.readBytes(): ByteArray = buffer.readBytes(byteOffset, byteLength)
 
 fun ArrayBufferView.setByteOffset(typedArray: ArrayBufferView, targetOffsetBytes: Int = 0) =
     ArrayBuffer_copy(typedArray.buffer, typedArray.byteOffset, this.buffer, this.byteOffset + targetOffsetBytes, typedArray.byteLength)
@@ -60,16 +106,18 @@ fun Int16Array.subarray(begin: Int = 0, end: Int = length): Int16Array = Int16Ar
 fun Int32Array.subarray(begin: Int = 0, end: Int = length): Int32Array = Int32Array(buffer, byteOffset + begin * 4, end - begin)
 fun Float32Array.subarray(begin: Int = 0, end: Int = length): Float32Array = Float32Array(buffer, byteOffset + begin * 4, end - begin)
 fun Float64Array.subarray(begin: Int = 0, end: Int = length): Float64Array = Float64Array(buffer, byteOffset + begin * 8, end - begin)
+fun DataView.subarray(begin: Int = 0, end: Int = byteLength): DataView = DataView(buffer, byteOffset + begin * 1, end - begin)
 
 fun ArrayBuffer.clone(): ArrayBuffer = ArrayBufferWrap(readBytes())
-fun Uint8ClampedArray.clone(): Uint8ClampedArray = Uint8ClampedArray(ArrayBufferWrap(buffer.readBytes(byteOffset, byteLength)))
-fun Uint8Array.clone(): Uint8Array = Uint8Array(ArrayBufferWrap(buffer.readBytes(byteOffset, byteLength)))
-fun Uint16Array.clone(): Uint16Array = Uint16Array(ArrayBufferWrap(buffer.readBytes(byteOffset, byteLength)))
-fun Int8Array.clone(): Int8Array = Int8Array(ArrayBufferWrap(buffer.readBytes(byteOffset, byteLength)))
-fun Int16Array.clone(): Int16Array = Int16Array(ArrayBufferWrap(buffer.readBytes(byteOffset, byteLength)))
-fun Int32Array.clone(): Int32Array = Int32Array(ArrayBufferWrap(buffer.readBytes(byteOffset, byteLength)))
-fun Float32Array.clone(): Float32Array = Float32Array(ArrayBufferWrap(buffer.readBytes(byteOffset, byteLength)))
-fun Float64Array.clone(): Float64Array = Float64Array(ArrayBufferWrap(buffer.readBytes(byteOffset, byteLength)))
+fun Uint8ClampedArray.clone(): Uint8ClampedArray = Uint8ClampedArray(ArrayBufferWrap(readBytes()))
+fun Uint8Array.clone(): Uint8Array = Uint8Array(ArrayBufferWrap(readBytes()))
+fun Uint16Array.clone(): Uint16Array = Uint16Array(ArrayBufferWrap(readBytes()))
+fun Int8Array.clone(): Int8Array = Int8Array(ArrayBufferWrap(readBytes()))
+fun Int16Array.clone(): Int16Array = Int16Array(ArrayBufferWrap(readBytes()))
+fun Int32Array.clone(): Int32Array = Int32Array(ArrayBufferWrap(readBytes()))
+fun Float32Array.clone(): Float32Array = Float32Array(ArrayBufferWrap(readBytes()))
+fun Float64Array.clone(): Float64Array = Float64Array(ArrayBufferWrap(readBytes()))
+fun DataView.clone(): DataView = DataView(ArrayBufferWrap(readBytes()))
 
 fun Uint8ClampedArray.subarraySize(begin: Int = 0, size: Int = length - begin): Uint8ClampedArray = subarray(begin, begin + size)
 fun Uint8Array.subarraySize(begin: Int = 0, size: Int = length - begin): Uint8Array = subarray(begin, begin + size)
@@ -151,17 +199,6 @@ expect class Uint16Array : ArrayBufferView {
 }
 expect class DataView : ArrayBufferView
 
-expect fun DataView.getInt8(byteOffset: Int): Byte
-expect fun DataView.getInt16(byteOffset: Int, littleEndian: Boolean): Short
-expect fun DataView.getInt32(byteOffset: Int, littleEndian: Boolean): Int
-expect fun DataView.getFloat32(byteOffset: Int, littleEndian: Boolean): Float
-expect fun DataView.getFloat64(byteOffset: Int, littleEndian: Boolean): Double
-expect fun DataView.setInt8(byteOffset: Int, value: Byte)
-expect fun DataView.setInt16(byteOffset: Int, value: Short, littleEndian: Boolean)
-expect fun DataView.setInt32(byteOffset: Int, value: Int, littleEndian: Boolean)
-expect fun DataView.setFloat32(byteOffset: Int, value: Float, littleEndian: Boolean)
-expect fun DataView.setFloat64(byteOffset: Int, value: Double, littleEndian: Boolean)
-
 expect operator fun Int8Array.get(index: Int): Byte
 expect operator fun Int16Array.get(index: Int): Short
 expect operator fun Int32Array.get(index: Int): Int
@@ -209,46 +246,69 @@ fun DataView(size: Int): DataView {
 }
 fun DataView(buffer: ArrayBuffer, byteOffset: Int = 0, byteLength: Int = buffer.byteLength - byteOffset, unit: Unit = Unit): DataView = buffer.dataView(byteOffset, byteLength)
 
-fun DataView.getUint8(byteOffset: Int): Int = getInt8(byteOffset).toInt() and 0xFF
-fun DataView.getUint16(byteOffset: Int, littleEndian: Boolean): Int = getInt16(byteOffset, littleEndian).toInt() and 0xFFFF
-fun DataView.getUint32(byteOffset: Int, littleEndian: Boolean): UInt = getInt32(byteOffset, littleEndian).toUInt()
+expect fun DataView.getS8(byteOffset: Int): Byte
+expect fun DataView.getS16(byteOffset: Int, littleEndian: Boolean): Short
+expect fun DataView.getS32(byteOffset: Int, littleEndian: Boolean): Int
+expect fun DataView.getF32(byteOffset: Int, littleEndian: Boolean): Float
+expect fun DataView.getF64(byteOffset: Int, littleEndian: Boolean): Double
+expect fun DataView.setS8(byteOffset: Int, value: Byte)
+expect fun DataView.setS16(byteOffset: Int, value: Short, littleEndian: Boolean)
+expect fun DataView.setS32(byteOffset: Int, value: Int, littleEndian: Boolean)
+expect fun DataView.getF32(byteOffset: Int, value: Float, littleEndian: Boolean)
+expect fun DataView.setF64(byteOffset: Int, value: Double, littleEndian: Boolean)
 
-fun DataView.setUint8(byteOffset: Int, value: Int) = setInt8(byteOffset, value.toByte())
-fun DataView.setUint16(byteOffset: Int, value: Int, littleEndian: Boolean) = setInt16(byteOffset, value.toShort(), littleEndian)
-fun DataView.setUint32(byteOffset: Int, value: UInt, littleEndian: Boolean) = setInt32(byteOffset, value.toInt(), littleEndian)
+fun DataView.getU8(byteOffset: Int): Int = getS8(byteOffset).unsigned
+fun DataView.getU16(byteOffset: Int, littleEndian: Boolean): Int = getS16(byteOffset, littleEndian).unsigned
+fun DataView.getU32(byteOffset: Int, littleEndian: Boolean): UInt = getS32(byteOffset, littleEndian).toUInt()
 
-fun DataView.setS8(byteOffset: Int, value: Byte) = setInt8(byteOffset, value.toByte())
-fun DataView.setS8(byteOffset: Int, value: Int) = setInt8(byteOffset, value.toByte())
-fun DataView.setU8(byteOffset: Int, value: Int) = setInt8(byteOffset, value.toByte())
+fun DataView.getUint8(byteOffset: Int): Int = getS8(byteOffset).toInt() and 0xFF
+fun DataView.getUint16(byteOffset: Int, littleEndian: Boolean): Int = getS16(byteOffset, littleEndian).toInt() and 0xFFFF
+fun DataView.getUint32(byteOffset: Int, littleEndian: Boolean): UInt = getS32(byteOffset, littleEndian).toUInt()
 
-fun DataView.getS8(byteOffset: Int): Byte = getInt8(byteOffset)
-fun DataView.getU8(byteOffset: Int): Int = getUint8(byteOffset).toInt()
+fun DataView.setUint8(byteOffset: Int, value: Int) = setS8(byteOffset, value.toByte())
+fun DataView.setUint16(byteOffset: Int, value: Int, littleEndian: Boolean) = setS16(byteOffset, value.toShort(), littleEndian)
+fun DataView.setUint32(byteOffset: Int, value: UInt, littleEndian: Boolean) = setS32(byteOffset, value.toInt(), littleEndian)
 
-fun DataView.getS16LE(byteOffset: Int): Short = getInt16(byteOffset, true)
+//fun DataView.setS8(byteOffset: Int, value: Byte) = this.setS8(byteOffset, value.toByte())
+fun DataView.setS8(byteOffset: Int, value: Int) = setS8(byteOffset, value.toByte())
+fun DataView.setU8(byteOffset: Int, value: Int) = setS8(byteOffset, value.toByte())
+
+//fun DataView.getS8(byteOffset: Int): Byte = getInt8(byteOffset)
+//fun DataView.getU8(byteOffset: Int): Int = getUint8(byteOffset).toInt()
+
+fun DataView.getS16LE(byteOffset: Int): Short = getS16(byteOffset, true)
 fun DataView.getU16LE(byteOffset: Int): Int = getUint16(byteOffset, true).toInt()
-fun DataView.getS32LE(byteOffset: Int): Int = getInt32(byteOffset, true)
+fun DataView.getS32LE(byteOffset: Int): Int = getS32(byteOffset, true)
 fun DataView.getU32LE(byteOffset: Int): UInt = getUint32(byteOffset, true).toUInt()
-fun DataView.getF32LE(byteOffset: Int): Float = getFloat32(byteOffset, true)
-fun DataView.getF64LE(byteOffset: Int): Double = getFloat64(byteOffset, true)
-fun DataView.getS16BE(byteOffset: Int): Short = getInt16(byteOffset, false)
+fun DataView.getF32LE(byteOffset: Int): Float = getF32(byteOffset, true)
+fun DataView.getF64LE(byteOffset: Int): Double = getF64(byteOffset, true)
+fun DataView.getS16BE(byteOffset: Int): Short = getS16(byteOffset, false)
 fun DataView.getU16BE(byteOffset: Int): Int = getUint16(byteOffset, false).toInt()
-fun DataView.getS32BE(byteOffset: Int): Int = getInt32(byteOffset, false)
+fun DataView.getS32BE(byteOffset: Int): Int = getS32(byteOffset, false)
 fun DataView.getU32BE(byteOffset: Int): UInt = getUint32(byteOffset, false).toUInt()
-fun DataView.getF32BE(byteOffset: Int): Float = getFloat32(byteOffset, false)
-fun DataView.getF64BE(byteOffset: Int): Double = getFloat64(byteOffset, false)
+fun DataView.getF32BE(byteOffset: Int): Float = getF32(byteOffset, false)
+fun DataView.getF64BE(byteOffset: Int): Double = getF64(byteOffset, false)
 
-fun DataView.setS16LE(byteOffset: Int, value: Short) { setInt16(byteOffset, value, true) }
+fun DataView.setS16LE(byteOffset: Int, value: Short) { setS16(byteOffset, value, true) }
 fun DataView.setU16LE(byteOffset: Int, value: Int) { setUint16(byteOffset, value, true) }
-fun DataView.setS32LE(byteOffset: Int, value: Int) { setInt32(byteOffset, value, true) }
+fun DataView.setS32LE(byteOffset: Int, value: Int) { setS32(byteOffset, value, true) }
 fun DataView.setU32LE(byteOffset: Int, value: UInt) { setUint32(byteOffset, value, true) }
-fun DataView.setF32LE(byteOffset: Int, value: Float) { setFloat32(byteOffset, value, true) }
-fun DataView.setF64LE(byteOffset: Int, value: Double) { setFloat64(byteOffset, value, true) }
-fun DataView.setS16BE(byteOffset: Int, value: Short) { setInt16(byteOffset, value, false) }
+fun DataView.setF32LE(byteOffset: Int, value: Float) {
+    getF32(byteOffset, value, true)
+}
+fun DataView.setF64LE(byteOffset: Int, value: Double) {
+    setF64(byteOffset, value, true)
+}
+fun DataView.setS16BE(byteOffset: Int, value: Short) { setS16(byteOffset, value, false) }
 fun DataView.setU16BE(byteOffset: Int, value: Int) { setUint16(byteOffset, value, false) }
-fun DataView.setS32BE(byteOffset: Int, value: Int) { setInt32(byteOffset, value, false) }
+fun DataView.setS32BE(byteOffset: Int, value: Int) { setS32(byteOffset, value, false) }
 fun DataView.setU32BE(byteOffset: Int, value: UInt) { setUint32(byteOffset, value, false) }
-fun DataView.setF32BE(byteOffset: Int, value: Float) { setFloat32(byteOffset, value, false) }
-fun DataView.setF64BE(byteOffset: Int, value: Double) { setFloat64(byteOffset, value, false) }
+fun DataView.setF32BE(byteOffset: Int, value: Float) {
+    getF32(byteOffset, value, false)
+}
+fun DataView.setF64BE(byteOffset: Int, value: Double) {
+    setF64(byteOffset, value, false)
+}
 
 fun DataView.setS64LE(byteOffset: Int, value: Long) {
     setS32LE(byteOffset + 0, value.low)
@@ -283,7 +343,7 @@ inline fun Float32Array(size: Int, direct: Boolean = false, block: (Int) -> Floa
 inline fun Float64Array(size: Int, direct: Boolean = false, block: (Int) -> Double): Float64Array = Float64Array(size, direct).also { for (n in 0 until size) it[n] = block(n) }
 
 fun ByteArray.toInt8Array(): Int8Array = ArrayBufferWrap(this.copyOf()).int8Array()
-fun Int8Array.toByteArray(): ByteArray = buffer.readBytes(byteOffset, byteLength)
+fun Int8Array.toByteArray(): ByteArray = readBytes()
 
 fun UByteArray.toUint8ClampedArray(direct: Boolean = false): Uint8ClampedArray = Uint8ClampedArray(size, direct) { this[it].toInt() }
 fun UByteArray.toUint8Array(direct: Boolean = false): Uint8Array = Uint8Array(size, direct) { this[it].toInt() }

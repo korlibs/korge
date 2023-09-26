@@ -3,71 +3,192 @@
 package korlibs.memory
 
 import korlibs.math.*
+import korlibs.memory.arrays.*
 import kotlin.jvm.*
 
-expect class Buffer {
+inline class Buffer(val data: DataView) {
+    constructor(size: Int, direct: Boolean = false) : this(ArrayBuffer(size, direct).dataView())
+    constructor(array: ByteArray, offset: Int = 0, size: Int = array.size - offset) : this(
+        ArrayBufferWrap(array).dataView(offset, size)
+    )
+
+    fun copyOf(newSize: Int): Buffer {
+        val out = Buffer(newSize)
+        arraycopy(this, 0, out, 0, kotlin.math.min(this.sizeInBytes, newSize))
+        return out
+    }
+    fun clone(direct: Boolean = false): Buffer {
+        val out = Buffer(this.size, direct)
+        arraycopy(this, 0, out, 0, size)
+        return out
+    }
+
+    internal val byteOffset: Int get() = data.byteOffset
+    val sizeInBytes: Int get() = data.byteLength
+    val size: Int get() = sizeInBytes
+
+    internal fun sliceInternal(start: Int, end: Int): Buffer = Buffer(data.subarray(start, end))
+    fun sliceWithSize(start: Int, size: Int): Buffer = slice(start, start + size)
+    fun slice(start: Int = 0, end: Int = sizeInBytes): Buffer {
+        if (start > end || start !in 0 .. sizeInBytes || end !in 0 .. sizeInBytes) {
+            throw IllegalArgumentException("invalid slice start:$start, end:$end not in 0..$sizeInBytes")
+        }
+        return sliceInternal(start, end)
+    }
+
+// Unaligned versions
+
+    fun getUnalignedUInt8(byteOffset: Int): Int = getUnalignedInt8(byteOffset).toInt() and 0xFF
+    fun getUnalignedUInt16(byteOffset: Int): Int = getUnalignedInt16(byteOffset).toInt() and 0xFFFF
+    fun getUnalignedInt8(byteOffset: Int): Byte = data.getS8(byteOffset)
+    fun getUnalignedInt16(byteOffset: Int): Short = data.getS16LE(byteOffset)
+    fun getUnalignedInt32(byteOffset: Int): Int = data.getS32LE(byteOffset)
+    fun getUnalignedInt64(byteOffset: Int): Long = data.getS64LE(byteOffset)
+    fun getUnalignedFloat32(byteOffset: Int): Float = data.getF32LE(byteOffset)
+    fun getUnalignedFloat64(byteOffset: Int): Double = data.getF64LE(byteOffset)
+
+    fun setUnalignedUInt8(byteOffset: Int, value: Int) = setUnalignedInt8(byteOffset, value.toByte())
+    fun setUnalignedUInt8Clamped(byteOffset: Int, value: Int) = setUnalignedInt8(byteOffset, value.clampUByte().toByte())
+    fun setUnalignedUInt16(byteOffset: Int, value: Int) = setUnalignedInt16(byteOffset, value.toShort())
+    fun setUnalignedInt8(byteOffset: Int, value: Int) = setUnalignedInt8(byteOffset, value.toByte())
+    fun setUnalignedInt8(byteOffset: Int, value: Byte) = data.setS8(byteOffset, value)
+    fun setUnalignedInt16(byteOffset: Int, value: Short) = data.setS16LE(byteOffset, value)
+    fun setUnalignedInt32(byteOffset: Int, value: Int) = data.setS32LE(byteOffset, value)
+    fun setUnalignedInt64(byteOffset: Int, value: Long) = data.setS64LE(byteOffset, value)
+    fun setUnalignedFloat32(byteOffset: Int, value: Float) = data.setF32LE(byteOffset, value)
+    fun setUnalignedFloat64(byteOffset: Int, value: Double) = data.setF64LE(byteOffset, value)
+
+// Array versions
+
+    fun getUnalignedArrayInt8(byteOffset: Int, out: ByteArray, offset: Int = 0, size: Int = out.size - offset): ByteArray { for (n in 0 until size) out[offset + n] = getUnalignedInt8(byteOffset + n * 1); return out }
+    fun getUnalignedArrayInt16(byteOffset: Int, out: ShortArray, offset: Int = 0, size: Int = out.size - offset): ShortArray { for (n in 0 until size) out[offset + n] = getUnalignedInt16(byteOffset + n * 2); return out }
+    fun getUnalignedArrayInt32(byteOffset: Int, out: IntArray, offset: Int = 0, size: Int = out.size - offset): IntArray { for (n in 0 until size) out[offset + n] = getUnalignedInt32(byteOffset + n * 4); return out }
+    fun getUnalignedArrayInt64(byteOffset: Int, out: LongArray, offset: Int = 0, size: Int = out.size - offset): LongArray { for (n in 0 until size) out[offset + n] = getUnalignedInt64(byteOffset + n * 8); return out }
+    fun getUnalignedArrayFloat32(byteOffset: Int, out: FloatArray, offset: Int = 0, size: Int = out.size - offset): FloatArray { for (n in 0 until size) out[offset + n] = getUnalignedFloat32(byteOffset + n * 4); return out }
+    fun getUnalignedArrayFloat64(byteOffset: Int, out: DoubleArray, offset: Int = 0, size: Int = out.size - offset): DoubleArray { for (n in 0 until size) out[offset + n] = getUnalignedFloat64(byteOffset + n * 8); return out }
+
+    fun setUnalignedArrayInt8(byteOffset: Int, inp: ByteArray, offset: Int = 0, size: Int = inp.size - offset) { for (n in 0 until size) setUnalignedInt8(byteOffset + n * 1, inp[offset + n]) }
+    fun setUnalignedArrayInt16(byteOffset: Int, inp: ShortArray, offset: Int = 0, size: Int = inp.size - offset) { for (n in 0 until size) setUnalignedInt16(byteOffset + n * 2, inp[offset + n]) }
+    fun setUnalignedArrayInt32(byteOffset: Int, inp: IntArray, offset: Int = 0, size: Int = inp.size - offset) { for (n in 0 until size) setUnalignedInt32(byteOffset + n * 4, inp[offset + n]) }
+    fun setUnalignedArrayInt64(byteOffset: Int, inp: LongArray, offset: Int = 0, size: Int = inp.size - offset) { for (n in 0 until size) setUnalignedInt64(byteOffset + n * 8, inp[offset + n]) }
+    fun setUnalignedArrayFloat32(byteOffset: Int, inp: FloatArray, offset: Int = 0, size: Int = inp.size - offset) { for (n in 0 until size) setUnalignedFloat32(byteOffset + n * 4, inp[offset + n]) }
+    fun setUnalignedArrayFloat64(byteOffset: Int, inp: DoubleArray, offset: Int = 0, size: Int = inp.size - offset) { for (n in 0 until size) setUnalignedFloat64(byteOffset + n * 8, inp[offset + n]) }
+
+    fun getUInt8(index: Int): Int = getUnalignedUInt8(index)
+    fun getUInt16(index: Int): Int = getUnalignedUInt16(index * 2) and 0xFFFF
+    fun getInt8(index: Int): Byte = getUnalignedInt8(index)
+    fun getInt16(index: Int): Short = getUnalignedInt16(index * 2)
+    fun getInt32(index: Int): Int = getUnalignedInt32(index * 4)
+    fun getInt64(index: Int): Long = getUnalignedInt64(index * 8)
+    fun getFloat32(index: Int): Float = getUnalignedFloat32(index * 4)
+    fun getFloat64(index: Int): Double = getUnalignedFloat64(index * 8)
+
+    fun setUInt8(index: Int, value: Int) = setUnalignedUInt8(index, value)
+    fun setUInt8Clamped(index: Int, value: Int) = setUnalignedUInt8Clamped(index, value)
+    fun setUInt16(index: Int, value: Int) = setUnalignedUInt16(index * 2, value)
+    fun setInt8(index: Int, value: Byte) = setUnalignedInt8(index, value)
+    fun setInt8(index: Int, value: Int) = setUnalignedInt8(index, value)
+    fun setInt16(index: Int, value: Short) = setUnalignedInt16(index * 2, value)
+    fun setInt32(index: Int, value: Int) = setUnalignedInt32(index * 4, value)
+    fun setInt64(index: Int, value: Long) = setUnalignedInt64(index * 8, value)
+    fun setFloat32(index: Int, value: Float) = setUnalignedFloat32(index * 4, value)
+    fun setFloat64(index: Int, value: Double) = setUnalignedFloat64(index * 8, value)
+
+// ALIGNED ARRAYS
+
+    fun getArrayUInt8(index: Int, out: UByteArrayInt, offset: Int = 0, size: Int = out.size - offset): UByteArrayInt = UByteArrayInt(getUnalignedArrayInt8(index * 1, out.data, offset, size))
+    fun getArrayUInt16(index: Int, out: UShortArrayInt, offset: Int = 0, size: Int = out.size - offset): UShortArrayInt = UShortArrayInt(getUnalignedArrayInt16(index * 2, out.data, offset, size))
+    fun getArrayInt8(index: Int, out: ByteArray, offset: Int = 0, size: Int = out.size - offset): ByteArray = getUnalignedArrayInt8(index * 1, out, offset, size)
+    fun getArrayInt16(index: Int, out: ShortArray, offset: Int = 0, size: Int = out.size - offset): ShortArray = getUnalignedArrayInt16(index * 2, out, offset, size)
+    fun getArrayInt32(index: Int, out: IntArray, offset: Int = 0, size: Int = out.size - offset): IntArray = getUnalignedArrayInt32(index * 4, out, offset, size)
+    fun getArrayInt64(index: Int, out: LongArray, offset: Int = 0, size: Int = out.size - offset): LongArray = getUnalignedArrayInt64(index * 8, out, offset, size)
+    fun getArrayFloat32(index: Int, out: FloatArray, offset: Int = 0, size: Int = out.size - offset): FloatArray = getUnalignedArrayFloat32(index * 4, out, offset, size)
+    fun getArrayFloat64(index: Int, out: DoubleArray, offset: Int = 0, size: Int = out.size - offset): DoubleArray = getUnalignedArrayFloat64(index * 8, out, offset, size)
+
+    fun setArrayUInt8(index: Int, inp: UByteArrayInt, offset: Int = 0, size: Int = inp.size - offset): Unit = setUnalignedArrayInt8(index * 1, inp.data, offset, size)
+    fun setArrayUInt16(index: Int, inp: UShortArrayInt, offset: Int = 0, size: Int = inp.size - offset): Unit = setUnalignedArrayInt16(index * 2, inp.data, offset, size)
+    fun setArrayInt8(index: Int, inp: ByteArray, offset: Int = 0, size: Int = inp.size - offset): Unit = setUnalignedArrayInt8(index * 1, inp, offset, size)
+    fun setArrayInt16(index: Int, inp: ShortArray, offset: Int = 0, size: Int = inp.size - offset): Unit = setUnalignedArrayInt16(index * 2, inp, offset, size)
+    fun setArrayInt32(index: Int, inp: IntArray, offset: Int = 0, size: Int = inp.size - offset): Unit = setUnalignedArrayInt32(index * 4, inp, offset, size)
+    fun setArrayInt64(index: Int, inp: LongArray, offset: Int = 0, size: Int = inp.size - offset): Unit = setUnalignedArrayInt64(index * 8, inp, offset, size)
+    fun setArrayFloat32(index: Int, inp: FloatArray, offset: Int = 0, size: Int = inp.size - offset): Unit = setUnalignedArrayFloat32(index * 4, inp, offset, size)
+    fun setArrayFloat64(index: Int, inp: DoubleArray, offset: Int = 0, size: Int = inp.size - offset): Unit = setUnalignedArrayFloat64(index * 8, inp, offset, size)
+
+
     companion object {
-        fun copy(src: Buffer, srcPosBytes: Int, dst: Buffer, dstPosBytes: Int, sizeInBytes: Int)
-        fun equals(src: Buffer, srcPosBytes: Int, dst: Buffer, dstPosBytes: Int, sizeInBytes: Int): Boolean
+        fun allocDirect(size: Int): Buffer = Buffer(size, direct = true)
+        fun allocNoDirect(size: Int): Buffer = Buffer(size, direct = false)
+
+        fun copy(src: Buffer, srcPosBytes: Int, dst: Buffer, dstPosBytes: Int, sizeInBytes: Int) {
+            arraycopy(
+                src.data.buffer, src.data.byteOffset + srcPosBytes,
+                dst.data.buffer, dst.data.byteOffset + dstPosBytes,
+                sizeInBytes
+            )
+        }
+        fun equals(src: Buffer, srcPosBytes: Int, dst: Buffer, dstPosBytes: Int, sizeInBytes: Int): Boolean {
+            return equalsCommon(src, srcPosBytes, dst, dstPosBytes, sizeInBytes)
+        }
+
+        internal fun equalsCommon(
+            src: Buffer,
+            srcPosBytes: Int,
+            dst: Buffer,
+            dstPosBytes: Int,
+            sizeInBytes: Int,
+            use64: Boolean = true,
+        ): Boolean {
+            check(srcPosBytes + sizeInBytes <= src.sizeInBytes)
+            check(dstPosBytes + sizeInBytes <= dst.sizeInBytes)
+            //for (n in 0 until sizeInBytes) {
+            //    if (src.getUnalignedInt8(srcPosBytes + n) != dst.getUnalignedInt8(dstPosBytes + n)) return false
+            //}
+            //return true
+            var offset = 0
+            var remaining = sizeInBytes
+
+            if (use64) {
+                val WORD = 8
+                val words = remaining / WORD
+                remaining %= WORD
+                for (n in 0 until words) {
+                    val v0 = src.getUnalignedInt64(srcPosBytes + offset + n * WORD)
+                    val v1 = dst.getUnalignedInt64(dstPosBytes + offset + n * WORD)
+                    if (v0 != v1) {
+                        return false
+                    }
+                }
+                offset += words * WORD
+            }
+            if (true) {
+                val WORD = 4
+                val words = remaining / WORD
+                remaining %= WORD
+                for (n in 0 until words) {
+                    val v0 = src.getUnalignedInt32(srcPosBytes + offset + n * WORD)
+                    val v1 = dst.getUnalignedInt32(dstPosBytes + offset + n * WORD)
+                    if (v0 != v1) {
+                        return false
+                    }
+                }
+                offset += words * WORD
+            }
+
+            if (true) {
+                for (n in 0 until remaining) {
+                    val v0 = src.getUnalignedInt8(srcPosBytes + offset + n)
+                    val v1 = dst.getUnalignedInt8(dstPosBytes + offset + n)
+                    if (v0 != v1) {
+                        return false
+                    }
+                }
+            }
+            return true
+        }
+
     }
 }
-internal fun Buffer.Companion.equalsCommon(
-    src: Buffer,
-    srcPosBytes: Int,
-    dst: Buffer,
-    dstPosBytes: Int,
-    sizeInBytes: Int,
-    use64: Boolean = true,
-): Boolean {
-    check(srcPosBytes + sizeInBytes <= src.sizeInBytes)
-    check(dstPosBytes + sizeInBytes <= dst.sizeInBytes)
-    //for (n in 0 until sizeInBytes) {
-    //    if (src.getUnalignedInt8(srcPosBytes + n) != dst.getUnalignedInt8(dstPosBytes + n)) return false
-    //}
-    //return true
-    var offset = 0
-    var remaining = sizeInBytes
 
-    if (use64) {
-        val WORD = 8
-        val words = remaining / WORD
-        remaining %= WORD
-        for (n in 0 until words) {
-            val v0 = src.getUnalignedInt64(srcPosBytes + offset + n * WORD)
-            val v1 = dst.getUnalignedInt64(dstPosBytes + offset + n * WORD)
-            if (v0 != v1) {
-                return false
-            }
-        }
-        offset += words * WORD
-    }
-    if (true) {
-        val WORD = 4
-        val words = remaining / WORD
-        remaining %= WORD
-        for (n in 0 until words) {
-            val v0 = src.getUnalignedInt32(srcPosBytes + offset + n * WORD)
-            val v1 = dst.getUnalignedInt32(dstPosBytes + offset + n * WORD)
-            if (v0 != v1) {
-                return false
-            }
-        }
-        offset += words * WORD
-    }
-
-    if (true) {
-        for (n in 0 until remaining) {
-            val v0 = src.getUnalignedInt8(srcPosBytes + offset + n)
-            val v1 = dst.getUnalignedInt8(dstPosBytes + offset + n)
-            if (v0 != v1) {
-                return false
-            }
-        }
-    }
-    return true
-}
-
-val Buffer.size: Int get() = sizeInBytes
 internal fun NBuffer_toString(buffer: Buffer): String = "Buffer(size=${buffer.size})"
 internal fun checkNBufferSize(size: Int) {
     if (size < 0) throw IllegalArgumentException("invalid size $size")
@@ -78,24 +199,7 @@ internal fun checkNBufferWrap(array: ByteArray, offset: Int, size: Int) {
         throw IllegalArgumentException("invalid arguments offset=$offset, size=$size for array.size=${array.size}")
     }
 }
-expect fun Buffer(size: Int, direct: Boolean = false): Buffer
-expect fun Buffer(array: ByteArray, offset: Int = 0, size: Int = array.size - offset): Buffer
-fun Buffer.Companion.allocDirect(size: Int): Buffer = Buffer(size, direct = true)
-fun Buffer.Companion.allocNoDirect(size: Int): Buffer = Buffer(size, direct = false)
 
-fun Buffer.copyOf(newSize: Int): Buffer {
-    val out = Buffer(newSize)
-    arraycopy(this, 0, out, 0, kotlin.math.min(this.sizeInBytes, newSize))
-    return out
-}
-fun Buffer.clone(direct: Boolean = false): Buffer {
-    val out = Buffer(this.size, direct)
-    arraycopy(this, 0, out, 0, size)
-    return out
-}
-
-expect val Buffer.byteOffset: Int
-expect val Buffer.sizeInBytes: Int
 private fun Int.hexChar(): Char = when (this) {
     in 0..9 -> '0' + this
     in 10..26 -> 'a' + (this - 10)
@@ -108,92 +212,6 @@ fun Buffer.hex(): String = buildString(sizeInBytes * 2) {
         append(value.extract4(0).hexChar())
     }
 }
-internal expect fun Buffer.sliceInternal(start: Int, end: Int): Buffer
-fun Buffer.sliceWithSize(start: Int, size: Int): Buffer = slice(start, start + size)
-fun Buffer.slice(start: Int = 0, end: Int = sizeInBytes): Buffer {
-    if (start > end || start !in 0 .. sizeInBytes || end !in 0 .. sizeInBytes) {
-        throw IllegalArgumentException("invalid slice start:$start, end:$end not in 0..$sizeInBytes")
-    }
-    return sliceInternal(start, end)
-}
-
-// Unaligned versions
-
-fun Buffer.getUnalignedUInt8(byteOffset: Int): Int = getUnalignedInt8(byteOffset).toInt() and 0xFF
-fun Buffer.getUnalignedUInt16(byteOffset: Int): Int = getUnalignedInt16(byteOffset).toInt() and 0xFFFF
-expect fun Buffer.getUnalignedInt8(byteOffset: Int): Byte
-expect fun Buffer.getUnalignedInt16(byteOffset: Int): Short
-expect fun Buffer.getUnalignedInt32(byteOffset: Int): Int
-expect fun Buffer.getUnalignedInt64(byteOffset: Int): Long
-expect fun Buffer.getUnalignedFloat32(byteOffset: Int): Float
-expect fun Buffer.getUnalignedFloat64(byteOffset: Int): Double
-
-fun Buffer.setUnalignedUInt8(byteOffset: Int, value: Int) = setUnalignedInt8(byteOffset, value.toByte())
-fun Buffer.setUnalignedUInt8Clamped(byteOffset: Int, value: Int) = setUnalignedInt8(byteOffset, value.clampUByte().toByte())
-fun Buffer.setUnalignedUInt16(byteOffset: Int, value: Int) = setUnalignedInt16(byteOffset, value.toShort())
-expect fun Buffer.setUnalignedInt8(byteOffset: Int, value: Byte)
-fun Buffer.setUnalignedInt8(byteOffset: Int, value: Int) = setUnalignedInt8(byteOffset, value.toByte())
-expect fun Buffer.setUnalignedInt16(byteOffset: Int, value: Short)
-expect fun Buffer.setUnalignedInt32(byteOffset: Int, value: Int)
-expect fun Buffer.setUnalignedInt64(byteOffset: Int, value: Long)
-expect fun Buffer.setUnalignedFloat32(byteOffset: Int, value: Float)
-expect fun Buffer.setUnalignedFloat64(byteOffset: Int, value: Double)
-
-// Array versions
-
-fun Buffer.getUnalignedArrayInt8(byteOffset: Int, out: ByteArray, offset: Int = 0, size: Int = out.size - offset): ByteArray { for (n in 0 until size) out[offset + n] = getUnalignedInt8(byteOffset + n * 1); return out }
-fun Buffer.getUnalignedArrayInt16(byteOffset: Int, out: ShortArray, offset: Int = 0, size: Int = out.size - offset): ShortArray { for (n in 0 until size) out[offset + n] = getUnalignedInt16(byteOffset + n * 2); return out }
-fun Buffer.getUnalignedArrayInt32(byteOffset: Int, out: IntArray, offset: Int = 0, size: Int = out.size - offset): IntArray { for (n in 0 until size) out[offset + n] = getUnalignedInt32(byteOffset + n * 4); return out }
-fun Buffer.getUnalignedArrayInt64(byteOffset: Int, out: LongArray, offset: Int = 0, size: Int = out.size - offset): LongArray { for (n in 0 until size) out[offset + n] = getUnalignedInt64(byteOffset + n * 8); return out }
-fun Buffer.getUnalignedArrayFloat32(byteOffset: Int, out: FloatArray, offset: Int = 0, size: Int = out.size - offset): FloatArray { for (n in 0 until size) out[offset + n] = getUnalignedFloat32(byteOffset + n * 4); return out }
-fun Buffer.getUnalignedArrayFloat64(byteOffset: Int, out: DoubleArray, offset: Int = 0, size: Int = out.size - offset): DoubleArray { for (n in 0 until size) out[offset + n] = getUnalignedFloat64(byteOffset + n * 8); return out }
-
-fun Buffer.setUnalignedArrayInt8(byteOffset: Int, inp: ByteArray, offset: Int = 0, size: Int = inp.size - offset) { for (n in 0 until size) setUnalignedInt8(byteOffset + n * 1, inp[offset + n]) }
-fun Buffer.setUnalignedArrayInt16(byteOffset: Int, inp: ShortArray, offset: Int = 0, size: Int = inp.size - offset) { for (n in 0 until size) setUnalignedInt16(byteOffset + n * 2, inp[offset + n]) }
-fun Buffer.setUnalignedArrayInt32(byteOffset: Int, inp: IntArray, offset: Int = 0, size: Int = inp.size - offset) { for (n in 0 until size) setUnalignedInt32(byteOffset + n * 4, inp[offset + n]) }
-fun Buffer.setUnalignedArrayInt64(byteOffset: Int, inp: LongArray, offset: Int = 0, size: Int = inp.size - offset) { for (n in 0 until size) setUnalignedInt64(byteOffset + n * 8, inp[offset + n]) }
-fun Buffer.setUnalignedArrayFloat32(byteOffset: Int, inp: FloatArray, offset: Int = 0, size: Int = inp.size - offset) { for (n in 0 until size) setUnalignedFloat32(byteOffset + n * 4, inp[offset + n]) }
-fun Buffer.setUnalignedArrayFloat64(byteOffset: Int, inp: DoubleArray, offset: Int = 0, size: Int = inp.size - offset) { for (n in 0 until size) setUnalignedFloat64(byteOffset + n * 8, inp[offset + n]) }
-
-fun Buffer.getUInt8(index: Int): Int = getUnalignedUInt8(index)
-fun Buffer.getUInt16(index: Int): Int = getUnalignedUInt16(index * 2) and 0xFFFF
-fun Buffer.getInt8(index: Int): Byte = getUnalignedInt8(index)
-fun Buffer.getInt16(index: Int): Short = getUnalignedInt16(index * 2)
-fun Buffer.getInt32(index: Int): Int = getUnalignedInt32(index * 4)
-fun Buffer.getInt64(index: Int): Long = getUnalignedInt64(index * 8)
-fun Buffer.getFloat32(index: Int): Float = getUnalignedFloat32(index * 4)
-fun Buffer.getFloat64(index: Int): Double = getUnalignedFloat64(index * 8)
-
-fun Buffer.setUInt8(index: Int, value: Int) = setUnalignedUInt8(index, value)
-fun Buffer.setUInt8Clamped(index: Int, value: Int) = setUnalignedUInt8Clamped(index, value)
-fun Buffer.setUInt16(index: Int, value: Int) = setUnalignedUInt16(index * 2, value)
-fun Buffer.setInt8(index: Int, value: Byte) = setUnalignedInt8(index, value)
-fun Buffer.setInt8(index: Int, value: Int) = setUnalignedInt8(index, value)
-fun Buffer.setInt16(index: Int, value: Short) = setUnalignedInt16(index * 2, value)
-fun Buffer.setInt32(index: Int, value: Int) = setUnalignedInt32(index * 4, value)
-fun Buffer.setInt64(index: Int, value: Long) = setUnalignedInt64(index * 8, value)
-fun Buffer.setFloat32(index: Int, value: Float) = setUnalignedFloat32(index * 4, value)
-fun Buffer.setFloat64(index: Int, value: Double) = setUnalignedFloat64(index * 8, value)
-
-// ALIGNED ARRAYS
-
-fun Buffer.getArrayUInt8(index: Int, out: UByteArrayInt, offset: Int = 0, size: Int = out.size - offset): UByteArrayInt = UByteArrayInt(getUnalignedArrayInt8(index * 1, out.data, offset, size))
-fun Buffer.getArrayUInt16(index: Int, out: UShortArrayInt, offset: Int = 0, size: Int = out.size - offset): UShortArrayInt = UShortArrayInt(getUnalignedArrayInt16(index * 2, out.data, offset, size))
-fun Buffer.getArrayInt8(index: Int, out: ByteArray, offset: Int = 0, size: Int = out.size - offset): ByteArray = getUnalignedArrayInt8(index * 1, out, offset, size)
-fun Buffer.getArrayInt16(index: Int, out: ShortArray, offset: Int = 0, size: Int = out.size - offset): ShortArray = getUnalignedArrayInt16(index * 2, out, offset, size)
-fun Buffer.getArrayInt32(index: Int, out: IntArray, offset: Int = 0, size: Int = out.size - offset): IntArray = getUnalignedArrayInt32(index * 4, out, offset, size)
-fun Buffer.getArrayInt64(index: Int, out: LongArray, offset: Int = 0, size: Int = out.size - offset): LongArray = getUnalignedArrayInt64(index * 8, out, offset, size)
-fun Buffer.getArrayFloat32(index: Int, out: FloatArray, offset: Int = 0, size: Int = out.size - offset): FloatArray = getUnalignedArrayFloat32(index * 4, out, offset, size)
-fun Buffer.getArrayFloat64(index: Int, out: DoubleArray, offset: Int = 0, size: Int = out.size - offset): DoubleArray = getUnalignedArrayFloat64(index * 8, out, offset, size)
-
-fun Buffer.setArrayUInt8(index: Int, inp: UByteArrayInt, offset: Int = 0, size: Int = inp.size - offset): Unit = setUnalignedArrayInt8(index * 1, inp.data, offset, size)
-fun Buffer.setArrayUInt16(index: Int, inp: UShortArrayInt, offset: Int = 0, size: Int = inp.size - offset): Unit = setUnalignedArrayInt16(index * 2, inp.data, offset, size)
-fun Buffer.setArrayInt8(index: Int, inp: ByteArray, offset: Int = 0, size: Int = inp.size - offset): Unit = setUnalignedArrayInt8(index * 1, inp, offset, size)
-fun Buffer.setArrayInt16(index: Int, inp: ShortArray, offset: Int = 0, size: Int = inp.size - offset): Unit = setUnalignedArrayInt16(index * 2, inp, offset, size)
-fun Buffer.setArrayInt32(index: Int, inp: IntArray, offset: Int = 0, size: Int = inp.size - offset): Unit = setUnalignedArrayInt32(index * 4, inp, offset, size)
-fun Buffer.setArrayInt64(index: Int, inp: LongArray, offset: Int = 0, size: Int = inp.size - offset): Unit = setUnalignedArrayInt64(index * 8, inp, offset, size)
-fun Buffer.setArrayFloat32(index: Int, inp: FloatArray, offset: Int = 0, size: Int = inp.size - offset): Unit = setUnalignedArrayFloat32(index * 4, inp, offset, size)
-fun Buffer.setArrayFloat64(index: Int, inp: DoubleArray, offset: Int = 0, size: Int = inp.size - offset): Unit = setUnalignedArrayFloat64(index * 8, inp, offset, size)
 
 interface BaseBuffer {
     val size: Int

@@ -15,6 +15,8 @@ actual fun ArrayBufferWrap(data: ByteArray): ArrayBuffer {
 internal actual fun ArrayBuffer_copy(src: ArrayBuffer, srcPos: Int, dst: ArrayBuffer, dstPos: Int, length: Int) {
     Int8Array(dst, dstPos, length).set(Int8Array(src, srcPos, length), 0)
 }
+internal actual fun ArrayBuffer_equals(src: ArrayBuffer, srcPos: Int, dst: ArrayBuffer, dstPos: Int, length: Int): Boolean =
+    ArrayBuffer_equals_common(src, srcPos, dst, dstPos, length)
 
 actual inline fun ArrayBuffer.uint8ClampedArray(byteOffset: Int, length: Int): Uint8ClampedArray = org.khronos.webgl.Uint8ClampedArray(this, byteOffset, length)
 actual inline fun ArrayBuffer.uint8Array(byteOffset: Int, length: Int): Uint8Array = org.khronos.webgl.Uint8Array(this, byteOffset, length)
@@ -37,16 +39,16 @@ actual typealias Uint16Array = org.khronos.webgl.Uint16Array
 
 actual typealias DataView = org.khronos.webgl.DataView
 
-actual inline fun DataView.getInt8(byteOffset: Int): Byte = (this.unsafeCast<org.khronos.webgl.DataView>().getInt8(byteOffset))
-actual inline fun DataView.getInt16(byteOffset: Int, littleEndian: Boolean): Short = (this.unsafeCast<org.khronos.webgl.DataView>().getInt16(byteOffset, littleEndian))
-actual inline fun DataView.getInt32(byteOffset: Int, littleEndian: Boolean): Int = (this.unsafeCast<org.khronos.webgl.DataView>().getInt32(byteOffset, littleEndian))
-actual inline fun DataView.getFloat32(byteOffset: Int, littleEndian: Boolean): Float = (this.unsafeCast<org.khronos.webgl.DataView>().getFloat32(byteOffset, littleEndian))
-actual inline fun DataView.getFloat64(byteOffset: Int, littleEndian: Boolean): Double = (this.unsafeCast<org.khronos.webgl.DataView>().getFloat64(byteOffset, littleEndian))
-actual inline fun DataView.setInt8(byteOffset: Int, value: Byte) { (this.unsafeCast<org.khronos.webgl.DataView>().setInt8(byteOffset, value)) }
-actual inline fun DataView.setInt16(byteOffset: Int, value: Short, littleEndian: Boolean) { (this.unsafeCast<org.khronos.webgl.DataView>().setInt16(byteOffset, value, littleEndian)) }
-actual inline fun DataView.setInt32(byteOffset: Int, value: Int, littleEndian: Boolean) { (this.unsafeCast<org.khronos.webgl.DataView>().setInt32(byteOffset, value, littleEndian)) }
-actual inline fun DataView.setFloat32(byteOffset: Int, value: Float, littleEndian: Boolean) { (this.unsafeCast<org.khronos.webgl.DataView>().setFloat32(byteOffset, value, littleEndian)) }
-actual inline fun DataView.setFloat64(byteOffset: Int, value: Double, littleEndian: Boolean) { (this.unsafeCast<org.khronos.webgl.DataView>().setFloat64(byteOffset, value, littleEndian)) }
+actual inline fun DataView.getS8(byteOffset: Int): Byte = (this.unsafeCast<org.khronos.webgl.DataView>().getInt8(byteOffset))
+actual inline fun DataView.getS16(byteOffset: Int, littleEndian: Boolean): Short = (this.unsafeCast<org.khronos.webgl.DataView>().getInt16(byteOffset, littleEndian))
+actual inline fun DataView.getS32(byteOffset: Int, littleEndian: Boolean): Int = (this.unsafeCast<org.khronos.webgl.DataView>().getInt32(byteOffset, littleEndian))
+actual inline fun DataView.getF32(byteOffset: Int, littleEndian: Boolean): Float = (this.unsafeCast<org.khronos.webgl.DataView>().getFloat32(byteOffset, littleEndian))
+actual inline fun DataView.getF64(byteOffset: Int, littleEndian: Boolean): Double = (this.unsafeCast<org.khronos.webgl.DataView>().getFloat64(byteOffset, littleEndian))
+actual inline fun DataView.setS8(byteOffset: Int, value: Byte) { (this.unsafeCast<org.khronos.webgl.DataView>().setInt8(byteOffset, value)) }
+actual inline fun DataView.setS16(byteOffset: Int, value: Short, littleEndian: Boolean) { (this.unsafeCast<org.khronos.webgl.DataView>().setInt16(byteOffset, value, littleEndian)) }
+actual inline fun DataView.setS32(byteOffset: Int, value: Int, littleEndian: Boolean) { (this.unsafeCast<org.khronos.webgl.DataView>().setInt32(byteOffset, value, littleEndian)) }
+actual inline fun DataView.getF32(byteOffset: Int, value: Float, littleEndian: Boolean) { (this.unsafeCast<org.khronos.webgl.DataView>().setFloat32(byteOffset, value, littleEndian)) }
+actual inline fun DataView.setF64(byteOffset: Int, value: Double, littleEndian: Boolean) { (this.unsafeCast<org.khronos.webgl.DataView>().setFloat64(byteOffset, value, littleEndian)) }
 
 actual inline operator fun Int8Array.get(index: Int): Byte = asDynamic()[index]
 actual inline operator fun Int16Array.get(index: Int): Short = asDynamic()[index]

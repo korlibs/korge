@@ -103,41 +103,44 @@ public class ByteArrayBuilder(public var data: ByteArray, size: Int = data.size,
     public fun toByteArray(): ByteArray = data.copyOf(_size)
 }
 
-public inline class ByteArrayBuilderLE(public val bab: ByteArrayBuilder)
+public inline class ByteArrayBuilderLE(public val bab: ByteArrayBuilder) {
+    public val size: Int get() = bab.size
+    public fun append(array: ByteArray, offset: Int = 0, len: Int = array.size - offset): Unit = bab.append(array, offset, len)
+    public fun append(v: Byte): ByteArrayBuilder = bab.append(v)
+    public fun appendByte(v: Int): ByteArrayBuilder = bab.appendByte(v)
+    public fun append(vararg v: Byte): Unit = bab.append(*v)
+    public fun append(vararg v: Int): ByteArrayBuilder = bab.append(*v)
+    public fun s8(v: Int): ByteArrayBuilder = bab.s8(v)
+    public fun s16(v: Int): ByteArrayBuilder = bab.s16LE(v)
+    public fun s24(v: Int): ByteArrayBuilder = bab.s24LE(v)
+    public fun s32(v: Int): ByteArrayBuilder = bab.s32LE(v)
+    public fun f16(v: Half): ByteArrayBuilder = bab.f16LE(v)
+    public fun f32(v: Float): ByteArrayBuilder = bab.f32LE(v)
+    public fun f64(v: Double): ByteArrayBuilder = bab.f64LE(v)
+    public fun clear(): Unit = bab.clear()
+    public fun toByteArray(): ByteArray = bab.toByteArray()
+}
 
-public val ByteArrayBuilderLE.size: Int get() = bab.size
-public fun ByteArrayBuilderLE.append(array: ByteArray, offset: Int = 0, len: Int = array.size - offset): Unit = bab.append(array, offset, len)
-public fun ByteArrayBuilderLE.append(v: Byte): ByteArrayBuilder = bab.append(v)
-public fun ByteArrayBuilderLE.appendByte(v: Int): ByteArrayBuilder = bab.appendByte(v)
-public fun ByteArrayBuilderLE.append(vararg v: Byte): Unit = bab.append(*v)
-public fun ByteArrayBuilderLE.append(vararg v: Int): ByteArrayBuilder = bab.append(*v)
-public fun ByteArrayBuilderLE.s8(v: Int): ByteArrayBuilder = bab.s8(v)
-public fun ByteArrayBuilderLE.s16(v: Int): ByteArrayBuilder = bab.s16LE(v)
-public fun ByteArrayBuilderLE.s24(v: Int): ByteArrayBuilder = bab.s24LE(v)
-public fun ByteArrayBuilderLE.s32(v: Int): ByteArrayBuilder = bab.s32LE(v)
-public fun ByteArrayBuilderLE.f16(v: Half): ByteArrayBuilder = bab.f16LE(v)
-public fun ByteArrayBuilderLE.f32(v: Float): ByteArrayBuilder = bab.f32LE(v)
-public fun ByteArrayBuilderLE.f64(v: Double): ByteArrayBuilder = bab.f64LE(v)
-public fun ByteArrayBuilderLE.clear(): Unit = bab.clear()
-public fun ByteArrayBuilderLE.toByteArray(): ByteArray = bab.toByteArray()
 
-public inline class ByteArrayBuilderBE(public val bab: ByteArrayBuilder)
+public inline class ByteArrayBuilderBE(public val bab: ByteArrayBuilder) {
+    public val size: Int get() = bab.size
+    public fun append(array: ByteArray, offset: Int = 0, len: Int = array.size - offset): Unit = bab.append(array, offset, len)
+    public fun append(v: Byte): ByteArrayBuilder = bab.append(v)
+    public fun appendByte(v: Int): ByteArrayBuilder = bab.appendByte(v)
+    public fun append(vararg v: Byte): Unit = bab.append(*v)
+    public fun append(vararg v: Int): ByteArrayBuilder = bab.append(*v)
+    public fun s8(v: Int): ByteArrayBuilder = bab.s8(v)
+    public fun s16(v: Int): ByteArrayBuilder = bab.s16BE(v)
+    public fun s24(v: Int): ByteArrayBuilder = bab.s24BE(v)
+    public fun s32(v: Int): ByteArrayBuilder = bab.s32BE(v)
+    public fun f16(v: Half): ByteArrayBuilder = bab.f16BE(v)
+    public fun f32(v: Float): ByteArrayBuilder = bab.f32BE(v)
+    public fun f64(v: Double): ByteArrayBuilder = bab.f64BE(v)
+    public fun clear(): Unit = bab.clear()
+    public fun toByteArray(): ByteArray = bab.toByteArray()
 
-public val ByteArrayBuilderBE.size: Int get() = bab.size
-public fun ByteArrayBuilderBE.append(array: ByteArray, offset: Int = 0, len: Int = array.size - offset): Unit = bab.append(array, offset, len)
-public fun ByteArrayBuilderBE.append(v: Byte): ByteArrayBuilder = bab.append(v)
-public fun ByteArrayBuilderBE.appendByte(v: Int): ByteArrayBuilder = bab.appendByte(v)
-public fun ByteArrayBuilderBE.append(vararg v: Byte): Unit = bab.append(*v)
-public fun ByteArrayBuilderBE.append(vararg v: Int): ByteArrayBuilder = bab.append(*v)
-public fun ByteArrayBuilderBE.s8(v: Int): ByteArrayBuilder = bab.s8(v)
-public fun ByteArrayBuilderBE.s16(v: Int): ByteArrayBuilder = bab.s16BE(v)
-public fun ByteArrayBuilderBE.s24(v: Int): ByteArrayBuilder = bab.s24BE(v)
-public fun ByteArrayBuilderBE.s32(v: Int): ByteArrayBuilder = bab.s32BE(v)
-public fun ByteArrayBuilderBE.f16(v: Half): ByteArrayBuilder = bab.f16BE(v)
-public fun ByteArrayBuilderBE.f32(v: Float): ByteArrayBuilder = bab.f32BE(v)
-public fun ByteArrayBuilderBE.f64(v: Double): ByteArrayBuilder = bab.f64BE(v)
-public fun ByteArrayBuilderBE.clear(): Unit = bab.clear()
-public fun ByteArrayBuilderBE.toByteArray(): ByteArray = bab.toByteArray()
+}
+
 
 /** Analogous to [buildString] but for [ByteArray] */
 public inline fun buildByteArray(capacity: Int = 4096, callback: ByteArrayBuilder.() -> Unit): ByteArray =

@@ -3,6 +3,7 @@
 package korlibs.memory.arrays
 
 import korlibs.math.*
+import korlibs.memory.*
 import java.nio.*
 
 actual interface BufferDataSource
@@ -20,30 +21,6 @@ actual interface ArrayBufferView : BufferDataSource {
     actual val byteLength: Int
 }
 
-private fun java.nio.Buffer.positionSafe(newPosition: Int) {
-    position(newPosition)
-}
-
-private fun java.nio.Buffer.limitSafe(newLimit: Int) {
-    limit(newLimit)
-}
-
-private fun java.nio.Buffer.flipSafe() {
-    flip()
-}
-
-private fun java.nio.Buffer.clearSafe() {
-    clear()
-}
-
-private fun java.nio.ByteBuffer.slicedBuffer(offset: Int, size: Int): ByteBuffer {
-    return this.duplicate().also {
-        it.order(ByteOrder.nativeOrder())
-        it.positionSafe(offset)
-        it.limitSafe(offset + size)
-    }
-}
-
 actual fun ArrayBufferDirect(size: Int): ArrayBuffer = ArrayBuffer(ByteBuffer.allocateDirect(size))
 actual fun ArrayBufferWrap(data: ByteArray): ArrayBuffer = ArrayBuffer(ByteBuffer.wrap(data))
 internal actual fun ArrayBuffer_copy(src: ArrayBuffer, srcPos: Int, dst: ArrayBuffer, dstPos: Int, length: Int) {
@@ -56,6 +33,8 @@ internal actual fun ArrayBuffer_copy(src: ArrayBuffer, srcPos: Int, dst: ArrayBu
     }
     dst.buffer.slicedBuffer(dstPos, length).put(src.buffer.slicedBuffer(srcPos, length))
 }
+internal actual fun ArrayBuffer_equals(src: ArrayBuffer, srcPos: Int, dst: ArrayBuffer, dstPos: Int, length: Int): Boolean =
+    src.buffer.slicedBuffer(srcPos, length) == dst.buffer.slicedBuffer(dstPos, length)
 
 val ArrayBufferView.jbuffer: ByteBuffer get() = buffer.buffer
 
@@ -107,16 +86,16 @@ actual class DataView(override val buffer: ArrayBuffer, override val byteOffset:
     fun jbuffer(littleEndian: Boolean): ByteBuffer = if (littleEndian) bufferLE else bufferBE
 }
 
-actual inline fun DataView.getInt8(byteOffset: Int): Byte = bufferLE.get(byteOffset(byteOffset, 1))
-actual inline fun DataView.getInt16(byteOffset: Int, littleEndian: Boolean): Short = jbuffer(littleEndian).getShort(byteOffset(byteOffset, 2))
-actual inline fun DataView.getInt32(byteOffset: Int, littleEndian: Boolean): Int = jbuffer(littleEndian).getInt(byteOffset(byteOffset, 4))
-actual inline fun DataView.getFloat32(byteOffset: Int, littleEndian: Boolean): Float = jbuffer(littleEndian).getFloat(byteOffset(byteOffset, 4))
-actual inline fun DataView.getFloat64(byteOffset: Int, littleEndian: Boolean): Double = jbuffer(littleEndian).getDouble(byteOffset(byteOffset, 8))
-actual inline fun DataView.setInt8(byteOffset: Int, value: Byte) { bufferLE.put(byteOffset(byteOffset, 1), value) }
-actual inline fun DataView.setInt16(byteOffset: Int, value: Short, littleEndian: Boolean) { jbuffer(littleEndian).putShort(byteOffset(byteOffset, 2), value) }
-actual inline fun DataView.setInt32(byteOffset: Int, value: Int, littleEndian: Boolean) { jbuffer(littleEndian).putInt(byteOffset(byteOffset, 4), value) }
-actual inline fun DataView.setFloat32(byteOffset: Int, value: Float, littleEndian: Boolean) { jbuffer(littleEndian).putFloat(byteOffset(byteOffset, 4), value) }
-actual inline fun DataView.setFloat64(byteOffset: Int, value: Double, littleEndian: Boolean) { jbuffer(littleEndian).putDouble(byteOffset(byteOffset, 8), value) }
+actual inline fun DataView.getS8(byteOffset: Int): Byte = bufferLE.get(byteOffset(byteOffset, 1))
+actual inline fun DataView.getS16(byteOffset: Int, littleEndian: Boolean): Short = jbuffer(littleEndian).getShort(byteOffset(byteOffset, 2))
+actual inline fun DataView.getS32(byteOffset: Int, littleEndian: Boolean): Int = jbuffer(littleEndian).getInt(byteOffset(byteOffset, 4))
+actual inline fun DataView.getF32(byteOffset: Int, littleEndian: Boolean): Float = jbuffer(littleEndian).getFloat(byteOffset(byteOffset, 4))
+actual inline fun DataView.getF64(byteOffset: Int, littleEndian: Boolean): Double = jbuffer(littleEndian).getDouble(byteOffset(byteOffset, 8))
+actual inline fun DataView.setS8(byteOffset: Int, value: Byte) { bufferLE.put(byteOffset(byteOffset, 1), value) }
+actual inline fun DataView.setS16(byteOffset: Int, value: Short, littleEndian: Boolean) { jbuffer(littleEndian).putShort(byteOffset(byteOffset, 2), value) }
+actual inline fun DataView.setS32(byteOffset: Int, value: Int, littleEndian: Boolean) { jbuffer(littleEndian).putInt(byteOffset(byteOffset, 4), value) }
+actual inline fun DataView.getF32(byteOffset: Int, value: Float, littleEndian: Boolean) { jbuffer(littleEndian).putFloat(byteOffset(byteOffset, 4), value) }
+actual inline fun DataView.setF64(byteOffset: Int, value: Double, littleEndian: Boolean) { jbuffer(littleEndian).putDouble(byteOffset(byteOffset, 8), value) }
 
 actual operator fun Int8Array.get(index: Int): Byte = jbuffer.get(byteOffset(index))
 actual operator fun Int16Array.get(index: Int): Short = jbuffer.getShort(byteOffset(index))

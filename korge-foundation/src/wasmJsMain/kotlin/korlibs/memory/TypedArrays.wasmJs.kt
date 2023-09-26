@@ -3,99 +3,72 @@
 package korlibs.memory.arrays
 
 import korlibs.math.*
-import korlibs.memory.*
+import org.khronos.webgl.get as getNative
+import org.khronos.webgl.set as setNative
 
-actual interface BufferDataSource
-
-actual class ArrayBuffer(val data: ByteArray) : BufferDataSource {
-    actual constructor(length: Int) : this(ByteArray(length))
-    actual val byteLength: Int get() = data.size
-}
-
-actual interface ArrayBufferView : BufferDataSource {
-    actual val buffer: ArrayBuffer
-    actual val byteOffset: Int
-    actual val byteLength: Int
-}
-
-val ArrayBufferView.data: ByteArray get() = buffer.data
+actual typealias BufferDataSource = org.khronos.webgl.BufferDataSource
+actual typealias ArrayBuffer = org.khronos.webgl.ArrayBuffer
+actual typealias ArrayBufferView = org.khronos.webgl.ArrayBufferView
 
 actual fun ArrayBufferDirect(size: Int): ArrayBuffer = ArrayBuffer(size)
-actual fun ArrayBufferWrap(data: ByteArray): ArrayBuffer = ArrayBuffer(data)
+actual fun ArrayBufferWrap(data: ByteArray): ArrayBuffer {
+    //val int8Array = data.unsafeCast<Int8Array>()
+    val int8Array = data.toInt8Array()
+    check(int8Array.byteOffset == 0)
+    return int8Array.buffer
+}
 internal actual fun ArrayBuffer_copy(src: ArrayBuffer, srcPos: Int, dst: ArrayBuffer, dstPos: Int, length: Int) {
-    arraycopy(src.data, srcPos, dst.data, dstPos, length)
+    Int8Array(dst, dstPos, length).set(Int8Array(src, srcPos, length), 0)
 }
+internal actual fun ArrayBuffer_equals(src: ArrayBuffer, srcPos: Int, dst: ArrayBuffer, dstPos: Int, length: Int): Boolean =
+    ArrayBuffer_equals_common(src, srcPos, dst, dstPos, length)
 
-actual inline fun ArrayBuffer.uint8ClampedArray(byteOffset: Int, length: Int): Uint8ClampedArray = Uint8ClampedArray(this, byteOffset, length)
-actual inline fun ArrayBuffer.uint8Array(byteOffset: Int, length: Int): Uint8Array = Uint8Array(this, byteOffset, length)
-actual inline fun ArrayBuffer.uint16Array(byteOffset: Int, length: Int): Uint16Array = Uint16Array(this, byteOffset, length)
-actual inline fun ArrayBuffer.int8Array(byteOffset: Int, length: Int): Int8Array = Int8Array(this, byteOffset, length)
-actual inline fun ArrayBuffer.int16Array(byteOffset: Int, length: Int): Int16Array = Int16Array(this, byteOffset, length)
-actual inline fun ArrayBuffer.int32Array(byteOffset: Int, length: Int): Int32Array = Int32Array(this, byteOffset, length)
-actual inline fun ArrayBuffer.float32Array(byteOffset: Int, length: Int): Float32Array = Float32Array(this, byteOffset, length)
-actual inline fun ArrayBuffer.float64Array(byteOffset: Int, length: Int): Float64Array = Float64Array(this, byteOffset, length)
-actual inline fun ArrayBuffer.dataView(byteOffset: Int, length: Int): DataView = DataView(this, byteOffset, length)
+actual inline fun ArrayBuffer.uint8ClampedArray(byteOffset: Int, length: Int): Uint8ClampedArray = org.khronos.webgl.Uint8ClampedArray(this, byteOffset, length)
+actual inline fun ArrayBuffer.uint8Array(byteOffset: Int, length: Int): Uint8Array = org.khronos.webgl.Uint8Array(this, byteOffset, length)
+actual inline fun ArrayBuffer.uint16Array(byteOffset: Int, length: Int): Uint16Array = org.khronos.webgl.Uint16Array(this, byteOffset, length)
+actual inline fun ArrayBuffer.int8Array(byteOffset: Int, length: Int): Int8Array = org.khronos.webgl.Int8Array(this, byteOffset, length)
+actual inline fun ArrayBuffer.int16Array(byteOffset: Int, length: Int): Int16Array = org.khronos.webgl.Int16Array(this, byteOffset, length)
+actual inline fun ArrayBuffer.int32Array(byteOffset: Int, length: Int): Int32Array = org.khronos.webgl.Int32Array(this, byteOffset, length)
+actual inline fun ArrayBuffer.float32Array(byteOffset: Int, length: Int): Float32Array = org.khronos.webgl.Float32Array(this, byteOffset, length)
+actual inline fun ArrayBuffer.float64Array(byteOffset: Int, length: Int): Float64Array = org.khronos.webgl.Float64Array(this, byteOffset, length)
+actual inline fun ArrayBuffer.dataView(byteOffset: Int, length: Int): DataView = org.khronos.webgl.DataView(this, byteOffset, length)
 
-actual class Int8Array(override val buffer: ArrayBuffer, override val byteOffset: Int, actual val length: Int) : ArrayBufferView {
-    override val byteLength: Int get() = length * 1
-    actual constructor(length: Int) : this(ArrayBuffer(length), 0, length)
-}
-actual class Int16Array(override val buffer: ArrayBuffer, override val byteOffset: Int, actual val length: Int) : ArrayBufferView {
-    override val byteLength: Int get() = length * 2
-    actual constructor(length: Int) : this(ArrayBuffer(length * 2), 0, length)
-}
-actual class Int32Array(override val buffer: ArrayBuffer, override val byteOffset: Int, actual val length: Int) : ArrayBufferView {
-    override val byteLength: Int get() = length * 4
-    actual constructor(length: Int) : this(ArrayBuffer(length * 4), 0, length)
-}
-actual class Float32Array(override val buffer: ArrayBuffer, override val byteOffset: Int, actual val length: Int) : ArrayBufferView {
-    override val byteLength: Int get() = length * 4
-    actual constructor(length: Int) : this(ArrayBuffer(length * 4), 0, length)
-}
-actual class Float64Array(override val buffer: ArrayBuffer, override val byteOffset: Int, actual val length: Int) : ArrayBufferView {
-    override val byteLength: Int get() = length * 8
-    actual constructor(length: Int) : this(ArrayBuffer(length * 8), 0, length)
-}
-actual class Uint8ClampedArray(override val buffer: ArrayBuffer, override val byteOffset: Int, actual val length: Int) : ArrayBufferView {
-    override val byteLength: Int get() = length * 1
-    actual constructor(length: Int) : this(ArrayBuffer(length * 1), 0, length)
-}
-actual class Uint8Array(override val buffer: ArrayBuffer, override val byteOffset: Int, actual val length: Int) : ArrayBufferView {
-    override val byteLength: Int get() = length * 1
-    actual constructor(length: Int) : this(ArrayBuffer(length * 1), 0, length)
-}
-actual class Uint16Array(override val buffer: ArrayBuffer, override val byteOffset: Int, actual val length: Int) : ArrayBufferView {
-    override val byteLength: Int get() = length * 2
-    actual constructor(length: Int) : this(ArrayBuffer(length * 2), 0, length)
-}
-actual class DataView(override val buffer: ArrayBuffer, override val byteOffset: Int, override val byteLength: Int) : ArrayBufferView {
-}
+actual typealias Int8Array = org.khronos.webgl.Int8Array
+actual typealias Int16Array = org.khronos.webgl.Int16Array
+actual typealias Int32Array = org.khronos.webgl.Int32Array
+actual typealias Float32Array = org.khronos.webgl.Float32Array
+actual typealias Float64Array = org.khronos.webgl.Float64Array
+actual typealias Uint8ClampedArray = org.khronos.webgl.Uint8ClampedArray
+actual typealias Uint8Array = org.khronos.webgl.Uint8Array
+actual typealias Uint16Array = org.khronos.webgl.Uint16Array
 
-actual fun DataView.getInt8(byteOffset: Int): Byte = data.getS8(byteOffset(byteOffset, 1)).toByte()
-actual fun DataView.getInt16(byteOffset: Int, littleEndian: Boolean): Short = data.getS16(byteOffset(byteOffset, 2), littleEndian).toShort()
-actual fun DataView.getInt32(byteOffset: Int, littleEndian: Boolean): Int = data.getS32(byteOffset(byteOffset, 4), littleEndian)
-actual fun DataView.getFloat32(byteOffset: Int, littleEndian: Boolean): Float = data.getF32(byteOffset(byteOffset, 4), littleEndian)
-actual fun DataView.getFloat64(byteOffset: Int, littleEndian: Boolean): Double = data.getF64(byteOffset(byteOffset, 8), littleEndian)
-actual fun DataView.setInt8(byteOffset: Int, value: Byte) { data.set8(byteOffset(byteOffset, 1), value.toInt()) }
-actual fun DataView.setInt16(byteOffset: Int, value: Short, littleEndian: Boolean) { data.set16(byteOffset(byteOffset, 2), value.toInt(), littleEndian) }
-actual fun DataView.setInt32(byteOffset: Int, value: Int, littleEndian: Boolean) { data.set32(byteOffset(byteOffset, 4), value, littleEndian) }
-actual fun DataView.setFloat32(byteOffset: Int, value: Float, littleEndian: Boolean) { data.setF32(byteOffset(byteOffset, 4), value, littleEndian) }
-actual fun DataView.setFloat64(byteOffset: Int, value: Double, littleEndian: Boolean) { data.setF64(byteOffset(byteOffset, 8), value, littleEndian) }
+actual typealias DataView = org.khronos.webgl.DataView
 
-actual operator fun Int8Array.get(index: Int): Byte = data[byteOffset(index)]
-actual operator fun Int16Array.get(index: Int): Short = data.getS16LE(byteOffset(index)).toShort()
-actual operator fun Int32Array.get(index: Int): Int = data.getS32LE(byteOffset(index))
-actual operator fun Float32Array.get(index: Int): Float = data.getF32LE(byteOffset(index))
-actual operator fun Float64Array.get(index: Int): Double = data.getF64LE(byteOffset(index))
-actual operator fun Uint8ClampedArray.get(index: Int): Int = data[byteOffset(index)].toInt() and 0xFF
-actual operator fun Uint8Array.get(index: Int): Int = data[byteOffset(index)].toInt() and 0xFF
-actual operator fun Uint16Array.get(index: Int): Int = data.getS16LE(byteOffset(index)) and 0xFFFF
+actual inline fun DataView.getS8(byteOffset: Int): Byte = (this.unsafeCast<org.khronos.webgl.DataView>().getInt8(byteOffset))
+actual inline fun DataView.getS16(byteOffset: Int, littleEndian: Boolean): Short = (this.unsafeCast<org.khronos.webgl.DataView>().getInt16(byteOffset, littleEndian))
+actual inline fun DataView.getS32(byteOffset: Int, littleEndian: Boolean): Int = (this.unsafeCast<org.khronos.webgl.DataView>().getInt32(byteOffset, littleEndian))
+actual inline fun DataView.getF32(byteOffset: Int, littleEndian: Boolean): Float = (this.unsafeCast<org.khronos.webgl.DataView>().getFloat32(byteOffset, littleEndian))
+actual inline fun DataView.getF64(byteOffset: Int, littleEndian: Boolean): Double = (this.unsafeCast<org.khronos.webgl.DataView>().getFloat64(byteOffset, littleEndian))
+actual inline fun DataView.setS8(byteOffset: Int, value: Byte) { (this.unsafeCast<org.khronos.webgl.DataView>().setInt8(byteOffset, value)) }
+actual inline fun DataView.setS16(byteOffset: Int, value: Short, littleEndian: Boolean) { (this.unsafeCast<org.khronos.webgl.DataView>().setInt16(byteOffset, value, littleEndian)) }
+actual inline fun DataView.setS32(byteOffset: Int, value: Int, littleEndian: Boolean) { (this.unsafeCast<org.khronos.webgl.DataView>().setInt32(byteOffset, value, littleEndian)) }
+actual inline fun DataView.getF32(byteOffset: Int, value: Float, littleEndian: Boolean) { (this.unsafeCast<org.khronos.webgl.DataView>().setFloat32(byteOffset, value, littleEndian)) }
+actual inline fun DataView.setF64(byteOffset: Int, value: Double, littleEndian: Boolean) { (this.unsafeCast<org.khronos.webgl.DataView>().setFloat64(byteOffset, value, littleEndian)) }
 
-actual operator fun Int8Array.set(index: Int, value: Byte) { data[byteOffset(index)] = value }
-actual operator fun Int16Array.set(index: Int, value: Short) { data.set16LE(byteOffset(index), value.toInt()) }
-actual operator fun Int32Array.set(index: Int, value: Int) { data.set32LE(byteOffset(index), value) }
-actual operator fun Float32Array.set(index: Int, value: Float) { data.setF32LE(byteOffset(index), value) }
-actual operator fun Float64Array.set(index: Int, value: Double) { data.setF64LE(byteOffset(index), value) }
-actual operator fun Uint8ClampedArray.set(index: Int, value: Int) { data.set(byteOffset(index), value.clamp(0, 255).toByte()) }
-actual operator fun Uint8Array.set(index: Int, value: Int) { data.set(byteOffset(index), value.toByte()) }
-actual operator fun Uint16Array.set(index: Int, value: Int) { data.set16LE(byteOffset(index), value) }
+actual inline operator fun Int8Array.get(index: Int): Byte = this.getNative(index)
+actual inline operator fun Int16Array.get(index: Int): Short = this.getNative(index)
+actual inline operator fun Int32Array.get(index: Int): Int = this.getNative(index)
+actual inline operator fun Float32Array.get(index: Int): Float = this.getNative(index)
+actual inline operator fun Float64Array.get(index: Int): Double = this.getNative(index)
+actual inline operator fun Uint8ClampedArray.get(index: Int): Int = this.getNative(index).unsigned
+actual inline operator fun Uint8Array.get(index: Int): Int = this.getNative(index).unsigned
+actual inline operator fun Uint16Array.get(index: Int): Int = this.getNative(index).unsigned
+
+actual inline operator fun Int8Array.set(index: Int, value: Byte) { this.setNative(index, value) }
+actual inline operator fun Int16Array.set(index: Int, value: Short) { this.setNative(index, value) }
+actual inline operator fun Int32Array.set(index: Int, value: Int) { this.setNative(index, value) }
+actual inline operator fun Float32Array.set(index: Int, value: Float) { this.setNative(index, value) }
+actual inline operator fun Float64Array.set(index: Int, value: Double) { this.setNative(index, value) }
+actual inline operator fun Uint8ClampedArray.set(index: Int, value: Int) { this.setNative(index, value.toByte()) }
+actual inline operator fun Uint8Array.set(index: Int, value: Int) { this.setNative(index, value.toByte()) }
+actual inline operator fun Uint16Array.set(index: Int, value: Int) { this.setNative(index, value.toShort()) }
