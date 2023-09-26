@@ -15,31 +15,13 @@ env:
   JAVA_DISTRIBUTION: zulu
 
 jobs:
-  publish-windows:
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v1
-      - { name: Set up JDK, uses: actions/setup-java@v3, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
-      - run: CALL gradlew.bat --no-daemon -DCI=true
-        shell: cmd
-      - run: CALL gradlew.bat --no-daemon jvmTest publishMingwX64PublicationToMavenLocal -DCI=true
-        shell: cmd
-        env:
-          DISABLE_JAVASCRIPT_TEST: true
-  publish-mac:
-    runs-on: macos-11
-    steps:
-      - uses: actions/checkout@v1
-      - { name: Set up JDK, uses: actions/setup-java@v3, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
-      - run: ./gradlew -DCI=true
-      - run: ./gradlew jvmTest publishMacosX64PublicationToMavenLocal publishMacosArm64PublicationToMavenLocal -DCI=true
-        env:
-          DISABLE_JAVASCRIPT_TEST: true
   publish-ios:
     runs-on: macos-11
     steps:
       - uses: actions/checkout@v1
       - { name: Set up JDK, uses: actions/setup-java@v3, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
+      - { name: Replace gradle wrapper, run: "sed 's/-all/-bin/g' gradle/wrapper/gradle-wrapper.properties > gradle/wrapper/gradle-wrapper.properties.bak; cp gradle/wrapper/gradle-wrapper.properties.bak gradle/wrapper/gradle-wrapper.properties" }
+      - { name: Prepare Gradle, uses: gradle/gradle-build-action@ef76a971e2fa3f867b617efd72f2fbd72cf6f8bc } # v2.8.0
       - run: ./gradlew -DCI=true
       - run: ./gradlew publishIosArm64PublicationToMavenLocal publishIosX64PublicationToMavenLocal publishIosSimulatorArm64PublicationToMavenLocal -DCI=true
         env:
@@ -49,6 +31,8 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - { name: Set up JDK, uses: actions/setup-java@v3, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
+      - { name: Replace gradle wrapper, run: "sed 's/-all/-bin/g' gradle/wrapper/gradle-wrapper.properties > gradle/wrapper/gradle-wrapper.properties.bak; cp gradle/wrapper/gradle-wrapper.properties.bak gradle/wrapper/gradle-wrapper.properties" }
+      - { name: Prepare Gradle, uses: gradle/gradle-build-action@ef76a971e2fa3f867b617efd72f2fbd72cf6f8bc } # v2.8.0
       - run: sudo apt-get install xvfb
       - run: xvfb-run --auto-servernum ./gradlew --no-daemon -DCI=true
       - run: xvfb-run --auto-servernum ./gradlew --no-daemon publishKotlinMultiplatformPublicationToMavenLocal publishJvmPublicationToMavenLocal -DCI=true
@@ -57,6 +41,8 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - { name: Set up JDK, uses: actions/setup-java@v3, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
+      - { name: Replace gradle wrapper, run: "sed 's/-all/-bin/g' gradle/wrapper/gradle-wrapper.properties > gradle/wrapper/gradle-wrapper.properties.bak; cp gradle/wrapper/gradle-wrapper.properties.bak gradle/wrapper/gradle-wrapper.properties" }
+      - { name: Prepare Gradle, uses: gradle/gradle-build-action@ef76a971e2fa3f867b617efd72f2fbd72cf6f8bc } # v2.8.0
       - run: sudo apt-get install xvfb
       - run: xvfb-run --auto-servernum ./gradlew --no-daemon -DCI=true
       - run: xvfb-run --auto-servernum ./gradlew --no-daemon publishJsPublicationToMavenLocal publishAndroidPublicationToMavenLocal -DCI=true
@@ -65,6 +51,8 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - { name: Set up JDK, uses: actions/setup-java@v3, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
+      - { name: Replace gradle wrapper, run: "sed 's/-all/-bin/g' gradle/wrapper/gradle-wrapper.properties > gradle/wrapper/gradle-wrapper.properties.bak; cp gradle/wrapper/gradle-wrapper.properties.bak gradle/wrapper/gradle-wrapper.properties" }
+      - { name: Prepare Gradle, uses: gradle/gradle-build-action@ef76a971e2fa3f867b617efd72f2fbd72cf6f8bc } # v2.8.0
       - run: sudo apt-get install xvfb
       - run: xvfb-run --auto-servernum ./gradlew --no-daemon -DCI=true
       - run: xvfb-run --auto-servernum ./gradlew --no-daemon jvmTest publishLinuxX64PublicationToMavenLocal -DCI=true
