@@ -22,8 +22,9 @@ fun vec4(x: Float, y: Float, z: Float, w: Float = 1f): Vector4F = Vector4F(x, y,
 // VALUE CLASSES
 //////////////////////////////
 
-@Deprecated("", ReplaceWith("p", "korlibs.math.geom.Point")) fun Point(p: Vector2F): Vector2F = p
-@Deprecated("", ReplaceWith("p", "korlibs.math.geom.Vector2")) fun Vector2(p: Vector2F): Vector2F = p
+//@Deprecated("", ReplaceWith("p", "korlibs.math.geom.Point")) fun Point(p: Vector2F): Vector2F = p
+//@Deprecated("", ReplaceWith("p", "korlibs.math.geom.Vector2")) fun Vector2(p: Vector2F): Vector2F = p
+
 data class Vector2F(val x: Float, val y: Float) {
     constructor(x: Double, y: Double) : this(x.toFloat(), y.toFloat())
     constructor(x: Int, y: Int) : this(x.toFloat(), y.toFloat())
