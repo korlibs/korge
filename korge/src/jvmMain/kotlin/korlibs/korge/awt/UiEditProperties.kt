@@ -3,21 +3,21 @@ package korlibs.korge.awt
 import korlibs.datastructure.*
 import korlibs.datastructure.iterators.*
 import korlibs.event.*
-import korlibs.korge.view.*
-import korlibs.korge.view.property.*
-import korlibs.korge.view.property.ObservableProperty
 import korlibs.image.bitmap.*
 import korlibs.image.color.*
 import korlibs.image.text.*
 import korlibs.io.async.*
 import korlibs.io.file.*
 import korlibs.io.util.*
+import korlibs.korge.view.*
+import korlibs.korge.view.property.*
+import korlibs.korge.view.property.ObservableProperty
 import korlibs.math.*
 import korlibs.math.geom.*
+import korlibs.math.geom.Point
 import korlibs.template.*
-import java.awt.Color
-import java.awt.Font
-import javax.swing.JLabel
+import java.awt.*
+import javax.swing.*
 import kotlin.math.*
 import kotlin.reflect.*
 import kotlin.reflect.full.*
@@ -147,6 +147,19 @@ internal class UiEditProperties(app: UiApplication, view: View?, val views: View
         }
     }
 
+    data class Three<T>(val x: T, val y: T, val z: T) {
+        operator fun get(index: Int): T = when (index) {
+            0 -> x; 1 -> y; 2 -> z
+            else -> TODO()
+        }
+        fun with(index: Int, v: T): Three<T> = when (index) {
+            0 -> Three(v, y, z)
+            1 -> Three(x, v, z)
+            2 -> Three(x, y, v)
+            else -> TODO()
+        }
+    }
+
     data class Four<T>(val x: T, val y: T, val z: T, val w: T) {
         operator fun get(index: Int): T = when (index) {
             0 -> x; 1 -> y; 2 -> z; 3 -> w
@@ -182,6 +195,14 @@ internal class UiEditProperties(app: UiApplication, view: View?, val views: View
             ObservableProperty(names[index], { prop.set(instance, get(extract(prop.get(instance)).with(index, it))) }, { extract(prop.get(instance))[index] })
         }.map { UiNumberEditableValue(app, it, viewProp.min, viewProp.max, viewProp.clampMin, viewProp.clampMax, viewProp.decimalPlaces) }
         return UiTwoItemEditableValue(app, vv[0], vv[1])
+    }
+
+    private inline fun <reified T> createTriple(noinline get: (p: Three<Double>) -> T, noinline extract: (T) -> Three<Double>, instance: Any, prop: KProperty1<*, *>?, viewProp: ViewProperty, names: List<String> = listOf("x", "y", "z")): UiComponent? {
+        prop as KMutableProperty1<Any, T>
+        val vv = (0 until 3).map { index ->
+            ObservableProperty(names[index], { prop.set(instance, get(extract(prop.get(instance)).with(index, it))) }, { extract(prop.get(instance))[index] })
+        }.map { UiNumberEditableValue(app, it, viewProp.min, viewProp.max, viewProp.clampMin, viewProp.clampMax, viewProp.decimalPlaces) }
+        return UiThreeItemEditableValue(app, vv[0], vv[1], vv[2])
     }
 
     private inline fun <reified T> createQuad(noinline get: (p: Four<Double>) -> T, noinline extract: (T) -> Four<Double>, instance: Any, prop: KProperty1<*, *>?, viewProp: ViewProperty, names: List<String> = listOf("x", "y", "z", "w")): UiComponent? {
@@ -236,10 +257,16 @@ internal class UiEditProperties(app: UiApplication, view: View?, val views: View
                 UiTwoItemEditableValue(app, vv[0], vv[1])
             }
             type.isSubtypeOf(MPoint::class.starProjectedType) -> createPair({ MPoint(it.x, it.y) }, { Two(it.x, it.y) }, instance, prop, viewProp)
-            type.isSubtypeOf(Point::class.starProjectedType) -> createPair({ Point(it.x, it.y) }, { Two(it.x, it.y) }, instance, prop, viewProp)
+            type.isSubtypeOf(Vector2D::class.starProjectedType) -> createPair({ Vector2D(it.x, it.y) }, { Two(it.x, it.y) }, instance, prop, viewProp)
             type.isSubtypeOf(Size::class.starProjectedType) -> createPair({ Size(it.x, it.y) }, { Two(it.width, it.height) }, instance, prop, viewProp)
             type.isSubtypeOf(Scale::class.starProjectedType) -> createPair({ Scale(it.x, it.y) }, { Two(it.scaleX, it.scaleY) }, instance, prop, viewProp)
+            type.isSubtypeOf(Spacing::class.starProjectedType) -> createPair({ Spacing(it.x, it.y) }, { Two(it.vertical, it.horizontal) }, instance, prop, viewProp)
             type.isSubtypeOf(Anchor::class.starProjectedType) -> createPair({ Anchor(it.x, it.y) }, { Two(it.sx.toDouble(), it.sy.toDouble()) }, instance, prop, viewProp)
+
+            type.isSubtypeOf(Vector2F::class.starProjectedType) -> createPair({ Vector2F(it.x, it.y) }, { Two(it.x.toDouble(), it.y.toDouble()) }, instance, prop, viewProp)
+            type.isSubtypeOf(Vector3F::class.starProjectedType) -> createTriple({ Vector3F(it.x, it.y, it.z) }, { Three(it.x.toDouble(), it.y.toDouble(), it.z.toDouble()) }, instance, prop, viewProp)
+            type.isSubtypeOf(Vector4F::class.starProjectedType) -> createQuad({ Vector4F(it.x, it.y, it.z, it.w) }, { Four(it.x.toDouble(), it.y.toDouble(), it.z.toDouble(), it.w.toDouble()) }, instance, prop, viewProp)
+
             type.isSubtypeOf(IntRange::class.starProjectedType) -> {
                 @Suppress("UNCHECKED_CAST")
                 prop as KMutableProperty1<Any, IntRange>
@@ -823,6 +850,19 @@ internal class UiTwoItemEditableValue<T>(app: UiApplication, left: UiEditableVal
         right.preferredWidth = 50.percent
         addChild(left)
         addChild(right)
+    }
+}
+
+internal class UiThreeItemEditableValue<T>(app: UiApplication, a: UiEditableValue<T>, b: UiEditableValue<T>, c: UiEditableValue<T>) : UiEditableValue<T>(app, a.prop) {
+    init {
+        layout = HorizontalUiLayout
+        this.preferredWidth = 100.percent
+        a.preferredWidth = 33.percent
+        b.preferredWidth = 33.percent
+        c.preferredWidth = 33.percent
+        addChild(a)
+        addChild(b)
+        addChild(c)
     }
 }
 
