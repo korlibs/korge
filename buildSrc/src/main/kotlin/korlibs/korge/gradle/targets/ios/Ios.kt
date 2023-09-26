@@ -59,8 +59,6 @@ fun Project.configureNativeIosTvos(projectType: ProjectType, targetName: String)
                     framework {
                         baseName = "GameMain"
                         xcf.add(this)
-                        //export("com.soywiz.korlibs.korgw:korgw")
-                        //export("com.soywiz.korlibs.korge2:korge")
                         embedBitcodeMode.set(Framework.BitcodeEmbeddingMode.BITCODE)
                     }
                 }

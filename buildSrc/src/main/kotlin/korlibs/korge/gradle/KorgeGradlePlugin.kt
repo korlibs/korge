@@ -9,6 +9,7 @@ import korlibs.korge.gradle.targets.linux.LDLibraries
 import korlibs.korge.gradle.typedresources.*
 import korlibs.korge.gradle.util.*
 import korlibs.modules.*
+import korlibs.root.*
 import org.gradle.api.*
 import org.gradle.api.plugins.*
 import org.gradle.api.tasks.*
@@ -83,18 +84,9 @@ class KorgeGradleApply(val project: Project, val projectType: ProjectType) {
 	private fun Project.configureDependencies() {
 		dependencies {
             add("commonMainApi", "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
-            add("commonMainApi", "com.soywiz.korlibs.korge2:korge:${korgeVersion}")
-            //add("commonMainApi", "com.soywiz.korlibs.korge-core:korge-core:${korgeVersion}")
-            //add("commonMainApi", "com.soywiz.korlibs.korge-platform:korge-platform:${korgeVersion}")
-            //add("commonMainApi", "com.soywiz.korlibs.klock:klock:${klockVersion}")
-            //add("commonMainApi", "com.soywiz.korlibs.kmem:kmem:${kmemVersion}")
-            //add("commonMainApi", "com.soywiz.korlibs.kds:kds:${kdsVersion}")
-            //add("commonMainApi", "com.soywiz.korlibs.krypto:krypto:${kryptoVersion}")
-            //add("commonMainApi", "com.soywiz.korlibs.korma:korma:${kormaVersion}")
-			//add("commonMainApi", "com.soywiz.korlibs.korio:korio:${korioVersion}")
-			//add("commonMainApi", "com.soywiz.korlibs.korim:korim:${korimVersion}")
-			//add("commonMainApi", "com.soywiz.korlibs.korau:korau:${korauVersion}")
-			//add("commonMainApi", "com.soywiz.korlibs.korgw:korgw:${korgwVersion}")
+            add("commonMainApi", "${RootKorlibsPlugin.KORGE_GROUP}:korge:${korgeVersion}")
+            //add("commonMainApi", "${RootKorlibsPlugin.KORGE_GROUP}:korge-core:${korgeVersion}")
+            //add("commonMainApi", "${RootKorlibsPlugin.KORGE_GROUP}:korge-platform:${korgeVersion}")
 		}
 	}
 
@@ -110,8 +102,6 @@ class KorgeGradleApply(val project: Project, val projectType: ProjectType) {
 		project.korge.addDependency("commonMainImplementation", "org.jetbrains.kotlin:kotlin-stdlib-common")
 		project.korge.addDependency("commonTestImplementation", "org.jetbrains.kotlin:kotlin-test")
 
-		//println("korlibs.korge2:korge:$korgeVersion")
-		//project.dependencies.add("commonMainImplementation", "korlibs.korge2:korge:$korgeVersion")
 		//gkotlin.sourceSets.maybeCreate("commonMain").dependencies {
 		//}
 		//kotlin.sourceSets.create("")
