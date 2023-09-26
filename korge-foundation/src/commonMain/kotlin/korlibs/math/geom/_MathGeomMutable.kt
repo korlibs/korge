@@ -2012,8 +2012,8 @@ fun Point.mutable(out: MPoint = MPoint()): MPoint = out.setTo(x, y)
 @Deprecated("")
 val Point.mutable: MPoint get() = mutable()
 
-@Deprecated("")
-fun Point(p: MPoint): Point = Point(p.x.toFloat(), p.y.toFloat())
+//@Deprecated("")
+//fun Point(p: MPoint): Point = Point(p.x.toFloat(), p.y.toFloat())
 
 @KormaMutableApi
 @Deprecated("Use Point instead")
