@@ -1,11 +1,12 @@
 package korlibs.korge.gradle.targets.jvm
 
+import korlibs.*
 import korlibs.korge.gradle.*
 import korlibs.korge.gradle.gkotlin
 import korlibs.korge.gradle.kotlin
 import korlibs.korge.gradle.targets.*
 import korlibs.korge.gradle.util.*
-import korlibs.*
+import korlibs.root.*
 import org.gradle.api.*
 import org.gradle.api.file.*
 import org.gradle.api.tasks.*
@@ -14,7 +15,7 @@ import org.gradle.api.tasks.testing.*
 import org.gradle.jvm.tasks.Jar
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import proguard.gradle.*
-import java.io.File
+import java.io.*
 
 val KORGE_RELOAD_AGENT_CONFIGURATION_NAME = "KorgeReloadAgent"
 val httpPort = 22011
@@ -111,7 +112,8 @@ fun Project.configureJvmRunJvm(isRootKorlibs: Boolean) {
         //.setTransitive(true)
         //.setDescription("korge-reload-agent to be downloaded and used for this project.")
         project.dependencies {
-            add(KORGE_RELOAD_AGENT_CONFIGURATION_NAME, "com.soywiz.korlibs.korge.reloadagent:korge-reload-agent:${BuildVersions.KORGE}")
+
+            add(KORGE_RELOAD_AGENT_CONFIGURATION_NAME, "${RootKorlibsPlugin.KORGE_RELOAD_AGENT_GROUP}:korge-reload-agent:${BuildVersions.KORGE}")
         }
     }
 

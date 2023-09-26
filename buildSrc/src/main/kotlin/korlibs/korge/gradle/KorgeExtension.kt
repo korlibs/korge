@@ -9,6 +9,7 @@ import korlibs.korge.gradle.targets.js.*
 import korlibs.korge.gradle.targets.jvm.*
 import korlibs.korge.gradle.util.*
 import korlibs.modules.*
+import korlibs.root.*
 import org.gradle.api.*
 import org.gradle.api.artifacts.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
@@ -328,26 +329,12 @@ open class KorgeExtension(
 
     val versionSubstitutions = LinkedHashMap<String, String>().also {
         //it["com.soywiz.korlibs.korge-test:korge-test"] = BuildVersions.KORLIBS
-        it["com.soywiz.korlibs.korge-core:korge-core"] = BuildVersions.KORLIBS
-        it["com.soywiz.korlibs.korge-platform:korge-platform"] = BuildVersions.KORLIBS
-
-        it["com.soywiz.korlibs.kbignum:kbignum"] = BuildVersions.KORLIBS
-        it["com.soywiz.korlibs.kds:kds"] = BuildVersions.KORLIBS
-        it["com.soywiz.korlibs.klock:klock"] = BuildVersions.KORLIBS
-        it["com.soywiz.korlibs.klogger:klogger"] = BuildVersions.KORLIBS
-        it["com.soywiz.korlibs.kmem:kmem"] = BuildVersions.KORLIBS
-        it["com.soywiz.korlibs.korau:korau"] = BuildVersions.KORLIBS
-        it["com.soywiz.korlibs.korge2:korge"] = BuildVersions.KORLIBS
-        it["com.soywiz.korlibs.korge.plugins:korge-gradle-plugin"] = BuildVersions.KORLIBS
-        it["com.soywiz.korlibs.korge.reloadagent:korge-reload-agent"] = BuildVersions.KORLIBS
-        it["com.soywiz.korlibs.korgw:korgw"] = BuildVersions.KORLIBS
-        it["com.soywiz.korlibs.korim:korim"] = BuildVersions.KORLIBS
-        it["com.soywiz.korlibs.korinject:korinject"] = BuildVersions.KORLIBS
-        it["com.soywiz.korlibs.korio:korio"] = BuildVersions.KORLIBS
-        it["com.soywiz.korlibs.korma:korma"] = BuildVersions.KORLIBS
-        it["com.soywiz.korlibs.korte:korte"] = BuildVersions.KORLIBS
-        it["com.soywiz.korlibs.krypto:krypto"] = BuildVersions.KORLIBS
-        it["com.soywiz.korlibs.ktruth:ktruth"] = BuildVersions.KORLIBS
+        it["${RootKorlibsPlugin.KORGE_GROUP}:korge"] = BuildVersions.KORGE
+        it["${RootKorlibsPlugin.KORGE_GROUP}:korge-root"] = BuildVersions.KORGE
+        it["${RootKorlibsPlugin.KORGE_GROUP}:korge-core"] = BuildVersions.KORGE
+        it["${RootKorlibsPlugin.KORGE_GROUP}:korge-platform"] = BuildVersions.KORGE
+        it["${RootKorlibsPlugin.KORGE_RELOAD_AGENT_GROUP}:korge-reload-agent"] = BuildVersions.KORGE
+        it["${RootKorlibsPlugin.KORGE_GRADLE_PLUGIN_GROUP}:korge-gradle-plugin"] = BuildVersions.KORGE
     }
 
     fun versionSubstitution(groupName: String, version: String) {

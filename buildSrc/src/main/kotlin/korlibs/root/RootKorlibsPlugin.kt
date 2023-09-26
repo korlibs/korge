@@ -29,6 +29,10 @@ import java.io.*
 import java.nio.file.*
 
 object RootKorlibsPlugin {
+    val KORGE_GROUP = "com.soywiz.korge"
+    val KORGE_RELOAD_AGENT_GROUP = "com.soywiz.korge"
+    val KORGE_GRADLE_PLUGIN_GROUP = "com.soywiz.korlibs.korge.plugins"
+
     @JvmStatic
     fun doInit(rootProject: Project) {
         rootProject.init()
@@ -101,12 +105,7 @@ object RootKorlibsPlugin {
         allprojectsThis {
             val projectName = project.name
             val firstComponent = projectName.substringBefore('-')
-            group = when {
-                projectName == "korge-gradle-plugin" -> "com.soywiz.korlibs.korge.plugins"
-                projectName == "korge-reload-agent" -> "com.soywiz.korlibs.korge.reloadagent"
-                firstComponent == "korge" -> "com.soywiz.korlibs.korge2"
-                else -> "com.soywiz.korlibs.$firstComponent"
-            }
+            group = RootKorlibsPlugin.KORGE_GROUP
         }
     }
 
