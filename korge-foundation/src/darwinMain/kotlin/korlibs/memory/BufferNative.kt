@@ -1,14 +1,59 @@
-@file:OptIn(ExperimentalNativeApi::class, ExperimentalNativeApi::class)
-
 package korlibs.memory
 
 import kotlinx.cinterop.*
 import platform.posix.*
 import kotlin.experimental.*
 
+@OptIn(ExperimentalNativeApi::class)
 actual class Buffer(val data: ByteArray, val offset: Int, val size: Int, dummy: Unit) {
+    actual constructor(size: Int, direct: Boolean) : this(ByteArray(checkNBufferSize(size)), 0, size, Unit)
+    actual constructor(array: ByteArray, offset: Int, size: Int): this(checkNBufferWrap(array, offset, size), offset, size, Unit)
+    actual val byteOffset: Int get() = offset
+    actual val sizeInBytes: Int get() = size
+
     val end: Int = offset + size
+    internal actual fun sliceInternal(start: Int, end: Int): Buffer = Buffer(data, offset + start, end - start)
+
+    actual fun getS8(byteOffset: Int): Byte = data[offset + byteOffset]
+    actual fun getS16LE(byteOffset: Int): Short = data.getShortAt(offset + byteOffset)
+    actual fun getS32LE(byteOffset: Int): Int = data.getIntAt(offset + byteOffset)
+    actual fun getS64LE(byteOffset: Int): Long = data.getLongAt(offset + byteOffset)
+    actual fun getF32LE(byteOffset: Int): Float = data.getFloatAt(offset + byteOffset)
+    actual fun getF64LE(byteOffset: Int): Double = data.getDoubleAt(offset + byteOffset)
+
+    actual fun getS16BE(byteOffset: Int): Short = getS16LE(byteOffset).reverseBytes()
+    actual fun getS32BE(byteOffset: Int): Int = getS32LE(byteOffset).reverseBytes()
+    actual fun getS64BE(byteOffset: Int): Long = getS64LE(byteOffset).reverseBytes()
+    actual fun getF32BE(byteOffset: Int): Float = getS32BE(byteOffset).reinterpretAsFloat()
+    actual fun getF64BE(byteOffset: Int): Double = getS64BE(byteOffset).reinterpretAsDouble()
+
+    actual fun set8(byteOffset: Int, value: Byte) { data[offset + byteOffset] = value }
+    actual fun set16LE(byteOffset: Int, value: Short) { data.setShortAt(offset + byteOffset, value) }
+    actual fun set32LE(byteOffset: Int, value: Int) { data.setIntAt(offset + byteOffset, value) }
+    actual fun set64LE(byteOffset: Int, value: Long) { data.setLongAt(offset + byteOffset, value) }
+    actual fun setF32LE(byteOffset: Int, value: Float) { data.setFloatAt(offset + byteOffset, value) }
+    actual fun setF64LE(byteOffset: Int, value: Double) { data.setDoubleAt(offset + byteOffset, value) }
+
+    actual fun set16BE(byteOffset: Int, value: Short) { set16LE(byteOffset, value.reverseBytes()) }
+    actual fun set32BE(byteOffset: Int, value: Int) { set32LE(byteOffset, value.reverseBytes()) }
+    actual fun set64BE(byteOffset: Int, value: Long) { set64LE(byteOffset, value.reverseBytes()) }
+    actual fun setF32BE(byteOffset: Int, value: Float) { set32BE(byteOffset, value.reinterpretAsInt()) }
+    actual fun setF64BE(byteOffset: Int, value: Double) { set64BE(byteOffset, value.reinterpretAsLong()) }
+
+
+    override fun hashCode(): Int = hashCodeCommon(this)
+    override fun equals(other: Any?): Boolean = equalsCommon(this, other)
     override fun toString(): String = NBuffer_toString(this)
+
+    actual fun transferBytes(bufferOffset: Int, array: ByteArray, arrayOffset: Int, len: Int, toArray: Boolean) {
+        val bufOffset = this.byteOffset + bufferOffset
+        if (toArray) {
+            arraycopy(this.data, bufOffset, array, arrayOffset, len)
+        } else {
+            arraycopy(array, arrayOffset, this.data, bufOffset, len)
+        }
+    }
+
     actual companion object {
         actual fun equals(src: Buffer, srcPosBytes: Int, dst: Buffer, dstPosBytes: Int, sizeInBytes: Int): Boolean {
             check(srcPosBytes + sizeInBytes <= src.sizeInBytes)
@@ -27,50 +72,7 @@ actual class Buffer(val data: ByteArray, val offset: Int, val size: Int, dummy: 
             )
         }
     }
-
-    // @TODO: Optimize by using words instead o bytes
-    override fun hashCode(): Int {
-        var h = 1
-        for (n in 0 until size) h = 31 * h + data[offset + n]
-        return h
-    }
-
-    // @TODO: Optimize by using words instead o bytes
-    override fun equals(other: Any?): Boolean {
-        if (other !is Buffer || this.size != other.size) return false
-        val t = this.data
-        val o = other.data
-        for (n in 0 until size) if (t[this.offset + n] != o[other.offset + n]) return false
-        return true
-    }
 }
-actual fun Buffer(size: Int, direct: Boolean): Buffer {
-    checkNBufferSize(size)
-    return Buffer(ByteArray(size), 0, size, Unit)
-}
-actual fun Buffer(array: ByteArray, offset: Int, size: Int): Buffer {
-    checkNBufferWrap(array, offset, size)
-    return Buffer(array, offset, size, Unit)
-}
-actual val Buffer.byteOffset: Int get() = offset
-actual val Buffer.sizeInBytes: Int get() = size
-internal actual fun Buffer.sliceInternal(start: Int, end: Int): Buffer = Buffer(data, offset + start, end - start)
-
-// Unaligned versions
-
-actual fun Buffer.getUnalignedInt8(byteOffset: Int): Byte = data[offset + byteOffset]
-actual fun Buffer.getUnalignedInt16(byteOffset: Int): Short = data.getShortAt(offset + byteOffset)
-actual fun Buffer.getUnalignedInt32(byteOffset: Int): Int = data.getIntAt(offset + byteOffset)
-actual fun Buffer.getUnalignedInt64(byteOffset: Int): Long = data.getLongAt(offset + byteOffset)
-actual fun Buffer.getUnalignedFloat32(byteOffset: Int): Float = data.getFloatAt(offset + byteOffset)
-actual fun Buffer.getUnalignedFloat64(byteOffset: Int): Double = data.getDoubleAt(offset + byteOffset)
-
-actual fun Buffer.setUnalignedInt8(byteOffset: Int, value: Byte) { data[offset + byteOffset] = value }
-actual fun Buffer.setUnalignedInt16(byteOffset: Int, value: Short) { data.setShortAt(offset + byteOffset, value) }
-actual fun Buffer.setUnalignedInt32(byteOffset: Int, value: Int) { data.setIntAt(offset + byteOffset, value) }
-actual fun Buffer.setUnalignedInt64(byteOffset: Int, value: Long) { data.setLongAt(offset + byteOffset, value) }
-actual fun Buffer.setUnalignedFloat32(byteOffset: Int, value: Float) { data.setFloatAt(offset + byteOffset, value) }
-actual fun Buffer.setUnalignedFloat64(byteOffset: Int, value: Double) { data.setDoubleAt(offset + byteOffset, value) }
 
 class NBufferTempAddress {
     val pool = arrayListOf<Pinned<ByteArray>>()

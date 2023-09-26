@@ -44,8 +44,8 @@ private class WebpWASM(bytes: ByteArray) : korlibs.wasm.WASMLib(bytes) {
         val infoPtr = get_info(dataPtr, bytes.size)
         val buffer = Buffer(readBytes(infoPtr, 12))
         freeBytes(dataPtr)
-        val success = buffer.getUnalignedInt32(0)
-        return if (success != 0) SizeInt(buffer.getUnalignedInt32(4), buffer.getUnalignedInt32(8)) else null
+        val success = buffer.getS32(0)
+        return if (success != 0) SizeInt(buffer.getS32(4), buffer.getS32(8)) else null
     }
 
     fun decodeWebpBytes(bytes: ByteArray): Bitmap32? {

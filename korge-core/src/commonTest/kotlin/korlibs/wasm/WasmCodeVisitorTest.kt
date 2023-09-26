@@ -31,9 +31,9 @@ class WasmCodeVisitorTest {
         //repeat(100) {
         run {
             val infoPtr = newInterpreter.invoke("get_info", ptr, webpBytes.size) as Int
-            val success = newInterpreter.memory.getUnalignedInt32(infoPtr + 0)
-            val width = newInterpreter.memory.getUnalignedInt32(infoPtr + 4)
-            val height = newInterpreter.memory.getUnalignedInt32(infoPtr + 8)
+            val success = newInterpreter.memory.getS32(infoPtr + 0)
+            val width = newInterpreter.memory.getS32(infoPtr + 4)
+            val height = newInterpreter.memory.getS32(infoPtr + 8)
             assertEquals("1,32x32", "$success,${width}x${height}")
         }
     }

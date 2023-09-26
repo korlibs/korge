@@ -73,7 +73,7 @@ object FFIGdiNativeImageFormatProvider : BaseNativeImageFormatProvider() {
         //val bitmapData = IntArray(32)
         val bmpData = Buffer(4 * 32)
         val res2 = Gdiplus.GdipBitmapLockBits(pimage[0], rect, ImageLockModeRead, if (premultiplied) Format32bppPArgb else Format32bppArgb, bmpData)
-        val strideS = bmpData.getUnalignedInt32(8)
+        val strideS = bmpData.getS32(8)
         val stride = strideS.absoluteValue
         val ptr = bmpData.getUnalignedFFIPointer(16)
 
