@@ -1,26 +1,24 @@
 package korlibs.korge.gradle
 
-import korlibs.korge.gradle.typedresources.*
+import korlibs.*
 import korlibs.korge.gradle.module.*
 import korlibs.korge.gradle.targets.*
 import korlibs.korge.gradle.targets.all.*
 import korlibs.korge.gradle.targets.jvm.*
 import korlibs.korge.gradle.targets.linux.LDLibraries
+import korlibs.korge.gradle.typedresources.*
 import korlibs.korge.gradle.util.*
-import korlibs.*
 import korlibs.modules.*
 import org.gradle.api.*
-import org.gradle.api.Project
 import org.gradle.api.plugins.*
 import org.gradle.api.tasks.*
 import org.gradle.api.tasks.diagnostics.*
 import org.gradle.internal.classloader.*
-import org.gradle.plugins.ide.idea.model.*
 import org.jetbrains.kotlin.gradle.dsl.*
 import java.io.*
 import java.net.*
-import java.util.UUID
-import java.util.concurrent.ConcurrentHashMap
+import java.util.*
+import java.util.concurrent.*
 import kotlin.concurrent.*
 
 abstract class KorgeGradleAbstractPlugin(val projectType: ProjectType) : Plugin<Project> {
@@ -101,11 +99,6 @@ class KorgeGradleApply(val project: Project, val projectType: ProjectType) {
 	}
 
 	private fun Project.addVersionExtension() {
-		ext.set("korioVersion", korioVersion)
-		ext.set("kormaVersion", kormaVersion)
-		ext.set("korauVersion", korauVersion)
-		ext.set("korimVersion", korimVersion)
-		ext.set("korgwVersion", korgwVersion)
 		ext.set("korgeVersion", korgeVersion)
 		ext.set("kotlinVersion", kotlinVersion)
 		ext.set("coroutinesVersion", coroutinesVersion)

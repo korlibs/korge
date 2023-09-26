@@ -1,4 +1,5 @@
 import korlibs.korge.gradle.targets.android.*
+import korlibs.root.*
 
 plugins {
     id("java")
@@ -9,7 +10,7 @@ plugins {
 }
 
 description = "Multiplatform Game Engine written in Kotlin"
-group = "com.soywiz.korlibs.korge.plugins"
+group = RootKorlibsPlugin.KORGE_GRADLE_PLUGIN_GROUP
 //group = "korlibs.korge"
 //this.name = "korlibs.korge.gradle.plugin"
 

@@ -1,5 +1,5 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import java.io.File
+
+import org.jetbrains.kotlin.gradle.tasks.*
 import java.io.StringReader
 import java.util.*
 
@@ -124,27 +124,11 @@ object BuildVersions {
     const val COROUTINES = "${libs.versions.kotlinx.coroutines.get()}"
     const val ANDROID_BUILD = "${libs.versions.android.build.gradle.get()}"
     const val KOTLIN_SERIALIZATION = "${libs.versions.kotlinx.serialization.get()}"
-    const val KORGE_TEST = "$projectVersion"
-    const val KORGE_CORE = "$projectVersion"
-    const val KORGE_FOUNDATION = "$projectVersion"
-    const val KORLIBS = "$projectVersion"
-    const val KRYPTO = "$projectVersion" // Deprecated
-    const val KLOCK = "$projectVersion" // Deprecated
-    const val KDS = "$projectVersion" // Deprecated
-    const val KMEM = "$projectVersion" // Deprecated
-    const val KORMA = "$projectVersion" // Deprecated
-    const val KORIO = "$projectVersion" // Deprecated
-    const val KORIM = "$projectVersion" // Deprecated
-    const val KORAU = "$projectVersion" // Deprecated
-    const val KORGW = "$projectVersion" // Deprecated
-    const val KORTE = "$projectVersion" // Deprecated
     const val KORGE = "$projectVersion"
 
     val ALL_PROPERTIES by lazy { listOf(
-        ::GIT, ::KRYPTO, ::KLOCK, ::KDS, ::KMEM, 
-        ::KORMA, ::KORIO, ::KORIM, ::KORAU, ::KORGW, ::KORGE,
-         ::KOTLIN, ::JNA, ::COROUTINES, ::ANDROID_BUILD, ::KOTLIN_SERIALIZATION,
-         ::KORGE_TEST, ::KORGE_CORE, ::KORGE_FOUNDATION,
+        ::GIT, ::KOTLIN, ::NODE_JS, ::JNA, ::COROUTINES, 
+        ::ANDROID_BUILD, ::KOTLIN_SERIALIZATION, ::KORGE
     ) }
     val ALL by lazy { ALL_PROPERTIES.associate { it.name to it.get() } }
 }

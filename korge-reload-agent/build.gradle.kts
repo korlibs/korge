@@ -1,4 +1,5 @@
 import korlibs.korge.gradle.targets.android.*
+import korlibs.root.*
 
 plugins {
     //id "kotlin" version "1.6.21"
@@ -8,7 +9,7 @@ plugins {
 }
 
 description = "Multiplatform Game Engine written in Kotlin"
-group = "com.soywiz.korlibs.korge.reloadagent"
+group = RootKorlibsPlugin.KORGE_GROUP
 
 tasks.jar {
     manifest {
