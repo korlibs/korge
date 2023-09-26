@@ -193,6 +193,26 @@ class TypedArraysTest {
         assertEquals("0000000000000b0c0d00000000000000", dst.asInt8Array().toByteArray().hex)
     }
 
+    @Test
+    fun testClone() {
+        run {
+            val dataA = Int8Array(4) { (10 + it).toByte() }.subarray(1)
+            val dataB = dataA.clone()
+            dataA[1] = -22
+            dataB[1] = -11
+            assertEquals("0bea0d", dataA.bytes.hex)
+            assertEquals("0bf50d", dataB.bytes.hex)
+        }
+        run {
+            val dataA = Int16Array(4) { (10 + it).toShort() }.subarray(1)
+            val dataB = dataA.clone()
+            dataA[1] = -22
+            dataB[1] = -11
+            assertEquals("0b00eaff0d00", dataA.asInt8Array().bytes.hex)
+            assertEquals("0b00f5ff0d00", dataB.asInt8Array().bytes.hex)
+        }
+    }
+
     val Int8Array.bytes: ByteArray get() = toByteArray()
     val ArrayBufferView.info: String get() = "$byteOffset/$byteLength"
 }
