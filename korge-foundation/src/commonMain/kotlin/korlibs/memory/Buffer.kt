@@ -7,9 +7,9 @@ import korlibs.memory.arrays.*
 import kotlin.jvm.*
 
 class Buffer(val data: DataView) {
-    constructor(size: Int, direct: Boolean = false) : this(ArrayBuffer(size, direct).dataView())
+    constructor(size: Int, direct: Boolean = false) : this(ArrayBuffer(checkNBufferSize(size), direct).dataView())
     constructor(array: ByteArray, offset: Int = 0, size: Int = array.size - offset) : this(
-        ArrayBufferWrap(array).dataView(offset, size)
+        ArrayBufferWrap(checkNBufferWrap(array, offset, size)).dataView(offset, size)
     )
 
     fun copyOf(newSize: Int): Buffer {
@@ -51,6 +51,8 @@ class Buffer(val data: DataView) {
         for (n in 0 until size) if (t.getS8(n) != o.getS8(n)) return false
         return true
     }
+
+    override fun toString(): String = NBuffer_toString(this)
 
     // Unaligned versions
 
@@ -206,14 +208,16 @@ class Buffer(val data: DataView) {
 }
 
 internal fun NBuffer_toString(buffer: Buffer): String = "Buffer(size=${buffer.size})"
-internal fun checkNBufferSize(size: Int) {
+internal fun checkNBufferSize(size: Int): Int {
     if (size < 0) throw IllegalArgumentException("invalid size $size")
+    return size
 }
-internal fun checkNBufferWrap(array: ByteArray, offset: Int, size: Int) {
+internal fun checkNBufferWrap(array: ByteArray, offset: Int, size: Int): ByteArray {
     val end = offset + size
     if (size < 0 || offset !in 0..array.size || end !in 0..array.size) {
         throw IllegalArgumentException("invalid arguments offset=$offset, size=$size for array.size=${array.size}")
     }
+    return array
 }
 
 private fun Int.hexChar(): Char = when (this) {
