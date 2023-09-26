@@ -18,7 +18,7 @@ fun ArrayBuffer.toIntArray(): IntArray = asInt32Array().toIntArray()
 fun ArrayBuffer.toFloatArray(): FloatArray = asFloat32Array().toFloatArray()
 fun ArrayBuffer.toDoubleArray(): DoubleArray = asFloat64Array().toDoubleArray()
 
-val Buffer.buffer: ArrayBuffer get() = data.buffer
+val Buffer.buffer: ArrayBuffer get() = data.buffer.jsBuffer
 val Buffer.arrayUByte: Uint8Array get() = Uint8Array(this.buffer, byteOffset, sizeInBytes)
 val Buffer.arrayByte: Int8Array get() = Int8Array(buffer, byteOffset, sizeInBytes)
 val Buffer.arrayShort: Int16Array get() = Int16Array(buffer, byteOffset, sizeInBytes / 2)
