@@ -37,10 +37,10 @@ class TypedUniform<T>(name: String, val voffset: Int, var vindex: Int, val block
     override fun toString(): String = "TypedUniform(name='$name', offset=$voffset, type=$type)"
 }
 
-private class KMemLayoutBuilder {
+private class UBLayoutBuilder {
     var offset = 0
     var maxAlign = 4
-    private fun align(size: Int): KMemLayoutBuilder {
+    private fun align(size: Int): UBLayoutBuilder {
         maxAlign = kotlin.math.max(maxAlign, size)
         while (this.offset % size != 0) this.offset++
         return this
@@ -54,7 +54,7 @@ private class KMemLayoutBuilder {
 
 open class UniformBlock(val fixedLocation: Int) {
     val name: String get() = this::class.portableSimpleName
-    private val layout = KMemLayoutBuilder()
+    private val layout = UBLayoutBuilder()
     private val _items = arrayListOf<TypedUniform<*>>()
     private var lastIndex = 0
     val uniforms: List<TypedUniform<*>> get() = _items

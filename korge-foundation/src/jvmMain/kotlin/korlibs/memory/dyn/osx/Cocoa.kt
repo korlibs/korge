@@ -555,14 +555,6 @@ inline class ObjcSel(val id: Long) {
     }
 }
 
-class MyNSRect(pointer: KPointer? = null) : KStructure(pointer) {
-    var x by nativeFloat()
-    var y by nativeFloat()
-    var width by nativeFloat()
-    var height by nativeFloat()
-    override fun toString(): String = "NSRect($x, $y, $width, $height)"
-}
-
 fun sel(name: String): Long {
     val value = ObjectiveC.sel_registerName(name)
     if (value == 0L) error("Invalid selector '$name'")
@@ -586,16 +578,17 @@ fun Long.msgSendNSRect(sel: String, vararg args: Any?): NSRectRes {
     if (isArm64) {
         return ObjectiveC.objc_msgSendNSRect(this, sel(sel), *args)
     } else {
-        val rect = MyNSRect()
+        val rect = Memory(32)
         val out = NSRectRes()
         this.msgSend_stret(rect, sel, *args)
-        out.x = rect.x
-        out.y = rect.y
-        out.width = rect.width
-        out.height = rect.height
+        out.x = rect.getDouble(0L)
+        out.y = rect.getDouble(8L)
+        out.width = rect.getDouble(16L)
+        out.height = rect.getDouble(24L)
         return out
     }
 }
+
 fun Long.msgSend_stret(output: Any?, sel: String, vararg args: Any?) {
     if (isArm64) error("Not available on arm64")
     ObjectiveC.objc_msgSend_stret(output, this, sel(sel), *args)

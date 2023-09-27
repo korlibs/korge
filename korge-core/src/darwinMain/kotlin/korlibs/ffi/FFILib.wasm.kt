@@ -29,7 +29,7 @@ actual val FFIPointer?.str: String
     get() = TODO("Not yet implemented")
 
 
-actual fun FFIPointer.getIntArray(size: Int, offset: Int): IntArray {
+actual fun FFIPointer.getIntArray(size: Int, byteOffset: Int): IntArray {
     TODO("Not yet implemented")
 }
 
@@ -37,16 +37,21 @@ actual fun <T> FFIPointer.castToFunc(type: KType): T {
     TODO("Not yet implemented")
 }
 
-actual fun FFIPointer.getUnalignedI8(offset: Int): Byte = TODO()
-actual fun FFIPointer.getUnalignedI16(offset: Int): Short = TODO()
-actual fun FFIPointer.getUnalignedI32(offset: Int): Int = TODO()
-actual fun FFIPointer.getUnalignedI64(offset: Int): Long = TODO()
-actual fun FFIPointer.getUnalignedF32(offset: Int): Float = TODO()
-actual fun FFIPointer.getUnalignedF64(offset: Int): Double = TODO()
+actual fun FFIPointer.getS8(byteOffset: Int): Byte = TODO()
+actual fun FFIPointer.getS16(byteOffset: Int): Short = TODO()
+actual fun FFIPointer.getS32(byteOffset: Int): Int = TODO()
+actual fun FFIPointer.getS64(byteOffset: Int): Long = TODO()
+actual fun FFIPointer.getF32(byteOffset: Int): Float = TODO()
+actual fun FFIPointer.getF64(byteOffset: Int): Double = TODO()
 
-actual fun FFIPointer.setUnalignedI8(value: Byte, offset: Int): Unit = TODO()
-actual fun FFIPointer.setUnalignedI16(value: Short, offset: Int): Unit = TODO()
-actual fun FFIPointer.setUnalignedI32(value: Int, offset: Int): Unit = TODO()
-actual fun FFIPointer.setUnalignedI64(value: Long, offset: Int): Unit = TODO()
-actual fun FFIPointer.setUnalignedF32(value: Float, offset: Int): Unit = TODO()
-actual fun FFIPointer.setUnalignedF64(value: Double, offset: Int): Unit = TODO()
+actual fun FFIPointer.set8(value: Byte, byteOffset: Int): Unit = TODO()
+actual fun FFIPointer.set16(value: Short, byteOffset: Int): Unit = TODO()
+actual fun FFIPointer.set32(value: Int, byteOffset: Int): Unit = TODO()
+actual fun FFIPointer.set64(value: Long, byteOffset: Int): Unit = TODO()
+actual fun FFIPointer.setF32(value: Float, byteOffset: Int): Unit = TODO()
+actual fun FFIPointer.setF64(value: Double, byteOffset: Int): Unit = TODO()
+
+actual class FFIArena actual constructor() {
+    actual fun allocBytes(size: Int): FFIPointer = TODO()
+    actual fun clear(): Unit = TODO()
+}

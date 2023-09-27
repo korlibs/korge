@@ -168,6 +168,15 @@ fun getCString(ptr: FFIPointer?): String? {
     return Deno.UnsafePointerView.getCString(ptr)
 }
 
+actual class FFIArena actual constructor() {
+    // @TODO: dlopen: malloc and free
+    actual fun allocBytes(size: Int): FFIPointer {
+        // @TODO: Check!
+        return Int8Array(size).unsafeCast<FFIPointer>()
+    }
+    actual fun clear(): Unit {
+    }
+}
 
 actual typealias FFIPointer = DenoPointer
 actual val FFI_POINTER_SIZE: Int = 8
@@ -194,31 +203,31 @@ fun FFIPointer.getDataView(offset: Int, size: Int): org.khronos.webgl.DataView {
     return org.khronos.webgl.DataView(Deno.UnsafePointerView(this).getArrayBuffer(size, offset))
 }
 
-actual fun FFIPointer.getUnalignedI8(offset: Int): Byte = Deno.UnsafePointerView(this).getInt8(offset)
-actual fun FFIPointer.getUnalignedI16(offset: Int): Short = Deno.UnsafePointerView(this).getInt16(offset)
-actual fun FFIPointer.getUnalignedI32(offset: Int): Int = Deno.UnsafePointerView(this).getInt32(offset)
-actual fun FFIPointer.getUnalignedI64(offset: Int): Long {
-    val low = getUnalignedI32(offset)
-    val high = getUnalignedI32(offset + 4)
+actual fun FFIPointer.getS8(byteOffset: Int): Byte = Deno.UnsafePointerView(this).getInt8(byteOffset)
+actual fun FFIPointer.getS16(byteOffset: Int): Short = Deno.UnsafePointerView(this).getInt16(byteOffset)
+actual fun FFIPointer.getS32(byteOffset: Int): Int = Deno.UnsafePointerView(this).getInt32(byteOffset)
+actual fun FFIPointer.getS64(byteOffset: Int): Long {
+    val low = getS32(byteOffset)
+    val high = getS32(byteOffset + 4)
     return Long.fromLowHigh(low, high)
 }
-actual fun FFIPointer.getUnalignedF32(offset: Int): Float = Deno.UnsafePointerView(this).getFloat32(offset)
-actual fun FFIPointer.getUnalignedF64(offset: Int): Double = Deno.UnsafePointerView(this).getFloat64(offset)
-actual fun FFIPointer.setUnalignedI8(value: Byte, offset: Int) = getDataView(offset, 1).setInt8(0, value)
-actual fun FFIPointer.setUnalignedI16(value: Short, offset: Int) = getDataView(offset, 2).setInt16(0, value, true)
-actual fun FFIPointer.setUnalignedI32(value: Int, offset: Int) = getDataView(offset, 4).setInt32(0, value, true)
-actual fun FFIPointer.setUnalignedI64(value: Long, offset: Int) {
-    setUnalignedI32(value._low, offset)
-    setUnalignedI32(value._high, offset + 4)
+actual fun FFIPointer.getF32(byteOffset: Int): Float = Deno.UnsafePointerView(this).getFloat32(byteOffset)
+actual fun FFIPointer.getF64(byteOffset: Int): Double = Deno.UnsafePointerView(this).getFloat64(byteOffset)
+actual fun FFIPointer.set8(value: Byte, byteOffset: Int) = getDataView(byteOffset, 1).setInt8(0, value)
+actual fun FFIPointer.set16(value: Short, byteOffset: Int) = getDataView(byteOffset, 2).setInt16(0, value, true)
+actual fun FFIPointer.set32(value: Int, byteOffset: Int) = getDataView(byteOffset, 4).setInt32(0, value, true)
+actual fun FFIPointer.set64(value: Long, byteOffset: Int) {
+    set32(value._low, byteOffset)
+    set32(value._high, byteOffset + 4)
 }
-actual fun FFIPointer.setUnalignedF32(value: Float, offset: Int) = getDataView(offset, 4).setFloat32(0, value, true)
-actual fun FFIPointer.setUnalignedF64(value: Double, offset: Int) = getDataView(offset, 8).setFloat64(0, value, true)
+actual fun FFIPointer.setF32(value: Float, byteOffset: Int) = getDataView(byteOffset, 4).setFloat32(0, value, true)
+actual fun FFIPointer.setF64(value: Double, byteOffset: Int) = getDataView(byteOffset, 8).setFloat64(0, value, true)
 
-actual fun FFIPointer.getIntArray(size: Int, offset: Int): IntArray {
+actual fun FFIPointer.getIntArray(size: Int, byteOffset: Int): IntArray {
     val view = Deno.UnsafePointerView(this)
     val out = IntArray(size)
     for (n in 0 until size) {
-        out[n] = view.asDynamic().getInt32(offset + n * 4)
+        out[n] = view.asDynamic().getInt32(byteOffset + n * 4)
     }
     //Deno.UnsafePointerView.getCString()
     //TODO("Not yet implemented")

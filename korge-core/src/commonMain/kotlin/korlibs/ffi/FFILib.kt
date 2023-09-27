@@ -23,36 +23,59 @@ expect fun FFIPointer.getStringz(): String
 expect fun <T> FFIPointer.castToFunc(type: KType): T
 inline fun <reified T> FFIPointer.castToFunc(): T = castToFunc(typeOf<T>())
 expect val FFI_POINTER_SIZE: Int
-expect fun FFIPointer.getIntArray(size: Int, offset: Int = 0): IntArray
-expect fun FFIPointer.getUnalignedI8(offset: Int = 0): Byte
-expect fun FFIPointer.getUnalignedI16(offset: Int = 0): Short
-expect fun FFIPointer.getUnalignedI32(offset: Int = 0): Int
-expect fun FFIPointer.getUnalignedI64(offset: Int = 0): Long
-expect fun FFIPointer.getUnalignedF32(offset: Int = 0): Float
-expect fun FFIPointer.getUnalignedF64(offset: Int = 0): Double
-expect fun FFIPointer.setUnalignedI8(value: Byte, offset: Int = 0)
-expect fun FFIPointer.setUnalignedI16(value: Short, offset: Int = 0)
-expect fun FFIPointer.setUnalignedI32(value: Int, offset: Int = 0)
-expect fun FFIPointer.setUnalignedI64(value: Long, offset: Int = 0)
-expect fun FFIPointer.setUnalignedF32(value: Float, offset: Int = 0)
-expect fun FFIPointer.setUnalignedF64(value: Double, offset: Int = 0)
+val FFI_NATIVE_LONG_SIZE: Int get() = FFI_POINTER_SIZE
+expect fun FFIPointer.getIntArray(size: Int, byteOffset: Int = 0): IntArray
+expect fun FFIPointer.getS8(byteOffset: Int = 0): Byte
+expect fun FFIPointer.getS16(byteOffset: Int = 0): Short
+expect fun FFIPointer.getS32(byteOffset: Int = 0): Int
+expect fun FFIPointer.getS64(byteOffset: Int = 0): Long
+expect fun FFIPointer.getF32(byteOffset: Int = 0): Float
+expect fun FFIPointer.getF64(byteOffset: Int = 0): Double
+expect fun FFIPointer.set8(value: Byte, byteOffset: Int = 0)
+expect fun FFIPointer.set16(value: Short, byteOffset: Int = 0)
+expect fun FFIPointer.set32(value: Int, byteOffset: Int = 0)
+expect fun FFIPointer.set64(value: Long, byteOffset: Int = 0)
+expect fun FFIPointer.setF32(value: Float, byteOffset: Int = 0)
+expect fun FFIPointer.setF64(value: Double, byteOffset: Int = 0)
 
-fun FFIPointer.setUnalignedFFIPointer(value: FFIPointer?, offset: Int = 0) {
-    if (FFI_POINTER_SIZE == 8) setUnalignedI64(value.address, offset) else setUnalignedI32(value.address.toInt(), offset)
+expect class FFIArena() {
+    fun allocBytes(size: Int): FFIPointer
+    fun clear(): Unit
 }
 
-fun FFIPointer.getUnalignedFFIPointer(offset: Int = 0): FFIPointer? =
-    if (FFI_POINTER_SIZE == 8) CreateFFIPointer(getUnalignedI64(offset)) else CreateFFIPointer(getUnalignedI32(offset).toLong())
+inline fun <T> ffiScoped(block: FFIArena.() -> T): T {
+    val arena = FFIArena()
+    try {
+        return block(arena)
+    } finally {
+        arena.clear()
+    }
+}
 
-fun FFIPointer.getI8(offset: Int = 0): Byte = getUnalignedI8(offset * 1)
-fun FFIPointer.getI16(offset: Int = 0): Short = getUnalignedI16(offset * 2)
-fun FFIPointer.getI32(offset: Int = 0): Int = getUnalignedI32(offset * 4)
-fun FFIPointer.getI64(offset: Int = 0): Long = getUnalignedI64(offset * 8)
-fun FFIPointer.getF32(offset: Int = 0): Float = getUnalignedF32(offset * 4)
-fun FFIPointer.getF64(offset: Int = 0): Double = getUnalignedF64(offset * 8)
+fun FFIPointer.setFFIPointer(value: FFIPointer?, byteOffset: Int = 0) {
+    if (FFI_POINTER_SIZE == 8) set64(value.address, byteOffset) else set32(value.address.toInt(), byteOffset)
+}
 
-fun FFIPointer.getFFIPointer(offset: Int = 0): FFIPointer? =
-    if (FFI_POINTER_SIZE == 8) CreateFFIPointer(getI64(offset)) else CreateFFIPointer(getI32(offset).toLong())
+fun FFIPointer.getFFIPointer(byteOffset: Int = 0): FFIPointer? =
+    if (FFI_POINTER_SIZE == 8) CreateFFIPointer(getS64(byteOffset)) else CreateFFIPointer(getS32(byteOffset).toLong())
+
+fun FFIPointer.getAlignedS16(offset: Int = 0): Short = getS16(offset * 2)
+fun FFIPointer.getAlignedS32(offset: Int = 0): Int = getS32(offset * 4)
+fun FFIPointer.getAlignedS64(offset: Int = 0): Long = getS64(offset * 8)
+fun FFIPointer.getAlignedF32(offset: Int = 0): Float = getF32(offset * 4)
+fun FFIPointer.getAlignedF64(offset: Int = 0): Double = getF64(offset * 8)
+
+fun FFIPointer.setAligned16(value: Short, offset: Int = 0) = set16(value, offset * 2)
+fun FFIPointer.setAligned32(value: Int, offset: Int = 0) = set32(value, offset * 4)
+fun FFIPointer.setAligned64(value: Long, offset: Int = 0) = set64(value, offset * 8)
+fun FFIPointer.setAlignedF32(value: Float, offset: Int = 0) = setF32(value, offset * 4)
+fun FFIPointer.setAlignedF64(value: Double, offset: Int = 0) = setF64(value, offset * 8)
+
+fun FFIPointer.getAlignedFFIPointer(offset: Int = 0): FFIPointer? =
+    if (FFI_POINTER_SIZE == 8) CreateFFIPointer(getAlignedS64(offset)) else CreateFFIPointer(getAlignedS32(offset).toLong())
+
+fun FFIPointer.setAlignedFFIPointer(value: FFIPointer?, offset: Int = 0) =
+    setFFIPointer(value, offset * FFI_POINTER_SIZE)
 
 fun ffiPointerArrayOf(vararg pointers: FFIPointer?): FFIPointerArray = FFIPointerArray(pointers.size).also {
     for (n in pointers.indices) it[n] = pointers[n]
@@ -193,3 +216,25 @@ object LibC : FFILib("/System/Library/Frameworks/CoreFoundation.framework/CoreFo
     }
 }
  */
+
+
+inline class FFITypedPointer<T>(val pointer: FFIPointer)
+
+fun <T> FFIPointer.typed(): FFITypedPointer<T> = FFITypedPointer<T>(this)
+fun <T> FFITypedPointer<*>.reinterpret(): FFITypedPointer<T> = FFITypedPointer<T>(this.pointer)
+
+operator fun FFITypedPointer<Byte>.get(index: Int): Byte = pointer.getS8(index * 1)
+operator fun FFITypedPointer<Short>.get(index: Int): Short = pointer.getS16(index * 2)
+operator fun FFITypedPointer<Int>.get(index: Int): Int = pointer.getS32(index * 4)
+operator fun FFITypedPointer<Long>.get(index: Int): Long = pointer.getS64(index * 8)
+operator fun FFITypedPointer<Float>.get(index: Int): Float = pointer.getF32(index * 4)
+operator fun FFITypedPointer<Double>.get(index: Int): Double = pointer.getF64(index * 8)
+operator fun FFITypedPointer<FFIPointer?>.get(index: Int): FFIPointer? = pointer.getFFIPointer(index * FFI_POINTER_SIZE)
+
+operator fun FFITypedPointer<Byte>.set(index: Int, value: Byte) = pointer.set8(value, index * 1)
+operator fun FFITypedPointer<Short>.set(index: Int, value: Short) = pointer.set16(value, index * 2)
+operator fun FFITypedPointer<Int>.set(index: Int, value: Int) = pointer.set32(value, index * 4)
+operator fun FFITypedPointer<Long>.set(index: Int, value: Long) = pointer.set64(value, index * 8)
+operator fun FFITypedPointer<Float>.set(index: Int, value: Float) = pointer.setF32(value, index * 4)
+operator fun FFITypedPointer<Double>.set(index: Int, value: Double) = pointer.setF64(value, index * 8)
+operator fun FFITypedPointer<FFIPointer?>.set(index: Int, value: FFIPointer?) = pointer.setFFIPointer(value, index * FFI_POINTER_SIZE)

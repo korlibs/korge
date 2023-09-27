@@ -1,6 +1,6 @@
 package korlibs.memory.dyn
 
-import com.sun.jna.Memory
+import com.sun.jna.*
 
 fun Memory(data: IntArray): Memory {
     val out = Memory(data.size.toLong() * 4)
@@ -13,3 +13,5 @@ fun Memory(data: LongArray): Memory {
     for (n in data.indices) out.setLong((n * 8).toLong(), data[n])
     return out
 }
+
+val Pointer.address: Long get() = Pointer.nativeValue(this)
