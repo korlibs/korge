@@ -110,8 +110,8 @@ object EXIF {
             }
             val data: ByteArray = s.readBytesExact(dataFormat.indexBytes(nComponent))
 
-            fun readUShort(index: Int): Int = data.getU16(index * 2, little = endian.isLittle)
-            fun readInt(index: Int): Int = data.getS32(index * 4, little = endian.isLittle)
+            fun readUShort(index: Int): Int = data.getU16(index * 2, littleEndian = endian.isLittle)
+            fun readInt(index: Int): Int = data.getS32(index * 4, littleEndian = endian.isLittle)
 
             if (debug) {
                 if (dataFormat == DataFormat.STRING) {

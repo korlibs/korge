@@ -510,23 +510,23 @@ fun SyncStream.readAll(): ByteArray = readBytes(available.toInt())
 
 fun SyncInputStream.readUByteArray(count: Int): UByteArray = readBytesExact(count).asUByteArray()
 
-fun SyncInputStream.readShortArrayLE(count: Int): ShortArray = readBytesExact(count * 2).getS16LEArray(0, count)
-fun SyncInputStream.readShortArrayBE(count: Int): ShortArray = readBytesExact(count * 2).getS16BEArray(0, count)
+fun SyncInputStream.readShortArrayLE(count: Int): ShortArray = readBytesExact(count * 2).getS16ArrayLE(0, count)
+fun SyncInputStream.readShortArrayBE(count: Int): ShortArray = readBytesExact(count * 2).getS16ArrayBE(0, count)
 
-fun SyncInputStream.readCharArrayLE(count: Int): CharArray = readBytesExact(count * 2).getU16LEArray(0, count)
-fun SyncInputStream.readCharArrayBE(count: Int): CharArray = readBytesExact(count * 2).getU16BEArray(0, count)
+fun SyncInputStream.readCharArrayLE(count: Int): CharArray = readBytesExact(count * 2).getU16ArrayLE(0, count)
+fun SyncInputStream.readCharArrayBE(count: Int): CharArray = readBytesExact(count * 2).getU16ArrayBE(0, count)
 
-fun SyncInputStream.readIntArrayLE(count: Int): IntArray = readBytesExact(count * 4).getS32LEArray(0, count)
-fun SyncInputStream.readIntArrayBE(count: Int): IntArray = readBytesExact(count * 4).getS32BEArray(0, count)
+fun SyncInputStream.readIntArrayLE(count: Int): IntArray = readBytesExact(count * 4).getS32ArrayLE(0, count)
+fun SyncInputStream.readIntArrayBE(count: Int): IntArray = readBytesExact(count * 4).getS32ArrayBE(0, count)
 
-fun SyncInputStream.readLongArrayLE(count: Int): LongArray = readBytesExact(count * 8).getS64LEArray(0, count)
-fun SyncInputStream.readLongArrayBE(count: Int): LongArray = readBytesExact(count * 8).getS64BEArray(0, count)
+fun SyncInputStream.readLongArrayLE(count: Int): LongArray = readBytesExact(count * 8).getS64ArrayLE(0, count)
+fun SyncInputStream.readLongArrayBE(count: Int): LongArray = readBytesExact(count * 8).getS64ArrayBE(0, count)
 
-fun SyncInputStream.readFloatArrayLE(count: Int): FloatArray = readBytesExact(count * 4).getF32LEArray(0, count)
-fun SyncInputStream.readFloatArrayBE(count: Int): FloatArray = readBytesExact(count * 4).getF32BEArray(0, count)
+fun SyncInputStream.readFloatArrayLE(count: Int): FloatArray = readBytesExact(count * 4).getF32ArrayLE(0, count)
+fun SyncInputStream.readFloatArrayBE(count: Int): FloatArray = readBytesExact(count * 4).getF32ArrayBE(0, count)
 
-fun SyncInputStream.readDoubleArrayLE(count: Int): DoubleArray = readBytesExact(count * 8).getF64LEArray(0, count)
-fun SyncInputStream.readDoubleArrayBE(count: Int): DoubleArray = readBytesExact(count * 8).getF64BEArray(0, count)
+fun SyncInputStream.readDoubleArrayLE(count: Int): DoubleArray = readBytesExact(count * 8).getF64ArrayLE(0, count)
+fun SyncInputStream.readDoubleArrayBE(count: Int): DoubleArray = readBytesExact(count * 8).getF64ArrayBE(0, count)
 
 fun SyncOutputStream.write8(v: Int): Unit = write(v)
 

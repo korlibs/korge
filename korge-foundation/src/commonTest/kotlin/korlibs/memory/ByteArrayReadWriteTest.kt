@@ -10,16 +10,16 @@ class ByteArrayReadWriteTest {
         assertEquals(-2, byteArrayOf(-1, -2, -3).getS8(1))
 
         assertEquals(0x9145, byteArrayOf(-1, 0x45, 0x91).getU16LE(1))
-        assertEquals(0x9145, byteArrayOf(-1, 0x45, 0x91).getU16(1, little = true))
+        assertEquals(0x9145, byteArrayOf(-1, 0x45, 0x91).getU16(1, littleEndian = true))
 
         assertEquals(0x9145, byteArrayOf(-1, 0x91, 0x45).getU16BE(1))
-        assertEquals(0x9145, byteArrayOf(-1, 0x91, 0x45).getU16(1, little = false))
+        assertEquals(0x9145, byteArrayOf(-1, 0x91, 0x45).getU16(1, littleEndian = false))
 
         assertEquals(0x914533, byteArrayOf(-1, 0x33, 0x45, 0x91).getU24LE(1))
-        assertEquals(0x914533, byteArrayOf(-1, 0x33, 0x45, 0x91).getU24(1, little = true))
+        assertEquals(0x914533, byteArrayOf(-1, 0x33, 0x45, 0x91).getU24(1, littleEndian = true))
 
         assertEquals(0x914533, byteArrayOf(-1, 0x91, 0x45, 0x33).getU24BE(1))
-        assertEquals(0x914533, byteArrayOf(-1, 0x91, 0x45, 0x33).getU24(1, little = false))
+        assertEquals(0x914533, byteArrayOf(-1, 0x91, 0x45, 0x33).getU24(1, littleEndian = false))
     }
 
     @Test

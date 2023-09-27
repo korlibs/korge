@@ -57,7 +57,7 @@ internal fun Buffer.Companion.hashCodeCommon(
     }
     val offset = (len / 4) * 4
     for (n in 0 until len % 4) {
-        h = 31 * h + buffer.getInt8(offset + n)
+        h = 31 * h + buffer.getS8(offset + n)
     }
     return h
 }
@@ -142,14 +142,6 @@ val Buffer.size: Int get() = sizeInBytes
 fun Buffer.Companion.allocDirect(size: Int): Buffer = Buffer(size, direct = true)
 fun Buffer.Companion.allocNoDirect(size: Int): Buffer = Buffer(size, direct = false)
 
-fun arraycopy(src: Buffer, srcPos: Int, dst: ByteArray, dstPos: Int, size: Int) {
-    src.transferBytes(srcPos, dst, dstPos, size, toArray = true)
-}
-
-fun arraycopy(src: ByteArray, srcPos: Int, dst: Buffer, dstPos: Int, size: Int) {
-    dst.transferBytes(dstPos, src, srcPos, size, toArray = false)
-}
-
 fun Buffer.copyOf(newSize: Int): Buffer {
     val out = Buffer(newSize)
     arraycopy(this, 0, out, 0, kotlin.math.min(this.sizeInBytes, newSize))
@@ -210,86 +202,136 @@ fun Buffer.set16LEClamped(byteOffset: Int, value: Int): Unit = set16LE(byteOffse
 fun Buffer.set16BEClamped(byteOffset: Int, value: Int): Unit = set16BE(byteOffset, value.clampUShort().toShort())
 inline fun Buffer.set16Clamped(byteOffset: Int, value: Int, littleEndian: Boolean = true): Unit = if (littleEndian) set16LEClamped(byteOffset, value) else set16BEClamped(byteOffset, value)
 
+inline private fun <T> _getArray(byteOffset: Int, out: T, start: Int, size: Int, elementBytes: Int, set: (Int, Int) -> Unit): T {
+    for (n in 0 until size) set(start + n, byteOffset + n * elementBytes)
+    return out
+}
+
+fun Buffer.getS8Array(byteOffset: Int, out: ByteArray, start: Int = 0, size: Int = out.size - start): ByteArray = out.also { arraycopy(this, byteOffset, out, start, size) }
+fun Buffer.getS16ArrayLE(byteOffset: Int, out: ShortArray, start: Int = 0, size: Int = out.size - start): ShortArray = _getArray(byteOffset, out, start, size, 2) { index, offset -> out[index] = getS16LE(offset) }
+fun Buffer.getS32ArrayLE(byteOffset: Int, out: IntArray, start: Int = 0, size: Int = out.size - start): IntArray = _getArray(byteOffset, out, start, size, 4) { index, offset -> out[index] = getS32LE(offset) }
+fun Buffer.getS64ArrayLE(byteOffset: Int, out: LongArray, start: Int = 0, size: Int = out.size - start): LongArray = _getArray(byteOffset, out, start, size, 8) { index, offset -> out[index] = getS64LE(offset) }
+fun Buffer.getF32ArrayLE(byteOffset: Int, out: FloatArray, start: Int = 0, size: Int = out.size - start): FloatArray = _getArray(byteOffset, out, start, size, 4) { index, offset -> out[index] = getF32LE(offset) }
+fun Buffer.getF64ArrayLE(byteOffset: Int, out: DoubleArray, start: Int = 0, size: Int = out.size - start): DoubleArray = _getArray(byteOffset, out, start, size, 8) { index, offset -> out[index] = getF64LE(offset) }
+fun Buffer.getS16ArrayBE(byteOffset: Int, out: ShortArray, start: Int = 0, size: Int = out.size - start): ShortArray = _getArray(byteOffset, out, start, size, 2) { index, offset -> out[index] = getS16BE(offset) }
+fun Buffer.getS32ArrayBE(byteOffset: Int, out: IntArray, start: Int = 0, size: Int = out.size - start): IntArray = _getArray(byteOffset, out, start, size, 4) { index, offset -> out[index] = getS32BE(offset) }
+fun Buffer.getS64ArrayBE(byteOffset: Int, out: LongArray, start: Int = 0, size: Int = out.size - start): LongArray = _getArray(byteOffset, out, start, size, 8) { index, offset -> out[index] = getS64BE(offset) }
+fun Buffer.getF32ArrayBE(byteOffset: Int, out: FloatArray, start: Int = 0, size: Int = out.size - start): FloatArray = _getArray(byteOffset, out, start, size, 4) { index, offset -> out[index] = getF32BE(offset) }
+fun Buffer.getF64ArrayBE(byteOffset: Int, out: DoubleArray, start: Int = 0, size: Int = out.size - start): DoubleArray = _getArray(byteOffset, out, start, size, 8) { index, offset -> out[index] = getF64BE(offset) }
+fun Buffer.getS16Array(byteOffset: Int, out: ShortArray, start: Int = 0, size: Int = out.size - start, littleEndian: Boolean = true): ShortArray = if (littleEndian) getS16ArrayLE(byteOffset, out, start, size) else getS16ArrayBE(byteOffset, out, start, size)
+fun Buffer.getS32Array(byteOffset: Int, out: IntArray, start: Int = 0, size: Int = out.size - start, littleEndian: Boolean = true): IntArray = if (littleEndian) getS32ArrayLE(byteOffset, out, start, size) else getS32ArrayBE(byteOffset, out, start, size)
+fun Buffer.getS64Array(byteOffset: Int, out: LongArray, start: Int = 0, size: Int = out.size - start, littleEndian: Boolean = true): LongArray = if (littleEndian) getS64ArrayLE(byteOffset, out, start, size) else getS64ArrayBE(byteOffset, out, start, size)
+fun Buffer.getF32Array(byteOffset: Int, out: FloatArray, start: Int = 0, size: Int = out.size - start, littleEndian: Boolean = true): FloatArray = if (littleEndian) getF32ArrayLE(byteOffset, out, start, size) else getF32ArrayBE(byteOffset, out, start, size)
+fun Buffer.getF64Array(byteOffset: Int, out: DoubleArray, start: Int = 0, size: Int = out.size - start, littleEndian: Boolean = true): DoubleArray = if (littleEndian) getF64ArrayLE(byteOffset, out, start, size) else getF64ArrayBE(byteOffset, out, start, size)
+
+fun Buffer.getS8Array(byteOffset: Int, size: Int): ByteArray = getS8Array(byteOffset, ByteArray(size))
+fun Buffer.getS16ArrayLE(byteOffset: Int, size: Int): ShortArray = getS16ArrayLE(byteOffset, ShortArray(size))
+fun Buffer.getS32ArrayLE(byteOffset: Int, size: Int): IntArray = getS32ArrayLE(byteOffset, IntArray(size))
+fun Buffer.getS64ArrayLE(byteOffset: Int, size: Int): LongArray = getS64ArrayLE(byteOffset, LongArray(size))
+fun Buffer.getF32ArrayLE(byteOffset: Int, size: Int): FloatArray = getF32ArrayLE(byteOffset, FloatArray(size))
+fun Buffer.getF64ArrayLE(byteOffset: Int, size: Int): DoubleArray = getF64ArrayLE(byteOffset, DoubleArray(size))
+fun Buffer.getS16ArrayBE(byteOffset: Int, size: Int): ShortArray = getS16ArrayBE(byteOffset, ShortArray(size))
+fun Buffer.getS32ArrayBE(byteOffset: Int, size: Int): IntArray = getS32ArrayBE(byteOffset, IntArray(size))
+fun Buffer.getS64ArrayBE(byteOffset: Int, size: Int): LongArray = getS64ArrayBE(byteOffset, LongArray(size))
+fun Buffer.getF32ArrayBE(byteOffset: Int, size: Int): FloatArray = getF32ArrayBE(byteOffset, FloatArray(size))
+fun Buffer.getF64ArrayBE(byteOffset: Int, size: Int): DoubleArray = getF64ArrayBE(byteOffset, DoubleArray(size))
+fun Buffer.getS16Array(byteOffset: Int, size: Int, littleEndian: Boolean = true): ShortArray = if (littleEndian) getS16ArrayLE(byteOffset, size) else getS16ArrayBE(byteOffset, size)
+fun Buffer.getS32Array(byteOffset: Int, size: Int, littleEndian: Boolean = true): IntArray = if (littleEndian) getS32ArrayLE(byteOffset, size) else getS32ArrayBE(byteOffset, size)
+fun Buffer.getS64Array(byteOffset: Int, size: Int, littleEndian: Boolean = true): LongArray = if (littleEndian) getS64ArrayLE(byteOffset, size) else getS64ArrayBE(byteOffset, size)
+fun Buffer.getF32Array(byteOffset: Int, size: Int, littleEndian: Boolean = true): FloatArray = if (littleEndian) getF32ArrayLE(byteOffset, size) else getF32ArrayBE(byteOffset, size)
+fun Buffer.getF64Array(byteOffset: Int, size: Int, littleEndian: Boolean = true): DoubleArray = if (littleEndian) getF64ArrayLE(byteOffset, size) else getF64ArrayBE(byteOffset, size)
+
+private inline fun _setArray(byteOffset: Int, start: Int, size: Int, elementBytes: Int, set: (Int, Int) -> Unit) {
+    for (n in 0 until size) {
+        set(byteOffset + n * elementBytes, start + n)
+    }
+}
+
+fun Buffer.setArray(byteOffset: Int, data: ByteArray, start: Int = 0, size: Int = data.size - start): Unit { arraycopy(data, start, this, byteOffset, size) }
+fun Buffer.setArrayLE(byteOffset: Int, data: ShortArray, start: Int = 0, size: Int = data.size - start): Unit = _setArray(byteOffset, start, size, 2) { offset, index -> set16LE(offset, data[index]) }
+fun Buffer.setArrayLE(byteOffset: Int, data: IntArray, start: Int = 0, size: Int = data.size - start): Unit = _setArray(byteOffset, start, size, 4) { offset, index -> set32LE(offset, data[index]) }
+fun Buffer.setArrayLE(byteOffset: Int, data: LongArray, start: Int = 0, size: Int = data.size - start): Unit = _setArray(byteOffset, start, size, 8) { offset, index -> set64LE(offset, data[index]) }
+fun Buffer.setArrayLE(byteOffset: Int, data: FloatArray, start: Int = 0, size: Int = data.size - start): Unit = _setArray(byteOffset, start, size, 4) { offset, index -> setF32LE(offset, data[index]) }
+fun Buffer.setArrayLE(byteOffset: Int, data: DoubleArray, start: Int = 0, size: Int = data.size - start): Unit = _setArray(byteOffset, start, size, 8) { offset, index -> setF64LE(offset, data[index]) }
+fun Buffer.setArrayBE(byteOffset: Int, data: ShortArray, start: Int = 0, size: Int = data.size - start): Unit = _setArray(byteOffset, start, size, 2) { offset, index -> set16BE(offset, data[index]) }
+fun Buffer.setArrayBE(byteOffset: Int, data: IntArray, start: Int = 0, size: Int = data.size - start): Unit = _setArray(byteOffset, start, size, 4) { offset, index -> set32BE(offset, data[index]) }
+fun Buffer.setArrayBE(byteOffset: Int, data: LongArray, start: Int = 0, size: Int = data.size - start): Unit = _setArray(byteOffset, start, size, 8) { offset, index -> set64BE(offset, data[index]) }
+fun Buffer.setArrayBE(byteOffset: Int, data: FloatArray, start: Int = 0, size: Int = data.size - start): Unit = _setArray(byteOffset, start, size, 4) { offset, index -> setF32BE(offset, data[index]) }
+fun Buffer.setArrayBE(byteOffset: Int, data: DoubleArray, start: Int = 0, size: Int = data.size - start): Unit = _setArray(byteOffset, start, size, 8) { offset, index -> setF64BE(offset, data[index]) }
+fun Buffer.setArray(byteOffset: Int, data: ShortArray, start: Int = 0, size: Int = data.size - start, littleEndian: Boolean = true): Unit = if (littleEndian) setArrayLE(byteOffset, data, start, size) else setArrayBE(byteOffset, data, start, size)
+fun Buffer.setArray(byteOffset: Int, data: IntArray, start: Int = 0, size: Int = data.size - start, littleEndian: Boolean = true): Unit = if (littleEndian) setArrayLE(byteOffset, data, start, size) else setArrayBE(byteOffset, data, start, size)
+fun Buffer.setArray(byteOffset: Int, data: LongArray, start: Int = 0, size: Int = data.size - start, littleEndian: Boolean = true): Unit = if (littleEndian) setArrayLE(byteOffset, data, start, size) else setArrayBE(byteOffset, data, start, size)
+fun Buffer.setArray(byteOffset: Int, data: FloatArray, start: Int = 0, size: Int = data.size - start, littleEndian: Boolean = true): Unit = if (littleEndian) setArrayLE(byteOffset, data, start, size) else setArrayBE(byteOffset, data, start, size)
+fun Buffer.setArray(byteOffset: Int, data: DoubleArray, start: Int = 0, size: Int = data.size - start, littleEndian: Boolean = true): Unit = if (littleEndian) setArrayLE(byteOffset, data, start, size) else setArrayBE(byteOffset, data, start, size)
+
 @Deprecated("", ReplaceWith("getS8(byteOffset)"))
 fun Buffer.getUnalignedInt8(byteOffset: Int): Byte = getS8(byteOffset)
-@Deprecated("", ReplaceWith("getS16LE(byteOffset)"))
-fun Buffer.getUnalignedInt16(byteOffset: Int): Short = getS16LE(byteOffset)
-@Deprecated("", ReplaceWith("getS32LE(byteOffset)"))
-fun Buffer.getUnalignedInt32(byteOffset: Int): Int = getS32LE(byteOffset)
-@Deprecated("", ReplaceWith("getS64LE(byteOffset)"))
-fun Buffer.getUnalignedInt64(byteOffset: Int): Long = getS64LE(byteOffset)
-@Deprecated("", ReplaceWith("getF32LE(byteOffset)"))
-fun Buffer.getUnalignedFloat32(byteOffset: Int): Float = getF32LE(byteOffset)
-@Deprecated("", ReplaceWith("getF64LE(byteOffset)"))
-fun Buffer.getUnalignedFloat64(byteOffset: Int): Double = getF64LE(byteOffset)
+@Deprecated("", ReplaceWith("getS16(byteOffset)"))
+fun Buffer.getUnalignedInt16(byteOffset: Int): Short = getS16(byteOffset)
+@Deprecated("", ReplaceWith("getS32(byteOffset)"))
+fun Buffer.getUnalignedInt32(byteOffset: Int): Int = getS32(byteOffset)
+@Deprecated("", ReplaceWith("getS64(byteOffset)"))
+fun Buffer.getUnalignedInt64(byteOffset: Int): Long = getS64(byteOffset)
+@Deprecated("", ReplaceWith("getF32(byteOffset)"))
+fun Buffer.getUnalignedFloat32(byteOffset: Int): Float = getF32(byteOffset)
+@Deprecated("", ReplaceWith("getF64(byteOffset)"))
+fun Buffer.getUnalignedFloat64(byteOffset: Int): Double = getF64(byteOffset)
 @Deprecated("", ReplaceWith("set8(byteOffset, value)"))
 fun Buffer.setUnalignedInt8(byteOffset: Int, value: Byte): Unit = set8(byteOffset, value)
-@Deprecated("", ReplaceWith("set16LE(byteOffset, value)"))
-fun Buffer.setUnalignedInt16(byteOffset: Int, value: Short): Unit = set16LE(byteOffset, value)
-@Deprecated("", ReplaceWith("set32LE(byteOffset, value)"))
-fun Buffer.setUnalignedInt32(byteOffset: Int, value: Int): Unit = set32LE(byteOffset, value)
-@Deprecated("", ReplaceWith("set64LE(byteOffset, value)"))
-fun Buffer.setUnalignedInt64(byteOffset: Int, value: Long): Unit = set64LE(byteOffset, value)
-@Deprecated("", ReplaceWith("setF32LE(byteOffset, value)"))
-fun Buffer.setUnalignedFloat32(byteOffset: Int, value: Float): Unit = setF32LE(byteOffset, value)
-@Deprecated("", ReplaceWith("setF64LE(byteOffset, value)"))
-fun Buffer.setUnalignedFloat64(byteOffset: Int, value: Double): Unit = setF64LE(byteOffset, value)
+@Deprecated("", ReplaceWith("set16(byteOffset, value)"))
+fun Buffer.setUnalignedInt16(byteOffset: Int, value: Short): Unit = set16(byteOffset, value)
+@Deprecated("", ReplaceWith("set32(byteOffset, value)"))
+fun Buffer.setUnalignedInt32(byteOffset: Int, value: Int): Unit = set32(byteOffset, value)
+@Deprecated("", ReplaceWith("set64(byteOffset, value)"))
+fun Buffer.setUnalignedInt64(byteOffset: Int, value: Long): Unit = set64(byteOffset, value)
+@Deprecated("", ReplaceWith("setF32(byteOffset, value)"))
+fun Buffer.setUnalignedFloat32(byteOffset: Int, value: Float): Unit = setF32(byteOffset, value)
+@Deprecated("", ReplaceWith("setF64(byteOffset, value)"))
+fun Buffer.setUnalignedFloat64(byteOffset: Int, value: Double): Unit = setF64(byteOffset, value)
 
 // Unaligned versions
 
 @Deprecated("", ReplaceWith("getU8(byteOffset)"))
 fun Buffer.getUnalignedUInt8(byteOffset: Int): Int = getU8(byteOffset)
-@Deprecated("", ReplaceWith("getU16LE(byteOffset)"))
-fun Buffer.getUnalignedUInt16(byteOffset: Int): Int = getU16LE(byteOffset)
+@Deprecated("", ReplaceWith("getU16(byteOffset)"))
+fun Buffer.getUnalignedUInt16(byteOffset: Int): Int = getU16(byteOffset)
 
 @Deprecated("", ReplaceWith("set8(byteOffset, value.toByte())"))
 fun Buffer.setUnalignedUInt8(byteOffset: Int, value: Int) = set8(byteOffset, value.toByte())
 @Deprecated("", ReplaceWith("set8Clamped(byteOffset, value)"))
 fun Buffer.setUnalignedUInt8Clamped(byteOffset: Int, value: Int) = set8Clamped(byteOffset, value)
-@Deprecated("", ReplaceWith("set16LE(byteOffset, value.toShort())"))
-fun Buffer.setUnalignedUInt16(byteOffset: Int, value: Int) = set16LE(byteOffset, value.toShort())
+@Deprecated("", ReplaceWith("set16(byteOffset, value.toShort())"))
+fun Buffer.setUnalignedUInt16(byteOffset: Int, value: Int) = set16(byteOffset, value.toShort())
 @Deprecated("", ReplaceWith("set8(byteOffset, value.toByte())"))
 fun Buffer.setUnalignedInt8(byteOffset: Int, value: Int) = set8(byteOffset, value.toByte())
 
 // Array versions
 
-@Deprecated("")
-fun Buffer.getUnalignedArrayInt8(byteOffset: Int, out: ByteArray, offset: Int = 0, size: Int = out.size - offset): ByteArray { for (n in 0 until size) out[offset + n] =
-    getS8(byteOffset + n * 1); return out }
-@Deprecated("")
-fun Buffer.getUnalignedArrayInt16(byteOffset: Int, out: ShortArray, offset: Int = 0, size: Int = out.size - offset): ShortArray { for (n in 0 until size) out[offset + n] =
-    getS16LE(byteOffset + n * 2); return out }
-@Deprecated("")
-fun Buffer.getUnalignedArrayInt32(byteOffset: Int, out: IntArray, offset: Int = 0, size: Int = out.size - offset): IntArray { for (n in 0 until size) out[offset + n] =
-    getS32LE(byteOffset + n * 4); return out }
-@Deprecated("")
-fun Buffer.getUnalignedArrayInt64(byteOffset: Int, out: LongArray, offset: Int = 0, size: Int = out.size - offset): LongArray { for (n in 0 until size) out[offset + n] =
-    getS64LE(byteOffset + n * 8); return out }
-@Deprecated("")
-fun Buffer.getUnalignedArrayFloat32(byteOffset: Int, out: FloatArray, offset: Int = 0, size: Int = out.size - offset): FloatArray { for (n in 0 until size) out[offset + n] =
-    getF32LE(byteOffset + n * 4); return out }
-@Deprecated("")
-fun Buffer.getUnalignedArrayFloat64(byteOffset: Int, out: DoubleArray, offset: Int = 0, size: Int = out.size - offset): DoubleArray { for (n in 0 until size) out[offset + n] =
-    getF64LE(byteOffset + n * 8); return out }
+@Deprecated("", ReplaceWith("getS8Array(byteOffset, out, offset, size)"))
+fun Buffer.getUnalignedArrayInt8(byteOffset: Int, out: ByteArray, offset: Int = 0, size: Int = out.size - offset): ByteArray = getS8Array(byteOffset, out, offset, size)
+@Deprecated("", ReplaceWith("getS16Array(byteOffset, out, offset, size)"))
+fun Buffer.getUnalignedArrayInt16(byteOffset: Int, out: ShortArray, offset: Int = 0, size: Int = out.size - offset): ShortArray = getS16Array(byteOffset, out, offset, size)
+@Deprecated("", ReplaceWith("getS32Array(byteOffset, out, offset, size)"))
+fun Buffer.getUnalignedArrayInt32(byteOffset: Int, out: IntArray, offset: Int = 0, size: Int = out.size - offset): IntArray = getS32Array(byteOffset, out, offset, size)
+@Deprecated("", ReplaceWith("getS64Array(byteOffset, out, offset, size)"))
+fun Buffer.getUnalignedArrayInt64(byteOffset: Int, out: LongArray, offset: Int = 0, size: Int = out.size - offset): LongArray = getS64Array(byteOffset, out, offset, size)
+@Deprecated("", ReplaceWith("getF32Array(byteOffset, out, offset, size)"))
+fun Buffer.getUnalignedArrayFloat32(byteOffset: Int, out: FloatArray, offset: Int = 0, size: Int = out.size - offset): FloatArray = getF32Array(byteOffset, out, offset, size)
+@Deprecated("", ReplaceWith("getF64Array(byteOffset, out, offset, size)"))
+fun Buffer.getUnalignedArrayFloat64(byteOffset: Int, out: DoubleArray, offset: Int = 0, size: Int = out.size - offset): DoubleArray = getF64Array(byteOffset, out, offset, size)
 
-@Deprecated("")
-fun Buffer.setUnalignedArrayInt8(byteOffset: Int, inp: ByteArray, offset: Int = 0, size: Int = inp.size - offset) { for (n in 0 until size) set8(byteOffset + n * 1, inp[offset + n])
-}
-@Deprecated("")
-fun Buffer.setUnalignedArrayInt16(byteOffset: Int, inp: ShortArray, offset: Int = 0, size: Int = inp.size - offset) { for (n in 0 until size) set16LE(byteOffset + n * 2, inp[offset + n])
-}
-@Deprecated("")
-fun Buffer.setUnalignedArrayInt32(byteOffset: Int, inp: IntArray, offset: Int = 0, size: Int = inp.size - offset) { for (n in 0 until size) set32LE(byteOffset + n * 4, inp[offset + n])
-}
-@Deprecated("")
-fun Buffer.setUnalignedArrayInt64(byteOffset: Int, inp: LongArray, offset: Int = 0, size: Int = inp.size - offset) { for (n in 0 until size) set64LE(byteOffset + n * 8, inp[offset + n])
-}
-@Deprecated("")
-fun Buffer.setUnalignedArrayFloat32(byteOffset: Int, inp: FloatArray, offset: Int = 0, size: Int = inp.size - offset) { for (n in 0 until size) setF32LE(byteOffset + n * 4, inp[offset + n])
-}
-@Deprecated("")
-fun Buffer.setUnalignedArrayFloat64(byteOffset: Int, inp: DoubleArray, offset: Int = 0, size: Int = inp.size - offset) { for (n in 0 until size) setF64LE(byteOffset + n * 8, inp[offset + n])
-}
+@Deprecated("", ReplaceWith("setArray(byteOffset, inp, offset, size)"))
+fun Buffer.setUnalignedArrayInt8(byteOffset: Int, inp: ByteArray, offset: Int = 0, size: Int = inp.size - offset) = setArray(byteOffset, inp, offset, size)
+@Deprecated("", ReplaceWith("setArray(byteOffset, inp, offset, size)"))
+fun Buffer.setUnalignedArrayInt16(byteOffset: Int, inp: ShortArray, offset: Int = 0, size: Int = inp.size - offset) = setArray(byteOffset, inp, offset, size)
+@Deprecated("", ReplaceWith("setArray(byteOffset, inp, offset, size)"))
+fun Buffer.setUnalignedArrayInt32(byteOffset: Int, inp: IntArray, offset: Int = 0, size: Int = inp.size - offset) = setArray(byteOffset, inp, offset, size)
+@Deprecated("", ReplaceWith("setArray(byteOffset, inp, offset, size)"))
+fun Buffer.setUnalignedArrayInt64(byteOffset: Int, inp: LongArray, offset: Int = 0, size: Int = inp.size - offset) = setArray(byteOffset, inp, offset, size)
+@Deprecated("", ReplaceWith("setArray(byteOffset, inp, offset, size)"))
+fun Buffer.setUnalignedArrayFloat32(byteOffset: Int, inp: FloatArray, offset: Int = 0, size: Int = inp.size - offset) = setArray(byteOffset, inp, offset, size)
+@Deprecated("", ReplaceWith("setArray(byteOffset, inp, offset, size)"))
+fun Buffer.setUnalignedArrayFloat64(byteOffset: Int, inp: DoubleArray, offset: Int = 0, size: Int = inp.size - offset) = setArray(byteOffset, inp, offset, size)
 
 @Deprecated("", ReplaceWith("getU8(index)"))
 fun Buffer.getUInt8(index: Int): Int = getU8(index)
@@ -331,39 +373,39 @@ fun Buffer.setFloat64(index: Int, value: Double) = setF64LE(index * Double.SIZE_
 
 // ALIGNED ARRAYS
 
-@Deprecated("")
-fun Buffer.getArrayUInt8(index: Int, out: UByteArrayInt, offset: Int = 0, size: Int = out.size - offset): UByteArrayInt = UByteArrayInt(getUnalignedArrayInt8(index * 1, out.data, offset, size))
-@Deprecated("")
-fun Buffer.getArrayUInt16(index: Int, out: UShortArrayInt, offset: Int = 0, size: Int = out.size - offset): UShortArrayInt = UShortArrayInt(getUnalignedArrayInt16(index * 2, out.data, offset, size))
-@Deprecated("")
-fun Buffer.getArrayInt8(index: Int, out: ByteArray, offset: Int = 0, size: Int = out.size - offset): ByteArray = getUnalignedArrayInt8(index * 1, out, offset, size)
-@Deprecated("")
-fun Buffer.getArrayInt16(index: Int, out: ShortArray, offset: Int = 0, size: Int = out.size - offset): ShortArray = getUnalignedArrayInt16(index * 2, out, offset, size)
-@Deprecated("")
-fun Buffer.getArrayInt32(index: Int, out: IntArray, offset: Int = 0, size: Int = out.size - offset): IntArray = getUnalignedArrayInt32(index * 4, out, offset, size)
-@Deprecated("")
-fun Buffer.getArrayInt64(index: Int, out: LongArray, offset: Int = 0, size: Int = out.size - offset): LongArray = getUnalignedArrayInt64(index * 8, out, offset, size)
-@Deprecated("")
-fun Buffer.getArrayFloat32(index: Int, out: FloatArray, offset: Int = 0, size: Int = out.size - offset): FloatArray = getUnalignedArrayFloat32(index * 4, out, offset, size)
-@Deprecated("")
-fun Buffer.getArrayFloat64(index: Int, out: DoubleArray, offset: Int = 0, size: Int = out.size - offset): DoubleArray = getUnalignedArrayFloat64(index * 8, out, offset, size)
+@Deprecated("", ReplaceWith("UByteArrayInt(getS8Array(index * Byte.SIZE_BYTES, out.data, offset, size))", "korlibs.memory.UByteArrayInt"))
+fun Buffer.getArrayUInt8(index: Int, out: UByteArrayInt, offset: Int = 0, size: Int = out.size - offset): UByteArrayInt = UByteArrayInt(getS8Array(index * Byte.SIZE_BYTES, out.data, offset, size))
+@Deprecated("", ReplaceWith("UShortArrayInt(getS16Array(index * Short.SIZE_BYTES, out.data, offset, size))", "korlibs.memory.UShortArrayInt"))
+fun Buffer.getArrayUInt16(index: Int, out: UShortArrayInt, offset: Int = 0, size: Int = out.size - offset): UShortArrayInt = UShortArrayInt(getS16Array(index * Short.SIZE_BYTES, out.data, offset, size))
+@Deprecated("", ReplaceWith("getS8Array(index * Byte.SIZE_BYTES, out, offset, size)"))
+fun Buffer.getArrayInt8(index: Int, out: ByteArray, offset: Int = 0, size: Int = out.size - offset): ByteArray = getS8Array(index * Byte.SIZE_BYTES, out, offset, size)
+@Deprecated("", ReplaceWith("getS16Array(index * Short.SIZE_BYTES, out, offset, size)"))
+fun Buffer.getArrayInt16(index: Int, out: ShortArray, offset: Int = 0, size: Int = out.size - offset): ShortArray = getS16Array(index * Short.SIZE_BYTES, out, offset, size)
+@Deprecated("", ReplaceWith("getS32Array(index * Int.SIZE_BYTES, out, offset, size)"))
+fun Buffer.getArrayInt32(index: Int, out: IntArray, offset: Int = 0, size: Int = out.size - offset): IntArray = getS32Array(index * Int.SIZE_BYTES, out, offset, size)
+@Deprecated("", ReplaceWith("getS64Array(index * Long.SIZE_BYTES, out, offset, size)"))
+fun Buffer.getArrayInt64(index: Int, out: LongArray, offset: Int = 0, size: Int = out.size - offset): LongArray = getS64Array(index * Long.SIZE_BYTES, out, offset, size)
+@Deprecated("", ReplaceWith("getF32Array(index * Float.SIZE_BYTES, out, offset, size)"))
+fun Buffer.getArrayFloat32(index: Int, out: FloatArray, offset: Int = 0, size: Int = out.size - offset): FloatArray = getF32Array(index * Float.SIZE_BYTES, out, offset, size)
+@Deprecated("", ReplaceWith("getF64Array(index * Double.SIZE_BYTES, out, offset, size)"))
+fun Buffer.getArrayFloat64(index: Int, out: DoubleArray, offset: Int = 0, size: Int = out.size - offset): DoubleArray = getF64Array(index * Double.SIZE_BYTES, out, offset, size)
 
-@Deprecated("")
-fun Buffer.setArrayUInt8(index: Int, inp: UByteArrayInt, offset: Int = 0, size: Int = inp.size - offset): Unit = setUnalignedArrayInt8(index * 1, inp.data, offset, size)
-@Deprecated("")
-fun Buffer.setArrayUInt16(index: Int, inp: UShortArrayInt, offset: Int = 0, size: Int = inp.size - offset): Unit = setUnalignedArrayInt16(index * 2, inp.data, offset, size)
-@Deprecated("")
-fun Buffer.setArrayInt8(index: Int, inp: ByteArray, offset: Int = 0, size: Int = inp.size - offset): Unit = setUnalignedArrayInt8(index * 1, inp, offset, size)
-@Deprecated("")
-fun Buffer.setArrayInt16(index: Int, inp: ShortArray, offset: Int = 0, size: Int = inp.size - offset): Unit = setUnalignedArrayInt16(index * 2, inp, offset, size)
-@Deprecated("")
-fun Buffer.setArrayInt32(index: Int, inp: IntArray, offset: Int = 0, size: Int = inp.size - offset): Unit = setUnalignedArrayInt32(index * 4, inp, offset, size)
-@Deprecated("")
-fun Buffer.setArrayInt64(index: Int, inp: LongArray, offset: Int = 0, size: Int = inp.size - offset): Unit = setUnalignedArrayInt64(index * 8, inp, offset, size)
-@Deprecated("")
-fun Buffer.setArrayFloat32(index: Int, inp: FloatArray, offset: Int = 0, size: Int = inp.size - offset): Unit = setUnalignedArrayFloat32(index * 4, inp, offset, size)
-@Deprecated("")
-fun Buffer.setArrayFloat64(index: Int, inp: DoubleArray, offset: Int = 0, size: Int = inp.size - offset): Unit = setUnalignedArrayFloat64(index * 8, inp, offset, size)
+@Deprecated("", ReplaceWith("setArray(index * Byte.SIZE_BYTES, inp.data, offset, size)"))
+fun Buffer.setArrayUInt8(index: Int, inp: UByteArrayInt, offset: Int = 0, size: Int = inp.size - offset): Unit = setArray(index * Byte.SIZE_BYTES, inp.data, offset, size)
+@Deprecated("", ReplaceWith("setArray(index * Short.SIZE_BYTES, inp.data, offset, size)"))
+fun Buffer.setArrayUInt16(index: Int, inp: UShortArrayInt, offset: Int = 0, size: Int = inp.size - offset): Unit = setArray(index * Short.SIZE_BYTES, inp.data, offset, size)
+@Deprecated("", ReplaceWith("setArray(index * Byte.SIZE_BYTES, inp, offset, size)"))
+fun Buffer.setArrayInt8(index: Int, inp: ByteArray, offset: Int = 0, size: Int = inp.size - offset): Unit = setArray(index * Byte.SIZE_BYTES, inp, offset, size)
+@Deprecated("", ReplaceWith("setArray(index * Short.SIZE_BYTES, inp, offset, size)"))
+fun Buffer.setArrayInt16(index: Int, inp: ShortArray, offset: Int = 0, size: Int = inp.size - offset): Unit = setArray(index * Short.SIZE_BYTES, inp, offset, size)
+@Deprecated("", ReplaceWith("setArray(index * Int.SIZE_BYTES, inp, offset, size)"))
+fun Buffer.setArrayInt32(index: Int, inp: IntArray, offset: Int = 0, size: Int = inp.size - offset): Unit = setArray(index * Int.SIZE_BYTES, inp, offset, size)
+@Deprecated("", ReplaceWith("setArray(index * Long.SIZE_BYTES, inp, offset, size)"))
+fun Buffer.setArrayInt64(index: Int, inp: LongArray, offset: Int = 0, size: Int = inp.size - offset): Unit = setArray(index * Long.SIZE_BYTES, inp, offset, size)
+@Deprecated("", ReplaceWith("setArray(index * Float.SIZE_BYTES, inp, offset, size)"))
+fun Buffer.setArrayFloat32(index: Int, inp: FloatArray, offset: Int = 0, size: Int = inp.size - offset): Unit = setArray(index * Float.SIZE_BYTES, inp, offset, size)
+@Deprecated("", ReplaceWith("setArray(index * Double.SIZE_BYTES, inp, offset, size)"))
+fun Buffer.setArrayFloat64(index: Int, inp: DoubleArray, offset: Int = 0, size: Int = inp.size - offset): Unit = setArray(index * Double.SIZE_BYTES, inp, offset, size)
 
 interface BaseBuffer {
     val size: Int
@@ -408,14 +450,14 @@ value class Int8Buffer(override val buffer: Buffer) : TypedBuffer {
         const val ELEMENT_SIZE_IN_BYTES = 1
     }
     constructor(size: Int, direct: Boolean = false) : this(Buffer(size * ELEMENT_SIZE_IN_BYTES, direct))
-    constructor(data: ByteArray, offset: Int = 0, size: Int = data.size - offset) : this(Buffer(size * ELEMENT_SIZE_IN_BYTES).also { it.setArrayInt8(0, data, offset, size) })
+    constructor(data: ByteArray, offset: Int = 0, size: Int = data.size - offset) : this(Buffer(size * ELEMENT_SIZE_IN_BYTES).also { it.setArray(0, data, offset, size) })
 
     override val elementSizeInBytes: Int get() = ELEMENT_SIZE_IN_BYTES
-    operator fun get(index: Int): Byte = buffer.getInt8(index)
-    operator fun set(index: Int, value: Byte) = buffer.setInt8(index, value)
-    fun getArray(index: Int, out: ByteArray, offset: Int = 0, size: Int = out.size - offset): ByteArray = buffer.getArrayInt8(index, out, offset, size)
+    operator fun get(index: Int): Byte = buffer.getS8(index)
+    operator fun set(index: Int, value: Byte) = buffer.set8(index, value)
+    fun getArray(index: Int, out: ByteArray, offset: Int = 0, size: Int = out.size - offset): ByteArray = buffer.getS8Array(index * ELEMENT_SIZE_IN_BYTES, out, offset, size)
     fun getArray(index: Int = 0, size: Int = this.size - index): ByteArray = getArray(index, ByteArray(size))
-    fun setArray(index: Int, inp: ByteArray, offset: Int = 0, size: Int = inp.size - offset): Unit = buffer.setArrayInt8(index, inp, offset, size)
+    fun setArray(index: Int, inp: ByteArray, offset: Int = 0, size: Int = inp.size - offset): Unit = buffer.setArray(index * ELEMENT_SIZE_IN_BYTES, inp, offset, size)
 
     fun slice(start: Int = 0, end: Int = this.size): Int8Buffer = Int8Buffer(buffer._slice(start * ELEMENT_SIZE_IN_BYTES, end * ELEMENT_SIZE_IN_BYTES))
     fun sliceWithSize(start: Int = 0, size: Int = this.size - start): Int8Buffer = slice(start, start + size)
@@ -427,14 +469,14 @@ value class Int16Buffer(override val buffer: Buffer) : TypedBuffer {
         const val ELEMENT_SIZE_IN_BYTES = 2
     }
     constructor(size: Int, direct: Boolean = false) : this(Buffer(size * ELEMENT_SIZE_IN_BYTES, direct))
-    constructor(data: ShortArray, offset: Int = 0, size: Int = data.size - offset) : this(Buffer(size * ELEMENT_SIZE_IN_BYTES).also { it.setArrayInt16(0, data, offset, size) })
+    constructor(data: ShortArray, offset: Int = 0, size: Int = data.size - offset) : this(Buffer(size * ELEMENT_SIZE_IN_BYTES).also { it.setArray(0, data, offset, size) })
 
     override val elementSizeInBytes: Int get() = ELEMENT_SIZE_IN_BYTES
-    operator fun get(index: Int): Short = buffer.getS16LE(index * ELEMENT_SIZE_IN_BYTES)
-    operator fun set(index: Int, value: Short) = buffer.set16LE(index * ELEMENT_SIZE_IN_BYTES, value)
-    fun getArray(index: Int, out: ShortArray, offset: Int = 0, size: Int = out.size - offset): ShortArray = buffer.getArrayInt16(index, out, offset, size)
+    operator fun get(index: Int): Short = buffer.getS16(index * ELEMENT_SIZE_IN_BYTES)
+    operator fun set(index: Int, value: Short) = buffer.set16(index * ELEMENT_SIZE_IN_BYTES, value)
+    fun getArray(index: Int, out: ShortArray, offset: Int = 0, size: Int = out.size - offset): ShortArray = buffer.getS16Array(index * Short.SIZE_BYTES, out, offset, size)
     fun getArray(index: Int = 0, size: Int = this.size - index): ShortArray = getArray(index, ShortArray(size))
-    fun setArray(index: Int, inp: ShortArray, offset: Int = 0, size: Int = inp.size - offset): Unit = buffer.setArrayInt16(index, inp, offset, size)
+    fun setArray(index: Int, inp: ShortArray, offset: Int = 0, size: Int = inp.size - offset): Unit = buffer.setArray(index * Short.SIZE_BYTES, inp, offset, size)
 
     fun slice(start: Int = 0, end: Int = this.size): Int16Buffer = Int16Buffer(buffer._slice(start * ELEMENT_SIZE_IN_BYTES, end * ELEMENT_SIZE_IN_BYTES))
     fun sliceWithSize(start: Int = 0, size: Int = this.size - start): Int16Buffer = slice(start, start + size)
@@ -448,14 +490,14 @@ value class Uint8Buffer(override val buffer: Buffer) : TypedBuffer, BaseIntBuffe
         operator fun invoke(data: UByteArray) = Uint8Buffer(UByteArrayInt(data.toByteArray()))
     }
     constructor(size: Int, direct: Boolean = false) : this(Buffer(size * ELEMENT_SIZE_IN_BYTES, direct))
-    constructor(data: UByteArrayInt, offset: Int = 0, size: Int = data.size - offset) : this(Buffer(size).also { it.setArrayUInt8(0, data, offset, size) })
+    constructor(data: UByteArrayInt, offset: Int = 0, size: Int = data.size - offset) : this(Buffer(size).also { it.setArray(0, data.data, offset, size) })
 
     override val elementSizeInBytes: Int get() = ELEMENT_SIZE_IN_BYTES
     override operator fun get(index: Int): Int = buffer.getU8(index)
     override operator fun set(index: Int, value: Int) = buffer.set8(index, value.toByte())
-    fun getArray(index: Int, out: UByteArrayInt, offset: Int = 0, size: Int = out.size - offset): UByteArrayInt = buffer.getArrayUInt8(index, out, offset, size)
+    fun getArray(index: Int, out: UByteArrayInt, offset: Int = 0, size: Int = out.size - offset): UByteArrayInt = UByteArrayInt(buffer.getS8Array(index * ELEMENT_SIZE_IN_BYTES, out.data, offset, size))
     fun getArray(index: Int = 0, size: Int = this.size - index): UByteArrayInt = getArray(index, UByteArrayInt(size))
-    fun setArray(index: Int, inp: UByteArrayInt, offset: Int = 0, size: Int = inp.size - offset): Unit = buffer.setArrayUInt8(index, inp, offset, size)
+    fun setArray(index: Int, inp: UByteArrayInt, offset: Int = 0, size: Int = inp.size - offset): Unit = buffer.setArray(index * ELEMENT_SIZE_IN_BYTES, inp.data, offset, size)
 
     fun slice(start: Int = 0, end: Int = this.size): Uint8Buffer = Uint8Buffer(buffer._slice(start * ELEMENT_SIZE_IN_BYTES, end * ELEMENT_SIZE_IN_BYTES))
     fun sliceWithSize(start: Int = 0, size: Int = this.size - start): Uint8Buffer = slice(start, start + size)
@@ -468,7 +510,7 @@ value class Uint8ClampedBuffer(override val buffer: Buffer) : TypedBuffer, BaseI
         operator fun invoke(data: ByteArray) = Uint8ClampedBuffer(UByteArrayInt(data))
     }
     constructor(size: Int, direct: Boolean = false) : this(Buffer(size * ELEMENT_SIZE_IN_BYTES, direct))
-    constructor(data: UByteArrayInt, offset: Int = 0, size: Int = data.size - offset) : this(Buffer(size).also { it.setArrayUInt8(0, data, offset, size) })
+    constructor(data: UByteArrayInt, offset: Int = 0, size: Int = data.size - offset) : this(Buffer(size).also { it.setArray(0, data.data, offset, size) })
 
     override val elementSizeInBytes: Int get() = ELEMENT_SIZE_IN_BYTES
     override operator fun get(index: Int): Int = buffer.getU8(index)
@@ -485,14 +527,14 @@ value class Uint16Buffer(override val buffer: Buffer) : TypedBuffer, BaseIntBuff
         operator fun invoke(data: ByteArray) = Uint8ClampedBuffer(UByteArrayInt(data))
     }
     constructor(size: Int, direct: Boolean = false) : this(Buffer(size * ELEMENT_SIZE_IN_BYTES, direct))
-    constructor(data: UShortArrayInt, offset: Int = 0, size: Int = data.size - offset) : this(Buffer(size * ELEMENT_SIZE_IN_BYTES).also { it.setArrayUInt16(0, data, offset, size) })
+    constructor(data: UShortArrayInt, offset: Int = 0, size: Int = data.size - offset) : this(Buffer(size * ELEMENT_SIZE_IN_BYTES).also { it.setArray(0, data.data, offset, size) })
 
     override val elementSizeInBytes: Int get() = ELEMENT_SIZE_IN_BYTES
-    override operator fun get(index: Int): Int = buffer.getU16LE(index * ELEMENT_SIZE_IN_BYTES)
-    override operator fun set(index: Int, value: Int) = buffer.set16LE(index * ELEMENT_SIZE_IN_BYTES, value.toShort())
-    fun getArray(index: Int, out: UShortArrayInt, offset: Int = 0, size: Int = out.size - offset): UShortArrayInt = buffer.getArrayUInt16(index, out, offset, size)
+    override operator fun get(index: Int): Int = buffer.getU16(index * ELEMENT_SIZE_IN_BYTES)
+    override operator fun set(index: Int, value: Int) = buffer.set16(index * ELEMENT_SIZE_IN_BYTES, value.toShort())
+    fun getArray(index: Int, out: UShortArrayInt, offset: Int = 0, size: Int = out.size - offset): UShortArrayInt = UShortArrayInt(buffer.getS16Array(index * ELEMENT_SIZE_IN_BYTES, out.data, offset, size))
     fun getArray(index: Int = 0, size: Int = this.size - index): UShortArrayInt = getArray(index, UShortArrayInt(size))
-    fun setArray(index: Int, inp: UShortArrayInt, offset: Int = 0, size: Int = inp.size - offset): Unit = buffer.setArrayUInt16(index, inp, offset, size)
+    fun setArray(index: Int, inp: UShortArrayInt, offset: Int = 0, size: Int = inp.size - offset): Unit = buffer.setArray(index * ELEMENT_SIZE_IN_BYTES, inp.data, offset, size)
 
     fun slice(start: Int = 0, end: Int = this.size): Uint16Buffer = Uint16Buffer(buffer._slice(start * ELEMENT_SIZE_IN_BYTES, end * ELEMENT_SIZE_IN_BYTES))
     fun sliceWithSize(start: Int = 0, size: Int = this.size - start): Uint16Buffer = slice(start, start + size)
@@ -504,14 +546,14 @@ value class Int32Buffer(override val buffer: Buffer) : TypedBuffer, BaseIntBuffe
         const val ELEMENT_SIZE_IN_BYTES = 4
     }
     constructor(size: Int, direct: Boolean = false) : this(Buffer(size * ELEMENT_SIZE_IN_BYTES, direct))
-    constructor(data: IntArray, offset: Int = 0, size: Int = data.size - offset) : this(Buffer(size * ELEMENT_SIZE_IN_BYTES).also { it.setArrayInt32(0, data, offset, size) })
+    constructor(data: IntArray, offset: Int = 0, size: Int = data.size - offset) : this(Buffer(size * ELEMENT_SIZE_IN_BYTES).also { it.setArray(0, data, offset, size) })
 
     override val elementSizeInBytes: Int get() = ELEMENT_SIZE_IN_BYTES
-    override operator fun get(index: Int): Int = buffer.getS32LE(index * ELEMENT_SIZE_IN_BYTES)
-    override operator fun set(index: Int, value: Int) = buffer.set32LE(index * ELEMENT_SIZE_IN_BYTES, value)
-    fun getArray(index: Int, out: IntArray, offset: Int = 0, size: Int = out.size - offset): IntArray = buffer.getArrayInt32(index, out, offset, size)
+    override operator fun get(index: Int): Int = buffer.getS32(index * ELEMENT_SIZE_IN_BYTES)
+    override operator fun set(index: Int, value: Int) = buffer.set32(index * ELEMENT_SIZE_IN_BYTES, value)
+    fun getArray(index: Int, out: IntArray, offset: Int = 0, size: Int = out.size - offset): IntArray = buffer.getS32Array(index * ELEMENT_SIZE_IN_BYTES, out, offset, size)
     fun getArray(index: Int = 0, size: Int = this.size - index): IntArray = getArray(index, IntArray(size))
-    fun setArray(index: Int, inp: IntArray, offset: Int = 0, size: Int = inp.size - offset): Unit = buffer.setArrayInt32(index, inp, offset, size)
+    fun setArray(index: Int, inp: IntArray, offset: Int = 0, size: Int = inp.size - offset): Unit = buffer.setArray(index * ELEMENT_SIZE_IN_BYTES, inp, offset, size)
 
     fun slice(start: Int = 0, end: Int = this.size): Int32Buffer = Int32Buffer(buffer._slice(start * ELEMENT_SIZE_IN_BYTES, end * ELEMENT_SIZE_IN_BYTES))
     fun sliceWithSize(start: Int = 0, size: Int = this.size - start): Int32Buffer = slice(start, start + size)
@@ -523,15 +565,15 @@ value class Uint32Buffer(override val buffer: Buffer) : TypedBuffer {
         const val ELEMENT_SIZE_IN_BYTES = 4
     }
     constructor(size: Int, direct: Boolean = false) : this(Buffer(size * ELEMENT_SIZE_IN_BYTES, direct))
-    constructor(data: UIntArray, offset: Int = 0, size: Int = data.size - offset) : this(Buffer(size * ELEMENT_SIZE_IN_BYTES).also { it.setArrayInt32(0, data.toIntArray(), offset, size) })
+    constructor(data: UIntArray, offset: Int = 0, size: Int = data.size - offset) : this(Buffer(size * ELEMENT_SIZE_IN_BYTES).also { it.setArray(0, data.toIntArray(), offset, size) })
 
     override val elementSizeInBytes: Int get() = ELEMENT_SIZE_IN_BYTES
-    operator fun get(index: Int): UInt = buffer.getS32LE(index * ELEMENT_SIZE_IN_BYTES).toUInt()
-    operator fun set(index: Int, value: UInt) = buffer.set32LE(index * ELEMENT_SIZE_IN_BYTES, value.toInt())
-    operator fun set(index: Int, value: Int) = buffer.set32LE(index * ELEMENT_SIZE_IN_BYTES, value)
-    fun getArray(index: Int, out: UIntArray, offset: Int = 0, size: Int = out.size - offset): UIntArray = buffer.getArrayInt32(index, out.asIntArray(), offset, size).asUIntArray()
+    operator fun get(index: Int): UInt = buffer.getS32(index * ELEMENT_SIZE_IN_BYTES).toUInt()
+    operator fun set(index: Int, value: UInt) = buffer.set32(index * ELEMENT_SIZE_IN_BYTES, value.toInt())
+    operator fun set(index: Int, value: Int) = buffer.set32(index * ELEMENT_SIZE_IN_BYTES, value)
+    fun getArray(index: Int, out: UIntArray, offset: Int = 0, size: Int = out.size - offset): UIntArray = buffer.getS32Array(index * ELEMENT_SIZE_IN_BYTES, out.asIntArray(), offset, size).asUIntArray()
     fun getArray(index: Int = 0, size: Int = this.size - index): UIntArray = getArray(index, UIntArray(size))
-    fun setArray(index: Int, inp: UIntArray, offset: Int = 0, size: Int = inp.size - offset): Unit = buffer.setArrayInt32(index, inp.asIntArray(), offset, size)
+    fun setArray(index: Int, inp: UIntArray, offset: Int = 0, size: Int = inp.size - offset): Unit = buffer.setArray(index * ELEMENT_SIZE_IN_BYTES, inp.asIntArray(), offset, size)
 
     fun slice(start: Int = 0, end: Int = this.size): Uint32Buffer = Uint32Buffer(buffer._slice(start * ELEMENT_SIZE_IN_BYTES, end * ELEMENT_SIZE_IN_BYTES))
     fun sliceWithSize(start: Int = 0, size: Int = this.size - start): Uint32Buffer = slice(start, start + size)
@@ -543,14 +585,14 @@ value class Int64Buffer(override val buffer: Buffer) : TypedBuffer {
         const val ELEMENT_SIZE_IN_BYTES = 8
     }
     constructor(size: Int, direct: Boolean = false) : this(Buffer(size * ELEMENT_SIZE_IN_BYTES, direct))
-    constructor(data: LongArray, offset: Int = 0, size: Int = data.size - offset) : this(Buffer(size * ELEMENT_SIZE_IN_BYTES).also { it.setArrayInt64(0, data, offset, size) })
+    constructor(data: LongArray, offset: Int = 0, size: Int = data.size - offset) : this(Buffer(size * ELEMENT_SIZE_IN_BYTES).also { it.setArray(0, data, offset, size) })
 
     override val elementSizeInBytes: Int get() = ELEMENT_SIZE_IN_BYTES
-    operator fun get(index: Int): Long = buffer.getS64LE(index * ELEMENT_SIZE_IN_BYTES)
-    operator fun set(index: Int, value: Long) = buffer.set64LE(index * ELEMENT_SIZE_IN_BYTES, value)
-    fun getArray(index: Int, out: LongArray, offset: Int = 0, size: Int = out.size - offset): LongArray = buffer.getArrayInt64(index, out, offset, size)
+    operator fun get(index: Int): Long = buffer.getS64(index * ELEMENT_SIZE_IN_BYTES)
+    operator fun set(index: Int, value: Long) = buffer.set64(index * ELEMENT_SIZE_IN_BYTES, value)
+    fun getArray(index: Int, out: LongArray, offset: Int = 0, size: Int = out.size - offset): LongArray = buffer.getS64Array(index * ELEMENT_SIZE_IN_BYTES, out, offset, size)
     fun getArray(index: Int = 0, size: Int = this.size - index): LongArray = getArray(index, LongArray(size))
-    fun setArray(index: Int, inp: LongArray, offset: Int = 0, size: Int = inp.size - offset): Unit = buffer.setArrayInt64(index, inp, offset, size)
+    fun setArray(index: Int, inp: LongArray, offset: Int = 0, size: Int = inp.size - offset): Unit = buffer.setArray(index * ELEMENT_SIZE_IN_BYTES, inp, offset, size)
 
     fun slice(start: Int = 0, end: Int = this.size): Int64Buffer = Int64Buffer(buffer._slice(start * ELEMENT_SIZE_IN_BYTES, end * ELEMENT_SIZE_IN_BYTES))
     fun sliceWithSize(start: Int = 0, size: Int = this.size - start): Int64Buffer = slice(start, start + size)
@@ -562,14 +604,14 @@ value class Float32Buffer(override val buffer: Buffer) : TypedBuffer, BaseFloatB
         const val ELEMENT_SIZE_IN_BYTES = 4
     }
     constructor(size: Int, direct: Boolean = false) : this(Buffer(size * ELEMENT_SIZE_IN_BYTES, direct))
-    constructor(data: FloatArray, offset: Int = 0, size: Int = data.size - offset) : this(Buffer(size * ELEMENT_SIZE_IN_BYTES).also { it.setArrayFloat32(0, data, offset, size) })
+    constructor(data: FloatArray, offset: Int = 0, size: Int = data.size - offset) : this(Buffer(size * ELEMENT_SIZE_IN_BYTES).also { it.setArray(0, data, offset, size) })
 
     override val elementSizeInBytes: Int get() = ELEMENT_SIZE_IN_BYTES
-    override operator fun get(index: Int): Float = buffer.getF32LE(index * ELEMENT_SIZE_IN_BYTES)
-    override operator fun set(index: Int, value: Float) = buffer.setF32LE(index * ELEMENT_SIZE_IN_BYTES, value)
-    fun getArray(index: Int, out: FloatArray, offset: Int = 0, size: Int = out.size - offset): FloatArray = buffer.getArrayFloat32(index, out, offset, size)
+    override operator fun get(index: Int): Float = buffer.getF32(index * ELEMENT_SIZE_IN_BYTES)
+    override operator fun set(index: Int, value: Float) = buffer.setF32(index * ELEMENT_SIZE_IN_BYTES, value)
+    fun getArray(index: Int, out: FloatArray, offset: Int = 0, size: Int = out.size - offset): FloatArray = buffer.getF32Array(index * ELEMENT_SIZE_IN_BYTES, out, offset, size)
     fun getArray(index: Int = 0, size: Int = this.size - index): FloatArray = getArray(index, FloatArray(size))
-    fun setArray(index: Int, inp: FloatArray, offset: Int = 0, size: Int = inp.size - offset): Unit = buffer.setArrayFloat32(index, inp, offset, size)
+    fun setArray(index: Int, inp: FloatArray, offset: Int = 0, size: Int = inp.size - offset): Unit = buffer.setArray(index * ELEMENT_SIZE_IN_BYTES, inp, offset, size)
 
     fun slice(start: Int = 0, end: Int = this.size): Float32Buffer = Float32Buffer(buffer._slice(start * ELEMENT_SIZE_IN_BYTES, end * ELEMENT_SIZE_IN_BYTES))
     fun sliceWithSize(start: Int = 0, size: Int = this.size - start): Float32Buffer = slice(start, start + size)
@@ -581,14 +623,14 @@ value class Float64Buffer(override val buffer: Buffer) : TypedBuffer {
         const val ELEMENT_SIZE_IN_BYTES = 8
     }
     constructor(size: Int, direct: Boolean = false) : this(Buffer(size * ELEMENT_SIZE_IN_BYTES, direct))
-    constructor(data: DoubleArray, offset: Int = 0, size: Int = data.size - offset) : this(Buffer(size * ELEMENT_SIZE_IN_BYTES).also { it.setArrayFloat64(0, data, offset, size) })
+    constructor(data: DoubleArray, offset: Int = 0, size: Int = data.size - offset) : this(Buffer(size * ELEMENT_SIZE_IN_BYTES).also { it.setArray(0, data, offset, size) })
 
     override val elementSizeInBytes: Int get() = ELEMENT_SIZE_IN_BYTES
-    operator fun get(index: Int): Double = buffer.getF64LE(index * ELEMENT_SIZE_IN_BYTES)
-    operator fun set(index: Int, value: Double) = buffer.setF64LE(index * ELEMENT_SIZE_IN_BYTES, value)
-    fun getArray(index: Int, out: DoubleArray, offset: Int = 0, size: Int = out.size - offset): DoubleArray = buffer.getArrayFloat64(index, out, offset, size)
+    operator fun get(index: Int): Double = buffer.getF64(index * ELEMENT_SIZE_IN_BYTES)
+    operator fun set(index: Int, value: Double) = buffer.setF64(index * ELEMENT_SIZE_IN_BYTES, value)
+    fun getArray(index: Int, out: DoubleArray, offset: Int = 0, size: Int = out.size - offset): DoubleArray = buffer.getF64Array(index * ELEMENT_SIZE_IN_BYTES, out, offset, size)
     fun getArray(index: Int = 0, size: Int = this.size - index): DoubleArray = getArray(index, DoubleArray(size))
-    fun setArray(index: Int, inp: DoubleArray, offset: Int = 0, size: Int = inp.size - offset): Unit = buffer.setArrayFloat64(index, inp, offset, size)
+    fun setArray(index: Int, inp: DoubleArray, offset: Int = 0, size: Int = inp.size - offset): Unit = buffer.setArray(index * ELEMENT_SIZE_IN_BYTES, inp, offset, size)
 
     fun slice(start: Int = 0, end: Int = this.size): Float64Buffer = Float64Buffer(buffer._slice(start * ELEMENT_SIZE_IN_BYTES, end * ELEMENT_SIZE_IN_BYTES))
     fun sliceWithSize(start: Int = 0, size: Int = this.size - start): Float64Buffer = slice(start, start + size)

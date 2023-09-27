@@ -83,7 +83,6 @@ actual class Buffer(val buffer: ByteBuffer) {
             //}
             dst.slicedBuffer(dstPosBytes, sizeInBytes).put(src.slicedBuffer(srcPosBytes, sizeInBytes))
         }
-
     }
 }
 
