@@ -10,12 +10,14 @@ asm = "9.5"
 #kotlin = "1.9.0-Beta"
 #kotlin = "1.8.255-SNAPSHOT"
 
-#kotlin = "1.9.0"
-#kotlin = "1.9.10"
-kotlin = "1.9.20-Beta2"
-#kotlinx-coroutines = "1.7.2"
-#kotlinx-atomicfu = "0.21.0"
-#kotlinx-serialization = "1.5.1"
+kotlin = "1.9.10"
+kotlinx-coroutines = "1.7.3"
+kotlinx-serialization = "1.6.0"
+
+#kotlin = "1.9.20-Beta2"
+#kotlinx-coroutines = "1.7.2-wasm1"
+#kotlinx-serialization = "1.5.1-wasm1"
+
 
 #maven { url = uri("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev") }
 
@@ -25,14 +27,11 @@ kotlin = "1.9.20-Beta2"
 #kotlin = "1.9.20-dev-2914"
 # https://maven.pkg.jetbrains.space/kotlin/p/wasm/experimental/org/jetbrains/kotlinx/atomicfu/
 # https://maven.pkg.jetbrains.space/kotlin/p/wasm/experimental/org/jetbrains/kotlinx/kotlinx-coroutines-core/
-kotlinx-atomicfu = "0.22.0-wasm1"
-kotlinx-coroutines = "1.7.2-wasm1"
-kotlinx-serialization = "1.5.1-wasm1"
 
 kotlinx-benchmark = "0.4.7"
-dokka = "1.8.10"
-kover = "0.6.1"
-kover-agent = "1.0.712"
+dokka = "1.9.0"
+#kover = "0.6.1"
+#kover-agent = "1.0.712"
 node = "16.9.1"
 #android-build-gradle = "7.4.2"
 #android-build-gradle = "8.0.0"
@@ -55,8 +54,8 @@ kotlin-serialization = { module = "org.jetbrains.kotlin:kotlin-serialization", v
 kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 dokka = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version.ref = "dokka" }
-kover = { module = "org.jetbrains.kotlinx:kover", version.ref = "kover" }
-kover-intellij-agent = { module = "org.jetbrains.intellij.deps:intellij-coverage-agent", version.ref = "kover-agent" }
+#kover = { module = "org.jetbrains.kotlinx:kover", version.ref = "kover" }
+#kover-intellij-agent = { module = "org.jetbrains.intellij.deps:intellij-coverage-agent", version.ref = "kover-agent" }
 jna-core = { module = "net.java.dev.jna:jna", version.ref = "jna" }
 jna-platform = { module = "net.java.dev.jna:jna-platform", version.ref = "jna" }
 jcodec-core = { module = "org.jcodec:jcodec", version.ref = "jcodec" }
@@ -64,7 +63,6 @@ proguard-gradle = { module = "com.guardsquare:proguard-gradle", version.ref = "p
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinx-coroutines" }
-kotlinx-atomicfu = { module = "org.jetbrains.kotlinx:atomicfu", version.ref = "kotlinx-atomicfu" }
 android-build-gradle = { module = "com.android.tools.build:gradle", version.ref = "android-build-gradle" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 gradle-publish-plugin = { module = "com.gradle.publish:plugin-publish-plugin", version.ref = "gradle-publish-plugin" }

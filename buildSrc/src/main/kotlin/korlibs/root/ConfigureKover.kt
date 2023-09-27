@@ -1,11 +1,10 @@
 package korlibs.root
 
-import korlibs.korge.gradle.util.*
-import korlibs.*
+//import kotlinx.kover.api.*
 import org.gradle.api.*
-import org.gradle.api.tasks.testing.*
 
 fun Project.configureKover() {
+    /*
     rootProject.allprojectsThis {
         plugins.apply(kotlinx.kover.KoverPlugin::class.java)
     }
@@ -34,4 +33,11 @@ fun Project.configureKover() {
             }
         }
     }
+    */
 }
+
+//fun org.gradle.api.Project.`koverMerged`(configure: Action<KoverMergedConfig>): Unit = (this as org.gradle.api.plugins.ExtensionAware).extensions.configure("koverMerged", configure)
+//fun org.gradle.api.Project.`kover`(configure: Action<kotlinx.kover.api.KoverProjectConfig>): Unit = (this as org.gradle.api.plugins.ExtensionAware).extensions.configure("kover", configure)
+//fun TaskContainer.`dokkaHtml`(configure: org.jetbrains.dokka.gradle.DokkaTask.() -> Unit) {
+//    configure(named<org.jetbrains.dokka.gradle.DokkaTask>("dokkaHtml").get())
+//}

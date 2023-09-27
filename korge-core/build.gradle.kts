@@ -7,8 +7,6 @@ dependencies {
     }
     add("commonMainApi", project(":korge-foundation"))
     add("commonMainApi", libs.kotlinx.coroutines.core)
-    //add("commonMainApi", libs.kotlinx.atomicfu)
-    //add("commonTestApi", project(":korge-test"))
     add("commonTestApi", libs.kotlinx.coroutines.test)
     add("jvmMainApi", libs.asm.core)
     add("jvmMainApi", libs.asm.util)

@@ -87,7 +87,7 @@ dependencies {
     implementation(libs.gson)
     implementation(libs.gradle.publish.plugin)
 
-    implementation(libs.kover)
+    //implementation(libs.kover)
     implementation(libs.dokka)
 
     implementation(libs.android.build.gradle)
@@ -98,8 +98,7 @@ dependencies {
 
     testImplementation("org.jetbrains.kotlin:kotlin-test")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
-    testImplementation("io.mockk:mockk:1.11.0")
-    testImplementation("junit:junit:4.13.2")
+    testImplementation(libs.junit)
 
     //implementation(project(":korge-reload-agent"))
 }

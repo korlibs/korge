@@ -25,7 +25,7 @@ if (isJava8or9) {
 }
 
 dependencies {
-    implementation(libs.kover)
+    //implementation(libs.kover)
     implementation(libs.dokka)
     implementation(libs.proguard.gradle)
     implementation(libs.closure.compiler)

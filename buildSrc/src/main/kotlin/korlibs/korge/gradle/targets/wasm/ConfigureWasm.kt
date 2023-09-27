@@ -1,13 +1,13 @@
 package korlibs.korge.gradle.targets.wasm
 
-import korlibs.*
 import org.gradle.api.*
 
 //fun Project.isWasmEnabled(): Boolean = findProperty("enable.wasm") == "true"
-fun Project.isWasmEnabled(): Boolean = true
-//fun Project.isWasmEnabled(): Boolean = false
+//fun Project.isWasmEnabled(): Boolean = true
+fun Project.isWasmEnabled(): Boolean = false
 
 fun Project.configureWasm(executable: Boolean, binaryen: Boolean = false) {
+    /*
     kotlin {
         wasmJs {
             if (binaryen) applyBinaryen()
@@ -37,4 +37,5 @@ fun Project.configureWasm(executable: Boolean, binaryen: Boolean = false) {
             }
         }
     }
+    */
 }
