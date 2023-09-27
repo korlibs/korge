@@ -643,7 +643,7 @@ class AGOpengl(val gl: KmlGl, var context: KmlGlContext? = null) : AG() {
                         writeUniform(
                             uniform.uniform,
                             glProgramInfo,
-                            currentMem._slice(uniform.voffset, uniform.voffset + uniform.totalBytes),
+                            currentMem.sliceBuffer(uniform.voffset, uniform.voffset + uniform.totalBytes),
                             "blockUniformSet",
                         )
                     }

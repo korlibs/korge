@@ -109,7 +109,7 @@ fun java.nio.Buffer.clearSafe() {
     clear()
 }
 
-inline fun <T : java.nio.Buffer> T._slice(offset: Int, size: Int, dup: (T) -> T): T {
+inline fun <T : java.nio.Buffer> T.sliceBuffer(offset: Int, size: Int, dup: (T) -> T): T {
     checkSliceBounds(offset, size)
     val out = dup(this)
     val start = this.position() + offset
@@ -119,11 +119,11 @@ inline fun <T : java.nio.Buffer> T._slice(offset: Int, size: Int, dup: (T) -> T)
     return out
 }
 
-fun ByteBuffer._slice(offset: Int, size: Int): ByteBuffer = this._slice(offset, size) { it.duplicate() }
-fun ShortBuffer._slice(offset: Int, size: Int): ShortBuffer = this._slice(offset, size) { it.duplicate() }
-fun IntBuffer._slice(offset: Int, size: Int): IntBuffer = this._slice(offset, size) { it.duplicate() }
-fun FloatBuffer._slice(offset: Int, size: Int): FloatBuffer = this._slice(offset, size) { it.duplicate() }
-fun DoubleBuffer._slice(offset: Int, size: Int): DoubleBuffer = this._slice(offset, size) { it.duplicate() }
+fun ByteBuffer.sliceBuffer(offset: Int, size: Int): ByteBuffer = this.sliceBuffer(offset, size) { it.duplicate() }
+fun ShortBuffer.sliceBuffer(offset: Int, size: Int): ShortBuffer = this.sliceBuffer(offset, size) { it.duplicate() }
+fun IntBuffer.sliceBuffer(offset: Int, size: Int): IntBuffer = this.sliceBuffer(offset, size) { it.duplicate() }
+fun FloatBuffer.sliceBuffer(offset: Int, size: Int): FloatBuffer = this.sliceBuffer(offset, size) { it.duplicate() }
+fun DoubleBuffer.sliceBuffer(offset: Int, size: Int): DoubleBuffer = this.sliceBuffer(offset, size) { it.duplicate() }
 
 val Buffer.nioBuffer: java.nio.ByteBuffer get() = this.slicedBuffer()
 val Buffer.nioIntBuffer: java.nio.IntBuffer get() = this.slicedBuffer().asIntBuffer()
