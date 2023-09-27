@@ -27,8 +27,6 @@ fun KType.toDenoFFI(ret: Boolean): dynamic {
     }
 }
 
-object DenoLibC :
-
 fun KClassifier.toDenoFFI(ret: Boolean): dynamic {
     return when (this) {
         Long::class -> "usize"
