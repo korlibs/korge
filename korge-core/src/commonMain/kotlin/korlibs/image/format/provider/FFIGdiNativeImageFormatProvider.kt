@@ -59,7 +59,7 @@ object FFIGdiNativeImageFormatProvider : BaseNativeImageFormatProvider() {
             }
         } finally {
             // IMarshalVtblRelease : [AddRef, DisconnectObject, GetMarshalSizeMax, GetUnmarshalClas, MarshalInterface, QueryInterface, Release, ReleaseMarshalData, UnmarshalInterface]
-            pstream.getFFIPointer(0)?.getFFIPointer(6)?.castToFunc<(FFIPointer?) -> Unit>()?.invoke(pstream)
+            pstream.getAlignedFFIPointer(0)?.getAlignedFFIPointer(6)?.castToFunc<(FFIPointer?) -> Unit>()?.invoke(pstream)
         }
         Gdiplus.GdipGetImageDimension(pimage[0], pwidth, pheight)
         val width = pwidth[0].toInt()

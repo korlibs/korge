@@ -1,22 +1,22 @@
 package korlibs.render.win32
 
-import korlibs.memory.*
-import korlibs.memory.dyn.*
 import korlibs.event.*
+import korlibs.ffi.*
 import korlibs.io.lang.*
 import korlibs.math.*
+import korlibs.memory.*
 
-internal class Win32XInputEventAdapterCommon(val xinput: XInput?, val joy: Joy32?) {
+internal class XInputGamepadEventAdapter {
     private val controllers = Array(GamepadInfo.MAX_CONTROLLERS) { GamepadInfo(it) }
 
     fun updateGamepads(emitter: GamepadInfoEmitter) {
-        if (xinput == null) return
+        if (!XInput.loaded) return
 
         emitter.dispatchGamepadUpdateStart()
-        kmemScoped {
+        ffiScoped {
             val state = XInputState(allocBytes(XInputState().size))
             for (n in 0 until GamepadInfo.MAX_CONTROLLERS) {
-                val connected = xinput.XInputGetState(n, state) == XInput.SUCCESS
+                val connected = XInput.XInputGetState(n, state.ptr) == XInput.SUCCESS
                 val gamepad = controllers[n]
                 if (connected) {
                     val buttons = state.wButtons.toInt() and 0xFFFF
@@ -43,9 +43,9 @@ internal class Win32XInputEventAdapterCommon(val xinput: XInput?, val joy: Joy32
                     gamepad.rawButtons[GameButton.RY.index] = GamepadInfo.withoutDeadRange(convertShortRangeToDouble(state.sThumbRY))
 
                     if (gamepad.name == null) {
-                        kmemScoped {
+                        ffiScoped {
                             val joyCapsW = JoyCapsW(allocBytes(JoyCapsW.SIZE))
-                            if (joy?.joyGetDevCapsW(n, joyCapsW, JoyCapsW.SIZE) == 0) {
+                            if (Win32Joy.joyGetDevCapsW(n, joyCapsW.ptr, JoyCapsW.SIZE) == 0) {
                                 gamepad.name = joyCapsW.name
                             }
                         }
@@ -63,52 +63,10 @@ internal class Win32XInputEventAdapterCommon(val xinput: XInput?, val joy: Joy32
 
     private fun convertShortRangeToDouble(value: Short): Float = value.toFloat().convertRangeClamped(Short.MIN_VALUE.toFloat(), Short.MAX_VALUE.toFloat(), -1f, +1f)
     private fun convertUByteRangeToDouble(value: Byte): Float = (value.toInt() and 0xFF).toFloat().convertRangeClamped(0f, 255f, 0f, +1f)
-}
 
-// Used this as reference:
-// https://github.com/fantarama/JXInput/blob/86356e7a4037bbb1f3478c7333555e00b3601bde/XInputJNA/src/main/java/com/microsoft/xinput/XInput.java
-internal class XInputState(pointer: KPointer? = null) : KStructure(pointer) {
-    var dwPacketNumber by int() // offset: 0
-    var wButtons by short() // offset: 4
-    var bLeftTrigger by byte() // offset: 6
-    var bRightTrigger by byte() // offset: 7
-    var sThumbLX by short() // offset: 8
-    var sThumbLY by short() // offset: 10
-    var sThumbRX by short() // offset: 12
-    var sThumbRY by short() // offset: 14
-    override fun toString(): String =
-        "XInputState(dwPacketNumber=$dwPacketNumber, wButtons=$wButtons, bLeftTrigger=$bLeftTrigger, bRightTrigger=$bRightTrigger, sThumbLX=$sThumbLX, sThumbLY=$sThumbLY, sThumbRX=$sThumbRX, sThumbRY=$sThumbRY)"
-}
+    object XInput : FFILib("xinput9_1_0.dll") {
+        val XInputGetState by func<(dwUserIndex: Int, pState: FFIPointer?) -> Int>()
 
-internal class JoyCapsW(pointer: KPointer? = null) : KStructure(pointer) {
-    companion object {
-        val SIZE = 728
-    }
-
-    var wMid: Short by short()
-    var wPid: Short by short()
-    var szPname by fixedBytes(32 * 2)
-    var name: String
-        get() = szPname.toString(Charsets.UTF16_LE).trimEnd('\u0000').also {
-            //println("JoyCapsW.name='$it'")
-        }
-        set(value) {
-            szPname = run {
-                ByteArray(szPname.size).also {
-                    val new = value.toByteArray(Charsets.UTF16_LE)
-                    arraycopy(new, 0, it, 0, new.size)
-                }
-            }
-
-        }
-    override fun toString(): String =
-        "JoyCapsW(name=$name)"
-}
-
-internal fun interface XInput {
-    fun XInputGetState(dwUserIndex: Int, pState: XInputState): Int // pState: XInputState
-
-    companion object {
         const val SUCCESS = 0
         const val ERROR_DEVICE_NOT_CONNECTED = 0x0000048F
 
@@ -131,8 +89,49 @@ internal fun interface XInput {
 
         const val SIZE = 16
     }
-}
 
-internal fun interface Joy32 {
-    fun joyGetDevCapsW(uJoyID: Int, pjc: JoyCapsW, cbjc: Int): Int // pjc: JoyCapsW
+    object Win32Joy : FFILib("Winmm.dll") {
+        val joyGetDevCapsW by func<(uJoyID: Int, pjc: FFIPointer?, cbjc: Int) -> Int>()
+    }
+
+    // Used this as reference:
+    // https://github.com/fantarama/JXInput/blob/86356e7a4037bbb1f3478c7333555e00b3601bde/XInputJNA/src/main/java/com/microsoft/xinput/XInput.java
+    internal class XInputState(pointer: FFIPointer? = null) : FFIStructure(pointer) {
+        var dwPacketNumber by int() // offset: 0
+        var wButtons by short() // offset: 4
+        var bLeftTrigger by byte() // offset: 6
+        var bRightTrigger by byte() // offset: 7
+        var sThumbLX by short() // offset: 8
+        var sThumbLY by short() // offset: 10
+        var sThumbRX by short() // offset: 12
+        var sThumbRY by short() // offset: 14
+        override fun toString(): String =
+            "XInputState(dwPacketNumber=$dwPacketNumber, wButtons=$wButtons, bLeftTrigger=$bLeftTrigger, bRightTrigger=$bRightTrigger, sThumbLX=$sThumbLX, sThumbLY=$sThumbLY, sThumbRX=$sThumbRX, sThumbRY=$sThumbRY)"
+    }
+
+    internal class JoyCapsW(pointer: FFIPointer? = null) : FFIStructure(pointer) {
+        companion object {
+            val SIZE = 728
+        }
+
+        var wMid: Short by short()
+        var wPid: Short by short()
+        var szPname by fixedBytes(32 * 2)
+        var name: String
+            get() = szPname.toString(Charsets.UTF16_LE).trimEnd('\u0000').also {
+                //println("JoyCapsW.name='$it'")
+            }
+            set(value) {
+                szPname = run {
+                    ByteArray(szPname.size).also {
+                        val new = value.toByteArray(Charsets.UTF16_LE)
+                        arraycopy(new, 0, it, 0, new.size)
+                    }
+                }
+
+            }
+        override fun toString(): String =
+            "JoyCapsW(name=$name)"
+    }
+
 }

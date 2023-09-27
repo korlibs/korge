@@ -1,10 +1,11 @@
 package korlibs.audio.sound.backend
 
-import com.sun.jna.*
 import korlibs.audio.sound.*
 import korlibs.datastructure.thread.*
+import korlibs.ffi.*
+import korlibs.io.async.*
+import korlibs.io.lang.*
 import korlibs.memory.*
-import korlibs.memory.dyn.*
 import korlibs.time.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
@@ -96,7 +97,7 @@ class JvmWaveOutPlatformAudioOutput(
         //println("DONE WAITING")
     }
 
-    private var handle: Pointer? = null
+    private var handle: FFIPointer? = null
     private var headers = emptyArray<WaveHeader>()
 
     override fun start() {
@@ -105,50 +106,53 @@ class JvmWaveOutPlatformAudioOutput(
         //println("STARTED")
         running = true
         nativeThread = korlibs.datastructure.thread.NativeThread {
-            val handlePtr = Memory(8L)
-            val freq = frequency
-            val blockAlign = (nchannels * Short.SIZE_BYTES)
-            val format = WAVEFORMATEX(Memory(WAVEFORMATEX().size.toLong()).also { it.clear() }.kpointer).also { format ->
-                format.wFormatTag = WINMM.WAVE_FORMAT_PCM.toShort()
-                format.nChannels = nchannels.toShort() // 2?
-                format.nSamplesPerSec = freq.toInt()
-                format.wBitsPerSample = Short.SIZE_BITS.toShort() // 16
-                format.nBlockAlign = ((nchannels * Short.SIZE_BYTES).toShort())
-                format.nAvgBytesPerSec = freq * blockAlign
-                format.cbSize = format.size.toShort()
-            }
-            WINMM.waveOutOpen(handlePtr, WINMM.WAVE_MAPPER, format.pointer?.ptr, null, null, 0).also {
-                if (it != 0) println("WINMM.waveOutOpen: $it")
-            }
-            handle = handlePtr.getPointer(0L)
-            //println("handle=$handle")
+            ffiScoped {
+                val arena = this
+                val handlePtr = allocBytes(8).typed<FFIPointer?>()
+                val freq = frequency
+                val blockAlign = (nchannels * Short.SIZE_BYTES)
+                val format = WAVEFORMATEX(allocBytes(WAVEFORMATEX().size)).also { format ->
+                    format.wFormatTag = WINMM.WAVE_FORMAT_PCM.toShort()
+                    format.nChannels = nchannels.toShort() // 2?
+                    format.nSamplesPerSec = freq.toInt()
+                    format.wBitsPerSample = Short.SIZE_BITS.toShort() // 16
+                    format.nBlockAlign = ((nchannels * Short.SIZE_BYTES).toShort())
+                    format.nAvgBytesPerSec = freq * blockAlign
+                    format.cbSize = format.size.toShort()
+                }
+                WINMM.waveOutOpen(handlePtr.pointer, WINMM.WAVE_MAPPER, format.ptr, null, null, 0).also {
+                    if (it != 0) println("WINMM.waveOutOpen: $it")
+                }
+                handle = handlePtr[0]
+                //println("handle=$handle")
 
-            headers = Array(3) { WaveHeader(it, handle, 1024, nchannels) }
+                headers = Array(3) { WaveHeader(it, handle, 1024, nchannels, arena) }
 
-            try {
-                while (running || availableRead > 0) {
-                    for (header in headers) {
-                        if (!header.hdr.isInQueue) {
-                            //println("Sending running=$running, availableRead=$availableRead, header=${header}")
-                            if (availableRead > 0) {
-                                samplesLock {
-                                    totalEmittedSamples += header.totalSamples
-                                    readShortsFully(header.data)
+                try {
+                    while (running || availableRead > 0) {
+                        for (header in headers) {
+                            if (!header.hdr.isInQueue) {
+                                //println("Sending running=$running, availableRead=$availableRead, header=${header}")
+                                if (availableRead > 0) {
+                                    samplesLock {
+                                        totalEmittedSamples += header.totalSamples
+                                        readShortsFully(header.data)
+                                    }
+                                    header.prepareAndWrite()
                                 }
-                                header.prepareAndWrite()
                             }
+                            Thread_sleep(1L)
                         }
-                        Thread.sleep(1L)
                     }
+                } finally {
+                    runBlockingNoJs {
+                        wait()
+                    }
+                    WINMM.waveOutReset(handle)
+                    WINMM.waveOutClose(handle)
+                    handle = null
+                    //println("CLOSED")
                 }
-            } finally {
-                runBlocking {
-                    wait()
-                }
-                WINMM.waveOutReset(handle)
-                WINMM.waveOutClose(handle)
-                handle = null
-                //println("CLOSED")
             }
         }.also {
             it.isDaemon = true
@@ -163,15 +167,16 @@ class JvmWaveOutPlatformAudioOutput(
 
     private class WaveHeader(
         val id: Int,
-        val handle: Pointer?,
+        val handle: FFIPointer?,
         val totalSamples: Int,
-        val nchannels: Int
+        val nchannels: Int,
+        val arena: FFIArena,
     ) {
         val data = Array(nchannels) { ShortArray(totalSamples) }
         val totalBytes = (totalSamples * nchannels * Short.SIZE_BYTES)
-        val dataMem = Memory(totalBytes.toLong())
-        val hdr = WAVEHDR(Memory(WAVEHDR().size.toLong()).kpointer).also { hdr ->
-            hdr.lpData = KPointerT(dataMem.kpointer)
+        val dataMem = arena.allocBytes(totalBytes).typed<Short>()
+        val hdr = WAVEHDR(arena.allocBytes(WAVEHDR().size)).also { hdr ->
+            hdr.lpData = dataMem.reinterpret()
             hdr.dwBufferLength = totalBytes
             hdr.dwFlags = 0
         }
@@ -183,31 +188,31 @@ class JvmWaveOutPlatformAudioOutput(
 
             for (ch in 0 until nchannels) {
                 for (n in 0 until totalSamples) {
-                    dataMem.setShort(((n * nchannels + ch) * Short.SIZE_BYTES).toLong(), data[ch][n])
+                    dataMem[((n * nchannels + ch) * Short.SIZE_BYTES)] = data[ch][n]
                 }
             }
             //if (hdr.isPrepared) dispose()
             if (!hdr.isPrepared) {
                 //println("-> prepare")
-                WINMM.waveOutPrepareHeader(handle, hdr.pointer?.ptr, hdr.size)
+                WINMM.waveOutPrepareHeader(handle, hdr.ptr, hdr.size)
             }
-            WINMM.waveOutWrite(handle, hdr.pointer?.ptr, hdr.size)
+            WINMM.waveOutWrite(handle, hdr.ptr, hdr.size)
         }
 
         fun dispose() {
-            WINMM.waveOutUnprepareHeader(handle, hdr.pointer?.ptr, hdr.size)
+            WINMM.waveOutUnprepareHeader(handle, hdr.ptr, hdr.size)
         }
 
         override fun toString(): String = "WaveHeader(id=$id, totalSamples=$totalSamples, nchannels=$nchannels, hdr=$hdr)"
     }
 }
 
-internal typealias LPHWAVEOUT = Pointer
-internal typealias HWAVEOUT = Pointer
-internal typealias LPCWAVEFORMATEX = Pointer
-internal typealias LPWAVEHDR = Pointer
+internal typealias LPHWAVEOUT = FFIPointer
+internal typealias HWAVEOUT = FFIPointer
+internal typealias LPCWAVEFORMATEX = FFIPointer
+internal typealias LPWAVEHDR = FFIPointer
 
-internal class WAVEHDR(pointer: KPointer? = null) : KStructure(pointer) {
+internal class WAVEHDR(pointer: FFIPointer? = null) : FFIStructure(pointer) {
     var lpData by pointer<Byte>()
     var dwBufferLength by int()
     var dwBytesRecorded by int()
@@ -226,7 +231,7 @@ internal class WAVEHDR(pointer: KPointer? = null) : KStructure(pointer) {
     override fun toString(): String = "WAVEHDR(dwBufferLength=$dwBufferLength, isDone=$isDone, isPrepared=$isPrepared, isInQueue=$isInQueue, flags=$dwFlags)"
 }
 
-internal class WAVEFORMATEX(pointer: KPointer? = null) : KStructure(pointer) {
+internal class WAVEFORMATEX(pointer: FFIPointer? = null) : FFIStructure(pointer) {
     var wFormatTag by short()
     var nChannels by short()
     var nSamplesPerSec by int()
@@ -236,28 +241,32 @@ internal class WAVEFORMATEX(pointer: KPointer? = null) : KStructure(pointer) {
     var cbSize by short()
 }
 
-internal typealias LPMMTIME = Pointer
-internal class MMTIME(pointer: KPointer? = null) : KStructure(pointer) {
+internal typealias LPMMTIME = FFIPointer?
+internal class MMTIME(pointer: FFIPointer? = null) : FFIStructure(pointer) {
     var wType by int()
     var values by int()
 }
 
-internal object WINMM {
-    @JvmStatic external fun waveOutOpen(phwo: LPHWAVEOUT?, uDeviceID: Int, pwfx: LPCWAVEFORMATEX?, dwCallback: Callback?, dwInstance: Pointer?, fdwOpen: Int): Int
-    @JvmStatic external fun waveOutClose(hwo: HWAVEOUT?): Int
-    @JvmStatic external fun waveOutReset(hwo: HWAVEOUT?): Int
-    @JvmStatic external fun waveOutPrepareHeader(hwo: HWAVEOUT?, pwh: LPWAVEHDR?, cbwh: Int): Int
-    @JvmStatic external fun waveOutWrite(hwo: HWAVEOUT?, pwh: LPWAVEHDR?, cbwh: Int): Int
-    @JvmStatic external fun waveOutUnprepareHeader(hwo: HWAVEOUT?, pwh: LPWAVEHDR?, cbwh: Int): Int
-    @JvmStatic external fun waveOutGetPosition(hwo: HWAVEOUT?, pmmt: LPMMTIME?, cbmmt: Int): Int
+internal object WINMM : FFILib("winmm.dll") {
+    //val waveOutOpen by func<(phwo: LPHWAVEOUT?, uDeviceID: Int, pwfx: LPCWAVEFORMATEX?, dwCallback: Callback?, dwInstance: Pointer?, fdwOpen: Int) -> Int>()
+    val waveOutOpen by func<(phwo: LPHWAVEOUT?, uDeviceID: Int, pwfx: LPCWAVEFORMATEX?, dwCallback: FFIPointer?, dwInstance: FFIPointer?, fdwOpen: Int) -> Int>()
+    val waveOutClose by func<(hwo: HWAVEOUT?) -> Int>()
+    val waveOutReset by func<(hwo: HWAVEOUT?) -> Int>()
+    val waveOutPrepareHeader by func<(hwo: HWAVEOUT?, pwh: LPWAVEHDR?, cbwh: Int) -> Int>()
+    val waveOutWrite by func<(hwo: HWAVEOUT?, pwh: LPWAVEHDR?, cbwh: Int) -> Int>()
+    val waveOutUnprepareHeader by func<(hwo: HWAVEOUT?, pwh: LPWAVEHDR?, cbwh: Int) -> Int>()
+    val waveOutGetPosition by func<(hwo: HWAVEOUT?, pmmt: LPMMTIME?, cbmmt: Int) -> Int>()
+
     fun waveOutGetPositionInSamples(hwo: HWAVEOUT?): Long {
-        val mem = Memory(16L).also { it.clear() }
-        mem.setInt(0L, TIME_SAMPLES)
-        val res = waveOutGetPosition(hwo, mem, 16)
-        val wType = mem.getInt(0L)
-        val value = mem.getInt(4L)
-        //println("waveOutGetPosition: res=$res, wType=$wType, value=$value")
-        return value.toLong()
+        ffiScoped {
+            val mem = allocBytes(16).typed<Int>()
+            mem[0] = TIME_SAMPLES
+            val res = waveOutGetPosition(hwo, mem.pointer, 16)
+            val wType = mem[0]
+            val value = mem[1]
+            //println("waveOutGetPosition: res=$res, wType=$wType, value=$value")
+            return value.toLong()
+        }
     }
 
     const val WAVE_MAPPER = -1
@@ -275,8 +284,4 @@ internal object WINMM {
     const val TIME_SMPTE = 8
     const val TIME_MIDI =16
     const val TIME_TICKS =32
-
-    init {
-        Native.register("winmm.dll")
-    }
 }

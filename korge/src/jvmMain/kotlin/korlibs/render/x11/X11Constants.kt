@@ -5,8 +5,8 @@ import com.sun.jna.platform.unix.*
 import com.sun.jna.ptr.*
 import korlibs.datastructure.*
 import korlibs.event.*
+import korlibs.ffi.*
 import korlibs.graphics.shader.gl.*
-import korlibs.memory.dyn.*
 import korlibs.render.platform.*
 
 
@@ -530,10 +530,13 @@ internal val XK_KeyMap: IntMap<Key> by lazy {
     }
 }
 
-internal fun KStructure.display() = pointer<X11.Display?>()
-internal fun KStructure.window() = pointer<X11.Window?>()
+//internal fun FFIStructure.display() = pointer<X11.Display?>()
+//internal fun FFIStructure.window() = pointer<X11.Window?>()
 
-internal class XConfigureEvent(p: KPointer? = null) : KStructure(p) {
+private fun FFIStructure.display() = pointer()
+private fun FFIStructure.window() = pointer()
+
+internal class XConfigureEvent(p: FFIPointer? = null) : FFIStructure(p) {
     var type by int()
     var serial by nativeLong()
     var send_event by int()
@@ -549,14 +552,14 @@ internal class XConfigureEvent(p: KPointer? = null) : KStructure(p) {
     var override_redirect by int()
 }
 
-internal class XKeyEvent(p: KPointer? = null) : KStructure(p) {
+internal class XKeyEvent(p: FFIPointer? = null) : FFIStructure(p) {
     var type by int()
     var serial by nativeLong()
     var send_event by int()
-    var display by pointer<X11.Display>()
-    var window by pointer<X11.Window>()
-    var root by pointer<X11.Window>()
-    var subwindow by pointer<X11.Window>()
+    var display by display()
+    var window by window()
+    var root by window()
+    var subwindow by window()
     var time by nativeLong()
     var x by int()
     var y by int()
@@ -567,14 +570,14 @@ internal class XKeyEvent(p: KPointer? = null) : KStructure(p) {
     var same_screen by int()
 }
 
-internal class MyXMotionEvent(p: KPointer? = null) : KStructure(p) {
+internal class MyXMotionEvent(p: FFIPointer? = null) : FFIStructure(p) {
     var type by int()
     var serial by nativeLong()
     var send_event by int()
-    var display by pointer<X11.Display?>()
-    var window by pointer<X11.Window?>()
-    var root by pointer<X11.Window?>()
-    var subwindow by pointer<X11.Window?>()
+    var display by display()
+    var window by window()
+    var root by window()
+    var subwindow by window()
     var time by nativeLong()
     var x by int()
     var y by int()
