@@ -22,6 +22,14 @@ val KotlinTarget.isTvos get() = name.startsWith("tvos")
 fun NamedDomainObjectContainer<KotlinSourceSet>.createPairSourceSet(name: String, vararg dependencies: PairSourceSet, doTest: Boolean = true, block: KotlinSourceSet.(test: Boolean) -> Unit = { }): PairSourceSet {
     val main = maybeCreate("${name}Main").apply { block(false) }
     val test = if (doTest) maybeCreate("${name}Test").apply { block(true) } else null
+
+    main.kotlin.srcDirs(listOf("src/$name"))
+    if (name == "common") main.resources.srcDirs(listOf("srcresources"))
+    if (test != null) {
+        test.kotlin.srcDirs(listOf("test/$name"))
+        if (name == "common") test.resources.srcDirs(listOf("testresources"))
+    }
+
     return PairSourceSet(main, test).also {
         for (dependency in dependencies) {
             it.dependsOn(dependency)
