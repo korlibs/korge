@@ -3,7 +3,7 @@ package korlibs.memory
 import korlibs.platform.*
 import org.khronos.webgl.*
 
-actual class Buffer(val dataView: DataView) {
+actual class Buffer(val dataView: org.khronos.webgl.DataView) {
     actual constructor(size: Int, direct: Boolean) : this(DataView(ArrayBuffer(checkNBufferSize(size))))
     actual constructor(array: ByteArray, offset: Int, size: Int) : this(DataView(checkNBufferWrap(array, offset, size).unsafeCast<Int8Array>().buffer, offset, size))
 
@@ -11,7 +11,7 @@ actual class Buffer(val dataView: DataView) {
     actual val sizeInBytes: Int get() = this.dataView.byteLength
 
     actual fun sliceInternal(start: Int, end: Int): Buffer =
-        Buffer(DataView(this.buffer, this.byteOffset + start, end - start))
+        Buffer(DataView(buffer, byteOffset + start, end - start))
 
     fun sliceUint8Array(offset: Int = 0, size: Int = dataView.byteLength - offset): Uint8Array =
         Uint8Array(buffer, dataView.byteOffset + offset, size)

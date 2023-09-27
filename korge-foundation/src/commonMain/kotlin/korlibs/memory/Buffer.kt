@@ -5,11 +5,8 @@ package korlibs.memory
 import korlibs.math.*
 import kotlin.jvm.*
 
-//typealias Buffer = NDataView
+typealias DataView = Buffer
 
-//expect class NDataView {
-
-// @TODO: slice -> subarray
 expect class Buffer {
     constructor(size: Int, direct: Boolean = false)
     constructor(array: ByteArray, offset: Int = 0, size: Int = array.size - offset)
@@ -144,6 +141,14 @@ internal fun checkNBufferWrap(array: ByteArray, offset: Int, size: Int): ByteArr
 val Buffer.size: Int get() = sizeInBytes
 fun Buffer.Companion.allocDirect(size: Int): Buffer = Buffer(size, direct = true)
 fun Buffer.Companion.allocNoDirect(size: Int): Buffer = Buffer(size, direct = false)
+
+fun arraycopy(src: Buffer, srcPos: Int, dst: ByteArray, dstPos: Int, size: Int) {
+    src.transferBytes(srcPos, dst, dstPos, size, toArray = true)
+}
+
+fun arraycopy(src: ByteArray, srcPos: Int, dst: Buffer, dstPos: Int, size: Int) {
+    dst.transferBytes(dstPos, src, srcPos, size, toArray = false)
+}
 
 fun Buffer.copyOf(newSize: Int): Buffer {
     val out = Buffer(newSize)

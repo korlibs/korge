@@ -5,6 +5,7 @@ import korlibs.io.*
 import korlibs.io.runtime.deno.*
 import korlibs.js.*
 import korlibs.memory.*
+import korlibs.memory.Buffer
 import kotlinx.coroutines.*
 import org.khronos.webgl.*
 import kotlin.js.Promise
@@ -189,8 +190,8 @@ actual val FFIPointer?.address: Long get() {
 actual fun CreateFFIPointer(ptr: Long): FFIPointer? = if (ptr == 0L) null else Deno.UnsafePointer.create(ptr.toJsBigInt())
 actual val FFIPointer?.str: String get() = if (this == null) "Pointer(null)" else "Pointer($value)"
 
-fun FFIPointer.getDataView(offset: Int, size: Int): DataView {
-    return DataView(Deno.UnsafePointerView(this).getArrayBuffer(size, offset))
+fun FFIPointer.getDataView(offset: Int, size: Int): org.khronos.webgl.DataView {
+    return org.khronos.webgl.DataView(Deno.UnsafePointerView(this).getArrayBuffer(size, offset))
 }
 
 actual fun FFIPointer.getUnalignedI8(offset: Int): Byte = Deno.UnsafePointerView(this).getInt8(offset)

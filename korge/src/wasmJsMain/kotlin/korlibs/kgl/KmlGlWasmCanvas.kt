@@ -10,6 +10,7 @@ import korlibs.image.bitmap.*
 import korlibs.image.format.*
 import korlibs.io.wasm.*
 import korlibs.memory.*
+import korlibs.memory.Buffer
 import kotlinx.browser.*
 import org.khronos.webgl.*
 import org.w3c.dom.*
