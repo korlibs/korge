@@ -60,7 +60,7 @@ actual class Buffer(val data: ByteArray, val offset: Int, val size: Int, dummy: 
             check(dstPosBytes + sizeInBytes <= dst.sizeInBytes)
             src.data.usePinned { srcPin ->
                 dst.data.usePinned { dstPin ->
-                    return memcmp(srcPin.startAddressOf + srcPosBytes, dstPin.startAddressOf + dstPosBytes, sizeInBytes.convert()) == 0
+                    return memcmp(srcPin.startAddressOf + src.offset + srcPosBytes, dstPin.startAddressOf + dst.offset + dstPosBytes, sizeInBytes.convert()) == 0
                 }
             }
         }
