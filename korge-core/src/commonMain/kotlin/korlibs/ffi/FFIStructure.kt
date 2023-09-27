@@ -6,7 +6,7 @@ import kotlin.reflect.*
 open class FFIStructure(var ptr: FFIPointer?) {
     val ptrSure: FFIPointer get() = ptr!!
 
-    val layout: MemLayoutBuilder = MemLayoutBuilder()
+    val layout: FFIMemLayoutBuilder = FFIMemLayoutBuilder()
 
     val size: Int get() = layout.size
     fun bool(): FFIDelegateBoolProperty = layout.bool()
@@ -23,13 +23,13 @@ open class FFIStructure(var ptr: FFIPointer?) {
     fun fixedBytes(size: Int): FFIDelegateFixedBytesProperty = layout.fixedBytes(size)
 }
 
-open class MemLayoutBuilder {
+open class FFIMemLayoutBuilder {
     var offset = 0
         internal set
     var maxAlign = 4
         internal set
 
-    private fun align(size: Int): MemLayoutBuilder {
+    private fun align(size: Int): FFIMemLayoutBuilder {
         maxAlign = max(maxAlign, size)
         while (this.offset % size != 0) this.offset++
         return this
