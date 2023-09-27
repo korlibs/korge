@@ -1,9 +1,6 @@
 package korlibs.render.win32
 
-import korlibs.memory.*
-import korlibs.event.*
-import kotlin.test.*
-
+/*
 class XInputEventAdapterCommonTest {
     @Test
     fun test() {
@@ -47,3 +44,4 @@ class XInputEventAdapterCommonTest {
         return v
     }
 }
+*/

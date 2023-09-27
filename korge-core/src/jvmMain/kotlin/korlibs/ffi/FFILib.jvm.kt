@@ -7,6 +7,9 @@ import korlibs.memory.*
 import kotlinx.coroutines.*
 import java.lang.reflect.*
 import java.util.concurrent.*
+import kotlin.Double
+import kotlin.Float
+import kotlin.Int
 import kotlin.reflect.*
 
 actual fun FFILibSym(lib: FFILib): FFILibSym {
@@ -27,21 +30,33 @@ actual val FFI_POINTER_SIZE: Int = 8
 actual fun FFIPointer.getStringz(): String = this.getString(0L)
 actual val FFIPointer?.address: Long get() = Pointer.nativeValue(this)
 actual val FFIPointer?.str: String get() = this.toString()
-actual fun FFIPointer.getIntArray(size: Int, offset: Int): IntArray = this.getIntArray(0L, size)
+actual fun FFIPointer.getIntArray(size: Int, byteOffset: Int): IntArray = this.getIntArray(0L, size)
 
-actual fun FFIPointer.getUnalignedI8(offset: Int): Byte = this.getByte(offset.toLong())
-actual fun FFIPointer.getUnalignedI16(offset: Int): Short = this.getShort(offset.toLong())
-actual fun FFIPointer.getUnalignedI32(offset: Int): Int = this.getInt(offset.toLong())
-actual fun FFIPointer.getUnalignedI64(offset: Int): Long = this.getLong(offset.toLong())
-actual fun FFIPointer.getUnalignedF32(offset: Int): Float = this.getFloat(offset.toLong())
-actual fun FFIPointer.getUnalignedF64(offset: Int): Double = this.getDouble(offset.toLong())
+actual fun FFIPointer.getS8(byteOffset: Int): Byte = this.getByte(byteOffset.toLong())
+actual fun FFIPointer.getS16(byteOffset: Int): Short = this.getShort(byteOffset.toLong())
+actual fun FFIPointer.getS32(byteOffset: Int): Int = this.getInt(byteOffset.toLong())
+actual fun FFIPointer.getS64(byteOffset: Int): Long = this.getLong(byteOffset.toLong())
+actual fun FFIPointer.getF32(byteOffset: Int): Float = this.getFloat(byteOffset.toLong())
+actual fun FFIPointer.getF64(byteOffset: Int): Double = this.getDouble(byteOffset.toLong())
 
-actual fun FFIPointer.setUnalignedI8(value: Byte, offset: Int) = this.setByte(offset.toLong(), value)
-actual fun FFIPointer.setUnalignedI16(value: Short, offset: Int) = this.setShort(offset.toLong(), value)
-actual fun FFIPointer.setUnalignedI32(value: Int, offset: Int) = this.setInt(offset.toLong(), value)
-actual fun FFIPointer.setUnalignedI64(value: Long, offset: Int) = this.setLong(offset.toLong(), value)
-actual fun FFIPointer.setUnalignedF32(value: Float, offset: Int) = this.setFloat(offset.toLong(), value)
-actual fun FFIPointer.setUnalignedF64(value: Double, offset: Int) = this.setDouble(offset.toLong(), value)
+actual fun FFIPointer.set8(value: Byte, byteOffset: Int) = this.setByte(byteOffset.toLong(), value)
+actual fun FFIPointer.set16(value: Short, byteOffset: Int) = this.setShort(byteOffset.toLong(), value)
+actual fun FFIPointer.set32(value: Int, byteOffset: Int) = this.setInt(byteOffset.toLong(), value)
+actual fun FFIPointer.set64(value: Long, byteOffset: Int) = this.setLong(byteOffset.toLong(), value)
+actual fun FFIPointer.setF32(value: Float, byteOffset: Int) = this.setFloat(byteOffset.toLong(), value)
+actual fun FFIPointer.setF64(value: Double, byteOffset: Int) = this.setDouble(byteOffset.toLong(), value)
+
+actual class FFIArena actual constructor() {
+    private val pointers = arrayListOf<Memory>()
+    actual fun allocBytes(size: Int): FFIPointer = Memory(size.toLong()).also {
+        it.clear()
+        pointers += it
+    }
+    actual fun clear() {
+        for (n in 0 until pointers.size) pointers[n].clear()
+        pointers.clear()
+    }
+}
 
 actual fun <T> FFIPointer.castToFunc(type: KType): T =
     createJNAFunctionToPlainFunc(Function.getFunction(this), type)

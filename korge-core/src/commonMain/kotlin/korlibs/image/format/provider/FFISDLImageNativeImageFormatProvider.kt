@@ -1,11 +1,8 @@
 package korlibs.image.format.provider
 
 import korlibs.ffi.*
-import korlibs.image.bitmap.Bitmap32
-import korlibs.image.format.BaseNativeImageFormatProvider
-import korlibs.image.format.BitmapNativeImage
-import korlibs.image.format.ImageDecodingProps
-import korlibs.image.format.NativeImageResult
+import korlibs.image.bitmap.*
+import korlibs.image.format.*
 
 object FFISDLImageNativeImageFormatProvider : BaseNativeImageFormatProvider() {
     private object SDL : FFILib(
@@ -44,11 +41,11 @@ object FFISDLImageNativeImageFormatProvider : BaseNativeImageFormatProvider() {
 
         //val ptr = surface.getUnalignedFFIPointer(0) ?: error("Can't load PTR")
         //println(nsurface.getIntArray(16).toList())
-        val width = nsurface.getI32(4)
-        val height = nsurface.getI32(5)
+        val width = nsurface.getS32(4)
+        val height = nsurface.getS32(5)
         //println(nsurface.getI32(8))
         //println(nsurface.getI64(4))
-        val pixels = nsurface.getFFIPointer(4) ?: error("Pixels is null in size=${width}x$height")
+        val pixels = nsurface.getAlignedFFIPointer(4) ?: error("Pixels is null in size=${width}x$height")
         val out = Bitmap32(
             width,
             height,

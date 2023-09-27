@@ -1,19 +1,14 @@
 package korlibs.render.x11
 
-import korlibs.kgl.checkedIf
-import korlibs.memory.dyn.*
-import korlibs.math.toInt
-import korlibs.graphics.gl.AGOpengl
-import korlibs.event.Key
-import korlibs.event.MouseButton
-import korlibs.event.MouseEvent
-import korlibs.render.DialogInterface
-import korlibs.render.EventLoopGameWindow
-import korlibs.render.ZenityDialogs
-import korlibs.image.bitmap.Bitmap
 import com.sun.jna.*
 import com.sun.jna.platform.unix.X11.*
+import korlibs.event.*
+import korlibs.graphics.gl.*
+import korlibs.image.bitmap.*
+import korlibs.kgl.*
+import korlibs.math.*
 import korlibs.memory.*
+import korlibs.render.*
 
 class X11GameWindow(checkGl: Boolean) : EventLoopGameWindow() {
     override val dialogInterface: DialogInterface = ZenityDialogs()
@@ -215,7 +210,7 @@ class X11GameWindow(checkGl: Boolean) : EventLoopGameWindow() {
                 ClientMessage, DestroyNotify -> close()
                 ConfigureNotify -> {
                     render(doUpdate = false) {
-                        val conf = XConfigureEvent(e.pointer.kpointer)
+                        val conf = XConfigureEvent(e.pointer)
                         width = conf.width
                         height = conf.height
                         dispatchReshapeEvent(conf.x, conf.y, conf.width, conf.height)
@@ -227,14 +222,14 @@ class X11GameWindow(checkGl: Boolean) : EventLoopGameWindow() {
                     val pressing = e.type == KeyPress
                     val ev =
                         if (pressing) korlibs.event.KeyEvent.Type.DOWN else korlibs.event.KeyEvent.Type.UP
-                    val keyCode = XKeyEvent(e.pointer.kpointer).keycode.toInt()
+                    val keyCode = XKeyEvent(e.pointer).keycode.toInt()
                     val kkey = XK_KeyMap[X.XLookupKeysym(e, 0)] ?: Key.UNKNOWN
                     //println("KEY: $ev, ${keyCode.toChar()}, $kkey, $keyCode, keySym=$keySym")
                     dispatchKeyEvent(ev, 0, keyCode.toChar(), kkey, keyCode)
                     //break@loop
                 }
                 MotionNotify, ButtonPress, ButtonRelease -> {
-                    val mot = MyXMotionEvent(e.pointer.kpointer)
+                    val mot = MyXMotionEvent(e.pointer)
                     //val mot = e.xmotion
                     val but = e.xbutton
 

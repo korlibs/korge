@@ -3,8 +3,8 @@ package korlibs.audio.sound.backend
 import com.sun.jna.*
 import korlibs.audio.sound.*
 import korlibs.datastructure.thread.*
+import korlibs.ffi.*
 import korlibs.memory.*
-import korlibs.memory.dyn.*
 import korlibs.time.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
@@ -108,7 +108,7 @@ class JvmWaveOutPlatformAudioOutput(
             val handlePtr = Memory(8L)
             val freq = frequency
             val blockAlign = (nchannels * Short.SIZE_BYTES)
-            val format = WAVEFORMATEX(Memory(WAVEFORMATEX().size.toLong()).also { it.clear() }.kpointer).also { format ->
+            val format = WAVEFORMATEX(Memory(WAVEFORMATEX().size.toLong()).also { it.clear() }).also { format ->
                 format.wFormatTag = WINMM.WAVE_FORMAT_PCM.toShort()
                 format.nChannels = nchannels.toShort() // 2?
                 format.nSamplesPerSec = freq.toInt()
@@ -117,7 +117,7 @@ class JvmWaveOutPlatformAudioOutput(
                 format.nAvgBytesPerSec = freq * blockAlign
                 format.cbSize = format.size.toShort()
             }
-            WINMM.waveOutOpen(handlePtr, WINMM.WAVE_MAPPER, format.pointer?.ptr, null, null, 0).also {
+            WINMM.waveOutOpen(handlePtr, WINMM.WAVE_MAPPER, format.ptr, null, null, 0).also {
                 if (it != 0) println("WINMM.waveOutOpen: $it")
             }
             handle = handlePtr.getPointer(0L)
@@ -170,8 +170,8 @@ class JvmWaveOutPlatformAudioOutput(
         val data = Array(nchannels) { ShortArray(totalSamples) }
         val totalBytes = (totalSamples * nchannels * Short.SIZE_BYTES)
         val dataMem = Memory(totalBytes.toLong())
-        val hdr = WAVEHDR(Memory(WAVEHDR().size.toLong()).kpointer).also { hdr ->
-            hdr.lpData = KPointerT(dataMem.kpointer)
+        val hdr = WAVEHDR(Memory(WAVEHDR().size.toLong())).also { hdr ->
+            hdr.lpData = dataMem.typed()
             hdr.dwBufferLength = totalBytes
             hdr.dwFlags = 0
         }
@@ -189,13 +189,13 @@ class JvmWaveOutPlatformAudioOutput(
             //if (hdr.isPrepared) dispose()
             if (!hdr.isPrepared) {
                 //println("-> prepare")
-                WINMM.waveOutPrepareHeader(handle, hdr.pointer?.ptr, hdr.size)
+                WINMM.waveOutPrepareHeader(handle, hdr.ptr, hdr.size)
             }
-            WINMM.waveOutWrite(handle, hdr.pointer?.ptr, hdr.size)
+            WINMM.waveOutWrite(handle, hdr.ptr, hdr.size)
         }
 
         fun dispose() {
-            WINMM.waveOutUnprepareHeader(handle, hdr.pointer?.ptr, hdr.size)
+            WINMM.waveOutUnprepareHeader(handle, hdr.ptr, hdr.size)
         }
 
         override fun toString(): String = "WaveHeader(id=$id, totalSamples=$totalSamples, nchannels=$nchannels, hdr=$hdr)"
@@ -207,7 +207,7 @@ internal typealias HWAVEOUT = Pointer
 internal typealias LPCWAVEFORMATEX = Pointer
 internal typealias LPWAVEHDR = Pointer
 
-internal class WAVEHDR(pointer: KPointer? = null) : KStructure(pointer) {
+internal class WAVEHDR(pointer: FFIPointer? = null) : FFIStructure(pointer) {
     var lpData by pointer<Byte>()
     var dwBufferLength by int()
     var dwBytesRecorded by int()
@@ -226,7 +226,7 @@ internal class WAVEHDR(pointer: KPointer? = null) : KStructure(pointer) {
     override fun toString(): String = "WAVEHDR(dwBufferLength=$dwBufferLength, isDone=$isDone, isPrepared=$isPrepared, isInQueue=$isInQueue, flags=$dwFlags)"
 }
 
-internal class WAVEFORMATEX(pointer: KPointer? = null) : KStructure(pointer) {
+internal class WAVEFORMATEX(pointer: FFIPointer? = null) : FFIStructure(pointer) {
     var wFormatTag by short()
     var nChannels by short()
     var nSamplesPerSec by int()
@@ -237,7 +237,7 @@ internal class WAVEFORMATEX(pointer: KPointer? = null) : KStructure(pointer) {
 }
 
 internal typealias LPMMTIME = Pointer
-internal class MMTIME(pointer: KPointer? = null) : KStructure(pointer) {
+internal class MMTIME(pointer: FFIPointer? = null) : FFIStructure(pointer) {
     var wType by int()
     var values by int()
 }

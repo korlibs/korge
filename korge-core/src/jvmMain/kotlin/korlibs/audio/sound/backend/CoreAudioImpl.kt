@@ -2,6 +2,7 @@ package korlibs.audio.sound.backend
 
 import com.sun.jna.*
 import korlibs.audio.sound.*
+import korlibs.ffi.*
 import korlibs.memory.dyn.*
 import java.util.concurrent.*
 import java.util.concurrent.atomic.*
@@ -28,7 +29,7 @@ private val jnaCoreAudioCallback by lazy {
         val output = audioOutputsById[(inUserData?.address ?: 0L).toInt()] ?: return@AudioQueueNewOutputCallback 0
 
         //val tone = AudioTone.generate(1.seconds, 41000.0)
-        val queue = AudioQueueBuffer(inBuffer?.kpointer)
+        val queue = AudioQueueBuffer(inBuffer)
         val ptr = queue.mAudioData
         val samplesCount = (queue.mAudioDataByteSize / Short.SIZE_BYTES) / 2
 
@@ -45,14 +46,16 @@ private val jnaCoreAudioCallback by lazy {
         //println("callback: availableRead=$availableRead, completed=$completed, inUserData=$inUserData, inAQ=$inAQ, inBuffer=$inBuffer, thread=${Thread.currentThread()}")
 
         //println(queue.mAudioDataByteSize)
-        for (n in 0 until samplesCount) {
-            ptr.pointer.setShort(((n * DequeBasedPlatformAudioOutput.nchannels + 0) * 2), left[n])
-            ptr.pointer.setShort(((n * DequeBasedPlatformAudioOutput.nchannels + 1) * 2), right[n])
+        if (ptr != null) {
+            for (n in 0 until samplesCount) {
+                ptr[n * DequeBasedPlatformAudioOutput.nchannels + 0] = left[n]
+                ptr[n * DequeBasedPlatformAudioOutput.nchannels + 1] = right[n]
+            }
         }
         //println("queue.mAudioData=${queue.mAudioData}")
 
         if (!output.completed) {
-            CoreAudioKit.AudioQueueEnqueueBuffer(inAQ, queue.pointer?.ptr, 0, null).also {
+            CoreAudioKit.AudioQueueEnqueueBuffer(inAQ, queue.ptr, 0, null).also {
                 if (it != 0) println("CoreAudioKit.AudioQueueEnqueueBuffer -> $it")
             }
         } else {
@@ -102,7 +105,7 @@ private class JvmCoreAudioPlatformAudioOutput(
     override fun start() {
         completed = false
         val queueRef = Memory(16).also { it.clear() }
-        val format = AudioStreamBasicDescription(Memory(40).also { it.clear() }.kpointer)
+        val format = AudioStreamBasicDescription(Memory(40).also { it.clear() })
 
         format.mSampleRate = frequency.toDouble()
         format.mFormatID = CoreAudioKit.kAudioFormatLinearPCM
@@ -117,7 +120,7 @@ private class JvmCoreAudioPlatformAudioOutput(
         val userDefinedPtr = Pointer(id.toLong())
 
         CoreAudioKit.AudioQueueNewOutput(
-            format.pointer?.ptr, jnaCoreAudioCallback, userDefinedPtr,
+            format.ptr, jnaCoreAudioCallback, userDefinedPtr,
             //CoreFoundation.CFRunLoopGetCurrent(),
             CoreFoundation.CFRunLoopGetMain(),
             CoreFoundation.kCFRunLoopCommonModes, 0, queueRef
@@ -132,10 +135,10 @@ private class JvmCoreAudioPlatformAudioOutput(
             CoreAudioKit.AudioQueueAllocateBuffer(queue, bufferSizeInBytes, bufferPtr).also {
                 if (it != 0) println("CoreAudioKit.AudioQueueAllocateBuffer -> $it")
             }
-            val ptr = AudioQueueBuffer(bufferPtr.getPointer(0).kpointer)
+            val ptr = AudioQueueBuffer(bufferPtr.getPointer(0))
             //println("AudioQueueAllocateBuffer=$res, ptr.pointer=${ptr.pointer}")
             ptr.mAudioDataByteSize = bufferSizeInBytes
-            jnaCoreAudioCallback.callback(userDefinedPtr, queue, ptr.pointer?.ptr)
+            jnaCoreAudioCallback.callback(userDefinedPtr, queue, ptr.ptr)
         }
         CoreAudioKit.AudioQueueStart(queue, null).also {
             if (it != 0) println("CoreAudioKit.AudioQueueStart -> $it")
@@ -151,7 +154,7 @@ private class JvmCoreAudioPlatformAudioOutput(
 }
 
 
-private class AudioQueueBuffer(p: KPointer? = null) : KStructure(p) {
+private class AudioQueueBuffer(p: FFIPointer? = null) : FFIStructure(p) {
     var mAudioDataBytesCapacity by int()
     var mAudioData by pointer<Short>()
     var mAudioDataByteSize by int()
@@ -171,7 +174,7 @@ private class AudioQueueBuffer(p: KPointer? = null) : KStructure(p) {
 //    //UInt32              mReserved;
 //}
 
-private class AudioStreamBasicDescription(p: KPointer? = null) : KStructure(p) {
+private class AudioStreamBasicDescription(p: FFIPointer? = null) : FFIStructure(p) {
     var mSampleRate by double()
     var mFormatID by int()
     var mFormatFlags by int()
