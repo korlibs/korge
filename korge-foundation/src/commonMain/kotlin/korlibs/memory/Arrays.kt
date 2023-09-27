@@ -141,6 +141,12 @@ public inline fun <T> arraycopy(size: Int, src: Any?, srcPos: Int, dst: Any?, ds
 }
 
 // Buffer variants
+fun arraycopy(src: Buffer, srcPos: Int, dst: ByteArray, dstPos: Int, size: Int) {
+    src.transferBytes(srcPos, dst, dstPos, size, toArray = true)
+}
+fun arraycopy(src: ByteArray, srcPos: Int, dst: Buffer, dstPos: Int, size: Int) {
+    dst.transferBytes(dstPos, src, srcPos, size, toArray = false)
+}
 fun arraycopy(src: Buffer, srcPos: Int, dst: Buffer, dstPos: Int, size: Int) {
     Buffer.copy(src, srcPos, dst, dstPos, size)
 }

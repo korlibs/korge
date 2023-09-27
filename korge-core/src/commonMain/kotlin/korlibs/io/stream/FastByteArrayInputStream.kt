@@ -115,23 +115,23 @@ class FastByteArrayInputStream(val ba: ByteArray, offset: Int = 0, val start: In
     fun readBytes(count: Int) = ba.getS8Array(offset(count), count)
 
     // Arrays
-    fun readShortArrayLE(count: Int): ShortArray = ba.getS16LEArray(offset(count * 2), count)
-    fun readShortArrayBE(count: Int): ShortArray = ba.getS16BEArray(offset(count * 2), count)
+    fun readShortArrayLE(count: Int): ShortArray = ba.getS16ArrayLE(offset(count * 2), count)
+    fun readShortArrayBE(count: Int): ShortArray = ba.getS16ArrayBE(offset(count * 2), count)
 
-    fun readCharArrayLE(count: Int): CharArray = ba.getU16LEArray(offset(count * 2), count)
-    fun readCharArrayBE(count: Int): CharArray = ba.getU16BEArray(offset(count * 2), count)
+    fun readCharArrayLE(count: Int): CharArray = ba.getU16ArrayLE(offset(count * 2), count)
+    fun readCharArrayBE(count: Int): CharArray = ba.getU16ArrayBE(offset(count * 2), count)
 
-    fun readIntArrayLE(count: Int): IntArray = ba.getS32LEArray(offset(count * 4), count)
-    fun readIntArrayBE(count: Int): IntArray = ba.getS32BEArray(offset(count * 4), count)
+    fun readIntArrayLE(count: Int): IntArray = ba.getS32ArrayLE(offset(count * 4), count)
+    fun readIntArrayBE(count: Int): IntArray = ba.getS32ArrayBE(offset(count * 4), count)
 
-    fun readLongArrayLE(count: Int): LongArray = ba.getS64LEArray(offset(count * 8), count)
-    fun readLongArrayBE(count: Int): LongArray = ba.getS64BEArray(offset(count * 8), count)
+    fun readLongArrayLE(count: Int): LongArray = ba.getS64ArrayLE(offset(count * 8), count)
+    fun readLongArrayBE(count: Int): LongArray = ba.getS64ArrayBE(offset(count * 8), count)
 
-    fun readFloatArrayLE(count: Int): FloatArray = ba.getF32LEArray(offset(count * 4), count)
-    fun readFloatArrayBE(count: Int): FloatArray = ba.getF32BEArray(offset(count * 4), count)
+    fun readFloatArrayLE(count: Int): FloatArray = ba.getF32ArrayLE(offset(count * 4), count)
+    fun readFloatArrayBE(count: Int): FloatArray = ba.getF32ArrayBE(offset(count * 4), count)
 
-    fun readDoubleArrayLE(count: Int): DoubleArray = ba.getF64LEArray(offset(count * 8), count)
-    fun readDoubleArrayBE(count: Int): DoubleArray = ba.getF64BEArray(offset(count * 8), count)
+    fun readDoubleArrayLE(count: Int): DoubleArray = ba.getF64ArrayLE(offset(count * 8), count)
+    fun readDoubleArrayBE(count: Int): DoubleArray = ba.getF64ArrayBE(offset(count * 8), count)
 
     // Variable Length
     fun readU_VL(): Int {

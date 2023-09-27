@@ -125,10 +125,10 @@ fun Buffer.setFFIPointer(offset: Int, value: FFIPointer?) {
 }
 
 fun Buffer.getUnalignedFFIPointer(offset: Int): FFIPointer? {
-    return CreateFFIPointer(if (FFI_POINTER_SIZE == 8) getUnalignedInt64(offset) else getUnalignedInt32(offset).toLong())
+    return CreateFFIPointer(if (FFI_POINTER_SIZE == 8) getS64(offset) else getS32(offset).toLong())
 }
 fun Buffer.setUnalignedFFIPointer(offset: Int, value: FFIPointer?) {
-    if (FFI_POINTER_SIZE == 8) setUnalignedInt64(offset, value.address) else setUnalignedInt32(offset, value.address.toInt())
+    if (FFI_POINTER_SIZE == 8) set64(offset, value.address) else set32(offset, value.address.toInt())
 }
 
 expect fun FFILibSym(lib: FFILib): FFILibSym

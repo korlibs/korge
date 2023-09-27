@@ -9,7 +9,6 @@ import korlibs.graphics.*
 import korlibs.graphics.shader.gl.*
 import korlibs.image.bitmap.*
 import korlibs.io.lang.*
-import korlibs.io.util.*
 import korlibs.logger.*
 import korlibs.memory.*
 import korlibs.number.*

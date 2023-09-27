@@ -428,7 +428,7 @@ open class NBufferTestBase {
     @Test
     fun testCopy() {
         val bufferBase = Buffer(ByteArray(16) { it.toByte() })
-        val buffer = bufferBase.slice(1)
+        val buffer = bufferBase.sliceBuffer(1)
         val buffer2 = Buffer(14, direct)
         Buffer.copy(buffer, 2, buffer2, 5, 7)
         assertEquals("0000000000030405060708090000", buffer2.hex())
@@ -440,7 +440,7 @@ open class NBufferTestBase {
             for (direct2 in listOf(false, true)) {
                 val bufferBase = Buffer(16, direct1)
                 for (n in 0 until 16) bufferBase.setUnalignedUInt8(n, n)
-                val buffer = bufferBase.slice(1)
+                val buffer = bufferBase.sliceBuffer(1)
                 val buffer2 = Buffer(14, direct2)
                 Buffer.copy(buffer, 2, buffer2, 5, 7)
                 assertEquals("0000000000030405060708090000", buffer2.hex())
@@ -454,9 +454,9 @@ open class NBufferTestBase {
             for (direct2 in listOf(false, true)) {
                 val bufferBase = Buffer(16, direct1)
                 for (n in 0 until 16) bufferBase.setUnalignedUInt8(n, n)
-                val buffer = bufferBase.slice(1)
-                val buffer2 = buffer.slice(2)
-                Buffer.copy(buffer.slice(1), 2, buffer2, 5, 7)
+                val buffer = bufferBase.sliceBuffer(1)
+                val buffer2 = buffer.sliceBuffer(2)
+                Buffer.copy(buffer.sliceBuffer(1), 2, buffer2, 5, 7)
                 assertEquals("03040506070405060708090a0f", buffer2.hex())
             }
         }

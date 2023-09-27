@@ -155,15 +155,15 @@ class UniformsRef(
     }
 
     // @TODO: Remaining get functions
-    operator fun get(uniform: TypedUniform<Int>): Int = getOffset(uniform).let { buffer.getUnalignedInt32(it) }
-    operator fun get(uniform: TypedUniform<Float>): Float = getOffset(uniform).let { buffer.getUnalignedFloat32(it + 0) }
-    operator fun get(uniform: TypedUniform<Vector2F>): Vector2F = getOffset(uniform).let { Vector2F(buffer.getUnalignedFloat32(it + 0), buffer.getUnalignedFloat32(it + 4)) }
-    operator fun get(uniform: TypedUniform<Vector3F>): Vector3F = getOffset(uniform).let { Vector3F(buffer.getUnalignedFloat32(it + 0), buffer.getUnalignedFloat32(it + 4), buffer.getUnalignedFloat32(it + 8)) }
-    operator fun get(uniform: TypedUniform<Vector4F>): Vector4F = getOffset(uniform).let { Vector4F(buffer.getUnalignedFloat32(it + 0), buffer.getUnalignedFloat32(it + 4), buffer.getUnalignedFloat32(it + 8), buffer.getUnalignedFloat32(it + 12)) }
+    operator fun get(uniform: TypedUniform<Int>): Int = getOffset(uniform).let { buffer.getS32(it) }
+    operator fun get(uniform: TypedUniform<Float>): Float = getOffset(uniform).let { buffer.getF32(it + 0) }
+    operator fun get(uniform: TypedUniform<Vector2F>): Vector2F = getOffset(uniform).let { Vector2F(buffer.getF32(it + 0), buffer.getF32(it + 4)) }
+    operator fun get(uniform: TypedUniform<Vector3F>): Vector3F = getOffset(uniform).let { Vector3F(buffer.getF32(it + 0), buffer.getF32(it + 4), buffer.getF32(it + 8)) }
+    operator fun get(uniform: TypedUniform<Vector4F>): Vector4F = getOffset(uniform).let { Vector4F(buffer.getF32(it + 0), buffer.getF32(it + 4), buffer.getF32(it + 8), buffer.getF32(it + 12)) }
     //operator fun get(uniform: TypedUniform<Matrix4>): Matrix4 = TODO()
 
     operator fun set(uniform: TypedUniform<Int>, value: Int) {
-        getOffset(uniform).also { buffer.setUnalignedInt32(it, value) }
+        getOffset(uniform).also { buffer.set32(it, value) }
     }
     operator fun set(uniform: TypedUniform<Float>, value: Boolean) = set(uniform, if (value) 1f else 0f)
     operator fun set(uniform: TypedUniform<Float>, value: Double) = set(uniform, value.toFloat())
@@ -202,7 +202,7 @@ class UniformsRef(
     }
     operator fun set(uniform: TypedUniform<Float>, value: Float) {
         getOffset(uniform).also {
-            buffer.setUnalignedFloat32(it + 0, value)
+            buffer.setF32(it + 0, value)
         }
     }
     //operator fun set(uniform: TypedUniform<Point>, x: Double, y: Double) { getOffset(uniform).also { bufferSetFloat2(it, x.toFloat(), y.toFloat()) } }
@@ -216,28 +216,28 @@ class UniformsRef(
 
 
     fun bufferSetFloat1(index: Int, v: Float) {
-        buffer.setUnalignedFloat32(index + 0, v)
+        buffer.setF32(index + 0, v)
     }
 
     fun bufferSetFloat2(index: Int, v: Vector2F) = bufferSetFloat2(index, v.x, v.y)
     fun bufferSetFloat2(index: Int, x: Float, y: Float) {
-        buffer.setUnalignedFloat32(index + 0, x)
-        buffer.setUnalignedFloat32(index + 4, y)
+        buffer.setF32(index + 0, x)
+        buffer.setF32(index + 4, y)
     }
 
     fun bufferSetFloat3(index: Int, v: Vector3F) = bufferSetFloat3(index, v.x, v.y, v.z)
     fun bufferSetFloat3(index: Int, x: Float, y: Float, z: Float) {
-        buffer.setUnalignedFloat32(index + 0, x)
-        buffer.setUnalignedFloat32(index + 4, y)
-        buffer.setUnalignedFloat32(index + 8, z)
+        buffer.setF32(index + 0, x)
+        buffer.setF32(index + 4, y)
+        buffer.setF32(index + 8, z)
     }
 
     fun bufferSetFloat4(index: Int, v: Vector4F) = bufferSetFloat4(index, v.x, v.y, v.z, v.w)
     fun bufferSetFloat4(index: Int, x: Float, y: Float, z: Float, w: Float) {
-        buffer.setUnalignedFloat32(index + 0, x)
-        buffer.setUnalignedFloat32(index + 4, y)
-        buffer.setUnalignedFloat32(index + 8, z)
-        buffer.setUnalignedFloat32(index + 12, w)
+        buffer.setF32(index + 0, x)
+        buffer.setF32(index + 4, y)
+        buffer.setF32(index + 8, z)
+        buffer.setF32(index + 12, w)
     }
 
     fun bufferSetFloat16(index: Int, value: Matrix4, indices: IntArray = Matrix4.INDICES_BY_COLUMNS_4x4) {
@@ -246,12 +246,12 @@ class UniformsRef(
 
     fun bufferSetFloatN(index: Int, floats: FloatArray, size: Int, offset: Int = 0) {
         for (n in 0 until size) {
-            buffer.setUnalignedFloat32(index + (n * 4), floats[offset + n])
+            buffer.setF32(index + (n * 4), floats[offset + n])
         }
     }
 
     inline fun bufferSetFloatNIndexed(index: Int, indices: IntArray, max: Int = indices.size, value: (Int) -> Float) {
-        for (n in 0 until max) buffer.setUnalignedFloat32(index + (n * 4), value(indices[n]))
+        for (n in 0 until max) buffer.setF32(index + (n * 4), value(indices[n]))
     }
 
     fun bufferSetFloatNIndexed(index: Int, indices: IntArray, value: FloatArray, max: Int = indices.size) {

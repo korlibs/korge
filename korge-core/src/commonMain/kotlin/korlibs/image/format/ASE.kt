@@ -412,7 +412,7 @@ object ASE : ImageFormatWithContainer("ase") {
                                 val compressedData = cs.readAvailable()
                                     .uncompress(ZLib, tilesWidth * tilesHeight * bytesPerTile)
                                 val data = when (bitsPerTile) {
-                                    32 -> compressedData.getS32LEArray(0, tilesWidth * tilesHeight)
+                                    32 -> compressedData.getS32ArrayLE(0, tilesWidth * tilesHeight)
                                     else -> TODO("Only supported 32-bits per tile")
                                 }
                                 AseTilemapCell(
@@ -580,7 +580,7 @@ object ASE : ImageFormatWithContainer("ase") {
                             val compressedData =
                                 cs.readBytesExact(compressedDataLength) // (Tile Width) x (Tile Height x Number of Tiles)
                             val data = compressedData.uncompress(ZLib)
-                            val ints = data.getS32LEArray(0, tileWidth * tileHeight * ntiles)
+                            val ints = data.getS32ArrayLE(0, tileWidth * tileHeight * ntiles)
                             val bitmap =
                                 Bitmap32(tileWidth, tileHeight * ntiles, RgbaArray(ints)).also {
                                     if (props.premultipliedSure) it.premultiplyInplaceIfRequired()

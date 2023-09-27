@@ -1,7 +1,6 @@
 package korlibs.audio.sound.impl.jna
 
 import korlibs.logger.Logger
-import korlibs.memory.*
 import korlibs.io.lang.Environment
 import korlibs.io.time.traceTime
 import com.sun.jna.Native

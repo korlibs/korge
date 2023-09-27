@@ -69,8 +69,8 @@ class NBufferTest2 {
 		assertEquals(0x03020100, mem.getInt32(0))
 		assertEquals(0x07060504, mem.getInt32(1))
 
-		assertEquals(0x03020100, mem.getUnalignedInt32(0))
-		assertEquals(0x04030201, mem.getUnalignedInt32(1))
-		assertEquals(0x05040302, mem.getUnalignedInt32(2))
+		assertEquals(0x03020100, mem.getS32(0))
+		assertEquals(0x04030201, mem.getS32(1))
+		assertEquals(0x05040302, mem.getS32(2))
 	}
 }

@@ -31,7 +31,7 @@ class CompressionJvmTest {
     fun gzip() {
         val data = compressedData
         val res = data.uncompress(GZIPNoCrc)
-        val res2 = res.getS32LEArray(0, 4096 / 4)
+        val res2 = res.getS32ArrayLE(0, 4096 / 4)
         val actualData = res2.toList().joinToString("")
         if (expectedData != actualData) {
             println("EX: $expectedData")
@@ -44,7 +44,7 @@ class CompressionJvmTest {
     fun gzip2() {
         val data = compressedData
         val res = data.uncompress(GZIPNoCrc)
-        val res2 = res.getS32LEArray(0, 4096 / 4)
+        val res2 = res.getS32ArrayLE(0, 4096 / 4)
         assertEquals(expectedData, res2.toList().joinToString(""))
     }
 

@@ -49,7 +49,7 @@ class AGUniformBlockTest {
 
         assertEquals(
             listOf(0.0, 1.0, 2.0, 3.0, 10.0, 11.0, 12.0, 13.0, 20.0, 21.0, 22.0, 23.0, 33.0, 33.0, 33.0, 33.0).map { it.toFloat() },
-            ubb.buffer.slice(0, ubb.blockSizeNoGlAlign).f32.toFloatArray().toList()
+            ubb.buffer.sliceBuffer(0, ubb.blockSizeNoGlAlign).f32.toFloatArray().toList()
         )
 
         val str = FragmentShader {
