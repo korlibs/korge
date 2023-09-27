@@ -221,6 +221,7 @@ object LibC : FFILib("/System/Library/Frameworks/CoreFoundation.framework/CoreFo
 inline class FFITypedPointer<T>(val pointer: FFIPointer)
 
 fun <T> FFIPointer.typed(): FFITypedPointer<T> = FFITypedPointer<T>(this)
+fun <T> FFITypedPointer<*>.reinterpret(): FFITypedPointer<T> = FFITypedPointer<T>(this.pointer)
 
 operator fun FFITypedPointer<Byte>.get(index: Int): Byte = pointer.getS8(index * 1)
 operator fun FFITypedPointer<Short>.get(index: Int): Short = pointer.getS16(index * 2)
@@ -228,6 +229,7 @@ operator fun FFITypedPointer<Int>.get(index: Int): Int = pointer.getS32(index * 
 operator fun FFITypedPointer<Long>.get(index: Int): Long = pointer.getS64(index * 8)
 operator fun FFITypedPointer<Float>.get(index: Int): Float = pointer.getF32(index * 4)
 operator fun FFITypedPointer<Double>.get(index: Int): Double = pointer.getF64(index * 8)
+operator fun FFITypedPointer<FFIPointer?>.get(index: Int): FFIPointer? = pointer.getFFIPointer(index * FFI_POINTER_SIZE)
 
 operator fun FFITypedPointer<Byte>.set(index: Int, value: Byte) = pointer.set8(value, index * 1)
 operator fun FFITypedPointer<Short>.set(index: Int, value: Short) = pointer.set16(value, index * 2)
@@ -235,3 +237,4 @@ operator fun FFITypedPointer<Int>.set(index: Int, value: Int) = pointer.set32(va
 operator fun FFITypedPointer<Long>.set(index: Int, value: Long) = pointer.set64(value, index * 8)
 operator fun FFITypedPointer<Float>.set(index: Int, value: Float) = pointer.setF32(value, index * 4)
 operator fun FFITypedPointer<Double>.set(index: Int, value: Double) = pointer.setF64(value, index * 8)
+operator fun FFITypedPointer<FFIPointer?>.set(index: Int, value: FFIPointer?) = pointer.setFFIPointer(value, index * FFI_POINTER_SIZE)
