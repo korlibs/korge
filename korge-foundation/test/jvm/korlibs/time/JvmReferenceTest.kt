@@ -2,6 +2,7 @@ package korlibs.time
 
 import java.time.*
 import java.time.format.*
+import java.util.*
 import kotlin.test.*
 
 class JvmReferenceTest {
@@ -9,9 +10,9 @@ class JvmReferenceTest {
         pattern: String,
         dateString: String
     ): Long {
-        val formatter = DateTimeFormatter.ofPattern(pattern)
-        val dateTime = LocalDateTime.parse(dateString, formatter);
-        val timestampMillis = dateTime.toInstant(ZoneOffset.UTC).toEpochMilli();
+        val formatter = DateTimeFormatter.ofPattern(pattern, Locale.ENGLISH)
+        val dateTime = LocalDateTime.parse(dateString, formatter)
+        val timestampMillis = dateTime.toInstant(ZoneOffset.UTC).toEpochMilli()
         return timestampMillis
     }
 

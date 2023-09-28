@@ -13,7 +13,7 @@ import kotlin.test.*
 
 class WastReaderTestJit : WastReaderTest() {
     override fun runModule(module: WasmModule, codeTrace: Boolean) {
-        WasmRunJVMJIT.build(module, codeTrace = codeTrace).invoke("run\$asserts")
+        WasmRunJVMOutputExt.build(module, codeTrace = codeTrace).invoke("run\$asserts")
     }
 }
 

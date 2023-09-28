@@ -198,7 +198,7 @@ open class WasmTest {
 
     protected suspend fun createModuleRuntimeJVM(file: String, loadTrace: Boolean = false, memPages: Int = 10, codeTrace: Boolean = false, validate: Boolean = true): WasmRuntime {
         val reader = WasmReaderBinary().also { it.doTrace = loadTrace }.read(resourcesVfs[file].readBytes().openSync())
-        val wasmModule = WasmRunJVMOutput().also { it.trace = codeTrace; it.validate = validate }.generate(reader.toModule())
+        val wasmModule = WasmRunJVMOutputExt().also { it.trace = codeTrace; it.validate = validate }.generate(reader.toModule())
         return wasmModule
     }
 
