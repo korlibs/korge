@@ -27,12 +27,11 @@ fun <T : Anchorable> T.anchor(anchor: Anchor): T {
     return this
 }
 
-fun <T : Anchorable> T.anchor(ax: Float, ay: Float): T = anchor(Anchor(ax, ay))
-fun <T : Anchorable> T.anchor(ax: Double, ay: Double): T = anchor(Anchor(ax, ay))
-fun <T : Anchorable> T.anchor(ax: Int, ay: Int): T = anchor(Anchor(ax, ay))
+@Suppress("NOTHING_TO_INLINE")
+inline fun <T : Anchorable> T.anchor(ax: Number, ay: Number): T = anchor(Anchor(ax.toDouble(), ay.toDouble()))
 
-fun <T : Anchorable> T.center(): T = anchor(0.5f, 0.5f)
-val <T : Anchorable> T.centered: T get() = anchor(0.5f, 0.5f)
+fun <T : Anchorable> T.center(): T = anchor(0.5, 0.5)
+val <T : Anchorable> T.centered: T get() = center()
 
 interface PixelAnchorable {
     @ViewProperty(name = "anchorPixel")

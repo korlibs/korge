@@ -22,6 +22,7 @@ data class Anchor2D(val sx: Double, val sy: Double) : Interpolable<Anchor> {
 
     companion object {
         inline operator fun invoke(sx: Ratio, sy: Ratio): Anchor2D = Anchor2D(sx.toDouble(), sy.toDouble())
+        inline operator fun invoke(sx: Number, sy: Number): Anchor2D = Anchor2D(sx.toDouble(), sy.toDouble())
 
         val TOP_LEFT: Anchor = Anchor(0f, 0f)
         val TOP_CENTER: Anchor = Anchor(.5f, 0f)
