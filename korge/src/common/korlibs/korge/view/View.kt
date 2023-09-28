@@ -84,9 +84,6 @@ abstract class View internal constructor(
     @KorgeInternal
     open val anchorDispY: Float get() = 0f
 
-    val anchorDispXF: Float get() = anchorDispX.toFloat()
-    val anchorDispYF: Float get() = anchorDispY.toFloat()
-
     /** Read-only internal children list, or null when not a [Container] */
     @KorgeInternal
     @PublishedApi
@@ -205,7 +202,7 @@ abstract class View internal constructor(
 
     /** Ratio speed of this node, affecting all the [View.addUpdater] */
     @ViewProperty(min = -1.0, max = 1.0, clampMin = false, clampMax = false)
-    var speed: Float = 1f
+    var speed: Double = 1.0
 
     internal var _stage: Stage? = null
         set(value) {
@@ -256,7 +253,7 @@ abstract class View internal constructor(
         }
 
     /** Computed [speed] combining all the speeds from ancestors */
-    val globalSpeed: Float get() = if (parent != null) parent!!.globalSpeed * speed else speed
+    val globalSpeed: Double get() = if (parent != null) parent!!.globalSpeed * speed else speed
 
     protected var _x: Double = 0.0
     protected var _y: Double = 0.0
@@ -266,7 +263,7 @@ abstract class View internal constructor(
     private var _skewY: Angle = Angle.ZERO
     private var _rotation: Angle = Angle.ZERO
 
-    private fun setXY(x: Double, y: Double) {
+    internal fun setXY(x: Double, y: Double) {
         ensureTransform()
         if (this._x != x || this._y != y) {
             this._x = x
@@ -1704,8 +1701,7 @@ fun <T : View> T.size(size: Size): T {
     return this
 }
 fun <T : View> T.size(width: Double, height: Double): T = size(Size(width, height))
-fun <T : View> T.size(width: Float, height: Float): T = size(Size(width, height))
-fun <T : View> T.size(width: Int, height: Int): T = size(Size(width, height))
+inline fun <T : View> T.size(width: Number, height: Number): T = size(width.toDouble(), height.toDouble())
 
 fun <T : View> T.globalPos(p: Point): T {
     this.globalPos = p
@@ -1757,33 +1753,34 @@ fun <T : View> T.xy(p: Point): T {
     this.pos = p
     return this
 }
-fun <T : View> T.xy(x: Double, y: Double): T = xy(Point(x, y))
-fun <T : View> T.xy(x: Float, y: Float): T = xy(Point(x, y))
-fun <T : View> T.xy(x: Int, y: Int): T = xy(Point(x, y))
+@Deprecated("")
 fun <T : View> T.xy(p: MPoint): T = xy(p.point)
+fun <T : View> T.xy(x: Double, y: Double): T {
+    setXY(x, y)
+    return this
+}
+inline fun <T : View> T.xy(x: Number, y: Number): T = xy(x.toDouble(), y.toDouble())
 
 /** Chainable method returning this that sets [View.x] and [View.y] */
-fun <T : View> T.position(x: Double, y: Double): T = xy(Point(x, y))
-fun <T : View> T.position(x: Float, y: Float): T = xy(Point(x, y))
-fun <T : View> T.position(x: Int, y: Int): T = xy(Point(x, y))
 fun <T : View> T.position(p: Point): T = xy(p)
+fun <T : View> T.position(x: Double, y: Double): T = xy(Point(x, y))
+inline fun <T : View> T.position(x: Number, y: Number): T = xy(x.toDouble(), y.toDouble())
 
-fun <T : View> T.bounds(left: Double, top: Double, right: Double, bottom: Double): T = xy(left, top).size(Size(right - left, bottom - top))
-fun <T : View> T.bounds(rect: Rectangle): T = bounds(rect.left.toDouble(), rect.top.toDouble(), rect.right.toDouble(), rect.bottom.toDouble())
+fun <T : View> T.bounds(left: Double, top: Double, right: Double, bottom: Double): T = xy(left, top).size(right - left, bottom - top)
+inline fun <T : View> T.bounds(left: Number, top: Number, right: Number, bottom: Number): T = bounds(left.toDouble(), top.toDouble(), right.toDouble(), bottom.toDouble())
+fun <T : View> T.bounds(rect: Rectangle): T = bounds(rect.left, rect.top, rect.right, rect.bottom)
 
 fun <T : View> T.positionX(x: Double): T {
     this.x = x
     return this
 }
-fun <T : View> T.positionX(x: Float): T = positionX(x.toDouble())
-fun <T : View> T.positionX(x: Int): T = positionX(x.toDouble())
+inline fun <T : View> T.positionX(x: Number): T = positionX(x.toDouble())
 
 fun <T : View> T.positionY(y: Double): T {
     this.y = y
     return this
 }
-fun <T : View> T.positionY(y: Float): T = positionY(y.toDouble())
-fun <T : View> T.positionY(y: Int): T = positionY(y.toDouble())
+inline fun <T : View> T.positionY(y: Number): T = positionY(y.toDouble())
 
 fun View.getPositionRelativeTo(view: View): Point {
     val mat = this.parent!!.getConcatMatrix(view, inclusive = false)
@@ -1822,12 +1819,10 @@ fun <T : View> T.skew(sx: Angle, sy: Angle): T {
 
 /** Chainable method returning this that sets [View.scaleXD] and [View.scaleYD] */
 fun <T : View> T.scale(sx: Double, sy: Double = sx): T {
-    this.scaleX = sx
-    this.scaleY = sy
+    this.scaleXY = Scale(sx, sy)
     return this
 }
-fun <T : View> T.scale(sx: Float, sy: Float = sx): T = scale(sx.toDouble(), sy.toDouble())
-fun <T : View> T.scale(sx: Int, sy: Int = sx): T = scale(sx.toDouble(), sy.toDouble())
+inline fun <T : View> T.scale(sx: Number, sy: Number = sx): T = scale(sx.toDouble(), sy.toDouble())
 
 /** Chainable method returning this that sets [View.colorMul] */
 fun <T : View> T.colorMul(color: RGBA): T {
@@ -1840,15 +1835,13 @@ fun <T : View> T.alpha(alpha: Float): T {
     this.alphaF = alpha
     return this
 }
-fun <T : View> T.alpha(alpha: Double): T = alpha(alpha.toFloat())
-fun <T : View> T.alpha(alpha: Int): T = alpha(alpha.toFloat())
+inline fun <T : View> T.alpha(alpha: Number): T = alpha(alpha.toFloat())
 
 fun <T : View> T.zIndex(index: Double): T {
     this.zIndex = index
     return this
 }
-fun <T : View> T.zIndex(index: Float): T = zIndex(index.toDouble())
-fun <T : View> T.zIndex(index: Int): T = zIndex(index.toDouble())
+inline fun <T : View> T.zIndex(index: Number): T = zIndex(index.toDouble())
 
 typealias ViewDslMarker = korlibs.math.annotations.ViewDslMarker
 // @TODO: This causes issues having to put some explicit this@ when it shouldn't be required

@@ -15,7 +15,7 @@ class Asteroid(
 		anchor(.5, .5)
 		scaleAvg = asteroidSize.toDouble() / 3.0
 		name = "asteroid"
-		speed = 0.6f
+		speed = 0.6
 		addUpdater { time ->
 			val scale = time / 16.0.milliseconds
 			val dx = angle.cosine * scale
@@ -34,11 +34,11 @@ class Asteroid(
 		if (asteroidSize > 1) {
 			Asteroid(assets, asteroidSize - 1).xy(x, y).addTo(parent!!).also {
 				it.angle = this.angle + 45.degrees
-				it.speed = this.speed * 1.5f
+				it.speed = this.speed * 1.5
 			}
 			Asteroid(assets, asteroidSize - 1).xy(x, y).addTo(parent!!).also {
 				it.angle = this.angle - 45.degrees
-				it.speed = this.speed * 1.5f
+				it.speed = this.speed * 1.5
 			}
 		}
 		removeFromParent()
