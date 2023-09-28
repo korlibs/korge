@@ -8,7 +8,6 @@ import korlibs.wasm.WasmRunJVMOutput.Companion.isStatic
 import korlibs.wasm.WasmSType.*
 import org.objectweb.asm.*
 import org.objectweb.asm.Type
-import org.objectweb.asm.util.*
 import java.io.*
 import java.lang.invoke.*
 import java.lang.reflect.*
@@ -108,12 +107,12 @@ open class WasmRunJVMJIT(module: WasmModule, memSize: Int, memMax: Int) : WasmRu
             (WasmRunJVMJIT::class.java.declaredMethods + WasmRuntime::class.java.declaredMethods).associateBy { it.name }
         }
 
-        fun build(module: WasmModule, codeTrace: Boolean = false): WasmRunJVMJIT =
-            WasmRunJVMOutput().also { it.trace = codeTrace }.generate(module)
+        fun build(module: WasmModule, outputGen: () -> WasmRunJVMOutput = { WasmRunJVMOutput() }, codeTrace: Boolean = false): WasmRunJVMJIT =
+            outputGen().also { it.trace = codeTrace }.generate(module)
     }
 }
 
-class WasmRunJVMOutput(
+open class WasmRunJVMOutput(
     val OUTPUT_CLASS_NAME: String = "WasmProgram",
 ) {
 
@@ -1155,6 +1154,8 @@ class WasmRunJVMOutput(
 
                                     visitIincInsn(2, 1)
                                 }
+
+                                else -> Unit
                             }
                         }
                         visitVarInsn(Opcodes.ILOAD, 1)
@@ -1258,74 +1259,81 @@ class WasmRunJVMOutput(
         }
     }
 
-    companion object {
-        fun Member.isStatic(): Boolean = Modifier.isStatic(modifiers)
+    open fun getClassVisitor(cw: ClassWriter, doValidate: Boolean): ClassVisitor {
+        //return if (doValidate) CheckClassAdapter(cw) else cw
+        return cw
+    }
 
-        inline fun createClass(
-            name: String,
-            parent: Class<*> = java.lang.Object::class.java,
-            vararg interfaces: Class<*>,
-            doTrace: Boolean,
-            doValidate: Boolean,
-            handleBytes: (ByteArray) -> Unit = { },
-            block: ClassVisitor.() -> Unit
-        ): Class<*> {
-            //val cv = TraceClassVisitor(null, ASMifier(), PrintWriter(System.out))
-            val cw = ClassWriter(ClassWriter.COMPUTE_MAXS or ClassWriter.COMPUTE_FRAMES)
+    inline fun createClass(
+        name: String,
+        parent: Class<*> = java.lang.Object::class.java,
+        vararg interfaces: Class<*>,
+        doTrace: Boolean,
+        doValidate: Boolean,
+        handleBytes: (ByteArray) -> Unit = { },
+        block: ClassVisitor.() -> Unit
+    ): Class<*> {
+        //val cv = TraceClassVisitor(null, ASMifier(), PrintWriter(System.out))
+        val cw = ClassWriter(ClassWriter.COMPUTE_MAXS or ClassWriter.COMPUTE_FRAMES)
 
-            val cr: ClassVisitor = if (doValidate) CheckClassAdapter(cw) else cw
-            //val cw = if (doTrace) TraceClassVisitor(cw2, ASMifier(), PrintWriter(System.out)) else cw2
-            //MethodVisitor
-            //val cw = ClassWriter(ClassWriter.COMPUTE_MAXS)
-            cr.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC, name, null, Type.getInternalName(parent), interfaces.map { Type.getInternalName(it) }.toTypedArray())
-            block(cr)
-            cr.visitEnd()
-            val bytes = cw.toByteArray()
+        val cr: ClassVisitor = getClassVisitor(cw, doValidate)
+        //val cw = if (doTrace) TraceClassVisitor(cw2, ASMifier(), PrintWriter(System.out)) else cw2
+        //MethodVisitor
+        //val cw = ClassWriter(ClassWriter.COMPUTE_MAXS)
+        cr.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC, name, null, Type.getInternalName(parent), interfaces.map { Type.getInternalName(it) }.toTypedArray())
+        block(cr)
+        cr.visitEnd()
+        val bytes = cw.toByteArray()
 
-            // DUMP bytecode
-            if (doTrace) dumpJVMBytecode(bytes)
+        // DUMP bytecode
+        if (doTrace) dumpJVMBytecode(bytes)
 
-            handleBytes(bytes)
+        handleBytes(bytes)
 
-            val classLoader = ByteArrayClassLoader(bytes, name)
-            val clazz = classLoader.loadClass(name)
-            return clazz
+        val classLoader = ByteArrayClassLoader(bytes, name)
+        val clazz = classLoader.loadClass(name)
+        return clazz
+    }
+
+    open fun dumpJVMBytecode(bytes: ByteArray) {
+    }
+
+    inline fun ClassVisitor.createConstructor(vararg params: Class<*>?, crossinline block: MethodVisitor.() -> Unit) {
+        createMethod("<init>", Void::class.javaPrimitiveType, *params, isStatic = false) {
+            block()
         }
+    }
 
-        @PublishedApi internal fun dumpJVMBytecode(bytes: ByteArray) {
-            ClassReader(bytes).accept(TraceClassVisitor(null, ASMifier(), PrintWriter(System.out)), 0)
-        }
-
-        inline fun ClassVisitor.createConstructor(vararg params: Class<*>?, block: MethodVisitor.() -> Unit) {
-            createMethod("<init>", Void::class.javaPrimitiveType, *params, isStatic = false) {
-                block()
-            }
-        }
-
-        inline fun ClassVisitor.createMethod(name: String, ret: Class<*>?, vararg params: Any?, isStatic: Boolean = false, maxStack: Int = 0, maxLocals: Int = 0, block: MethodVisitor.() -> Unit) {
-            try {
-                if (name.contains(".")) error("Invalid method name '$name'")
-                val myMethod = visitMethod(
-                    Opcodes.ACC_PUBLIC or (if (isStatic) Opcodes.ACC_STATIC else 0),
-                    name,
-                    Type.getMethodDescriptor(Type.getType(ret), *params.map {
-                        if (it is Class<*>) Type.getType(it) else Type.getType(it.toString())
-                    }.toTypedArray()),
-                    null, null
-                )
-                val doTrace = false
-                //val doTrace = true
-                val asmifier = ASMifier()
-                val mv = if (doTrace) TraceMethodVisitor(myMethod, asmifier) else myMethod
+    inline fun ClassVisitor.createMethod(name: String, ret: Class<*>?, vararg params: Any?, isStatic: Boolean = false, maxStack: Int = 0, maxLocals: Int = 0, crossinline block: MethodVisitor.() -> Unit) {
+        try {
+            if (name.contains(".")) error("Invalid method name '$name'")
+            val myMethod: MethodVisitor = visitMethod(
+                Opcodes.ACC_PUBLIC or (if (isStatic) Opcodes.ACC_STATIC else 0),
+                name,
+                Type.getMethodDescriptor(Type.getType(ret), *params.map {
+                    if (it is Class<*>) Type.getType(it) else Type.getType(it.toString())
+                }.toTypedArray()),
+                null, null
+            )
+            val doTrace = false
+            //val doTrace = true
+            useMethodVisitor(myMethod, doTrace) { mv ->
                 mv.visitCode()
                 block(mv)
                 mv.visitMaxs(maxStack, maxLocals)
                 mv.visitEnd()
-                if (doTrace) println(asmifier.text.joinToString(""))
-            } catch (e: Throwable) {
-                throw Exception("Error generating '$name' method", e)
             }
+        } catch (e: Throwable) {
+            throw Exception("Error generating '$name' method", e)
         }
+    }
+
+    open fun useMethodVisitor(myMethod: MethodVisitor, doTrace: Boolean, block: (mv: MethodVisitor) -> Unit) {
+        block(myMethod)
+    }
+
+    companion object {
+        fun Member.isStatic(): Boolean = Modifier.isStatic(modifiers)
 
         fun MethodVisitor.ret(type: WasmSType?) {
             when (type) {
