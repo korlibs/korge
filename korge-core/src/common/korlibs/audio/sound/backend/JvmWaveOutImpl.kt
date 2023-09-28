@@ -188,7 +188,7 @@ class JvmWaveOutPlatformAudioOutput(
 
             for (ch in 0 until nchannels) {
                 for (n in 0 until totalSamples) {
-                    dataMem[((n * nchannels + ch) * Short.SIZE_BYTES)] = data[ch][n]
+                    dataMem[n * nchannels + ch] = data[ch][n]
                 }
             }
             //if (hdr.isPrepared) dispose()
