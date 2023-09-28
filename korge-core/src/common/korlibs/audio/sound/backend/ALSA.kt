@@ -4,12 +4,14 @@ import korlibs.audio.sound.AudioSamplesInterleaved
 import korlibs.audio.sound.DequeBasedPlatformAudioOutput
 import korlibs.audio.sound.NativeSoundProvider
 import korlibs.audio.sound.PlatformAudioOutput
+import korlibs.datastructure.thread.*
 import korlibs.ffi.FFILib
 import korlibs.ffi.FFIPointer
 import korlibs.ffi.FFIPointerArray
 import korlibs.ffi.address
 import korlibs.io.async.delay
 import korlibs.io.async.launchImmediately
+import korlibs.io.lang.*
 import korlibs.time.measureTime
 import korlibs.time.milliseconds
 import kotlinx.coroutines.*
@@ -27,7 +29,8 @@ class ALSAPlatformAudioOutput(
     coroutineContext: CoroutineContext,
     frequency: Int,
 ) : DequeBasedPlatformAudioOutput(coroutineContext, frequency) {
-    var nativeThread: Job? = null
+    //var nativeThread: Job? = null
+    var nativeThread: NativeThread? = null
     var running = false
 
     var pcm: FFIPointer? = null
@@ -47,34 +50,18 @@ class ALSAPlatformAudioOutput(
     override fun start() {
         if (running) return
         running = true
-        nativeThread = launchImmediately(coroutineContext) {
+        //nativeThread = launchImmediately(coroutineContext) {
+        nativeThread = nativeThread(isDaemon = true) {
             // @TODO:
-
-            pcm = A2.snd_pcm_open("default", A2.SND_PCM_STREAM_PLAYBACK, 0)
-            if (pcm.address == 0L) {
-                error("Can't initialize ALSA")
-                running = false
-                return@launchImmediately
-            }
-
-            val latency = 50_000
-            A2.snd_pcm_set_params(
-                pcm,
-                A2.SND_PCM_FORMAT_S16_LE,
-                A2.SND_PCM_ACCESS_RW_INTERLEAVED,
-                nchannels,
-                frequency,
-                1,
-                latency
-            )
 
             val temp = AudioSamplesInterleaved(nchannels, 1024)
             try {
-                while (running) {
+                while (running || availableRead > 0) {
                     val readCount = readShortsInterleaved(temp)
 
                     if (readCount == 0) {
-                        delay(1.milliseconds)
+                        //delay(1.milliseconds)
+                        Thread_sleep(1L)
                         continue
                     }
 
@@ -82,18 +69,41 @@ class ALSAPlatformAudioOutput(
                     var offset = 0
                     var pending = readCount
                     while (pending > 0) {
+                        if (pcm == null) {
+                            pcm = A2.snd_pcm_open("default", A2.SND_PCM_STREAM_PLAYBACK, 0)
+                            if (pcm.address == 0L) {
+                                error("Can't initialize ALSA")
+                                //running = false
+                                //return@nativeThread
+                            }
+
+                            //val latency = 8 * 4096
+                            val latency = 32 * 4096
+                            A2.snd_pcm_set_params(
+                                pcm,
+                                A2.SND_PCM_FORMAT_S16_LE,
+                                A2.SND_PCM_ACCESS_RW_INTERLEAVED,
+                                nchannels,
+                                frequency,
+                                1,
+                                latency
+                            )
+                        }
+
                         val written = A2.snd_pcm_writei(pcm, temp.data, offset * nchannels, pending * nchannels, pending)
                         //println("offset=$offset, pending=$pending, written=$written")
                         if (written == -A2.EPIPE) {
                             //println("ALSA: EPIPE error")
-                            A2.snd_pcm_prepare(pcm)
+                            //A2.snd_pcm_prepare(pcm)
+                            A2.snd_pcm_recover(pcm, written, 0)
                             offset = 0
                             pending = readCount
                             continue
                             //blockingSleep(1.milliseconds)
                         } else if (written < 0) {
                             println("ALSA: OTHER error: $written")
-                            delay(1.milliseconds)
+                            //delay(1.milliseconds)
+                            Thread_sleep(1L)
                             break
                         } else {
                             offset += written

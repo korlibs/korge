@@ -1,6 +1,7 @@
 package korlibs.audio.sound
 
 import korlibs.audio.sound.backend.*
+import korlibs.audio.sound.impl.awt.*
 import korlibs.audio.sound.impl.jna.*
 import korlibs.audio.sound.impl.jna.OpenALException
 import korlibs.io.time.*
@@ -9,26 +10,25 @@ import korlibs.platform.*
 
 private val logger = Logger("NativeSoundProviderJvm")
 
-private val dummyNativeSoundProvider by lazy { DummyNativeSoundProvider() }
-
 private val nativeSoundProviderDeferred: NativeSoundProvider by lazy {
     try {
         traceTime("SoundProvider") {
             when {
-                Platform.isLinux -> FFIALSANativeSoundProvider
+                //Platform.isLinux -> FFIALSANativeSoundProvider
+                Platform.isLinux -> AwtNativeSoundProvider
                 Platform.isApple -> jvmCoreAudioNativeSoundProvider
                 Platform.isWindows -> jvmWaveOutNativeSoundProvider
                 else -> JnaOpenALNativeSoundProvider()
-            } ?: dummyNativeSoundProvider
+            } ?: AwtNativeSoundProvider
         }
     } catch (e: UnsatisfiedLinkError) {
-        dummyNativeSoundProvider
+        DummyNativeSoundProvider
     } catch (e: OpenALException) {
         logger.error { "OpenALException: ${e.message}" }
-        dummyNativeSoundProvider
+        DummyNativeSoundProvider
     } catch (e: Throwable) {
         e.printStackTrace()
-        dummyNativeSoundProvider
+        DummyNativeSoundProvider
     }
 }
 
