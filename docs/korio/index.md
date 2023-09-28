@@ -1,6 +1,6 @@
 ---
 layout: default
-title: "KorIO"
+title: "I/O"
 children: /korio/
 fa-icon: fa-copy
 priority: 40
@@ -19,5 +19,3 @@ KorIO is a library for Charsets, Encodings, Checksums, Compression, I/O, Streams
 ## Pages
 
 {% include toc.html context="/korio/" description=true %}
-
-{% include using_with_gradle.md name="korio" %}

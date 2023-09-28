@@ -53,8 +53,6 @@ table.where { it::value ge 20L }.limit(10).collect {
 }
 ```
 
-{% include using_with_gradle.md name="kminiorm" %}
-
 ## Defining Tables
 
 You can use normal Kotlin properties for defining columns.

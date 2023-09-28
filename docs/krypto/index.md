@@ -1,6 +1,6 @@
 ---
 layout: default
-title: "Krypto"
+title: "Crypto"
 fa-icon: fa-lock
 priority: 950
 ---
@@ -87,5 +87,3 @@ object AES {
     fun encryptEes128Cbc(plainMessage: ByteArray, cipherKey: ByteArray): ByteArray
 }
 ```
-
-{% include using_with_gradle.md name="krypto" %}

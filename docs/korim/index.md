@@ -1,6 +1,6 @@
 ---
 layout: default
-title: "KorIM"
+title: "Image"
 fa-icon: fa-image
 priority: 51
 children: /korim/
@@ -66,5 +66,3 @@ Korim provides native font rendering. You can rasterize glyph fonts on all targe
 
 Korim provides korio integration adding `VfsFile.readBitmap()` that allows Bitmap reading easily
 and faster (with native implementations) in some targets like browsers.
-
-{% include using_with_gradle.md name="korim" %}

@@ -25,13 +25,13 @@ cd korge
 ./gradlew publishToMavenLocal
 ```
 
-This publishes all the libraries with the version `2.0.0.999` in the `~/.m2` folder.
+This publishes all the libraries with the version `999.0.0.999` in the `~/.m2` folder.
 
 To make compilation faster, you can add `org.gradle.parallel=true` to your `~/.gradle/gradle.properties` file (crete it if it doesn't exist).
 
 ### Using `korge-next` in a KorGE project
 
-To use korge-next in a KorGE project, just build and publish it locally and replace your version with `2.0.0.999`.
+To use korge-next in a KorGE project, just build and publish it locally and replace your version with `999.0.0.999`.
 
 ## Documentation
 

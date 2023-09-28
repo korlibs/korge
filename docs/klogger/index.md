@@ -1,6 +1,6 @@
 ---
 layout: default
-title: "Klogger"
+title: "Logger"
 fa-icon: fa-bell
 priority: 60
 ---
@@ -14,8 +14,6 @@ This library provides a simple interface to do logging into suitable outputs lik
 {% include stars.html project="klogger" central="com.soywiz.korlibs.klogger/klogger" %}
 
 {% include toc_include.md %}
-
-{% include using_with_gradle.md name="klogger" %}
 
 ## Console
 
