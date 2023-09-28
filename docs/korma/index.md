@@ -1,6 +1,6 @@
 ---
 layout: default
-title: "KorMA"
+title: "Maths"
 fa-icon: fa-calculator
 children: /korma/
 priority: 50
@@ -19,8 +19,6 @@ Korma is a mathematic library for multiplatform Kotlin 1.3 mostly focused on geo
 ## Pages
 
 {% include toc.html context="/korma/" description=true %}
-
-{% include using_with_gradle.md name="korma" %}
 
 ## Clipper & poly2tri
 

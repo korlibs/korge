@@ -1,6 +1,6 @@
 ---
 layout: default
-title: "KorAU"
+title: "Audio"
 fa-icon: fa-headphones
 priority: 70
 ---
@@ -14,8 +14,6 @@ It supports playing sounds, creating dynamic audio streams and decoding audio fi
 {% include stars.html project="korge" central="com.soywiz.korlibs.korau/korau" %}
 
 {% include toc_include.md %}
-
-{% include using_with_gradle.md name="korau" %}
 
 ## AudioFormat
 

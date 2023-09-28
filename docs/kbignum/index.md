@@ -1,6 +1,6 @@
 ---
 layout: default
-title: KBigNum
+title: Big Numbers
 fa-icon: fa-sort-numeric-up
 priority: 200
 ---
@@ -181,5 +181,3 @@ We can construct closed ranges the range `..` operator:
 ```kotlin
 (10.4.bn in (10.5.bn .. 16.5.bn)) == false
 ```
-
-{% include using_with_gradle.md name="kbignum" %}

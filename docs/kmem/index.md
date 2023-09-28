@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Kmem
+title: Memory
 fa-icon: fa-microchip
 priority: 59
 ---
@@ -14,7 +14,6 @@ Kmem is bit, array and fast memory utilities library for multiplatform Kotlin 1.
 {% include stars.html project="korge" central="com.soywiz.korlibs.kmem/kmem" %}
 
 {% include toc_include.md max_level="3" %}
-{% include using_with_gradle.md name="kmem" %}
 
 ## arraycopy and arrayfill
 

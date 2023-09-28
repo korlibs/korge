@@ -15,9 +15,9 @@ Yes. All these libraries are dual licensed under MIT and Apache 2.0 or CC0 Publi
 ## Where can I find the libraries?
 {:#repos}
 
-* You can find the source code of my libraries on <https://github.com/korlibs> and <https://github.com/soywiz>.
-* I publish all my library binaries at maven central too: <https://search.maven.org/search?q=g:com.soywiz.korlibs.*>.
-* The libraries are also synchronized to maven central automatically.
+* Source Code for version 4: <https://github.com/korlibs/korlibs4>
+* Source Code for version 5+: <https://github.com/korlibs/korge>
+* All the libraries are published to maven central too: <https://search.maven.org/search?q=g:com.soywiz.korlibs.*>.
 
 ## I get an error: unable to find library -lGL on Linux
 
@@ -217,6 +217,20 @@ Can you listen it here:
 <audio controls="controls">
  <source src="/i/sound/korge.mp3" />
 </audio>
+
+## Where are the old Korlibs4 libraries?
+
+Starting with KorGE 5.0, for convenience and focus, the old Korlibs are now
+integrated into the  `korge`, `korge-core` and `korge-foundation` artifacts.
+The code is still there, except for some package renames.
+
+You can find the old code and structure there:
+
+* Docs: <https://korlibs4.soywiz.com/>
+* Code: <https://github.com/korlibs/korlibs4>
+
+The community can contribute via PR to the repo and maintain the libraries
+supporting new targets, new Kotlin versions, fixing bugs, documenting etc.
 
 ## Where's the privacy page
 

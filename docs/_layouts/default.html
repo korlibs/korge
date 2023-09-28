@@ -29,6 +29,13 @@
     <script src="/js/mermaid/mermaid.min.js"></script>
     {% endif %}
 
+    {% if page.redirect_to %}
+    <meta http-equiv="Refresh" content="0; url='{{ page.redirect_to }}'" />
+    <script>
+        document.location.href = `{{ page.redirect_to }}`;
+    </script>
+    {% endif %}
+
     <!-- 2 -->
 </head>
 
@@ -44,12 +51,8 @@
     <div class="container-fluid">
       <div class="navbar-header">
         <a class="navbar-brand" href="/" style="padding:10px;">
-            <!--
-          <img alt="Korlibs" src="/i/logos/korlibs.svg" width="32" height="32" style="display: inline;" />
-		      Korlibs
-		      -->
-            <img alt="Korlibs" src="/i/logos/korge.svg" width="32" height="32" style="display: inline;" />
-            Korlibs
+            <img alt="KorGE" src="/i/logos/korge.svg" width="32" height="32" style="display: inline;" />
+            KorGE
 
         </a>
         <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">

@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Klock
+title: Time
 fa-icon: fa-clock
 priority: 10
 children: /klock/
@@ -23,5 +23,3 @@ and to provide an API that is powerful, fun and easy to use.
 ## Pages
 
 {% include toc.html context="/klock/" description=true %}
-
-{% include using_with_gradle.md name="klock" %}

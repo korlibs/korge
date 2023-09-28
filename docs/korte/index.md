@@ -1,6 +1,6 @@
 ---
 layout: default
-title: "KorTE"
+title: "Templates"
 fa-icon: far fa-file-code
 children: /korte/
 priority: 52
@@ -164,5 +164,3 @@ class TestMethods : DynamicType<TestMethods> by DynamicType({
 
 
 {% endraw %}
-
-{% include using_with_gradle.md name="korte" %}

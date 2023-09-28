@@ -1,6 +1,6 @@
 ---
 layout: default
-title: KDS
+title: Data Structures
 permalink: /kds/
 fa-icon: fa-tree
 children: /kds/
@@ -94,5 +94,3 @@ assertEquals(listOf(1, 2, 3), mapWhile({ iterator.hasNext() }) { iterator.next()
 
 // And much more!
 ```
-
-{% include using_with_gradle.md name="kds" %}
