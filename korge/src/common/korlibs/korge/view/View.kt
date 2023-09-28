@@ -1762,6 +1762,7 @@ fun <T : View> T.xy(x: Double, y: Double): T {
 inline fun <T : View> T.xy(x: Number, y: Number): T = xy(x.toDouble(), y.toDouble())
 
 /** Chainable method returning this that sets [View.x] and [View.y] */
+fun <T : View> T.position(p: Point): T = xy(p)
 fun <T : View> T.position(x: Double, y: Double): T = xy(Point(x, y))
 inline fun <T : View> T.position(x: Number, y: Number): T = xy(x.toDouble(), y.toDouble())
 
