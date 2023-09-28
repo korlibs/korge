@@ -1,4 +1,8 @@
+{% if include.playlist %}
+<iframe id="video_{{ include.video_id }}" width="960" height="540" src="https://www.youtube.com/embed/videoseries?list={{ include.playlist }}" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+{% else %}
 <iframe id="video_{{ include.video_id }}" width="960" height="540" style="max-width: 100%; max-height: 100vh;" src="https://www.youtube.com/embed/{{ include.video_id }}" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+{% endif %}
 
 <script type="text/javascript">
 	(() => {
