@@ -27,7 +27,7 @@ kotlin = "1.9.20-Beta2"
 # https://maven.pkg.jetbrains.space/kotlin/p/wasm/experimental/org/jetbrains/kotlinx/kotlinx-coroutines-core/
 kotlinx-atomicfu = "0.22.0-wasm1"
 kotlinx-coroutines = "1.7.2-wasm1"
-kotlinx-serialization = "1.5.1-wasm1"
+kotlinx-serialization = "1.6.0-wasm0"
 
 kotlinx-benchmark = "0.4.7"
 dokka = "1.8.10"
