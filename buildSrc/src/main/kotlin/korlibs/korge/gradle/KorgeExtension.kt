@@ -205,15 +205,17 @@ open class KorgeExtension(
     /**
      * Deprecated. Used to create K/N desktop executables.
      */
+    @Deprecated("")
     fun targetDesktop() {
-        println("targetDesktop is deprecated")
+        //println("targetDesktop is deprecated")
     }
 
     /**
      * Deprecated. Used to create K/N desktop executables for other platforms.
      */
+    @Deprecated("")
     fun targetDesktopCross() {
-        println("targetDesktopCross is deprecated")
+        //println("targetDesktopCross is deprecated")
     }
 
     /**
