@@ -44,19 +44,24 @@ open class LibraryResolver(val fs: SyncIO, val platform: Platform) {
             }
 
             else -> {
-                val exact = ldLibraries.ldFolders
-                    .firstNotNullOfOrNull { folder ->
-                        val tries = listOf("lib$name.so", name)
-                        tries.firstNotNullOfOrNull { folder[it].takeIf { it.exists() } }
+                //println("ldLibraries.ldFolders=${ldLibraries.ldFolders}")
+                val exactFiles = ldLibraries.ldFolders.asSequence().mapNotNull { folder ->
+                    val tries = listOf("lib$name.so", name)
+                    tries.firstNotNullOfOrNull { folder[it].takeIf { it.exists() } }?.fullPath
+                } + ldLibraries.ldFolders.asSequence().mapNotNull { folder ->
+                    //println(folder.list())
+                    folder.list().firstOrNull {
+                        it.name.startsWith("lib$name") || it.name.startsWith(name)
                     }?.fullPath
+                }
+                //println("ldLibraries.ldFolders.exactFiles=${exactFiles}")
 
-                exact ?: ldLibraries.ldFolders
-                    .firstNotNullOfOrNull { folder ->
-                        println(folder.list())
-                        folder.list().firstOrNull {
-                            it.name.startsWith("lib$name") || it.name.startsWith(name)
-                        }
-                    }?.fullPath
+                exactFiles.firstOrNull {
+                    if (Platform.arch.is64Bits) {
+                        if (it.contains("i386")) return@firstOrNull false
+                    }
+                    true
+                }
             }
         }
     }

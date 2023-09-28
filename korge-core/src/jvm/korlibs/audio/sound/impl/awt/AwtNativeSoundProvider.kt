@@ -1,30 +1,29 @@
 package korlibs.audio.sound.impl.awt
 
-/*
-import korlibs.datastructure.*
-import korlibs.time.*
-import korlibs.audio.error.*
-import korlibs.audio.format.*
 import korlibs.audio.sound.*
-import korlibs.io.async.*
-import korlibs.io.stream.*
-import java.io.*
-import java.nio.*
+import korlibs.datastructure.*
+import korlibs.datastructure.thread.*
+import korlibs.memory.*
+import korlibs.time.*
+import kotlinx.coroutines.*
 import javax.sound.sampled.*
-import javax.sound.sampled.AudioFormat
 import kotlin.coroutines.*
+import kotlin.time.*
 
 // AudioSystem.getMixerInfo()
-val mixer by lazy { AudioSystem.getMixer(null) }
+private val mixer by lazy { AudioSystem.getMixer(null) }
 
 object AwtNativeSoundProvider : NativeSoundProvider() {
-    override fun init() {
+    val format = AudioFormat(44100f, 16, 2, true, false)
+
+    val linePool = ConcurrentPool { (mixer.getLine(DataLine.Info(SourceDataLine::class.java, format)) as SourceDataLine).also { it.open() } }
+
+    init {
         // warming and preparing
         mixer.mixerInfo
-        val af = AudioFormat(44100f, 16, 2, true, false)
-        val info = DataLine.Info(SourceDataLine::class.java, af)
+        val info = DataLine.Info(SourceDataLine::class.java, format)
         val line = AudioSystem.getLine(info) as SourceDataLine
-        line.open(af, 4096)
+        line.open(format, 4096)
         line.start()
         line.write(ByteArray(4), 0, 4)
         line.drain()
@@ -32,162 +31,198 @@ object AwtNativeSoundProvider : NativeSoundProvider() {
         line.close()
     }
 
-    override suspend fun createAudioStream(freq: Int): PlatformAudioOutput = JvmPlatformAudioOutput(freq)
-
-    override suspend fun createSound(data: ByteArray, streaming: Boolean, props: AudioDecodingProps): NativeSound {
-        val audioData = try {
-            nativeAudioFormats.decode(data.openAsync(), props) ?: AudioData.DUMMY
-        } catch (e: Throwable) {
-            e.printStackTrace()
-            AudioData.DUMMY
-        }
-        return AwtNativeSound(audioData, audioData.toWav()).init()
-    }
-
-    override suspend fun createSound(data: AudioData, formats: AudioFormats, streaming: Boolean): NativeSound = AwtNativeSound(data, data.toWav())
-}
-
-class AwtNativeSound(val audioData: AudioData, val data: ByteArray) : NativeSound() {
-    override var length: TimeSpan = 0.milliseconds
-    val format by lazy {
-        javax.sound.sampled.AudioFormat(
-            javax.sound.sampled.AudioFormat.Encoding.PCM_SIGNED,
-            audioData.rate.toFloat(),
-            16,
-            audioData.channels,
-            1024,
-            1024.toFloat(),
-            false
-        )
-    }
-    //val jsound by lazy { AudioSystem.getAudioInputStream(ByteArrayInputStream(data)) }
-
-    suspend fun init(): AwtNativeSound {
-        executeInWorkerJVM {
-            val sound = AudioSystem.getAudioInputStream(ByteArrayInputStream(data))
-            length = (sound.frameLength * 1000.0 / sound.format.frameRate.toDouble()).toLong().milliseconds
-        }
-        return this
-    }
-
-    override suspend fun decode(): AudioData = audioData
-
-    class PooledClip {
-        companion object {
-            private val pool = Pool({ it.stopped = false }) { PooledClip() }
-            fun play(channel: NativeSoundChannel, params: PlaybackParameters): PooledClip {
-                //val clip = pool.alloc()
-                val clip = PooledClip()
-                clip.play(channel)
-                return clip
-            }
-        }
-
-        val lineListener: LineListener = object : LineListener {
-            override fun update(event: LineEvent) {
-                when (event.type) {
-                    LineEvent.Type.STOP, LineEvent.Type.CLOSE -> {
-                        event.line.close()
-                        clip.removeLineListener(this)
-                        stop()
-                    }
-                }
-            }
-        }
-
-        val clip = AudioSystem.getClip(mixer.mixerInfo).apply {
-            addLineListener(lineListener)
-        }
-        var stopped = false
-        val current: TimeSpan get() = clip.microsecondPosition.toDouble().microseconds
-
-        private var channel: NativeSoundChannel? = null
-
-        fun stop() {
-            if (!stopped) {
-                stopped = true
-                channel?.stop()
-                channel = null
-                clip.stop()
-                //clip.close()
-                //pool.free(this)
-            }
-        }
-
-        fun play(channel: NativeSoundChannel) {
-            this.channel = channel
-            val sound = channel.sound as AwtNativeSound
-
-            if (sound.audioData.totalTime == 0.seconds) {
-                stop()
-            } else {
-                val data = sound.data
-                val time = measureTime {
-                    clip.open(sound.format, data, 0, data.size)
-                }
-                //println("Opening clip time: $time")
-                clip.start()
-            }
-        }
-    }
-
-    override fun play(params: PlaybackParameters): NativeSoundChannel {
-        return object : NativeSoundChannel(this) {
-
-            var clip: PooledClip? = PooledClip.play(this, params)
-
-            //val len = clip.microsecondLength.toDouble().microseconds
-            val len = audioData.totalTime
-
-            override var current: TimeSpan
-                get() = clip?.current ?: 0.milliseconds
-                set(value) = seekingNotSupported()
-            override val total: TimeSpan get() = len
-            //override val playing: Boolean get() = !stopped && current < total
-            override val playing: Boolean get() = clip != null
-
-            //override var pitch: Double = 1.0
-            //    set(value) {
-            //        field = value
-            //        //(clip.getControl(FloatControl.Type.SAMPLE_RATE) as FloatControl).value = (audioData.rate * pitch).toFloat()
-            //    }
-
-            override fun stop() {
-                clip?.stop()
-                clip = null
-            }
-        }.also {
-            it.copySoundPropsFrom(params)
-        }
-    }
+    override fun createPlatformAudioOutput(coroutineContext: CoroutineContext, freq: Int): PlatformAudioOutput =
+        JvmPlatformAudioOutput(this, coroutineContext, freq)
 }
 
 data class SampleBuffer(val timestamp: Long, val data: AudioSamples)
 
-class JvmPlatformAudioOutput(freq: Int) : PlatformAudioOutput(freq) {
+/*
+private class JvmCoreAudioPlatformAudioOutput(
+    coroutineContext: CoroutineContext,
+    frequency: Int
+) : DequeBasedPlatformAudioOutput(coroutineContext, frequency) {
+    val id = lastId.incrementAndGet()
     companion object {
-        var lastId = 0
-        val mixer by lazy { AudioSystem.getMixer(null) }
+        private var lastId = AtomicInteger(0)
+        const val bufferSizeInBytes = 2048
+        const val numBuffers = 3
     }
 
-    val id = lastId++
-    val format by lazy { AudioFormat(freq.toFloat(), 16, 2, true, false) }
-    var _msElapsed = 0.0
-    val msElapsed get() = _msElapsed
-    var totalShorts = 0
-    val buffers = Queue<SampleBuffer>()
-    var thread: Thread? = null
-    var running = true
+    init {
+        audioOutputsById[id] = this
+    }
 
-    val availableBuffers: Int get() = synchronized(buffers) { buffers.size }
-    val line by lazy { mixer.getLine(DataLine.Info(SourceDataLine::class.java, format)) as SourceDataLine }
+    internal var completed = false
 
-    override val availableSamples get() = synchronized(buffers) { totalShorts }
+    var queue: Pointer? = null
 
-    fun ensureThread() {
-        if (thread == null) {
+    var left: ShortArray = ShortArray(0)
+    var right: ShortArray = ShortArray(0)
 
-            thread = Thread {
+    internal fun _readShorts(channel: Int, out: ShortArray, offset: Int = 0, count: Int = out.size - offset) {
+        readShorts(channel, out, offset, count)
+    }
+
+    override fun start() {
+        completed = false
+        val queueRef = Memory(16).also { it.clear() }
+        val format = AudioStreamBasicDescription(Memory(40).also { it.clear() })
+
+        format.mSampleRate = frequency.toDouble()
+        format.mFormatID = CoreAudioKit.kAudioFormatLinearPCM
+        format.mFormatFlags = CoreAudioKit.kLinearPCMFormatFlagIsSignedInteger or CoreAudioKit.kAudioFormatFlagIsPacked
+        format.mBitsPerChannel = (8 * Short.SIZE_BYTES)
+        format.mChannelsPerFrame = nchannels
+        format.mBytesPerFrame = (Short.SIZE_BYTES * format.mChannelsPerFrame)
+        format.mFramesPerPacket = 1
+        format.mBytesPerPacket = format.mBytesPerFrame * format.mFramesPerPacket
+        format.mReserved = 0
+
+        val userDefinedPtr = Pointer(id.toLong())
+
+        CoreAudioKit.AudioQueueNewOutput(
+            format.ptr, jnaCoreAudioCallback, userDefinedPtr,
+            //CoreFoundation.CFRunLoopGetCurrent(),
+            CoreFoundation.CFRunLoopGetMain(),
+            CoreFoundation.kCFRunLoopCommonModes, 0, queueRef
+        ).also {
+            if (it != 0) println("CoreAudioKit.AudioQueueNewOutput -> $it")
+        }
+        queue = queueRef.getPointer(0L)
+        //println("result=$result, queue=$queue")
+        val buffersArray = Memory((8 * numBuffers).toLong()).also { it.clear() }
+        for (buf in 0 until numBuffers) {
+            val bufferPtr = Pointer(buffersArray.address + 8 * buf)
+            CoreAudioKit.AudioQueueAllocateBuffer(queue, bufferSizeInBytes, bufferPtr).also {
+                if (it != 0) println("CoreAudioKit.AudioQueueAllocateBuffer -> $it")
+            }
+            val ptr = AudioQueueBuffer(bufferPtr.getPointer(0))
+            //println("AudioQueueAllocateBuffer=$res, ptr.pointer=${ptr.pointer}")
+            ptr.mAudioDataByteSize = bufferSizeInBytes
+            jnaCoreAudioCallback.callback(userDefinedPtr, queue, ptr.ptr)
+        }
+        CoreAudioKit.AudioQueueStart(queue, null).also {
+            if (it != 0) println("CoreAudioKit.AudioQueueStart -> $it")
+        }
+
+    }
+
+    override fun stop() {
+        completed = true
+        CoreAudioKit.AudioQueueDispose(queue, false)
+        audioOutputsById.remove(id)
+    }
+}
+*/
+
+
+class JvmPlatformAudioOutput(
+    val provider: AwtNativeSoundProvider,
+    coroutineContext: CoroutineContext,
+    frequency: Int
+) : DequeBasedPlatformAudioOutput(coroutineContext, frequency) {
+    val samplesLock = korlibs.datastructure.lock.NonRecursiveLock()
+    var nativeThread: NativeThread? = null
+    var running = false
+    var totalEmittedSamples = 0L
+
+    override suspend fun wait() {
+        if (line == null) return
+        for (n in 0 until 1000) {
+            var currentPositionInSamples: Long = 0L
+            var totalEmittedSamples: Long = 0L
+            var availableRead = 0
+            samplesLock {
+                currentPositionInSamples = line?.longFramePosition ?: 0L
+                availableRead = this.availableRead
+                totalEmittedSamples = this.totalEmittedSamples
+            }
+            //println("availableRead=$availableRead, waveOutGetPosition=$currentPositionInSamples, totalEmittedSamples=$totalEmittedSamples")
+            if (availableRead <= 0 && currentPositionInSamples >= totalEmittedSamples) break
+            delay(1.milliseconds)
+        }
+    }
+
+    val format = provider.format
+    var line: SourceDataLine? = null
+
+    val BYTES_PER_SAMPLE = nchannels * Short.SIZE_BYTES
+
+    fun bytesToSamples(bytes: Int): Int = bytes / BYTES_PER_SAMPLE
+    fun samplesToBytes(samples: Int): Int = samples * BYTES_PER_SAMPLE
+
+    override fun start() {
+        //println("TRYING TO START")
+        if (running) return
+        //println("STARTED")
+        running = true
+        nativeThread = nativeThread(isDaemon = true) {
+            try {
+                var timesWithoutBuffers = 0
+                while (running || availableRead > 0) {
+                    while (availableRead > 0) {
+                        timesWithoutBuffers = 0
+                        while (availableRead > 0) {
+                            if (line == null) {
+                                val prepareLineTime = measureTimedValue {
+                                    line = provider.linePool.alloc()
+                                    //println("OPEN LINE: $line")
+                                    line!!.stop()
+                                    line!!.flush()
+                                    line!!.start()
+                                }
+                                //println("prepareLineTime=$prepareLineTime")
+                            }
+                            val availableBytes = line!!.available()
+                            //val availableSamples = minOf(availableRead, bytesToSamples(availableBytes))
+                            val availableSamples = minOf(441, minOf(availableRead, bytesToSamples(availableBytes)))
+
+                            val info = AudioSamplesInterleaved(nchannels, availableSamples)
+                            val readCount = readShortsInterleaved(info)
+                            val bytes = ByteArray(samplesToBytes(readCount))
+                            bytes.setArrayLE(0, info.data)
+                            //println(bytes.hex)
+                            val (written, time) = measureTimedValue { line!!.write(bytes, 0, bytes.size) }
+                            if (written != bytes.size) {
+                                println("NOT FULLY WRITTEN $written != ${bytes.size}")
+                            }
+                            //println("written=$written, write time=$time")
+                            samplesLock {
+                                this.totalEmittedSamples += readCount
+                            }
+                        }
+                        //println(bytes.hex)
+                        Thread.sleep(1L)
+                    }
+                    //println("SHUT($id)!")
+                    //Thread.sleep(500L) // 0.5 seconds of grace before shutting down this thread!
+                    Thread.sleep(50L) // 0.5 seconds of grace before shutting down this thread!
+                    timesWithoutBuffers++
+                    if (timesWithoutBuffers >= 10) break
+                }
+            } catch (e: Throwable) {
+                e.printStackTrace()
+            } finally {
+                //println("CLOSED_LINE: $line running=$running!")
+                if (line != null) {
+                    //line?.drain()
+                    //line?.stop()
+                    //line?.close()
+                    provider.linePool.free(line!!)
+                    line = null
+                }
+            }
+        }
+    }
+
+    override fun stop() {
+        running = false
+        //println("STOPPING")
+    }
+
+    /*
+                val line by lazy { mixer.getLine(DataLine.Info(SourceDataLine::class.java, format)) as SourceDataLine }
                 line.open()
                 line.start()
                 //println("OPENED_LINE($id)!")
@@ -197,7 +232,7 @@ class JvmPlatformAudioOutput(freq: Int) : PlatformAudioOutput(freq) {
                         while (availableBuffers > 0) {
                             timesWithoutBuffers = 0
                             val buf = synchronized(buffers) { buffers.dequeue() }
-                            synchronized(buffers) { totalShorts -= buf.data.size }
+                            synchronized(buffers) { totalShorts -= buf.data.totalSamples * buf.data.channels }
                             val bdata = convertFromShortToByte(buf.data.interleaved().data)
 
                             val msChunk = (((bdata.size / 2) * 1000.0) / frequency.toDouble()).toInt()
@@ -223,55 +258,5 @@ class JvmPlatformAudioOutput(freq: Int) : PlatformAudioOutput(freq) {
                     line.stop()
                     line.close()
                 }
-
-                thread = null
-            }.apply {
-                name = "NativeAudioStream$id"
-                isDaemon = true
-                start()
-            }
-        }
-    }
-
-    override suspend fun add(samples: AudioSamples, offset: Int, size: Int) {
-        val buffer = SampleBuffer(System.currentTimeMillis(), samples.copyOfRange(offset, offset + size))
-        synchronized(buffers) {
-            totalShorts += buffer.data.size
-            buffers.enqueue(buffer)
-        }
-
-        ensureThread()
-
-        while (availableBuffers >= 5) {
-            coroutineContext.delay(4.milliseconds)
-        }
-
-        //val ONE_SECOND = 44100 * 2
-        ////val BUFFER_TIME_SIZE = ONE_SECOND / 8 // 1/8 second of buffer
-        //val BUFFER_TIME_SIZE = ONE_SECOND / 4 // 1/4 second of buffer
-        ////val BUFFER_TIME_SIZE = ONE_SECOND / 2 // 1/2 second of buffer
-        //while (bufferSize >= 32 && synchronized(buffers) { totalShorts } > BUFFER_TIME_SIZE) {
-        //	ensureThread()
-        //	getCoroutineContext().eventLoop.sleepNextFrame()
-        //}
-    }
-
-    fun convertFromShortToByte(sa: ShortArray, offset: Int = 0, size: Int = sa.size - offset): ByteArray {
-        val bb = ByteBuffer.allocate(size * 2).order(ByteOrder.nativeOrder())
-        val sb = bb.asShortBuffer()
-        sb.put(sa, offset, size)
-        return bb.array()
-    }
-
-    //suspend fun CoroutineContext.sleepImmediate2() = suspendCoroutine<Unit> { c ->
-    //	eventLoop.setImmediate { c.resume(Unit) }
-    //}
-    override fun stop() {
-        running = false
-    }
-
-    override fun start() {
-
-    }
+     */
 }
-*/
