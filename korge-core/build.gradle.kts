@@ -11,7 +11,7 @@ dependencies {
     //add("commonTestApi", project(":korge-test"))
     add("commonTestApi", libs.kotlinx.coroutines.test)
     add("jvmMainApi", libs.asm.core)
-    add("jvmMainApi", libs.asm.util)
+    add("jvmTestApi", libs.asm.util)
 }
 
 korlibs.NativeTools.configureAndroidDependency(project, libs.kotlinx.coroutines.android)
