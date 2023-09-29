@@ -139,12 +139,12 @@ tasks {
 afterEvaluate {
     //def publishTaskOrNull = tasks.findByName(publishAllPublications ? "publishAllPublicationsToMavenRepository" : "publishPluginMavenPublicationToMavenRepository")
 
-    if (tasks.findByName("publishToMavenRepository") != null) {
+    if (tasks.findByName("publishAllPublicationsToMavenRepository") != null) {
         @Suppress("UNUSED_VARIABLE")
         val publishJvmPublicationToMavenRepository = tasks.register("publishJvmPublicationToMavenRepository", Task::class) {
             group = "publishing"
             dependsOn("publishPluginMavenPublicationToMavenRepository")
-            dependsOn("publishToMavenRepository")
+            dependsOn("publishAllPublicationsToMavenRepository")
         }
     }
 }

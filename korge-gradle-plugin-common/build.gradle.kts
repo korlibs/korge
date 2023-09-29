@@ -61,10 +61,10 @@ tasks {
 }
 
 afterEvaluate {
-    if (tasks.findByName("publishToMavenRepository") != null) {
+    if (tasks.findByName("publishAllPublicationsToMavenRepository") != null) {
         tasks.register("publishJvmPublicationToMavenRepository", Task::class) {
             group = "publishing"
-            dependsOn("publishToMavenRepository")
+            dependsOn("publishAllPublicationsToMavenRepository")
         }
     }
 }
