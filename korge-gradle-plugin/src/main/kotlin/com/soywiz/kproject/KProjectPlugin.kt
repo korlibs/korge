@@ -33,8 +33,8 @@ class KProjectPlugin : Plugin<Project> {
                 ?: default
         }
 
-        val jvmVersion = getPropertyValue("kproject.jvm.version", "1.8")
-        val androidJvmVersion = getPropertyValue("kproject.android.jvm.version", "11")
+        val jvmVersion = getPropertyValue("kproject.jvm.version", korlibs.korge.gradle.targets.android.GRADLE_JAVA_VERSION_STR)
+        val androidJvmVersion = getPropertyValue("kproject.android.jvm.version", korlibs.korge.gradle.targets.android.ANDROID_JAVA_VERSION_STR)
 
         //val kprojectYml = File(project.projectDir, "kproject.yml")
         //val kproject = if (kprojectYml.exists()) KProject.load(kprojectYml, KSet(File("modules")), true) else null
@@ -85,7 +85,7 @@ class KProjectPlugin : Plugin<Project> {
                 }
             }
             if (hasTarget(KProjectTarget.WASM_JS)) {
-                wasm().apply {
+                wasmJs().apply {
                     browser()
                 }
             }
@@ -107,6 +107,9 @@ class KProjectPlugin : Plugin<Project> {
                 iosX64()
                 iosArm64()
                 iosSimulatorArm64()
+                tvosX64()
+                tvosArm64()
+                tvosSimulatorArm64()
             }
             sourceSets.apply {
                 val common = createPair("common")
