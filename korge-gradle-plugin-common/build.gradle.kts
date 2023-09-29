@@ -5,7 +5,6 @@ import org.gradle.kotlin.dsl.kotlin
 
 plugins {
     id("java")
-    id("java-gradle-plugin")
     id("maven-publish")
     id("com.gradle.plugin-publish")
     id("org.jetbrains.kotlin.jvm")
@@ -56,5 +55,5 @@ korlibs.NativeTools.groovyConfigureSigning(project)
 
 val publishJvmPublicationToMavenLocal = tasks.register("publishJvmPublicationToMavenLocal", Task::class) {
     group = "publishing"
-    dependsOn("publishMavenPublicationToMavenLocal")
+    dependsOn("publishToMavenLocal")
 }
