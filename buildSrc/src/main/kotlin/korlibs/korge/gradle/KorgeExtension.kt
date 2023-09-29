@@ -1,6 +1,7 @@
 package korlibs.korge.gradle
 
 import groovy.text.*
+import korlibs.*
 import korlibs.korge.gradle.processor.*
 import korlibs.korge.gradle.targets.*
 import korlibs.korge.gradle.targets.android.*
@@ -330,7 +331,6 @@ open class KorgeExtension(
 	var supressWarnings: Boolean = false
 
     val versionSubstitutions = LinkedHashMap<String, String>().also {
-        //it["com.soywiz.korlibs.korge-test:korge-test"] = BuildVersions.KORLIBS
         it["${RootKorlibsPlugin.KORGE_GROUP}:korge"] = BuildVersions.KORGE
         it["${RootKorlibsPlugin.KORGE_GROUP}:korge-root"] = BuildVersions.KORGE
         it["${RootKorlibsPlugin.KORGE_GROUP}:korge-core"] = BuildVersions.KORGE
@@ -339,8 +339,16 @@ open class KorgeExtension(
         it["${RootKorlibsPlugin.KORGE_GRADLE_PLUGIN_GROUP}:korge-gradle-plugin"] = BuildVersions.KORGE
     }
 
+    val artifactSubstitution = LinkedHashMap<String, String>().also {
+        it["com.soywiz.korlibs.korge2:korge"] = "${RootKorlibsPlugin.KORGE_GROUP}:korge:${BuildVersions.KORGE}"
+    }
+
     fun versionSubstitution(groupName: String, version: String) {
         versionSubstitutions[groupName] = version
+    }
+
+    fun artifactSubstitution(groupName: String, newGroupNameVersion: String) {
+        artifactSubstitution[groupName] = newGroupNameVersion
     }
 
     /**
@@ -366,8 +374,9 @@ open class KorgeExtension(
 
     var searchResourceProcessorsInMainSourceSet: Boolean = false
 
-    var icon: File? = project.projectDir["icon.png"]
-    var banner: File? = project.projectDir["banner.png"]
+    var skipDeps: Boolean = false
+    var icon: File? = File(project.projectDir, "icon.png")
+    var banner: File? = File(project.projectDir, "banner.png")
 
     var javaAddOpens: List<String> = JvmAddOpens.createAddOpens().toMutableList()
 
@@ -608,6 +617,14 @@ open class KorgeExtension(
 		project.dependencies.add(config, notation)
 	}
 
+    fun finish() {
+        if (!skipDeps && project.allprojects.any { it.path == ":deps" }) {
+            project.dependencies {
+                add("commonMainApi", project.project(":deps"))
+                //add("commonMainApi", project(":korge-dragonbones"))
+            }
+        }
+    }
 }
 
 // println(project.resolveArtifacts("korlibs.korge:korge-metadata:1.0.0"))

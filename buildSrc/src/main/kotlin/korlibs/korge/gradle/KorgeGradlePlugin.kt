@@ -125,6 +125,11 @@ fun Project.configureAutoVersions() {
                         details.useVersion(version)
                         details.because("korge.versionSubstitutions: '$groupWithName' -> $version")
                     }
+                    val artifact = korge.artifactSubstitution[groupWithName]
+                    if (artifact != null) {
+                        details.useTarget(artifact)
+                        details.because("korge.artifactSubstitution: '$groupWithName' -> $artifact")
+                    }
                 }
             }
         }
@@ -197,7 +202,7 @@ fun Project.configureBuildScriptClasspathTasks() {
 val Project.gkotlin get() = properties["kotlin"] as KotlinMultiplatformExtension
 val Project.ext get() = extensions.getByType(ExtraPropertiesExtension::class.java)
 
-fun Project.korge(callback: KorgeExtension.() -> Unit) = korge.apply(callback)
+fun Project.korge(callback: KorgeExtension.() -> Unit) = korge.apply(callback).also { it.finish() }
 val Project.kotlin: KotlinMultiplatformExtension get() = this.extensions.getByType(KotlinMultiplatformExtension::class.java)
 val Project.korge: KorgeExtension
     get() {
