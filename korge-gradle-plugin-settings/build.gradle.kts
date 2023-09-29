@@ -55,3 +55,13 @@ val publishJvmPublicationToMavenLocal = tasks.register("publishJvmPublicationToM
     dependsOn("publishPluginMavenPublicationToMavenLocal")
     dependsOn("publishToMavenLocal")
 }
+
+afterEvaluate {
+    if (tasks.findByName("publishToMavenRepository") != null) {
+        tasks.register("publishJvmPublicationToMavenRepository", Task::class) {
+            group = "publishing"
+            dependsOn("publishPluginMavenPublicationToMavenRepository")
+            dependsOn("publishToMavenRepository")
+        }
+    }
+}

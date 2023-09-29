@@ -53,7 +53,18 @@ if (!KProjectVersionKt.exists() || KProjectVersionKt.text != KProjectVersionCont
 korlibs.NativeTools.groovyConfigurePublishing(project, false)
 korlibs.NativeTools.groovyConfigureSigning(project)
 
-val publishJvmPublicationToMavenLocal = tasks.register("publishJvmPublicationToMavenLocal", Task::class) {
-    group = "publishing"
-    dependsOn("publishToMavenLocal")
+tasks {
+    val publishJvmPublicationToMavenLocal = creating(Task::class) {
+        group = "publishing"
+        dependsOn("publishToMavenLocal")
+    }
+}
+
+afterEvaluate {
+    if (tasks.findByName("publishToMavenRepository") != null) {
+        tasks.register("publishJvmPublicationToMavenRepository", Task::class) {
+            group = "publishing"
+            dependsOn("publishToMavenRepository")
+        }
+    }
 }
