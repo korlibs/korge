@@ -779,8 +779,8 @@ fun Project.getForcedVersion(): String {
 }
 
 fun Project.getProjectForcedVersion(): String {
-    val res = when (this.name) {
-        "korge-gradle-plugin" -> getForcedVersionGradlePluginVersion()
+    val res = when {
+        this.name.startsWith("korge-gradle-plugin") -> getForcedVersionGradlePluginVersion()
         else -> getForcedVersionLibrariesVersion()
     }
     if (System.getenv("FORCED_VERSION") != null) {
@@ -804,7 +804,7 @@ val Project.currentJavaVersion by LazyExt { currentJavaVersion() }
 fun Project.hasBuildGradle() = listOf("build.gradle", "build.gradle.kts").any { File(projectDir, it).exists() }
 val Project.isSample: Boolean get() = project.path.startsWith(":samples:") || project.path.startsWith(":korge-sandbox") || project.path.startsWith(":korge-editor") || project.path.startsWith(":korge-starter-kit")
 fun Project.mustAutoconfigureKMM(): Boolean =
-    project.name != "korge-gradle-plugin" &&
+    !project.name.startsWith("korge-gradle-plugin") &&
         project.name != "korge-reload-agent" &&
         project.name != "korge-benchmarks" &&
         project.hasBuildGradle()

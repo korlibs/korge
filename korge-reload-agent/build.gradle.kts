@@ -40,7 +40,7 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile::class).all {
 
 publishing {
     publications {
-        maybeCreate("maven", MavenPublication::class).apply {
+        val maven by creating(MavenPublication::class) {
             groupId = group.toString()
             artifactId = "korge-reload-agent"
             version = version
