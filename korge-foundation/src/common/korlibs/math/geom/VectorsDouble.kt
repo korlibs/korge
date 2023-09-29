@@ -155,8 +155,8 @@ data class Vector2D(val x: Double, val y: Double) : IsAlmostEquals<Vector2D> {
         val DOWN_SCREEN = Vector2D(0.0, +1.0)
 
 
-        //inline operator fun invoke(x: Int, y: Int): Vector2 = Vector2D(x.toDouble(), y.toDouble())
-        //inline operator fun invoke(x: Float, y: Float): Vector2 = Vector2D(x.toDouble(), y.toDouble())
+        inline operator fun invoke(x: Number, y: Number): Vector2D = Vector2D(x.toDouble(), y.toDouble())
+        //inline operator fun invoke(x: Float, y: Float): Vector2D = Vector2D(x.toDouble(), y.toDouble())
 
         //fun fromRaw(raw: Float2Pack) = Vector2D(raw)
 
