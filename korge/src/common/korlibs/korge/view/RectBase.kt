@@ -47,7 +47,7 @@ open class RectBase(
 	val sRight: Float get() = sLeft + bwidth
 	val sBottom: Float get() = sTop + bheight
 
-    protected val vertices = TexturedVertexArray(4, TexturedVertexArray.QUAD_INDICES)
+    protected open val vertices = TexturedVertexArray(4, TexturedVertexArray.QUAD_INDICES)
 
 	override fun renderInternal(ctx: RenderContext) {
 		if (!visible) return
