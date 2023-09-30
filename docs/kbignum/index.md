@@ -11,8 +11,6 @@ Library for dealing with Big Numbers both integral and decimal
 
 {% include stars.html project="korge" central="com.soywiz.korlibs.kbignum/kbignum" %}
 
-{% include toc_include.md %}
-
 ## General Bits
 
 KBigNum exposes two basic classes: `BigInt` and `BigNum`.

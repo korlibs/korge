@@ -27,7 +27,7 @@ Live demo (editable) [[source code]](https://github.com/korlibs/korte-samples/bl
 
 <embed src="https://korlibs.github.io/korte-samples/korte-sample-browser/web/" style="width: 100%;height:50vh;" />
 
-{% include toc_include.md %}
+
 
 {% raw %}
 

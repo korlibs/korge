@@ -8,7 +8,7 @@ priority: 6
 
 Each kind of standard view provides a normal constructor, plus a DSL constructor that have `Container` as receiver.
 
-{% include toc_include.md %}
+
 
 ## Container & FixedSizeContainer
 
@@ -246,7 +246,7 @@ class CameraContainer(){
 ## Mesh
 
 Mesh allows to render a raw set of points as triangles or triangle strips. Used for example by the skeleton-based
-animations with mesh deforms. {% include toc_include.md %}
+animations with mesh deforms. 
 
 ```kotlin
 open class Mesh(

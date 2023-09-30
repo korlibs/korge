@@ -8,8 +8,6 @@ priority: 0
 
 KorIM support several Bitmap formats and operations.
 
-{% include toc_include.md max_level=2 %}
-
 ## Bitmap
 
 `Bitmap` is an abstract class used to represent images, as a bidimensional matrix with a set of RGBA pixels.

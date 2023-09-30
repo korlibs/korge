@@ -2,7 +2,14 @@
 <html lang="en">
 
 <head>
-	<meta charset="utf-8">
+    {% if page.redirect_to %}
+    <meta http-equiv="Refresh" content="0; url='{{ page.redirect_to }}'" />
+    <script>
+        document.location.href = `{{ page.redirect_to }}`;
+    </script>
+    {% endif %}
+
+    <meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 
@@ -29,12 +36,8 @@
     <script src="/js/mermaid/mermaid.min.js"></script>
     {% endif %}
 
-    {% if page.redirect_to %}
-    <meta http-equiv="Refresh" content="0; url='{{ page.redirect_to }}'" />
-    <script>
-        document.location.href = `{{ page.redirect_to }}`;
-    </script>
-    {% endif %}
+    <!-- add after bootstrap.min.css -->
+    <link rel="stylesheet" href="https://cdn.rawgit.com/afeld/bootstrap-toc/v0.4.1/dist/bootstrap-toc.min.css">
 
     <!-- 2 -->
 </head>
@@ -95,10 +98,13 @@
           <input type="search" class="form-control" placeholder="Search... (press 't' to focus)" id="searchq" name="q" />
         </form>
       </aside>
-      <article id="page-content-wrapper2">
+      <article id="page-content-wrapper2" data-spy="scroll" data-target="#toc">
         <div class="container-fluid">
           <div class="row">
-            <div class="col-lg-12" id="page-content2">
+            <div class="col-md-2 col-md-push-10 d-none d-md-block affix">
+                <nav id="toc" data-toggle="toc"></nav>
+            </div>
+            <div class="col-md-10" id="page-content2">
               <div id="page-content">
                   <div class="github_edit_page print_hide" style="float: right;position:relative;top:-0.6em;">
                       <a href="https://github.com/korlibs/korge/edit/main/docs/{{ page.path }}" class="btn btn-default" target="_blank" rel="noopener">
@@ -133,6 +139,47 @@
               <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
               {% endif %}
               {% endunless %}
+
+                <div style="margin-top:32px;margin-bottom: 16px;">
+                    Was this article useful?
+                    <div style="display:inline-block;" class="btn-group">
+                    <a class="btn btn-default" style="color:#426c42;" href="https://docs.google.com/forms/d/e/1FAIpQLSclcND_ZoRdwqW-GvBus9gAaA9Ek-130M3FcC6qk7huWxCfvA/viewform?usp=pp_url&entry.743568020={{ page.url }}&entry.593163446=5" target="_blank">
+                        <i class="fas fa-thumbs-up"></i>
+                    </a>
+                    <a class="btn btn-default" style="color:#863333;" href="https://docs.google.com/forms/d/e/1FAIpQLSclcND_ZoRdwqW-GvBus9gAaA9Ek-130M3FcC6qk7huWxCfvA/viewform?usp=pp_url&entry.743568020={{ page.url }}&entry.593163446=1" target="_blank">
+                        <i class="fas fa-thumbs-down"></i>
+                    </a>
+                    </div>
+                </div>
+
+                <!--
+                <script>
+                    const headings = [];
+                    function generateToc(node) {
+                        const nodeName = node.nodeName.toLowerCase()
+
+                        //if (["h1", "h2", "h3", "h4", "h5"].indexOf(nodeName) >= 0) {
+                        if (["h1", "h2", "h3", "h4", "h5"].indexOf(nodeName) >= 0) {
+                            headings.push(node)
+                        }
+                        for (const child of node.childNodes) {
+                            generateToc(child)
+                        }
+                    }
+
+                    const toc = document.querySelector("#page-toc")
+                    const content = document.querySelector("#page-content2")
+                    generateToc(content)
+                    for (const heading of headings) {
+                        const entry = document.createElement('div')
+                        entry.innerText = heading.innerText
+                        toc.appendChild(entry)
+                    }
+                    //console.log(headings)
+                    //content.querySelectorAll()
+                    //toc.innerText = "hello"
+                </script>
+                -->
             </div>
           </div>
         </div>
@@ -146,10 +193,10 @@
   </div>
 
 
-<script src="{{ '/js/jquery-2.2.4.min.js' | prepend: site.baseurl }}" type="text/javascript" defer></script>
-<script src="{{ '/js/bootstrap.js' | prepend: site.baseurl }}" type="text/javascript" defer></script>
-<script src="{{ '/js/navigation.js' | prepend: site.baseurl }}" type="text/javascript" defer></script>
-<script src="{{ '/js/highlight/highlight.pack.js' | prepend: site.baseurl }}" type="text/javascript" defer onload="
+<script src="{{ '/js/jquery-2.2.4.min.js' | prepend: site.baseurl }}" type="text/javascript"></script>
+<script src="{{ '/js/bootstrap.js' | prepend: site.baseurl }}" type="text/javascript"></script>
+<script src="{{ '/js/navigation.js' | prepend: site.baseurl }}" type="text/javascript"></script>
+<script src="{{ '/js/highlight/highlight.pack.js' | prepend: site.baseurl }}" type="text/javascript" onload="
 		window.addEventListener('DOMContentLoaded', () => {
 			document.querySelectorAll('pre code').forEach((block) => {
 				//console.log('pre code', block);
@@ -159,11 +206,14 @@
 	"></script>
 
 {% if page.support_diagram %}
-<script src="{{ '/js/lodash.min.js' | prepend: site.baseurl }}" type="text/javascript" defer></script>
-<script src="{{ '/js/dagre.min.js' | prepend: site.baseurl }}" type="text/javascript" defer></script>
-<script src="{{ '/js/nomnoml.js' | prepend: site.baseurl }}" type="text/javascript" defer></script>
-<script src="{{ '/js/replacer.js' | prepend: site.baseurl }}" type="text/javascript" defer></script>
+<script src="{{ '/js/lodash.min.js' | prepend: site.baseurl }}" type="text/javascript"></script>
+<script src="{{ '/js/dagre.min.js' | prepend: site.baseurl }}" type="text/javascript"></script>
+<script src="{{ '/js/nomnoml.js' | prepend: site.baseurl }}" type="text/javascript"></script>
+<script src="{{ '/js/replacer.js' | prepend: site.baseurl }}" type="text/javascript"></script>
 {% endif %}
+
+<!-- add after bootstrap.min.js -->
+<script src="https://cdn.rawgit.com/afeld/bootstrap-toc/v0.4.1/dist/bootstrap-toc.min.js"></script>
 
 <!--
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/docsearch.js@2/dist/cdn/docsearch.min.js" defer onload="

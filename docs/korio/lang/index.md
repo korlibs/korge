@@ -9,7 +9,7 @@ priority: 8
 
 KorIO has some general language tools to make life easier.
 
-{% include toc_include.md max_level=2 %}
+
 
 ## Misc
 

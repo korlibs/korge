@@ -5,8 +5,6 @@ css-icon: fab fa-github
 priority: 1000
 ---
 
-{% include toc_include.md max_level=2 %}
-
 ## Code
 
 All new development happens in the `korge` repository:

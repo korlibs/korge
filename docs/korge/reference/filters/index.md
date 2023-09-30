@@ -12,7 +12,7 @@ Views can have filters attached that change how the view and its children are di
 var View.filter: Filter? = null
 ```
 
-{% include toc_include.md %}
+
 
 {% include sample.html sample="FiltersScene" %}
 

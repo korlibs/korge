@@ -9,7 +9,7 @@ priority: 7
 
 KorIO has some tools for accessing the environment.
 
-{% include toc_include.md max_level=2 %}
+
 
 ## Environment
 

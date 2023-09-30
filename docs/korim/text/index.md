@@ -9,8 +9,6 @@ status: new
 
 KorIM support creating, rendering, and measuring TTF Vector fonts and Bitmap fonts. In addition it support generating bitmap fonts on the fly, and storing them.
 
-{% include toc_include.md max_level=2 %}
-
 ## Font
 
 Font is the common interface for all the available fonts independently to their type.

@@ -13,8 +13,6 @@ It supports playing sounds, creating dynamic audio streams and decoding audio fi
 
 {% include stars.html project="korge" central="com.soywiz.korlibs.korau/korau" %}
 
-{% include toc_include.md %}
-
 ## AudioFormat
 
 ```kotlin

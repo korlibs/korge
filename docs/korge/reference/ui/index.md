@@ -8,7 +8,7 @@ priority: 6000
 
 KorGE include some UI components, you can use out of the box.
 
-{% include toc_include.md %}
+
 
 ## `UIButton`
 

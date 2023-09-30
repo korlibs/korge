@@ -9,8 +9,6 @@ status: new
 
 KorIM supports creating, loading and saving different image formats.
 
-{% include toc_include.md max_level=2 %}
-
 ## ImageFormat, ImageFormats
 
 ImageFormat allows to read/decode and write/encode images in a specific format. This class supports decoding static images, animations, and layered animated formats like `ASE` supporting most of its features.

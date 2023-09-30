@@ -9,7 +9,7 @@ priority: 10
 
 KorMA provides some path finding algorithms.
 
-{% include toc_include.md max_level=2 %}
+
 
 
 ## Path Finding

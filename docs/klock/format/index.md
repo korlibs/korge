@@ -9,9 +9,6 @@ priority: 20
 
 Klock has utilities for formatting, parsing and localizing dates and times.
 
-{% include toc_include.md max_level=3 %}
-
-
 ## Localization
 
 Starting with Klock 1.3.0, there is support for multiple languages.

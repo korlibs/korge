@@ -9,7 +9,7 @@ priority: 1
 
 KorIO has functionality to manipulate synchronous streams of data.
 
-{% include toc_include.md max_level=2 %}
+
 
 ## SyncPositionStream
 

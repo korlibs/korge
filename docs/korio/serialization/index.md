@@ -9,7 +9,7 @@ priority: 9
 
 KorIO has utilities for serializing and deserializing typical formats.
 
-{% include toc_include.md max_level=2 %}
+
 
 ## JSON
 

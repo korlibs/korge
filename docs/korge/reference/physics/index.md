@@ -11,7 +11,7 @@ Some kind of games require some physics to work.
 KorGE provides a set of hit-testing and collision detection utilities
 and a port of Box2D out of the box:
 
-{% include toc_include.md %}
+
 
 ## Hit Testing + Collision/Intersection Detection
 

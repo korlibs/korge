@@ -7,8 +7,6 @@ fa-icon: fa-hat-wizard
 priority: 10
 ---
 
-{% include toc_include.md max_level=3 %}
-
 ## binarySearch: `genericBinarySearch`, `binarySearch`
 {: #genericBinarySearch }
 

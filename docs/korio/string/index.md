@@ -9,7 +9,7 @@ priority: 11
 
 KorIO has utilities for handling texts.
 
-{% include toc_include.md max_level=2 %}
+
 
 ## Indenter
 

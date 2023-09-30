@@ -18,7 +18,7 @@ that is almost modern web browser nowadays.
 Features fast compilation time, small output size, fast startup time
 and widely array of supported of devices with a single target.
 
-{% include toc_include.md %}
+
 
 ## Executing
 

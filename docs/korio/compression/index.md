@@ -9,7 +9,7 @@ priority: 6
 
 KorIO has some compression and checksum tools.
 
-{% include toc_include.md max_level=2 %}
+
 
 
 ## Checksum

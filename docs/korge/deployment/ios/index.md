@@ -16,7 +16,7 @@ It includes a thin Objective-C wrapper
 for the entry point of the application so it doesn't have to include the Swift runtime on
 older iOS versions.
 
-{% include toc_include.md %}
+
 
 ## Executing
 

@@ -9,7 +9,7 @@ priority: 3
 
 KorIO has extra asynchronous and threading utilities.
 
-{% include toc_include.md max_level=2 %}
+
 
 ## AsyncByteArrayDeque
 
