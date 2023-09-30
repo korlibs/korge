@@ -166,13 +166,36 @@ interface DocStats {
 }
 
 class DocQueryResultResult implements DocStats {
-	constructor(public results: DocQueryResult[], public wordsInIndex: number, public iterations: number = 0, public queryTimeMs: number = 0) {
+	constructor(public results: DocQueryResult[] = [], public wordsInIndex: number = 0, public iterations: number = 0, public queryTimeMs: number = 0) {
 	}
+
+    append(other: DocQueryResultResult) {
+        this.results.push(...other.results)
+        this.wordsInIndex += other.wordsInIndex
+        this.iterations += other.iterations
+        this.queryTimeMs += other.queryTimeMs
+    }
 }
 
 class WordWithVariants {
 	constructor(public words: string[]) {
 	}
+}
+
+class DocIndices {
+    public indices: DocIndex[] = []
+
+    addIndex(index: DocIndex) {
+        this.indices.push(index)
+    }
+
+    query(text: string, maxResults: number = 7, debug: boolean = false): DocQueryResultResult {
+        const out = new DocQueryResultResult();
+        for (const index of this.indices) {
+            out.append(index.query(text, maxResults, debug))
+        }
+        return out;
+    }
 }
 
 class DocIndex {
@@ -418,7 +441,9 @@ class DocSection {
 class Doc {
 	public title: string = ''
 	public sections: DocSection[] = []
-	constructor(public index: DocIndex, public url: string) {
+    public fullUrl: string
+	constructor(public index: DocIndex, public url: string, public baseUrl: string) {
+        this.fullUrl = `${baseUrl}${url}`
 	}
 
 	createSection(id: string, title: string, parentSection: DocSection|null): DocSection {
@@ -433,8 +458,8 @@ class DocIndexer {
 	hSections: DocSection[]
 	section: DocSection
 
-	constructor(index: DocIndex, url: string) {
-		this.doc = new Doc(index, url);
+	constructor(index: DocIndex, url: string, baseUrl: string) {
+		this.doc = new Doc(index, url, baseUrl);
 		this.section = this.doc.createSection("", "", null)
 		this.hSections = [this.section, this.section]
 	}
@@ -510,11 +535,11 @@ async function fetchParts(allLink: string) {
 	let response = await fetch(allLink);
 	let text = await response.text()
 	const time1 = Date.now()
-	console.log("Fetched all.html in", time1 - time0)
+	console.log(`Fetched '${allLink}' in`, time1 - time0)
 	return text.split("!!!$PAGE$!!!")
 }
 
-function createIndexFromParts(parts: string[]) {
+function createIndexFromParts(parts: string[], baseUrl: string) {
 	const time0 = Date.now()
 	//console.log(parts.length);
 	const parser = new DOMParser();
@@ -533,7 +558,7 @@ function createIndexFromParts(parts: string[]) {
         //console.log(`<base href="${url}t">`)
         baseElem.href = url;
         xmlDoc.head.appendChild(baseElem);
-		const indexer = new DocIndexer(index, url);
+		const indexer = new DocIndexer(index, url, baseUrl);
 		indexer.index(xmlDoc.documentElement)
 	}
 	const time1 = Date.now()
@@ -541,16 +566,17 @@ function createIndexFromParts(parts: string[]) {
 	return index
 }
 
-async function getIndex(allLink: string): Promise<DocIndex> {
+async function getIndex(allLink: string, baseUrl: string): Promise<DocIndex> {
 	const parts = await fetchParts(allLink)
 	//setInterval(() => { createIndexFromParts(parts) }, 500)
-	return createIndexFromParts(parts)
+	return createIndexFromParts(parts, baseUrl)
 }
 
-async function getIndexOnce(allLink: string): Promise<DocIndex> {
-	(window as any).searchIndexPromise ||= getIndex(allLink);
-	(window as any).searchIndex = await (window as any).searchIndexPromise;
-	return (window as any).searchIndex;
+async function getIndexOnce(allLink: string, name: string, baseUrl: string): Promise<DocIndex> {
+    let awindow = window as any;
+    awindow.searchIndexPromiseCache ||= {};
+    awindow.searchIndexPromiseCache[name] ||= getIndex(allLink, baseUrl);
+	return await awindow.searchIndexPromiseCache[name];
 }
 
 interface HTMLElement {
@@ -567,7 +593,7 @@ HTMLElement.prototype.createChild = (function(tagName: string, gen?: (e: HTMLEle
 	return element
 })
 
-async function newSearchHook(query: string, allLink: string = '/all.html') {
+async function newSearchHook(query: string) {
 	console.log("ready")
 
 	const searchBox: HTMLInputElement|undefined = document.querySelector(query) as any;
@@ -664,7 +690,10 @@ async function newSearchHook(query: string, allLink: string = '/all.html') {
 
 		//console.log('ev', e)
 		searchResults.classList.add('search-loading')
-		const index = await getIndexOnce(allLink);
+        const indices = new DocIndices()
+        indices.addIndex(await getIndexOnce("/all.html", 'main', ''))
+        indices.addIndex(await getIndexOnce("https://store.korge.org/all.html", 'store', '/store_proxy/?url='))
+
 		searchResults.classList.remove('search-loading')
 
 		switch (e.key) {
@@ -682,7 +711,7 @@ async function newSearchHook(query: string, allLink: string = '/all.html') {
 		//console.clear()
 		const debug = false
 		//const debug = true
-		const results = index.query(currentText, 7, debug)
+		const results = indices.query(currentText, 7, debug)
 		searchResults.classList.toggle('search-no-results', results.results.length == 0)
 
 		//console.info("Results in", results.queryTimeMs, "words in index", results.wordsInIndex)
@@ -702,7 +731,7 @@ async function newSearchHook(query: string, allLink: string = '/all.html') {
 			result.results.forEach((res) => {
 				const index = resultIndex++
 				const section = res.section;
-				const href = `${res.doc.url}#${section.id}`
+				const href = `${res.doc.fullUrl}#${section.id}`
 				//console.log("->", `SCORE:`, res.score, res.section.titles, res.paragraph?.paragraph?.text)
 				const div = searchResults.createChild("a", (it) => {
 					it.href = href
@@ -752,6 +781,7 @@ async function newSearchHook(query: string, allLink: string = '/all.html') {
 }
 
 
+// noinspection JSUnusedGlobalSymbols
 async function newSearchMain() {
 	await newSearchHook("input#searchbox")
 }

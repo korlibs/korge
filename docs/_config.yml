@@ -23,6 +23,6 @@ kramdown:
     disable : true
 sass:
   sass_dir: css
-plugins:
+#plugins:
   #- jekyll-redirect-from
   #- hook-add-last-modified-date
