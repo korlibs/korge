@@ -7,8 +7,6 @@ fa-icon: fa-ellipsis-h
 priority: 1
 ---
 
-{% include toc_include.md max_level=3 %}
-
 ## ArrayList: `IntArrayList`, `FloatArrayList` and `DoubleArrayList`
 {: #ArrayList }
 

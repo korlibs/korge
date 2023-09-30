@@ -5,8 +5,6 @@ fa-icon: fa-question-circle
 priority: 2000
 ---
 
-{% include toc_include.md %}
-
 ## Are these libraries free?
 {:#free}
 

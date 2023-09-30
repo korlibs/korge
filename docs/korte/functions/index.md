@@ -8,7 +8,7 @@ priority: 2
 
 KorTE include some basic functions by default.
 
-{% include toc_include.md max_level=2 %}
+
 
 {% raw %}
 

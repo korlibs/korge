@@ -13,8 +13,6 @@ This library provides a simple interface to do logging into suitable outputs lik
 
 {% include stars.html project="klogger" central="com.soywiz.korlibs.klogger/klogger" %}
 
-{% include toc_include.md %}
-
 ## Console
 
 Klogger provides a common way for logging into JavaScript console with fallback to stdout and stderr.

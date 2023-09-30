@@ -8,7 +8,7 @@ priority: 970
 Portable Kotlin Common package to do dependency injection.
 Part of `korge-foundation` (previously korinject)
 
-{% include toc_include.md %}
+
 
 ## Creating a new injector
 

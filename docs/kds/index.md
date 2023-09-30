@@ -23,8 +23,6 @@ include specialized versions for primitives like <code>Int</code> or <code>Doubl
 [![Build Status](https://travis-ci.org/korlibs/kds.svg?branch=master)](https://travis-ci.org/korlibs/kds)
 [![Maven Version](https://img.shields.io/github/tag/korlibs/kds.svg?style=flat&label=maven)](http://search.maven.org/#search%7Cga%7C1%7Ca%3A%22kds%22)
 
-{% include toc_include.md %}
-
 ## Pages
 
 {% include toc.html context="/kds/" description=true %}

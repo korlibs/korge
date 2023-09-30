@@ -10,7 +10,7 @@ support_diagram: true
 
 KorGE provide mechanisms for testing views, scenes and suspending functions.
 
-{% include toc_include.md %}
+
 
 ## Basics
 

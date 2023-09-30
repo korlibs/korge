@@ -14,8 +14,6 @@ KorIO is a library for Charsets, Encodings, Checksums, Compression, I/O, Streams
 
 {% include stars.html project="korge" central="com.soywiz.korlibs.korio/korio" %}
 
-{% include toc_include.md max_level="4" %}
-
 ## Pages
 
 {% include toc.html context="/korio/" description=true %}

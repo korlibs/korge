@@ -9,8 +9,6 @@ priority: 0
 
 KorIO has a Virtual File System functionality.
 
-{% include toc_include.md max_level=3 %}
-
 ## File System
 
 ## PathInfo

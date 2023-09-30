@@ -6,7 +6,7 @@ fa-icon: fa-gamepad
 priority: 30
 ---
 
-{% include toc_include.md %}
+
 
 ## Accessing input state
 

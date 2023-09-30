@@ -6,7 +6,7 @@ fa-icon: fa-play
 priority: 31
 ---
 
-{% include toc_include.md %}
+
 
 ![](/animation/animation.jpg)
 

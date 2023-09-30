@@ -7,8 +7,6 @@ fa-icon: fa-sitemap
 priority: 3
 ---
 
-{% include toc_include.md max_level=3 %}
-
 ## FastMap: `FastIntMap`, `FastStringMap`
 {: #FastMap }
 

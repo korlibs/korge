@@ -7,9 +7,6 @@ fa-icon: fa-swatchbook
 priority: 10
 ---
 
-{% include toc_include.md max_level=3 %}
-
-
 ## Extra
 
 Provides a Extra funtionality to define extrinsic properties to an object that has been decorated with Extra interface implemented by Extra.Mixin. It just adds a extra hashmap to the object, so it can be used to externally define properties. The idea is similar to `WeakProperty` but doesn't require weak references at all. But just works with objects that implements Extra interface.

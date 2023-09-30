@@ -9,8 +9,6 @@ priority: 2
 
 Klock has utilities for mesuring time.
 
-{% include toc_include.md max_level=3 %}
-
 ## Measuring Time
 
 As for Klock 1.0, there are two relevant functionality: the `measureTime`, `measureTimeWithResult` functions and the `PerformanceCounter` class.

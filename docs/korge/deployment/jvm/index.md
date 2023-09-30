@@ -16,7 +16,7 @@ This integrates pretty well on the IDEs, have fast building and startup times,
 and provides a great tools like a better debugging experience. All these features
 makes it the best target for debugging and trying things fast.
 
-{% include toc_include.md %}
+
 
 ## Entrypoint
 

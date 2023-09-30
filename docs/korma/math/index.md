@@ -9,7 +9,7 @@ priority: 10
 
 KorMA provides some mathematical utilities.
 
-{% include toc_include.md max_level=2 %}
+
 
 
 ## Math utils

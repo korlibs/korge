@@ -9,7 +9,7 @@ priority: 4
 
 KorIO has utilities for handling different charsets.
 
-{% include toc_include.md max_level=2 %}
+
 
 ## Charset
 

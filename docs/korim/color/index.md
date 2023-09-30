@@ -9,8 +9,6 @@ priority: 10
 KorIM support several color formats, packed inline classes and conversion between them
 as well as mixing, de/premultiplication and other optimized operations.
 
-{% include toc_include.md max_level=2 %}
-
 ## ColorFormat
 
 All color formats implements the `ColorFormat` interface.
