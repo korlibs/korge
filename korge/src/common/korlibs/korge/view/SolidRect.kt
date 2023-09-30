@@ -21,7 +21,7 @@ inline fun Container.solidRect(width: Int, height: Int, color: RGBA = Colors.WHI
 /**
  * A Rect [RectBase] [View] of size [widthD] and [heightD] with the initial color, [color].
  */
-open class SolidRect(size: Size, color: RGBA = Colors.WHITE) : RectBase() {
+class SolidRect(size: Size, color: RGBA = Colors.WHITE) : RectBase() {
 	companion object {
         operator fun invoke(width: Int, height: Int, color: RGBA = Colors.WHITE) = SolidRect(Size(width, height), color)
         operator fun invoke(width: Float, height: Float, color: RGBA = Colors.WHITE) = SolidRect(Size(width, height), color)
