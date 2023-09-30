@@ -134,16 +134,37 @@ class DocQueryResult {
     }
 }
 class DocQueryResultResult {
-    constructor(results, wordsInIndex, iterations = 0, queryTimeMs = 0) {
+    constructor(results = [], wordsInIndex = 0, iterations = 0, queryTimeMs = 0) {
         this.results = results;
         this.wordsInIndex = wordsInIndex;
         this.iterations = iterations;
         this.queryTimeMs = queryTimeMs;
     }
+    append(other) {
+        this.results.push(...other.results);
+        this.wordsInIndex += other.wordsInIndex;
+        this.iterations += other.iterations;
+        this.queryTimeMs += other.queryTimeMs;
+    }
 }
 class WordWithVariants {
     constructor(words) {
         this.words = words;
+    }
+}
+class DocIndices {
+    constructor() {
+        this.indices = [];
+    }
+    addIndex(index) {
+        this.indices.push(index);
+    }
+    query(text, maxResults = 7, debug = false) {
+        const out = new DocQueryResultResult();
+        for (const index of this.indices) {
+            out.append(index.query(text, maxResults, debug));
+        }
+        return out;
     }
 }
 class DocIndex {
@@ -373,11 +394,13 @@ class DocSection {
     }
 }
 class Doc {
-    constructor(index, url) {
+    constructor(index, url, baseUrl) {
         this.index = index;
         this.url = url;
+        this.baseUrl = baseUrl;
         this.title = '';
         this.sections = [];
+        this.fullUrl = `${baseUrl}${url}`;
     }
     createSection(id, title, parentSection) {
         let docSection = new DocSection(this, id, title, parentSection);
@@ -386,8 +409,8 @@ class Doc {
     }
 }
 class DocIndexer {
-    constructor(index, url) {
-        this.doc = new Doc(index, url);
+    constructor(index, url, baseUrl) {
+        this.doc = new Doc(index, url, baseUrl);
         this.section = this.doc.createSection("", "", null);
         this.hSections = [this.section, this.section];
     }
@@ -456,10 +479,10 @@ async function fetchParts(allLink) {
     let response = await fetch(allLink);
     let text = await response.text();
     const time1 = Date.now();
-    console.log("Fetched all.html in", time1 - time0);
+    console.log(`Fetched '${allLink}' in`, time1 - time0);
     return text.split("!!!$PAGE$!!!");
 }
-function createIndexFromParts(parts) {
+function createIndexFromParts(parts, baseUrl) {
     const time0 = Date.now();
     const parser = new DOMParser();
     const index = new DocIndex();
@@ -475,22 +498,23 @@ function createIndexFromParts(parts) {
         const baseElem = xmlDoc.createElement("base");
         baseElem.href = url;
         xmlDoc.head.appendChild(baseElem);
-        const indexer = new DocIndexer(index, url);
+        const indexer = new DocIndexer(index, url, baseUrl);
         indexer.index(xmlDoc.documentElement);
     }
     const time1 = Date.now();
     console.log("Created index in", time1 - time0);
     return index;
 }
-async function getIndex(allLink) {
+async function getIndex(allLink, baseUrl) {
     const parts = await fetchParts(allLink);
-    return createIndexFromParts(parts);
+    return createIndexFromParts(parts, baseUrl);
 }
-async function getIndexOnce(allLink) {
+async function getIndexOnce(allLink, name, baseUrl) {
     var _a;
-    (_a = window).searchIndexPromise || (_a.searchIndexPromise = getIndex(allLink));
-    window.searchIndex = await window.searchIndexPromise;
-    return window.searchIndex;
+    let awindow = window;
+    awindow.searchIndexPromiseCache || (awindow.searchIndexPromiseCache = {});
+    (_a = awindow.searchIndexPromiseCache)[name] || (_a[name] = getIndex(allLink, baseUrl));
+    return await awindow.searchIndexPromiseCache[name];
 }
 HTMLElement.prototype.createChild = (function (tagName, gen) {
     const element = document.createElement(tagName);
@@ -500,7 +524,7 @@ HTMLElement.prototype.createChild = (function (tagName, gen) {
     this.appendChild(element);
     return element;
 });
-async function newSearchHook(query, allLink = '/all.html') {
+async function newSearchHook(query) {
     console.log("ready");
     const searchBox = document.querySelector(query);
     const searchResults = document.createElement("div");
@@ -584,7 +608,9 @@ async function newSearchHook(query, allLink = '/all.html') {
         if (lastText == currentText)
             return;
         searchResults.classList.add('search-loading');
-        const index = await getIndexOnce(allLink);
+        const indices = new DocIndices();
+        indices.addIndex(await getIndexOnce("/all.html", 'main', ''));
+        indices.addIndex(await getIndexOnce("https://store.korge.org/all.html", 'store', '/store_proxy/?url='));
         searchResults.classList.remove('search-loading');
         switch (e.key) {
             case 'ArrowUp':
@@ -596,7 +622,7 @@ async function newSearchHook(query, allLink = '/all.html') {
         foundResults.clear();
         lastText = currentText;
         const debug = false;
-        const results = index.query(currentText, 7, debug);
+        const results = indices.query(currentText, 7, debug);
         searchResults.classList.toggle('search-no-results', results.results.length == 0);
         let resultIndex = 0;
         const usedImages = new Set();
@@ -613,7 +639,7 @@ async function newSearchHook(query, allLink = '/all.html') {
             result.results.forEach((res) => {
                 const index = resultIndex++;
                 const section = res.section;
-                const href = `${res.doc.url}#${section.id}`;
+                const href = `${res.doc.fullUrl}#${section.id}`;
                 const div = searchResults.createChild("a", (it) => {
                     it.href = href;
                     it.id = `result${index}`;
