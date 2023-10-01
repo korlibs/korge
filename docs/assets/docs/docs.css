@@ -3233,3 +3233,20 @@ main a, main button, main input, main select, main textarea, main h2, main h3, m
 main img {
     max-width: 100%;
 }
+
+
+.custom-scroll::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+}
+.custom-scroll::-webkit-scrollbar-track {
+    background: var(--bd-pre-bg);
+}
+.custom-scroll::-webkit-scrollbar-thumb {
+    background: var(--bs-border-color);
+    border-radius: 5px;
+    border: 1px solid var(--bd-pre-bg);
+}
+.custom-scroll::-webkit-scrollbar-thumb:hover {
+    background: var(--bs-dark-border-subtle);
+}

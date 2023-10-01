@@ -122,17 +122,6 @@ We have a nice and welcoming community! Feel free to drop in.
 
 
 
-
-
-
-
-
-
-
-
-
-
-
 ## Tools:
 
 KorGE uses intelliJ as IDE + Gradle for building. You can check how to [set-up the environment here](/korge/gettingstarted/setup/).
@@ -140,34 +129,6 @@ KorGE uses intelliJ as IDE + Gradle for building. You can check how to [set-up t
 <img alt="Gradle" src="/i/logos/gradle.svg" style="width:128px;height:128px;" />
 <img alt="IntelliJ" src="/i/logos/intellij.svg" style="width:128px;height:128px;" />
 
-## Dependencies:
-
-KorGE uses [Kotlin](https://kotlinlang.org/) and several other [Korlibs libraries](https://github.com/korlibs/korge):
-
-<a href="https://kotlinlang.org/">
-  <img alt="Kotlin" src="/i/logos/kotlin.svg" width="128" height="128" style="padding:4px;" />
-</a>
-<a href="https://github.com/korlibs/korlibs">
-  <img alt="Korlibs" src="/i/logos/korlibs.svg" width="128" height="128" style="padding:4px;" />
-</a>
-<a href="https://github.com/korlibs/korio">
-  <img alt="Korio" src="/i/logos/korio.svg" width="128" height="128" style="padding:4px;" />
-</a>
-<a href="https://github.com/korlibs/korma">
-  <img alt="Korma" src="/i/logos/korma.svg" width="128" height="128" style="padding:4px;" />
-</a>
-<a href="https://github.com/korlibs/korim">
-  <img alt="Korim" src="/i/logos/korim.svg" width="128" height="128" style="padding:4px;" />
-</a>
-<a href="https://github.com/korlibs/korau">
-  <img alt="Korau" src="/i/logos/korau.svg" width="128" height="128" style="padding:4px;" />
-</a>
-<a href="https://github.com/korlibs/korgw">
-  <img alt="Korui" src="/i/logos/korui.svg" width="128" height="128" style="padding:4px;" />
-</a>
-<a href="https://github.com/korlibs/klock">
-  <img alt="Klock" src="/i/logos/klock.svg" width="128" height="128" style="padding:4px;" />
-</a>
 
 ## Targets:
 
