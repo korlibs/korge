@@ -267,7 +267,6 @@
             //<div class='bd-clipboard'></div>
             //<div class='highlight' markdown='1'>
             pre.replaceWith(wrapper)
-            console.log(pre)
         })
 
         document.querySelectorAll('pre code').forEach((block) => {
