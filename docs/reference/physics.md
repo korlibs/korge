@@ -18,7 +18,7 @@ and a port of Box2D out of the box:
 You can define vectorial shapes associated to views to define
 its shape for standard out of the box collision detection and hitTesting.
 
-The [`Graphics`](/korge/views_standard#graphics) view uses
+The [`Graphics`](/views/standard/#graphics) view uses
 its shapes for collision detecting with other shapes and views.
 For the rest of the views you can use the `hitShape` property defining
 

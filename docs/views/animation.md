@@ -139,9 +139,7 @@ you to create your own easings.
 
 ## ANI/SWF Files
 
-![](/korge/swf/logo.avif)
-
-Korge supports [SWF Adobe Flash/Animate files](/korge/swf) and can support
+Korge supports [SWF Adobe Flash/Animate files](/store_proxy/?url=/module/korge-swf/) and can support
 other custom formats through extensions/plugins.
 For example it would be possible to create an exporter for *After Effects* or *Apple Motion*.
 
@@ -149,8 +147,6 @@ Korge defines a custom ANI file format for animations.
 Atlas based with sound support.
 
 You can preview ANI/SWF files (as they will look in runtime) right in intelliJ, using Korge's intelliJ plugin (*that uses Korge itself for rendering!*):
-
-![](/korge/swf/korge-intellij-plugin-preview.avif)
 
 ## Video-tutorial
 

@@ -189,7 +189,7 @@ false, it uses a nearest neighborhood sampling approach.
 
 ## SceneContainer
 
-See the [Scenes page](/korge/basics/scene/#SceneContainer) for more information.
+See the [Scenes page](/scenes/#SceneContainer) for more information.
 
 ## Graphics
 

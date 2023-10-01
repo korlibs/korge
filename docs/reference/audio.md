@@ -230,7 +230,7 @@ open class PlatformAudioOutput(freq: Int) {
 
 
 
-<img src="/i/logos/korau.png" style="float:left;" />
+<img src="/i/logos/korau.avif" style="float:left;" />
 
 Korge uses **[KorAU](https://github.com/soywiz/korau)** for audio loading,
 and playback.
