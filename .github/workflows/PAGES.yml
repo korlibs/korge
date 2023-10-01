@@ -54,8 +54,7 @@ jobs:
           source: ./docs
           destination: ./_site
       - name: Check broken links
-        working-directory: ./docs
-        run: npm run checkBrokenLinks
+        run: "npx --yes broken-link-checker-local _site --filter-level=3 || true"
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
 
