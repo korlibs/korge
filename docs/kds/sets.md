@@ -1,10 +1,12 @@
 ---
+permalink: /kds/sets/
+group: data-structures
 layout: default
-title: "Sets"
-title_prefix: KDS
+title: "Data Structure Sets"
+title_short: Sets
 description: "IntSet, BitSet"
 fa-icon: fa-layer-group
-priority: 2
+priority: 30
 ---
 
 ## IntSet

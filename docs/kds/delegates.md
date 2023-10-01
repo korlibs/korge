@@ -1,10 +1,12 @@
 ---
+permalink: /kds/delegates/
+group: data-structures
 layout: default
-title: "Delegates"
-title_prefix: KDS
+title: "Data Structure Delegates"
+title_short: Delegates
 description: "Extra, Computed, WeakProperty"
 fa-icon: fa-swatchbook
-priority: 10
+priority: 50
 ---
 
 ## Extra

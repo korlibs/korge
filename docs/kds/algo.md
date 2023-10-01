@@ -1,7 +1,9 @@
 ---
+permalink: /kds/algo/
+group: data-structures
 layout: default
-title: "Algorithms"
-title_prefix: KDS
+title: "Data Structure Algorithms"
+title_short: Algorithms
 description: "genericBinarySearch, genericSort, mapWhile, getCyclic"
 fa-icon: fa-hat-wizard
 priority: 10

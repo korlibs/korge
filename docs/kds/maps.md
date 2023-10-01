@@ -1,10 +1,12 @@
 ---
+permalink: /kds/maps/
+group: data-structures
 layout: default
-title: "Maps"
-title_prefix: KDS
+title: "Data Structure Maps"
+title_short: Maps
 description: "FastMap, IntMap, IntIntMap, IntFloatMap, CacheMap, CaseInsensitiveStringMap, WeakMap, MapList extensions..."
 fa-icon: fa-sitemap
-priority: 3
+priority: 40
 ---
 
 ## FastMap: `FastIntMap`, `FastStringMap`

@@ -1,27 +1,20 @@
 ---
+permalink: /kds/
+group: data-structures
 layout: default
 title: Data Structures
-permalink: /kds/
+title_short: Introduction
 fa-icon: fa-tree
 children: /kds/
-priority: 58
+priority: 0
 ---
 
 <img src="/i/logos/kds.svg" width="196" height="196" style="float: left;margin: 0 16px 16px 0;" alt="KDS: Data Structures" />
 
-<p align="center">
 Kds is a Data Structure library for Multiplatform Kotlin.
 It includes a set of optimized data structures written in Kotlin Common so they are available in
 JVM, JS and future multiplatform targets. Those structures are designed to be allocation-efficient and fast, so Kds
 include specialized versions for primitives like <code>Int</code> or <code>Double</code>.
-</p>
-
-[https://github.com/korlibs/kds](https://github.com/korlibs/kds)
-
-{% include stars.html project="korge" central="com.soywiz.korlibs.kds/kds" %}
-
-[![Build Status](https://travis-ci.org/korlibs/kds.svg?branch=master)](https://travis-ci.org/korlibs/kds)
-[![Maven Version](https://img.shields.io/github/tag/korlibs/kds.svg?style=flat&label=maven)](http://search.maven.org/#search%7Cga%7C1%7Ca%3A%22kds%22)
 
 ## Pages
 

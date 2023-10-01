@@ -15,3 +15,7 @@
   title: Templates
   icon: bi bi-filetype-html
   color: purple
+- id: data-structures
+  title: Data Structures
+  icon: bi bi-database-fill
+  color: green
