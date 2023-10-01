@@ -261,6 +261,7 @@
         document.querySelectorAll('pre code').forEach((block) => {
             const pre = block.parentNode
             const wrapper = document.createElement('div')
+            pre.className = "custom-scroll"
             wrapper.className = 'bd-code-snippet '
             wrapper.innerHTML = `<div class=\'bd-clipboard\'></div><div class="highlight">${pre.outerHTML}</div>`
             //<div className='bd-code-snippet' markdown='1'>
