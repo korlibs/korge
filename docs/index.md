@@ -1,5 +1,5 @@
 ---
-layout: redirect
+layout: default
 title: Korlibs
 fa-icon: fa-home
 permalink: /

@@ -10,6 +10,10 @@ priority: 99
 disabled: true
 ---
 
+## 3rd Game Jam
+
+Coming soon in 2023...
+
 ## 2nd Game Jam
 
 ### Due date 5th September 2021
@@ -17,7 +21,7 @@ disabled: true
 * <https://itch.io/jam/korge-gamejam-2>
 
 <a href="https://itch.io/jam/korge-gamejam-2" target="_blank">
-<img src="/i/korge_game_jam_2.jpg" style="width:720px;" />
+<img src="/i/korge_game_jam_2.avif" style="width:720px;" />
 </a>
 
 ### Important: Last minute update

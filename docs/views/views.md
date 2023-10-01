@@ -24,9 +24,9 @@ It is **a tree structure** where `View` has a parent, and `Container` has other 
 
 Then when **KorAG performs the rendering**, it starts drawing from the bottom to the top. Just like [Painter's Algorithm](https://en.wikipedia.org/wiki/Painter%27s_algorithm).
 
-![](painter1.png)
+![](/i/painter1.avif)
 
-![](painter2.png)
+![](/i/painter2.avif)
 
 ## Properties
 
@@ -52,7 +52,7 @@ Then when **KorAG performs the rendering**, it starts drawing from the bottom to
 
 KorGE supports NORMAL, ADD, MULTIPLY and SUBTRACT blending modes.
 
-![](blending.png)
+![](/i/blending.avif)
 
 ## Components
 
@@ -165,7 +165,7 @@ val boxRed   = solidRect(Size(100, 100), Colors.RED  ).xy(25, 25)
 val boxBlue  = solidRect(Size(100, 100), Colors.BLUE ).xy(50, 50)
 ```
 
-![zIndex0.png](zIndex0.png)
+![zIndex0.png](/i/zIndex0.avif)
 
 And after setting their `zIndex`:
 
@@ -174,6 +174,6 @@ boxGreen.zIndex = +1f
 boxBlue.zIndex = -1f
 ```
 
-![zIndex1.png](zIndex1.png)
+![zIndex1.png](/i/zIndex1.avif)
 
 Now the green is in the top, while the blue is in the back. `boxRed` is in the middle since it has a zIndex of 0f.

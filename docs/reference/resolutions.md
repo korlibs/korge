@@ -13,7 +13,7 @@ priority: 35
 ## Overview
 
 <!-- https://docs.google.com/drawings/d/1Zoql1LIfBDdp44reYey5dfPyThOd89rFyCeRw9GUMfc/edit?usp=sharing -->
-![](/i/virtual-size.png)
+![](/i/virtual-size.avif)
 
 ## Video-tutorial
 

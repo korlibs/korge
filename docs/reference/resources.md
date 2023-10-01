@@ -21,7 +21,7 @@ automatically an optimized atlas of the images, and provides a way to access the
 
 KorGE IntelliJ plugin will also display previews for files and atlases:
 
-![](KR.png)
+![](/i/KR.avif)
 
 You can see it in action in the KorGE youtube channel with the [KorGE Chess tutorial](https://www.youtube.com/watch?v=mSK7ruZbam0&list=PLzb5P1l-LxelGV8bWyT7tnLsF96MQxqCM&index=4).
 

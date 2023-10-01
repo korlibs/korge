@@ -27,9 +27,9 @@ views.gameWindow.alert("My message")
 views.gameWindow.alertError(Exception("My error message"))
 ```
 
-![/i/img.jpg](/i/img.jpg)
+![/i/img.jpg](/i/img.avif)
 
-![/i/img_4.jpg](/i/img_4.jpg)
+![/i/img_4.jpg](/i/img_4.avif)
 
 ### `confirm` to ask for a YES or NO
 
@@ -39,7 +39,7 @@ To ask the user to confirm an action with a native dialog:
 val result: Boolean = views.gameWindow.confirm("My message")
 ```
 
-![/i/img_1.jpg](/i/img_1.jpg)
+![/i/img_1.jpg](/i/img_1.avif)
 
 ### `prompt` to ask for a text
 
@@ -49,7 +49,7 @@ You can use `prompt` to ask the user to type/prompt/input a string with a native
 val result: String = views.gameWindow.prompt("My title", "default")
 ```
 
-![/i/img_2.jpg](/i/img_2.jpg)
+![/i/img_2.jpg](/i/img_2.avif)
 
 ### `close` to close the window
 
@@ -63,4 +63,4 @@ To ask the user to select to open one or more files, both for writing and/or rea
 val selectedFiles: List<VfsFile> = views.gameWindow.openFileDialog(FileFilter("Images" to listOf("*.jpg", "*.jpg")), write = false, multi = true, currentDir = null)
 ```
 
-![/i/img_3.jpg](/i/img_3.jpg)
+![/i/img_3.jpg](/i/img_3.avif)

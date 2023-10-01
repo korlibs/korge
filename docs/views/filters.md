@@ -39,16 +39,16 @@ container {
 	position(24, 24)
 	alpha = 0.25
 	filter = IdentityFilter
-	image(resourcesVfs["korge.png"].readBitmap())
-	image(resourcesVfs["korge.png"].readBitmap()) {
+	image(resourcesVfs["korge.avif"].readBitmap())
+	image(resourcesVfs["korge.avif"].readBitmap()) {
 		position(64, 64)
 	}
 }
 ```
 
 <div style="display:flex;width:100%;max-width:100%;">
-<img src="/i/filters/identity_complex_off.png" style="max-width:50%;" />
-<img src="/i/filters/identity_complex_on.png" style="max-width:50%;" />
+<img src="/i/filters/identity_complex_off.avif" style="max-width:50%;" />
+<img src="/i/filters/identity_complex_on.avif" style="max-width:50%;" />
 </div>
 
 ## ColorMatrixFilter
@@ -80,7 +80,7 @@ class ColorMatrixFilter(var colorMatrix: Matrix3D, var blendRatio: Double) : Fil
 view.filter = ColorMatrixFilter(ColorMatrixFilter.GRAYSCALE_MATRIX)
 ```
 
-![](/i/filters/color_matrix.png)
+![](/i/filters/color_matrix.avif)
 
 ## Convolute3Filter
 
@@ -103,7 +103,7 @@ class Convolute3Filter(var kernel: Matrix3D) : Filter() {
 view.filter = Convolute3Filter(Convolute3Filter.KERNEL_EDGE_DETECTION)
 ```
 
-![](/i/filters/edge_detection.png)
+![](/i/filters/edge_detection.avif)
 
 ## BlurFilter
 
@@ -119,7 +119,7 @@ class BlurFilter(initialRadius: Double = 1.0) : Filter {
 view.filter = BlurFilter(8.0)
 ```
 
-![](/i/filters/blur.png)
+![](/i/filters/blur.avif)
 
 ## WaveFilter and PageFilter
 
@@ -142,7 +142,7 @@ class PageFilter(
 view.filter = PageFilter(hamplitude1 = 64.0)
 ```
 
-![](/i/filters/page.png)
+![](/i/filters/page.avif)
 
 ```kotlin
 class WaveFilter(
@@ -156,7 +156,7 @@ class WaveFilter(
 ) : Filter()
 ```
 
-![](/i/filters/wave.png)
+![](/i/filters/wave.avif)
 
 ## SwizzleColorsFilter
 
@@ -170,7 +170,7 @@ class SwizzleColorsFilter(var swizzle: String = "rgba") : Filter()
 view.filter = SwizzleColorsFilter("bgra")
 ```
 
-![](/i/filters/swizzle_color.png)
+![](/i/filters/swizzle_color.avif)
 
 ## Backdrop Filters
 

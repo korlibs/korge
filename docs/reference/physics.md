@@ -68,7 +68,7 @@ view.onCollision(filter = { it != this }) { // filters out collisions with the s
 
 If you use `onCollision` the collision will be triggered by the rectangular bounding box of the corresponding view.
 
-![](/korge/physics/onCollision.gif)
+{% include autoplay_video.html src="/i/onCollision.webm" %}
 
 Handy extensions for checking with shape precision:
 
@@ -80,7 +80,7 @@ fun View.onCollisionShape(filter: (View) -> Boolean = { true }, root: View? = nu
 
 Using `onCollisionShape` a collision will be triggered using the `hitShape` of a view. 
 
-![](/korge/physics/onCollisionShape.gif)
+{% include autoplay_video.html src="/i/onCollisionShape.webm" %}
 
 You can define your own `hitShapes` for costum views. Notice in the following sample animation, that the image view would originally have a rectangular boundingbox.
 
@@ -91,8 +91,7 @@ val planet = image(resourcesVfs["planet.png"].readBitmap())
 	}
 ```
 
-![](/korge/physics/onCollisionShapeImage.gif)
-
+{% include autoplay_video.html src="/i/onCollisionShapeImage.webm" %}
 
 ### Video-tutorials
 

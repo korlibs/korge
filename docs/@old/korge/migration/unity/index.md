@@ -3,7 +3,7 @@ layout: default
 title: "Migration from Unity"
 ---
 
-![](/migration/unity/unity_to_korge.png)
+![](/migration/unity/unity_to_korge.avif)
 
 Note that currently **KorGE is focused on 2D game development**.
 Even when KorAG allows you to render 3d objects and scenes, you won't have help from the engine.

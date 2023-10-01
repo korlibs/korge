@@ -5,7 +5,7 @@ layout: default
 title: "Tips & Samples"
 title_short: Tips & Samples
 fa-icon: fa-chalkboard-teacher 
-priority: 2 
+priority: 20
 ---
 
 ## Showcases

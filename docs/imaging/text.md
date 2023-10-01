@@ -43,7 +43,7 @@ Bitmap Fonts are fonts that include all their glyphs in one or several atlases. 
 * Load pretty fast
 * Do not scale well, your rendered glyphs should have a reasonable size
 
-![](/imaging/font.png)
+![](/imaging/font.avif)
 {: style="background: black;"}
 
 ```kotlin
@@ -124,7 +124,7 @@ Latest versions experimentally support some ttf fonts with colors, and embedded 
 * Usually smaller
 * Each glyph will require parsing
 
-![](/imaging/ttffont.png)
+![](/imaging/ttffont.avif)
 
 ### Reading a TtfFont
 

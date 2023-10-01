@@ -336,7 +336,7 @@ onDropFile {
 }
 ```
 
-![](/i/file_drag_and_drop.gif)
+{% include autoplay_video.html src="/i/file_drag_and_drop.webm" %}
 
 Or if you want to register events directly:
 
@@ -365,7 +365,7 @@ val closeable = solidRect.draggableCloseable()
 
 The Closeable version returns a Closeable instance allowing you to stop accepting the dragging after the close.
 
-![](/i/view_dragging.gif)
+{% include autoplay_video.html src="/i/view_dragging.webm" %}
 
 ### Configure how dragging works
 

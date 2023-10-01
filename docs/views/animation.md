@@ -8,7 +8,7 @@ fa-icon: fa-play
 priority: 31
 ---
 
-![](/animation/animation.jpg)
+![](/i/animation.avif)
 
 ## Video-tutorial
 
@@ -62,7 +62,7 @@ Korge provides a simple, yet powerful interface for creating tweens.
 
 ### Simple interface
 
-![](animation.jpg)
+![](/i/animation.avif)
 
 `View` has an extension method called `View.tween` that allows you to do the magic. And has the following definition:
 
@@ -130,7 +130,7 @@ animate {
 Korge provides an Easing class with the most common easings. And allows
 you to create your own easings.
 
-![](easing.png)
+![](/i/easing.avif)
 
 {% include sample.html sample="EasingsScene" %}
 
@@ -157,7 +157,7 @@ you to create your own easings.
 
 ## ANI/SWF Files
 
-![](/korge/swf/logo.png)
+![](/korge/swf/logo.avif)
 
 Korge supports [SWF Adobe Flash/Animate files](/korge/swf) and can support
 other custom formats through extensions/plugins.
@@ -168,5 +168,5 @@ Atlas based with sound support.
 
 You can preview ANI/SWF files (as they will look in runtime) right in intelliJ, using Korge's intelliJ plugin (*that uses Korge itself for rendering!*):
 
-![](/korge/swf/korge-intellij-plugin-preview.png)
+![](/korge/swf/korge-intellij-plugin-preview.avif)
 

@@ -14,4 +14,4 @@ Other times we want to adjust stuff or to get specific properties from views.
 By pressing **F7**, you can check mouse events, and on the JVM there is an extra debug window
 where you can check the view tree and the properties of each view.
 
-![](/i/debug.png)
+![](/i/debug.avif)

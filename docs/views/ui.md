@@ -21,13 +21,13 @@ It automatically includes ellipsis for long texts.
 uiButton("Hello World, this is a button!")
 ```
 
-![UIButton.png](/i/ui/UIButton.png)
+![UIButton.png](/i/ui/UIButton.avif)
 
 ```kotlin
 uiButton(icon = resourcesVfs["korge.png"].readBitmapSlice())
 ```
 
-![img.png](/i/ui/img.png)
+![img.png](/i/ui/img.avif)
 
 It is possible to adjust some of the visual properties of the UIButton:
 
@@ -41,7 +41,7 @@ uiButton("Hello World, this is a text!").also {
 }
 ```
 
-![img_2.png](/i/ui/img_2.png)
+![img_2.png](/i/ui/img_2.avif)
 
 ## `UICheckBox`
 
@@ -51,7 +51,7 @@ For desktop interfaces, where you need a toggleable setting, you can use `UIChec
 uiCheckBox(text = "My CheckBox", checked = true)
 ```
 
-![img_3.png](/i/ui/img_3.png)
+![img_3.png](/i/ui/img_3.avif)
 
 ## `UIRadioButton` / `UIRadioButtonGroup`
 
@@ -66,7 +66,7 @@ uiVerticalStack {
 }
 ```
 
-![img_4.png](/i/ui/img_4.png)
+![img_4.png](/i/ui/img_4.avif)
 
 ## `UIComboBox`
 
@@ -76,7 +76,7 @@ A ComboBox / DropDown / Select that drops a list of elements the user can select
 uiComboBox(size = Size(160f, 32f), items = listOf("Hello", "World", "Options", "among", "a", "long", "list", "of", "options", "where", "scrolling", "appears"), selectedIndex = 2)
 ```
 
-![img_5.png](/i/ui/img_5.png)
+![img_5.png](/i/ui/img_5.avif)
 
 ## `TextBlock`
 
@@ -92,7 +92,7 @@ textBlock(
 )
 ```
 
-![img_11.png](/i/ui/img_11.png)
+![img_11.png](/i/ui/img_11.avif)
 
 ## `UIText`
 
@@ -102,7 +102,7 @@ This is a UIView wrapping a plain KorGE `Text`. For word wrapping, etc. using `T
 uiText("Hello World!")
 ```
 
-![img_12.png](/i/ui/img_12.png)
+![img_12.png](/i/ui/img_12.avif)
 
 ## `UITextInput`
 
@@ -110,7 +110,7 @@ uiText("Hello World!")
 uiTextInput("Text Input")
 ```
 
-![img_13.png](/i/ui/img_13.png)
+![img_13.png](/i/ui/img_13.avif)
 
 ## `UIImage`
 
@@ -121,13 +121,13 @@ solidRect(Size(120f, 32f), Colors.PURPLE)
 uiImage(Size(120f, 32f), KR.korge.read().slice(), scaleMode = ScaleMode.FIT, contentAnchor = Anchor.CENTER)
 ```
 
-![img_14.png](/i/ui/img_14.png)
+![img_14.png](/i/ui/img_14.avif)
 
 ## `UIWindow`
 
 A draggable, resizable and closeable window.
 
-![img_24.png](/i/ui/img_24.png)
+![img_24.png](/i/ui/img_24.avif)
 
 ## `UIProgressBar`
 
@@ -135,7 +135,7 @@ A draggable, resizable and closeable window.
 uiProgressBar(size = Size(256, 8), current = 75f, maximum = 100f)
 ```
 
-![img_17.png](/i/ui/img_17.png)
+![img_17.png](/i/ui/img_17.avif)
 
 ## `UITreeView`
 
@@ -149,7 +149,7 @@ uiTreeView(UITreeViewList(listOf(
 )), size = Size(100, 100))
 ```
 
-![img_18.png](/i/ui/img_18.png)
+![img_18.png](/i/ui/img_18.avif)
 
 ## `UIMaterialLayer`
 
@@ -168,7 +168,7 @@ uiMaterialLayer().also {
 }
 ```
 
-![img_16.png](/i/ui/img_16.png)
+![img_16.png](/i/ui/img_16.avif)
 
 ## `UIBreadCrumb`
 
@@ -176,7 +176,7 @@ uiMaterialLayer().also {
 uiBreadCrumb(listOf("hello", "world", "this", "is", "a", "path"))
 ```
 
-![img_6.png](/i/ui/img_6.png)
+![img_6.png](/i/ui/img_6.avif)
 
 ## `UIEditableNumber`
 
@@ -186,7 +186,7 @@ This allows the user to edit a number, while allowing to drag & drop or click to
 uiEditableNumber(10.0, min = 0.0, max = 100.0)
 ```
 
-![img_7.png](/i/ui/img_7.png)
+![img_7.png](/i/ui/img_7.avif)
 
 ## `UISlider`
 
@@ -196,7 +196,7 @@ A slider to select a number in a range.
 uiSlider(value = 50f, min = 0f, max = 100f)
 ```
 
-![img_21.png](/i/ui/img_21.png)
+![img_21.png](/i/ui/img_21.avif)
 
 ## `UIVerticalList`
 
@@ -217,7 +217,7 @@ uiScrollable(Size(160, 120)) {
 }
 ```
 
-![img_19.png](/i/ui/img_19.png)
+![img_19.png](/i/ui/img_19.avif)
 
 ## `UISpacer`
 
@@ -230,7 +230,7 @@ uiVerticalStack {
 }
 ```
 
-![img_22.png](/i/ui/img_22.png)
+![img_22.png](/i/ui/img_22.avif)
 
 ## Layouts
 
@@ -242,7 +242,7 @@ uiScrollable(Size(300, 300)) {
 }
 ```
 
-![img_20.png](/i/ui/img_20.png)
+![img_20.png](/i/ui/img_20.avif)
 
 ### `UIVerticalStack`
 
@@ -256,7 +256,7 @@ uiVerticalStack(padding = 4f) {
 }
 ```
 
-![img_8.png](/i/ui/img_8.png)
+![img_8.png](/i/ui/img_8.avif)
 
 ### `UIHorizontalStack`
 
@@ -270,7 +270,7 @@ uiHorizontalStack(padding = 4f) {
 }
 ```
 
-![img_9.png](/i/ui/img_9.png)
+![img_9.png](/i/ui/img_9.avif)
 
 ### `UIGridFill`
 
@@ -282,7 +282,7 @@ uiGridFill(cols = 3, rows = 3) {
 }
 ```
 
-![img_10.png](/i/ui/img_10.png)
+![img_10.png](/i/ui/img_10.avif)
 
 ## Styling
 
@@ -299,4 +299,4 @@ uiContainer {
 }
 ```
 
-![img_1.png](/i/ui/img_1.png)
+![img_1.png](/i/ui/img_1.avif)

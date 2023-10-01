@@ -23,9 +23,9 @@ you can reduce the number of those batches and making the game to perform much b
 Also atlases usually put some space between images, that's because when doing mipmaping
 or linear sampling, sometimes near pixels are interpolated / mixed.
 
-![](/korge/atlas/atlas.png)
+![](/i/atlas.avif)
 
-![](/korge/atlas/logos.atlas.png)
+![](/i/logos.atlas.avif)
 
 ```json
 {
