@@ -221,7 +221,7 @@
             <div class="offcanvas-body">
                 <nav class="bd-links w-100" id="bd-docs-nav" aria-label="Docs navigation" style="overflow-x: none;"><ul class="bd-links-nav list-unstyled mb-0 pb-3 pb-md-2 pe-lg-2">
                     {% for section in site.data.sections %}
-                    <li class="bd-links-group py-2">
+                    <li id="section-{{ section.id }}" class="bd-links-group py-2">
                         <strong class="bd-links-heading d-flex w-100 align-items-center fw-semibold">
                             <i class="{{ section.icon }}" style="margin-top:-.5rem; color: var(--bs-{{ section.color }});"></i>&nbsp;
                             {{ section.title }}

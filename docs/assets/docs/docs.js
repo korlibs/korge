@@ -314,3 +314,47 @@
         });
     });
 })();
+
+(async () => {
+
+    const catalogJsonCacheDate = localStorage.getItem('catalogJsonCacheDate')|0
+
+    if ((Date.now() - catalogJsonCacheDate) >= 3600 * 1000) {
+        localStorage.setItem('catalogJsonCacheDate', Date.now().toString())
+        const fetchResult = await fetch("https://store.korge.org/catalog.json")
+        const resultStr = await fetchResult.text()
+        localStorage.setItem('catalogJsonCacheContent', resultStr)
+    }
+    const result = JSON.parse(localStorage.getItem('catalogJsonCacheContent'))
+    const linkList = []
+    for (const item of result) {
+        const cat = item.category
+        const title = item.title
+        const url = item.url
+        const path = url.replace(/^https:\/\/store\.korge\.org/, '')
+        //<li><a href="/templates/tags/" class=" ">Tags</a></li>
+        const li = document.createElement("li")
+        const a = document.createElement("a")
+        a.href = `/store_proxy/?url=${path}`
+        a.className = "bd-links-link d-inline-block rounded"
+        a.textContent = title
+        li.appendChild(a)
+        linkList.push(a)
+        const catUL = document.querySelector(`#section-${cat} ul`)
+        if (catUL) {
+            catUL.appendChild(li)
+        }
+    }
+
+    const [currentLocation] = document.location.href.split('#')
+
+    for (/** @type HTMLAnchorElement */ const link of linkList) {
+        //console.log(link.href, document.location.href)
+        if (link.href === currentLocation) {
+            link.classList.add('active')
+            //link.dataset['aria-current'] = 'page'
+            link.scrollIntoView({ block: "center" })
+            break;
+        }
+    }
+})();
