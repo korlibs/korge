@@ -308,7 +308,10 @@
     $(function () {
         var navSelector = "#toc";
         var $myNav = $(navSelector);
-        Toc.init($myNav);
+        Toc.init({
+            $nav: $myNav,
+            $scope: $('main'),
+        });
         $("body").scrollspy({
             target: navSelector,
         });
@@ -348,13 +351,15 @@
 
     const [currentLocation] = document.location.href.split('#')
 
-    for (/** @type HTMLAnchorElement */ const link of linkList) {
-        //console.log(link.href, document.location.href)
-        if (link.href === currentLocation) {
-            link.classList.add('active')
-            //link.dataset['aria-current'] = 'page'
-            link.scrollIntoView({ block: "center" })
-            break;
+    if (currentLocation.indexOf("/store_proxy") >= 0) {
+        for (/** @type HTMLAnchorElement */ const link of linkList) {
+            //console.log(link.href, document.location.href)
+            if (link.href === currentLocation) {
+                link.classList.add('active')
+                //link.dataset['aria-current'] = 'page'
+                link.scrollIntoView({block: "center"})
+                break;
+            }
         }
     }
 })();
