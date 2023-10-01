@@ -1,6 +1,0 @@
----
-layout: "none"
-fa-icon: fa-copy
-priority: 40
----
-{{ site.data.versions | jsonify }}
