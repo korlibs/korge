@@ -1,10 +1,15 @@
 ---
 layout: default
-title: KorGE
+group: getting-started
+title: Getting Started with KorGE
+title_short: Introduction
+description: KorGE Game Engine is an KotlinOpen Source modern Game Engine created in KotlinKotlin designed to be extremely portable and really enjoyable to use.
 children: /korge/
 priority: -1
 fa-icon: fa-gamepad
 ---
+
+{% include stars.html project="korge" central="com.soywiz.korlibs.korge.plugins/korge-gradle-plugin" %}
 
 ## Welcome to KorGE
 
@@ -23,8 +28,6 @@ starter kits,
 and an [IntellIJ plugin](https://plugins.jetbrains.com/plugin/9676-korge) to improve the workflow.
 
 You can see a small presentation of KorGE here: <https://korge.org/>{:target="_blank"}
-
-{% include stars.html project="korge" central="com.soywiz.korlibs.korge.plugins/korge-gradle-plugin" %}
 
 <div style="clear:both;"></div>
 

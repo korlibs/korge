@@ -1,0 +1,13 @@
+# https://icons.getbootstrap.com/
+- id: getting-started
+  title: Getting started
+  icon: bi bi-book-half
+  color: indigo
+- id: customize
+  title: Customize
+  icon: bi bi-palette2
+  color: pink
+- id: time
+  title: Time
+  icon: bi bi-clock
+  color: magenta

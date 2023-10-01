@@ -1,10 +1,12 @@
 ---
+permalink: /klock/measure/
 layout: default
-title: "Measure"
-title_prefix: Klock
+group: time
+title: "Time Measure"
+title_short: Measure
 description: "measureTime, measureTimeWithResult & PerformanceCounter"
 fa-icon: fa-ruler-horizontal
-priority: 2
+priority: 40
 ---
 
 Klock has utilities for mesuring time.

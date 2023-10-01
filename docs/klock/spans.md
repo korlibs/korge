@@ -1,10 +1,12 @@
 ---
+permalink: /klock/spans/
 layout: default
-title: "Spans"
-title_prefix: Klock
+group: time
+title: "Time Spans"
+title_short: Spans
 description: "TimeSpan, MonthSpan, DateTimeSpan, DateTimeRange..."
 fa-icon: fa-hourglass-half
-priority: 1
+priority: 30
 ---
 
 Klock has utilities for representing spans of time, dates, and months.

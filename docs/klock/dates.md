@@ -1,12 +1,13 @@
 ---
+permalink: /klock/dates/
 layout: default
+group: time
 title: "Dates"
-title_prefix: Klock
+title_short: Dates
 description: "DateTime, Date, DayOfWeek, Month, Year, YearMonth, TimeZone..."
 fa-icon: fa-calendar-alt
-priority: 0
+priority: 20
 ---
-
 
 To represent instants with date and time information, there are two classes: `DateTime` and `DateTimeTz`.
 

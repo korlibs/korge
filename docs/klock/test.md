@@ -1,10 +1,12 @@
 ---
+permalink: /klock/test/
 layout: default
-title: "Testing"
-title_prefix: Klock
+group: time
+title: "Date/Time testing"
+title_short: Testing
 description: "TimeProvider and testing"
 fa-icon: fa-vial
-priority: 40
+priority: 70
 ---
 
 Klock has utilities for providing time and there are some integrations for testing.

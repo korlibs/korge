@@ -1,0 +1,6 @@
+- name: Links
+  links:
+    - { name: "Home", url: "/" }
+- name: Guides
+  links:
+    - { name: "Getting Started", url: "/" }

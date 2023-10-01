@@ -1,10 +1,12 @@
 ---
+permalink: /klock/format/
 layout: default
-title: "Format"
-title_prefix: Klock
+group: time
+title: "Time Format"
+title_short: Format
 description: "Formatting, parsing and localization"
 fa-icon: fa-globe
-priority: 20
+priority: 60
 ---
 
 Klock has utilities for formatting, parsing and localizing dates and times.

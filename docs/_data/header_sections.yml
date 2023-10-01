@@ -1,0 +1,6 @@
+left:
+  - { title: "Docs", url: "/" }
+  - { title: "Examples", url: "/" }
+right:
+  - { title: "GitHub", url: "https://github.com/korlibs/korge", icon: "bi bi-github" }
+  - { title: "Twitter", url: "https://twitter.com/KorgeGameEngine", icon: "bi bi-twitter" }

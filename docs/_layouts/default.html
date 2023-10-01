@@ -1,264 +1,301 @@
-<!DOCTYPE html>
-<html lang="en">
-
+<!doctype html>
+<html lang="en" data-bs-theme="auto">
 <head>
-    {% if page.redirect_to %}
-    <meta http-equiv="Refresh" content="0; url='{{ page.redirect_to }}'" />
-    <script>
-        document.location.href = `{{ page.redirect_to }}`;
-    </script>
-    {% endif %}
-
     <meta charset="utf-8">
-	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="{{ site.description }}">
+    <meta name="author" content="{{ site.description }}">
 
-	<title>Korlibs: {{ page.title_prefix }} {% if page.title %}{{ page.title }}{% else %}{{ site.title }}{% endif %}</title>
-	<meta name="description" content="{% if page.excerpt %}{{ page.excerpt | strip_html | strip_newlines | truncate: 160 }}{% else %}{{ site.description }}{% endif %}">
+    <title>{{ page.title }}</title>
 
-	<link rel="stylesheet" href="{{ '/css/main.css' | prepend: site.baseurl }}">
-	<link rel="stylesheet" href="{{ '/newsearch.css' | prepend: site.baseurl }}">
+    <link rel="canonical" href="{{ page.url | absolute_url }}">
 
-	<link rel="icon" href="{{ "/i/icon.png" | prepend: site.baseurl }}" />
+    <script src="/assets/docs/color-modes.js"></script>
 
-	<link rel="canonical" href="{{ page.url | replace:'index.html','' | prepend: site.baseurl | prepend: site.url }}">
-	<link rel="alternate" type="application/rss+xml" title="{{ site.title }}" href="{{ '/feed.xml' | prepend: site.baseurl | prepend: site.url }}">
+    <link href="/assets/bootstrap/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+    <link href="/assets/bootstrap-icons/bootstrap-icons.css" rel="stylesheet" crossorigin="anonymous">
+    <!--<link href="/assets/bootstrap-toc/bootstrap-toc.min.css" rel="stylesheet" crossorigin="anonymous">-->
 
-    {% if page.useMermaid %}
-    <!-- https://mermaid.live/ -->
-    <!-- https://mermaid.js.org/intro/ -->
+    <link href="/assets/docs/docs.css" rel="stylesheet">
+
+    <meta name="theme-color" content="#712cf9">
+
+    <!-- Favicons -->
     <!--
-    <script type="module">
-        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
-        mermaid.initialize({ startOnLoad: true });
-    </script>
+    <link rel="apple-touch-icon" href="/assets/img/favicons/apple-touch-icon.png" sizes="180x180">
+    <link rel="icon" href="/assets/img/favicons/favicon-32x32.png" sizes="32x32" type="image/png">
+    <link rel="icon" href="/assets/img/favicons/favicon-16x16.png" sizes="16x16" type="image/png">
+    <link rel="manifest" href="/assets/img/favicons/manifest.json">
+    <link rel="mask-icon" href="/assets/img/favicons/safari-pinned-tab.svg" color="#712cf9">
+    <link rel="icon" href="/assets/img/favicons/favicon.ico">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@getbootstrap">
+    <meta name="twitter:creator" content="@getbootstrap">
+    <meta name="twitter:title" content="Get started with Bootstrap">
+    <meta name="twitter:description" content="Bootstrap is a powerful, feature-packed frontend toolkit. Build anything—from prototype to production—in minutes.">
+    <meta name="twitter:image" content="https://getbootstrap.com/assets/brand/bootstrap-social.png">
+
+    <meta property="og:url" content="https://getbootstrap.com/getting-started/introduction/">
+    <meta property="og:title" content="Get started with Bootstrap">
+    <meta property="og:description" content="Bootstrap is a powerful, feature-packed frontend toolkit. Build anything—from prototype to production—in minutes.">
+    <meta property="og:type" content="article">
+    <meta property="og:image" content="https://getbootstrap.com/assets/brand/bootstrap-social.png">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="2000">
+    <meta property="og:image:height" content="1000">
     -->
-    <script src="/js/mermaid/mermaid.min.js"></script>
-    {% endif %}
 
-    <!-- add after bootstrap.min.css -->
-    <link rel="stylesheet" href="https://cdn.rawgit.com/afeld/bootstrap-toc/v0.4.1/dist/bootstrap-toc.min.css">
-
-    <!-- 2 -->
+    <style>
+        .bd-links-link {
+            width: 100% !important;
+            margin: 0;
+            padding: 0.2rem 1.5rem;
+            box-sizing: border-box;
+        }
+        .bd-links-heading {
+            margin-bottom: 0.2rem;
+        }
+    </style>
 </head>
-
-<body>
-
-{% include analytics.html %}
-
-{% capture toc %}
-{% include toc.html context="/" level=0 %}
-{% endcapture %}
-
-  <nav class="navbar navbar-default navbar-fixed-top">
-    <div class="container-fluid">
-      <div class="navbar-header">
-        <a class="navbar-brand" href="/" style="padding:10px;">
-            <img alt="KorGE" src="/i/logos/korge.svg" width="32" height="32" style="display: inline;" />
-            KorGE
-
-        </a>
-        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
-          <span class="sr-only">Toggle navigation</span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-        </button>
-      </div>
-
-      <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-        <ul class="nav navbar-nav navbar-right">
-            <li><a href="https://blog.korge.org/"><i class="fab fa-wordpress" aria-hidden="true"></i> Blog</a></li>
-            <li><a href="https://korge.org/"><i class="fa fa-gamepad" aria-hidden="true"></i> KorGE</a></li>
-            <li class="active"><a href="/"><i class="fa fa-book" aria-hidden="true"></i> Docs</a></li>
-            <li><a href="https://dokka.korge.org/"><i class="fa fa-book-open" aria-hidden="true"></i> Dokka</a></li>
-			<!--
-			<li><a href="/sponsor" style="color: #aa9258;"><i class="fa fa-star" aria-hidden="true"></i> Sponsor</a></li>
-			<li><a href="/korge_jam" style="color: #aa9258;"><i class="fa fa-trophy" aria-hidden="true"></i> 2nd Game JAM</a></li>
-			-->
-			<li><a href="https://discord.korge.org/"><i class="fab fa-discord" aria-hidden="true"></i> Discord</a></li>
-            <!--
-            <li><a href="https://slack.korge.org/"><i class="fab fa-slack" aria-hidden="true"></i> Slack</a></li>
-            -->
-			<!--
-			<li><a href="https://forum.korge.org/" target="_blank"><i class="fas fa-comments" aria-hidden="true"></i> Forum</a></li>
-			-->
-			<li><a href="https://youtube.korge.org/" target="_blank"><i class="fab fa-youtube" aria-hidden="true"></i></a></li>
-			<li><a href="https://twitter.com/KorgeGameEngine/" target="_blank"><i class="fab fa-twitter" aria-hidden="true"></i></a></li>
-            <li><a href="{{ site.project_url }}" target="_blank" rel="noopener"><i class="fab fa-github" aria-hidden="true"></i></a></li>
-        </ul>
-      </div>
+<body data-bs-spy="scroll" data-bs-target="#toc">
+<div class="skippy visually-hidden-focusable overflow-hidden">
+    <div class="container-xl">
+        <a class="d-inline-flex p-2 m-1" href="#content">Skip to main content</a>
+        <a class="d-none d-md-inline-flex p-2 m-1" href="#bd-docs-nav">Skip to docs navigation</a>
     </div>
-  </nav>
+</div>
 
-  <div id="wrapper">
-    <div id="page-content-wrapper">
-      <aside id="page-content-search" style="margin-bottom:0.5em;">
-        <form role="search" action="/search">
-          <input type="search" class="form-control" placeholder="Search... (press 't' to focus)" id="searchq" name="q" />
-        </form>
-      </aside>
-      <article id="page-content-wrapper2" data-spy="scroll" data-target="#toc">
-        <div class="container-fluid">
-          <div class="row">
-            <div class="col-md-2 col-md-push-10 d-none d-md-block affix">
-                <nav id="toc" data-toggle="toc"></nav>
-            </div>
-            <div class="col-md-10" id="page-content2">
-              <div id="page-content">
-                  <div class="github_edit_page print_hide" style="float: right;position:relative;top:-0.6em;">
-                      <a href="https://github.com/korlibs/korge/edit/main/docs/{{ page.path }}" class="btn btn-default" target="_blank" rel="noopener">
-                          <i class="fab fa-github" aria-hidden="true" style="font-size:1.5em;"></i> Suggest Change / Typo
-                      </a>
-                  </div>
-                  <h1 class="{% if page.hide_title == true %}hide_title{% endif %}">{% if page.title_icon %}<i class="{{ page.title_icon }}" aria-hidden="true"></i> {% endif %}{{ page.title_prefix }} {{ page.title }}</h1>
-                  {% case page.status %}
-                    {% when 'todo' %}<div class="alert alert-warning" role="alert">This page has to be written</div>
-                    {% when 'outdated' %}<div class="alert alert-warning" role="alert">This page is outdated</div>
-                    {% when 'incomplete' %}<div class="alert alert-warning" role="alert">This page is incomplete</div>
-                    {% else %}
-                  {% endcase %}
-                  {{ content }}
-              </div>
+<header class="navbar navbar-expand-lg bd-navbar sticky-top">
+    <nav class="container-xxl bd-gutter flex-wrap flex-lg-nowrap" aria-label="Main navigation">
+        <div class="bd-navbar-toggle">
+            <button class="navbar-toggler p-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#bdSidebar" aria-controls="bdSidebar" aria-label="Toggle docs navigation">
+                <i class="bi bi-list" style="font-size:1.5rem;"></i>
 
-              {% unless hide_comments %}
-              {% if site.disqus_id %}
-              <div id="disqus_thread" class="print_hide" style="margin-top:80px;"></div>
-              <script type="text/javascript" id="disqus-script">
-                var disqus_config = function () {
-                  this.page.url = "{{ page.url | replace:'index.html','' | prepend: site.baseurl | prepend: site.url }}";
-                  this.page.identifier = "{{ page.url | replace:'index.html','' | prepend: site.baseurl | prepend: site.url }}";
-                };
-                (function() {
-                  var d = document, s = d.createElement('script');
-                  s.src = '//{{ site.disqus_id }}.disqus.com/embed.js';
-                  s.setAttribute('data-timestamp', +new Date());
-                  (d.head || d.body).appendChild(s);
-                })();
-              </script>
-              <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
-              {% endif %}
-              {% endunless %}
-
-                <div style="margin-top:32px;margin-bottom: 16px;">
-                    Was this article useful?
-                    <div style="display:inline-block;" class="btn-group">
-                    <a class="btn btn-default" style="color:#426c42;" href="https://docs.google.com/forms/d/e/1FAIpQLSclcND_ZoRdwqW-GvBus9gAaA9Ek-130M3FcC6qk7huWxCfvA/viewform?usp=pp_url&entry.743568020={{ page.url }}&entry.593163446=5" target="_blank">
-                        <i class="fas fa-thumbs-up"></i>
-                    </a>
-                    <a class="btn btn-default" style="color:#863333;" href="https://docs.google.com/forms/d/e/1FAIpQLSclcND_ZoRdwqW-GvBus9gAaA9Ek-130M3FcC6qk7huWxCfvA/viewform?usp=pp_url&entry.743568020={{ page.url }}&entry.593163446=1" target="_blank">
-                        <i class="fas fa-thumbs-down"></i>
-                    </a>
-                    </div>
-                </div>
-
-                <!--
-                <script>
-                    const headings = [];
-                    function generateToc(node) {
-                        const nodeName = node.nodeName.toLowerCase()
-
-                        //if (["h1", "h2", "h3", "h4", "h5"].indexOf(nodeName) >= 0) {
-                        if (["h1", "h2", "h3", "h4", "h5"].indexOf(nodeName) >= 0) {
-                            headings.push(node)
-                        }
-                        for (const child of node.childNodes) {
-                            generateToc(child)
-                        }
-                    }
-
-                    const toc = document.querySelector("#page-toc")
-                    const content = document.querySelector("#page-content2")
-                    generateToc(content)
-                    for (const heading of headings) {
-                        const entry = document.createElement('div')
-                        entry.innerText = heading.innerText
-                        toc.appendChild(entry)
-                    }
-                    //console.log(headings)
-                    //content.querySelectorAll()
-                    //toc.innerText = "hello"
-                </script>
-                -->
-            </div>
-          </div>
+                <span class="d-none fs-6 pe-1">Browse</span>
+            </button>
         </div>
-      </article>
-    </div>
-    <aside id="sidebar-wrapper" class="print_hide">
-      <div class="sidebar-nav" style="padding-top:16px;margin-bottom:1em;" >
-        {{ toc }}
-      </div>
+
+        <a class="navbar-brand p-0 me-0 me-lg-2" href="/" aria-label="{{ site.title }}">
+            <img style="width:32px;height:32px;" src="/i/logos/korge.svg" />
+        </a>
+
+        <div class="d-flex">
+            <button class="navbar-toggler d-flex d-lg-none order-3 p-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#bdNavbar" aria-controls="bdNavbar" aria-label="Toggle navigation">
+                <i class="bi bi-three-dots"></i>
+            </button>
+        </div>
+
+        <div class="offcanvas-lg offcanvas-end flex-grow-1" tabindex="-1" id="bdNavbar" aria-labelledby="bdNavbarOffcanvasLabel" data-bs-scroll="true">
+            <div class="offcanvas-header px-4 pb-0">
+                <h5 class="offcanvas-title text-white" id="bdNavbarOffcanvasLabel">Bootstrap</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close" data-bs-target="#bdNavbar"></button>
+            </div>
+
+            <div class="offcanvas-body p-4 pt-0 p-lg-0">
+                <hr class="d-lg-none text-white-50">
+                <ul class="navbar-nav flex-row flex-wrap bd-navbar-nav">
+                    {% for section in site.data.header_sections.left %}
+                    {% assign active = forloop.first %}
+                    <li class="nav-item col-6 col-lg-auto">
+                        <a class="nav-link py-2 px-0 px-lg-2 {% if active %}active{% endif %}" {% if active %}aria-current="true"{% endif %} href="{{ section.url }}">{{ section.title }}</a>
+                    </li>
+                    {% endfor %}
+                </ul>
+
+                <hr class="d-lg-none text-white-50">
+
+                <ul class="navbar-nav flex-row flex-wrap ms-md-auto">
+                    {% for section in site.data.header_sections.right %}
+                    {% assign active = forloop.first %}
+                    <li class="nav-item col-6 col-lg-auto">
+                        <a class="nav-link py-2 px-0 px-lg-2" href="{{ section.url }}" target="_blank" rel="noopener">
+                            <i class="{{ section.icon }}"></i>
+                            <small class="d-lg-none ms-2">{{ section.title }}</small>
+                        </a>
+                    </li>
+                    {% endfor %}
+
+                    <li class="nav-item py-2 py-lg-1 col-12 col-lg-auto">
+                        <div class="vr d-none d-lg-flex h-100 mx-lg-2 text-white"></div>
+                        <hr class="d-lg-none my-2 text-white-50">
+                    </li>
+
+                    <li class="nav-item dropdown">
+                        <button type="button" class="btn btn-link nav-link py-2 px-0 px-lg-2 dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" data-bs-display="static">
+                            <span class="d-lg-none" aria-hidden="true">{{ page.title }}</span><span class="visually-hidden">Bootstrap&nbsp;</span> v5.0.x <span class="visually-hidden">(switch to other versions)</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><h6 class="dropdown-header">v5 releases</h6></li>
+                            <li>
+                                <a class="dropdown-item d-flex align-items-center justify-content-between active" aria-current="true" href="/getting-started/introduction/">
+                                    Latest (5.0.x)
+                                    <i class="bi bis bi-check2 ms-auto"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
+
+                    <li class="nav-item py-2 py-lg-1 col-12 col-lg-auto">
+                        <div class="vr d-none d-lg-flex h-100 mx-lg-2 text-white"></div>
+                        <hr class="d-lg-none my-2 text-white-50">
+                    </li>
+
+                    <li class="nav-item dropdown">
+                        <button class="btn btn-link nav-link px-0 px-lg-2 dropdown-toggle d-flex align-items-center"
+                                id="bd-theme"
+                                type="button"
+                                aria-expanded="false"
+                                data-bs-toggle="dropdown"
+                                data-bs-display="static"
+                                aria-label="Toggle theme (auto)"
+                        >
+                            <div id="active-theme-icon" class="bi bis bi-circle-half"></div>
+                            <span class="d-lg-none mb-0" id="bd-theme-text">Toggle theme</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="bd-theme-text">
+                            <li>
+                                <button type="button" class="dropdown-item d-flex align-items-center" data-bs-theme-value="light" aria-pressed="false">
+                                    <i class="bi me-2 mb-1 opacity-50 bi-sun-fill theme-icon"></i>
+                                    Light
+                                    <i class="bi bi-check2 ms-auto mb-1 d-none"></i>
+                                </button>
+                            </li>
+                            <li>
+                                <button type="button" class="dropdown-item d-flex align-items-center" data-bs-theme-value="dark" aria-pressed="false">
+                                    <i class="bi me-2 mb-1 opacity-50 bi-moon-stars-fill theme-icon"></i>
+                                    Dark
+                                    <i class="bi bi-check2 ms-auto mb-1 d-none"></i>
+                                </button>
+                            </li>
+                            <li>
+                                <button type="button" class="dropdown-item d-flex align-items-center active" data-bs-theme-value="auto" aria-pressed="true">
+                                    <i class="bi me-2 mb-1 opacity-50 bi-circle-half theme-icon"></i>
+                                    Auto
+                                    <i class="bi bi-check2 ms-auto mb-1 d-none"></i>
+                                </button>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+</header>
+
+
+
+<div class="container-xxl bd-gutter mt-3 my-md-4 bd-layout">
+    <aside class="bd-sidebar">
+        <div class="offcanvas-lg offcanvas-start" tabindex="-1" id="bdSidebar" aria-labelledby="bdSidebarOffcanvasLabel">
+            <div class="offcanvas-header border-bottom">
+                <h5 class="offcanvas-title" id="bdSidebarOffcanvasLabel">Browse docs</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close" data-bs-target="#bdSidebar"></button>
+            </div>
+
+            <div class="offcanvas-body">
+                <nav class="bd-links w-100" id="bd-docs-nav" aria-label="Docs navigation" style="overflow-x: none;"><ul class="bd-links-nav list-unstyled mb-0 pb-3 pb-md-2 pe-lg-2">
+                    {% for section in site.data.sections %}
+                    <li class="bd-links-group py-2">
+                        <strong class="bd-links-heading d-flex w-100 align-items-center fw-semibold">
+                            <i class="{{ section.icon }}" style="margin-top:-.5rem; color: var(--bs-{{ section.color }});"></i>&nbsp;
+                            {{ section.title }}
+                        </strong>
+
+                        <ul class="list-unstyled fw-normal pb-2 small">
+                            {% assign section_pages = site.pages | where:"group",section.id | sort: "priority" %}
+                            {% for cpage in section_pages %}
+                                {% if cpage.url == page.url %}
+                                {% assign active = true %}
+                                {% else %}
+                                {% assign active = false %}
+                                {% endif %}
+                                <li><a href="{{ cpage.url }}" class="bd-links-link d-inline-block rounded {% if active %}active{% endif %}" {% if active %}aria-current="page"{% endif %}>{{ cpage.title_short | default: cpage.title }}</a></li>
+                            {% endfor %}
+                        </ul>
+                    </li>
+                    {% endfor %}
+                </ul>
+                </nav>
+
+            </div>
+        </div>
     </aside>
-  </div>
+
+    <main class="bd-main order-1">
+        <div class="bd-intro pt-2 ps-lg-2">
+            <div class="d-md-flex flex-md-row-reverse align-items-center justify-content-between">
+                <div class="mb-3 mb-md-0 d-flex text-nowrap"><a class="btn btn-sm btn-bd-light rounded-2" href="{{ site.edit_root_url }}{{ page.path }}" title="View and edit this file on GitHub" target="_blank" rel="noopener">
+                    View on GitHub
+                </a>
+                </div>
+                <h1 class="bd-title mb-0" id="content">{{ page.title }}</h1>
+            </div>
+            <p class="bd-lead">{{ page.description }}</p>
+        </div>
 
 
-<script src="{{ '/js/jquery-2.2.4.min.js' | prepend: site.baseurl }}" type="text/javascript"></script>
-<script src="{{ '/js/bootstrap.js' | prepend: site.baseurl }}" type="text/javascript"></script>
-<script src="{{ '/js/navigation.js' | prepend: site.baseurl }}" type="text/javascript"></script>
-<script src="{{ '/js/highlight/highlight.pack.js' | prepend: site.baseurl }}" type="text/javascript" onload="
-		window.addEventListener('DOMContentLoaded', () => {
-			document.querySelectorAll('pre code').forEach((block) => {
-				//console.log('pre code', block);
-				hljs.highlightBlock(block);
-			});
-		});
-	"></script>
+        <div class="bd-toc mt-3 mb-5 my-lg-0 mb-lg-5 px-sm-1 text-body-secondary">
+            <button class="btn btn-link p-md-0 mb-2 mb-md-0 text-decoration-none bd-toc-toggle d-md-none" type="button" data-bs-toggle="collapse" data-bs-target="#tocContents" aria-expanded="false" aria-controls="tocContents">
+                On this page
+                <i class="bi bi-chevron-expand"></i>
+            </button>
+            <strong class="d-none d-md-block h6 my-2 ms-3">On this page</strong>
+            <hr class="d-none d-md-block my-2 ms-3">
+            <div class="collapse bd-toc-collapse" id="tocContents">
+                <nav id="toc"></nav>
+            </div>
+        </div>
 
-{% if page.support_diagram %}
-<script src="{{ '/js/lodash.min.js' | prepend: site.baseurl }}" type="text/javascript"></script>
-<script src="{{ '/js/dagre.min.js' | prepend: site.baseurl }}" type="text/javascript"></script>
-<script src="{{ '/js/nomnoml.js' | prepend: site.baseurl }}" type="text/javascript"></script>
-<script src="{{ '/js/replacer.js' | prepend: site.baseurl }}" type="text/javascript"></script>
-{% endif %}
+        <div class="bd-content ps-lg-2">
+            {{ content }}
 
-<!-- add after bootstrap.min.js -->
-<script src="https://cdn.rawgit.com/afeld/bootstrap-toc/v0.4.1/dist/bootstrap-toc.min.js"></script>
+            {% include article_bottom.html %}
+        </div>
+    </main>
+</div>
 
-<!--
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/docsearch.js@2/dist/cdn/docsearch.min.js" defer onload="
-	window.addEventListener('DOMContentLoaded', () => {
-		// https://docsearch.algolia.com/docs/behavior/
-		window.algoliaSearch = docsearch({
-			apiKey: 'cab25d9fd75655af06ab7fda91cc79e6',
-			indexName: 'korlibs',
-			inputSelector: '#searchq',
-			debug: false,
-			algoliaOptions: {
-				hitsPerPage: 7,
-			},
-		});
-	});
-"></script>
--->
 
-<script type="text/javascript" src="/newsearch.js" defer onload="
-	window.addEventListener('DOMContentLoaded', () => {
-		newSearchHook('#searchq', '/all.html?{{ site.time | date: '%s' }}')
-	});
-"></script>
+<footer class="bd-footer py-4 py-md-5 mt-5 bg-body-tertiary">
+    <div class="container py-4 py-md-5 px-4 px-md-3 text-body-secondary">
+        <div class="row">
+            <div class="col-lg-3 mb-3">
+                <a class="d-inline-flex align-items-center mb-2 text-body-emphasis text-decoration-none" href="/" aria-label="{{ page.title }}">
+                    <img src="/i/logos/korge.svg" />
+                    <span class="fs-5">{{ site.title }}</span>
+                </a>
+                <div class="small">
+                    {% include bottom_desc.md %}
+                </div>
+            </div>
+            {% for section in site.data.footer_sections %}
+            {{ index }}
+            <div class="col-6 col-lg-2 mb-3 {% if forloop.index0 == 0 %}offset-lg-1{% endif %}">
+                <h5>{{ section.name }}</h5>
+                <ul class="list-unstyled">
+                    {% for link in section.links %}
+                    <li class="mb-2"><a href="{{ link.url }}">{{ link.name }}</a></li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</footer>
 
-<script type="text/javascript">
-	window.addEventListener('DOMContentLoaded', () => {
-		document.addEventListener('keyup', (e) => {
-			const isInput = document.activeElement.tagName.toUpperCase() === 'INPUT';
-			if (e.key === 'Escape' && isInput) {
-				document.activeElement.blur();
-			}
-			if (e.key === 't' && !isInput) {
-				document.querySelector('#searchq').focus();
-				document.querySelector('#searchq').select();
-			}
-		});
-		document.querySelector('#searchq').addEventListener('focus', () => {
-			document.querySelector('#searchq').placeholder = 'Search... (type, then use \'↑\', \'↓\' and \'⏎\' to select results)';
-		});
-		document.querySelector('#searchq').addEventListener('blur', () => {
-			document.querySelector('#searchq').placeholder = 'Search... (press \'t\' to focus)';
-		});
-	})
-</script>
+<script src="/assets/bootstrap/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+
+<script src="/assets/jquery/jquery-3.7.1.min.js"></script>
+
+<script src="/assets/highlight/highlight.pack.js" type="text/javascript"></script>
+
+<script src="/assets/bootstrap-toc/bootstrap-toc.min.js"></script>
+
+<script src="/assets/docs/clipboard.min.js"></script>
+<script src="/assets/docs/docs.js"></script>
+
+<div class="position-fixed" aria-hidden="true"><input type="text" tabindex="-1"></div>
 
 </body>
-
 </html>
