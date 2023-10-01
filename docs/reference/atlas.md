@@ -88,3 +88,10 @@ val animation1 = atlas.getSpriteAnimation() // Includes all the images
 val animation2 = atlas.getSpriteAnimation("RunRight") // Includes the images starting with RunRight 
 val animation3 = atlas.getSpriteAnimation(Regex("beam\\d+.png")) // Includes the images starting with beam, following a number and ending with .png
 ```
+
+## Runtime Atlas Generation
+
+```kotlin
+val atlas = MutableAtlasUnit()
+val slice = resourcesVfs["test.png"].readBitmapSlice(atlas = atlas)
+```
