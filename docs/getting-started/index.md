@@ -2,17 +2,13 @@
 permalink: /getting-started/
 group: getting-started
 layout: default
-title: Getting Started with KorGE
+title: Welcome to KorGE
 title_short: Introduction
 description: KorGE Game Engine is an KotlinOpen Source modern Game Engine created in KotlinKotlin designed to be extremely portable and really enjoyable to use.
 children: /korge/
 priority: -1
 fa-icon: fa-gamepad
 ---
-
-{% include stars.html project="korge" central="com.soywiz.korlibs.korge.plugins/korge-gradle-plugin" %}
-
-## Welcome to KorGE
 
 <img alt="Korge" src="/i/logos/korge.svg" width="180" height="180" style="float:left;margin-right:16px;"/>
 
@@ -30,15 +26,18 @@ and an [IntellIJ plugin](https://plugins.jetbrains.com/plugin/9676-korge) to imp
 
 You can see a small presentation of KorGE here: <https://korge.org/>{:target="_blank"}
 
+{% include stars.html project="korge" central="com.soywiz.korlibs.korge.plugins/korge-gradle-plugin" %}
+
 <div style="clear:both;"></div>
 
 ## Next Steps
 
 Now that you have a working environment, let's explore other concepts.
 
-1. Take your [first steps](firststeps) learning to create a sample game with basic shapes.
-2. Then build a more complex and realistic game with a [step-by-step tutorial to build a 2048 game](/korge/samples/).
-3. Finally, [deploy it in one of our supported platforms](/korge/deployment/).
+1. [Install the environment](/getting-started/install/)
+2. Take your [first steps](firststeps) learning to create a sample game with basic shapes.
+3. Then build a more complex and realistic game with a [step-by-step tutorial to build a 2048 game](/korge/samples/).
+4. Finally, [deploy it in one of our supported platforms](/korge/deployment/).
 
 From there you can get a deep look to the [reference documentation](/korge/reference/).
 
