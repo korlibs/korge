@@ -1,0 +1,86 @@
+# https://icons.getbootstrap.com/
+- id: getting-started
+  title: Getting started
+  icon: bi bi-book-half
+  color: indigo
+
+- id: tutorials
+  title: Tutorials
+  icon: bi bi-mortarboard
+  color: red
+
+- id: views
+  title: Views
+  icon: bi bi-diagram-3
+  color: pink
+
+- id: scenes
+  title: Scenes
+  icon: bi bi-node-plus
+  color: pink
+
+- id: reference
+  title: Reference
+  icon: bi bi-palette2
+  color: pink
+
+- id: targets
+  title: Targets
+  icon: bi bi-phone
+  color: orange
+
+- id: time
+  title: Time
+  icon: bi bi-clock
+  color: magenta
+
+- id: maths
+  title: Maths
+  icon: bi bi-calculator-fill
+  color: blue
+
+- id: data-structures
+  title: Data Structures
+  icon: bi bi-database-fill
+  color: green
+
+- id: io
+  title: I/O
+  icon: bi bi-file-earmark-binary-fill
+  color: cyan
+
+- id: imaging
+  title: Imaging
+  icon: bi bi-image-fill
+  color: blue
+
+- id: templates
+  title: Templates
+  icon: bi bi-filetype-html
+  color: purple
+
+- id: gfx
+  title: GFX
+  icon: bi bi-fire
+  color: purple
+
+- id: sfx
+  title: SFX
+  icon: bi bi-music-note-beamed
+  color: purple
+
+- id: fonts
+  title: Fonts
+  icon: bi bi-fonts
+  color: purple
+
+- id: modules
+  title: Modules
+  icon: bi bi-collection
+  color: purple
+
+- id: about
+  title: About
+  icon: bi bi-globe
+  color: indigo
+

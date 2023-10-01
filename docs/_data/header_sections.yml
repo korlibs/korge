@@ -1,0 +1,11 @@
+left:
+  - { title: "Docs", url: "/" }
+  - { title: "KorGE", url: "https://korge.org/" }
+  - { title: "Blog", url: "https://blog.korge.org/" }
+  - { title: "Dokka", url: "https://dokka.korge.org/" }
+  - { title: "Discussions", url: "https://forum.korge.org/", icon: "bi bi-chat-quote" }
+right:
+  - { title: "GitHub", url: "https://github.com/korlibs/korge", icon: "bi bi-github" }
+  - { title: "Twitter", url: "https://twitter.korge.org/", icon: "bi bi-twitter" }
+  - { title: "Discord", url: "https://discord.korge.org/", icon: "bi bi-discord" }
+  - { title: "Youtube", url: "https://youtube.korge.org/", icon: "bi bi-youtube" }

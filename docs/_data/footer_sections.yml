@@ -1,0 +1,24 @@
+- name: Links
+  links:
+    - { name: "Documentation", url: "/" }
+    - { name: "Blog", url: "https://blog.korge.org/" }
+    - { name: "Dokka", url: "https://dokka.korge.org/" }
+- name: Guides
+  links:
+    - { name: "Views", url: "/views/" }
+    - { name: "Scenes", url: "/scenes/" }
+    - { name: "Math", url: "/math/" }
+    - { name: "I/O", url: "/io/" }
+    - { name: "Data Structures", url: "/data-structures/" }
+- name: Community
+  links:
+    - { name: "Discord", url: "https://discord.korge.org/" }
+    - { name: "Github Discussions", url: "https://forum.korge.org/" }
+    - { name: "Twitter", url: "https://twitter.korge.org/" }
+    - { name: "Youtube", url: "https://youtube.korge.org/" }
+- name: Tutorials
+  links:
+    - { name: "2048", url: "/tutorials/2048/" }
+    - { name: "Chess", url: "/tutorials/chess/" }
+    - { name: "Connect-4", url: "/tutorials/connect-4/" }
+    - { name: "Dungeon Explorer", url: "/tutorials/dungeon/" }

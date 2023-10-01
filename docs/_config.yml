@@ -1,6 +1,7 @@
-title: Korlibs
+title: KorGE
 email: soywiz@gmail.com
 description: Modern Kotlin Common Libraries for Full Stack development
+authors: soywiz and KorGE authors
 analytics_id: G-KV32JER3MJ
 exclude:
   - ".gradle"
@@ -10,7 +11,7 @@ exclude:
   - "@old"
 baseurl: ""
 url: "https://korlibs.soywiz.com"
-doc_base_url: https://github.com/korlibs/korlibs.github.io
+edit_root_url: https://github.com/korlibs/korge/blob/main/docs/
 blog_url: ""
 project_url: https://github.com/korlibs
 google_search_id: 001447907640164080602:ej0h0w0ufr0
