@@ -1,13 +1,14 @@
 ---
+permalink: /korim/text/
+group: imaging
 layout: default
-title: "Text"
-title_prefix: KorIM
+title: "Imaging Text"
+title_short: Text
+description: KorIM support creating, rendering, and measuring TTF Vector fonts and Bitmap fonts. In addition it support generating bitmap fonts on the fly, and storing them.
 fa-icon: fa-font
 priority: 40
 status: new
 ---
-
-KorIM support creating, rendering, and measuring TTF Vector fonts and Bitmap fonts. In addition it support generating bitmap fonts on the fly, and storing them.
 
 ## Font
 
@@ -42,7 +43,8 @@ Bitmap Fonts are fonts that include all their glyphs in one or several atlases. 
 * Load pretty fast
 * Do not scale well, your rendered glyphs should have a reasonable size
 
-![](/korim/text/font.png)
+![](/korim/font.png)
+{: style="background: black;"}
 
 ```kotlin
 class BitmapFont : Font {
@@ -122,7 +124,7 @@ Latest versions experimentally support some ttf fonts with colors, and embedded 
 * Usually smaller
 * Each glyph will require parsing
 
-![](/korim/text/ttffont.png)
+![](/korim/ttffont.png)
 
 ### Reading a TtfFont
 

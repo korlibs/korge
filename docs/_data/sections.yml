@@ -3,6 +3,10 @@
   title: Getting started
   icon: bi bi-book-half
   color: indigo
+- id: tutorials
+  title: Tutorials
+  icon: bi bi-mortarboard
+  color: red
 - id: customize
   title: Customize
   icon: bi bi-palette2
@@ -19,3 +23,7 @@
   title: Data Structures
   icon: bi bi-database-fill
   color: green
+- id: imaging
+  title: Imaging
+  icon: bi bi-image-fill
+  color: blue

@@ -1,13 +1,14 @@
 ---
+permalink: /korim/format/
+group: imaging
 layout: default
 title: "Image Formats"
-title_prefix: KorIM
+title_short: Image Formats
+description: KorIM supports creating, loading and saving different image formats.
 fa-icon: fa-file-image
-priority: 20
-status: new
+priority: 40
 ---
 
-KorIM supports creating, loading and saving different image formats.
 
 ## ImageFormat, ImageFormats
 
@@ -245,6 +246,10 @@ Supports reading SVG and rasterizing it to the default size. (For SVG vector rea
 ### TGA
 
 Supports reading and writing Targa uncompressed image files.
+
+### WEBP
+
+Supports reading and writing WEBP image files via WebAssembly.
 
 ## Reading images
 

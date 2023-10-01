@@ -1,13 +1,14 @@
 ---
+permalink: /korim/vector/
+group: imaging
 layout: default
-title: "Vector Rendering"
-title_prefix: KorIM
+title: "Imaging Vector Rendering"
+title_short: Vector Rendering
+description: KorIM support vector rendering by the `Context2d` class. This class is meant to simulate the JS HTML Canvas API, but hyper-vitaminated. 
 fa-icon: fa-bezier-curve
 priority: 35
 status: new
 ---
-
-KorIM support vector rendering by the `Context2d` class. This class is meant to simulate the JS HTML Canvas API, but hypervitaminated.
 
 ## Context2d
 

@@ -1,13 +1,15 @@
 ---
+permalink: /korim/atlas/
+group: imaging
 layout: default
-title: "Atlas"
-title_prefix: KorIM
+title: "Imaging Atlas"
+title_short: Atlas
+description: KorIM supports creating, loading and saving atlases.
 fa-icon: fa-atlas
 priority: 50
 status: new
 ---
 
-KorIM supports creating, loading and saving atlases.
 
 ## Loading atlases
 

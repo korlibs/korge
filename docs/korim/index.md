@@ -1,9 +1,11 @@
 ---
+permalink: /korim/
+group: imaging
 layout: default
 title: "Image"
+title_short: "Introduction"
 fa-icon: fa-image
-priority: 51
-children: /korim/
+priority: 0
 ---
 
 <img alt="KorIM" src="/i/logos/korim.svg" style="float:left;width:128px;height:128px;" />

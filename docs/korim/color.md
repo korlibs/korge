@@ -1,13 +1,13 @@
 ---
+permalink: /korim/color/
+group: imaging
 layout: default
-title: "Colors"
-title_prefix: KorIM
+title: "Imaging Colors"
+title_short: Colors
+description: KorIM support several color formats, packed inline classes and conversion between them as well as mixing, de/premultiplication and other optimized operations.
 fa-icon: fa-palette
 priority: 10
 ---
-
-KorIM support several color formats, packed inline classes and conversion between them
-as well as mixing, de/premultiplication and other optimized operations.
 
 ## ColorFormat
 
