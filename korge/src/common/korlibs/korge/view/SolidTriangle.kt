@@ -21,22 +21,35 @@ class SolidTriangle(
 ) {
   var p1: Point = p1
     set(value) {
+      updateTriangle()
       updatedVertices()
       field = value
     }
   var p2: Point = p2
     set(value) {
+      updateTriangle()
       updatedVertices()
       field = value
     }
   var p3: Point = p3
     set(value) {
+      updateTriangle()
       updatedVertices()
       field = value
     }
 
   init {
     colorMul = color
+  }
+
+  fun updateTriangle() {
+    vertices = Float32Buffer(
+      floatArrayOf(
+        p1.x.toFloat(), p1.y.toFloat(),
+        p2.x.toFloat(), p2.y.toFloat(),
+        p3.x.toFloat(), p3.y.toFloat(),
+      )
+    )
   }
 }
 
