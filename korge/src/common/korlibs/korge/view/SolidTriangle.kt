@@ -9,47 +9,39 @@ class SolidTriangle(
   p1: Point, p2: Point, p3: Point,
   color: RGBA = Colors.WHITE,
 ) : Mesh(
-  vertices = Float32Buffer(
-    floatArrayOf(
-      p1.x.toFloat(), p1.y.toFloat(),
-      p2.x.toFloat(), p2.y.toFloat(),
-      p3.x.toFloat(), p3.y.toFloat(),
-    )
-  ),
+  vertices = Float32Buffer(6),
   indices = Uint16Buffer(UShortArrayInt(shortArrayOf(0, 1, 2))),
   uvs = Float32Buffer(12)
 ) {
   var p1: Point = p1
     set(value) {
       updateTriangle()
-      updatedVertices()
       field = value
     }
   var p2: Point = p2
     set(value) {
       updateTriangle()
-      updatedVertices()
       field = value
     }
   var p3: Point = p3
     set(value) {
       updateTriangle()
-      updatedVertices()
       field = value
     }
 
   init {
     colorMul = color
+    updateTriangle()
   }
 
-  fun updateTriangle() {
-    vertices = Float32Buffer(
-      floatArrayOf(
-        p1.x.toFloat(), p1.y.toFloat(),
-        p2.x.toFloat(), p2.y.toFloat(),
-        p3.x.toFloat(), p3.y.toFloat(),
-      )
-    )
+  private fun updateTriangle() {
+    vertices[0] = p1.x.toFloat()
+    vertices[1] = p1.y.toFloat()
+    vertices[2] = p2.x.toFloat()
+    vertices[3] = p2.y.toFloat()
+    vertices[4] = p3.x.toFloat()
+    vertices[5] = p3.y.toFloat()
+    updatedVertices()
   }
 }
 
