@@ -1,16 +1,15 @@
 ---
+permalink: /maths/utils/
+group: maths
 layout: default
 title: Math Utils
-title_prefix: KorMA
+title_short: Math Utils
 description: "Clamping, interpolation and easing"
 fa-icon: fa-less-than-equal
 priority: 10
 ---
 
 KorMA provides some mathematical utilities.
-
-
-
 
 ## Math utils
 

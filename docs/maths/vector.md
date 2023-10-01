@@ -1,15 +1,15 @@
 ---
+permalink: /maths/vector/
+group: maths
 layout: default
 title: Vector
 title_prefix: KorMA
 description: "VectorPath, VectorBuilder, Shape2d, Shape2d union, difference, Triangulation, Vector Collision, Bezier..."
 fa-icon: fa-bezier-curve
-priority: 2
+priority: 10
 ---
 
 KorMA provide several vectorial capabilities to generate all kind of vectorial shapes formed from lines, polygons and curves.
-
-
 
 ## VectorPath and VectorBuilder 
 

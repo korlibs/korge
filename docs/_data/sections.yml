@@ -3,27 +3,38 @@
   title: Getting started
   icon: bi bi-book-half
   color: indigo
+
 - id: tutorials
   title: Tutorials
   icon: bi bi-mortarboard
   color: red
+
 - id: customize
   title: Customize
   icon: bi bi-palette2
   color: pink
+
 - id: time
   title: Time
   icon: bi bi-clock
   color: magenta
+
 - id: templates
   title: Templates
   icon: bi bi-filetype-html
   color: purple
+
 - id: data-structures
   title: Data Structures
   icon: bi bi-database-fill
   color: green
+
 - id: imaging
   title: Imaging
   icon: bi bi-image-fill
+  color: blue
+
+- id: maths
+  title: Maths
+  icon: bi bi-calculator-fill
   color: blue

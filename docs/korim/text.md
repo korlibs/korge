@@ -48,21 +48,21 @@ Bitmap Fonts are fonts that include all their glyphs in one or several atlases. 
 
 ```kotlin
 class BitmapFont : Font {
-	// ...
-	
-	// Getting a glyph from a codePoint/character
-	operator fun get(codePoint: Int): Glyph
-	operator fun get(char: Char): Glyph
-	
-	class Glyph {
-		val fontSize: Double
-		val id: Int
-		val texture: BitmapSlice<Bitmap>
-		val xoffset: Int
-		val yoffset: Int
-		val xadvance: In
+    // ...
+    
+    // Getting a glyph from a codePoint/character
+    operator fun get(codePoint: Int): Glyph
+    operator fun get(char: Char): Glyph
+    
+    class Glyph {
+        val fontSize: Double
+        val id: Int
+        val texture: BitmapSlice<Bitmap>
+        val xoffset: Int
+        val yoffset: Int
+        val xadvance: In
         val bmp: Bitmap32
-	}
+    }
 }
 ```
 
@@ -86,14 +86,14 @@ for a specific size, including a set of characters and specifying and paint and 
 ```kotlin
 val baseFont: Font = // any font including TTF or Bitmap here
 val font: BitmapFont = baseFont.toBitmapFont(
-	fontSize = 32.0,
-	chars = CharacterSet.LATIN_ALL,
-	paint = Colors.WHITE,
-	mipmaps = true,
-	effect = BitmapEffect(
-		dropShadowX = 2, dropShadowY = 1, dropShadowRadius = 2,
-		borderSize = 2, borderColor = Colors.RED,
-	) 
+    fontSize = 32.0,
+    chars = CharacterSet.LATIN_ALL,
+    paint = Colors.WHITE,
+    mipmaps = true,
+    effect = BitmapEffect(
+        dropShadowX = 2, dropShadowY = 1, dropShadowRadius = 2,
+        borderSize = 2, borderColor = Colors.RED,
+    ) 
 ) 
 ```
 

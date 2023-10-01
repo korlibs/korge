@@ -1,15 +1,13 @@
 ---
+permalink: /maths/binpacker/
+group: maths
 layout: default
-title: BinPacking
-title_prefix: KorMA
-description: "Bin Packing, MaxRects..."
+title: Bin Packing
+title_short: Bin Packing
+description: "KorMA provides some utilities for bin packing: Bin Packing, MaxRects..."
 fa-icon: fa-box
 priority: 10
 ---
-
-KorMA provides some utilities for bin packing.
-
-
 
 ## BinPacker
 

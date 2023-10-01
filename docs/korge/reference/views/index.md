@@ -32,7 +32,7 @@ Then when **KorAG performs the rendering**, it starts drawing from the bottom to
 
 * **x, y**
 * **scaleX, scaleY**
-* **rotation**: [Angle](/korma/#angle)
+* **rotation**: [Angle](/maths/#angle)
 * **skewX, skewY**
 * **visible**
 * **alpha**

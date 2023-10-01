@@ -1,15 +1,16 @@
 ---
+permalink: /maths/bignum/
+group: maths
 layout: default
 title: Big Numbers
+title_short: Big Numbers
+description: Package for dealing with Big Numbers both integral and decimal
 fa-icon: fa-sort-numeric-up
 priority: 200
 ---
 
-Library for dealing with Big Numbers both integral and decimal
 
-<https://github.com/korlibs/korge/tree/main/kbignum/>{:target=_blank}
-
-{% include stars.html project="korge" central="com.soywiz.korlibs.kbignum/kbignum" %}
+<https://github.com/korlibs/korge/tree/main/korge-foundation/src/common/korlibs/bignumber>{:target=_blank}
 
 ## General Bits
 
