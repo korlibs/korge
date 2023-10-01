@@ -1,9 +1,11 @@
 ---
+permalink: /korte/extending/
+group: templates
 layout: default
-title: Extending
-title_prefix: KorTE
+title: Template Extending
+title_short: Extending
 fa-icon: fa-puzzle-piece
-priority: 10
+priority: 70
 ---
 
 It is possible to extend KorTE with new tags, functions and filters.

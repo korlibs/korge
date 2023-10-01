@@ -11,3 +11,7 @@
   title: Time
   icon: bi bi-clock
   color: magenta
+- id: templates
+  title: Templates
+  icon: bi bi-filetype-html
+  color: purple

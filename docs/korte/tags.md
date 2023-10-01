@@ -1,9 +1,11 @@
 ---
+permalink: /korte/tags/
+group: templates
 layout: default
-title: Tags
-title_prefix: KorTE
+title: Template Tags
+title_short: Tags
 fa-icon: fas fa-tags
-priority: 1
+priority: 20
 ---
 
 KorTE include some basic tags by default.

@@ -1,9 +1,11 @@
 ---
+permalink: /korte/
+group: templates
 layout: default
 title: "Templates"
+title_short: Introduction
 fa-icon: far fa-file-code
-children: /korte/
-priority: 52
+priority: 0
 ---
 
 <img alt="KorTE" src="/i/logos/korte.svg" width="128" height="128" style="float: left;" />
@@ -20,8 +22,6 @@ But can also work on Native when using untyped model data or making models to im
 It allows to call suspend methods from within templates.
 
 <https://github.com/korlibs/korte>
-
-{% include stars.html project="korge" central="com.soywiz.korlibs.korte/korte" %}
 
 Live demo (editable) [[source code]](https://github.com/korlibs/korte-samples/blob/master/korte-sample-browser/src/main/kotlin/main.kt){:target="_blank",:rel="noopener"}:
 

@@ -1,14 +1,13 @@
 ---
+permalink: /korte/syntax/
+group: templates
 layout: default
-title: Syntax
-title_prefix: KorTE
+title: Template Syntax
+title_short: Syntax
+description: Ths syntax of KorTE is similar to liquid and other template engines.
 fa-icon: fas fa-code
-priority: 0
+priority: 10
 ---
-
-Ths syntax of KorTE is similar to liquid and other template engines.
-
-
 
 {% raw %}
 

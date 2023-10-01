@@ -1,14 +1,13 @@
 ---
+permalink: /korte/filters/
+group: templates
 layout: default
-title: Filters
-title_prefix: KorTE
+title: Template Filters
+title_short: Filters
+description: KorTE include some basic filters by default.
 fa-icon: fas fa-filter
-priority: 3
+priority: 50
 ---
-
-KorTE include some basic filters by default.
-
-
 
 {% raw %}
 
