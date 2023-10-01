@@ -10,10 +10,6 @@ priority: 31
 
 ![](/i/animation.avif)
 
-## Video-tutorial
-
-{% include youtube.html video_id="ebW4Hr97h_I" %}
-
 ## while (true) + delay
 
 One way of animation in KorGE is to just make a loop and place a delay.
@@ -130,30 +126,16 @@ animate {
 Korge provides an Easing class with the most common easings. And allows
 you to create your own easings.
 
-![](/i/easing.avif)
-
 {% include sample.html sample="EasingsScene" %}
 
-* Easings.EASE_IN_ELASTIC
-* Easings.EASE_OUT_ELASTIC
-* Easings.EASE_OUT_BOUNCE
-* Easings.LINEAR
-* Easings.EASE_IN
-* Easings.EASE_OUT
-* Easings.EASE_IN_OUT
-* Easings.EASE_OUT_IN
-* Easings.EASE_IN_BACK
-* Easings.EASE_OUT_BACK
-* Easings.EASE_IN_OUT_BACK
-* Easings.EASE_OUT_IN_BACK
-* Easings.EASE_IN_OUT_ELASTIC
-* Easings.EASE_OUT_IN_ELASTIC
-* Easings.EASE_IN_BOUNCE
-* Easings.EASE_IN_OUT_BOUNCE
-* Easings.EASE_OUT_IN_BOUNCE
-* Easings.EASE_IN_QUAD
-* Easings.EASE_OUT_QUAD
-* Easings.EASE_IN_OUT_QUAD
+|                             |                             |                          |                            |
+|-----------------------------|-----------------------------|--------------------------|----------------------------|
+| Easings.EASE_IN_ELASTIC     | Easings.EASE_OUT_ELASTIC    | Easings.EASE_OUT_BOUNCE  | Easings.LINEAR             |
+| Easings.EASE_IN             | Easings.EASE_OUT            | Easings.EASE_IN_OUT      | Easings.EASE_OUT_IN        |
+| Easings.EASE_IN_BACK        | Easings.EASE_OUT_BACK       | Easings.EASE_IN_OUT_BACK | Easings.EASE_OUT_IN_BACK   |
+| Easings.EASE_IN_OUT_ELASTIC | Easings.EASE_OUT_IN_ELASTIC | Easings.EASE_IN_BOUNCE   | Easings.EASE_IN_OUT_BOUNCE |
+| Easings.EASE_OUT_IN_BOUNCE  | Easings.EASE_IN_QUAD        | Easings.EASE_OUT_QUAD    | Easings.EASE_IN_OUT_QUAD   |
+{:.small}
 
 ## ANI/SWF Files
 
@@ -169,4 +151,8 @@ Atlas based with sound support.
 You can preview ANI/SWF files (as they will look in runtime) right in intelliJ, using Korge's intelliJ plugin (*that uses Korge itself for rendering!*):
 
 ![](/korge/swf/korge-intellij-plugin-preview.avif)
+
+## Video-tutorial
+
+{% include youtube.html video_id="ebW4Hr97h_I" %}
 

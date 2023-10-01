@@ -11,11 +11,6 @@ priority: 5
 Korge's views works like [AS3's DisplayObject](https://help.adobe.com/en_US/FlashPlatform/reference/actionscript/3/flash/display/DisplayObject.html) or the HTML DOM. It is intended for 2D rendering, though you can create custom views with 3D content rendering with KorAG.
 
 
-
-## Video-tutorial
-
-{% include youtube.html video_id="nR_cCs_8wF8" %}
-
 ## Rendering
 
 ![](table.gif)
@@ -177,3 +172,8 @@ boxBlue.zIndex = -1f
 ![zIndex1.png](/i/zIndex1.avif)
 
 Now the green is in the top, while the blue is in the back. `boxRed` is in the middle since it has a zIndex of 0f.
+
+## Video-tutorial
+
+{% include youtube.html video_id="nR_cCs_8wF8" %}
+

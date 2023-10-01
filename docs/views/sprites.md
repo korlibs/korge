@@ -22,11 +22,6 @@ at the same time at a decent framerate.
 
 This page covers `Sprite` and `SpriteAnimation` as well as `Atlas`
 
-## Video-tutorials
-
-{% include youtube.html video_id="fY7a2xrHL9g" %}
-{% include youtube.html video_id="atElzA2jYkQ" %}
-
 ## Creating a `SpriteAnimation`
 
 There are two ways of creating a `SpriteAnimation`:
@@ -129,3 +124,9 @@ class SpriteAnimation {
 fun Atlas.getSpriteAnimation(prefix: String, defaultTimePerFrame: TimeSpan): SpriteAnimation
 fun Atlas.getSpriteAnimation(regex: Regex, defaultTimePerFrame: TimeSpan): SpriteAnimation
 ```
+
+## Video-tutorials
+
+{% include youtube.html video_id="fY7a2xrHL9g" %}
+{% include youtube.html video_id="atElzA2jYkQ" %}
+
