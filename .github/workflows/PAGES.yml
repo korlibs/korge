@@ -55,7 +55,7 @@ jobs:
           destination: ./_site
       - name: Check broken links
         working-directory: ./docs
-        run: npm run checkBrokenLinksNoBuild
+        run: npm run checkBrokenLinks
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
 
