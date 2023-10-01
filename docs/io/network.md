@@ -1,4 +1,6 @@
 ---
+permalink: /io/network/
+group: io
 layout: default
 title: Network
 title_prefix: KorIO

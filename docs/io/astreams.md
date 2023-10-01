@@ -1,4 +1,6 @@
 ---
+permalink: /io/astreams/
+group: io
 layout: default
 title: Async Streams
 title_prefix: KorIO

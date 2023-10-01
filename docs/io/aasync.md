@@ -1,4 +1,6 @@
 ---
+permalink: /io/async/
+group: io
 layout: default
 title: Async Tools
 title_prefix: KorIO

@@ -1,4 +1,6 @@
 ---
+permalink: /io/charset/
+group: io
 layout: default
 title: Charset
 title_prefix: KorIO

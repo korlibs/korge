@@ -1,4 +1,6 @@
 ---
+permalink: /io/env/
+group: io
 layout: default
 title: Environment
 title_prefix: KorIO

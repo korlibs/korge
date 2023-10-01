@@ -1,4 +1,6 @@
 ---
+permalink: /io/string/
+group: io
 layout: default
 title: String Utils
 title_prefix: KorIO

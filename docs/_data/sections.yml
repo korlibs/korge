@@ -38,3 +38,9 @@
   title: Maths
   icon: bi bi-calculator-fill
   color: blue
+
+- id: io
+  title: I/O
+  icon: bi bi-file-earmark-binary-fill
+  color: cyan
+

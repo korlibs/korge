@@ -1,4 +1,6 @@
 ---
+permalink: /io/sstreams/
+group: io
 layout: default
 title: Sync Streams
 title_prefix: KorIO

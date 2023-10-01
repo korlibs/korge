@@ -6,7 +6,7 @@ fa-icon: fa-archive
 priority: 10
 ---
 
-KorGE uses the [Virtual File Systems from Korio](/korio/) to load resources from different sources,
+KorGE uses the [Virtual File Systems from Korio](/io/) to load resources from different sources,
 and its most basic resources are [Bitmaps from KorIM](/korim/) and [Sounds from KorAU](/korau/).
 But it can also load bitmap fonts, tiled maps, etc.
 

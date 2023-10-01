@@ -1,4 +1,6 @@
 ---
+permalink: /io/serialization/
+group: io
 layout: default
 title: Serialization
 title_prefix: KorIO

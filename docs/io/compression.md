@@ -1,4 +1,6 @@
 ---
+permalink: /io/compression/
+group: io
 layout: default
 title: Compression
 title_prefix: KorIO

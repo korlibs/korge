@@ -1,4 +1,6 @@
 ---
+permalink: /io/lang/
+group: io
 layout: default
 title: Language Tools
 title_prefix: KorIO

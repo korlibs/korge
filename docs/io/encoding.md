@@ -1,4 +1,6 @@
 ---
+permalink: /io/encoding/
+group: io
 layout: default
 title: Encoding
 title_prefix: KorIO

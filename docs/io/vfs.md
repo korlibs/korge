@@ -1,10 +1,12 @@
 ---
+permalink: /io/vfs/
+group: io
 layout: default
 title: File System
-title_prefix: KorIO
+title_short: File System
 description: "PathInfo, VfsFile, Vfs, IsoVfs, JailVfs, LocalVfs, LogVfs, MemoryVfs, MergedVfs, MountableVfs, NodeVfs, UrlVfs, ZipVfs"
 fa-icon: fa-copy
-priority: 0
+priority: 1
 ---
 
 KorIO has a Virtual File System functionality.
