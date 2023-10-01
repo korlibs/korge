@@ -9,8 +9,6 @@ priority: 40
 
 Klock has utilities for providing time and there are some integrations for testing.
 
-{% include toc_include.md max_level=3 %}
-
 ## TimeProvider
 
 Sometimes you will need a source of time that can be mocked. Klock includes a `TimeProvider` interface with a default implementation using `DateTime`.

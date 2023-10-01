@@ -14,7 +14,7 @@ Korma is a mathematic library for multiplatform Kotlin 1.3 mostly focused on geo
 
 {% include stars.html project="korge" central="com.soywiz.korlibs.korma/korma" %}
 
-{% include toc_include.md %}
+
 
 ## Pages
 

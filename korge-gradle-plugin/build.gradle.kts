@@ -125,11 +125,13 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile::class).configure
 
 //def publishAllPublications = false
 
-val publishJvmPublicationToMavenLocal = tasks.register("publishJvmPublicationToMavenLocal", Task::class) {
-    group = "publishing"
-    //dependsOn(publishAllPublications ? "publishToMavenLocal" : "publishPluginMavenPublicationToMavenLocal")
-    dependsOn("publishPluginMavenPublicationToMavenLocal")
-    dependsOn("publishKorgePluginMarkerMavenPublicationToMavenLocal")
+tasks {
+    val publishJvmPublicationToMavenLocal by creating(Task::class) {
+        group = "publishing"
+        //dependsOn(publishAllPublications ? "publishToMavenLocal" : "publishPluginMavenPublicationToMavenLocal")
+        dependsOn("publishPluginMavenPublicationToMavenLocal")
+        dependsOn("publishToMavenLocal")
+    }
 }
 
 // publishKorgePluginMarkerMavenPublicationToMavenLocal
@@ -137,15 +139,12 @@ val publishJvmPublicationToMavenLocal = tasks.register("publishJvmPublicationToM
 afterEvaluate {
     //def publishTaskOrNull = tasks.findByName(publishAllPublications ? "publishAllPublicationsToMavenRepository" : "publishPluginMavenPublicationToMavenRepository")
 
-    if (tasks.findByName("publishKorgePluginMarkerMavenPublicationToMavenRepository") != null) {
+    if (tasks.findByName("publishAllPublicationsToMavenRepository") != null) {
         @Suppress("UNUSED_VARIABLE")
         val publishJvmPublicationToMavenRepository = tasks.register("publishJvmPublicationToMavenRepository", Task::class) {
             group = "publishing"
             dependsOn("publishPluginMavenPublicationToMavenRepository")
-            dependsOn("publishKorgePluginMarkerMavenPublicationToMavenRepository")
-            dependsOn("publishKorgeLibraryPluginMarkerMavenPublicationToMavenRepository")
-            dependsOn("publishKprojectPluginMarkerMavenPublicationToMavenRepository")
-            dependsOn("publishKprojectRootPluginMarkerMavenPublicationToMavenRepository")
+            dependsOn("publishAllPublicationsToMavenRepository")
         }
     }
 }

@@ -52,5 +52,16 @@ korlibs.NativeTools.groovyConfigureSigning(project)
 
 val publishJvmPublicationToMavenLocal = tasks.register("publishJvmPublicationToMavenLocal", Task::class) {
     group = "publishing"
-    dependsOn("publishMavenPublicationToMavenLocal")
+    dependsOn("publishPluginMavenPublicationToMavenLocal")
+    dependsOn("publishToMavenLocal")
+}
+
+afterEvaluate {
+    if (tasks.findByName("publishAllPublicationsToMavenRepository") != null) {
+        tasks.register("publishJvmPublicationToMavenRepository", Task::class) {
+            group = "publishing"
+            dependsOn("publishPluginMavenPublicationToMavenRepository")
+            dependsOn("publishAllPublicationsToMavenRepository")
+        }
+    }
 }

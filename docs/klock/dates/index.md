@@ -18,9 +18,6 @@ Since 1.7.0:
 * `Date` class represent the Year+Month+Day part of an instant
 * `Time` class represent the Hour+Minute+Second+Millisecond part of an instant
 
-{% include toc_include.md max_level=3 %}
-
-
 ## Current Time
 
 ```kotlin

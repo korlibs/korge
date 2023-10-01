@@ -9,8 +9,6 @@ status: new
 
 KorIM support vector rendering by the `Context2d` class. This class is meant to simulate the JS HTML Canvas API, but hypervitaminated.
 
-{% include toc_include.md max_level=2 %}
-
 ## Context2d
 
 Context2d is a class that mimics the HTML Canvas API, it implements the VectorBuilder interface.

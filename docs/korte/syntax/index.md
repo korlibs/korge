@@ -8,7 +8,7 @@ priority: 0
 
 Ths syntax of KorTE is similar to liquid and other template engines.
 
-{% include toc_include.md max_level=2 %}
+
 
 {% raw %}
 

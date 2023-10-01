@@ -9,7 +9,7 @@ priority: 2
 
 KorMA provide several vectorial capabilities to generate all kind of vectorial shapes formed from lines, polygons and curves.
 
-{% include toc_include.md max_level=2 %}
+
 
 ## VectorPath and VectorBuilder 
 

@@ -28,9 +28,6 @@ You can see a small presentation of KorGE here: <https://korge.org/>{:target="_b
 
 <div style="clear:both;"></div>
 
-{% include toc_include.md max_level=2 %}
-
-
 ## 1. Install IntelliJ IDEA
 
 ### Install JetBrains ToolBox

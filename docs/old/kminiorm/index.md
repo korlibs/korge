@@ -19,8 +19,6 @@ on most databases. While still providing raw Query support on SQL-based implemen
 
 {% include stars.html project="kminiorm" %}
 
-{% include toc_include.md max_level="3" %}
-
 ## Small sample
 
 ```kotlin

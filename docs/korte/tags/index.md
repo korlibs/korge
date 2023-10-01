@@ -8,7 +8,7 @@ priority: 1
 
 KorTE include some basic tags by default.
 
-{% include toc_include.md max_level=2 %}
+
 
 ### Syntax
 

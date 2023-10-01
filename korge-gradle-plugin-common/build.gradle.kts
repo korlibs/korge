@@ -5,7 +5,6 @@ import org.gradle.kotlin.dsl.kotlin
 
 plugins {
     id("java")
-    id("java-gradle-plugin")
     id("maven-publish")
     id("com.gradle.plugin-publish")
     id("org.jetbrains.kotlin.jvm")
@@ -54,7 +53,18 @@ if (!KProjectVersionKt.exists() || KProjectVersionKt.text != KProjectVersionCont
 korlibs.NativeTools.groovyConfigurePublishing(project, false)
 korlibs.NativeTools.groovyConfigureSigning(project)
 
-val publishJvmPublicationToMavenLocal = tasks.register("publishJvmPublicationToMavenLocal", Task::class) {
-    group = "publishing"
-    dependsOn("publishMavenPublicationToMavenLocal")
+tasks {
+    val publishJvmPublicationToMavenLocal = creating(Task::class) {
+        group = "publishing"
+        dependsOn("publishToMavenLocal")
+    }
+}
+
+afterEvaluate {
+    if (tasks.findByName("publishAllPublicationsToMavenRepository") != null) {
+        tasks.register("publishJvmPublicationToMavenRepository", Task::class) {
+            group = "publishing"
+            dependsOn("publishAllPublicationsToMavenRepository")
+        }
+    }
 }

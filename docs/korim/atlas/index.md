@@ -9,8 +9,6 @@ status: new
 
 KorIM supports creating, loading and saving atlases.
 
-{% include toc_include.md max_level=2 %}
-
 ## Loading atlases
 
 You can read atlases from files with the `VfsFile.readAtlas` extension. It detects and supports three different atlas formats: text-based, json-based and xml-based.

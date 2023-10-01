@@ -11,7 +11,7 @@ you will want to follow some patterns to be able to split your application effec
 
 KorGE includes an asynchronous dependency injector and some tools like the modules and scenes to do so.
 
-{% include toc_include.md %}
+
 
 ## Scenes
 

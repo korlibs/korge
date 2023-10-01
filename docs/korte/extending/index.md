@@ -8,7 +8,7 @@ priority: 10
 
 It is possible to extend KorTE with new tags, functions and filters.
 
-{% include toc_include.md max_level=2 %}
+
 
 {% raw %}
 

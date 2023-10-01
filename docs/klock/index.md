@@ -18,8 +18,6 @@ and to provide an API that is powerful, fun and easy to use.
 
 {% include stars.html project="korge" central="com.soywiz.korlibs.klock/klock" %}
 
-{% include toc_include.md %}
-
 ## Pages
 
 {% include toc.html context="/klock/" description=true %}

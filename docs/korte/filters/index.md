@@ -8,7 +8,7 @@ priority: 3
 
 KorTE include some basic filters by default.
 
-{% include toc_include.md max_level=2 %}
+
 
 {% raw %}
 

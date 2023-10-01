@@ -9,7 +9,7 @@ priority: 10
 
 KorIO has utilities for handling network.
 
-{% include toc_include.md max_level=2 %}
+
 
 ## MimeType
 

@@ -9,7 +9,7 @@ priority: 1
 
 KorMA provides some geometry utilities.
 
-{% include toc_include.md max_level=2 %}
+
 
 ## Angle
 

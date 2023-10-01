@@ -13,8 +13,6 @@ Kmem is bit, array and fast memory utilities library for multiplatform Kotlin 1.
 
 {% include stars.html project="korge" central="com.soywiz.korlibs.kmem/kmem" %}
 
-{% include toc_include.md max_level="3" %}
-
 ## arraycopy and arrayfill
 
 Kotlin 1.3 introduces an `Array.copyInto` extension, but the signature is a bit confusing. KMem introduces a wrapper around it that makes the signature more familiar (like Java's `System.arraycopy`). This is the kind of function that works better like a global or static function since there is no obvious receiver even with the "To" suffix

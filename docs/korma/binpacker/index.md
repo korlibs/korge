@@ -9,7 +9,7 @@ priority: 10
 
 KorMA provides some utilities for bin packing.
 
-{% include toc_include.md max_level=2 %}
+
 
 ## BinPacker
 

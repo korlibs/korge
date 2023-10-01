@@ -8,7 +8,7 @@ priority: 100
 
 In order to monetize your game, KorGE provices some out of the box plugins to do so:
 
-{% include toc_include.md %}
+
 
 You can also create or use any of your own multiplatform libraries.
 Or [create a korge-plugin](/korge/plugin/) if that library require configuring things like the `AndroidManifest.xml` file.
@@ -98,4 +98,3 @@ class Admob {
     )
 }
 ```
- 

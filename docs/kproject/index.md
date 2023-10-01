@@ -8,7 +8,7 @@ priority: 70
 
 {% include stars.html project="kproject" central="com.soywiz.kproject/com.soywiz.kproject.gradle.plugin" %}
 
-{% include toc_include.md %}
+
 
 [KProject](https://github.com/korlibs/kproject) is a mechanism, and a set of gradle plugins to share kotlin
 libraries and modules by source code instead of precompiled libraries for each platform by using a YAML-based

@@ -9,7 +9,7 @@ priority: 5
 
 KorIO has utilities for handling different encodings.
 
-{% include toc_include.md max_level=2 %}
+
 
 ## Escaping and Quoting
 

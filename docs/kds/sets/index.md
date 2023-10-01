@@ -7,8 +7,6 @@ fa-icon: fa-layer-group
 priority: 2
 ---
 
-{% include toc_include.md max_level=3 %}
-
 ## IntSet
 {: #IntSet }
 

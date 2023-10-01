@@ -9,8 +9,6 @@ priority: 1
 
 Klock has utilities for representing spans of time, dates, and months.
 
-{% include toc_include.md max_level=3 %}
-
 ## TimeSpan
 
 Klock offers a `TimeSpan` inline class using a Double to be allocation-free on all targets, and it serves to represent durations without start references.

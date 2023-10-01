@@ -10,7 +10,7 @@ KorGE supports Device, Bitmap and TTF fonts on all the targets.
 
 BitmapFonts are handled by KorIM.
 
-{% include toc_include.md %}
+
 
 ## Bitmap fonts
 

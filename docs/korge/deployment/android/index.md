@@ -12,9 +12,6 @@ to end generating portable Android `APK`, or Android `AAR` packages
 with no external dependencies, nor native per-platform native code, also supports
 proguard, so the resulting application is really small.
 
-
-{% include toc_include.md %}
-
 ## Executing
 
 Using gradle tasks on the terminal.

@@ -9,7 +9,7 @@ priority: 2
 
 KorIO has functionality to manipulate asynchronous streams of data.
 
-{% include toc_include.md max_level=2 %}
+
 
 ## AsyncBaseStream
 
