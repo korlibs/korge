@@ -533,6 +533,7 @@ async function newSearchHook(query) {
     if (!searchBox)
         return;
     function updatePositions() {
+        searchResults.style.position = 'fixed';
         searchResults.style.left = `${searchBox?.offsetLeft}px`;
         searchResults.style.top = `${searchBox.offsetTop + searchBox.offsetHeight + 2}px`;
     }
