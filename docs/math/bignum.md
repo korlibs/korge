@@ -1,6 +1,6 @@
 ---
 permalink: /math/bignum/
-group: maths
+group: math
 layout: default
 title: Big Numbers
 title_short: Big Numbers

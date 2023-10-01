@@ -1,6 +1,6 @@
 ---
 permalink: /math/geometry2d/
-group: maths
+group: math
 layout: default
 title: Geometry 2D
 title_short: Geometry 2D

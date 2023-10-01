@@ -1,6 +1,6 @@
 ---
 permalink: /math/vector/
-group: maths
+group: math
 layout: default
 title: Vector
 title_prefix: KorMA

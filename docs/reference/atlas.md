@@ -8,8 +8,6 @@ fa-icon: fas fa-map
 priority: 35
 ---
 
-
-
 ## Overview
 
 Atlas is a way to pack several images into a single bigger image

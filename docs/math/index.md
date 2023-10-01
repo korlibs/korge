@@ -1,6 +1,6 @@
 ---
 permalink: /math/
-group: maths
+group: math
 layout: default
 title: "Maths"
 title_short: Introduction
