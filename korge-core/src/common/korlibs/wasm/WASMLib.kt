@@ -19,7 +19,7 @@ interface IWASMLib : Closeable {
     // EXTRA
 
     fun invokeFuncFloat(name: String, vararg params: Any?): Float = (invokeFunc(name, *params) as Number).toFloat()
-    fun invokeFuncInt(name: String, vararg params: Any?): Int = (invokeFunc(name, *params) as Number).toInt()
+    fun invokeFuncInt(name: String, vararg params: Any?): Int = (invokeFunc(name, *params) as? Number)?.toInt() ?: 0
     fun invokeFuncUnit(name: String, vararg params: Any?): Unit { invokeFunc(name, *params) }
 
     fun readShorts(pos: Int, size: Int): ShortArray {
