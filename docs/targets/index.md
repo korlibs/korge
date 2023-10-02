@@ -64,7 +64,7 @@ korge {
 
 ## Project structure
 
-Three small files (plus Gradle {{ site.data.versions.gradle }}) is all you need to get started:
+Three small files (plus Gradle 8.3) is all you need to get started:
 
 ### build.gradle.kts
 
