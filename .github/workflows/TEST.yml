@@ -22,6 +22,7 @@ jobs:
   changes:
     runs-on: ubuntu-latest
     outputs:
+      testDocs: ${{ steps.filter.outputs.docs == 'true' || steps.filter.outputs.all == 'true' }}
       testJvm: ${{ steps.filter.outputs.jvm == 'true' || steps.filter.outputs.all == 'true' }}
       testJs: ${{ steps.filter.outputs.js == 'true' || steps.filter.outputs.all == 'true' }}
       testWasm: ${{ steps.filter.outputs.wasm == 'true' || steps.filter.outputs.all == 'true' }}
@@ -38,6 +39,9 @@ jobs:
         with:
           base: ${{ github.ref }}
           filters: |
+            docs:
+              - '.github/workflows/PAGES.yml'
+              - 'docs/**'
             all:
               - '.github/workflows/TEST.yml'
               - '**/build.gradle'
@@ -77,6 +81,19 @@ jobs:
               - '**/src/tvos*/**'
               - '**/src/darwin*/**'
               - '**/src/posix*/**'
+  test-docs:
+    needs: changes
+    if: ${{ needs.changes.outputs.testDocs == 'true' }}
+    timeout-minutes: 240
+    runs-on: ubuntu-latest
+    env:
+      DISABLE_JAVASCRIPT_TEST: true
+      DISABLE_ANDROID: true
+    steps:
+      - { name: Checkout, uses: actions/checkout@v3 }
+      - { name: Setup Pages, uses: actions/configure-pages@v3 }
+      - { name: Build with Jekyll, uses: actions/jekyll-build-pages@v1, with: { source: ./docs, destination: ./_site } }
+      - { name: Check broken links, run: "npx --yes broken-link-checker-local _site --filter-level=3 -e -r" }
 
   test-jvm:
     needs: changes
