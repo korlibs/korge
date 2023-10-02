@@ -94,10 +94,10 @@ val props = Properties()
 props.load(StringReader(file("../gradle.properties").text))
 
 var projectVersion = System.getenv("FORCED_VERSION")
-    ?.replaceFirst("^refs/tags/", "")
-    ?.replaceFirst("^v", "")
-    ?.replaceFirst("^w", "")
-    ?.replaceFirst("^z", "")
+    ?.replaceFirst(Regex("^refs/tags/"), "")
+    ?.replaceFirst(Regex("^v"), "")
+    ?.replaceFirst(Regex("^w"), "")
+    ?.replaceFirst(Regex("^z"), "")
     ?: props.getProperty("version")
 
 if (projectVersion.contains("-only-gradle-plugin-")) {
