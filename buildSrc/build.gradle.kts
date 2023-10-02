@@ -108,6 +108,7 @@ if (projectVersion.contains("-only-gradle-plugin-")) {
 if (System.getenv("FORCED_VERSION") != null) {
     println(":: FORCED_VERSION=${System.getenv("FORCED_VERSION")}")
     println(":: projectVersion=$projectVersion")
+    if (projectVersion.contains("/")) error("Invalid projectVersion=$projectVersion")
 }
 
 val realKotlinVersion = System.getenv("FORCED_KOTLIN_VERSION")
