@@ -38,7 +38,7 @@ Now that you have a working environment, let's explore other concepts.
 2. Then build a more complex and realistic game with a [step-by-step tutorial to build a chess game](/tutorials/chess/).
 3. Finally, [deploy it in one of our supported platforms](/targets/).
 
-From there you can get a deep look to the [reference documentation](/reference/).
+You can also explore the documentation or search for specific topics.
 
 ## Asking Questions and Solving Doubts
 
