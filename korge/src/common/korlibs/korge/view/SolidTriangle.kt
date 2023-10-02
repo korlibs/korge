@@ -15,18 +15,18 @@ class SolidTriangle(
 ) {
   var p1: Point = p1
     set(value) {
-      updateTriangle()
       field = value
+      updateTriangle()
     }
   var p2: Point = p2
     set(value) {
-      updateTriangle()
       field = value
+      updateTriangle()
     }
   var p3: Point = p3
     set(value) {
-      updateTriangle()
       field = value
+      updateTriangle()
     }
 
   init {
