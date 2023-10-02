@@ -34,8 +34,8 @@
   icon: bi bi-clock
   color: magenta
 
-- id: maths
-  title: Maths
+- id: math
+  title: Math
   icon: bi bi-calculator-fill
   color: blue
 
@@ -59,6 +59,11 @@
   icon: bi bi-filetype-html
   color: purple
 
+- id: about
+  title: About
+  icon: bi bi-globe
+  color: indigo
+
 - id: gfx
   title: GFX
   icon: bi bi-fire
@@ -78,9 +83,3 @@
   title: Modules
   icon: bi bi-collection
   color: purple
-
-- id: about
-  title: About
-  icon: bi bi-globe
-  color: indigo
-

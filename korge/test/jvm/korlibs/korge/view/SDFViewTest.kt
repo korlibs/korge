@@ -1,7 +1,10 @@
 package korlibs.korge.view
 
 import korlibs.graphics.shader.*
+import korlibs.image.atlas.*
 import korlibs.image.color.*
+import korlibs.image.format.*
+import korlibs.io.file.std.*
 import korlibs.korge.render.*
 import korlibs.korge.testing.*
 import korlibs.math.geom.*

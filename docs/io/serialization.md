@@ -4,7 +4,7 @@ group: io
 layout: default
 title: Serialization
 title_prefix: KorIO
-description: "JSON, YAML, XML and Properties serialization"
+description: "JSON, TOML, YAML, XML and Properties serialization"
 fa-icon: fa-code
 priority: 9
 ---
@@ -31,6 +31,14 @@ object Json {
 
 fun String.fromJson(): Any? = Json.parse(this)
 fun Map<*, *>.toJson(pretty: Boolean = false): String = Json.stringify(this, pretty)
+```
+
+## TOML
+
+```kotlin
+object TOML {
+    fun parseToml(str: String, out: MutableMap<String, Any?> = LinkedHashMap()): Map<String, Any?>
+}
 ```
 
 ## YAML

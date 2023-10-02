@@ -55,6 +55,8 @@ jobs:
           destination: ./_site
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
+      - name: Check broken links
+        run: "npx --yes broken-link-checker-local _site --filter-level=3 -e -r || true"
 
   # Deployment job
   deploy:

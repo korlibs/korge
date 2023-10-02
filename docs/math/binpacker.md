@@ -1,6 +1,6 @@
 ---
 permalink: /math/binpacker/
-group: maths
+group: math
 layout: default
 title: Bin Packing
 title_short: Bin Packing

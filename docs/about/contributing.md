@@ -40,7 +40,7 @@ Did you find something **wrong**, **misleading** or **confusing**? Or just want 
 In order to make it easier to contribute, each page of the documentation contains a `Suggest Change / Typo`,
 so you can propose a change.
 
-<img src="/i/suggest_change.png" style="border: 2px solid black;" />
+<img src="/i/suggest_change.avif" style="border: 2px solid black;" />
 
 All the documentation is hosted at github using github pages and [jekyll](https://jekyllrb.com/):
 

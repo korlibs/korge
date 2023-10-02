@@ -8,7 +8,7 @@ fa-icon: fa-sort-alpha-down
 priority: 4
 ---
 
-KorGE has a `Stage` like AS3, Pixi and HTML DOM and a [display tree with `View` nodes](/korge/views).
+KorGE has a `Stage` like AS3, Pixi and HTML DOM and a [display tree with `View` nodes](/views/).
 
 ## DSL
 
@@ -22,7 +22,7 @@ suspend fun main() = Korge { // this: Stage ->
 
 ## Module+Scene-based
 
-But larger applications define a module, scenes and use the [Korinject's asynchronous dependency injector](/korinject/):
+But larger applications define a module, scenes and use the [Korinject's dependency injector](/injector/):
 
 ```kotlin
 suspend fun main() = Korge(Korge.Config(module = MyModule))
@@ -53,7 +53,7 @@ It allows to load all kind of resources asynchronously from different sources an
 * Using KorIM it can load images
 * And using KorAU can load sound and music files
 
-It [defines `Scene` that act as a controller](/korge/basics/scene) and a way to split the application in smaller parts.
+It [defines `Scene` that act as a controller](/scenes/) and a way to split the application in smaller parts.
 It uses the `Injector` from Korio as an [IoC](https://en.wikipedia.org/wiki/Inversion_of_control) mechanism to declare dependencies to Scenes.
 
 Optionally (not imposed) it can use the Korio's `Bus` for communicating different parts of the application.

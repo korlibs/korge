@@ -1,6 +1,6 @@
 ---
 permalink: /math/utils/
-group: maths
+group: math
 layout: default
 title: Math Utils
 title_short: Math Utils

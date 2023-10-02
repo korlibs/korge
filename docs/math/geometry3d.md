@@ -1,6 +1,6 @@
 ---
 permalink: /math/geometry3d/
-group: maths
+group: math
 layout: default
 title: Geometry 3D
 title_short: Geometry 3D

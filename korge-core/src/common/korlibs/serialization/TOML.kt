@@ -3,6 +3,7 @@
 package korlibs.io.serialization.toml
 
 //import org.intellij.lang.annotations.Language
+import korlibs.math.geom.*
 import kotlin.math.min
 
 // @TODO: Dates
@@ -246,4 +247,9 @@ object TOML {
 
         override fun toString(): String = "StrReader[$len](pos=$pos, peek='${str.substring(pos, min(len, pos + 10))}')"
     }
+}
+
+fun test() {
+    Angle.between(Point(10, 10), Point(30, 30), Vector2D.UP_SCREEN)
+    Point.angle(Point(10, 10), Point(30, 30), Vector2D.UP_SCREEN)
 }

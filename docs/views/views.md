@@ -13,7 +13,7 @@ Korge's views works like [AS3's DisplayObject](https://help.adobe.com/en_US/Flas
 
 ## Rendering
 
-![](table.gif)
+![](/i/table.avif)
 
 It is **a tree structure** where `View` has a parent, and `Container` has other `View` as children.
 

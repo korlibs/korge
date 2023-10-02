@@ -12,9 +12,9 @@
 
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="{{ site.description }}">
-    <meta name="author" content="{{ site.description }}">
+    <meta name="author" content="{{ site.authors }}">
 
-    <title>{{ page.title }}</title>
+    <title>KorGE: {{ page.title }}</title>
 
     <link rel="canonical" href="{{ page.url | absolute_url }}">
     <link rel="icon" href="/i/icon.avif" />
@@ -35,32 +35,6 @@
     <meta name="theme-color" content="#712cf9">
 
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3395905965441916" crossorigin="anonymous"></script>
-
-    <!-- Favicons -->
-    <!--
-    <link rel="apple-touch-icon" href="/assets/img/favicons/apple-touch-icon.png" sizes="180x180">
-    <link rel="icon" href="/assets/img/favicons/favicon-32x32.png" sizes="32x32" type="image/png">
-    <link rel="icon" href="/assets/img/favicons/favicon-16x16.png" sizes="16x16" type="image/png">
-    <link rel="manifest" href="/assets/img/favicons/manifest.json">
-    <link rel="mask-icon" href="/assets/img/favicons/safari-pinned-tab.svg" color="#712cf9">
-    <link rel="icon" href="/assets/img/favicons/favicon.ico">
-
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:site" content="@getbootstrap">
-    <meta name="twitter:creator" content="@getbootstrap">
-    <meta name="twitter:title" content="Get started with Bootstrap">
-    <meta name="twitter:description" content="Bootstrap is a powerful, feature-packed frontend toolkit. Build anything—from prototype to production—in minutes.">
-    <meta name="twitter:image" content="https://getbootstrap.com/assets/brand/bootstrap-social.png">
-
-    <meta property="og:url" content="https://getbootstrap.com/getting-started/introduction/">
-    <meta property="og:title" content="Get started with Bootstrap">
-    <meta property="og:description" content="Bootstrap is a powerful, feature-packed frontend toolkit. Build anything—from prototype to production—in minutes.">
-    <meta property="og:type" content="article">
-    <meta property="og:image" content="https://getbootstrap.com/assets/brand/bootstrap-social.png">
-    <meta property="og:image:type" content="image/png">
-    <meta property="og:image:width" content="2000">
-    <meta property="og:image:height" content="1000">
-    -->
 
     <style>
         .bd-links-link {
@@ -103,11 +77,11 @@
 
 
         <div class="d-flex">
-            <form role="search" action="/search">
-            </form>
+            <!--<form role="search" action="/search" method="get">-->
             <div class="bd-search" id="docsearch" data-bd-docs-version="5.3">
-                <input type="search" class="form-control" placeholder="Search... (press 't' to focus)" id="searchq" name="q" />
+                <input type="search" class="form-control" placeholder="Search... (press 't' to focus)" id="searchq" name="q" style="width:210px;" />
             </div>
+            <!--</form>-->
             <button class="navbar-toggler d-flex d-lg-none order-3 p-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#bdNavbar" aria-controls="bdNavbar" aria-label="Toggle navigation">
                 <i class="bi bi-three-dots"></i>
             </button>
@@ -155,7 +129,7 @@
                         <ul class="dropdown-menu dropdown-menu-end">
                             <li><h6 class="dropdown-header">v5 releases</h6></li>
                             <li>
-                                <a class="dropdown-item d-flex align-items-center justify-content-between active" aria-current="true" href="/getting-started/introduction/">
+                                <a class="dropdown-item d-flex align-items-center justify-content-between active" aria-current="true" href="/">
                                     Latest (5.0.x)
                                     <i class="bi bis bi-check2 ms-auto"></i>
                                 </a>
@@ -260,6 +234,15 @@
                 <h1 class="bd-title mb-0" id="content">{{ page.title }}</h1>
             </div>
             <p class="bd-lead">{{ page.description }}</p>
+            <div style="font-size:0.9rem;font-style: italic;color:var(--bs-gray)">
+                {% if page.version_review %}
+                Document reviewed for {{ page.version_review }}
+                {% else %}
+                Document not reviewed yet, might be outdated. Please,
+                <a href="https://docs.google.com/forms/d/e/1FAIpQLSclcND_ZoRdwqW-GvBus9gAaA9Ek-130M3FcC6qk7huWxCfvA/viewform?usp=pp_url&entry.743568020=/math/geometry2d/&entry.593163446=1" target="_blank">let us know</a>
+                if you find something invalid here.
+                {% endif %}
+            </div>
         </div>
 
 
@@ -289,8 +272,8 @@
         <div class="row">
             <div class="col-lg-3 mb-3">
                 <a class="d-inline-flex align-items-center mb-2 text-body-emphasis text-decoration-none" href="/" aria-label="{{ page.title }}">
-                    <img src="/i/logos/korge.svg" />
-                    <span class="fs-5">{{ site.title }}</span>
+                    <img src="/i/logos/korge.svg" style="width:3rem;height:3rem;" />
+                    <span class="fs-5">&nbsp;{{ site.title }}</span>
                 </a>
                 <div class="small">
                     {% include bottom_desc.md %}

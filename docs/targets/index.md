@@ -123,6 +123,4 @@ For Windows, change all the `./gradlew` for `gradlew.bat`.
 
 The most basic task to run your application is `./gradlew runJvm`.
 
-For the rest of the tasks and details for each platform, check the [Targets section](/korge/targets):
-
-{% include toc.html context="/korge/targets/" %}
+For the rest of the tasks and details for each platform, check the [Targets section](/targets):
