@@ -2,8 +2,8 @@ description = "Korge Core Libraries"
 
 dependencies {
     configurations.findByName("androidMainApi")?.let {
-        add("androidMainApi", "androidx.javascriptengine:javascriptengine:1.0.0-alpha05")
-        add("androidMainApi", "com.google.guava:guava:31.0.1-android")
+        //add("androidMainApi", "androidx.javascriptengine:javascriptengine:1.0.0-alpha05")
+        //add("androidMainApi", "com.google.guava:guava:31.0.1-android")
     }
     add("commonMainApi", project(":korge-foundation"))
     add("commonMainApi", libs.kotlinx.coroutines.core)

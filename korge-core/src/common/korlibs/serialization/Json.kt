@@ -49,7 +49,7 @@ object Json {
             val dres = parseNumber(s)
             if (dres.toInt().toDouble() == dres) dres.toInt() else dres
         }
-        't', 'f', 'n' -> parseBooleanOrNull(s, context)
+        't', 'f', 'n', 'u' -> parseBooleanOrNull(s, context)
         '"' -> s.readStringLit()
         else -> invalidJson("Not expected '$ic'")
     }
@@ -59,6 +59,7 @@ object Json {
             s.tryRead("true") -> true
             s.tryRead("false") -> false
             s.tryRead("null") -> null
+            s.tryRead("undefined") -> null
             else -> invalidJson()
         }
     }

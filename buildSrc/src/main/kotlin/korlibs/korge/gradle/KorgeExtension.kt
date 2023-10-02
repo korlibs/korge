@@ -302,8 +302,7 @@ open class KorgeExtension(
     //@JvmOverloads
     //fun bundle(uri: String, baseName: String? = null) = bundles.bundle(uri, baseName)
 
-    val DEFAULT_JVM_TARGET = "1.8"
-    //val DEFAULT_JVM_TARGET = "1.6"
+    val DEFAULT_JVM_TARGET = GRADLE_JAVA_VERSION_STR
 	var jvmTarget: String = project.findProject("jvm.target")?.toString() ?: DEFAULT_JVM_TARGET
 	var androidLibrary: Boolean = project.findProperty("android.library") == "true"
     var overwriteAndroidFiles: Boolean = project.findProperty("overwrite.android.files") == "false"

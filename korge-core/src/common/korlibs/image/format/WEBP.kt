@@ -57,6 +57,8 @@ private class WebpWASM(bytes: ByteArray) : korlibs.wasm.WASMLib(bytes) {
         val width = buffer.getInt32(0)
         val height = buffer.getInt32(1)
 
+        //println("WEBP: memTemp=$memTemp, dataPtr=$dataPtr, width=$width, height=$height")
+
         val pixels = when {
             decodedPtr != 0 -> IntArray(width * height).also {
                 Buffer(readBytes(decodedPtr, width * height * 4)).getArrayInt32(0, it)
