@@ -34,12 +34,11 @@ You can see a small presentation of KorGE here: <https://korge.org/>{:target="_b
 
 Now that you have a working environment, let's explore other concepts.
 
-1. [Install the environment](/getting-started/install/)
-2. Take your [first steps](firststeps) learning to create a sample game with basic shapes.
-3. Then build a more complex and realistic game with a [step-by-step tutorial to build a 2048 game](/korge/samples/).
-4. Finally, [deploy it in one of our supported platforms](/korge/deployment/).
+1. [Install the environment and run the Hello World](/getting-started/install/)
+2. Then build a more complex and realistic game with a [step-by-step tutorial to build a chess game](/tutorials/chess/).
+3. Finally, [deploy it in one of our supported platforms](/targets/).
 
-From there you can get a deep look to the [reference documentation](/korge/reference/).
+You can also explore the documentation or search for specific topics.
 
 ## Asking Questions and Solving Doubts
 
@@ -56,7 +55,7 @@ We have a nice and welcoming community! Feel free to drop in.
 
 ## Tools:
 
-KorGE uses intelliJ as IDE + Gradle for building. You can check how to [set-up the environment here](/korge/gettingstarted/setup/).
+KorGE uses intelliJ as IDE + Gradle for building. You can check how to [set-up the environment here](/getting-started/install/).
 
 <img alt="Gradle" src="/i/logos/gradle.svg" style="width:128px;height:128px;" />
 <img alt="IntelliJ" src="/i/logos/intellij.svg" style="width:128px;height:128px;" />
