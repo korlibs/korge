@@ -49,7 +49,7 @@ fun NewKProjectModel.Companion.parseObject(data: Any?, file: FileRef = MemoryFil
         testDependencies = data["testDependencies"].list.map { Dependency.parseObject(it.value, file) },
         versions = when (dataVersions.value) {
             is List<*> -> dataVersions.list.associate {
-                val entry = it.map.entries.first()
+                val entry = it.map.entries.firstOrNull() ?: error("Can't find any version in $this")
                 entry.key.str to entry.value.str
             }
             else -> dataVersions.map.toList().associate { it.first.str to it.second.str }
