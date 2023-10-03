@@ -4,6 +4,7 @@ import com.android.build.gradle.*
 import com.soywiz.kproject.internal.*
 import com.soywiz.kproject.model.*
 import com.soywiz.kproject.util.*
+import korlibs.korge.gradle.targets.android.*
 import org.gradle.api.*
 import org.gradle.api.plugins.*
 import org.gradle.api.tasks.testing.logging.*
@@ -68,6 +69,11 @@ class KProjectPlugin : Plugin<Project> {
                     compilations.all {
                         it.kotlinOptions.jvmTarget = androidJvmVersion
                     }
+
+                }
+                project.afterEvaluate {
+                    val compileDebugJavaWithJavac = project.tasks.findByName("compileDebugJavaWithJavac") as? org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile?
+                    compileDebugJavaWithJavac?.compilerOptions?.jvmTarget?.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.fromTarget(androidJvmVersion))
                 }
                 project.extensions.getByType(LibraryExtension::class.java).apply {
                     compileSdk = ANDROID_DEFAULT_COMPILE_SDK
