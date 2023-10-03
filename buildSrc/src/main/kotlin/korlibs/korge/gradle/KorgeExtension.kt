@@ -198,8 +198,10 @@ open class KorgeExtension(
      * Configures WASM target
      */
     fun targetWasm(binaryen: Boolean = false) {
-        target("wasmJs") {
-            project.configureWasm(projectType, binaryen)
+        if (korlibs.korge.gradle.targets.wasm.isWasmEnabled(project)) {
+            target("wasmJs") {
+                project.configureWasm(projectType, binaryen)
+            }
         }
     }
 

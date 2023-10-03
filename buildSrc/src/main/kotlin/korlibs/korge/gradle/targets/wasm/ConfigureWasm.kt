@@ -4,7 +4,8 @@ import korlibs.*
 import org.gradle.api.*
 
 //fun Project.isWasmEnabled(): Boolean = findProperty("enable.wasm") == "true"
-fun Project.isWasmEnabled(): Boolean = true
+//fun isWasmEnabled(project: Project?): Boolean = true
+fun isWasmEnabled(project: Project?): Boolean = false
 //fun Project.isWasmEnabled(): Boolean = false
 
 fun Project.configureWasm(executable: Boolean, binaryen: Boolean = false) {

@@ -44,6 +44,8 @@ class KProjectPlugin : Plugin<Project> {
             if (name.isKotlinNative && isWindowsOrLinuxArm) return false
             // Do not include K/N (iOS) on Windows or Linux (only on Macos)
             if (name.isKotlinNative && !korlibs.korge.gradle.targets.isMacos) return false
+            // Do not include WASM is globally disabled
+            if (name.isWasmJs && !korlibs.korge.gradle.targets.wasm.isWasmEnabled(null)) return false
             return info2.hasTarget(name)
         }
 
@@ -87,7 +89,7 @@ class KProjectPlugin : Plugin<Project> {
                 }
             }
             if (hasTarget(KProjectTarget.WASM_JS)) {
-                wasmJs().apply {
+                wasmJs {
                     browser()
                 }
             }
