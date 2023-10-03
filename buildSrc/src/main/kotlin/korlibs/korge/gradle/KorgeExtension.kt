@@ -339,7 +339,25 @@ open class KorgeExtension(
     }
 
     val artifactSubstitution = LinkedHashMap<String, String>().also {
-        it["com.soywiz.korlibs.korge2:korge"] = "${RootKorlibsPlugin.KORGE_GROUP}:korge:${BuildVersions.KORGE}"
+        val korgeArtifact = "${RootKorlibsPlugin.KORGE_GROUP}:korge:${BuildVersions.KORGE}"
+        val korgeFoundationArtifact = "${RootKorlibsPlugin.KORGE_GROUP}:korge-foundation:${BuildVersions.KORGE}"
+        val korgeCoreArtifact = "${RootKorlibsPlugin.KORGE_GROUP}:korge-core:${BuildVersions.KORGE}"
+
+        it["com.soywiz.korlibs.korge2:korge"] = korgeArtifact
+        it["com.soywiz.korlibs.korgw:korgw"] = korgeArtifact
+
+        it["com.soywiz.korlibs.kbignum:kbignum"] = korgeFoundationArtifact
+        it["com.soywiz.korlibs.kds:kds"] = korgeFoundationArtifact
+        it["com.soywiz.korlibs.korinject:korinject"] = korgeFoundationArtifact
+        it["com.soywiz.korlibs.krypto:krypto"] = korgeFoundationArtifact
+        it["com.soywiz.korlibs.korma:korma"] = korgeFoundationArtifact
+        it["com.soywiz.korlibs.kmem:kmem"] = korgeFoundationArtifact
+        it["com.soywiz.korlibs.klock:klock"] = korgeFoundationArtifact
+
+        it["com.soywiz.korlibs.korio:korio"] = korgeCoreArtifact
+        it["com.soywiz.korlibs.korim:korim"] = korgeCoreArtifact
+        it["com.soywiz.korlibs.korau:korau"] = korgeCoreArtifact
+        it["com.soywiz.korlibs.korte:korte"] = korgeCoreArtifact
     }
 
     fun versionSubstitution(groupName: String, version: String) {
