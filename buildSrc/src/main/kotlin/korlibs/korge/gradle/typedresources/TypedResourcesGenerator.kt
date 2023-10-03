@@ -141,51 +141,51 @@ class TypedResourcesGenerator {
             }
 
             for (ase in ases) {
+                val aseFile = ase.file
+
+                val info = try {
+                    ASEInfo.getAseInfo(ase.file.readBytes())
+                } catch (e: Throwable) {
+                    System.err.println("ERROR LOADING FILE: aseFile=$aseFile")
+                    e.printStackTrace()
+                    continue
+                }
+
                 line("")
                 line("inline class ${ase.className}(val data: korlibs.image.format.ImageDataContainer)") {
                     line("inline class TypedAse(val __file: VfsFile) { suspend fun read(atlas: korlibs.image.atlas.MutableAtlasUnit? = null): ${ase.className} = ${ase.className}(this.__file.readImageDataContainer(korlibs.image.format.ASE.toProps(), atlas)) }")
-                    val aseFile = ase.file
 
-                    try {
-                        val info = ASEInfo.getAseInfo(ase.file.readBytes())
-
-                        line("enum class TypedAnimation(val animationName: String)") {
+                    line("enum class TypedAnimation(val animationName: String)") {
+                        for (tag in info.tags) {
+                            line("${tag.tagName.nameToVariable().uppercase()}(${tag.tagName.quoted}),")
+                        }
+                        line(";")
+                        line("companion object") {
+                            line("val list: List<TypedAnimation> = values().toList()")
                             for (tag in info.tags) {
-                                line("${tag.tagName.nameToVariable().uppercase()}(${tag.tagName.quoted}),")
-                            }
-                            line(";")
-                            line("companion object") {
-                                line("val list: List<TypedAnimation> = values().toList()")
-                                for (tag in info.tags) {
-                                    line("val ${tag.tagName.nameToVariable().lowercase()}: TypedAnimation get() = TypedAnimation.${tag.tagName.nameToVariable().uppercase()}")
-                                }
+                                line("val ${tag.tagName.nameToVariable().lowercase()}: TypedAnimation get() = TypedAnimation.${tag.tagName.nameToVariable().uppercase()}")
                             }
                         }
-
-                        line("inline class TypedImageData(val data: ImageData)") {
-                            line("val animations: TypedAnimation.Companion get() = TypedAnimation")
-                        }
-
-                        val uniqueNames = UniqueNameGenerator()
-                        uniqueNames["animations"] // reserve names
-                        uniqueNames["default"] // reserve names
-
-                        line("val animations: TypedAnimation.Companion get() = TypedAnimation")
-                        line("val default: TypedImageData get() = TypedImageData(data.default)")
-                        for (sliceName in info.slices.map { it.sliceName }.distinct()) {
-                            val varName = uniqueNames[sliceName.nameToVariable()]
-                            line("val `$varName`: TypedImageData get() = TypedImageData(data[${sliceName.quoted}]!!)")
-                        }
-                        // @TODO: We could
-
-                        //println("wizardFemale=${wizardFemale.imageDatasByName.keys}")
-                        //println("wizardFemale.animations=${wizardFemale.imageDatas.first().animationsByName.keys}")
-                    } catch (e: Throwable) {
-                        System.err.println("FILE: aseFile=$aseFile")
-                        e.printStackTrace()
-
-                        throw e // @TODO: Remove this
                     }
+
+                    line("inline class TypedImageData(val data: ImageData)") {
+                        line("val animations: TypedAnimation.Companion get() = TypedAnimation")
+                    }
+
+                    val uniqueNames = UniqueNameGenerator()
+                    uniqueNames["animations"] // reserve names
+                    uniqueNames["default"] // reserve names
+
+                    line("val animations: TypedAnimation.Companion get() = TypedAnimation")
+                    line("val default: TypedImageData get() = TypedImageData(data.default)")
+                    for (sliceName in info.slices.map { it.sliceName }.distinct()) {
+                        val varName = uniqueNames[sliceName.nameToVariable()]
+                        line("val `$varName`: TypedImageData get() = TypedImageData(data[${sliceName.quoted}]!!)")
+                    }
+                    // @TODO: We could
+
+                    //println("wizardFemale=${wizardFemale.imageDatasByName.keys}")
+                    //println("wizardFemale.animations=${wizardFemale.imageDatas.first().animationsByName.keys}")
                 }
             }
         }
