@@ -42,6 +42,8 @@ class KProjectPlugin : Plugin<Project> {
         // @TODO: Configure
         fun hasTarget(name: KProjectTarget): Boolean {
             if (name.isKotlinNative && isWindowsOrLinuxArm) return false
+            // Do not include K/N (iOS) on Windows or Linux (only on Macos)
+            if (name.isKotlinNative && !korlibs.korge.gradle.targets.isMacos) return false
             return info2.hasTarget(name)
         }
 
