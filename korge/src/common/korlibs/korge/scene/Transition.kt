@@ -5,6 +5,7 @@ import korlibs.korge.render.*
 import korlibs.korge.tween.*
 import korlibs.korge.view.*
 import korlibs.korge.view.filter.*
+import korlibs.korge.view.property.*
 import korlibs.math.interpolation.*
 import kotlin.native.concurrent.*
 
@@ -19,6 +20,9 @@ class TransitionView() : Container() {
         dummyView()
     }
 
+    @ViewProperty(min = 0.0, max = 1.0, clampMin = false, clampMax = false)
+    var ratio: Ratio = Ratio.ZERO
+
     /** [Transition] that will be used to render [prev] and [next] */
     internal var transition: Transition = AlphaTransition
         private set
@@ -29,7 +33,7 @@ class TransitionView() : Container() {
     /** Moves [next] to [prev], sets [next] and starts the [ratio] to 0.0 to start the transition. */
 	fun startNewTransition(next: View, transition: Transition = this.transition) {
         this.transition = transition
-		this.ratio = 0.0
+		this.ratio = Ratio.ZERO
         this.transitionProcess = transition.create()
 		setViews(this.next, next)
         this.transitionProcess.start(this.prev, this.next)
@@ -38,7 +42,8 @@ class TransitionView() : Container() {
     override fun toString(): String = super.toString() + ":ratio=$ratio:transition=$transition"
 
     fun endTransition() {
-        this.ratio = 1.0
+        this.ratio = Ratio.ONE
+
         this.transitionProcess.end(this.prev, this.next)
         setViews(dummyView(), next)
     }
@@ -52,8 +57,8 @@ class TransitionView() : Container() {
 
 	override fun renderInternal(ctx: RenderContext) {
 		when {
-			ratio <= 0.0 -> prev.render(ctx)
-			ratio >= 1.0 -> next.render(ctx)
+			ratio <= Ratio.ZERO -> prev.render(ctx)
+			ratio >= Ratio.ONE -> next.render(ctx)
 			else -> this.transitionProcess.render(ctx, prev, next, ratio)
 		}
 	}
@@ -62,23 +67,23 @@ class TransitionView() : Container() {
 interface TransitionProcess {
     fun start(prev: View, next: View) = Unit
     fun end(prev: View, next: View) = Unit
-    fun render(ctx: RenderContext, prev: View, next: View, ratio: Double) = Unit
+    fun render(ctx: RenderContext, prev: View, next: View, ratio: Ratio) = Unit
 }
 
 interface Transition {
     fun create(): TransitionProcess
 }
 
-fun TransitionProcess(name: String = "Transition", render: (ctx: RenderContext, prev: View, next: View, ratio: Double) -> Unit): TransitionProcess =
+fun TransitionProcess(name: String = "Transition", render: (ctx: RenderContext, prev: View, next: View, ratio: Ratio) -> Unit): TransitionProcess =
     object : TransitionProcess {
-        override fun render(ctx: RenderContext, prev: View, next: View, ratio: Double) = render(ctx, prev, next, ratio)
+        override fun render(ctx: RenderContext, prev: View, next: View, ratio: Ratio) = render(ctx, prev, next, ratio)
         override fun toString(): String = name
     }
 
-fun Transition(name: String = "Transition", render: (ctx: RenderContext, prev: View, next: View, ratio: Double) -> Unit): Transition {
+fun Transition(name: String = "Transition", render: (ctx: RenderContext, prev: View, next: View, ratio: Ratio) -> Unit): Transition {
     return object : Transition, TransitionProcess {
         override fun create(): TransitionProcess = this
-        override fun render(ctx: RenderContext, prev: View, next: View, ratio: Double) = render(ctx, prev, next, ratio)
+        override fun render(ctx: RenderContext, prev: View, next: View, ratio: Ratio) = render(ctx, prev, next, ratio)
         override fun toString(): String = name
     }
 }
@@ -106,7 +111,7 @@ fun Transition.withEasing(easing: Easing) = object : Transition {
         return object : TransitionProcess {
             override fun start(prev: View, next: View) = process.start(prev, next)
             override fun end(prev: View, next: View) = process.end(prev, next)
-            override fun render(ctx: RenderContext, prev: View, next: View, ratio: Double) =
+            override fun render(ctx: RenderContext, prev: View, next: View, ratio: Ratio) =
                 process.render(ctx, prev, next, easing(ratio))
         }
     }

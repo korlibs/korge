@@ -6,6 +6,7 @@ import korlibs.korge.scene.*
 import korlibs.korge.view.*
 import korlibs.korge.view.filter.*
 import korlibs.math.geom.*
+import korlibs.math.interpolation.*
 import korlibs.time.*
 
 class MainFiltersRenderToBitmap : Scene() {
@@ -18,7 +19,7 @@ class MainFiltersRenderToBitmap : Scene() {
             image(bitmap).scale(.5).position(0, 0).addFilter(WaveFilter(time = 0.5.seconds))
             //image(bitmap).scale(.5).position(256, 0).addFilter(DirectionalBlurFilter(radius = 32.0))
             image(bitmap).scale(.5).position(256, 0).addFilter(BlurFilter(radius = 32.0))
-            image(bitmap).scale(.5).position(512, 0).addFilter(TransitionFilter(TransitionFilter.Transition.SWEEP, reversed = false, spread = 1.0, ratio = 0.5))
+            image(bitmap).scale(.5).position(512, 0).addFilter(TransitionFilter(TransitionFilter.Transition.SWEEP, reversed = false, spread = 1.0, ratio = Ratio.HALF))
             image(bitmap).scale(.5).position(0, 256).addFilter(PageFilter(hratio = 0.5, hamplitude1 = 20.0))
             image(bitmap).scale(.5).position(256, 256).addFilter(Convolute3Filter(Convolute3Filter.KERNEL_SHARPEN))
             image(bitmap).scale(.5).position(512, 256).addFilter(SwizzleColorsFilter("bgga"))

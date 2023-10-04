@@ -4,8 +4,8 @@ import korlibs.korge.render.*
 import korlibs.korge.style.*
 import korlibs.korge.view.*
 import korlibs.korge.view.property.*
-import korlibs.math.*
 import korlibs.math.geom.*
+import korlibs.math.interpolation.*
 
 inline fun Container.uiProgressBar(
     size: Size = Size(256, 24),
@@ -24,12 +24,20 @@ open class UIProgressBar(
     @ViewProperty(min = 0.0, max = 100.0)
 	var maximum: Double by uiObservable(maximum) { updateState() }
 
-	override var ratio: Double
+    /** Property used for interpolable views like morph shapes, progress bars etc. */
+    @ViewProperty(min = 0.0, max = 1.0, clampMin = false, clampMax = false)
+	var ratio: Ratio
 		set(value) { current = value * maximum }
-		get() = (current / maximum).clamp01()
+		get() = Ratio(current, maximum).clamped
 
     override fun renderInternal(ctx: RenderContext) {
         styles.uiProgressBarRenderer.render(ctx)
         super.renderInternal(ctx)
     }
+
+    override fun copyPropsFrom(source: View) {
+        super.copyPropsFrom(source)
+        this.ratio = (source as? UIProgressBar?)?.ratio ?: Ratio.ZERO
+    }
+
 }

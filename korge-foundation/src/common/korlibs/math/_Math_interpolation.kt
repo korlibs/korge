@@ -19,6 +19,7 @@ private const val HALF_PI = PI.toFloat() / 2f
 fun interface Easing {
     operator fun invoke(it: Float): Float
     operator fun invoke(it: Double): Double = invoke(it.toFloat()).toDouble()
+    operator fun invoke(it: Ratio): Ratio = Ratio(invoke(it.toFloat()).toDouble())
 
     companion object {
         operator fun invoke(name: () -> String, block: (Float) -> Float): Easing {

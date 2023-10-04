@@ -73,8 +73,8 @@ class MainFiltersSample : Scene() {
             sequence(looped = true) {
                 //tween(color::blendRatio[0], time = 1.seconds, easing = Easing.EASE_IN_OUT)
                 //tween(color::blendRatio[1], time = 1.seconds, easing = Easing.EASE_IN_OUT)
-                tween(color::ratio[0], time = 1.seconds, easing = Easing.EASE_IN_OUT)
-                tween(color::ratio[1], time = 1.seconds, easing = Easing.EASE_IN_OUT)
+                tween(color::ratio[Ratio.ZERO], time = 1.seconds, easing = Easing.EASE_IN_OUT)
+                tween(color::ratio[Ratio.ONE], time = 1.seconds, easing = Easing.EASE_IN_OUT)
             }
             sequence(looped = true) {
                 tween(page::hratio[0], time = 1.seconds, easing = Easing.EASE_IN_OUT)
