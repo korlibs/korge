@@ -141,10 +141,11 @@ jobs:
       - { name: Testing JVM, run: "./gradlew --stacktrace --parallel jvmTest", env: { EGL_LOG_LEVEL: debug, LIBGL_DEBUG: verbose, LIBGL_ALWAYS_SOFTWARE: true, MESA_DEBUG: true } }
       - { name: Archive Test Results, if: failure(), uses: actions/upload-artifact@v3, with: { name: screenshot-test-results-linux, retention-days: 21, path: "**/build/reports", if-no-files-found: ignore } }
       - { name: Check sandbox compiles, run: "./gradlew :korge-sandbox:jvmJar" }
-      - { name: Publish to maven local, run: ./gradlew --parallel publishJvmLocal }
+      - { name: Publish to maven local, run: ./gradlew --parallel publishJvmLocal publishKotlinMultiplatformPublicationToMavenLocal }
       - { name: e2e test, working-directory: e2e/e2e-test, run: ./gradlew checkReferencesJvm --stacktrace }
       - { name: Archive E2E Test Results, if: failure(), uses: actions/upload-artifact@v3, with: { name: e2e-test-results-linux-jvm, retention-days: 21, path: "**/e2e/e2e-test/build/screenshots", if-no-files-found: ignore } }
       - { name: e2e multi test and hotreload, working-directory: e2e/e2e-test-multi, run: "./gradlew --watch-fs --warn --configuration-cache --configuration-cache-problems=warn compileKotlinJvm" }
+      - { name: Check publication includes iOS, run: ./gradlew checkModulePublication }
 
   test-jvm-macos:
     needs: changes
