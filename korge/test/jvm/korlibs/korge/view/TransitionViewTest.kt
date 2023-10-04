@@ -5,6 +5,7 @@ import korlibs.korge.scene.*
 import korlibs.korge.testing.*
 import korlibs.korge.view.filter.*
 import korlibs.math.geom.*
+import korlibs.math.interpolation.*
 import kotlin.test.*
 
 class TransitionViewTest {
@@ -17,13 +18,13 @@ class TransitionViewTest {
                 solidRect(50, 50, Colors.BLUE)
             }
         }, MaskTransition(TransitionFilter.Transition.CIRCULAR))
-        tv.ratio = 0.5
+        tv.ratio = Ratio.HALF
         addChild(tv)
 
         assertScreenshot(posterize = 5)
-        tv.ratio = 0.9
+        tv.ratio = 0.9.toRatio()
         assertScreenshot(posterize = 5)
-        tv.ratio = 1.0
+        tv.ratio = 1.0.toRatio()
         assertScreenshot(posterize = 5)
     }
 
