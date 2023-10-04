@@ -4,12 +4,9 @@ import org.gradle.api.*
 import korlibs.korge.gradle.targets.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 
-// Only mac has ios/tvos targets
-val Project.supportKotlinNative: Boolean get() = isMacos && System.getenv("DISABLE_KOTLIN_NATIVE") != "true"
 
-val Project.doEnableKotlinNative: Boolean get() = supportKotlinNative
 val Project.doEnableKotlinAndroid: Boolean get() = rootProject.findProperty("enableKotlinAndroid") == "true" && System.getenv("DISABLE_KOTLIN_ANDROID") != "true"
-val Project.doEnableKotlinMobile: Boolean get() = doEnableKotlinNative && rootProject.findProperty("enableKotlinMobile") == "true"
+val Project.doEnableKotlinMobile: Boolean get() = supportKotlinNative && rootProject.findProperty("enableKotlinMobile") == "true"
 val Project.doEnableKotlinMobileTvos: Boolean get() = doEnableKotlinMobile && rootProject.findProperty("enableKotlinMobileTvos") == "true"
 
 val Project.hasAndroid get() = extensions.findByName("android") != null

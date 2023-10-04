@@ -230,7 +230,7 @@ object RootKorlibsPlugin {
                     project.configureAndroidDirect(ProjectType.fromExecutable(isSample), isKorge = false)
                 }
 
-                if (isSample && doEnableKotlinNative && isMacos) {
+                if (isSample && supportKotlinNative && isMacos) {
                     project.configureNativeIos(projectType = ProjectType.EXECUTABLE)
                 }
 
@@ -427,7 +427,7 @@ object RootKorlibsPlugin {
                             }
                         }
 
-                        if (doEnableKotlinNative) {
+                        if (supportKotlinNative) {
                             val native by lazy { createPairSourceSet("native", concurrent) }
                             val posix by lazy { createPairSourceSet("posix", native) }
                             val darwin by lazy { createPairSourceSet("darwin", posix) }

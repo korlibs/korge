@@ -238,7 +238,7 @@ open class KorgeExtension(
      */
     fun targetIos() {
         target("ios") {
-            if (isMacos && supportKotlinNative) {
+            if (supportKotlinNative) {
                 project.configureNativeIos(projectType)
             }
         }
@@ -382,7 +382,7 @@ open class KorgeExtension(
 	var authorEmail = "unknown@unknown"
 	var authorHref = "http://localhost"
 
-	val nativeEnabled = project.supportKotlinNative
+	val nativeEnabled = supportKotlinNative
 
     val newDesktopEnabled get() = project.findProperty("korge.enable.desktop") == "true" || System.getenv("KORGE_ENABLE_DESKTOP") == "true"
     val newAndroidEnabled get() = project.findProperty("korge.enable.android") == "true" || System.getenv("KORGE_ENABLE_ANDROID") == "true"
