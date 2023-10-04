@@ -1,0 +1,78 @@
+---
+permalink: /about/team/
+group: about
+layout: default
+title: Team
+title_short: Team
+priority: 2
+devs:
+- {name: "Carlos Ballesteros", id: "soywiz"}
+contributors:
+- {name: "Carlos Ballesteros", id: "soywiz"}
+---
+
+<h2>Team</h2>
+
+<div class="list-group mb-3">
+    {% for dev in page.devs %}
+    <a class="list-group-item list-group-item-action d-flex align-items-center" href="https://github.com/{{ dev.id }}">
+      <img src="https://github.com/{{ dev.id }}.png" alt="@{{ dev.id }}" width="32" height="32" class="rounded me-2" loading="lazy">
+      <span>
+        <strong>{{ dev.name }}</strong> @{{ dev.id }}
+      </span>
+    </a>
+    {% endfor %}
+</div>
+
+<p>Please make a PR adding you if you have contributed to the project.</p>
+
+<h2>Contributors</h2>
+
+<template id="user-link">
+    <a class="devLink list-group-item list-group-item-action d-flex align-items-center" href="about:blank">
+        <img src="about:blank" alt="---" width="32" height="32" class="devImage rounded me-2" loading="lazy">
+        <span>
+            <strong class="devName">---</strong> <span class="devId">---</span>
+          </span>
+    </a>
+</template>
+
+<div class="list-group mb-3" id="contributors">
+</div>
+
+<script type="text/javascript">
+    async function cachedFetchText(url) {
+        const cacheRequestContentKey = `cache-request-content-${url}`
+        const cacheRequestDateKey = `cache-request-date-${url}`
+        let now = Date.now();
+        let lastSetTime = +localStorage.getItem(cacheRequestDateKey);
+        if ((now - lastSetTime) >= 3600 * 1000) {
+            console.log('downloading', url)
+            const request = await fetch(url)
+            const data = await request.text()
+            localStorage.setItem(cacheRequestContentKey, data)
+            localStorage.setItem(cacheRequestDateKey, now)
+        } else {
+            console.log('cached', url, now, lastSetTime)
+        }
+
+        return localStorage.getItem(cacheRequestContentKey)
+    }
+
+    (async () => {
+        const contributorsData = JSON.parse(await cachedFetchText('https://api.github.com/repos/korlibs/korge/contributors'))
+
+        const userLinkTemplate = document.querySelector("template#user-link")
+        const contributors = document.querySelector("#contributors")
+        for (const contr of contributorsData) {
+            const node = userLinkTemplate.content.cloneNode(true)
+            const dev = contr.login
+            node.querySelector(".devLink").href = `https://github.com/${dev}`
+            node.querySelector(".devImage").src = `https://github.com/${dev}.png`
+            node.querySelector(".devImage").alt = `@${dev}`
+            node.querySelector(".devName").innerText = ``
+            node.querySelector(".devId").innerText = `@${dev}`
+            contributors.appendChild(node)
+        }
+    })()
+</script>
