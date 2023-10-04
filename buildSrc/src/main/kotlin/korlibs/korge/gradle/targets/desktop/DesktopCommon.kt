@@ -1,20 +1,9 @@
 package korlibs.korge.gradle.targets.desktop
 
-import korlibs.korge.gradle.gkotlin
-import korlibs.korge.gradle.korge
-import korlibs.korge.gradle.kotlin
-import korlibs.korge.gradle.targets.isArm
-import korlibs.korge.gradle.targets.isLinux
-import korlibs.korge.gradle.targets.isMacos
-import korlibs.korge.gradle.targets.isWindows
-import korlibs.korge.gradle.util.Indenter
-import korlibs.korge.gradle.util.createOnce
-import org.gradle.api.Project
-import org.gradle.api.Task
-import org.jetbrains.kotlin.gradle.plugin.mpp.AbstractKotlinNativeTargetPreset
-import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
-import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTargetWithHostTestsPreset
-import java.io.File
+import korlibs.korge.gradle.*
+import korlibs.korge.gradle.util.*
+import org.gradle.api.*
+import java.io.*
 
 val Project.prepareKotlinNativeBootstrap: Task get() = tasks.createOnce("prepareKotlinNativeBootstrap") {
     val output = nativeDesktopBootstrapFile

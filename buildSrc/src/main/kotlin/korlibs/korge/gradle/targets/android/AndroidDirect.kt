@@ -11,6 +11,8 @@ import korlibs.korge.gradle.targets.all.*
 import korlibs.korge.gradle.util.*
 import org.gradle.api.*
 import org.gradle.api.tasks.*
+import org.gradle.api.tasks.compile.*
+import org.jetbrains.kotlin.gradle.dsl.*
 import java.io.*
 
 fun Project.configureAndroidDirect(projectType: ProjectType, isKorge: Boolean) {
@@ -23,6 +25,7 @@ fun Project.configureAndroidDirect(projectType: ProjectType, isKorge: Boolean) {
     }
 
     //val android = project.extensions.getByName("android")
+    //project.kotlin.jvmToolchain(11)
 
     project.kotlin.androidTarget().apply {
     //project.kotlin.android().apply {
@@ -187,5 +190,14 @@ fun Project.configureAndroidDirect(projectType: ProjectType, isKorge: Boolean) {
             //packageDebugAssets?.mustRunAfter(jvmProcessResources) // @TODO: <-- THIS
             //packageReleaseAssets?.mustRunAfter(jvmProcessResources) // @TODO: <-- THIS
         }
+        val compileDebugJavaWithJavac = project.tasks.findByName("compileDebugJavaWithJavac") as? org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile?
+        compileDebugJavaWithJavac?.compilerOptions?.jvmTarget?.set(ANDROID_JVM_TARGET)
+
+        //tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile::class.java).configureEach {
+        //    it.compilerOptions.jvmTarget.set(ANDROID_JVM_TARGET)
+        //    //it.jvmTargetValidationMode.set(org.jetbrains.kotlin.gradle.dsl.jvm.JvmTargetValidationMode.WARNING)
+        //}
+        //val compileDebugJavaWithJavac = tasks.findByName("compileDebugJavaWithJavac")
+        //println("compileDebugJavaWithJavac=$compileDebugJavaWithJavac : ${compileDebugJavaWithJavac!!::class}")
     }
 }

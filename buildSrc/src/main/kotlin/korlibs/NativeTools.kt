@@ -1,12 +1,13 @@
 package korlibs
 
+import korlibs.korge.gradle.targets.*
 import korlibs.modules.*
 import org.gradle.api.*
 
 object NativeTools {
     @JvmStatic
     fun configureAllCInterop(project: Project, name: String) {
-        if (project.doEnableKotlinNative) {
+        if (supportKotlinNative) {
             project.kotlin {
                 for (target in allNativeTargets(project)) {
                     target.compilations["main"].cinterops {
