@@ -305,9 +305,9 @@ class SceneContainer(
         }
 
         if (time > 0.seconds) {
-            transitionView.tween(transitionView::ratio[0.0, 1.0], time = time)
+            transitionView.tween(transitionView::ratio[Ratio.ZERO, Ratio.ONE], time = time)
         } else {
-            transitionView.ratio = 1.0
+            transitionView.ratio = Ratio.ONE
         }
 
         transitionView.endTransition()

@@ -105,8 +105,8 @@ class MainUI : Scene() {
         }
         val job = launchImmediately {
             while (true) {
-                tween(progress::ratio[1.0], time = 1.seconds, easing = Easing.EASE_IN_OUT)
-                tween(progress::ratio[1.0, 0.0], time = 1.seconds, easing = Easing.EASE_IN_OUT)
+                tween(progress::ratio[Ratio.ONE], time = 1.seconds, easing = Easing.EASE_IN_OUT)
+                tween(progress::ratio[Ratio.ONE, Ratio.ZERO], time = 1.seconds, easing = Easing.EASE_IN_OUT)
             }
         }
         uiButton("Stop Progress").position(Point(64 + progress.width, 32.0)).mouse { onClick { job.cancel() } }

@@ -8,9 +8,11 @@ import korlibs.korge.render.*
 import korlibs.korge.style.*
 import korlibs.korge.ui.UIOldScrollBar.*
 import korlibs.korge.view.*
+import korlibs.korge.view.property.*
 import korlibs.math.*
 import korlibs.math.geom.*
 import korlibs.math.geom.slice.*
+import korlibs.math.interpolation.*
 import kotlin.math.*
 
 @Deprecated("Use UINewScrollable")
@@ -71,10 +73,12 @@ open class UIOldScrollBar(
 
     val onChange = Signal<UIOldScrollBar>()
 
-    override var ratio: Double
-        get() = (current / (totalSize - pageSize)).clamp01()
+    /** Property used for interpolable views like morph shapes, progress bars etc. */
+    @ViewProperty(min = 0.0, max = 1.0, clampMin = false, clampMax = false)
+    var ratio: Ratio
+        get() = Ratio(current, (totalSize - pageSize)).clamped
         set(value) {
-            current = value.clamp01() * (totalSize - pageSize)
+            current = value.clamped * (totalSize - pageSize)
         }
 
     protected val background = solidRect(100, 100, styles.buttonBackColor)
@@ -108,13 +112,13 @@ open class UIOldScrollBar(
             changeCurrent(pos.sign * 0.8f * this.pageSize)
         }
 
-        var initRatio = 0.0
-        var startRatio = 0.0
+        var initRatio = Ratio.ZERO
+        var startRatio = Ratio.ZERO
         thumb.onMouseDrag {
             val lmouse = background.localMousePos(views)
             val curPosition = if (isHorizontal) lmouse.x else lmouse.y
             val size = if (isHorizontal) background.width - thumb.width else background.height - thumb.height
-            val curRatio = curPosition / size
+            val curRatio = Ratio(curPosition, size)
             if (it.start) {
                 initRatio = ratio
                 startRatio = curRatio
@@ -150,6 +154,11 @@ open class UIOldScrollBar(
             thumb.position(0.0, buttonHeight + (trackHeight - thumbHeight) * ratio).size(trackWidth, thumbHeight)
         }
         onChange(this)
+    }
+
+    override fun copyPropsFrom(source: View) {
+        super.copyPropsFrom(source)
+        this.ratio = (source as? UIOldScrollBar?)?.ratio ?: Ratio.ZERO
     }
 }
 

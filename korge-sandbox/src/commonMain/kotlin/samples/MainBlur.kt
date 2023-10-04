@@ -11,6 +11,7 @@ import korlibs.korge.view.*
 import korlibs.korge.view.filter.*
 import korlibs.math.geom.Anchor
 import korlibs.math.geom.degrees
+import korlibs.math.interpolation.*
 import korlibs.time.*
 import kotlin.reflect.*
 
@@ -73,7 +74,7 @@ class MainBlur : Scene() {
         val colorMatrixFilter = ColorMatrixFilter(ColorMatrixFilter.SEPIA_MATRIX, blendRatio = 0.5)
         image(bitmap).xy(500, 250).filters(colorMatrixFilter).bindScale()
 
-        val transitionFilter = TransitionFilter(TransitionFilter.Transition.CIRCULAR, reversed = false, ratio = 0.5, spread = 0.2)
+        val transitionFilter = TransitionFilter(TransitionFilter.Transition.CIRCULAR, reversed = false, ratio = Ratio.HALF, spread = 0.2)
         image(bitmap).xy(370, 250).filters(transitionFilter).bindScale()
 
         val pageFilter = PageFilter()
@@ -129,11 +130,11 @@ class MainBlur : Scene() {
             }
             uiHorizontalFill {
                 uiText("Blend").styles { textColor = Colors.BLACK }
-                uiSlider(value = transitionFilter.ratio, min = 0.0, max = 1.0, step = 0.0, decimalPlaces = 2).changed {
+                uiSlider(value = transitionFilter.ratio.toDouble(), min = 0.0, max = 1.0, step = 0.0, decimalPlaces = 2).changed {
                     colorMatrixFilter.blendRatio = it
                     pageFilter.hamplitude0 = it
-                    transitionFilter.ratio = it
-                    pageFilter.hratio = it
+                    transitionFilter.ratio = it.toRatio()
+                    pageFilter.hratio = it.toRatio()
                     waveFilter.time = it.seconds
                     flagFilter.time = it.seconds
                 }
