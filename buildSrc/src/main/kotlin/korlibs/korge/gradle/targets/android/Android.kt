@@ -9,6 +9,7 @@ import org.gradle.api.JavaVersion
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.tasks.GradleBuild
+import org.jetbrains.kotlin.gradle.dsl.*
 import java.io.File
 import java.util.*
 
@@ -230,8 +231,9 @@ const val ANDROID_DEFAULT_MIN_SDK = 21 // Android 5.0
 const val ANDROID_DEFAULT_COMPILE_SDK = 33
 const val ANDROID_DEFAULT_TARGET_SDK = 33
 
-val ANDROID_JAVA_VERSION = JavaVersion.VERSION_11
-val ANDROID_JAVA_VERSION_STR = ANDROID_JAVA_VERSION.toString()
-
 val GRADLE_JAVA_VERSION_STR = "11"
 
+val ANDROID_JAVA_VERSION = JavaVersion.VERSION_1_8
+//val ANDROID_JAVA_VERSION = JavaVersion.VERSION_11
+val ANDROID_JAVA_VERSION_STR = ANDROID_JAVA_VERSION.toString()
+val ANDROID_JVM_TARGET = JvmTarget.fromTarget(ANDROID_JAVA_VERSION_STR)
