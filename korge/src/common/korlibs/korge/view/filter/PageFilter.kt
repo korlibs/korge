@@ -6,18 +6,19 @@ import korlibs.korge.render.*
 import korlibs.korge.view.property.*
 import korlibs.math.*
 import korlibs.math.geom.*
+import korlibs.math.interpolation.*
 import kotlin.math.*
 
 /**
  * A filter that simulates a page of a book.
  */
 class PageFilter(
-    hratio: Double = 0.0,
+    hratio: Ratio = Ratio.ZERO,
     hamplitude0: Double = 0.0,
     hamplitude1: Double = 10.0,
     hamplitude2: Double = 0.0,
 
-    vratio: Double = 0.5,
+    vratio: Ratio = Ratio.HALF,
     vamplitude0: Double = 0.0,
     vamplitude1: Double = 0.0,
     vamplitude2: Double = 0.0,
@@ -39,8 +40,8 @@ class PageFilter(
             vamplitude1: Number = 0.0,
             vamplitude2: Number = 0.0,
         ): PageFilter = PageFilter(
-            hratio.toDouble(), hamplitude0.toDouble(),
-            hamplitude1.toDouble(), hamplitude2.toDouble(), vratio.toDouble(),
+            hratio.toRatio(), hamplitude0.toDouble(),
+            hamplitude1.toDouble(), hamplitude2.toDouble(), vratio.toRatio(),
             vamplitude0.toDouble(), vamplitude1.toDouble(), vamplitude2.toDouble()
         )
 
@@ -67,7 +68,7 @@ class PageFilter(
     }
 
     @ViewProperty
-    var hratio: Double = hratio.toDouble()
+    var hratio: Ratio = hratio
     @ViewProperty
     var hamplitude0: Double = hamplitude0.toDouble()
     @ViewProperty
@@ -76,7 +77,7 @@ class PageFilter(
     var hamplitude2: Double = hamplitude2.toDouble()
 
     @ViewProperty
-    var vratio: Double = vratio.toDouble()
+    var vratio: Ratio = vratio
     @ViewProperty
     var vamplitude0: Double = vamplitude0.toDouble()
     @ViewProperty
@@ -94,7 +95,7 @@ class PageFilter(
         super.updateUniforms(ctx, filterScale)
 
         ctx[PageUB].push {
-            it[u_Offset] = Point(hratio, vratio)
+            it.set(u_Offset, hratio.toFloat(), vratio.toFloat())
             it.set(u_HAmplitude, hamplitude0.toFloat(), hamplitude1.toFloat(), hamplitude2.toFloat(), 0f)
             it.set(u_VAmplitude, vamplitude0.toFloat(), vamplitude1.toFloat(), vamplitude2.toFloat(), 0f)
         }
