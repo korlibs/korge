@@ -134,7 +134,7 @@ class MainBlur : Scene() {
                     colorMatrixFilter.blendRatio = it
                     pageFilter.hamplitude0 = it
                     transitionFilter.ratio = it.toRatio()
-                    pageFilter.hratio = it
+                    pageFilter.hratio = it.toRatio()
                     waveFilter.time = it.seconds
                     flagFilter.time = it.seconds
                 }

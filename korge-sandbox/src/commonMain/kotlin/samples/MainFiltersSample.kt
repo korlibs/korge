@@ -77,8 +77,8 @@ class MainFiltersSample : Scene() {
                 tween(color::ratio[Ratio.ONE], time = 1.seconds, easing = Easing.EASE_IN_OUT)
             }
             sequence(looped = true) {
-                tween(page::hratio[0], time = 1.seconds, easing = Easing.EASE_IN_OUT)
-                tween(page::hratio[1], time = 1.seconds, easing = Easing.EASE_IN_OUT)
+                tween(page::hratio[Ratio.ZERO], time = 1.seconds, easing = Easing.EASE_IN_OUT)
+                tween(page::hratio[Ratio.ONE], time = 1.seconds, easing = Easing.EASE_IN_OUT)
             }
             sequence(looped = true) {
                 block { conImg.filter = Convolute3Filter(Convolute3Filter.KERNEL_SHARPEN) }
