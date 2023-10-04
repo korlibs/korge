@@ -6,7 +6,7 @@ import org.gradle.api.*
 object NativeTools {
     @JvmStatic
     fun configureAllCInterop(project: Project, name: String) {
-        if (project.doEnableKotlinNative) {
+        if (project.doEnableKotlinNativeOnKorlibs) {
             project.kotlin {
                 for (target in allNativeTargets(project)) {
                     target.compilations["main"].cinterops {

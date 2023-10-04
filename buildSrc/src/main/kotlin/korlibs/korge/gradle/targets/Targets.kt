@@ -4,10 +4,14 @@ import org.apache.tools.ant.taskdefs.condition.*
 import org.gradle.api.*
 import org.jetbrains.kotlin.gradle.plugin.*
 
+// Only mac has ios/tvos targets but since CI exports multiplatform on linux
 val supportKotlinNative: Boolean get() {
     // Linux and Windows ARM hosts doesn't have K/N toolchains
-    if ((isLinux || isWindows) && isArm) return false
-    return true
+    if (isArm && (isLinux || isWindows)) return false
+    // We can also try to disable it manually
+    if (System.getenv("DISABLE_KOTLIN_NATIVE") == "true") return false
+    // On Mac, CI or when FORCE_ENABLE_KOTLIN_NATIVE=true, let's enable it
+    return isMacos || (System.getenv("CI") == "true") || (System.getenv("FORCE_ENABLE_KOTLIN_NATIVE") == "true")
 }
 
 val isWindows get() = Os.isFamily(Os.FAMILY_WINDOWS)
