@@ -61,7 +61,8 @@ fun Project.configureAndroidDirect(projectType: ProjectType, isKorge: Boolean) {
 
     val android = extensions.getByName<TestedExtension>("android")
     android.apply {
-        namespace = AndroidConfig.getNamespace(project, isKorge)
+        val androidGenerated = project.toAndroidGenerated(isKorge)
+        namespace = androidGenerated.getNamespace(isKorge)
 
         setCompileSdkVersion(if (isKorge) project.korge.androidCompileSdk else project.getAndroidCompileSdkVersion())
         //buildToolsVersion(project.findProperty("android.buildtools.version")?.toString() ?: "30.0.2")
@@ -89,7 +90,7 @@ fun Project.configureAndroidDirect(projectType: ProjectType, isKorge: Boolean) {
         defaultConfig.also {
             it.multiDexEnabled = true
             if (projectType.isExecutable) {
-                it.applicationId = AndroidConfig.getAppId(project, isKorge)
+                it.applicationId = androidGenerated.getAppId(isKorge)
             }
             it.minSdk = if (isKorge) project.korge.androidMinSdk else project.getAndroidMinSdkVersion()
             it.targetSdk = if (isKorge) project.korge.androidTargetSdk else project.getAndroidTargetSdkVersion()
@@ -146,9 +147,9 @@ fun Project.configureAndroidDirect(projectType: ProjectType, isKorge: Boolean) {
                 //println("@ANDROID_DIRECT:")
                 //println(resourcesSrcDirs.joinToString("\n"))
                 //println(kotlinSrcDirs.joinToString("\n"))
-                manifest.srcFile(AndroidConfig.getAndroidManifestFile(project, isKorge = isKorge))
-                java.srcDirs(AndroidConfig.getAndroidSrcFolder(project, isKorge = isKorge))
-                res.srcDirs(AndroidConfig.getAndroidResFolder(project, isKorge = isKorge))
+                manifest.srcFile(androidGenerated.getAndroidManifestFile(isKorge = isKorge))
+                java.srcDirs(androidGenerated.getAndroidSrcFolder(isKorge = isKorge))
+                res.srcDirs(androidGenerated.getAndroidResFolder(isKorge = isKorge))
                 assets.srcDirs(
                     "${project.buildDir}/processedResources/jvm/main",
                     //"${project.projectDir}/src/commonMain/resources",

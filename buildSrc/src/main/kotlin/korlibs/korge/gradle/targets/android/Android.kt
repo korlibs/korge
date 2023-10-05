@@ -1,35 +1,45 @@
 package korlibs.korge.gradle.targets.android
 
 import korlibs.korge.gradle.util.*
-import korlibs.korge.gradle.*
-import korlibs.korge.gradle.targets.*
-import korlibs.korge.gradle.targets.all.*
-import org.gradle.api.DefaultTask
-import org.gradle.api.JavaVersion
-import org.gradle.api.Project
-import org.gradle.api.Task
-import org.gradle.api.tasks.GradleBuild
+import org.gradle.api.*
 import org.jetbrains.kotlin.gradle.dsl.*
-import java.io.File
-import java.util.*
+import java.io.*
 
-val Project.androidSdkPath: String get() = AndroidSdk.getAndroidSdkPath(this)
+interface AndroidSdkProvider {
+    val projectDir: File
+    val androidSdkPath: String
+    val spawnExt: SpawnExtension
 
-val Project.androidAdbPath get() = "$androidSdkPath/platform-tools/adb"
-val Project.androidEmulatorPath get() = "$androidSdkPath/emulator/emulator"
+    fun execLogger(vararg params: String) {
+        spawnExt.execLogger(projectDir, *params)
+    }
 
-fun Project.execAndroidAdb(vararg args: String) {
-    execLogger {
-        it.commandLine(androidAdbPath, *args)
+    fun execOutput(vararg params: String): String {
+        return spawnExt.execOutput(projectDir, *params)
     }
 }
 
-fun Project.androidAdbDeviceList(): List<String> {
+val Project.androidSdkProvider: AndroidSdkProvider get() = object : AndroidSdkProvider {
+    override val projectDir: File get() = this@androidSdkProvider.projectDir
+    override val androidSdkPath: String get() = this@androidSdkProvider.androidSdkPath
+    override val spawnExt: SpawnExtension get() = this@androidSdkProvider.spawnExt
+}
+
+val Project.androidSdkPath: String get() = AndroidSdk.getAndroidSdkPath(this)
+
+val AndroidSdkProvider.androidAdbPath get() = "$androidSdkPath/platform-tools/adb"
+val AndroidSdkProvider.androidEmulatorPath get() = "$androidSdkPath/emulator/emulator"
+
+fun AndroidSdkProvider.execAndroidAdb(vararg args: String) {
+    execLogger(androidAdbPath, *args)
+}
+
+fun AndroidSdkProvider.androidAdbDeviceList(): List<String> {
     return execOutput(androidAdbPath, "devices", "-l").trim().split("\n").map { it.trim() }.drop(1)
 
 }
 
-fun Project.androidEmulatorListAvds(): List<String> {
+fun AndroidSdkProvider.androidEmulatorListAvds(): List<String> {
     val output = execOutput(androidEmulatorPath, "-list-avds").trim()
     return when {
         output.isBlank() -> listOf()
@@ -37,19 +47,17 @@ fun Project.androidEmulatorListAvds(): List<String> {
     }
 }
 
-fun Project.androidEmulatorIsStarted(): Boolean {
+fun AndroidSdkProvider.androidEmulatorIsStarted(): Boolean {
     return androidAdbDeviceList().any { it.contains("emulator") }
 }
 
-fun Project.androidEmulatorFirstAvd(): String? {
+fun AndroidSdkProvider.androidEmulatorFirstAvd(): String? {
     val avds = androidEmulatorListAvds()
     return avds.firstOrNull { !it.contains("_TV") } ?: avds.firstOrNull()
 }
 
-fun Project.execAndroidEmulator(vararg args: String) {
-    execLogger {
-        it.commandLine(androidEmulatorPath, *args)
-    }
+fun AndroidSdkProvider.execAndroidEmulator(vararg args: String) {
+    execLogger(androidEmulatorPath, *args)
 }
 
 fun Project.ensureAndroidLocalPropertiesWithSdkDir(outputFolder: File = project.rootDir) {
@@ -65,7 +73,7 @@ fun Project.ensureAndroidLocalPropertiesWithSdkDir(outputFolder: File = project.
 }
 
 
-fun Project.androidEmulatorStart() {
+fun AndroidSdkProvider.androidEmulatorStart() {
     val avdName = androidEmulatorFirstAvd() ?: error("No android emulators available to start. Please create one using Android Studio")
     val spawner = spawnExt
     spawner.spawn(projectDir, listOf(androidEmulatorPath, "-avd", avdName, "-netdelay", "none", "-netspeed", "full"))
@@ -110,93 +118,6 @@ fun isKorlibsDependency(cleanFullName: String): Boolean {
 //    generated.writeResources(File(outputFolder, "$srcMain/res"))
 //    generated.writeMainActivity(File(outputFolder, "$srcMain/kotlin"))
 //}
-
-fun AndroidGenerated(korge: KorgeExtension, info: AndroidInfo = AndroidInfo(null)): AndroidGenerated {
-    return AndroidGenerated(
-        icons = korge.iconProvider,
-        ifNotExists = korge.overwriteAndroidFiles,
-        androidPackageName = korge.id,
-        androidInit = korge.plugins.pluginExts.getAndroidInit() + info.androidInit,
-        androidMsaa = korge.androidMsaa,
-        fullscreen = korge.fullscreen,
-        orientation = korge.orientation,
-        displayCutout = korge.displayCutout,
-        realEntryPoint = korge.realEntryPoint,
-        androidAppName = korge.name,
-        androidManifestChunks = korge.androidManifestChunks,
-        androidManifestApplicationChunks = korge.androidManifestApplicationChunks,
-        androidManifest = korge.plugins.pluginExts.getAndroidManifestApplication() + info.androidManifest,
-        androidLibrary = korge.androidLibrary,
-    )
-}
-
-fun AndroidGenerated(project: Project, isKorge: Boolean, info: AndroidInfo = AndroidInfo(null)): AndroidGenerated {
-    return when {
-        isKorge -> AndroidGenerated(project.korge, info)
-        else -> AndroidGenerated(
-            icons = KorgeIconProvider(File(project.korgeGradlePluginResources, "icons/korge.png"), File(project.korgeGradlePluginResources, "banners/korge.png")),
-            ifNotExists = true,
-            fullscreen = true,
-            androidPackageName = AndroidConfig.getAppId(project, isKorge),
-            displayCutout = DisplayCutout.SHORT_EDGES,
-            realEntryPoint = "main",
-            androidMsaa = 4,
-            androidAppName = project.name,
-            androidLibrary = false,
-        )
-    }
-}
-
-class AndroidGenerated constructor(
-    val icons: KorgeIconProvider,
-    val ifNotExists: Boolean,
-    val androidPackageName: String,
-    val realEntryPoint: String = "main",
-    val androidMsaa: Int? = null,
-    val fullscreen: Boolean? = null,
-    val androidInit: List<String> = emptyList(),
-    val orientation: Orientation = Orientation.DEFAULT,
-    val displayCutout: DisplayCutout = DisplayCutout.DEFAULT,
-    val androidAppName: String = "androidAppName",
-    val androidManifestChunks: Set<String> = emptySet(),
-    val androidManifestApplicationChunks: Set<String> = emptySet(),
-    val androidManifest: List<String> = emptyList(),
-    val androidLibrary: Boolean = true,
-) {
-    companion object
-    fun writeResources(folder: File) {
-        writeFileBytes(File(folder, "mipmap-mdpi/icon.png")) { icons.getIconBytes() }
-        writeFileBytes(File(folder, "drawable/app_icon.png")) { icons.getIconBytes() }
-        writeFileBytes(File(folder, "drawable/app_banner.png")) { icons.getBannerBytes(432, 243) }
-        writeFileText(File(folder, "values/styles.xml")) { AndroidManifestXml.genStylesXml(this@AndroidGenerated) }
-    }
-
-    fun writeMainActivity(outputFolder: File) {
-        writeFileText(File(outputFolder, "MainActivity.kt")) { AndroidMainActivityKt.genAndroidMainActivityKt(this@AndroidGenerated) }
-    }
-
-    fun writeAndroidManifest(outputFolder: File) {
-        writeFileText(File(outputFolder, "AndroidManifest.xml")) { AndroidManifestXml.genAndroidManifestXml(this@AndroidGenerated) }
-    }
-
-    fun writeKeystore(outputFolder: File) {
-        writeFileBytes(File(outputFolder, "korge.keystore")) { getResourceBytes("korge.keystore") }
-    }
-
-    private fun writeFileBytes(file: File, gen: () -> ByteArray) {
-        file.conditionally(ifNotExists) { ensureParents().writeBytesIfChanged(gen()) }
-    }
-    private fun writeFileText(file: File, gen: () -> String) {
-        file.conditionally(ifNotExists) { ensureParents().writeTextIfChanged(gen()) }
-    }
-}
-
-class AndroidInfo(val map: Map<String, Any?>?) {
-    //init { println("AndroidInfo: $map") }
-    val androidInit: List<String> = (map?.get("androidInit") as? List<String?>?)?.filterNotNull() ?: listOf()
-    val androidManifest: List<String> = (map?.get("androidManifest") as? List<String?>?)?.filterNotNull() ?: listOf()
-    val androidDependencies: List<String> = (map?.get("androidDependencies") as? List<String>?)?.filterNotNull() ?: listOf()
-}
 
 private var _tryAndroidSdkDirs: List<File>? = null
 // @TODO: Use [AndroidSdk] class

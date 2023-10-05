@@ -18,13 +18,31 @@ class AndroidTest : AbstractGradleIntegrationTest() {
             override fun spawn(dir: File, command: List<String>) {
                 spawnResult.add(dir to command)
             }
+
+            override fun execLogger(projectDir: File, vararg params: String) {
+                project.exec {
+                    it.workingDir(projectDir)
+                    it.commandLine(*params)
+                }
+            }
+
+            override fun execOutput(projectDir: File, vararg params: String): String {
+                val stdout = ByteArrayOutputStream()
+                project.exec {
+                    it.commandLineCompat(*params)
+                    it.standardOutput = stdout
+                    //errorOutput = stdout
+                }
+                return stdout.toString("UTF-8")
+            }
         }
     }
+    val androidSdkProvider get() = project.androidSdkProvider
 
     @Test
     fun testPaths() {
-        assertEquals(ANDROID_EMULATOR_PATH, project.androidEmulatorPath)
-        assertEquals(ANDROID_ADB_PATH, project.androidAdbPath)
+        assertEquals(ANDROID_EMULATOR_PATH, androidSdkProvider.androidEmulatorPath)
+        assertEquals(ANDROID_ADB_PATH, androidSdkProvider.androidAdbPath)
     }
 
     val emulatorListAvds = arrayOf(ANDROID_EMULATOR_PATH, "-list-avds")
@@ -32,23 +50,23 @@ class AndroidTest : AbstractGradleIntegrationTest() {
     @Test
     fun testAndroidEmulatorListAvds() {
         project.defineExecResult(*emulatorListAvds, stdout = "Pixel_2_XL_API_28\n").also {
-            assertEquals(listOf("Pixel_2_XL_API_28"), project.androidEmulatorListAvds())
+            assertEquals(listOf("Pixel_2_XL_API_28"), androidSdkProvider.androidEmulatorListAvds())
         }
         project.defineExecResult(*emulatorListAvds, stdout = "Android_TV_720p_API_28\nPixel_2_API_30\n").also {
-            assertEquals(listOf("Android_TV_720p_API_28", "Pixel_2_API_30"), project.androidEmulatorListAvds())
+            assertEquals(listOf("Android_TV_720p_API_28", "Pixel_2_API_30"), androidSdkProvider.androidEmulatorListAvds())
         }
     }
 
     @Test
     fun testAndroidEmulatorFirstAvd() {
         project.defineExecResult(*emulatorListAvds, stdout = "").also {
-            assertEquals(null, project.androidEmulatorFirstAvd())
+            assertEquals(null, androidSdkProvider.androidEmulatorFirstAvd())
         }
         project.defineExecResult(*emulatorListAvds, stdout = "Pixel_2_XL_API_28\n").also {
-            assertEquals("Pixel_2_XL_API_28", project.androidEmulatorFirstAvd())
+            assertEquals("Pixel_2_XL_API_28", androidSdkProvider.androidEmulatorFirstAvd())
         }
         project.defineExecResult(*emulatorListAvds, stdout = "Android_TV_720p_API_28\nPixel_2_API_30\n").also {
-            assertEquals("Pixel_2_API_30", project.androidEmulatorFirstAvd())
+            assertEquals("Pixel_2_API_30", androidSdkProvider.androidEmulatorFirstAvd())
         }
     }
 
@@ -58,7 +76,7 @@ class AndroidTest : AbstractGradleIntegrationTest() {
         project.installAndroidRun(listOf(), direct = true, isKorge = true)
         val stdout = captureStdout {
             project.defineExecResult(ANDROID_ADB_PATH, "logcat", stdout = expectedStdout)
-            project.tasks.getByName("adbLogcat").execute()
+            project.tasks.getByName("adbLogcat").also { (it as DefaultAndroidTask).initWithProject(project) }.execute()
         }
         assertEquals(expectedStdout, stdout)
     }
@@ -67,7 +85,7 @@ class AndroidTest : AbstractGradleIntegrationTest() {
     fun testAndroidEmulatorStart() {
         assertFailsWith<IllegalStateException>() {
             project.defineExecResult(*emulatorListAvds, stdout = "")
-            project.androidEmulatorStart()
+            androidSdkProvider.androidEmulatorStart()
         }
 
         run {
@@ -82,7 +100,7 @@ class AndroidTest : AbstractGradleIntegrationTest() {
                     ),
                 )
             )
-            project.androidEmulatorStart()
+            androidSdkProvider.androidEmulatorStart()
             assertEquals<List<Any>>(
                 listOf(
                     project.projectDir to listOf(
