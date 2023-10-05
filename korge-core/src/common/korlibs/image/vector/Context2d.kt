@@ -280,9 +280,9 @@ open class Context2d(
     inline fun skew(skewX: Angle = Angle.ZERO, skewY: Angle = Angle.ZERO, block: () -> Unit) =
         keep { skew(skewX, skewY).also { block() } }
 
-    inline fun scale(sx: Float, sy: Float = sx, block: () -> Unit) = keep { scale(sx, sy).also { block() } }
+    inline fun scale(sx: Number, sy: Number = sx, block: () -> Unit) = keep { scale(sx.toDouble(), sy.toDouble()).also { block() } }
     inline fun rotate(angle: Angle, block: () -> Unit) = keep { rotate(angle).also { block() } }
-    inline fun translate(tx: Float, ty: Float, block: () -> Unit) = keep { translate(tx, ty).also { block() } }
+    inline fun translate(tx: Number, ty: Number, block: () -> Unit) = keep { translate(tx.toDouble(), ty.toDouble()).also { block() } }
 
     fun skew(skewX: Angle = 0.degrees, skewY: Angle = 0.degrees) {
         state.transform = state.transform.preskewed(skewX, skewY)

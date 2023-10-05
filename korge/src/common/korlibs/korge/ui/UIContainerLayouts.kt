@@ -102,7 +102,7 @@ inline fun Container.uiContainer(
 ) = UIContainer(size).addTo(this).apply(block)
 
 open class UIContainer(size: Size) : UIBaseContainer(size) {
-    override fun relayout() {}
+    override fun relayoutInternal() {}
 }
 
 abstract class UIBaseContainer(size: Size) : UIView(size) {
@@ -121,7 +121,18 @@ abstract class UIBaseContainer(size: Size) : UIView(size) {
         relayout()
     }
 
-    abstract fun relayout()
+    private var doingRelayout = false
+    fun relayout() {
+        if (doingRelayout) return
+        doingRelayout = true
+        try {
+            relayoutInternal()
+        } finally {
+            doingRelayout = false
+        }
+    }
+
+    protected abstract fun relayoutInternal()
 
     var deferredRendering: Boolean? = true
     //var deferredRendering: Boolean? = false
@@ -155,7 +166,7 @@ open class UIVerticalStack(
             }
         }
 
-    override fun relayout() {
+    override fun relayoutInternal() {
         var y = 0.0
         var bb = BoundsBuilder()
         forEachChild {
@@ -189,7 +200,7 @@ open class UIHorizontalStack(
             }
         }
 
-    override fun relayout() {
+    override fun relayoutInternal() {
         var x = 0.0
         var bb = BoundsBuilder()
         forEachChild {
@@ -219,7 +230,7 @@ inline fun Container.uiHorizontalFill(
 ) = UIHorizontalFill(size).addTo(this).apply(block)
 
 open class UIHorizontalFill(size: Size = Size(128, 20)) : UIContainer(size) {
-    override fun relayout() {
+    override fun relayoutInternal() {
         var x = 0.0
         val elementWidth = width / numChildren
         forEachChild {
@@ -237,7 +248,7 @@ inline fun Container.uiVerticalFill(
 ) = UIVerticalFill(size).addTo(this).apply(block)
 
 open class UIVerticalFill(size: Size = Size(128, 128)) : UIContainer(size) {
-    override fun relayout() {
+    override fun relayoutInternal() {
         var y = 0.0
         val elementHeight = height / numChildren
         forEachChild {
@@ -273,7 +284,7 @@ open class UIGridFill(
     @ViewProperty
     var direction: UIDirection by UIObservable(direction) { relayout() }
 
-    override fun relayout() {
+    override fun relayoutInternal() {
         val width = width
         val height = height
         val paddingH = spacing.horizontal
@@ -310,7 +321,7 @@ inline fun Container.uiFillLayeredContainer(
 ) = UIFillLayeredContainer(size).addTo(this).apply(block)
 
 open class UIFillLayeredContainer(size: Size = Size(128, 20)) : UIContainer(size) {
-    override fun relayout() {
+    override fun relayoutInternal() {
         val width = this.width
         val height = this.height
         forEachChild {

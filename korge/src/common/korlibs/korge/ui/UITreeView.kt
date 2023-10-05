@@ -1,11 +1,16 @@
 package korlibs.korge.ui
 
+import korlibs.datastructure.*
 import korlibs.datastructure.iterators.*
+import korlibs.image.bitmap.*
 import korlibs.image.color.*
+import korlibs.korge.animate.*
 import korlibs.korge.annotations.*
 import korlibs.korge.input.*
+import korlibs.korge.tween.*
 import korlibs.korge.view.*
 import korlibs.math.geom.*
+import kotlin.time.Duration.Companion.seconds
 
 @KorgeExperimental
 class UITreeViewNode<T>(val element: T, val items: List<UITreeViewNode<T>> = emptyList()) {
@@ -64,7 +69,8 @@ interface UITreeViewProvider<T> {
 
 @KorgeExperimental
 private class UITreeViewVerticalListProviderAdapter<T>(val provider: UITreeViewProvider<T>) : UIVerticalList.Provider {
-    class Node<T>(val value: T, val localIndex: Int, val indentation: Int) {
+    class Node<T>(val value: T, val localIndex: Int, val indentation: Int, val parent: Node<T>?) {
+        val path: List<Node<T>> = (parent?.path ?: emptyList()) + listOf(this)
         var opened: Boolean = false
         var openCount: Int = 0
     }
@@ -76,27 +82,58 @@ private class UITreeViewVerticalListProviderAdapter<T>(val provider: UITreeViewP
     override val numItems: Int get() = items.size
     override val fixedHeight: Double get() = provider.height
 
+    companion object {
+        val ICON_DOWN = NativeImageContext2d(10, 10) {
+            val sw = 4.0
+            val sh = 4.0
+            translate(width * 0.5, height * 0.5 + sh * 0.5) {
+                stroke(Colors.WHITE, 2.0) {
+                    moveTo(-sw, +sh)
+                    lineTo(0.0, -sh)
+                    lineTo(+sw, +sh)
+                }
+            }
+        }
+    }
+
     override fun getItemHeight(index: Int): Double = fixedHeight
     override fun getItemView(index: Int, vlist: UIVerticalList): View {
+        val node = items[index]
+        val itemViews = vlist.extraCache("itemViewsCache") { LinkedHashMap<List<Node<T>>, View>() }
+        return itemViews.getOrPut(node.path) {
+            createItemView(index, vlist)
+        }
+    }
+    fun createItemView(index: Int, vlist: UIVerticalList): View {
+        //println("Creating new createItemView index=$index")
         val node = items[index]
         val childCount = provider.getNumChildren(node.value)
         val container = UIFillLayeredContainer()
         val background = container.solidRect(10, 10, Colors.TRANSPARENT)
-        val stack = container.uiHorizontalStack(padding = 2.0)
+        val stack = container.uiHorizontalStack(padding = 4.0)
         val child = provider.getViewForNode(node.value)
         stack.solidRect(10 * node.indentation, 10, Colors.TRANSPARENT)
-        val rect = stack.solidRect(10, 10, Colors.TRANSPARENT)
-        fun updateIcon() {
-            rect.color = when {
+        val imageContainer = stack.fixedSizeContainer(Size(10, 10))
+        val icon = imageContainer.image(ICON_DOWN).centered.xy((ICON_DOWN.size * 0.5).toDouble().toVector())
+        fun updateIcon(animated: Boolean) {
+            val isOpen: Boolean? = when {
                 childCount > 0 -> {
                     when {
-                        node.opened -> Colors.GREEN
-                        else -> Colors.RED
+                        node.opened -> true
+                        else -> false
                     }
                 }
-
-                else -> Colors.TRANSPARENT
+                else -> null
             }
+
+            icon.visible = isOpen != null
+            val angle = if (isOpen == true) 90.degrees else 0.degrees
+            if (animated) {
+                icon.simpleAnimator.tween(icon::rotation[angle], time = 0.25.seconds)
+            } else {
+                icon.rotation = angle
+            }
+
             background.color = when {
                 selectedNode == node -> Colors["#191034"]
                 else -> Colors.TRANSPARENT
@@ -111,13 +148,13 @@ private class UITreeViewVerticalListProviderAdapter<T>(val provider: UITreeViewP
             selectedNode = node
             if (node.hasChildren()) {
                 node.toggle()
-                updateIcon()
+                updateIcon(animated = true)
                 vlist.invalidateList()
             } else {
                 vlist.invalidateList()
             }
         }
-        updateIcon()
+        updateIcon(animated = false)
         return container
     }
 
@@ -152,7 +189,7 @@ private class UITreeViewVerticalListProviderAdapter<T>(val provider: UITreeViewP
         val nodeIndex = getNodeIndex(node)
         val children = provider.getChildrenList(node.value)
         node.openCount = children.size
-        items.addAll(nodeIndex + 1, children.mapIndexed { index, t -> Node(t, index, node.indentation + 1) })
+        items.addAll(nodeIndex + 1, children.mapIndexed { index, t -> Node(t, index, node.indentation + 1, node) })
     }
 
     fun toggleNode(node: Node<T>) {
@@ -162,7 +199,7 @@ private class UITreeViewVerticalListProviderAdapter<T>(val provider: UITreeViewP
     fun init() {
         items.clear()
         provider.getChildrenList(null).fastForEachWithIndex { index, value ->
-            items.add(Node(value, index, 0))
+            items.add(Node(value, index, 0, null))
         }
     }
 }
