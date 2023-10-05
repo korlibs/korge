@@ -183,15 +183,15 @@ private val isWindows get() = Os.isFamily(Os.FAMILY_WINDOWS)
 private val isMacos get() = Os.isFamily(Os.FAMILY_MAC)
 private val isLinux get() = Os.isFamily(Os.FAMILY_UNIX) && !isMacos
 
-fun Project.openBrowser(url: String) {
-    execThis {
+fun openBrowser(url: String) {
+    ProcessBuilder().command(buildList {
         when {
             isWindows -> {
-                commandLine("cmd", "/c", "explorer.exe $url")
-                isIgnoreExitValue = true
+                addAll(listOf("cmd", "/c", "explorer.exe $url"))
+                //isIgnoreExitValue = true
             }
-            isLinux -> commandLine("xdg-open", url)
-            else -> commandLine("open", url)
+            isLinux -> addAll(listOf("xdg-open", url))
+            else -> addAll(listOf("open", url))
         }
-    }
+    }).start()
 }

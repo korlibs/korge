@@ -5,18 +5,37 @@ import korlibs.korge.gradle.targets.*
 import korlibs.korge.gradle.util.*
 import korlibs.*
 import org.gradle.api.*
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.TaskAction
 import org.jetbrains.kotlin.gradle.targets.js.npm.tasks.*
 import java.io.*
 import java.lang.management.*
 
 internal var _webServer: DecoratedHttpServer? = null
 
-fun Project.configureJavascriptRun() {
-    fun runServer(blocking: Boolean) {
+open class RunJsServer : DefaultTask() {
+    @get:Input
+    var blocking: Boolean = true
+
+    private var webBindAddress: String = "127.0.0.1"
+    private var webBindPort: Int = 8083
+
+    private lateinit var wwwFolder: File
+
+    init {
+        project.afterEvaluate {
+            webBindAddress = project.korge.webBindAddress
+            webBindPort = project.korge.webBindPort
+            wwwFolder = File(project.buildDir, "www")
+        }
+    }
+
+    @TaskAction
+    open fun run() {
         if (_webServer == null) {
-            val address = korge.webBindAddress
-            val port = korge.webBindPort
-            val server = staticHttpServer(File(project.buildDir, "www"), address = address, port = port)
+            val address = webBindAddress
+            val port = webBindPort
+            val server = staticHttpServer(wwwFolder, address = address, port = port)
             _webServer = server
             try {
                 val openAddress = when (address) {
@@ -39,21 +58,19 @@ fun Project.configureJavascriptRun() {
         }
         _webServer?.updateVersion?.incrementAndGet()
     }
+}
 
-    val runJsRelease = project.tasks.createThis<Task>(name = "runJsRelease") {
+fun Project.configureJavascriptRun() {
+    val runJsRelease = project.tasks.createThis<RunJsServer>(name = "runJsRelease") {
         group = GROUP_KORGE_RUN
         dependsOn("browserReleaseEsbuild")
-        doLast {
-            runServer(!project.gradle.startParameter.isContinuous)
-        }
+        blocking = !project.gradle.startParameter.isContinuous
     }
 
-    val runJsDebug = project.tasks.createThis<Task>("runJsDebug") {
+    val runJsDebug = project.tasks.createThis<RunJsServer>("runJsDebug") {
         group = GROUP_KORGE_RUN
         dependsOn("browserDebugEsbuild")
-        doLast {
-            runServer(!project.gradle.startParameter.isContinuous)
-        }
+        blocking = !project.gradle.startParameter.isContinuous
     }
 
     // @TODO: jsBrowserProductionRun is much faster than jsBrowserDevelopmentRun at runtime. Why is that??
