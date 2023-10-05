@@ -7,6 +7,7 @@ import org.gradle.api.artifacts.*
 import org.gradle.api.file.*
 import org.gradle.api.tasks.*
 import org.gradle.jvm.tasks.*
+import org.gradle.process.CommandLineArgumentProvider
 import java.io.*
 
 fun Project.findAllProjectDependencies(visited: MutableSet<Project> = mutableSetOf()): Set<Project> {
@@ -32,24 +33,17 @@ open class KorgeJavaExecWithAutoreload : KorgeJavaExec() {
     private var rootDir: File = project.rootProject.rootDir
     @get:InputFiles
     lateinit var rootJars: List<File>
-    @get:InputFile
+
+    //@get:InputFile
     //private var reloadAgentConfiguration: Configuration = project.configurations.getByName(KORGE_RELOAD_AGENT_CONFIGURATION_NAME)//.resolve().first()
-    lateinit var reloadAgentJar: File
+    //lateinit var reloadAgentJar: File
 
 
     init {
         //val reloadAgent = project.findProject(":korge-reload-agent")
         //if (reloadAgent != null)
         //project.dependencies.add()
-        project.afterEvaluate {
-            val allProjects = project.findAllProjectDependencies()
-            //projectPaths = allProjects.map { it.path }
-            projectPaths = listOf(project.path)
-            rootJars = allProjects.map { File(it.buildDir, "classes/kotlin/jvm/main") }
-            //println("allProjects=${allProjects.map { it.name }}")
-            //println("projectPaths=$projectPaths")
-            //println("rootJars=\n${rootJars.toList().joinToString("\n")}")
-        }
+
         /*
         project.afterEvaluate {
             project.afterEvaluate {
@@ -71,51 +65,57 @@ open class KorgeJavaExecWithAutoreload : KorgeJavaExec() {
         }
         */
         val reloadAgent = project.findProject(":korge-reload-agent")
-        reloadAgentJar = when {
+        val reloadAgentJar = when {
             reloadAgent != null -> (project.rootProject.tasks.getByPath(":korge-reload-agent:jar") as Jar).outputs.files.files.first()
             else -> project.configurations.getByName(KORGE_RELOAD_AGENT_CONFIGURATION_NAME).resolve().first()
         }
-    }
 
-    override fun exec() {
-        //val gradlewCommand = if (isWindows) "gradlew.bat" else "gradlew"
+        project.afterEvaluate {
+            val allProjects = project.findAllProjectDependencies()
+            //projectPaths = allProjects.map { it.path }
+            projectPaths = listOf(project.path)
+            rootJars = allProjects.map { File(it.buildDir, "classes/kotlin/jvm/main") }
+            //println("allProjects=${allProjects.map { it.name }}")
+            //println("projectPaths=$projectPaths")
+            //println("rootJars=\n${rootJars.toList().joinToString("\n")}")
 
-        println("runJvmAutoreload:reloadAgentJar=$reloadAgentJar")
-        //val outputJar = JvmTools.findPathJar(Class.forName("korlibs.korge.reloadagent.KorgeReloadAgent"))
+            //println("runJvmAutoreload:reloadAgentJar=$reloadAgentJar")
+            //val outputJar = JvmTools.findPathJar(Class.forName("korlibs.korge.reloadagent.KorgeReloadAgent"))
 
-        //val agentJarTask: org.gradle.api.tasks.bundling.Jar = project(":korge-reload-agent").tasks.findByName("jar") as org.gradle.api.tasks.bundling.Jar
-        //val outputJar = agentJarTask.outputs.files.files.first()
-        //println("agentJarTask=$outputJar")
+            //val agentJarTask: org.gradle.api.tasks.bundling.Jar = project(":korge-reload-agent").tasks.findByName("jar") as org.gradle.api.tasks.bundling.Jar
+            //val outputJar = agentJarTask.outputs.files.files.first()
+            //println("agentJarTask=$outputJar")
 
-        jvmArgs(
-            "-javaagent:$reloadAgentJar=${listOf(
-                "$httpPort",
-                ArrayList<String>().apply {
-                    add("-classpath")
-                    add("${rootDir}/gradle/wrapper/gradle-wrapper.jar")
-                    add("org.gradle.wrapper.GradleWrapperMain")
-                    //add("--no-daemon") // This causes: Continuous build does not work when file system watching is disabled
-                    add("--watch-fs")
-                    add("--warn")
-                    add("--project-dir=${rootDir}")
-                    if (doConfigurationCache) {
-                        add("--configuration-cache")
-                        add("--configuration-cache-problems=warn")
-                    }
-                    add("-t")
-                    add("compileKotlinJvm")
-                    //add("compileKotlinJvmAndNotify")
-                    for (projectPath in projectPaths) {
-                        add("${projectPath.trimEnd(':')}:compileKotlinJvmAndNotify")
-                    }
-                }.joinToString(CMD_SEPARATOR),
-                "$enableRedefinition",
-                rootJars.joinToString(CMD_SEPARATOR) { it.absolutePath }
-            ).joinToString(ARGS_SEPARATOR)}"
-        )
-        environment("KORGE_AUTORELOAD", "true")
+            jvmArgs(
+                "-javaagent:$reloadAgentJar=${listOf(
+                    "$httpPort",
+                    ArrayList<String>().apply {
+                        add("-classpath")
+                        add("${rootDir}/gradle/wrapper/gradle-wrapper.jar")
+                        add("org.gradle.wrapper.GradleWrapperMain")
+                        //add("--no-daemon") // This causes: Continuous build does not work when file system watching is disabled
+                        add("--watch-fs")
+                        add("--warn")
+                        add("--project-dir=${rootDir}")
+                        if (doConfigurationCache) {
+                            add("--configuration-cache")
+                            add("--configuration-cache-problems=warn")
+                        }
+                        add("-t")
+                        add("compileKotlinJvm")
+                        //add("compileKotlinJvmAndNotify")
+                        for (projectPath in projectPaths) {
+                            add("${projectPath.trimEnd(':')}:compileKotlinJvmAndNotify")
+                        }
+                    }.joinToString(CMD_SEPARATOR),
+                    "$enableRedefinition",
+                    rootJars.joinToString(CMD_SEPARATOR) { it.absolutePath }
+                ).joinToString(ARGS_SEPARATOR)}"
+            )
 
-        super.exec()
+            environment("KORGE_AUTORELOAD", "true")
+
+        }
     }
 }
 
@@ -145,19 +145,6 @@ open class KorgeJavaExec : JavaExec() {
     val korgeClassPath: FileCollection = project.getKorgeClassPath()
 
     override fun exec() {
-        val firstThread = firstThread
-            ?: (
-                System.getenv("KORGE_START_ON_FIRST_THREAD") == "true"
-                    || System.getenv("KORGW_JVM_ENGINE") == "sdl"
-                //|| project.findProperty("korgw.jvm.engine") == "sdl"
-                )
-
-        if (firstThread && isMacos) {
-            jvmArgs("-XstartOnFirstThread")
-            //println("Executed jvmArgs(\"-XstartOnFirstThread\")")
-        } else {
-            //println("firstThread=$firstThread, isMacos=$isMacos")
-        }
         classpath = korgeClassPath
         for (classPath in classpath.toList()) {
             logger.info("- $classPath")
@@ -174,6 +161,18 @@ open class KorgeJavaExec : JavaExec() {
         systemProperties = (System.getProperties().toMutableMap() as MutableMap<String, Any>) - "java.awt.headless"
         defaultCharacterEncoding = Charsets.UTF_8.toString()
         // https://github.com/korlibs/korge-plugins/issues/25
+        project.afterEvaluate {
+            val firstThread = firstThread
+                ?: (
+                    System.getenv("KORGE_START_ON_FIRST_THREAD") == "true"
+                        || System.getenv("KORGW_JVM_ENGINE") == "sdl"
+                    //|| project.findProperty("korgw.jvm.engine") == "sdl"
+                    )
+            if (firstThread && isMacos) {
+                jvmArgs("-XstartOnFirstThread")
+            }
+        }
+        //jvmArgumentProviders.add(provider)
     }
 }
 

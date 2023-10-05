@@ -12,5 +12,6 @@ suspend fun main() = Korge(windowSize = Size(512, 512), backgroundColor = Colors
 class MyMainScene : Scene() {
     override suspend fun SContainer.sceneMain() {
         text("Text: $mySharedString")
+        gameWindow.close()
     }
 }

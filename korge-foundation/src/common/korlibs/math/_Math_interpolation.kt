@@ -19,6 +19,7 @@ private const val HALF_PI = PI.toFloat() / 2f
 fun interface Easing {
     operator fun invoke(it: Float): Float
     operator fun invoke(it: Double): Double = invoke(it.toFloat()).toDouble()
+    operator fun invoke(it: Ratio): Ratio = Ratio(invoke(it.toFloat()).toDouble())
 
     companion object {
         operator fun invoke(name: () -> String, block: (Float) -> Float): Easing {
@@ -418,12 +419,15 @@ inline operator fun Ratio.div(value: Double): Double = this.value / value
 
 @Deprecated("", ReplaceWith("this")) fun Ratio.toRatio(): Ratio = this
 
+inline fun Number.toRatio(): Ratio = Ratio(this.toDouble())
 fun Float.toRatio(): Ratio = Ratio(this)
 fun Double.toRatio(): Ratio = Ratio(this)
 
+inline fun Number.toRatio(max: Number): Ratio = Ratio(this.toDouble(), max.toDouble())
 fun Float.toRatio(max: Float): Ratio = Ratio(this, max)
 fun Double.toRatio(max: Double): Ratio = Ratio(this, max)
 
+inline fun Number.toRatioClamped(): Ratio = Ratio(this.toDouble().clamp01())
 fun Float.toRatioClamped(): Ratio = Ratio(this.clamp01())
 fun Double.toRatioClamped(): Ratio = Ratio(this.clamp01())
 

@@ -8,6 +8,7 @@ import korlibs.korge.view.*
 import korlibs.korge.view.filter.*
 import korlibs.korge.view.vector.*
 import korlibs.math.geom.*
+import korlibs.math.interpolation.*
 
 class MainClipping : Scene() {
     override suspend fun SContainer.sceneMain() {
@@ -38,7 +39,7 @@ class MainClipping : Scene() {
                 solidRect(512, 512, Colors.BLUE)
             }
         }, MaskTransition(TransitionFilter.Transition.CIRCULAR))
-        tv.ratio = 0.5
+        tv.ratio = Ratio.HALF
         addChild(tv)
 
         gpuShapeView({

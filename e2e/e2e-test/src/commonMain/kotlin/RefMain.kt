@@ -11,6 +11,7 @@ import korlibs.io.file.std.*
 import korlibs.io.lang.*
 import korlibs.io.serialization.json.Json
 import korlibs.math.geom.*
+import korlibs.math.interpolation.*
 
 suspend fun main() = Korge(windowSize = Size(768, 512), backgroundColor = Colors["#2b2b2b"]) {
     //println("StandardPaths.cwd=${korlibs.io.file.std.StandardPaths.cwd}")
@@ -101,8 +102,8 @@ object FiltersE2ETestCase : E2ETestCase() {
         println("PREPARING VIEWS...")
         image(bitmap).scale(.5).position(0, 0).addFilter(WaveFilter(time = 0.5.seconds, crestDistance = Vector2D(256, 128)))
         image(bitmap).scale(.5).position(256, 0).addFilter(BlurFilter(radius = 6.0))
-        image(bitmap).scale(.5).position(512, 0).addFilter(TransitionFilter(TransitionFilter.Transition.SWEEP, reversed = false, spread = 1.0, ratio = 0.5))
-        image(bitmap2).scale(.5).position(0, 256).addFilter(PageFilter(hratio = 0.5, hamplitude1 = 20.0))
+        image(bitmap).scale(.5).position(512, 0).addFilter(TransitionFilter(TransitionFilter.Transition.SWEEP, reversed = false, spread = 1.0, ratio = Ratio.HALF))
+        image(bitmap2).scale(.5).position(0, 256).addFilter(PageFilter(hratio = Ratio.HALF, hamplitude1 = 20.0))
         image(bitmap2).scale(.5).position(256, 256).addFilter(Convolute3Filter(Convolute3Filter.KERNEL_SHARPEN))
         image(bitmap2).scale(.5).position(512, 256).addFilter(SwizzleColorsFilter("bgga"))
         println("VIEWS PREPARED")

@@ -4,6 +4,7 @@ import korlibs.graphics.*
 import korlibs.image.color.*
 import korlibs.io.lang.*
 import korlibs.math.geom.*
+import korlibs.math.interpolation.*
 import korlibs.math.nextMultipleOf
 import korlibs.memory.*
 import kotlin.reflect.*
@@ -167,6 +168,7 @@ class UniformsRef(
     }
     operator fun set(uniform: TypedUniform<Float>, value: Boolean) = set(uniform, if (value) 1f else 0f)
     operator fun set(uniform: TypedUniform<Float>, value: Double) = set(uniform, value.toFloat())
+    operator fun set(uniform: TypedUniform<Float>, value: Ratio) = set(uniform, value.toFloat())
     operator fun set(uniform: TypedUniform<Vector2F>, value: Vector2F) = set(uniform, value.x, value.y)
     operator fun set(uniform: TypedUniform<Vector2F>, value: Point) = set(uniform, value.x.toFloat(), value.y.toFloat())
     operator fun set(uniform: TypedUniform<Vector2F>, value: Size) = set(uniform, value.width.toFloat(), value.height.toFloat())

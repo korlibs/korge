@@ -8,12 +8,13 @@ import korlibs.image.color.*
 import korlibs.image.paint.*
 import korlibs.korge.render.*
 import korlibs.korge.view.property.*
+import korlibs.math.interpolation.*
 
 class TransitionFilter(
     var transition: Transition = Transition.CIRCULAR,
     reversed: Boolean = false,
     spread: Double = 1.0,
-    ratio: Double = 1.0,
+    ratio: Ratio = Ratio.ONE,
     filtering: Boolean = false,
 ) : ShaderFilter() {
     class Transition(val bmp: Bitmap) {
@@ -52,9 +53,9 @@ class TransitionFilter(
             transition: Transition = Transition.CIRCULAR,
             reversed: Boolean = false,
             spread: Number = 1.0,
-            ratio: Number = 1.0,
+            ratio: Ratio = Ratio.ONE,
             filtering: Boolean = false,
-        ): TransitionFilter = TransitionFilter(transition, reversed, spread.toDouble(), ratio.toDouble(), filtering)
+        ): TransitionFilter = TransitionFilter(transition, reversed, spread.toDouble(), ratio, filtering)
 
         private val u_Mask = DefaultShaders.u_TexEx
 
@@ -87,7 +88,7 @@ class TransitionFilter(
     @ViewProperty
     var spread: Double = spread.toDouble()
     @ViewProperty
-    var ratio: Double = ratio.toDouble()
+    var ratio: Ratio = ratio
 
     override fun updateUniforms(ctx: RenderContext, filterScale: Double) {
         ctx[TransitionUB].push {

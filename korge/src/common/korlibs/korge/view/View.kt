@@ -187,11 +187,6 @@ abstract class View internal constructor(
         }
     }
 
-    /** Property used for interpolable views like morph shapes, progress bars etc. */
-    @ViewProperty(min = 0.0, max = 1.0, clampMin = false, clampMax = false)
-    // @TODO: Convert Float -> Ratio
-    open var ratio: Double = 0.0
-
     @PublishedApi internal var _index: Int = 0
     @PublishedApi internal var _parent: Container? = null
 
@@ -1318,7 +1313,7 @@ abstract class View internal constructor(
         throw MustOverrideException("Must Override ${this::class}.createInstance()")
 
     /**
-     * Allows to copy the basic properties (transform [localMatrix], [visible], [colorTransform], [ratio], [speed], [name]...)
+     * Allows to copy the basic properties (transform [localMatrix], [visible], [colorMul], [speed], [name]...)
      * from [source] into [this]
      */
     open fun copyPropsFrom(source: View) {
@@ -1326,7 +1321,6 @@ abstract class View internal constructor(
         this.colorMul = source.colorMul
         this.setMatrix(source.localMatrix)
         this.visible = source.visible
-        this.ratio = source.ratio
         this.speed = source.speed
         this.blendMode = source.blendMode
     }
