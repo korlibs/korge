@@ -213,11 +213,15 @@ abstract class DefaultAndroidTask : DefaultTask(), AndroidSdkProvider {
     @Internal
     override lateinit var spawnExt: SpawnExtension
 
+    fun initWithProject(project: Project) {
+        this.projectDir = project.projectDir
+        this.androidSdkPath = project.androidSdkPath
+        this.spawnExt = project.spawnExt
+    }
+
     init {
         project.afterEvaluate {
-            this.projectDir = project.projectDir
-            this.androidSdkPath = project.androidSdkPath
-            this.spawnExt = project.spawnExt
+            initWithProject(it)
         }
     }
 }

@@ -9,21 +9,20 @@ interface AndroidSdkProvider {
     val projectDir: File
     val androidSdkPath: String
     val spawnExt: SpawnExtension
+
+    fun execLogger(vararg params: String) {
+        spawnExt.execLogger(projectDir, *params)
+    }
+
+    fun execOutput(vararg params: String): String {
+        return spawnExt.execOutput(projectDir, *params)
+    }
 }
 
 val Project.androidSdkProvider: AndroidSdkProvider get() = object : AndroidSdkProvider {
     override val projectDir: File get() = this@androidSdkProvider.projectDir
     override val androidSdkPath: String get() = this@androidSdkProvider.androidSdkPath
     override val spawnExt: SpawnExtension get() = this@androidSdkProvider.spawnExt
-}
-
-fun AndroidSdkProvider.execLogger(vararg params: String) {
-    println("EXEC: ${params.joinToString(" ")}")
-    ProcessBuilder(*params).redirectErrorStream(true).directory(projectDir).start().waitFor()
-}
-
-fun AndroidSdkProvider.execOutput(vararg params: String): String {
-    return ProcessBuilder(*params).redirectErrorStream(true).directory(projectDir).start().inputStream.readBytes().toString(Charsets.UTF_8)
 }
 
 val Project.androidSdkPath: String get() = AndroidSdk.getAndroidSdkPath(this)

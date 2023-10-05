@@ -11,7 +11,6 @@ class AndroidTest : AbstractGradleIntegrationTest() {
     val ANDROID_EMULATOR_PATH = "$ANDROID_SDK_PATH/emulator/emulator"
     val ANDROID_ADB_PATH = "$ANDROID_SDK_PATH/platform-tools/adb"
     val spawnResult = arrayListOf<Any>()
-    val androidSdkProvider get() = project.androidSdkProvider
 
     init {
         project.extensions.add(korlibs.korge.gradle.targets.android.AndroidSdk.ANDROID_SDK_PATH_KEY, ANDROID_SDK_PATH)
@@ -19,8 +18,26 @@ class AndroidTest : AbstractGradleIntegrationTest() {
             override fun spawn(dir: File, command: List<String>) {
                 spawnResult.add(dir to command)
             }
+
+            override fun execLogger(projectDir: File, vararg params: String) {
+                project.exec {
+                    it.workingDir(projectDir)
+                    it.commandLine(*params)
+                }
+            }
+
+            override fun execOutput(projectDir: File, vararg params: String): String {
+                val stdout = ByteArrayOutputStream()
+                project.exec {
+                    it.commandLineCompat(*params)
+                    it.standardOutput = stdout
+                    //errorOutput = stdout
+                }
+                return stdout.toString("UTF-8")
+            }
         }
     }
+    val androidSdkProvider get() = project.androidSdkProvider
 
     @Test
     fun testPaths() {
@@ -59,7 +76,7 @@ class AndroidTest : AbstractGradleIntegrationTest() {
         project.installAndroidRun(listOf(), direct = true, isKorge = true)
         val stdout = captureStdout {
             project.defineExecResult(ANDROID_ADB_PATH, "logcat", stdout = expectedStdout)
-            project.tasks.getByName("adbLogcat").execute()
+            project.tasks.getByName("adbLogcat").also { (it as DefaultAndroidTask).initWithProject(project) }.execute()
         }
         assertEquals(expectedStdout, stdout)
     }
