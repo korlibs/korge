@@ -123,14 +123,14 @@ class KProjectPlugin : Plugin<Project> {
             }
             sourceSets.apply {
                 val common = createPair("common")
-                common.test.dependencies { implementation(kotlin("test")) }
+                common.test?.dependencies { implementation(kotlin("test")) }
                 val concurrent = createPair("concurrent")
                 val jvmAndroid = createPair("jvmAndroid").dependsOn(concurrent)
                 if (hasTarget(KProjectTarget.JVM)) {
                     val jvm = createPair("jvm").dependsOn(jvmAndroid)
                 }
                 if (hasTarget(KProjectTarget.ANDROID)) {
-                    val android = createPair("android").dependsOn(jvmAndroid)
+                    val android = createPair("android", doTest = false).dependsOn(jvmAndroid)
                 }
                 if (hasTarget(KProjectTarget.JS)) {
                     val js = createPair("js")
@@ -176,11 +176,14 @@ class KProjectPlugin : Plugin<Project> {
     }
 
     // SourceSet pairs: main + test
-    data class KotlinSourceSetPair(val main: KotlinSourceSet, val test: KotlinSourceSet)
-    fun NamedDomainObjectContainer<KotlinSourceSet>.createPair(name: String): KotlinSourceSetPair = KotlinSourceSetPair(maybeCreate("${name}Main"), maybeCreate("${name}Test"))
+    data class KotlinSourceSetPair(val main: KotlinSourceSet, val test: KotlinSourceSet?)
+    fun NamedDomainObjectContainer<KotlinSourceSet>.createPair(name: String, doTest: Boolean = true): KotlinSourceSetPair = KotlinSourceSetPair(
+        maybeCreate("${name}Main"),
+        if (doTest) maybeCreate("${name}Test") else null
+    )
     fun KotlinSourceSetPair.dependsOn(other: KotlinSourceSetPair): KotlinSourceSetPair {
         this.main.dependsOn(other.main)
-        this.test.dependsOn(other.test)
+        other.test?.let { this.test?.dependsOn(it) }
         return this
     }
 }
