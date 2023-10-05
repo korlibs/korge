@@ -10,15 +10,7 @@ import java.io.*
 
 fun Project.installAndroidRun(dependsOnList: List<String>, direct: Boolean, isKorge: Boolean) {
 
-    val createAndroidManifest = tasks.createThis<Task>("createAndroidManifest") {
-        doFirst {
-            val generated = AndroidGenerated(project, isKorge)
-            val mainDir = AndroidConfig.getAndroidManifestFile(project, isKorge).parentFile
-            generated.writeResources(AndroidConfig.getAndroidResFolder(project, isKorge))
-            generated.writeMainActivity(AndroidConfig.getAndroidSrcFolder(project, isKorge))
-            generated.writeKeystore(mainDir)
-            generated.writeAndroidManifest(mainDir)
-        }
+    val createAndroidManifest = tasks.createThis<AndroidCreateAndroidManifest>("createAndroidManifest") {
     }
 
     val hasKotlinMultiplatformExtension = project.extensions.findByType(KotlinMultiplatformExtension::class.java) != null
@@ -93,35 +85,11 @@ fun Project.installAndroidRun(dependsOnList: List<String>, direct: Boolean, isKo
             //installAndroidTask.dependsOn(getKorgeProcessResourcesTaskName("jvm", "main"))
             //installAndroidTask.dependsOn(getKorgeProcessResourcesTaskName("metadata", "main"))
 
-            val androidApplicationId = AndroidConfig.getAppId(project, isKorge)
+            val androidApplicationId = AndroidGenerated.getAppId(project, isKorge)
 
-            val onlyRunAndroid = tasks.createTyped<DefaultTask>("onlyRunAndroid$suffixDevice$suffixDebug") {
-                doFirst {
-                    execLogger {
-                        it.commandLine(
-                            androidAdbPath, *extra, "shell", "am", "start",
-                            "-e", "sleepBeforeStart", "300",
-                            "-n", "$androidApplicationId/$androidApplicationId.MainActivity"
-                        )
-                    }
-                    val pid = run {
-                        val startTime = System.currentTimeMillis()
-                        while (true) {
-                            val currentTime = System.currentTimeMillis()
-                            val elapsedTime = currentTime - startTime
-                            try {
-                                return@run execOutput(androidAdbPath, *extra, "shell", "pidof", androidApplicationId).trim()
-                            } catch (e: Throwable) {
-                                //e.printStackTrace()
-                                Thread.sleep(10L)
-                                if (elapsedTime >= 5000L) throw e
-                            }
-                        }
-                    }
-                    execLogger {
-                        it.commandLine(androidAdbPath, *extra, "logcat", "--pid=$pid")
-                    }
-                }
+            val onlyRunAndroid = tasks.createTyped<OnlyRunAndroidTask>("onlyRunAndroid$suffixDevice$suffixDebug") {
+                this.extra = extra
+                this.androidApplicationId = androidApplicationId
             }
 
             tasks.createTyped<DefaultTask>("runAndroid$suffixDevice$suffixDebug") {
@@ -132,38 +100,127 @@ fun Project.installAndroidRun(dependsOnList: List<String>, direct: Boolean, isKo
         }
     }
 
-    tasks.createTyped<DefaultTask>("androidEmulatorDeviceList") {
+    tasks.createTyped<AndroidEmulatorListAvdsTask>("androidEmulatorDeviceList") {
         group = GROUP_KORGE_ADB
-        doFirst {
-            println(androidEmulatorListAvds().joinToString("\n"))
-            //execAndroidAdb("devices", "-l")
-        }
     }
 
-    tasks.createTyped<DefaultTask>("androidEmulatorStart") {
+    tasks.createTyped<AndroidEmulatorStartTask>("androidEmulatorStart") {
         group = GROUP_KORGE_ADB
         onlyIf { !androidEmulatorIsStarted() }
-        doFirst {
-            androidEmulatorStart()
-        }
     }
 
-    tasks.createTyped<DefaultTask>("adbDeviceList") {
+    tasks.createTyped<AndroidAdbDeviceListTask>("adbDeviceList") {
         group = GROUP_KORGE_ADB
-        doFirst {
-            println(androidAdbDeviceList().joinToString("\n"))
-            //execAndroidAdb("devices", "-l")
-        }
     }
 
-    tasks.createTyped<DefaultTask>("adbLogcat") {
+    tasks.createTyped<AndroidAdbLogcatTask>("adbLogcat") {
         group = GROUP_KORGE_ADB
-        doFirst {
-            execAndroidAdb("logcat")
+    }
+}
+
+open class AndroidCreateAndroidManifest : DefaultTask() {
+    private lateinit var generated: AndroidGenerated
+
+    @get:Input
+    var isKorge = true
+
+    init {
+        project.afterEvaluate {
+            generated = project.toAndroidGenerated(isKorge)
+        }
+    }
+    @TaskAction
+    fun run() {
+        val mainDir = this.generated.getAndroidManifestFile(isKorge).parentFile
+        generated.writeResources(this.generated.getAndroidResFolder(isKorge))
+        generated.writeMainActivity(this.generated.getAndroidSrcFolder(isKorge))
+        generated.writeKeystore(mainDir)
+        generated.writeAndroidManifest(mainDir)
+    }
+}
+
+open class OnlyRunAndroidTask : DefaultAndroidTask() {
+    @get:Input
+    var extra: Array<String> = emptyArray()
+    @get:Input
+    var androidApplicationId: String = ""
+
+    override fun run() {
+        execLogger(androidAdbPath, *extra, "shell", "am", "start",
+            "-e", "sleepBeforeStart", "300",
+            "-n", "$androidApplicationId/$androidApplicationId.MainActivity"
+        )
+        val pid = run {
+            val startTime = System.currentTimeMillis()
+            while (true) {
+                val currentTime = System.currentTimeMillis()
+                val elapsedTime = currentTime - startTime
+                try {
+                    return@run execOutput(androidAdbPath, *extra, "shell", "pidof", androidApplicationId).trim()
+                } catch (e: Throwable) {
+                    //e.printStackTrace()
+                    Thread.sleep(10L)
+                    if (elapsedTime >= 5000L) throw e
+                }
+            }
+        }
+        execLogger(androidAdbPath, *extra, "logcat", "--pid=$pid")
+    }
+}
+
+open class AndroidEmulatorListAvdsTask : DefaultAndroidTask() {
+    override fun run() {
+        androidEmulatorListAvds().joinToString("\n")
+    }
+}
+
+open class AndroidAdbDeviceListTask : DefaultAndroidTask() {
+    override fun run() {
+        println(androidAdbDeviceList().joinToString("\n"))
+        //execAndroidAdb("devices", "-l")
+    }
+}
+
+open class AndroidAdbLogcatTask : DefaultAndroidTask() {
+    override fun run() {
+        execAndroidAdb("logcat")
+    }
+}
+
+open class AndroidEmulatorStartTask : DefaultAndroidTask() {
+    override fun run() {
+        val avdName = androidEmulatorFirstAvd() ?: error("No android emulators available to start. Please create one using Android Studio")
+        val spawner = spawnExt
+        spawner.spawn(projectDir, listOf(androidEmulatorPath, "-avd", avdName, "-netdelay", "none", "-netspeed", "full"))
+        while (!androidEmulatorIsStarted()) {
+            Thread.sleep(1000L)
         }
     }
 }
 
+
+abstract class DefaultAndroidTask : DefaultTask(), AndroidSdkProvider {
+    @TaskAction
+    abstract fun run()
+
+    //@get:InputDirectory
+    @Internal
+    override lateinit var projectDir: File
+    //@get:Input
+    @Internal
+    override lateinit var androidSdkPath: String
+    //@get:Input
+    @Internal
+    override lateinit var spawnExt: SpawnExtension
+
+    init {
+        project.afterEvaluate {
+            this.projectDir = project.projectDir
+            this.androidSdkPath = project.androidSdkPath
+            this.spawnExt = project.spawnExt
+        }
+    }
+}
 
 /*
 tasks.createThis<Task>("onlyRunAndroid") {

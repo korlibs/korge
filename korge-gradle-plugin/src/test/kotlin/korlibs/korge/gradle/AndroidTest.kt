@@ -11,6 +11,7 @@ class AndroidTest : AbstractGradleIntegrationTest() {
     val ANDROID_EMULATOR_PATH = "$ANDROID_SDK_PATH/emulator/emulator"
     val ANDROID_ADB_PATH = "$ANDROID_SDK_PATH/platform-tools/adb"
     val spawnResult = arrayListOf<Any>()
+    val androidSdkProvider get() = project.androidSdkProvider
 
     init {
         project.extensions.add(korlibs.korge.gradle.targets.android.AndroidSdk.ANDROID_SDK_PATH_KEY, ANDROID_SDK_PATH)
@@ -23,8 +24,8 @@ class AndroidTest : AbstractGradleIntegrationTest() {
 
     @Test
     fun testPaths() {
-        assertEquals(ANDROID_EMULATOR_PATH, project.androidEmulatorPath)
-        assertEquals(ANDROID_ADB_PATH, project.androidAdbPath)
+        assertEquals(ANDROID_EMULATOR_PATH, androidSdkProvider.androidEmulatorPath)
+        assertEquals(ANDROID_ADB_PATH, androidSdkProvider.androidAdbPath)
     }
 
     val emulatorListAvds = arrayOf(ANDROID_EMULATOR_PATH, "-list-avds")
@@ -32,23 +33,23 @@ class AndroidTest : AbstractGradleIntegrationTest() {
     @Test
     fun testAndroidEmulatorListAvds() {
         project.defineExecResult(*emulatorListAvds, stdout = "Pixel_2_XL_API_28\n").also {
-            assertEquals(listOf("Pixel_2_XL_API_28"), project.androidEmulatorListAvds())
+            assertEquals(listOf("Pixel_2_XL_API_28"), androidSdkProvider.androidEmulatorListAvds())
         }
         project.defineExecResult(*emulatorListAvds, stdout = "Android_TV_720p_API_28\nPixel_2_API_30\n").also {
-            assertEquals(listOf("Android_TV_720p_API_28", "Pixel_2_API_30"), project.androidEmulatorListAvds())
+            assertEquals(listOf("Android_TV_720p_API_28", "Pixel_2_API_30"), androidSdkProvider.androidEmulatorListAvds())
         }
     }
 
     @Test
     fun testAndroidEmulatorFirstAvd() {
         project.defineExecResult(*emulatorListAvds, stdout = "").also {
-            assertEquals(null, project.androidEmulatorFirstAvd())
+            assertEquals(null, androidSdkProvider.androidEmulatorFirstAvd())
         }
         project.defineExecResult(*emulatorListAvds, stdout = "Pixel_2_XL_API_28\n").also {
-            assertEquals("Pixel_2_XL_API_28", project.androidEmulatorFirstAvd())
+            assertEquals("Pixel_2_XL_API_28", androidSdkProvider.androidEmulatorFirstAvd())
         }
         project.defineExecResult(*emulatorListAvds, stdout = "Android_TV_720p_API_28\nPixel_2_API_30\n").also {
-            assertEquals("Pixel_2_API_30", project.androidEmulatorFirstAvd())
+            assertEquals("Pixel_2_API_30", androidSdkProvider.androidEmulatorFirstAvd())
         }
     }
 
@@ -67,7 +68,7 @@ class AndroidTest : AbstractGradleIntegrationTest() {
     fun testAndroidEmulatorStart() {
         assertFailsWith<IllegalStateException>() {
             project.defineExecResult(*emulatorListAvds, stdout = "")
-            project.androidEmulatorStart()
+            androidSdkProvider.androidEmulatorStart()
         }
 
         run {
@@ -82,7 +83,7 @@ class AndroidTest : AbstractGradleIntegrationTest() {
                     ),
                 )
             )
-            project.androidEmulatorStart()
+            androidSdkProvider.androidEmulatorStart()
             assertEquals<List<Any>>(
                 listOf(
                     project.projectDir to listOf(
