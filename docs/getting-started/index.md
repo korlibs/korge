@@ -4,7 +4,7 @@ group: getting-started
 layout: default
 title: Welcome to KorGE
 title_short: Introduction
-description: KorGE Game Engine is an KotlinOpen Source modern Game Engine created in KotlinKotlin designed to be extremely portable and really enjoyable to use.
+description: KorGE Game Engine is a Kotlin Open Source modern Game Engine created in Kotlin designed to be extremely portable and really enjoyable to use.
 children: /korge/
 priority: -1
 fa-icon: fa-gamepad
