@@ -20,7 +20,7 @@ In the case you want a custom view where you can specify rendering code, you can
 You need to provide a `renderInternal` where you render things.
 
 ```kotlin
-class MyCustonView : View() {
+class MyCustomView : View() {
     override fun renderInternal(ctx: RenderContext) {
         // Custom Render Code here
         ctx.useBatcher { batcher ->
