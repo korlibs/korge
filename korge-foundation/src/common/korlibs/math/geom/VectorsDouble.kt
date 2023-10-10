@@ -12,6 +12,9 @@ typealias Point3 = Vector3D
 data class Vector3D(val x: Double, val y: Double, val z: Double)
 data class Vector4D(val x: Double, val y: Double, val z: Double, val w: Double)
 
+fun Vector3F.toDouble(): Vector3D = Vector3D(x.toDouble(), y.toDouble(), z.toDouble())
+fun Vector3D.toFloat(): Vector3F = Vector3F(x, y, z)
+
 data class Vector2D(val x: Double, val y: Double) : IsAlmostEquals<Vector2D> {
     //constructor(x: Float, y: Float) : this(float2PackOf(x, y))
     constructor(x: Float, y: Float) : this(x.toDouble(), y.toDouble())
@@ -298,3 +301,5 @@ fun Vector2D.toInt(): Vector2I = Vector2I(x.toInt(), y.toInt())
 fun Vector2D.toIntCeil(): Vector2I = Vector2I(x.toIntCeil(), y.toIntCeil())
 fun Vector2D.toIntRound(): Vector2I = Vector2I(x.toIntRound(), y.toIntRound())
 fun Vector2D.toIntFloor(): Vector2I = Vector2I(x.toIntFloor(), y.toIntFloor())
+
+fun Vector3D.toCylindrical(): CylindricalVector = CylindricalVector.fromCartesian(this)

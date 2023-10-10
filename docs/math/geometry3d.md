@@ -14,6 +14,20 @@ priority: 3
 
 `Vector3D` and `Matrix3D` are vectors and matrices of 4 components / 4 rows and 4 columns. They can also be used as 2, 3 and 4 component vectors, and 2x2, 3x3 and 4x4 matrices.
 
+## CylindricalVector
+
+`CylindricalVector` represents a coordinate in a cylinder.
+
+``` kotlin
+val cylindricalVector = CylindricalVector(radius = 10.0, angle = 45.degrees, y = 10.0)
+val vector: Vector3F = cylindricalVector.toVector3()
+val again: CylindricalVector = vector.toCylindrical()
+
+val radius = cylindricalVector.radius
+val angle = cylindricalVector.angle
+val y = cylindricalVector.y
+```
+
 ## AABB3D & Sphere3D
 
 ```kotlin
