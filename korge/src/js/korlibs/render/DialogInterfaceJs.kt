@@ -11,7 +11,7 @@ import org.w3c.files.*
 class DialogInterfaceJs : DialogInterface {
 
     override suspend fun browse(url: URL) {
-        document.open(url.fullUrl)
+        document.open(url.fullUrl, "", "noopener=true")
     }
 
     override suspend fun alert(message: String) {
