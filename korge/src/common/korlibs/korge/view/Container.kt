@@ -245,6 +245,18 @@ open class Container(
      */
     fun addChild(view: View) = addChildAt(view, numChildren)
 
+    /** Equivalent to [addChild] */
+    operator fun <T : View> T.unaryPlus(): T {
+        addChild(this)
+        return this
+    }
+
+    // Use .apply { } instead
+    //inline operator fun <T : View> T.invoke(block: T.() -> Unit): T {
+    //    block(this)
+    //    return this
+    //}
+
     fun addChildren(views: List<View?>?) {
         if (views == null) return
         views.fastForEach { if (it != null) addChild(it) }

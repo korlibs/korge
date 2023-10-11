@@ -156,4 +156,18 @@ internal class ContainerTest {
             assertEquals("click", log.joinToString(","))
         }
     }
+
+    @Test
+    fun testUnaryPlus() {
+        val container = Container().apply {
+            +DummyView()
+            +Container().apply {
+                +DummyView()
+            }
+        }
+
+        assertEquals(2, container.numChildren)
+        assertEquals(listOf(DummyView::class, Container::class), container.children.map { it::class })
+        assertEquals(listOf(DummyView::class), (container.lastChild as Container).children.map { it::class })
+    }
 }
