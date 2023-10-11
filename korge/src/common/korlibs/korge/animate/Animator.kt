@@ -381,6 +381,10 @@ fun Animator.block(name: String? = null, callback: () -> Unit) {
     addNode(Animator.BlockNode(name, callback))
 }
 
+fun Animator.removeFromParent(view: View) {
+    block { view.removeFromParent() }
+}
+
 ////////////////////////
 
 fun Animator.scaleBy(view: View, scaleX: Double, scaleY: Double = scaleX, time: TimeSpan = this.defaultTime, easing: Easing = this.defaultEasing) = __tween(view::scaleX.incr(scaleX), view::scaleY.incr(scaleY), time = time, easing = easing, name = "scaleBy")

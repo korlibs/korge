@@ -6,8 +6,19 @@ data class RectCorners(
     val bottomRight: Double,
     val bottomLeft: Double,
 ) {
+    operator fun unaryMinus(): RectCorners = this * (-1.0)
+    operator fun unaryPlus(): RectCorners = this
+    operator fun plus(that: RectCorners): RectCorners = RectCorners(this.topLeft + that.topLeft, this.topRight + that.topRight, this.bottomLeft + that.bottomLeft, this.bottomRight + that.bottomRight)
+    operator fun minus(that: RectCorners): RectCorners = RectCorners(this.topLeft - that.topLeft, this.topRight - that.topRight, this.bottomLeft - that.bottomLeft, this.bottomRight - that.bottomRight)
+    operator fun times(scale: Double): RectCorners = RectCorners(topLeft * scale, topRight * scale, bottomRight * scale, bottomLeft * scale)
+    operator fun div(scale: Double): RectCorners = this * (1.0 / scale)
+
     companion object {
         val EMPTY = RectCorners(0)
+        val ZERO = RectCorners(0)
+        val ONE = RectCorners(1.0)
+        val MINUS_ONE = RectCorners(-1.0)
+        val NaN = RectCorners(Double.NaN)
 
         inline operator fun invoke(corner: Number): RectCorners = RectCorners(corner.toDouble(), corner.toDouble(), corner.toDouble(), corner.toDouble())
         inline operator fun invoke(topLeftBottomRight: Number, topRightAndBottomLeft: Number): RectCorners = RectCorners(topLeftBottomRight.toDouble(), topRightAndBottomLeft.toDouble(), topLeftBottomRight.toDouble(), topRightAndBottomLeft.toDouble())

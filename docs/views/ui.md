@@ -192,11 +192,81 @@ uiEditableNumber(10.0, min = 0.0, max = 100.0)
 
 A slider to select a number in a range.
 
+![img_21.png](/i/ui/img_21.avif)
+
 ```kotlin
-uiSlider(value = 50f, min = 0f, max = 100f)
+uiSlider(value = 50.0, min = -50.0, max = +50.0, step = 1.0) {
+    showTooltip = true
+    marks = true
+    textTransformer = { "${it}" }
+    decimalPlaces = 2
+    styles {
+        uiSelectedColor = MaterialColors.RED_600
+        uiBackgroundColor = MaterialColors.BLUE_50
+    }
+    changed {
+        println("SLIDER changed to $it")
+    }
+}
 ```
 
-![img_21.png](/i/ui/img_21.avif)
+It is possible to show or disable marks with `slider.marks = true/false`.
+
+**Configuring slider tooltips**
+
+You can configure tooltips with `slider.showTooltips`:
+
+```kotlin
+slider.showTooltips = true // always show tooltips
+slider.showTooltips = false // never show tooltips
+slider.showTooltips = null // the default: show only while dragging
+```
+
+**Configuring slider marks**
+
+Some small dots can be configured to visually display steps inside the slider.
+
+```kotlin
+slider.marks = true // show slider marks
+slider.marks = false // hides slider marks
+```
+
+**Configuring tooltip text**
+
+It is possible to configure the tooltip text transforming the value:
+
+```kotlin
+slider.textTransformer = { "${it}º" }
+```
+
+**Tooltip decimal places**
+
+It is possible to configure the tooltip decimal places with:
+
+```kotlin
+slider.decimalPlaces = null // auto-configured based on the step
+slider.decimalPlaces = 2 // 2 decimal places X.YY
+```
+
+**Subscribing to tooltip changes**
+
+To subscribe to changes to the slider:
+
+```kotlin
+slider.onChange.add { println("Slider changed to $it") }
+slider.changed { newValue -> println("Slider changed to $newValue") }
+```
+
+**Styling**
+
+It is possible to adjust the color of the slider:
+
+```kotlin
+slider.styles {
+    uiSelectedColor = MaterialColors.RED_600
+    uiBackgroundColor = MaterialColors.BLUE_50
+}
+```
 
 ## `UIVerticalList`
 

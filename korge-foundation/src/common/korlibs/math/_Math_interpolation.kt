@@ -390,6 +390,12 @@ inline class Ratio(val value: Double) : Comparable<Ratio> {
         val ONE = Ratio(1.0)
         val NaN = Ratio(Float.NaN)
 
+        inline fun fromValueInRange(value: Number, min: Number, max: Number): Ratio =
+            value.toDouble().convertRange(min.toDouble(), max.toDouble(), 0.0, 1.0).toRatio()
+
+        inline fun fromValueInRangeClamped(value: Number, min: Number, max: Number): Ratio =
+            value.toDouble().convertRangeClamped(min.toDouble(), max.toDouble(), 0.0, 1.0).toRatio()
+
         inline fun forEachRatio(steps: Int, include0: Boolean = true, include1: Boolean = true, block: (ratio: Ratio) -> Unit) {
             val NS = steps - 1
             val NSd = NS.toDouble()

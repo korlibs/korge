@@ -4,10 +4,10 @@ import korlibs.math.*
 import kotlin.math.*
 
 val Double.niceStr: String get() = niceStr(-1, zeroSuffix = false)
-fun Double.niceStr(decimalPlaces: Int, zeroSuffix: Boolean = false): String = buildString { appendNice(this@niceStr.roundDecimalPlaces(decimalPlaces), zeroSuffix = zeroSuffix) }
+fun Double.niceStr(decimalPlaces: Int, zeroSuffix: Boolean = false): String = buildString { appendNice(this@niceStr.roundDecimalPlaces(decimalPlaces), zeroSuffix = zeroSuffix && decimalPlaces > 0) }
 
 val Float.niceStr: String get() = niceStr(-1, zeroSuffix = false)
-fun Float.niceStr(decimalPlaces: Int, zeroSuffix: Boolean = false): String = buildString { appendNice(this@niceStr.roundDecimalPlaces(decimalPlaces), zeroSuffix = zeroSuffix) }
+fun Float.niceStr(decimalPlaces: Int, zeroSuffix: Boolean = false): String = buildString { appendNice(this@niceStr.roundDecimalPlaces(decimalPlaces), zeroSuffix = zeroSuffix && decimalPlaces > 0) }
 
 fun StringBuilder.appendNice(value: Double, zeroSuffix: Boolean = false): Unit {
     when {

@@ -398,6 +398,10 @@ public val Int.nextPowerOfTwo: Int get() {
     return v
 }
 
+// @TODO: Optimize this
+fun Int.numberOfDigits(radix: Int = 10): Int = radix.toString(radix).length
+fun Long.numberOfDigits(radix: Int = 10): Int = radix.toString(radix).length
+
 /** Returns the previous power of two of [this] */
 public val Int.prevPowerOfTwo: Int get() = if (isPowerOfTwo) this else (nextPowerOfTwo ushr 1)
 

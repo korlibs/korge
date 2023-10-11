@@ -90,37 +90,46 @@ class MainBlur : Scene() {
 
         uiVerticalStack(padding = 2.0, width = 370.0) {
             xy(50, 400)
-            uiHorizontalFill {
+            uiHorizontalFill(padding = 4.0) {
                 uiText("Blur radius").styles { textColor = Colors.BLACK }
-                uiSlider(value = initialBlur, max = 32, step = 0.1).changed { blur1.radius = it }
+                uiSlider(value = initialBlur, max = 32, step = 0.1) {
+                    styles {
+                        uiSelectedColor = MaterialColors.RED_600
+                        uiBackgroundColor = MaterialColors.BLUE_50
+                    }
+                    changed { blur1.radius = it }
+                }
             }
-            uiHorizontalFill {
+            uiHorizontalFill(padding = 4.0) {
                 uiText("Drop radius").styles { textColor = Colors.BLACK }
                 uiSlider(value = dropshadowFilter.blurRadius.toInt(), max = 32).changed { dropshadowFilter.blurRadius = it }
             }
-            uiHorizontalFill {
+            uiHorizontalFill(padding = 4.0) {
                 uiText("Drop X").styles { textColor = Colors.BLACK }
                 uiSlider(value = dropshadowFilter.dropX.toInt(), min = -32, max = +32).changed { dropshadowFilter.dropX = it }
             }
-            uiHorizontalFill {
+            uiHorizontalFill(padding = 4.0) {
                 uiText("Drop Y").styles { textColor = Colors.BLACK }
                 uiSlider(value = dropshadowFilter.dropY.toInt(), min = -32, max = +32).changed { dropshadowFilter.dropY = it }
             }
-            uiHorizontalFill {
+            uiHorizontalFill(padding = 4.0) {
                 uiButton("black").clicked { dropshadowFilter.shadowColor = Colors.BLACK.withAd(dropshadowFilter.shadowColor.ad) }
                 uiButton("red").clicked { dropshadowFilter.shadowColor = Colors.RED.withAd(dropshadowFilter.shadowColor.ad) }
                 uiButton("green").clicked { dropshadowFilter.shadowColor = Colors.GREEN.withAd(dropshadowFilter.shadowColor.ad) }
                 uiButton("blue").clicked { dropshadowFilter.shadowColor = Colors.BLUE.withAd(dropshadowFilter.shadowColor.ad) }
             }
-            uiHorizontalFill {
+            uiHorizontalFill(padding = 4.0) {
                 uiText("Drop Alpha").styles { textColor = Colors.BLACK }
                 uiSlider(value = dropshadowFilter.shadowColor.a, min = 0, max = 255).changed { dropshadowFilter.shadowColor = dropshadowFilter.shadowColor.withA(it.toInt()) }
             }
-            uiHorizontalFill {
+            uiHorizontalFill(padding = 4.0) {
                 uiText("Rotation").styles { textColor = Colors.BLACK }
-                uiSlider(value = rotatedBitmap.rotation.degrees.toInt(), min = 0, max = 360).changed { rotatedBitmap.rotation = it.degrees }
+                uiSlider(value = rotatedBitmap.rotation.degrees.toInt(), min = 0, max = 360) {
+                    textTransformer = { "${it}'" }
+                    changed { rotatedBitmap.rotation = it.degrees }
+                }
             }
-            uiHorizontalFill {
+            uiHorizontalFill(padding = 4.0) {
                 uiButton("circular").clicked { transitionFilter.transition = TransitionFilter.Transition.CIRCULAR }
                 uiButton("diagonal1").clicked { transitionFilter.transition = TransitionFilter.Transition.DIAGONAL1 }
                 uiButton("diagonal2").clicked { transitionFilter.transition = TransitionFilter.Transition.DIAGONAL2 }
@@ -147,8 +156,11 @@ class MainBlur : Scene() {
             }
             uiHorizontalFill {
                 uiText("Filter Scale").styles { textColor = Colors.BLACK }
-                uiSlider(value = filterScale, min = 0.2, max = 2.0, step = 0.1).changed {
-                    filterScale = it
+                uiSlider(value = filterScale, min = 0.2, max = 2.0, step = 0.1) {
+                    marks = true
+                    changed {
+                        filterScale = it
+                    }
                 }
             }
         }

@@ -115,3 +115,15 @@ fun Context2d.drawRichText(
     }
     return n
 }
+
+fun RichTextData.bounds(maxHeight: Int = Int.MAX_VALUE): Rectangle {
+    return place(Rectangle(0, 0, Int.MAX_VALUE, maxHeight)).bounds()
+}
+
+fun RichTextDataPlacements.bounds(): Rectangle {
+    var bb = BoundsBuilder()
+    placements.forEach {
+        bb += it.font.getTextBounds(it.size, it.text).bounds
+    }
+    return bb.bounds
+}

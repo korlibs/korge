@@ -226,36 +226,45 @@ abstract class UIVerticalHorizontalStack(size: Size = UI_DEFAULT_SIZE, padding: 
 
 inline fun Container.uiHorizontalFill(
     size: Size = Size(128, 20),
+    padding: Number = UI_DEFAULT_PADDING,
     block: @ViewDslMarker UIHorizontalFill.() -> Unit = {}
-) = UIHorizontalFill(size).addTo(this).apply(block)
+) = UIHorizontalFill(size, padding.toDouble()).addTo(this).apply(block)
 
-open class UIHorizontalFill(size: Size = Size(128, 20)) : UIContainer(size) {
-    override fun relayoutInternal() {
-        var x = 0.0
-        val elementWidth = width / numChildren
+abstract class UIHorizontalVerticalFill(size: Size = Size(128, 128), var padding: Double = UI_DEFAULT_PADDING) : UIContainer(size) {
+    protected inline fun _relayoutInternal(dimension: Double, block: (it: View, pos: Double, elementSize: Double) -> Unit) {
+        var pos = 0.0
+        val padding = this.padding
+        val numSpaces = maxOf(0, numChildren - 1)
+        val elementSize = (dimension - numSpaces * padding) / numChildren
         forEachChild {
-            it.x = x
+            block(it, pos, elementSize)
+            pos += elementSize + padding
+        }
+    }
+}
+
+open class UIHorizontalFill(size: Size = Size(128, 20), padding: Double = UI_DEFAULT_PADDING) : UIHorizontalVerticalFill(size, padding) {
+    override fun relayoutInternal() {
+        _relayoutInternal(width) { it, pos, elementSize ->
+            it.x = pos
             it.scaledHeight = height
-            it.unscaledWidth = elementWidth
-            x += elementWidth
+            it.unscaledWidth = elementSize
         }
     }
 }
 
 inline fun Container.uiVerticalFill(
     size: Size = Size(128, 20),
+    padding: Number = UI_DEFAULT_PADDING,
     block: @ViewDslMarker UIVerticalFill.() -> Unit = {}
-) = UIVerticalFill(size).addTo(this).apply(block)
+) = UIVerticalFill(size, padding.toDouble()).addTo(this).apply(block)
 
-open class UIVerticalFill(size: Size = Size(128, 128)) : UIContainer(size) {
+open class UIVerticalFill(size: Size = Size(128, 128), padding: Double = UI_DEFAULT_PADDING) : UIHorizontalVerticalFill(size, padding) {
     override fun relayoutInternal() {
-        var y = 0.0
-        val elementHeight = height / numChildren
-        forEachChild {
-            it.y = y
+        _relayoutInternal(height) { it, pos, elementSize ->
+            it.y = pos
             it.scaledWidth = width
-            it.unscaledHeight = elementHeight
-            y += elementHeight
+            it.unscaledHeight = elementSize
         }
     }
 }

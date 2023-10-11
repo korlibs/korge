@@ -72,7 +72,7 @@ suspend fun main() = Korge(
     backgroundColor = DEFAULT_KORGE_BG_COLOR,
     displayMode = KorgeDisplayMode.CENTER_NO_CLIP,
     debug = false,
-    forceRenderEveryFrame = false
+    //forceRenderEveryFrame = false
 ) {
     //sceneContainer().changeTo({MainSprites10k()}); return@start
     //sceneContainer().changeTo({MainGraphicsText()}); return@start
