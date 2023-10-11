@@ -3,11 +3,14 @@ package korlibs.korge.ui
 import korlibs.datastructure.*
 import korlibs.image.color.*
 import korlibs.korge.animate.*
+import korlibs.korge.annotations.*
+import korlibs.korge.internal.*
 import korlibs.korge.render.*
 import korlibs.korge.tween.*
 import korlibs.korge.view.*
 import korlibs.korge.view.property.*
 import korlibs.math.geom.*
+import korlibs.math.geom.collider.*
 import korlibs.math.interpolation.*
 import korlibs.time.*
 
@@ -48,9 +51,10 @@ class MaterialLayerHighlights(val view: View) {
     }
 }
 
+@OptIn(KorgeInternal::class, KorgeExperimental::class)
 class UIMaterialLayer(
     size: Size = Size(100, 100),
-) : UIView(size), ViewLeaf {
+) : UIView(size), ViewLeaf, Anchorable {
     @ViewProperty
     var bgColor: RGBA = Colors.WHITE; set(value) { field = value; invalidateRender() }
     @ViewProperty
@@ -74,14 +78,27 @@ class UIMaterialLayer(
 
     private val highlights = MaterialLayerHighlights(this)
 
+    override var anchor: Anchor = Anchor.TOP_LEFT
+        set(value) {
+            if (field != value) {
+                field = value
+                invalidateLocalBounds()
+            }
+        }
+
+    @KorgeInternal override val anchorDispX: Float get() = (width * anchor.sx).toFloat()
+    @KorgeInternal override val anchorDispY: Float get() = (height * anchor.sy).toFloat()
+
+    override fun getLocalBoundsInternal(): Rectangle = Rectangle(-anchorDispX.toDouble(), -anchorDispY.toDouble(), width, height)
+
     override fun renderInternal(ctx: RenderContext) {
         if (!visible) return
 
         renderCtx2d(ctx) { ctx2d ->
             //println("context.multiplyColor=${ctx2d.multiplyColor}")
             ctx2d.materialRoundRect(
-                x = 0.0,
-                y = 0.0,
+                x = -anchorDispX.toDouble(),
+                y = -anchorDispY.toDouble(),
                 width = width,
                 height = height,
                 color = bgColor,
@@ -98,8 +115,8 @@ class UIMaterialLayer(
             )
             highlights.fastForEach {
                 ctx2d.materialRoundRect(
-                    x = 0.0,
-                    y = 0.0,
+                    x = -anchorDispX.toDouble(),
+                    y = -anchorDispY.toDouble(),
                     width = width,
                     height = height,
                     color = Colors.TRANSPARENT,
