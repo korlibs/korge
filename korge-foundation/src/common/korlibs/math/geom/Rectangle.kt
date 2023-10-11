@@ -32,10 +32,14 @@ data class RectangleD(val x: Double, val y: Double, val width: Double, val heigh
     val position: Point get() = Point(x, y)
     val size: Size get() = Size(width, height)
 
-    val xD: Double get() = x.toDouble()
-    val yD: Double get() = y.toDouble()
-    val widthD: Double get() = width.toDouble()
-    val heightD: Double get() = height.toDouble()
+    @Deprecated("", ReplaceWith("x"))
+    val xD: Double get() = x
+    @Deprecated("", ReplaceWith("y"))
+    val yD: Double get() = y
+    @Deprecated("", ReplaceWith("width"))
+    val widthD: Double get() = width
+    @Deprecated("", ReplaceWith("height"))
+    val heightD: Double get() = height
 
     val isZero: Boolean get() = this == ZERO
     val isInfinite: Boolean get() = this == INFINITE
