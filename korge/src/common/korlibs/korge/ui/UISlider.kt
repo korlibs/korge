@@ -16,7 +16,7 @@ inline fun Container.uiSlider(
     min: Number = UISlider.DEFAULT_MIN,
     max: Number = UISlider.DEFAULT_MAX,
     step: Number = UISlider.DEFAULT_STEP,
-    decimalPlaces: Int = UISlider.decimalPlacesFromStep(step.toDouble()),
+    decimalPlaces: Int? = null,
     size: Size = UISlider.DEFAULT_SIZE,
     block: @ViewDslMarker UISlider.() -> Unit = {}
 ): UISlider = UISlider(value, min, max, step, decimalPlaces, size).addTo(this).apply(block)
@@ -24,10 +24,9 @@ inline fun Container.uiSlider(
 @Suppress("OPT_IN_USAGE")
 class UISlider(
     value: Number = DEFAULT_VALUE, min: Number = DEFAULT_MIN, max: Number = DEFAULT_MAX, step: Number = DEFAULT_STEP,
-    decimalPlaces: Int = DEFAULT_DECIMAL_PLACES,
+    decimalPlaces: Int? = null,
     size: Size = UISlider.DEFAULT_SIZE,
-) : UIView(size)
-// , StyleableView
+) : UIView(size), StyleableView
 {
     companion object {
         const val DEFAULT_VALUE = 0
@@ -160,6 +159,17 @@ class UISlider(
             }
         }
 
+    var decimalPlaces: Int? = decimalPlaces
+        set(value) {
+            if (field != value) {
+                field = value
+            }
+        }
+
+    var textTransformer: (String) -> String = { it }
+
+    private val realDecimalPlaces: Int get() = decimalPlaces ?: decimalPlacesFromStep(step)
+
     private val nmarks1: Int get() = minOf((width / 4).toIntCeil() + 1, ((max - min) / step).toIntCeil())
 
     private var ratio: Ratio
@@ -178,13 +188,13 @@ class UISlider(
         if (show) updateTooltip() else updateTooltip(null)
     }
 
-    private fun updateTooltip(value: String? = this.value.niceStr(decimalPlacesFromStep(step), zeroSuffix = true)) {
+    private fun updateTooltip(value: String? = this.value.niceStr(realDecimalPlaces, zeroSuffix = true)) {
         if (value == null) {
             tooltip?.let { tooltipContainer?.hide(it) }
         } else {
-            val maxNumber = (if (min < 0.0) "-" else "") + "9".repeat(this.max.toIntCeil().numberOfDigits(radix = 10)) + "." + "9".repeat(decimalPlacesFromStep(step))
+            val maxNumber = (if (min < 0.0) "-" else "") + "9".repeat(this.max.toIntCeil().numberOfDigits(radix = 10)) + "." + "9".repeat(realDecimalPlaces)
 
-            tooltip = tooltipContainer?.show(thumb, value, maxNumber)
+            tooltip = tooltipContainer?.show(thumb, textTransformer(value), textTransformer(maxNumber))
         }
     }
 
@@ -201,7 +211,7 @@ class UISlider(
         updatedMarks()
     }
 
-    fun updatedStyles() {
+    override fun updatedStyles() {
         //println("!! onParentChanged")
         background.bgColor = styles.uiSelectedColor
         foreground.bgColor = styles.uiSelectedColor
@@ -211,6 +221,11 @@ class UISlider(
     }
 
     private fun updatedMarks() {
+        if (!marks) {
+            marksContainer.removeChildren()
+            return
+        }
+
         val nmarks1 = this.nmarks1
         val nmarks = nmarks1 + 1
 
