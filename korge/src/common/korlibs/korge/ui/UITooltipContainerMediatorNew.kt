@@ -13,12 +13,12 @@ import korlibs.math.geom.*
 import korlibs.time.*
 
 @KorgeExperimental
-val Container.uiTooltipContainerMedaitorNew by Extra.PropertyThis {
-    UITooltipContainerMedaitorNew(this)
+val Container.uiTooltipContainerMediatorNew by Extra.PropertyThis {
+    UITooltipContainerMediatorNew(this)
 }
 
 @KorgeExperimental
-class UITooltipContainerMedaitorNew(val container: Container) : Closeable {
+class UITooltipContainerMediatorNew(val container: Container) : Closeable {
     class Tooltip(track: View, textData: RichTextData) : UIView(size = computeSize(textData)) {
         companion object {
             fun computeSize(textData: RichTextData): Size {
@@ -86,7 +86,7 @@ class UITooltipContainerMedaitorNew(val container: Container) : Closeable {
         }
         tooltips -= tooltip
     }
-    fun hideAll(immediate: Boolean = true): UITooltipContainerMedaitorNew {
+    fun hideAll(immediate: Boolean = true): UITooltipContainerMediatorNew {
         while (tooltips.isNotEmpty()) {
             hide(tooltips.last())
         }

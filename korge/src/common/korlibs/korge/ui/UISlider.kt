@@ -165,7 +165,7 @@ class UISlider(
             this.value = value.convertToRange(min, max)
         }
 
-    private var tooltip: UITooltipContainerMedaitorNew.Tooltip? = null
+    private var tooltip: UITooltipContainerMediatorNew.Tooltip? = null
 
     init {
         updatedMarks()
@@ -234,13 +234,13 @@ class UISlider(
         readjust()
     }
 
-    private var tooltipContainer: UITooltipContainerMedaitorNew? = null
+    private var tooltipContainer: UITooltipContainerMediatorNew? = null
 
     override fun onParentChanged() {
         super.onParentChanged()
         tooltipContainer?.close()
         updatedStyles()
-        tooltipContainer = parent?.uiTooltipContainerMedaitorNew
+        tooltipContainer = parent?.uiTooltipContainerMediatorNew
         //println("tooltipContainer = $tooltipContainer")
     }
 }
