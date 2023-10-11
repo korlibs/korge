@@ -123,7 +123,7 @@ interface VectorBuilder {
     fun roundRect(rect: RoundRectangle) {
         val r = rect.rect
         val c = rect.corners
-        roundRect(r.xD, r.yD, r.widthD, r.heightD, c.topLeft.toDouble(), c.topRight.toDouble(), c.bottomLeft.toDouble(), c.bottomRight.toDouble())
+        roundRect(r.x, r.y, r.width, r.height, c.topLeft, c.topRight, c.bottomLeft, c.bottomRight)
     }
 
     fun roundRect(x: Double, y: Double, w: Double, h: Double, rx: Double, ry: Double = rx) {
