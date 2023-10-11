@@ -193,17 +193,12 @@ class UISlider(
         background.width = width
         foreground.width = width * ratio
         thumb.x = width * ratio
-        if (marksContainer.numChildren > 0) {
-            for (n in 0..nmarks1) {
-                val markRatio = Ratio(n, nmarks1)
-                val include = (markRatio >= ratio)
-                val child = marksContainer.getChildAtOrNull(n)
-                (child as? UIMaterialLayer)?.bgColor = if (include) styles.uiSelectedColor else styles.uiBackgroundColor
-            }
-        }
+
         if (showTooltip == true) {
             showTooltip(true)
         }
+
+        updatedMarks()
     }
 
     fun updatedStyles() {
@@ -216,21 +211,31 @@ class UISlider(
     }
 
     private fun updatedMarks() {
-        marksContainer.removeChildren()
-        if (!marks) return
-
-        val viewWidth = width
         val nmarks1 = this.nmarks1
-        for (n in 0 .. nmarks1) {
-            val ratio = Ratio(n, nmarks1)
-            marksContainer.uiMaterialLayer {
-                anchor(Anchor.CENTER)
-                size(2, 2)
-                shadowRadius = 0.0
-                bgColor = this@UISlider.styles.uiSelectedColor
-                radiusRatio = RectCorners(1.0)
-                xy(ratio.convertToRange(4.0, viewWidth - 4.0), 0)
+        val nmarks = nmarks1 + 1
+
+        if (marksContainer.numChildren != nmarks) {
+            marksContainer.removeChildren()
+
+            val viewWidth = width
+            for (n in 0..nmarks1) {
+                val ratio = Ratio(n, nmarks1)
+                marksContainer.uiMaterialLayer {
+                    anchor(Anchor.CENTER)
+                    size(2, 2)
+                    shadowRadius = 0.0
+                    bgColor = this@UISlider.styles.uiSelectedColor
+                    radiusRatio = RectCorners(1.0)
+                    xy(ratio.convertToRange(4.0, viewWidth - 4.0), 0)
+                }
             }
+        }
+
+        for (n in 0..nmarks1) {
+            val markRatio = Ratio(n, nmarks1)
+            val include = (markRatio >= ratio)
+            val child = marksContainer.getChildAtOrNull(n)
+            (child as? UIMaterialLayer)?.bgColor = if (include) styles.uiSelectedColor else styles.uiBackgroundColor
         }
     }
 
