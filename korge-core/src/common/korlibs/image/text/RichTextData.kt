@@ -117,6 +117,8 @@ data class RichTextData(
         val color: RGBA? = null,
         val canBreak: Boolean = true,
     ) {
+        fun withText(text: String): RichTextData = RichTextData(text, this)
+
         companion object {
             val DEFAULT = Style(textSize = 16.0, font = DefaultTtfFont)
         }
