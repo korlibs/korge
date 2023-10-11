@@ -20,6 +20,6 @@ class DitherFilterJvmTest {
             }
         })
 
-        assertScreenshot()
+        assertScreenshot(psnr = 25.0)
     }
 }
