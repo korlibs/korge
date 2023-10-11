@@ -7,6 +7,7 @@ import korlibs.io.lang.*
 import korlibs.korge.animate.*
 import korlibs.korge.annotations.*
 import korlibs.korge.style.*
+import korlibs.korge.time.*
 import korlibs.korge.tween.*
 import korlibs.korge.view.*
 import korlibs.math.geom.*
@@ -30,7 +31,7 @@ val Container.closestUITooltipContainerMediatorNew: UITooltipContainerMediatorNe
 
 @KorgeExperimental
 class UITooltipContainerMediatorNew(val container: Container) : Closeable {
-    class Tooltip(track: View, textData: RichTextData) : UIView(size = computeSize(textData)) {
+    class Tooltip(val mediator: UITooltipContainerMediatorNew, track: View, textData: RichTextData) : UIView(size = computeSize(textData)) {
         companion object {
             fun computeSize(textData: RichTextData): Size {
                 return textData.bounds().size + Size(8, 4)
@@ -60,6 +61,11 @@ class UITooltipContainerMediatorNew(val container: Container) : Closeable {
             }
         init {
             zIndex = 100000.0
+            timers.interval(0.5.seconds) {
+                if (track.stage == null) {
+                    mediator.hide(this)
+                }
+            }
         }
         fun reposition(track: View = this.track) {
             this.track = track
@@ -86,7 +92,7 @@ class UITooltipContainerMediatorNew(val container: Container) : Closeable {
         val textStyle = RichTextData.Style(DefaultTtfFontAsBitmap, textSize = 12.0)
         val textData = textStyle.withText(text)
         val _tooltip = if (update) tooltips.firstOrNull { it.track == track } else null
-        val tooltip = _tooltip ?: Tooltip(track, textData).also { tooltips += it.addTo(container) }
+        val tooltip = _tooltip ?: Tooltip(this, track, textData).also { tooltips += it.addTo(container) }
         if (!immediate && _tooltip == null) {
             tooltip.alpha = 0.0
             tooltip.simpleAnimator.tween(tooltip::alpha[1.0], time = .3.seconds)
@@ -111,7 +117,7 @@ class UITooltipContainerMediatorNew(val container: Container) : Closeable {
     }
     fun hideAll(immediate: Boolean = true): UITooltipContainerMediatorNew {
         while (tooltips.isNotEmpty()) {
-            hide(tooltips.last())
+            hide(tooltips.last(), immediate)
         }
         return this
     }
