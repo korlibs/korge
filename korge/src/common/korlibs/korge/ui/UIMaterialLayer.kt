@@ -30,9 +30,9 @@ class MaterialLayerHighlights(val view: View) {
         highlights.fastForEach(block)
     }
 
-    fun addHighlight(pos: Point, below: Boolean = false, scale: Double = 1.0) {
+    fun addHighlight(pos: Point, below: Boolean = false, scale: Double = 1.0, startRadius: Double = 0.0) {
         removeHighlights()
-        val highlight = Highlight(pos, 0.0, 1.0, below, scale)
+        val highlight = Highlight(pos, startRadius, 1.0, below, scale)
         highlights += highlight
         highlightsActive += highlight
         view.simpleAnimator.tween(highlight::radiusRatio[1.0], V2Callback { view.invalidateRender() }, time = 0.5.seconds, easing = Easing.EASE_IN)
@@ -131,7 +131,7 @@ class UIMaterialLayer(
                     color = Colors.TRANSPARENT,
                     radius = radius * it.scale,
                     highlightPos = it.pos,
-                    highlightRadius = it.radiusRatio * it.scale,
+                    highlightRadius = it.radiusRatio * scale,
                     highlightColor = highlightColor.withAd(highlightColor.ad * this.alpha),
                     //colorMul = renderColorMul,
                 )
@@ -149,8 +149,8 @@ class UIMaterialLayer(
         addHighlight(Point(0.5, 0.5), below = true)
     }
 
-    fun addHighlight(pos: Point, below: Boolean = false, scale: Double = 1.0) {
-        highlights.addHighlight(pos, below, scale)
+    fun addHighlight(pos: Point, below: Boolean = false, scale: Double = 1.0, startRadius: Double = 0.0) {
+        highlights.addHighlight(pos, below, scale, startRadius)
     }
 
     @ViewProperty
