@@ -10,7 +10,6 @@ import korlibs.korge.tween.*
 import korlibs.korge.view.*
 import korlibs.korge.view.property.*
 import korlibs.math.geom.*
-import korlibs.math.geom.collider.*
 import korlibs.math.interpolation.*
 import korlibs.time.*
 
@@ -20,7 +19,7 @@ inline fun Container.uiMaterialLayer(
 ): UIMaterialLayer = UIMaterialLayer(size).addTo(this).apply(block)
 
 class MaterialLayerHighlights(val view: View) {
-    class Highlight(var pos: Point, var radiusRatio: Double, var alpha: Double)
+    class Highlight(var pos: Point, var radiusRatio: Double, var alpha: Double, var below: Boolean)
 
     @PublishedApi internal val highlights = fastArrayListOf<Highlight>()
     private val highlightsActive = fastArrayListOf<Highlight>()
@@ -31,9 +30,9 @@ class MaterialLayerHighlights(val view: View) {
         highlights.fastForEach(block)
     }
 
-    fun addHighlight(pos: Point) {
+    fun addHighlight(pos: Point, below: Boolean) {
         removeHighlights()
-        val highlight = Highlight(pos, 0.0, 1.0)
+        val highlight = Highlight(pos, 0.0, 1.0, below)
         highlights += highlight
         highlightsActive += highlight
         view.simpleAnimator.tween(highlight::radiusRatio[1.0], V2Callback { view.invalidateRender() }, time = 0.5.seconds, easing = Easing.EASE_IN)
@@ -96,6 +95,7 @@ class UIMaterialLayer(
 
         renderCtx2d(ctx) { ctx2d ->
             //println("context.multiplyColor=${ctx2d.multiplyColor}")
+            renderHighlights(ctx2d, below = true)
             ctx2d.materialRoundRect(
                 x = -anchorDispX.toDouble(),
                 y = -anchorDispY.toDouble(),
@@ -113,7 +113,13 @@ class UIMaterialLayer(
                 borderColor = borderColor,
                 //colorMul = renderColorMul,
             )
-            highlights.fastForEach {
+            renderHighlights(ctx2d, below = false)
+        }
+    }
+
+    fun renderHighlights(ctx2d: RenderContext2D, below: Boolean) {
+        highlights.fastForEach {
+            if (below == it.below) {
                 ctx2d.materialRoundRect(
                     x = -anchorDispX.toDouble(),
                     y = -anchorDispY.toDouble(),
@@ -135,8 +141,13 @@ class UIMaterialLayer(
         addHighlight(Point(0.5, 0.5))
     }
 
-    fun addHighlight(pos: Point) {
-        highlights.addHighlight(pos)
+    @ViewProperty
+    private fun addHighlightActionBelow() {
+        addHighlight(Point(0.5, 0.5), below = true)
+    }
+
+    fun addHighlight(pos: Point, below: Boolean = false) {
+        highlights.addHighlight(pos, below)
     }
 
     @ViewProperty
