@@ -7,7 +7,6 @@ import org.gradle.api.artifacts.*
 import org.gradle.api.file.*
 import org.gradle.api.tasks.*
 import org.gradle.jvm.tasks.*
-import org.gradle.process.CommandLineArgumentProvider
 import java.io.*
 
 fun Project.findAllProjectDependencies(visited: MutableSet<Project> = mutableSetOf()): Set<Project> {
@@ -161,16 +160,14 @@ open class KorgeJavaExec : JavaExec() {
         systemProperties = (System.getProperties().toMutableMap() as MutableMap<String, Any>) - "java.awt.headless"
         defaultCharacterEncoding = Charsets.UTF_8.toString()
         // https://github.com/korlibs/korge-plugins/issues/25
-        project.afterEvaluate {
-            val firstThread = firstThread
-                ?: (
-                    System.getenv("KORGE_START_ON_FIRST_THREAD") == "true"
-                        || System.getenv("KORGW_JVM_ENGINE") == "sdl"
-                    //|| project.findProperty("korgw.jvm.engine") == "sdl"
-                    )
-            if (firstThread && isMacos) {
-                jvmArgs("-XstartOnFirstThread")
-            }
+        val firstThread = firstThread
+            ?: (
+                System.getenv("KORGE_START_ON_FIRST_THREAD") == "true"
+                    || System.getenv("KORGW_JVM_ENGINE") == "sdl"
+                //|| project.findProperty("korgw.jvm.engine") == "sdl"
+                )
+        if (firstThread && isMacos) {
+            jvmArgs("-XstartOnFirstThread")
         }
         //jvmArgumentProviders.add(provider)
     }
