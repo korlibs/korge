@@ -57,7 +57,9 @@ class UIMaterialLayer(
     @ViewProperty
     var bgColor: RGBA = Colors.WHITE; set(value) { field = value; invalidateRender() }
     @ViewProperty
-    var radius: RectCorners = RectCorners.EMPTY; set(value) { field = value; invalidateRender() }
+    var radius: RectCorners? = null; set(value) { field = value; invalidateRender() }
+    @ViewProperty
+    var radiusRatio: RectCorners? = null; set(value) { field = value; invalidateRender() }
 
     @ViewProperty
     var borderColor: RGBA = Colors.BLACK; set(value) { field = value; invalidateRender() }
@@ -93,6 +95,10 @@ class UIMaterialLayer(
 
     override fun getLocalBoundsInternal(): Rectangle = Rectangle(-anchorDispX.toDouble(), -anchorDispY.toDouble(), width, height)
 
+    private val computedRadius: RectCorners get() {
+        return radiusRatio?.times(minOf(width, height) / 2.0) ?: radius ?: RectCorners.EMPTY
+    }
+
     override fun renderInternal(ctx: RenderContext) {
         if (!visible) return
 
@@ -105,7 +111,7 @@ class UIMaterialLayer(
                 width = width,
                 height = height,
                 color = bgColor,
-                radius = radius,
+                radius = computedRadius,
                 shadowOffset = shadowOffset,
                 shadowColor = shadowColor,
                 shadowRadius = shadowRadius,
@@ -129,7 +135,7 @@ class UIMaterialLayer(
                     width = width * it.scale,
                     height = height * it.scale,
                     color = Colors.TRANSPARENT,
-                    radius = radius * it.scale,
+                    radius = computedRadius * it.scale,
                     highlightPos = it.pos,
                     highlightRadius = it.radiusRatio * scale,
                     highlightColor = highlightColor.withAd(highlightColor.ad * this.alpha),
