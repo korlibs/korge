@@ -19,7 +19,7 @@ inline fun Container.uiMaterialLayer(
 ): UIMaterialLayer = UIMaterialLayer(size).addTo(this).apply(block)
 
 class MaterialLayerHighlights(val view: View) {
-    class Highlight(var pos: Point, var radiusRatio: Double, var alpha: Double, var below: Boolean)
+    class Highlight(var pos: Point, var radiusRatio: Double, var alpha: Double, var below: Boolean = false, var scale: Double = 1.0)
 
     @PublishedApi internal val highlights = fastArrayListOf<Highlight>()
     private val highlightsActive = fastArrayListOf<Highlight>()
@@ -30,9 +30,9 @@ class MaterialLayerHighlights(val view: View) {
         highlights.fastForEach(block)
     }
 
-    fun addHighlight(pos: Point, below: Boolean) {
+    fun addHighlight(pos: Point, below: Boolean = false, scale: Double = 1.0) {
         removeHighlights()
-        val highlight = Highlight(pos, 0.0, 1.0, below)
+        val highlight = Highlight(pos, 0.0, 1.0, below, scale)
         highlights += highlight
         highlightsActive += highlight
         view.simpleAnimator.tween(highlight::radiusRatio[1.0], V2Callback { view.invalidateRender() }, time = 0.5.seconds, easing = Easing.EASE_IN)
@@ -74,6 +74,9 @@ class UIMaterialLayer(
     var shadowRadius: Double = 10.0; set(value) { field = value; invalidateRender() }
     @ViewProperty
     var shadowOffset: Point = Point.ZERO; set(value) { field = value; invalidateRender() }
+
+    @ViewProperty
+    var highlightColor: RGBA = Colors.WHITE.withAd(0.4)
 
     private val highlights = MaterialLayerHighlights(this)
 
@@ -121,15 +124,15 @@ class UIMaterialLayer(
         highlights.fastForEach {
             if (below == it.below) {
                 ctx2d.materialRoundRect(
-                    x = -anchorDispX.toDouble(),
-                    y = -anchorDispY.toDouble(),
-                    width = width,
-                    height = height,
+                    x = -anchorDispX.toDouble() * it.scale,
+                    y = -anchorDispY.toDouble() * it.scale,
+                    width = width * it.scale,
+                    height = height * it.scale,
                     color = Colors.TRANSPARENT,
-                    radius = radius,
+                    radius = radius * it.scale,
                     highlightPos = it.pos,
-                    highlightRadius = it.radiusRatio,
-                    highlightColor = Colors.WHITE.withAd(it.alpha * 0.4),
+                    highlightRadius = it.radiusRatio * it.scale,
+                    highlightColor = highlightColor.withAd(highlightColor.ad * this.alpha),
                     //colorMul = renderColorMul,
                 )
             }
@@ -146,8 +149,8 @@ class UIMaterialLayer(
         addHighlight(Point(0.5, 0.5), below = true)
     }
 
-    fun addHighlight(pos: Point, below: Boolean = false) {
-        highlights.addHighlight(pos, below)
+    fun addHighlight(pos: Point, below: Boolean = false, scale: Double = 1.0) {
+        highlights.addHighlight(pos, below, scale)
     }
 
     @ViewProperty
