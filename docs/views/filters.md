@@ -172,6 +172,16 @@ view.filter = SwizzleColorsFilter("bgra")
 
 ![](/i/filters/swizzle_color.avif)
 
+## DitheringFilter
+
+It can simulate a dithering from a posterization:
+
+```kotlin
+view.filter = DitheringFilter(levels = 2.0)
+```
+
+![](/i/filters/dithering_filter.avif)
+
 ## Backdrop Filters
 
 It is possible to render filters as backdrop
