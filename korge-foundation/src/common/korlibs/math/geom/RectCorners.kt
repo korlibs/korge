@@ -15,6 +15,10 @@ data class RectCorners(
 
     companion object {
         val EMPTY = RectCorners(0)
+        val ZERO = RectCorners(0)
+        val ONE = RectCorners(1.0)
+        val MINUS_ONE = RectCorners(-1.0)
+        val NaN = RectCorners(Double.NaN)
 
         inline operator fun invoke(corner: Number): RectCorners = RectCorners(corner.toDouble(), corner.toDouble(), corner.toDouble(), corner.toDouble())
         inline operator fun invoke(topLeftBottomRight: Number, topRightAndBottomLeft: Number): RectCorners = RectCorners(topLeftBottomRight.toDouble(), topRightAndBottomLeft.toDouble(), topLeftBottomRight.toDouble(), topRightAndBottomLeft.toDouble())
