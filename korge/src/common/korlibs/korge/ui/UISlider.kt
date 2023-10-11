@@ -132,6 +132,9 @@ class UISlider(
                 field = rvalue
                 readjust()
                 onChange(rvalue)
+                if (showTooltip != false) {
+                    showTooltip(true)
+                }
             }
         }
 
@@ -157,7 +160,7 @@ class UISlider(
             }
         }
 
-    private val nmarks1: Int get() = ((max - min) / step).toIntCeil()
+    private val nmarks1: Int get() = minOf((width / 4).toIntCeil() + 1, ((max - min) / step).toIntCeil())
 
     private var ratio: Ratio
         get() = value.convertRangeClamped(min, max, 0.0, 1.0).toRatio()
@@ -175,11 +178,13 @@ class UISlider(
         if (show) updateTooltip() else updateTooltip(null)
     }
 
-    private fun updateTooltip(value: String? = this.value.niceStr(decimalPlacesFromStep(step))) {
+    private fun updateTooltip(value: String? = this.value.niceStr(decimalPlacesFromStep(step), zeroSuffix = true)) {
         if (value == null) {
             tooltip?.let { tooltipContainer?.hide(it) }
         } else {
-            tooltip = tooltipContainer?.show(thumb, value)
+            val maxNumber = (if (min < 0.0) "-" else "") + "9".repeat(this.max.toIntCeil().numberOfDigits(radix = 10)) + "." + "9".repeat(decimalPlacesFromStep(step))
+
+            tooltip = tooltipContainer?.show(thumb, value, maxNumber)
         }
     }
 
@@ -188,13 +193,15 @@ class UISlider(
         background.width = width
         foreground.width = width * ratio
         thumb.x = width * ratio
-        for (n in 0..nmarks1) {
-            val markRatio = Ratio(n, nmarks1)
-            val include = (markRatio >= ratio)
-            val child = marksContainer.getChildAtOrNull(n)
-            (child as? UIMaterialLayer)?.bgColor = if (include) styles.uiSelectedColor else styles.uiBackgroundColor
+        if (marksContainer.numChildren > 0) {
+            for (n in 0..nmarks1) {
+                val markRatio = Ratio(n, nmarks1)
+                val include = (markRatio >= ratio)
+                val child = marksContainer.getChildAtOrNull(n)
+                (child as? UIMaterialLayer)?.bgColor = if (include) styles.uiSelectedColor else styles.uiBackgroundColor
+            }
         }
-        if (showTooltip != false) {
+        if (showTooltip == true) {
             showTooltip(true)
         }
     }
@@ -239,8 +246,13 @@ class UISlider(
     override fun onParentChanged() {
         super.onParentChanged()
         tooltipContainer?.close()
+        tooltipContainer = parent?.closestUITooltipContainerMediatorNew
         updatedStyles()
-        tooltipContainer = parent?.uiTooltipContainerMediatorNew
         //println("tooltipContainer = $tooltipContainer")
     }
+}
+
+fun <T : UISlider> T.changed(block: (Double) -> Unit): T {
+    onChange.add(block)
+    return this
 }

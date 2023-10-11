@@ -12,9 +12,20 @@ import korlibs.korge.view.*
 import korlibs.math.geom.*
 import korlibs.time.*
 
+private val uiTooltipContainerMediatorNewKey: String = "uiTooltipContainerMediatorNew"
+
 @KorgeExperimental
-val Container.uiTooltipContainerMediatorNew by Extra.PropertyThis {
+val Container.uiTooltipContainerMediatorNew: UITooltipContainerMediatorNew by Extra.PropertyThis(uiTooltipContainerMediatorNewKey) {
     UITooltipContainerMediatorNew(this)
+}
+
+@KorgeExperimental
+val Container.closestUITooltipContainerMediatorNew: UITooltipContainerMediatorNew get() {
+    if (this.extra?.contains(uiTooltipContainerMediatorNewKey) == true) {
+        return this.uiTooltipContainerMediatorNew
+    } else {
+        return parent?.closestUITooltipContainerMediatorNew ?: uiTooltipContainerMediatorNew
+    }
 }
 
 @KorgeExperimental
@@ -37,13 +48,15 @@ class UITooltipContainerMediatorNew(val container: Container) : Closeable {
             this.align = TextAlignment.MIDDLE_CENTER
             //this.alignment = TextAlignment.MIDDLE_CENTER
         }
+        var textDataForFit: RichTextData = textData
+            set(value) {
+                field = value
+                textView.text = textData
+            }
         var textData: RichTextData = textData
             set(value) {
                 field = value
-                this.size = computeSize(textData)
-                textView.text = textData
-                textView.size = size
-                backgroundView.size = size
+                textView.text = value
             }
         init {
             zIndex = 100000.0
@@ -54,6 +67,13 @@ class UITooltipContainerMediatorNew(val container: Container) : Closeable {
             val tooltipBounds = this.getGlobalBounds()
             this.globalPos = bounds.getAnchoredPoint(Anchor.TOP_CENTER) - Vector2D(tooltipBounds.width * 0.5, tooltipBounds.height + 4.0)
         }
+        fun resize(textData: RichTextData) {
+            val size = computeSize(textData)
+            //println("resize=$size")
+            this.size = size
+            textView.size = size
+            backgroundView.size = size
+        }
 
         override fun onParentChanged() {
             reposition()
@@ -62,16 +82,19 @@ class UITooltipContainerMediatorNew(val container: Container) : Closeable {
 
     private val tooltips = arrayListOf<Tooltip>()
 
-    fun show(track: View, text: String, update: Boolean = true, immediate: Boolean = false): Tooltip {
-        val textData = RichTextData(text, textSize = 12.0, font = DefaultTtfFontAsBitmap)
+    fun show(track: View, text: String, maxTextSize: String = text, update: Boolean = true, immediate: Boolean = false): Tooltip {
+        val textStyle = RichTextData.Style(DefaultTtfFontAsBitmap, textSize = 12.0)
+        val textData = textStyle.withText(text)
         val _tooltip = if (update) tooltips.firstOrNull { it.track == track } else null
         val tooltip = _tooltip ?: Tooltip(track, textData).also { tooltips += it.addTo(container) }
         if (!immediate && _tooltip == null) {
             tooltip.alpha = 0.0
             tooltip.simpleAnimator.tween(tooltip::alpha[1.0], time = .3.seconds)
         }
-        tooltip.reposition()
+        tooltip.resize(textStyle.withText(maxTextSize))
         tooltip.textData = textData
+        tooltip.reposition()
+        //println("maxTextSize=$maxTextSize")
         return tooltip
     }
 
