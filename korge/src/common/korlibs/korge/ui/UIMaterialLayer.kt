@@ -49,8 +49,7 @@ class UIMaterialLayer(
         fun removeHighlight(highlight: Highlight) {
             view.simpleAnimator.sequence {
                 tween(
-                    highlight::alpha[0.0],
-                    highlight::radiusRatio[0.0],
+                    if (highlight.below) highlight::radiusRatio[0.0] else highlight::alpha[0.0],
                     V2Callback { view.invalidateRender() }, time = 0.3.seconds, easing = Easing.EASE_IN)
                 block { highlights.remove(highlight) }
             }
