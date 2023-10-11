@@ -19,6 +19,8 @@ inline fun Container.uiMaterialLayer(
     block: @ViewDslMarker UIMaterialLayer.() -> Unit = {}
 ): UIMaterialLayer = UIMaterialLayer(size).addTo(this).apply(block)
 
+typealias MaterialLayerHighlights = UIMaterialLayer.Highlights
+
 @OptIn(KorgeInternal::class, KorgeExperimental::class)
 class UIMaterialLayer(
     size: Size = Size(100, 100),
