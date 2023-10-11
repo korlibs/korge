@@ -1,6 +1,7 @@
 package korlibs.korge.ui
 
 import korlibs.datastructure.*
+import korlibs.datastructure.iterators.*
 import korlibs.image.color.*
 import korlibs.korge.animate.*
 import korlibs.korge.annotations.*
@@ -18,42 +19,54 @@ inline fun Container.uiMaterialLayer(
     block: @ViewDslMarker UIMaterialLayer.() -> Unit = {}
 ): UIMaterialLayer = UIMaterialLayer(size).addTo(this).apply(block)
 
-class MaterialLayerHighlights(val view: View) {
-    class Highlight(var pos: Point, var radiusRatio: Double, var alpha: Double, var below: Boolean = false, var scale: Double = 1.0)
-
-    @PublishedApi internal val highlights = fastArrayListOf<Highlight>()
-    private val highlightsActive = fastArrayListOf<Highlight>()
-
-    val size: Int get() = highlights.size
-
-    inline fun fastForEach(block: (Highlight) -> Unit) {
-        highlights.fastForEach(block)
-    }
-
-    fun addHighlight(pos: Point, below: Boolean = false, scale: Double = 1.0, startRadius: Double = 0.0) {
-        removeHighlights()
-        val highlight = Highlight(pos, startRadius, 1.0, below, scale)
-        highlights += highlight
-        highlightsActive += highlight
-        view.simpleAnimator.tween(highlight::radiusRatio[1.0], V2Callback { view.invalidateRender() }, time = 0.5.seconds, easing = Easing.EASE_IN)
-    }
-
-    @ViewProperty
-    fun removeHighlights() {
-        highlightsActive.fastForEach {
-            view.simpleAnimator.sequence {
-                tween(it::alpha[0.0].delay(0.1.seconds), V2Callback { view.invalidateRender() }, time = 0.3.seconds, easing = Easing.EASE_IN)
-                block { highlights.remove(it) }
-            }
-        }
-        highlightsActive.clear()
-    }
-}
-
 @OptIn(KorgeInternal::class, KorgeExperimental::class)
 class UIMaterialLayer(
     size: Size = Size(100, 100),
 ) : UIView(size), ViewLeaf, Anchorable {
+    class Highlight(var pos: Point, var radiusRatio: Double, var alpha: Double, var below: Boolean = false, var scale: Double = 1.0)
+
+    class Highlights(val view: View) {
+        @PublishedApi internal val highlights = fastArrayListOf<Highlight>()
+        private val highlightsActive = fastArrayListOf<Highlight>()
+
+        val size: Int get() = highlights.size
+
+        inline fun fastForEach(block: (Highlight) -> Unit) {
+            highlights.fastForEach(block)
+        }
+
+        fun addHighlight(pos: Point, below: Boolean = false, scale: Double = 1.0, startRadius: Double = 0.0): Highlight {
+            removeHighlights()
+            val highlight = Highlight(pos, startRadius, 1.0, below, scale)
+            highlights += highlight
+            highlightsActive += highlight
+            view.simpleAnimator.tween(highlight::radiusRatio[1.0], V2Callback { view.invalidateRender() }, time = 0.5.seconds, easing = Easing.EASE_IN)
+            return highlight
+        }
+
+        fun removeHighlight(highlight: Highlight) {
+            view.simpleAnimator.sequence {
+                tween(
+                    highlight::alpha[0.0],
+                    highlight::radiusRatio[0.0],
+                    V2Callback { view.invalidateRender() }, time = 0.3.seconds, easing = Easing.EASE_IN)
+                block { highlights.remove(highlight) }
+            }
+            highlightsActive.remove(highlight)
+        }
+
+        fun removeHighlights(highlights: List<Highlight>) {
+            highlights.toList().fastForEach { removeHighlight(it) }
+            //highlightsActive.clear()
+        }
+
+        @ViewProperty
+        fun removeHighlights() {
+            removeHighlights(highlightsActive)
+        }
+    }
+
+
     @ViewProperty
     var bgColor: RGBA = Colors.WHITE; set(value) { field = value; invalidateRender() }
     @ViewProperty
@@ -80,7 +93,7 @@ class UIMaterialLayer(
     @ViewProperty
     var highlightColor: RGBA = Colors.WHITE.withAd(0.4)
 
-    private val highlights = MaterialLayerHighlights(this)
+    private val highlights = Highlights(this)
 
     override var anchor: Anchor = Anchor.TOP_LEFT
         set(value) {
@@ -138,7 +151,7 @@ class UIMaterialLayer(
                     radius = computedRadius * it.scale,
                     highlightPos = it.pos,
                     highlightRadius = it.radiusRatio * scale,
-                    highlightColor = highlightColor.withAd(highlightColor.ad * this.alpha),
+                    highlightColor = highlightColor.withAd(highlightColor.ad * it.alpha),
                     //colorMul = renderColorMul,
                 )
             }
@@ -155,8 +168,16 @@ class UIMaterialLayer(
         addHighlight(Point(0.5, 0.5), below = true)
     }
 
-    fun addHighlight(pos: Point, below: Boolean = false, scale: Double = 1.0, startRadius: Double = 0.0) {
-        highlights.addHighlight(pos, below, scale, startRadius)
+    fun addHighlight(pos: Point, below: Boolean = false, scale: Double = 1.0, startRadius: Double = 0.0): Highlight {
+        return highlights.addHighlight(pos, below, scale, startRadius)
+    }
+
+    fun removeHighlight(highlight: Highlight) {
+        highlights.removeHighlight(highlight)
+    }
+
+    fun removeHighlights(highlights: List<Highlight>) {
+        this.highlights.removeHighlights(highlights)
     }
 
     @ViewProperty
