@@ -4,7 +4,6 @@ import korlibs.io.async.*
 import korlibs.io.lang.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
-import kotlin.js.*
 import kotlin.reflect.*
 
 @PublishedApi
@@ -15,10 +14,20 @@ expect annotation class WorkerExport()
 val DEBUG_WORKER = Environment["DEBUG_WORKER"] == "true"
 
 open class _WorkerImpl {
+    open val isAvailable: Boolean get() = true
     open fun insideWorker(): Boolean = false
     open fun createWorker(): Any? = null
     open fun destroyWorker(worker: Any?) = Unit
-    open suspend fun <T : WorkerTask> execute(worker: Any?, clazz: KClass<T>, create: () -> T, params: Array<out Any?>): Any? = Unit
+    open suspend fun <T : WorkerTask> execute(worker: Any?, clazz: KClass<T>, create: () -> T, params: Array<out Any?>): Any? {
+        val task = create()
+        task.params = params.toList()
+        task.execute()
+        val result = task.result
+        return when (result) {
+            is Deferred<*> -> result.await()
+            else -> result
+        }
+    }
 }
 
 @WorkerExport

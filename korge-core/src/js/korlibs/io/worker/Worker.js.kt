@@ -9,7 +9,6 @@ import kotlinx.coroutines.*
 import org.w3c.dom.events.*
 import org.w3c.workers.*
 import kotlin.coroutines.*
-import kotlin.js.*
 import kotlin.js.Promise
 import kotlin.reflect.*
 
@@ -17,10 +16,12 @@ actual typealias WorkerExport = JsExport
 
 //val isWorker: Boolean get() = js("(typeof importScripts === 'function')").unsafeCast<Boolean>()
 val isWorker: Boolean get() = js("(typeof DedicatedWorkerGlobalScope === 'function')").unsafeCast<Boolean>()
-var workerUrl = js("(globalThis.location)") ?: (if (isDenoJs) Deno.mainModule else ".")
+var workerUrl: String? = js("(globalThis.location)") ?: (if (isDenoJs) Deno.mainModule else ".")
 
 @PublishedApi
 internal actual val workerImpl: _WorkerImpl = object : _WorkerImpl() {
+    override val isAvailable: Boolean get() = workerUrl != null
+
     override fun insideWorker(): Boolean {
         //println("import.meta.url: " + js("(import.meta.url)"))
         //println("DedicatedWorkerGlobalScope: " + js("(globalThis.DedicatedWorkerGlobalScope)"))
@@ -28,15 +29,19 @@ internal actual val workerImpl: _WorkerImpl = object : _WorkerImpl() {
         //if (isDenoJs) println("Deno.mainModule: " + js("(Deno.mainModule)"))
         workerUrl = when {
             isDenoJs -> Deno.mainModule
-            else -> JSStackTrace.current().entries.last().file
+            else -> JSStackTrace.current().entries.lastOrNull()?.file
+        }
+
+        if (workerUrl == null) {
+            println("workerUrl = null, STACKTRACE:" + Exception().stackTraceToString())
         }
         //Exception().printStackTrace()
 
-        if (isWorker) {
+        if (isWorker && isAvailable) {
             jsGlobalThis.asDynamic().onmessage = { evt: ServiceWorkerMessageEvent ->
                 val input = evt.data.unsafeCast<Array<Any?>>()
                 val id = input[0].unsafeCast<String>()
-                val moduleUrl = input[1].unsafeCast<String?>() ?: workerUrl
+                val moduleUrl = input[1].unsafeCast<String?>() ?: workerUrl ?: "."
                 val clazzName = input[2].unsafeCast<String>()
                 val params = input.drop(3)
                 //console.log("RECEIVED EVENT", input)
@@ -100,6 +105,10 @@ internal actual val workerImpl: _WorkerImpl = object : _WorkerImpl() {
         create: () -> T,
         params: Array<out Any?>
     ): Any? {
+        if (!isAvailable) {
+            return super.execute(worker, clazz, create, params)
+        }
+
         val stacktrace = JSStackTrace.parse(clazz.instantiate().getModuleStacktrace())
         val module = stacktrace.entries[1].file
 
