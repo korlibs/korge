@@ -113,8 +113,10 @@ fun Project.configureEsbuild() {
                     addAll(esbuildCmd)
                     //add("--watch",)
                     add("--bundle")
-                    add("--minify")
-                    add("--sourcemap=external")
+                    if (!debug) {
+                        add("--minify")
+                        add("--sourcemap=external")
+                    }
                     add(jsPath)
                     add("--outfile=$output")
                     // @TODO: Close this command on CTRL+C
