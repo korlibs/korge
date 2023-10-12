@@ -2,8 +2,8 @@ package korlibs.io.worker
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.*
-import java.io.Closeable
-import java.util.concurrent.atomic.AtomicInteger
+import java.io.*
+import java.util.concurrent.atomic.*
 import kotlin.concurrent.*
 import kotlin.reflect.*
 
@@ -22,6 +22,20 @@ private data class ExecuteInfo(val id: Int, val clazz: KClass<out WorkerTask>, v
 
 @PublishedApi
 internal actual val workerImpl: _WorkerImpl = object : _WorkerImpl() {
+    override fun init() {
+        super.init()
+        // @TODO: Required for now for Java >= 19
+        // Eventually we should render everything into a texture, and then draw it with metal or OpenGL.
+        // For metal: https://developer.apple.com/documentation/metal/metal_sample_code_library/mixing_metal_and_opengl_rendering_in_a_view
+        // Or directly render with metal.
+        // We could also investigate:
+        // - Dawn: https://github.com/hexops/dawn
+        // - Angle: https://github.com/google/angle
+        // Alternatively we could create a native Window using JNA/FFI and not relying on Java AWT
+        System.setProperty("sun.java2d.metal", "false")
+        System.setProperty("sun.java2d.opengl", "true")
+    }
+
     override fun insideWorker(): Boolean {
         return false
     }

@@ -15,6 +15,7 @@ val DEBUG_WORKER = Environment["DEBUG_WORKER"] == "true"
 
 open class _WorkerImpl {
     open val isAvailable: Boolean get() = true
+    open fun init(): Unit = Unit
     open fun insideWorker(): Boolean = false
     open fun createWorker(): Any? = null
     open fun destroyWorker(worker: Any?) = Unit
@@ -87,6 +88,7 @@ class Worker : Closeable {
 
     companion object {
         inline fun init(block: () -> Unit): Unit {
+            workerImpl.init()
             if (workerImpl.insideWorker()) {
                 if (DEBUG_WORKER) println("INSIDE WORKER")
                 return
