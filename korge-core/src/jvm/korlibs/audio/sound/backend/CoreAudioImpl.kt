@@ -3,6 +3,7 @@ package korlibs.audio.sound.backend
 import com.sun.jna.*
 import korlibs.audio.sound.*
 import korlibs.ffi.*
+import korlibs.io.annotations.*
 import korlibs.memory.dyn.*
 import java.util.concurrent.*
 import java.util.concurrent.atomic.*
@@ -197,6 +198,7 @@ private fun interface AudioQueueNewOutputCallback : Callback {
     fun callback(inUserData: Pointer?, inAQ: Pointer?, inBuffer: Pointer?): Int
 }
 
+@Keep
 private object CoreAudioKit {
     @JvmStatic external fun AudioQueueNewOutput(
         inFormat: Pointer?,
@@ -221,6 +223,7 @@ private object CoreAudioKit {
     }
 }
 
+@Keep
 private object CoreFoundation {
     val library = NativeLibrary.getInstance("CoreFoundation")
     @JvmStatic val kCFRunLoopCommonModes: Pointer? = library.getGlobalVariableAddress("kCFRunLoopCommonModes").getPointer(0L)

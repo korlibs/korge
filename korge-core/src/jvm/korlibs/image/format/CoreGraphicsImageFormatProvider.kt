@@ -2,21 +2,20 @@ package korlibs.image.format
 
 import com.sun.jna.*
 import korlibs.image.awt.*
-import korlibs.image.bitmap.*
 import korlibs.image.color.*
+import korlibs.io.annotations.*
 import korlibs.io.file.*
 import korlibs.io.file.std.*
-import korlibs.memory.dyn.*
 import korlibs.memory.dyn.osx.*
 import korlibs.time.*
 import kotlinx.coroutines.*
-import sun.misc.Unsafe
 import java.awt.image.*
 import java.io.*
 
 open class CoreGraphicsImageFormatProvider : AwtNativeImageFormatProvider() {
     companion object : CoreGraphicsImageFormatProvider()
 
+    @Keep
     object CoreFoundation {
         // CFNumberGetValue(number: platform.CoreFoundation.CFNumberRef? /* = kotlinx.cinterop.CPointer<cnames.structs.__CFNumber>? */, theType: platform.CoreFoundation.CFNumberType /* = kotlin.Int */, valuePtr: kotlinx.cinterop.CValuesRef<*>?): kotlin.Boolean { /* compiled code */ }
         val LIB = "/System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation"
@@ -39,6 +38,7 @@ open class CoreGraphicsImageFormatProvider : AwtNativeImageFormatProvider() {
         }
     }
 
+    @Keep
     object CoreGraphics {
         val LIB = "/System/Library/Frameworks/CoreGraphics.framework/Versions/A/CoreGraphics"
 
@@ -73,6 +73,7 @@ open class CoreGraphicsImageFormatProvider : AwtNativeImageFormatProvider() {
             Native.register(LIB)
         }
     }
+    @Keep
     object ImageIO {
         val LIB = "/System/Library/Frameworks/ImageIO.framework/Versions/A/ImageIO"
 

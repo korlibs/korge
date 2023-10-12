@@ -1,16 +1,17 @@
 package korlibs.audio.sound.impl.jna
 
-import korlibs.logger.Logger
-import korlibs.io.lang.Environment
-import korlibs.io.time.traceTime
-import com.sun.jna.Native
-import com.sun.jna.Pointer
-import korlibs.platform.*
-import java.io.File
-import java.net.URL
-import java.nio.Buffer
+import com.sun.jna.*
+import korlibs.io.annotations.*
+import korlibs.io.lang.*
+import korlibs.io.time.*
+import korlibs.logger.*
+import korlibs.platform.Platform
+import java.io.*
+import java.net.*
+import java.nio.*
 
 @Suppress("unused")
+@Keep
 object AL {
     private val logger = Logger("AL")
 
