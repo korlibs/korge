@@ -153,54 +153,11 @@ private fun Project.configureJvmTest() {
     }
 }
 
-open class PatchedProGuardTask : ProGuardTask() {
-    @Internal override fun getadaptresourcefilenames(): Any = super.getadaptresourcefilenames()
-    @Internal override fun getadaptresourcefilecontents(): Any = super.getadaptresourcefilecontents()
-    @Internal override fun getallowaccessmodification(): Any = super.getallowaccessmodification()
-    @Internal override fun getaddconfigurationdebugging(): Any = super.getaddconfigurationdebugging()
-    @Internal override fun getadaptclassstrings(): Any = super.getadaptclassstrings()
-    @Internal override fun getdontoptimize(): Any = super.getdontoptimize()
-    @Internal override fun getdontobfuscate(): Any = super.getdontobfuscate()
-    @Internal override fun getdontwarn(): Any = super.getdontwarn()
-    @Internal override fun getdontnote(): Any = super.getdontnote()
-    @Internal override fun getConfigurationFiles(): MutableList<Any?> = super.getConfigurationFiles()
-    @Internal override fun getandroid(): Any = super.getandroid()
-    @Internal override fun getdontusemixedcaseclassnames(): Any = super.getdontusemixedcaseclassnames()
-    @Internal override fun getdontskipnonpubliclibraryclassmembers(): Any = super.getdontskipnonpubliclibraryclassmembers()
-    @Internal override fun getdontshrink(): Any = super.getdontshrink()
-    @Internal override fun getdontpreverify(): Any = super.getdontpreverify()
-    @Internal override fun getInJarCounts(): MutableList<Any?> = super.getInJarCounts()
-    @Internal override fun getignorewarnings(): Any = super.getignorewarnings()
-    @Internal override fun getflattenpackagehierarchy(): Any = super.getflattenpackagehierarchy()
-    @Internal override fun getdump(): Any = super.getdump()
-    @Internal override fun getkeepdirectories(): Any = super.getkeepdirectories()
-    @Internal override fun getkeepattributes(): Any = super.getkeepattributes()
-    @Internal override fun getInJarFiles(): MutableList<Any?> = super.getInJarFiles()
-    @Internal override fun getInJarFilters(): MutableList<Any?> = super.getInJarFilters()
-    @Internal override fun getforceprocessing(): Any = super.getforceprocessing()
-    @Internal override fun getmergeinterfacesaggressively(): Any = super.getmergeinterfacesaggressively()
-    @Internal override fun getLibraryJarFilters(): MutableList<Any?> = super.getLibraryJarFilters()
-    @Internal override fun getLibraryJarFiles(): MutableList<Any?> = super.getLibraryJarFiles()
-    @Internal override fun getskipnonpubliclibraryclasses(): Any = super.getskipnonpubliclibraryclasses()
-    @Internal override fun getprintseeds(): Any = super.getprintseeds()
-    @Internal override fun getprintusage(): Any = super.getprintusage()
-    @Internal override fun getprintmapping(): Any = super.getprintmapping()
-    @Internal override fun getoverloadaggressively(): Any = super.getoverloadaggressively()
-    @Internal override fun getuseuniqueclassmembernames(): Any = super.getuseuniqueclassmembernames()
-    @Internal override fun getkeeppackagenames(): Any = super.getkeeppackagenames()
-    @Internal override fun getrepackageclasses(): Any = super.getrepackageclasses()
-    @Internal override fun getkeepparameternames(): Any = super.getkeepparameternames()
-    @Internal override fun getrenamesourcefileattribute(): Any = super.getrenamesourcefileattribute()
-    @Internal override fun getmicroedition(): Any = super.getmicroedition()
-    @Internal override fun getverbose(): Any = super.getverbose()
-    @Internal override fun getprintconfiguration(): Any = super.getprintconfiguration()
-    @Internal override fun getOutJarFiles(): MutableList<Any?> = super.getOutJarFiles()
-    @Internal override fun getOutJarFilters(): MutableList<Any?> = super.getOutJarFilters()
-}
-
 private fun Project.addProguard() {
 	// packageJvmFatJar
 	val packageJvmFatJar = project.tasks.createThis<org.gradle.jvm.tasks.Jar>("packageJvmFatJar") {
+        dependsOn("jvmJar")
+        //entryCompression = ZipEntryCompression.STORED
         archiveBaseName.set("${project.name}-all")
 		group = GROUP_KORGE_PACKAGE
 		exclude(
@@ -232,7 +189,8 @@ private fun Project.addProguard() {
 					mapOf(
 						"Implementation-Title" to korge.realJvmMainClassName,
 						"Implementation-Version" to project.version.toString(),
-						"Main-Class" to korge.realJvmMainClassName
+						"Main-Class" to korge.realJvmMainClassName,
+                        "Add-Opens" to JvmAddOpens.jvmAddOpensList().joinToString(" "),
 					)
 				)
 			}
@@ -242,17 +200,63 @@ private fun Project.addProguard() {
 				project.gkotlin.targets.jvm.compilations.main.runtimeDependencyFiles.map { if (it.isDirectory) it else project.zipTree(it) as Any }
 				//listOf<File>()
 			})
-			with(project.getTasksByName("jvmJar", true).first() as CopySpec)
+            //val jvmJarTask = project.getTasksByName("jvmJar", true).first { it.project == project } as CopySpec
+            val jvmJarTask = project.getTasksByName("jvmJar", false).first() as Jar
+            //jvmJarTask.entryCompression = ZipEntryCompression.STORED
+            with(jvmJarTask)
+            //println("jvmJarTask=$jvmJarTask")
 		}
 	}
 
-	project.tasks.createThis<PatchedProGuardTask>("packageJvmFatJarProguard") {
+	project.tasks.createThis<ProGuardTask>("packageJvmFatJarProguard") {
         dependsOn(packageJvmFatJar)
 		group = GROUP_KORGE_PACKAGE
+        val serializationProFile = File(buildDir, "/serialization.pro")
+
+        doFirst {
+            serializationProFile.writeTextIfChanged("""
+                # Keep `Companion` object fields of serializable classes.
+                # This avoids serializer lookup through `getDeclaredClasses` as done for named companion objects.
+                -if @kotlinx.serialization.Serializable class **
+                -keepclassmembers class <1> {
+                    static <1>${'$'}Companion Companion;
+                }
+
+                # Keep `serializer()` on companion objects (both default and named) of serializable classes.
+                -if @kotlinx.serialization.Serializable class ** {
+                    static **${'$'}* *;
+                }
+                -keepclassmembers class <2>${'$'}<3> {
+                    kotlinx.serialization.KSerializer serializer(...);
+                }
+
+                # Keep `INSTANCE.serializer()` of serializable objects.
+                -if @kotlinx.serialization.Serializable class ** {
+                    public static ** INSTANCE;
+                }
+                -keepclassmembers class <1> {
+                    public static <1> INSTANCE;
+                    kotlinx.serialization.KSerializer serializer(...);
+                }
+
+                # @Serializable and @Polymorphic are used at runtime for polymorphic serialization.
+                -keepattributes RuntimeVisibleAnnotations,AnnotationDefault
+
+                # Don't print notes about potential mistakes or omissions in the configuration for kotlinx-serialization classes
+                # See also https://github.com/Kotlin/kotlinx.serialization/issues/1900
+                -dontnote kotlinx.serialization.**
+
+                # Serialization core uses `java.lang.ClassValue` for caching inside these specified classes.
+                # If there is no `java.lang.ClassValue` (for example, in Android), then R8/ProGuard will print a warning.
+                # However, since in this case they will not be used, we can disable these warnings
+                -dontwarn kotlinx.serialization.internal.ClassValueReferences
+            """.trimIndent())
+        }
 		project.afterEvaluate {
-			libraryjars("${System.getProperty("java.home")}/lib/rt.jar")
+			val javaHome = System.getProperty("java.home")
+            libraryjars("$javaHome/lib/rt.jar")
 			// Support newer java versions that doesn't have rt.jar
-			libraryjars(project.fileTree("${System.getProperty("java.home")}/jmods/") {
+			libraryjars(project.fileTree("$javaHome/jmods/") {
                 it.include("**/java.*.jmod")
 			})
 			//println(packageJvmFatJar.outputs.files.toList())
@@ -269,16 +273,33 @@ private fun Project.addProguard() {
                 }
             """.trimIndent())
 
+            this.configuration(serializationProFile)
+
 			keepnames("class com.sun.jna.** { *; }")
 			keepnames("class * extends com.sun.jna.** { *; }")
+            keepnames("class * implements com.sun.jna.Library { *; }")
+            keepnames("class * extends korlibs.ffi.FFILib { *; }")
+            keepnames("@korlibs.io.annotations.Keep class * { *; }")
+            keepnames("@kotlinx.serialization class * { *; }")
+            keepclassmembernames("class * { @korlibs.io.annotations.Keep *; }")
+            keepclassmembernames("@korlibs.io.annotations.Keep class * { *; }")
+            keepclassmembernames("@korlibs.io.annotations.Keep interface * { *; }")
+            //keepnames("@korlibs.io.annotations.Keep interface *")
+            //keepnames("class korlibs.render.platform.INativeGL")
+
+
 			//task.keepnames("class org.jcodec.** { *; }")
 			keepattributes()
 			keep("class * implements com.sun.jna.** { *; }")
 			keep("class com.sun.jna.** { *; }")
-			keep("class ${project.korge.realJvmMainClassName} { *; }")
 			keep("class org.jcodec.** { *; }")
+            //keep("class korlibs.ffi.** { *; }")
+            keep("@korlibs.io.annotations.Keep class * { *; }")
+            keep("@kotlinx.serialization class * { *; }")
+            keep("class * implements korlibs.korge.ViewsCompleter { *; }")
 
 			if (korge.realJvmMainClassName.isNotBlank()) {
+                keep("class ${project.korge.realJvmMainClassName} { *; }")
 				keep("""public class ${korge.realJvmMainClassName} { public static void main(java.lang.String[]); }""")
 			}
 		}

@@ -7,6 +7,7 @@ import korlibs.datastructure.*
 import korlibs.event.*
 import korlibs.ffi.*
 import korlibs.graphics.shader.gl.*
+import korlibs.io.annotations.*
 import korlibs.render.platform.*
 
 
@@ -588,6 +589,7 @@ internal class MyXMotionEvent(p: FFIPointer? = null) : FFIStructure(p) {
     var same_screen by int()
 }
 
+@Keep
 object EGL {
     external fun eglGetDisplay(displayType: Long): Pointer?
     external fun eglInitialize(display: Pointer?, major: Pointer?, minor: Pointer?): Boolean

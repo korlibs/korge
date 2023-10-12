@@ -3,11 +3,12 @@
 package korlibs.render.platform
 
 import com.sun.jna.*
+import korlibs.io.annotations.*
 import korlibs.io.lang.*
 import korlibs.io.time.*
 import korlibs.logger.*
-import korlibs.platform.Platform
 import korlibs.memory.dyn.*
+import korlibs.platform.Platform
 import korlibs.render.win32.*
 import java.io.*
 import java.nio.*
@@ -40,6 +41,7 @@ typealias VoidPtr = ByteBuffer
 typealias IntPtr = IntBuffer
 typealias FloatPtr = FloatBuffer
 
+@Keep
 object DirectGL : INativeGL {
     private val logger = Logger("DirectGL")
 
@@ -233,6 +235,7 @@ object DirectGL : INativeGL {
                             when {
                                 Platform.isMac -> {
                                     this[Library.OPTION_SYMBOL_PROVIDER] = SymbolProvider { handle, name, parent ->
+                                        //println("handle=$handle, name=$name, parent=$parent")
                                         val suffix = when (name) {
                                             // To support VAOs in old 2.1 context (to not require CORE profile)
                                             "glGenVertexArrays", "glDeleteVertexArrays", "glBindVertexArray" -> "APPLE"
@@ -301,6 +304,7 @@ val nativeOpenGLLibraryPath: String by lazy {
     }
 }
 
+@Keep
 interface INativeGL {
     fun glActiveTexture(texture: GLenum)
     fun glAttachShader(program: GLuint, shader: GLuint)

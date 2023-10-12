@@ -8,6 +8,7 @@ import korlibs.io.file.std.*
 import com.sun.jna.Memory
 import com.sun.jna.Native
 import com.sun.jna.Pointer
+import korlibs.io.annotations.*
 import korlibs.math.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
@@ -188,6 +189,7 @@ object AlsaTest {
     }
 }
 
+@Keep
 object ASound2 {
     var initialized = false
 

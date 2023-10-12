@@ -1,21 +1,12 @@
 package korlibs.audio.sound.backend
 
-import korlibs.audio.sound.AudioSamplesInterleaved
-import korlibs.audio.sound.DequeBasedPlatformAudioOutput
-import korlibs.audio.sound.NativeSoundProvider
-import korlibs.audio.sound.PlatformAudioOutput
+import korlibs.audio.sound.*
 import korlibs.datastructure.thread.*
-import korlibs.ffi.FFILib
-import korlibs.ffi.FFIPointer
-import korlibs.ffi.FFIPointerArray
-import korlibs.ffi.address
-import korlibs.io.async.delay
-import korlibs.io.async.launchImmediately
+import korlibs.ffi.*
 import korlibs.io.lang.*
-import korlibs.time.measureTime
-import korlibs.time.milliseconds
+import korlibs.time.*
 import kotlinx.coroutines.*
-import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.*
 
 object FFIALSANativeSoundProvider : NativeSoundProvider() {
     override fun createPlatformAudioOutput(coroutineContext: CoroutineContext, freq: Int): PlatformAudioOutput {
@@ -389,7 +380,7 @@ object AlsaTest {
     }
 }
 
-object ASound2 {
+@Keep object ASound2 {
     var initialized = false
 
     @JvmStatic external fun snd_pcm_open(pcmPtr: Pointer?, name: String, stream: Int, mode: Int): Int

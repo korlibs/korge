@@ -5,6 +5,8 @@ jna = "5.13.0"
 jcodec = "0.2.5"
 junit = "4.13.2"
 proguard-gradle = "7.2.2"
+#proguard-gradle = "7.4.0" # Exception in thread "main" java.lang.VerifyError: Bad type on operand stack :     l/a/e/e.a()[I @3: invokevirtual :     Type '[I' (current frame, stack[0]) is not assignable to '[Ljava/lang/Object;'
+#proguard-gradle = "7.3.2"
 asm = "9.5"
 jgit = "5.13.1.202206130422-r"
 
