@@ -201,6 +201,8 @@ open class PatchedProGuardTask : ProGuardTask() {
 private fun Project.addProguard() {
 	// packageJvmFatJar
 	val packageJvmFatJar = project.tasks.createThis<org.gradle.jvm.tasks.Jar>("packageJvmFatJar") {
+        dependsOn("jvmJar")
+        //entryCompression = ZipEntryCompression.STORED
         archiveBaseName.set("${project.name}-all")
 		group = GROUP_KORGE_PACKAGE
 		exclude(
@@ -243,7 +245,11 @@ private fun Project.addProguard() {
 				project.gkotlin.targets.jvm.compilations.main.runtimeDependencyFiles.map { if (it.isDirectory) it else project.zipTree(it) as Any }
 				//listOf<File>()
 			})
-			with(project.getTasksByName("jvmJar", true).first() as CopySpec)
+            //val jvmJarTask = project.getTasksByName("jvmJar", true).first { it.project == project } as CopySpec
+            val jvmJarTask = project.getTasksByName("jvmJar", false).first() as Jar
+            //jvmJarTask.entryCompression = ZipEntryCompression.STORED
+            with(jvmJarTask)
+            //println("jvmJarTask=$jvmJarTask")
 		}
 	}
 
