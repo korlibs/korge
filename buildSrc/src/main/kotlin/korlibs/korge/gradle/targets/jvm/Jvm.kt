@@ -232,7 +232,8 @@ private fun Project.addProguard() {
 					mapOf(
 						"Implementation-Title" to korge.realJvmMainClassName,
 						"Implementation-Version" to project.version.toString(),
-						"Main-Class" to korge.realJvmMainClassName
+						"Main-Class" to korge.realJvmMainClassName,
+                        "Add-Opens" to JvmAddOpens.jvmAddOpensList().joinToString(" "),
 					)
 				)
 			}

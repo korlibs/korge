@@ -1,25 +1,31 @@
 package korlibs.korge.gradle.targets.jvm
 
-import korlibs.korge.gradle.targets.isLinux
-import korlibs.korge.gradle.targets.isMacos
-import java.util.ArrayList
+import korlibs.korge.gradle.targets.*
 
 object JvmAddOpens {
     val beforeJava9 = System.getProperty("java.version").startsWith("1.")
 
     fun createAddOpensTypedArray(): Array<String> = createAddOpens().toTypedArray()
 
+    fun jvmAddOpensList(mac: Boolean = true, linux: Boolean = true): List<String> = buildList {
+        add("java.desktop/sun.java2d.opengl")
+        add("java.desktop/java.awt")
+        add("java.desktop/sun.awt")
+        if (mac) {
+            add("java.desktop/sun.lwawt")
+            add("java.desktop/sun.lwawt.macosx")
+            add("java.desktop/com.apple.eawt")
+            add("java.desktop/com.apple.eawt.event")
+        }
+        if (linux) {
+            add("java.desktop/sun.awt.X11")
+        }
+    }
+
     @OptIn(ExperimentalStdlibApi::class)
     fun createAddOpens(): List<String> = buildList<String> {
-        add("--add-opens=java.desktop/sun.java2d.opengl=ALL-UNNAMED")
-        add("--add-opens=java.desktop/java.awt=ALL-UNNAMED")
-        add("--add-opens=java.desktop/sun.awt=ALL-UNNAMED")
-        if (isMacos) {
-            add("--add-opens=java.desktop/sun.lwawt=ALL-UNNAMED")
-            add("--add-opens=java.desktop/sun.lwawt.macosx=ALL-UNNAMED")
-            add("--add-opens=java.desktop/com.apple.eawt=ALL-UNNAMED")
-            add("--add-opens=java.desktop/com.apple.eawt.event=ALL-UNNAMED")
+        for (item in jvmAddOpensList(mac = isMacos, linux = isLinux)) {
+            add("--add-opens=$item=ALL-UNNAMED")
         }
-        if (isLinux) add("--add-opens=java.desktop/sun.awt.X11=ALL-UNNAMED")
     }
 }

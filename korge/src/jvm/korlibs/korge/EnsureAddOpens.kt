@@ -1,16 +1,30 @@
 package korlibs.korge
 
-import korlibs.platform.Platform
 import korlibs.io.dynamic.*
+import korlibs.platform.*
 import java.util.*
-import kotlin.system.exitProcess
-import kotlin.text.contains
+import kotlin.system.*
 
 private fun getJavaVersion(): Int {
     val version = System.getProperty("java.version")
     val parts = version.split('.')
     if (parts.first() == "1") return parts.getOrElse(1) { "0" }.toInt()
     return parts.first().toInt()
+}
+
+fun jvmAddOpensList(mac: Boolean = true, linux: Boolean = true): List<String> = buildList {
+    add("java.desktop/sun.java2d.opengl")
+    add("java.desktop/java.awt")
+    add("java.desktop/sun.awt")
+    if (mac) {
+        add("java.desktop/sun.lwawt")
+        add("java.desktop/sun.lwawt.macosx")
+        add("java.desktop/com.apple.eawt")
+        add("java.desktop/com.apple.eawt.event")
+    }
+    if (linux) {
+        add("java.desktop/sun.awt.X11")
+    }
 }
 
 /** Call this as soon as possible to create a new process with the JVM --add-opens */
@@ -25,14 +39,8 @@ fun jvmEnsureAddOpens() {
         println("Java Version $javaVersion, not included --add-opens. Creating a new process...")
         println("CLI: $cli")
         val addOpens = buildList {
-            add("--add-opens=java.desktop/sun.java2d.opengl=ALL-UNNAMED")
-            add("--add-opens=java.desktop/java.awt=ALL-UNNAMED")
-            add("--add-opens=java.desktop/sun.awt=ALL-UNNAMED")
-            if (Platform.os.isMac) {
-                add("--add-opens=java.desktop/sun.lwawt=ALL-UNNAMED")
-                add("--add-opens=java.desktop/sun.lwawt.macosx=ALL-UNNAMED")
-                add("--add-opens=java.desktop/com.apple.eawt=ALL-UNNAMED")
-                add("--add-opens=java.desktop/com.apple.eawt.event=ALL-UNNAMED")
+            for (item in jvmAddOpensList(mac = Platform.os.isMac, linux = Platform.os.isLinux)) {
+                add("--add-opens=$item=ALL-UNNAMED")
             }
         }
 
