@@ -279,6 +279,7 @@ private fun Project.addProguard() {
 			keepnames("class * extends com.sun.jna.** { *; }")
             keepnames("class * implements com.sun.jna.Library { *; }")
             keepnames("class * extends korlibs.ffi.FFILib { *; }")
+            keepnames("class * extends korlibs.korge.scene.Scene { *; }")
             keepnames("@korlibs.io.annotations.Keep class * { *; }")
             keepnames("@kotlinx.serialization class * { *; }")
             keepclassmembernames("class * { @korlibs.io.annotations.Keep *; }")
