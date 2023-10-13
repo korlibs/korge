@@ -117,7 +117,7 @@ object RootKorlibsPlugin {
         // https://youtrack.jetbrains.com/issue/KT-48273
         afterEvaluate {
             rootProject.extensions.configure(org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension::class.java, Action {
-                it.versions.webpackDevServer.version = "4.0.0"
+                //it.versions.webpackDevServer.version = "4.0.0"
             })
         }
     }
