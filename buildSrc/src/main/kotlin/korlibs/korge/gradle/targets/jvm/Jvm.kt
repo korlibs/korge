@@ -284,6 +284,7 @@ private fun Project.addProguard() {
             keepclassmembernames("class * { @korlibs.io.annotations.Keep *; }")
             keepclassmembernames("@korlibs.io.annotations.Keep class * { *; }")
             keepclassmembernames("@korlibs.io.annotations.Keep interface * { *; }")
+            keepclassmembernames("enum * { public *; }")
             //keepnames("@korlibs.io.annotations.Keep interface *")
             //keepnames("class korlibs.render.platform.INativeGL")
 
