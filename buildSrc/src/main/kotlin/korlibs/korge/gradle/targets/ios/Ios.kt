@@ -16,6 +16,19 @@ import java.io.*
 fun Project.configureNativeIos(projectType: ProjectType) {
     configureNativeIosTvos(projectType, "ios")
     configureNativeIosTvos(projectType, "tvos")
+
+    val exKotlinSourceSetContainer = this.project.exKotlinSourceSetContainer
+    this.project.kotlin.apply {
+        sourceSets.apply {
+            for (target in listOf(iosArm64(), iosX64(), iosSimulatorArm64(), tvosArm64(), tvosX64(), tvosSimulatorArm64())) {
+                val native = createPairSourceSet(target.name)
+                when {
+                    target.isIos -> native.dependsOn(exKotlinSourceSetContainer.ios)
+                    target.isTvos -> native.dependsOn(exKotlinSourceSetContainer.tvos)
+                }
+            }
+        }
+    }
 }
 
 val Project.xcframework by projectExtension() {
@@ -191,8 +204,14 @@ fun Project.configureNativeIosTvosRun(targetName: String) {
             val simulatorSuffix = if (simulator) "Simulator" else "Device"
             //val arch = if (simulator) "X64" else "Arm64"
             //val arch2 = if (simulator) "x64" else "armv8"
-            val arch = if (simulator) "X64" else "Arm64"
-            val arch2 = if (simulator) "x86_64" else "arm64"
+            val arch = when {
+                simulator -> if (isArm) "SimulatorArm64" else "X64"
+                else -> "Arm64"
+            }
+            val arch2 = when {
+                simulator -> if (isArm) "arm64" else "x86_64"
+                else -> "arm64"
+            }
             val sdkName = if (simulator) "iphonesimulator" else "iphoneos"
             tasks.createThis<Exec>("${targetName}Build$simulatorSuffix$debugSuffix") {
                 //task.dependsOn(prepareKotlinNativeIosProject, "linkMain${debugSuffix}FrameworkIos$arch")

@@ -5,6 +5,7 @@ import korlibs.korge.gradle.*
 import korlibs.korge.gradle.gkotlin
 import korlibs.korge.gradle.kotlin
 import korlibs.korge.gradle.targets.*
+import korlibs.korge.gradle.targets.desktop.*
 import korlibs.korge.gradle.util.*
 import korlibs.root.*
 import org.gradle.api.*
@@ -207,6 +208,14 @@ private fun Project.addProguard() {
             //println("jvmJarTask=$jvmJarTask")
 		}
 	}
+
+    project.tasks.createThis<Task>("packageJvmMacosApp") {
+        dependsOn(packageJvmFatJar)
+        group = GROUP_KORGE_PACKAGE
+        doLast {
+            DesktopJreBundler.createMacosApp(project, packageJvmFatJar.outputs.files.first())
+        }
+    }
 
 	project.tasks.createThis<ProGuardTask>("packageJvmFatJarProguard") {
         dependsOn(packageJvmFatJar)

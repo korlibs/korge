@@ -428,20 +428,20 @@ object RootKorlibsPlugin {
                         }
 
                         if (supportKotlinNative) {
+                            //val iosTvosMacos by lazy { createPairSourceSet("iosTvosMacos", darwin) }
+                            //val iosMacos by lazy { createPairSourceSet("iosMacos", iosTvosMacos) }
+
+                            //val linux by lazy { createPairSourceSet("linux", posix) }
+                            //val macos by lazy { createPairSourceSet("macos", iosMacos) }
+                            //val mingw by lazy { createPairSourceSet("mingw", native) }
+
                             val native by lazy { createPairSourceSet("native", concurrent) }
                             val posix by lazy { createPairSourceSet("posix", native) }
                             val darwin by lazy { createPairSourceSet("darwin", posix) }
-                            val iosTvosMacos by lazy { createPairSourceSet("iosTvosMacos", darwin) }
-                            val iosMacos by lazy { createPairSourceSet("iosMacos", iosTvosMacos) }
-
-                            val linux by lazy { createPairSourceSet("linux", posix) }
-                            val macos by lazy { createPairSourceSet("macos", iosMacos) }
-                            val mingw by lazy { createPairSourceSet("mingw", native) }
-
                             val darwinMobile by lazy { createPairSourceSet("darwinMobile", darwin) }
-                            val iosTvos by lazy { createPairSourceSet("iosTvos", darwinMobile, iosTvosMacos) }
+                            val iosTvos by lazy { createPairSourceSet("iosTvos", darwinMobile/*, iosTvosMacos*/) }
                             val tvos by lazy { createPairSourceSet("tvos", iosTvos) }
-                            val ios by lazy { createPairSourceSet("ios", iosTvos, iosMacos) }
+                            val ios by lazy { createPairSourceSet("ios", iosTvos/*, iosMacos*/) }
 
                             for (target in mobileTargets(project)) {
                                 val native = createPairSourceSet(target.name)
