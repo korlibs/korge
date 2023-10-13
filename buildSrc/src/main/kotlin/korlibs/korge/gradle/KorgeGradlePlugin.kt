@@ -204,18 +204,17 @@ val Project.ext get() = extensions.getByType(ExtraPropertiesExtension::class.jav
 
 fun Project.korge(callback: KorgeExtension.() -> Unit) = korge.apply(callback).also { it.finish() }
 val Project.kotlin: KotlinMultiplatformExtension get() = this.extensions.getByType(KotlinMultiplatformExtension::class.java)
-val Project.korge: KorgeExtension
-    get() {
-        val extension = project.extensions.findByName("korge") as? KorgeExtension?
-        return if (extension == null) {
-            //val newExtension = KorgeExtension(this, objectFactory = )
-            val newExtension = project.extensions.create("korge", KorgeExtension::class.java)
-            //project.extensions.add("korge", newExtension)
-            newExtension
-        } else {
-            extension
-        }
+val Project.korge: KorgeExtension get() = extensionGetOrCreate("korge")
+
+inline fun <reified T> Project.extensionGetOrCreate(name: String): T {
+    val extension = project.extensions.findByName(name) as? T?
+    return if (extension == null) {
+        val newExtension = project.extensions.create(name, T::class.java)
+        newExtension
+    } else {
+        extension
     }
+}
 
 open class JsWebCopy() : Copy() {
     @OutputDirectory
