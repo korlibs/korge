@@ -4,13 +4,12 @@ import com.android.build.gradle.*
 import com.soywiz.kproject.internal.*
 import com.soywiz.kproject.model.*
 import com.soywiz.kproject.util.*
-import korlibs.korge.gradle.targets.android.*
 import org.gradle.api.*
 import org.gradle.api.plugins.*
 import org.gradle.api.tasks.testing.logging.*
 import org.jetbrains.kotlin.gradle.dsl.*
 import org.jetbrains.kotlin.gradle.plugin.*
-import java.io.File
+import java.io.*
 
 @Suppress("unused")
 class KProjectPlugin : Plugin<Project> {
@@ -140,7 +139,7 @@ class KProjectPlugin : Plugin<Project> {
                     val native = createPair("native").dependsOn(concurrent)
                     val posix = createPair("posix").dependsOn(native)
                     val apple = createPair("apple").dependsOn(posix)
-                    val macos = createPair("macos").dependsOn(apple)
+                    //val macos = createPair("macos").dependsOn(apple)
                     //if (hasTarget(KProjectTarget.DESKTOP)) {
                     //    createPair("macosX64").dependsOn(macos)
                     //    createPair("macosArm64").dependsOn(macos)
