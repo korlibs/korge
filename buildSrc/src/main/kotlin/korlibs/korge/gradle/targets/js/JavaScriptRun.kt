@@ -1,12 +1,11 @@
 package korlibs.korge.gradle.targets.js
 
+import korlibs.*
 import korlibs.korge.gradle.*
 import korlibs.korge.gradle.targets.*
 import korlibs.korge.gradle.util.*
-import korlibs.*
 import org.gradle.api.*
-import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.TaskAction
+import org.gradle.api.tasks.*
 import org.jetbrains.kotlin.gradle.targets.js.npm.tasks.*
 import java.io.*
 import java.lang.management.*
@@ -79,6 +78,7 @@ fun Project.configureJavascriptRun() {
         dependsOn(runJsRelease)
     }
 
+    /*
     val runJsWebpack = project.tasks.createThis<Task>(name = "runJsWebpack") {
         group = GROUP_KORGE_RUN
         dependsOn("jsBrowserProductionRun")
@@ -93,6 +93,7 @@ fun Project.configureJavascriptRun() {
         group = GROUP_KORGE_RUN
         dependsOn("jsBrowserProductionRun")
     }
+    */
 
     val jsStopWeb = project.tasks.createThis<Task>(name = "jsStopWeb") {
         doLast {
