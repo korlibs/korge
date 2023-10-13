@@ -1,7 +1,6 @@
 package korlibs.korge.gradle.targets.apple
 
-import korlibs.korge.gradle.GameCategory
-import korlibs.korge.gradle.KorgeExtension
+import korlibs.korge.gradle.*
 
 object InfoPlistBuilder {
 	fun GameCategory?.toUTI(): String {
@@ -62,6 +61,7 @@ object InfoPlistBuilder {
 			appendLine("  <key>CFBundleSignature</key><string>????</string>")
 			appendLine("  <key>LSMinimumSystemVersion</key><string>10.9.0</string>")
 			appendLine("  <key>NSHighResolutionCapable</key><true/>")
+            appendLine("  <key>LSRequiresNativeExecution</key><true/>")
 		}
         appendLine("""</dict></plist>""")
 	}

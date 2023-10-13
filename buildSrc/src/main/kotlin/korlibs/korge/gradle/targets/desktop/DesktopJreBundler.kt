@@ -7,62 +7,64 @@ import korlibs.korge.gradle.util.*
 import org.gradle.api.*
 import java.io.*
 import java.net.*
+import java.security.*
 
 // https://stackoverflow.com/questions/13017121/unpacking-tar-gz-into-root-dir-with-gradle
+// https://github.com/korlibs/universal-jre/
 object DesktopJreBundler {
     // https://github.com/adoptium/temurin21-binaries/releases/tag/jdk-21%2B35
-    val JRE_MACOS_ARM64 = "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21%2B35/OpenJDK21U-jre_aarch64_mac_hotspot_21_35.tar.gz"
-    val JRE_MACOS_X64 = "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21%2B35/OpenJDK21U-jre_x64_mac_hotspot_21_35.tar.gz"
-    val JRE_WINDOWS_X64 = "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21%2B35/OpenJDK21U-jre_x64_windows_hotspot_21_35.zip"
 
-    fun cachedFile(url: String): File {
-        val downloadUrl = URL(url)
-        val localFile = File(korgeCacheDir, File(downloadUrl.file).name)
+    data class UrlRef(val url: String, val sha256: String)
+
+    val JRE_MACOS_LAUNCHER = UrlRef(
+        "https://github.com/korlibs/universal-jre/releases/download/0.0.1/app",
+        sha256 = "4123b08e24678885781b04125675aa2f7d2af87583a753d16737ad154934bf0b"
+    )
+
+    val JRE_MACOS_UNIVERSAL = UrlRef(
+        "https://github.com/korlibs/universal-jre/releases/download/0.0.1/macos-universal-jdk-21+35-jre.tar.gz",
+        sha256 = "6d2d0a2e35c649fc731f5d3f38d7d7828f7fad4b9b2ea55d4d05f0fd26cf93ca"
+    )
+
+    val JRE_DIR = File(korgeCacheDir, "jre")
+    val UNIVERSAL = File(JRE_DIR, "universal")
+    val UNIVERSAL_JRE = File(UNIVERSAL, "jdk-21+35-jre/Contents/jre")
+
+    fun cachedFile(urlRef: UrlRef): File {
+        val downloadUrl = URL(urlRef.url)
+        val localFile = File(JRE_DIR, File(downloadUrl.file).name).ensureParents()
         if (!localFile.isFile) {
             println("Downloading $downloadUrl...")
-            localFile.writeBytes(downloadUrl.readBytes())
+            val bytes = downloadUrl.readBytes()
+            val actualSha256 = MessageDigest.getInstance("SHA-256").digest(bytes).hex
+            val expectedSha256 = urlRef.sha256
+            if (actualSha256 != expectedSha256) {
+                error("URL: ${urlRef.url} expected to have $expectedSha256 but was $actualSha256")
+            }
+            localFile.writeBytes(bytes)
         }
         return localFile
     }
 
     fun createMacosApp(project: Project, fatJar: File) {
-        val gameApp = File(project.buildDir, "platforms/jvm-macos/game.app/Contents").ensureParents()
-        // @TODO: Universal JRE?
-        // @TODO: https://incenp.org/notes/2023/universal-java-app-on-macos.html
-        project.copy {
-            it.from(project.tarTree(cachedFile(JRE_MACOS_ARM64)))
-            it.into(File(gameApp, "jdk-arm64"))
-            it.filePermissions {
-                it.unix("0777".toInt(8))
+        if (!UNIVERSAL_JRE.isDirectory) {
+            project.copy {
+                it.from(project.tarTree(cachedFile(JRE_MACOS_UNIVERSAL)))
+                it.into(UNIVERSAL)
             }
         }
+
+        val gameApp = File(project.buildDir, "platforms/jvm-macos/game.app/Contents").ensureParents()
         project.copy {
-            it.from(project.tarTree(cachedFile(JRE_MACOS_X64)))
-            it.into(File(gameApp, "jdk-x86_64"))
-            it.filePermissions {
-                it.unix("0777".toInt(8))
-            }
+            it.from(UNIVERSAL_JRE)
+            it.into(File(gameApp, "MacOS/jre"))
         }
 
         val korge = project.korge
         File(gameApp, "Resources/${korge.exeBaseName}.icns").ensureParents().writeBytes(IcnsBuilder.build(korge.getIconBytes()))
         File(gameApp, "Info.plist").writeText(InfoPlistBuilder.build(korge))
         val exec = File(gameApp, "MacOS/${File(korge.exeBaseName).name}").ensureParents()
-        exec.writeText("""
-            #!/bin/sh
-            PARENT_PATH=${'$'}( cd "${'$'}(dirname "${'$'}{BASH_SOURCE[0]}")" ; pwd -P )
-            JAVA_ARM="${'$'}PARENT_PATH/../jdk-arm64/jdk-21+35-jre/Contents/Home/bin/java"
-            JAVA_X64="${'$'}PARENT_PATH/../jdk-x86_64/jdk-21+35-jre/Contents/Home/bin/java"
-            #ARCH=`/usr/bin/uname -m`
-            #ARCH=arm64
-            ${'$'}JAVA_ARM --version
-            STATUS=${'$'}?
-            if [ ${'$'}STATUS -eq 0 ]; then
-                ${'$'}JAVA_ARM -jar "${'$'}PARENT_PATH/app.jar"
-            else
-                ${'$'}JAVA_X64 -jar "${'$'}PARENT_PATH/app.jar"
-            fi
-        """.trimIndent())
+        exec.writeBytes(cachedFile(JRE_MACOS_LAUNCHER).readBytes())
         exec.setExecutable(true)
         project.copy {
             it.from(fatJar)
