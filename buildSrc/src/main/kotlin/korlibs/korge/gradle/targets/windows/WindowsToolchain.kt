@@ -13,7 +13,7 @@ import java.net.*
  * @NOTE: We have to call compileKotlinMingw first at least once so the toolchain is downloaded before doing stuff
  */
 object WindowsToolchain {
-    val depsDir: File by lazy { File("${System.getProperty("user.home")}/.konan/dependencies") }
+    val depsDir: File by lazy { File("${System.getProperty("user.home")}/.konan/dependencies").also { it.mkdirs() } }
     val resourceHackerZip: File by lazy {
         println("Downloading tool for replacing resources in executable..")
         File(depsDir, "resource_hacker.zip").also { it.writeBytes(URL("https://github.com/korlibs/korge-tools/releases/download/resourcehacker/resource_hacker.zip").readBytes()) }

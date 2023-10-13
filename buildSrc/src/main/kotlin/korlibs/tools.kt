@@ -42,7 +42,7 @@ var File.text
         this.also { it.parentFile.mkdirs() }.writeText(value)
     }
 
-fun File.ensureParents() = this.apply { this.parentFile.mkdirs() }
+fun File.ensureParents(): File = this.apply { this.parentFile.mkdirs() }
 
 // File and archives
 fun Project.downloadFile(url: URL, localFile: File, connectionTimeout: Int = 15_000, readTimeout: Int = 15_000) {

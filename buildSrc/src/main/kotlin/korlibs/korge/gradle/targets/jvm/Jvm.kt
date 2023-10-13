@@ -137,7 +137,7 @@ fun Project.configureJvmRunJvm(isRootKorlibs: Boolean) {
 }
 
 internal val Project.jvmCompilation: NamedDomainObjectSet<*> get() = kotlin.targets.getByName("jvm").compilations as NamedDomainObjectSet<*>
-internal val Project.mainJvmCompilation: KotlinJvmCompilation get() = jvmCompilation.getByName("main") as org.jetbrains.kotlin.gradle.plugin.mpp.KotlinJvmCompilation
+internal val Project.mainJvmCompilation: KotlinJvmCompilation get() = jvmCompilation.getByName("main") as? org.jetbrains.kotlin.gradle.plugin.mpp.KotlinJvmCompilation? ?: error("Can't find main jvm compilation")
 
 private fun Project.configureJvmTest() {
 	val jvmTest = (tasks.findByName("jvmTest") as Test)
@@ -209,15 +209,7 @@ private fun Project.addProguard() {
 		}
 	}
 
-    project.tasks.createThis<Task>("packageJvmMacosApp") {
-        dependsOn(packageJvmFatJar)
-        group = GROUP_KORGE_PACKAGE
-        doLast {
-            DesktopJreBundler.createMacosApp(project, packageJvmFatJar.outputs.files.first())
-        }
-    }
-
-	project.tasks.createThis<ProGuardTask>("packageJvmFatJarProguard") {
+	val packageJvmFatJarProguard = project.tasks.createThis<ProGuardTask>("packageJvmFatJarProguard") {
         dependsOn(packageJvmFatJar)
 		group = GROUP_KORGE_PACKAGE
         val serializationProFile = File(buildDir, "/serialization.pro")
@@ -301,6 +293,7 @@ private fun Project.addProguard() {
 
 			//task.keepnames("class org.jcodec.** { *; }")
 			keepattributes()
+            keep("class * extends korlibs.ffi.FFILib { *; }")
 			keep("class * implements com.sun.jna.** { *; }")
 			keep("class com.sun.jna.** { *; }")
 			keep("class org.jcodec.** { *; }")
@@ -308,12 +301,43 @@ private fun Project.addProguard() {
             keep("@korlibs.io.annotations.Keep class * { *; }")
             keep("@kotlinx.serialization class * { *; }")
             keep("class * implements korlibs.korge.ViewsCompleter { *; }")
+            keep("public class kotlin.reflect.jvm.internal.impl.serialization.deserialization.builtins.* { public *; }")
+            keep("class kotlin.reflect.jvm.internal.impl.load.** { *; }")
+
 
 			if (korge.realJvmMainClassName.isNotBlank()) {
                 keep("class ${project.korge.realJvmMainClassName} { *; }")
 				keep("""public class ${korge.realJvmMainClassName} { public static void main(java.lang.String[]); }""")
 			}
 		}
-
 	}
+
+    val packageFatJar = packageJvmFatJar
+    //val packageFatJar = packageJvmFatJarProguard
+
+
+    project.tasks.createThis<Task>("packageJvmLinuxApp") {
+        dependsOn(packageFatJar)
+        group = GROUP_KORGE_PACKAGE
+        doLast {
+            DesktopJreBundler.createLinuxBundle(project, packageFatJar.outputs.files.first())
+        }
+    }
+
+    project.tasks.createThis<Task>("packageJvmWindowsApp") {
+        dependsOn(packageFatJar)
+        group = GROUP_KORGE_PACKAGE
+        doLast {
+            DesktopJreBundler.createWin32Bundle(project, packageFatJar.outputs.files.first())
+        }
+    }
+
+    project.tasks.createThis<Task>("packageJvmMacosApp") {
+        dependsOn(packageFatJar)
+        group = GROUP_KORGE_PACKAGE
+        doLast {
+            DesktopJreBundler.createMacosApp(project, packageFatJar.outputs.files.first())
+        }
+    }
+
 }
