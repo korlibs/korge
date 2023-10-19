@@ -1,19 +1,21 @@
 package korlibs.datastructure.lock
 
-import platform.posix.pthread_self
+import korlibs.datastructure.thread.*
+import korlibs.time.*
+import platform.posix.*
 import kotlin.concurrent.*
+import kotlin.time.*
 
-actual class Lock actual constructor() {
-    @PublishedApi internal var locked = AtomicInt(0)
+actual class Lock actual constructor() : BaseLock {
+    @PublishedApi internal var notified = AtomicReference(false)
+    @PublishedApi internal var locked = AtomicReference(false)
     @PublishedApi internal var current: platform.posix.pthread_t? = null
 
     @PublishedApi internal fun lock(): Boolean {
         var initialThread = false
-        if (!locked.compareAndSet(0, 1)) {
+        if (!locked.compareAndSet(false, true)) {
             if (current != pthread_self()) {
-                while (!locked.compareAndSet(0, 1)) {
-                    Unit // Should we try to sleep this thread and awake it later? If the lock is short, might not be needed
-                }
+                NativeThread.spinWhile { !locked.compareAndSet(false, true) }
             }
         } else {
             current = pthread_self()
@@ -25,9 +27,8 @@ actual class Lock actual constructor() {
     @PublishedApi internal fun unlock(initialThread: Boolean) {
         if (initialThread) {
             current = null
-            while (!locked.compareAndSet(1, 0)) {
-                Unit // Should we try to sleep this thread and awake it later? If the lock is short, might not be needed
-            }
+            // Should we try to sleep this thread and awake it later? If the lock is short, might not be needed
+            NativeThread.spinWhile { !locked.compareAndSet(true, false) }
         }
     }
 
@@ -39,21 +40,36 @@ actual class Lock actual constructor() {
             unlock(initialThread)
         }
     }
+
+    actual override fun notify(unit: Unit) {
+        notified.value = true
+    }
+    actual override fun wait(time: TimeSpan): Boolean {
+        check(locked.value) { "Must wait inside a synchronization block" }
+        val start = TimeSource.Monotonic.markNow()
+        notified.value = false
+        unlock(true)
+        try {
+            NativeThread.spinWhile { !notified.value && start.elapsedNow() < time }
+        } finally {
+            lock()
+        }
+        return notified.value
+    }
 }
 
-actual class NonRecursiveLock actual constructor() {
-    @PublishedApi internal var locked = AtomicInt(0)
+actual class NonRecursiveLock actual constructor() : BaseLock {
+    @PublishedApi internal var notified = AtomicReference(false)
+    @PublishedApi internal var locked = AtomicReference(false)
 
     fun lock() {
-        while (!locked.compareAndSet(0, 1)) {
-            Unit // Should we try to sleep this thread and awake it later? If the lock is short, might not be needed
-        }
+        // Should we try to sleep this thread and awake it later? If the lock is short, might not be needed
+        NativeThread.spinWhile { !locked.compareAndSet(false, true) }
     }
 
     fun unlock() {
-        while (!locked.compareAndSet(1, 0)) {
-            Unit // Should we try to sleep this thread and awake it later? If the lock is short, might not be needed
-        }
+        // Should we try to sleep this thread and awake it later? If the lock is short, might not be needed
+        NativeThread.spinWhile { !locked.compareAndSet(true, false) }
     }
 
     actual inline operator fun <T> invoke(callback: () -> T): T {
@@ -63,5 +79,21 @@ actual class NonRecursiveLock actual constructor() {
         } finally {
             unlock()
         }
+    }
+
+    actual override fun notify(unit: Unit) {
+        notified.value = true
+    }
+    actual override fun wait(time: TimeSpan): Boolean {
+        check(locked.value) { "Must wait inside a synchronization block" }
+        val start = TimeSource.Monotonic.markNow()
+        notified.value = false
+        unlock()
+        try {
+            NativeThread.spinWhile { !notified.value && start.elapsedNow() < time }
+        } finally {
+            lock()
+        }
+        return notified.value
     }
 }
