@@ -32,8 +32,13 @@ private fun <T> Class<T>.getFieldOrNull(name: String): Field? =
 
 fun Component.awtGetPeer(): Any {
     //Class.forName("AWTAccessor")
+    require(!this.isLightweight) { "Component must be heavyweight" }
+    require(this.isDisplayable) { "Component must be displayable" }
+
     try {
-        return Dyn.global["sun.awt.AWTAccessor"].dynamicInvoke("getComponentAccessor").dynamicInvoke("getPeer", this@awtGetPeer).value ?: Unit
+        val accessor = Dyn.global["sun.awt.AWTAccessor"].dynamicInvoke("getComponentAccessor")
+        //println("accessor=$accessor")
+        return accessor.dynamicInvoke("getPeer", this@awtGetPeer).value ?: Unit
     } catch (e: Throwable) {
         e.printStackTrace()
     }
