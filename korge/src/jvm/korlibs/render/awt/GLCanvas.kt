@@ -1,7 +1,7 @@
 package korlibs.render.awt
 
-import korlibs.kgl.*
 import korlibs.graphics.gl.*
+import korlibs.kgl.*
 import korlibs.render.*
 import korlibs.render.platform.*
 import java.awt.*
@@ -11,6 +11,7 @@ open class GLCanvas constructor(checkGl: Boolean = true, val logGl: Boolean = fa
     val ag: AGOpengl = AGOpenglAWT(checkGl, logGl, cacheGl)
     var ctx: BaseOpenglContext? = null
     val gl = ag.gl
+    private var doContextLost = false
 
     override fun getGraphicsConfiguration(): GraphicsConfiguration? {
         return super.getGraphicsConfiguration()
@@ -47,11 +48,15 @@ open class GLCanvas constructor(checkGl: Boolean = true, val logGl: Boolean = fa
             //println("--------------------------------------")
             //ctxComponentId = componentId
             ctx = glContextFromComponent(this, this)
-            ag.contextLost()
+            doContextLost = true
         }
         //println("--------------")
         ctx?.useContext(g, ag) { g, info ->
-            render(gl, g)
+            if (doContextLost) {
+                doContextLost = false
+                ag.contextLost()
+            }
+            render(gl, g, info)
         }
     }
 
@@ -72,9 +77,16 @@ open class GLCanvas constructor(checkGl: Boolean = true, val logGl: Boolean = fa
 
     val getCurrent: () -> Any? = { ctx?.getCurrent() }
 
-    open fun render(gl: KmlGl, g: Graphics) {
+    open fun render(gl: KmlGl, g: Graphics, info: BaseOpenglContext.ContextInfo) {
         //ctx?.makeCurrent()
         gl.info.current = getCurrent
+        val viewport = info.viewport
+        if (viewport != null) {
+            gl.viewport(viewport.x, viewport.y, viewport.width, viewport.height)
+            gl.scissor(viewport.x, viewport.y, viewport.width, viewport.height)
+            gl.enable(KmlGl.SCISSOR_TEST)
+            //println("viewport=$viewport")
+        }
         defaultRenderer(gl, g)
     }
 
