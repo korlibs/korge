@@ -15,3 +15,4 @@ fun Memory(data: LongArray): Memory {
 }
 
 val Pointer.address: Long get() = Pointer.nativeValue(this)
+val Pointer?.addressNotNull: Long get() = Pointer.nativeValue(this)

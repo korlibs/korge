@@ -14,6 +14,12 @@ import kotlin.test.*
 class AGMetalTest {
     @Test
     @Ignore
+    fun testGenerateCode() {
+        generateKotlinCode("CAMetalLayer")
+    }
+
+    @Test
+    @Ignore
     fun test() = macTestWithAutoreleasePool {
         val device = MetalGlobals.MTLCreateSystemDefaultDevice()?.asObjcDynamicInterface<MTLDevice>()
             ?: return@macTestWithAutoreleasePool run { println("Skipping AGMetalTest since couldn't get metal device") }

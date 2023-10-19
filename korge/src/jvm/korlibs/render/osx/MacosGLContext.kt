@@ -1,11 +1,16 @@
 package korlibs.render.osx
 
+import com.sun.jna.*
+import korlibs.annotations.*
 import korlibs.graphics.*
 import korlibs.graphics.gl.*
 import korlibs.io.dynamic.*
 import korlibs.kgl.*
 import korlibs.math.geom.*
 import korlibs.memory.dyn.osx.*
+import korlibs.memory.dyn.osx.CGFloat
+import korlibs.memory.dyn.osx.NSRect
+import korlibs.memory.dyn.osx.NativeName
 import korlibs.render.*
 import korlibs.render.platform.*
 import java.awt.*
@@ -155,6 +160,17 @@ class MacosGLContext(
     }
 }
 
+@Keep
+interface AGL : Library {
+    fun aglGetCurrentContext(): Pointer?
+    fun aglSetInteger(ctx: Pointer?, key: Int, values: Pointer?)
+
+    //companion object : Foundation by Native.load("/System/Library/Frameworks/Foundation.framework/Versions/C/Foundation", Foundation::class.java) as Foundation
+    companion object : AGL by Native.load("AGL", AGL::class.java, NativeName.OPTIONS) as AGL {
+        //val NATIVE = NativeLibrary.getInstance("AGL")
+    }
+}
+
 class MacAWTOpenglContext(val gwconfig: GameWindowConfig, val c: Component, var other: MacosGLContext? = null) : BaseOpenglContext {
     companion object {
         private inline fun <T : Any> privilegedAction(crossinline block: () -> T): T {
@@ -195,6 +211,7 @@ class MacAWTOpenglContext(val gwconfig: GameWindowConfig, val c: Component, var 
 
     override fun useContext(g: Graphics, ag: AG, action: (Graphics, BaseOpenglContext.ContextInfo) -> Unit) {
         invokeWithOGLContextCurrentMethod.invoke(null, g, Runnable {
+
             //if (!(isQueueFlusherThread.invoke(null) as Boolean)) error("Can't render on another thread")
             try {
                 val factor = getDisplayScalingFactor(c)

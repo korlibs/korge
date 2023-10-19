@@ -1,11 +1,10 @@
 package korlibs.render.osx
+
+import com.sun.jna.*
 import korlibs.memory.dyn.osx.*
+import korlibs.memory.dyn.osx.NativeName
 import korlibs.render.platform.*
 import korlibs.render.platform.NativeLoad
-import korlibs.render.platform.NativeName
-import korlibs.io.lang.*
-import com.sun.jna.*
-import java.util.concurrent.*
 
 class NSApplication(id: Long) : NSObject(id) {
     fun setActivationPolicy(value: Int) = id.msgSend("setActivationPolicy:", value.toLong())
@@ -263,6 +262,10 @@ inline class NSMenuItem(val id: Long) {
     }
 }
 
+//interface NSObject {
+//    val id: Long
+//}
+
 inline class NSMenu(val id: Long) {
     constructor() : this(NSClass("NSMenu").alloc().msgSend("init"))
 
@@ -275,14 +278,8 @@ inline class NSMenu(val id: Long) {
     }
 }
 
-inline fun autoreleasePool(body: () -> Unit) {
-    val autoreleasePool = NSClass("NSAutoreleasePool").alloc().msgSend("init")
-    try {
-        body()
-    } finally {
-        autoreleasePool.msgSend("drain")
-    }
-}
+@Deprecated("", ReplaceWith("korlibs.memory.dyn.osx.autoreleasePool(body)", "korlibs"))
+inline fun autoreleasePool(body: () -> Unit) = korlibs.memory.dyn.osx.autoreleasePool(body)
 
 internal interface GL : Library {
     fun glViewport(x: Int, y: Int, width: Int, height: Int)
@@ -324,7 +321,7 @@ interface AppKit : Library {
 fun Foundation.NSLog(msg: NSString) = NSLog(msg.id)
 fun Foundation.NSLog(msg: String) = NSLog(NSString(msg))
 
-interface DisplayLinkCallback : Callback {
+fun interface DisplayLinkCallback : Callback {
     fun callback(displayLink: Pointer?, inNow: Pointer?, inOutputTime: Pointer?, flagsIn: Pointer?, flagsOut: Pointer?, userInfo: Pointer?): Int
 }
 
@@ -338,6 +335,61 @@ interface CoreVideo : Library {
     fun CVDisplayLinkSetOutputCallback(displayLinkValue: Pointer?, callback: Callback?, userInfo: Pointer?): Int
     fun CVDisplayLinkStart(displayLinkValue: Pointer?): Int
     fun CVDisplayLinkStop(displayLinkValue: Pointer?): Int
+
+    // https://developer.apple.com/documentation/metal/metal_sample_code_library/mixing_metal_and_opengl_rendering_in_a_view
+    fun CVPixelBufferCreate(
+        allocator: Pointer?,
+        width: Int,
+        height: Int,
+        pixelFormatType: Int,
+        pixelBufferAttributes: Pointer?, // Dictionary
+        pixelBufferOut: Pointer?
+    ): Int
+
+    // OpenGL
+
+    fun CVOpenGLTextureCacheCreate(
+        allocator: Pointer?,
+        cacheAttributes: Pointer?, // Dictionary
+        cglContext: Pointer?,
+        cglPixelFormat: Pointer?,
+        textureAttributes: Pointer?,
+        cacheOut: Pointer?
+    ): Int
+
+    fun CVOpenGLTextureCacheCreateTextureFromImage(
+        allocator: Pointer?,
+        textureCache: Pointer?,
+        sourceImage: Pointer?,
+        attributes: Pointer?,
+        textureOut: Pointer?
+    ): Int
+
+    fun CVOpenGLTextureGetName(image: Pointer?): Int
+
+    // Metal
+
+    fun CVMetalTextureCacheCreate(
+        allocator: Pointer?,
+        cacheAttributes: Pointer?,
+        metalDevice: Pointer?,
+        textureAttributes: Pointer?,
+        cacheOut: Pointer?
+    ): Int
+
+    fun CVMetalTextureCacheCreateTextureFromImage(
+        allocator: Pointer?,
+        textureCache: Pointer?,
+        sourceImage: Pointer?,
+        textureAttributes: Pointer?,
+        pixelFormat: Int,
+        width: Int,
+        height: Int,
+        planeIndex: Int,
+        textureOut: Pointer?
+    ): Int
+    fun CVMetalTextureGetTexture(image: Pointer?): Pointer?
+
     companion object : CoreVideo by NativeLoad("/System/Library/Frameworks/CoreVideo.framework/Versions/A/CoreVideo",)
 }
 

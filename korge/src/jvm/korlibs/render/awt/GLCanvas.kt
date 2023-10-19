@@ -1,16 +1,21 @@
 package korlibs.render.awt
 
+import korlibs.graphics.*
 import korlibs.kgl.*
 import korlibs.graphics.gl.*
+import korlibs.kgl.*
+import korlibs.korge.view.*
 import korlibs.render.*
 import korlibs.render.platform.*
 import java.awt.*
+import java.awt.Graphics
 import java.io.*
 
 open class GLCanvas constructor(checkGl: Boolean = true, val logGl: Boolean = false, cacheGl: Boolean = false) : Canvas(), GameWindowConfig, Closeable {
     val ag: AGOpengl = AGOpenglAWT(checkGl, logGl, cacheGl)
     var ctx: BaseOpenglContext? = null
     val gl = ag.gl
+    private var doContextLost = false
 
     override fun getGraphicsConfiguration(): GraphicsConfiguration? {
         return super.getGraphicsConfiguration()
@@ -41,22 +46,31 @@ open class GLCanvas constructor(checkGl: Boolean = true, val logGl: Boolean = fa
         //    close()
         //}
         if (logGl) {
-            println("+++++++++++++++++++++++++++++")
+            //println("+++++++++++++++++++++++++++++")
         }
         if (ctx == null) {
-            println("--------------------------------------")
+            //println("--------------------------------------")
             //ctxComponentId = componentId
             ctx = glContextFromComponent(this, this)
-            ag.contextLost()
+            doContextLost = true
         }
         //println("--------------")
-        render(gl, g)
+        ctx?.useContext(g, ag) { g, info ->
+            if (doContextLost) {
+                doContextLost = false
+                ag.contextLost()
+            }
+            render(gl, g, info)
+        }
     }
 
 
     override fun close() {
         ctx?.dispose()
         ctx = null
+    }
+
+    var defaultRendererAG: (ag: AG) -> Unit = {
     }
 
     var defaultRenderer: (gl: KmlGl, g: Graphics) -> Unit = { gl, g ->
@@ -68,12 +82,22 @@ open class GLCanvas constructor(checkGl: Boolean = true, val logGl: Boolean = fa
          */
     }
 
-    val isCurrent: () -> Any? = { ctx?.getCurrent() }
+    val getCurrent: () -> Any? = { ctx?.getCurrent() }
 
-    open fun render(gl: KmlGl, g: Graphics) {
+    open fun render(gl: KmlGl, g: Graphics, info: BaseOpenglContext.ContextInfo) {
         //ctx?.makeCurrent()
-        gl.info.current = isCurrent
-        defaultRenderer(gl, g)
+        gl.info.current = getCurrent
+        ag.startEndFrame {
+            val viewport = info.viewport
+            if (viewport != null) {
+                gl.viewport(viewport.x, viewport.y, viewport.width, viewport.height)
+                gl.scissor(viewport.x, viewport.y, viewport.width, viewport.height)
+                gl.enable(KmlGl.SCISSOR_TEST)
+                //println("viewport=$viewport")
+            }
+            defaultRenderer(gl, g)
+            defaultRendererAG(ag)
+        }
     }
 
     override var quality: GameWindow.Quality = GameWindow.Quality.AUTOMATIC

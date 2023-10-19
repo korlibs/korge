@@ -47,9 +47,20 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         const val defaultPixelsPerInch : Double = 96.0
     }
 
-    val mainFrameBuffer: AGFrameBuffer = AGFrameBuffer(isMain = true)
+    @PublishedApi internal var _mainFrameBuffer: AGFrameBuffer = AGFrameBuffer(isMain = true)
+    val mainFrameBuffer: AGFrameBuffer get() = _mainFrameBuffer
     var contextVersion: Int = 0
         private set
+
+    inline fun <T> setMainFrameBufferTemporarily(frameBuffer: AGFrameBuffer, block: () -> T): T {
+        val old = mainFrameBuffer
+        try {
+            _mainFrameBuffer = frameBuffer
+            return block()
+        } finally {
+            _mainFrameBuffer = old
+        }
+    }
 
     open fun contextLost() {
         logger.info { this }

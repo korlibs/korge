@@ -212,7 +212,8 @@ open class AGFrameBuffer(val base: AGFrameBufferBase, val id: Int = -1) : Closea
     val isTexture: Boolean get() = base.isTexture
     val isMain: Boolean get() = base.isMain
     val tex: AGTexture get() = base.tex
-    val info: AGFrameBufferInfo get() = AGFrameBufferInfo(0).withSize(width, height).withSamples(nsamples).withHasDepth(hasDepth).withHasStencil(hasStencil)
+    val info: AGFrameBufferInfo get() = AGFrameBufferInfo(0)
+        .withBounds(x, y, width, height).withSamples(nsamples).withHasDepth(hasDepth).withHasStencil(hasStencil)
     companion object {
         const val DEFAULT_INITIAL_WIDTH = 128
         const val DEFAULT_INITIAL_HEIGHT = 128

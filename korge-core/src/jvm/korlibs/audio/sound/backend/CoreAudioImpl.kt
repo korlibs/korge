@@ -5,6 +5,7 @@ import korlibs.audio.sound.*
 import korlibs.ffi.*
 import korlibs.io.annotations.*
 import korlibs.memory.dyn.*
+import korlibs.memory.dyn.osx.*
 import java.util.concurrent.*
 import java.util.concurrent.atomic.*
 import kotlin.coroutines.*
@@ -220,18 +221,5 @@ private object CoreAudioKit {
 
     init {
         Native.register("CoreAudioKit")
-    }
-}
-
-@Keep
-private object CoreFoundation {
-    val library = NativeLibrary.getInstance("CoreFoundation")
-    @JvmStatic val kCFRunLoopCommonModes: Pointer? = library.getGlobalVariableAddress("kCFRunLoopCommonModes").getPointer(0L)
-    @JvmStatic external fun CFRunLoopGetCurrent(): Pointer?
-    @JvmStatic external fun CFRunLoopGetMain(): Pointer?
-    @JvmStatic external fun CFRunLoopRun(): Void
-
-    init {
-        Native.register("CoreFoundation")
     }
 }
