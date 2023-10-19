@@ -1,6 +1,7 @@
 package korlibs.memory.dyn.osx
 
 import com.sun.jna.*
+import korlibs.annotations.*
 import korlibs.memory.dyn.*
 import java.lang.reflect.*
 import java.util.*
@@ -1032,7 +1033,7 @@ inline fun autoreleasePool(body: () -> Unit) {
     }
 }
 
-//@Keep
+@Keep
 object CoreFoundation {
     val library = NativeLibrary.getInstance("CoreFoundation")
     @JvmStatic val kCFRunLoopCommonModes: Pointer? = library.getGlobalVariableAddress("kCFRunLoopCommonModes").getPointer(0L)
