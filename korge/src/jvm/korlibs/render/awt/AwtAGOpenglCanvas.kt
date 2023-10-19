@@ -9,11 +9,12 @@ import korlibs.math.geom.*
 import korlibs.platform.*
 import korlibs.render.*
 import korlibs.render.platform.*
+import java.awt.Canvas
 import java.awt.Container
 import java.awt.Graphics
 
 // @TODO: Use Metal, OpenGL or whatever required depending on what's AWT is using
-class AwtAGOpenglCanvas : Container(), EventListener by BaseEventListener(), BoundsProvider by BoundsProvider.Base() {
+class AwtAGOpenglCanvas : Canvas(), EventListener by BaseEventListener(), BoundsProvider by BoundsProvider.Base() {
     //override val ag: AGOpengl = AGOpenglAWT(checkGl = true, logGl = true)
     val ag: AG = AGOpenglAWT()
 

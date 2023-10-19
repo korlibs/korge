@@ -41,16 +41,18 @@ open class GLCanvas constructor(checkGl: Boolean = true, val logGl: Boolean = fa
         //    close()
         //}
         if (logGl) {
-            println("+++++++++++++++++++++++++++++")
+            //println("+++++++++++++++++++++++++++++")
         }
         if (ctx == null) {
-            println("--------------------------------------")
+            //println("--------------------------------------")
             //ctxComponentId = componentId
             ctx = glContextFromComponent(this, this)
             ag.contextLost()
         }
         //println("--------------")
-        render(gl, g)
+        ctx?.useContext(g, ag) { g, info ->
+            render(gl, g)
+        }
     }
 
 
@@ -68,11 +70,11 @@ open class GLCanvas constructor(checkGl: Boolean = true, val logGl: Boolean = fa
          */
     }
 
-    val isCurrent: () -> Any? = { ctx?.getCurrent() }
+    val getCurrent: () -> Any? = { ctx?.getCurrent() }
 
     open fun render(gl: KmlGl, g: Graphics) {
         //ctx?.makeCurrent()
-        gl.info.current = isCurrent
+        gl.info.current = getCurrent
         defaultRenderer(gl, g)
     }
 

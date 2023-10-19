@@ -5,6 +5,7 @@ import korlibs.datastructure.lock.*
 import korlibs.datastructure.thread.*
 import korlibs.image.bitmap.*
 import korlibs.image.color.*
+import korlibs.kgl.*
 import korlibs.korge.render.*
 import korlibs.memory.dyn.osx.*
 import korlibs.render.osx.*
@@ -61,6 +62,13 @@ class AwtGameCanvasTest {
         })
         frame.contentPane.add(JLabel().also { it.isOpaque = true; it.background = Color.YELLOW })
         frame.contentPane.add(JLabel().also { it.isOpaque = true; it.background = Color.GREEN })
+        frame.contentPane.add(GLCanvas().also {
+            it.defaultRenderer = { gl, g ->
+                gl.clearColor(1f, .5f, 1f, 1f)
+                gl.clear(KmlGl.COLOR_BUFFER_BIT)
+            }
+        })
+        /*
         frame.contentPane.add(AwtAGOpenglCanvas().also {
             val renderContext = RenderContext(it.ag, it)
             it.doRender = { ag ->
@@ -72,6 +80,7 @@ class AwtGameCanvasTest {
                 //SolidRect(100, 100, Colors.MEDIUMPURPLE).render(renderContext)
             }
         })
+         */
         frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
         frame.preferredSize = Dimension(600, 600)
         frame.pack()
@@ -105,9 +114,9 @@ class AwtGameCanvasTest {
 
         //CPlatformWindow
 
-        //frame.repaint()
-        //NativeThread.sleep(0.1.seconds)
-        //frame.repaint()
+        frame.repaint()
+        NativeThread.sleep(0.1.seconds)
+        frame.repaint()
         NativeThread.sleep(100.seconds)
     }
 }
