@@ -2,20 +2,20 @@ package korlibs.korge.render
 
 import korlibs.datastructure.*
 import korlibs.datastructure.iterators.*
-import korlibs.memory.unit.*
 import korlibs.graphics.*
 import korlibs.graphics.annotation.*
 import korlibs.graphics.log.*
 import korlibs.graphics.shader.*
-import korlibs.korge.internal.*
-import korlibs.korge.stat.*
-import korlibs.korge.view.*
-import korlibs.render.*
 import korlibs.image.bitmap.*
 import korlibs.image.color.*
 import korlibs.io.async.*
 import korlibs.io.lang.*
+import korlibs.korge.internal.*
+import korlibs.korge.stat.*
+import korlibs.korge.view.*
 import korlibs.math.geom.*
+import korlibs.memory.unit.*
+import korlibs.render.*
 import kotlin.coroutines.*
 
 /**
@@ -320,11 +320,11 @@ class RenderContext(
      */
     fun refGcCloseable(closeable: Closeable) = agAutoFreeManager.reference(closeable)
 
-    internal fun beforeRender() {
+    @PublishedApi internal fun beforeRender() {
         batch.beforeRender()
     }
 
-    internal fun afterRender() {
+    @PublishedApi internal fun afterRender() {
         flush()
         finish()
         batch.afterRender()
@@ -353,12 +353,23 @@ class RenderContext(
     val frameBuffers: Pool<AGFrameBuffer> = Pool { AGFrameBuffer(id = it) }
     val frameBufferStack = FastArrayList<AGFrameBuffer>()
 
-    inline fun doRender(block: () -> Unit) {
+    inline fun doRenderNew(frameBuffer: AGFrameBuffer = mainFrameBuffer, block: () -> Unit) {
+        beforeRender()
+        try {
+            doRender(frameBuffer) {
+                block()
+            }
+        } finally {
+            afterRender()
+        }
+    }
+
+    inline fun doRender(frameBuffer: AGFrameBuffer = mainFrameBuffer, block: () -> Unit) {
         _buffers.reset()
         ag.startFrame()
         try {
             //mainRenderBuffer.init()
-            setFrameBufferTemporally(mainFrameBuffer) {
+            setFrameBufferTemporally(frameBuffer) {
                 block()
             }
         } finally {
@@ -475,17 +486,26 @@ class RenderContext(
     }
 
 
-    val textureDrawer by lazy { AGTextureDrawer(ag) }
-    fun drawTexture(frameBuffer: AGFrameBuffer, tex: AGTexture) {
-        textureDrawer.draw(frameBuffer, tex, -1f, +1f, +1f, -1f)
+    val textureDrawer get() = ag.textureDrawer
+    fun drawTexture(frameBuffer: AGFrameBuffer, tex: AGTexture, left: Float = -1f, top: Float = +1f, right: Float = +1f, bottom: Float = -1f) {
+        textureDrawer.draw(frameBuffer, tex, left, top, right, bottom)
     }
 
-    private val drawTempTexture: AGTexture by lazy { AGTexture() }
+    //private val drawTempTexture: AGTexture by lazy { AGTexture() }
 
-    fun drawBitmap(frameBuffer: AGFrameBuffer, bmp: Bitmap) {
-        drawTempTexture.upload(bmp, mipmaps = false)
-        drawTexture(frameBuffer, drawTempTexture)
-        drawTempTexture.upload(Bitmaps.transparent.bmp)
+    fun drawBitmapXY(frameBuffer: AGFrameBuffer, bmp: Bitmap, x: Int, y: Int, scale: Float = 1f) {
+        val fx = (x.toFloat() / frameBuffer.width) * 2 - 1f
+        val fy = (y.toFloat() / frameBuffer.height) * 2 - 1f
+        val fw = (bmp.width.toFloat() / frameBuffer.width) * 2 * scale
+        val fh = (bmp.height.toFloat() / frameBuffer.height) * 2 * scale
+        drawBitmap(frameBuffer, bmp, fx, fy, fx + fw, fy + fh)
+    }
+
+    fun drawBitmap(frameBuffer: AGFrameBuffer, bmp: Bitmap, left: Float = -1f, top: Float = +1f, right: Float = +1f, bottom: Float = -1f) {
+        val tex = agBitmapTextureManager.getTextureBase(bmp).base
+        //drawTempTexture.upload(bmp, mipmaps = false)
+        drawTexture(frameBuffer, tex!!, left, top, right, bottom)
+        //drawTempTexture.upload(Bitmaps.transparent.bmp)
     }
 
     inline fun backupTexture(frameBuffer: AGFrameBuffer, tex: AGTexture?, callback: () -> Unit) {
