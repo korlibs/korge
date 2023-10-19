@@ -1,18 +1,8 @@
 package korlibs.render.platform
 
-import com.sun.jna.FunctionMapper
-import com.sun.jna.Library
-import com.sun.jna.Native
-import com.sun.jna.Pointer
+import com.sun.jna.*
 
-annotation class NativeName(val name: String) {
-    companion object {
-        val OPTIONS = mapOf(
-            Library.OPTION_FUNCTION_MAPPER to FunctionMapper { _, method ->
-                method.getAnnotation(NativeName::class.java)?.name ?: method.name
-            }
-        )
-    }
-}
-
-inline fun <reified T : Library> NativeLoad(name: String) = Native.load(name, T::class.java, NativeName.OPTIONS) as T
+@Deprecated("")
+typealias NativeName = korlibs.memory.dyn.osx.NativeName
+@Deprecated("", ReplaceWith("korlibs.memory.dyn.osx.NativeLoad<T>(name)", "korlibs"))
+inline fun <reified T : Library> NativeLoad(name: String) = korlibs.memory.dyn.osx.NativeLoad<T>(name)
