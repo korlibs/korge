@@ -8,8 +8,10 @@ import korlibs.math.geom.*
 import korlibs.math.geom.Rectangle
 import korlibs.render.*
 import korlibs.render.platform.*
+import korlibs.time.*
 import java.awt.*
 import java.awt.Graphics
+import javax.swing.SwingUtilities
 
 // @TODO: Use Metal, OpenGL or whatever required depending on what's AWT is using
 open class AwtAGOpenglCanvas : Canvas(), BoundsProvider by BoundsProvider.Base() {
@@ -18,11 +20,21 @@ open class AwtAGOpenglCanvas : Canvas(), BoundsProvider by BoundsProvider.Base()
 
     var ctx: BaseOpenglContext? = null
 
+    var autoRepaint = true
+
+    private val counter = TimeSampler(1.seconds)
+    val renderFps: Int get() = counter.count
+
     override fun paint(g: Graphics) {
+        counter.add()
         //super.paint(g)
         ensureContext()
         //g.fillRect(0, 0, 100, 100)
+        ctx?.swapInterval(1)
         ctx?.useContext(g, ag, paintInContextDelegate)
+        if (autoRepaint) {
+            SwingUtilities.invokeLater { repaint() }
+        }
     }
 
     val state: KmlGlState by lazy { (ag as AGOpengl).createGlState() }
@@ -42,26 +54,40 @@ open class AwtAGOpenglCanvas : Canvas(), BoundsProvider by BoundsProvider.Base()
                 val mainFrameBuffer = ag.mainFrameBuffer
 
                 val viewport = info.viewport
+
+                val frameOrComponent = this
+                val transform = this.graphicsConfiguration.defaultTransform
+                val factor = transform.scaleX
+
+                val scaledWidth = (frameOrComponent.width * factor).toInt()
+                val scaledHeight = (frameOrComponent.height * factor).toInt()
+                val viewportScale = 1.0
+
+                //println("factor=$factor")
+
                 if (viewport != null) {
                 //if (false) {
                     viewport!!
-                    val frameOrComponent = this
-                    val transform = this.graphicsConfiguration.defaultTransform
-                    val factor = transform.scaleX
                     val frameBuffer = AGFrameBuffer()
                     mainFrameBuffer.setSize(
-                        viewport.x, viewport.y, viewport.width, viewport.height,
-                        (frameOrComponent.width * factor).toInt(),
-                        (frameOrComponent.height * factor).toInt(),
+                        (viewport.x * viewportScale).toInt(),
+                        (viewport.y * viewportScale).toInt(),
+                        (viewport.width * viewportScale).toInt(),
+                        (viewport.height * viewportScale).toInt(),
+                        scaledWidth,
+                        scaledHeight,
                     )
-                    frameBuffer.setSize(0, 0, viewport.width, viewport.height)
+                    frameBuffer.setSize(scaledWidth, scaledHeight)
                     //frameBuffer.scissor = RectangleInt(0, 0, 50, 50)
+
+                    //ag.clear(frameBuffer)
 
                     ag.setMainFrameBufferTemporarily(frameBuffer) {
                         doRender(ag)
                     }
                     ag.textureDrawer.draw(mainFrameBuffer, frameBuffer.tex)
                 } else {
+                    mainFrameBuffer.setSize(scaledWidth, scaledHeight)
                     doRender(ag)
                 }
             }

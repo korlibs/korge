@@ -40,9 +40,6 @@ class AwtGameCanvasTest {
         el.setInterval(60.hz.timeSpan) {
             viewsLock {
                 x++
-                if (!Platform.isMac) {
-                    canvas?.repaint()
-                }
             }
         }
 
