@@ -4,14 +4,15 @@ import korlibs.graphics.*
 import korlibs.graphics.gl.*
 import korlibs.kgl.*
 import korlibs.korge.view.*
-import korlibs.math.geom.*
 import korlibs.math.geom.Rectangle
+import korlibs.platform.*
 import korlibs.render.*
+import korlibs.render.osx.*
 import korlibs.render.platform.*
 import korlibs.time.*
 import java.awt.*
 import java.awt.Graphics
-import javax.swing.SwingUtilities
+import javax.swing.*
 
 // @TODO: Use Metal, OpenGL or whatever required depending on what's AWT is using
 open class AwtAGOpenglCanvas : Canvas(), BoundsProvider by BoundsProvider.Base() {
@@ -28,12 +29,38 @@ open class AwtAGOpenglCanvas : Canvas(), BoundsProvider by BoundsProvider.Base()
     override fun paint(g: Graphics) {
         counter.add()
         //super.paint(g)
-        ensureContext()
+        if (ctx == null) {
+            ctx = glContextFromComponent(this, GameWindowConfig.Impl())
+            if (ctx!!.supportsSwapInterval()) {
+                ctx?.swapInterval(1)
+            }
+        }
         //g.fillRect(0, 0, 100, 100)
-        ctx?.swapInterval(1)
-        ctx?.useContext(g, ag, paintInContextDelegate)
-        if (autoRepaint) {
-            SwingUtilities.invokeLater { repaint() }
+        val ctx = this.ctx
+        if (ctx != null) {
+            ctx.useContext(g, ag, paintInContextDelegate)
+            if (autoRepaint && ctx.supportsSwapInterval()) {
+                SwingUtilities.invokeLater { repaint() }
+            }
+        }
+    }
+
+    private val dl = if (!Platform.isMac) null else OSXDisplayLink {
+        if (autoRepaint && ctx?.supportsSwapInterval() != true) {
+            repaint()
+            //SwingUtilities.invokeLater { repaint() }
+        }
+        //println("FRAME!")
+    }
+
+    init {
+        addHierarchyListener {
+            if (dl == null) return@addHierarchyListener
+            val added = getContainerFrame()?.isVisible == true
+            if (dl.running != added) {
+                if (added) dl.start() else dl.stop()
+                println("!!! processHierarchyEvent: added=$added")
+            }
         }
     }
 
@@ -91,12 +118,6 @@ open class AwtAGOpenglCanvas : Canvas(), BoundsProvider by BoundsProvider.Base()
                     doRender(ag)
                 }
             }
-        }
-    }
-
-    private fun ensureContext() {
-        if (ctx == null) {
-            ctx = glContextFromComponent(this, GameWindowConfig.Impl())
         }
     }
 

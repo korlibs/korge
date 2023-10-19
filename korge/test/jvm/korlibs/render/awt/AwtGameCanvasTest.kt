@@ -7,10 +7,7 @@ import korlibs.image.bitmap.*
 import korlibs.image.color.*
 import korlibs.kgl.*
 import korlibs.korge.render.*
-import korlibs.memory.dyn.osx.*
 import korlibs.platform.*
-import korlibs.render.osx.*
-import korlibs.render.osx.metal.*
 import korlibs.time.*
 import java.awt.*
 import javax.swing.*
@@ -34,12 +31,16 @@ class AwtGameCanvasTest {
         val el = SyncEventLoop()
         val viewsLock = Lock()
         var canvas: Component? = null
+        var fpsLabel: JLabel? = null
 
         var x = 0
 
         el.setInterval(60.hz.timeSpan) {
             viewsLock {
                 x++
+                if (!Platform.isMac) {
+                    canvas?.repaint()
+                }
             }
         }
 
@@ -60,6 +61,7 @@ class AwtGameCanvasTest {
                         //SolidRect(100, 100, Colors.MEDIUMPURPLE).render(renderContext)
                     }
                 }
+                fpsLabel?.text = "FPS: ${(canvas as AwtAGOpenglCanvas).renderFps}"
             }
         })
         /*
@@ -80,7 +82,9 @@ class AwtGameCanvasTest {
         })
 
          */
-        frame.contentPane.add(JLabel().also { it.isOpaque = true; it.background = Color.YELLOW })
+        frame.contentPane.add(JLabel().also {
+            fpsLabel = it
+            it.isOpaque = true; it.background = Color.YELLOW })
         frame.contentPane.add(JLabel().also { it.isOpaque = true; it.background = Color.GREEN })
         frame.contentPane.add(GLCanvas().also {
             it.defaultRenderer = { gl, g ->
@@ -107,12 +111,6 @@ class AwtGameCanvasTest {
         frame.setLocationRelativeTo(null)
         frame.isVisible = true
 
-        val dl = OSXDisplayLink {
-            canvas?.repaint()
-            //println("FRAME!")
-        }
-        dl.start()
-
         /*
         //println("PEER: " + AWTAccessor.getComponentAccessor().getPeer<ComponentPeer>(frame))
         val layer = frame.getCAMetalLayer()
@@ -134,9 +132,6 @@ class AwtGameCanvasTest {
 
         //CPlatformWindow
 
-        frame.repaint()
-        NativeThread.sleep(0.1.seconds)
-        frame.repaint()
         NativeThread.sleep(100.seconds)
     }
 }

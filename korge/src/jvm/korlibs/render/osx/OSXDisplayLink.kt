@@ -35,6 +35,7 @@ class OSXDisplayLink(
     }
 
     var running = false
+        private set
 
     fun start() {
         if (!Platform.isMac) return
