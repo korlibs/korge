@@ -583,9 +583,15 @@ fun Rectangle?.toAGScissor(): AGScissor {
 operator fun BoundsBuilder.plus(scissor: AGScissor): BoundsBuilder =
     this + Point(scissor.left, scissor.top) + Point(scissor.right, scissor.bottom)
 
-inline class AGFrameBufferInfo(val data: Int) {
+inline class AGFrameBufferInfo(val dataLong: Long) {
+    val data get() = dataLong.low
+    val data2 get() = dataLong.high
+    constructor(data: Int, data2: Int) : this(Long.fromLowHigh(data, data2))
+
     val width: Int get() = data.extract14(0)
     val height: Int get() = data.extract14(14)
+    val x: Int get() = data2.extract14(0)
+    val y: Int get() = data2.extract14(14)
     val size: AGSize get() = AGSize(width, height)
     val hasDepth: Boolean get() = data.extractBool(28)
     val hasStencil: Boolean get() = data.extractBool(29)
@@ -593,17 +599,19 @@ inline class AGFrameBufferInfo(val data: Int) {
     val samples: Int get() = 1 shl samplesBits
     val hasStencilAndDepth: Boolean  get() = hasDepth && hasStencil
 
-    fun withSize(width: Int = this.width, height: Int = this.height): AGFrameBufferInfo = AGFrameBufferInfo(data.insert14(width, 0).insert14(height, 14))
-    fun withHasDepth(hasDepth: Boolean): AGFrameBufferInfo = AGFrameBufferInfo(data.insert(hasDepth, 28))
-    fun withHasStencil(hasStencil: Boolean): AGFrameBufferInfo = AGFrameBufferInfo(data.insert(hasStencil, 29))
+    fun withXY(x: Int = this.x, y: Int = this.y): AGFrameBufferInfo = AGFrameBufferInfo(data, data2.insert14(x, 0).insert14(y, 14))
+    fun withSize(width: Int = this.width, height: Int = this.height): AGFrameBufferInfo = AGFrameBufferInfo(data.insert14(width, 0).insert14(height, 14), data2)
+    fun withBounds(x: Int = this.x, y: Int = this.y, width: Int = this.width, height: Int = this.height): AGFrameBufferInfo = withXY(x, y).withSize(width, height)
+    fun withHasDepth(hasDepth: Boolean): AGFrameBufferInfo = AGFrameBufferInfo(data.insert(hasDepth, 28), data2)
+    fun withHasStencil(hasStencil: Boolean): AGFrameBufferInfo = AGFrameBufferInfo(data.insert(hasStencil, 29), data2)
     fun withSamples(samples: Int): AGFrameBufferInfo = withSamplesBits(ilog2(samples))
-    private fun withSamplesBits(bits: Int): AGFrameBufferInfo = AGFrameBufferInfo(data.insert2(bits, 30))
+    private fun withSamplesBits(bits: Int): AGFrameBufferInfo = AGFrameBufferInfo(data.insert2(bits, 30), data2)
 
     override fun toString(): String = "AGFrameBufferInfo(width=$width, height=$height, hasDepth=$hasDepth, hasStencil=$hasStencil, samples=$samples)"
 
     companion object {
-        val DEFAULT = AGFrameBufferInfo(0)
-        val INVALID = AGFrameBufferInfo(-1)
+        val DEFAULT = AGFrameBufferInfo(0, 0)
+        val INVALID = AGFrameBufferInfo(-1, 0)
     }
 }
 
