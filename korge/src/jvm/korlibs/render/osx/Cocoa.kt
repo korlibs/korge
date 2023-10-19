@@ -321,7 +321,7 @@ interface AppKit : Library {
 fun Foundation.NSLog(msg: NSString) = NSLog(msg.id)
 fun Foundation.NSLog(msg: String) = NSLog(NSString(msg))
 
-interface DisplayLinkCallback : Callback {
+fun interface DisplayLinkCallback : Callback {
     fun callback(displayLink: Pointer?, inNow: Pointer?, inOutputTime: Pointer?, flagsIn: Pointer?, flagsOut: Pointer?, userInfo: Pointer?): Int
 }
 

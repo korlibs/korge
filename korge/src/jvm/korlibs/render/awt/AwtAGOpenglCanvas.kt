@@ -40,14 +40,18 @@ open class AwtAGOpenglCanvas : Canvas(), BoundsProvider by BoundsProvider.Base()
         if (ctx != null) {
             ctx.useContext(g, ag, paintInContextDelegate)
             if (autoRepaint && ctx.supportsSwapInterval()) {
-                SwingUtilities.invokeLater { repaint() }
+                SwingUtilities.invokeLater { requestFrame() }
             }
         }
     }
 
+    fun requestFrame() {
+        repaint()
+    }
+
     private val dl = if (!Platform.isMac) null else OSXDisplayLink {
         if (autoRepaint && ctx?.supportsSwapInterval() != true) {
-            repaint()
+            requestFrame()
             //SwingUtilities.invokeLater { repaint() }
         }
         //println("FRAME!")
@@ -59,7 +63,7 @@ open class AwtAGOpenglCanvas : Canvas(), BoundsProvider by BoundsProvider.Base()
             val added = getContainerFrame()?.isVisible == true
             if (dl.running != added) {
                 if (added) dl.start() else dl.stop()
-                println("!!! processHierarchyEvent: added=$added")
+                //println("!!! processHierarchyEvent: added=$added")
             }
         }
     }
