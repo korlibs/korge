@@ -15,15 +15,7 @@ interface Disposable {
     }
 }
 
-interface Closeable {
-	fun close(): Unit
-
-	companion object {
-		operator fun invoke(callback: () -> Unit) = object : Closeable {
-			override fun close() = callback()
-		}
-	}
-}
+typealias Closeable = korlibs.datastructure.closeable.Closeable
 
 object DummyCloseable : Closeable {
 	override fun close() {
