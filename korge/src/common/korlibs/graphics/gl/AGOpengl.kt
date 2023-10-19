@@ -1,8 +1,8 @@
 package korlibs.graphics.gl
 
-import korlibs.encoding.*
 import korlibs.datastructure.*
 import korlibs.datastructure.iterators.*
+import korlibs.encoding.*
 import korlibs.graphics.*
 import korlibs.graphics.shader.*
 import korlibs.graphics.shader.gl.*
@@ -985,7 +985,7 @@ class AGOpengl(val gl: KmlGl, var context: KmlGlContext? = null) : AG() {
         //println("bindFrameBuffer: $frameBuffer, info=$info")
         if (_currentViewportSize != info.size) {
             //println("viewport: 0, 0, ${info.width}, ${info.height}")
-            gl.viewport(0, 0, info.width, info.height)
+            gl.viewport(info.x, info.y, info.width, info.height)
         }
         if (frameBuffer.isMain) {
             if (_currentFrameBuffer != backBufferFrameBufferBinding) {
