@@ -1025,11 +1025,11 @@ inline class NSMenu(val id: Long) {
 }
 
 inline fun autoreleasePool(body: () -> Unit) {
-    val autoreleasePool = NSClass("NSAutoreleasePool").alloc().msgSend("init")
+    val autoreleasePool = if (Platform.isMac()) NSClass("NSAutoreleasePool").alloc().msgSend("init") else null
     try {
         body()
     } finally {
-        autoreleasePool.msgSend("drain")
+        autoreleasePool?.msgSend("drain")
     }
 }
 
