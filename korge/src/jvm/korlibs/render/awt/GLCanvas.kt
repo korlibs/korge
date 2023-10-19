@@ -1,10 +1,14 @@
 package korlibs.render.awt
 
+import korlibs.graphics.*
+import korlibs.kgl.*
 import korlibs.graphics.gl.*
 import korlibs.kgl.*
+import korlibs.korge.view.*
 import korlibs.render.*
 import korlibs.render.platform.*
 import java.awt.*
+import java.awt.Graphics
 import java.io.*
 
 open class GLCanvas constructor(checkGl: Boolean = true, val logGl: Boolean = false, cacheGl: Boolean = false) : Canvas(), GameWindowConfig, Closeable {
@@ -66,6 +70,9 @@ open class GLCanvas constructor(checkGl: Boolean = true, val logGl: Boolean = fa
         ctx = null
     }
 
+    var defaultRendererAG: (ag: AG) -> Unit = {
+    }
+
     var defaultRenderer: (gl: KmlGl, g: Graphics) -> Unit = { gl, g ->
         /*
         ctx?.useContext(g, ag) {
@@ -80,14 +87,17 @@ open class GLCanvas constructor(checkGl: Boolean = true, val logGl: Boolean = fa
     open fun render(gl: KmlGl, g: Graphics, info: BaseOpenglContext.ContextInfo) {
         //ctx?.makeCurrent()
         gl.info.current = getCurrent
-        val viewport = info.viewport
-        if (viewport != null) {
-            gl.viewport(viewport.x, viewport.y, viewport.width, viewport.height)
-            gl.scissor(viewport.x, viewport.y, viewport.width, viewport.height)
-            gl.enable(KmlGl.SCISSOR_TEST)
-            //println("viewport=$viewport")
+        ag.startEndFrame {
+            val viewport = info.viewport
+            if (viewport != null) {
+                gl.viewport(viewport.x, viewport.y, viewport.width, viewport.height)
+                gl.scissor(viewport.x, viewport.y, viewport.width, viewport.height)
+                gl.enable(KmlGl.SCISSOR_TEST)
+                //println("viewport=$viewport")
+            }
+            defaultRenderer(gl, g)
+            defaultRendererAG(ag)
         }
-        defaultRenderer(gl, g)
     }
 
     override var quality: GameWindow.Quality = GameWindow.Quality.AUTOMATIC

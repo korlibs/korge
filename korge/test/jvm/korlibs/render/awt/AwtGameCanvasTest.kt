@@ -8,6 +8,7 @@ import korlibs.image.color.*
 import korlibs.kgl.*
 import korlibs.korge.render.*
 import korlibs.memory.dyn.osx.*
+import korlibs.platform.*
 import korlibs.render.osx.*
 import korlibs.render.osx.metal.*
 import korlibs.time.*
@@ -25,18 +26,23 @@ class AwtGameCanvasTest {
         System.setProperty("sun.java2d.opengl", "true")
         //System.setProperty("sun.java2d.opengl", "false")
 
-        val frame = JFrame("Title")
+        val frame = object : JFrame("Title") {
+        }
         val bmp = Bitmap32(128, 128) { x, y -> Colors.BLACK.withB(x * 2).withG(y * 2) }.premultiplied()
         val bmp2 = Bitmap32(128, 128) { x, y -> Colors.BLACK.withR(x * 2).withG(y * 2) }.premultiplied()
 
         val el = SyncEventLoop()
         val viewsLock = Lock()
+        var canvas: Component? = null
 
         var x = 0
 
         el.setInterval(60.hz.timeSpan) {
             viewsLock {
                 x++
+                if (!Platform.isMac) {
+                    canvas?.repaint()
+                }
             }
         }
 
@@ -45,7 +51,6 @@ class AwtGameCanvasTest {
         }
 
         frame.contentPane.layout = GridLayout(2, 2)
-        var canvas: AwtAGOpenglCanvas? = null
         frame.contentPane.add(AwtAGOpenglCanvas().also {
             canvas = it
             val renderContext = RenderContext(it.ag, it)
@@ -60,6 +65,24 @@ class AwtGameCanvasTest {
                 }
             }
         })
+        /*
+        frame.contentPane.add(GLCanvas().also {
+            canvas = it
+            //val renderContext = RenderContext(it.ag, it)
+            val renderContext = RenderContext(it.ag)
+            it.defaultRendererAG = { ag ->
+                renderContext.doRenderNew {
+                    //println(renderContext.currentWidth)
+                    renderContext.clear(Colors.LIGHTPINK)
+                    viewsLock {
+                        renderContext.drawBitmapXY(renderContext.currentFrameBuffer, bmp, (sin(x.toFloat() / 50f) * 200 + 200).toInt(), 100)
+                        //SolidRect(100, 100, Colors.MEDIUMPURPLE).render(renderContext)
+                    }
+                }
+            }
+        })
+
+         */
         frame.contentPane.add(JLabel().also { it.isOpaque = true; it.background = Color.YELLOW })
         frame.contentPane.add(JLabel().also { it.isOpaque = true; it.background = Color.GREEN })
         frame.contentPane.add(GLCanvas().also {
