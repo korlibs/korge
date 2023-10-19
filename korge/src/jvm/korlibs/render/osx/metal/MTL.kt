@@ -1,7 +1,70 @@
 package korlibs.render.osx.metal
 
 import com.sun.jna.*
+import korlibs.io.dynamic.*
+import korlibs.io.lang.*
+import korlibs.memory.*
 import korlibs.memory.dyn.osx.*
+import korlibs.render.osx.*
+import korlibs.render.platform.*
+import javax.swing.*
+
+fun JFrame.getCAMetalLayer(): CAMetalLayer? {
+    if (!Dyn.global["sun.awt.CGraphicsDevice"].dynamicInvoke("usingMetalPipeline").bool) return null
+    val peer = this.awtGetPeer()
+    val platformWindow = peer.dyn.dynamicInvoke("getPlatformWindow")
+    val contentView = platformWindow.dyn.dynamicInvoke("getContentView")
+    val windowLayerPtr = contentView.dyn.dynamicInvoke("getWindowLayerPtr").long
+    return if (windowLayerPtr != 0L) ObjcDynamicInterface.Companion.proxy(windowLayerPtr, CAMetalLayer::class.java) else null
+}
+
+inline class FourCharCode(val value: Int) {
+    val c0: Char get() = value.extract8(24).toChar()
+    val c1: Char get() = value.extract8(16).toChar()
+    val c2: Char get() = value.extract8(8).toChar()
+    val c3: Char get() = value.extract8(0).toChar()
+    constructor(c0: Char, c1: Char, c2: Char, c3: Char) : this(0.insert8(c0.code, 24).insert8(c1.code, 16).insert8(c2.code, 8).insert8(c3.code, 0))
+    constructor(str: String) : this(str[0], str[1], str[2], str[3])
+}
+
+// https://developer.apple.com/documentation/metal/metal_sample_code_library/mixing_metal_and_opengl_rendering_in_a_view
+class CoreVideoOpenGLMetalSharedTexture(val width: Int, val height: Int) : Disposable {
+    val cvBufferProperties = run {
+        NSMutableDictionary().also {
+            it["OpenGLCompatibility"] = true
+            it["MetalCompatibility"] = true
+        }
+    }
+
+    val glContext: Pointer? = null // @TODO: Provide context
+    val pixelFormat: Pointer? = null // @TODO: Provide
+
+    val pixelBuffer = Memory(8L).also { mem ->
+        CoreVideo.CVPixelBufferCreate(null, width, height, FourCharCode("BGRA").value, cvBufferProperties.ptr, mem)
+    }.getPointer(0L)
+
+    val glTextureCache = Memory(16L).also { mem ->
+        CoreVideo.CVOpenGLTextureCacheCreate(null, null, glContext, pixelFormat, null, mem)
+    }.getPointer(0L)
+
+    val _CVGLTexture = Memory(16L).also { mem ->
+        CoreVideo.CVOpenGLTextureCacheCreateTextureFromImage(null, glTextureCache, pixelBuffer, null, mem)
+    }.getPointer(0L)
+
+    val glTexture = CoreVideo.CVOpenGLTextureGetName(_CVGLTexture)
+    init {
+        println("pixelBuffer=$pixelBuffer")
+        println("glTextureCache=$glTextureCache")
+        println("_CVGLTexture=$_CVGLTexture")
+        println("glTexture=$glTexture")
+    }
+
+    override fun dispose() {
+        // @TODO: release
+        //CoreVideo.CVPixelBufferCreate()
+        //pixelBuffer
+    }
+}
 
 interface CoreGraphics : Library {
 }
