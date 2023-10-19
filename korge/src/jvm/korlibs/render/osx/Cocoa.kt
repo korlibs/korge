@@ -275,14 +275,8 @@ inline class NSMenu(val id: Long) {
     }
 }
 
-inline fun autoreleasePool(body: () -> Unit) {
-    val autoreleasePool = NSClass("NSAutoreleasePool").alloc().msgSend("init")
-    try {
-        body()
-    } finally {
-        autoreleasePool.msgSend("drain")
-    }
-}
+@Deprecated("", ReplaceWith("korlibs.memory.dyn.osx.autoreleasePool(body)", "korlibs"))
+inline fun autoreleasePool(body: () -> Unit) = korlibs.memory.dyn.osx.autoreleasePool(body)
 
 internal interface GL : Library {
     fun glViewport(x: Int, y: Int, width: Int, height: Int)

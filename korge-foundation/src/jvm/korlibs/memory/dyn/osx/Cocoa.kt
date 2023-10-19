@@ -1,15 +1,10 @@
 package korlibs.memory.dyn.osx
 
-import korlibs.memory.dyn.*
 import com.sun.jna.*
+import korlibs.memory.dyn.*
 import java.lang.reflect.*
 import java.util.*
 import java.util.concurrent.*
-import kotlin.collections.ArrayList
-import kotlin.collections.toString
-import kotlin.reflect.*
-import kotlin.text.Charsets
-import kotlin.text.toCharArray
 
 //inline class ID(val id: Long)
 typealias ID = Long
@@ -60,6 +55,8 @@ interface ObjectiveC : Library {
     fun objc_msgSendCGFloat(vararg args: Any?): CGFloat
     @NativeName("objc_msgSend")
     fun objc_msgSendFloat(vararg args: Any?): Float
+    @NativeName("objc_msgSend")
+    fun objc_msgSendDouble(vararg args: Any?): Double
     @NativeName("objc_msgSend")
     fun objc_msgSendNSPoint(vararg args: Any?): NSPointRes
     @NativeName("objc_msgSend")
@@ -569,6 +566,8 @@ fun Long.msgSendVoid(sel: String, vararg args: Any?): Unit = ObjectiveC.objc_msg
 
 fun Long.msgSendFloat(sel: ObjcSel, vararg args: Any?): Float = ObjectiveC.objc_msgSendFloat(this, sel(sel), *args)
 fun Long.msgSendFloat(sel: String, vararg args: Any?): Float = ObjectiveC.objc_msgSendFloat(this, sel(sel), *args)
+fun Long.msgSendDouble(sel: ObjcSel, vararg args: Any?): Double = ObjectiveC.objc_msgSendDouble(this, sel(sel), *args)
+fun Long.msgSendDouble(sel: String, vararg args: Any?): Double = ObjectiveC.objc_msgSendDouble(this, sel(sel), *args)
 
 fun Long.msgSendCGFloat(sel: ObjcSel, vararg args: Any?): CGFloat = ObjectiveC.objc_msgSendCGFloat(this, sel(sel), *args)
 fun Long.msgSendCGFloat(sel: String, vararg args: Any?): CGFloat = ObjectiveC.objc_msgSendCGFloat(this, sel(sel), *args)
@@ -615,8 +614,12 @@ open class NSRECT : Structure {
 operator fun Long.invoke(sel: String, vararg args: Any?): Long = ObjectiveC.objc_msgSend(this, sel(sel), *args)
 
 open class NSObject(val id: Long) : IntegerType(8, id, false), NativeMapped {
+    val ptr get() = id.toPointer()
+
     fun msgSend(sel: String, vararg args: Any?): Long = ObjectiveC.objc_msgSend(id, sel(sel), *args)
     fun msgSendInt(sel: String, vararg args: Any?): Int = ObjectiveC.objc_msgSendInt(id, sel(sel), *args)
+    fun msgSendFloat(sel: String, vararg args: Any?): Float = ObjectiveC.objc_msgSendFloat(id, sel(sel), *args)
+    fun msgSendDouble(sel: String, vararg args: Any?): Double = ObjectiveC.objc_msgSendDouble(id, sel(sel), *args)
     fun msgSendCGFloat(sel: String, vararg args: Any?): CGFloat = ObjectiveC.objc_msgSendCGFloat(id, sel(sel), *args)
     fun msgSendNSPoint(sel: String, vararg args: Any?): NSPointRes = ObjectiveC.objc_msgSendNSPoint(id, sel(sel), *args)
     fun msgSend_stret(sel: String, vararg args: Any?): Unit = ObjectiveC.objc_msgSend_stret(id, sel(sel), *args)
@@ -636,6 +639,10 @@ open class NSObject(val id: Long) : IntegerType(8, id, false), NativeMapped {
 
     override fun fromNative(nativeValue: Any, context: FromNativeContext?): Any = NSObject((nativeValue as Number).toLong())
     override fun nativeType(): Class<*> = Long::class.javaPrimitiveType!!
+
+    val objcClass: NSClass get() = NSClass(msgSend("class"))
+
+    override fun toString(): String = "NSObject($id)"
 }
 
 open class NSString(id: Long) : NSObject(id) {
@@ -662,8 +669,14 @@ open class NSString(id: Long) : NSObject(id) {
     }
 }
 
-open class NSClass(val name: String) : NSObject(ObjectiveC.objc_getClass(name)) {
+open class NSClass(id: Long) : NSObject(id) {
+    constructor(name: String) : this(ObjectiveC.objc_getClass(name))
+
     val OBJ_CLASS = id
+
+    val name by lazy { ObjectiveC.class_getName(id) }
+
+    override fun toString(): String = "NSClass[$id]($name)"
 }
 
 fun <T> nsAutoreleasePool(block: () -> T): T {
@@ -1017,6 +1030,80 @@ inline fun autoreleasePool(body: () -> Unit) {
     } finally {
         autoreleasePool.msgSend("drain")
     }
+}
+
+//@Keep
+object CoreFoundation {
+    val library = NativeLibrary.getInstance("CoreFoundation")
+    @JvmStatic val kCFRunLoopCommonModes: Pointer? = library.getGlobalVariableAddress("kCFRunLoopCommonModes").getPointer(0L)
+    @JvmStatic val kCFBooleanTrue: Pointer? = library.getGlobalVariableAddress("kCFBooleanTrue").getPointer(0L)
+    @JvmStatic val kCFBooleanFalse: Pointer? = library.getGlobalVariableAddress("kCFBooleanFalse").getPointer(0L)
+    @JvmStatic external fun CFRunLoopGetCurrent(): Pointer?
+    @JvmStatic external fun CFRunLoopGetMain(): Pointer?
+    @JvmStatic external fun CFRunLoopRun(): Void
+
+    init {
+        Native.register("CoreFoundation")
+    }
+}
+
+class CFBoolean private constructor(id: Long) : NSObject(id) {
+    val value: Boolean get() = this.id == TRUE.id
+
+    companion object {
+        val TRUE = CFBoolean(CoreFoundation.kCFBooleanTrue.addressNotNull)
+        val FALSE = CFBoolean(CoreFoundation.kCFBooleanFalse.addressNotNull)
+
+        operator fun invoke(value: Boolean): CFBoolean = if (value) TRUE else FALSE
+    }
+}
+
+class NSNumber private constructor(id: Long) : NSObject(id) {
+    constructor(value: Int) : this(NSClass("NSNumber").alloc().msgSend("initWithInt:", value))
+    constructor(value: Double) : this(NSClass("NSNumber").alloc().msgSend("initWithDouble:", value))
+    constructor(value: Long, unit: Unit = Unit) : this(NSClass("NSNumber").alloc().msgSend("initWithLong:", value))
+    val boolValue: Boolean get() = id.msgSendInt("boolValue") != 0
+    val intValue: Int get() = id.msgSendInt("intValue")
+    val longValue: Long get() = id.msgSend("longValue")
+    val doubleValue: Double get() = id.msgSendDouble("doubleValue")
+}
+
+fun NSObject.Companion.cast(value: Any): NSObject {
+    return when (value) {
+        is NSObject -> value
+        is String -> NSString(value)
+        is Int -> NSNumber(value)
+        is Long -> NSNumber(value)
+        is Double -> NSNumber(value)
+        is Boolean -> CFBoolean(value)
+        else -> TODO("Unsupported value '$value' to be cast to NSObject")
+    }
+}
+
+class NSMutableDictionary(id: Long) : NSObject(id) {
+    constructor() : this(NSClass("NSMutableDictionary").alloc().msgSend("init"))
+    val count: Int get() = id.msgSendInt("count")
+    fun setValue(value: NSObject, forKey: NSObject) {
+        id.msgSend("setValue:forKey:", value.id, forKey.id)
+    }
+    fun getValue(key: NSObject): NSObject {
+        return NSObject(id.msgSend("valueForKey:", key.id))
+    }
+    operator fun set(key: NSObject, value: NSObject) {
+        setValue(value, key)
+    }
+    operator fun set(key: Any, value: Any) {
+        this[NSObject.cast(key)] = NSObject.cast(value)
+    }
+
+    operator fun get(key: Any): NSObject {
+        return getValue(NSObject.cast(key))
+    }
+}
+
+class NSDictionary(id: Long) : NSObject(id) {
+    constructor() : this(NSClass("NSDictionary").alloc().msgSend("init"))
+    val count: Int get() = id.msgSendInt("count")
 }
 
 /*
