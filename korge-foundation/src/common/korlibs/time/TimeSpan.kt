@@ -109,7 +109,7 @@ typealias TimeSpan = Duration
 
 operator fun Duration.unaryPlus(): Duration = this
 
-val Duration.milliseconds: Double get() = this.inWholeMicroseconds.toDouble() / 1000.0
+val Duration.milliseconds: Double get() = this.inWholeNanoseconds.toDouble() / 1_000_000.0
 
 /** Returns the total number of [nanoseconds] for this [TimeSpan] (1 / 1_000_000_000 [seconds]) */
 val Duration.nanoseconds: Double get() = this.inWholeNanoseconds.toDouble()
