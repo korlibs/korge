@@ -1,6 +1,8 @@
 package korlibs.render
 
 import korlibs.datastructure.*
+import korlibs.datastructure.closeable.*
+import korlibs.datastructure.lock.*
 import korlibs.event.*
 import korlibs.graphics.*
 import korlibs.graphics.log.*
@@ -10,6 +12,7 @@ import korlibs.image.vector.*
 import korlibs.io.*
 import korlibs.io.async.*
 import korlibs.io.file.*
+import korlibs.korge.view.*
 import korlibs.logger.*
 import korlibs.math.geom.*
 import korlibs.memory.*
@@ -32,7 +35,11 @@ data class GameWindowCreationConfig(
     val logGl: Boolean = false,
     val cacheGl: Boolean = false,
     val fullscreen: Boolean? = null,
-)
+) {
+    companion object {
+        val DEFAULT = GameWindowCreationConfig()
+    }
+}
 
 expect fun CreateDefaultGameWindow(config: GameWindowCreationConfig): GameWindow
 fun CreateDefaultGameWindow() = CreateDefaultGameWindow(GameWindowCreationConfig())
@@ -178,6 +185,7 @@ open class GameWindow :
     //override val ag: AG = LogAG()
     override val ag: AG = AGDummy()
 
+    open val myCoroutineDispatcher = SyncEventLoopCoroutineDispatcher()
     open val coroutineDispatcher: GameWindowCoroutineDispatcher = GameWindowCoroutineDispatcher()
 
     fun getCoroutineDispatcherWithCurrentContext(coroutineContext: CoroutineContext): CoroutineContext = coroutineContext + coroutineDispatcher
@@ -191,6 +199,7 @@ open class GameWindow :
     protected val resumeEvent = ResumeEvent()
     protected val stopEvent = StopEvent()
     protected val destroyEvent = DestroyEvent()
+    protected val updateEvent = UpdateEvent()
     protected val renderEvent = RenderEvent()
     protected val initEvent = InitEvent()
     protected val disposeEvent = DisposeEvent()
@@ -201,8 +210,14 @@ open class GameWindow :
     protected val gestureEvent = GestureEvent()
     protected val dropFileEvent = DropFileEvent()
 
-    fun onRenderEvent(block: (RenderEvent) -> Unit) {
-        onEvent(RenderEvent, block)
+    /** Happens on the updater thread */
+    fun onUpdateEvent(block: (UpdateEvent) -> Unit): Closeable {
+        return onEvent(UpdateEvent, block)
+    }
+
+    /** Happens on the rendering thread */
+    fun onRenderEvent(block: (RenderEvent) -> Unit): Closeable {
+        return onEvent(RenderEvent, block)
     }
 
     val counterTimePerFrame: TimeSpan get() = (1_000_000.0 / fps).microseconds
@@ -249,6 +264,13 @@ open class GameWindow :
     open var visible: Boolean = false
     open var bgcolor: RGBA = Colors.BLACK
     override var quality: Quality get() = Quality.AUTOMATIC; set(value) = Unit
+
+    fun hide() {
+        visible = false
+    }
+    fun show() {
+        visible = true
+    }
 
     val onDebugEnabled = Signal<Unit>()
     val onDebugChanged = Signal<Boolean>()
@@ -463,10 +485,21 @@ open class GameWindow :
     fun dispatchStopEvent() = dispatch(stopEvent.reset())
     fun dispatchDestroyEvent() = dispatch(destroyEvent.reset())
     fun dispatchDisposeEvent() = dispatch(disposeEvent.reset())
-    fun dispatchRenderEvent(update: Boolean = true, render: Boolean = true) = dispatch(renderEvent.reset {
-        this.update = update
-        this.render = render
-    })
+    private val updateRenderLock = Lock()
+    fun dispatchUpdateEvent() {
+        updateRenderLock { dispatch(updateEvent) }
+    }
+    fun dispatchNewRenderEvent() {
+        dispatchRenderEvent(update = false, render = true)
+    }
+    fun dispatchRenderEvent(update: Boolean = true, render: Boolean = true) {
+        updateRenderLock {
+            dispatch(renderEvent.reset {
+                this.update = update
+                this.render = render
+            })
+        }
+    }
     fun dispatchDropfileEvent(type: DropFileEvent.Type, files: List<VfsFile>?) = dispatch(dropFileEvent.reset {
         this.type = type
         this.files = files
