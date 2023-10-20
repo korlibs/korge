@@ -181,9 +181,6 @@ object KorgeRunner {
         }
         val realGameWindow = (config.gameWindow ?: coroutineContext[GameWindow] ?: CreateDefaultGameWindow(GameWindowCreationConfig(multithreaded = multithreaded, fullscreen = config.fullscreen)))
         realGameWindow.bgcolor = config.backgroundColor ?: Colors.BLACK
-        //println("Configure: ${width}x${height}")
-        // @TODO: Configure should happen before loop. But we should ensure that all the korgw targets are ready for this
-        //realGameWindow.configure(width, height, title, icon, fullscreen)
         realGameWindow.loop {
             val gameWindow = this
             if (Platform.isNative) println("Korui[0]")
@@ -195,7 +192,7 @@ object KorgeRunner {
                     // Do nothing
                     when {
                         //iconDrawable != null -> this.icon = iconDrawable.render()
-                        iconPath != null -> this.icon = resourcesVfs[iconPath!!].readBitmap(imageFormats)
+                        iconPath != null -> this.icon = resourcesVfs[iconPath].readBitmap(imageFormats)
                         else -> Unit
                     }
                 } catch (e: Throwable) {
@@ -224,15 +221,13 @@ object KorgeRunner {
                 stageBuilder = config.stageBuilder
             ).also {
                 it.init()
+                if (Platform.isJsBrowser) {
+                    Dyn.global["views"] = it
+                }
             }
 
-            if (Platform.isJsBrowser) {
-                Dyn.global["views"] = views
-            }
-            config.injector
-                .mapInstance(ModuleArgs(config.args))
-                .mapInstance(GameWindow::class, gameWindow)
-                .mapInstance(KorgeConfig::class, config)
+            config.injector.mapInstance(GameWindow::class, gameWindow)
+            config.injector.mapInstance(KorgeConfig::class, config)
             views.debugViews = debug
             views.debugFontExtraScale = config.debugFontExtraScale
             views.debugFontColor = config.debugFontColor
@@ -245,20 +240,15 @@ object KorgeRunner {
             //Korge.prepareViews(views, gameWindow, bgcolor != null, bgcolor ?: Colors.TRANSPARENT_BLACK)
 
             gameWindow.registerTime("prepareViews") {
-                prepareViews(
-                    views,
-                    gameWindow,
-                    bgcolor != null,
-                    bgcolor ?: Colors.TRANSPARENT,
-                    waitForFirstRender = true,
-                    forceRenderEveryFrame = config.forceRenderEveryFrame,
-                    configInjector = config.configInjector
-                )
+                KorgeReload.registerEventDispatcher(gameWindow)
+                prepareViewsBase(views, gameWindow, true, bgcolor, TimeSpan.NIL, config.forceRenderEveryFrame, config.configInjector).await()
             }
 
             gameWindow.registerTime("completeViews") {
+                // Here we can install a debugger, etc.
                 completeViews(views)
             }
+
             views.launchImmediately {
                 coroutineScope {
                     //println("coroutineContext: $coroutineContext")
@@ -273,20 +263,12 @@ object KorgeRunner {
                     }
                 }
             }
-            if (Platform.isNative) println("CanvasApplicationEx.IN[1]")
-            if (Platform.isNative) println("Korui[1]")
 
             if (config.blocking) {
                 // @TODO: Do not complete to prevent job cancelation?
                 gameWindow.waitClose()
                 gameWindow.exit()
             }
-        }
-    }
-
-    suspend fun GameWindow.waitClose() {
-        while (running) {
-            delay(100.milliseconds)
         }
     }
 
@@ -300,7 +282,6 @@ object KorgeRunner {
         forceRenderEveryFrame: Boolean = true,
         configInjector: Injector.() -> Unit = {},
     ): CompletableDeferred<Unit> {
-        KorgeReload.registerEventDispatcher(eventDispatcher)
 
         val injector = views.injector
         injector.mapInstance(views)
@@ -329,29 +310,6 @@ object KorgeRunner {
         fun getRealXY(x: Double, y: Double, scaleCoords: Boolean): Point {
             return views.windowToGlobalCoords(Point(x, y))
         }
-
-        fun getRealX(x: Double, scaleCoords: Boolean): Double = if (scaleCoords) x * views.devicePixelRatio else x
-        fun getRealY(y: Double, scaleCoords: Boolean): Double = if (scaleCoords) y * views.devicePixelRatio else y
-
-        /*
-        fun updateTouch(id: Int, x: Double, y: Double, start: Boolean, end: Boolean) {
-            val touch = input.getTouch(id)
-            val now = DateTime.now()
-
-            touch.id = id
-            touch.active = !end
-
-            if (start) {
-                touch.startTime = now
-                touch.start.setTo(x, y)
-            }
-
-            touch.currentTime = now
-            touch.current.setTo(x, y)
-
-            input.updateTouches()
-        }
-        */
 
         fun mouseDown(type: String, p: Point, button: MouseButton) {
             input.toggleButton(button, true)
@@ -590,24 +548,4 @@ object KorgeRunner {
 
         return firstRenderDeferred
     }
-
-    @KorgeInternal
-    suspend fun prepareViews(
-        views: Views,
-        eventDispatcher: EventListener,
-        clearEachFrame: Boolean = true,
-        bgcolor: RGBA = Colors.TRANSPARENT,
-        fixedSizeStep: TimeSpan = TimeSpan.NIL,
-        waitForFirstRender: Boolean = true,
-        forceRenderEveryFrame: Boolean = true,
-        configInjector: Injector.() -> Unit
-    ) {
-        val firstRenderDeferred =
-            prepareViewsBase(views, eventDispatcher, clearEachFrame, bgcolor, fixedSizeStep, forceRenderEveryFrame, configInjector)
-        if (waitForFirstRender) {
-            firstRenderDeferred.await()
-        }
-    }
-
-	data class ModuleArgs(val args: Array<String>)
 }
