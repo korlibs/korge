@@ -1,19 +1,13 @@
 package korlibs.render.awt
 
-import korlibs.event.*
 import korlibs.image.awt.*
 import korlibs.image.bitmap.*
-import korlibs.io.file.std.*
 import korlibs.math.*
 import korlibs.math.geom.*
-import korlibs.platform.*
 import korlibs.render.*
 import korlibs.render.platform.*
 import java.awt.*
-import java.awt.datatransfer.*
-import java.awt.dnd.*
 import java.awt.event.*
-import java.io.*
 import javax.imageio.*
 import javax.swing.*
 
@@ -23,20 +17,7 @@ class AwtGameWindow(config: GameWindowCreationConfig = GameWindowCreationConfig.
     val classLoader = this.javaClass.classLoader
 
     override fun ensureContext() {
-        if (ctx == null) {
-            if (Platform.isMac) {
-                try {
-                    //ctx = ProxiedMacAWTOpenglContext(frame)
-                    ctx = glContextFromComponent(frame, this)
-
-                } catch (e: Throwable) {
-                    e.printStackTrace()
-                    ctx = glContextFromComponent(frame, this)
-                }
-            } else {
-                ctx = glContextFromComponent(frame, this)
-            }
-        }
+        if (ctx == null) ctx = glContextFromComponent(frame, this)
     }
 
     //private var currentInFullScreen = false
@@ -51,37 +32,7 @@ class AwtGameWindow(config: GameWindowCreationConfig = GameWindowCreationConfig.
             setBounds(0, 0, 640, 480)
             val frame = this
             frame.setLocationRelativeTo(null)
-            frame.dropTarget = object : DropTarget() {
-                init {
-                    this.addDropTargetListener(object : DropTargetAdapter() {
-                        override fun drop(dtde: DropTargetDropEvent) {
-                            //println("drop")
-                            dtde.acceptDrop(DnDConstants.ACTION_COPY)
-                            dispatchDropfileEvent(DropFileEvent.Type.DROP, (dtde.transferable.getTransferData(DataFlavor.javaFileListFlavor) as List<File>).map { it.toVfs() })
-                            dispatchDropfileEvent(DropFileEvent.Type.END, null)
-                        }
-                    })
-                }
-
-                override fun dragEnter(dtde: DropTargetDragEvent) {
-                    dtde.acceptDrag(DnDConstants.ACTION_COPY)
-                    //dispatchDropfileEvent(DropFileEvent.Type.ENTER, null)
-                    dispatchDropfileEvent(DropFileEvent.Type.START, null)
-                    //println("dragEnter")
-                    super.dragEnter(dtde)
-                }
-
-                override fun dragOver(dtde: DropTargetDragEvent) {
-                    dtde.acceptDrag(DnDConstants.ACTION_COPY)
-                    super.dragOver(dtde)
-                }
-
-                override fun dragExit(dte: DropTargetEvent) {
-                    //dispatchDropfileEvent(DropFileEvent.Type.EXIT, null)
-                    dispatchDropfileEvent(DropFileEvent.Type.END, null)
-                    super.dragExit(dte)
-                }
-            }
+            frame.setKorgeDropTarget(this@AwtGameWindow)
 
             runCatching {
                 val awtImageURL = AwtGameWindow::class.java.getResource("/@appicon.png")
@@ -116,7 +67,6 @@ class AwtGameWindow(config: GameWindowCreationConfig = GameWindowCreationConfig.
         override fun paintComponents(g: Graphics?) {
         }
 
-
         // https://stackoverflow.com/questions/52108178/swing-animation-still-stutter-when-i-use-toolkit-getdefaulttoolkit-sync
         // https://www.oracle.com/java/technologies/painting.html
         // https://docs.oracle.com/javase/tutorial/extra/fullscreen/rendering.html
@@ -130,15 +80,8 @@ class AwtGameWindow(config: GameWindowCreationConfig = GameWindowCreationConfig.
         }
     }
 
-    override var alwaysOnTop: Boolean = false
-        set(value) {
-            field = value
-            frame.isAlwaysOnTop = value
-        }
-
-    override var title: String
-        get() = frame.title
-        set(value) { frame.title = value }
+    override var alwaysOnTop: Boolean by frame::_isAlwaysOnTop
+    override var title: String by frame::title
     override var icon: Bitmap? = null
         set(value) {
             field = value

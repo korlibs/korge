@@ -1,20 +1,14 @@
 package korlibs.render.awt
 
-import com.sun.jna.*
 import korlibs.datastructure.*
 import korlibs.event.*
 import korlibs.graphics.*
 import korlibs.graphics.gl.*
-import korlibs.image.awt.*
 import korlibs.image.color.*
 import korlibs.io.async.*
-import korlibs.io.dynamic.*
 import korlibs.kgl.*
-import korlibs.math.*
-import korlibs.math.geom.*
 import korlibs.memory.*
-import korlibs.memory.dyn.osx.*
-import korlibs.platform.Platform
+import korlibs.platform.*
 import korlibs.render.*
 import korlibs.render.osx.*
 import korlibs.render.platform.*
@@ -33,32 +27,8 @@ import kotlin.system.*
 abstract class BaseAwtGameWindow(
     override val ag: AGOpengl
 ) : GameWindow(), ClipboardOwner {
-    private val localGraphicsEnvironment : GraphicsEnvironment by lazy(LazyThreadSafetyMode.PUBLICATION) {
-        GraphicsEnvironment.getLocalGraphicsEnvironment()
-    }
-
-    override val devicePixelRatio: Double get() {
-        if (GraphicsEnvironment.isHeadless()) {
-            return super.devicePixelRatio
-        }
-        // transform
-        // https://stackoverflow.com/questions/20767708/how-do-you-detect-a-retina-display-in-java
-        val config = component.graphicsConfiguration
-            ?: localGraphicsEnvironment.defaultScreenDevice.defaultConfiguration
-        return config.defaultTransform.scaleX
-    }
-
-    //override val pixelsPerInch: Float by lazy(LazyThreadSafetyMode.PUBLICATION) {
-    override val pixelsPerInch: Double get() {
-        if (GraphicsEnvironment.isHeadless()) {
-            return AG.defaultPixelsPerInch
-        }
-        // maybe this is not just windows specific :
-        // https://stackoverflow.com/questions/32586883/windows-scaling
-        // somehow this value is not update when you change the scaling in the windows settings while the jvm is running :(
-        return Toolkit.getDefaultToolkit().screenResolution.toDouble()
-    }
-
+    override val devicePixelRatio: Double get() = component.devicePixelRatio
+    override val pixelsPerInch: Double get() = component.pixelsPerInch
     override val pixelsPerLogicalInchRatio: Double by lazy(LazyThreadSafetyMode.PUBLICATION) {
         pixelsPerInch / AG.defaultPixelsPerInch
     }
@@ -82,51 +52,17 @@ abstract class BaseAwtGameWindow(
     }
     val windowOrComponent get() = window ?: component
 
-    val Cursor.jvmCursor: java.awt.Cursor get() = java.awt.Cursor(when (this) {
-        Cursor.DEFAULT -> java.awt.Cursor.DEFAULT_CURSOR
-        Cursor.CROSSHAIR -> java.awt.Cursor.CROSSHAIR_CURSOR
-        Cursor.TEXT -> java.awt.Cursor.TEXT_CURSOR
-        Cursor.HAND -> java.awt.Cursor.HAND_CURSOR
-        Cursor.MOVE -> java.awt.Cursor.MOVE_CURSOR
-        Cursor.WAIT -> java.awt.Cursor.WAIT_CURSOR
-        Cursor.RESIZE_EAST -> java.awt.Cursor.E_RESIZE_CURSOR
-        Cursor.RESIZE_SOUTH -> java.awt.Cursor.S_RESIZE_CURSOR
-        Cursor.RESIZE_WEST -> java.awt.Cursor.W_RESIZE_CURSOR
-        Cursor.RESIZE_NORTH -> java.awt.Cursor.N_RESIZE_CURSOR
-        Cursor.RESIZE_NORTH_EAST -> java.awt.Cursor.NE_RESIZE_CURSOR
-        Cursor.RESIZE_NORTH_WEST -> java.awt.Cursor.NW_RESIZE_CURSOR
-        Cursor.RESIZE_SOUTH_EAST -> java.awt.Cursor.SE_RESIZE_CURSOR
-        Cursor.RESIZE_SOUTH_WEST -> java.awt.Cursor.SW_RESIZE_CURSOR
-        else -> java.awt.Cursor.DEFAULT_CURSOR
-    })
-
-    val CustomCursor.jvmCursor: java.awt.Cursor by extraPropertyThis {
-        val toolkit = Toolkit.getDefaultToolkit()
-        val size = toolkit.getBestCursorSize(bounds.width.toIntCeil(), bounds.height.toIntCeil())
-        val result = this.createBitmap(Size(size.width, size.height))
-        //println("BITMAP SIZE=${result.bitmap.size}, hotspot=${result.hotspot}")
-        val hotspotX = result.hotspot.x.coerceIn(0, result.bitmap.width - 1)
-        val hotspotY = result.hotspot.y.coerceIn(0, result.bitmap.height - 1)
-        toolkit.createCustomCursor(result.bitmap.toAwt(), java.awt.Point(hotspotX, hotspotY), name).also {
-            //println("CUSTOM CURSOR: $it")
-        }
-    }
-
     override var cursor: ICursor = Cursor.DEFAULT
         set(value) {
             if (field == value) return
             field = value
-            component.cursor = when (value) {
-                is Cursor -> value.jvmCursor
-                is CustomCursor -> value.jvmCursor
-                else -> java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR)
-            }
+            component.cursor = value.jvmCursor
         }
 
     fun MenuItem?.toJMenuItem(): JComponent {
         val item = this
         return when {
-            item == null || item.text == null -> JSeparator()
+            item?.text == null -> JSeparator()
             item.children != null -> {
                 JMenu(item.text).also {
                     it.isEnabled = item.enabled
@@ -226,23 +162,6 @@ abstract class BaseAwtGameWindow(
 
             val viewport = info.viewport
             val scissor = info.scissors
-            /*
-            gl.enableDisable(gl.SCISSOR_TEST, scissor != null)
-            if (scissor != null) {
-                gl.scissor(scissor.x.toInt(), scissor.y.toInt(), scissor.width.toInt(), scissor.height.toInt())
-            }
-            if (viewport != null) {
-                gl.viewport(viewport.x.toInt(), viewport.y.toInt(), viewport.width.toInt(), viewport.height.toInt())
-            } else {
-                gl.viewport(0, 0, scaledWidth.toInt().coerceAtLeast(1), scaledHeight.toInt().coerceAtLeast(1))
-            }
-            gl.clearColor(.3f, .3f, .3f, 1f)
-            gl.clear(gl.COLOR_BUFFER_BIT)
-            */
-
-            //println("-- viewport=$viewport, scissors=$scissor")
-
-            //println("RENDER: $info, factor=$factor")
 
             if (component is JFrame) {
                 //println("component.width: ${contentComponent.width}x${contentComponent.height}")
@@ -316,13 +235,7 @@ abstract class BaseAwtGameWindow(
     private val linuxJoyEventAdapter by lazy { LinuxJoyEventAdapter() }
     private val macosGamepadEventAdapter by lazy { MacosGamepadEventAdapter() }
 
-
-    val frameScaleFactor: Float
-        get() {
-            return getDisplayScalingFactor(component)
-            //val res = frame.toolkit.getDesktopProperty("apple.awt.contentScaleFactor") as? Number
-            //if (res != null) return res.toDouble()
-        }
+    val frameScaleFactor: Float get() = getDisplayScalingFactor(component)
 
     val nonScaledWidth get() = contentComponent.width.toDouble()
     val nonScaledHeight get() = contentComponent.height.toDouble()
@@ -332,12 +245,7 @@ abstract class BaseAwtGameWindow(
 
     override val width: Int get() = (scaledWidth).toInt()
     override val height: Int get() = (scaledHeight).toInt()
-
-    override var visible: Boolean
-        get() = component.isVisible
-        set(value) {
-            component.isVisible = value
-        }
+    override var visible: Boolean by LazyDelegate { component::visible }
     override var bgcolor: RGBA
         get() = component.background.toRgba()
         set(value) {
@@ -355,29 +263,13 @@ abstract class BaseAwtGameWindow(
         )
     }
 
-    val displayLinkData = Memory(16L).also { it.clear() }
     var displayLinkLock: java.lang.Object? = null
-    var displayLink: Pointer? = Pointer.NULL
-
-    // @TODO: by lazy // but maybe causing issues with the intellij plugin?
-    val displayLinkCallback = object : DisplayLinkCallback {
-        override fun callback(
-            displayLink: Pointer?,
-            inNow: Pointer?,
-            inOutputTime: Pointer?,
-            flagsIn: Pointer?,
-            flagsOut: Pointer?,
-            userInfo: Pointer?
-        ): Int {
-            displayLinkLock?.let { displayLock ->
-                synchronized(displayLock) {
-                    displayLock.notify()
-                }
+    private val dl = OSXDisplayLink {
+        displayLinkLock?.let { displayLock ->
+            synchronized(displayLock) {
+                displayLock.notify()
             }
-            return 0
         }
-    }.also {
-        Native.setCallbackThreadInitializer(it, CallbackThreadInitializer(false, false, "DisplayLink"))
     }
 
     open fun frameDispose() {
@@ -600,56 +492,14 @@ abstract class BaseAwtGameWindow(
                     override fun mouseExited(e: MouseEvent) = handleMouseEvent(e)
                     override fun mousePressed(e: MouseEvent) = handleMouseEvent(e)
                 })
-
-            }
-
-        }
-
-        //val timer = Timer(1000 / 60, ActionListener { component.repaint() })
-        //timer.start()
-
-        //val toolkit = Toolkit.getDefaultToolkit()
-        //val events = toolkit.systemEventQueue
-
-        if (Platform.isMac) {
-            try {
-                val displayID = CoreGraphics.CGMainDisplayID()
-                val res = CoreVideo.CVDisplayLinkCreateWithCGDisplay(displayID, displayLinkData)
-
-                if (res == 0) {
-                    displayLinkLock = java.lang.Object()
-                    displayLink = displayLinkData.getPointer(0L)
-                    if (CoreVideo.CVDisplayLinkSetOutputCallback(displayLink, displayLinkCallback, Pointer.NULL) == 0) {
-                        CoreVideo.CVDisplayLinkStart(displayLink)
-                    } else {
-                        displayLinkLock = null
-                        displayLink = Pointer.NULL
-                    }
-                }
-            } catch (e: Throwable) {
-                e.printStackTrace()
             }
         }
 
-        //Thread.sleep(1000000L)
-
+        if (Platform.isMac) dl.start()
         val displayLock = this.displayLinkLock
-
-        if (displayLock != null) {
-            logger.info { "Using DisplayLink" }
-        } else {
-            logger.info { "NOT Using DisplayLink" }
-        }
-
+        logger.info { if (displayLock != null) "Using DisplayLink" else "NOT Using DisplayLink" }
         logger.info { "running: ${Thread.currentThread()}, fvsync=$fvsync" }
-
-        if (Platform.isMac) {
-            try {
-                registerGestureListener()
-            } catch (e: Throwable) {
-                e.printStackTrace()
-            }
-        }
+        contentComponent.registerGestureListeners(this@BaseAwtGameWindow)
 
         while (running) {
             if (fvsync) {
@@ -691,8 +541,8 @@ abstract class BaseAwtGameWindow(
         logger.info { "completed.running=$running" }
         //timer.stop()
 
-        if (Platform.isMac && displayLink != Pointer.NULL) {
-            CoreVideo.CVDisplayLinkStop(displayLink)
+        if (Platform.isMac) {
+            dl.stop()
         }
 
         dispatchDestroyEvent()
@@ -703,80 +553,6 @@ abstract class BaseAwtGameWindow(
         if (exitProcessOnClose) { // Don't do this since we might continue in the e2e test
             exitProcess(this.exitCode)
         }
-    }
-
-    private fun registerGestureListener() {
-        logger.info { "MacOS registering gesture listener..." }
-
-        val gestureListener = java.lang.reflect.Proxy.newProxyInstance(
-            ClassLoader.getSystemClassLoader(),
-            arrayOf(
-                Class.forName("com.apple.eawt.event.GestureListener"),
-                Class.forName("com.apple.eawt.event.MagnificationListener"),
-                Class.forName("com.apple.eawt.event.RotationListener"),
-                Class.forName("com.apple.eawt.event.SwipeListener"),
-            )
-        ) { proxy, method, args ->
-            try {
-                when (method.name) {
-                    "magnify" -> {
-                        val magnification = args[0].dyn.dynamicInvoke("getMagnification")
-                        //println("magnify: $magnification")
-                        queue {
-                            dispatch(gestureEvent.also {
-                                it.type = GestureEvent.Type.MAGNIFY
-                                it.id = 0
-                                it.amount = magnification.float
-                            })
-                        }
-                    }
-
-                    "rotate" -> {
-                        val rotation = args[0].dyn.dynamicInvoke("getRotation")
-                        //println("rotate: $rotation")
-                        queue {
-                            dispatch(gestureEvent.also {
-                                it.type = GestureEvent.Type.ROTATE
-                                it.id = 0
-                                it.amount = rotation.float
-                            })
-                        }
-                    }
-
-                    "swipedUp", "swipedDown", "swipedLeft", "swipedRight" -> {
-                        queue {
-                            dispatch(gestureEvent.also {
-                                it.type = GestureEvent.Type.SWIPE
-                                it.id = 0
-                                it.amountX = 0f
-                                it.amountY = 0f
-                                when (method.name) {
-                                    "swipedUp" -> it.amountY = -1f
-                                    "swipedDown" -> it.amountY = +1f
-                                    "swipedLeft" -> it.amountX = -1f
-                                    "swipedRight" -> it.amountX = +1f
-                                }
-                            })
-                        }
-                    }
-
-                    else -> {
-                        //println("gestureListener: $method, ${args.toList()}")
-                    }
-                }
-            } catch (e: Throwable) {
-                e.printStackTrace()
-            }
-            args[0].dyn.dynamicInvoke("consume")
-        }
-
-        val clazz = Dyn.global["com.apple.eawt.event.GestureUtilities"]
-        logger.info { " -- GestureUtilities=$clazz" }
-        clazz.dynamicInvoke("addGestureListenerTo", contentComponent, gestureListener)
-
-        //val value = (contentComponent as JComponent).getClientProperty("com.apple.eawt.event.internalGestureHandler");
-        //println("value $value");
-        //GestureUtilities.addGestureListenerTo(p, ga);
     }
 
     override fun computeDisplayRefreshRate(): Int {
@@ -814,31 +590,5 @@ abstract class BaseAwtGameWindow(
     }
 
     override val hapticFeedbackGenerateSupport: Boolean get() = true
-    override fun hapticFeedbackGenerate(kind: HapticFeedbackKind) {
-        when {
-            Platform.os.isMac -> {
-                val KIND_GENERIC = 0
-                val KIND_ALIGNMENT = 1
-                val KIND_LEVEL_CHANGE = 2
-
-                val PERFORMANCE_TIME_DEFAULT = 0
-                val PERFORMANCE_TIME_NOW = 1
-                val PERFORMANCE_TIME_DRAW_COMPLETED = 2
-
-                val kindInt = when (kind) {
-                    HapticFeedbackKind.GENERIC -> KIND_GENERIC
-                    HapticFeedbackKind.ALIGNMENT -> KIND_ALIGNMENT
-                    HapticFeedbackKind.LEVEL_CHANGE -> KIND_LEVEL_CHANGE
-                }
-                val performanceTime = PERFORMANCE_TIME_NOW
-
-                NSClass("NSHapticFeedbackManager")
-                    .msgSend("defaultPerformer")
-                    .msgSend("performFeedbackPattern:performanceTime:", kindInt.toLong(), performanceTime.toLong())
-            }
-            else -> {
-                super.hapticFeedbackGenerate(kind)
-            }
-        }
-    }
+    override fun hapticFeedbackGenerate(kind: HapticFeedbackKind) = component.hapticFeedbackGenerate(kind)
 }
