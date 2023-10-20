@@ -704,7 +704,7 @@ abstract class BaseAwtGameWindow(
         component.isVisible = false
         frameDispose()
 
-        if (exitProcessOnExit) { // Don't do this since we might continue in the e2e test
+        if (exitProcessOnClose) { // Don't do this since we might continue in the e2e test
             exitProcess(this.exitCode)
         }
     }

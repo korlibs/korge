@@ -1,12 +1,16 @@
 package korlibs.korge.tween
 
-import korlibs.time.milliseconds
-import korlibs.korge.tests.ViewsForTesting
+import korlibs.io.async.*
+import korlibs.korge.tests.*
+import korlibs.math.interpolation.*
+import korlibs.number.*
+import korlibs.time.*
+import kotlin.test.*
 
 class TweenTest : ViewsForTesting(20.milliseconds) {
-    /*
 	@Test
 	// @TODO: Flaky!
+    @Ignore
 	fun name() = viewsTest {
 		//println("BLOCK START")
 		val result = arrayListOf<Any>()
@@ -59,5 +63,4 @@ class TweenTest : ViewsForTesting(20.milliseconds) {
 			result2.joinToString(",")
 		)
 	}
-     */
 }

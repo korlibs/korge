@@ -6,10 +6,6 @@ import kotlinx.coroutines.*
 import platform.Foundation.*
 import platform.UIKit.*
 
-actual fun createDialogInterfaceForComponent(nativeComponent: Any?): DialogInterface {
-    return DialogInterfaceIos(nativeComponent as IosGameWindow)
-}
-
 class DialogInterfaceIos(val gameWindow: IosGameWindow) : DialogInterface {
     override suspend fun browse(url: URL) {
         UIApplication.sharedApplication.openURL(NSURL(string = url.fullUrl))

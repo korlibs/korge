@@ -7,7 +7,7 @@ open class GLCanvasGameWindow(
     val canvas: GLCanvas,
 ) : BaseAwtGameWindow(canvas.ag) {
     init {
-        exitProcessOnExit = false
+        exitProcessOnClose = false
         canvas.defaultRenderer = { gl, g ->
             framePaint(g)
         }

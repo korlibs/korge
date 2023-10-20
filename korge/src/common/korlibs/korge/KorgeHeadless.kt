@@ -6,28 +6,8 @@ import korlibs.image.format.*
 import korlibs.korge.view.*
 import korlibs.math.geom.*
 import korlibs.render.*
-import korlibs.time.*
 
 object KorgeHeadless {
-    class HeadlessGameWindowCoroutineDispatcher(val gameWindow: HeadlessGameWindow) : GameWindowCoroutineDispatcher() {
-        //init {
-        //    frameRenderLoop()
-        //}
-//
-        //fun frameRenderLoop() {
-        //    this.invokeOnTimeout(16L, Runnable {
-        //        //println("frameRenderLoop")
-        //        gameWindow.frameRender()
-        //        frameRenderLoop()
-        //    }, gameWindow.coroutineDispatcher)
-        //}
-
-        override fun executePending(availableTime: TimeSpan) {
-            //println("HeadlessGameWindowCoroutineDispatcher.executePending: timedTasks=${_timedTasks.size}, tasks=${_tasks.size}")
-            super.executePending(availableTime)
-        }
-    }
-
     class HeadlessGameWindow(
         val size: Size = Size(640, 480),
         val draw: Boolean = false,
@@ -41,9 +21,6 @@ object KorgeHeadless {
         init {
             this.exitProcessOnClose = exitProcessOnClose
         }
-
-        override val coroutineDispatcher: GameWindowCoroutineDispatcher = HeadlessGameWindowCoroutineDispatcher(this)
-
 
         //override val ag: AG = if (draw) AGSoftware(width, height) else DummyAG(width, height)
         //override val ag: AG = AGDummy(width, height)

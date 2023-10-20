@@ -11,6 +11,7 @@ import korlibs.korge.tests.*
 import korlibs.korge.ui.*
 import korlibs.korge.view.filter.*
 import korlibs.math.geom.*
+import kotlinx.coroutines.*
 import kotlin.test.*
 
 class ViewsJvmTest : ViewsForTesting(log = true) {
@@ -82,7 +83,7 @@ class ViewsJvmTest : ViewsForTesting(log = true) {
 
     @Test
     fun testRunBlockingNoJs() = viewsTest {
-        val bitmap = runBlockingNoJs {
+        val bitmap = runBlocking {
             resourcesVfs["texture.png"].readBitmap()
         }
         assertEquals(SizeInt(64, 64), bitmap.size)
