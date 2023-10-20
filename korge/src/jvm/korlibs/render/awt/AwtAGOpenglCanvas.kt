@@ -26,10 +26,17 @@ open class AwtAGOpenglCanvas : Canvas(), BoundsProvider by BoundsProvider.Base()
     private val counter = TimeSampler(1.seconds)
     val renderFps: Int get() = counter.count
 
+    private var contextLost: Boolean = false
+
+    fun contextLost() {
+        contextLost = true
+    }
+
     override fun paint(g: Graphics) {
         counter.add()
         //super.paint(g)
         if (ctx == null) {
+            contextLost()
             ctx = glContextFromComponent(this, GameWindowConfig.Impl())
             if (ctx!!.supportsSwapInterval()) {
                 ctx?.swapInterval(1)
@@ -38,10 +45,10 @@ open class AwtAGOpenglCanvas : Canvas(), BoundsProvider by BoundsProvider.Base()
         //g.fillRect(0, 0, 100, 100)
         val ctx = this.ctx
         if (ctx != null) {
-            ctx.useContext(g, ag, paintInContextDelegate)
             if (autoRepaint && ctx.supportsSwapInterval()) {
                 SwingUtilities.invokeLater { requestFrame() }
             }
+            ctx.useContext(g, ag, paintInContextDelegate)
         }
     }
 
@@ -93,6 +100,11 @@ open class AwtAGOpenglCanvas : Canvas(), BoundsProvider by BoundsProvider.Base()
                 val scaledWidth = (frameOrComponent.width * factor).toInt()
                 val scaledHeight = (frameOrComponent.height * factor).toInt()
                 val viewportScale = 1.0
+
+                if (contextLost) {
+                    contextLost = false
+                    ag.contextLost()
+                }
 
                 //println("factor=$factor")
 
