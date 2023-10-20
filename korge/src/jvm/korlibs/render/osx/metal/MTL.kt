@@ -9,9 +9,11 @@ import korlibs.render.osx.*
 import korlibs.render.platform.*
 import javax.swing.*
 
-val isUsingMetalPipeline: Boolean get() = runCatching {
-    Dyn.global["sun.awt.CGraphicsDevice"].dynamicInvoke("usingMetalPipeline").bool
-}.getOrNull() ?: false
+val isUsingMetalPipeline: Boolean by lazy {
+    runCatching {
+        Dyn.global["sun.awt.CGraphicsDevice"].dynamicInvoke("usingMetalPipeline").bool
+    }.getOrNull() ?: false
+}
 
 fun JFrame.getCAMetalLayer(): CAMetalLayer? {
     if (!isUsingMetalPipeline) return null
