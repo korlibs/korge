@@ -186,6 +186,7 @@ object WindowsRegistry {
     private const val ERROR_ACCESS_DENIED = 5
     private const val ERROR_INVALID_HANDLE = 6
     private const val ERROR_INSUFFICIENT_BUFFER = 122
+    private const val ERROR_MORE_DATA = 234 // dderror
 
     private const val RRF_RT_ANY = 0x0000ffff
     private const val RRF_RT_DWORD = 0x00000018
@@ -225,7 +226,7 @@ object WindowsRegistry {
     private fun parsePathWithValueEx(path: String): Triple<HKEY, String, String>? =
         parsePathWithValue(path)?.let { Triple(it.first, it.second, it.third) }
 
-    class RegistryException(val errorCode: Int) : Exception()
+    class RegistryException(val errorCode: Int) : Exception("Win32 error $errorCode")
 
     private fun listSubKeys(hKey: HKEY): List<String> = ffiScoped {
         val lpcSubKeys = allocBytes(4)
@@ -269,9 +270,10 @@ object WindowsRegistry {
         val lpType = allocBytes(4)
 
         val out = LinkedHashMap<String, Any?>()
+        //println("nvalues=$nvalues")
         for (n in 0 until nvalues) {
-            lpcchValueName.set32(maxValueNameLen)
-            lpcbData.set32(maxValueLen)
+            lpcchValueName.set32(maxValueNameLen + 1)
+            lpcbData.set32(maxValueLen + 1)
             checkSuccess(Advapi32.RegEnumValueW(
                 hKey, n, namePtr, lpcchValueName,
                 null, lpType, valuePtr, lpcbData
@@ -279,6 +281,8 @@ object WindowsRegistry {
             val name = namePtr.getWideStringz()
             val valueSize = lpcbData.getS32()
             val type = lpType.getS32()
+            //println("listValues=$nvalues: name=$name, value=$valuePtr")
+
             out[name] = convertValue(type, valuePtr, valueSize)
         }
         return out
@@ -300,7 +304,9 @@ object WindowsRegistry {
         return ffiScoped {
             val lpType = allocBytes(4)
             val lpcbData = allocBytes(4)
-            checkSuccess(Advapi32.RegGetValueW(root, keyPathPath, valueName, RRF_RT_ANY, lpType, null, lpcbData), extraValid = ERROR_INSUFFICIENT_BUFFER)
+            val v = Advapi32.RegGetValueW(root, keyPathPath, valueName, RRF_RT_ANY, lpType, null, lpcbData)
+            if (v == ERROR_FILE_NOT_FOUND) return null
+            checkSuccess(v, extraValid = ERROR_INSUFFICIENT_BUFFER)
             val bytesSize = lpcbData.getS32()
             val dataPtr = allocBytes(bytesSize)
             checkSuccess(Advapi32.RegGetValueW(root, keyPathPath, valueName, RRF_RT_ANY, lpType, dataPtr, lpcbData))
@@ -340,7 +346,7 @@ object WindowsRegistry {
                             is List<*> -> value.map { it.toString() }.joinToString("") { "$value\u0000" }.toByteArray(Charsets.UTF16_LE)
                             else -> "$value\u0000".toByteArray(Charsets.UTF16_LE)
                         }
-                        Advapi32.RegSetValueExW(key, valueName, 0, REG_BINARY, allocBytes(data.size) { data[it] }, data.size)
+                        Advapi32.RegSetValueExW(key, valueName, 0, kind, allocBytes(data.size) { data[it] }, data.size)
                     }
                     else -> Unit
                 }

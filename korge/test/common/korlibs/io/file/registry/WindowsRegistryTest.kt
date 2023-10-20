@@ -11,9 +11,11 @@ class WindowsRegistryTest {
     fun testRegistry() = suspendTest({ WindowsRegistry.isSupported }) {
         assertEquals(WindowsRegistry.KEY_MAP.keys.toList().sorted(), WindowsRegistryVfs.root.listNames().sorted())
 
-        assertTrue { WindowsRegistryVfs.HKEY_CURRENT_USER.listNames().map { it.lowercase() }.contains("software") }
-        assertTrue { WindowsRegistryVfs.HKEY_LOCAL_MACHINE["Software"].listNames().map { it.lowercase() }.contains("windows") }
-        assertTrue { WindowsRegistryVfs.HKEY_LOCAL_MACHINE["Software/Windows"].listNames().map { it.lowercase() }.contains("currentversion") }
+        //println(WindowsRegistryVfs.HKEY_LOCAL_MACHINE["Software"].listNames())
+
+        assertTrue("software") { WindowsRegistryVfs.HKEY_CURRENT_USER.listNames().map { it.lowercase() }.contains("software") }
+        assertTrue("microsoft") { WindowsRegistryVfs.HKEY_LOCAL_MACHINE["Software"].listNames().map { it.lowercase() }.contains("microsoft") }
+        assertTrue("currentversion") { WindowsRegistryVfs.HKEY_LOCAL_MACHINE["Software/Microsoft/Windows"].listNames().map { it.lowercase() }.contains("currentversion") }
 
         val korge = WindowsRegistryVfs.HKEY_CURRENT_USER["Software/KorGETest"]
         suspend fun cleanup() {
