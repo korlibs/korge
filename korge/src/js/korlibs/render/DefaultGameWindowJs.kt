@@ -16,7 +16,6 @@ import org.w3c.dom.*
 import org.w3c.dom.TouchEvent
 import org.w3c.dom.events.*
 import org.w3c.dom.events.MouseEvent
-import kotlin.coroutines.*
 
 private external val navigator: dynamic
 
@@ -230,6 +229,8 @@ open class BrowserCanvasJsGameWindow(
             me.preventDefault()
         }
     }
+
+    private val touchBuilder = TouchBuilder()
 
     // JS TouchEvent contains only active touches (ie. touchend just return the list of non ended-touches)
     private fun touchEvent(e: TouchEvent, type: korlibs.event.TouchEvent.Type) {
