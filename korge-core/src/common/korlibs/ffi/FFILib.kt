@@ -20,7 +20,8 @@ expect fun CreateFFIPointer(ptr: Long): FFIPointer?
 expect val FFIPointer?.address: Long
 expect val FFIPointer?.str: String
 expect fun FFIPointer.getStringz(): String
-expect fun <T> FFIPointer.castToFunc(type: KType): T
+expect fun FFIPointer.getWideStringz(): String
+expect fun <T> FFIPointer.castToFunc(type: KType, config: FFIFuncConfig = FFIFuncConfig.DEFAULT): T
 inline fun <reified T> FFIPointer.castToFunc(): T = castToFunc(typeOf<T>())
 expect val FFI_POINTER_SIZE: Int
 val FFI_NATIVE_LONG_SIZE: Int get() = FFI_POINTER_SIZE
@@ -38,9 +39,16 @@ expect fun FFIPointer.set64(value: Long, byteOffset: Int = 0)
 expect fun FFIPointer.setF32(value: Float, byteOffset: Int = 0)
 expect fun FFIPointer.setF64(value: Double, byteOffset: Int = 0)
 
+fun FFIPointer.getByteArray(size: Int, byteOffset: Int = 0): ByteArray = ByteArray(size) { getS8(byteOffset + (it * Byte.SIZE_BYTES)) }
+fun FFIPointer.getShortArray(size: Int, byteOffset: Int = 0): ShortArray = ShortArray(size) { getS16(byteOffset + (it * Short.SIZE_BYTES)) }
+
 expect class FFIArena() {
     fun allocBytes(size: Int): FFIPointer
     fun clear(): Unit
+}
+
+inline fun FFIArena.allocBytes(size: Int, gen: (Int) -> Byte): FFIPointer {
+    return allocBytes(size).also { for (n in 0 until size) it.set8(gen(n), n) }
 }
 
 inline fun <T> ffiScoped(block: FFIArena.() -> T): T {
@@ -143,6 +151,17 @@ class FuncType(val params: List<KType?>, val ret: KType?) {
     val retClass = ret?.classifier
 }
 
+data class FFIFuncConfig(
+    val wideString: Boolean = false,
+    // Alternate to C ABI convention
+    val altAbiConvention: Boolean = false,
+) {
+    companion object {
+        val DEFAULT = FFIFuncConfig()
+        val WIDE_STRING = DEFAULT.copy(wideString = true)
+    }
+}
+
 open class FFILib(val paths: List<String>, val lazyCreate: Boolean = true) {
     @OptIn(SyncIOAPI::class)
     val resolvedPath by lazy { LibraryResolver.resolve(*paths.toTypedArray()) }
@@ -169,7 +188,7 @@ open class FFILib(val paths: List<String>, val lazyCreate: Boolean = true) {
 
     }
 
-    class FuncDelegate<T>(val base: FFILib, val name: String, val type: KType) : ReadOnlyProperty<FFILib, T> {
+    class FuncDelegate<T>(val base: FFILib, val name: String, val type: KType, val config: FFIFuncConfig) : ReadOnlyProperty<FFILib, T> {
         val parts = extractTypeFunc(type)
         //val generics = type.arguments.map { it.type?.classifier }
         val params = parts.paramsClass
@@ -181,17 +200,17 @@ open class FFILib(val paths: List<String>, val lazyCreate: Boolean = true) {
         }
     }
 
-    class FuncInfo<T>(val type: KType, val extraName: String?) {
+    class FuncInfo<T>(val type: KType, val extraName: String?, val config: FFIFuncConfig) {
         operator fun provideDelegate(
             thisRef: FFILib,
             prop: KProperty<*>
-        ): ReadOnlyProperty<FFILib, T> = FuncDelegate<T>(thisRef, extraName ?: prop.name, type).also {
+        ): ReadOnlyProperty<FFILib, T> = FuncDelegate<T>(thisRef, extraName ?: prop.name, type, config).also {
             thisRef.functions.add(it)
             if (!thisRef.lazyCreate) it.getValue(thisRef, prop)
         }
     }
 
-    inline fun <reified T : Function<*>> func(name: String? = null): FuncInfo<T> = FuncInfo<T>(typeOf<T>(), name)
+    inline fun <reified T : Function<*>> func(name: String? = null, config: FFIFuncConfig = FFIFuncConfig.DEFAULT): FuncInfo<T> = FuncInfo<T>(typeOf<T>(), name, config)
 
     //inline fun <reified T : Function<*>> castToFunc(ptr: FFIPointer): T = sym.castToFunc(ptr, FuncInfo(typeOf<T>(), null))
     protected fun finalize() {

@@ -25,6 +25,10 @@ actual fun FFIPointer.getStringz(): String {
     TODO("Not yet implemented")
 }
 
+actual fun FFIPointer.getWideStringz(): String {
+    TODO("Not yet implemented")
+}
+
 actual val FFIPointer?.str: String
     get() = TODO("Not yet implemented")
 
@@ -33,7 +37,7 @@ actual fun FFIPointer.getIntArray(size: Int, byteOffset: Int): IntArray {
     TODO("Not yet implemented")
 }
 
-actual fun <T> FFIPointer.castToFunc(type: KType): T {
+actual fun <T> FFIPointer.castToFunc(type: KType, config: FFIFuncConfig): T {
     TODO("Not yet implemented")
 }
 
