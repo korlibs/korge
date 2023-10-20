@@ -1,14 +1,14 @@
 package korlibs.time
 
 import korlibs.math.*
-import kotlin.jvm.JvmInline
-import korlibs.time.internal.Serializable
+import korlibs.time.internal.*
+import kotlin.jvm.*
 
-val TimeSpan.hz get() = timesPerSecond
-val Int.hz get() = timesPerSecond
-val Double.hz get() = timesPerSecond
+val TimeSpan.hz: Frequency get() = timesPerSecond
+val Int.hz: Frequency get() = timesPerSecond
+val Double.hz: Frequency get() = timesPerSecond
 
-fun TimeSpan.toFrequency() = timesPerSecond
+fun TimeSpan.toFrequency(): Frequency = timesPerSecond
 
 val TimeSpan.timesPerSecond get() = Frequency(1.0 / this.seconds)
 val Int.timesPerSecond get() = Frequency(this.toDouble())
