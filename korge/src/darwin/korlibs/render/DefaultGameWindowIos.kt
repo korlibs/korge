@@ -9,6 +9,7 @@ import korlibs.io.*
 import korlibs.kgl.*
 import korlibs.logger.*
 import korlibs.math.geom.*
+import korlibs.math.geom.Point
 import korlibs.memory.*
 import korlibs.time.*
 import kotlinx.cinterop.*
@@ -294,32 +295,43 @@ class MyGLKViewController(
 
     enum class TouchType { BEGAN, MOVED, ENDED }
 
+    protected val touchBuilder = TouchBuilder()
+    protected val touchEvent get() = touchBuilder.new
+
     override fun touchesBegan(touches: Set<*>, withEvent: UIEvent?) {
         if (!initialized) return
-        this.gameWindow.dispatchTouchEventModeIos()
-        this.gameWindow.dispatchTouchEventStartStart()
+        this.dispatchTouchEventModeIos()
+        this.dispatchTouchEventStartStart()
         //printf("moved.");
         addTouches(touches, type = TouchType.BEGAN)
-        this.gameWindow.dispatchTouchEventEnd()
+        this.dispatchTouchEventEnd()
     }
 
     override fun touchesMoved(touches: Set<*>, withEvent: UIEvent?) {
         if (!initialized) return
-        this.gameWindow.dispatchTouchEventModeIos()
-        this.gameWindow.dispatchTouchEventStartMove()
+        this.dispatchTouchEventModeIos()
+        this.dispatchTouchEventStartMove()
         //printf("moved.");
         addTouches(touches, type = TouchType.MOVED)
-        this.gameWindow.dispatchTouchEventEnd()
+        this.dispatchTouchEventEnd()
     }
 
     override fun touchesEnded(touches: Set<*>, withEvent: UIEvent?) {
         if (!initialized) return
-        this.gameWindow.dispatchTouchEventModeIos()
-        this.gameWindow.dispatchTouchEventStartEnd()
+        this.dispatchTouchEventModeIos()
+        this.dispatchTouchEventStartEnd()
         //printf("ended.");
         addTouches(touches, type = TouchType.ENDED)
-        this.gameWindow.dispatchTouchEventEnd()
+        this.dispatchTouchEventEnd()
     }
+
+    // iOS tools
+    fun dispatchTouchEventModeIos() { touchBuilder.mode = TouchBuilder.Mode.IOS }
+    fun dispatchTouchEventStartStart() = touchBuilder.startFrame(TouchEvent.Type.START)
+    fun dispatchTouchEventStartMove() = touchBuilder.startFrame(TouchEvent.Type.MOVE)
+    fun dispatchTouchEventStartEnd() = touchBuilder.startFrame(TouchEvent.Type.END)
+    fun dispatchTouchEventAddTouch(id: Int, x: Float, y: Float) = touchBuilder.touch(id, Point(x, y))
+    fun dispatchTouchEventEnd() = gameWindow.dispatch(touchBuilder.endFrame().reset())
 
     private fun addTouches(touches: Set<*>, type: TouchType) {
         //println("addTouches[${touches.size}] type=$type");
@@ -345,7 +357,7 @@ class MyGLKViewController(
             val pointY = point.useContents { y.toFloat() }
             val px = pointX * this.view.contentScaleFactor.toFloat()
             val py = pointY * this.view.contentScaleFactor.toFloat()
-            this.gameWindow.dispatchTouchEventAddTouch(uid, px, py)
+            this.dispatchTouchEventAddTouch(uid, px, py)
 
             //println(" - TOUCH. index=$index, uid=$uid, px=$px, py=$py")
 

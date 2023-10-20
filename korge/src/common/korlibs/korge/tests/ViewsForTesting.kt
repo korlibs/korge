@@ -1,6 +1,5 @@
 package korlibs.korge.tests
 
-import korlibs.datastructure.TGenPriorityQueue
 import korlibs.event.*
 import korlibs.graphics.*
 import korlibs.graphics.log.*
@@ -18,8 +17,8 @@ import korlibs.platform.*
 import korlibs.render.*
 import korlibs.time.*
 import kotlinx.coroutines.*
-import kotlin.coroutines.*
 import kotlin.jvm.*
+import kotlin.time.Duration.Companion.milliseconds
 
 expect fun enrichTestGameWindow(window: ViewsForTesting.TestGameWindow)
 
@@ -38,8 +37,11 @@ open class ViewsForTesting(
 	val timeProvider = object : TimeProvider {
         override fun now(): DateTime = time
     }
-	val dispatcher = FastGameWindowCoroutineDispatcher()
-    inner class TestGameWindow(initialSize: Size, val dispatcher: FastGameWindowCoroutineDispatcher) : GameWindowLog() {
+	val dispatcher = GameWindowCoroutineDispatcher(
+        nowProvider = { time.unixMillisDouble.milliseconds },
+        fast = true,
+    )
+    inner class TestGameWindow(initialSize: Size, val dispatcher: GameWindowCoroutineDispatcher) : GameWindowLog() {
         override var androidContextAny: Any? = null
         override val devicePixelRatio: Double get() = this@ViewsForTesting.devicePixelRatio
         override var width: Int = initialSize.width.toInt()
@@ -371,37 +373,6 @@ open class ViewsForTesting(
     suspend fun delayFrame() {
         simulateFrame()
     }
-
-    class TimedTask2(val time: DateTime, val continuation: CancellableContinuation<Unit>?, val callback: Runnable?) {
-        var exception: Throwable? = null
-        override fun toString(): String = "${time.unixMillisLong}"
-    }
-
-    inner class FastGameWindowCoroutineDispatcher : GameWindowCoroutineDispatcher() {
-		val hasMore get() = timedTasks2.isNotEmpty() || hasTasks()
-
-		override fun now() = time.unixMillisDouble.milliseconds
-
-        private val timedTasks2 = TGenPriorityQueue<TimedTask2> { a, b -> a.time.compareTo(b.time) }
-
-        override fun invokeOnTimeout(timeMillis: Long, block: Runnable, context: CoroutineContext): DisposableHandle {
-            //println("invokeOnTimeout: $timeMillis")
-            val task = TimedTask2(time + timeMillis.toDouble().milliseconds, null, block)
-            lock { timedTasks2.add(task) }
-            return DisposableHandle { lock { timedTasks2.remove(task) } }
-        }
-
-        override fun scheduleResumeAfterDelay(timeMillis: Long, continuation: CancellableContinuation<Unit>) {
-            //println("scheduleResumeAfterDelay: $timeMillis")
-            val task = TimedTask2(time + timeMillis.toDouble().milliseconds, continuation, null)
-            continuation.invokeOnCancellation {
-                task.exception = it
-            }
-            lock { timedTasks2.add(task) }
-        }
-
-		override fun toString(): String = "FastGameWindowCoroutineDispatcher"
-	}
 
     inline fun <T : AG> testRenderContext(ag: T, block: (RenderContext) -> Unit): T {
         val ctx = RenderContext(ag, views)

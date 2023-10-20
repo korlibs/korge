@@ -1,13 +1,10 @@
 package korlibs.render
 
-import korlibs.io.file.VfsFile
-import korlibs.io.file.std.localCurrentDirVfs
-import korlibs.io.file.std.localVfs
-import korlibs.io.lang.unsupported
-import korlibs.io.net.URL
-import korlibs.io.util.fromGlob
-
-expect fun createDialogInterfaceForComponent(nativeComponent: Any?): DialogInterface
+import korlibs.io.file.*
+import korlibs.io.file.std.*
+import korlibs.io.lang.*
+import korlibs.io.net.*
+import korlibs.io.util.*
 
 interface DialogInterfaceProvider {
     val dialogInterface: DialogInterface

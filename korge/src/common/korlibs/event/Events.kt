@@ -27,6 +27,17 @@ abstract class Event {
     }
 }
 
+inline fun <T : Event> T.reset(block: T.() -> Unit = {}): T {
+    this.defaultPrevented = false
+    block(this)
+    return this
+}
+
+operator fun <T : Event> T.invoke(block: T.() -> Unit): T {
+    block(this)
+    return this
+}
+
 @Deprecated("") fun Event.preventDefault(reason: Any? = null): Nothing = throw PreventDefaultException(reason)
 @Deprecated("") fun preventDefault(reason: Any? = null): Nothing = throw PreventDefaultException(reason)
 @Deprecated("") class PreventDefaultException(val reason: Any? = null) : Exception()

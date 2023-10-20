@@ -2,8 +2,7 @@ package korlibs.korge.testing
 
 import korlibs.image.bitmap.*
 import korlibs.image.color.*
-import korlibs.io.async.*
-import korlibs.io.lang.Environment
+import korlibs.io.lang.*
 import korlibs.korge.*
 import korlibs.korge.annotations.*
 import korlibs.korge.input.*
@@ -11,7 +10,6 @@ import korlibs.korge.ui.*
 import korlibs.korge.view.*
 import korlibs.korge.view.Container
 import korlibs.korge.view.align.*
-import korlibs.korge.view.onClick
 import korlibs.math.geom.*
 import kotlinx.coroutines.sync.*
 import java.awt.*
@@ -73,7 +71,7 @@ inline fun korgeScreenshotTestV2(
                 windowSize = Size(1280, 720),
                 virtualSize = Size(700, 480),
                 main = {
-                    views.gameWindow.exitProcessOnExit = false
+                    views.gameWindow.exitProcessOnClose = false
 
                     uiScrollable(size = Size(700.0, 480.0)) { uiScrollable ->
                         uiScrollable.backgroundColor = Colors.LIGHTGRAY

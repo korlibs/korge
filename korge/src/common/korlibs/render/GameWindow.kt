@@ -1,19 +1,15 @@
 package korlibs.render
 
 import korlibs.datastructure.*
-import korlibs.datastructure.lock.*
 import korlibs.event.*
 import korlibs.graphics.*
-import korlibs.graphics.annotation.*
 import korlibs.graphics.log.*
 import korlibs.image.bitmap.*
 import korlibs.image.color.*
 import korlibs.image.vector.*
 import korlibs.io.*
 import korlibs.io.async.*
-import korlibs.io.experimental.*
 import korlibs.io.file.*
-import korlibs.io.lang.*
 import korlibs.logger.*
 import korlibs.math.geom.*
 import korlibs.memory.*
@@ -40,190 +36,6 @@ data class GameWindowCreationConfig(
 
 expect fun CreateDefaultGameWindow(config: GameWindowCreationConfig): GameWindow
 fun CreateDefaultGameWindow() = CreateDefaultGameWindow(GameWindowCreationConfig())
-
-/**
- * @example FileFilter("All files" to listOf("*.*"), "Image files" to listOf("*.png", "*.jpg", "*.jpeg", "*.gif"))
- */
-open class GameWindowCoroutineDispatcherSetNow : GameWindowCoroutineDispatcher() {
-    var currentTime: TimeSpan = PerformanceCounter.reference
-    override fun now() = currentTime
-}
-
-@OptIn(InternalCoroutinesApi::class)
-open class GameWindowCoroutineDispatcher : CoroutineDispatcher(), Delay, Closeable {
-    override fun dispatchYield(context: CoroutineContext, block: Runnable): Unit = dispatch(context, block)
-
-    class TimedTask(val time: TimeSpan, val continuation: CancellableContinuation<Unit>?, val callback: Runnable?) {
-        var exception: Throwable? = null
-    }
-
-    @PublishedApi internal val tasks = Queue<Runnable>()
-    @PublishedApi internal val timedTasks = PriorityQueue<TimedTask> { a, b -> a.time.compareTo(b.time) }
-
-    protected val _tasks: Queue<Runnable> get() = tasks
-    protected val _timedTasks: PriorityQueue<TimedTask> get() = timedTasks
-    val lock = NonRecursiveLock()
-
-    fun hasTasks() = tasks.isNotEmpty()
-
-    fun queue(block: Runnable?) {
-        if (block == null) return
-        lock { tasks.enqueue(block) }
-    }
-
-    fun queue(block: () -> Unit) = queue(Runnable { block() })
-
-    @KorioExperimentalApi
-    fun <T> queueBlocking(block: () -> T): T {
-        val result = CompletableDeferred<T>()
-        queue(Runnable {
-            result.complete(block())
-        })
-        return runBlockingNoJs { result.await() }
-    }
-
-    override fun dispatch(context: CoroutineContext, block: Runnable) = queue(block) // @TODO: We are not using the context
-
-    open fun now() = PerformanceCounter.reference
-
-    override fun scheduleResumeAfterDelay(timeMillis: Long, continuation: CancellableContinuation<Unit>) {
-        scheduleResumeAfterDelay(timeMillis.toDouble().milliseconds, continuation)
-    }
-
-    fun scheduleResumeAfterDelay(time: TimeSpan, continuation: CancellableContinuation<Unit>) {
-        val task = TimedTask(now() + time, continuation, null)
-        continuation.invokeOnCancellation {
-            task.exception = it
-        }
-        lock { timedTasks.add(task) }
-    }
-
-    override fun invokeOnTimeout(timeMillis: Long, block: Runnable, context: CoroutineContext): DisposableHandle {
-        val task = TimedTask(now() + timeMillis.toDouble().milliseconds, null, block)
-        lock { timedTasks.add(task) }
-        return DisposableHandle { lock { timedTasks.remove(task) } }
-    }
-
-    var timedTasksTime = 0.milliseconds
-    var tasksTime = 0.milliseconds
-
-    /**
-     * Allows to configure how much time per frame is available to execute pending tasks,
-     * despite time available in the frame.
-     * When not set it uses the remaining available time in frame
-     **/
-    var maxAllocatedTimeForTasksPerFrame: TimeSpan? = null
-
-    /** On JS this cannot work, because it requires the real event loop to be reached */
-    @OptIn(ExperimentalStdlibApi::class)
-    @KoragExperimental
-    open fun <T> runBlockingNoJs(coroutineContext: CoroutineContext, block: suspend () -> T): T {
-        var completed = false
-        var finalException: Throwable? = null
-        var finalResult: T? = null
-
-        block.startCoroutine(object : Continuation<T> {
-            override val context: CoroutineContext get() = coroutineContext
-            override fun resumeWith(result: Result<T>) {
-                finalResult = result.getOrNull()
-                finalException = result.exceptionOrNull()
-                completed = true
-            }
-        })
-        while (!completed) {
-            executePending(256.milliseconds)
-            if (completed) break
-            blockingSleep(1.milliseconds)
-        }
-        if (finalException != null) {
-            throw finalException!!
-        }
-        return finalResult as T
-    }
-
-    open fun executePending(availableTime: TimeSpan) {
-        try {
-            val startTime = now()
-
-            var processedTimedTasks = 0
-            var processedTasks = 0
-
-            timedTasksTime = measureTime {
-                while (true) {
-                    val item = lock {
-                        if (timedTasks.isNotEmpty() && startTime >= timedTasks.head.time) timedTasks.removeHead() else null
-                    } ?: break
-                    try {
-                        if (item.exception != null) {
-                            item.continuation?.resumeWithException(item.exception!!)
-                            if (item.callback != null) {
-                                item.exception?.printStackTrace()
-                            }
-                        } else {
-                            item.continuation?.resume(Unit)
-                            item.callback?.run()
-                        }
-                    } catch (e: Throwable) {
-                        e.printStackTrace()
-                    } finally {
-                        processedTimedTasks++
-                    }
-                    val elapsedTime = now() - startTime
-                    if (elapsedTime >= availableTime) {
-                        informTooManyCallbacksToHandleInThisFrame(elapsedTime, availableTime, processedTimedTasks, processedTasks)
-                        break
-                    }
-                }
-            }
-            tasksTime = measureTime {
-                while (true) {
-                    val task = lock { (if (tasks.isNotEmpty()) tasks.dequeue() else null) } ?: break
-                    val time = measureTime {
-                        try {
-                            task.run()
-                        } catch (e: Throwable) {
-                            e.printStackTrace()
-                        } finally {
-                            processedTasks++
-                        }
-                    }
-                    //println("task=$time, task=$task")
-                    val elapsed = now() - startTime
-                    if (elapsed >= availableTime) {
-                        informTooManyCallbacksToHandleInThisFrame(elapsed, availableTime, processedTimedTasks, processedTasks)
-                        break
-                    }
-                }
-            }
-        } catch (e: Throwable) {
-            println("Error in GameWindowCoroutineDispatcher.executePending:")
-            e.printStackTrace()
-        }
-    }
-
-    val tooManyCallbacksLogger = Logger("Korgw.GameWindow.TooManyCallbacks")
-
-    open fun informTooManyCallbacksToHandleInThisFrame(elapsedTime: TimeSpan, availableTime: TimeSpan, processedTimedTasks: Int, processedTasks: Int) {
-        tooManyCallbacksLogger.warn { "Too many callbacks to handle in this frame elapsedTime=${elapsedTime.roundMilliseconds()}, availableTime=${availableTime.roundMilliseconds()} pending timedTasks=${timedTasks.size}, tasks=${tasks.size}, processedTimedTasks=$processedTimedTasks, processedTasks=$processedTasks" }
-    }
-
-    override fun close() {
-        executePending(2.seconds)
-        logger.info { "GameWindowCoroutineDispatcher.close" }
-        while (timedTasks.isNotEmpty()) {
-            timedTasks.removeHead().continuation?.resume(Unit)
-        }
-        while (tasks.isNotEmpty()) {
-            tasks.dequeue().run()
-        }
-    }
-
-    override fun toString(): String = "GameWindowCoroutineDispatcher"
-
-    companion object {
-        val logger = Logger("GameWindow")
-    }
-}
 
 interface GameWindowConfig {
     val quality: GameWindow.Quality
@@ -387,31 +199,7 @@ open class GameWindow :
     protected val keyEvent = KeyEvent()
     protected val mouseEvent = MouseEvent()
     protected val gestureEvent = GestureEvent()
-    protected val touchBuilder = TouchBuilder()
-    protected val touchEvent get() = touchBuilder.new
     protected val dropFileEvent = DropFileEvent()
-
-    inline fun <T : Event> T.reset(block: T.() -> Unit = {}): T {
-        this.defaultPrevented = false
-        block(this)
-        return this
-    }
-
-    operator fun <TEvent : Event> TEvent.invoke(block: TEvent.() -> Unit): TEvent {
-        block(this)
-        return this
-    }
-
-    @KoragExperimental
-    suspend fun <T> runBlockingNoJs(block: suspend () -> T): T {
-        return runBlockingNoJs(coroutineContext, block)
-    }
-
-    /** On JS this cannot work, because it requires the real event loop to be reached */
-    @KoragExperimental
-    open fun <T> runBlockingNoJs(coroutineContext: CoroutineContext, block: suspend () -> T): T {
-        return coroutineDispatcher.runBlockingNoJs(coroutineContext, block)
-    }
 
     fun onRenderEvent(block: (RenderEvent) -> Unit) {
         onEvent(RenderEvent, block)
@@ -508,8 +296,6 @@ open class GameWindow :
     fun exit(exitCode: Int = 0): Unit = close(exitCode)
 
     var exitProcessOnClose: Boolean = true
-    @Deprecated("Use exitProcessOnClose instead")
-    var exitProcessOnExit: Boolean by ::exitProcessOnClose
     var exitCode = 0; private set
     var running = true; protected set
     private var closing = false
@@ -809,13 +595,6 @@ open class GameWindow :
         //}
     }
 
-    // iOS tools
-    fun dispatchTouchEventModeIos() { touchBuilder.mode = TouchBuilder.Mode.IOS }
-    fun dispatchTouchEventStartStart() = touchBuilder.startFrame(TouchEvent.Type.START)
-    fun dispatchTouchEventStartMove() = touchBuilder.startFrame(TouchEvent.Type.MOVE)
-    fun dispatchTouchEventStartEnd() = touchBuilder.startFrame(TouchEvent.Type.END)
-    fun dispatchTouchEventAddTouch(id: Int, x: Float, y: Float) = touchBuilder.touch(id, Point(x, y))
-    fun dispatchTouchEventEnd() = dispatch(touchBuilder.endFrame().reset())
 
     // @TODO: Is this used?
     fun entry(callback: suspend () -> Unit) {
@@ -853,7 +632,8 @@ interface ClipboardData {
 data class TextClipboardData(val text: String, val contentType: String? = null) : ClipboardData
 
 open class EventLoopGameWindow : GameWindow() {
-    override val coroutineDispatcher: GameWindowCoroutineDispatcherSetNow = GameWindowCoroutineDispatcherSetNow()
+    var fixedTime = PerformanceCounter.reference
+    override val coroutineDispatcher = GameWindowCoroutineDispatcher(nowProvider = { fixedTime })
 
     override suspend fun loop(entry: suspend GameWindow.() -> Unit) {
         try {
@@ -904,7 +684,7 @@ open class EventLoopGameWindow : GameWindow() {
 
     @PublishedApi
     internal fun renderInternal(doUpdate: Boolean, frameStartTime: TimeSpan = PerformanceCounter.reference) {
-        coroutineDispatcher.currentTime = PerformanceCounter.reference
+        fixedTime = PerformanceCounter.reference
         doInitRender()
 
         var doRender = !doUpdate

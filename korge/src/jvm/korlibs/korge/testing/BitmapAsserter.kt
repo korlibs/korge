@@ -7,8 +7,9 @@ import korlibs.image.bitmap.*
 import korlibs.image.color.*
 import korlibs.image.format.*
 import korlibs.io.lang.*
-import korlibs.korge.annotations.KorgeExperimental
+import korlibs.korge.annotations.*
 import korlibs.korge.view.*
+import kotlinx.coroutines.*
 import java.awt.*
 import java.io.*
 import javax.swing.*
@@ -157,7 +158,7 @@ suspend fun OffscreenStage.assertScreenshot(
     if (outFile.exists()) {
         //val expectedBitmap = runBlockingNoJs { outFile.toVfs().readNativeImage(ImageDecodingProps.DEFAULT_STRAIGHT).toBMP32() }
         val expectedBitmap =
-            runBlockingNoJs { PNG.decode(outFile.readBytes(), ImageDecodingProps.DEFAULT_STRAIGHT).toBMP32() }
+            runBlocking { PNG.decode(outFile.readBytes(), ImageDecodingProps.DEFAULT_STRAIGHT).toBMP32() }
         //val ref = referenceBitmap.scaleLinear(scale, scale)
         //val act = actualBitmap.scaleLinear(scale)
         val result = BitmapComparer.compare(expectedBitmap, actualBitmap)

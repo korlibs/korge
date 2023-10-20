@@ -1,7 +1,6 @@
 package korlibs.korge.view
 
 import korlibs.graphics.*
-import korlibs.graphics.annotation.*
 import korlibs.inject.*
 import korlibs.io.resources.*
 import korlibs.korge.input.*
@@ -40,10 +39,6 @@ open class Stage internal constructor(override val views: Views) : FixedSizeCont
         this._stage = this
         this._invalidateNotifier = this
     }
-
-    @KoragExperimental
-    fun <T> runBlockingNoJs(block: suspend () -> T): T =
-        gameWindow.runBlockingNoJs(this.coroutineContext, block)
 
     /** Mouse coordinates relative to the [Stage] singleton */
     val mousePos: Point get() = localMousePos(views)
