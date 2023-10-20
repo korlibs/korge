@@ -9,8 +9,12 @@ import korlibs.render.osx.*
 import korlibs.render.platform.*
 import javax.swing.*
 
+val isUsingMetalPipeline: Boolean get() = runCatching {
+    Dyn.global["sun.awt.CGraphicsDevice"].dynamicInvoke("usingMetalPipeline").bool
+}.getOrNull() ?: false
+
 fun JFrame.getCAMetalLayer(): CAMetalLayer? {
-    if (!Dyn.global["sun.awt.CGraphicsDevice"].dynamicInvoke("usingMetalPipeline").bool) return null
+    if (!isUsingMetalPipeline) return null
     val peer = this.awtGetPeer()
     val platformWindow = peer.dyn.dynamicInvoke("getPlatformWindow")
     val contentView = platformWindow.dyn.dynamicInvoke("getContentView")
