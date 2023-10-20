@@ -217,7 +217,7 @@ object WindowsRegistry {
 
     private fun normalizePath(path: String) = path.trim('/').replace('/', '\\')
 
-    val isSupported: Boolean get() = Platform.isWindows
+    val isSupported: Boolean get() = Platform.isWindows && FFILib.isFFISupported
 
     private fun parsePathEx(path: String): Pair<HKEY, String>? =
         parsePath(path)?.let { Pair(it.first, it.second) }
