@@ -8,42 +8,26 @@ import korlibs.render.*
 import korlibs.render.platform.*
 import java.awt.*
 import java.awt.event.*
-import javax.imageio.*
 import javax.swing.*
 
 class AwtGameWindow(config: GameWindowCreationConfig = GameWindowCreationConfig.DEFAULT) : BaseAwtGameWindow(AGOpenglAWT(config)) {
     override var ctx: BaseOpenglContext? = null
-    //val frame = Window(Frame("Korgw"))
-    val classLoader = this.javaClass.classLoader
 
     override fun ensureContext() {
         if (ctx == null) ctx = glContextFromComponent(frame, this)
     }
 
-    //private var currentInFullScreen = false
-
     val frame: JFrame = object : JFrame("Korgw") {
         val frame = this
-        //val frame = object : Frame("Korgw") {
+
         init {
             isVisible = false
             ignoreRepaint = true
             //background = Color.black
             setBounds(0, 0, 640, 480)
-            val frame = this
             frame.setLocationRelativeTo(null)
             frame.setKorgeDropTarget(this@AwtGameWindow)
-
-            runCatching {
-                val awtImageURL = AwtGameWindow::class.java.getResource("/@appicon.png")
-                    ?: AwtGameWindow::class.java.getResource("@appicon.png")
-                    ?: ClassLoader.getSystemResource("@appicon.png")
-                setIconIncludingTaskbarFromImage(awtImageURL?.let { ImageIO.read(it) })
-            }
-
-            //val dim = getDefaultToolkit().screenSize
-            //frame.setLocation(dim.width / 2 - frame.size.width / 2, dim.height / 2 - frame.size.height / 2)
-
+            frame.setIconIncludingTaskbarFromResource("@appicon.png")
             this.initTools()
 
             addWindowListener(object : WindowAdapter() {
@@ -64,13 +48,8 @@ class AwtGameWindow(config: GameWindowCreationConfig = GameWindowCreationConfig.
             })
         }
 
-        override fun paintComponents(g: Graphics?) {
-        }
+        override fun paintComponents(g: Graphics?) = Unit
 
-        // https://stackoverflow.com/questions/52108178/swing-animation-still-stutter-when-i-use-toolkit-getdefaulttoolkit-sync
-        // https://www.oracle.com/java/technologies/painting.html
-        // https://docs.oracle.com/javase/tutorial/extra/fullscreen/rendering.html
-        // https://docs.oracle.com/javase/tutorial/extra/fullscreen/doublebuf.html
         override fun paint(g: Graphics) {
             try {
                 framePaint(g)
@@ -95,11 +74,19 @@ class AwtGameWindow(config: GameWindowCreationConfig = GameWindowCreationConfig.
             this.setSize(280, 256)
             this.type = Window.Type.UTILITY
             this.isAlwaysOnTop = true
-            //this.isUndecorated = true
-            //this.opacity = 0.5f
-            //focusableWindowState = false
         } catch (e: Throwable) {
             e.printStackTrace()
+        }
+        val debugFrame = this
+        this@AwtGameWindow.onDebugChanged.add {
+            EventQueue.invokeLater {
+                debugFrame.isVisible = it
+                synchronizeDebugFrameCoordinates()
+                if (debugFrame.isVisible) {
+                    //frame.isVisible = false
+                    frame.isVisible = true
+                }
+            }
         }
     }
 
@@ -113,30 +100,12 @@ class AwtGameWindow(config: GameWindowCreationConfig = GameWindowCreationConfig.
         debugFrame.setSize(debugFrame.width.coerceAtLeast(64), frameBounds.height)
     }
 
-    init {
-        onDebugChanged.add {
-            EventQueue.invokeLater {
-                debugFrame.isVisible = it
-                synchronizeDebugFrameCoordinates()
-                if (debugFrame.isVisible) {
-                    //frame.isVisible = false
-                    frame.isVisible = true
-                }
-            }
-        }
-    }
-
     override fun setSize(width: Int, height: Int) {
         contentComponent.setSize(width, height)
         contentComponent.preferredSize = Dimension(width, height)
         frame.pack()
         val component = this.component
-        //val dim = Toolkit.getDefaultToolkit().screenSize
-        //component.setLocation(dim.width / 2 - component.size.width / 2, dim.height / 2 - component.size.height / 2)
-        if (component is Window) {
-            component.setLocationRelativeTo(null)
-        }
-        //component.setlo
+        if (component is Window) component.setLocationRelativeTo(null)
     }
 
     override val component: Component get() = frame

@@ -18,7 +18,17 @@ import java.awt.datatransfer.*
 import java.awt.dnd.*
 import java.awt.image.*
 import java.io.*
+import javax.imageio.*
 import javax.swing.*
+
+fun JFrame.setIconIncludingTaskbarFromResource(path: String) {
+    runCatching {
+        val awtImageURL = AwtGameWindow::class.java.getResource("/$path")
+            ?: AwtGameWindow::class.java.getResource(path)
+            ?: ClassLoader.getSystemResource(path)
+        setIconIncludingTaskbarFromImage(awtImageURL?.let { ImageIO.read(it) })
+    }
+}
 
 fun JFrame.setIconIncludingTaskbarFromImage(awtImage: BufferedImage?) {
     val frame = this

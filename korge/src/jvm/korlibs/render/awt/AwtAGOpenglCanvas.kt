@@ -16,6 +16,10 @@ import java.awt.Graphics
 import javax.swing.*
 
 // @TODO: Use Metal, OpenGL or whatever required depending on what's AWT is using
+// https://stackoverflow.com/questions/52108178/swing-animation-still-stutter-when-i-use-toolkit-getdefaulttoolkit-sync
+// https://www.oracle.com/java/technologies/painting.html
+// https://docs.oracle.com/javase/tutorial/extra/fullscreen/rendering.html
+// https://docs.oracle.com/javase/tutorial/extra/fullscreen/doublebuf.html
 open class AwtAGOpenglCanvas : Canvas(), BoundsProvider by BoundsProvider.Base() {
     init {
         System.setProperty("sun.java2d.opengl", "true")
