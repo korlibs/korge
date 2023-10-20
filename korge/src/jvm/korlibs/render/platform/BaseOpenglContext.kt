@@ -89,7 +89,7 @@ fun glContextFromComponent(c: Component, gwconfig: GameWindowConfig): BaseOpengl
                 val display = X.XOpenDisplay(null)
                 val screen = X.XDefaultScreen(display)
                 if (c is Frame) {
-                    val contentWindow = c.awtGetPeer().dyn.dynamicInvoke("getContentWindow") as Long
+                    val contentWindow = c.awtGetPeer().dyn.dynamicInvoke("getContentWindow").long
                     X11OpenglContext(gwconfig, display, X11.Drawable(contentWindow), screen, doubleBuffered = true)
                 } else {
                     val componentId = Native.getComponentID(c)
