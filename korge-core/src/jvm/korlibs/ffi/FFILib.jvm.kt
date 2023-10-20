@@ -19,6 +19,8 @@ actual fun FFILibSym(lib: FFILib): FFILibSym {
 actual typealias FFIPointer = Pointer
 actual typealias FFIMemory = Memory
 
+actual val FFI_SUPPORTED: Boolean = true
+
 actual fun CreateFFIMemory(size: Int): FFIMemory = Memory(size.toLong())
 actual fun CreateFFIMemory(bytes: ByteArray): FFIMemory = Memory(bytes.size.toLong()).also { it.write(0L, bytes, 0, bytes.size) }
 actual val FFIMemory.pointer: FFIPointer get() = this

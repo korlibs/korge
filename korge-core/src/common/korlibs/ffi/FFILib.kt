@@ -11,6 +11,8 @@ expect class FFIPointer
 
 expect class FFIMemory
 
+expect val FFI_SUPPORTED: Boolean
+
 expect fun CreateFFIMemory(size: Int): FFIMemory
 expect fun CreateFFIMemory(bytes: ByteArray): FFIMemory
 
@@ -179,13 +181,14 @@ open class FFILib(val paths: List<String>, val lazyCreate: Boolean = true) {
     val loaded: Boolean get() = true
 
     companion object {
+        val isFFISupported = FFI_SUPPORTED
+
         fun extractTypeFunc(type: KType): FuncType {
             val generics = type.arguments.map { it.type }
             val ret = generics.last()
             val params = generics.dropLast(1)
             return FuncType(params, ret)
         }
-
     }
 
     class FuncDelegate<T>(val base: FFILib, val name: String, val type: KType, val config: FFIFuncConfig) : ReadOnlyProperty<FFILib, T> {

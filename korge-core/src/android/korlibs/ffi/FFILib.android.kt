@@ -11,6 +11,8 @@ actual class FFIPointer
 
 actual class FFIMemory
 
+actual val FFI_SUPPORTED: Boolean = false
+
 actual fun CreateFFIMemory(size: Int): FFIMemory = TODO()
 actual fun CreateFFIMemory(bytes: ByteArray): FFIMemory = TODO()
 actual val FFIMemory.pointer: FFIPointer get() = TODO()

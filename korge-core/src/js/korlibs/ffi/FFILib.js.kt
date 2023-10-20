@@ -6,6 +6,7 @@ import korlibs.io.runtime.deno.*
 import korlibs.js.*
 import korlibs.memory.*
 import korlibs.memory.Buffer
+import korlibs.platform.*
 import kotlinx.coroutines.*
 import org.khronos.webgl.*
 import kotlin.js.Promise
@@ -183,6 +184,8 @@ actual typealias FFIPointer = DenoPointer
 actual val FFI_POINTER_SIZE: Int = 8
 
 actual typealias FFIMemory = Uint8Array
+
+actual val FFI_SUPPORTED: Boolean = Platform.isJsDenoJs
 
 actual fun CreateFFIMemory(size: Int): FFIMemory = Uint8Array(size)
 actual fun CreateFFIMemory(bytes: ByteArray): FFIMemory = bytes.asDynamic()
