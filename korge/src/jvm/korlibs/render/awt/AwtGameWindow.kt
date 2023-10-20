@@ -3,7 +3,6 @@ package korlibs.render.awt
 import korlibs.event.*
 import korlibs.image.awt.*
 import korlibs.image.bitmap.*
-import korlibs.io.dynamic.*
 import korlibs.io.file.std.*
 import korlibs.math.*
 import korlibs.math.geom.*
@@ -14,24 +13,11 @@ import java.awt.*
 import java.awt.datatransfer.*
 import java.awt.dnd.*
 import java.awt.event.*
-import java.awt.image.*
 import java.io.*
 import javax.imageio.*
 import javax.swing.*
 
-class AwtGameWindow(config: GameWindowCreationConfig) : BaseAwtGameWindow(AGOpenglAWT(config)) {
-
-    /*
-    fun JFrame.isFullScreen(): Boolean {
-        try {
-            awtGetPeer()
-        } catch (e: Throwable) {
-            e.printStackTrace()
-            return false
-        }
-    }
-    */
-
+class AwtGameWindow(config: GameWindowCreationConfig = GameWindowCreationConfig.DEFAULT) : BaseAwtGameWindow(AGOpenglAWT(config)) {
     override var ctx: BaseOpenglContext? = null
     //val frame = Window(Frame("Korgw"))
     val classLoader = this.javaClass.classLoader
@@ -107,41 +93,27 @@ class AwtGameWindow(config: GameWindowCreationConfig) : BaseAwtGameWindow(AGOpen
             //val dim = getDefaultToolkit().screenSize
             //frame.setLocation(dim.width / 2 - frame.size.width / 2, dim.height / 2 - frame.size.height / 2)
 
-            if (Platform.isMac) {
-                //rootPane.putClientProperty("apple.awt.fullscreenable", true)
+            this.initTools()
 
-                /*
-                val listener = Proxy.newProxyInstance(classLoader, arrayOf(Class.forName("com.apple.eawt.FullScreenListener"))) { proxy, method, args ->
-                    //println("INVOKED: $proxy, $method")
-                    when (method.name) {
-                        "windowEnteredFullScreen" -> {
-                            currentInFullScreen = true
-                        }
-                        "windowExitedFullScreen" -> {
-                            currentInFullScreen = false
-                        }
-                    }
-                    null
+            addWindowListener(object : WindowAdapter() {
+                override fun windowClosing(e: WindowEvent?) {
+                    debugFrame.isVisible = false
+                    debugFrame.dispose()
+                    running = false
                 }
-                */
-                try {
-                    Dyn.global["com.apple.eawt.FullScreenUtilities"].dynamicInvoke("setWindowCanFullScreen", frame, true)
-                    //Dyn.global["com.apple.eawt.FullScreenUtilities"].invoke("addFullScreenListenerTo", frame, listener)
-                } catch (e: Throwable) {
-                    if (e::class.qualifiedName != "java.lang.reflect.InaccessibleObjectException") {
-                        e.printStackTrace()
-                    }
+            })
+            addComponentListener(object : ComponentAdapter() {
+                override fun componentMoved(e: ComponentEvent?) {
+                    synchronizeDebugFrameCoordinates()
                 }
 
-                // @TODO: This one owns the whole screen in a bad way
-                //val env = GraphicsEnvironment.getLocalGraphicsEnvironment()
-                //val device = env.defaultScreenDevice
-                //device.fullScreenWindow = this
-            }
+                override fun componentResized(e: ComponentEvent?) {
+                    synchronizeDebugFrameCoordinates()
+                }
+            })
         }
 
         override fun paintComponents(g: Graphics?) {
-
         }
 
 
@@ -172,6 +144,7 @@ class AwtGameWindow(config: GameWindowCreationConfig) : BaseAwtGameWindow(AGOpen
             field = value
             frame.setIconIncludingTaskbarFromImage(value?.toAwt())
         }
+    override var fullscreen: Boolean by frame::isFullScreen
 
     val debugFrame = JFrame("Debug").apply {
         try {
@@ -210,46 +183,6 @@ class AwtGameWindow(config: GameWindowCreationConfig) : BaseAwtGameWindow(AGOpen
         }
     }
 
-    override var fullscreen: Boolean
-        get() = when {
-            Platform.isMac -> frame.rootPane.bounds == frame.bounds
-            else -> GraphicsEnvironment.getLocalGraphicsEnvironment().defaultScreenDevice.fullScreenWindow == frame
-        }
-        set(value) {
-            //println("fullscreen: $fullscreen -> $value")
-            if (fullscreen != value) {
-                when {
-                    Platform.isMac -> {
-                        //println("TOGGLING!")
-                        if (fullscreen != value) {
-                            queue {
-                                try {
-                                    //println("INVOKE!: ${getClass("com.apple.eawt.Application").invoke("getApplication")}")
-                                    Dyn.global["com.apple.eawt.Application"]
-                                        .dynamicInvoke("getApplication")
-                                        .dynamicInvoke("requestToggleFullScreen", frame)
-                                } catch (e: Throwable) {
-                                    if (e::class.qualifiedName != "java.lang.reflect.InaccessibleObjectException") {
-                                        e.printStackTrace()
-                                    }
-                                    GraphicsEnvironment.getLocalGraphicsEnvironment().defaultScreenDevice.fullScreenWindow = if (value) frame else null
-                                    frame.isVisible = true
-                                }
-                            }
-                        }
-                    }
-                    else -> {
-                        GraphicsEnvironment.getLocalGraphicsEnvironment().defaultScreenDevice.fullScreenWindow = if (value) frame else null
-
-                        //frame.extendedState = if (value) JFrame.MAXIMIZED_BOTH else JFrame.NORMAL
-                        //frame.isUndecorated = value
-                        frame.isVisible = true
-                        //frame.isAlwaysOnTop = true
-                    }
-                }
-            }
-        }
-
     override fun setSize(width: Int, height: Int) {
         contentComponent.setSize(width, height)
         contentComponent.preferredSize = Dimension(width, height)
@@ -266,34 +199,7 @@ class AwtGameWindow(config: GameWindowCreationConfig) : BaseAwtGameWindow(AGOpen
     override val component: Component get() = frame
     override val contentComponent: Component get() = frame.contentPane
 
-    override fun loopInitialization() {
-        frame.addWindowListener(object : WindowAdapter() {
-            override fun windowClosing(e: WindowEvent?) {
-                debugFrame.isVisible = false
-                debugFrame.dispose()
-                running = false
-            }
-        })
-        frame.addComponentListener(object : ComponentAdapter() {
-            override fun componentMoved(e: ComponentEvent?) {
-                synchronizeDebugFrameCoordinates()
-            }
-
-            override fun componentResized(e: ComponentEvent?) {
-                synchronizeDebugFrameCoordinates()
-            }
-        })
-    }
-
     override fun frameDispose() {
         frame.dispose()
-    }
-}
-
-fun JFrame.setIconIncludingTaskbarFromImage(awtImage: BufferedImage?) {
-    val frame = this
-    runCatching {
-        frame.iconImage = awtImage?.getScaledInstance(32, 32, Image.SCALE_SMOOTH)
-        Dyn.global["java.awt.Taskbar"].dynamicInvoke("getTaskbar").dynamicInvoke("setIconImage", awtImage)
     }
 }

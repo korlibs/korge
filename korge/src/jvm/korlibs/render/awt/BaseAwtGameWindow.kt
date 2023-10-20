@@ -380,9 +380,6 @@ abstract class BaseAwtGameWindow(
         Native.setCallbackThreadInitializer(it, CallbackThreadInitializer(false, false, "DisplayLink"))
     }
 
-    open fun loopInitialization() {
-    }
-
     open fun frameDispose() {
     }
 
@@ -395,12 +392,11 @@ abstract class BaseAwtGameWindow(
         launchImmediately(getCoroutineDispatcherWithCurrentContext()) {
             entry()
         }
-        //frame.setBounds(0, 0, width, height)
+
+//frame.setBounds(0, 0, width, height)
 
         //val timer= Timer(40, ActionListener {
         //})
-
-        loopInitialization()
 
         component.addComponentListener(object : ComponentAdapter() {
             override fun componentResized(e: ComponentEvent) {
