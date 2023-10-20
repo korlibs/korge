@@ -13,9 +13,6 @@ import korlibs.io.net.*
 import kotlinx.coroutines.*
 import java.io.*
 
-actual fun createDialogInterfaceForComponent(nativeComponent: Any?): DialogInterface =
-    DialogInterfaceAndroid { nativeComponent as Context }
-
 class DialogInterfaceAndroid(val contextProvider: () -> Context) : DialogInterface {
     val context get() = contextProvider()
 
