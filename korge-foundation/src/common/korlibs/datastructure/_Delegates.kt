@@ -1,7 +1,6 @@
 package korlibs.datastructure
 
-import kotlin.reflect.KProperty
-import kotlin.reflect.KProperty1
+import kotlin.reflect.*
 
 typealias ExtraType = FastStringMap<Any?>?
 fun ExtraTypeCreate() = FastStringMap<Any?>()
@@ -123,4 +122,10 @@ class Observable<T>(val initial: T, val before: (T) -> Unit = {}, val after: (T)
         currentValue = value
         after(value)
     }
+}
+
+class LazyDelegate<T>(val propRef: () -> KMutableProperty0<T>) {
+    val cachedPropRef by lazy { propRef() }
+    operator fun getValue(obj: Any, prop: KProperty<*>): T = cachedPropRef.get()
+    operator fun setValue(obj: Any, prop: KProperty<*>, value: T) = cachedPropRef.set(value)
 }
