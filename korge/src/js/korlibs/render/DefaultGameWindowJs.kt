@@ -21,9 +21,6 @@ import kotlin.coroutines.*
 private external val navigator: dynamic
 
 open class JsGameWindow : GameWindow() {
-    override fun <T> runBlockingNoJs(coroutineContext: CoroutineContext, block: suspend () -> T): T {
-        error("GameWindow.unsafeRunBlocking not implemented on JS")
-    }
 }
 
 open class BrowserCanvasJsGameWindow(

@@ -1,23 +1,19 @@
 package korlibs.render.osx
 
-import korlibs.kgl.checkedIf
-import korlibs.kgl.logIf
-import korlibs.platform.Platform
+import com.sun.jna.*
+import korlibs.event.*
+import korlibs.graphics.gl.*
+import korlibs.image.bitmap.*
+import korlibs.image.format.*
+import korlibs.io.async.*
+import korlibs.io.util.*
+import korlibs.kgl.*
 import korlibs.memory.dyn.osx.*
-import korlibs.graphics.gl.AGOpengl
-import korlibs.event.Key
-import korlibs.event.KeyEvent
-import korlibs.event.MouseButton
-import korlibs.event.MouseEvent
+import korlibs.platform.Platform
 import korlibs.render.*
 import korlibs.render.platform.*
 import korlibs.render.platform.NativeLoad
-import korlibs.image.bitmap.Bitmap
-import korlibs.image.format.PNG
-import korlibs.io.async.launchImmediately
-import korlibs.io.util.Once
-import com.sun.jna.*
-import java.nio.ByteBuffer
+import java.nio.*
 import kotlin.coroutines.*
 import kotlin.system.*
 
@@ -306,8 +302,7 @@ class MacGameWindow(val checkGl: Boolean, val logGl: Boolean) : GameWindow() {
         get() = super.key
 
     override val ag: AGOpengl = AGOpengl(MacKmlGL().checkedIf(checkGl).logIf(logGl))
-    override val coroutineDispatcher: GameWindowCoroutineDispatcher
-        get() = super.coroutineDispatcher
+
     override var title: String
         get() = NSString(window.msgSend("title")).toString()
         set(value) {
