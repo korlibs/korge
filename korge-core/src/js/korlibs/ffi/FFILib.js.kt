@@ -6,6 +6,7 @@ import korlibs.io.runtime.deno.*
 import korlibs.js.*
 import korlibs.memory.*
 import korlibs.memory.Buffer
+import korlibs.platform.*
 import kotlinx.coroutines.*
 import org.khronos.webgl.*
 import kotlin.js.Promise
@@ -95,7 +96,8 @@ class FFILibSymJS(val lib: FFILib) : FFILibSym {
     override fun <T> get(name: String, type: KType): T {
         if (syms == null) error("Can't get symbol '$name' for ${lib::class} : '${(lib as FFILib).paths}'")
         //return syms[name]
-        return preprocessFunc(symbolsByName[name]!!.type, syms[name], name)
+        val sym = symbolsByName[name]!!
+        return preprocessFunc(sym.type, syms[name], name, sym.config)
     }
 
     override fun close() {
@@ -105,7 +107,7 @@ class FFILibSymJS(val lib: FFILib) : FFILibSym {
 
 
 // @TODO: Optimize this
-private fun preprocessFunc(type: KType, func: dynamic, name: String?): dynamic {
+private fun preprocessFunc(type: KType, func: dynamic, name: String?, config: FFIFuncConfig): dynamic {
     val ftype = FFILib.extractTypeFunc(type)
     val convertToString = ftype.retClass == String::class
     return {
@@ -183,6 +185,8 @@ actual val FFI_POINTER_SIZE: Int = 8
 
 actual typealias FFIMemory = Uint8Array
 
+actual val FFI_SUPPORTED: Boolean = Platform.isJsDenoJs
+
 actual fun CreateFFIMemory(size: Int): FFIMemory = Uint8Array(size)
 actual fun CreateFFIMemory(bytes: ByteArray): FFIMemory = bytes.asDynamic()
 
@@ -191,6 +195,21 @@ actual val FFIMemory.pointer: FFIPointer get() = Deno.UnsafePointer.of(this)
 actual fun FFIPointer.getStringz(): String {
     return getCString(this) ?: "<null>"
     //return this.readStringz()
+}
+actual fun FFIPointer.getWideStringz(): String {
+    if (this.value == JsBigInt(0)) return "<null>"
+
+    val ptr = Deno.UnsafePointerView(this)
+    var strlen = 0
+    while (true) {
+        if (ptr.getInt16(strlen * 2).toInt() == 0) break
+        strlen++
+    }
+    val chars = CharArray(strlen)
+    for (n in 0 until strlen) {
+        chars[n] = ptr.getInt16(n * 2).toInt().toChar()
+    }
+    return chars.concatToString()
 }
 actual val FFIPointer?.address: Long get() {
     val res = Deno.UnsafePointer.value(this)
@@ -234,7 +253,7 @@ actual fun FFIPointer.getIntArray(size: Int, byteOffset: Int): IntArray {
     return out
 }
 
-actual fun <T> FFIPointer.castToFunc(type: KType): T {
+actual fun <T> FFIPointer.castToFunc(type: KType, config: FFIFuncConfig): T {
     val def = type.funcToDenoDef()
     val res = Deno.UnsafeFnPointer(this, def)
     //console.log("castToFunc.def=", def, "res=", res)
@@ -242,6 +261,6 @@ actual fun <T> FFIPointer.castToFunc(type: KType): T {
         val arguments = js("(arguments)")
         res.asDynamic().call.apply(res, arguments)
     }
-    return preprocessFunc(type, func, null)
+    return preprocessFunc(type, func, null, config)
 
 }

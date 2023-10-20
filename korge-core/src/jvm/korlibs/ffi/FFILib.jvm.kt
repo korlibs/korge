@@ -19,6 +19,8 @@ actual fun FFILibSym(lib: FFILib): FFILibSym {
 actual typealias FFIPointer = Pointer
 actual typealias FFIMemory = Memory
 
+actual val FFI_SUPPORTED: Boolean = true
+
 actual fun CreateFFIMemory(size: Int): FFIMemory = Memory(size.toLong())
 actual fun CreateFFIMemory(bytes: ByteArray): FFIMemory = Memory(bytes.size.toLong()).also { it.write(0L, bytes, 0, bytes.size) }
 actual val FFIMemory.pointer: FFIPointer get() = this
@@ -28,6 +30,7 @@ actual fun CreateFFIPointer(ptr: Long): FFIPointer? = if (ptr == 0L) null else P
 actual val FFI_POINTER_SIZE: Int = 8
 
 actual fun FFIPointer.getStringz(): String = this.getString(0L)
+actual fun FFIPointer.getWideStringz(): String = this.getWideString(0L)
 actual val FFIPointer?.address: Long get() = Pointer.nativeValue(this)
 actual val FFIPointer?.str: String get() = this.toString()
 actual fun FFIPointer.getIntArray(size: Int, byteOffset: Int): IntArray = this.getIntArray(0L, size)
@@ -58,10 +61,10 @@ actual class FFIArena actual constructor() {
     }
 }
 
-actual fun <T> FFIPointer.castToFunc(type: KType): T =
-    createJNAFunctionToPlainFunc(Function.getFunction(this), type)
+actual fun <T> FFIPointer.castToFunc(type: KType, config: FFIFuncConfig): T =
+    createJNAFunctionToPlainFunc(Function.getFunction(this), type, config)
 
-fun <T : kotlin.Function<*>> createJNAFunctionToPlainFunc(func: Function, type: KType): T {
+fun <T : kotlin.Function<*>> createJNAFunctionToPlainFunc(func: Function, type: KType, config: FFIFuncConfig): T {
     val ftype = FFILib.extractTypeFunc(type)
 
     return Proxy.newProxyInstance(
@@ -72,6 +75,7 @@ fun <T : kotlin.Function<*>> createJNAFunctionToPlainFunc(func: Function, type: 
             when (it) {
                 is FFIPointerArray -> it.data
                 is Buffer -> it.buffer
+                is String -> if (config.wideString) com.sun.jna.WString(it) else it
                 else -> it
             }
         }.toTypedArray()
@@ -103,8 +107,8 @@ fun <T : kotlin.Function<*>> createJNAFunctionToPlainFunc(func: Function, type: 
     } as T
 }
 
-inline fun <reified T : kotlin.Function<*>> createJNAFunctionToPlainFunc(func: Function): T =
-    createJNAFunctionToPlainFunc(func, typeOf<T>())
+inline fun <reified T : kotlin.Function<*>> createJNAFunctionToPlainFunc(func: Function, config: FFIFuncConfig): T =
+    createJNAFunctionToPlainFunc(func, typeOf<T>(), config)
 
 class FFILibSymJVM(val lib: FFILib) : FFILibSym {
     @OptIn(SyncIOAPI::class)
@@ -116,15 +120,15 @@ class FFILibSymJVM(val lib: FFILib) : FFILibSym {
         }
     }
 
-    fun <T : kotlin.Function<*>> createFunction(funcName: String, type: KType): T {
+    fun <T : kotlin.Function<*>> createFunction(funcName: String, type: KType, config: FFIFuncConfig): T {
         val func: Function = nlib!!.getFunction(funcName) ?: error("Can't find function ${funcName}")
-        return createJNAFunctionToPlainFunc<T>(func, type)
+        return createJNAFunctionToPlainFunc<T>(func, type, config)
     }
 
     val functions: Map<String, kotlin.Function<*>> by lazy {
         lib.functions.associate { nfunc ->
             //val lib = NativeLibrary.getInstance("")
-            nfunc.name to createFunction(nfunc.name, nfunc.type)
+            nfunc.name to createFunction(nfunc.name, nfunc.type, nfunc.config)
         }
     }
 
