@@ -1,7 +1,8 @@
 package korlibs.render
 
-import korlibs.datastructure.closeable.*
+import korlibs.datastructure.closeable.Closeable
 import korlibs.datastructure.event.*
+import korlibs.io.lang.*
 import korlibs.time.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
@@ -18,13 +19,26 @@ class SyncEventLoopCoroutineDispatcher(val eventLoop: SyncEventLoop) : Coroutine
         eventLoop.setImmediate {
             block.run()
         }
-        //TODO("Not yet implemented")
     }
 
     override fun scheduleResumeAfterDelay(timeMillis: Long, continuation: CancellableContinuation<Unit>) {
-        eventLoop.setTimeout(timeMillis.milliseconds) {
-            continuation.resume(Unit)
+        var cancelled: Throwable? = null
+        continuation.invokeOnCancellation {
+            cancelled = it
         }
+        eventLoop.setTimeout(timeMillis.milliseconds) {
+            if (cancelled != null) {
+                continuation.resumeWithException(cancelled!!)
+            } else {
+                continuation.resume(Unit)
+            }
+        }
+    }
+
+    override fun invokeOnTimeout(timeMillis: Long, block: Runnable, context: CoroutineContext): DisposableHandle {
+        return eventLoop.setTimeout(timeMillis.milliseconds) {
+            block.run()
+        }.toDisposable()
     }
 
     fun loopForever() {
@@ -33,5 +47,9 @@ class SyncEventLoopCoroutineDispatcher(val eventLoop: SyncEventLoop) : Coroutine
 
     fun loopUntilEmpty() {
         eventLoop.runTasksUntilEmpty()
+    }
+
+    fun executePending() {
+        eventLoop.runAvailableNextTasks()
     }
 }
