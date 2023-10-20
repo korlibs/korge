@@ -41,10 +41,10 @@ import kotlin.coroutines.*
 class Views(
     override val coroutineContext: CoroutineContext,
     val ag: AG,
-    val injector: Injector,
-    val input: Input,
-    val timeProvider: TimeProvider,
-    val stats: Stats,
+    val injector: Injector = Injector(),
+    val input: Input = Input(),
+    val timeProvider: TimeProvider = TimeProvider,
+    val stats: Stats = Stats(),
     val gameWindow: GameWindow,
     val gameId: String = "korgegame",
     val settingsFolder: String? = null,
@@ -61,6 +61,10 @@ class Views(
     InvalidateNotifier,
     DeviceDimensionsProvider by gameWindow
 {
+    constructor(gameWindow: GameWindow) : this(
+        gameWindow, gameWindow.ag, gameWindow = gameWindow
+    )
+
     var quality by gameWindow::quality
 
     override val views = this
