@@ -6,6 +6,7 @@ import korlibs.datastructure.*
 import korlibs.datastructure.closeable.*
 import korlibs.datastructure.lock.*
 import korlibs.datastructure.thread.*
+import korlibs.logger.*
 import korlibs.time.*
 import kotlin.time.*
 
@@ -14,6 +15,7 @@ interface EventLoop : Closeable {
     fun setTimeout(time: TimeSpan, task: () -> Unit): Closeable
     fun setInterval(time: TimeSpan, task: () -> Unit): Closeable
 }
+fun EventLoop.setInterval(time: Frequency, task: () -> Unit): Closeable = setInterval(time.timeSpan, task)
 
 class SyncEventLoop(
     /** precise=true will have better precision at the cost of more CPU-usage (busy waiting) */
@@ -66,7 +68,11 @@ class SyncEventLoop(
     private fun _queueAfter(time: TimeSpan, interval: Boolean, task: () -> Unit): Closeable {
         return lock {
             val task = TimedTask(this, now, time, interval, task)
-            timedTasks.add(task)
+            if (running) {
+                timedTasks.add(task)
+            } else {
+                Console.warn("WARNING: QUEUED TASK time=$time interval=$interval without running")
+            }
             //println("NOTIFIED!")
             lock.notify()
             task
@@ -74,7 +80,15 @@ class SyncEventLoop(
     }
 
     override fun close() {
-        running = false
+        val oldImmediateRun = immediateRun
+        try {
+            // Run pending tasks including pending timers, but won't allow to add new tasks because running=false
+            immediateRun = true
+            running = false
+            runAvailableNextTasks()
+        } finally {
+            immediateRun = oldImmediateRun
+        }
     }
 
     protected fun shouldTimedTaskRun(task: TimedTask): Boolean {
@@ -87,22 +101,15 @@ class SyncEventLoop(
         lock.wait(waitTime, precise)
     }
 
-    protected fun waitAndExecuteNextTask(): Boolean {
-        //println("tasks=$tasks, timedTasks=$timedTasks")
-        lock {
-            if (tasks.isEmpty() && timedTasks.isNotEmpty()) {
-                val head = timedTasks.head
-                if ((head.timeMark - now) >= 16.milliseconds) {
-                    //println("GC")
-                    NativeThread.gc(full = false)
-                }
-                val waitTime = head.timeMark - now
-                if (waitTime >= 0.seconds) {
-                    wait(waitTime)
-                }
-            }
+    fun runAvailableNextTasks(): Int {
+        var count = 0
+        while (runAvailableNextTask()) {
+            count++
         }
+        return count
+    }
 
+    fun runAvailableNextTask(): Boolean {
         val timedTask = lock {
             if (timedTasks.isNotEmpty() && shouldTimedTaskRun(timedTasks.head)) timedTasks.removeHead() else null
         }
@@ -122,11 +129,30 @@ class SyncEventLoop(
         return task != null || timedTask != null
     }
 
+    fun waitAndRunNextTask(): Boolean {
+        //println("tasks=$tasks, timedTasks=$timedTasks")
+        lock {
+            if (tasks.isEmpty() && timedTasks.isNotEmpty()) {
+                val head = timedTasks.head
+                if ((head.timeMark - now) >= 16.milliseconds) {
+                    //println("GC")
+                    NativeThread.gc(full = false)
+                }
+                val waitTime = head.timeMark - now
+                if (waitTime >= 0.seconds) {
+                    wait(waitTime)
+                }
+            }
+        }
+
+        return runAvailableNextTask()
+    }
+
     fun runTasksUntilEmpty() {
         //Thread.currentThread().priority = Thread.MAX_PRIORITY
         // Timed tasks
         while (running) {
-            val somethingExecuted = waitAndExecuteNextTask()
+            val somethingExecuted = waitAndRunNextTask()
 
             if (lock { !somethingExecuted && tasks.isEmpty() && timedTasks.isEmpty() }) {
                 break
