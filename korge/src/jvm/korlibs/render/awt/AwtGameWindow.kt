@@ -1,8 +1,6 @@
 package korlibs.render.awt
 
 import korlibs.event.*
-import korlibs.render.*
-import korlibs.render.platform.*
 import korlibs.image.awt.*
 import korlibs.image.bitmap.*
 import korlibs.io.dynamic.*
@@ -10,10 +8,13 @@ import korlibs.io.file.std.*
 import korlibs.math.*
 import korlibs.math.geom.*
 import korlibs.platform.*
+import korlibs.render.*
+import korlibs.render.platform.*
 import java.awt.*
 import java.awt.datatransfer.*
 import java.awt.dnd.*
 import java.awt.event.*
+import java.awt.image.*
 import java.io.*
 import javax.imageio.*
 import javax.swing.*
@@ -96,19 +97,11 @@ class AwtGameWindow(config: GameWindowCreationConfig) : BaseAwtGameWindow(AGOpen
                 }
             }
 
-            run {
+            runCatching {
                 val awtImageURL = AwtGameWindow::class.java.getResource("/@appicon.png")
                     ?: AwtGameWindow::class.java.getResource("@appicon.png")
                     ?: ClassLoader.getSystemResource("@appicon.png")
-                if (awtImageURL != null) {
-                    runCatching {
-                        val awtImage = ImageIO.read(awtImageURL)
-                        kotlin.runCatching {
-                            Dyn.global["java.awt.Taskbar"].dynamicInvoke("getTaskbar").dynamicInvoke("setIconImage", awtImage)
-                        }
-                        frame.iconImage = awtImage.getScaledInstance(32, 32, Image.SCALE_SMOOTH)
-                    }
-                }
+                setIconIncludingTaskbarFromImage(awtImageURL?.let { ImageIO.read(it) })
             }
 
             //val dim = getDefaultToolkit().screenSize
@@ -177,13 +170,7 @@ class AwtGameWindow(config: GameWindowCreationConfig) : BaseAwtGameWindow(AGOpen
     override var icon: Bitmap? = null
         set(value) {
             field = value
-            val awtImage = value?.toAwt()
-            if (awtImage != null) {
-                kotlin.runCatching {
-                    Dyn.global["java.awt.Taskbar"].dynamicInvoke("getTaskbar").dynamicInvoke("setIconImage", awtImage)
-                }
-                frame.iconImage = awtImage
-            }
+            frame.setIconIncludingTaskbarFromImage(value?.toAwt())
         }
 
     val debugFrame = JFrame("Debug").apply {
@@ -300,5 +287,13 @@ class AwtGameWindow(config: GameWindowCreationConfig) : BaseAwtGameWindow(AGOpen
 
     override fun frameDispose() {
         frame.dispose()
+    }
+}
+
+fun JFrame.setIconIncludingTaskbarFromImage(awtImage: BufferedImage?) {
+    val frame = this
+    runCatching {
+        frame.iconImage = awtImage?.getScaledInstance(32, 32, Image.SCALE_SMOOTH)
+        Dyn.global["java.awt.Taskbar"].dynamicInvoke("getTaskbar").dynamicInvoke("setIconImage", awtImage)
     }
 }
