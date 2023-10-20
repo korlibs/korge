@@ -9,6 +9,14 @@ import org.jetbrains.kotlin.gradle.targets.js.ir.*
 import java.io.*
 
 fun Project.configureEsbuild() {
+    try {
+        configureErrorableEsbuild()
+    } catch (e: Throwable) {
+        e.printStackTrace()
+    }
+}
+
+fun Project.configureErrorableEsbuild() {
     val userGradleFolder = File(System.getProperty("user.home"), ".gradle")
 
     val wwwFolder = File(buildDir, "www")
