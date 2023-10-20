@@ -1,26 +1,21 @@
 package korlibs.io.file.registry
 
-import korlibs.io.async.suspendTest
-import korlibs.io.file.Vfs
-import korlibs.io.file.baseName
-import korlibs.io.stream.openAsync
-import korlibs.encoding.hex
-import kotlin.test.Ignore
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertTrue
+import korlibs.encoding.*
+import korlibs.io.async.*
+import korlibs.io.file.*
+import korlibs.io.stream.*
+import kotlin.test.*
 
 class WindowsRegistryTest {
     @Test
-    @Ignore
     fun testRegistry() = suspendTest({ WindowsRegistry.isSupported }) {
         assertEquals(WindowsRegistryBase.KEY_MAP.keys.toList().sorted(), WindowsRegistryVfs.root.listNames().sorted())
 
-        assertTrue { WindowsRegistryVfs["HKEY_CURRENT_USER"].listNames().map { it.lowercase() }.contains("software") }
-        assertTrue { WindowsRegistryVfs["HKEY_LOCAL_MACHINE/Software"].listNames().map { it.lowercase() }.contains("windows") }
-        assertTrue { WindowsRegistryVfs["HKEY_LOCAL_MACHINE/Software/Windows"].listNames().map { it.lowercase() }.contains("currentversion") }
+        assertTrue { WindowsRegistryVfs.HKEY_CURRENT_USER.listNames().map { it.lowercase() }.contains("software") }
+        assertTrue { WindowsRegistryVfs.HKEY_LOCAL_MACHINE["Software"].listNames().map { it.lowercase() }.contains("windows") }
+        assertTrue { WindowsRegistryVfs.HKEY_LOCAL_MACHINE["Software/Windows"].listNames().map { it.lowercase() }.contains("currentversion") }
 
-        val korge = WindowsRegistryVfs["HKEY_CURRENT_USER/Software/KorGETest"]
+        val korge = WindowsRegistryVfs.HKEY_CURRENT_USER["Software/KorGETest"]
         suspend fun cleanup() {
             korge["MyKey"].delete()
             korge.delete()
