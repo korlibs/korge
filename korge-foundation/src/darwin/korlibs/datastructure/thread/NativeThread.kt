@@ -9,19 +9,26 @@ import kotlin.native.runtime.*
 actual class NativeThread actual constructor(val code: () -> Unit) {
     actual var isDaemon: Boolean = false
 
+    var worker: Worker? = null
+
+    actual var priority: Int = 0
+    actual var name: String? = null
+
     actual fun start() {
-        val worker = Worker.start()
-        worker.executeAfter {
+        worker = Worker.start()
+        worker?.executeAfter {
             try {
                 code()
             } finally {
-                worker.requestTermination()
+                worker?.requestTermination()
+                worker = null
             }
         }
     }
 
     actual fun interrupt() {
         // No operation
+        worker = null
     }
 
     actual companion object {

@@ -40,4 +40,9 @@ actual class NativeThread actual constructor(val code: () -> Unit) {
         actual val currentThreadId: Long get() = 1L
         actual val currentThreadName: String? get() = "Thread-$currentThreadId"
     }
+
+    actual var priority: Int
+        get() = 0
+        set(value) {}
+    actual var name: String? = "Thread-JS"
 }
