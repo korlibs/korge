@@ -460,7 +460,7 @@ class MacGameWindow(val checkGl: Boolean, val logGl: Boolean) : GameWindow() {
             autoreleasePool.msgSend("drain")
         }
 
-        if (exitProcessOnExit) {
+        if (exitProcessOnClose) {
             exitProcess(this.exitCode)
         }
     }

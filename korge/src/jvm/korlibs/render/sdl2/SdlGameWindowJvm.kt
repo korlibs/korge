@@ -217,7 +217,7 @@ class SdlGameWindowJvm(checkGl: Boolean) : EventLoopGameWindow() {
         SDL.SDL_DestroyRenderer(r)
         SDL.SDL_DestroyWindow(w)
         SDL.SDL_Quit()
-        if (exitProcessOnExit) {
+        if (exitProcessOnClose) {
             exitProcess(this.exitCode)
         }
     }

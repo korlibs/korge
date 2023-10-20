@@ -1,10 +1,9 @@
 package korlibs.korge.testing
 
 import korlibs.image.bitmap.*
-import korlibs.image.color.Colors
 import korlibs.image.format.*
 import korlibs.io.file.std.*
-import korlibs.korge.annotations.KorgeExperimental
+import korlibs.korge.annotations.*
 import korlibs.korge.view.*
 import korlibs.time.*
 import kotlinx.coroutines.sync.*
@@ -155,7 +154,7 @@ class KorgeScreenshotTester(
         println("Ending test")
         processGoldenResults()
 
-        views.gameWindow.exitProcessOnExit = false
+        views.gameWindow.exitProcessOnClose = false
         views.gameWindow.close()
         testingLock.unlock()
     }

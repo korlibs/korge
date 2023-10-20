@@ -296,8 +296,6 @@ open class GameWindow :
     fun exit(exitCode: Int = 0): Unit = close(exitCode)
 
     var exitProcessOnClose: Boolean = true
-    @Deprecated("Use exitProcessOnClose instead")
-    var exitProcessOnExit: Boolean by ::exitProcessOnClose
     var exitCode = 0; private set
     var running = true; protected set
     private var closing = false
