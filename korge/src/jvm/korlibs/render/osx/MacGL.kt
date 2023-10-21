@@ -1,7 +1,6 @@
 package korlibs.render.osx
 
 import com.sun.jna.*
-import korlibs.memory.dyn.*
 import korlibs.render.platform.*
 
 open class MacKmlGl : NativeKgl(DirectGL)

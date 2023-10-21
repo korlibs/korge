@@ -3,9 +3,8 @@ package korlibs.audio.sound.backend
 import com.sun.jna.*
 import korlibs.audio.sound.*
 import korlibs.ffi.*
+import korlibs.internal.osx.*
 import korlibs.io.annotations.*
-import korlibs.memory.dyn.*
-import korlibs.memory.dyn.osx.*
 import java.util.concurrent.*
 import java.util.concurrent.atomic.*
 import kotlin.coroutines.*

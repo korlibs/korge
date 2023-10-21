@@ -7,6 +7,7 @@ import korlibs.image.bitmap.*
 import korlibs.image.color.*
 import korlibs.korge.render.*
 import korlibs.platform.*
+import korlibs.render.osx.*
 import korlibs.time.*
 import java.awt.*
 import javax.swing.*
@@ -16,7 +17,7 @@ import kotlin.test.*
 class AwtGameCanvasTest {
     @Test
     //@Ignore
-    fun test() = korlibs.memory.dyn.osx.autoreleasePool {
+    fun test() = autoreleasePool {
         //System.setProperty("sun.java2d.metal", "true")
         //System.setProperty("sun.java2d.opengl", "false")
         System.setProperty("sun.java2d.opengl", "true")

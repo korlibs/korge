@@ -2,7 +2,7 @@ package korlibs.render.platform
 
 import com.sun.jna.*
 import korlibs.io.dynamic.*
-import korlibs.memory.dyn.*
+import korlibs.render.osx.*
 import java.awt.*
 
 fun Component.awtGetPeer(): Any {

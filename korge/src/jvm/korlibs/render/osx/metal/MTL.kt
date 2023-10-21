@@ -4,7 +4,6 @@ import com.sun.jna.*
 import korlibs.io.dynamic.*
 import korlibs.io.lang.*
 import korlibs.memory.*
-import korlibs.memory.dyn.osx.*
 import korlibs.render.osx.*
 import korlibs.render.platform.*
 import javax.swing.*

@@ -7,8 +7,6 @@ import korlibs.graphics.gl.*
 import korlibs.io.dynamic.*
 import korlibs.kgl.*
 import korlibs.math.geom.*
-import korlibs.memory.dyn.*
-import korlibs.memory.dyn.osx.*
 import korlibs.render.*
 import korlibs.render.platform.*
 import java.awt.*

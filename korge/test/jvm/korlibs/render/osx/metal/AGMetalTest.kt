@@ -3,8 +3,8 @@ package korlibs.render.osx.metal
 import korlibs.image.color.*
 import korlibs.image.format.*
 import korlibs.memory.*
-import korlibs.memory.dyn.osx.*
 import korlibs.platform.*
+import korlibs.render.osx.*
 import kotlinx.coroutines.*
 import org.junit.Test
 import kotlin.test.*

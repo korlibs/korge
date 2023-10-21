@@ -1,4 +1,4 @@
-import korlibs.applyProjectProperties
+import korlibs.*
 
 description = "Multiplatform Game Engine written in Kotlin"
 
@@ -15,8 +15,9 @@ dependencies {
     commonMainApi(project(":korge-foundation"))
     //commonTestApi(project(":korge-test"))
     jvmMainApi("org.jetbrains.kotlin:kotlin-reflect")
-    jvmMainApi(libs.jackson.databind)
-    jvmMainApi(libs.jackson.module.kotlin)
+    jvmMainImplementation(libs.jackson.databind)
+    jvmMainImplementation(libs.jackson.module.kotlin)
+    jvmMainImplementation(libs.bundles.jna)
 
     //commonTestApi(testFixtures(project(":korma")))
 
