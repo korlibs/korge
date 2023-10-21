@@ -69,8 +69,8 @@ class RenderContext(
     @KorgeInternal
     var viewMat2D: Matrix = Matrix()
 
-    var flipRenderTexture = true
-    //var flipRenderTexture = false
+    //var flipRenderTexture = true
+    var flipRenderTexture = false
 
     val tempTexturePool: Pool<AGTexture> = Pool { AGTexture() }
 
@@ -83,6 +83,7 @@ class RenderContext(
 
     fun updateStandardUniforms() {
         //println("updateStandardUniforms: ag.currentSize(${ag.currentWidth}, ${ag.currentHeight}) : ${ag.currentFrameBuffer}")
+        //if (flipRenderTexture && currentFrameBuffer.isTexture) {
         if (flipRenderTexture && currentFrameBuffer.isTexture) {
             projMat = Matrix4.ortho(Rectangle.fromBounds(0, currentFrameBuffer.height, currentFrameBuffer.width, 0), -1f, 1f)
         } else {
@@ -215,6 +216,7 @@ class RenderContext(
     var currentFrameBuffer: AGFrameBuffer = ag.mainFrameBuffer
     val currentFrameBufferOrMain: AGFrameBuffer get() = currentFrameBuffer ?: mainFrameBuffer
     val isRenderingToWindow: Boolean get() = currentFrameBufferOrMain === mainFrameBuffer
+    //val isRenderingToWindow: Boolean get() = false
     val isRenderingToTexture: Boolean get() = !isRenderingToWindow
 
     // On macOS components, this will be the size of the component
@@ -484,7 +486,6 @@ class RenderContext(
     fun popFrameBuffer() {
         currentFrameBuffer = frameBufferStack.removeAt(frameBufferStack.size - 1)
     }
-
 
     val textureDrawer get() = ag.textureDrawer
     fun drawTexture(frameBuffer: AGFrameBuffer, tex: AGTexture, left: Float = -1f, top: Float = +1f, right: Float = +1f, bottom: Float = -1f) {

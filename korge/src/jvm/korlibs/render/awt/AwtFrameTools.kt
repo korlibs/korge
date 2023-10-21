@@ -507,3 +507,8 @@ fun Component.registerKeyEvents(gameWindow: GameWindow) {
         override fun keyReleased(e: JKeyEvent) = handleKeyEvent(e)
     })
 }
+
+fun JFrame.computeDimensionsForSize(width: Int, height: Int): Dimension {
+    val insets = this.insets
+    return Dimension(width + insets.left + insets.right, height + insets.top + insets.bottom)
+}

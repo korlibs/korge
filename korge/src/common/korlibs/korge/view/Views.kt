@@ -147,9 +147,7 @@ class Views(
      */
 	fun onClose(callback: suspend () -> Unit) {
 		closeables += object : AsyncCloseable {
-			override suspend fun close() {
-				callback()
-			}
+			override suspend fun close() = callback()
 		}
 	}
 
@@ -375,6 +373,8 @@ class Views(
         )
 
         //println("RESIZED: $virtualSize, $actualSize, $targetSize")
+
+        //println("bp.globalToWindowMatrix=${bp.globalToWindowMatrix}")
 
         renderContext.projectionMatrixTransform = bp.globalToWindowMatrix
         renderContext.projectionMatrixTransformInv = bp.windowToGlobalMatrix

@@ -95,6 +95,8 @@ open class AwtAGOpenglCanvas : JPanel(GridLayout(1, 1), false.also { System.setP
 
     var doRender: (AG) -> Unit = { ag -> }
 
+    val frameBuffer = AGFrameBuffer()
+
     val paintInContextDelegate: (Graphics, BaseOpenglContext.ContextInfo) -> Unit = { g, info ->
         state.keep {
         //run {
@@ -112,6 +114,7 @@ open class AwtAGOpenglCanvas : JPanel(GridLayout(1, 1), false.also { System.setP
                 val scaledWidth = (frameOrComponent.width * factor).toInt()
                 val scaledHeight = (frameOrComponent.height * factor).toInt()
                 val viewportScale = 1.0
+                //println("factor=$factor, viewportScale=$viewportScale, viewport=$viewport")
 
                 if (contextLost) {
                     contextLost = false
@@ -123,7 +126,6 @@ open class AwtAGOpenglCanvas : JPanel(GridLayout(1, 1), false.also { System.setP
                 if (viewport != null) {
                 //if (false) {
                     viewport!!
-                    val frameBuffer = AGFrameBuffer()
                     mainFrameBuffer.setSize(
                         (viewport.x * viewportScale).toInt(),
                         (viewport.y * viewportScale).toInt(),
@@ -132,7 +134,7 @@ open class AwtAGOpenglCanvas : JPanel(GridLayout(1, 1), false.also { System.setP
                         scaledWidth,
                         scaledHeight,
                     )
-                    frameBuffer.setSize(scaledWidth, scaledHeight)
+                    frameBuffer.setSize(viewport.width, viewport.height)
                     //frameBuffer.scissor = RectangleInt(0, 0, 50, 50)
 
                     //ag.clear(frameBuffer)
@@ -140,7 +142,7 @@ open class AwtAGOpenglCanvas : JPanel(GridLayout(1, 1), false.also { System.setP
                     ag.setMainFrameBufferTemporarily(frameBuffer) {
                         doRender(ag)
                     }
-                    ag.textureDrawer.draw(mainFrameBuffer, frameBuffer.tex)
+                    ag.textureDrawer.drawXY(mainFrameBuffer, frameBuffer.tex, viewport.x, viewport.y, viewport.width, viewport.height)
                 } else {
                     mainFrameBuffer.setSize(scaledWidth, scaledHeight)
                     doRender(ag)

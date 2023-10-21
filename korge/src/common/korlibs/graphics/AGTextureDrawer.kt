@@ -2,6 +2,7 @@ package korlibs.graphics
 
 import korlibs.datastructure.*
 import korlibs.graphics.shader.*
+import korlibs.math.*
 import korlibs.memory.*
 
 val AG.textureDrawer by Extra.PropertyThis {
@@ -37,6 +38,20 @@ class AGTextureDrawer(val ag: AG) {
         verticesDataF32[offset + 1] = py
         verticesDataF32[offset + 2] = tx
         verticesDataF32[offset + 3] = ty
+    }
+
+    private fun Float.convertToM1P1(): Float {
+        return this.convertRange(0f, 1f, -1f, +1f)
+    }
+
+    fun drawXY(frameBuffer: AGFrameBuffer, tex: AGTexture, x: Int, y: Int, width: Int, height: Int) {
+        val fwidth = frameBuffer.fullWidth.toFloat()
+        val fheight = frameBuffer.fullHeight.toFloat()
+        val left = x.toFloat() / fwidth
+        val top = y.toFloat() / fheight
+        val right = (x + width).toFloat() / fwidth
+        val bottom = (y + height).toFloat() / fheight
+        return draw(frameBuffer, tex, left.convertToM1P1(), top.convertToM1P1(), right.convertToM1P1(), bottom.convertToM1P1())
     }
 
     fun draw(frameBuffer: AGFrameBuffer, tex: AGTexture, left: Float = -1f, top: Float = +1f, right: Float = +1f, bottom: Float = -1f) {

@@ -135,7 +135,7 @@ class AwtGameWindow(
             defaultCloseOperation = WindowConstants.DISPOSE_ON_CLOSE
             contentPane.layout = GridLayout(1, 1)
             contentPane.add(canvas)
-            preferredSize = Dimension(640, 480)
+            preferredSize = computeDimensionsForSize(640, 480)
             //setBounds(0, 0, 640, 480)
             pack()
             setLocationRelativeTo(null)
@@ -150,6 +150,12 @@ class AwtGameWindow(
         }
     }
     override val window: Window get() = frame
+
+    override fun setSize(width: Int, height: Int): Unit {
+        frame.preferredSize = frame.computeDimensionsForSize(width, height)
+        frame.pack()
+        frame.setLocationRelativeTo(null)
+    }
 
     override fun setMainMenu(items: List<MenuItem>) {
         //Dispatchers.Unconfined.launchUnscoped {

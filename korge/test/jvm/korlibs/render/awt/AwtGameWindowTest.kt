@@ -11,6 +11,7 @@ import korlibs.korge.view.*
 import korlibs.logger.*
 import korlibs.render.*
 import korlibs.time.*
+import kotlinx.coroutines.*
 import kotlin.test.*
 
 class AwtGameWindowTest {
@@ -22,20 +23,23 @@ class AwtGameWindowTest {
 
         gameWindow.bgcolor = Colors.BLACK
 
+        gameWindow.icon = runBlocking { resourcesVfs["korge.png"].readBitmap() }
         gameWindow.configureKorge(KorgeConfig(backgroundColor = Colors.BLACK)) {
+            solidRect(width, height, Colors.SADDLEBROWN.withAd(0.2))
             println(measureTime {
                 image(resourcesVfs["korge.png"].readBitmap())
             })
-            solidRect(100, 100, Colors.RED).addUpdater {
+            solidRect(100, 100, Colors.RED) {
+                mouse {
+                    over { alpha = 0.5 }
+                    out { alpha = 1.0 }
+                }
+            }.addUpdater {
+                //println(views.globalToWindowMatrix)
                 this.x++
             }
             mouse.click {
                 println("CLICK!")
-                showContextMenu {
-                    item("Hello")
-                    item("World")
-                }
-
             }
             mouse.scroll {
                 println("SCROLL: $it")
@@ -45,15 +49,6 @@ class AwtGameWindowTest {
             }
             onEvent(DestroyEvent) {
                 println("DESTROY!")
-            }
-
-            setMainMenu {
-                item("Hello") {
-                    item("&Exit")
-                }
-                item("World") {
-                    item("Hello")
-                }
             }
 
             //mouse { moveAnywhere { println("MOUSE MOVE $it") } }
