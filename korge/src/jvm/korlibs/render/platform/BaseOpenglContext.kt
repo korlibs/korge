@@ -1,19 +1,18 @@
 package korlibs.render.platform
 
-import korlibs.memory.*
+import com.sun.jna.*
+import com.sun.jna.platform.unix.*
 import korlibs.graphics.*
-import korlibs.render.*
-import korlibs.render.osx.*
-import korlibs.render.win32.Win32OpenglContext
-import korlibs.render.x11.X
-import korlibs.render.x11.X11OpenglContext
+import korlibs.io.dynamic.*
 import korlibs.io.lang.*
 import korlibs.math.geom.*
-import com.sun.jna.Native
-import com.sun.jna.platform.unix.X11
-import korlibs.platform.*
+import korlibs.platform.Platform
+import korlibs.render.*
+import korlibs.render.osx.*
+import korlibs.render.win32.*
+import korlibs.render.x11.*
 import java.awt.*
-import java.lang.reflect.Method
+import java.lang.reflect.*
 
 interface BaseOpenglContext : Disposable {
     val isCore: Boolean get() = false
@@ -90,7 +89,7 @@ fun glContextFromComponent(c: Component, gwconfig: GameWindowConfig): BaseOpengl
                 val display = X.XOpenDisplay(null)
                 val screen = X.XDefaultScreen(display)
                 if (c is Frame) {
-                    val contentWindow = c.awtGetPeer().reflective().dynamicInvoke("getContentWindow") as Long
+                    val contentWindow = c.awtGetPeer().dyn.dynamicInvoke("getContentWindow").long
                     X11OpenglContext(gwconfig, display, X11.Drawable(contentWindow), screen, doubleBuffered = true)
                 } else {
                     val componentId = Native.getComponentID(c)

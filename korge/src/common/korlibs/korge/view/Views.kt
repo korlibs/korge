@@ -41,10 +41,10 @@ import kotlin.coroutines.*
 class Views(
     override val coroutineContext: CoroutineContext,
     val ag: AG,
-    val injector: Injector,
-    val input: Input,
-    val timeProvider: TimeProvider,
-    val stats: Stats,
+    val injector: Injector = Injector(),
+    val input: Input = Input(),
+    val timeProvider: TimeProvider = TimeProvider,
+    val stats: Stats = Stats(),
     val gameWindow: GameWindow,
     val gameId: String = "korgegame",
     val settingsFolder: String? = null,
@@ -61,6 +61,10 @@ class Views(
     InvalidateNotifier,
     DeviceDimensionsProvider by gameWindow
 {
+    constructor(gameWindow: GameWindow) : this(
+        gameWindow, gameWindow.ag, gameWindow = gameWindow
+    )
+
     var quality by gameWindow::quality
 
     override val views = this
@@ -276,26 +280,32 @@ class Views(
         return result
     }
 
-	fun render() {
-        ag.startFrame()
-		if (clearEachFrame) renderContext.clear(clearColor, stencil = 0, depth = 1f, clearColor = true, clearStencil = true, clearDepth = true)
+    fun renderNew(frameBuffer: AGFrameBuffer = ag.mainFrameBuffer) {
+        renderContext.currentFrameBuffer = frameBuffer
+
+        if (clearEachFrame) renderContext.clear(clearColor, stencil = 0, depth = 1f, clearColor = true, clearStencil = true, clearDepth = true)
         onBeforeRender(renderContext)
         renderContext.flush()
-		stage.render(renderContext)
+        stage.render(renderContext)
         renderContext.flush()
         stage.renderDebug(renderContext)
 
-		if (debugViews) {
+        if (debugViews) {
             //renderContext.setTemporalProjectionMatrixTransform(Matrix()) {
             run {
                 debugHandlers.fastForEach { debugHandler ->
                     this.debugHandler(renderContext)
                 }
             }
-		}
+        }
 
         onAfterRender(renderContext)
         renderContext.flush()
+    }
+
+	fun render() {
+        ag.startFrame()
+		renderNew()
     }
 
 	fun frameUpdateAndRender(

@@ -1,19 +1,20 @@
 package korlibs.io.lang
 
-import korlibs.datastructure.iterators.fastForEach
-import kotlinx.coroutines.CancellationException
+import korlibs.datastructure.closeable.Closeable
+import korlibs.datastructure.iterators.*
+import kotlinx.coroutines.*
 
 // @TODO: Merge [Closeable], [Disposable] and [Cancellable]
 
-interface Disposable {
-	fun dispose()
+fun interface Disposable : DisposableHandle {
+	override fun dispose()
 
     companion object {
-        operator fun invoke(callback: () -> Unit) = object : Disposable {
-            override fun dispose() = callback()
-        }
+        operator fun invoke(callback: () -> Unit) = Disposable { callback() }
     }
 }
+
+fun Closeable.toDisposable(): Disposable = Disposable { this.close() }
 
 typealias Closeable = korlibs.datastructure.closeable.Closeable
 

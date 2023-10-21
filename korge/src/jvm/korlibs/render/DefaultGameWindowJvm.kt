@@ -1,22 +1,17 @@
 package korlibs.render
 
 import SdlGameWindowJvm
-import korlibs.memory.*
-import korlibs.graphics.*
 import korlibs.event.*
-import korlibs.render.awt.AwtGameWindow
-import korlibs.render.osx.MacGameWindow
-import korlibs.render.osx.initializeMacOnce
-import korlibs.render.osx.isOSXMainThread
-import korlibs.render.x11.X11GameWindow
-import korlibs.image.color.RGBA
+import korlibs.graphics.*
+import korlibs.image.color.*
 import korlibs.platform.*
-import kotlinx.coroutines.runBlocking
+import korlibs.render.awt.*
+import korlibs.render.osx.*
+import korlibs.render.x11.*
+import kotlinx.coroutines.*
 
 actual fun CreateDefaultGameWindow(config: GameWindowCreationConfig): GameWindow {
-    if (Platform.isMac) {
-        initializeMacOnce()
-    }
+    //if (Platform.isMac) initializeMacOnce()
 
     val engine = korgwJvmEngine
         ?: System.getenv("KORGW_JVM_ENGINE")

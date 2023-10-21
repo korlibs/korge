@@ -6,17 +6,42 @@ import korlibs.io.lang.*
 import korlibs.io.net.*
 import korlibs.io.util.*
 
+/** Represents a class that have a reference to a [dialogInterface] */
 interface DialogInterfaceProvider {
     val dialogInterface: DialogInterface
 }
 
+/**
+ * Provides an interface with typical window dialogs and functionality.
+ *
+ * Providing:
+ * - [browse], [alert], [confirm], [prompt], [openFileDialog]
+ */
 interface DialogInterface : DialogInterfaceProvider {
     override val dialogInterface: DialogInterface get() = this
 
+    /**
+     * Opens a [url] using the default web browser
+     **/
     suspend fun browse(url: URL): Unit = unsupported()
+    /**
+     * Opens an alert dialog showing a [message] and an OK button
+     **/
     suspend fun alert(message: String): Unit = unsupported()
+    /**
+     * Opens a dialog with a [message] requesting the user to accept or cancel.
+     * It returns true if the user accepted. */
     suspend fun confirm(message: String): Boolean = unsupported()
+    /**
+     * Opens a dialog with a [message] and a [default] text asking the user
+     * to provide a text message and returns it as a [String]
+     **/
     suspend fun prompt(message: String, default: String = ""): String = unsupported()
+    /**
+     * Opens a file dialog for [write] or not, selecting [multi]ple files
+     * and in an optional [currentDir] allowing to select specific [filter] files,
+     * and returns a list (that may be empty) of files selected by the user
+     **/
     suspend fun openFileDialog(filter: FileFilter? = null, write: Boolean = false, multi: Boolean = false, currentDir: VfsFile? = null): List<VfsFile> =
         unsupported()
 

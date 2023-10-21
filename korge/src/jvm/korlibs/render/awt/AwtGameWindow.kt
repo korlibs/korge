@@ -1,154 +1,55 @@
 package korlibs.render.awt
 
-import korlibs.event.*
 import korlibs.image.awt.*
 import korlibs.image.bitmap.*
-import korlibs.io.dynamic.*
-import korlibs.io.file.std.*
 import korlibs.math.*
 import korlibs.math.geom.*
-import korlibs.platform.*
 import korlibs.render.*
 import korlibs.render.platform.*
 import java.awt.*
-import java.awt.datatransfer.*
-import java.awt.dnd.*
 import java.awt.event.*
-import java.awt.image.*
-import java.io.*
-import javax.imageio.*
 import javax.swing.*
 
-class AwtGameWindow(config: GameWindowCreationConfig) : BaseAwtGameWindow(AGOpenglAWT(config)) {
-
-    /*
-    fun JFrame.isFullScreen(): Boolean {
-        try {
-            awtGetPeer()
-        } catch (e: Throwable) {
-            e.printStackTrace()
-            return false
-        }
-    }
-    */
-
+class AwtGameWindow(config: GameWindowCreationConfig = GameWindowCreationConfig.DEFAULT) : BaseAwtGameWindow(AGOpenglAWT(config)) {
     override var ctx: BaseOpenglContext? = null
-    //val frame = Window(Frame("Korgw"))
-    val classLoader = this.javaClass.classLoader
 
     override fun ensureContext() {
-        if (ctx == null) {
-            if (Platform.isMac) {
-                try {
-                    //ctx = ProxiedMacAWTOpenglContext(frame)
-                    ctx = glContextFromComponent(frame, this)
-
-                } catch (e: Throwable) {
-                    e.printStackTrace()
-                    ctx = glContextFromComponent(frame, this)
-                }
-            } else {
-                ctx = glContextFromComponent(frame, this)
-            }
-        }
+        if (ctx == null) ctx = glContextFromComponent(frame, this)
     }
-
-    //private var currentInFullScreen = false
 
     val frame: JFrame = object : JFrame("Korgw") {
         val frame = this
-        //val frame = object : Frame("Korgw") {
+
         init {
             isVisible = false
             ignoreRepaint = true
             //background = Color.black
             setBounds(0, 0, 640, 480)
-            val frame = this
             frame.setLocationRelativeTo(null)
-            frame.dropTarget = object : DropTarget() {
-                init {
-                    this.addDropTargetListener(object : DropTargetAdapter() {
-                        override fun drop(dtde: DropTargetDropEvent) {
-                            //println("drop")
-                            dtde.acceptDrop(DnDConstants.ACTION_COPY)
-                            dispatchDropfileEvent(DropFileEvent.Type.DROP, (dtde.transferable.getTransferData(DataFlavor.javaFileListFlavor) as List<File>).map { it.toVfs() })
-                            dispatchDropfileEvent(DropFileEvent.Type.END, null)
-                        }
-                    })
+            frame.setKorgeDropTarget(this@AwtGameWindow)
+            frame.setIconIncludingTaskbarFromResource("@appicon.png")
+            this.initTools()
+
+            addWindowListener(object : WindowAdapter() {
+                override fun windowClosing(e: WindowEvent?) {
+                    debugFrame.isVisible = false
+                    debugFrame.dispose()
+                    running = false
+                }
+            })
+            addComponentListener(object : ComponentAdapter() {
+                override fun componentMoved(e: ComponentEvent?) {
+                    synchronizeDebugFrameCoordinates()
                 }
 
-                override fun dragEnter(dtde: DropTargetDragEvent) {
-                    dtde.acceptDrag(DnDConstants.ACTION_COPY)
-                    //dispatchDropfileEvent(DropFileEvent.Type.ENTER, null)
-                    dispatchDropfileEvent(DropFileEvent.Type.START, null)
-                    //println("dragEnter")
-                    super.dragEnter(dtde)
+                override fun componentResized(e: ComponentEvent?) {
+                    synchronizeDebugFrameCoordinates()
                 }
-
-                override fun dragOver(dtde: DropTargetDragEvent) {
-                    dtde.acceptDrag(DnDConstants.ACTION_COPY)
-                    super.dragOver(dtde)
-                }
-
-                override fun dragExit(dte: DropTargetEvent) {
-                    //dispatchDropfileEvent(DropFileEvent.Type.EXIT, null)
-                    dispatchDropfileEvent(DropFileEvent.Type.END, null)
-                    super.dragExit(dte)
-                }
-            }
-
-            runCatching {
-                val awtImageURL = AwtGameWindow::class.java.getResource("/@appicon.png")
-                    ?: AwtGameWindow::class.java.getResource("@appicon.png")
-                    ?: ClassLoader.getSystemResource("@appicon.png")
-                setIconIncludingTaskbarFromImage(awtImageURL?.let { ImageIO.read(it) })
-            }
-
-            //val dim = getDefaultToolkit().screenSize
-            //frame.setLocation(dim.width / 2 - frame.size.width / 2, dim.height / 2 - frame.size.height / 2)
-
-            if (Platform.isMac) {
-                //rootPane.putClientProperty("apple.awt.fullscreenable", true)
-
-                /*
-                val listener = Proxy.newProxyInstance(classLoader, arrayOf(Class.forName("com.apple.eawt.FullScreenListener"))) { proxy, method, args ->
-                    //println("INVOKED: $proxy, $method")
-                    when (method.name) {
-                        "windowEnteredFullScreen" -> {
-                            currentInFullScreen = true
-                        }
-                        "windowExitedFullScreen" -> {
-                            currentInFullScreen = false
-                        }
-                    }
-                    null
-                }
-                */
-                try {
-                    Dyn.global["com.apple.eawt.FullScreenUtilities"].dynamicInvoke("setWindowCanFullScreen", frame, true)
-                    //Dyn.global["com.apple.eawt.FullScreenUtilities"].invoke("addFullScreenListenerTo", frame, listener)
-                } catch (e: Throwable) {
-                    if (e::class.qualifiedName != "java.lang.reflect.InaccessibleObjectException") {
-                        e.printStackTrace()
-                    }
-                }
-
-                // @TODO: This one owns the whole screen in a bad way
-                //val env = GraphicsEnvironment.getLocalGraphicsEnvironment()
-                //val device = env.defaultScreenDevice
-                //device.fullScreenWindow = this
-            }
+            })
         }
 
-        override fun paintComponents(g: Graphics?) {
+        override fun paintComponents(g: Graphics?) = Unit
 
-        }
-
-
-        // https://stackoverflow.com/questions/52108178/swing-animation-still-stutter-when-i-use-toolkit-getdefaulttoolkit-sync
-        // https://www.oracle.com/java/technologies/painting.html
-        // https://docs.oracle.com/javase/tutorial/extra/fullscreen/rendering.html
-        // https://docs.oracle.com/javase/tutorial/extra/fullscreen/doublebuf.html
         override fun paint(g: Graphics) {
             try {
                 framePaint(g)
@@ -158,20 +59,14 @@ class AwtGameWindow(config: GameWindowCreationConfig) : BaseAwtGameWindow(AGOpen
         }
     }
 
-    override var alwaysOnTop: Boolean = false
-        set(value) {
-            field = value
-            frame.isAlwaysOnTop = value
-        }
-
-    override var title: String
-        get() = frame.title
-        set(value) { frame.title = value }
+    override var alwaysOnTop: Boolean by frame::_isAlwaysOnTop
+    override var title: String by frame::title
     override var icon: Bitmap? = null
         set(value) {
             field = value
             frame.setIconIncludingTaskbarFromImage(value?.toAwt())
         }
+    override var fullscreen: Boolean by frame::isFullScreen
 
     val debugFrame = JFrame("Debug").apply {
         try {
@@ -179,11 +74,19 @@ class AwtGameWindow(config: GameWindowCreationConfig) : BaseAwtGameWindow(AGOpen
             this.setSize(280, 256)
             this.type = Window.Type.UTILITY
             this.isAlwaysOnTop = true
-            //this.isUndecorated = true
-            //this.opacity = 0.5f
-            //focusableWindowState = false
         } catch (e: Throwable) {
             e.printStackTrace()
+        }
+        val debugFrame = this
+        this@AwtGameWindow.onDebugChanged.add {
+            EventQueue.invokeLater {
+                debugFrame.isVisible = it
+                synchronizeDebugFrameCoordinates()
+                if (debugFrame.isVisible) {
+                    //frame.isVisible = false
+                    frame.isVisible = true
+                }
+            }
         }
     }
 
@@ -197,103 +100,18 @@ class AwtGameWindow(config: GameWindowCreationConfig) : BaseAwtGameWindow(AGOpen
         debugFrame.setSize(debugFrame.width.coerceAtLeast(64), frameBounds.height)
     }
 
-    init {
-        onDebugChanged.add {
-            EventQueue.invokeLater {
-                debugFrame.isVisible = it
-                synchronizeDebugFrameCoordinates()
-                if (debugFrame.isVisible) {
-                    //frame.isVisible = false
-                    frame.isVisible = true
-                }
-            }
-        }
-    }
-
-    override var fullscreen: Boolean
-        get() = when {
-            Platform.isMac -> frame.rootPane.bounds == frame.bounds
-            else -> GraphicsEnvironment.getLocalGraphicsEnvironment().defaultScreenDevice.fullScreenWindow == frame
-        }
-        set(value) {
-            //println("fullscreen: $fullscreen -> $value")
-            if (fullscreen != value) {
-                when {
-                    Platform.isMac -> {
-                        //println("TOGGLING!")
-                        if (fullscreen != value) {
-                            queue {
-                                try {
-                                    //println("INVOKE!: ${getClass("com.apple.eawt.Application").invoke("getApplication")}")
-                                    Dyn.global["com.apple.eawt.Application"]
-                                        .dynamicInvoke("getApplication")
-                                        .dynamicInvoke("requestToggleFullScreen", frame)
-                                } catch (e: Throwable) {
-                                    if (e::class.qualifiedName != "java.lang.reflect.InaccessibleObjectException") {
-                                        e.printStackTrace()
-                                    }
-                                    GraphicsEnvironment.getLocalGraphicsEnvironment().defaultScreenDevice.fullScreenWindow = if (value) frame else null
-                                    frame.isVisible = true
-                                }
-                            }
-                        }
-                    }
-                    else -> {
-                        GraphicsEnvironment.getLocalGraphicsEnvironment().defaultScreenDevice.fullScreenWindow = if (value) frame else null
-
-                        //frame.extendedState = if (value) JFrame.MAXIMIZED_BOTH else JFrame.NORMAL
-                        //frame.isUndecorated = value
-                        frame.isVisible = true
-                        //frame.isAlwaysOnTop = true
-                    }
-                }
-            }
-        }
-
     override fun setSize(width: Int, height: Int) {
         contentComponent.setSize(width, height)
         contentComponent.preferredSize = Dimension(width, height)
         frame.pack()
         val component = this.component
-        //val dim = Toolkit.getDefaultToolkit().screenSize
-        //component.setLocation(dim.width / 2 - component.size.width / 2, dim.height / 2 - component.size.height / 2)
-        if (component is Window) {
-            component.setLocationRelativeTo(null)
-        }
-        //component.setlo
+        if (component is Window) component.setLocationRelativeTo(null)
     }
 
     override val component: Component get() = frame
     override val contentComponent: Component get() = frame.contentPane
 
-    override fun loopInitialization() {
-        frame.addWindowListener(object : WindowAdapter() {
-            override fun windowClosing(e: WindowEvent?) {
-                debugFrame.isVisible = false
-                debugFrame.dispose()
-                running = false
-            }
-        })
-        frame.addComponentListener(object : ComponentAdapter() {
-            override fun componentMoved(e: ComponentEvent?) {
-                synchronizeDebugFrameCoordinates()
-            }
-
-            override fun componentResized(e: ComponentEvent?) {
-                synchronizeDebugFrameCoordinates()
-            }
-        })
-    }
-
     override fun frameDispose() {
         frame.dispose()
-    }
-}
-
-fun JFrame.setIconIncludingTaskbarFromImage(awtImage: BufferedImage?) {
-    val frame = this
-    runCatching {
-        frame.iconImage = awtImage?.getScaledInstance(32, 32, Image.SCALE_SMOOTH)
-        Dyn.global["java.awt.Taskbar"].dynamicInvoke("getTaskbar").dynamicInvoke("setIconImage", awtImage)
     }
 }
