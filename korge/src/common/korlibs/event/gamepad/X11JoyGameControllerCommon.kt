@@ -1,18 +1,17 @@
-package korlibs.render.x11
+package korlibs.event.gamepad
 
 import korlibs.datastructure.*
 import korlibs.datastructure.iterators.*
-import korlibs.time.*
-import korlibs.memory.*
 import korlibs.event.*
 import korlibs.io.concurrent.*
 import korlibs.io.concurrent.atomic.*
-import korlibs.io.concurrent.atomic.KorAtomicInt
 import korlibs.io.file.*
 import korlibs.io.file.sync.*
 import korlibs.io.lang.*
 import korlibs.math.*
+import korlibs.memory.*
 import korlibs.platform.*
+import korlibs.time.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
 

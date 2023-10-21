@@ -668,15 +668,6 @@ open class NSClass(id: Long) : NSObject(id) {
     override fun toString(): String = "NSClass[$id]($name)"
 }
 
-fun <T> nsAutoreleasePool(block: () -> T): T {
-    val pool = NSClass("NSAutoreleasePool").alloc().msgSend("init")
-    try {
-        return block()
-    } finally {
-        pool.msgSend("release")
-    }
-}
-
 open class ObjcProtocol(val name: String) : NSObject(ObjectiveC.objc_getProtocol(name)) {
     val OBJ_PROTOCOL = id
 }
@@ -1012,10 +1003,10 @@ inline class NSMenu(val id: Long) {
     }
 }
 
-inline fun autoreleasePool(body: () -> Unit) {
+inline fun <T> autoreleasePool(body: () -> T): T {
     val autoreleasePool = if (Platform.isMac()) NSClass("NSAutoreleasePool").alloc().msgSend("init") else null
     try {
-        body()
+        return body()
     } finally {
         autoreleasePool?.msgSend("drain")
     }

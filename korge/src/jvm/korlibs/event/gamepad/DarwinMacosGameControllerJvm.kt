@@ -1,4 +1,4 @@
-package korlibs.render.osx
+package korlibs.event.gamepad
 
 import com.sun.jna.*
 import korlibs.datastructure.iterators.*
@@ -10,10 +10,7 @@ import korlibs.number.*
 import korlibs.render.*
 import kotlin.reflect.*
 
-//fun main() {
-//}
-
-interface FrameworkInt : Library
+internal interface FrameworkInt : Library
 
 @PublishedApi
 internal inline fun <T> getValueOrNull(obj: ObjcRef, property: KProperty<*>, gen: (Long) -> T): T? =
@@ -23,7 +20,7 @@ internal inline fun <T> getValueOrNull(obj: ObjcRef, property: KProperty<*>, gen
 internal inline fun <T> getValue(obj: ObjcRef, property: KProperty<*>, gen: (Long) -> T): T =
     obj.id.msgSend(property.name).let { gen(it) }
 
-inline class GCControllerButtonInput(val id: Long) {
+internal inline class GCControllerButtonInput(val id: Long) {
     val analog: Boolean get() = id.msgSendInt(sel_isAnalog) != 0
     val touched: Boolean get() = id.msgSendInt(sel_isTouched) != 0
     val pressed: Boolean get() = id.msgSendInt(sel_isPressed) != 0
@@ -55,7 +52,7 @@ class GCControllerAxisInput(id: Long) : ObjcRef(id) {
     override fun toString(): String = value.niceStr(2)
 }
 
-class GCControllerDirectionPad(id: Long) : ObjcRef(id) {
+internal class GCControllerDirectionPad(id: Long) : ObjcRef(id) {
     @Keep val right by GCControllerButtonInput
     @Keep val left by GCControllerButtonInput
     @Keep val up by GCControllerButtonInput
@@ -78,7 +75,7 @@ class GCControllerDirectionPad(id: Long) : ObjcRef(id) {
     override fun toString(): String = "DPad(${up.nice}, ${right.nice}, ${down.nice}, ${left.nice})"
 }
 
-open class GCMicroGamepad(id: Long) : ObjcRef(id) {
+internal open class GCMicroGamepad(id: Long) : ObjcRef(id) {
     @Keep val buttonA by GCControllerButtonInput
     @Keep val buttonX by GCControllerButtonInput
     @Keep val dpad by GCControllerDirectionPad
@@ -90,7 +87,7 @@ open class GCMicroGamepad(id: Long) : ObjcRef(id) {
     }
 }
 
-open class GCGamepad(id: Long) : GCMicroGamepad(id) {
+internal open class GCGamepad(id: Long) : GCMicroGamepad(id) {
     @Keep val leftShoulder by GCControllerButtonInput
     @Keep val rightShoulder by GCControllerButtonInput
     @Keep val buttonB by GCControllerButtonInput
@@ -102,7 +99,7 @@ open class GCGamepad(id: Long) : GCMicroGamepad(id) {
     }
 }
 
-class GCExtendedGamepad(id: Long) : GCGamepad(id) {
+internal class GCExtendedGamepad(id: Long) : GCGamepad(id) {
     @Keep val leftTrigger by GCControllerButtonInput
     @Keep val rightTrigger by GCControllerButtonInput
     @Keep val buttonOptions by GCControllerButtonInput
@@ -150,7 +147,7 @@ class GCDeviceBattery(id: Long) : ObjcRef(id) {
 /**
  * https://developer.apple.com/documentation/gamecontroller/gccontroller?language=objc
  */
-class GCController(id: Long) : ObjcRef(id) {
+internal class GCController(id: Long) : ObjcRef(id) {
     val isAttachedToDevice: Boolean get() = id.msgSendInt("isAttachedToDevice") != 0
     val playerIndex: Int get() = id.msgSendInt("playerIndex")
     //val physicalInputProfile: GCPhysicalInputProfile by GCPhysicalInputProfile

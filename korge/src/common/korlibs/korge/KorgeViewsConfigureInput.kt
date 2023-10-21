@@ -10,7 +10,6 @@ import korlibs.korge.internal.*
 import korlibs.korge.view.*
 import korlibs.math.geom.*
 import korlibs.time.*
-import kotlinx.coroutines.*
 
 @KorgeInternal
 internal fun Views.prepareViewsBase(
@@ -20,7 +19,7 @@ internal fun Views.prepareViewsBase(
     fixedSizeStep: TimeSpan = TimeSpan.NIL,
     forceRenderEveryFrame: Boolean = true,
     configInjector: Injector.() -> Unit = {},
-): CompletableDeferred<Unit> {
+) {
     val views = this
 
     configInjector(views.injector)
@@ -231,50 +230,16 @@ internal fun Views.prepareViewsBase(
 
     eventDispatcher.onEvent(ReloadEvent) { views.dispatch(it) }
 
-    var renderShown = false
     views.clearEachFrame = clearEachFrame
     views.clearColor = bgcolor
-    val firstRenderDeferred = CompletableDeferred<Unit>()
 
-    fun renderBlock(event: RenderEvent) {
-        //println("renderBlock: $event")
-        try {
-            views.frameUpdateAndRender(
-                fixedSizeStep = fixedSizeStep,
-                forceRender = views.forceRenderEveryFrame,
-                doUpdate = event.update,
-                doRender = event.render,
-            )
-
-            views.input.mouseOutside = false
-            if (moveMouseOutsideInNextFrame) {
-                moveMouseOutsideInNextFrame = false
-                views.input.mouseOutside = true
-                views.input.mouseInside = false
-                views.mouseUpdated()
-            }
-        } catch (e: Throwable) {
-            Korge.logger.error { "views.gameWindow.onRenderEvent:" }
-            e.printStackTrace()
-            if (views.rethrowRenderError) throw e
+    views.onAfterRender.add {
+        views.input.mouseOutside = false
+        if (moveMouseOutsideInNextFrame) {
+            moveMouseOutsideInNextFrame = false
+            views.input.mouseOutside = true
+            views.input.mouseInside = false
+            views.mouseUpdated()
         }
     }
-
-    views.gameWindow.onRenderEvent { event ->
-        //println("RenderEvent: $event")
-        if (!event.render) {
-            renderBlock(event)
-        } else {
-            views.renderContext.doRender {
-                if (!renderShown) {
-                    //println("!!!!!!!!!!!!! views.gameWindow.addEventListener<RenderEvent>")
-                    renderShown = true
-                    firstRenderDeferred.complete(Unit)
-                }
-                renderBlock(event)
-            }
-        }
-    }
-
-    return firstRenderDeferred
 }

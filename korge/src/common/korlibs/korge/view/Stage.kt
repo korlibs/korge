@@ -21,6 +21,8 @@ open class Stage internal constructor(override val views: Views) : FixedSizeCont
     , ResourcesContainer
     , BoundsProvider by views.bp
     , InvalidateNotifier
+    , DialogInterfaceProvider by views
+    , MenuInterfaceProvider by views
 {
     override var clip: Boolean by views::clipBorders
 

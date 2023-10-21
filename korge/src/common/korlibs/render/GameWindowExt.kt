@@ -216,6 +216,7 @@ data class GameWindowCreationConfig(
     val logGl: Boolean = false,
     val cacheGl: Boolean = false,
     val fullscreen: Boolean? = null,
+    val title: String = "App",
 ) {
     companion object {
         val DEFAULT = GameWindowCreationConfig()
@@ -299,30 +300,6 @@ fun GameWindow.onDragAndDropFileEvent(block: suspend (DropFileEvent) -> Unit) {
 }
 
 enum class HapticFeedbackKind { GENERIC, ALIGNMENT, LEVEL_CHANGE }
-
-data class GameWindowMenuItem(val text: String?, val enabled: Boolean = true, val children: List<GameWindowMenuItem>? = null, val action: () -> Unit = {}) {
-    companion object {
-        val SEPARATOR = GameWindowMenuItem(null)
-    }
-}
-
-class GameWindowMenuItemBuilder(private var text: String? = null, private var enabled: Boolean = true, private var action: () -> Unit = {}) {
-    @PublishedApi internal val children = arrayListOf<GameWindowMenuItem>()
-
-    inline fun separator() {
-        item(null)
-    }
-
-    inline fun item(text: String?, enabled: Boolean = true, noinline action: () -> Unit = {}, block: GameWindowMenuItemBuilder.() -> Unit = {}): GameWindowMenuItem {
-        val mib = GameWindowMenuItemBuilder(text, enabled, action)
-        block(mib)
-        val item = mib.toItem()
-        children.add(item)
-        return item
-    }
-
-    fun toItem() = GameWindowMenuItem(text, enabled, children.ifEmpty { null }, action)
-}
 
 sealed interface ICursor
 

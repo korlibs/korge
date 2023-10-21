@@ -4,8 +4,7 @@ import com.sun.jna.*
 import korlibs.memory.dyn.*
 import korlibs.render.platform.*
 
-//open class MacKmlGL : NativeKgl(MacGL)
-open class MacKmlGL : NativeKgl(DirectGL)
+open class MacKmlGl : NativeKgl(DirectGL)
 
 interface MacGL : INativeGL, Library {
     companion object : MacGL by NativeLoad(nativeOpenGLLibraryPath) {

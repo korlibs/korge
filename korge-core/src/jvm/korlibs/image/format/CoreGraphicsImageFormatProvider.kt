@@ -93,7 +93,7 @@ open class CoreGraphicsImageFormatProvider : AwtNativeImageFormatProvider() {
         }
     }
 
-    override suspend fun decodeHeaderInternal(data: ByteArray): ImageInfo = nsAutoreleasePool {
+    override suspend fun decodeHeaderInternal(data: ByteArray): ImageInfo = autoreleasePool {
         val cfdata = CoreFoundation.CFDataCreate(null, data, data.size)
         val imgSource = ImageIO.CGImageSourceCreateWithData(data = cfdata, options = null)
         val props = ImageIO.CGImageSourceCopyPropertiesAtIndex(imgSource, 0, null)
@@ -167,7 +167,7 @@ open class CoreGraphicsImageFormatProvider : AwtNativeImageFormatProvider() {
             return super.decodeInternal(data, props)
         }
 
-        return nsAutoreleasePool {
+        return autoreleasePool {
             //val p = Stopwatch()
             //println(p.getElapsedAndRestart())
 

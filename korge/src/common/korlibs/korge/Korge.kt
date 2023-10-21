@@ -1,7 +1,6 @@
 package korlibs.korge
 
 import korlibs.annotations.*
-import korlibs.graphics.log.*
 import korlibs.image.color.*
 import korlibs.image.format.*
 import korlibs.inject.*
@@ -142,7 +141,8 @@ data class Korge(
             configureLoggerFromProperties(localCurrentDirVfs["klogger.properties"])
         }
         val config = this
-        val gameWindow = (config.gameWindow ?: coroutineContext[GameWindow] ?: CreateDefaultGameWindow(GameWindowCreationConfig(multithreaded = config.multithreaded, fullscreen = config.fullscreen)))
+        val creationConfig = GameWindowCreationConfig(multithreaded = config.multithreaded, fullscreen = config.fullscreen, title = config.title)
+        val gameWindow = (config.gameWindow ?: coroutineContext[GameWindow] ?: CreateDefaultGameWindow(creationConfig))
         gameWindow.configureKorge(config) {
             entry()
         }
@@ -171,7 +171,8 @@ fun GameWindow.configureKorge(config: KorgeConfig = KorgeConfig(), block: suspen
     val views = Views(
         gameWindow = gameWindow,
         coroutineContext = gameWindow.coroutineDispatcher,
-        ag = if (config.debugAg) AGPrint() else gameWindow.ag,
+        //ag = if (config.debugAg) AGPrint() else gameWindow.ag,
+        ag = gameWindow.ag,
         injector = config.injector,
         gameId = config.gameId,
         timeProvider = config.timeProvider,
@@ -183,6 +184,7 @@ fun GameWindow.configureKorge(config: KorgeConfig = KorgeConfig(), block: suspen
             Dyn.global["views"] = it
         }
     }
+    gameWindow.coroutineContext += InjectorContext(config.injector)
     Korge.logger.logTime("configureGameWindow") {
         gameWindow.configure(windowSize, config.title, null, config.fullscreen, config.backgroundColor ?: Colors.BLACK)
     }
@@ -227,11 +229,15 @@ fun GameWindow.configureKorge(config: KorgeConfig = KorgeConfig(), block: suspen
     gameWindow.onRenderEvent {
         if (initialized) {
             //println("RENDER")
+            //println("gameWindow.size=${gameWindow.frameSize}")
             views.renderNew()
         }
     }
+
     gameWindow.queueSuspend {
         Korge.logger.info { "Initializing..." }
+        runCatching { views.init() }.exceptionOrNull()?.let { it.stackTraceToString() }
+
         // Initialize
         try {
             Korge.logger.logTime("setIcon") {
@@ -251,7 +257,7 @@ fun GameWindow.configureKorge(config: KorgeConfig = KorgeConfig(), block: suspen
             Korge.logger.logTime("prepareViews") {
                 KorgeReload.registerEventDispatcher(gameWindow)
                 @Suppress("OPT_IN_USAGE")
-                views.prepareViewsBase(gameWindow, true, gameWindow.bgcolor, TimeSpan.NIL, config.forceRenderEveryFrame, config.configInjector).await()
+                views.prepareViewsBase(gameWindow, true, gameWindow.bgcolor, TimeSpan.NIL, config.forceRenderEveryFrame, config.configInjector)
             }
 
             Korge.logger.logTime("completeViews") {
@@ -269,4 +275,5 @@ fun GameWindow.configureKorge(config: KorgeConfig = KorgeConfig(), block: suspen
             views.stage.sceneContainer().changeTo(config.mainSceneClass)
         }
     }
+
 }

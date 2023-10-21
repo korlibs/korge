@@ -21,11 +21,33 @@ import javax.swing.*
 // https://www.oracle.com/java/technologies/painting.html
 // https://docs.oracle.com/javase/tutorial/extra/fullscreen/rendering.html
 // https://docs.oracle.com/javase/tutorial/extra/fullscreen/doublebuf.html
-open class AwtAGOpenglCanvas : Canvas(), BoundsProvider by BoundsProvider.Base(), Extra by Extra.Mixin() {
-    init {
-        System.setProperty("sun.java2d.opengl", "true")
-    }
-
+//open class AwtAGOpenglCanvas : Canvas(), BoundsProvider by BoundsProvider.Base(), Extra by Extra.Mixin() {
+open class AwtAGOpenglCanvas : JPanel(GridLayout(1, 1), false.also { System.setProperty("sun.java2d.opengl", "true") }), BoundsProvider by BoundsProvider.Base(), Extra by Extra.Mixin() {
+    val canvas = object : Canvas() {
+        override fun paint(g: Graphics) {
+            counter.add()
+            //super.paint(g)
+            if (ctx == null) {
+                contextLost()
+                ctx = glContextFromComponent(this, GameWindowConfig.Impl())
+                if (ctx!!.supportsSwapInterval()) {
+                    ctx?.swapInterval(1)
+                }
+            }
+            //g.fillRect(0, 0, 100, 100)
+            val ctx = this@AwtAGOpenglCanvas.ctx
+            if (ctx != null) {
+                if (autoRepaint && ctx.supportsSwapInterval()) {
+                    SwingUtilities.invokeLater { requestFrame() }
+                }
+                if (isUsingMetalPipeline) {
+                    println("!!! ERROR: Using Metal pipeline ${this::class} won't work")
+                }
+                //println("CTX: $ctx")
+                ctx.useContext(g, ag, paintInContextDelegate)
+            }
+        }
+    }.also { layout = GridLayout(1, 1) }.also { add(it) }
     //override val ag: AGOpengl = AGOpenglAWT(checkGl = true, logGl = true)
     val ag: AG = AGOpenglAWT()
 
@@ -42,40 +64,17 @@ open class AwtAGOpenglCanvas : Canvas(), BoundsProvider by BoundsProvider.Base()
         contextLost = true
     }
 
-    override fun paint(g: Graphics) {
-        counter.add()
-        //super.paint(g)
-        if (ctx == null) {
-            contextLost()
-            ctx = glContextFromComponent(this, GameWindowConfig.Impl())
-            if (ctx!!.supportsSwapInterval()) {
-                ctx?.swapInterval(1)
-            }
-        }
-        //g.fillRect(0, 0, 100, 100)
-        val ctx = this.ctx
-        if (ctx != null) {
-            if (autoRepaint && ctx.supportsSwapInterval()) {
-                SwingUtilities.invokeLater { requestFrame() }
-            }
-            if (isUsingMetalPipeline) {
-                println("!!! ERROR: Using Metal pipeline ${this::class} won't work")
-            }
-            //println("CTX: $ctx")
-            ctx.useContext(g, ag, paintInContextDelegate)
-        }
-    }
-
-    fun requestFrame() {
-        repaint()
-    }
-
     private val dl = if (!Platform.isMac) null else OSXDisplayLink {
         if (autoRepaint && ctx?.supportsSwapInterval() != true) {
             requestFrame()
             //SwingUtilities.invokeLater { repaint() }
         }
         //println("FRAME!")
+    }
+
+    fun requestFrame() {
+        canvas.repaint()
+        //repaint()
     }
 
     init {

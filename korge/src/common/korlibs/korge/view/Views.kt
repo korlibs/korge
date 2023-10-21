@@ -55,6 +55,7 @@ class Views(
     CoroutineScope, ViewsContainer,
 	BoundsProvider by bp,
     DialogInterfaceProvider by gameWindow,
+    MenuInterfaceProvider by gameWindow,
     Closeable,
     ResourcesContainer,
     InvalidateNotifier,

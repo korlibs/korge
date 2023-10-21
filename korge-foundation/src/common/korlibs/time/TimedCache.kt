@@ -1,12 +1,8 @@
-package korlibs.render.internal
+package korlibs.time
 
-import korlibs.time.DateTime
-import korlibs.time.TimeSpan
-import kotlin.reflect.KProperty
+import kotlin.reflect.*
 
-// @TODO: Move to Klock?
-
-internal class TimedCache<T : Any>(val ttl: TimeSpan, val gen: () -> T) {
+class TimedCache<T : Any>(val ttl: TimeSpan, val gen: () -> T) {
     var last = DateTime.EPOCH
     lateinit var value: T
 
@@ -22,7 +18,7 @@ internal class TimedCache<T : Any>(val ttl: TimeSpan, val gen: () -> T) {
     operator fun getValue(obj: Any?, property: KProperty<*>): T = get()
 }
 
-internal class IntTimedCache(val ttl: TimeSpan, val gen: () -> Int) {
+class IntTimedCache(val ttl: TimeSpan, val gen: () -> Int) {
     var last = DateTime.EPOCH
     var value: Int = 0
 

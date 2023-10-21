@@ -241,7 +241,7 @@ open class Win32KmlGlContext(window: Any? = null, parent: KmlGlContext? = null) 
 }
 
 // http://renderingpipeline.com/2012/05/windowless-opengl/
-open class X11KmlGlContext(window: Any? = null, parent: KmlGlContext? = null) : KmlGlContext(window, MacKmlGL(), parent) {
+open class X11KmlGlContext(window: Any? = null, parent: KmlGlContext? = null) : KmlGlContext(window, MacKmlGl(), parent) {
     init {
         val display = X.XOpenDisplay(null)
         //X.glXChooseFBConfig()
@@ -264,7 +264,7 @@ open class X11KmlGlContext(window: Any? = null, parent: KmlGlContext? = null) : 
 }
 
 // https://forums.developer.nvidia.com/t/egl-without-x11/58733
-open class EGLKmlGlContext(window: Any? = null, parent: KmlGlContext? = null) : KmlGlContext(window, MacKmlGL(), parent) {
+open class EGLKmlGlContext(window: Any? = null, parent: KmlGlContext? = null) : KmlGlContext(window, MacKmlGl(), parent) {
     val display: Pointer? = run {
         EGL.eglGetDisplay(0).also {
             if (it == null) error("Can't get EGL main display. Try setting env DISPLAY=:0 ?")
@@ -371,7 +371,7 @@ private interface CoreGraphics : Library {
     companion object : CoreGraphics by NativeLoad("/System/Library/Frameworks/CoreGraphics.framework/Versions/A/CoreGraphics")
 }
 
-open class MacKmlGlContextManaged(window: Any? = null, parent: KmlGlContext? = null) : KmlGlContext(window, MacKmlGL(), parent) {
+open class MacKmlGlContextManaged(window: Any? = null, parent: KmlGlContext? = null) : KmlGlContext(window, MacKmlGl(), parent) {
     val glCtx: MacosGLContext = MacosGLContext(sharedContext = (parent as MacKmlGlContextManaged?)?.glCtx?.openGLContext ?: 0L)
 
     override fun set() = glCtx.makeCurrent()
@@ -387,7 +387,7 @@ open class MacKmlGlContextManaged(window: Any? = null, parent: KmlGlContext? = n
 
 
 // http://renderingpipeline.com/2012/05/windowless-opengl-on-macos-x/
-open class MacKmlGlContextRaw(window: Any? = null, parent: KmlGlContext? = null) : KmlGlContext(window, MacKmlGL(), parent) {
+open class MacKmlGlContextRaw(window: Any? = null, parent: KmlGlContext? = null) : KmlGlContext(window, MacKmlGl(), parent) {
     var ctx: com.sun.jna.Pointer? = run {
         val ctx = Memory(8L).also { it.clear() } // void**
         checkError("CGLCreateContext", MacGL.CGLCreateContext(pix, (parent as? MacKmlGlContextRaw)?.ctx, ctx))

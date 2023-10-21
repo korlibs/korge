@@ -133,7 +133,7 @@ class AGMetalTest {
 
     private fun macTestWithAutoreleasePool(block: () -> Unit) {
         if (!Platform.isMac) return
-        nsAutoreleasePool {
+        autoreleasePool {
         //run {
             block()
         }

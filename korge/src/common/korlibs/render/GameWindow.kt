@@ -13,7 +13,6 @@ import korlibs.io.async.*
 import korlibs.korge.view.*
 import korlibs.logger.*
 import korlibs.math.geom.*
-import korlibs.render.internal.*
 import korlibs.time.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
@@ -58,6 +57,7 @@ expect fun CreateDefaultGameWindow(config: GameWindowCreationConfig = GameWindow
 open class GameWindow :
     BaseEventListener(),
     DialogInterfaceProvider,
+    MenuInterface,
     DeviceDimensionsProvider,
     CoroutineContext.Element,
     AGWindow,
@@ -66,11 +66,6 @@ open class GameWindow :
 {
     open val androidContextAny: Any? get() = null
     override val dialogInterface: DialogInterface get() = DialogInterface.Unsupported
-
-    // Context Menu
-    open fun setMainMenu(items: List<GameWindowMenuItem>) = Unit
-    open fun showContextMenu(items: List<GameWindowMenuItem>) = Unit
-    fun showContextMenu(block: GameWindowMenuItemBuilder.() -> Unit) = showContextMenu(GameWindowMenuItemBuilder().also(block).toItem().children ?: listOf())
 
     // SOFT KEYBOARD
     open val isSoftKeyboardVisible: Boolean get() = false
@@ -100,6 +95,7 @@ open class GameWindow :
 
     val eventLoop = SyncEventLoop()
     open val coroutineDispatcher = EventLoopCoroutineDispatcher(eventLoop)
+    var coroutineContext: CoroutineContext = EmptyCoroutineContext
 
     fun getCoroutineDispatcherWithCurrentContext(coroutineContext: CoroutineContext): CoroutineContext = coroutineContext + coroutineDispatcher
     suspend fun getCoroutineDispatcherWithCurrentContext(): CoroutineContext = getCoroutineDispatcherWithCurrentContext(coroutineContext)
@@ -108,7 +104,7 @@ open class GameWindow :
     @PublishedApi internal val _updateRenderLock = Lock()
     inline fun updateRenderLock(block: () -> Unit) = _updateRenderLock(block)
     fun queueSuspend(callback: suspend () -> Unit) {
-        launch(coroutineDispatcher) {
+        launch(coroutineDispatcher + coroutineContext) {
             callback()
         }
     }
@@ -143,11 +139,35 @@ open class GameWindow :
     val timePerFrame: TimeSpan get() = counterTimePerFrame
     open fun computeDisplayRefreshRate(): Int = 60
     private val fpsCached by IntTimedCache(1000.milliseconds) { computeDisplayRefreshRate() }
+
+    /** Update FPS */
     open var preferredFps: Int = DEFAULT_PREFERRED_FPS
     open var fps: Int
         get() = fpsCached
         @Deprecated("Deprecated setting fps")
         set(value) = Unit
+
+    /** Rate at which update events happen in the event loop */
+    var updateFps: Frequency = DEFAULT_PREFERRED_FPS.hz
+        set(value) {
+            field = value
+            updateUpdateInterval()
+        }
+    private var currentUpdateFps: Frequency = 0.hz
+    private var currentUpdateInterval: Closeable? = null
+    private fun updateUpdateInterval(fps: Frequency = this.updateFps) {
+        if (currentUpdateFps != fps) {
+            currentUpdateFps = fps
+            currentUpdateInterval?.close()
+            currentUpdateInterval = eventLoop.setInterval(fps) {
+                dispatchUpdateEvent()
+            }
+        }
+    }
+
+    init {
+        updateUpdateInterval()
+    }
 
     // PROPS
     open var visible: Boolean = false
@@ -157,6 +177,7 @@ open class GameWindow :
     open var title: String get() = ""; set(value) = Unit
     open val width: Int = 0
     open val height: Int = 0
+    val frameSize get() = Size(width, height)
     open fun setSize(width: Int, height: Int): Unit = Unit
     open var vsync: Boolean = true
     open var icon: Bitmap? = null
@@ -198,11 +219,17 @@ open class GameWindow :
     open fun close(exitCode: Int = 0) {
         if (closing) return
         closing = true
+        println("[1]")
+        queue { dispatchDestroyEvent() }
+        println("[2]")
         running = false
         this.exitCode = exitCode
+        println("[3]")
         logger.info { "GameWindow.close" }
         coroutineDispatcher.close()
+        println("[4]")
         coroutineDispatcher.cancelChildren()
+        println("[5]")
     }
 
     @Deprecated("")

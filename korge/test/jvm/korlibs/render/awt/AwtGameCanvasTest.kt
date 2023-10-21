@@ -5,7 +5,6 @@ import korlibs.datastructure.lock.*
 import korlibs.datastructure.thread.*
 import korlibs.image.bitmap.*
 import korlibs.image.color.*
-import korlibs.kgl.*
 import korlibs.korge.render.*
 import korlibs.platform.*
 import korlibs.time.*
@@ -16,7 +15,7 @@ import kotlin.test.*
 
 class AwtGameCanvasTest {
     @Test
-    @Ignore
+    //@Ignore
     fun test() = korlibs.memory.dyn.osx.autoreleasePool {
         //System.setProperty("sun.java2d.metal", "true")
         //System.setProperty("sun.java2d.opengl", "false")
@@ -86,12 +85,12 @@ class AwtGameCanvasTest {
             fpsLabel = it
             it.isOpaque = true; it.background = Color.YELLOW })
         frame.contentPane.add(JLabel().also { it.isOpaque = true; it.background = Color.GREEN })
-        frame.contentPane.add(GLCanvas().also {
-            it.defaultRenderer = { gl, g ->
-                gl.clearColor(1f, .5f, 1f, 1f)
-                gl.clear(KmlGl.COLOR_BUFFER_BIT)
-            }
-        })
+        //frame.contentPane.add(GLCanvas().also {
+        //    it.defaultRenderer = { gl, g ->
+        //        gl.clearColor(1f, .5f, 1f, 1f)
+        //        gl.clear(KmlGl.COLOR_BUFFER_BIT)
+        //    }
+        //})
         /*
         frame.contentPane.add(AwtAGOpenglCanvas().also {
             val renderContext = RenderContext(it.ag, it)

@@ -1,4 +1,4 @@
-package korlibs.render.win32
+package korlibs.event.gamepad
 
 import korlibs.event.*
 import korlibs.ffi.*

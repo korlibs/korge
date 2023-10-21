@@ -277,9 +277,6 @@ inline class NSMenu(val id: Long) {
     }
 }
 
-@Deprecated("", ReplaceWith("korlibs.memory.dyn.osx.autoreleasePool(body)", "korlibs"))
-inline fun autoreleasePool(body: () -> Unit) = korlibs.memory.dyn.osx.autoreleasePool(body)
-
 internal interface GL : Library {
     fun glViewport(x: Int, y: Int, width: Int, height: Int)
     fun glClearColor(r: Float, g: Float, b: Float, a: Float)
