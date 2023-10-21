@@ -1,26 +1,24 @@
 package korlibs.event.gamepad
 
-import com.sun.jna.*
+import korlibs.annotations.*
 import korlibs.datastructure.iterators.*
 import korlibs.event.*
-import korlibs.io.annotations.*
+import korlibs.ffi.*
+import korlibs.ffi.osx.*
 import korlibs.math.geom.*
-import korlibs.memory.dyn.osx.*
 import korlibs.number.*
 import korlibs.render.*
 import kotlin.reflect.*
 
-internal interface FrameworkInt : Library
+@PublishedApi
+internal inline fun <T> getValueOrNull(obj: NSObject, property: KProperty<*>, gen: (Long) -> T): T? =
+    obj.msgSend(property.name).takeIf { it != 0L }?.let { gen(it) }
 
 @PublishedApi
-internal inline fun <T> getValueOrNull(obj: ObjcRef, property: KProperty<*>, gen: (Long) -> T): T? =
-    obj.id.msgSend(property.name).takeIf { it != 0L }?.let { gen(it) }
+internal inline fun <T> getValue(obj: NSObject, property: KProperty<*>, gen: (Long) -> T): T =
+    obj.msgSend(property.name).let { gen(it) }
 
-@PublishedApi
-internal inline fun <T> getValue(obj: ObjcRef, property: KProperty<*>, gen: (Long) -> T): T =
-    obj.id.msgSend(property.name).let { gen(it) }
-
-internal inline class GCControllerButtonInput(val id: Long) {
+internal inline class GCControllerButtonInput(val id: ObjcRef) {
     val analog: Boolean get() = id.msgSendInt(sel_isAnalog) != 0
     val touched: Boolean get() = id.msgSendInt(sel_isTouched) != 0
     val pressed: Boolean get() = id.msgSendInt(sel_isPressed) != 0
@@ -38,28 +36,29 @@ internal inline class GCControllerButtonInput(val id: Long) {
         val sel_isPressed = ObjcSel("isPressed")
         val sel_value = ObjcSel("value")
 
-        inline operator fun getValue(obj: ObjcRef, property: KProperty<*>): GCControllerButtonInput =
-            getValue(obj, property) { GCControllerButtonInput(it) }
+        inline operator fun getValue(obj: NSObject, property: KProperty<*>): GCControllerButtonInput =
+            getValue(obj, property) { GCControllerButtonInput(ObjcRef(it)) }
     }
 }
 
-class GCControllerAxisInput(id: Long) : ObjcRef(id) {
-    val value: Float get() = id.msgSendFloat("value").toFloat()
+class GCControllerAxisInput(id: ObjcRef) : NSObject(id) {
+    val value: Float get() = ref.msgSendFloat("value")
     companion object {
-        inline operator fun getValue(obj: ObjcRef, property: KProperty<*>): GCControllerAxisInput = GCControllerAxisInput(obj.id.msgSend(property.name))
+        inline operator fun getValue(obj: NSObject, property: KProperty<*>): GCControllerAxisInput = GCControllerAxisInput(obj.msgSendRef(property.name))
     }
 
     override fun toString(): String = value.niceStr(2)
 }
 
-internal class GCControllerDirectionPad(id: Long) : ObjcRef(id) {
-    @Keep val right by GCControllerButtonInput
-    @Keep val left by GCControllerButtonInput
-    @Keep val up by GCControllerButtonInput
-    @Keep val down by GCControllerButtonInput
+@KeepNames
+internal class GCControllerDirectionPad(id: ObjcRef) : NSObject(id) {
+    val right by GCControllerButtonInput
+    val left by GCControllerButtonInput
+    val up by GCControllerButtonInput
+    val down by GCControllerButtonInput
 
-    @Keep val xAxis by GCControllerAxisInput
-    @Keep val yAxis by GCControllerAxisInput
+    val xAxis by GCControllerAxisInput
+    val yAxis by GCControllerAxisInput
 
     val x: Float get() = xAxis.value
     val y: Float get() = yAxis.value
@@ -68,50 +67,53 @@ internal class GCControllerDirectionPad(id: Long) : ObjcRef(id) {
     val point: Point get() = _point
 
     companion object {
-        inline operator fun getValue(obj: ObjcRef, property: KProperty<*>): GCControllerDirectionPad =
-            getValue(obj, property) { GCControllerDirectionPad(it) }
+        inline operator fun getValue(obj: NSObject, property: KProperty<*>): GCControllerDirectionPad =
+            getValue(obj, property) { GCControllerDirectionPad(ObjcRef(it)) }
     }
 
     override fun toString(): String = "DPad(${up.nice}, ${right.nice}, ${down.nice}, ${left.nice})"
 }
 
-internal open class GCMicroGamepad(id: Long) : ObjcRef(id) {
-    @Keep val buttonA by GCControllerButtonInput
-    @Keep val buttonX by GCControllerButtonInput
-    @Keep val dpad by GCControllerDirectionPad
-    @Keep val buttonMenu by GCControllerButtonInput
+@KeepNames
+internal open class GCMicroGamepad(id: ObjcRef) : NSObject(id) {
+    val buttonA by GCControllerButtonInput
+    val buttonX by GCControllerButtonInput
+    val dpad by GCControllerDirectionPad
+    val buttonMenu by GCControllerButtonInput
 
     companion object {
-        inline operator fun getValue(obj: ObjcRef, property: KProperty<*>): GCMicroGamepad? =
-            getValueOrNull(obj, property) { GCMicroGamepad(it) }
+        inline operator fun getValue(obj: NSObject, property: KProperty<*>): GCMicroGamepad? =
+            getValueOrNull(obj, property) { GCMicroGamepad(ObjcRef(it)) }
     }
 }
 
-internal open class GCGamepad(id: Long) : GCMicroGamepad(id) {
-    @Keep val leftShoulder by GCControllerButtonInput
-    @Keep val rightShoulder by GCControllerButtonInput
-    @Keep val buttonB by GCControllerButtonInput
-    @Keep val buttonY by GCControllerButtonInput
+@KeepNames
+internal open class GCGamepad(id: ObjcRef) : GCMicroGamepad(id) {
+    val leftShoulder by GCControllerButtonInput
+    val rightShoulder by GCControllerButtonInput
+    val buttonB by GCControllerButtonInput
+    val buttonY by GCControllerButtonInput
 
     companion object {
-        inline operator fun getValue(obj: ObjcRef, property: KProperty<*>): GCGamepad? =
-            getValueOrNull(obj, property) { GCGamepad(it) }
+        inline operator fun getValue(obj: NSObject, property: KProperty<*>): GCGamepad? =
+            getValueOrNull(obj, property) { GCGamepad(ObjcRef(it)) }
     }
 }
 
-internal class GCExtendedGamepad(id: Long) : GCGamepad(id) {
-    @Keep val leftTrigger by GCControllerButtonInput
-    @Keep val rightTrigger by GCControllerButtonInput
-    @Keep val buttonOptions by GCControllerButtonInput
-    @Keep val buttonHome by GCControllerButtonInput
-    @Keep val leftThumbstick by GCControllerDirectionPad
-    @Keep val rightThumbstick by GCControllerDirectionPad
-    @Keep val leftThumbstickButton by GCControllerButtonInput
-    @Keep val rightThumbstickButton by GCControllerButtonInput
+@KeepNames
+internal class GCExtendedGamepad(id: ObjcRef) : GCGamepad(id) {
+    val leftTrigger by GCControllerButtonInput
+    val rightTrigger by GCControllerButtonInput
+    val buttonOptions by GCControllerButtonInput
+    val buttonHome by GCControllerButtonInput
+    val leftThumbstick by GCControllerDirectionPad
+    val rightThumbstick by GCControllerDirectionPad
+    val leftThumbstickButton by GCControllerButtonInput
+    val rightThumbstickButton by GCControllerButtonInput
 
     companion object {
-        inline operator fun getValue(obj: ObjcRef, property: KProperty<*>): GCExtendedGamepad? =
-            getValueOrNull(obj, property) { GCExtendedGamepad(it) }
+        inline operator fun getValue(obj: NSObject, property: KProperty<*>): GCExtendedGamepad? =
+            getValueOrNull(obj, property) { GCExtendedGamepad(ObjcRef(it)) }
     }
 
     override fun toString(): String = "GCExtendedGamepad(dpad=$dpad, LR=[${leftThumbstick.point.niceStr(2)}, ${rightThumbstick.point.niceStr(2)}] [A=${buttonA.nice}, B=${buttonB.nice}, X=${buttonX.nice}, Y=${buttonY.nice}], L=[${leftShoulder.nice}, ${leftTrigger.nice}, ${leftThumbstickButton.nice}], R=[${rightShoulder.nice}, ${rightTrigger.nice}, ${rightThumbstickButton.nice}], SYS=[${buttonMenu.nice}, ${buttonOptions.nice}, ${buttonHome.nice}])"
@@ -134,22 +136,22 @@ internal class GCExtendedGamepad(id: Long) : GCGamepad(id) {
 //   }
 //}
 
-class GCDeviceBattery(id: Long) : ObjcRef(id) {
+class GCDeviceBattery(val id: ObjcRef) {
     val batteryLevel: Float get() = id.msgSendFloat("batteryLevel")
     val batteryState: Int get() = id.msgSendInt("batteryState")
 
     companion object {
-        inline operator fun getValue(obj: ObjcRef, property: KProperty<*>): GCDeviceBattery? =
-            getValueOrNull(obj, property) { GCDeviceBattery(it) }
+        inline operator fun getValue(obj: NSObject, property: KProperty<*>): GCDeviceBattery? =
+            getValueOrNull(obj, property) { GCDeviceBattery(ObjcRef(it)) }
     }
 }
 
 /**
  * https://developer.apple.com/documentation/gamecontroller/gccontroller?language=objc
  */
-internal class GCController(id: Long) : ObjcRef(id) {
-    val isAttachedToDevice: Boolean get() = id.msgSendInt("isAttachedToDevice") != 0
-    val playerIndex: Int get() = id.msgSendInt("playerIndex")
+internal class GCController(id: ObjcRef) : NSObject(id) {
+    val isAttachedToDevice: Boolean get() = ref.msgSendInt("isAttachedToDevice") != 0
+    val playerIndex: Int get() = ref.msgSendInt("playerIndex")
     //val physicalInputProfile: GCPhysicalInputProfile by GCPhysicalInputProfile
     val extendedGamepad: GCExtendedGamepad? by GCExtendedGamepad
     val gamepad: GCGamepad? by GCGamepad
@@ -163,35 +165,33 @@ internal class GCController(id: Long) : ObjcRef(id) {
     val productCategory: String by lazy { NSString(id.msgSend("productCategory")).toString() }
 
     companion object {
-        fun controllers(): NSArray = NSArray(NSClass("GCController").msgSend("controllers"))
+        fun controllers(): NSArray = NSArray(NSClass("GCController").msgSendRef("controllers"))
     }
 }
 
-class NSArray(val id: Long) : AbstractList<Long>() {
+class NSArray(val id: ObjcRef) : AbstractList<Long>() {
     val count: Int get() = id.msgSendInt("count")
     override val size: Int get() = count
     override operator fun get(index: Int): Long = id.msgSend("objectAtIndex:", index)
     override fun toString(): String = "NSArray(${toList()})"
 }
 
-class MacosGameController {
-    companion object {
-        @JvmStatic
-        fun main(args: Array<String>) {
-            val gamepad = MacosGamepadEventAdapter()
-            val events = GameWindow()
-            events.onEvent(GamePadUpdateEvent) { print("$it\r") }
-            events.onEvents(*GamePadConnectionEvent.Type.ALL) { println(it) }
-            while (true) {
-                gamepad.updateGamepads(events)
-                Thread.sleep(10L)
-            }
-        }
-    }
-}
+//@JvmStatic
+//fun main(args: Array<String>) {
+//    val gamepad = MacosGamepadEventAdapter()
+//    val events = GameWindow()
+//    events.onEvent(GamePadUpdateEvent) { print("$it\r") }
+//    events.onEvents(*GamePadConnectionEvent.Type.ALL) { println(it) }
+//    while (true) {
+//        gamepad.updateGamepads(events)
+//        NativeThread.sleep(10.milliseconds)
+//    }
+//}
 
 internal class MacosGamepadEventAdapter {
-    val lib by lazy { Native.load("/System/Library/Frameworks/GameController.framework/Versions/A/GameController", FrameworkInt::class.java) }
+    internal object FrameworkInt : FFILib("/System/Library/Frameworks/GameController.framework/Versions/A/GameController")
+
+    val lib by lazy { FrameworkInt }
 
     private fun GamepadInfo.set(button: GameButton, value: Float, deadRange: Boolean = false) { rawButtons[button.index] = GamepadInfo.withoutDeadRange(value.toFloat(), apply = deadRange) }
     private fun GamepadInfo.set(button: GameButton, cbutton: GCControllerButtonInput, deadRange: Boolean = false) {
@@ -207,7 +207,7 @@ internal class MacosGamepadEventAdapter {
             for (n in allControllers.indices) allControllers[n] = null
             GCController.controllers()
                 //.sortedBy { it }
-                .map { GCController(it) }
+                .map { GCController(ObjcRef(it)) }
                 .fastForEachWithIndex { index, it ->
                     //println("index=$index")
                     if (index in allControllers.indices) allControllers[index] = it

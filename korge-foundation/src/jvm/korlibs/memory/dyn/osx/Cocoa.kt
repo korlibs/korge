@@ -233,6 +233,7 @@ object ObjcTypeParser {
                 if (str.readChar() != ']') error("Invalid $str")
                 FixedArrayObjcType(count, type)
             }
+            '#' -> PrimitiveObjcType.ID
             ':' -> PrimitiveObjcType.SEL
             'C' -> PrimitiveObjcType.BYTE
             'i' -> PrimitiveObjcType.INT
@@ -866,13 +867,9 @@ public class NativeNSRect {
         pointer = Pointer(memory);
     }
 
-    fun free() {
-        Native.free(Pointer.nativeValue(pointer));
-    }
+    fun free() = Native.free(Pointer.nativeValue(pointer))
 
-    fun getPointer(): Pointer {
-        return pointer;
-    }
+    fun getPointer(): Pointer = pointer
 
     var a: Int get() = pointer.getInt(0L); set(value) { pointer.setInt(0L, value) }
     var b: Int get() = pointer.getInt(4L); set(value) { pointer.setInt(4L, value) }

@@ -7,6 +7,10 @@ actual fun FFILibSym(lib: FFILib): FFILibSym {
     }
 }
 
+actual fun <T> FFICreateProxyFunction(type: KType, handler: (args: Array<Any?>) -> Any?): T {
+    TODO()
+}
+
 actual class FFIPointer
 
 actual class FFIMemory
