@@ -54,6 +54,35 @@ interface GameWindowConfig {
 
 typealias GameWindowQuality = GameWindow.Quality
 
+/**
+ * A [GameWindow] represents a window, canvas or headless virtual frame where a game is displayed and can receive user events, it provides:
+ *
+ * Updating and Rendering:
+ * - An [EventLoop] and a [coroutineDispatcher] where run code in a single thread like on JavaScript
+ * - Provides an [onUpdateEvent] that will be executed in the [EventLoop] at a fixed rate determined by [fps] used for updating the game, and having a lock to prevent rendering while running
+ * - Provides an [onRenderEvent] that will be executed in the Rendering thread at vsync or whenever a rendering is required. It has a lock to prevent executing at the same time as the onUpdateEvent.
+ * - If needing to update the game state outside the provided EventLoop, you can use the [updateRenderLock] function
+ *
+ * Events:
+ * - It implements the EventListener interface.
+ * - Dispatches Window and User Input events:
+ *   - Update and rendering events: [UpdateEvent], [RenderEvent]
+ *   - Window/App lifecycle event: [PauseEvent], [ResumeEvent], [StopEvent], [InitEvent], [DestroyEvent], [DisposeEvent], [FullScreenEvent], [ReshapeEvent]
+ *   - Input events: [KeyEvent], [MouseEvent], [GestureEvent], [DropFileEvent]
+ *
+ * Window properties:
+ * - [title], [icon], [cursor], [width], [height], [preferredFps], [fullscreen], [visible], [bgcolor], [quality], [alwaysOnTop]
+ *
+ * Dialogs:
+ * - [browse], [alert], [confirm], [prompt], [openFileDialog]
+ * - [showContextMenu]
+ *
+ * Virtual Keyboard:
+ * - [showSoftKeyboard], [hideSoftKeyboard]
+ *
+ * Device Dimensions provider:
+ * - [devicePixelRatio], [pixelsPerInch], [pixelsPerCm]
+ */
 open class GameWindow :
     BaseEventListener(),
     DialogInterfaceProvider,
@@ -485,12 +514,12 @@ open class GameWindow :
     fun dispatchStopEvent() = dispatch(stopEvent.reset())
     fun dispatchDestroyEvent() = dispatch(destroyEvent.reset())
     fun dispatchDisposeEvent() = dispatch(disposeEvent.reset())
-    private val updateRenderLock = Lock()
+    @PublishedApi internal val _updateRenderLock = Lock()
+    inline fun updateRenderLock(block: () -> Unit) {
+        _updateRenderLock(block)
+    }
     fun dispatchUpdateEvent() {
         updateRenderLock { dispatch(updateEvent) }
-    }
-    fun dispatchNewRenderEvent() {
-        dispatchRenderEvent(update = false, render = true)
     }
     fun dispatchRenderEvent(update: Boolean = true, render: Boolean = true) {
         updateRenderLock {
@@ -499,6 +528,9 @@ open class GameWindow :
                 this.render = render
             })
         }
+    }
+    fun dispatchNewRenderEvent() {
+        dispatchRenderEvent(update = false, render = true)
     }
     fun dispatchDropfileEvent(type: DropFileEvent.Type, files: List<VfsFile>?) = dispatch(dropFileEvent.reset {
         this.type = type
