@@ -37,22 +37,21 @@ open class ViewsForTesting(
 	val timeProvider = object : TimeProvider {
         override fun now(): DateTime = time
     }
-	val dispatcher = GameWindowCoroutineDispatcher(
-        nowProvider = { time.unixMillisDouble.milliseconds },
-        fast = true,
-    )
-    inner class TestGameWindow(initialSize: Size, val dispatcher: GameWindowCoroutineDispatcher) : GameWindowLog() {
+    inner class TestGameWindow(initialSize: Size) : GameWindowLog() {
+        init {
+            eventLoop.immediateRun = true
+            eventLoop.nowProvider = { time.unixMillisDouble.milliseconds }
+        }
         override var androidContextAny: Any? = null
         override val devicePixelRatio: Double get() = this@ViewsForTesting.devicePixelRatio
         override var width: Int = initialSize.width.toInt()
         override var height: Int = initialSize.height.toInt()
-        override val coroutineDispatcher = dispatcher
     }
     open fun filterLogDraw(str: String, kind: AGBaseLog.Kind): Boolean {
         return kind != AGBaseLog.Kind.SHADER
     }
 
-	val gameWindow = TestGameWindow(windowSize, dispatcher).also {
+	val gameWindow = TestGameWindow(windowSize).also {
         enrichTestGameWindow(it)
     }
     val ag: AG by lazy {
@@ -292,7 +291,7 @@ open class ViewsForTesting(
         viewsLog.init()
         this@ViewsForTesting.devicePixelRatio = devicePixelRatio
         //suspendTest(timeout = timeout, cond = { !OS.isAndroid && !OS.isJs && !OS.isNative }) {
-        KorgeRunner.prepareViewsBase(views, gameWindow, fixedSizeStep = frameTime, forceRenderEveryFrame = forceRenderEveryFrame)
+        views.prepareViewsBase(gameWindow, fixedSizeStep = frameTime, forceRenderEveryFrame = forceRenderEveryFrame)
 
 		injector.mapInstance<KorgeConfig>(KorgeConfig(
 			title = "KorgeViewsForTesting",
@@ -303,17 +302,15 @@ open class ViewsForTesting(
 		var completed = false
 		var completedException: Throwable? = null
 
-		this@ViewsForTesting.dispatcher.dispatch(coroutineContext, Runnable {
-			launchImmediately(views.coroutineContext + dispatcher) {
-				try {
-                    block(views.stage)
-				} catch (e: Throwable) {
-					completedException = e
-				} finally {
-					completed = true
-				}
-			}
-		})
+        gameWindow.queueSuspend {
+            try {
+                block(views.stage)
+            } catch (e: Throwable) {
+                completedException = e
+            } finally {
+                completed = true
+            }
+        }
 
         //println("[a0]")
 		withTimeoutNullable(timeout ?: TimeSpan.NIL) {
@@ -321,7 +318,6 @@ open class ViewsForTesting(
 			while (!completed) {
                 //println("FRAME")
 				simulateFrame()
-				dispatcher.executePending(availableTime = 1.seconds)
 			}
 
             //println("[a2]")

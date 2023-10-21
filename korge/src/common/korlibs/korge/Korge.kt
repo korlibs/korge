@@ -1,32 +1,24 @@
 package korlibs.korge
 
-import korlibs.audio.sound.*
-import korlibs.datastructure.iterators.*
-import korlibs.event.*
+import korlibs.annotations.*
 import korlibs.graphics.log.*
 import korlibs.image.color.*
 import korlibs.image.format.*
 import korlibs.inject.*
-import korlibs.io.async.*
 import korlibs.io.dynamic.*
 import korlibs.io.file.std.*
 import korlibs.io.resources.*
-import korlibs.io.worker.*
-import korlibs.korge.input.*
 import korlibs.korge.internal.*
 import korlibs.korge.logger.*
 import korlibs.korge.render.*
 import korlibs.korge.resources.*
 import korlibs.korge.scene.*
-import korlibs.korge.stat.*
 import korlibs.korge.view.*
 import korlibs.logger.*
 import korlibs.math.geom.*
-import korlibs.memory.*
 import korlibs.platform.*
 import korlibs.render.*
 import korlibs.time.*
-import kotlinx.coroutines.*
 import kotlin.coroutines.*
 import kotlin.reflect.*
 
@@ -43,17 +35,12 @@ data class KorgeDisplayMode(val scaleMode: ScaleMode, val scaleAnchor: Anchor, v
     }
 }
 
-@Target(AnnotationTarget.VALUE_PARAMETER)
-private annotation class DeprecatedParameter(
-    val reason: String
-)
-
 suspend fun Korge(
     args: Array<String> = arrayOf(),
     imageFormats: ImageFormat = RegisteredImageFormats,
     gameWindow: GameWindow? = null,
     //val eventDispatcher: EventDispatcher = gameWindow ?: DummyEventDispatcher, // Removed
-    mainSceneClass: KClass<out Scene>? = null,
+    @DeprecatedParameter("Create a sceneContainer instead") mainSceneClass: KClass<out Scene>? = null,
     timeProvider: TimeProvider = TimeProvider,
     injector: Injector = Injector(),
     configInjector: Injector.() -> Unit = {},
@@ -80,17 +67,17 @@ suspend fun Korge(
     @DeprecatedParameter("Use backgroundColor instead")
     bgcolor: RGBA? = Colors.BLACK,
     backgroundColor: RGBA? = bgcolor,
-    quality: GameWindow.Quality = GameWindow.Quality.PERFORMANCE,
+    quality: GameWindowQuality = GameWindowQuality.PERFORMANCE,
     icon: String? = null,
-    multithreaded: Boolean? = null,
+    @DeprecatedParameter("Ignored") multithreaded: Boolean? = null,
     forceRenderEveryFrame: Boolean = true,
-    main: (suspend Stage.() -> Unit) = {},
+    @DeprecatedParameter("Use entry instead") main: (suspend Stage.() -> Unit) = {},
     debugAg: Boolean = false,
     debugFontExtraScale: Double = 1.0,
     debugFontColor: RGBA = Colors.WHITE,
     stageBuilder: (Views) -> Stage = { Stage(it) },
     targetFps: Double = 0.0,
-    entry: suspend Stage.() -> Unit = {}
+    entry: suspend Stage.() -> Unit = {},
 ): Unit = Korge(
     args = args, imageFormats = imageFormats, gameWindow = gameWindow, mainSceneClass = mainSceneClass,
     timeProvider = timeProvider, injector = injector, configInjector = configInjector, debug = debug,
@@ -132,7 +119,7 @@ data class Korge(
     val displayMode: KorgeDisplayMode = KorgeDisplayMode.DEFAULT,
     val title: String = "Game",
     val backgroundColor: RGBA? = Colors.BLACK,
-    val quality: GameWindow.Quality = GameWindow.Quality.PERFORMANCE,
+    val quality: GameWindowQuality = GameWindowQuality.PERFORMANCE,
     val icon: String? = null,
     val multithreaded: Boolean? = null,
     val forceRenderEveryFrame: Boolean = true,
@@ -151,7 +138,14 @@ data class Korge(
     }
 
     suspend fun start(entry: suspend Stage.() -> Unit = this.main) {
-        KorgeRunner.invoke(this.copy(main = entry))
+        if (!Platform.isJsBrowser) {
+            configureLoggerFromProperties(localCurrentDirVfs["klogger.properties"])
+        }
+        val config = this
+        val gameWindow = (config.gameWindow ?: coroutineContext[GameWindow] ?: CreateDefaultGameWindow(GameWindowCreationConfig(multithreaded = config.multithreaded, fullscreen = config.fullscreen)))
+        gameWindow.configureKorge(config) {
+            entry()
+        }
     }
 }
 
@@ -162,37 +156,90 @@ suspend fun Korge(entry: suspend Stage.() -> Unit) { Korge().start(entry) }
 
 suspend fun KorgeWithConfig(config: KorgeConfig, entry: suspend Stage.() -> Unit) { config.start(entry) }
 
+data class KorgeArgs(val args: Array<String>)
+
 /**
- * Entry point for games written in Korge.
- * You have to call the [Korge] method by either providing some parameters, or a [Korge.Config] object.
- */
-object KorgeRunner {
-    suspend operator fun invoke(config: Korge) = Worker.init {
-        RegisteredImageFormats.register(config.imageFormats)
-
-        val iconPath = config.icon
-        val imageFormats = config.imageFormats
-        val entry = config.main
-        val multithreaded = config.multithreaded
-        val windowSize = config.windowSize
-
-        if (!Platform.isJsBrowser) {
-            configureLoggerFromProperties(localCurrentDirVfs["klogger.properties"])
+ * Configures a [GameWindow] to run a [Korge] application.
+ **/
+fun GameWindow.configureKorge(config: KorgeConfig = KorgeConfig(), block: suspend Stage.() -> Unit = {}) {
+    val gameWindow = this
+    val iconPath = config.icon
+    val imageFormats = config.imageFormats
+    val entry = config.main
+    val multithreaded = config.multithreaded
+    val windowSize = config.windowSize
+    val views = Views(
+        gameWindow = gameWindow,
+        coroutineContext = gameWindow.coroutineDispatcher,
+        ag = if (config.debugAg) AGPrint() else gameWindow.ag,
+        injector = config.injector,
+        gameId = config.gameId,
+        timeProvider = config.timeProvider,
+        settingsFolder = config.settingsFolder,
+        batchMaxQuads = config.batchMaxQuads,
+        stageBuilder = config.stageBuilder
+    ).also {
+        if (Platform.isJsBrowser) {
+            Dyn.global["views"] = it
         }
-        val realGameWindow = (config.gameWindow ?: coroutineContext[GameWindow] ?: CreateDefaultGameWindow(GameWindowCreationConfig(multithreaded = multithreaded, fullscreen = config.fullscreen)))
-        realGameWindow.bgcolor = config.backgroundColor ?: Colors.BLACK
-        realGameWindow.loop {
-            val gameWindow = this
-            if (Platform.isNative) println("Korui[0]")
-            gameWindow.registerTime("configureGameWindow") {
-                realGameWindow.configure(windowSize, config.title, null, config.fullscreen, config.backgroundColor ?: Colors.BLACK)
-            }
-            gameWindow.registerTime("setIcon") {
+    }
+    Korge.logger.logTime("configureGameWindow") {
+        gameWindow.configure(windowSize, config.title, null, config.fullscreen, config.backgroundColor ?: Colors.BLACK)
+    }
+    gameWindow.quality = quality
+    gameWindow.backgroundColor = config.backgroundColor ?: Colors.BLACK
+
+    RegisteredImageFormats.register(config.imageFormats)
+    val injector = views.injector
+    config.configInjector(injector)
+    injector.mapInstance(views)
+    injector.mapInstance(views.ag)
+    injector.mapInstance(KorgeArgs(config.args))
+    injector.mapInstance(Resources::class, views.globalResources)
+    injector.mapSingleton(ResourcesRoot::class) { ResourcesRoot() }
+    injector.mapInstance(views.input)
+    injector.mapInstance(views.stats)
+    injector.mapInstance(CoroutineContext::class, views.coroutineContext)
+    injector.mapPrototype(EmptyScene::class) { EmptyScene() }
+    injector.mapInstance(TimeProvider::class, views.timeProvider)
+    injector.mapInstance(GameWindow::class, gameWindow)
+    injector.mapInstance(KorgeConfig::class, config)
+    views.debugViews = gameWindow.debug
+    views.debugFontExtraScale = config.debugFontExtraScale
+    views.debugFontColor = config.debugFontColor
+    views.virtualWidth = config.virtualSize.width.toInt()
+    views.virtualHeight = config.virtualSize.height.toInt()
+    views.scaleAnchor = config.displayMode.scaleAnchor
+    views.scaleMode = config.displayMode.scaleMode
+    views.clipBorders = config.displayMode.clipBorders
+    views.targetFps = config.targetFps
+
+    var initialized = false
+
+    val stopwatch = Stopwatch()
+    gameWindow.onUpdateEvent {
+        if (initialized) {
+            //println("UPDATE")
+            views.update(stopwatch.getElapsedAndRestart())
+        }
+    }
+
+    gameWindow.onRenderEvent {
+        if (initialized) {
+            //println("RENDER")
+            views.renderNew()
+        }
+    }
+    gameWindow.queueSuspend {
+        Korge.logger.info { "Initializing..." }
+        // Initialize
+        try {
+            Korge.logger.logTime("setIcon") {
                 try {
                     // Do nothing
                     when {
                         //iconDrawable != null -> this.icon = iconDrawable.render()
-                        iconPath != null -> this.icon = resourcesVfs[iconPath].readBitmap(imageFormats)
+                        iconPath != null -> gameWindow.icon = resourcesVfs[iconPath].readBitmap(imageFormats)
                         else -> Unit
                     }
                 } catch (e: Throwable) {
@@ -200,352 +247,26 @@ object KorgeRunner {
                     e.printStackTrace()
                 }
             }
-            this.quality = quality
-            if (Platform.isNative) println("CanvasApplicationEx.IN[0]")
-            val input = Input()
-            val stats = Stats()
 
-            // Use this once Korgw is on 1.12.5
-            //val views = Views(gameWindow.getCoroutineDispatcherWithCurrentContext() + SupervisorJob(), ag, injector, input, timeProvider, stats, gameWindow)
-            val views: Views = Views(
-                coroutineContext = coroutineContext + gameWindow.coroutineDispatcher + InjectorContext(config.injector) + SupervisorJob(),
-                ag = if (config.debugAg) AGPrint() else ag,
-                injector = config.injector,
-                input = input,
-                timeProvider = config.timeProvider,
-                stats = stats,
-                gameWindow = gameWindow,
-                gameId = config.gameId,
-                settingsFolder = config.settingsFolder,
-                batchMaxQuads = config.batchMaxQuads,
-                stageBuilder = config.stageBuilder
-            ).also {
-                it.init()
-                if (Platform.isJsBrowser) {
-                    Dyn.global["views"] = it
-                }
-            }
-
-            config.injector.mapInstance(GameWindow::class, gameWindow)
-            config.injector.mapInstance(KorgeConfig::class, config)
-            views.debugViews = debug
-            views.debugFontExtraScale = config.debugFontExtraScale
-            views.debugFontColor = config.debugFontColor
-            views.virtualWidth = config.virtualSize.width.toInt()
-            views.virtualHeight = config.virtualSize.height.toInt()
-            views.scaleAnchor = config.displayMode.scaleAnchor
-            views.scaleMode = config.displayMode.scaleMode
-            views.clipBorders = config.displayMode.clipBorders
-            views.targetFps = config.targetFps
-            //Korge.prepareViews(views, gameWindow, bgcolor != null, bgcolor ?: Colors.TRANSPARENT_BLACK)
-
-            gameWindow.registerTime("prepareViews") {
+            Korge.logger.logTime("prepareViews") {
                 KorgeReload.registerEventDispatcher(gameWindow)
-                prepareViewsBase(views, gameWindow, true, bgcolor, TimeSpan.NIL, config.forceRenderEveryFrame, config.configInjector).await()
+                @Suppress("OPT_IN_USAGE")
+                views.prepareViewsBase(gameWindow, true, gameWindow.bgcolor, TimeSpan.NIL, config.forceRenderEveryFrame, config.configInjector).await()
             }
 
-            gameWindow.registerTime("completeViews") {
+            Korge.logger.logTime("completeViews") {
                 // Here we can install a debugger, etc.
                 completeViews(views)
             }
-
-            views.launchImmediately {
-                coroutineScope {
-                    //println("coroutineContext: $coroutineContext")
-                    //println("GameWindow: ${coroutineContext[GameWindow]}")
-                    if (config.mainSceneClass != null) {
-                        views.stage.sceneContainer().changeTo(config.mainSceneClass)
-                    }
-                    entry(views.stage)
-                    if (config.blocking) {
-                        // @TODO: Do not complete to prevent job cancelation?
-                        gameWindow.waitClose()
-                    }
-                }
-            }
-
-            if (config.blocking) {
-                // @TODO: Do not complete to prevent job cancelation?
-                gameWindow.waitClose()
-                gameWindow.exit()
-            }
-        }
-    }
-
-    @KorgeInternal
-    fun prepareViewsBase(
-        views: Views,
-        eventDispatcher: EventListener,
-        clearEachFrame: Boolean = true,
-        bgcolor: RGBA = Colors.TRANSPARENT,
-        fixedSizeStep: TimeSpan = TimeSpan.NIL,
-        forceRenderEveryFrame: Boolean = true,
-        configInjector: Injector.() -> Unit = {},
-    ): CompletableDeferred<Unit> {
-
-        val injector = views.injector
-        injector.mapInstance(views)
-        injector.mapInstance(views.ag)
-        injector.mapInstance(Resources::class, views.globalResources)
-        injector.mapSingleton(ResourcesRoot::class) { ResourcesRoot() }
-        injector.mapInstance(views.input)
-        injector.mapInstance(views.stats)
-        injector.mapInstance(CoroutineContext::class, views.coroutineContext)
-        injector.mapPrototype(EmptyScene::class) { EmptyScene() }
-        injector.mapInstance(TimeProvider::class, views.timeProvider)
-        configInjector(injector)
-
-        val input = views.input
-        val ag = views.ag
-        var downPos = Point.ZERO
-        var upPos = Point.ZERO
-        var downTime = DateTime.EPOCH
-        var moveTime = DateTime.EPOCH
-        var upTime = DateTime.EPOCH
-        var moveMouseOutsideInNextFrame = false
-        val mouseTouchId = -1
-        views.forceRenderEveryFrame = forceRenderEveryFrame
-
-        // devicePixelRatio might change at runtime by changing the resolution or changing the screen of the window
-        fun getRealXY(x: Double, y: Double, scaleCoords: Boolean): Point {
-            return views.windowToGlobalCoords(Point(x, y))
+        } finally {
+            Korge.logger.info { "Initialized" }
+            initialized = true
         }
 
-        fun mouseDown(type: String, p: Point, button: MouseButton) {
-            input.toggleButton(button, true)
-            input.setMouseGlobalPos(p, down = false)
-            input.setMouseGlobalPos(p, down = true)
-            views.mouseUpdated()
-            downPos = input.mousePos
-            downTime = DateTime.now()
-            input.mouseInside = true
+        config.main(views.stage)
+        block(views.stage)
+        if (config.mainSceneClass != null) {
+            views.stage.sceneContainer().changeTo(config.mainSceneClass)
         }
-
-        fun mouseUp(type: String, p: Point, button: MouseButton) {
-            //Console.log("mouseUp: $name")
-            input.toggleButton(button, false)
-            input.setMouseGlobalPos(p, down = false)
-            views.mouseUpdated()
-            upPos = views.input.mousePos
-        }
-
-        fun mouseMove(type: String, p: Point, inside: Boolean) {
-            views.input.setMouseGlobalPos(p, down = false)
-            views.input.mouseInside = inside
-            if (!inside) {
-                moveMouseOutsideInNextFrame = true
-            }
-            views.mouseUpdated()
-            moveTime = DateTime.now()
-        }
-
-        fun mouseDrag(type: String, p: Point) {
-            views.input.setMouseGlobalPos(p, down = false)
-            views.mouseUpdated()
-            moveTime = DateTime.now()
-        }
-
-        val mouseTouchEvent = TouchEvent()
-
-        fun dispatchSimulatedTouchEvent(
-            p: Point,
-            button: MouseButton,
-            type: TouchEvent.Type,
-            status: Touch.Status
-        ) {
-            mouseTouchEvent.screen = 0
-            mouseTouchEvent.emulated = true
-            mouseTouchEvent.currentTime = DateTime.now()
-            mouseTouchEvent.scaleCoords = false
-            mouseTouchEvent.startFrame(type)
-            mouseTouchEvent.touch(button.id, p, status, kind = Touch.Kind.MOUSE, button = button)
-            mouseTouchEvent.endFrame()
-            views.dispatch(mouseTouchEvent)
-        }
-
-        eventDispatcher.onEvents(*MouseEvent.Type.ALL) { e ->
-            //println("MOUSE: $e")
-            Korge.logger.trace { "eventDispatcher.addEventListener<MouseEvent>:$e" }
-            val p = getRealXY(e.x.toDouble(), e.y.toDouble(), e.scaleCoords)
-            when (e.type) {
-                MouseEvent.Type.DOWN -> {
-                    mouseDown("mouseDown", p, e.button)
-                    //updateTouch(mouseTouchId, x, y, start = true, end = false)
-                    dispatchSimulatedTouchEvent(p, e.button, TouchEvent.Type.START, Touch.Status.ADD)
-                }
-
-                MouseEvent.Type.UP -> {
-                    mouseUp("mouseUp", p, e.button)
-                    //updateTouch(mouseTouchId, x, y, start = false, end = true)
-                    dispatchSimulatedTouchEvent(p, e.button, TouchEvent.Type.END, Touch.Status.REMOVE)
-                }
-
-                MouseEvent.Type.DRAG -> {
-                    mouseDrag("onMouseDrag", p)
-                    //updateTouch(mouseTouchId, x, y, start = false, end = false)
-                    dispatchSimulatedTouchEvent(p, e.button, TouchEvent.Type.MOVE, Touch.Status.KEEP)
-                }
-
-                MouseEvent.Type.MOVE -> mouseMove("mouseMove", p, inside = true)
-                MouseEvent.Type.CLICK -> Unit
-                MouseEvent.Type.ENTER -> mouseMove("mouseEnter", p, inside = true)
-                MouseEvent.Type.EXIT -> mouseMove("mouseExit", p, inside = false)
-                MouseEvent.Type.SCROLL -> Unit
-            }
-            views.dispatch(e)
-        }
-
-        eventDispatcher.onEvents(*KeyEvent.Type.ALL) { e ->
-            Korge.logger.trace { "eventDispatcher.addEventListener<KeyEvent>:$e" }
-            views.dispatch(e)
-        }
-        eventDispatcher.onEvents(*GestureEvent.Type.ALL) { e ->
-            Korge.logger.trace { "eventDispatcher.addEventListener<GestureEvent>:$e" }
-            views.dispatch(e)
-        }
-
-        eventDispatcher.onEvents(*DropFileEvent.Type.ALL) { e -> views.dispatch(e) }
-        eventDispatcher.onEvent(ResumeEvent) { e ->
-            views.dispatch(e)
-            nativeSoundProvider.paused = false
-        }
-        eventDispatcher.onEvent(PauseEvent) { e ->
-            views.dispatch(e)
-            nativeSoundProvider.paused = true
-        }
-        eventDispatcher.onEvent(StopEvent) { e -> views.dispatch(e) }
-        eventDispatcher.onEvent(DestroyEvent) { e ->
-            try {
-                views.dispatch(e)
-            } finally {
-                views.launchImmediately {
-                    views.close()
-                }
-            }
-        }
-
-        val touchMouseEvent = MouseEvent()
-        eventDispatcher.onEvents(*TouchEvent.Type.ALL) { e ->
-            Korge.logger.trace { "eventDispatcher.addEventListener<TouchEvent>:$e" }
-
-            input.updateTouches(e)
-            val ee = input.touch
-            for (t in ee.touches) {
-                t.p = getRealXY(t.x.toDouble(), t.y.toDouble(), e.scaleCoords)
-            }
-            views.dispatch(ee)
-
-            // Touch to mouse events
-            if (ee.numTouches == 1) {
-                val start = ee.isStart
-                val end = ee.isEnd
-                val t = ee.touches.first()
-                val p = t.p
-                val x = t.x
-                val y = t.y
-                val button = MouseButton.LEFT
-
-                //updateTouch(t.id, x, y, start, end)
-                when {
-                    start -> mouseDown("onTouchStart", p, button)
-                    end -> mouseUp("onTouchEnd", p, button)
-                    else -> mouseMove("onTouchMove", p, inside = true)
-                }
-                views.dispatch(touchMouseEvent.also {
-                    it.id = 0
-                    it.button = button
-                    it.buttons = if (end) 0 else 1 shl button.id
-                    it.x = x.toInt()
-                    it.y = y.toInt()
-                    it.scaleCoords = false
-                    it.emulated = true
-                    it.type = when {
-                        start -> MouseEvent.Type.DOWN
-                        end -> MouseEvent.Type.UP
-                        else -> MouseEvent.Type.DRAG
-                    }
-                })
-                if (end) {
-                    moveMouseOutsideInNextFrame = true
-                }
-            }
-
-        }
-
-        fun gamepadUpdated(e: GamePadUpdateEvent) {
-            e.gamepads.fastForEach { gamepad ->
-                input.gamepads[gamepad.index].copyFrom(gamepad)
-            }
-            input.updateConnectedGamepads()
-        }
-
-        eventDispatcher.onEvents(*GamePadConnectionEvent.Type.ALL) { e ->
-            Korge.logger.trace { "eventDispatcher.addEventListener<GamePadConnectionEvent>:$e" }
-            views.dispatch(e)
-        }
-
-        eventDispatcher.onEvent(GamePadUpdateEvent) { e ->
-            gamepadUpdated(e)
-            views.dispatch(e)
-        }
-
-        eventDispatcher.onEvent(ReshapeEvent) { e ->
-            //try { throw Exception() } catch (e: Throwable) { e.printStackTrace() }
-            //println("eventDispatcher.addEventListener<ReshapeEvent>: ${ag.backWidth}x${ag.backHeight} : ${e.width}x${e.height}")
-            //println("resized. ${ag.backWidth}, ${ag.backHeight}")
-            views.resized(ag.mainFrameBuffer.width, ag.mainFrameBuffer.height)
-        }
-
-        //println("eventDispatcher.dispatch(ReshapeEvent(0, 0, views.nativeWidth, views.nativeHeight)) : ${views.nativeWidth}x${views.nativeHeight}")
-        eventDispatcher.dispatch(ReshapeEvent(0, 0, views.nativeWidth, views.nativeHeight))
-
-        eventDispatcher.onEvent(ReloadEvent) { views.dispatch(it) }
-
-        var renderShown = false
-        views.clearEachFrame = clearEachFrame
-        views.clearColor = bgcolor
-        val firstRenderDeferred = CompletableDeferred<Unit>()
-
-        fun renderBlock(event: RenderEvent) {
-            //println("renderBlock: $event")
-            try {
-                views.frameUpdateAndRender(
-                    fixedSizeStep = fixedSizeStep,
-                    forceRender = views.forceRenderEveryFrame,
-                    doUpdate = event.update,
-                    doRender = event.render,
-                )
-
-                views.input.mouseOutside = false
-                if (moveMouseOutsideInNextFrame) {
-                    moveMouseOutsideInNextFrame = false
-                    views.input.mouseOutside = true
-                    views.input.mouseInside = false
-                    views.mouseUpdated()
-                }
-            } catch (e: Throwable) {
-                Korge.logger.error { "views.gameWindow.onRenderEvent:" }
-                e.printStackTrace()
-                if (views.rethrowRenderError) throw e
-            }
-        }
-
-        views.gameWindow.onRenderEvent { event ->
-            //println("RenderEvent: $event")
-            if (!event.render) {
-                renderBlock(event)
-            } else {
-                views.renderContext.doRender {
-                    if (!renderShown) {
-                        //println("!!!!!!!!!!!!! views.gameWindow.addEventListener<RenderEvent>")
-                        renderShown = true
-                        firstRenderDeferred.complete(Unit)
-                    }
-                    renderBlock(event)
-                }
-            }
-        }
-
-        return firstRenderDeferred
     }
 }

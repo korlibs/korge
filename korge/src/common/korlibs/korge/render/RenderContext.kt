@@ -53,7 +53,7 @@ class RenderContext(
     DeviceDimensionsProvider by deviceDimensionsProvider,
     Closeable
 {
-    val quality: GameWindow.Quality get() = windowConfig.quality
+    val quality: GameWindowQuality get() = windowConfig.quality
 
     @PublishedApi internal val _buffers = AGProgramWithUniforms.BufferCache()
     private val _programs = FastIdentityMap<Program, AGProgramWithUniforms>()

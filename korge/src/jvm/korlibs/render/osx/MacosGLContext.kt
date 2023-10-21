@@ -7,10 +7,8 @@ import korlibs.graphics.gl.*
 import korlibs.io.dynamic.*
 import korlibs.kgl.*
 import korlibs.math.geom.*
+import korlibs.memory.dyn.*
 import korlibs.memory.dyn.osx.*
-import korlibs.memory.dyn.osx.CGFloat
-import korlibs.memory.dyn.osx.NSRect
-import korlibs.memory.dyn.osx.NativeName
 import korlibs.render.*
 import korlibs.render.platform.*
 import java.awt.*
@@ -20,7 +18,7 @@ import javax.swing.*
 class MacosGLContext(
     var contentView: Long = 0L,
     val window: Long = 0L,
-    val quality: GameWindow.Quality = GameWindow.Quality.AUTOMATIC,
+    val quality: GameWindowQuality = GameWindowQuality.AUTOMATIC,
     val sharedContext: Long = 0L,
 ) : BaseOpenglContext {
     companion object {
@@ -41,7 +39,7 @@ class MacosGLContext(
     }
 
     val attrs: IntArray by lazy {
-        val antialias = (this.quality == GameWindow.Quality.QUALITY)
+        val antialias = (this.quality == GameWindowQuality.QUALITY)
         val antialiasArray = if (antialias) intArrayOf(
             NSOpenGLPFAMultisample,
             NSOpenGLPFASampleBuffers, 1,

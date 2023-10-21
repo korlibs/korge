@@ -1,17 +1,17 @@
 package korlibs.render.win32
 
-import korlibs.kgl.*
-import korlibs.logger.*
-import korlibs.render.*
-import korlibs.render.platform.*
-import korlibs.image.bitmap.*
-import korlibs.io.lang.*
 import com.sun.jna.*
 import com.sun.jna.Function
 import com.sun.jna.platform.win32.*
 import com.sun.jna.platform.win32.WinDef.*
 import com.sun.jna.ptr.*
 import com.sun.jna.win32.*
+import korlibs.image.bitmap.*
+import korlibs.io.lang.*
+import korlibs.kgl.*
+import korlibs.logger.*
+import korlibs.render.*
+import korlibs.render.platform.*
 import java.awt.*
 import java.io.*
 import java.lang.reflect.*
@@ -359,9 +359,9 @@ class Win32OpenglContext(val gwconfig: GameWindowConfig, val hWnd: WinDef.HWND, 
         //println("makeCurrent")
         makeCurrent(hDC, hRC)
         when (gwconfig.quality) {
-            GameWindow.Quality.QUALITY -> DirectGL.glEnable(GL_MULTISAMPLE)
-            GameWindow.Quality.PERFORMANCE,
-            GameWindow.Quality.AUTOMATIC -> DirectGL.glDisable(GL_MULTISAMPLE)
+            GameWindowQuality.QUALITY -> DirectGL.glEnable(GL_MULTISAMPLE)
+            GameWindowQuality.PERFORMANCE,
+            GameWindowQuality.AUTOMATIC -> DirectGL.glDisable(GL_MULTISAMPLE)
         }
 
     }

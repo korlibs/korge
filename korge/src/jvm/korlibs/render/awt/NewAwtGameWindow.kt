@@ -1,20 +1,42 @@
 package korlibs.render.awt
 
+import korlibs.datastructure.*
 import korlibs.datastructure.event.*
 import korlibs.datastructure.thread.*
 import korlibs.graphics.*
 import korlibs.image.awt.*
 import korlibs.image.bitmap.*
-import korlibs.io.async.*
 import korlibs.render.*
 import korlibs.time.*
 import java.awt.*
 import java.awt.event.*
 import javax.swing.*
 
-class NewAwtGameWindow : GameWindow() {
-    val canvas = AwtAGOpenglCanvas()
+val AwtAGOpenglCanvas.gameWindow: NewAwtCanvasGameWindow by Extra.PropertyThis { NewAwtCanvasGameWindow(this) }
+
+open class NewAwtCanvasGameWindow(val canvas: AwtAGOpenglCanvas) : GameWindow() {
     override val ag: AG get() = canvas.ag
+
+    val thread = nativeThread(name = "NewAwtGameWindow") {
+        eventLoop.runTasksForever()
+    }
+
+    init {
+        canvas.doRender = {
+            dispatchNewRenderEvent()
+        }
+        coroutineDispatcher.eventLoop.setInterval(60.hz) {
+            dispatchUpdateEvent()
+        }
+    }
+
+    override fun close(exitCode: Int) {
+        super.close(exitCode)
+        coroutineDispatcher.close()
+    }
+}
+
+class NewAwtGameWindow(val config: GameWindowCreationConfig = GameWindowCreationConfig()) : NewAwtCanvasGameWindow(AwtAGOpenglCanvas()) {
     val frame = object : JFrame() {
         init {
             isVisible = false
@@ -37,39 +59,13 @@ class NewAwtGameWindow : GameWindow() {
         }
     }
 
-    val thread = nativeThread(name = "NewAwtGameWindow") {
-        myCoroutineDispatcher.loopForever()
-    }
-
-    init {
-        canvas.doRender = {
-            dispatchNewRenderEvent()
-        }
-        myCoroutineDispatcher.eventLoop.setInterval(60.hz) {
-            dispatchUpdateEvent()
-        }
-    }
-
-    override var alwaysOnTop: Boolean
-        get() = frame.isAlwaysOnTop
-        set(value) { frame.isAlwaysOnTop = value }
+    override var alwaysOnTop: Boolean by frame::_isAlwaysOnTop
     override var title: String by frame::title
-    override var visible: Boolean
-        get() = frame.isVisible
-        set(value) { frame.isVisible = value }
+    override var visible: Boolean by frame::visible
     override var icon: Bitmap? = null
         set(value) {
             field = value
             frame.setIconIncludingTaskbarFromImage(value?.toAwt())
         }
     override var fullscreen: Boolean by frame::isFullScreen
-
-    override suspend fun loop(entry: suspend GameWindow.() -> Unit) {
-        launchUnscoped { entry() }
-    }
-
-    override fun close(exitCode: Int) {
-        super.close(exitCode)
-        myCoroutineDispatcher.close()
-    }
 }

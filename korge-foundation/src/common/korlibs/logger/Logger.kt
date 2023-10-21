@@ -1,5 +1,9 @@
 package korlibs.logger
 
+import korlibs.datastructure.lock.*
+import korlibs.time.*
+import kotlin.time.*
+
 /**
  * Utility to log messages.
  *
@@ -37,6 +41,7 @@ class Logger private constructor(val name: String, val normalizedName: String, v
     val isLocalOutputSet: Boolean get() = optOutput != null
 
     companion object {
+        private val Logger_lock = Lock()
         private val Logger_loggers = HashMap<String, Logger>()
 
         /** The default [Level] used for all [Logger] that doesn't have its [Logger.level] set */
@@ -46,7 +51,7 @@ class Logger private constructor(val name: String, val normalizedName: String, v
         var defaultOutput: Output = DefaultLogOutput
 
         /** Gets a [Logger] from its [name] */
-        operator fun invoke(name: String): Logger {
+        operator fun invoke(name: String): Logger = Logger_lock {
             val normalizedName = normalizeName(name)
             if (Logger_loggers[normalizedName] == null) {
                 val logger = Logger(name, normalizedName, true)
@@ -137,6 +142,12 @@ class Logger private constructor(val name: String, val normalizedName: String, v
 
     /** Traces the lazily executed [msg] if the [Logger.level] is at least [Level.TRACE] */
     inline fun trace(msg: () -> Any?) = log(Level.TRACE, msg)
+
+    inline fun <T> logTime(name: String, level: Level = Level.INFO, block: () -> T): T {
+        val (value, time) = measureTimedValue(block)
+        log(level) { "$name: $time" }
+        return value
+    }
 
     @PublishedApi
     internal fun actualLog(level: Level, msg: Any?) { output.output(this, level, msg) }

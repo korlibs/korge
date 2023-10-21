@@ -39,20 +39,19 @@ import kotlin.coroutines.*
  * and contains a reference to the [root] [Stage] view.
  */
 class Views(
-    override val coroutineContext: CoroutineContext,
-    val ag: AG,
+    val gameWindow: GameWindow,
+    override val coroutineContext: CoroutineContext = gameWindow.coroutineDispatcher,
+    val ag: AG = gameWindow.ag,
     val injector: Injector = Injector(),
     val input: Input = Input(),
     val timeProvider: TimeProvider = TimeProvider,
     val stats: Stats = Stats(),
-    val gameWindow: GameWindow,
     val gameId: String = "korgegame",
     val settingsFolder: String? = null,
     val batchMaxQuads: Int = BatchBuilder2D.DEFAULT_BATCH_QUADS,
     val bp: BoundsProvider = BoundsProvider.Base(),
     val stageBuilder: (Views) -> Stage = { Stage(it) }
 ) : BaseEventListener(),
-    Extra by Extra.Mixin(),
     CoroutineScope, ViewsContainer,
 	BoundsProvider by bp,
     DialogInterfaceProvider by gameWindow,
@@ -61,9 +60,7 @@ class Views(
     InvalidateNotifier,
     DeviceDimensionsProvider by gameWindow
 {
-    constructor(gameWindow: GameWindow) : this(
-        gameWindow, gameWindow.ag, gameWindow = gameWindow
-    )
+    //constructor(gameWindow: GameWindow) : this(gameWindow, gameWindow.ag, gameWindow = gameWindow)
 
     var quality by gameWindow::quality
 
@@ -496,7 +493,7 @@ class ViewsLog constructor(
 	val stats: Stats = Stats(),
 	val gameWindow: GameWindow = GameWindowLog()
 ) : CoroutineScope {
-	val views: Views = Views(coroutineContext + InjectorContext(injector), ag, injector, input, timeProvider, stats, gameWindow).also {
+	val views: Views = Views(gameWindow, coroutineContext + InjectorContext(injector), ag, injector, input, timeProvider, stats).also {
 	    it.rethrowRenderError = true
     }
     val stage: Stage get() = views.stage

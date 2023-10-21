@@ -1,5 +1,6 @@
 package korlibs.render.awt
 
+import korlibs.datastructure.*
 import korlibs.graphics.*
 import korlibs.graphics.gl.*
 import korlibs.kgl.*
@@ -20,7 +21,7 @@ import javax.swing.*
 // https://www.oracle.com/java/technologies/painting.html
 // https://docs.oracle.com/javase/tutorial/extra/fullscreen/rendering.html
 // https://docs.oracle.com/javase/tutorial/extra/fullscreen/doublebuf.html
-open class AwtAGOpenglCanvas : Canvas(), BoundsProvider by BoundsProvider.Base() {
+open class AwtAGOpenglCanvas : Canvas(), BoundsProvider by BoundsProvider.Base(), Extra by Extra.Mixin() {
     init {
         System.setProperty("sun.java2d.opengl", "true")
     }

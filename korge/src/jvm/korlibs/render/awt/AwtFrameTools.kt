@@ -21,10 +21,12 @@ import java.io.*
 import javax.imageio.*
 import javax.swing.*
 
+object AwtFrameTools
+
 fun JFrame.setIconIncludingTaskbarFromResource(path: String) {
     runCatching {
-        val awtImageURL = AwtGameWindow::class.java.getResource("/$path")
-            ?: AwtGameWindow::class.java.getResource(path)
+        val awtImageURL = AwtFrameTools::class.java.getResource("/$path")
+            ?: AwtFrameTools::class.java.getResource(path)
             ?: ClassLoader.getSystemResource(path)
         setIconIncludingTaskbarFromImage(awtImageURL?.let { ImageIO.read(it) })
     }
@@ -170,25 +172,25 @@ val Component.pixelsPerInch: Double get() {
 }
 
 
-val GameWindow.Cursor.jvmCursor: java.awt.Cursor get() = java.awt.Cursor(when (this) {
-    GameWindow.Cursor.DEFAULT -> java.awt.Cursor.DEFAULT_CURSOR
-    GameWindow.Cursor.CROSSHAIR -> java.awt.Cursor.CROSSHAIR_CURSOR
-    GameWindow.Cursor.TEXT -> java.awt.Cursor.TEXT_CURSOR
-    GameWindow.Cursor.HAND -> java.awt.Cursor.HAND_CURSOR
-    GameWindow.Cursor.MOVE -> java.awt.Cursor.MOVE_CURSOR
-    GameWindow.Cursor.WAIT -> java.awt.Cursor.WAIT_CURSOR
-    GameWindow.Cursor.RESIZE_EAST -> java.awt.Cursor.E_RESIZE_CURSOR
-    GameWindow.Cursor.RESIZE_SOUTH -> java.awt.Cursor.S_RESIZE_CURSOR
-    GameWindow.Cursor.RESIZE_WEST -> java.awt.Cursor.W_RESIZE_CURSOR
-    GameWindow.Cursor.RESIZE_NORTH -> java.awt.Cursor.N_RESIZE_CURSOR
-    GameWindow.Cursor.RESIZE_NORTH_EAST -> java.awt.Cursor.NE_RESIZE_CURSOR
-    GameWindow.Cursor.RESIZE_NORTH_WEST -> java.awt.Cursor.NW_RESIZE_CURSOR
-    GameWindow.Cursor.RESIZE_SOUTH_EAST -> java.awt.Cursor.SE_RESIZE_CURSOR
-    GameWindow.Cursor.RESIZE_SOUTH_WEST -> java.awt.Cursor.SW_RESIZE_CURSOR
+val korlibs.render.Cursor.jvmCursor: java.awt.Cursor get() = java.awt.Cursor(when (this) {
+    korlibs.render.Cursor.DEFAULT -> java.awt.Cursor.DEFAULT_CURSOR
+    korlibs.render.Cursor.CROSSHAIR -> java.awt.Cursor.CROSSHAIR_CURSOR
+    korlibs.render.Cursor.TEXT -> java.awt.Cursor.TEXT_CURSOR
+    korlibs.render.Cursor.HAND -> java.awt.Cursor.HAND_CURSOR
+    korlibs.render.Cursor.MOVE -> java.awt.Cursor.MOVE_CURSOR
+    korlibs.render.Cursor.WAIT -> java.awt.Cursor.WAIT_CURSOR
+    korlibs.render.Cursor.RESIZE_EAST -> java.awt.Cursor.E_RESIZE_CURSOR
+    korlibs.render.Cursor.RESIZE_SOUTH -> java.awt.Cursor.S_RESIZE_CURSOR
+    korlibs.render.Cursor.RESIZE_WEST -> java.awt.Cursor.W_RESIZE_CURSOR
+    korlibs.render.Cursor.RESIZE_NORTH -> java.awt.Cursor.N_RESIZE_CURSOR
+    korlibs.render.Cursor.RESIZE_NORTH_EAST -> java.awt.Cursor.NE_RESIZE_CURSOR
+    korlibs.render.Cursor.RESIZE_NORTH_WEST -> java.awt.Cursor.NW_RESIZE_CURSOR
+    korlibs.render.Cursor.RESIZE_SOUTH_EAST -> java.awt.Cursor.SE_RESIZE_CURSOR
+    korlibs.render.Cursor.RESIZE_SOUTH_WEST -> java.awt.Cursor.SW_RESIZE_CURSOR
     else -> java.awt.Cursor.DEFAULT_CURSOR
 })
 
-val GameWindow.CustomCursor.jvmCursor: java.awt.Cursor by extraPropertyThis {
+val CustomCursor.jvmCursor: java.awt.Cursor by extraPropertyThis {
     val toolkit = Toolkit.getDefaultToolkit()
     val size = toolkit.getBestCursorSize(bounds.width.toIntCeil(), bounds.height.toIntCeil())
     val result = this.createBitmap(Size(size.width, size.height))
@@ -200,15 +202,15 @@ val GameWindow.CustomCursor.jvmCursor: java.awt.Cursor by extraPropertyThis {
     }
 }
 
-val GameWindow.ICursor.jvmCursor: java.awt.Cursor get() {
+val ICursor.jvmCursor: java.awt.Cursor get() {
     return when (this) {
-        is GameWindow.Cursor -> this.jvmCursor
-        is GameWindow.CustomCursor -> this.jvmCursor
+        is korlibs.render.Cursor -> this.jvmCursor
+        is CustomCursor -> this.jvmCursor
         else -> java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR)
     }
 }
 
-fun Component.hapticFeedbackGenerate(kind: GameWindow.HapticFeedbackKind) {
+fun Component.hapticFeedbackGenerate(kind: HapticFeedbackKind) {
     when {
         Platform.os.isMac -> {
             val KIND_GENERIC = 0
@@ -220,9 +222,9 @@ fun Component.hapticFeedbackGenerate(kind: GameWindow.HapticFeedbackKind) {
             val PERFORMANCE_TIME_DRAW_COMPLETED = 2
 
             val kindInt = when (kind) {
-                GameWindow.HapticFeedbackKind.GENERIC -> KIND_GENERIC
-                GameWindow.HapticFeedbackKind.ALIGNMENT -> KIND_ALIGNMENT
-                GameWindow.HapticFeedbackKind.LEVEL_CHANGE -> KIND_LEVEL_CHANGE
+                HapticFeedbackKind.GENERIC -> KIND_GENERIC
+                HapticFeedbackKind.ALIGNMENT -> KIND_ALIGNMENT
+                HapticFeedbackKind.LEVEL_CHANGE -> KIND_LEVEL_CHANGE
             }
             val performanceTime = PERFORMANCE_TIME_NOW
 
@@ -318,3 +320,24 @@ fun Component.registerGestureListeners(dispatcher: GameWindow) {
         e.printStackTrace()
     }
 }
+
+fun GameWindowMenuItem?.toJMenuItem(): JComponent {
+    val item = this
+    return when {
+        item?.text == null -> JSeparator()
+        item.children != null -> {
+            JMenu(item.text).also {
+                it.isEnabled = item.enabled
+                it.addActionListener { item.action() }
+                for (child in item.children) {
+                    it.add(child.toJMenuItem())
+                }
+            }
+        }
+        else -> JMenuItem(item.text).also {
+            it.isEnabled = item.enabled
+            it.addActionListener { item.action() }
+        }
+    }
+}
+

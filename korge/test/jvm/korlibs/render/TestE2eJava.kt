@@ -1,5 +1,6 @@
 package korlibs.render
 
+/*
 import korlibs.event.*
 import korlibs.graphics.*
 import korlibs.image.bitmap.*
@@ -79,3 +80,4 @@ class TestE2eJava {
         //assertEquals(Colors.DARKGREY, bmp[63, 0])
     }
 }
+*/

@@ -1,5 +1,6 @@
 package korlibs.render.awt
 
+/*
 import korlibs.datastructure.*
 import korlibs.event.*
 import korlibs.graphics.*
@@ -59,27 +60,7 @@ abstract class BaseAwtGameWindow(
             component.cursor = value.jvmCursor
         }
 
-    fun MenuItem?.toJMenuItem(): JComponent {
-        val item = this
-        return when {
-            item?.text == null -> JSeparator()
-            item.children != null -> {
-                JMenu(item.text).also {
-                    it.isEnabled = item.enabled
-                    it.addActionListener { item.action() }
-                    for (child in item.children) {
-                        it.add(child.toJMenuItem())
-                    }
-                }
-            }
-            else -> JMenuItem(item.text).also {
-                it.isEnabled = item.enabled
-                it.addActionListener { item.action() }
-            }
-        }
-    }
-
-    override fun setMainMenu(items: List<MenuItem>) {
+    override fun setMainMenu(items: List<GameWindowMenuItem>) {
         val component = this.component
         if (component !is JFrame) {
             println("GameWindow.setMainMenu: component=$component")
@@ -99,7 +80,7 @@ abstract class BaseAwtGameWindow(
         println("GameWindow.setMainMenu: component=$component, bar=$bar")
     }
 
-    override fun showContextMenu(items: List<MenuItem>) {
+    override fun showContextMenu(items: List<GameWindowMenuItem>) {
         val popupMenu = JPopupMenu()
         for (item in items) {
             popupMenu.add(item.toJMenuItem())
@@ -246,7 +227,7 @@ abstract class BaseAwtGameWindow(
     override val width: Int get() = (scaledWidth).toInt()
     override val height: Int get() = (scaledHeight).toInt()
     override var visible: Boolean by LazyDelegate { component::visible }
-    override var bgcolor: RGBA
+    override var backgroundColor: RGBA
         get() = component.background.toRgba()
         set(value) {
             component.background = value.toAwt()
@@ -592,3 +573,4 @@ abstract class BaseAwtGameWindow(
     override val hapticFeedbackGenerateSupport: Boolean get() = true
     override fun hapticFeedbackGenerate(kind: HapticFeedbackKind) = component.hapticFeedbackGenerate(kind)
 }
+*/

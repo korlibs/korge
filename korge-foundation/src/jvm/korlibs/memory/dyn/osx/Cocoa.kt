@@ -10,19 +10,7 @@ import java.util.concurrent.*
 //inline class ID(val id: Long)
 typealias ID = Long
 
-annotation class NativeName(val name: String) {
-    companion object {
-        val OPTIONS = mapOf(
-            Library.OPTION_FUNCTION_MAPPER to FunctionMapper { _, method ->
-                method.getAnnotation(NativeName::class.java)?.name ?: method.name
-            }
-        )
-    }
-}
-
 typealias NSRectPtr = Pointer
-
-inline fun <reified T : Library> NativeLoad(name: String): T = Native.load(name, T::class.java, NativeName.OPTIONS) as T
 
 // https://developer.apple.com/documentation/objectivec/objective-c_runtime
 interface ObjectiveC : Library {

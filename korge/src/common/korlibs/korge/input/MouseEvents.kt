@@ -44,7 +44,7 @@ class MouseEvents(val view: View) : Extra by Extra.Mixin(), Closeable {
                     view = view.parent
                 }
 
-                val newCursor = view?.cursor ?: GameWindow.Cursor.DEFAULT
+                val newCursor = view?.cursor ?: Cursor.DEFAULT
                 if (views.gameWindow.cursor != newCursor) {
                     views.gameWindow.cursor = newCursor
                 }
@@ -637,7 +637,7 @@ fun MouseEvents.multiClick(count: Int, callback: (MouseEvents) -> Unit): Closeab
 }
 
 @ThreadLocal // @TODO: Is this required?
-var View.cursor: GameWindow.ICursor? by extraProperty { null }
+var View.cursor: ICursor? by extraProperty { null }
 
 //    get() = mouse.cursor
 //    set(value) { mouse.cursor = value }

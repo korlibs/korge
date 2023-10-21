@@ -1,14 +1,11 @@
 package korlibs.render.awt
 
 import korlibs.graphics.*
-import korlibs.kgl.*
 import korlibs.graphics.gl.*
 import korlibs.kgl.*
-import korlibs.korge.view.*
 import korlibs.render.*
 import korlibs.render.platform.*
 import java.awt.*
-import java.awt.Graphics
 import java.io.*
 
 open class GLCanvas constructor(checkGl: Boolean = true, val logGl: Boolean = false, cacheGl: Boolean = false) : Canvas(), GameWindowConfig, Closeable {
@@ -100,5 +97,5 @@ open class GLCanvas constructor(checkGl: Boolean = true, val logGl: Boolean = fa
         }
     }
 
-    override var quality: GameWindow.Quality = GameWindow.Quality.AUTOMATIC
+    override var quality: GameWindowQuality = GameWindowQuality.AUTOMATIC
 }

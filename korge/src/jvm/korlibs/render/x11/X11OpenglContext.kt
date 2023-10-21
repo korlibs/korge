@@ -1,12 +1,11 @@
 package korlibs.render.x11
 
+import com.sun.jna.*
+import com.sun.jna.platform.unix.*
+import korlibs.io.lang.*
+import korlibs.math.*
 import korlibs.render.*
 import korlibs.render.platform.*
-import korlibs.io.lang.*
-import com.sun.jna.CallbackReference
-import com.sun.jna.Pointer
-import com.sun.jna.platform.unix.*
-import korlibs.math.*
 
 // https://www.khronos.org/opengl/wiki/Tutorial:_OpenGL_3.0_Context_Creation_(GLX)
 class X11OpenglContext(val gwconfig: GameWindowConfig, val d: X11.Display?, val w: X11.Drawable?, val scr: Int, val vi: XVisualInfo? = chooseVisuals(d, scr), val doubleBuffered: Boolean = true) : BaseOpenglContext {
@@ -22,44 +21,9 @@ class X11OpenglContext(val gwconfig: GameWindowConfig, val d: X11.Display?, val 
                         for (depth in listOf(24, 16, 0)) {
                             for (stencil in listOf(8, 0)) {
                                 for (doubleBuffer in listOf(true, false)) {
-                                    val attrs = buildList<Int> {
-                                        if (specifyRenderType) {
-                                            //add(GLX_RENDER_TYPE)
-                                            //add(GLX_RGBA_BIT)
-                                            add(GLX_RGBA)
-                                        }
-                                        if (doubleBuffer) {
-                                            add(GLX_DOUBLEBUFFER)
-                                            add(doubleBuffer.toInt())
-                                        }
-                                        if (depth != 0) {
-                                            add(GLX_DEPTH_SIZE)
-                                            add(depth)
-                                        }
-                                        if (stencil != 0) {
-                                            add(GLX_STENCIL_SIZE)
-                                            add(stencil)
-                                        }
-                                        if (bitsPerColorComponent != 0) {
-                                            add(GLX_RED_SIZE)
-                                            add(bitsPerColorComponent)
-                                            add(GLX_GREEN_SIZE)
-                                            add(bitsPerColorComponent)
-                                            add(GLX_BLUE_SIZE)
-                                            add(bitsPerColorComponent)
-                                        }
-                                        if (multisampling) {
-                                            add(GLX_SAMPLE_BUFFERS)
-                                            add(1)
-                                            add(GLX_SAMPLES)
-                                            add(4)
-                                        }
-                                        add(X11.None)
-                                    }.toIntArray()
-                                    val vi = X.glXChooseVisual(d, scr, attrs)
-                                    if (vi != null) {
-                                        println("VI: $vi (doubleBuffer=$doubleBuffer, depth=$depth, bitsPerColorComponent=$bitsPerColorComponent, specifyRenderType=$specifyRenderType)")
-                                        return vi
+                                    chooseVisual(d, scr, multisampling, specifyRenderType, bitsPerColorComponent, depth, stencil, doubleBuffer)?.let {
+                                        println("VI: $it (doubleBuffer=$doubleBuffer, depth=$depth, bitsPerColorComponent=$bitsPerColorComponent, specifyRenderType=$specifyRenderType)")
+                                        return it
                                     }
                                 }
                             }
@@ -68,9 +32,57 @@ class X11OpenglContext(val gwconfig: GameWindowConfig, val d: X11.Display?, val 
                 }
             }
 
-
             println("VI: null")
             return null
+        }
+
+
+        private fun chooseVisual(
+            d: X11.Display?,
+            scr: Int = X.XDefaultScreen(d),
+            multisampling: Boolean,
+            specifyRenderType: Boolean,
+            bitsPerColorComponent: Int,
+            depth: Int,
+            stencil: Int,
+            doubleBuffer: Boolean,
+        ): XVisualInfo? {
+            val attrs = buildList<Int> {
+                if (specifyRenderType) {
+                    //add(GLX_RENDER_TYPE)
+                    //add(GLX_RGBA_BIT)
+                    add(GLX_RGBA)
+                }
+                if (doubleBuffer) {
+                    add(GLX_DOUBLEBUFFER)
+                    add(doubleBuffer.toInt())
+                }
+                if (depth != 0) {
+                    add(GLX_DEPTH_SIZE)
+                    add(depth)
+                }
+                if (stencil != 0) {
+                    add(GLX_STENCIL_SIZE)
+                    add(stencil)
+                }
+                if (bitsPerColorComponent != 0) {
+                    add(GLX_RED_SIZE)
+                    add(bitsPerColorComponent)
+                    add(GLX_GREEN_SIZE)
+                    add(bitsPerColorComponent)
+                    add(GLX_BLUE_SIZE)
+                    add(bitsPerColorComponent)
+                }
+                if (multisampling) {
+                    add(GLX_SAMPLE_BUFFERS)
+                    add(1)
+                    add(GLX_SAMPLES)
+                    add(4)
+                }
+                add(X11.None)
+            }.toIntArray()
+            val vi = X.glXChooseVisual(d, scr, attrs)
+            return vi
         }
     }
     init {
@@ -122,16 +134,16 @@ class X11OpenglContext(val gwconfig: GameWindowConfig, val d: X11.Display?, val 
     }
 
     private var glXSwapIntervalEXTSet: Boolean = false
-    private var swapIntervalEXT: X11GameWindow.glXSwapIntervalEXTCallback? = null
+    private var swapIntervalEXT: glXSwapIntervalEXTCallback? = null
     private var swapIntervalEXTPointer: Pointer? = null
 
-    private fun getSwapInterval(): X11GameWindow.glXSwapIntervalEXTCallback? {
+    private fun getSwapInterval(): glXSwapIntervalEXTCallback? {
         if (!glXSwapIntervalEXTSet) {
             glXSwapIntervalEXTSet = true
             swapIntervalEXTPointer = X.glXGetProcAddress("glXSwapIntervalEXT")
 
             swapIntervalEXT = when {
-                swapIntervalEXTPointer != Pointer.NULL -> CallbackReference.getCallback(X11GameWindow.glXSwapIntervalEXTCallback::class.java, swapIntervalEXTPointer) as? X11GameWindow.glXSwapIntervalEXTCallback?
+                swapIntervalEXTPointer != Pointer.NULL -> CallbackReference.getCallback(glXSwapIntervalEXTCallback::class.java, swapIntervalEXTPointer) as? glXSwapIntervalEXTCallback?
                 else -> null
             }
             println("swapIntervalEXT: $swapIntervalEXT")

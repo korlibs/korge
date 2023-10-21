@@ -1,10 +1,9 @@
 package korlibs.render.osx
 
 import com.sun.jna.*
+import korlibs.memory.dyn.*
 import korlibs.memory.dyn.osx.*
-import korlibs.memory.dyn.osx.NativeName
 import korlibs.render.platform.*
-import korlibs.render.platform.NativeLoad
 
 class NSApplication(id: Long) : NSObject(id) {
     fun setActivationPolicy(value: Int) = id.msgSend("setActivationPolicy:", value.toLong())

@@ -1,16 +1,14 @@
 package korlibs.korge.service.haptic
 
-import korlibs.datastructure.extraPropertyThis
-import korlibs.time.milliseconds
-import korlibs.korge.service.vibration.vibration
-import korlibs.korge.view.Views
+import korlibs.datastructure.*
+import korlibs.korge.service.vibration.*
+import korlibs.korge.view.*
 import korlibs.render.*
-import kotlin.native.concurrent.ThreadLocal
+import korlibs.time.*
+import kotlin.native.concurrent.*
 
 @ThreadLocal
 val Views.hapticFeedback by extraPropertyThis { HapticFeedback(this) }
-
-typealias HapticFeedbackKind = GameWindow.HapticFeedbackKind
 
 // https://developer.apple.com/design/human-interface-guidelines/ios/user-interaction/haptics/
 open class HapticFeedback(val views: Views) {

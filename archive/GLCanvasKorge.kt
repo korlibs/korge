@@ -1,11 +1,14 @@
 package korlibs.korge
 
+/*
 import korlibs.io.async.*
 import korlibs.korge.internal.*
 import korlibs.korge.view.*
 import korlibs.math.geom.*
 import korlibs.render.awt.*
+import korlibs.render.platform.*
 import kotlinx.coroutines.*
+import java.awt.*
 import java.io.*
 
 fun GLCanvasWithKorge(
@@ -99,3 +102,19 @@ class GLCanvasKorge internal constructor(
         }
     }
 }
+
+open class GLCanvasGameWindow(
+    val canvas: GLCanvas,
+) : BaseAwtGameWindow(canvas.ag) {
+    init {
+        exitProcessOnClose = false
+        canvas.defaultRenderer = { gl, g ->
+            framePaint(g)
+        }
+    }
+
+    override val ctx: BaseOpenglContext get() = canvas.ctx!!
+    override val component: Component get() = canvas
+    override val contentComponent: Component get() = canvas
+}
+*/

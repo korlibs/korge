@@ -39,7 +39,10 @@ class SyncEventLoop(
         }
     }
     private val startTime = TimeSource.Monotonic.markNow()
-    private val now: Duration get() = startTime.elapsedNow()
+
+    var nowProvider: () -> Duration = { startTime.elapsedNow() }
+
+    private val now: Duration get() = nowProvider()
     private val tasks = ArrayDeque<() -> Unit>()
     private val timedTasks = TGenPriorityQueue<TimedTask> { a, b -> a.compareTo(b) }
 
@@ -109,12 +112,22 @@ class SyncEventLoop(
         return count
     }
 
+    var uncatchedExceptionHandler: (Throwable) -> Unit = { it.printStackTrace() }
+
+    private inline fun runCatchingExceptions(block: () -> Unit) {
+        try {
+            block()
+        } catch (e: Throwable) {
+            uncatchedExceptionHandler(e)
+        }
+    }
+
     fun runAvailableNextTask(): Boolean {
         val timedTask = lock {
             if (timedTasks.isNotEmpty() && shouldTimedTaskRun(timedTasks.head)) timedTasks.removeHead() else null
         }
         if (timedTask != null) {
-            timedTask.callback()
+            runCatchingExceptions { timedTask.callback() }
             if (timedTask.interval) {
                 timedTask.timeMark = maxOf(timedTask.timeMark + timedTask.time, now)
                 //println("READDED: timedTask.now=${timedTask.now}")
@@ -124,7 +137,7 @@ class SyncEventLoop(
         val task = lock {
             if (tasks.isNotEmpty()) tasks.removeFirst() else null
         }
-        task?.invoke()
+        runCatchingExceptions { task?.invoke() }
 
         return task != null || timedTask != null
     }

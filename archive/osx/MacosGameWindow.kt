@@ -8,63 +8,14 @@ import korlibs.image.format.*
 import korlibs.io.async.*
 import korlibs.io.util.*
 import korlibs.kgl.*
+import korlibs.memory.dyn.*
 import korlibs.memory.dyn.osx.*
 import korlibs.platform.Platform
 import korlibs.render.*
 import korlibs.render.platform.*
-import korlibs.render.platform.NativeLoad
 import java.nio.*
 import kotlin.coroutines.*
 import kotlin.system.*
-
-//open class MacKmlGL : NativeKgl(MacGL)
-open class MacKmlGL : NativeKgl(DirectGL)
-
-
-interface MacGL : INativeGL, Library {
-    companion object : MacGL by NativeLoad(nativeOpenGLLibraryPath) {
-    }
-
-    //fun CGLSetParameter(vararg args: Any?): Int
-    fun CGLEnable(ctx: Pointer?, enable: Int): Int
-    fun CGLDisable(ctx: Pointer?, enable: Int): Int
-    fun CGLChoosePixelFormat(attributes: Pointer, pix: Pointer, num: Pointer): Int
-    fun CGLCreateContext(pix: Pointer?, sharedCtx: Pointer?, ctx: Pointer?): Int
-    fun CGLDestroyPixelFormat(ctx: Pointer?): Int
-    fun CGLSetCurrentContext(ctx: Pointer?): Int
-    fun CGLGetCurrentContext(): Pointer?
-    fun CGLDestroyContext(ctx: Pointer?): Int
-    fun CGLGetPixelFormat(ctx: Pointer?): Pointer?
-
-    enum class Error(val id: Int) {
-        kCGLNoError            (0),        /* no error */
-        kCGLBadAttribute       (10000),	/* invalid pixel format attribute  */
-        kCGLBadProperty        (10001),	/* invalid renderer property       */
-        kCGLBadPixelFormat     (10002),	/* invalid pixel format            */
-        kCGLBadRendererInfo    (10003),	/* invalid renderer info           */
-        kCGLBadContext         (10004),	/* invalid context                 */
-        kCGLBadDrawable        (10005),	/* invalid drawable                */
-        kCGLBadDisplay         (10006),	/* invalid graphics device         */
-        kCGLBadState           (10007),	/* invalid context state           */
-        kCGLBadValue           (10008),	/* invalid numerical value         */
-        kCGLBadMatch           (10009),	/* invalid share context           */
-        kCGLBadEnumeration     (10010),	/* invalid enumerant               */
-        kCGLBadOffScreen       (10011),	/* invalid offscreen drawable      */
-        kCGLBadFullScreen      (10012),	/* invalid fullscreen drawable     */
-        kCGLBadWindow          (10013),	/* invalid window                  */
-        kCGLBadAddress         (10014),	/* invalid pointer                 */
-        kCGLBadCodeModule      (10015),	/* invalid code module             */
-        kCGLBadAlloc           (10016),	/* invalid memory allocation       */
-        kCGLBadConnection      (10017), /* invalid CoreGraphics connection */
-        kUnknownError      (-1);
-
-        companion object {
-            val VALUES = values().associateBy { it.id }
-
-            operator fun get(id: Int): Error = VALUES[id] ?: kUnknownError
-        }
-    }
-}
 
 private fun ByteArray.toNSData(): Long = NSClass("NSData").alloc().msgSend("initWithBytes:length:", ByteBuffer.wrap(this), this.size)
 
@@ -559,3 +510,7 @@ internal val CharToKeys = mapOf(
     '0' to Key.N0, '1' to Key.N1, '2' to Key.N2, '3' to Key.N3, '4' to Key.N4,
     '5' to Key.N5, '6' to Key.N6, '7' to Key.N7, '8' to Key.N8, '9' to Key.N9
 )
+
+class DialogInterfaceJvmCocoa(val gwProvider: () -> MacGameWindow) : DialogInterface {
+    val gw get() = gwProvider()
+}

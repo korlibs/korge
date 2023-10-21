@@ -1,5 +1,6 @@
 package korlibs.render.awt
 
+/*
 import korlibs.image.awt.*
 import korlibs.image.bitmap.*
 import korlibs.math.*
@@ -115,3 +116,4 @@ class AwtGameWindow(config: GameWindowCreationConfig = GameWindowCreationConfig.
         frame.dispose()
     }
 }
+*/

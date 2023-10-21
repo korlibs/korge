@@ -1,22 +1,19 @@
 package korlibs.render.osx
 
-import korlibs.datastructure.iterators.*
-import korlibs.memory.dyn.osx.*
-import korlibs.event.*
-import korlibs.render.*
-import korlibs.io.annotations.*
-import korlibs.io.util.*
-import korlibs.math.geom.*
 import com.sun.jna.*
+import korlibs.datastructure.iterators.*
+import korlibs.event.*
+import korlibs.io.annotations.*
+import korlibs.math.geom.*
+import korlibs.memory.dyn.osx.*
 import korlibs.number.*
+import korlibs.render.*
 import kotlin.reflect.*
 
 //fun main() {
 //}
 
-interface FrameworkInt : Library {
-
-}
+interface FrameworkInt : Library
 
 @PublishedApi
 internal inline fun <T> getValueOrNull(obj: ObjcRef, property: KProperty<*>, gen: (Long) -> T): T? =

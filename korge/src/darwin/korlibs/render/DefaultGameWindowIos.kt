@@ -21,6 +21,8 @@ import platform.GameController.*
 import platform.UIKit.*
 import platform.darwin.*
 
+actual fun CreateDefaultGameWindow(config: GameWindowCreationConfig): GameWindow = MyIosGameWindow
+
 expect val iosTvosTools: IosTvosToolsImpl
 
 open class IosTvosToolsImpl {
@@ -244,6 +246,9 @@ class MyGLKViewController(
 
             logger.info { "dispatchInitEvent" }
             gameWindow.dispatchInitEvent()
+            gameWindow.queue {
+
+            }
             gameWindow.entry {
                 logger.info { "Executing entry..." }
                 this.entry()
@@ -268,19 +273,9 @@ class MyGLKViewController(
             gameWindow.dispatchReshapeEvent(0, 0, width, height)
         }
 
-        //this.value++
-        //glDisable(GL_SCISSOR_TEST)
-        //glDisable(GL_STENCIL_TEST)
-        //glViewport(0, 0, 200, 300)
-        //glScissor(0, 0, 200, 300)
-        //glClearColor((this.value % 100).toFloat() / 100f, 0f, 1f, 1f)
-        //glClear(GL_COLOR_BUFFER_BIT)
-
         darwinGamePad.updateGamepads(gameWindow)
         gameWindow.frame()
     }
-
-
 
     override fun didReceiveMemoryWarning() {
         //super.didReceiveMemoryWarning()
@@ -400,26 +395,6 @@ open class IosGameWindow(
             glXViewController?.preferredFramesPerSecond = value.convert()
         }
     override var fps: Int get() = 60; set(value) = Unit
-    //override var title: String get() = ""; set(value) = Unit
-    //override val width: Int get() = 512
-    //override val height: Int get() = 512
-    //override var icon: Bitmap? get() = null; set(value) = Unit
-    //override var fullscreen: Boolean get() = false; set(value) = Unit
-    //override var visible: Boolean get() = false; set(value) = Unit
-    //override var quality: Quality get() = Quality.AUTOMATIC; set(value) = Unit
-
-    override suspend fun loop(entry: suspend GameWindow.() -> Unit) {
-        println("YAY! IosGameWindow.loop")
-        // Trick to reference some classes to make them available on iOS
-        //println("loop[0]")
-        try {
-            entry(this)
-            //println("loop[1]")
-        } catch (e: Throwable) {
-            println("ERROR IosGameWindow.loop:")
-            e.printStackTrace()
-        }
-    }
 
     override val isSoftKeyboardVisible: Boolean get() = super.isSoftKeyboardVisible
     lateinit var textField: MyUITextComponent
@@ -660,8 +635,6 @@ fun SetInitialIosGameWindow(gameWindow: IosGameWindow): IosGameWindow {
     MyIosGameWindow = gameWindow
     return gameWindow
 }
-
-actual fun CreateDefaultGameWindow(config: GameWindowCreationConfig): GameWindow = MyIosGameWindow
 
 /*
 
