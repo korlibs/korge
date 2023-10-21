@@ -73,7 +73,7 @@ typealias GameWindowQuality = GameWindow.Quality
  * Window properties:
  * - [title], [icon], [cursor], [width], [height], [preferredFps], [fullscreen], [visible], [bgcolor], [quality], [alwaysOnTop]
  *
- * Dialogs:
+ * Dialogs [DialogInterface]:
  * - [browse], [alert], [confirm], [prompt], [openFileDialog]
  * - [showContextMenu]
  *
