@@ -142,7 +142,7 @@ open class AwtAGOpenglCanvas : JPanel(GridLayout(1, 1), false.also { System.setP
                     ag.setMainFrameBufferTemporarily(frameBuffer) {
                         doRender(ag)
                     }
-                    ag.textureDrawer.drawXY(mainFrameBuffer, frameBuffer.tex, viewport.x, viewport.y, viewport.width, viewport.height)
+                    ag.textureDrawer.draw(mainFrameBuffer, frameBuffer.tex, -1f, -1f, +1f, +1f)
                 } else {
                     mainFrameBuffer.setSize(scaledWidth, scaledHeight)
                     doRender(ag)

@@ -16,7 +16,7 @@ import kotlin.test.*
 
 class AwtGameCanvasTest {
     @Test
-    //@Ignore
+    @Ignore
     fun test() = autoreleasePool {
         //System.setProperty("sun.java2d.metal", "true")
         //System.setProperty("sun.java2d.opengl", "false")
@@ -63,6 +63,7 @@ class AwtGameCanvasTest {
                 }
                 fpsLabel?.text = "FPS: ${(canvas as AwtAGOpenglCanvas).renderFps}"
             }
+            it.visible = true
         })
         /*
         frame.contentPane.add(GLCanvas().also {
