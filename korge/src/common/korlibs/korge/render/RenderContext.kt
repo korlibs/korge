@@ -69,8 +69,8 @@ class RenderContext(
     @KorgeInternal
     var viewMat2D: Matrix = Matrix()
 
-    //var flipRenderTexture = true
-    var flipRenderTexture = false
+    var flipRenderTexture = true
+    //var flipRenderTexture = false
 
     val tempTexturePool: Pool<AGTexture> = Pool { AGTexture() }
 
@@ -84,7 +84,7 @@ class RenderContext(
     fun updateStandardUniforms() {
         //println("updateStandardUniforms: ag.currentSize(${ag.currentWidth}, ${ag.currentHeight}) : ${ag.currentFrameBuffer}")
         //if (flipRenderTexture && currentFrameBuffer.isTexture) {
-        if (flipRenderTexture && currentFrameBuffer.isTexture) {
+        if (flipRenderTexture && currentFrameBuffer.isTexture && currentFrameBuffer != ag.mainFrameBuffer) {
             projMat = Matrix4.ortho(Rectangle.fromBounds(0, currentFrameBuffer.height, currentFrameBuffer.width, 0), -1f, 1f)
         } else {
             projMat = Matrix4.ortho(Rectangle.fromBounds(0, 0, currentFrameBuffer.width, currentFrameBuffer.height), -1f, 1f)

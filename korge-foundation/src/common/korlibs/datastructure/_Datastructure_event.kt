@@ -19,7 +19,8 @@ fun EventLoop.setInterval(time: Frequency, task: () -> Unit): Closeable = setInt
 
 class SyncEventLoop(
     /** precise=true will have better precision at the cost of more CPU-usage (busy waiting) */
-    var precise: Boolean = true,
+    //var precise: Boolean = true,
+    var precise: Boolean = false,
     /** Execute timers immediately instead of waiting. Useful for testing. */
     var immediateRun: Boolean = false,
 ) : EventLoop {
