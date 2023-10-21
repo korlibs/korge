@@ -334,18 +334,11 @@ open class ViewsForTesting(
         frameTime: TimeSpan = this.frameTime,
         crossinline block: suspend S.() -> Unit
     ): AsyncEntryPointResult = viewsTest(timeout, frameTime) {
-            config?.apply {
-                injector.configInjector()
-            }
-
+            config?.apply { injector.configInjector() }
             injector.configureInjector()
-
             val container = sceneContainer(views)
             container.changeTo<S>()
-
-            with(container.currentScene as S) {
-                block()
-            }
+            with(container.currentScene as S) { block() }
         }
 
 

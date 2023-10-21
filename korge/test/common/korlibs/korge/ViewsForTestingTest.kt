@@ -1,12 +1,10 @@
 package korlibs.korge
 
-import korlibs.korge.scene.Scene
-import korlibs.korge.tests.ViewsForTesting
-import korlibs.korge.view.SContainer
-import korlibs.inject.Injector
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertTrue
+import korlibs.inject.*
+import korlibs.korge.scene.*
+import korlibs.korge.tests.*
+import korlibs.korge.view.*
+import kotlin.test.*
 
 class ViewsForTestingTest : ViewsForTesting() {
     open class Dependency {
@@ -21,12 +19,8 @@ class ViewsForTestingTest : ViewsForTesting() {
     }
 
     fun Injector.mapCommon() {
-        mapSingleton {
-            Dependency()
-        }
-        mapPrototype {
-            DummyScene(get())
-        }
+        mapSingleton { Dependency() }
+        mapPrototype { DummyScene(get()) }
     }
 
     @Test

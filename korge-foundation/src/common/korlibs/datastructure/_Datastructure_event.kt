@@ -87,8 +87,8 @@ class SyncEventLoop(
         try {
             // Run pending tasks including pending timers, but won't allow to add new tasks because running=false
             immediateRun = true
-            running = false
             runAvailableNextTasks()
+            running = false
         } finally {
             immediateRun = oldImmediateRun
         }

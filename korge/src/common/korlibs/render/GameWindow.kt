@@ -177,7 +177,7 @@ open class GameWindow :
     open var title: String get() = ""; set(value) = Unit
     open val width: Int = 0
     open val height: Int = 0
-    val frameSize get() = Size(width, height)
+    val frameSize get() = SizeInt(width, height)
     open fun setSize(width: Int, height: Int): Unit = Unit
     open var vsync: Boolean = true
     open var icon: Bitmap? = null
@@ -219,17 +219,17 @@ open class GameWindow :
     open fun close(exitCode: Int = 0) {
         if (closing) return
         closing = true
-        println("[1]")
+        //println("[1]")
         queue { dispatchDestroyEvent() }
-        println("[2]")
+        //println("[2]")
         running = false
         this.exitCode = exitCode
-        println("[3]")
+        //println("[3]")
         logger.info { "GameWindow.close" }
         coroutineDispatcher.close()
-        println("[4]")
+        //println("[4]")
         coroutineDispatcher.cancelChildren()
-        println("[5]")
+        //println("[5]")
     }
 
     @Deprecated("")

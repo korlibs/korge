@@ -184,6 +184,7 @@ fun GameWindow.configureKorge(config: KorgeConfig = KorgeConfig(), block: suspen
             Dyn.global["views"] = it
         }
     }
+    views.setVirtualSize(config.virtualSize)
     gameWindow.coroutineContext += InjectorContext(config.injector)
     Korge.logger.logTime("configureGameWindow") {
         gameWindow.configure(windowSize, config.title, null, config.fullscreen, config.backgroundColor ?: Colors.BLACK)
@@ -226,10 +227,18 @@ fun GameWindow.configureKorge(config: KorgeConfig = KorgeConfig(), block: suspen
         }
     }
 
+    var cachedFrameSize = SizeInt(0, 0)
+
     gameWindow.onRenderEvent {
         if (initialized) {
             //println("RENDER")
             //println("gameWindow.size=${gameWindow.frameSize}")
+            val frameSize = gameWindow.frameSize
+            if (cachedFrameSize != frameSize) {
+                cachedFrameSize = frameSize
+                views.resized(frameSize.width, frameSize.height)
+                views.update(0.milliseconds)
+            }
             views.renderNew()
         }
     }

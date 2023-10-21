@@ -6,6 +6,7 @@ import korlibs.graphics.*
 import korlibs.image.awt.*
 import korlibs.image.bitmap.*
 import korlibs.image.color.*
+import korlibs.platform.*
 import korlibs.render.*
 import korlibs.render.MenuItem
 import korlibs.time.*
@@ -172,7 +173,50 @@ class AwtGameWindow(
             frame.title = value
             System.setProperty("apple.awt.application.name", value)
         }
-    override var visible: Boolean by frame::visible
+    override var visible: Boolean
+        get() = frame.visible
+        set(value) {
+            val shown = !frame.visible && value
+            frame.visible = value
+            if (shown) {
+                EventQueue.invokeLater {
+                    frame.repaint()
+                    //fullscreen = true
+
+                    // keys.up(Key.ENTER) { if (it.alt) gameWindow.toggleFullScreen() }
+
+                    // @TODO: HACK so the windows grabs focus on Windows 10 when launching on gradle daemon
+                    val useRobotHack = Platform.isWindows
+
+                    if (useRobotHack) {
+                        (frame as? Frame?)?.apply {
+                            val frame = this
+                            val insets = frame.insets
+                            frame.isAlwaysOnTop = true
+                            try {
+                                val robot = Robot()
+                                val pos = MouseInfo.getPointerInfo().location
+                                val bounds = frame.bounds
+                                bounds.setFrameFromDiagonal(bounds.minX + insets.left, bounds.minY + insets.top, bounds.maxX - insets.right, bounds.maxY - insets.bottom)
+
+                                //println("frame.bounds: ${frame.bounds}")
+                                //println("frame.bounds: ${bounds}")
+                                //println("frame.insets: ${insets}")
+                                //println(frame.contentPane.bounds)
+                                //println("START ROBOT")
+                                robot.mouseMove(bounds.centerX.toInt(), bounds.centerY.toInt())
+                                robot.mousePress(InputEvent.BUTTON3_MASK)
+                                robot.mouseRelease(InputEvent.BUTTON3_MASK)
+                                robot.mouseMove(pos.x, pos.y)
+                                //println("END ROBOT")
+                            } catch (e: Throwable) {
+                            }
+                            frame.isAlwaysOnTop = false
+                        }
+                    }
+                }
+            }
+        }
     override var icon: Bitmap? = null
         set(value) {
             field = value

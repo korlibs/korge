@@ -32,7 +32,6 @@ import kotlinx.coroutines.*
 import kotlin.collections.set
 import kotlin.coroutines.*
 
-//@Singleton
 /**
  * Heavyweight singleton object within the application that contains information about the Views.
  * It contains information about the [coroutineContext], the [gameWindow], the [injector], the [input]
@@ -248,6 +247,9 @@ class Views(
 		this.virtualHeight = height
 		resized()
 	}
+    fun setVirtualSize(size: Size) {
+        setVirtualSize(size.width.toInt(), size.height.toInt())
+    }
 
     override fun <T : BEvent> dispatch(
         type: EventType<T>,
@@ -358,16 +360,10 @@ class Views(
 		//println("localMouse: (${stage.localMouseX}, ${stage.localMouseY}), inputMouse: (${input.mouse.x}, ${input.mouse.y})")
 	}
 
-	fun resized(width: Int, height: Int) {
-		val actualWidth = width
-		val actualHeight = height
-		//println("RESIZED: $width, $height")
-		actualSize = SizeInt(actualWidth, actualHeight)
-		resized()
-	}
+	fun resized(width: Int, height: Int) = resized(SizeInt(width, height))
 
-
-	fun resized() {
+	fun resized(actualSize: SizeInt = this.actualSize) {
+        this.actualSize = actualSize
 		//println("$e : ${views.ag.backWidth}x${views.ag.backHeight}")
         bp.setBoundsInfo(
             Size(virtualWidth, virtualHeight),
@@ -592,15 +588,13 @@ interface BoundsProvider {
     //@KorgeExperimental var actualVirtualWidth = DefaultViewport.WIDTH; private set
     //@KorgeExperimental var actualVirtualHeight = DefaultViewport.HEIGHT; private set
 
-    val virtualLeft: Double get() = actualVirtualBounds.left.toDouble()
-    val virtualTop: Double get() = actualVirtualBounds.top.toDouble()
-    val virtualRight: Double get() = actualVirtualBounds.right.toDouble()
-    val virtualBottom: Double get() = actualVirtualBounds.bottom.toDouble()
+    val virtualLeft: Double get() = actualVirtualBounds.left
+    val virtualTop: Double get() = actualVirtualBounds.top
+    val virtualRight: Double get() = actualVirtualBounds.right
+    val virtualBottom: Double get() = actualVirtualBounds.bottom
 
-    @KorgeExperimental
-    val actualVirtualRight: Double get() = actualVirtualBounds.right.toDouble()
-    @KorgeExperimental
-    val actualVirtualBottom: Double get() = actualVirtualBounds.bottom.toDouble()
+    @KorgeExperimental val actualVirtualRight: Double get() = actualVirtualBounds.right
+    @KorgeExperimental val actualVirtualBottom: Double get() = actualVirtualBounds.bottom
 
     fun globalToWindowBounds(bounds: Rectangle): Rectangle =
         bounds.transformed(globalToWindowMatrix)
