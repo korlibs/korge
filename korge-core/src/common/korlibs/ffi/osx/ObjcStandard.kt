@@ -1,5 +1,6 @@
 package korlibs.ffi.osx
 
+import korlibs.ffi.*
 import korlibs.io.lang.*
 import kotlin.text.toCharArray
 
@@ -64,3 +65,13 @@ class NSNumber private constructor(id: Long) : NSObject(id) {
     //val doubleValue: Double get() = msgSendDouble("doubleValue")
 }
 
+class NSArray(val id: ObjcRef) : AbstractList<Long>() {
+    val count: Int get() = id.msgSendInt("count")
+    override val size: Int get() = count
+    override operator fun get(index: Int): Long = id.msgSend("objectAtIndex:", index)
+    override fun toString(): String = "NSArray(${toList()})"
+}
+
+object CoreFoundation : FFILib("/System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation") {
+    val dlopen: (path: String, mode: Int) -> FFIPointer? by func()
+}

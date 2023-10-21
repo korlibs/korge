@@ -4,7 +4,7 @@ import com.sun.jna.*
 import korlibs.ffi.osx.*
 import korlibs.image.awt.*
 import korlibs.image.color.*
-import korlibs.internal.osx.*
+import korlibs.internal.osx.CoreFoundation
 import korlibs.io.annotations.*
 import korlibs.io.file.*
 import korlibs.io.file.std.*

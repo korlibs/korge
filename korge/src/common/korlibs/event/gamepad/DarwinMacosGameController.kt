@@ -3,7 +3,6 @@ package korlibs.event.gamepad
 import korlibs.annotations.*
 import korlibs.datastructure.iterators.*
 import korlibs.event.*
-import korlibs.ffi.*
 import korlibs.ffi.osx.*
 import korlibs.math.geom.*
 import korlibs.number.*
@@ -169,13 +168,6 @@ internal class GCController(id: ObjcRef) : NSObject(id) {
     }
 }
 
-class NSArray(val id: ObjcRef) : AbstractList<Long>() {
-    val count: Int get() = id.msgSendInt("count")
-    override val size: Int get() = count
-    override operator fun get(index: Int): Long = id.msgSend("objectAtIndex:", index)
-    override fun toString(): String = "NSArray(${toList()})"
-}
-
 //@JvmStatic
 //fun main(args: Array<String>) {
 //    val gamepad = MacosGamepadEventAdapter()
@@ -189,9 +181,9 @@ class NSArray(val id: ObjcRef) : AbstractList<Long>() {
 //}
 
 internal class MacosGamepadEventAdapter {
-    internal object FrameworkInt : FFILib("/System/Library/Frameworks/GameController.framework/Versions/A/GameController")
-
-    val lib by lazy { FrameworkInt }
+    val lib by lazy {
+        CoreFoundation.dlopen("/System/Library/Frameworks/GameController.framework/Versions/A/GameController", 0)
+    }
 
     private fun GamepadInfo.set(button: GameButton, value: Float, deadRange: Boolean = false) { rawButtons[button.index] = GamepadInfo.withoutDeadRange(value.toFloat(), apply = deadRange) }
     private fun GamepadInfo.set(button: GameButton, cbutton: GCControllerButtonInput, deadRange: Boolean = false) {
@@ -202,64 +194,60 @@ internal class MacosGamepadEventAdapter {
     private val gamepad = GamepadInfo()
 
     fun updateGamepads(gameWindow: GameWindow) {
-        try {
-            lib
-            for (n in allControllers.indices) allControllers[n] = null
-            GCController.controllers()
-                //.sortedBy { it }
-                .map { GCController(ObjcRef(it)) }
-                .fastForEachWithIndex { index, it ->
-                    //println("index=$index")
-                    if (index in allControllers.indices) allControllers[index] = it
-                }
-
-            gameWindow.dispatchGamepadUpdateStart()
-            for (index in allControllers.indices) {
-                val ctrl = allControllers[index] ?: continue
-                val ex: GCExtendedGamepad? = ctrl.extendedGamepad
-                val base: GCGamepad? = ctrl.gamepad ?: ctrl.extendedGamepad
-                val micro: GCMicroGamepad? = ctrl.microGamepad ?: ctrl.gamepad ?: ctrl.extendedGamepad
-                if (micro != null) {
-                    gamepad.set(GameButton.LEFT, micro.dpad.left)
-                    gamepad.set(GameButton.RIGHT, micro.dpad.right)
-                    gamepad.set(GameButton.UP, micro.dpad.up)
-                    gamepad.set(GameButton.DOWN, micro.dpad.down)
-                    gamepad.set(GameButton.XBOX_A, micro.buttonA)
-                    gamepad.set(GameButton.XBOX_X, micro.buttonX)
-                    gamepad.set(GameButton.START, micro.buttonMenu)
-                }
-                if (base != null) {
-                    gamepad.set(GameButton.XBOX_B, base.buttonB)
-                    gamepad.set(GameButton.XBOX_Y, base.buttonY)
-                    gamepad.set(GameButton.L1, base.leftShoulder)
-                    gamepad.set(GameButton.R1, base.rightShoulder)
-                }
-                if (ex != null) {
-                    gamepad.set(GameButton.SYSTEM, ex.buttonHome)
-                    gamepad.set(GameButton.SELECT, ex.buttonOptions)
-                    gamepad.set(GameButton.L3, ex.leftThumbstickButton)
-                    gamepad.set(GameButton.R3, ex.rightThumbstickButton)
-                    gamepad.set(GameButton.L2, ex.leftTrigger)
-                    gamepad.set(GameButton.R2, ex.rightTrigger)
-                    gamepad.set(GameButton.LX, ex.leftThumbstick.x, deadRange = true)
-                    gamepad.set(GameButton.LY, ex.leftThumbstick.y, deadRange = true)
-                    gamepad.set(GameButton.RX, ex.rightThumbstick.x, deadRange = true)
-                    gamepad.set(GameButton.RY, ex.rightThumbstick.y, deadRange = true)
-                }
-                gamepad.name = ctrl.vendorName
-                gamepad.batteryLevel = ctrl.battery?.batteryLevel?.toFloat() ?: 1f
-                //println("ctrl.battery?.batteryState=${ctrl.battery?.batteryState}")
-                gamepad.batteryStatus = when (ctrl.battery?.batteryState) {
-                    0 -> GamepadInfo.BatteryStatus.DISCHARGING
-                    1 -> GamepadInfo.BatteryStatus.CHARGING
-                    2 -> GamepadInfo.BatteryStatus.FULL
-                    else -> GamepadInfo.BatteryStatus.UNKNOWN
-                }
-                gameWindow.dispatchGamepadUpdateAdd(gamepad)
+        lib
+        for (n in allControllers.indices) allControllers[n] = null
+        GCController.controllers()
+            //.sortedBy { it }
+            .map { GCController(ObjcRef(it)) }
+            .fastForEachWithIndex { index, it ->
+                //println("index=$index")
+                if (index in allControllers.indices) allControllers[index] = it
             }
-            gameWindow.dispatchGamepadUpdateEnd()
-        } catch (e: Throwable) {
-            e.printStackTrace()
+        
+        gameWindow.dispatchGamepadUpdateStart()
+        for (index in allControllers.indices) {
+            val ctrl = allControllers[index] ?: continue
+            val ex: GCExtendedGamepad? = ctrl.extendedGamepad
+            val base: GCGamepad? = ctrl.gamepad ?: ctrl.extendedGamepad
+            val micro: GCMicroGamepad? = ctrl.microGamepad ?: ctrl.gamepad ?: ctrl.extendedGamepad
+            if (micro != null) {
+                gamepad.set(GameButton.LEFT, micro.dpad.left)
+                gamepad.set(GameButton.RIGHT, micro.dpad.right)
+                gamepad.set(GameButton.UP, micro.dpad.up)
+                gamepad.set(GameButton.DOWN, micro.dpad.down)
+                gamepad.set(GameButton.XBOX_A, micro.buttonA)
+                gamepad.set(GameButton.XBOX_X, micro.buttonX)
+                gamepad.set(GameButton.START, micro.buttonMenu)
+            }
+            if (base != null) {
+                gamepad.set(GameButton.XBOX_B, base.buttonB)
+                gamepad.set(GameButton.XBOX_Y, base.buttonY)
+                gamepad.set(GameButton.L1, base.leftShoulder)
+                gamepad.set(GameButton.R1, base.rightShoulder)
+            }
+            if (ex != null) {
+                gamepad.set(GameButton.SYSTEM, ex.buttonHome)
+                gamepad.set(GameButton.SELECT, ex.buttonOptions)
+                gamepad.set(GameButton.L3, ex.leftThumbstickButton)
+                gamepad.set(GameButton.R3, ex.rightThumbstickButton)
+                gamepad.set(GameButton.L2, ex.leftTrigger)
+                gamepad.set(GameButton.R2, ex.rightTrigger)
+                gamepad.set(GameButton.LX, ex.leftThumbstick.x, deadRange = true)
+                gamepad.set(GameButton.LY, ex.leftThumbstick.y, deadRange = true)
+                gamepad.set(GameButton.RX, ex.rightThumbstick.x, deadRange = true)
+                gamepad.set(GameButton.RY, ex.rightThumbstick.y, deadRange = true)
+            }
+            gamepad.name = ctrl.vendorName
+            gamepad.batteryLevel = ctrl.battery?.batteryLevel?.toFloat() ?: 1f
+            //println("ctrl.battery?.batteryState=${ctrl.battery?.batteryState}")
+            gamepad.batteryStatus = when (ctrl.battery?.batteryState) {
+                0 -> GamepadInfo.BatteryStatus.DISCHARGING
+                1 -> GamepadInfo.BatteryStatus.CHARGING
+                2 -> GamepadInfo.BatteryStatus.FULL
+                else -> GamepadInfo.BatteryStatus.UNKNOWN
+            }
+            gameWindow.dispatchGamepadUpdateAdd(gamepad)
         }
+        gameWindow.dispatchGamepadUpdateEnd()
     }
 }

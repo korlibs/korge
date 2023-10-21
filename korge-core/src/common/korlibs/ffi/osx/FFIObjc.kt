@@ -406,9 +406,7 @@ open class NSObject(val id: Long) {
     constructor(id: ObjcRef, unit: Unit = Unit) : this(id.id)
 
     init {
-        if (id == 0L) {
-            println("NSObject[${this::class}]: id=$id")
-        }
+        check(id != 0L) { "NSObject is null" }
     }
 
     val ref = ObjcRef(id)
