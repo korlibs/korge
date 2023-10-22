@@ -54,9 +54,14 @@ inline fun korgeScreenshotTestV2(
             return@suspendTest
         }
 
+        var n = 0
+
         while (testingLock.isLocked) {
             println("Waiting for test to end...")
             delay(100.milliseconds)
+            if (n++ >= 50) {
+                error("Test didn't finish in time")
+            }
         }
 
         val resultsWithErrors = results.results.filter { result ->
