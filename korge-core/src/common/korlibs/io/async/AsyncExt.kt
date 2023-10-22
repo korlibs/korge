@@ -22,6 +22,18 @@ suspend fun <T> CoroutineContext.launchUnscopedAndWait(block: suspend () -> T): 
     return deferred.await()
 }
 
+fun CoroutineContext.onCancel(block: () -> Unit): Cancellable {
+    var running = true
+    launchUnscoped {
+        try {
+            while (running) kotlinx.coroutines.delay(1.seconds)
+        } catch (e: CancellationException) {
+            if (running) block()
+        }
+    }
+    return Cancellable { running = false }
+}
+
 fun CoroutineContext.launchUnscoped(block: suspend () -> Unit) {
     block.startCoroutine(object : Continuation<Unit> {
         override val context: CoroutineContext = this@launchUnscoped

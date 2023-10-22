@@ -5,6 +5,9 @@ import korlibs.audio.sound.*
 import korlibs.ffi.*
 import korlibs.internal.osx.*
 import korlibs.io.annotations.*
+import korlibs.io.async.*
+import korlibs.io.lang.*
+import korlibs.memory.*
 import java.util.concurrent.*
 import java.util.concurrent.atomic.*
 import kotlin.coroutines.*
@@ -20,6 +23,9 @@ val jvmCoreAudioNativeSoundProvider: JvmCoreAudioNativeSoundProvider? by lazy {
 
 class JvmCoreAudioNativeSoundProvider : NativeSoundProvider() {
     override fun createPlatformAudioOutput(coroutineContext: CoroutineContext, freq: Int): PlatformAudioOutput = JvmCoreAudioPlatformAudioOutput(coroutineContext, freq)
+    override fun createNewPlatformAudioOutput(coroutineContext: CoroutineContext, buffer: AudioSamples, freq: Int, gen: (AudioSamples) -> Unit): NewPlatformAudioOutput {
+        return JvmCoreAudioNewPlatformAudioOutput(coroutineContext, buffer, freq, gen)
+    }
 }
 
 private val audioOutputsById = ConcurrentHashMap<Int, JvmCoreAudioPlatformAudioOutput>()
@@ -74,6 +80,137 @@ private val jnaCoreAudioCallback by lazy {
         0
     }.also {
         Native.setCallbackThreadInitializer(it, cti)
+    }
+}
+
+private val newAudioOutputsById = ConcurrentHashMap<Long, JvmCoreAudioNewPlatformAudioOutput>()
+private val ctiNew by lazy { CallbackThreadInitializer() }
+private val jnaNewCoreAudioCallback by lazy {
+    AudioQueueNewOutputCallback { inUserData, inAQ, inBuffer ->
+        try {
+            val output = newAudioOutputsById[(inUserData?.address ?: 0L).toLong()] ?: return@AudioQueueNewOutputCallback 0
+            val nchannels = output.nchannels
+
+            //val tone = AudioTone.generate(1.seconds, 41000.0)
+            val queue = AudioQueueBuffer(inBuffer)
+            val ptr = queue.mAudioData
+            val samplesCount = (queue.mAudioDataByteSize / Short.SIZE_BYTES)
+            //println("samplesCount=$samplesCount")
+
+            if (ptr != null) {
+                val samples = AudioSamples(nchannels, samplesCount)
+                output.safeGen(samples)
+                val buffer = ShortArray(samplesCount * nchannels)
+
+                for (m in 0 until nchannels) {
+                    arraycopyStride(
+                        samples.data[m], 0, 1,
+                        buffer, m, nchannels,
+                        samplesCount
+                    )
+                }
+                for (n in 0 until samplesCount * nchannels) {
+                    ptr[n] = buffer[n]
+                }
+            }
+            //println("queue.mAudioData=${queue.mAudioData}")
+
+            if (!output.completed) {
+                CoreAudioKit.AudioQueueEnqueueBuffer(inAQ, queue.ptr, 0, null).also {
+                    if (it != 0) println("CoreAudioKit.AudioQueueEnqueueBuffer -> $it")
+                }
+            } else {
+                Unit
+            }
+        } catch (e: Throwable) {
+            e.printStackTrace()
+        }
+        0
+    }.also {
+        Native.setCallbackThreadInitializer(it, ctiNew)
+    }
+}
+
+private class JvmCoreAudioNewPlatformAudioOutput(
+    coroutineContext: CoroutineContext,
+    buffer: AudioSamples,
+    freq: Int,
+    gen: (AudioSamples) -> Unit,
+) : NewPlatformAudioOutput(coroutineContext, buffer, freq, gen) {
+    val id = lastId.incrementAndGet()
+    companion object {
+        private var lastId = AtomicLong(0L)
+        const val bufferSizeInBytes = 2048
+        const val numBuffers = 3
+    }
+
+    var onCancel: Cancellable? = null
+
+    init {
+    }
+
+    internal var completed = false
+
+    var queue: Pointer? = null
+
+    override fun start() {
+        stop()
+
+        onCancel = coroutineContext.onCancel { stop() }
+        newAudioOutputsById[id] = this
+        completed = false
+        val queueRef = Memory(16).also { it.clear() }
+        val format = AudioStreamBasicDescription(Memory(40).also { it.clear() })
+
+        format.mSampleRate = frequency.toDouble()
+        format.mFormatID = CoreAudioKit.kAudioFormatLinearPCM
+        format.mFormatFlags = CoreAudioKit.kLinearPCMFormatFlagIsSignedInteger or CoreAudioKit.kAudioFormatFlagIsPacked
+        format.mBitsPerChannel = (8 * Short.SIZE_BYTES)
+        format.mChannelsPerFrame = nchannels
+        format.mBytesPerFrame = (Short.SIZE_BYTES * format.mChannelsPerFrame)
+        format.mFramesPerPacket = 1
+        format.mBytesPerPacket = format.mBytesPerFrame * format.mFramesPerPacket
+        format.mReserved = 0
+
+        val userDefinedPtr = Pointer(id.toLong())
+
+        CoreAudioKit.AudioQueueNewOutput(
+            format.ptr, jnaNewCoreAudioCallback, userDefinedPtr,
+            //CoreFoundation.CFRunLoopGetCurrent(),
+            CoreFoundation.CFRunLoopGetMain(), // @TODO: Use other Loop to avoid issues
+            CoreFoundation.kCFRunLoopCommonModes, 0, queueRef
+        ).also {
+            if (it != 0) println("CoreAudioKit.AudioQueueNewOutput -> $it")
+        }
+        queue = queueRef.getPointer(0L)
+        //println("result=$result, queue=$queue")
+        val buffersArray = Memory((8 * numBuffers).toLong()).also { it.clear() }
+        for (buf in 0 until numBuffers) {
+            val bufferPtr = Pointer(buffersArray.address + 8 * buf)
+            CoreAudioKit.AudioQueueAllocateBuffer(queue, bufferSizeInBytes, bufferPtr).also {
+                if (it != 0) println("CoreAudioKit.AudioQueueAllocateBuffer -> $it")
+            }
+            val ptr = AudioQueueBuffer(bufferPtr.getPointer(0))
+            //println("AudioQueueAllocateBuffer=$res, ptr.pointer=${ptr.pointer}")
+            ptr.mAudioDataByteSize = bufferSizeInBytes
+            jnaNewCoreAudioCallback.callback(userDefinedPtr, queue, ptr.ptr)
+        }
+        CoreAudioKit.AudioQueueStart(queue, null).also {
+            if (it != 0) println("CoreAudioKit.AudioQueueStart -> $it")
+        }
+    }
+
+    override fun stop() {
+        completed = true
+
+        onCancel?.cancel()
+        onCancel = null
+
+        if (queue != null) {
+            CoreAudioKit.AudioQueueDispose(queue, false)
+            queue = null
+        }
+        newAudioOutputsById.remove(id)
     }
 }
 

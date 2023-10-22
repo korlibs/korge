@@ -1,14 +1,11 @@
 package samples
 
-import korlibs.memory.arraycopy
-import korlibs.math.clamp
-import korlibs.audio.sound.AudioSamples
-import korlibs.audio.sound.nativeSoundProvider
-import korlibs.korge.scene.Scene
-import korlibs.korge.ui.uiVerticalStack
-import korlibs.korge.view.SContainer
-import korlibs.korge.view.text
-import korlibs.io.async.launchImmediately
+import korlibs.audio.sound.*
+import korlibs.korge.scene.*
+import korlibs.korge.ui.*
+import korlibs.korge.view.*
+import korlibs.math.*
+import korlibs.memory.*
 import kotlin.math.*
 
 class MainPolyphonic : Scene() {
@@ -38,6 +35,15 @@ class MainPolyphonic : Scene() {
         channelStates[1].noteIndex = 0; nextNote(1)
 
         for (nchannel in 0 until 2) {
+            val stream2 = nativeSoundProvider.createNewPlatformAudioOutput(AudioSamples(1, 4410), 44100) { samples ->
+                audioOutCallback(nchannel, samples.data[0], samples.data[0].size)
+                for (n in 1 until samples.channels) {
+                    arraycopy(samples.data[0], 0, samples.data[n], 0, samples.data[0].size)
+                }
+                samples.scaleVolume(.05f)
+            }
+            stream2.start()
+            /*
             //for (nchannel in 0 until 1) {
             launchImmediately {
                 //AudioTone.generate(0.25.seconds, 440.0).playAndWait()
@@ -58,11 +64,13 @@ class MainPolyphonic : Scene() {
                     stream.add(samples)
                 }
             }
+
+             */
         }
     }
 
     companion object {
-        const val SAMPLE_COUNT = 0x10000
+        const val SAMPLE_COUNT = 0x20000
         val sample = FloatArray(SAMPLE_COUNT)
 
         const val SAMPLE_RATE = 44100

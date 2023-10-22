@@ -1,28 +1,15 @@
 package korlibs.audio.sound
 
-import korlibs.datastructure.Extra
-import korlibs.time.DateTime
-import korlibs.time.TimeSpan
-import korlibs.time.milliseconds
-import korlibs.time.seconds
-import korlibs.audio.format.AudioDecodingProps
-import korlibs.audio.format.AudioFormats
-import korlibs.audio.format.WAV
-import korlibs.audio.format.defaultAudioFormats
-import korlibs.io.async.Signal
-import korlibs.io.async.delay
-import korlibs.io.concurrent.atomic.korAtomic
-import korlibs.io.file.FinalVfsFile
-import korlibs.io.file.Vfs
-import korlibs.io.file.VfsFile
-import korlibs.io.file.baseName
-import korlibs.io.lang.Disposable
-import korlibs.io.lang.unsupported
-import korlibs.io.stream.AsyncStream
-import korlibs.io.stream.openAsync
+import korlibs.audio.format.*
+import korlibs.datastructure.*
+import korlibs.io.async.*
+import korlibs.io.file.*
+import korlibs.io.lang.*
+import korlibs.io.stream.*
+import korlibs.time.*
 import kotlinx.coroutines.*
-import kotlin.coroutines.CoroutineContext
-import kotlin.native.concurrent.ThreadLocal
+import kotlin.coroutines.*
+import kotlin.native.concurrent.*
 import kotlin.coroutines.coroutineContext as coroutineContextKt
 
 @ThreadLocal
@@ -34,6 +21,8 @@ open class LazyNativeSoundProvider(val gen: () -> NativeSoundProvider) : NativeS
     override val target: String get() = parent.target
 
     override fun createPlatformAudioOutput(coroutineContext: CoroutineContext, freq: Int): PlatformAudioOutput = parent.createPlatformAudioOutput(coroutineContext, freq)
+    override fun createNewPlatformAudioOutput(coroutineContext: CoroutineContext, buffer: AudioSamples, freq: Int, gen: (AudioSamples) -> Unit): NewPlatformAudioOutput =
+        parent.createNewPlatformAudioOutput(coroutineContext, buffer, freq, gen)
 
     override suspend fun createSound(data: ByteArray, streaming: Boolean, props: AudioDecodingProps, name: String): Sound =
         parent.createSound(data, streaming, props, name)
@@ -57,10 +46,16 @@ open class NativeSoundProvider : Disposable {
     open var paused: Boolean = false
 
     open fun createPlatformAudioOutput(coroutineContext: CoroutineContext, freq: Int = 44100): PlatformAudioOutput = PlatformAudioOutput(coroutineContext, freq)
+    open fun createNewPlatformAudioOutput(coroutineContext: CoroutineContext, buffer: AudioSamples, freq: Int = 44100, gen: (AudioSamples) -> Unit): NewPlatformAudioOutput {
+        println("createNewPlatformAudioOutput: ${this::class}")
+        return NewPlatformAudioOutput(coroutineContext, buffer, freq, gen)
+    }
 
     suspend fun createPlatformAudioOutput(freq: Int = 44100): PlatformAudioOutput = createPlatformAudioOutput(coroutineContextKt, freq)
 
-	open suspend fun createSound(data: ByteArray, streaming: Boolean = false, props: AudioDecodingProps = AudioDecodingProps.DEFAULT, name: String = "Unknown"): Sound {
+    suspend fun createNewPlatformAudioOutput(buffer: AudioSamples, freq: Int = 44100, gen: (AudioSamples) -> Unit): NewPlatformAudioOutput = createNewPlatformAudioOutput(coroutineContextKt, buffer, freq, gen)
+
+    open suspend fun createSound(data: ByteArray, streaming: Boolean = false, props: AudioDecodingProps = AudioDecodingProps.DEFAULT, name: String = "Unknown"): Sound {
         val format = props.formats ?: audioFormats
         val stream = format.decodeStreamOrError(data.openAsync(), props)
         return if (streaming) {

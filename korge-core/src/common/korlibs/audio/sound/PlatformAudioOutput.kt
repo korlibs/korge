@@ -8,6 +8,32 @@ import korlibs.time.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
 
+open class NewPlatformAudioOutput(
+    val coroutineContext: CoroutineContext,
+    val buffer: AudioSamples,
+    val frequency: Int,
+    val gen: (AudioSamples) -> Unit,
+) : Disposable, SoundProps {
+    private val lock = Lock()
+    fun safeGen(buffer: AudioSamples) {
+        lock {
+            try {
+                gen(buffer)
+            } catch (e: Throwable) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    val nchannels get() = buffer.channels
+    override var pitch: Double = 1.0
+    override var volume: Double = 1.0
+    override var panning: Double = 0.0
+    open fun start() = Unit
+    open fun stop() = Unit
+    final override fun dispose() = stop()
+}
+
 open class PlatformAudioOutput(
     val coroutineContext: CoroutineContext,
     val frequency: Int
