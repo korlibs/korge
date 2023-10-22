@@ -13,6 +13,7 @@ import korlibs.io.async.*
 import korlibs.korge.view.*
 import korlibs.logger.*
 import korlibs.math.geom.*
+import korlibs.platform.*
 import korlibs.time.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
@@ -94,6 +95,7 @@ open class GameWindow :
     override val ag: AG = AGDummy()
 
     val eventLoop = SyncEventLoop()
+    val renderEventLoop = SyncEventLoop(immediateRun = true)
     open val coroutineDispatcher = EventLoopCoroutineDispatcher(eventLoop)
     var coroutineContext: CoroutineContext = EmptyCoroutineContext
 
@@ -104,7 +106,7 @@ open class GameWindow :
     @PublishedApi internal val _updateRenderLock = Lock()
     inline fun updateRenderLock(block: () -> Unit) = _updateRenderLock(block)
     fun queueSuspend(callback: suspend () -> Unit) {
-        launch(coroutineDispatcher + coroutineContext) {
+        launchAsap(coroutineDispatcher + coroutineContext) {
             callback()
         }
     }
@@ -117,6 +119,18 @@ open class GameWindow :
             deferred.completeWith(runCatching { callback() })
         }
         return runBlockingNoJs { deferred.await() }
+    }
+    fun queueRender(callback: () -> Unit) = renderEventLoop.setImmediate(callback)
+    fun queueRenderSync(callback: () -> Unit) {
+        if (Platform.isJs) {
+            callback()
+        } else {
+            val done = CompletableDeferred<Unit>()
+            renderEventLoop.setImmediate {
+                try { callback() } finally { done.complete(Unit) }
+            }
+            runBlockingNoJs { done.await() }
+        }
     }
 
     internal val events = GameWindowEventInstances()
@@ -153,10 +167,13 @@ open class GameWindow :
             field = value
             updateUpdateInterval()
         }
+
+    open val autoUpdateInterval = true
+
     private var currentUpdateFps: Frequency = 0.hz
     private var currentUpdateInterval: Closeable? = null
     private fun updateUpdateInterval(fps: Frequency = this.updateFps) {
-        if (currentUpdateFps != fps) {
+        if (autoUpdateInterval && currentUpdateFps != fps) {
             currentUpdateFps = fps
             currentUpdateInterval?.close()
             currentUpdateInterval = eventLoop.setInterval(fps) {

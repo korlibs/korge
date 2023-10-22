@@ -8,6 +8,7 @@ import korlibs.kgl.*
 import korlibs.korge.*
 import korlibs.korge.view.*
 import korlibs.math.geom.*
+import korlibs.render.awt.*
 import kotlinx.coroutines.*
 
 internal fun createKmlGlContext(fboWidth: Int, fboHeight: Int): KmlGlContext {
@@ -44,7 +45,6 @@ internal fun createKmlGlContext(fboWidth: Int, fboHeight: Int): KmlGlContext {
 }
 
 fun suspendTestWithOffscreenAG(fboSize: Size, checkGl: Boolean = false, logGl: Boolean = false, callback: suspend CoroutineScope.(ag: AG) -> Unit) = suspendTest {
-    /*
     val fboWidth = fboSize.width.toInt()
     val fboHeight = fboSize.height.toInt()
 
@@ -61,9 +61,6 @@ fun suspendTestWithOffscreenAG(fboSize: Size, checkGl: Boolean = false, logGl: B
         ag.contextsToFree.forEach { it?.unset(); it?.close() }
         ag.contextsToFree.clear()
     }
-
-     */
-    TODO()
 }
 
 class OffscreenContext(val testClassName: String, val testMethodName: String) {

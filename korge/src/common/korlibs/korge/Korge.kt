@@ -6,11 +6,9 @@ import korlibs.image.format.*
 import korlibs.inject.*
 import korlibs.io.dynamic.*
 import korlibs.io.file.std.*
-import korlibs.io.resources.*
 import korlibs.korge.internal.*
 import korlibs.korge.logger.*
 import korlibs.korge.render.*
-import korlibs.korge.resources.*
 import korlibs.korge.scene.*
 import korlibs.korge.view.*
 import korlibs.logger.*
@@ -192,22 +190,11 @@ fun GameWindow.configureKorge(config: KorgeConfig = KorgeConfig(), block: suspen
     gameWindow.quality = quality
     gameWindow.backgroundColor = config.backgroundColor ?: Colors.BLACK
 
-    RegisteredImageFormats.register(config.imageFormats)
     val injector = views.injector
     config.configInjector(injector)
-    injector.mapInstance(views)
-    injector.mapInstance(views.ag)
+    RegisteredImageFormats.register(config.imageFormats)
     injector.mapInstance(KorgeArgs(config.args))
-    injector.mapInstance(Resources::class, views.globalResources)
-    injector.mapSingleton(ResourcesRoot::class) { ResourcesRoot() }
-    injector.mapInstance(views.input)
-    injector.mapInstance(views.stats)
-    injector.mapInstance(CoroutineContext::class, views.coroutineContext)
-    injector.mapPrototype(EmptyScene::class) { EmptyScene() }
-    injector.mapInstance(TimeProvider::class, views.timeProvider)
-    injector.mapInstance(GameWindow::class, gameWindow)
     injector.mapInstance(KorgeConfig::class, config)
-    views.debugViews = gameWindow.debug
     views.debugFontExtraScale = config.debugFontExtraScale
     views.debugFontColor = config.debugFontColor
     views.virtualWidth = config.virtualSize.width.toInt()
@@ -217,31 +204,10 @@ fun GameWindow.configureKorge(config: KorgeConfig = KorgeConfig(), block: suspen
     views.clipBorders = config.displayMode.clipBorders
     views.targetFps = config.targetFps
 
-    var initialized = false
 
-    val stopwatch = Stopwatch()
-    gameWindow.onUpdateEvent {
-        if (initialized) {
-            //println("UPDATE")
-            views.update(stopwatch.getElapsedAndRestart())
-        }
-    }
-
-    var cachedFrameSize = SizeInt(0, 0)
-
-    gameWindow.onRenderEvent {
-        if (initialized) {
-            //println("RENDER")
-            //println("gameWindow.size=${gameWindow.frameSize}")
-            val frameSize = gameWindow.frameSize
-            if (cachedFrameSize != frameSize) {
-                cachedFrameSize = frameSize
-                views.resized(frameSize.width, frameSize.height)
-                views.update(0.milliseconds)
-            }
-            views.renderNew()
-        }
-    }
+    KorgeReload.registerEventDispatcher(gameWindow)
+    @Suppress("OPT_IN_USAGE")
+    views.prepareViewsBase(gameWindow, true, gameWindow.bgcolor, config.forceRenderEveryFrame, config.configInjector)
 
     gameWindow.queueSuspend {
         Korge.logger.info { "Initializing..." }
@@ -262,20 +228,8 @@ fun GameWindow.configureKorge(config: KorgeConfig = KorgeConfig(), block: suspen
                     e.printStackTrace()
                 }
             }
-
-            Korge.logger.logTime("prepareViews") {
-                KorgeReload.registerEventDispatcher(gameWindow)
-                @Suppress("OPT_IN_USAGE")
-                views.prepareViewsBase(gameWindow, true, gameWindow.bgcolor, TimeSpan.NIL, config.forceRenderEveryFrame, config.configInjector)
-            }
-
-            Korge.logger.logTime("completeViews") {
-                // Here we can install a debugger, etc.
-                completeViews(views)
-            }
         } finally {
             Korge.logger.info { "Initialized" }
-            initialized = true
         }
 
         config.main(views.stage)
@@ -284,5 +238,4 @@ fun GameWindow.configureKorge(config: KorgeConfig = KorgeConfig(), block: suspen
             views.stage.sceneContainer().changeTo(config.mainSceneClass)
         }
     }
-
 }

@@ -281,24 +281,26 @@ class Views(
     fun renderNew(frameBuffer: AGFrameBuffer = ag.mainFrameBuffer) {
         renderContext.currentFrameBuffer = frameBuffer
 
-        if (clearEachFrame) renderContext.clear(clearColor, stencil = 0, depth = 1f, clearColor = true, clearStencil = true, clearDepth = true)
-        onBeforeRender(renderContext)
-        renderContext.flush()
-        stage.render(renderContext)
-        renderContext.flush()
-        stage.renderDebug(renderContext)
+        renderContext.doRenderNew {
+            if (clearEachFrame) renderContext.clear(clearColor, stencil = 0, depth = 1f, clearColor = true, clearStencil = true, clearDepth = true)
+            onBeforeRender(renderContext)
+            renderContext.flush()
+            stage.render(renderContext)
+            renderContext.flush()
+            stage.renderDebug(renderContext)
 
-        if (debugViews) {
-            //renderContext.setTemporalProjectionMatrixTransform(Matrix()) {
-            run {
-                debugHandlers.fastForEach { debugHandler ->
-                    this.debugHandler(renderContext)
+            if (debugViews) {
+                //renderContext.setTemporalProjectionMatrixTransform(Matrix()) {
+                run {
+                    debugHandlers.fastForEach { debugHandler ->
+                        this.debugHandler(renderContext)
+                    }
                 }
             }
-        }
 
-        onAfterRender(renderContext)
-        renderContext.flush()
+            onAfterRender(renderContext)
+            renderContext.flush()
+        }
     }
 
 	fun render() {

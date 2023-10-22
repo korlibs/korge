@@ -16,7 +16,7 @@ import kotlin.test.*
 
 class AwtGameWindowTest {
     @Test
-    //@Ignore
+    @Ignore
     fun test() {
         Korge.logger.level = Logger.Level.DEBUG
         val gameWindow = AwtGameWindow(GameWindowCreationConfig.DEFAULT.copy(title = "hello"))

@@ -47,7 +47,7 @@ class SyncEventLoop(
     private val tasks = ArrayDeque<() -> Unit>()
     private val timedTasks = TGenPriorityQueue<TimedTask> { a, b -> a.compareTo(b) }
 
-    fun queueFirst(task: () -> Unit) {
+    fun setImmediateFirst(task: () -> Unit) {
         lock {
             tasks.addFirst(task)
             lock.notify()
@@ -55,6 +55,7 @@ class SyncEventLoop(
     }
 
     override fun setImmediate(task: () -> Unit) {
+        //println("setImmediate: task=$task")
         lock {
             tasks.addLast(task)
             lock.notify()
@@ -70,6 +71,7 @@ class SyncEventLoop(
     }
 
     private fun _queueAfter(time: TimeSpan, interval: Boolean, task: () -> Unit): Closeable {
+        //println("_queueAfter: time=$time, interval=$interval, task=$task")
         return lock {
             val task = TimedTask(this, now, time, interval, task)
             if (running) {
@@ -105,9 +107,9 @@ class SyncEventLoop(
         lock.wait(waitTime, precise)
     }
 
-    fun runAvailableNextTasks(): Int {
+    fun runAvailableNextTasks(runTimers: Boolean = true): Int {
         var count = 0
-        while (runAvailableNextTask()) {
+        while (runAvailableNextTask(runTimers)) {
             count++
         }
         return count
@@ -123,13 +125,20 @@ class SyncEventLoop(
         }
     }
 
-    fun runAvailableNextTask(): Boolean {
+    fun runAvailableNextTask(maxCount: Int): Boolean {
+        for (n in 0 until maxCount) {
+            if (!runAvailableNextTask()) return false
+        }
+        return true
+    }
+
+    fun runAvailableNextTask(runTimers: Boolean = true): Boolean {
         val timedTask = lock {
-            if (timedTasks.isNotEmpty() && shouldTimedTaskRun(timedTasks.head)) timedTasks.removeHead() else null
+            if (runTimers) if (timedTasks.isNotEmpty() && shouldTimedTaskRun(timedTasks.head)) timedTasks.removeHead() else null else null
         }
         if (timedTask != null) {
             runCatchingExceptions { timedTask.callback() }
-            if (timedTask.interval) {
+            if (timedTask.interval && !immediateRun) {
                 timedTask.timeMark = maxOf(timedTask.timeMark + timedTask.time, now)
                 //println("READDED: timedTask.now=${timedTask.now}")
                 timedTasks.add(timedTask)
@@ -138,7 +147,10 @@ class SyncEventLoop(
         val task = lock {
             if (tasks.isNotEmpty()) tasks.removeFirst() else null
         }
-        runCatchingExceptions { task?.invoke() }
+        runCatchingExceptions {
+            //println("RUN TASK $task")
+            task?.invoke()
+        }
 
         return task != null || timedTask != null
     }
@@ -165,11 +177,17 @@ class SyncEventLoop(
     fun runTasksUntilEmpty() {
         //Thread.currentThread().priority = Thread.MAX_PRIORITY
         // Timed tasks
+        val stopwatch = Stopwatch().start()
         while (running) {
             val somethingExecuted = waitAndRunNextTask()
 
             if (lock { !somethingExecuted && tasks.isEmpty() && timedTasks.isEmpty() }) {
                 break
+            }
+
+            if (stopwatch.elapsed >= 0.1.seconds) {
+                stopwatch.restart()
+                NativeThread.sleep(10.milliseconds)
             }
         }
     }

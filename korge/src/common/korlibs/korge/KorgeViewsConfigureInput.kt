@@ -6,21 +6,38 @@ import korlibs.event.*
 import korlibs.image.color.*
 import korlibs.inject.*
 import korlibs.io.async.*
+import korlibs.io.resources.*
 import korlibs.korge.internal.*
+import korlibs.korge.resources.*
+import korlibs.korge.scene.*
 import korlibs.korge.view.*
 import korlibs.math.geom.*
+import korlibs.render.*
 import korlibs.time.*
+import kotlin.coroutines.*
 
 @KorgeInternal
 internal fun Views.prepareViewsBase(
     eventDispatcher: EventListener,
     clearEachFrame: Boolean = true,
     bgcolor: RGBA = Colors.TRANSPARENT,
-    fixedSizeStep: TimeSpan = TimeSpan.NIL,
     forceRenderEveryFrame: Boolean = true,
     configInjector: Injector.() -> Unit = {},
 ) {
     val views = this
+
+    val injector = views.injector
+    injector.mapInstance(views)
+    injector.mapInstance(views.ag)
+    injector.mapInstance(Resources::class, views.globalResources)
+    injector.mapSingleton(ResourcesRoot::class) { ResourcesRoot() }
+    injector.mapInstance(views.input)
+    injector.mapInstance(views.stats)
+    injector.mapInstance(CoroutineContext::class, views.coroutineContext)
+    injector.mapPrototype(EmptyScene::class) { EmptyScene() }
+    injector.mapInstance(TimeProvider::class, views.timeProvider)
+    injector.mapInstance(GameWindow::class, gameWindow)
+    views.debugViews = gameWindow.debug
 
     configInjector(views.injector)
 
@@ -241,5 +258,30 @@ internal fun Views.prepareViewsBase(
             views.input.mouseInside = false
             views.mouseUpdated()
         }
+    }
+
+    val stopwatch = Stopwatch(views.timeProvider)
+    gameWindow.onUpdateEvent {
+        //println("stopwatch.elapsed=${stopwatch.elapsed}")
+        views.update(stopwatch.getElapsedAndRestart())
+    }
+
+    var cachedFrameSize = SizeInt(0, 0)
+
+    gameWindow.onRenderEvent {
+        //println("RENDER")
+        //println("gameWindow.size=${gameWindow.frameSize}")
+        val frameSize = gameWindow.frameSize
+        if (cachedFrameSize != frameSize) {
+            cachedFrameSize = frameSize
+            views.resized(frameSize.width, frameSize.height)
+            views.update(0.milliseconds)
+        }
+        views.renderNew()
+    }
+
+    Korge.logger.logTime("completeViews") {
+        // Here we can install a debugger, etc.
+        completeViews(views)
     }
 }

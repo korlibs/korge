@@ -1,6 +1,7 @@
 package korlibs.time
 
 class Stopwatch(val nanosecondProvider: () -> Double = { PerformanceCounter.nanoseconds }) {
+    constructor(timeProvider: TimeProvider) : this({ timeProvider.now().unixMillis.milliseconds.nanoseconds })
     private var running = false
     private var startNano = 0.0
     private val currentNano get() = nanosecondProvider()

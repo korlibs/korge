@@ -11,6 +11,8 @@ import korlibs.korge.view.*
 import korlibs.korge.view.Container
 import korlibs.korge.view.align.*
 import korlibs.math.geom.*
+import korlibs.time.*
+import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.*
 import java.awt.*
 
@@ -54,6 +56,7 @@ inline fun korgeScreenshotTestV2(
 
         while (testingLock.isLocked) {
             println("Waiting for test to end...")
+            delay(100.milliseconds)
         }
 
         val resultsWithErrors = results.results.filter { result ->
