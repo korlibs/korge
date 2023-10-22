@@ -102,6 +102,8 @@ open class AwtAGOpenglCanvas : JPanel(GridLayout(1, 1), false.also { System.setP
     private val counter = TimeSampler(1.seconds)
     val renderFps: Int get() = counter.count
 
+
+
     private var contextLost: Boolean = false
 
     fun contextLost() {
@@ -135,6 +137,7 @@ open class AwtAGOpenglCanvas : JPanel(GridLayout(1, 1), false.also { System.setP
                 val frameOrComponent = this
                 val transform = this.graphicsConfiguration.defaultTransform
                 val factor = transform.scaleX
+                //val factor = 1.0
 
                 val scaledWidth = (frameOrComponent.width * factor).toInt()
                 val scaledHeight = (frameOrComponent.height * factor).toInt()
@@ -148,8 +151,8 @@ open class AwtAGOpenglCanvas : JPanel(GridLayout(1, 1), false.also { System.setP
 
                 //println("factor=$factor")
 
-                //if (viewport != null) {
-                if (false) {
+                if (viewport != null) {
+                //if (false) {
                     viewport!!
                     mainFrameBuffer.setSize(
                         (viewport.x * viewportScale).toInt(),

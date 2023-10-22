@@ -194,6 +194,7 @@ open class GameWindow :
     open val width: Int = 0
     open val height: Int = 0
     val frameSize get() = SizeInt(width, height)
+    val scaledFrameSize get() = SizeInt((width * devicePixelRatio).toInt(), (height * devicePixelRatio).toInt())
     open fun setSize(width: Int, height: Int): Unit = Unit
     open var vsync: Boolean = true
     open var icon: Bitmap? = null
@@ -212,8 +213,8 @@ open class GameWindow :
     open var debug: Boolean = false
         set(value) {
             field = value
-            onDebugChanged(value)
             if (value) onDebugEnabled()
+            onDebugChanged(value)
         }
 
     var exitProcessOnClose: Boolean = true

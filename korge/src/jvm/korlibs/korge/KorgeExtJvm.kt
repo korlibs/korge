@@ -2,15 +2,16 @@ package korlibs.korge
 
 import korlibs.image.bitmap.*
 import korlibs.image.color.*
-import korlibs.time.*
 import korlibs.korge.awt.*
 import korlibs.korge.time.*
 import korlibs.korge.view.*
 import korlibs.korge.view.Ellipse
+import korlibs.korge.view.Image
 import korlibs.math.geom.*
+import korlibs.time.*
 import kotlinx.coroutines.*
 import java.awt.Container
-import java.util.ServiceLoader
+import java.util.*
 
 interface ViewsCompleter {
     fun completeViews(views: Views)

@@ -42,6 +42,7 @@ open class AwtCanvasGameWindow(
 
     override val width: Int get() = canvas.width
     override val height: Int get() = canvas.height
+
     override var backgroundColor: RGBA
         get() = canvas.background.toRgba()
         set(value) { canvas.background = value.toAwt() }
@@ -249,4 +250,7 @@ class AwtGameWindow(
             System.exit(exitCode)
         }
     }
+
+    val awtGameWindowDebugger = AwtGameWindowDebugger(this, frame)
+    override val debugComponent: Any? = awtGameWindowDebugger.debugFrame
 }

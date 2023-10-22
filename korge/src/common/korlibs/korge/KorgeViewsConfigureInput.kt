@@ -271,7 +271,7 @@ internal fun Views.prepareViewsBase(
     gameWindow.onRenderEvent {
         //println("RENDER")
         //println("gameWindow.size=${gameWindow.frameSize}")
-        val frameSize = gameWindow.frameSize
+        val frameSize = gameWindow.scaledFrameSize
         if (cachedFrameSize != frameSize) {
             cachedFrameSize = frameSize
             views.resized(frameSize.width, frameSize.height)
