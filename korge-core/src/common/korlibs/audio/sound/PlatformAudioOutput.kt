@@ -34,6 +34,24 @@ open class NewPlatformAudioOutput(
     final override fun dispose() = stop()
 }
 
+open class PlatformAudioOutputBasedOnNew(
+    val soundProvider: NativeSoundProvider,
+    coroutineContext: CoroutineContext,
+    frequency: Int,
+) : DequeBasedPlatformAudioOutput(coroutineContext, frequency) {
+    val new = soundProvider.createNewPlatformAudioOutput(coroutineContext, AudioSamples(2, 4410), frequency) { buffer ->
+        readShorts(buffer.data)
+    }
+
+    override fun start() {
+        new.start()
+    }
+
+    override fun stop() {
+        new.stop()
+    }
+}
+
 open class PlatformAudioOutput(
     val coroutineContext: CoroutineContext,
     val frequency: Int
