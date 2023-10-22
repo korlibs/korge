@@ -160,10 +160,10 @@ class SyncEventLoop(
         lock {
             if (tasks.isEmpty() && timedTasks.isNotEmpty()) {
                 val head = timedTasks.head
-                if ((head.timeMark - now) >= 16.milliseconds) {
-                    //println("GC")
-                    NativeThread.gc(full = false)
-                }
+                //if ((head.timeMark - now) >= 16.milliseconds) {
+                //    //println("GC")
+                //    //NativeThread.gc(full = false)
+                //}
                 val waitTime = head.timeMark - now
                 if (waitTime >= 0.seconds) {
                     wait(waitTime)
@@ -196,7 +196,7 @@ class SyncEventLoop(
         running = true
         while (running) {
             runTasksUntilEmpty()
-            NativeThread.gc(full = true)
+            //NativeThread.gc(full = true)
             NativeThread.sleep(1.milliseconds)
         }
     }
