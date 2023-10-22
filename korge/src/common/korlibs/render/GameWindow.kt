@@ -13,7 +13,6 @@ import korlibs.io.async.*
 import korlibs.korge.view.*
 import korlibs.logger.*
 import korlibs.math.geom.*
-import korlibs.platform.*
 import korlibs.time.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
@@ -94,8 +93,8 @@ open class GameWindow :
     //override val ag: AG = LogAG()
     override val ag: AG = AGDummy()
 
-    val eventLoop = SyncEventLoop()
-    val renderEventLoop = SyncEventLoop(immediateRun = true)
+    val eventLoop = SyncEventLoop(precise = false)
+    //val renderEventLoop = SyncEventLoop(precise = false, immediateRun = true)
     open val coroutineDispatcher = EventLoopCoroutineDispatcher(eventLoop)
     var coroutineContext: CoroutineContext = EmptyCoroutineContext
 
@@ -120,18 +119,18 @@ open class GameWindow :
         }
         return runBlockingNoJs { deferred.await() }
     }
-    fun queueRender(callback: () -> Unit) = renderEventLoop.setImmediate(callback)
-    fun queueRenderSync(callback: () -> Unit) {
-        if (Platform.isJs) {
-            callback()
-        } else {
-            val done = CompletableDeferred<Unit>()
-            renderEventLoop.setImmediate {
-                try { callback() } finally { done.complete(Unit) }
-            }
-            runBlockingNoJs { done.await() }
-        }
-    }
+    //fun queueRender(callback: () -> Unit) = renderEventLoop.setImmediate(callback)
+    //fun queueRenderSync(callback: () -> Unit) {
+    //    if (Platform.isJs) {
+    //        callback()
+    //    } else {
+    //        val done = CompletableDeferred<Unit>()
+    //        renderEventLoop.setImmediate {
+    //            try { callback() } finally { done.complete(Unit) }
+    //        }
+    //        runBlockingNoJs { done.await() }
+    //    }
+    //}
 
     internal val events = GameWindowEventInstances()
     internal val gamepadEmitter: GamepadInfoEmitter = GamepadInfoEmitter(this)

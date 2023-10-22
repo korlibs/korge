@@ -144,7 +144,6 @@ private class JvmCoreAudioPlatformAudioOutput(
         CoreAudioKit.AudioQueueStart(queue, null).also {
             if (it != 0) println("CoreAudioKit.AudioQueueStart -> $it")
         }
-
     }
 
     override fun stop() {

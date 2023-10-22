@@ -1,6 +1,7 @@
 package korlibs.render.awt
 
 import korlibs.datastructure.*
+import korlibs.datastructure.lock.*
 import korlibs.graphics.*
 import korlibs.graphics.gl.*
 import korlibs.kgl.*
@@ -24,7 +25,7 @@ import javax.swing.*
 //open class AwtAGOpenglCanvas : Canvas(), BoundsProvider by BoundsProvider.Base(), Extra by Extra.Mixin() {
 open class AwtAGOpenglCanvas : JPanel(GridLayout(1, 1), false.also { System.setProperty("sun.java2d.opengl", "true") }), BoundsProvider by BoundsProvider.Base(), Extra by Extra.Mixin() {
     val canvas = object : Canvas() {
-        override fun paint(g: Graphics) {
+        private fun renderGraphics(g: Graphics) {
             counter.add()
             //super.paint(g)
             if (ctx == null) {
@@ -36,15 +37,56 @@ open class AwtAGOpenglCanvas : JPanel(GridLayout(1, 1), false.also { System.setP
             }
             //g.fillRect(0, 0, 100, 100)
             val ctx = this@AwtAGOpenglCanvas.ctx
+            if (isUsingMetalPipeline) {
+                println("!!! ERROR: Using Metal pipeline ${this::class} won't work")
+            }
+            //println("CTX: $ctx")
+            ctx?.useContext(g, ag, paintInContextDelegate)
             if (ctx != null) {
                 if (autoRepaint && ctx.supportsSwapInterval()) {
-                    SwingUtilities.invokeLater { requestFrame() }
+                    //if (true) {
+                    SwingUtilities.invokeLater {
+                        //vsyncLock { vsyncLock.wait(0.5.seconds) }
+                        requestFrame()
+                    }
                 }
-                if (isUsingMetalPipeline) {
-                    println("!!! ERROR: Using Metal pipeline ${this::class} won't work")
+            }
+        }
+
+        override fun paint(g: Graphics) {
+            //if (!createdBufferStrategy) {
+            //    createdBufferStrategy = true
+            //    val buf = createBufferStrategy(2)
+            //}
+            renderGraphics(g)
+        }
+
+        //var createdBufferStrategy = false
+
+        private val dl: OSXDisplayLink? = if (!Platform.isMac) null else OSXDisplayLink {
+            //private val dl: OSXDisplayLink? = if (true) null else OSXDisplayLink {
+            //if (autoRepaint && ctx?.supportsSwapInterval() != true && createdBufferStrategy) {
+            if (autoRepaint && ctx?.supportsSwapInterval() != true) {
+                //val bufferStrat = bufferStrategy
+                //val g = bufferStrat.drawGraphics
+                //renderGraphics(g)
+                //bufferStrategy.show()
+
+                //requestFrame()
+                SwingUtilities.invokeLater { requestFrame() }
+                //vsyncLock { vsyncLock.notify() }
+            }
+            //println("FRAME!")
+        }
+
+        init {
+            addHierarchyListener {
+                if (dl == null) return@addHierarchyListener
+                val added = getContainerFrame()?.isVisible == true
+                if (dl.running != added) {
+                    if (added) dl.start() else dl.stop()
+                    //println("!!! processHierarchyEvent: added=$added")
                 }
-                //println("CTX: $ctx")
-                ctx.useContext(g, ag, paintInContextDelegate)
             }
         }
     }.also { layout = GridLayout(1, 1) }.also { add(it) }
@@ -55,6 +97,8 @@ open class AwtAGOpenglCanvas : JPanel(GridLayout(1, 1), false.also { System.setP
 
     var autoRepaint = true
 
+    val vsyncLock = Lock()
+
     private val counter = TimeSampler(1.seconds)
     val renderFps: Int get() = counter.count
 
@@ -64,28 +108,9 @@ open class AwtAGOpenglCanvas : JPanel(GridLayout(1, 1), false.also { System.setP
         contextLost = true
     }
 
-    private val dl = if (!Platform.isMac) null else OSXDisplayLink {
-        if (autoRepaint && ctx?.supportsSwapInterval() != true) {
-            requestFrame()
-            //SwingUtilities.invokeLater { repaint() }
-        }
-        //println("FRAME!")
-    }
-
     fun requestFrame() {
         canvas.repaint()
         //repaint()
-    }
-
-    init {
-        addHierarchyListener {
-            if (dl == null) return@addHierarchyListener
-            val added = getContainerFrame()?.isVisible == true
-            if (dl.running != added) {
-                if (added) dl.start() else dl.stop()
-                //println("!!! processHierarchyEvent: added=$added")
-            }
-        }
     }
 
     val state: KmlGlState by lazy { (ag as AGOpengl).createGlState() }
@@ -123,8 +148,8 @@ open class AwtAGOpenglCanvas : JPanel(GridLayout(1, 1), false.also { System.setP
 
                 //println("factor=$factor")
 
-                if (viewport != null) {
-                //if (false) {
+                //if (viewport != null) {
+                if (false) {
                     viewport!!
                     mainFrameBuffer.setSize(
                         (viewport.x * viewportScale).toInt(),
