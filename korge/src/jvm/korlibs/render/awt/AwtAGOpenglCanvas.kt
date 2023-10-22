@@ -4,6 +4,7 @@ import korlibs.datastructure.*
 import korlibs.datastructure.lock.*
 import korlibs.graphics.*
 import korlibs.graphics.gl.*
+import korlibs.io.concurrent.atomic.*
 import korlibs.kgl.*
 import korlibs.korge.view.*
 import korlibs.math.geom.Rectangle
@@ -24,6 +25,9 @@ import javax.swing.*
 // https://docs.oracle.com/javase/tutorial/extra/fullscreen/doublebuf.html
 //open class AwtAGOpenglCanvas : Canvas(), BoundsProvider by BoundsProvider.Base(), Extra by Extra.Mixin() {
 open class AwtAGOpenglCanvas : JPanel(GridLayout(1, 1), false.also { System.setProperty("sun.java2d.opengl", "true") }), BoundsProvider by BoundsProvider.Base(), Extra by Extra.Mixin() {
+    var continuousRenderMode: Boolean = true
+    var updatedSinceFrame = KorAtomicInt(0)
+
     val canvas = object : Canvas() {
         private fun renderGraphics(g: Graphics) {
             counter.add()
@@ -62,7 +66,6 @@ open class AwtAGOpenglCanvas : JPanel(GridLayout(1, 1), false.also { System.setP
         }
 
         //var createdBufferStrategy = false
-
         private val dl: OSXDisplayLink? = if (!Platform.isMac) null else OSXDisplayLink {
             //private val dl: OSXDisplayLink? = if (true) null else OSXDisplayLink {
             //if (autoRepaint && ctx?.supportsSwapInterval() != true && createdBufferStrategy) {
@@ -73,7 +76,14 @@ open class AwtAGOpenglCanvas : JPanel(GridLayout(1, 1), false.also { System.setP
                 //bufferStrategy.show()
 
                 //requestFrame()
-                SwingUtilities.invokeLater { requestFrame() }
+                //if (gameWindow.continuousRenderMode || gameWindow.updatedSinceFrame > 0) {
+                if (continuousRenderMode || updatedSinceFrame.value > 0) {
+                    //println("continuousRenderMode=$continuousRenderMode, updatedSinceFrame.value=${updatedSinceFrame.value}")
+                    updatedSinceFrame.value = 0
+                    SwingUtilities.invokeLater {
+                        requestFrame()
+                    }
+                }
                 //vsyncLock { vsyncLock.notify() }
             }
             //println("FRAME!")

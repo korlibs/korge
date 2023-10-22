@@ -10,6 +10,7 @@ import korlibs.graphics.log.*
 import korlibs.image.bitmap.*
 import korlibs.image.color.*
 import korlibs.io.async.*
+import korlibs.io.concurrent.atomic.*
 import korlibs.korge.view.*
 import korlibs.logger.*
 import korlibs.math.geom.*
@@ -136,8 +137,8 @@ open class GameWindow :
     internal val gamepadEmitter: GamepadInfoEmitter = GamepadInfoEmitter(this)
     internal val gameWindowInputState = GameWindowInputState()
 
-    var updatedSinceFrame: Int = 0
-    val mustTriggerRender: Boolean get() = continuousRenderMode || updatedSinceFrame > 0
+    open val updatedSinceFrame = KorAtomicInt(0)
+    val mustTriggerRender: Boolean get() = continuousRenderMode || updatedSinceFrame.value > 0
     var onContinuousRenderModeUpdated: ((Boolean) -> Unit)? = null
     open var continuousRenderMode: Boolean by Delegates.observable(true) { prop, old, new -> onContinuousRenderModeUpdated?.invoke(new) }
 
@@ -255,9 +256,14 @@ open class GameWindow :
     override fun repaint(): Unit = Unit
 
     @Deprecated("")
-    fun startFrame() = run { updatedSinceFrame = 0 }
+    fun startFrame() = run {
+        //updatedSinceFrame = 0
+    }
     @Deprecated("")
-    fun invalidatedView() = run { updatedSinceFrame++ }
+    fun invalidatedView() = run {
+        //println("invalidatedView")
+        updatedSinceFrame.incrementAndGet()
+    }
     @Deprecated("")
     fun handleContextLost() = run { gameWindowInputState.contextLost = true }
 

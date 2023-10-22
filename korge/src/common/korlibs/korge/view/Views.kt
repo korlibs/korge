@@ -11,6 +11,7 @@ import korlibs.image.format.*
 import korlibs.inject.*
 import korlibs.io.*
 import korlibs.io.async.*
+import korlibs.io.concurrent.atomic.*
 import korlibs.io.file.*
 import korlibs.io.file.std.*
 import korlibs.io.lang.*
@@ -308,42 +309,6 @@ class Views(
 		renderNew()
     }
 
-	fun frameUpdateAndRender(
-        fixedSizeStep: TimeSpan = TimeSpan.NIL,
-        forceRender: Boolean = false,
-        doUpdate: Boolean = true,
-        doRender: Boolean = true,
-    ) {
-        val currentTime = timeProvider.now()
-		views.stats.startFrame()
-		Korge.logger.trace { "ag.onRender" }
-		//println("Render")
-		//println("currentTime: $currentTime")
-		val delta = (currentTime - lastTime)
-		val adelta = if (delta > views.clampElapsedTimeTo) views.clampElapsedTimeTo else delta
-		//println("delta: $delta")
-		//println("Render($lastTime -> $currentTime): $delta")
-		lastTime = currentTime
-        if (doUpdate) {
-            if (fixedSizeStep != TimeSpan.NIL) {
-                update(fixedSizeStep)
-            } else {
-                update(adelta)
-            }
-        }
-        val doRender2 = doRender && (forceRender || updatedSinceFrame > 0)
-        if (doRender2) {
-            if (printRendering) {
-                println("Views.frameUpdateAndRender[${DateTime.nowUnixMillisLong()}]: doRender=$doRender2 -> [forceRender=$forceRender, updatedSinceFrame=$updatedSinceFrame]")
-            }
-            render()
-            startFrame()
-        }
-	}
-
-    //var printRendering: Boolean = true
-    var printRendering: Boolean = Environment["SHOW_FRAME_UPDATE_AND_RENDER"] == "true"
-
     private val eventResults = EventResult()
 
 	fun update(elapsed: TimeSpan) {
@@ -455,7 +420,7 @@ class Views(
         debugSaveView(action, view)
     }
 
-    var updatedSinceFrame: Int by gameWindow::updatedSinceFrame
+    val updatedSinceFrame: KorAtomicInt by gameWindow::updatedSinceFrame
 
     fun startFrame() {
         gameWindow.startFrame()
@@ -464,6 +429,7 @@ class Views(
     override fun invalidatedView(view: BaseView?) {
         //println("invalidatedView: $view")
         gameWindow.invalidatedView()
+        //printStackTrace()
     }
 
     //var viewExtraBuildDebugComponent = arrayListOf<(views: Views, view: View, container: UiContainer) -> Unit>()

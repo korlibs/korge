@@ -11,6 +11,7 @@ import korlibs.datastructure.*
 import korlibs.datastructure.lock.*
 import korlibs.event.*
 import korlibs.io.async.*
+import korlibs.io.concurrent.atomic.*
 import korlibs.math.geom.*
 import korlibs.memory.*
 import korlibs.time.*
@@ -140,7 +141,7 @@ open class KorgwSurfaceView constructor(
                 val frameStartTime = runPreFrame()
                 try {
                     if (!continuousRenderMode) {
-                        gameWindow.updatedSinceFrame++
+                        gameWindow.updatedSinceFrame.incrementAndGet()
                     }
                     gameWindow.frame(frameStartTime = frameStartTime, doUpdate = continuousRenderMode, doRender = true)
                     onDraw(Unit)
