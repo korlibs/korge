@@ -160,12 +160,13 @@ fun GameWindow.dispatchUpdateEvent() {
 }
 fun GameWindow.dispatchRenderEvent(update: Boolean = true, render: Boolean = true) {
     updateRenderLock {
-        renderEventLoop.runAvailableNextTasks(runTimers = false)
+        //renderEventLoop.runAvailableNextTasks(runTimers = false)
         dispatch(events.renderEvent.reset {
             this.update = update
             this.render = render
         })
     }
+    ag.finish()
 }
 fun GameWindow.dispatchNewRenderEvent() {
     dispatchRenderEvent(update = false, render = true)

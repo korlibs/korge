@@ -293,7 +293,6 @@ class RenderContext(
      * Finishes the drawing and flips the screen. Called by the KorGe engine at the end of the frame.
      */
 	fun finish() {
-		ag.finish()
         frameBuffers.free(frameFrameBuffers)
         if (frameFrameBuffers.isNotEmpty()) frameFrameBuffers.clear()
     }
