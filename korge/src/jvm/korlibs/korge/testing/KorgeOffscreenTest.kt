@@ -44,7 +44,7 @@ internal fun createKmlGlContext(fboWidth: Int, fboHeight: Int): KmlGlContext {
     return ctx
 }
 
-fun suspendTestWithOffscreenAG(fboSize: Size, checkGl: Boolean = false, logGl: Boolean = false, callback: suspend CoroutineScope.(ag: AG) -> Unit) = suspendTest {
+fun suspendTestWithOffscreenAG(fboSize: Size, checkGl: Boolean = false, logGl: Boolean = false, setContext: Boolean = true, callback: suspend CoroutineScope.(ag: AG) -> Unit) = suspendTest {
     val fboWidth = fboSize.width.toInt()
     val fboHeight = fboSize.height.toInt()
 
@@ -54,7 +54,7 @@ fun suspendTestWithOffscreenAG(fboSize: Size, checkGl: Boolean = false, logGl: B
     try {
         ag.contextsToFree += ctx
         ag.mainFrameBuffer.setSize(fboWidth, fboHeight)
-        ctx.set()
+        if (setContext) ctx.set()
 
         callback(ag)
     } finally {
@@ -93,12 +93,10 @@ inline fun korgeScreenshotTest(
     }
 
     var exception: Throwable? = null
-    suspendTestWithOffscreenAG(windowSize, checkGl = checkGl, logGl = logGl) { ag ->
-        KorgeHeadless(KorgeConfig(
-            windowSize = windowSize, virtualSize = virtualSize,
-            backgroundColor = bgcolor,
-            stageBuilder = { OffscreenStage(it) }
-            ),
+    suspendTestWithOffscreenAG(windowSize, checkGl = checkGl, logGl = logGl, setContext = false) { ag ->
+        val deferred = CompletableDeferred<Unit>()
+        val gameWindow = KorgeHeadless(
+            config = KorgeConfig(windowSize = windowSize, virtualSize = virtualSize, backgroundColor = bgcolor, stageBuilder = { OffscreenStage(it) }),
             ag = ag, devicePixelRatio = devicePixelRatio,
         ) {
             injector.mapInstance(offscreenContext)
@@ -108,8 +106,11 @@ inline fun korgeScreenshotTest(
                 exception = e
             } finally {
                 gameWindow.close()
+                deferred.complete(Unit)
             }
         }
+        deferred.await()
+        gameWindow.close()
     }
     exception?.let { throw it }
 }

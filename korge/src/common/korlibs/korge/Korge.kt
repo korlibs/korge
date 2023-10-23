@@ -183,7 +183,6 @@ fun GameWindow.configureKorge(config: KorgeConfig = KorgeConfig(), block: suspen
         }
     }
     views.setVirtualSize(config.virtualSize)
-    gameWindow.coroutineContext += InjectorContext(config.injector)
     Korge.logger.logTime("configureGameWindow") {
         gameWindow.configure(windowSize, config.title, null, config.fullscreen, config.backgroundColor ?: Colors.BLACK)
     }

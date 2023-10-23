@@ -14,16 +14,17 @@ import korlibs.korge.view.*
 import korlibs.math.geom.*
 import korlibs.render.*
 import korlibs.time.*
-import kotlin.coroutines.*
 
 @KorgeInternal
 internal fun Views.prepareViewsBase(
-    eventDispatcher: EventListener,
+    eventDispatcher: GameWindow,
     clearEachFrame: Boolean = true,
     bgcolor: RGBA = Colors.TRANSPARENT,
     forceRenderEveryFrame: Boolean = true,
     configInjector: Injector.() -> Unit = {},
 ) {
+    eventDispatcher.coroutineContext += InjectorContext(injector)
+
     val views = this
 
     val injector = views.injector
@@ -33,7 +34,7 @@ internal fun Views.prepareViewsBase(
     injector.mapSingleton(ResourcesRoot::class) { ResourcesRoot() }
     injector.mapInstance(views.input)
     injector.mapInstance(views.stats)
-    injector.mapInstance(CoroutineContext::class, views.coroutineContext)
+    //injector.mapInstance(CoroutineContext::class, views.coroutineContext) // Maybe we shouldn't include this
     injector.mapPrototype(EmptyScene::class) { EmptyScene() }
     injector.mapInstance(TimeProvider::class, views.timeProvider)
     injector.mapInstance(GameWindow::class, gameWindow)

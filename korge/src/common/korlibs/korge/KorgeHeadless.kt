@@ -1,13 +1,17 @@
 package korlibs.korge
 
+import korlibs.datastructure.thread.*
 import korlibs.graphics.*
+import korlibs.graphics.gl.*
 import korlibs.graphics.log.*
 import korlibs.image.format.*
 import korlibs.korge.view.*
 import korlibs.math.geom.*
 import korlibs.render.*
+import korlibs.time.*
 
 object KorgeHeadless {
+    @OptIn(ExperimentalStdlibApi::class)
     class HeadlessGameWindow(
         val size: Size = Size(640, 480),
         val draw: Boolean = false,
@@ -22,10 +26,19 @@ object KorgeHeadless {
             this.exitProcessOnClose = exitProcessOnClose
         }
 
+        init {
+            nativeThread { eventLoop.runTasksForever() }
+            eventLoop.setInterval(60.hz.timeSpan) {
+                (ag as? AGOpengl?)?.context?.set()
+                this@HeadlessGameWindow.dispatchNewRenderEvent()
+            }
+        }
+
         //override val ag: AG = if (draw) AGSoftware(width, height) else DummyAG(width, height)
         //override val ag: AG = AGDummy(width, height)
     }
 
+    @OptIn(ExperimentalStdlibApi::class)
     suspend operator fun invoke(
         config: KorgeConfig,
         ag: AG = AGDummy(config.windowSize),
@@ -37,7 +50,6 @@ object KorgeHeadless {
         val gameWindow = HeadlessGameWindow(config.windowSize, draw = draw, ag = ag, devicePixelRatio = devicePixelRatio)
         gameWindow.exitProcessOnClose = false
         config.copy(gameWindow = gameWindow).start {
-            //config.main?.invoke(this)
             entry()
         }
         return gameWindow
