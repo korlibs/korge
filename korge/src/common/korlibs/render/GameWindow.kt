@@ -57,6 +57,7 @@ expect fun CreateDefaultGameWindow(config: GameWindowCreationConfig = GameWindow
  */
 open class GameWindow :
     BaseEventListener(),
+    Closeable,
     DialogInterfaceProvider,
     MenuInterface,
     DeviceDimensionsProvider,
@@ -234,7 +235,11 @@ open class GameWindow :
     @Deprecated("Use close instead")
     fun exit(exitCode: Int = 0): Unit = close(exitCode)
 
-    open fun close(exitCode: Int = 0) {
+    override fun close() {
+        close(0)
+    }
+
+    open fun close(exitCode: Int) {
         if (closing) return
         closing = true
         //println("[1]")
