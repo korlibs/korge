@@ -11,7 +11,6 @@ import korlibs.korge.view.*
 import korlibs.math.geom.*
 import korlibs.memory.*
 import korlibs.render.GameWindowQuality.*
-import kotlin.native.concurrent.*
 
 class GameWindowEventInstances {
     val pauseEvent = PauseEvent()
@@ -206,9 +205,6 @@ fun GameWindow.handleReshapeEventIfRequired(x: Int, y: Int, width: Int, height: 
     gameWindowInputState.surfaceWidth = width
     gameWindowInputState.surfaceHeight = height
 }
-
-@ThreadLocal
-var GLOBAL_CHECK_GL = false
 
 data class GameWindowCreationConfig(
     val multithreaded: Boolean? = null,
