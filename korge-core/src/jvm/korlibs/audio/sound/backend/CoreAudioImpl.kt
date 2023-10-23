@@ -5,6 +5,7 @@ import korlibs.audio.sound.*
 import korlibs.ffi.*
 import korlibs.io.annotations.*
 import korlibs.io.async.*
+import korlibs.io.concurrent.atomic.*
 import korlibs.io.lang.*
 import korlibs.memory.*
 import java.util.concurrent.*
@@ -43,9 +44,12 @@ private val jnaNewCoreAudioCallback by lazy {
             //println("samplesCount=$samplesCount")
 
             if (ptr != null) {
-                val samples = AudioSamples(nchannels, samplesCount)
+                // Reuse instances as much as possible
+                if (output.samples.totalSamples != samplesCount) output.samples = AudioSamples(nchannels, samplesCount)
+                if (output.buffer.totalSamples != samplesCount) output.buffer = AudioSamplesInterleaved(nchannels, samplesCount)
+                val samples = output.samples
                 output.safeGen(samples)
-                val buffer = ShortArray(samplesCount * nchannels)
+                val buffer = output.buffer.data
 
                 for (m in 0 until nchannels) {
                     arraycopyStride(
@@ -92,6 +96,10 @@ private class JvmCoreAudioNewPlatformAudioOutput(
     var onCancel: Cancellable? = null
 
     internal var completed = false
+
+    internal var samples by KorAtomicRef(AudioSamples(nchannels, 0))
+    internal var buffer by KorAtomicRef(AudioSamplesInterleaved(nchannels, 0))
+
 
     var queue: Pointer? = null
 
