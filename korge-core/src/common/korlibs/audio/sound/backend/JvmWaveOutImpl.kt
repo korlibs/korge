@@ -135,7 +135,7 @@ class JvmWaveOutNewPlatformAudioOutput(
                         var queued = 0
                         for (header in headers) {
                             if (!header.hdr.isInQueue) {
-                                safeGen(header.samples)
+                                genSafe(header.samples)
                                 header.prepareAndWrite()
                                 queued++
                                 //println("Sending running=$running, availableRead=$availableRead, header=${header}")

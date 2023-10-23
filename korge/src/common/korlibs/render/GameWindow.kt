@@ -17,10 +17,34 @@ import korlibs.math.geom.*
 import korlibs.time.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
-import kotlin.properties.*
 
 /** Creates the default [GameWindow] for this platform. Typically, a window/frame or a fullscreen screen depending on the OS */
 expect fun CreateDefaultGameWindow(config: GameWindowCreationConfig = GameWindowCreationConfig()): GameWindow
+
+class ContinuousRenderMode {
+    var continuousRenderMode: Boolean = true
+    var updatedSinceRender = KorAtomicInt(0)
+
+    val mustTriggerRender: Boolean get() = continuousRenderMode || updatedSinceRender.value > 0
+
+    fun updated() {
+        updatedSinceRender.incrementAndGet()
+    }
+
+    fun restart() {
+        updatedSinceRender.value = 0
+    }
+
+    fun shouldRender(): Boolean {
+        if (mustTriggerRender) {
+            //println("continuousRenderMode=$continuousRenderMode, updatedSinceFrame.value=${updatedSinceFrame.value}")
+            restart()
+            return true
+        } else {
+            return false
+        }
+    }
+}
 
 /**
  * A [GameWindow] represents a window, canvas or headless virtual frame where a game is displayed and can receive user events, it provides:
@@ -155,10 +179,7 @@ open class GameWindow :
     internal val gamepadEmitter: GamepadInfoEmitter = GamepadInfoEmitter(this)
     internal val gameWindowInputState = GameWindowInputState()
 
-    open val updatedSinceFrame = KorAtomicInt(0)
-    val mustTriggerRender: Boolean get() = continuousRenderMode || updatedSinceFrame.value > 0
-    var onContinuousRenderModeUpdated: ((Boolean) -> Unit)? = null
-    open var continuousRenderMode: Boolean by Delegates.observable(true) { prop, old, new -> onContinuousRenderModeUpdated?.invoke(new) }
+    open val continuousRenderMode = ContinuousRenderMode()
 
     /** Happens on the updater thread */
     fun onUpdateEvent(block: (UpdateEvent) -> Unit): Closeable = onEvent(UpdateEvent, block)
@@ -275,7 +296,7 @@ open class GameWindow :
     @Deprecated("")
     fun invalidatedView() = run {
         //println("invalidatedView")
-        updatedSinceFrame.incrementAndGet()
+        continuousRenderMode.updated()
     }
     @Deprecated("")
     fun handleContextLost() = run { gameWindowInputState.contextLost = true }

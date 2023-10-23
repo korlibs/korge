@@ -1,7 +1,6 @@
 package korlibs.korge.view
 
 import korlibs.datastructure.*
-import korlibs.datastructure.event.*
 import korlibs.datastructure.iterators.*
 import korlibs.event.*
 import korlibs.graphics.*
@@ -69,7 +68,8 @@ class Views(
     override val views = this
 
     var rethrowRenderError = false
-    var forceRenderEveryFrame: Boolean by gameWindow::continuousRenderMode
+    val continuousRenderMode = gameWindow.continuousRenderMode
+    var forceRenderEveryFrame: Boolean by continuousRenderMode::continuousRenderMode
 
     val virtualPixelsPerInch: Double get() = pixelsPerInch / globalToWindowScaleAvg
     val virtualPixelsPerCm: Double get() = virtualPixelsPerInch / DeviceDimensionsProvider.INCH_TO_CM
@@ -421,7 +421,7 @@ class Views(
         debugSaveView(action, view)
     }
 
-    val updatedSinceFrame: KorAtomicInt by gameWindow::updatedSinceFrame
+    //val updatedSinceFrame: KorAtomicInt by gameWindow::updatedSinceFrame
 
     fun startFrame() {
         gameWindow.startFrame()

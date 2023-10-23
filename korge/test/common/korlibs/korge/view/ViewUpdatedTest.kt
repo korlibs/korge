@@ -55,12 +55,12 @@ class ViewUpdatedTest {
         }
 
         fun assertUpdatedOnce(name: String = "block()", expectedCount: Int = 1, block: () -> Unit) {
-            views.updatedSinceFrame.value = 0
+            views.continuousRenderMode.restart()
             block()
-            assertEquals(expectedCount, views.updatedSinceFrame.value, message = "Should update view::${name}")
-            views.updatedSinceFrame.value = 0
+            assertEquals(expectedCount, views.continuousRenderMode.updatedSinceRender.value, message = "Should update view::${name}")
+            views.continuousRenderMode.restart()
             block()
-            assertEquals(0, views.updatedSinceFrame.value, message = "Shouldn't re-update view::${name}")
+            assertEquals(0, views.continuousRenderMode.updatedSinceRender.value, message = "Shouldn't re-update view::${name}")
         }
     }
 }

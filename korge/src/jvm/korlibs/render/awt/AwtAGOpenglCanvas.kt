@@ -5,7 +5,6 @@ import korlibs.datastructure.lock.*
 import korlibs.datastructure.thread.*
 import korlibs.graphics.*
 import korlibs.graphics.gl.*
-import korlibs.io.concurrent.atomic.*
 import korlibs.kgl.*
 import korlibs.korge.view.*
 import korlibs.logger.*
@@ -31,8 +30,7 @@ open class AwtAGOpenglCanvas : JPanel(GridLayout(1, 1), false.also { System.setP
         val LOGGER = Logger("AwtAGOpenglCanvas")
     }
 
-    var continuousRenderMode: Boolean = true
-    var updatedSinceFrame = KorAtomicInt(0)
+    val continuousRenderMode = ContinuousRenderMode()
 
     interface RendererThread {
         val doRenderInUIThread: Boolean
@@ -54,9 +52,7 @@ open class AwtAGOpenglCanvas : JPanel(GridLayout(1, 1), false.also { System.setP
 
                 //requestFrame()
                 //if (gameWindow.continuousRenderMode || gameWindow.updatedSinceFrame > 0) {
-                if (canvas.continuousRenderMode || canvas.updatedSinceFrame.value > 0) {
-                    //println("continuousRenderMode=$continuousRenderMode, updatedSinceFrame.value=${updatedSinceFrame.value}")
-                    canvas.updatedSinceFrame.value = 0
+                if (canvas.continuousRenderMode.shouldRender()) {
                     SwingUtilities.invokeLater {
                         canvas.requestFrame()
                     }
@@ -94,9 +90,8 @@ open class AwtAGOpenglCanvas : JPanel(GridLayout(1, 1), false.also { System.setP
                                 continue
                             }
                         }
-                        if (canvas.continuousRenderMode || canvas.updatedSinceFrame.value > 0) {
+                        if (canvas.continuousRenderMode.shouldRender()) {
                             //println("continuousRenderMode=$continuousRenderMode, updatedSinceFrame.value=${updatedSinceFrame.value}")
-                            canvas.updatedSinceFrame.value = 0
                             fcanvas.renderGraphics(fcanvas.bufferStrategy.drawGraphics)
                         }
                     }
@@ -148,7 +143,7 @@ open class AwtAGOpenglCanvas : JPanel(GridLayout(1, 1), false.also { System.setP
             if (dl.doRenderInUIThread) {
                 renderGraphics(g)
             } else {
-                updatedSinceFrame.incrementAndGet()
+                continuousRenderMode.updated()
             }
         }
 
@@ -181,8 +176,6 @@ open class AwtAGOpenglCanvas : JPanel(GridLayout(1, 1), false.also { System.setP
 
     private val counter = TimeSampler(1.seconds)
     val renderFps: Int get() = counter.count
-
-
 
     private var contextLost: Boolean = false
 

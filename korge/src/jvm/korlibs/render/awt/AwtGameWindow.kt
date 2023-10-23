@@ -44,8 +44,7 @@ open class AwtCanvasGameWindow constructor(
     override val width: Int get() = canvas.width
     override val height: Int get() = canvas.height
 
-    override var continuousRenderMode: Boolean by canvas::continuousRenderMode
-    override val updatedSinceFrame = canvas.updatedSinceFrame
+    override val continuousRenderMode = canvas.continuousRenderMode
 
     override var backgroundColor: RGBA
         get() = canvas.background.toRgba()

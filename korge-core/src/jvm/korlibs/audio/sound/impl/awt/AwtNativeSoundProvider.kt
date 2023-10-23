@@ -56,7 +56,7 @@ class JvmNewPlatformAudioOutput(
                     if (paused) {
                         Thread.sleep(10L)
                     } else {
-                        safeGen(info)
+                        genSafe(info)
                         bytes.setArrayLE(0, info.interleaved().data)
                         //println(bytes.count { it == 0.toByte() })
                         line.write(bytes, 0, bytes.size)

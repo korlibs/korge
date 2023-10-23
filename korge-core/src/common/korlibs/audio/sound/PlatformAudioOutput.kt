@@ -13,13 +13,13 @@ open class NewPlatformAudioOutput(
     val coroutineContext: CoroutineContext,
     val nchannels: Int,
     val frequency: Int,
-    val gen: (AudioSamples) -> Unit,
+    private val gen: (AudioSamples) -> Unit,
 ) : Disposable, SoundProps {
     val onCancel = coroutineContext.onCancel { stop() }
     var paused: Boolean = false
 
     private val lock = Lock()
-    fun safeGen(buffer: AudioSamples) {
+    fun genSafe(buffer: AudioSamples) {
         lock {
             try {
                 gen(buffer)

@@ -4,9 +4,7 @@ import com.sun.jna.*
 import korlibs.audio.sound.*
 import korlibs.ffi.*
 import korlibs.io.annotations.*
-import korlibs.io.async.*
 import korlibs.io.concurrent.atomic.*
-import korlibs.io.lang.*
 import korlibs.memory.*
 import java.util.concurrent.*
 import java.util.concurrent.atomic.*
@@ -45,7 +43,7 @@ private val jnaNewCoreAudioCallback by lazy {
                 if (output.samples.totalSamples != samplesCount) output.samples = AudioSamples(nchannels, samplesCount)
                 if (output.buffer.totalSamples != samplesCount) output.buffer = AudioSamplesInterleaved(nchannels, samplesCount)
                 val samples = output.samples
-                output.safeGen(samples)
+                output.genSafe(samples)
                 val buffer = output.buffer.data
 
                 for (m in 0 until nchannels) {

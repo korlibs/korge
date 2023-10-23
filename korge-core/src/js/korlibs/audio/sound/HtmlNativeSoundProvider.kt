@@ -1,24 +1,23 @@
 package korlibs.audio.sound
 
-import korlibs.time.TimeSpan
-import korlibs.time.seconds
-import korlibs.audio.format.AudioDecodingProps
-import korlibs.audio.internal.SampleConvert
-import korlibs.io.file.Vfs
-import korlibs.io.file.std.LocalVfs
-import korlibs.io.file.std.UrlVfs
-import korlibs.io.lang.invalidOp
-import kotlinx.coroutines.CompletableDeferred
-import org.w3c.dom.HTMLAudioElement
-import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.coroutineContext
+import korlibs.audio.format.*
+import korlibs.audio.internal.*
+import korlibs.io.file.*
+import korlibs.io.file.std.*
+import korlibs.io.lang.*
+import korlibs.time.*
+import kotlinx.coroutines.*
+import org.w3c.dom.*
+import kotlin.coroutines.*
 
-class HtmlNativeSoundProvider : NativeSoundProvider() {
+class HtmlNativeSoundProvider : NativeSoundProviderNew() {
     init {
         HtmlSimpleSound.ensureUnlockStart()
     }
 
-	override fun createPlatformAudioOutput(coroutineContext: CoroutineContext, freq: Int): PlatformAudioOutput = JsPlatformAudioOutput(coroutineContext, freq)
+    override fun createNewPlatformAudioOutput(coroutineContext: CoroutineContext, nchannels: Int, freq: Int, gen: (AudioSamples) -> Unit): NewPlatformAudioOutput {
+        return JsNewPlatformAudioOutput(coroutineContext, nchannels, freq, gen)
+    }
 
 	override suspend fun createSound(data: ByteArray, streaming: Boolean, props: AudioDecodingProps, name: String): Sound =
         AudioBufferSound(AudioBufferOrHTMLMediaElement(HtmlSimpleSound.loadSound(data)), "#bytes", coroutineContext, name)
