@@ -1,6 +1,8 @@
 package korlibs.render
 
 import korlibs.datastructure.*
+import korlibs.datastructure.event.*
+import korlibs.datastructure.thread.*
 import korlibs.event.*
 import korlibs.graphics.*
 import korlibs.graphics.gl.*
@@ -33,7 +35,7 @@ open class IosTvosToolsImpl {
     open fun viewDidLoad(view: GLKView?) {
     }
 
-    open fun hapticFeedbackGenerate(kind: GameWindow.HapticFeedbackKind) {
+    open fun hapticFeedbackGenerate(kind: HapticFeedbackKind) {
     }
 }
 
@@ -187,8 +189,6 @@ class ViewController(
         pressesHandler(KeyEvent.Type.UP, presses, withEvent)
     }
 
-
-
     //override fun pressesCancelled(presses: Set<*>, withEvent: UIPressesEvent?) {
     //    super.pressesBegan(presses, withEvent)
     //    pressesHandler(KeyEvent.Type.UP, presses, withEvent)
@@ -216,6 +216,7 @@ class MyGLKViewController(
     var lastWidth = 0
     var lastHeight = 0
     val darwinGamePad = DarwinGameControllerNative()
+    var eventLoopThread: NativeThread? = null
 
     override fun viewDidLoad() {
         val view = this.view as? GLKView?
@@ -226,6 +227,14 @@ class MyGLKViewController(
         initialized = false
         lastWidth = 0
         lastHeight = 0
+    }
+
+    override fun viewWillAppear(animated: Boolean) {
+        eventLoopThread = nativeThread { thread -> (gameWindow.eventLoop as SyncEventLoop).runTasksForever { thread.threadSuggestRunning } }
+    }
+
+    override fun viewWillDisappear(animated: Boolean) {
+        eventLoopThread?.threadSuggestRunning = false
     }
 
     override fun glkView(view: GLKView, drawInRect: CValue<CGRect>) {
@@ -246,10 +255,7 @@ class MyGLKViewController(
 
             logger.info { "dispatchInitEvent" }
             gameWindow.dispatchInitEvent()
-            gameWindow.queue {
-
-            }
-            gameWindow.entry {
+            gameWindow.queueSuspend {
                 logger.info { "Executing entry..." }
                 this.entry()
             }
@@ -274,7 +280,9 @@ class MyGLKViewController(
         }
 
         darwinGamePad.updateGamepads(gameWindow)
-        gameWindow.frame()
+        if (gameWindow.continuousRenderMode.shouldRender()) {
+            gameWindow.dispatchNewRenderEvent()
+        }
     }
 
     override fun didReceiveMemoryWarning() {

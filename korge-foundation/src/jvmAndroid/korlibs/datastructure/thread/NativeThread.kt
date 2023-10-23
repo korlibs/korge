@@ -13,7 +13,7 @@ private fun TimeSpan.toMillisNanos(): Pair<Long, Int> {
 actual class NativeThread actual constructor(val code: (NativeThread) -> Unit) : Extra by Extra.Mixin() {
     val thread = Thread { code(this) }
 
-    var threadSuggestRunning = true
+    actual var threadSuggestRunning = true
 
     actual var priority: Int by thread::priority
     actual var name: String? by thread::name

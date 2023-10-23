@@ -15,11 +15,11 @@ actual val iosTvosTools: IosTvosToolsImpl = object : IosTvosToolsImpl() {
         view?.multipleTouchEnabled = true
     }
 
-    override fun hapticFeedbackGenerate(kind: GameWindow.HapticFeedbackKind) {
+    override fun hapticFeedbackGenerate(kind: HapticFeedbackKind) {
         when (kind) {
-            GameWindow.HapticFeedbackKind.GENERIC -> uiSelectionFeedbackGenerator.selectionChanged()
-            GameWindow.HapticFeedbackKind.ALIGNMENT -> uiSelectionFeedbackGenerator.selectionChanged()
-            GameWindow.HapticFeedbackKind.LEVEL_CHANGE -> uiImpactFeedbackGenerator.impactOccurred()
+            HapticFeedbackKind.GENERIC -> uiSelectionFeedbackGenerator.selectionChanged()
+            HapticFeedbackKind.ALIGNMENT -> uiSelectionFeedbackGenerator.selectionChanged()
+            HapticFeedbackKind.LEVEL_CHANGE -> uiImpactFeedbackGenerator.impactOccurred()
         }
     }
 }
