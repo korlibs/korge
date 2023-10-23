@@ -236,6 +236,10 @@ public fun FloatArray.lastIndexOf(sub: FloatArray, starting: Int = 0): Int = arr
 public fun DoubleArray.lastIndexOf(sub: DoubleArray, starting: Int = 0): Int = array_lastIndexOf(starting, size, sub.size) { n, m -> this[n] == sub[m] }
 public fun <T> Array<T>.lastIndexOf(sub: Array<T>, starting: Int = 0): Int = array_lastIndexOf(starting, size, sub.size) { n, m -> this[n] == sub[m] }
 
+public inline fun <T> arraycopyStride(src: (Int) -> T, srcPos: Int, srcStride: Int, dst: (Int, T) -> Unit, dstPos: Int, dstStride: Int, size: Int) {
+    for (n in 0 until size) dst(dstPos + dstStride * n, src(srcPos + srcStride * n))
+}
+
 public fun arraycopyStride(src: ByteArray, srcPos: Int, srcStride: Int, dst: ByteArray, dstPos: Int, dstStride: Int, size: Int) {
     for (n in 0 until size) dst[dstPos + dstStride * n] = src[srcPos + srcStride * n]
 }
