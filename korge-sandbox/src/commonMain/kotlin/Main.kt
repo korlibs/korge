@@ -2,6 +2,7 @@
 import korlibs.event.*
 import korlibs.image.color.*
 import korlibs.image.text.*
+import korlibs.inject.*
 import korlibs.io.async.*
 import korlibs.korge.*
 import korlibs.korge.input.*
@@ -64,6 +65,9 @@ suspend fun main() = Korge(
     //sceneContainer().changeTo({MainSprites10k()}); return@start
     //sceneContainer().changeTo({MainGraphicsText()}); return@start
     //sceneContainer().changeTo({MainUI()}); return@start
+
+    val injector = injector()
+    println("Injector: $injector") // Ensure injector is available as a manual test
 
     var lastBackTime = DateTime.EPOCH
     keys {
