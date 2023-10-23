@@ -1,6 +1,6 @@
 package korlibs.io.concurrent.atomic
 
-import kotlin.reflect.KProperty
+import kotlin.reflect.*
 
 expect fun <T> korAtomic(initial: T): KorAtomicRef<T>
 expect fun korAtomic(initial: Boolean): KorAtomicBoolean
@@ -20,6 +20,14 @@ fun KorAtomicLong(initial: Long): KorAtomicLong = korAtomic(initial)
 interface KorAtomicBase<T> {
 	var value: T
 	fun compareAndSet(expect: T, update: T): Boolean
+}
+
+inline fun <T> KorAtomicBase<T>.update(transform: (T) -> T): T {
+    while (true) {
+        val value = this.value
+        val next = transform(value)
+        if (compareAndSet(value, next)) return next
+    }
 }
 
 interface KorAtomicNumber<T : Number> : KorAtomicBase<T> {
@@ -68,11 +76,31 @@ open class KorAtomicInt internal constructor(initial: Int, dummy: Boolean) : Kor
 		}
 	}
 
-	override fun addAndGet(delta: Int): Int {
-		this.value += delta
-		return this.value
-	}
+	override fun addAndGet(delta: Int): Int = update { it + delta }
+    fun addAndGetMod(delta: Int, modulo: Int): Int = update { (it + delta) % modulo }
 
+    override fun toString(): String = "$value"
+}
+
+class KorAtomicFloat(initial: Float) : KorAtomicNumber<Float> {
+    private val atomic = KorAtomicInt(initial.toRawBits())
+    override var value: Float
+        get() = Float.fromBits(atomic.value)
+        set(value) {
+            atomic.value = value.toRawBits()
+        }
+
+    override fun compareAndSet(expect: Float, update: Float): Boolean {
+        return if (value == expect) {
+            value = update
+            true
+        } else {
+            false
+        }
+    }
+
+    override fun addAndGet(delta: Float): Float = update { it + delta }
+    fun addAndGetMod(delta: Float, modulo: Float): Float = update { (it + delta) % modulo }
     override fun toString(): String = "$value"
 }
 
