@@ -2,6 +2,7 @@ package korlibs.audio.sound
 
 import korlibs.datastructure.lock.*
 import korlibs.datastructure.thread.*
+import korlibs.io.async.*
 import korlibs.io.lang.*
 import korlibs.math.*
 import korlibs.time.*
@@ -14,6 +15,8 @@ open class NewPlatformAudioOutput(
     val frequency: Int,
     val gen: (AudioSamples) -> Unit,
 ) : Disposable, SoundProps {
+    val onCancel = coroutineContext.onCancel { stop() }
+
     private val lock = Lock()
     fun safeGen(buffer: AudioSamples) {
         lock {
@@ -38,6 +41,10 @@ open class PlatformAudioOutputBasedOnNew(
     coroutineContext: CoroutineContext,
     frequency: Int,
 ) : DequeBasedPlatformAudioOutput(coroutineContext, frequency) {
+    init{
+        println("PlatformAudioOutputBasedOnNew[$frequency] = $soundProvider")
+    }
+
     val new = soundProvider.createNewPlatformAudioOutput(coroutineContext, 2, frequency) { buffer ->
         readShorts(buffer.data)
     }

@@ -2,11 +2,13 @@ package korlibs.render.awt
 
 import korlibs.datastructure.*
 import korlibs.datastructure.lock.*
+import korlibs.datastructure.thread.*
 import korlibs.graphics.*
 import korlibs.graphics.gl.*
 import korlibs.io.concurrent.atomic.*
 import korlibs.kgl.*
 import korlibs.korge.view.*
+import korlibs.logger.*
 import korlibs.math.geom.Rectangle
 import korlibs.platform.*
 import korlibs.render.*
@@ -16,6 +18,7 @@ import korlibs.render.platform.*
 import korlibs.time.*
 import java.awt.*
 import java.awt.Graphics
+import java.lang.IllegalStateException
 import javax.swing.*
 
 // @TODO: Use Metal, OpenGL or whatever required depending on what's AWT is using
@@ -25,11 +28,88 @@ import javax.swing.*
 // https://docs.oracle.com/javase/tutorial/extra/fullscreen/doublebuf.html
 //open class AwtAGOpenglCanvas : Canvas(), BoundsProvider by BoundsProvider.Base(), Extra by Extra.Mixin() {
 open class AwtAGOpenglCanvas : JPanel(GridLayout(1, 1), false.also { System.setProperty("sun.java2d.opengl", "true") }), BoundsProvider by BoundsProvider.Base(), Extra by Extra.Mixin() {
+    companion object {
+        val LOGGER = Logger("AwtAGOpenglCanvas")
+    }
+
     var continuousRenderMode: Boolean = true
     var updatedSinceFrame = KorAtomicInt(0)
 
-    val canvas = object : Canvas() {
-        private fun renderGraphics(g: Graphics) {
+    interface RendererThread {
+        val running: Boolean
+        fun start()
+        fun stop()
+    }
+
+    class DisplayLinkRenderThread(val canvas: AwtAGOpenglCanvas) : RendererThread {
+        val dl = OSXDisplayLink {
+            //private val dl: OSXDisplayLink? = if (true) null else OSXDisplayLink {
+            //if (autoRepaint && ctx?.supportsSwapInterval() != true && createdBufferStrategy) {
+            if (canvas.autoRepaint && canvas.ctx?.supportsSwapInterval() != true) {
+                //val bufferStrat = bufferStrategy
+                //val g = bufferStrat.drawGraphics
+                //renderGraphics(g)
+                //bufferStrategy.show()
+
+                //requestFrame()
+                //if (gameWindow.continuousRenderMode || gameWindow.updatedSinceFrame > 0) {
+                if (canvas.continuousRenderMode || canvas.updatedSinceFrame.value > 0) {
+                    //println("continuousRenderMode=$continuousRenderMode, updatedSinceFrame.value=${updatedSinceFrame.value}")
+                    canvas.updatedSinceFrame.value = 0
+                    SwingUtilities.invokeLater {
+                        canvas.requestFrame()
+                    }
+                }
+                //vsyncLock { vsyncLock.notify() }
+            }
+            //println("FRAME!")
+        }
+        override val running: Boolean by dl::running
+        override fun start() = dl.start()
+        override fun stop() = dl.stop()
+    }
+
+    class VsyncRenderThread(val canvas: AwtAGOpenglCanvas) : RendererThread {
+        var createdBufferStrategy = false
+
+        var thread: NativeThread? = null
+        override val running: Boolean get() = thread?.threadSuggestRunning == true
+
+        override fun start() {
+            stop()
+            thread = nativeThread(start = true, name = "VsyncRenderThread") { thread ->
+                val fcanvas = canvas.canvas
+                try {
+                    while (thread.threadSuggestRunning) {
+                        if (!createdBufferStrategy) {
+                            try {
+                                fcanvas.createBufferStrategy(2)
+                                //println("buf=$buf")
+                                createdBufferStrategy = true
+                                AwtAGOpenglCanvas.LOGGER.info { "createdBufferStrategy = true" }
+                            } catch (e: IllegalStateException) {
+                                Thread.sleep(1L)
+                                continue
+                            }
+                        }
+                        fcanvas.renderGraphics(fcanvas.bufferStrategy.drawGraphics)
+                    }
+                } catch (e: Throwable) {
+                    e.printStackTrace()
+                }
+            }
+        }
+
+        override fun stop() {
+            thread?.threadSuggestRunning = false
+            thread = null
+        }
+    }
+
+    inner class GLCanvas : Canvas() {
+        internal fun renderGraphics(g: Graphics) {
+            if (!visible || !SwingUtilities.getWindowAncestor(this).visible) return
+            //println("renderGraphics")
             counter.add()
             //super.paint(g)
             if (ctx == null) {
@@ -45,53 +125,32 @@ open class AwtAGOpenglCanvas : JPanel(GridLayout(1, 1), false.also { System.setP
                 println("!!! ERROR: Using Metal pipeline ${this::class} won't work")
             }
             //println("CTX: $ctx")
+            //if (ctx != null) {
+            //    if (autoRepaint && ctx.supportsSwapInterval()) {
+            //        //if (true) {
+            //        SwingUtilities.invokeLater {
+            //            //vsyncLock { vsyncLock.wait(0.5.seconds) }
+            //            requestFrame()
+            //        }
+            //    }
+            //}
             ctx?.useContext(g, ag, paintInContextDelegate)
-            if (ctx != null) {
-                if (autoRepaint && ctx.supportsSwapInterval()) {
-                    //if (true) {
-                    SwingUtilities.invokeLater {
-                        //vsyncLock { vsyncLock.wait(0.5.seconds) }
-                        requestFrame()
-                    }
-                }
-            }
+            //ctx?.swapBuffers()
         }
 
         override fun paint(g: Graphics) {
-            //if (!createdBufferStrategy) {
-            //    createdBufferStrategy = true
-            //    val buf = createBufferStrategy(2)
-            //}
-            renderGraphics(g)
+
+            //renderGraphics(g)
         }
 
-        //var createdBufferStrategy = false
-        private val dl: OSXDisplayLink? = if (!Platform.isMac) null else OSXDisplayLink {
-            //private val dl: OSXDisplayLink? = if (true) null else OSXDisplayLink {
-            //if (autoRepaint && ctx?.supportsSwapInterval() != true && createdBufferStrategy) {
-            if (autoRepaint && ctx?.supportsSwapInterval() != true) {
-                //val bufferStrat = bufferStrategy
-                //val g = bufferStrat.drawGraphics
-                //renderGraphics(g)
-                //bufferStrategy.show()
 
-                //requestFrame()
-                //if (gameWindow.continuousRenderMode || gameWindow.updatedSinceFrame > 0) {
-                if (continuousRenderMode || updatedSinceFrame.value > 0) {
-                    //println("continuousRenderMode=$continuousRenderMode, updatedSinceFrame.value=${updatedSinceFrame.value}")
-                    updatedSinceFrame.value = 0
-                    SwingUtilities.invokeLater {
-                        requestFrame()
-                    }
-                }
-                //vsyncLock { vsyncLock.notify() }
-            }
-            //println("FRAME!")
+        private val dl: RendererThread = when {
+            Platform.isMac -> DisplayLinkRenderThread(this@AwtAGOpenglCanvas)
+            else -> VsyncRenderThread(this@AwtAGOpenglCanvas)
         }
 
         init {
             addHierarchyListener {
-                if (dl == null) return@addHierarchyListener
                 val added = getContainerFrame()?.isVisible == true
                 if (dl.running != added) {
                     if (added) dl.start() else dl.stop()
@@ -99,7 +158,9 @@ open class AwtAGOpenglCanvas : JPanel(GridLayout(1, 1), false.also { System.setP
                 }
             }
         }
-    }.also { layout = GridLayout(1, 1) }.also { add(it) }
+    }
+
+    val canvas = GLCanvas().also { layout = GridLayout(1, 1) }.also { add(it) }
     //override val ag: AGOpengl = AGOpenglAWT(checkGl = true, logGl = true)
     val ag: AG = AGOpenglAWT()
 

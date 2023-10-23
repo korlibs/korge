@@ -2,10 +2,11 @@
 
 package korlibs.datastructure.thread
 
+import korlibs.datastructure.*
 import korlibs.time.*
 import kotlin.time.*
 
-expect class NativeThread(code: () -> Unit) {
+expect class NativeThread(code: (NativeThread) -> Unit) : Extra {
     companion object {
         val isSupported: Boolean
         val currentThreadId: Long
@@ -27,7 +28,7 @@ public fun nativeThread(
     isDaemon: Boolean = false,
     name: String? = null,
     priority: Int = -1,
-    block: () -> Unit
+    block: (NativeThread) -> Unit
 ): NativeThread {
     val thread = NativeThread(block)
     if (isDaemon) thread.isDaemon = true

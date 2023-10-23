@@ -40,12 +40,19 @@ open class LazyNativeSoundProvider(val gen: () -> NativeSoundProvider) : NativeS
     override fun dispose() = parent.dispose()
 }
 
-open class NativeSoundProvider : Disposable {
+open class NativeSoundProviderNew : NativeSoundProvider() {
+    final override fun createPlatformAudioOutput(coroutineContext: CoroutineContext, freq: Int): PlatformAudioOutput =
+        PlatformAudioOutputBasedOnNew(this, coroutineContext, freq)
+}
+
+open class NativeSoundProvider() : Disposable {
 	open val target: String = "unknown"
 
     open var paused: Boolean = false
 
-    open fun createPlatformAudioOutput(coroutineContext: CoroutineContext, freq: Int = 44100): PlatformAudioOutput = PlatformAudioOutput(coroutineContext, freq)
+    open fun createPlatformAudioOutput(coroutineContext: CoroutineContext, freq: Int = 44100): PlatformAudioOutput {
+        return PlatformAudioOutput(coroutineContext, freq)
+    }
     open fun createNewPlatformAudioOutput(coroutineContext: CoroutineContext, nchannels: Int, freq: Int = 44100, gen: (AudioSamples) -> Unit): NewPlatformAudioOutput {
         //println("createNewPlatformAudioOutput: ${this::class}")
         return NewPlatformAudioOutput(coroutineContext, nchannels, freq, gen)

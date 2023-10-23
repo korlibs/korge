@@ -363,7 +363,6 @@ class Win32OpenglContext(val gwconfig: GameWindowConfig, val hWnd: WinDef.HWND, 
             GameWindowQuality.PERFORMANCE,
             GameWindowQuality.AUTOMATIC -> DirectGL.glDisable(GL_MULTISAMPLE)
         }
-
     }
 
     override fun releaseCurrent() {
@@ -375,9 +374,11 @@ class Win32OpenglContext(val gwconfig: GameWindowConfig, val hWnd: WinDef.HWND, 
             val error = Win32.GetLastError()
             logger.error { "WGL.wglMakeCurrent($hDC, $hRC).error = $error" }
         }
+        //println("makeCurrent")
     }
 
     override fun swapBuffers() {
+        //println("swapBuffers")
         //println("swapBuffers")
         Win32.glFlush()
         Win32.SwapBuffers(hDC)

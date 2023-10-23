@@ -1,5 +1,6 @@
 package korlibs.datastructure.thread
 
+import korlibs.datastructure.*
 import korlibs.time.*
 
 private fun TimeSpan.toMillisNanos(): Pair<Long, Int> {
@@ -9,8 +10,10 @@ private fun TimeSpan.toMillisNanos(): Pair<Long, Int> {
     return millis to nanos
 }
 
-actual class NativeThread actual constructor(val code: () -> Unit) {
-    val thread = Thread(code)
+actual class NativeThread actual constructor(val code: (NativeThread) -> Unit) : Extra by Extra.Mixin() {
+    val thread = Thread { code(this) }
+
+    var threadSuggestRunning = true
 
     actual var priority: Int by thread::priority
     actual var name: String? by thread::name
@@ -20,10 +23,12 @@ actual class NativeThread actual constructor(val code: () -> Unit) {
         set(value) { thread.isDaemon = value }
 
     actual fun start() {
+        threadSuggestRunning = true
         thread.start()
     }
 
     actual fun interrupt() {
+        threadSuggestRunning = false
         // No operation
         thread.interrupt()
     }

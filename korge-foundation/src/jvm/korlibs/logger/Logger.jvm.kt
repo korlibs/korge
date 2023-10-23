@@ -1,5 +1,7 @@
 package korlibs.logger
 
+import korlibs.logger.Console.color
+import korlibs.time.*
 import java.util.logging.*
 
 actual object Console : BaseConsole() {
@@ -29,7 +31,14 @@ actual object DefaultLogOutput : Logger.Output {
                 if (nativeLogger.handlers.isEmpty()) {
                     nativeLogger.addHandler(object : Handler() {
                         override fun publish(record: LogRecord) {
-                            println("${record.instant}: ${record.loggerName} - ${record.message}")
+                            val out = if (record.level.intValue() >= Level.WARNING.intValue()) System.err else System.out
+                            val color = when {
+                                record.level.intValue() >= Level.SEVERE.intValue() -> AnsiEscape.Color.RED
+                                record.level.intValue() >= Level.WARNING.intValue() -> AnsiEscape.Color.YELLOW
+                                else -> AnsiEscape.Color.WHITE
+                            }
+                            val time = DateTime.fromUnixMillis(record.millis).format(DateFormat.FORMAT2)
+                            out.println("$time[${Thread.currentThread()}]: ${record.level}: ${record.loggerName} - ${record.message}".color(color))
                         }
                         override fun flush() = Unit
                         override fun close() = Unit

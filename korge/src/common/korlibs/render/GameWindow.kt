@@ -101,13 +101,13 @@ open class GameWindow :
     var coroutineContext: CoroutineContext = EmptyCoroutineContext
 
     fun getCoroutineDispatcherWithCurrentContext(coroutineContext: CoroutineContext): CoroutineContext = coroutineContext + coroutineDispatcher
-    suspend fun getCoroutineDispatcherWithCurrentContext(): CoroutineContext = getCoroutineDispatcherWithCurrentContext(coroutineContext)
+    fun getCoroutineDispatcherWithCurrentContext(): CoroutineContext = getCoroutineDispatcherWithCurrentContext(coroutineContext)
 
     // Event Loop
     @PublishedApi internal val _updateRenderLock = Lock()
     inline fun updateRenderLock(block: () -> Unit) = _updateRenderLock(block)
     fun queueSuspend(callback: suspend () -> Unit) {
-        launchAsap(coroutineDispatcher + coroutineContext) {
+        getCoroutineDispatcherWithCurrentContext().launchUnscoped {
             callback()
         }
     }
@@ -242,17 +242,12 @@ open class GameWindow :
     open fun close(exitCode: Int) {
         if (closing) return
         closing = true
-        //println("[1]")
         queue { dispatchDestroyEvent() }
-        //println("[2]")
         running = false
         this.exitCode = exitCode
-        //println("[3]")
         logger.info { "GameWindow.close" }
+        coroutineDispatcher.cancel()
         coroutineDispatcher.close()
-        //println("[4]")
-        coroutineDispatcher.cancelChildren()
-        //println("[5]")
     }
 
     @Deprecated("")

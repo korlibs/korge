@@ -3,20 +3,21 @@ package korlibs.audio.sound.backend
 import korlibs.audio.sound.*
 import korlibs.datastructure.thread.*
 import korlibs.ffi.*
-import korlibs.io.async.*
 import korlibs.io.lang.*
 import korlibs.memory.*
-import korlibs.time.*
-import kotlinx.coroutines.*
 import kotlin.coroutines.*
 
 val jvmWaveOutNativeSoundProvider: NativeSoundProvider? by lazy {
     JvmWaveOutNativeSoundProvider()
 }
 
-class JvmWaveOutNativeSoundProvider : NativeSoundProvider() {
-    override fun createPlatformAudioOutput(coroutineContext: CoroutineContext, freq: Int): PlatformAudioOutput =
-        JvmWaveOutPlatformAudioOutput(this, coroutineContext, freq)
+class JvmWaveOutNativeSoundProvider : NativeSoundProviderNew() {
+    override fun createNewPlatformAudioOutput(
+        coroutineContext: CoroutineContext,
+        nchannels: Int,
+        freq: Int,
+        gen: (AudioSamples) -> Unit
+    ): NewPlatformAudioOutput = JvmWaveOutNewPlatformAudioOutput(coroutineContext, nchannels, freq, gen)
 }
 
 /*
@@ -68,34 +69,35 @@ class JvmWaveOutPlatformAudioOutputNew(
 }
 */
 
-class JvmWaveOutPlatformAudioOutput(
-    val provider: JvmWaveOutNativeSoundProvider,
+class JvmWaveOutNewPlatformAudioOutput(
     coroutineContext: CoroutineContext,
-    frequency: Int
-) : DequeBasedPlatformAudioOutput(coroutineContext, frequency) {
+    nchannels: Int,
+    freq: Int,
+    gen: (AudioSamples) -> Unit
+) : NewPlatformAudioOutput(coroutineContext, nchannels, freq, gen) {
     val samplesLock = korlibs.datastructure.lock.NonRecursiveLock()
     var nativeThread: NativeThread? = null
     var running = false
     var totalEmittedSamples = 0L
 
-    override suspend fun wait() {
-        // @TODO: Get samples not reproduced
-        //println("WAITING...")
-        for (n in 0 until 1000) {
-            var currentPositionInSamples: Long = 0L
-            var totalEmittedSamples: Long = 0L
-            var availableRead = 0
-            samplesLock {
-                currentPositionInSamples = WINMM.waveOutGetPositionInSamples(handle)
-                availableRead = this.availableRead
-                totalEmittedSamples = this.totalEmittedSamples
-            }
-            //println("availableRead=$availableRead, waveOutGetPosition=$currentPositionInSamples, totalEmittedSamples=$totalEmittedSamples")
-            if (availableRead <= 0 && currentPositionInSamples >= totalEmittedSamples) break
-            delay(1.milliseconds)
-        }
-        //println("DONE WAITING")
-    }
+    //override suspend fun wait() {
+    //    // @TODO: Get samples not reproduced
+    //    //println("WAITING...")
+    //    for (n in 0 until 1000) {
+    //        var currentPositionInSamples: Long = 0L
+    //        var totalEmittedSamples: Long = 0L
+    //        var availableRead = 0
+    //        samplesLock {
+    //            currentPositionInSamples = WINMM.waveOutGetPositionInSamples(handle)
+    //            availableRead = this.availableRead
+    //            totalEmittedSamples = this.totalEmittedSamples
+    //        }
+    //        //println("availableRead=$availableRead, waveOutGetPosition=$currentPositionInSamples, totalEmittedSamples=$totalEmittedSamples")
+    //        if (availableRead <= 0 && currentPositionInSamples >= totalEmittedSamples) break
+    //        delay(1.milliseconds)
+    //    }
+    //    //println("DONE WAITING")
+    //}
 
     private var handle: FFIPointer? = null
     private var headers = emptyArray<WaveHeader>()
@@ -126,28 +128,26 @@ class JvmWaveOutPlatformAudioOutput(
                 handle = handlePtr[0]
                 //println("handle=$handle")
 
-                headers = Array(3) { WaveHeader(it, handle, 1024, nchannels, arena) }
+                headers = Array(4) { WaveHeader(it, handle, 1024, nchannels, arena) }
 
                 try {
-                    while (running || availableRead > 0) {
+                    while (running) {
+                        var queued = 0
                         for (header in headers) {
                             if (!header.hdr.isInQueue) {
+                                safeGen(header.samples)
+                                header.prepareAndWrite()
+                                queued++
                                 //println("Sending running=$running, availableRead=$availableRead, header=${header}")
-                                if (availableRead > 0) {
-                                    samplesLock {
-                                        totalEmittedSamples += header.totalSamples
-                                        readShortsFully(header.data)
-                                    }
-                                    header.prepareAndWrite()
-                                }
                             }
-                            Thread_sleep(1L)
                         }
+                        if (queued == 0) Thread_sleep(1L)
                     }
                 } finally {
-                    runBlockingNoJs {
-                        wait()
-                    }
+                    for (header in headers) header.dispose()
+                    //runBlockingNoJs {
+                    //    wait()
+                    //}
                     WINMM.waveOutReset(handle)
                     WINMM.waveOutClose(handle)
                     handle = null
@@ -164,47 +164,52 @@ class JvmWaveOutPlatformAudioOutput(
         running = false
         //println("STOPPING")
     }
+}
 
-    private class WaveHeader(
-        val id: Int,
-        val handle: FFIPointer?,
-        val totalSamples: Int,
-        val nchannels: Int,
-        val arena: FFIArena,
-    ) {
-        val data = Array(nchannels) { ShortArray(totalSamples) }
-        val totalBytes = (totalSamples * nchannels * Short.SIZE_BYTES)
-        val dataMem = arena.allocBytes(totalBytes).typed<Short>()
-        val hdr = WAVEHDR(arena.allocBytes(WAVEHDR().size)).also { hdr ->
-            hdr.lpData = dataMem.reinterpret()
-            hdr.dwBufferLength = totalBytes
-            hdr.dwFlags = 0
-        }
 
-        fun prepareAndWrite(totalSamples: Int = this.totalSamples) {
-            //println(data[0].toList())
+private class WaveHeader(
+    val id: Int,
+    val handle: FFIPointer?,
+    val totalSamples: Int,
+    val nchannels: Int,
+    val arena: FFIArena,
+) {
+    val samples = AudioSamples(nchannels, totalSamples)
+    val data = samples.data
 
-            hdr.dwBufferLength = (totalSamples * nchannels * Short.SIZE_BYTES)
-
-            for (ch in 0 until nchannels) {
-                for (n in 0 until totalSamples) {
-                    dataMem[n * nchannels + ch] = data[ch][n]
-                }
-            }
-            //if (hdr.isPrepared) dispose()
-            if (!hdr.isPrepared) {
-                //println("-> prepare")
-                WINMM.waveOutPrepareHeader(handle, hdr.ptr, hdr.size)
-            }
-            WINMM.waveOutWrite(handle, hdr.ptr, hdr.size)
-        }
-
-        fun dispose() {
-            WINMM.waveOutUnprepareHeader(handle, hdr.ptr, hdr.size)
-        }
-
-        override fun toString(): String = "WaveHeader(id=$id, totalSamples=$totalSamples, nchannels=$nchannels, hdr=$hdr)"
+    val totalBytes = (totalSamples * nchannels * Short.SIZE_BYTES)
+    val dataMem = arena.allocBytes(totalBytes).typed<Short>()
+    val hdr = WAVEHDR(arena.allocBytes(WAVEHDR().size)).also { hdr ->
+        hdr.lpData = dataMem.reinterpret()
+        hdr.dwBufferLength = totalBytes
+        hdr.dwFlags = 0
     }
+
+    fun prepareAndWrite(totalSamples: Int = this.totalSamples) {
+        //println(data[0].toList())
+
+        val nchannels = this.nchannels
+        hdr.dwBufferLength = (totalSamples * nchannels * Short.SIZE_BYTES)
+
+        for (ch in 0 until nchannels) {
+            val inputCh = data[ch]
+            for (n in 0 until totalSamples) {
+                dataMem[n * nchannels + ch] = inputCh[n]
+            }
+        }
+        //if (hdr.isPrepared) dispose()
+        if (!hdr.isPrepared) {
+            //println("-> prepare")
+            WINMM.waveOutPrepareHeader(handle, hdr.ptr, hdr.size)
+        }
+        WINMM.waveOutWrite(handle, hdr.ptr, hdr.size)
+    }
+
+    fun dispose() {
+        WINMM.waveOutUnprepareHeader(handle, hdr.ptr, hdr.size)
+    }
+
+    override fun toString(): String = "WaveHeader(id=$id, totalSamples=$totalSamples, nchannels=$nchannels, hdr=$hdr)"
 }
 
 internal typealias LPHWAVEOUT = FFIPointer

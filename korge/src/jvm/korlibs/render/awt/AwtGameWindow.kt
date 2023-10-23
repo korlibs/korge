@@ -6,10 +6,12 @@ import korlibs.graphics.*
 import korlibs.image.awt.*
 import korlibs.image.bitmap.*
 import korlibs.image.color.*
+import korlibs.io.lang.*
 import korlibs.platform.*
 import korlibs.render.*
 import korlibs.render.MenuItem
 import korlibs.time.*
+import korlibs.time.TimedCache
 import kotlinx.coroutines.*
 import java.awt.*
 import java.awt.datatransfer.*
@@ -80,11 +82,6 @@ open class AwtCanvasGameWindow(
         popupMenu.show(canvas, canvas.mousePosition.x, canvas.mousePosition.y)
     }
 
-    override fun close(exitCode: Int) {
-        super.close(exitCode)
-        coroutineDispatcher.close()
-    }
-
     override fun lostOwnership(clipboard: Clipboard?, contents: Transferable?) {
     }
 
@@ -150,8 +147,8 @@ class AwtGameWindow(
             })
             initTools()
         }
-        override fun paintComponents(g: Graphics?) {
-        }
+        //override fun paintComponents(g: Graphics?) {
+        //}
     }
     override val window: Window get() = frame
 
@@ -245,12 +242,10 @@ class AwtGameWindow(
     override fun close(exitCode: Int) {
         try {
             super.close(exitCode)
-        } catch (e: Throwable) {
-            e.printStackTrace()
-        }
-        println("exitProcessOnClose=$exitProcessOnClose")
-        if (exitProcessOnClose) {
-            System.exit(exitCode)
+        } finally {
+            if (exitProcessOnClose) {
+                System.exit(exitCode)
+            }
         }
     }
 

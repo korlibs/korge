@@ -8,7 +8,6 @@ import korlibs.time.*
 
 class MainSound : Scene() {
     override suspend fun SContainer.sceneMain() {
-
         val music = resourcesVfs["sounds/Snowland.mp3"].readMusic()
         //val music = resourcesVfs["sounds/click.wav"].readSound()
         //val music = resourcesVfs["sounds/click.wav"].readMusic()

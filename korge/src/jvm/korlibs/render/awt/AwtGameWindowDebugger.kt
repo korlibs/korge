@@ -37,7 +37,6 @@ class AwtGameWindowDebugger(val gameWindow: GameWindow, val mainFrame: JFrame) {
             override fun windowClosing(e: WindowEvent?) {
                 debugFrame.isVisible = false
                 debugFrame.dispose()
-                gameWindow.close()
             }
         })
         mainFrame.addComponentListener(object : ComponentAdapter() {

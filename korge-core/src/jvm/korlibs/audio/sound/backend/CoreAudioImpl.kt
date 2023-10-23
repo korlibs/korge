@@ -21,10 +21,7 @@ val jvmCoreAudioNativeSoundProvider: JvmCoreAudioNativeSoundProvider? by lazy {
     }
 }
 
-class JvmCoreAudioNativeSoundProvider : NativeSoundProvider() {
-    //override fun createPlatformAudioOutput(coroutineContext: CoroutineContext, freq: Int): PlatformAudioOutput = JvmCoreAudioPlatformAudioOutput(coroutineContext, freq)
-    override fun createPlatformAudioOutput(coroutineContext: CoroutineContext, freq: Int): PlatformAudioOutput = PlatformAudioOutputBasedOnNew(this, coroutineContext, freq)
-
+class JvmCoreAudioNativeSoundProvider : NativeSoundProviderNew() {
     override fun createNewPlatformAudioOutput(coroutineContext: CoroutineContext, nchannels: Int, freq: Int, gen: (AudioSamples) -> Unit): NewPlatformAudioOutput {
         return JvmCoreAudioNewPlatformAudioOutput(coroutineContext, nchannels, freq, gen)
     }
@@ -93,8 +90,6 @@ private class JvmCoreAudioNewPlatformAudioOutput(
         const val numBuffers = 3
     }
 
-    var onCancel: Cancellable? = null
-
     internal var completed = false
 
     internal var samples by KorAtomicRef(AudioSamples(nchannels, 0))
@@ -106,7 +101,6 @@ private class JvmCoreAudioNewPlatformAudioOutput(
     override fun start() {
         stop()
 
-        onCancel = coroutineContext.onCancel { stop() }
         newAudioOutputsById[id] = this
         completed = false
         val queueRef = Memory(16).also { it.clear() }
@@ -149,9 +143,6 @@ private class JvmCoreAudioNewPlatformAudioOutput(
 
     override fun stop() {
         completed = true
-
-        onCancel?.cancel()
-        onCancel = null
 
         if (queue != null) {
             CoreAudioKit.AudioQueueDispose(queue, false)

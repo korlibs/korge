@@ -135,7 +135,7 @@ open class UIVerticalList(provider: Provider, width: Double = 200.0) : UIView(DE
 
             val removeIndices = viewsByIndex.keys.filter { it !in fromIndex .. toIndex }.toSet()
 
-            viewsByIndex.forEach { (index, view) ->
+            viewsByIndex.toList().forEach { (index, view) ->
                 if (index in removeIndices) {
                     view.removeFromParent()
                 }

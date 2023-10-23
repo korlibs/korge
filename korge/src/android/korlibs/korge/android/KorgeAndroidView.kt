@@ -32,7 +32,7 @@ open class KorgeAndroidView @JvmOverloads constructor(
         if (!moduleLoaded) return
 
         gameWindow?.dispatchDestroyEvent()
-        gameWindow?.coroutineContext = null
+        //gameWindow?.coroutineContext = null
         gameWindow?.close()
         gameWindow?.exit()
         mGLView = null
