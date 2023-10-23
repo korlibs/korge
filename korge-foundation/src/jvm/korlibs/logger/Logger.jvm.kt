@@ -1,6 +1,6 @@
 package korlibs.logger
 
-import java.util.logging.Level
+import java.util.logging.*
 
 actual object Console : BaseConsole() {
     override fun logInternal(kind: Kind, vararg msg: Any?) {
@@ -24,10 +24,24 @@ internal actual val miniEnvironmentVariables: Map<String, String> by lazy { Syst
 actual object DefaultLogOutput : Logger.Output {
     override fun output(logger: Logger, level: Logger.Level, msg: Any?) {
         if (logger.nativeLogger == null) {
-            logger.nativeLogger = java.util.logging.Logger.getLogger(logger.name)
+            logger.nativeLogger = java.util.logging.Logger.getLogger(logger.name).also { nativeLogger ->
+                nativeLogger.useParentHandlers = true
+                if (nativeLogger.handlers.isEmpty()) {
+                    nativeLogger.addHandler(object : Handler() {
+                        override fun publish(record: LogRecord) {
+                            println("${record.instant}: ${record.loggerName} - ${record.message}")
+                        }
+                        override fun flush() = Unit
+                        override fun close() = Unit
+                    })
+                }
+            }
         }
+        val nativeLogger = logger.nativeLogger as java.util.logging.Logger
+        nativeLogger.level = logger.level.toJava()
+        //println("logger.level=${logger.level}, nativeLogger.level=${nativeLogger.level}, level=$level")
         //println("logger=$logger, level=$level, msg=$msg")
-        (logger.nativeLogger as java.util.logging.Logger).log(level.toJava(), msg.toString())
+        nativeLogger.log(level.toJava(), msg.toString())
     }
 }
 
