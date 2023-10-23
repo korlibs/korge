@@ -1,5 +1,6 @@
 package korlibs.render
 
+import korlibs.datastructure.event.*
 import korlibs.event.*
 import korlibs.event.Touch
 import korlibs.graphics.*
@@ -20,6 +21,7 @@ import org.w3c.dom.events.MouseEvent
 private external val navigator: dynamic
 
 open class JsGameWindow : GameWindow() {
+    override fun createEventLoop(): EventLoop = JsEventLoop
 }
 
 open class BrowserCanvasJsGameWindow(
@@ -109,7 +111,7 @@ open class BrowserCanvasJsGameWindow(
         }
     }
 
-    override var quality: Quality = Quality.AUTOMATIC
+    override var quality: GameWindowQuality = GameWindowQuality.AUTOMATIC
         set(value) {
             if (field != value) {
                 field = value
@@ -207,7 +209,7 @@ open class BrowserCanvasJsGameWindow(
                 }
             }
         }
-        dispatch(keyEvent {
+        dispatch(events.keyEvent {
             this.type = when (me.type) {
                 "keydown" -> KeyEvent.Type.DOWN
                 "keyup" -> KeyEvent.Type.UP
@@ -257,7 +259,7 @@ open class BrowserCanvasJsGameWindow(
         val tx = transformEventX(e.clientX.toFloat() - canvasBounds.left.toFloat()).toInt()
         val ty = transformEventY(e.clientY.toFloat() - canvasBounds.top.toFloat()).toInt()
         //console.log("mouseEvent", type.toString(), e.clientX, e.clientY, tx, ty)
-        mouseEvent {
+        events.mouseEvent {
             this.type = if (e.buttons.toInt() != 0) pressingType else type
             this.scaleCoords = false
             this.id = 0
@@ -294,7 +296,7 @@ open class BrowserCanvasJsGameWindow(
 
         // If we are in a touch device, touch events will be dispatched, and then we don't want to emit mouse events, that would be duplicated
         if (!is_touch_device() || type == korlibs.event.MouseEvent.Type.SCROLL) {
-            dispatch(mouseEvent)
+            dispatch(events.mouseEvent)
         }
     }
 
@@ -310,7 +312,7 @@ open class BrowserCanvasJsGameWindow(
         set(value) {
             field = value
             canvas.style.cursor = when (value) {
-                is Cursor -> {
+                is korlibs.render.Cursor -> {
                     when (value) {
                         Cursor.DEFAULT -> "default"
                         Cursor.CROSSHAIR -> "crosshair"
@@ -378,13 +380,6 @@ open class BrowserCanvasJsGameWindow(
             window.close()
         }
         loopJob = null
-    }
-
-    override suspend fun loop(entry: suspend GameWindow.() -> Unit) {
-        loopJob = launchImmediately(getCoroutineDispatcherWithCurrentContext()) {
-            entry()
-        }
-        jsFrame(0.0)
     }
 
     private lateinit var jsFrame: (Double) -> Unit
@@ -455,8 +450,9 @@ open class BrowserCanvasJsGameWindow(
 
         jsFrame = { step: Double ->
             window.requestAnimationFrame(jsFrame) // Execute first to prevent exceptions breaking the loop, not triggering again
-            frame()
+            dispatchNewRenderEvent()
         }
+        jsFrame(0.0)
     }
 
 

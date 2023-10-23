@@ -95,24 +95,41 @@ open class GameWindow :
     //override val ag: AG = LogAG()
     override val ag: AG = AGDummy()
 
-    val eventLoop = SyncEventLoop(precise = false)
+    open fun createEventLoop(): BaseEventLoop = SyncEventLoop(precise = false)
+
+    val eventLoop: BaseEventLoop by lazy { createEventLoop() }
     //val renderEventLoop = SyncEventLoop(precise = false, immediateRun = true)
-    open val coroutineDispatcher = EventLoopCoroutineDispatcher(eventLoop)
+    open val coroutineDispatcher by lazy {
+        EventLoopCoroutineDispatcher(eventLoop).also {
+            ensureInitialized()
+        }
+    }
     var coroutineContext: CoroutineContext = EmptyCoroutineContext
 
     fun getCoroutineDispatcherWithCurrentContext(coroutineContext: CoroutineContext): CoroutineContext = coroutineContext + coroutineDispatcher
     fun getCoroutineDispatcherWithCurrentContext(): CoroutineContext = getCoroutineDispatcherWithCurrentContext(coroutineContext)
 
+    private fun ensureInitialized() {
+        updateUpdateInterval()
+    }
+
     // Event Loop
     @PublishedApi internal val _updateRenderLock = Lock()
     inline fun updateRenderLock(block: () -> Unit) = _updateRenderLock(block)
     fun queueSuspend(callback: suspend () -> Unit) {
+        coroutineDispatcher
         launchAsap(getCoroutineDispatcherWithCurrentContext()) {
             callback()
         }
     }
-    fun queue(callback: () -> Unit) = eventLoop.setImmediate(callback)
-    fun queue(callback: Runnable) = eventLoop.setImmediate { callback.run() }
+    fun queue(callback: () -> Unit) {
+        coroutineDispatcher
+        eventLoop.setImmediate(callback)
+    }
+    fun queue(callback: Runnable) {
+        coroutineDispatcher
+        eventLoop.setImmediate { callback.run() }
+    }
     @Deprecated("")
     fun <T> queueBlocking(callback: () -> T): T {
         val deferred = CompletableDeferred<T>()
@@ -181,10 +198,6 @@ open class GameWindow :
                 dispatchUpdateEvent()
             }
         }
-    }
-
-    init {
-        updateUpdateInterval()
     }
 
     // PROPS

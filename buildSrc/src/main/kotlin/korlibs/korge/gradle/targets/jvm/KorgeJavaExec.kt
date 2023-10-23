@@ -166,7 +166,7 @@ open class KorgeJavaExec : JavaExec() {
                     || System.getenv("KORGW_JVM_ENGINE") == "sdl"
                 //|| project.findProperty("korgw.jvm.engine") == "sdl"
                 )
-        jvmArgs("-XX:+IgnoreUnrecognizedVMOptions", "-XX:+UseZGC", "-XX:+ZGenerational")
+        jvmArgs("-XX:+UnlockExperimentalVMOptions", "-XX:+IgnoreUnrecognizedVMOptions", "-XX:+UseZGC", "-XX:+ZGenerational")
         //jvmArgs("-XX:+UseZGC")
         if (firstThread && isMacos) {
             jvmArgs("-XstartOnFirstThread")

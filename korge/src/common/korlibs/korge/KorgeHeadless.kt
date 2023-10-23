@@ -1,5 +1,6 @@
 package korlibs.korge
 
+import korlibs.datastructure.event.*
 import korlibs.datastructure.thread.*
 import korlibs.graphics.*
 import korlibs.graphics.gl.*
@@ -19,6 +20,8 @@ object KorgeHeadless {
         exitProcessOnClose: Boolean = false,
         override val devicePixelRatio: Double = 1.0,
     ) : GameWindow() {
+        val syncEventLoop by lazy { eventLoop as SyncEventLoop }
+
         override val width: Int = size.width.toInt()
         override val height: Int = size.height.toInt()
 
@@ -27,7 +30,7 @@ object KorgeHeadless {
         }
 
         init {
-            nativeThread { eventLoop.runTasksForever() }
+            nativeThread(name = "HeadlessGameWindow-syncEventLoop") { syncEventLoop.runTasksForever() }
             eventLoop.setInterval(60.hz.timeSpan) {
                 (ag as? AGOpengl?)?.context?.set()
                 this@HeadlessGameWindow.dispatchNewRenderEvent()

@@ -1,6 +1,7 @@
 package korlibs.korge.view
 
 import korlibs.datastructure.*
+import korlibs.datastructure.event.*
 import korlibs.datastructure.iterators.*
 import korlibs.event.*
 import korlibs.graphics.*

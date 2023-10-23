@@ -1,17 +1,16 @@
 package korlibs.render.awt
 
 import korlibs.datastructure.*
+import korlibs.datastructure.event.*
 import korlibs.datastructure.thread.*
 import korlibs.graphics.*
 import korlibs.image.awt.*
 import korlibs.image.bitmap.*
 import korlibs.image.color.*
-import korlibs.io.lang.*
 import korlibs.platform.*
 import korlibs.render.*
 import korlibs.render.MenuItem
 import korlibs.time.*
-import korlibs.time.TimedCache
 import kotlinx.coroutines.*
 import java.awt.*
 import java.awt.datatransfer.*
@@ -21,7 +20,7 @@ import kotlin.concurrent.*
 
 val AwtAGOpenglCanvas.gameWindow: AwtCanvasGameWindow by Extra.PropertyThis { AwtCanvasGameWindow(this) }
 
-open class AwtCanvasGameWindow(
+open class AwtCanvasGameWindow constructor(
     val canvas: AwtAGOpenglCanvas
 ) : GameWindow(), ClipboardOwner {
     override val devicePixelRatio: Double by TimedCache(ttl = .1.seconds) { canvas.devicePixelRatio }
@@ -39,7 +38,7 @@ open class AwtCanvasGameWindow(
     }
 
     val thread = nativeThread(name = "NewAwtGameWindow") {
-        eventLoop.runTasksForever()
+        (this.eventLoop as SyncEventLoop).runTasksForever()
     }
 
     override val width: Int get() = canvas.width

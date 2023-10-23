@@ -17,13 +17,15 @@ interface EventLoop : Closeable {
 }
 fun EventLoop.setInterval(time: Frequency, task: () -> Unit): Closeable = setInterval(time.timeSpan, task)
 
+abstract class BaseEventLoop : EventLoop
+
 class SyncEventLoop(
     /** precise=true will have better precision at the cost of more CPU-usage (busy waiting) */
     //var precise: Boolean = true,
     var precise: Boolean = false,
     /** Execute timers immediately instead of waiting. Useful for testing. */
     var immediateRun: Boolean = false,
-) : EventLoop {
+) : BaseEventLoop() {
     private val lock = NonRecursiveLock()
     private var running = true
     protected class TimedTask(val eventLoop: SyncEventLoop, var now: Duration, val time: Duration, var interval: Boolean, val callback: () -> Unit) : Comparable<TimedTask>, Closeable {

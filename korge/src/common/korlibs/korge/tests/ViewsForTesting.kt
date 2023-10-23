@@ -1,5 +1,6 @@
 package korlibs.korge.tests
 
+import korlibs.datastructure.event.*
 import korlibs.event.*
 import korlibs.graphics.*
 import korlibs.graphics.log.*
@@ -38,9 +39,10 @@ open class ViewsForTesting(
         override fun now(): DateTime = time
     }
     inner class TestGameWindow(initialSize: Size) : GameWindowLog() {
+        val syncEventLoop by lazy { eventLoop as SyncEventLoop }
         init {
-            eventLoop.immediateRun = true
-            eventLoop.nowProvider = { time.unixMillisDouble.milliseconds }
+            syncEventLoop.immediateRun = true
+            syncEventLoop.nowProvider = { time.unixMillisDouble.milliseconds }
         }
         override val autoUpdateInterval = false
         override var androidContextAny: Any? = null
@@ -326,7 +328,7 @@ open class ViewsForTesting(
                     simulateFrame()
                     //println("[2]")
                     //val ntasks = gameWindow.eventLoop.runAvailableNextTask(10)
-                    val ntasks = gameWindow.eventLoop.runAvailableNextTasks()
+                    val ntasks = gameWindow.syncEventLoop.runAvailableNextTasks()
                     //println("[3]")
 
                     if (ntasks == 0) {
