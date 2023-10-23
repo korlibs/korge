@@ -21,7 +21,7 @@ import org.w3c.dom.events.MouseEvent
 private external val navigator: dynamic
 
 open class JsGameWindow : GameWindow() {
-    override fun createEventLoop(): EventLoop = JsEventLoop
+    override fun createEventLoop(): BaseEventLoop = JsEventLoop
 }
 
 open class BrowserCanvasJsGameWindow(
