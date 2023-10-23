@@ -36,7 +36,7 @@ class AndroidConfig(
 fun Project.toAndroidGenerated(isKorge: Boolean, info: AndroidInfo = AndroidInfo(null)): AndroidGenerated = AndroidGenerated(
     icons = if (isKorge) korge.iconProvider else KorgeIconProvider(File(korgeGradlePluginResources, "icons/korge.png"), File(korgeGradlePluginResources, "banners/korge.png")),
     ifNotExists = if (isKorge) korge.overwriteAndroidFiles else true,
-    androidPackageName = korge.id,
+    androidPackageName = AndroidGenerated.getAppId(this, isKorge),
     androidInit = korge.plugins.pluginExts.getAndroidInit() + info.androidInit,
     androidMsaa = if (isKorge) korge.androidMsaa else 4,
     fullscreen = if (isKorge) korge.fullscreen else true,
@@ -52,7 +52,7 @@ fun Project.toAndroidGenerated(isKorge: Boolean, info: AndroidInfo = AndroidInfo
     buildDir = project.buildDir,
 )
 
-class AndroidGenerated constructor(
+data class AndroidGenerated constructor(
     val icons: KorgeIconProvider,
     val ifNotExists: Boolean,
     val androidPackageName: String,

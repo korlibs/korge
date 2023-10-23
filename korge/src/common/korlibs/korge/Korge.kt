@@ -140,6 +140,7 @@ data class Korge(
         }
         val config = this
         val creationConfig = GameWindowCreationConfig(multithreaded = config.multithreaded, fullscreen = config.fullscreen, title = config.title)
+        println("Korge.start: coroutineContext=$coroutineContext")
         val gameWindow = (config.gameWindow ?: coroutineContext[GameWindow] ?: CreateDefaultGameWindow(creationConfig))
         gameWindow.configureKorge(config) {
             entry()

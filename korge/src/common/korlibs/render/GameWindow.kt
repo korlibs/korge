@@ -132,7 +132,11 @@ open class GameWindow :
             ensureInitialized()
         }
     }
+
     var coroutineContext: CoroutineContext = EmptyCoroutineContext
+
+    open fun enrichCoroutineContext() {
+    }
 
     fun getCoroutineDispatcherWithCurrentContext(coroutineContext: CoroutineContext): CoroutineContext = coroutineContext + coroutineDispatcher
     fun getCoroutineDispatcherWithCurrentContext(): CoroutineContext = getCoroutineDispatcherWithCurrentContext(coroutineContext)

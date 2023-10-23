@@ -17,13 +17,14 @@ import korlibs.time.*
 
 @KorgeInternal
 internal fun Views.prepareViewsBase(
-    eventDispatcher: GameWindow,
+    gameWindow: GameWindow,
     clearEachFrame: Boolean = true,
     bgcolor: RGBA = Colors.TRANSPARENT,
     forceRenderEveryFrame: Boolean = true,
     configInjector: Injector.() -> Unit = {},
 ) {
-    eventDispatcher.coroutineContext += InjectorContext(injector)
+    gameWindow.coroutineContext += InjectorContext(injector)
+    gameWindow.enrichCoroutineContext()
 
     val views = this
 
@@ -37,8 +38,8 @@ internal fun Views.prepareViewsBase(
     //injector.mapInstance(CoroutineContext::class, views.coroutineContext) // Maybe we shouldn't include this
     injector.mapPrototype(EmptyScene::class) { EmptyScene() }
     injector.mapInstance(TimeProvider::class, views.timeProvider)
-    injector.mapInstance(GameWindow::class, gameWindow)
-    views.debugViews = gameWindow.debug
+    injector.mapInstance(GameWindow::class, this.gameWindow)
+    views.debugViews = this.gameWindow.debug
 
     configInjector(views.injector)
 
@@ -110,7 +111,7 @@ internal fun Views.prepareViewsBase(
         views.dispatch(mouseTouchEvent)
     }
 
-    eventDispatcher.onEvents(*MouseEvent.Type.ALL) { e ->
+    gameWindow.onEvents(*MouseEvent.Type.ALL) { e ->
         //println("MOUSE: $e")
         Korge.logger.trace { "eventDispatcher.addEventListener<MouseEvent>:$e" }
         val p = getRealXY(e.x.toDouble(), e.y.toDouble(), e.scaleCoords)
@@ -142,26 +143,26 @@ internal fun Views.prepareViewsBase(
         views.dispatch(e)
     }
 
-    eventDispatcher.onEvents(*KeyEvent.Type.ALL) { e ->
+    gameWindow.onEvents(*KeyEvent.Type.ALL) { e ->
         Korge.logger.trace { "eventDispatcher.addEventListener<KeyEvent>:$e" }
         views.dispatch(e)
     }
-    eventDispatcher.onEvents(*GestureEvent.Type.ALL) { e ->
+    gameWindow.onEvents(*GestureEvent.Type.ALL) { e ->
         Korge.logger.trace { "eventDispatcher.addEventListener<GestureEvent>:$e" }
         views.dispatch(e)
     }
 
-    eventDispatcher.onEvents(*DropFileEvent.Type.ALL) { e -> views.dispatch(e) }
-    eventDispatcher.onEvent(ResumeEvent) { e ->
+    gameWindow.onEvents(*DropFileEvent.Type.ALL) { e -> views.dispatch(e) }
+    gameWindow.onEvent(ResumeEvent) { e ->
         views.dispatch(e)
         nativeSoundProvider.paused = false
     }
-    eventDispatcher.onEvent(PauseEvent) { e ->
+    gameWindow.onEvent(PauseEvent) { e ->
         views.dispatch(e)
         nativeSoundProvider.paused = true
     }
-    eventDispatcher.onEvent(StopEvent) { e -> views.dispatch(e) }
-    eventDispatcher.onEvent(DestroyEvent) { e ->
+    gameWindow.onEvent(StopEvent) { e -> views.dispatch(e) }
+    gameWindow.onEvent(DestroyEvent) { e ->
         try {
             views.dispatch(e)
         } finally {
@@ -172,7 +173,7 @@ internal fun Views.prepareViewsBase(
     }
 
     val touchMouseEvent = MouseEvent()
-    eventDispatcher.onEvents(*TouchEvent.Type.ALL) { e ->
+    gameWindow.onEvents(*TouchEvent.Type.ALL) { e ->
         Korge.logger.trace { "eventDispatcher.addEventListener<TouchEvent>:$e" }
 
         input.updateTouches(e)
@@ -226,17 +227,17 @@ internal fun Views.prepareViewsBase(
         input.updateConnectedGamepads()
     }
 
-    eventDispatcher.onEvents(*GamePadConnectionEvent.Type.ALL) { e ->
+    gameWindow.onEvents(*GamePadConnectionEvent.Type.ALL) { e ->
         Korge.logger.trace { "eventDispatcher.addEventListener<GamePadConnectionEvent>:$e" }
         views.dispatch(e)
     }
 
-    eventDispatcher.onEvent(GamePadUpdateEvent) { e ->
+    gameWindow.onEvent(GamePadUpdateEvent) { e ->
         gamepadUpdated(e)
         views.dispatch(e)
     }
 
-    eventDispatcher.onEvent(ReshapeEvent) { e ->
+    gameWindow.onEvent(ReshapeEvent) { e ->
         //try { throw Exception() } catch (e: Throwable) { e.printStackTrace() }
         //println("eventDispatcher.addEventListener<ReshapeEvent>: ${ag.backWidth}x${ag.backHeight} : ${e.width}x${e.height}")
         //println("resized. ${ag.backWidth}, ${ag.backHeight}")
@@ -244,9 +245,9 @@ internal fun Views.prepareViewsBase(
     }
 
     //println("eventDispatcher.dispatch(ReshapeEvent(0, 0, views.nativeWidth, views.nativeHeight)) : ${views.nativeWidth}x${views.nativeHeight}")
-    eventDispatcher.dispatch(ReshapeEvent(0, 0, views.nativeWidth, views.nativeHeight))
+    gameWindow.dispatch(ReshapeEvent(0, 0, views.nativeWidth, views.nativeHeight))
 
-    eventDispatcher.onEvent(ReloadEvent) { views.dispatch(it) }
+    gameWindow.onEvent(ReloadEvent) { views.dispatch(it) }
 
     views.clearEachFrame = clearEachFrame
     views.clearColor = bgcolor
@@ -262,17 +263,17 @@ internal fun Views.prepareViewsBase(
     }
 
     val stopwatch = Stopwatch(views.timeProvider)
-    gameWindow.onUpdateEvent {
+    this.gameWindow.onUpdateEvent {
         //println("stopwatch.elapsed=${stopwatch.elapsed}")
         views.update(stopwatch.getElapsedAndRestart())
     }
 
     var cachedFrameSize = SizeInt(0, 0)
 
-    gameWindow.onRenderEvent {
+    this.gameWindow.onRenderEvent {
         //println("RENDER")
         //println("gameWindow.size=${gameWindow.frameSize}")
-        val frameSize = gameWindow.scaledFrameSize
+        val frameSize = this.gameWindow.scaledFrameSize
         if (cachedFrameSize != frameSize) {
             cachedFrameSize = frameSize
             views.resized(frameSize.width, frameSize.height)

@@ -84,10 +84,13 @@ open class KorgwSurfaceView constructor(
     }
 
     override fun onDrawFrame(unused: GL10) {
-        if (gameWindow.continuousRenderMode.shouldRender()) {
-            gameWindow.updateRenderLock {
+        //GLES20.glClearColor(1f, 0f, 1f, 1f)
+        //GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
+        //if (gameWindow.continuousRenderMode.shouldRender()) {
+        run {
+            //gameWindow.updateRenderLock {
                 gameWindow.dispatchNewRenderEvent()
-            }
+            //}
             onDraw(Unit)
         }
     }

@@ -11,6 +11,7 @@ import java.io.*
 fun Project.installAndroidRun(dependsOnList: List<String>, direct: Boolean, isKorge: Boolean) {
 
     val createAndroidManifest = tasks.createThis<AndroidCreateAndroidManifest>("createAndroidManifest") {
+        this.isKorge = isKorge
     }
 
     val hasKotlinMultiplatformExtension = project.extensions.findByType(KotlinMultiplatformExtension::class.java) != null
@@ -89,7 +90,11 @@ fun Project.installAndroidRun(dependsOnList: List<String>, direct: Boolean, isKo
 
             val onlyRunAndroid = tasks.createTyped<OnlyRunAndroidTask>("onlyRunAndroid$suffixDevice$suffixDebug") {
                 this.extra = extra
-                this.androidApplicationId = androidApplicationId
+                //this.androidApplicationId = androidApplicationId
+            }
+
+            afterEvaluate {
+                onlyRunAndroid.androidApplicationId = AndroidGenerated.getAppId(project, isKorge)
             }
 
             tasks.createTyped<DefaultTask>("runAndroid$suffixDevice$suffixDebug") {
@@ -131,6 +136,7 @@ open class AndroidCreateAndroidManifest : DefaultTask() {
     }
     @TaskAction
     fun run() {
+        //println("this.generated=${this.generated} : isKorge=$isKorge")
         val mainDir = this.generated.getAndroidManifestFile(isKorge).parentFile
         generated.writeResources(this.generated.getAndroidResFolder(isKorge))
         generated.writeMainActivity(this.generated.getAndroidSrcFolder(isKorge))
@@ -150,19 +156,22 @@ open class OnlyRunAndroidTask : DefaultAndroidTask() {
             "-e", "sleepBeforeStart", "300",
             "-n", "$androidApplicationId/$androidApplicationId.MainActivity"
         )
-        val pid = run {
+        val pid: String = run {
             val startTime = System.currentTimeMillis()
             while (true) {
                 val currentTime = System.currentTimeMillis()
                 val elapsedTime = currentTime - startTime
                 try {
-                    return@run execOutput(androidAdbPath, *extra, "shell", "pidof", androidApplicationId).trim()
+                    val res = execOutput(androidAdbPath, *extra, "shell", "pidof", androidApplicationId).trim()
+                    if (res.isEmpty()) error("PID not found")
+                    return@run res
                 } catch (e: Throwable) {
                     //e.printStackTrace()
                     Thread.sleep(10L)
                     if (elapsedTime >= 5000L) throw e
                 }
             }
+            error("Unexpected")
         }
         execLogger(androidAdbPath, *extra, "logcat", "--pid=$pid")
     }

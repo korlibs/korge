@@ -21,16 +21,17 @@ interface AndroidContextHolder {
 }
 
 abstract class BaseAndroidGameWindow(
-    final override val androidContext: Context,
+    androidContext: Context,
     val config: GameWindowCreationConfig = GameWindowCreationConfig(),
 ) : GameWindow(), AndroidContextHolder {
     final override val dialogInterface = DialogInterfaceAndroid { androidContext }
+    final override val androidContext = androidContext
     override val androidContextAny: Any? = androidContext
     abstract val androidView: View
     override val pixelsPerInch: Double by TimedCache(1.seconds) { androidContext.resources.displayMetrics.xdpi.toDouble() }
     val _activity: Activity? get() = androidContext.activity
 
-    init {
+    override fun enrichCoroutineContext() {
         coroutineContext += AndroidCoroutineContext(androidContext)
     }
 

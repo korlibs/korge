@@ -37,7 +37,7 @@ import kotlin.coroutines.*
  * It contains information about the [coroutineContext], the [gameWindow], the [injector], the [input]
  * and contains a reference to the [root] [Stage] view.
  */
-class Views(
+class Views constructor(
     val gameWindow: GameWindow,
     override val coroutineContext: CoroutineContext = gameWindow.coroutineDispatcher,
     val ag: AG = gameWindow.ag,

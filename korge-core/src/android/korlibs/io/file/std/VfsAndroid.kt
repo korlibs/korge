@@ -18,10 +18,14 @@ private var _vfsInitWithAndroidContextOnce: Boolean = false
 var absoluteCwd = File(".").absolutePath
 val tmpdir: String by lazy { System.getProperty("java.io.tmpdir") }
 
-fun vfsInitWithAndroidContextOnce(context: Context) {
-    if (_vfsInitWithAndroidContextOnce) return
+fun vfsInitWithAndroidContextOnce(context: Context?) {
+    if (_vfsInitWithAndroidContextOnce || context == null) return
     _vfsInitWithAndroidContextOnce = true
-    absoluteCwd = context.applicationInfo.dataDir
+    try {
+        absoluteCwd = context.applicationInfo.dataDir
+    } catch (e: Throwable) {
+        e.printStackTrace()
+    }
 }
 
 class AndroidDeferredVfs(private val generate: (Context) -> VfsFile) : Vfs.Proxy() {

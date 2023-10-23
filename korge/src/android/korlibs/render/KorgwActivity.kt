@@ -9,10 +9,10 @@ import android.view.KeyEvent
 import android.widget.*
 import korlibs.event.*
 import korlibs.graphics.gl.*
+import korlibs.io.android.*
 import korlibs.io.file.std.*
 import korlibs.kgl.*
 import korlibs.memory.*
-import kotlin.coroutines.*
 
 abstract class KorgwActivity(
     private val activityWithResult: ActivityWithResult.Mixin = ActivityWithResult.Mixin(),
@@ -20,7 +20,10 @@ abstract class KorgwActivity(
 ) : Activity(), ActivityWithResult by activityWithResult
 //, DialogInterface.OnKeyListener
 {
-    var gameWindow: AndroidGameWindow = AndroidGameWindow(this, config)
+    val gameWindow: AndroidGameWindow by lazy { AndroidGameWindow(this, config).also {
+        //it.continuousRenderMode.onContinuousRenderModeUpdated = { mGLView?.continuousRenderMode = it }
+        mGLView?.continuousRenderMode = true
+    } }
     var mGLView: KorgwSurfaceView? = null
     var layout: RelativeLayout? = null
     lateinit var ag: AGOpengl
@@ -42,7 +45,6 @@ abstract class KorgwActivity(
     init {
         activityWithResult.activity = this
         //mGLView?.continuousRenderMode = true
-        gameWindow.continuousRenderMode.onContinuousRenderModeUpdated = { mGLView?.continuousRenderMode = it }
     }
 
     fun Bundle.toMap(): Map<String, Any?> = this.keySet().associateWith { this.get(it) }
@@ -69,6 +71,7 @@ abstract class KorgwActivity(
         ag = AGOpengl(KmlGlAndroid { mGLView?.clientVersion ?: -1 }.checkedIf(checked = agCheck).logIf(log = false))
 
         gameWindow.initializeAndroid()
+        gameWindow.coroutineContext += AndroidCoroutineContext(this) + gameWindow
 
         layout = RelativeLayout(this).also { layout ->
             layout.addView(
@@ -81,20 +84,20 @@ abstract class KorgwActivity(
         }
         setContentView(layout)
 
-        mGLView!!.onDraw.once {
-            suspend {
-                activityMain()
-            }.startCoroutine(object : Continuation<Unit> {
-                override val context: CoroutineContext get() = korlibs.io.android.AndroidCoroutineContext(this@KorgwActivity) + gameWindow
-
-                override fun resumeWith(result: Result<Unit>) {
-                    println("KorgwActivity.activityMain completed! result=$result")
-                    if (result.isFailure) {
-                        result.exceptionOrNull()?.printStackTrace()
-                    }
-                }
-            })
+        gameWindow.queueSuspend {
+            activityMain()
         }
+        //suspend {
+        //}.startCoroutine(object : Continuation<Unit> {
+        //    override val context: CoroutineContext get() = korlibs.io.android.AndroidCoroutineContext(this@KorgwActivity) + gameWindow
+//
+        //    override fun resumeWith(result: Result<Unit>) {
+        //        println("KorgwActivity.activityMain completed! result=$result")
+        //        if (result.isFailure) {
+        //            result.exceptionOrNull()?.printStackTrace()
+        //        }
+        //    }
+        //})
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
