@@ -14,6 +14,7 @@ import kotlin.coroutines.cancellation.CancellationException
 
 actual val nativeSoundProvider: NativeSoundProvider by lazy { AndroidNativeSoundProvider() }
 
+//class AndroidNativeSoundProvider : NativeSoundProviderNew() {
 class AndroidNativeSoundProvider : NativeSoundProvider() {
     companion object {
         val MAX_CHANNELS = 16

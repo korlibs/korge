@@ -6,7 +6,7 @@ import android.os.*
 import android.util.*
 import android.view.*
 import android.view.KeyEvent
-import android.widget.RelativeLayout
+import android.widget.*
 import korlibs.event.*
 import korlibs.graphics.gl.*
 import korlibs.io.file.std.*
@@ -41,9 +41,8 @@ abstract class KorgwActivity(
 
     init {
         activityWithResult.activity = this
-        gameWindow.onContinuousRenderModeUpdated = {
-            mGLView?.continuousRenderMode = it
-        }
+        //mGLView?.continuousRenderMode = true
+        gameWindow.continuousRenderMode.onContinuousRenderModeUpdated = { mGLView?.continuousRenderMode = it }
     }
 
     fun Bundle.toMap(): Map<String, Any?> = this.keySet().associateWith { this.get(it) }

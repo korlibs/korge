@@ -194,9 +194,9 @@ class SyncEventLoop(
         }
     }
 
-    fun runTasksForever() {
+    fun runTasksForever(runWhile: () -> Boolean = { true }) {
         running = true
-        while (running) {
+        while (running && runWhile()) {
             runTasksUntilEmpty()
             //NativeThread.gc(full = true)
             NativeThread.sleep(1.milliseconds)

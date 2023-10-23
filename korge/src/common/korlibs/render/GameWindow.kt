@@ -17,12 +17,16 @@ import korlibs.math.geom.*
 import korlibs.time.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
+import kotlin.properties.*
 
 /** Creates the default [GameWindow] for this platform. Typically, a window/frame or a fullscreen screen depending on the OS */
 expect fun CreateDefaultGameWindow(config: GameWindowCreationConfig = GameWindowCreationConfig()): GameWindow
 
 class ContinuousRenderMode {
-    var continuousRenderMode: Boolean = true
+    var onContinuousRenderModeUpdated: ((Boolean) -> Unit)? = null
+    var continuousRenderMode: Boolean by Delegates.observable(true) { prop, old, new ->
+        onContinuousRenderModeUpdated?.invoke(new)
+    }
     var updatedSinceRender = KorAtomicInt(0)
 
     val mustTriggerRender: Boolean get() = continuousRenderMode || updatedSinceRender.value > 0

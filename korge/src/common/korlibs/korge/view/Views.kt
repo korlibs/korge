@@ -11,7 +11,6 @@ import korlibs.image.format.*
 import korlibs.inject.*
 import korlibs.io.*
 import korlibs.io.async.*
-import korlibs.io.concurrent.atomic.*
 import korlibs.io.file.*
 import korlibs.io.file.std.*
 import korlibs.io.lang.*
