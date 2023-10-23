@@ -12,7 +12,6 @@ import platform.AudioToolbox.*
 import platform.AudioToolbox.AudioQueueBufferRef
 import platform.AudioToolbox.AudioQueueRef
 import platform.CoreAudioTypes.*
-import platform.CoreFoundation.*
 import platform.darwin.OSStatus
 import kotlin.Int
 import kotlin.String
@@ -34,32 +33,31 @@ class CoreAudioNativeSoundProvider : NativeSoundProvider() {
     //override suspend fun createSound(data: ByteArray, streaming: Boolean, props: AudioDecodingProps): NativeSound = AVFoundationNativeSoundNoStream(CoroutineScope(coroutineContext), audioFormats.decode(data))
 
     override fun createPlatformAudioOutput(coroutineContext: CoroutineContext, freq: Int): PlatformAudioOutput = CoreAudioPlatformAudioOutput(coroutineContext, freq)
-    override fun createNewPlatformAudioOutput(coroutineContext: CoroutineContext, buffer: AudioSamples, freq: Int, gen: (AudioSamples) -> Unit): CoreAudioNewPlatformAudioOutput = CoreAudioNewPlatformAudioOutput(coroutineContext, freq, buffer, gen)
+    override fun createNewPlatformAudioOutput(coroutineContext: CoroutineContext, nchannels: Int, freq: Int, gen: (AudioSamples) -> Unit): CoreAudioNewPlatformAudioOutput = CoreAudioNewPlatformAudioOutput(coroutineContext, freq, nchannels, gen)
 }
 
 class CoreAudioNewPlatformAudioOutput(
     coroutineContext: CoroutineContext,
     freq: Int,
-    buffer: AudioSamples,
+    nchannels: Int,
     gen: (AudioSamples) -> Unit,
-) : NewPlatformAudioOutput(coroutineContext, freq, buffer, gen) {
-    val generator = CoreAudioGenerator(freq, buffer.channels, coroutineContext = coroutineContext) { data, dataSize ->
-        val samples = AudioSamples(buffer.channels, dataSize)
+) : NewPlatformAudioOutput(coroutineContext, nchannels, freq, gen) {
+    val generator = CoreAudioGenerator(freq, nchannels, coroutineContext = coroutineContext) { data, dataSize ->
+        val nchannels = this.nchannels
+        val samples = AudioSamples(nchannels, dataSize)
         gen(samples)
 
-        println("GEN")
         for (m in 0 until nchannels) {
+            val input = samples[m]
             for (n in 0 until dataSize / nchannels) {
-                data[n * nchannels + m] = samples[m, n]
+                data[n * nchannels + m] = input[n]
             }
         }
     }
     override fun start() {
-        println("GEN.start")
         generator.start()
     }
     override fun stop() {
-        println("GEN.stop")
         generator.dispose()
     }
 }
@@ -174,7 +172,7 @@ class CoreAudioGenerator(
 
             AudioQueueNewOutput(
                 format.ptr, staticCFunction(::coreAudioOutputCallback), thisStableRef!!.asCPointer(),
-                CFRunLoopGetCurrent(), kCFRunLoopCommonModes, 0.convert(), queue!!.ptr
+                null, null, 0.convert(), queue!!.ptr
             ).also {
                 if (it != 0) error("Error in AudioQueueNewOutput")
             }

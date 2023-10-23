@@ -24,8 +24,8 @@ class JvmCoreAudioNativeSoundProvider : NativeSoundProvider() {
     //override fun createPlatformAudioOutput(coroutineContext: CoroutineContext, freq: Int): PlatformAudioOutput = JvmCoreAudioPlatformAudioOutput(coroutineContext, freq)
     override fun createPlatformAudioOutput(coroutineContext: CoroutineContext, freq: Int): PlatformAudioOutput = PlatformAudioOutputBasedOnNew(this, coroutineContext, freq)
 
-    override fun createNewPlatformAudioOutput(coroutineContext: CoroutineContext, buffer: AudioSamples, freq: Int, gen: (AudioSamples) -> Unit): NewPlatformAudioOutput {
-        return JvmCoreAudioNewPlatformAudioOutput(coroutineContext, buffer, freq, gen)
+    override fun createNewPlatformAudioOutput(coroutineContext: CoroutineContext, nchannels: Int, freq: Int, gen: (AudioSamples) -> Unit): NewPlatformAudioOutput {
+        return JvmCoreAudioNewPlatformAudioOutput(coroutineContext, nchannels, freq, gen)
     }
 }
 
@@ -78,10 +78,10 @@ private val jnaNewCoreAudioCallback by lazy {
 
 private class JvmCoreAudioNewPlatformAudioOutput(
     coroutineContext: CoroutineContext,
-    buffer: AudioSamples,
+    nchannels: Int,
     freq: Int,
     gen: (AudioSamples) -> Unit,
-) : NewPlatformAudioOutput(coroutineContext, buffer, freq, gen) {
+) : NewPlatformAudioOutput(coroutineContext, nchannels, freq, gen) {
     val id = lastId.incrementAndGet()
     companion object {
         private var lastId = AtomicLong(0L)

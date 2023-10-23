@@ -21,8 +21,8 @@ open class LazyNativeSoundProvider(val gen: () -> NativeSoundProvider) : NativeS
     override val target: String get() = parent.target
 
     override fun createPlatformAudioOutput(coroutineContext: CoroutineContext, freq: Int): PlatformAudioOutput = parent.createPlatformAudioOutput(coroutineContext, freq)
-    override fun createNewPlatformAudioOutput(coroutineContext: CoroutineContext, buffer: AudioSamples, freq: Int, gen: (AudioSamples) -> Unit): NewPlatformAudioOutput =
-        parent.createNewPlatformAudioOutput(coroutineContext, buffer, freq, gen)
+    override fun createNewPlatformAudioOutput(coroutineContext: CoroutineContext, nchannels: Int, freq: Int, gen: (AudioSamples) -> Unit): NewPlatformAudioOutput =
+        parent.createNewPlatformAudioOutput(coroutineContext, nchannels, freq, gen)
 
     override suspend fun createSound(data: ByteArray, streaming: Boolean, props: AudioDecodingProps, name: String): Sound =
         parent.createSound(data, streaming, props, name)
@@ -46,14 +46,14 @@ open class NativeSoundProvider : Disposable {
     open var paused: Boolean = false
 
     open fun createPlatformAudioOutput(coroutineContext: CoroutineContext, freq: Int = 44100): PlatformAudioOutput = PlatformAudioOutput(coroutineContext, freq)
-    open fun createNewPlatformAudioOutput(coroutineContext: CoroutineContext, buffer: AudioSamples, freq: Int = 44100, gen: (AudioSamples) -> Unit): NewPlatformAudioOutput {
-        println("createNewPlatformAudioOutput: ${this::class}")
-        return NewPlatformAudioOutput(coroutineContext, buffer, freq, gen)
+    open fun createNewPlatformAudioOutput(coroutineContext: CoroutineContext, nchannels: Int, freq: Int = 44100, gen: (AudioSamples) -> Unit): NewPlatformAudioOutput {
+        //println("createNewPlatformAudioOutput: ${this::class}")
+        return NewPlatformAudioOutput(coroutineContext, nchannels, freq, gen)
     }
 
     suspend fun createPlatformAudioOutput(freq: Int = 44100): PlatformAudioOutput = createPlatformAudioOutput(coroutineContextKt, freq)
 
-    suspend fun createNewPlatformAudioOutput(buffer: AudioSamples, freq: Int = 44100, gen: (AudioSamples) -> Unit): NewPlatformAudioOutput = createNewPlatformAudioOutput(coroutineContextKt, buffer, freq, gen)
+    suspend fun createNewPlatformAudioOutput(nchannels: Int, freq: Int = 44100, gen: (AudioSamples) -> Unit): NewPlatformAudioOutput = createNewPlatformAudioOutput(coroutineContextKt, nchannels, freq, gen)
 
     open suspend fun createSound(data: ByteArray, streaming: Boolean = false, props: AudioDecodingProps = AudioDecodingProps.DEFAULT, name: String = "Unknown"): Sound {
         val format = props.formats ?: audioFormats

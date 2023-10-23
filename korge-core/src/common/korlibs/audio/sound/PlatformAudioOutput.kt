@@ -10,7 +10,7 @@ import kotlin.coroutines.*
 
 open class NewPlatformAudioOutput(
     val coroutineContext: CoroutineContext,
-    val buffer: AudioSamples,
+    val nchannels: Int,
     val frequency: Int,
     val gen: (AudioSamples) -> Unit,
 ) : Disposable, SoundProps {
@@ -25,7 +25,6 @@ open class NewPlatformAudioOutput(
         }
     }
 
-    val nchannels get() = buffer.channels
     override var pitch: Double = 1.0
     override var volume: Double = 1.0
     override var panning: Double = 0.0
@@ -39,7 +38,7 @@ open class PlatformAudioOutputBasedOnNew(
     coroutineContext: CoroutineContext,
     frequency: Int,
 ) : DequeBasedPlatformAudioOutput(coroutineContext, frequency) {
-    val new = soundProvider.createNewPlatformAudioOutput(coroutineContext, AudioSamples(2, 4410), frequency) { buffer ->
+    val new = soundProvider.createNewPlatformAudioOutput(coroutineContext, 2, frequency) { buffer ->
         readShorts(buffer.data)
     }
 
