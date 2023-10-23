@@ -16,12 +16,14 @@ open class NewPlatformAudioOutput(
     val gen: (AudioSamples) -> Unit,
 ) : Disposable, SoundProps {
     val onCancel = coroutineContext.onCancel { stop() }
+    var paused: Boolean = false
 
     private val lock = Lock()
     fun safeGen(buffer: AudioSamples) {
         lock {
             try {
                 gen(buffer)
+                applyPropsTo(buffer)
             } catch (e: Throwable) {
                 e.printStackTrace()
             }
@@ -46,7 +48,10 @@ open class PlatformAudioOutputBasedOnNew(
     }
 
     val new = soundProvider.createNewPlatformAudioOutput(coroutineContext, 2, frequency) { buffer ->
+        //println("availableRead=$availableRead")
+        //if (availableRead >= buffer.data.size) {
         readShorts(buffer.data)
+        //}
     }
 
     override fun start() {
@@ -251,9 +256,7 @@ open class DequeBasedPlatformAudioOutput(
 
     override val availableSamples: Int get() = lock { deque.availableRead }
     final override suspend fun add(samples: AudioSamples, offset: Int, size: Int) {
-        while (deque.availableRead >= 441 * 4) {
-            delay(10.milliseconds)
-        }
+        while (deque.availableRead >= 1024 * 16) delay(1.milliseconds)
         lock { deque.write(samples, offset, size) }
     }
 }

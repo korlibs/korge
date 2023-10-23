@@ -107,7 +107,7 @@ open class GameWindow :
     @PublishedApi internal val _updateRenderLock = Lock()
     inline fun updateRenderLock(block: () -> Unit) = _updateRenderLock(block)
     fun queueSuspend(callback: suspend () -> Unit) {
-        getCoroutineDispatcherWithCurrentContext().launchUnscoped {
+        launchAsap(getCoroutineDispatcherWithCurrentContext()) {
             callback()
         }
     }

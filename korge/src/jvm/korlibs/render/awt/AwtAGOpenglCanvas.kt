@@ -18,7 +18,6 @@ import korlibs.render.platform.*
 import korlibs.time.*
 import java.awt.*
 import java.awt.Graphics
-import java.lang.IllegalStateException
 import javax.swing.*
 
 // @TODO: Use Metal, OpenGL or whatever required depending on what's AWT is using
@@ -36,12 +35,14 @@ open class AwtAGOpenglCanvas : JPanel(GridLayout(1, 1), false.also { System.setP
     var updatedSinceFrame = KorAtomicInt(0)
 
     interface RendererThread {
+        val doRenderInUIThread: Boolean
         val running: Boolean
         fun start()
         fun stop()
     }
 
     class DisplayLinkRenderThread(val canvas: AwtAGOpenglCanvas) : RendererThread {
+        override val doRenderInUIThread: Boolean = true
         val dl = OSXDisplayLink {
             //private val dl: OSXDisplayLink? = if (true) null else OSXDisplayLink {
             //if (autoRepaint && ctx?.supportsSwapInterval() != true && createdBufferStrategy) {
@@ -70,6 +71,7 @@ open class AwtAGOpenglCanvas : JPanel(GridLayout(1, 1), false.also { System.setP
     }
 
     class VsyncRenderThread(val canvas: AwtAGOpenglCanvas) : RendererThread {
+        override val doRenderInUIThread: Boolean = false
         var createdBufferStrategy = false
 
         var thread: NativeThread? = null
@@ -92,7 +94,11 @@ open class AwtAGOpenglCanvas : JPanel(GridLayout(1, 1), false.also { System.setP
                                 continue
                             }
                         }
-                        fcanvas.renderGraphics(fcanvas.bufferStrategy.drawGraphics)
+                        if (canvas.continuousRenderMode || canvas.updatedSinceFrame.value > 0) {
+                            //println("continuousRenderMode=$continuousRenderMode, updatedSinceFrame.value=${updatedSinceFrame.value}")
+                            canvas.updatedSinceFrame.value = 0
+                            fcanvas.renderGraphics(fcanvas.bufferStrategy.drawGraphics)
+                        }
                     }
                 } catch (e: Throwable) {
                     e.printStackTrace()
@@ -139,8 +145,11 @@ open class AwtAGOpenglCanvas : JPanel(GridLayout(1, 1), false.also { System.setP
         }
 
         override fun paint(g: Graphics) {
-
-            //renderGraphics(g)
+            if (dl.doRenderInUIThread) {
+                renderGraphics(g)
+            } else {
+                updatedSinceFrame.incrementAndGet()
+            }
         }
 
 

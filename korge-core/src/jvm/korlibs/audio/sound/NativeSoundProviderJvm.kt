@@ -2,7 +2,6 @@ package korlibs.audio.sound
 
 import korlibs.audio.sound.backend.*
 import korlibs.audio.sound.impl.awt.*
-import korlibs.audio.sound.impl.jna.*
 import korlibs.audio.sound.impl.jna.OpenALException
 import korlibs.io.time.*
 import korlibs.logger.*
@@ -15,10 +14,8 @@ private val nativeSoundProviderDeferred: NativeSoundProvider by lazy {
         traceTime("SoundProvider") {
             when {
                 //Platform.isLinux -> FFIALSANativeSoundProvider
-                //Platform.isLinux -> AwtNativeSoundProvider
-                //Platform.isApple -> jvmCoreAudioNativeSoundProvider
-                //Platform.isWindows -> jvmWaveOutNativeSoundProvider
-                //Platform.isWindows -> AwtNativeSoundProvider
+                Platform.isApple -> jvmCoreAudioNativeSoundProvider
+                Platform.isWindows -> jvmWaveOutNativeSoundProvider
                 //else -> JnaOpenALNativeSoundProvider()
                 else -> AwtNativeSoundProvider
             } ?: AwtNativeSoundProvider

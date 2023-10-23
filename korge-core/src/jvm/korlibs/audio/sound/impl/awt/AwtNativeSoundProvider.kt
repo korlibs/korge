@@ -1,14 +1,12 @@
 package korlibs.audio.sound.impl.awt
 
 import korlibs.audio.sound.*
-import korlibs.datastructure.*
 import korlibs.datastructure.thread.*
 import korlibs.memory.*
-import korlibs.time.*
-import kotlinx.coroutines.*
 import javax.sound.sampled.*
 import kotlin.coroutines.*
-import kotlin.time.*
+
+private val mixer by lazy { AudioSystem.getMixer(null) }
 
 object AwtNativeSoundProvider : NativeSoundProviderNew() {
     override fun createNewPlatformAudioOutput(
@@ -32,29 +30,37 @@ class JvmNewPlatformAudioOutput(
 
     val BYTES_PER_SAMPLE = nchannels * Short.SIZE_BYTES
 
-    fun bytesToSamples(bytes: Int): Int = bytes / BYTES_PER_SAMPLE
-    fun samplesToBytes(samples: Int): Int = samples * BYTES_PER_SAMPLE
+    private fun bytesToSamples(bytes: Int): Int = bytes / BYTES_PER_SAMPLE
+    private fun samplesToBytes(samples: Int): Int = samples * BYTES_PER_SAMPLE
 
     override fun start() {
         //println("TRYING TO START")
         if (nativeThread?.threadSuggestRunning == true) return
 
         //println("STARTED")
+
+        // SAMPLE -> Short, FRAME -> nchannels * SAMPLE
         nativeThread = nativeThread(isDaemon = true) {
             it.threadSuggestRunning = true
             val nchannels = this.nchannels
-            //val format = AudioFormat(frequency.toFloat(), Short.SIZE_BITS * nchannels, nchannels, true, false)
-            val format = AudioFormat(44100.toFloat(), Short.SIZE_BITS * nchannels, nchannels, true, false)
-            val line = AudioSystem.getSourceDataLine(format)
+            val format = AudioFormat(frequency.toFloat(), Short.SIZE_BITS, nchannels, true, false)
+            //val format = AudioFormat(44100.toFloat(), Short.SIZE_BITS, nchannels, true, false)
+            //val line = AudioSystem.getSourceDataLine(format)
+            val line = (mixer.getLine(DataLine.Info(SourceDataLine::class.java, format)) as SourceDataLine)
             line.open()
             line.start()
             try {
                 val info = AudioSamples(nchannels, 1024)
                 val bytes = ByteArray(samplesToBytes(1024))
                 while (it.threadSuggestRunning) {
-                    safeGen(info)
-                    bytes.setArrayLE(0, info.interleaved().data)
-                    line.write(bytes, 0, bytes.size)
+                    if (paused) {
+                        Thread.sleep(10L)
+                    } else {
+                        safeGen(info)
+                        bytes.setArrayLE(0, info.interleaved().data)
+                        //println(bytes.count { it == 0.toByte() })
+                        line.write(bytes, 0, bytes.size)
+                    }
                 }
             } catch (e: Throwable) {
                 e.printStackTrace()

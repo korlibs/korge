@@ -31,7 +31,7 @@ internal fun Views.prepareViewsBase(
     injector.mapInstance(views)
     injector.mapInstance(views.ag)
     injector.mapInstance(Resources::class, views.globalResources)
-    injector.mapSingleton(ResourcesRoot::class) { ResourcesRoot() }
+    injector.mapInstance(ResourcesRoot())
     injector.mapInstance(views.input)
     injector.mapInstance(views.stats)
     //injector.mapInstance(CoroutineContext::class, views.coroutineContext) // Maybe we shouldn't include this

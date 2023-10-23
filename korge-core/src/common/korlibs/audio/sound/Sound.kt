@@ -6,6 +6,7 @@ import korlibs.io.async.*
 import korlibs.io.file.*
 import korlibs.io.lang.*
 import korlibs.io.stream.*
+import korlibs.math.*
 import korlibs.time.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
@@ -43,6 +44,10 @@ open class LazyNativeSoundProvider(val gen: () -> NativeSoundProvider) : NativeS
 open class NativeSoundProviderNew : NativeSoundProvider() {
     final override fun createPlatformAudioOutput(coroutineContext: CoroutineContext, freq: Int): PlatformAudioOutput =
         PlatformAudioOutputBasedOnNew(this, coroutineContext, freq)
+
+    override suspend fun createNonStreamingSound(data: AudioData, name: String): Sound {
+        return super.createNonStreamingSound(data, name)
+    }
 }
 
 open class NativeSoundProvider() : Disposable {
@@ -96,7 +101,8 @@ open class NativeSoundProvider() : Disposable {
     open suspend fun createNonStreamingSound(
         data: AudioData,
         name: String = "Unknown"
-    ): Sound = createStreamingSound(data.toStream(), true, name)
+    //): Sound = createStreamingSound(data.toStream(), true, name)
+    ): Sound = SoundAudioData(coroutineContextKt, data, this, true, name)
 
     open suspend fun createSound(
 		data: AudioData,
@@ -186,6 +192,24 @@ fun SoundProps.copySoundPropsFrom(other: ReadonlySoundProps) {
     this.volume = other.volume
     this.pitch = other.pitch
     this.panning = other.panning
+}
+
+fun SoundProps.volumeForChannel(channel: Int): Double {
+    return when (channel) {
+        0 -> panning.convertRangeClamped(-1.0, 0.0, 0.0, 1.0)
+        else -> 1.0 - panning.convertRangeClamped(0.0, 1.0, 0.0, 1.0)
+    }
+}
+
+fun SoundProps.applyPropsTo(samples: AudioSamples) {
+    for (ch in 0 until samples.channels) {
+        val volume01 = volumeForChannel(ch)
+        for (n in 0 until samples.totalSamples) {
+            var sample = samples[ch, n]
+            sample = (sample * volume01).toInt().toShort()
+            samples[ch, n] = sample
+        }
+    }
 }
 
 fun SoundProps.copySoundPropsFromCombined(l: ReadonlySoundProps, r: ReadonlySoundProps) {

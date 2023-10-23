@@ -203,12 +203,22 @@ fun GameWindow.configureKorge(config: KorgeConfig = KorgeConfig(), block: suspen
     views.clipBorders = config.displayMode.clipBorders
     views.targetFps = config.targetFps
 
-
     KorgeReload.registerEventDispatcher(gameWindow)
     @Suppress("OPT_IN_USAGE")
     views.prepareViewsBase(gameWindow, true, gameWindow.bgcolor, config.forceRenderEveryFrame, config.configInjector)
 
     gameWindow.queueSuspend {
+        // @TODO: ResourcesVfs seems to require an access here? If ResourcesVfs is accessed in a scene, it is Cancelled later.
+        resourcesVfs["klogger.properties"].exists()
+
+        if (!Platform.isJsBrowser) {
+            try {
+                configureLoggerFromProperties(localCurrentDirVfs["klogger.properties"])
+            } catch (e: Throwable) {
+
+            }
+        }
+
         Korge.logger.info { "Initializing..." }
         runCatching { views.init() }.exceptionOrNull()?.let { it.stackTraceToString() }
 
