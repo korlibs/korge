@@ -227,7 +227,7 @@ fun Project.configureNativeIosTvosRun(targetName: String) {
                 //}
                 workingDir(xcodeProjDir)
                 doFirst {
-                    commandLine("xcrun", "xcodebuild", "-scheme", "app-$arch-$debugSuffix", "-project", ".", "-configuration", debugSuffix, "-derivedDataPath", "build", "-arch", arch2, "-sdk", iosSdkExt.appleFindSdk(sdkName))
+                    commandLine("xcrun", "xcodebuild", "-allowProvisioningUpdates", "-scheme", "app-$arch-$debugSuffix", "-project", ".", "-configuration", debugSuffix, "-derivedDataPath", "build", "-arch", arch2, "-sdk", iosSdkExt.appleFindSdk(sdkName))
                     println("COMMAND: ${commandLine.joinToString(" ")}")
                 }
             }
