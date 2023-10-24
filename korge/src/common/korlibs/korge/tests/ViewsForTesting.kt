@@ -96,7 +96,7 @@ open class ViewsForTesting(
         gameWindow.height = height
         views.scaleAnchor = scaleAnchor
         views.scaleMode = scaleMode
-        gameWindow.dispatchReshapeEvent(0, 0, width, height)
+        gameWindow.dispatchReshapeEventQueued(0, 0, width, height)
     }
 
     suspend fun <T> deferred(block: suspend (CompletableDeferred<T>) -> Unit): T {

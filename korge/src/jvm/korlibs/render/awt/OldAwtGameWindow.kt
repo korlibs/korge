@@ -363,7 +363,6 @@ abstract class BaseAwtGameWindow(
         //})
 
         queue {
-            dispatchInitEvent()
             dispatchReshapeEvent()
         }
         EventQueue.invokeLater {

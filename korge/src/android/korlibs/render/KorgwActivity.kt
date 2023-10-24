@@ -115,21 +115,21 @@ abstract class KorgwActivity(
         println("---------------- KorgwActivity.onResume --------------")
         super.onResume()
         mGLView?.onResume()
-        gameWindow?.dispatchResumeEvent()
+        gameWindow?.dispatchResumeEventQueued()
     }
 
     override fun onPause() {
         println("---------------- KorgwActivity.onPause --------------")
         super.onPause()
         mGLView?.onPause()
-        gameWindow?.dispatchPauseEvent()
+        gameWindow?.dispatchPauseEventQueued()
         KmemGC.collect()
     }
 
     override fun onStop() {
         println("---------------- KorgwActivity.onStop --------------")
         super.onStop()
-        gameWindow?.dispatchStopEvent()
+        gameWindow?.dispatchStopEventQueued()
     }
 
     override fun onDestroy() {
@@ -141,7 +141,7 @@ abstract class KorgwActivity(
         mGLView = null
         setContentView(android.view.View(this))
         gameWindow.queue {
-            gameWindow.dispatchDestroyEvent()
+            gameWindow.dispatchDestroyEventQueued()
         }
         //gameWindow?.close() // Do not close, since it will be automatically closed by the destroy event
     }
@@ -195,7 +195,7 @@ abstract class KorgwActivity(
 
     override fun onBackPressed() {
         gameWindow.queue {
-            if (!gameWindow.dispatchKeyEventEx(korlibs.event.KeyEvent.Type.DOWN, 0, '\u0008', Key.BACK, KeyEvent.KEYCODE_BACK)) {
+            if (!gameWindow.dispatchKeyEventExQueued(korlibs.event.KeyEvent.Type.DOWN, 0, '\u0008', Key.BACK, KeyEvent.KEYCODE_BACK)) {
                 runOnUiThread {
                     super.onBackPressed()
                 }

@@ -484,17 +484,10 @@ data class FullScreenEvent(var fullscreen: Boolean = false) : TypedEvent<FullScr
     }
 }
 
-open class RenderEvent : TypedEvent<RenderEvent>(RenderEvent) {
-    companion object : RenderEvent(), EventType<RenderEvent>
+class RenderEvent : TypedEvent<RenderEvent>(RenderEvent) {
+    companion object : EventType<RenderEvent>
 
     override fun toString(): String = "RenderEvent"
-}
-
-open class InitEvent : TypedEvent<InitEvent>(InitEvent) {
-    companion object : InitEvent(), EventType<InitEvent>
-
-    fun copyFrom(other: InitEvent) {
-    }
 }
 
 class ResumeEvent() : TypedEvent<ResumeEvent>(ResumeEvent) {

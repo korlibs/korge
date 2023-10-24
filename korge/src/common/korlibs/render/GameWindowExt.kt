@@ -13,20 +13,22 @@ import korlibs.memory.*
 import korlibs.render.GameWindowQuality.*
 
 class GameWindowEventInstances {
+    var requestLock: () -> Unit = { }
     val pauseEvent = PauseEvent()
     val resumeEvent = ResumeEvent()
     val stopEvent = StopEvent()
     val destroyEvent = DestroyEvent()
+    val disposeEvent = DisposeEvent()
     val updateEvent = UpdateEvent()
     val renderEvent = RenderEvent()
-    val initEvent = InitEvent()
-    val disposeEvent = DisposeEvent()
-    val fullScreenEvent = FullScreenEvent()
-    val reshapeEvent = ReshapeEvent()
-    val keyEvent = KeyEvent()
+    val updateEvents = ConcurrentPool { UpdateEvent() }
+    val fullScreenEvents = ConcurrentPool { FullScreenEvent() }
+    val reshapeEvents = ConcurrentPool { ReshapeEvent() }
+    val keyEvents = ConcurrentPool { KeyEvent() }
     val mouseEvent = MouseEvent()
-    val gestureEvent = GestureEvent()
-    val dropFileEvent = DropFileEvent()
+    val mouseEvents = ConcurrentPool(reset = { it.requestLock = requestLock }) { MouseEvent().also { it.requestLock = requestLock } }
+    val gestureEvents = ConcurrentPool { GestureEvent() }
+    val dropFileEvents = ConcurrentPool { DropFileEvent() }
 }
 
 class GameWindowInputState {
@@ -52,7 +54,7 @@ class GameWindowInputState {
 }
 
 fun GameWindow.dispatchKeyEvent(type: KeyEvent.Type, id: Int, character: Char, key: Key, keyCode: Int, str: String? = null): Boolean {
-    return dispatchKeyEventEx(type, id, character, key, keyCode, str = str)
+    return dispatchKeyEventExQueued(type, id, character, key, keyCode, str = str)
 }
 
 fun GameWindow.dispatchKeyEventDownUp(id: Int, character: Char, key: Key, keyCode: Int, str: String? = null): Boolean {
@@ -78,7 +80,7 @@ fun GameWindow.dispatchGamepadUpdateAdd(info: GamepadInfo) {
 fun GameWindow.dispatchGamepadUpdateEnd(out: IntArrayList = IntArrayList()): IntArrayList =
     gamepadEmitter.dispatchGamepadUpdateEnd(out)
 
-fun GameWindow.dispatchKeyEventEx(
+fun GameWindow.dispatchKeyEventExQueued(
     type: KeyEvent.Type, id: Int, character: Char, key: Key, keyCode: Int,
     shift: Boolean = gameWindowInputState.shift, ctrl: Boolean = gameWindowInputState.ctrl, alt: Boolean = gameWindowInputState.alt, meta: Boolean = gameWindowInputState.meta,
     str: String? = null
@@ -86,7 +88,7 @@ fun GameWindow.dispatchKeyEventEx(
     if (type != KeyEvent.Type.TYPE) {
         gameWindowInputState.keysPresing[key.ordinal] = (type == KeyEvent.Type.DOWN)
     }
-    dispatch(events.keyEvent.reset {
+    dispatchQueued(events.keyEvents) {
         this.id = id
         this.character = character
         this.key = key
@@ -103,17 +105,18 @@ fun GameWindow.dispatchKeyEventEx(
         } else {
             this.str = str
         }
-    })
-    return events.keyEvent.defaultPrevented
+    }
+    //return events.keyEvents.defaultPrevented
+    return false
 }
 
-fun GameWindow.dispatchSimpleMouseEvent(
+fun GameWindow.dispatchSimpleMouseEventQueued(
     type: MouseEvent.Type, id: Int, x: Int, y: Int, button: MouseButton, simulateClickOnUp: Boolean = false
 ) {
-    dispatchMouseEvent(type, id, x, y, button, simulateClickOnUp = simulateClickOnUp)
+    dispatchMouseEventQueued(type, id, x, y, button, simulateClickOnUp = simulateClickOnUp)
 }
 
-fun GameWindow.dispatchMouseEvent(
+fun GameWindow.dispatchMouseEventQueued(
     type: MouseEvent.Type, id: Int, x: Int, y: Int, button: MouseButton, buttons: Int = gameWindowInputState.mouseButtons,
     scrollDeltaX: Float = gameWindowInputState.scrollDeltaX, scrollDeltaY: Float = gameWindowInputState.scrollDeltaY, scrollDeltaZ: Float = gameWindowInputState.scrollDeltaZ,
     isShiftDown: Boolean = gameWindowInputState.shift, isCtrlDown: Boolean = gameWindowInputState.ctrl, isAltDown: Boolean = gameWindowInputState.alt, isMetaDown: Boolean = gameWindowInputState.meta,
@@ -123,7 +126,7 @@ fun GameWindow.dispatchMouseEvent(
     if (type != MouseEvent.Type.DOWN && type != MouseEvent.Type.UP) {
         gameWindowInputState.mouseButtons = gameWindowInputState.mouseButtons.setBits(1 shl button.ordinal, type == MouseEvent.Type.DOWN)
     }
-    dispatch(events.mouseEvent.reset {
+    dispatchQueued(events.mouseEvents) {
         this.type = type
         this.id = id
         this.x = x
@@ -139,20 +142,38 @@ fun GameWindow.dispatchMouseEvent(
         this.isAltDown = isAltDown
         this.isMetaDown = isMetaDown
         this.scaleCoords = scaleCoords
-    })
+    }
     //if (simulateClickOnUp && type == MouseEvent.Type.UP) {
     //    dispatchMouseEvent(MouseEvent.Type.CLICK, id, x, y, button, buttons, scrollDeltaX, scrollDeltaY, scrollDeltaZ, isShiftDown, isCtrlDown, isAltDown, isMetaDown, scaleCoords, simulateClickOnUp = false)
     //}
 }
 
+fun <T : BEvent> GameWindow.dispatchQueued(event: T) {
+    queue { dispatch(event) }
+}
 
+fun <T : BEvent> GameWindow.dispatchQueued(pool: Pool<T>, update: T.() -> Unit) {
+    pool.alloc {
+        update(it)
+        dispatch(it)
+    }
+    //val item = pool.alloc()
+    //update(item)
+    //queue {
+    //    try {
+    //        dispatch(item)
+    //    } finally {
+    //        pool.free(item)
+    //    }
+    //}
+}
 
-fun GameWindow.dispatchInitEvent() = dispatch(events.initEvent.reset())
-fun GameWindow.dispatchPauseEvent() = dispatch(events.pauseEvent.reset())
-fun GameWindow.dispatchResumeEvent() = dispatch(events.resumeEvent.reset())
-fun GameWindow.dispatchStopEvent() = dispatch(events.stopEvent.reset())
-fun GameWindow.dispatchDestroyEvent() = dispatch(events.destroyEvent.reset())
-fun GameWindow.dispatchDisposeEvent() = dispatch(events.disposeEvent.reset())
+fun GameWindow.dispatchPauseEventQueued() = dispatchQueued(events.pauseEvent)
+fun GameWindow.dispatchResumeEventQueued() = dispatchQueued(events.resumeEvent)
+fun GameWindow.dispatchStopEventQueued() = dispatchQueued(events.stopEvent)
+fun GameWindow.dispatchDestroyEventQueued() = dispatchQueued(events.destroyEvent)
+fun GameWindow.dispatchDisposeEventQueued() = dispatchQueued(events.disposeEvent)
+
 fun GameWindow.dispatchUpdateEvent() {
     updateRenderLock { dispatch(events.updateEvent) }
 }
@@ -161,24 +182,24 @@ fun GameWindow.dispatchRenderEvent() {
     updateRenderLock { dispatch(events.renderEvent) }
     ag.finish()
 }
-fun GameWindow.dispatchDropfileEvent(type: DropFileEvent.Type, files: List<VfsFile>?) = dispatch(events.dropFileEvent.reset {
+fun GameWindow.dispatchDropfileEventQueued(type: DropFileEvent.Type, files: List<VfsFile>?) = dispatchQueued(events.dropFileEvents) {
     this.type = type
     this.files = files
-})
-fun GameWindow.dispatchFullscreenEvent(fullscreen: Boolean) = dispatch(events.fullScreenEvent.reset { this.fullscreen = fullscreen })
+}
+fun GameWindow.dispatchFullscreenEventQueued(fullscreen: Boolean) = dispatchQueued(events.fullScreenEvents) { this.fullscreen = fullscreen }
 
-fun GameWindow.dispatchReshapeEvent(x: Int, y: Int, width: Int, height: Int) {
-    dispatchReshapeEventEx(x, y, width, height, width, height)
+fun GameWindow.dispatchReshapeEventQueued(x: Int, y: Int, width: Int, height: Int) {
+    dispatchReshapeEventExQueued(x, y, width, height, width, height)
 }
 
-fun GameWindow.dispatchReshapeEventEx(x: Int, y: Int, width: Int, height: Int, fullWidth: Int, fullHeight: Int) {
+fun GameWindow.dispatchReshapeEventExQueued(x: Int, y: Int, width: Int, height: Int, fullWidth: Int, fullHeight: Int) {
     ag.mainFrameBuffer.setSize(x, y, width, height, fullWidth, fullHeight)
-    dispatch(events.reshapeEvent.reset {
+    dispatchQueued(events.reshapeEvents) {
         this.x = x
         this.y = y
         this.width = width
         this.height = height
-    })
+    }
 }
 
 fun GameWindow.handleInitEventIfRequired() {

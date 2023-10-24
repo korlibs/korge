@@ -361,7 +361,7 @@ fun Component.registerMouseEvents(gameWindow: GameWindow) {
     var mouseX: Int = 0
     var mouseY: Int = 0
 
-    gameWindow.events.mouseEvent.requestLock = {
+    gameWindow.events.requestLock = {
         val location = MouseInfo.getPointerInfo().location
         lockingX = location.x
         lockingY = location.y
@@ -401,7 +401,7 @@ fun Component.registerMouseEvents(gameWindow: GameWindow) {
             mouseX = e.x
             mouseY = e.y
             //println("ev=$ev")
-            gameWindow.dispatchMouseEvent(
+            gameWindow.dispatchMouseEventQueued(
                 type = ev,
                 id = 0,
                 x = sx.toInt(),
@@ -441,7 +441,7 @@ fun Component.registerMouseEvents(gameWindow: GameWindow) {
             val scrollDelta = e.preciseWheelRotation.toFloat() * osfactor
 
             val isShiftDown = modifiers hasFlags JMouseEvent.SHIFT_DOWN_MASK
-            gameWindow.dispatchMouseEvent(
+            gameWindow.dispatchMouseEventQueued(
                 type = ev,
                 id = 0,
                 x = sx.toInt(),
@@ -496,7 +496,7 @@ fun Component.registerKeyEvents(gameWindow: GameWindow) {
             val keyCode = e.keyCode
             val key = awtKeyCodeToKey(e.keyCode)
 
-            gameWindow.dispatchKeyEventEx(ev, id, char, key, keyCode, e.isShiftDown, e.isControlDown, e.isAltDown, e.isMetaDown)
+            gameWindow.dispatchKeyEventExQueued(ev, id, char, key, keyCode, e.isShiftDown, e.isControlDown, e.isAltDown, e.isMetaDown)
         }
     }
 

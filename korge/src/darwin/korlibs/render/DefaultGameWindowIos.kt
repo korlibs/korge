@@ -91,16 +91,16 @@ abstract class KorgwBaseNewAppDelegate {
     fun applicationWillResignActive(app: UIApplication) {
         logger.info {"applicationWillResignActive" }
         forceGC()
-        gameWindow.dispatchPauseEvent()
+        gameWindow.dispatchPauseEventQueued()
     }
     fun applicationDidBecomeActive(app: UIApplication) {
         logger.info {"applicationDidBecomeActive" }
-        gameWindow.dispatchResumeEvent()
+        gameWindow.dispatchResumeEventQueued()
     }
     fun applicationWillTerminate(app: UIApplication) {
         logger.info {"applicationWillTerminate" }
-        gameWindow.dispatchStopEvent()
-        gameWindow.dispatchDestroyEvent()
+        gameWindow.dispatchStopEventQueued()
+        gameWindow.dispatchDestroyEventQueued()
     }
 
     private fun forceGC() {
@@ -183,7 +183,7 @@ class ViewController(
             val key = IosKeyMap.KEY_MAP[keyCode.toInt()] ?: Key.UNKNOWN
             //println("pressesHandler[$type]: ${keyCode}, ${modifierFlags}, $key, ${uiKey.charactersIgnoringModifiers}")
 
-            gameWindow.dispatchKeyEventEx(
+            gameWindow.dispatchKeyEventExQueued(
                 type,
                 0,
                 uiKey.charactersIgnoringModifiers.firstOrNull() ?: '\u0000',
@@ -257,6 +257,10 @@ class MyGLKViewController(
     }
 
     override fun glkView(view: GLKView, drawInRect: CValue<CGRect>) {
+        val rect = drawInRect.useContents { toRectangle() }
+
+        println("RENDER rect=$rect")
+
         if (!initialized) {
             initialized = true
             initializeIosResourcesPath()
@@ -266,9 +270,7 @@ class MyGLKViewController(
             gameWindow.onUpdateEvent {
                 darwinGamePad.updateGamepads(gameWindow)
             }
-            logger.info { "dispatchInitEvent" }
             gameWindow.queueSuspend {
-                gameWindow.dispatchInitEvent()
                 logger.info { "Executing entry..." }
                 this.entry()
             }
@@ -285,17 +287,15 @@ class MyGLKViewController(
 
         val width = (view.bounds.useContents { size.width } * view.contentScaleFactor).toInt()
         val height = (view.bounds.useContents { size.height } * view.contentScaleFactor).toInt()
-        if (lastWidth != width || lastHeight != height) {
-            println("RESHAPE: $lastWidth, $lastHeight -> $width, $height")
-            this.lastWidth = width
-            this.lastHeight = height
-            gameWindow.dispatchReshapeEvent(0, 0, width, height)
-        }
+
+        gameWindow.resized(width, height)
 
         //if (gameWindow.continuousRenderMode.shouldRender()) {
         //    gameWindow.dispatchRenderEvent()
         //}
         gameWindow.dispatchRenderEvent()
+
+        println("/RENDER rect=$rect")
     }
 
     override fun didReceiveMemoryWarning() {
@@ -347,7 +347,7 @@ class MyGLKViewController(
     fun dispatchTouchEventStartMove() = touchBuilder.startFrame(TouchEvent.Type.MOVE)
     fun dispatchTouchEventStartEnd() = touchBuilder.startFrame(TouchEvent.Type.END)
     fun dispatchTouchEventAddTouch(id: Int, x: Float, y: Float) = touchBuilder.touch(id, Point(x, y))
-    fun dispatchTouchEventEnd() = gameWindow.dispatch(touchBuilder.endFrame().reset())
+    fun dispatchTouchEventEnd() = gameWindow.dispatchQueued(touchBuilder.endFrame().reset())
 
     private fun addTouches(touches: Set<*>, type: TouchType) {
         //println("addTouches[${touches.size}] type=$type");

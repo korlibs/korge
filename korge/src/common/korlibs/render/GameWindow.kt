@@ -284,7 +284,7 @@ open class GameWindow :
     open fun close(exitCode: Int) {
         if (closing) return
         closing = true
-        queue { dispatchDestroyEvent() }
+        queue { dispatchDestroyEventQueued() }
         running = false
         this.exitCode = exitCode
         logger.info { "GameWindow.close" }
@@ -314,6 +314,12 @@ open class GameWindow :
     open fun hapticFeedbackGenerate(kind: HapticFeedbackKind): Unit = Unit
     open suspend fun clipboardWrite(data: ClipboardData): Unit = Unit
     open suspend fun clipboardRead(): ClipboardData? = null
+
+    fun resized(width: Int, height: Int) {
+        if (ag.mainFrameBuffer.setSize(width, height)) {
+            dispatchReshapeEventQueued(0, 0, width, height)
+        }
+    }
 
     //open fun lockMousePointer() = println("WARNING: lockMousePointer not implemented")
     //open fun unlockMousePointer() = Unit

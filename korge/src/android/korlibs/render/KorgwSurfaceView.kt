@@ -82,9 +82,7 @@ open class KorgwSurfaceView constructor(
     }
 
     override fun onDrawFrame(unused: GL10) {
-        val ag = gameWindow.ag
-
-        ag.mainFrameBuffer.setSize(width, height)
+        gameWindow.resized(width, height)
 
         //GLES20.glClearColor(1f, 0f, .5f, 1f); GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
         //if (gameWindow.continuousRenderMode.shouldRender()) {
@@ -129,7 +127,7 @@ open class KorgwSurfaceView constructor(
         //println(InputDevice.SOURCE)
         //val stopPropagating = gameWindow.queueBlocking {
         val stopPropagating = gameWindow.queue {
-            gameWindow.dispatchKeyEventEx(
+            gameWindow.dispatchKeyEventExQueued(
                 type, 0, char, key, keyCode,
                 shift = event.isShiftPressed,
                 ctrl = event.isCtrlPressed,

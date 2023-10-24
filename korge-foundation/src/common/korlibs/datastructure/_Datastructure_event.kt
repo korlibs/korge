@@ -36,6 +36,7 @@ class SyncPauseable : Pauseable {
 }
 
 abstract class BaseEventLoop : EventLoop, Pauseable {
+    val runLock = Lock()
 }
 
 class SyncEventLoop(

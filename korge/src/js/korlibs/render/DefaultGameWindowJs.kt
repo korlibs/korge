@@ -144,7 +144,7 @@ open class BrowserCanvasJsGameWindow(
         }
         //canvasRatio = (canvas.width.toDouble() / canvas.clientWidth.toDouble())
 
-        dispatchReshapeEvent(0, 0, canvas.width, canvas.height)
+        dispatchReshapeEventQueued(0, 0, canvas.width, canvas.height)
     }
 
     inline fun transformEventX(x: Float): Float = x * canvasRatio
@@ -209,7 +209,7 @@ open class BrowserCanvasJsGameWindow(
                 }
             }
         }
-        dispatch(events.keyEvent {
+        dispatchQueued(events.keyEvents) {
             this.type = when (me.type) {
                 "keydown" -> KeyEvent.Type.DOWN
                 "keyup" -> KeyEvent.Type.UP
@@ -224,7 +224,7 @@ open class BrowserCanvasJsGameWindow(
             this.alt = me.altKey
             this.meta = me.metaKey
             this.character = me.charCode.toChar()
-        })
+        }
 
         // @TODO: preventDefault on all causes keypress to not happen?
         if (key == Key.TAB || key.isFunctionKey) {
@@ -259,7 +259,7 @@ open class BrowserCanvasJsGameWindow(
         val tx = transformEventX(e.clientX.toFloat() - canvasBounds.left.toFloat()).toInt()
         val ty = transformEventY(e.clientY.toFloat() - canvasBounds.top.toFloat()).toInt()
         //console.log("mouseEvent", type.toString(), e.clientX, e.clientY, tx, ty)
-        events.mouseEvent {
+        events.mouseEvents.allocThis {
             this.type = if (e.buttons.toInt() != 0) pressingType else type
             this.scaleCoords = false
             this.id = 0
@@ -292,11 +292,10 @@ open class BrowserCanvasJsGameWindow(
                     z = we.deltaZ.toFloat() * sensitivity,
                 )
             }
-        }
-
-        // If we are in a touch device, touch events will be dispatched, and then we don't want to emit mouse events, that would be duplicated
-        if (!is_touch_device() || type == korlibs.event.MouseEvent.Type.SCROLL) {
-            dispatch(events.mouseEvent)
+            // If we are in a touch device, touch events will be dispatched, and then we don't want to emit mouse events, that would be duplicated
+            if (!is_touch_device() || type == korlibs.event.MouseEvent.Type.SCROLL) {
+                dispatch(this)
+            }
         }
     }
 
@@ -433,18 +432,18 @@ open class BrowserCanvasJsGameWindow(
         //    })
         //})
         window.addEventListener("resize", { onResized() })
-        canvas.ondragenter = { dispatchDropfileEvent(DropFileEvent.Type.START, null) }
-        canvas.ondragexit = { dispatchDropfileEvent(DropFileEvent.Type.END, null) }
-        canvas.ondragleave = { dispatchDropfileEvent(DropFileEvent.Type.END, null) }
+        canvas.ondragenter = { dispatchDropfileEventQueued(DropFileEvent.Type.START, null) }
+        canvas.ondragexit = { dispatchDropfileEventQueued(DropFileEvent.Type.END, null) }
+        canvas.ondragleave = { dispatchDropfileEventQueued(DropFileEvent.Type.END, null) }
         canvas.ondragover = { it.preventDefault() }
-        canvas.ondragstart = { dispatchDropfileEvent(DropFileEvent.Type.START, null) }
-        canvas.ondragend = { dispatchDropfileEvent(DropFileEvent.Type.END, null) }
+        canvas.ondragstart = { dispatchDropfileEventQueued(DropFileEvent.Type.START, null) }
+        canvas.ondragend = { dispatchDropfileEventQueued(DropFileEvent.Type.END, null) }
         canvas.ondrop = {
             it.preventDefault()
-            dispatchDropfileEvent(DropFileEvent.Type.END, null)
+            dispatchDropfileEventQueued(DropFileEvent.Type.END, null)
             val items = it.dataTransfer!!.items
             val files = (0 until items.length).mapNotNull { items[it]?.getAsFile()?.toVfs() }
-            dispatchDropfileEvent(DropFileEvent.Type.DROP, files)
+            dispatchDropfileEventQueued(DropFileEvent.Type.DROP, files)
         }
         onResized()
 
