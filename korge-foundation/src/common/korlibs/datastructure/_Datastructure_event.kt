@@ -5,32 +5,24 @@ package korlibs.datastructure.event
 import korlibs.datastructure.*
 import korlibs.datastructure.closeable.*
 import korlibs.datastructure.lock.*
-import korlibs.datastructure.pauseable.*
 import korlibs.datastructure.thread.*
 import korlibs.logger.*
 import korlibs.time.*
 import kotlin.time.*
 
-interface EventLoop : Pauseable, Closeable {
+interface EventLoop : Closeable {
     fun setImmediate(task: () -> Unit)
     fun setTimeout(time: TimeSpan, task: () -> Unit): Closeable
     fun setInterval(time: TimeSpan, task: () -> Unit): Closeable
 }
 fun EventLoop.setInterval(time: Frequency, task: () -> Unit): Closeable = setInterval(time.timeSpan, task)
 
-abstract class BaseEventLoop : EventLoop, Pauseable {
-    val runLock = Lock()
-}
-
 class SyncEventLoop(
     /** precise=true will have better precision at the cost of more CPU-usage (busy waiting) */
-    //var precise: Boolean = true,
-    var precise: Boolean = false,
+    var precise: Boolean = true,
     /** Execute timers immediately instead of waiting. Useful for testing. */
     var immediateRun: Boolean = false,
-) : BaseEventLoop(), Pauseable {
-    private val pauseable = SyncPauseable()
-    override var paused: Boolean by pauseable::paused
+) : EventLoop {
     private val lock = NonRecursiveLock()
     private var running = true
     protected class TimedTask(val eventLoop: SyncEventLoop, var now: Duration, val time: Duration, var interval: Boolean, val callback: () -> Unit) : Comparable<TimedTask>, Closeable {
@@ -47,14 +39,11 @@ class SyncEventLoop(
         }
     }
     private val startTime = TimeSource.Monotonic.markNow()
-
-    var nowProvider: () -> Duration = { startTime.elapsedNow() }
-
-    private val now: Duration get() = nowProvider()
+    private val now: Duration get() = startTime.elapsedNow()
     private val tasks = ArrayDeque<() -> Unit>()
     private val timedTasks = TGenPriorityQueue<TimedTask> { a, b -> a.compareTo(b) }
 
-    fun setImmediateFirst(task: () -> Unit) {
+    fun queueFirst(task: () -> Unit) {
         lock {
             tasks.addFirst(task)
             lock.notify()
@@ -62,7 +51,6 @@ class SyncEventLoop(
     }
 
     override fun setImmediate(task: () -> Unit) {
-        //println("setImmediate: task=$task")
         lock {
             tasks.addLast(task)
             lock.notify()
@@ -78,7 +66,6 @@ class SyncEventLoop(
     }
 
     private fun _queueAfter(time: TimeSpan, interval: Boolean, task: () -> Unit): Closeable {
-        //println("_queueAfter: time=$time, interval=$interval, task=$task")
         return lock {
             val task = TimedTask(this, now, time, interval, task)
             if (running) {
@@ -97,8 +84,8 @@ class SyncEventLoop(
         try {
             // Run pending tasks including pending timers, but won't allow to add new tasks because running=false
             immediateRun = true
-            runAvailableNextTasks()
             running = false
+            runAvailableNextTasks()
         } finally {
             immediateRun = oldImmediateRun
         }
@@ -114,41 +101,21 @@ class SyncEventLoop(
         lock.wait(waitTime, precise)
     }
 
-    fun runAvailableNextTasks(runTimers: Boolean = true): Int {
+    fun runAvailableNextTasks(): Int {
         var count = 0
-        while (runAvailableNextTask(runTimers)) {
+        while (runAvailableNextTask()) {
             count++
         }
         return count
     }
 
-    var uncatchedExceptionHandler: (Throwable) -> Unit = { it.printStackTrace() }
-
-    private inline fun runCatchingExceptions(block: () -> Unit) {
-        try {
-            //runLock {
-            run {
-                block()
-            }
-        } catch (e: Throwable) {
-            uncatchedExceptionHandler(e)
-        }
-    }
-
-    fun runAvailableNextTask(maxCount: Int): Boolean {
-        for (n in 0 until maxCount) {
-            if (!runAvailableNextTask()) return false
-        }
-        return true
-    }
-
-    fun runAvailableNextTask(runTimers: Boolean = true): Boolean {
+    fun runAvailableNextTask(): Boolean {
         val timedTask = lock {
-            if (runTimers) if (timedTasks.isNotEmpty() && shouldTimedTaskRun(timedTasks.head)) timedTasks.removeHead() else null else null
+            if (timedTasks.isNotEmpty() && shouldTimedTaskRun(timedTasks.head)) timedTasks.removeHead() else null
         }
         if (timedTask != null) {
-            runCatchingExceptions { timedTask.callback() }
-            if (timedTask.interval && !immediateRun) {
+            timedTask.callback()
+            if (timedTask.interval) {
                 timedTask.timeMark = maxOf(timedTask.timeMark + timedTask.time, now)
                 //println("READDED: timedTask.now=${timedTask.now}")
                 timedTasks.add(timedTask)
@@ -157,10 +124,7 @@ class SyncEventLoop(
         val task = lock {
             if (tasks.isNotEmpty()) tasks.removeFirst() else null
         }
-        runCatchingExceptions {
-            //println("RUN TASK $task")
-            task?.invoke()
-        }
+        task?.invoke()
 
         return task != null || timedTask != null
     }
@@ -170,10 +134,10 @@ class SyncEventLoop(
         lock {
             if (tasks.isEmpty() && timedTasks.isNotEmpty()) {
                 val head = timedTasks.head
-                //if ((head.timeMark - now) >= 16.milliseconds) {
-                //    //println("GC")
-                //    //NativeThread.gc(full = false)
-                //}
+                if ((head.timeMark - now) >= 16.milliseconds) {
+                    //println("GC")
+                    NativeThread.gc(full = false)
+                }
                 val waitTime = head.timeMark - now
                 if (waitTime >= 0.seconds) {
                     wait(waitTime)
@@ -187,26 +151,20 @@ class SyncEventLoop(
     fun runTasksUntilEmpty() {
         //Thread.currentThread().priority = Thread.MAX_PRIORITY
         // Timed tasks
-        val stopwatch = Stopwatch().start()
         while (running) {
-            pauseable.checkPaused()
             val somethingExecuted = waitAndRunNextTask()
 
             if (lock { !somethingExecuted && tasks.isEmpty() && timedTasks.isEmpty() }) {
                 break
             }
-
-            if (stopwatch.elapsed >= 0.1.seconds) {
-                stopwatch.restart()
-                NativeThread.sleep(10.milliseconds)
-            }
         }
     }
 
-    fun runTasksForever(runWhile: () -> Boolean = { true }) {
+    fun runTasksForever() {
         running = true
-        while (running && runWhile()) {
+        while (running) {
             runTasksUntilEmpty()
+            NativeThread.gc(full = true)
             NativeThread.sleep(1.milliseconds)
         }
     }
