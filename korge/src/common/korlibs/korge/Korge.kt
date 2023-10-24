@@ -1,5 +1,6 @@
 package korlibs.korge
 
+import korlibs.annotations.*
 import korlibs.audio.sound.*
 import korlibs.datastructure.iterators.*
 import korlibs.event.*
@@ -42,11 +43,6 @@ data class KorgeDisplayMode(val scaleMode: ScaleMode, val scaleAnchor: Anchor, v
         val NO_SCALE = KorgeDisplayMode(ScaleMode.NO_SCALE, Anchor.TOP_LEFT, clipBorders = false)
     }
 }
-
-@Target(AnnotationTarget.VALUE_PARAMETER)
-private annotation class DeprecatedParameter(
-    val reason: String
-)
 
 suspend fun Korge(
     args: Array<String> = arrayOf(),
