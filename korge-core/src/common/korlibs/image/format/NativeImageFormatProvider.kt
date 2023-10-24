@@ -7,7 +7,6 @@ import korlibs.io.file.*
 import korlibs.math.geom.*
 import kotlinx.coroutines.*
 import kotlin.math.*
-import kotlin.native.concurrent.*
 
 expect val nativeImageFormatProvider: NativeImageFormatProvider
 
