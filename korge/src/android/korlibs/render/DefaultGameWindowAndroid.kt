@@ -89,6 +89,11 @@ abstract class BaseAndroidGameWindow(
         }
     }
 
+    override fun close(exitCode: Int) {
+        super.close(exitCode)
+        androidContext.activity?.finishAffinity()
+    }
+
     //fun <T : Any> queueAndWait(callback: () -> T): T {
     //    var result: Result<T>? = null
     //    val semaphore = java.util.concurrent.Semaphore(0)

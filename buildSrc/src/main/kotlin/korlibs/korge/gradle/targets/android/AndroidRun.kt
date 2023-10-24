@@ -3,6 +3,7 @@ package korlibs.korge.gradle.targets.android
 import korlibs.korge.gradle.*
 import korlibs.korge.gradle.targets.*
 import korlibs.korge.gradle.util.*
+import korlibs.korge.gradle.util.AnsiEscape.Companion.color
 import org.gradle.api.*
 import org.gradle.api.tasks.*
 import org.jetbrains.kotlin.gradle.dsl.*
@@ -173,7 +174,25 @@ open class OnlyRunAndroidTask : DefaultAndroidTask() {
             }
             error("Unexpected")
         }
-        execLogger(androidAdbPath, *extra, "logcat", "--pid=$pid")
+        val EXIT_MESSAGE = "InputTransport: Input channel destroyed:"
+        execLogger(androidAdbPath, *extra, "logcat", "--pid=$pid") {
+            if (it.contains(EXIT_MESSAGE)) {
+                println("Found EXIT_MESSAGE=$EXIT_MESSAGE")
+                this.destroy()
+            }
+            val parts = it.split(" ", limit = 5)
+            val end = parts.getOrElse(4) { " " }.trimStart()
+            val color = when {
+                end.startsWith('V') -> null
+                end.startsWith('D') -> AnsiEscape.Color.BLUE
+                end.startsWith('I') -> AnsiEscape.Color.GREEN
+                end.startsWith('W') -> AnsiEscape.Color.YELLOW
+                end.startsWith('E') -> AnsiEscape.Color.RED
+                else -> AnsiEscape.Color.WHITE
+            }
+            //println("parts=$parts")
+            if (color != null) it.color(color) else it
+        }
     }
 }
 
