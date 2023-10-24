@@ -1,14 +1,13 @@
 package korlibs.korge.gradle.targets.ios
 
-import java.io.File
 import korlibs.korge.gradle.util.*
 import org.gradle.configurationcache.extensions.*
+import java.io.*
 
 object IosProjectTools {
     fun genBootstrapKt(entrypoint: String): String = """
         import $entrypoint
         
-        @ThreadLocal
         object NewAppDelegate : korlibs.render.KorgwBaseNewAppDelegate() {
             override fun applicationDidFinishLaunching(app: platform.UIKit.UIApplication) { applicationDidFinishLaunching(app) { ${entrypoint}() } }
         }
