@@ -10,8 +10,8 @@ interface AndroidSdkProvider {
     val androidSdkPath: String
     val spawnExt: SpawnExtension
 
-    fun execLogger(vararg params: String) {
-        spawnExt.execLogger(projectDir, *params)
+    fun execLogger(vararg params: String, filter: Process.(line: String) -> String? = { it }) {
+        spawnExt.execLogger(projectDir, *params, filter = filter)
     }
 
     fun execOutput(vararg params: String): String {

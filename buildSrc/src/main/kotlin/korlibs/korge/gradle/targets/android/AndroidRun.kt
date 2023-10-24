@@ -171,8 +171,27 @@ open class OnlyRunAndroidTask : DefaultAndroidTask() {
                     if (elapsedTime >= 5000L) throw e
                 }
             }
+            error("Unexpected")
         }
-        execLogger(androidAdbPath, *extra, "logcat", "--pid=$pid")
+        val EXIT_MESSAGE = "InputTransport: Input channel destroyed:"
+        execLogger(androidAdbPath, *extra, "logcat", "--pid=$pid") {
+            if (it.contains(EXIT_MESSAGE)) {
+                println("Found EXIT_MESSAGE=$EXIT_MESSAGE")
+                this.destroy()
+            }
+            val parts = it.split(" ", limit = 5)
+            val end = parts.getOrElse(4) { " " }.trimStart()
+            val color = when {
+                end.startsWith('V') -> null
+                end.startsWith('D') -> AnsiEscape.Color.BLUE
+                end.startsWith('I') -> AnsiEscape.Color.GREEN
+                end.startsWith('W') -> AnsiEscape.Color.YELLOW
+                end.startsWith('E') -> AnsiEscape.Color.RED
+                else -> AnsiEscape.Color.WHITE
+            }
+            //println("parts=$parts")
+            if (color != null) it.color(color) else it
+        }
     }
 }
 
