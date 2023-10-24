@@ -30,7 +30,7 @@ private val jnaNewCoreAudioCallback by lazy {
     AudioQueueNewOutputCallback { inUserData, inAQ, inBuffer ->
         try {
             val output = newAudioOutputsById[(inUserData?.address ?: 0L).toLong()] ?: return@AudioQueueNewOutputCallback 0
-            val nchannels = output.nchannels
+            val nchannels = output.channels
 
             //val tone = AudioTone.generate(1.seconds, 41000.0)
             val queue = AudioQueueBuffer(inBuffer)
@@ -96,7 +96,7 @@ private class JvmCoreAudioNewPlatformAudioOutput(
 
     var queue: Pointer? = null
 
-    override fun start() {
+    override fun internalStart() {
         stop()
 
         newAudioOutputsById[id] = this
@@ -108,7 +108,7 @@ private class JvmCoreAudioNewPlatformAudioOutput(
         format.mFormatID = CoreAudioKit.kAudioFormatLinearPCM
         format.mFormatFlags = CoreAudioKit.kLinearPCMFormatFlagIsSignedInteger or CoreAudioKit.kAudioFormatFlagIsPacked
         format.mBitsPerChannel = (8 * Short.SIZE_BYTES)
-        format.mChannelsPerFrame = nchannels
+        format.mChannelsPerFrame = channels
         format.mBytesPerFrame = (Short.SIZE_BYTES * format.mChannelsPerFrame)
         format.mFramesPerPacket = 1
         format.mBytesPerPacket = format.mBytesPerFrame * format.mFramesPerPacket
@@ -139,7 +139,7 @@ private class JvmCoreAudioNewPlatformAudioOutput(
         }
     }
 
-    override fun stop() {
+    override fun internalStop() {
         completed = true
 
         if (queue != null) {

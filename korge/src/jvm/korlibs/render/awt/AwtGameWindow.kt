@@ -63,7 +63,7 @@ open class AwtCanvasGameWindow constructor(
         }
         canvas.doRender = {
             //it.clear(it.mainFrameBuffer, Colors.RED)
-            dispatchNewRenderEvent()
+            dispatchRenderEvent()
         }
         canvas.canvas.registerMouseEvents(this)
         canvas.canvas.registerKeyEvents(this)

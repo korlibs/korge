@@ -17,7 +17,9 @@ interface EventLoop : Closeable {
 }
 fun EventLoop.setInterval(time: Frequency, task: () -> Unit): Closeable = setInterval(time.timeSpan, task)
 
-abstract class BaseEventLoop : EventLoop
+abstract class BaseEventLoop : EventLoop {
+    val runLock = Lock()
+}
 
 class SyncEventLoop(
     /** precise=true will have better precision at the cost of more CPU-usage (busy waiting) */
@@ -121,7 +123,10 @@ class SyncEventLoop(
 
     private inline fun runCatchingExceptions(block: () -> Unit) {
         try {
-            block()
+            //runLock {
+            run {
+                block()
+            }
         } catch (e: Throwable) {
             uncatchedExceptionHandler(e)
         }

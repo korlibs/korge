@@ -376,7 +376,7 @@ open class ViewsForTesting(
             //println("SIMULATE: $frameTime")
             time += currentFrameTime
             gameWindow.dispatchUpdateEvent()
-            gameWindow.dispatchNewRenderEvent()
+            gameWindow.dispatchRenderEvent()
             simulatedFrames++
             val now = PerformanceCounter.reference
             val elapsedSinceLastDelay = now - lastDelay

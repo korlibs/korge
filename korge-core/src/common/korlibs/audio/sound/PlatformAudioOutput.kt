@@ -11,11 +11,11 @@ import kotlin.coroutines.*
 
 open class NewPlatformAudioOutput(
     val coroutineContext: CoroutineContext,
-    val nchannels: Int,
+    val channels: Int,
     val frequency: Int,
     private val gen: (AudioSamples) -> Unit,
 ) : Disposable, SoundProps {
-    val onCancel = coroutineContext.onCancel { stop() }
+    var onCancel: Cancellable? = null
     var paused: Boolean = false
 
     private val lock = Lock()
@@ -33,8 +33,20 @@ open class NewPlatformAudioOutput(
     override var pitch: Double = 1.0
     override var volume: Double = 1.0
     override var panning: Double = 0.0
-    open fun start() = Unit
-    open fun stop() = Unit
+
+    protected open fun internalStart() = Unit
+    protected open fun internalStop() = Unit
+
+    fun start() {
+        stop()
+        onCancel = coroutineContext.onCancel { stop() }
+        internalStart()
+    }
+    fun stop() {
+        onCancel?.cancel()
+        onCancel = null
+        internalStop()
+    }
     final override fun dispose() = stop()
 }
 

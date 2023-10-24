@@ -15,8 +15,8 @@ class HtmlNativeSoundProvider : NativeSoundProviderNew() {
         HtmlSimpleSound.ensureUnlockStart()
     }
 
-    override fun createNewPlatformAudioOutput(coroutineContext: CoroutineContext, nchannels: Int, freq: Int, gen: (AudioSamples) -> Unit): NewPlatformAudioOutput {
-        return JsNewPlatformAudioOutput(coroutineContext, nchannels, freq, gen)
+    override fun createNewPlatformAudioOutput(coroutineContext: CoroutineContext, channels: Int, frequency: Int, gen: (AudioSamples) -> Unit): NewPlatformAudioOutput {
+        return JsNewPlatformAudioOutput(coroutineContext, channels, frequency, gen)
     }
 
 	override suspend fun createSound(data: ByteArray, streaming: Boolean, props: AudioDecodingProps, name: String): Sound =

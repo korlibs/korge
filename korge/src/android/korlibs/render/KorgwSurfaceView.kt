@@ -11,7 +11,6 @@ import korlibs.datastructure.*
 import korlibs.datastructure.event.*
 import korlibs.datastructure.thread.*
 import korlibs.event.*
-import korlibs.io.async.*
 import korlibs.math.geom.*
 import korlibs.memory.*
 import javax.microedition.khronos.egl.*
@@ -32,7 +31,6 @@ open class KorgwSurfaceView constructor(
 
     val view = this
 
-    val onDraw = Signal<Unit>()
     val requestedClientVersion by lazy { getVersionFromPackageManager(context) }
     var clientVersion = -1
     var continuousRenderMode: Boolean
@@ -84,15 +82,22 @@ open class KorgwSurfaceView constructor(
     }
 
     override fun onDrawFrame(unused: GL10) {
-        //GLES20.glClearColor(1f, 0f, 1f, 1f)
-        //GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
+        val ag = gameWindow.ag
+
+        ag.mainFrameBuffer.setSize(width, height)
+
+        //GLES20.glClearColor(1f, 0f, .5f, 1f); GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
         //if (gameWindow.continuousRenderMode.shouldRender()) {
         run {
             //gameWindow.updateRenderLock {
-                gameWindow.dispatchNewRenderEvent()
+                gameWindow.dispatchRenderEvent()
             //}
-            onDraw(Unit)
         }
+
+        //println("gameWindow.bufferWidth=${gameWindow.bufferWidth},${gameWindow.bufferHeight}, ag.mainFrameBuffer=${ag.mainFrameBuffer.width}, ${ag.mainFrameBuffer.height}, ${ag.mainFrameBuffer.fullWidth}, ${ag.mainFrameBuffer.fullHeight}")
+
+        //ag.textureDrawer.drawXY(ag.mainFrameBuffer, null, 20, 20, 100, 100)
+
     }
 
     override fun onSurfaceChanged(unused: GL10, width: Int, height: Int) {

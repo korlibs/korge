@@ -14,10 +14,10 @@ val jvmWaveOutNativeSoundProvider: NativeSoundProvider? by lazy {
 class JvmWaveOutNativeSoundProvider : NativeSoundProviderNew() {
     override fun createNewPlatformAudioOutput(
         coroutineContext: CoroutineContext,
-        nchannels: Int,
-        freq: Int,
+        channels: Int,
+        frequency: Int,
         gen: (AudioSamples) -> Unit
-    ): NewPlatformAudioOutput = JvmWaveOutNewPlatformAudioOutput(coroutineContext, nchannels, freq, gen)
+    ): NewPlatformAudioOutput = JvmWaveOutNewPlatformAudioOutput(coroutineContext, channels, frequency, gen)
 }
 
 /*
@@ -102,7 +102,7 @@ class JvmWaveOutNewPlatformAudioOutput(
     private var handle: FFIPointer? = null
     private var headers = emptyArray<WaveHeader>()
 
-    override fun start() {
+    override fun internalStart() {
         //println("TRYING TO START")
         if (running) return
         //println("STARTED")
@@ -112,13 +112,13 @@ class JvmWaveOutNewPlatformAudioOutput(
                 val arena = this
                 val handlePtr = allocBytes(8).typed<FFIPointer?>()
                 val freq = frequency
-                val blockAlign = (nchannels * Short.SIZE_BYTES)
+                val blockAlign = (channels * Short.SIZE_BYTES)
                 val format = WAVEFORMATEX(allocBytes(WAVEFORMATEX().size)).also { format ->
                     format.wFormatTag = WINMM.WAVE_FORMAT_PCM.toShort()
-                    format.nChannels = nchannels.toShort() // 2?
+                    format.nChannels = channels.toShort() // 2?
                     format.nSamplesPerSec = freq.toInt()
                     format.wBitsPerSample = Short.SIZE_BITS.toShort() // 16
-                    format.nBlockAlign = ((nchannels * Short.SIZE_BYTES).toShort())
+                    format.nBlockAlign = ((channels * Short.SIZE_BYTES).toShort())
                     format.nAvgBytesPerSec = freq * blockAlign
                     format.cbSize = format.size.toShort()
                 }
@@ -128,7 +128,7 @@ class JvmWaveOutNewPlatformAudioOutput(
                 handle = handlePtr[0]
                 //println("handle=$handle")
 
-                headers = Array(4) { WaveHeader(it, handle, 1024, nchannels, arena) }
+                headers = Array(4) { WaveHeader(it, handle, 1024, channels, arena) }
 
                 try {
                     while (running) {
@@ -160,7 +160,7 @@ class JvmWaveOutNewPlatformAudioOutput(
         }
     }
 
-    override fun stop() {
+    override fun internalStop() {
         running = false
         //println("STOPPING")
     }

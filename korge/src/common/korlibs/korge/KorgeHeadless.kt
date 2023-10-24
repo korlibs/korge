@@ -33,7 +33,7 @@ object KorgeHeadless {
             nativeThread(name = "HeadlessGameWindow-syncEventLoop") { syncEventLoop.runTasksForever() }
             eventLoop.setInterval(60.hz.timeSpan) {
                 (ag as? AGOpengl?)?.context?.set()
-                this@HeadlessGameWindow.dispatchNewRenderEvent()
+                this@HeadlessGameWindow.dispatchRenderEvent()
             }
         }
 

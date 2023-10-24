@@ -33,7 +33,7 @@ class JvmNewPlatformAudioOutput(
     private fun bytesToSamples(bytes: Int): Int = bytes / BYTES_PER_SAMPLE
     private fun samplesToBytes(samples: Int): Int = samples * BYTES_PER_SAMPLE
 
-    override fun start() {
+    override fun internalStart() {
         //println("TRYING TO START")
         if (nativeThread?.threadSuggestRunning == true) return
 
@@ -42,7 +42,7 @@ class JvmNewPlatformAudioOutput(
         // SAMPLE -> Short, FRAME -> nchannels * SAMPLE
         nativeThread = nativeThread(isDaemon = true) {
             it.threadSuggestRunning = true
-            val nchannels = this.nchannels
+            val nchannels = this.channels
             val format = AudioFormat(frequency.toFloat(), Short.SIZE_BITS, nchannels, true, false)
             //val format = AudioFormat(44100.toFloat(), Short.SIZE_BITS, nchannels, true, false)
             //val line = AudioSystem.getSourceDataLine(format)
@@ -72,7 +72,7 @@ class JvmNewPlatformAudioOutput(
         }
     }
 
-    override fun stop() {
+    override fun internalStop() {
         nativeThread?.threadSuggestRunning = false
         nativeThread = null
         //println("STOPPING")

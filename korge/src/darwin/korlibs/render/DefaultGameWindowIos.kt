@@ -281,7 +281,7 @@ class MyGLKViewController(
 
         darwinGamePad.updateGamepads(gameWindow)
         if (gameWindow.continuousRenderMode.shouldRender()) {
-            gameWindow.dispatchNewRenderEvent()
+            gameWindow.dispatchRenderEvent()
         }
     }
 

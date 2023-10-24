@@ -31,10 +31,10 @@ class JsNewPlatformAudioOutput(
 
 	private var startPromise: Cancellable? = null
 
-	override fun start() {
+	override fun internalStart() {
 		if (nodeRunning) return
 		startPromise = HtmlSimpleSound.callOnUnlocked {
-			node = HtmlSimpleSound.ctx?.createScriptProcessor(1024, nchannels, 2)
+			node = HtmlSimpleSound.ctx?.createScriptProcessor(1024, channels, 2)
 			node?.onaudioprocess = { e ->
                 val nchannels = e.outputBuffer.numberOfChannels
                 val outChannels = Array(nchannels) { e.outputBuffer.getChannelData(it) }
@@ -56,7 +56,7 @@ class JsNewPlatformAudioOutput(
 		missingDataCount = 0
 	}
 
-	override fun stop() {
+	override fun internalStop() {
 		if (!nodeRunning) return
 		startPromise?.cancel()
 		this.node?.disconnect()

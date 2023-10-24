@@ -32,7 +32,7 @@ class CoreAudioNativeSoundProvider : NativeSoundProviderNew() {
 
     //override suspend fun createSound(data: ByteArray, streaming: Boolean, props: AudioDecodingProps): NativeSound = AVFoundationNativeSoundNoStream(CoroutineScope(coroutineContext), audioFormats.decode(data))
 
-    override fun createNewPlatformAudioOutput(coroutineContext: CoroutineContext, nchannels: Int, freq: Int, gen: (AudioSamples) -> Unit): CoreAudioNewPlatformAudioOutput = CoreAudioNewPlatformAudioOutput(coroutineContext, freq, nchannels, gen)
+    override fun createNewPlatformAudioOutput(coroutineContext: CoroutineContext, channels: Int, frequency: Int, gen: (AudioSamples) -> Unit): CoreAudioNewPlatformAudioOutput = CoreAudioNewPlatformAudioOutput(coroutineContext, frequency, channels, gen)
 }
 
 class CoreAudioNewPlatformAudioOutput(
@@ -53,10 +53,10 @@ class CoreAudioNewPlatformAudioOutput(
             }
         }
     }
-    override fun start() {
+    override fun internalStart() {
         generator.start()
     }
-    override fun stop() {
+    override fun internalStop() {
         generator.dispose()
     }
 }

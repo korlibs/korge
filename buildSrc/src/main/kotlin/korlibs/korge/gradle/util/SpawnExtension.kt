@@ -5,11 +5,14 @@ import java.io.*
 
 open class SpawnExtension {
     open fun spawn(dir: File, command: List<String>) {
-        ProcessBuilder(command).redirectErrorStream(true).directory(dir).start()
+        ProcessBuilder(command).inheritIO().redirectErrorStream(true).directory(dir).start()
     }
     open fun execLogger(projectDir: File, vararg params: String) {
         println("EXEC: ${params.joinToString(" ")}")
-        ProcessBuilder(*params).redirectErrorStream(true).directory(projectDir).start().waitFor()
+        val process = ProcessBuilder(*params).redirectErrorStream(true).directory(projectDir).start()
+        val reader = process.inputStream.reader()
+        reader.forEachLine { println(it) }
+        process.waitFor()
     }
 
     open fun execOutput(projectDir: File, vararg params: String): String {

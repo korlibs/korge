@@ -157,18 +157,10 @@ fun GameWindow.dispatchDisposeEvent() = dispatch(events.disposeEvent.reset())
 fun GameWindow.dispatchUpdateEvent() {
     updateRenderLock { dispatch(events.updateEvent) }
 }
-fun GameWindow.dispatchRenderEvent(update: Boolean = true, render: Boolean = true) {
-    updateRenderLock {
-        //renderEventLoop.runAvailableNextTasks(runTimers = false)
-        dispatch(events.renderEvent.reset {
-            this.update = update
-            this.render = render
-        })
-    }
+
+fun GameWindow.dispatchRenderEvent() {
+    updateRenderLock { dispatch(events.renderEvent) }
     ag.finish()
-}
-fun GameWindow.dispatchNewRenderEvent() {
-    dispatchRenderEvent(update = false, render = true)
 }
 fun GameWindow.dispatchDropfileEvent(type: DropFileEvent.Type, files: List<VfsFile>?) = dispatch(events.dropFileEvent.reset {
     this.type = type
