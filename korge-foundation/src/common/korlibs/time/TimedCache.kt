@@ -25,15 +25,17 @@ class TimedCache<T : Any>(var validTime: TimeSpan, val timeProvider: TimeProvide
 }
 
 class IntTimedCache(val ttl: TimeSpan, val timeProvider: TimeProvider = TimeProvider, val gen: () -> Int) {
-    @PublishedApi internal var last = DateTime.EPOCH
+    @PublishedApi internal var cachedTime = DateTime.EPOCH
     @PublishedApi internal var _value: Int = 0
 
-    val value: Int get() = get()
+    var value: Int
+        get() = get()
+        set(value) { _value = value }
 
     inline fun get(): Int {
         val now = timeProvider.now()
-        if (now - last > ttl) {
-            last = now
+        if (cachedTime == DateTime.EPOCH || (now - cachedTime >= ttl)) {
+            cachedTime = now
             _value = gen()
         }
         return _value
