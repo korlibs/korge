@@ -19,6 +19,20 @@ class IosDeploy(val project: Project) {
 
     val isInstalled get() = iosDeployCmd.exists()
 
+    // https://github.com/ios-control/ios-deploy/issues/588
+    // no ios-deploy required anymore?
+    // xcrun devicectl list devices -j /tmp/devices.json
+    // xcrun devicectl device install app --device 00008110-001XXXXXXXXXX ./korge-sandbox/build/platforms/ios/app.xcodeproj/build/Build/Products/Debug-iphoneos/unnamed.app
+    // crun devicectl device process launch --device 00008110-001XXXXXXXXXX file:///private/var/containers/Bundle/Application/1604D2D5-35F3-4E43-8B47-1DEF5D778480/nilo.app
+
+    fun install(localAppPath: String) {
+        command("--bundle", localAppPath)
+    }
+
+    fun installAndRun(localAppPath: String) {
+        command("--noninteractive", "-d", "--bundle", localAppPath)
+    }
+
     fun command(vararg cmds: String) {
         project.execLogger {
             it.commandLine(iosDeployCmd, *cmds)
