@@ -2,7 +2,6 @@ package korlibs.logger
 
 import kotlin.native.concurrent.ThreadLocal
 
-@ThreadLocal
 @PublishedApi
 internal var baseConsoleHook: ((
     kind: BaseConsole.Kind, msg: Array<out Any?>,

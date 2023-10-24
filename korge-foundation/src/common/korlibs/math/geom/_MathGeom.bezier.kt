@@ -1837,7 +1837,6 @@ fun Curves.toNonCurveSimplePointList(out: PointArrayList = PointArrayList()): Po
     return out
 }
 
-@ThreadLocal
 val Curves.isConvex: Boolean by extraPropertyThis { this.assumeConvex || Convex.isConvex(this) }
 
 fun Curves.toDashes(pattern: DoubleArray?, offset: Double = 0.0): List<Curves> {
