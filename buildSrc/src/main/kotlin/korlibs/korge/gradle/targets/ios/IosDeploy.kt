@@ -1,9 +1,8 @@
 package korlibs.korge.gradle.targets.ios
 
-import org.gradle.api.Project
-import korlibs.korge.gradle.util.projectExtension
-import korlibs.korge.gradle.util.execLogger
-import java.io.File
+import korlibs.korge.gradle.util.*
+import org.gradle.api.*
+import java.io.*
 
 val Project.iosTvosDeployExt by projectExtension {
     IosDeploy(this)
@@ -12,7 +11,10 @@ val Project.iosTvosDeployExt by projectExtension {
 val korgeCacheDir get() = File(System.getProperty("user.home"), ".korge").apply { mkdirs() }
 
 class IosDeploy(val project: Project) {
-    val iosDeployDir = File(korgeCacheDir, "ios-deploy")
+    val iosDeployVersion = "1.12.2"
+    //val iosDeployRepo = "https://github.com/korlibs/ios-deploy.git"
+    val iosDeployRepo = "https://github.com/ios-control/ios-deploy.git"
+    val iosDeployDir = File(korgeCacheDir, "ios-deploy-$iosDeployVersion")
     val iosDeployCmd = File(iosDeployDir, "build/Release/ios-deploy")
 
     val isInstalled get() = iosDeployCmd.exists()
@@ -36,7 +38,12 @@ class IosDeploy(val project: Project) {
     fun clone() {
         iosDeployDir.mkdirs()
         project.execLogger {
-            it.commandLine("git", "clone", "https://github.com/korlibs/ios-deploy.git", iosDeployDir.absolutePath)
+            it.workingDir(iosDeployDir.absolutePath)
+            it.commandLine("git", "clone", iosDeployRepo, iosDeployDir.absolutePath)
+        }
+        project.execLogger {
+            it.workingDir(iosDeployDir.absolutePath)
+            it.commandLine("git", "checkout", iosDeployVersion)
         }
     }
 
