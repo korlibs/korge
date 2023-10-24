@@ -3,12 +3,23 @@ package korlibs.datastructure
 import korlibs.datastructure.lock.*
 import kotlin.reflect.*
 
-class ExtraObject {
+class ExtraObject : MutableMap<String, Any?> {
     private val lock = Lock()
     private val data = FastStringMap<Any?>()
-    fun get(key: String): Any? = lock { data[key] }
-    fun set(key: String, value: Any?) = lock { data[key] = value }
-    fun contains(key: String): Boolean = lock { key in data }
+    override val size: Int get() = lock { data.size }
+    override val entries: MutableSet<MutableMap.MutableEntry<String, Any?>> get() = lock { data.keys.associateWith { data[it] }.toMutableMap().entries.toMutableSet() }
+    override val keys: MutableSet<String> get() = lock { data.keys.toMutableSet() }
+    override val values: MutableCollection<Any?> = lock { data.values.toMutableList() }
+    override operator fun get(key: String): Any? = lock { data[key] }
+    operator fun set(key: String, value: Any?) = lock { data[key] = value }
+    operator fun contains(key: String): Boolean = lock { key in data }
+    override fun isEmpty(): Boolean = size == 0
+    override fun clear() = lock { data.clear() }
+    override fun remove(key: String): Any? = lock { data.remove(key) }
+    override fun putAll(from: Map<out String, Any?>) = lock { for ((key, value) in from) data[key] = value }
+    override fun put(key: String, value: Any?): Any? = lock { data[key] = value }
+    override fun containsValue(value: Any?): Boolean = lock { value in values }
+    override fun containsKey(key: String): Boolean = lock { key in data }
 }
 
 typealias ExtraType = ExtraObject?
