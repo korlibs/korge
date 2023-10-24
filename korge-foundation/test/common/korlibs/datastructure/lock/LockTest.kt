@@ -1,5 +1,10 @@
 package korlibs.datastructure.lock
 
+import korlibs.datastructure.thread.*
+import korlibs.platform.*
+import korlibs.time.*
+import kotlin.test.*
+
 class LockTest {
     @Test
     fun test() {
