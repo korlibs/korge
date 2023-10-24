@@ -61,3 +61,9 @@ fun NativeThread.Companion.sleepExact(time: TimeSpan) {
 fun NativeThread.Companion.sleepUntil(date: DateTime, exact: Boolean = true) {
     sleep(date - DateTime.now(), exact)
 }
+
+fun NativeThread.Companion.sleepWhile(cond: () -> Boolean) {
+    while (cond()) {
+        NativeThread.sleep(1.milliseconds)
+    }
+}
