@@ -1,16 +1,12 @@
 package korlibs.time.locale
 
-import korlibs.time.TimezoneNames
-import korlibs.time.hours
-import korlibs.time.minutes
-import kotlin.native.concurrent.ThreadLocal
+import korlibs.time.*
 
 private fun utc(hours: Int, minutes: Int = 0) = hours.hours + minutes.minutes
 
 // @TODO: Should we include the most popular timezones increasing the artifact size? Maybe include a plugin mechanism and a registration in klock-locale?
 // @TODO: https://en.wikipedia.org/wiki/List_of_time_zone_abbreviations
 
-@ThreadLocal
 private var ExtendedTimezoneNamesOrNull: TimezoneNames? = null
 
 val ExtendedTimezoneNames: TimezoneNames get() {
