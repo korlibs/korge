@@ -4,16 +4,12 @@ import korlibs.encoding.*
 import korlibs.logger.*
 import korlibs.math.geom.*
 import korlibs.memory.*
-import kotlin.native.concurrent.*
 
 class KmlGlException(message: String) : RuntimeException(message)
 
 private val logger = Logger("KmlGlException")
-@ThreadLocal
 private val tempNBufferByte = Buffer(1, direct = true)
-@ThreadLocal
 private val tempNBuffer1 = Buffer(4, direct = true)
-@ThreadLocal
 private val tempNBuffer4 = Buffer(4 * 4, direct = true)
 
 private inline fun tempByte1Buffer(value: Int = 0, block: (Buffer) -> Unit): Int = tempNBufferByte.let {

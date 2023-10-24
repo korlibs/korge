@@ -1,9 +1,18 @@
 package korlibs.datastructure
 
+import korlibs.datastructure.lock.*
 import kotlin.reflect.*
 
-typealias ExtraType = FastStringMap<Any?>?
-fun ExtraTypeCreate() = FastStringMap<Any?>()
+class ExtraObject {
+    private val lock = Lock()
+    private val data = FastStringMap<Any?>()
+    fun get(key: String): Any? = lock { data[key] }
+    fun set(key: String, value: Any?) = lock { data[key] = value }
+    fun contains(key: String): Boolean = lock { key in data }
+}
+
+typealias ExtraType = ExtraObject?
+fun ExtraTypeCreate() = ExtraObject()
 
 interface Extra {
     var extra: ExtraType

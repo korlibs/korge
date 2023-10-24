@@ -1,11 +1,10 @@
 package korlibs.image.format
 
 import korlibs.datastructure.*
-import korlibs.image.atlas.MutableAtlasUnit
+import korlibs.image.atlas.*
 import korlibs.image.bitmap.*
-import korlibs.io.file.VfsFile
+import korlibs.io.file.*
 import korlibs.math.geom.slice.*
-import kotlin.native.concurrent.ThreadLocal
 
 typealias ImageOrientation = SliceOrientation
 
@@ -19,6 +18,5 @@ suspend fun VfsFile.readBitmapSliceWithOrientation(props: ImageDecodingProps = I
     }
 }
 
-@ThreadLocal
 var ImageInfo.orientation: ImageOrientation? by Extra.Property { null }
 val ImageInfo?.orientationSure: ImageOrientation get() = this?.orientation ?: ImageOrientation.ROTATE_0

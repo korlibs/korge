@@ -1,18 +1,11 @@
 package samples
 
-import korlibs.korge.scene.Scene
-import korlibs.korge.view.SContainer
-import korlibs.korge.view.image
-import korlibs.korge.view.solidRect
-import korlibs.korge.view.xy
-import korlibs.image.atlas.Atlas
-import korlibs.image.atlas.readAtlas
-import korlibs.image.bitmap.*
-import korlibs.image.color.RGBA
-import korlibs.image.format.ImageOrientation
-import korlibs.io.file.std.resourcesVfs
-import kotlin.math.max
-import kotlin.native.concurrent.ThreadLocal
+import korlibs.image.atlas.*
+import korlibs.image.color.*
+import korlibs.io.file.std.*
+import korlibs.korge.scene.*
+import korlibs.korge.view.*
+import kotlin.math.*
 
 class MainRotatedAtlas : Scene() {
     override suspend fun SContainer.sceneMain() {
@@ -68,7 +61,6 @@ class MainRotatedAtlas : Scene() {
 }
 
 class BG {
-    @ThreadLocal
     companion object {
         private val colAr = arrayOf(RGBA(240, 240, 240), RGBA(220, 220, 220))
         private var cur = true

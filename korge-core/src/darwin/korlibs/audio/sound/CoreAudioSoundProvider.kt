@@ -22,7 +22,6 @@ import kotlin.native.ThreadLocal
 actual val nativeSoundProvider: NativeSoundProvider get() = CORE_AUDIO_NATIVE_SOUND_PROVIDER
 expect fun appleInitAudio()
 
-@ThreadLocal
 val CORE_AUDIO_NATIVE_SOUND_PROVIDER: CoreAudioNativeSoundProvider by lazy { CoreAudioNativeSoundProvider() }
 
 class CoreAudioNativeSoundProvider : NativeSoundProviderNew() {

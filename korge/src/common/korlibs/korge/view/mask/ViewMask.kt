@@ -6,12 +6,8 @@ import korlibs.graphics.annotation.*
 import korlibs.image.color.*
 import korlibs.korge.render.*
 import korlibs.korge.view.*
-import kotlin.native.concurrent.*
 
-@ThreadLocal
 private var View.__mask: View? by extraProperty { null }
-
-@ThreadLocal
 private var View.__maskFiltering: Boolean by extraProperty { true }
 
 fun <T : View> T.mask(mask: View?, filtering: Boolean = true): T {

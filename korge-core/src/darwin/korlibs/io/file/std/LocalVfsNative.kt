@@ -1,43 +1,33 @@
 package korlibs.io.file.std
 
-import korlibs.time.*
 import korlibs.io.async.*
 import korlibs.io.file.*
 import korlibs.io.lang.*
 import korlibs.io.posix.*
 import korlibs.io.process.*
 import korlibs.io.stream.*
+import korlibs.time.*
 import kotlinx.cinterop.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import platform.posix.*
 import kotlin.math.*
-import kotlin.native.concurrent.*
 
-@ThreadLocal
 val tmpdir: String by lazy { Environment["TMPDIR"] ?: Environment["TEMP"] ?: Environment["TMP"] ?: "/tmp" }
-
-@ThreadLocal
 var customCwd: String? = null
 
-@ThreadLocal
-val nativeCwd by lazy { StandardPaths.cwd }
+val nativeCwd get() = StandardPaths.cwd
 val cwd: String get() = customCwd ?: nativeCwd
 
-//@ThreadLocal
 //val cwdVfs: VfsFile by lazy { DynamicRootVfs(rootLocalVfsNative) { cwd } }
 val cwdVfs: VfsFile get() = rootLocalVfsNative[cwd]
 
-@ThreadLocal
 actual val standardVfs: StandardVfs = object : StandardVfs() {
-    override val resourcesVfs: VfsFile by lazy { applicationDataVfs.jail() }
+    override val resourcesVfs: VfsFile get() = applicationDataVfs.jail()
     override val rootLocalVfs: VfsFile get() = applicationDataVfs
 }
 
-@ThreadLocal
 actual val cacheVfs: VfsFile by lazy { MemoryVfs() }
-
-@ThreadLocal
 actual val tempVfs: VfsFile by lazy { jailedLocalVfs(tmpdir) }
 
 actual val applicationVfs: VfsFile get() = rootLocalVfsNative[customCwd ?: StandardPaths.resourcesFolder]
@@ -45,10 +35,7 @@ actual val applicationDataVfs: VfsFile get() = applicationVfs
 actual val externalStorageVfs: VfsFile get() = applicationVfs
 actual val userHomeVfs: VfsFile get() = jailedLocalVfs(StandardPaths.userHome)
 
-@ThreadLocal
 val rootLocalVfsNative by lazy { LocalVfsNative(async = true) }
-
-@ThreadLocal
 val rootLocalVfsNativeSync by lazy { LocalVfsNative(async = false) }
 
 actual fun localVfs(path: String, async: Boolean): VfsFile =

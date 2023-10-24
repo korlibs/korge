@@ -12,7 +12,6 @@ import korlibs.math.geom.ds.*
 import korlibs.math.geom.shape.*
 import korlibs.math.geom.trapezoid.*
 import korlibs.number.*
-import kotlin.native.concurrent.*
 
 interface IVectorPath : VectorBuilder {
     fun toSvgString(): String
@@ -536,10 +535,10 @@ fun VectorPath.applyTransform(m: Matrix): VectorPath = when {
     else -> this
 }
 
-@ThreadLocal private var VectorPath._bvhCurvesCacheVersion by extraProperty { -1 }
-@ThreadLocal private var VectorPath._bvhCurvesCache by extraProperty<BVH2D<Bezier>?> { null }
-@ThreadLocal private var VectorPath._curvesCacheVersion by extraProperty { -1 }
-@ThreadLocal private var VectorPath._curvesCache by extraProperty<List<Curves>?> { null }
+private var VectorPath._bvhCurvesCacheVersion by extraProperty { -1 }
+private var VectorPath._bvhCurvesCache by extraProperty<BVH2D<Bezier>?> { null }
+private var VectorPath._curvesCacheVersion by extraProperty { -1 }
+private var VectorPath._curvesCache by extraProperty<List<Curves>?> { null }
 
 fun VectorPath.getBVHBeziers(): BVH2D<Bezier> {
     if (_bvhCurvesCacheVersion != version) {

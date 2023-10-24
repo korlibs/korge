@@ -14,7 +14,6 @@ import kotlin.coroutines.*
 import kotlin.native.concurrent.*
 import kotlin.coroutines.coroutineContext as coroutineContextKt
 
-@ThreadLocal
 expect val nativeSoundProvider: NativeSoundProvider
 
 open class LazyNativeSoundProvider(val gen: () -> NativeSoundProvider) : NativeSoundProvider() {

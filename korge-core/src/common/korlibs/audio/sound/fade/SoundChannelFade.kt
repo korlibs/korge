@@ -7,14 +7,11 @@ import korlibs.math.*
 import korlibs.math.interpolation.*
 import korlibs.time.*
 import kotlinx.coroutines.*
-import kotlin.native.concurrent.*
 
 val DEFAULT_FADE_TIME get() = 0.5.seconds
 val DEFAULT_FADE_EASING get() = Easing.LINEAR
 
-@ThreadLocal
 private val SoundChannel.fadeThread by extraProperty { AsyncThread() }
-@ThreadLocal
 private var SoundChannel.changing by extraProperty { false }
 private inline fun <T> SoundChannel.changing(block: () -> T): T {
     changing = true

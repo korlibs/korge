@@ -7,7 +7,6 @@ import korlibs.render.*
 import korlibs.time.*
 import kotlin.native.concurrent.*
 
-@ThreadLocal
 val Views.hapticFeedback by extraPropertyThis { HapticFeedback(this) }
 
 // https://developer.apple.com/design/human-interface-guidelines/ios/user-interaction/haptics/

@@ -33,7 +33,6 @@ var UIFocusable.focused: Boolean
         UIFocusManager.Scope.focusView.stage?.uiFocusManager?.uiFocusedView = if (value) this else null
     }
 
-@ThreadLocal
 private var View._focusable: UIFocusable? by extraProperty { null }
 
 var View.focusable: UIFocusable?

@@ -2,10 +2,9 @@
 
 package korlibs.datastructure.random
 
-import kotlin.native.concurrent.ThreadLocal
-import kotlin.random.Random
+import korlibs.datastructure.lock.*
+import kotlin.random.*
 
-@ThreadLocal
 private val LocalFastRandom = FastRandom(Random.Default.nextLong())
 
 // Copy of XorWowRandom from the Kotlin Standard library but optimizing some methods
@@ -19,7 +18,8 @@ open class FastRandom private constructor(
 ) : Random() {
     companion object : FastRandom() {
         val Default get() = LocalFastRandom
-        override fun nextBits(bitCount: Int): Int = LocalFastRandom.nextBits(bitCount)
+        private val lock = Lock()
+        override fun nextBits(bitCount: Int): Int = lock { LocalFastRandom.nextBits(bitCount) }
     }
 
     private constructor(seed1: Int, seed2: Int) :

@@ -30,12 +30,30 @@ expect val iosTvosTools: IosTvosToolsImpl
 open class IosTvosToolsImpl {
     open fun applicationDidFinishLaunching(app: UIApplication, window: UIWindow) {
         //window?.windowScene = windowScene
+        initializeIosResourcesPath()
     }
 
     open fun viewDidLoad(view: GLKView?) {
+        initializeIosResourcesPath()
     }
 
     open fun hapticFeedbackGenerate(kind: HapticFeedbackKind) {
+    }
+}
+
+
+private fun initializeIosResourcesPath() {
+    if (korlibs.io.file.std.customCwd != null) return
+    val path = nativeCwdOrNull()
+    if (path != null) {
+        val rpath = "$path/include/app/resources"
+        if (NSFileManager().contentsOfDirectoryAtPath(rpath, null) != null) {
+            println("glkView: Switching CWD to $rpath...")
+            NSFileManager.defaultManager.changeCurrentDirectoryPath(rpath)
+            korlibs.io.file.std.customCwd = rpath
+        } else {
+            println("glkView: NOT switching CWD ($path doesn't exists)...")
+        }
     }
 }
 
@@ -235,27 +253,22 @@ class MyGLKViewController(
 
     override fun viewWillDisappear(animated: Boolean) {
         eventLoopThread?.threadSuggestRunning = false
+        eventLoopThread = null
     }
 
     override fun glkView(view: GLKView, drawInRect: CValue<CGRect>) {
         if (!initialized) {
             initialized = true
-            val path = nativeCwdOrNull()
-            if (path != null) {
-                val rpath = "$path/include/app/resources"
-                if (NSFileManager().contentsOfDirectoryAtPath(rpath, null) != null) {
-                    println("glkView: Switching CWD to $rpath...")
-                    NSFileManager.defaultManager.changeCurrentDirectoryPath(rpath)
-                    korlibs.io.file.std.customCwd = rpath
-                } else {
-                    println("glkView: NOT switching CWD ($path doesn't exists)...")
-                }
-            }
+            initializeIosResourcesPath()
             //self.lastTouchId = 0;
 
+            logger.info { "gameWindow.onUpdateEvent" }
+            gameWindow.onUpdateEvent {
+                darwinGamePad.updateGamepads(gameWindow)
+            }
             logger.info { "dispatchInitEvent" }
-            gameWindow.dispatchInitEvent()
             gameWindow.queueSuspend {
+                gameWindow.dispatchInitEvent()
                 logger.info { "Executing entry..." }
                 this.entry()
             }
@@ -264,8 +277,8 @@ class MyGLKViewController(
         // Context changed!
         val currentContext = EAGLContext.currentContext()
         if (myContext != currentContext) {
-            logger.info {"myContext = $myContext" }
-            logger.info {"currentContext = $currentContext" }
+            logger.info { "myContext = $myContext" }
+            logger.info { "currentContext = $currentContext" }
             myContext = currentContext
             gameWindow.ag.contextLost()
         }
@@ -279,10 +292,10 @@ class MyGLKViewController(
             gameWindow.dispatchReshapeEvent(0, 0, width, height)
         }
 
-        darwinGamePad.updateGamepads(gameWindow)
-        if (gameWindow.continuousRenderMode.shouldRender()) {
-            gameWindow.dispatchRenderEvent()
-        }
+        //if (gameWindow.continuousRenderMode.shouldRender()) {
+        //    gameWindow.dispatchRenderEvent()
+        //}
+        gameWindow.dispatchRenderEvent()
     }
 
     override fun didReceiveMemoryWarning() {

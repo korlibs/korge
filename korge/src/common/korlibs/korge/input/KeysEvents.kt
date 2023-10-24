@@ -143,7 +143,6 @@ class KeysEvents(val view: View) : Closeable {
     }
 }
 
-@ThreadLocal
 val View.keys: KeysEvents by Extra.PropertyThis<View, KeysEvents> { KeysEvents(this) }
 
 inline fun View.newKeys(callback: KeysEvents.() -> Unit): KeysEvents = KeysEvents(this).also {

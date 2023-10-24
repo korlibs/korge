@@ -4,7 +4,6 @@ import korlibs.datastructure.*
 import korlibs.korge.render.*
 import korlibs.korge.view.*
 import korlibs.math.*
-import kotlin.native.concurrent.*
 
 /**
  * An optional [Filter] attached to this view.
@@ -40,7 +39,6 @@ class ViewRenderPhaseFilter(var filter: Filter? = null) : ViewRenderPhase {
 }
 
 /** Usually a value between [0.0, 1.0] */
-@ThreadLocal
 var View.filterScale: Double by extraPropertyThis(transform = { Filter.discretizeFilterScale(it) }) { 1.0 }
 
 //internal const val VIEW_FILTER_TRANSPARENT_EDGE = true

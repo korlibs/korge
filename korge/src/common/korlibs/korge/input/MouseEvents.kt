@@ -636,7 +636,6 @@ fun MouseEvents.multiClick(count: Int, callback: (MouseEvents) -> Unit): Closeab
     }
 }
 
-@ThreadLocal // @TODO: Is this required?
 var View.cursor: ICursor? by extraProperty { null }
 
 //    get() = mouse.cursor
