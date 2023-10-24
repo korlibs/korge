@@ -236,6 +236,25 @@ public fun FloatArray.lastIndexOf(sub: FloatArray, starting: Int = 0): Int = arr
 public fun DoubleArray.lastIndexOf(sub: DoubleArray, starting: Int = 0): Int = array_lastIndexOf(starting, size, sub.size) { n, m -> this[n] == sub[m] }
 public fun <T> Array<T>.lastIndexOf(sub: Array<T>, starting: Int = 0): Int = array_lastIndexOf(starting, size, sub.size) { n, m -> this[n] == sub[m] }
 
+public inline fun <T> arraycopyStride(src: (Int) -> T, srcPos: Int, srcStride: Int, dst: (Int, T) -> Unit, dstPos: Int, dstStride: Int, size: Int) {
+    for (n in 0 until size) dst(dstPos + dstStride * n, src(srcPos + srcStride * n))
+}
+
+public fun arraycopyStride(src: ByteArray, srcPos: Int, srcStride: Int, dst: ByteArray, dstPos: Int, dstStride: Int, size: Int) {
+    for (n in 0 until size) dst[dstPos + dstStride * n] = src[srcPos + srcStride * n]
+}
+
+public fun arraycopyStride(src: ShortArray, srcPos: Int, srcStride: Int, dst: ShortArray, dstPos: Int, dstStride: Int, size: Int) {
+    for (n in 0 until size) dst[dstPos + dstStride * n] = src[srcPos + srcStride * n]
+}
+
+public fun arraycopyStride(src: IntArray, srcPos: Int, srcStride: Int, dst: IntArray, dstPos: Int, dstStride: Int, size: Int) {
+    for (n in 0 until size) dst[dstPos + dstStride * n] = src[srcPos + srcStride * n]
+}
+
+public fun arraycopyStride(src: FloatArray, srcPos: Int, srcStride: Int, dst: FloatArray, dstPos: Int, dstStride: Int, size: Int) {
+    for (n in 0 until size) dst[dstPos + dstStride * n] = src[srcPos + srcStride * n]
+}
 
 public fun arrayinterleave(
     out: ByteArray, outPos: Int,
@@ -349,3 +368,22 @@ public inline class FloatArrayFromIntArray(public val base: IntArray) {
 public fun IntArray.asFloatArray(): FloatArrayFromIntArray = FloatArrayFromIntArray(this)
 /** Gets the underlying array of [this] */
 public fun FloatArrayFromIntArray.asIntArray(): IntArray = base
+
+internal inline fun <T> getSampledGeneric(index: Float, get: (Int) -> T, scale: (T, Float) -> Float, convert: (Float) -> T, unit: Unit = Unit): T {
+    val index0 = index.toInt()
+    val v0 = get(index0)
+    if (index0.toFloat() == index) return v0
+    val v1 = get(index0 + 1)
+    val ratio = index % 1f
+    val o0 = scale(v0, 1f - ratio)
+    val o1 = scale(v1, ratio)
+    return convert(o0 + o1)
+}
+
+
+fun ByteArray.getSampled(index: Float): Byte = getSampledGeneric(index, get = { this[it] }, scale = { value, scale -> value * scale }, convert = { it.toInt().toByte() })
+fun UByteArray.getSampled(index: Float): UByte = getSampledGeneric(index, get = { this[it] }, scale = { value, scale -> value.toInt() * scale }, convert = { it.toInt().toUByte() })
+fun ShortArray.getSampled(index: Float): Short = getSampledGeneric(index, get = { this[it] }, scale = { value, scale -> value * scale }, convert = { it.toInt().toShort() })
+fun UShortArray.getSampled(index: Float): UShort = getSampledGeneric(index, get = { this[it] }, scale = { value, scale -> value.toInt() * scale }, convert = { it.toInt().toUShort() })
+fun CharArray.getSampled(index: Float): Char = getSampledGeneric(index, get = { this[it] }, scale = { value, scale -> value.toInt() * scale }, convert = { it.toInt().toChar() })
+fun FloatArray.getSampled(index: Float): Float = getSampledGeneric(index, get = { this[it] }, scale = { value, scale -> value * scale }, convert = { it })
