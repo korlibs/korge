@@ -54,7 +54,6 @@ data class V2<V>(
         "V2(key=${key.name}, range=[$initial-$end], startTime=$startTime, duration=$duration)"
 }
 
-@ThreadLocal
 private object V2CallbackSupport {
     var dummy: Unit = Unit
 }

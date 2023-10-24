@@ -10,7 +10,6 @@ import korlibs.korge.view.*
 import korlibs.math.*
 import korlibs.math.geom.*
 import kotlin.math.*
-import kotlin.native.concurrent.*
 
 /**
  * Interface for [View] filters.
@@ -188,5 +187,4 @@ fun Filter.renderToTextureWithBorderUnsafe(
 fun Filter.expandedBorderRectangle(inp: Rectangle): Rectangle =
     inp.expanded(getBorder(inp.width.toIntCeil(), inp.height.toIntCeil()))
 
-@ThreadLocal
 val RenderContext.renderToTextureResultPool by Extra.Property { Pool({ it.dispose() }) { RenderToTextureResult() } }

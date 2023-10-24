@@ -16,7 +16,6 @@ import kotlin.collections.component1
 import kotlin.collections.component2
 import kotlin.collections.set
 import kotlin.coroutines.*
-import kotlin.native.concurrent.*
 
 internal fun createNativeSystemFontProvider(coroutineContext: CoroutineContext, platform: Platform = Platform): NativeSystemFontProvider = when {
     platform.runtime.isJs -> FallbackNativeSystemFontProvider(DefaultTtfFont)
@@ -33,7 +32,6 @@ internal fun createNativeSystemFontProvider(coroutineContext: CoroutineContext, 
     }
 }
 
-@ThreadLocal
 var _nativeSystemFontProvider: NativeSystemFontProvider? = null
 fun nativeSystemFontProvider(coroutineContext: CoroutineContext): NativeSystemFontProvider =
     cacheLazyNullable(::_nativeSystemFontProvider) { createNativeSystemFontProvider(coroutineContext) }

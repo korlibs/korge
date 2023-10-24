@@ -1,9 +1,7 @@
 package korlibs.image.font
 
 import korlibs.datastructure.lock.*
-import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.coroutineContext
-import kotlin.native.concurrent.ThreadLocal
+import kotlin.coroutines.*
 
 interface FontRegistry {
     operator fun get(name: String?): Font
@@ -14,7 +12,6 @@ interface FontRegistry {
 
 // TODO Can't use an object because that would be included in the JS output
 
-@ThreadLocal
 private var SystemFontRegistryOrNull: DefaultFontRegistry? = null
 
 fun SystemFontRegistry(coroutineContext: CoroutineContext): DefaultFontRegistry {

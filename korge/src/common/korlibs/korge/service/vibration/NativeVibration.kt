@@ -5,7 +5,6 @@ import korlibs.time.TimeSpan
 import korlibs.korge.view.Views
 import kotlin.native.concurrent.ThreadLocal
 
-@ThreadLocal
 val Views.vibration by extraPropertyThis { NativeVibration(this) }
 
 /**

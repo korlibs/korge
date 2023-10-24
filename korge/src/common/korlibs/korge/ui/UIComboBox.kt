@@ -28,7 +28,6 @@ inline fun <T> Container.uiComboBox(
     block: @ViewDslMarker UIComboBox<T>.() -> Unit = {}
 ) = UIComboBox(size, selectedIndex, items).addTo(this).apply(block)
 
-@ThreadLocal
 var Views.openedComboBox by Extra.Property<UIComboBox<*>?>() { null }
 
 open class UIComboBox<T>(

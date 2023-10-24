@@ -411,12 +411,12 @@ class CSSReader(val tokens: ListReader<CSS.Companion.Token>) {
     }
 }
 
-@ThreadLocal val CSS.Expression.color: RGBA by extraPropertyThis { CSS.parseColor(exprStr) }
-@ThreadLocal val CSS.Expression.ratio: Ratio by extraPropertyThis { CSS.parseRatio(exprStr) }
-@ThreadLocal val CSS.Expression.matrix: Matrix by extraPropertyThis { CSS.parseTransform(exprStr) }
-@ThreadLocal val CSS.Expression.transform: MatrixTransform by extraPropertyThis { matrix.immutable.decompose() }
-@ThreadLocal val CSS.Expression.easing: Easing by extraPropertyThis { CSS.parseEasing(exprStr) }
-@ThreadLocal val CSS.Declarations.animation: CSS.Animation? by extraPropertyThis {
+val CSS.Expression.color: RGBA by extraPropertyThis { CSS.parseColor(exprStr) }
+val CSS.Expression.ratio: Ratio by extraPropertyThis { CSS.parseRatio(exprStr) }
+val CSS.Expression.matrix: Matrix by extraPropertyThis { CSS.parseTransform(exprStr) }
+val CSS.Expression.transform: MatrixTransform by extraPropertyThis { matrix.immutable.decompose() }
+val CSS.Expression.easing: Easing by extraPropertyThis { CSS.parseEasing(exprStr) }
+val CSS.Declarations.animation: CSS.Animation? by extraPropertyThis {
     this["animation"]?.let { CSS.parseAnimation(it.exprStr) }
 }
 

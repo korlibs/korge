@@ -7,7 +7,6 @@ import korlibs.korge.view.Views
 import korlibs.render.*
 import kotlin.native.concurrent.ThreadLocal
 
-@ThreadLocal
 val Views.hapticFeedback by extraPropertyThis { HapticFeedback(this) }
 
 typealias HapticFeedbackKind = GameWindow.HapticFeedbackKind

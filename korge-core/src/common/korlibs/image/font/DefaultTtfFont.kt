@@ -1,10 +1,9 @@
 package korlibs.image.font
 
-import korlibs.time.*
+import korlibs.encoding.*
 import korlibs.io.compression.*
 import korlibs.io.compression.deflate.*
-import korlibs.encoding.*
-import kotlin.native.concurrent.*
+import korlibs.time.*
 
 // Sani Trixie Sans
 // 1.6.1 - December 3, 2014
@@ -18,7 +17,6 @@ private fun DefaultTtfFontBytes() = "eNq0kwO8HFsSxv/Vmr4T20k/xZzYtu1J7maSp6vYtm3
 
 // Do not use by lazy because that would be included in JS (because global property delegates are included in the output because they can have side effects)
 
-@ThreadLocal
 private var DefaultTtfFontOrNull: TtfFont? = null
 
 val DefaultTtfFont: TtfFont get() {
