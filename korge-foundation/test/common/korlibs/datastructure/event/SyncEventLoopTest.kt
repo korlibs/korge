@@ -26,7 +26,7 @@ class SyncEventLoopTest {
             }
             ep.setImmediate { log("hello") }
             ep.setImmediate { log("world") }
-            ep.queueFirst { log("hi, ") }
+            ep.setImmediateFirst { log("hi, ") }
             if (NativeThread.isSupported) {
                 nativeThread {
                     NativeThread.sleepExact(10.milliseconds)
