@@ -1,6 +1,8 @@
 package korlibs.logger
 
-import java.util.logging.Level
+import korlibs.logger.Console.color
+import korlibs.time.*
+import java.util.logging.*
 
 actual object Console : BaseConsole() {
     override fun logInternal(kind: Kind, vararg msg: Any?) {
@@ -24,10 +26,31 @@ internal actual val miniEnvironmentVariables: Map<String, String> by lazy { Syst
 actual object DefaultLogOutput : Logger.Output {
     override fun output(logger: Logger, level: Logger.Level, msg: Any?) {
         if (logger.nativeLogger == null) {
-            logger.nativeLogger = java.util.logging.Logger.getLogger(logger.name)
+            logger.nativeLogger = java.util.logging.Logger.getLogger(logger.name).also { nativeLogger ->
+                nativeLogger.useParentHandlers = true
+                if (nativeLogger.handlers.isEmpty()) {
+                    nativeLogger.addHandler(object : Handler() {
+                        override fun publish(record: LogRecord) {
+                            val out = if (record.level.intValue() >= Level.WARNING.intValue()) System.err else System.out
+                            val color = when {
+                                record.level.intValue() >= Level.SEVERE.intValue() -> AnsiEscape.Color.RED
+                                record.level.intValue() >= Level.WARNING.intValue() -> AnsiEscape.Color.YELLOW
+                                else -> AnsiEscape.Color.WHITE
+                            }
+                            val time = DateTime.fromUnixMillis(record.millis).format(DateFormat.FORMAT2)
+                            out.println("$time[${Thread.currentThread()}]: ${record.level}: ${record.loggerName} - ${record.message}".color(color))
+                        }
+                        override fun flush() = Unit
+                        override fun close() = Unit
+                    })
+                }
+            }
         }
+        val nativeLogger = logger.nativeLogger as java.util.logging.Logger
+        nativeLogger.level = logger.level.toJava()
+        //println("logger.level=${logger.level}, nativeLogger.level=${nativeLogger.level}, level=$level")
         //println("logger=$logger, level=$level, msg=$msg")
-        (logger.nativeLogger as java.util.logging.Logger).log(level.toJava(), msg.toString())
+        nativeLogger.log(level.toJava(), msg.toString())
     }
 }
 
