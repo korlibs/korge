@@ -99,38 +99,36 @@ fun Project.configureErrorableEsbuild() {
             else -> browserPrepareEsbuildRelease
         }
 
-        //for (run in listOf(false, true)) {
-        for (run in listOf(false)) {
-            val runSuffix = if (run) "Run" else ""
+        // browserDebugEsbuild
+        // browserReleaseEsbuild
+        tasks.createThis<Exec>("browser${debugPrefix}Esbuild") {
+            group = "kotlin browser"
+            val compileExecutableKotlinJs = tasks.getByName("compile${productionInfix}ExecutableKotlinJs") as KotlinJsIrLink
+            dependsOn(browserPrepareEsbuild)
+            dependsOn(compileExecutableKotlinJs)
 
-            // browserDebugEsbuild
-            // browserReleaseEsbuild
-            tasks.createThis<Exec>("browser${debugPrefix}Esbuild${runSuffix}") {
-                group = "kotlin browser"
-                dependsOn(browserPrepareEsbuild)
-
-                val compileExecutableKotlinJs = tasks.getByName("compile${productionInfix}ExecutableKotlinJs") as KotlinJsIrLink
-                //println("compileExecutableKotlinJs:" + compileExecutableKotlinJs::class)
-                val jsPath = compileExecutableKotlinJs.outputFileProperty.get()
-
-                val output = File(wwwFolder, "${project.name}.js")
-                inputs.file(jsPath)
-                outputs.file(output)
-                environment("PATH", ENV_PATH)
-                commandLine(ArrayList<Any>().apply {
-                    addAll(esbuildCmd)
-                    //add("--watch",)
-                    add("--bundle")
-                    if (!debug) {
-                        add("--minify")
-                        add("--sourcemap=external")
-                    }
-                    add(jsPath)
-                    add("--outfile=$output")
-                    // @TODO: Close this command on CTRL+C
-                    //if (run) add("--servedir=$wwwFolder")
-                })
-            }
+            //println("compileExecutableKotlinJs:" + compileExecutableKotlinJs::class)
+            val jsPath = compileExecutableKotlinJs.outputFileProperty.get()
+            val output = File(wwwFolder, "${project.name}.js")
+            //println("jsPath=$jsPath")
+            //println("jsPath.parentFile=${jsPath.parentFile}")
+            //println("outputs=${compileExecutableKotlinJs.outputs.files.toList()}")
+            inputs.files(compileExecutableKotlinJs.outputs.files)
+            outputs.file(output)
+            environment("PATH", ENV_PATH)
+            commandLine(buildList {
+                addAll(esbuildCmd)
+                //add("--watch",)
+                add("--bundle")
+                if (!debug) {
+                    add("--minify")
+                    add("--sourcemap=external")
+                }
+                add(jsPath)
+                add("--outfile=$output")
+                // @TODO: Close this command on CTRL+C
+                //if (run) add("--servedir=$wwwFolder")
+            })
         }
     }
 }
