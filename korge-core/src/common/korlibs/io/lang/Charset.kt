@@ -1,12 +1,11 @@
 package korlibs.io.lang
 
-import korlibs.datastructure.IntIntMap
-import korlibs.datastructure.iterators.fastForEach
-import korlibs.datastructure.lock.NonRecursiveLock
+import korlibs.datastructure.*
+import korlibs.datastructure.iterators.*
+import korlibs.datastructure.lock.*
 import korlibs.memory.*
-import kotlin.math.min
-import kotlin.native.concurrent.SharedImmutable
-import kotlin.native.concurrent.ThreadLocal
+import kotlin.math.*
+import kotlin.native.concurrent.*
 
 fun interface CharsetProvider {
     operator fun invoke(normalizedName: String, name: String): Charset?
@@ -14,9 +13,7 @@ fun interface CharsetProvider {
 
 expect val platformCharsetProvider: CharsetProvider
 
-@ThreadLocal
 private val CHARSET_PROVIDERS = arrayListOf<CharsetProvider>()
-@ThreadLocal
 private val CHARSET_PROVIDERS_LOCK = NonRecursiveLock()
 
 

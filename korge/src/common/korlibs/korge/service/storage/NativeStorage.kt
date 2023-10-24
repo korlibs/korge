@@ -5,7 +5,6 @@ import korlibs.datastructure.lock.*
 import korlibs.io.serialization.json.*
 import korlibs.korge.view.*
 import kotlin.collections.*
-import kotlin.native.concurrent.*
 
 /** Cross-platform way of synchronously storing small data */
 //expect fun NativeStorage(views: Views): IStorageWithKeys
@@ -18,7 +17,6 @@ expect class NativeStorage(views: Views) : IStorageWithKeys {
 	override fun removeAll()
 }
 
-@ThreadLocal
 val Views.storage: NativeStorage by Extra.PropertyThis<Views, NativeStorage> { NativeStorage(this) }
 
 val ViewsContainer.storage: NativeStorage get() = this.views.storage

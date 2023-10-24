@@ -3,7 +3,6 @@ package korlibs.io.lang
 import korlibs.datastructure.*
 import korlibs.platform.*
 import kotlin.collections.set
-import kotlin.native.concurrent.*
 
 internal expect object EnvironmentInternal {
 	// Uses querystring on JS/Browser, and proper env vars in the rest
@@ -12,7 +11,6 @@ internal expect object EnvironmentInternal {
 	fun getAll(): Map<String, String>
 }
 
-@ThreadLocal
 private var customEnvironments: CaseInsensitiveStringMap<String>? = null
 
 interface Environment {

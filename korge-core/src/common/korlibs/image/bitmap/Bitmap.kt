@@ -37,7 +37,6 @@ abstract class Bitmap(
     //override fun getOrNull() = this
     //override suspend fun get() = this
 
-    //@ThreadLocal
     protected val tempInts: IntArray by lazy { IntArray(width * 2) }
     protected val tempRgba: RgbaArray get() = RgbaArray(tempInts)
 

@@ -257,7 +257,5 @@ object KRA : ImageFormat("kra") {
 
 }
 
-@ThreadLocal
 var ImageDecodingProps.kritaLoadLayers by extraProperty { true }
-@ThreadLocal
 var ImageDecodingProps.kritaPartialImageLayers by extraProperty { false }

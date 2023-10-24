@@ -45,10 +45,7 @@ actual val applicationDataVfs: VfsFile get() = applicationVfs
 actual val externalStorageVfs: VfsFile get() = applicationVfs
 actual val userHomeVfs: VfsFile get() = jailedLocalVfs(StandardPaths.userHome)
 
-@ThreadLocal
 val rootLocalVfsNative by lazy { LocalVfsNative(async = true) }
-
-@ThreadLocal
 val rootLocalVfsNativeSync by lazy { LocalVfsNative(async = false) }
 
 actual fun localVfs(path: String, async: Boolean): VfsFile =

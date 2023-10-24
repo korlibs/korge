@@ -380,7 +380,6 @@ object KorteDefaultTags {
     )
 }
 
-@ThreadLocal
 var KorteTemplateConfig.debugPrintln by korteExtraProperty({ extra }) { { v: Any? -> println(v) } }
 
 object DefaultBlocks {

@@ -85,7 +85,6 @@ open class InvalidAudioFormatException(message: String) : RuntimeException(messa
 
 fun invalidAudioFormat(message: String = "invalid audio format"): Nothing = throw InvalidAudioFormatException(message)
 
-@ThreadLocal
 val defaultAudioFormats by lazy { standardAudioFormats() }
 
 class AudioFormats : AudioFormat() {

@@ -4,7 +4,6 @@ import korlibs.datastructure.*
 import korlibs.korge.view.*
 import kotlin.native.concurrent.*
 
-@ThreadLocal
 var Views.registerFilterSerialization: Boolean by Extra.Property { false }
 fun ViewsContainer.registerFilterSerialization() {
     if (views.registerFilterSerialization) return

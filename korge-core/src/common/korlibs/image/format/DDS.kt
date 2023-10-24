@@ -1,15 +1,8 @@
 package korlibs.image.format
 
-import korlibs.datastructure.Extra
-import korlibs.io.lang.invalidOp
-import korlibs.io.stream.SyncStream
-import korlibs.io.stream.openSync
-import korlibs.io.stream.readAll
-import korlibs.io.stream.readIntArrayLE
-import korlibs.io.stream.readS32LE
-import korlibs.io.stream.readStream
-import korlibs.io.stream.readString
-import kotlin.native.concurrent.ThreadLocal
+import korlibs.datastructure.*
+import korlibs.io.lang.*
+import korlibs.io.stream.*
 
 object DDS : ImageFormat("dds") {
 	override fun decodeHeader(s: SyncStream, props: ImageDecodingProps): ImageInfo? {
@@ -67,5 +60,4 @@ object DDS : ImageFormat("dds") {
 	}
 }
 
-@ThreadLocal
 private var ImageInfo.fourcc by Extra.Property { "    " }

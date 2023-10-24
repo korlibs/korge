@@ -52,7 +52,6 @@ open class ImageData constructor(
 
 data class ImageDataWithAtlas(val image: ImageData, val atlas: AtlasPacker.Result<ImageFrameLayer>)
 
-@ThreadLocal
 var ImageData.info: ImageInfo? by Extra.Property { null }
 
 //fun ImageData.packInAtlas(): ImageDataWithAtlas {

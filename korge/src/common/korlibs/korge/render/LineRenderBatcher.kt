@@ -17,7 +17,6 @@ import kotlin.native.concurrent.*
 
 /** Creates/gets a [LineRenderBatcher] associated to [this] [RenderContext] */
 @Deprecated("USe useDebugLineRenderContext instead")
-@ThreadLocal
 val RenderContext.debugLineRenderContext: LineRenderBatcher by Extra.PropertyThis<RenderContext, LineRenderBatcher> { LineRenderBatcher(this) }
 
 @Suppress("DEPRECATION")
