@@ -5,10 +5,18 @@ import korlibs.audio.internal.*
 import korlibs.io.file.*
 import korlibs.io.file.std.*
 import korlibs.io.lang.*
+import korlibs.memory.*
+import korlibs.platform.*
 import korlibs.time.*
-import kotlinx.coroutines.*
-import org.w3c.dom.*
 import kotlin.coroutines.*
+
+actual val nativeSoundProvider: NativeSoundProvider by lazy {
+    if (Platform.isJsBrowser) {
+        HtmlNativeSoundProvider()
+    } else {
+        DummyNativeSoundProvider
+    }
+}
 
 class HtmlNativeSoundProvider : NativeSoundProviderNew() {
     init {
@@ -19,103 +27,83 @@ class HtmlNativeSoundProvider : NativeSoundProviderNew() {
         return JsNewPlatformAudioOutput(coroutineContext, channels, frequency, gen)
     }
 
-	override suspend fun createSound(data: ByteArray, streaming: Boolean, props: AudioDecodingProps, name: String): Sound =
+    override suspend fun createSound(data: ByteArray, streaming: Boolean, props: AudioDecodingProps, name: String): Sound =
         AudioBufferSound(AudioBufferOrHTMLMediaElement(HtmlSimpleSound.loadSound(data)), "#bytes", coroutineContext, name)
 
-	override suspend fun createSound(vfs: Vfs, path: String, streaming: Boolean, props: AudioDecodingProps): Sound = when (vfs) {
-		is LocalVfs, is UrlVfs -> {
+    override suspend fun createSound(vfs: Vfs, path: String, streaming: Boolean, props: AudioDecodingProps): Sound = when (vfs) {
+        is LocalVfs, is UrlVfs -> {
             //println("createSound[1]")
-			val url = when (vfs) {
-				is LocalVfs -> path
-				is UrlVfs -> vfs.getFullUrl(path)
-				else -> invalidOp
-			}
+            val url = when (vfs) {
+                is LocalVfs -> path
+                is UrlVfs -> vfs.getFullUrl(path)
+                else -> invalidOp
+            }
             if (streaming) {
                 AudioBufferSound(AudioBufferOrHTMLMediaElement(HtmlSimpleSound.loadSoundBuffer(url)), url, coroutineContext)
                 //HtmlElementAudio(url)
             } else {
                 AudioBufferSound(AudioBufferOrHTMLMediaElement(HtmlSimpleSound.loadSound(url)), url, coroutineContext)
             }
-		}
-		else -> {
+        }
+        else -> {
             //println("createSound[2]")
-			super.createSound(vfs, path)
-		}
-	}
-}
-
-class HtmlElementAudio(
-    val audio: HTMLAudioElement,
-    coroutineContext: CoroutineContext,
-) : Sound(coroutineContext) {
-    override val length: TimeSpan get() = audio.duration.seconds
-
-    override suspend fun decode(maxSamples: Int): AudioData =
-        AudioBufferSound(AudioBufferOrHTMLMediaElement(HtmlSimpleSound.loadSound(audio.src)), audio.src, defaultCoroutineContext).decode()
-
-    companion object {
-        suspend operator fun invoke(url: String): HtmlElementAudio {
-            val audio = createAudioElement(url)
-            val promise = CompletableDeferred<Unit>()
-            audio.oncanplay = { promise.complete(Unit) }
-            audio.oncanplaythrough = { promise.complete(Unit) }
-            promise.await()
-            //HtmlSimpleSound.waitUnlocked()
-            return HtmlElementAudio(audio, coroutineContext)
+            super.createSound(vfs, path)
         }
     }
+}
 
-    override fun play(coroutineContext: CoroutineContext, params: PlaybackParameters): SoundChannel {
-        val audioCopy = audio.clone()
-        audioCopy.volume = params.volume
-        HtmlSimpleSound.callOnUnlocked {
-            audioCopy.play()
-        }
-        audioCopy.oncancel = {
-            params.onCancel?.invoke()
-        }
-        audioCopy.onended = {
-            params.onFinish?.invoke()
-        }
-        return object : SoundChannel(this@HtmlElementAudio) {
-            override var volume: Double
-                get() = audioCopy.volume
-                set(value) {
-                    audioCopy.volume = value
+class JsNewPlatformAudioOutput(
+    coroutineContext: CoroutineContext,
+    nchannels: Int,
+    frequency: Int,
+    gen: (AudioSamplesInterleaved) -> Unit
+) : NewPlatformAudioOutput(
+    coroutineContext, nchannels, frequency, gen
+) {
+    init {
+        nativeSoundProvider // Ensure it is created
+    }
+
+    var missingDataCount = 0
+    var nodeRunning = false
+    var node: ScriptProcessorNode? = null
+
+    private var startPromise: Cancellable? = null
+
+    override fun internalStart() {
+        if (nodeRunning) return
+        startPromise = HtmlSimpleSound.callOnUnlocked {
+            val ctx = HtmlSimpleSound.ctx
+            if (ctx != null) {
+                val bufferSize = 1024
+                val scale = (frequency / ctx.sampleRate).toFloat()
+                val samples = AudioSamplesInterleaved(channels, (bufferSize * scale).toInt())
+                node = ctx.createScriptProcessor(bufferSize, channels, channels)
+                //Console.log("sampleRate", ctx.sampleRate, "bufferSize", bufferSize, "totalSamples", samples.totalSamples, "scale", scale)
+                node?.onaudioprocess = { e ->
+                    genSafe(samples)
+                    val separated = samples.separated()
+                    for (ch in 0 until channels) {
+                        val outCh = e.outputBuffer.getChannelData(ch)
+                        val data = separated[ch]
+                        for (n in 0 until bufferSize) {
+                            outCh[n] = SampleConvert.shortToFloat(data.getSampled(n * scale))
+                        }
+                    }
+
                 }
-
-            override var pitch: Double
-                get() = 1.0
-                set(value) {}
-
-            override var panning: Double
-                get() = 0.0
-                set(value) {}
-
-            override val total: TimeSpan get() = audioCopy.duration.seconds
-            override var current: TimeSpan
-                get() = audioCopy.currentTime.seconds
-                set(value) { audioCopy.currentTime = value.seconds }
-
-            override val state: SoundChannelState get() = when {
-                audioCopy.paused -> SoundChannelState.PAUSED
-                audioCopy.ended -> SoundChannelState.STOPPED
-                else -> SoundChannelState.PLAYING
-            }
-
-            override fun pause() {
-                audioCopy.pause()
-            }
-
-            override fun resume() {
-                audioCopy.play()
-            }
-
-            override fun stop() {
-                audioCopy.pause()
-                current = 0.seconds
+                this.node?.connect(ctx.destination)
             }
         }
+        nodeRunning = true
+        missingDataCount = 0
+    }
+
+    override fun internalStop() {
+        if (!nodeRunning) return
+        startPromise?.cancel()
+        this.node?.disconnect()
+        nodeRunning = false
     }
 }
 
