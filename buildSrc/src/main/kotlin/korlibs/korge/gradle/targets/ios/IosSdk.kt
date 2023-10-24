@@ -1,13 +1,11 @@
 package korlibs.korge.gradle.targets.ios
 
 import korlibs.korge.gradle.util.*
-import org.gradle.api.Project
-import java.io.ByteArrayInputStream
-import java.io.IOException
-import java.security.cert.CertificateFactory
-import java.security.cert.X509Certificate
+import org.gradle.api.*
+import java.io.*
+import java.security.cert.*
 import java.util.*
-import javax.security.auth.x500.X500Principal
+import javax.security.auth.x500.*
 
 val Project.iosSdkExt by projectExtension {
     IosSdk(this)
@@ -43,20 +41,37 @@ class IosSdk(val project: Project) {
     // https://gist.github.com/luckman212/ec52e9291f27bc39c2eecee07e7a9aa7
     fun appleGetDefaultDeveloperCertificateTeamId(): String? {
         @Throws(IOException::class)
-        fun execCmd(cmd: String?): String {
+        fun execCmd(vararg cmd: String?): String {
             return Runtime.getRuntime().exec(cmd).inputStream.reader().readText()
         }
 
-        val certB64 = execCmd("security find-certificate -p")
-            .replace("-----BEGIN CERTIFICATE-----", "")
-            .replace("-----END CERTIFICATE-----", "")
-            .lines()
-            .joinToString("")
+        fun certFromFilter(filter: String?): String? {
+            return execCmd(*buildList {
+                add("security")
+                add("find-certificate")
+                if (filter != null) {
+                    add("-c")
+                    add("Apple Development:")
+                }
+                add("-p")
+            }.toTypedArray())
+                .replace("-----BEGIN CERTIFICATE-----", "")
+                .replace("-----END CERTIFICATE-----", "")
+                .lines()
+                .joinToString("").trim().takeIf { it.isNotEmpty() }
+        }
+
+        val certB64 = certFromFilter("Apple Development:") ?: certFromFilter(null)
 
         val cert = CertificateFactory.getInstance("X.509").generateCertificate(ByteArrayInputStream(Base64.getDecoder().decode(certB64))) as X509Certificate
         val subjectStr = cert.subjectX500Principal.getName(X500Principal.RFC2253)
+        val teamId = Regex("OU=([^,]+)").find(subjectStr)?.groups?.get(1)?.value
 
-        return Regex("OU=(\\w+)").find(subjectStr)?.groups?.get(1)?.value
+        //println("CERT=$cert")
+        //println("subjectStr=$subjectStr")
+        //println("teamId=$teamId")
+
+        return teamId
     }
 
     fun appleGetDevices(os: String = "iOS"): List<IosDevice> {
