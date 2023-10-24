@@ -69,7 +69,7 @@ actual fun FFILibSym(lib: FFILib): FFILibSym {
 }
 
 class FFILibSymJS(val lib: FFILib) : FFILibSym {
-    val symbolsByName: Map<String, FFILib.FuncDelegate<*>> by lazy { lib.functions.associateBy { it.name } }
+    val symbolsByName: Map<String, FFILib.FuncDelegate<*>> by lazy { lib.functions.associateBy { it.bname } }
 
     val syms: dynamic by lazy {
         lib as FFILib
@@ -78,7 +78,7 @@ class FFILibSymJS(val lib: FFILib) : FFILibSym {
                 Deno.dlopen<dynamic>(
                     path, jsObject(
                         *lib.functions.map {
-                            it.name to it.type.funcToDenoDef()
+                            it.bname to it.type.funcToDenoDef()
                         }.toTypedArray()
                     )
                 ).symbols
@@ -178,6 +178,10 @@ actual class FFIArena actual constructor() {
     }
     actual fun clear(): Unit {
     }
+}
+
+actual fun <T> FFICreateProxyFunction(type: KType, handler: (args: Array<Any?>) -> Any?): T {
+    TODO()
 }
 
 actual typealias FFIPointer = DenoPointer

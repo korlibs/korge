@@ -17,7 +17,6 @@ dependencies {
     //add("jvmTestApi", "org.powermock:powermock-mockito-release-full:1.6.4")
     //add("jvmTestApi", "org.fuin:units4j:0.8.4")
     //add("jvmTestApi", "org.ow2.asm:asm:8.0.1")
-    add("jvmMainApi", libs.bundles.jna)
     add("commonMainApi", libs.kotlinx.coroutines.core)
     //add("commonMainApi", libs.kotlinx.atomicfu)
     //add("commonTestApi", project(":korge-test"))

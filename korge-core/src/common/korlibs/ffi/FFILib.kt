@@ -4,8 +4,13 @@ import korlibs.datastructure.*
 import korlibs.io.file.sync.*
 import korlibs.io.lang.*
 import korlibs.memory.*
+import kotlin.jvm.*
 import kotlin.properties.*
 import kotlin.reflect.*
+
+expect fun <T> FFICreateProxyFunction(type: KType, handler: (args: Array<Any?>) -> Any?): T
+
+inline fun <reified T> FFICreateProxyFunction(noinline handler: (args: Array<Any?>) -> Any?): T = FFICreateProxyFunction(typeOf<T>(), handler)
 
 expect class FFIPointer
 
@@ -68,6 +73,19 @@ fun FFIPointer.setFFIPointer(value: FFIPointer?, byteOffset: Int = 0) {
 
 fun FFIPointer.getFFIPointer(byteOffset: Int = 0): FFIPointer? =
     if (FFI_POINTER_SIZE == 8) CreateFFIPointer(getS64(byteOffset)) else CreateFFIPointer(getS32(byteOffset).toLong())
+
+@JvmInline
+value class FFIVarargs(val args: List<Any?>) {
+    constructor(vararg args: Any?) : this(args.toList())
+    override fun toString(): String = "FFIVarargs(${args.joinToString(", ")})"
+}
+
+interface FFICallback
+
+/** Might be 32-bit or 64-bit depending on the OS */
+class FFINativeLong(val value: Long) {
+
+}
 
 fun FFIPointer.getAlignedS16(offset: Int = 0): Short = getS16(offset * 2)
 fun FFIPointer.getAlignedS32(offset: Int = 0): Int = getS32(offset * 4)
@@ -191,14 +209,14 @@ open class FFILib(val paths: List<String>, val lazyCreate: Boolean = true) {
         }
     }
 
-    class FuncDelegate<T>(val base: FFILib, val name: String, val type: KType, val config: FFIFuncConfig) : ReadOnlyProperty<FFILib, T> {
+    class FuncDelegate<T>(val base: FFILib, val bname: String, val name: String, val type: KType, val config: FFIFuncConfig) : ReadOnlyProperty<FFILib, T> {
         val parts = extractTypeFunc(type)
         //val generics = type.arguments.map { it.type?.classifier }
         val params = parts.paramsClass
         val ret = parts.retClass
         var cached: T? = null
         override fun getValue(thisRef: FFILib, property: KProperty<*>): T {
-            if (cached == null) cached = base.sym.get(name, type)
+            if (cached == null) cached = base.sym.get(bname, type)
             return cached.fastCastTo()
         }
     }
@@ -207,7 +225,7 @@ open class FFILib(val paths: List<String>, val lazyCreate: Boolean = true) {
         operator fun provideDelegate(
             thisRef: FFILib,
             prop: KProperty<*>
-        ): ReadOnlyProperty<FFILib, T> = FuncDelegate<T>(thisRef, extraName ?: prop.name, type, config).also {
+        ): ReadOnlyProperty<FFILib, T> = FuncDelegate<T>(thisRef, prop.name, extraName ?: prop.name, type, config).also {
             thisRef.functions.add(it)
             if (!thisRef.lazyCreate) it.getValue(thisRef, prop)
         }

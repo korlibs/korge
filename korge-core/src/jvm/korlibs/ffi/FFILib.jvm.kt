@@ -16,6 +16,13 @@ actual fun FFILibSym(lib: FFILib): FFILibSym {
     return FFILibSymJVM(lib)
 }
 
+actual fun <T> FFICreateProxyFunction(type: KType, handler: (args: Array<Any?>) -> Any?): T = Proxy.newProxyInstance(
+    FFILibSym::class.java.classLoader,
+    arrayOf((type.classifier as KClass<*>).java)
+) { _, _, args ->
+    handler(args ?: arrayOf())
+} as T
+
 actual typealias FFIPointer = Pointer
 actual typealias FFIMemory = Memory
 
@@ -62,29 +69,34 @@ actual class FFIArena actual constructor() {
 }
 
 actual fun <T> FFIPointer.castToFunc(type: KType, config: FFIFuncConfig): T =
-    createJNAFunctionToPlainFunc(Function.getFunction(this), type, config)
+    createJNAFunctionToPlainFunc(Function.getFunction(this), type, config, null)
 
-fun <T : kotlin.Function<*>> createJNAFunctionToPlainFunc(func: Function, type: KType, config: FFIFuncConfig): T {
+fun <T : kotlin.Function<*>> createJNAFunctionToPlainFunc(func: Function?, type: KType, config: FFIFuncConfig, name: String?): T {
     val ftype = FFILib.extractTypeFunc(type)
+    var ret = ftype.retClass as KClass<*>
+    val isDeferred = ret == Deferred::class
+    if (isDeferred) {
+        ret = ftype.ret?.arguments?.first()?.type?.classifier as KClass<*>
+    }
 
     return Proxy.newProxyInstance(
         FFILibSymJVM::class.java.classLoader,
         arrayOf((type.classifier as KClass<*>).java)
     ) { proxy, method, args ->
-        val targs = (args ?: emptyArray()).map {
+        if (func == null) error("Function not available")
+        val inputArgs = args ?: emptyArray()
+        val targsl = ArrayList<Any?>(inputArgs.size)
+        for (it in inputArgs) {
             when (it) {
-                is FFIPointerArray -> it.data
-                is Buffer -> it.buffer
-                is String -> if (config.wideString) com.sun.jna.WString(it) else it
-                else -> it
+                is FFIVarargs -> targsl.addAll(it.args)
+                is FFIPointerArray -> targsl.add(it.data)
+                is Buffer -> targsl.add(it.buffer)
+                is String -> targsl.add(if (config.wideString) com.sun.jna.WString(it) else it)
+                else -> targsl.add(it)
             }
-        }.toTypedArray()
-
-        var ret = ftype.retClass
-        val isDeferred = ret == Deferred::class
-        if (isDeferred) {
-            ret = ftype.ret?.arguments?.first()?.type?.classifier
         }
+        val targs = targsl.toTypedArray()
+        //println("name=$name, targsl=$targsl")
 
         fun call(): Any? {
             return when (ret) {
@@ -93,6 +105,8 @@ fun <T : kotlin.Function<*>> createJNAFunctionToPlainFunc(func: Function, type: 
                 Float::class -> func.invokeFloat(targs)
                 Double::class -> func.invokeDouble(targs)
                 else -> func.invoke((ftype.retClass as KClass<*>).java, targs)
+            }.also {
+                //println("  -> ret=$it [${ret.simpleName}]")
             }
         }
 
@@ -103,17 +117,18 @@ fun <T : kotlin.Function<*>> createJNAFunctionToPlainFunc(func: Function, type: 
             }
         } else {
             call()
+        }.also {
+            //println("    -> $it")
         }
     } as T
 }
 
 inline fun <reified T : kotlin.Function<*>> createJNAFunctionToPlainFunc(func: Function, config: FFIFuncConfig): T =
-    createJNAFunctionToPlainFunc(func, typeOf<T>(), config)
+    createJNAFunctionToPlainFunc(func, typeOf<T>(), config, null)
 
 class FFILibSymJVM(val lib: FFILib) : FFILibSym {
     @OptIn(SyncIOAPI::class)
     val nlib by lazy {
-        lib as FFILib
         val resolvedPaths = listOf(LibraryResolver.resolve(*lib.paths.toTypedArray()))
         resolvedPaths.firstNotNullOfOrNull {
             NativeLibrary.getInstance(it)
@@ -121,14 +136,15 @@ class FFILibSymJVM(val lib: FFILib) : FFILibSym {
     }
 
     fun <T : kotlin.Function<*>> createFunction(funcName: String, type: KType, config: FFIFuncConfig): T {
-        val func: Function = nlib!!.getFunction(funcName) ?: error("Can't find function ${funcName}")
-        return createJNAFunctionToPlainFunc<T>(func, type, config)
+        val func = runCatching { nlib!!.getFunction(funcName) ?: error("Can't find function ${funcName}") }
+        func.exceptionOrNull()?.let { println("WARNING: ${it.message}") }
+        return createJNAFunctionToPlainFunc<T>(func.getOrNull(), type, config, funcName)
     }
 
     val functions: Map<String, kotlin.Function<*>> by lazy {
         lib.functions.associate { nfunc ->
             //val lib = NativeLibrary.getInstance("")
-            nfunc.name to createFunction(nfunc.name, nfunc.type, nfunc.config)
+            nfunc.bname to createFunction(nfunc.name, nfunc.type, nfunc.config)
         }
     }
 
