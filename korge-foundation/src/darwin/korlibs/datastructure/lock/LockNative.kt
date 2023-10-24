@@ -42,6 +42,8 @@ actual class Lock actual constructor() : BaseLock {
     }
 
     actual override fun notify(unit: Unit) {
+        check(locked.value) { "Must wait inside a synchronization block" }
+        if (current != pthread_self()) error("Must lock the notify thread")
         notified.value = true
     }
     actual override fun wait(time: TimeSpan): Boolean {
@@ -90,7 +92,7 @@ actual class NonRecursiveLock actual constructor() : BaseLock {
         notified.value = false
         unlock()
         try {
-            NativeThread.spinWhile { !notified.value && start.elapsedNow() < time }
+            NativeThread.sleepWhile { !notified.value && start.elapsedNow() < time }
         } finally {
             lock()
         }
