@@ -1,24 +1,28 @@
+@file:Suppress("PackageDirectoryMismatch")
 package korlibs.datastructure.thread
 
+import korlibs.datastructure.*
 import korlibs.time.*
 import kotlinx.cinterop.*
 import platform.Foundation.*
 import kotlin.native.concurrent.*
 import kotlin.native.runtime.*
 
-actual class NativeThread actual constructor(val code: () -> Unit) {
+actual class NativeThread actual constructor(val code: (NativeThread) -> Unit) : Extra by Extra.Mixin() {
     actual var isDaemon: Boolean = false
 
+    actual var threadSuggestRunning: Boolean = true
     var worker: Worker? = null
 
     actual var priority: Int = 0
     actual var name: String? = null
 
     actual fun start() {
+        threadSuggestRunning = true
         worker = Worker.start()
         worker?.executeAfter {
             try {
-                code()
+                code(this)
             } finally {
                 worker?.requestTermination()
                 worker = null
@@ -28,6 +32,7 @@ actual class NativeThread actual constructor(val code: () -> Unit) {
 
     actual fun interrupt() {
         // No operation
+        threadSuggestRunning = false
         worker = null
     }
 

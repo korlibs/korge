@@ -1,16 +1,20 @@
 package korlibs.datastructure.thread
 
+import korlibs.datastructure.*
 import korlibs.time.*
 import kotlin.time.*
 
-actual class NativeThread actual constructor(val code: () -> Unit) {
+actual class NativeThread actual constructor(val code: (NativeThread) -> Unit) : Extra by Extra.Mixin() {
     actual var isDaemon: Boolean = false
+    actual var threadSuggestRunning = true
 
     actual fun start() {
+        threadSuggestRunning = true
         TODO()
     }
 
     actual fun interrupt() {
+        threadSuggestRunning = false
         TODO()
     }
 

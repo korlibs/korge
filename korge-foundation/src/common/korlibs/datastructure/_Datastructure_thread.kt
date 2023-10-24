@@ -2,10 +2,11 @@
 
 package korlibs.datastructure.thread
 
+import korlibs.datastructure.*
 import korlibs.time.*
 import kotlin.time.*
 
-expect class NativeThread(code: () -> Unit) {
+expect class NativeThread(code: (NativeThread) -> Unit) : Extra {
     companion object {
         val isSupported: Boolean
         val currentThreadId: Long
@@ -15,6 +16,7 @@ expect class NativeThread(code: () -> Unit) {
         fun sleep(time: TimeSpan): Unit
         inline fun spinWhile(cond: () -> Boolean): Unit
     }
+    var threadSuggestRunning: Boolean
     var priority: Int
     var name: String?
     var isDaemon: Boolean
@@ -27,7 +29,7 @@ public fun nativeThread(
     isDaemon: Boolean = false,
     name: String? = null,
     priority: Int = -1,
-    block: () -> Unit
+    block: (NativeThread) -> Unit
 ): NativeThread {
     val thread = NativeThread(block)
     if (isDaemon) thread.isDaemon = true
@@ -58,4 +60,10 @@ fun NativeThread.Companion.sleepExact(time: TimeSpan) {
 
 fun NativeThread.Companion.sleepUntil(date: DateTime, exact: Boolean = true) {
     sleep(date - DateTime.now(), exact)
+}
+
+fun NativeThread.Companion.sleepWhile(cond: () -> Boolean) {
+    while (cond()) {
+        NativeThread.sleep(1.milliseconds)
+    }
 }
