@@ -5,6 +5,8 @@ import korlibs.platform.*
 import korlibs.time.*
 
 object JsEventLoop : BaseEventLoop() {
+    override var paused: Boolean = false
+
     override fun close() = Unit
         override fun setImmediate(task: () -> Unit) {
             jsGlobalThis.setTimeout({ task() }, 0)
