@@ -8,6 +8,8 @@ import kotlin.test.*
 class ThreadLocalTest {
     @Test
     fun test() {
+        if (!NativeThread.isSupported) return
+
         var n = 0
         val lock = Lock()
         val log = arrayListOf<String>()
