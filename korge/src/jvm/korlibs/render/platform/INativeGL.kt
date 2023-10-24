@@ -3,11 +3,11 @@
 package korlibs.render.platform
 
 import com.sun.jna.*
+import korlibs.ffi.*
 import korlibs.io.annotations.*
 import korlibs.io.lang.*
 import korlibs.io.time.*
 import korlibs.logger.*
-import korlibs.memory.dyn.*
 import korlibs.platform.Platform
 import korlibs.render.win32.*
 import java.io.*

@@ -8,11 +8,9 @@ import korlibs.image.format.*
 import korlibs.io.async.*
 import korlibs.io.util.*
 import korlibs.kgl.*
-import korlibs.memory.dyn.osx.*
 import korlibs.platform.Platform
 import korlibs.render.*
 import korlibs.render.platform.*
-import korlibs.render.platform.NativeLoad
 import java.nio.*
 import kotlin.coroutines.*
 import kotlin.system.*

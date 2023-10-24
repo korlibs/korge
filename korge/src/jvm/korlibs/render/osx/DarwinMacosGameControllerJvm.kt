@@ -1,7 +1,6 @@
 package korlibs.render.osx
 
 import korlibs.datastructure.iterators.*
-import korlibs.memory.dyn.osx.*
 import korlibs.event.*
 import korlibs.render.*
 import korlibs.io.annotations.*

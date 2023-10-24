@@ -7,10 +7,6 @@ import korlibs.graphics.gl.*
 import korlibs.io.dynamic.*
 import korlibs.kgl.*
 import korlibs.math.geom.*
-import korlibs.memory.dyn.osx.*
-import korlibs.memory.dyn.osx.CGFloat
-import korlibs.memory.dyn.osx.NSRect
-import korlibs.memory.dyn.osx.NativeName
 import korlibs.render.*
 import korlibs.render.platform.*
 import java.awt.*

@@ -1,12 +1,12 @@
 package korlibs.image.format
 
 import com.sun.jna.*
+import korlibs.ffi.osx.*
 import korlibs.image.awt.*
 import korlibs.image.color.*
 import korlibs.io.annotations.*
 import korlibs.io.file.*
 import korlibs.io.file.std.*
-import korlibs.memory.dyn.osx.*
 import korlibs.time.*
 import kotlinx.coroutines.*
 import java.awt.image.*
@@ -93,7 +93,7 @@ open class CoreGraphicsImageFormatProvider : AwtNativeImageFormatProvider() {
         }
     }
 
-    override suspend fun decodeHeaderInternal(data: ByteArray): ImageInfo = nsAutoreleasePool {
+    override suspend fun decodeHeaderInternal(data: ByteArray): ImageInfo = autoreleasePool {
         val cfdata = CoreFoundation.CFDataCreate(null, data, data.size)
         val imgSource = ImageIO.CGImageSourceCreateWithData(data = cfdata, options = null)
         val props = ImageIO.CGImageSourceCopyPropertiesAtIndex(imgSource, 0, null)
@@ -167,7 +167,7 @@ open class CoreGraphicsImageFormatProvider : AwtNativeImageFormatProvider() {
             return super.decodeInternal(data, props)
         }
 
-        return nsAutoreleasePool {
+        return autoreleasePool {
             //val p = Stopwatch()
             //println(p.getElapsedAndRestart())
 
@@ -231,3 +231,11 @@ open class CoreGraphicsImageFormatProvider : AwtNativeImageFormatProvider() {
     }
 }
 
+private inline fun <T> autoreleasePool(body: () -> T): T {
+    val autoreleasePool = if (Platform.isMac()) NSClass("NSAutoreleasePool").alloc().msgSendRef("init") else null
+    try {
+        return body()
+    } finally {
+        autoreleasePool?.msgSendVoid("drain")
+    }
+}
