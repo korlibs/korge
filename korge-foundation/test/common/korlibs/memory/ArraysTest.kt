@@ -1,7 +1,6 @@
 package korlibs.memory
 
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import kotlin.test.*
 
 class ArraysTest {
 
@@ -34,5 +33,19 @@ class ArraysTest {
 
         assertEquals(-1, bytes.indexOf(byteArrayOf(2, 3, 4, 5)))
         assertEquals(-1, bytes.lastIndexOf(byteArrayOf(2, 3, 4, 5)))
+    }
+
+    @Test
+    fun testGetSampled() {
+        val array = byteArrayOf(0, 127, 64)
+        assertEquals(0, array.getSampled(0f))
+        assertEquals(15, array.getSampled(.125f))
+        assertEquals(63, array.getSampled(.5f))
+        assertEquals(111, array.getSampled(.875f))
+        assertEquals(127, array.getSampled(1f))
+        assertEquals(119, array.getSampled(1.125f))
+        assertEquals(95, array.getSampled(1.5f))
+        assertEquals(71, array.getSampled(1.875f))
+        assertEquals(64, array.getSampled(2f))
     }
 }
