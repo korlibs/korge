@@ -2,22 +2,21 @@ package korlibs.audio.sound
 
 //import mystdio.*
 import cnames.structs.OpaqueAudioQueue
+import korlibs.memory.*
 import kotlinx.cinterop.*
 import kotlinx.cinterop.COpaquePointer
 import kotlinx.cinterop.ShortVar
 import kotlinx.cinterop.convert
-import kotlinx.cinterop.get
-import kotlinx.cinterop.set
 import platform.AudioToolbox.*
 import platform.AudioToolbox.AudioQueueBufferRef
 import platform.AudioToolbox.AudioQueueRef
 import platform.CoreAudioTypes.*
 import platform.darwin.OSStatus
+import platform.posix.*
 import kotlin.Int
 import kotlin.String
 import kotlin.Unit
 import kotlin.coroutines.*
-import kotlin.native.ThreadLocal
 
 actual val nativeSoundProvider: NativeSoundProvider get() = CORE_AUDIO_NATIVE_SOUND_PROVIDER
 expect fun appleInitAudio()
@@ -40,43 +39,22 @@ class CoreAudioNewPlatformAudioOutput(
     nchannels: Int,
     gen: (AudioSamplesInterleaved) -> Unit,
 ) : NewPlatformAudioOutput(coroutineContext, nchannels, freq, gen) {
+    //private var samples: AudioSamplesInterleaved? = null
+
     val generator = CoreAudioGenerator(freq, nchannels, coroutineContext = coroutineContext) { data, dataSize ->
-        val nchannels = this.nchannels
-        val samples = AudioSamplesInterleaved(nchannels, dataSize)
+        val totalSamples = dataSize / nchannels
+        //if (samples == null || samples!!.totalSamples != totalSamples || samples!!.channels != channels) {
+        //}
+        val samples = AudioSamplesInterleaved(nchannels, totalSamples)
         genSafe(samples)
-        val samplesData = samples.data
-        for (n in 0 until dataSize) data[n] = samplesData[n]
+        samples.data.usePinned {
+            memcpy(data, it.startAddressOf, (dataSize * Short.SIZE_BYTES).convert())
+        }
     }
     override fun internalStart() {
         generator.start()
     }
     override fun internalStop() {
-        generator.dispose()
-    }
-}
-
-class CoreAudioPlatformAudioOutput(
-    coroutineContext: CoroutineContext,
-    freq: Int
-) : DequeBasedPlatformAudioOutput(coroutineContext, freq) {
-    val generator = CoreAudioGenerator(freq, nchannels, coroutineContext = coroutineContext) { data, dataSize ->
-        val temp = ShortArray(dataSize / nchannels)
-        for (m in 0 until nchannels) {
-            readShorts(m, temp)
-            for (n in 0 until dataSize / nchannels) {
-                data[n * nchannels + m] = temp[n]
-            }
-        }
-        //for (n in 0 until dataSize / nchannels) {
-        //    for (m in 0 until nchannels) {
-        //        data[n * nchannels + m] = readShort(m)
-        //    }
-        //}
-    }
-    override fun start() {
-        generator.start()
-    }
-    override fun stop() {
         generator.dispose()
     }
 }
