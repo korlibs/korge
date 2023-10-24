@@ -17,7 +17,6 @@ import korlibs.logger.*
 import korlibs.math.geom.*
 import korlibs.memory.*
 import korlibs.render.GameWindow.Quality.*
-import korlibs.render.internal.*
 import korlibs.time.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
