@@ -252,7 +252,7 @@ fun Project.configureNativeIosTvosRun(targetName: String) {
             dependsOn(installIosTvosDeploy, buildTaskName)
             doLast {
                 val appFolder = tasks.getByName(buildTaskName).outputs.files.first().parentFile
-                iosTvosDeployExt.command("--bundle", appFolder.absolutePath)
+                iosTvosDeployExt.install(appFolder.absolutePath)
             }
         }
 
@@ -262,7 +262,7 @@ fun Project.configureNativeIosTvosRun(targetName: String) {
             dependsOn(installIosTvosDeploy, buildTaskName)
             doFirst {
                 val appFolder = tasks.getByName(buildTaskName).outputs.files.first().parentFile
-                iosTvosDeployExt.command("--noninteractive", "-d", "--bundle", appFolder.absolutePath)
+                iosTvosDeployExt.installAndRun(appFolder.absolutePath)
             }
         }
 
