@@ -1,6 +1,7 @@
 package korlibs.audio.sound
 
 import korlibs.audio.sound.backend.*
+import korlibs.datastructure.thread.*
 import korlibs.io.time.*
 import korlibs.logger.*
 import korlibs.platform.*
@@ -20,9 +21,9 @@ private val nativeSoundProviderDeferred: NativeSoundProvider by lazy {
         }
     } catch (e: UnsatisfiedLinkError) {
         DummyNativeSoundProvider
-    } catch (e: OpenALException) {
-        logger.error { "OpenALException: ${e.message}" }
-        DummyNativeSoundProvider
+    //} catch (e: OpenALException) {
+    //    logger.error { "OpenALException: ${e.message}" }
+    //    DummyNativeSoundProvider
     } catch (e: Throwable) {
         e.printStackTrace()
         DummyNativeSoundProvider
@@ -30,7 +31,7 @@ private val nativeSoundProviderDeferred: NativeSoundProvider by lazy {
 }
 
 actual val nativeSoundProvider: NativeSoundProvider by lazy {
-    Thread { nativeSoundProviderDeferred }.apply { isDaemon = true }.start()
+    nativeThread(isDaemon = true, start = true) { nativeSoundProviderDeferred }
     LazyNativeSoundProvider { nativeSoundProviderDeferred }
 }
 //actual val nativeSoundProvider: NativeSoundProvider by lazy { JogampNativeSoundProvider() }

@@ -18,7 +18,7 @@ class AndroidNativeSoundProvider : NativeSoundProviderNew() {
             audioManager!!.generateAudioSessionId() else -1
     }
 
-    override fun createNewPlatformAudioOutput(coroutineContext: CoroutineContext, channels: Int, frequency: Int, gen: (AudioSamples) -> Unit): NewPlatformAudioOutput {
+    override fun createNewPlatformAudioOutput(coroutineContext: CoroutineContext, channels: Int, frequency: Int, gen: (AudioSamplesInterleaved) -> Unit): NewPlatformAudioOutput {
         ensureAudioManager(coroutineContext)
         return AndroidNewPlatformAudioOutput(this, coroutineContext, channels, frequency, gen)
     }
@@ -43,7 +43,7 @@ class AndroidNativeSoundProvider : NativeSoundProviderNew() {
         coroutineContext: CoroutineContext,
         channels: Int,
         frequency: Int,
-        gen: (AudioSamples) -> Unit
+        gen: (AudioSamplesInterleaved) -> Unit
     ) : NewPlatformAudioOutput(coroutineContext, channels, frequency, gen) {
         var thread: NativeThread? = null
 
@@ -86,7 +86,7 @@ class AndroidNativeSoundProvider : NativeSoundProviderNew() {
                     System.err.println("Audio track was not initialized correctly frequency=$frequency, bufferSamples=$bufferSamples")
                 }
 
-                val buffer = AudioSamples(channels, bufferSamples)
+                val buffer = AudioSamplesInterleaved(channels, bufferSamples)
                 at.play()
 
                 var lastVolL = Float.NaN
@@ -124,8 +124,7 @@ class AndroidNativeSoundProvider : NativeSoundProviderNew() {
                                 }
 
                                 genSafe(buffer)
-                                val bufferInterleaved = buffer.interleaved()
-                                at.write(bufferInterleaved.data, 0, bufferInterleaved.data.size)
+                                at.write(buffer.data, 0, buffer.data.size)
                             }
                         }
                     }

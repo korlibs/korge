@@ -5,7 +5,6 @@ import korlibs.audio.sound.*
 import korlibs.ffi.*
 import korlibs.io.annotations.*
 import korlibs.io.concurrent.atomic.*
-import korlibs.memory.*
 import java.util.concurrent.*
 import java.util.concurrent.atomic.*
 import kotlin.coroutines.*
@@ -20,7 +19,7 @@ val jvmCoreAudioNativeSoundProvider: JvmCoreAudioNativeSoundProvider? by lazy {
 }
 
 class JvmCoreAudioNativeSoundProvider : NativeSoundProviderNew() {
-    override fun createNewPlatformAudioOutput(coroutineContext: CoroutineContext, nchannels: Int, freq: Int, gen: (AudioSamples) -> Unit): NewPlatformAudioOutput {
+    override fun createNewPlatformAudioOutput(coroutineContext: CoroutineContext, nchannels: Int, freq: Int, gen: (AudioSamplesInterleaved) -> Unit): NewPlatformAudioOutput {
         return JvmCoreAudioNewPlatformAudioOutput(coroutineContext, nchannels, freq, gen)
     }
 }
@@ -40,21 +39,13 @@ private val jnaNewCoreAudioCallback by lazy {
 
             if (ptr != null) {
                 // Reuse instances as much as possible
-                if (output.samples.totalSamples != samplesCount) output.samples = AudioSamples(nchannels, samplesCount)
                 if (output.buffer.totalSamples != samplesCount) output.buffer = AudioSamplesInterleaved(nchannels, samplesCount)
-                val samples = output.samples
+                val samples = output.buffer
                 output.genSafe(samples)
-                val buffer = output.buffer.data
 
-                for (m in 0 until nchannels) {
-                    arraycopyStride(
-                        samples.data[m], 0, 1,
-                        buffer, m, nchannels,
-                        samplesCount
-                    )
-                }
+                val samplesData = samples.data
                 for (n in 0 until samplesCount * nchannels) {
-                    ptr[n] = buffer[n]
+                    ptr[n] = samplesData[n]
                 }
             }
             //println("queue.mAudioData=${queue.mAudioData}")
@@ -79,7 +70,7 @@ private class JvmCoreAudioNewPlatformAudioOutput(
     coroutineContext: CoroutineContext,
     nchannels: Int,
     freq: Int,
-    gen: (AudioSamples) -> Unit,
+    gen: (AudioSamplesInterleaved) -> Unit,
 ) : NewPlatformAudioOutput(coroutineContext, nchannels, freq, gen) {
     val id = lastId.incrementAndGet()
     companion object {
@@ -90,15 +81,11 @@ private class JvmCoreAudioNewPlatformAudioOutput(
 
     internal var completed = false
 
-    internal var samples by KorAtomicRef(AudioSamples(nchannels, 0))
     internal var buffer by KorAtomicRef(AudioSamplesInterleaved(nchannels, 0))
-
 
     var queue: Pointer? = null
 
     override fun internalStart() {
-        stop()
-
         newAudioOutputsById[id] = this
         completed = false
         val queueRef = Memory(16).also { it.clear() }

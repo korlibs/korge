@@ -17,7 +17,7 @@ class JsNewPlatformAudioOutput(
     coroutineContext: CoroutineContext,
     nchannels: Int,
     freq: Int,
-    gen: (AudioSamples) -> Unit
+    gen: (AudioSamplesInterleaved) -> Unit
 ) : NewPlatformAudioOutput(
     coroutineContext, nchannels, freq, gen
 ) {
@@ -39,13 +39,12 @@ class JsNewPlatformAudioOutput(
                 val nchannels = e.outputBuffer.numberOfChannels
                 val outChannels = Array(nchannels) { e.outputBuffer.getChannelData(it) }
                 val nsamples = e.outputBuffer.getChannelData(0).size
-                val samples = AudioSamples(nchannels, nsamples)
+                val samples = AudioSamplesInterleaved(nchannels, nsamples)
                 genSafe(samples)
                 for (ch in 0 until nchannels) {
-                    val samplesCh = samples[ch]
                     val outCh = outChannels[ch]
                     for (n in 0 until nsamples) {
-                        outCh[n] = SampleConvert.shortToFloat(samplesCh[n])
+                        outCh[n] = SampleConvert.shortToFloat(samples[ch, n])
                     }
                 }
 

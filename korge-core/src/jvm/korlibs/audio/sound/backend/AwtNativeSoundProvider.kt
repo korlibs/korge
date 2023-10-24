@@ -13,7 +13,7 @@ object AwtNativeSoundProvider : NativeSoundProviderNew() {
         coroutineContext: CoroutineContext,
         nchannels: Int,
         freq: Int,
-        gen: (AudioSamples) -> Unit
+        gen: (AudioSamplesInterleaved) -> Unit
     ): NewPlatformAudioOutput {
         return JvmNewPlatformAudioOutput(this, coroutineContext, nchannels, freq, gen)
     }
@@ -24,7 +24,7 @@ class JvmNewPlatformAudioOutput(
     coroutineContext: CoroutineContext,
     nchannels: Int,
     freq: Int,
-    gen: (AudioSamples) -> Unit
+    gen: (AudioSamplesInterleaved) -> Unit
 ) : NewPlatformAudioOutput(coroutineContext, nchannels, freq, gen) {
     var nativeThread: NativeThread? = null
 
@@ -50,14 +50,14 @@ class JvmNewPlatformAudioOutput(
             line.open()
             line.start()
             try {
-                val info = AudioSamples(nchannels, 1024)
+                val info = AudioSamplesInterleaved(nchannels, 1024)
                 val bytes = ByteArray(samplesToBytes(1024))
                 while (it.threadSuggestRunning) {
                     if (paused) {
                         Thread.sleep(10L)
                     } else {
                         genSafe(info)
-                        bytes.setArrayLE(0, info.interleaved().data)
+                        bytes.setArrayLE(0, info.data)
                         //println(bytes.count { it == 0.toByte() })
                         line.write(bytes, 0, bytes.size)
                     }

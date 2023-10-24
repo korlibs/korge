@@ -13,13 +13,13 @@ open class NewPlatformAudioOutput(
     val coroutineContext: CoroutineContext,
     val channels: Int,
     val frequency: Int,
-    private val gen: (AudioSamples) -> Unit,
+    private val gen: (AudioSamplesInterleaved) -> Unit,
 ) : Disposable, SoundProps {
     var onCancel: Cancellable? = null
     var paused: Boolean = false
 
     private val lock = Lock()
-    fun genSafe(buffer: AudioSamples) {
+    fun genSafe(buffer: AudioSamplesInterleaved) {
         lock {
             try {
                 gen(buffer)
@@ -62,7 +62,7 @@ open class PlatformAudioOutputBasedOnNew(
     val new = soundProvider.createNewPlatformAudioOutput(coroutineContext, 2, frequency) { buffer ->
         //println("availableRead=$availableRead")
         //if (availableRead >= buffer.data.size) {
-        readShorts(buffer.data)
+        readSamplesInterleaved(buffer, fully = true)
         //}
     }
 
@@ -255,6 +255,20 @@ open class DequeBasedPlatformAudioOutput(
             for (n in 0 until totalRead) {
                 for (ch in 0 until nchannels) {
                     out[ch][offset + n] = _readShort(ch)
+                }
+            }
+
+            return totalRead
+        }
+    }
+
+    protected fun readSamplesInterleaved(out: IAudioSamples, offset: Int = 0, count: Int = out.totalSamples - offset, nchannels: Int = out.channels, fully: Boolean): Int {
+        lock {
+            val totalRead = if (fully) count else minOf(availableRead, count)
+
+            for (n in 0 until totalRead) {
+                for (ch in 0 until nchannels) {
+                    out[ch, offset + n] = _readShort(ch)
                 }
             }
 

@@ -19,7 +19,7 @@ class AndroidTest : AbstractGradleIntegrationTest() {
                 spawnResult.add(dir to command)
             }
 
-            override fun execLogger(projectDir: File, vararg params: String) {
+            override fun execLogger(projectDir: File, vararg params: String, filter: Process.(line: String) -> String?) {
                 project.exec {
                     it.workingDir(projectDir)
                     it.commandLine(*params)

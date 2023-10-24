@@ -1,5 +1,6 @@
 package korlibs.audio.sound.backend
 
+/*
 import korlibs.audio.internal.*
 import korlibs.audio.sound.*
 import korlibs.datastructure.*
@@ -684,4 +685,5 @@ internal inline fun <T> runCatchingAl(block: () -> T): T? {
     }
     return result.getOrNull()
 }
+*/
 */

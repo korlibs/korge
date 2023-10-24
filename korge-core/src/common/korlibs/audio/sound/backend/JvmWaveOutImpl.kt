@@ -16,7 +16,7 @@ class JvmWaveOutNativeSoundProvider : NativeSoundProviderNew() {
         coroutineContext: CoroutineContext,
         channels: Int,
         frequency: Int,
-        gen: (AudioSamples) -> Unit
+        gen: (AudioSamplesInterleaved) -> Unit
     ): NewPlatformAudioOutput = JvmWaveOutNewPlatformAudioOutput(coroutineContext, channels, frequency, gen)
 }
 
@@ -73,7 +73,7 @@ class JvmWaveOutNewPlatformAudioOutput(
     coroutineContext: CoroutineContext,
     nchannels: Int,
     freq: Int,
-    gen: (AudioSamples) -> Unit
+    gen: (AudioSamplesInterleaved) -> Unit
 ) : NewPlatformAudioOutput(coroutineContext, nchannels, freq, gen) {
     val samplesLock = korlibs.datastructure.lock.NonRecursiveLock()
     var nativeThread: NativeThread? = null
@@ -171,13 +171,12 @@ private class WaveHeader(
     val id: Int,
     val handle: FFIPointer?,
     val totalSamples: Int,
-    val nchannels: Int,
+    val channels: Int,
     val arena: FFIArena,
 ) {
-    val samples = AudioSamples(nchannels, totalSamples)
-    val data = samples.data
+    val samples = AudioSamplesInterleaved(channels, totalSamples)
 
-    val totalBytes = (totalSamples * nchannels * Short.SIZE_BYTES)
+    val totalBytes = (totalSamples * channels * Short.SIZE_BYTES)
     val dataMem = arena.allocBytes(totalBytes).typed<Short>()
     val hdr = WAVEHDR(arena.allocBytes(WAVEHDR().size)).also { hdr ->
         hdr.lpData = dataMem.reinterpret()
@@ -188,14 +187,12 @@ private class WaveHeader(
     fun prepareAndWrite(totalSamples: Int = this.totalSamples) {
         //println(data[0].toList())
 
-        val nchannels = this.nchannels
-        hdr.dwBufferLength = (totalSamples * nchannels * Short.SIZE_BYTES)
+        val channels = this.channels
+        hdr.dwBufferLength = (totalSamples * channels * Short.SIZE_BYTES)
 
-        for (ch in 0 until nchannels) {
-            val inputCh = data[ch]
-            for (n in 0 until totalSamples) {
-                dataMem[n * nchannels + ch] = inputCh[n]
-            }
+        val samplesData = samples.data
+        for (n in 0 until channels * totalSamples) {
+            dataMem[n] = samplesData[n]
         }
         //if (hdr.isPrepared) dispose()
         if (!hdr.isPrepared) {
@@ -209,7 +206,7 @@ private class WaveHeader(
         WINMM.waveOutUnprepareHeader(handle, hdr.ptr, hdr.size)
     }
 
-    override fun toString(): String = "WaveHeader(id=$id, totalSamples=$totalSamples, nchannels=$nchannels, hdr=$hdr)"
+    override fun toString(): String = "WaveHeader(id=$id, totalSamples=$totalSamples, nchannels=$channels, hdr=$hdr)"
 }
 
 internal typealias LPHWAVEOUT = FFIPointer

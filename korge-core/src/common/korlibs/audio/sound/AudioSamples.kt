@@ -1,15 +1,11 @@
 package korlibs.audio.sound
 
-import korlibs.memory.arraycopy
-import korlibs.memory.arrayinterleave
-import korlibs.math.clamp01
-import korlibs.audio.internal.SampleConvert
-import korlibs.audio.internal.coerceToShort
+import korlibs.audio.internal.*
 import korlibs.datastructure.iterators.*
-import korlibs.io.lang.assert
-import kotlin.math.absoluteValue
-import kotlin.math.max
-import kotlin.math.min
+import korlibs.io.lang.*
+import korlibs.math.*
+import korlibs.memory.*
+import kotlin.math.*
 
 interface IAudioSamples {
     val channels: Int
@@ -19,11 +15,19 @@ interface IAudioSamples {
     operator fun get(channel: Int, sample: Int): Short
     operator fun set(channel: Int, sample: Int, value: Short): Unit
     fun getFloat(channel: Int, sample: Int): Float = SampleConvert.shortToFloat(this[channel, sample])
-    fun setFloat(channel: Int, sample: Int, value: Float) { this[channel, sample] = SampleConvert.floatToShort(value) }
+    fun setFloat(channel: Int, sample: Int, value: Float) {
+        this[channel, sample] = SampleConvert.floatToShort(value)
+    }
+
     fun setFloatStereo(sample: Int, l: Float, r: Float) {
         setFloat(0, sample, l)
         setFloat(1, sample, r)
     }
+
+    fun scaleVolume(scale: Double): IAudioSamples = scaleVolume(scale.toFloat())
+    fun scaleVolume(channelScales: DoubleArray): IAudioSamples = scaleVolume(FloatArray(channelScales.size) { channelScales[it].toFloat() })
+    fun scaleVolume(scale: Float): IAudioSamples
+    fun scaleVolume(channelScales: FloatArray): IAudioSamples
 }
 
 internal fun AudioSamples.resample(scale: Double, totalSamples: Int = (this.totalSamples * scale).toInt(), out: AudioSamples = AudioSamples(channels, totalSamples)): AudioSamples {
@@ -98,10 +102,8 @@ class AudioSamples(override val channels: Int, override val totalSamples: Int, v
         this[1, sample] = valueRight
     }
 
-    fun scaleVolume(scale: Double): AudioSamples = scaleVolume(scale.toFloat())
-    fun scaleVolume(channelScales: DoubleArray): AudioSamples = scaleVolume(FloatArray(channelScales.size) { channelScales[it].toFloat() })
 
-    fun scaleVolume(scale: Float): AudioSamples {
+    override fun scaleVolume(scale: Float): AudioSamples {
         data.fastForEach { channel ->
             for (n in channel.indices) {
                 channel[n] = (channel[n] * scale).toInt().coerceToShort()
@@ -109,7 +111,7 @@ class AudioSamples(override val channels: Int, override val totalSamples: Int, v
         }
         return this
     }
-    fun scaleVolume(channelScales: FloatArray): AudioSamples {
+    override fun scaleVolume(channelScales: FloatArray): AudioSamples {
         data.fastForEachWithIndex { ch, channel ->
             for (n in channel.indices) {
                 channel[n] = (channel[n] * channelScales[ch]).toInt().coerceToShort()
@@ -145,6 +147,21 @@ class AudioSamplesInterleaved(override val channels: Int, override val totalSamp
     private fun index(channel: Int, sample: Int): Int = (sample * channels) + channel
     override operator fun get(channel: Int, sample: Int): Short = data[index(channel, sample)]
     override operator fun set(channel: Int, sample: Int, value: Short) { data[index(channel, sample)] = value }
+
+    override fun scaleVolume(scale: Float): AudioSamplesInterleaved {
+        for (n in data.indices) data[n] = (data[n] * scale).toInt().coerceToShort()
+        return this
+    }
+    override fun scaleVolume(channelScales: FloatArray): AudioSamplesInterleaved {
+        for (ch in 0 until channels) {
+            val chVolume = channelScales[ch]
+            for (n in 0 until totalSamples) {
+                val i = n * channels + ch
+                data[i] = (data[i] * chVolume).toInt().coerceToShort()
+            }
+        }
+        return this
+    }
 
     override fun toString(): String = "AudioSamplesInterleaved(channels=$channels, totalSamples=$totalSamples)"
 }

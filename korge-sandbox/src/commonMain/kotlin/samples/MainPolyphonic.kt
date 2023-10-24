@@ -6,7 +6,6 @@ import korlibs.korge.scene.*
 import korlibs.korge.ui.*
 import korlibs.korge.view.*
 import korlibs.math.*
-import korlibs.memory.*
 import kotlin.math.*
 
 class MainPolyphonic : Scene() {
@@ -25,10 +24,7 @@ class MainPolyphonic : Scene() {
 
         for (nchannel in 0 until 2) {
             val stream2 = nativeSoundProvider.createNewPlatformAudioOutput(1, 44100) { samples ->
-                audioOutCallback(nchannel, samples.data[0], samples.data[0].size)
-                for (n in 1 until samples.channels) {
-                    arraycopy(samples.data[0], 0, samples.data[n], 0, samples.data[0].size)
-                }
+                audioOutCallback(nchannel, samples.data, samples.data.size)
                 samples.scaleVolume(.05f)
             }
             stream2.start()
