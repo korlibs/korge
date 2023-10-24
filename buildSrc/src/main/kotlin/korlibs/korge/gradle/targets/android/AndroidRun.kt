@@ -3,6 +3,7 @@ package korlibs.korge.gradle.targets.android
 import korlibs.korge.gradle.*
 import korlibs.korge.gradle.targets.*
 import korlibs.korge.gradle.util.*
+import korlibs.korge.gradle.util.AnsiEscape.Companion.color
 import org.gradle.api.*
 import org.gradle.api.tasks.*
 import org.jetbrains.kotlin.gradle.dsl.*
@@ -11,6 +12,7 @@ import java.io.*
 fun Project.installAndroidRun(dependsOnList: List<String>, direct: Boolean, isKorge: Boolean) {
 
     val createAndroidManifest = tasks.createThis<AndroidCreateAndroidManifest>("createAndroidManifest") {
+        this.isKorge = isKorge
     }
 
     val hasKotlinMultiplatformExtension = project.extensions.findByType(KotlinMultiplatformExtension::class.java) != null
@@ -89,7 +91,10 @@ fun Project.installAndroidRun(dependsOnList: List<String>, direct: Boolean, isKo
 
             val onlyRunAndroid = tasks.createTyped<OnlyRunAndroidTask>("onlyRunAndroid$suffixDevice$suffixDebug") {
                 this.extra = extra
-                this.androidApplicationId = androidApplicationId
+            }
+
+            afterEvaluate {
+                onlyRunAndroid.androidApplicationId = AndroidGenerated.getAppId(project, isKorge)
             }
 
             tasks.createTyped<DefaultTask>("runAndroid$suffixDevice$suffixDebug") {
@@ -131,6 +136,7 @@ open class AndroidCreateAndroidManifest : DefaultTask() {
     }
     @TaskAction
     fun run() {
+        //println("this.generated=${this.generated} : isKorge=$isKorge")
         val mainDir = this.generated.getAndroidManifestFile(isKorge).parentFile
         generated.writeResources(this.generated.getAndroidResFolder(isKorge))
         generated.writeMainActivity(this.generated.getAndroidSrcFolder(isKorge))
@@ -150,21 +156,42 @@ open class OnlyRunAndroidTask : DefaultAndroidTask() {
             "-e", "sleepBeforeStart", "300",
             "-n", "$androidApplicationId/$androidApplicationId.MainActivity"
         )
-        val pid = run {
+        val pid: String = run {
             val startTime = System.currentTimeMillis()
             while (true) {
                 val currentTime = System.currentTimeMillis()
                 val elapsedTime = currentTime - startTime
                 try {
-                    return@run execOutput(androidAdbPath, *extra, "shell", "pidof", androidApplicationId).trim()
+                    val res = execOutput(androidAdbPath, *extra, "shell", "pidof", androidApplicationId).trim()
+                    if (res.isEmpty()) error("PID not found")
+                    return@run res
                 } catch (e: Throwable) {
                     //e.printStackTrace()
                     Thread.sleep(10L)
                     if (elapsedTime >= 5000L) throw e
                 }
             }
+            error("Unexpected")
         }
-        execLogger(androidAdbPath, *extra, "logcat", "--pid=$pid")
+        val EXIT_MESSAGE = "InputTransport: Input channel destroyed:"
+        execLogger(androidAdbPath, *extra, "logcat", "--pid=$pid") {
+            if (it.contains(EXIT_MESSAGE)) {
+                println("Found EXIT_MESSAGE=$EXIT_MESSAGE")
+                this.destroy()
+            }
+            val parts = it.split(" ", limit = 5)
+            val end = parts.getOrElse(4) { " " }.trimStart()
+            val color = when {
+                end.startsWith('V') -> null
+                end.startsWith('D') -> AnsiEscape.Color.BLUE
+                end.startsWith('I') -> AnsiEscape.Color.GREEN
+                end.startsWith('W') -> AnsiEscape.Color.YELLOW
+                end.startsWith('E') -> AnsiEscape.Color.RED
+                else -> AnsiEscape.Color.WHITE
+            }
+            //println("parts=$parts")
+            if (color != null) it.color(color) else it
+        }
     }
 }
 
