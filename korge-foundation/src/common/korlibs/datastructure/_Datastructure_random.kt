@@ -5,8 +5,6 @@ package korlibs.datastructure.random
 import korlibs.datastructure.lock.*
 import kotlin.random.*
 
-private val LocalFastRandom = FastRandom(Random.Default.nextLong())
-
 // Copy of XorWowRandom from the Kotlin Standard library but optimizing some methods
 open class FastRandom private constructor(
     private var x: Int,
@@ -17,9 +15,10 @@ open class FastRandom private constructor(
     private var addend: Int
 ) : Random() {
     companion object : FastRandom() {
-        val Default get() = LocalFastRandom
+        private val _instance = FastRandom(Random.Default.nextLong())
+        val Default: FastRandom get() = this
         private val lock = Lock()
-        override fun nextBits(bitCount: Int): Int = lock { LocalFastRandom.nextBits(bitCount) }
+        override fun nextBits(bitCount: Int): Int = lock { _instance.nextBits(bitCount) }
     }
 
     private constructor(seed1: Int, seed2: Int) :

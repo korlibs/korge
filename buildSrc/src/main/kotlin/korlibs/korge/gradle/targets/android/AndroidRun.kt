@@ -91,7 +91,6 @@ fun Project.installAndroidRun(dependsOnList: List<String>, direct: Boolean, isKo
 
             val onlyRunAndroid = tasks.createTyped<OnlyRunAndroidTask>("onlyRunAndroid$suffixDevice$suffixDebug") {
                 this.extra = extra
-                //this.androidApplicationId = androidApplicationId
             }
 
             afterEvaluate {

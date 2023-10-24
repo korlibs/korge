@@ -5,14 +5,11 @@ package korlibs.datastructure.event
 import korlibs.datastructure.*
 import korlibs.datastructure.closeable.*
 import korlibs.datastructure.lock.*
+import korlibs.datastructure.pauseable.*
 import korlibs.datastructure.thread.*
 import korlibs.logger.*
 import korlibs.time.*
 import kotlin.time.*
-
-interface Pauseable {
-    var paused: Boolean
-}
 
 interface EventLoop : Pauseable, Closeable {
     fun setImmediate(task: () -> Unit)
@@ -20,20 +17,6 @@ interface EventLoop : Pauseable, Closeable {
     fun setInterval(time: TimeSpan, task: () -> Unit): Closeable
 }
 fun EventLoop.setInterval(time: Frequency, task: () -> Unit): Closeable = setInterval(time.timeSpan, task)
-
-class SyncPauseable : Pauseable {
-    val pausedLock = Lock()
-    override var paused: Boolean = false
-        set(value) {
-            if (field != value) {
-                field = value
-                pausedLock { pausedLock.notify() }
-            }
-        }
-    fun checkPaused() {
-        while (paused) { pausedLock { pausedLock.wait(60.seconds) } }
-    }
-}
 
 abstract class BaseEventLoop : EventLoop, Pauseable {
     val runLock = Lock()
@@ -224,7 +207,6 @@ class SyncEventLoop(
         running = true
         while (running && runWhile()) {
             runTasksUntilEmpty()
-            //NativeThread.gc(full = true)
             NativeThread.sleep(1.milliseconds)
         }
     }

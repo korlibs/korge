@@ -2,7 +2,7 @@ package korlibs.audio.sound
 
 import korlibs.audio.format.*
 import korlibs.datastructure.*
-import korlibs.datastructure.event.*
+import korlibs.datastructure.pauseable.*
 import korlibs.io.async.*
 import korlibs.io.file.*
 import korlibs.io.lang.*
@@ -11,7 +11,6 @@ import korlibs.math.*
 import korlibs.time.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
-import kotlin.native.concurrent.*
 import kotlin.coroutines.coroutineContext as coroutineContextKt
 
 expect val nativeSoundProvider: NativeSoundProvider

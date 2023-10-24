@@ -82,4 +82,10 @@ class FastRandomTest {
         assertEquals(3f, floatArrayOf(3f).random(random))
         assertEquals(7.0, doubleArrayOf(7.0).random(random))
     }
+
+    @Test
+    fun testGlobalInstance() {
+        println((0 until 10).map { FastRandom.nextInt() })
+        assertTrue { (0 until 10).map { FastRandom.nextInt() }.distinct().size >= 2 }
+    }
 }
