@@ -1,4 +1,4 @@
-package korlibs.audio.sound.impl.awt
+package korlibs.audio.sound.backend
 
 import korlibs.audio.sound.*
 import korlibs.datastructure.thread.*

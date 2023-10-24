@@ -1,15 +1,12 @@
-package korlibs.audio.sound.impl.alsa
+package korlibs.audio.sound.backend
 
-import korlibs.datastructure.lock.*
-import korlibs.time.*
+import com.sun.jna.*
 import korlibs.audio.sound.*
-import korlibs.io.async.*
-import korlibs.io.file.std.*
-import com.sun.jna.Memory
-import com.sun.jna.Native
-import com.sun.jna.Pointer
+import korlibs.datastructure.lock.*
 import korlibs.io.annotations.*
+import korlibs.io.file.std.*
 import korlibs.math.*
+import korlibs.time.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
 

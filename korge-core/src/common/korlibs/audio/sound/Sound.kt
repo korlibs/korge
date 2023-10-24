@@ -44,10 +44,6 @@ open class LazyNativeSoundProvider(val gen: () -> NativeSoundProvider) : NativeS
 open class NativeSoundProviderNew : NativeSoundProvider() {
     final override fun createPlatformAudioOutput(coroutineContext: CoroutineContext, freq: Int): PlatformAudioOutput =
         PlatformAudioOutputBasedOnNew(this, coroutineContext, freq)
-
-    override suspend fun createNonStreamingSound(data: AudioData, name: String): Sound {
-        return super.createNonStreamingSound(data, name)
-    }
 }
 
 open class NativeSoundProvider() : Disposable {
@@ -55,15 +51,15 @@ open class NativeSoundProvider() : Disposable {
 
     open var paused: Boolean = false
 
-    open fun createPlatformAudioOutput(coroutineContext: CoroutineContext, freq: Int = 44100): PlatformAudioOutput {
-        return PlatformAudioOutput(coroutineContext, freq)
-    }
+    @Deprecated("")
+    open fun createPlatformAudioOutput(coroutineContext: CoroutineContext, freq: Int = 44100): PlatformAudioOutput = PlatformAudioOutput(coroutineContext, freq)
+    @Deprecated("")
+    suspend fun createPlatformAudioOutput(freq: Int = 44100): PlatformAudioOutput = createPlatformAudioOutput(coroutineContextKt, freq)
+
     open fun createNewPlatformAudioOutput(coroutineContext: CoroutineContext, channels: Int, frequency: Int = 44100, gen: (AudioSamples) -> Unit): NewPlatformAudioOutput {
         //println("createNewPlatformAudioOutput: ${this::class}")
         return NewPlatformAudioOutput(coroutineContext, channels, frequency, gen)
     }
-
-    suspend fun createPlatformAudioOutput(freq: Int = 44100): PlatformAudioOutput = createPlatformAudioOutput(coroutineContextKt, freq)
 
     suspend fun createNewPlatformAudioOutput(nchannels: Int, freq: Int = 44100, gen: (AudioSamples) -> Unit): NewPlatformAudioOutput = createNewPlatformAudioOutput(coroutineContextKt, nchannels, freq, gen)
 

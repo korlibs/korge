@@ -1,8 +1,6 @@
 package korlibs.audio.sound
 
 import korlibs.audio.sound.backend.*
-import korlibs.audio.sound.impl.awt.*
-import korlibs.audio.sound.impl.jna.OpenALException
 import korlibs.io.time.*
 import korlibs.logger.*
 import korlibs.platform.*
