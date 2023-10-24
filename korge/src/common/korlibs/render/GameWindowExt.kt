@@ -49,7 +49,6 @@ class GameWindowInputState {
     var surfaceHeight = -1
     var doInitialize = false
     var initialized = false
-    var contextLost = false
 }
 
 fun GameWindow.dispatchKeyEvent(type: KeyEvent.Type, id: Int, character: Char, key: Key, keyCode: Int, str: String? = null): Boolean {

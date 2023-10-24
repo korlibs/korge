@@ -113,11 +113,11 @@ data class AndroidGenerated constructor(
 
     fun getAndroidResFolder(isKorge: Boolean): File {
         //return File(project.projectDir, "src/androidMain/res")
-        return File(buildDir, "androidres")
+        return File(buildDir, "platforms/android/androires").ensureParents()
     }
     fun getAndroidSrcFolder(isKorge: Boolean): File {
         //return File(project.projectDir, "src/androidMain/kotlin")
-        return File(buildDir, "androidsrc")
+        return File(buildDir, "platforms/android/androisrc").ensureParents()
     }
 
     companion object {

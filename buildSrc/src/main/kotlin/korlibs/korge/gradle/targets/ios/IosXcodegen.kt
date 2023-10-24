@@ -1,19 +1,15 @@
 package korlibs.korge.gradle.targets.ios
 
-import korlibs.korge.gradle.util.FileList
-import korlibs.korge.gradle.util.execLogger
-import korlibs.korge.gradle.util.projectExtension
-import korlibs.korge.gradle.util.takeIfExists
-import org.gradle.api.Project
-import java.io.File
+import korlibs.korge.gradle.util.*
+import org.gradle.api.*
+import java.io.*
 
 val Project.iosXcodegenExt by projectExtension {
     IosXcodegen(this)
 }
 
 class IosXcodegen(val project: Project) {
-    //val xcodeGenGitTag = "2.25.0"
-    val xcodeGenGitTag = "2.35.0"
+    val xcodeGenGitTag = "2.37.0"
     val korlibsFolder = File(System.getProperty("user.home") + "/.korlibs").apply { mkdirs() }
     val xcodeGenFolder = File(korlibsFolder, "XcodeGen-$xcodeGenGitTag")
     val xcodeGenLocalExecutable = File("/usr/local/bin/xcodegen")

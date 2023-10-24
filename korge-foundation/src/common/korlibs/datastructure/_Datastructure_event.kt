@@ -10,15 +10,32 @@ import korlibs.logger.*
 import korlibs.time.*
 import kotlin.time.*
 
-interface EventLoop : Closeable {
+interface Pauseable {
+    var paused: Boolean
+}
+
+interface EventLoop : Pauseable, Closeable {
     fun setImmediate(task: () -> Unit)
     fun setTimeout(time: TimeSpan, task: () -> Unit): Closeable
     fun setInterval(time: TimeSpan, task: () -> Unit): Closeable
 }
 fun EventLoop.setInterval(time: Frequency, task: () -> Unit): Closeable = setInterval(time.timeSpan, task)
 
-abstract class BaseEventLoop : EventLoop {
-    val runLock = Lock()
+class SyncPauseable : Pauseable {
+    val pausedLock = Lock()
+    override var paused: Boolean = false
+        set(value) {
+            if (field != value) {
+                field = value
+                pausedLock { pausedLock.notify() }
+            }
+        }
+    fun checkPaused() {
+        while (paused) { pausedLock { pausedLock.wait(60.seconds) } }
+    }
+}
+
+abstract class BaseEventLoop : EventLoop, Pauseable {
 }
 
 class SyncEventLoop(
@@ -27,7 +44,9 @@ class SyncEventLoop(
     var precise: Boolean = false,
     /** Execute timers immediately instead of waiting. Useful for testing. */
     var immediateRun: Boolean = false,
-) : BaseEventLoop() {
+) : BaseEventLoop(), Pauseable {
+    private val pauseable = SyncPauseable()
+    override var paused: Boolean by pauseable::paused
     private val lock = NonRecursiveLock()
     private var running = true
     protected class TimedTask(val eventLoop: SyncEventLoop, var now: Duration, val time: Duration, var interval: Boolean, val callback: () -> Unit) : Comparable<TimedTask>, Closeable {
@@ -186,6 +205,7 @@ class SyncEventLoop(
         // Timed tasks
         val stopwatch = Stopwatch().start()
         while (running) {
+            pauseable.checkPaused()
             val somethingExecuted = waitAndRunNextTask()
 
             if (lock { !somethingExecuted && tasks.isEmpty() && timedTasks.isEmpty() }) {

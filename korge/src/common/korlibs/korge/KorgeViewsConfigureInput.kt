@@ -2,6 +2,7 @@ package korlibs.korge
 
 import korlibs.audio.sound.*
 import korlibs.datastructure.iterators.*
+import korlibs.datastructure.lock.*
 import korlibs.event.*
 import korlibs.image.color.*
 import korlibs.inject.*
@@ -155,11 +156,14 @@ internal fun Views.prepareViewsBase(
     gameWindow.onEvents(*DropFileEvent.Type.ALL) { e -> views.dispatch(e) }
     gameWindow.onEvent(ResumeEvent) { e ->
         views.dispatch(e)
+        Lock()
         nativeSoundProvider.paused = false
+        gameWindow.eventLoop.paused = false
     }
     gameWindow.onEvent(PauseEvent) { e ->
         views.dispatch(e)
         nativeSoundProvider.paused = true
+        gameWindow.eventLoop.paused = true
     }
     gameWindow.onEvent(StopEvent) { e -> views.dispatch(e) }
     gameWindow.onEvent(DestroyEvent) { e ->

@@ -3,6 +3,7 @@ package korlibs.audio.sound
 import android.content.*
 import android.media.*
 import android.os.*
+import korlibs.datastructure.event.*
 import korlibs.datastructure.thread.*
 import korlibs.io.android.*
 import kotlin.coroutines.*
@@ -23,13 +24,8 @@ class AndroidNativeSoundProvider : NativeSoundProviderNew() {
         return AndroidNewPlatformAudioOutput(this, coroutineContext, channels, frequency, gen)
     }
 
-    override var paused: Boolean = false
-        set(value) {
-            if (field != value) {
-                field = value
-                //(this as java.lang.Object).notifyAll()
-            }
-        }
+    private val pauseable = SyncPauseable()
+    override var paused: Boolean by pauseable::paused
 
     fun ensureAudioManager(coroutineContext: CoroutineContext) {
         if (audioManager == null) {
@@ -94,6 +90,8 @@ class AndroidNativeSoundProvider : NativeSoundProviderNew() {
 
                 try {
                     while (thread.threadSuggestRunning) {
+                        provider.pauseable.checkPaused()
+
                         if (this.paused) {
                             at.pause()
                             Thread.sleep(20L)

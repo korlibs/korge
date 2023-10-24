@@ -306,8 +306,6 @@ open class GameWindow :
         //println("invalidatedView")
         continuousRenderMode.updated()
     }
-    @Deprecated("")
-    fun handleContextLost() = run { gameWindowInputState.contextLost = true }
 
     open fun updateGamepads() {
     }

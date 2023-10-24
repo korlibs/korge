@@ -70,7 +70,7 @@ open class KorgwSurfaceView constructor(
 
     override fun onSurfaceCreated(unused: GL10, config: EGLConfig) {
         //GLES20.glClearColor(0.0f, 0.4f, 0.7f, 1.0f)
-        gameWindow.handleContextLost()
+        gameWindow.ag.contextLost()
         clientVersion = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
             val out = IntArray(1)
             eglQueryContext(eglGetCurrentDisplay(), eglGetCurrentContext(), EGL_CONTEXT_CLIENT_VERSION, out, 0)

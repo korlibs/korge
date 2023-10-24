@@ -2,6 +2,7 @@ package korlibs.audio.sound
 
 import korlibs.audio.format.*
 import korlibs.datastructure.*
+import korlibs.datastructure.event.*
 import korlibs.io.async.*
 import korlibs.io.file.*
 import korlibs.io.lang.*
@@ -46,10 +47,10 @@ open class NativeSoundProviderNew : NativeSoundProvider() {
         PlatformAudioOutputBasedOnNew(this, coroutineContext, freq)
 }
 
-open class NativeSoundProvider() : Disposable {
+open class NativeSoundProvider() : Disposable, Pauseable {
 	open val target: String = "unknown"
 
-    open var paused: Boolean = false
+    override var paused: Boolean = false
 
     @Deprecated("")
     open fun createPlatformAudioOutput(coroutineContext: CoroutineContext, freq: Int = 44100): PlatformAudioOutput = PlatformAudioOutput(coroutineContext, freq)
