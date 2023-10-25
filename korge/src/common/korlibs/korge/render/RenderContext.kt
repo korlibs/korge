@@ -53,7 +53,7 @@ class RenderContext(
     DeviceDimensionsProvider by deviceDimensionsProvider,
     Closeable
 {
-    val quality: GameWindow.Quality get() = windowConfig.quality
+    val quality: GameWindowQuality get() = windowConfig.quality
 
     @PublishedApi internal val _buffers = AGProgramWithUniforms.BufferCache()
     private val _programs = FastIdentityMap<Program, AGProgramWithUniforms>()
@@ -484,7 +484,6 @@ class RenderContext(
     fun popFrameBuffer() {
         currentFrameBuffer = frameBufferStack.removeAt(frameBufferStack.size - 1)
     }
-
 
     val textureDrawer get() = ag.textureDrawer
     fun drawTexture(frameBuffer: AGFrameBuffer, tex: AGTexture, left: Float = -1f, top: Float = +1f, right: Float = +1f, bottom: Float = -1f) {

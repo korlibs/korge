@@ -81,7 +81,7 @@ class UIEditableNumber(value: Double = 0.0, min: Double = 0.0, max: Double = 1.0
 
     init {
         this.value = value
-        cursor = GameWindow.Cursor.RESIZE_EAST
+        cursor = Cursor.RESIZE_EAST
         var start = 0.0
         textInputView.onReturnPressed { setTextInputVisible(false, useValue = true) }
         textInputView.onEscPressed { setTextInputVisible(false, useValue = false) }

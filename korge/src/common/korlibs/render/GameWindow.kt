@@ -52,6 +52,9 @@ interface GameWindowConfig {
 }
 
 typealias GameWindowQuality = GameWindow.Quality
+typealias CustomCursor = GameWindow.CustomCursor
+typealias Cursor = GameWindow.Cursor
+typealias ICursor = GameWindow.ICursor
 
 /**
  * A [GameWindow] represents a window, canvas or headless virtual frame where a game is displayed and can receive user events, it provides:

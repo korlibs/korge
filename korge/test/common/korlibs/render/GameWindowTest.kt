@@ -9,7 +9,7 @@ import kotlin.test.*
 class GameWindowTest {
     @Test
     fun testCustomCursor() = suspendTest {
-        val cursor = GameWindow.CustomCursor(buildShape {
+        val cursor = CustomCursor(buildShape {
             fill(Colors.RED) {
                 moveTo(Point(0, 0))
                 lineTo(Point(-32, -32))

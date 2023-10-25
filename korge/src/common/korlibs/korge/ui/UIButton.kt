@@ -248,7 +248,7 @@ open class UIButton(
                 }
 			}
 		}
-        this.cursor = GameWindow.Cursor.HAND
+        this.cursor = Cursor.HAND
         setInitialState()
     }
 

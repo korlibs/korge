@@ -345,7 +345,7 @@ class TextEditController(
     init {
         //println(metrics)
 
-        this.eventHandler.cursor = GameWindow.Cursor.TEXT
+        this.eventHandler.cursor = Cursor.TEXT
 
         closeables += this.eventHandler.timers.interval(0.5.seconds) {
             if (!focused) {
