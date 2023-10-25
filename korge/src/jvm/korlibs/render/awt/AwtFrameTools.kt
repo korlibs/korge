@@ -4,6 +4,7 @@ import korlibs.datastructure.*
 import korlibs.event.*
 import korlibs.event.MouseEvent
 import korlibs.ffi.osx.*
+import korlibs.ffi.osx.*
 import korlibs.graphics.*
 import korlibs.image.awt.*
 import korlibs.io.dynamic.*
