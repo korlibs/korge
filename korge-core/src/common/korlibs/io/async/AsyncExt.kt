@@ -6,7 +6,6 @@ import korlibs.platform.*
 import korlibs.time.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
-import kotlin.native.concurrent.*
 
 private val logger = Logger("AsyncExt")
 
@@ -20,6 +19,18 @@ suspend fun <T> CoroutineContext.launchUnscopedAndWait(block: suspend () -> T): 
         }
     })
     return deferred.await()
+}
+
+fun CoroutineContext.onCancel(block: () -> Unit): Cancellable {
+    var running = true
+    launchUnscoped {
+        try {
+            while (running) kotlinx.coroutines.delay(1.seconds)
+        } catch (e: CancellationException) {
+            if (running) block()
+        }
+    }
+    return Cancellable { running = false }
 }
 
 fun CoroutineContext.launchUnscoped(block: suspend () -> Unit) {
@@ -66,7 +77,6 @@ fun suspendTest(cond: () -> Boolean, timeout: TimeSpan? = DEFAULT_SUSPEND_TEST_T
 fun suspendTestNoBrowser(callback: suspend CoroutineScope.() -> Unit) = suspendTest({ !Platform.isJsBrowser }, callback = callback)
 fun suspendTestNoJs(callback: suspend CoroutineScope.() -> Unit) = suspendTest({ !Platform.isJs && !Platform.isWasm }, callback = callback)
 
-@ThreadLocal
 val DEBUG_ASYNC_LAUNCH_ERRORS by lazy { Environment["DEBUG_ASYNC_LAUNCH_ERRORS"] == "true" }
 
 private fun CoroutineScope._launch(start: CoroutineStart, callback: suspend () -> Unit): Job = launch(coroutineContext, start = start) {
