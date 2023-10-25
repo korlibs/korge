@@ -170,25 +170,25 @@ val Component.pixelsPerInch: Double get() {
 }
 
 
-val GameWindow.Cursor.jvmCursor: java.awt.Cursor get() = java.awt.Cursor(when (this) {
-    GameWindow.Cursor.DEFAULT -> java.awt.Cursor.DEFAULT_CURSOR
-    GameWindow.Cursor.CROSSHAIR -> java.awt.Cursor.CROSSHAIR_CURSOR
-    GameWindow.Cursor.TEXT -> java.awt.Cursor.TEXT_CURSOR
-    GameWindow.Cursor.HAND -> java.awt.Cursor.HAND_CURSOR
-    GameWindow.Cursor.MOVE -> java.awt.Cursor.MOVE_CURSOR
-    GameWindow.Cursor.WAIT -> java.awt.Cursor.WAIT_CURSOR
-    GameWindow.Cursor.RESIZE_EAST -> java.awt.Cursor.E_RESIZE_CURSOR
-    GameWindow.Cursor.RESIZE_SOUTH -> java.awt.Cursor.S_RESIZE_CURSOR
-    GameWindow.Cursor.RESIZE_WEST -> java.awt.Cursor.W_RESIZE_CURSOR
-    GameWindow.Cursor.RESIZE_NORTH -> java.awt.Cursor.N_RESIZE_CURSOR
-    GameWindow.Cursor.RESIZE_NORTH_EAST -> java.awt.Cursor.NE_RESIZE_CURSOR
-    GameWindow.Cursor.RESIZE_NORTH_WEST -> java.awt.Cursor.NW_RESIZE_CURSOR
-    GameWindow.Cursor.RESIZE_SOUTH_EAST -> java.awt.Cursor.SE_RESIZE_CURSOR
-    GameWindow.Cursor.RESIZE_SOUTH_WEST -> java.awt.Cursor.SW_RESIZE_CURSOR
+val korlibs.render.Cursor.jvmCursor: java.awt.Cursor get() = java.awt.Cursor(when (this) {
+    korlibs.render.Cursor.DEFAULT -> java.awt.Cursor.DEFAULT_CURSOR
+    korlibs.render.Cursor.CROSSHAIR -> java.awt.Cursor.CROSSHAIR_CURSOR
+    korlibs.render.Cursor.TEXT -> java.awt.Cursor.TEXT_CURSOR
+    korlibs.render.Cursor.HAND -> java.awt.Cursor.HAND_CURSOR
+    korlibs.render.Cursor.MOVE -> java.awt.Cursor.MOVE_CURSOR
+    korlibs.render.Cursor.WAIT -> java.awt.Cursor.WAIT_CURSOR
+    korlibs.render.Cursor.RESIZE_EAST -> java.awt.Cursor.E_RESIZE_CURSOR
+    korlibs.render.Cursor.RESIZE_SOUTH -> java.awt.Cursor.S_RESIZE_CURSOR
+    korlibs.render.Cursor.RESIZE_WEST -> java.awt.Cursor.W_RESIZE_CURSOR
+    korlibs.render.Cursor.RESIZE_NORTH -> java.awt.Cursor.N_RESIZE_CURSOR
+    korlibs.render.Cursor.RESIZE_NORTH_EAST -> java.awt.Cursor.NE_RESIZE_CURSOR
+    korlibs.render.Cursor.RESIZE_NORTH_WEST -> java.awt.Cursor.NW_RESIZE_CURSOR
+    korlibs.render.Cursor.RESIZE_SOUTH_EAST -> java.awt.Cursor.SE_RESIZE_CURSOR
+    korlibs.render.Cursor.RESIZE_SOUTH_WEST -> java.awt.Cursor.SW_RESIZE_CURSOR
     else -> java.awt.Cursor.DEFAULT_CURSOR
 })
 
-val GameWindow.CustomCursor.jvmCursor: java.awt.Cursor by extraPropertyThis {
+val CustomCursor.jvmCursor: java.awt.Cursor by extraPropertyThis {
     val toolkit = Toolkit.getDefaultToolkit()
     val size = toolkit.getBestCursorSize(bounds.width.toIntCeil(), bounds.height.toIntCeil())
     val result = this.createBitmap(Size(size.width, size.height))
@@ -200,10 +200,10 @@ val GameWindow.CustomCursor.jvmCursor: java.awt.Cursor by extraPropertyThis {
     }
 }
 
-val GameWindow.ICursor.jvmCursor: java.awt.Cursor get() {
+val ICursor.jvmCursor: java.awt.Cursor get() {
     return when (this) {
-        is GameWindow.Cursor -> this.jvmCursor
-        is GameWindow.CustomCursor -> this.jvmCursor
+        is korlibs.render.Cursor -> this.jvmCursor
+        is CustomCursor -> this.jvmCursor
         else -> java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR)
     }
 }

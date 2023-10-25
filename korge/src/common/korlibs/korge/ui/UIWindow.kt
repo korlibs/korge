@@ -79,7 +79,7 @@ class UIWindow(title: String, size: Size = Size(256, 256)) : UIContainer(size) {
             val sh = this
             val anchor = this@ScaleHandler.anchor
             anchor(Anchor.CENTER)
-            cursor = GameWindow.Cursor.fromAnchorResize(anchor)
+            cursor = Cursor.fromAnchorResize(anchor)
             // @TODO: clamping shouldn't affect (we should use it.start and get initial values to compute based on start and not on deltas)
             sh.draggable {
                 val obounds: Rectangle = window.getGlobalBounds()
@@ -171,7 +171,7 @@ class UIWindow(title: String, size: Size = Size(256, 256)) : UIContainer(size) {
         val sh = this
         anchor(Anchor.MIDDLE_LEFT)
         position(0.0, 0.0)
-        cursor = GameWindow.Cursor.RESIZE_NORTH
+        cursor = Cursor.RESIZE_NORTH
         sh.draggable {
             sh.x = 0.0
             sh.y = 0.0
@@ -188,7 +188,7 @@ class UIWindow(title: String, size: Size = Size(256, 256)) : UIContainer(size) {
         val sh = this
         anchor(Anchor.TOP_CENTER)
         position(width, 0.0)
-        cursor = GameWindow.Cursor.RESIZE_EAST
+        cursor = Cursor.RESIZE_EAST
         sh.draggable {
             sh.x = sh.x.clamp(minWidth, maxWidth)
             sh.y = 0.0
@@ -199,7 +199,7 @@ class UIWindow(title: String, size: Size = Size(256, 256)) : UIContainer(size) {
         val sh = this
         anchor(Anchor.MIDDLE_LEFT)
         position(0.0, height)
-        cursor = GameWindow.Cursor.RESIZE_SOUTH
+        cursor = Cursor.RESIZE_SOUTH
         sh.draggable {
             sh.x = 0.0
             sh.y = sh.y.clamp(minHeight, maxHeight)
@@ -210,7 +210,7 @@ class UIWindow(title: String, size: Size = Size(256, 256)) : UIContainer(size) {
         val sh = this
         anchor(Anchor.MIDDLE_CENTER)
         position(width, height)
-        cursor = GameWindow.Cursor.RESIZE_SOUTH_EAST
+        cursor = Cursor.RESIZE_SOUTH_EAST
         sh.draggable {
             sh.x = sh.x.clamp(minWidth, maxWidth)
             sh.y = sh.y.clamp(minHeight, maxHeight)
