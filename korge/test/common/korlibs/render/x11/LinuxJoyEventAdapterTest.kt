@@ -1,6 +1,7 @@
 package korlibs.render.x11
 
 import korlibs.event.*
+import korlibs.event.gamepad.*
 import korlibs.io.async.*
 import korlibs.io.file.sync.*
 import korlibs.io.lang.*
