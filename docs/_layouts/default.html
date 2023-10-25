@@ -234,6 +234,13 @@
                 <h1 class="bd-title mb-0" id="content">{{ page.title }}</h1>
             </div>
             <p class="bd-lead">{{ page.description }}</p>
+
+            {% if jekyll.environment != "development" %}
+            <div>
+                <script async type="text/javascript" src="//cdn.carbonads.com/carbon.js?serve=CWYI42JM&placement=korgeorg" id="_carbonads_js"></script>
+            </div>
+            {% endif %}
+
             <div style="font-size:0.9rem;font-style: italic;color:var(--bs-gray)">
                 {% if page.version_review %}
                 Document reviewed for {{ page.version_review }}
