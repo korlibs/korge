@@ -40,6 +40,10 @@ open class UIBaseCheckBox<T : UIBaseCheckBox<T>>(
 ) : UIFocusableView(size), ViewLeaf {
     open class Kind
 
+    init {
+        simpleAnimator.autoInvalidateView = true
+    }
+
     val thisAsT: T get() = this.fastCastTo<T>()
     val onChange: Signal<T> = Signal<T>()
 
@@ -69,11 +73,6 @@ open class UIBaseCheckBox<T : UIBaseCheckBox<T>>(
     private var pressing by uiObservable(false) { updateState() }
 
     private var textBounds = Rectangle()
-
-    override fun renderInternal(ctx: RenderContext) {
-        updateState()
-        super.renderInternal(ctx)
-    }
 
     override fun onSizeChanged() {
         super.onSizeChanged()
