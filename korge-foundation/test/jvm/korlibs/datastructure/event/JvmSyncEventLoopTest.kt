@@ -56,9 +56,7 @@ class JvmSyncEventLoopTest {
             //println("ITEM")
             updateGame()
         }
-        nativeThread {
-            el.runTasksForever()
-        }
+        el.start()
         nativeThread {
             var running = true
             while (running) {
