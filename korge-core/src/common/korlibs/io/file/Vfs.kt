@@ -215,7 +215,7 @@ abstract class Vfs : AsyncCloseable {
 		FinalVfsFile(this, path)
 
 	abstract class Proxy : Vfs() {
-		private val logger = Logger("Proxy")
+		private val logger = Logger("Vfs.Proxy")
 		protected abstract suspend fun access(path: String): VfsFile
 		protected open suspend fun VfsFile.transform(): VfsFile = file(this.path)
 		//suspend protected fun transform2_f(f: VfsFile): VfsFile = transform(f)

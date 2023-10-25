@@ -2,7 +2,7 @@ package korlibs.time
 
 import kotlin.reflect.*
 
-class TimedCache<T : Any>(var validTime: TimeSpan, val timeProvider: TimeProvider = TimeProvider, val gen: () -> T) {
+class TimedCache<T : Any>(var ttl: TimeSpan, val timeProvider: TimeProvider = TimeProvider, val gen: () -> T) {
     private var cachedTime: DateTime = DateTime.EPOCH
     private lateinit var _value: T
 
@@ -12,7 +12,7 @@ class TimedCache<T : Any>(var validTime: TimeSpan, val timeProvider: TimeProvide
 
     operator fun getValue(obj: Any, prop: KProperty<*>?): T {
         val now = timeProvider.now()
-        if (cachedTime == DateTime.EPOCH || (now - cachedTime) >= validTime) {
+        if (cachedTime == DateTime.EPOCH || (now - cachedTime) >= ttl) {
             cachedTime = now
             this._value = gen()
         }

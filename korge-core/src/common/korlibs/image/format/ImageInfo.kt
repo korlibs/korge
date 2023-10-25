@@ -1,7 +1,6 @@
 package korlibs.image.format
 
-import korlibs.datastructure.Extra
-import korlibs.datastructure.toMap
+import korlibs.datastructure.*
 import korlibs.math.geom.*
 
 open class ImageInfo : Sizeable, Extra by Extra.Mixin() {
@@ -11,7 +10,7 @@ open class ImageInfo : Sizeable, Extra by Extra.Mixin() {
 
 	override val size: Size get() = Size(width, height)
 
-	override fun toString(): String = "ImageInfo(width=$width, height=$height, bpp=$bitsPerPixel, extra=${extra?.toMap()})"
+    override fun toString(): String = "ImageInfo(width=$width, height=$height, bpp=$bitsPerPixel, extra=${extra?.toMap()})"
 }
 
 fun ImageInfo(block: ImageInfo.() -> Unit): ImageInfo = ImageInfo().apply(block)
