@@ -4,120 +4,78 @@ import korlibs.audio.sound.*
 import korlibs.datastructure.thread.*
 import korlibs.ffi.*
 import korlibs.io.lang.*
-import korlibs.time.*
-import kotlinx.coroutines.*
 import kotlin.coroutines.*
 
 object FFIALSANativeSoundProvider : NativeSoundProvider() {
-    override fun createPlatformAudioOutput(coroutineContext: CoroutineContext, freq: Int): PlatformAudioOutput {
+    override fun createNewPlatformAudioOutput(coroutineContext: CoroutineContext, channels: Int, frequency: Int, gen: (AudioSamplesInterleaved) -> Unit): NewPlatformAudioOutput {
         //println("ALSANativeSoundProvider.createPlatformAudioOutput(freq=$freq)")
-        return ALSAPlatformAudioOutput(this, coroutineContext, freq)
+        return ALSAPlatformAudioOutput(this, coroutineContext, channels, frequency, gen)
     }
 }
 
 class ALSAPlatformAudioOutput(
     val soundProvider: FFIALSANativeSoundProvider,
     coroutineContext: CoroutineContext,
+    channels: Int,
     frequency: Int,
-) : DequeBasedPlatformAudioOutput(coroutineContext, frequency) {
+    gen: (AudioSamplesInterleaved) -> Unit,
+) : NewPlatformAudioOutput(coroutineContext, channels, frequency, gen) {
     //var nativeThread: Job? = null
     var nativeThread: NativeThread? = null
-    var running = false
 
-    var pcm: FFIPointer? = null
-
-    override suspend fun wait() {
-        running = false
-        //println("WAITING")
-        val time = measureTime {
-            while (pcm.address != 0L) {
-                delay(10.milliseconds)
-            }
-        }
-        //println("WAITED: time=$time")
-        //super.wait()
-    }
-
-    override fun start() {
-        if (running) return
-        running = true
+    override fun internalStart() {
         //nativeThread = launchImmediately(coroutineContext) {
-        nativeThread = nativeThread(isDaemon = true) {
-            // @TODO:
+        nativeThread = nativeThread(isDaemon = true) { thread ->
+            val buffer = AudioSamplesInterleaved(channels, 1024)
+            val pcm = A2.snd_pcm_open("default", A2.SND_PCM_STREAM_PLAYBACK, 0)
+            if (pcm.address == 0L) {
+                error("Can't initialize ALSA")
+                //running = false
+                //return@nativeThread
+            }
 
-            val temp = AudioSamplesInterleaved(nchannels, 1024)
+            //val latency = 8 * 4096
+            val latency = 32 * 4096
+            A2.snd_pcm_set_params(
+                pcm,
+                A2.SND_PCM_FORMAT_S16_LE,
+                A2.SND_PCM_ACCESS_RW_INTERLEAVED,
+                channels,
+                frequency,
+                1,
+                latency
+            )
             try {
-                while (running || availableRead > 0) {
-                    val readCount = readShortsInterleaved(temp)
-
-                    if (readCount == 0) {
+                while (thread.threadSuggestRunning) {
+                    genSafe(buffer)
+                    val written = A2.snd_pcm_writei(pcm, buffer.data, 0, buffer.totalSamples * channels, buffer.totalSamples)
+                    //println("offset=$offset, pending=$pending, written=$written")
+                    if (written == -A2.EPIPE) {
+                        //println("ALSA: EPIPE error")
+                        //A2.snd_pcm_prepare(pcm)
+                        A2.snd_pcm_recover(pcm, written, 0)
+                        continue
+                        //blockingSleep(1.milliseconds)
+                    } else if (written < 0) {
+                        println("ALSA: OTHER error: $written")
                         //delay(1.milliseconds)
                         Thread_sleep(1L)
-                        continue
-                    }
-
-                    //println("readCount=$readCount")
-                    var offset = 0
-                    var pending = readCount
-                    while (pending > 0) {
-                        if (pcm == null) {
-                            pcm = A2.snd_pcm_open("default", A2.SND_PCM_STREAM_PLAYBACK, 0)
-                            if (pcm.address == 0L) {
-                                error("Can't initialize ALSA")
-                                //running = false
-                                //return@nativeThread
-                            }
-
-                            //val latency = 8 * 4096
-                            val latency = 32 * 4096
-                            A2.snd_pcm_set_params(
-                                pcm,
-                                A2.SND_PCM_FORMAT_S16_LE,
-                                A2.SND_PCM_ACCESS_RW_INTERLEAVED,
-                                nchannels,
-                                frequency,
-                                1,
-                                latency
-                            )
-                        }
-
-                        val written = A2.snd_pcm_writei(pcm, temp.data, offset * nchannels, pending * nchannels, pending)
-                        //println("offset=$offset, pending=$pending, written=$written")
-                        if (written == -A2.EPIPE) {
-                            //println("ALSA: EPIPE error")
-                            //A2.snd_pcm_prepare(pcm)
-                            A2.snd_pcm_recover(pcm, written, 0)
-                            offset = 0
-                            pending = readCount
-                            continue
-                            //blockingSleep(1.milliseconds)
-                        } else if (written < 0) {
-                            println("ALSA: OTHER error: $written")
-                            //delay(1.milliseconds)
-                            Thread_sleep(1L)
-                            break
-                        } else {
-                            offset += written
-                            pending -= written
-                        }
+                        break
                     }
                 }
             } finally {
                 //println("!!COMPLETED : pcm=$pcm")
-                if (pcm.address != 0L) {
-                    A2.snd_pcm_wait(pcm, 1000)
-                    A2.snd_pcm_drain(pcm)
-                    A2.snd_pcm_close(pcm)
-                    pcm = null
-                    //println("!!CLOSED = $pcm")
-                }
+                A2.snd_pcm_wait(pcm, 1000)
+                A2.snd_pcm_drain(pcm)
+                A2.snd_pcm_close(pcm)
+                //println("!!CLOSED = $pcm")
             }
         }
     }
 
-    override fun stop() {
-        running = false
-        super.stop()
+    override fun internalStop() {
+        nativeThread?.threadSuggestRunning = false
+        nativeThread = null
     }
 }
 

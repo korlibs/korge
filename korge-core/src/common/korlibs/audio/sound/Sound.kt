@@ -1,31 +1,18 @@
 package korlibs.audio.sound
 
-import korlibs.datastructure.Extra
-import korlibs.time.DateTime
-import korlibs.time.TimeSpan
-import korlibs.time.milliseconds
-import korlibs.time.seconds
-import korlibs.audio.format.AudioDecodingProps
-import korlibs.audio.format.AudioFormats
-import korlibs.audio.format.WAV
-import korlibs.audio.format.defaultAudioFormats
-import korlibs.io.async.Signal
-import korlibs.io.async.delay
-import korlibs.io.concurrent.atomic.korAtomic
-import korlibs.io.file.FinalVfsFile
-import korlibs.io.file.Vfs
-import korlibs.io.file.VfsFile
-import korlibs.io.file.baseName
-import korlibs.io.lang.Disposable
-import korlibs.io.lang.unsupported
-import korlibs.io.stream.AsyncStream
-import korlibs.io.stream.openAsync
+import korlibs.audio.format.*
+import korlibs.datastructure.*
+import korlibs.datastructure.pauseable.*
+import korlibs.io.async.*
+import korlibs.io.file.*
+import korlibs.io.lang.*
+import korlibs.io.stream.*
+import korlibs.math.*
+import korlibs.time.*
 import kotlinx.coroutines.*
-import kotlin.coroutines.CoroutineContext
-import kotlin.native.concurrent.ThreadLocal
+import kotlin.coroutines.*
 import kotlin.coroutines.coroutineContext as coroutineContextKt
 
-@ThreadLocal
 expect val nativeSoundProvider: NativeSoundProvider
 
 open class LazyNativeSoundProvider(val gen: () -> NativeSoundProvider) : NativeSoundProvider() {
@@ -34,6 +21,8 @@ open class LazyNativeSoundProvider(val gen: () -> NativeSoundProvider) : NativeS
     override val target: String get() = parent.target
 
     override fun createPlatformAudioOutput(coroutineContext: CoroutineContext, freq: Int): PlatformAudioOutput = parent.createPlatformAudioOutput(coroutineContext, freq)
+    override fun createNewPlatformAudioOutput(coroutineContext: CoroutineContext, channels: Int, frequency: Int, gen: (AudioSamplesInterleaved) -> Unit): NewPlatformAudioOutput =
+        parent.createNewPlatformAudioOutput(coroutineContext, channels, frequency, gen)
 
     override suspend fun createSound(data: ByteArray, streaming: Boolean, props: AudioDecodingProps, name: String): Sound =
         parent.createSound(data, streaming, props, name)
@@ -51,16 +40,29 @@ open class LazyNativeSoundProvider(val gen: () -> NativeSoundProvider) : NativeS
     override fun dispose() = parent.dispose()
 }
 
-open class NativeSoundProvider : Disposable {
+open class NativeSoundProviderNew : NativeSoundProvider() {
+    final override fun createPlatformAudioOutput(coroutineContext: CoroutineContext, freq: Int): PlatformAudioOutput =
+        PlatformAudioOutputBasedOnNew(this, coroutineContext, freq)
+}
+
+open class NativeSoundProvider() : Disposable, Pauseable {
 	open val target: String = "unknown"
 
-    open var paused: Boolean = false
+    override var paused: Boolean = false
 
+    @Deprecated("")
     open fun createPlatformAudioOutput(coroutineContext: CoroutineContext, freq: Int = 44100): PlatformAudioOutput = PlatformAudioOutput(coroutineContext, freq)
-
+    @Deprecated("")
     suspend fun createPlatformAudioOutput(freq: Int = 44100): PlatformAudioOutput = createPlatformAudioOutput(coroutineContextKt, freq)
 
-	open suspend fun createSound(data: ByteArray, streaming: Boolean = false, props: AudioDecodingProps = AudioDecodingProps.DEFAULT, name: String = "Unknown"): Sound {
+    open fun createNewPlatformAudioOutput(coroutineContext: CoroutineContext, channels: Int, frequency: Int = 44100, gen: (AudioSamplesInterleaved) -> Unit): NewPlatformAudioOutput {
+        //println("createNewPlatformAudioOutput: ${this::class}")
+        return NewPlatformAudioOutput(coroutineContext, channels, frequency, gen)
+    }
+
+    suspend fun createNewPlatformAudioOutput(nchannels: Int, freq: Int = 44100, gen: (AudioSamplesInterleaved) -> Unit): NewPlatformAudioOutput = createNewPlatformAudioOutput(coroutineContextKt, nchannels, freq, gen)
+
+    open suspend fun createSound(data: ByteArray, streaming: Boolean = false, props: AudioDecodingProps = AudioDecodingProps.DEFAULT, name: String = "Unknown"): Sound {
         val format = props.formats ?: audioFormats
         val stream = format.decodeStreamOrError(data.openAsync(), props)
         return if (streaming) {
@@ -74,6 +76,7 @@ open class NativeSoundProvider : Disposable {
     //open val audioFormats: AudioFormats = AudioFormats(WAV, MP3Decoder, OGG)
 
     open suspend fun createSound(vfs: Vfs, path: String, streaming: Boolean = false, props: AudioDecodingProps = AudioDecodingProps.DEFAULT): Sound {
+        println("createSound.coroutineContext: $coroutineContextKt")
         return if (streaming) {
             //val stream = vfs.file(path).open()
             //createStreamingSound(audioFormats.decodeStreamOrError(stream, props)) {
@@ -94,7 +97,8 @@ open class NativeSoundProvider : Disposable {
     open suspend fun createNonStreamingSound(
         data: AudioData,
         name: String = "Unknown"
-    ): Sound = createStreamingSound(data.toStream(), true, name)
+    //): Sound = createStreamingSound(data.toStream(), true, name)
+    ): Sound = SoundAudioData(coroutineContextKt, data, this, true, name)
 
     open suspend fun createSound(
 		data: AudioData,
@@ -184,6 +188,35 @@ fun SoundProps.copySoundPropsFrom(other: ReadonlySoundProps) {
     this.volume = other.volume
     this.pitch = other.pitch
     this.panning = other.panning
+}
+
+fun SoundProps.volumeForChannel(channel: Int): Double {
+    return when (channel) {
+        0 -> panning.convertRangeClamped(-1.0, 0.0, 0.0, 1.0)
+        else -> 1.0 - panning.convertRangeClamped(0.0, 1.0, 0.0, 1.0)
+    }
+}
+
+fun SoundProps.applyPropsTo(samples: AudioSamplesInterleaved) {
+    for (ch in 0 until samples.channels) {
+        val volume01 = volumeForChannel(ch)
+        for (n in 0 until samples.totalSamples) {
+            var sample = samples[ch, n]
+            sample = (sample * volume01).toInt().toShort()
+            samples[ch, n] = sample
+        }
+    }
+}
+
+fun SoundProps.applyPropsTo(samples: AudioSamples) {
+    for (ch in 0 until samples.channels) {
+        val volume01 = volumeForChannel(ch)
+        for (n in 0 until samples.totalSamples) {
+            var sample = samples[ch, n]
+            sample = (sample * volume01).toInt().toShort()
+            samples[ch, n] = sample
+        }
+    }
 }
 
 fun SoundProps.copySoundPropsFromCombined(l: ReadonlySoundProps, r: ReadonlySoundProps) {

@@ -1,14 +1,11 @@
 package samples
 
-import korlibs.memory.arraycopy
-import korlibs.math.clamp
-import korlibs.audio.sound.AudioSamples
-import korlibs.audio.sound.nativeSoundProvider
-import korlibs.korge.scene.Scene
-import korlibs.korge.ui.uiVerticalStack
-import korlibs.korge.view.SContainer
-import korlibs.korge.view.text
-import korlibs.io.async.launchImmediately
+import korlibs.audio.sound.*
+import korlibs.io.concurrent.atomic.*
+import korlibs.korge.scene.*
+import korlibs.korge.ui.*
+import korlibs.korge.view.*
+import korlibs.math.*
 import kotlin.math.*
 
 class MainPolyphonic : Scene() {
@@ -22,65 +19,50 @@ class MainPolyphonic : Scene() {
             text("by Yann Tiersen")
         }
 
-        val maxAt = SAMPLE_COUNT / 16
-        for (i in 0 until SAMPLE_COUNT) {
-            sample[i] = when {
-                i < maxAt -> (i.toFloat() / maxAt.toFloat() * 2f - 1f)
-                else -> (1f - (i - maxAt).toFloat() / (SAMPLE_COUNT - maxAt).toFloat() * 2f)
-            }
-        }
-        var base = 40.0f
-        for (i in 0 until OCTAVE_COUNT) {
-            createPitches(base, octaves[i])
-            base *= 2f
-        }
-        channelStates[0].noteIndex = 0; nextNote(0)
-        channelStates[1].noteIndex = 0; nextNote(1)
+        channelStates[0].noteIndex.value = 0; nextNote(0)
+        channelStates[1].noteIndex.value = 0; nextNote(1)
 
         for (nchannel in 0 until 2) {
-            //for (nchannel in 0 until 1) {
-            launchImmediately {
-                //AudioTone.generate(0.25.seconds, 440.0).playAndWait()
-                val stream = nativeSoundProvider.createPlatformAudioOutput(44100)
-                stream.start()
-                while (true) {
-                    //val samples = AudioSamples(1, 44100 * 6)
-                    val samples = AudioSamples(1, 4410)
-                    //val samples = AudioSamples(2, 44100)
-                    //val samples = AudioSamples(1, 44100)
-                    audioOutCallback(nchannel, samples.data[0], samples.data[0].size)
-                    for (n in 1 until samples.channels) {
-                        arraycopy(samples.data[0], 0, samples.data[n], 0, samples.data[0].size)
-                    }
-                    samples.scaleVolume(.05f)
-                    //MemorySyncStream().apply { writeShortArrayLE(samples.data[0]) }.toByteArray().writeToFile("/tmp/data.raw")
-                    //for (n in 0 until 44100) println(samples.data[0][n])
-                    stream.add(samples)
-                }
+            val stream2 = nativeSoundProvider.createNewPlatformAudioOutput(1, 44100) { samples ->
+                audioOutCallback(nchannel, samples.data, samples.data.size)
+                samples.scaleVolume(.05f)
             }
+            stream2.start()
         }
     }
 
     companion object {
-        const val SAMPLE_COUNT = 0x10000
-        val sample = FloatArray(SAMPLE_COUNT)
+        const val SAMPLE_COUNT = 0x1000
+        val SAMPLE = FloatArray(SAMPLE_COUNT).also { SAMPLE ->
+            val maxAt = SAMPLE_COUNT / 16
+            for (i in 0 until SAMPLE_COUNT) {
+                SAMPLE[i] = when {
+                    i < maxAt -> (i.toFloat() / maxAt.toFloat() * 2f - 1f)
+                    else -> (1f - (i - maxAt).toFloat() / (SAMPLE_COUNT - maxAt).toFloat() * 2f)
+                }
+            }
+        }
 
         const val SAMPLE_RATE = 44100
 
-        const val OCTAVE_COUNT = 6
-
-        val octaves = Array(6) { FloatArray(12) }
+        val OCTAVES = Array(6) { FloatArray(12) }.also { OCTAVES ->
+            var base = 40.0f
+            for (element in OCTAVES) {
+                createPitches(base, element)
+                base *= 2f
+            }
+        }
 
         data class Note_t(val note: Int, val octave: Int, val duration: Int)
         data class ChannelState_t(
-            var currentNote: Note_t = Note_t(0, 0, 0),
-            var noteIndex: Int = 0,
-            var currentTime: Int = 0,
-            var currentsampleIndex: Float = 0f,
-            var currentsampleIncrement: Float = 0f
+            val currentNote: KorAtomicRef<Note_t> = KorAtomicRef(Note_t(0, 0, 0)),
+            val noteIndex: KorAtomicInt = KorAtomicInt(0),
+            val currentTime: KorAtomicInt = KorAtomicInt(0),
+            val currentsampleIndex: KorAtomicFloat = KorAtomicFloat(0f),
+            val currentsampleIncrement: KorAtomicFloat = KorAtomicFloat(0f)
         )
 
-        val channelStates = Array(3) { ChannelState_t() }
+        val channelStates = Array(2) { ChannelState_t() }
 
         // "S" means "#"
         const val NOTE_END = -2
@@ -359,18 +341,18 @@ class MainPolyphonic : Scene() {
 
         fun nextNote(channel: Int) {
             val state = channelStates[channel]
-            state.currentNote = channels[channel][state.noteIndex]
-            state.currentTime = 0
-            state.currentsampleIndex = 0f
-            val note = state.currentNote.note
+            state.currentNote.value = channels[channel][state.noteIndex.value]
+            state.currentTime.value = 0
+            state.currentsampleIndex.value = 0f
+            val note = state.currentNote.value.note
             if (note == NOTE_PAUSE) {
-                state.currentsampleIncrement = 0f
+                state.currentsampleIncrement.value = 0f
             } else {
-                state.currentsampleIncrement = octaves[state.currentNote.octave][note] * (SAMPLE_COUNT.toFloat()) / (SAMPLE_RATE.toFloat())
+                state.currentsampleIncrement.value = OCTAVES[state.currentNote.value.octave][note] * (SAMPLE_COUNT.toFloat()) / (SAMPLE_RATE.toFloat())
             }
 
-            state.noteIndex++
-            if (channels[channel][state.noteIndex].note == NOTE_END) state.noteIndex = 0
+            state.noteIndex.incrementAndGet()
+            if (channels[channel][state.noteIndex.value].note == NOTE_END) state.noteIndex.value = 0
         }
 
         // calculate current value of attack/delay/sustain/release envelope
@@ -397,18 +379,17 @@ class MainPolyphonic : Scene() {
             val state = channelStates[channel]
             var bufn = bufn
             for (i in 0 until reqn) {
-                val time = (state.currentTime.toFloat()) / (SAMPLE_RATE.toFloat())
-                if (state.currentTime++ == state.currentNote.duration) {
+                val time = (state.currentTime.value.toFloat()) / (SAMPLE_RATE.toFloat())
+                if (state.currentTime.getAndIncrement() == state.currentNote.value.duration) {
                     nextNote(channel)
                 }
                 var value: Float
-                if (state.currentsampleIncrement == 0.0f) {
+                if (state.currentsampleIncrement.value == 0.0f) {
                     value = 0.0f
                 } else {
-                    value = sample[state.currentsampleIndex.toInt()] * adsr(time, (state.currentNote.duration.toFloat()) / (SAMPLE_RATE.toFloat()))
+                    value = SAMPLE[state.currentsampleIndex.value.toInt()] * adsr(time, (state.currentNote.value.duration.toFloat()) / (SAMPLE_RATE.toFloat()))
                     value *= 0x7000f
-                    state.currentsampleIndex += state.currentsampleIncrement
-                    if (state.currentsampleIndex >= SAMPLE_COUNT) state.currentsampleIndex -= SAMPLE_COUNT.toFloat()
+                    state.currentsampleIndex.addAndGetMod(state.currentsampleIncrement.value, SAMPLE_COUNT.toFloat())
                 }
                 val rvalue = value.clamp(Short.MIN_VALUE.toFloat(), Short.MAX_VALUE.toInt().toFloat()).toInt().toShort()
                 //for (n in 0 until nchannels) buf[bufn++] = value.toShort()

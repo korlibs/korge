@@ -2,11 +2,78 @@ package korlibs.audio.sound
 
 import korlibs.datastructure.lock.*
 import korlibs.datastructure.thread.*
+import korlibs.io.async.*
 import korlibs.io.lang.*
 import korlibs.math.*
 import korlibs.time.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
+
+open class NewPlatformAudioOutput(
+    val coroutineContext: CoroutineContext,
+    val channels: Int,
+    val frequency: Int,
+    private val gen: (AudioSamplesInterleaved) -> Unit,
+) : Disposable, SoundProps {
+    var onCancel: Cancellable? = null
+    var paused: Boolean = false
+
+    private val lock = Lock()
+    fun genSafe(buffer: AudioSamplesInterleaved) {
+        lock {
+            try {
+                gen(buffer)
+                applyPropsTo(buffer)
+            } catch (e: Throwable) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    override var pitch: Double = 1.0
+    override var volume: Double = 1.0
+    override var panning: Double = 0.0
+
+    protected open fun internalStart() = Unit
+    protected open fun internalStop() = Unit
+
+    fun start() {
+        stop()
+        onCancel = coroutineContext.onCancel { stop() }
+        internalStart()
+    }
+    fun stop() {
+        onCancel?.cancel()
+        onCancel = null
+        internalStop()
+    }
+    final override fun dispose() = stop()
+}
+
+open class PlatformAudioOutputBasedOnNew(
+    val soundProvider: NativeSoundProvider,
+    coroutineContext: CoroutineContext,
+    frequency: Int,
+) : DequeBasedPlatformAudioOutput(coroutineContext, frequency) {
+    init{
+        println("PlatformAudioOutputBasedOnNew[$frequency] = $soundProvider")
+    }
+
+    val new = soundProvider.createNewPlatformAudioOutput(coroutineContext, 2, frequency) { buffer ->
+        //println("availableRead=$availableRead")
+        //if (availableRead >= buffer.data.size) {
+        readSamplesInterleaved(buffer, fully = true)
+        //}
+    }
+
+    override fun start() {
+        new.start()
+    }
+
+    override fun stop() {
+        new.stop()
+    }
+}
 
 open class PlatformAudioOutput(
     val coroutineContext: CoroutineContext,
@@ -195,15 +262,27 @@ open class DequeBasedPlatformAudioOutput(
         }
     }
 
+    protected fun readSamplesInterleaved(out: IAudioSamples, offset: Int = 0, count: Int = out.totalSamples - offset, nchannels: Int = out.channels, fully: Boolean): Int {
+        lock {
+            val totalRead = if (fully) count else minOf(availableRead, count)
+
+            for (n in 0 until totalRead) {
+                for (ch in 0 until nchannels) {
+                    out[ch, offset + n] = _readShort(ch)
+                }
+            }
+
+            return totalRead
+        }
+    }
+
     protected fun readSamples(samples: AudioSamples, offset: Int = 0, count: Int = samples.totalSamples - offset, fully: Boolean = false): Int {
         return _readShorts(samples.data, offset, count, fully = fully)
     }
 
     override val availableSamples: Int get() = lock { deque.availableRead }
     final override suspend fun add(samples: AudioSamples, offset: Int, size: Int) {
-        while (deque.availableRead >= 441 * 4) {
-            delay(10.milliseconds)
-        }
+        while (deque.availableRead >= 1024 * 16) delay(1.milliseconds)
         lock { deque.write(samples, offset, size) }
     }
 }

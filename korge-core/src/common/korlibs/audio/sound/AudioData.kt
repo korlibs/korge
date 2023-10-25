@@ -1,19 +1,11 @@
 package korlibs.audio.sound
 
-import korlibs.time.TimeSpan
-import korlibs.time.seconds
-import korlibs.memory.arraycopy
-import korlibs.audio.format.AudioDecodingProps
-import korlibs.audio.format.AudioEncodingProps
-import korlibs.audio.format.AudioFormat
-import korlibs.audio.format.AudioFormats
-import korlibs.audio.format.defaultAudioFormats
-import korlibs.io.file.VfsFile
-import korlibs.io.file.VfsOpenMode
-import korlibs.io.file.baseName
-import korlibs.io.lang.invalidOp
-import korlibs.io.stream.openUse
-import kotlin.math.min
+import korlibs.audio.format.*
+import korlibs.io.file.*
+import korlibs.io.lang.*
+import korlibs.memory.*
+import korlibs.time.*
+import kotlin.math.*
 
 class AudioData(
     val rate: Int,
@@ -32,6 +24,7 @@ class AudioData(
     val totalSamples: Int get() = samples.totalSamples
     val totalTime: TimeSpan get() = timeAtSample(totalSamples)
     fun timeAtSample(sample: Int): TimeSpan = ((sample).toDouble() / rate.toDouble()).seconds
+    fun sampleAtTime(time: TimeSpan): Int = (time.seconds * rate.toDouble()).toInt()
 
     operator fun get(channel: Int): ShortArray = samples.data[channel]
     operator fun get(channel: Int, sample: Int): Short = samples.data[channel][sample]

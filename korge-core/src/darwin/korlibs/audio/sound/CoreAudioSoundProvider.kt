@@ -2,101 +2,59 @@ package korlibs.audio.sound
 
 //import mystdio.*
 import cnames.structs.OpaqueAudioQueue
-import kotlinx.cinterop.Arena
+import korlibs.memory.*
+import kotlinx.cinterop.*
 import kotlinx.cinterop.COpaquePointer
-import kotlinx.cinterop.CPointer
-import kotlinx.cinterop.CPointerVarOf
 import kotlinx.cinterop.ShortVar
-import kotlinx.cinterop.StableRef
-import kotlinx.cinterop.alloc
-import kotlinx.cinterop.allocArray
-import kotlinx.cinterop.asStableRef
 import kotlinx.cinterop.convert
-import kotlinx.cinterop.get
-import kotlinx.cinterop.memScoped
-import kotlinx.cinterop.plus
-import kotlinx.cinterop.pointed
-import kotlinx.cinterop.ptr
-import kotlinx.cinterop.reinterpret
-import kotlinx.cinterop.set
-import kotlinx.cinterop.staticCFunction
-import kotlinx.cinterop.value
-import platform.AudioToolbox.AudioQueueAllocateBuffer
-import platform.AudioToolbox.AudioQueueBuffer
+import platform.AudioToolbox.*
 import platform.AudioToolbox.AudioQueueBufferRef
-import platform.AudioToolbox.AudioQueueDispose
-import platform.AudioToolbox.AudioQueueEnqueueBuffer
-import platform.AudioToolbox.AudioQueueNewOutput
 import platform.AudioToolbox.AudioQueueRef
-import platform.AudioToolbox.AudioQueueStart
-import platform.AudioToolbox.kAudioFormatUnsupportedDataFormatError
-import platform.AudioToolbox.kAudioQueueErr_BufferEmpty
-import platform.AudioToolbox.kAudioQueueErr_BufferInQueue
-import platform.AudioToolbox.kAudioQueueErr_CannotStart
-import platform.AudioToolbox.kAudioQueueErr_CodecNotFound
-import platform.AudioToolbox.kAudioQueueErr_DisposalPending
-import platform.AudioToolbox.kAudioQueueErr_EnqueueDuringReset
-import platform.AudioToolbox.kAudioQueueErr_InvalidBuffer
-import platform.AudioToolbox.kAudioQueueErr_InvalidCodecAccess
-import platform.AudioToolbox.kAudioQueueErr_InvalidDevice
-import platform.AudioToolbox.kAudioQueueErr_InvalidOfflineMode
-import platform.AudioToolbox.kAudioQueueErr_InvalidParameter
-import platform.AudioToolbox.kAudioQueueErr_InvalidProperty
-import platform.AudioToolbox.kAudioQueueErr_InvalidPropertySize
-import platform.AudioToolbox.kAudioQueueErr_InvalidPropertyValue
-import platform.AudioToolbox.kAudioQueueErr_InvalidQueueType
-import platform.AudioToolbox.kAudioQueueErr_InvalidRunState
-import platform.AudioToolbox.kAudioQueueErr_Permissions
-import platform.AudioToolbox.kAudioQueueErr_PrimeTimedOut
-import platform.AudioToolbox.kAudioQueueErr_QueueInvalidated
-import platform.AudioToolbox.kAudioQueueErr_RecordUnderrun
-import platform.CoreAudioTypes.AudioStreamBasicDescription
-import platform.CoreAudioTypes.kAudioFormatFlagIsPacked
-import platform.CoreAudioTypes.kAudioFormatLinearPCM
-import platform.CoreAudioTypes.kLinearPCMFormatFlagIsSignedInteger
-import platform.CoreFoundation.CFRunLoopGetCurrent
-import platform.CoreFoundation.kCFRunLoopCommonModes
+import platform.CoreAudioTypes.*
 import platform.darwin.OSStatus
-import kotlin.coroutines.CoroutineContext
+import platform.posix.*
+import kotlin.Int
+import kotlin.String
+import kotlin.Unit
+import kotlin.coroutines.*
 
 actual val nativeSoundProvider: NativeSoundProvider get() = CORE_AUDIO_NATIVE_SOUND_PROVIDER
 expect fun appleInitAudio()
 
-@ThreadLocal
 val CORE_AUDIO_NATIVE_SOUND_PROVIDER: CoreAudioNativeSoundProvider by lazy { CoreAudioNativeSoundProvider() }
 
-class CoreAudioNativeSoundProvider : NativeSoundProvider() {
+class CoreAudioNativeSoundProvider : NativeSoundProviderNew() {
     init {
         appleInitAudio()
     }
 
     //override suspend fun createSound(data: ByteArray, streaming: Boolean, props: AudioDecodingProps): NativeSound = AVFoundationNativeSoundNoStream(CoroutineScope(coroutineContext), audioFormats.decode(data))
 
-    override fun createPlatformAudioOutput(coroutineContext: CoroutineContext, freq: Int): PlatformAudioOutput = CoreAudioPlatformAudioOutput(coroutineContext, freq)
+    override fun createNewPlatformAudioOutput(coroutineContext: CoroutineContext, channels: Int, frequency: Int, gen: (AudioSamplesInterleaved) -> Unit): CoreAudioNewPlatformAudioOutput = CoreAudioNewPlatformAudioOutput(coroutineContext, frequency, channels, gen)
 }
 
-class CoreAudioPlatformAudioOutput(
+class CoreAudioNewPlatformAudioOutput(
     coroutineContext: CoroutineContext,
-    freq: Int
-) : DequeBasedPlatformAudioOutput(coroutineContext, freq) {
+    freq: Int,
+    nchannels: Int,
+    gen: (AudioSamplesInterleaved) -> Unit,
+) : NewPlatformAudioOutput(coroutineContext, nchannels, freq, gen) {
+    //private var samples: AudioSamplesInterleaved? = null
+
     val generator = CoreAudioGenerator(freq, nchannels, coroutineContext = coroutineContext) { data, dataSize ->
-        val temp = ShortArray(dataSize / nchannels)
-        for (m in 0 until nchannels) {
-            readShorts(m, temp)
-            for (n in 0 until dataSize / nchannels) {
-                data[n * nchannels + m] = temp[n]
-            }
-        }
-        //for (n in 0 until dataSize / nchannels) {
-        //    for (m in 0 until nchannels) {
-        //        data[n * nchannels + m] = readShort(m)
-        //    }
+        val totalSamples = dataSize / nchannels
+        //if (samples == null || samples!!.totalSamples != totalSamples || samples!!.channels != channels) {
         //}
+        val samples = AudioSamplesInterleaved(nchannels, totalSamples)
+        genSafe(samples)
+        samples.data.usePinned {
+            memcpy(data, it.startAddressOf, (dataSize * Short.SIZE_BYTES).convert())
+        }
     }
-    override fun start() {
+    override fun internalStart() {
         generator.start()
     }
-    override fun stop() {
+    override fun internalStop() {
         generator.dispose()
     }
 }
@@ -185,7 +143,7 @@ class CoreAudioGenerator(
 
             AudioQueueNewOutput(
                 format.ptr, staticCFunction(::coreAudioOutputCallback), thisStableRef!!.asCPointer(),
-                CFRunLoopGetCurrent(), kCFRunLoopCommonModes, 0.convert(), queue!!.ptr
+                null, null, 0.convert(), queue!!.ptr
             ).also {
                 if (it != 0) error("Error in AudioQueueNewOutput")
             }
