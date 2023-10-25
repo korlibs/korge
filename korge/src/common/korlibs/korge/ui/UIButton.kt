@@ -148,7 +148,9 @@ open class UIButton(
     var textColor: RGBA
         get() = richText.defaultStyle.color ?: Colors.WHITE
         set(value) {
-            richText = richText.withStyle(style = richText.defaultStyle.copy(color = value))
+            if (textColor != value) {
+                richText = richText.withStyle(style = richText.defaultStyle.copy(color = value))
+            }
         }
 
     private fun setInitialState() {
