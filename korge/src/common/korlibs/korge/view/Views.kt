@@ -306,7 +306,11 @@ class Views constructor(
 
 	fun render() {
         ag.startFrame()
-		renderNew()
+        try {
+            renderNew()
+        } finally {
+            ag.endFrame()
+        }
     }
 
     private val eventResults = EventResult()
@@ -315,10 +319,13 @@ class Views constructor(
 		//println(this)
 		//println("Update: $elapsed")
 		input.startFrame(elapsed)
-        eventResults.reset()
-        stage.updateSingleViewWithViewsAll(this, elapsed)
-        //println("Views.update:eventResults=$eventResults")
-		input.endFrame(elapsed)
+        try {
+            eventResults.reset()
+            stage.updateSingleViewWithViewsAll(this, elapsed)
+            //println("Views.update:eventResults=$eventResults")
+        } finally {
+            input.endFrame(elapsed)
+        }
 	}
 
 	fun mouseUpdated() {

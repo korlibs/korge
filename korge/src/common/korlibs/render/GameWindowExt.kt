@@ -180,7 +180,7 @@ fun GameWindow.dispatchUpdateEvent() {
 
 fun GameWindow.dispatchRenderEvent() {
     updateRenderLock { dispatch(events.renderEvent) }
-    ag.finish()
+    //ag.finish()
 }
 fun GameWindow.dispatchDropfileEventQueued(type: DropFileEvent.Type, files: List<VfsFile>?) = dispatchQueued(events.dropFileEvents) {
     this.type = type

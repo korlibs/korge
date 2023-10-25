@@ -29,9 +29,7 @@ object KorgeHeadless {
         init {
             eventLoop.start()
             eventLoop.setInterval(60.hz.timeSpan) {
-                (ag as? AGOpengl?)?.context?.use {
-                    this@HeadlessGameWindow.dispatchRenderEvent()
-                }
+                this@HeadlessGameWindow.dispatchRenderEvent()
             }
         }
 

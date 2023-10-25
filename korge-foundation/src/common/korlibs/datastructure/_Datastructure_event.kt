@@ -220,7 +220,7 @@ open class SyncEventLoop(
     private var thread: NativeThread? = null
     open fun start(): Unit {
         if (thread != null) return
-        thread = nativeThread {
+        thread = nativeThread(name = "eventLoopSync") {
             runTasksForever { thread?.threadSuggestRunning == true }
         }
     }

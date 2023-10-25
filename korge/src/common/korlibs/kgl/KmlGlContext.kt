@@ -24,4 +24,13 @@ abstract class KmlGlContext(val window: Any?, val gl: KmlGl, val parent: KmlGlCo
     }
     override fun close() {
     }
+
+    inline fun <T> setUnset(block: (KmlGlContext) -> T): T {
+        set()
+        try {
+            return block(this)
+        } finally {
+            unset()
+        }
+    }
 }

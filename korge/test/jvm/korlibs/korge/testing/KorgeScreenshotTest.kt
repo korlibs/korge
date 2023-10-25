@@ -139,13 +139,8 @@ class KorgeScreenshotTest {
     )
 
     @Test
-    fun test12() = korgeScreenshotTestV2(
-        Korge(
-            windowSize = Size(512, 512),
-            virtualSize = Size(512, 512),
-            backgroundColor = Colors.LIGHTGRAY
-        ),
-    ) {
+    //fun test12() = korgeScreenshotTestV2(
+    fun test12() = korgeScreenshotTest(bgcolor = Colors.LIGHTGRAY,) {
         val maxDegrees = (+16).degrees
 
         val rect1 = solidRect(100, 100, Colors.RED) {
@@ -155,7 +150,7 @@ class KorgeScreenshotTest {
             position(200, 200)
         }
 
-        it.recordGolden(this, "initial1")
+        assertScreenshot(this, "initial1")
 
         val rect2 = solidRect(150, 150, Colors.YELLOW) {
             rotation = maxDegrees
@@ -164,7 +159,7 @@ class KorgeScreenshotTest {
             position(350, 350)
         }
 
-        it.recordGolden(rect2, "initial2")
+        assertScreenshot(rect2, "initial2")
 
         val rect3 = solidRect(150, 150, Colors.GREEN) {
             rotation = maxDegrees
@@ -173,7 +168,7 @@ class KorgeScreenshotTest {
             position(100, 350)
         }
 
-        it.recordGolden(this, "initial3")
+        assertScreenshot(this, "initial3")
 
         val rectContainer = container {
             val a = 100
@@ -181,8 +176,6 @@ class KorgeScreenshotTest {
             solidRect(a / 2, a / 2, Colors.YELLOW)
         }
 
-        it.recordGolden(rectContainer, "initial4", DIFF_BY_PIXELS_SETTINGS)
-
-        it.endTest()
+        assertScreenshot(rectContainer, "initial4", psnr = 40.0)
     }
 }

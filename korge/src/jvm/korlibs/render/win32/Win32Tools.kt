@@ -337,6 +337,8 @@ class Win32OpenglContext(val gwconfig: GameWindowConfig, val hWnd: WinDef.HWND, 
         }
 
         logger.debug { "requestCoreProfile=$requestCoreProfile, isCore=$isCore, extensions=${extensions.size}" }
+
+        releaseCurrent()
     }
 
     val extensions by lazy {
@@ -370,9 +372,12 @@ class Win32OpenglContext(val gwconfig: GameWindowConfig, val hWnd: WinDef.HWND, 
     }
 
     private fun makeCurrent(hDC: HDC?, hRC: WinDef.HGLRC?) {
+        //println("Make current ${Thread.currentThread()} ; hDC=$hDC, hRC=$hRC")
+        //printStackTrace()
         if (!WGL.wglMakeCurrent(hDC, hRC)) {
             val error = Win32.GetLastError()
             logger.error { "WGL.wglMakeCurrent($hDC, $hRC).error = $error" }
+            //error("error setting OpenGL context")
         }
         //println("makeCurrent")
     }
