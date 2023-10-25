@@ -79,6 +79,11 @@ open class BrowserCanvasJsGameWindow(
     )
 
     private val gamepad = GamepadInfo()
+
+    init {
+        eventLoop.start()
+    }
+
     @Suppress("UNUSED_PARAMETER")
     override fun updateGamepads() {
         try {

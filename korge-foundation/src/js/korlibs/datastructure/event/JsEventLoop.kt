@@ -17,7 +17,7 @@ open class LocalJsEventLoop(
         if (closeable != null) return
 
         closeable = JsEventLoop.setIntervalFrame {
-            runTasksUntilEmpty()
+            runAvailableNextTask()
         }
     }
 

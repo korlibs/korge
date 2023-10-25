@@ -221,9 +221,7 @@ open class SyncEventLoop(
     open fun start(): Unit {
         if (thread != null) return
         thread = nativeThread {
-            while (thread?.threadSuggestRunning == true) {
-                runTasksUntilEmpty()
-            }
+            runTasksForever { thread?.threadSuggestRunning == true }
         }
     }
     open fun stop(): Unit {

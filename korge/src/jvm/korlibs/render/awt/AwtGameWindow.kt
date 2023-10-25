@@ -1,8 +1,6 @@
 package korlibs.render.awt
 
 import korlibs.datastructure.*
-import korlibs.datastructure.event.*
-import korlibs.datastructure.thread.*
 import korlibs.graphics.*
 import korlibs.image.awt.*
 import korlibs.image.bitmap.*
@@ -37,8 +35,8 @@ open class AwtCanvasGameWindow constructor(
         return _window
     }
 
-    val thread = nativeThread(name = "NewAwtGameWindow") {
-        (this.eventLoop as SyncEventLoop).runTasksForever()
+    init {
+        eventLoop.start()
     }
 
     override val width: Int get() = canvas.width

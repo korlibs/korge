@@ -44,9 +44,7 @@ class AwtGameCanvasTest {
             }
         }
 
-        nativeThread {
-            el.runTasksForever()
-        }
+        el.start()
 
         frame.contentPane.layout = GridLayout(2, 2)
         frame.contentPane.add(AwtAGOpenglCanvas().also {

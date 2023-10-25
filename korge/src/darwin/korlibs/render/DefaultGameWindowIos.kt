@@ -234,7 +234,6 @@ class MyGLKViewController(
     var lastWidth = 0
     var lastHeight = 0
     val darwinGamePad = DarwinGameControllerNative()
-    var eventLoopThread: NativeThread? = null
 
     override fun viewDidLoad() {
         val view = this.view as? GLKView?
@@ -248,12 +247,11 @@ class MyGLKViewController(
     }
 
     override fun viewWillAppear(animated: Boolean) {
-        eventLoopThread = nativeThread { thread -> (gameWindow.eventLoop as SyncEventLoop).runTasksForever { thread.threadSuggestRunning } }
+        gameWindow.eventLoop.start()
     }
 
     override fun viewWillDisappear(animated: Boolean) {
-        eventLoopThread?.threadSuggestRunning = false
-        eventLoopThread = null
+        gameWindow.eventLoop.stop()
     }
 
     override fun glkView(view: GLKView, drawInRect: CValue<CGRect>) {
