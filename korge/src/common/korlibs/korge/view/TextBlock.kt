@@ -26,38 +26,38 @@ class TextBlock(
     private var dirty = true
 
     @ViewProperty
-    var text: RichTextData = text; set(value) { field = value; invalidateText() }
+    var text: RichTextData = text; set(value) { if (field != value) { field = value; invalidateText() } }
 
     @ViewProperty
     @ViewPropertyProvider(TextAlignmentProvider::class)
-    var align: TextAlignment = align; set(value) { field = value; invalidProps() }
+    var align: TextAlignment = align; set(value) { if (field != value) { field = value; invalidProps() } }
 
     @ViewProperty
-    var includePartialLines: Boolean = false; set(value) { field = value; invalidProps() }
+    var includePartialLines: Boolean = false; set(value) { if (field != value) { field = value; invalidProps() } }
     @ViewProperty
-    var includeFirstLineAlways: Boolean = true; set(value) { field = value; invalidProps() }
+    var includeFirstLineAlways: Boolean = true; set(value) { if (field != value) { field = value; invalidProps() } }
     @ViewProperty
-    var fill: Paint? = colorMul; set(value) { field = value; invalidProps() }
+    var fill: Paint? = colorMul; set(value) { if (field != value) { field = value; invalidProps() } }
     @ViewProperty
-    var stroke: Stroke? = null; set(value) { field = value; invalidProps() }
+    var stroke: Stroke? = null; set(value) { if (field != value) { field = value; invalidProps() } }
     @ViewProperty
-    var wordWrap: Boolean = true; set(value) { field = value; invalidProps() }
+    var wordWrap: Boolean = true; set(value) { if (field != value) { field = value; invalidProps() } }
     @ViewProperty
-    var ellipsis: String? = "..."; set(value) { field = value; invalidProps() }
+    var ellipsis: String? = "..."; set(value) { if (field != value) { field = value; invalidProps() } }
     @ViewProperty
-    var padding: Margin = Margin.ZERO; set(value) { field = value; invalidProps() }
+    var padding: Margin = Margin.ZERO; set(value) { if (field != value) { field = value; invalidProps() } }
     @ViewProperty
-    var autoSize: Boolean = false; set(value) { field = value; invalidateText() }
+    var autoSize: Boolean = false; set(value) { if (field != value) { field = value; invalidateText() } }
     //@ViewProperty(min = 0.0, max = 10.0, clampMin = true)
     //var textRange: IntRange = ALL_TEXT_RANGE; set(value) { field = value; invalidateText() }
     @ViewProperty(min = 0.0, max = 10.0, clampMin = true)
-    var textRangeStart: Int = 0; set(value) { field = value; invalidateText() }
+    var textRangeStart: Int = 0; set(value) { if (field != value) { field = value; invalidateText() } }
     @ViewProperty(min = 0.0, max = 10.0, clampMin = true)
-    var textRangeEnd: Int = Int.MAX_VALUE; set(value) { field = value; invalidateText() }
+    var textRangeEnd: Int = Int.MAX_VALUE; set(value) { if (field != value) { field = value; invalidateText() } }
     var plainText: String
         get() = text.text
         set(value) {
-            text = RichTextData(value, style = text.defaultStyle)
+            if (plainText != value) text = RichTextData(value, style = text.defaultStyle)
         }
     private var image: Image? = null
     private var allBitmap: Boolean? = null
