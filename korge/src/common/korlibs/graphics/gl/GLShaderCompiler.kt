@@ -89,7 +89,7 @@ internal object GLShaderCompiler {
                 //println("!!! PROGRAM SUCCESSFULLY COMPILED: config=$config\n$vertexString\n$fragmentString" )
                 return Triple(fragmentShaderId, vertexShaderId, config)
             } catch (e: AGOpengl.ShaderException) {
-                logger.info { e.stackTraceToString() }
+                logger.debug { e.stackTraceToString() }
                 //e.printStackTrace()
 
                 errors += e
