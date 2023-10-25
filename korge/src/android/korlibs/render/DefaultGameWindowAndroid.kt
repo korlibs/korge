@@ -9,7 +9,6 @@ import korlibs.event.*
 import korlibs.graphics.*
 import korlibs.image.bitmap.*
 import korlibs.io.android.*
-import korlibs.io.lang.TimedCache
 import korlibs.time.*
 import kotlinx.coroutines.*
 
