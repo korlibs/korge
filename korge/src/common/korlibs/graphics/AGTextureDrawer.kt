@@ -2,6 +2,7 @@ package korlibs.graphics
 
 import korlibs.datastructure.*
 import korlibs.graphics.shader.*
+import korlibs.math.*
 import korlibs.memory.*
 
 val AG.textureDrawer by Extra.PropertyThis {
@@ -28,6 +29,15 @@ class AGTextureDrawer(val ag: AG) {
                 SET(out, texture2D(u_Tex, v_Tex["xy"]))
             }
         })
+        val PROGRAM_DEBUG = Program(VertexShader {
+            DefaultShaders {
+                SET(out, vec4(a_Pos, 0f.lit, 1f.lit))
+            }
+        }, FragmentShader {
+            DefaultShaders {
+                SET(out, vec4(1f, 0f, 1f, 1f))
+            }
+        })
     }
     val ref = AGProgramWithUniforms(PROGRAM)
 
@@ -39,10 +49,26 @@ class AGTextureDrawer(val ag: AG) {
         verticesDataF32[offset + 3] = ty
     }
 
-    fun draw(frameBuffer: AGFrameBuffer, tex: AGTexture, left: Float = -1f, top: Float = +1f, right: Float = +1f, bottom: Float = -1f) {
+    private fun Float.convertToM1P1(): Float {
+        return this.convertRange(0f, 1f, -1f, +1f)
+    }
+
+    fun drawXY(frameBuffer: AGFrameBuffer, tex: AGTexture?, x: Int, y: Int, width: Int, height: Int) {
+        val fwidth = frameBuffer.fullWidth.toFloat()
+        val fheight = frameBuffer.fullHeight.toFloat()
+        val left = x.toFloat() / fwidth
+        val top = y.toFloat() / fheight
+        val right = (x + width).toFloat() / fwidth
+        val bottom = (y + height).toFloat() / fheight
+        return draw(frameBuffer, tex, left.convertToM1P1(), top.convertToM1P1(), right.convertToM1P1(), bottom.convertToM1P1())
+    }
+
+    fun draw(frameBuffer: AGFrameBuffer, tex: AGTexture?, left: Float = -1f, top: Float = +1f, right: Float = +1f, bottom: Float = -1f) {
         //tex.upload(Bitmap32(32, 32) { x, y -> Colors.RED })
         //uniforms.set(DefaultShaders.u_Tex, tex)
-        textureUnits.set(DefaultShaders.u_Tex, tex)
+        if (tex != null) {
+            textureUnits.set(DefaultShaders.u_Tex, tex)
+        }
 
         val texLeft = 0f
         val texRight = +1f
@@ -63,7 +89,7 @@ class AGTextureDrawer(val ag: AG) {
         ag.draw(
             frameBuffer,
             vertexData = vertexData,
-            program = PROGRAM,
+            program = if (tex != null) PROGRAM else PROGRAM_DEBUG,
             drawType = AGDrawType.TRIANGLE_STRIP,
             indexType = AGIndexType.NONE,
             vertexCount = 4,
