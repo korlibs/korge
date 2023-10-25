@@ -1,11 +1,10 @@
 package korlibs.korge
 
-import korlibs.datastructure.event.*
-import korlibs.datastructure.thread.*
 import korlibs.graphics.*
 import korlibs.graphics.gl.*
 import korlibs.graphics.log.*
 import korlibs.image.format.*
+import korlibs.io.lang.*
 import korlibs.korge.view.*
 import korlibs.math.geom.*
 import korlibs.render.*
@@ -28,14 +27,11 @@ object KorgeHeadless {
         }
 
         init {
-            if (NativeThread.isSupported) {
-                nativeThread(name = "HeadlessGameWindow-syncEventLoop") { (eventLoop as SyncEventLoop).runTasksForever() }
-            } else {
-                eventLoop.setInterval(1.milliseconds) { }
-            }
+            eventLoop.start()
             eventLoop.setInterval(60.hz.timeSpan) {
-                (ag as? AGOpengl?)?.context?.set()
-                this@HeadlessGameWindow.dispatchRenderEvent()
+                (ag as? AGOpengl?)?.context?.use {
+                    this@HeadlessGameWindow.dispatchRenderEvent()
+                }
             }
         }
 
