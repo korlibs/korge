@@ -11,10 +11,14 @@ import korlibs.logger.*
 import korlibs.time.*
 import kotlin.time.*
 
+expect fun createPlatformEventLoop(precise: Boolean = true): SyncEventLoop
+
 interface EventLoop : Pauseable, Closeable {
+    companion object
     fun setImmediate(task: () -> Unit)
     fun setTimeout(time: TimeSpan, task: () -> Unit): Closeable
     fun setInterval(time: TimeSpan, task: () -> Unit): Closeable
+    fun setIntervalFrame(task: () -> Unit): Closeable = setInterval(60.hz.timeSpan, task)
 }
 fun EventLoop.setInterval(time: Frequency, task: () -> Unit): Closeable = setInterval(time.timeSpan, task)
 
@@ -22,7 +26,7 @@ abstract class BaseEventLoop : EventLoop, Pauseable {
     val runLock = Lock()
 }
 
-class SyncEventLoop(
+open class SyncEventLoop(
     /** precise=true will have better precision at the cost of more CPU-usage (busy waiting) */
     //var precise: Boolean = true,
     var precise: Boolean = false,
@@ -209,5 +213,21 @@ class SyncEventLoop(
             runTasksUntilEmpty()
             NativeThread.sleep(1.milliseconds)
         }
+    }
+
+    // START
+
+    private var thread: NativeThread? = null
+    open fun start(): Unit {
+        if (thread != null) return
+        thread = nativeThread {
+            while (thread?.threadSuggestRunning == true) {
+                runTasksUntilEmpty()
+            }
+        }
+    }
+    open fun stop(): Unit {
+        thread?.threadSuggestRunning = false
+        thread = null
     }
 }

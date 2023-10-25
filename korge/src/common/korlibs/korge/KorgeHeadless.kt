@@ -20,8 +20,6 @@ object KorgeHeadless {
         exitProcessOnClose: Boolean = false,
         override val devicePixelRatio: Double = 1.0,
     ) : GameWindow() {
-        val syncEventLoop by lazy { eventLoop as SyncEventLoop }
-
         override val width: Int = size.width.toInt()
         override val height: Int = size.height.toInt()
 
@@ -30,7 +28,11 @@ object KorgeHeadless {
         }
 
         init {
-            nativeThread(name = "HeadlessGameWindow-syncEventLoop") { syncEventLoop.runTasksForever() }
+            if (NativeThread.isSupported) {
+                nativeThread(name = "HeadlessGameWindow-syncEventLoop") { (eventLoop as SyncEventLoop).runTasksForever() }
+            } else {
+                eventLoop.setInterval(1.milliseconds) { }
+            }
             eventLoop.setInterval(60.hz.timeSpan) {
                 (ag as? AGOpengl?)?.context?.set()
                 this@HeadlessGameWindow.dispatchRenderEvent()

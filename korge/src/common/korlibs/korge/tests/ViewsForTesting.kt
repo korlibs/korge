@@ -39,11 +39,12 @@ open class ViewsForTesting(
         override fun now(): DateTime = time
     }
     inner class TestGameWindow(initialSize: Size) : GameWindowLog() {
-        val syncEventLoop by lazy { eventLoop as SyncEventLoop }
         init {
-            syncEventLoop.immediateRun = true
-            syncEventLoop.nowProvider = { time.unixMillisDouble.milliseconds }
+            eventLoop.immediateRun = true
+            eventLoop.nowProvider = { time.unixMillisDouble.milliseconds }
         }
+
+        val syncEventLoop by lazy { eventLoop as SyncEventLoop }
         override val autoUpdateInterval = false
         override var androidContextAny: Any? = null
         override val devicePixelRatio: Double get() = this@ViewsForTesting.devicePixelRatio

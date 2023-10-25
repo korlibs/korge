@@ -124,9 +124,7 @@ open class GameWindow :
     //override val ag: AG = LogAG()
     override val ag: AG = AGDummy()
 
-    open fun createEventLoop(): BaseEventLoop = SyncEventLoop(precise = false)
-
-    val eventLoop: BaseEventLoop by lazy { createEventLoop() }
+    val eventLoop: SyncEventLoop = createPlatformEventLoop(precise = false)
     //val renderEventLoop = SyncEventLoop(precise = false, immediateRun = true)
     open val coroutineDispatcher by lazy {
         EventLoopCoroutineDispatcher(eventLoop).also {

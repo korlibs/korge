@@ -1,6 +1,5 @@
 package korlibs.render
 
-import korlibs.datastructure.event.*
 import korlibs.event.*
 import korlibs.event.Touch
 import korlibs.graphics.*
@@ -21,7 +20,6 @@ import org.w3c.dom.events.MouseEvent
 private external val navigator: dynamic
 
 open class JsGameWindow : GameWindow() {
-    override fun createEventLoop(): BaseEventLoop = JsEventLoop
 }
 
 open class BrowserCanvasJsGameWindow(
