@@ -233,12 +233,12 @@ open class AGFrameBuffer(val base: AGFrameBufferBase, val id: Int = -1) : Closea
     private var _scissor = RectangleInt()
     var scissor: RectangleInt? = null
 
-    open fun setSize(width: Int, height: Int) {
-        setSize(0, 0, width, height)
+    open fun setSize(width: Int, height: Int): Boolean {
+        return setSize(0, 0, width, height)
     }
 
-    open fun setSize(x: Int, y: Int, width: Int, height: Int, fullWidth: Int = width, fullHeight: Int = height) {
-        if (this.x == x && this.y == y && this.width == width && this.height == height && this.fullWidth == fullWidth && this.fullHeight == fullHeight) return
+    open fun setSize(x: Int, y: Int, width: Int, height: Int, fullWidth: Int = width, fullHeight: Int = height): Boolean {
+        if (this.x == x && this.y == y && this.width == width && this.height == height && this.fullWidth == fullWidth && this.fullHeight == fullHeight) return true
         tex.upload(NullBitmap(width, height))
 
         base.estimatedMemoryUsage = ByteUnits.fromBytes(fullWidth * fullHeight * (4 + 4))
@@ -250,6 +250,8 @@ open class AGFrameBuffer(val base: AGFrameBufferBase, val id: Int = -1) : Closea
         this.fullWidth = fullWidth
         this.fullHeight = fullHeight
         markAsDirty()
+
+        return false
     }
 
     fun scissor(scissor: RectangleInt?) {
