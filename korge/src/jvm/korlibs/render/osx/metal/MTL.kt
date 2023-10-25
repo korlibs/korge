@@ -1,11 +1,13 @@
 package korlibs.render.osx.metal
 
 import com.sun.jna.*
+import korlibs.ffi.osx.*
 import korlibs.io.dynamic.*
 import korlibs.io.lang.*
 import korlibs.memory.*
-import korlibs.memory.dyn.osx.*
 import korlibs.render.osx.*
+import korlibs.render.osx.NSMutableDictionary
+import korlibs.render.osx.NSString
 import korlibs.render.platform.*
 import javax.swing.*
 

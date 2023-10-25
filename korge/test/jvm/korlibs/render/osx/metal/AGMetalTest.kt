@@ -1,11 +1,8 @@
 package korlibs.render.osx.metal
 
 import korlibs.image.color.*
-import korlibs.image.format.*
-import korlibs.memory.*
-import korlibs.memory.dyn.osx.*
 import korlibs.platform.*
-import kotlinx.coroutines.*
+import korlibs.render.osx.*
 import org.junit.Test
 import kotlin.test.*
 
@@ -47,7 +44,7 @@ class AGMetalTest {
         }
         //println("vertexBuffer.contents=${vertexBuffer.contents}")
         //println("vertexBuffer.length=${vertexBuffer.length}")
-        val library = device.newLibrary(/*language=c*/NSString("""
+        val library = device.newLibrary(/*language=metal*/NSString("""
             typedef struct {
                 packed_float3 position;
                 // [[flat]]
@@ -133,7 +130,7 @@ class AGMetalTest {
 
     private fun macTestWithAutoreleasePool(block: () -> Unit) {
         if (!Platform.isMac) return
-        nsAutoreleasePool {
+        autoreleasePool {
         //run {
             block()
         }

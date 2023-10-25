@@ -5,7 +5,6 @@ import com.sun.jna.platform.win32.*
 import korlibs.io.lang.*
 import korlibs.logger.*
 import korlibs.platform.Platform
-import korlibs.memory.dyn.*
 import korlibs.render.*
 import korlibs.render.osx.*
 import korlibs.render.platform.*

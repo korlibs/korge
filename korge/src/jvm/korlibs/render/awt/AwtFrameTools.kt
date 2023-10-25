@@ -2,6 +2,7 @@ package korlibs.render.awt
 
 import korlibs.datastructure.*
 import korlibs.event.*
+import korlibs.ffi.osx.*
 import korlibs.graphics.*
 import korlibs.image.awt.*
 import korlibs.io.dynamic.*
@@ -9,7 +10,6 @@ import korlibs.io.file.*
 import korlibs.io.file.std.*
 import korlibs.math.*
 import korlibs.math.geom.*
-import korlibs.memory.dyn.osx.*
 import korlibs.platform.*
 import korlibs.render.*
 import java.awt.*
@@ -227,8 +227,8 @@ fun Component.hapticFeedbackGenerate(kind: GameWindow.HapticFeedbackKind) {
             val performanceTime = PERFORMANCE_TIME_NOW
 
             NSClass("NSHapticFeedbackManager")
-                .msgSend("defaultPerformer")
-                .msgSend("performFeedbackPattern:performanceTime:", kindInt.toLong(), performanceTime.toLong())
+                .msgSendRef("defaultPerformer")
+                .msgSendVoid("performFeedbackPattern:performanceTime:", kindInt.toLong(), performanceTime.toLong())
         }
         else -> {
             Unit
