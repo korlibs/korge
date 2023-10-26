@@ -23,6 +23,12 @@ object AndroidSdk {
 
     @JvmStatic
     private fun _getAndroidSdkOrNullCreateLocalProperties(project: Project): String? {
+        // Project property (assume it exists without checking because tests require it)
+        val extensionAndroidSdkPath = (
+            project.findProperty(ANDROID_SDK_PATH_KEY)?.toString() ?: project.extensions.findByName(ANDROID_SDK_PATH_KEY)?.toString()
+            )
+        if (extensionAndroidSdkPath != null) return extensionAndroidSdkPath
+
         val localPropertiesFile = File(project.rootProject.rootDir, "local.properties")
         val props = Properties().apply { if (localPropertiesFile.exists()) load(localPropertiesFile.readText().reader()) }
         if (props.getProperty("sdk.dir") != null) return props.getProperty("sdk.dir")
@@ -37,12 +43,6 @@ object AndroidSdk {
         // Environment variable
         val env = System.getenv("ANDROID_SDK_ROOT")?.takeIf { File(it).isDirectory }
         if (env != null) return env
-
-        // Project property (assume it exists without checking because tests require it)
-        val extensionAndroidSdkPath = (
-            project.findProperty(ANDROID_SDK_PATH_KEY)?.toString() ?: project.extensions.findByName(ANDROID_SDK_PATH_KEY)?.toString()
-        )
-        if (extensionAndroidSdkPath != null) return extensionAndroidSdkPath
 
         // GUESS IT
         val userHome = System.getProperty("user.home")
