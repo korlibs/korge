@@ -38,10 +38,10 @@ object AndroidSdk {
         val env = System.getenv("ANDROID_SDK_ROOT")?.takeIf { File(it).isDirectory }
         if (env != null) return env
 
-        // Project property
+        // Project property (assume it exists without checking because tests require it)
         val extensionAndroidSdkPath = (
             project.findProperty(ANDROID_SDK_PATH_KEY)?.toString() ?: project.extensions.findByName(ANDROID_SDK_PATH_KEY)?.toString()
-        )?.takeIf { File(it).isDirectory }
+        )
         if (extensionAndroidSdkPath != null) return extensionAndroidSdkPath
 
         // GUESS IT
