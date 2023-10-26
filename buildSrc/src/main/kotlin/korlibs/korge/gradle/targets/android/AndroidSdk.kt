@@ -1,6 +1,5 @@
 package korlibs.korge.gradle.targets.android
 
-import korlibs.korge.gradle.util.*
 import org.gradle.api.*
 import java.io.*
 import java.util.*
@@ -13,20 +12,39 @@ object AndroidSdk {
     //Windows: %LOCALAPPDATA%\Android\sdk
     @JvmStatic
     fun getAndroidSdkPath(project: Project): String {
-        val extensionAndroidSdkPath = project.findProperty(ANDROID_SDK_PATH_KEY)?.toString() ?: project.extensions.findByName(ANDROID_SDK_PATH_KEY)?.toString()
-        if (extensionAndroidSdkPath != null) return extensionAndroidSdkPath
-        val localPropertiesFile = project.projectDir["local.properties"]
-        if (localPropertiesFile.exists()) {
-            val props = Properties().apply { load(localPropertiesFile.readText().reader()) }
-            if (props.getProperty("sdk.dir") != null) {
-                return props.getProperty("sdk.dir")!!
-            }
-        }
-        return guessAndroidSdkPath() ?: error("Can't find android sdk (ANDROID_HOME environment not set and Android SDK not found in standard locations)")
+        return _getAndroidSdkOrNullCreateLocalProperties(project)
+            ?: error("Can't find android sdk (ANDROID_HOME environment not set and Android SDK not found in standard locations)")
     }
 
     @JvmStatic
-    fun guessAndroidSdkPath(): String? {
+    fun hasAndroidSdk(project: Project): Boolean {
+        return _getAndroidSdkOrNullCreateLocalProperties(project) != null
+    }
+
+    @JvmStatic
+    private fun _getAndroidSdkOrNullCreateLocalProperties(project: Project): String? {
+        // Project property (assume it exists without checking because tests require it)
+        val extensionAndroidSdkPath = (
+            project.findProperty(ANDROID_SDK_PATH_KEY)?.toString() ?: project.extensions.findByName(ANDROID_SDK_PATH_KEY)?.toString()
+            )
+        if (extensionAndroidSdkPath != null) return extensionAndroidSdkPath
+
+        val localPropertiesFile = File(project.rootProject.rootDir, "local.properties")
+        val props = Properties().apply { if (localPropertiesFile.exists()) load(localPropertiesFile.readText().reader()) }
+        if (props.getProperty("sdk.dir") != null) return props.getProperty("sdk.dir")
+        val sdk = __getAndroidSdkOrNull(project) ?: return null
+        props.setProperty("sdk.dir", sdk.replace("\\", "/"))
+        localPropertiesFile.writer().use { props.store(it, null) }
+        return sdk
+    }
+
+    @JvmStatic
+    private fun __getAndroidSdkOrNull(project: Project): String? {
+        // Environment variable
+        val env = System.getenv("ANDROID_SDK_ROOT")?.takeIf { File(it).isDirectory }
+        if (env != null) return env
+
+        // GUESS IT
         val userHome = System.getProperty("user.home")
         return listOfNotNull(
             System.getenv("ANDROID_HOME"),
@@ -36,18 +54,6 @@ object AndroidSdk {
             "$userHome/AndroidSDK",  // location of sdkmanager on linux
             "/usr/lib/android-sdk",  // location on debian based linux (sudo apt install android-sdk)
             "/Library/Android/sdk"   // some other flavor of linux
-        ).firstOrNull { File(it).exists() }
-    }
-
-    @JvmStatic
-    fun hasAndroidSdk(project: Project): Boolean {
-        val env = System.getenv("ANDROID_SDK_ROOT")
-        if (env != null) return true
-        val localPropsFile = File(project.rootProject.rootDir, "local.properties")
-        if (!localPropsFile.exists()) {
-            val sdkPath = AndroidSdk.guessAndroidSdkPath() ?: return false
-            localPropsFile.writeText("sdk.dir=${sdkPath.replace("\\", "/")}")
-        }
-        return true
+        ).firstOrNull { File(it).isDirectory }
     }
 }

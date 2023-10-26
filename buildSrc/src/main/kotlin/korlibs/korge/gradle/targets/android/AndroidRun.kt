@@ -10,6 +10,10 @@ import org.jetbrains.kotlin.gradle.dsl.*
 import java.io.*
 
 fun Project.installAndroidRun(dependsOnList: List<String>, direct: Boolean, isKorge: Boolean) {
+    if (!AndroidSdk.hasAndroidSdk(this)) {
+        logger.info("Not configuring android because couldn't find the SDK")
+        return
+    }
 
     val createAndroidManifest = tasks.createThis<AndroidCreateAndroidManifest>("createAndroidManifest") {
         this.isKorge = isKorge
