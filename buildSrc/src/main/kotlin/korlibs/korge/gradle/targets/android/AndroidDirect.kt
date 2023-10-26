@@ -16,6 +16,11 @@ import org.jetbrains.kotlin.gradle.dsl.*
 import java.io.*
 
 fun Project.configureAndroidDirect(projectType: ProjectType, isKorge: Boolean) {
+    if (!AndroidSdk.hasAndroidSdk(this)) {
+        logger.info("Couldn't find ANDROID SDK, do not configuring android")
+        return
+    }
+
     project.ensureAndroidLocalPropertiesWithSdkDir()
 
     if (projectType.isExecutable) {
