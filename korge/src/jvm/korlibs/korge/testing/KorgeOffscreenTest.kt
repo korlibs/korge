@@ -13,38 +13,39 @@ import kotlinx.coroutines.*
 
 internal fun createKmlGlContext(fboWidth: Int, fboHeight: Int): KmlGlContext {
     val ctx = KmlGlContextDefault()
-    ctx.set()
+    ctx.setUnset {
 
-    val gl = ctx.gl
+        val gl = ctx.gl
 
-    val GL_RGBA8 = 0x8058
+        val GL_RGBA8 = 0x8058
 
-    // Build the texture that will serve as the color attachment for the framebuffer.
-    val colorRenderbuffer = gl.genRenderbuffer()
-    gl.bindRenderbuffer(KmlGl.RENDERBUFFER, colorRenderbuffer)
-    gl.renderbufferStorage(KmlGl.RENDERBUFFER, GL_RGBA8, fboWidth, fboHeight)
-    gl.bindRenderbuffer(KmlGl.RENDERBUFFER, 0)
+        // Build the texture that will serve as the color attachment for the framebuffer.
+        val colorRenderbuffer = gl.genRenderbuffer()
+        gl.bindRenderbuffer(KmlGl.RENDERBUFFER, colorRenderbuffer)
+        gl.renderbufferStorage(KmlGl.RENDERBUFFER, GL_RGBA8, fboWidth, fboHeight)
+        gl.bindRenderbuffer(KmlGl.RENDERBUFFER, 0)
 
-    // Build the texture that will serve as the depth attachment for the framebuffer.
-    val depthRenderbuffer = gl.genRenderbuffer()
-    gl.bindRenderbuffer(KmlGl.RENDERBUFFER, depthRenderbuffer)
-    gl.renderbufferStorage(KmlGl.RENDERBUFFER, KmlGl.DEPTH_COMPONENT, fboWidth, fboHeight)
-    gl.bindRenderbuffer(KmlGl.RENDERBUFFER, 0)
+        // Build the texture that will serve as the depth attachment for the framebuffer.
+        val depthRenderbuffer = gl.genRenderbuffer()
+        gl.bindRenderbuffer(KmlGl.RENDERBUFFER, depthRenderbuffer)
+        gl.renderbufferStorage(KmlGl.RENDERBUFFER, KmlGl.DEPTH_COMPONENT, fboWidth, fboHeight)
+        gl.bindRenderbuffer(KmlGl.RENDERBUFFER, 0)
 
-    // Build the framebuffer.
-    val framebuffer = gl.genFramebuffer()
-    gl.bindFramebuffer(KmlGl.FRAMEBUFFER, framebuffer)
-    gl.framebufferRenderbuffer(KmlGl.FRAMEBUFFER, KmlGl.COLOR_ATTACHMENT0, KmlGl.RENDERBUFFER, colorRenderbuffer)
-    gl.framebufferRenderbuffer(KmlGl.FRAMEBUFFER, KmlGl.DEPTH_ATTACHMENT, KmlGl.RENDERBUFFER, depthRenderbuffer)
+        // Build the framebuffer.
+        val framebuffer = gl.genFramebuffer()
+        gl.bindFramebuffer(KmlGl.FRAMEBUFFER, framebuffer)
+        gl.framebufferRenderbuffer(KmlGl.FRAMEBUFFER, KmlGl.COLOR_ATTACHMENT0, KmlGl.RENDERBUFFER, colorRenderbuffer)
+        gl.framebufferRenderbuffer(KmlGl.FRAMEBUFFER, KmlGl.DEPTH_ATTACHMENT, KmlGl.RENDERBUFFER, depthRenderbuffer)
 
-    val status = gl.checkFramebufferStatus(KmlGl.FRAMEBUFFER)
-    //if (status != GL_FRAMEBUFFER_COMPLETE)
-    // Error
+        val status = gl.checkFramebufferStatus(KmlGl.FRAMEBUFFER)
+        //if (status != GL_FRAMEBUFFER_COMPLETE)
+        // Error
+    }
 
     return ctx
 }
 
-fun suspendTestWithOffscreenAG(fboSize: Size, checkGl: Boolean = false, logGl: Boolean = false, callback: suspend CoroutineScope.(ag: AG) -> Unit) = suspendTest {
+fun suspendTestWithOffscreenAG(fboSize: Size, checkGl: Boolean = false, logGl: Boolean = false, setContext: Boolean = true, callback: suspend CoroutineScope.(ag: AG) -> Unit) = suspendTest {
     val fboWidth = fboSize.width.toInt()
     val fboHeight = fboSize.height.toInt()
 
@@ -54,11 +55,13 @@ fun suspendTestWithOffscreenAG(fboSize: Size, checkGl: Boolean = false, logGl: B
     try {
         ag.contextsToFree += ctx
         ag.mainFrameBuffer.setSize(fboWidth, fboHeight)
-        ctx.set()
-
+        if (setContext) ctx.set()
         callback(ag)
     } finally {
-        ag.contextsToFree.forEach { it?.unset(); it?.close() }
+        ag.contextsToFree.forEach {
+            if (setContext) it?.unset()
+            it?.close()
+        }
         ag.contextsToFree.clear()
     }
 }
@@ -93,12 +96,10 @@ inline fun korgeScreenshotTest(
     }
 
     var exception: Throwable? = null
-    suspendTestWithOffscreenAG(windowSize, checkGl = checkGl, logGl = logGl) { ag ->
-        KorgeHeadless(KorgeConfig(
-            windowSize = windowSize, virtualSize = virtualSize,
-            backgroundColor = bgcolor,
-            stageBuilder = { OffscreenStage(it) }
-            ),
+    suspendTestWithOffscreenAG(windowSize, checkGl = checkGl, logGl = logGl, setContext = false) { ag ->
+        val deferred = CompletableDeferred<Unit>()
+        val gameWindow = KorgeHeadless(
+            config = KorgeConfig(windowSize = windowSize, virtualSize = virtualSize, backgroundColor = bgcolor, stageBuilder = { OffscreenStage(it) }),
             ag = ag, devicePixelRatio = devicePixelRatio,
         ) {
             injector.mapInstance(offscreenContext)
@@ -108,8 +109,11 @@ inline fun korgeScreenshotTest(
                 exception = e
             } finally {
                 gameWindow.close()
+                deferred.complete(Unit)
             }
         }
+        deferred.await()
+        gameWindow.close()
     }
     exception?.let { throw it }
 }

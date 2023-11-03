@@ -484,24 +484,10 @@ data class FullScreenEvent(var fullscreen: Boolean = false) : TypedEvent<FullScr
     }
 }
 
-open class RenderEvent : TypedEvent<RenderEvent>(RenderEvent) {
-    companion object : RenderEvent(), EventType<RenderEvent>
+class RenderEvent : TypedEvent<RenderEvent>(RenderEvent) {
+    companion object : EventType<RenderEvent>
 
-    var update: Boolean = true
-    var render: Boolean = true
-    fun copyFrom(other: RenderEvent) {
-        this.update = other.update
-        this.render = other.render
-    }
-
-    override fun toString(): String = "RenderEvent(update=$update, render=$render)"
-}
-
-open class InitEvent : TypedEvent<InitEvent>(InitEvent) {
-    companion object : InitEvent(), EventType<InitEvent>
-
-    fun copyFrom(other: InitEvent) {
-    }
+    override fun toString(): String = "RenderEvent"
 }
 
 class ResumeEvent() : TypedEvent<ResumeEvent>(ResumeEvent) {

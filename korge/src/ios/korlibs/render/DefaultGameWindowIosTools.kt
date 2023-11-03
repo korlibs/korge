@@ -8,18 +8,20 @@ actual val iosTvosTools: IosTvosToolsImpl = object : IosTvosToolsImpl() {
     val uiImpactFeedbackGenerator by lazy { UIImpactFeedbackGenerator() }
 
     override fun applicationDidFinishLaunching(app: UIApplication, window: UIWindow) {
+        super.applicationDidFinishLaunching(app, window)
         window.backgroundColor = UIColor.systemBackgroundColor
     }
 
     override fun viewDidLoad(view: GLKView?) {
+        super.viewDidLoad(view)
         view?.multipleTouchEnabled = true
     }
 
-    override fun hapticFeedbackGenerate(kind: GameWindow.HapticFeedbackKind) {
+    override fun hapticFeedbackGenerate(kind: HapticFeedbackKind) {
         when (kind) {
-            GameWindow.HapticFeedbackKind.GENERIC -> uiSelectionFeedbackGenerator.selectionChanged()
-            GameWindow.HapticFeedbackKind.ALIGNMENT -> uiSelectionFeedbackGenerator.selectionChanged()
-            GameWindow.HapticFeedbackKind.LEVEL_CHANGE -> uiImpactFeedbackGenerator.impactOccurred()
+            HapticFeedbackKind.GENERIC -> uiSelectionFeedbackGenerator.selectionChanged()
+            HapticFeedbackKind.ALIGNMENT -> uiSelectionFeedbackGenerator.selectionChanged()
+            HapticFeedbackKind.LEVEL_CHANGE -> uiImpactFeedbackGenerator.impactOccurred()
         }
     }
 }

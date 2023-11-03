@@ -1,5 +1,6 @@
 package korlibs.korge.tests
 
+import korlibs.datastructure.event.*
 import korlibs.event.*
 import korlibs.graphics.*
 import korlibs.graphics.log.*
@@ -37,22 +38,24 @@ open class ViewsForTesting(
 	val timeProvider = object : TimeProvider {
         override fun now(): DateTime = time
     }
-	val dispatcher = GameWindowCoroutineDispatcher(
-        nowProvider = { time.unixMillisDouble.milliseconds },
-        fast = true,
-    )
-    inner class TestGameWindow(initialSize: Size, val dispatcher: GameWindowCoroutineDispatcher) : GameWindowLog() {
+    inner class TestGameWindow(initialSize: Size) : GameWindowLog() {
+        init {
+            eventLoop.immediateRun = true
+            eventLoop.nowProvider = { time.unixMillisDouble.milliseconds }
+        }
+
+        val syncEventLoop by lazy { eventLoop as SyncEventLoop }
+        override val autoUpdateInterval = false
         override var androidContextAny: Any? = null
         override val devicePixelRatio: Double get() = this@ViewsForTesting.devicePixelRatio
         override var width: Int = initialSize.width.toInt()
         override var height: Int = initialSize.height.toInt()
-        override val coroutineDispatcher = dispatcher
     }
     open fun filterLogDraw(str: String, kind: AGBaseLog.Kind): Boolean {
         return kind != AGBaseLog.Kind.SHADER
     }
 
-	val gameWindow = TestGameWindow(windowSize, dispatcher).also {
+	val gameWindow = TestGameWindow(windowSize).also {
         enrichTestGameWindow(it)
     }
     val ag: AG by lazy {
@@ -94,7 +97,7 @@ open class ViewsForTesting(
         gameWindow.height = height
         views.scaleAnchor = scaleAnchor
         views.scaleMode = scaleMode
-        gameWindow.dispatchReshapeEvent(0, 0, width, height)
+        gameWindow.dispatchReshapeEventQueued(0, 0, width, height)
     }
 
     suspend fun <T> deferred(block: suspend (CompletableDeferred<T>) -> Unit): T {
@@ -281,6 +284,8 @@ open class ViewsForTesting(
         return bounds.intersects(visibleBounds)
     }
 
+    var currentFrameTime = this.frameTime
+
     fun viewsTest(
         timeout: TimeSpan? = DEFAULT_SUSPEND_TEST_TIMEOUT,
         frameTime: TimeSpan = this.frameTime,
@@ -289,10 +294,11 @@ open class ViewsForTesting(
         forceRenderEveryFrame: Boolean = true,
         block: suspend Stage.() -> Unit
     ): AsyncEntryPointResult = suspendTest(timeout = timeout, cond = cond) {
+        currentFrameTime = frameTime
         viewsLog.init()
         this@ViewsForTesting.devicePixelRatio = devicePixelRatio
         //suspendTest(timeout = timeout, cond = { !OS.isAndroid && !OS.isJs && !OS.isNative }) {
-        KorgeRunner.prepareViewsBase(views, gameWindow, fixedSizeStep = frameTime, forceRenderEveryFrame = forceRenderEveryFrame)
+        views.prepareViewsBase(gameWindow, forceRenderEveryFrame = forceRenderEveryFrame)
 
 		injector.mapInstance<KorgeConfig>(KorgeConfig(
 			title = "KorgeViewsForTesting",
@@ -303,30 +309,48 @@ open class ViewsForTesting(
 		var completed = false
 		var completedException: Throwable? = null
 
-		this@ViewsForTesting.dispatcher.dispatch(coroutineContext, Runnable {
-			launchImmediately(views.coroutineContext + dispatcher) {
-				try {
-                    block(views.stage)
-				} catch (e: Throwable) {
-					completedException = e
-				} finally {
-					completed = true
-				}
-			}
-		})
+        gameWindow.queueSuspend {
+            try {
+                block(views.stage)
+            } catch (e: Throwable) {
+                completedException = e
+            } finally {
+                completed = true
+            }
+        }
 
         //println("[a0]")
-		withTimeoutNullable(timeout ?: TimeSpan.NIL) {
-            //println("[a1]")
-			while (!completed) {
-                //println("FRAME")
-				simulateFrame()
-				dispatcher.executePending(availableTime = 1.seconds)
-			}
+        try {
+            withTimeoutNullable(timeout ?: TimeSpan.NIL) {
+                //println("[a1]")
+                var nframes = 0
+                while (!completed) {
+                    //println("[1]")
+                    simulateFrame()
+                    //println("[2]")
+                    //val ntasks = gameWindow.eventLoop.runAvailableNextTask(10)
+                    val ntasks = gameWindow.syncEventLoop.runAvailableNextTasks()
+                    //println("[3]")
 
-            //println("[a2]")
-			if (completedException != null) throw completedException!!
-		}
+                    if (ntasks == 0) {
+                        nframes++
+                        if (nframes >= 10000) {
+                            completedException = Exception("No tasks ran during frames=$nframes")
+                            break
+                        }
+                    } else {
+                        nframes = 0
+                    }
+                    //if (ntasks > 0) println("Ran ntasks=$ntasks")
+                    //println("Ran ntasks=$ntasks")
+                }
+
+                //println("[a2]")
+                if (completedException != null) throw completedException!!
+            }
+        } finally {
+            gameWindow.close()
+        }
         //println("[a3]")
 	}
 
@@ -338,19 +362,12 @@ open class ViewsForTesting(
         frameTime: TimeSpan = this.frameTime,
         crossinline block: suspend S.() -> Unit
     ): AsyncEntryPointResult = viewsTest(timeout, frameTime) {
-            config?.apply {
-                injector.configInjector()
-            }
-
-            injector.configureInjector()
-
-            val container = sceneContainer(views)
-            container.changeTo<S>()
-
-            with(container.currentScene as S) {
-                block()
-            }
-        }
+        config?.apply { injector.configInjector() }
+        injector.configureInjector()
+        val container = sceneContainer(views)
+        container.changeTo<S>()
+        with(container.currentScene as S) { block() }
+    }
 
 
     private var simulatedFrames = 0
@@ -358,14 +375,15 @@ open class ViewsForTesting(
 	private suspend fun simulateFrame(count: Int = 1) {
 		repeat(count) {
             //println("SIMULATE: $frameTime")
-            time += frameTime
+            time += currentFrameTime
+            gameWindow.dispatchUpdateEvent()
             gameWindow.dispatchRenderEvent()
             simulatedFrames++
             val now = PerformanceCounter.reference
             val elapsedSinceLastDelay = now - lastDelay
             if (elapsedSinceLastDelay >= 1.seconds) {
                 lastDelay = now
-                delay(1)
+                delay(1.milliseconds)
             }
 		}
 	}

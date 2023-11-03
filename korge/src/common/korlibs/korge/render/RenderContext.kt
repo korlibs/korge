@@ -83,7 +83,8 @@ class RenderContext(
 
     fun updateStandardUniforms() {
         //println("updateStandardUniforms: ag.currentSize(${ag.currentWidth}, ${ag.currentHeight}) : ${ag.currentFrameBuffer}")
-        if (flipRenderTexture && currentFrameBuffer.isTexture) {
+        //if (flipRenderTexture && currentFrameBuffer.isTexture) {
+        if (flipRenderTexture && currentFrameBuffer.isTexture && currentFrameBuffer != ag.mainFrameBuffer) {
             projMat = Matrix4.ortho(Rectangle.fromBounds(0, currentFrameBuffer.height, currentFrameBuffer.width, 0), -1f, 1f)
         } else {
             projMat = Matrix4.ortho(Rectangle.fromBounds(0, 0, currentFrameBuffer.width, currentFrameBuffer.height), -1f, 1f)
@@ -215,6 +216,7 @@ class RenderContext(
     var currentFrameBuffer: AGFrameBuffer = ag.mainFrameBuffer
     val currentFrameBufferOrMain: AGFrameBuffer get() = currentFrameBuffer ?: mainFrameBuffer
     val isRenderingToWindow: Boolean get() = currentFrameBufferOrMain === mainFrameBuffer
+    //val isRenderingToWindow: Boolean get() = false
     val isRenderingToTexture: Boolean get() = !isRenderingToWindow
 
     // On macOS components, this will be the size of the component
@@ -291,7 +293,6 @@ class RenderContext(
      * Finishes the drawing and flips the screen. Called by the KorGe engine at the end of the frame.
      */
 	fun finish() {
-		ag.finish()
         frameBuffers.free(frameFrameBuffers)
         if (frameFrameBuffers.isNotEmpty()) frameFrameBuffers.clear()
     }

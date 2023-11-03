@@ -8,17 +8,15 @@ import android.os.*
 import android.view.*
 import android.view.KeyEvent
 import korlibs.datastructure.*
-import korlibs.datastructure.lock.*
+import korlibs.datastructure.event.*
+import korlibs.datastructure.thread.*
 import korlibs.event.*
-import korlibs.io.async.*
 import korlibs.math.geom.*
 import korlibs.memory.*
-import korlibs.time.*
 import javax.microedition.khronos.egl.*
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.egl.EGLDisplay
 import javax.microedition.khronos.opengles.*
-import kotlin.concurrent.*
 
 // https://github.com/aosp-mirror/platform_frameworks_base/blob/e4df5d375df945b0f53a9c7cca83d37970b7ce64/opengl/java/android/opengl/GLSurfaceView.java
 open class KorgwSurfaceView constructor(
@@ -33,7 +31,6 @@ open class KorgwSurfaceView constructor(
 
     val view = this
 
-    val onDraw = Signal<Unit>()
     val requestedClientVersion by lazy { getVersionFromPackageManager(context) }
     var clientVersion = -1
     var continuousRenderMode: Boolean
@@ -52,10 +49,7 @@ open class KorgwSurfaceView constructor(
         //renderMode = RENDERMODE_WHEN_DIRTY
     }
 
-    var firstRender = false
-    private val renderLock = NonRecursiveLock()
-
-    var updateTimerThread: Thread? = null
+    var updateTimerThread: NativeThread? = null
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
@@ -63,59 +57,20 @@ open class KorgwSurfaceView constructor(
         val display: Display = (context.getSystemService(Context.WINDOW_SERVICE) as WindowManager).getDefaultDisplay()
         val refreshRating: Float = display.refreshRate
 
-        updateTimerThread = thread(start = true, isDaemon = true, name = "korgw-updater") {
-            try {
-                while (true) {
-                    val startTime = System.currentTimeMillis()
-                    try {
-                        if (!firstRender) {
-                            requestRender()
-                        } else {
-                            //queueEvent {
-                            renderLock {
-                                //println("onAttachedToWindow.timer: continuousRenderMode=$continuousRenderMode")
-                                if (!continuousRenderMode) {
-                                    val frameStartTime = runPreFrame()
-                                    try {
-                                        gameWindow.frame(
-                                            frameStartTime = frameStartTime,
-                                            doUpdate = true,
-                                            doRender = false
-                                        )
-                                        //println("     --> gameWindow.mustTriggerRender=${gameWindow.mustTriggerRender}")
-                                        if (gameWindow.mustTriggerRender) {
-                                            requestRender()
-                                        }
-                                    } catch (e: Throwable) {
-                                        e.printStackTrace()
-                                    }
-                                }
-                            }
-                        }
-                        //}
-                    } finally {
-                        val endTime = System.currentTimeMillis()
-                        val elapsedTime = (endTime - startTime).toInt()
-                        // @TODO: Ideally this shouldn't be a timer, but a vsync-based callback, or at least use screen's hz)
-                        //Thread.sleep(maxOf(4L, (1000L / refreshRating).toLong() - elapsedTime))
-                        Thread.sleep(1L)
-                    }
-                }
-            } catch (e: InterruptedException) {
-                // Do nothing, just finish the loop
-            }
+        updateTimerThread = nativeThread(start = true, isDaemon = true, name = "korgw-updater") { thread ->
+            (gameWindow.eventLoop as SyncEventLoop).runTasksForever { thread.threadSuggestRunning }
         }
     }
 
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
-        updateTimerThread?.interrupt()
+        updateTimerThread?.threadSuggestRunning = false
         updateTimerThread = null
     }
 
     override fun onSurfaceCreated(unused: GL10, config: EGLConfig) {
         //GLES20.glClearColor(0.0f, 0.4f, 0.7f, 1.0f)
-        gameWindow.handleContextLost()
+        gameWindow.ag.contextLost()
         clientVersion = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
             val out = IntArray(1)
             eglQueryContext(eglGetCurrentDisplay(), eglGetCurrentContext(), EGL_CONTEXT_CLIENT_VERSION, out, 0)
@@ -126,31 +81,21 @@ open class KorgwSurfaceView constructor(
         println("OpenGL ES Version (actual): $clientVersion")
     }
 
-    private fun runPreFrame(): TimeSpan {
-        val frameStartTime = PerformanceCounter.reference
-        gameWindow.handleInitEventIfRequired()
-        gameWindow.handleReshapeEventIfRequired(0, 0, view.width, view.height)
-        gameController.runPreFrame(gameWindow)
-        return frameStartTime
-    }
-
     override fun onDrawFrame(unused: GL10) {
-        renderLock {
-            try {
-                val frameStartTime = runPreFrame()
-                try {
-                    if (!continuousRenderMode) {
-                        gameWindow.updatedSinceFrame++
-                    }
-                    gameWindow.frame(frameStartTime = frameStartTime, doUpdate = continuousRenderMode, doRender = true)
-                    onDraw(Unit)
-                } catch (e: Throwable) {
-                    e.printStackTrace()
-                }
-            } finally {
-                firstRender = true
-            }
+        gameWindow.resized(width, height)
+
+        //GLES20.glClearColor(1f, 0f, .5f, 1f); GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
+        //if (gameWindow.continuousRenderMode.shouldRender()) {
+        run {
+            //gameWindow.updateRenderLock {
+                gameWindow.dispatchRenderEvent()
+            //}
         }
+
+        //println("gameWindow.bufferWidth=${gameWindow.bufferWidth},${gameWindow.bufferHeight}, ag.mainFrameBuffer=${ag.mainFrameBuffer.width}, ${ag.mainFrameBuffer.height}, ${ag.mainFrameBuffer.fullWidth}, ${ag.mainFrameBuffer.fullHeight}")
+
+        //ag.textureDrawer.drawXY(ag.mainFrameBuffer, null, 20, 20, 100, 100)
+
     }
 
     override fun onSurfaceChanged(unused: GL10, width: Int, height: Int) {
@@ -182,7 +127,7 @@ open class KorgwSurfaceView constructor(
         //println(InputDevice.SOURCE)
         //val stopPropagating = gameWindow.queueBlocking {
         val stopPropagating = gameWindow.queue {
-            gameWindow.dispatchKeyEventEx(
+            gameWindow.dispatchKeyEventExQueued(
                 type, 0, char, key, keyCode,
                 shift = event.isShiftPressed,
                 ctrl = event.isCtrlPressed,

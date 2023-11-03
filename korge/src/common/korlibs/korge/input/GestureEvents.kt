@@ -2,8 +2,8 @@ package korlibs.korge.input
 
 import korlibs.datastructure.*
 import korlibs.event.*
-import korlibs.korge.view.*
 import korlibs.io.async.*
+import korlibs.korge.view.*
 import kotlin.reflect.*
 
 class GestureEvents(val view: BaseView) {
@@ -16,6 +16,8 @@ class GestureEvents(val view: BaseView) {
     val smartZoom = Signal<GestureEvents>()
     val id: Int get() = lastEvent.id
     val amount: Float get() = lastEvent.amount
+
+    override fun toString(): String = "GestureEvents(lastEvent=$lastEvent)"
 
     lateinit var views: Views
         private set

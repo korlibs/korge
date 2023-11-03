@@ -1,10 +1,10 @@
 package samples
 
-import korlibs.korge.scene.Scene
+import korlibs.korge.scene.*
 import korlibs.korge.service.haptic.*
-import korlibs.korge.ui.clicked
-import korlibs.korge.ui.uiButton
-import korlibs.korge.view.SContainer
+import korlibs.korge.ui.*
+import korlibs.korge.view.*
+import korlibs.render.*
 
 class MainHaptic : Scene() {
     override suspend fun SContainer.sceneMain() {

@@ -2,6 +2,7 @@ package samples
 
 import korlibs.image.color.*
 import korlibs.image.format.*
+import korlibs.io.async.*
 import korlibs.io.file.std.*
 import korlibs.korge.scene.*
 import korlibs.korge.view.*
@@ -64,13 +65,16 @@ class MainClipping : Scene() {
                 // This shouldn't be needed since Stage.localMatrix is always the identity
                 onStageResized { width, height ->
                     //println("resized=$width, $height")
-                    container2.removeChildren()
-                    container2.addChild(image(container.unsafeRenderToBitmapSync(views.renderContext).also {
-                        it.updateColors { if (it.a == 0) Colors.RED else it }
-                    }).also {
-                        it.x = 300.0
-                        it.y = views.virtualHeightDouble - it.bitmap.height - 50 * escale
-                    })
+                    launch {
+                        val bitmap = container.renderToBitmap(views).also {
+                            it.updateColors { if (it.a == 0) Colors.RED else it }
+                        }
+                        container2.removeChildren()
+                        container2.addChild(image(bitmap).also {
+                            it.x = 300.0
+                            it.y = views.virtualHeightDouble - it.bitmap.height - 50 * escale
+                        })
+                    }
                 }
             }
         }

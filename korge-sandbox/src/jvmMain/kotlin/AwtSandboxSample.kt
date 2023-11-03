@@ -1,13 +1,4 @@
-
-import korlibs.datastructure.iterators.*
-import korlibs.image.color.*
-import korlibs.korge.*
-import korlibs.korge.input.*
-import korlibs.korge.ui.*
-import korlibs.math.geom.*
-import java.awt.*
-import javax.swing.*
-
+/*
 object AwtSandboxSample {
     @JvmStatic
     fun main(args: Array<String>) {
@@ -77,3 +68,4 @@ object AwtSandboxSample {
         frame.validate()
     }
 }
+*/

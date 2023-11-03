@@ -2,6 +2,8 @@ package korlibs.render.awt
 
 import korlibs.datastructure.*
 import korlibs.event.*
+import korlibs.event.MouseEvent
+import korlibs.ffi.osx.*
 import korlibs.ffi.osx.*
 import korlibs.graphics.*
 import korlibs.image.awt.*
@@ -10,21 +12,29 @@ import korlibs.io.file.*
 import korlibs.io.file.std.*
 import korlibs.math.*
 import korlibs.math.geom.*
+import korlibs.memory.*
 import korlibs.platform.*
 import korlibs.render.*
+import korlibs.render.MenuItem
+import korlibs.render.platform.*
 import java.awt.*
 import java.awt.Point
 import java.awt.datatransfer.*
 import java.awt.dnd.*
+import java.awt.event.*
 import java.awt.image.*
 import java.io.*
 import javax.imageio.*
 import javax.swing.*
+import java.awt.event.KeyEvent as JKeyEvent
+import java.awt.event.MouseEvent as JMouseEvent
+
+object AwtFrameTools
 
 fun JFrame.setIconIncludingTaskbarFromResource(path: String) {
     runCatching {
-        val awtImageURL = AwtGameWindow::class.java.getResource("/$path")
-            ?: AwtGameWindow::class.java.getResource(path)
+        val awtImageURL = AwtFrameTools::class.java.getResource("/$path")
+            ?: AwtFrameTools::class.java.getResource(path)
             ?: ClassLoader.getSystemResource(path)
         setIconIncludingTaskbarFromImage(awtImageURL?.let { ImageIO.read(it) })
     }
@@ -208,7 +218,7 @@ val ICursor.jvmCursor: java.awt.Cursor get() {
     }
 }
 
-fun Component.hapticFeedbackGenerate(kind: GameWindow.HapticFeedbackKind) {
+fun Component.hapticFeedbackGenerate(kind: HapticFeedbackKind) {
     when {
         Platform.os.isMac -> {
             val KIND_GENERIC = 0
@@ -220,9 +230,9 @@ fun Component.hapticFeedbackGenerate(kind: GameWindow.HapticFeedbackKind) {
             val PERFORMANCE_TIME_DRAW_COMPLETED = 2
 
             val kindInt = when (kind) {
-                GameWindow.HapticFeedbackKind.GENERIC -> KIND_GENERIC
-                GameWindow.HapticFeedbackKind.ALIGNMENT -> KIND_ALIGNMENT
-                GameWindow.HapticFeedbackKind.LEVEL_CHANGE -> KIND_LEVEL_CHANGE
+                HapticFeedbackKind.GENERIC -> KIND_GENERIC
+                HapticFeedbackKind.ALIGNMENT -> KIND_ALIGNMENT
+                HapticFeedbackKind.LEVEL_CHANGE -> KIND_LEVEL_CHANGE
             }
             val performanceTime = PERFORMANCE_TIME_NOW
 
@@ -317,4 +327,189 @@ fun Component.registerGestureListeners(dispatcher: GameWindow) {
     } catch (e: Throwable) {
         e.printStackTrace()
     }
+}
+
+fun MenuItem?.toJMenuItem(): JComponent {
+    val item = this
+    return when {
+        item?.text == null -> JSeparator()
+        item.children != null -> {
+            JMenu(item.text).also {
+                it.isEnabled = item.enabled
+                it.addActionListener { item.action() }
+                for (child in item.children) {
+                    it.add(child.toJMenuItem())
+                }
+            }
+        }
+        else -> JMenuItem(item.text).also {
+            it.isEnabled = item.enabled
+            it.addActionListener { item.action() }
+        }
+    }
+}
+
+fun Component.registerMouseEvents(gameWindow: GameWindow) {
+    val contentComponent = this
+    // Here all the robot events have been already processed, so they won't be processed
+    //println("END ROBOT2")
+
+    var lastMouseX: Int = 0
+    var lastMouseY: Int = 0
+    var lockingX: Int = 0
+    var lockingY: Int = 0
+    var locking = false
+    var mouseX: Int = 0
+    var mouseY: Int = 0
+
+    gameWindow.events.requestLock = {
+        val location = MouseInfo.getPointerInfo().location
+        lockingX = location.x
+        lockingY = location.y
+        locking = true
+    }
+
+    fun handleMouseEvent(e: JMouseEvent) {
+        val factor = getDisplayScalingFactor(contentComponent)
+
+        val ev = when (e.id) {
+            JMouseEvent.MOUSE_DRAGGED -> MouseEvent.Type.DRAG
+            JMouseEvent.MOUSE_MOVED -> MouseEvent.Type.MOVE
+            JMouseEvent.MOUSE_CLICKED -> MouseEvent.Type.CLICK
+            JMouseEvent.MOUSE_PRESSED -> MouseEvent.Type.DOWN
+            JMouseEvent.MOUSE_RELEASED -> MouseEvent.Type.UP
+            JMouseEvent.MOUSE_ENTERED -> MouseEvent.Type.ENTER
+            JMouseEvent.MOUSE_EXITED -> MouseEvent.Type.EXIT
+            else -> MouseEvent.Type.MOVE
+        }
+
+        //println("MOUSE EVENT: $ev : ${e.button} : ${MouseButton[e.button - 1]}")
+        gameWindow.queue {
+            val button = if (e.button == 0) MouseButton.NONE else MouseButton[e.button - 1]
+
+            if (locking) {
+                Robot().mouseMove(lockingX, lockingY)
+                if (ev == korlibs.event.MouseEvent.Type.UP) {
+                    locking = false
+                }
+            }
+
+            lastMouseX = e.x
+            lastMouseY = e.y
+            val sx = e.x * factor
+            val sy = e.y * factor
+            val modifiers = e.modifiersEx
+            mouseX = e.x
+            mouseY = e.y
+            //println("ev=$ev")
+            gameWindow.dispatchMouseEventQueued(
+                type = ev,
+                id = 0,
+                x = sx.toInt(),
+                y = sy.toInt(),
+                button = button,
+                buttons = 0,
+                scrollDeltaX = 0f,
+                scrollDeltaY = 0f,
+                scrollDeltaZ = 0f,
+                scrollDeltaMode = korlibs.event.MouseEvent.ScrollDeltaMode.PIXEL,
+                isShiftDown = modifiers hasFlags JMouseEvent.SHIFT_DOWN_MASK,
+                isCtrlDown = modifiers hasFlags JMouseEvent.CTRL_DOWN_MASK,
+                isAltDown = modifiers hasFlags JMouseEvent.ALT_DOWN_MASK,
+                isMetaDown = modifiers hasFlags JMouseEvent.META_DOWN_MASK,
+                scaleCoords = false,
+                simulateClickOnUp = false
+            )
+        }
+    }
+
+    fun handleMouseWheelEvent(e: MouseWheelEvent) {
+        val factor = getDisplayScalingFactor(contentComponent)
+
+        gameWindow.queue {
+            val ev = korlibs.event.MouseEvent.Type.SCROLL
+            val button = MouseButton[8]
+            val factor = factor
+            val sx = e.x * factor
+            val sy = e.y * factor
+            val modifiers = e.modifiersEx
+            //TODO: check this on linux and macos
+            //val scrollDelta = e.scrollAmount * e.preciseWheelRotation // * e.unitsToScroll
+            val osfactor = when {
+                Platform.isMac -> 0.25f
+                else -> 1.0f
+            }
+            val scrollDelta = e.preciseWheelRotation.toFloat() * osfactor
+
+            val isShiftDown = modifiers hasFlags JMouseEvent.SHIFT_DOWN_MASK
+            gameWindow.dispatchMouseEventQueued(
+                type = ev,
+                id = 0,
+                x = sx.toInt(),
+                y = sy.toInt(),
+                button = button,
+                buttons = 0,
+                scrollDeltaX = if (isShiftDown) scrollDelta else 0f,
+                scrollDeltaY = if (isShiftDown) 0f else scrollDelta,
+                scrollDeltaZ = 0f,
+                scrollDeltaMode = korlibs.event.MouseEvent.ScrollDeltaMode.PIXEL,
+                isShiftDown = isShiftDown,
+                isCtrlDown = modifiers hasFlags JMouseEvent.CTRL_DOWN_MASK,
+                isAltDown = modifiers hasFlags JMouseEvent.ALT_DOWN_MASK,
+                isMetaDown = modifiers hasFlags JMouseEvent.META_DOWN_MASK,
+                scaleCoords = false,
+                simulateClickOnUp = false
+            )
+        }
+    }
+
+    contentComponent.addMouseMotionListener(object : MouseMotionAdapter() {
+        override fun mouseMoved(e: JMouseEvent) = handleMouseEvent(e)
+        override fun mouseDragged(e: JMouseEvent) = handleMouseEvent(e)
+    })
+
+    contentComponent.addMouseListener(object : MouseAdapter() {
+        override fun mouseReleased(e: JMouseEvent) = handleMouseEvent(e)
+        override fun mouseMoved(e: JMouseEvent) = handleMouseEvent(e)
+        override fun mouseEntered(e: JMouseEvent) = handleMouseEvent(e)
+        override fun mouseDragged(e: JMouseEvent) = handleMouseEvent(e)
+        override fun mouseClicked(e: JMouseEvent) = handleMouseEvent(e)
+        override fun mouseExited(e: JMouseEvent) = handleMouseEvent(e)
+        override fun mousePressed(e: JMouseEvent) = handleMouseEvent(e)
+    })
+
+    contentComponent.addMouseWheelListener { e -> handleMouseWheelEvent(e) }
+}
+
+fun Component.registerKeyEvents(gameWindow: GameWindow) {
+    val component = this
+
+    fun handleKeyEvent(e: JKeyEvent) {
+        gameWindow.queue {
+            val ev = when (e.id) {
+                JKeyEvent.KEY_TYPED -> korlibs.event.KeyEvent.Type.TYPE
+                JKeyEvent.KEY_PRESSED -> korlibs.event.KeyEvent.Type.DOWN
+                JKeyEvent.KEY_RELEASED -> korlibs.event.KeyEvent.Type.UP
+                else -> korlibs.event.KeyEvent.Type.TYPE
+            }
+            val id = 0
+            val char = e.keyChar
+            val keyCode = e.keyCode
+            val key = awtKeyCodeToKey(e.keyCode)
+
+            gameWindow.dispatchKeyEventExQueued(ev, id, char, key, keyCode, e.isShiftDown, e.isControlDown, e.isAltDown, e.isMetaDown)
+        }
+    }
+
+    component.focusTraversalKeysEnabled = false
+    component.addKeyListener(object : KeyAdapter() {
+        override fun keyTyped(e: JKeyEvent) = handleKeyEvent(e)
+        override fun keyPressed(e: JKeyEvent) = handleKeyEvent(e)
+        override fun keyReleased(e: JKeyEvent) = handleKeyEvent(e)
+    })
+}
+
+fun JFrame.computeDimensionsForSize(width: Int, height: Int): Dimension {
+    val insets = this.insets
+    return Dimension(width + insets.left + insets.right, height + insets.top + insets.bottom)
 }

@@ -58,7 +58,7 @@ class KorgeHeadlessTest {
             } finally {
             }
             */
-            gameWindow.frameRender()
+            //gameWindow.frameRender()
 
             views.gameWindow.close() // We close the window, finalizing the test here
         }

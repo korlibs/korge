@@ -24,15 +24,14 @@ open class KorgeAndroidView @JvmOverloads constructor(
     private var gameWindow: AndroidGameWindowNoActivity? = null
 
     private val renderEvent = RenderEvent()
-    private val initEvent = InitEvent()
 
     var moduleLoaded = false ; private set
 
     fun unloadModule() {
         if (!moduleLoaded) return
 
-        gameWindow?.dispatchDestroyEvent()
-        gameWindow?.coroutineContext = null
+        gameWindow?.dispatchDestroyEventQueued()
+        //gameWindow?.coroutineContext = null
         gameWindow?.close()
         gameWindow?.exit()
         mGLView = null

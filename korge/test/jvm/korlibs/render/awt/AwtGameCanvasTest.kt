@@ -5,7 +5,6 @@ import korlibs.datastructure.lock.*
 import korlibs.datastructure.thread.*
 import korlibs.image.bitmap.*
 import korlibs.image.color.*
-import korlibs.kgl.*
 import korlibs.korge.render.*
 import korlibs.platform.*
 import korlibs.render.osx.*
@@ -45,9 +44,7 @@ class AwtGameCanvasTest {
             }
         }
 
-        nativeThread {
-            el.runTasksForever()
-        }
+        el.start()
 
         frame.contentPane.layout = GridLayout(2, 2)
         frame.contentPane.add(AwtAGOpenglCanvas().also {
@@ -64,6 +61,7 @@ class AwtGameCanvasTest {
                 }
                 fpsLabel?.text = "FPS: ${(canvas as AwtAGOpenglCanvas).renderFps}"
             }
+            it.visible = true
         })
         /*
         frame.contentPane.add(GLCanvas().also {
@@ -87,12 +85,12 @@ class AwtGameCanvasTest {
             fpsLabel = it
             it.isOpaque = true; it.background = Color.YELLOW })
         frame.contentPane.add(JLabel().also { it.isOpaque = true; it.background = Color.GREEN })
-        frame.contentPane.add(GLCanvas().also {
-            it.defaultRenderer = { gl, g ->
-                gl.clearColor(1f, .5f, 1f, 1f)
-                gl.clear(KmlGl.COLOR_BUFFER_BIT)
-            }
-        })
+        //frame.contentPane.add(GLCanvas().also {
+        //    it.defaultRenderer = { gl, g ->
+        //        gl.clearColor(1f, .5f, 1f, 1f)
+        //        gl.clear(KmlGl.COLOR_BUFFER_BIT)
+        //    }
+        //})
         /*
         frame.contentPane.add(AwtAGOpenglCanvas().also {
             val renderContext = RenderContext(it.ag, it)

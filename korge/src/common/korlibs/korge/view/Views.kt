@@ -32,45 +32,43 @@ import kotlinx.coroutines.*
 import kotlin.collections.set
 import kotlin.coroutines.*
 
-//@Singleton
 /**
  * Heavyweight singleton object within the application that contains information about the Views.
  * It contains information about the [coroutineContext], the [gameWindow], the [injector], the [input]
  * and contains a reference to the [root] [Stage] view.
  */
-class Views(
-    override val coroutineContext: CoroutineContext,
-    val ag: AG,
+class Views constructor(
+    val gameWindow: GameWindow,
+    override val coroutineContext: CoroutineContext = gameWindow.coroutineDispatcher,
+    val ag: AG = gameWindow.ag,
     val injector: Injector = Injector(),
     val input: Input = Input(),
     val timeProvider: TimeProvider = TimeProvider,
     val stats: Stats = Stats(),
-    val gameWindow: GameWindow,
     val gameId: String = "korgegame",
     val settingsFolder: String? = null,
     val batchMaxQuads: Int = BatchBuilder2D.DEFAULT_BATCH_QUADS,
     val bp: BoundsProvider = BoundsProvider.Base(),
     val stageBuilder: (Views) -> Stage = { Stage(it) }
 ) : BaseEventListener(),
-    Extra by Extra.Mixin(),
     CoroutineScope, ViewsContainer,
 	BoundsProvider by bp,
     DialogInterfaceProvider by gameWindow,
+    MenuInterfaceProvider by gameWindow,
     Closeable,
     ResourcesContainer,
     InvalidateNotifier,
     DeviceDimensionsProvider by gameWindow
 {
-    constructor(gameWindow: GameWindow) : this(
-        gameWindow, gameWindow.ag, gameWindow = gameWindow
-    )
+    //constructor(gameWindow: GameWindow) : this(gameWindow, gameWindow.ag, gameWindow = gameWindow)
 
     var quality by gameWindow::quality
 
     override val views = this
 
     var rethrowRenderError = false
-    var forceRenderEveryFrame: Boolean by gameWindow::continuousRenderMode
+    val continuousRenderMode = gameWindow.continuousRenderMode
+    var forceRenderEveryFrame: Boolean by continuousRenderMode::continuousRenderMode
 
     val virtualPixelsPerInch: Double get() = pixelsPerInch / globalToWindowScaleAvg
     val virtualPixelsPerCm: Double get() = virtualPixelsPerInch / DeviceDimensionsProvider.INCH_TO_CM
@@ -150,9 +148,7 @@ class Views(
      */
 	fun onClose(callback: suspend () -> Unit) {
 		closeables += object : AsyncCloseable {
-			override suspend fun close() {
-				callback()
-			}
+			override suspend fun close() = callback()
 		}
 	}
 
@@ -250,6 +246,9 @@ class Views(
 		this.virtualHeight = height
 		resized()
 	}
+    fun setVirtualSize(size: Size) {
+        setVirtualSize(size.width.toInt(), size.height.toInt())
+    }
 
     override fun <T : BEvent> dispatch(
         type: EventType<T>,
@@ -283,66 +282,36 @@ class Views(
     fun renderNew(frameBuffer: AGFrameBuffer = ag.mainFrameBuffer) {
         renderContext.currentFrameBuffer = frameBuffer
 
-        if (clearEachFrame) renderContext.clear(clearColor, stencil = 0, depth = 1f, clearColor = true, clearStencil = true, clearDepth = true)
-        onBeforeRender(renderContext)
-        renderContext.flush()
-        stage.render(renderContext)
-        renderContext.flush()
-        stage.renderDebug(renderContext)
+        renderContext.doRenderNew {
+            if (clearEachFrame) renderContext.clear(clearColor, stencil = 0, depth = 1f, clearColor = true, clearStencil = true, clearDepth = true)
+            onBeforeRender(renderContext)
+            renderContext.flush()
+            stage.render(renderContext)
+            renderContext.flush()
+            stage.renderDebug(renderContext)
 
-        if (debugViews) {
-            //renderContext.setTemporalProjectionMatrixTransform(Matrix()) {
-            run {
-                debugHandlers.fastForEach { debugHandler ->
-                    this.debugHandler(renderContext)
+            if (debugViews) {
+                //renderContext.setTemporalProjectionMatrixTransform(Matrix()) {
+                run {
+                    debugHandlers.fastForEach { debugHandler ->
+                        this.debugHandler(renderContext)
+                    }
                 }
             }
-        }
 
-        onAfterRender(renderContext)
-        renderContext.flush()
+            onAfterRender(renderContext)
+            renderContext.flush()
+        }
     }
 
 	fun render() {
         ag.startFrame()
-		renderNew()
+        try {
+            renderNew()
+        } finally {
+            ag.endFrame()
+        }
     }
-
-	fun frameUpdateAndRender(
-        fixedSizeStep: TimeSpan = TimeSpan.NIL,
-        forceRender: Boolean = false,
-        doUpdate: Boolean = true,
-        doRender: Boolean = true,
-    ) {
-        val currentTime = timeProvider.now()
-		views.stats.startFrame()
-		Korge.logger.trace { "ag.onRender" }
-		//println("Render")
-		//println("currentTime: $currentTime")
-		val delta = (currentTime - lastTime)
-		val adelta = if (delta > views.clampElapsedTimeTo) views.clampElapsedTimeTo else delta
-		//println("delta: $delta")
-		//println("Render($lastTime -> $currentTime): $delta")
-		lastTime = currentTime
-        if (doUpdate) {
-            if (fixedSizeStep != TimeSpan.NIL) {
-                update(fixedSizeStep)
-            } else {
-                update(adelta)
-            }
-        }
-        val doRender2 = doRender && (forceRender || updatedSinceFrame > 0)
-        if (doRender2) {
-            if (printRendering) {
-                println("Views.frameUpdateAndRender[${DateTime.nowUnixMillisLong()}]: doRender=$doRender2 -> [forceRender=$forceRender, updatedSinceFrame=$updatedSinceFrame]")
-            }
-            render()
-            startFrame()
-        }
-	}
-
-    //var printRendering: Boolean = true
-    var printRendering: Boolean = Environment["SHOW_FRAME_UPDATE_AND_RENDER"] == "true"
 
     private val eventResults = EventResult()
 
@@ -350,26 +319,23 @@ class Views(
 		//println(this)
 		//println("Update: $elapsed")
 		input.startFrame(elapsed)
-        eventResults.reset()
-        stage.updateSingleViewWithViewsAll(this, elapsed)
-        //println("Views.update:eventResults=$eventResults")
-		input.endFrame(elapsed)
+        try {
+            eventResults.reset()
+            stage.updateSingleViewWithViewsAll(this, elapsed)
+            //println("Views.update:eventResults=$eventResults")
+        } finally {
+            input.endFrame(elapsed)
+        }
 	}
 
 	fun mouseUpdated() {
 		//println("localMouse: (${stage.localMouseX}, ${stage.localMouseY}), inputMouse: (${input.mouse.x}, ${input.mouse.y})")
 	}
 
-	fun resized(width: Int, height: Int) {
-		val actualWidth = width
-		val actualHeight = height
-		//println("RESIZED: $width, $height")
-		actualSize = SizeInt(actualWidth, actualHeight)
-		resized()
-	}
+	fun resized(width: Int, height: Int) = resized(SizeInt(width, height))
 
-
-	fun resized() {
+	fun resized(actualSize: SizeInt = this.actualSize) {
+        this.actualSize = actualSize
 		//println("$e : ${views.ag.backWidth}x${views.ag.backHeight}")
         bp.setBoundsInfo(
             Size(virtualWidth, virtualHeight),
@@ -381,6 +347,8 @@ class Views(
         )
 
         //println("RESIZED: $virtualSize, $actualSize, $targetSize")
+
+        //println("bp.globalToWindowMatrix=${bp.globalToWindowMatrix}")
 
         renderContext.projectionMatrixTransform = bp.globalToWindowMatrix
         renderContext.projectionMatrixTransformInv = bp.windowToGlobalMatrix
@@ -459,7 +427,7 @@ class Views(
         debugSaveView(action, view)
     }
 
-    var updatedSinceFrame: Int by gameWindow::updatedSinceFrame
+    //val updatedSinceFrame: KorAtomicInt by gameWindow::updatedSinceFrame
 
     fun startFrame() {
         gameWindow.startFrame()
@@ -468,6 +436,7 @@ class Views(
     override fun invalidatedView(view: BaseView?) {
         //println("invalidatedView: $view")
         gameWindow.invalidatedView()
+        //printStackTrace()
     }
 
     //var viewExtraBuildDebugComponent = arrayListOf<(views: Views, view: View, container: UiContainer) -> Unit>()
@@ -496,7 +465,7 @@ class ViewsLog constructor(
 	val stats: Stats = Stats(),
 	val gameWindow: GameWindow = GameWindowLog()
 ) : CoroutineScope {
-	val views: Views = Views(coroutineContext + InjectorContext(injector), ag, injector, input, timeProvider, stats, gameWindow).also {
+	val views: Views = Views(gameWindow, coroutineContext + InjectorContext(injector), ag, injector, input, timeProvider, stats).also {
 	    it.rethrowRenderError = true
     }
     val stage: Stage get() = views.stage
@@ -594,15 +563,13 @@ interface BoundsProvider {
     //@KorgeExperimental var actualVirtualWidth = DefaultViewport.WIDTH; private set
     //@KorgeExperimental var actualVirtualHeight = DefaultViewport.HEIGHT; private set
 
-    val virtualLeft: Double get() = actualVirtualBounds.left.toDouble()
-    val virtualTop: Double get() = actualVirtualBounds.top.toDouble()
-    val virtualRight: Double get() = actualVirtualBounds.right.toDouble()
-    val virtualBottom: Double get() = actualVirtualBounds.bottom.toDouble()
+    val virtualLeft: Double get() = actualVirtualBounds.left
+    val virtualTop: Double get() = actualVirtualBounds.top
+    val virtualRight: Double get() = actualVirtualBounds.right
+    val virtualBottom: Double get() = actualVirtualBounds.bottom
 
-    @KorgeExperimental
-    val actualVirtualRight: Double get() = actualVirtualBounds.right.toDouble()
-    @KorgeExperimental
-    val actualVirtualBottom: Double get() = actualVirtualBounds.bottom.toDouble()
+    @KorgeExperimental val actualVirtualRight: Double get() = actualVirtualBounds.right
+    @KorgeExperimental val actualVirtualBottom: Double get() = actualVirtualBounds.bottom
 
     fun globalToWindowBounds(bounds: Rectangle): Rectangle =
         bounds.transformed(globalToWindowMatrix)

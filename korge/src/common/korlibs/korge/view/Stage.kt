@@ -1,5 +1,6 @@
 package korlibs.korge.view
 
+import korlibs.datastructure.thread.*
 import korlibs.graphics.*
 import korlibs.inject.*
 import korlibs.io.resources.*
@@ -21,6 +22,8 @@ open class Stage internal constructor(override val views: Views) : FixedSizeCont
     , ResourcesContainer
     , BoundsProvider by views.bp
     , InvalidateNotifier
+    , DialogInterfaceProvider by views
+    , MenuInterfaceProvider by views
 {
     override var clip: Boolean by views::clipBorders
 
@@ -60,6 +63,11 @@ open class Stage internal constructor(override val views: Views) : FixedSizeCont
     //        super.renderInternal(ctx)
     //    }
     //}
+
+    @ViewProperty
+    fun GC() {
+        NativeThread.gc(full = true)
+    }
 
     @Suppress("unused")
     @ViewProperty(min = 0.0, max = 2000.0, groupName = "Stage")

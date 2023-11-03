@@ -1,4 +1,4 @@
-import korlibs.applyProjectProperties
+import korlibs.*
 
 description = "Multiplatform Game Engine written in Kotlin"
 

@@ -6,11 +6,6 @@ import korlibs.io.lang.*
 import korlibs.io.net.*
 import korlibs.io.util.*
 
-/** Represents a class that have a reference to a [dialogInterface] */
-interface DialogInterfaceProvider {
-    val dialogInterface: DialogInterface
-}
-
 /**
  * Provides an interface with typical window dialogs and functionality.
  *
@@ -46,6 +41,11 @@ interface DialogInterface : DialogInterfaceProvider {
         unsupported()
 
     object Unsupported : DialogInterface
+}
+
+/** Represents a class that have a reference to a [dialogInterface] */
+interface DialogInterfaceProvider {
+    val dialogInterface: DialogInterface
 }
 
 suspend fun DialogInterfaceProvider.browse(url: URL): Unit = dialogInterface.browse(url)

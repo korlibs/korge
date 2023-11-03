@@ -15,6 +15,7 @@ class AnimatorTest : ViewsForTesting() {
     fun test() = viewsTest {
         val view = solidRect(100, 100, Colors.RED)
         val log = arrayListOf<String>()
+        //delay(1.seconds)
         animate(completeOnCancel = false) {
             moveTo(view, 100, 0)
             moveBy(view, y = +100.0)

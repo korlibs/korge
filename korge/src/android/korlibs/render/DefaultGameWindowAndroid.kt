@@ -8,8 +8,9 @@ import android.view.inputmethod.*
 import korlibs.event.*
 import korlibs.graphics.*
 import korlibs.image.bitmap.*
+import korlibs.io.android.*
+import korlibs.time.*
 import kotlinx.coroutines.*
-import kotlin.coroutines.*
 
 
 actual fun CreateDefaultGameWindow(config: GameWindowCreationConfig): GameWindow = TODO()
@@ -19,27 +20,27 @@ interface AndroidContextHolder {
 }
 
 abstract class BaseAndroidGameWindow(
+    androidContext: Context,
     val config: GameWindowCreationConfig = GameWindowCreationConfig(),
 ) : GameWindow(), AndroidContextHolder {
-    abstract override val androidContext: Context
+    final override val dialogInterface = DialogInterfaceAndroid { androidContext }
+    final override val androidContext = androidContext
+    override val androidContextAny: Any? = androidContext
     abstract val androidView: View
+    override val pixelsPerInch: Double by TimedCache(1.seconds) { androidContext.resources.displayMetrics.xdpi.toDouble() }
+    val _activity: Activity? get() = androidContext.activity
 
-    override val androidContextAny: Any? get() = androidContext
+    override fun enrichCoroutineContext() {
+        coroutineContext += AndroidCoroutineContext(androidContext)
+    }
 
-    // @TODO: Cache somehow?
-    override val pixelsPerInch: Double get() = androidContext.resources.displayMetrics.xdpi.toDouble()
-
-    val context get() = androidContext
-    var coroutineContext: CoroutineContext? = null
     val Context?.activity: Activity? get() = when (this) {
         is Activity -> this
         is ContextWrapper -> this.baseContext.activity
         else -> null
     }
-    val _activity: Activity? get() = context.activity
 
     val inputMethodManager get() = androidContext.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-    override val dialogInterface = DialogInterfaceAndroid { androidContext }
     override var isSoftKeyboardVisible: Boolean = false
 
     override var keepScreenOn: Boolean
@@ -87,6 +88,11 @@ abstract class BaseAndroidGameWindow(
         }
     }
 
+    override fun close(exitCode: Int) {
+        super.close(exitCode)
+        androidContext.activity?.finishAffinity()
+    }
+
     //fun <T : Any> queueAndWait(callback: () -> T): T {
     //    var result: Result<T>? = null
     //    val semaphore = java.util.concurrent.Semaphore(0)
@@ -115,8 +121,7 @@ suspend fun <T> runAndroidOnUiThreadSuspend(context: Context? = null, block: () 
     return deferred.await()
 }
 
-class AndroidGameWindow(val activity: KorgwActivity, config: GameWindowCreationConfig = activity.config) : BaseAndroidGameWindow(config) {
-    override val androidContext get() = activity
+class AndroidGameWindow(val activity: KorgwActivity, config: GameWindowCreationConfig = activity.config) : BaseAndroidGameWindow(activity, config) {
     override val androidView: View get() = activity.mGLView ?: error("Can't find mGLView")
 
     val mainHandler by lazy { android.os.Handler(androidContext.mainLooper) }
@@ -135,12 +140,6 @@ class AndroidGameWindow(val activity: KorgwActivity, config: GameWindowCreationC
             field = value
             activity.makeFullscreen(value)
         }
-    override var visible: Boolean
-        get() = super.visible
-        set(value) {}
-    override var quality: Quality
-        get() = super.quality
-        set(value) {}
 
     fun initializeAndroid() {
         fullscreen = true
@@ -148,25 +147,16 @@ class AndroidGameWindow(val activity: KorgwActivity, config: GameWindowCreationC
 
     override fun setSize(width: Int, height: Int) {
     }
-
-
-    override suspend fun loop(entry: suspend GameWindow.() -> Unit) {
-        this.coroutineContext = kotlin.coroutines.coroutineContext
-        //println("CONTEXT: ${kotlin.coroutines.coroutineContext[AndroidCoroutineContext.Key]?.context}")
-        entry(this)
-    }
 }
 
 class AndroidGameWindowNoActivity(
     override val width: Int,
     override val height: Int,
     override val ag: AG,
-    override val androidContext: Context,
+    androidContext: Context,
     config: GameWindowCreationConfig = GameWindowCreationConfig(),
     val getView: () -> View
-) : BaseAndroidGameWindow(config) {
-    override val dialogInterface = DialogInterfaceAndroid { androidContext }
-
+) : BaseAndroidGameWindow(androidContext, config) {
     override val androidView: View get() = getView()
     override var title: String = "Korge"
 
@@ -181,13 +171,4 @@ class AndroidGameWindowNoActivity(
     override var visible: Boolean
         get() = super.visible
         set(value) {}
-
-    override var quality: Quality
-        get() = super.quality
-        set(value) {}
-
-    override suspend fun loop(entry: suspend GameWindow.() -> Unit) {
-        this.coroutineContext = kotlin.coroutines.coroutineContext
-        entry(this)
-    }
 }

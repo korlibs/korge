@@ -16,7 +16,7 @@ import javax.swing.*
 class MacosGLContext(
     var contentView: Long = 0L,
     val window: Long = 0L,
-    val quality: GameWindow.Quality = GameWindow.Quality.AUTOMATIC,
+    val quality: GameWindowQuality = GameWindowQuality.AUTOMATIC,
     val sharedContext: Long = 0L,
 ) : BaseOpenglContext {
     companion object {
@@ -37,7 +37,7 @@ class MacosGLContext(
     }
 
     val attrs: IntArray by lazy {
-        val antialias = (this.quality == GameWindow.Quality.QUALITY)
+        val antialias = (this.quality == GameWindowQuality.QUALITY)
         val antialiasArray = if (antialias) intArrayOf(
             NSOpenGLPFAMultisample,
             NSOpenGLPFASampleBuffers, 1,
@@ -206,39 +206,43 @@ class MacAWTOpenglContext(val gwconfig: GameWindowConfig, val c: Component, var 
     override val scaleFactor: Float get() = getDisplayScalingFactor(c)
 
     override fun useContext(g: Graphics, ag: AG, action: (Graphics, BaseOpenglContext.ContextInfo) -> Unit) {
-        invokeWithOGLContextCurrentMethod.invoke(null, g, Runnable {
+        try {
+            invokeWithOGLContextCurrentMethod.invoke(null, g, Runnable {
 
-            //if (!(isQueueFlusherThread.invoke(null) as Boolean)) error("Can't render on another thread")
-            try {
-                val factor = getDisplayScalingFactor(c)
-                //val window = SwingUtilities.getWindowAncestor(c)
-                val viewport = getOGLViewport.invoke(null, g, (c.width * factor).toInt(), (c.height * factor).toInt()) as java.awt.Rectangle
-                //val viewport = getOGLViewport.invoke(null, g, window.width.toInt(), window.height.toInt()) as java.awt.Rectangle
-                val scissorBox = getOGLScissorBox(null, g) as? java.awt.Rectangle?
-                ///println("factor=$factor, scissorBox: $scissorBox, viewport: $viewport")
-                //info.scissors?.setTo(scissorBox.x, scissorBox.y, scissorBox.width, scissorBox.height)
-                if (scissorBox != null) {
-                    info.scissors = RectangleInt(scissorBox.x, scissorBox.y, scissorBox.width, scissorBox.height)
-                    //info.viewport?.setTo(viewport.x, viewport.y, viewport.width, viewport.height)
-                    info.viewport = RectangleInt(scissorBox.x, scissorBox.y, scissorBox.width, scissorBox.height)
-                } else {
-                    System.err.println("ERROR !! scissorBox = $scissorBox, viewport = $viewport")
-                }
-                //info.viewport?.setTo(scissorBox.x, scissorBox.y)
-                //println("viewport: $viewport, $scissorBox")
-                //println(g.clipBounds)
-                if (other != null) {
-                    val oldContext = NSClass("NSOpenGLContext").msgSend("currentContext")
-                    other!!.useContext(g, ag) { g, info -> action(g, info) }
-                    oldContext.msgSend("makeCurrentContext")
-                } else {
-                    action(g, info)
-                }
+                //if (!(isQueueFlusherThread.invoke(null) as Boolean)) error("Can't render on another thread")
+                try {
+                    val factor = getDisplayScalingFactor(c)
+                    //val window = SwingUtilities.getWindowAncestor(c)
+                    val viewport = getOGLViewport.invoke(null, g, (c.width * factor).toInt(), (c.height * factor).toInt()) as java.awt.Rectangle
+                    //val viewport = getOGLViewport.invoke(null, g, window.width.toInt(), window.height.toInt()) as java.awt.Rectangle
+                    val scissorBox = getOGLScissorBox(null, g) as? java.awt.Rectangle?
+                    ///println("factor=$factor, scissorBox: $scissorBox, viewport: $viewport")
+                    //info.scissors?.setTo(scissorBox.x, scissorBox.y, scissorBox.width, scissorBox.height)
+                    if (scissorBox != null) {
+                        info.scissors = RectangleInt(scissorBox.x, scissorBox.y, scissorBox.width, scissorBox.height)
+                        //info.viewport?.setTo(viewport.x, viewport.y, viewport.width, viewport.height)
+                        info.viewport = RectangleInt(scissorBox.x, scissorBox.y, scissorBox.width, scissorBox.height)
+                    } else {
+                        System.err.println("ERROR !! scissorBox = $scissorBox, viewport = $viewport")
+                    }
+                    //info.viewport?.setTo(scissorBox.x, scissorBox.y)
+                    //println("viewport: $viewport, $scissorBox")
+                    //println(g.clipBounds)
+                    if (other != null) {
+                        val oldContext = NSClass("NSOpenGLContext").msgSend("currentContext")
+                        other!!.useContext(g, ag) { g, info -> action(g, info) }
+                        oldContext.msgSend("makeCurrentContext")
+                    } else {
+                        action(g, info)
+                    }
 
-            } catch (e: Throwable) {
-                e.printStackTrace()
-            }
-        })
+                } catch (e: Throwable) {
+                    e.printStackTrace()
+                }
+            })
+        } catch (e: Throwable) {
+            e.printStackTrace()
+        }
     }
 
     override fun makeCurrent() = Unit

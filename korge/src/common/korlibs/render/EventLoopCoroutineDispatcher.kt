@@ -1,16 +1,13 @@
 package korlibs.render
 
 import korlibs.datastructure.closeable.Closeable
-import korlibs.datastructure.event.*
 import korlibs.io.lang.*
 import korlibs.time.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
 
 @OptIn(InternalCoroutinesApi::class)
-class SyncEventLoopCoroutineDispatcher(val eventLoop: SyncEventLoop) : CoroutineDispatcher(), Delay, Closeable {
-    constructor(precise: Boolean = true, immediateRun: Boolean = false) : this(SyncEventLoop(precise, immediateRun))
-
+class EventLoopCoroutineDispatcher(val eventLoop: korlibs.datastructure.event.EventLoop) : CoroutineDispatcher(), Delay, Closeable {
     override fun close() {
         eventLoop.close()
     }
@@ -39,17 +36,5 @@ class SyncEventLoopCoroutineDispatcher(val eventLoop: SyncEventLoop) : Coroutine
         return eventLoop.setTimeout(timeMillis.milliseconds) {
             block.run()
         }.toDisposable()
-    }
-
-    fun loopForever() {
-        eventLoop.runTasksForever()
-    }
-
-    fun loopUntilEmpty() {
-        eventLoop.runTasksUntilEmpty()
-    }
-
-    fun executePending() {
-        eventLoop.runAvailableNextTasks()
     }
 }

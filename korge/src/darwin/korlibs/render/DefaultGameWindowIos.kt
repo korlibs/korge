@@ -1,6 +1,8 @@
 package korlibs.render
 
 import korlibs.datastructure.*
+import korlibs.datastructure.event.*
+import korlibs.datastructure.thread.*
 import korlibs.event.*
 import korlibs.graphics.*
 import korlibs.graphics.gl.*
@@ -21,17 +23,37 @@ import platform.GameController.*
 import platform.UIKit.*
 import platform.darwin.*
 
+actual fun CreateDefaultGameWindow(config: GameWindowCreationConfig): GameWindow = MyIosGameWindow
+
 expect val iosTvosTools: IosTvosToolsImpl
 
 open class IosTvosToolsImpl {
     open fun applicationDidFinishLaunching(app: UIApplication, window: UIWindow) {
         //window?.windowScene = windowScene
+        initializeIosResourcesPath()
     }
 
     open fun viewDidLoad(view: GLKView?) {
+        initializeIosResourcesPath()
     }
 
-    open fun hapticFeedbackGenerate(kind: GameWindow.HapticFeedbackKind) {
+    open fun hapticFeedbackGenerate(kind: HapticFeedbackKind) {
+    }
+}
+
+
+private fun initializeIosResourcesPath() {
+    if (korlibs.io.file.std.customCwd != null) return
+    val path = nativeCwdOrNull()
+    if (path != null) {
+        val rpath = "$path/include/app/resources"
+        if (NSFileManager().contentsOfDirectoryAtPath(rpath, null) != null) {
+            println("glkView: Switching CWD to $rpath...")
+            NSFileManager.defaultManager.changeCurrentDirectoryPath(rpath)
+            korlibs.io.file.std.customCwd = rpath
+        } else {
+            println("glkView: NOT switching CWD ($path doesn't exists)...")
+        }
     }
 }
 
@@ -69,16 +91,16 @@ abstract class KorgwBaseNewAppDelegate {
     fun applicationWillResignActive(app: UIApplication) {
         logger.info {"applicationWillResignActive" }
         forceGC()
-        gameWindow.dispatchPauseEvent()
+        gameWindow.dispatchPauseEventQueued()
     }
     fun applicationDidBecomeActive(app: UIApplication) {
         logger.info {"applicationDidBecomeActive" }
-        gameWindow.dispatchResumeEvent()
+        gameWindow.dispatchResumeEventQueued()
     }
     fun applicationWillTerminate(app: UIApplication) {
         logger.info {"applicationWillTerminate" }
-        gameWindow.dispatchStopEvent()
-        gameWindow.dispatchDestroyEvent()
+        gameWindow.dispatchStopEventQueued()
+        gameWindow.dispatchDestroyEventQueued()
     }
 
     private fun forceGC() {
@@ -161,7 +183,7 @@ class ViewController(
             val key = IosKeyMap.KEY_MAP[keyCode.toInt()] ?: Key.UNKNOWN
             //println("pressesHandler[$type]: ${keyCode}, ${modifierFlags}, $key, ${uiKey.charactersIgnoringModifiers}")
 
-            gameWindow.dispatchKeyEventEx(
+            gameWindow.dispatchKeyEventExQueued(
                 type,
                 0,
                 uiKey.charactersIgnoringModifiers.firstOrNull() ?: '\u0000',
@@ -184,8 +206,6 @@ class ViewController(
         super.pressesBegan(presses, withEvent)
         pressesHandler(KeyEvent.Type.UP, presses, withEvent)
     }
-
-
 
     //override fun pressesCancelled(presses: Set<*>, withEvent: UIPressesEvent?) {
     //    super.pressesBegan(presses, withEvent)
@@ -226,25 +246,29 @@ class MyGLKViewController(
         lastHeight = 0
     }
 
+    override fun viewWillAppear(animated: Boolean) {
+        gameWindow.eventLoop.start()
+    }
+
+    override fun viewWillDisappear(animated: Boolean) {
+        gameWindow.eventLoop.stop()
+    }
+
     override fun glkView(view: GLKView, drawInRect: CValue<CGRect>) {
+        val rect = drawInRect.useContents { toRectangle() }
+
+        println("RENDER rect=$rect")
+
         if (!initialized) {
             initialized = true
-            val path = nativeCwdOrNull()
-            if (path != null) {
-                val rpath = "$path/include/app/resources"
-                if (NSFileManager().contentsOfDirectoryAtPath(rpath, null) != null) {
-                    println("glkView: Switching CWD to $rpath...")
-                    NSFileManager.defaultManager.changeCurrentDirectoryPath(rpath)
-                    korlibs.io.file.std.customCwd = rpath
-                } else {
-                    println("glkView: NOT switching CWD ($path doesn't exists)...")
-                }
-            }
+            initializeIosResourcesPath()
             //self.lastTouchId = 0;
 
-            logger.info { "dispatchInitEvent" }
-            gameWindow.dispatchInitEvent()
-            gameWindow.entry {
+            logger.info { "gameWindow.onUpdateEvent" }
+            gameWindow.onUpdateEvent {
+                darwinGamePad.updateGamepads(gameWindow)
+            }
+            gameWindow.queueSuspend {
                 logger.info { "Executing entry..." }
                 this.entry()
             }
@@ -253,34 +277,24 @@ class MyGLKViewController(
         // Context changed!
         val currentContext = EAGLContext.currentContext()
         if (myContext != currentContext) {
-            logger.info {"myContext = $myContext" }
-            logger.info {"currentContext = $currentContext" }
+            logger.info { "myContext = $myContext" }
+            logger.info { "currentContext = $currentContext" }
             myContext = currentContext
             gameWindow.ag.contextLost()
         }
 
         val width = (view.bounds.useContents { size.width } * view.contentScaleFactor).toInt()
         val height = (view.bounds.useContents { size.height } * view.contentScaleFactor).toInt()
-        if (lastWidth != width || lastHeight != height) {
-            println("RESHAPE: $lastWidth, $lastHeight -> $width, $height")
-            this.lastWidth = width
-            this.lastHeight = height
-            gameWindow.dispatchReshapeEvent(0, 0, width, height)
-        }
 
-        //this.value++
-        //glDisable(GL_SCISSOR_TEST)
-        //glDisable(GL_STENCIL_TEST)
-        //glViewport(0, 0, 200, 300)
-        //glScissor(0, 0, 200, 300)
-        //glClearColor((this.value % 100).toFloat() / 100f, 0f, 1f, 1f)
-        //glClear(GL_COLOR_BUFFER_BIT)
+        gameWindow.resized(width, height)
 
-        darwinGamePad.updateGamepads(gameWindow)
-        gameWindow.frame()
+        //if (gameWindow.continuousRenderMode.shouldRender()) {
+        //    gameWindow.dispatchRenderEvent()
+        //}
+        gameWindow.dispatchRenderEvent()
+
+        println("/RENDER rect=$rect")
     }
-
-
 
     override fun didReceiveMemoryWarning() {
         //super.didReceiveMemoryWarning()
@@ -331,7 +345,7 @@ class MyGLKViewController(
     fun dispatchTouchEventStartMove() = touchBuilder.startFrame(TouchEvent.Type.MOVE)
     fun dispatchTouchEventStartEnd() = touchBuilder.startFrame(TouchEvent.Type.END)
     fun dispatchTouchEventAddTouch(id: Int, x: Float, y: Float) = touchBuilder.touch(id, Point(x, y))
-    fun dispatchTouchEventEnd() = gameWindow.dispatch(touchBuilder.endFrame().reset())
+    fun dispatchTouchEventEnd() = gameWindow.dispatchQueued(touchBuilder.endFrame().reset())
 
     private fun addTouches(touches: Set<*>, type: TouchType) {
         //println("addTouches[${touches.size}] type=$type");
@@ -400,26 +414,6 @@ open class IosGameWindow(
             glXViewController?.preferredFramesPerSecond = value.convert()
         }
     override var fps: Int get() = 60; set(value) = Unit
-    //override var title: String get() = ""; set(value) = Unit
-    //override val width: Int get() = 512
-    //override val height: Int get() = 512
-    //override var icon: Bitmap? get() = null; set(value) = Unit
-    //override var fullscreen: Boolean get() = false; set(value) = Unit
-    //override var visible: Boolean get() = false; set(value) = Unit
-    //override var quality: Quality get() = Quality.AUTOMATIC; set(value) = Unit
-
-    override suspend fun loop(entry: suspend GameWindow.() -> Unit) {
-        println("YAY! IosGameWindow.loop")
-        // Trick to reference some classes to make them available on iOS
-        //println("loop[0]")
-        try {
-            entry(this)
-            //println("loop[1]")
-        } catch (e: Throwable) {
-            println("ERROR IosGameWindow.loop:")
-            e.printStackTrace()
-        }
-    }
 
     override val isSoftKeyboardVisible: Boolean get() = super.isSoftKeyboardVisible
     lateinit var textField: MyUITextComponent
@@ -660,8 +654,6 @@ fun SetInitialIosGameWindow(gameWindow: IosGameWindow): IosGameWindow {
     MyIosGameWindow = gameWindow
     return gameWindow
 }
-
-actual fun CreateDefaultGameWindow(config: GameWindowCreationConfig): GameWindow = MyIosGameWindow
 
 /*
 
