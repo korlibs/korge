@@ -33,7 +33,16 @@ data class GameWindowCreationConfig(
     val checkGl: Boolean = false,
     val logGl: Boolean = false,
     val cacheGl: Boolean = false,
+    /** Makes the window to start full screen. If null, the default configuration will be used. */
     val fullscreen: Boolean? = null,
+    /** Allows to make the window undecorated */
+    val decorated: Boolean = true,
+    /** Allows to make window transparent */
+    val transparent: Boolean = false,
+    /** Allows window to be resizable */
+    val resizable: Boolean = true,
+    //val allowMinimize: Boolean = true,
+    //val allowMaximize: Boolean = true,
 ) {
     companion object {
         val DEFAULT = GameWindowCreationConfig()
