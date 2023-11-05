@@ -93,8 +93,8 @@ abstract class ImageFormat(vararg exts: String) : ImageFormatEncoderDecoder {
 	//fun decode(file: File) = this.read(file.openSync("r"), file.name)
 	//fun decode(s: ByteArray, filename: String = "unknown"): Bitmap = read(s.openSync(), filename)
 
-    override suspend fun decode(s: VfsFile, props: ImageDecodingProps): Bitmap =
-        this.read(s.readAsSyncStream(), props.copy(filename = s.baseName))
+    override suspend fun decode(file: VfsFile, props: ImageDecodingProps): Bitmap =
+        this.read(file.readAsSyncStream(), props.copy(filename = file.baseName))
 
     suspend fun decode(s: AsyncStream, filename: String) = this.read(s.readAll(), ImageDecodingProps(filename))
     suspend fun decode(s: AsyncStream, props: ImageDecodingProps = ImageDecodingProps.DEFAULT) =
