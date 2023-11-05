@@ -2,8 +2,12 @@ package korlibs.image.format
 
 import korlibs.datastructure.lock.*
 
-class ImageFormatsMutable : ImageFormats() {
+class ImageFormatsMutable() : ImageFormats() {
     val lock = NonRecursiveLock()
+
+    constructor(vararg formats: ImageFormat) : this() {
+        register(*formats)
+    }
 
     fun register(vararg formats: ImageFormat) {
         lock { this._formats = this._formats + formats - this }
