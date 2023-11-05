@@ -1,19 +1,14 @@
 package korlibs.image.format
 
-import korlibs.logger.*
-import korlibs.image.atlas.MutableAtlas
-import korlibs.image.atlas.MutableAtlasUnit
+import korlibs.image.atlas.*
 import korlibs.image.bitmap.*
-import korlibs.image.vector.SizedDrawable
-import korlibs.image.vector.format.readSVG
-import korlibs.io.file.VfsFile
-import korlibs.io.file.VfsOpenMode
-import korlibs.io.file.baseName
-import korlibs.io.lang.FileNotFoundException
-import korlibs.io.stream.AsyncInputStream
-import korlibs.io.stream.openSync
-import korlibs.io.stream.readAll
-import kotlinx.coroutines.CancellationException
+import korlibs.image.vector.*
+import korlibs.image.vector.format.*
+import korlibs.io.file.*
+import korlibs.io.lang.*
+import korlibs.io.stream.*
+import korlibs.logger.*
+import kotlinx.coroutines.*
 
 suspend fun displayImage(bmp: Bitmap, kind: Int = 0) = nativeImageFormatProvider.display(bmp, kind)
 
@@ -67,7 +62,7 @@ suspend fun VfsFile.readBitmapSlice(
     val result = readBitmap(props = props)
     return when {
         atlas != null -> atlas.add(result.toBMP32IfRequired(), Unit, name).slice
-        else -> result.slice()
+        else -> result.slice(name = name)
     }
 }
 
