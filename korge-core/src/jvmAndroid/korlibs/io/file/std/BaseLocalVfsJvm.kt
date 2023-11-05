@@ -1,11 +1,11 @@
 package korlibs.io.file.std
 
-import korlibs.time.*
+import korlibs.datastructure.closeable.Closeable
 import korlibs.io.async.*
 import korlibs.io.file.*
-import korlibs.io.lang.Closeable
 import korlibs.io.stream.*
 import korlibs.io.util.isAliveJre7
+import korlibs.time.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import java.io.*
@@ -13,14 +13,16 @@ import java.nio.file.*
 import java.nio.file.Path
 import java.nio.file.attribute.*
 import kotlin.collections.*
+import kotlin.coroutines.*
 
 internal open class BaseLocalVfsJvm : LocalVfs() {
     val that = this
     override val absolutePath: String = ""
 
-    protected suspend fun <T> executeIo(callback: suspend CoroutineScope.() -> T): T =
-        withContext(Dispatchers.CIO, callback)
-    //private suspend inline fun <T> executeIo(callback: suspend () -> T): T = callback()
+    protected suspend fun <T> executeIo(callback: suspend () -> T): T = when {
+        coroutineContext.preferSyncIo -> callback()
+        else -> withContext(Dispatchers.CIO) { callback() }
+    }
 
     fun UnixPermissions.toSet(): Set<PosixFilePermission> = buildList<PosixFilePermission> {
         val it = this@toSet
