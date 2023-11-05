@@ -2,11 +2,7 @@ package korlibs.image.atlas
 
 import korlibs.image.bitmap.*
 import korlibs.math.geom.*
-import korlibs.math.geom.binpack.BinPacker
-import kotlin.collections.LinkedHashMap
-import kotlin.collections.arrayListOf
-import kotlin.collections.map
-import kotlin.collections.plusAssign
+import korlibs.math.geom.binpack.*
 import kotlin.collections.set
 import kotlin.collections.toList
 
@@ -48,6 +44,11 @@ class MutableAtlas<T>(
     val entries = arrayListOf<Entry<T>>()
     val entriesByName = LinkedHashMap<String, Entry<T>>()
     val size get() = entries.size
+
+    operator fun contains(name: String): Boolean = name in entriesByName
+
+    operator fun get(name: String): BmpSlice = entriesByName[name]?.slice
+        ?: error("Can't find '$name' it atlas")
 
     private fun reconstructWithSize(width: Int, height: Int) {
         val slices = entries.toList()
