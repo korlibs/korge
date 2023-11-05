@@ -118,6 +118,7 @@ data class Korge(
     val debug: Boolean = false,
     val trace: Boolean = false,
     val context: Any? = null,
+    @DeprecatedParameter("Use windowCreationConfig instead")
     val fullscreen: Boolean? = null,
     val blocking: Boolean = true,
     val gameId: String = DEFAULT_GAME_ID,
@@ -130,8 +131,10 @@ data class Korge(
     val backgroundColor: RGBA? = Colors.BLACK,
     val quality: GameWindow.Quality = GameWindow.Quality.PERFORMANCE,
     val icon: String? = null,
+    @DeprecatedParameter("Use windowCreationConfig instead")
     val multithreaded: Boolean? = null,
     val forceRenderEveryFrame: Boolean = true,
+    val windowCreationConfig: GameWindowCreationConfig = GameWindowCreationConfig(fullscreen = fullscreen, multithreaded = multithreaded),
     val main: (suspend Stage.() -> Unit) = {},
     val debugAg: Boolean = false,
     val debugFontExtraScale: Double = 1.0,
@@ -169,13 +172,12 @@ object KorgeRunner {
         val iconPath = config.icon
         val imageFormats = config.imageFormats
         val entry = config.main
-        val multithreaded = config.multithreaded
         val windowSize = config.windowSize
 
         if (!Platform.isJsBrowser) {
             configureLoggerFromProperties(localCurrentDirVfs["klogger.properties"])
         }
-        val realGameWindow = (config.gameWindow ?: coroutineContext[GameWindow] ?: CreateDefaultGameWindow(GameWindowCreationConfig(multithreaded = multithreaded, fullscreen = config.fullscreen)))
+        val realGameWindow = (config.gameWindow ?: coroutineContext[GameWindow] ?: CreateDefaultGameWindow(config.windowCreationConfig))
         realGameWindow.bgcolor = config.backgroundColor ?: Colors.BLACK
         realGameWindow.loop {
             val gameWindow = this

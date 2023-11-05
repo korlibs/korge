@@ -23,7 +23,9 @@ class AwtGameWindow(config: GameWindowCreationConfig = GameWindowCreationConfig.
         init {
             isVisible = false
             ignoreRepaint = true
-            //background = Color.black
+            isUndecorated = !config.decorated
+            background = if (config.transparent) Color(0, 0, 0, 0) else background
+            isResizable = config.resizable
             setBounds(0, 0, 640, 480)
             frame.setLocationRelativeTo(null)
             frame.setKorgeDropTarget(this@AwtGameWindow)
