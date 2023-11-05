@@ -1,12 +1,12 @@
 package korlibs.image.format
 
+import korlibs.encoding.*
 import korlibs.image.bitmap.*
 import korlibs.io.concurrent.atomic.*
 import korlibs.io.file.*
 import korlibs.io.lang.*
 import korlibs.io.lang.ASCII
 import korlibs.io.stream.*
-import korlibs.encoding.*
 import kotlin.coroutines.cancellation.*
 
 open class ImageFormats(formats: Iterable<ImageFormat>) : ImageFormat("") {
@@ -15,6 +15,11 @@ open class ImageFormats(formats: Iterable<ImageFormat>) : ImageFormat("") {
     @PublishedApi
     internal var _formats: Set<ImageFormat> by KorAtomicRef(formats.listFormats() - this)
 	val formats: Set<ImageFormat> get() = _formats
+
+    fun formatByExt(ext: String): ImageFormat {
+        return formats.firstOrNull { ext in it.extensions }
+            ?: throw UnsupportedOperationException("Don't know how to generate file for extension '$ext' (supported extensions ${formats.flatMap { it.extensions }})")
+    }
 
     override fun toString(): String = "ImageFormats(${formats.size})$formats"
 
@@ -43,30 +48,53 @@ open class ImageFormats(formats: Iterable<ImageFormat>) : ImageFormat("") {
 		return null
 	}
 
+    private inline fun <T> readImageTyped(s: SyncStream, props: ImageDecodingProps, block: (format: ImageFormat, s: SyncStream, props: ImageDecodingProps) -> T): T {
+        //val format = formats.firstOrNull { it.check(s.sliceStart(), props) }
+        //println("--------------")
+        //println("FORMATS: $formats, props=$props")
+        for (format in formats) {
+            if (format.check(s.sliceStart(), props)) {
+                //println("FORMAT CHECK: $format")
+                return block(format, s.sliceStart(), props)
+            }
+        }
+        //if (format != null) return format.readImage(s.sliceStart(), props)
+        throw UnsupportedOperationException(
+            "No suitable image format : MAGIC:" + s.sliceStart().readString(4, ASCII) +
+                "(" + s.sliceStart().readBytes(4).hex + ") (" + s.sliceStart().readBytes(4).toString(ASCII) + ")"
+        )
+    }
+
 	override fun readImage(s: SyncStream, props: ImageDecodingProps): ImageData {
-		//val format = formats.firstOrNull { it.check(s.sliceStart(), props) }
-		//println("--------------")
-		//println("FORMATS: $formats, props=$props")
-		for (format in formats) {
-			if (format.check(s.sliceStart(), props)) {
-				//println("FORMAT CHECK: $format")
-				return format.readImage(s.sliceStart(), props)
-			}
-		}
-		//if (format != null) return format.readImage(s.sliceStart(), props)
-		throw UnsupportedOperationException(
-			"No suitable image format : MAGIC:" + s.sliceStart().readString(4, ASCII) +
-					"(" + s.sliceStart().readBytes(4).hex + ") (" + s.sliceStart().readBytes(4).toString(ASCII) + ")"
-		)
+        return readImageTyped(s, props) { format, s, props ->
+            format.readImage(s.sliceStart(), props)
+        }
 	}
 
 	override fun writeImage(image: ImageData, s: SyncStream, props: ImageEncodingProps) {
-		val ext = PathInfo(props.filename).extensionLC
 		//println("filename: $filename")
-		val format = formats.firstOrNull { ext in it.extensions }
-				?: throw UnsupportedOperationException("Don't know how to generate file for extension '$ext' (supported extensions ${formats.flatMap { it.extensions }}) (props $props)")
-		format.writeImage(image, s, props)
+        formatByExt(PathInfo(props.filename).extensionLC).writeImage(image, s, props)
 	}
+
+    override suspend fun encodeSuspend(image: ImageDataContainer, props: ImageEncodingProps): ByteArray {
+        return formatByExt(props.filename.pathInfo.extensionLC).encodeSuspend(image, props)
+    }
+
+    override fun readImageContainer(s: SyncStream, props: ImageDecodingProps): ImageDataContainer {
+        return readImageTyped(s, props) { format, s, props ->
+            format.readImageContainer(s.sliceStart(), props)
+        }
+    }
+
+    override suspend fun decodeSuspend(data: ByteArray, props: ImageDecodingProps): Bitmap {
+        return readImageTyped(data.openSync(), props) { format, s, props ->
+            format.decodeSuspend(data, props)
+        }
+    }
+
+    override suspend fun decode(file: VfsFile, props: ImageDecodingProps): Bitmap {
+        return formatByExt(file.extensionLC).decode(file, props)
+    }
 }
 
 
