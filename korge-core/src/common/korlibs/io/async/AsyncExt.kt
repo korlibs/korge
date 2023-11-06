@@ -69,13 +69,17 @@ expect fun asyncEntryPoint(callback: suspend () -> Unit): AsyncEntryPointResult
 expect fun asyncTestEntryPoint(callback: suspend () -> Unit): AsyncEntryPointResult
 
 val DEFAULT_SUSPEND_TEST_TIMEOUT = 20.seconds
+//val DEFAULT_TEST_SYNC_IO: Boolean? = true
+val DEFAULT_TEST_SYNC_IO: Boolean? = false
 
-fun suspendTest(timeout: TimeSpan?, callback: suspend CoroutineScope.() -> Unit) = asyncTestEntryPoint { if (timeout != null) withTimeoutNullable(timeout) { callback() } else coroutineScope { callback() } }
-//fun suspendTest(timeout: TimeSpan?, callback: suspend CoroutineScope.() -> Unit) = asyncEntryPoint { coroutineScope { callback() } }
-fun suspendTest(callback: suspend CoroutineScope.() -> Unit) = suspendTest(DEFAULT_SUSPEND_TEST_TIMEOUT, callback)
-fun suspendTest(cond: () -> Boolean, timeout: TimeSpan? = DEFAULT_SUSPEND_TEST_TIMEOUT, callback: suspend CoroutineScope.() -> Unit) = suspendTest(timeout) { if (cond()) callback() }
-fun suspendTestNoBrowser(callback: suspend CoroutineScope.() -> Unit) = suspendTest({ !Platform.isJsBrowser }, callback = callback)
-fun suspendTestNoJs(callback: suspend CoroutineScope.() -> Unit) = suspendTest({ !Platform.isJs && !Platform.isWasm }, callback = callback)
+fun suspendTest(timeout: TimeSpan? = DEFAULT_SUSPEND_TEST_TIMEOUT, preferSyncIo: Boolean? = null, callback: suspend CoroutineScope.() -> Unit) = asyncTestEntryPoint {
+    withContext(PreferSyncIo(preferSyncIo)) {
+        if (timeout != null) withTimeoutNullable(timeout) { callback() } else coroutineScope { callback() }
+    }
+}
+fun suspendTest(cond: () -> Boolean, timeout: TimeSpan? = DEFAULT_SUSPEND_TEST_TIMEOUT, preferSyncIo: Boolean? = DEFAULT_TEST_SYNC_IO, callback: suspend CoroutineScope.() -> Unit) = suspendTest(timeout, preferSyncIo = preferSyncIo) { if (cond()) callback() }
+fun suspendTestNoBrowser(preferSyncIo: Boolean? = DEFAULT_TEST_SYNC_IO, callback: suspend CoroutineScope.() -> Unit) = suspendTest({ !Platform.isJsBrowser }, callback = callback, preferSyncIo = preferSyncIo)
+fun suspendTestNoJs(preferSyncIo: Boolean? = DEFAULT_TEST_SYNC_IO, callback: suspend CoroutineScope.() -> Unit) = suspendTest({ !Platform.isJs && !Platform.isWasm }, callback = callback, preferSyncIo = preferSyncIo)
 
 val DEBUG_ASYNC_LAUNCH_ERRORS by lazy { Environment["DEBUG_ASYNC_LAUNCH_ERRORS"] == "true" }
 
