@@ -53,7 +53,7 @@ abstract class ImageFormat(vararg exts: String) : ImageFormatEncoderDecoder {
     }
 
     open suspend fun decodeHeaderSuspend(s: AsyncStream, props: ImageDecodingProps = ImageDecodingProps.DEFAULT): ImageInfo? {
-        return decodeHeader(s.toSyncOrNull() ?: s.readAll().openSync())
+        return decodeHeader(s.toSyncOrNull() ?: s.readAll().openSync(), props)
     }
 
 	open fun decodeHeader(s: SyncStream, props: ImageDecodingProps = ImageDecodingProps.DEFAULT): ImageInfo? =
@@ -142,6 +142,8 @@ data class ImageDecodingProps constructor(
 
     val premultipliedSure: Boolean get() = premultiplied ?: true
     val formatSure: ImageFormat get() = format ?: RegisteredImageFormats
+
+    fun copyWithFile(file: VfsFile) = copy(filename = file.baseName)
 
     // https://developer.android.com/reference/android/graphics/BitmapFactory.Options#inSampleSize
     fun getSampleSize(originalWidth: Int, originalHeight: Int): Int {
