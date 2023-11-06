@@ -6,6 +6,10 @@ import korlibs.math.geom.*
 import kotlin.test.*
 
 class FAKETest {
+    init {
+        RegisteredImageFormats.registerFirst(FAKE)
+    }
+
     @Test
     fun testInfoNotFake() = suspendTest {
         assertEquals(null, FAKE.decodeHeaderSuspend(SingleFileMemoryVfsWithName("", name = "4x3.png"))?.size)
