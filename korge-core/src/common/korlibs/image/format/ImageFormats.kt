@@ -16,8 +16,10 @@ open class ImageFormats(formats: Iterable<ImageFormat>) : ImageFormat("") {
     internal var _formats: Set<ImageFormat> by KorAtomicRef(formats.listFormats() - this)
 	val formats: Set<ImageFormat> get() = _formats
 
+    fun formatByExtOrNull(ext: String): ImageFormat? = formats.firstOrNull { ext in it.extensions }
+
     fun formatByExt(ext: String): ImageFormat {
-        return formats.firstOrNull { ext in it.extensions }
+        return formatByExtOrNull(ext)
             ?: throw UnsupportedOperationException("Don't know how to generate file for extension '$ext' (supported extensions ${formats.flatMap { it.extensions }})")
     }
 
