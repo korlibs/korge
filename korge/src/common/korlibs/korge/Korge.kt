@@ -8,6 +8,7 @@ import korlibs.graphics.log.*
 import korlibs.image.color.*
 import korlibs.image.format.*
 import korlibs.inject.*
+import korlibs.io.*
 import korlibs.io.async.*
 import korlibs.io.dynamic.*
 import korlibs.io.file.std.*
@@ -86,6 +87,8 @@ suspend fun Korge(
     debugFontColor: RGBA = Colors.WHITE,
     stageBuilder: (Views) -> Stage = { Stage(it) },
     targetFps: Double = 0.0,
+    /** false by default, useful only for debugging on the JVM */
+    preferSyncIo: Boolean? = null,
     entry: suspend Stage.() -> Unit = {}
 ): Unit = Korge(
     args = args, imageFormats = imageFormats, gameWindow = gameWindow, mainSceneClass = mainSceneClass,
@@ -104,6 +107,7 @@ suspend fun Korge(
     stageBuilder = stageBuilder,
     unit = Unit,
     targetFps = targetFps,
+    preferSyncIo = preferSyncIo,
 ).start(entry)
 
 data class Korge(
@@ -141,6 +145,7 @@ data class Korge(
     val debugFontColor: RGBA = Colors.WHITE,
     val stageBuilder: (Views) -> Stage = { Stage(it) },
     val targetFps: Double = 0.0,
+    val preferSyncIo: Boolean? = null,
     val unit: Unit = Unit,
 ) {
     companion object {
@@ -150,7 +155,9 @@ data class Korge(
     }
 
     suspend fun start(entry: suspend Stage.() -> Unit = this.main) {
-        KorgeRunner.invoke(this.copy(main = entry))
+        withContext(PreferSyncIo(preferSyncIo)) {
+            KorgeRunner.invoke(this@Korge.copy(main = entry))
+        }
     }
 }
 
