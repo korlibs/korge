@@ -52,8 +52,12 @@ abstract class ImageFormat(vararg exts: String) : ImageFormatEncoderDecoder {
         return out.toByteArray()
     }
 
+    suspend fun decodeHeaderSuspend(file: VfsFile, props: ImageDecodingProps = ImageDecodingProps.DEFAULT): ImageInfo? {
+        return file.openUse { decodeHeaderSuspend(this@openUse, props.copyWithFile(file)) }
+    }
+
     open suspend fun decodeHeaderSuspend(s: AsyncStream, props: ImageDecodingProps = ImageDecodingProps.DEFAULT): ImageInfo? {
-        return decodeHeader(s.toSyncOrNull() ?: s.readAll().openSync())
+        return decodeHeader(s.toSyncOrNull() ?: s.readAll().openSync(), props)
     }
 
 	open fun decodeHeader(s: SyncStream, props: ImageDecodingProps = ImageDecodingProps.DEFAULT): ImageInfo? =
@@ -93,8 +97,8 @@ abstract class ImageFormat(vararg exts: String) : ImageFormatEncoderDecoder {
 	//fun decode(file: File) = this.read(file.openSync("r"), file.name)
 	//fun decode(s: ByteArray, filename: String = "unknown"): Bitmap = read(s.openSync(), filename)
 
-    override suspend fun decode(s: VfsFile, props: ImageDecodingProps): Bitmap =
-        this.read(s.readAsSyncStream(), props.copy(filename = s.baseName))
+    override suspend fun decode(file: VfsFile, props: ImageDecodingProps): Bitmap =
+        this.read(file.readAsSyncStream(), props.copy(filename = file.baseName))
 
     suspend fun decode(s: AsyncStream, filename: String) = this.read(s.readAll(), ImageDecodingProps(filename))
     suspend fun decode(s: AsyncStream, props: ImageDecodingProps = ImageDecodingProps.DEFAULT) =
@@ -142,6 +146,8 @@ data class ImageDecodingProps constructor(
 
     val premultipliedSure: Boolean get() = premultiplied ?: true
     val formatSure: ImageFormat get() = format ?: RegisteredImageFormats
+
+    fun copyWithFile(file: VfsFile) = copy(filename = file.baseName)
 
     // https://developer.android.com/reference/android/graphics/BitmapFactory.Options#inSampleSize
     fun getSampleSize(originalWidth: Int, originalHeight: Int): Int {

@@ -2,11 +2,19 @@ package korlibs.image.format
 
 import korlibs.datastructure.lock.*
 
-class ImageFormatsMutable : ImageFormats() {
-    val lock = NonRecursiveLock()
+class ImageFormatsMutable() : ImageFormats() {
+    @PublishedApi internal val lock = NonRecursiveLock()
+
+    constructor(vararg formats: ImageFormat) : this() {
+        register(*formats)
+    }
 
     fun register(vararg formats: ImageFormat) {
         lock { this._formats = this._formats + formats - this }
+    }
+
+    fun registerFirst(vararg formats: ImageFormat) {
+        lock { this._formats = (formats.toSet() + this._formats) - this }
     }
 
     fun unregister(vararg formats: ImageFormat) {

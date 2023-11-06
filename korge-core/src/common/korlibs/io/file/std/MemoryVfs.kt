@@ -2,25 +2,18 @@
 
 package korlibs.io.file.std
 
-import korlibs.io.file.PathInfo
-import korlibs.io.file.VfsFile
-import korlibs.io.file.baseName
-import korlibs.io.file.folder
-import korlibs.io.file.fullName
-import korlibs.io.lang.Charset
-import korlibs.io.lang.Charsets
-import korlibs.io.lang.UTF8
-import korlibs.io.lang.toByteArray
-import korlibs.io.stream.AsyncStream
-import korlibs.io.stream.SyncStream
-import korlibs.io.stream.openAsync
-import korlibs.io.stream.toAsync
+import korlibs.io.file.*
+import korlibs.io.lang.*
+import korlibs.io.stream.*
 
-fun VfsFileFromData(data: ByteArray, ext: String = "bin") = MemoryVfsMix(mapOf("file.$ext" to data))["file.$ext"]
-fun VfsFileFromData(data: String, ext: String = "bin", charset: Charset = Charsets.UTF8) = MemoryVfsMix(mapOf("file.$ext" to data), charset = charset)["file.$ext"]
+fun SingleFileMemoryVfsWithName(data: ByteArray, name: String) = MemoryVfsMix(mapOf(name to data))[name]
+fun SingleFileMemoryVfsWithName(data: String, name: String, charset: Charset = Charsets.UTF8) = MemoryVfsMix(mapOf(name to data), charset = charset)[name]
 
-fun SingleFileMemoryVfs(data: ByteArray, ext: String = "bin") = VfsFileFromData(data, ext)
-fun SingleFileMemoryVfs(data: String, ext: String = "bin", charset: Charset = Charsets.UTF8) = VfsFileFromData(data, ext, charset)
+fun VfsFileFromData(data: ByteArray, ext: String = "bin", basename: String = "file") = SingleFileMemoryVfsWithName(data, "$basename.$ext")
+fun VfsFileFromData(data: String, ext: String = "bin", charset: Charset = Charsets.UTF8, basename: String = "file") = SingleFileMemoryVfsWithName(data, "$basename.$ext", charset)
+
+fun SingleFileMemoryVfs(data: ByteArray, ext: String = "bin", basename: String = "file") = VfsFileFromData(data, ext, basename)
+fun SingleFileMemoryVfs(data: String, ext: String = "bin", charset: Charset = Charsets.UTF8, basename: String = "file") = VfsFileFromData(data, ext, charset, basename)
 
 fun MemoryVfs(items: Map<String, AsyncStream> = LinkedHashMap(), caseSensitive: Boolean = true): VfsFile {
 	val vfs = NodeVfs(caseSensitive)
