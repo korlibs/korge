@@ -8,8 +8,10 @@ import korlibs.io.stream.*
 
 object FAKE : ImageFormat("fake") {
     override fun decodeHeader(s: SyncStream, props: ImageDecodingProps): ImageInfo? {
-        if (props.filename.pathInfo.extensionLC != "fake") return null
-        return generateImageInfoFromString(s.readString(1024))
+        val fileName = props.filename
+        if (fileName.pathInfo.extensionLC != "fake") return null
+        val fakeString = _getFakeString(fileName) { s.readBytes(1024) }
+        return generateImageInfoFromString(fakeString)
     }
     override fun readImage(s: SyncStream, props: ImageDecodingProps): ImageData {
         return ImageData(_decode(props.filename) { s.readBytes(1024) })
@@ -18,12 +20,19 @@ object FAKE : ImageFormat("fake") {
         return _decode(file.baseName) { file.openUse { readBytesUpTo(1024) } }
     }
 
-    private inline fun _decode(baseName: String, readBytes: () -> ByteArray): Bitmap {
-        val numbers = baseName.substringBefore('.').split("x")
+    private inline fun _getFakeString(baseName: String, readBytes: () -> ByteArray): String {
         return when {
-            numbers.size < 2 -> generateFromString(readBytes().toString(Charsets.UTF8))
-            else -> generateFromString(baseName)
+            isValidFakeString(baseName) -> baseName
+            else -> readBytes().toString(Charsets.UTF8)
         }
+    }
+
+    private inline fun _decode(baseName: String, readBytes: () -> ByteArray): Bitmap {
+        return generateFromString(_getFakeString(baseName, readBytes))
+    }
+
+    private fun isValidFakeString(str: String): Boolean {
+        return str.substringBefore('.').split("x").size >= 2
     }
 
     fun generateImageInfoFromString(str: String): ImageInfo {
