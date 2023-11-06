@@ -40,7 +40,8 @@ suspend fun ImageFormatEncoder.encodeSuspend(
 
 interface ImageFormatEncoderDecoder : ImageFormatEncoder, ImageFormatDecoder
 
-abstract class ImageFormat(vararg exts: String) : ImageFormatEncoderDecoder {
+abstract class ImageFormat(vararg exts: String) : BaseImageDecodingProps, ImageFormatEncoderDecoder {
+    override val decodingProps: ImageDecodingProps by lazy { this.toProps() }
 	val extensions = exts.map { it.toLowerCase().trim() }.toSet()
     open fun readImageContainer(s: SyncStream, props: ImageDecodingProps = ImageDecodingProps.DEFAULT): ImageDataContainer = ImageDataContainer(listOf(readImage(s, props)))
 	open fun readImage(s: SyncStream, props: ImageDecodingProps = ImageDecodingProps.DEFAULT): ImageData = TODO()
@@ -53,7 +54,7 @@ abstract class ImageFormat(vararg exts: String) : ImageFormatEncoderDecoder {
     }
 
     suspend fun decodeHeaderSuspend(file: VfsFile, props: ImageDecodingProps = ImageDecodingProps.DEFAULT): ImageInfo? {
-        return file.openUse { decodeHeaderSuspend(this@openUse, props.copyWithFile(file)) }
+        return file.openUse { decodeHeaderSuspend(this@openUse, props.withFile(file)) }
     }
 
     open suspend fun decodeHeaderSuspend(s: AsyncStream, props: ImageDecodingProps = ImageDecodingProps.DEFAULT): ImageInfo? {
@@ -71,7 +72,7 @@ abstract class ImageFormat(vararg exts: String) : ImageFormatEncoderDecoder {
 		}
 
 	fun read(s: SyncStream, filename: String = "unknown"): Bitmap =
-		readImage(s, ImageDecodingProps.DEFAULT.copy(filename = filename)).mainBitmap
+		readImage(s, ImageDecodingProps.DEFAULT.withFileName(filename)).mainBitmap
 
 	suspend fun read(file: VfsFile) = this.read(file.readAsSyncStream(), file.baseName)
 	//fun read(file: File) = this.read(file.openSync(), file.name)
@@ -98,7 +99,7 @@ abstract class ImageFormat(vararg exts: String) : ImageFormatEncoderDecoder {
 	//fun decode(s: ByteArray, filename: String = "unknown"): Bitmap = read(s.openSync(), filename)
 
     override suspend fun decode(file: VfsFile, props: ImageDecodingProps): Bitmap =
-        this.read(file.readAsSyncStream(), props.copy(filename = file.baseName))
+        this.read(file.readAsSyncStream(), props.withFile(file))
 
     suspend fun decode(s: AsyncStream, filename: String) = this.read(s.readAll(), ImageDecodingProps(filename))
     suspend fun decode(s: AsyncStream, props: ImageDecodingProps = ImageDecodingProps.DEFAULT) =
@@ -115,12 +116,16 @@ abstract class ImageFormat(vararg exts: String) : ImageFormatEncoderDecoder {
 		encode(ImageData(bitmap), props)
 
 	suspend fun read(file: VfsFile, props: ImageDecodingProps = ImageDecodingProps.DEFAULT): ImageData =
-		this.readImage(file.readAll().openSync(), props.copy(filename = file.baseName))
+		this.readImage(file.readAll().openSync(), props.withFile(file))
 
 	override fun toString(): String = "ImageFormat($extensions)"
 }
 
 class ImageDecoderNotFoundException : Exception("Can't read image using AWT. No available decoder for input")
+
+interface BaseImageDecodingProps {
+    val decodingProps: ImageDecodingProps
+}
 
 data class ImageDecodingProps constructor(
     val filename: String = "unknown",
@@ -142,12 +147,15 @@ data class ImageDecodingProps constructor(
      */
     val out: Bitmap? = null,
     override var extra: ExtraType = null
-) : Extra {
+) : BaseImageDecodingProps, Extra {
+
+    override val decodingProps get() = this
 
     val premultipliedSure: Boolean get() = premultiplied ?: true
     val formatSure: ImageFormat get() = format ?: RegisteredImageFormats
 
-    fun copyWithFile(file: VfsFile) = copy(filename = file.baseName)
+    fun withFileName(filename: String): ImageDecodingProps = copy(filename = filename)
+    fun withFile(file: VfsFile): ImageDecodingProps = withFileName(file.baseName)
 
     // https://developer.android.com/reference/android/graphics/BitmapFactory.Options#inSampleSize
     fun getSampleSize(originalWidth: Int, originalHeight: Int): Int {
@@ -183,6 +191,8 @@ data class ImageEncodingProps(
     val depremultiplyIfRequired: Boolean = true,
     val init: (ImageEncodingProps.() -> Unit)? = null
 ) : Extra {
+    fun withFile(file: VfsFile): ImageEncodingProps = copy(filename = file.baseName)
+
     val extension: String get() = PathInfo(filename).extensionLC
     val mimeType: String get() = when (extension) {
         "jpg", "jpeg" -> "image/jpeg"

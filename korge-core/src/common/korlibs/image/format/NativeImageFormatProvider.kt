@@ -3,9 +3,11 @@ package korlibs.image.format
 import korlibs.image.bitmap.*
 import korlibs.image.color.*
 import korlibs.image.vector.*
+import korlibs.io.async.*
 import korlibs.io.file.*
 import korlibs.math.geom.*
 import kotlinx.coroutines.*
+import kotlin.coroutines.*
 import kotlin.math.*
 
 expect val nativeImageFormatProvider: NativeImageFormatProvider
@@ -17,6 +19,11 @@ data class NativeImageResult(
 )
 
 abstract class NativeImageFormatProvider : ImageFormatEncoderDecoder {
+    protected suspend fun <T> executeIo(callback: suspend () -> T): T = when {
+        coroutineContext.preferSyncIo -> callback()
+        else -> withContext(Dispatchers.CIO) { callback() }
+    }
+
     protected open suspend fun decodeHeaderInternal(data: ByteArray): ImageInfo {
         val result = decodeInternal(data, ImageDecodingProps.DEFAULT)
         return ImageInfo().also {

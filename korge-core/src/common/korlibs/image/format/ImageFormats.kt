@@ -126,7 +126,7 @@ suspend fun Bitmap.writeTo(
 	file: VfsFile,
 	formats: ImageFormat = RegisteredImageFormats,
 	props: ImageEncodingProps = ImageEncodingProps()
-) = file.writeBytes(formats.encode(this, props.copy(filename = file.baseName)))
+) = file.writeBytes(formats.encode(this, props.withFile(file)))
 
 @Suppress("unused")
 suspend fun BmpSlice.writeTo(
