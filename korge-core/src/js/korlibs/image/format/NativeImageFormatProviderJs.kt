@@ -33,7 +33,8 @@ actual val nativeImageFormatProvider: NativeImageFormatProvider = when {
 object NodeJsNativeImageFormatProvider : BaseNativeImageFormatProvider() {
     override val formats: ImageFormat get() = RegisteredImageFormats
     override suspend fun encodeSuspend(image: ImageDataContainer, props: ImageEncodingProps): ByteArray {
-        return RegisteredImageFormats.formats.first().encode(image.default)
+        val format = RegisteredImageFormats.formatByExtOrNull(props.filename.pathInfo.extensionLC) ?: RegisteredImageFormats.formats.last()
+        return format.encode(image.default)
         //return PNG.encode(image.default.mainBitmap)
     }
 }
