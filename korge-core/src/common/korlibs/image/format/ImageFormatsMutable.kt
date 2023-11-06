@@ -3,7 +3,7 @@ package korlibs.image.format
 import korlibs.datastructure.lock.*
 
 class ImageFormatsMutable() : ImageFormats() {
-    val lock = NonRecursiveLock()
+    @PublishedApi internal val lock = NonRecursiveLock()
 
     constructor(vararg formats: ImageFormat) : this() {
         register(*formats)
