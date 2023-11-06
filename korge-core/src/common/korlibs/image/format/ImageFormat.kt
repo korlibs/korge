@@ -52,6 +52,10 @@ abstract class ImageFormat(vararg exts: String) : ImageFormatEncoderDecoder {
         return out.toByteArray()
     }
 
+    suspend fun decodeHeaderSuspend(file: VfsFile, props: ImageDecodingProps = ImageDecodingProps.DEFAULT): ImageInfo? {
+        return file.openUse { decodeHeaderSuspend(this@openUse, props.copyWithFile(file)) }
+    }
+
     open suspend fun decodeHeaderSuspend(s: AsyncStream, props: ImageDecodingProps = ImageDecodingProps.DEFAULT): ImageInfo? {
         return decodeHeader(s.toSyncOrNull() ?: s.readAll().openSync(), props)
     }
