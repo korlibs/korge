@@ -8,7 +8,6 @@ import korlibs.io.annotations.*
 import korlibs.io.file.*
 import korlibs.io.file.std.*
 import korlibs.time.*
-import kotlinx.coroutines.*
 import java.awt.image.*
 import java.io.*
 
@@ -112,25 +111,17 @@ open class CoreGraphicsImageFormatProvider : AwtNativeImageFormatProvider() {
     }
 
     override suspend fun decodeInternal(data: ByteArray, props: ImageDecodingProps): NativeImageResult {
-        val (res, time) = measureTimeWithResult {
-            withContext(Dispatchers.IO) {
-                _decodeInternal(data, props)
-            }
-        }
+        val (res, time) = measureTimeWithResult { executeIo { _decodeInternal(data, props) } }
         //println("DECODED IMAGE IN: $time")
         return res
     }
 
     override suspend fun decodeInternal(vfs: Vfs, path: String, props: ImageDecodingProps): NativeImageResult {
         val finalFile = vfs.getUnderlyingUnscapedFile(path)
-        if (finalFile.vfs is LocalVfs) {
-            //println("DECODE FAST PATH! from LocalVfs")
-            return withContext(Dispatchers.IO) {
-                _decodeInternal(File(finalFile.path).readBytes(), props)
-            }
+        return when (finalFile.vfs) {
+            is LocalVfs -> executeIo { _decodeInternal(File(finalFile.path).readBytes(), props) }
+            else -> decodeInternal(vfs[path].readBytes(), props)
         }
-
-        return decodeInternal(vfs[path].readBytes(), props)
     }
 
 
@@ -195,6 +186,9 @@ open class CoreGraphicsImageFormatProvider : AwtNativeImageFormatProvider() {
             }
             val colorSpace = CoreGraphics.CGColorSpaceCreateDeviceRGB()
 
+            if (width * height <= 0) {
+                error("Invalid size size=${width}x${height}")
+            }
             val pixels = Memory((width * height * 4).toLong()).also { it.clear() }
 
             val context = CoreGraphics.CGBitmapContextCreate(
