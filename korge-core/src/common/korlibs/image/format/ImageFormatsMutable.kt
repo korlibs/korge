@@ -13,6 +13,10 @@ class ImageFormatsMutable() : ImageFormats() {
         lock { this._formats = this._formats + formats - this }
     }
 
+    fun registerFirst(vararg formats: ImageFormat) {
+        lock { this._formats = (formats.toSet() + this._formats) - this }
+    }
+
     fun unregister(vararg formats: ImageFormat) {
         lock { this._formats = this._formats - formats.toSet() }
     }
