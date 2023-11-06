@@ -14,72 +14,63 @@ suspend fun displayImage(bmp: Bitmap, kind: Int = 0) = nativeImageFormatProvider
 
 // Read bitmaps from files
 
-suspend fun VfsFile.readNativeImage(props: ImageDecodingProps = ImageDecodingProps.DEFAULT): NativeImage =
+suspend fun VfsFile.readNativeImage(props: BaseImageDecodingProps = ImageDecodingProps.DEFAULT): NativeImage =
     readBitmapNative(props) as NativeImage
-suspend fun VfsFile.readBitmapNative(props: ImageDecodingProps = ImageDecodingProps.DEFAULT): Bitmap =
-    readBitmap(props.copy(tryNativeDecode = true, format = null))
-suspend fun VfsFile.readBitmapNoNative(props: ImageDecodingProps = ImageDecodingProps.DEFAULT): Bitmap =
-    readBitmap(props.copy(tryNativeDecode = false, format = props.format ?: RegisteredImageFormats))
-suspend fun VfsFile.readBitmap(props: ImageDecodingProps = ImageDecodingProps.DEFAULT): Bitmap =
-    _readBitmap(file = this, props = props)
+suspend fun VfsFile.readBitmapNative(props: BaseImageDecodingProps = ImageDecodingProps.DEFAULT): Bitmap =
+    readBitmap(props.decodingProps.copy(tryNativeDecode = true, format = null))
+suspend fun VfsFile.readBitmapNoNative(props: BaseImageDecodingProps = ImageDecodingProps.DEFAULT): Bitmap =
+    readBitmap(props.decodingProps.copy(tryNativeDecode = false, format = props.decodingProps.format ?: RegisteredImageFormats))
+suspend fun VfsFile.readBitmap(props: BaseImageDecodingProps = ImageDecodingProps.DEFAULT): Bitmap =
+    _readBitmap(file = this, props = props.decodingProps)
 
 // Read bitmaps from AsyncInputStream
 
-suspend fun AsyncInputStream.readNativeImage(props: ImageDecodingProps = ImageDecodingProps.DEFAULT): NativeImage =
-    readBitmap(props.copy(tryNativeDecode = true, format = null)) as NativeImage
-suspend fun AsyncInputStream.readBitmap(props: ImageDecodingProps = ImageDecodingProps("file.bin")): Bitmap =
-    _readBitmap(bytes = this.readAll(), props = props)
+suspend fun AsyncInputStream.readNativeImage(props: BaseImageDecodingProps = ImageDecodingProps.DEFAULT): NativeImage =
+    readBitmap(props.decodingProps.copy(tryNativeDecode = true, format = null)) as NativeImage
+suspend fun AsyncInputStream.readBitmap(props: BaseImageDecodingProps = ImageDecodingProps("file.bin")): Bitmap =
+    _readBitmap(bytes = this.readAll(), props = props.decodingProps)
 
 // Read extended image data
 
-suspend fun AsyncInputStream.readImageData(props: ImageDecodingProps = ImageDecodingProps.DEFAULT): ImageData =
-    props.formatSure.readImage(this.readAll().openSync(), ImageDecodingProps(props.filename))
+suspend fun AsyncInputStream.readImageData(props: BaseImageDecodingProps = ImageDecodingProps.DEFAULT): ImageData =
+    props.decodingProps.formatSure.readImage(this.readAll().openSync(), ImageDecodingProps(props.decodingProps.filename))
 suspend fun AsyncInputStream.readBitmapListNoNative(props: ImageDecodingProps = ImageDecodingProps.DEFAULT): List<Bitmap> =
 	readImageData(props).frames.map { it.bitmap }
-suspend fun VfsFile.readBitmapInfo(props: ImageDecodingProps = ImageDecodingProps.DEFAULT): ImageInfo? =
-    props.formatSure.decodeHeader(this.readAsSyncStream(), props)
-suspend fun VfsFile.readImageInfo(props: ImageDecodingProps = ImageDecodingProps.DEFAULT): ImageInfo? =
-    openUse(VfsOpenMode.READ) { props.formatSure.decodeHeaderSuspend(this, props) }
-suspend fun VfsFile.readImageData(props: ImageDecodingProps = ImageDecodingProps.DEFAULT, atlas: MutableAtlas<Unit>? = null): ImageData =
+suspend fun VfsFile.readBitmapInfo(props: BaseImageDecodingProps = ImageDecodingProps.DEFAULT): ImageInfo? =
+    props.decodingProps.formatSure.decodeHeader(this.readAsSyncStream(), props.decodingProps)
+suspend fun VfsFile.readImageInfo(props: BaseImageDecodingProps = ImageDecodingProps.DEFAULT): ImageInfo? =
+    openUse(VfsOpenMode.READ) { props.decodingProps.formatSure.decodeHeaderSuspend(this, props.decodingProps) }
+suspend fun VfsFile.readImageData(props: BaseImageDecodingProps = ImageDecodingProps.DEFAULT, atlas: MutableAtlas<Unit>? = null): ImageData =
     readImageDataContainer(props, atlas).default
 
-suspend fun VfsFile.readImageDataContainer(props: ImageDecodingProps = ImageDecodingProps.DEFAULT, atlas: MutableAtlas<Unit>? = null): ImageDataContainer {
-    val out = props.formatSure.readImageContainer(this.readAsSyncStream(), props.copy(filename = this.baseName))
+suspend fun VfsFile.readImageDataContainer(props: BaseImageDecodingProps = ImageDecodingProps.DEFAULT, atlas: MutableAtlas<Unit>? = null): ImageDataContainer {
+    val out = props.decodingProps.formatSure.readImageContainer(this.readAsSyncStream(), props.decodingProps.withFile(this))
     return if (atlas != null) out.packInMutableAtlas(atlas) else out
 }
 
-suspend fun VfsFile.readBitmapListNoNative(props: ImageDecodingProps = ImageDecodingProps.DEFAULT): List<Bitmap> =
+suspend fun VfsFile.readBitmapListNoNative(props: BaseImageDecodingProps = ImageDecodingProps.DEFAULT): List<Bitmap> =
 	readImageData(props).frames.map { it.bitmap }
 
-suspend fun VfsFile.readBitmapImageData(props: ImageDecodingProps = ImageDecodingProps.DEFAULT): ImageData =
+suspend fun VfsFile.readBitmapImageData(props: BaseImageDecodingProps = ImageDecodingProps.DEFAULT): ImageData =
     readImageData(props)
 
 suspend fun VfsFile.readBitmapSlice(
     name: String? = null,
     atlas: MutableAtlasUnit? = null,
-    props: ImageDecodingProps = ImageDecodingProps.DEFAULT,
+    props: BaseImageDecodingProps = ImageDecodingProps.DEFAULT,
+): BmpSlice = readBitmapSlice(props, name, atlas)
+
+suspend fun VfsFile.readBitmapSlice(
+    bprops: BaseImageDecodingProps,
+    name: String? = null,
+    atlas: MutableAtlasUnit? = null,
 ): BmpSlice {
-    val result = readBitmap(props = props)
+    val result = readBitmap(props = bprops)
     return when {
         atlas != null -> atlas.add(result.toBMP32IfRequired(), Unit, name).slice
         else -> result.slice(name = name)
     }
 }
-
-// ImageFormat variants
-
-suspend fun VfsFile.readBitmapListNoNative(format: ImageFormat): List<Bitmap> =
-    readBitmapListNoNative(format.toProps())
-suspend fun VfsFile.readBitmap(format: ImageFormat): Bitmap =
-    readBitmap(format.toProps())
-suspend fun VfsFile.readBitmapNative(format: ImageFormat): Bitmap =
-    readBitmapNative(format.toProps())
-suspend fun VfsFile.readBitmapNoNative(format: ImageFormat): Bitmap =
-    readBitmapNoNative(format.toProps())
-suspend fun VfsFile.readImageInfo(format: ImageFormat): ImageInfo? =
-    readImageInfo(format.toProps())
-suspend fun VfsFile.readBitmapInfo(format: ImageFormat): ImageInfo? =
-    readBitmapInfo(format.toProps())
 
 // Atlas variants
 
@@ -93,7 +84,7 @@ suspend fun VfsFile.writeBitmap(
 	format: ImageFormat,
 	props: ImageEncodingProps = ImageEncodingProps()
 ) {
-	this.write(format.encode(bitmap, props.copy(filename = this.baseName)))
+	this.write(format.encode(bitmap, props.withFile(this)))
 }
 
 //////////////////////////
@@ -105,7 +96,7 @@ private suspend fun _readBitmap(
     bytes: ByteArray? = null,
     props: ImageDecodingProps = ImageDecodingProps.DEFAULT
 ): Bitmap {
-    val prop = if (file != null) props.copy(filename = file.baseName) else props
+    val prop = if (file != null) props.withFile(file) else props
     val rformats = when {
         !prop.tryNativeDecode -> listOf(prop.format)
         prop.format == null -> listOf(null)
