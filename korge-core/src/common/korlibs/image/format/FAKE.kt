@@ -7,13 +7,22 @@ import korlibs.io.lang.*
 import korlibs.io.stream.*
 
 object FAKE : ImageFormat("fake") {
-    override fun decodeHeader(s: SyncStream, props: ImageDecodingProps): ImageInfo? = generateImageInfoFromString(s.readString(1024))
-    override fun readImage(s: SyncStream, props: ImageDecodingProps): ImageData = ImageData(generateFromString(s.readString(1024)))
+    override fun decodeHeader(s: SyncStream, props: ImageDecodingProps): ImageInfo? {
+        if (props.filename.pathInfo.extensionLC != "fake") return null
+        return generateImageInfoFromString(s.readString(1024))
+    }
+    override fun readImage(s: SyncStream, props: ImageDecodingProps): ImageData {
+        return ImageData(_decode(props.filename) { s.readBytes(1024) })
+    }
     override suspend fun decode(file: VfsFile, props: ImageDecodingProps): Bitmap {
-        val numbers = file.baseName.substringBefore('.').split("x")
+        return _decode(file.baseName) { file.openUse { readBytesUpTo(1024) } }
+    }
+
+    private inline fun _decode(baseName: String, readBytes: () -> ByteArray): Bitmap {
+        val numbers = baseName.substringBefore('.').split("x")
         return when {
-            numbers.size < 2 -> generateFromString(file.openUse { readBytesUpTo(1024).toString(Charsets.UTF8) })
-            else -> generateFromString(file.baseName)
+            numbers.size < 2 -> generateFromString(readBytes().toString(Charsets.UTF8))
+            else -> generateFromString(baseName)
         }
     }
 
