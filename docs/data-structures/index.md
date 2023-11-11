@@ -7,6 +7,8 @@ title_short: Introduction
 fa-icon: fa-tree
 children: /kds/
 priority: 0
+artifact: 'com.soywiz.korge:korge-foundation'
+package: korlibs.datastructure
 ---
 
 <img src="/i/logos/kds.svg" width="196" height="196" style="float: left;margin: 0 16px 16px 0;" alt="KDS: Data Structures" />

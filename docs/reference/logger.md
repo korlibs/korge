@@ -5,9 +5,9 @@ layout: default
 title: "Logger"
 fa-icon: fa-bell
 priority: 60
+artifact: 'com.soywiz.korge:korge-foundation'
+package: korlibs.logger
 ---
-
-Klogger is a logger library for multiplatform Kotlin.
 
 This module provides a simple interface to do logging into suitable outputs like javascript's console or stdout/stderr.
 

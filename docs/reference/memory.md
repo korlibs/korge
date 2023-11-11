@@ -5,13 +5,13 @@ layout: default
 title: Memory
 fa-icon: fa-microchip
 priority: 59
+artifact: 'com.soywiz.korge:korge-foundation'
+package: korlibs.memory
 ---
 
 <img src="/i/logos/kmem.svg" width="196" height="196" style="float: left;margin: 0 16px 16px 0;" alt="KMEM: Memory Utilities" />
 
-Kmem is bit, array and fast memory utilities library for multiplatform Kotlin 1.3
-
-[https://github.com/korlibs/kmem](https://github.com/korlibs/kmem)
+Kmem is bit, array and fast memory utilities library for multiplatform Kotlin
 
 ## arraycopy and arrayfill
 

@@ -7,6 +7,8 @@ title_prefix: KorIO
 description: "JSON, TOML, YAML, XML and Properties serialization"
 fa-icon: fa-code
 priority: 9
+artifact: 'com.soywiz.korge:korge-core'
+package: korlibs.serialization
 ---
 
 KorIO has utilities for serializing and deserializing typical formats.

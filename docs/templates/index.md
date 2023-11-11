@@ -6,11 +6,13 @@ title: "Templates"
 title_short: Introduction
 fa-icon: far fa-file-code
 priority: 0
+artifact: 'com.soywiz.korge:korge-core'
+package: korlibs.template
 ---
 
 <img alt="KorTE" src="/i/logos/korte.svg" width="128" height="128" style="float: left;" />
 
-KorTE is a asynchronous template engine for Multiplatform Kotlin 1.3.
+KorTE is a asynchronous template engine for Multiplatform Kotlin.
 
 It is a non-strict super set of [twig](https://twig.symfony.com/) / [django](https://docs.djangoproject.com/en/2.1/topics/templates/) / [atpl.js](https://github.com/soywiz/atpl.js) / [jinjava](https://github.com/HubSpot/jinjava) template engines and can support [liquid template engine](https://shopify.github.io/liquid/) too with frontmatter.
 
@@ -20,8 +22,6 @@ It works on JVM and JS out of the box.
 But can also work on Native when using untyped model data or making models to implement the `DynamicType` interface.
 
 It allows to call suspend methods from within templates.
-
-<https://github.com/korlibs/korte>
 
 Live demo (editable) [[source code]](https://github.com/korlibs/korte-samples/blob/master/korte-sample-browser/src/main/kotlin/main.kt){:target="_blank",:rel="noopener"}:
 
