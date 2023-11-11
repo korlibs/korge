@@ -7,7 +7,7 @@ fa-icon: fa-lock
 priority: 950
 ---
 
-Krypto is a cryptography library for Multiplatform Kotlin 1.3.
+Krypto is a cryptography library for Multiplatform Kotlin.
 
 
 ## SecureRandom

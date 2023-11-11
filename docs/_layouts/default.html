@@ -130,7 +130,7 @@
                             <li><h6 class="dropdown-header">v5 releases</h6></li>
                             <li>
                                 <a class="dropdown-item d-flex align-items-center justify-content-between active" aria-current="true" href="/">
-                                    Latest (5.0.x)
+                                    Latest (5.1.x)
                                     <i class="bi bis bi-check2 ms-auto"></i>
                                 </a>
                             </li>
@@ -250,6 +250,29 @@
                 if you find something invalid here.
                 {% endif %}
             </div>
+
+            {% if page.artifact or page.package or page.packages %}
+            <div style="margin-top:0.5em;">
+                {% if page.artifact %}
+                To access this functionality you can include the:
+                <code>{{ page.artifact }}:{{ site.data.versions.korge }}</code>
+                artifact from maven central.
+                {% endif %}
+                {% if page.package or page.packages %}
+                All the functionality yields in the
+                {% if page.packages %}
+                    {% for package in page.packages %}
+                    {% if forloop.index != 1 %}, {% endif %}
+                    <code>{{ package }}</code>
+                    {% endfor %}
+                    packages
+                {% else %}
+                <code>{{ page.package }}</code> package
+                {% endif %}
+                .
+                {% endif %}
+            </div>
+            {% endif %}
         </div>
 
 

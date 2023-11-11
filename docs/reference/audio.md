@@ -5,11 +5,13 @@ layout: default
 title: "Audio"
 fa-icon: fa-headphones
 priority: 70
+artifact: 'com.soywiz.korge:korge-core'
+package: korlibs.audio
 ---
 
 <img alt="KorAU" src="/i/logos/korau.svg" width="128" height="128" style="float: left;margin-right:1em;" />
 
-[KorAU](https://github.com/korlibs/korge/tree/main/korau), Kotlin cORoutines AUdio - Audio playing, and sound file decoding
+KorAU, Kotlin cORoutines AUdio - Audio playing, and sound file decoding
 
 It supports playing sounds, creating dynamic audio streams and decoding audio file formats: wav, mp3 and ogg.
 

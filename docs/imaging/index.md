@@ -6,6 +6,8 @@ title: "Image"
 title_short: "Introduction"
 fa-icon: fa-image
 priority: 0
+artifact: 'com.soywiz.korge:korge-core'
+package: korlibs.image
 ---
 
 <img alt="KorIM" src="/i/logos/korim.svg" style="float:left;width:128px;height:128px;" />
@@ -15,8 +17,6 @@ priority: 0
 This library is able to load PNG, JPEGs, BMPs, TGAs, PSDs and SVG vector images.
 Also allows rendering vectorial images using native rasterizers. 
 Also allows to use native image loaders for the fastest performance.
-
-[https://github.com/korlibs/korim](https://github.com/korlibs/korim)
 
 {% include stars.html project="korge" central="com.soywiz.korlibs.korim/korim" %}
 
