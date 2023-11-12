@@ -31,7 +31,7 @@ kotlinx-serialization = "1.6.0"
 #kotlinx-serialization = "1.6.0-wasm0"
 
 kotlinx-benchmark = "0.4.7"
-dokka = "1.8.10"
+dokka = "1.9.10"
 kover = "0.6.1"
 kover-agent = "1.0.712"
 node = "16.9.1"
