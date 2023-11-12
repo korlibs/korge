@@ -19,6 +19,7 @@ import org.gradle.api.*
 import org.gradle.api.file.*
 import org.gradle.api.tasks.*
 import org.gradle.api.tasks.testing.*
+import org.jetbrains.dokka.gradle.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import org.jetbrains.kotlin.gradle.targets.js.npm.*
 import org.jetbrains.kotlin.gradle.targets.js.testing.*
@@ -46,7 +47,14 @@ object RootKorlibsPlugin {
     }
 
     fun Project.init() {
-        plugins.apply("org.jetbrains.dokka")
+        plugins.apply(DokkaPlugin::class.java)
+
+        allprojects {
+            tasks.withType(AbstractDokkaTask::class.java).configureEach {
+                //println("DOKKA=$it")
+                it.offlineMode.set(true)
+            }
+        }
 
         checkMinimumJavaVersion()
         configureBuildScriptClasspathTasks()
