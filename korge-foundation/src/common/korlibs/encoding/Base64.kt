@@ -131,6 +131,8 @@ fun ByteArray.toBase64(url: Boolean = false, doPadding: Boolean = false): String
 val ByteArray.base64: String get() = Base64.encode(this)
 val ByteArray.base64Url: String get() = Base64.encode(this, true)
 
+
+/** test comment*/
 private fun String.toDecodeArray(): IntArray = IntArray(0x100).also {
     for (n in 0..255) it[n] = -1
     for (n in indices) {
