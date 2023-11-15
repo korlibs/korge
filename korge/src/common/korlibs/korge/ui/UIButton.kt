@@ -257,59 +257,23 @@ open class UIButton(
     }
 
     open fun updatedUIButton(down: Boolean? = null, over: Boolean? = null, pos: Point = Point.ZERO, immediate: Boolean = false) {
-        val button = this
-        if (!button.enabled) {
-            //button.animStateManager.set(
-            //    AnimState(
-            //        button::bgcolor[button.bgColorDisabled]
-            //))
-            //button.animatorEffects.cancel()
-            background.bgColor = button.bgColorDisabled
-            button.invalidateRender()
-            return
+        val bgColor = when {
+            !enabled -> bgColorDisabled
+            over ?: false -> bgColorOver
+            selected -> bgColorSelected
+            else -> bgColorOut
         }
-        //println("UPDATED: down=$down, over=$over, px=$px, py=$py")
+
+        if (immediate) {
+            background.bgColor = bgColor
+        } else {
+            animator.tween(background::bgColor[bgColor], time = 0.25.seconds)
+        }
+
         if (down == true) {
-            //button.animStateManager.set(
-            //    AnimState(
-            //        button::highlightRadius[0.0, 1.0],
-            //        button::highlightAlpha[1.0],
-            //        button::highlightPos[Point(px / button.width, py / button.height), Point(px / button.width, py / button.height)],
-            //    ))
             background.addHighlight(pos)
-                /*
-            button.highlightPos.setTo(px / button.width, py / button.height)
-            button.animatorEffects.tween(
-                button::highlightRadius[0.0, 1.0],
-                button::highlightColor[Colors.WHITE.withAd(0.5), Colors.WHITE.withAd(0.5)],
-                time = 0.5.seconds, easing = Easing.EASE_IN
-            )
-            */
-        }
-        if (down == false) {
-            //button.animStateManager.set(
-            //    AnimState(button::highlightAlpha[0.0])
-            //)
+        } else {
             background.removeHighlights()
-            //button.animatorEffects.tween(button::highlightColor[Colors.TRANSPARENT_BLACK], time = 0.2.seconds)
-        }
-        if (over != null) {
-            val bgcolor = when {
-                !button.enabled -> button.bgColorDisabled
-                over -> button.bgColorOver
-                selected -> button.bgColorSelected
-                else -> button.bgColorOut
-            }
-            //button.animStateManager.set(
-            //    AnimState(
-            //        button::bgcolor[bgcolor]
-            //    )
-            //)
-            if (immediate) {
-                background.bgColor = bgcolor
-            } else {
-                button.animator.tween(background::bgColor[bgcolor], time = 0.25.seconds)
-            }
         }
     }
 
