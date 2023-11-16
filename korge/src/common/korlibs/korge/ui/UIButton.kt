@@ -102,10 +102,11 @@ open class UIButton(
     override var enabled: Boolean
         get() = super.enabled
         set(value) {
-            if (value != mouseEnabled)
-                updatedUIButton(enabled = value)
-
+            val valueChanged = value != mouseEnabled
             mouseEnabled = value
+
+            if (valueChanged)
+                updatedUIButton(enable = value)
         }
 
     //protected val rect: NinePatchEx = ninePatch(null, width, height)
@@ -265,9 +266,17 @@ open class UIButton(
         touch.simulateTapAt(views, localToGlobal(Point(width * 0.5f, height * 0.5f)))
     }
 
-    open fun updatedUIButton(down: Boolean? = null, over: Boolean? = null, enabled: Boolean? = null, pos: Point = Point.ZERO, immediate: Boolean = false) {
+    open fun updatedUIButton(down: Boolean? = null, over: Boolean? = null, enable: Boolean? = null, pos: Point = Point.ZERO, immediate: Boolean = false) {
+        if (enabled && down != null) {
+            if (down) {
+                background.addHighlight(pos)
+            } else {
+                background.removeHighlights()
+            }
+        }
+
         val bgColor = when {
-            enabled == false -> bgColorDisabled
+            enable == false || !enabled -> bgColorDisabled
             over == true -> bgColorOver
             selected -> bgColorSelected
             else -> bgColorOut
@@ -277,12 +286,6 @@ open class UIButton(
             background.bgColor = bgColor
         } else {
             animator.tween(background::bgColor[bgColor], time = 0.25.seconds)
-        }
-
-        if (down == true) {
-            background.addHighlight(pos)
-        } else if (down == false) {
-            background.removeHighlights()
         }
     }
 
