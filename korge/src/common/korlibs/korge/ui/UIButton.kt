@@ -99,6 +99,13 @@ open class UIButton(
             setInitialState()
         }
 
+    override var enabled: Boolean
+        get() = super.enabled
+        set(value) {
+            mouseEnabled = value
+            updatedUIButton(enabled = value)
+        }
+
     //protected val rect: NinePatchEx = ninePatch(null, width, height)
     //protected val background = roundRect(
     //    width, height, radiusWidth(width), radiusHeight(height), bgColorOut)
@@ -256,10 +263,10 @@ open class UIButton(
         touch.simulateTapAt(views, localToGlobal(Point(width * 0.5f, height * 0.5f)))
     }
 
-    open fun updatedUIButton(down: Boolean? = null, over: Boolean? = null, pos: Point = Point.ZERO, immediate: Boolean = false) {
+    open fun updatedUIButton(down: Boolean? = null, over: Boolean? = null, enabled: Boolean? = null, pos: Point = Point.ZERO, immediate: Boolean = false) {
         val bgColor = when {
-            !enabled -> bgColorDisabled
-            over ?: false -> bgColorOver
+            enabled == false -> bgColorDisabled
+            over == true -> bgColorOver
             selected -> bgColorSelected
             else -> bgColorOut
         }
