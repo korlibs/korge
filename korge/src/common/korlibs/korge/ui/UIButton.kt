@@ -102,8 +102,10 @@ open class UIButton(
     override var enabled: Boolean
         get() = super.enabled
         set(value) {
+            if (value != mouseEnabled)
+                updatedUIButton(enabled = value)
+
             mouseEnabled = value
-            updatedUIButton(enabled = value)
         }
 
     //protected val rect: NinePatchEx = ninePatch(null, width, height)
