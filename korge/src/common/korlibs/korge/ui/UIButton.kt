@@ -279,7 +279,7 @@ open class UIButton(
 
         if (down == true) {
             background.addHighlight(pos)
-        } else {
+        } else if (down == false) {
             background.removeHighlights()
         }
     }
