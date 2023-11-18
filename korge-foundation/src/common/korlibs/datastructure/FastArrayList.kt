@@ -1,7 +1,7 @@
 package korlibs.datastructure
 
-import korlibs.datastructure.iterators.fastForEach
-import kotlin.math.min
+import korlibs.datastructure.iterators.*
+import kotlin.math.*
 
 interface MutableListEx<E> : MutableList<E> {
     fun removeRange(fromIndex: Int, toIndex: Int)
@@ -33,6 +33,8 @@ expect class FastArrayList<E> : MutableListEx<E>, RandomAccess {
 
     fun trimToSize()
     fun ensureCapacity(minCapacity: Int)
+
+    override fun removeRange(fromIndex: Int, toIndex: Int)
 
     // From List
 
