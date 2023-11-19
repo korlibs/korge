@@ -6,16 +6,16 @@ internal expect fun anyIdentityHashCode(obj: Any?): Int
 @RequiresOptIn(level = RequiresOptIn.Level.WARNING)
 public annotation class KdsInternalApi
 
-internal fun <T> Array<T>.fill(value: T) { for (n in indices) this[n] = value }
-internal fun IntArray.fill(value: Int) { for (n in indices) this[n] = value }
+@PublishedApi internal fun <T> Array<T>.fill(value: T) { for (n in indices) this[n] = value }
+@PublishedApi internal fun IntArray.fill(value: Int) { for (n in indices) this[n] = value }
 
-internal inline fun <T> contentHashCode(size: Int, gen: (index: Int) -> T): Int {
+@PublishedApi internal inline fun <T> contentHashCode(size: Int, gen: (index: Int) -> T): Int {
     var result = 1
     for (n in 0 until size) result = 31 * result + gen(n).hashCode()
     return result
 }
 
-internal inline fun hashCoder(count: Int, gen: (index: Int) -> Int): Int {
+@PublishedApi internal inline fun hashCoder(count: Int, gen: (index: Int) -> Int): Int {
     var out = 0
     for (n in 0 until count) {
         out *= 7
