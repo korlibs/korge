@@ -109,7 +109,7 @@ enum class Timezone(val abbr: String, val offset: TimezoneOffset, val long: Stri
     IRST("IRST", +3, 30),
     IST_INDIA("IST", +5, 30, long = "IST_INDIA"),
     IST_IRISH("IST", +1, long = "IST_IRISH"),
-    IST_ISRAEL("ISTL", +2, long = "IST_ISRAEL"),
+    IST_ISRAEL("IST", +2, long = "IST_ISRAEL"),
     JST("JST", +9),
     KALT("KALT", +2),
     KGT("KGT", +6),
