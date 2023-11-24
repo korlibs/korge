@@ -5,7 +5,6 @@ import korlibs.image.color.*
 import korlibs.image.font.*
 import korlibs.image.text.*
 import korlibs.io.concurrent.atomic.*
-import korlibs.korge.ui.*
 import korlibs.korge.view.*
 import kotlin.reflect.*
 
@@ -28,7 +27,7 @@ class ViewStyles(val view: View) {
     var updating = KorAtomicInt(0)
 
     fun <T> getProp(prop: KProperty<T>, default: T): T =
-        (data?.get(prop.name) as? T?) ?: (view.parent as? UIView)?.styles?.getProp(prop, default) ?: default
+        (data?.get(prop.name) as? T?) ?: view.parent?.styles?.getProp(prop, default) ?: default
 
     fun doUpdate(updating: Int = this.updating.value) {
         if (updating == 0) {
