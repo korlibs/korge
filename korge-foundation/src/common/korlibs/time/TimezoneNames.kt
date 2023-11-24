@@ -2,22 +2,28 @@ package korlibs.time
 
 import korlibs.time.internal.Serializable
 
-data class TimezoneNames(val namesToOffsets: Map<String, TimeSpan>) : Serializable {
-	constructor(vararg tz: Pair<String, TimeSpan>) : this(tz.toMap())
+data class TimezoneNames(val timeZones: List<Timezone>) : Serializable {
+    val namesToOffsetsList by lazy { timeZones.groupBy { it.abbr } }
+    val namesToOffsets by lazy { namesToOffsetsList.map { it.key to it.value.first().offset.time }.toMap() }
+    constructor(vararg tz: Timezone) : this(tz.toList())
 
-	operator fun plus(other: TimezoneNames) = TimezoneNames(this.namesToOffsets + other.namesToOffsets)
+	operator fun plus(other: TimezoneNames): TimezoneNames = TimezoneNames(this.timeZones + other.timeZones)
+    operator fun get(name: String): Timezone? = namesToOffsetsList[name.uppercase().trim()]?.first()
+
+    /** Some abbreviations collides, so we can get a list of Timezones based on abbreviation */
+    fun getAll(name: String): List<Timezone> = namesToOffsetsList[name.uppercase().trim()] ?: emptyList()
 
 	companion object {
         @Suppress("MayBeConstant", "unused")
         private const val serialVersionUID = 1L
 
         val DEFAULT = TimezoneNames(
-			"PDT" to (-7).hours,
-			"PST" to (-8).hours,
-			"GMT" to 0.hours,
-			"UTC" to 0.hours,
-            "CET" to (+1).hours,
-            "CEST" to (+2).hours,
+			Timezone.PDT,
+			Timezone.PST,
+			Timezone.GMT,
+			Timezone.UTC,
+            Timezone.CET,
+            Timezone.CEST,
 		)
 	}
 }
