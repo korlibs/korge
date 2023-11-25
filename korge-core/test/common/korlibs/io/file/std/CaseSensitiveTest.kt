@@ -25,19 +25,24 @@ class CaseSensitiveTest {
 
     private suspend fun _testLocalVfs() {
         val vfs = localVfs(StandardPaths.temp)
-        vfs["korio-resource.Txt"].writeString("HELLO")
-        assertEquals(false, vfs["korio-resource.txt"].exists())
-        assertEquals(false, vfs["korio-resource.TXT"].exists())
-        assertEquals(true, vfs["korio-resource.Txt"].exists())
+        val file = vfs["korio-resource.Txt"]
+        file.writeString("HELLO")
+        try {
+            assertEquals(false, vfs["korio-resource.txt"].exists())
+            assertEquals(false, vfs["korio-resource.TXT"].exists())
+            assertEquals(true, vfs["korio-resource.Txt"].exists())
 
-        assertEquals(false, vfs["korio-resource.txt"].isFile())
-        assertEquals(true, vfs["korio-resource.Txt"].isFile())
-        assertEquals(false, vfs["korio-resource.txt"].isDirectory())
-        assertEquals(false, vfs["korio-resource.Txt"].isDirectory())
+            assertEquals(false, vfs["korio-resource.txt"].isFile())
+            assertEquals(true, vfs["korio-resource.Txt"].isFile())
+            assertEquals(false, vfs["korio-resource.txt"].isDirectory())
+            assertEquals(false, vfs["korio-resource.Txt"].isDirectory())
 
-        assertFails { vfs["korio-resource.txt"].readBytes() }
-        assertFails { vfs["korio-resource.TXT"].readBytes() }
-        assertEquals(5, vfs["korio-resource.Txt"].readBytes().size)
+            assertFails { vfs["korio-resource.txt"].readBytes() }
+            assertFails { vfs["korio-resource.TXT"].readBytes() }
+            assertEquals(5, vfs["korio-resource.Txt"].readBytes().size)
+        } finally {
+            file.delete()
+        }
     }
 
     private suspend fun _testLocalVfsFolder() {
@@ -45,15 +50,19 @@ class CaseSensitiveTest {
         val dir = vfs["korio-resource-temp-Folder"]
         dir.mkdirs()
         dir["demo.txt"].writeString("HELLO")
-        assertEquals(false, vfs["korio-resource-temp-folder"].exists())
-        assertEquals(true, vfs["korio-resource-temp-Folder"].exists())
+        try {
+            assertEquals(false, vfs["korio-resource-temp-folder"].exists())
+            assertEquals(true, vfs["korio-resource-temp-Folder"].exists())
 
-        assertEquals(false, vfs["korio-resource-temp-folder"].isFile())
-        assertEquals(false, vfs["korio-resource-temp-Folder"].isFile())
-        assertEquals(false, vfs["korio-resource-temp-folder"].isDirectory())
-        assertEquals(true, vfs["korio-resource-temp-Folder"].isDirectory())
+            assertEquals(false, vfs["korio-resource-temp-folder"].isFile())
+            assertEquals(false, vfs["korio-resource-temp-Folder"].isFile())
+            assertEquals(false, vfs["korio-resource-temp-folder"].isDirectory())
+            assertEquals(true, vfs["korio-resource-temp-Folder"].isDirectory())
 
-        assertEquals(listOf("demo.txt"), dir.listSimple().filter { it.baseName == "demo.txt" }.map { it.baseName })
-        assertFails { vfs["korio-resource-temp-folder"].listSimple() }
+            assertEquals(listOf("demo.txt"), dir.listSimple().filter { it.baseName == "demo.txt" }.map { it.baseName })
+            assertFails { vfs["korio-resource-temp-folder"].listSimple() }
+        } finally {
+            dir.deleteRecursively(includeSelf = true)
+        }
     }
 }

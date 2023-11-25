@@ -217,7 +217,9 @@ internal open class BaseLocalVfsJvm : LocalVfs() {
                     if (exists && (mode == VfsOpenMode.CREATE_NEW)) {
                         throw IOException("File $file already exists")
                     }
-                    if (!exists) throw IOException("File $file doesn't exist")
+                    if (!exists && !mode.createIfNotExists) {
+                        throw IOException("File $file doesn't exist")
+                    }
                     RandomAccessFile(
                         file, when (mode) {
                             VfsOpenMode.READ -> "r"
