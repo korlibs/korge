@@ -328,6 +328,8 @@ value class DateTime(
     fun toOffset(offset: TimeSpan) = toOffset(offset.offset)
     /** Returns this date with a local offset. Components might change because of the [offset]. */
     fun toOffset(offset: TimezoneOffset) = DateTimeTz.utc(this, offset)
+    /** Returns this date with a local offset. Components might change because of the [timeZone]. */
+    fun toTimezone(timeZone: Timezone) = toOffset(timeZone.offset)
     /** Returns this date with a 0 offset. Components are equal. */
     val utc: DateTimeTz get() = DateTimeTz.utc(this, TimezoneOffset(0.minutes))
 

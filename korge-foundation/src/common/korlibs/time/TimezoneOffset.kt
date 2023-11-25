@@ -32,11 +32,11 @@ value class TimezoneOffset(
 
     /** Returns a string representation of this [TimezoneOffset] */
     val timeZone: String get() {
-            val sign = if (positive) "+" else "-"
-            val hour = deltaHoursAbs.padded(2)
-            val minute = deltaMinutesAbs.padded(2)
-            return if (time == 0.minutes) "UTC" else "GMT$sign$hour$minute"
-        }
+        val sign = if (positive) "+" else "-"
+        val hour = deltaHoursAbs.padded(2)
+        val minute = deltaMinutesAbs.padded(2)
+        return if (time == 0.minutes) "UTC" else "GMT$sign$hour$minute"
+    }
 
 
     private val deltaTotalMinutesAbs: Int get() = abs(totalMinutes.toInt())
