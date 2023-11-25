@@ -4,7 +4,7 @@ import korlibs.datastructure.closeable.Closeable
 import korlibs.io.async.*
 import korlibs.io.file.*
 import korlibs.io.stream.*
-import korlibs.io.util.isAliveJre7
+import korlibs.io.util.*
 import korlibs.time.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
@@ -13,58 +13,19 @@ import java.nio.file.*
 import java.nio.file.Path
 import java.nio.file.attribute.*
 import kotlin.collections.*
-import kotlin.coroutines.*
 
 internal open class BaseLocalVfsJvm : LocalVfs() {
     val that = this
     override val absolutePath: String = ""
-
-    protected suspend fun <T> executeIo(callback: suspend () -> T): T = when {
-        coroutineContext.preferSyncIo -> callback()
-        else -> withContext(Dispatchers.CIO) { callback() }
-    }
-
-    fun UnixPermissions.toSet(): Set<PosixFilePermission> = buildList<PosixFilePermission> {
-        val it = this@toSet
-        if (it.owner.writable) add(PosixFilePermission.OWNER_WRITE)
-        if (it.owner.readable) add(PosixFilePermission.OWNER_READ)
-        if (it.owner.executable) add(PosixFilePermission.OWNER_EXECUTE)
-        if (it.other.writable) add(PosixFilePermission.OTHERS_WRITE)
-        if (it.other.readable) add(PosixFilePermission.OTHERS_READ)
-        if (it.other.executable) add(PosixFilePermission.OTHERS_EXECUTE)
-        if (it.group.writable) add(PosixFilePermission.GROUP_WRITE)
-        if (it.group.readable) add(PosixFilePermission.GROUP_READ)
-        if (it.group.executable) add(PosixFilePermission.GROUP_EXECUTE)
-    }.toSet()
-
-    fun Set<PosixFilePermission>.toUnixPermissionsAttribute(): UnixPermissions {
-        return UnixPermissions(
-            owner = UnixPermission(
-                contains(PosixFilePermission.OWNER_READ),
-                contains(PosixFilePermission.OWNER_WRITE),
-                contains(PosixFilePermission.OWNER_EXECUTE)
-            ),
-            group = UnixPermission(
-                contains(PosixFilePermission.GROUP_READ),
-                contains(PosixFilePermission.GROUP_WRITE),
-                contains(PosixFilePermission.GROUP_EXECUTE)
-            ),
-            other = UnixPermission(
-                contains(PosixFilePermission.OTHERS_READ),
-                contains(PosixFilePermission.OTHERS_WRITE),
-                contains(PosixFilePermission.OTHERS_EXECUTE)
-            ),
-        )
-    }
 
     override suspend fun chmod(path: String, mode: UnixPermissions): Unit = executeIo {
         val file = resolveFile(path)
         Files.setPosixFilePermissions(file.toPath(), mode.toSet())
     }
 
-    fun resolve(path: String) = path
-    fun resolvePath(path: String) = Paths.get(resolve(path))
-    fun resolveFile(path: String) = File(resolve(path))
+    fun resolve(path: String): String = path
+    fun resolvePath(path: String): Path = resolveFile(path).toPath()
+    fun resolveFile(path: String): File = File(resolve(path))
 
     override suspend fun exec(
         path: String,
@@ -131,56 +92,7 @@ internal open class BaseLocalVfsJvm : LocalVfs() {
     //}
 
     @Suppress("BlockingMethodInNonBlockingContext")
-    override suspend fun open(path: String, mode: VfsOpenMode): AsyncStream {
-        try {
-            val raf = executeIo {
-                val file = resolveFile(path)
-                if (file.exists() && (mode == VfsOpenMode.CREATE_NEW)) {
-                    throw IOException("File $file already exists")
-                }
-                RandomAccessFile(
-                    file, when (mode) {
-                        VfsOpenMode.READ -> "r"
-                        VfsOpenMode.WRITE -> "rw"
-                        VfsOpenMode.APPEND -> "rw"
-                        VfsOpenMode.CREATE -> "rw"
-                        VfsOpenMode.CREATE_NEW -> "rw"
-                        VfsOpenMode.CREATE_OR_TRUNCATE -> "rw"
-                    }
-                ).apply {
-                    if (mode.truncate) {
-                        setLength(0L)
-                    }
-                    if (mode == VfsOpenMode.APPEND) {
-                        seek(length())
-                    }
-                }
-            }
-
-            return object : AsyncStreamBase() {
-                override suspend fun read(position: Long, buffer: ByteArray, offset: Int, len: Int): Int = executeIo {
-                    raf.seek(position)
-                    raf.read(buffer, offset, len)
-                }
-
-                override suspend fun write(position: Long, buffer: ByteArray, offset: Int, len: Int) = executeIo {
-                    raf.seek(position)
-                    raf.write(buffer, offset, len)
-                }
-
-                override suspend fun setLength(value: Long): Unit = executeIo {
-                    raf.setLength(value)
-                }
-
-                override suspend fun getLength(): Long = executeIo { raf.length() }
-                override suspend fun close() = raf.close()
-
-                override fun toString(): String = "$that($path)"
-            }.toAsyncStream()
-        } catch (e: java.nio.file.NoSuchFileException) {
-            throw FileNotFoundException(e.message)
-        }
-    }
+    override suspend fun open(path: String, mode: VfsOpenMode): AsyncStream = open(this, resolveFile(path), mode, path)
 
     override suspend fun setSize(path: String, size: Long): Unit = executeIo {
         val file = resolveFile(path)
@@ -192,36 +104,13 @@ internal open class BaseLocalVfsJvm : LocalVfs() {
 
     override suspend fun stat(path: String): VfsStat = executeIo {
         val file = resolveFile(path)
-        val fullpath = "$path/${file.name}"
-        if (file.exists()) {
-            val lastModified = DateTime.fromUnixMillis(file.lastModified())
-            createExistsStat(
-                fullpath,
-                isDirectory = file.isDirectory,
-                size = file.length(),
-                createTime = lastModified,
-                modifiedTime = lastModified,
-                lastAccessTime = lastModified,
-                mode = kotlin.runCatching {
-                    Files.getPosixFilePermissions(file.toPath()).toUnixPermissionsAttribute().bits
-                }.getOrNull() ?: 511
-            )
-        } else {
-            createNonExistsStat(fullpath)
-        }
+        stat(this, file, "$path/${file.name}")
     }
 
-    /*
-    @OptIn(ExperimentalCoroutinesApi::class)
-    override suspend fun listFlow(path: String): kotlinx.coroutines.flow.Flow<VfsFile> = flow {
-        for (it in (File(path).listFiles() ?: emptyArray<File>())) {
-            emit(that.file("$path/${it.name}"))
-        }
-    }.flowOn(IOContext)
-    */
 
     override suspend fun listFlow(path: String): kotlinx.coroutines.flow.Flow<VfsFile> = flow {
-        for (it in (File(path).listFiles() ?: emptyArray<File>())) {
+        val file = resolveFile(path).caseSensitiveOrThrow()
+        for (it in (file.listFiles() ?: emptyArray<File>())) {
             emit(that.file("$path/${it.name}"))
         }
     }.flowOn(Dispatchers.CIO)
@@ -316,6 +205,115 @@ internal open class BaseLocalVfsJvm : LocalVfs() {
             running = false
             registeredKey.cancel()
         }
+    }
+
+    protected suspend fun <T> executeIo(callback: suspend () -> T): T = jvmExecuteIo(callback)
+
+    companion object {
+        suspend fun open(vfs: Vfs, file: File, mode: VfsOpenMode, path: String): AsyncStream {
+            try {
+                val raf = jvmExecuteIo {
+                    val exists = file.existsCaseSensitive()
+                    if (exists && (mode == VfsOpenMode.CREATE_NEW)) {
+                        throw IOException("File $file already exists")
+                    }
+                    if (!exists) throw IOException("File $file doesn't exist")
+                    RandomAccessFile(
+                        file, when (mode) {
+                            VfsOpenMode.READ -> "r"
+                            VfsOpenMode.WRITE -> "rw"
+                            VfsOpenMode.APPEND -> "rw"
+                            VfsOpenMode.CREATE -> "rw"
+                            VfsOpenMode.CREATE_NEW -> "rw"
+                            VfsOpenMode.CREATE_OR_TRUNCATE -> "rw"
+                        }
+                    ).apply {
+                        if (mode.truncate) {
+                            setLength(0L)
+                        }
+                        if (mode == VfsOpenMode.APPEND) {
+                            seek(length())
+                        }
+                    }
+                }
+
+                return object : AsyncStreamBase() {
+                    override suspend fun read(position: Long, buffer: ByteArray, offset: Int, len: Int): Int = jvmExecuteIo {
+                        raf.seek(position)
+                        raf.read(buffer, offset, len)
+                    }
+
+                    override suspend fun write(position: Long, buffer: ByteArray, offset: Int, len: Int) = jvmExecuteIo {
+                        raf.seek(position)
+                        raf.write(buffer, offset, len)
+                    }
+
+                    override suspend fun setLength(value: Long): Unit = jvmExecuteIo {
+                        raf.setLength(value)
+                    }
+
+                    override suspend fun getLength(): Long = jvmExecuteIo { raf.length() }
+                    override suspend fun close() = raf.close()
+
+                    override fun toString(): String = "$vfs($path)"
+                }.toAsyncStream()
+            } catch (e: java.nio.file.NoSuchFileException) {
+                throw FileNotFoundException(e.message)
+            }
+        }
+
+        suspend fun stat(root: Vfs, file: File, fullpath: String = file.absolutePath): VfsStat = jvmExecuteIo {
+            if (file.existsCaseSensitive()) {
+                val lastModified = DateTime.fromUnixMillis(file.lastModified())
+                root.createExistsStat(
+                    fullpath,
+                    isDirectory = file.isDirectory,
+                    size = file.length(),
+                    createTime = lastModified,
+                    modifiedTime = lastModified,
+                    lastAccessTime = lastModified,
+                    mode = kotlin.runCatching {
+                        Files.getPosixFilePermissions(file.toPath()).toUnixPermissionsAttribute().bits
+                    }.getOrNull() ?: 511
+                )
+            } else {
+                root.createNonExistsStat(fullpath)
+            }
+        }
+
+        fun UnixPermissions.toSet(): Set<PosixFilePermission> = buildList<PosixFilePermission> {
+            val it = this@toSet
+            if (it.owner.writable) add(PosixFilePermission.OWNER_WRITE)
+            if (it.owner.readable) add(PosixFilePermission.OWNER_READ)
+            if (it.owner.executable) add(PosixFilePermission.OWNER_EXECUTE)
+            if (it.other.writable) add(PosixFilePermission.OTHERS_WRITE)
+            if (it.other.readable) add(PosixFilePermission.OTHERS_READ)
+            if (it.other.executable) add(PosixFilePermission.OTHERS_EXECUTE)
+            if (it.group.writable) add(PosixFilePermission.GROUP_WRITE)
+            if (it.group.readable) add(PosixFilePermission.GROUP_READ)
+            if (it.group.executable) add(PosixFilePermission.GROUP_EXECUTE)
+        }.toSet()
+
+        fun Set<PosixFilePermission>.toUnixPermissionsAttribute(): UnixPermissions {
+            return UnixPermissions(
+                owner = UnixPermission(
+                    contains(PosixFilePermission.OWNER_READ),
+                    contains(PosixFilePermission.OWNER_WRITE),
+                    contains(PosixFilePermission.OWNER_EXECUTE)
+                ),
+                group = UnixPermission(
+                    contains(PosixFilePermission.GROUP_READ),
+                    contains(PosixFilePermission.GROUP_WRITE),
+                    contains(PosixFilePermission.GROUP_EXECUTE)
+                ),
+                other = UnixPermission(
+                    contains(PosixFilePermission.OTHERS_READ),
+                    contains(PosixFilePermission.OTHERS_WRITE),
+                    contains(PosixFilePermission.OTHERS_EXECUTE)
+                ),
+            )
+        }
+
     }
 
     override fun toString(): String = "LocalVfs"

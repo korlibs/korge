@@ -107,7 +107,7 @@ data class VfsFile(
 	suspend fun exists(): Boolean = runIgnoringExceptions { vfs.stat(this.path).exists } ?: false
     suspend fun takeIfExists() = takeIf { it.exists() }
 	suspend fun isDirectory(): Boolean = stat().isDirectory
-    suspend fun isFile(): Boolean = !stat().isDirectory
+    suspend fun isFile(): Boolean = stat().isFile
 	suspend fun setSize(size: Long): Unit = vfs.setSize(this.path, size)
 
 	suspend fun delete() = vfs.delete(this.path)
