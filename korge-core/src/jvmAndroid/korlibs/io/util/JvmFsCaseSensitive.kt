@@ -27,7 +27,7 @@ fun URL.caseSensitiveOrNull(): URL? {
 val File.matchesCaseSensitive: Boolean get() {
     if (!this.exists()) return true
     if (keepOsFsCaseSensitivity) return true
-    if (!Platform.isWindows) return true
+    if (Platform.isLinux) return true
     val canonicalFile = this.canonicalFile
     val matchesCase = canonicalFile.name == this.name
     if (!matchesCase) {
