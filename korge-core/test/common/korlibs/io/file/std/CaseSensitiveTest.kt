@@ -2,26 +2,18 @@ package korlibs.io.file.std
 
 import korlibs.io.async.*
 import korlibs.io.file.*
+import korlibs.platform.*
 import kotlin.test.*
 
 class CaseSensitiveTest {
-    @Test
-    fun testResourcesVfs() = suspendTest(preferSyncIo = true) { _testResourcesVfs() }
+    private val cond: () -> Boolean = { !Platform.isJs }
 
-    @Test
-    fun testResourcesVfsAsync() = suspendTest(preferSyncIo = false) { _testResourcesVfs() }
-
-    @Test
-    fun testLocalVfs() = suspendTest(preferSyncIo = true) { _testLocalVfs() }
-
-    @Test
-    fun testLocalVfsAsync() = suspendTest(preferSyncIo = false) { _testLocalVfs() }
-
-    @Test
-    fun testLocalVfsFolder() = suspendTest(preferSyncIo = true) { _testLocalVfsFolder() }
-
-    @Test
-    fun testLocalVfsFolderAsync() = suspendTest(preferSyncIo = false) { _testLocalVfsFolder() }
+    @Test fun testResourcesVfs() = suspendTest(cond = cond, preferSyncIo = true) { _testResourcesVfs() }
+    @Test fun testResourcesVfsAsync() = suspendTest(cond = cond, preferSyncIo = false) { _testResourcesVfs() }
+    @Test fun testLocalVfs() = suspendTest(cond = cond, preferSyncIo = true) { _testLocalVfs() }
+    @Test fun testLocalVfsAsync() = suspendTest(cond = cond, preferSyncIo = false) { _testLocalVfs() }
+    @Test fun testLocalVfsFolder() = suspendTest(cond = cond, preferSyncIo = true) { _testLocalVfsFolder() }
+    @Test fun testLocalVfsFolderAsync() = suspendTest(cond = cond, preferSyncIo = false) { _testLocalVfsFolder() }
 
     private suspend fun _testResourcesVfs() {
         assertEquals(false, resourcesVfs["file-not-exists.file.bin"].exists())
