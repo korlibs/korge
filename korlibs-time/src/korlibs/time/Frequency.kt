@@ -1,6 +1,5 @@
 package korlibs.time
 
-import korlibs.math.*
 import korlibs.time.internal.*
 import kotlin.jvm.*
 

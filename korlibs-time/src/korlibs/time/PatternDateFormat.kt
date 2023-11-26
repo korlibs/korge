@@ -1,8 +1,7 @@
 package korlibs.time
 
-import korlibs.math.*
+import korlibs.time.internal.*
 import korlibs.time.internal.MicroStrReader
-import korlibs.time.internal.Serializable
 import korlibs.time.internal.increment
 import korlibs.time.internal.padded
 import korlibs.time.internal.readTimeZoneOffset

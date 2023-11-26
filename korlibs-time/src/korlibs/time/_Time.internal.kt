@@ -2,7 +2,6 @@
 
 package korlibs.time.internal
 
-import korlibs.math.*
 import korlibs.time.*
 import kotlin.jvm.*
 import kotlin.math.*
@@ -66,8 +65,8 @@ internal fun Double.padded(intCount: Int, decCount: Int): String {
 }
 
 internal fun String.substr(start: Int, length: Int = this.length): String {
-    val low = (if (start >= 0) start else this.length + start).clamp(0, this.length)
-    val high = (if (length >= 0) low + length else this.length + length).clamp(0, this.length)
+    val low = (if (start >= 0) start else this.length + start).coerceIn(0, this.length)
+    val high = (if (length >= 0) low + length else this.length + length).coerceIn(0, this.length)
     return if (high < low) "" else this.substring(low, high)
 }
 

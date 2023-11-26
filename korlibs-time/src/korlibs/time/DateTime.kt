@@ -1,6 +1,5 @@
 package korlibs.time
 
-import korlibs.math.*
 import korlibs.time.DateTime.Companion.EPOCH
 import korlibs.time.internal.*
 import kotlin.jvm.JvmInline
@@ -116,14 +115,14 @@ value class DateTime(
             second: Int = 0,
             milliseconds: Int = 0
         ): DateTime {
-            val clampedMonth = month.clamp(1, 12)
+            val clampedMonth = month.coerceIn(1, 12)
             return createUnchecked(
                 year = year,
                 month = clampedMonth,
-                day = day.clamp(1, Month(month).days(year)),
-                hour = hour.clamp(0, 23),
-                minute = minute.clamp(0, 59),
-                second = second.clamp(0, 59),
+                day = day.coerceIn(1, Month(month).days(year)),
+                hour = hour.coerceIn(0, 23),
+                minute = minute.coerceIn(0, 59),
+                second = second.coerceIn(0, 59),
                 milliseconds = milliseconds
             )
         }

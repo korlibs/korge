@@ -25,6 +25,7 @@ fun isPropertyTrue(name: String): Boolean {
 val inCI = isPropertyTrue("CI")
 val disabledExtraKorgeLibs = isPropertyTrue("DISABLED_EXTRA_KORGE_LIBS")
 
+include(":korlibs-time")
 include(":korge-foundation")
 include(":korge-core")
 include(":korge")
