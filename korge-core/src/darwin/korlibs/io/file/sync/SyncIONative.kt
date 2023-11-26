@@ -6,7 +6,7 @@ import kotlinx.cinterop.*
 import platform.posix.*
 
 @OptIn(ExperimentalForeignApi::class)
-actual val platformSyncIO: SyncIO = object : SyncIO {
+actual fun platformSyncIO(caseSensitive: Boolean): SyncIO = object : SyncIO {
     override fun realpath(path: String): String = posixRealpath(path)
     override fun readlink(path: String): String? = posixReadlink(path)
 
