@@ -27,11 +27,20 @@ fun NamedDomainObjectContainer<KotlinSourceSet>.createPairSourceSet(name: String
     val main = maybeCreate("${name}Main").apply { block(false) }
     val test = if (doTest) maybeCreate("${name}Test").apply { block(true) } else null
 
-    main.kotlin.srcDirs(listOf("src/$name"))
-    if (name == "common") main.resources.srcDirs(listOf("srcresources"))
+    if (name == "common") {
+        main.kotlin.srcDirs(listOf("src"))
+        main.resources.srcDirs(listOf("resources"))
+    } else {
+        main.kotlin.srcDirs(listOf("src@$name"))
+    }
     if (test != null) {
-        test.kotlin.srcDirs(listOf("test/$name"))
-        if (name == "common") test.resources.srcDirs(listOf("testresources"))
+        //test.kotlin.srcDirs(listOf("test/$name"))
+        if (name == "common") {
+            test.kotlin.srcDirs(listOf("test"))
+            test.resources.srcDirs(listOf("testresources"))
+        } else {
+            test.kotlin.srcDirs(listOf("test@$name"))
+        }
     }
 
     return PairSourceSet(main, test).also {

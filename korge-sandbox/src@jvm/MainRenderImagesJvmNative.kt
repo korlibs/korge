@@ -1,5 +1,4 @@
 import java.awt.image.*
-import java.io.*
 import javax.imageio.*
 import korlibs.image.awt.*
 import korlibs.image.format.*
