@@ -6,16 +6,18 @@ import java.io.*
 import java.nio.file.*
 import kotlin.io.path.*
 
-actual val platformSyncIO: SyncIO = object : SyncIO {
+actual fun platformSyncIO(caseSensitive: Boolean): SyncIO = object : SyncIO {
     override fun realpath(path: String): String = File(path).canonicalPath
     override fun readlink(path: String): String? = kotlin.runCatching {
         Files.readSymbolicLink(File(path).toPath())?.absolutePathString()
     }.getOrNull()
 
-    private fun file(path: String): File = File(path).caseSensitiveOrThrow()
+    private fun file(path: String): File {
+        return File(path).let { if (caseSensitive) it.caseSensitiveOrThrow() else it }
+    }
 
     override fun open(path: String, mode: String): SyncIOFD {
-        val file = file(path).caseSensitiveOrThrow()
+        val file = file(path)
         val raf = RandomAccessFile(file, mode)
         return object : SyncIOFD {
             override var length: Long
