@@ -372,7 +372,7 @@ object RootKorlibsPlugin {
                     //    nonNative: [js, jvmAndroid]
                     sourceSets.apply {
 
-                        val common = createPairSourceSet("common") { test ->
+                        val common = createPairSourceSet("common", project = project) { test ->
                             dependencies {
                                 if (test) {
                                     implementation(kotlin("test-common"))
@@ -383,12 +383,12 @@ object RootKorlibsPlugin {
                             }
                         }
 
-                        val concurrent = createPairSourceSet("concurrent", common)
-                        val jvmAndroid = createPairSourceSet("jvmAndroid", concurrent)
+                        val concurrent = createPairSourceSet("concurrent", common, project = project)
+                        val jvmAndroid = createPairSourceSet("jvmAndroid", concurrent, project = project)
 
                         // Default source set for JVM-specific sources and dependencies:
                         // JVM-specific tests and their dependencies:
-                        val jvm = createPairSourceSet("jvm", jvmAndroid) { test ->
+                        val jvm = createPairSourceSet("jvm", jvmAndroid, project = project) { test ->
                             dependencies {
                                 if (test) {
                                     implementation(kotlin("test-junit"))
@@ -399,7 +399,7 @@ object RootKorlibsPlugin {
                         }
 
                         if (hasAndroid) {
-                            val android = createPairSourceSet("android", jvmAndroid, doTest = false) { test ->
+                            val android = createPairSourceSet("android", jvmAndroid, doTest = false, project = project) { test ->
                                 dependencies {
                                     if (test) {
                                         //implementation(kotlin("test"))
@@ -413,7 +413,7 @@ object RootKorlibsPlugin {
                             }
                         }
 
-                        val js = createPairSourceSet("js", common) { test ->
+                        val js = createPairSourceSet("js", common, project = project) { test ->
                             dependencies {
                                 if (test) {
                                     implementation(kotlin("test-js"))
@@ -424,7 +424,7 @@ object RootKorlibsPlugin {
                         }
 
                         if (isWasmEnabled(project)) {
-                            val wasm = createPairSourceSet("wasmJs", common) { test ->
+                            val wasm = createPairSourceSet("wasmJs", common, project = project) { test ->
                                 dependencies {
                                     if (test) {
                                         implementation(kotlin("test-wasm-js"))
@@ -443,16 +443,16 @@ object RootKorlibsPlugin {
                             //val macos by lazy { createPairSourceSet("macos", iosMacos) }
                             //val mingw by lazy { createPairSourceSet("mingw", native) }
 
-                            val native by lazy { createPairSourceSet("native", concurrent) }
-                            val posix by lazy { createPairSourceSet("posix", native) }
-                            val darwin by lazy { createPairSourceSet("darwin", posix) }
-                            val darwinMobile by lazy { createPairSourceSet("darwinMobile", darwin) }
-                            val iosTvos by lazy { createPairSourceSet("iosTvos", darwinMobile/*, iosTvosMacos*/) }
-                            val tvos by lazy { createPairSourceSet("tvos", iosTvos) }
-                            val ios by lazy { createPairSourceSet("ios", iosTvos/*, iosMacos*/) }
+                            val native by lazy { createPairSourceSet("native", concurrent, project = project) }
+                            val posix by lazy { createPairSourceSet("posix", native, project = project) }
+                            val darwin by lazy { createPairSourceSet("darwin", posix, project = project) }
+                            val darwinMobile by lazy { createPairSourceSet("darwinMobile", darwin, project = project) }
+                            val iosTvos by lazy { createPairSourceSet("iosTvos", darwinMobile/*, iosTvosMacos*/, project = project) }
+                            val tvos by lazy { createPairSourceSet("tvos", iosTvos, project = project) }
+                            val ios by lazy { createPairSourceSet("ios", iosTvos/*, iosMacos*/, project = project) }
 
                             for (target in mobileTargets(project)) {
-                                val native = createPairSourceSet(target.name)
+                                val native = createPairSourceSet(target.name, project = project)
                                 when {
                                     target.isIos -> native.dependsOn(ios)
                                     target.isTvos -> native.dependsOn(tvos)

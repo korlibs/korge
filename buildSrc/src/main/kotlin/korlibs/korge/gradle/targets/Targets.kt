@@ -3,6 +3,7 @@ package korlibs.korge.gradle.targets
 import org.apache.tools.ant.taskdefs.condition.*
 import org.gradle.api.*
 import org.jetbrains.kotlin.gradle.plugin.*
+import java.io.*
 
 // Only mac has ios/tvos targets but since CI exports multiplatform on linux
 val supportKotlinNative: Boolean get() {
@@ -23,23 +24,32 @@ val inCI: Boolean get() = !System.getenv("CI").isNullOrBlank() || !System.getPro
 val KotlinTarget.isIos get() = name.startsWith("ios")
 val KotlinTarget.isTvos get() = name.startsWith("tvos")
 
-fun NamedDomainObjectContainer<KotlinSourceSet>.createPairSourceSet(name: String, vararg dependencies: PairSourceSet, doTest: Boolean = true, block: KotlinSourceSet.(test: Boolean) -> Unit = { }): PairSourceSet {
+fun NamedDomainObjectContainer<KotlinSourceSet>.createPairSourceSet(
+    name: String,
+    vararg dependencies: PairSourceSet, doTest: Boolean = true,
+    project: Project? = null,
+    block: KotlinSourceSet.(test: Boolean) -> Unit = { }
+): PairSourceSet {
     val main = maybeCreate("${name}Main").apply { block(false) }
     val test = if (doTest) maybeCreate("${name}Test").apply { block(true) } else null
 
-    if (name == "common") {
-        main.kotlin.srcDirs(listOf("src"))
-        main.resources.srcDirs(listOf("resources"))
-    } else {
-        main.kotlin.srcDirs(listOf("src@$name"))
-    }
-    if (test != null) {
-        //test.kotlin.srcDirs(listOf("test/$name"))
+    val newVariant = if (project?.projectDir != null) !File(project.projectDir, "src/commonMain").isDirectory else false
+
+    if (newVariant) {
         if (name == "common") {
-            test.kotlin.srcDirs(listOf("test"))
-            test.resources.srcDirs(listOf("testresources"))
+            main.kotlin.srcDirs(listOf("src"))
+            main.resources.srcDirs(listOf("resources"))
         } else {
-            test.kotlin.srcDirs(listOf("test@$name"))
+            main.kotlin.srcDirs(listOf("src@$name"))
+        }
+        if (test != null) {
+            //test.kotlin.srcDirs(listOf("test/$name"))
+            if (name == "common") {
+                test.kotlin.srcDirs(listOf("test"))
+                test.resources.srcDirs(listOf("testresources"))
+            } else {
+                test.kotlin.srcDirs(listOf("test@$name"))
+            }
         }
     }
 
