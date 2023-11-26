@@ -21,7 +21,7 @@ fun Project.configureNativeIos(projectType: ProjectType) {
     this.project.kotlin.apply {
         sourceSets.apply {
             for (target in listOf(iosArm64(), iosX64(), iosSimulatorArm64(), tvosArm64(), tvosX64(), tvosSimulatorArm64())) {
-                val native = createPairSourceSet(target.name)
+                val native = createPairSourceSet(target.name, project = project)
                 when {
                     target.isIos -> native.dependsOn(exKotlinSourceSetContainer.ios)
                     target.isTvos -> native.dependsOn(exKotlinSourceSetContainer.tvos)
