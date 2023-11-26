@@ -19,13 +19,14 @@ internal open class BaseLocalVfsJvm : LocalVfs() {
     override val absolutePath: String = ""
 
     override suspend fun chmod(path: String, mode: UnixPermissions): Unit = executeIo {
-        val file = resolveFile(path)
+        val file = resolveFileCaseSensitive(path)
         Files.setPosixFilePermissions(file.toPath(), mode.toSet())
     }
 
     fun resolve(path: String): String = path
     fun resolvePath(path: String): Path = resolveFile(path).toPath()
     fun resolveFile(path: String): File = File(resolve(path))
+    fun resolveFileCaseSensitive(path: String): File = resolveFile(path).caseSensitiveOrThrow()
 
     override suspend fun exec(
         path: String,
@@ -124,10 +125,10 @@ internal open class BaseLocalVfsJvm : LocalVfs() {
     override suspend fun touch(path: String, time: DateTime, atime: DateTime): Unit =
         executeIo { resolveFile(path).setLastModified(time.unixMillisLong); Unit }
 
-    override suspend fun delete(path: String): Boolean = executeIo { resolveFile(path).delete() }
-    override suspend fun rmdir(path: String): Boolean = executeIo { resolveFile(path).delete() }
+    override suspend fun delete(path: String): Boolean = executeIo { resolveFileCaseSensitive(path).delete() }
+    override suspend fun rmdir(path: String): Boolean = executeIo { resolveFileCaseSensitive(path).delete() }
     override suspend fun rename(src: String, dst: String): Boolean =
-        executeIo { resolveFile(src).renameTo(resolveFile(dst)) }
+        executeIo { resolveFileCaseSensitive(src).renameTo(resolveFile(dst)) }
 
     protected open fun watchModifiers(path: String): Array<WatchEvent.Modifier> = emptyArray()
 
