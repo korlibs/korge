@@ -13,6 +13,7 @@ import java.nio.file.*
 import java.nio.file.Path
 import java.nio.file.attribute.*
 import kotlin.collections.*
+import kotlin.io.NoSuchFileException
 
 internal open class BaseLocalVfsJvm : LocalVfs() {
     val that = this
@@ -111,6 +112,7 @@ internal open class BaseLocalVfsJvm : LocalVfs() {
 
     override suspend fun listFlow(path: String): kotlinx.coroutines.flow.Flow<VfsFile> = flow {
         val file = resolveFile(path).caseSensitiveOrThrow()
+        if (!file.isDirectory) throw NoSuchFileException(file)
         for (it in (file.listFiles() ?: emptyArray<File>())) {
             emit(that.file("$path/${it.name}"))
         }
