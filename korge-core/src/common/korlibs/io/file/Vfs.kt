@@ -45,10 +45,11 @@ abstract class Vfs : AsyncCloseable {
         if (cache) it.file.cachedStat = it
     }
 
-	fun createNonExistsStat(path: String, extraInfo: Any? = null, cache: Boolean = false) = VfsStat(
+	fun createNonExistsStat(path: String, extraInfo: Any? = null, cache: Boolean = false, exception: Throwable? = null) = VfsStat(
 		file = file(path), exists = false, isDirectory = false, size = 0L,
 		device = -1L, inode = -1L, mode = 511, owner = "nobody", group = "nobody",
-		createTime = DateTime.EPOCH, modifiedTime = DateTime.EPOCH, lastAccessTime = DateTime.EPOCH, extraInfo = extraInfo
+		createTime = DateTime.EPOCH, modifiedTime = DateTime.EPOCH, lastAccessTime = DateTime.EPOCH, extraInfo = extraInfo,
+        exception = exception
 	)
 
 	suspend fun exec(
@@ -357,8 +358,11 @@ data class VfsStat(
     val lastAccessTime: DateTime = modifiedTime,
     val extraInfo: Any? = null,
     val kind: Vfs.FileKind? = null,
-    val id: String? = null
+    val id: String? = null,
+    val exception: Throwable? = null,
 ) : Path by file {
+    val isFile: Boolean get() = exists && !isDirectory
+
     /**
      * Gets the unix-like permissions inverse of [VfsFile.chmod]
      */

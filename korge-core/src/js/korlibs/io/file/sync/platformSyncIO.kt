@@ -21,7 +21,9 @@ private fun <T> JSIterable<T>.toArray(): Array<T> {
     return Array_from(this)
 }
 
-object DenoSyncIO : SyncIO {
+open class DenoSyncIO(val caseSensitive: Boolean) : SyncIO {
+    companion object : DenoSyncIO(caseSensitive = true)
+
     override fun realpath(path: String): String = Deno.realPathSync(path)
     override fun readlink(path: String): String? = Deno.readLinkSync(path)
     override fun writelink(path: String, link: String?) { Deno.linkSync(path, link) }
@@ -76,9 +78,9 @@ class DenoSyncIOFD(val path: String, val mode: String) : SyncIOFD {
     }
 }
 
-actual val platformSyncIO: SyncIO by lazy {
-    when {
-        Platform.isJsDenoJs -> DenoSyncIO
+internal actual fun platformSyncIO(caseSensitive: Boolean): SyncIO {
+    return when {
+        Platform.isJsDenoJs -> DenoSyncIO(caseSensitive)
         //Platform.isJsNodeJs -> NodeSyncIO
         else -> unsupported("Not supported SyncIO on browser")
     }

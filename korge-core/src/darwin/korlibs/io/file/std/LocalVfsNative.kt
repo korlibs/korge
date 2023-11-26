@@ -57,7 +57,21 @@ open class LocalVfsNativeBase(val async: Boolean = true) : LocalVfs() {
     val that get() = this
     override val absolutePath: String get() = ""
 
-    fun resolve(path: String) = path
+    fun resolveOrError(path: String): Pair<String, Exception?> {
+        val rpath = path
+        val pathExpected = rpath.pathInfo
+        val pathResolved = posixRealpath(rpath).pathInfo
+        if (pathExpected.baseName != pathResolved.baseName) {
+            return rpath to IOException("File case not matched pathExpected=$pathExpected != pathResolved=$pathResolved")
+        }
+        return rpath to null
+    }
+
+    fun resolve(path: String): String {
+        val (rpath, exception) = resolveOrError(path)
+        if (exception != null) throw exception
+        return rpath
+    }
 
     suspend inline fun <R> doIo(crossinline func: () -> R): R =
         if (async) withContext(Dispatchers.CIO) { func() } else func()
@@ -228,12 +242,14 @@ open class LocalVfsNativeBase(val async: Boolean = true) : LocalVfs() {
     }
 
     override suspend fun stat(path: String): VfsStat {
-        val rpath = resolve(path)
-        val statInfo = posixStat(rpath)
-        return when {
-            statInfo != null -> createExistsStat(rpath, statInfo.isDirectory, statInfo.size, mode = statInfo.mode)
-            else -> createNonExistsStat(rpath)
+        val (rpath, exception) = resolveOrError(path)
+        if (exception == null) {
+            val statInfo = posixStat(rpath)
+            if (statInfo != null) {
+                return createExistsStat(rpath, statInfo.isDirectory, statInfo.size, mode = statInfo.mode)
+            }
         }
+        return createNonExistsStat(rpath, exception = exception)
     }
 
     override suspend fun listFlow(path: String) = flow {

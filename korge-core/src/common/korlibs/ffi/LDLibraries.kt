@@ -1,12 +1,11 @@
 package korlibs.ffi
 
 import korlibs.io.file.sync.*
-import korlibs.io.file.sync.platformSyncIO
 import korlibs.io.util.Glob
 
 open class LDLibraries(val fs: SyncIO) {
     @SyncIOAPI
-    companion object : LDLibraries(platformSyncIO)
+    companion object : LDLibraries(platformSyncIOCaseInsensitive)
 
     private val libFolders = LinkedHashSet<SyncIOFile>()
     private val loadConfFiles = LinkedHashSet<SyncIOFile>()

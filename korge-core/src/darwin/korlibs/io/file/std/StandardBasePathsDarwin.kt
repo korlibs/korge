@@ -1,10 +1,8 @@
 package korlibs.io.file.std
 
 import korlibs.io.*
-import korlibs.io.file.PathInfo
-import korlibs.io.file.parent
-import korlibs.io.posix.posixRealpath
-import korlibs.platform.Platform
+import korlibs.io.file.*
+import korlibs.platform.*
 import kotlinx.cinterop.*
 import platform.Foundation.*
 

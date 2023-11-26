@@ -6,14 +6,18 @@ import java.io.*
 import java.nio.file.*
 import kotlin.io.path.*
 
-actual val platformSyncIO: SyncIO = object : SyncIO {
+actual fun platformSyncIO(caseSensitive: Boolean): SyncIO = object : SyncIO {
     override fun realpath(path: String): String = File(path).canonicalPath
     override fun readlink(path: String): String? = kotlin.runCatching {
         Files.readSymbolicLink(File(path).toPath())?.absolutePathString()
     }.getOrNull()
 
+    private fun file(path: String): File {
+        return File(path).let { if (caseSensitive) it.caseSensitiveOrThrow() else it }
+    }
+
     override fun open(path: String, mode: String): SyncIOFD {
-        val file = File(path)
+        val file = file(path)
         val raf = RandomAccessFile(file, mode)
         return object : SyncIOFD {
             override var length: Long
@@ -29,15 +33,15 @@ actual val platformSyncIO: SyncIO = object : SyncIO {
         }
     }
 
-    override fun stat(path: String): SyncIOStat? = File(path).takeIf { it.exists() }?.let { SyncIOStat(path, it.isDirectory, it.length()) }
-    override fun mkdir(path: String): Boolean = File(path).mkdir()
-    override fun rmdir(path: String): Boolean = File(path).takeIf { it.isDirectory }?.delete() ?: false
-    override fun delete(path: String): Boolean = File(path).takeIf { !it.isDirectory }?.delete() ?: false
-    override fun list(path: String): List<String> = File(path).list()?.toList() ?: emptyList()
+    override fun stat(path: String): SyncIOStat? = file(path).takeIf { it.exists() }?.let { SyncIOStat(path, it.isDirectory, it.length()) }
+    override fun mkdir(path: String): Boolean = file(path).mkdir()
+    override fun rmdir(path: String): Boolean = file(path).takeIf { it.isDirectory }?.delete() ?: false
+    override fun delete(path: String): Boolean = file(path).takeIf { !it.isDirectory }?.delete() ?: false
+    override fun list(path: String): List<String> = file(path).list()?.toList() ?: emptyList()
 
     override fun exec(commands: List<String>, envs: Map<String, String>, cwd: String): SyncExecProcess {
         val process = ProcessBuilder(commands.toMutableList())
-            .directory(File(cwd))
+            .directory(file(cwd))
             .also { it.environment().putAll(envs) }
             .also { it.redirectError(ProcessBuilder.Redirect.INHERIT) }
             .start()

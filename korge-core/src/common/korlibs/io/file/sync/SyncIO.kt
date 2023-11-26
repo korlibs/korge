@@ -10,7 +10,13 @@ import korlibs.io.stream.*
 annotation class SyncIOAPI
 
 @SyncIOAPI
-expect val platformSyncIO: SyncIO
+internal expect fun platformSyncIO(caseSensitive: Boolean): SyncIO
+
+@SyncIOAPI
+val platformSyncIO: SyncIO = platformSyncIO(caseSensitive = true)
+
+@SyncIOAPI
+val platformSyncIOCaseInsensitive: SyncIO = platformSyncIO(caseSensitive = false)
 
 class SyncIOFile(val impl: SyncIO, val fullPath: String) {
     companion object {

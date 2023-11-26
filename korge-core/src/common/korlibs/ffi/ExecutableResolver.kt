@@ -6,7 +6,7 @@ import korlibs.platform.*
 
 open class ExecutableResolver(val fs: SyncIO) {
     @OptIn(SyncIOAPI::class)
-    companion object : ExecutableResolver(platformSyncIO)
+    companion object : ExecutableResolver(platformSyncIOCaseInsensitive)
 
     fun findInPaths(exec: String, paths: List<String>): String? {
         val fileSeparator = if (Platform.isWindows) "\\" else "/"

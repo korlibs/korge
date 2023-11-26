@@ -4,7 +4,9 @@ import com.sun.nio.file.*
 import korlibs.io.dynamic.*
 import korlibs.io.file.*
 import korlibs.io.lang.*
+import korlibs.io.lang.IOException
 import korlibs.io.stream.*
+import korlibs.io.util.*
 import java.io.*
 import java.net.*
 import java.nio.file.*
@@ -53,7 +55,6 @@ private class ResourcesVfsProviderJvm {
 	operator fun invoke(classLoader: ClassLoader): Vfs = JvmClassLoaderResourcesVfs(classLoader)
 }
 
-
 class JvmClassLoaderResourcesVfs(val classLoader: ClassLoader) : MergedVfs(name = "MergedVfsDecorator") {
     override suspend fun init() {
         val currentDir = localCurrentDirVfs.absolutePath
@@ -86,7 +87,6 @@ class JvmClassLoaderResourcesVfs(val classLoader: ClassLoader) : MergedVfs(name 
             if (resourcesVfsDebug) println("classPathsApp.relative: $srcs")
             srcDirs += srcs
         }
-
 
         //println("localCurrentDirVfs: $localCurrentDirVfs, ${localCurrentDirVfs.absolutePath}")
 
@@ -151,27 +151,34 @@ class JvmClassLoaderResourcesVfs(val classLoader: ClassLoader) : MergedVfs(name 
         this += object : Vfs() {
             private fun normalize(path: String): String = path.trim('/')
 
-            private fun getResourceAsStream(npath: String) = classLoader.getResourceAsStream(npath)
-                ?: classLoader.getResourceAsStream("/$npath")
+            private fun getResource(npath: String): URL = classLoader.getResource(npath)
+                ?: classLoader.getResource("/$npath")
                 ?: invalidOp("Can't find '$npath' in ResourcesVfsProviderJvm")
 
             override suspend fun open(path: String, mode: VfsOpenMode): AsyncStream {
                 val npath = normalize(path)
-                //println("ResourcesVfsProviderJvm:open: $path")
-                return MemorySyncStream(getResourceAsStream(npath).readBytes()).toAsync()
+                val url = getResource(npath).caseSensitiveOrNull() ?: throw IOException("$npath doesn't match case")
+                url.toFileOrNull()?.let {
+                    return BaseLocalVfsJvm.open(this@JvmClassLoaderResourcesVfs, it, mode,  npath)
+                }
+                return MemorySyncStream(jvmExecuteIo { url.openStream().use { it.readBytes() } }).toAsync()
             }
 
             override suspend fun stat(path: String): VfsStat {
                 val npath = normalize(path)
-                //println("ResourcesVfsProviderJvm:stat: $npath")
-                return try {
-                    val s = getResourceAsStream(npath)
-                    val size = s.available()
-                    s.read()
-                    createExistsStat(npath, isDirectory = false, size = size.toLong())
+                try {
+                    val url = getResource(npath).caseSensitiveOrNull() ?: throw IOException("$npath doesn't match case")
+                    url.toFileOrNull()?.let {
+                        return BaseLocalVfsJvm.stat(this@JvmClassLoaderResourcesVfs, it, npath)
+                    }
+                    return jvmExecuteIo { url.openStream()?.use { s ->
+                        val size = s.available()
+                        s.read()
+                        createExistsStat(npath, isDirectory = false, size = size.toLong())
+                    } } ?: error("Not found")
                 } catch (e: Throwable) {
                     //e.printStackTrace()
-                    createNonExistsStat(npath)
+                    return createNonExistsStat(npath, exception = e)
                 }
             }
 

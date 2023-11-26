@@ -137,7 +137,10 @@ class FFILibSymJVM(val lib: FFILib) : FFILibSym {
 
     fun <T : kotlin.Function<*>> createFunction(funcName: String, type: KType, config: FFIFuncConfig): T {
         val func = runCatching { nlib!!.getFunction(funcName) ?: error("Can't find function ${funcName}") }
-        func.exceptionOrNull()?.let { println("WARNING: ${it.message}") }
+        func.exceptionOrNull()?.let {
+            println("WARNING[${it::class}]: ${it.message} getting $funcName")
+            it.printStackTrace()
+        }
         return createJNAFunctionToPlainFunc<T>(func.getOrNull(), type, config, funcName)
     }
 

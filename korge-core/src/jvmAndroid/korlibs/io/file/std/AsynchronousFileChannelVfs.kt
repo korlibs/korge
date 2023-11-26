@@ -3,13 +3,14 @@ package korlibs.io.file.std
 import korlibs.io.async.*
 import korlibs.io.file.*
 import korlibs.io.stream.*
-import korlibs.io.util.nioSuspendCompletion
+import korlibs.io.util.*
 import java.io.*
 import java.nio.*
 import java.nio.channels.*
 import java.nio.file.*
 import kotlin.collections.buildList
 import kotlin.coroutines.*
+import kotlin.io.NoSuchFileException
 import kotlin.io.path.*
 
 // Requires JVM 7, and Android API Level 26 (Android Oreo 8.0)
@@ -59,7 +60,7 @@ internal open class AsynchronousFileChannelVfs : BaseLocalVfsJvm() {
                 if (mode.truncate) add(StandardOpenOption.TRUNCATE_EXISTING)
             }
             //println("path=$path, mode=$mode, options=$options")
-            executeIo { AsynchronousFileChannel.open(Path(path), *options.toTypedArray()) }
+            executeIo { AsynchronousFileChannel.open(Path(path).caseSensitiveOrThrow(), *options.toTypedArray()) }
         } catch (e: java.nio.file.NoSuchFileException) {
             throw FileNotFoundException(e.message)
         }
