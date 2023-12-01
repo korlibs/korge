@@ -21,7 +21,7 @@ dependencies {
     commonMainApi(libs.kotlinx.atomicfu)
     //add("commonMainApi", libs.kotlinx.atomicfu)
     //add("commonTestApi", project(":korge-test"))
-    comonTestApi(libs.kotlinx.coroutines.test)
+    commonTestApi(libs.kotlinx.coroutines.test)
     commonMainApi(project(":korlibs-time"))
 }
 
