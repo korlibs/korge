@@ -1,8 +1,0 @@
-{
-  "scripts": {
-    "start" : "jekyll s --watch --livereload --host=0.0.0.0 --port=4000",
-    "startIncremental" : "jekyll s --watch --livereload --incremental --host=0.0.0.0 --port=4000",
-    "checkBrokenLinksNoBuild" : "npx --yes broken-link-checker-local _site --filter-level=3 || true",
-    "checkBrokenLinks" : "jekyll b; npx --yes broken-link-checker; npx --yes broken-link-checker-local _site --filter-level=3 || true"
-  }
-}
