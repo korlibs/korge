@@ -16,8 +16,8 @@ jgit = "5.13.1.202206130422-r"
 #kotlin = "1.9.0"
 #kotlin = "1.9.10"
 kotlin = "1.9.21"
-kotlinx-coroutines = "1.7.2"
-kotlinx-serialization = "1.6.0"
+kotlinx-coroutines = "1.8.0-RC"
+kotlinx-serialization = "1.6.2"
 
 #maven { url = uri("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev") }
 
