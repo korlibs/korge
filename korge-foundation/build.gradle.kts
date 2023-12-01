@@ -17,11 +17,12 @@ dependencies {
     //add("jvmTestApi", "org.powermock:powermock-mockito-release-full:1.6.4")
     //add("jvmTestApi", "org.fuin:units4j:0.8.4")
     //add("jvmTestApi", "org.ow2.asm:asm:8.0.1")
-    add("commonMainApi", libs.kotlinx.coroutines.core)
+    commonMainApi(libs.kotlinx.coroutines.core)
+    commonMainApi(libs.kotlinx.atomicfu)
     //add("commonMainApi", libs.kotlinx.atomicfu)
     //add("commonTestApi", project(":korge-test"))
-    add("commonTestApi", libs.kotlinx.coroutines.test)
-    add("commonMainApi", project(":korlibs-time"))
+    commonTestApi(libs.kotlinx.coroutines.test)
+    commonMainApi(project(":korlibs-time"))
 }
 
 //korlibs.korge.gradle.generate.TemplateGenerator.synchronize(new File(projectDir, "template"))

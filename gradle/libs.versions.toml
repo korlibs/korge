@@ -16,8 +16,9 @@ jgit = "5.13.1.202206130422-r"
 #kotlin = "1.9.0"
 #kotlin = "1.9.10"
 kotlin = "1.9.21"
-kotlinx-coroutines = "1.7.2"
-kotlinx-serialization = "1.6.0"
+kotlinx-coroutines = "1.8.0-RC"
+kotlinx-serialization = "1.6.2"
+kotlinx-atomicfu = "0.23.1"
 
 #maven { url = uri("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev") }
 
@@ -65,6 +66,7 @@ proguard-gradle = { module = "com.guardsquare:proguard-gradle", version.ref = "p
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinx-coroutines" }
+kotlinx-atomicfu = { module = "org.jetbrains.kotlinx:atomicfu", version.ref = "kotlinx-atomicfu" }
 android-build-gradle = { module = "com.android.tools.build:gradle", version.ref = "android-build-gradle" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 gradle-publish-plugin = { module = "com.gradle.publish:plugin-publish-plugin", version.ref = "gradle-publish-plugin" }
