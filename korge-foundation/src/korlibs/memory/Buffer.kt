@@ -9,6 +9,7 @@ typealias DataView = Buffer
 
 expect class Buffer {
     constructor(size: Int, direct: Boolean = false)
+    @Deprecated("Can't wrap without copying on WasmJS")
     constructor(array: ByteArray, offset: Int = 0, size: Int = array.size - offset)
 
     val byteOffset: Int

@@ -9,7 +9,7 @@ actual class Buffer(val dataView: org.khronos.webgl.DataView) {
     actual constructor(array: ByteArray, offset: Int, size: Int) : this(
         //DataView(checkNBufferWrap(array, offset, size).unsafeCast<Int8Array>().buffer, offset, size)
         // @TODO: Can't wrap, so we perform a copy
-        org.khronos.webgl.DataView(array.toInt8Array().buffer, offset, size)
+        org.khronos.webgl.DataView(checkNBufferWrap(array, offset, size).toInt8Array().buffer, offset, size)
     )
 
     actual val byteOffset: Int get() = this.dataView.byteOffset

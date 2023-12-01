@@ -30,7 +30,7 @@ class LockTest {
 
     @Test
     fun testWaitNotify() {
-        if (Platform.isJs) return
+        if (Platform.isJsOrWasm) return
 
         val lock = Lock()
         var log = arrayListOf<String>()
