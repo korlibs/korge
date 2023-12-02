@@ -6,7 +6,7 @@ import korlibs.platform.*
 import kotlin.test.*
 
 class CaseSensitiveTest {
-    private val cond: () -> Boolean = { !Platform.isJs }
+    private val cond: () -> Boolean = { !Platform.isJsOrWasm }
 
     @Test fun testResourcesVfs() = suspendTest(cond = cond, preferSyncIo = true) { _testResourcesVfs() }
     @Test fun testResourcesVfsAsync() = suspendTest(cond = cond, preferSyncIo = false) { _testResourcesVfs() }

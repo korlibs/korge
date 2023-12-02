@@ -2,11 +2,17 @@ package korlibs.image
 
 import korlibs.io.util.*
 import korlibs.number.*
+import korlibs.platform.*
 import kotlin.test.*
 
 class QualityTest {
     @Test
     fun testLevels() {
+        if (Platform.isWasm) {
+            println("Skipping in wasm as Float.toString is not working as the rest of the targets")
+            return
+        }
+
         fun Quality.result(): String = "$this: ${level.niceStr(2, zeroSuffix = true)}: $isLow, $isMedium, $isHigh : ${this <= Quality.MEDIUM}, ${this >= Quality.MEDIUM}"
 
         assertEquals(

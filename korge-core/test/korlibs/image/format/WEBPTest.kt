@@ -8,6 +8,7 @@ import kotlin.test.*
 class WEBPTest {
     @Test
     fun test1() = suspendTest {
+        if (Platform.isWasm) { println("Skipping WEBPTest WASM for now as it hangs: https://github.com/korlibs/korge/pull/2057#issuecomment-1837089337"); return@suspendTest }
         if (Platform.isIos || Platform.isTvos) {
             println("Skipping WEBPTest for now on iOS")
             return@suspendTest
@@ -19,6 +20,7 @@ class WEBPTest {
 
     @Test
     fun test2() = suspendTest {
+        if (Platform.isWasm) { println("Skipping WEBPTest WASM for now as it hangs: https://github.com/korlibs/korge/pull/2057#issuecomment-1837089337"); return@suspendTest }
         if (Platform.isIos || Platform.isTvos) {
             println("Skipping WEBPTest for now on iOS")
             return@suspendTest
