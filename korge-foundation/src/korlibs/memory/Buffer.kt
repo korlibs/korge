@@ -655,14 +655,14 @@ fun Buffer.asInt64(): Int64Buffer = Int64Buffer(this)
 fun Buffer.asFloat32(): Float32Buffer = Float32Buffer(this)
 fun Buffer.asFloat64(): Float64Buffer = Float64Buffer(this)
 
-fun TypedBuffer.asUInt8(): Uint8Buffer = this.buffer.u8
-fun TypedBuffer.asUInt16(): Uint16Buffer = this.buffer.u16
-fun TypedBuffer.asInt8(): Int8Buffer = this.buffer.i8
-fun TypedBuffer.asInt16(): Int16Buffer = this.buffer.i16
-fun TypedBuffer.asInt32(): Int32Buffer = this.buffer.i32
-fun TypedBuffer.asInt64(): Int64Buffer = this.buffer.i64
-fun TypedBuffer.asFloat32(): Float32Buffer = this.buffer.f32
-fun TypedBuffer.asFloat64(): Float64Buffer = this.buffer.f64
+fun TypedBuffer.asUInt8(): Uint8Buffer = this.buffer.asUInt8()
+fun TypedBuffer.asUInt16(): Uint16Buffer = this.buffer.asUInt16()
+fun TypedBuffer.asInt8(): Int8Buffer = this.buffer.asInt8()
+fun TypedBuffer.asInt16(): Int16Buffer = this.buffer.asInt16()
+fun TypedBuffer.asInt32(): Int32Buffer = this.buffer.asInt32()
+fun TypedBuffer.asInt64(): Int64Buffer = this.buffer.asInt64()
+fun TypedBuffer.asFloat32(): Float32Buffer = this.buffer.asFloat32()
+fun TypedBuffer.asFloat64(): Float64Buffer = this.buffer.asFloat64()
 
 inline fun <T> BufferTemp(size: Int, callback: (Buffer) -> T): T = Buffer.allocDirect(size).run(callback)
 
