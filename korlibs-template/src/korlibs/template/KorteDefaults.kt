@@ -1,17 +1,9 @@
 package korlibs.template
 
-import korlibs.io.serialization.json.*
-import korlibs.io.util.*
-import korlibs.math.*
-import korlibs.template.dynamic.KorteDynamic2
-import korlibs.template.internal.korteExtraProperty
-import korlibs.util.*
+import korlibs.template.dynamic.*
+import korlibs.template.internal.*
 import kotlin.coroutines.cancellation.*
-import kotlin.math.absoluteValue
-import kotlin.math.ceil
-import kotlin.math.floor
-import kotlin.math.round
-import kotlin.native.concurrent.*
+import kotlin.math.*
 
 //@Suppress("unused")
 object KorteDefaultFilters {
@@ -65,7 +57,7 @@ object KorteDefaultFilters {
         subject.toDynamicList() + arg.toDynamicList()
     }
     val JsonEncode = KorteFilter("json_encode") {
-        Json.stringify(subject)
+        Json_stringify(subject)
     }
     val Format = KorteFilter("format") {
         subject.toDynamicString().format(*(args.toTypedArray() as Array<out Any>))

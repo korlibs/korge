@@ -1,5 +1,6 @@
 package korlibs.wasm
 
+import korlibs.io.async.*
 import korlibs.platform.*
 import korlibs.template.*
 import kotlin.test.*
