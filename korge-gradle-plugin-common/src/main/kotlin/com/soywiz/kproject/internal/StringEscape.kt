@@ -74,4 +74,3 @@ internal fun String.unquote(): String = if (isQuoted()) this.substring(1, this.l
 
 internal val String?.quoted: String get() = this.quote()
 internal val String.unquoted: String get() = this.unquote()
-
