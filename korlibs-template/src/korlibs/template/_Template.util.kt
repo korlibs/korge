@@ -2,7 +2,7 @@
 
 package korlibs.template.util
 
-import korlibs.datastructure.lock.*
+import korlibs.template.internal.*
 import kotlin.coroutines.*
 
 interface KorteAsyncTextWriterContainer {

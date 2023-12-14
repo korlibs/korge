@@ -1,6 +1,6 @@
 [versions]
-jackson-databind = "2.14.2"
-jackson-module-kotlin = "2.14.2"
+jackson-databind = "2.16.0"
+jackson-module-kotlin = "2.16.0"
 jna = "5.13.0"
 jcodec = "0.2.5"
 junit = "4.13.2"

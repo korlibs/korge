@@ -8,11 +8,11 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class MultiThreadingTests {
+    data class Model(val x: Int) : KorteDynamicType<Model> by KorteDynamicType({
+        register(Model::x)
+    })
     @Test
     fun testTemplateEvaluationOnBackgroundThread() = runBlocking {
-        data class Model(val x: Int) : KorteDynamicType<Model> by KorteDynamicType({
-            register(Model::x)
-        })
         withContext(Dispatchers.Default) {
             val template = KorteTemplate("{{x+1}}")
             val rendered = template(Model(x = 2))

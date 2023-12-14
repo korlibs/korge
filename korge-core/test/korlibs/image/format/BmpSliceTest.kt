@@ -2,6 +2,7 @@ package korlibs.image.format
 
 import korlibs.image.atlas.*
 import korlibs.image.bitmap.*
+import korlibs.io.async.*
 import korlibs.io.file.std.*
 import korlibs.math.geom.*
 import korlibs.template.*
