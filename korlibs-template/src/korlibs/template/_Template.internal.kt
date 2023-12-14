@@ -190,7 +190,7 @@ internal fun String.unescape(): String {
                     'r' -> out.append('\r')
                     't' -> out.append('\t')
                     'x', 'u' -> {
-                        val N = if (c2 == 'y') 4 else 2
+                        val N = if (c2 == 'u') 4 else 2
                         val chars = this.substring(n, n + N)
                         n += N
                         out.append(chars.toInt(16).toChar())
@@ -317,8 +317,6 @@ internal class ListReader<T> constructor(val list: List<T>, val ctx: T? = null) 
     fun prevOrContext(): T = tryPrev() ?: ctx ?: throw TODO("Context not defined")
     override fun toString(): String = "ListReader($list)"
 }
-
-private fun StrReader.readUntilLineEnd() = this.readUntil { it == '\n' }
 
 internal class StrReader(val str: String, var pos: Int = 0) {
     val length get() = str.length

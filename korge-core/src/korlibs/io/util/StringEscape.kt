@@ -1,81 +1,66 @@
 package korlibs.io.util
 
-import korlibs.memory.extract
-import korlibs.encoding.Hex
-
-fun String.escape(): String {
-	val out = StringBuilder()
-	for (n in 0 until this.length) {
-		val c = this[n]
-		when (c) {
-			'\\' -> out.append("\\\\")
-			'"' -> out.append("\\\"")
-			'\n' -> out.append("\\n")
-			'\r' -> out.append("\\r")
-			'\t' -> out.append("\\t")
-			in '\u0000'..'\u001f' -> {
-				out.append("\\x")
-				out.append(Hex.encodeCharLower(c.toInt().extract(4, 4)))
-				out.append(Hex.encodeCharLower(c.toInt().extract(0, 4)))
-			}
-			else -> out.append(c)
-		}
-	}
-	return out.toString()
+private const val HEX_DIGITS_LOWER = "0123456789abcdef"
+fun String.escape(unicode: Boolean): String {
+    val out = StringBuilder(this.length + 16)
+    for (c in this) {
+        when (c) {
+            '\\' -> out.append("\\\\")
+            '"' -> out.append("\\\"")
+            '\n' -> out.append("\\n")
+            '\r' -> out.append("\\r")
+            '\t' -> out.append("\\t")
+            else -> when {
+                !unicode && c in '\u0000'..'\u001f' -> {
+                    out.append("\\x")
+                    out.append(HEX_DIGITS_LOWER[(c.code ushr 4) and 0xF])
+                    out.append(HEX_DIGITS_LOWER[(c.code ushr 0) and 0xF])
+                }
+                unicode && !c.isPrintable() -> {
+                    out.append("\\u")
+                    out.append(HEX_DIGITS_LOWER[(c.code ushr 12) and 0xF])
+                    out.append(HEX_DIGITS_LOWER[(c.code ushr 8) and 0xF])
+                    out.append(HEX_DIGITS_LOWER[(c.code ushr 4) and 0xF])
+                    out.append(HEX_DIGITS_LOWER[(c.code ushr 0) and 0xF])
+                }
+                else -> out.append(c)
+            }
+        }
+    }
+    return out.toString()
 }
-
-fun String.uescape(): String {
-	val out = StringBuilder()
-	for (n in 0 until this.length) {
-		val c = this[n]
-		when (c) {
-			'\\' -> out.append("\\\\")
-			'"' -> out.append("\\\"")
-			'\n' -> out.append("\\n")
-			'\r' -> out.append("\\r")
-			'\t' -> out.append("\\t")
-			else -> if (c.isPrintable()) {
-				out.append(c)
-			} else {
-				out.append("\\u")
-				out.append(Hex.encodeCharLower(c.toInt().extract(12, 4)))
-				out.append(Hex.encodeCharLower(c.toInt().extract(8, 4)))
-				out.append(Hex.encodeCharLower(c.toInt().extract(4, 4)))
-				out.append(Hex.encodeCharLower(c.toInt().extract(0, 4)))
-			}
-		}
-	}
-	return out.toString()
-}
+fun String.escape(): String = escape(unicode = false)
+fun String.uescape(): String = escape(unicode = true)
 
 fun String.unescape(): String {
-	val out = StringBuilder()
-	var n = 0
-	while (n < this.length) {
-		val c = this[n++]
-		when (c) {
-			'\\' -> {
-				val c2 = this[n++]
-				when (c2) {
-					'\\' -> out.append('\\')
-					'"' -> out.append('\"')
-					'n' -> out.append('\n')
-					'r' -> out.append('\r')
-					't' -> out.append('\t')
-					'u' -> {
-						val chars = this.substring(n, n + 4)
-						n += 4
-						out.append(chars.toInt(16).toChar())
-					}
-					else -> {
-						out.append("\\$c2")
-					}
-				}
-			}
-			else -> out.append(c)
-		}
-	}
-	return out.toString()
+    val out = StringBuilder()
+    var n = 0
+    while (n < this.length) {
+        val c = this[n++]
+        when (c) {
+            '\\' -> {
+                val c2 = this[n++]
+                when (c2) {
+                    '\\' -> out.append('\\')
+                    '"' -> out.append('\"')
+                    'n' -> out.append('\n')
+                    'r' -> out.append('\r')
+                    't' -> out.append('\t')
+                    'x', 'u' -> {
+                        val N = if (c2 == 'u') 4 else 2
+                        val chars = this.substring(n, n + N)
+                        n += N
+                        out.append(chars.toInt(16).toChar())
+                    }
+                    else -> {
+                        out.append("\\$c2")
+                    }
+                }
+            }
+            else -> out.append(c)
+        }
+    }
+    return out.toString()
 }
 
 fun String?.uquote(): String = if (this != null) "\"${this.uescape()}\"" else "null"

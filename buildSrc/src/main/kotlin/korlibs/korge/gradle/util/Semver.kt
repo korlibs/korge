@@ -11,14 +11,13 @@ data class SemVer(val version: String) : Comparable<SemVer> {
 			while (s1.hasNextInt() && s2.hasNextInt()) {
 				val v1 = s1.nextInt()
 				val v2 = s2.nextInt()
-				if (v1 < v2) {
-					return -1
-				} else if (v1 > v2) {
-					return 1
-				}
+                when {
+                    v1 < v2 -> return -1
+                    v1 > v2 -> return +1
+                }
 			}
 
-			if (s1.hasNextInt() && s1.nextInt() != 0) return 1
+			if (s1.hasNextInt() && s1.nextInt() != 0) return +1
 			return if (s2.hasNextInt() && s2.nextInt() != 0) -1 else 0
 		}
 	}
