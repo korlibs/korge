@@ -173,7 +173,7 @@ internal fun String._escape(unicode: Boolean): String {
     return out.toString()
 }
 internal fun String.escape(): String = _escape(unicode = false)
-internal fun String.uescape(): String = _escape(unicode = true)
+internal fun String.escapeUnicode(): String = _escape(unicode = true)
 internal fun String.unescape(): String {
     val out = StringBuilder()
     var n = 0
@@ -223,7 +223,7 @@ internal fun StringBuilder.jsonStringify(value: Any?) {
         null -> append("null")
         is Boolean -> append(value == true)
         is Number -> append(value)
-        is String -> append('"').append(value.uescape()).append('"')
+        is String -> append('"').append(value.escapeUnicode()).append('"')
         is Iterable<*> -> {
             append('[')
             var first = true

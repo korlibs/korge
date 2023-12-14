@@ -30,7 +30,8 @@ fun String.escape(unicode: Boolean): String {
     return out.toString()
 }
 fun String.escape(): String = escape(unicode = false)
-fun String.uescape(): String = escape(unicode = true)
+fun String.escapeUnicode(): String = escape(unicode = true)
+@Deprecated("", ReplaceWith("escapeUnicode()")) fun String.uescape(): String = escapeUnicode()
 
 fun String.unescape(): String {
     val out = StringBuilder()
@@ -63,8 +64,10 @@ fun String.unescape(): String {
     return out.toString()
 }
 
-fun String?.uquote(): String = if (this != null) "\"${this.uescape()}\"" else "null"
-fun String?.quote(): String = if (this != null) "\"${this.escape()}\"" else "null"
+fun String?.quote(unicode: Boolean): String = if (this != null) "\"${this.escape(unicode)}\"" else "null"
+fun String?.quote(): String = quote(unicode = false)
+fun String?.quoteUnicode(): String = quote(unicode = true)
+@Deprecated("", ReplaceWith("quoteUnicode()")) fun String?.uquote(): String = quoteUnicode()
 
 fun String.isQuoted(): Boolean = this.startsWith('"') && this.endsWith('"')
 fun String.unquote(): String = if (isQuoted()) this.substring(1, this.length - 1).unescape() else this

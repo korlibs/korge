@@ -1,7 +1,7 @@
 package korlibs.korge.gradle.util
 
 internal const val HEX_DIGITS_LOWER = "0123456789abcdef"
-internal fun String._escape(unicode: Boolean): String {
+internal fun String.escape(unicode: Boolean): String {
     val out = StringBuilder(this.length + 16)
     for (c in this) {
         when (c) {
@@ -29,11 +29,12 @@ internal fun String._escape(unicode: Boolean): String {
     }
     return out.toString()
 }
-internal fun String.escape(): String = _escape(unicode = false)
-internal fun String.uescape(): String = _escape(unicode = true)
+internal fun String.escape(): String = escape(unicode = false)
+internal fun String.escapeUnicode(): String = escape(unicode = true)
 
-fun String?.uquote(): String = if (this != null) "\"${this.uescape()}\"" else "null"
-fun String?.quote(): String = if (this != null) "\"${this.escape()}\"" else "null"
+internal fun String?.quote(unicode: Boolean): String = if (this != null) "\"${this.escape(unicode)}\"" else "null"
+internal fun String?.quote(): String = quote(unicode = false)
+internal fun String?.quoteUnicode(): String = quote(unicode = true)
 
 val String?.quoted: String get() = this.quote()
 
