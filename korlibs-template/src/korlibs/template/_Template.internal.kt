@@ -3,13 +3,12 @@
 package korlibs.template.internal
 
 import korlibs.template.util.KorteDeferred
+import kotlinx.atomicfu.locks.*
 import kotlin.coroutines.coroutineContext
 import kotlin.reflect.*
 
-// @TODO: Proper implementation
-class Lock {
-    operator fun <T> invoke(block: () -> T): T = block()
-}
+internal typealias Lock = SynchronizedObject
+internal inline operator fun <T> Lock.invoke(block: () -> T): T = synchronized(this@invoke) { block() }
 
 internal class KorteAsyncCache {
     private val lock = Lock()

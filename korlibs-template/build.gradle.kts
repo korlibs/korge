@@ -11,5 +11,6 @@ project.extensions.extraProperties.properties.apply {
 }
 
 dependencies {
+    commonMainApi(libs.kotlinx.atomicfu)
     commonTestApi(libs.kotlinx.coroutines.test)
 }
