@@ -175,7 +175,7 @@ internal fun String._escape(unicode: Boolean): String {
 internal fun String.escape(): String = _escape(unicode = false)
 internal fun String.escapeUnicode(): String = _escape(unicode = true)
 internal fun String.unescape(): String {
-    val out = StringBuilder()
+    val out = StringBuilder(this.length)
     var n = 0
     while (n < this.length) {
         val c = this[n++]

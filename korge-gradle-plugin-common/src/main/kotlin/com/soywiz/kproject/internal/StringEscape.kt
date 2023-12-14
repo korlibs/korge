@@ -35,7 +35,7 @@ internal fun String.escape(): String = escape(unicode = false)
 internal fun String.escapeUnicode(): String = escape(unicode = true)
 
 internal fun String.unescape(): String {
-    val out = StringBuilder()
+    val out = StringBuilder(this.length)
     var n = 0
     while (n < this.length) {
         val c = this[n++]

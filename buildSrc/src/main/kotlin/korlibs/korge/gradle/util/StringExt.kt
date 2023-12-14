@@ -42,7 +42,7 @@ internal fun Int.mask(): Int = (1 shl this) - 1
 internal fun Int.extract(offset: Int, count: Int): Int = (this ushr offset) and count.mask()
 
 fun String.unescape(): String {
-    val out = StringBuilder()
+    val out = StringBuilder(this.length)
     var n = 0
     while (n < this.length) {
         val c = this[n++]

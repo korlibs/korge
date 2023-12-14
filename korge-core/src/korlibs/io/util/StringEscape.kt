@@ -34,7 +34,7 @@ fun String.escapeUnicode(): String = escape(unicode = true)
 @Deprecated("", ReplaceWith("escapeUnicode()")) fun String.uescape(): String = escapeUnicode()
 
 fun String.unescape(): String {
-    val out = StringBuilder()
+    val out = StringBuilder(this.length)
     var n = 0
     while (n < this.length) {
         val c = this[n++]
