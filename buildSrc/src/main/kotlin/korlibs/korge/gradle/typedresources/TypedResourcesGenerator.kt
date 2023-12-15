@@ -148,7 +148,7 @@ class TypedResourcesGenerator {
                 } catch (e: Throwable) {
                     System.err.println("ERROR LOADING FILE: aseFile=$aseFile")
                     e.printStackTrace()
-                    continue
+                    ASEInfo()
                 }
 
                 line("")
