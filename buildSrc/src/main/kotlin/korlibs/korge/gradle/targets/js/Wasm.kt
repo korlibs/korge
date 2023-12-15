@@ -17,12 +17,11 @@ fun Project.configureWasm(projectType: ProjectType, binaryen: Boolean = false) {
 
     if (projectType.isExecutable) {
 
-        project.tasks.createThis<WasmJsCreateIndexTask>("wasmJsCreateIndex") {
+        val wasmJsCreateIndex = project.tasks.createThis<WasmJsCreateIndexTask>("wasmJsCreateIndex") {
         }
         //:compileDevelopmentExecutableKotlinWasmJs
         project.tasks.findByName("wasmJsBrowserDevelopmentRun")?.apply {
-            dependsOn("wasmJsCreateIndex")
-            doFirst { wasmJsCreateIndex(project) }
+            dependsOn(wasmJsCreateIndex)
         }
         project.tasks.createThis<Task>("runWasmJs") {
             dependsOn("wasmJsRun")
