@@ -6,6 +6,7 @@ import korlibs.korge.gradle.targets.*
 import korlibs.korge.gradle.targets.wasm.*
 import korlibs.korge.gradle.util.*
 import org.gradle.api.*
+import org.gradle.api.tasks.TaskAction
 import org.jetbrains.kotlin.gradle.targets.js.npm.*
 import java.io.*
 
@@ -16,26 +17,25 @@ fun Project.configureWasm(projectType: ProjectType, binaryen: Boolean = false) {
 
     if (projectType.isExecutable) {
 
-        project.tasks.createThis<Task>("wasmCreateIndex") {
-            doFirst {
-                wasmCreateIndex(project)
-            }
+        val wasmJsCreateIndex = project.tasks.createThis<WasmJsCreateIndexTask>("wasmJsCreateIndex") {
         }
-        project.tasks.findByName("wasmBrowserDevelopmentRun")?.apply {
-            dependsOn("wasmCreateIndex")
-            doFirst { wasmCreateIndex(project) }
+        //:compileDevelopmentExecutableKotlinWasmJs
+        project.tasks.findByName("wasmJsBrowserDevelopmentRun")?.apply {
+            dependsOn(wasmJsCreateIndex)
         }
-        val task = project.tasks.createThis<Task>("runWasm") {
-            dependsOn("wasmRun")
+        project.tasks.createThis<Task>("runWasmJs") {
+            dependsOn("wasmJsRun")
         }
     }
 }
 
-fun wasmCreateIndex(project: Project) {
-    val compilation = project.kotlin.wasm().compilations["main"]!!
-    val npmDir = compilation.npmProject.dir
-    File(npmDir, "kotlin/index.html").also { it.parentFile.mkdirs() }.writeText(
-        """
+open class WasmJsCreateIndexTask : DefaultTask() {
+    private val npmDir: File = project.kotlin.wasm().compilations["main"]!!.npmProject.dir
+
+    @TaskAction
+    fun run() {
+        File(npmDir, "kotlin/index.html").also { it.parentFile.mkdirs() }.writeText(
+            """
             <html>
                 <script type = 'module'>
                     import module from "./${npmDir.name}.mjs"
@@ -44,5 +44,6 @@ fun wasmCreateIndex(project: Project) {
                 </script>
             </html>
         """.trimIndent()
-    )
+        )
+    }
 }

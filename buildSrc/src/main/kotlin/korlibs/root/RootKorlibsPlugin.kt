@@ -508,16 +508,12 @@ object RootKorlibsPlugin {
         rootProject.samples {
             if (isWasmEnabled(project)) {
                 configureWasm(executable = true)
-                project.tasks.createThis<Task>("wasmCreateIndex") {
-                    doFirst {
-                        wasmCreateIndex(project)
-                    }
+                val wasmJsCreateIndex = project.tasks.createThis<WasmJsCreateIndexTask>("wasmJsCreateIndex") {
                 }
-                project.tasks.findByName("wasmBrowserDevelopmentRun")?.apply {
-                    dependsOn("wasmCreateIndex")
-                    doFirst { wasmCreateIndex(project) }
+                project.tasks.findByName("wasmJsBrowserDevelopmentRun")?.apply {
+                    dependsOn(wasmJsCreateIndex)
                 }
-                val task = project.tasks.createThis<Task>("runWasm") {
+                project.tasks.createThis<Task>("runWasmJs") {
                     dependsOn("wasmJsRun")
                 }
             }
