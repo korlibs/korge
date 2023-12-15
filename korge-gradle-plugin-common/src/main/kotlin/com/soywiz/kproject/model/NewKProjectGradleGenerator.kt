@@ -2,7 +2,7 @@ package com.soywiz.kproject.model
 
 import com.soywiz.kproject.internal.*
 import com.soywiz.kproject.util.*
-import com.soywiz.kproject.version.*
+import korlibs.korge.gradle.common.*
 
 class NewKProjectGradleGenerator(val projectRootFolder: FileRef) {
     val resolver = NewKProjectResolver()
@@ -99,7 +99,7 @@ class NewKProjectGradleGenerator(val projectRootFolder: FileRef) {
                     for (plugin in gradlePlugins) {
                         when (plugin) {
                             "serialization" -> {
-                                appendLine("  add(\"commonMainApi\", \"org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0\")")
+                                appendLine("  add(\"commonMainApi\", \"org.jetbrains.kotlinx:kotlinx-serialization-json:${BuildVersions.KOTLIN_SERIALIZATION}\")")
                             }
                         }
                     }

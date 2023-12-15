@@ -48,7 +48,7 @@ class NewKProjectModelTest {
             """
             """
         ) {
-            assertEquals("11111", targetsStr())
+            assertEquals("1111", targetsStr())
         }
 
         checkKProject(
@@ -56,7 +56,7 @@ class NewKProjectModelTest {
                 targets: [jvm]
             """
         ) {
-            assertEquals("10000", targetsStr())
+            assertEquals("1000", targetsStr())
         }
     }
 
@@ -81,7 +81,8 @@ class NewKProjectModelTest {
             assertEquals("4.0.0", versions["com.soywiz.korlibs.korge2:korge"])
         }
     }
-    val targets = listOf(KProjectTarget.JVM, KProjectTarget.JS, KProjectTarget.ANDROID, KProjectTarget.DESKTOP, KProjectTarget.MOBILE)
+    //val targets = listOf(KProjectTarget.JVM, KProjectTarget.JS, KProjectTarget.ANDROID, KProjectTarget.DESKTOP, KProjectTarget.MOBILE)
+    val targets = listOf(KProjectTarget.JVM, KProjectTarget.JS, KProjectTarget.ANDROID, KProjectTarget.MOBILE)
     fun NewKProjectModel.targetsStr(): String = this@NewKProjectModelTest.targets.joinToString("") { if (hasTarget(it)) "1" else "0" }
 
     fun checkKProject(model: String, block: NewKProjectModel.() -> Unit) {
