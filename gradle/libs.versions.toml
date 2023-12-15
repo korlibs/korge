@@ -56,6 +56,7 @@ junit = { module = "junit:junit", version.ref = "junit" }
 kotlin-serialization = { module = "org.jetbrains.kotlin:kotlin-serialization", version.ref = "kotlin" }
 kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
+kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
 dokka = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version.ref = "dokka" }
 kover = { module = "org.jetbrains.kotlinx:kover", version.ref = "kover" }
 kover-intellij-agent = { module = "org.jetbrains.intellij.deps:intellij-coverage-agent", version.ref = "kover-agent" }
@@ -75,6 +76,7 @@ jgit = { module = "org.eclipse.jgit:org.eclipse.jgit", version.ref = "jgit" }
 
 [bundles]
 jna = ["jna-core", "jna-platform"]
+kotlin-test = ["junit", "kotlin-test", "kotlin-test-junit"]
 
 #[plugins]
 #jmh = { id = "me.champeau.jmh", version = "0.6.5" }
