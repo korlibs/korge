@@ -422,7 +422,7 @@ open class KorgeExtension(
 	//var proguardObfuscate: Boolean = false
 	var proguardObfuscate: Boolean = true
 
-	val realEntryPoint get() = entryPoint ?: (jvmMainClassName.substringBeforeLast('.', "") + ".main").trimStart('.')
+	val realEntryPoint: String get() = entryPoint ?: (jvmMainClassName.substringBeforeLast('.', "") + ".main").trimStart('.')
 	val realJvmMainClassName: String get() = jvmMainClassName
 
 	val extraEntryPoints = arrayListOf<Entrypoint>()
