@@ -91,6 +91,9 @@ kotlin.sourceSets.test.configure {
 java.sourceSets.main.configure {
     resources.srcDirs(File(projectDir, "build/srcgen2res"))
 }
+java.sourceSets.test.configure {
+    resources.srcDirs(File(projectDir, "build/testgen2res"))
+}
 
 dependencies {
     //implementation(project(":korge-gradle-plugin-common"))

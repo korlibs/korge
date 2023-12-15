@@ -26,7 +26,7 @@ class TypedResourcesGeneratorTest {
         }
 
         val generatedNormalized = generated.trim().normalize()
-        val expectedNormalized = this::class.java.getResource("/expected.KR.generated.txt")!!.readText().normalize()
+        val expectedNormalized = getResourceText("expected.KR.generated.txt").normalize()
 
         if (expectedNormalized != generatedNormalized) {
             println(generatedNormalized)

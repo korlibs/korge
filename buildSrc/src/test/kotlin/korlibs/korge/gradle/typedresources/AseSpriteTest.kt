@@ -7,7 +7,7 @@ import org.junit.Test
 class AseSpriteTest {
     @Test
     fun test() {
-        val info = ASEInfo.Companion.getAseInfo(this::class.java.getResource("/sprites.ase")!!.readBytes())
+        val info = ASEInfo.Companion.getAseInfo(getResourceBytes("sprites.ase"))
         Assert.assertEquals(0, info.slices.size)
         Assert.assertEquals(listOf("TestNum", "FireTrail", "FireTrail2"), info.tags.map { it.tagName })
     }
