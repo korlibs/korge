@@ -4,7 +4,7 @@ import java.io.*
 
 class ByteArraySlice(val ba: ByteArray, val pos: Int = 0, val size: Int = ba.size - pos) {
     fun sliceRange(range: IntRange): ByteArraySlice {
-        return ByteArraySlice(ba, pos + range.first, range.last - range.first - 1)
+        return ByteArraySlice(ba, pos + range.first, range.last - range.first + 1)
     }
     val length: Int get() = size
     operator fun get(index: Int): Byte = ba[pos + index]
@@ -19,6 +19,8 @@ class ByteArraySimpleInputStream(
     val data: ByteArraySlice,
     var pos: Int = 0
 ) {
+    override fun toString(): String = "ByteArraySimpleInputStream([data=${data.ba.size}, pos=${data.pos}, len=${data.length}], pos=$pos)"
+
     val available: Int get() = length - pos
     val length: Int get() = data.size
 
