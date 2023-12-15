@@ -42,11 +42,17 @@ fun Project.configureErrorableEsbuild() {
 
         val esbuildVersion = korge.esbuildVersion
         doFirst {
-            val npmCmd = arrayOf(
-                File(env.nodeExecutable),
-                File(env.nodeDir, "lib/node_modules/npm/bin/npm-cli.js").takeIf { it.exists() }
-                    ?: File(env.nodeDir, "node_modules/npm/bin/npm-cli.js").takeIf { it.exists() }
-                    ?: error("Can't find npm-cli.js in ${env.nodeDir} standard folders")
+
+            //val nodeDir = env.nodeBinDir
+            val nodeDir = env.dir
+            val file1: File = File(env.nodeExecutable)
+            val file2: File? = File(nodeDir, "lib/node_modules/npm/bin/npm-cli.js").takeIf { it.exists() }
+            val file3: File? = File(nodeDir, "node_modules/npm/bin/npm-cli.js").takeIf { it.exists() }
+            val npmCmd = arrayOf<File>(
+                file1,
+                file2
+                    ?: file2
+                    ?: error("Can't find npm-cli.js in ${nodeDir} standard folders")
             )
 
             environment("PATH", ENV_PATH)
