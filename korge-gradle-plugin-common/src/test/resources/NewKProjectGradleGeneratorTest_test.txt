@@ -28,11 +28,11 @@ buildscript {
     }
 }
 plugins {
-  id("com.soywiz.kproject") version "0.0.1-SNAPSHOT"
+  id("com.soywiz.kproject")
   id("org.jetbrains.kotlin.plugin.serialization")
 }
 dependencies {
-  add("commonMainApi", "org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
+  add("commonMainApi", "org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
   add("commonMainApi", project(":mymodule"))
 }
 [file("build.extra.gradle"), file("build.extra.gradle.kts")].each { extraGradle ->
@@ -61,7 +61,7 @@ buildscript {
     }
 }
 plugins {
-  id("com.soywiz.kproject") version "0.0.1-SNAPSHOT"
+  id("com.soywiz.kproject")
 }
 dependencies {
   add("commonMainApi", project(":Ademo2"))
@@ -102,7 +102,7 @@ buildscript {
     }
 }
 plugins {
-  id("com.soywiz.kproject") version "0.0.1-SNAPSHOT"
+  id("com.soywiz.kproject")
 }
 dependencies {
   add("commonMainApi", project(":Ademo3"))
@@ -157,7 +157,7 @@ buildscript {
     }
 }
 plugins {
-  id("com.soywiz.kproject") version "0.0.1-SNAPSHOT"
+  id("com.soywiz.kproject")
 }
 dependencies {
   add("commonMainApi", "org.jetbrains.compose.runtime:runtime:1.4.1")
