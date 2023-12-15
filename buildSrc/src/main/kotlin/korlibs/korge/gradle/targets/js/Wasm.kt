@@ -16,22 +16,23 @@ fun Project.configureWasm(projectType: ProjectType, binaryen: Boolean = false) {
 
     if (projectType.isExecutable) {
 
-        project.tasks.createThis<Task>("wasmCreateIndex") {
+        project.tasks.createThis<Task>("wasmJsCreateIndex") {
             doFirst {
-                wasmCreateIndex(project)
+                wasmJsCreateIndex(project)
             }
         }
-        project.tasks.findByName("wasmBrowserDevelopmentRun")?.apply {
-            dependsOn("wasmCreateIndex")
-            doFirst { wasmCreateIndex(project) }
+        //:compileDevelopmentExecutableKotlinWasmJs
+        project.tasks.findByName("wasmJsBrowserDevelopmentRun")?.apply {
+            dependsOn("wasmJsCreateIndex")
+            doFirst { wasmJsCreateIndex(project) }
         }
-        val task = project.tasks.createThis<Task>("runWasm") {
-            dependsOn("wasmRun")
+        project.tasks.createThis<Task>("runWasmJs") {
+            dependsOn("wasmJsRun")
         }
     }
 }
 
-fun wasmCreateIndex(project: Project) {
+fun wasmJsCreateIndex(project: Project) {
     val compilation = project.kotlin.wasm().compilations["main"]!!
     val npmDir = compilation.npmProject.dir
     File(npmDir, "kotlin/index.html").also { it.parentFile.mkdirs() }.writeText(

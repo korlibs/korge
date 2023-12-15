@@ -11,8 +11,6 @@ fun isWasmEnabled(project: Project?): Boolean = true
 fun Project.configureWasm(executable: Boolean, binaryen: Boolean = false) {
     kotlin {
         wasmJs {
-            if (binaryen) applyBinaryen()
-
             if (executable) {
                 binaries.executable()
             }
@@ -30,6 +28,8 @@ fun Project.configureWasm(executable: Boolean, binaryen: Boolean = false) {
                 //    }
                 //}
             }
+
+            if (binaryen) applyBinaryen()
         }
 
         sourceSets.maybeCreate("wasmJsTest").apply {
