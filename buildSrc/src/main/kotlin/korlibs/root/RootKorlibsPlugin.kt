@@ -157,6 +157,11 @@ object RootKorlibsPlugin {
             fromFolder = File(rootProject.projectDir, "buildSrc/src/main/resources"),
             intoFolder = File(rootProject.projectDir, "korge-gradle-plugin/build/srcgen2res")
         )
+
+        project.symlinktree(
+            fromFolder = File(rootProject.projectDir, "buildSrc/src/test/resources"),
+            intoFolder = File(rootProject.projectDir, "korge-gradle-plugin/build/testgen2res")
+        )
     }
 
     fun Project.initShowSystemInfoWhenLinkingInWindows() {
