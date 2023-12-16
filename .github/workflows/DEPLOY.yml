@@ -87,7 +87,7 @@ jobs:
       - { name: Prepare Gradle, uses: gradle/gradle-build-action@ef76a971e2fa3f867b617efd72f2fbd72cf6f8bc } # v2.8.0
       - run: sudo apt-get install xvfb
       - run: xvfb-run --auto-servernum ./gradlew --no-daemon checkReleasingMavenCentral
-      #- run: xvfb-run --auto-servernum ./gradlew --no-daemon publishWasmJsPublicationToMavenRepository
+      - run: xvfb-run --auto-servernum ./gradlew --no-daemon publishWasmJsPublicationToMavenRepository
       - run: xvfb-run --auto-servernum ./gradlew --no-daemon publishJsPublicationToMavenRepository publishAndroidPublicationToMavenRepository
 
   publish-finalize:
