@@ -157,6 +157,11 @@ object RootKorlibsPlugin {
             fromFolder = File(rootProject.projectDir, "buildSrc/src/main/resources"),
             intoFolder = File(rootProject.projectDir, "korge-gradle-plugin/build/srcgen2res")
         )
+
+        project.symlinktree(
+            fromFolder = File(rootProject.projectDir, "buildSrc/src/test/resources"),
+            intoFolder = File(rootProject.projectDir, "korge-gradle-plugin/build/testgen2res")
+        )
     }
 
     fun Project.initShowSystemInfoWhenLinkingInWindows() {
@@ -503,17 +508,13 @@ object RootKorlibsPlugin {
         rootProject.samples {
             if (isWasmEnabled(project)) {
                 configureWasm(executable = true)
-                project.tasks.createThis<Task>("wasmCreateIndex") {
-                    doFirst {
-                        wasmCreateIndex(project)
-                    }
+                val wasmJsCreateIndex = project.tasks.createThis<WasmJsCreateIndexTask>("wasmJsCreateIndex") {
                 }
-                project.tasks.findByName("wasmBrowserDevelopmentRun")?.apply {
-                    dependsOn("wasmCreateIndex")
-                    doFirst { wasmCreateIndex(project) }
+                project.tasks.findByName("wasmJsBrowserDevelopmentRun")?.apply {
+                    dependsOn(wasmJsCreateIndex)
                 }
-                val task = project.tasks.createThis<Task>("runWasm") {
-                    dependsOn("wasmRun")
+                project.tasks.createThis<Task>("runWasmJs") {
+                    dependsOn("wasmJsRun")
                 }
             }
 

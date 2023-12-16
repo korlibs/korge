@@ -1,63 +1,48 @@
 package korlibs.korge.gradle.util
 
-import java.util.Locale
-
-fun String.escape(): String {
-    val out = StringBuilder()
-    for (n in 0 until this.length) {
-        val c = this[n]
+internal const val HEX_DIGITS_LOWER = "0123456789abcdef"
+internal fun String.escape(unicode: Boolean): String {
+    val out = StringBuilder(this.length + 16)
+    for (c in this) {
         when (c) {
             '\\' -> out.append("\\\\")
             '"' -> out.append("\\\"")
             '\n' -> out.append("\\n")
             '\r' -> out.append("\\r")
             '\t' -> out.append("\\t")
-            in '\u0000'..'\u001f' -> {
-                out.append("\\x")
-                out.append(Hex.encodeCharLower(c.toInt().extract(4, 4)))
-                out.append(Hex.encodeCharLower(c.toInt().extract(0, 4)))
-            }
-            else -> out.append(c)
-        }
-    }
-    return out.toString()
-}
-
-fun String.uescape(): String {
-    val out = StringBuilder()
-    for (n in 0 until this.length) {
-        val c = this[n]
-        when (c) {
-            '\\' -> out.append("\\\\")
-            '"' -> out.append("\\\"")
-            '\n' -> out.append("\\n")
-            '\r' -> out.append("\\r")
-            '\t' -> out.append("\\t")
-            else -> if (c.isPrintable()) {
-                out.append(c)
-            } else {
-                out.append("\\u")
-                out.append(Hex.encodeCharLower(c.toInt().extract(12, 4)))
-                out.append(Hex.encodeCharLower(c.toInt().extract(8, 4)))
-                out.append(Hex.encodeCharLower(c.toInt().extract(4, 4)))
-                out.append(Hex.encodeCharLower(c.toInt().extract(0, 4)))
+            else -> when {
+                !unicode && c in '\u0000'..'\u001f' -> {
+                    out.append("\\x")
+                    out.append(HEX_DIGITS_LOWER[(c.code ushr 4) and 0xF])
+                    out.append(HEX_DIGITS_LOWER[(c.code ushr 0) and 0xF])
+                }
+                unicode && !c.isPrintable() -> {
+                    out.append("\\u")
+                    out.append(HEX_DIGITS_LOWER[(c.code ushr 12) and 0xF])
+                    out.append(HEX_DIGITS_LOWER[(c.code ushr 8) and 0xF])
+                    out.append(HEX_DIGITS_LOWER[(c.code ushr 4) and 0xF])
+                    out.append(HEX_DIGITS_LOWER[(c.code ushr 0) and 0xF])
+                }
+                else -> out.append(c)
             }
         }
     }
     return out.toString()
 }
+internal fun String.escape(): String = escape(unicode = false)
+internal fun String.escapeUnicode(): String = escape(unicode = true)
 
-fun String?.uquote(): String = if (this != null) "\"${this.uescape()}\"" else "null"
-fun String?.quote(): String = if (this != null) "\"${this.escape()}\"" else "null"
+internal fun String?.quote(unicode: Boolean): String = if (this != null) "\"${this.escape(unicode)}\"" else "null"
+internal fun String?.quote(): String = quote(unicode = false)
+internal fun String?.quoteUnicode(): String = quote(unicode = true)
 
 val String?.quoted: String get() = this.quote()
 
 internal fun Int.mask(): Int = (1 shl this) - 1
 internal fun Int.extract(offset: Int, count: Int): Int = (this ushr offset) and count.mask()
 
-
 fun String.unescape(): String {
-    val out = StringBuilder()
+    val out = StringBuilder(this.length)
     var n = 0
     while (n < this.length) {
         val c = this[n++]
@@ -70,9 +55,10 @@ fun String.unescape(): String {
                     'n' -> out.append('\n')
                     'r' -> out.append('\r')
                     't' -> out.append('\t')
-                    'u' -> {
-                        val chars = this.substring(n, n + 4)
-                        n += 4
+                    'x', 'u' -> {
+                        val N = if (c2 == 'u') 4 else 2
+                        val chars = this.substring(n, n + N)
+                        n += N
                         out.append(chars.toInt(16).toChar())
                     }
                     else -> {
@@ -88,10 +74,9 @@ fun String.unescape(): String {
 
 fun String.isQuoted(): Boolean = this.startsWith('"') && this.endsWith('"')
 
-fun String.unquote(): String = if (isQuoted()) {
-    this.substring(1, this.length - 1).unescape()
-} else {
-    this
+fun String.unquote(): String = when {
+    isQuoted() -> this.substring(1, this.length - 1).unescape()
+    else -> this
 }
 
 fun Char.isDigit(): Boolean = this in '0'..'9'

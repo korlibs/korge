@@ -1,12 +1,9 @@
 package korlibs.template
 
-import korlibs.io.util.*
-import korlibs.template.dynamic.KorteDynamic2
-import korlibs.template.dynamic.KorteDynamicContext
-import korlibs.template.internal.KorteStrReader
-import korlibs.template.util.KorteListReader
-import kotlin.coroutines.cancellation.CancellationException
-import kotlin.text.isDigit
+import korlibs.template.dynamic.*
+import korlibs.template.internal.*
+import korlibs.template.util.*
+import kotlin.coroutines.cancellation.*
 
 interface KorteExprNode : KorteDynamicContext {
     suspend fun eval(context: KorteTemplate.EvalContext): Any?
@@ -434,9 +431,9 @@ interface KorteExprNode : KorteDynamicContext {
                     }
                     r.skipSpaces()
                     val dstart2 = r.pos
-                    if (r.peek(3) in KorteExprNode.Token.OPERATORS) emit(KorteExprNode.Token.TOperator(r.read(3)), dstart2)
-                    if (r.peek(2) in KorteExprNode.Token.OPERATORS) emit(KorteExprNode.Token.TOperator(r.read(2)), dstart2)
-                    if (r.peek(1) in KorteExprNode.Token.OPERATORS) emit(KorteExprNode.Token.TOperator(r.read(1)), dstart2)
+                    if (r.peek(3) in OPERATORS) emit(TOperator(r.read(3)), dstart2)
+                    if (r.peek(2) in OPERATORS) emit(TOperator(r.read(2)), dstart2)
+                    if (r.peek(1) in OPERATORS) emit(TOperator(r.read(1)), dstart2)
                     if (r.peekChar() == '\'' || r.peekChar() == '"') {
                         val dstart3 = r.pos
                         val strStart = r.read()
@@ -451,7 +448,7 @@ interface KorteExprNode : KorteDynamicContext {
                 }
                 val dstart = r.pos
                 //emit(ExprNode.Token.TEnd(), dstart)
-                return KorteListReader(out, KorteExprNode.Token.TEnd().annotate(context, dstart))
+                return KorteListReader(out, TEnd().annotate(context, dstart))
             }
         }
     }

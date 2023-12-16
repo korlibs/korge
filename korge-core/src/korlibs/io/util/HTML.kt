@@ -1,5 +1,14 @@
 package korlibs.io.util
 
-import korlibs.io.serialization.xml.Xml
-
-fun String.htmlspecialchars() = Xml.Entities.encode(this)
+fun String.htmlspecialchars(): String = buildString(this@htmlspecialchars.length + 16) {
+    for (it in this@htmlspecialchars) {
+        when (it) {
+            '"' -> append("&quot;")
+            '\'' -> append("&apos;")
+            '<' -> append("&lt;")
+            '>' -> append("&gt;")
+            '&' -> append("&amp;")
+            else -> append(it)
+        }
+    }
+}

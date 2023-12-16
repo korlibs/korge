@@ -64,7 +64,7 @@ data class ASEInfo(
                 val bytesInFrame = s.readS32LE()
                 val fs = s.readStream(bytesInFrame - 4)
                 val frameMagic = fs.readU16LE()
-                //println("  bytesInFrame=$bytesInFrame, frameMagic=$frameMagic")
+                //println("  bytesInFrame=$bytesInFrame, frameMagic=$frameMagic, fs=$fs")
                 if (frameMagic != 0xF1FA) error("Invalid ASE sprite file or error parsing : frameMagic=$frameMagic")
                 fs.readU16LE()
                 val frameDuration = fs.readU16LE()

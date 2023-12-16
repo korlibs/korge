@@ -1,13 +1,7 @@
 package korlibs.template
 
-import korlibs.datastructure.*
-import korlibs.io.serialization.yaml.*
-import korlibs.io.util.*
-import korlibs.template.dynamic.KorteDynamic2
-import korlibs.template.dynamic.KorteDynamicContext
-import korlibs.template.dynamic.KorteMapper2
-import korlibs.template.dynamic.KorteObjectMapper2
-import korlibs.template.internal.KorteAsyncCache
+import korlibs.template.dynamic.*
+import korlibs.template.internal.*
 import korlibs.template.util.*
 import kotlin.collections.set
 

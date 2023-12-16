@@ -91,6 +91,9 @@ kotlin.sourceSets.test.configure {
 java.sourceSets.main.configure {
     resources.srcDirs(File(projectDir, "build/srcgen2res"))
 }
+java.sourceSets.test.configure {
+    resources.srcDirs(File(projectDir, "build/testgen2res"))
+}
 
 dependencies {
     //implementation(project(":korge-gradle-plugin-common"))
@@ -112,9 +115,7 @@ dependencies {
 	implementation(localGroovy())
     //compileOnly(gradleKotlinDsl())
 
-    testImplementation("org.jetbrains.kotlin:kotlin-test")
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
-    testImplementation(libs.junit)
+    testImplementation(libs.bundles.kotlin.test)
 
     //implementation(project(":korge-reload-agent"))
 }
@@ -149,9 +150,7 @@ afterEvaluate {
     }
 }
 
-val jvmTest = tasks.register("jvmTest", Task::class) {
-    dependsOn("test")
-}
+tasks { val jvmTest by creating { dependsOn("test") } }
 
 korlibs.NativeTools.groovyConfigurePublishing(project, false)
 korlibs.NativeTools.groovyConfigureSigning(project)
