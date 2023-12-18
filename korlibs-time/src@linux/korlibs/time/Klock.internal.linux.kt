@@ -3,10 +3,16 @@
 package korlibs.time.internal
 
 import korlibs.time.*
-import korlibs.time.darwin.*
-import kotlinx.cinterop.*
-import platform.CoreFoundation.*
-import platform.posix.*
+import kotlinx.cinterop.alloc
+import kotlinx.cinterop.convert
+import kotlinx.cinterop.memScoped
+import kotlinx.cinterop.ptr
+import kotlinx.cinterop.value
+import platform.posix.gettimeofday
+import platform.posix.localtime_r
+import platform.posix.time_tVar
+import platform.posix.timeval
+import platform.posix.tm
 
 internal actual object KlockInternal {
     actual val currentTime: Double get() = memScoped {
@@ -33,13 +39,16 @@ internal actual object KlockInternal {
         if (u > 0) platform.posix.usleep(u.convert())
     }
 
-    actual fun localTimezoneOffsetMinutes(time: DateTime): TimeSpan = autoreleasepool {
-        CFAbsoluteTimeGetCurrent()
-        return getLocalTimezoneOffsetDarwin(CFTimeZoneCopySystem(), time)
-    }
-}
+    // @TODO: kotlin-native bug: https://github.com/JetBrains/kotlin-native/pull/1901
+    //private val microStart = kotlin.system.getTimeMicros()
+    //actual fun currentTimeMillis(): Long = kotlin.system.getTimeMillis()
+    //actual fun microClock(): Double = (kotlin.system.getTimeMicros() - microStart).toDouble()
 
-internal fun getLocalTimezoneOffsetDarwin(tz: CFTimeZoneRef?, time: DateTime): TimeSpan {
-    val secondsSince2001 = time.cfAbsoluteTime()
-    return (CFTimeZoneGetSecondsFromGMT(tz, secondsSince2001.toDouble()) / 60.0).minutes
+    actual fun localTimezoneOffsetMinutes(time: DateTime): TimeSpan = memScoped {
+        val t = alloc<time_tVar>()
+        val tm = alloc<tm>()
+        t.value = (time.unixMillisLong / 1000L).convert()
+        localtime_r(t.ptr, tm.ptr)
+        tm.tm_gmtoff.toInt().seconds
+    }
 }

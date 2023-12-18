@@ -230,3 +230,27 @@ jobs:
       - { name: Run ios simulator tests, run: ./gradlew iosX64Test }
       #- { name: Check compilation of tvOS targets, run: ./gradlew publishTvosArm64PublicationToMavenLocal }
       - { name: Archive Test Results, if: failure(), uses: actions/upload-artifact@v3, with: { name: screenshot-test-results-macos, retention-days: 21, path: "**/build/reports", if-no-files-found: ignore } }
+
+  test-native:
+    needs: changes
+    strategy:
+      matrix:
+        include:
+          - { os: windows-latest, outputKey: testWindows, testTask: mingwX64Test }
+          - { os: ubuntu-latest, outputKey: testLinux, testTask: linuxX64Test, buildTasks: publishLinuxArm64PublicationToMavenLocal }
+          - { os: macos-11, outputKey: testMacos, testTask: macosX64Test, buildTasks: publishMacosArm64PublicationToMavenLocal }
+    #if: ${{ needs.changes.outputs[matrix.outputKey] == 'true' }}
+    timeout-minutes: 240
+    runs-on: ${{ matrix.os }}
+    env:
+      DISABLE_ANDROID: true
+      DISABLE_SANDBOX: true
+    steps:
+      - { uses: actions/checkout@v3 }
+      - { name: Replace gradle wrapper, run: "sed 's/-all/-bin/g' gradle/wrapper/gradle-wrapper.properties > gradle/wrapper/gradle-wrapper.properties.bak; cp gradle/wrapper/gradle-wrapper.properties.bak gradle/wrapper/gradle-wrapper.properties" }
+      - { name: Set up JDK, uses: actions/setup-java@v3, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
+      - { name: Prepare Gradle, uses: gradle/gradle-build-action@ef76a971e2fa3f867b617efd72f2fbd72cf6f8bc } # v2.8.0
+      - { name: Start gradle, run: ./gradlew }
+      - { name: "Run ${{ matrix.testTask }} tests", run: "./gradlew ${{ matrix.testTask }}" }
+      - { name: "Run ${{ matrix.buildTasks }}", if: "${{ matrix.buildTasks }}", run: "./gradlew ${{ matrix.buildTasks }}" }
+      - { name: Archive Test Results, if: failure(), uses: actions/upload-artifact@v3, with: { name: "test-results-${{ matrix.os }}", retention-days: 21, path: "**/build/reports", if-no-files-found: ignore } }

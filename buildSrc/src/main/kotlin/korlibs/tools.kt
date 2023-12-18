@@ -28,6 +28,10 @@ fun MutableMap<String, Any>.applyProjectProperties(
     put("project.author.email", "soywiz@gmail.com")
 }
 
+fun MutableMap<String, Any>.includeKotlinNativeDesktop() {
+    this["include.kotlin.native.desktop"] = true
+}
+
 // Extensions
 operator fun File.get(name: String) = File(this, name)
 
