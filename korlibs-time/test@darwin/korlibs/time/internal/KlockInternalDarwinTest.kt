@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalForeignApi::class)
+
 package korlibs.time.internal
 
 import korlibs.time.*
@@ -7,6 +9,7 @@ import platform.CoreFoundation.*
 import platform.Foundation.*
 import kotlin.test.*
 
+@OptIn(ExperimentalForeignApi::class)
 class KlockInternalDarwinTest {
     @Test
     fun test() {

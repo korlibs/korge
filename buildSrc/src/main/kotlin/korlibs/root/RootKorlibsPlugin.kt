@@ -20,6 +20,7 @@ import org.gradle.api.file.*
 import org.gradle.api.tasks.*
 import org.gradle.api.tasks.testing.*
 import org.jetbrains.dokka.gradle.*
+import org.jetbrains.kotlin.gradle.plugin.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import org.jetbrains.kotlin.gradle.targets.js.npm.*
 import org.jetbrains.kotlin.gradle.targets.js.testing.*
@@ -444,17 +445,29 @@ object RootKorlibsPlugin {
                             //val iosTvosMacos by lazy { createPairSourceSet("iosTvosMacos", darwin) }
                             //val iosMacos by lazy { createPairSourceSet("iosMacos", iosTvosMacos) }
 
-                            //val linux by lazy { createPairSourceSet("linux", posix) }
-                            //val macos by lazy { createPairSourceSet("macos", iosMacos) }
-                            //val mingw by lazy { createPairSourceSet("mingw", native) }
-
                             val native by lazy { createPairSourceSet("native", concurrent, project = project) }
                             val posix by lazy { createPairSourceSet("posix", native, project = project) }
-                            val darwin by lazy { createPairSourceSet("darwin", posix, project = project) }
+                            val apple by lazy { createPairSourceSet("apple", posix, project = project) }
+                            val darwin by lazy { createPairSourceSet("darwin", apple, project = project) }
                             val darwinMobile by lazy { createPairSourceSet("darwinMobile", darwin, project = project) }
                             val iosTvos by lazy { createPairSourceSet("iosTvos", darwinMobile/*, iosTvosMacos*/, project = project) }
                             val tvos by lazy { createPairSourceSet("tvos", iosTvos, project = project) }
                             val ios by lazy { createPairSourceSet("ios", iosTvos/*, iosMacos*/, project = project) }
+
+                            if (project.name == "korlibs-time") {
+                                val macos by lazy { createPairSourceSet("macos", darwin, project = project) }
+                                val linux by lazy { createPairSourceSet("linux", posix, project = project) }
+                                val mingw by lazy { createPairSourceSet("mingw", native, project = project) }
+
+                                for (target in desktopTargets(project)) {
+                                    val native = createPairSourceSet(target.name, project = project)
+                                    when {
+                                        target.isLinux -> native.dependsOn(linux)
+                                        target.isMacos -> native.dependsOn(macos)
+                                        target.isMingw -> native.dependsOn(mingw)
+                                    }
+                                }
+                            }
 
                             for (target in mobileTargets(project)) {
                                 val native = createPairSourceSet(target.name, project = project)
