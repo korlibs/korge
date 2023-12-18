@@ -239,7 +239,7 @@ jobs:
           - { os: windows-latest, outputKey: testWindows, testTask: mingwX64Test }
           - { os: ubuntu-latest, outputKey: testLinux, testTask: linuxX64Test, buildTasks: publishLinuxArm64PublicationToMavenLocal }
           - { os: macos-11, outputKey: testMacos, testTask: macosX64Test, buildTasks: publishMacosArm64PublicationToMavenLocal }
-    if: ${{ needs.changes.outputs[matrix.outputKey] == 'true' }}
+    #if: ${{ needs.changes.outputs[matrix.outputKey] == 'true' }}
     timeout-minutes: 240
     runs-on: ${{ matrix.os }}
     env:
