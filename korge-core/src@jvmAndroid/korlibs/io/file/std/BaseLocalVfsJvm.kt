@@ -94,7 +94,8 @@ internal open class BaseLocalVfsJvm : LocalVfs() {
     //}
 
     @Suppress("BlockingMethodInNonBlockingContext")
-    override suspend fun open(path: String, mode: VfsOpenMode): AsyncStream = open(this, resolveFile(path), mode, path)
+    override suspend fun open(path: String, mode: VfsOpenMode): AsyncStream =
+        open(this, resolveFile(path), mode, path)
 
     override suspend fun setSize(path: String, size: Long): Unit = executeIo {
         val file = resolveFile(path)
@@ -249,7 +250,7 @@ internal open class BaseLocalVfsJvm : LocalVfs() {
                     }
 
                     override suspend fun write(position: Long, buffer: ByteArray, offset: Int, len: Int) = jvmExecuteIo {
-                        raf.seek(position)
+                        if (!mode.append) raf.seek(position)
                         raf.write(buffer, offset, len)
                     }
 
@@ -261,7 +262,7 @@ internal open class BaseLocalVfsJvm : LocalVfs() {
                     override suspend fun close() = raf.close()
 
                     override fun toString(): String = "$vfs($path)"
-                }.toAsyncStream()
+                }.toAsyncStream(raf.filePointer)
             } catch (e: java.nio.file.NoSuchFileException) {
                 throw FileNotFoundException(e.message)
             }
