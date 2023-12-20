@@ -46,7 +46,7 @@ internal open class AsynchronousFileChannelVfs : BaseLocalVfsJvm() {
             override suspend fun close() = raf.close()
 
             override fun toString(): String = "$that($path)"
-        }.toAsyncStream()
+        }.toAsyncStream(if (mode.append) raf.sizeSuspend() else 0L)
     }
 
     suspend fun openAsynchronousFileChannel(path: String, mode: VfsOpenMode): AsynchronousFileChannel {
@@ -54,7 +54,7 @@ internal open class AsynchronousFileChannelVfs : BaseLocalVfsJvm() {
             val options: List<OpenOption> = buildList {
                 add(StandardOpenOption.READ)
                 if (mode.write) add(StandardOpenOption.WRITE)
-                if (mode == VfsOpenMode.APPEND) add(StandardOpenOption.APPEND)
+                //if (mode == VfsOpenMode.APPEND) add(StandardOpenOption.APPEND) // Unsupported
                 if (mode.createIfNotExists) add(StandardOpenOption.CREATE)
                 if (mode == VfsOpenMode.CREATE_NEW) add(StandardOpenOption.CREATE_NEW)
                 if (mode.truncate) add(StandardOpenOption.TRUNCATE_EXISTING)
