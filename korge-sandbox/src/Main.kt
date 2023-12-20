@@ -77,10 +77,10 @@ suspend fun main() = Korge(
     val font = resourcesVfs["m5x7_16_outline.fnt"].readBitmapFont()
     text("Text", font = font) {
         xy(100, 150)
-        smoothing = false
+        //smoothing = false
     }
 
-    textBlock(RichTextData("HELLO WORLD", font = font)).xy(200, 250)
+    textBlock(RichTextData("HELLO WORLD", font = font)).xy(200, 250).also { it.smoothing = false }
 
     return@Korge
 

@@ -59,6 +59,12 @@ class TextBlock(
         set(value) {
             if (plainText != value) text = RichTextData(value, style = text.defaultStyle)
         }
+    @ViewProperty
+    var smoothing: Boolean = true
+        set(value) {
+            if (field != value) { field = value; invalidProps() }
+        }
+
     private var image: Image? = null
     private var allBitmap: Boolean? = null
         get() {
@@ -97,13 +103,14 @@ class TextBlock(
         }
         image?.bitmap = bmp.slice()
         image?.program = (text.defaultStyle.font as? BitmapFont?)?.agProgram
+        image?.smoothing = smoothing
         bmp.context2d {
             drawRichText(
                 text,
                 bounds = Rectangle.fromBounds(padding.left, padding.top, width - padding.right, height - padding.bottom),
                 includePartialLines = includePartialLines, wordWrap = wordWrap, ellipsis = ellipsis, align = align,
                 fill = fill, stroke = stroke, includeFirstLineAlways = true,
-                textRangeStart = textRangeStart, textRangeEnd = textRangeEnd
+                textRangeStart = textRangeStart, textRangeEnd = textRangeEnd,
             )
         }
     }
@@ -120,7 +127,7 @@ class TextBlock(
             image = null
             //if (textRange != ALL_TEXT_RANGE) println("textRange=$textRange")
             renderCtx2d(ctx) {
-                it.drawText(placements!!, textRangeStart = textRangeStart, textRangeEnd = textRangeEnd)
+                it.drawText(placements!!, textRangeStart = textRangeStart, textRangeEnd = textRangeEnd, filtering = smoothing)
             }
         } else {
             ensureTexture()

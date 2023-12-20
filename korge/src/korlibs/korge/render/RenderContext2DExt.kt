@@ -176,9 +176,10 @@ fun RenderContext2D.drawText(
     fill: Paint? = null,
     stroke: Stroke? = null,
     align: TextAlignment = TextAlignment.TOP_LEFT,
-    includeFirstLineAlways: Boolean = true
+    includeFirstLineAlways: Boolean = true,
+    filtering: Boolean = this.filtering,
 ) {
-    drawText(text.place(Rectangle(pos, size), wordWrap, includePartialLines, ellipsis, fill, stroke, align, includeFirstLineAlways = includeFirstLineAlways))
+    drawText(text.place(Rectangle(pos, size), wordWrap, includePartialLines, ellipsis, fill, stroke, align, includeFirstLineAlways = includeFirstLineAlways), filtering = filtering)
 }
 
 @KorgeExperimental
@@ -186,13 +187,15 @@ fun RenderContext2D.drawText(
     placements: RichTextDataPlacements,
     textRangeStart: Int = 0,
     textRangeEnd: Int = Int.MAX_VALUE,
+    filtering: Boolean = this.filtering,
 ) {
     var n = 0
     placements.fastForEach {
         drawText(
             it.text, it.font.lazyBitmap, it.size, it.pos, (it.fillStyle as? RGBA?) ?: Colors.WHITE, baseline = true,
             textRangeStart = textRangeStart - n,
-            textRangeEnd = textRangeEnd - n
+            textRangeEnd = textRangeEnd - n,
+            filtering = filtering
         )
         n += it.text.length
     }
@@ -208,6 +211,7 @@ fun RenderContext2D.drawText(
     baseline: Boolean = false,
     textRangeStart: Int = 0,
     textRangeEnd: Int = Int.MAX_VALUE,
+    filtering: Boolean = this.filtering,
     //stroke: Stroke?,
 ) {
     val scale = font.getTextScale(textSize)
@@ -227,7 +231,7 @@ fun RenderContext2D.drawText(
                 ),
                 (color * multiplyColor),
                 //multiplyColor,
-                true, glyph.texture, font.agProgram,
+                filtering, glyph.texture, font.agProgram,
             )
         }
         sx += glyph.xadvance * scale
