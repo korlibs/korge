@@ -382,7 +382,7 @@ fun CreateWStringTextRenderer(
             } else {
                 val g = reader.keep { getGlyphMetrics(reader, c) }
                 transform = Matrix.IDENTITY
-                //println("READER: c='${c.toChar()}', pos=${reader.position}")
+                //println("READER: c='${c.toChar()}', pos=${reader.position}, xadvance=${g.xadvance}")
                 handler(this, reader, c, g, (g.xadvance + getKerning(c, c1)))
             }
             // No explicit movement, skip 1

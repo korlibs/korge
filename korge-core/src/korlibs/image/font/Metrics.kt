@@ -90,7 +90,7 @@ data class FontMetrics(
     fun cloneWithNewSize(size: Double): FontMetrics = copy().copyFromNewSize(this, size)
 }
 
-data class GlyphMetrics(
+data class GlyphMetrics constructor(
     var size: Double = 0.0,
     var existing: Boolean = false,
     var codePoint: Int = 0,

@@ -331,7 +331,7 @@ open class Text(
                         it.scaleXY = Scale(entry.sx, entry.sy)
                         it.rotation = entry.rot
                         it.visible = n in textRangeStart until textRangeEnd
-                        //println("ENTRY: sxy=${entry.sx},${entry.sy}, dxy=$dx,$dy")
+                        //println("ENTRY: pos=${it.pos}, entrypos=${entry.x},${entry.y}, sxy=${entry.sx},${entry.sy}, dxy=$dx,$dy")
                     }
 
                     //setContainerPosition(0.0, 0.0, font.base)

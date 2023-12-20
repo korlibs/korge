@@ -118,7 +118,7 @@ interface BitmapFont : Font {
             name: String = "BitmapFont",
             distanceField: String? = null,
         ): BitmapFont = BitmapFontImpl(
-            fontSize.toDouble().absoluteValue,
+            fontSize.toDouble(),
             //fontSize.toDouble(),
             lineHeight.toDouble(),
             base.toDouble(),
@@ -338,7 +338,7 @@ private suspend fun readBitmapFontTxt(
 		}
 		when {
 			line.startsWith("info") -> {
-				fontSize = map["size"]?.toDouble() ?: 16.0
+				fontSize = (map["size"]?.toDouble() ?: 16.0).absoluteValue
 			}
 			line.startsWith("page") -> {
 				val id = map["id"]?.toInt() ?: 0
@@ -378,7 +378,7 @@ private suspend fun readBitmapFontTxt(
         fontSize = fontSize,
         lineHeight = lineHeight,
         base = base ?: lineHeight,
-        glyphs = glyphs.map { it.id to it }.toMap().toIntMap(),
+        glyphs = glyphs.associateBy { it.id }.toIntMap(),
         kernings = kernings.associateByInt { _, it ->
             BitmapFont.Kerning.buildKey(it.first, it.second)
         }
