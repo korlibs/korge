@@ -118,7 +118,8 @@ interface BitmapFont : Font {
             name: String = "BitmapFont",
             distanceField: String? = null,
         ): BitmapFont = BitmapFontImpl(
-            fontSize.toDouble(),
+            fontSize.toDouble().absoluteValue,
+            //fontSize.toDouble(),
             lineHeight.toDouble(),
             base.toDouble(),
             glyphs,

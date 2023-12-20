@@ -33,4 +33,16 @@ class RichTextDataPlacementTest {
             logger.debug { "placement: $placement" }
         }
     }
+
+    @Test
+    fun testNegativeFontSize() = suspendTest {
+        val font = resourcesVfs["font2/m5x7_16_outline.fnt"].readBitmapFont()
+        val placements = RichTextData("Text", font = font).place(Rectangle(0, 0, 1000, 1000))
+        assertEquals(16.0, font.fontSize)
+        assertEquals(1.0, font.getTextScale(16.0))
+        val firstPlacement = placements.placements.first()
+        assertEquals(Point(0, 11), firstPlacement.pos)
+        assertEquals(16.0, firstPlacement.size)
+        assertEquals("Text", firstPlacement.text)
+    }
 }

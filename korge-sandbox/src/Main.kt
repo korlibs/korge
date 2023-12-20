@@ -74,6 +74,16 @@ suspend fun main() = Korge(
     debug = false,
     //forceRenderEveryFrame = false
 ) {
+    val font = resourcesVfs["m5x7_16_outline.fnt"].readBitmapFont()
+    text("Text", font = font) {
+        xy(100, 150)
+        smoothing = false
+    }
+
+    textBlock(RichTextData("HELLO WORLD", font = font)).xy(200, 250)
+
+    return@Korge
+
     //sceneContainer().changeTo({MainSprites10k()}); return@start
     //sceneContainer().changeTo({MainGraphicsText()}); return@start
     //sceneContainer().changeTo({MainUI()}); return@start

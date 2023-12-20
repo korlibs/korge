@@ -1,6 +1,8 @@
 package samples
 
 import korlibs.image.color.*
+import korlibs.image.font.*
+import korlibs.io.file.std.*
 import korlibs.korge.scene.*
 import korlibs.korge.ui.*
 import korlibs.korge.view.*
@@ -9,6 +11,7 @@ import korlibs.math.interpolation.*
 
 class MainUIStacks : Scene() {
     override suspend fun SContainer.sceneMain() {
+        /*
         lateinit var hs: UIHorizontalStack
         lateinit var hs2: UIHorizontalStack
         lateinit var hs3: UIHorizontalStack
@@ -59,5 +62,6 @@ class MainUIStacks : Scene() {
                 changed { grid.cols = it.toInt() }
             }
         }
+        */
     }
 }
