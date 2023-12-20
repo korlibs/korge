@@ -22,18 +22,6 @@ class LocalVfsJvmAndroidTest {
     }
 
     suspend fun _testAppendVfs(vfs: Vfs, name: String) {
-        val file = vfs[StandardPaths.temp]["file.append.$name.txt"]
-        file.delete()
-        try {
-            file.openUse(VfsOpenMode.APPEND) {
-                writeString("hello")
-            }
-            file.openUse(VfsOpenMode.APPEND) {
-                writeString(" world")
-            }
-            assertEquals("hello world", file.readString())
-        } finally {
-            file.delete()
-        }
+        AppendBaseTest._testAppendVfs(vfs[StandardPaths.temp]["file.append.$name.txt"])
     }
 }
