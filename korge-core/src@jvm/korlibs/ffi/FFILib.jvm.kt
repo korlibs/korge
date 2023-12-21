@@ -135,11 +135,13 @@ class FFILibSymJVM(val lib: FFILib) : FFILibSym {
         }
     }
 
-    fun <T : kotlin.Function<*>> createFunction(funcName: String, type: KType, config: FFIFuncConfig): T {
-        val func = runCatching { nlib!!.getFunction(funcName) ?: error("Can't find function ${funcName}") }
+    fun <T : kotlin.Function<*>> createFunction(funcName: String, type: KType, config: FFIFuncConfig, required: Boolean): T {
+        val func = runCatching { nlib!!.getFunction(funcName) ?: error("Can't find function $funcName") }
         func.exceptionOrNull()?.let {
-            println("WARNING[${it::class}]: ${it.message} getting $funcName")
-            it.printStackTrace()
+            if (required) {
+                println("WARNING[${it::class}]: ${it.message} getting $funcName")
+                it.printStackTrace()
+            }
         }
         return createJNAFunctionToPlainFunc<T>(func.getOrNull(), type, config, funcName)
     }
@@ -147,7 +149,7 @@ class FFILibSymJVM(val lib: FFILib) : FFILibSym {
     val functions: Map<String, kotlin.Function<*>> by lazy {
         lib.functions.associate { nfunc ->
             //val lib = NativeLibrary.getInstance("")
-            nfunc.bname to createFunction(nfunc.name, nfunc.type, nfunc.config)
+            nfunc.bname to createFunction(nfunc.name, nfunc.type, nfunc.config, nfunc.required)
         }
     }
 
