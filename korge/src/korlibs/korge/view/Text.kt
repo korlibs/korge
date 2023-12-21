@@ -68,7 +68,6 @@ open class Text(
     override var text: String = text; set(value) { if (field != value) {
         field = value;
         updateLineCount()
-        version++
         invalidate()
         invalidateRender()
     } }
@@ -78,39 +77,30 @@ open class Text(
     init {
         updateLineCount()
     }
-    var fillStyle: Paint? = fill ?: color; set(value) { if (field != value) { field = value; version++ } }
-    var stroke: Stroke? = stroke; set(value) { if (field != value) { field = value; version++ } }
+    var fillStyle: Paint? = fill ?: color; set(value) { if (field != value) { field = value; invalidate() } }
+    var stroke: Stroke? = stroke; set(value) { if (field != value) { field = value; invalidate() } }
 
     var color: RGBA
         get() = (fillStyle as? RGBA?) ?: Colors.WHITE
         set(value) { fillStyle = value }
 
-    var font: Resourceable<out Font> = font; set(value) {
-        if (field != value) {
-            field = value
-            version++
-            invalidate()
-        }
-        //printStackTrace("setfont=$field")
-    }
+    var font: Resourceable<out Font> = font; set(value) {  if (field != value) { field = value; invalidate() } }
 
     @ViewProperty(min = 1.0, max = 300.0)
-    var textSize: Double = textSize; set(value) {
-        if (field != value) {
-            field = value
-            version++
-            invalidate()
-        }
-    }
+    var textSize: Double = textSize; set(value) { if (field != value) { field = value; invalidate() } }
     var fontSize: Double by ::textSize
 
-    var renderer: TextRenderer<String> = renderer; set(value) {
-        if (field != value) {
-            field = value
-            version++
-            invalidate()
-        }
+    override fun invalidate() {
+        version++
+        super.invalidate()
     }
+
+    @ViewProperty(min = 0.0, max = 10.0, clampMin = true)
+    var textRangeStart: Int = 0; set(value) { if (field != value) { field = value; invalidate() } }
+    @ViewProperty(min = 0.0, max = 10.0, clampMin = true)
+    var textRangeEnd: Int = Int.MAX_VALUE; set(value) { if (field != value) { field = value; invalidate() } }
+
+    var renderer: TextRenderer<String> = renderer; set(value) { if (field != value) { field = value; invalidate() } }
 
     //private var cachedRendererVersionInvalidated: Int = -1
     //init {
@@ -124,14 +114,7 @@ open class Text(
     //    }
     //}
 
-    var alignment: TextAlignment = alignment
-        set(value) {
-            if (field == value) return
-            field = value
-            //println("Text.alignment=$field")
-            version++
-            invalidate()
-        }
+    var alignment: TextAlignment = alignment ; set(value) { if (field != value) { field = value; invalidate() } }
     @ViewProperty
     @ViewPropertyProvider(provider = HorizontalAlignProvider::class)
     var horizontalAlign: HorizontalAlign
@@ -196,7 +179,6 @@ open class Text(
         this._textBounds = rect
         autoSize = false
         boundsVersion++
-        version++
         invalidate()
     }
 
@@ -204,7 +186,6 @@ open class Text(
         if (autoSize) return
         autoSize = true
         boundsVersion++
-        version++
         invalidate()
     }
 
@@ -349,6 +330,8 @@ open class Text(
                         it.pos = Point(entry.x + dx, entry.y + dy)
                         it.scaleXY = Scale(entry.sx, entry.sy)
                         it.rotation = entry.rot
+                        it.visible = n in textRangeStart until textRangeEnd
+                        //println("ENTRY: pos=${it.pos}, entrypos=${entry.x},${entry.y}, sxy=${entry.sx},${entry.sy}, dxy=$dx,$dy")
                     }
 
                     //setContainerPosition(0.0, 0.0, font.base)
@@ -402,6 +385,8 @@ open class Text(
                             //outMetrics = this@Text._textMetricsResult ?: TextMetricsResult(),
                             fillStyle = this@Text.fillStyle,
                             stroke = this@Text.stroke,
+                            textRangeStart = textRangeStart,
+                            textRangeEnd = textRangeEnd,
                         )
                     }
                     // Optimize since we already have the metrics to avoid recomputing them later
