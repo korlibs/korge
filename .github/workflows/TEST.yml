@@ -105,7 +105,7 @@ jobs:
   test-jvm:
     needs: changes
     if: ${{ needs.changes.outputs.testJvm == 'true' }}
-    timeout-minutes: 240
+    timeout-minutes: 25
     runs-on: ubuntu-latest
     env:
       DISABLE_JAVASCRIPT_TEST: true
@@ -133,7 +133,7 @@ jobs:
   test-jvm-macos:
     needs: changes
     if: ${{ needs.changes.outputs.testMacos == 'true' }}
-    timeout-minutes: 240
+    timeout-minutes: 25
     runs-on: macos-11
     env:
       DISABLE_JAVASCRIPT_TEST: true
@@ -151,7 +151,7 @@ jobs:
   test-jvm-windows:
     needs: changes
     if: ${{ needs.changes.outputs.testWindows == 'true' }}
-    timeout-minutes: 240
+    timeout-minutes: 25
     runs-on: windows-latest
     env:
       DISABLE_JAVASCRIPT_TEST: true
@@ -177,7 +177,7 @@ jobs:
   test-js-wasm:
     needs: changes
     if: ${{ needs.changes.outputs.testJs == 'true' || needs.changes.outputs.testWasm == 'true' }}
-    timeout-minutes: 240
+    timeout-minutes: 25
     runs-on: ubuntu-latest
     env:
       DISABLE_KOTLIN_NATIVE: true
@@ -196,7 +196,7 @@ jobs:
   test-android:
     needs: changes
     if: ${{ needs.changes.outputs.testAndroid == 'true' }}
-    timeout-minutes: 240
+    timeout-minutes: 25
     #runs-on: macos-11
     runs-on: ubuntu-latest
     env:
@@ -216,7 +216,7 @@ jobs:
   test-ios:
     needs: changes
     if: ${{ needs.changes.outputs.testMacos == 'true' }}
-    timeout-minutes: 240
+    timeout-minutes: 25
     runs-on: macos-11
     env:
       DISABLE_ANDROID: true
@@ -240,7 +240,7 @@ jobs:
           - { os: ubuntu-latest, outputKey: testLinux, testTask: linuxX64Test, buildTasks: publishLinuxArm64PublicationToMavenLocal }
           - { os: macos-11, outputKey: testMacos, testTask: macosX64Test, buildTasks: publishMacosArm64PublicationToMavenLocal }
     #if: ${{ needs.changes.outputs[matrix.outputKey] == 'true' }}
-    timeout-minutes: 240
+    timeout-minutes: 25
     runs-on: ${{ matrix.os }}
     env:
       DISABLE_ANDROID: true
