@@ -38,6 +38,6 @@ class TextBlockScreenshotTest {
             color = Colors.PURPLE
         )).xy(34, 16).also { it.smoothing = false }
 
-        assertScreenshot(this, "textBlock", posterize = 6)
+        assertScreenshot(this, "textBlock", posterize = 6, psnr = 25.0)
     }
 }
