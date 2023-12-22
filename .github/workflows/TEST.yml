@@ -20,8 +20,9 @@ env:
   ENABLE_BENCHMARKS: false
 
 jobs:
-  test-matrix:
+  test:
     strategy:
+      fail-fast: false # Once working, comment this
       matrix:
         include:
           - { outputKey: testWindows, os: windows-latest, testTask: mingwX64Test, enableKotlinNative: true }
@@ -31,7 +32,7 @@ jobs:
           - { outputKey: testJs, os: ubuntu-latest, testTask: "wasmJsBrowserTest", buildTasks: "jsNodeTest jsBrowserTest" }
           - { outputKey: testAndroid, os: ubuntu-latest, enableAndroid: true }
           - { outputKey: testJvmMacos, os: macos-11, testTask: jvmTest }
-          - { outputKey: testJvmLinux, os: ubuntu-latest, testTask: jvmTest, precompileTask: compileTestKotlinJvm, e2e: true }
+          - { outputKey: testJvmLinux, os: ubuntu-latest, testTask: jvmTest, precompileTask: compileTestKotlinJvm, enableSandbox: true, e2e: true }
           - { outputKey: testJvmWindows, os: windows-latest, testTask: jvmTest, precompileTask: compileTestKotlinJvm }
     #if: ${{ needs.changes.outputs[matrix.outputKey] == 'true' }}
     timeout-minutes: 25
@@ -39,7 +40,7 @@ jobs:
     env:
       DISABLE_KOTLIN_NATIVE: ${{ !matrix.enableKotlinNative }}
       DISABLE_ANDROID: ${{ !matrix.enableAndroid }}
-      DISABLE_SANDBOX: true
+      DISABLE_SANDBOX: ${{ !matrix.enableSandbox }}
       #GRADLE_OPTS: -Dorg.gradle.daemon=false -Dkotlin.compiler.execution.strategy=in-process -Dorg.gradle.workers.max=3
     steps:
       - { uses: actions/checkout@v3 }
