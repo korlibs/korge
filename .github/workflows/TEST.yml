@@ -32,7 +32,7 @@ jobs:
           - { outputKey: testJs, os: ubuntu-latest, testTask: "wasmJsBrowserTest", buildTasks: "jsNodeTest jsBrowserTest" }
           - { outputKey: testAndroid, os: ubuntu-latest, enableAndroid: true }
           - { outputKey: testJvmMacos, os: macos-11, testTask: jvmTest }
-          - { outputKey: testJvmLinux, os: ubuntu-latest, testTask: jvmTest, precompileTask: compileTestKotlinJvm, enableSandbox: true, e2e: true }
+          - { outputKey: testJvmLinux, os: ubuntu-latest, testTask: jvmTest, precompileTask: compileTestKotlinJvm, enableKotlinNative: true, enableSandbox: true, e2e: true }
           - { outputKey: testJvmWindows, os: windows-latest, testTask: jvmTest, precompileTask: compileTestKotlinJvm }
     #if: ${{ needs.changes.outputs[matrix.outputKey] == 'true' }}
     timeout-minutes: 25
