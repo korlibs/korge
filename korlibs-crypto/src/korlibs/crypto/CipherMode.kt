@@ -1,6 +1,6 @@
 package korlibs.crypto
 
-import korlibs.memory.arraycopy
+import korlibs.memory.internalArrayCopy
 import kotlin.experimental.xor
 
 /**
@@ -58,7 +58,7 @@ private object CipherModeCBC : CipherModeIV("CBC") {
         for (n in pData.indices step cipher.blockSize) {
             arrayxor(pData, n, ivb)
             cipher.encrypt(pData, n, cipher.blockSize)
-            arraycopy(pData, n, ivb, 0, cipher.blockSize)
+            internalArrayCopy(pData, n, ivb, 0, cipher.blockSize)
         }
     }
 
@@ -67,10 +67,10 @@ private object CipherModeCBC : CipherModeIV("CBC") {
         val tempBytes = ByteArray(blockSize)
 
         for (n in pData.indices step blockSize) {
-            arraycopy(pData, n, tempBytes, 0, blockSize)
+            internalArrayCopy(pData, n, tempBytes, 0, blockSize)
             cipher.decrypt(pData, n, blockSize)
             arrayxor(pData, n, ivb)
-            arraycopy(tempBytes, 0, ivb, 0, blockSize)
+            internalArrayCopy(tempBytes, 0, ivb, 0, blockSize)
         }
     }
 }
@@ -81,10 +81,10 @@ private object CipherModePCBC : CipherModeIV("PCBC") {
         val plaintext = ByteArray(blockSize)
 
         for (n in pData.indices step blockSize) {
-            arraycopy(pData, n, plaintext, 0, blockSize)
+            internalArrayCopy(pData, n, plaintext, 0, blockSize)
             arrayxor(pData, n, ivb)
             cipher.encrypt(pData, n, cipher.blockSize)
-            arraycopy(pData, n, ivb, 0, blockSize)
+            internalArrayCopy(pData, n, ivb, 0, blockSize)
             arrayxor(ivb, 0, plaintext)
         }
     }
@@ -94,10 +94,10 @@ private object CipherModePCBC : CipherModeIV("PCBC") {
         val cipherText = ByteArray(cipher.blockSize)
 
         for (n in pData.indices step cipher.blockSize) {
-            arraycopy(pData, n, cipherText, 0, blockSize)
+            internalArrayCopy(pData, n, cipherText, 0, blockSize)
             cipher.decrypt(pData, n, cipher.blockSize)
             arrayxor(pData, n, ivb)
-            arraycopy(pData, n, ivb, 0, blockSize)
+            internalArrayCopy(pData, n, ivb, 0, blockSize)
             arrayxor(ivb, 0, cipherText)
         }
     }
@@ -109,10 +109,10 @@ private object CipherModeCFB : CipherModeIV("CFB") {
         val cipherText = ByteArray(blockSize)
 
         cipher.encrypt(ivb)
-        arraycopy(ivb, 0, cipherText, 0, blockSize)
+        internalArrayCopy(ivb, 0, cipherText, 0, blockSize)
         for (n in pData.indices step blockSize) {
             arrayxor(cipherText, 0, blockSize, pData, n)
-            arraycopy(cipherText, 0, pData, n, blockSize)
+            internalArrayCopy(cipherText, 0, pData, n, blockSize)
 
             if (n + blockSize < pData.size) {
                 cipher.encrypt(cipherText)
@@ -126,13 +126,13 @@ private object CipherModeCFB : CipherModeIV("CFB") {
         val cipherText = ByteArray(blockSize)
 
         cipher.encrypt(ivb)
-        arraycopy(ivb, 0, cipherText, 0, blockSize)
+        internalArrayCopy(ivb, 0, cipherText, 0, blockSize)
         for (n in pData.indices step blockSize) {
-            arraycopy(cipherText, 0, plainText, 0, blockSize)
+            internalArrayCopy(cipherText, 0, plainText, 0, blockSize)
             arrayxor(plainText, 0, blockSize, pData, n)
 
-            arraycopy(pData, n, cipherText, 0, blockSize)
-            arraycopy(plainText, 0, pData, n, blockSize)
+            internalArrayCopy(pData, n, cipherText, 0, blockSize)
+            internalArrayCopy(plainText, 0, pData, n, blockSize)
             if (n + blockSize < pData.size) {
                 cipher.encrypt(cipherText)
             }
@@ -146,9 +146,9 @@ private object CipherModeOFB : CipherModeIVDE("OFB") {
         val cipherText = ByteArray(blockSize)
         cipher.encrypt(ivb)
         for (n in pData.indices step blockSize) {
-            arraycopy(pData, n, cipherText, 0, blockSize)
+            internalArrayCopy(pData, n, cipherText, 0, blockSize)
             arrayxor(cipherText, 0, ivb)
-            arraycopy(cipherText, 0, pData, n, blockSize)
+            internalArrayCopy(cipherText, 0, pData, n, blockSize)
             if (n + blockSize < pData.size) {
                 cipher.encrypt(ivb)
             }
@@ -162,7 +162,7 @@ private object CipherModeCTR : CipherModeIVDE("CTR") {
         val blockSize = cipher.blockSize
         val temp = ByteArray(ivb.size)
         for (n in pData.indices step blockSize) {
-            arraycopy(ivb, 0, temp, 0, temp.size)
+            internalArrayCopy(ivb, 0, temp, 0, temp.size)
             cipher.encrypt(temp, 0, blockSize)
             arrayxor(pData, n, temp)
             for (j in blockSize - 1 downTo 0) {
@@ -219,5 +219,5 @@ private fun getIV(srcIV: ByteArray?, blockSize: Int): ByteArray {
     if (srcIV == null) TODO("IV not provided")
     if (srcIV.size < blockSize) throw IllegalArgumentException("Wrong IV length: must be $blockSize bytes long")
     return srcIV.copyOf(blockSize)
-    //return ByteArray(blockSize).also { dstIV -> arraycopy(srcIV, 0, dstIV, 0, kotlin.math.min(srcIV.size, dstIV.size)) }
+    //return ByteArray(blockSize).also { dstIV -> internalArrayCopy(srcIV, 0, dstIV, 0, kotlin.math.min(srcIV.size, dstIV.size)) }
 }

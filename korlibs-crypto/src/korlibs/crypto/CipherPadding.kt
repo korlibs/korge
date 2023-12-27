@@ -1,6 +1,6 @@
 package korlibs.crypto
 
-import korlibs.memory.arraycopy
+import korlibs.memory.internalArrayCopy
 import kotlin.random.Random
 
 typealias Padding = CipherPadding
@@ -24,7 +24,7 @@ abstract class CipherPadding {
         //padding(data, blockSize, this)
         val paddingSize = paddingSize(data.size, blockSize)
         val result = ByteArray(data.size + paddingSize)
-        arraycopy(data, 0, result, 0, data.size)
+        internalArrayCopy(data, 0, result, 0, data.size)
         addInternal(result, data.size, paddingSize)
         return result
     }
@@ -63,7 +63,7 @@ private object CipherPaddingISO10126 : CipherPadding() {
     override fun addInternal(result: ByteArray, dataSize: Int, paddingSize: Int) {
         val randomBytes = Random.nextBytes(paddingSize)
         randomBytes[paddingSize - 1] = paddingSize.toByte()
-        arraycopy(randomBytes, 0, result, dataSize, randomBytes.size)
+        internalArrayCopy(randomBytes, 0, result, dataSize, randomBytes.size)
     }
 }
 private object CipherPaddingZero : CipherPadding() {

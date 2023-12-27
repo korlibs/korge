@@ -1,6 +1,6 @@
 package korlibs.crypto
 
-import korlibs.memory.arraycopy
+import korlibs.memory.internalArrayCopy
 import kotlin.random.Random
 
 expect fun fillRandomBytes(array: ByteArray)
@@ -31,7 +31,7 @@ object SecureRandom : Random() {
     override fun nextBytes(array: ByteArray, fromIndex: Int, toIndex: Int): ByteArray {
         val random = ByteArray(toIndex - fromIndex)
         fillRandomBytes(random)
-        arraycopy(random, 0, array, fromIndex, random.size)
+        internalArrayCopy(random, 0, array, fromIndex, random.size)
         return array
     }
 

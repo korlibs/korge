@@ -1,6 +1,6 @@
 package korlibs.crypto
 
-import korlibs.memory.arraycopy
+import korlibs.memory.internalArrayCopy
 import kotlin.rotateLeft
 
 class SHA1 : SHA(chunkSize = 64, digestSize = 20, name = "SHA1") {
@@ -22,7 +22,7 @@ class SHA1 : SHA(chunkSize = 64, digestSize = 20, name = "SHA1") {
     private val w = IntArray(80)
     private val h = IntArray(5)
 
-    override fun coreReset() { arraycopy(H, 0, h, 0, 5) }
+    override fun coreReset() { internalArrayCopy(H, 0, h, 0, 5) }
 
     init {
         coreReset()

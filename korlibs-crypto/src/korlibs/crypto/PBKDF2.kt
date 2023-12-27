@@ -1,6 +1,6 @@
 package korlibs.crypto
 
-import korlibs.memory.arraycopy
+import korlibs.memory.internalArrayCopy
 
 class PBKDF2 {
     companion object {
@@ -33,8 +33,8 @@ class PBKDF2 {
             gen@ for (i in 1 .. blockSize) {
                 t.fill(0)
                 i.toByteArray(i32be)
-                arraycopy(salt, 0, uv, 0, salt.size)
-                arraycopy(i32be, 0, uv, salt.size, i32be.size)
+                internalArrayCopy(salt, 0, uv, 0, salt.size)
+                internalArrayCopy(i32be, 0, uv, salt.size, i32be.size)
                 var u = uv
                 for (c in 1 .. iterationCount) {
                     u = HMAC.hmac(password, u, hasher).bytes

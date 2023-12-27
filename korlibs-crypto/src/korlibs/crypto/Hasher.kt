@@ -58,7 +58,7 @@ abstract class Hasher(val chunkSize: Int, val digestSize: Int, val name: String)
         while (left > 0) {
             val remainingInChunk = chunkSize - writtenInChunk
             val toRead = min(remainingInChunk, left)
-            arraycopy(data, curr, chunk, writtenInChunk, toRead)
+            internalArrayCopy(data, curr, chunk, writtenInChunk, toRead)
             left -= toRead
             curr += toRead
             writtenInChunk += toRead
@@ -76,7 +76,7 @@ abstract class Hasher(val chunkSize: Int, val digestSize: Int, val name: String)
         var padPos = 0
         while (padPos < pad.size) {
             val padSize = chunkSize - writtenInChunk
-            arraycopy(pad, padPos, chunk, writtenInChunk, padSize)
+            internalArrayCopy(pad, padPos, chunk, writtenInChunk, padSize)
             coreUpdate(chunk)
             writtenInChunk = 0
             padPos += padSize
