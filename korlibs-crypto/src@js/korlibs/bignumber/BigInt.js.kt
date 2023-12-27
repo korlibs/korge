@@ -2,10 +2,10 @@ package korlibs.bignumber
 
 internal actual val InternalCryptoBigIntNativeFactory: BigIntConstructor = object : BigIntConstructor {
     override fun create(value: Int): BigInt =
-        if (supportNativeJsBigInt) InternalCryptoJsBigInt.create(value) else CommonBigInt.create(value)
+        if (supportNativeJsBigInt) InternalCryptoJsBigInt.create(value) else InternalCryptoCommonBigInt.create(value)
 
     override fun create(value: String, radix: Int): BigInt =
-        if (supportNativeJsBigInt) InternalCryptoJsBigInt.create(value, radix) else CommonBigInt.create(value, radix)
+        if (supportNativeJsBigInt) InternalCryptoJsBigInt.create(value, radix) else InternalCryptoCommonBigInt.create(value, radix)
 
 }
 

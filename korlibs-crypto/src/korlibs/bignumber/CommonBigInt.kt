@@ -6,7 +6,7 @@ import kotlin.time.*
 /**
  * @TODO: Use JVM BigInteger and JS BigInt
  */
-internal class CommonBigInt private constructor(val data: UInt16ArrayZeroPad, override val signum: Int, var dummy: Boolean) : BigInt, BigIntConstructor by CommonBigInt {
+internal class InternalCryptoCommonBigInt private constructor(val data: UInt16ArrayZeroPad, override val signum: Int, var dummy: Boolean) : BigInt, BigIntConstructor by InternalCryptoCommonBigInt {
     val isOne get() = isSmall && this == ONE
 	val isSmall get() = data.size <= 1
 	val maxBits get() = data.size * CHUNK_BITS
@@ -15,14 +15,14 @@ internal class CommonBigInt private constructor(val data: UInt16ArrayZeroPad, ov
 	companion object : BigIntCompanion {
         internal const val CHUNK_BITS = Short.SIZE_BITS // UInt16ArrayZeroPad
 
-		val ZERO = CommonBigInt(uint16ArrayZeroPadOf(), 0, true)
-		val MINUS_ONE = CommonBigInt(uint16ArrayZeroPadOf(1), -1, true)
-		val ONE = CommonBigInt(uint16ArrayZeroPadOf(1), 1, true)
-		val TWO = CommonBigInt(uint16ArrayZeroPadOf(2), 1, true)
-		val TEN = CommonBigInt(uint16ArrayZeroPadOf(10), 1, true)
-		val SMALL = CommonBigInt(uint16ArrayZeroPadOf(UINT16_MASK), 1, true)
+		val ZERO = InternalCryptoCommonBigInt(uint16ArrayZeroPadOf(), 0, true)
+		val MINUS_ONE = InternalCryptoCommonBigInt(uint16ArrayZeroPadOf(1), -1, true)
+		val ONE = InternalCryptoCommonBigInt(uint16ArrayZeroPadOf(1), 1, true)
+		val TWO = InternalCryptoCommonBigInt(uint16ArrayZeroPadOf(2), 1, true)
+		val TEN = InternalCryptoCommonBigInt(uint16ArrayZeroPadOf(10), 1, true)
+		val SMALL = InternalCryptoCommonBigInt(uint16ArrayZeroPadOf(UINT16_MASK), 1, true)
 
-		operator fun invoke(data: UInt16ArrayZeroPad, signum: Int): CommonBigInt {
+		operator fun invoke(data: UInt16ArrayZeroPad, signum: Int): InternalCryptoCommonBigInt {
 			// Trim leading zeros
 			var maxN = 0
 			for (n in data.size - 1 downTo 0) {
@@ -33,17 +33,17 @@ internal class CommonBigInt private constructor(val data: UInt16ArrayZeroPad, ov
 			}
 
 			if (maxN == 0) return ZERO
-			return CommonBigInt(data.copyOf(maxN), signum, false)
+			return InternalCryptoCommonBigInt(data.copyOf(maxN), signum, false)
 		}
 
-		override fun create(value: Int): CommonBigInt = when (value) {
+		override fun create(value: Int): InternalCryptoCommonBigInt = when (value) {
             -1 -> MINUS_ONE
             0 -> ZERO
             1 -> ONE
             2 -> TWO
             else -> {
                 val magnitude = value.toLong().absoluteValue
-                CommonBigInt(
+                InternalCryptoCommonBigInt(
                     uint16ArrayZeroPadOf(
                         (magnitude ushr 0).toInt(),
                         (magnitude ushr 16).toInt()
@@ -51,12 +51,12 @@ internal class CommonBigInt private constructor(val data: UInt16ArrayZeroPad, ov
                 )
             }
         }
-        //if (value == 0) return CommonBigInt(uint16ArrayZeroPadOf(), 0, true)
+        //if (value == 0) return InternalCryptoCommonBigInt(uint16ArrayZeroPadOf(), 0, true)
 
-        override operator fun invoke(value: Int): CommonBigInt = create(value)
-        override operator fun invoke(value: Long): CommonBigInt = create(value) as CommonBigInt
-        override operator fun invoke(value: String): CommonBigInt = create(value) as CommonBigInt
-        override operator fun invoke(value: String, radix: Int): CommonBigInt = create(value, radix) as CommonBigInt
+        override operator fun invoke(value: Int): InternalCryptoCommonBigInt = create(value)
+        override operator fun invoke(value: Long): InternalCryptoCommonBigInt = create(value) as InternalCryptoCommonBigInt
+        override operator fun invoke(value: String): InternalCryptoCommonBigInt = create(value) as InternalCryptoCommonBigInt
+        override operator fun invoke(value: String, radix: Int): InternalCryptoCommonBigInt = create(value, radix) as InternalCryptoCommonBigInt
     }
 
 	fun countBits(): Int {
@@ -90,8 +90,8 @@ internal class CommonBigInt private constructor(val data: UInt16ArrayZeroPad, ov
 		return maxBits
 	}
 
-	override operator fun plus(other: BigInt): CommonBigInt {
-        other as CommonBigInt
+	override operator fun plus(other: BigInt): InternalCryptoCommonBigInt {
+        other as InternalCryptoCommonBigInt
 		val l = this
 		val r = other
 		return when {
@@ -100,12 +100,12 @@ internal class CommonBigInt private constructor(val data: UInt16ArrayZeroPad, ov
 			l.isNegative && r.isPositive -> r - l.absoluteValue
 			l.isPositive && r.isNegative -> l - r.absoluteValue
 			l.isNegative && r.isNegative -> -(l.absoluteValue + r.absoluteValue)
-			else -> CommonBigInt(UnsignedBigInt.add(this.data, other.data), signum)
+			else -> InternalCryptoCommonBigInt(UnsignedBigInt.add(this.data, other.data), signum)
 		}
 	}
 
-	override operator fun minus(other: BigInt): CommonBigInt {
-        other as CommonBigInt
+	override operator fun minus(other: BigInt): InternalCryptoCommonBigInt {
+        other as InternalCryptoCommonBigInt
 		val l = this
 		val r = other
 		return when {
@@ -115,13 +115,13 @@ internal class CommonBigInt private constructor(val data: UInt16ArrayZeroPad, ov
 			l.isNegative && r.isPositive -> -(l.absoluteValue + r) // -l - r == -(l + r)
 			l.isPositive && r.isNegative -> l + r.absoluteValue // l - (-r) == l + r
 			l.isPositive && r.isPositive && l < r -> -(r - l)
-			else -> CommonBigInt(UnsignedBigInt.sub(l.data, r.data), 1)
+			else -> InternalCryptoCommonBigInt(UnsignedBigInt.sub(l.data, r.data), 1)
 		}
 	}
 
 	@OptIn(ExperimentalTime::class)
-    override infix fun pow(exponent: BigInt): CommonBigInt {
-        exponent as CommonBigInt
+    override infix fun pow(exponent: BigInt): InternalCryptoCommonBigInt {
+        exponent as InternalCryptoCommonBigInt
 		if (exponent.isNegative) throw BigIntNegativeExponentException()
         if (exponent.isZero) return ONE
         if (exponent == ONE) return this
@@ -139,16 +139,16 @@ internal class CommonBigInt private constructor(val data: UInt16ArrayZeroPad, ov
 		return result
 	}
 
-    override infix fun pow(exponent: Int): CommonBigInt = powWithStats(exponent, null)
+    override infix fun pow(exponent: Int): InternalCryptoCommonBigInt = powWithStats(exponent, null)
 
-    private fun getLower(len: Int): CommonBigInt =
-        if (len >= data.size) this.absoluteValue else CommonBigInt(data.copyOfRange(0, len), 1)
-    private fun getUpper(len: Int): CommonBigInt =
-        if (len >= data.size) ZERO else CommonBigInt(data.copyOfRange(len, data.size), 1)
+    private fun getLower(len: Int): InternalCryptoCommonBigInt =
+        if (len >= data.size) this.absoluteValue else InternalCryptoCommonBigInt(data.copyOfRange(0, len), 1)
+    private fun getUpper(len: Int): InternalCryptoCommonBigInt =
+        if (len >= data.size) ZERO else InternalCryptoCommonBigInt(data.copyOfRange(len, data.size), 1)
 
-    override fun square(): CommonBigInt {
+    override fun square(): InternalCryptoCommonBigInt {
         if (this.isZero) return ZERO
-        //return CommonBigInt(UnsignedBigInt.squareToLen(this.data), +1)
+        //return InternalCryptoCommonBigInt(UnsignedBigInt.squareToLen(this.data), +1)
         return when {
             // Karatsuba
             this.data.size > 128 -> {
@@ -165,7 +165,7 @@ internal class CommonBigInt private constructor(val data: UInt16ArrayZeroPad, ov
         }
     }
 
-	fun powWithStats(exponent: Int, stats: OpStats?): CommonBigInt {
+	fun powWithStats(exponent: Int, stats: OpStats?): InternalCryptoCommonBigInt {
         //return this pow exponent.bi
         if (exponent < 0) throw BigIntNegativeExponentException()
         if (exponent == 0) return ONE
@@ -215,7 +215,7 @@ internal class CommonBigInt private constructor(val data: UInt16ArrayZeroPad, ov
         }
     }
 
-    fun mulWithStats(other: CommonBigInt, stats: OpStats?): CommonBigInt {
+    fun mulWithStats(other: InternalCryptoCommonBigInt, stats: OpStats?): InternalCryptoCommonBigInt {
         stats?.iterations = 0
         return when {
             this.isZero || other.isZero -> ZERO
@@ -223,19 +223,19 @@ internal class CommonBigInt private constructor(val data: UInt16ArrayZeroPad, ov
             other == ONE -> this
             this == TWO -> other shl 1
             other == TWO -> this shl 1
-            other.countBits() == 1 -> CommonBigInt(
+            other.countBits() == 1 -> InternalCryptoCommonBigInt(
                 (this shl other.trailingZeros()).data,
                 if (this.signum == other.signum) +1 else -1
             )
-            else -> CommonBigInt(
+            else -> InternalCryptoCommonBigInt(
                 UnsignedBigInt.mul(this.data, other.data, stats),
                 if (this.signum == other.signum) +1 else -1
             )
         }
     }
 
-    override operator fun times(other: BigInt): CommonBigInt {
-        other as CommonBigInt
+    override operator fun times(other: BigInt): InternalCryptoCommonBigInt {
+        other as InternalCryptoCommonBigInt
         return when {
             this.isOne -> other
             other.isOne -> this
@@ -244,24 +244,24 @@ internal class CommonBigInt private constructor(val data: UInt16ArrayZeroPad, ov
             else -> mulWithStats(other, null)
         }
     }
-    override operator fun div(other: BigInt): CommonBigInt = divRem(other as CommonBigInt).div
-	override operator fun rem(other: BigInt): CommonBigInt = divRem(other as CommonBigInt).rem
+    override operator fun div(other: BigInt): InternalCryptoCommonBigInt = divRem(other as InternalCryptoCommonBigInt).div
+	override operator fun rem(other: BigInt): InternalCryptoCommonBigInt = divRem(other as InternalCryptoCommonBigInt).rem
 
-    fun withBit(bit: Int, set: Boolean = true): CommonBigInt {
+    fun withBit(bit: Int, set: Boolean = true): InternalCryptoCommonBigInt {
         // return if (set) this or (ONE shl bit) else this and (ONE shl bit).inv()
         val bitShift = (bit % 16)
         val bitMask = 1 shl bitShift
         val wordPos = bit / 16
-        val out = CommonBigInt(data.copyOf(max(data.size, wordPos + 1)), if (signum == 0) 1 else signum, dummy)
+        val out = InternalCryptoCommonBigInt(data.copyOf(max(data.size, wordPos + 1)), if (signum == 0) 1 else signum, dummy)
         val outData = out.data
         outData[wordPos] = if (set) outData[wordPos] or bitMask else outData[wordPos] and bitMask.inv()
         return out
     }
 
 	// Assumes positive non-zero values this > 0 && other > 0
-	data class DivRem(val div: CommonBigInt, val rem: CommonBigInt)
+	data class DivRem(val div: InternalCryptoCommonBigInt, val rem: InternalCryptoCommonBigInt)
 
-	fun divRem(other: CommonBigInt): DivRem {
+	fun divRem(other: InternalCryptoCommonBigInt): DivRem {
 		return when {
 			this.isZero -> DivRem(
 				ZERO,
@@ -278,11 +278,11 @@ internal class CommonBigInt private constructor(val data: UInt16ArrayZeroPad, ov
 				DivRem(-it.div, it.rem)
 			}
 			other == ONE -> DivRem(this, ZERO)
-			other == TWO -> DivRem(this shr 1, CommonBigInt(this.getBitInt(0)) as CommonBigInt)
+			other == TWO -> DivRem(this shr 1, InternalCryptoCommonBigInt(this.getBitInt(0)) as InternalCryptoCommonBigInt)
 			other <= SMALL -> UnsignedBigInt.divRemSmall(this.data, other.toInt()).let {
 				DivRem(
-					CommonBigInt(it.div, signum),
-					CommonBigInt(it.rem) as CommonBigInt
+					InternalCryptoCommonBigInt(it.div, signum),
+					InternalCryptoCommonBigInt(it.rem) as InternalCryptoCommonBigInt
 				)
 			}
 			other.countBits() == 1 -> {
@@ -294,7 +294,7 @@ internal class CommonBigInt private constructor(val data: UInt16ArrayZeroPad, ov
 	}
 
 	// Simple euclidean division
-	private fun divRemBig(other: CommonBigInt): DivRem {
+	private fun divRemBig(other: InternalCryptoCommonBigInt): DivRem {
 		if (this.isZero) return DivRem(ZERO, ZERO)
 		if (other.isZero) throw BigIntDivisionByZeroException()
 		if (this.isNegative || other.isNegative) throw BigIntException("Non positive numbers")
@@ -325,7 +325,7 @@ internal class CommonBigInt private constructor(val data: UInt16ArrayZeroPad, ov
     fun getBitInt(n: Int): Int = ((data[n / 16] ushr (n % 16)) and 1)
 	fun getBit(n: Int): Boolean = getBitInt(n) != 0
 
-	override infix fun shl(count: Int): CommonBigInt {
+	override infix fun shl(count: Int): InternalCryptoCommonBigInt {
         if (count == 0) return this
 		if (count < 0) return this shr (-count)
 		val blockShift = count / 16
@@ -339,10 +339,10 @@ internal class CommonBigInt private constructor(val data: UInt16ArrayZeroPad, ov
 			carry = v ushr count_rcp
 		}
 		if (carry != 0) throw BigIntException("ERROR!")
-		return CommonBigInt(out, signum)
+		return InternalCryptoCommonBigInt(out, signum)
 	}
 
-    override infix fun shr(count: Int): CommonBigInt {
+    override infix fun shr(count: Int): InternalCryptoCommonBigInt {
 		//if (this.isNegative) return -(this.absoluteValue shr count) - 1
 		if (count < 0) return this shl (-count)
 		val blockShift = count / 16
@@ -356,11 +356,11 @@ internal class CommonBigInt private constructor(val data: UInt16ArrayZeroPad, ov
 			out[n - blockShift] = ((carry shl count_rcp) or (v ushr smallShift))
 			carry = v and LOW_MASK
 		}
-		return CommonBigInt(out, signum)
+		return InternalCryptoCommonBigInt(out, signum)
 	}
 
 	override operator fun compareTo(that: BigInt): Int {
-        that as CommonBigInt
+        that as InternalCryptoCommonBigInt
 		if (this.isNegative && that.isPositiveOrZero) return -1
 		if (this.isPositiveOrZero && that.isNegative) return +1
 		val resUnsigned = UnsignedBigInt.compare(this.data, that.data)
@@ -368,39 +368,39 @@ internal class CommonBigInt private constructor(val data: UInt16ArrayZeroPad, ov
 	}
 
 	override fun hashCode(): Int = this.data.contentHashCode() * this.signum
-    override fun equals(other: Any?): Boolean = (other is CommonBigInt) && this.signum == other.signum && this.data.contentEquals(other.data)
+    override fun equals(other: Any?): Boolean = (other is InternalCryptoCommonBigInt) && this.signum == other.signum && this.data.contentEquals(other.data)
 
 	val absoluteValue get() = abs()
-    override fun abs() = if (this.isZero) ZERO else if (this.isPositive) this else CommonBigInt(this.data, 1)
+    override fun abs() = if (this.isZero) ZERO else if (this.isPositive) this else InternalCryptoCommonBigInt(this.data, 1)
 
-    override operator fun unaryPlus(): CommonBigInt = this
-    override operator fun unaryMinus(): CommonBigInt = CommonBigInt(this.data, -signum, false)
+    override operator fun unaryPlus(): InternalCryptoCommonBigInt = this
+    override operator fun unaryMinus(): InternalCryptoCommonBigInt = InternalCryptoCommonBigInt(this.data, -signum, false)
 
-    fun mulAddSmall(mul: Int, add: Int): CommonBigInt {
+    fun mulAddSmall(mul: Int, add: Int): InternalCryptoCommonBigInt {
         if ((mul and 0xFFFF) == mul && (add and 0xFFFF) == add) {
             val temp = UInt16ArrayZeroPad(data.data.copyOf(data.size + 1))
             UnsignedBigInt.inplaceSmallMulAdd(temp, mul, add)
-            return CommonBigInt(temp, if (temp.isAllZero) 0 else if (signum == 0) 1 else signum)
+            return InternalCryptoCommonBigInt(temp, if (temp.isAllZero) 0 else if (signum == 0) 1 else signum)
         }
-        val out = this * CommonBigInt(mul)
-        return if (add == 0) out else out + CommonBigInt(add)
+        val out = this * InternalCryptoCommonBigInt(mul)
+        return if (add == 0) out else out + InternalCryptoCommonBigInt(add)
     }
 
-	override operator fun plus(other: Int): CommonBigInt = plus(CommonBigInt(other))
-    override operator fun minus(other: Int): CommonBigInt = minus(CommonBigInt(other))
-    override operator fun times(other: Int): CommonBigInt = mulAddSmall(other, 0)
-    override operator fun times(other: Long): CommonBigInt = times(CommonBigInt(other))
-    override operator fun div(other: Int): CommonBigInt = div(CommonBigInt(other))
-    override operator fun rem(other: Int): CommonBigInt = rem(CommonBigInt(other))
+	override operator fun plus(other: Int): InternalCryptoCommonBigInt = plus(InternalCryptoCommonBigInt(other))
+    override operator fun minus(other: Int): InternalCryptoCommonBigInt = minus(InternalCryptoCommonBigInt(other))
+    override operator fun times(other: Int): InternalCryptoCommonBigInt = mulAddSmall(other, 0)
+    override operator fun times(other: Long): InternalCryptoCommonBigInt = times(InternalCryptoCommonBigInt(other))
+    override operator fun div(other: Int): InternalCryptoCommonBigInt = div(InternalCryptoCommonBigInt(other))
+    override operator fun rem(other: Int): InternalCryptoCommonBigInt = rem(InternalCryptoCommonBigInt(other))
 
-    override infix fun and(other: BigInt): CommonBigInt = bitwise(other as CommonBigInt, Int::and)
-    override infix fun or(other: BigInt): CommonBigInt = bitwise(other as CommonBigInt, Int::or)
-	override infix fun xor(other: BigInt): CommonBigInt = bitwise(other as CommonBigInt, Int::xor)
+    override infix fun and(other: BigInt): InternalCryptoCommonBigInt = bitwise(other as InternalCryptoCommonBigInt, Int::and)
+    override infix fun or(other: BigInt): InternalCryptoCommonBigInt = bitwise(other as InternalCryptoCommonBigInt, Int::or)
+	override infix fun xor(other: BigInt): InternalCryptoCommonBigInt = bitwise(other as InternalCryptoCommonBigInt, Int::xor)
 
-    override fun inv(): CommonBigInt = -(this + 1)
+    override fun inv(): InternalCryptoCommonBigInt = -(this + 1)
 
-	private inline fun bitwise(other: CommonBigInt, op: (a: Int, b: Int) -> Int): CommonBigInt {
-		return CommonBigInt(
+	private inline fun bitwise(other: InternalCryptoCommonBigInt, op: (a: Int, b: Int) -> Int): InternalCryptoCommonBigInt {
+		return InternalCryptoCommonBigInt(
             UInt16ArrayZeroPad(max(this.data.size, other.data.size)).also {
 				for (n in 0 until it.size) it[n] = op(this.data[n], other.data[n])
 			}, 1
@@ -470,13 +470,13 @@ internal class CommonBigInt private constructor(val data: UInt16ArrayZeroPad, ov
 		while (num != ZERO) {
 			val result = UnsignedBigInt.divRemSmall(num.data, radix)
 			out.append(digit(result.rem))
-			num = CommonBigInt(result.div, 1)
+			num = InternalCryptoCommonBigInt(result.div, 1)
 		}
 		sb.append(out.reversed().toString())
 	}
 
     override fun toInt(): Int {
-		if (significantBits > 31) throw BigIntOverflowException("Can't represent CommonBigInt($this) as integer: maxBits=$maxBits, significantBits=$significantBits, trailingZeros=${trailingZeros()}")
+		if (significantBits > 31) throw BigIntOverflowException("Can't represent InternalCryptoCommonBigInt($this) as integer: maxBits=$maxBits, significantBits=$significantBits, trailingZeros=${trailingZeros()}")
 		val magnitude = (this.data[0].toLong() or (this.data[1].toLong() shl 16)) * signum
 		return magnitude.toInt()
 	}
@@ -648,7 +648,7 @@ internal object UnsignedBigInt {
 	// l >= 0 && r >= 0
 	// TODO optimize using the Karatsuba algorithm:
 	// TODO: - https://en.wikipedia.org/wiki/Multiplication_algorithm#Karatsuba_multiplication
-	fun mul(l: UInt16ArrayZeroPad, r: UInt16ArrayZeroPad, stats: CommonBigInt.OpStats?): UInt16ArrayZeroPad {
+	fun mul(l: UInt16ArrayZeroPad, r: UInt16ArrayZeroPad, stats: InternalCryptoCommonBigInt.OpStats?): UInt16ArrayZeroPad {
         var its = 0
 		val out = UInt16ArrayZeroPad(l.size + r.size + 1)
 		for (rn in 0 until r.size) {

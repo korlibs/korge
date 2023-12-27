@@ -9,7 +9,7 @@ internal val Int.internalCryptoBI: BigInt get() = BigInt(this)
  */
 internal interface BigInt : Comparable<BigInt>, BigIntConstructor {
     companion object {
-        val usesNativeImplementation get() = BigInt(0) !is CommonBigInt
+        val usesNativeImplementation get() = BigInt(0) !is InternalCryptoCommonBigInt
 
         val ZERO = BigInt("0")
         val MINUS_ONE = BigInt("-1")
