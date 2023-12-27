@@ -13,7 +13,7 @@ project.extensions.extraProperties.properties.apply {
 dependencies {
     commonMainApi(libs.kotlinx.atomicfu)
     commonTestApi(libs.kotlinx.coroutines.test)
-    commonMainApi(project(":korge-foundation"))
+    commonMainApi(project(":korlibs-time"))
 }
 
 fun doGenerateKdsTemplates() {

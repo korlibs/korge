@@ -1,7 +1,8 @@
 package korlibs.datastructure
 
 import korlibs.datastructure.internal.*
-import korlibs.memory.*
+import korlibs.memory.InternalMemory.arraycopy
+import korlibs.memory.InternalMemory.countLeadingZeros
 import kotlin.math.*
 
 fun <T : CharSequence> Array<T>.sortedRadix(start: Int = 0, end: Int = this.size, default: Char = '\u0000', transform: (Char) -> Char = { it }): Array<T> = this.copyOf().also { it.sortRadix(start, end, default, transform) }

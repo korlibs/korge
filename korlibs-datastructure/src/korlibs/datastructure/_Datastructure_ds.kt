@@ -32,7 +32,6 @@ Jon-Carlos Rivera - imbcmdth@hotmail.com
 
 import korlibs.datastructure.*
 import korlibs.math.*
-import korlibs.number.*
 import kotlin.collections.set
 import kotlin.math.*
 

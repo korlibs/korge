@@ -2,7 +2,8 @@ package korlibs.datastructure
 
 import korlibs.datastructure.internal.*
 import korlibs.math.*
-import korlibs.memory.*
+import korlibs.memory.InternalMemory.arraycopy
+import kotlin.collections.max
 import kotlin.math.*
 
 //typealias IntList = IIntArrayList
@@ -221,7 +222,7 @@ fun IntArray.toIntArrayList(): IntArrayList = IntArrayList(*this)
 
 // Double
 
-interface DoubleList : Collection<Double>, IsAlmostEquals<DoubleList> {
+interface DoubleList : Collection<Double> {
     operator fun get(index: Int): Double
     fun getAt(index: Int): Double
     fun indexOf(value: Double, start: Int = 0, end: Int = this.size): Int
@@ -233,7 +234,7 @@ interface DoubleList : Collection<Double>, IsAlmostEquals<DoubleList> {
     fun listIterator(index: Int): ListIterator<Double>
     fun subList(fromIndex: Int, toIndex: Int): List<Double>
     fun clone(): DoubleList
-    override fun isAlmostEquals(other: DoubleList, epsilon: Double): Boolean {
+    fun isAlmostEquals(other: DoubleList, epsilon: Double): Boolean {
         if (this.size != other.size) return false
         for (n in indices) if (!this.getAt(n).isAlmostEquals(other.getAt(n), epsilon)) return false
         return true

@@ -7,7 +7,6 @@ import korlibs.datastructure.closeable.*
 import korlibs.datastructure.lock.*
 import korlibs.datastructure.pauseable.*
 import korlibs.datastructure.thread.*
-import korlibs.logger.*
 import korlibs.time.*
 import kotlin.time.*
 
@@ -88,7 +87,7 @@ open class SyncEventLoop(
             if (running) {
                 timedTasks.add(task)
             } else {
-                Console.warn("WARNING: QUEUED TASK time=$time interval=$interval without running")
+                //TODO: add back logger Console.warn("WARNING: QUEUED TASK time=$time interval=$interval without running")
             }
             //println("NOTIFIED!")
             lock.notify()

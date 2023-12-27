@@ -4,7 +4,7 @@ package korlibs.datastructure
 
 import korlibs.datastructure.internal.*
 import korlibs.datastructure.iterators.fastForEach
-import korlibs.math.*
+import korlibs.math.InternalMath.ilog2Ceil
 import kotlin.collections.Collection
 import kotlin.collections.Iterable
 import kotlin.collections.Map
