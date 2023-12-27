@@ -1,17 +1,6 @@
 package korlibs.bignumber
 
-import korlibs.bignumber.ranges.*
 import kotlin.math.*
-
-// Big Number
-/** Converts this into a [BigNum] */
-val Double.bn: BigNum get() = BigNum("$this")
-/** Converts this into a [BigNum] */
-val Long.bn: BigNum get() = BigNum(this.bi, 0)
-/** Converts this into a [BigNum] */
-val Int.bn: BigNum get() = BigNum(this.bi, 0)
-/** Converts this into a [BigNum] */
-val String.bn: BigNum get() = BigNum(this)
 
 /**
  * Represents a [BigNum],
@@ -19,18 +8,14 @@ val String.bn: BigNum get() = BigNum(this)
  *
  * There are no precision issues like happens with [Float] or [Double] floating point types.
  */
-class BigNum(val int: BigInt, val scale: Int) : Comparable<BigNum> {
+internal class BigNum(val int: BigInt, val scale: Int) : Comparable<BigNum> {
     init {
         //println("BigNum($int, $scale) == $this")
     }
 
     companion object {
-        /** Represents 0.0 as a [BigNum] */
-        val ZERO = BigNum(BigInt(0), 0)
         /** Represents 1.0 as a [BigNum] */
         val ONE = BigNum(BigInt(1), 0)
-        /** Represents 2.0 as a [BigNum] */
-        val TWO = BigNum(BigInt(2), 0)
 
         /** Creates a [BigNum] from a string [str] */
         operator fun invoke(str: String): BigNum {
@@ -60,8 +45,8 @@ class BigNum(val int: BigInt, val scale: Int) : Comparable<BigNum> {
      */
     fun convertToScale(otherScale: Int): BigNum = when {
         this.scale == otherScale -> this
-        otherScale > this.scale -> BigNum(int * (10.bi pow (otherScale - this.scale)), otherScale)
-        else -> BigNum(int / (10.bi pow (this.scale - otherScale)), otherScale)
+        otherScale > this.scale -> BigNum(int * (10.internalCryptoBI pow (otherScale - this.scale)), otherScale)
+        else -> BigNum(int / (10.internalCryptoBI pow (this.scale - otherScale)), otherScale)
     }
 
     /** Performs this + [other] returning a [BigNum], if the scale is different for both numbers, it finds a common one */
@@ -78,11 +63,11 @@ class BigNum(val int: BigInt, val scale: Int) : Comparable<BigNum> {
 
     /** Performs this / [other] returning a [BigNum] using a specific [precision] */
     fun div(other: BigNum, precision: Int): BigNum {
-        val scale = (10.bi pow (other.scale + precision))
+        val scale = (10.internalCryptoBI pow (other.scale + precision))
         val li = this.int * scale
         val ri = other.int
         val res = li / ri
-        return BigNum(res, this.scale) * BigNum(1.bi, precision)
+        return BigNum(res, this.scale) * BigNum(1.internalCryptoBI, precision)
     }
 
     /** Performs this ** [exponent] */
@@ -107,12 +92,6 @@ class BigNum(val int: BigInt, val scale: Int) : Comparable<BigNum> {
         val commonScale = this.commonScale(other)
         return this.convertToScale(commonScale).int.compareTo(other.convertToScale(commonScale).int)
     }
-
-    /** Creates a [ClosedBigNumRange] between this and [that] */
-    operator fun rangeTo(that: BigNum): ClosedBigNumRange = ClosedBigNumRange(
-        start = this,
-        endInclusive = that
-    )
 
     override fun hashCode(): Int = int.hashCode() + 3 * scale.hashCode()
     override fun equals(other: Any?): Boolean = (other is BigNum) && this.compareTo(other) == 0
@@ -148,15 +127,15 @@ class BigNum(val int: BigInt, val scale: Int) : Comparable<BigNum> {
     fun toBigIntCeil(): BigInt {
         val it = this.toBigInt()
         val decimal = decimalPart
-        return if (decimal.isZero) it else (it + 1.bi)
+        return if (decimal.isZero) it else (it + 1.internalCryptoBI)
     }
     /** Converts this [BigInt] doing rounding when there are decimals */
     fun toBigIntRound(): BigInt {
-        val firstDigit = decimalPart / 10.bi.pow(scale - 1)
+        val firstDigit = decimalPart / 10.internalCryptoBI.pow(scale - 1)
         return if (firstDigit.toInt() >= 5) toBigIntCeil() else toBigIntFloor()
     }
 
     /** Returns the decimal part as a [BigInt] of this BigNum so for `1.9123.bn` it will return `9123.bi` */
     val decimalPart: BigInt
-        get() = int % 10.bi.pow(scale)
+        get() = int % 10.internalCryptoBI.pow(scale)
 }

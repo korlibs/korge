@@ -3,17 +3,17 @@ package korlibs.bignumber
 import java.math.*
 
 /** Converts a [BigInteger] into a [BigInt] ([JvmBigInt]) */
-val BigInteger.bi: JvmBigInt get() = JvmBigInt(this)
+internal val BigInteger.bi: JvmBigInt get() = JvmBigInt(this)
 
 /** Converts a [BigInt] into a [BigInteger] */
-fun BigInt.toBigInteger(): BigInteger = when (this) {
+internal fun BigInt.toBigInteger(): BigInteger = when (this) {
     is JvmBigInt -> this.value
     else -> BigInteger(this.toString())
 }
 
-actual val BigIntNativeFactory: BigIntConstructor = JvmBigInt
+internal actual val InternalCryptoBigIntNativeFactory: BigIntConstructor = JvmBigInt
 
-class JvmBigInt(val value: BigInteger) : BigInt, BigIntConstructor by JvmBigInt {
+internal class JvmBigInt(val value: BigInteger) : BigInt, BigIntConstructor by JvmBigInt {
     constructor(value: Int) : this(BigInteger.valueOf(value.toLong()))
     constructor(value: Long) : this(BigInteger.valueOf(value))
     constructor(value: String, radix: Int) : this(try {

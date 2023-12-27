@@ -2,12 +2,12 @@ package korlibs.crypto
 
 import korlibs.encoding.Base64
 import korlibs.encoding.Hex
-import korlibs.memory.arraycopy
+import korlibs.memory.*
 import kotlin.math.min
 
 open class HasherFactory(val name: String, val create: () -> Hasher) {
     operator fun invoke(): Hasher = create()
-    fun digest(data: ByteArray) = create().also { it.update(data, 0, data.size) }.digest()
+    fun digest(data: ByteArray): Hash = create().also { it.update(data, 0, data.size) }.digest()
 
     inline fun digest(temp: ByteArray = ByteArray(0x1000), readBytes: (data: ByteArray) -> Int): Hash =
         this.create().also {

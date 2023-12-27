@@ -6,7 +6,7 @@ import kotlin.time.*
 /**
  * @TODO: Use JVM BigInteger and JS BigInt
  */
-class CommonBigInt private constructor(val data: UInt16ArrayZeroPad, override val signum: Int, var dummy: Boolean) : BigInt, BigIntConstructor by CommonBigInt {
+internal class CommonBigInt private constructor(val data: UInt16ArrayZeroPad, override val signum: Int, var dummy: Boolean) : BigInt, BigIntConstructor by CommonBigInt {
     val isOne get() = isSmall && this == ONE
 	val isSmall get() = data.size <= 1
 	val maxBits get() = data.size * CHUNK_BITS
@@ -484,7 +484,7 @@ class CommonBigInt private constructor(val data: UInt16ArrayZeroPad, override va
 	fun toBigNum(): BigNum = BigNum(this, 0)
 }
 
-class UInt16ArrayZeroPad internal constructor(val data: IntArray) {
+internal class UInt16ArrayZeroPad internal constructor(val data: IntArray) {
     val isAllZero: Boolean get() = data.all { it == 0 }
     val size get() = data.size
 

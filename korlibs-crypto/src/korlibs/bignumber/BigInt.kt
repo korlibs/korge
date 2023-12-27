@@ -1,21 +1,13 @@
 package korlibs.bignumber
 
-import korlibs.bignumber.ranges.*
-
 // Big Integer
 /** Converts this into a [BigInt] */
-val Long.bi: BigInt get() = BigInt(this)
-/** Converts this into a [BigInt] */
-val Int.bi: BigInt get() = BigInt(this)
-/** Converts this into a [BigInt] */
-val String.bi: BigInt get() = BigInt(this)
-/** Converts this into a [BigInt] using a specific [radix], that is the base to use. radix=10 for decimal, radix=16 for hexadecimal */
-fun String.bi(radix: Int): BigInt = BigInt(this, radix)
+internal val Int.internalCryptoBI: BigInt get() = BigInt(this)
 
 /**
  * Represents an arbitrary-sized Big Integer.
  */
-interface BigInt : Comparable<BigInt>, BigIntConstructor {
+internal interface BigInt : Comparable<BigInt>, BigIntConstructor {
     companion object {
         val usesNativeImplementation get() = BigInt(0) !is CommonBigInt
 
@@ -103,19 +95,16 @@ interface BigInt : Comparable<BigInt>, BigIntConstructor {
     operator fun div(other: Int): BigInt = this / create(other)
     /** Returns this % [other] */
     operator fun rem(other: Int): BigInt = this % create(other)
-
-    /** Creates a new inclusive [BigIntRange] ranging from [this] to [that] */
-    operator fun rangeTo(that: BigInt): BigIntRange = BigIntRange(start = this, endInclusive = that)
 }
 
-interface BigIntCompanion : BigIntConstructor {
+internal interface BigIntCompanion : BigIntConstructor {
     operator fun invoke(value: Int) = create(value)
     operator fun invoke(value: Long) = create(value)
     operator fun invoke(value: String) = create(value)
     operator fun invoke(value: String, radix: Int) = create(value, radix)
 }
 
-interface BigIntConstructor {
+internal interface BigIntConstructor {
     fun create(value: Int): BigInt
     //fun create(value: Long): BigInt = create("$value", 10) // @TODO: Kotlin.JS BUG
     fun create(value: Long): BigInt {
@@ -166,12 +155,12 @@ interface BigIntConstructor {
     }
 }
 
-expect val BigIntNativeFactory: BigIntConstructor
+internal expect val InternalCryptoBigIntNativeFactory: BigIntConstructor
 
-fun BigInt(value: Int): BigInt = BigIntNativeFactory.create(value)
-fun BigInt(value: Long): BigInt = BigIntNativeFactory.create(value)
-fun BigInt(value: String, radix: Int): BigInt = BigIntNativeFactory.create(value, radix)
-fun BigInt(value: String): BigInt = BigIntNativeFactory.create(value)
+internal fun BigInt(value: Int): BigInt = InternalCryptoBigIntNativeFactory.create(value)
+internal fun BigInt(value: Long): BigInt = InternalCryptoBigIntNativeFactory.create(value)
+internal fun BigInt(value: String, radix: Int): BigInt = InternalCryptoBigIntNativeFactory.create(value, radix)
+internal fun BigInt(value: String): BigInt = InternalCryptoBigIntNativeFactory.create(value)
 
 internal fun <T> parseWithNumberPrefix(str: String, gen: (sub: String, radix: Int) -> T): T = when {
     str.startsWith("0x") -> gen(str.substring(2), 16)
@@ -181,12 +170,12 @@ internal fun <T> parseWithNumberPrefix(str: String, gen: (sub: String, radix: In
 }
 
 /** A generic [BigInt] exception */
-open class BigIntException(message: String) : Throwable(message)
+internal open class BigIntException(message: String) : Throwable(message)
 /** A [BigInt] exception thrown when an invalid String value is provided while parsing */
-open class BigIntInvalidFormatException(message: String) : BigIntException(message)
+internal open class BigIntInvalidFormatException(message: String) : BigIntException(message)
 /** A [BigInt] exception thrown when trying to divide by zero */
-open class BigIntDivisionByZeroException() : BigIntException("Division by zero")
+internal open class BigIntDivisionByZeroException() : BigIntException("Division by zero")
 /** A [BigInt] exception thrown when an overflow operation occurs, like for example when trying to convert a too big [BigInt] into an [Int] */
-open class BigIntOverflowException(message: String) : BigIntException(message)
+internal open class BigIntOverflowException(message: String) : BigIntException(message)
 /** A [BigInt] exception thrown when doing a `pow` operation with a negative exponent */
-open class BigIntNegativeExponentException() : BigIntOverflowException("Negative exponent")
+internal open class BigIntNegativeExponentException() : BigIntOverflowException("Negative exponent")

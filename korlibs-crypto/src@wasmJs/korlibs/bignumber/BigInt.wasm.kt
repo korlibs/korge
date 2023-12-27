@@ -1,3 +1,3 @@
 package korlibs.bignumber
 
-actual val BigIntNativeFactory: BigIntConstructor = CommonBigInt
+internal actual val InternalCryptoBigIntNativeFactory: BigIntConstructor = CommonBigInt
