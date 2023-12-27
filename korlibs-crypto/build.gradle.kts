@@ -24,22 +24,3 @@ dependencies {
     commonTestApi(libs.kotlinx.coroutines.test)
     commonMainApi(project(":korlibs-time"))
 }
-
-//korlibs.korge.gradle.generate.TemplateGenerator.synchronize(new File(projectDir, "template"))
-
-fun doGenerateKdsTemplates() {
-    TemplateGenerator.synchronizeNew(File(projectDir, "src/korlibs/datastructure/Deque.kt"), true, true, true, true, true, true, true, false)
-    TemplateGenerator.synchronizeNew(File(projectDir, "src/korlibs/datastructure/Array2.kt"), true, true, true, true, true, true, true, true)
-    TemplateGenerator.synchronizeNew(File(projectDir, "src/korlibs/datastructure/Stack.kt"), false)
-    TemplateGenerator.synchronizeNew(File(projectDir, "src/korlibs/datastructure/PriorityQueue.kt"), false)
-}
-
-// Run only with the generate task
-//tas
-task("generateKdsTemplates") {
-    doLast { doGenerateKdsTemplates() }
-}
-
-afterEvaluate {
-    doGenerateKdsTemplates()
-}

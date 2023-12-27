@@ -1,6 +1,6 @@
 package korlibs.crypto
 
-import korlibs.memory.*
+import korlibs.memory.arraycopy
 
 class PBKDF2 {
     companion object {

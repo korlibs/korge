@@ -1,6 +1,6 @@
 package korlibs.crypto
 
-import korlibs.memory.*
+import korlibs.memory.arraycopy
 import kotlin.rotateRight
 
 class SHA256 : SHA(chunkSize = 64, digestSize = 32) {

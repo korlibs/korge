@@ -1,6 +1,6 @@
 package korlibs.crypto
 
-import korlibs.memory.*
+import korlibs.memory.arraycopy
 import kotlin.random.Random
 
 expect fun fillRandomBytes(array: ByteArray)
