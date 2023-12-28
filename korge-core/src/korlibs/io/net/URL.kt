@@ -150,8 +150,8 @@ data class URL private constructor(
 		fun isAbsolute(url: String): Boolean = StrReader(url).tryRegex(schemeRegex) != null
 
 		fun resolve(base: String, access: String): String {
-            // if access url is relative protocol then copy it
-            val refinedAccess = if (access.startsWith("//")) "${base.split(":").first()}:$access" else access
+            // if access url is relative protocol then copy it from base
+            val refinedAccess = if (access.startsWith("//")) "${base.substringBefore(":")}:$access" else access
             return when {
                 refinedAccess.isEmpty() -> base
                 isAbsolute(refinedAccess) -> refinedAccess
