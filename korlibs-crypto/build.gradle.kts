@@ -2,7 +2,7 @@
 import korlibs.*
 import korlibs.korge.gradle.generate.*
 
-description = "Korge Foundation Libraries"
+description = "Korlibs Cryptography Library"
 
 project.extensions.extraProperties.properties.apply {
     applyProjectProperties("https://github.com/korlibs/korge/korge-foundation",
@@ -23,24 +23,4 @@ dependencies {
     //add("commonTestApi", project(":korge-test"))
     commonTestApi(libs.kotlinx.coroutines.test)
     commonMainApi(project(":korlibs-time"))
-    commonMainApi(project(":korlibs-crypto"))
-}
-
-//korlibs.korge.gradle.generate.TemplateGenerator.synchronize(new File(projectDir, "template"))
-
-fun doGenerateKdsTemplates() {
-    TemplateGenerator.synchronizeNew(File(projectDir, "src/korlibs/datastructure/Deque.kt"), true, true, true, true, true, true, true, false)
-    TemplateGenerator.synchronizeNew(File(projectDir, "src/korlibs/datastructure/Array2.kt"), true, true, true, true, true, true, true, true)
-    TemplateGenerator.synchronizeNew(File(projectDir, "src/korlibs/datastructure/Stack.kt"), false)
-    TemplateGenerator.synchronizeNew(File(projectDir, "src/korlibs/datastructure/PriorityQueue.kt"), false)
-}
-
-// Run only with the generate task
-//tas
-task("generateKdsTemplates") {
-    doLast { doGenerateKdsTemplates() }
-}
-
-afterEvaluate {
-    doGenerateKdsTemplates()
 }

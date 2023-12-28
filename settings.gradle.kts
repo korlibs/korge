@@ -26,6 +26,7 @@ val inCI = isPropertyTrue("CI")
 val disabledExtraKorgeLibs = isPropertyTrue("DISABLED_EXTRA_KORGE_LIBS")
 
 include(":korlibs-time")
+include(":korlibs-crypto")
 include(":korlibs-template")
 include(":korge-foundation")
 include(":korge-core")

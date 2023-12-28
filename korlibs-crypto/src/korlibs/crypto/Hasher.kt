@@ -2,7 +2,7 @@ package korlibs.crypto
 
 import korlibs.encoding.Base64
 import korlibs.encoding.Hex
-import korlibs.memory.*
+import korlibs.internal.arraycopy
 import kotlin.math.min
 
 open class HasherFactory(val name: String, val create: () -> Hasher) {
