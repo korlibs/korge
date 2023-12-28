@@ -149,10 +149,15 @@ data class URL private constructor(
 
 		fun isAbsolute(url: String): Boolean = StrReader(url).tryRegex(schemeRegex) != null
 
-		fun resolve(base: String, access: String): String = when {
-			isAbsolute(access) -> access
-			access.startsWith("/") -> URL(base).copy(path = access).fullUrl
-			else -> URL(base).run { copy(path = "/${("${path.substringBeforeLast('/')}/$access").pathInfo.normalize().trimStart('/')}").fullUrl }
+		fun resolve(base: String, access: String): String {
+            // if access url is relative protocol then copy it
+            val refinedAccess = if (access.startsWith("//")) "${base.split(":").first()}:$access" else access
+            return when {
+                refinedAccess.isEmpty() -> base
+                isAbsolute(refinedAccess) -> refinedAccess
+                refinedAccess.startsWith("/") -> URL(base).copy(path = refinedAccess.normalizeUrl(), query = null).fullUrl
+                else -> URL(base).run { copy(path = "/${("${path.substringBeforeLast('/')}/$refinedAccess").normalizeUrl().trimStart('/')}", query = null).fullUrl }
+            }
 		}
 
 		fun decodeComponent(s: String, charset: Charset = UTF8, formUrlEncoded: Boolean = false): String {
@@ -201,4 +206,13 @@ data class URL private constructor(
 
 fun createBase64URLForData(data: ByteArray, contentType: String): String {
 	return "data:$contentType;base64,${data.toBase64()}"
+}
+
+fun String.normalizeUrl(): String {
+    // Split with the query string or fragment, whichever comes first,
+    // to avoid normalizing query string and fragment
+    val paramFlag = this.find { it == '?' || it == '#' } ?: '?'
+    val pathParts = this.split(paramFlag).toMutableList()
+    pathParts[0] = pathParts[0].pathInfo.normalize(removeEndSlash = false)
+    return pathParts.joinToString(paramFlag.toString())
 }

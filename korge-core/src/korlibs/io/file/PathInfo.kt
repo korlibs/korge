@@ -1,7 +1,7 @@
 package korlibs.io.file
 
 import korlibs.datastructure.count
-import korlibs.datastructure.iterators.fastForEach
+import korlibs.datastructure.iterators.*
 import korlibs.io.lang.indexOfOrNull
 import korlibs.io.lang.lastIndexOfOrNull
 import korlibs.io.net.MimeType
@@ -185,24 +185,26 @@ open class VfsNamed(override val pathInfo: PathInfo) : Path
 
 
 fun PathInfo.parts(): List<String> = fullPath.split('/')
-fun PathInfo.normalize(): String {
-	val path = this.fullPath
-	val schemeIndex = path.indexOf(":")
-	return if (schemeIndex >= 0) {
-		val take = if (path.substring(schemeIndex).startsWith("://")) 3 else 1
-		path.substring(0, schemeIndex + take) + path.substring(schemeIndex + take).pathInfo.normalize()
-	} else {
-		val path2 = path.replace('\\', '/')
-		val out = ArrayList<String>()
-		path2.split("/").fastForEach { part ->
-			when (part) {
-				"", "." -> if (out.isEmpty()) out += "" else Unit
-				".." -> if (out.isNotEmpty()) out.removeAt(out.size - 1)
-				else -> out += part
-			}
-		}
-		out.joinToString("/")
-	}
+fun PathInfo.normalize(removeEndSlash: Boolean = true): String {
+    val path = this.fullPath
+    val schemeIndex = path.indexOf(":")
+    return if (schemeIndex >= 0) {
+        val take = if (path.substring(schemeIndex).startsWith("://")) 3 else 1
+        path.substring(0, schemeIndex + take) + path.substring(schemeIndex + take).pathInfo.normalize()
+    } else {
+        val path2 = path.replace('\\', '/')
+        val out = ArrayList<String>()
+        val path2PathLength: Int
+        path2.split("/").also { path2PathLength = it.size }.fastForEachWithIndex { index, part ->
+            when (part) {
+                "" -> if (out.isEmpty() || !removeEndSlash) out += ""
+                "." -> if (index == path2PathLength - 1 && !removeEndSlash) out += ""
+                ".." -> if (out.isNotEmpty() && index != 1) out.removeAt(out.size - 1)
+                else -> out += part
+            }
+        }
+        out.joinToString("/")
+    }
 }
 
 fun PathInfo.combine(access: PathInfo): PathInfo {
