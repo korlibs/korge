@@ -164,6 +164,9 @@ class URLTest {
         assertEquals("https://example.com/path/bar.html?foo", URL.resolve("https://example.com/path/file?bar", "bar.html?foo"))
         assertEquals("https://example.com/path/file?foo", URL.resolve("https://example.com/path/file?bar", "?foo"))
         assertEquals("https://example.com/foo bar/", URL.resolve("https://example.com/example/", "../foo bar/"))
+        assertEquals("file:///var/log/messages", URL.resolve("file:///etc/", "/var/log/messages"))
+        assertEquals("file:///var/log/messages", URL.resolve("file:///etc", "/var/log/messages"))
+        assertEquals("file:///etc/var/log/messages", URL.resolve("file:///etc/", "var/log/messages"))
 	}
 
 	@Test
