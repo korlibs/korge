@@ -1,7 +1,5 @@
 package korlibs.encoding
 
-import korlibs.encoding.*
-
 object Base64 {
     private val TABLE = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/="
     private val TABLE_URL = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_="
