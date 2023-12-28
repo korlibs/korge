@@ -156,7 +156,14 @@ data class URL private constructor(
                 refinedAccess.isEmpty() -> base
                 isAbsolute(refinedAccess) -> refinedAccess
                 refinedAccess.startsWith("/") -> URL(base).copy(path = refinedAccess.normalizeUrl(), query = null).fullUrl
-                else -> URL(base).run { copy(path = "/${("${path.substringBeforeLast('/')}/$refinedAccess").normalizeUrl().trimStart('/')}", query = null).fullUrl }
+                else -> URL(base).run {
+                    val refinedPath = if(refinedAccess.startsWith("?") || refinedAccess.startsWith("#")) {
+                        "${path}$refinedAccess"
+                    } else {
+                        "${path.substringBeforeLast('/')}/$refinedAccess"
+                    }
+                    copy(path = "/${refinedPath.normalizeUrl().trimStart('/')}", query = null).fullUrl
+                }
             }
 		}
 

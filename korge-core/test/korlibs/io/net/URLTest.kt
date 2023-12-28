@@ -161,6 +161,9 @@ class URLTest {
         assertEquals("http://example.com/b/c/g?y/../x", URL.resolve("http://example.com/b/c/d;p?q", "g?y/../x"))
         assertEquals("http://example.com/b/c/g#s/./x", URL.resolve("http://example.com/b/c/d;p?q", "g#s/./x"))
         assertEquals("http://example.com/b/c/g#s/../x", URL.resolve("http://example.com/b/c/d;p?q", "g#s/../x"))
+        assertEquals("https://example.com/path/bar.html?foo", URL.resolve("https://example.com/path/file?bar", "bar.html?foo"))
+        assertEquals("https://example.com/path/file?foo", URL.resolve("https://example.com/path/file?bar", "?foo"))
+        assertEquals("https://example.com/foo bar/", URL.resolve("https://example.com/example/", "../foo bar/"))
 	}
 
 	@Test
