@@ -1,6 +1,6 @@
 package korlibs.crypto
 
-import korlibs.memory.internalArrayCopy
+import korlibs.internal.arraycopy
 
 // https://git.suckless.org/sbase/file/libutil/sha512.c.html
 // https://git.suckless.org/sbase/file/sha512.h.html
@@ -179,10 +179,10 @@ class SHA512 : SHA(chunkSize = 128, digestSize = 64) {
         this.len += len.toULong()
         if (r != 0) {
             if (len < 128 - r) {
-                internalArrayCopy(m.asByteArray(), p, this.buf.asByteArray(), r, len)
+                arraycopy(m.asByteArray(), p, this.buf.asByteArray(), r, len)
                 return
             }
-            internalArrayCopy(m.asByteArray(), p, buf.asByteArray(), r, 128 - r)
+            arraycopy(m.asByteArray(), p, buf.asByteArray(), r, 128 - r)
             len -= 128 - r
             p += 128 - r
             processblock(this.buf)
@@ -192,7 +192,7 @@ class SHA512 : SHA(chunkSize = 128, digestSize = 64) {
             len -= 128
             p += 128
         }
-        internalArrayCopy(m.asByteArray(), p, buf.asByteArray(), 0, len)
+        arraycopy(m.asByteArray(), p, buf.asByteArray(), 0, len)
     }
 
 }

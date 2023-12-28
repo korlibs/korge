@@ -1,6 +1,6 @@
 package korlibs.crypto
 
-import korlibs.memory.internalArrayCopy
+import korlibs.internal.arraycopy
 
 class HMAC {
 
@@ -23,7 +23,7 @@ class HMAC {
             }
             if (key.size < blockSize) {
                 val newKey = ByteArray(blockSize)
-                internalArrayCopy(key, 0, newKey, 0, key.size)
+                arraycopy(key, 0, newKey, 0, key.size)
                 key = newKey
             }
 

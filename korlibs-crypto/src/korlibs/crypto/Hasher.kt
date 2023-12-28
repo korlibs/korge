@@ -2,7 +2,7 @@ package korlibs.crypto
 
 import korlibs.encoding.Base64
 import korlibs.encoding.Hex
-import korlibs.memory.*
+import korlibs.internal.arraycopy
 import kotlin.math.min
 
 open class HasherFactory(val name: String, val create: () -> Hasher) {
@@ -58,7 +58,7 @@ abstract class Hasher(val chunkSize: Int, val digestSize: Int, val name: String)
         while (left > 0) {
             val remainingInChunk = chunkSize - writtenInChunk
             val toRead = min(remainingInChunk, left)
-            internalArrayCopy(data, curr, chunk, writtenInChunk, toRead)
+            arraycopy(data, curr, chunk, writtenInChunk, toRead)
             left -= toRead
             curr += toRead
             writtenInChunk += toRead
@@ -76,7 +76,7 @@ abstract class Hasher(val chunkSize: Int, val digestSize: Int, val name: String)
         var padPos = 0
         while (padPos < pad.size) {
             val padSize = chunkSize - writtenInChunk
-            internalArrayCopy(pad, padPos, chunk, writtenInChunk, padSize)
+            arraycopy(pad, padPos, chunk, writtenInChunk, padSize)
             coreUpdate(chunk)
             writtenInChunk = 0
             padPos += padSize

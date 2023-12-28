@@ -1,6 +1,6 @@
 package korlibs.crypto
 
-import korlibs.memory.internalArrayCopy
+import korlibs.internal.arraycopy
 import kotlin.rotateRight
 
 class SHA256 : SHA(chunkSize = 64, digestSize = 32) {
@@ -39,10 +39,10 @@ class SHA256 : SHA(chunkSize = 64, digestSize = 32) {
         coreReset()
     }
 
-    override fun coreReset() { internalArrayCopy(H, 0, h, 0, 8) }
+    override fun coreReset() { arraycopy(H, 0, h, 0, 8) }
 
     override fun coreUpdate(chunk: ByteArray) {
-        internalArrayCopy(h, 0, r, 0, 8)
+        arraycopy(h, 0, r, 0, 8)
 
         for (j in 0 until 16) w[j] = chunk.readS32_be(j * 4)
         for (j in 16 until 64) {

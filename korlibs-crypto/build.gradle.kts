@@ -2,7 +2,7 @@
 import korlibs.*
 import korlibs.korge.gradle.generate.*
 
-description = "Korge Foundation Libraries"
+description = "Korlibs Cryptography Library"
 
 project.extensions.extraProperties.properties.apply {
     applyProjectProperties("https://github.com/korlibs/korge/korge-foundation",
