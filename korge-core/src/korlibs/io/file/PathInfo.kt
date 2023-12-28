@@ -190,7 +190,7 @@ fun PathInfo.normalize(removeEndSlash: Boolean = true): String {
     val schemeIndex = path.indexOf(":")
     return if (schemeIndex >= 0) {
         val take = if (path.substring(schemeIndex).startsWith("://")) 3 else 1
-        path.substring(0, schemeIndex + take) + path.substring(schemeIndex + take).pathInfo.normalize()
+        path.substring(0, schemeIndex + take) + path.substring(schemeIndex + take).pathInfo.normalize(removeEndSlash = removeEndSlash)
     } else {
         val path2 = path.replace('\\', '/')
         val out = ArrayList<String>()
