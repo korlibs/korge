@@ -3,16 +3,12 @@ package korlibs.io.net
 import korlibs.memory.ByteArrayBuilder
 import korlibs.io.file.normalize
 import korlibs.io.file.pathInfo
-import korlibs.io.lang.Charset
-import korlibs.io.lang.UTF8
-import korlibs.io.lang.substr
-import korlibs.io.lang.toByteArray
-import korlibs.io.lang.toString
 import korlibs.io.util.StrReader
 import korlibs.io.util.substringAfterOrNull
 import korlibs.io.util.substringBeforeOrNull
 import korlibs.encoding.Hex
 import korlibs.encoding.toBase64
+import korlibs.io.lang.*
 
 data class URL private constructor(
 	val isOpaque: Boolean,
@@ -149,12 +145,20 @@ data class URL private constructor(
 
 		fun isAbsolute(url: String): Boolean = StrReader(url).tryRegex(schemeRegex) != null
 
+        fun resolveOrNull(base: String, access: String): String? = kotlin.runCatching { resolve(base, access) }.getOrNull()
+
 		fun resolve(base: String, access: String): String {
             // if access url is relative protocol then copy it from base
-            val refinedAccess = if (access.startsWith("//")) "${base.substringBefore(":")}:$access" else access
+            val refinedAccess = if (access.startsWith("//") && base.contains(":")) "${base.substringBefore(":")}:$access" else access
+            if (isAbsolute(refinedAccess)) return refinedAccess
+            if (base.isBlank()) {
+                throw MalformedInputException("The base URL should not be empty, or the access URL must be absolute.")
+            }
+            if (!isAbsolute(base)) {
+                throw MalformedInputException("At least one of the base URL or access URL must be absolute.")
+            }
             return when {
                 refinedAccess.isEmpty() -> base
-                isAbsolute(refinedAccess) -> refinedAccess
                 refinedAccess.startsWith("/") -> URL(base).copy(path = refinedAccess.normalizeUrl(), query = null).fullUrl
                 else -> URL(base).run {
                     val refinedPath = if(refinedAccess.startsWith("?") || refinedAccess.startsWith("#")) {
