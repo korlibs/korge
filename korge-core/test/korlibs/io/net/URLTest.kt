@@ -1,9 +1,8 @@
 package korlibs.io.net
 
 import korlibs.io.file.*
-import korlibs.io.lang.toByteArray
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import korlibs.io.lang.*
+import kotlin.test.*
 
 class URLTest {
 	data class UrlInfo(val url: String, val componentString: String, val isAbsolute: Boolean, val isOpaque: Boolean)
@@ -167,6 +166,15 @@ class URLTest {
         assertEquals("file:///var/log/messages", URL.resolve("file:///etc/", "/var/log/messages"))
         assertEquals("file:///var/log/messages", URL.resolve("file:///etc", "/var/log/messages"))
         assertEquals("file:///etc/var/log/messages", URL.resolve("file:///etc/", "var/log/messages"))
+
+        assertNull(URL.resolveOrNull("", ""))
+        assertFailsWith<MalformedInputException> { URL.resolve("", "") }
+        assertNull(URL.resolveOrNull("abc", "/abc"))
+        assertFailsWith<MalformedInputException> { URL.resolve("abc", "/abc") }
+        assertNull(URL.resolveOrNull("wrong", "also wrong"))
+        assertFailsWith<MalformedInputException> { URL.resolve("wrong", "also wrong") }
+        assertEquals("https://example.com/a", URL.resolve("", "https://example.com/a"))
+        assertEquals("https://example.com/a", URL.resolve("wrong", "https://example.com/a"))
 	}
 
 	@Test
