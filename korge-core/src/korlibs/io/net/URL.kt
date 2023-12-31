@@ -86,7 +86,7 @@ data class URL private constructor(
 			fragment: String?,
 			opaque: Boolean = false,
 			port: Int = DEFAULT_PORT
-		): URL = URL(opaque, scheme, userInfo, host, path, query, fragment, port)
+		): URL = URL(opaque, scheme?.lowercase(), userInfo, host, path, query, fragment, port)
 
 		private val schemeRegex = Regex("\\w+:")
 
