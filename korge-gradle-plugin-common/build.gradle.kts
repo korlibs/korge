@@ -18,6 +18,7 @@ dependencies {
     //implementation(localGroovy())
     //implementation("org.eclipse.jgit:org.eclipse.jgit:6.3.0.202209071007-r")
     implementation(libs.jgit)
+    testImplementation(libs.bundles.kotlin.test)
 }
 
 val jversion = GRADLE_JAVA_VERSION_STR
@@ -68,3 +69,5 @@ afterEvaluate {
         }
     }
 }
+
+tasks { val jvmTest by creating { dependsOn("test") } }

@@ -209,7 +209,7 @@ open class FFILib(val paths: List<String>, val lazyCreate: Boolean = true) {
         }
     }
 
-    class FuncDelegate<T>(val base: FFILib, val bname: String, val name: String, val type: KType, val config: FFIFuncConfig) : ReadOnlyProperty<FFILib, T> {
+    class FuncDelegate<T>(val base: FFILib, val bname: String, val name: String, val type: KType, val config: FFIFuncConfig, val required: Boolean) : ReadOnlyProperty<FFILib, T> {
         val parts = extractTypeFunc(type)
         //val generics = type.arguments.map { it.type?.classifier }
         val params = parts.paramsClass
@@ -221,17 +221,17 @@ open class FFILib(val paths: List<String>, val lazyCreate: Boolean = true) {
         }
     }
 
-    class FuncInfo<T>(val type: KType, val extraName: String?, val config: FFIFuncConfig) {
+    class FuncInfo<T>(val type: KType, val extraName: String?, val config: FFIFuncConfig, val required: Boolean = true) {
         operator fun provideDelegate(
             thisRef: FFILib,
             prop: KProperty<*>
-        ): ReadOnlyProperty<FFILib, T> = FuncDelegate<T>(thisRef, prop.name, extraName ?: prop.name, type, config).also {
+        ): ReadOnlyProperty<FFILib, T> = FuncDelegate<T>(thisRef, prop.name, extraName ?: prop.name, type, config, required).also {
             thisRef.functions.add(it)
             if (!thisRef.lazyCreate) it.getValue(thisRef, prop)
         }
     }
 
-    inline fun <reified T : Function<*>> func(name: String? = null, config: FFIFuncConfig = FFIFuncConfig.DEFAULT): FuncInfo<T> = FuncInfo<T>(typeOf<T>(), name, config)
+    inline fun <reified T : Function<*>> func(name: String? = null, config: FFIFuncConfig = FFIFuncConfig.DEFAULT, required: Boolean = true): FuncInfo<T> = FuncInfo<T>(typeOf<T>(), name, config, required)
 
     //inline fun <reified T : Function<*>> castToFunc(ptr: FFIPointer): T = sym.castToFunc(ptr, FuncInfo(typeOf<T>(), null))
     protected fun finalize() {

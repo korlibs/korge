@@ -72,7 +72,7 @@ fun Project.configureAndroidDirect(projectType: ProjectType, isKorge: Boolean) {
         setCompileSdkVersion(if (isKorge) project.korge.androidCompileSdk else project.getAndroidCompileSdkVersion())
         //buildToolsVersion(project.findProperty("android.buildtools.version")?.toString() ?: "30.0.2")
 
-        (this as CommonExtension<*, *, *, *>).installation.apply {
+        (this as CommonExtension<*, *, *, *, *>).installation.apply {
             // @TODO: Android Build Gradle newer version
             installOptions("-r")
             timeOutInMs = project.korge.androidTimeoutMs
@@ -81,6 +81,12 @@ fun Project.configureAndroidDirect(projectType: ProjectType, isKorge: Boolean) {
         compileOptions.apply {
             sourceCompatibility = ANDROID_JAVA_VERSION
             targetCompatibility = ANDROID_JAVA_VERSION
+        }
+
+        buildFeatures.apply {
+            if (project.name == "korge-foundation") {
+                buildConfig = true
+            }
         }
 
         packagingOptions.also {

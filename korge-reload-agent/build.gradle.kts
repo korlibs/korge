@@ -65,3 +65,9 @@ afterEvaluate {
 
 korlibs.NativeTools.groovyConfigurePublishing(project, false)
 korlibs.NativeTools.groovyConfigureSigning(project)
+
+dependencies {
+    testImplementation(libs.bundles.kotlin.test)
+}
+
+tasks { val jvmTest by creating { dependsOn("test") } }

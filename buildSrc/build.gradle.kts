@@ -140,11 +140,17 @@ val buildVersionsStringForPlugin = buildVersionsString.replace(
     "const val GIT = \"---\"",
     "const val GIT = \"${gitVersion}\""
 )
+val buildVersionsStringForPlugin2 = buildVersionsStringForPlugin.replace(
+    "package korlibs.korge.gradle",
+    "package korlibs.korge.gradle.common"
+)
 
 val buildsVersionBuildSrcFile =
     file("../buildSrc/src/main/kotlinGen/korlibs/korge/gradle/BuildVersions.kt")
 val buildsVersionFilePlugin =
     file("../korge-gradle-plugin/build/srcgen/korlibs/korge/gradle/BuildVersions.kt")
+val buildsVersionFilePlugin2 =
+    file("../korge-gradle-plugin-common/build/srcgen/korlibs/korge/gradle/common/BuildVersions.kt")
 
 if (!buildsVersionBuildSrcFile.exists() || buildsVersionBuildSrcFile.text != buildVersionsStringForBuildSrc) {
     buildsVersionBuildSrcFile.parentFile.mkdirs()
@@ -153,4 +159,8 @@ if (!buildsVersionBuildSrcFile.exists() || buildsVersionBuildSrcFile.text != bui
 if (!buildsVersionFilePlugin.exists() || buildsVersionFilePlugin.text != buildVersionsStringForPlugin) {
     buildsVersionFilePlugin.parentFile.mkdirs()
     buildsVersionFilePlugin.text = buildVersionsStringForPlugin
+}
+if (!buildsVersionFilePlugin2.exists() || buildsVersionFilePlugin2.text != buildVersionsStringForPlugin2) {
+    buildsVersionFilePlugin2.parentFile.mkdirs()
+    buildsVersionFilePlugin2.text = buildVersionsStringForPlugin2
 }

@@ -1,1 +1,5 @@
 * text=auto eol=lf
+
+# https://github.com/github-linguist/linguist/blob/master/docs/overrides.md
+*.wasm linguist-vendored
+*.wat linguist-vendored

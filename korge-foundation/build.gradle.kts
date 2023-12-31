@@ -23,6 +23,7 @@ dependencies {
     //add("commonTestApi", project(":korge-test"))
     commonTestApi(libs.kotlinx.coroutines.test)
     commonMainApi(project(":korlibs-time"))
+    commonMainApi(project(":korlibs-crypto"))
 }
 
 //korlibs.korge.gradle.generate.TemplateGenerator.synchronize(new File(projectDir, "template"))

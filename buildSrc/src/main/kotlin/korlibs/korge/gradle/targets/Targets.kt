@@ -23,6 +23,9 @@ val inCI: Boolean get() = !System.getenv("CI").isNullOrBlank() || !System.getPro
 
 val KotlinTarget.isIos get() = name.startsWith("ios")
 val KotlinTarget.isTvos get() = name.startsWith("tvos")
+val KotlinTarget.isLinux get() = name.startsWith("linux")
+val KotlinTarget.isMingw get() = name.startsWith("mingw")
+val KotlinTarget.isMacos get() = name.startsWith("macos")
 
 fun NamedDomainObjectContainer<KotlinSourceSet>.createPairSourceSet(
     name: String,

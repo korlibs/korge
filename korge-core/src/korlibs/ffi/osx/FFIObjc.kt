@@ -42,7 +42,7 @@ object FFIObjc : FFILib("objc") {
 
     // @TODO: Check: Error looking up function 'objc_msgSend_stret': dlsym(RTLD_DEFAULT, objc_msgSend_stret): symbol not found
     // Was only available on Intel macs?
-    val objc_msgSend_stret: (structPtr: Any?, args: FFIVarargs) -> Unit by func("objc_msgSend_stret")
+    val objc_msgSend_stret: (structPtr: Any?, args: FFIVarargs) -> Unit by func("objc_msgSend_stret", required = false)
 
     /*
     fun objc_msgSend(a: Long, b: Long): Long

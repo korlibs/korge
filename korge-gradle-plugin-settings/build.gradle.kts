@@ -28,6 +28,7 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile::class).all {
 
 dependencies {
     implementation(project(":korge-gradle-plugin-common"))
+    testImplementation(libs.bundles.kotlin.test)
 }
 
 gradlePlugin {
@@ -65,3 +66,5 @@ afterEvaluate {
         }
     }
 }
+
+tasks { val jvmTest by creating { dependsOn("test") } }
