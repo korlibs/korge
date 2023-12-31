@@ -24,7 +24,7 @@ actual object Console : BaseConsole() {
 internal actual val miniEnvironmentVariables: Map<String, String> by lazy { System.getenv() }
 
 actual object DefaultLogOutput : Logger.Output {
-    override fun output(logger: Logger, level: Logger.Level, msg: Any?) {
+    actual override fun output(logger: Logger, level: Logger.Level, msg: Any?) {
         if (logger.nativeLogger == null) {
             logger.nativeLogger = java.util.logging.Logger.getLogger(logger.name).also { nativeLogger ->
                 nativeLogger.useParentHandlers = true

@@ -16,6 +16,9 @@ expect class NativeThread(code: (NativeThread) -> Unit) : Extra {
         fun sleep(time: TimeSpan): Unit
         inline fun spinWhile(cond: () -> Boolean): Unit
     }
+
+    override var extra: ExtraType
+
     var threadSuggestRunning: Boolean
     var priority: Int
     var name: String?
