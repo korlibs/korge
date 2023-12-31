@@ -8,8 +8,6 @@ import kotlinx.cinterop.*
 import platform.CoreFoundation.*
 import platform.posix.*
 
-actual interface Serializable
-
 internal actual object KlockInternal {
     actual val currentTime: Double get() = memScoped {
         val timeVal = alloc<timeval>()

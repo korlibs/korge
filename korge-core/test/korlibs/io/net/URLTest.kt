@@ -1,8 +1,8 @@
 package korlibs.io.net
 
-import korlibs.io.lang.toByteArray
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import korlibs.io.file.*
+import korlibs.io.lang.*
+import kotlin.test.*
 
 class URLTest {
 	data class UrlInfo(val url: String, val componentString: String, val isAbsolute: Boolean, val isOpaque: Boolean)
@@ -100,6 +100,22 @@ class URLTest {
 		for (url in URLS) assertEquals(url.isOpaque, URL(url.url).isOpaque, url.url)
 	}
 
+    @Test
+    fun testNormalize() {
+        assertEquals("g", "./g/.".pathInfo.normalize())
+        assertEquals("g", "././g".pathInfo.normalize())
+        assertEquals("g", "./g/.".pathInfo.normalize())
+        assertEquals("g", "g/".pathInfo.normalize())
+        assertEquals("/g", "/./g".pathInfo.normalize())
+        assertEquals("/g", "/../g".pathInfo.normalize())
+        assertEquals("g", "./g".pathInfo.normalize())
+        assertEquals("g", "g/.".pathInfo.normalize())
+        assertEquals("g/", "g/.".normalizeUrl())
+        assertEquals("g/", "g/".normalizeUrl())
+        assertEquals("g/", "./g/.".normalizeUrl())
+        assertEquals("g/", "./g/.".normalizeUrl())
+    }
+
 	@Test
 	fun testResolve() {
 		assertEquals("https://www.google.es/", URL.resolve("https://google.es/", "https://www.google.es/"))
@@ -109,6 +125,56 @@ class URLTest {
 		assertEquals("https://google.es/test", URL.resolve("https://google.es/path/path2", "../test"))
 		assertEquals("https://google.es/path/test", URL.resolve("https://google.es/path/path2/", "../test"))
 		assertEquals("https://google.es/test", URL.resolve("https://google.es/path/path2/", "../../../test"))
+
+        assertEquals("http://example.com/one/two?three", URL.resolve("http://example.com", "./one/two?three"))
+        assertEquals("http://example.com/one/two?three", URL.resolve("http://example.com?one", "./one/two?three"))
+        assertEquals("http://example.com/one/two?three#four", URL.resolve("http://example.com", "./one/two?three#four"))
+        assertEquals("https://example.com/one", URL.resolve("http://example.com/", "https://example.com/one"))
+        assertEquals("http://example.com/one/two.html", URL.resolve("http://example.com/two/", "../one/two.html"))
+        assertEquals("https://example2.com/one", URL.resolve("https://example.com/", "//example2.com/one"))
+        assertEquals("https://example.com:8080/one", URL.resolve("https://example.com:8080", "./one"))
+        assertEquals("https://example2.com/one", URL.resolve("http://example.com/", "https://example2.com/one"))
+        assertEquals("https://example.com/one", URL.resolve("wrong", "https://example.com/one"))
+        assertEquals("https://example.com/one", URL.resolve("https://example.com/one", ""))
+        assertEquals("https://example.com/one/two.c", URL.resolve("https://example.com/one/two/", "../two.c"))
+        assertEquals("https://example.com/two.c", URL.resolve("https://example.com/one/two", "../two.c"))
+        assertEquals("ftp://example.com/one", URL.resolve("ftp://example.com/two/", "../one"))
+        assertEquals("ftp://example.com/one/two.c", URL.resolve("ftp://example.com/one/", "./two.c"))
+        assertEquals("ftp://example.com/one/two.c", URL.resolve("ftp://example.com/one/", "two.c"))
+        // examples taken from rfc3986 section 5.4.2
+        assertEquals("http://example.com/g", URL.resolve("http://example.com/b/c/d;p?q", "../../../g"))
+        assertEquals("http://example.com/g", URL.resolve("http://example.com/b/c/d;p?q", "../../../../g"))
+        assertEquals("http://example.com/g", URL.resolve("http://example.com/b/c/d;p?q", "/./g"))
+        assertEquals("http://example.com/g", URL.resolve("http://example.com/b/c/d;p?q", "/../g"))
+        assertEquals("http://example.com/b/c/g.", URL.resolve("http://example.com/b/c/d;p?q", "g."))
+        assertEquals("http://example.com/b/c/.g", URL.resolve("http://example.com/b/c/d;p?q", ".g"))
+        assertEquals("http://example.com/b/c/g..", URL.resolve("http://example.com/b/c/d;p?q", "g.."))
+        assertEquals("http://example.com/b/c/..g", URL.resolve("http://example.com/b/c/d;p?q", "..g"))
+        assertEquals("http://example.com/b/g", URL.resolve("http://example.com/b/c/d;p?q", "./../g"))
+        assertEquals("http://example.com/b/c/g/", URL.resolve("http://example.com/b/c/d;p?q", "./g/."))
+        assertEquals("http://example.com/b/c/g/h", URL.resolve("http://example.com/b/c/d;p?q", "g/./h"))
+        assertEquals("http://example.com/b/c/h", URL.resolve("http://example.com/b/c/d;p?q", "g/../h"))
+        assertEquals("http://example.com/b/c/g;x=1/y", URL.resolve("http://example.com/b/c/d;p?q", "g;x=1/./y"))
+        assertEquals("http://example.com/b/c/y", URL.resolve("http://example.com/b/c/d;p?q", "g;x=1/../y"))
+        assertEquals("http://example.com/b/c/g?y/./x", URL.resolve("http://example.com/b/c/d;p?q", "g?y/./x"))
+        assertEquals("http://example.com/b/c/g?y/../x", URL.resolve("http://example.com/b/c/d;p?q", "g?y/../x"))
+        assertEquals("http://example.com/b/c/g#s/./x", URL.resolve("http://example.com/b/c/d;p?q", "g#s/./x"))
+        assertEquals("http://example.com/b/c/g#s/../x", URL.resolve("http://example.com/b/c/d;p?q", "g#s/../x"))
+        assertEquals("https://example.com/path/bar.html?foo", URL.resolve("https://example.com/path/file?bar", "bar.html?foo"))
+        assertEquals("https://example.com/path/file?foo", URL.resolve("https://example.com/path/file?bar", "?foo"))
+        assertEquals("https://example.com/foo bar/", URL.resolve("https://example.com/example/", "../foo bar/"))
+        assertEquals("file:///var/log/messages", URL.resolve("file:///etc/", "/var/log/messages"))
+        assertEquals("file:///var/log/messages", URL.resolve("file:///etc", "/var/log/messages"))
+        assertEquals("file:///etc/var/log/messages", URL.resolve("file:///etc/", "var/log/messages"))
+
+        assertNull(URL.resolveOrNull("", ""))
+        assertFailsWith<MalformedInputException> { URL.resolve("", "") }
+        assertNull(URL.resolveOrNull("abc", "/abc"))
+        assertFailsWith<MalformedInputException> { URL.resolve("abc", "/abc") }
+        assertNull(URL.resolveOrNull("wrong", "also wrong"))
+        assertFailsWith<MalformedInputException> { URL.resolve("wrong", "also wrong") }
+        assertEquals("https://example.com/a", URL.resolve("", "https://example.com/a"))
+        assertEquals("https://example.com/a", URL.resolve("wrong", "https://example.com/a"))
 	}
 
 	@Test

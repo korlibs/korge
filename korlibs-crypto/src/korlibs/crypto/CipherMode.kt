@@ -1,7 +1,7 @@
 package korlibs.crypto
 
-import korlibs.memory.*
-import kotlin.experimental.*
+import korlibs.internal.arraycopy
+import kotlin.experimental.xor
 
 /**
  * Symmetric Cipher Mode

@@ -39,8 +39,10 @@ node = "16.9.1"
 #android-build-gradle = "7.4.2"
 #android-build-gradle = "8.0.0"
 #android-build-gradle = "7.4.0-beta02"
-android-build-gradle = "7.3.1"
+#android-build-gradle = "7.3.1"
 #android-build-gradle = "8.1.0-alpha04"
+#android-build-gradle = "8.2.0" # The project is using an incompatible version (AGP 8.2.0) of the Android Gradle plugin. Latest supported version is AGP 8.2.0-beta05
+android-build-gradle = "8.2.0"
 gson = "2.10.1"
 gradle-publish-plugin = "1.1.0"
 #gradle-publish-plugin = "0.14.0"
@@ -56,6 +58,7 @@ junit = { module = "junit:junit", version.ref = "junit" }
 kotlin-serialization = { module = "org.jetbrains.kotlin:kotlin-serialization", version.ref = "kotlin" }
 kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
+kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
 dokka = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version.ref = "dokka" }
 kover = { module = "org.jetbrains.kotlinx:kover", version.ref = "kover" }
 kover-intellij-agent = { module = "org.jetbrains.intellij.deps:intellij-coverage-agent", version.ref = "kover-agent" }
@@ -75,6 +78,7 @@ jgit = { module = "org.eclipse.jgit:org.eclipse.jgit", version.ref = "jgit" }
 
 [bundles]
 jna = ["jna-core", "jna-platform"]
+kotlin-test = ["junit", "kotlin-test", "kotlin-test-junit"]
 
 #[plugins]
 #jmh = { id = "me.champeau.jmh", version = "0.6.5" }
