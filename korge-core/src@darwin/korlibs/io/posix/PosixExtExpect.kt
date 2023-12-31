@@ -1,9 +1,20 @@
 package korlibs.io.posix
 
+import korlibs.time.*
 import kotlinx.cinterop.*
 import platform.posix.*
+import kotlin.time.*
+import kotlin.time.Duration.Companion.nanoseconds
+import kotlin.time.Duration.Companion.seconds
 
-data class PosixStatInfo(val size: Long, val isDirectory: Boolean, val mode: Int = 0)
+data class PosixStatInfo(
+    val size: Long,
+    val isDirectory: Boolean,
+    val mode: Int = 0,
+    val timeCreated: DateTime,
+    val timeModified: DateTime,
+    val timeLastAccess: DateTime,
+)
 
 fun posixFread(__ptr: CValuesRef<*>?, __size: Long, __nitems: Long, __stream: CValuesRef<FILE>?): ULong = POSIX.posixFread(__ptr, __size, __nitems, __stream)
 fun posixFwrite(__ptr: CValuesRef<*>?, __size: Long, __nitems: Long, __stream: CValuesRef<FILE>?): ULong = POSIX.posixFwrite(__ptr, __size, __nitems, __stream)
@@ -63,10 +74,21 @@ abstract class BasePosix {
             if (platform.posix.stat(rpath, s.ptr) == 0) {
                 val size: Long = s.st_size.toLong()
                 val isDirectory = (s.st_mode.toInt() and S_IFDIR) != 0
-                return PosixStatInfo(size = size, isDirectory = isDirectory, mode = s.st_mode.convert())
+                return PosixStatInfo(
+                    size = size,
+                    isDirectory = isDirectory,
+                    mode = s.st_mode.convert(),
+                    timeCreated = s.st_ctimespec.toDateTime(),
+                    timeModified = s.st_mtimespec.toDateTime(),
+                    timeLastAccess = s.st_atimespec.toDateTime(),
+                )
             }
         }
         return null
     }
+
+    fun platform.posix.timespec.toDateTime(): DateTime =
+        DateTime.EPOCH +
+            (this.tv_sec.seconds + this.tv_nsec.nanoseconds)
 
 }
