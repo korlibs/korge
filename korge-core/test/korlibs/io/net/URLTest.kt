@@ -101,6 +101,23 @@ class URLTest {
 	}
 
     @Test
+    fun testURL(){
+        val url = URL("HTTPS://Google.com:442/test?q=1")
+        assertEquals("https", url.scheme) // always lowercase issue #2092
+        assertEquals("Google.com", url.host)
+        assertEquals(442, url.port)
+        assertEquals("/test", url.path)
+        assertEquals("/test?q=1", url.pathWithQuery)
+        assertEquals("q=1", url.query)
+        assertEquals("https://Google.com:442/test?q=1", url.fullUrl)
+
+        val url2 = URL(scheme = "HTTPs", userInfo = null, host = "Google.com", path = "", query = null, fragment = null)
+        assertEquals("https", url2.scheme)
+        assertEquals(443, url2.port)
+        assertEquals("https://Google.com", url2.fullUrl)
+    }
+
+    @Test
     fun testNormalize() {
         assertEquals("g", "./g/.".pathInfo.normalize())
         assertEquals("g", "././g".pathInfo.normalize())
