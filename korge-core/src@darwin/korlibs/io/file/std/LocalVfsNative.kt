@@ -246,7 +246,12 @@ open class LocalVfsNativeBase(val async: Boolean = true) : LocalVfs() {
         if (exception == null) {
             val statInfo = posixStat(rpath)
             if (statInfo != null) {
-                return createExistsStat(rpath, statInfo.isDirectory, statInfo.size, mode = statInfo.mode)
+                return createExistsStat(
+                    rpath, statInfo.isDirectory, statInfo.size, mode = statInfo.mode,
+                    createTime = statInfo.timeCreated,
+                    modifiedTime = statInfo.timeModified,
+                    lastAccessTime = statInfo.timeLastAccess,
+                )
             }
         }
         return createNonExistsStat(rpath, exception = exception)
