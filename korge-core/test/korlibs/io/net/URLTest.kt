@@ -105,6 +105,7 @@ class URLTest {
         val url = URL("HTTPS://Google.com:442/test?q=1")
         assertEquals("https", url.scheme) // always lowercase issue #2092
         assertEquals("Google.com", url.host)
+        assertEquals(442, url.port)
         assertEquals("/test", url.path)
         assertEquals("/test?q=1", url.pathWithQuery)
         assertEquals("q=1", url.query)
