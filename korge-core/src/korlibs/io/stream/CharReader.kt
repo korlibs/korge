@@ -19,7 +19,7 @@ class CharReaderFromSyncStream(val stream: SyncStream, val charset: Charset, val
     private var tempStringBuilder = StringBuilder()
 
     init {
-        if (chunkSize < MIN_CHUNK_SIZE) throw IllegalArgumentException("chunkSize must be greater than $MIN_CHUNK_SIZE")
+        require(chunkSize >= MIN_CHUNK_SIZE) { "chunkSize must be greater than $MIN_CHUNK_SIZE, was $chunkSize" }
     }
 
     override fun clone(): CharReader = CharReaderFromSyncStream(stream.clone(), charset, chunkSize)
@@ -56,7 +56,7 @@ class CharReaderFromSyncStream(val stream: SyncStream, val charset: Charset, val
     }
 
     companion object {
-        private const val DEFAULT_CHUNK_SIZE = 1024
-        private const val MIN_CHUNK_SIZE = 8
+        const val DEFAULT_CHUNK_SIZE = 1024
+        const val MIN_CHUNK_SIZE = 8
     }
 }
