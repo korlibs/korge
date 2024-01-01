@@ -13,6 +13,7 @@ import korlibs.io.lang.*
 data class URL private constructor(
 	val isOpaque: Boolean,
 	val scheme: String?,
+	val subScheme: String?,
 	val userInfo: String?,
 	val host: String?,
 	val path: String,
@@ -43,6 +44,7 @@ data class URL private constructor(
 	fun toUrlString(includeScheme: Boolean = true, out: StringBuilder = StringBuilder()): StringBuilder {
 		if (includeScheme && scheme != null) {
 			out.append("$scheme:")
+            if (subScheme != null) out.append("$subScheme:")
 			if (!isOpaque) out.append("//")
 		}
 		if (userInfo != null) out.append("$userInfo@")
@@ -58,7 +60,7 @@ data class URL private constructor(
 
 	override fun toString(): String = fullUrl
 	fun toComponentString(): String {
-		return "URL(" + listOf(::scheme, ::userInfo, ::host, ::path, ::query, ::fragment)
+		return "URL(" + listOf(::scheme, ::subScheme, ::userInfo, ::host, ::path, ::query, ::fragment)
 			.map { it.name to it.get() }
 			.filter { it.second != null }
 			.joinToString(", ") { "${it.first}=${it.second}" } + ")"
@@ -79,6 +81,7 @@ data class URL private constructor(
 
 		operator fun invoke(
 			scheme: String?,
+			subScheme: String?,
 			userInfo: String?,
 			host: String?,
 			path: String,
@@ -86,9 +89,19 @@ data class URL private constructor(
 			fragment: String?,
 			opaque: Boolean = false,
 			port: Int = DEFAULT_PORT
-		): URL = URL(opaque, scheme?.lowercase(), userInfo, host, path, query, fragment, port)
+		): URL = URL(
+            isOpaque = opaque,
+            scheme = scheme?.lowercase(),
+            subScheme = subScheme?.lowercase(),
+            userInfo = userInfo,
+            host = host,
+            path = path,
+            query = query,
+            fragment = fragment,
+            defaultPort = port
+        )
 
-		private val schemeRegex = Regex("\\w+:")
+		private val schemeRegex = Regex("^([a-zA-Z]+)(?::([a-zA-Z]+))?:")
 
 		operator fun invoke(url: String): URL {
 			val r = StrReader(url)
@@ -97,7 +110,9 @@ data class URL private constructor(
 				schemeColon != null -> {
 					val isHierarchical = r.tryLit("//") != null
 					val nonScheme = r.readRemaining()
-					val scheme = schemeColon.dropLast(1)
+                    val schemeParts = schemeColon.dropLast(1).split(":")
+					val scheme = schemeParts[0]
+                    val subScheme = schemeParts.getOrNull(1)
 
                     val nonFragment = nonScheme.substringBefore('#')
                     val fragment = nonScheme.substringAfterOrNull('#')
@@ -117,6 +132,7 @@ data class URL private constructor(
 					URL(
 						opaque = !isHierarchical,
 						scheme = scheme,
+						subScheme = subScheme,
 						userInfo = userInfo,
 						host = host.takeIf { it.isNotEmpty() },
 						path = if (path != null) "/$path" else "",
@@ -133,6 +149,7 @@ data class URL private constructor(
 					URL(
 						opaque = false,
 						scheme = null,
+                        subScheme = null,
 						userInfo = null,
 						host = null,
 						path = path,

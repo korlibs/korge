@@ -111,10 +111,51 @@ class URLTest {
         assertEquals("q=1", url.query)
         assertEquals("https://Google.com:442/test?q=1", url.fullUrl)
 
-        val url2 = URL(scheme = "HTTPs", userInfo = null, host = "Google.com", path = "", query = null, fragment = null)
+        val url2 = URL(scheme = "HTTPs", subScheme = null, userInfo = null, host = "Google.com", path = "", query = null, fragment = null)
         assertEquals("https", url2.scheme)
         assertEquals(443, url2.port)
         assertEquals("https://Google.com", url2.fullUrl)
+
+        val url3 = URL("https://username:password@example.com:8443/path/to/resource?q=1")
+        assertEquals("https", url3.scheme)
+        assertNull(url3.subScheme)
+        assertEquals("username:password", url3.userInfo)
+        assertEquals("username", url3.user)
+        assertEquals("password", url3.password)
+        assertEquals("example.com", url3.host)
+        assertEquals(8443, url3.port)
+        assertEquals("/path/to/resource", url3.path)
+        assertEquals("/path/to/resource?q=1", url3.pathWithQuery)
+        assertEquals("q=1", url3.query)
+        assertEquals("https://username:password@example.com:8443/path/to/resource?q=1", url3.fullUrl)
+    }
+
+    @Test
+    fun testSubSchemeUrls(){
+//        <scheme>:<subScheme>://<host>:<port>/<path>?<query_parameters>#<fragment>
+        val url = URL("jdbc:mysql://localhost:3306/database?useSSL=false")
+        assertEquals("jdbc", url.scheme) // always lowercase issue #2092
+        assertEquals("mysql", url.subScheme)
+        assertEquals("localhost", url.host)
+        assertEquals(3306, url.port)
+        assertEquals("/database", url.path)
+        assertEquals("/database?useSSL=false", url.pathWithQuery)
+        assertEquals("useSSL=false", url.query)
+        assertEquals("jdbc:mysql://localhost:3306/database?useSSL=false", url.fullUrl)
+
+        val url2 = URL(scheme = "jdbc", subScheme = "mysql", userInfo = null, host = "localhost", path = "/database", query = null, fragment = null, port = 3306)
+        assertEquals("jdbc:mysql://localhost:3306/database", url2.fullUrl)
+
+
+        val url3 = URL("jdbc:mysql://localhost:3306/database?useSSL=false")
+        assertEquals("jdbc", url3.scheme) // always lowercase issue #2092
+        assertEquals("mysql", url3.subScheme)
+        assertEquals("localhost", url3.host)
+        assertEquals(3306, url3.port)
+        assertEquals("/database", url3.path)
+        assertEquals("/database?useSSL=false", url3.pathWithQuery)
+        assertEquals("useSSL=false", url3.query)
+        assertEquals("jdbc:mysql://localhost:3306/database?useSSL=false", url3.fullUrl)
     }
 
     @Test
