@@ -15,6 +15,9 @@ class CharReaderTest {
     fun test2() {
         val reader = "áéíóúñ".repeat(10).toByteArray(UTF8).toCharReader(charset = UTF8, chunkSize = 8)
         assertEquals("á,éí,óúñ", listOf(reader.read(1), reader.read(2), reader.read(3)).joinToString(","))
+
+        assertFailsWith<IllegalArgumentException> { "áéíóúñ".toByteArray(UTF8).toCharReader(charset = UTF8, chunkSize = CharReaderFromSyncStream.MIN_CHUNK_SIZE -1) }
+
     }
 
     @Test
