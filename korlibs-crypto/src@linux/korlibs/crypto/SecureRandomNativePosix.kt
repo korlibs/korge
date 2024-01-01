@@ -1,18 +1,24 @@
 package korlibs.crypto
 
-import kotlinx.cinterop.*
-import platform.Security.*
-import platform.posix.*
+import kotlinx.cinterop.addressOf
+import kotlinx.cinterop.convert
+import kotlinx.cinterop.get
+import kotlinx.cinterop.usePinned
+import platform.posix.fclose
+import platform.posix.fopen
+import platform.posix.fread
+import platform.posix.fwrite
 
-// https://developer.apple.com/documentation/security/randomization_services
 actual fun fillRandomBytes(array: ByteArray) {
     if (array.isEmpty()) return
 
     array.usePinned { pin ->
         val ptr = pin.addressOf(0)
-        val status = SecRandomCopyBytes(kSecRandomDefault, array.size.convert(), ptr)
-        if (status != errSecSuccess) {
-            error("Error filling random bytes. errorCode=$status")
+        val file = fopen("/dev/urandom", "rb")
+        if (file != null) {
+            fread(ptr, 1.convert(), array.size.convert(), file)
+            for (n in 0 until array.size) array[n] = ptr[n]
+            fclose(file)
         }
     }
 }
