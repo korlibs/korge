@@ -101,7 +101,7 @@ data class URL private constructor(
             defaultPort = port
         )
 
-		private val schemeRegex = Regex("^([a-zA-Z]+)(?::([a-zA-Z]+))?:")
+		private val schemeRegex = Regex("^([a-zA-Z0-9+.-]+)(?::([a-zA-Z]+))?:")
 
 		operator fun invoke(url: String): URL {
 			val r = StrReader(url)

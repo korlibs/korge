@@ -159,6 +159,20 @@ class URLTest {
     }
 
     @Test
+    fun testUrlScheme() {
+//        test scheme standard (rfc3986#section-3.1): ALPHA *( ALPHA / DIGIT / "+" / "-" / "." )
+        val url = URL("custom+scheme123://example.com/path/to/resource")
+        assertEquals("custom+scheme123", url.scheme)
+        assertEquals("example.com", url.host)
+        assertEquals("custom+scheme123://example.com/path/to/resource", url.fullUrl)
+
+        val url2 = URL("alpha-numeric+scheme.123://example.com/path/to/resource")
+        assertEquals("alpha-numeric+scheme.123", url2.scheme)
+        assertEquals("example.com", url2.host)
+        assertEquals("alpha-numeric+scheme.123://example.com/path/to/resource", url2.fullUrl)
+    }
+
+    @Test
     fun testNormalize() {
         assertEquals("g", "./g/.".pathInfo.normalize())
         assertEquals("g", "././g".pathInfo.normalize())
