@@ -13,33 +13,50 @@ fun ByteArray.toCharReader(charset: Charset, chunkSize: Int = 1024): CharReader 
 fun SyncStream.toCharReader(charset: Charset, chunkSize: Int = 1024): CharReader =
     CharReaderFromSyncStream(this, charset, chunkSize)
 
-class CharReaderFromSyncStream(val stream: SyncStream, val charset: Charset, val chunkSize: Int = 1024) : CharReader {
+class CharReaderFromSyncStream(val stream: SyncStream, val charset: Charset, val chunkSize: Int = DEFAULT_CHUNK_SIZE) : CharReader {
     private val temp = ByteArray(chunkSize)
     private val buffer = ByteArrayDeque()
     private var tempStringBuilder = StringBuilder()
 
+    init {
+        if (chunkSize < MIN_CHUNK_SIZE) throw IllegalArgumentException("chunkSize must be greater than $MIN_CHUNK_SIZE")
+    }
+
     override fun clone(): CharReader = CharReaderFromSyncStream(stream.clone(), charset, chunkSize)
 
     override fun read(out: StringBuilder, count: Int): Int {
-        while (buffer.availableRead < temp.size) {
-            val readCount = stream.read(temp)
-            if (readCount <= 0) break
-            buffer.write(temp, 0, readCount)
-        }
-
+        bufferUp()
         while (tempStringBuilder.length < count) {
             val readCount = buffer.peek(temp)
             val consumed = charset.decode(tempStringBuilder, temp, 0, readCount)
-            if (consumed <= 0) break
-            buffer.skip(consumed)
+            if (consumed <= 0) {
+                if (bufferUp() <= 0) break
+            } else {
+                buffer.skip(consumed)
+            }
         }
-
-        //println("tempStringBuilder=$tempStringBuilder")
 
         val slice = tempStringBuilder.substring(0, kotlin.math.min(count, tempStringBuilder.length))
         tempStringBuilder = StringBuilder(slice.length).append(tempStringBuilder.substring(slice.length))
 
         out.append(slice)
         return slice.length
+    }
+
+    private fun bufferUp(): Int {
+        var totalReadCount = 0
+        while (buffer.availableRead < temp.size) {
+            val readCount = stream.read(temp)
+            if (readCount <= 0) break
+            totalReadCount += readCount
+            buffer.write(temp, 0, readCount)
+        }
+
+        return totalReadCount
+    }
+
+    companion object {
+        private const val DEFAULT_CHUNK_SIZE = 1024
+        private const val MIN_CHUNK_SIZE = 8
     }
 }
