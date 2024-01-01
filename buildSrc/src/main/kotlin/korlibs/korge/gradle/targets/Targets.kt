@@ -12,7 +12,8 @@ val supportKotlinNative: Boolean get() {
     // We can also try to disable it manually
     if (System.getenv("DISABLE_KOTLIN_NATIVE") == "true") return false
     // On Mac, CI or when FORCE_ENABLE_KOTLIN_NATIVE=true, let's enable it
-    return isMacos || (System.getenv("CI") == "true") || (System.getenv("FORCE_ENABLE_KOTLIN_NATIVE") == "true")
+    //return isMacos || (System.getenv("CI") == "true") || (System.getenv("FORCE_ENABLE_KOTLIN_NATIVE") == "true")
+    return true
 }
 
 val isWindows get() = Os.isFamily(Os.FAMILY_WINDOWS)
