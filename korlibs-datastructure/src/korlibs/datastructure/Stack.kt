@@ -2,7 +2,7 @@
 
 package korlibs.datastructure
 
-import korlibs.datastructure.annotations.Template
+import korlibs.datastructure.annotations.*
 
 typealias Stack<TGen> = TGenStack<TGen>
 

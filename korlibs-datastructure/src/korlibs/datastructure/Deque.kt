@@ -2,11 +2,11 @@
 
 package korlibs.datastructure
 
-import korlibs.datastructure.annotations.Template
-import korlibs.datastructure.internal.contentHashCode
+import korlibs.datastructure.annotations.*
+import korlibs.datastructure.internal.*
 import korlibs.math.InternalMath.umod
 import korlibs.memory.InternalMemory.arraycopy
-import kotlin.math.min
+import kotlin.math.*
 
 typealias Deque<TGen> = TGenDeque<TGen>
 

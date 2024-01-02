@@ -1,7 +1,10 @@
 package korlibs.memory
 
+import kotlin.jvm.*
+
 /** View of [shorts] [ShortArray] reinterpreted as [Int] */
-public inline class UShortArrayInt(public val data: ShortArray) {
+@JvmInline
+internal value class UShortArrayInt(public val data: ShortArray) {
     val shorts: ShortArray get() = data
 
     /** Creates a new [UShortArrayInt] view of [size] bytes */

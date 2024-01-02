@@ -1,6 +1,6 @@
 package korlibs.datastructure
 
-import kotlin.math.min
+import kotlin.math.*
 
 fun <T> genericSort(subject: T, left: Int, right: Int, ops: SortOps<T>): T =
     genericSort(subject, left, right, ops, false)

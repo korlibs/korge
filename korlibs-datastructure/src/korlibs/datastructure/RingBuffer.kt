@@ -1,11 +1,9 @@
 package korlibs.datastructure
 
-import korlibs.datastructure.internal.KdsInternalApi
-import korlibs.datastructure.internal.equaler
-import korlibs.datastructure.internal.hashCoder
+import korlibs.datastructure.internal.*
 import korlibs.memory.InternalMemory.arraycopy
-import kotlin.jvm.JvmOverloads
-import kotlin.math.min
+import kotlin.jvm.*
+import kotlin.math.*
 
 class RingBuffer(bits: Int) : ByteRingBuffer(bits)
 

@@ -2,7 +2,7 @@ package korlibs.memory
 
 import java.nio.*
 
-actual class Buffer(val buffer: ByteBuffer) {
+internal actual class Buffer(val buffer: ByteBuffer) {
     val bufferLE = buffer.duplicate().order(ByteOrder.LITTLE_ENDIAN)
     val bufferBE = buffer.duplicate().order(ByteOrder.BIG_ENDIAN)
     actual val byteOffset: Int = buffer.position()
@@ -93,23 +93,23 @@ internal fun java.nio.Buffer.checkSliceBounds(offset: Int, size: Int) {
     //if (end !in 0 until this.capacity()) error("offset=$offset, size=$size not inside ${this.capacity()}")
 }
 
-fun java.nio.Buffer.positionSafe(newPosition: Int) {
+internal fun java.nio.Buffer.positionSafe(newPosition: Int) {
     position(newPosition)
 }
 
-fun java.nio.Buffer.limitSafe(newLimit: Int) {
+internal fun java.nio.Buffer.limitSafe(newLimit: Int) {
     limit(newLimit)
 }
 
-fun java.nio.Buffer.flipSafe() {
+internal fun java.nio.Buffer.flipSafe() {
     flip()
 }
 
-fun java.nio.Buffer.clearSafe() {
+internal fun java.nio.Buffer.clearSafe() {
     clear()
 }
 
-inline fun <T : java.nio.Buffer> T.sliceBuffer(offset: Int, size: Int, dup: (T) -> T): T {
+internal inline fun <T : java.nio.Buffer> T.sliceBuffer(offset: Int, size: Int, dup: (T) -> T): T {
     checkSliceBounds(offset, size)
     val out = dup(this)
     val start = this.position() + offset
@@ -119,14 +119,14 @@ inline fun <T : java.nio.Buffer> T.sliceBuffer(offset: Int, size: Int, dup: (T) 
     return out
 }
 
-fun ByteBuffer.sliceBuffer(offset: Int, size: Int): ByteBuffer = this.sliceBuffer(offset, size) { it.duplicate() }
-fun ShortBuffer.sliceBuffer(offset: Int, size: Int): ShortBuffer = this.sliceBuffer(offset, size) { it.duplicate() }
-fun IntBuffer.sliceBuffer(offset: Int, size: Int): IntBuffer = this.sliceBuffer(offset, size) { it.duplicate() }
-fun FloatBuffer.sliceBuffer(offset: Int, size: Int): FloatBuffer = this.sliceBuffer(offset, size) { it.duplicate() }
-fun DoubleBuffer.sliceBuffer(offset: Int, size: Int): DoubleBuffer = this.sliceBuffer(offset, size) { it.duplicate() }
+internal fun ByteBuffer.sliceBuffer(offset: Int, size: Int): ByteBuffer = this.sliceBuffer(offset, size) { it.duplicate() }
+internal fun ShortBuffer.sliceBuffer(offset: Int, size: Int): ShortBuffer = this.sliceBuffer(offset, size) { it.duplicate() }
+internal fun IntBuffer.sliceBuffer(offset: Int, size: Int): IntBuffer = this.sliceBuffer(offset, size) { it.duplicate() }
+internal fun FloatBuffer.sliceBuffer(offset: Int, size: Int): FloatBuffer = this.sliceBuffer(offset, size) { it.duplicate() }
+internal fun DoubleBuffer.sliceBuffer(offset: Int, size: Int): DoubleBuffer = this.sliceBuffer(offset, size) { it.duplicate() }
 
-val Buffer.nioBuffer: java.nio.ByteBuffer get() = this.slicedBuffer()
-val Buffer.nioIntBuffer: java.nio.IntBuffer get() = this.slicedBuffer().asIntBuffer()
-val Buffer.nioFloatBuffer: java.nio.FloatBuffer get() = this.slicedBuffer().asFloatBuffer()
+internal val Buffer.nioBuffer: java.nio.ByteBuffer get() = this.slicedBuffer()
+internal val Buffer.nioIntBuffer: java.nio.IntBuffer get() = this.slicedBuffer().asIntBuffer()
+internal val Buffer.nioFloatBuffer: java.nio.FloatBuffer get() = this.slicedBuffer().asFloatBuffer()
 
 internal actual val currentIsLittleEndian: Boolean get() = ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN

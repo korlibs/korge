@@ -1,8 +1,11 @@
 package korlibs.memory
 
+import kotlin.jvm.*
+
 
 /** View of [bytes] [ByteArray] reinterpreted as [Int] */
-public inline class UByteArrayInt(public val data: ByteArray) {
+@JvmInline
+internal value class UByteArrayInt(public val data: ByteArray) {
     val bytes: ByteArray get() = data
 
     /** Creates a new [UByteArrayInt] view of [size] bytes */

@@ -1,10 +1,8 @@
 package korlibs.datastructure
 
-import korlibs.datastructure.comparator.ComparatorComparable
-import korlibs.datastructure.map.MutableEntryExt
-import korlibs.datastructure.map.MutableMapExt
-import kotlin.math.max
-import kotlin.math.min
+import korlibs.datastructure.comparator.*
+import korlibs.datastructure.map.*
+import kotlin.math.*
 
 fun <K, V> sortedMapOf(comparator: Comparator<K>, vararg values: Pair<K, V>): SortedMap<K, V> =
     SortedMap<K, V>(comparator).also { it.putAll(values) }

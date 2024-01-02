@@ -3,7 +3,6 @@ package korlibs.datastructure
 import korlibs.datastructure.internal.*
 import korlibs.math.*
 import korlibs.memory.InternalMemory.arraycopy
-import kotlin.collections.max
 import kotlin.math.*
 
 //typealias IntList = IIntArrayList

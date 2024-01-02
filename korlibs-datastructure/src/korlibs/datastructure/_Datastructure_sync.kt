@@ -3,7 +3,7 @@
 package korlibs.datastructure.sync
 
 import korlibs.datastructure.*
-import korlibs.datastructure.lock.NonRecursiveLock
+import korlibs.datastructure.lock.*
 
 open class SynchronizedCollection<T>(
     protected val base: MutableCollection<T>,

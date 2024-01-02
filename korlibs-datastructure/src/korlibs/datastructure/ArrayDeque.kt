@@ -1,8 +1,8 @@
 package korlibs.datastructure
 
-import korlibs.datastructure.internal.KdsInternalApi
+import korlibs.datastructure.internal.*
 import korlibs.math.InternalMath.ilog2
-import kotlin.jvm.JvmOverloads
+import kotlin.jvm.*
 
 class ByteArrayDeque(val initialBits: Int = 10, val allowGrow: Boolean = true) {
     private var ring = RingBuffer(initialBits)

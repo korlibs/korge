@@ -2,7 +2,7 @@ package korlibs.memory
 
 import org.khronos.webgl.*
 
-actual class Buffer(val dataView: org.khronos.webgl.DataView) {
+internal actual class Buffer(val dataView: org.khronos.webgl.DataView) {
     actual constructor(size: Int, direct: Boolean) : this(DataView(ArrayBuffer(checkNBufferSize(size))))
     actual constructor(array: ByteArray, offset: Int, size: Int) : this(DataView(checkNBufferWrap(array, offset, size).unsafeCast<Int8Array>().buffer, offset, size))
 
@@ -77,28 +77,28 @@ actual class Buffer(val dataView: org.khronos.webgl.DataView) {
     }
 }
 
-val Buffer.buffer: ArrayBuffer get() = dataView.buffer
+internal val Buffer.buffer: ArrayBuffer get() = dataView.buffer
 
-fun ArrayBuffer.asUint8ClampedArray(): Uint8ClampedArray = Uint8ClampedArray(this)
-fun ArrayBuffer.asUint8Array(): Uint8Array = Uint8Array(this)
-fun ArrayBuffer.asInt8Array(): Int8Array = Int8Array(this)
-fun ArrayBuffer.asInt16Array(): Int16Array = Int16Array(this)
-fun ArrayBuffer.asInt32Array(): Int32Array = Int32Array(this)
-fun ArrayBuffer.asFloat32Array(): Float32Array = Float32Array(this)
-fun ArrayBuffer.asFloat64Array(): Float64Array = Float64Array(this)
+internal fun ArrayBuffer.asUint8ClampedArray(): Uint8ClampedArray = Uint8ClampedArray(this)
+internal fun ArrayBuffer.asUint8Array(): Uint8Array = Uint8Array(this)
+internal fun ArrayBuffer.asInt8Array(): Int8Array = Int8Array(this)
+internal fun ArrayBuffer.asInt16Array(): Int16Array = Int16Array(this)
+internal fun ArrayBuffer.asInt32Array(): Int32Array = Int32Array(this)
+internal fun ArrayBuffer.asFloat32Array(): Float32Array = Float32Array(this)
+internal fun ArrayBuffer.asFloat64Array(): Float64Array = Float64Array(this)
 
-fun ArrayBuffer.asUByteArray(): UByteArray = asUint8Array().unsafeCast<ByteArray>().asUByteArray()
-fun ArrayBuffer.asByteArray(): ByteArray = asInt8Array().unsafeCast<ByteArray>()
-fun ArrayBuffer.asShortArray(): ShortArray = asInt16Array().unsafeCast<ShortArray>()
-fun ArrayBuffer.asIntArray(): IntArray = asInt32Array().unsafeCast<IntArray>()
-fun ArrayBuffer.asFloatArray(): FloatArray = asFloat32Array().unsafeCast<FloatArray>()
-fun ArrayBuffer.asDoubleArray(): DoubleArray = asFloat64Array().unsafeCast<DoubleArray>()
+internal fun ArrayBuffer.asUByteArray(): UByteArray = asUint8Array().unsafeCast<ByteArray>().asUByteArray()
+internal fun ArrayBuffer.asByteArray(): ByteArray = asInt8Array().unsafeCast<ByteArray>()
+internal fun ArrayBuffer.asShortArray(): ShortArray = asInt16Array().unsafeCast<ShortArray>()
+internal fun ArrayBuffer.asIntArray(): IntArray = asInt32Array().unsafeCast<IntArray>()
+internal fun ArrayBuffer.asFloatArray(): FloatArray = asFloat32Array().unsafeCast<FloatArray>()
+internal fun ArrayBuffer.asDoubleArray(): DoubleArray = asFloat64Array().unsafeCast<DoubleArray>()
 
-val Buffer.arrayUByte: Uint8Array get() = Uint8Array(this.buffer, byteOffset, sizeInBytes)
-val Buffer.arrayByte: Int8Array get() = Int8Array(buffer, byteOffset, sizeInBytes)
-val Buffer.arrayShort: Int16Array get() = Int16Array(buffer, byteOffset, sizeInBytes / 2)
-val Buffer.arrayInt: Int32Array get() = Int32Array(buffer, byteOffset, sizeInBytes / 4)
-val Buffer.arrayFloat: Float32Array get() = Float32Array(buffer, byteOffset, sizeInBytes / 4)
-val Buffer.arrayDouble: Float64Array get() = Float64Array(buffer, byteOffset, sizeInBytes / 8)
+internal val Buffer.arrayUByte: Uint8Array get() = Uint8Array(this.buffer, byteOffset, sizeInBytes)
+internal val Buffer.arrayByte: Int8Array get() = Int8Array(buffer, byteOffset, sizeInBytes)
+internal val Buffer.arrayShort: Int16Array get() = Int16Array(buffer, byteOffset, sizeInBytes / 2)
+internal val Buffer.arrayInt: Int32Array get() = Int32Array(buffer, byteOffset, sizeInBytes / 4)
+internal val Buffer.arrayFloat: Float32Array get() = Float32Array(buffer, byteOffset, sizeInBytes / 4)
+internal val Buffer.arrayDouble: Float64Array get() = Float64Array(buffer, byteOffset, sizeInBytes / 8)
 
 internal actual val currentIsLittleEndian: Boolean = Uint8Array(Uint32Array(arrayOf(0x11223344)).buffer)[0].toInt() == 0x44

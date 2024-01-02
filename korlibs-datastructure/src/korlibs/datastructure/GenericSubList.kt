@@ -1,7 +1,6 @@
 package korlibs.datastructure
 
-import korlibs.datastructure.internal.equaler
-import korlibs.datastructure.internal.hashCoder
+import korlibs.datastructure.internal.*
 
 // @TODO: Optimize
 class GenericSubList<T>(val base: List<T>, val start: Int, val end: Int) : List<T> {

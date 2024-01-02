@@ -1,7 +1,7 @@
 package korlibs.datastructure
 
-import korlibs.datastructure.iterators.fastForEach
-import korlibs.datastructure.lock.NonRecursiveLock
+import korlibs.datastructure.iterators.*
+import korlibs.datastructure.lock.*
 
 class TemporalPool<T : Any>(private val reset: (T) -> Unit = {}, preallocate: Int = 0, private val gen: (Int) -> T) {
     private val lock = NonRecursiveLock()

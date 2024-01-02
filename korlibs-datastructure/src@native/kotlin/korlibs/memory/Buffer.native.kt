@@ -5,7 +5,7 @@ import platform.posix.*
 import kotlin.experimental.*
 
 @OptIn(ExperimentalNativeApi::class)
-actual class Buffer(val data: ByteArray, val offset: Int, val size: Int, dummy: Unit) {
+internal actual class Buffer(val data: ByteArray, val offset: Int, val size: Int, dummy: Unit) {
     actual constructor(size: Int, direct: Boolean) : this(ByteArray(checkNBufferSize(size)), 0, size, Unit)
     actual constructor(array: ByteArray, offset: Int, size: Int): this(checkNBufferWrap(array, offset, size), offset, size, Unit)
     actual val byteOffset: Int get() = offset
@@ -74,7 +74,7 @@ actual class Buffer(val data: ByteArray, val offset: Int, val size: Int, dummy: 
     }
 }
 
-class NBufferTempAddress {
+internal class NBufferTempAddress {
     val pool = arrayListOf<Pinned<ByteArray>>()
     companion object {
         val ARRAY1 = ByteArray(1)
