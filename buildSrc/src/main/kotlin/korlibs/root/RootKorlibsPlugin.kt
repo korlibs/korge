@@ -454,7 +454,7 @@ object RootKorlibsPlugin {
                             val tvos by lazy { createPairSourceSet("tvos", iosTvos, project = project) }
                             val ios by lazy { createPairSourceSet("ios", iosTvos/*, iosMacos*/, project = project) }
 
-                            if (project.name == "korlibs-time") {
+                            if (project.name == "korlibs-time" || project.name == "korlibs-crypto") {
                                 val macos by lazy { createPairSourceSet("macos", darwin, project = project) }
                                 val linux by lazy { createPairSourceSet("linux", posix, project = project) }
                                 val mingw by lazy { createPairSourceSet("mingw", native, project = project) }
