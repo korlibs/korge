@@ -13,6 +13,7 @@ import korlibs.io.lang.*
 data class URL private constructor(
 	val isOpaque: Boolean,
 	val scheme: String?,
+	val subScheme: String?,
 	val userInfo: String?,
 	val host: String?,
 	val path: String,
@@ -43,6 +44,7 @@ data class URL private constructor(
 	fun toUrlString(includeScheme: Boolean = true, out: StringBuilder = StringBuilder()): StringBuilder {
 		if (includeScheme && scheme != null) {
 			out.append("$scheme:")
+            if (subScheme != null) out.append("$subScheme:")
 			if (!isOpaque) out.append("//")
 		}
 		if (userInfo != null) out.append("$userInfo@")
@@ -58,7 +60,7 @@ data class URL private constructor(
 
 	override fun toString(): String = fullUrl
 	fun toComponentString(): String {
-		return "URL(" + listOf(::scheme, ::userInfo, ::host, ::path, ::query, ::fragment)
+		return "URL(" + listOf(::scheme, ::subScheme, ::userInfo, ::host, ::path, ::query, ::fragment)
 			.map { it.name to it.get() }
 			.filter { it.second != null }
 			.joinToString(", ") { "${it.first}=${it.second}" } + ")"
@@ -77,18 +79,55 @@ data class URL private constructor(
             else -> -1
         }
 
-		operator fun invoke(
-			scheme: String?,
-			userInfo: String?,
-			host: String?,
-			path: String,
-			query: String?,
-			fragment: String?,
-			opaque: Boolean = false,
-			port: Int = DEFAULT_PORT
-		): URL = URL(opaque, scheme?.lowercase(), userInfo, host, path, query, fragment, port)
+        fun fromComponents(
+            scheme: String? = null,
+            subScheme: String? = null,
+            userInfo: String? = null,
+            host: String? = null,
+            path: String = "",
+            query: String? = null,
+            fragment: String? = null,
+            opaque: Boolean = false,
+            port: Int = DEFAULT_PORT
+        ): URL = URL(
+            isOpaque = opaque,
+            scheme = scheme?.lowercase(),
+            subScheme = subScheme?.lowercase(),
+            userInfo = userInfo,
+            host = host,
+            path = path,
+            query = query,
+            fragment = fragment,
+            defaultPort = port
+        )
 
-		private val schemeRegex = Regex("\\w+:")
+        @Deprecated(
+            message = "Use URL.fromComponents",
+            replaceWith = ReplaceWith("URL.fromComponents(scheme, subScheme, userInfo, host, path, query, fragment, opaque)")
+        )
+        operator fun invoke(
+            scheme: String?,
+            userInfo: String?,
+            host: String?,
+            path: String,
+            query: String?,
+            fragment: String?,
+            opaque: Boolean = false,
+            port: Int = DEFAULT_PORT,
+            subScheme: String? = null,
+        ): URL = this.fromComponents(
+            opaque = opaque,
+            scheme = scheme?.lowercase(),
+            subScheme = subScheme?.lowercase(),
+            userInfo = userInfo,
+            host = host,
+            path = path,
+            query = query,
+            fragment = fragment,
+            port = port
+        )
+
+		private val schemeRegex = Regex("^([a-zA-Z0-9+.-]+)(?::([a-zA-Z]+))?:")
 
 		operator fun invoke(url: String): URL {
 			val r = StrReader(url)
@@ -97,7 +136,9 @@ data class URL private constructor(
 				schemeColon != null -> {
 					val isHierarchical = r.tryLit("//") != null
 					val nonScheme = r.readRemaining()
-					val scheme = schemeColon.dropLast(1)
+                    val schemeParts = schemeColon.dropLast(1).split(":")
+					val scheme = schemeParts[0]
+                    val subScheme = schemeParts.getOrNull(1)
 
                     val nonFragment = nonScheme.substringBefore('#')
                     val fragment = nonScheme.substringAfterOrNull('#')
@@ -114,9 +155,10 @@ data class URL private constructor(
                     val host = hostWithPort.substringBefore(':')
                     val port = hostWithPort.substringAfterOrNull(':')
 
-					URL(
+					this.fromComponents(
 						opaque = !isHierarchical,
 						scheme = scheme,
+						subScheme = subScheme,
 						userInfo = userInfo,
 						host = host.takeIf { it.isNotEmpty() },
 						path = if (path != null) "/$path" else "",
@@ -130,9 +172,10 @@ data class URL private constructor(
                     val fragment = url.substringAfterOrNull('#')
                     val path = nonFragment.substringBefore('?')
                     val query = nonFragment.substringAfterOrNull('?')
-					URL(
+					this.fromComponents(
 						opaque = false,
 						scheme = null,
+                        subScheme = null,
 						userInfo = null,
 						host = null,
 						path = path,
