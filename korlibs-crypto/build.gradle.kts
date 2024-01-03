@@ -10,7 +10,3 @@ project.extensions.extraProperties.properties.apply {
         "https://raw.githubusercontent.com/korlibs/korge/master/korge-foundation/LICENSE"
     )
 }
-
-dependencies {
-    commonMainApi(project(":korlibs-time"))
-}
