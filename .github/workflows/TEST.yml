@@ -64,4 +64,5 @@ jobs:
       - { if: "${{ matrix.e2e && failure() }}", name: Archive E2E Test Results, uses: actions/upload-artifact@v3, with: { name: e2e-test-results-linux-jvm, retention-days: 21, path: "**/e2e/e2e-test/build/screenshots", if-no-files-found: ignore } }
       - { if: "${{ matrix.e2e }}", name: e2e multi test and hotreload, working-directory: e2e/e2e-test-multi, run: "./gradlew --watch-fs --warn --configuration-cache --configuration-cache-problems=warn compileKotlinJvm" }
       - { if: "${{ matrix.e2e }}", name: e2e multi test runJvmAutoreload, working-directory: e2e/e2e-test-multi, run: "./gradlew --configuration-cache :client:runJvmAutoreload" }
+      - { if: "${{ matrix.e2e }}", name: e2e multi test packageJvmFatJar, working-directory: e2e/e2e-test-multi, run: "./gradlew --configuration-cache :client:packageJvmFatJar" }
       - { if: "${{ matrix.e2e }}", name: Check publication includes iOS, run: ./gradlew checkModulePublication }
