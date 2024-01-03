@@ -13,9 +13,6 @@ pluginManagement {
         maven { url = uri("https://oss.sonatype.org/content/repositories/snapshots/") }
     }
 }
-plugins {
-    id("org.gradle.toolchains.foojay-resolver-convention") version "0.5.0"
-}
 
 val enableMetalPlayground: String by settings
 
@@ -46,4 +43,3 @@ if (System.getenv("DISABLE_SANDBOX") != "true") {
 if (!inCI || System.getenv("ENABLE_BENCHMARKS") == "true") {
     include(":korge-benchmarks")
 }
-include("korlibs-platform")
