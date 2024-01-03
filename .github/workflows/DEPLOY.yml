@@ -12,7 +12,7 @@ on:
         type: string
 env:
   CI: true
-  FORCED_VERSION: ${{ inputs.print_tags || github.ref }}
+  FORCED_VERSION: ${{ inputs.forced_version || github.ref }}
   ORG_GRADLE_PROJECT_signingKey: ${{ secrets.ORG_GRADLE_PROJECT_SIGNINGKEY }}
   ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.ORG_GRADLE_PROJECT_SIGNINGPASSWORD }}
   SONATYPE_USERNAME: ${{ secrets.SONATYPEUSERNAME }}
