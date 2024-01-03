@@ -4,10 +4,15 @@ on:
   push:
     tags:
       - 'v*'
-
+  workflow_dispatch:
+    inputs:
+      forced_version:
+        description: 'FORCED_VERSION to use'
+        required: true
+        type: string
 env:
   CI: true
-  FORCED_VERSION: ${{ github.ref }}
+  FORCED_VERSION: ${{ inputs.forced_version || github.ref }}
   ORG_GRADLE_PROJECT_signingKey: ${{ secrets.ORG_GRADLE_PROJECT_SIGNINGKEY }}
   ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.ORG_GRADLE_PROJECT_SIGNINGPASSWORD }}
   SONATYPE_USERNAME: ${{ secrets.SONATYPEUSERNAME }}
@@ -26,6 +31,7 @@ jobs:
       DISABLE_ANDROID: true
       DISABLE_SANDBOX: true
     steps:
+      - run: "echo FORCED_VERSION=$FORCED_VERSION"
       - uses: actions/checkout@v1
       - { name: Set up JDK, uses: actions/setup-java@v3, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
       - { name: Replace gradle wrapper, run: "sed 's/-all/-bin/g' gradle/wrapper/gradle-wrapper.properties > gradle/wrapper/gradle-wrapper.properties.bak; cp gradle/wrapper/gradle-wrapper.properties.bak gradle/wrapper/gradle-wrapper.properties" }
@@ -34,8 +40,18 @@ jobs:
       - id: createStagedRepositoryId
         run: xvfb-run --auto-servernum ./gradlew --no-daemon --info --stacktrace startReleasingMavenCentral
 
-  publish-ios:
-    runs-on: macos-11
+  publish:
+    strategy:
+      fail-fast: false # Once working, comment this
+      matrix:
+        include:
+          - { os: macos-11, tasks: publishIosArm64PublicationToMavenRepository publishIosX64PublicationToMavenRepository publishIosSimulatorArm64PublicationToMavenRepository }
+          - { os: macos-11, tasks: publishTvosX64PublicationToMavenRepository publishTvosArm64PublicationToMavenRepository publishTvosSimulatorArm64PublicationToMavenRepository }
+          - { os: macos-11, tasks: publishMacosX64PublicationToMavenRepository publishMacosArm64PublicationToMavenRepository }
+          - { os: ubuntu-latest, tasks: publishKotlinMultiplatformPublicationToMavenRepository publishJvmPublicationToMavenRepository }
+          - { os: ubuntu-latest, tasks: publishWasmJsPublicationToMavenRepository publishJsPublicationToMavenRepository publishAndroidPublicationToMavenRepository }
+          - { os: ubuntu-latest, tasks: publishMingwX64PublicationToMavenRepository publishLinuxX64PublicationToMavenRepository publishLinuxArm64PublicationToMavenRepository }
+    runs-on: ${{ matrix.os }}
     needs: [create-staging-repo]
     env:
       stagedRepositoryId: ${{needs.create-staging-repo.outputs.stagedRepositoryId}}
@@ -44,55 +60,14 @@ jobs:
       - { name: Set up JDK, uses: actions/setup-java@v3, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
       - { name: Replace gradle wrapper, run: "sed 's/-all/-bin/g' gradle/wrapper/gradle-wrapper.properties > gradle/wrapper/gradle-wrapper.properties.bak; cp gradle/wrapper/gradle-wrapper.properties.bak gradle/wrapper/gradle-wrapper.properties" }
       - { name: Prepare Gradle, uses: gradle/gradle-build-action@ef76a971e2fa3f867b617efd72f2fbd72cf6f8bc } # v2.8.0
+      #- run: sudo apt-get install xvfb
+      #- run: xvfb-run --auto-servernum ./gradlew --no-daemon checkReleasingMavenCentral
       - run: ./gradlew checkReleasingMavenCentral
-      - run: ./gradlew publishIosArm64PublicationToMavenRepository publishIosX64PublicationToMavenRepository publishIosSimulatorArm64PublicationToMavenRepository
-        env:
-          DISABLE_JAVASCRIPT_TEST: true
-  publish-tvos:
-    runs-on: macos-11
-    needs: [create-staging-repo]
-    env:
-      stagedRepositoryId: ${{needs.create-staging-repo.outputs.stagedRepositoryId}}
-    steps:
-      - uses: actions/checkout@v1
-      - { name: Set up JDK, uses: actions/setup-java@v3, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
-      - { name: Replace gradle wrapper, run: "sed 's/-all/-bin/g' gradle/wrapper/gradle-wrapper.properties > gradle/wrapper/gradle-wrapper.properties.bak; cp gradle/wrapper/gradle-wrapper.properties.bak gradle/wrapper/gradle-wrapper.properties" }
-      - { name: Prepare Gradle, uses: gradle/gradle-build-action@ef76a971e2fa3f867b617efd72f2fbd72cf6f8bc } # v2.8.0
-      - run: ./gradlew checkReleasingMavenCentral
-      - run: ./gradlew publishTvosX64PublicationToMavenRepository publishTvosArm64PublicationToMavenRepository publishTvosSimulatorArm64PublicationToMavenRepository
-        env:
-          DISABLE_JAVASCRIPT_TEST: true
-  publish-jvm-multiplatform:
-    runs-on: ubuntu-latest
-    needs: [create-staging-repo]
-    env:
-      stagedRepositoryId: ${{needs.create-staging-repo.outputs.stagedRepositoryId}}
-    steps:
-      - uses: actions/checkout@v1
-      - { name: Set up JDK, uses: actions/setup-java@v3, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
-      - { name: Replace gradle wrapper, run: "sed 's/-all/-bin/g' gradle/wrapper/gradle-wrapper.properties > gradle/wrapper/gradle-wrapper.properties.bak; cp gradle/wrapper/gradle-wrapper.properties.bak gradle/wrapper/gradle-wrapper.properties" }
-      - { name: Prepare Gradle, uses: gradle/gradle-build-action@ef76a971e2fa3f867b617efd72f2fbd72cf6f8bc } # v2.8.0
-      - run: sudo apt-get install xvfb
-      - run: xvfb-run --auto-servernum ./gradlew --no-daemon checkReleasingMavenCentral
-      - run: xvfb-run --auto-servernum ./gradlew --no-daemon publishKotlinMultiplatformPublicationToMavenRepository publishJvmPublicationToMavenRepository
-  publish-js-android:
-    runs-on: ubuntu-latest
-    needs: [create-staging-repo]
-    env:
-      stagedRepositoryId: ${{needs.create-staging-repo.outputs.stagedRepositoryId}}
-    steps:
-      - uses: actions/checkout@v1
-      - { name: Set up JDK, uses: actions/setup-java@v3, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
-      - { name: Replace gradle wrapper, run: "sed 's/-all/-bin/g' gradle/wrapper/gradle-wrapper.properties > gradle/wrapper/gradle-wrapper.properties.bak; cp gradle/wrapper/gradle-wrapper.properties.bak gradle/wrapper/gradle-wrapper.properties" }
-      - { name: Prepare Gradle, uses: gradle/gradle-build-action@ef76a971e2fa3f867b617efd72f2fbd72cf6f8bc } # v2.8.0
-      - run: sudo apt-get install xvfb
-      - run: xvfb-run --auto-servernum ./gradlew --no-daemon checkReleasingMavenCentral
-      - run: xvfb-run --auto-servernum ./gradlew --no-daemon publishWasmJsPublicationToMavenRepository
-      - run: xvfb-run --auto-servernum ./gradlew --no-daemon publishJsPublicationToMavenRepository publishAndroidPublicationToMavenRepository
+      - run: ./gradlew ${{ matrix.tasks }}
 
   publish-finalize:
     runs-on: ubuntu-latest
-    needs: [publish-ios, publish-jvm-multiplatform, publish-js-android, publish-tvos]
+    needs: [publish]
     env:
       stagedRepositoryId: ${{needs.create-staging-repo.outputs.stagedRepositoryId}}
       DISABLE_JAVASCRIPT_TEST: true
