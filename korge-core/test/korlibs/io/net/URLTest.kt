@@ -111,7 +111,7 @@ class URLTest {
         assertEquals("q=1", url.query)
         assertEquals("https://Google.com:442/test?q=1", url.fullUrl)
 
-        val url2 = URL(scheme = "HTTPs", userInfo = null, host = "Google.com", path = "", query = null, fragment = null)
+        val url2 = URL.fromComponents(scheme = "HTTPs", host = "Google.com")
         assertEquals("https", url2.scheme)
         assertEquals(443, url2.port)
         assertNull(url2.subScheme)
@@ -144,7 +144,7 @@ class URLTest {
         assertEquals("useSSL=false", url.query)
         assertEquals("jdbc:mysql://localhost:3306/database?useSSL=false", url.fullUrl)
 
-        val url2 = URL(scheme = "jdbc", subScheme = "mysql", userInfo = null, host = "localhost", path = "/database", query = null, fragment = null, port = 3306)
+        val url2 = URL.fromComponents(scheme = "jdbc", subScheme = "mysql", host = "localhost", path = "/database", port = 3306)
         assertEquals("jdbc:mysql://localhost:3306/database", url2.fullUrl)
 
 

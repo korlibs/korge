@@ -79,17 +79,17 @@ data class URL private constructor(
             else -> -1
         }
 
-		operator fun invoke(
-			scheme: String?,
-			subScheme: String?,
-			userInfo: String?,
-			host: String?,
-			path: String,
-			query: String?,
-			fragment: String?,
-			opaque: Boolean = false,
-			port: Int = DEFAULT_PORT
-		): URL = URL(
+        fun fromComponents(
+            scheme: String? = null,
+            subScheme: String? = null,
+            userInfo: String? = null,
+            host: String? = null,
+            path: String = "",
+            query: String? = null,
+            fragment: String? = null,
+            opaque: Boolean = false,
+            port: Int = DEFAULT_PORT
+        ): URL = URL(
             isOpaque = opaque,
             scheme = scheme?.lowercase(),
             subScheme = subScheme?.lowercase(),
@@ -101,6 +101,10 @@ data class URL private constructor(
             defaultPort = port
         )
 
+        @Deprecated(
+            message = "Use URL.fromComponents",
+            replaceWith = ReplaceWith("URL.fromComponents(scheme, subScheme, userInfo, host, path, query, fragment, opaque)")
+        )
         operator fun invoke(
             scheme: String?,
             userInfo: String?,
@@ -109,17 +113,18 @@ data class URL private constructor(
             query: String?,
             fragment: String?,
             opaque: Boolean = false,
-            port: Int = DEFAULT_PORT
-        ): URL = URL(
-            isOpaque = opaque,
+            port: Int = DEFAULT_PORT,
+            subScheme: String? = null,
+        ): URL = this.fromComponents(
+            opaque = opaque,
             scheme = scheme?.lowercase(),
-            subScheme = null,
+            subScheme = subScheme?.lowercase(),
             userInfo = userInfo,
             host = host,
             path = path,
             query = query,
             fragment = fragment,
-            defaultPort = port
+            port = port
         )
 
 		private val schemeRegex = Regex("^([a-zA-Z0-9+.-]+)(?::([a-zA-Z]+))?:")
@@ -150,7 +155,7 @@ data class URL private constructor(
                     val host = hostWithPort.substringBefore(':')
                     val port = hostWithPort.substringAfterOrNull(':')
 
-					URL(
+					this.fromComponents(
 						opaque = !isHierarchical,
 						scheme = scheme,
 						subScheme = subScheme,
@@ -167,7 +172,7 @@ data class URL private constructor(
                     val fragment = url.substringAfterOrNull('#')
                     val path = nonFragment.substringBefore('?')
                     val query = nonFragment.substringAfterOrNull('?')
-					URL(
+					this.fromComponents(
 						opaque = false,
 						scheme = null,
                         subScheme = null,
