@@ -111,9 +111,10 @@ class URLTest {
         assertEquals("q=1", url.query)
         assertEquals("https://Google.com:442/test?q=1", url.fullUrl)
 
-        val url2 = URL(scheme = "HTTPs", subScheme = null, userInfo = null, host = "Google.com", path = "", query = null, fragment = null)
+        val url2 = URL(scheme = "HTTPs", userInfo = null, host = "Google.com", path = "", query = null, fragment = null)
         assertEquals("https", url2.scheme)
         assertEquals(443, url2.port)
+        assertNull(url2.subScheme)
         assertEquals("https://Google.com", url2.fullUrl)
 
         val url3 = URL("https://username:password@example.com:8443/path/to/resource?q=1")

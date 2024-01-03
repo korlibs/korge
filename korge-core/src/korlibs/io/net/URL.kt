@@ -101,6 +101,27 @@ data class URL private constructor(
             defaultPort = port
         )
 
+        operator fun invoke(
+            scheme: String?,
+            userInfo: String?,
+            host: String?,
+            path: String,
+            query: String?,
+            fragment: String?,
+            opaque: Boolean = false,
+            port: Int = DEFAULT_PORT
+        ): URL = URL(
+            isOpaque = opaque,
+            scheme = scheme?.lowercase(),
+            subScheme = null,
+            userInfo = userInfo,
+            host = host,
+            path = path,
+            query = query,
+            fragment = fragment,
+            defaultPort = port
+        )
+
 		private val schemeRegex = Regex("^([a-zA-Z0-9+.-]+)(?::([a-zA-Z]+))?:")
 
 		operator fun invoke(url: String): URL {
