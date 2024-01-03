@@ -128,5 +128,3 @@ internal fun DoubleBuffer.sliceBuffer(offset: Int, size: Int): DoubleBuffer = th
 internal val Buffer.nioBuffer: java.nio.ByteBuffer get() = this.slicedBuffer()
 internal val Buffer.nioIntBuffer: java.nio.IntBuffer get() = this.slicedBuffer().asIntBuffer()
 internal val Buffer.nioFloatBuffer: java.nio.FloatBuffer get() = this.slicedBuffer().asFloatBuffer()
-
-internal actual val currentIsLittleEndian: Boolean get() = ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN

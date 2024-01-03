@@ -1,5 +1,6 @@
 package korlibs.datastructure.internal.memory
 
+import korlibs.datastructure.internal.platform.*
 import org.khronos.webgl.*
 import org.khronos.webgl.DataView
 
@@ -106,5 +107,3 @@ internal fun ByteArray.toInt8Array(): Int8Array {
     return out
     //}
 }
-
-internal actual val currentIsLittleEndian: Boolean = Uint8Array(Uint32Array(1).also { it[0] = 0x11223344 }.buffer)[0].toInt() == 0x44

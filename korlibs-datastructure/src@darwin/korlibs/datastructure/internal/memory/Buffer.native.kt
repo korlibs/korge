@@ -1,8 +1,8 @@
 package korlibs.datastructure.internal.memory
 
-import korlibs.datastructure.internal.memory.Buffer
 import korlibs.datastructure.internal.memory.Memory.arraycopy
 import kotlinx.cinterop.*
+import platform.posix.*
 import kotlin.experimental.*
 
 @OptIn(ExperimentalNativeApi::class)

@@ -1,5 +1,6 @@
 package korlibs.datastructure.internal.memory
 
+import korlibs.datastructure.internal.platform.*
 import org.khronos.webgl.*
 import org.khronos.webgl.DataView
 
@@ -101,5 +102,3 @@ internal val Buffer.arrayShort: Int16Array get() = Int16Array(buffer, byteOffset
 internal val Buffer.arrayInt: Int32Array get() = Int32Array(buffer, byteOffset, sizeInBytes / 4)
 internal val Buffer.arrayFloat: Float32Array get() = Float32Array(buffer, byteOffset, sizeInBytes / 4)
 internal val Buffer.arrayDouble: Float64Array get() = Float64Array(buffer, byteOffset, sizeInBytes / 8)
-
-internal actual val currentIsLittleEndian: Boolean = Uint8Array(Uint32Array(arrayOf(0x11223344)).buffer)[0].toInt() == 0x44

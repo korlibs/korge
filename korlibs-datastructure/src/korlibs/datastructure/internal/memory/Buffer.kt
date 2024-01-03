@@ -10,7 +10,6 @@ import kotlin.jvm.*
 
 internal typealias DataView = Buffer
 
-@OptIn(ExperimentalNativeApi::class)
 internal expect class Buffer {
     constructor(size: Int, direct: Boolean = false)
     @Deprecated("Can't wrap without copying on WasmJS")
