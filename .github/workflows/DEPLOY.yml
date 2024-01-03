@@ -47,9 +47,10 @@ jobs:
         include:
           - { os: macos-11, tasks: publishIosArm64PublicationToMavenRepository publishIosX64PublicationToMavenRepository publishIosSimulatorArm64PublicationToMavenRepository }
           - { os: macos-11, tasks: publishTvosX64PublicationToMavenRepository publishTvosArm64PublicationToMavenRepository publishTvosSimulatorArm64PublicationToMavenRepository }
+          - { os: macos-11, tasks: publishMacosX64PublicationToMavenRepository publishMacosArm64PublicationToMavenRepository }
           - { os: ubuntu-latest, tasks: publishKotlinMultiplatformPublicationToMavenRepository publishJvmPublicationToMavenRepository }
           - { os: ubuntu-latest, tasks: publishWasmJsPublicationToMavenRepository publishJsPublicationToMavenRepository publishAndroidPublicationToMavenRepository }
-          - { os: ubuntu-latest, tasks: publishMingwX64PublicationToMavenRepository publishLinuxX64PublicationToMavenRepository publishMacosX64PublicationToMavenRepository publishLinuxArm64PublicationToMavenRepository publishMacosArm64PublicationToMavenRepository }
+          - { os: ubuntu-latest, tasks: publishMingwX64PublicationToMavenRepository publishLinuxX64PublicationToMavenRepository publishLinuxArm64PublicationToMavenRepository }
     runs-on: ${{ matrix.os }}
     needs: [create-staging-repo]
     env:
