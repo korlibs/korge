@@ -1,6 +1,6 @@
 package korlibs.datastructure.internal.memory
 
-import korlibs.datastructure.internal.platform.*
+import korlibs.platform.*
 import org.khronos.webgl.*
 import org.khronos.webgl.DataView
 

@@ -1,4 +1,4 @@
-package korlibs.datastructure.internal.platform
+package korlibs.platform
 
 import java.lang.management.ManagementFactory
 import java.nio.ByteOrder
@@ -36,7 +36,7 @@ internal actual val currentIsDebug: Boolean by lazy {
     val inputArgumentsString = inputArguments.toString()
     inputArguments.contains("-Xdebug") || inputArgumentsString.contains("-agentlib:jdwp")
 }
-internal actual val currentIsLittleEndian: Boolean get() = ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN
+actual val currentIsLittleEndian: Boolean get() = ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN
 
 internal actual val currentRawPlatformName: String = "jvm-$currentOs-$currentArch-$currentBuildVariant"
 internal actual val currentRawOsName: String = System.getProperty("os.name")

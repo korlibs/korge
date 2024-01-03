@@ -1,7 +1,7 @@
 package korlibs.datastructure.event
 
 import korlibs.datastructure.closeable.*
-import korlibs.datastructure.internal.platform.jsGlobalThis
+import korlibs.platform.jsGlobalThis
 import korlibs.time.*
 
 actual fun createPlatformEventLoop(precise: Boolean): SyncEventLoop =

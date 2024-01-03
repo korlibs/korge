@@ -1,16 +1,16 @@
 package korlibs.platform
 
-import korlibs.js.Deno
+import korlibs.platform.internal.js.Deno
 import kotlinx.browser.*
 import org.khronos.webgl.Uint32Array
 import org.khronos.webgl.Uint8Array
 import org.khronos.webgl.get
 import org.w3c.dom.*
 
-internal val isDenoJs: Boolean by lazy { js("(typeof Deno === 'object' && Deno.statSync)").unsafeCast<Boolean>() }
+val isDenoJs: Boolean by lazy { js("(typeof Deno === 'object' && Deno.statSync)").unsafeCast<Boolean>() }
 internal val isWeb: Boolean by lazy { js("(typeof window === 'object')").unsafeCast<Boolean>() }
 internal val isWorker: Boolean by lazy { js("(typeof importScripts === 'function')").unsafeCast<Boolean>() }
-internal val isNodeJs: Boolean by lazy { js("((typeof process !== 'undefined') && process.release && (process.release.name.search(/node|io.js/) !== -1))").unsafeCast<Boolean>() }
+val isNodeJs: Boolean by lazy { js("((typeof process !== 'undefined') && process.release && (process.release.name.search(/node|io.js/) !== -1))").unsafeCast<Boolean>() }
 internal val isShell: Boolean get() = !isWeb && !isNodeJs && !isWorker
 
 // @TODO: Check navigator.userAgent
@@ -32,7 +32,7 @@ internal actual val currentArch: Arch = Arch.UNKNOWN
 
 internal actual val currentRuntime: Runtime = Runtime.JS
 internal actual val currentIsDebug: Boolean = false
-internal actual val currentIsLittleEndian: Boolean = Uint8Array(Uint32Array(arrayOf(0x11223344)).buffer)[0].toInt() == 0x44
+actual val currentIsLittleEndian: Boolean = Uint8Array(Uint32Array(arrayOf(0x11223344)).buffer)[0].toInt() == 0x44
 internal actual val multithreadedSharedHeap: Boolean = false // Workers have different heaps
 
 internal actual val currentRawPlatformName: String = when {

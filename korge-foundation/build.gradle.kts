@@ -25,6 +25,7 @@ dependencies {
     commonMainApi(project(":korlibs-time"))
     commonMainApi(project(":korlibs-crypto"))
     commonMainApi(project(":korlibs-datastructure"))
+    commonMainApi(project(":korlibs-platform"))
 }
 
 //korlibs.korge.gradle.generate.TemplateGenerator.synchronize(new File(projectDir, "template"))

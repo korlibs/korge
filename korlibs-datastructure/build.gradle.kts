@@ -1,12 +1,12 @@
 import korlibs.*
 
-description = "Korlibs Datastructure - Former Korte"
+description = "Korlibs Datastructure Library"
 
 project.extensions.extraProperties.properties.apply {
     applyProjectProperties(
-        "https://raw.githubusercontent.com/korlibs/korge/main/korlibs-datastructure",
+        "https://raw.githubusercontent.com/korlibs/korge/main/korlibs-foundation",
         "Public Domain",
-        "https://raw.githubusercontent.com/korlibs/korge/main/korlibs-datastructure/LICENSE"
+        "https://raw.githubusercontent.com/korlibs/korge/main/korlibs-foundation/LICENSE"
     )
 }
 
@@ -14,6 +14,7 @@ dependencies {
     commonMainApi(libs.kotlinx.atomicfu)
     commonTestApi(libs.kotlinx.coroutines.test)
     commonMainApi(project(":korlibs-time"))
+    commonMainApi(project(":korlibs-platform"))
 }
 
 fun doGenerateKdsTemplates() {
