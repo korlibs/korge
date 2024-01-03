@@ -4,10 +4,15 @@ on:
   push:
     tags:
       - 'v*'
-
+  workflow_dispatch:
+    inputs:
+      forced_version:
+        description: 'FORCED_VERSION to use'
+        required: true
+        type: string
 env:
   CI: true
-  FORCED_VERSION: ${{ github.ref }}
+  FORCED_VERSION: ${{ inputs.print_tags || github.ref }}
   ORG_GRADLE_PROJECT_signingKey: ${{ secrets.ORG_GRADLE_PROJECT_SIGNINGKEY }}
   ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.ORG_GRADLE_PROJECT_SIGNINGPASSWORD }}
   SONATYPE_USERNAME: ${{ secrets.SONATYPEUSERNAME }}
@@ -26,6 +31,7 @@ jobs:
       DISABLE_ANDROID: true
       DISABLE_SANDBOX: true
     steps:
+      - run: "echo FORCED_VERSION=$FORCED_VERSION"
       - uses: actions/checkout@v1
       - { name: Set up JDK, uses: actions/setup-java@v3, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
       - { name: Replace gradle wrapper, run: "sed 's/-all/-bin/g' gradle/wrapper/gradle-wrapper.properties > gradle/wrapper/gradle-wrapper.properties.bak; cp gradle/wrapper/gradle-wrapper.properties.bak gradle/wrapper/gradle-wrapper.properties" }
