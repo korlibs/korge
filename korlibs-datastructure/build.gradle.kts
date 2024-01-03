@@ -4,9 +4,9 @@ description = "Korlibs Datastructure Library"
 
 project.extensions.extraProperties.properties.apply {
     applyProjectProperties(
-        "https://raw.githubusercontent.com/korlibs/korge/main/korlibs-foundation",
+        "https://raw.githubusercontent.com/korlibs/korge/main/korlibs-datastructure",
         "Public Domain",
-        "https://raw.githubusercontent.com/korlibs/korge/main/korlibs-foundation/LICENSE"
+        "https://raw.githubusercontent.com/korlibs/korge/main/korlibs-datastructure/LICENSE"
     )
 }
 

@@ -2,9 +2,12 @@ package korlibs.io.worker
 
 import korlibs.io.*
 import korlibs.io.async.*
+import korlibs.io.isDenoJs
 import korlibs.io.lang.*
 import korlibs.js.*
-import korlibs.platform.*
+import korlibs.platform.JsObject
+import korlibs.platform.jsGlobalThis
+import korlibs.platform.jsImport
 import kotlinx.coroutines.*
 import org.w3c.dom.events.*
 import org.w3c.workers.*

@@ -11,8 +11,6 @@ import korlibs.korge.gradle.targets.all.*
 import korlibs.korge.gradle.util.*
 import org.gradle.api.*
 import org.gradle.api.tasks.*
-import org.gradle.api.tasks.compile.*
-import org.jetbrains.kotlin.gradle.dsl.*
 import java.io.*
 
 fun Project.configureAndroidDirect(projectType: ProjectType, isKorge: Boolean) {
@@ -33,7 +31,7 @@ fun Project.configureAndroidDirect(projectType: ProjectType, isKorge: Boolean) {
     //project.kotlin.jvmToolchain(11)
 
     project.kotlin.androidTarget().apply {
-    //project.kotlin.android().apply {
+        //project.kotlin.android().apply {
         publishAllLibraryVariants()
         publishLibraryVariantsGroupedByFlavor = true
         //this.attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.androidJvm)
@@ -84,9 +82,7 @@ fun Project.configureAndroidDirect(projectType: ProjectType, isKorge: Boolean) {
         }
 
         buildFeatures.apply {
-            if (project.name == "korge-foundation") {
-                buildConfig = true
-            }
+            buildConfig = true
         }
 
         packagingOptions.also {
@@ -119,10 +115,15 @@ fun Project.configureAndroidDirect(projectType: ProjectType, isKorge: Boolean) {
 
         signingConfigs.apply {
             maybeCreate("release").apply {
-                storeFile = if (isKorge) project.file(project.findProperty("RELEASE_STORE_FILE") ?: korge.androidReleaseSignStoreFile) else File(korgeGradlePluginResources, "korge.keystore")
-                storePassword = project.findProperty("RELEASE_STORE_PASSWORD")?.toString() ?: (if (isKorge) korge.androidReleaseSignStorePassword else "password")
-                keyAlias = project.findProperty("RELEASE_KEY_ALIAS")?.toString() ?: (if (isKorge) korge.androidReleaseSignKeyAlias else "korge")
-                keyPassword = project.findProperty("RELEASE_KEY_PASSWORD")?.toString() ?: (if (isKorge) korge.androidReleaseSignKeyPassword else "password")
+                storeFile = if (isKorge) project.file(
+                    project.findProperty("RELEASE_STORE_FILE") ?: korge.androidReleaseSignStoreFile
+                ) else File(korgeGradlePluginResources, "korge.keystore")
+                storePassword = project.findProperty("RELEASE_STORE_PASSWORD")?.toString()
+                    ?: (if (isKorge) korge.androidReleaseSignStorePassword else "password")
+                keyAlias = project.findProperty("RELEASE_KEY_ALIAS")?.toString()
+                    ?: (if (isKorge) korge.androidReleaseSignKeyAlias else "korge")
+                keyPassword = project.findProperty("RELEASE_KEY_PASSWORD")?.toString()
+                    ?: (if (isKorge) korge.androidReleaseSignKeyPassword else "password")
             }
         }
         buildTypes.apply {
@@ -174,7 +175,14 @@ fun Project.configureAndroidDirect(projectType: ProjectType, isKorge: Boolean) {
                 //manifest.srcFile(File(project.buildDir, "AndroidManifest.xml"))
                 //manifest.srcFile(File(project.projectDir, "src/main/AndroidManifest.xml"))
             }
-            for (name in listOf("test", "testDebug", "testRelease", "androidTest", "androidTestDebug", "androidTestRelease")) {
+            for (name in listOf(
+                "test",
+                "testDebug",
+                "testRelease",
+                "androidTest",
+                "androidTestDebug",
+                "androidTestRelease"
+            )) {
                 maybeCreate(name).apply {
                     assets.srcDirs("src/commonTest/resources")
                 }
@@ -202,7 +210,8 @@ fun Project.configureAndroidDirect(projectType: ProjectType, isKorge: Boolean) {
             //packageDebugAssets?.mustRunAfter(jvmProcessResources) // @TODO: <-- THIS
             //packageReleaseAssets?.mustRunAfter(jvmProcessResources) // @TODO: <-- THIS
         }
-        val compileDebugJavaWithJavac = project.tasks.findByName("compileDebugJavaWithJavac") as? org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile?
+        val compileDebugJavaWithJavac =
+            project.tasks.findByName("compileDebugJavaWithJavac") as? org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile?
         compileDebugJavaWithJavac?.compilerOptions?.jvmTarget?.set(ANDROID_JVM_TARGET)
 
         //tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile::class.java).configureEach {
