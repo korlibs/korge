@@ -1,7 +1,7 @@
 package korlibs.datastructure.lock
 
 import korlibs.datastructure.thread.*
-import korlibs.platforminternal.Platform
+import korlibs.datastructure.internal.platform.Platform
 import korlibs.time.*
 import kotlin.test.*
 

@@ -1,9 +1,9 @@
 package korlibs.datastructure
 
 import korlibs.datastructure.internal.*
-import korlibs.mathinternal.IsAlmostEqualsF
-import korlibs.mathinternal.isAlmostEquals
-import korlibs.memoryinternal.InternalMemory.arraycopy
+import korlibs.datastructure.internal.math.IsAlmostEqualsF
+import korlibs.datastructure.internal.math.isAlmostEquals
+import korlibs.datastructure.internal.memory.Memory.arraycopy
 import kotlin.math.*
 
 //typealias IntList = IIntArrayList

@@ -31,8 +31,8 @@ Jon-Carlos Rivera - imbcmdth@hotmail.com
  ******************************************************************************/
 
 import korlibs.datastructure.*
-import korlibs.mathinternal.isAlmostEquals
-import korlibs.mathinternal.niceStr
+import korlibs.datastructure.internal.math.isAlmostEquals
+import korlibs.datastructure.internal.math.niceStr
 import kotlin.collections.set
 import kotlin.math.*
 

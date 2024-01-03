@@ -1,6 +1,6 @@
 package korlibs.datastructure
 
-import korlibs.mathinternal.InternalMath.divCeil
+import korlibs.datastructure.internal.math.Math.divCeil
 import kotlin.experimental.*
 
 /**

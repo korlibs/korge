@@ -1,7 +1,7 @@
 package korlibs.datastructure
 
 import korlibs.datastructure.internal.*
-import korlibs.mathinternal.InternalMath.divCeil
+import korlibs.datastructure.internal.math.Math.divCeil
 
 /**
  * Fixed size [BitSet]. Similar to a [BooleanArray] but tightly packed to reduce memory usage.

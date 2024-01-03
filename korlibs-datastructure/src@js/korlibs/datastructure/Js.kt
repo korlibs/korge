@@ -2,11 +2,7 @@
 
 package korlibs.datastructure
 
-import korlibs.jsinternal.Array_from
-import korlibs.jsinternal.JsArray
-import korlibs.jsinternal.JsMap
-import korlibs.jsinternal.JsWeakMap
-import korlibs.jsinternal.*
+import korlibs.datastructure.internal.js.*
 
 actual inline fun <T> Any?.fastCastTo(): T = this.unsafeCast<T>()
 

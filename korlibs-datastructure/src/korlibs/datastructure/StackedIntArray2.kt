@@ -1,6 +1,6 @@
 package korlibs.datastructure
 
-import korlibs.memoryinternal.InternalMemory.arraycopy
+import korlibs.datastructure.internal.memory.Memory.arraycopy
 
 interface IStackedIntArray2 {
     /** Annotation of where in [startX] this stack would be placed in a bigger container, not used for set or get methods */

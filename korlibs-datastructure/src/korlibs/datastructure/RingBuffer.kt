@@ -1,7 +1,7 @@
 package korlibs.datastructure
 
 import korlibs.datastructure.internal.*
-import korlibs.memoryinternal.InternalMemory.arraycopy
+import korlibs.datastructure.internal.memory.Memory.arraycopy
 import kotlin.jvm.*
 import kotlin.math.*
 

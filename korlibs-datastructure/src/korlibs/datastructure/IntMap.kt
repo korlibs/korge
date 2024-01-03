@@ -4,7 +4,7 @@ package korlibs.datastructure
 
 import korlibs.datastructure.internal.*
 import korlibs.datastructure.iterators.*
-import korlibs.mathinternal.InternalMath.ilog2Ceil
+import korlibs.datastructure.internal.math.Math.ilog2Ceil
 import kotlin.collections.component1
 import kotlin.collections.component2
 import kotlin.contracts.*

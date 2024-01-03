@@ -1,6 +1,6 @@
 package korlibs.datastructure
 
-import korlibs.mathinternal.InternalMath.umod
+import korlibs.datastructure.internal.math.Math.umod
 import kotlin.math.*
 
 inline fun count(cond: (index: Int) -> Boolean): Int {

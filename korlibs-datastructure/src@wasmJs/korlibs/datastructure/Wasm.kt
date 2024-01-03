@@ -2,7 +2,7 @@
 
 package korlibs.datastructure
 
-import korlibs.memoryinternal.InternalMemory.arraycopy
+import korlibs.datastructure.internal.memory.Memory.arraycopy
 
 actual inline fun <T> Any?.fastCastTo(): T = this as T
 
