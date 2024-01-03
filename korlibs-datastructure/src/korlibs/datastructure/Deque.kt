@@ -4,8 +4,8 @@ package korlibs.datastructure
 
 import korlibs.datastructure.annotations.*
 import korlibs.datastructure.internal.*
-import korlibs.math.InternalMath.umod
-import korlibs.memory.InternalMemory.arraycopy
+import korlibs.mathinternal.InternalMath.umod
+import korlibs.memoryinternal.InternalMemory.arraycopy
 import kotlin.math.*
 
 typealias Deque<TGen> = TGenDeque<TGen>

@@ -1,7 +1,7 @@
 package korlibs.datastructure
 
 import korlibs.datastructure.lock.*
-import korlibs.memory.InternalMemory.arraycopy
+import korlibs.memoryinternal.InternalMemory.arraycopy
 import kotlin.math.*
 
 class ChunkedByteDeque {

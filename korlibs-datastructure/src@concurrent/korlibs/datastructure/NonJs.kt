@@ -1,6 +1,6 @@
 package korlibs.datastructure
 
-import korlibs.memory.InternalMemory.arraycopy
+import korlibs.memoryinternal.InternalMemory.arraycopy
 
 @Suppress("UNCHECKED_CAST")
 actual inline fun <T> Any?.fastCastTo(): T = this as T
