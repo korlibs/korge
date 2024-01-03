@@ -30,7 +30,7 @@ internal actual val currentArch: Arch by lazy {
     return@lazy Arch.UNKNOWN
 }
 
-internal actual val currentIsDebug: Boolean get() = true //BuildConfig.DEBUG
+internal actual val currentIsDebug: Boolean get() = BuildConfig.DEBUG
 
 actual val currentIsLittleEndian: Boolean get() = ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN
 
