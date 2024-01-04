@@ -18,7 +18,7 @@ internal actual val currentArch: Arch = Arch.UNKNOWN
 
 internal actual val currentRuntime: Runtime = Runtime.WASM
 internal actual val currentIsDebug: Boolean = false
-internal actual val currentIsLittleEndian: Boolean =
+actual val currentIsLittleEndian: Boolean =
     Uint8Array(Uint32Array(1).also { it[0] = 0x11223344 }.buffer)[0].toInt() == 0x44
 internal actual val multithreadedSharedHeap: Boolean = false // Workers have different heaps
 
