@@ -29,7 +29,7 @@ internal actual val currentArch: Arch = when (kotlin.native.Platform.cpuArchitec
 }
 
 internal actual val currentIsDebug: Boolean get() = kotlin.native.Platform.isDebugBinary
-actual val currentIsLittleEndian: Boolean get() = kotlin.native.Platform.isLittleEndian
+internal actual val currentIsLittleEndian: Boolean get() = kotlin.native.Platform.isLittleEndian
 internal actual val multithreadedSharedHeap: Boolean = true
 internal actual val currentRawPlatformName: String = "native-$currentOs-$currentArch-$currentBuildVariant"
 internal actual val currentRawOsName: String = "$currentOs"

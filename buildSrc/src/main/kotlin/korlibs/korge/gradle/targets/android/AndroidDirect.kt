@@ -82,7 +82,9 @@ fun Project.configureAndroidDirect(projectType: ProjectType, isKorge: Boolean) {
         }
 
         buildFeatures.apply {
-            buildConfig = true
+            if (project.name == "korlibs-platform") {
+                buildConfig = true
+            }
         }
 
         packagingOptions.also {
