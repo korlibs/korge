@@ -1,6 +1,6 @@
 @file:Suppress("PackageDirectoryMismatch")
 
-package korlibs.event
+package korlibs.datastructure.event
 
 import korlibs.datastructure.*
 import korlibs.datastructure.closeable.*

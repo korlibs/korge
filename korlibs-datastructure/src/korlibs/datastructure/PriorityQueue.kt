@@ -220,22 +220,32 @@ class TGenPriorityQueue<TGen>
 
 @Suppress("UNCHECKED_CAST", "RemoveExplicitTypeArguments")
 class IntPriorityQueue
-@PublishedApi internal constructor(private var data: IntArray, val comparator: IntComparator) : MutableCollection<Int> {
+@PublishedApi internal constructor(private var data: IntArray, val comparator: IntComparator) :
+    MutableCollection<Int> {
     companion object {
         operator fun invoke(
             initialCapacity: Int,
             comparator: IntComparator,
             reversed: Boolean = false
         ): IntPriorityQueue =
-            IntPriorityQueue(IntArray(initialCapacity) as IntArray, if (reversed) comparator.reversed() else comparator)
+            IntPriorityQueue(
+                IntArray(initialCapacity) as IntArray,
+                if (reversed) comparator.reversed() else comparator
+            )
 
         operator fun invoke(comparator: IntComparator, reversed: Boolean = false): IntPriorityQueue =
-            IntPriorityQueue(IntArray(16) as IntArray, if (reversed) comparator.reversed() else comparator)
+            IntPriorityQueue(
+                IntArray(16) as IntArray,
+                if (reversed) comparator.reversed() else comparator
+            )
 
-        operator fun invoke(reversed: Boolean = false, comparator: (left: Int, right: Int) -> Int): IntPriorityQueue =
+        operator fun invoke(
+            reversed: Boolean = false,
+            comparator: (left: Int, right: Int) -> Int
+        ): IntPriorityQueue =
             IntPriorityQueue(Comparator(comparator), reversed)
 
-        operator fun invoke(reversed: Boolean = false): IntPriorityQueue =
+        operator fun  invoke(reversed: Boolean = false): IntPriorityQueue =
             IntPriorityQueue(comparator(), reversed)
     }
 
@@ -408,6 +418,7 @@ class IntPriorityQueue
 }
 
 
+
 // Double
 
 
@@ -427,7 +438,10 @@ class DoublePriorityQueue
             )
 
         operator fun invoke(comparator: DoubleComparator, reversed: Boolean = false): DoublePriorityQueue =
-            DoublePriorityQueue(DoubleArray(16) as DoubleArray, if (reversed) comparator.reversed() else comparator)
+            DoublePriorityQueue(
+                DoubleArray(16) as DoubleArray,
+                if (reversed) comparator.reversed() else comparator
+            )
 
         operator fun invoke(
             reversed: Boolean = false,
@@ -435,7 +449,7 @@ class DoublePriorityQueue
         ): DoublePriorityQueue =
             DoublePriorityQueue(Comparator(comparator), reversed)
 
-        operator fun invoke(reversed: Boolean = false): DoublePriorityQueue =
+        operator fun  invoke(reversed: Boolean = false): DoublePriorityQueue =
             DoublePriorityQueue(comparator(), reversed)
     }
 
@@ -608,6 +622,7 @@ class DoublePriorityQueue
 }
 
 
+
 // Float
 
 
@@ -627,7 +642,10 @@ class FloatPriorityQueue
             )
 
         operator fun invoke(comparator: FloatComparator, reversed: Boolean = false): FloatPriorityQueue =
-            FloatPriorityQueue(FloatArray(16) as FloatArray, if (reversed) comparator.reversed() else comparator)
+            FloatPriorityQueue(
+                FloatArray(16) as FloatArray,
+                if (reversed) comparator.reversed() else comparator
+            )
 
         operator fun invoke(
             reversed: Boolean = false,
@@ -635,7 +653,7 @@ class FloatPriorityQueue
         ): FloatPriorityQueue =
             FloatPriorityQueue(Comparator(comparator), reversed)
 
-        operator fun invoke(reversed: Boolean = false): FloatPriorityQueue =
+        operator fun  invoke(reversed: Boolean = false): FloatPriorityQueue =
             FloatPriorityQueue(comparator(), reversed)
     }
 

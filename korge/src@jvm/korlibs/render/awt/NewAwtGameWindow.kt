@@ -1,7 +1,7 @@
 package korlibs.render.awt
 
+import korlibs.datastructure.event.setInterval
 import korlibs.datastructure.thread.*
-import korlibs.event.*
 import korlibs.graphics.*
 import korlibs.image.awt.*
 import korlibs.image.bitmap.*

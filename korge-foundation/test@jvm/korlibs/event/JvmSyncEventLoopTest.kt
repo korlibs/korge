@@ -1,5 +1,6 @@
 package korlibs.event
 
+import korlibs.datastructure.event.*
 import korlibs.datastructure.lock.*
 import korlibs.datastructure.thread.*
 import korlibs.time.*

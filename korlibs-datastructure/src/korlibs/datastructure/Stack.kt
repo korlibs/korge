@@ -83,6 +83,7 @@ inline class IntStack(private val items: IntArrayList = IntArrayList()) : Collec
 }
 
 
+
 // Double
 
 
@@ -117,6 +118,7 @@ inline class DoubleStack(private val items: DoubleArrayList = DoubleArrayList())
     //override fun hashCode(): Int = items.hashCode()
     //override fun equals(other: Any?): Boolean = (other is DoubleStack) && items == other.items
 }
+
 
 
 // Float

@@ -454,6 +454,7 @@ open class IntDeque(initialCapacity: Int) : MutableCollection<Int> {
 }
 
 
+
 // Double
 
 
@@ -669,6 +670,7 @@ open class DoubleDeque(initialCapacity: Int) : MutableCollection<Double> {
         return sb.toString()
     }
 }
+
 
 
 // Float
@@ -888,6 +890,7 @@ open class FloatDeque(initialCapacity: Int) : MutableCollection<Float> {
 }
 
 
+
 // Byte
 
 
@@ -1103,6 +1106,7 @@ open class ByteDeque(initialCapacity: Int) : MutableCollection<Byte> {
         return sb.toString()
     }
 }
+
 
 
 // Char
@@ -1322,6 +1326,7 @@ open class CharDeque(initialCapacity: Int) : MutableCollection<Char> {
 }
 
 
+
 // Short
 
 
@@ -1539,6 +1544,7 @@ open class ShortDeque(initialCapacity: Int) : MutableCollection<Short> {
 }
 
 
+
 // Long
 
 
@@ -1754,6 +1760,7 @@ open class LongDeque(initialCapacity: Int) : MutableCollection<Long> {
         return sb.toString()
     }
 }
+
 
 
 // Boolean

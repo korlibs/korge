@@ -2,7 +2,7 @@ package korlibs.render.awt
 
 import korlibs.datastructure.lock.*
 import korlibs.datastructure.thread.*
-import korlibs.event.SyncEventLoop
+import korlibs.datastructure.event.SyncEventLoop
 import korlibs.image.bitmap.*
 import korlibs.image.color.*
 import korlibs.kgl.*

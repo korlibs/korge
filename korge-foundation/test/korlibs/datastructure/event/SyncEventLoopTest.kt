@@ -1,4 +1,4 @@
-package korlibs.event
+package korlibs.datastructure.event
 
 import korlibs.datastructure.closeable.*
 import korlibs.datastructure.thread.*
