@@ -1,7 +1,6 @@
 package korlibs.datastructure
 
 import korlibs.datastructure.internal.*
-import korlibs.datastructure.internal.math.IsAlmostEqualsF
 import korlibs.datastructure.internal.math.isAlmostEquals
 import korlibs.datastructure.internal.memory.Memory.arraycopy
 import kotlin.math.*
@@ -444,7 +443,7 @@ fun doubleArrayListOf(vararg values: Double) = DoubleArrayList(*values)
 
 // Float
 
-interface FloatList : Collection<Float>, IsAlmostEqualsF<FloatList> {
+interface FloatList : Collection<Float> {
     operator fun get(index: Int): Float
     fun getAt(index: Int): Float
     fun indexOf(value: Float, start: Int = 0, end: Int = this.size): Int
@@ -456,7 +455,7 @@ interface FloatList : Collection<Float>, IsAlmostEqualsF<FloatList> {
     fun listIterator(index: Int): ListIterator<Float>
     fun subList(fromIndex: Int, toIndex: Int): List<Float>
     fun clone(): FloatList
-    override fun isAlmostEquals(other: FloatList, epsilon: Float): Boolean {
+    fun isAlmostEquals(other: FloatList, epsilon: Float): Boolean {
         if (this.size != other.size) return false
         for (n in indices) if (!this.getAt(n).isAlmostEquals(other.getAt(n), epsilon)) return false
         return true

@@ -4,25 +4,6 @@ import korlibs.datastructure.internal.memory.Memory.countLeadingZeros
 import kotlin.math.*
 
 internal object Math {
-    /** Clamps the integer value in the 0..255 range */
-    fun Int.clampUByte(): Int {
-        val n = this and -(if (this >= 0) 1 else 0)
-        return (n or (0xFF - n shr 31)) and 0xFF
-    }
-
-    fun Int.clampUShort(): Int {
-        val n = this and -(if (this >= 0) 1 else 0)
-        return (n or (0xFFFF - n shr 31)) and 0xFFFF
-    }
-
-    /** Returns an [Int] representing this [Byte] as if it was unsigned 0x00..0xFF */
-    inline val Byte.unsigned get() = this.toInt() and 0xFF
-
-    /** Returns an [Int] representing this [Short] as if it was unsigned 0x0000..0xFFFF */
-    inline val Short.unsigned: Int get() = this.toInt() and 0xFFFF
-
-    /** Returns a [Long] representing this [Int] as if it was unsigned 0x00000000L..0xFFFFFFFFL */
-    inline val Int.unsigned: Long get() = this.toLong() and 0xFFFFFFFFL
     fun ilog2(v: Int): Int = if (v == 0) (-1) else (31 - v.countLeadingZeros())
 
     private val MINUS_ZERO_F = -0.0f
@@ -58,18 +39,9 @@ internal object Math {
     /** Divides [this] into [that] rounding to the ceil */
     infix fun Int.divCeil(that: Int): Int = if (this % that != 0) (this / that) + 1 else (this / that)
 
-
-    interface IsAlmostEquals<T> {
-        fun isAlmostEquals(other: T, epsilon: Double = 0.000001): Boolean
-    }
-
-    fun ilog2Ceil(v: Int): Int = ceil(log2(v.toDouble())).toInt()
+        fun ilog2Ceil(v: Int): Int = ceil(log2(v.toDouble())).toInt()
 }
 
-
-interface IsAlmostEqualsF<T> {
-    fun isAlmostEquals(other: T, epsilon: Float = 0.0001f): Boolean
-}
 
 internal fun Double.isAlmostEquals(other: Double, epsilon: Double = 0.000001): Boolean =
     (this - other).absoluteValue < epsilon

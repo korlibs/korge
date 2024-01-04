@@ -3,11 +3,11 @@
 package korlibs.datastructure
 
 import korlibs.datastructure.internal.js.*
+import korlibs.datastructure.internal.memory.*
 
 actual inline fun <T> Any?.fastCastTo(): T = this.unsafeCast<T>()
 
 actual class FastIntMap<T>(dummy: Boolean)
-
 
 actual fun <T> FastIntMap(): FastIntMap<T> = JsMap().asDynamic()
 actual val <T> FastIntMap<T>.size: Int get() = (this.asDynamic()).size
