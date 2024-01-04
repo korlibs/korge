@@ -31,7 +31,7 @@ internal actual val currentArch: Arch by lazy {
 
 internal actual val currentIsDebug: Boolean get() = BuildConfig.DEBUG
 
-actual val currentIsLittleEndian: Boolean get() = ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN
+internal actual val currentIsLittleEndian: Boolean get() = ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN
 
 internal actual val currentRawPlatformName: String = "android-$currentOs-$currentArch-$currentBuildVariant"
 internal actual val currentRawOsName: String = System.getProperty("os.name") ?: "android"

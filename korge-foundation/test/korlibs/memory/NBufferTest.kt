@@ -1,6 +1,7 @@
 package korlibs.memory
 
 import korlibs.platform.*
+import korlibs.platform.Platform.Companion.isLittleEndian
 import kotlin.byteArrayOf
 import kotlin.test.*
 
@@ -463,12 +464,12 @@ open class NBufferTestBase {
     }
 
     fun Byte.asLittle(): Byte = this
-    fun Short.asLittle(): Short = if (currentIsLittleEndian) this else this.reverseBytes()
-    fun Int.asLittle(): Int = if (currentIsLittleEndian) this else this.reverseBytes()
-    fun Long.asLittle(): Long = if (currentIsLittleEndian) this else this.reverseBytes()
+    fun Short.asLittle(): Short = if (isLittleEndian) this else this.reverseBytes()
+    fun Int.asLittle(): Int = if (isLittleEndian) this else this.reverseBytes()
+    fun Long.asLittle(): Long = if (isLittleEndian) this else this.reverseBytes()
 
     fun Byte.asBig(): Byte = this
-    fun Short.asBig(): Short = if (currentIsLittleEndian) this.reverseBytes() else this
-    fun Int.asBig(): Int = if (currentIsLittleEndian) this.reverseBytes() else this
-    fun Long.asBig(): Long = if (currentIsLittleEndian) this.reverseBytes() else this
+    fun Short.asBig(): Short = if (isLittleEndian) this.reverseBytes() else this
+    fun Int.asBig(): Int = if (isLittleEndian) this.reverseBytes() else this
+    fun Long.asBig(): Long = if (isLittleEndian) this.reverseBytes() else this
 }

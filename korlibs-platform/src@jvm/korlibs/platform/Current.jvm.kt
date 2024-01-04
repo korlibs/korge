@@ -37,7 +37,7 @@ internal actual val currentIsDebug: Boolean by lazy {
     val inputArgumentsString = inputArguments.toString()
     inputArguments.contains("-Xdebug") || inputArgumentsString.contains("-agentlib:jdwp")
 }
-actual val currentIsLittleEndian: Boolean get() = ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN
+internal actual val currentIsLittleEndian: Boolean get() = ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN
 
 internal actual val currentRawPlatformName: String = "jvm-$currentOs-$currentArch-$currentBuildVariant"
 internal actual val currentRawOsName: String = System.getProperty("os.name")
