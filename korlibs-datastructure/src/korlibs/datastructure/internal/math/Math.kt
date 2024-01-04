@@ -39,7 +39,7 @@ internal object Math {
     /** Divides [this] into [that] rounding to the ceil */
     infix fun Int.divCeil(that: Int): Int = if (this % that != 0) (this / that) + 1 else (this / that)
 
-        fun ilog2Ceil(v: Int): Int = ceil(log2(v.toDouble())).toInt()
+    fun ilog2Ceil(v: Int): Int = ceil(log2(v.toDouble())).toInt()
 }
 
 

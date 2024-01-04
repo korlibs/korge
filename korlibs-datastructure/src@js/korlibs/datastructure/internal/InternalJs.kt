@@ -1,7 +1,7 @@
 package korlibs.datastructure.internal
 
 @JsName("Symbol")
-external fun Symbol(name: String): dynamic
+internal external fun Symbol(name: String): dynamic
 
 private var lastIdentityHashCodeId = 0
 private val IDENTITY_HASH_CODE_SYMBOL = Symbol("KotlinIdentityHashCode")
