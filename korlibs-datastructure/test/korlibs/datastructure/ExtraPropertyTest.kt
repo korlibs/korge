@@ -1,12 +1,11 @@
 package korlibs.datastructure
 
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 private var Demo.demo1 by extraProperty { "hello" }
 private val Demo.demo by extraProperty { linkedSetOf<String>() }
 private var Demo.demo2 by extraPropertyThis(transform = { if (it % 10 == 0) it else it - (it % 10) }) { 10 }
+
 private class Demo : Extra by Extra.Mixin()
 
 class ExtraPropertyTest {

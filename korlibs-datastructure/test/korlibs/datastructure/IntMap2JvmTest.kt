@@ -1,8 +1,7 @@
 package korlibs.datastructure
 
-import kotlin.random.Random
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import kotlin.random.*
+import kotlin.test.*
 
 class IntMap2JvmTest {
     @Test

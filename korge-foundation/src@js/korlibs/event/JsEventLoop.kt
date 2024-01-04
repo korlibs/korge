@@ -1,4 +1,4 @@
-package korlibs.datastructure.event
+package korlibs.event
 
 import korlibs.datastructure.closeable.*
 import korlibs.platform.jsGlobalThis

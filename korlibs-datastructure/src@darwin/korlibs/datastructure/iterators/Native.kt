@@ -12,7 +12,8 @@ actual val CONCURRENCY_COUNT: Int = Platform.getAvailableProcessors()
 
 val PARALLEL_WORKERS = if (CONCURRENCY_COUNT > 1) Array(CONCURRENCY_COUNT) { Worker.start() } else emptyArray()
 
-@PublishedApi internal class ParallelForeachChunk(val start: Int, val end: Int, val block: (Int) -> Unit)
+@PublishedApi
+internal class ParallelForeachChunk(val start: Int, val end: Int, val block: (Int) -> Unit)
 
 actual inline fun parallelForeach(count: Int, crossinline block: (n: Int) -> Unit) {
     if (count == 0) return

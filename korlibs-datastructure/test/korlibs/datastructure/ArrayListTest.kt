@@ -1,8 +1,6 @@
 package korlibs.datastructure
 
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNotEquals
+import kotlin.test.*
 
 class ArrayListTest {
     @Test
@@ -146,8 +144,15 @@ class ArrayListTest {
 
     @Test
     fun testInsertAt() {
-        assertEquals(listOf(4, 3, 2, 1), intArrayListOf().insertAt(0, 1).insertAt(0, 2).insertAt(0, 3).insertAt(0, 4).toList())
-        assertEquals(listOf(21, 22, 23, 11, 12, 13, 1, 2, 3), intArrayListOf().insertAt(0, intArrayOf(1, 2, 3)).insertAt(0, intArrayOf(11, 12, 13)).insertAt(0, intArrayOf(21, 22, 23)).toList())
+        assertEquals(
+            listOf(4, 3, 2, 1),
+            intArrayListOf().insertAt(0, 1).insertAt(0, 2).insertAt(0, 3).insertAt(0, 4).toList()
+        )
+        assertEquals(
+            listOf(21, 22, 23, 11, 12, 13, 1, 2, 3),
+            intArrayListOf().insertAt(0, intArrayOf(1, 2, 3)).insertAt(0, intArrayOf(11, 12, 13))
+                .insertAt(0, intArrayOf(21, 22, 23)).toList()
+        )
     }
 
     @Test

@@ -18,10 +18,16 @@ class TGenQueue<TGen>() : Collection<TGen> {
         for (item in items) enqueue(item)
     }
 
-    fun enqueue(v: TGen) { items.addLast(v) }
+    fun enqueue(v: TGen) {
+        items.addLast(v)
+    }
+
     fun peek(): TGen? = items.firstOrNull()
     fun dequeue(): TGen = items.removeFirst()
-    fun remove(v: TGen) { items.remove(v) }
+    fun remove(v: TGen) {
+        items.remove(v)
+    }
+
     fun toList() = items.toList()
     fun clear() = items.clear()
 
@@ -49,10 +55,16 @@ class IntQueue() : Collection<Int> {
         for (item in items) enqueue(item)
     }
 
-    fun enqueue(v: Int) { items.addLast(v) }
+    fun enqueue(v: Int) {
+        items.addLast(v)
+    }
+
     fun peek(): Int? = items.firstOrNull()
     fun dequeue(): Int = items.removeFirst()
-    fun remove(v: Int) { items.remove(v) }
+    fun remove(v: Int) {
+        items.remove(v)
+    }
+
     fun toList() = items.toList()
     fun clear() = items.clear()
 
@@ -80,10 +92,16 @@ class DoubleQueue() : Collection<Double> {
         for (item in items) enqueue(item)
     }
 
-    fun enqueue(v: Double) { items.addLast(v) }
+    fun enqueue(v: Double) {
+        items.addLast(v)
+    }
+
     fun peek(): Double? = items.firstOrNull()
     fun dequeue(): Double = items.removeFirst()
-    fun remove(v: Double) { items.remove(v) }
+    fun remove(v: Double) {
+        items.remove(v)
+    }
+
     fun toList() = items.toList()
     fun clear() = items.clear()
 
@@ -111,10 +129,16 @@ class FloatQueue() : Collection<Float> {
         for (item in items) enqueue(item)
     }
 
-    fun enqueue(v: Float) { items.addLast(v) }
+    fun enqueue(v: Float) {
+        items.addLast(v)
+    }
+
     fun peek(): Float? = items.firstOrNull()
     fun dequeue(): Float = items.removeFirst()
-    fun remove(v: Float) { items.remove(v) }
+    fun remove(v: Float) {
+        items.remove(v)
+    }
+
     fun toList() = items.toList()
     fun clear() = items.clear()
 

@@ -1,6 +1,11 @@
 package korlibs.datastructure
 
-inline fun genericRemoveSortedDuplicates(size: Int, equals: (x: Int, y: Int) -> Boolean, copy: (src: Int, dst: Int) -> Unit, resize: (size: Int) -> Unit) {
+inline fun genericRemoveSortedDuplicates(
+    size: Int,
+    equals: (x: Int, y: Int) -> Boolean,
+    copy: (src: Int, dst: Int) -> Unit,
+    resize: (size: Int) -> Unit
+) {
     if (size < 2) return
     var pivot = 0
     var ref = 0

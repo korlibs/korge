@@ -77,6 +77,7 @@ abstract class SortOps<T> {
     open fun shiftLeft(subject: T, indexL: Int, indexR: Int) {
         for (n in indexR downTo indexL + 1) swap(subject, n - 1, n)
     }
+
     open fun reverse(subject: T, indexL: Int, indexR: Int) {
         val count = indexR - indexL + 1
         for (n in 0 until count / 2) {
@@ -86,8 +87,7 @@ abstract class SortOps<T> {
 }
 
 object SortOpsComparable : SortOps<MutableList<Comparable<Any>>>() {
-    override fun compare(subject: MutableList<Comparable<Any>>, l: Int, r: Int): Int
-        = subject[l].compareTo(subject[r])
+    override fun compare(subject: MutableList<Comparable<Any>>, l: Int, r: Int): Int = subject[l].compareTo(subject[r])
 
     override fun swap(subject: MutableList<Comparable<Any>>, indexL: Int, indexR: Int) {
         val tmp = subject[indexL]

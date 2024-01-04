@@ -152,7 +152,11 @@ open class ByteRingBuffer(val bits: Int) {
     }
 
     fun peek(offset: Int = 0) = buffer[(readPos + offset) and mask]
-    override fun equals(other: Any?): Boolean = (other is ByteRingBuffer) && this.availableRead == other.availableRead && equaler(availableRead) { this.peek(it) == other.peek(it) }
+    override fun equals(other: Any?): Boolean =
+        (other is ByteRingBuffer) && this.availableRead == other.availableRead && equaler(availableRead) {
+            this.peek(it) == other.peek(it)
+        }
+
     override fun hashCode(): Int = contentHashCode()
     fun contentHashCode(): Int = hashCoder(availableRead) { peek(it).toInt() }
 }
@@ -217,6 +221,7 @@ class ShortRingBuffer(val bits: Int) {
         read(temp, 0, 1)
         return temp[0]
     }
+
     fun writeOne(value: Short) {
         temp[0] = value
         write(temp, 0, 1)
@@ -230,7 +235,11 @@ class ShortRingBuffer(val bits: Int) {
     }
 
     fun peek(offset: Int = 0) = buffer[(readPos + offset) and mask]
-    override fun equals(other: Any?): Boolean = (other is ShortRingBuffer) && this.availableRead == other.availableRead && equaler(availableRead) { this.peek(it) == other.peek(it) }
+    override fun equals(other: Any?): Boolean =
+        (other is ShortRingBuffer) && this.availableRead == other.availableRead && equaler(availableRead) {
+            this.peek(it) == other.peek(it)
+        }
+
     override fun hashCode(): Int = contentHashCode()
     fun contentHashCode(): Int = hashCoder(availableRead) { peek(it).toInt() }
 }
@@ -288,7 +297,11 @@ class IntRingBuffer(val bits: Int) {
     }
 
     fun peek(offset: Int = 0) = buffer[(readPos + offset) and mask]
-    override fun equals(other: Any?): Boolean = (other is IntRingBuffer) && this.availableRead == other.availableRead && equaler(availableRead) { this.peek(it) == other.peek(it) }
+    override fun equals(other: Any?): Boolean =
+        (other is IntRingBuffer) && this.availableRead == other.availableRead && equaler(availableRead) {
+            this.peek(it) == other.peek(it)
+        }
+
     override fun hashCode(): Int = contentHashCode()
     fun contentHashCode(): Int = hashCoder(availableRead) { peek(it).toInt() }
 }
@@ -346,7 +359,11 @@ class FloatRingBuffer(val bits: Int) {
     }
 
     fun peek(offset: Int = 0) = buffer[(readPos + offset) and mask]
-    override fun equals(other: Any?): Boolean = (other is FloatRingBuffer) && this.availableRead == other.availableRead && equaler(availableRead) { this.peek(it) == other.peek(it) }
+    override fun equals(other: Any?): Boolean =
+        (other is FloatRingBuffer) && this.availableRead == other.availableRead && equaler(availableRead) {
+            this.peek(it) == other.peek(it)
+        }
+
     override fun hashCode(): Int = contentHashCode()
     fun contentHashCode(): Int = hashCoder(availableRead) { peek(it).toBits() }
 }

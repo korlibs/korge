@@ -1,12 +1,13 @@
 @file:Suppress("PackageDirectoryMismatch")
 
-package korlibs.datastructure.event
+package korlibs.event
 
 import korlibs.datastructure.*
 import korlibs.datastructure.closeable.*
 import korlibs.datastructure.lock.*
 import korlibs.datastructure.pauseable.*
 import korlibs.datastructure.thread.*
+import korlibs.logger.*
 import korlibs.time.*
 import kotlin.time.*
 
@@ -87,7 +88,7 @@ open class SyncEventLoop(
             if (running) {
                 timedTasks.add(task)
             } else {
-                //TODO: add back logger Console.warn("WARNING: QUEUED TASK time=$time interval=$interval without running")
+                Console.warn("WARNING: QUEUED TASK time=$time interval=$interval without running")
             }
             //println("NOTIFIED!")
             lock.notify()

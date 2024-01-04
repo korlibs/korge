@@ -20,7 +20,9 @@ actual class NativeThread actual constructor(val code: (NativeThread) -> Unit) :
 
     actual var isDaemon: Boolean
         get() = thread.isDaemon
-        set(value) { thread.isDaemon = value }
+        set(value) {
+            thread.isDaemon = value
+        }
 
     actual fun start() {
         threadSuggestRunning = true
@@ -40,7 +42,8 @@ actual class NativeThread actual constructor(val code: (NativeThread) -> Unit) :
         actual val currentThreadName: String? get() = Thread.currentThread().name
 
         private val java_lang_Thread = Class.forName("java.lang.Thread")
-        @PublishedApi internal val onSpinWait = runCatching { java_lang_Thread.getMethod("onSpinWait") }.getOrNull()
+        @PublishedApi
+        internal val onSpinWait = runCatching { java_lang_Thread.getMethod("onSpinWait") }.getOrNull()
 
         actual fun gc(full: Boolean) {
             System.gc()
@@ -55,6 +58,7 @@ actual class NativeThread actual constructor(val code: (NativeThread) -> Unit) :
                 Thread.sleep(millis, nanos)
             }
         }
+
         actual inline fun spinWhile(cond: () -> Boolean): Unit {
             //println("onSpinWait=$onSpinWait")
             while (cond()) {

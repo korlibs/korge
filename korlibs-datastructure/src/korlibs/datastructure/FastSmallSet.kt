@@ -1,7 +1,8 @@
 package korlibs.datastructure
 
 class FastSmallSet<T> : AbstractMutableSet<T>() {
-    @PublishedApi internal val _items = LinkedHashSet<T>()
+    @PublishedApi
+    internal val _items = LinkedHashSet<T>()
     //@PublishedApi internal val _items = FastArrayList<T>()
     //val itemsToIndex = LinkedHashMap<T, Int>()
     //val items: List<T> get() = _items

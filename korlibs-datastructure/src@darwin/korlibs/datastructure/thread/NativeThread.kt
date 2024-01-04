@@ -1,4 +1,5 @@
 @file:Suppress("PackageDirectoryMismatch")
+
 package korlibs.datastructure.thread
 
 import korlibs.datastructure.*
@@ -51,6 +52,7 @@ actual class NativeThread actual constructor(val code: (NativeThread) -> Unit) :
             platform.posix.usleep(time.inWholeMicroseconds.toUInt())
 
         }
+
         actual inline fun spinWhile(cond: () -> Boolean): Unit {
             while (cond()) {
                 // @TODO: try to improve performance like: Thread.onSpinWait() or SpinWait.SpinUntil

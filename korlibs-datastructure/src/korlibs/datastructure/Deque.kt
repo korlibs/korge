@@ -141,7 +141,10 @@ open class TGenDeque<TGen>(initialCapacity: Int) : MutableCollection<TGen> {
     }
 
     override fun add(element: TGen): Boolean = true.apply { addLast(element) }
-    override fun clear() { _size = 0 }
+    override fun clear() {
+        _size = 0
+    }
+
     override fun remove(element: TGen): Boolean {
         val index = indexOf(element)
         if (index >= 0) removeAt(index)
@@ -173,7 +176,10 @@ open class TGenDeque<TGen>(initialCapacity: Int) : MutableCollection<TGen> {
 
     private fun internalIndex(index: Int) = (_start + index) umod capacity
 
-    operator fun set(index: Int, value: TGen) { data[internalIndex(index)] = value }
+    operator fun set(index: Int, value: TGen) {
+        data[internalIndex(index)] = value
+    }
+
     operator fun get(index: Int): TGen = data[internalIndex(index)]
 
     fun getOrNull(index: Int): TGen? = if (index in indices) get(index) else null
@@ -200,7 +206,9 @@ open class TGenDeque<TGen>(initialCapacity: Int) : MutableCollection<TGen> {
             var index = 0
             override fun next(): TGen = that[index++]
             override fun hasNext(): Boolean = index < size
-            override fun remove() { removeAt(--index) }
+            override fun remove() {
+                removeAt(--index)
+            }
         }
     }
 
@@ -353,7 +361,10 @@ open class IntDeque(initialCapacity: Int) : MutableCollection<Int> {
     }
 
     override fun add(element: Int): Boolean = true.apply { addLast(element) }
-    override fun clear() { _size = 0 }
+    override fun clear() {
+        _size = 0
+    }
+
     override fun remove(element: Int): Boolean {
         val index = indexOf(element)
         if (index >= 0) removeAt(index)
@@ -385,7 +396,10 @@ open class IntDeque(initialCapacity: Int) : MutableCollection<Int> {
 
     private fun internalIndex(index: Int) = (_start + index) umod capacity
 
-    operator fun set(index: Int, value: Int) { data[internalIndex(index)] = value }
+    operator fun set(index: Int, value: Int) {
+        data[internalIndex(index)] = value
+    }
+
     operator fun get(index: Int): Int = data[internalIndex(index)]
 
     fun getOrNull(index: Int): Int? = if (index in indices) get(index) else null
@@ -412,7 +426,9 @@ open class IntDeque(initialCapacity: Int) : MutableCollection<Int> {
             var index = 0
             override fun next(): Int = that[index++]
             override fun hasNext(): Boolean = index < size
-            override fun remove() { removeAt(--index) }
+            override fun remove() {
+                removeAt(--index)
+            }
         }
     }
 
@@ -436,7 +452,6 @@ open class IntDeque(initialCapacity: Int) : MutableCollection<Int> {
         return sb.toString()
     }
 }
-
 
 
 // Double
@@ -563,7 +578,10 @@ open class DoubleDeque(initialCapacity: Int) : MutableCollection<Double> {
     }
 
     override fun add(element: Double): Boolean = true.apply { addLast(element) }
-    override fun clear() { _size = 0 }
+    override fun clear() {
+        _size = 0
+    }
+
     override fun remove(element: Double): Boolean {
         val index = indexOf(element)
         if (index >= 0) removeAt(index)
@@ -595,7 +613,10 @@ open class DoubleDeque(initialCapacity: Int) : MutableCollection<Double> {
 
     private fun internalIndex(index: Int) = (_start + index) umod capacity
 
-    operator fun set(index: Int, value: Double) { data[internalIndex(index)] = value }
+    operator fun set(index: Int, value: Double) {
+        data[internalIndex(index)] = value
+    }
+
     operator fun get(index: Int): Double = data[internalIndex(index)]
 
     fun getOrNull(index: Int): Double? = if (index in indices) get(index) else null
@@ -622,7 +643,9 @@ open class DoubleDeque(initialCapacity: Int) : MutableCollection<Double> {
             var index = 0
             override fun next(): Double = that[index++]
             override fun hasNext(): Boolean = index < size
-            override fun remove() { removeAt(--index) }
+            override fun remove() {
+                removeAt(--index)
+            }
         }
     }
 
@@ -646,7 +669,6 @@ open class DoubleDeque(initialCapacity: Int) : MutableCollection<Double> {
         return sb.toString()
     }
 }
-
 
 
 // Float
@@ -773,7 +795,10 @@ open class FloatDeque(initialCapacity: Int) : MutableCollection<Float> {
     }
 
     override fun add(element: Float): Boolean = true.apply { addLast(element) }
-    override fun clear() { _size = 0 }
+    override fun clear() {
+        _size = 0
+    }
+
     override fun remove(element: Float): Boolean {
         val index = indexOf(element)
         if (index >= 0) removeAt(index)
@@ -805,7 +830,10 @@ open class FloatDeque(initialCapacity: Int) : MutableCollection<Float> {
 
     private fun internalIndex(index: Int) = (_start + index) umod capacity
 
-    operator fun set(index: Int, value: Float) { data[internalIndex(index)] = value }
+    operator fun set(index: Int, value: Float) {
+        data[internalIndex(index)] = value
+    }
+
     operator fun get(index: Int): Float = data[internalIndex(index)]
 
     fun getOrNull(index: Int): Float? = if (index in indices) get(index) else null
@@ -832,7 +860,9 @@ open class FloatDeque(initialCapacity: Int) : MutableCollection<Float> {
             var index = 0
             override fun next(): Float = that[index++]
             override fun hasNext(): Boolean = index < size
-            override fun remove() { removeAt(--index) }
+            override fun remove() {
+                removeAt(--index)
+            }
         }
     }
 
@@ -856,7 +886,6 @@ open class FloatDeque(initialCapacity: Int) : MutableCollection<Float> {
         return sb.toString()
     }
 }
-
 
 
 // Byte
@@ -983,7 +1012,10 @@ open class ByteDeque(initialCapacity: Int) : MutableCollection<Byte> {
     }
 
     override fun add(element: Byte): Boolean = true.apply { addLast(element) }
-    override fun clear() { _size = 0 }
+    override fun clear() {
+        _size = 0
+    }
+
     override fun remove(element: Byte): Boolean {
         val index = indexOf(element)
         if (index >= 0) removeAt(index)
@@ -1015,7 +1047,10 @@ open class ByteDeque(initialCapacity: Int) : MutableCollection<Byte> {
 
     private fun internalIndex(index: Int) = (_start + index) umod capacity
 
-    operator fun set(index: Int, value: Byte) { data[internalIndex(index)] = value }
+    operator fun set(index: Int, value: Byte) {
+        data[internalIndex(index)] = value
+    }
+
     operator fun get(index: Int): Byte = data[internalIndex(index)]
 
     fun getOrNull(index: Int): Byte? = if (index in indices) get(index) else null
@@ -1042,7 +1077,9 @@ open class ByteDeque(initialCapacity: Int) : MutableCollection<Byte> {
             var index = 0
             override fun next(): Byte = that[index++]
             override fun hasNext(): Boolean = index < size
-            override fun remove() { removeAt(--index) }
+            override fun remove() {
+                removeAt(--index)
+            }
         }
     }
 
@@ -1066,7 +1103,6 @@ open class ByteDeque(initialCapacity: Int) : MutableCollection<Byte> {
         return sb.toString()
     }
 }
-
 
 
 // Char
@@ -1193,7 +1229,10 @@ open class CharDeque(initialCapacity: Int) : MutableCollection<Char> {
     }
 
     override fun add(element: Char): Boolean = true.apply { addLast(element) }
-    override fun clear() { _size = 0 }
+    override fun clear() {
+        _size = 0
+    }
+
     override fun remove(element: Char): Boolean {
         val index = indexOf(element)
         if (index >= 0) removeAt(index)
@@ -1225,7 +1264,10 @@ open class CharDeque(initialCapacity: Int) : MutableCollection<Char> {
 
     private fun internalIndex(index: Int) = (_start + index) umod capacity
 
-    operator fun set(index: Int, value: Char) { data[internalIndex(index)] = value }
+    operator fun set(index: Int, value: Char) {
+        data[internalIndex(index)] = value
+    }
+
     operator fun get(index: Int): Char = data[internalIndex(index)]
 
     fun getOrNull(index: Int): Char? = if (index in indices) get(index) else null
@@ -1252,7 +1294,9 @@ open class CharDeque(initialCapacity: Int) : MutableCollection<Char> {
             var index = 0
             override fun next(): Char = that[index++]
             override fun hasNext(): Boolean = index < size
-            override fun remove() { removeAt(--index) }
+            override fun remove() {
+                removeAt(--index)
+            }
         }
     }
 
@@ -1276,7 +1320,6 @@ open class CharDeque(initialCapacity: Int) : MutableCollection<Char> {
         return sb.toString()
     }
 }
-
 
 
 // Short
@@ -1403,7 +1446,10 @@ open class ShortDeque(initialCapacity: Int) : MutableCollection<Short> {
     }
 
     override fun add(element: Short): Boolean = true.apply { addLast(element) }
-    override fun clear() { _size = 0 }
+    override fun clear() {
+        _size = 0
+    }
+
     override fun remove(element: Short): Boolean {
         val index = indexOf(element)
         if (index >= 0) removeAt(index)
@@ -1435,7 +1481,10 @@ open class ShortDeque(initialCapacity: Int) : MutableCollection<Short> {
 
     private fun internalIndex(index: Int) = (_start + index) umod capacity
 
-    operator fun set(index: Int, value: Short) { data[internalIndex(index)] = value }
+    operator fun set(index: Int, value: Short) {
+        data[internalIndex(index)] = value
+    }
+
     operator fun get(index: Int): Short = data[internalIndex(index)]
 
     fun getOrNull(index: Int): Short? = if (index in indices) get(index) else null
@@ -1462,7 +1511,9 @@ open class ShortDeque(initialCapacity: Int) : MutableCollection<Short> {
             var index = 0
             override fun next(): Short = that[index++]
             override fun hasNext(): Boolean = index < size
-            override fun remove() { removeAt(--index) }
+            override fun remove() {
+                removeAt(--index)
+            }
         }
     }
 
@@ -1486,7 +1537,6 @@ open class ShortDeque(initialCapacity: Int) : MutableCollection<Short> {
         return sb.toString()
     }
 }
-
 
 
 // Long
@@ -1613,7 +1663,10 @@ open class LongDeque(initialCapacity: Int) : MutableCollection<Long> {
     }
 
     override fun add(element: Long): Boolean = true.apply { addLast(element) }
-    override fun clear() { _size = 0 }
+    override fun clear() {
+        _size = 0
+    }
+
     override fun remove(element: Long): Boolean {
         val index = indexOf(element)
         if (index >= 0) removeAt(index)
@@ -1645,7 +1698,10 @@ open class LongDeque(initialCapacity: Int) : MutableCollection<Long> {
 
     private fun internalIndex(index: Int) = (_start + index) umod capacity
 
-    operator fun set(index: Int, value: Long) { data[internalIndex(index)] = value }
+    operator fun set(index: Int, value: Long) {
+        data[internalIndex(index)] = value
+    }
+
     operator fun get(index: Int): Long = data[internalIndex(index)]
 
     fun getOrNull(index: Int): Long? = if (index in indices) get(index) else null
@@ -1672,7 +1728,9 @@ open class LongDeque(initialCapacity: Int) : MutableCollection<Long> {
             var index = 0
             override fun next(): Long = that[index++]
             override fun hasNext(): Boolean = index < size
-            override fun remove() { removeAt(--index) }
+            override fun remove() {
+                removeAt(--index)
+            }
         }
     }
 
@@ -1696,7 +1754,6 @@ open class LongDeque(initialCapacity: Int) : MutableCollection<Long> {
         return sb.toString()
     }
 }
-
 
 
 // Boolean
@@ -1823,7 +1880,10 @@ open class BooleanDeque(initialCapacity: Int) : MutableCollection<Boolean> {
     }
 
     override fun add(element: Boolean): Boolean = true.apply { addLast(element) }
-    override fun clear() { _size = 0 }
+    override fun clear() {
+        _size = 0
+    }
+
     override fun remove(element: Boolean): Boolean {
         val index = indexOf(element)
         if (index >= 0) removeAt(index)
@@ -1855,7 +1915,10 @@ open class BooleanDeque(initialCapacity: Int) : MutableCollection<Boolean> {
 
     private fun internalIndex(index: Int) = (_start + index) umod capacity
 
-    operator fun set(index: Int, value: Boolean) { data[internalIndex(index)] = value }
+    operator fun set(index: Int, value: Boolean) {
+        data[internalIndex(index)] = value
+    }
+
     operator fun get(index: Int): Boolean = data[internalIndex(index)]
 
     fun getOrNull(index: Int): Boolean? = if (index in indices) get(index) else null
@@ -1882,7 +1945,9 @@ open class BooleanDeque(initialCapacity: Int) : MutableCollection<Boolean> {
             var index = 0
             override fun next(): Boolean = that[index++]
             override fun hasNext(): Boolean = index < size
-            override fun remove() { removeAt(--index) }
+            override fun remove() {
+                removeAt(--index)
+            }
         }
     }
 

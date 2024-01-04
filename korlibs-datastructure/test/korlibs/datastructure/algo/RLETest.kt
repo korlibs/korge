@@ -1,7 +1,6 @@
 package korlibs.datastructure.algo
 
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import kotlin.test.*
 
 class RLETest {
     @Test

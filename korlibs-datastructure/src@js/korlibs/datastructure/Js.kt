@@ -3,7 +3,6 @@
 package korlibs.datastructure
 
 import korlibs.datastructure.internal.js.*
-import korlibs.datastructure.internal.memory.*
 
 actual inline fun <T> Any?.fastCastTo(): T = this.unsafeCast<T>()
 
@@ -13,9 +12,15 @@ actual fun <T> FastIntMap(): FastIntMap<T> = JsMap().asDynamic()
 actual val <T> FastIntMap<T>.size: Int get() = (this.asDynamic()).size
 actual fun <T> FastIntMap<T>.keys(): List<Int> = Array_from((this.asDynamic()).keys()).unsafeCast<Array<Int>>().toList()
 actual inline operator fun <T> FastIntMap<T>.get(key: Int): T? = (this.asDynamic()).get(key)
-actual inline operator fun <T> FastIntMap<T>.set(key: Int, value: T) { (this.asDynamic()).set(key, value) }
+actual inline operator fun <T> FastIntMap<T>.set(key: Int, value: T) {
+    (this.asDynamic()).set(key, value)
+}
+
 actual inline operator fun <T> FastIntMap<T>.contains(key: Int): Boolean = (this.asDynamic()).contains(key) != undefined
-actual inline fun <T> FastIntMap<T>.remove(key: Int) { (this.asDynamic()).delete(key) }
+actual inline fun <T> FastIntMap<T>.remove(key: Int) {
+    (this.asDynamic()).delete(key)
+}
+
 actual inline fun <T> FastIntMap<T>.removeRange(src: Int, dst: Int) {
     //@Suppress("UNUSED_VARIABLE") val obj = this.asDynamic()
     //js("for (var key in obj.keys()) if (key >= src && key <= dst) obj.delete(key);")
@@ -54,8 +59,14 @@ actual inline operator fun <T> FastStringMap<T>.set(key: String, value: T): Unit
     run { (this.asDynamic()).set(key, value) }
 
 actual inline operator fun <T> FastStringMap<T>.contains(key: String): Boolean = (this.asDynamic()).has(key)
-actual inline fun <T> FastStringMap<T>.remove(key: String) { (this.asDynamic()).delete(key) }
-actual inline fun <T> FastStringMap<T>.clear() { (this.asDynamic()).clear() }
+actual inline fun <T> FastStringMap<T>.remove(key: String) {
+    (this.asDynamic()).delete(key)
+}
+
+actual inline fun <T> FastStringMap<T>.clear() {
+    (this.asDynamic()).clear()
+}
+
 actual fun <T> FastStringMap<T>.putAll(other: FastStringMap<T>) {
     for (key in other.keys) {
         this[key] = other[key].asDynamic()
@@ -80,12 +91,23 @@ actual class FastIdentityMap<K, V>(dummy: Boolean)
 
 actual fun <K, V> FastIdentityMap(): FastIdentityMap<K, V> = JsMap().asDynamic()
 actual val <K, V> FastIdentityMap<K, V>.size: Int get() = this.asDynamic().size
-actual fun <K, V> FastIdentityMap<K, V>.keys(): List<K> = Array_from((this.asDynamic()).keys()).unsafeCast<Array<K>>().toList()
+actual fun <K, V> FastIdentityMap<K, V>.keys(): List<K> =
+    Array_from((this.asDynamic()).keys()).unsafeCast<Array<K>>().toList()
+
 actual operator fun <K, V> FastIdentityMap<K, V>.get(key: K): V? = (this.asDynamic()).get(key)
-actual operator fun <K, V> FastIdentityMap<K, V>.set(key: K, value: V) { (this.asDynamic()).set(key, value) }
+actual operator fun <K, V> FastIdentityMap<K, V>.set(key: K, value: V) {
+    (this.asDynamic()).set(key, value)
+}
+
 actual operator fun <K, V> FastIdentityMap<K, V>.contains(key: K): Boolean = (this.asDynamic()).has(key)
-actual fun <K, V> FastIdentityMap<K, V>.remove(key: K) { (this.asDynamic()).delete(key) }
-actual fun <K, V> FastIdentityMap<K, V>.clear() { (this.asDynamic()).clear() }
+actual fun <K, V> FastIdentityMap<K, V>.remove(key: K) {
+    (this.asDynamic()).delete(key)
+}
+
+actual fun <K, V> FastIdentityMap<K, V>.clear() {
+    (this.asDynamic()).clear()
+}
+
 actual inline fun <K, V> FastIdentityMap<K, V>.fastKeyForEach(callback: (key: K) -> Unit) {
     //println("FastStringMap<T>.fastKeyForEach")
     val mapIterator = this.asDynamic().keys()
@@ -117,13 +139,17 @@ actual class WeakMap<K : Any, V> {
 }
 
 
-public actual open class FastArrayList<E> internal constructor(@PublishedApi internal val __array: Array<E>) : AbstractMutableList<E>(),
+public actual open class FastArrayList<E> internal constructor(@PublishedApi internal val __array: Array<E>) :
+    AbstractMutableList<E>(),
     MutableListEx<E>, RandomAccess {
-    @PublishedApi inline internal val jsArray: JsArray<E> get() = __array.unsafeCast<JsArray<E>>()
+    @PublishedApi
+    inline internal val jsArray: JsArray<E> get() = __array.unsafeCast<JsArray<E>>()
+
     public actual constructor() : this(emptyArray())
     @Suppress("ACTUAL_FUNCTION_WITH_DEFAULT_ARGUMENTS")
     public actual constructor(initialCapacity: Int) : this(emptyArray())
     public actual constructor(elements: Collection<E>) : this(elements.toTypedArray<Any?>().unsafeCast<Array<E>>()) {}
+
     public actual fun trimToSize() {}
     public actual fun ensureCapacity(minCapacity: Int) {}
 
@@ -211,7 +237,7 @@ public actual open class FastArrayList<E> internal constructor(@PublishedApi int
             callback(array[n++].unsafeCast<E>())
         }
     }
-    
+
     actual inline fun fastForEachWithIndex(callback: (index: Int, value: E) -> Unit) {
         val array = this.jsArray
         var n = 0

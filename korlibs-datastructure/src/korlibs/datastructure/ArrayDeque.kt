@@ -55,7 +55,8 @@ class ByteArrayDeque(val initialBits: Int = 10, val allowGrow: Boolean = true) {
     private fun ensureWrite(count: Int) {
         if (count <= ring.availableWrite) return
         if (!allowGrow) {
-            val message = "Can't grow ByteArrayDeque. Need to write $count, but only ${ring.availableWrite} is available"
+            val message =
+                "Can't grow ByteArrayDeque. Need to write $count, but only ${ring.availableWrite} is available"
             println("ERROR: $message")
             error(message)
         }
@@ -73,6 +74,7 @@ class ByteArrayDeque(val initialBits: Int = 10, val allowGrow: Boolean = true) {
         read(tempBuffer, 0, 1)
         return tempBuffer[0]
     }
+
     fun writeOne(value: Byte) {
         tempBuffer[0] = value
         write(tempBuffer, 0, 1)
@@ -144,6 +146,7 @@ class ShortArrayDeque(val initialBits: Int = 10) {
         read(tempBuffer, 0, 1)
         return tempBuffer[0]
     }
+
     fun writeOne(value: Short) {
         tempBuffer[0] = value
         write(tempBuffer, 0, 1)
@@ -208,6 +211,7 @@ class IntArrayDeque(val initialBits: Int = 10) {
         read(tempBuffer, 0, 1)
         return tempBuffer[0]
     }
+
     fun writeOne(value: Int) {
         tempBuffer[0] = value
         write(tempBuffer, 0, 1)
@@ -272,6 +276,7 @@ class FloatArrayDeque(val initialBits: Int = 10) {
         read(tempBuffer, 0, 1)
         return tempBuffer[0]
     }
+
     fun writeOne(value: Float) {
         tempBuffer[0] = value
         write(tempBuffer, 0, 1)

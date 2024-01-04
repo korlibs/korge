@@ -1,13 +1,18 @@
 package korlibs.datastructure
 
 class FastIdentityCacheMap<K, V> {
-    @PublishedApi internal var fast1K: K? = null
-    @PublishedApi internal var fast1V: V? = null
-    @PublishedApi internal var fast2K: K? = null
-    @PublishedApi internal var fast2V: V? = null
+    @PublishedApi
+    internal var fast1K: K? = null
+    @PublishedApi
+    internal var fast1V: V? = null
+    @PublishedApi
+    internal var fast2K: K? = null
+    @PublishedApi
+    internal var fast2V: V? = null
     //@PublishedApi internal var fast3K: K? = null
     //@PublishedApi internal var fast3V: V? = null
-    @PublishedApi internal var cache: FastIdentityMap<K, V> = FastIdentityMap()
+    @PublishedApi
+    internal var cache: FastIdentityMap<K, V> = FastIdentityMap()
 
     val size: Int get() = cache.size
 

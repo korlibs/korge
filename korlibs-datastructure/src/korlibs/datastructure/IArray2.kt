@@ -10,6 +10,7 @@ interface IArray2<E> : Iterable<E> {
             check(arraySize >= width * height) { "backing array of size=$arraySize, has less elements than $width * $height" }
         }
     }
+
     val width: Int
     val height: Int
 

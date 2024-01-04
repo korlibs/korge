@@ -18,10 +18,30 @@ dependencies {
 }
 
 fun doGenerateKdsTemplates() {
-    korlibs.korge.gradle.generate.TemplateGenerator.synchronizeNew(File(projectDir, "src/korlibs/datastructure/Deque.kt"), true, true, true, true, true, true, true, false)
-    korlibs.korge.gradle.generate.TemplateGenerator.synchronizeNew(File(projectDir, "src/korlibs/datastructure/Array2.kt"), true, true, true, true, true, true, true, true)
-    korlibs.korge.gradle.generate.TemplateGenerator.synchronizeNew(File(projectDir, "src/korlibs/datastructure/Stack.kt"), false)
-    korlibs.korge.gradle.generate.TemplateGenerator.synchronizeNew(File(projectDir, "src/korlibs/datastructure/PriorityQueue.kt"), false)
+    korlibs.korge.gradle.generate.TemplateGenerator.synchronizeNew(
+        File(
+            projectDir,
+            "src/korlibs/datastructure/Deque.kt"
+        ), true, true, true, true, true, true, true, false
+    )
+    korlibs.korge.gradle.generate.TemplateGenerator.synchronizeNew(
+        File(
+            projectDir,
+            "src/korlibs/datastructure/Array2.kt"
+        ), true, true, true, true, true, true, true, true
+    )
+    korlibs.korge.gradle.generate.TemplateGenerator.synchronizeNew(
+        File(
+            projectDir,
+            "src/korlibs/datastructure/Stack.kt"
+        ), false
+    )
+    korlibs.korge.gradle.generate.TemplateGenerator.synchronizeNew(
+        File(
+            projectDir,
+            "src/korlibs/datastructure/PriorityQueue.kt"
+        ), false
+    )
 }
 
 // Run only with the generate task

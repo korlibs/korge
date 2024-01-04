@@ -1,10 +1,7 @@
 package korlibs.datastructure
 
-import kotlin.random.Random
-import kotlin.test.Ignore
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertTrue
+import kotlin.random.*
+import kotlin.test.*
 
 fun Random.intStream(): Sequence<Int> = sequence { while (true) yield(nextInt()) }
 fun Random.intStream(from: Int, until: Int): Sequence<Int> = sequence { while (true) yield(nextInt(from, until)) }

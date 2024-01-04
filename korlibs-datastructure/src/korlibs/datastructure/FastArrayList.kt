@@ -12,12 +12,15 @@ interface MutableListEx<E> : MutableList<E> {
         setAll(index, elements, offset, setCount)
         addAll(elements, offset + setCount, size - setCount)
     }
+
     fun setAll(index: Int, elements: FastArrayList<E>, offset: Int = 0, size: Int = elements.size - offset) {
         for (n in 0 until size) this[index + n] = elements[offset + n]
     }
+
     fun addAll(elements: FastArrayList<E>, offset: Int = 0, size: Int = elements.size - offset) {
         for (n in 0 until size) this.add(elements[offset + n])
     }
+
     fun removeToSize(size: Int) {
         removeRange(size, this.size)
         //while (this.size > size) removeLast()
@@ -72,7 +75,8 @@ expect class FastArrayList<E> : MutableListEx<E>, RandomAccess {
 
 fun <T> fastArrayListOf(vararg values: T): FastArrayList<T> = FastArrayList<T>(values.size).also { it.addAll(values) }
 
-fun <T> List<T>.ensureFastList(): FastArrayList<T> = if (this is FastArrayList) this else FastArrayList<T>(this.size).also { out -> fastForEach { out.add(it) } }
+fun <T> List<T>.ensureFastList(): FastArrayList<T> =
+    if (this is FastArrayList) this else FastArrayList<T>(this.size).also { out -> fastForEach { out.add(it) } }
 
 fun <T> List<T>.toFastList(): List<T> = FastArrayList<T>(this.size).also { out -> fastForEach { out.add(it) } }
 fun <T> Array<T>.toFastList(): List<T> = FastArrayList<T>(this.size).also { out -> fastForEach { out.add(it) } }
@@ -84,7 +88,7 @@ fun <T> List<T>.toFastList(out: FastArrayList<T> = FastArrayList()): FastArrayLi
     val minSize = min(this.size, out.size)
     for (n in 0 until minSize) out[n] = this[n]
     // Add new elements
-    for (n in minSize  until this.size) out.add(this[n])
+    for (n in minSize until this.size) out.add(this[n])
     // Remove extra elements
     while (out.size > this.size) out.removeLast()
     return out

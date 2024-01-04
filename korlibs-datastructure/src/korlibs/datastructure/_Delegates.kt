@@ -7,7 +7,10 @@ class ExtraObject : MutableMap<String, Any?> {
     private val lock = Lock()
     private val data = FastStringMap<Any?>()
     override val size: Int get() = lock { data.size }
-    override val entries: MutableSet<MutableMap.MutableEntry<String, Any?>> get() = lock { data.keys.associateWith { data[it] }.toMutableMap().entries.toMutableSet() }
+    override val entries: MutableSet<MutableMap.MutableEntry<String, Any?>>
+        get() = lock {
+            data.keys.associateWith { data[it] }.toMutableMap().entries.toMutableSet()
+        }
     override val keys: MutableSet<String> get() = lock { data.keys.toMutableSet() }
     override val values: MutableCollection<Any?> = lock { data.values.toMutableList() }
     override operator fun get(key: String): Any? = lock { data[key] }
@@ -23,6 +26,7 @@ class ExtraObject : MutableMap<String, Any?> {
 }
 
 typealias ExtraType = ExtraObject?
+
 fun ExtraTypeCreate() = ExtraObject()
 
 interface Extra {
@@ -57,9 +61,12 @@ interface Extra {
     }
 
     class PropertyThis<T2 : Extra, T : Any?>(val name: String? = null, val defaultGen: T2.() -> T) {
-        @PublishedApi internal var transform: (T2.(value: T) -> T) = { it }
+        @PublishedApi
+        internal var transform: (T2.(value: T) -> T) = { it }
 
-        inline fun withTransform(noinline block: T2.(T) -> T): PropertyThis<T2, T> { transform = block; return this }
+        inline fun withTransform(noinline block: T2.(T) -> T): PropertyThis<T2, T> {
+            transform = block; return this
+        }
 
         inline operator fun getValue(thisRef: T2, property: KProperty<*>): T {
             val res = thisRef.getExtraTyped<T>(name ?: property.name)
@@ -83,6 +90,7 @@ interface Extra {
 
 fun <T> Extra.extraCache(name: String, block: () -> T): T =
     (getExtra(name) as? T?) ?: block().also { setExtra(name, it) }
+
 fun <T : Any?> Extra.getExtraTyped(name: String): T? = extra?.get(name).fastCastTo<T?>()
 fun Extra.hasExtra(name: String): Boolean = extra?.contains(name) == true
 fun Extra.getExtra(name: String): Any? = extra?.get(name)
@@ -122,14 +130,18 @@ class WeakProperty<V>(val gen: () -> V) {
     val map = WeakMap<Any, V>()
 
     operator fun getValue(obj: Any, property: KProperty<*>): V = map.getOrPut(obj) { gen() }
-    operator fun setValue(obj: Any, property: KProperty<*>, value: V) { map[obj] = value }
+    operator fun setValue(obj: Any, property: KProperty<*>, value: V) {
+        map[obj] = value
+    }
 }
 
 class WeakPropertyThis<T : Any, V>(val gen: T.() -> V) {
     val map = WeakMap<T, V>()
 
     operator fun getValue(obj: T, property: KProperty<*>): V = map.getOrPut(obj) { gen(obj) }
-    operator fun setValue(obj: T, property: KProperty<*>, value: V) { map[obj] = value }
+    operator fun setValue(obj: T, property: KProperty<*>, value: V) {
+        map[obj] = value
+    }
 }
 
 class Observable<T>(val initial: T, val before: (T) -> Unit = {}, val after: (T) -> Unit = {}) {

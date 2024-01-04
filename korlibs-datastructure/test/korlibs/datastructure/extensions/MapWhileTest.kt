@@ -1,8 +1,7 @@
 package korlibs.datastructure.extensions
 
 import korlibs.datastructure.*
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import kotlin.test.*
 
 class MapWhileTest {
     @Test
@@ -17,7 +16,7 @@ class MapWhileTest {
     @Test
     fun test2() {
         val iterator = listOf(1, 2, 3).iterator()
-        assertEquals(listOf(1, 2, 3), mapWhile({ iterator.hasNext() }) { iterator.next()})
+        assertEquals(listOf(1, 2, 3), mapWhile({ iterator.hasNext() }) { iterator.next() })
     }
 
     @Test

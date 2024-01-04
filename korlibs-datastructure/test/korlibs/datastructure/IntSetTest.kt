@@ -1,7 +1,6 @@
 package korlibs.datastructure
 
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import kotlin.test.*
 
 class IntSetTest {
     @Test

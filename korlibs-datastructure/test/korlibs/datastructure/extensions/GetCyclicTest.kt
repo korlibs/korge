@@ -1,12 +1,7 @@
 package korlibs.datastructure.extensions
 
-import korlibs.datastructure.IntArray2
-import korlibs.datastructure.doubleArrayListOf
-import korlibs.datastructure.floatArrayListOf
-import korlibs.datastructure.getCyclic
-import korlibs.datastructure.intArrayListOf
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import korlibs.datastructure.*
+import kotlin.test.*
 
 class GetCyclicTest {
     @Test

@@ -9,7 +9,7 @@ import kotlin.experimental.*
  */
 //class BitArray private constructor(val data: IntArray, size: Int) : AbstractList<Boolean>(), Collection<Boolean> {
 class BitArray private constructor(val data: ByteArray, size: Int) : AbstractList<Boolean>(), Collection<Boolean> {
-//class BitArray private constructor(val data: IntArray, size: Int) : AbstractCollection<Boolean>(), Collection<Boolean> {
+    //class BitArray private constructor(val data: IntArray, size: Int) : AbstractCollection<Boolean>(), Collection<Boolean> {
     override val size: Int = size
 
     override fun iterator(): Iterator<Boolean> {
@@ -55,4 +55,5 @@ class BitArray private constructor(val data: ByteArray, size: Int) : AbstractLis
     }
 }
 
-fun bitArrayOf(vararg values: Boolean): BitArray = BitArray(values.size).also { for (n in values.indices) it[n] = values[n] }
+fun bitArrayOf(vararg values: Boolean): BitArray =
+    BitArray(values.size).also { for (n in values.indices) it[n] = values[n] }

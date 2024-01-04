@@ -31,8 +31,7 @@ Jon-Carlos Rivera - imbcmdth@hotmail.com
  ******************************************************************************/
 
 import korlibs.datastructure.*
-import korlibs.datastructure.internal.math.isAlmostEquals
-import korlibs.datastructure.internal.math.niceStr
+import korlibs.datastructure.internal.math.*
 import kotlin.collections.set
 import kotlin.math.*
 
@@ -652,11 +651,13 @@ class BVH<T>(
 
                         //println("dim=$dim, tminNum=$tminNum [$imin, $rmin], tminDen=$raySize : $tmin")
 
-                        return_array.add(IntersectResult(
-                            ray = ray,
-                            intersect = tmin,
-                            obj = ltree,
-                        ))
+                        return_array.add(
+                            IntersectResult(
+                                ray = ray,
+                                intersect = tmin,
+                                obj = ltree,
+                            )
+                        )
                     }
                 }
             }
@@ -687,7 +688,8 @@ class BVH<T>(
 
             //for (var i = nodes.length - 1; i >= 0; i--) {
             //nodes.fastForEachReverse { ltree ->
-            for (i in nodes.size - 1 downTo 0) { val ltree = nodes[i]
+            for (i in nodes.size - 1 downTo 0) {
+                val ltree = nodes[i]
                 if (comparators.overlap_intervals(intervals, ltree.d)) {
                     if (ltree.nodes != null) { // Not a Leaf
                         hit_stack.add(ltree.nodes!!)
@@ -911,6 +913,7 @@ data class BVHVector(val data: DoubleArray) {
         operator fun invoke(vararg data: Double): BVHVector = BVHVector(data)
         operator fun invoke(vararg data: Int): BVHVector = BVHVector(data.mapDouble { it.toDouble() })
     }
+
     val dimensions: Int get() = data.size
     fun checkDimensions(dims: Int) {
         if (dims != this.dimensions) error("Expected $dims dimensions, but found $dimensions")
@@ -939,7 +942,10 @@ inline class BVHRay(val intervals: BVHIntervals) {
     }
 
     val data get() = intervals.data
-    fun copyFrom(other: BVHRay): BVHRay { intervals.copyFrom(other.intervals); return this }
+    fun copyFrom(other: BVHRay): BVHRay {
+        intervals.copyFrom(other.intervals); return this
+    }
+
     fun clone() = BVHRay(BVHIntervals(data.copyOf()))
     val length: Int get() = dimensions
     val dimensions: Int get() = data.size / 2
@@ -961,7 +967,10 @@ inline class BVHRect(val intervals: BVHIntervals) {
     }
 
     val data get() = intervals.data
-    fun copyFrom(other: BVHRect): BVHRect { intervals.copyFrom(other.intervals); return this }
+    fun copyFrom(other: BVHRect): BVHRect {
+        intervals.copyFrom(other.intervals); return this
+    }
+
     fun clone() = BVHRect(BVHIntervals(data.copyOf()))
     val length: Int get() = dimensions
     val dimensions: Int get() = data.size / 2
@@ -970,8 +979,13 @@ inline class BVHRect(val intervals: BVHIntervals) {
     fun size(dim: Int): Double = data[dim * 2 + 1]
     fun max(dim: Int): Double = min(dim) + size(dim)
 
-    fun min(dim: Int, value: Double) { data[dim * 2 + 0] = value }
-    fun size(dim: Int, value: Double) { data[dim * 2 + 1] = value }
+    fun min(dim: Int, value: Double) {
+        data[dim * 2 + 0] = value
+    }
+
+    fun size(dim: Int, value: Double) {
+        data[dim * 2 + 1] = value
+    }
 
     val min: BVHVector get() = BVHVector(DoubleArray(dimensions) { min(it) })
     val size: BVHVector get() = BVHVector(DoubleArray(dimensions) { size(it) })
@@ -1006,7 +1020,8 @@ data class BVHIntervals(val data: DoubleArray) {
     companion object {
         operator fun invoke(vararg values: Double): BVHIntervals = BVHIntervals(values)
         operator fun invoke(vararg values: Float): BVHIntervals = BVHIntervals(values.mapDouble { it.toDouble() })
-        operator fun invoke(vararg values: Int): BVHIntervals = BVHIntervals(DoubleArray(values.size) { values[it].toDouble() })
+        operator fun invoke(vararg values: Int): BVHIntervals =
+            BVHIntervals(DoubleArray(values.size) { values[it].toDouble() })
     }
 
     fun checkDimensions(dimensions: Int) {
@@ -1142,7 +1157,6 @@ data class BVHIntervals(val data: DoubleArray) {
 //        append(']')
 //    }
 //}
-
 
 
 /*

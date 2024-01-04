@@ -44,7 +44,10 @@ class ArrayExtTest {
         assertEquals(listOf(3, 4, 1, 2), listOf(1, 2, 3, 4).rotatedRight(-2).toList())
         assertEquals(listOf(3, 4, 1, 2), arrayOf<Int>(1, 2, 3, 4).rotatedRight(-2).toList())
         assertEquals(listOf(3, 4, 1, 2), byteArrayOf(1, 2, 3, 4).rotatedRight(-2).map { it.toInt() }.toList())
-        assertEquals(listOf(3, 4, 1, 2), charArrayOf(1.toChar(), 2.toChar(), 3.toChar(), 4.toChar()).rotatedRight(-2).map { it.toInt() }.toList())
+        assertEquals(
+            listOf(3, 4, 1, 2),
+            charArrayOf(1.toChar(), 2.toChar(), 3.toChar(), 4.toChar()).rotatedRight(-2).map { it.toInt() }.toList()
+        )
         assertEquals(listOf(3, 4, 1, 2), shortArrayOf(1, 2, 3, 4).rotatedRight(-2).map { it.toInt() }.toList())
         assertEquals(listOf(3, 4, 1, 2), longArrayOf(1, 2, 3, 4).rotatedRight(-2).map { it.toInt() }.toList())
         assertEquals(listOf(3, 4, 1, 2), floatArrayOf(1f, 2f, 3f, 4f).rotatedRight(-2).map { it.toInt() }.toList())
@@ -54,7 +57,10 @@ class ArrayExtTest {
         assertEquals(listOf(4, 1, 2, 3), listOf(1, 2, 3, 4).rotatedLeft(-1).toList())
         assertEquals(listOf(4, 1, 2, 3), arrayOf(1, 2, 3, 4).rotatedLeft(-1).toList())
         assertEquals(listOf(4, 1, 2, 3), byteArrayOf(1, 2, 3, 4).rotatedLeft(-1).map { it.toInt() }.toList())
-        assertEquals(listOf(4, 1, 2, 3), charArrayOf(1.toChar(), 2.toChar(), 3.toChar(), 4.toChar()).rotatedLeft(-1).map { it.toInt() }.toList())
+        assertEquals(
+            listOf(4, 1, 2, 3),
+            charArrayOf(1.toChar(), 2.toChar(), 3.toChar(), 4.toChar()).rotatedLeft(-1).map { it.toInt() }.toList()
+        )
         assertEquals(listOf(4, 1, 2, 3), shortArrayOf(1, 2, 3, 4).rotatedLeft(-1).map { it.toInt() }.toList())
         assertEquals(listOf(4, 1, 2, 3), longArrayOf(1, 2, 3, 4).rotatedLeft(-1).map { it.toInt() }.toList())
         assertEquals(listOf(4, 1, 2, 3), floatArrayOf(1f, 2f, 3f, 4f).rotatedLeft(-1).map { it.toInt() }.toList())

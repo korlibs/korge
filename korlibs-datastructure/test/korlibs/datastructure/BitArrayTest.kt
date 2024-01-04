@@ -1,7 +1,6 @@
 package korlibs.datastructure
 
 import kotlin.test.*
-import kotlin.time.*
 
 class BitArrayTest {
     @Test

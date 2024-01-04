@@ -9,8 +9,13 @@ class CaseInsensitiveStringMap<T> private constructor(
     private val mapLC: MutableMap<String, T>
 ) : MutableMap<String, T> by mapOrig {
     constructor() : this(LinkedHashMap(), LinkedHashMap(), LinkedHashMap())
-    constructor(data: Map<String, T>) : this() { putAll(data) }
-    constructor(vararg items: Pair<String, T>) : this() { putAll(items.toList()) }
+    constructor(data: Map<String, T>) : this() {
+        putAll(data)
+    }
+
+    constructor(vararg items: Pair<String, T>) : this() {
+        putAll(items.toList())
+    }
 
     override fun containsKey(key: String): Boolean = mapLC.containsKey(key.toLowerCase())
 

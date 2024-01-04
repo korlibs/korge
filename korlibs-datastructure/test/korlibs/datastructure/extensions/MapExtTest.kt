@@ -1,12 +1,7 @@
 package korlibs.datastructure.extensions
 
-import korlibs.datastructure.countMap
-import korlibs.datastructure.flip
-import korlibs.datastructure.incr
-import korlibs.datastructure.linkedHashMapOf
-import korlibs.datastructure.toLinkedMap
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import korlibs.datastructure.*
+import kotlin.test.*
 
 class MapExtTest {
     @Test

@@ -1,7 +1,7 @@
 package korlibs.render
 
 import korlibs.datastructure.closeable.Closeable
-import korlibs.datastructure.event.*
+import korlibs.event.SyncEventLoop
 import korlibs.io.lang.*
 import korlibs.time.*
 import kotlinx.coroutines.*

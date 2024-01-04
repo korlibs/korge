@@ -1,10 +1,7 @@
 package korlibs.datastructure
 
-import kotlin.random.Random
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
+import kotlin.random.*
+import kotlin.test.*
 
 class PriorityQueueTest {
     @Test
@@ -60,6 +57,7 @@ class PriorityQueueTest {
     @Test
     fun test4() {
         class WI(val v: Int)
+
         val pq = PriorityQueue<WI> { a, b -> (-a.v).compareTo(-b.v) }
         pq.addAll(listOf(1, 2, 3, 4).map { WI(it) })
         assertEquals(listOf(4, 3, 2, 1), pq.map { it.v })
@@ -70,6 +68,7 @@ class PriorityQueueTest {
         data class WI(var v: Int) {
             override fun toString(): String = "$v"
         }
+
         val pq = PriorityQueue<WI> { a, b -> (a.v).compareTo(b.v) }
         val a = WI(10)
         val b = WI(20)

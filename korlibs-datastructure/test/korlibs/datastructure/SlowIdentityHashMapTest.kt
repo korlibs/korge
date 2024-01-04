@@ -1,12 +1,12 @@
 package korlibs.datastructure
 
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import kotlin.test.*
 
 class SlowIdentityHashMapTest {
     @Test
     fun test() {
         data class Test(val a: Int)
+
         val i1 = Test(1)
         val i2 = Test(1)
         val map = hashMapOf(i1 to 1, i2 to 2)

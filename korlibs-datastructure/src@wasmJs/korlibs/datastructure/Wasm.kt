@@ -33,9 +33,15 @@ actual inline fun <T> FastIntMap(): FastIntMap<T> = IntMap()
 actual val <T> FastIntMap<T>.size: Int get() = (this as IntMap<T>).size
 actual fun <T> FastIntMap<T>.keys(): List<Int> = (this as IntMap<T>).keys.toList()
 actual inline operator fun <T> FastIntMap<T>.get(key: Int): T? = (this as IntMap<T>).get(key)
-actual inline operator fun <T> FastIntMap<T>.set(key: Int, value: T) { (this as IntMap<T>).set(key, value) }
+actual inline operator fun <T> FastIntMap<T>.set(key: Int, value: T) {
+    (this as IntMap<T>).set(key, value)
+}
+
 actual inline operator fun <T> FastIntMap<T>.contains(key: Int): Boolean = (this as IntMap<T>).contains(key)
-actual inline fun <T> FastIntMap<T>.remove(key: Int) { (this as IntMap<T>).remove(key) }
+actual inline fun <T> FastIntMap<T>.remove(key: Int) {
+    (this as IntMap<T>).remove(key)
+}
+
 actual inline fun <T> FastIntMap<T>.removeRange(src: Int, dst: Int) = (this as IntMap<T>).removeRange(src, dst)
 actual inline fun <T> FastIntMap<T>.clear() = (this as IntMap<T>).clear()
 actual inline fun <T> FastIntMap<T>.fastKeyForEach(callback: (key: Int) -> Unit) {
@@ -52,9 +58,15 @@ actual class FastStringMap<T>(val dummy: Boolean) {
 actual inline fun <T> FastStringMap(): FastStringMap<T> = FastStringMap(true)
 actual val <T> FastStringMap<T>.size: Int get() = (this.map).size
 actual inline operator fun <T> FastStringMap<T>.get(key: String): T? = (this.map).get(key)
-actual inline operator fun <T> FastStringMap<T>.set(key: String, value: T) { (this.map).set(key, value) }
+actual inline operator fun <T> FastStringMap<T>.set(key: String, value: T) {
+    (this.map).set(key, value)
+}
+
 actual inline operator fun <T> FastStringMap<T>.contains(key: String): Boolean = (this.map).contains(key)
-actual inline fun <T> FastStringMap<T>.remove(key: String) { (this.map).remove(key) }
+actual inline fun <T> FastStringMap<T>.remove(key: String) {
+    (this.map).remove(key)
+}
+
 actual inline fun <T> FastStringMap<T>.clear() = (this.map).clear()
 actual fun <T> FastStringMap<T>.keys(): List<String> = map.keys.toList()
 actual fun <T> FastStringMap<T>.putAll(other: FastStringMap<T>) {
@@ -76,14 +88,24 @@ actual class FastIdentityMap<K, V>(dummy: Boolean) {
     val map = SlowIdentityHashMap<K, V>()
     val size get() = map.size
 }
+
 actual fun <K, V> FastIdentityMap(): FastIdentityMap<K, V> = FastIdentityMap(true)
 actual val <K, V> FastIdentityMap<K, V>.size: Int get() = this.map.size
 actual fun <K, V> FastIdentityMap<K, V>.keys(): List<K> = this.map.keys.toList()
 actual operator fun <K, V> FastIdentityMap<K, V>.get(key: K): V? = this.map[key]
-actual operator fun <K, V> FastIdentityMap<K, V>.set(key: K, value: V) { this.map[key] = value }
+actual operator fun <K, V> FastIdentityMap<K, V>.set(key: K, value: V) {
+    this.map[key] = value
+}
+
 actual operator fun <K, V> FastIdentityMap<K, V>.contains(key: K): Boolean = this.map.containsKey(key)
-actual fun <K, V> FastIdentityMap<K, V>.remove(key: K) { this.map.remove(key) }
-actual fun <K, V> FastIdentityMap<K, V>.clear() { this.map.clear() }
+actual fun <K, V> FastIdentityMap<K, V>.remove(key: K) {
+    this.map.remove(key)
+}
+
+actual fun <K, V> FastIdentityMap<K, V>.clear() {
+    this.map.clear()
+}
+
 actual inline fun <K, V> FastIdentityMap<K, V>.fastKeyForEach(callback: (key: K) -> Unit) {
     this.map.buckets.fastForEach { _, bucket ->
         bucket.keys.fastForEach {
@@ -165,7 +187,8 @@ public actual open class FastArrayList<E> internal constructor(
      * @param initialCapacity initial capacity (ignored)
      */
     @Suppress("ACTUAL_FUNCTION_WITH_DEFAULT_ARGUMENTS")
-    public actual constructor(initialCapacity: Int) : this(arrayOfNulls(initialCapacity), 0) {}
+    public actual constructor(initialCapacity: Int) : this(arrayOfNulls(initialCapacity), 0) {
+    }
 
     /**
      * Creates an [FastArrayList] filled from the [elements] collection.
@@ -275,6 +298,7 @@ public actual open class FastArrayList<E> internal constructor(
         }
         return -1
     }
+
     actual override fun lastIndexOf(element: E): Int {
         for (index in 0 until size) {
             val i = size - index - 1

@@ -1,8 +1,6 @@
 package korlibs.datastructure
 
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFails
+import kotlin.test.*
 
 class ListReaderTest {
     @Test

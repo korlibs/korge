@@ -72,7 +72,8 @@ interface Platform {
             rawPlatformName: String = "unknown",
             rawOsName: String = "unknown",
             hasMultithreadedSharedHeap: Boolean = false,
-        ): Platform = Impl(endian, arch, os, runtime, buildVariant, rawPlatformName, rawOsName, hasMultithreadedSharedHeap)
+        ): Platform =
+            Impl(endian, arch, os, runtime, buildVariant, rawPlatformName, rawOsName, hasMultithreadedSharedHeap)
     }
 
     data class Impl(

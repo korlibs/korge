@@ -8,9 +8,11 @@ import korlibs.time.*
 interface Pauseable {
     var paused: Boolean
 }
+
 fun Pauseable.pause() {
     paused = true
 }
+
 fun Pauseable.resume() {
     paused = false
 }
@@ -24,7 +26,10 @@ class SyncPauseable : Pauseable {
                 pausedLock { pausedLock.notify() }
             }
         }
+
     fun checkPaused() {
-        while (paused) { pausedLock { pausedLock.wait(60.seconds) } }
+        while (paused) {
+            pausedLock { pausedLock.wait(60.seconds) }
+        }
     }
 }

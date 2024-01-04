@@ -1,7 +1,6 @@
 package korlibs.datastructure
 
-import kotlin.test.Test
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 class KdsJsTest {
     @Test

@@ -28,7 +28,8 @@ open class CustomHashMap<K, V>(
                 object : MutableMap.MutableEntry<K, V> {
                     override val key: K = bucket.keys[index]
                     override val value: V = bucket.values[index]
-                    override fun setValue(newValue: V): V = bucket.values[index].also { bucket.values[index] = newValue }
+                    override fun setValue(newValue: V): V =
+                        bucket.values[index].also { bucket.values[index] = newValue }
                 }
             }
             .toMutableSet()

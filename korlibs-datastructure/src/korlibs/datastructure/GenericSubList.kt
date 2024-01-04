@@ -73,6 +73,8 @@ class GenericListIterator<T>(val list: List<T>, val iindex: Int = 0) : ListItera
 
     override fun previousIndex(): Int = index - 1
 
-    override fun equals(other: Any?): Boolean = (other is GenericListIterator<*>) && this.list == other.list && this.index == other.index
+    override fun equals(other: Any?): Boolean =
+        (other is GenericListIterator<*>) && this.list == other.list && this.index == other.index
+
     override fun hashCode(): Int = list.hashCode() + index.hashCode()
 }

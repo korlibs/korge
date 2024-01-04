@@ -50,6 +50,7 @@ data class Array2<TGen>(override val width: Int, override val height: Int, val d
     init {
         IArray2.checkArraySize(width, height, data.size)
     }
+
     companion object {
         inline operator fun <TGen : Any> invoke(width: Int, height: Int, fill: TGen): Array2<TGen> =
             Array2<TGen>(width, height, Array<Any>(width * height) { fill } as Array<TGen>)
@@ -172,18 +173,19 @@ data class IntArray2(override val width: Int, override val height: Int, val data
     init {
         IArray2.checkArraySize(width, height, data.size)
     }
+
     companion object {
-        inline operator fun  invoke(width: Int, height: Int, fill: Int): IntArray2 =
+        inline operator fun invoke(width: Int, height: Int, fill: Int): IntArray2 =
             IntArray2(width, height, IntArray(width * height) { fill } as IntArray)
 
-        inline operator fun  invoke(
+        inline operator fun invoke(
             width: Int,
             height: Int,
             gen: (n: Int) -> Int
         ): IntArray2 =
             IntArray2(width, height, IntArray(width * height) { gen(it) } as IntArray)
 
-        inline fun  withGen(
+        inline fun withGen(
             width: Int,
             height: Int,
             gen: (x: Int, y: Int) -> Int
@@ -193,14 +195,14 @@ data class IntArray2(override val width: Int, override val height: Int, val data
                 height,
                 IntArray(width * height) { gen(it % width, it / width) } as IntArray)
 
-        inline operator fun  invoke(rows: List<List<Int>>): IntArray2 {
+        inline operator fun invoke(rows: List<List<Int>>): IntArray2 {
             val width = rows[0].size
             val height = rows.size
             val anyCell = rows[0][0]
             return (IntArray2(width, height) { anyCell }).apply { set(rows) }
         }
 
-        inline operator fun  invoke(
+        inline operator fun invoke(
             map: String,
             marginChar: Char = '\u0000',
             gen: (char: Char, x: Int, y: Int) -> Int
@@ -225,7 +227,7 @@ data class IntArray2(override val width: Int, override val height: Int, val data
             }
         }
 
-        inline operator fun  invoke(
+        inline operator fun invoke(
             map: String,
             default: Int,
             transform: Map<Char, Int>
@@ -233,7 +235,7 @@ data class IntArray2(override val width: Int, override val height: Int, val data
             return invoke(map) { c, _, _ -> transform[c] ?: default }
         }
 
-        inline fun  fromString(
+        inline fun fromString(
             maps: Map<Char, Int>,
             default: Int,
             code: String,
@@ -283,7 +285,6 @@ data class IntArray2(override val width: Int, override val height: Int, val data
 }
 
 
-
 // Double
 
 
@@ -292,18 +293,19 @@ data class DoubleArray2(override val width: Int, override val height: Int, val d
     init {
         IArray2.checkArraySize(width, height, data.size)
     }
+
     companion object {
-        inline operator fun  invoke(width: Int, height: Int, fill: Double): DoubleArray2 =
+        inline operator fun invoke(width: Int, height: Int, fill: Double): DoubleArray2 =
             DoubleArray2(width, height, DoubleArray(width * height) { fill } as DoubleArray)
 
-        inline operator fun  invoke(
+        inline operator fun invoke(
             width: Int,
             height: Int,
             gen: (n: Int) -> Double
         ): DoubleArray2 =
             DoubleArray2(width, height, DoubleArray(width * height) { gen(it) } as DoubleArray)
 
-        inline fun  withGen(
+        inline fun withGen(
             width: Int,
             height: Int,
             gen: (x: Int, y: Int) -> Double
@@ -313,14 +315,14 @@ data class DoubleArray2(override val width: Int, override val height: Int, val d
                 height,
                 DoubleArray(width * height) { gen(it % width, it / width) } as DoubleArray)
 
-        inline operator fun  invoke(rows: List<List<Double>>): DoubleArray2 {
+        inline operator fun invoke(rows: List<List<Double>>): DoubleArray2 {
             val width = rows[0].size
             val height = rows.size
             val anyCell = rows[0][0]
             return (DoubleArray2(width, height) { anyCell }).apply { set(rows) }
         }
 
-        inline operator fun  invoke(
+        inline operator fun invoke(
             map: String,
             marginChar: Char = '\u0000',
             gen: (char: Char, x: Int, y: Int) -> Double
@@ -345,7 +347,7 @@ data class DoubleArray2(override val width: Int, override val height: Int, val d
             }
         }
 
-        inline operator fun  invoke(
+        inline operator fun invoke(
             map: String,
             default: Double,
             transform: Map<Char, Double>
@@ -353,7 +355,7 @@ data class DoubleArray2(override val width: Int, override val height: Int, val d
             return invoke(map) { c, _, _ -> transform[c] ?: default }
         }
 
-        inline fun  fromString(
+        inline fun fromString(
             maps: Map<Char, Double>,
             default: Double,
             code: String,
@@ -403,7 +405,6 @@ data class DoubleArray2(override val width: Int, override val height: Int, val d
 }
 
 
-
 // Float
 
 
@@ -412,18 +413,19 @@ data class FloatArray2(override val width: Int, override val height: Int, val da
     init {
         IArray2.checkArraySize(width, height, data.size)
     }
+
     companion object {
-        inline operator fun  invoke(width: Int, height: Int, fill: Float): FloatArray2 =
+        inline operator fun invoke(width: Int, height: Int, fill: Float): FloatArray2 =
             FloatArray2(width, height, FloatArray(width * height) { fill } as FloatArray)
 
-        inline operator fun  invoke(
+        inline operator fun invoke(
             width: Int,
             height: Int,
             gen: (n: Int) -> Float
         ): FloatArray2 =
             FloatArray2(width, height, FloatArray(width * height) { gen(it) } as FloatArray)
 
-        inline fun  withGen(
+        inline fun withGen(
             width: Int,
             height: Int,
             gen: (x: Int, y: Int) -> Float
@@ -433,14 +435,14 @@ data class FloatArray2(override val width: Int, override val height: Int, val da
                 height,
                 FloatArray(width * height) { gen(it % width, it / width) } as FloatArray)
 
-        inline operator fun  invoke(rows: List<List<Float>>): FloatArray2 {
+        inline operator fun invoke(rows: List<List<Float>>): FloatArray2 {
             val width = rows[0].size
             val height = rows.size
             val anyCell = rows[0][0]
             return (FloatArray2(width, height) { anyCell }).apply { set(rows) }
         }
 
-        inline operator fun  invoke(
+        inline operator fun invoke(
             map: String,
             marginChar: Char = '\u0000',
             gen: (char: Char, x: Int, y: Int) -> Float
@@ -465,7 +467,7 @@ data class FloatArray2(override val width: Int, override val height: Int, val da
             }
         }
 
-        inline operator fun  invoke(
+        inline operator fun invoke(
             map: String,
             default: Float,
             transform: Map<Char, Float>
@@ -473,7 +475,7 @@ data class FloatArray2(override val width: Int, override val height: Int, val da
             return invoke(map) { c, _, _ -> transform[c] ?: default }
         }
 
-        inline fun  fromString(
+        inline fun fromString(
             maps: Map<Char, Float>,
             default: Float,
             code: String,
@@ -523,7 +525,6 @@ data class FloatArray2(override val width: Int, override val height: Int, val da
 }
 
 
-
 // Byte
 
 
@@ -532,18 +533,19 @@ data class ByteArray2(override val width: Int, override val height: Int, val dat
     init {
         IArray2.checkArraySize(width, height, data.size)
     }
+
     companion object {
-        inline operator fun  invoke(width: Int, height: Int, fill: Byte): ByteArray2 =
+        inline operator fun invoke(width: Int, height: Int, fill: Byte): ByteArray2 =
             ByteArray2(width, height, ByteArray(width * height) { fill } as ByteArray)
 
-        inline operator fun  invoke(
+        inline operator fun invoke(
             width: Int,
             height: Int,
             gen: (n: Int) -> Byte
         ): ByteArray2 =
             ByteArray2(width, height, ByteArray(width * height) { gen(it) } as ByteArray)
 
-        inline fun  withGen(
+        inline fun withGen(
             width: Int,
             height: Int,
             gen: (x: Int, y: Int) -> Byte
@@ -553,14 +555,14 @@ data class ByteArray2(override val width: Int, override val height: Int, val dat
                 height,
                 ByteArray(width * height) { gen(it % width, it / width) } as ByteArray)
 
-        inline operator fun  invoke(rows: List<List<Byte>>): ByteArray2 {
+        inline operator fun invoke(rows: List<List<Byte>>): ByteArray2 {
             val width = rows[0].size
             val height = rows.size
             val anyCell = rows[0][0]
             return (ByteArray2(width, height) { anyCell }).apply { set(rows) }
         }
 
-        inline operator fun  invoke(
+        inline operator fun invoke(
             map: String,
             marginChar: Char = '\u0000',
             gen: (char: Char, x: Int, y: Int) -> Byte
@@ -585,7 +587,7 @@ data class ByteArray2(override val width: Int, override val height: Int, val dat
             }
         }
 
-        inline operator fun  invoke(
+        inline operator fun invoke(
             map: String,
             default: Byte,
             transform: Map<Char, Byte>
@@ -593,7 +595,7 @@ data class ByteArray2(override val width: Int, override val height: Int, val dat
             return invoke(map) { c, _, _ -> transform[c] ?: default }
         }
 
-        inline fun  fromString(
+        inline fun fromString(
             maps: Map<Char, Byte>,
             default: Byte,
             code: String,
@@ -643,7 +645,6 @@ data class ByteArray2(override val width: Int, override val height: Int, val dat
 }
 
 
-
 // Char
 
 
@@ -652,18 +653,19 @@ data class CharArray2(override val width: Int, override val height: Int, val dat
     init {
         IArray2.checkArraySize(width, height, data.size)
     }
+
     companion object {
-        inline operator fun  invoke(width: Int, height: Int, fill: Char): CharArray2 =
+        inline operator fun invoke(width: Int, height: Int, fill: Char): CharArray2 =
             CharArray2(width, height, CharArray(width * height) { fill } as CharArray)
 
-        inline operator fun  invoke(
+        inline operator fun invoke(
             width: Int,
             height: Int,
             gen: (n: Int) -> Char
         ): CharArray2 =
             CharArray2(width, height, CharArray(width * height) { gen(it) } as CharArray)
 
-        inline fun  withGen(
+        inline fun withGen(
             width: Int,
             height: Int,
             gen: (x: Int, y: Int) -> Char
@@ -673,14 +675,14 @@ data class CharArray2(override val width: Int, override val height: Int, val dat
                 height,
                 CharArray(width * height) { gen(it % width, it / width) } as CharArray)
 
-        inline operator fun  invoke(rows: List<List<Char>>): CharArray2 {
+        inline operator fun invoke(rows: List<List<Char>>): CharArray2 {
             val width = rows[0].size
             val height = rows.size
             val anyCell = rows[0][0]
             return (CharArray2(width, height) { anyCell }).apply { set(rows) }
         }
 
-        inline operator fun  invoke(
+        inline operator fun invoke(
             map: String,
             marginChar: Char = '\u0000',
             gen: (char: Char, x: Int, y: Int) -> Char
@@ -705,7 +707,7 @@ data class CharArray2(override val width: Int, override val height: Int, val dat
             }
         }
 
-        inline operator fun  invoke(
+        inline operator fun invoke(
             map: String,
             default: Char,
             transform: Map<Char, Char>
@@ -713,7 +715,7 @@ data class CharArray2(override val width: Int, override val height: Int, val dat
             return invoke(map) { c, _, _ -> transform[c] ?: default }
         }
 
-        inline fun  fromString(
+        inline fun fromString(
             maps: Map<Char, Char>,
             default: Char,
             code: String,
@@ -763,7 +765,6 @@ data class CharArray2(override val width: Int, override val height: Int, val dat
 }
 
 
-
 // Short
 
 
@@ -772,18 +773,19 @@ data class ShortArray2(override val width: Int, override val height: Int, val da
     init {
         IArray2.checkArraySize(width, height, data.size)
     }
+
     companion object {
-        inline operator fun  invoke(width: Int, height: Int, fill: Short): ShortArray2 =
+        inline operator fun invoke(width: Int, height: Int, fill: Short): ShortArray2 =
             ShortArray2(width, height, ShortArray(width * height) { fill } as ShortArray)
 
-        inline operator fun  invoke(
+        inline operator fun invoke(
             width: Int,
             height: Int,
             gen: (n: Int) -> Short
         ): ShortArray2 =
             ShortArray2(width, height, ShortArray(width * height) { gen(it) } as ShortArray)
 
-        inline fun  withGen(
+        inline fun withGen(
             width: Int,
             height: Int,
             gen: (x: Int, y: Int) -> Short
@@ -793,14 +795,14 @@ data class ShortArray2(override val width: Int, override val height: Int, val da
                 height,
                 ShortArray(width * height) { gen(it % width, it / width) } as ShortArray)
 
-        inline operator fun  invoke(rows: List<List<Short>>): ShortArray2 {
+        inline operator fun invoke(rows: List<List<Short>>): ShortArray2 {
             val width = rows[0].size
             val height = rows.size
             val anyCell = rows[0][0]
             return (ShortArray2(width, height) { anyCell }).apply { set(rows) }
         }
 
-        inline operator fun  invoke(
+        inline operator fun invoke(
             map: String,
             marginChar: Char = '\u0000',
             gen: (char: Char, x: Int, y: Int) -> Short
@@ -825,7 +827,7 @@ data class ShortArray2(override val width: Int, override val height: Int, val da
             }
         }
 
-        inline operator fun  invoke(
+        inline operator fun invoke(
             map: String,
             default: Short,
             transform: Map<Char, Short>
@@ -833,7 +835,7 @@ data class ShortArray2(override val width: Int, override val height: Int, val da
             return invoke(map) { c, _, _ -> transform[c] ?: default }
         }
 
-        inline fun  fromString(
+        inline fun fromString(
             maps: Map<Char, Short>,
             default: Short,
             code: String,
@@ -883,7 +885,6 @@ data class ShortArray2(override val width: Int, override val height: Int, val da
 }
 
 
-
 // Long
 
 
@@ -892,18 +893,19 @@ data class LongArray2(override val width: Int, override val height: Int, val dat
     init {
         IArray2.checkArraySize(width, height, data.size)
     }
+
     companion object {
-        inline operator fun  invoke(width: Int, height: Int, fill: Long): LongArray2 =
+        inline operator fun invoke(width: Int, height: Int, fill: Long): LongArray2 =
             LongArray2(width, height, LongArray(width * height) { fill } as LongArray)
 
-        inline operator fun  invoke(
+        inline operator fun invoke(
             width: Int,
             height: Int,
             gen: (n: Int) -> Long
         ): LongArray2 =
             LongArray2(width, height, LongArray(width * height) { gen(it) } as LongArray)
 
-        inline fun  withGen(
+        inline fun withGen(
             width: Int,
             height: Int,
             gen: (x: Int, y: Int) -> Long
@@ -913,14 +915,14 @@ data class LongArray2(override val width: Int, override val height: Int, val dat
                 height,
                 LongArray(width * height) { gen(it % width, it / width) } as LongArray)
 
-        inline operator fun  invoke(rows: List<List<Long>>): LongArray2 {
+        inline operator fun invoke(rows: List<List<Long>>): LongArray2 {
             val width = rows[0].size
             val height = rows.size
             val anyCell = rows[0][0]
             return (LongArray2(width, height) { anyCell }).apply { set(rows) }
         }
 
-        inline operator fun  invoke(
+        inline operator fun invoke(
             map: String,
             marginChar: Char = '\u0000',
             gen: (char: Char, x: Int, y: Int) -> Long
@@ -945,7 +947,7 @@ data class LongArray2(override val width: Int, override val height: Int, val dat
             }
         }
 
-        inline operator fun  invoke(
+        inline operator fun invoke(
             map: String,
             default: Long,
             transform: Map<Char, Long>
@@ -953,7 +955,7 @@ data class LongArray2(override val width: Int, override val height: Int, val dat
             return invoke(map) { c, _, _ -> transform[c] ?: default }
         }
 
-        inline fun  fromString(
+        inline fun fromString(
             maps: Map<Char, Long>,
             default: Long,
             code: String,
@@ -1003,7 +1005,6 @@ data class LongArray2(override val width: Int, override val height: Int, val dat
 }
 
 
-
 // Boolean
 
 
@@ -1012,18 +1013,19 @@ data class BooleanArray2(override val width: Int, override val height: Int, val 
     init {
         IArray2.checkArraySize(width, height, data.size)
     }
+
     companion object {
-        inline operator fun  invoke(width: Int, height: Int, fill: Boolean): BooleanArray2 =
+        inline operator fun invoke(width: Int, height: Int, fill: Boolean): BooleanArray2 =
             BooleanArray2(width, height, BooleanArray(width * height) { fill } as BooleanArray)
 
-        inline operator fun  invoke(
+        inline operator fun invoke(
             width: Int,
             height: Int,
             gen: (n: Int) -> Boolean
         ): BooleanArray2 =
             BooleanArray2(width, height, BooleanArray(width * height) { gen(it) } as BooleanArray)
 
-        inline fun  withGen(
+        inline fun withGen(
             width: Int,
             height: Int,
             gen: (x: Int, y: Int) -> Boolean
@@ -1033,14 +1035,14 @@ data class BooleanArray2(override val width: Int, override val height: Int, val 
                 height,
                 BooleanArray(width * height) { gen(it % width, it / width) } as BooleanArray)
 
-        inline operator fun  invoke(rows: List<List<Boolean>>): BooleanArray2 {
+        inline operator fun invoke(rows: List<List<Boolean>>): BooleanArray2 {
             val width = rows[0].size
             val height = rows.size
             val anyCell = rows[0][0]
             return (BooleanArray2(width, height) { anyCell }).apply { set(rows) }
         }
 
-        inline operator fun  invoke(
+        inline operator fun invoke(
             map: String,
             marginChar: Char = '\u0000',
             gen: (char: Char, x: Int, y: Int) -> Boolean
@@ -1065,7 +1067,7 @@ data class BooleanArray2(override val width: Int, override val height: Int, val 
             }
         }
 
-        inline operator fun  invoke(
+        inline operator fun invoke(
             map: String,
             default: Boolean,
             transform: Map<Char, Boolean>
@@ -1073,7 +1075,7 @@ data class BooleanArray2(override val width: Int, override val height: Int, val 
             return invoke(map) { c, _, _ -> transform[c] ?: default }
         }
 
-        inline fun  fromString(
+        inline fun fromString(
             maps: Map<Char, Boolean>,
             default: Boolean,
             code: String,

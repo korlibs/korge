@@ -39,5 +39,6 @@ class BitSet(override val size: Int) : Collection<Boolean> {
     override fun iterator(): Iterator<Boolean> = (0 until size).map { this[it] }.iterator()
 
     override fun hashCode(): Int = data.contentHashCode() + size
-    override fun equals(other: Any?): Boolean = (other is BitSet) && this.size == other.size && this.data.contentEquals(other.data)
+    override fun equals(other: Any?): Boolean =
+        (other is BitSet) && this.size == other.size && this.data.contentEquals(other.data)
 }

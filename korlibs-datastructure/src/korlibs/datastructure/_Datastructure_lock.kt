@@ -31,7 +31,7 @@ interface BaseLock {
 expect class Lock() : BaseLock {
     override fun notify(unit: Unit)
     override fun wait(time: TimeSpan): Boolean
-	inline operator fun <T> invoke(callback: () -> T): T
+    inline operator fun <T> invoke(callback: () -> T): T
 }
 
 /**

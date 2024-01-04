@@ -1,7 +1,6 @@
 package korlibs.datastructure
 
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import kotlin.test.*
 
 class GenericSubListTest {
     private val list = listOf(1, 2, 3, 4, 3)

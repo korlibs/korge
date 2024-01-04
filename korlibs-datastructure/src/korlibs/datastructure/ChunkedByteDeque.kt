@@ -1,7 +1,7 @@
 package korlibs.datastructure
 
-import korlibs.datastructure.lock.*
 import korlibs.datastructure.internal.memory.Memory.arraycopy
+import korlibs.datastructure.lock.*
 import kotlin.math.*
 
 class ChunkedByteDeque {
@@ -31,7 +31,9 @@ class ChunkedByteDeque {
         lock {
             chunkPos += size
             availableRead -= size
-            if (chunkPos >= chunk.size) { chunks.removeFirst(); chunkPos = 0 }
+            if (chunkPos >= chunk.size) {
+                chunks.removeFirst(); chunkPos = 0
+            }
         }
     }
 
@@ -56,7 +58,7 @@ class ChunkedByteDeque {
 
     fun read(): Int {
         val chunk = lock { if (chunks.isNotEmpty()) chunks.first else null } ?: return -1
-        return chunk[chunkPos].also { chunk.consumeChunkSize(1)}.toInt() and 0xFF
+        return chunk[chunkPos].also { chunk.consumeChunkSize(1) }.toInt() and 0xFF
     }
 
     fun read(count: Int): ByteArray = ByteArray(count).let { it.copyOf(read(it)) }

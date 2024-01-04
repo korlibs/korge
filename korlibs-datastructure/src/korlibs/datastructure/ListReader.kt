@@ -14,7 +14,9 @@ class ListReader<T>(val list: List<T>) {
     fun skip(count: Int = 1) = this.apply { this.position += count }
     fun read(): T = peek().apply { skip(1) }
     override fun toString(): String = "ListReader($list)"
-    override fun equals(other: Any?): Boolean = (other is ListReader<*>) && this.list == other.list && this.position == other.position
+    override fun equals(other: Any?): Boolean =
+        (other is ListReader<*>) && this.list == other.list && this.position == other.position
+
     override fun hashCode(): Int = this.list.hashCode()
 }
 

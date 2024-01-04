@@ -14,15 +14,29 @@ private inline class PriorityQueueNode(val index: Int) {}
 
 @Suppress("UNCHECKED_CAST", "RemoveExplicitTypeArguments")
 class TGenPriorityQueue<TGen>
-@PublishedApi internal constructor(private var data: Array<TGen>, val comparator: Comparator<TGen>) : MutableCollection<TGen> {
+@PublishedApi internal constructor(private var data: Array<TGen>, val comparator: Comparator<TGen>) :
+    MutableCollection<TGen> {
     companion object {
-        operator fun <TGen> invoke(initialCapacity: Int, comparator: Comparator<TGen>, reversed: Boolean = false): TGenPriorityQueue<TGen> =
-            TGenPriorityQueue<TGen>(arrayOfNulls<Any>(initialCapacity) as Array<TGen>, if (reversed) comparator.reversed() else comparator)
+        operator fun <TGen> invoke(
+            initialCapacity: Int,
+            comparator: Comparator<TGen>,
+            reversed: Boolean = false
+        ): TGenPriorityQueue<TGen> =
+            TGenPriorityQueue<TGen>(
+                arrayOfNulls<Any>(initialCapacity) as Array<TGen>,
+                if (reversed) comparator.reversed() else comparator
+            )
 
         operator fun <TGen> invoke(comparator: Comparator<TGen>, reversed: Boolean = false): TGenPriorityQueue<TGen> =
-            TGenPriorityQueue<TGen>(arrayOfNulls<Any>(16) as Array<TGen>, if (reversed) comparator.reversed() else comparator)
+            TGenPriorityQueue<TGen>(
+                arrayOfNulls<Any>(16) as Array<TGen>,
+                if (reversed) comparator.reversed() else comparator
+            )
 
-        operator fun <TGen> invoke(reversed: Boolean = false, comparator: (left: TGen, right: TGen) -> Int): TGenPriorityQueue<TGen> =
+        operator fun <TGen> invoke(
+            reversed: Boolean = false,
+            comparator: (left: TGen, right: TGen) -> Int
+        ): TGenPriorityQueue<TGen> =
             TGenPriorityQueue<TGen>(Comparator(comparator), reversed)
 
         operator fun <TGen : Comparable<TGen>> invoke(reversed: Boolean = false): TGenPriorityQueue<TGen> =
@@ -31,7 +45,9 @@ class TGenPriorityQueue<TGen>
 
     private var PriorityQueueNode.value
         get() = data[this.index]
-        set(value) { data[this.index] = value }
+        set(value) {
+            data[this.index] = value
+        }
     private val PriorityQueueNode.isRoot: Boolean get() = this.index == 0
     private val PriorityQueueNode.parent: PriorityQueueNode get() = PriorityQueueNode((this.index - 1) / 2)
     private val PriorityQueueNode.left: PriorityQueueNode get() = PriorityQueueNode(2 * this.index + 1)
@@ -42,10 +58,11 @@ class TGenPriorityQueue<TGen>
 
     private val capacity get() = data.size
     override var size = 0; private set
-    val head: TGen get() {
-        if (size <= 0) throw IndexOutOfBoundsException()
-        return data[0]
-    }
+    val head: TGen
+        get() {
+            if (size <= 0) throw IndexOutOfBoundsException()
+            return data[0]
+        }
 
     override fun add(element: TGen): Boolean {
         size++
@@ -134,7 +151,8 @@ class TGenPriorityQueue<TGen>
         l.value = temp
     }
 
-    override operator fun contains(element: TGen): Boolean = (0 until size).any { PriorityQueueNode(it).value == element }
+    override operator fun contains(element: TGen): Boolean =
+        (0 until size).any { PriorityQueueNode(it).value == element }
 
     override fun containsAll(elements: Collection<TGen>): Boolean {
         val thisSet = this.toSet()
@@ -146,7 +164,10 @@ class TGenPriorityQueue<TGen>
         for (e in elements) add(e)
         return elements.isNotEmpty()
     }
-    override fun clear() { size = 0 }
+
+    override fun clear() {
+        size = 0
+    }
 
     //fun poll() = head
 
@@ -184,7 +205,9 @@ class TGenPriorityQueue<TGen>
 
     override fun toString(): String = toList().toString()
 
-    override fun equals(other: Any?): Boolean = other is TGenPriorityQueue<*/*_TGen_*/> && this.data.contentEquals(other.data) && this.comparator == other.comparator
+    override fun equals(other: Any?): Boolean =
+        other is TGenPriorityQueue<*/*_TGen_*/> && this.data.contentEquals(other.data) && this.comparator == other.comparator
+
     override fun hashCode(): Int = data.contentHashCode()
 }
 
@@ -199,7 +222,11 @@ class TGenPriorityQueue<TGen>
 class IntPriorityQueue
 @PublishedApi internal constructor(private var data: IntArray, val comparator: IntComparator) : MutableCollection<Int> {
     companion object {
-        operator fun invoke(initialCapacity: Int, comparator: IntComparator, reversed: Boolean = false): IntPriorityQueue =
+        operator fun invoke(
+            initialCapacity: Int,
+            comparator: IntComparator,
+            reversed: Boolean = false
+        ): IntPriorityQueue =
             IntPriorityQueue(IntArray(initialCapacity) as IntArray, if (reversed) comparator.reversed() else comparator)
 
         operator fun invoke(comparator: IntComparator, reversed: Boolean = false): IntPriorityQueue =
@@ -208,13 +235,15 @@ class IntPriorityQueue
         operator fun invoke(reversed: Boolean = false, comparator: (left: Int, right: Int) -> Int): IntPriorityQueue =
             IntPriorityQueue(Comparator(comparator), reversed)
 
-        operator fun  invoke(reversed: Boolean = false): IntPriorityQueue =
+        operator fun invoke(reversed: Boolean = false): IntPriorityQueue =
             IntPriorityQueue(comparator(), reversed)
     }
 
     private var PriorityQueueNode.value
         get() = data[this.index]
-        set(value) { data[this.index] = value }
+        set(value) {
+            data[this.index] = value
+        }
     private val PriorityQueueNode.isRoot: Boolean get() = this.index == 0
     private val PriorityQueueNode.parent: PriorityQueueNode get() = PriorityQueueNode((this.index - 1) / 2)
     private val PriorityQueueNode.left: PriorityQueueNode get() = PriorityQueueNode(2 * this.index + 1)
@@ -225,10 +254,11 @@ class IntPriorityQueue
 
     private val capacity get() = data.size
     override var size = 0; private set
-    val head: Int get() {
-        if (size <= 0) throw IndexOutOfBoundsException()
-        return data[0]
-    }
+    val head: Int
+        get() {
+            if (size <= 0) throw IndexOutOfBoundsException()
+            return data[0]
+        }
 
     override fun add(element: Int): Boolean {
         size++
@@ -317,7 +347,8 @@ class IntPriorityQueue
         l.value = temp
     }
 
-    override operator fun contains(element: Int): Boolean = (0 until size).any { PriorityQueueNode(it).value == element }
+    override operator fun contains(element: Int): Boolean =
+        (0 until size).any { PriorityQueueNode(it).value == element }
 
     override fun containsAll(elements: Collection<Int>): Boolean {
         val thisSet = this.toSet()
@@ -329,7 +360,10 @@ class IntPriorityQueue
         for (e in elements) add(e)
         return elements.isNotEmpty()
     }
-    override fun clear() { size = 0 }
+
+    override fun clear() {
+        size = 0
+    }
 
     //fun poll() = head
 
@@ -367,10 +401,11 @@ class IntPriorityQueue
 
     override fun toString(): String = toList().toString()
 
-    override fun equals(other: Any?): Boolean = other is IntPriorityQueue && this.data.contentEquals(other.data) && this.comparator == other.comparator
+    override fun equals(other: Any?): Boolean =
+        other is IntPriorityQueue && this.data.contentEquals(other.data) && this.comparator == other.comparator
+
     override fun hashCode(): Int = data.contentHashCode()
 }
-
 
 
 // Double
@@ -378,24 +413,37 @@ class IntPriorityQueue
 
 @Suppress("UNCHECKED_CAST", "RemoveExplicitTypeArguments")
 class DoublePriorityQueue
-@PublishedApi internal constructor(private var data: DoubleArray, val comparator: DoubleComparator) : MutableCollection<Double> {
+@PublishedApi internal constructor(private var data: DoubleArray, val comparator: DoubleComparator) :
+    MutableCollection<Double> {
     companion object {
-        operator fun invoke(initialCapacity: Int, comparator: DoubleComparator, reversed: Boolean = false): DoublePriorityQueue =
-            DoublePriorityQueue(DoubleArray(initialCapacity) as DoubleArray, if (reversed) comparator.reversed() else comparator)
+        operator fun invoke(
+            initialCapacity: Int,
+            comparator: DoubleComparator,
+            reversed: Boolean = false
+        ): DoublePriorityQueue =
+            DoublePriorityQueue(
+                DoubleArray(initialCapacity) as DoubleArray,
+                if (reversed) comparator.reversed() else comparator
+            )
 
         operator fun invoke(comparator: DoubleComparator, reversed: Boolean = false): DoublePriorityQueue =
             DoublePriorityQueue(DoubleArray(16) as DoubleArray, if (reversed) comparator.reversed() else comparator)
 
-        operator fun invoke(reversed: Boolean = false, comparator: (left: Double, right: Double) -> Int): DoublePriorityQueue =
+        operator fun invoke(
+            reversed: Boolean = false,
+            comparator: (left: Double, right: Double) -> Int
+        ): DoublePriorityQueue =
             DoublePriorityQueue(Comparator(comparator), reversed)
 
-        operator fun  invoke(reversed: Boolean = false): DoublePriorityQueue =
+        operator fun invoke(reversed: Boolean = false): DoublePriorityQueue =
             DoublePriorityQueue(comparator(), reversed)
     }
 
     private var PriorityQueueNode.value
         get() = data[this.index]
-        set(value) { data[this.index] = value }
+        set(value) {
+            data[this.index] = value
+        }
     private val PriorityQueueNode.isRoot: Boolean get() = this.index == 0
     private val PriorityQueueNode.parent: PriorityQueueNode get() = PriorityQueueNode((this.index - 1) / 2)
     private val PriorityQueueNode.left: PriorityQueueNode get() = PriorityQueueNode(2 * this.index + 1)
@@ -406,10 +454,11 @@ class DoublePriorityQueue
 
     private val capacity get() = data.size
     override var size = 0; private set
-    val head: Double get() {
-        if (size <= 0) throw IndexOutOfBoundsException()
-        return data[0]
-    }
+    val head: Double
+        get() {
+            if (size <= 0) throw IndexOutOfBoundsException()
+            return data[0]
+        }
 
     override fun add(element: Double): Boolean {
         size++
@@ -498,7 +547,8 @@ class DoublePriorityQueue
         l.value = temp
     }
 
-    override operator fun contains(element: Double): Boolean = (0 until size).any { PriorityQueueNode(it).value == element }
+    override operator fun contains(element: Double): Boolean =
+        (0 until size).any { PriorityQueueNode(it).value == element }
 
     override fun containsAll(elements: Collection<Double>): Boolean {
         val thisSet = this.toSet()
@@ -510,7 +560,10 @@ class DoublePriorityQueue
         for (e in elements) add(e)
         return elements.isNotEmpty()
     }
-    override fun clear() { size = 0 }
+
+    override fun clear() {
+        size = 0
+    }
 
     //fun poll() = head
 
@@ -548,10 +601,11 @@ class DoublePriorityQueue
 
     override fun toString(): String = toList().toString()
 
-    override fun equals(other: Any?): Boolean = other is DoublePriorityQueue && this.data.contentEquals(other.data) && this.comparator == other.comparator
+    override fun equals(other: Any?): Boolean =
+        other is DoublePriorityQueue && this.data.contentEquals(other.data) && this.comparator == other.comparator
+
     override fun hashCode(): Int = data.contentHashCode()
 }
-
 
 
 // Float
@@ -559,24 +613,37 @@ class DoublePriorityQueue
 
 @Suppress("UNCHECKED_CAST", "RemoveExplicitTypeArguments")
 class FloatPriorityQueue
-@PublishedApi internal constructor(private var data: FloatArray, val comparator: FloatComparator) : MutableCollection<Float> {
+@PublishedApi internal constructor(private var data: FloatArray, val comparator: FloatComparator) :
+    MutableCollection<Float> {
     companion object {
-        operator fun invoke(initialCapacity: Int, comparator: FloatComparator, reversed: Boolean = false): FloatPriorityQueue =
-            FloatPriorityQueue(FloatArray(initialCapacity) as FloatArray, if (reversed) comparator.reversed() else comparator)
+        operator fun invoke(
+            initialCapacity: Int,
+            comparator: FloatComparator,
+            reversed: Boolean = false
+        ): FloatPriorityQueue =
+            FloatPriorityQueue(
+                FloatArray(initialCapacity) as FloatArray,
+                if (reversed) comparator.reversed() else comparator
+            )
 
         operator fun invoke(comparator: FloatComparator, reversed: Boolean = false): FloatPriorityQueue =
             FloatPriorityQueue(FloatArray(16) as FloatArray, if (reversed) comparator.reversed() else comparator)
 
-        operator fun invoke(reversed: Boolean = false, comparator: (left: Float, right: Float) -> Int): FloatPriorityQueue =
+        operator fun invoke(
+            reversed: Boolean = false,
+            comparator: (left: Float, right: Float) -> Int
+        ): FloatPriorityQueue =
             FloatPriorityQueue(Comparator(comparator), reversed)
 
-        operator fun  invoke(reversed: Boolean = false): FloatPriorityQueue =
+        operator fun invoke(reversed: Boolean = false): FloatPriorityQueue =
             FloatPriorityQueue(comparator(), reversed)
     }
 
     private var PriorityQueueNode.value
         get() = data[this.index]
-        set(value) { data[this.index] = value }
+        set(value) {
+            data[this.index] = value
+        }
     private val PriorityQueueNode.isRoot: Boolean get() = this.index == 0
     private val PriorityQueueNode.parent: PriorityQueueNode get() = PriorityQueueNode((this.index - 1) / 2)
     private val PriorityQueueNode.left: PriorityQueueNode get() = PriorityQueueNode(2 * this.index + 1)
@@ -587,10 +654,11 @@ class FloatPriorityQueue
 
     private val capacity get() = data.size
     override var size = 0; private set
-    val head: Float get() {
-        if (size <= 0) throw IndexOutOfBoundsException()
-        return data[0]
-    }
+    val head: Float
+        get() {
+            if (size <= 0) throw IndexOutOfBoundsException()
+            return data[0]
+        }
 
     override fun add(element: Float): Boolean {
         size++
@@ -679,7 +747,8 @@ class FloatPriorityQueue
         l.value = temp
     }
 
-    override operator fun contains(element: Float): Boolean = (0 until size).any { PriorityQueueNode(it).value == element }
+    override operator fun contains(element: Float): Boolean =
+        (0 until size).any { PriorityQueueNode(it).value == element }
 
     override fun containsAll(elements: Collection<Float>): Boolean {
         val thisSet = this.toSet()
@@ -691,7 +760,10 @@ class FloatPriorityQueue
         for (e in elements) add(e)
         return elements.isNotEmpty()
     }
-    override fun clear() { size = 0 }
+
+    override fun clear() {
+        size = 0
+    }
 
     //fun poll() = head
 
@@ -729,6 +801,8 @@ class FloatPriorityQueue
 
     override fun toString(): String = toList().toString()
 
-    override fun equals(other: Any?): Boolean = other is FloatPriorityQueue && this.data.contentEquals(other.data) && this.comparator == other.comparator
+    override fun equals(other: Any?): Boolean =
+        other is FloatPriorityQueue && this.data.contentEquals(other.data) && this.comparator == other.comparator
+
     override fun hashCode(): Int = data.contentHashCode()
 }

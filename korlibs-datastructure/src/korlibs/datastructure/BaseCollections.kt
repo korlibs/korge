@@ -55,6 +55,7 @@ interface BaseList<T> : List<T> {
         for (n in 0 until size) if (this[n] in elementsSet) return true
         return false
     }
+
     override fun contains(element: T): Boolean = indexOf(element) >= 0
     override fun isEmpty(): Boolean = size == 0
     override fun iterator(): Iterator<T> = listIterator(0)
@@ -65,6 +66,7 @@ interface BaseList<T> : List<T> {
         for (n in size - 1 downTo 0) if (this[n] == element) return n
         return -1
     }
+
     override fun indexOf(element: T): Int {
         for (n in 0 until size) if (this[n] == element) return n
         return -1
@@ -72,8 +74,8 @@ interface BaseList<T> : List<T> {
 }
 
 open class BaseSubList<T>(val list: List<T>, start: Int, end: Int) : BaseList<T> {
-    var start: Int = start ; protected set
-    var end: Int = end ; protected set
+    var start: Int = start; protected set
+    var end: Int = end; protected set
     override val size: Int get() = end - start
     fun checkIndex(index: Int): Int {
         if (index < 0 || index >= size) throw IndexOutOfBoundsException()
@@ -83,7 +85,8 @@ open class BaseSubList<T>(val list: List<T>, start: Int, end: Int) : BaseList<T>
     override fun get(index: Int): T = list[checkIndex(index)]
 }
 
-open class BaseSubMutableList<T>(val mlist: MutableList<T>, start: Int, end: Int) : BaseSubList<T>(mlist, start, end), BaseMutableList<T> {
+open class BaseSubMutableList<T>(val mlist: MutableList<T>, start: Int, end: Int) : BaseSubList<T>(mlist, start, end),
+    BaseMutableList<T> {
     override fun add(index: Int, element: T) {
         mlist.add(checkIndex(index), element)
         end++
@@ -113,8 +116,14 @@ open class BaseListIterator<T>(val list: List<T>, var index: Int) : ListIterator
     override fun previousIndex(): Int = index - 1
 }
 
-open class BaseMutableListIterator<T>(val mlist: MutableList<T>, index: Int) : BaseListIterator<T>(mlist, index), MutableListIterator<T> {
+open class BaseMutableListIterator<T>(val mlist: MutableList<T>, index: Int) : BaseListIterator<T>(mlist, index),
+    MutableListIterator<T> {
     override fun add(element: T) = mlist.add(index, element)
-    override fun remove() { mlist.removeAt(index) }
-    override fun set(element: T) { mlist[index] = element }
+    override fun remove() {
+        mlist.removeAt(index)
+    }
+
+    override fun set(element: T) {
+        mlist[index] = element
+    }
 }

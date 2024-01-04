@@ -22,7 +22,10 @@ open class BaseCacheMap<K, V>() : BaseMutableMap<K, V> {
         return value
     }
 
-    override fun putAll(from: Map<out K, V>) { for ((k, v) in from) put(k, v) }
+    override fun putAll(from: Map<out K, V>) {
+        for ((k, v) in from) put(k, v)
+    }
+
     override fun put(key: K, value: V): V? {
         val oldValue = map[key]
         if (oldValue != value) {

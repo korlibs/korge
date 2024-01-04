@@ -1,7 +1,7 @@
 package korlibs.platform
 
-import java.lang.management.ManagementFactory
-import java.nio.ByteOrder
+import java.lang.management.*
+import java.nio.*
 
 internal actual val currentOs: Os by lazy {
     val os = System.getProperty("os.name").lowercase()
@@ -22,6 +22,7 @@ internal actual val currentArch: Arch by lazy {
         arch.contains("i386") || arch.contains("i486") || arch.contains("i586") || arch.contains("i686") || arch.contains(
             "x86"
         ) -> Arch.X86
+
         arch.contains("mips32") || arch.contains("mips32el") -> Arch.MIPS32
         arch.contains("mips64") || arch.contains("mips64el") -> Arch.MIPS64
         arch.contains("aarch64") -> Arch.ARM64

@@ -1,7 +1,6 @@
 package korlibs.datastructure
 
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import kotlin.test.*
 
 class ByteArrayDequeTest {
     @Test
@@ -26,7 +25,9 @@ class ByteArrayDequeTest {
         data.write(byteArrayOf(0x99.toByte(), 0x88.toByte(), 0x33, 0x44, 0x55, 0x66, 0xAA.toByte()))
         assertEquals(8, data.availableRead)
         assertEquals(0, data.availableWriteWithoutAllocating)
-        assertEquals(listOf(0x7F, 0x99, 0x88, 0x33, 0x44, 0x55, 0x66, 0xAA), data.readBytesUpTo(8).map { it.toInt() and 0xFF })
+        assertEquals(
+            listOf(0x7F, 0x99, 0x88, 0x33, 0x44, 0x55, 0x66, 0xAA),
+            data.readBytesUpTo(8).map { it.toInt() and 0xFF })
         assertEquals(-1, data.readByte())
         assertEquals(0, data.readBytesUpTo(10).size)
     }

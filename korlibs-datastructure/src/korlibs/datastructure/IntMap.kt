@@ -3,21 +3,26 @@
 package korlibs.datastructure
 
 import korlibs.datastructure.internal.*
-import korlibs.datastructure.iterators.*
 import korlibs.datastructure.internal.math.Math.ilog2Ceil
+import korlibs.datastructure.iterators.*
 import kotlin.collections.component1
 import kotlin.collections.component2
 import kotlin.contracts.*
 import kotlin.math.*
 
-private fun _mask(value: Int, mask: Int) = (value + ((value ushr 8) and 0xFF) + ((value ushr 16) and 0xFF) + ((value shr 24) and 0xFF)) and mask
+private fun _mask(value: Int, mask: Int) =
+    (value + ((value ushr 8) and 0xFF) + ((value ushr 16) and 0xFF) + ((value shr 24) and 0xFF)) and mask
 //private fun _mask(value: Int, mask: Int) = (value + (value shr 16)) and mask
 private fun _hash1(key: Int, mask: Int) = _mask(key, mask)
 private fun _hash2(key: Int, mask: Int) = _mask(key * 0x4d2fa52d, mask)
 private fun _hash3(key: Int, mask: Int) = _mask((key * 0x1194e069), mask)
 
 class IntMap<T> internal constructor(private var nbits: Int, private val loadFactor: Double, dummy: Boolean = false) {
-    constructor(initialCapacity: Int = 16, loadFactor: Double = 0.75) : this(max(4, ilog2Ceil(initialCapacity)), loadFactor, true)
+    constructor(initialCapacity: Int = 16, loadFactor: Double = 0.75) : this(
+        max(4, ilog2Ceil(initialCapacity)),
+        loadFactor,
+        true
+    )
 
     companion object {
         @PublishedApi
@@ -143,6 +148,7 @@ class IntMap<T> internal constructor(private var nbits: Int, private val loadFac
                     }
                     continue@retry
                 }
+
                 (index == ZERO_INDEX) -> return zeroValue.apply { zeroValue = value }
                 else -> return _values[index].apply { _values[index] = value }
             }
@@ -180,9 +186,9 @@ class IntMap<T> internal constructor(private var nbits: Int, private val loadFac
 
     data class Entry<T>(var key: Int, var value: T?)
 
-    val keys get() = Iterable { Iterator(this).let { Iterator({ it.hasNext() }, { it.nextKey()} ) } }
-    val values get() = Iterable { Iterator(this).let { Iterator({ it.hasNext() }, { it.nextValue()} ) } }
-    val entries get() = Iterable { Iterator(this).let { Iterator({ it.hasNext() }, { it.nextEntry()} ) } }
+    val keys get() = Iterable { Iterator(this).let { Iterator({ it.hasNext() }, { it.nextKey() }) } }
+    val values get() = Iterable { Iterator(this).let { Iterator({ it.hasNext() }, { it.nextValue() }) } }
+    val entries get() = Iterable { Iterator(this).let { Iterator({ it.hasNext() }, { it.nextEntry() }) } }
 
     val pooledKeys get() = keys
     val pooledValues get() = values
@@ -244,9 +250,11 @@ class IntMap<T> internal constructor(private var nbits: Int, private val loadFac
             index = nextNonEmptyIndex(_keys, if (index == ZERO_INDEX) 0 else (index + 1))
         }
     }
+
     inline fun fastValueForEachNullable(callback: (value: T?) -> Unit) {
         fastKeyForEach { callback(this[it]) }
     }
+
     inline fun fastForEachNullable(callback: (key: Int, value: T?) -> Unit) {
         fastKeyForEach { callback(it, this[it]) }
     }
@@ -255,6 +263,7 @@ class IntMap<T> internal constructor(private var nbits: Int, private val loadFac
     inline fun fastValueForEach(callback: (value: T) -> Unit) {
         fastKeyForEach { callback(this[it]!!) }
     }
+
     inline fun fastForEach(callback: (key: Int, value: T) -> Unit) {
         fastKeyForEach { callback(it, this[it]!!) }
     }
@@ -371,7 +380,11 @@ class IntFloatMap {
 */
 
 class IntIntMap internal constructor(private var nbits: Int, private val loadFactor: Double, dummy: Boolean) {
-    constructor(initialCapacity: Int = 16, loadFactor: Double = 0.75) : this(max(4, ilog2Ceil(initialCapacity)), loadFactor, true)
+    constructor(initialCapacity: Int = 16, loadFactor: Double = 0.75) : this(
+        max(4, ilog2Ceil(initialCapacity)),
+        loadFactor,
+        true
+    )
 
     override fun toString(): String = this.toMap().toString()
 
@@ -391,7 +404,8 @@ class IntIntMap internal constructor(private var nbits: Int, private val loadFac
     private var mask = capacity - 1
     internal var stashSize = 1 + nbits * nbits; private set
     internal val backSize get() = capacity + stashSize
-    @PublishedApi internal var _keys = IntArray(backSize)
+    @PublishedApi
+    internal var _keys = IntArray(backSize)
     private var _values = IntArray(backSize)
     private val stashStart get() = _keys.size - stashSize
     private var growSize: Int = (capacity * loadFactor).toInt()
@@ -515,6 +529,7 @@ class IntIntMap internal constructor(private var nbits: Int, private val loadFac
                     }
                     continue@retry
                 }
+
                 (index == ZERO_INDEX) -> return zeroValue.apply { zeroValue = value }
                 else -> return _values[index].apply { _values[index] = value }
             }
@@ -532,9 +547,9 @@ class IntIntMap internal constructor(private var nbits: Int, private val loadFac
 
     data class Entry(var key: Int, var value: Int)
 
-    val keys get() = Iterable { Iterator(this).let { Iterator({ it.hasNext() }, { it.nextKey()} ) } }
-    val values get() = Iterable { Iterator(this).let { Iterator({ it.hasNext() }, { it.nextValue()} ) } }
-    val entries get() = Iterable { Iterator(this).let { Iterator({ it.hasNext() }, { it.nextEntry()} ) } }
+    val keys get() = Iterable { Iterator(this).let { Iterator({ it.hasNext() }, { it.nextKey() }) } }
+    val values get() = Iterable { Iterator(this).let { Iterator({ it.hasNext() }, { it.nextValue() }) } }
+    val entries get() = Iterable { Iterator(this).let { Iterator({ it.hasNext() }, { it.nextEntry() }) } }
 
     val pooledKeys get() = keys
     val pooledValues get() = values
@@ -599,6 +614,7 @@ class IntIntMap internal constructor(private var nbits: Int, private val loadFac
     inline fun fastValueForEach(callback: (value: Int) -> Unit) {
         fastKeyForEach { callback(this[it]) }
     }
+
     inline fun fastForEach(callback: (key: Int, value: Int) -> Unit) {
         fastKeyForEach { callback(it, this[it]) }
     }

@@ -1,6 +1,6 @@
 @file:Suppress("PackageDirectoryMismatch")
 
-package korlibs.datastructure.event
+package korlibs.event
 
 actual fun createPlatformEventLoop(precise: Boolean): SyncEventLoop =
-    SyncEventLoop(precise = precise)
+    SyncEventLoop(precise)

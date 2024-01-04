@@ -21,16 +21,45 @@ public fun <T> MutableList<T>.reverse(fromIndex: Int, toIndex: Int): Unit {
 }
 
 
-fun BooleanArray.swap(lIndex: Int, rIndex: Int) { val temp = this[lIndex]; this[lIndex] = this[rIndex]; this[rIndex] = temp }
-fun ByteArray.swap(lIndex: Int, rIndex: Int) { val temp = this[lIndex]; this[lIndex] = this[rIndex]; this[rIndex] = temp }
-fun CharArray.swap(lIndex: Int, rIndex: Int) { val temp = this[lIndex]; this[lIndex] = this[rIndex]; this[rIndex] = temp }
-fun ShortArray.swap(lIndex: Int, rIndex: Int) { val temp = this[lIndex]; this[lIndex] = this[rIndex]; this[rIndex] = temp }
-fun IntArray.swap(lIndex: Int, rIndex: Int) { val temp = this[lIndex]; this[lIndex] = this[rIndex]; this[rIndex] = temp }
-fun LongArray.swap(lIndex: Int, rIndex: Int) { val temp = this[lIndex]; this[lIndex] = this[rIndex]; this[rIndex] = temp }
-fun FloatArray.swap(lIndex: Int, rIndex: Int) { val temp = this[lIndex]; this[lIndex] = this[rIndex]; this[rIndex] = temp }
-fun DoubleArray.swap(lIndex: Int, rIndex: Int) { val temp = this[lIndex]; this[lIndex] = this[rIndex]; this[rIndex] = temp }
-fun <T> Array<T>.swap(lIndex: Int, rIndex: Int) { val temp = this[lIndex]; this[lIndex] = this[rIndex]; this[rIndex] = temp }
-fun <T> MutableList<T>.swap(lIndex: Int, rIndex: Int) { val temp = this[lIndex]; this[lIndex] = this[rIndex]; this[rIndex] = temp }
+fun BooleanArray.swap(lIndex: Int, rIndex: Int) {
+    val temp = this[lIndex]; this[lIndex] = this[rIndex]; this[rIndex] = temp
+}
+
+fun ByteArray.swap(lIndex: Int, rIndex: Int) {
+    val temp = this[lIndex]; this[lIndex] = this[rIndex]; this[rIndex] = temp
+}
+
+fun CharArray.swap(lIndex: Int, rIndex: Int) {
+    val temp = this[lIndex]; this[lIndex] = this[rIndex]; this[rIndex] = temp
+}
+
+fun ShortArray.swap(lIndex: Int, rIndex: Int) {
+    val temp = this[lIndex]; this[lIndex] = this[rIndex]; this[rIndex] = temp
+}
+
+fun IntArray.swap(lIndex: Int, rIndex: Int) {
+    val temp = this[lIndex]; this[lIndex] = this[rIndex]; this[rIndex] = temp
+}
+
+fun LongArray.swap(lIndex: Int, rIndex: Int) {
+    val temp = this[lIndex]; this[lIndex] = this[rIndex]; this[rIndex] = temp
+}
+
+fun FloatArray.swap(lIndex: Int, rIndex: Int) {
+    val temp = this[lIndex]; this[lIndex] = this[rIndex]; this[rIndex] = temp
+}
+
+fun DoubleArray.swap(lIndex: Int, rIndex: Int) {
+    val temp = this[lIndex]; this[lIndex] = this[rIndex]; this[rIndex] = temp
+}
+
+fun <T> Array<T>.swap(lIndex: Int, rIndex: Int) {
+    val temp = this[lIndex]; this[lIndex] = this[rIndex]; this[rIndex] = temp
+}
+
+fun <T> MutableList<T>.swap(lIndex: Int, rIndex: Int) {
+    val temp = this[lIndex]; this[lIndex] = this[rIndex]; this[rIndex] = temp
+}
 
 fun BooleanArray.rotateLeft(offset: Int = +1) = rotateRight(-offset)
 fun ByteArray.rotateLeft(offset: Int = +1) = rotateRight(-offset)

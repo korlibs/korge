@@ -1,10 +1,8 @@
 package korlibs.platform
 
-import korlibs.platform.internal.js.Deno
+import korlibs.platform.internal.js.*
 import kotlinx.browser.*
-import org.khronos.webgl.Uint32Array
-import org.khronos.webgl.Uint8Array
-import org.khronos.webgl.get
+import org.khronos.webgl.*
 import org.w3c.dom.*
 
 val isDenoJs: Boolean by lazy { js("(typeof Deno === 'object' && Deno.statSync)").unsafeCast<Boolean>() }
@@ -24,6 +22,7 @@ internal actual val currentOs: Os
                 else -> Os.UNKNOWN
             }
         }
+
         else -> {
             Os.UNKNOWN
         }
@@ -49,29 +48,31 @@ private external val navigator: dynamic // browser
 @JsName("process")
 private external val _process: dynamic // nodejs
 
-val process: dynamic get() {
-    if (js("(typeof process === 'undefined')")) {
-        try {
-            error("Not in NodeJS. Can't access process")
-        } catch (e: Throwable) {
-            e.printStackTrace()
-            throw e
+val process: dynamic
+    get() {
+        if (js("(typeof process === 'undefined')")) {
+            try {
+                error("Not in NodeJS. Can't access process")
+            } catch (e: Throwable) {
+                e.printStackTrace()
+                throw e
+            }
         }
+        return _process
     }
-    return _process
-}
 
-val jsWindow: Window get() {
-    if (js("(typeof window === 'undefined')")) {
-        try {
-            error("Not in Browser. Can't access window")
-        } catch (e: Throwable) {
-            e.printStackTrace()
-            throw e
+val jsWindow: Window
+    get() {
+        if (js("(typeof window === 'undefined')")) {
+            try {
+                error("Not in Browser. Can't access window")
+            } catch (e: Throwable) {
+                e.printStackTrace()
+                throw e
+            }
         }
+        return window
     }
-    return window
-}
 
 @JsName("import")
 external fun jsImport(url: String): dynamic
@@ -79,21 +80,23 @@ external fun jsImport(url: String): dynamic
 @JsName("globalThis")
 private external val globalThis: dynamic // all
 
-val jsGlobalThis: WindowOrWorkerGlobalScope get() {
-    return globalThis
-}
-
-val jsDocument: Document get() {
-    if (js("(typeof document === 'undefined')")) {
-        try {
-            error("Not in Browser. Can't access document")
-        } catch (e: Throwable) {
-            e.printStackTrace()
-            throw e
-        }
+val jsGlobalThis: WindowOrWorkerGlobalScope
+    get() {
+        return globalThis
     }
-    return document
-}
+
+val jsDocument: Document
+    get() {
+        if (js("(typeof document === 'undefined')")) {
+            try {
+                error("Not in Browser. Can't access document")
+            } catch (e: Throwable) {
+                e.printStackTrace()
+                throw e
+            }
+        }
+        return document
+    }
 
 internal actual val currentRawOsName: String = when {
     isDenoJs -> "deno"

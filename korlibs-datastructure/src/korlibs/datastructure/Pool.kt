@@ -18,8 +18,11 @@ class TemporalPool<T : Any>(private val reset: (T) -> Unit = {}, preallocate: In
     }
 }
 
-open class ConcurrentPool<T : Any>(private val reset: (T) -> Unit = {}, preallocate: Int = 0, private val gen: (Int) -> T)
-    : Pool<T>(reset, preallocate, gen) {
+open class ConcurrentPool<T : Any>(
+    private val reset: (T) -> Unit = {},
+    preallocate: Int = 0,
+    private val gen: (Int) -> T
+) : Pool<T>(reset, preallocate, gen) {
     private val lock = NonRecursiveLock()
 
     override fun alloc(): T {
@@ -83,9 +86,17 @@ open class Pool<T : Any>(private val reset: (T) -> Unit = {}, preallocate: Int =
         free(element)
     }
 
-    fun free(vararg elements: T) { elements.fastForEach { free(it) } }
-    fun free(elements: Iterable<T>) { for (element in elements) free(element) }
-    fun free(elements: List<T>) { elements.fastForEach { free(it) } }
+    fun free(vararg elements: T) {
+        elements.fastForEach { free(it) }
+    }
+
+    fun free(elements: Iterable<T>) {
+        for (element in elements) free(element)
+    }
+
+    fun free(elements: List<T>) {
+        elements.fastForEach { free(it) }
+    }
 
     inline operator fun <R> invoke(callback: (T) -> R): R = alloc(callback)
 
@@ -122,7 +133,11 @@ open class Pool<T : Any>(private val reset: (T) -> Unit = {}, preallocate: Int =
         }
     }
 
-    inline fun <R> allocMultiple(count: Int, temp: FastArrayList<T> = FastArrayList(), callback: (FastArrayList<T>) -> R): R {
+    inline fun <R> allocMultiple(
+        count: Int,
+        temp: FastArrayList<T> = FastArrayList(),
+        callback: (FastArrayList<T>) -> R
+    ): R {
         temp.clear()
         for (n in 0 until count) temp.add(alloc())
         try {
@@ -142,7 +157,8 @@ open class Pool<T : Any>(private val reset: (T) -> Unit = {}, preallocate: Int =
     }
 
     override fun hashCode(): Int = items.hashCode()
-    override fun equals(other: Any?): Boolean = (other is Pool<*>) && this.items == other.items && this.itemsInPool == other.itemsInPool
+    override fun equals(other: Any?): Boolean =
+        (other is Pool<*>) && this.items == other.items && this.itemsInPool == other.itemsInPool
 }
 
 class ReturnablePool<T : Any>(private val _reset: (T) -> Unit = { }, private val gen: (index: Int) -> T) {

@@ -1,16 +1,17 @@
 package korlibs.datastructure
 
-import korlibs.time.*
-import kotlin.test.*
 import kotlin.random.*
+import kotlin.test.*
 
 class RadixSortTest {
     @Test
     fun testStringArray() {
-        val array1: Array<String> = arrayOf("abc", "aaa", "bca", "acc", "bbb", "cad", "caa", "dddd", "aaaa", "AAA", "BBB")
+        val array1: Array<String> =
+            arrayOf("abc", "aaa", "bca", "acc", "bbb", "cad", "caa", "dddd", "aaaa", "AAA", "BBB")
         val original: Array<String> = array1.copyOf()
         val items: Array<String> = array1.sortedRadix(transform = { it.lowercaseChar() })
-        val items2: Array<String> = array1.sortedArrayWith { a, b -> a.compareTo(b, ignoreCase = true) } as Array<String>
+        val items2: Array<String> =
+            array1.sortedArrayWith { a, b -> a.compareTo(b, ignoreCase = true) } as Array<String>
         assertContentEquals(original, array1)
         assertContentEquals(items, items2)
     }

@@ -42,7 +42,9 @@ class FakeMutableSetMapEntry<K, V>(val set: Set<Map.Entry<K, V>>) : MutableSet<M
     override fun add(element: MutableMap.MutableEntry<K, V>): Boolean = TODO()
     override fun addAll(elements: Collection<MutableMap.MutableEntry<K, V>>): Boolean = TODO()
     override fun clear() = TODO()
-    override fun iterator(): MutableIterator<MutableMap.MutableEntry<K, V>> = set.map { FakeMutableMapEntry(it) }.iterator().asFakeMutable()
+    override fun iterator(): MutableIterator<MutableMap.MutableEntry<K, V>> =
+        set.map { FakeMutableMapEntry(it) }.iterator().asFakeMutable()
+
     override fun remove(element: MutableMap.MutableEntry<K, V>): Boolean = TODO()
     override fun removeAll(elements: Collection<MutableMap.MutableEntry<K, V>>): Boolean = TODO()
     override fun retainAll(elements: Collection<MutableMap.MutableEntry<K, V>>): Boolean = TODO()
@@ -68,4 +70,5 @@ fun <K> Collection<K>.asFakeMutable() = FakeMutableCollection(this)
 fun <K> Iterator<K>.asFakeMutable() = FakeMutableIterator(this)
 fun <K> ListIterator<K>.asFakeMutable() = FakeMutableListIterator(this)
 
-fun <K, V> Set<Map.Entry<K, V>>.asFakeMutable(): MutableSet<MutableMap.MutableEntry<K, V>> = FakeMutableSetMapEntry(this)
+fun <K, V> Set<Map.Entry<K, V>>.asFakeMutable(): MutableSet<MutableMap.MutableEntry<K, V>> =
+    FakeMutableSetMapEntry(this)

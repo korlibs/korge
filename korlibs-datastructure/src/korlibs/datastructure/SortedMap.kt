@@ -20,18 +20,21 @@ open class SortedMap<K, V>(val comparator: Comparator<K>) : MutableMapExt<K, V> 
     override fun containsKey(key: K): Boolean = keysToIndex.contains(key) // O(1)
     override fun containsValue(value: V): Boolean = _values.contains(value) // O(n)
 
-    override val keys: MutableSet<K> get() {
-        ensureSorted()
-        return _keys.toMutableSet()
-    }
-    override val values: MutableCollection<V> get() {
-        ensureSorted()
-        return _values.toMutableList()
-    }
-    override val entries: MutableSet<MutableMap.MutableEntry<K, V>> get() {
-        ensureSorted()
-        return MutableEntryExt.fromMap(this, _keys)
-    }
+    override val keys: MutableSet<K>
+        get() {
+            ensureSorted()
+            return _keys.toMutableSet()
+        }
+    override val values: MutableCollection<V>
+        get() {
+            ensureSorted()
+            return _values.toMutableList()
+        }
+    override val entries: MutableSet<MutableMap.MutableEntry<K, V>>
+        get() {
+            ensureSorted()
+            return MutableEntryExt.fromMap(this, _keys)
+        }
 
     override fun clear() {
         keysToIndex.clear()
@@ -126,7 +129,15 @@ open class SortedMap<K, V>(val comparator: Comparator<K>) : MutableMapExt<K, V> 
 
     fun nearestLowHighIndex(key: K, doHigh: Boolean): Int {
         ensureSorted()
-        return genericBinarySearch(0, _keys.size, { from, to, low, high -> if (doHigh) max(low, high) else min(low, high) }) { comparator.compare(_keys[it], key) }
+        return genericBinarySearch(
+            0,
+            _keys.size,
+            { from, to, low, high -> if (doHigh) max(low, high) else min(low, high) }) {
+            comparator.compare(
+                _keys[it],
+                key
+            )
+        }
     }
 
     fun nearestLowIndex(key: K): Int = nearestLowHighIndex(key, doHigh = false)
@@ -140,6 +151,7 @@ open class SortedMap<K, V>(val comparator: Comparator<K>) : MutableMapExt<K, V> 
         val index = if (key in keysToIndex) bindex - 1 else bindex
         return _keys.getOrNull(index)
     }
+
     fun nearestHighExcludingExact(key: K): K? {
         val bindex = nearestHighIndex(key)
         val index = if (key in keysToIndex) bindex + 1 else bindex

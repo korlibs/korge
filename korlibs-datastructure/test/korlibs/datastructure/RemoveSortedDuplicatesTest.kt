@@ -1,7 +1,6 @@
 package korlibs.datastructure
 
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import kotlin.test.*
 
 class RemoveSortedDuplicatesTest {
     @Test
@@ -14,7 +13,10 @@ class RemoveSortedDuplicatesTest {
         assertEquals(arrayListOf(1, 2), arrayListOf(1, 1, 2, 2).removeSortedDuplicates())
         assertEquals(arrayListOf(1, 2), arrayListOf(1, 2, 2).removeSortedDuplicates())
         assertEquals(arrayListOf(1, 2), arrayListOf(1, 1, 2).removeSortedDuplicates())
-        assertEquals(arrayListOf(1, 2, 3, 4, 5, 6, 7), arrayListOf(1, 1, 1, 1, 2, 3, 4, 5, 6, 7, 7, 7).removeSortedDuplicates())
+        assertEquals(
+            arrayListOf(1, 2, 3, 4, 5, 6, 7),
+            arrayListOf(1, 1, 1, 1, 2, 3, 4, 5, 6, 7, 7, 7).removeSortedDuplicates()
+        )
     }
 
     @Test

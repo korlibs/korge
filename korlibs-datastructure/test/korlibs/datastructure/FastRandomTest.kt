@@ -1,11 +1,7 @@
 package korlibs.datastructure
 
-import korlibs.datastructure.random.FastRandom
-import korlibs.datastructure.random.fastRandom
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFails
-import kotlin.test.assertTrue
+import korlibs.datastructure.random.*
+import kotlin.test.*
 
 class FastRandomTest {
     val random = FastRandom(0L)

@@ -1,8 +1,7 @@
 package korlibs.datastructure
 
-import korlibs.datastructure.internal.KdsInternalApi
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import korlibs.datastructure.internal.*
+import kotlin.test.*
 
 @OptIn(KdsInternalApi::class)
 class RingBufferTest {

@@ -25,7 +25,10 @@ inline class TGenStack<TGen>(private val items: FastArrayList<TGen> = FastArrayL
         }
     }
 
-    fun push(v: TGen) { items.add(v) }
+    fun push(v: TGen) {
+        items.add(v)
+    }
+
     fun pop(): TGen = items.removeAt(items.size - 1)
     fun peek(): TGen? = items.lastOrNull()
     fun clear() {
@@ -61,7 +64,10 @@ inline class IntStack(private val items: IntArrayList = IntArrayList()) : Collec
         }
     }
 
-    fun push(v: Int) { items.add(v) }
+    fun push(v: Int) {
+        items.add(v)
+    }
+
     fun pop(): Int = items.removeAt(items.size - 1)
     fun peek(): Int? = items.lastOrNull()
     fun clear() {
@@ -75,7 +81,6 @@ inline class IntStack(private val items: IntArrayList = IntArrayList()) : Collec
     //override fun hashCode(): Int = items.hashCode()
     //override fun equals(other: Any?): Boolean = (other is IntStack) && items == other.items
 }
-
 
 
 // Double
@@ -95,7 +100,10 @@ inline class DoubleStack(private val items: DoubleArrayList = DoubleArrayList())
         }
     }
 
-    fun push(v: Double) { items.add(v) }
+    fun push(v: Double) {
+        items.add(v)
+    }
+
     fun pop(): Double = items.removeAt(items.size - 1)
     fun peek(): Double? = items.lastOrNull()
     fun clear() {
@@ -109,7 +117,6 @@ inline class DoubleStack(private val items: DoubleArrayList = DoubleArrayList())
     //override fun hashCode(): Int = items.hashCode()
     //override fun equals(other: Any?): Boolean = (other is DoubleStack) && items == other.items
 }
-
 
 
 // Float
@@ -129,7 +136,10 @@ inline class FloatStack(private val items: FloatArrayList = FloatArrayList()) : 
         }
     }
 
-    fun push(v: Float) { items.add(v) }
+    fun push(v: Float) {
+        items.add(v)
+    }
+
     fun pop(): Float = items.removeAt(items.size - 1)
     fun peek(): Float? = items.lastOrNull()
     fun clear() {
