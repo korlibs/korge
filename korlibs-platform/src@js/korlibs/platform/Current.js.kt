@@ -1,6 +1,5 @@
 package korlibs.platform
 
-import korlibs.js.Deno
 import kotlinx.browser.*
 import org.khronos.webgl.Uint32Array
 import org.khronos.webgl.Uint8Array
@@ -12,6 +11,8 @@ internal val isWeb: Boolean by lazy { js("(typeof window === 'object')").unsafeC
 internal val isWorker: Boolean by lazy { js("(typeof importScripts === 'function')").unsafeCast<Boolean>() }
 internal val isNodeJs: Boolean by lazy { js("((typeof process !== 'undefined') && process.release && (process.release.name.search(/node|io.js/) !== -1))").unsafeCast<Boolean>() }
 internal val isShell: Boolean get() = !isWeb && !isNodeJs && !isWorker
+
+private external val Deno: dynamic
 
 // @TODO: Check navigator.userAgent
 internal actual val currentOs: Os
