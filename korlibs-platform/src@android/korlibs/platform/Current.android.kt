@@ -1,8 +1,7 @@
 package korlibs.platform
 
 import android.os.*
-import korlibs.korge_foundation.*
-import korlibs.memory.*
+import korlibs.korlibs_platform.*
 import java.nio.*
 
 internal actual val currentOs: Os = Os.ANDROID

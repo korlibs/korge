@@ -84,7 +84,7 @@ fun Project.configureAndroidDirect(projectType: ProjectType, isKorge: Boolean) {
         }
 
         buildFeatures.apply {
-            if (project.name == "korge-foundation") {
+            if (project.name == "korlibs-platform") {
                 buildConfig = true
             }
         }
