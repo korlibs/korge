@@ -13,6 +13,9 @@ pluginManagement {
         maven { url = uri("https://oss.sonatype.org/content/repositories/snapshots/") }
     }
 }
+plugins {
+    id("org.gradle.toolchains.foojay-resolver-convention") version "0.5.0"
+}
 
 val enableMetalPlayground: String by settings
 
@@ -26,6 +29,7 @@ val inCI = isPropertyTrue("CI")
 val disabledExtraKorgeLibs = isPropertyTrue("DISABLED_EXTRA_KORGE_LIBS")
 
 include(":korlibs-platform")
+include(":korlibs-datastructure")
 include(":korlibs-time")
 include(":korlibs-crypto")
 include(":korlibs-template")
@@ -42,3 +46,4 @@ if (System.getenv("DISABLE_SANDBOX") != "true") {
 if (!inCI || System.getenv("ENABLE_BENCHMARKS") == "true") {
     include(":korge-benchmarks")
 }
+include("korlib-datastructure")
