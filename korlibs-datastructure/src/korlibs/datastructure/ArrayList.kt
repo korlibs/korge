@@ -1,6 +1,7 @@
 package korlibs.datastructure
 
 import korlibs.datastructure.internal.*
+import korlibs.datastructure.internal.math.*
 import korlibs.datastructure.internal.memory.Memory.arraycopy
 import kotlin.math.*
 
@@ -19,7 +20,8 @@ typealias IDoubleArrayList = DoubleList
  */
 @Suppress("UNCHECKED_CAST")
 class IntArrayList(capacity: Int = 7) : Collection<Int> {
-    companion object { }
+    companion object {}
+
     var data: IntArray = IntArray(capacity) as IntArray; private set
     internal val capacity: Int get() = data.size
     private var length: Int = 0
@@ -44,7 +46,9 @@ class IntArrayList(capacity: Int = 7) : Collection<Int> {
         }
     }
 
-    fun clear() { length = 0 }
+    fun clear() {
+        length = 0
+    }
 
     fun add(v0: Int) {
         ensure(1)
@@ -103,7 +107,9 @@ class IntArrayList(capacity: Int = 7) : Collection<Int> {
     }
 
     fun add(values: IntArrayList) = add(values.data, 0, values.size)
-    fun add(values: Iterable<Int>) { for (v in values) add(v) }
+    fun add(values: Iterable<Int>) {
+        for (v in values) add(v)
+    }
 
     operator fun get(index: Int): Int = data[index]
 
@@ -178,7 +184,7 @@ class IntArrayList(capacity: Int = 7) : Collection<Int> {
         val out = data[index]
         if (count > 0) {
             if (index < length - count) arraycopy(data, index + count, data, index, length - index - count)
-            length-= count
+            length -= count
         }
         return out
     }
@@ -220,7 +226,7 @@ fun IntArray.toIntArrayList(): IntArrayList = IntArrayList(*this)
 
 // Double
 
-interface DoubleList : Collection<Double>{
+interface DoubleList : Collection<Double> {
     operator fun get(index: Int): Double
     fun getAt(index: Int): Double
     fun indexOf(value: Double, start: Int = 0, end: Int = this.size): Int
@@ -232,6 +238,11 @@ interface DoubleList : Collection<Double>{
     fun listIterator(index: Int): ListIterator<Double>
     fun subList(fromIndex: Int, toIndex: Int): List<Double>
     fun clone(): DoubleList
+    fun isAlmostEquals(other: DoubleList, epsilon: Double): Boolean {
+        if (this.size != other.size) return false
+        for (n in indices) if (!this.getAt(n).isAlmostEquals(other.getAt(n), epsilon)) return false
+        return true
+    }
 }
 
 /**
@@ -240,6 +251,7 @@ interface DoubleList : Collection<Double>{
 @Suppress("UNCHECKED_CAST")
 class DoubleArrayList(capacity: Int = 7) : DoubleList {
     companion object
+
     var data: DoubleArray = DoubleArray(capacity) as DoubleArray; private set
     internal val capacity: Int get() = data.size
     private var length: Int = 0
@@ -264,23 +276,28 @@ class DoubleArrayList(capacity: Int = 7) : DoubleList {
         }
     }
 
-    fun clear() { length = 0 }
+    fun clear() {
+        length = 0
+    }
 
     fun add(v0: Double) {
         ensure(1)
         data[length++] = v0
     }
+
     fun add(v0: Double, v1: Double) {
         ensure(2)
         data[length++] = v0
         data[length++] = v1
     }
+
     fun add(v0: Double, v1: Double, v2: Double) {
         ensure(3)
         data[length++] = v0
         data[length++] = v1
         data[length++] = v2
     }
+
     fun add(v0: Double, v1: Double, v2: Double, v3: Double) {
         ensure(4)
         data[length++] = v0
@@ -288,6 +305,7 @@ class DoubleArrayList(capacity: Int = 7) : DoubleList {
         data[length++] = v2
         data[length++] = v3
     }
+
     fun add(v0: Double, v1: Double, v2: Double, v3: Double, v4: Double) {
         ensure(5)
         data[length++] = v0
@@ -296,6 +314,7 @@ class DoubleArrayList(capacity: Int = 7) : DoubleList {
         data[length++] = v3
         data[length++] = v4
     }
+
     fun add(v0: Double, v1: Double, v2: Double, v3: Double, v4: Double, v5: Double) {
         ensure(6)
         data[length++] = v0
@@ -318,7 +337,9 @@ class DoubleArrayList(capacity: Int = 7) : DoubleList {
     }
 
     fun add(values: DoubleArrayList) = add(values.data, 0, values.size)
-    fun add(values: Iterable<Double>) { for (v in values) add(v) }
+    fun add(values: Iterable<Double>) {
+        for (v in values) add(v)
+    }
 
     override operator fun get(index: Int): Double = data[index]
 
@@ -400,7 +421,7 @@ class DoubleArrayList(capacity: Int = 7) : DoubleList {
         val out = data[index]
         if (count > 0) {
             if (index < length - count) arraycopy(data, index + count, data, index, length - index - count)
-            length-= count
+            length -= count
         }
         return out
     }
@@ -437,7 +458,7 @@ fun doubleArrayListOf(vararg values: Double) = DoubleArrayList(*values)
 
 // Float
 
-interface FloatList : Collection<Float>{
+interface FloatList : Collection<Float> {
     operator fun get(index: Int): Float
     fun getAt(index: Int): Float
     fun indexOf(value: Float, start: Int = 0, end: Int = this.size): Int
@@ -449,6 +470,11 @@ interface FloatList : Collection<Float>{
     fun listIterator(index: Int): ListIterator<Float>
     fun subList(fromIndex: Int, toIndex: Int): List<Float>
     fun clone(): FloatList
+    fun isAlmostEquals(other: FloatList, epsilon: Float): Boolean {
+        if (this.size != other.size) return false
+        for (n in indices) if (!this.getAt(n).isAlmostEquals(other.getAt(n), epsilon)) return false
+        return true
+    }
 }
 
 /**
@@ -456,7 +482,7 @@ interface FloatList : Collection<Float>{
  */
 @Suppress("UNCHECKED_CAST")
 class FloatArrayList(capacity: Int = 7) : FloatList {
-    companion object { }
+    companion object {}
 
     override fun clone(): FloatArrayList = FloatArrayList(this)
 
@@ -484,14 +510,35 @@ class FloatArrayList(capacity: Int = 7) : FloatList {
         }
     }
 
-    fun clear() { length = 0 }
+    fun clear() {
+        length = 0
+    }
 
-    fun add(value: Float) { ensure(1); data[length++] = value }
-    fun add(v0: Float, v1: Float) { ensure(2); data[length++] = v0; data[length++] = v1 }
-    fun add(v0: Float, v1: Float, v2: Float) { ensure(3); data[length++] = v0; data[length++] = v1; data[length++] = v2 }
-    fun add(v0: Float, v1: Float, v2: Float, v3: Float) { ensure(4); data[length++] = v0; data[length++] = v1; data[length++] = v2; data[length++] = v3 }
-    fun add(v0: Float, v1: Float, v2: Float, v3: Float, v4: Float) { ensure(5); data[length++] = v0; data[length++] = v1; data[length++] = v2; data[length++] = v3; data[length++] = v4 }
-    fun add(v0: Float, v1: Float, v2: Float, v3: Float, v4: Float, v5: Float) { ensure(6); data[length++] = v0; data[length++] = v1; data[length++] = v2; data[length++] = v3; data[length++] = v4; data[length++] = v5 }
+    fun add(value: Float) {
+        ensure(1); data[length++] = value
+    }
+
+    fun add(v0: Float, v1: Float) {
+        ensure(2); data[length++] = v0; data[length++] = v1
+    }
+
+    fun add(v0: Float, v1: Float, v2: Float) {
+        ensure(3); data[length++] = v0; data[length++] = v1; data[length++] = v2
+    }
+
+    fun add(v0: Float, v1: Float, v2: Float, v3: Float) {
+        ensure(4); data[length++] = v0; data[length++] = v1; data[length++] = v2; data[length++] = v3
+    }
+
+    fun add(v0: Float, v1: Float, v2: Float, v3: Float, v4: Float) {
+        ensure(5); data[length++] = v0; data[length++] = v1; data[length++] = v2; data[length++] = v3; data[length++] =
+            v4
+    }
+
+    fun add(v0: Float, v1: Float, v2: Float, v3: Float, v4: Float, v5: Float) {
+        ensure(6); data[length++] = v0; data[length++] = v1; data[length++] = v2; data[length++] = v3; data[length++] =
+            v4; data[length++] = v5
+    }
 
     operator fun plusAssign(value: Float) = add(value)
     operator fun plusAssign(value: FloatArray) = add(value)
@@ -505,7 +552,9 @@ class FloatArrayList(capacity: Int = 7) : FloatList {
     }
 
     fun add(values: FloatArrayList) = add(values.data, 0, values.size)
-    fun add(values: Iterable<Float>) { for (v in values) add(v) }
+    fun add(values: Iterable<Float>) {
+        for (v in values) add(v)
+    }
 
     override operator fun get(index: Int): Float = data[index]
 
@@ -590,7 +639,7 @@ class FloatArrayList(capacity: Int = 7) : FloatList {
         val out = data[index]
         if (count > 0) {
             if (index < length - count) arraycopy(data, index + count, data, index, length - index - count)
-            length-= count
+            length -= count
         }
         return out
     }
