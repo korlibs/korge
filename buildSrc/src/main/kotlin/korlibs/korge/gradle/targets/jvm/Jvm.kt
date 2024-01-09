@@ -181,9 +181,6 @@ private fun Project.addProguard() {
             "META-INF/*.kotlin_module",
 		)
         duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-        doFirst {
-            from(project.files().from(project.getCompilationKorgeProcessedResourcesFolder(mainJvmCompilation)))
-        }
 		project.afterEvaluate {
 			manifest { manifest ->
 				manifest.attributes(
@@ -205,6 +202,7 @@ private fun Project.addProguard() {
             val jvmJarTask = project.getTasksByName("jvmJar", false).first() as Jar
             //jvmJarTask.entryCompression = ZipEntryCompression.STORED
             with(jvmJarTask)
+            from(project.files().from(project.getCompilationKorgeProcessedResourcesFolder(mainJvmCompilation)))
             //println("jvmJarTask=$jvmJarTask")
 		}
 	}
