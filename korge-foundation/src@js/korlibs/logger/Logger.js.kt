@@ -24,9 +24,10 @@ external private val process: dynamic
 external private val Deno: dynamic
 
 internal actual val miniEnvironmentVariables: Map<String, String> by lazy {
+
     when {
-        isNodeJs -> jsObjectToMap(process.env)
-        isDenoJs -> jsObjectToMap(Deno.env)
+        Platform.isJsNodeJs -> jsObjectToMap(process.env)
+        Platform.isJsDenoJs -> jsObjectToMap(Deno.env)
         js("(typeof document !== 'undefined')") -> QueryString_decode((document.location?.search ?: "").trimStart('?')).map { it.key to (it.value.firstOrNull() ?: it.key) }.toMap()
         else -> mapOf()
     }

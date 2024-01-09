@@ -463,12 +463,12 @@ open class NBufferTestBase {
     }
 
     fun Byte.asLittle(): Byte = this
-    fun Short.asLittle(): Short = if (currentIsLittleEndian) this else this.reverseBytes()
-    fun Int.asLittle(): Int = if (currentIsLittleEndian) this else this.reverseBytes()
-    fun Long.asLittle(): Long = if (currentIsLittleEndian) this else this.reverseBytes()
+    fun Short.asLittle(): Short = if (Platform.isLittleEndian) this else this.reverseBytes()
+    fun Int.asLittle(): Int = if (Platform.isLittleEndian) this else this.reverseBytes()
+    fun Long.asLittle(): Long = if (Platform.isLittleEndian) this else this.reverseBytes()
 
     fun Byte.asBig(): Byte = this
-    fun Short.asBig(): Short = if (currentIsLittleEndian) this.reverseBytes() else this
-    fun Int.asBig(): Int = if (currentIsLittleEndian) this.reverseBytes() else this
-    fun Long.asBig(): Long = if (currentIsLittleEndian) this.reverseBytes() else this
+    fun Short.asBig(): Short = if (Platform.isLittleEndian) this.reverseBytes() else this
+    fun Int.asBig(): Int = if (Platform.isLittleEndian) this.reverseBytes() else this
+    fun Long.asBig(): Long = if (Platform.isLittleEndian) this.reverseBytes() else this
 }

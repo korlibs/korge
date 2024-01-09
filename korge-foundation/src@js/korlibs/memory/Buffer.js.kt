@@ -32,7 +32,7 @@ actual class Buffer(val dataView: org.khronos.webgl.DataView) {
     actual fun getS64LE(byteOffset: Int): Long {
         val v0 = getS32LE(byteOffset).toLong() and 0xFFFFFFFFL
         val v1 = getS32LE(byteOffset + 4).toLong() and 0xFFFFFFFFL
-        return if (currentIsLittleEndian) (v1 shl 32) or v0 else (v0 shl 32) or v1
+        return if (Platform.isLittleEndian) (v1 shl 32) or v0 else (v0 shl 32) or v1
     }
     actual fun getF32LE(byteOffset: Int): Float = dataView.getFloat32(byteOffset, true)
     actual fun getF64LE(byteOffset: Int): Double = dataView.getFloat64(byteOffset, true)

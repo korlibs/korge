@@ -1,5 +1,6 @@
 package korlibs.math.geom
 
+import korlibs.datastructure.*
 import korlibs.math.*
 import kotlin.math.*
 import kotlin.test.*
@@ -48,6 +49,8 @@ private fun <T : Any> T?.isAlmostEqualsGeneric(
         is IntArray, is FloatArray, is DoubleArray -> toNumberList(e).isAlmostEqualsGeneric(toNumberList(a), absoluteTolerance)
         is IsAlmostEquals<*> -> (e as IsAlmostEquals<Any>).isAlmostEquals(a, absoluteTolerance)
         is IsAlmostEqualsF<*> -> (e as IsAlmostEqualsF<Any>).isAlmostEquals(a, sqrt(absoluteTolerance).toFloat())
+        is DoubleList -> e.isAlmostEquals(a as DoubleList, absoluteTolerance)
+        is FloatList -> e.isAlmostEquals(a as FloatList, absoluteTolerance.toFloat())
         is List<*> -> {
             if (a !is List<*>?) return false
             if (e.size != a.size) return false
