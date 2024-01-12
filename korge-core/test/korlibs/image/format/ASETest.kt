@@ -288,4 +288,27 @@ class ASETest {
         assertEquals("hidden_layer", frameAseIndexToName[1])
         assertEquals("visible2", frameAseIndexToName[2])
     }
+
+    @Test
+    fun testNinePatch() = suspendTest({ !Platform.isJs }) {
+        val ase = resourcesVfs["ase_tests/9patch.aseprite"]
+            .readImageDataContainer(ASE)
+
+        val ninePatchSlice = ase
+            .imageDatas.first()
+            .frames.first()
+            .first!!
+            .ninePatchSlice!!
+
+        assertEquals(
+            NinePatchInfo.AxisInfo(ranges = listOf(Pair(false, 0..13), Pair(true, 14..17), Pair(false, 18..29)), totalLen = 30),
+            ninePatchSlice.info.xaxis
+        )
+        assertEquals(
+            NinePatchInfo.AxisInfo(ranges = listOf(Pair(false, 0..13), Pair(true, 14..17), Pair(false, 18..29)), totalLen = 30),
+            ninePatchSlice.info.yaxis
+        )
+        //val ninePatchBmpSlice = resourcesVfs["Aseprite/9patch.aseprite"].readImageDataContainer(ASE).imageDatas.first().frames.first().first?.ninePatchSlice
+        //ninePatch(ninePatchBmpSlice, Size(200, 100))
+    }
 }
