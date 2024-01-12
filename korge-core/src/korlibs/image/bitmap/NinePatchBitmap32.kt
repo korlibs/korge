@@ -10,7 +10,7 @@ import korlibs.math.*
 import korlibs.math.geom.*
 import kotlin.math.*
 
-class NinePatchInfo constructor(
+data class NinePatchInfo constructor(
 	val xranges: List<Pair<Boolean, IntRange>>,
 	val yranges: List<Pair<Boolean, IntRange>>,
 	val width: Int,
@@ -42,7 +42,7 @@ class NinePatchInfo constructor(
 		}
 	}
 
-	class AxisInfo(ranges: List<Pair<Boolean, IntRange>>, val totalLen: Int) {
+	data class AxisInfo(val ranges: List<Pair<Boolean, IntRange>>, val totalLen: Int) {
 		val segments = ranges.map { AxisSegment(it.first, it.second) }.toFastList()
 		val fixedLen = max(1, segments.filter { it.fixed }.sumOf { it.length })
 		val scaledLen = max(1, segments.filter { it.scaled }.sumOf { it.length })
