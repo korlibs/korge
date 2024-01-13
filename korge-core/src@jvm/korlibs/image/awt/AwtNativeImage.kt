@@ -41,7 +41,7 @@ fun BufferedImage.clone(
         this.raster.dataBuffer.dataType == out.raster.dataBuffer.dataType -> {
             val src = (this.raster.dataBuffer as DataBufferInt).data
             val dst = (out.raster.dataBuffer as DataBufferInt).data
-            korlibs.memory.arraycopy(src, 0, dst, 0, dst.size)
+            arraycopy(src, 0, dst, 0, dst.size)
         }
         //this.type == BufferedImage.TYPE_4BYTE_ABGR && out.type == AWT_INTERNAL_IMAGE_TYPE -> {
         //    val src = (this.raster.dataBuffer as DataBufferByte).data
@@ -89,7 +89,7 @@ abstract class BaseAwtNativeImage(
         for (y0 in 0 until height) {
             val iindex = index(x, y0 + y)
             val oindex = offset + (y0 * width)
-            korlibs.memory.arraycopy(awtData, iindex, out, oindex, width)
+            arraycopy(awtData, iindex, out, oindex, width)
             if (requireConv) conv(out, oindex, width)
         }
     }
@@ -98,7 +98,7 @@ abstract class BaseAwtNativeImage(
         for (y0 in 0 until height) {
             val iindex = index(x, y0 + y)
             val oindex = offset + (y0 * width)
-            korlibs.memory.arraycopy(out, oindex, awtData, iindex, width)
+            arraycopy(out, oindex, awtData, iindex, width)
             if (requireConv) conv(awtData, iindex, width)
         }
     }
@@ -143,7 +143,7 @@ class AwtNativeImage private constructor(val awtImage: BufferedImage, dummy: Uni
     }
     val dataBuffer = awtImage.raster.dataBuffer as DataBufferInt
     override val awtData = dataBuffer.data
-    constructor(awtImage: BufferedImage) : this(awtConvertImageIfRequired(awtImage), Unit)
+    constructor(awtImage: BufferedImage, out: BufferedImage? = null) : this(awtConvertImageIfRequired(awtImage, out), Unit)
 	override val name: String get() = "AwtNativeImage"
     override val requireConv: Boolean = true
 
