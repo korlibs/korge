@@ -20,7 +20,6 @@ import org.gradle.api.file.*
 import org.gradle.api.tasks.*
 import org.gradle.api.tasks.testing.*
 import org.jetbrains.dokka.gradle.*
-import org.jetbrains.kotlin.gradle.plugin.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import org.jetbrains.kotlin.gradle.targets.js.npm.*
 import org.jetbrains.kotlin.gradle.targets.js.testing.*
@@ -309,7 +308,7 @@ object RootKorlibsPlugin {
                         AddFreeCompilerArgs.addFreeCompilerArgs(project, this)
                     }
                     if (isWasmEnabled(project)) {
-                        configureWasm(executable = false)
+                        configureWasmTarget(executable = false)
                         val wasmBrowserTest = tasks.getByName("wasmJsBrowserTest") as KotlinJsTest
                         // ~/projects/korge/build/js/packages/korge-root-klock-wasm-test
                         wasmBrowserTest.doFirst {
@@ -520,15 +519,7 @@ object RootKorlibsPlugin {
     fun Project.initSamples() {
         rootProject.samples {
             if (isWasmEnabled(project)) {
-                configureWasm(executable = true)
-                val wasmJsCreateIndex = project.tasks.createThis<WasmJsCreateIndexTask>("wasmJsCreateIndex") {
-                }
-                project.tasks.findByName("wasmJsBrowserDevelopmentRun")?.apply {
-                    dependsOn(wasmJsCreateIndex)
-                }
-                project.tasks.createThis<Task>("runWasmJs") {
-                    dependsOn("wasmJsRun")
-                }
+                configureWasm(ProjectType.EXECUTABLE, binaryen = false)
             }
 
             // @TODO: Move to KorGE plugin

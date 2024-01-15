@@ -93,18 +93,28 @@ fun awtShowImage(image: BufferedImage): JFrame {
 
 fun awtShowImage(bitmap: Bitmap) = awtShowImage(bitmap.toBMP32().toAwt())
 
-fun awtConvertImage(image: BufferedImage): BufferedImage {
-	val out = BufferedImage(image.width, image.height, BufferedImage.TYPE_INT_ARGB_PRE)
-	out.graphics.drawImage(image, 0, 0, null)
-	return out
+fun awtConvertImage(image: BufferedImage, out: BufferedImage? = null): BufferedImage {
+    val result = if (out == null) {
+        BufferedImage(image.width, image.height, BufferedImage.TYPE_INT_ARGB_PRE)
+    } else {
+        require(out.width == image.width)
+        require(out.height == image.height)
+        require(out.type == BufferedImage.TYPE_INT_ARGB_PRE)
+        out
+    }
+    result.graphics.drawImage(image, 0, 0, null)
+    return result
 }
 
-fun awtConvertImageIfRequired(image: BufferedImage): BufferedImage =
-	if ((image.type == BufferedImage.TYPE_INT_ARGB_PRE) || (image.type == BufferedImage.TYPE_INT_ARGB)) image else awtConvertImage(image)
+fun awtConvertImageIfRequired(image: BufferedImage, out: BufferedImage? = null): BufferedImage =
+    if ((image.type == BufferedImage.TYPE_INT_ARGB_PRE) || (image.type == BufferedImage.TYPE_INT_ARGB)) image else awtConvertImage(
+        image,
+        out
+    )
 
 fun Bitmap32.transferTo(out: BufferedImage): BufferedImage {
-	val ints = (out.raster.dataBuffer as DataBufferInt).data
-	arraycopy(this.ints, 0, ints, 0, this.width * this.height)
+    val ints = (out.raster.dataBuffer as DataBufferInt).data
+    arraycopy(this.ints, 0, ints, 0, this.width * this.height)
     BGRA.rgbaToBgra(ints, 0, area)
 	out.flush()
 	return out

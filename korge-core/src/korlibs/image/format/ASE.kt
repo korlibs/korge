@@ -672,10 +672,8 @@ object ASE : ImageFormatWithContainer("ase") {
         // Create image data for all slices of frames but take only layers which are defined in "props"
         val datas = image.slices.mapNotNull { slice ->
             slice.sortKeys()
-            val maxWidth = slice.keys.map { it.sliceWidth }.maxOrNull()
-                ?: 0
-            val maxHeight = slice.keys.map { it.sliceHeight }.maxOrNull()
-                ?: 0
+            val maxWidth = slice.keys.maxOfOrNull { it.sliceWidth } ?: 0
+            val maxHeight = slice.keys.maxOfOrNull { it.sliceHeight } ?: 0
 
             val frames = image.frames.mapNotNull { frame ->
                 val sliceKey = slice.getSliceForFrame(frame.index)
@@ -687,15 +685,25 @@ object ASE : ImageFormatWithContainer("ase") {
                 val layerData = cells.map { (key, value) ->
                     createImageFrameLayer(key, value)
                 }.map {
+                    val sliceKeyFrame = sliceKey.sliceFrame
                     val sliceFrame = RectangleInt(
-                        sliceKey.sliceFrame.x - it.targetX, sliceKey.sliceFrame.y - it.targetY,
-                        sliceKey.sliceFrame.width, sliceKey.sliceFrame.height
+                        sliceKeyFrame.x - it.targetX, sliceKeyFrame.y - it.targetY,
+                        sliceKeyFrame.width, sliceKeyFrame.height
                     )
+                    val sslice = it.slice.slice(sliceFrame, it.slice.name)
+                    val ninePatchSlice = when {
+                        slice.hasNinePatch -> sslice.asNinePatchSimple(
+                            sliceKey.centerXPos, sliceKey.centerYPos,
+                            sliceKey.centerXPos + sliceKey.centerWidth, sliceKey.centerYPos + sliceKey.centerHeight,
+                        )
+                        else -> null
+                    }
                     ImageFrameLayer(
-                        it.layer, it.slice.slice(sliceFrame, it.slice.name),
-                        (if (props.useSlicePosition()) sliceKey.sliceFrame.x else it.targetX) - sliceKey.pivotX,
-                        (if (props.useSlicePosition()) sliceKey.sliceFrame.y else it.targetY) - sliceKey.pivotY,
-                        it.main, it.includeInAtlas
+                        it.layer, sslice,
+                        (if (props.useSlicePosition()) sliceKeyFrame.x else it.targetX) - sliceKey.pivotX,
+                        (if (props.useSlicePosition()) sliceKeyFrame.y else it.targetY) - sliceKey.pivotY,
+                        it.main, it.includeInAtlas,
+                        ninePatchSlice = ninePatchSlice
                     )
                 }
                 if (layerData.isNotEmpty()) {

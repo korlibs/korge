@@ -8,7 +8,7 @@ fun isWasmEnabled(project: Project?): Boolean = true
 //fun isWasmEnabled(project: Project?): Boolean = false
 //fun Project.isWasmEnabled(): Boolean = false
 
-fun Project.configureWasm(executable: Boolean, binaryen: Boolean = false) {
+fun Project.configureWasmTarget(executable: Boolean, binaryen: Boolean = false) {
     kotlin {
         wasmJs {
             if (executable) {

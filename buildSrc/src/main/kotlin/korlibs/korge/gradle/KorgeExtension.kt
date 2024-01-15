@@ -194,10 +194,15 @@ open class KorgeExtension(
         }
     }
 
+    @Deprecated("Use targetWasmJs instead", ReplaceWith("targetWasmJs(binaryen)"))
+    fun targetWasm(binaryen: Boolean = false) {
+        targetWasmJs(binaryen)
+    }
+
     /**
      * Configures WASM target
      */
-    fun targetWasm(binaryen: Boolean = false) {
+    fun targetWasmJs(binaryen: Boolean = false) {
         if (korlibs.korge.gradle.targets.wasm.isWasmEnabled(project)) {
             target("wasmJs") {
                 project.configureWasm(projectType, binaryen)
