@@ -1,6 +1,12 @@
 package korlibs.datastructure.extensions
 
-import korlibs.datastructure.*
+import korlibs.datastructure.mapWhile
+import korlibs.datastructure.mapWhileArray
+import korlibs.datastructure.mapWhileCheck
+import korlibs.datastructure.mapWhileDouble
+import korlibs.datastructure.mapWhileFloat
+import korlibs.datastructure.mapWhileInt
+import korlibs.datastructure.mapWhileNotNull
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

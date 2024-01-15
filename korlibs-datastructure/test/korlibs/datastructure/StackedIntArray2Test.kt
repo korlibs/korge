@@ -1,6 +1,7 @@
 package korlibs.datastructure
 
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class StackedIntArray2Test {
     @Test

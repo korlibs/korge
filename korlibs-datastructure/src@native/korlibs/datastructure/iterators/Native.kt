@@ -3,9 +3,9 @@
 package korlibs.datastructure.iterators
 
 import kotlin.concurrent.AtomicInt
-import kotlin.experimental.*
-import kotlin.math.*
-import kotlin.native.concurrent.*
+import kotlin.experimental.ExperimentalNativeApi
+import kotlin.math.max
+import kotlin.native.concurrent.Worker
 
 @OptIn(ExperimentalStdlibApi::class)
 actual val CONCURRENCY_COUNT: Int = Platform.getAvailableProcessors()

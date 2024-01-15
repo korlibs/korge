@@ -1,7 +1,7 @@
 package korlibs.concurrent.thread
 
 import kotlin.time.*
-import kotlin.time.Duration.Companion.seconds
+import korlibs.datastructure.Extra
 
 private fun Duration.toMillisNanos(): Pair<Long, Int> {
     val nanoSeconds = inWholeNanoseconds

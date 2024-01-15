@@ -1,4 +1,4 @@
-import korlibs.*
+import korlibs.applyProjectProperties
 
 description = "Korlibs Datastructure Library"
 

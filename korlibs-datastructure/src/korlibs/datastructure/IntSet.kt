@@ -1,6 +1,6 @@
 package korlibs.datastructure
 
-import korlibs.datastructure.fakemutable.*
+import korlibs.datastructure.fakemutable.asFakeMutable
 
 /**
  * A [Set] structure representing a set of [Int] without boxing.

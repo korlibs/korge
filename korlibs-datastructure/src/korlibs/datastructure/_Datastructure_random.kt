@@ -2,8 +2,8 @@
 
 package korlibs.datastructure.random
 
-import korlibs.datastructure.lock.*
-import kotlin.random.*
+import korlibs.datastructure.lock.Lock
+import kotlin.random.Random
 
 // Copy of XorWowRandom from the Kotlin Standard library but optimizing some methods
 open class FastRandom private constructor(

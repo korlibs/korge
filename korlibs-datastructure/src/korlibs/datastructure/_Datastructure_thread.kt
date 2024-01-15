@@ -7,6 +7,7 @@ import korlibs.time.*
 import korlibs.concurrent.thread.sleep as sleepConcurrent
 import korlibs.concurrent.thread.sleepExact as sleepExactConcurrent
 import korlibs.concurrent.thread.sleepWhile as sleepWhileConcurrent
+import kotlin.time.TimeSource
 
 @Deprecated("Use korlibs.concurrent.thread package")
 typealias NativeThread = korlibs.concurrent.thread.NativeThread

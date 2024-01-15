@@ -2,8 +2,8 @@
 
 package korlibs.datastructure.pauseable
 
-import korlibs.datastructure.lock.*
-import korlibs.time.*
+import korlibs.datastructure.lock.Lock
+import korlibs.time.seconds
 
 interface Pauseable {
     var paused: Boolean

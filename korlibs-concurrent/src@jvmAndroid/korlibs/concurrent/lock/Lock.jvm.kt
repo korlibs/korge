@@ -2,6 +2,8 @@ package korlibs.concurrent.lock
 
 import java.util.concurrent.atomic.*
 import kotlin.time.*
+import kotlin.time.TimeSource
+import kotlin.time.measureTime
 
 private fun Duration.toMillisNanos(): Pair<Long, Int> {
     val nanoSeconds = inWholeNanoseconds

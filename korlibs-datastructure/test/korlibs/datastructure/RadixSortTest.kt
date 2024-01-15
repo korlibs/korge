@@ -1,8 +1,8 @@
 package korlibs.datastructure
 
-import korlibs.time.*
-import kotlin.test.*
-import kotlin.random.*
+import kotlin.random.Random
+import kotlin.test.Test
+import kotlin.test.assertContentEquals
 
 class RadixSortTest {
     @Test

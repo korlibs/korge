@@ -1,9 +1,10 @@
 package korlibs.datastructure
 
-import korlibs.datastructure.internal.*
-import korlibs.datastructure.internal.math.*
+import korlibs.datastructure.internal.contentEquals
+import korlibs.datastructure.internal.contentHashCode
+import korlibs.datastructure.internal.math.isAlmostEquals
 import korlibs.datastructure.internal.memory.Memory.arraycopy
-import kotlin.math.*
+import kotlin.math.max
 
 //typealias IntList = IIntArrayList
 @Deprecated("", ReplaceWith("korlibs.datastructure.FloatList", "korlibs.datastructure.FloatList"))

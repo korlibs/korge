@@ -1,6 +1,6 @@
 package korlibs.datastructure
 
-import kotlin.reflect.*
+import kotlin.reflect.KMutableProperty0
 
 interface Ref<T : Any> {
     var value: T

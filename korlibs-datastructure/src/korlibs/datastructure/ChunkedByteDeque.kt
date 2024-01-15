@@ -1,8 +1,8 @@
 package korlibs.datastructure
 
 import korlibs.datastructure.internal.memory.Memory.arraycopy
-import korlibs.datastructure.lock.*
-import kotlin.math.*
+import korlibs.datastructure.lock.NonRecursiveLock
+import kotlin.math.min
 
 class ChunkedByteDeque {
     private val lock = NonRecursiveLock()

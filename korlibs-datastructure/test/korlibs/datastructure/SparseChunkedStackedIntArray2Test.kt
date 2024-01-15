@@ -1,6 +1,8 @@
 package korlibs.datastructure
 
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class SparseChunkedStackedIntArray2Test {
     @Test

@@ -1,7 +1,8 @@
 package korlibs.datastructure.algo
 
-import korlibs.datastructure.*
-import kotlin.test.*
+import korlibs.datastructure.intIntMapOf
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class HistoriogramTest {
     @Test

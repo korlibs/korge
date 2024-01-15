@@ -1,6 +1,7 @@
 package korlibs.datastructure
 
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class ArrayExtTest {
     val array = intArrayOf(1, 2, 3, 4)

@@ -1,9 +1,13 @@
 package korlibs.datastructure.lock
 
-import korlibs.datastructure.thread.*
-import korlibs.platform.*
-import korlibs.time.*
-import kotlin.test.*
+import korlibs.datastructure.thread.NativeThread
+import korlibs.datastructure.thread.nativeThread
+import korlibs.platform.Platform
+import korlibs.time.milliseconds
+import korlibs.time.seconds
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFails
 
 class LockTest {
     @Test

@@ -1,7 +1,11 @@
 package korlibs.datastructure.internal.math
 
 import korlibs.datastructure.internal.memory.Memory.countLeadingZeros
-import kotlin.math.*
+import kotlin.math.absoluteValue
+import kotlin.math.ceil
+import kotlin.math.log2
+import kotlin.math.pow
+import kotlin.math.round
 
 internal object Math {
     fun ilog2(v: Int): Int = if (v == 0) (-1) else (31 - v.countLeadingZeros())

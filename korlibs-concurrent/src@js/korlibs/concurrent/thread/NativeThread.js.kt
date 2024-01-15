@@ -1,6 +1,8 @@
 package korlibs.concurrent.thread
 
 import kotlin.time.*
+import korlibs.datastructure.Extra
+import kotlin.time.TimeSource
 
 actual class NativeThread actual constructor(val code: (NativeThread) -> Unit) {
     actual var userData: Any? = null

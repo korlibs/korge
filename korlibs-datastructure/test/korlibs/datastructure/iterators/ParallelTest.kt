@@ -1,7 +1,10 @@
 package korlibs.datastructure.iterators
 
-import korlibs.datastructure.*
-import kotlin.test.*
+import korlibs.datastructure.mapInt
+import korlibs.datastructure.toIntArrayList
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class ParallelTest {
     @Test

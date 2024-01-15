@@ -1,8 +1,8 @@
 package korlibs.datastructure.iterators
 
-import java.util.concurrent.*
-import java.util.concurrent.atomic.*
-import kotlin.math.*
+import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicInteger
+import kotlin.math.max
 
 //actual val CONCURRENCY_COUNT: Int = max(1, Runtime.getRuntime().availableProcessors() / 2)
 actual val CONCURRENCY_COUNT: Int = max(1, java.lang.Runtime.getRuntime().availableProcessors())

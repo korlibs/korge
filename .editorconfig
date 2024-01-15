@@ -4,7 +4,7 @@ end_of_line=lf
 insert_final_newline=true
 indent_style=space
 indent_size=4
-ij_kotlin_name_count_to_use_star_import = 1
+ij_kotlin_name_count_to_use_star_import = 1000
 ij_kotlin_blank_lines_before_declaration_with_comment_or_annotation_on_separate_line = 0
 ij_kotlin_variable_annotation_wrap = off
 

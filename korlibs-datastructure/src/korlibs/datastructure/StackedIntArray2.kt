@@ -1,6 +1,5 @@
 package korlibs.datastructure
 
-import korlibs.datastructure.internal.*
 import korlibs.datastructure.internal.memory.Memory.arraycopy
 
 interface IStackedIntArray2 {

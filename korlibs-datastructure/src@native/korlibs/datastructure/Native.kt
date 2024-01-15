@@ -2,7 +2,7 @@
 
 package korlibs.datastructure
 
-import kotlin.experimental.*
+import kotlin.experimental.ExperimentalNativeApi
 import kotlin.native.identityHashCode
 import kotlin.native.ref.WeakReference
 

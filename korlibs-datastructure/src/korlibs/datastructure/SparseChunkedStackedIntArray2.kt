@@ -1,8 +1,10 @@
 package korlibs.datastructure
 
-import korlibs.datastructure.ds.*
-import korlibs.datastructure.iterators.*
-import kotlin.math.*
+import korlibs.datastructure.ds.BVH
+import korlibs.datastructure.ds.BVHIntervals
+import korlibs.datastructure.iterators.fastForEach
+import kotlin.math.max
+import kotlin.math.min
 
 class SparseChunkedStackedIntArray2(override var empty: Int = -1) : IStackedIntArray2 {
 

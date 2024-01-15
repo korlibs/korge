@@ -1,6 +1,8 @@
 package korlibs.datastructure
 
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 // This test is only defined on the JVM, so it doesn't execute on mobile, specially on Android,
 // where memory limitations might make it run into an OutOfMemory exception

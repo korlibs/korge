@@ -1,7 +1,9 @@
 package korlibs.datastructure
 
-import korlibs.datastructure.lock.*
-import kotlin.reflect.*
+import korlibs.datastructure.lock.Lock
+import kotlin.reflect.KMutableProperty0
+import kotlin.reflect.KProperty
+import kotlin.reflect.KProperty1
 
 class ExtraObject : MutableMap<String, Any?> {
     private val lock = Lock()

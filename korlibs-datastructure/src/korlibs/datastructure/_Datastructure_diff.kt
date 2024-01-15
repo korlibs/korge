@@ -2,7 +2,7 @@
 
 package korlibs.datastructure.diff
 
-import korlibs.datastructure.*
+import korlibs.datastructure.fastArrayListOf
 
 class Diff<T>(val kept: List<T>, val removed: List<T>, val added: List<T>) {
     companion object {

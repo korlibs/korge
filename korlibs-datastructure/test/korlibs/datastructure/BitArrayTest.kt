@@ -1,7 +1,8 @@
 package korlibs.datastructure
 
-import kotlin.test.*
-import kotlin.time.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 class BitArrayTest {
     @Test

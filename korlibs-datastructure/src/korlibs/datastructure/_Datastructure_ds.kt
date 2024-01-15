@@ -30,10 +30,19 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 Jon-Carlos Rivera - imbcmdth@hotmail.com
  ******************************************************************************/
 
-import korlibs.datastructure.*
-import korlibs.datastructure.internal.math.*
+import korlibs.datastructure.Deque
+import korlibs.datastructure.FastArrayList
+import korlibs.datastructure.fastArrayListOf
+import korlibs.datastructure.internal.math.isAlmostEquals
+import korlibs.datastructure.internal.math.niceStr
+import korlibs.datastructure.mapDouble
 import kotlin.collections.set
-import kotlin.math.*
+import kotlin.math.abs
+import kotlin.math.absoluteValue
+import kotlin.math.floor
+import kotlin.math.max
+import kotlin.math.min
+import kotlin.math.pow
 
 /**
  * A Bounding Volume Hierarchy implementation for arbitrary dimensions.

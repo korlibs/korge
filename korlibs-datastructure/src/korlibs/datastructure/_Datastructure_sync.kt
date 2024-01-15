@@ -2,7 +2,9 @@
 
 package korlibs.datastructure.sync
 
-import korlibs.datastructure.*
+import korlibs.datastructure.BaseMutableList
+import korlibs.datastructure.BaseMutableMap
+import korlibs.datastructure.BaseSubMutableList
 import korlibs.datastructure.lock.NonRecursiveLock
 
 open class SynchronizedCollection<T>(

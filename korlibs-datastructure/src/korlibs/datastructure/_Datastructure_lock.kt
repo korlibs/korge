@@ -5,6 +5,9 @@ package korlibs.datastructure.lock
 import korlibs.time.*
 import korlibs.concurrent.lock.waitPrecise as waitPreciseConcurrent
 import korlibs.concurrent.lock.wait as waitConcurrent
+import korlibs.datastructure.thread.NativeThread
+import korlibs.datastructure.thread.sleepExact
+import kotlin.time.TimeSource
 
 @Deprecated("Use korlibs.concurrent.lock package")
 typealias BaseLock = korlibs.concurrent.lock.BaseLock
