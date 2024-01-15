@@ -13,14 +13,18 @@ import java.io.*
 fun Project.configureWasm(projectType: ProjectType, binaryen: Boolean = false) {
     if (gkotlin.targets.findByName("wasm") != null) return
 
-    configureWasm(executable = true, binaryen = binaryen)
+    configureWasmTarget(executable = true, binaryen = binaryen)
 
     if (projectType.isExecutable) {
 
         val wasmJsCreateIndex = project.tasks.createThis<WasmJsCreateIndexTask>("wasmJsCreateIndex") {
         }
         //:compileDevelopmentExecutableKotlinWasmJs
-        project.tasks.findByName("wasmJsBrowserDevelopmentRun")?.apply {
+        //project.tasks.findByName("wasmJsBrowserDevelopmentRun")?.apply {
+        project.tasks.findByName("compileDevelopmentExecutableKotlinWasmJs")?.apply {
+            dependsOn(wasmJsCreateIndex)
+        }
+        project.tasks.findByName("compileProductionExecutableKotlinWasmJs")?.apply {
             dependsOn(wasmJsCreateIndex)
         }
         project.tasks.createThis<Task>("runWasmJs") {
@@ -30,7 +34,7 @@ fun Project.configureWasm(projectType: ProjectType, binaryen: Boolean = false) {
 }
 
 open class WasmJsCreateIndexTask : DefaultTask() {
-    private val npmDir: File = project.kotlin.wasm().compilations["main"]!!.npmProject.dir
+    private val npmDir: File = project.kotlin.wasmJs().compilations["main"]!!.npmProject.dir
 
     @TaskAction
     fun run() {
