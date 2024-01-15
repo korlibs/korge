@@ -27,4 +27,5 @@ dependencies {
     commonMainApi(project(":korlibs-platform"))
     commonMainApi(project(":korlibs-datastructure"))
     commonMainApi(project(":korlibs-logger"))
+    commonMainApi(project(":korlibs-inject"))
 }
