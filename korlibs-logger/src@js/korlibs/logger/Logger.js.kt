@@ -1,6 +1,5 @@
 package korlibs.logger
 
-import korlibs.platform.*
 import kotlinx.browser.document
 
 actual object Console : BaseConsole() {
@@ -20,14 +19,17 @@ actual object DefaultLogOutput : Logger.Output {
     override fun output(logger: Logger, level: Logger.Level, msg: Any?) = Logger.ConsoleLogOutput.output(logger, level, msg)
 }
 
-external private val process: dynamic
-external private val Deno: dynamic
+private external val process: dynamic
+private external val Deno: dynamic
+
+private val isDenoJs: Boolean by lazy { js("(typeof Deno === 'object' && Deno.statSync)").unsafeCast<Boolean>() }
+private val isNodeJs: Boolean by lazy { js("((typeof process !== 'undefined') && process.release && (process.release.name.search(/node|io.js/) !== -1))").unsafeCast<Boolean>() }
 
 internal actual val miniEnvironmentVariables: Map<String, String> by lazy {
 
     when {
-        Platform.isJsNodeJs -> jsObjectToMap(process.env)
-        Platform.isJsDenoJs -> jsObjectToMap(Deno.env)
+        isNodeJs -> jsObjectToMap(process.env)
+        isDenoJs -> jsObjectToMap(Deno.env)
         js("(typeof document !== 'undefined')") -> QueryString_decode((document.location?.search ?: "").trimStart('?')).map { it.key to (it.value.firstOrNull() ?: it.key) }.toMap()
         else -> mapOf()
     }
