@@ -1,12 +1,11 @@
-package korlibs.datastructure.thread
+package korlibs.concurrent.thread
 
-import korlibs.datastructure.*
-import korlibs.time.*
 import kotlin.time.*
 
-actual class NativeThread actual constructor(val code: (NativeThread) -> Unit) : Extra by Extra.Mixin() {
+actual class NativeThread actual constructor(val code: (NativeThread) -> Unit) {
     actual var isDaemon: Boolean = false
     actual var threadSuggestRunning = true
+    actual var userData: Any? = null
 
     actual fun start() {
         threadSuggestRunning = true
@@ -28,7 +27,7 @@ actual class NativeThread actual constructor(val code: (NativeThread) -> Unit) :
         actual fun gc(full: Boolean) {
         }
 
-        actual fun sleep(time: TimeSpan) {
+        actual fun sleep(time: Duration) {
             warnSleep
             val start = TimeSource.Monotonic.markNow()
             spinWhile { start.elapsedNow() < time }
@@ -48,5 +47,5 @@ actual class NativeThread actual constructor(val code: (NativeThread) -> Unit) :
     actual var priority: Int
         get() = 0
         set(value) {}
-    actual var name: String? = "Thread-JS"
+    actual var name: String? = "Thread-WASMJS"
 }

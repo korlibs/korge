@@ -1,15 +1,14 @@
 @file:Suppress("PackageDirectoryMismatch")
-package korlibs.datastructure.thread
+package korlibs.concurrent.thread
 
-import korlibs.datastructure.*
-import korlibs.time.*
-import kotlinx.cinterop.*
-import platform.Foundation.*
+import platform.posix.*
 import kotlin.native.concurrent.*
 import kotlin.native.runtime.*
+import kotlin.time.*
 
-actual class NativeThread actual constructor(val code: (NativeThread) -> Unit) : Extra by Extra.Mixin() {
+actual class NativeThread actual constructor(val code: (NativeThread) -> Unit) {
     actual var isDaemon: Boolean = false
+    actual var userData: Any? = null
 
     actual var threadSuggestRunning: Boolean = true
     var worker: Worker? = null
@@ -38,7 +37,8 @@ actual class NativeThread actual constructor(val code: (NativeThread) -> Unit) :
 
     actual companion object {
         actual val isSupported: Boolean get() = true
-        actual val currentThreadId: Long get() = NSThread.currentThread.objcPtr().toLong()
+        //actual val currentThreadId: Long get() = NSThread.currentThread.objcPtr().toLong()
+        actual val currentThreadId: Long get() = pthread_self().toLong()
         actual val currentThreadName: String? get() = "Thread-$currentThreadId"
 
         @OptIn(NativeRuntimeApi::class)
@@ -46,7 +46,7 @@ actual class NativeThread actual constructor(val code: (NativeThread) -> Unit) :
             GC.schedule()
         }
 
-        actual fun sleep(time: TimeSpan): Unit {
+        actual fun sleep(time: Duration): Unit {
             //platform.posix.nanosleep()
             platform.posix.usleep(time.inWholeMicroseconds.toUInt())
 

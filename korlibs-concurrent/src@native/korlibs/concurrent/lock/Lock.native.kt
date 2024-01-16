@@ -1,7 +1,6 @@
-package korlibs.datastructure.lock
+package korlibs.concurrent.lock
 
-import korlibs.datastructure.thread.*
-import korlibs.time.*
+import korlibs.concurrent.thread.*
 import platform.posix.*
 import kotlin.concurrent.*
 import kotlin.time.*
@@ -46,7 +45,7 @@ actual class Lock actual constructor() : BaseLock {
         if (current != pthread_self()) error("Must lock the notify thread")
         notified.value = true
     }
-    actual override fun wait(time: TimeSpan): Boolean {
+    actual override fun wait(time: Duration): Boolean {
         check(locked.value) { "Must wait inside a synchronization block" }
         val start = TimeSource.Monotonic.markNow()
         notified.value = false
@@ -86,7 +85,7 @@ actual class NonRecursiveLock actual constructor() : BaseLock {
     actual override fun notify(unit: Unit) {
         notified.value = true
     }
-    actual override fun wait(time: TimeSpan): Boolean {
+    actual override fun wait(time: Duration): Boolean {
         check(locked.value) { "Must wait inside a synchronization block" }
         val start = TimeSource.Monotonic.markNow()
         notified.value = false

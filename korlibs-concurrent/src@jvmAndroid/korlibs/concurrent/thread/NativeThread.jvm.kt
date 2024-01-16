@@ -1,17 +1,18 @@
-package korlibs.datastructure.thread
+package korlibs.concurrent.thread
 
-import korlibs.datastructure.*
-import korlibs.time.*
+import kotlin.time.*
+import kotlin.time.Duration.Companion.seconds
 
-private fun TimeSpan.toMillisNanos(): Pair<Long, Int> {
+private fun Duration.toMillisNanos(): Pair<Long, Int> {
     val nanoSeconds = inWholeNanoseconds
     val millis = (nanoSeconds / 1_000_000L)
     val nanos = (nanoSeconds % 1_000_000L).toInt()
     return millis to nanos
 }
 
-actual class NativeThread actual constructor(val code: (NativeThread) -> Unit) : Extra by Extra.Mixin() {
+actual class NativeThread actual constructor(val code: (NativeThread) -> Unit) {
     val thread = Thread { code(this) }
+    actual var userData: Any? = null
 
     actual var threadSuggestRunning = true
 
@@ -46,7 +47,7 @@ actual class NativeThread actual constructor(val code: (NativeThread) -> Unit) :
             System.gc()
         }
 
-        actual fun sleep(time: TimeSpan) {
+        actual fun sleep(time: Duration) {
             //val gcTime = measureTime { System.gc() }
             //val compensatedTime = time - gcTime
             val compensatedTime = time

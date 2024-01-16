@@ -2,68 +2,34 @@
 
 package korlibs.datastructure.thread
 
-import korlibs.datastructure.*
 import korlibs.time.*
-import kotlin.time.*
+import korlibs.concurrent.thread.sleep as sleepConcurrent
+import korlibs.concurrent.thread.sleepExact as sleepExactConcurrent
+import korlibs.concurrent.thread.sleepWhile as sleepWhileConcurrent
 
-expect class NativeThread(code: (NativeThread) -> Unit) : Extra {
-    companion object {
-        val isSupported: Boolean
-        val currentThreadId: Long
-        val currentThreadName: String?
+@Deprecated("Use korlibs.concurrent.thread package")
+typealias NativeThread = korlibs.concurrent.thread.NativeThread
 
-        fun gc(full: Boolean): Unit
-        fun sleep(time: TimeSpan): Unit
-        inline fun spinWhile(cond: () -> Boolean): Unit
-    }
-    var threadSuggestRunning: Boolean
-    var priority: Int
-    var name: String?
-    var isDaemon: Boolean
-    fun start(): Unit
-    fun interrupt(): Unit
-}
-
+@Deprecated("Use korlibs.concurrent.thread package")
 public fun nativeThread(
     start: Boolean = true,
     isDaemon: Boolean = false,
     name: String? = null,
     priority: Int = -1,
     block: (NativeThread) -> Unit
-): NativeThread {
-    val thread = NativeThread(block)
-    if (isDaemon) thread.isDaemon = true
-    if (priority > 0) thread.priority = priority
-    if (name != null) thread.name = name
-    // if (contextClassLoader != null) thread.contextClassLoader = contextClassLoader
-    if (start) thread.start()
-    return thread
-}
+): NativeThread = korlibs.concurrent.thread.nativeThread(start, isDaemon, name, priority, block)
 
-fun NativeThread.Companion.sleep(time: TimeSpan, exact: Boolean) {
-    if (exact) sleepExact(time) else sleep(time)
-}
+@Deprecated("Use korlibs.concurrent.thread package")
+fun korlibs.concurrent.thread.NativeThread.Companion.sleep(time: TimeSpan, exact: Boolean) = sleepConcurrent(time, exact)
 
 // https://stackoverflow.com/questions/13397571/precise-thread-sleep-needed-max-1ms-error#:~:text=Scheduling%20Fundamentals
 // https://www.softprayog.in/tutorials/alarm-sleep-and-high-resolution-timers
-fun NativeThread.Companion.sleepExact(time: TimeSpan) {
-    val start = TimeSource.Monotonic.markNow()
-    //val imprecision = 10.milliseconds
-    //val imprecision = 1.milliseconds
-    val imprecision = 4.milliseconds
-    val javaSleep = time - imprecision
-    if (javaSleep >= 0.seconds) {
-        NativeThread.sleep(javaSleep)
-    }
-    NativeThread.spinWhile { start.elapsedNow() < time }
-}
+@Deprecated("Use korlibs.concurrent.thread package")
+fun korlibs.concurrent.thread.NativeThread.Companion.sleepExact(time: TimeSpan) = sleepExactConcurrent(time)
+@Deprecated("Use korlibs.concurrent.thread package")
+inline fun korlibs.concurrent.thread.NativeThread.Companion.sleepWhile(cond: () -> Boolean) = sleepWhileConcurrent(cond)
 
-fun NativeThread.Companion.sleepUntil(date: DateTime, exact: Boolean = true) {
+// Extension from DateTime
+fun korlibs.concurrent.thread.NativeThread.Companion.sleepUntil(date: DateTime, exact: Boolean = true) {
     sleep(date - DateTime.now(), exact)
-}
-
-fun NativeThread.Companion.sleepWhile(cond: () -> Boolean) {
-    while (cond()) {
-        NativeThread.sleep(1.milliseconds)
-    }
 }

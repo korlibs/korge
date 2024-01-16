@@ -1,7 +1,6 @@
 package korlibs.logger
 
-import korlibs.datastructure.lock.*
-import korlibs.time.*
+import korlibs.concurrent.lock.*
 import kotlin.time.*
 
 /**
