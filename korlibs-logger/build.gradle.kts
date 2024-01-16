@@ -11,5 +11,5 @@ project.extensions.extraProperties.properties.apply {
 }
 
 dependencies {
-    commonMainApi(project(":korlibs-concurrent"))
+    commonMainApi(libs.kotlinx.atomicfu)
 }
