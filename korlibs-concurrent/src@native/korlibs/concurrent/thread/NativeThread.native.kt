@@ -37,8 +37,7 @@ actual class NativeThread actual constructor(val code: (NativeThread) -> Unit) {
 
     actual companion object {
         actual val isSupported: Boolean get() = true
-        //actual val currentThreadId: Long get() = NSThread.currentThread.objcPtr().toLong()
-        actual val currentThreadId: Long get() = pthread_self().toLong()
+        actual val currentThreadId: Long get() = korlibs.concurrent.thread.__currentThreadId
         actual val currentThreadName: String? get() = "Thread-$currentThreadId"
 
         @OptIn(NativeRuntimeApi::class)
@@ -59,3 +58,5 @@ actual class NativeThread actual constructor(val code: (NativeThread) -> Unit) {
         }
     }
 }
+
+internal expect val __currentThreadId: Long
