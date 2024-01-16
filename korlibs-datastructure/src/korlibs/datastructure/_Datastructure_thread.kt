@@ -2,6 +2,7 @@
 
 package korlibs.datastructure.thread
 
+import korlibs.datastructure.*
 import korlibs.time.*
 import korlibs.concurrent.thread.sleep as sleepConcurrent
 import korlibs.concurrent.thread.sleepExact as sleepExactConcurrent
@@ -9,6 +10,13 @@ import korlibs.concurrent.thread.sleepWhile as sleepWhileConcurrent
 
 @Deprecated("Use korlibs.concurrent.thread package")
 typealias NativeThread = korlibs.concurrent.thread.NativeThread
+
+val korlibs.concurrent.thread.NativeThread.extra: Extra get() {
+    if (this.userData == null) {
+        this.userData = Extra.Mixin()
+    }
+    return this.userData as Extra
+}
 
 @Deprecated("Use korlibs.concurrent.thread package")
 public fun nativeThread(
