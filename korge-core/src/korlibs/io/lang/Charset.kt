@@ -210,7 +210,6 @@ open class SingleByteCharset(name: String, val conv: String) : BaseSingleByteCha
 
 object ISO_8859_1 : SingleByteCharset("ISO-8859-1", buildString { for (n in 0 until 256) append(n.toChar()) })
 
-@SharedImmutable
 expect val UTF8: Charset
 
 class UTF16Charset(val le: Boolean) : Charset("UTF-16-" + (if (le) "LE" else "BE")) {
