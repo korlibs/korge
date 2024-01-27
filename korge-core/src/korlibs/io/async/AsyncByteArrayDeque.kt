@@ -8,9 +8,21 @@ import korlibs.time.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.*
 
-interface IAsyncByteArrayDeque : AsyncOutputStream, AsyncInputStream
+@Deprecated("", replaceWith = ReplaceWith("korlibs.io.async.IAsyncRingBuffer"))
+@Suppress("unused")
+typealias IAsyncByteArrayDeque = IAsyncRingBuffer
 
-class AsyncByteArrayDeque(private val bufferSize: Int = 1024) : IAsyncByteArrayDeque {
+@Deprecated("", replaceWith = ReplaceWith("korlibs.io.async.AsyncRingBuffer"))
+@Suppress("unused")
+typealias AsyncByteArrayDeque = AsyncRingBuffer
+
+@Deprecated("", replaceWith = ReplaceWith("korlibs.io.async.AsyncRingBufferChunked"))
+@Suppress("unused")
+typealias AsyncByteArrayDequeChunked = AsyncRingBufferChunked
+
+interface IAsyncRingBuffer : AsyncOutputStream, AsyncInputStream
+
+class AsyncRingBuffer(private val bufferSize: Int = 1024) : IAsyncRingBuffer {
     var name: String? = null
 	private val notifyRead = Channel<Unit>(Channel.CONFLATED)
 	private val notifyWrite = Channel<Unit>(Channel.CONFLATED)
@@ -53,7 +65,7 @@ class AsyncByteArrayDeque(private val bufferSize: Int = 1024) : IAsyncByteArrayD
     override fun toString(): String = "AsyncByteArrayDeque($name)"
 }
 
-class AsyncByteArrayDequeChunked(val maxSize: Int = AsyncByteArrayDequeChunked.DEFAULT_MAX_SIZE) : IAsyncByteArrayDeque {
+class AsyncRingBufferChunked(val maxSize: Int = AsyncRingBufferChunked.DEFAULT_MAX_SIZE) : IAsyncRingBuffer {
     companion object {
         const val DEFAULT_MAX_SIZE = 8 * 1024 * 1024
     }

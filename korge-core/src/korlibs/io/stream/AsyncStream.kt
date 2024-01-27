@@ -883,8 +883,8 @@ class MemoryAsyncStreamBase(var data: korlibs.memory.ByteArrayBuilder) : AsyncSt
 suspend fun asyncStreamWriter(bufferSize: Int = AsyncByteArrayDequeChunked.DEFAULT_MAX_SIZE, name: String? = null, lazy: Boolean = false, process: suspend (out: AsyncOutputStream) -> Unit): AsyncInputStream {
 	return object : AsyncInputStream {
         val deque = when {
-            lazy -> AsyncByteArrayDeque(bufferSize).also { it.name = name }
-            else -> AsyncByteArrayDequeChunked(bufferSize).also { it.name = name }
+            lazy -> AsyncRingBuffer(bufferSize).also { it.name = name }
+            else -> AsyncRingBufferChunked(bufferSize).also { it.name = name }
         }
         var lastError: Throwable? = null
 
