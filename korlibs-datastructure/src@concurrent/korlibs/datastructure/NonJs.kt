@@ -97,7 +97,7 @@ public actual open class FastArrayList<E> internal constructor(
         return out
     }
 
-    override fun removeRange(fromIndex: Int, toIndex: Int) {
+    actual override fun removeRange(fromIndex: Int, toIndex: Int) {
         val count = toIndex - fromIndex
         if (count <= 0) return
         val array = this.array

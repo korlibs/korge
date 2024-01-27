@@ -34,7 +34,7 @@ fun Project.configureWasm(projectType: ProjectType, binaryen: Boolean = false) {
 }
 
 open class WasmJsCreateIndexTask : DefaultTask() {
-    private val npmDir: File = project.kotlin.wasmJs().compilations["main"]!!.npmProject.dir
+    private val npmDir: File = project.kotlin.wasmJs().compilations["main"]!!.npmProject.dir.get().asFile
 
     @TaskAction
     fun run() {

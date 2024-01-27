@@ -20,4 +20,8 @@ val defaultDynApi: DynApi get() = DynamicInternal
 // @TODO: We should be able to plug-in a kotlinx-serialization version for this
 var dynApi: DynApi = DynamicInternal
 
-internal expect object DynamicInternal : DynApi
+internal expect object DynamicInternal : DynApi {
+    override fun get(instance: Any?, key: String): Any?
+    override fun set(instance: Any?, key: String, value: Any?)
+    override fun invoke(instance: Any?, key: String, args: Array<out Any?>): Any?
+}

@@ -20,3 +20,4 @@ err.txt
 *.xcuserstate
 xcuserdata
 kotlin-js-store/
+/.kotlin
