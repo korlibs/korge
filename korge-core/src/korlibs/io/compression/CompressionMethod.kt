@@ -60,9 +60,15 @@ fun CompressionMethod.compress(i: SyncInputStream, o: SyncOutputStream, context:
 	compress(i.toAsyncInputStream(), o.toAsyncOutputStream(), context)
 }
 
-fun ByteArray.uncompress(method: CompressionMethod, outputSizeHint: Int = this.size * 2): ByteArray = MemorySyncStreamToByteArray(outputSizeHint) { method.uncompress(this@uncompress.openSync(), this) }
+fun CompressionMethod.compress(bytes: ByteArray, context: CompressionContext = CompressionContext(), outputSizeHint: Int = (bytes.size * 1.1).toInt()): ByteArray =
+    MemorySyncStreamToByteArray(outputSizeHint) { this@compress.compress(bytes.openSync(), this, context) }
+fun CompressionMethod.uncompress(bytes: ByteArray, outputSizeHint: Int = bytes.size * 2): ByteArray =
+    MemorySyncStreamToByteArray(outputSizeHint) { this@uncompress.uncompress(bytes.openSync(), this) }
+
+fun ByteArray.uncompress(method: CompressionMethod, outputSizeHint: Int = this.size * 2): ByteArray =
+    method.uncompress(this, outputSizeHint)
 fun ByteArray.compress(method: CompressionMethod, context: CompressionContext = CompressionContext(), outputSizeHint: Int = (this.size * 1.1).toInt()): ByteArray =
-	MemorySyncStreamToByteArray(outputSizeHint) { method.compress(this@compress.openSync(), this, context) }
+	method.compress(this, context, outputSizeHint)
 
 suspend fun AsyncInputStream.uncompressed(method: CompressionMethod, bufferSize: Int = AsyncByteArrayDequeChunked.DEFAULT_MAX_SIZE): AsyncInputStream = method.uncompressStream(this, bufferSize)
 suspend fun AsyncInputStream.compressed(method: CompressionMethod, context: CompressionContext = CompressionContext(), bufferSize: Int = AsyncByteArrayDequeChunked.DEFAULT_MAX_SIZE): AsyncInputStream = method.compressStream(this, context, bufferSize)
