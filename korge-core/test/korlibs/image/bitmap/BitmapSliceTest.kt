@@ -28,6 +28,25 @@ class BitmapSliceTest {
     }
 
     @Test
+    fun testPutSliceWithBorder() {
+        // Create bitmap with red pixels in each corner
+        val corners = Bitmap32(16, 16, premultiplied = false)
+        corners[0, 0] = Colors.RED
+        corners[0, 15] = Colors.RED
+        corners[15, 0] = Colors.RED
+        corners[15, 15] = Colors.RED
+        val extruded = Bitmap32(18, 18, premultiplied = false)
+        // Put corners bitmap (16x16) in middle of extruded bitmap (18x18) and expand its borders
+        extruded.putSliceWithBorder(1, 1, corners.slice(), 1)
+
+        // Check if all corners were expanded correctly
+        assertEquals(Colors.RED, extruded[0, 0])
+        assertEquals(Colors.RED, extruded[0, 17])
+        assertEquals(Colors.RED, extruded[17, 0])
+        assertEquals(Colors.RED, extruded[17, 17])
+    }
+
+    @Test
     fun testBmpSize() {
         val slice = Bitmap32(128, 64, premultiplied = false).sliceWithSize(24, 16, 31, 17)
         assertEquals(
