@@ -1,7 +1,6 @@
 package korlibs.logger
 
-import korlibs.datastructure.lock.*
-import korlibs.time.*
+import kotlinx.atomicfu.locks.*
 import kotlin.time.*
 
 /**
@@ -41,7 +40,7 @@ class Logger private constructor(val name: String, val normalizedName: String, v
     val isLocalOutputSet: Boolean get() = optOutput != null
 
     companion object {
-        private val Logger_lock = Lock()
+        private val Logger_lock = SynchronizedObject()
         private val Logger_loggers = HashMap<String, Logger>()
 
         /** The default [Level] used for all [Logger] that doesn't have its [Logger.level] set */
@@ -51,7 +50,7 @@ class Logger private constructor(val name: String, val normalizedName: String, v
         var defaultOutput: Output = DefaultLogOutput
 
         /** Gets a [Logger] from its [name] */
-        operator fun invoke(name: String): Logger = Logger_lock {
+        operator fun invoke(name: String): Logger = synchronized(Logger_lock) {
             val normalizedName = normalizeName(name)
             if (Logger_loggers[normalizedName] == null) {
                 val logger = Logger(name, normalizedName, true)

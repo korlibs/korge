@@ -1,7 +1,8 @@
 package korlibs.logger
 
 import korlibs.logger.Console.color
-import korlibs.time.*
+import java.text.SimpleDateFormat
+import java.util.Date
 import java.util.logging.*
 
 actual object Console : BaseConsole() {
@@ -24,6 +25,8 @@ actual object Console : BaseConsole() {
 internal actual val miniEnvironmentVariables: Map<String, String> by lazy { System.getenv() }
 
 actual object DefaultLogOutput : Logger.Output {
+    private val DATE_FORMAT = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
+
     override fun output(logger: Logger, level: Logger.Level, msg: Any?) {
         if (logger.nativeLogger == null) {
             logger.nativeLogger = java.util.logging.Logger.getLogger(logger.name).also { nativeLogger ->
@@ -37,7 +40,7 @@ actual object DefaultLogOutput : Logger.Output {
                                 record.level.intValue() >= Level.WARNING.intValue() -> AnsiEscape.Color.YELLOW
                                 else -> AnsiEscape.Color.WHITE
                             }
-                            val time = DateTime.fromUnixMillis(record.millis).format(DateFormat.FORMAT2)
+                            val time = DATE_FORMAT.format(Date(System.currentTimeMillis()))
                             out.println("$time[${Thread.currentThread()}]: ${record.level}: ${record.loggerName} - ${record.message}".color(color))
                         }
                         override fun flush() = Unit

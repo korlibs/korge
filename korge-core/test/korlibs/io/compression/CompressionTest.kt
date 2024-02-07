@@ -2,9 +2,9 @@
 
 package korlibs.io.compression
 
+import korlibs.encoding.*
 import korlibs.io.async.suspendTest
 import korlibs.io.compression.deflate.GZIP
-import korlibs.encoding.fromBase64
 import korlibs.memory.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -29,5 +29,13 @@ class CompressionTest {
                     "111111111111111111111111111111",
             res2.toList().joinToString("")
         )
+    }
+
+    @Test
+    fun test() {
+        val uncompressedBytes = byteArrayOf(1, 2, 3, 4, 5)
+        val compressedBytes = GZIP.compress(uncompressedBytes)
+        val bytes = GZIP.uncompress(compressedBytes)
+        assertEquals(bytes.hex, uncompressedBytes.hex)
     }
 }

@@ -3,10 +3,7 @@ package korlibs.io.runtime.node
 import korlibs.time.*
 import korlibs.logger.Logger
 import korlibs.io.*
-import korlibs.io.async.AsyncByteArrayDeque
-import korlibs.io.async.AsyncQueue
-import korlibs.io.async.launchImmediately
-import korlibs.io.async.withContext
+import korlibs.io.async.*
 import korlibs.io.file.*
 import korlibs.io.file.std.LocalVfs
 import korlibs.io.file.std.ShellArgs
@@ -103,7 +100,7 @@ object JsRuntimeNode : JsRuntime() {
 private class NodeJsAsyncClient(val coroutineContext: CoroutineContext) : AsyncClient {
     private val net = require_node("net")
     private var connection: dynamic = null
-    private val input = AsyncByteArrayDeque()
+    private val input = AsyncRingBuffer()
 
     override var connected: Boolean = false; private set
 
