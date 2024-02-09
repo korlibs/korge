@@ -1,6 +1,6 @@
 package korlibs.datastructure
 
-import korlibs.datastructure.internal.math.Math.umod
+import korlibs.math.umod
 
 public fun <T> MutableList<T>.reverse(fromIndex: Int, toIndex: Int): Unit {
     if (fromIndex < 0 || toIndex > size) {

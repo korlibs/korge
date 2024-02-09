@@ -49,3 +49,6 @@ if (!inCI || System.getenv("ENABLE_BENCHMARKS") == "true") {
     include(":korge-benchmarks")
 }
 include("korlibs-inject")
+include("korlibs-math-core")
+include("korlibs-memory")
+include("korlibs-util")

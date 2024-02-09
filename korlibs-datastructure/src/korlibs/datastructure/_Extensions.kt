@@ -1,6 +1,6 @@
 package korlibs.datastructure
 
-import korlibs.datastructure.internal.math.Math.umod
+import korlibs.math.umod
 import kotlin.math.max
 import kotlin.math.min
 

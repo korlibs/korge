@@ -33,8 +33,8 @@ Jon-Carlos Rivera - imbcmdth@hotmail.com
 import korlibs.datastructure.Deque
 import korlibs.datastructure.FastArrayList
 import korlibs.datastructure.fastArrayListOf
-import korlibs.datastructure.internal.math.isAlmostEquals
-import korlibs.datastructure.internal.math.niceStr
+import korlibs.math.isAlmostEquals
+import korlibs.datastructure.internal.niceStr
 import korlibs.datastructure.mapDouble
 import kotlin.collections.set
 import kotlin.math.abs

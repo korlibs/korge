@@ -2,8 +2,8 @@ package korlibs.datastructure
 
 import korlibs.datastructure.internal.contentEquals
 import korlibs.datastructure.internal.contentHashCode
-import korlibs.datastructure.internal.math.isAlmostEquals
-import korlibs.datastructure.internal.memory.Memory.arraycopy
+import korlibs.math.isAlmostEquals
+import korlibs.memory.arraycopy
 import kotlin.math.max
 
 //typealias IntList = IIntArrayList

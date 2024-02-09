@@ -16,6 +16,8 @@ dependencies {
     commonMainApi(project(":korlibs-time"))
     commonMainApi(project(":korlibs-platform"))
     commonMainApi(project(":korlibs-concurrent"))
+    commonMainApi(project(":korlibs-math-core"))
+    commonMainApi(project(":korlibs-memory"))
 }
 
 fun doGenerateKdsTemplates() {

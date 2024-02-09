@@ -1,6 +1,6 @@
 package korlibs.datastructure
 
-import korlibs.datastructure.internal.memory.Memory.arraycopy
+import korlibs.memory.arraycopy
 import korlibs.datastructure.lock.NonRecursiveLock
 import kotlin.math.min
 

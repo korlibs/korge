@@ -1,8 +1,8 @@
 package korlibs.datastructure
 
 import korlibs.datastructure.internal.*
-import korlibs.datastructure.internal.memory.Memory.arraycopy
-import korlibs.datastructure.internal.memory.Memory.countLeadingZeros
+import korlibs.memory.arraycopy
+import korlibs.memory.countLeadingZeros
 import kotlin.collections.copyOf
 import kotlin.collections.maxOfOrNull
 import kotlin.math.ceil
