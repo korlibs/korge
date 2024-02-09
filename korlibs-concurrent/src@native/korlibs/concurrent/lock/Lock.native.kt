@@ -2,11 +2,8 @@ package korlibs.concurrent.lock
 
 import korlibs.concurrent.thread.*
 import platform.posix.*
-import korlibs.datastructure.thread.*
-import korlibs.time.*
 import kotlin.concurrent.*
 import kotlin.time.*
-import platform.posix.*
 
 actual class Lock actual constructor() : BaseLock {
     @PublishedApi internal var notified = AtomicReference(false)

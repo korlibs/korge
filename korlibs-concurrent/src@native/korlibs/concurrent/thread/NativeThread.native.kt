@@ -1,16 +1,9 @@
 @file:Suppress("PackageDirectoryMismatch")
 package korlibs.concurrent.thread
 
-import platform.posix.*
 import kotlin.native.concurrent.*
 import kotlin.native.runtime.*
 import kotlin.time.*
-import korlibs.datastructure.*
-import korlibs.time.*
-import kotlin.native.concurrent.*
-import kotlin.native.runtime.*
-import kotlinx.cinterop.*
-import platform.Foundation.*
 
 actual class NativeThread actual constructor(val code: (NativeThread) -> Unit) {
     actual var isDaemon: Boolean = false

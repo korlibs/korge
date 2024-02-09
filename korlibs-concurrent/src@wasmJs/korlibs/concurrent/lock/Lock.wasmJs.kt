@@ -1,7 +1,6 @@
 package korlibs.concurrent.lock
 
 import kotlin.time.*
-import korlibs.time.TimeSpan
 
 actual class Lock actual constructor() : BaseLock {
     var locked = false
