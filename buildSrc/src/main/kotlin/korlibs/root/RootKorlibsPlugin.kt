@@ -461,6 +461,9 @@ object RootKorlibsPlugin {
                                 || project.name == "korlibs-concurrent"
                                 || project.name == "korlibs-logger"
                                 || project.name == "korlibs-datastructure"
+                                || project.name == "korlibs-math-core"
+                                || project.name == "korlibs-util"
+                                || project.name == "korlibs-memory"
                                 || project.name == "korlibs-platform"
                             ) {
                                 val macos by lazy { createPairSourceSet("macos", darwin, project = project) }
