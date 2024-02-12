@@ -12,6 +12,7 @@ import korlibs.math.geom.vector.*
 import korlibs.platform.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class BitmapSliceTest {
     val logger = Logger("BitmapSliceTest")
@@ -29,21 +30,29 @@ class BitmapSliceTest {
 
     @Test
     fun testPutSliceWithBorder() {
-        // Create bitmap with red pixels in each corner
-        val corners = Bitmap32(16, 16, premultiplied = false)
-        corners[0, 0] = Colors.RED
-        corners[0, 15] = Colors.RED
-        corners[15, 0] = Colors.RED
-        corners[15, 15] = Colors.RED
-        val extruded = Bitmap32(18, 18, premultiplied = false)
-        // Put corners bitmap (16x16) in middle of extruded bitmap (18x18) and expand its borders
-        extruded.putSliceWithBorder(1, 1, corners.slice(), 1)
+        // Create bitmap with border pixels
+        val bmpInput = Bitmap8(4, 4, byteArrayOf(
+            1, 2, 3, 4,
+            5, 0, 0, 6,
+            7, 0, 0, 8,
+            9, 1, 2, 3
+        ))
 
-        // Check if all corners were expanded correctly
-        assertEquals(Colors.RED, extruded[0, 0])
-        assertEquals(Colors.RED, extruded[0, 17])
-        assertEquals(Colors.RED, extruded[17, 0])
-        assertEquals(Colors.RED, extruded[17, 17])
+        val extruded = Bitmap8(6, 6)
+        extruded.putSliceWithBorder(1, 1, bmpInput.slice(), 1)
+
+        assertTrue {
+            extruded.contentEquals(
+                Bitmap8(6, 6, byteArrayOf(
+                    1, 1, 2, 3, 4, 4,
+                    1, 1, 2, 3, 4, 4,
+                    5, 5, 0, 0, 6, 6,
+                    7, 7, 0, 0, 8, 8,
+                    9, 9, 1, 2, 3, 3,
+                    9, 9, 1, 2, 3, 3
+                ))
+            )
+        }
     }
 
     @Test
