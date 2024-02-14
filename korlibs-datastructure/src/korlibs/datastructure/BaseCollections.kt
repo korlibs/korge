@@ -14,7 +14,7 @@ interface BaseMap<K, V> : Map<K, V> {
     override fun containsValue(value: V): Boolean = values.contains(value)
 }
 
-interface BaseMutableList<T> : BaseList<T>, MutableList<T> {
+abstract class BaseMutableList<T> : BaseList<T>(), MutableList<T> {
     override fun iterator(): MutableIterator<T> = listIterator(0)
     override fun listIterator(): MutableListIterator<T> = listIterator(0)
     override fun listIterator(index: Int): MutableListIterator<T> = BaseMutableListIterator(this, index)
@@ -49,7 +49,7 @@ interface BaseMutableList<T> : BaseList<T>, MutableList<T> {
     }
 }
 
-interface BaseList<T> : List<T> {
+abstract class BaseList<T> : List<T> {
     override fun containsAll(elements: Collection<T>): Boolean {
         val elementsSet = elements.toSet()
         for (n in 0 until size) if (this[n] in elementsSet) return true
@@ -71,7 +71,7 @@ interface BaseList<T> : List<T> {
     }
 }
 
-open class BaseSubList<T>(val list: List<T>, start: Int, end: Int) : BaseList<T> {
+open class BaseSubList<T>(val list: List<T>, start: Int, end: Int) : BaseList<T>() {
     var start: Int = start ; protected set
     var end: Int = end ; protected set
     override val size: Int get() = end - start
@@ -83,7 +83,17 @@ open class BaseSubList<T>(val list: List<T>, start: Int, end: Int) : BaseList<T>
     override fun get(index: Int): T = list[checkIndex(index)]
 }
 
-open class BaseSubMutableList<T>(val mlist: MutableList<T>, start: Int, end: Int) : BaseSubList<T>(mlist, start, end), BaseMutableList<T> {
+open class BaseSubMutableList<T>(val mlist: MutableList<T>, start: Int, end: Int) : BaseMutableList<T>() {
+    var start: Int = start ; protected set
+    var end: Int = end ; protected set
+    override val size: Int get() = end - start
+    fun checkIndex(index: Int): Int {
+        if (index < 0 || index >= size) throw IndexOutOfBoundsException()
+        return start + index
+    }
+
+    override fun get(index: Int): T = mlist[checkIndex(index)]
+
     override fun add(index: Int, element: T) {
         mlist.add(checkIndex(index), element)
         end++

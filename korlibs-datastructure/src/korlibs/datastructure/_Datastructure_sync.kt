@@ -25,7 +25,7 @@ open class SynchronizedCollection<T>(
 open class SynchronizedList<T>(
     protected val base: MutableList<T>,
     protected val lock: NonRecursiveLock = NonRecursiveLock()
-) : BaseMutableList<T> {
+) : BaseMutableList<T>() {
     override fun clear() = lock { base.clear() }
     override fun add(index: Int, element: T) { lock { base.add(index, element) } }
     override fun addAll(index: Int, elements: Collection<T>): Boolean = lock { base.addAll(index, elements) }
