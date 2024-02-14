@@ -153,11 +153,11 @@ inline fun Container.uiVerticalStack(
 ) = UIVerticalStack(width, padding, adjustSize).addTo(this).apply(block)
 
 open class UIVerticalStack(
-    forcedWidth: Double? = null,
-    padding: Double = UI_DEFAULT_PADDING,
+    forcedWidth: Number? = null,
+    padding: Number = UI_DEFAULT_PADDING,
     adjustSize: Boolean = true,
 ) : UIVerticalHorizontalStack(Size(forcedWidth ?: 100.0, 0.0), padding, adjustSize) {
-    var forcedWidth: Double? = forcedWidth
+    var forcedWidth: Double? = forcedWidth?.toDouble()
         set(value) {
             if (field != value) {
                 field = value
@@ -216,8 +216,8 @@ open class UIHorizontalStack(
     }
 }
 
-abstract class UIVerticalHorizontalStack(size: Size = UI_DEFAULT_SIZE, padding: Double = UI_DEFAULT_PADDING, val adjustSize: Boolean) : UIContainer(size) {
-    var padding: Double = padding
+abstract class UIVerticalHorizontalStack(size: Size = UI_DEFAULT_SIZE, padding: Number = UI_DEFAULT_PADDING, val adjustSize: Boolean) : UIContainer(size) {
+    var padding: Double = padding.toDouble()
         set(value) {
             field = value
             relayout()

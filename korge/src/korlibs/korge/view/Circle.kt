@@ -27,15 +27,15 @@ inline fun Container.circle(
  * The [autoScaling] property determines if the underlying texture will be updated when the hierarchy is scaled.
  */
 open class Circle(
-    radius: Double = 16.0,
+    radius: Number = 16.0,
     fill: Paint = Colors.WHITE,
     stroke: Paint = Colors.WHITE,
-    strokeThickness: Double = 0.0,
+    strokeThickness: Number = 0.0,
     autoScaling: Boolean = true,
     renderer: GraphicsRenderer = GraphicsRenderer.GPU,
 ) : ShapeView(shape = VectorPath(), fill = fill, stroke = stroke, strokeThickness = strokeThickness, autoScaling = autoScaling, renderer = renderer) {
     /** Radius of the circle */
-    var radius: Double by uiObservable(radius) { updateGraphics() }
+    var radius: Double by uiObservable(radius.toDouble()) { updateGraphics() }
     /** Color of the circle. Internally it uses the [colorMul] property */
     var color: RGBA by ::colorMul
 
