@@ -38,7 +38,7 @@ open class Container(
     /**
      * A collection with all the children [View]s.
      */
-    val children: ContainerCollection = ContainerCollection(this, __children)
+    val children: ContainerCollection = ContainerCollection(this)
 
     @PublishedApi
     override val _children: List<View>? get() = __children
@@ -415,6 +415,14 @@ open class Container(
         if (parent.hasAncestor(child)) invalidOp("Can't addChild to an ancestor")
     }
 
+    fun addChildrenAt(views: Collection<View>, index: Int) {
+        // @TODO: Optimize this
+        var nindex = index
+        for (v in views) {
+            addChildAt(v, nindex++)
+        }
+    }
+
     /**
      * Adds the [view] [View] as a child at a specific [index].
      *
@@ -495,13 +503,22 @@ open class Container(
 /**
  * Allows to safely interact with the children of a [container] instance.
  */
-class ContainerCollection internal constructor(val container: Container, children: List<View>) : MutableCollection<View>, List<View> by children {
+class ContainerCollection internal constructor(val container: Container) : BaseMutableList<View>() {
     override val size: Int get() = container.numChildren
+    override fun get(index: Int): View = container.getChildAt(index)
+    override fun removeAt(index: Int): View = this[index].also { container.removeChildAt(index) }
+    override fun set(index: Int, element: View): View {
+        val old = this[index]
+        container.replaceChild(old, element)
+        return old
+    }
 
     override fun contains(element: View): Boolean = element.parent === container
     override fun containsAll(elements: Collection<View>): Boolean = elements.all { it.parent === container }
     override fun isEmpty(): Boolean = container.numChildren == 0
 
+    override fun addAll(index: Int, elements: Collection<View>): Boolean = elements.isNotEmpty().also { container.addChildrenAt(elements, index) }
+    override fun add(index: Int, element: View) = container.addChildAt(element, index)
     override fun add(element: View): Boolean {
         container.addChild(element)
         return true
