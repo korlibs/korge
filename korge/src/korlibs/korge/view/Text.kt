@@ -44,7 +44,7 @@ inline fun Container.text(
     = Text(text, textSize.toDouble(), color, font, alignment, renderer, autoScaling, fill, stroke).addTo(this, block)
 
 open class Text(
-    text: String, textSize: Double = DEFAULT_TEXT_SIZE,
+    text: String, textSize: Number = DEFAULT_TEXT_SIZE,
     color: RGBA = Colors.WHITE, font: Resourceable<out Font> = DefaultTtfFontAsBitmap,
     alignment: TextAlignment = TextAlignment.TOP_LEFT,
     renderer: TextRenderer<String> = DefaultStringTextRenderer,
@@ -87,7 +87,7 @@ open class Text(
     var font: Resourceable<out Font> = font; set(value) {  if (field != value) { field = value; invalidate() } }
 
     @ViewProperty(min = 1.0, max = 300.0)
-    var textSize: Double = textSize; set(value) { if (field != value) { field = value; invalidate() } }
+    var textSize: Double = textSize.toDouble(); set(value) { if (field != value) { field = value; invalidate() } }
     var fontSize: Double by ::textSize
 
     override fun invalidate() {

@@ -11,7 +11,7 @@ inline fun Container.shapeView(
     shape: VectorPath? = null,
     fill: Paint = Colors.WHITE,
     stroke: Paint = Colors.WHITE,
-    strokeThickness: Double = 1.0,
+    strokeThickness: Number = 1.0,
     autoScaling: Boolean = true,
     renderer: GraphicsRenderer = GraphicsRenderer.GPU,
     callback: @ViewDslMarker ShapeView.() -> Unit = {}
@@ -21,7 +21,7 @@ open class ShapeView(
     shape: VectorPath? = null,
     fill: Paint = Colors.WHITE,
     stroke: Paint = Colors.WHITE,
-    strokeThickness: Double = 1.0,
+    strokeThickness: Number = 1.0,
     autoScaling: Boolean = true,
     //renderer: GraphicsRenderer = GraphicsRenderer.SYSTEM
     renderer: GraphicsRenderer = GraphicsRenderer.GPU
@@ -72,7 +72,7 @@ open class ShapeView(
             _updateShapeGraphics()
         }
     @ViewProperty
-    var strokeThickness: Double = strokeThickness
+    var strokeThickness: Double = strokeThickness.toDouble()
         set(value) {
             if (field == value) return
             field = value

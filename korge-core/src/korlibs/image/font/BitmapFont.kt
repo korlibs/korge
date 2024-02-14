@@ -133,21 +133,22 @@ interface BitmapFont : Font {
          */
         operator fun invoke(
             font: Font,
-            fontSize: Double,
+            fontSize: Number,
             chars: CharacterSet = CharacterSet.LATIN_ALL,
             fontName: String = font.name,
             paint: Paint = Colors.WHITE,
             mipmaps: Boolean = true,
             effect: BitmapEffect? = null,
         ): BitmapFont {
-            val fmetrics = font.getFontMetrics(fontSize)
-            val glyphMetrics = chars.codePoints.map { font.getGlyphMetrics(fontSize, it, reader = null) }
+            val fontSizeD = fontSize.toDouble()
+            val fmetrics = font.getFontMetrics(fontSizeD)
+            val glyphMetrics = chars.codePoints.map { font.getGlyphMetrics(fontSizeD, it, reader = null) }
             val requiredArea = glyphMetrics.map { (it.width + 4) * (fmetrics.lineHeight + 4) }.sum().toIntCeil()
             val requiredAreaSide = sqrt(requiredArea.toFloat()).toIntCeil()
             val matlas = MutableAtlas<TextToBitmapResult>(requiredAreaSide.nextPowerOfTwo, requiredAreaSide.nextPowerOfTwo)
             val border = 2
             for (codePoint in chars.codePoints) {
-                val result = font.renderGlyphToBitmap(fontSize, codePoint, paint = paint, fill = true, border = 1, effect = effect)
+                val result = font.renderGlyphToBitmap(fontSizeD, codePoint, paint = paint, fill = true, border = 1, effect = effect)
                 //val result = font.renderGlyphToBitmap(fontSize, codePoint, paint = DefaultPaint, fill = true)
                 //println("codePoint[${codePoint.toChar()}]: $result")
                 matlas.add(result.bmp.toBMP32().premultipliedIfRequired(), result)
@@ -163,7 +164,7 @@ interface BitmapFont : Font {
                     val g = it.data.glyphs.first()
                     //val fm = it.data.fmetrics
                     val m = g.metrics
-                    g.codePoint to Glyph(fontSize, g.codePoint, slice, -border, (border - m.height - m.top).toInt() + fm.ascent.toInt(), m.xadvance.toIntCeil())
+                    g.codePoint to Glyph(fontSizeD, g.codePoint, slice, -border, (border - m.height - m.top).toInt() + fm.ascent.toInt(), m.xadvance.toIntCeil())
                 }.toIntMap(),
                 kernings = IntMap(),
                 name = fontName

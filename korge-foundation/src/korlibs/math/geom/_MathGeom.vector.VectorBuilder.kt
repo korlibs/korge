@@ -150,13 +150,13 @@ interface VectorBuilder {
 
     fun write(curves: List<Curves>) = write(curves.toVectorPath())
     fun write(curves: Curves) = write(curves.toVectorPath())
-    fun arc(center: Point, r: Double, start: Angle, end: Angle, counterclockwise: Boolean = false) = Arc.arcPath(this, center, r, start, end, counterclockwise)
+    fun arc(center: Point, r: Number, start: Angle, end: Angle, counterclockwise: Boolean = false) = Arc.arcPath(this, center, r.toDouble(), start, end, counterclockwise)
 
     fun circle(circle: Circle) = circle(circle.center, circle.radius)
     fun circleHole(circle: Circle) = circleHole(circle.center, circle.radius)
 
-    fun circle(center: Point, radius: Double): Unit = arc(center, radius, Angle.ZERO, Angle.FULL)
-    fun circleHole(center: Point, radius: Double) = arc(center, radius, Angle.ZERO, Angle.FULL, counterclockwise = true)
+    fun circle(center: Point, radius: Number): Unit = arc(center, radius, Angle.ZERO, Angle.FULL)
+    fun circleHole(center: Point, radius: Number) = arc(center, radius, Angle.ZERO, Angle.FULL, counterclockwise = true)
 
     fun ellipse(bounds: Rectangle) = ellipse(bounds.center, bounds.size / 2)
     fun ellipse(ellipse: Ellipse) = ellipse(ellipse.center, ellipse.radius)
