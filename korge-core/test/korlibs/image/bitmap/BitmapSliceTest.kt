@@ -12,6 +12,7 @@ import korlibs.math.geom.vector.*
 import korlibs.platform.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class BitmapSliceTest {
     val logger = Logger("BitmapSliceTest")
@@ -25,6 +26,33 @@ class BitmapSliceTest {
         //assertEquals("Rectangle(x=48, y=48, width=-16, height=-16)", bmp.sliceWithBounds(48, 48, 32, 32).bounds.toString()) // Allow invalid bounds
         assertEquals("Rectangle(x=48, y=48, width=0, height=0)", bmp.sliceWithBounds(48, 48, 32, 32).bounds.toString())
         assertEquals("Rectangle(x=24, y=24, width=24, height=24)", bmp.sliceWithSize(16, 16, 32, 32).sliceWithSize(8, 8, 40, 40).bounds.toString())
+    }
+
+    @Test
+    fun testPutSliceWithBorder() {
+        // Create bitmap with border pixels
+        val bmpInput = Bitmap8(4, 4, byteArrayOf(
+            1, 2, 3, 4,
+            5, 0, 0, 6,
+            7, 0, 0, 8,
+            9, 1, 2, 3
+        ))
+
+        val extruded = Bitmap8(6, 6)
+        extruded.putSliceWithBorder(1, 1, bmpInput.slice(), 1)
+
+        assertTrue {
+            extruded.contentEquals(
+                Bitmap8(6, 6, byteArrayOf(
+                    1, 1, 2, 3, 4, 4,
+                    1, 1, 2, 3, 4, 4,
+                    5, 5, 0, 0, 6, 6,
+                    7, 7, 0, 0, 8, 8,
+                    9, 9, 1, 2, 3, 3,
+                    9, 9, 1, 2, 3, 3
+                ))
+            )
+        }
     }
 
     @Test
