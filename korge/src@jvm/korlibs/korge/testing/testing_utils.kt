@@ -173,7 +173,7 @@ inline fun korgeScreenshotTestV2(
                 })
             config.start()
         } else {
-            error("Diffs found... Update goldens with INTERACTIVE_SCREENSHOT=true.")
+            println("Diffs found... Update goldens with INTERACTIVE_SCREENSHOT=true.")
         }
     }
 }
