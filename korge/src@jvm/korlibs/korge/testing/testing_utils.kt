@@ -14,9 +14,8 @@ import korlibs.math.geom.*
 import kotlinx.coroutines.sync.*
 import java.awt.*
 
-@OptIn(KorgeExperimental::class)
 inline fun korgeScreenshotTestV2(
-    korgeConfig: Korge,
+    korgeConfig: Korge = Korge(),
     settings: KorgeScreenshotValidationSettings = KorgeScreenshotValidationSettings(),
     crossinline callback: suspend Stage.(korgeScreenshotTester: KorgeScreenshotTester) -> Unit = {},
 ) {
@@ -174,7 +173,7 @@ inline fun korgeScreenshotTestV2(
                 })
             config.start()
         } else {
-            println("Diffs found... Update goldens with INTERACTIVE_SCREENSHOT=true.")
+            error("Diffs found... Update goldens with INTERACTIVE_SCREENSHOT=true.")
         }
     }
 }

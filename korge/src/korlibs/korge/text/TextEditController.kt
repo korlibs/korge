@@ -24,19 +24,24 @@ import korlibs.time.*
 import kotlin.math.*
 import kotlin.text.isLetterOrDigit
 
+data class TextInputSettings(
+    // If true, render static non-blinking caret rather than blinking caret.
+    val useStaticCaret: Boolean = false
+)
+
 @KorgeExperimental
 class TextEditController(
     val textView: Text,
     val caretContainer: Container = textView,
     val eventHandler: View = textView,
     val bg: RenderableView? = null,
+    val settings: TextInputSettings = TextInputSettings(),
 ) : Closeable, UIFocusable, ISoftKeyboardConfig by SoftKeyboardConfig() {
     init {
         textView.focusable = this
     }
 
     val stage: Stage? get() = textView.stage
-    var initialText: String = textView.text
     private val closeables = CancellableGroup()
     override val UIFocusManager.Scope.focusView: View get() = this@TextEditController.textView
     val onEscPressed = Signal<TextEditController>()
@@ -89,7 +94,10 @@ class TextEditController(
 
     private val textSnapshots = HistoryStack<TextSnapshot>()
 
-    private fun setTextNoSnapshot(text: String, out: TextSnapshot = TextSnapshot("", 0..0)): TextSnapshot? {
+    private fun setTextNoSnapshot(
+        text: String,
+        out: TextSnapshot = TextSnapshot("", 0..0)
+    ): TextSnapshot? {
         if (!acceptTextChange(textView.text, text)) return null
         out.text = textView.text
         out.selectionRange = selectionRange
@@ -138,7 +146,7 @@ class TextEditController(
         }
     var textColor: RGBA by textView::color
 
-    private var _selectionStart: Int = initialText.length
+    private var _selectionStart: Int = textView.text.length
     private var _selectionEnd: Int = _selectionStart
 
     private fun clampIndex(index: Int) = index.clamp(0, text.length)
@@ -186,7 +194,11 @@ class TextEditController(
     }
 
     val selectionLength: Int get() = (selectionEnd - selectionStart).absoluteValue
-    val selectionText: String get() = text.substring(min(selectionStart, selectionEnd), max(selectionStart, selectionEnd))
+    val selectionText: String
+        get() = text.substring(
+            min(selectionStart, selectionEnd),
+            max(selectionStart, selectionEnd)
+        )
     var selectionRange: IntRange
         get() = min(selectionStart, selectionEnd) until max(selectionStart, selectionEnd)
         set(value) {
@@ -195,7 +207,7 @@ class TextEditController(
 
     private val gameWindow get() = textView.stage!!.views.gameWindow
 
-    fun getCaretAtIndex(index: Int): Bezier {
+    private fun getCaretAtIndex(index: Int): Bezier {
         val glyphPositions = textView.getGlyphMetrics().glyphs
         if (glyphPositions.isEmpty()) return Bezier(Point(), Point())
         val glyph = glyphPositions[min(index, glyphPositions.size - 1)]
@@ -231,7 +243,11 @@ class TextEditController(
                     minDist = dist
                     //println("[$n] dist=$dist")
                     index = when {
-                        n >= glyphPositions.size - 1 && dist != 0.0 && glyph.distToPath(pos, startEnd = false) < glyph.distToPath(pos, startEnd = true) -> n + 1
+                        n >= glyphPositions.size - 1 && dist != 0.0 && glyph.distToPath(
+                            pos,
+                            startEnd = false
+                        ) < glyph.distToPath(pos, startEnd = true) -> n + 1
+
                         else -> n
                     }
                 }
@@ -241,23 +257,35 @@ class TextEditController(
         return index
     }
 
-    fun updateCaretPosition() {
+    private fun updateCaretPosition() {
         val range = selectionRange
         //val startX = getCaretAtIndex(range.start)
         //val endX = getCaretAtIndex(range.endExclusive)
 
         val array = PointArrayList(if (range.isEmpty()) 2 else (range.length + 1) * 2)
         if (range.isEmpty()) {
-            val last = (range.first >= this.text.length)
-            val caret = getCaretAtIndex(range.first)
-            val sign = if (last) -1.0 else +1.0
-            val normal = caret.normal(Ratio.ZERO) * (2.0 * sign)
-            val p0 = caret.points.first
-            val p1 = caret.points.last
-            array.add(p0)
-            array.add(p1)
-            array.add(p0 + normal)
-            array.add(p1 + normal)
+            if (range.first == 0 && this.text.isEmpty()) {
+                // Render caret when text is empty.
+                // We use the height of a space character as the caret height.
+                val caretHeight = textView.getGlyphMetricsForSpaceCharacter().glyphs.first().caretStart.points.last.y
+                val caretWidth = 2.0
+                array.add(Point(0.0, 0))
+                array.add(Point(0.0, caretHeight))
+                array.add(Point(caretWidth, 0))
+                array.add(Point(caretWidth, caretHeight))
+            } else {
+                val last = (range.first >= this.text.length)
+                val caret = getCaretAtIndex(range.first)
+                val sign = if (last) -1.0 else +1.0
+                val normal = caret.normal(Ratio.ZERO) * (2.0 * sign)
+                val p0 = caret.points.first
+                val p1 = caret.points.last
+                array.add(p0)
+                array.add(p1)
+                array.add(p0 + normal)
+                array.add(p1 + normal)
+            }
+
         } else {
             for (n in range.first..range.last + 1) {
                 val caret = getCaretAtIndex(n)
@@ -335,9 +363,9 @@ class TextEditController(
     //override var focused: Boolean
     //    set(value) {
     //        if (value == focused) return
-//
+    //
     //        bg?.isFocused = value
-//
+    //
     //
     //    }
     //    get() = stage?.uiFocusedView == this
@@ -351,10 +379,14 @@ class TextEditController(
             if (!focused) {
                 caret.visible = false
             } else {
-                if (selectionLength == 0) {
-                    caret.visible = !caret.visible
-                } else {
+                if (settings.useStaticCaret) {
                     caret.visible = true
+                } else {
+                    if (selectionLength == 0) {
+                        caret.visible = !caret.visible
+                    } else {
+                        caret.visible = true
+                    }
                 }
             }
         }
@@ -372,9 +404,11 @@ class TextEditController(
                             onReturnPressed(this@TextEditController)
                         }
                     }
+
                     27 -> {
                         onEscPressed(this@TextEditController)
                     }
+
                     else -> {
                         insertText(it.characters())
                     }
@@ -391,6 +425,7 @@ class TextEditController(
                                 Key.Z -> {
                                     if (it.shift) redo() else undo()
                                 }
+
                                 Key.C, Key.X -> {
                                     if (selectionText.isNotEmpty()) {
                                         gameWindow.clipboardWrite(TextClipboardData(selectionText))
@@ -401,17 +436,22 @@ class TextEditController(
                                         moveToIndex(false, selection.first)
                                     }
                                 }
+
                                 Key.V -> {
-                                    val rtext = (gameWindow.clipboardRead() as? TextClipboardData?)?.text
+                                    val rtext =
+                                        (gameWindow.clipboardRead() as? TextClipboardData?)?.text
                                     if (rtext != null) insertText(rtext)
                                 }
+
                                 Key.A -> {
                                     selectAll()
                                 }
+
                                 else -> Unit
                             }
                         }
                     }
+
                     Key.BACKSPACE, Key.DELETE -> {
                         val range = selectionRange
                         if (range.length > 0) {
@@ -422,7 +462,8 @@ class TextEditController(
                                 if (cursorIndex > 0) {
                                     val oldCursorIndex = cursorIndex
                                     text = text.withoutIndex(cursorIndex - 1)
-                                    cursorIndex = oldCursorIndex - 1 // This [oldCursorIndex] is required since changing text might change the cursorIndex already in some circumstances
+                                    cursorIndex =
+                                        oldCursorIndex - 1 // This [oldCursorIndex] is required since changing text might change the cursorIndex already in some circumstances
                                 }
                             } else {
                                 if (cursorIndex < text.length) {
@@ -431,18 +472,27 @@ class TextEditController(
                             }
                         }
                     }
+
                     Key.LEFT -> {
                         when {
                             it.isStartFinalSkip() -> moveToIndex(it.shift, 0)
-                            else -> moveToIndex(it.shift, leftIndex(selectionStart, it.isWordSkip()))
+                            else -> moveToIndex(
+                                it.shift,
+                                leftIndex(selectionStart, it.isWordSkip())
+                            )
                         }
                     }
+
                     Key.RIGHT -> {
                         when {
                             it.isStartFinalSkip() -> moveToIndex(it.shift, text.length)
-                            else -> moveToIndex(it.shift, rightIndex(selectionStart, it.isWordSkip()))
+                            else -> moveToIndex(
+                                it.shift,
+                                rightIndex(selectionStart, it.isWordSkip())
+                            )
                         }
                     }
+
                     Key.HOME -> moveToIndex(it.shift, 0)
                     Key.END -> moveToIndex(it.shift, text.length)
                     else -> Unit
@@ -451,7 +501,7 @@ class TextEditController(
         }
 
         closeables += this.eventHandler.newMouse {
-        //container.mouse {
+            //container.mouse {
             var dragging = false
             bg?.isOver = false
             onOut(this@TextEditController)

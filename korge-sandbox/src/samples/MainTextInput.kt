@@ -4,6 +4,7 @@ import korlibs.event.*
 import korlibs.image.color.*
 import korlibs.image.font.*
 import korlibs.io.file.std.*
+import korlibs.korge.annotations.*
 import korlibs.korge.scene.*
 import korlibs.korge.text.*
 import korlibs.korge.ui.*
@@ -13,6 +14,7 @@ import korlibs.math.geom.*
 import korlibs.math.geom.shape.*
 
 class MainTextInput : Scene() {
+    @OptIn(KorgeExperimental::class)
     override suspend fun SContainer.sceneMain() {
         //val bitmap = NativeImage(512, 512, premultiplied = true).context2d {
         //    fill(Colors.RED) {
@@ -46,6 +48,11 @@ class MainTextInput : Scene() {
             this.softKeyboardType = SoftKeyboardType.EMAIL_ADDRESS
         }.xy(200, 300)
 
+        val t = uiTextInput("input with static caret", size = Size(512f, 64f), settings = TextInputSettings(useStaticCaret = true)) {
+            this.textSize = 40.0
+            this.font = font
+        }.xy(200, 400)
+
         val textPath = buildVectorPath { circle(Point(0, 0), 100.0) }
 
         text(
@@ -65,6 +72,9 @@ class MainTextInput : Scene() {
             .aroundPath(buildVectorPath { moveTo(Point(0.0, 0.0)); quadTo(Point(250.0, -100.0), Point(500.0, 0.0)) })
             .filters(DropshadowFilter())
             .also { it.editText() }
+
+
+        t.focus()
 
         /*
         gpuGraphics {
