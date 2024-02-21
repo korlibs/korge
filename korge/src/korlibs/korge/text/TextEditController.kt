@@ -25,8 +25,9 @@ import kotlin.math.*
 import kotlin.text.isLetterOrDigit
 
 data class TextInputSettings(
-    // If true, render static non-blinking caret rather than blinking caret.
-    val useStaticCaret: Boolean = false
+    // Controls caret blinking duration.
+    // If null, then caret will be static.
+    val caretBlinkingDuration: TimeSpan? = 0.5.seconds,
 )
 
 @KorgeExperimental
@@ -375,12 +376,10 @@ class TextEditController(
 
         this.eventHandler.cursor = Cursor.TEXT
 
-        closeables += this.eventHandler.timers.interval(0.5.seconds) {
-            if (!focused) {
-                caret.visible = false
-            } else {
-                if (settings.useStaticCaret) {
-                    caret.visible = true
+        if (settings.caretBlinkingDuration != null) {
+            closeables += this.eventHandler.timers.interval(settings.caretBlinkingDuration) {
+                if (!focused) {
+                    caret.visible = false
                 } else {
                     if (selectionLength == 0) {
                         caret.visible = !caret.visible
@@ -390,6 +389,7 @@ class TextEditController(
                 }
             }
         }
+
 
         closeables += this.eventHandler.newKeys {
             typed {

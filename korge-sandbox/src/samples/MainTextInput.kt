@@ -48,7 +48,7 @@ class MainTextInput : Scene() {
             this.softKeyboardType = SoftKeyboardType.EMAIL_ADDRESS
         }.xy(200, 300)
 
-        val t = uiTextInput("input with static caret", size = Size(512f, 64f), settings = TextInputSettings(useStaticCaret = true)) {
+        uiTextInput("input with static caret", size = Size(512f, 64f), settings = TextInputSettings(caretBlinkingDuration = null)) {
             this.textSize = 40.0
             this.font = font
         }.xy(200, 400)
@@ -72,9 +72,6 @@ class MainTextInput : Scene() {
             .aroundPath(buildVectorPath { moveTo(Point(0.0, 0.0)); quadTo(Point(250.0, -100.0), Point(500.0, 0.0)) })
             .filters(DropshadowFilter())
             .also { it.editText() }
-
-
-        t.focus()
 
         /*
         gpuGraphics {

@@ -13,7 +13,7 @@ class UITextInputTestJvm {
         val input = uiTextInput(
             initialText = "",
             size = Size(20.0, 24.0),
-            settings = TextInputSettings(useStaticCaret = true)
+            settings = TextInputSettings(caretBlinkingDuration = null)
         ) { }
         input.focus()
         it.recordGolden(input, "emptyTextInputRendersCaret")
