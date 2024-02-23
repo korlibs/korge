@@ -76,6 +76,7 @@ data class VfsFile(
 	override suspend fun openRead(): AsyncStream = open(VfsOpenMode.READ)
 
 	suspend inline fun <T> openUse(mode: VfsOpenMode = VfsOpenMode.READ, callback: AsyncStream.() -> T): T = open(mode).use(callback)
+    suspend inline fun <T> openUseIt(mode: VfsOpenMode = VfsOpenMode.READ, callback: (AsyncStream) -> T): T = open(mode).use(callback)
 
 	suspend fun readRangeBytes(range: LongRange): ByteArray = vfs.readRange(this.path, range)
 	suspend fun readRangeBytes(range: IntRange): ByteArray = vfs.readRange(this.path, range.toLongRange())

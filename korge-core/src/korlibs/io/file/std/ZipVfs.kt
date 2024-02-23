@@ -143,8 +143,9 @@ suspend fun <R> AsyncStream.openAsZip(caseSensitive: Boolean = true, useNativeDe
  * at Coroutine$await$lambda.doResume (korio.js:626:34)
  * at file:///Users/soywiz/projects/korlibs/korio/build/node_modules/korio.js:603:25
  */
-suspend fun VfsFile.createZipFromTree(): ByteArray = ZipBuilder.createZipFromTree(this)
-suspend fun VfsFile.createZipFromTreeTo(s: AsyncStream) = ZipBuilder.createZipFromTreeTo(this, s)
+suspend fun VfsFile.createZipFromTree(useFolderAsRoot: Boolean = false): ByteArray = ZipBuilder.createZipFromTree(this, useFolderAsRoot)
+suspend fun VfsFile.createZipFromTreeTo(s: AsyncStream, useFolderAsRoot: Boolean = false) = ZipBuilder.createZipFromTreeTo(this, s, useFolderAsRoot)
+suspend fun VfsFile.createZipFromTreeTo(zipFile: VfsFile, useFolderAsRoot: Boolean = true): VfsFile = ZipBuilder.createZipFromTreeTo(this, zipFile, useFolderAsRoot)
 
 private fun ZipEntry2?.toStat(file: VfsFile): VfsStat {
     val vfs = file.vfs

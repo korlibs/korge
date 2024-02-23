@@ -1,35 +1,27 @@
 package korlibs.io.compression.zip
 
-import korlibs.memory.ByteArrayBuilder
-import korlibs.io.file.VfsFile
-import korlibs.io.file.fullName
-import korlibs.io.file.std.createZipFromTreeTo
-import korlibs.io.lang.UTF8
-import korlibs.io.lang.toByteArray
-import korlibs.io.stream.AsyncStream
-import korlibs.io.stream.MemorySyncStream
-import korlibs.io.stream.toAsync
-import korlibs.io.stream.write16LE
-import korlibs.io.stream.write32LE
-import korlibs.io.stream.writeBytes
-import korlibs.io.stream.writeFile
-import korlibs.io.stream.writeString
-import korlibs.io.stream.writeSync
-import korlibs.io.util.checksum.CRC32
-import korlibs.io.util.checksum.checksum
+import korlibs.io.file.*
+import korlibs.io.lang.*
+import korlibs.io.stream.*
+import korlibs.io.util.checksum.*
+import korlibs.memory.*
 
 class ZipBuilder {
     companion object {
-        suspend fun createZipFromTree(file: VfsFile): ByteArray {
-            val buf = ByteArrayBuilder()
-            val mem = MemorySyncStream(buf)
-            file.createZipFromTreeTo(mem.toAsync())
-            return buf.toByteArray()
+        suspend fun createZipFromTree(file: VfsFile, useFolderAsRoot: Boolean = false): ByteArray = buildByteArray {
+            createZipFromTreeTo(file, MemorySyncStream(this).toAsync(), useFolderAsRoot)
         }
 
-        suspend fun createZipFromTreeTo(file: VfsFile, s: AsyncStream) {
+        suspend fun createZipFromTreeTo(folder: VfsFile, zipFile: VfsFile, useFolderAsRoot: Boolean = true): VfsFile {
+            zipFile.openUse(VfsOpenMode.CREATE_OR_TRUNCATE) {
+                createZipFromTreeTo(if (useFolderAsRoot) folder.jail() else folder, this)
+            }
+            return zipFile
+        }
+
+        suspend fun createZipFromTreeTo(file: VfsFile, s: AsyncStream, useFolderAsRoot: Boolean = false) {
             val entries = arrayListOf<ZipEntry>()
-            ZipBuilder.addZipFileEntryTree(s, file, entries)
+            ZipBuilder.addZipFileEntryTree(s, if (useFolderAsRoot) file.jail() else file, entries)
             val directoryStart = s.position
 
             for (entry in entries) {
