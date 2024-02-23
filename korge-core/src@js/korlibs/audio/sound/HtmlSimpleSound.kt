@@ -26,6 +26,9 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
+val AudioBuffer.durationOrNull: Double? get() = duration.takeIf { !it.isNaN() }
+val HTMLMediaElement.durationOrNull: Double? get() = duration.takeIf { !it.isNaN() }
+
 class AudioBufferOrHTMLMediaElement(
     val audioBuffer: AudioBuffer?,
     val htmlAudioElement: HTMLAudioElement?,
@@ -37,8 +40,8 @@ class AudioBufferOrHTMLMediaElement(
     val isNotNull get() = !isNull
 
     val duration: Double? get() = when {
-        audioBuffer != null -> audioBuffer.duration
-        htmlAudioElement != null -> htmlAudioElement.duration
+        audioBuffer != null -> audioBuffer.durationOrNull
+        htmlAudioElement != null -> htmlAudioElement.durationOrNull
         else -> null
     }
     val numberOfChannels: Int get() = audioBuffer?.numberOfChannels ?: 1
@@ -84,7 +87,7 @@ object HtmlSimpleSound {
 
 	class SimpleSoundChannel(
 		val buffer: AudioBufferOrHTMLMediaElement,
-		val ctx: BaseAudioContext,
+		val ctx: BaseAudioContext?,
         val params: PlaybackParameters,
         val coroutineContext: CoroutineContext
 	) {
@@ -100,7 +103,7 @@ object HtmlSimpleSound {
             val htmlAudioElement = buffer.htmlAudioElement
             val audioBuffer = buffer.audioBuffer
 
-            ctx.destination.apply {
+            ctx?.destination?.apply {
                 pannerNode = panner {
                     gainNode = gain {
                         when {
@@ -147,7 +150,7 @@ object HtmlSimpleSound {
                         if (sourceNode == null || ctx?.state != "running") {
                             window.setTimeout(
                                 { deferred.complete(Unit) },
-                                ((buffer.asDynamic().duration.unsafeCast<Double>()) * 1000).toInt()
+                                ((buffer.unsafeCast<HTMLMediaElement>().durationOrNull ?: 0.0) * 1000).toInt()
                             )
                         } else {
                             sourceNode?.onended = {
@@ -372,41 +375,41 @@ object HtmlSimpleSound {
 
 	suspend fun loadSound(url: String): AudioBuffer? = loadSound(url.uniVfs.readBytes())
 
-	init {
-		val _scratchBuffer = ctx?.createBuffer(1, 1, 22050)
-		lateinit var unlock: (e: Event) -> Unit
-		unlock = {
+    init {
+        val _scratchBuffer = ctx?.createBuffer(1, 1, 22050)
+        lateinit var unlock: (e: Event) -> Unit
+        unlock = {
             // Remove the touch start listener.
             document.removeEventListener("keydown", unlock, true)
             document.removeEventListener("touchstart", unlock, true)
             document.removeEventListener("touchend", unlock, true)
             document.removeEventListener("mousedown", unlock, true)
 
-			if (ctx != null) {
+            if (ctx != null) {
                 // If already created the audio context, we try to resume it
                 (window.asDynamic()).globalAudioContext.unsafeCast<BaseAudioContext?>()?.resume()
 
                 val source = ctx.createBufferSource()
 
-				source.buffer = _scratchBuffer
-				source.connect(ctx.destination)
-				source.start(0.0)
-				if (jsTypeOf(ctx.asDynamic().resume) === "function") ctx.asDynamic().resume()
-				source.onended = {
-					source.disconnect(0)
+                source.buffer = _scratchBuffer
+                source.connect(ctx.destination)
+                source.start(0.0)
+                if (jsTypeOf(ctx.asDynamic().resume) === "function") ctx.asDynamic().resume()
+                source.onended = {
+                    source.disconnect(0)
 
-					unlocked = true
+                    unlocked = true
                     logger.info { "Web Audio was successfully unlocked" }
-					unlockDeferred.complete(Unit)
-				}
-			}
-		}
+                    unlockDeferred.complete(Unit)
+                }
+            }
+        }
 
-		document.addEventListener("keydown", unlock, true)
-		document.addEventListener("touchstart", unlock, true)
-		document.addEventListener("touchend", unlock, true)
-		document.addEventListener("mousedown", unlock, true)
-	}
+        document.addEventListener("keydown", unlock, true)
+        document.addEventListener("touchstart", unlock, true)
+        document.addEventListener("touchend", unlock, true)
+        document.addEventListener("mousedown", unlock, true)
+    }
 }
 
 external interface AudioParam {
