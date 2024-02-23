@@ -21,6 +21,8 @@ private const val CHUNK = 8 * 1024 * 1024
 
 @OptIn(KorioExperimentalApi::class)
 fun DeflateNative(windowBits: Int): CompressionMethod = object : CompressionMethod {
+    override val name: String get() = "DEFLATE"
+
     val DEBUG_DEFLATE = Environment["DEBUG_DEFLATE"] == "true"
     //val DEBUG_DEFLATE = true
 

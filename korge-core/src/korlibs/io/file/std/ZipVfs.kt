@@ -1,8 +1,8 @@
 package korlibs.io.file.std
 
+import korlibs.io.compression.*
 import korlibs.io.compression.deflate.Deflate
 import korlibs.io.compression.deflate.DeflatePortable
-import korlibs.io.compression.uncompressed
 import korlibs.io.compression.zip.ZipBuilder
 import korlibs.io.compression.zip.ZipEntry2
 import korlibs.io.compression.zip.ZipFile
@@ -33,8 +33,14 @@ suspend fun ZipVfs(
     caseSensitive: Boolean = true,
     closeStream: Boolean = false,
     useNativeDecompression: Boolean = true,
-    fullName: String? = null
+    fullName: String? = null,
+    compressionMethods: List<CompressionMethod>? = null,
 ): VfsFile {
+    val compressionMethods = (compressionMethods ?: emptyList()) + listOf(CompressionMethod.Uncompressed, if (useNativeDecompression) Deflate else DeflatePortable)
+    val algosByName = compressionMethods.associateBy { it.name }
+
+    val algoIdToName = mapOf(0 to "STORE", 8 to "DEFLATE", 14 to "LZMA")
+
     //val s = zipFile.open(VfsOpenMode.READ)
     val zipFile = ZipFile(s, caseSensitive, fullName ?: vfsFile?.fullName)
 
@@ -78,10 +84,8 @@ suspend fun ZipVfs(
                     0 -> compressedData
                     else -> {
                         //println("[ZipVfs].open[5]")
-                        val method = when (entry.compressionMethod) {
-                            8 -> if (useNativeDecompression) Deflate else DeflatePortable
-                            else -> TODO("Not implemented zip method ${entry.compressionMethod}")
-                        }
+                        val algoName = algoIdToName[entry.compressionMethod]
+                        val method = algosByName[algoName] ?: TODO("Not implemented zip method ${entry.compressionMethod} with name '$algoName' not provided as compressionMethods")
                         compressedData.uncompressed(method).withLength(entry.uncompressedSize).toAsyncStream()
                         //val compressed = compressedData.uncompressed(method).readAll()
                         //val compressed = compressedData.readAll().uncompress(method)
@@ -112,14 +116,14 @@ suspend fun ZipVfs(
     return Impl().root
 }
 
-suspend fun VfsFile.openAsZip(caseSensitive: Boolean = true, useNativeDecompression: Boolean = true): VfsFile =
-    ZipVfs(this.open(VfsOpenMode.READ), this, caseSensitive = caseSensitive, closeStream = true, useNativeDecompression = useNativeDecompression)
+suspend fun VfsFile.openAsZip(caseSensitive: Boolean = true, useNativeDecompression: Boolean = true, compressionMethods: List<CompressionMethod>? = null): VfsFile =
+    ZipVfs(this.open(VfsOpenMode.READ), this, caseSensitive = caseSensitive, closeStream = true, useNativeDecompression = useNativeDecompression, compressionMethods = compressionMethods)
 
-suspend fun AsyncStream.openAsZip(caseSensitive: Boolean = true, useNativeDecompression: Boolean = true) =
-    ZipVfs(this, caseSensitive = caseSensitive, closeStream = false, useNativeDecompression = useNativeDecompression)
+suspend fun AsyncStream.openAsZip(caseSensitive: Boolean = true, useNativeDecompression: Boolean = true, compressionMethods: List<CompressionMethod>? = null) =
+    ZipVfs(this, caseSensitive = caseSensitive, closeStream = false, useNativeDecompression = useNativeDecompression, compressionMethods = compressionMethods)
 
-suspend fun <R> VfsFile.openAsZip(caseSensitive: Boolean = true, useNativeDecompression: Boolean = true, callback: suspend (VfsFile) -> R): R {
-    val file = openAsZip(caseSensitive, useNativeDecompression = useNativeDecompression)
+suspend fun <R> VfsFile.openAsZip(caseSensitive: Boolean = true, useNativeDecompression: Boolean = true, compressionMethods: List<CompressionMethod>? = null, callback: suspend (VfsFile) -> R): R {
+    val file = openAsZip(caseSensitive, useNativeDecompression = useNativeDecompression, compressionMethods = compressionMethods)
     try {
         return callback(file)
     } finally {
@@ -143,8 +147,24 @@ suspend fun <R> AsyncStream.openAsZip(caseSensitive: Boolean = true, useNativeDe
  * at Coroutine$await$lambda.doResume (korio.js:626:34)
  * at file:///Users/soywiz/projects/korlibs/korio/build/node_modules/korio.js:603:25
  */
-suspend fun VfsFile.createZipFromTree(): ByteArray = ZipBuilder.createZipFromTree(this)
-suspend fun VfsFile.createZipFromTreeTo(s: AsyncStream) = ZipBuilder.createZipFromTreeTo(this, s)
+suspend fun VfsFile.createZipFromTree(
+    useFolderAsRoot: Boolean = false, compression: CompressionMethod = CompressionMethod.Uncompressed): ByteArray = ZipBuilder.createZipFromTree(
+    this,
+    compression,
+    useFolderAsRoot
+)
+suspend fun VfsFile.createZipFromTreeTo(s: AsyncStream, compression: CompressionMethod = CompressionMethod.Uncompressed, useFolderAsRoot: Boolean = false) = ZipBuilder.createZipFromTreeTo(
+    this,
+    s,
+    compression,
+    useFolderAsRoot
+)
+suspend fun VfsFile.createZipFromTreeTo(zipFile: VfsFile, compression: CompressionMethod = CompressionMethod.Uncompressed, useFolderAsRoot: Boolean = true): VfsFile = ZipBuilder.createZipFromTreeTo(
+    this,
+    zipFile,
+    compression,
+    useFolderAsRoot
+)
 
 private fun ZipEntry2?.toStat(file: VfsFile): VfsStat {
     val vfs = file.vfs

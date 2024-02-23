@@ -1,39 +1,43 @@
 package korlibs.io.compression.zip
 
-import korlibs.memory.ByteArrayBuilder
-import korlibs.io.file.VfsFile
-import korlibs.io.file.fullName
-import korlibs.io.file.std.createZipFromTreeTo
-import korlibs.io.lang.UTF8
-import korlibs.io.lang.toByteArray
-import korlibs.io.stream.AsyncStream
-import korlibs.io.stream.MemorySyncStream
-import korlibs.io.stream.toAsync
-import korlibs.io.stream.write16LE
-import korlibs.io.stream.write32LE
-import korlibs.io.stream.writeBytes
-import korlibs.io.stream.writeFile
-import korlibs.io.stream.writeString
-import korlibs.io.stream.writeSync
-import korlibs.io.util.checksum.CRC32
-import korlibs.io.util.checksum.checksum
+import korlibs.io.compression.*
+import korlibs.io.file.*
+import korlibs.io.lang.*
+import korlibs.io.stream.*
+import korlibs.io.util.checksum.*
+import korlibs.memory.*
 
 class ZipBuilder {
     companion object {
-        suspend fun createZipFromTree(file: VfsFile): ByteArray {
-            val buf = ByteArrayBuilder()
-            val mem = MemorySyncStream(buf)
-            file.createZipFromTreeTo(mem.toAsync())
-            return buf.toByteArray()
+        suspend fun createZipFromTree(file: VfsFile, compression: CompressionMethod = CompressionMethod.Uncompressed, useFolderAsRoot: Boolean = false): ByteArray = buildByteArray {
+            createZipFromTreeTo(file, MemorySyncStream(this).toAsync(), compression, useFolderAsRoot)
         }
 
-        suspend fun createZipFromTreeTo(file: VfsFile, s: AsyncStream) {
+        suspend fun createZipFromTreeTo(
+            folder: VfsFile,
+            zipFile: VfsFile,
+            compression: CompressionMethod = CompressionMethod.Uncompressed,
+            useFolderAsRoot: Boolean = true
+        ): VfsFile {
+            zipFile.openUse(VfsOpenMode.CREATE_OR_TRUNCATE) {
+            //zipFile.openUse(VfsOpenMode.CREATE) {
+                createZipFromTreeTo(folder, this, compression, useFolderAsRoot)
+            }
+            return zipFile
+        }
+
+        suspend fun createZipFromTreeTo(
+            file: VfsFile,
+            s: AsyncStream,
+            compression: CompressionMethod = CompressionMethod.Uncompressed,
+            useFolderAsRoot: Boolean = false
+        ) {
             val entries = arrayListOf<ZipEntry>()
-            ZipBuilder.addZipFileEntryTree(s, file, entries)
+            addZipFileEntryTree(s, if (useFolderAsRoot) file.jail() else file, entries, compression)
             val directoryStart = s.position
 
             for (entry in entries) {
-                ZipBuilder.addDirEntry(s, entry)
+                addDirEntry(s, entry)
             }
             val directoryEnd = s.position
             val comment = byteArrayOf()
@@ -51,23 +55,35 @@ class ZipBuilder {
             }
         }
 
-        suspend fun addZipFileEntry(s: AsyncStream, entry: VfsFile): ZipEntry {
+        val CompressionMethod.zipId: Int get() = when (this.name) {
+            "STORE" -> 0
+            "DEFLATE" -> 8
+            "LZMA" -> 14
+            else -> TODO("Unknown '${this.name}' compression method for zip ($this)")
+        }
+
+        suspend fun addZipFileEntry(s: AsyncStream, entry: VfsFile, compression: CompressionMethod = CompressionMethod.Uncompressed): ZipEntry {
             val size = entry.size().toInt()
             val versionMadeBy = 0x314
             val extractVersion = 10
             val flags = 2048
-            //val compressionMethod = 8 // Deflate
-            val compressionMethod = 0 // Store
+            val compressionMethod = compression.zipId
+            val compressed = compressionMethod != 0
             val date = 0
             val time = 0
-            val crc32 = entry.checksum(CRC32)
+            //var crc32 = if (compressed) 0 else entry.checksum(CRC32)
+            var crc32 = entry.checksum(CRC32)
             val name = entry.fullName.trim('/')
             val nameBytes = name.toByteArray(UTF8)
             val extraBytes = byteArrayOf()
-            val compressedSize = size
+            var compressedSize = if (compressed) 0 else size
             val uncompressedSize = size
 
             val headerOffset = s.position
+
+            var compressedPos = 0L
+
+            compressedPos = s.position + 14
             s.writeSync {
                 writeString("PK\u0003\u0004")
                 write16LE(extractVersion)
@@ -83,7 +99,23 @@ class ZipBuilder {
                 writeBytes(nameBytes)
                 writeBytes(extraBytes)
             }
-            s.writeFile(entry)
+            if (compressed) {
+                val startPos = s.position
+                //val crcUpdater = CRC32.updater()
+                entry.openUseIt {
+                    //compression.compress(it, s.withChecksumUpdater(crcUpdater))
+                    compression.compress(it, s)
+                }
+                //crc32 = crcUpdater.current
+                val endPos = s.position
+                compressedSize = (endPos - startPos).toInt()
+                s.sliceWithSize(compressedPos, 8).also {
+                    it.write32LE(crc32)
+                    it.write32LE(compressedSize)
+                }
+            } else {
+                s.writeFile(entry)
+            }
 
             return ZipEntry(
                 versionMadeBy = versionMadeBy,
@@ -105,11 +137,11 @@ class ZipBuilder {
             )
         }
 
-        suspend fun addZipFileEntryTree(s: AsyncStream, entry: VfsFile, entries: MutableList<ZipEntry>) {
+        suspend fun addZipFileEntryTree(s: AsyncStream, entry: VfsFile, entries: MutableList<ZipEntry>, compression: CompressionMethod = CompressionMethod.Uncompressed) {
             if (entry.isDirectory()) {
-                entry.list().collect { addZipFileEntryTree(s, it, entries) }
+                entry.list().collect { addZipFileEntryTree(s, it, entries, compression) }
             } else {
-                entries += addZipFileEntry(s, entry)
+                entries += addZipFileEntry(s, entry, compression)
             }
         }
 
