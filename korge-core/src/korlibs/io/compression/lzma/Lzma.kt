@@ -18,6 +18,8 @@ import korlibs.io.stream.writeBytes
  */
 @OptIn(KorioExperimentalApi::class)
 object Lzma : CompressionMethod {
+    override val name: String get() = "LZMA"
+
 	override suspend fun uncompress(reader: BitReader, out: AsyncOutputStream) {
 		val input = reader.readAll().openSync()
 		val properties = input.readBytesExact(5)

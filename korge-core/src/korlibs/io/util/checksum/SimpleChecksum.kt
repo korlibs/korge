@@ -1,10 +1,7 @@
 package korlibs.io.util.checksum
 
 import korlibs.io.async.use
-import korlibs.io.stream.AsyncInputOpenable
-import korlibs.io.stream.AsyncInputStream
-import korlibs.io.stream.SyncInputStream
-import korlibs.io.stream.read
+import korlibs.io.stream.*
 
 interface SimpleChecksum {
 	val initialValue: Int
@@ -42,3 +39,22 @@ suspend fun AsyncInputStream.checksum(checksum: SimpleChecksum): Int {
 }
 
 suspend fun AsyncInputOpenable.checksum(checksum: SimpleChecksum) = this.openRead().use { this.checksum(checksum) }
+
+fun SimpleChecksum.updater(): SimpleChecksumUpdater = SimpleChecksumUpdater(this)
+
+class SimpleChecksumUpdater(val checksum: SimpleChecksum) {
+    var current: Int = checksum.initialValue
+        private set
+
+    fun update(data: ByteArray, offset: Int = 0, len: Int = data.size - offset): Int {
+        current = checksum.update(current, data, offset, len)
+        return current
+    }
+}
+
+fun AsyncOutputStream.withChecksumUpdater(checksum: SimpleChecksumUpdater): AsyncOutputStream = object : AsyncOutputStream by this@withChecksumUpdater {
+    override suspend fun write(buffer: ByteArray, offset: Int, len: Int) {
+        checksum.update(buffer, offset, len)
+        this@withChecksumUpdater.write(buffer, offset, len)
+    }
+}
