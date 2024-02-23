@@ -11,13 +11,11 @@ open class StandardBasePathsDarwin : StandardBasePathsNative() {
     override val executableFolder: String get() = PathInfo(executableFile).parent.fullPath
     override val resourcesFolder: String by lazy {
         val path = nativeCwd()
-        println("StandardBasePathsDarwin.resourcesFolder: $path")
         var cpath = path
         while (cpath.length > 2) {
             if (NSFileManager().contentsOfDirectoryAtPath(path, null) != null) break
             cpath = PathInfo(cpath).parent.fullPath
         }
-        println("  -> $cpath")
         cpath
     }
     override fun appPreferencesFolder(appId: String): String {
