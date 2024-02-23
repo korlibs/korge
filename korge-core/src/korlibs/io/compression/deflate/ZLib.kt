@@ -16,6 +16,8 @@ import korlibs.encoding.hex
 
 @OptIn(KorioExperimentalApi::class)
 open class ZLib(val deflater: (windowBits: Int) -> CompressionMethod) : CompressionMethod {
+    override val name: String get() = "ZLIB"
+
 	companion object : ZLib({ Deflate(it) })
 
     object Portable : ZLib({ DeflatePortable(it) })

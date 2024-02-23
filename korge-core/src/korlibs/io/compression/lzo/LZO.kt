@@ -27,6 +27,8 @@ import korlibs.encoding.hex
 
 // @TODO: We might want to support a raw version without headers?
 open class LZO(val headerType: HeaderType = HeaderType.SHORT) : CompressionMethod {
+    override val name: String get() = "LZO"
+
     companion object : LZO(headerType = HeaderType.SHORT);
 
     enum class HeaderType { NONE, SHORT, LONG }

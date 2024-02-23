@@ -11,7 +11,9 @@ actual fun Deflate(windowBits: Int): CompressionMethod = DeflateNative(windowBit
 
 @OptIn(KorioExperimentalApi::class)
 fun DeflateNative(windowBits: Int): CompressionMethod = object : CompressionMethod {
-	override suspend fun uncompress(i: BitReader, o: AsyncOutputStream) {
+    override val name: String get() = "DEFLATE"
+
+    override suspend fun uncompress(i: BitReader, o: AsyncOutputStream) {
 		val tempInput = ByteArray(64 * 1024)
 		var tempInputSize = 0
 		val tempOutput = ByteArray(128 * 1024)

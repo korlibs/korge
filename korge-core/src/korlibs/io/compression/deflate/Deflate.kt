@@ -23,7 +23,9 @@ val Deflate: CompressionMethod by lazy { Deflate(15) }
 
 @OptIn(KorioExperimentalApi::class)
 open class DeflatePortable(val windowBits: Int) : CompressionMethod {
-	override suspend fun compress(
+    override val name: String get() = "DEFLATE"
+
+    override suspend fun compress(
 		i: BitReader,
 		o: AsyncOutputStream,
 		context: CompressionContext
