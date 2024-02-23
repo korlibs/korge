@@ -1,27 +1,15 @@
 
-import korlibs.audio.sound.*
 import korlibs.event.*
 import korlibs.image.color.*
-import korlibs.image.font.*
-import korlibs.image.format.*
 import korlibs.image.text.*
-import korlibs.image.vector.*
-import korlibs.image.vector.format.SVG
 import korlibs.io.async.*
-import korlibs.io.file.std.*
-import korlibs.io.lang.*
 import korlibs.korge.*
 import korlibs.korge.input.*
-import korlibs.korge.scene.*
 import korlibs.korge.time.*
 import korlibs.korge.tween.*
-import korlibs.korge.ui.*
 import korlibs.korge.view.*
 import korlibs.korge.view.align.alignBottomToBottomOf
-import korlibs.korge.view.align.alignLeftToLeftOf
-import korlibs.korge.view.align.alignTopToTopOf
 import korlibs.korge.view.align.centerXOn
-import korlibs.math.geom.*
 import korlibs.math.interpolation.*
 import korlibs.time.*
 import samples.*
@@ -135,11 +123,13 @@ suspend fun main() = Korge(
         //Demo(::MainColorTransformFilter),
         //Demo(::MainMasks),
         //Demo(::MainShape2dScene),
-        Demo(::MainUIStacks),
+        //Demo(::MainUIStacks),
+        Demo(::MainAudioScene),
         //Demo(::MainSprites10k),
         //Demo(::MainStressMatrixMultiplication),
         //Demo(::MainSDF),
         listOf(
+            Demo(::MainAudioScene),
             Demo(::MainUIStacks),
             Demo(::MainShape2dScene),
             Demo(::MainStressMatrixMultiplication),

@@ -76,7 +76,7 @@ open class NativeSoundProvider() : Disposable, Pauseable {
     //open val audioFormats: AudioFormats = AudioFormats(WAV, MP3Decoder, OGG)
 
     open suspend fun createSound(vfs: Vfs, path: String, streaming: Boolean = false, props: AudioDecodingProps = AudioDecodingProps.DEFAULT): Sound {
-        println("createSound.coroutineContext: $coroutineContextKt")
+        //println("createSound.coroutineContext: $coroutineContextKt")
         return if (streaming) {
             //val stream = vfs.file(path).open()
             //createStreamingSound(audioFormats.decodeStreamOrError(stream, props)) {

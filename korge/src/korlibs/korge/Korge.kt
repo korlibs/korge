@@ -174,6 +174,7 @@ suspend fun KorgeWithConfig(config: KorgeConfig, entry: suspend Stage.() -> Unit
  */
 object KorgeRunner {
     suspend operator fun invoke(config: Korge) = Worker.init {
+        nativeSoundProvider // Ensure web audio hooks are added to avoid first click not working on JS
         RegisteredImageFormats.register(config.imageFormats)
 
         val iconPath = config.icon
