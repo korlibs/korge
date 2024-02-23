@@ -842,6 +842,9 @@ fun AsyncInputStream.withLength(length: Long): AsyncInputStream {
 	}
 }
 
+fun MemoryAsyncStream(data: korlibs.memory.ByteArrayBuilder): AsyncStream = MemoryAsyncStreamBase(data).toAsyncStream()
+fun MemoryAsyncStream(initialCapacity: Int = 4096): AsyncStream = MemoryAsyncStreamBase(initialCapacity).toAsyncStream()
+
 class MemoryAsyncStreamBase(var data: korlibs.memory.ByteArrayBuilder) : AsyncStreamBase() {
 	constructor(initialCapacity: Int = 4096) : this(ByteArrayBuilder(initialCapacity))
 
