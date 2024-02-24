@@ -236,7 +236,7 @@ fun SoundProps.copySoundPropsFromCombined(l: ReadonlySoundProps, r: ReadonlySoun
     this.panning = r.panning
 }
 
-class SoundChannelGroup(volume: Double = 1.0, pitch: Double = 1.0, panning: Double = 0.0) : SoundChannelBase, SoundChannelPlay {
+class SoundChannelGroup(volume: Double = 1.0, pitch: Double = 1.0, panning: Double = 0.0) : SoundChannelBase, SoundChannelPlay, Extra by Extra.Mixin() {
     private val channels = arrayListOf<SoundChannelBase>()
 
     override val state: SoundChannelState get() = when {
@@ -305,8 +305,10 @@ class SoundChannelGroup(volume: Double = 1.0, pitch: Double = 1.0, panning: Doub
         prune()
     }
 
-    override fun reset(): Unit = all { it.reset() }
-    override fun stop(): Unit = all { it.stop() }
+    override fun reset() = all { it.reset() }
+    override fun stop() = all { it.stop() }
+    override fun resume() = all { it.resume() }
+    override fun pause() = all { it.pause() }
 
     override fun play(coroutineContext: CoroutineContext, sound: Sound, params: PlaybackParameters): SoundChannel {
         return sound.play(
@@ -328,10 +330,12 @@ enum class SoundChannelState {
     val playingOrPaused get() = this == PAUSED || this == PLAYING
 }
 
-interface SoundChannelBase : SoundProps {
+interface SoundChannelBase : SoundProps, Extra {
     val state: SoundChannelState
     fun reset(): Unit
     fun stop(): Unit
+    fun resume(): Unit
+    fun pause(): Unit
 
     fun onCompleted(coroutineContext: CoroutineContext, block: () -> Unit) {
         var blockOnce: (() -> Unit)? = null
@@ -382,8 +386,8 @@ abstract class SoundChannel(val sound: Sound) : SoundChannelBase, Extra by Extra
     final override fun reset() { current = 0.seconds }
 	abstract override fun stop(): Unit
 
-    open fun pause(): Unit = unsupported()
-    open fun resume(): Unit = unsupported()
+    override fun pause(): Unit = unsupported()
+    override fun resume(): Unit = unsupported()
     fun togglePaused(): Unit = if (paused) resume() else pause()
 }
 
