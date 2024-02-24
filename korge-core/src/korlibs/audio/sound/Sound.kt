@@ -236,7 +236,7 @@ fun SoundProps.copySoundPropsFromCombined(l: ReadonlySoundProps, r: ReadonlySoun
     this.panning = r.panning
 }
 
-class SoundChannelGroup(volume: Double = 1.0, pitch: Double = 1.0, panning: Double = 0.0) : SoundChannelBase {
+class SoundChannelGroup(volume: Double = 1.0, pitch: Double = 1.0, panning: Double = 0.0) : SoundChannelBase, SoundChannelPlay, Extra by Extra.Mixin() {
     private val channels = arrayListOf<SoundChannelBase>()
 
     override val state: SoundChannelState get() = when {
@@ -272,10 +272,18 @@ class SoundChannelGroup(volume: Double = 1.0, pitch: Double = 1.0, panning: Doub
         this.panning = panning
     }
 
+    @Suppress("DEPRECATION")
+    fun register(channel: SoundChannelBase, coroutineContext: CoroutineContext) {
+        add(channel)
+        channel.onCompleted(coroutineContext) { remove(channel) }
+    }
+
+    @Deprecated("Use register instead of play")
     fun add(channel: SoundChannelBase) {
         channels.add(channel)
         setProps(channel)
     }
+    @Deprecated("Use register instead of play")
     fun remove(channel: SoundChannelBase) {
         channels.remove(channel)
     }
@@ -284,6 +292,7 @@ class SoundChannelGroup(volume: Double = 1.0, pitch: Double = 1.0, panning: Doub
         channel.volume = this.volume
         channel.pitch = this.pitch
         channel.panning = this.panning
+        channel.position = this.position
     }
 
     @PublishedApi
@@ -296,8 +305,21 @@ class SoundChannelGroup(volume: Double = 1.0, pitch: Double = 1.0, panning: Doub
         prune()
     }
 
-    override fun reset(): Unit = all { it.reset() }
-    override fun stop(): Unit = all { it.stop() }
+    override fun reset() = all { it.reset() }
+    override fun stop() = all { it.stop() }
+    override fun resume() = all { it.resume() }
+    override fun pause() = all { it.pause() }
+
+    override fun play(coroutineContext: CoroutineContext, sound: Sound, params: PlaybackParameters): SoundChannel {
+        return sound.play(
+            coroutineContext,
+            params.copy(
+                volume = this.volume * params.volume,
+                pitch = this.pitch * params.pitch,
+                panning = this.panning * params.panning,
+            )
+        ).also { register(it, coroutineContext) }
+    }
 }
 
 enum class SoundChannelState {
@@ -308,11 +330,31 @@ enum class SoundChannelState {
     val playingOrPaused get() = this == PAUSED || this == PLAYING
 }
 
-
-interface SoundChannelBase : SoundProps {
+interface SoundChannelBase : SoundProps, Extra {
     val state: SoundChannelState
     fun reset(): Unit
     fun stop(): Unit
+    fun resume(): Unit
+    fun pause(): Unit
+
+    fun onCompleted(coroutineContext: CoroutineContext, block: () -> Unit) {
+        var blockOnce: (() -> Unit)? = null
+        blockOnce = {
+            blockOnce = null
+            block()
+        }
+
+        coroutineContext.onCancel {
+            blockOnce?.invoke()
+        }
+        coroutineContext.launchUnscoped {
+            try {
+                while (state.playing) delay(10.milliseconds)
+            } finally {
+                blockOnce?.invoke()
+            }
+        }
+    }
 }
 
 suspend fun SoundChannelBase.await() {
@@ -323,6 +365,7 @@ val SoundChannelBase.playing: Boolean get() = state.playing
 val SoundChannelBase.paused: Boolean get() = state.paused
 val SoundChannelBase.playingOrPaused: Boolean get() = state.playingOrPaused
 
+@Deprecated("Use channel.play() instead")
 fun <T : SoundChannelBase> T.attachTo(group: SoundChannelGroup): T = this.apply { group.add(this) }
 
 abstract class SoundChannel(val sound: Sound) : SoundChannelBase, Extra by Extra.Mixin() {
@@ -343,8 +386,8 @@ abstract class SoundChannel(val sound: Sound) : SoundChannelBase, Extra by Extra
     final override fun reset() { current = 0.seconds }
 	abstract override fun stop(): Unit
 
-    open fun pause(): Unit = unsupported()
-    open fun resume(): Unit = unsupported()
+    override fun pause(): Unit = unsupported()
+    override fun resume(): Unit = unsupported()
     fun togglePaused(): Unit = if (paused) resume() else pause()
 }
 
@@ -361,7 +404,29 @@ suspend fun SoundChannel.await(progress: SoundChannel.(current: TimeSpan, total:
 	}
 }
 
-abstract class Sound(val creationCoroutineContext: CoroutineContext) : SoundProps, AudioStreamable {
+interface SoundChannelPlay {
+    fun play(coroutineContext: CoroutineContext, sound: Sound, params: PlaybackParameters = PlaybackParameters.DEFAULT): SoundChannel
+    fun play(coroutineContext: CoroutineContext, sound: Sound, times: PlaybackTimes, startTime: TimeSpan = 0.seconds): SoundChannel = play(coroutineContext, sound, PlaybackParameters(times, startTime))
+    fun playForever(coroutineContext: CoroutineContext, sound: Sound, startTime: TimeSpan = 0.seconds): SoundChannel = play(coroutineContext, sound, infinitePlaybackTimes, startTime)
+    suspend fun play(sound: Sound, params: PlaybackParameters = PlaybackParameters.DEFAULT): SoundChannel = play(coroutineContextKt, sound, params)
+    suspend fun play(sound: Sound, times: PlaybackTimes, startTime: TimeSpan = 0.seconds): SoundChannel = play(coroutineContextKt, sound, times, startTime)
+    suspend fun playForever(sound: Sound, startTime: TimeSpan = 0.seconds): SoundChannel = playForever(coroutineContextKt, sound, startTime)
+    suspend fun playAndWait(sound: Sound, params: PlaybackParameters, progress: SoundChannel.(current: TimeSpan, total: TimeSpan) -> Unit = { current, total -> }): Unit = play(sound, params).await(progress)
+    suspend fun playAndWait(sound: Sound, times: PlaybackTimes = 1.playbackTimes, startTime: TimeSpan = 0.seconds, progress: SoundChannel.(current: TimeSpan, total: TimeSpan) -> Unit = { current, total -> }): Unit = play(sound, times, startTime).await(progress)
+}
+
+interface SoundPlay {
+    fun play(coroutineContext: CoroutineContext, params: PlaybackParameters = PlaybackParameters.DEFAULT): SoundChannel
+    fun play(coroutineContext: CoroutineContext, times: PlaybackTimes, startTime: TimeSpan = 0.seconds): SoundChannel = play(coroutineContext, PlaybackParameters(times, startTime))
+    fun playForever(coroutineContext: CoroutineContext, startTime: TimeSpan = 0.seconds): SoundChannel = play(coroutineContext, infinitePlaybackTimes, startTime)
+    suspend fun play(params: PlaybackParameters = PlaybackParameters.DEFAULT): SoundChannel = play(coroutineContextKt, params)
+    suspend fun play(times: PlaybackTimes, startTime: TimeSpan = 0.seconds): SoundChannel = play(coroutineContextKt, times, startTime)
+    suspend fun playForever(startTime: TimeSpan = 0.seconds): SoundChannel = playForever(coroutineContextKt, startTime)
+    suspend fun playAndWait(params: PlaybackParameters, progress: SoundChannel.(current: TimeSpan, total: TimeSpan) -> Unit = { current, total -> }): Unit = play(params).await(progress)
+    suspend fun playAndWait(times: PlaybackTimes = 1.playbackTimes, startTime: TimeSpan = 0.seconds, progress: SoundChannel.(current: TimeSpan, total: TimeSpan) -> Unit = { current, total -> }): Unit = play(times, startTime).await(progress)
+}
+
+abstract class Sound(val creationCoroutineContext: CoroutineContext) : SoundProps, SoundPlay, AudioStreamable {
     var defaultCoroutineContext = creationCoroutineContext
 
     open val name: String = "UnknownNativeSound"
@@ -375,16 +440,7 @@ abstract class Sound(val creationCoroutineContext: CoroutineContext) : SoundProp
     fun playNoCancel(times: PlaybackTimes = PlaybackTimes.ONE, startTime: TimeSpan = 0.seconds): SoundChannel = play(creationCoroutineContext + SupervisorJob(), times, startTime)
     fun playNoCancelForever(startTime: TimeSpan = 0.seconds): SoundChannel = play(creationCoroutineContext + SupervisorJob(), infinitePlaybackTimes, startTime)
 
-    open fun play(coroutineContext: CoroutineContext, params: PlaybackParameters = PlaybackParameters.DEFAULT): SoundChannel = TODO()
-    fun play(coroutineContext: CoroutineContext, times: PlaybackTimes, startTime: TimeSpan = 0.seconds): SoundChannel = play(coroutineContext, PlaybackParameters(times, startTime))
-    fun playForever(coroutineContext: CoroutineContext, startTime: TimeSpan = 0.seconds): SoundChannel = play(coroutineContext, infinitePlaybackTimes, startTime)
-
-    suspend fun play(params: PlaybackParameters = PlaybackParameters.DEFAULT): SoundChannel = play(coroutineContextKt, params)
-    suspend fun play(times: PlaybackTimes, startTime: TimeSpan = 0.seconds): SoundChannel = play(coroutineContextKt, times, startTime)
-    suspend fun playForever(startTime: TimeSpan = 0.seconds): SoundChannel = playForever(coroutineContextKt, startTime)
-
-    suspend fun playAndWait(params: PlaybackParameters, progress: SoundChannel.(current: TimeSpan, total: TimeSpan) -> Unit = { current, total -> }): Unit = play(params).await(progress)
-    suspend fun playAndWait(times: PlaybackTimes = 1.playbackTimes, startTime: TimeSpan = 0.seconds, progress: SoundChannel.(current: TimeSpan, total: TimeSpan) -> Unit = { current, total -> }): Unit = play(times, startTime).await(progress)
+    override fun play(coroutineContext: CoroutineContext, params: PlaybackParameters): SoundChannel = TODO()
 
     abstract suspend fun decode(maxSamples: Int = DEFAULT_MAX_SAMPLES): AudioData
     suspend fun toAudioData(maxSamples: Int = DEFAULT_MAX_SAMPLES): AudioData = decode(maxSamples)

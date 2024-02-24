@@ -1,13 +1,8 @@
 package korlibs.audio.impl.jna
 
 import korlibs.audio.format.*
+import korlibs.audio.sound.*
 import korlibs.time.seconds
-import korlibs.audio.sound.SoundChannelGroup
-import korlibs.audio.sound.attachTo
-import korlibs.audio.sound.await
-import korlibs.audio.sound.playbackTimes
-import korlibs.audio.sound.readAudioStream
-import korlibs.audio.sound.readSound
 import korlibs.io.file.VfsFile
 import korlibs.io.file.fullName
 import korlibs.io.file.std.MemoryVfs
@@ -43,7 +38,7 @@ object JnaSoundProviderSample {
             //val result = data.playForever().attachTo(group)
             println(data.length)
             //val result = data.play(2.playbackTimes, startTime = 50.2.seconds).attachTo(group)
-            val result = data.play(10.playbackTimes, startTime = 0.seconds).attachTo(group)
+            val result = group.play(data, 10.playbackTimes, startTime = 0.seconds)
             //result.current = 50.seconds
             println(result.total)
             //group.volume = 0.2
