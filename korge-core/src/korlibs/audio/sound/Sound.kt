@@ -8,6 +8,7 @@ import korlibs.io.file.*
 import korlibs.io.lang.*
 import korlibs.io.stream.*
 import korlibs.math.*
+import korlibs.math.geom.*
 import korlibs.time.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
@@ -49,6 +50,12 @@ open class NativeSoundProvider() : Disposable, Pauseable {
 	open val target: String = "unknown"
 
     override var paused: Boolean = false
+
+    open var listenerPosition: Vector3 = Vector3.ZERO
+    open var listenerOrientationAt: Vector3 = Vector3.FORWARD // Look vector
+    open var listenerOrientationUp: Vector3 = Vector3.UP
+    // @TODO: Should this be estimated automatically from position samples?
+    open var listenerSpeed: Vector3 = Vector3.ZERO
 
     @Deprecated("")
     open fun createPlatformAudioOutput(coroutineContext: CoroutineContext, freq: Int = 44100): PlatformAudioOutput = PlatformAudioOutput(coroutineContext, freq)
@@ -164,12 +171,14 @@ interface ReadonlySoundProps {
     val volume: Double
     val pitch: Double
     val panning: Double
+    val position: Vector3
 }
 
 interface SoundProps : ReadonlySoundProps {
     override var volume: Double
     override var pitch: Double
     override var panning: Double
+    override var position: Vector3
 }
 
 object DummySoundProps : SoundProps {
@@ -182,6 +191,7 @@ object DummySoundProps : SoundProps {
     override var panning: Double
         get() = 0.0
         set(v) = Unit
+    override var position: Vector3 = Vector3.ZERO
 }
 
 fun SoundProps.copySoundPropsFrom(other: ReadonlySoundProps) {
@@ -250,6 +260,11 @@ class SoundChannelGroup(volume: Double = 1.0, pitch: Double = 1.0, panning: Doub
             field = value
             all { it.panning = value }
         }
+    override var position: Vector3 = Vector3.ZERO
+        set(value) {
+            field = value
+            all { it.position = value }
+        }
 
     init {
         this.volume = volume
@@ -315,6 +330,7 @@ abstract class SoundChannel(val sound: Sound) : SoundChannelBase, Extra by Extra
 	override var volume = 1.0
 	override var pitch = 1.0
 	override var panning = 0.0 // -1.0 left, +1.0 right
+    override var position: Vector3 = Vector3.ZERO
     // @TODO: Rename to position
 	open var current: TimeSpan
         get() = DateTime.now() - startTime
@@ -352,6 +368,7 @@ abstract class Sound(val creationCoroutineContext: CoroutineContext) : SoundProp
     override var volume: Double = 1.0
     override var panning: Double = 0.0
     override var pitch: Double = 1.0
+    override var position: Vector3 = Vector3.ZERO
 	open val length: TimeSpan = 0.seconds
     open val nchannels: Int get() = 1
 
@@ -382,6 +399,7 @@ data class PlaybackParameters(
     override val volume: Double = 1.0,
     override val pitch: Double = 1.0,
     override val panning: Double = 0.0,
+    override val position: Vector3 = Vector3.ZERO,
     val onCancel: (() -> Unit)? = null,
     val onFinish: (() -> Unit)? = null,
 ) : ReadonlySoundProps {

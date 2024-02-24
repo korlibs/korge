@@ -5,6 +5,7 @@ import korlibs.datastructure.thread.*
 import korlibs.io.async.*
 import korlibs.io.lang.*
 import korlibs.math.*
+import korlibs.math.geom.*
 import korlibs.time.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
@@ -33,6 +34,7 @@ open class NewPlatformAudioOutput(
     override var pitch: Double = 1.0
     override var volume: Double = 1.0
     override var panning: Double = 0.0
+    override var position: Vector3 = Vector3.ZERO
 
     protected open fun internalStart() = Unit
     protected open fun internalStop() = Unit
@@ -83,6 +85,7 @@ open class PlatformAudioOutput(
     override var pitch: Double = 1.0
     override var volume: Double = 1.0
     override var panning: Double = 0.0
+    override var position: Vector3 = Vector3.ZERO
 	open suspend fun add(samples: AudioSamples, offset: Int = 0, size: Int = samples.totalSamples) {
         delay(100.milliseconds)
     }
@@ -196,6 +199,7 @@ open class DequeBasedPlatformAudioOutput(
     override var pitch: Double = 1.0 ; set(value) { field = value; updateProps() }
     override var volume: Double = 1.0 ; set(value) { field = value; updateProps() }
     override var panning: Double = 0.0 ; set(value) { field = value; updateProps() }
+    override var position: Vector3 = Vector3.ZERO; set(value) { field = value; updateProps() }
 
     var volumes = FloatArray(2) { 1f }
 
