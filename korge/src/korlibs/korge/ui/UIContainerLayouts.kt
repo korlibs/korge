@@ -172,7 +172,8 @@ open class UIVerticalStack(
         forEachChild {
             it.y = y
             if (adjustSize && forcedWidth != null) it.scaledWidth = width
-            y += it.height + padding
+            val bounds = it.getLocalBounds()
+            y += bounds.bottom + padding
             bb += it.getBounds(this@UIVerticalStack)
         }
         unscaledSize = Size(if (forcedWidth == null) bb.xmax else forcedWidth!!, y)
