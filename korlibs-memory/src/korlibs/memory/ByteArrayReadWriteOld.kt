@@ -1,7 +1,5 @@
 package korlibs.memory
 
-import korlibs.number.*
-
 /////////////////////////////////////////
 /////////////////////////////////////////
 /////////////////////////////////////////
@@ -21,14 +19,12 @@ import korlibs.number.*
 @Deprecated("", ReplaceWith("getS24LE(o)")) public fun ByteArray.readS24LE(o: Int): Int = getS24LE(o)
 @Deprecated("", ReplaceWith("getS32LE(o)")) public fun ByteArray.readS32LE(o: Int): Int = getS32LE(o)
 @Deprecated("", ReplaceWith("getS64LE(o)")) public fun ByteArray.readS64LE(o: Int): Long = getS64LE(o)
-@Deprecated("", ReplaceWith("getF16LE(o)")) public fun ByteArray.readF16LE(o: Int): Half = getF16LE(o)
 @Deprecated("", ReplaceWith("getF32LE(o)")) public fun ByteArray.readF32LE(o: Int): Float = getF32LE(o)
 @Deprecated("", ReplaceWith("getF64LE(o)")) public fun ByteArray.readF64LE(o: Int): Double = getF64LE(o)
 @Deprecated("", ReplaceWith("getS16BE(o)")) public fun ByteArray.readS16BE(o: Int): Int = getS16BE(o)
 @Deprecated("", ReplaceWith("getS24BE(o)")) public fun ByteArray.readS24BE(o: Int): Int = getS24BE(o)
 @Deprecated("", ReplaceWith("getS32BE(o)")) public fun ByteArray.readS32BE(o: Int): Int = getS32BE(o)
 @Deprecated("", ReplaceWith("getS64BE(o)")) public fun ByteArray.readS64BE(o: Int): Long = getS64BE(o)
-@Deprecated("", ReplaceWith("getF16BE(o)")) public fun ByteArray.readF16BE(o: Int): Half = getF16BE(o)
 @Deprecated("", ReplaceWith("getF32BE(o)")) public fun ByteArray.readF32BE(o: Int): Float = getF32BE(o)
 @Deprecated("", ReplaceWith("getF64BE(o)")) public fun ByteArray.readF64BE(o: Int): Double = getF64BE(o)
 
@@ -40,7 +36,6 @@ import korlibs.number.*
 @Deprecated("", ReplaceWith("getS24(o, little)")) public fun ByteArray.readS24(o: Int, little: Boolean): Int = getS24(o, little)
 @Deprecated("", ReplaceWith("getS32(o, little)")) public fun ByteArray.readS32(o: Int, little: Boolean): Int = getS32(o, little)
 @Deprecated("", ReplaceWith("getS64(o, little)")) public fun ByteArray.readS64(o: Int, little: Boolean): Long = getS64(o, little)
-@Deprecated("", ReplaceWith("getF16(o, little)")) public fun ByteArray.readF16(o: Int, little: Boolean): Half = getF16(o, little)
 @Deprecated("", ReplaceWith("getF32(o, little)")) public fun ByteArray.readF32(o: Int, little: Boolean): Float = getF32(o, little)
 @Deprecated("", ReplaceWith("getF64(o, little)")) public fun ByteArray.readF64(o: Int, little: Boolean): Double = getF64(o, little)
 
@@ -75,7 +70,6 @@ import korlibs.number.*
 @Deprecated("", ReplaceWith("set24(o, v, little)")) public fun ByteArray.write24(o: Int, v: Int, little: Boolean) = set24(o, v, little)
 @Deprecated("", ReplaceWith("set32(o, v, little)")) public fun ByteArray.write32(o: Int, v: Int, little: Boolean) = set32(o, v, little)
 @Deprecated("", ReplaceWith("set64(o, v, little)")) public fun ByteArray.write64(o: Int, v: Long, little: Boolean) = set64(o, v, little)
-@Deprecated("", ReplaceWith("setF16(o, v, little)")) public fun ByteArray.writeF16(o: Int, v: Half, little: Boolean) = setF16(o, v, little)
 @Deprecated("", ReplaceWith("setF32(o, v, little)")) public fun ByteArray.writeF32(o: Int, v: Float, little: Boolean) = setF32(o, v, little)
 @Deprecated("", ReplaceWith("setF64(o, v, little)")) public fun ByteArray.writeF64(o: Int, v: Double, little: Boolean) = setF64(o, v, little)
 
@@ -84,7 +78,6 @@ import korlibs.number.*
 @Deprecated("", ReplaceWith("set32LE(o, v)")) public fun ByteArray.write32LE(o: Int, v: Int) = set32LE(o, v)
 @Deprecated("", ReplaceWith("set32LE(o, v)")) public fun ByteArray.write32LE(o: Int, v: Long) = set32LE(o, v)
 @Deprecated("", ReplaceWith("set64LE(o, v)")) public fun ByteArray.write64LE(o: Int, v: Long) = set64LE(o, v)
-@Deprecated("", ReplaceWith("setF16LE(o, v)")) public fun ByteArray.writeF16LE(o: Int, v: Half) = setF16LE(o, v)
 @Deprecated("", ReplaceWith("setF32LE(o, v)")) public fun ByteArray.writeF32LE(o: Int, v: Float) = setF32LE(o, v)
 @Deprecated("", ReplaceWith("setF64LE(o, v)")) public fun ByteArray.writeF64LE(o: Int, v: Double) = setF64LE(o, v)
 
@@ -93,7 +86,6 @@ import korlibs.number.*
 @Deprecated("", ReplaceWith("set32BE(o, v)")) public fun ByteArray.write32BE(o: Int, v: Int) = set32BE(o, v)
 @Deprecated("", ReplaceWith("set32BE(o, v)")) public fun ByteArray.write32BE(o: Int, v: Long) = set32BE(o, v)
 @Deprecated("", ReplaceWith("set64BE(o, v)")) public fun ByteArray.write64BE(o: Int, v: Long) = set64BE(o, v)
-@Deprecated("", ReplaceWith("setF16BE(o, v)")) public fun ByteArray.writeF16BE(o: Int, v: Half) = setF16BE(o, v)
 @Deprecated("", ReplaceWith("setF32BE(o, v)")) public fun ByteArray.writeF32BE(o: Int, v: Float) = setF32BE(o, v)
 @Deprecated("", ReplaceWith("setF64BE(o, v)")) public fun ByteArray.writeF64BE(o: Int, v: Double) = setF64BE(o, v)
 

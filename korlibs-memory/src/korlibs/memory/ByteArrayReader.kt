@@ -1,13 +1,11 @@
 package korlibs.memory
 
-import korlibs.number.*
-
 public class ByteArrayReader(public val data: ByteArray, public val start: Int, public val size: Int = 0) {
     private var offset = start
     public val remaining: Int get() = size - offset
     public val hasMore: Boolean get() = remaining > 0
 
-    private fun <T> move(count: Int, callback: ByteArray.(Int) -> T): T {
+    fun <T> move(count: Int, callback: ByteArray.(Int) -> T): T {
         val res = callback(data, this.offset)
         this.offset += count
         return res
@@ -36,10 +34,6 @@ public class ByteArrayReader(public val data: ByteArray, public val start: Int, 
     public fun s32LE(): Int = move(4) { getS32LE(it) }
     public fun u32BE(): Long = move(4) { getU32BE(it) }
     public fun s32BE(): Int = move(4) { getS32BE(it) }
-
-    public fun f16(little: Boolean): Half = move(2) { getF16(it, little) }
-    public fun f16LE(): Half = move(2) { getF16LE(it) }
-    public fun f16BE(): Half = move(2) { getF16BE(it) }
     public fun f32(little: Boolean): Float = move(4) { getF32(it, little) }
     public fun f32LE(): Float = move(4) { getF32LE(it) }
     public fun f32BE(): Float = move(4) { getF32BE(it) }
@@ -61,7 +55,6 @@ public fun ByteArrayReaderLE.u24(): Int = bar.u24LE()
 public fun ByteArrayReaderLE.s24(): Int = bar.s24LE()
 public fun ByteArrayReaderLE.u32(): Long = bar.u32LE()
 public fun ByteArrayReaderLE.s32(): Int = bar.s32LE()
-public fun ByteArrayReaderLE.f16(): Half = bar.f16LE()
 public fun ByteArrayReaderLE.f32(): Float = bar.f32LE()
 public fun ByteArrayReaderLE.f64(): Double = bar.f64LE()
 
@@ -78,7 +71,6 @@ public fun ByteArrayReaderBE.u24(): Int = bar.u24BE()
 public fun ByteArrayReaderBE.s24(): Int = bar.s24BE()
 public fun ByteArrayReaderBE.u32(): Long = bar.u32BE()
 public fun ByteArrayReaderBE.s32(): Int = bar.s32BE()
-public fun ByteArrayReaderBE.f16(): Half = bar.f16BE()
 public fun ByteArrayReaderBE.f32(): Float = bar.f32BE()
 public fun ByteArrayReaderBE.f64(): Double = bar.f64BE()
 
