@@ -27,8 +27,6 @@ dependencies {
     commonMainApi(project(":korlibs-platform"))
     commonMainApi(project(":korlibs-math-core"))
     commonMainApi(project(":korlibs-memory"))
-    commonMainApi(project(":korlibs-datastructure"))
     commonMainApi(project(":korlibs-logger"))
     commonMainApi(project(":korlibs-inject"))
-    commonMainApi(project(":korlibs-util"))
 }
