@@ -16,4 +16,5 @@ dependencies {
     commonTestApi(libs.kotlinx.coroutines.test)
     commonMainApi(project(":korlibs-math-core"))
     commonMainApi(project(":korlibs-platform"))
+    commonMainApi(project(":korlibs-util"))
 }
