@@ -1,7 +1,6 @@
 package korlibs.memory
 
-import korlibs.math.*
-import korlibs.number.*
+import korlibs.math.unsigned
 
 /////////////////////////////////////////
 /////////////////////////////////////////
@@ -34,14 +33,12 @@ public fun ByteArray.getS16LE(offset: Int): Int = get16LE(offset).signExtend(16)
 public fun ByteArray.getS24LE(offset: Int): Int = get24LE(offset).signExtend(24)
 public fun ByteArray.getS32LE(offset: Int): Int = get32LE(offset)
 public fun ByteArray.getS64LE(offset: Int): Long = get64LE(offset)
-public fun ByteArray.getF16LE(offset: Int): Half = Half.fromBits(get16LE(offset))
 public fun ByteArray.getF32LE(offset: Int): Float = Float.fromBits(get32LE(offset))
 public fun ByteArray.getF64LE(offset: Int): Double = Double.fromBits(get64LE(offset))
 public fun ByteArray.getS16BE(offset: Int): Int = get16BE(offset).signExtend(16)
 public fun ByteArray.getS24BE(offset: Int): Int = get24BE(offset).signExtend(24)
 public fun ByteArray.getS32BE(offset: Int): Int = get32BE(offset)
 public fun ByteArray.getS64BE(offset: Int): Long = get64BE(offset)
-public fun ByteArray.getF16BE(offset: Int): Half = Half.fromBits(get16BE(offset))
 public fun ByteArray.getF32BE(offset: Int): Float = Float.fromBits(get32BE(offset))
 public fun ByteArray.getF64BE(offset: Int): Double = Double.fromBits(get64BE(offset))
 
@@ -53,7 +50,6 @@ public fun ByteArray.getS16(offset: Int, littleEndian: Boolean): Int = if (littl
 public fun ByteArray.getS24(offset: Int, littleEndian: Boolean): Int = if (littleEndian) getS24LE(offset) else getS24BE(offset)
 public fun ByteArray.getS32(offset: Int, littleEndian: Boolean): Int = if (littleEndian) getS32LE(offset) else getS32BE(offset)
 public fun ByteArray.getS64(offset: Int, littleEndian: Boolean): Long = if (littleEndian) getS64LE(offset) else getS64BE(offset)
-public fun ByteArray.getF16(offset: Int, littleEndian: Boolean): Half = if (littleEndian) getF16LE(offset) else getF16BE(offset)
 public fun ByteArray.getF32(offset: Int, littleEndian: Boolean): Float = if (littleEndian) getF32LE(offset) else getF32BE(offset)
 public fun ByteArray.getF64(offset: Int, littleEndian: Boolean): Double = if (littleEndian) getF64LE(offset) else getF64BE(offset)
 
@@ -92,7 +88,6 @@ public fun ByteArray.set16(offset: Int, value: Int, littleEndian: Boolean) { if 
 public fun ByteArray.set24(offset: Int, value: Int, littleEndian: Boolean) { if (littleEndian) set24LE(offset, value) else set24BE(offset, value) }
 public fun ByteArray.set32(offset: Int, value: Int, littleEndian: Boolean) { if (littleEndian) set32LE(offset, value) else set32BE(offset, value) }
 public fun ByteArray.set64(offset: Int, value: Long, littleEndian: Boolean) { if (littleEndian) set64LE(offset, value) else set64BE(offset, value) }
-public fun ByteArray.setF16(offset: Int, value: Half, littleEndian: Boolean) { if (littleEndian) setF16LE(offset, value) else setF16BE(offset, value) }
 public fun ByteArray.setF32(offset: Int, value: Float, littleEndian: Boolean) { if (littleEndian) setF32LE(offset, value) else setF32BE(offset, value) }
 public fun ByteArray.setF64(offset: Int, value: Double, littleEndian: Boolean) { if (littleEndian) setF64LE(offset, value) else setF64BE(offset, value) }
 
@@ -101,7 +96,6 @@ public fun ByteArray.set24LE(offset: Int, value: Int) { this[offset + 0] = value
 public fun ByteArray.set32LE(offset: Int, value: Int) { this[offset + 0] = value.extractByte(0); this[offset + 1] = value.extractByte(8); this[offset + 2] = value.extractByte(16); this[offset + 3] = value.extractByte(24) }
 public fun ByteArray.set32LE(offset: Int, value: Long) { set32LE(offset, value.toInt()) }
 public fun ByteArray.set64LE(offset: Int, value: Long) { set32LE(offset + 0, (value ushr 0).toInt()); set32LE(offset + 4, (value ushr 32).toInt()) }
-public fun ByteArray.setF16LE(offset: Int, value: Half) { set16LE(offset + 0, value.toRawBits().toInt()) }
 public fun ByteArray.setF32LE(offset: Int, value: Float) { set32LE(offset + 0, value.toRawBits()) }
 public fun ByteArray.setF64LE(offset: Int, value: Double) { set64LE(offset + 0, value.toRawBits()) }
 
@@ -110,7 +104,6 @@ public fun ByteArray.set24BE(offset: Int, value: Int) { this[offset + 2] = value
 public fun ByteArray.set32BE(offset: Int, value: Int) { this[offset + 3] = value.extractByte(0); this[offset + 2] = value.extractByte(8); this[offset + 1] = value.extractByte(16); this[offset + 0] = value.extractByte(24) }
 public fun ByteArray.set32BE(offset: Int, value: Long) { set32BE(offset, value.toInt()) }
 public fun ByteArray.set64BE(offset: Int, value: Long) { set32BE(offset + 0, (value ushr 32).toInt()); set32BE(offset + 4, (value ushr 0).toInt()) }
-public fun ByteArray.setF16BE(offset: Int, value: Half) { set16BE(offset + 0, value.toRawBits().toInt()) }
 public fun ByteArray.setF32BE(offset: Int, value: Float) { set32BE(offset + 0, value.toRawBits()) }
 public fun ByteArray.setF64BE(offset: Int, value: Double) { set64BE(offset + 0, value.toRawBits()) }
 

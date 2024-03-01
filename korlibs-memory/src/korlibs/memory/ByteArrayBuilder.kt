@@ -1,7 +1,6 @@
 package korlibs.memory
 
-import korlibs.number.*
-import kotlin.math.*
+import kotlin.math.max
 
 /**
  * Analogous to [StringBuilder] but for [ByteArray]. Allows to [append] values to end calling [toByteArray].
@@ -83,11 +82,6 @@ public class ByteArrayBuilder(public var data: ByteArray, size: Int = data.size,
     public fun s32(v: Int, little: Boolean): ByteArrayBuilder = this.apply { prepare(4) { data.set32(_size, v, little) } }
     public fun s32LE(v: Int): ByteArrayBuilder = this.apply { prepare(4) { data.set32LE(_size, v) } }
     public fun s32BE(v: Int): ByteArrayBuilder = this.apply { prepare(4) { data.set32BE(_size, v) } }
-
-    public fun f16(v: Half, little: Boolean): ByteArrayBuilder = this.apply { prepare(2) { data.setF16(_size, v, little) } }
-    public fun f16LE(v: Half): ByteArrayBuilder = this.apply { prepare(2) { data.setF16LE(_size, v) } }
-    public fun f16BE(v: Half): ByteArrayBuilder = this.apply { prepare(2) { data.setF16BE(_size, v) } }
-
     public fun f32(v: Float, little: Boolean): ByteArrayBuilder = this.apply { prepare(4) { data.setF32(_size, v, little) } }
     public fun f32LE(v: Float): ByteArrayBuilder = this.apply { prepare(4) { data.setF32LE(_size, v) } }
     public fun f32BE(v: Float): ByteArrayBuilder = this.apply { prepare(4) { data.setF32BE(_size, v) } }
@@ -115,7 +109,6 @@ public fun ByteArrayBuilderLE.s8(v: Int): ByteArrayBuilder = bab.s8(v)
 public fun ByteArrayBuilderLE.s16(v: Int): ByteArrayBuilder = bab.s16LE(v)
 public fun ByteArrayBuilderLE.s24(v: Int): ByteArrayBuilder = bab.s24LE(v)
 public fun ByteArrayBuilderLE.s32(v: Int): ByteArrayBuilder = bab.s32LE(v)
-public fun ByteArrayBuilderLE.f16(v: Half): ByteArrayBuilder = bab.f16LE(v)
 public fun ByteArrayBuilderLE.f32(v: Float): ByteArrayBuilder = bab.f32LE(v)
 public fun ByteArrayBuilderLE.f64(v: Double): ByteArrayBuilder = bab.f64LE(v)
 public fun ByteArrayBuilderLE.clear(): Unit = bab.clear()
@@ -133,7 +126,6 @@ public fun ByteArrayBuilderBE.s8(v: Int): ByteArrayBuilder = bab.s8(v)
 public fun ByteArrayBuilderBE.s16(v: Int): ByteArrayBuilder = bab.s16BE(v)
 public fun ByteArrayBuilderBE.s24(v: Int): ByteArrayBuilder = bab.s24BE(v)
 public fun ByteArrayBuilderBE.s32(v: Int): ByteArrayBuilder = bab.s32BE(v)
-public fun ByteArrayBuilderBE.f16(v: Half): ByteArrayBuilder = bab.f16BE(v)
 public fun ByteArrayBuilderBE.f32(v: Float): ByteArrayBuilder = bab.f32BE(v)
 public fun ByteArrayBuilderBE.f64(v: Double): ByteArrayBuilder = bab.f64BE(v)
 public fun ByteArrayBuilderBE.clear(): Unit = bab.clear()
