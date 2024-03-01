@@ -17,4 +17,5 @@ dependencies {
     commonMainApi(project(":korlibs-math-core"))
     commonMainApi(project(":korlibs-platform"))
     commonMainApi(project(":korlibs-util"))
+    commonMainApi(project(":korlibs-crypto"))
 }
