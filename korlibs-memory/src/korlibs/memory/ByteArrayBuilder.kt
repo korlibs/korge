@@ -9,7 +9,7 @@ import kotlin.math.max
 public class ByteArrayBuilder(public var data: ByteArray, size: Int = data.size, public val allowGrow: Boolean = true) {
     public constructor(initialCapacity: Int = 4096) : this(ByteArray(initialCapacity), 0)
 
-    var _size: Int = size
+    private var _size: Int = size
     public var size: Int get() = _size
         set(value) {
             val oldPosition = _size
@@ -34,11 +34,11 @@ public class ByteArrayBuilder(public var data: ByteArray, size: Int = data.size,
         }
     }
 
-    fun ensureCount(count: Int) {
+    private fun ensureCount(count: Int) {
         ensure(_size + count)
     }
 
-    inline fun <T> prepare(count: Int, callback: () -> T): T {
+    private inline fun <T> prepare(count: Int, callback: () -> T): T {
         ensureCount(count)
         return callback().also { _size += count }
     }

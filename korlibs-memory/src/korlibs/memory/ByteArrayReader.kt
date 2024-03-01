@@ -5,7 +5,7 @@ public class ByteArrayReader(public val data: ByteArray, public val start: Int, 
     public val remaining: Int get() = size - offset
     public val hasMore: Boolean get() = remaining > 0
 
-    fun <T> move(count: Int, callback: ByteArray.(Int) -> T): T {
+    private fun <T> move(count: Int, callback: ByteArray.(Int) -> T): T {
         val res = callback(data, this.offset)
         this.offset += count
         return res
