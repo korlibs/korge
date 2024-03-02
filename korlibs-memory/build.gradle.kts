@@ -11,11 +11,8 @@ project.extensions.extraProperties.properties.apply {
 }
 
 dependencies {
-    commonMainApi(libs.kotlinx.coroutines.core)
-    commonMainApi(libs.kotlinx.atomicfu)
-    commonTestApi(libs.kotlinx.coroutines.test)
     commonMainApi(project(":korlibs-math-core"))
     commonMainApi(project(":korlibs-platform"))
-    commonMainApi(project(":korlibs-util"))
-    commonMainApi(project(":korlibs-crypto"))
+    commonTestImplementation(project(":korlibs-util"))
+    commonTestImplementation(project(":korlibs-crypto"))
 }
