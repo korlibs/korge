@@ -30,4 +30,5 @@ dependencies {
     commonMainApi(project(":korlibs-memory"))
     commonMainApi(project(":korlibs-logger"))
     commonMainApi(project(":korlibs-inject"))
+    commonMainApi(project(":korlibs-util"))
 }
