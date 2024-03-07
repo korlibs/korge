@@ -321,18 +321,30 @@ class YamlTest {
 
     @Test
     fun testSingleQuoteInString() {
-        val res = korlibs.template.internal.Yaml.decode("""
-           hello:   'world'
-           title: What's Happening
-           demo: ["hello",   "world", "test", what's happening, yeah]
-       """.trimIndent())
         assertEquals(
             mapOf(
                 "hello" to "world",
                 "title" to "What's Happening",
-                "demo" to listOf("hello", "world", "test", "what's happening", "yeah")
+                "demo" to listOf("hello", "world", "test", "what's happening", "yeah"),
+                "dependencies" to listOf(
+                    "https://github.com/korlibs/kproject.git/samples/demo2#95696dd942ebc8db4ee9d9f4835ce12d853ff16f",
+                    "https://github.com/korlibs/kproject.git/samples/demo2 #95696dd942ebc8db4ee9d9f4835ce12d853ff16f",
+                    "https://github.com/korlibs/kproject.git/samples/demo2#95696dd942ebc8db4ee9d9f4835ce12d853ff16f",
+                    "https://github.com/korlibs/kproject.git/samples/demo2",
+                ),
             ),
-            res
+            Yaml.decode("""
+                hello:   'world'
+                title: What's Happening
+                demo: ["hello",   "world", "test", what's happening, yeah]
+                # hi
+                dependencies:
+                    - "https://github.com/korlibs/kproject.git/samples/demo2#95696dd942ebc8db4ee9d9f4835ce12d853ff16f"
+                    - "https://github.com/korlibs/kproject.git/samples/demo2 #95696dd942ebc8db4ee9d9f4835ce12d853ff16f"
+                    - https://github.com/korlibs/kproject.git/samples/demo2#95696dd942ebc8db4ee9d9f4835ce12d853ff16f
+                    - https://github.com/korlibs/kproject.git/samples/demo2 #95696dd942ebc8db4ee9d9f4835ce12d853ff16f
+                    # hello
+           """.trimIndent())
         )
     }
 }

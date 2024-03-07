@@ -582,7 +582,11 @@ object Yaml {
                         flush(); out += Token.SYMBOL("$c", peekChar())
                     }
                     '#' -> {
-                        flush(); readUntilLineEnd(); skip(); continue@linestart
+                        if (str.lastOrNull()?.isWhitespaceFast() == true || (str == "" && out.lastOrNull() is Token.LINE)) {
+                            flush(); readUntilLineEnd(); skip(); continue@linestart
+                        } else {
+                            str += c
+                        }
                     }
                     '\n' -> {
                         flush(); continue@linestart
@@ -591,7 +595,7 @@ object Yaml {
                         flush()
                         val last = out.lastOrNull()
                         //println("out=$last, c='$c', reader=$this")
-                        if (last is Token.SYMBOL && (last.str == ":" || last.str == "[" || last.str == "{" || last.str == ",")) {
+                        if (last is Token.SYMBOL && (last.str == ":" || last.str == "[" || last.str == "{" || last.str == "," || last.str == "-")) {
                             s.unread()
                             //println(" -> c='$c', reader=$this")
                             out += Token.STR(s.readStringLit())
