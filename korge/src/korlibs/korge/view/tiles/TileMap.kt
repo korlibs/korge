@@ -16,7 +16,7 @@ import kotlin.math.*
 
 inline fun Container.tileMap(
     map: TileMapData,
-    tileset: TileSet,
+    tileset: TileSet = map.tileSet ?: TileSet.EMPTY,
     repeatX: TileMapRepeat = TileMapRepeat.NONE,
     repeatY: TileMapRepeat = repeatX,
     smoothing: Boolean = true,
