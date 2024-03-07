@@ -2,7 +2,7 @@
 
 package korlibs.io.serialization.csv
 
-import korlibs.io.util.StrReader
+import korlibs.util.*
 
 class CSV(val lines: List<List<String>>, val names: List<String>? = null) : Collection<CSV.Record> {
     val namesToIndex: Map<String, Int> = names?.withIndex()?.associate { it.value to it.index } ?: emptyMap()
@@ -47,13 +47,13 @@ class CSV(val lines: List<List<String>>, val names: List<String>? = null) : Coll
             return values.joinToString("$separator") { serializeElement(it, separator) }
         }
 
-        fun parseLine(line: String, separator: Char = DEFAULT_SEPARATOR): List<String> = parseLine(StrReader(line), separator)
+        fun parseLine(line: String, separator: Char = DEFAULT_SEPARATOR): List<String> = parseLine(SimpleStrReader(line), separator)
 
-        fun parseLine(line: StrReader, separator: Char = DEFAULT_SEPARATOR): List<String> {
+        fun parseLine(line: SimpleStrReader, separator: Char = DEFAULT_SEPARATOR): List<String> {
             val out = arrayListOf<String>()
             val str = StringBuilder()
             while (line.hasMore) {
-                val c = line.read()
+                val c = line.readChar()
                 when (c) {
                     // Quoted string
                     '"' -> {
@@ -92,7 +92,7 @@ class CSV(val lines: List<List<String>>, val names: List<String>? = null) : Coll
             return out
         }
 
-        fun parse(s: StrReader, separator: Char = DEFAULT_SEPARATOR, headerNames: Boolean = true): CSV {
+        fun parse(s: SimpleStrReader, separator: Char = DEFAULT_SEPARATOR, headerNames: Boolean = true): CSV {
             val lines = arrayListOf<List<String>>()
             while (s.hasMore) {
                 lines.add(parseLine(s, separator))
@@ -100,6 +100,6 @@ class CSV(val lines: List<List<String>>, val names: List<String>? = null) : Coll
             return if (headerNames) CSV(lines.drop(1), lines[0]) else CSV(lines, null)
         }
 
-        fun parse(str: String, separator: Char = DEFAULT_SEPARATOR, headerNames: Boolean = true): CSV = parse(StrReader(str), separator, headerNames)
+        fun parse(str: String, separator: Char = DEFAULT_SEPARATOR, headerNames: Boolean = true): CSV = parse(SimpleStrReader(str), separator, headerNames)
     }
 }

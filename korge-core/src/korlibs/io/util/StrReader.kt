@@ -4,6 +4,7 @@ import korlibs.datastructure.*
 import korlibs.datastructure.iterators.fastForEach
 import korlibs.io.lang.*
 import korlibs.io.stream.*
+import korlibs.util.*
 import kotlin.collections.*
 import kotlin.math.max
 import kotlin.math.min
@@ -11,16 +12,16 @@ import kotlin.math.min
 /**
  * @TODO: Make this an interface, but inline functions would need to be extension methods breaking source-compatibility
  **/
-abstract class BaseStrReader {
+abstract class BaseStrReader : SimpleStrReader {
     abstract val eof: Boolean
     abstract val pos: Int
-    val hasMore: Boolean get() = !eof
+    override val hasMore: Boolean get() = !eof
 
     abstract fun peekOffset(offset: Int = 0): Char
     abstract fun peek(count: Int): String
 
-    open fun peekChar(): Char = peekOffset(0)
-    open fun readChar(): Char {
+    override fun peekChar(): Char = peekOffset(0)
+    override fun readChar(): Char {
         val out = peekChar()
         skip(1)
         return out
