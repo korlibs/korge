@@ -38,23 +38,23 @@ class TileMapViewScreenshotTest {
     ) {
 
         val tileset = TileSet.fromBitmapSlices(16, 16, listOf(
-            Bitmap32(16, 16, Colors.TRANSPARENT).slice(),
+            Bitmap32(16, 16, Colors.TRANSPARENT).premultipliedIfRequired().slice(),
             //Bitmap32(16, 16, Colors.RED).slice(),
             Bitmap32(16, 16) { x, y ->
                 when {
                     x < 8 -> if (y < 8) Colors.RED else Colors.BLUE
                     else -> if (y < 8) Colors.WHITE else Colors.GREEN
                 }
-            }.slice(),
+            }.premultipliedIfRequired().slice(),
             Bitmap32(16, 16) { x, y ->
                 RGBA(64 + x * 8, 64 + y * 8, 255, 255)
-            }.slice(),
+            }.premultipliedIfRequired().slice(),
             Bitmap32(16, 16) { x, y ->
                 RGBA(255, 64 + x * 8, 64 + y * 8, 255)
-            }.slice(),
+            }.premultipliedIfRequired().slice(),
             Bitmap32(16, 16) { x, y ->
                 RGBA(64 + x * 8, 255, 64 + y * 8, 255)
-            }.slice(),
+            }.premultipliedIfRequired().slice(),
         ))
 
         val map = TileMapData(8, 16, tileset, Tile.INVALID)
