@@ -1,12 +1,14 @@
 package com.soywiz.kproject.model
 
 import com.soywiz.kproject.internal.*
+import korlibs.io.serialization.yaml.*
 import kotlin.test.*
 
 class NewKProjectModelTest {
     @Test
     fun test() {
-        val project = NewKProjectModel.parseObject(Yaml.decode("""
+        val project = NewKProjectModel.parseObject(
+            Yaml.decode("""
             name: "korge-compose"
             #targets: [jvm, desktop]
             #targets: [jvm, js, desktop, ios]
