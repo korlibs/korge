@@ -55,9 +55,10 @@ data class TileMapData(
 
     constructor(
         width: Int, height: Int,
+        empty: Tile = Tile(0),
         tileSet: TileSet? = null,
         offsetKind: TileMapOffsetKind = TileMapOffsetKind.INT,
-    ) : this(StackedLongArray2(width, height, StackedLongArray2.EMPTY), tileSet, offsetKind)
+    ) : this(StackedLongArray2(width, height, empty.raw), tileSet, offsetKind)
 
     /** The [empty] value that will be returned if the specified cell it out of bounds, or empty */
     val empty: Tile get() = Tile(data.empty)
