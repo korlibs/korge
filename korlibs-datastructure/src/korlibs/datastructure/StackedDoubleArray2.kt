@@ -54,6 +54,8 @@ class StackedDoubleArray2(
     override val startX: Int = 0,
     override val startY: Int = 0,
 ) : IStackedDoubleArray2 {
+    override var contentVersion: Int = 0 ; private set
+
     override fun clone(): StackedDoubleArray2 {
         return StackedDoubleArray2(width, height, empty, startX, startY).also { out ->
             arraycopy(this.level.data, 0, out.level.data, 0, out.level.data.size)
@@ -91,12 +93,14 @@ class StackedDoubleArray2(
     fun setLayer(level: Int, data: DoubleArray2) {
         ensureLevel(level)
         this.data[level] = data
+        contentVersion++
     }
 
     override operator fun set(x: Int, y: Int, level: Int, value: Double) {
         ensureLevel(level)
         data[level][x, y] = value
         this.level[x, y] = maxOf(this.level[x, y], level + 1)
+        contentVersion++
     }
 
     override operator fun get(x: Int, y: Int, level: Int): Double {
@@ -110,76 +114,25 @@ class StackedDoubleArray2(
 
     override fun removeLast(x: Int, y: Int) {
         level[x, y] = (level[x, y] - 1).coerceAtLeast(0)
+        contentVersion++
     }
 }
 
 fun DoubleArray2.toStacked(): StackedDoubleArray2 = StackedDoubleArray2(this)
 
-class SparseChunkedStackedDoubleArray2(override var empty: Double = StackedDoubleArray2.EMPTY) : IStackedDoubleArray2 {
+class SparseChunkedStackedDoubleArray2(override var empty: Double = StackedDoubleArray2.EMPTY) : SparseChunkedStackedArray2<IStackedDoubleArray2>(), IStackedDoubleArray2 {
     constructor(vararg layers: IStackedDoubleArray2, empty: Double = StackedDoubleArray2.EMPTY) : this(empty) {
         layers.fastForEach { putChunk(it) }
     }
 
-    var minX = 0
-    var minY = 0
-    var maxX = 0
-    var maxY = 0
-    override var maxLevel: Int = 0
-
-    val bvh = BVH<IStackedDoubleArray2>(dimensions = 2)
-    var first: IStackedDoubleArray2? = null
-    var last: IStackedDoubleArray2? = null
-
-    fun putChunk(chunk: IStackedDoubleArray2) {
-        if (first == null) {
-            first = chunk
-            empty = chunk.empty
-            minX = Int.MAX_VALUE
-            minY = Int.MAX_VALUE
-            maxX = Int.MIN_VALUE
-            maxY = Int.MIN_VALUE
-        }
-        last = chunk
-        bvh.insertOrUpdate(
-            BVHIntervals(chunk.startX, chunk.width, chunk.startY, chunk.height),
-            chunk
-        )
-        minX = min(minX, chunk.startX)
-        minY = min(minY, chunk.startY)
-        maxX = max(maxX, chunk.endX)
-        maxY = max(maxY, chunk.endY)
-        maxLevel = max(maxLevel, chunk.maxLevel)
+    override fun setEmptyFromChunk(chunk: IStackedDoubleArray2) {
+        empty = chunk.empty
     }
-
-    override val startX: Int get() = minX
-    override val startY: Int get() = minY
-    override val width: Int get() = maxX - minX
-    override val height: Int get() = maxY - minY
-
-    fun findAllChunks(): List<IStackedDoubleArray2> = bvh.findAllValues()
-
-    private var lastSearchChunk: IStackedDoubleArray2? = null
-
-    private fun IStackedDoubleArray2.chunkX(x: Int): Int = x - this.startX
-    private fun IStackedDoubleArray2.chunkY(y: Int): Int = y - this.startY
-    private fun IStackedDoubleArray2.containsChunk(x: Int, y: Int): Boolean {
-        return x in startX until endX && y in startY until endY
-    }
-
-    fun getChunkAt(x: Int, y: Int): IStackedDoubleArray2? {
-        // Cache to be much faster while iterating rows
-        lastSearchChunk?.let {
-            if (it.containsChunk(x, y)) return it
-        }
-        lastSearchChunk = bvh.searchValues(BVHIntervals(x, 1, y, 1)).firstOrNull()
-        return lastSearchChunk
-    }
-
-    override fun inside(x: Int, y: Int): Boolean = getChunkAt(x, y) != null
 
     override fun set(x: Int, y: Int, level: Int, value: Double) {
         getChunkAt(x, y)?.let { chunk ->
             chunk[chunk.chunkX(x), chunk.chunkY(y), level] = value
+            contentVersion++
         }
     }
 
@@ -188,19 +141,6 @@ class SparseChunkedStackedDoubleArray2(override var empty: Double = StackedDoubl
             return chunk[chunk.chunkX(x), chunk.chunkY(y), level]
         }
         return empty
-    }
-
-    override fun getStackLevel(x: Int, y: Int): Int {
-        getChunkAt(x, y)?.let { chunk ->
-            return chunk.getStackLevel(chunk.chunkX(x), chunk.chunkY(y))
-        }
-        return 0
-    }
-
-    override fun removeLast(x: Int, y: Int) {
-        getChunkAt(x, y)?.let { chunk ->
-            chunk.removeLast(chunk.chunkX(x), chunk.chunkY(y))
-        }
     }
 
     override fun clone(): SparseChunkedStackedDoubleArray2 = SparseChunkedStackedDoubleArray2(empty).also { sparse ->

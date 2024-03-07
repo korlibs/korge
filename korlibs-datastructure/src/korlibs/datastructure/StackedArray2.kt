@@ -3,6 +3,9 @@ package korlibs.datastructure
 interface IStackedArray2<T> : IStackedArray2Base
 
 interface IStackedArray2Base {
+    /** Version of the data. Each change increments this. */
+    val contentVersion: Int
+
     /** Annotation of where in [startX] this stack would be placed in a bigger container, not used for set or get methods */
     val startX: Int
     /** Annotation of where in [startY] this stack would be placed in a bigger container, not used for set or get methods */
@@ -38,4 +41,12 @@ interface IStackedArray2Base {
     //fun setGeneric(x: Int, y: Int, level: Int, value: T)
     ///** Gets the value at [x], [y] at [level], [startX] and [startY] are NOT used here so 0,0 means the top-left element */
     //fun getGeneric(x: Int, y: Int, level: Int): T
+
+    fun eachPosition(block: (x: Int, y: Int) -> Unit) {
+        for (y in 0 until height) {
+            for (x in 0 until width) {
+                block(x, y)
+            }
+        }
+    }
 }
