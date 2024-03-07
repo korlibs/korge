@@ -64,7 +64,7 @@ typealias TileInfo = korlibs.image.tiles.Tile
 
 class TileMap(
     var map: TileMapInfo = TileMapInfo(1, 1),
-    tileset: TileSet = TileSet.EMPTY,
+    tileset: TileSet = map.tileSet ?: TileSet.EMPTY,
     var smoothing: Boolean = true,
     var tileSize: SizeInt = tileset.tileSize,
 //) : BaseTileMap(intMap, smoothing, staggerAxis, staggerIndex, tileSize) {
@@ -84,11 +84,14 @@ class TileMap(
         }
 
     // Analogous to Bitmap32.locking
+    @Deprecated("Not required anymore")
     fun lock() {
     }
+    @Deprecated("Not required anymore")
     fun unlock() {
-        contentVersion++
+        //map.contentVersion++
     }
+    @Deprecated("Not required anymore")
     inline fun <T> lock(block: () -> T): T {
         lock()
         try {
@@ -104,8 +107,9 @@ class TileMap(
     var repeatX = TileMapRepeat.NONE
     var repeatY = TileMapRepeat.NONE
 
-    protected var contentVersion = 0
-    private var cachedContentVersion = 0
+    private var animationVersion = 0
+    private var cachedContentVersion = -1
+    private var cachedAnimationVersion = -1
 
     // @TODO: Use a TextureVertexBuffer or something
     @KorgeInternal
@@ -193,11 +197,12 @@ class TileMap(
             lastVirtualRect = currentVirtualRect
         }
 
-        if (!dirtyVertices && cachedContentVersion == contentVersion) return
+        if (!dirtyVertices && cachedContentVersion == map.contentVersion && cachedAnimationVersion == animationVersion) return
 
         //println("currentVirtualRect=$currentVirtualRect")
 
-        cachedContentVersion = contentVersion
+        cachedContentVersion = map.contentVersion
+        cachedAnimationVersion = animationVersion
         dirtyVertices = false
         val m = globalMatrix
 
@@ -279,8 +284,8 @@ class TileMap(
 
         val quadIndexData = TexturedVertexArray.quadIndices(allocTilesClamped)
 
-        val invTileWidth  = 1f / tileWidth
-        val invTileHeight = 1f / tileHeight
+        val scaleOffsetX = map.offsetKind.scale(tileWidth)
+        val scaleOffsetY = map.offsetKind.scale(tileHeight)
 
         //println("TILE RANGE: ($xmin,$ymin)-($xmax,$ymax)  :: ($xmin2,$ymin2)-($xmax2,$ymax2) :: (${stackedIntMap.startX},${stackedIntMap.startY})-(${stackedIntMap.endX},${stackedIntMap.endY})")
 
@@ -306,8 +311,8 @@ class TileMap(
                     val rotate = cell.rotate
                     val offsetX = cell.offsetX
                     val offsetY = cell.offsetY
-                    val rationalOffsetX = offsetX * invTileWidth
-                    val rationalOffsetY = offsetY * invTileHeight
+                    val rationalOffsetX = offsetX * scaleOffsetX
+                    val rationalOffsetY = offsetY * scaleOffsetY
 
                     //println("CELL_DATA: $cellData")
 
@@ -451,7 +456,7 @@ class TileMap(
         tileset: TileSet,
         smoothing: Boolean = true,
         tileSize: SizeInt = tileset.tileSize,
-    ) : this(TileMapInfo(map.asLong()), tileset, smoothing, tileSize)
+    ) : this(TileMapInfo(map.asLong(), offsetKind = TileMapOffsetKind.RATIONAL_DIMENSION), tileset, smoothing, tileSize)
 
     @Deprecated("Use TileMapInfo variant instead")
     constructor(
@@ -501,7 +506,7 @@ class TileMap(
                         animationElapsed[tileIndex] -= currentFrame.duration.milliseconds
                         animationIndex[tileIndex] = nextIndex
                         tilesetTextures[tileIndex] = tileset.textures[info.frames[nextIndex].tileId]
-                        contentVersion++
+                        animationVersion++
                     }
                 }
             }
