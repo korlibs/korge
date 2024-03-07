@@ -91,6 +91,36 @@ public fun Int.mask(): Int = (1 shl this) - 1
 /** Creates a [Long] with [this] bits set to 1 */
 public fun Long.mask(): Long = (1L shl this.toInt()) - 1L
 
+/** Creates an [Int] with [this] bits set to 1, displaced [offset] bits */
+public fun Int.mask(offset: Int): Int = mask() shl offset
+/** Creates a [Long] with [this] bits set to 1, displaced [offset] bits */
+public fun Long.mask(offset: Int): Long = mask() shl offset
+
+inline class IntMaskRange private constructor(val raw: Int) {
+    val offset: Int get() = raw.extract8(0)
+    val size: Int get() = raw.extract8(8)
+    fun toMask(): Int = size.mask(offset)
+
+    override fun toString(): String = "IntMaskRange(offset=$offset, size=$size)"
+
+    fun extract(value: Int): Int = value.extract(offset, size)
+    fun extractSigned(value: Int, signed: Boolean = true): Int = value.extractSigned(offset, size, signed)
+
+    companion object {
+        fun fromRange(offset: Int, size: Int): IntMaskRange = IntMaskRange(0.insert8(offset, 0).insert8(size, 8))
+        fun fromMask(mask: Int): IntMaskRange {
+            if (mask == 0) return IntMaskRange(0)
+            val offset = mask.countTrailingZeroBits()
+            val size = (32 - mask.countLeadingZeroBits()) - offset
+            return fromRange(offset, size)
+        }
+    }
+    operator fun component1(): Int = offset
+    operator fun component2(): Int = size
+}
+
+fun Int.extractMaskRange(): IntMaskRange = IntMaskRange.fromMask(this)
+
 //fun Int.getBit(offset: Int): Boolean = ((this ushr offset) and 1) != 0
 //fun Int.getBits(offset: Int, count: Int): Int = (this ushr offset) and count.mask()
 
@@ -134,6 +164,9 @@ inline fun Int.extract15(offset: Int): Int = (this ushr offset) and 0b1111111111
 inline fun Int.extract16(offset: Int): Int = (this ushr offset) and 0b1111111111111111
 /** Extracts 24 bits at [offset] from [this] [Int] */
 inline fun Int.extract24(offset: Int): Int = (this ushr offset) and 0xFFFFFF
+
+/** Extracts [count] bits at [offset] from [this] [Int] sign-extending its result if [signed] is set to true */
+public fun Int.extractSigned(offset: Int, count: Int, signed: Boolean): Int = if (signed) extractSigned(offset, count) else extract(offset, count)
 
 /** Extracts [count] bits at [offset] from [this] [Int] sign-extending its result */
 public fun Int.extractSigned(offset: Int, count: Int): Int = ((this ushr offset) and count.mask()).signExtend(count)
