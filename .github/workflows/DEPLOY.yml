@@ -32,7 +32,8 @@ jobs:
       DISABLE_SANDBOX: true
     steps:
       - run: "echo FORCED_VERSION=$FORCED_VERSION"
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v3
+      - { name: Use Node.js 20.x, uses: actions/setup-node@v3, with: { node-version: 20.x } }
       - { name: Set up JDK, uses: actions/setup-java@v3, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
       - { name: Replace gradle wrapper, run: "sed 's/-all/-bin/g' gradle/wrapper/gradle-wrapper.properties > gradle/wrapper/gradle-wrapper.properties.bak; cp gradle/wrapper/gradle-wrapper.properties.bak gradle/wrapper/gradle-wrapper.properties" }
       - { name: Prepare Gradle, uses: gradle/gradle-build-action@ef76a971e2fa3f867b617efd72f2fbd72cf6f8bc } # v2.8.0
@@ -56,7 +57,8 @@ jobs:
     env:
       stagedRepositoryId: ${{needs.create-staging-repo.outputs.stagedRepositoryId}}
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v3
+      - { name: Use Node.js 20.x, uses: actions/setup-node@v3, with: { node-version: 20.x } }
       - { name: Set up JDK, uses: actions/setup-java@v3, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
       - { name: Replace gradle wrapper, run: "sed 's/-all/-bin/g' gradle/wrapper/gradle-wrapper.properties > gradle/wrapper/gradle-wrapper.properties.bak; cp gradle/wrapper/gradle-wrapper.properties.bak gradle/wrapper/gradle-wrapper.properties" }
       - { name: Prepare Gradle, uses: gradle/gradle-build-action@ef76a971e2fa3f867b617efd72f2fbd72cf6f8bc } # v2.8.0
@@ -75,7 +77,8 @@ jobs:
       DISABLE_ANDROID: true
       DISABLE_SANDBOX: true
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v3
+      - { name: Use Node.js 20.x, uses: actions/setup-node@v3, with: { node-version: 20.x } }
       - { name: Set up JDK, uses: actions/setup-java@v3, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
       - { name: Replace gradle wrapper, run: "sed 's/-all/-bin/g' gradle/wrapper/gradle-wrapper.properties > gradle/wrapper/gradle-wrapper.properties.bak; cp gradle/wrapper/gradle-wrapper.properties.bak gradle/wrapper/gradle-wrapper.properties" }
       - { name: Prepare Gradle, uses: gradle/gradle-build-action@ef76a971e2fa3f867b617efd72f2fbd72cf6f8bc } # v2.8.0
