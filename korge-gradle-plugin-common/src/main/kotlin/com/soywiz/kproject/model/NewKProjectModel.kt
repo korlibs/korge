@@ -1,6 +1,7 @@
 package com.soywiz.kproject.model
 
 import com.soywiz.kproject.internal.*
+import korlibs.io.serialization.yaml.*
 
 //enum class NewKProjectType { LIBRARY, EXECUTABLE }
 

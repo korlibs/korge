@@ -2,6 +2,7 @@ package korlibs.template
 
 import korlibs.template.dynamic.*
 import korlibs.template.internal.*
+import korlibs.util.*
 import kotlin.coroutines.cancellation.*
 import kotlin.math.*
 

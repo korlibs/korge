@@ -22,7 +22,7 @@ class KProjectPlugin : Plugin<Project> {
 
         val depsKprojectYml = File(project.rootProject.rootDir, "deps.kproject.yml")
         val info = when {
-            depsKprojectYml.exists() -> Yaml.decode(depsKprojectYml.readText())
+            depsKprojectYml.exists() -> korlibs.io.serialization.yaml.Yaml.decode(depsKprojectYml.readText())
             else -> null
         }.dyn
         val info2 = NewKProjectModel.loadFile(depsKprojectYml.fileRef)

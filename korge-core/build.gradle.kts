@@ -7,6 +7,7 @@ dependencies {
     }
     commonMainApi(project(":korlibs-template"))
     commonMainApi(project(":korge-foundation"))
+    commonMainApi(project(":korlibs-serialization-yaml"))
     commonMainApi(libs.kotlinx.coroutines.core)
     commonMainApi(libs.kotlinx.atomicfu)
     //add("commonMainApi", libs.kotlinx.atomicfu)

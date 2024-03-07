@@ -1,6 +1,5 @@
-package korlibs.template
+package korlibs.io.serialization.yaml
 
-import korlibs.template.internal.*
 import kotlin.test.*
 
 // http://nodeca.github.io/js-yaml/

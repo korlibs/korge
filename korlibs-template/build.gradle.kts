@@ -11,6 +11,8 @@ project.extensions.extraProperties.properties.apply {
 }
 
 dependencies {
+    commonMainApi(project(":korlibs-serialization-yaml"))
+    commonMainApi(project(":korlibs-util"))
     commonMainApi(libs.kotlinx.atomicfu)
     commonTestApi(libs.kotlinx.coroutines.test)
 }
