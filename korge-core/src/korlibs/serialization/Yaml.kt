@@ -7,10 +7,9 @@ import korlibs.io.lang.invalidOp
 import korlibs.io.util.StrReader
 import korlibs.io.util.unquote
 import kotlin.collections.set
-
 object Yaml {
-    fun decode(str: String) = read(ListReader(tokenize(str)), level = 0)
-    fun read(str: String) = read(ListReader(tokenize(str)), level = 0)
+    fun decode(str: String): Any? = read(ListReader(tokenize(str)), level = 0)
+    fun read(str: String): Any? = read(ListReader(tokenize(str)), level = 0)
 
     private fun parseStr(toks: List<Token>): Any? {
         if (toks.size == 1 && toks[0] is Token.STR) return toks[0].ustr
@@ -123,7 +122,7 @@ object Yaml {
         return map ?: list
     }
 
-    fun ListReader<Token>.readId(): List<Token> {
+    private fun ListReader<Token>.readId(): List<Token> {
         val tokens = arrayListOf<Token>()
         while (hasMore) {
             val token = peek()
@@ -137,7 +136,7 @@ object Yaml {
         return tokens
     }
 
-    fun readOrString(s: ListReader<Token>, level: Int, delimiters: Set<String>, supportNonSpaceSymbols: Boolean): Any? {
+    private fun readOrString(s: ListReader<Token>, level: Int, delimiters: Set<String>, supportNonSpaceSymbols: Boolean): Any? {
         val sp = s.peek()
         return if (sp is Token.ID || (supportNonSpaceSymbols && sp is Token.SYMBOL && !sp.isNextWhite)) {
             var str = ""
@@ -170,7 +169,7 @@ object Yaml {
         linestart@ while (hasMore) {
             // Line start
             flush()
-            val indentStr = readWhile(Char::isWhitespace).replace("\t", "     ")
+            val indentStr = readWhile(kotlin.Char::isWhitespace).replace("\t", "     ")
             if (indentStr.contains('\n')) continue@linestart  // ignore empty lines with possible additional indent
             val indent = indentStr.length
             if (indents.isEmpty() || indent > indents.last()) {
@@ -196,8 +195,15 @@ object Yaml {
                     }
                     '"', '\'' -> {
                         flush()
-                        s.unread()
-                        out += Token.STR(s.readStringLit())
+                        val last = out.lastOrNull()
+                        //println("out=$last, c='$c', reader=$this")
+                        if (last is Token.SYMBOL && (last.str == ":" || last.str == "[" || last.str == "{" || last.str == ",")) {
+                            s.unread()
+                            //println(" -> c='$c', reader=$this")
+                            out += Token.STR(s.readStringLit())
+                        } else {
+                            str += c
+                        }
                     }
                     else -> str += c
                 }

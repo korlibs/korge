@@ -333,6 +333,7 @@ internal class StrReader(val str: String, var pos: Int = 0) {
 
     fun skip() = skip(1)
     fun peek(): Char = if (hasMore) this.str[this.pos] else '\u0000'
+    fun peekChar(): Char = peek()
     fun read(): Char = if (hasMore) this.str[posSkip(1)] else '\u0000'
     fun unread() = skip(-1)
 
@@ -363,6 +364,8 @@ internal class StrReader(val str: String, var pos: Int = 0) {
     fun skipSpaces() = skipWhile { it.isWhitespaceFast() }
     fun readWhile(f: (Char) -> Boolean): String = readBlock { skipWhile(f) }
     fun readUntil(f: (Char) -> Boolean): String = readBlock { skipUntil(f) }
+
+    override fun toString(): String = "StrReader(str=${str.length}, pos=$pos, range='${str.substring(pos.coerceIn(str.indices), (pos + 10).coerceIn(str.indices)).replace("\n", "\\n")}')"
 }
 
 internal fun StrReader.readStringLit(reportErrors: Boolean = true): String {
@@ -399,8 +402,8 @@ internal fun StrReader.readStringLit(reportErrors: Boolean = true): String {
 }
 
 object Yaml {
-    fun decode(str: String) = read(ListReader(tokenize(str)), level = 0)
-    fun read(str: String) = read(ListReader(tokenize(str)), level = 0)
+    fun decode(str: String): Any? = read(ListReader(tokenize(str)), level = 0)
+    fun read(str: String): Any? = read(ListReader(tokenize(str)), level = 0)
 
     private fun parseStr(toks: List<Token>): Any? {
         if (toks.size == 1 && toks[0] is Token.STR) return toks[0].ustr
@@ -576,7 +579,7 @@ object Yaml {
                 val c = read()
                 when (c) {
                     ':', '-', '[', ']', ',' -> {
-                        flush(); out += Token.SYMBOL("$c", peek())
+                        flush(); out += Token.SYMBOL("$c", peekChar())
                     }
                     '#' -> {
                         flush(); readUntilLineEnd(); skip(); continue@linestart
@@ -586,8 +589,15 @@ object Yaml {
                     }
                     '"', '\'' -> {
                         flush()
-                        s.unread()
-                        out += Token.STR(s.readStringLit())
+                        val last = out.lastOrNull()
+                        //println("out=$last, c='$c', reader=$this")
+                        if (last is Token.SYMBOL && (last.str == ":" || last.str == "[" || last.str == "{" || last.str == ",")) {
+                            s.unread()
+                            //println(" -> c='$c', reader=$this")
+                            out += Token.STR(s.readStringLit())
+                        } else {
+                            str += c
+                        }
                     }
                     else -> str += c
                 }

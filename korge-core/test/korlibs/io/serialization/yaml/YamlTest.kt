@@ -318,4 +318,21 @@ class YamlTest {
             - git::adder: :korlibs/kproject::/modules/adder::54f73b01cea9cb2e8368176ac45f2fca948e57db
         """.trimIndent()))
     }
+
+    @Test
+    fun testSingleQuoteInString() {
+        val res = korlibs.template.internal.Yaml.decode("""
+           hello:   'world'
+           title: What's Happening
+           demo: ["hello",   "world", "test", what's happening, yeah]
+       """.trimIndent())
+        assertEquals(
+            mapOf(
+                "hello" to "world",
+                "title" to "What's Happening",
+                "demo" to listOf("hello", "world", "test", "what's happening", "yeah")
+            ),
+            res
+        )
+    }
 }

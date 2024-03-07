@@ -293,4 +293,21 @@ class YamlTest {
             """.trimIndent())
         )
     }
+
+    @Test
+    fun testSingleQuoteInString() {
+        val res = Yaml.decode("""
+           hello:   'world'
+           title: What's Happening
+           demo: ["hello",   "world", "test", what's happening, yeah]
+       """.trimIndent())
+        assertEquals(
+            mapOf(
+                "hello" to "world",
+                "title" to "What's Happening",
+                "demo" to listOf("hello", "world", "test", "what's happening", "yeah")
+            ),
+            res
+        )
+    }
 }
