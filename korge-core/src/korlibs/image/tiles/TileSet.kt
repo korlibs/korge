@@ -21,10 +21,19 @@ data class TileSetTileInfo(
     val collision: TileShapeInfo? = null,
 ) : Extra by Extra.Mixin()
 
+/**
+ * A set of [BmpSlice] where all share a [width] and [height].
+ * For performance’s sake, ideally, all the slices should be part of the same [Bitmap].
+ *
+ * Used along [TileMapInfo] to represent tiles.
+ */
 class TileSet(
     val tilesMap: IntMap<TileSetTileInfo>,
 	//val textures: List<BmpSlice?>,
+
+    /** [width] of each tile */
     val width: Int = if (tilesMap.size == 0) 0 else tilesMap.firstValue().slice.width,
+    /** [height] of each tile */
     val height: Int = if (tilesMap.size == 0) 0 else tilesMap.firstValue().slice.height,
 ) {
     val tileSize: SizeInt get() = SizeInt(width, height)
