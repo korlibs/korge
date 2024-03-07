@@ -158,37 +158,50 @@ class TileSet(
 			val border2 = border * 2
 			val btilewidth = tilewidth + border2
 			val btileheight = tileheight + border2
-			val barea = btilewidth * btileheight
-			val fullArea = bmpSlices.size.nextPowerOfTwo * barea
-			val expectedSide = sqrt(fullArea.toDouble()).toIntCeil().nextPowerOfTwo
+            val columns = sqrt(bmpSlices.size.toDouble()).toIntCeil()
+            val rows = (bmpSlices.size.toDouble() / columns).toIntCeil()
+            val minWidth = columns * (tilewidth + border) + border
+            val minHeight = rows * (tileheight + border) + border
+            val potSize = maxOf(minWidth.nextPowerOfTwo, minHeight.nextPowerOfTwo)
 
             val premultiplied = bmpSlices.any { it.base.premultiplied }
 
-			val out = Bitmap32(expectedSide, expectedSide, premultiplied = premultiplied).mipmaps(mipmaps)
+			val out = Bitmap32(potSize, potSize, premultiplied = premultiplied).mipmaps(mipmaps)
 			val texs = IntMap<TileSetTileInfo>()
 
-			val columns = (out.width / btilewidth)
-
-			lateinit var tex: Bitmap
 			//val tex = views.texture(out, mipmaps = mipmaps)
-            var nn = 0
-			for (m in 0 until 2) {
-				for (n in 0 until bmpSlices.size) {
-					val y = n / columns
-					val x = n % columns
-					val px = x * btilewidth + border
-					val py = y * btileheight + border
-					if (m == 0) {
-						out.putSliceWithBorder(px, py, bmpSlices[n], border)
-					} else {
-						texs[nn] = TileSetTileInfo(nn, tex.sliceWithSize(px, py, tilewidth, tileheight, name = bmpSlices[n].name))
-                        nn++
-					}
-				}
-				if (m == 0) {
-					tex = out
-				}
-			}
+            for (n in bmpSlices.indices) {
+                val y = n / columns
+                val x = n % columns
+                val px = x * btilewidth + border
+                val py = y * btileheight + border
+                //out.putSliceWithBorder(px, py, bmpSlices[n], border)
+                out.put(bmpSlices[n], px, py)
+                //println("putSliceWithBorder=${bmpSlices[n]}")
+                val tileInfo = TileSetTileInfo(
+                    n,
+                    out.sliceWithSize(px, py, tilewidth, tileheight, name = bmpSlices[n].name)
+                )
+                //println("tileInfo=$tileInfo")
+                texs[n] = tileInfo
+            }
+
+            // Create borders Columns
+            for (x in 0 until columns) {
+                val px = x * btilewidth + border
+                for (b in 0 until border) {
+                    Bitmap32.copyRect(out, px, 0, out, px - 1 - b, 0, 1, out.height)
+                    Bitmap32.copyRect(out, px + tilewidth - 1, 0, out, px + tilewidth + b, 0, 1, out.height)
+                }
+            }
+            // Create borders Rows
+            for (y in 0 until rows) {
+                val py = y * btileheight + border
+                for (b in 0 until border) {
+                    Bitmap32.copyRect(out, 0, py, out, 0, py - 1 - b, out.width, 1)
+                    Bitmap32.copyRect(out, 0, py + tileheight - 1, out, 0, py + tileheight + b, out.width, 1)
+                }
+            }
 
 			return TileSet(texs, tilewidth, tileheight)
 		}
