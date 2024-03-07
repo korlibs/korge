@@ -7,9 +7,6 @@ import korlibs.image.bitmap.*
 import korlibs.image.color.Colors
 import korlibs.image.color.RGBA
 import korlibs.image.color.RgbaArray
-import korlibs.image.tiles.TileMapData
-import korlibs.image.tiles.TileSet
-import korlibs.image.tiles.TileSetTileInfo
 import korlibs.image.vector.BlendMode
 import korlibs.io.compression.deflate.ZLib
 import korlibs.io.compression.uncompress
@@ -25,6 +22,7 @@ import korlibs.io.stream.readU32LE
 import korlibs.io.stream.readU8
 import korlibs.math.geom.slice.*
 import korlibs.encoding.hex
+import korlibs.image.tiles.*
 import korlibs.math.geom.*
 import korlibs.memory.*
 
@@ -612,10 +610,10 @@ object ASE : ImageFormatWithContainer("ase") {
         fun createImageFrameLayer(key: Int, value: AseCell): ImageFrameLayer {
             val resolved = value.resolve()
             val layer = imageLayers[key]
-            var tilemap: TileMapData? = null
+            var tilemap: AseTileMapData? = null
             if (resolved is AseTilemapCell) {
                 val tileset = image.tilesets[layer.tilesetIndex]
-                tilemap = TileMapData(
+                tilemap = AseTileMapData(
                     resolved.data,
                     tileset?.tileSet,
                     maskData = resolved.tileBitmask,
@@ -631,7 +629,7 @@ object ASE : ImageFormatWithContainer("ase") {
                 resolved.y,
                 main = false,
                 includeInAtlas = true,
-                tilemap = tilemap
+                tilemap = tilemap?.toTileMapInfo()
             )
         }
 
@@ -751,12 +749,29 @@ object ASE : ImageFormatWithContainer("ase") {
 
     fun SyncStream.readRGB(): RGBA = RGBA(readU8(), readU8(), readU8())
     fun SyncStream.readRGBA(): RGBA = RGBA(readS32LE())
-    fun SyncStream.readFixedLE(): Fixed32 = Fixed32(readS32LE())
+    internal fun SyncStream.readFixedLE(): Fixed32 = Fixed32(readS32LE())
     fun SyncStream.readAseString(): String = readString(readU16LE())
 }
 
-inline class Fixed32(val value: Int) {
+internal inline class Fixed32(val value: Int) {
     val integral: Int get() = ((value ushr 0) and 0xFFFF)
     val decimal: Int get() = ((value ushr 16) and 0xFFFF)
     val double: Double get() = TODO()
+}
+
+data class AseTileMapData(
+    var data: IntArray2,
+    var tileSet: TileSet? = null,
+    val maskData: Int = 0x0fffffff,
+    val maskFlipX: Int = 1 shl 31,
+    val maskFlipY: Int = 1 shl 30,
+    val maskRotate: Int = 1 shl 29,
+) {
+    fun toTileMapInfo(): TileMapInfo {
+        val map = TileMapInfo(data.width, data.height, tileSet = tileSet, offsetKind = TileMapOffsetKind.INT)
+        data.each { x, y, v ->
+            map[x, y] = Tile(v and maskData, 0, 0, (v and maskFlipX) != 0, (v and maskFlipY) != 0, (v and maskRotate) != 0)
+        }
+        return map
+    }
 }

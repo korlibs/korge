@@ -1,7 +1,7 @@
 package korlibs.image.format
 
 import korlibs.image.bitmap.*
-import korlibs.image.tiles.TileMapData
+import korlibs.image.tiles.*
 
 /**
  * This class is used to store the layer image from e.g. an aseprite image file.
@@ -22,7 +22,7 @@ open class ImageFrameLayer(
     val targetY: Int = 0,
     val main: Boolean = true,
     val includeInAtlas: Boolean = true,
-    val tilemap: TileMapData? = null,
+    val tilemap: TileMapInfo? = null,
     val ninePatchSlice: NinePatchBmpSlice? = null,
 ) {
     private var _bitmap: Bitmap? = null
