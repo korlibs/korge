@@ -2,8 +2,33 @@ package korlibs.image.tiles
 
 import korlibs.datastructure.*
 
-class TileMapInfo(val data: IStackedLongArray2) : BaseDelegatedStackedArray2(data), IStackedArray2<Tile> {
-    constructor(width: Int, height: Int) : this(StackedLongArray2(width, height, StackedLongArray2.EMPTY))
+enum class TileMapOffsetKind(val scale: (dimension: Float) -> Float) {
+    INT({ 1f }),
+
+    RATIONAL_DIMENSION({ 1f / it }),
+
+    RATIONAL_8({ 1f / 8f }),
+    RATIONAL_16({ 1f / 16f }),
+    RATIONAL_32({ 1f / 32f }),
+    RATIONAL_64({ 1f / 64f }),
+    RATIONAL_128({ 1f / 128f }),
+
+    RATIONAL_10({ 1f / 10f }),
+    RATIONAL_100({ 1f / 100f }),
+    ;
+}
+
+data class TileMapInfo(
+    val data: IStackedLongArray2,
+    val tileSet: TileSet? = null,
+    val offsetKind: TileMapOffsetKind = TileMapOffsetKind.INT,
+) : BaseDelegatedStackedArray2(data), IStackedArray2<Tile> {
+
+    constructor(
+        width: Int, height: Int,
+        tileSet: TileSet? = null,
+        offsetKind: TileMapOffsetKind = TileMapOffsetKind.INT,
+    ) : this(StackedLongArray2(width, height, StackedLongArray2.EMPTY), tileSet, offsetKind)
 
     /** The [empty] value that will be returned if the specified cell it out of bounds, or empty */
     val empty: Tile get() = Tile(data.empty)

@@ -4,6 +4,7 @@ import korlibs.datastructure.IntArray2
 import korlibs.datastructure.each
 import korlibs.image.bitmap.*
 
+@Deprecated("")
 data class TileMapData(
     var data: IntArray2,
     var tileSet: TileSet? = null,
@@ -13,6 +14,7 @@ data class TileMapData(
     val maskRotate: Int = 1 shl 29,
 )
 
+@Deprecated("")
 fun TileMapData.renderTo(out: Bitmap32, x: Int, y: Int) {
     val tileSet = this.tileSet ?: return
     data.each { tx, ty, v ->
@@ -29,6 +31,7 @@ fun TileMapData.renderTo(out: Bitmap32, x: Int, y: Int) {
     }
 }
 
+@Deprecated("")
 fun TileMapData.render(): Bitmap32 {
     val tileSet = this.tileSet ?: return Bitmap32(1, 1, premultiplied = true)
     val out = Bitmap32(data.width * tileSet.width, data.height * tileSet.height, premultiplied = true)
