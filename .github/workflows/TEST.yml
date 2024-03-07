@@ -27,11 +27,10 @@ jobs:
         include:
           - { outputKey: testWindows, os: windows-latest, testTask: mingwX64Test, enableKotlinNative: true }
           - { outputKey: testLinux, os: ubuntu-latest, testTask: linuxX64Test, buildTasks: publishLinuxArm64PublicationToMavenLocal, enableKotlinNative: true }
-          - { outputKey: testMacos, os: macos-11, testTask: macosX64Test, buildTasks: publishMacosArm64PublicationToMavenLocal, enableKotlinNative: true }
+          - { outputKey: testMacosAndJvm, os: macos-11, testTask: macosX64Test jvmTest, buildTasks: publishMacosArm64PublicationToMavenLocal, enableKotlinNative: true }
           - { outputKey: testIos, os: macos-11, testTask: iosX64Test, enableKotlinNative: true }
           - { outputKey: testJs, os: ubuntu-latest, testTask: "wasmJsBrowserTest", buildTasks: "jsNodeTest jsBrowserTest" }
           - { outputKey: testAndroid, os: ubuntu-latest, enableAndroid: true }
-          - { outputKey: testJvmMacos, os: macos-11, testTask: jvmTest }
           - { outputKey: testJvmLinux, os: ubuntu-latest, testTask: jvmTest, precompileTask: compileTestKotlinJvm, enableKotlinNative: true, enableSandbox: true, e2e: true }
           - { outputKey: testJvmWindows, os: windows-latest, testTask: jvmTest, precompileTask: compileTestKotlinJvm }
     #if: ${{ needs.changes.outputs[matrix.outputKey] == 'true' }}
