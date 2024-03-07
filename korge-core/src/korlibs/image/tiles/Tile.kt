@@ -29,6 +29,8 @@ inline class Tile(val raw: Long) {
 
     companion object {
         const val INVALID_VALUE = -1L
+        val ZERO = Tile(0L)
+        val INVALID = Tile(INVALID_VALUE)
 
         fun fromRaw(raw: Long): Tile = Tile(raw)
         fun fromRaw(low: Int, high: Int): Tile = Tile(Long.fromLowHigh(low, high))

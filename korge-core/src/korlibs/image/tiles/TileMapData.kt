@@ -1,28 +1,15 @@
 package korlibs.image.tiles
 
 import korlibs.datastructure.*
+import korlibs.math.*
 import korlibs.memory.*
-
-enum class TileMapOffsetKind(val scale: (dimension: Float) -> Float) {
-    INT({ 1f }),
-
-    RATIONAL_DIMENSION({ 1f / it }),
-
-    RATIONAL_8({ 1f / 8f }),
-    RATIONAL_16({ 1f / 16f }),
-    RATIONAL_32({ 1f / 32f }),
-    RATIONAL_64({ 1f / 64f }),
-    RATIONAL_128({ 1f / 128f }),
-
-    RATIONAL_10({ 1f / 10f }),
-    RATIONAL_100({ 1f / 100f }),
-    ;
-}
 
 data class TileMapData(
     val data: IStackedLongArray2,
-    val tileSet: TileSet? = null,
-    val offsetKind: TileMapOffsetKind = TileMapOffsetKind.INT,
+    val tileSet: TileSet = TileSet.EMPTY,
+    val repeatX: TileMapRepeat = TileMapRepeat.NONE,
+    val repeatY: TileMapRepeat = TileMapRepeat.NONE,
+    val offsetScale: Float = 1f,
 ) : BaseDelegatedStackedArray2(data), IStackedArray2<Tile> {
 
     companion object {
@@ -38,9 +25,11 @@ data class TileMapData(
             //maskOffsetX: Int = 5.mask(18),
             //maskOffsetY: Int = 5.mask(23),
             offsetSigned: Boolean = true,
-            offsetKind: TileMapOffsetKind = TileMapOffsetKind.INT,
+            repeatX: TileMapRepeat = TileMapRepeat.NONE,
+            repeatY: TileMapRepeat = TileMapRepeat.NONE,
+            offsetScale: Float = 1f,
         ): TileMapData {
-            val map = TileMapData(data.width, data.height, tileSet = tileSet, offsetKind = offsetKind)
+            val map = TileMapData(data.width, data.height, tileSet = tileSet ?: TileSet.EMPTY, offsetScale = offsetScale, repeatX = repeatX, repeatY = repeatY)
             val offsetXRange = IntMaskRange.fromMask(maskOffsetX)
             val offsetYRange = IntMaskRange.fromMask(maskOffsetY)
             data.each { x, y, v ->
@@ -55,10 +44,12 @@ data class TileMapData(
 
     constructor(
         width: Int, height: Int,
+        tileSet: TileSet = TileSet.EMPTY,
         empty: Tile = Tile(0),
-        tileSet: TileSet? = null,
-        offsetKind: TileMapOffsetKind = TileMapOffsetKind.INT,
-    ) : this(StackedLongArray2(width, height, empty.raw), tileSet, offsetKind)
+        repeatX: TileMapRepeat = TileMapRepeat.NONE,
+        repeatY: TileMapRepeat = TileMapRepeat.NONE,
+        offsetScale: Float = 1f,
+    ) : this(StackedLongArray2(width, height, empty.raw), tileSet, repeatX, repeatY, offsetScale)
 
     /** The [empty] value that will be returned if the specified cell it out of bounds, or empty */
     val empty: Tile get() = Tile(data.empty)
@@ -118,4 +109,13 @@ fun TileMapData.toStringListSimplified(func: (Tile) -> Char): List<String> {
         line[x] = func(this[x, y])
     }
     return lines.map { it.toString() }
+}
+
+enum class TileMapRepeat(val get: (v: Int, max: Int) -> Int) {
+    NONE({ v, max -> v }),
+    REPEAT({ v, max -> v umod max }),
+    MIRROR({ v, max ->
+        val r = v umod max
+        if ((v / max) % 2 == 0) r else max - 1 - r
+    })
 }
