@@ -3,10 +3,10 @@ package korlibs.image.format
 import korlibs.datastructure.*
 import korlibs.image.atlas.*
 import korlibs.image.bitmap.*
+import korlibs.image.tiles.*
 import korlibs.io.async.*
 import korlibs.io.file.std.*
 import korlibs.math.geom.*
-import korlibs.memory.*
 import korlibs.platform.*
 import kotlin.test.*
 
@@ -168,7 +168,7 @@ class ASETest {
         val ase = resourcesVfs["asepritetilemap.aseprite"].readImageData(ASEDecoder)
         val tilemap = ase.frames[0].layerData[1].tilemap
         assertNotNull(tilemap)
-        val tilemapStr = tilemap.data.toStringList({ it.digitToChar() }).joinToString("\n")
+        val tilemapStr = tilemap.toStringListSimplified { it.tile.digitToChar() }.joinToString("\n")
         assertEquals(
             """
                 12121212

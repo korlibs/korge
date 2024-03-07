@@ -7,9 +7,6 @@ import korlibs.image.bitmap.*
 import korlibs.image.color.Colors
 import korlibs.image.color.RGBA
 import korlibs.image.color.RgbaArray
-import korlibs.image.tiles.TileMapData
-import korlibs.image.tiles.TileSet
-import korlibs.image.tiles.TileSetTileInfo
 import korlibs.image.vector.BlendMode
 import korlibs.io.compression.deflate.ZLib
 import korlibs.io.compression.uncompress
@@ -25,6 +22,7 @@ import korlibs.io.stream.readU32LE
 import korlibs.io.stream.readU8
 import korlibs.math.geom.slice.*
 import korlibs.encoding.hex
+import korlibs.image.tiles.*
 import korlibs.math.geom.*
 import korlibs.memory.*
 
@@ -751,12 +749,19 @@ object ASE : ImageFormatWithContainer("ase") {
 
     fun SyncStream.readRGB(): RGBA = RGBA(readU8(), readU8(), readU8())
     fun SyncStream.readRGBA(): RGBA = RGBA(readS32LE())
-    fun SyncStream.readFixedLE(): Fixed32 = Fixed32(readS32LE())
+    internal fun SyncStream.readFixedLE(): Fixed32 = Fixed32.fromRaw(readS32LE())
     fun SyncStream.readAseString(): String = readString(readU16LE())
 }
 
-inline class Fixed32(val value: Int) {
-    val integral: Int get() = ((value ushr 0) and 0xFFFF)
-    val decimal: Int get() = ((value ushr 16) and 0xFFFF)
-    val double: Double get() = TODO()
+// https://github.com/aseprite/aseprite/blob/50d4f9d8028dc56686b7f0720ef4775db7b2f782/src/fixmath/fixmath.h
+internal inline class Fixed32 private constructor(val raw: Int) {
+    val double: Double get() = raw.toDouble() / 65536.0
+
+    companion object {
+        fun fromRaw(raw: Int): Fixed32 = Fixed32(raw)
+        operator fun invoke(x: Double): Fixed32 {
+            if (x !in -32767.0 .. 32767.0) error("x=$x is outside Fixed32 range")
+            return Fixed32((x * 65536.0 + (if (x < 0) -0.5 else 0.5)).toInt())
+        }
+    }
 }

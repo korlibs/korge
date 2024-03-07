@@ -1,29 +1,26 @@
 package korlibs.datastructure
 
 import korlibs.datastructure.ds.*
-import korlibs.datastructure.iterators.*
 import kotlin.math.*
 
-class SparseChunkedStackedIntArray2(override var empty: Int = -1) : IStackedIntArray2 {
-
-    constructor(vararg layers: IStackedIntArray2, empty: Int = -1) : this(empty) {
-        layers.fastForEach { putChunk(it) }
-    }
-
+abstract class SparseChunkedStackedArray2<TStackedArray2 : IStackedArray2Base>() : IStackedArray2Base {
+    override var contentVersion: Int = 0 ; protected set
     var minX = 0
     var minY = 0
     var maxX = 0
     var maxY = 0
     override var maxLevel: Int = 0
 
-    val bvh = BVH<IStackedIntArray2>(dimensions = 2)
-    var first: IStackedIntArray2? = null
-    var last: IStackedIntArray2? = null
+    val bvh = BVH<TStackedArray2>(dimensions = 2)
+    var first: TStackedArray2? = null
+    var last: TStackedArray2? = null
 
-    fun putChunk(chunk: IStackedIntArray2) {
+    protected abstract fun setEmptyFromChunk(chunk: TStackedArray2)
+
+    fun putChunk(chunk: TStackedArray2) {
         if (first == null) {
             first = chunk
-            empty = chunk.empty
+            setEmptyFromChunk(chunk)
             minX = Int.MAX_VALUE
             minY = Int.MAX_VALUE
             maxX = Int.MIN_VALUE
@@ -39,6 +36,7 @@ class SparseChunkedStackedIntArray2(override var empty: Int = -1) : IStackedIntA
         maxX = max(maxX, chunk.endX)
         maxY = max(maxY, chunk.endY)
         maxLevel = max(maxLevel, chunk.maxLevel)
+        contentVersion++
     }
 
     override val startX: Int get() = minX
@@ -46,17 +44,16 @@ class SparseChunkedStackedIntArray2(override var empty: Int = -1) : IStackedIntA
     override val width: Int get() = maxX - minX
     override val height: Int get() = maxY - minY
 
-    fun findAllChunks(): List<IStackedIntArray2> = bvh.findAllValues()
+    fun findAllChunks(): List<TStackedArray2> = bvh.findAllValues()
+    protected var lastSearchChunk: TStackedArray2? = null
 
-    private var lastSearchChunk: IStackedIntArray2? = null
-
-    private fun IStackedIntArray2.chunkX(x: Int): Int = x - this.startX
-    private fun IStackedIntArray2.chunkY(y: Int): Int = y - this.startY
-    private fun IStackedIntArray2.containsChunk(x: Int, y: Int): Boolean {
+    protected fun TStackedArray2.chunkX(x: Int): Int = x - this.startX
+    protected fun TStackedArray2.chunkY(y: Int): Int = y - this.startY
+    protected fun TStackedArray2.containsChunk(x: Int, y: Int): Boolean {
         return x in startX until endX && y in startY until endY
     }
 
-    fun getChunkAt(x: Int, y: Int): IStackedIntArray2? {
+    fun getChunkAt(x: Int, y: Int): TStackedArray2? {
         // Cache to be much faster while iterating rows
         lastSearchChunk?.let {
             if (it.containsChunk(x, y)) return it
@@ -67,19 +64,6 @@ class SparseChunkedStackedIntArray2(override var empty: Int = -1) : IStackedIntA
 
     override fun inside(x: Int, y: Int): Boolean = getChunkAt(x, y) != null
 
-    override fun set(x: Int, y: Int, level: Int, value: Int) {
-        getChunkAt(x, y)?.let { chunk ->
-            chunk[chunk.chunkX(x), chunk.chunkY(y), level] = value
-        }
-    }
-
-    override fun get(x: Int, y: Int, level: Int): Int {
-        getChunkAt(x, y)?.let { chunk ->
-            return chunk[chunk.chunkX(x), chunk.chunkY(y), level]
-        }
-        return empty
-    }
-
     override fun getStackLevel(x: Int, y: Int): Int {
         getChunkAt(x, y)?.let { chunk ->
             return chunk.getStackLevel(chunk.chunkX(x), chunk.chunkY(y))
@@ -87,21 +71,18 @@ class SparseChunkedStackedIntArray2(override var empty: Int = -1) : IStackedIntA
         return 0
     }
 
-    override fun push(x: Int, y: Int, value: Int) {
-        getChunkAt(x, y)?.let { chunk ->
-            chunk.push(chunk.chunkX(x), chunk.chunkY(y), value)
-        }
-    }
-
     override fun removeLast(x: Int, y: Int) {
         getChunkAt(x, y)?.let { chunk ->
             chunk.removeLast(chunk.chunkX(x), chunk.chunkY(y))
+            contentVersion++
         }
     }
 
-    override fun clone(): SparseChunkedStackedIntArray2 = SparseChunkedStackedIntArray2(empty).also { sparse ->
-        findAllChunks().fastForEach {
-            sparse.putChunk(it.clone())
+    override fun eachPosition(block: (x: Int, y: Int) -> Unit) {
+        for (chunk in findAllChunks()) {
+            chunk.eachPosition { x, y ->
+                block(chunk.startX + x, chunk.startY + y)
+            }
         }
     }
 }

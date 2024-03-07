@@ -96,4 +96,25 @@ class BitsTest {
 		assertEquals(0b0101, 0b0111.unsetBits(0b0010))
 		assertEquals(0b0110, 0b0100.setBits(0b0010))
 	}
+
+    @Test
+    fun testIntMaskRange() {
+        assertEquals(0, IntMaskRange.fromRange(0, 0).toMask())
+        assertEquals(0, IntMaskRange.fromRange(32, 0).toMask())
+        assertEquals(0xFF, IntMaskRange.fromRange(0, 8).toMask())
+        assertEquals(0xFF00, IntMaskRange.fromRange(8, 8).toMask())
+        assertEquals(0xFF0000, IntMaskRange.fromRange(16, 8).toMask())
+        assertEquals(0xFF000000L.toInt(), IntMaskRange.fromRange(24, 8).toMask())
+
+        assertEquals(IntMaskRange.fromRange(0, 0), IntMaskRange.fromMask(0))
+        assertEquals(IntMaskRange.fromRange(0, 1), IntMaskRange.fromMask(1))
+        assertEquals(IntMaskRange.fromRange(0, 4), IntMaskRange.fromMask(0xF))
+        assertEquals(IntMaskRange.fromRange(0, 8), IntMaskRange.fromMask(0xFF))
+        assertEquals(IntMaskRange.fromRange(8, 8), IntMaskRange.fromMask(0xFF00))
+        assertEquals(IntMaskRange.fromRange(16, 8), IntMaskRange.fromMask(0xFF0000))
+        assertEquals(IntMaskRange.fromRange(24, 8), IntMaskRange.fromMask(0xFF000000L.toInt()))
+
+        assertEquals(0xFF, IntMaskRange.fromMask(0xFF).extract(0xFF))
+        assertEquals(-1, IntMaskRange.fromMask(0xFF).extractSigned(0xFF))
+    }
 }

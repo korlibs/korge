@@ -680,6 +680,10 @@ open class Context2d(
     }
 
     open fun drawImage(image: Bitmap, pos: Point, size: Size = image.size.toFloat()) = rendererDrawImage(image, pos, size, state.transform)
+
+    // @TODO: Implement this!
+    // open fun drawImage(image: BmpSlice, pos: Point, size: Size = image.size.toFloat()) = rendererDrawImage(image, pos, size, state.transform)
+
 }
 
 fun RGBA.toFill() = ColorPaint(this)
