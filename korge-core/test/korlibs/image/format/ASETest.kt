@@ -7,7 +7,6 @@ import korlibs.image.tiles.*
 import korlibs.io.async.*
 import korlibs.io.file.std.*
 import korlibs.math.geom.*
-import korlibs.memory.*
 import korlibs.platform.*
 import kotlin.test.*
 
@@ -164,23 +163,12 @@ class ASETest {
         )
     }
 
-    fun TileMapInfo.toStringList(func: (Tile) -> Char): List<String> {
-        val lines = arrayListOf<StringBuilder>()
-        eachPosition { x, y ->
-            while (lines.size <= y) lines.add(StringBuilder())
-            val line = lines[y]
-            while (line.length <= x) line.append(' ')
-            line[x] = func(this[x, y])
-        }
-        return lines.map { it.toString() }
-    }
-
     @Test
     fun testTilemap() = suspendTest({ !Platform.isJs }) {
         val ase = resourcesVfs["asepritetilemap.aseprite"].readImageData(ASEDecoder)
         val tilemap = ase.frames[0].layerData[1].tilemap
         assertNotNull(tilemap)
-        val tilemapStr = tilemap.toStringList({ it.tile.digitToChar() }).joinToString("\n")
+        val tilemapStr = tilemap.toStringListSimplified { it.tile.digitToChar() }.joinToString("\n")
         assertEquals(
             """
                 12121212

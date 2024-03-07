@@ -98,7 +98,7 @@ open class ImageAnimationView<T: SmoothedBmpSlice>(
                         image as TileMap
                         val tilemap = it.tilemap
                         if (tilemap == null) {
-                            image.map = TileMapInfo(1, 1)
+                            image.map = TileMapData(1, 1)
                             image.tileset = TileSet.EMPTY
                         } else {
                             image.map = tilemap

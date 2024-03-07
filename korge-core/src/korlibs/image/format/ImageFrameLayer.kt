@@ -22,7 +22,7 @@ open class ImageFrameLayer(
     val targetY: Int = 0,
     val main: Boolean = true,
     val includeInAtlas: Boolean = true,
-    val tilemap: TileMapInfo? = null,
+    val tilemap: TileMapData? = null,
     val ninePatchSlice: NinePatchBmpSlice? = null,
 ) {
     private var _bitmap: Bitmap? = null

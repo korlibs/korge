@@ -610,10 +610,10 @@ object ASE : ImageFormatWithContainer("ase") {
         fun createImageFrameLayer(key: Int, value: AseCell): ImageFrameLayer {
             val resolved = value.resolve()
             val layer = imageLayers[key]
-            var tilemap: AseTileMapData? = null
+            var tilemap: TileMapData? = null
             if (resolved is AseTilemapCell) {
                 val tileset = image.tilesets[layer.tilesetIndex]
-                tilemap = AseTileMapData(
+                tilemap = TileMapData(
                     resolved.data,
                     tileset?.tileSet,
                     maskData = resolved.tileBitmask,
@@ -629,7 +629,7 @@ object ASE : ImageFormatWithContainer("ase") {
                 resolved.y,
                 main = false,
                 includeInAtlas = true,
-                tilemap = tilemap?.toTileMapInfo()
+                tilemap = tilemap
             )
         }
 
@@ -757,21 +757,4 @@ internal inline class Fixed32(val value: Int) {
     val integral: Int get() = ((value ushr 0) and 0xFFFF)
     val decimal: Int get() = ((value ushr 16) and 0xFFFF)
     val double: Double get() = TODO()
-}
-
-data class AseTileMapData(
-    var data: IntArray2,
-    var tileSet: TileSet? = null,
-    val maskData: Int = 0x0fffffff,
-    val maskFlipX: Int = 1 shl 31,
-    val maskFlipY: Int = 1 shl 30,
-    val maskRotate: Int = 1 shl 29,
-) {
-    fun toTileMapInfo(): TileMapInfo {
-        val map = TileMapInfo(data.width, data.height, tileSet = tileSet, offsetKind = TileMapOffsetKind.INT)
-        data.each { x, y, v ->
-            map[x, y] = Tile(v and maskData, 0, 0, (v and maskFlipX) != 0, (v and maskFlipY) != 0, (v and maskRotate) != 0)
-        }
-        return map
-    }
 }

@@ -25,7 +25,7 @@ data class TileSetTileInfo(
  * A set of [BmpSlice] where all share a [width] and [height].
  * For performance’s sake, ideally, all the slices should be part of the same [Bitmap].
  *
- * Used along [TileMapInfo] to represent tiles.
+ * Used along [TileMapData] to represent tiles.
  */
 class TileSet(
     val tilesMap: IntMap<TileSetTileInfo>,

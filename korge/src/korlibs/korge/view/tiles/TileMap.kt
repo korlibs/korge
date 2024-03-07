@@ -15,7 +15,7 @@ import korlibs.math.geom.collider.*
 import kotlin.math.*
 
 inline fun Container.tileMap(
-    map: TileMapInfo,
+    map: TileMapData,
     tileset: TileSet,
     repeatX: TileMapRepeat = TileMapRepeat.NONE,
     repeatY: TileMapRepeat = repeatX,
@@ -63,7 +63,7 @@ enum class TileMapRepeat(val get: (v: Int, max: Int) -> Int) {
 typealias TileInfo = korlibs.image.tiles.Tile
 
 class TileMap(
-    var map: TileMapInfo = TileMapInfo(1, 1),
+    var map: TileMapData = TileMapData(1, 1),
     tileset: TileSet = map.tileSet ?: TileSet.EMPTY,
     var smoothing: Boolean = true,
     var tileSize: SizeInt = tileset.tileSize,
@@ -72,7 +72,7 @@ class TileMap(
     @Deprecated("Use map instead", level = DeprecationLevel.WARNING)
     var stackedIntMap: IStackedIntArray2
         get() = map.data.asInt()
-        set(value) { map = TileMapInfo(value.asLong()) }
+        set(value) { map = TileMapData(value.asLong()) }
 
     @Deprecated("Use map instead", level = DeprecationLevel.HIDDEN)
     var intMap: IntArray2
@@ -456,7 +456,7 @@ class TileMap(
         tileset: TileSet,
         smoothing: Boolean = true,
         tileSize: SizeInt = tileset.tileSize,
-    ) : this(TileMapInfo(map.asLong(), offsetKind = TileMapOffsetKind.RATIONAL_DIMENSION), tileset, smoothing, tileSize)
+    ) : this(TileMapData(map.asLong(), offsetKind = TileMapOffsetKind.RATIONAL_DIMENSION), tileset, smoothing, tileSize)
 
     @Deprecated("Use TileMapInfo variant instead")
     constructor(

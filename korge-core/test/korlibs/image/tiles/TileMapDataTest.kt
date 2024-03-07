@@ -3,10 +3,10 @@ package korlibs.image.tiles
 import korlibs.math.geom.slice.*
 import kotlin.test.*
 
-class TileMapInfoTest {
+class TileMapDataTest {
     @Test
     fun testTileMapInfo() {
-        val map = TileMapInfo(2, 2)
+        val map = TileMapData(2, 2)
         assertEquals(0, map.contentVersion)
         map[0, 0] = Tile(10, SliceOrientation.ROTATE_90)
         assertEquals(1, map.contentVersion)

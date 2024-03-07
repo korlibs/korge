@@ -4,14 +4,14 @@ import korlibs.image.bitmap.*
 import korlibs.math.geom.*
 import korlibs.math.geom.slice.*
 
-fun TileMapInfo.render(): NativeImage {
+fun TileMapData.render(): NativeImage {
     val tileSet = this.tileSet ?: return NativeImage(1, 1, premultiplied = true)
     val out = NativeImage(data.width * tileSet.width, data.height * tileSet.height, premultiplied = true)
     renderTo(out, 0, 0)
     return out
 }
 
-fun TileMapInfo.renderTo(out: Bitmap, x: Int = 0, y: Int = 0) {
+fun TileMapData.renderTo(out: Bitmap, x: Int = 0, y: Int = 0) {
     val map = this
     val tileSet = this.tileSet ?: return
     val tiles = LinkedHashMap<Pair<Int, SliceOrientation>, Bitmap32>()
