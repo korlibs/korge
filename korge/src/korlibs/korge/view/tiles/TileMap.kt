@@ -15,6 +15,17 @@ import korlibs.math.geom.collider.*
 import kotlin.math.*
 
 inline fun Container.tileMap(
+    map: TileMapInfo,
+    tileset: TileSet,
+    repeatX: TileMapRepeat = TileMapRepeat.NONE,
+    repeatY: TileMapRepeat = repeatX,
+    smoothing: Boolean = true,
+    tileSize: SizeInt = tileset.tileSize,
+    callback: @ViewDslMarker TileMap.() -> Unit = {},
+) = TileMap(map, tileset, smoothing, tileSize).repeat(repeatX, repeatY).addTo(this, callback)
+
+@Deprecated("Use TileMapInfo variant instead")
+inline fun Container.tileMap(
     map: IStackedIntArray2,
     tileset: TileSet,
     repeatX: TileMapRepeat = TileMapRepeat.NONE,
@@ -24,6 +35,7 @@ inline fun Container.tileMap(
     callback: @ViewDslMarker TileMap.() -> Unit = {},
 ) = TileMap(map, tileset, smoothing, tileSize).repeat(repeatX, repeatY).addTo(this, callback)
 
+@Deprecated("Use TileMapInfo variant instead")
 inline fun Container.tileMap(
     map: IntArray2,
     tileset: TileSet,
@@ -35,6 +47,7 @@ inline fun Container.tileMap(
 ) = TileMap(map, tileset, smoothing, tileSize).repeat(repeatX, repeatY).addTo(this, callback)
 
 @PublishedApi
+@Deprecated("Use TileMapInfo variant instead")
 internal fun Bitmap32.toIntArray2() = IntArray2(width, height, ints)
 
 enum class TileMapRepeat(val get: (v: Int, max: Int) -> Int) {
@@ -46,36 +59,22 @@ enum class TileMapRepeat(val get: (v: Int, max: Int) -> Int) {
     })
 }
 
-inline class TileInfo(val data: Int) {
-    val isValid: Boolean get() = data != -1
-    val isInvalid: Boolean get() = data == -1
-
-    val tile: Int get() = data.extract(0, 18)
-    val offsetX: Int get() = data.extract5(18)
-    val offsetY: Int get() = data.extract5(23)
-    val rotate: Boolean get() = data.extract(29)
-    val flipY: Boolean get() = data.extract(30)
-    val flipX: Boolean get() = data.extract(31)
-
-    constructor(tile: Int, offsetX: Int = 0, offsetY: Int = 0, flipX: Boolean = false, flipY: Boolean = false, rotate: Boolean = false) : this(0
-        .insert(tile, 0, 18)
-        .insert(offsetX, 18, 5)
-        .insert(offsetY, 23, 5)
-        .insert(rotate, 29)
-        .insert(flipY, 30)
-        .insert(flipX, 31)
-    )
-
-}
+@Deprecated("Use korlibs.image.tiles.Tile instead", replaceWith = ReplaceWith("korlibs.image.tiles.Tile"))
+typealias TileInfo = korlibs.image.tiles.Tile
 
 class TileMap(
-    var stackedIntMap: IStackedIntArray2 = StackedIntArray2(1, 1, 0),
+    var map: TileMapInfo = TileMapInfo(1, 1),
     tileset: TileSet = TileSet.EMPTY,
     var smoothing: Boolean = true,
     var tileSize: SizeInt = tileset.tileSize,
 //) : BaseTileMap(intMap, smoothing, staggerAxis, staggerIndex, tileSize) {
 ) : View() {
-    @Deprecated("Use stackedIntMap instead", level = DeprecationLevel.HIDDEN)
+    @Deprecated("Use map instead", level = DeprecationLevel.WARNING)
+    var stackedIntMap: IStackedIntArray2
+        get() = map.data.asInt()
+        set(value) { map = TileMapInfo(value.asLong()) }
+
+    @Deprecated("Use map instead", level = DeprecationLevel.HIDDEN)
     var intMap: IntArray2
         get() = (stackedIntMap as StackedIntArray2).data.first()
         set(value) {
@@ -446,6 +445,15 @@ class TileMap(
         tileHeight = tileset.height.toFloat()
     }
 
+    @Deprecated("Use TileMapInfo variant instead")
+    constructor(
+        map: IStackedIntArray2,
+        tileset: TileSet,
+        smoothing: Boolean = true,
+        tileSize: SizeInt = tileset.tileSize,
+    ) : this(TileMapInfo(map.asLong()), tileset, smoothing, tileSize)
+
+    @Deprecated("Use TileMapInfo variant instead")
     constructor(
         map: IntArray2,
         tileset: TileSet,
@@ -453,6 +461,7 @@ class TileMap(
         tileSize: SizeInt = tileset.tileSize,
     ) : this(map.toStacked(), tileset, smoothing, tileSize)
 
+    @Deprecated("Use TileMapInfo variant instead")
     constructor(
         map: Bitmap32,
         tileset: TileSet,
@@ -471,9 +480,10 @@ class TileMap(
     fun pixelHitTest(tileX: Int, tileY: Int, x: Int, y: Int, direction: HitTestDirection): Boolean {
         //println("pixelHitTestByte: tileX=$tileX, tileY=$tileY, x=$x, y=$y")
         //println(tileset.collisions.toList())
-        if (!stackedIntMap.inside(tileX, tileY)) return true
-        val tile = stackedIntMap.getLast(tileX, tileY)
-        val collision = tileset.tilesMap[tile]?.collision ?: return false
+        if (!map.inside(tileX, tileY)) return true
+        val tile = map.getLast(tileX, tileY)
+        // @TODO: Handle rotations, etc. that should transform coordinates.
+        val collision = tileset.tilesMap[tile.tile]?.collision ?: return false
         return collision.hitTestAny(Point(x, y), direction)
     }
 
@@ -498,7 +508,7 @@ class TileMap(
         }
     }
 
-    override fun getLocalBoundsInternal() = Rectangle(0f, 0f, tileWidth * stackedIntMap.width, tileHeight * stackedIntMap.height)
+    override fun getLocalBoundsInternal() = Rectangle(0f, 0f, tileWidth * map.width, tileHeight * map.height)
 
     fun repeat(repeatX: TileMapRepeat, repeatY: TileMapRepeat = repeatX): TileMap {
         this.repeatX = repeatX
