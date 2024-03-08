@@ -5,6 +5,7 @@ dependencies {
         //add("androidMainApi", "androidx.javascriptengine:javascriptengine:1.0.0-alpha05")
         //add("androidMainApi", "com.google.guava:guava:31.0.1-android")
     }
+    commonMainApi(project(":korlibs-io"))
     commonMainApi(project(":korlibs-template"))
     commonMainApi(project(":korge-foundation"))
     commonMainApi(project(":korlibs-serialization-yaml"))
