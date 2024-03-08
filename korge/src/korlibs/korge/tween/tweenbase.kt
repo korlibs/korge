@@ -24,7 +24,10 @@ data class V2<V>(
 ) {
     val endTime = startTime + duration.coalesce { 0.nanoseconds }
 
-    fun duration(default: TimeSpan): TimeSpan = if (duration.isNil) default else duration
+    @Deprecated("", ReplaceWith("getDuration(duration)"), level = DeprecationLevel.HIDDEN)
+    fun duration(default: TimeSpan): TimeSpan = getDuration(default)
+
+    fun getDuration(default: TimeSpan): TimeSpan = if (duration.isNil) default else duration
     fun endTime(default: TimeSpan): TimeSpan = if (duration.isNil) default else endTime
 
     fun init(): Unit {
