@@ -5,7 +5,6 @@ package korlibs.math.geom.slice
 import korlibs.datastructure.*
 import korlibs.math.*
 import korlibs.math.geom.*
-import korlibs.memory.*
 
 data class RectCoords(
     override val tlX: Float, override val tlY: Float,
@@ -375,13 +374,13 @@ enum class SliceRotation {
 inline class SliceOrientation(
     val raw: Int,
 ) {
-    val rotation: SliceRotation get() = SliceRotation[raw.extract2(0)]
-    val flipX: Boolean get() = raw.extractBool(2)
+    val rotation: SliceRotation get() = SliceRotation[raw.extract(0, 2)]
+    val flipX: Boolean get() = raw.extract(2, 1) != 0
 
-    constructor(rotation: SliceRotation = SliceRotation.R0, flipX: Boolean = false) : this(0.insert2(rotation.ordinal, 0).insert(flipX, 2))
+    constructor(rotation: SliceRotation = SliceRotation.R0, flipX: Boolean = false) : this(0.insert(rotation.ordinal, 0, 2).insert(flipX, 2))
 
     /** Indices represent TL, TR, BR, BL */
-    val indices: IntArray get() = INDICES[raw.extract3(0)]
+    val indices: IntArray get() = INDICES[raw.extract(0, 3)]
 
     val isRotatedDeg90CwOrCcw: Boolean get() = rotation == SliceRotation.R90 || rotation == SliceRotation.R270
 
@@ -402,7 +401,7 @@ inline class SliceOrientation(
         out = out.rotatedRight(orientation.rotation.ordinal)
         return out
     }
-    override fun toString(): String = NAMES[raw.extract3(0)]
+    override fun toString(): String = NAMES[raw.extract(0, 3)]
 
     fun getX(width: Int, height: Int, x: Int, y: Int): Int {
         val w1 = width - 1
@@ -476,4 +475,16 @@ inline class SliceOrientation(
             MIRROR_HORIZONTAL_ROTATE_0, MIRROR_HORIZONTAL_ROTATE_90, MIRROR_HORIZONTAL_ROTATE_180, MIRROR_HORIZONTAL_ROTATE_270,
         )
     }
+}
+
+private fun Int.mask(): Int = (1 shl this) - 1
+private fun Int.extract(offset: Int, bits: Int): Int = (this ushr offset) and bits.mask()
+private fun Int.insert(value: Boolean, offset: Int): Int {
+    val bits = (1 shl offset)
+    return if (value) this or bits else this and bits.inv()
+}
+private fun Int.insert(value: Int, offset: Int, bits: Int): Int {
+    val mask = bits.mask() shl offset
+    val ovalue = (value shl offset) and mask
+    return (this and mask.inv()) or ovalue
 }

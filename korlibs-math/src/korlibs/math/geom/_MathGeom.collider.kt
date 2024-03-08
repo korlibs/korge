@@ -87,8 +87,11 @@ fun List<HitTestable>.toHitTestable(): HitTestable {
     }
 }
 
-private inline fun Int.extract(offset: Int): Boolean = ((this ushr offset) and 0b1) != 0
-private inline fun Int.insert(value: Boolean, offset: Int): Int = if (value) this or (1 shl offset) else this
+private fun Int.extract(offset: Int): Boolean = ((this ushr offset) and 1) != 0
+private fun Int.insert(value: Boolean, offset: Int): Int {
+    val bits = (1 shl offset)
+    return if (value) this or bits else this and bits.inv()
+}
 
 /*
 import korlibs.datastructure.*

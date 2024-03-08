@@ -1,7 +1,6 @@
 package korlibs.math.geom
 
 import korlibs.math.*
-import korlibs.memory.*
 import kotlin.math.*
 
 
@@ -136,7 +135,7 @@ data class Matrix4 private constructor(
     }
 
     fun copyToColumns(out: FloatArray = FloatArray(16), offset: Int = 0): FloatArray {
-        arraycopy(this.data, 0, out, offset, 16)
+        this.data.copyInto(out, offset, 0, 16)
         return out
     }
     fun copyToRows(out: FloatArray = FloatArray(16), offset: Int = 0): FloatArray {

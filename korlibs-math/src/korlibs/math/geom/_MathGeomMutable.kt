@@ -9,7 +9,6 @@ import korlibs.math.interpolation.*
 import korlibs.number.*
 import kotlin.math.*
 
-
 @Deprecated("Use immutable BoundsBuilder instead")
 class MBoundsBuilder {
     val tempRect = MRectangle()

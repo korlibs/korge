@@ -11,7 +11,6 @@ import korlibs.math.geom.convex.*
 import korlibs.math.geom.shape.*
 import korlibs.math.geom.vector.*
 import korlibs.math.interpolation.*
-import korlibs.memory.*
 import korlibs.number.*
 import kotlin.contracts.*
 import kotlin.jvm.*
@@ -42,7 +41,7 @@ object Arc {
     fun ellipsePath(out: VectorBuilder, p: Point, rsize: Size) {
         val (x, y) = p
         val (rw, rh) = rsize
-        val k = K.toDouble()
+        val k = K
         val ox = (rw / 2) * k
         val oy = (rh / 2) * k
         val xe = x + rw
