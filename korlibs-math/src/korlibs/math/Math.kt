@@ -1,6 +1,5 @@
 package korlibs.math
 
-import korlibs.memory.*
 import kotlin.math.*
 
 const val PIF = PI.toFloat()

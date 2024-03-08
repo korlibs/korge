@@ -10,7 +10,6 @@ import korlibs.math.geom.*
 import korlibs.math.geom.bezier.*
 import korlibs.math.geom.shape.*
 import korlibs.math.interpolation.*
-import korlibs.memory.*
 
 // @TODO: Implement LineCap + LineJoin
 // @TODO: Use Curves and reuse code from [CurvesToStrokes]

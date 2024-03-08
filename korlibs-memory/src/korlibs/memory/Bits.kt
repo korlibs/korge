@@ -193,9 +193,9 @@ public fun Int.extractScaledFFDefault(offset: Int, count: Int, default: Int): In
 
 /** Replaces [this] bits from [offset] to [offset]+[count] with [value] and returns the result of doing such replacement */
 public fun Int.insert(value: Int, offset: Int, count: Int): Int {
-    val mask = count.mask()
-    val clearValue = this and (mask shl offset).inv()
-    return clearValue or ((value and mask) shl offset)
+    val mask = count.mask() shl offset
+    val ovalue = (value shl offset) and mask
+    return (this and mask.inv()) or ovalue
 }
 
 public fun Int.insert24(value: Int, offset: Int): Int = insertMask(value, offset, 0xFFFFFF)
@@ -236,8 +236,8 @@ inline fun Int.insertMask(value: Int, offset: Int, mask: Int): Int {
 }
 /** Replaces 1 bit at [offset] with [value] and returns the result of doing such replacement */
 public fun Int.insert(value: Boolean, offset: Int): Int {
-    val ivalue = if (value) 1 else 0
-    return (this and (1 shl offset).inv()) or (ivalue shl offset)
+    val bits = (1 shl offset)
+    return if (value) this or bits else this and bits.inv()
 }
 
 public fun Int.insertScaled(value: Int, offset: Int, count: Int, scale: Int): Int = insert((value * count.mask()) / scale, offset, count)
