@@ -1,6 +1,5 @@
 package korlibs.number
 
-import korlibs.math.*
 import kotlin.math.*
 
 val Double.niceStr: String get() = niceStr(-1, zeroSuffix = false)
@@ -64,3 +63,18 @@ internal fun StringBuilder.appendNice(value: Float) {
 
 fun Int.toStringUnsigned(radix: Int = 10): String = this.toUInt().toString(radix)
 fun Long.toStringUnsigned(radix: Int = 10): String = this.toULong().toString(radix)
+
+private fun Double.isAlmostEquals(other: Double, epsilon: Double = 0.000001): Boolean = (this - other).absoluteValue < epsilon
+private fun Float.isAlmostEquals(other: Float, epsilon: Float = 0.000001f): Boolean = (this - other).absoluteValue < epsilon
+
+private fun Float.roundDecimalPlaces(places: Int): Float {
+    if (places < 0) return this
+    val placesFactor: Float = 10f.pow(places.toFloat())
+    return round(this * placesFactor) / placesFactor
+}
+
+private fun Double.roundDecimalPlaces(places: Int): Double {
+    if (places < 0) return this
+    val placesFactor: Double = 10.0.pow(places.toDouble())
+    return round(this * placesFactor) / placesFactor
+}

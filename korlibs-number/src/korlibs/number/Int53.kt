@@ -1,6 +1,6 @@
 package korlibs.number
 
-import korlibs.memory.*
+import korlibs.number.internal.*
 import kotlin.math.ceil
 import kotlin.math.floor
 
