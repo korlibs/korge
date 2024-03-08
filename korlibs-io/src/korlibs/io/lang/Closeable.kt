@@ -17,15 +17,8 @@ fun interface Disposable : DisposableHandle {
 fun Closeable.toDisposable(): Disposable = Disposable { this.close() }
 
 typealias Closeable = korlibs.datastructure.closeable.Closeable
-
-object DummyCloseable : Closeable {
-	override fun close() {
-	}
-}
-
-interface OptionalCloseable : Closeable {
-	override fun close(): Unit = Unit
-}
+typealias DummyCloseable = korlibs.datastructure.closeable.DummyCloseable
+typealias OptionalCloseable = korlibs.datastructure.closeable.OptionalCloseable
 
 // Kotlin BUG : Exception in thread "AWT-EventQueue-0" java.lang.NoClassDefFoundError: korlibs/io/lang/CloseableKt$Closeable$1
 //fun Closeable(callback: () -> Unit) = object : Closeable {

@@ -9,8 +9,6 @@ import JsWeakMap
 import get
 import set
 
-actual inline fun <T> Any?.fastCastTo(): T = this.unsafeCast<T>()
-
 actual class FastIntMap<T>(dummy: Boolean)
 
 

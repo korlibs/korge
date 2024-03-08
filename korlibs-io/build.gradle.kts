@@ -15,6 +15,7 @@ project.extensions.extraProperties.properties.apply {
 dependencies {
     commonMainApi(libs.kotlinx.coroutines.core)
     commonMainApi(project(":korge-foundation")) // @TODO: We should get rid of it eventually and depend on specific
+    commonMainApi(project(":korlibs-io-core"))
     commonMainApi(project(":korlibs-math-core"))
     commonMainApi(project(":korlibs-memory"))
     commonMainApi(project(":korlibs-util"))

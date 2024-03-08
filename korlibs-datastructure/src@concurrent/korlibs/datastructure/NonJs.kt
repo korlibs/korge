@@ -2,9 +2,6 @@ package korlibs.datastructure
 
 import korlibs.datastructure.internal.memory.Memory.arraycopy
 
-@Suppress("UNCHECKED_CAST")
-actual inline fun <T> Any?.fastCastTo(): T = this as T
-
 //actual typealias FastArrayList<E> = ArrayList<E>
 public actual open class FastArrayList<E> internal constructor(
     @PublishedApi internal var array: Array<Any?>,

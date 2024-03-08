@@ -6,6 +6,7 @@ dependencies {
         //add("androidMainApi", "com.google.guava:guava:31.0.1-android")
     }
     commonMainApi(project(":korlibs-io"))
+    commonMainApi(project(":korlibs-image"))
     commonMainApi(project(":korlibs-template"))
     commonMainApi(project(":korge-foundation"))
     commonMainApi(project(":korlibs-serialization-yaml"))

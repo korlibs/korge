@@ -13,6 +13,7 @@ project.extensions.extraProperties.properties.apply {
 dependencies {
     commonMainApi(libs.kotlinx.atomicfu)
     commonTestApi(libs.kotlinx.coroutines.test)
+    commonMainApi(project(":korlibs-util"))
     commonMainApi(project(":korlibs-time"))
     commonMainApi(project(":korlibs-platform"))
     commonMainApi(project(":korlibs-concurrent"))
