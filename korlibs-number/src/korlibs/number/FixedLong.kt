@@ -1,6 +1,6 @@
 package korlibs.number
 
-import korlibs.math.*
+import korlibs.number.internal.*
 import kotlin.math.*
 
 /**

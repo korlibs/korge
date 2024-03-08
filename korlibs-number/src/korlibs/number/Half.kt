@@ -2,7 +2,7 @@
 
 package korlibs.number
 
-import korlibs.memory.reinterpretAsFloat
+import korlibs.number.internal.*
 
 /**
  * Represents a floating point value of 16 bits. Also known as Half-precision floating-point format (IEEE 754-2008).
