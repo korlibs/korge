@@ -23,6 +23,7 @@ dependencies {
     //add("commonTestApi", project(":korge-test"))
     commonTestApi(libs.kotlinx.coroutines.test)
     commonMainApi(project(":korlibs-time"))
+    commonMainApi(project(":korlibs-bignumber"))
     commonMainApi(project(":korlibs-datastructure"))
     commonMainApi(project(":korlibs-crypto"))
     commonMainApi(project(":korlibs-platform"))
