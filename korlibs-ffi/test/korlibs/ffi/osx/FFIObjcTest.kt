@@ -15,7 +15,7 @@ class FFIObjcTest {
         dict[10] = 10
         //dict[10] = 20
         dict[20] = 30
-        println(dict.count)
+        assertEquals(2, dict.count)
         //println("dict=$dict")
         //println(ObjcClassRef.listAll())
         //ObjcClassRef.fromName("NSDictionary")?.dumpKotlin()
