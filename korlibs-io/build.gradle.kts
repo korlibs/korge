@@ -17,6 +17,7 @@ dependencies {
     commonMainApi(project(":korge-foundation")) // @TODO: We should get rid of it eventually and depend on specific
     commonMainApi(project(":korlibs-math-core"))
     commonMainApi(project(":korlibs-memory"))
+    commonMainApi(project(":korlibs-ffi"))
     commonMainApi(project(":korlibs-util"))
     commonMainApi(project(":korlibs-crypto"))
     //commonMainApi(project(":korlibs-encoding"))
