@@ -1,14 +1,11 @@
 package korlibs.ffi
 
-import korlibs.io.file.sync.*
-import korlibs.io.util.Glob
-
-open class LDLibraries(val fs: SyncIO) {
-    @SyncIOAPI
+open class LDLibraries(val fs: FFISyncIO) {
+    @FFISyncIOAPI
     companion object : LDLibraries(platformSyncIOCaseInsensitive)
 
-    private val libFolders = LinkedHashSet<SyncIOFile>()
-    private val loadConfFiles = LinkedHashSet<SyncIOFile>()
+    private val libFolders = LinkedHashSet<FFISyncIOFile>()
+    private val loadConfFiles = LinkedHashSet<FFISyncIOFile>()
     private val libFoldersInitializeOnce by lazy {
         try {
             // Fixed paths as described https://renenyffenegger.ch/notes/Linux/fhs/etc/ld_so_conf
@@ -22,7 +19,7 @@ open class LDLibraries(val fs: SyncIO) {
         libFolders
     }
 
-    val ldFolders: List<SyncIOFile> get() = libFoldersInitializeOnce.toList()
+    val ldFolders: List<FFISyncIOFile> get() = libFoldersInitializeOnce.toList()
 
     // /etc/ld.so.conf
     // include /etc/ld.so.conf.d/*.conf
@@ -37,9 +34,9 @@ open class LDLibraries(val fs: SyncIO) {
         }
     }
 
-    fun hasLibrary(name: String) = libFoldersInitializeOnce.any { it[name].exists() }
+    fun hasLibrary(name: String): Boolean = libFoldersInitializeOnce.any { it[name].exists() }
 
-    private fun loadConfFile(file: SyncIOFile) {
+    private fun loadConfFile(file: FFISyncIOFile) {
         if (file in loadConfFiles) return
         loadConfFiles.add(file)
         for (line in file.readString().lines()) {
@@ -51,7 +48,8 @@ open class LDLibraries(val fs: SyncIO) {
                 val glob = tline.removePrefix("include ")
                 val fullFile = fs.file(glob)
                 val globFolder = fullFile.parent
-                val globPattern = Glob(fullFile.name)
+                //val globPattern = Glob(fullFile.name)
+                val globPattern = Regex("^" + fullFile.name.replace(".", "\\.").replace("*", ".*").replace("?", ".") + "$")
                 if (globFolder.isDirectory) {
                     for (item in globFolder.list()) {
                         if (globPattern matches item.name) {

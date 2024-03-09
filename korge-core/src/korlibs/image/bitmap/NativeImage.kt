@@ -9,7 +9,7 @@ import korlibs.image.vector.Drawable
 import korlibs.image.vector.SizedDrawable
 import korlibs.encoding.toBase64
 
-abstract class NativeImage(width: Int, height: Int, val data: Any?, premultiplied: Boolean) : Bitmap(width, height, 32, premultiplied, null) {
+abstract class NativeImage(width: Int, height: Int, val data: Any?, premultiplied: Boolean) : Bitmap(width, height, 32, premultiplied, null), NativeImageRef {
 	abstract val name: String
     open fun toUri(): String = "data:image/png;base64," + PNG.encode(this, ImageEncodingProps("out.png")).toBase64()
 

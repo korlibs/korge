@@ -1,12 +1,11 @@
 package korlibs.ffi
 
-import korlibs.io.file.sync.*
 import korlibs.platform.Platform
 
-open class LibraryResolver(val fs: SyncIO, val platform: Platform) {
+open class LibraryResolver(val fs: FFISyncIO, val platform: Platform) {
     val ldLibraries by lazy { LDLibraries(fs) }
 
-    @SyncIOAPI
+    @FFISyncIOAPI
     companion object : LibraryResolver(platformSyncIOCaseInsensitive, Platform)
 
     fun resolve(vararg names: String): String? = names.firstNotNullOfOrNull { resolve(it) }

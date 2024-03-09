@@ -1,8 +1,7 @@
 package korlibs.ffi
 
 import korlibs.datastructure.*
-import korlibs.io.file.sync.*
-import korlibs.io.lang.*
+import korlibs.datastructure.closeable.*
 import korlibs.memory.*
 import kotlin.jvm.*
 import kotlin.properties.*
@@ -183,7 +182,7 @@ data class FFIFuncConfig(
 }
 
 open class FFILib(val paths: List<String>, val lazyCreate: Boolean = true) {
-    @OptIn(SyncIOAPI::class)
+    @OptIn(FFISyncIOAPI::class)
     val resolvedPath by lazy { LibraryResolver.resolve(*paths.toTypedArray()) }
 
     constructor(vararg paths: String?, lazyCreate: Boolean = true) : this(paths.toList().filterNotNull(), lazyCreate = lazyCreate)

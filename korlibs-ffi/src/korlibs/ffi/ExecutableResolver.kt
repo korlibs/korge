@@ -1,11 +1,10 @@
 package korlibs.ffi
 
-import korlibs.io.file.sync.*
 import korlibs.memory.*
 import korlibs.platform.*
 
-open class ExecutableResolver(val fs: SyncIO) {
-    @OptIn(SyncIOAPI::class)
+open class ExecutableResolver(val fs: FFISyncIO) {
+    @OptIn(FFISyncIOAPI::class)
     companion object : ExecutableResolver(platformSyncIOCaseInsensitive)
 
     fun findInPaths(exec: String, paths: List<String>): String? {

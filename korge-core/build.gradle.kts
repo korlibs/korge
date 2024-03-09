@@ -5,6 +5,7 @@ dependencies {
         //add("androidMainApi", "androidx.javascriptengine:javascriptengine:1.0.0-alpha05")
         //add("androidMainApi", "com.google.guava:guava:31.0.1-android")
     }
+    commonMainApi(project(":korlibs-ffi"))
     commonMainApi(project(":korlibs-io"))
     commonMainApi(project(":korlibs-template"))
     commonMainApi(project(":korge-foundation"))
@@ -16,7 +17,6 @@ dependencies {
     //add("commonMainApi", libs.kotlinx.atomicfu)
     //add("commonTestApi", project(":korge-test"))
     commonTestApi(libs.kotlinx.coroutines.test)
-    jvmMainImplementation(libs.bundles.jna)
     jvmMainImplementation(libs.asm.core)
     jvmMainImplementation(libs.asm.util)
 }
