@@ -13,6 +13,7 @@ project.extensions.extraProperties.properties.apply {
 dependencies {
     commonMainApi(project(":korlibs-io"))
     commonMainApi(project(":korlibs-ffi"))
+    commonMainApi(project(":korlibs-wasm"))
     //jvmMainImplementation(libs.bundles.jna)
     commonMainApi(libs.kotlinx.atomicfu)
 }
