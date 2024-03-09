@@ -1,5 +1,6 @@
 package korlibs.wasm
 
+/*
 open class DenoWASMLib(content: ByteArray) : BaseWASMLib(content) {
     val runner = DenoWasmProcessStdin.open(content)
 
@@ -15,3 +16,4 @@ open class DenoWASMLib(content: ByteArray) : BaseWASMLib(content) {
     override fun invokeFuncIndirect(address: Int, vararg params: Any?): Any? = runner.executeFunctionIndirect(address, *params)
     override fun close() = runner.close()
 }
+*/
