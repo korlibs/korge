@@ -1,12 +1,10 @@
 package korlibs.ffi
 
-import korlibs.io.file.sync.*
-import korlibs.memory.*
 import korlibs.platform.*
 
-open class ExecutableResolver(val fs: SyncIO) {
-    @OptIn(SyncIOAPI::class)
-    companion object : ExecutableResolver(platformSyncIOCaseInsensitive)
+open class ExecutableResolver internal constructor(internal val fs: FFISyncIO) {
+    @OptIn(FFISyncIOAPI::class)
+    companion object : ExecutableResolver(FFIPlatformSyncIO)
 
     fun findInPaths(exec: String, paths: List<String>): String? {
         val fileSeparator = if (Platform.isWindows) "\\" else "/"

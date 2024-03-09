@@ -4,6 +4,8 @@ import org.khronos.webgl.*
 import kotlin.js.Date
 import kotlin.js.Promise
 
+val Deno.isDeno: Boolean get() = js("('Deno' in window)").unsafeCast<Boolean>()
+
 external object Deno {
     fun inspect(value: dynamic): String
     fun exit(exitCode: Int = definedExternally)

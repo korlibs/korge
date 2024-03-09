@@ -1,7 +1,6 @@
 package korlibs.ffi.osx
 
 import korlibs.ffi.*
-import korlibs.io.lang.*
 import kotlin.text.toCharArray
 
 fun NSObject.Companion.cast(value: Any): NSObject {
@@ -29,7 +28,7 @@ open class NSString(id: Long) : NSObject(id) {
             val length = this.length
             val ba = ByteArray(length + 1)
             msgSend("getCString:maxLength:encoding:", ba, length + 1, 4)
-            val str = ba.toString(Charsets.UTF8)
+            val str = ba.decodeToString()
             return str.substring(0, str.length - 1)
         }
 

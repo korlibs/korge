@@ -1,8 +1,7 @@
 package korlibs.ffi
 
+import JsArray
 import korlibs.image.bitmap.*
-import korlibs.io.*
-import korlibs.io.runtime.deno.*
 import korlibs.js.*
 import korlibs.memory.*
 import korlibs.memory.Buffer
@@ -36,7 +35,7 @@ fun KClassifier.toDenoFFI(ret: Boolean): dynamic {
         Float::class -> "f32"
         Double::class -> "f64"
         Boolean::class -> "i8"
-        NativeImage::class -> "buffer"
+        NativeImageRef::class -> "buffer"
         ByteArray::class -> "buffer"
         ShortArray::class -> "buffer"
         CharArray::class -> "buffer"
@@ -189,7 +188,7 @@ actual val FFI_POINTER_SIZE: Int = 8
 
 actual typealias FFIMemory = Uint8Array
 
-actual val FFI_SUPPORTED: Boolean = Platform.isJsDenoJs
+actual val FFI_SUPPORTED: Boolean = Deno.isDeno
 
 actual fun CreateFFIMemory(size: Int): FFIMemory = Uint8Array(size)
 actual fun CreateFFIMemory(bytes: ByteArray): FFIMemory = bytes.asDynamic()
@@ -236,15 +235,15 @@ actual fun FFIPointer.getS64(byteOffset: Int): Long {
 }
 actual fun FFIPointer.getF32(byteOffset: Int): Float = Deno.UnsafePointerView(this).getFloat32(byteOffset)
 actual fun FFIPointer.getF64(byteOffset: Int): Double = Deno.UnsafePointerView(this).getFloat64(byteOffset)
-actual fun FFIPointer.set8(value: Byte, byteOffset: Int) = getDataView(byteOffset, 1).setInt8(0, value)
-actual fun FFIPointer.set16(value: Short, byteOffset: Int) = getDataView(byteOffset, 2).setInt16(0, value, true)
-actual fun FFIPointer.set32(value: Int, byteOffset: Int) = getDataView(byteOffset, 4).setInt32(0, value, true)
+actual fun FFIPointer.set8(value: Byte, byteOffset: Int): Unit = getDataView(byteOffset, 1).setInt8(0, value)
+actual fun FFIPointer.set16(value: Short, byteOffset: Int): Unit = getDataView(byteOffset, 2).setInt16(0, value, true)
+actual fun FFIPointer.set32(value: Int, byteOffset: Int): Unit = getDataView(byteOffset, 4).setInt32(0, value, true)
 actual fun FFIPointer.set64(value: Long, byteOffset: Int) {
     set32(value._low, byteOffset)
     set32(value._high, byteOffset + 4)
 }
-actual fun FFIPointer.setF32(value: Float, byteOffset: Int) = getDataView(byteOffset, 4).setFloat32(0, value, true)
-actual fun FFIPointer.setF64(value: Double, byteOffset: Int) = getDataView(byteOffset, 8).setFloat64(0, value, true)
+actual fun FFIPointer.setF32(value: Float, byteOffset: Int): Unit = getDataView(byteOffset, 4).setFloat32(0, value, true)
+actual fun FFIPointer.setF64(value: Double, byteOffset: Int): Unit = getDataView(byteOffset, 8).setFloat64(0, value, true)
 
 actual fun FFIPointer.getIntArray(size: Int, byteOffset: Int): IntArray {
     val view = Deno.UnsafePointerView(this)
@@ -268,3 +267,16 @@ actual fun <T> FFIPointer.castToFunc(type: KType, config: FFIFuncConfig): T {
     return preprocessFunc(type, func, null, config)
 
 }
+
+private fun def(result: dynamic, vararg params: dynamic, nonblocking: Boolean = false): dynamic =
+    jsObject("parameters" to params, "result" to result, "nonblocking" to nonblocking)
+
+private fun jsObject(vararg pairs: Pair<String, Any?>): dynamic {
+    val out = jsEmptyObj()
+    for (pair in pairs) out[pair.first] = pair.second
+    return out
+}
+
+private fun jsEmptyObj(): dynamic = js("({})")
+
+private external val Deno: dynamic

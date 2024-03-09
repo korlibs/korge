@@ -2,7 +2,6 @@ package korlibs.ffi
 
 import com.sun.jna.*
 import com.sun.jna.Function
-import korlibs.io.file.sync.*
 import korlibs.memory.*
 import kotlinx.coroutines.*
 import java.lang.reflect.*
@@ -49,12 +48,12 @@ actual fun FFIPointer.getS64(byteOffset: Int): Long = this.getLong(byteOffset.to
 actual fun FFIPointer.getF32(byteOffset: Int): Float = this.getFloat(byteOffset.toLong())
 actual fun FFIPointer.getF64(byteOffset: Int): Double = this.getDouble(byteOffset.toLong())
 
-actual fun FFIPointer.set8(value: Byte, byteOffset: Int) = this.setByte(byteOffset.toLong(), value)
-actual fun FFIPointer.set16(value: Short, byteOffset: Int) = this.setShort(byteOffset.toLong(), value)
-actual fun FFIPointer.set32(value: Int, byteOffset: Int) = this.setInt(byteOffset.toLong(), value)
-actual fun FFIPointer.set64(value: Long, byteOffset: Int) = this.setLong(byteOffset.toLong(), value)
-actual fun FFIPointer.setF32(value: Float, byteOffset: Int) = this.setFloat(byteOffset.toLong(), value)
-actual fun FFIPointer.setF64(value: Double, byteOffset: Int) = this.setDouble(byteOffset.toLong(), value)
+actual fun FFIPointer.set8(value: Byte, byteOffset: Int): Unit = this.setByte(byteOffset.toLong(), value)
+actual fun FFIPointer.set16(value: Short, byteOffset: Int): Unit = this.setShort(byteOffset.toLong(), value)
+actual fun FFIPointer.set32(value: Int, byteOffset: Int): Unit = this.setInt(byteOffset.toLong(), value)
+actual fun FFIPointer.set64(value: Long, byteOffset: Int): Unit = this.setLong(byteOffset.toLong(), value)
+actual fun FFIPointer.setF32(value: Float, byteOffset: Int): Unit = this.setFloat(byteOffset.toLong(), value)
+actual fun FFIPointer.setF64(value: Double, byteOffset: Int): Unit = this.setDouble(byteOffset.toLong(), value)
 
 actual class FFIArena actual constructor() {
     private val pointers = arrayListOf<Memory>()
@@ -127,7 +126,7 @@ inline fun <reified T : kotlin.Function<*>> createJNAFunctionToPlainFunc(func: F
     createJNAFunctionToPlainFunc(func, typeOf<T>(), config, null)
 
 class FFILibSymJVM(val lib: FFILib) : FFILibSym {
-    @OptIn(SyncIOAPI::class)
+    @OptIn(FFISyncIOAPI::class)
     val nlib by lazy {
         val resolvedPaths = listOf(LibraryResolver.resolve(*lib.paths.toTypedArray()))
         resolvedPaths.firstNotNullOfOrNull {
