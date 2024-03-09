@@ -1,6 +1,6 @@
 package korlibs.ffi
 
-open class LDLibraries(val fs: FFISyncIO) {
+open class LDLibraries internal constructor(internal val fs: FFISyncIO) {
     @FFISyncIOAPI
     companion object : LDLibraries(FFIPlatformSyncIO)
 
@@ -19,7 +19,8 @@ open class LDLibraries(val fs: FFISyncIO) {
         libFolders
     }
 
-    val ldFolders: List<FFISyncIOFile> get() = libFoldersInitializeOnce.toList()
+    internal val ldFoldersFile: List<FFISyncIOFile> get() = libFoldersInitializeOnce.toList()
+    val ldFolders: List<String> get() = ldFoldersFile.map { it.fullPath }
 
     // /etc/ld.so.conf
     // include /etc/ld.so.conf.d/*.conf

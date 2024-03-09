@@ -3,7 +3,7 @@ package korlibs.ffi
 import korlibs.js.*
 import korlibs.js.Deno
 
-actual val FFIPlatformSyncIO: FFISyncIO = when {
+internal actual val FFIPlatformSyncIO: FFISyncIO = when {
     Deno.isDeno -> object : FFISyncIO {
         override fun exists(path: String): Boolean =
             try { Deno.statSync(path); true } catch (e: dynamic) { false }

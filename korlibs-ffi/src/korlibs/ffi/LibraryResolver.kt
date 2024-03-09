@@ -2,7 +2,7 @@ package korlibs.ffi
 
 import korlibs.platform.Platform
 
-open class LibraryResolver(val fs: FFISyncIO, val platform: Platform) {
+open class LibraryResolver internal constructor(internal val fs: FFISyncIO, val platform: Platform) {
     val ldLibraries by lazy { LDLibraries(fs) }
 
     @FFISyncIOAPI
@@ -41,10 +41,10 @@ open class LibraryResolver(val fs: FFISyncIO, val platform: Platform) {
 
             else -> {
                 //println("ldLibraries.ldFolders=${ldLibraries.ldFolders}")
-                val exactFiles = ldLibraries.ldFolders.asSequence().mapNotNull { folder ->
+                val exactFiles = ldLibraries.ldFoldersFile.asSequence().mapNotNull { folder ->
                     val tries = listOf("lib$name.so", name)
                     tries.firstNotNullOfOrNull { folder[it].takeIf { it.exists() } }?.fullPath
-                } + ldLibraries.ldFolders.asSequence().mapNotNull { folder ->
+                } + ldLibraries.ldFoldersFile.asSequence().mapNotNull { folder ->
                     //println(folder.list())
                     folder.list().firstOrNull {
                         it.name.startsWith("lib$name") || it.name.startsWith(name)

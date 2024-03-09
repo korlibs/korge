@@ -1,3 +1,3 @@
 package korlibs.ffi
 
-actual val FFIPlatformSyncIO: FFISyncIO get() = TODO()
+internal actual val FFIPlatformSyncIO: FFISyncIO get() = TODO()
