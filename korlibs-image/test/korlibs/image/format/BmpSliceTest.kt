@@ -5,7 +5,6 @@ import korlibs.image.bitmap.*
 import korlibs.io.async.*
 import korlibs.io.file.std.*
 import korlibs.math.geom.*
-import korlibs.template.*
 import kotlin.test.*
 
 class BmpSliceTest {
