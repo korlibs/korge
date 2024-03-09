@@ -1,5 +1,6 @@
 package korlibs.wasm
 
+/*
 import korlibs.datastructure.lock.*
 import korlibs.ffi.*
 import korlibs.io.file.sync.*
@@ -436,3 +437,4 @@ while (running) {
   }
 }
 """.trimIndent()
+*/

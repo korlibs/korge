@@ -1,6 +1,5 @@
 package korlibs.wasm
 
-import korlibs.ffi.*
 import korlibs.math.*
 import korlibs.memory.*
 import korlibs.wasm.*
