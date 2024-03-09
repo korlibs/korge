@@ -8,6 +8,7 @@ dependencies {
     commonMainApi(project(":korlibs-wasm"))
     commonMainApi(project(":korlibs-ffi"))
     commonMainApi(project(":korlibs-image"))
+    commonMainApi(project(":korlibs-audio"))
     commonMainApi(project(":korlibs-io"))
     commonMainApi(project(":korlibs-template"))
     commonMainApi(project(":korge-foundation"))
