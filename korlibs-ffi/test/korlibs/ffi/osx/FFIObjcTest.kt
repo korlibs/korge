@@ -1,13 +1,15 @@
 package korlibs.ffi.osx
 
 import korlibs.ffi.*
-import korlibs.io.async.*
 import korlibs.platform.*
+import kotlinx.coroutines.test.*
 import kotlin.test.*
 
 class FFIObjcTest {
     @Test
-    fun test() = suspendTest({ Platform.isMac && FFILib.isFFISupported }){
+    fun test() = runTest {
+        if (!Platform.isMac) return@runTest
+        if (!FFILib.isFFISupported) return@runTest
         //println(NSDictionary().objcClass)
         val dict = NSMutableDictionary()
         dict[10] = 10

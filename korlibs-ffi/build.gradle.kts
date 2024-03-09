@@ -15,7 +15,7 @@ dependencies {
     commonMainApi(project(":korlibs-memory"))
     commonMainApi(project(":korlibs-annotations"))
     commonMainApi(project(":korlibs-datastructure")) // @TODO: We should remove this at some point
-    jvmMainImplementation(libs.bundles.jna)
+    jvmMainApi(libs.bundles.jna)
     commonMainApi(libs.kotlinx.coroutines.core)
     commonMainApi(libs.kotlinx.atomicfu)
     commonTestApi(libs.kotlinx.coroutines.test)

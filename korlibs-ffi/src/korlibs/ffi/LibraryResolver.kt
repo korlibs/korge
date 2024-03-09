@@ -6,7 +6,7 @@ open class LibraryResolver(val fs: FFISyncIO, val platform: Platform) {
     val ldLibraries by lazy { LDLibraries(fs) }
 
     @FFISyncIOAPI
-    companion object : LibraryResolver(platformSyncIOCaseInsensitive, Platform)
+    companion object : LibraryResolver(FFIPlatformSyncIO, Platform)
 
     fun resolve(vararg names: String): String? = names.firstNotNullOfOrNull { resolve(it) }
 

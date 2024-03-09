@@ -3,6 +3,8 @@ package korlibs.ffi
 @RequiresOptIn(level = RequiresOptIn.Level.ERROR)
 annotation class FFISyncIOAPI
 
+expect val FFIPlatformSyncIO: FFISyncIO
+
 interface FFISyncIO {
     fun exists(path: String): Boolean
     fun isDirectory(path: String): Boolean

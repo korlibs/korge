@@ -2,7 +2,7 @@ package korlibs.ffi
 
 open class LDLibraries(val fs: FFISyncIO) {
     @FFISyncIOAPI
-    companion object : LDLibraries(platformSyncIOCaseInsensitive)
+    companion object : LDLibraries(FFIPlatformSyncIO)
 
     private val libFolders = LinkedHashSet<FFISyncIOFile>()
     private val loadConfFiles = LinkedHashSet<FFISyncIOFile>()
