@@ -35,7 +35,7 @@ jobs:
           - { outputKey: testJvmLinux, os: ubuntu-latest, testTask: jvmTest, precompileTask: compileTestKotlinJvm, enableKotlinNative: true, enableSandbox: true, e2e: true }
           - { outputKey: testJvmWindows, os: windows-latest, testTask: jvmTest, precompileTask: compileTestKotlinJvm }
     #if: ${{ needs.changes.outputs[matrix.outputKey] == 'true' }}
-    timeout-minutes: 25
+    timeout-minutes: 30
     runs-on: ${{ matrix.os }}
     env:
       DISABLE_KOTLIN_NATIVE: ${{ !matrix.enableKotlinNative }}
