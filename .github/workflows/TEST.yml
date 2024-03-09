@@ -43,14 +43,14 @@ jobs:
       DISABLE_SANDBOX: ${{ !matrix.enableSandbox }}
       #GRADLE_OPTS: -Dorg.gradle.daemon=false -Dkotlin.compiler.execution.strategy=in-process -Dorg.gradle.workers.max=3
     steps:
-      - { uses: actions/checkout@v3 }
-      - { name: Use Node.js 20.x, uses: actions/setup-node@v3, with: { node-version: 20.x } }
+      - { uses: actions/checkout@v4 }
+      - { name: Use Node.js 20.x, uses: actions/setup-node@v4, with: { node-version: 20.x } }
       - { name: Configure parallel in local.properties, run: "echo org.gradle.parallel=true >> local.properties" }
       - { name: Replace gradle wrapper, run: "sed 's/-all/-bin/g' gradle/wrapper/gradle-wrapper.properties > gradle/wrapper/gradle-wrapper.properties.bak; cp gradle/wrapper/gradle-wrapper.properties.bak gradle/wrapper/gradle-wrapper.properties" }
       - { if: "${{ startsWith(matrix.os, 'ubuntu-') }}", name: Install freeglut3 & openal, run: sudo apt-get update && sudo apt-get -y install freeglut3-dev libopenal-dev xvfb }
       - { if: "${{ startsWith(matrix.os, 'ubuntu-') }}", name: Run Xvfb in Background, run: "Xvfb :99 &" }
       - { if: "${{ startsWith(matrix.os, 'windows-') }}", name: Download and unzip opengl, shell: cmd, run: "curl -L -o opengl32-x64.zip https://github.com/korlibs/mesa-dist-win/releases/download/21.2.3/opengl32-x64.zip && unzip opengl32-x64.zip && unzip opengl32-x64.zip -d korge" }
-      - { name: Set up JDK, uses: actions/setup-java@v3, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
+      - { name: Set up JDK, uses: actions/setup-java@v4, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
       - { name: Prepare Gradle, uses: gradle/gradle-build-action@ef76a971e2fa3f867b617efd72f2fbd72cf6f8bc } # v2.8.0
       - { name: Start gradle, run: ./gradlew }
       - { if: "${{ matrix.precompileTask }}", name: "Building ${{ matrix.precompileTask }} classes", run: "./gradlew --stacktrace --parallel ${{ matrix.precompileTask }}" }
@@ -58,11 +58,11 @@ jobs:
       - { if: "${{ matrix.testTask }}", name: "Run ${{ matrix.testTask }} tests", run: "./gradlew ${{ matrix.testTask }}", env: { EGL_LOG_LEVEL: debug, LIBGL_DEBUG: verbose, LIBGL_ALWAYS_SOFTWARE: true, MESA_DEBUG: true } }
       - { if: "${{ matrix.buildTasks }}", name: "Run ${{ matrix.buildTasks }}", run: "./gradlew ${{ matrix.buildTasks }}" }
       - { name: "Run Android Tests", if: "${{ matrix.enableAndroid }}", uses: reactivecircus/android-emulator-runner@v2, with: { "api-level": 21, "script": "./gradlew connectedCheck" } }
-      - { name: Archive Test Results, if: failure(), uses: actions/upload-artifact@v3, with: { name: "test-results-${{ matrix.os }}", retention-days: 21, path: "**/build/reports", if-no-files-found: ignore } }
+      - { name: Archive Test Results, if: failure(), uses: actions/upload-artifact@v4, with: { name: "test-results-${{ matrix.os }}", retention-days: 21, path: "**/build/reports", if-no-files-found: ignore } }
       - { if: "${{ matrix.e2e }}", name: Check sandbox compiles, run: "./gradlew :korge-sandbox:jvmJar" }
       - { if: "${{ matrix.e2e }}", name: Publish to maven local, run: ./gradlew --parallel publishJvmLocal publishKotlinMultiplatformPublicationToMavenLocal }
       - { if: "${{ matrix.e2e }}", name: e2e test, working-directory: e2e/e2e-test, run: ./gradlew checkReferencesJvm --stacktrace }
-      - { if: "${{ matrix.e2e && failure() }}", name: Archive E2E Test Results, uses: actions/upload-artifact@v3, with: { name: e2e-test-results-linux-jvm, retention-days: 21, path: "**/e2e/e2e-test/build/screenshots", if-no-files-found: ignore } }
+      - { if: "${{ matrix.e2e && failure() }}", name: Archive E2E Test Results, uses: actions/upload-artifact@v4, with: { name: e2e-test-results-linux-jvm, retention-days: 21, path: "**/e2e/e2e-test/build/screenshots", if-no-files-found: ignore } }
       - { if: "${{ matrix.e2e }}", name: e2e multi test and hotreload, working-directory: e2e/e2e-test-multi, run: "./gradlew --watch-fs --warn --configuration-cache --configuration-cache-problems=warn compileKotlinJvm" }
       - { if: "${{ matrix.e2e }}", name: e2e multi test runJvmAutoreload, working-directory: e2e/e2e-test-multi, run: "./gradlew --configuration-cache :client:runJvmAutoreload" }
       - { if: "${{ matrix.e2e }}", name: e2e multi test packageJvmFatJar, working-directory: e2e/e2e-test-multi, run: "./gradlew --configuration-cache :client:packageJvmFatJar" }
