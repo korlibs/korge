@@ -264,7 +264,7 @@ object KorteDefaultTags {
 
         for (part in chunks) {
             when (part.tag.name) {
-                "if", "elseif", "unless", "elseunless" -> branches += Branch(part)
+                "if", "elseif", "elsif", "unless", "elseunless" -> branches += Branch(part)
                 "else" -> elseBranch = part.body
             }
         }
@@ -281,8 +281,8 @@ object KorteDefaultTags {
         return node
     }
 
-    val If = KorteTag("if", setOf("else", "elseif", "elseunless"), setOf("end", "endif")) { BuildIf(isIf = true) }
-    val Unless = KorteTag("unless", setOf("else", "elseif", "elseunless"), setOf("end", "endunless")) { BuildIf(isIf = true) }
+    val If = KorteTag("if", setOf("else", "elseif", "elsif", "elseunless"), setOf("end", "endif")) { BuildIf(isIf = true) }
+    val Unless = KorteTag("unless", setOf("else", "elseif", "elsif", "elseunless"), setOf("end", "endunless")) { BuildIf(isIf = true) }
 
     val Import = KorteTag("import", setOf(), null) {
         val part = chunks.first()
