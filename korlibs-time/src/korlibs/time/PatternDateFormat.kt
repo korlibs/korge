@@ -65,7 +65,7 @@ data class PatternDateFormat @JvmOverloads constructor(
                     continue
                 }
             }
-            chunks.add(s.tryReadOrNull("do") ?: s.readRepeatedChar())
+            chunks.add(s.tryReadOrNull("do") ?: s.tryReadOrNull("S*") ?: s.readRepeatedChar())
         }
     }.toList()
 
@@ -92,7 +92,8 @@ data class PatternDateFormat @JvmOverloads constructor(
             "mm" -> """(\d{2})"""
             "s" -> """(\d{1,2})"""
             "ss" -> """(\d{2})"""
-            "S" -> """(\d{1,9})"""
+            "S" -> """(\d{1,9})""" // @TODO: This should be \d{1} to keep semantics
+            "S*" -> """(\d{1,9})"""
             "SS" -> """(\d{2})"""
             "SSS" -> """(\d{3})"""
             "SSSS" -> """(\d{4})"""
@@ -165,6 +166,7 @@ data class PatternDateFormat @JvmOverloads constructor(
                 "m", "mm" -> utc.minutes.padded(nlen)
                 "s", "ss" -> utc.seconds.padded(nlen)
 
+                "S*" -> (utc.milliseconds.toDouble() / 1000).toString().removePrefix("0.").trimStart('0')
                 "S", "SS", "SSS", "SSSS", "SSSSS", "SSSSSS", "SSSSSSS", "SSSSSSSS", "SSSSSSSSS" -> {
                     val milli = utc.milliseconds
                     val base10length = log10(utc.milliseconds.toDouble()).toInt() + 1
@@ -234,6 +236,7 @@ data class PatternDateFormat @JvmOverloads constructor(
                 }
                 "m", "mm" -> minute = value.toInt()
                 "s", "ss" -> second = value.toInt()
+                "S*" -> millisecond = ("0.${value}".toDouble() * 1000).toInt()
                 "S", "SS", "SSS", "SSSS", "SSSSS", "SSSSSS", "SSSSSSS", "SSSSSSSS", "SSSSSSSSS" -> {
                     val base10length = log10(value.toDouble()).toInt() + 1
                     millisecond = if (base10length > 3) {
@@ -308,11 +311,4 @@ private fun mconvertRangeZero(value: Int, size: Int): Int {
 private fun mconvertRangeNonZero(value: Int, size: Int): Int {
     val res = (value umod size)
     return if (res == 0) size else res
-}
-
-private fun MicroStrReader.readRepeatedChar(): String {
-    return readChunk {
-        val c = readChar()
-        while (hasMore && (tryRead(c))) Unit
-    }
 }

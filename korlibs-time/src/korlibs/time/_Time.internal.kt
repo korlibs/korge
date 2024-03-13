@@ -217,3 +217,10 @@ internal fun MicroStrReader.readTimeZoneOffset(tzNames: TimezoneNames = Timezone
     val roffset = hours.hours + minutes.minutes
     return if (sign > 0) +roffset else -roffset
 }
+
+internal fun MicroStrReader.readRepeatedChar(): String {
+    return readChunk {
+        val c = readChar()
+        while (hasMore && (tryRead(c))) Unit
+    }
+}

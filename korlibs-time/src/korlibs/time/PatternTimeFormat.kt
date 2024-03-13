@@ -17,7 +17,9 @@ data class PatternTimeFormat(
         private const val serialVersionUID = 1L
     }
 
-    data class Options(val optionalSupport: Boolean = false) : Serializable {
+    data class Options(
+        val optionalSupport: Boolean = false
+    ) : Serializable {
         companion object {
             @Suppress("MayBeConstant", "unused")
             private const val serialVersionUID = 1L
@@ -56,11 +58,7 @@ data class PatternTimeFormat(
                     continue
                 }
             }
-            val chunk = s.readChunk {
-                val c = s.readChar()
-                while (s.hasMore && s.tryRead(c)) Unit
-            }
-            chunks.add(chunk)
+            chunks.add(s.tryReadOrNull("S*") ?: s.readRepeatedChar())
         }
     }.toList()
 
@@ -74,7 +72,8 @@ data class PatternTimeFormat(
             "mm" -> """(\d{2})"""
             "s" -> """(\d{1,2})"""
             "ss" -> """(\d{2})"""
-            "S" -> """(\d{1,6})"""
+            "S" -> """(\d{1,6})""" // @TODO: This should be \d{1} to keep semantics
+            "S*" -> """(\d{1,9})"""
             "SS" -> """(\d{2})"""
             "SSS" -> """(\d{3})"""
             "SSSS" -> """(\d{4})"""
@@ -124,6 +123,7 @@ data class PatternTimeFormat(
                 "m", "mm" -> time.minute.padded(nlen)
                 "s", "ss" -> time.second.padded(nlen)
 
+                "S*" -> (time.millisecond.toDouble() / 1000).toString().removePrefix("0.").trimStart('0')
                 "S", "SS", "SSS", "SSSS", "SSSSS", "SSSSSS", "SSSSSSS", "SSSSSSSS" -> {
                     val milli = time.millisecond
                     val numberLength = log10(time.millisecond.toDouble()).toInt() + 1
@@ -158,6 +158,7 @@ data class PatternTimeFormat(
                 }
                 "m", "mm" -> minute = value.toInt()
                 "s", "ss" -> second = value.toInt()
+                "S*" -> millisecond = ("0.${value}".toDouble() * 1000).toInt()
                 "S", "SS", "SSS", "SSSS", "SSSSS", "SSSSSS" -> {
                     val numberLength = log10(value.toDouble()).toInt() + 1
                     millisecond = if (numberLength > 3) {

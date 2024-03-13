@@ -1,5 +1,6 @@
 package korlibs.time
 
+import java.text.SimpleDateFormat
 import java.time.*
 import java.time.format.*
 import java.util.*
@@ -46,6 +47,17 @@ class JvmReferenceTest {
         assertEquals(
             1540124184000L,
             klockParse("EEE, dd MMM yyyy HH:mm:ss X", "Sun, 21 Oct 2018 12:16:24 +0300")
+        )
+    }
+
+    @Test
+    fun testParsingDateTimesWithDeciSeconds() {
+        var dtmilli = 1536379689009L
+        assertEquals(dtmilli, DateTime(2018, 9, 8, 4, 8, 9, 9).unixMillisLong)
+        assertEquals(
+            message = "Sat, 08 Sep 2018 04:08:09.9 UTC",
+            expected = dtmilli,
+            actual = SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss.S z", Locale.ENGLISH).parse("Sat, 08 Sep 2018 04:08:09.9 UTC").time
         )
     }
 }
