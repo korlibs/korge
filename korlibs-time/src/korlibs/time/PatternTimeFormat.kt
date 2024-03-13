@@ -84,8 +84,8 @@ data class PatternTimeFormat(
             "a" -> """(\w+)"""
             " " -> """(\s+)"""
             else -> when {
-                it.startsWith('\'') -> "(" + Regex.escapeReplacement(it.substr(1, it.length - 2)) + ")"
-                else -> "(" + Regex.escapeReplacement(it) + ")"
+                it.startsWith('\'') -> "(" + Regex.escape(it.substr(1, it.length - 2)) + ")"
+                else -> "(" + Regex.escape(it) + ")"
             }
         }
     }
