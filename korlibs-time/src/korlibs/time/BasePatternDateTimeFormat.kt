@@ -278,7 +278,7 @@ abstract class BasePatternDateTimeFormat(
                 "m", "mm" -> minute.padded(nlen)
                 "s", "ss" -> second.padded(nlen)
 
-                "S*" -> (millisecond.toDouble() / 1000).toString().removePrefix("0.").trimStart('0')
+                "S*" -> (millisecond.toDouble() / 1000).toString().removePrefix("0.").trimStart('0').takeIf { it.isNotEmpty() } ?: "0"
                 "S", "SS", "SSS", "SSSS", "SSSSS", "SSSSSS", "SSSSSSS", "SSSSSSSS", "SSSSSSSSS" -> {
                     val milli = millisecond
                     val numberLength = log10(millisecond.toDouble()).toInt() + 1
