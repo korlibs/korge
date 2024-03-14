@@ -157,7 +157,7 @@ object ISO8601 {
                         seconds = if (nextComma || fmtReader.tryRead('.')) {
                             var count = 3
                             while (fmtReader.tryRead('s')) count++
-                            reader.tryReadDouble(count) ?: return reportParse("incorrect seconds")
+                            reader.tryReadDouble() ?: return reportParse("incorrect seconds")
                         } else {
                             reader.tryReadDouble(2) ?: return reportParse("incorrect seconds")
                         }

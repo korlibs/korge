@@ -11,7 +11,9 @@ interface DateFormat {
         val FORMAT2 = DateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
         val FORMAT_DATE = DateFormat("yyyy-MM-dd")
 
-        val FORMATS = listOf(DEFAULT_FORMAT, FORMAT1, FORMAT2, FORMAT_DATE)
+        val ISO_DATE_TIME_OFFSET = DateFormat("yyyy-MM-dd'T'HH:mm[:ss[.S*]]Z").withOptional()
+
+        val FORMATS = listOf(DEFAULT_FORMAT, FORMAT1, FORMAT2, ISO_DATE_TIME_OFFSET, FORMAT_DATE)
 
         fun parse(date: String): DateTimeTz {
             var lastError: Throwable? = null

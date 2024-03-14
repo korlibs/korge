@@ -28,10 +28,22 @@ class SimplerDateFormatTest {
         //assertEquals(31, DateFormat("yyyy-MM-dd'T'HH:mm:ss").parse("2000-12-31T00:00:00").dayOfMonth)
     }
 
-    // https://github.com/korlibs/korge/issues/2197
     @Test
     fun testDateFormatMillisecondPrecisionIssue2197() {
-        val format = DateFormat("yyyy-MM-dd'T'HH:mm[:ss[.S*]]Z").withOptional()
+        _testDateFormatMillisecondPrecisionIssue2197(DateFormat("yyyy-MM-dd'T'HH:mm[:ss[.S*]]Z").withOptional())
+    }
+
+    @Test
+    fun testDateFormatMillisecondPrecisionIssue2197_2() {
+        _testDateFormatMillisecondPrecisionIssue2197(DateFormat.ISO_DATE_TIME_OFFSET)
+    }
+
+    @Test
+    fun testDateFormatMillisecondPrecisionIssue2197_3() {
+        _testDateFormatMillisecondPrecisionIssue2197(ISO8601.DATETIME_UTC_COMPLETE_FRACTION)
+    }
+
+    private fun _testDateFormatMillisecondPrecisionIssue2197(format: DateFormat) {
         val date = korlibs.time.DateTime(2020, 1, 1, 13, 12, 30, 100)
 
         assertEquals(1, format.parseUtc("2020-01-01T13:12:30.001Z").milliseconds) //1

@@ -163,10 +163,8 @@ internal class MicroStrReader(val str: String, var offset: Int = 0) {
         var decimals = false
         loop@while (hasMore) {
             when (val pc = peekChar()) {
-                ',' -> {
-                    if (numCount == 0) {
-                        return null
-                    }
+                ',', '.' -> {
+                    if (numCount == 0) return null
                     decimals = true
                     readChar()
                 }
