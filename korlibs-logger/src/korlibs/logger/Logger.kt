@@ -168,4 +168,6 @@ internal val miniEnvironmentVariablesUC: Map<String, String> get() {
     return _miniEnvironmentVariablesUC!!
 }
 
-expect object DefaultLogOutput : Logger.Output
+expect object DefaultLogOutput : Logger.Output {
+    override fun output(logger: Logger, level: Logger.Level, msg: Any?)
+}

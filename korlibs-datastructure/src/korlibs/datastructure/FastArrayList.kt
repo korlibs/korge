@@ -34,6 +34,9 @@ expect class FastArrayList<E> : MutableListEx<E>, RandomAccess {
     fun trimToSize()
     fun ensureCapacity(minCapacity: Int)
 
+    // From MutableListEx
+    override fun removeRange(fromIndex: Int, toIndex: Int)
+
     // From List
 
     override val size: Int
