@@ -1,6 +1,7 @@
 .idea
 .fleet
 .gradle
+.kotlin
 *.iml
 *.ipr
 *.iws
