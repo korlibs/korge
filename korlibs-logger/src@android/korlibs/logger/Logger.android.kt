@@ -36,7 +36,7 @@ actual object Console : BaseConsole() {
 }
 
 actual object DefaultLogOutput : Logger.Output {
-    override fun output(logger: Logger, level: Logger.Level, msg: Any?) {
+    actual override fun output(logger: Logger, level: Logger.Level, msg: Any?) {
         if (level == Logger.Level.NONE) return
         Log.println(when (level) {
             Logger.Level.NONE -> Log.VERBOSE
