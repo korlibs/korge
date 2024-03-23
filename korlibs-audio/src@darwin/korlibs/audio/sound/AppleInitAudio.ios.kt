@@ -5,7 +5,8 @@ import kotlinx.cinterop.*
 import platform.AVFAudio.*
 import platform.Foundation.*
 
-actual fun appleInitAudio() {
+//actual fun appleInitAudio() {
+fun appleInitAudio() {
     // printStackTrace("appleInitAudio")
     memScoped {
         val error = alloc<ObjCObjectVar<NSError?>>().ptr

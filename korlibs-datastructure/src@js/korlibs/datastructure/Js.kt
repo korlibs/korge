@@ -192,7 +192,7 @@ public actual open class FastArrayList<E> internal constructor(@PublishedApi int
         return false
     }
 
-    override fun removeRange(fromIndex: Int, toIndex: Int) {
+    actual override fun removeRange(fromIndex: Int, toIndex: Int) {
         jsArray.splice(fromIndex, toIndex - fromIndex)
         modCount++
     }
