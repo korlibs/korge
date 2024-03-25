@@ -1,5 +1,6 @@
 package korlibs.template
 
+import korlibs.io.serialization.yaml.*
 import korlibs.template.dynamic.*
 import korlibs.template.internal.*
 import korlibs.template.util.*
@@ -298,7 +299,9 @@ open class KorteTemplateConfig(
     var unknownFilter: KorteFilter = KorteFilter("unknown") { tok.exception("Unknown filter '$name'") },
     val autoEscapeMode: KorteAutoEscapeMode = KorteAutoEscapeMode.HTML,
     // Here we can convert markdown into html if required. This is available at the template level + content + named blocks
-    val contentTypeProcessor: (content: String, contentType: String?) -> String = { content, _ -> content }
+    val contentTypeProcessor: (content: String, contentType: String?) -> String = { content, _ -> content },
+    val frontMatterParser: (String) -> Any? = { Yaml.decode(it) },
+    @Suppress("UNUSED_PARAMETER") dummy: Unit = Unit, // To avoid tailing lambda
 ) {
     val extra = LinkedHashMap<String, Any>()
 
@@ -468,7 +471,7 @@ interface KorteBlock : KorteDynamicContext {
                                         val yamlLines = slines.slice(0 until index)
                                         val outside = slines.slice(index + 1 until slines.size)
                                         val yamlText = yamlLines.joinToString("\n")
-                                        val yaml = Yaml.read(yamlText)
+                                        val yaml = parseContext.config.frontMatterParser(yamlText)
                                         if (yaml is Map<*, *>) {
                                             parseContext.template.frontMatter = yaml as Map<String, Any?>
                                         }

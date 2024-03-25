@@ -190,6 +190,8 @@ open class Win32KmlGlContext(window: Any? = null, parent: KmlGlContext? = null) 
     }
 
     private fun makeCurrent(hDC: WinDef.HDC?, hRC: WinDef.HGLRC?) {
+        if (hDC == null) return
+
         if (!WGL.wglMakeCurrent(hDC, hRC)) {
             val error = Win32.GetLastError()
             logger.error { "WGL.wglMakeCurrent($hDC, $hRC).error = $error" }

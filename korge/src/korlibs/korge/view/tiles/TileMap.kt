@@ -15,6 +15,13 @@ import korlibs.math.geom.collider.*
 import kotlin.math.*
 
 inline fun Container.tileMap(
+    map: TileMapData,
+    smoothing: Boolean = true,
+    callback: @ViewDslMarker TileMap.() -> Unit = {},
+) = TileMap(map, map.tileSet, smoothing, map.tileSet.tileSize).repeat(map.repeatX, map.repeatY).addTo(this, callback)
+
+@Deprecated("Use TileMapInfo variant instead")
+inline fun Container.tileMap(
     map: IStackedIntArray2,
     tileset: TileSet,
     repeatX: TileMapRepeat = TileMapRepeat.NONE,
@@ -24,6 +31,7 @@ inline fun Container.tileMap(
     callback: @ViewDslMarker TileMap.() -> Unit = {},
 ) = TileMap(map, tileset, smoothing, tileSize).repeat(repeatX, repeatY).addTo(this, callback)
 
+@Deprecated("Use TileMapInfo variant instead")
 inline fun Container.tileMap(
     map: IntArray2,
     tileset: TileSet,
@@ -35,61 +43,36 @@ inline fun Container.tileMap(
 ) = TileMap(map, tileset, smoothing, tileSize).repeat(repeatX, repeatY).addTo(this, callback)
 
 @PublishedApi
+@Deprecated("Use TileMapInfo variant instead")
 internal fun Bitmap32.toIntArray2() = IntArray2(width, height, ints)
 
-enum class TileMapRepeat(val get: (v: Int, max: Int) -> Int) {
-    NONE({ v, max -> v }),
-    REPEAT({ v, max -> v umod max }),
-    MIRROR({ v, max ->
-        val r = v umod max
-        if ((v / max) % 2 == 0) r else max - 1 - r
-    })
-}
+@Deprecated("Use korlibs.image.tiles.TileMapRepeat instead", replaceWith = ReplaceWith("korlibs.image.tiles.TileMapRepeat"))
+typealias TileMapRepeat = korlibs.image.tiles.TileMapRepeat
 
-inline class TileInfo(val data: Int) {
-    val isValid: Boolean get() = data != -1
-    val isInvalid: Boolean get() = data == -1
-
-    val tile: Int get() = data.extract(0, 18)
-    val offsetX: Int get() = data.extract5(18)
-    val offsetY: Int get() = data.extract5(23)
-    val rotate: Boolean get() = data.extract(29)
-    val flipY: Boolean get() = data.extract(30)
-    val flipX: Boolean get() = data.extract(31)
-
-    constructor(tile: Int, offsetX: Int = 0, offsetY: Int = 0, flipX: Boolean = false, flipY: Boolean = false, rotate: Boolean = false) : this(0
-        .insert(tile, 0, 18)
-        .insert(offsetX, 18, 5)
-        .insert(offsetY, 23, 5)
-        .insert(rotate, 29)
-        .insert(flipY, 30)
-        .insert(flipX, 31)
-    )
-
-}
+@Deprecated("Use korlibs.image.tiles.Tile instead", replaceWith = ReplaceWith("korlibs.image.tiles.Tile"))
+typealias TileInfo = korlibs.image.tiles.Tile
 
 class TileMap(
-    var stackedIntMap: IStackedIntArray2 = StackedIntArray2(1, 1, 0),
-    tileset: TileSet = TileSet.EMPTY,
+    var map: TileMapData = TileMapData(1, 1),
+    tileset: TileSet = map.tileSet,
     var smoothing: Boolean = true,
     var tileSize: SizeInt = tileset.tileSize,
 //) : BaseTileMap(intMap, smoothing, staggerAxis, staggerIndex, tileSize) {
 ) : View() {
-    @Deprecated("Use stackedIntMap instead", level = DeprecationLevel.HIDDEN)
-    var intMap: IntArray2
-        get() = (stackedIntMap as StackedIntArray2).data.first()
-        set(value) {
-            lock {
-                stackedIntMap = StackedIntArray2(value)
-            }
-        }
+    @Deprecated("Use map instead", level = DeprecationLevel.WARNING)
+    var stackedIntMap: IStackedIntArray2
+        get() = map.data.asInt()
+        set(value) { map = TileMapData(value.asLong()) }
 
     // Analogous to Bitmap32.locking
+    @Deprecated("Not required anymore")
     fun lock() {
     }
+    @Deprecated("Not required anymore")
     fun unlock() {
-        contentVersion++
+        //map.contentVersion++
     }
+    @Deprecated("Not required anymore")
     inline fun <T> lock(block: () -> T): T {
         lock()
         try {
@@ -102,11 +85,12 @@ class TileMap(
     private var tileWidth: Float = 0f
     private var tileHeight: Float = 0f
 
-    var repeatX = TileMapRepeat.NONE
-    var repeatY = TileMapRepeat.NONE
+    var repeatX = map.repeatX
+    var repeatY = map.repeatY
 
-    protected var contentVersion = 0
-    private var cachedContentVersion = 0
+    private var animationVersion = 0
+    private var cachedContentVersion = -1
+    private var cachedAnimationVersion = -1
 
     // @TODO: Use a TextureVertexBuffer or something
     @KorgeInternal
@@ -194,11 +178,12 @@ class TileMap(
             lastVirtualRect = currentVirtualRect
         }
 
-        if (!dirtyVertices && cachedContentVersion == contentVersion) return
+        if (!dirtyVertices && cachedContentVersion == map.contentVersion && cachedAnimationVersion == animationVersion) return
 
         //println("currentVirtualRect=$currentVirtualRect")
 
-        cachedContentVersion = contentVersion
+        cachedContentVersion = map.contentVersion
+        cachedAnimationVersion = animationVersion
         dirtyVertices = false
         val m = globalMatrix
 
@@ -247,17 +232,17 @@ class TileMap(
         val doRepeatY = repeatY != TileMapRepeat.NONE
         val doRepeatAny = doRepeatX || doRepeatY // Since if it is rotated, we might have problems. For no rotation we could repeat separately
 
-        val ymin2 = (if (doRepeatAny) ymin else ymin.clamp(stackedIntMap.startY, stackedIntMap.endY)) - 1 - overdrawTiles
-        val ymax2 = (if (doRepeatAny) ymax else ymax.clamp(stackedIntMap.startY, stackedIntMap.endY)) + 1 + overdrawTiles
-        val xmin2 = (if (doRepeatAny) xmin else xmin.clamp(stackedIntMap.startX, stackedIntMap.endX)) - 1 - overdrawTiles
-        val xmax2 = (if (doRepeatAny) xmax else xmax.clamp(stackedIntMap.startX, stackedIntMap.endX)) + 1 + overdrawTiles
+        val ymin2 = (if (doRepeatAny) ymin else ymin.clamp(map.startY, map.endY)) - 1 - overdrawTiles
+        val ymax2 = (if (doRepeatAny) ymax else ymax.clamp(map.startY, map.endY)) + 1 + overdrawTiles
+        val xmin2 = (if (doRepeatAny) xmin else xmin.clamp(map.startX, map.endX)) - 1 - overdrawTiles
+        val xmax2 = (if (doRepeatAny) xmax else xmax.clamp(map.startX, map.endX)) + 1 + overdrawTiles
 
         //println("xyminmax2=${xmin2},${ymin2} - ${xmax2},${ymax2}")
 
         val yheight = ymax2 - ymin2
         val xwidth = xmax2 - xmin2
 
-        val ntiles = xwidth * yheight * stackedIntMap.maxLevel
+        val ntiles = xwidth * yheight * map.maxLevel
 
         //println("ntiles=$ntiles")
 
@@ -280,8 +265,11 @@ class TileMap(
 
         val quadIndexData = TexturedVertexArray.quadIndices(allocTilesClamped)
 
-        val invTileWidth  = 1f / tileWidth
-        val invTileHeight = 1f / tileHeight
+        //val scaleOffsetX = map.offsetKind.scale(tileWidth)
+        //val scaleOffsetY = map.offsetKind.scale(tileHeight)
+
+        val scaleOffsetX = (1f / tileWidth) * map.offsetScale
+        val scaleOffsetY = (1f / tileHeight) * map.offsetScale
 
         //println("TILE RANGE: ($xmin,$ymin)-($xmax,$ymax)  :: ($xmin2,$ymin2)-($xmax2,$ymax2) :: (${stackedIntMap.startX},${stackedIntMap.startY})-(${stackedIntMap.endX},${stackedIntMap.endY})")
 
@@ -289,16 +277,16 @@ class TileMap(
         for (y in ymin2 until ymax2) {
             for (x in xmin2 until xmax2) {
                 iterationCount++
-                val rx = repeatX.get(x, stackedIntMap.width)
-                val ry = repeatY.get(y, stackedIntMap.height)
+                val rx = repeatX.get(x, map.width)
+                val ry = repeatY.get(y, map.height)
 
-                if (rx < stackedIntMap.startX || rx >= stackedIntMap.endX) continue
-                if (ry < stackedIntMap.startY || ry >= stackedIntMap.endY) continue
-                for (level in 0 until stackedIntMap.getStackLevel(rx, ry)) {
+                if (rx < map.startX || rx >= map.endX) continue
+                if (ry < map.startY || ry >= map.endY) continue
+                for (level in 0 until map.getStackLevel(rx, ry)) {
 
                     //println("x=$x, y=$y, rx=$rx, ry=$ry, level=$level")
 
-                    val cell = TileInfo(stackedIntMap[rx, ry, level])
+                    val cell = map[rx, ry, level]
                     if (cell.isInvalid) continue
 
                     val cellData = cell.tile
@@ -307,8 +295,10 @@ class TileMap(
                     val rotate = cell.rotate
                     val offsetX = cell.offsetX
                     val offsetY = cell.offsetY
-                    val rationalOffsetX = offsetX * invTileWidth
-                    val rationalOffsetY = offsetY * invTileHeight
+                    val rationalOffsetX = offsetX * scaleOffsetX
+                    val rationalOffsetY = offsetY * scaleOffsetY
+
+                    //if (offsetX != 0 || offsetY != 0) println("x=$x, y=$y, offsetX=$offsetX, offsetY=$offsetY, rationalOffsetX=$rationalOffsetX, rationalOffsetY=$rationalOffsetY, scaleOffsetX=$scaleOffsetX, scaleOffsetY=$scaleOffsetY")
 
                     //println("CELL_DATA: $cellData")
 
@@ -446,6 +436,15 @@ class TileMap(
         tileHeight = tileset.height.toFloat()
     }
 
+    @Deprecated("Use TileMapInfo variant instead")
+    constructor(
+        map: IStackedIntArray2,
+        tileset: TileSet,
+        smoothing: Boolean = true,
+        tileSize: SizeInt = tileset.tileSize,
+    ) : this(TileMapData(map.asLong()), tileset, smoothing, tileSize)
+
+    @Deprecated("Use TileMapInfo variant instead")
     constructor(
         map: IntArray2,
         tileset: TileSet,
@@ -453,6 +452,7 @@ class TileMap(
         tileSize: SizeInt = tileset.tileSize,
     ) : this(map.toStacked(), tileset, smoothing, tileSize)
 
+    @Deprecated("Use TileMapInfo variant instead")
     constructor(
         map: Bitmap32,
         tileset: TileSet,
@@ -471,9 +471,10 @@ class TileMap(
     fun pixelHitTest(tileX: Int, tileY: Int, x: Int, y: Int, direction: HitTestDirection): Boolean {
         //println("pixelHitTestByte: tileX=$tileX, tileY=$tileY, x=$x, y=$y")
         //println(tileset.collisions.toList())
-        if (!stackedIntMap.inside(tileX, tileY)) return true
-        val tile = stackedIntMap.getLast(tileX, tileY)
-        val collision = tileset.tilesMap[tile]?.collision ?: return false
+        if (!map.inside(tileX, tileY)) return true
+        val tile = map.getLast(tileX, tileY)
+        // @TODO: Handle rotations, etc. that should transform coordinates.
+        val collision = tileset.tilesMap[tile.tile]?.collision ?: return false
         return collision.hitTestAny(Point(x, y), direction)
     }
 
@@ -491,14 +492,14 @@ class TileMap(
                         animationElapsed[tileIndex] -= currentFrame.duration.milliseconds
                         animationIndex[tileIndex] = nextIndex
                         tilesetTextures[tileIndex] = tileset.textures[info.frames[nextIndex].tileId]
-                        contentVersion++
+                        animationVersion++
                     }
                 }
             }
         }
     }
 
-    override fun getLocalBoundsInternal() = Rectangle(0f, 0f, tileWidth * stackedIntMap.width, tileHeight * stackedIntMap.height)
+    override fun getLocalBoundsInternal() = Rectangle(0f, 0f, tileWidth * map.width, tileHeight * map.height)
 
     fun repeat(repeatX: TileMapRepeat, repeatY: TileMapRepeat = repeatX): TileMap {
         this.repeatX = repeatX

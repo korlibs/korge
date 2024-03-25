@@ -4,6 +4,7 @@ import korlibs.datastructure.*
 import korlibs.image.bitmap.*
 import korlibs.image.format.*
 import korlibs.image.tiles.*
+import korlibs.image.tiles.TileMapRepeat
 import korlibs.io.file.std.*
 import korlibs.korge.scene.*
 import korlibs.korge.view.*

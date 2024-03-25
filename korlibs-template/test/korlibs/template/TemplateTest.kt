@@ -162,7 +162,7 @@ class TemplateTest : BaseTest() {
     @Test
     fun testSimpleElseIf() = suspendTest {
         val tpl =
-            KorteTemplate("{% if v == 1 %}one{% elseif v == 2 %}two{% elseif v < 5 %}less than five{% elseif v > 8 %}greater than eight{% else %}other{% end %}")
+            KorteTemplate("{% if v == 1 %}one{% elseif v == 2 %}two{% elsif v < 5 %}less than five{% elseif v > 8 %}greater than eight{% else %}other{% end %}")
         assertEquals("one", tpl("v" to 1))
         assertEquals("two", tpl("v" to 2))
         assertEquals("less than five", tpl("v" to 3))
