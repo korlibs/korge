@@ -207,7 +207,8 @@ open class UIHorizontalStack(
         forEachChild {
             it.x = x
             if (adjustSize && forcedHeight != null) it.scaledHeight = height
-            x += it.width + padding
+            val bounds = it.getLocalBounds()
+            x += bounds.right + padding
             bb += it.getBounds(this@UIHorizontalStack)
         }
         //println("forcedHeight=$forcedHeight!")
