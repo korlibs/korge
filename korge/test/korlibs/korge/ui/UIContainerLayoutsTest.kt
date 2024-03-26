@@ -3,6 +3,7 @@ package korlibs.korge.ui
 import korlibs.image.color.*
 import korlibs.korge.view.*
 import korlibs.math.geom.*
+import korlibs.number.*
 import kotlin.test.*
 
 class UIContainerLayoutsTest {
@@ -110,5 +111,25 @@ class UIContainerLayoutsTest {
                 str(cols = 3, rows = 2, spacing = Spacing(vertical = 4f, horizontal = 8f), direction = UIDirection.ROW),
             ).joinToString("\n")
         )
+    }
+
+    @Test
+    fun testUIVerticalStack() {
+        val stack = UIVerticalStack()
+        val view1 = stack.solidRect(10, 10, Colors.RED)
+        val view2 = stack.graphics { fill(Colors.RED) { rect(10, 10, 20, 20) } }
+        val view3 = stack.solidRect(10, 10, Colors.RED)
+        stack.relayout()
+        assertEquals("0,10,40", "${view1.y.niceStr},${view2.y.niceStr},${view3.y.niceStr}")
+    }
+
+    @Test
+    fun testUIHorizontalStack() {
+        val stack = UIHorizontalStack()
+        val view1 = stack.solidRect(10, 10, Colors.RED)
+        val view2 = stack.graphics { fill(Colors.RED) { rect(10, 10, 20, 20) } }
+        val view3 = stack.solidRect(10, 10, Colors.RED)
+        stack.relayout()
+        assertEquals("0,10,40", "${view1.x.niceStr},${view2.x.niceStr},${view3.x.niceStr}")
     }
 }
