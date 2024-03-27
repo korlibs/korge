@@ -14,7 +14,7 @@ kotlinx-coroutines = "1.8.0"
 kotlinx-serialization = "1.6.2"
 kotlinx-atomicfu = "0.23.1"
 
-korlibs = "5.5.0-alpha2"
+korlibs = "5.5.0-alpha3"
 
 #maven { url = uri("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev") }
 
