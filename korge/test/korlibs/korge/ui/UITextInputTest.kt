@@ -11,7 +11,7 @@ import kotlin.test.*
 class UITextInputTest : ViewsForTesting() {
     @Test
     fun testBackspace() = viewsTest {
-        val textInput = uiTextInput()
+        val textInput = uiTextInput() {}
         assertEquals(0, textInput.selectionStart)
         textInput.focus()
         keyType("hello")
@@ -82,7 +82,7 @@ class UITextInputTest : ViewsForTesting() {
 
     inner class TextInputTester(val stage: Stage) {
         val log = arrayListOf<String>()
-        val textInput = stage.uiTextInput()
+        val textInput = stage.uiTextInput() {}
         fun log(action: String) {
             log += action
             log += "STATE: '${textInput.text}':${textInput.selectionStart}<..${textInput.selectionEnd}"

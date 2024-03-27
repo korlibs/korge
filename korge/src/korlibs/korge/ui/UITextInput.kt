@@ -14,15 +14,16 @@ import korlibs.math.geom.*
 inline fun Container.uiTextInput(
     initialText: String = "",
     size: Size = Size(128, 24),
+    settings: TextInputSettings = TextInputSettings(),
     block: @ViewDslMarker UITextInput.() -> Unit = {}
-): UITextInput = UITextInput(initialText, size)
+): UITextInput = UITextInput(initialText, size, settings)
     .addTo(this).also { block(it) }
 
 /**
  * Simple Single Line Text Input
  */
 @KorgeExperimental
-class UITextInput(initialText: String = "", size: Size = Size(128, 24)) :
+class UITextInput(initialText: String = "", size: Size = Size(128, 24), settings: TextInputSettings = TextInputSettings()) :
     UIView(size),
     //UIFocusable,
     ISoftKeyboardConfig by SoftKeyboardConfig() {
@@ -38,7 +39,7 @@ class UITextInput(initialText: String = "", size: Size = Size(128, 24)) :
     //private val container = fixedSizeContainer(width - 4.0, height - 4.0).position(2.0, 3.0)
     private val textView = container.text(initialText, 16.0, color = Colors.BLACK, font = DefaultTtfFontAsBitmap)
     //private val textView = container.text(initialText, 16.0, color = Colors.BLACK, font = DefaultTtfFont)
-    val controller = TextEditController(textView, textView, this, bg)
+    val controller = TextEditController(textView, textView, this, bg, settings)
 
     //init { uiScrollable {  } }
 

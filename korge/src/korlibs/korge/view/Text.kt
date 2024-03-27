@@ -230,6 +230,10 @@ open class Text(
         return _textMetricsResult ?: error("Must ensure font is resolved before calling getGlyphMetrics")
     }
 
+    fun getGlyphMetricsForSpaceCharacter(): TextMetricsResult {
+        return font.getOrNull()?.getTextBoundsWithGlyphs(fontSize, " ", renderer, alignment) ?: error("Must ensure font is resolved before calling getGlyphMetrics")
+    }
+
     private val tempBmpEntry = Text2TextRendererActions.Entry()
     private val fontMetrics = FontMetrics()
     private val textMetrics = TextMetrics()

@@ -14,9 +14,8 @@ import korlibs.math.geom.*
 import kotlinx.coroutines.sync.*
 import java.awt.*
 
-@OptIn(KorgeExperimental::class)
 inline fun korgeScreenshotTestV2(
-    korgeConfig: Korge,
+    korgeConfig: Korge = Korge(),
     settings: KorgeScreenshotValidationSettings = KorgeScreenshotValidationSettings(),
     crossinline callback: suspend Stage.(korgeScreenshotTester: KorgeScreenshotTester) -> Unit = {},
 ) {
