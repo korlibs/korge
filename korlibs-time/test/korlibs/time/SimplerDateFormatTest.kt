@@ -1,8 +1,6 @@
 package korlibs.time
 
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
+import kotlin.test.*
 
 class SimplerDateFormatTest {
     // Sun, 06 Nov 1994 08:49:37 GMT
@@ -28,6 +26,55 @@ class SimplerDateFormatTest {
     fun testBug67() {
         assertEquals(31, DateTime(2000, 12, 31).dayOfMonth)
         //assertEquals(31, DateFormat("yyyy-MM-dd'T'HH:mm:ss").parse("2000-12-31T00:00:00").dayOfMonth)
+    }
+
+    @Test
+    fun testDateFormatMillisecondPrecisionIssue2197() {
+        _testDateFormatMillisecondPrecisionIssue2197(DateFormat("yyyy-MM-dd'T'HH:mm[:ss[.S*]]Z").withOptional())
+    }
+
+    @Test
+    fun testDateFormatMillisecondPrecisionIssue2197_2() {
+        _testDateFormatMillisecondPrecisionIssue2197(DateFormat.ISO_DATE_TIME_OFFSET)
+    }
+
+    @Test
+    fun testDateFormatMillisecondPrecisionIssue2197_3() {
+        _testDateFormatMillisecondPrecisionIssue2197(ISO8601.DATETIME_UTC_COMPLETE_FRACTION)
+    }
+
+    private fun _testDateFormatMillisecondPrecisionIssue2197(format: DateFormat) {
+        val date = korlibs.time.DateTime(2020, 1, 1, 13, 12, 30, 100)
+
+        assertEquals(1, format.parseUtc("2020-01-01T13:12:30.001Z").milliseconds) //1
+        assertEquals(10, format.parseUtc("2020-01-01T13:12:30.010Z").milliseconds) //10
+        assertEquals(100, format.parseUtc("2020-01-01T13:12:30.100Z").milliseconds) //100
+        assertEquals(100, format.parseUtc("2020-01-01T13:12:30.1Z").milliseconds) // ❌ parsed as 1
+        assertEquals(100, format.parseUtc("2020-01-01T13:12:30.10Z").milliseconds) // ❌ parsed as 10
+        assertEquals(100, format.parseUtc("2020-01-01T13:12:30.100Z").milliseconds) //100
+
+        assertEquals(date, format.parseUtc("2020-01-01T13:12:30.1Z")) // ❌ parsed as 2020-01-01T13:12:30.001Z
+        assertEquals(date, format.parseUtc("2020-01-01T13:12:30.10Z")) // ❌ parsed as 2020-01-01T13:12:30.010Z
+        assertEquals(date, format.parseUtc("2020-01-01T13:12:30.100Z"))
+        assertEquals(date, format.parseUtc("2020-01-01T13:12:30.1000Z"))
+        assertEquals(date, format.parseUtc("2020-01-01T13:12:30.10000Z"))
+        assertEquals(date, format.parseUtc("2020-01-01T13:12:30.100000Z"))
+        assertEquals(date, format.parseUtc("2020-01-01T13:12:30.1000000Z"))
+        assertEquals(date, format.parseUtc("2020-01-01T13:12:30.10000000Z")) // ❌ parsed as 2020-01-01T13:12:30.099Z
+        assertEquals(date, format.parseUtc("2020-01-01T13:12:30.100000000Z"))
+        // Out of precision
+        assertEquals(date, format.parseUtc("2020-01-01T13:12:30.1000000000Z"))
+
+        assertNotEquals(date, format.parseUtc("2020-01-01T13:12:30.01Z"))
+        assertNotEquals(date, format.parseUtc("2020-01-01T13:12:30.001Z"))
+        assertNotEquals(date, format.parseUtc("2020-01-01T13:12:30.0001Z"))
+        assertNotEquals(date, format.parseUtc("2020-01-01T13:12:30.00001Z"))
+        assertNotEquals(date, format.parseUtc("2020-01-01T13:12:30.000001Z"))
+        assertNotEquals(date, format.parseUtc("2020-01-01T13:12:30.0000001Z"))
+        assertNotEquals(date, format.parseUtc("2020-01-01T13:12:30.00000001Z"))
+        assertNotEquals(date, format.parseUtc("2020-01-01T13:12:30.000000001Z"))
+        // Out of precision
+        assertNotEquals(date, format.parseUtc("2020-01-01T13:12:30.0000000001Z"))
     }
 
     class StrictOffset {

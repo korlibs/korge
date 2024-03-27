@@ -443,6 +443,12 @@ class DateTimeTest {
     }
 
     @Test
+    fun testBug123_2() {
+        val str2 = "1989-01-01T10:00:00.0Z"
+        assertEquals(str2, DateTime.parse(str2).format(DateFormat.ISO_DATE_TIME_OFFSET))
+    }
+
+    @Test
     fun testIssue131() {
         assertEquals(
             "2020-07-23T12:30:52.999000000Z",

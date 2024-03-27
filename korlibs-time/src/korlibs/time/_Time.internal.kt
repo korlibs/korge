@@ -163,10 +163,8 @@ internal class MicroStrReader(val str: String, var offset: Int = 0) {
         var decimals = false
         loop@while (hasMore) {
             when (val pc = peekChar()) {
-                ',' -> {
-                    if (numCount == 0) {
-                        return null
-                    }
+                ',', '.' -> {
+                    if (numCount == 0) return null
                     decimals = true
                     readChar()
                 }
@@ -216,4 +214,11 @@ internal fun MicroStrReader.readTimeZoneOffset(tzNames: TimezoneNames = Timezone
     val minutes = part.substr(2, 2).padStart(2, '0').toIntOrNull() ?: return null
     val roffset = hours.hours + minutes.minutes
     return if (sign > 0) +roffset else -roffset
+}
+
+internal fun MicroStrReader.readRepeatedChar(): String {
+    return readChunk {
+        val c = readChar()
+        while (hasMore && (tryRead(c))) Unit
+    }
 }

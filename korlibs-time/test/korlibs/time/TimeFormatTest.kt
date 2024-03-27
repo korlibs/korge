@@ -64,4 +64,19 @@ class TimeFormatTest {
 
         assertEquals(dateUnix.hours, dateUnixLocal.hours, "testFromUnix. now=$now, diff=$diff, dataUnix=$dateUnix, dateUnixLocal=$dateUnixLocal")
     }
+
+    // https://github.com/korlibs/korge/issues/2197
+    @Test
+    fun testTimeFormatMillisecondPrecisionIssue2197() {
+        val format = TimeFormat("HH:mm[:ss[.S*]]").withOptional()
+
+        assertEquals(0, format.parseTime("13:12").millisecond) //0
+        assertEquals(0, format.parseTime("13:12:01").millisecond) //0
+        assertEquals(100, format.parseTime("13:12:30.1").millisecond) // ❌ parsed as 1
+        assertEquals(1, format.parseTime("13:12:30.001").millisecond) //1
+        assertEquals(10, format.parseTime("13:12:30.010").millisecond) //10
+        assertEquals(100, format.parseTime("13:12:30.100").millisecond) //100
+        assertEquals(100, format.parseTime("13:12:30.10").millisecond) // ❌ parsed as 10
+        assertEquals(100, format.parseTime("13:12:30.100").millisecond) //100
+    }
 }
