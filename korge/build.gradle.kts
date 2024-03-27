@@ -4,20 +4,21 @@ description = "Multiplatform Game Engine written in Kotlin"
 
 project.extensions.extraProperties.properties.apply {
     applyProjectProperties(
-        "https://github.com/korlibs/klogger",
+        "https://github.com/korlibs/korge",
         "MIT License",
         "https://raw.githubusercontent.com/korlibs/korge/master/LICENSE"
     )
 }
 
 dependencies {
-    commonMainApi(project(":korge-core"))
-    commonMainApi(project(":korge-foundation"))
+    commonMainApi(libs.korlibs.audio)
+    commonMainApi(libs.korlibs.image)
+    commonMainApi(libs.korlibs.inject)
+    commonMainApi(libs.korlibs.template)
     //commonTestApi(project(":korge-test"))
     jvmMainApi("org.jetbrains.kotlin:kotlin-reflect")
     jvmMainImplementation(libs.jackson.databind)
     jvmMainImplementation(libs.jackson.module.kotlin)
-    jvmMainImplementation(libs.bundles.jna)
 
     //commonTestApi(testFixtures(project(":korma")))
 
