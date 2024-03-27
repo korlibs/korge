@@ -14,11 +14,6 @@ group = RootKorlibsPlugin.KORGE_GRADLE_PLUGIN_GROUP
 //group = "korlibs.korge"
 //this.name = "korlibs.korge.gradle.plugin"
 
-dependencies {
-    implementation(project(":korge-gradle-plugin-common"))
-    implementation(project(":korlibs-serialization-yaml"))
-}
-
 gradlePlugin {
     website.set("https://korge.soywiz.com/")
     vcsUrl.set("https://github.com/korlibs/korge-plugins")
@@ -97,7 +92,8 @@ java.sourceSets.test.configure {
 }
 
 dependencies {
-    //implementation(project(":korge-gradle-plugin-common"))
+    implementation(project(":korge-gradle-plugin-common"))
+    implementation(libs.korlibs.serialization.yaml)
 
     implementation(libs.kotlin.gradle.plugin)
     implementation(libs.kotlin.serialization)

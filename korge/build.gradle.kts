@@ -11,13 +11,18 @@ project.extensions.extraProperties.properties.apply {
 }
 
 dependencies {
-    commonMainApi(project(":korge-core"))
-    commonMainApi(project(":korge-foundation"))
+    commonMainApi(libs.korlibs.audio)
+    commonMainApi(libs.korlibs.image)
+    commonMainApi(libs.korlibs.inject)
+    commonMainApi(libs.korlibs.template)
+    commonMainApi(libs.korlibs.serialization.yaml)
+    //commonMainApi(project(":korge-core"))
+    //commonMainApi(project(":korge-foundation"))
+
     //commonTestApi(project(":korge-test"))
     jvmMainApi("org.jetbrains.kotlin:kotlin-reflect")
     jvmMainImplementation(libs.jackson.databind)
     jvmMainImplementation(libs.jackson.module.kotlin)
-    jvmMainImplementation(libs.bundles.jna)
 
     //commonTestApi(testFixtures(project(":korma")))
 
