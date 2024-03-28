@@ -25,12 +25,12 @@ jobs:
       fail-fast: false # Once working, comment this
       matrix:
         include:
-          - { outputKey: testIos, os: macos-11, testTask: iosX64Test, enableKotlinNative: true }
-          - { outputKey: testJs, os: ubuntu-latest, testTask: "wasmJsBrowserTest", buildTasks: "jsNodeTest jsBrowserTest" }
-          - { outputKey: testAndroid, os: ubuntu-latest, enableAndroid: true }
-          - { outputKey: testJvmMacos, os: macos-11, testTask: jvmTest }
-          - { outputKey: testJvmLinux, os: ubuntu-latest, testTask: jvmTest, precompileTask: compileTestKotlinJvm, enableKotlinNative: true, enableSandbox: true, e2e: true }
-          - { outputKey: testJvmWindows, os: windows-latest, testTask: jvmTest, precompileTask: compileTestKotlinJvm }
+          - { outputKey: testIos, os: macos-11, testTask: iosX64Test, precompileTask: compileTestKotlinIosX64, enableKotlinNative: true }
+          - { outputKey: testJs, os: ubuntu-latest, testTask: "wasmJsBrowserTest", buildTasks: "jsNodeTest jsBrowserTest", precompileTask: "wasmJsTestClasses jsTestClasses" }
+          - { outputKey: testAndroid, os: ubuntu-latest, enableAndroid: true, precompileTask: "compileDebugAndroidTestSources" }
+          - { outputKey: testJvmMacos, os: macos-11, testTask: jvmTest, precompileTask: "compileTestKotlinJvm compileTestKotlin" }
+          - { outputKey: testJvmLinux, os: ubuntu-latest, testTask: jvmTest, precompileTask: "compileTestKotlinJvm compileTestKotlin", enableKotlinNative: true, enableSandbox: true, e2e: true }
+          - { outputKey: testJvmWindows, os: windows-latest, testTask: jvmTest, precompileTask: "compileTestKotlinJvm compileTestKotlin" }
     #if: ${{ needs.changes.outputs[matrix.outputKey] == 'true' }}
     timeout-minutes: 30
     runs-on: ${{ matrix.os }}
@@ -48,7 +48,7 @@ jobs:
       - { if: "${{ startsWith(matrix.os, 'ubuntu-') }}", name: Run Xvfb in Background, run: "Xvfb :99 &" }
       - { if: "${{ startsWith(matrix.os, 'windows-') }}", name: Download and unzip opengl, shell: cmd, run: "curl -L -o opengl32-x64.zip https://github.com/korlibs/mesa-dist-win/releases/download/21.2.3/opengl32-x64.zip && unzip opengl32-x64.zip && unzip opengl32-x64.zip -d korge" }
       - { name: Set up JDK, uses: actions/setup-java@v4, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
-      - { name: Prepare Gradle, uses: gradle/gradle-build-action@ef76a971e2fa3f867b617efd72f2fbd72cf6f8bc } # v2.8.0
+      - { name: Prepare Gradle, uses: gradle/actions/setup-gradle@417ae3ccd767c252f5661f1ace9f835f9654f2b5 } # https://github.com/gradle/actions/releases/tag/v3.1.0
       - { name: Start gradle, run: ./gradlew }
       - { if: "${{ matrix.precompileTask }}", name: "Building ${{ matrix.precompileTask }} classes", run: "./gradlew --stacktrace --parallel ${{ matrix.precompileTask }}" }
       #- { name: Testing JVM on windows, shell: cmd, run: "CALL gradlew.bat --parallel jvmTest", env: { EGL_LOG_LEVEL: debug, LIBGL_DEBUG: verbose, LIBGL_ALWAYS_SOFTWARE: true, MESA_DEBUG: true } }
