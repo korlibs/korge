@@ -25,12 +25,12 @@ jobs:
       fail-fast: false # Once working, comment this
       matrix:
         include:
-          - { outputKey: testIos, os: macos-11, testTask: iosX64Test, enableKotlinNative: true }
-          - { outputKey: testJs, os: ubuntu-latest, testTask: "wasmJsBrowserTest", buildTasks: "jsNodeTest jsBrowserTest" }
+          - { outputKey: testIos, os: macos-11, testTask: iosX64Test, precompileTask: compileTestKotlinIosX64, enableKotlinNative: true }
+          - { outputKey: testJs, os: ubuntu-latest, testTask: "wasmJsBrowserTest", buildTasks: "jsNodeTest jsBrowserTest", precompileTask: "wasmJsTestClasses jsTestClasses" }
           - { outputKey: testAndroid, os: ubuntu-latest, enableAndroid: true }
-          - { outputKey: testJvmMacos, os: macos-11, testTask: jvmTest }
-          - { outputKey: testJvmLinux, os: ubuntu-latest, testTask: jvmTest, precompileTask: compileTestKotlinJvm, enableKotlinNative: true, enableSandbox: true, e2e: true }
-          - { outputKey: testJvmWindows, os: windows-latest, testTask: jvmTest, precompileTask: compileTestKotlinJvm }
+          - { outputKey: testJvmMacos, os: macos-11, testTask: jvmTest, precompileTask: "compileTestKotlinJvm compileTestKotlin" }
+          - { outputKey: testJvmLinux, os: ubuntu-latest, testTask: jvmTest, precompileTask: "compileTestKotlinJvm compileTestKotlin", enableKotlinNative: true, enableSandbox: true, e2e: true }
+          - { outputKey: testJvmWindows, os: windows-latest, testTask: jvmTest, precompileTask: "compileTestKotlinJvm compileTestKotlin" }
     #if: ${{ needs.changes.outputs[matrix.outputKey] == 'true' }}
     timeout-minutes: 30
     runs-on: ${{ matrix.os }}
