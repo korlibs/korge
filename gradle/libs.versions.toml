@@ -9,7 +9,7 @@ proguard-gradle = "7.2.2"
 asm = "9.5"
 jgit = "5.13.1.202206130422-r"
 
-kotlin = "1.9.23"
+kotlin = "2.0.0-Beta5"
 kotlinx-coroutines = "1.8.0"
 kotlinx-serialization = "1.6.2"
 kotlinx-atomicfu = "0.23.1"
