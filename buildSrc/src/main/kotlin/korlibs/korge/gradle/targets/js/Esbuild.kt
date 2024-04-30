@@ -112,11 +112,7 @@ fun Project.configureErrorableEsbuild() {
             dependsOn(browserPrepareEsbuild)
             dependsOn(compileExecutableKotlinJs)
 
-            //println("compileExecutableKotlinJs:" + compileExecutableKotlinJs::class)
-            //val jsPath = compileExecutableKotlinJs.outputFileProperty.get()
-            //val jsPath = compileExecutableKotlinJs.destinationDirectory.asFile.get().absolutePath + "/" + compileExecutableKotlinJs.moduleName.get() + ".js"
-            // @TODO: Check this
-            val jsPath = compileExecutableKotlinJs.destinationDirectory.asFile.get().absolutePath
+            val jsPath = compileExecutableKotlinJs.destinationDirectory.asFile.get().absolutePath + "/" + compileExecutableKotlinJs.compilerOptions.moduleName.get() + ".js"
 
             val output = File(wwwFolder, "${project.name}.js")
             //println("jsPath=$jsPath")
