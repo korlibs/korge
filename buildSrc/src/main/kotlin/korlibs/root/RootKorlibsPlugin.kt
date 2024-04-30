@@ -563,7 +563,10 @@ object RootKorlibsPlugin {
                         // @TODO: How to get the actual .js file generated/served?
                         val jsFile = File("${project.name}.js").name
                         val resourcesFolders = jsMainCompilation.allKotlinSourceSets
-                            .flatMap { it.resources.srcDirs } + listOf(File(rootProject.rootDir, "_template"))
+                            .flatMap { it.resources.srcDirs } + listOf(
+                                File(rootProject.rootDir, "_template"),
+                                File(rootProject.rootDir, "buildSrc/src/main/resources"),
+                            )
                         //println("jsFile: $jsFile")
                         //println("resourcesFolders: $resourcesFolders")
                         fun readTextFile(name: String): String {
