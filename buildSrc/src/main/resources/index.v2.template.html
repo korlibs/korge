@@ -37,12 +37,14 @@
 	max-height: 50vh;
 	width: 64px;
 	height: 64px;
+	margin: auto auto;
 	animation: spin 2s linear infinite;
 }
 .preloader_text {
 	color: #776bc7;
 	margin-top: 0.5em;
 	font: 14px Arial;
+	text-align: center;
 }
 @keyframes spin {
 	0% { transform: rotate(0deg); }
@@ -54,7 +56,10 @@ $CUSTOM_CSS
 <div class="preloader_container">
 	<div class="preloader">
 		<div class="preloader_spinner"></div>
-		<div class="preloader_text">Loading game...</div>
+		<div class="preloader_text">
+            Loading game...
+            <noscript><div style="color:red;">Please enable <strong>JavaScript</strong> to run KorGE</div></noscript>
+        </div>
 	</div>
 </div>
 
