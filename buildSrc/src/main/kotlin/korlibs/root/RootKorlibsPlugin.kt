@@ -336,6 +336,7 @@ object RootKorlibsPlugin {
                                 //kotlinOptions.sourceMap = true
                             }
                         }
+                        configureJsTargetOnce()
                         configureJSTestsOnce()
                     }
                     //configureJSTests()
@@ -552,6 +553,7 @@ object RootKorlibsPlugin {
                     browser {
                         binaries.executable()
                     }
+                    configureJsTargetOnce()
                 }
 
                 tasks.getByName("jsProcessResources").apply {

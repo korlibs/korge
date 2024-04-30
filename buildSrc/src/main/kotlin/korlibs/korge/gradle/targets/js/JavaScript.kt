@@ -44,6 +44,7 @@ fun Project.configureJavaScript(projectType: ProjectType) {
 					suppressWarnings = korge.supressWarnings
 				}
 			}
+            configureJsTargetOnce()
             configureJSTestsOnce()
 		}
 
@@ -89,6 +90,12 @@ fun Project.configureJavaScript(projectType: ProjectType) {
         configureJavascriptRun()
     }
     configureClosureCompiler()
+}
+
+fun KotlinJsTargetDsl.configureJsTargetOnce() {
+    this.compilerOptions {
+        target.set("es2015")
+    }
 }
 
 fun KotlinJsTargetDsl.configureJSTestsOnce() {
