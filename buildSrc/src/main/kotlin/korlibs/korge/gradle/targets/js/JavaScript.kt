@@ -44,6 +44,7 @@ fun Project.configureJavaScript(projectType: ProjectType) {
 					suppressWarnings = korge.supressWarnings
 				}
 			}
+            configureJsTargetOnce()
             configureJSTestsOnce()
 		}
 
@@ -65,7 +66,10 @@ fun Project.configureJavaScript(projectType: ProjectType) {
         val jsCreateIndexHtml = project.tasks.createThis<JsCreateIndexTask>("jsCreateIndexHtml").also { task ->
             val jsMainCompilation = kotlin.js().compilations["main"]!!
             val resourcesFolders: List<File> = jsMainCompilation.allKotlinSourceSets
-                .flatMap { it.resources.srcDirs } + listOf(File(rootProject.rootDir, "_template"))
+                .flatMap { it.resources.srcDirs } + listOf(
+                    File(rootProject.rootDir, "_template"),
+                    File(rootProject.rootDir, "buildSrc/src/main/resources"),
+                )
             task.resourcesFolders = resourcesFolders
             task.targetDir = generatedIndexHtmlDir
         }
@@ -86,6 +90,12 @@ fun Project.configureJavaScript(projectType: ProjectType) {
         configureJavascriptRun()
     }
     configureClosureCompiler()
+}
+
+fun KotlinJsTargetDsl.configureJsTargetOnce() {
+    this.compilerOptions {
+        //target.set("es2015")
+    }
 }
 
 fun KotlinJsTargetDsl.configureJSTestsOnce() {

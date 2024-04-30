@@ -112,11 +112,11 @@ fun Project.configureErrorableEsbuild() {
             dependsOn(browserPrepareEsbuild)
             dependsOn(compileExecutableKotlinJs)
 
-            //println("compileExecutableKotlinJs:" + compileExecutableKotlinJs::class)
-            //val jsPath = compileExecutableKotlinJs.outputFileProperty.get()
-            //val jsPath = compileExecutableKotlinJs.destinationDirectory.asFile.get().absolutePath + "/" + compileExecutableKotlinJs.moduleName.get() + ".js"
-            // @TODO: Check this
-            val jsPath = compileExecutableKotlinJs.destinationDirectory.asFile.get().absolutePath
+            val jsBasePath = compileExecutableKotlinJs.destinationDirectory.asFile.get().absolutePath + "/" + compileExecutableKotlinJs.compilerOptions.moduleName.get()
+            val jsPath = "$jsBasePath.js" // Normal JS
+            val mjsPath = "$jsBasePath.mjs" // ES2015
+            //val finalJsPath = mjsPath
+            val finalJsPath = jsPath
 
             val output = File(wwwFolder, "${project.name}.js")
             //println("jsPath=$jsPath")
@@ -125,19 +125,22 @@ fun Project.configureErrorableEsbuild() {
             inputs.files(compileExecutableKotlinJs.outputs.files)
             outputs.file(output)
             environment("PATH", ENV_PATH)
-            commandLine(buildList {
-                addAll(esbuildCmd)
-                //add("--watch",)
-                add("--bundle")
-                if (!debug) {
-                    add("--minify")
-                    add("--sourcemap=external")
-                }
-                add(jsPath)
-                add("--outfile=$output")
-                // @TODO: Close this command on CTRL+C
-                //if (run) add("--servedir=$wwwFolder")
-            })
+            doFirst {
+                commandLine(buildList {
+                    addAll(esbuildCmd)
+                    //add("--watch",)
+                    add("--bundle")
+                    if (!debug) {
+                        add("--minify")
+                        add("--sourcemap=external")
+                    }
+                    add(finalJsPath)
+                    add("--outfile=$output")
+                    // @TODO: Close this command on CTRL+C
+                    //if (run) add("--servedir=$wwwFolder")
+                })
+            }
+
         }
     }
 }

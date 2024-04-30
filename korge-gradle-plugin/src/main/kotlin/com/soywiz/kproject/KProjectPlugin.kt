@@ -91,6 +91,10 @@ class KProjectPlugin : Plugin<Project> {
                     browser {
                         //commonWebpackConfig { cssSupport { it.enabled.set(true) } }
                     }
+                    this.compilerOptions {
+                        //target.set("es2015")
+                    }
+                    //configureJsTargetOnce()
                 }
             }
             if (hasTarget(KProjectTarget.WASM_JS)) {
