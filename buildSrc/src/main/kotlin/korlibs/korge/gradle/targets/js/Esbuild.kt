@@ -42,8 +42,8 @@ fun Project.configureErrorableEsbuild() {
 
         val esbuildVersion = korge.esbuildVersion
         doFirst {
-            //val nodeDir = env.nodeBinDir
-            val nodeDir = env.dir
+            val nodeDir = env.nodeBinDir // Kotlin 1.9.x
+            //val nodeDir = env.dir // Kotlin 2.0.x
             val file1: File = File(env.nodeExecutable)
             val file2: File? = File(nodeDir, "lib/node_modules/npm/bin/npm-cli.js").takeIf { it.exists() }
             val file3: File? = File(nodeDir, "node_modules/npm/bin/npm-cli.js").takeIf { it.exists() }

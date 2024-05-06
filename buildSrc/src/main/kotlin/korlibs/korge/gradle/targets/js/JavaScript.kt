@@ -93,9 +93,9 @@ fun Project.configureJavaScript(projectType: ProjectType) {
 }
 
 fun KotlinJsTargetDsl.configureJsTargetOnce() {
-    this.compilerOptions {
-        //target.set("es2015")
-    }
+    //this.compilerOptions {
+    //    //target.set("es2015")
+    //}
 }
 
 fun KotlinJsTargetDsl.configureJSTestsOnce() {

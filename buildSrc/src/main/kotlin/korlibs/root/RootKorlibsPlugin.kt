@@ -314,7 +314,8 @@ object RootKorlibsPlugin {
                         wasmBrowserTest.doFirst {
                             logger.info("!!!!! wasmBrowserTest PATCH :: $wasmBrowserTest : ${wasmBrowserTest::class.java}")
 
-                            val npmProjectDir: File = wasmBrowserTest.compilation.npmProject.dir.get().asFile
+                            //val npmProjectDir: File = wasmBrowserTest.compilation.npmProject.dir.get().asFile // Kotlin 2.0.x
+                            val npmProjectDir: File = wasmBrowserTest.compilation.npmProject.dir
                             val projectName = npmProjectDir.name
                             val uninstantiatedMjs = File(npmProjectDir, "kotlin/$projectName.uninstantiated.mjs")
 
