@@ -17,6 +17,7 @@ dependencies {
     commonMainApi(libs.korlibs.template)
     commonMainApi(libs.korlibs.time)
     commonMainApi(libs.kotlinx.atomicfu)
+    commonMainApi(libs.kotlinx.coroutines.core)
     //commonTestApi(project(":korge-test"))
     jvmMainApi("org.jetbrains.kotlin:kotlin-reflect")
     jvmMainImplementation(libs.jackson.databind)
