@@ -10,11 +10,11 @@ asm = "9.5"
 jgit = "5.13.1.202206130422-r"
 
 kotlin = "2.0.0"
-kotlinx-coroutines = "1.8.0"
+kotlinx-coroutines = "1.8.1"
 kotlinx-serialization = "1.6.2"
-kotlinx-atomicfu = "0.23.1"
+kotlinx-atomicfu = "0.24.0"
 
-korlibs = "5.5.0-alpha3"
+korlibs = "6.0.0-alpha1"
 
 #maven { url = uri("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev") }
 
