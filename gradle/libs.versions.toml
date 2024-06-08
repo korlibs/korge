@@ -16,32 +16,14 @@ kotlinx-atomicfu = "0.24.0"
 
 korlibs = "6.0.0-alpha1"
 
-#maven { url = uri("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev") }
-
-# https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev/org/jetbrains/kotlin/kotlin-stdlib/
-#kotlin = "1.9.0-dev-6976"
-#kotlin = "1.9.20-dev-2332"
-#kotlin = "1.9.20-dev-2914"
-# https://maven.pkg.jetbrains.space/kotlin/p/wasm/experimental/org/jetbrains/kotlinx/atomicfu/
-# https://maven.pkg.jetbrains.space/kotlin/p/wasm/experimental/org/jetbrains/kotlinx/kotlinx-coroutines-core/
-#kotlinx-coroutines = "1.7.2-wasm1"
-#kotlinx-serialization = "1.6.0-wasm0"
-
 kotlinx-benchmark = "0.4.7"
 dokka = "1.9.10"
 kover = "0.6.1"
 kover-agent = "1.0.712"
 node = "20.12.1"
-#android-build-gradle = "7.4.2"
-#android-build-gradle = "8.0.0"
-#android-build-gradle = "7.4.0-beta02"
-#android-build-gradle = "7.3.1"
-#android-build-gradle = "8.1.0-alpha04"
-#android-build-gradle = "8.2.0" # The project is using an incompatible version (AGP 8.2.0) of the Android Gradle plugin. Latest supported version is AGP 8.2.0-beta05
 android-build-gradle = "8.2.0"
 gson = "2.10.1"
 gradle-publish-plugin = "1.1.0"
-#gradle-publish-plugin = "0.14.0"
 closure-compiler = "v20210808"
 # https://repo.maven.apache.org/maven2/org/jetbrains/intellij/deps/intellij-coverage-agent/
 
@@ -50,6 +32,7 @@ korlibs-audio = { module = "com.soywiz:korlibs-audio", version.ref = "korlibs" }
 korlibs-image = { module = "com.soywiz:korlibs-image", version.ref = "korlibs" }
 korlibs-inject = { module = "com.soywiz:korlibs-inject", version.ref = "korlibs" }
 korlibs-template = { module = "com.soywiz:korlibs-template", version.ref = "korlibs" }
+korlibs-time = { module = "com.soywiz:korlibs-time", version.ref = "korlibs" }
 korlibs-serialization-yaml = { module = "com.soywiz:korlibs-serialization-yaml", version.ref = "korlibs" }
 jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
 jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson" }
