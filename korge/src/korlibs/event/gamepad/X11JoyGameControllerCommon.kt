@@ -12,6 +12,7 @@ import korlibs.math.*
 import korlibs.memory.*
 import korlibs.platform.*
 import korlibs.time.*
+import kotlinx.atomicfu.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
 
@@ -105,7 +106,7 @@ internal class LinuxJoyEventAdapter @OptIn(SyncIOAPI::class) constructor(val syn
         }
 
         private var running = true
-        val readCount = KorAtomicInt(0)
+        val readCount = atomic(0)
         val once = CompletableDeferred<Unit>()
 
         // @TODO: This Hangs WASM
