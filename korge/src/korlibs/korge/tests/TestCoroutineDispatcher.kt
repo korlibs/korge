@@ -5,10 +5,11 @@ import korlibs.datastructure.lock.*
 import korlibs.time.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
+import kotlin.time.*
 
 @OptIn(InternalCoroutinesApi::class)
 @Deprecated("")
-class TestCoroutineDispatcher(val frameTime: TimeSpan = 16.milliseconds) :
+class TestCoroutineDispatcher(val frameTime: Duration = 16.milliseconds) :
 	//CoroutineDispatcher(), ContinuationInterceptor, Delay, DelayFrame {
 	CoroutineDispatcher(), ContinuationInterceptor, Delay {
 	var time = 0L; private set
@@ -78,7 +79,7 @@ class TestCoroutineDispatcher(val frameTime: TimeSpan = 16.milliseconds) :
 	}
 
     @Deprecated("Use loop instead if possible")
-    suspend fun step(time: TimeSpan) {
+    suspend fun step(time: Duration) {
         this.time += time.millisecondsLong
         while (true) {
             val task = lock { if (tasks.isNotEmpty() && this.time >= tasks.head.time) tasks.removeHead() else null } ?: break

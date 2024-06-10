@@ -11,7 +11,6 @@ import korlibs.io.file.*
 import korlibs.io.file.std.*
 import korlibs.io.lang.*
 import korlibs.math.geom.*
-import korlibs.math.geom.Point
 import java.awt.*
 import java.awt.Rectangle
 import java.awt.event.*

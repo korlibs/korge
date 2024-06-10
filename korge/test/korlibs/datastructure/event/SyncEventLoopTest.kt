@@ -1,7 +1,10 @@
 package korlibs.datastructure.event
 
+import korlibs.concurrent.thread.*
 import korlibs.datastructure.closeable.*
 import korlibs.datastructure.thread.*
+import korlibs.datastructure.thread.NativeThread
+import korlibs.datastructure.thread.nativeThread
 import korlibs.time.*
 import kotlin.test.*
 import kotlin.time.*
@@ -17,7 +20,7 @@ class SyncEventLoopTest {
                 println("${start.elapsedNow().milliseconds}: $msg")
             }
             var times = 0
-            var interval: Closeable? = null
+            var interval: AutoCloseable? = null
             ep.setTimeout(0.5.seconds) { log("timeout after 0.5 seconds") }
             interval = ep.setInterval(0.2.seconds) {
                 log("interval after 0.2 seconds")

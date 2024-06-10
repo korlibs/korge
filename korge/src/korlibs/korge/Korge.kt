@@ -31,6 +31,7 @@ import korlibs.time.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
 import kotlin.reflect.*
+import kotlin.time.*
 
 typealias KorgeConfig = Korge
 
@@ -284,7 +285,7 @@ object KorgeRunner {
         eventDispatcher: EventListener,
         clearEachFrame: Boolean = true,
         bgcolor: RGBA = Colors.TRANSPARENT,
-        fixedSizeStep: TimeSpan = TimeSpan.NIL,
+        fixedSizeStep: Duration = TimeSpan.NIL,
         forceRenderEveryFrame: Boolean = true,
         configInjector: Injector.() -> Unit = {},
     ): CompletableDeferred<Unit> {

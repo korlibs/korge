@@ -8,6 +8,7 @@ import korlibs.korge.view.*
 import korlibs.math.geom.*
 import korlibs.time.*
 import kotlin.test.*
+import kotlin.time.*
 
 class KeysEventsTest : ViewsForTesting() {
     @Test
@@ -77,7 +78,7 @@ class KeysEventsTest : ViewsForTesting() {
         fun keyUp(key: Key) {
             views.dispatch(KeyEvent(KeyEvent.Type.UP, key = key))
         }
-        fun delay(time: TimeSpan) {
+        fun delay(time: Duration) {
             views.dispatch(UpdateEvent(time))
         }
 

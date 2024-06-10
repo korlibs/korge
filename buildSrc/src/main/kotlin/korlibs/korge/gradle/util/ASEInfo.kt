@@ -34,7 +34,7 @@ data class ASEInfo(
             val tags = arrayListOf<AseTag>()
 
             val fileSize = s.readS32LE()
-            if (s.length < fileSize) error("File too short")
+            if (s.length < fileSize) error("File too short s.length=${s.length} < fileSize=${fileSize}")
             val headerMagic = s.readU16LE()
             if (headerMagic != 0xA5E0) error("Not an Aseprite file : headerMagic=$headerMagic")
             val numFrames = s.readU16LE()

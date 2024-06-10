@@ -9,6 +9,7 @@ import korlibs.math.geom.*
 import korlibs.memory.*
 import korlibs.time.*
 import kotlin.math.*
+import kotlin.time.*
 
 /**
  * A Wave [Filter] that distorts the texture using waves.
@@ -22,7 +23,7 @@ class WaveFilter(
     amplitude: Vector2D = Vector2D(10, 10),
     crestDistance: Vector2D = Vector2D(16, 16),
     cyclesPerSecond: Vector2D = Vector2D(1, 1),
-    time: TimeSpan = 0.seconds
+    time: Duration = 0.seconds
 ) : ShaderFilter() {
     /** Maximum amplitude of the wave on the X,Y axis */
     @ViewProperty

@@ -9,6 +9,7 @@ import korlibs.korge.scene.*
 import korlibs.korge.view.*
 import korlibs.korge.view.filter.*
 import korlibs.time.*
+import kotlin.time.*
 
 class MainFlag : ScaledScene(592, 592) {
     override suspend fun SContainer.sceneMain() {
@@ -31,7 +32,7 @@ class MainFlag : ScaledScene(592, 592) {
         }
 
         // Propagates the wave over time
-        addUpdater { dt: TimeSpan ->
+        addUpdater { dt: Duration ->
             //println("MainFlag.addUpdater: dt=$dt")
             flagFilter.time = flagFilter.time.plus(dt)
             invalidateRender()

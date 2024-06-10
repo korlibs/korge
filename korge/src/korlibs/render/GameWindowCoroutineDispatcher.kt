@@ -13,12 +13,12 @@ import kotlin.time.*
 
 @OptIn(InternalCoroutinesApi::class)
 class GameWindowCoroutineDispatcher(
-    var nowProvider: () -> TimeSpan = { PerformanceCounter.reference },
+    var nowProvider: () -> Duration = { PerformanceCounter.reference },
     var fast: Boolean = false,
-) : CoroutineDispatcher(), Delay, Closeable {
+) : CoroutineDispatcher(), Delay, AutoCloseable {
     override fun dispatchYield(context: CoroutineContext, block: Runnable): Unit = dispatch(context, block)
 
-    class TimedTask(val time: TimeSpan, val continuation: CancellableContinuation<Unit>?, val callback: Runnable?) {
+    class TimedTask(val time: Duration, val continuation: CancellableContinuation<Unit>?, val callback: Runnable?) {
         var exception: Throwable? = null
     }
 
@@ -54,7 +54,7 @@ class GameWindowCoroutineDispatcher(
         scheduleResumeAfterDelay(timeMillis.toDouble().milliseconds, continuation)
     }
 
-    fun scheduleResumeAfterDelay(time: TimeSpan, continuation: CancellableContinuation<Unit>) {
+    fun scheduleResumeAfterDelay(time: Duration, continuation: CancellableContinuation<Unit>) {
         val task = TimedTask(now() + time, continuation, null)
         continuation.invokeOnCancellation {
             task.exception = it
@@ -76,9 +76,9 @@ class GameWindowCoroutineDispatcher(
      * despite time available in the frame.
      * When not set it uses the remaining available time in frame
      **/
-    var maxAllocatedTimeForTasksPerFrame: TimeSpan? = null
+    var maxAllocatedTimeForTasksPerFrame: Duration? = null
 
-    fun executePending(availableTime: TimeSpan) {
+    fun executePending(availableTime: Duration) {
         try {
             val startTime = now()
 
@@ -140,7 +140,7 @@ class GameWindowCoroutineDispatcher(
 
     val tooManyCallbacksLogger = Logger("Korgw.GameWindow.TooManyCallbacks")
 
-    fun informTooManyCallbacksToHandleInThisFrame(elapsedTime: TimeSpan, availableTime: TimeSpan, processedTimedTasks: Int, processedTasks: Int) {
+    fun informTooManyCallbacksToHandleInThisFrame(elapsedTime: Duration, availableTime: Duration, processedTimedTasks: Int, processedTasks: Int) {
         tooManyCallbacksLogger.warn { "Too many callbacks to handle in this frame elapsedTime=${elapsedTime.roundMilliseconds()}, availableTime=${availableTime.roundMilliseconds()} pending timedTasks=${timedTasks.size}, tasks=${tasks.size}, processedTimedTasks=$processedTimedTasks, processedTasks=$processedTasks" }
     }
 

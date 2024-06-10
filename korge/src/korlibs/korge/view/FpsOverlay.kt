@@ -8,6 +8,7 @@ import korlibs.korge.render.*
 import korlibs.math.*
 import korlibs.platform.*
 import korlibs.time.*
+import kotlin.time.*
 
 @OptIn(KorgeInternal::class)
 internal fun ViewsContainer.installFpsDebugOverlay() {
@@ -161,18 +162,19 @@ private class TimeSlidingWindow(val capacity: Int) {
 
     val size get() = deque.size
 
-    val avg: TimeSpan get() = if (deque.size == 0) 0.seconds else (totalMicroseconds.toDouble() / deque.size).microseconds
+    val avg: Duration get() = if (deque.size == 0) 0.seconds else (totalMicroseconds.toDouble() / deque.size).microseconds
+
     // @TODO: Can we compute this incrementally?
-    val min: TimeSpan get() = deque.minOrNull()?.microseconds ?: 1.microseconds
-    val max: TimeSpan get() = deque.maxOrNull()?.microseconds ?: 1.microseconds
+    val min: Duration get() = deque.minOrNull()?.microseconds ?: 1.microseconds
+    val max: Duration get() = deque.maxOrNull()?.microseconds ?: 1.microseconds
 
     val avgFps: Float get() = (1.seconds / avg).toFloat()
     val minFps: Float get() = (1.seconds / max).toFloat()
     val maxFps: Float get() = (1.seconds / min).toFloat()
 
-    operator fun get(index: Int): TimeSpan = deque[index].microseconds
+    operator fun get(index: Int): Duration = deque[index].microseconds
 
-    fun add(value: TimeSpan) {
+    fun add(value: Duration) {
         val intValue = value.microsecondsInt
         deque.add(intValue)
         totalMicroseconds += intValue

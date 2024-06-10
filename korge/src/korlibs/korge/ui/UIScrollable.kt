@@ -15,6 +15,7 @@ import korlibs.math.geom.*
 import korlibs.math.interpolation.*
 import korlibs.time.*
 import kotlin.math.*
+import kotlin.time.*
 
 inline fun Container.uiScrollable(
     size: Size = Size(256, 256),
@@ -35,27 +36,30 @@ open class UIScrollable(size: Size, cache: Boolean = true) : UIView(size, cache 
 
         var scrollBarPos: Double by if (isHorizontal) view::x else view::y
         var viewPos: Double by if (isHorizontal) view::x else view::y
-            //get() = if (isHorizontal) view.x else view.y
-            //set(value) = if (isHorizontal) view.x = value else view.y = value
+
+        //get() = if (isHorizontal) view.x else view.y
+        //set(value) = if (isHorizontal) view.x = value else view.y = value
         var viewScaledSize: Double by if (isHorizontal) view::scaledWidth else view::scaledHeight
-            //get() = if (isHorizontal) view.scaledWidth else view.scaledHeight
-            //set(value: Double) = if (isHorizontal) view.scaledWidth = value else view.scaledHeight = value
+        //get() = if (isHorizontal) view.scaledWidth else view.scaledHeight
+        //set(value: Double) = if (isHorizontal) view.scaledWidth = value else view.scaledHeight = value
 
         val scrollRatio: Double get() = size / totalSize
         val scrollbarSize: Double get() = size * scrollRatio
 
-        val scaledSize: Double get() = if (isHorizontal) view.scaledWidth  else view.scaledHeight
+        val scaledSize: Double get() = if (isHorizontal) view.scaledWidth else view.scaledHeight
         var containerPos: Double by if (isHorizontal) container::x else container::y
-            //get() = if (isHorizontal) container.x else container.y
-            //set(value) { if (isHorizontal) container.x = value else container.y = value }
+        //get() = if (isHorizontal) container.x else container.y
+        //set(value) { if (isHorizontal) container.x = value else container.y = value }
 
         val overflowPixelsBegin: Double get() = if (isHorizontal) scrollable.overflowPixelsLeft else scrollable.overflowPixelsTop
         val overflowPixelsEnd: Double get() = if (isHorizontal) scrollable.overflowPixelsRight else scrollable.overflowPixelsBottom
         val onScrollPosChange = Signal<UIScrollable>()
         val size: Double get() = if (isHorizontal) scrollable.width else scrollable.height
         val shouldBeVisible get() = (size < totalSize)
-        val totalSize: Double get() = (container.getLocalBounds().let { if (isHorizontal) max(scrollable.width, it.right) else max(scrollable.height, it.bottom) })
-            //.also { println("totalSize=$it") }
+        val totalSize: Double
+            get() = (container.getLocalBounds().let { if (isHorizontal) max(scrollable.width, it.right) else max(scrollable.height, it.bottom) })
+
+        //.also { println("totalSize=$it") }
         val scrollArea: Double get() = totalSize - size
         val positionEnd: Double get() = position + size
         var position: Double
@@ -72,12 +76,15 @@ open class UIScrollable(size: Size, cache: Boolean = true) : UIView(size, cache 
                 }
             }
 
-        @KorgeInternal fun scrollBarPositionToScrollTopLeft(pos: Double): Double {
+        @KorgeInternal
+        fun scrollBarPositionToScrollTopLeft(pos: Double): Double {
             val d = size - scaledSize
             if (d == 0.0) return 0.0
             return (pos / d) * scrollArea
         }
-        @KorgeInternal fun scrollTopLeftToScrollBarPosition(pos: Double): Double {
+
+        @KorgeInternal
+        fun scrollTopLeftToScrollBarPosition(pos: Double): Double {
             val d = scrollArea
             if (d == 0.0) return 0.0
             return (pos / d) * (size - scaledSize)
@@ -86,6 +93,7 @@ open class UIScrollable(size: Size, cache: Boolean = true) : UIView(size, cache 
         fun ensurePositionIsVisible(position: Double, anchor: Double = 0.5) {
             ensureRangeIsVisible(position, position, anchor)
         }
+
         fun ensureRangeIsVisible(start: Double, end: Double, anchor: Double = 0.5) {
             if (start !in this.position..this.positionEnd || end !in this.position..this.positionEnd) {
                 this.position = (start - size * anchor).clamp(0.0, scrollArea)
@@ -122,7 +130,6 @@ open class UIScrollable(size: Size, cache: Boolean = true) : UIView(size, cache 
     var scrollLeft: Double by horizontal::position
     var scrollLeftRatio: Double by horizontal::positionRatio
 
-
     // VERTICAL SCROLLBAR
     val onScrollTopChange: Signal<UIScrollable> get() = vertical.onScrollPosChange
     val scrollHeight: Double get() = vertical.totalSize
@@ -131,6 +138,7 @@ open class UIScrollable(size: Size, cache: Boolean = true) : UIView(size, cache 
 
     @ViewProperty
     var frictionRate = 0.75
+
     @ViewProperty
     var overflowRate = 0.1
     val overflowPixelsVertical: Double get() = height * overflowRate
@@ -139,18 +147,25 @@ open class UIScrollable(size: Size, cache: Boolean = true) : UIView(size, cache 
     val overflowPixelsBottom: Double get() = overflowPixelsVertical
     val overflowPixelsLeft: Double get() = overflowPixelsHorizontal
     val overflowPixelsRight: Double get() = overflowPixelsHorizontal
+
     @ViewProperty
     var containerX: Double by container::x
+
     @ViewProperty
     var containerY: Double by container::y
+
     @ViewProperty
-    var timeScrollBar: TimeSpan = 0.seconds
+    var timeScrollBar: Duration = 0.seconds
+
     @ViewProperty
     var autohideScrollBar = false
+
     @ViewProperty
     var scrollBarAlpha = 0.75
+
     @ViewProperty
     var backgroundColor: RGBA = Colors["#161a1d"]
+
     @ViewProperty
     var mobileBehaviour = true
 

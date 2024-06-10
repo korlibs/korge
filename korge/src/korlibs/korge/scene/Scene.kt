@@ -15,6 +15,7 @@ import korlibs.render.*
 import korlibs.time.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
+import kotlin.time.*
 
 /**
  * Acts as a controller. Subclasses must override at least one of: [sceneInit] or [sceneMain].
@@ -265,4 +266,4 @@ abstract class LogScene : Scene() {
 	}
 }
 
-suspend fun Scene.delay(time: TimeSpan) = sceneView.delay(time)
+suspend fun Scene.delay(time: Duration) = sceneView.delay(time)

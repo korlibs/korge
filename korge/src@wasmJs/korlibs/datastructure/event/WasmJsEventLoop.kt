@@ -11,7 +11,7 @@ open class LocalJsEventLoop(
     precise: Boolean = false,
     immediateRun: Boolean = false,
 ) : SyncEventLoop(precise, immediateRun) {
-    private var closeable: Closeable? = null
+    private var closeable: AutoCloseable? = null
 
     override fun start() {
         if (closeable != null) return
@@ -39,19 +39,19 @@ object JsEventLoop : BaseEventLoop() {
         window.setTimeout({ task(); null }, 0)
     }
 
-    override fun setTimeout(time: TimeSpan, task: () -> Unit): Closeable {
+    override fun setTimeout(time: TimeSpan, task: () -> Unit): AutoCloseable {
         val id = window.setTimeout({ task(); null }, time.millisecondsInt)
-        return Closeable { window.clearTimeout(id) }
+        return AutoCloseable { window.clearTimeout(id) }
     }
 
-    override fun setInterval(time: TimeSpan, task: () -> Unit): Closeable {
+    override fun setInterval(time: TimeSpan, task: () -> Unit): AutoCloseable {
         val id = window.setInterval({ task(); null }, time.millisecondsInt)
-        return Closeable { window.clearInterval(id) }
+        return AutoCloseable { window.clearInterval(id) }
     }
 
-    override fun setIntervalFrame(task: () -> Unit): Closeable {
+    override fun setIntervalFrame(task: () -> Unit): AutoCloseable {
         var running = true
-        var gen: (() -> Unit) ? = null
+        var gen: (() -> Unit)? = null
         gen = {
             if (running) {
                 task()
@@ -59,6 +59,6 @@ object JsEventLoop : BaseEventLoop() {
             }
         }
         gen()
-        return Closeable { running = false }
+        return AutoCloseable { running = false }
     }
 }

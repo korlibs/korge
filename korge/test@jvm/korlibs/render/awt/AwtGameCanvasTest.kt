@@ -1,8 +1,10 @@
 package korlibs.render.awt
 
+import korlibs.concurrent.thread.*
 import korlibs.datastructure.event.*
 import korlibs.datastructure.lock.*
-import korlibs.datastructure.thread.*
+import korlibs.datastructure.thread.NativeThread
+import korlibs.datastructure.thread.nativeThread
 import korlibs.image.bitmap.*
 import korlibs.image.color.*
 import korlibs.kgl.*

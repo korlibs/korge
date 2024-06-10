@@ -55,7 +55,7 @@ open class CachedContainer(
             }
         }
 
-    inner class CacheTexture(val ctx: RenderContext) : Closeable {
+    inner class CacheTexture(val ctx: RenderContext) : AutoCloseable {
         val rb = ctx.unsafeAllocateFrameBuffer(16, 16, onlyThisFrame = false)
         val texBase = TextureBase(rb.tex, 16, 16)
         var tex = Texture(texBase)

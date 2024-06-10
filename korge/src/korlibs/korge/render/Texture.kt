@@ -12,7 +12,7 @@ import korlibs.math.geom.slice.*
 class TextureBase(
     var base: AGTexture?,
     override var size: SizeInt,
-) : Closeable, SizeableInt {
+) : AutoCloseable, SizeableInt {
     constructor(base: AGTexture?, width: Int, height: Int) : this(base, SizeInt(width, height))
     var width: Int get() = size.width; set(width) { size = SizeInt(width, height) }
     var height: Int get() = size.height; set(height) { size = SizeInt(width, height) }

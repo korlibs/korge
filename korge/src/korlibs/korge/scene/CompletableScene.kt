@@ -7,6 +7,7 @@ import korlibs.korge.view.SContainer
 import korlibs.io.async.launchImmediately
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred
+import kotlin.time.*
 
 abstract class CompletableScene<T>() : Scene() {
 	private val deferred = CompletableDeferred<T>()
@@ -30,7 +31,7 @@ abstract class CompletableScene<T>() : Scene() {
 
 suspend inline fun <reified T : CompletableScene<R>, R> SceneContainer.changeToResult(
     vararg injects: Any,
-    time: TimeSpan = 0.milliseconds,
+    time: Duration = 0.milliseconds,
     transition: Transition = AlphaTransition
 ): R {
 	val instance = changeTo(T::class, *injects, time = time, transition = transition)

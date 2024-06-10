@@ -5,6 +5,7 @@ import korlibs.korge.tween.*
 import korlibs.math.geom.*
 import korlibs.math.interpolation.*
 import korlibs.time.*
+import kotlin.time.*
 
 /**
  * Creates a new [Camera] and attaches to [this] [Container]. The [callback] argument is called with the [Camera] injected as this to be able to configure the camera.
@@ -53,14 +54,14 @@ open class Camera : Container(), View.Reference {
 	fun setTo(view: View?) { this.localMatrix = getLocalMatrixFittingView(view) }
 	fun setTo(rect: Rectangle) { this.localMatrix = getLocalMatrixFittingGlobalRect(rect) }
 
-	suspend fun tweenTo(view: View?, vararg vs: V2<*>, time: TimeSpan, easing: Easing = Easing.LINEAR) = this.tween(
+	suspend fun tweenTo(view: View?, vararg vs: V2<*>, time: Duration, easing: Easing = Easing.LINEAR) = this.tween(
 		this::localMatrix[this.localMatrix, getLocalMatrixFittingView(view)],
 		*vs,
 		time = time,
 		easing = easing
 	)
 
-	suspend fun tweenTo(rect: Rectangle, vararg vs: V2<*>, time: TimeSpan, easing: Easing = Easing.LINEAR) = this.tween(
+	suspend fun tweenTo(rect: Rectangle, vararg vs: V2<*>, time: Duration, easing: Easing = Easing.LINEAR) = this.tween(
 		this::localMatrix[this.localMatrix, getLocalMatrixFittingGlobalRect(rect)],
 		*vs,
 		time = time,

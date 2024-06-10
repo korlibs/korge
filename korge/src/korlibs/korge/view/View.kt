@@ -27,6 +27,7 @@ import korlibs.number.*
 import korlibs.time.*
 import kotlin.jvm.*
 import kotlin.math.*
+import kotlin.time.*
 
 /**
  * KorGE includes a DOM-based tree of views that makes a chain of affine transforms starting with the [Stage], that is the root node.
@@ -1471,13 +1472,13 @@ fun View?.commonAncestor(ancestor: View?): View? = View.commonAncestor(this, anc
 fun View.replaceWith(view: View): Boolean = this.parent?.replaceChild(this, view) ?: false
 
 /** Adds a block that will be executed per frame to this view. As parameter the block will receive a [TimeSpan] with the time elapsed since the previous frame. */
-fun <T : View> T.addUpdater(first: Boolean = true, firstTime: TimeSpan = TimeSpan.ZERO, updatable: T.(dt: TimeSpan) -> Unit): CloseableCancellable {
+fun <T : View> T.addUpdater(first: Boolean = true, firstTime: Duration = TimeSpan.ZERO, updatable: T.(dt: Duration) -> Unit): CloseableCancellable {
     if (first) updatable(this, firstTime)
     return onEvent(UpdateEvent) { updatable(this, it.deltaTime * this.globalSpeed) }
 }
-fun <T : View> T.addUpdater(updatable: T.(dt: TimeSpan) -> Unit): CloseableCancellable = addUpdater(true, updatable = updatable)
+fun <T : View> T.addUpdater(updatable: T.(dt: Duration) -> Unit): CloseableCancellable = addUpdater(true, updatable = updatable)
 
-fun <T : View> T.addUpdaterWithViews(updatable: T.(views: Views, dt: TimeSpan) -> Unit): CloseableCancellable = onEvent(ViewsUpdateEvent) {
+fun <T : View> T.addUpdaterWithViews(updatable: T.(views: Views, dt: Duration) -> Unit): CloseableCancellable = onEvent(ViewsUpdateEvent) {
     updatable(this@addUpdaterWithViews, it.views, it.delta * this.globalSpeed)
 }
 
@@ -1495,7 +1496,7 @@ fun <T : View> T.deferWithViews(views: Views? = null, tryImmediate: Boolean = tr
     return this
 }
 
-fun <T : View> T.addOptFixedUpdater(time: TimeSpan = TimeSpan.NIL, updatable: T.(dt: TimeSpan) -> Unit): CloseableCancellable = when (time) {
+fun <T : View> T.addOptFixedUpdater(time: Duration = TimeSpan.NIL, updatable: T.(dt: Duration) -> Unit): CloseableCancellable = when (time) {
     TimeSpan.NIL -> addUpdater(updatable)
     else -> addFixedUpdater(time) { updatable(time) }
 }
@@ -1513,7 +1514,7 @@ fun <T : View> T.addFixedUpdater(
  * To avoid executing too many blocks, when there is a long pause, [limitCallsPerFrame] limits the number of times the block can be executed in a single frame.
  */
 fun <T : View> T.addFixedUpdater(
-    time: TimeSpan,
+    time: Duration,
     first: Boolean = true,
     limitCallsPerFrame: Int = 16,
     updatable: T.() -> Unit
@@ -1543,10 +1544,10 @@ fun <T : View> T.addFixedUpdater(
 }
 
 @Deprecated("Use addUpdater instead", ReplaceWith("addUpdater(updatable)"))
-inline fun <T : View> T.onFrame(noinline updatable: T.(dt: TimeSpan) -> Unit): Cancellable = addUpdater(updatable)
+inline fun <T : View> T.onFrame(noinline updatable: T.(dt: Duration) -> Unit): Cancellable = addUpdater(updatable)
 
 fun <T : View> T.onNextFrame(block: T.(views: Views) -> Unit): CloseableCancellable {
-    var closeable: Closeable? = null
+    var closeable: AutoCloseable? = null
     closeable = addUpdaterWithViews { views, _ ->
         block(views)
         closeable?.close()

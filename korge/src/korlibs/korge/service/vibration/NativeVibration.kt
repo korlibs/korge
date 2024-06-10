@@ -4,6 +4,7 @@ import korlibs.datastructure.extraPropertyThis
 import korlibs.time.TimeSpan
 import korlibs.korge.view.Views
 import kotlin.native.concurrent.ThreadLocal
+import kotlin.time.*
 
 val Views.vibration by extraPropertyThis { NativeVibration(this) }
 
@@ -18,12 +19,12 @@ expect class NativeVibration constructor(views: Views) {
      * @param amplitudes list of intensities of the vibration. A `0.2` results in 20% vibration power.
      *        Only supported on Android target. Ignored if the size is not equal with the timings.
      */
-    fun vibratePattern(timings: Array<TimeSpan>, amplitudes: Array<Double> = emptyArray())
+    fun vibratePattern(timings: Array<Duration>, amplitudes: Array<Double> = emptyArray())
 
     /**
      * @param time vibration duration in milliseconds
      * @param amplitude percentage intensity of the vibration. A `0.2` results in 20% vibration power.
      *        Only supported on Android target.
      */
-    fun vibrate(time: TimeSpan, amplitude: Double = 1.0)
+    fun vibrate(time: Duration, amplitude: Double = 1.0)
 }

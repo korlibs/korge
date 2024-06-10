@@ -51,7 +51,7 @@ class RenderContext(
     BoundsProvider by bp,
     AGFeatures by ag,
     DeviceDimensionsProvider by deviceDimensionsProvider,
-    Closeable
+    AutoCloseable
 {
     val quality: GameWindowQuality get() = windowConfig.quality
 
@@ -318,7 +318,7 @@ class RenderContext(
      *
      * This can be use for example to automatically manage temporal/cached textures.
      */
-    fun refGcCloseable(closeable: Closeable) = agAutoFreeManager.reference(closeable)
+    fun refGcCloseable(closeable: AutoCloseable) = agAutoFreeManager.reference(closeable)
 
     @PublishedApi internal fun beforeRender() {
         batch.beforeRender()

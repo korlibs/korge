@@ -18,12 +18,13 @@ import korlibs.render.*
 import korlibs.time.*
 import kotlinx.coroutines.*
 import kotlin.jvm.*
+import kotlin.time.*
 import kotlin.time.Duration.Companion.milliseconds
 
 expect fun enrichTestGameWindow(window: ViewsForTesting.TestGameWindow)
 
 open class ViewsForTesting(
-    val frameTime: TimeSpan = 10.milliseconds,
+    val frameTime: Duration = 10.milliseconds,
     val windowSize: Size = DefaultViewport.SIZE,
     val virtualSize: Size = windowSize,
     val defaultDevicePixelRatio: Double = 1.0,
@@ -282,8 +283,8 @@ open class ViewsForTesting(
     }
 
     fun viewsTest(
-        timeout: TimeSpan? = DEFAULT_SUSPEND_TEST_TIMEOUT,
-        frameTime: TimeSpan = this.frameTime,
+        timeout: Duration? = DEFAULT_SUSPEND_TEST_TIMEOUT,
+        frameTime: Duration = this.frameTime,
         cond: () -> Boolean = { Platform.isJvm && !Platform.isAndroid },
         //devicePixelRatio: Double = defaultDevicePixelRatio,
         forceRenderEveryFrame: Boolean = true,
@@ -334,8 +335,8 @@ open class ViewsForTesting(
     inline fun <reified S : Scene> sceneTest(
         config: Korge? = null,
         noinline configureInjector: Injector.() -> Unit = {},
-        timeout: TimeSpan? = DEFAULT_SUSPEND_TEST_TIMEOUT,
-        frameTime: TimeSpan = this.frameTime,
+        timeout: Duration? = DEFAULT_SUSPEND_TEST_TIMEOUT,
+        frameTime: Duration = this.frameTime,
         crossinline block: suspend S.() -> Unit
     ): AsyncEntryPointResult = viewsTest(timeout, frameTime) {
             config?.apply {

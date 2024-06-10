@@ -16,6 +16,7 @@ import korlibs.time.*
 import kotlin.math.*
 import kotlin.native.concurrent.*
 import kotlin.reflect.*
+import kotlin.time.*
 
 private var Input.mouseHitSearch by Extra.Property { false }
 private var Input.mouseHitResult by Extra.Property<View?> { null }
@@ -24,7 +25,7 @@ private var Views.mouseDebugHandlerOnce by Extra.Property { Once() }
 private var Views.mouseDebugLastFrameClicked by Extra.Property { false }
 
 @OptIn(KorgeInternal::class)
-class MouseEvents(val view: View) : Extra by Extra.Mixin(), Closeable {
+class MouseEvents(val view: View) : Extra by Extra.Mixin(), AutoCloseable {
     init {
         view.mouseEnabled = true
     }
@@ -66,7 +67,6 @@ class MouseEvents(val view: View) : Extra by Extra.Mixin(), Closeable {
                     val space = max(1 * scale, 2.0)
                     val matrix = views.windowToGlobalMatrix
                     //println(scale)
-
 
                     var yy = 60.toDouble() * scale
                     val lineHeight = 8.toDouble() * scale
@@ -224,14 +224,13 @@ class MouseEvents(val view: View) : Extra by Extra.Mixin(), Closeable {
     inline fun onScrollOutside(noinline handler: suspend (MouseEvents) -> Unit): MouseEvents =
         _mouseEvent(MouseEvents::scrollOutside, handler)
 
-
     // Returns the Closeable after adding the handler to the corresponding Signal
     // in the MouseEvents.
     @PublishedApi
     internal inline fun _mouseEventCloseable(
         prop: KProperty1<MouseEvents, Signal<MouseEvents>>,
         noinline handler: suspend (MouseEvents) -> Unit
-    ): Closeable {
+    ): AutoCloseable {
         return prop.get(this)
             .add { launchImmediately(this.coroutineContext) { handler(it) } }
     }
@@ -324,6 +323,7 @@ class MouseEvents(val view: View) : Extra by Extra.Mixin(), Closeable {
     fun stopPropagation() {
         currentEvent?.stopPropagation()
     }
+
     fun preventDefault() {
         currentEvent?.preventDefault()
     }
@@ -406,6 +406,7 @@ class MouseEvents(val view: View) : Extra by Extra.Mixin(), Closeable {
                     }
                 }
             }
+
             MouseEvent.Type.DOWN -> {
                 if (!event.isAltDown) {
                     views.mouseDebugLastFrameClicked = true
@@ -420,6 +421,7 @@ class MouseEvents(val view: View) : Extra by Extra.Mixin(), Closeable {
                     }
                 }
             }
+
             MouseEvent.Type.SCROLL -> {
                 //this.lastEventScroll = event
                 if (isOver) {
@@ -458,7 +460,7 @@ class MouseEvents(val view: View) : Extra by Extra.Mixin(), Closeable {
         }
     }
 
-    fun update(views: Views, dt: TimeSpan) {
+    fun update(views: Views, dt: Duration) {
         if (!view.mouseEnabled) return
         this.views = views
 
@@ -541,7 +543,6 @@ class MouseEvents(val view: View) : Extra by Extra.Mixin(), Closeable {
 //    views.root.hitTest(input.mouse)
 //}
 
-
 //var View.mouseEnabled by Extra.Property { true }
 
 val View.mouse: MouseEvents by Extra.PropertyThis { MouseEvents(this) }
@@ -575,7 +576,7 @@ inline fun <T : View> T.onOutOnOver(
     noinline out: @EventsDslMarker (MouseEvents) -> Unit,
     noinline over: @EventsDslMarker (MouseEvents) -> Unit
 ): T {
-    var component: Closeable? = null
+    var component: AutoCloseable? = null
     onOut { events ->
         component?.close()
         component = null
@@ -617,9 +618,9 @@ inline fun <T : View?> T.onScroll(noinline handler: @EventsDslMarker suspend (Mo
 
 fun ViewsContainer.installMouseDebugExtensionOnce() = MouseEvents.installDebugExtensionOnce(views)
 
-fun MouseEvents.doubleClick(callback: (MouseEvents) -> Unit): Closeable = multiClick(2, callback)
+fun MouseEvents.doubleClick(callback: (MouseEvents) -> Unit): AutoCloseable = multiClick(2, callback)
 
-fun MouseEvents.multiClick(count: Int, callback: (MouseEvents) -> Unit): Closeable {
+fun MouseEvents.multiClick(count: Int, callback: (MouseEvents) -> Unit): AutoCloseable {
     var clickCount = 0
     var lastClickTime = DateTime.EPOCH
     return this.click {

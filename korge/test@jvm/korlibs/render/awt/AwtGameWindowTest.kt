@@ -1,6 +1,9 @@
 package korlibs.render.awt
 
+import korlibs.concurrent.thread.*
+import korlibs.concurrent.thread.NativeThread.Companion.sleep
 import korlibs.datastructure.thread.*
+import korlibs.datastructure.thread.NativeThread
 import korlibs.image.color.*
 import korlibs.image.format.*
 import korlibs.io.async.*

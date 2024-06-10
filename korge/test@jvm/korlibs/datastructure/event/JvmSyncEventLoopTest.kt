@@ -1,7 +1,11 @@
 package korlibs.datastructure.event
 
+import korlibs.concurrent.thread.*
+import korlibs.concurrent.thread.NativeThread.Companion.sleep
 import korlibs.datastructure.lock.*
 import korlibs.datastructure.thread.*
+import korlibs.datastructure.thread.NativeThread
+import korlibs.datastructure.thread.nativeThread
 import korlibs.time.*
 import java.awt.*
 import javax.swing.*

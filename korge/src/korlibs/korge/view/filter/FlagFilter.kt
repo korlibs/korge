@@ -8,6 +8,7 @@ import korlibs.math.*
 import korlibs.math.geom.*
 import korlibs.time.*
 import kotlin.math.*
+import kotlin.time.*
 
 /**
  * A Flag [Filter] that distorts the texture using increasing waves to the right, keeping the left-most vertical static,
@@ -22,7 +23,7 @@ class FlagFilter(
     amplitude: Double = 80.0,
     crestCount: Double = 5.0,
     cyclesPerSecond: Double = 2.0,
-    time: TimeSpan = 0.seconds
+    time: Duration = 0.seconds
 ) : ShaderFilter() {
     object FlagUB : UniformBlock(fixedLocation = 5) {
         val u_amplitude by float()
@@ -36,7 +37,7 @@ class FlagFilter(
             amplitude: Number = 80.0,
             crestCount: Number = 5.0,
             cyclesPerSecond: Number = 2.0,
-            time: TimeSpan = 0.seconds
+            time: Duration = 0.seconds
         ): FlagFilter = FlagFilter(amplitude.toDouble(), crestCount.toDouble(), cyclesPerSecond.toDouble(), time)
 
         override val fragment: FragmentShader = FragmentShaderDefault {
@@ -62,7 +63,7 @@ class FlagFilter(
     var cyclesPerSecond: Double = cyclesPerSecond.toDouble()
 
     /** The elapsed time for the animation */
-    var time: TimeSpan = time
+    var time: Duration = time
 
     override val programProvider: ProgramProvider get() = FlagFilter
 

@@ -17,6 +17,7 @@ import korlibs.event.Touch
 import korlibs.event.TouchEvent
 import korlibs.korge.internal.KorgeInternal
 import korlibs.math.geom.*
+import kotlin.time.*
 
 //@Singleton
 @OptIn(KorgeInternal::class)
@@ -124,19 +125,19 @@ class Input : Extra by Extra.Mixin() {
     }
 
     @KorgeInternal
-    fun startFrame(delta: TimeSpan) {
+    fun startFrame(delta: Duration) {
         this.extra?.clear()
         keys.startFrame(delta)
     }
 
     @KorgeInternal
-    fun endFrame(delta: TimeSpan) {
+    fun endFrame(delta: Duration) {
         this.clicked = false
         keys.endFrame(delta)
         endFrameOldKeys(delta)
     }
 
-    private fun endFrameOldKeys(delta: TimeSpan) {
+    private fun endFrameOldKeys(delta: Duration) {
         for (n in 0 until KEYCODES) {
             val prev = keysRawPrev[n]
             val curr = keysRaw[n]
@@ -223,10 +224,10 @@ class InputKeys {
         }
     }
 
-    internal fun startFrame(delta: TimeSpan) {
+    internal fun startFrame(delta: Duration) {
     }
 
-    internal fun endFrame(delta: TimeSpan) {
+    internal fun endFrame(delta: Duration) {
         arraycopy(pressing, 0, pressingPrev, 0, pressing.size)
     }
 

@@ -8,6 +8,7 @@ import korlibs.math.interpolation.*
 import korlibs.time.*
 import kotlinx.coroutines.*
 import kotlin.reflect.*
+import kotlin.time.*
 
 fun audioChannel(isLocal: Boolean = false): AudioChannel.Provider = if (isLocal) AudioChannel.ProviderLocal else AudioChannel.ProviderGlobal
 
@@ -47,11 +48,11 @@ class AudioChannel(val name: String, val viewsContainer: ViewsContainer, val isL
         channel = null
     }
 
-    suspend fun fadeIn(time: TimeSpan = DEFAULT_FADE_TIME, easing: Easing = DEFAULT_FADE_EASING) {
+    suspend fun fadeIn(time: Duration = DEFAULT_FADE_TIME, easing: Easing = DEFAULT_FADE_EASING) {
         channel?.fadeIn(time, easing)
     }
 
-    suspend fun fadeOut(time: TimeSpan = DEFAULT_FADE_TIME, easing: Easing = DEFAULT_FADE_EASING) {
+    suspend fun fadeOut(time: Duration = DEFAULT_FADE_TIME, easing: Easing = DEFAULT_FADE_EASING) {
         channel?.fadeOut(time, easing)
     }
 }

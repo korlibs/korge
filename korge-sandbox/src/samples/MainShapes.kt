@@ -2,11 +2,13 @@ package samples
 
 import korlibs.image.color.*
 import korlibs.io.async.*
+import korlibs.io.async.launch
 import korlibs.korge.input.*
 import korlibs.korge.scene.*
 import korlibs.korge.view.*
 import korlibs.math.geom.*
 import korlibs.time.*
+import kotlinx.coroutines.*
 
 class MainShapes : Scene() {
     override suspend fun SContainer.sceneMain() {

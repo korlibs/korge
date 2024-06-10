@@ -31,6 +31,7 @@ import korlibs.time.*
 import kotlinx.coroutines.*
 import kotlin.collections.set
 import kotlin.coroutines.*
+import kotlin.time.*
 
 //@Singleton
 /**
@@ -54,9 +55,9 @@ class Views(
 ) : BaseEventListener(),
     Extra by Extra.Mixin(),
     CoroutineScope, ViewsContainer,
-	BoundsProvider by bp,
+    BoundsProvider by bp,
     DialogInterfaceProvider by gameWindow,
-    Closeable,
+    AutoCloseable,
     ResourcesContainer,
     InvalidateNotifier,
     DeviceDimensionsProvider by gameWindow
@@ -309,7 +310,7 @@ class Views(
     }
 
 	fun frameUpdateAndRender(
-        fixedSizeStep: TimeSpan = TimeSpan.NIL,
+        fixedSizeStep: Duration = TimeSpan.NIL,
         forceRender: Boolean = false,
         doUpdate: Boolean = true,
         doRender: Boolean = true,
@@ -346,7 +347,7 @@ class Views(
 
     private val eventResults = EventResult()
 
-	fun update(elapsed: TimeSpan) {
+	fun update(elapsed: Duration) {
 		//println(this)
 		//println("Update: $elapsed")
 		input.startFrame(elapsed)
@@ -558,7 +559,7 @@ private fun getAllDescendantViewsBase(view: View, out: FastArrayList<View>, reve
 }
 
 @OptIn(KorgeInternal::class)
-fun View.updateSingleView(delta: TimeSpan, tempUpdate: UpdateEvent = UpdateEvent()) {
+fun View.updateSingleView(delta: Duration, tempUpdate: UpdateEvent = UpdateEvent()) {
     dispatch(tempUpdate.also { it.deltaTime = delta })
 }
 
@@ -574,7 +575,7 @@ fun View.updateSingleView(delta: TimeSpan, tempUpdate: UpdateEvent = UpdateEvent
 @OptIn(KorgeInternal::class)
 fun View.updateSingleViewWithViewsAll(
     views: Views,
-    delta: TimeSpan,
+    delta: Duration,
 ) {
     dispatch(views.updateEvent.also { it.deltaTime = delta })
     dispatch(views.viewsUpdateEvent.also { it.delta = delta })
@@ -664,7 +665,7 @@ fun BoundsProvider.setBoundsInfo(
 
 suspend fun views(): Views = injector().get()
 
-class UpdateEvent(var deltaTime: TimeSpan = TimeSpan.ZERO) : Event(), TEvent<UpdateEvent> {
+class UpdateEvent(var deltaTime: Duration = TimeSpan.ZERO) : Event(), TEvent<UpdateEvent> {
     companion object : EventType<UpdateEvent>
     override val type: EventType<UpdateEvent> get() = UpdateEvent
 
@@ -675,7 +676,7 @@ class UpdateEvent(var deltaTime: TimeSpan = TimeSpan.ZERO) : Event(), TEvent<Upd
     override fun toString(): String = "UpdateEvent(time=$deltaTime)"
 }
 
-class ViewsUpdateEvent(val views: Views, var delta: TimeSpan = TimeSpan.ZERO) : Event(), TEvent<ViewsUpdateEvent> {
+class ViewsUpdateEvent(val views: Views, var delta: Duration = TimeSpan.ZERO) : Event(), TEvent<ViewsUpdateEvent> {
     companion object : EventType<ViewsUpdateEvent>
     override val type: EventType<ViewsUpdateEvent> get() = ViewsUpdateEvent
 

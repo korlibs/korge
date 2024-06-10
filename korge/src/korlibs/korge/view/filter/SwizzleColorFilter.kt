@@ -1,6 +1,6 @@
 package korlibs.korge.view.filter
 
-import korlibs.datastructure.lock.*
+import korlibs.concurrent.lock.*
 import korlibs.graphics.shader.*
 import korlibs.korge.view.property.*
 

@@ -11,6 +11,7 @@ import korlibs.korge.view.align.*
 import korlibs.math.geom.*
 import korlibs.math.random.*
 import korlibs.time.*
+import kotlinx.coroutines.*
 import onCollision
 import kotlin.random.*
 

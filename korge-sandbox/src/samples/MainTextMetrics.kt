@@ -6,6 +6,7 @@ import korlibs.image.color.*
 import korlibs.image.font.*
 import korlibs.image.text.*
 import korlibs.io.async.*
+import korlibs.io.file.*
 import korlibs.io.file.std.*
 import korlibs.korge.input.*
 import korlibs.korge.scene.*

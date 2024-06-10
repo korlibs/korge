@@ -12,6 +12,7 @@ import korlibs.image.color.*
 import korlibs.image.font.*
 import korlibs.io.lang.*
 import korlibs.math.geom.*
+import kotlin.time.*
 
 @KorgeExperimental
 inline fun Container.uiTooltipContainer(
@@ -26,15 +27,24 @@ class UITooltipContainer() : Container() {
         visible = false
     }
 
-    var tooltipFont: Font ; get() = tooltip.styles.textFont ; set(value) { tooltip.styles.textFont = value }
-    var tooltipColor: RGBA ; get() = tooltip.styles.textColor ; set(value) { tooltip.styles.textColor = value }
-    var tooltipBackgroundColor: RGBA ; get() = tooltip.bgcolor ; set(value) { tooltip.bgcolor = value }
-    var showTime: TimeSpan = 0.4.seconds
-    var appearAnimationTime: TimeSpan = 0.2.seconds
+    var tooltipFont: Font; get() = tooltip.styles.textFont;
+        set(value) {
+            tooltip.styles.textFont = value
+        }
+    var tooltipColor: RGBA; get() = tooltip.styles.textColor;
+        set(value) {
+            tooltip.styles.textColor = value
+        }
+    var tooltipBackgroundColor: RGBA; get() = tooltip.bgcolor;
+        set(value) {
+            tooltip.bgcolor = value
+        }
+    var showTime: Duration = 0.4.seconds
+    var appearAnimationTime: Duration = 0.2.seconds
     var tooltipOffsetX: Double = 0.0
     var tooltipOffsetY: Double = 4.0
 
-    private var visibleTimer: Closeable? = null
+    private var visibleTimer: AutoCloseable? = null
 
     fun disappear() {
         tooltip.visible = false
