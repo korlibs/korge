@@ -1,22 +1,21 @@
 package korlibs.graphics.gl
 
 import korlibs.datastructure.*
-import korlibs.datastructure.lock.*
 import korlibs.graphics.*
-import korlibs.io.concurrent.atomic.*
 import korlibs.kgl.*
 import korlibs.memory.unit.*
+import kotlinx.atomicfu.*
 
 class GLGlobalState(val gl: KmlGl, val ag: AG) {
-    var texturesCreated = korAtomic(0)
-    var texturesDeleted = korAtomic(0)
-    var texturesSize = korAtomic(0L)
+    var texturesCreated = atomic(0)
+    var texturesDeleted = atomic(0)
+    var texturesSize = atomic(0L)
 
-    var buffersCreated = korAtomic(0)
-    var buffersDeleted = korAtomic(0)
-    var buffersSize = korAtomic(0L)
+    var buffersCreated = atomic(0)
+    var buffersDeleted = atomic(0)
+    var buffersSize = atomic(0L)
 
-    internal val objectsToDeleteLock = Lock()
+    internal val objectsToDeleteLock = korlibs.concurrent.lock.Lock()
     internal val objectsToDelete = fastArrayListOf<GLBaseObject>()
 
     fun readStats(out: AGStats) {
@@ -113,11 +112,4 @@ internal class GLTexture(state: GLGlobalState) : GLBaseObject(state) {
 
 ////////////////
 
-internal fun <T : AGObject, R: AGNativeObject> T.createOnce(state: GLGlobalState, block: (T) -> R): R {
-    if (this._native == null || this._cachedContextVersion != state.ag.contextVersion) {
-        this._cachedContextVersion = state.ag.contextVersion
-        this._resetVersion()
-        this._native = block(this)
-    }
-    return this._native as R
-}
+internal inline fun <T : AGObject, R: AGNativeObject> T.createOnce(state: GLGlobalState, block: (T) -> R): R = createOnce(state.ag, block)

@@ -291,7 +291,7 @@ open class GameWindow :
         @Deprecated("Deprecated setting fps")
         set(value) = Unit
 
-    open var title: String get() = ""; set(value) = Unit
+    open var title: String = ""
     open val width: Int = 0
     open val height: Int = 0
     open var vsync: Boolean = true

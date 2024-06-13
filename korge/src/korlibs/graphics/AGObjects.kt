@@ -38,6 +38,15 @@ open class AGObject : AutoCloseable {
     }
 }
 
+internal inline fun <T : AGObject, R: AGNativeObject> T.createOnce(ag: AG, block: (T) -> R): R {
+    if (this._native == null || this._cachedContextVersion != ag.contextVersion) {
+        this._cachedContextVersion = ag.contextVersion
+        this._resetVersion()
+        this._native = block(this)
+    }
+    return this._native as R
+}
+
 class AGBuffer : AGObject() {
     var mem: Buffer? = null
         private set

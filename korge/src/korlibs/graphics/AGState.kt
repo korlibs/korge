@@ -635,6 +635,13 @@ data class AGScissor private constructor(
     val isNIL: Boolean get() = this == NIL
     val isNotNIL: Boolean get() = !isNIL
 
+    val raw: Long get() = Long.fromLowHigh(
+        0.insert16(_left.toInt(), 0).insert16(_top.toInt(), 16),
+        0.insert16(_right.toInt(), 0).insert16(_bottom.toInt(), 16)
+    )
+
+    constructor(raw: Long) : this(raw.low.extractShort(0), raw.low.extractShort(1), raw.high.extractShort(0), raw.high.extractShort(1))
+
     constructor(x: Int, y: Int, width: Int, height: Int) : this(x.toShortClamped(), y.toShortClamped(), (x + width).toShortClamped(), (y + height).toShortClamped())
     constructor(x: Float, y: Float, width: Float, height: Float) : this(x.toIntRound(), y.toIntRound(), width.toIntRound(), height.toIntRound())
     constructor(x: Double, y: Double, width: Double, height: Double) : this(x.toIntRound(), y.toIntRound(), width.toIntRound(), height.toIntRound())
@@ -656,6 +663,7 @@ data class AGScissor private constructor(
         return "Scissor(x=${x}, y=${y}, width=${width}, height=${height})"
     }
 
+    fun orNull(): AGScissor? = if (isNIL) null else this
     fun toRect(): Rectangle = if (isNIL) Rectangle.NIL else Rectangle(x, y, width, height)
     fun toRectOrNull(): Rectangle? = toRect().takeIf { it.isNotNIL }
 
