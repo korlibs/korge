@@ -279,6 +279,7 @@ open class KorgeExtension(
     fun targetAll() {
         targetJvm()
         targetJs()
+        targetWasmJs()
         targetDesktop()
         targetAndroid()
         targetIos()
