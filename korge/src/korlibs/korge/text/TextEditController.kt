@@ -30,7 +30,7 @@ class TextEditController(
     val caretContainer: Container = textView,
     val eventHandler: View = textView,
     val bg: RenderableView? = null,
-) : Closeable, UIFocusable, ISoftKeyboardConfig by SoftKeyboardConfig() {
+) : AutoCloseable, UIFocusable, ISoftKeyboardConfig by SoftKeyboardConfig() {
     init {
         textView.focusable = this
     }

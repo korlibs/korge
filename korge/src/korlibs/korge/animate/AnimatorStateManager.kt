@@ -10,13 +10,14 @@ import korlibs.io.lang.*
 import korlibs.math.*
 import korlibs.math.interpolation.*
 import kotlin.reflect.*
+import kotlin.time.*
 
 @KorgeExperimental
 val View.animStateManager by Extra.PropertyThis { AnimatorStateManager(this) }
 
 @KorgeExperimental
-data class AnimState(val transitions: List<V2<*>>, val time: TimeSpan = 0.5.seconds, val easing: Easing = Easing.LINEAR) {
-    constructor(vararg transitions: V2<*>, time: TimeSpan = 0.5.seconds, easing: Easing = Easing.LINEAR) : this(transitions.toList(), time = time, easing = easing)
+data class AnimState(val transitions: List<V2<*>>, val time: Duration = 0.5.seconds, val easing: Easing = Easing.LINEAR) {
+    constructor(vararg transitions: V2<*>, time: Duration = 0.5.seconds, easing: Easing = Easing.LINEAR) : this(transitions.toList(), time = time, easing = easing)
 
     operator fun plus(other: AnimState): AnimState {
         return AnimState(
@@ -29,6 +30,7 @@ data class AnimState(val transitions: List<V2<*>>, val time: TimeSpan = 0.5.seco
 
 class AnimatorStateManager(val view: View) {
     data class Entry<T>(val v2: V2<T>, val value: T)
+
     val defaults = LinkedHashMap<KMutableProperty0<*>, Entry<*>>()
 
     private fun backup(state: AnimState) {
@@ -44,7 +46,7 @@ class AnimatorStateManager(val view: View) {
         })
     }
 
-    private var currentTime: TimeSpan = TimeSpan.ZERO
+    private var currentTime: Duration = TimeSpan.ZERO
     private var currentState: AnimState = AnimState()
 
     fun add(vararg states: AnimState) {
@@ -76,7 +78,7 @@ class AnimatorStateManager(val view: View) {
         }
     }
 
-    fun update(dt: TimeSpan) {
+    fun update(dt: Duration) {
         val isStart = currentTime == TimeSpan.ZERO
         currentTime += dt
         var completedCount = 0

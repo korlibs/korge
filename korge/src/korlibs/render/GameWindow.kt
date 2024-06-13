@@ -1,8 +1,7 @@
 package korlibs.render
 
+import korlibs.concurrent.lock.*
 import korlibs.datastructure.*
-import korlibs.datastructure.closeable.*
-import korlibs.datastructure.lock.*
 import korlibs.event.*
 import korlibs.graphics.*
 import korlibs.graphics.log.*
@@ -18,10 +17,12 @@ import korlibs.math.geom.*
 import korlibs.memory.*
 import korlibs.render.GameWindow.Quality.*
 import korlibs.time.*
+import korlibs.time.measureTime
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
 import kotlin.native.concurrent.*
 import kotlin.properties.*
+import kotlin.time.*
 
 @ThreadLocal
 var GLOBAL_CHECK_GL = false
@@ -101,8 +102,7 @@ open class GameWindow :
     CoroutineContext.Element,
     AGWindow,
     GameWindowConfig,
-    Extra by Extra.Mixin()
-{
+    Extra by Extra.Mixin() {
     open val androidContextAny: Any? get() = null
 
     sealed interface ICursor
@@ -215,6 +215,7 @@ open class GameWindow :
     open var alwaysOnTop: Boolean = false
 
     override val key: CoroutineContext.Key<*> get() = CoroutineKey
+
     companion object CoroutineKey : CoroutineContext.Key<GameWindow> {
         const val DEFAULT_PREFERRED_FPS = 60
         val logger = Logger("GameWindow")
@@ -251,23 +252,23 @@ open class GameWindow :
     protected val dropFileEvent = DropFileEvent()
 
     /** Happens on the updater thread */
-    fun onUpdateEvent(block: (UpdateEvent) -> Unit): Closeable {
+    fun onUpdateEvent(block: (UpdateEvent) -> Unit): AutoCloseable {
         return onEvent(UpdateEvent, block)
     }
 
     /** Happens on the rendering thread */
-    fun onRenderEvent(block: (RenderEvent) -> Unit): Closeable {
+    fun onRenderEvent(block: (RenderEvent) -> Unit): AutoCloseable {
         return onEvent(RenderEvent, block)
     }
 
-    val counterTimePerFrame: TimeSpan get() = (1_000_000.0 / fps).microseconds
-    val timePerFrame: TimeSpan get() = counterTimePerFrame
+    val counterTimePerFrame: Duration get() = (1_000_000.0 / fps).microseconds
+    val timePerFrame: Duration get() = counterTimePerFrame
 
     open fun computeDisplayRefreshRate(): Int {
         return 60
     }
 
-    open fun registerTime(name: String, time: TimeSpan) {
+    open fun registerTime(name: String, time: Duration) {
         //println("registerTime: $name=$time")
     }
 
@@ -308,6 +309,7 @@ open class GameWindow :
     fun hide() {
         visible = false
     }
+
     fun show() {
         visible = true
     }
@@ -330,8 +332,10 @@ open class GameWindow :
     enum class Quality(override val level: Float) : korlibs.image.Quality {
         /** Will render to lower resolutions, ignoring devicePixelRatio on retina-like screens */
         PERFORMANCE(0f),
+
         /** Will render to higher resolutions, using devicePixelRatio on retina-like screens */
         QUALITY(1f),
+
         /** Will choose [PERFORMANCE] or [QUALITY] based on some heuristics */
         AUTOMATIC(.5f);
 
@@ -354,6 +358,7 @@ open class GameWindow :
     }
 
     open fun setSize(width: Int, height: Int): Unit = Unit
+
     // Alias for close
     fun exit(exitCode: Int = 0): Unit = close(exitCode)
 
@@ -401,7 +406,7 @@ open class GameWindow :
         onContinuousRenderModeUpdated?.invoke(new)
     }
 
-    fun frame(doUpdate: Boolean = true, doRender: Boolean = true, frameStartTime: TimeSpan = PerformanceCounter.reference): TimeSpan {
+    fun frame(doUpdate: Boolean = true, doRender: Boolean = true, frameStartTime: Duration = PerformanceCounter.reference): Duration {
         val startTime = PerformanceCounter.reference
         if (doRender) {
             renderTime = measureTime {
@@ -492,8 +497,8 @@ open class GameWindow :
         surfaceHeight = height
     }
 
-    var gamePadTime: TimeSpan = TimeSpan.ZERO
-    fun frameUpdate(startTime: TimeSpan) {
+    var gamePadTime: Duration = TimeSpan.ZERO
+    fun frameUpdate(startTime: Duration) {
         gamePadTime = measureTime {
             updateGamepads()
         }
@@ -502,7 +507,8 @@ open class GameWindow :
             val consumed = now - startTime
             //val remaining = (counterTimePerFrame - consumed) - 2.milliseconds // Do not push too much so give two extra milliseconds just in case
             //val timeForTasks = coroutineDispatcher.maxAllocatedTimeForTasksPerFrame ?: (remaining * 10) // We would be skipping up to 10 frames by default
-            val timeForTasks = coroutineDispatcher.maxAllocatedTimeForTasksPerFrame ?: (counterTimePerFrame * 10) // We would be skipping up to 10 frames by default
+            val timeForTasks =
+                coroutineDispatcher.maxAllocatedTimeForTasksPerFrame ?: (counterTimePerFrame * 10) // We would be skipping up to 10 frames by default
             val finalTimeForTasks = max(timeForTasks, 4.milliseconds) // Avoid having 0 milliseconds or even negative
             //println("         - frameUpdate: finalTimeForTasks=$finalTimeForTasks, startTime=$startTime, now=$now")
             coroutineDispatcher.executePending(finalTimeForTasks)
@@ -515,7 +521,7 @@ open class GameWindow :
     open fun updateGamepads() {
     }
 
-    fun executePending(availableTime: TimeSpan) {
+    fun executePending(availableTime: Duration) {
         coroutineDispatcher.executePending(availableTime)
     }
 
@@ -529,9 +535,11 @@ open class GameWindow :
     inline fun updateRenderLock(block: () -> Unit) {
         _updateRenderLock(block)
     }
+
     fun dispatchUpdateEvent() {
         updateRenderLock { dispatch(updateEvent) }
     }
+
     fun dispatchRenderEvent(update: Boolean = true, render: Boolean = true) {
         updateRenderLock {
             dispatch(renderEvent.reset {
@@ -540,13 +548,16 @@ open class GameWindow :
             })
         }
     }
+
     fun dispatchNewRenderEvent() {
         dispatchRenderEvent(update = false, render = true)
     }
+
     fun dispatchDropfileEvent(type: DropFileEvent.Type, files: List<VfsFile>?) = dispatch(dropFileEvent.reset {
         this.type = type
         this.files = files
     })
+
     fun dispatchFullscreenEvent(fullscreen: Boolean) = dispatch(fullScreenEvent.reset { this.fullscreen = fullscreen })
 
     fun dispatchReshapeEvent(x: Int, y: Int, width: Int, height: Int) {
@@ -671,7 +682,6 @@ open class GameWindow :
         //}
     }
 
-
     // @TODO: Is this used?
     fun entry(callback: suspend () -> Unit) {
         launch(coroutineDispatcher) {
@@ -753,13 +763,13 @@ open class EventLoopGameWindow : GameWindow() {
     fun elapsedSinceLastRenderTime() = PerformanceCounter.reference - lastRenderTime
 
     inline fun render(doUpdate: Boolean, doRender: () -> Boolean = { true }) {
-        val frameStartTime: TimeSpan = PerformanceCounter.reference
+        val frameStartTime: Duration = PerformanceCounter.reference
         val mustRender = doRender()
         if (mustRender) renderInternal(doUpdate = doUpdate, frameStartTime = frameStartTime)
     }
 
     @PublishedApi
-    internal fun renderInternal(doUpdate: Boolean, frameStartTime: TimeSpan = PerformanceCounter.reference) {
+    internal fun renderInternal(doUpdate: Boolean, frameStartTime: Duration = PerformanceCounter.reference) {
         fixedTime = PerformanceCounter.reference
         doInitRender()
 
@@ -790,7 +800,7 @@ open class EventLoopGameWindow : GameWindow() {
         }
     }
 
-    protected fun sleep(time: TimeSpan) {
+    protected fun sleep(time: Duration) {
         // Reimplement: Spinlock!
         val start = PerformanceCounter.reference
         while ((PerformanceCounter.reference - start) < time) {

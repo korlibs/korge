@@ -11,15 +11,16 @@ import korlibs.math.interpolation.*
 import korlibs.time.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
+import kotlin.time.*
 
 class TweenComponent(
     val view: BaseView,
     private val vs: List<V2<*>>,
-    val time: TimeSpan = TimeSpan.NIL,
+    val time: Duration = TimeSpan.NIL,
     val easing: Easing = DEFAULT_EASING,
     val callback: (Float) -> Unit,
     val c: CancellableContinuation<Unit>?,
-    val waitTime: TimeSpan = TimeSpan.NIL,
+    val waitTime: Duration = TimeSpan.NIL,
     val autoInvalidate: Boolean = true
 ) {
 	var elapsed = 0.0.milliseconds
@@ -28,7 +29,7 @@ class TweenComponent(
 	var done = false
     var resumed = false
 
-    var updater: Closeable? = view.onEvent(UpdateEvent) { it -> _update(it.deltaTime) }
+    var updater: AutoCloseable? = view.onEvent(UpdateEvent) { it -> _update(it.deltaTime) }
 
 	init {
 
@@ -39,7 +40,7 @@ class TweenComponent(
         _update(TimeSpan.ZERO)
 	}
 
-    private fun _update(dt: TimeSpan) {
+    private fun _update(dt: Duration) {
         if (autoInvalidate) {
             view.invalidateRender()
         }
@@ -83,7 +84,7 @@ class TweenComponent(
         //println("TWEEN COMPLETED[$this, $vs]: $elapsed")
     }
 
-	fun setTo(elapsed: TimeSpan) {
+	fun setTo(elapsed: Duration) {
         if (elapsed == 0.milliseconds) {
             vs.fastForEach { v ->
                 v.init()
@@ -113,9 +114,9 @@ class TweenComponent(
  */
 suspend fun BaseView?.tween(
     vararg vs: V2<*>,
-    time: TimeSpan = DEFAULT_TIME,
+    time: Duration = DEFAULT_TIME,
     easing: Easing = DEFAULT_EASING,
-    waitTime: TimeSpan = TimeSpan.NIL,
+    waitTime: Duration = TimeSpan.NIL,
     timeout: Boolean = false,
     autoInvalidate: Boolean = true,
     // @TODO: We should use Ratio here as callback at some point
@@ -139,9 +140,9 @@ suspend fun BaseView?.tween(
 
 fun BaseView?.tweenNoWait(
     vararg vs: V2<*>,
-    time: TimeSpan = DEFAULT_TIME,
+    time: Duration = DEFAULT_TIME,
     easing: Easing = DEFAULT_EASING,
-    waitTime: TimeSpan = TimeSpan.NIL,
+    waitTime: Duration = TimeSpan.NIL,
     callback: (Float) -> Unit = { }
 ): TweenComponent? {
     if (this == null) return null
@@ -150,9 +151,9 @@ fun BaseView?.tweenNoWait(
 
 suspend fun QView.tween(
     vararg vs: V2<*>,
-    time: TimeSpan = DEFAULT_TIME,
+    time: Duration = DEFAULT_TIME,
     easing: Easing = DEFAULT_EASING,
-    waitTime: TimeSpan = TimeSpan.NIL,
+    waitTime: Duration = TimeSpan.NIL,
     callback: (Float) -> Unit = { }
 ) {
     if (isEmpty()) {
@@ -172,18 +173,18 @@ internal val DEFAULT_EASING = Easing.EASE_IN_OUT_QUAD
 internal val DEFAULT_TIME = 1.seconds
 
 suspend fun BaseView?.tweenAsync(
-	vararg vs: V2<*>,
-	time: TimeSpan = DEFAULT_TIME,
-	easing: Easing = DEFAULT_EASING,
-    waitTime: TimeSpan = TimeSpan.NIL,
-	callback: (Float) -> Unit = {}
+    vararg vs: V2<*>,
+    time: Duration = DEFAULT_TIME,
+    easing: Easing = DEFAULT_EASING,
+    waitTime: Duration = TimeSpan.NIL,
+    callback: (Float) -> Unit = {}
 ): Deferred<Unit> = asyncImmediately(coroutineContext) { tween(*vs, time = time, easing = easing, waitTime = waitTime, callback = callback) }
 
 fun BaseView?.tweenAsync(
-	vararg vs: V2<*>,
-	coroutineContext: CoroutineContext,
-	time: TimeSpan = DEFAULT_TIME,
-	easing: Easing = DEFAULT_EASING,
-    waitTime: TimeSpan = TimeSpan.NIL,
+    vararg vs: V2<*>,
+    coroutineContext: CoroutineContext,
+    time: Duration = DEFAULT_TIME,
+    easing: Easing = DEFAULT_EASING,
+    waitTime: Duration = TimeSpan.NIL,
     callback: (Float) -> Unit = {}
 ) = asyncImmediately(coroutineContext) { tween(*vs, time = time, easing = easing, waitTime = waitTime, callback = callback) }

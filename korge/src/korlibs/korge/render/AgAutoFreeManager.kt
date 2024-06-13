@@ -6,9 +6,9 @@ import korlibs.io.lang.*
 
 // @TODO: This is pretty generic, we could expose it elsewhere
 class AgAutoFreeManager(
-) : Closeable {
+) : AutoCloseable {
     class Entry(
-        var closeable: Closeable? = null,
+        var closeable: AutoCloseable? = null,
     ) {
         fun closeAndReset() {
             closeable?.close()
@@ -20,10 +20,10 @@ class AgAutoFreeManager(
     }
 
     private val entryPool = Pool(reset = { it.reset() }) { Entry() }
-    private val cachedCloseables = FastIdentityMap<Closeable?, Entry>()
+    private val cachedCloseables = FastIdentityMap<AutoCloseable?, Entry>()
     private val availableInLastGC = fastArrayListOf<Entry>()
 
-    fun reference(closeable: Closeable) {
+    fun reference(closeable: AutoCloseable) {
         cachedCloseables.getOrPut(closeable) {
             entryPool.alloc().also { it.closeable = closeable }
         }

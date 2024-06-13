@@ -4,6 +4,7 @@ import korlibs.image.color.*
 import korlibs.image.format.*
 import korlibs.image.vector.*
 import korlibs.io.async.*
+import korlibs.io.async.launch
 import korlibs.io.file.std.*
 import korlibs.korge.scene.*
 import korlibs.korge.tween.*
@@ -13,6 +14,7 @@ import korlibs.math.geom.shape.*
 import korlibs.math.geom.vector.*
 import korlibs.math.interpolation.*
 import korlibs.time.*
+import kotlinx.coroutines.*
 
 class MainTweenPoint : Scene() {
     override suspend fun SContainer.sceneMain() {

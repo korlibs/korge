@@ -1,6 +1,5 @@
 package korlibs.render
 
-import korlibs.datastructure.closeable.Closeable
 import korlibs.datastructure.event.*
 import korlibs.io.lang.*
 import korlibs.time.*
@@ -8,7 +7,7 @@ import kotlinx.coroutines.*
 import kotlin.coroutines.*
 
 @OptIn(InternalCoroutinesApi::class)
-class SyncEventLoopCoroutineDispatcher(val eventLoop: SyncEventLoop) : CoroutineDispatcher(), Delay, Closeable {
+class SyncEventLoopCoroutineDispatcher(val eventLoop: SyncEventLoop) : CoroutineDispatcher(), Delay, AutoCloseable {
     constructor(precise: Boolean = true, immediateRun: Boolean = false) : this(SyncEventLoop(precise, immediateRun))
 
     override fun close() {

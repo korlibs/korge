@@ -7,6 +7,7 @@ import korlibs.korge.scene.*
 import korlibs.korge.tween.*
 import korlibs.korge.view.*
 import korlibs.korge.view.filter.*
+import korlibs.math.geom.*
 import korlibs.math.interpolation.*
 import korlibs.time.*
 
@@ -14,7 +15,7 @@ class MainFiltersSample : Scene() {
     override suspend fun SContainer.sceneMain() {
         val bitmap = resourcesVfs["korge.png"].readBitmap()
 
-        val wave = WaveFilter()
+        val wave = WaveFilter(crestDistance = Vector2D(200, 200), amplitude = Vector2D(24, 24))
         image(bitmap) {
             scale(.5)
             position(0, 0)

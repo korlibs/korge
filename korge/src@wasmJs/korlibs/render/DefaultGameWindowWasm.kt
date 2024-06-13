@@ -8,10 +8,13 @@ import korlibs.image.bitmap.*
 import korlibs.image.format.*
 import korlibs.io.async.*
 import korlibs.io.file.*
+import korlibs.io.lang.*
 import korlibs.io.util.*
 import korlibs.io.wasm.*
 import korlibs.kgl.*
 import korlibs.math.geom.*
+import korlibs.render.internal.*
+import korlibs.wasm.*
 import kotlinx.browser.*
 import kotlinx.coroutines.*
 import org.w3c.dom.*

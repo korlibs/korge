@@ -32,7 +32,7 @@ import korlibs.memory.unit.*
 @OptIn(KorgeInternal::class, KorgeExperimental::class)
 class AgBitmapTextureManager(
     val ag: AG
-) : Closeable {
+) : AutoCloseable {
     var maxCachedMemory = 0L
 
     /** Bitmaps to keep for some time even if not referenced in [framesBetweenGC] as long as the [maxCachedMemory] allows it */

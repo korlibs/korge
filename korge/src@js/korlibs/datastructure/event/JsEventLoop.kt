@@ -11,7 +11,7 @@ open class LocalJsEventLoop(
     precise: Boolean = false,
     immediateRun: Boolean = false,
 ) : SyncEventLoop(precise, immediateRun) {
-    private var closeable: Closeable? = null
+    private var closeable: AutoCloseable? = null
 
     override fun start() {
         if (closeable != null) return
@@ -39,21 +39,21 @@ object JsEventLoop : BaseEventLoop() {
         jsGlobalThis.setTimeout({ task() }, 0)
     }
 
-    override fun setTimeout(time: TimeSpan, task: () -> Unit): Closeable {
+    override fun setTimeout(time: TimeSpan, task: () -> Unit): AutoCloseable {
         val id = jsGlobalThis.setTimeout({ task() }, time.millisecondsInt)
-        return Closeable { jsGlobalThis.clearTimeout(id) }
+        return AutoCloseable { jsGlobalThis.clearTimeout(id) }
     }
 
-    override fun setInterval(time: TimeSpan, task: () -> Unit): Closeable {
+    override fun setInterval(time: TimeSpan, task: () -> Unit): AutoCloseable {
         val id = jsGlobalThis.setInterval({ task() }, time.millisecondsInt)
-        return Closeable { jsGlobalThis.clearInterval(id) }
+        return AutoCloseable { jsGlobalThis.clearInterval(id) }
     }
 
-    override fun setIntervalFrame(task: () -> Unit): Closeable {
+    override fun setIntervalFrame(task: () -> Unit): AutoCloseable {
         val globalThisDyn = jsGlobalThis.asDynamic()
         if (!globalThisDyn.requestAnimationFrame) return super.setIntervalFrame(task)
         var running = true
-        var gen: (() -> Unit) ? = null
+        var gen: (() -> Unit)? = null
         gen = {
             if (running) {
                 task()
@@ -61,6 +61,6 @@ object JsEventLoop : BaseEventLoop() {
             }
         }
         gen()
-        return Closeable { running = false }
+        return AutoCloseable { running = false }
     }
 }

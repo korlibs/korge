@@ -6,6 +6,7 @@ import korlibs.korge.scene.*
 import korlibs.korge.ui.*
 import korlibs.korge.view.*
 import korlibs.math.*
+import kotlinx.atomicfu.*
 import kotlin.math.*
 
 class MainPolyphonic : Scene() {
@@ -55,11 +56,11 @@ class MainPolyphonic : Scene() {
 
         data class Note_t(val note: Int, val octave: Int, val duration: Int)
         data class ChannelState_t(
-            val currentNote: KorAtomicRef<Note_t> = KorAtomicRef(Note_t(0, 0, 0)),
-            val noteIndex: KorAtomicInt = KorAtomicInt(0),
-            val currentTime: KorAtomicInt = KorAtomicInt(0),
-            val currentsampleIndex: KorAtomicFloat = KorAtomicFloat(0f),
-            val currentsampleIncrement: KorAtomicFloat = KorAtomicFloat(0f)
+            val currentNote: AtomicRef<Note_t> = atomic(Note_t(0, 0, 0)),
+            val noteIndex: AtomicInt = atomic(0),
+            val currentTime: AtomicInt = atomic(0),
+            val currentsampleIndex: AtomicRef<Float> = atomic(0f),
+            val currentsampleIncrement: AtomicRef<Float> = atomic(0f)
         )
 
         val channelStates = Array(2) { ChannelState_t() }
@@ -408,3 +409,6 @@ class MainPolyphonic : Scene() {
         }
     }
 }
+
+private fun AtomicRef<Float>.addAndGetMod(delta: Float, modulo: Float): Float = updateAndGet { (it + delta) % modulo }
+private fun AtomicRef<Double>.addAndGetMod(delta: Double, modulo: Double): Double = updateAndGet { (it + delta) % modulo }

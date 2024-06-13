@@ -4,6 +4,7 @@ import korlibs.io.lang.*
 import korlibs.korge.view.*
 import korlibs.math.geom.*
 import korlibs.time.*
+import kotlin.time.*
 
 open class MouseDragInfo(
     val view: View,
@@ -21,15 +22,17 @@ open class MouseDragInfo(
     override fun toString(): String = "MouseDragInfo(start=$start, end=$end, sx=$sx, sy=$sy, cx=$cx, cy=$cy)"
 
     lateinit var mouseEvents: MouseEvents
-    val elapsed: TimeSpan get() = time - startTime
+    val elapsed: Duration get() = time - startTime
 
     val localDXY: Point get() = localDXY(view)
     @Deprecated("") val localDX: Double get() = localDX(view)
     @Deprecated("") val localDY: Double get() = localDY(view)
 
     fun localDXY(view: View): Point = view.parent?.globalToLocalDelta(Point(0.0, 0.0), Point(dx, dy)) ?: Point(dx, dy)
-    @Deprecated("") fun localDX(view: View): Double = localDXY(view).x
-    @Deprecated("") fun localDY(view: View): Double = localDXY(view).y
+    @Deprecated("")
+    fun localDX(view: View): Double = localDXY(view).x
+    @Deprecated("")
+    fun localDY(view: View): Double = localDXY(view).y
 
     private var lastDx: Double = Double.NaN
     private var lastDy: Double = Double.NaN
@@ -80,10 +83,10 @@ enum class MouseDragState {
 }
 
 data class OnMouseDragCloseable(
-    val onDownCloseable: Closeable,
-    val onUpAnywhereCloseable: Closeable,
-    val onMoveAnywhereCloseable: Closeable
-) : Closeable {
+    val onDownCloseable: AutoCloseable,
+    val onUpAnywhereCloseable: AutoCloseable,
+    val onMoveAnywhereCloseable: AutoCloseable
+) : AutoCloseable {
     override fun close() {
         onDownCloseable.close()
         onUpAnywhereCloseable.close()
@@ -126,9 +129,11 @@ private fun <T : View> T.onMouseDragInternal(
                 sy = py
                 info.reset()
             }
+
             MouseDragState.END -> {
                 dragging = false
             }
+
             else -> Unit
         }
         cx = mousePos.x
@@ -138,9 +143,9 @@ private fun <T : View> T.onMouseDragInternal(
         callback(views(), info.set(dx, dy, state.isStart, state.isEnd, timeProvider.now(), sx, sy, cx, cy))
     }
 
-    lateinit var onDownCloseable: Closeable
-    lateinit var onUpAnywhereCloseable: Closeable
-    lateinit var onMoveAnywhereCloseable: Closeable
+    lateinit var onDownCloseable: AutoCloseable
+    lateinit var onUpAnywhereCloseable: AutoCloseable
+    lateinit var onMoveAnywhereCloseable: AutoCloseable
     this.mouse {
         onDownCloseable = onDownCloseable { handle(it, MouseDragState.START) }
         onUpAnywhereCloseable = onUpAnywhereCloseable { handle(it, MouseDragState.END) }
@@ -219,8 +224,8 @@ open class DraggableInfo(view: View) : MouseDragInfo(view) {
 }
 
 data class DraggableCloseable(
-    val onMouseDragCloseable: Closeable
-): Closeable {
+    val onMouseDragCloseable: AutoCloseable
+): AutoCloseable {
     override fun close() {
         onMouseDragCloseable.close()
     }

@@ -226,6 +226,12 @@ class MyGLKViewController(
         lastHeight = 0
     }
 
+    private fun nativeCwdOrNull(): String? {
+        return kotlinx.cinterop.autoreleasepool {
+            platform.Foundation.NSBundle.mainBundle.resourcePath
+        }
+    }
+
     override fun glkView(view: GLKView, drawInRect: CValue<CGRect>) {
         if (!initialized) {
             initialized = true

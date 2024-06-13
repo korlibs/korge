@@ -15,6 +15,7 @@ import korlibs.image.format.readBitmap
 import korlibs.io.async.launch
 import korlibs.io.async.launchImmediately
 import korlibs.io.file.std.resourcesVfs
+import kotlinx.coroutines.*
 import util.*
 import kotlin.random.Random
 

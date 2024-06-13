@@ -5,10 +5,11 @@ import korlibs.image.atlas.*
 import korlibs.image.bitmap.*
 import korlibs.math.*
 import korlibs.time.*
+import kotlin.time.*
 
 class SpriteAnimation constructor(
     val sprites: List<BmpSlice>,
-    val defaultTimePerFrame: TimeSpan = TimeSpan.NIL
+    val defaultTimePerFrame: Duration = TimeSpan.NIL
 ) : Collection<BmpSlice> by sprites {
     companion object {
         operator fun invoke(
@@ -64,8 +65,8 @@ class SpriteAnimation constructor(
     operator fun get(index: Int) = getSprite(index)
 }
 
-fun Atlas.getSpriteAnimation(prefix: String = "", defaultTimePerFrame: TimeSpan = TimeSpan.NIL): SpriteAnimation =
+fun Atlas.getSpriteAnimation(prefix: String = "", defaultTimePerFrame: Duration = TimeSpan.NIL): SpriteAnimation =
     SpriteAnimation(this.entries.filter { it.filename.startsWith(prefix) }.map { it.slice }.toFastList(), defaultTimePerFrame)
 
-fun Atlas.getSpriteAnimation(regex: Regex, defaultTimePerFrame: TimeSpan = TimeSpan.NIL): SpriteAnimation =
+fun Atlas.getSpriteAnimation(regex: Regex, defaultTimePerFrame: Duration = TimeSpan.NIL): SpriteAnimation =
     SpriteAnimation(this.entries.filter { regex.matches(it.filename) }.map { it.slice }.toFastList(), defaultTimePerFrame)

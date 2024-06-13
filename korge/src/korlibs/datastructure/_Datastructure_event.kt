@@ -2,25 +2,32 @@
 
 package korlibs.datastructure.event
 
+import korlibs.concurrent.lock.*
+import korlibs.concurrent.thread.*
 import korlibs.datastructure.*
-import korlibs.datastructure.closeable.*
 import korlibs.datastructure.lock.*
+import korlibs.datastructure.lock.Lock
 import korlibs.datastructure.pauseable.*
 import korlibs.datastructure.thread.*
+import korlibs.datastructure.thread.NativeThread
+import korlibs.datastructure.thread.nativeThread
 import korlibs.logger.*
 import korlibs.time.*
+import kotlinx.atomicfu.locks.*
 import kotlin.time.*
 
 expect fun createPlatformEventLoop(precise: Boolean = true): SyncEventLoop
 
-interface EventLoop : Pauseable, Closeable {
+interface EventLoop : Pauseable, AutoCloseable {
     companion object
+
     fun setImmediate(task: () -> Unit)
-    fun setTimeout(time: TimeSpan, task: () -> Unit): Closeable
-    fun setInterval(time: TimeSpan, task: () -> Unit): Closeable
-    fun setIntervalFrame(task: () -> Unit): Closeable = setInterval(60.hz.timeSpan, task)
+    fun setTimeout(time: Duration, task: () -> Unit): AutoCloseable
+    fun setInterval(time: Duration, task: () -> Unit): AutoCloseable
+    fun setIntervalFrame(task: () -> Unit): AutoCloseable = setInterval(60.hz.timeSpan, task)
 }
-fun EventLoop.setInterval(time: Frequency, task: () -> Unit): Closeable = setInterval(time.timeSpan, task)
+
+fun EventLoop.setInterval(time: Frequency, task: () -> Unit): AutoCloseable = setInterval(time.timeSpan, task)
 
 abstract class BaseEventLoop : EventLoop, Pauseable {
     val runLock = Lock()
@@ -35,14 +42,17 @@ open class SyncEventLoop(
 ) : BaseEventLoop(), Pauseable {
     private val pauseable = SyncPauseable()
     override var paused: Boolean by pauseable::paused
-    private val lock = NonRecursiveLock()
+    private val lock = korlibs.concurrent.lock.Lock()
     private var running = true
-    protected class TimedTask(val eventLoop: SyncEventLoop, var now: Duration, val time: Duration, var interval: Boolean, val callback: () -> Unit) : Comparable<TimedTask>, Closeable {
+
+    protected class TimedTask(val eventLoop: SyncEventLoop, var now: Duration, val time: Duration, var interval: Boolean, val callback: () -> Unit) :
+        Comparable<TimedTask>, AutoCloseable {
         var timeMark: Duration
             get() = now + time
             set(value) {
                 now = value - time
             }
+
         override fun compareTo(other: TimedTask): Int = this.timeMark.compareTo(other.timeMark)
         override fun close() {
             //println("CLOSE")
@@ -50,6 +60,7 @@ open class SyncEventLoop(
             eventLoop.timedTasks.remove(this)
         }
     }
+
     private val startTime = TimeSource.Monotonic.markNow()
 
     var nowProvider: () -> Duration = { startTime.elapsedNow() }
@@ -73,15 +84,15 @@ open class SyncEventLoop(
         }
     }
 
-    override fun setTimeout(time: TimeSpan, task: () -> Unit): Closeable {
+    override fun setTimeout(time: Duration, task: () -> Unit): AutoCloseable {
         return _queueAfter(time, interval = false, task = task)
     }
 
-    override fun setInterval(time: TimeSpan, task: () -> Unit): Closeable {
+    override fun setInterval(time: Duration, task: () -> Unit): AutoCloseable {
         return _queueAfter(time, interval = true, task = task)
     }
 
-    private fun _queueAfter(time: TimeSpan, interval: Boolean, task: () -> Unit): Closeable {
+    private fun _queueAfter(time: Duration, interval: Boolean, task: () -> Unit): AutoCloseable {
         //println("_queueAfter: time=$time, interval=$interval, task=$task")
         return lock {
             val task = TimedTask(this, now, time, interval, task)
@@ -113,7 +124,7 @@ open class SyncEventLoop(
         return now >= timedTasks.head.timeMark
     }
 
-    protected fun wait(waitTime: TimeSpan) {
+    protected fun wait(waitTime: Duration) {
         if (immediateRun) return
         lock.wait(waitTime, precise)
     }
@@ -224,6 +235,7 @@ open class SyncEventLoop(
             runTasksForever { thread?.threadSuggestRunning == true }
         }
     }
+
     open fun stop(): Unit {
         thread?.threadSuggestRunning = false
         thread = null

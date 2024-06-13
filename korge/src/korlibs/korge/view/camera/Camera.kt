@@ -7,6 +7,7 @@ import korlibs.math.geom.*
 import korlibs.math.interpolation.*
 import korlibs.time.*
 import kotlin.math.*
+import kotlin.time.*
 
 @Deprecated("")
 inline fun Container.cameraContainer(
@@ -149,7 +150,7 @@ class CameraContainer(
         sync()
     }
 
-    fun setTargetCamera(camera: Camera, time: TimeSpan = 1.seconds, easing: Easing = Easing.LINEAR) {
+    fun setTargetCamera(camera: Camera, time: Duration = 1.seconds, easing: Easing = Easing.LINEAR) {
         elapsedTime = 0.seconds
         this.transitionTime = time
         this.easing = easing
@@ -158,7 +159,7 @@ class CameraContainer(
         targetCamera.copyFrom(camera)
     }
 
-    suspend fun tweenCamera(camera: Camera, time: TimeSpan = 1.seconds, easing: Easing = Easing.LINEAR) {
+    suspend fun tweenCamera(camera: Camera, time: Duration = 1.seconds, easing: Easing = Easing.LINEAR) {
         setTargetCamera(camera, time, easing)
         onCompletedTransition.waitOne()
     }

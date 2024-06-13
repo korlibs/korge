@@ -4,8 +4,8 @@ import korlibs.datastructure.*
 import korlibs.image.color.*
 import korlibs.image.font.*
 import korlibs.image.text.*
-import korlibs.io.concurrent.atomic.*
 import korlibs.korge.view.*
+import kotlinx.atomicfu.*
 import kotlin.reflect.*
 
 val View.styles: ViewStyles by Extra.PropertyThis { ViewStyles(this) }
@@ -24,7 +24,7 @@ interface StyleableView {
 
 class ViewStyles(val view: View) {
     @PublishedApi internal var data: LinkedHashMap<String, Any?>? = null
-    var updating = KorAtomicInt(0)
+    var updating = atomic(0)
 
     fun <T> getProp(prop: KProperty<T>, default: T): T =
         (data?.get(prop.name) as? T?) ?: view.parent?.styles?.getProp(prop, default) ?: default

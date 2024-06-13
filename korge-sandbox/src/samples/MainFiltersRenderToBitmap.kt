@@ -16,7 +16,7 @@ class MainFiltersRenderToBitmap : Scene() {
         val container = FixedSizeContainer(Size(width, height)).apply {
             //scale(2.0, 2.0)
             println("PREPARING VIEWS...")
-            image(bitmap).scale(.5).position(0, 0).addFilter(WaveFilter(time = 0.5.seconds))
+            image(bitmap).scale(.5).position(0, 0).addFilter(WaveFilter(time = 0.5.seconds, crestDistance = Vector2D(200, 200), amplitude = Vector2D(24, 24)))
             //image(bitmap).scale(.5).position(256, 0).addFilter(DirectionalBlurFilter(radius = 32.0))
             image(bitmap).scale(.5).position(256, 0).addFilter(BlurFilter(radius = 32.0))
             image(bitmap).scale(.5).position(512, 0).addFilter(TransitionFilter(TransitionFilter.Transition.SWEEP, reversed = false, spread = 1.0, ratio = Ratio.HALF))

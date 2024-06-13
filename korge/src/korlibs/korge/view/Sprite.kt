@@ -6,6 +6,7 @@ import korlibs.image.bitmap.*
 import korlibs.io.async.Signal
 import korlibs.math.geom.*
 import korlibs.math.geom.vector.VectorPath
+import kotlin.time.*
 
 inline fun Container.sprite(
     initialAnimation: SpriteAnimation, anchor: Anchor = Anchor.TOP_LEFT, callback: @ViewDslMarker Sprite.() -> Unit = {}
@@ -44,7 +45,7 @@ open class Sprite(
     smoothing: Boolean = true
 ) : BaseImage(bitmap, anchor, hitShape, smoothing) {
     constructor(
-        bitmap : Bitmap,
+        bitmap: Bitmap,
         anchor: Anchor = Anchor.TOP_LEFT,
         hitShape: VectorPath? = null,
         smoothing: Boolean = true
@@ -80,34 +81,34 @@ open class Sprite(
     private var _onAnimationStarted: Signal<SpriteAnimation>? = null
     private var _onFrameChanged: Signal<SpriteAnimation>? = null
 
-    val onAnimationCompleted : Signal<SpriteAnimation>
-        get(){
+    val onAnimationCompleted: Signal<SpriteAnimation>
+        get() {
             if (_onAnimationCompleted == null) _onAnimationCompleted = Signal()
             return _onAnimationCompleted!!
         }
 
-    val onAnimationStopped : Signal<SpriteAnimation>
+    val onAnimationStopped: Signal<SpriteAnimation>
         get() {
             if (_onAnimationStopped == null) _onAnimationStopped = Signal()
             return _onAnimationStopped!!
         }
 
-    val onAnimationStarted : Signal<SpriteAnimation>
+    val onAnimationStarted: Signal<SpriteAnimation>
         get() {
             if (_onAnimationStarted == null) _onAnimationStarted = Signal()
             return _onAnimationStarted!!
         }
 
-    val onFrameChanged : Signal<SpriteAnimation>
+    val onFrameChanged: Signal<SpriteAnimation>
         get() {
             if (_onFrameChanged == null) _onFrameChanged = Signal()
             return _onFrameChanged!!
         }
 
-    var spriteDisplayTime: TimeSpan = 50.milliseconds
+    var spriteDisplayTime: Duration = 50.milliseconds
     private var animationLooped = false
-    private var lastAnimationFrameTime: TimeSpan = 0.milliseconds
-    private var animationRemainingDuration: TimeSpan = 0.milliseconds
+    private var lastAnimationFrameTime: Duration = 0.milliseconds
+    private var animationRemainingDuration: Duration = 0.milliseconds
         set(value) {
             if (value <= 0.milliseconds && animationType == AnimationType.DURATION) {
                 stopAnimation()
@@ -135,7 +136,7 @@ open class Sprite(
         }
     }
 
-    private fun getDefaultTime(spriteAnimation: SpriteAnimation?): TimeSpan = when {
+    private fun getDefaultTime(spriteAnimation: SpriteAnimation?): Duration = when {
         spriteAnimation != null && spriteAnimation.defaultTimePerFrame != TimeSpan.NIL -> spriteAnimation.defaultTimePerFrame
         else -> spriteDisplayTime
     }
@@ -143,7 +144,7 @@ open class Sprite(
     fun playAnimation(
         times: Int = 1,
         spriteAnimation: SpriteAnimation? = currentAnimation,
-        spriteDisplayTime: TimeSpan = getDefaultTime(spriteAnimation),
+        spriteDisplayTime: Duration = getDefaultTime(spriteAnimation),
         startFrame: Int = -1,
         endFrame: Int = 0,
         reversed: Boolean = false
@@ -159,7 +160,7 @@ open class Sprite(
 
     fun playAnimation(
         spriteAnimation: SpriteAnimation? = currentAnimation,
-        spriteDisplayTime: TimeSpan = getDefaultTime(spriteAnimation),
+        spriteDisplayTime: Duration = getDefaultTime(spriteAnimation),
         startFrame: Int = -1,
         endFrame: Int = 0,
         reversed: Boolean = false
@@ -174,9 +175,9 @@ open class Sprite(
     )
 
     fun playAnimationForDuration(
-        duration: TimeSpan,
+        duration: Duration,
         spriteAnimation: SpriteAnimation? = currentAnimation,
-        spriteDisplayTime: TimeSpan = getDefaultTime(spriteAnimation),
+        spriteDisplayTime: Duration = getDefaultTime(spriteAnimation),
         startFrame: Int = -1,
         reversed: Boolean = false
     ) = updateCurrentAnimation(
@@ -190,7 +191,7 @@ open class Sprite(
 
     fun playAnimationLooped(
         spriteAnimation: SpriteAnimation? = currentAnimation,
-        spriteDisplayTime: TimeSpan = getDefaultTime(spriteAnimation),
+        spriteDisplayTime: Duration = getDefaultTime(spriteAnimation),
         startFrame: Int = -1,
         reversed: Boolean = false
     ) = updateCurrentAnimation(
@@ -207,7 +208,7 @@ open class Sprite(
         triggerEvent(_onAnimationStopped)
     }
 
-    private fun nextSprite(frameTime: TimeSpan) {
+    private fun nextSprite(frameTime: Duration) {
         lastAnimationFrameTime += frameTime
         if (lastAnimationFrameTime + frameTime >= this.spriteDisplayTime) {
             when (animationType) {
@@ -216,11 +217,12 @@ open class Sprite(
                         animationNumberOfFramesRequested--
                     }
                 }
+
                 AnimationType.DURATION -> {
                     animationRemainingDuration -= lastAnimationFrameTime
                 }
-                AnimationType.LOOPED -> {
 
+                AnimationType.LOOPED -> {
                 }
             }
             if (reversed) --currentSpriteIndex else ++currentSpriteIndex
@@ -230,16 +232,17 @@ open class Sprite(
         }
     }
 
-    val totalFrames: Int get() {
-        val ca = currentAnimation ?: return 1
-        return ca.size
-    }
+    val totalFrames: Int
+        get() {
+            val ca = currentAnimation ?: return 1
+            return ca.size
+        }
 
     private fun updateCurrentAnimation(
         spriteAnimation: SpriteAnimation?,
-        spriteDisplayTime: TimeSpan = getDefaultTime(spriteAnimation),
+        spriteDisplayTime: Duration = getDefaultTime(spriteAnimation),
         animationCyclesRequested: Int = 1,
-        duration: TimeSpan = 0.milliseconds,
+        duration: Duration = 0.milliseconds,
         startFrame: Int = 0,
         endFrame: Int = 0,
         looped: Boolean = false,
@@ -258,8 +261,8 @@ open class Sprite(
         val endFrame = endFrame umod totalFrames
         currentAnimation?.let {
             val count = when {
-                startFrame > endFrame -> (if (reversed) startFrame - endFrame else it.spriteStackSize-(startFrame - endFrame))
-                endFrame > startFrame -> (if (reversed) (startFrame - endFrame) umod it.spriteStackSize else endFrame-startFrame)
+                startFrame > endFrame -> (if (reversed) startFrame - endFrame else it.spriteStackSize - (startFrame - endFrame))
+                endFrame > startFrame -> (if (reversed) (startFrame - endFrame) umod it.spriteStackSize else endFrame - startFrame)
                 else -> 0
             }
             val requestedFrames = count + (animationCyclesRequested * it.spriteStackSize)

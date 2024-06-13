@@ -2,6 +2,7 @@ package korlibs.event.gamepad
 
 import korlibs.datastructure.*
 import korlibs.datastructure.iterators.*
+import korlibs.datastructure.thread.*
 import korlibs.event.*
 import korlibs.io.concurrent.*
 import korlibs.io.concurrent.atomic.*
@@ -12,13 +13,15 @@ import korlibs.math.*
 import korlibs.memory.*
 import korlibs.platform.*
 import korlibs.time.*
+import kotlinx.atomicfu.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
+import kotlin.time.*
 
 /**
  * <https://www.kernel.org/doc/Documentation/input/gamepad.txt>
  */
-internal class LinuxJoyEventAdapter @OptIn(SyncIOAPI::class) constructor(val syncIO: SyncIO = SyncIO) : Closeable {
+internal class LinuxJoyEventAdapter @OptIn(SyncIOAPI::class) constructor(val syncIO: SyncIO = SyncIO) : AutoCloseable {
     companion object {
         const val JS_EVENT_BUTTON = 0x01    /* button pressed/released */
         const val JS_EVENT_AXIS = 0x02    /* joystick moved */
@@ -41,7 +44,7 @@ internal class LinuxJoyEventAdapter @OptIn(SyncIOAPI::class) constructor(val syn
             .sortedBy { it.id }
     }
 
-    class RunEvery(val time: TimeSpan) {
+    class RunEvery(val time: Duration) {
         var lastRun = DateTime.EPOCH
         operator fun invoke(block: () -> Unit) {
             val now = DateTime.now()
@@ -90,7 +93,7 @@ internal class LinuxJoyEventAdapter @OptIn(SyncIOAPI::class) constructor(val syn
         readers.clear()
     }
 
-    internal class X11JoystickReader(val info: DeviceInfo, val platformSyncIO: SyncIO) : Closeable {
+    internal class X11JoystickReader(val info: DeviceInfo, val platformSyncIO: SyncIO) : AutoCloseable {
         val index: Int = info.id
 
         private val buttonsPressure = FloatArray(GameButton.MAX)
@@ -105,7 +108,7 @@ internal class LinuxJoyEventAdapter @OptIn(SyncIOAPI::class) constructor(val syn
         }
 
         private var running = true
-        val readCount = KorAtomicInt(0)
+        val readCount = atomic(0)
         val once = CompletableDeferred<Unit>()
 
         // @TODO: This Hangs WASM
@@ -191,14 +194,14 @@ internal class LinuxJoyEventAdapter @OptIn(SyncIOAPI::class) constructor(val syn
                             }
                             //println("$time, $type, $number, $value: ${buttons.toStringUnsigned(2)}, ${axes.slice(0 until maxAxes).toList()}")
                         } else {
-                            Thread_sleep(10L)
+                            NativeThread.sleep(10.fastMilliseconds)
                         }
                         readCount.incrementAndGet()
                         once.complete(Unit)
                     }
                 } catch (e: Throwable) {
                     e.printStackTrace()
-                    Thread_sleep(100L)
+                    NativeThread.sleep(100.fastMilliseconds)
                 }
             }
         }

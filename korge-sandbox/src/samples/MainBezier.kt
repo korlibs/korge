@@ -3,6 +3,7 @@ package samples
 import korlibs.image.color.*
 import korlibs.image.vector.*
 import korlibs.io.async.*
+import korlibs.io.async.launch
 import korlibs.korge.scene.*
 import korlibs.korge.tween.*
 import korlibs.korge.view.*
@@ -11,6 +12,7 @@ import korlibs.math.geom.bezier.*
 import korlibs.math.interpolation.*
 import korlibs.math.random.*
 import korlibs.time.*
+import kotlinx.coroutines.*
 import kotlin.random.*
 
 class MainBezier : Scene() {

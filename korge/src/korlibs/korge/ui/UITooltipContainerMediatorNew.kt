@@ -30,7 +30,7 @@ val Container.closestUITooltipContainerMediatorNew: UITooltipContainerMediatorNe
 }
 
 @KorgeExperimental
-class UITooltipContainerMediatorNew(val container: Container) : Closeable {
+class UITooltipContainerMediatorNew(val container: Container) : AutoCloseable {
     class Tooltip(val mediator: UITooltipContainerMediatorNew, track: View, textData: RichTextData) : UIView(size = computeSize(textData)) {
         companion object {
             fun computeSize(textData: RichTextData): Size {
