@@ -75,7 +75,7 @@ private val GITHUB_TREE_REGEX = Regex("(https://github\\.com\\/.*?\\/.*?)\\/tree
 
 fun Dependency.Companion.parseString(str: String, projectFile: FileRef = MemoryFileRef()): Dependency {
     try {
-        val parts = str.split("::")
+        val parts = str.split(Regex("(::|##)"))
         val firstPart = parts.first()
         when (firstPart) {
             // - git::adder::korlibs/kproject::/modules/adder::54f73b01cea9cb2e8368176ac45f2fca948e57db
@@ -133,7 +133,8 @@ fun Dependency.Companion.parseString(str: String, projectFile: FileRef = MemoryF
             - git@github.com:korlibs/korge-ext.git/korge-tiled#0.0.1::734d96ccc18733064ef9fbda8ac359585011112d
             - "https://github.com/korlibs/korge-ext.git/korge-tiled#0.0.1::734d96ccc18733064ef9fbda8ac359585011112d"
             - "https://github.com/korlibs/korge-parallax/tree/0.0.1/korge-parallax::dacd7f4c430c48349565295394f723b05841c54a"
-            
+            - https://github.com/korlibs/korge-virtualcontroller/tree/v1.0.2/korge-virtualcontroller##df0e840b8171bb3f5b8f7a86b77fbe39e725be16
+
             ## MAVEN:
             - maven::common::org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4
             - com.soywiz.korlibs.korge2:korge
