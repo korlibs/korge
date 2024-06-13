@@ -13,6 +13,7 @@ import korlibs.datastructure.thread.NativeThread
 import korlibs.datastructure.thread.nativeThread
 import korlibs.logger.*
 import korlibs.time.*
+import kotlinx.atomicfu.locks.*
 import kotlin.time.*
 
 expect fun createPlatformEventLoop(precise: Boolean = true): SyncEventLoop
@@ -41,7 +42,7 @@ open class SyncEventLoop(
 ) : BaseEventLoop(), Pauseable {
     private val pauseable = SyncPauseable()
     override var paused: Boolean by pauseable::paused
-    private val lock = Lock()
+    private val lock = korlibs.concurrent.lock.Lock()
     private var running = true
 
     protected class TimedTask(val eventLoop: SyncEventLoop, var now: Duration, val time: Duration, var interval: Boolean, val callback: () -> Unit) :

@@ -5,14 +5,17 @@ import korlibs.datastructure.closeable.*
 import korlibs.datastructure.thread.*
 import korlibs.datastructure.thread.NativeThread
 import korlibs.datastructure.thread.nativeThread
+import korlibs.io.async.*
 import korlibs.time.*
 import kotlin.test.*
 import kotlin.time.*
 import kotlin.time.Duration.Companion.seconds
 
 class SyncEventLoopTest {
+    // @TODO: Lock.notify is not implemented on JS
     @Test
-    fun test() {
+    fun test() = suspendTest({ NativeThread.isSupported }) {
+    //fun test() = suspendTest {
         repeat(2) {
             val ep = SyncEventLoop(precise = true)
             val start = TimeSource.Monotonic.markNow()

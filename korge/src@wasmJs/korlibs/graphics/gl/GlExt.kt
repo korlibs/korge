@@ -3,6 +3,7 @@ package korlibs.graphics.gl
 import korlibs.kgl.*
 import korlibs.graphics.*
 import korlibs.io.wasm.*
+import korlibs.wasm.*
 import org.w3c.dom.*
 import kotlinx.browser.*
 
@@ -14,7 +15,7 @@ object AGFactoryWebgl : AGFactory {
 	}
 }
 
-fun jsEmptyObject() = jsEmptyObj()
+fun jsEmptyObject(): JsAny = jsEmptyObj()
 
 fun jsObject(vararg pairs: Pair<String, Any?>): JsAny {
 	val out = jsEmptyObject()

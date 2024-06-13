@@ -1,10 +1,8 @@
 package korlibs.korge.service.storage
 
-import korlibs.io.*
+import korlibs.graphics.gl.*
 import korlibs.io.lang.*
-import korlibs.io.runtime.node.*
 import korlibs.korge.view.*
-import korlibs.memory.*
 import korlibs.platform.*
 import kotlinx.browser.*
 

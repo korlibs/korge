@@ -12,6 +12,7 @@ import korlibs.io.lang.*
 import korlibs.io.serialization.json.Json
 import korlibs.math.geom.*
 import korlibs.math.interpolation.*
+import korlibs.io.file.jail
 
 suspend fun main() = Korge(windowSize = Size(768, 512), backgroundColor = Colors["#2b2b2b"]) {
     //println("StandardPaths.cwd=${korlibs.io.file.std.StandardPaths.cwd}")

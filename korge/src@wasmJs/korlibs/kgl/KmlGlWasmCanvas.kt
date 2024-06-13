@@ -11,6 +11,7 @@ import korlibs.image.format.*
 import korlibs.io.wasm.*
 import korlibs.memory.*
 import korlibs.memory.Buffer
+import korlibs.wasm.*
 import kotlinx.browser.*
 import org.khronos.webgl.*
 import org.w3c.dom.*
