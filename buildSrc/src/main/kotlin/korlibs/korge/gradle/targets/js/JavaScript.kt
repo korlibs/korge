@@ -110,12 +110,6 @@ fun KotlinJsTargetDsl.configureJSTestsOnce() {
             }
         }
     }
-    nodejs {
-        //testTask { useMocha() }
-        testRuns.getByName(KotlinTargetWithTests.DEFAULT_TEST_RUN_NAME).executionTask.configure {
-            it.useMocha()
-        }
-    }
 
     // Kotlin 1.8.10:
     //   compileSync: task ':korio:jsTestTestDevelopmentExecutableCompileSync' : [/Users/soywiz/projects/korge/build/js/packages/korge-root-korio-test/kotlin]
