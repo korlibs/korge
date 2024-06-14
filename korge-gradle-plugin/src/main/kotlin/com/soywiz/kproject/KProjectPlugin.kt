@@ -75,11 +75,19 @@ class KProjectPlugin : Plugin<Project> {
                     compileDebugJavaWithJavac?.compilerOptions?.jvmTarget?.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.fromTarget(androidJvmVersion))
                 }
                 project.extensions.getByType(LibraryExtension::class.java).apply {
-                    compileSdk = ANDROID_DEFAULT_COMPILE_SDK
+                    val compileSdk = ANDROID_DEFAULT_COMPILE_SDK
+                    val targetSdk = ANDROID_DEFAULT_TARGET_SDK
+                    val minSdk = ANDROID_DEFAULT_MIN_SDK
+                    this.compileSdk = ANDROID_DEFAULT_COMPILE_SDK
                     namespace = ("${project.group}.${project.name}").replace("-", ".")
                     sourceSets.apply {
                         maybeCreate("main").apply {
-                            manifest.srcFile(AndroidConfig.getAndroidManifestFile(project))
+                            manifest.srcFile(AndroidConfig.getAndroidManifestFile(
+                                project,
+                                minSdk = minSdk,
+                                targetSdk = targetSdk,
+                                compileSdk = compileSdk,
+                            ))
                         }
                     }
                 }
