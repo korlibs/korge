@@ -89,7 +89,7 @@ fun Project.configureJavaScript(projectType: ProjectType) {
     if (projectType.isExecutable) {
         configureJavascriptRun()
     }
-    configureClosureCompiler()
+    configureWebpack()
 }
 
 fun KotlinJsTargetDsl.configureJsTargetOnce() {

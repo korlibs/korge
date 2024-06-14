@@ -103,7 +103,6 @@ dependencies {
     implementation(libs.kotlin.serialization)
 
     implementation(libs.proguard.gradle)
-    implementation(libs.closure.compiler)
     implementation(libs.gson)
     implementation(libs.gradle.publish.plugin)
 
