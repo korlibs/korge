@@ -115,8 +115,8 @@ fun Project.configureErrorableEsbuild() {
             val jsBasePath = compileExecutableKotlinJs.destinationDirectory.asFile.get().absolutePath + "/" + compileExecutableKotlinJs.compilerOptions.moduleName.get()
             val jsPath = "$jsBasePath.js" // Normal JS
             val mjsPath = "$jsBasePath.mjs" // ES2015
-            //val finalJsPath = mjsPath
-            val finalJsPath = jsPath
+            val finalJsPath = mjsPath
+            //val finalJsPath = jsPath
 
             val output = File(wwwFolder, "${project.name}.js")
             //println("jsPath=$jsPath")
