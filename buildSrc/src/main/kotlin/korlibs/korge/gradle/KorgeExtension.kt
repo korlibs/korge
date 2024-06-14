@@ -95,7 +95,7 @@ open class KorgeExtension(
 	}
 
     companion object {
-        const val ESBUILD_DEFAULT_VERSION = "0.17.10"
+        const val ESBUILD_DEFAULT_VERSION = "0.21.5"
 
         val DEFAULT_ANDROID_EXCLUDE_PATTERNS = setOf(
             "META-INF/DEPENDENCIES",

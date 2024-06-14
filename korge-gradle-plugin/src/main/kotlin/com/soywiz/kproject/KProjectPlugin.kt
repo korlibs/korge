@@ -92,7 +92,7 @@ class KProjectPlugin : Plugin<Project> {
                         //commonWebpackConfig { cssSupport { it.enabled.set(true) } }
                     }
                     this.compilerOptions {
-                        //target.set("es2015")
+                        target.set("es2015")
                     }
                     //configureJsTargetOnce()
                 }
