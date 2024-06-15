@@ -32,7 +32,7 @@ class MainBVH : Scene() {
             rects += view
             bvh.insertOrUpdate(view.getBounds(this), view)
         }
-        addUpdater {
+        addFastUpdater {
             for (n in rects.size - 100 until rects.size) {
                 val view = rects[n]
                 if (view.x < 0) {
@@ -75,7 +75,7 @@ class MainBVH : Scene() {
         }
         updateRay()
 
-        addUpdater {
+        addFastUpdater {
             //println("moved")
             val mousePos = localMousePos(views)
             val angle = Point.angleFull(center, mousePos)

@@ -309,8 +309,15 @@ class Views(
 		renderNew()
     }
 
+    fun frameUpdateAndRender(
+        fixedSizeStep: Duration,
+        forceRender: Boolean = false,
+        doUpdate: Boolean = true,
+        doRender: Boolean = true,
+    ) = frameUpdateAndRender(fixedSizeStep.fast, forceRender, doUpdate, doRender)
+
 	fun frameUpdateAndRender(
-        fixedSizeStep: Duration = TimeSpan.NIL,
+        fixedSizeStep: FastDuration = FastDuration.NaN,
         forceRender: Boolean = false,
         doUpdate: Boolean = true,
         doRender: Boolean = true,
@@ -326,7 +333,7 @@ class Views(
 		//println("Render($lastTime -> $currentTime): $delta")
 		lastTime = currentTime
         if (doUpdate) {
-            if (fixedSizeStep != TimeSpan.NIL) {
+            if (fixedSizeStep != FastDuration.NaN) {
                 update(fixedSizeStep)
             } else {
                 update(adelta)
@@ -347,7 +354,9 @@ class Views(
 
     private val eventResults = EventResult()
 
-	fun update(elapsed: Duration) {
+    fun update(elapsed: Duration) = update(elapsed.fast)
+
+	fun update(elapsed: FastDuration) {
 		//println(this)
 		//println("Update: $elapsed")
 		input.startFrame(elapsed)
@@ -573,12 +582,14 @@ fun View.updateSingleView(delta: Duration, tempUpdate: UpdateEvent = UpdateEvent
 //}
 
 @OptIn(KorgeInternal::class)
+fun View.updateSingleViewWithViewsAll(views: Views, delta: Duration) = updateSingleViewWithViewsAll(views, delta.fast)
+
 fun View.updateSingleViewWithViewsAll(
     views: Views,
-    delta: Duration,
+    delta: FastDuration,
 ) {
-    dispatch(views.updateEvent.also { it.deltaTime = delta })
-    dispatch(views.viewsUpdateEvent.also { it.delta = delta })
+    dispatch(views.updateEvent.also { it.fastDeltaTime = delta })
+    dispatch(views.viewsUpdateEvent.also { it.fastDelta = delta })
 }
 
 interface BoundsProvider {
@@ -665,26 +676,37 @@ fun BoundsProvider.setBoundsInfo(
 
 suspend fun views(): Views = injector().get()
 
-class UpdateEvent(var deltaTime: Duration = TimeSpan.ZERO) : Event(), TEvent<UpdateEvent> {
+class UpdateEvent(var fastDeltaTime: FastDuration = FastDuration.ZERO) : Event(), TEvent<UpdateEvent> {
+    constructor(deltaTime: Duration) : this(deltaTime.fast)
+    var deltaTime: Duration
+        set(value) { fastDeltaTime = value.fast }
+        get() = fastDeltaTime.toDuration()
+
     companion object : EventType<UpdateEvent>
     override val type: EventType<UpdateEvent> get() = UpdateEvent
 
     fun copyFrom(other: UpdateEvent) {
-        this.deltaTime = other.deltaTime
+        this.fastDeltaTime = other.fastDeltaTime
     }
 
-    override fun toString(): String = "UpdateEvent(time=$deltaTime)"
+    override fun toString(): String = "UpdateEvent(time=$fastDeltaTime)"
 }
 
-class ViewsUpdateEvent(val views: Views, var delta: Duration = TimeSpan.ZERO) : Event(), TEvent<ViewsUpdateEvent> {
+class ViewsUpdateEvent(val views: Views, var fastDelta: FastDuration = FastDuration.ZERO) : Event(), TEvent<ViewsUpdateEvent> {
+    constructor(views: Views, delta: Duration) : this(views, delta.fast)
+
+    var delta: Duration
+        set(value) { fastDelta = value.fast }
+        get() = fastDelta.toDuration()
+
     companion object : EventType<ViewsUpdateEvent>
     override val type: EventType<ViewsUpdateEvent> get() = ViewsUpdateEvent
 
     fun copyFrom(other: ViewsUpdateEvent) {
-        this.delta = other.delta
+        this.fastDelta = other.fastDelta
     }
 
-    override fun toString(): String = "ViewsUpdateEvent(time=$delta)"
+    override fun toString(): String = "ViewsUpdateEvent(time=$fastDelta)"
 }
 
 class ViewsResizedEvent(val views: Views, var size: SizeInt = SizeInt(0, 0)) : Event(), TEvent<ViewsResizedEvent> {

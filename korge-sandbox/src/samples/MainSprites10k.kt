@@ -38,8 +38,8 @@ class MainSprites10k : Scene() {
         val random = Random(0)
         val randoms = FloatArray(greenSprites.size) { random.nextDouble(0.5, 1.1).toFloat() }
 
-        addUpdater {
-            val scale = (if (it == 0.0.milliseconds) 0f else (it / 16.666666.milliseconds).toFloat())
+        addFastUpdater {
+            val scale = (if (it == 0.0.fastMilliseconds) 0f else (it / 16.666666.fastMilliseconds).toFloat())
 
             greenSprites.forEachIndexed { index, sprite ->
                 sprite.walkDirection(index % greenAnimations.size, scale * randoms[index])

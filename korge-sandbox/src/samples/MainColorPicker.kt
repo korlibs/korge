@@ -2,16 +2,11 @@ package samples
 
 import korlibs.korge.input.mouse
 import korlibs.korge.scene.Scene
-import korlibs.korge.view.SContainer
-import korlibs.korge.view.addUpdater
-import korlibs.korge.view.image
-import korlibs.korge.view.scale
-import korlibs.korge.view.unsafeRenderToBitmapSync
-import korlibs.korge.view.xy
 import korlibs.image.bitmap.Bitmaps
 import korlibs.image.bitmap.slice
 import korlibs.image.format.readBitmap
 import korlibs.io.file.std.resourcesVfs
+import korlibs.korge.view.*
 import korlibs.math.geom.*
 
 class MainColorPicker : Scene() {
@@ -27,7 +22,7 @@ class MainColorPicker : Scene() {
                 invalidateRender()
             }
         }
-        addUpdater {
+        addFastUpdater {
         }
     }
 }

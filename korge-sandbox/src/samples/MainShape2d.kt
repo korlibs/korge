@@ -119,7 +119,7 @@ class MainShape2dScene : Scene() {
         //}
 
 
-        addUpdater {
+        addFastUpdater {
             update()
         }
         updateShape()

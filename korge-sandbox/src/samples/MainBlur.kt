@@ -23,7 +23,7 @@ class MainBlur : Scene() {
         val initialBlur = 6.0
         var filterScale = 1.0
         fun <T : View> T.bindScale(): T {
-            addUpdater { this.filterScale = filterScale }
+            addFastUpdater { this.filterScale = filterScale }
             return this
         }
 
@@ -31,7 +31,7 @@ class MainBlur : Scene() {
         val blur2 = BlurFilter(initialBlur)
         val radiusProps = fastArrayListOf<KMutableProperty0<Double>>()
 
-        addUpdater {
+        addFastUpdater {
             //blur2.radius = blur1.radius
             blur2.radius = blur1.radius / 2f
             for (prop in radiusProps) prop.set(blur1.radius)

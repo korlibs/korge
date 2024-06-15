@@ -32,7 +32,7 @@ fun View.animator(
     looped: Boolean = false,
     startImmediately: Boolean = Animator.DEFAULT_START_IMMEDIATELY,
     block: @AnimatorDslMarker Animator.() -> Unit = {}
-): Animator = Animator(this, defaultTime, defaultSpeed, defaultEasing, parallel, looped, parent = null, startImmediately = startImmediately, level = 0).apply(block)
+): Animator = Animator(this, defaultTime.fast, defaultSpeed, defaultEasing, parallel, looped, parent = null, startImmediately = startImmediately, level = 0).apply(block)
 
 suspend fun View.animate(
     defaultTime: Duration = Animator.DEFAULT_TIME,
@@ -43,11 +43,11 @@ suspend fun View.animate(
     completeOnCancel: Boolean = false,
     startImmediately: Boolean = Animator.DEFAULT_START_IMMEDIATELY,
     block: @AnimatorDslMarker Animator.() -> Unit = {}
-): Animator = Animator(this, defaultTime, defaultSpeed, defaultEasing, parallel, looped, parent = null, startImmediately = startImmediately, level = 0).apply(block).also { it.await(completeOnCancel = completeOnCancel) }
+): Animator = Animator(this, defaultTime.fast, defaultSpeed, defaultEasing, parallel, looped, parent = null, startImmediately = startImmediately, level = 0).apply(block).also { it.await(completeOnCancel = completeOnCancel) }
 
 open class Animator @PublishedApi internal constructor(
     @PublishedApi internal val root: View,
-    @PublishedApi internal val defaultTime: Duration,
+    @PublishedApi internal val fastDefaultTime: FastDuration,
     @PublishedApi internal val defaultSpeed: Double,
     @PublishedApi internal val defaultEasing: Easing,
     private val parallel: Boolean = false,
@@ -57,6 +57,8 @@ open class Animator @PublishedApi internal constructor(
     @PublishedApi internal val level: Int,
     @PublishedApi internal val startImmediately: Boolean,
 ) : CloseableCancellable {
+    val defaultTime: Duration get() = fastDefaultTime.slow
+
     //private val indent: String get() = Indenter.INDENTS[level]
 
     companion object {
@@ -99,10 +101,10 @@ open class Animator @PublishedApi internal constructor(
 
         //println("!!!!!!!!!!!!! ADD NEW UPDATER : updater=$updater, this=$this, parent=$parent")
 
-        rootAnimator.updater = this@Animator.root.addUpdater(first = rootAnimator.startImmediately) { dt ->
+        rootAnimator.updater = this@Animator.root.addFastUpdater(first = rootAnimator.startImmediately) { dt ->
             if (this@Animator.autoInvalidateView) this@Animator.root.invalidateRender()
             //println("****")
-            if (this@Animator.rootAnimationNode.update(dt) >= TimeSpan.ZERO) {
+            if (this@Animator.rootAnimationNode.update(dt) >= FastDuration.ZERO) {
                 if (this@Animator.looped) {
                     this@Animator.onComplete()
                 } else {
@@ -181,7 +183,7 @@ open class Animator @PublishedApi internal constructor(
         looped: Boolean = false,
         startImmediately: Boolean = this.startImmediately,
         callback: @AnimatorDslMarker Animator.() -> Unit
-    ): Animator = Animator(root, time, speed, easing, true, looped, level = level + 1, parent = this, startImmediately = startImmediately).also { callback(it) }.also { addNode(it.rootAnimationNode) }
+    ): Animator = Animator(root, time.fast, speed, easing, true, looped, level = level + 1, parent = this, startImmediately = startImmediately).also { callback(it) }.also { addNode(it.rootAnimationNode) }
 
     inline fun sequence(
         defaultTime: Duration = this.defaultTime,
@@ -190,7 +192,7 @@ open class Animator @PublishedApi internal constructor(
         looped: Boolean = false,
         startImmediately: Boolean = this.startImmediately,
         callback: @AnimatorDslMarker Animator.() -> Unit
-    ): Animator = Animator(root, defaultTime, defaultSpeed, easing, false, looped, level = level + 1, parent = this, startImmediately = startImmediately).also { callback(it) }.also { addNode(it.rootAnimationNode) }
+    ): Animator = Animator(root, defaultTime.fast, defaultSpeed, easing, false, looped, level = level + 1, parent = this, startImmediately = startImmediately).also { callback(it) }.also { addNode(it.rootAnimationNode) }
 
     fun parallelLazy(
         time: Duration = this.defaultTime,
@@ -199,7 +201,7 @@ open class Animator @PublishedApi internal constructor(
         looped: Boolean = false,
         startImmediately: Boolean = this.startImmediately,
         init: @AnimatorDslMarker Animator.() -> Unit
-    ): Animator = Animator(root, time, speed, easing, true, looped, lazyInit = init, level = level + 1, parent = this, startImmediately = startImmediately).also { addNode(it.rootAnimationNode) }
+    ): Animator = Animator(root, time.fast, speed, easing, true, looped, lazyInit = init, level = level + 1, parent = this, startImmediately = startImmediately).also { addNode(it.rootAnimationNode) }
 
     fun sequenceLazy(
         time: Duration = this.defaultTime,
@@ -208,13 +210,13 @@ open class Animator @PublishedApi internal constructor(
         looped: Boolean = false,
         startImmediately: Boolean = this.startImmediately,
         init: @AnimatorDslMarker Animator.() -> Unit
-    ): Animator = Animator(root, time, speed, easing, false, looped, lazyInit = init, level = level + 1, parent = this, startImmediately = startImmediately).also { addNode(it.rootAnimationNode) }
+    ): Animator = Animator(root, time.fast, speed, easing, false, looped, lazyInit = init, level = level + 1, parent = this, startImmediately = startImmediately).also { addNode(it.rootAnimationNode) }
 
     @PublishedApi internal fun __tween(
         vararg vs: V2<*>,
         lazyVs: Array<out () -> V2<*>>? = null,
-        time: Duration = this.defaultTime,
-        lazyTime: (() -> Duration)? = null,
+        time: FastDuration = this.fastDefaultTime,
+        lazyTime: (() -> FastDuration)? = null,
         easing: Easing = this.defaultEasing,
         name: String?,
         replace: Boolean = true
@@ -228,8 +230,8 @@ open class Animator @PublishedApi internal constructor(
 
     @PublishedApi internal fun __tween(
         vararg vs: () -> V2<*>,
-        time: Duration = this.defaultTime,
-        lazyTime: (() -> Duration)? = null,
+        time: FastDuration = this.fastDefaultTime,
+        lazyTime: (() -> FastDuration)? = null,
         easing: Easing = this.defaultEasing,
         name: String?
     ) {
@@ -257,21 +259,21 @@ open class Animator @PublishedApi internal constructor(
 
         private val toRemove = fastArrayListOf<NewAnimatorNode>()
 
-        override fun update(dt: Duration): Duration {
+        override fun update(dt: FastDuration): FastDuration {
             var dt = if (speed != 1.0) dt * speed else dt
 
             //println("UPDATE!!: dt=$dt")
             ensureInit()
 
             if (parallel) {
-                var completedTime = 0.seconds
+                var completedTime = 0.fastSeconds
                 toRemove.clear()
                 nodes.forEachIndexed { index, it ->
                     val result = it.update(dt)
-                    if (result >= 0.seconds) {
+                    if (result >= 0.fastSeconds) {
                         toRemove.add(it)
                     }
-                    completedTime = if (index == 0) result else min(completedTime, result)
+                    completedTime = if (index == 0) result else min(completedTime.fastMilliseconds, result.fastMilliseconds).fastMilliseconds
                     //println(" - $result")
                 }
                 if (toRemove.isNotEmpty()) nodes.removeAll(toRemove)
@@ -304,7 +306,7 @@ open class Animator @PublishedApi internal constructor(
                     }
                 }
                 //println("${indent}->completed")
-                return if (nodes.isNotEmpty() || currentNode != null) (-1).seconds else TimeSpan.ZERO
+                return if (nodes.isNotEmpty() || currentNode != null) (-1).fastSeconds else FastDuration.ZERO
             }
         }
 
@@ -327,23 +329,23 @@ open class Animator @PublishedApi internal constructor(
     class TweenNode(
         vararg val vs: V2<*>,
         val lazyVs: Array<out () -> V2<*>>? = null,
-        val time: Duration = 1000.milliseconds,
-        val lazyTime: (() -> Duration)? = null,
+        val time: FastDuration = 1000.fastMilliseconds,
+        val lazyTime: (() -> FastDuration)? = null,
         val easing: Easing,
         val name: String? = null
     ) : NewAnimatorNode {
         val computedVs by lazy { (lazyVs?.map { it() } ?: vs.toList()).toMutableList() }
-        private val totalTime: Duration by lazy { lazyTime?.invoke() ?: time }
+        private val totalTime: FastDuration by lazy { lazyTime?.invoke() ?: time }
 
         override fun toString(): String = "TweenNode(totalTime=$totalTime, name=$name, ${computedVs.toList()})"
 
-        private var currentTime: Duration = TimeSpan.ZERO
+        private var currentTime: FastDuration = FastDuration.ZERO
         override fun reset() {
-            currentTime = TimeSpan.ZERO
+            currentTime = FastDuration.ZERO
         }
 
-        override fun update(dt: Duration): Duration {
-            if (currentTime == TimeSpan.ZERO) {
+        override fun update(dt: FastDuration): FastDuration {
+            if (currentTime == FastDuration.ZERO) {
                 computedVs.fastForEach {
                     it.init()
                 }
@@ -351,8 +353,8 @@ open class Animator @PublishedApi internal constructor(
             currentTime += dt
             computedVs.fastForEach {
                 val ratio = when {
-                    totalTime == TimeSpan.ZERO -> 1.0
-                    else -> currentTime.seconds.convertRange(it.startTime.seconds, it.endTime(totalTime).seconds, 0.0, 1.0)
+                    totalTime == FastDuration.ZERO -> 1.0
+                    else -> currentTime.fastSeconds.convertRange(it.fastStartTime.fastSeconds, it.endTime(totalTime).fastSeconds, 0.0, 1.0)
                 }
 
                 //println("dt=$dt, currentTime=$currentTime, totalTime=$totalTime, ratio=$ratio, it.startTime=${it.startTime}, it.endTime(totalTime)=${it.endTime(totalTime)}")
@@ -378,7 +380,7 @@ open class Animator @PublishedApi internal constructor(
             executed = false
         }
 
-        override fun update(dt: Duration): Duration {
+        override fun update(dt: FastDuration): FastDuration {
             complete()
             return dt
         }
@@ -396,20 +398,20 @@ interface NewAnimatorNode {
     fun reset()
 
     /** Sets this node to the specified [dt] (Delta Time), returns the exceeded time of completion, 0 if completed, less than zero if not completed. */
-    fun update(dt: Duration): Duration
+    fun update(dt: FastDuration): FastDuration
     fun complete()
 }
 
 ////////////////////////
 
-fun Animator.tween(vararg vs: V2<*>, time: Duration = this.defaultTime, easing: Easing = this.defaultEasing, name: String? = null, replace: Boolean = true): Unit = __tween(*vs, time = time, easing = easing, name = name, replace = replace)
-fun Animator.tweenLazyTime(vararg vs: V2<*>, time: () -> Duration = { this.defaultTime }, easing: Easing = this.defaultEasing, name: String? = null, replace: Boolean = true) = __tween(*vs, lazyTime = time, easing = easing, name = name, replace = replace)
+fun Animator.tween(vararg vs: V2<*>, time: Duration = this.defaultTime, easing: Easing = this.defaultEasing, name: String? = null, replace: Boolean = true): Unit = __tween(*vs, time = time.fast, easing = easing, name = name, replace = replace)
+fun Animator.tweenLazyTime(vararg vs: V2<*>, time: () -> Duration = { this.defaultTime }, easing: Easing = this.defaultEasing, name: String? = null, replace: Boolean = true) = __tween(*vs, lazyTime = { time().fast }, easing = easing, name = name, replace = replace)
 
-fun Animator.tweenLazy(vararg vs: () -> V2<*>, time: Duration = this.defaultTime, easing: Easing = this.defaultEasing, name: String? = null) = __tween(*vs, time = time, easing = easing, name = name)
-fun Animator.tweenLazyLazyTime(vararg vs: () -> V2<*>, time: () -> Duration = { this.defaultTime }, easing: Easing = this.defaultEasing, name: String? = null) = __tween(*vs, lazyTime = time, easing = easing, name = name)
+fun Animator.tweenLazy(vararg vs: () -> V2<*>, time: Duration = this.defaultTime, easing: Easing = this.defaultEasing, name: String? = null) = __tween(*vs, time = time.fast, easing = easing, name = name)
+fun Animator.tweenLazyLazyTime(vararg vs: () -> V2<*>, time: () -> Duration = { this.defaultTime }, easing: Easing = this.defaultEasing, name: String? = null) = __tween(*vs, lazyTime = { time().fast }, easing = easing, name = name)
 
-fun Animator.wait(time: Duration = this.defaultTime) = __tween(time = time, name = "wait")
-fun Animator.waitLazy(time: () -> Duration) = __tween(lazyTime = time, name = "wait")
+fun Animator.wait(time: Duration = this.defaultTime) = __tween(time = time.fast, name = "wait")
+fun Animator.waitLazy(time: () -> Duration) = __tween(lazyTime = { time().fast }, name = "wait")
 
 fun Animator.block(name: String? = null, callback: () -> Unit) {
     addNode(Animator.BlockNode(name, callback))
@@ -421,10 +423,10 @@ fun Animator.removeFromParent(view: View) {
 
 ////////////////////////
 
-fun Animator.scaleBy(view: View, scaleX: Double, scaleY: Double = scaleX, time: Duration = this.defaultTime, easing: Easing = this.defaultEasing) = __tween(view::scaleX.incr(scaleX), view::scaleY.incr(scaleY), time = time, easing = easing, name = "scaleBy")
-fun Animator.rotateBy(view: View, rotation: Angle, time: Duration = this.defaultTime, easing: Easing = this.defaultEasing) = __tween(view::rotation.incr(rotation), time = time, easing = easing, name = "rotateBy")
-fun Animator.moveBy(view: View, x: Double = 0.0, y: Double = 0.0, time: Duration = this.defaultTime, easing: Easing = this.defaultEasing) = __tween(view::x.incr(x), view::y.incr(y), time = time, easing = easing, name = "moveBy")
-fun Animator.moveByWithSpeed(view: View, x: Double = 0.0, y: Double = 0.0, speed: Double = this.defaultSpeed, easing: Easing = this.defaultEasing) = __tween(view::x.incr(x), view::y.incr(y), lazyTime = { (hypot(x, y) / speed.toDouble()).seconds }, easing = easing, name = "moveByWithSpeed")
+fun Animator.scaleBy(view: View, scaleX: Double, scaleY: Double = scaleX, time: Duration = this.defaultTime, easing: Easing = this.defaultEasing) = __tween(view::scaleX.incr(scaleX), view::scaleY.incr(scaleY), time = time.fast, easing = easing, name = "scaleBy")
+fun Animator.rotateBy(view: View, rotation: Angle, time: Duration = this.defaultTime, easing: Easing = this.defaultEasing) = __tween(view::rotation.incr(rotation), time = time.fast, easing = easing, name = "rotateBy")
+fun Animator.moveBy(view: View, x: Double = 0.0, y: Double = 0.0, time: Duration = this.defaultTime, easing: Easing = this.defaultEasing) = __tween(view::x.incr(x), view::y.incr(y), time = time.fast, easing = easing, name = "moveBy")
+fun Animator.moveByWithSpeed(view: View, x: Double = 0.0, y: Double = 0.0, speed: Double = this.defaultSpeed, easing: Easing = this.defaultEasing) = __tween(view::x.incr(x), view::y.incr(y), lazyTime = { (hypot(x, y) / speed.toDouble()).fastSeconds }, easing = easing, name = "moveByWithSpeed")
 
 fun Animator.moveBy(view: View, x: Number = 0.0, y: Number = 0.0, time: Duration = this.defaultTime, easing: Easing = this.defaultEasing) = moveBy(view, x.toDouble(), y.toDouble(), time, easing)
 fun Animator.moveByWithSpeed(view: View, x: Number = 0.0, y: Number = 0.0, speed: Double = this.defaultSpeed, easing: Easing = this.defaultEasing) = moveByWithSpeed(view, x.toDouble(), y.toDouble(), speed, easing)
@@ -436,10 +438,15 @@ fun Animator.scaleTo(
     time: Duration = this.defaultTime,
     lazyTime: (() -> Duration)? = null,
     easing: Easing = this.defaultEasing
-) = __tween({ view::scaleX[scaleX()] }, { view::scaleY[scaleY()] }, time = time, lazyTime = lazyTime, easing = easing, name = "scaleTo")
-fun Animator.scaleTo(view: View, scaleX: Double, scaleY: Double = scaleX, time: Duration = this.defaultTime, easing: Easing = this.defaultEasing) = __tween(view::scaleX[scaleX], view::scaleY[scaleY], time = time, easing = easing, name = "scaleTo")
+) = __tween({ view::scaleX[scaleX()] }, { view::scaleY[scaleY()] }, time = time.fast, lazyTime = lazyTime.fast, easing = easing, name = "scaleTo")
+fun Animator.scaleTo(view: View, scaleX: Double, scaleY: Double = scaleX, time: Duration = this.defaultTime, easing: Easing = this.defaultEasing) = __tween(view::scaleX[scaleX], view::scaleY[scaleY], time = time.fast, easing = easing, name = "scaleTo")
 fun Animator.scaleTo(view: View, scaleX: Float, scaleY: Float = scaleX, time: Duration = this.defaultTime, easing: Easing = this.defaultEasing) = scaleTo(view, scaleX.toDouble(), scaleY.toDouble(), time, easing)
 fun Animator.scaleTo(view: View, scaleX: Int, scaleY: Int = scaleX, time: Duration = this.defaultTime, easing: Easing = this.defaultEasing) = scaleTo(view, scaleX.toDouble(), scaleY.toDouble(), time, easing)
+
+private val (() -> Duration)?.fast: (() -> FastDuration)? get() {
+    if (this == null) return null
+    return { this().fast }
+}
 
 fun Animator.moveTo(
     view: View,
@@ -448,13 +455,13 @@ fun Animator.moveTo(
     time: Duration = this.defaultTime,
     lazyTime: (() -> Duration)? = null,
     easing: Easing = this.defaultEasing
-) = __tween({ view::x[x()] }, { view::y[y()] }, time = time, lazyTime = lazyTime, easing = easing, name = "moveTo")
-fun Animator.moveTo(view: View, x: Double, y: Double, time: Duration = this.defaultTime, easing: Easing = this.defaultEasing) = __tween(view::x[x], view::y[y], time = time, easing = easing, name = "moveTo")
+) = __tween({ view::x[x()] }, { view::y[y()] }, time = time.fast, lazyTime = lazyTime.fast, easing = easing, name = "moveTo")
+fun Animator.moveTo(view: View, x: Double, y: Double, time: Duration = this.defaultTime, easing: Easing = this.defaultEasing) = __tween(view::x[x], view::y[y], time = time.fast, easing = easing, name = "moveTo")
 fun Animator.moveTo(view: View, x: Float, y: Float, time: Duration = this.defaultTime, easing: Easing = this.defaultEasing) = moveTo(view, x.toDouble(), y.toDouble(), time, easing)
 fun Animator.moveTo(view: View, x: Int, y: Int, time: Duration = this.defaultTime, easing: Easing = this.defaultEasing) = moveTo(view, x.toDouble(), y.toDouble(), time, easing)
 
-fun Animator.moveToWithSpeed(view: View, x: () -> Number = { view.x }, y: () -> Number = { view.y }, speed: () -> Number = { this.defaultSpeed }, easing: Easing = this.defaultEasing) = __tween({ view::x[x()] }, { view::y[y()] }, lazyTime = { (hypot(view.x - x().toDouble(), view.y - y().toDouble()) / speed().toDouble()).seconds }, easing = easing, name = "moveToWithSpeed")
-fun Animator.moveToWithSpeed(view: View, x: Double, y: Double, speed: Double = this.defaultSpeed, easing: Easing = this.defaultEasing) = __tween(view::x[x], view::y[y], lazyTime = { (hypot(view.x - x, view.y - y) / speed.toDouble()).seconds }, easing = easing, name = "moveToWithSpeed")
+fun Animator.moveToWithSpeed(view: View, x: () -> Number = { view.x }, y: () -> Number = { view.y }, speed: () -> Number = { this.defaultSpeed }, easing: Easing = this.defaultEasing) = __tween({ view::x[x()] }, { view::y[y()] }, lazyTime = { (hypot(view.x - x().toDouble(), view.y - y().toDouble()) / speed().toDouble()).fastSeconds }, easing = easing, name = "moveToWithSpeed")
+fun Animator.moveToWithSpeed(view: View, x: Double, y: Double, speed: Double = this.defaultSpeed, easing: Easing = this.defaultEasing) = __tween(view::x[x], view::y[y], lazyTime = { (hypot(view.x - x, view.y - y) / speed.toDouble()).fastSeconds }, easing = easing, name = "moveToWithSpeed")
 fun Animator.moveToWithSpeed(view: View, x: Float, y: Float, speed: Number = this.defaultSpeed, easing: Easing = this.defaultEasing) = moveToWithSpeed(view, x.toDouble(), y.toDouble(), speed.toDouble(), easing)
 fun Animator.moveToWithSpeed(view: View, x: Int, y: Int, speed: Number = this.defaultSpeed, easing: Easing = this.defaultEasing) = moveToWithSpeed(view, x.toDouble(), y.toDouble(), speed.toDouble(), easing)
 
@@ -465,30 +472,30 @@ fun Animator.moveInPath(
     time: Duration = this.defaultTime,
     lazyTime: (() -> Duration)? = null,
     easing: Easing = this.defaultEasing
-) = __tween({ view::pos.get(path, includeLastPoint = includeLastPoint) }, time = time, lazyTime = lazyTime, easing = easing, name = "moveInPath")
+) = __tween({ view::pos.get(path, includeLastPoint = includeLastPoint) }, time = time.fast, lazyTime = lazyTime.fast, easing = easing, name = "moveInPath")
 fun Animator.moveInPath(
     view: View,
     points: PointList,
     time: Duration = this.defaultTime,
     lazyTime: (() -> Duration)? = null,
     easing: Easing = this.defaultEasing
-) = __tween({ view::pos[points] }, time = time, lazyTime = lazyTime, easing = easing, name = "moveInPath")
+) = __tween({ view::pos[points] }, time = time.fast, lazyTime = lazyTime.fast, easing = easing, name = "moveInPath")
 
-fun Animator.moveInPathWithSpeed(view: View, path: VectorPath, includeLastPoint: Boolean = true, speed: () -> Number = { this.defaultSpeed }, easing: Easing = this.defaultEasing) = __tween({ view::pos.get(path, includeLastPoint = includeLastPoint) }, lazyTime = { (path.length / speed().toDouble()).seconds }, easing = easing, name = "moveInPathWithSpeed")
-fun Animator.moveInPathWithSpeed(view: View, points: PointList, speed: () -> Number = { this.defaultSpeed }, easing: Easing = this.defaultEasing) = __tween({ view::pos[points] }, lazyTime = { (points.length / speed().toDouble()).seconds }, easing = easing, name = "moveInPathWithSpeed")
+fun Animator.moveInPathWithSpeed(view: View, path: VectorPath, includeLastPoint: Boolean = true, speed: () -> Number = { this.defaultSpeed }, easing: Easing = this.defaultEasing) = __tween({ view::pos.get(path, includeLastPoint = includeLastPoint) }, lazyTime = { (path.length / speed().toDouble()).fastSeconds }, easing = easing, name = "moveInPathWithSpeed")
+fun Animator.moveInPathWithSpeed(view: View, points: PointList, speed: () -> Number = { this.defaultSpeed }, easing: Easing = this.defaultEasing) = __tween({ view::pos[points] }, lazyTime = { (points.length / speed().toDouble()).fastSeconds }, easing = easing, name = "moveInPathWithSpeed")
 
-fun Animator.alpha(view: View, alpha: Float, time: Duration = this.defaultTime, easing: Easing = this.defaultEasing) = __tween(view::alphaF[alpha], time = time, easing = easing, name = "alpha")
+fun Animator.alpha(view: View, alpha: Float, time: Duration = this.defaultTime, easing: Easing = this.defaultEasing) = __tween(view::alphaF[alpha], time = time.fast, easing = easing, name = "alpha")
 fun Animator.alpha(view: View, alpha: Double, time: Duration = this.defaultTime, easing: Easing = this.defaultEasing) = alpha(view, alpha.toFloat(), time, easing)
 fun Animator.alpha(view: View, alpha: Int, time: Duration = this.defaultTime, easing: Easing = this.defaultEasing) = alpha(view, alpha.toFloat(), time, easing)
 
-fun Animator.rotateTo(view: View, angle: Angle, time: Duration = this.defaultTime, easing: Easing = this.defaultEasing) = __tween(view::rotation[angle], time = time, easing = easing, name = "rotateTo")
+fun Animator.rotateTo(view: View, angle: Angle, time: Duration = this.defaultTime, easing: Easing = this.defaultEasing) = __tween(view::rotation[angle], time = time.fast, easing = easing, name = "rotateTo")
 fun Animator.rotateTo(
     view: View,
     rotation: () -> Angle,
     time: Duration = this.defaultTime,
     lazyTime: (() -> Duration)? = null,
     easing: Easing = this.defaultEasing
-) = __tween({ view::rotation[rotation()] }, time = time, lazyTime = lazyTime, easing = easing, name = "rotateTo")
+) = __tween({ view::rotation[rotation()] }, time = time.fast, lazyTime = lazyTime.fast, easing = easing, name = "rotateTo")
 
 fun Animator.show(view: View, time: Duration = this.defaultTime, easing: Easing = this.defaultEasing) = alpha(view, 1.0, time, easing)
 fun Animator.hide(view: View, time: Duration = this.defaultTime, easing: Easing = this.defaultEasing) = alpha(view, 0.0, time, easing)

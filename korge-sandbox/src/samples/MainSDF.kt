@@ -28,7 +28,7 @@ open class CircleSDFView(size: Size = Size(100f, 100f)) : ShadedView(PROGRAM, si
     var time = 0.0f
 
     init {
-        addUpdater {
+        addFastUpdater {
             time += it.seconds.toFloat()
             invalidateRender()
         }

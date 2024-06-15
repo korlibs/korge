@@ -23,8 +23,15 @@ class FlagFilter(
     amplitude: Double = 80.0,
     crestCount: Double = 5.0,
     cyclesPerSecond: Double = 2.0,
-    time: Duration = 0.seconds
+    fastTime: FastDuration = 0.fastSeconds
 ) : ShaderFilter() {
+    constructor(
+        amplitude: Double = 80.0,
+        crestCount: Double = 5.0,
+        cyclesPerSecond: Double = 2.0,
+        time: Duration
+    ) : this(amplitude, crestCount, cyclesPerSecond, time.fast)
+
     object FlagUB : UniformBlock(fixedLocation = 5) {
         val u_amplitude by float()
         val u_crestCount by float()
@@ -63,7 +70,11 @@ class FlagFilter(
     var cyclesPerSecond: Double = cyclesPerSecond.toDouble()
 
     /** The elapsed time for the animation */
-    var time: Duration = time
+    var time: Duration
+        set(value) { fastTime = value.fast }
+        get() = fastTime.toDuration()
+
+    var fastTime: FastDuration = fastTime
 
     override val programProvider: ProgramProvider get() = FlagFilter
 
@@ -73,7 +84,7 @@ class FlagFilter(
             it[u_amplitude] = amplitude
             it[u_crestCount] = crestCount
             it[u_cyclesPerSecond] = cyclesPerSecond
-            it[u_Time] = time.seconds.toFloat()
+            it[u_Time] = fastTime.seconds.toFloat()
         }
     }
 

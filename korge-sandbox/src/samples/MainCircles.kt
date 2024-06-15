@@ -22,7 +22,7 @@ class MainCircles : Scene() {
         collisionViews = fastArrayListOf<View>(rect1, rect1b, rect2)
         println(rect1.hitShape2d)
         println(rect2.hitShape2d)
-        addUpdater { dt ->
+        addFastUpdater { dt ->
             val dx = input.keys.getDeltaAxis(Key.LEFT, Key.RIGHT)
             val dy = input.keys.getDeltaAxis(Key.UP, Key.DOWN)
             //if (dx != 0.0 || dy != 0.0) {

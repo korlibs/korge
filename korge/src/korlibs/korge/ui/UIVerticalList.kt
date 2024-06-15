@@ -49,7 +49,7 @@ open class UIVerticalList(provider: Provider, width: Double = 200.0) : UIView(DE
 
     init {
         updateList()
-        addUpdater {
+        addFastUpdater {
             updateList()
         }
     }

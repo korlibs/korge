@@ -248,7 +248,7 @@ object KorgeRunner {
 
             gameWindow.registerTime("prepareViews") {
                 KorgeReload.registerEventDispatcher(gameWindow)
-                prepareViewsBase(views, gameWindow, true, bgcolor, TimeSpan.NIL, config.forceRenderEveryFrame, config.configInjector).await()
+                prepareViewsBase(views, gameWindow, true, bgcolor, FastDuration.NaN, config.forceRenderEveryFrame, config.configInjector).await()
             }
 
             gameWindow.registerTime("completeViews") {
@@ -285,7 +285,7 @@ object KorgeRunner {
         eventDispatcher: EventListener,
         clearEachFrame: Boolean = true,
         bgcolor: RGBA = Colors.TRANSPARENT,
-        fixedSizeStep: Duration = TimeSpan.NIL,
+        fixedSizeStep: FastDuration = FastDuration.NaN,
         forceRenderEveryFrame: Boolean = true,
         configInjector: Injector.() -> Unit = {},
     ): CompletableDeferred<Unit> {

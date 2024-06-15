@@ -12,7 +12,7 @@ class MainStressMatrixMultiplication : Scene() {
             val text = text("result")
             var N = 1_000
             var step = 0
-            addUpdater {
+            addFastUpdater {
                 var sum = 0.0
                 for (n in 0 until N) {
                     val mat = this.localMatrix * this@sceneMain.localMatrix * this@MainStressMatrixMultiplication.stage.localMatrix * Matrix().scaled(n.toFloat()).translated(x.toFloat() * 10f, y.toFloat() * -20f)

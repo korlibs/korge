@@ -232,7 +232,7 @@ class MainStrokesExperiment : Scene() {
         val container = container {
         }
         val offsetInfo = OffsetInfo()
-        addUpdater {
+        addFastUpdater {
             container.removeChildren()
             container.addChild(generateDashes(offsetInfo.offset))
         }

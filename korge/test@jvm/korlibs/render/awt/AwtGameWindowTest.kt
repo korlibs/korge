@@ -33,7 +33,7 @@ class AwtGameWindowTest {
         }
         gameWindow.launchUnscoped {
             views.stage.image(resourcesVfs["korge.png"].readBitmap())
-            views.stage.solidRect(100, 100, Colors.RED).addUpdater {
+            views.stage.solidRect(100, 100, Colors.RED).addFastUpdater {
                 this.x++
             }
             println("[1]")

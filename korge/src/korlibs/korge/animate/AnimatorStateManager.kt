@@ -16,16 +16,19 @@ import kotlin.time.*
 val View.animStateManager by Extra.PropertyThis { AnimatorStateManager(this) }
 
 @KorgeExperimental
-data class AnimState(val transitions: List<V2<*>>, val time: Duration = 0.5.seconds, val easing: Easing = Easing.LINEAR) {
-    constructor(vararg transitions: V2<*>, time: Duration = 0.5.seconds, easing: Easing = Easing.LINEAR) : this(transitions.toList(), time = time, easing = easing)
+data class AnimState(val transitions: List<V2<*>>, val fastTime: FastDuration = 0.5.fastSeconds, val easing: Easing = Easing.LINEAR) {
+    constructor(vararg transitions: V2<*>, fastTime: FastDuration = 0.5.fastSeconds, easing: Easing = Easing.LINEAR) : this(transitions.toList(), fastTime = fastTime, easing = easing)
 
-    operator fun plus(other: AnimState): AnimState {
-        return AnimState(
-            (other.transitions.associateBy { it.key } + transitions.associateBy { it.key }).values.toList(),
-            time = time,
-            easing = easing
-        )
-    }
+    constructor(transitions: List<V2<*>>, time: Duration, easing: Easing) : this(transitions, time.fast, easing)
+    constructor(vararg transitions: V2<*>, time: Duration, easing: Easing = Easing.LINEAR) : this(transitions.toList(), time = time, easing = easing)
+
+    val time: Duration get() = fastTime.slow
+
+    operator fun plus(other: AnimState): AnimState = AnimState(
+        (other.transitions.associateBy { it.key } + transitions.associateBy { it.key }).values.toList(),
+        fastTime = fastTime,
+        easing = easing
+    )
 }
 
 class AnimatorStateManager(val view: View) {
@@ -46,7 +49,7 @@ class AnimatorStateManager(val view: View) {
         })
     }
 
-    private var currentTime: Duration = TimeSpan.ZERO
+    private var currentTime: FastDuration = FastDuration.ZERO
     private var currentState: AnimState = AnimState()
 
     fun add(vararg states: AnimState) {
@@ -57,7 +60,7 @@ class AnimatorStateManager(val view: View) {
     fun set(vararg states: AnimState) {
         states.fastForEach { backup(it) }
         val default = defaultState()
-        currentTime = TimeSpan.ZERO
+        currentTime = FastDuration.ZERO
         if (states.isEmpty()) {
             currentState = default
         } else {
@@ -72,14 +75,14 @@ class AnimatorStateManager(val view: View) {
 
     fun ensureUpdater() {
         if (updater == null) {
-            updater = view.addUpdater {
+            updater = view.addFastUpdater {
                 update(it)
             }
         }
     }
 
-    fun update(dt: Duration) {
-        val isStart = currentTime == TimeSpan.ZERO
+    fun update(dt: FastDuration) {
+        val isStart = currentTime == FastDuration.ZERO
         currentTime += dt
         var completedCount = 0
         currentState.transitions.fastForEach {

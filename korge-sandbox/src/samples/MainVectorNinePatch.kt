@@ -34,7 +34,7 @@ class MainVectorNinePatch : Scene() {
         //    NinePatchSlices(77.0 until (300.0 - 77.0)),
         //))
 
-        addUpdater {
+        addFastUpdater {
             view.size(mousePos.x, mousePos.y)
         }
     }

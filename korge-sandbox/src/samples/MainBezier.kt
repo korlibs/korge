@@ -29,7 +29,7 @@ class MainBezier : Scene() {
         }
         val bez = Bez()
 
-        addUpdater {
+        addFastUpdater {
             shape.updateShape {
                 //val curve = Bezier.Quad(bez.p1, bez.p2, bez.p3)
                 val curve = Bezier(bez.p1, bez.p2, bez.p3, bez.p4)

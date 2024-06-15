@@ -9,8 +9,15 @@ import kotlin.time.*
 
 class SpriteAnimation constructor(
     val sprites: List<BmpSlice>,
-    val defaultTimePerFrame: Duration = TimeSpan.NIL
+    val fastDefaultTimePerFrame: FastDuration = FastDuration.NaN
 ) : Collection<BmpSlice> by sprites {
+    val defaultTimePerFrame get() = fastDefaultTimePerFrame.toDuration()
+
+    constructor(
+        sprites: List<BmpSlice>,
+        defaultTimePerFrame: Duration
+    ) : this(sprites, defaultTimePerFrame.fast)
+
     companion object {
         operator fun invoke(
             spriteMap: Bitmap,
@@ -65,8 +72,8 @@ class SpriteAnimation constructor(
     operator fun get(index: Int) = getSprite(index)
 }
 
-fun Atlas.getSpriteAnimation(prefix: String = "", defaultTimePerFrame: Duration = TimeSpan.NIL): SpriteAnimation =
+fun Atlas.getSpriteAnimation(prefix: String = "", defaultTimePerFrame: Duration = Duration.NIL): SpriteAnimation =
     SpriteAnimation(this.entries.filter { it.filename.startsWith(prefix) }.map { it.slice }.toFastList(), defaultTimePerFrame)
 
-fun Atlas.getSpriteAnimation(regex: Regex, defaultTimePerFrame: Duration = TimeSpan.NIL): SpriteAnimation =
+fun Atlas.getSpriteAnimation(regex: Regex, defaultTimePerFrame: Duration = Duration.NIL): SpriteAnimation =
     SpriteAnimation(this.entries.filter { regex.matches(it.filename) }.map { it.slice }.toFastList(), defaultTimePerFrame)

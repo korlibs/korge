@@ -8,7 +8,6 @@ import korlibs.math.geom.vector.*
 import korlibs.math.interpolation.*
 import korlibs.time.*
 import kotlin.jvm.*
-import kotlin.native.concurrent.*
 import kotlin.reflect.*
 import kotlin.time.*
 
@@ -19,17 +18,35 @@ data class V2<V>(
     val end: V,
     val interpolator: (Ratio, V, V) -> V,
     val includeStart: Boolean,
-    val startTime: Duration = 0.nanoseconds,
-    val duration: Duration = TimeSpan.NIL,
+    val fastStartTime: FastDuration = FastDuration.ZERO,
+    val fastDuration: FastDuration = FastDuration.NaN,
     private val initialization: (() -> Unit)? = null,
 ) {
-    val endTime = startTime + duration.coalesce { 0.nanoseconds }
+    constructor(
+        key: KMutableProperty0<V>,
+        initial: V,
+        end: V,
+        interpolator: (Ratio, V, V) -> V,
+        includeStart: Boolean,
+        startTime: Duration,
+        duration: Duration,
+        initialization: (() -> Unit)? = null,
+    ) : this(key, initial, end, interpolator, includeStart, startTime.fast, duration.fast, initialization)
+
+    val startTime: Duration get() = fastStartTime.toDuration()
+    val duration: Duration get() = fastDuration.toDuration()
+
+    val fastEndTime = fastStartTime + if (fastDuration == FastDuration.NaN) 0.fastNanoseconds else fastDuration
+    val endTime get() = fastEndTime.slow
 
     @Deprecated("", ReplaceWith("getDuration(duration)"), level = DeprecationLevel.HIDDEN)
     fun duration(default: Duration): Duration = getDuration(default)
 
     fun getDuration(default: Duration): Duration = if (duration.isNil) default else duration
     fun endTime(default: Duration): Duration = if (duration.isNil) default else endTime
+
+    fun getDuration(default: FastDuration): FastDuration = if (fastDuration == FastDuration.NaN) default else fastDuration
+    fun endTime(default: FastDuration): FastDuration = if (fastDuration == FastDuration.NaN) default else fastEndTime
 
     fun init(): Unit {
         if (!includeStart) {
@@ -170,7 +187,9 @@ internal fun _interpolateAngle(ratio: Ratio, l: Angle, r: Angle): Angle = ratio.
 @PublishedApi
 internal fun _interpolateAngleDenormalized(ratio: Ratio, l: Angle, r: Angle): Angle = ratio.interpolateAngleDenormalized(l, r)
 @PublishedApi
-internal fun _interpolateTimeSpan(ratio: Ratio, l: Duration, r: Duration): Duration = _interpolate(ratio, l.milliseconds, r.milliseconds).milliseconds
+internal fun _interpolateDuration(ratio: Ratio, l: Duration, r: Duration): Duration = _interpolate(ratio, l.milliseconds, r.milliseconds).milliseconds
+@PublishedApi
+internal fun _interpolateFastDuration(ratio: Ratio, l: FastDuration, r: FastDuration): FastDuration = _interpolate(ratio, l.milliseconds, r.milliseconds).fastMilliseconds
 @PublishedApi
 internal fun _interpolateColorAdd(ratio: Ratio, l: ColorAdd, r: ColorAdd): ColorAdd = ColorAdd(
     ratio.interpolate(l.r, r.r),
@@ -290,14 +309,20 @@ inline operator fun KMutableProperty0<Angle>.get(initial: Angle, end: Angle) = V
 
 fun V2<Angle>.denormalized(): V2<Angle> = this.copy(interpolator = ::_interpolateAngleDenormalized)
 
-inline operator fun KMutableProperty0<Duration>.get(end: Duration) = V2(this, this.get(), end, ::_interpolateTimeSpan, includeStart = false)
-inline operator fun KMutableProperty0<Duration>.get(initial: Duration, end: Duration) = V2(this, initial, end, ::_interpolateTimeSpan, includeStart = true)
+inline operator fun KMutableProperty0<Duration>.get(end: Duration) = V2(this, this.get(), end, ::_interpolateDuration, includeStart = false)
+inline operator fun KMutableProperty0<Duration>.get(initial: Duration, end: Duration) = V2(this, initial, end, ::_interpolateDuration, includeStart = true)
+
+inline operator fun KMutableProperty0<FastDuration>.get(end: FastDuration) = V2(this, this.get(), end, ::_interpolateFastDuration, includeStart = false)
+inline operator fun KMutableProperty0<FastDuration>.get(initial: FastDuration, end: FastDuration) = V2(this, initial, end, ::_interpolateFastDuration, includeStart = true)
 
 fun <V> V2<V>.clamped(): V2<V> = copy(interpolator = { ratio, l, r -> this.interpolator(ratio.clamped, l, r) })
 fun <V> V2<V>.easing(easing: Easing): V2<V> = this.copy(interpolator = { ratio, a, b -> this.interpolator(easing(ratio.toDouble()).toRatio(), a, b) })
 
-inline fun <V> V2<V>.delay(startTime: Duration) = this.copy(startTime = startTime)
-inline fun <V> V2<V>.duration(duration: Duration) = this.copy(duration = duration)
+inline fun <V> V2<V>.delay(startTime: Duration) = delay(startTime.fast)
+inline fun <V> V2<V>.duration(duration: Duration) = duration(duration.fast)
+
+inline fun <V> V2<V>.delay(startTime: FastDuration) = this.copy(fastStartTime = startTime)
+inline fun <V> V2<V>.duration(duration: FastDuration) = this.copy(fastDuration = duration)
 
 inline fun <V> V2<V>.linear() = this
 inline fun <V> V2<V>.smooth() = this.easing(Easing.SMOOTH)

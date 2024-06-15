@@ -38,9 +38,9 @@ class Game(val scene: MainAsteroids) {
         spawnRandomAsteroids(ship.image)
     }
 
-    private val stageUpdater = sceneView.addUpdater { time ->
+    private val stageUpdater = sceneView.addFastUpdater { time ->
         if (!gameOver) {
-            val scale = time / 16.0.milliseconds
+            val scale = time / 16.0.fastMilliseconds
 
             if (ship.bulletReload > 0) ship.bulletReload -= scale
 
@@ -79,8 +79,8 @@ class Game(val scene: MainAsteroids) {
                 }
             }
 
-            bullet.addUpdater {
-                val scale = it / 16.milliseconds
+            bullet.addFastUpdater {
+                val scale = it / 16.fastMilliseconds
                 bullet.advance(+3.0 * scale)
                 // If the bullet flies off the screen, discard it
                 if (bullet.x < -BULLET_SIZE || bullet.y < -BULLET_SIZE || bullet.x > WIDTH + BULLET_SIZE || bullet.y > HEIGHT + BULLET_SIZE) {

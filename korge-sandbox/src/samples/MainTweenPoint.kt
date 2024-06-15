@@ -41,7 +41,7 @@ class MainTweenPoint : Scene() {
             }
         }
 
-        addUpdater {
+        addFastUpdater {
             println("views.ag.getStats: ${views.ag.getStats()}")
         }
     }

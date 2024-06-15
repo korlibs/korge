@@ -93,7 +93,7 @@ class MainTextMetrics : Scene() {
                 }
             }
 
-            addUpdater {
+            addFastUpdater {
                 updateBounds()
             }
             updateBounds()

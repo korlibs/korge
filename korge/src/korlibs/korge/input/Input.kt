@@ -3,9 +3,6 @@ package korlibs.korge.input
 import korlibs.datastructure.Extra
 import korlibs.datastructure.clear
 import korlibs.datastructure.iterators.fastForEach
-import korlibs.time.TimeSpan
-import korlibs.time.milliseconds
-import korlibs.time.nanoseconds
 import korlibs.memory.arraycopy
 import korlibs.memory.setBits
 import korlibs.graphics.gl.AGOpenglFactory
@@ -17,6 +14,7 @@ import korlibs.event.Touch
 import korlibs.event.TouchEvent
 import korlibs.korge.internal.KorgeInternal
 import korlibs.math.geom.*
+import korlibs.time.*
 import kotlin.time.*
 
 //@Singleton
@@ -125,41 +123,41 @@ class Input : Extra by Extra.Mixin() {
     }
 
     @KorgeInternal
-    fun startFrame(delta: Duration) {
+    fun startFrame(delta: FastDuration) {
         this.extra?.clear()
         keys.startFrame(delta)
     }
 
     @KorgeInternal
-    fun endFrame(delta: Duration) {
+    fun endFrame(delta: FastDuration) {
         this.clicked = false
         keys.endFrame(delta)
         endFrameOldKeys(delta)
     }
 
-    private fun endFrameOldKeys(delta: Duration) {
+    private fun endFrameOldKeys(delta: FastDuration) {
         for (n in 0 until KEYCODES) {
             val prev = keysRawPrev[n]
             val curr = keysRaw[n]
             keysJustReleased[n] = prev && !curr
             keysJustPressed[n] = !prev && curr
             if (curr) {
-                keysPressingTime[n] += delta.nanoseconds
+                keysPressingTime[n] += delta.fastNanoseconds
             } else {
                 keysPressingTime[n] = 0.0
                 keysLastTimeTriggered[n] = 0.0
             }
             var triggerPress = false
-            val pressingTime = keysPressingTime[n].nanoseconds
+            val pressingTime = keysPressingTime[n].fastNanoseconds
             if (keysPressingTime[n] > 0) {
-                val timeBarrier = when (pressingTime.milliseconds) {
-                    in 0.0..1.0 -> 0.0.milliseconds
-                    in 1.0..300.0 -> 100.0.milliseconds
-                    in 300.0..1000.0 -> 50.0.milliseconds
-                    else -> 20.0.milliseconds
+                val timeBarrier = when (pressingTime.fastMilliseconds) {
+                    in 0.0..1.0 -> 0.0.fastMilliseconds
+                    in 1.0..300.0 -> 100.0.fastMilliseconds
+                    in 300.0..1000.0 -> 50.0.fastMilliseconds
+                    else -> 20.0.fastMilliseconds
                 }
 
-                val elapsedTime = pressingTime - keysLastTimeTriggered[n].nanoseconds
+                val elapsedTime = pressingTime - keysLastTimeTriggered[n].fastNanoseconds
                 if (elapsedTime >= timeBarrier) {
                     triggerPress = true
                 }
@@ -224,10 +222,10 @@ class InputKeys {
         }
     }
 
-    internal fun startFrame(delta: Duration) {
+    internal fun startFrame(delta: FastDuration) {
     }
 
-    internal fun endFrame(delta: Duration) {
+    internal fun endFrame(delta: FastDuration) {
         arraycopy(pressing, 0, pressingPrev, 0, pressing.size)
     }
 

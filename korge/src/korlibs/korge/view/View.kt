@@ -196,7 +196,7 @@ abstract class View internal constructor(
         get() = _index
         internal set(value) { _index = value }
 
-    /** Ratio speed of this node, affecting all the [View.addUpdater] */
+    /** Ratio speed of this node, affecting all the [View.addFastUpdater] */
     @ViewProperty(min = -1.0, max = 1.0, clampMin = false, clampMax = false)
     var speed: Double = 1.0
 
@@ -1472,15 +1472,21 @@ fun View?.commonAncestor(ancestor: View?): View? = View.commonAncestor(this, anc
 fun View.replaceWith(view: View): Boolean = this.parent?.replaceChild(this, view) ?: false
 
 /** Adds a block that will be executed per frame to this view. As parameter the block will receive a [TimeSpan] with the time elapsed since the previous frame. */
-fun <T : View> T.addUpdater(first: Boolean = true, firstTime: Duration = TimeSpan.ZERO, updatable: T.(dt: Duration) -> Unit): CloseableCancellable {
+fun <T : View> T.addUpdater(first: Boolean = true, firstTime: Duration = Duration.ZERO, updatable: T.(dt: Duration) -> Unit): CloseableCancellable {
     if (first) updatable(this, firstTime)
     return onEvent(UpdateEvent) { updatable(this, it.deltaTime * this.globalSpeed) }
 }
-fun <T : View> T.addUpdater(updatable: T.(dt: Duration) -> Unit): CloseableCancellable = addUpdater(true, updatable = updatable)
 
-fun <T : View> T.addUpdaterWithViews(updatable: T.(views: Views, dt: Duration) -> Unit): CloseableCancellable = onEvent(ViewsUpdateEvent) {
-    updatable(this@addUpdaterWithViews, it.views, it.delta * this.globalSpeed)
+fun <T : View> T.addFastUpdater(first: Boolean = true, firstTime: FastDuration = FastDuration.ZERO, updatable: T.(dt: FastDuration) -> Unit): CloseableCancellable {
+    if (first) updatable(this, firstTime)
+    return onEvent(UpdateEvent) { updatable(this, it.fastDeltaTime * this.globalSpeed) }
 }
+
+fun <T : View> T.addUpdater(updatable: T.(dt: Duration) -> Unit): CloseableCancellable = addUpdater(true, updatable = updatable)
+fun <T : View> T.addFastUpdater(updatable: T.(dt: FastDuration) -> Unit): CloseableCancellable = addFastUpdater(true, updatable = updatable)
+
+fun <T : View> T.addUpdaterWithViews(updatable: T.(views: Views, dt: Duration) -> Unit): CloseableCancellable = onEvent(ViewsUpdateEvent) { updatable(this@addUpdaterWithViews, it.views, it.delta * this.globalSpeed) }
+fun <T : View> T.addFastUpdaterWithViews(updatable: T.(views: Views, dt: FastDuration) -> Unit): CloseableCancellable = onEvent(ViewsUpdateEvent) { updatable(this@addFastUpdaterWithViews, it.views, it.fastDelta * this.globalSpeed) }
 
 /** Registers a [block] that will be executed once in the next frame that this [View] is displayed with the [Views] singleton */
 fun <T : View> T.deferWithViews(views: Views? = null, tryImmediate: Boolean = true, block: (views: Views) -> Unit): T {
@@ -1496,8 +1502,13 @@ fun <T : View> T.deferWithViews(views: Views? = null, tryImmediate: Boolean = tr
     return this
 }
 
-fun <T : View> T.addOptFixedUpdater(time: Duration = TimeSpan.NIL, updatable: T.(dt: Duration) -> Unit): CloseableCancellable = when (time) {
-    TimeSpan.NIL -> addUpdater(updatable)
+fun <T : View> T.addOptFixedUpdater(time: Duration = Duration.NIL, updatable: T.(dt: Duration) -> Unit): CloseableCancellable = when (time) {
+    Duration.NIL -> addUpdater(updatable)
+    else -> addFixedUpdater(time) { updatable(time) }
+}
+
+fun <T : View> T.addOptFixedUpdater(time: FastDuration = FastDuration.NaN, updatable: T.(dt: FastDuration) -> Unit): CloseableCancellable = when (time) {
+    FastDuration.NaN -> addFastUpdater(updatable)
     else -> addFixedUpdater(time) { updatable(time) }
 }
 
@@ -1506,7 +1517,11 @@ fun <T : View> T.addFixedUpdater(
     initial: Boolean = true,
     limitCallsPerFrame: Int = 16,
     updatable: T.() -> Unit
-): Cancellable = addFixedUpdater(timesPerSecond.timeSpan, initial, limitCallsPerFrame, updatable)
+): Cancellable = addFixedUpdater(timesPerSecond.fastDuration, initial, limitCallsPerFrame, updatable)
+
+fun <T : View> T.addFixedUpdater(
+    time: Duration, first: Boolean = true, limitCallsPerFrame: Int = 16, updatable: T.() -> Unit
+): CloseableCancellable = addFixedUpdater(time.fast, first, limitCallsPerFrame, updatable)
 
 /**
  * Adds an [updatable] block that will be executed every [time] time, the calls will be discretized on each frame and will handle accumulations.
@@ -1514,13 +1529,13 @@ fun <T : View> T.addFixedUpdater(
  * To avoid executing too many blocks, when there is a long pause, [limitCallsPerFrame] limits the number of times the block can be executed in a single frame.
  */
 fun <T : View> T.addFixedUpdater(
-    time: Duration,
+    time: FastDuration,
     first: Boolean = true,
     limitCallsPerFrame: Int = 16,
     updatable: T.() -> Unit
 ): CloseableCancellable {
-    var accum = 0.0.milliseconds
-    return addUpdater(first = first, firstTime = time) { dt ->
+    var accum = FastDuration.ZERO
+    return addFastUpdater(first = first, firstTime = time) { dt ->
         accum += dt
         //println("UPDATE: accum=$accum, tickTime=$tickTime")
         var calls = 0
@@ -1530,14 +1545,14 @@ fun <T : View> T.addFixedUpdater(
             calls++
             if (calls >= limitCallsPerFrame) {
                 // We do not accumulate for the next frame in this case
-                accum = 0.0.milliseconds
+                accum = FastDuration.ZERO
                 break
             }
         }
         if (calls > 0) {
             // Do not accumulate for small fractions since this would cause hiccups!
             if (accum < time * 0.25) {
-                accum = 0.0.milliseconds
+                accum = FastDuration.ZERO
             }
         }
     }

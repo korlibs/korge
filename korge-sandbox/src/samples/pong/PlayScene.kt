@@ -40,7 +40,7 @@ class PlayScene() : Scene() {
 		// Add a HUD for reporting the FPS
 		val fpsText = text("FPS: 0") {
 			position(10, 30)
-			addUpdater {
+			addFastUpdater {
 				text = "FPS: " + views.gameWindow.fps.toString()
 			}
 		}
@@ -48,7 +48,7 @@ class PlayScene() : Scene() {
 		// Add a HUD for reporting the ticks/frame length
 		val tickSizeText = text("Tick: 0") {
 			position(10, 50)
-			addUpdater {
+			addFastUpdater {
 				text = "Tick: " + views.gameWindow.timePerFrame.toString()
 			}
 		}
@@ -56,7 +56,7 @@ class PlayScene() : Scene() {
 		// Add a help text which explains the rules of the game
 		val helpText = text("") {
 			position(10, 100)
-			addUpdater {
+			addFastUpdater {
 				// this text is only visible if the game is not in Playing state
 				visible = (playState != GameStates.Playing)
 
@@ -77,7 +77,7 @@ class PlayScene() : Scene() {
 		// A simple flavour text informing that a goal was scored
 		val scoredYellText = text("SCORED!!!\n\n") {
 			position(sceneWidth / 2 - 100, sceneHeight / 2 - 20)
-			addUpdater {
+			addFastUpdater {
 				// this is only visible when the game is in Scored state
 				visible = (playState == GameStates.Scored)
 			}
@@ -87,14 +87,14 @@ class PlayScene() : Scene() {
 		val scoreLeftText = text("0") {
 //            textSize = 24.0
 			position(sceneWidth / 4, sceneHeight / 2)
-			addUpdater {
+			addFastUpdater {
 				text = scorePlayerLeft.toString()
 			}
 		}
 		// text to show the score of the player on the Right side
 		val scoreRightText = text("0") {
 			position(sceneWidth * 3 / 4, sceneHeight / 2)
-			addUpdater {
+			addFastUpdater {
 				text = scorePlayerRight.toString()
 			}
 		}
@@ -102,7 +102,7 @@ class PlayScene() : Scene() {
 		// the left paddle
 		val paddleLeft = solidRect(paddleWidth, paddleHeight, Colors.RED) {
 			position(paddleDistanceFromWall, paddlePosYAtStart)
-			addUpdater {
+			addFastUpdater {
 				// move the paddle up or down as long as it doesn't leaves the bounds of the game window
 				val keys = views.input.keys
 				if (keys[Key.W] && y > 0) {
@@ -117,7 +117,7 @@ class PlayScene() : Scene() {
 		// the right paddle
 		val paddleRight = solidRect(paddleWidth, paddleHeight, Colors.BLUE) {
 			position(sceneWidth - paddleDistanceFromWall - paddleWidth, paddlePosYAtStart)
-			addUpdater {
+			addFastUpdater {
 				// move the paddle up or down as long as it doesn't leaves the bounds of the game window
 				val keys = views.input.keys
 				if (keys[Key.UP] && y > 0) {
@@ -147,7 +147,7 @@ class PlayScene() : Scene() {
 				playState = GameStates.Scored
 			}
 
-			addUpdater {
+			addFastUpdater {
 				// only move ball if the game is in Playing state
 				if (playState == GameStates.Playing) {
 

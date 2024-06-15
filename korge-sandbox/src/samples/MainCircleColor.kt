@@ -14,7 +14,7 @@ class MainCircleColor : Scene() {
             shape.stroke = Colors.RED
             shape.fill = Colors.GREEN
             shape.strokeThickness = 16.0
-            addUpdater { shape.radius += 1f }
+            addFastUpdater { shape.radius += 1f }
         }
     }
 }

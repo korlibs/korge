@@ -262,9 +262,9 @@ class ViewsTest : ViewsForTesting() {
         lateinit var rect: SolidRect
         val container = Container().apply {
             rect = solidRect(100, 100, Colors.RED)
-            rect.addUpdater { time ->
+            rect.addFastUpdater { time ->
                 x++
-                assertEquals(0.0.seconds, time)
+                assertEquals(0.0.fastSeconds, time)
                 @Suppress("USELESS_IS_CHECK")
                 assertTrue { this is SolidRect }
             }
@@ -448,7 +448,7 @@ class ViewsTest : ViewsForTesting() {
     fun <T2 : Comparable<T2>> Container.sortChildrenBy(selector: (View) -> T2) = sortChildrenBy(selector.toComparator())
     fun Container.sortChildrenByY() = sortChildrenBy(View::y)
     fun <T : Container> T.keepChildrenSortedBy(comparator: Comparator<View>): T {
-        addUpdater { this.sortChildrenBy(comparator) }
+        addFastUpdater { this.sortChildrenBy(comparator) }
         return this
     }
 
