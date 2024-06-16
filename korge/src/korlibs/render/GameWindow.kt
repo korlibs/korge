@@ -406,7 +406,7 @@ open class GameWindow :
         onContinuousRenderModeUpdated?.invoke(new)
     }
 
-    fun frame(doUpdate: Boolean = true, doRender: Boolean = true, frameStartTime: Duration = PerformanceCounter.reference): Duration {
+    fun frame(doUpdate: Boolean = true, doRender: Boolean = true, frameStartTime: FastDuration = PerformanceCounter.fastReference): FastDuration {
         val startTime = PerformanceCounter.reference
         if (doRender) {
             renderTime = measureTime {
@@ -423,7 +423,7 @@ open class GameWindow :
             }
             //println("updateTime=$updateTime")
         }
-        val endTime = PerformanceCounter.reference
+        val endTime = PerformanceCounter.fastReference
         return endTime - startTime
     }
 
@@ -497,9 +497,9 @@ open class GameWindow :
         surfaceHeight = height
     }
 
-    var gamePadTime: Duration = TimeSpan.ZERO
-    fun frameUpdate(startTime: Duration) {
-        gamePadTime = measureTime {
+    var gamePadTime: FastDuration = FastDuration.ZERO
+    fun frameUpdate(startTime: FastDuration) {
+        gamePadTime = fastMeasureTime {
             updateGamepads()
         }
         try {
@@ -766,13 +766,13 @@ open class EventLoopGameWindow : GameWindow() {
     fun elapsedSinceLastRenderTime() = PerformanceCounter.reference - lastRenderTime
 
     inline fun render(doUpdate: Boolean, doRender: () -> Boolean = { true }) {
-        val frameStartTime: Duration = PerformanceCounter.reference
+        val frameStartTime: FastDuration = PerformanceCounter.fastReference
         val mustRender = doRender()
         if (mustRender) renderInternal(doUpdate = doUpdate, frameStartTime = frameStartTime)
     }
 
     @PublishedApi
-    internal fun renderInternal(doUpdate: Boolean, frameStartTime: Duration = PerformanceCounter.reference) {
+    internal fun renderInternal(doUpdate: Boolean, frameStartTime: FastDuration = PerformanceCounter.fastReference) {
         fixedTime = PerformanceCounter.fastReference
         doInitRender()
 

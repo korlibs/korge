@@ -3,18 +3,18 @@ package korlibs.graphics.gl
 import korlibs.datastructure.*
 import korlibs.datastructure.lock.*
 import korlibs.graphics.*
-import korlibs.io.concurrent.atomic.*
 import korlibs.kgl.*
 import korlibs.memory.unit.*
+import kotlinx.atomicfu.*
 
 class GLGlobalState(val gl: KmlGl, val ag: AG) {
-    var texturesCreated = korAtomic(0)
-    var texturesDeleted = korAtomic(0)
-    var texturesSize = korAtomic(0L)
+    var texturesCreated = atomic(0)
+    var texturesDeleted = atomic(0)
+    var texturesSize = atomic(0.0)
 
-    var buffersCreated = korAtomic(0)
-    var buffersDeleted = korAtomic(0)
-    var buffersSize = korAtomic(0L)
+    var buffersCreated = atomic(0)
+    var buffersDeleted = atomic(0)
+    var buffersSize = atomic(0.0)
 
     internal val objectsToDeleteLock = Lock()
     internal val objectsToDelete = fastArrayListOf<GLBaseObject>()
@@ -55,9 +55,9 @@ internal class GLBuffer(state: GLGlobalState) : GLBaseObject(state) {
 
     internal var lastUploadedSize = -1
 
-    var estimatedBytes: Long = 0L
+    var estimatedBytes: Double = 0.0
         set(value) {
-            globalState.buffersSize.addAndGet(+value -field)
+            globalState.buffersSize.updateAndGet { it + value - field }
             field = value
         }
     init {
@@ -92,9 +92,9 @@ internal class GLTexture(state: GLGlobalState) : GLBaseObject(state) {
     var id = gl.genTexture()
     var cachedContentVersion: Int = -2
     var cachedAGContextVersion: Int = -2
-    var estimatedBytes = 0L
+    var estimatedBytes = 0.0
         set(value) {
-            globalState.texturesSize.addAndGet(+value -field)
+            globalState.texturesSize.updateAndGet { it + value - field }
             field = value
         }
 
