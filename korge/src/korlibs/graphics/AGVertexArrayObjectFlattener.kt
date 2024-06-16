@@ -2,7 +2,6 @@ package korlibs.graphics
 
 import korlibs.datastructure.*
 import korlibs.graphics.shader.*
-import korlibs.io.lang.*
 import korlibs.logger.*
 import korlibs.memory.*
 
@@ -33,7 +32,7 @@ fun AGBuffer.extractDataOf(attribute: Attribute, layout: VertexLayout): AGBuffer
             val localOffset = index * attribute.totalBytes
             val data = mem!!.getUnalignedArrayInt8(offset, ByteArray(attribute.totalBytes))
             logger.trace { "extracting data of $attribute from $data" }
-            assert(data.size == attribute.totalBytes)
+            check(data.size == attribute.totalBytes)
             setUnalignedArrayInt8(localOffset, data)
         }
     }.let { AGBuffer().upload(it) }

@@ -13,12 +13,12 @@ import kotlin.time.*
 
 @OptIn(InternalCoroutinesApi::class)
 class GameWindowCoroutineDispatcher(
-    var nowProvider: () -> Duration = { PerformanceCounter.reference },
+    var nowProvider: () -> FastDuration = { PerformanceCounter.fastReference },
     var fast: Boolean = false,
 ) : CoroutineDispatcher(), Delay, AutoCloseable {
     override fun dispatchYield(context: CoroutineContext, block: Runnable): Unit = dispatch(context, block)
 
-    class TimedTask(val time: Duration, val continuation: CancellableContinuation<Unit>?, val callback: Runnable?) {
+    class TimedTask(val time: FastDuration, val continuation: CancellableContinuation<Unit>?, val callback: Runnable?) {
         var exception: Throwable? = null
     }
 
@@ -46,7 +46,7 @@ class GameWindowCoroutineDispatcher(
 
     override fun dispatch(context: CoroutineContext, block: Runnable) = queue(block) // @TODO: We are not using the context
 
-    fun now(): Duration {
+    fun now(): FastDuration {
         return nowProvider()
     }
 
@@ -68,8 +68,8 @@ class GameWindowCoroutineDispatcher(
         return DisposableHandle { lock { timedTasks.remove(task) } }
     }
 
-    var timedTasksTime = 0.milliseconds
-    var tasksTime = 0.milliseconds
+    var timedTasksTime = 0.fastMilliseconds
+    var tasksTime = 0.fastMilliseconds
 
     /**
      * Allows to configure how much time per frame is available to execute pending tasks,
@@ -79,13 +79,17 @@ class GameWindowCoroutineDispatcher(
     var maxAllocatedTimeForTasksPerFrame: Duration? = null
 
     fun executePending(availableTime: Duration) {
+        executePending(availableTime.fast)
+    }
+
+    fun executePending(availableTime: FastDuration) {
         try {
             val startTime = now()
 
             var processedTimedTasks = 0
             var processedTasks = 0
 
-            timedTasksTime = measureTime {
+            timedTasksTime = fastMeasureTime {
                 while (true) {
                     val item = lock {
                         if (timedTasks.isNotEmpty() && (fast || startTime >= timedTasks.head.time)) timedTasks.removeHead() else null
@@ -112,10 +116,10 @@ class GameWindowCoroutineDispatcher(
                     }
                 }
             }
-            tasksTime = measureTime {
+            tasksTime = fastMeasureTime {
                 while (true) {
                     val task = lock { (if (tasks.isNotEmpty()) tasks.dequeue() else null) } ?: break
-                    val time = measureTime {
+                    val time = fastMeasureTime {
                         try {
                             task.run()
                         } catch (e: Throwable) {
@@ -140,7 +144,10 @@ class GameWindowCoroutineDispatcher(
 
     val tooManyCallbacksLogger = Logger("Korgw.GameWindow.TooManyCallbacks")
 
-    fun informTooManyCallbacksToHandleInThisFrame(elapsedTime: Duration, availableTime: Duration, processedTimedTasks: Int, processedTasks: Int) {
+    fun informTooManyCallbacksToHandleInThisFrame(elapsedTime: Duration, availableTime: Duration, processedTimedTasks: Int, processedTasks: Int) = informTooManyCallbacksToHandleInThisFrame(
+        elapsedTime.fast, availableTime.fast, processedTimedTasks, processedTasks
+    )
+    fun informTooManyCallbacksToHandleInThisFrame(elapsedTime: FastDuration, availableTime: FastDuration, processedTimedTasks: Int, processedTasks: Int) {
         tooManyCallbacksLogger.warn { "Too many callbacks to handle in this frame elapsedTime=${elapsedTime.roundMilliseconds()}, availableTime=${availableTime.roundMilliseconds()} pending timedTasks=${timedTasks.size}, tasks=${tasks.size}, processedTimedTasks=$processedTimedTasks, processedTasks=$processedTasks" }
     }
 

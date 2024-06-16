@@ -524,6 +524,9 @@ open class GameWindow :
     fun executePending(availableTime: Duration) {
         coroutineDispatcher.executePending(availableTime)
     }
+    fun executePending(availableTime: FastDuration) {
+        coroutineDispatcher.executePending(availableTime)
+    }
 
     fun dispatchInitEvent() = dispatch(initEvent.reset())
     fun dispatchPauseEvent() = dispatch(pauseEvent.reset())
@@ -718,7 +721,7 @@ interface ClipboardData {
 data class TextClipboardData(val text: String, val contentType: String? = null) : ClipboardData
 
 open class EventLoopGameWindow : GameWindow() {
-    var fixedTime = PerformanceCounter.reference
+    var fixedTime = PerformanceCounter.fastReference
     override val coroutineDispatcher = GameWindowCoroutineDispatcher(nowProvider = { fixedTime })
 
     override suspend fun loop(entry: suspend GameWindow.() -> Unit) {
@@ -770,7 +773,7 @@ open class EventLoopGameWindow : GameWindow() {
 
     @PublishedApi
     internal fun renderInternal(doUpdate: Boolean, frameStartTime: Duration = PerformanceCounter.reference) {
-        fixedTime = PerformanceCounter.reference
+        fixedTime = PerformanceCounter.fastReference
         doInitRender()
 
         var doRender = !doUpdate

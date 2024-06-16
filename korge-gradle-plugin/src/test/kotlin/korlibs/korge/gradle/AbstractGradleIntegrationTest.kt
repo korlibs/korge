@@ -71,7 +71,7 @@ class TestableExecSpec : ExecSpec {
 
 data class TestableExecResult(val stdout: String, val stderr: String = "", val exitCode: Int = 0) : ExecResult {
     override fun getExitValue(): Int = exitCode
-    override fun assertNormalExitValue(): ExecResult = this.apply { assert(exitValue == 0) }
+    override fun assertNormalExitValue(): ExecResult = this.apply { check(exitValue == 0) }
     override fun rethrowFailure(): ExecResult = this.apply { assertNormalExitValue() }
 }
 

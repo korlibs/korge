@@ -39,7 +39,7 @@ open class ViewsForTesting(
         override fun now(): DateTime = time
     }
 	val dispatcher = GameWindowCoroutineDispatcher(
-        nowProvider = { time.unixMillisDouble.milliseconds },
+        nowProvider = { time.unixMillisDouble.fastMilliseconds },
         fast = true,
     )
     inner class TestGameWindow(initialSize: Size, val dispatcher: GameWindowCoroutineDispatcher) : GameWindowLog() {
