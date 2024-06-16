@@ -28,9 +28,13 @@ class FrameBlock(private val view: View, private val views: Views, private val f
     private var accumulatedWaitedTime = 0.fastMilliseconds
 
     suspend fun frame() {
+        var count = 0
         while (accumulatedWaitedTime < frameTime) {
             accumulatedWaitedTime += views.timeProvider.measureFast {
                 view.timers.waitFrame()
+            }
+            if (count++ >= 4) {
+                accumulatedWaitedTime = 0.fastMilliseconds
             }
         }
         if (accumulatedWaitedTime >= frameTime) {
