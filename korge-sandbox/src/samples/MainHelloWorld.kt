@@ -12,7 +12,7 @@ import korlibs.korge.view.position
 import korlibs.korge.view.scale
 import korlibs.image.bitmap.*
 import korlibs.math.geom.degrees
-import korlibs.math.interpolation.Easing
+import korlibs.math.interpolation.*
 
 // @TODO: We could autogenerate this via gradle
 private val korlibs.io.resources.ResourcesContainer.korge_png by resourceBitmap("korge.png")

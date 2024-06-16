@@ -18,7 +18,7 @@ dependencies {
     //implementation(localGroovy())
     //implementation("org.eclipse.jgit:org.eclipse.jgit:6.3.0.202209071007-r")
     implementation(libs.jgit)
-    implementation(libs.korlibs.serialization.yaml)
+    implementation(libs.korlibs.serialization)
     testImplementation(libs.bundles.kotlin.test)
 }
 
