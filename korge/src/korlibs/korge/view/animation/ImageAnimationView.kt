@@ -59,7 +59,7 @@ open class ImageAnimationView<T: SmoothedBmpSlice>(
     val numLayers: Int get() = _layers.size
     fun getLayer(index: Int): View = _layers[index]
     fun getLayer(name: String): View? = _layersByName[name]
-    private var nextFrameIn = 0.milliseconds
+    private var nextFrameIn = 0.fastMilliseconds
     private var nextFrameIndex = 0
     private var dir = +1
 
@@ -108,7 +108,7 @@ open class ImageAnimationView<T: SmoothedBmpSlice>(
                 }
                 image.xy(it.targetX, it.targetY)
             }
-            nextFrameIn = frame.duration
+            nextFrameIn = frame.duration.fast
             dir = when (computedDirection) {
                 ImageAnimation.Direction.FORWARD -> +1
                 ImageAnimation.Direction.REVERSE -> -1
@@ -172,7 +172,7 @@ open class ImageAnimationView<T: SmoothedBmpSlice>(
 
     init {
         didSetAnimation()
-        addUpdater {
+        addFastUpdater {
             //println("running=$running, nextFrameIn=$nextFrameIn, nextFrameIndex=$nextFrameIndex")
             if (running) {
                 nextFrameIn -= it

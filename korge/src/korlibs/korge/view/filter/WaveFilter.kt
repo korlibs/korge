@@ -23,8 +23,15 @@ class WaveFilter(
     amplitude: Vector2D = Vector2D(10, 10),
     crestDistance: Vector2D = Vector2D(16, 16),
     cyclesPerSecond: Vector2D = Vector2D(1, 1),
-    time: Duration = 0.seconds
+    fastTime: FastDuration = 0.fastSeconds
 ) : ShaderFilter() {
+    constructor(
+        amplitude: Vector2D = Vector2D(10, 10),
+        crestDistance: Vector2D = Vector2D(16, 16),
+        cyclesPerSecond: Vector2D = Vector2D(1, 1),
+        time: Duration
+    ) : this(amplitude, crestDistance, cyclesPerSecond, time.fast)
+
     /** Maximum amplitude of the wave on the X,Y axis */
     @ViewProperty
 	var amplitude: Vector2D = amplitude
@@ -39,7 +46,11 @@ class WaveFilter(
 
     /** The elapsed time for the animation */
     @ViewProperty
-	var time = time
+	var time: Duration
+        set(value) { fastTime = value.fast }
+        get() = fastTime.toDuration()
+
+    var fastTime = fastTime
 
     override val programProvider: ProgramProvider get() = WaveFilter
 

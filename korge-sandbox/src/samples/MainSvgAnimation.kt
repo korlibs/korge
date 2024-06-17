@@ -48,8 +48,8 @@ class MainSvgAnimation : Scene() {
             println("GPU SHAPE: $it")
         }
 
-        addUpdater { dt ->
-            svg.updateStyles(dt)
+        addFastUpdater { dt ->
+            svg.updateStyles(dt.toDuration())
             shape.updateShape {
                 buildGraphics()
             }

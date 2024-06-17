@@ -115,8 +115,8 @@ class CameraContainer(
     fun getCameraToFit(rect: Rectangle, out: Camera = Camera()): Camera = getCameraRect(rect, ScaleMode.SHOW_ALL, out)
     fun getCameraToCover(rect: Rectangle, out: Camera = Camera()): Camera = getCameraRect(rect, ScaleMode.COVER, out)
 
-    private var transitionTime = 1.0.seconds
-    private var elapsedTime = 0.0.milliseconds
+    private var transitionTime = 1.0.fastSeconds
+    private var elapsedTime = 0.0.fastMilliseconds
     //var easing = Easing.EASE_OUT
     private var easing = Easing.LINEAR
 
@@ -150,8 +150,10 @@ class CameraContainer(
         sync()
     }
 
-    fun setTargetCamera(camera: Camera, time: Duration = 1.seconds, easing: Easing = Easing.LINEAR) {
-        elapsedTime = 0.seconds
+    fun setTargetCamera(camera: Camera, time: Duration, easing: Easing = Easing.LINEAR) = setTargetCamera(camera, time.fast, easing)
+
+    fun setTargetCamera(camera: Camera, time: FastDuration = 1.fastSeconds, easing: Easing = Easing.LINEAR) {
+        elapsedTime = 0.fastSeconds
         this.transitionTime = time
         this.easing = easing
         following = null
@@ -159,7 +161,9 @@ class CameraContainer(
         targetCamera.copyFrom(camera)
     }
 
-    suspend fun tweenCamera(camera: Camera, time: Duration = 1.seconds, easing: Easing = Easing.LINEAR) {
+    suspend fun tweenCamera(camera: Camera, time: Duration, easing: Easing = Easing.LINEAR) = tweenCamera(camera, time.fast, easing)
+
+    suspend fun tweenCamera(camera: Camera, time: FastDuration = 1.fastSeconds, easing: Easing = Easing.LINEAR) {
         setTargetCamera(camera, time, easing)
         onCompletedTransition.waitOne()
     }
@@ -174,7 +178,7 @@ class CameraContainer(
         block(this)
         contentContainer.addTo(this)
         content.addTo(contentContainer)
-        addUpdater {
+        addFastUpdater {
             when {
                 following != null -> {
                     val point = getFollowingXY()

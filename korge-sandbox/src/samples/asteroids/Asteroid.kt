@@ -16,7 +16,7 @@ class Asteroid(
 		scaleAvg = asteroidSize.toDouble() / 3.0
 		name = "asteroid"
 		speed = 0.6
-		addUpdater { time ->
+		addFastUpdater { time ->
 			val scale = time / 16.0.milliseconds
 			val dx = angle.cosine * scale
 			val dy = angle.sine * scale

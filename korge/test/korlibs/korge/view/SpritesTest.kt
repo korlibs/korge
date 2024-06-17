@@ -1,11 +1,10 @@
 package korlibs.korge.view
 
-import korlibs.time.milliseconds
-import korlibs.time.seconds
 import korlibs.korge.tests.ViewsForTesting
 import korlibs.image.bitmap.*
 import korlibs.image.format.readBitmap
 import korlibs.io.file.std.resourcesVfs
+import korlibs.time.*
 import kotlinx.coroutines.CompletableDeferred
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -142,7 +141,7 @@ class SpritesTest : ViewsForTesting() {
     @Test
     fun testSpriteAnimationTimesAndSpriteTimeDisplay() = viewsTest {
         testPlayAnimation {
-            countDownSprite.playAnimation(times = 1, spriteDisplayTime = 100.milliseconds)
+            countDownSprite.playAnimation(times = 1, spriteDisplayTime = 100.fastMilliseconds)
         }
         assertEquals("started,stopped,completed", logs.joinToString(","))
         assertEquals(10, countDownSprite.totalFramesPlayed)

@@ -21,7 +21,7 @@ class MainTiledBackground : Scene() {
         val tilemap = tileMap(IntArray2(2, 2, intArrayOf(0, 1, 1, 0)), repeatX = TileMapRepeat.REPEAT, repeatY = TileMapRepeat.REPEAT, tileset = tileset)
         tilemap.x += 300
         tilemap.y += 300
-        addUpdater {
+        addFastUpdater {
             //tilemap.rotation += 1.degrees
             tilemap.x += 1
             tilemap.y += 0.25

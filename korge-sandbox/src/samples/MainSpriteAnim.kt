@@ -123,16 +123,16 @@ class MainSpriteAnim : ScaledScene(512, 512) {
         addChild(player1)
         addChild(player2)
 
-        addUpdater { time ->
-            val scale = 16.milliseconds / time
+        addFastUpdater { time ->
+            val scale = 16.fastMilliseconds / time
             val disp = 2 * scale
             val keys = views.input.keys
 
             player1.handleKeys(keys, disp.toFloat())
             player2.handleKeys(keys, disp.toFloat())
 
-            if (keys[Key.L]) { player1.playAnimationLooped(spriteAnimationDown, 100.milliseconds) }
-            if (keys[Key.T]) { player1.playAnimation(spriteAnimation = spriteAnimationDown, times = 3, spriteDisplayTime = 200.milliseconds) }
+            if (keys[Key.L]) { player1.playAnimationLooped(spriteAnimationDown, 100.fastMilliseconds) }
+            if (keys[Key.T]) { player1.playAnimation(spriteAnimation = spriteAnimationDown, times = 3, spriteDisplayTime = 200.fastMilliseconds) }
             if (keys[Key.C]) { player1.playAnimationForDuration(1.seconds, spriteAnimationDown); player1.y -= 2 }
             if (keys[Key.ESCAPE]) { player1.stopAnimation() }
         }

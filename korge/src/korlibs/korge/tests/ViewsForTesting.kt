@@ -39,7 +39,7 @@ open class ViewsForTesting(
         override fun now(): DateTime = time
     }
 	val dispatcher = GameWindowCoroutineDispatcher(
-        nowProvider = { time.unixMillisDouble.milliseconds },
+        nowProvider = { time.unixMillisDouble.fastMilliseconds },
         fast = true,
     )
     inner class TestGameWindow(initialSize: Size, val dispatcher: GameWindowCoroutineDispatcher) : GameWindowLog() {
@@ -293,7 +293,7 @@ open class ViewsForTesting(
         viewsLog.init()
         this@ViewsForTesting.devicePixelRatio = devicePixelRatio
         //suspendTest(timeout = timeout, cond = { !OS.isAndroid && !OS.isJs && !OS.isNative }) {
-        KorgeRunner.prepareViewsBase(views, gameWindow, fixedSizeStep = frameTime, forceRenderEveryFrame = forceRenderEveryFrame)
+        KorgeRunner.prepareViewsBase(views, gameWindow, fixedSizeStep = frameTime.fast, forceRenderEveryFrame = forceRenderEveryFrame)
 
 		injector.mapInstance<KorgeConfig>(KorgeConfig(
 			title = "KorgeViewsForTesting",

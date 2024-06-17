@@ -425,7 +425,7 @@ class AGOpengl(val gl: KmlGl, var context: KmlGlContext? = null) : AG() {
         buffer.update {
             //println("Updated buffer: ${buffer.identityHashCode()} $buffer, $target, $onlyUpdate")
             val mem = buffer.mem ?: Buffer(0)
-            bufferInfo.estimatedBytes = mem.sizeInBytes.toLong()
+            bufferInfo.estimatedBytes = mem.sizeInBytes.toDouble()
             if (onlyUpdate) gl.bindBuffer(target.toGl(), bufferInfo.id)
             if (bufferInfo.lastUploadedSize < mem.sizeInBytes) {
                 //println("UPLOAD FULL DATA buffer=$bufferInfo: uploadedSize=${bufferInfo.lastUploadedSize} = ${mem.sizeInBytes} : contextVersion=$contextVersion")
@@ -857,7 +857,7 @@ class AGOpengl(val gl: KmlGl, var context: KmlGlContext? = null) : AG() {
 
                 //println("UPDATE BITMAP: rbmp=$rbmp")
 
-                var totalSize = 0L
+                var totalSize = 0.0
 
                 for ((index, bmp) in bmps.withIndex()) {
                     val isFloat = bmp is FloatBitmap32

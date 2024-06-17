@@ -285,7 +285,10 @@ class UniformBlockBuffer<T : UniformBlock>(val block: T) {
     @PublishedApi internal var buffer = Buffer(blockSize * 1)
     private val bufferSize: Int get() = buffer.sizeInBytes / blockSize
     val current = UniformsRef(block, buffer, -1)
-    var currentIndex by current::index
+    //var currentIndex by current::index // VERY SLOW on JS
+    var currentIndex: Int
+        set(value) { current.index = value }
+        get() = current.index
     val size: Int get() = currentIndex + 1
     val data = Buffer(block.totalSize)
     //val values by lazy { block.uniforms.map { AGUniformValue(it.uniform) } }

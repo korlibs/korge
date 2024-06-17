@@ -155,7 +155,11 @@ open class UIScrollable(size: Size, cache: Boolean = true) : UIView(size, cache 
     var containerY: Double by container::y
 
     @ViewProperty
-    var timeScrollBar: Duration = 0.seconds
+    var timeScrollBar: Duration
+        set(value) { fastTimeScrollBar = value.fast }
+        get() = fastTimeScrollBar.toDuration()
+
+    private var fastTimeScrollBar: FastDuration = 0.fastSeconds
 
     @ViewProperty
     var autohideScrollBar = false
@@ -172,7 +176,7 @@ open class UIScrollable(size: Size, cache: Boolean = true) : UIView(size, cache 
     private fun showScrollBar() {
         horizontal.view.alpha = scrollBarAlpha
         vertical.view.alpha = scrollBarAlpha
-        timeScrollBar = 0.seconds
+        fastTimeScrollBar = 0.fastSeconds
     }
 
     override fun renderInternal(ctx: RenderContext) {
@@ -286,8 +290,8 @@ open class UIScrollable(size: Size, cache: Boolean = true) : UIView(size, cache 
                 }
             }
         }
-        addUpdater {
-            if (it.milliseconds == 0.0) return@addUpdater
+        addFastUpdater {
+            if (it.milliseconds == 0.0) return@addFastUpdater
             //println("horizontal.scrollbarSize=${horizontal.scrollBarPos},${horizontal.scrollbarSize}(${horizontal.view.visible},${horizontal.view.alpha}), vertical.scrollbarSize=${vertical.scrollbarSize}")
             infos.fastForEach { info ->
                 info.view.visible = info.shouldBeVisible
@@ -319,10 +323,10 @@ open class UIScrollable(size: Size, cache: Boolean = true) : UIView(size, cache 
                     }
 
                     if (!dragging && autohideScrollBar) {
-                        if (timeScrollBar >= 1.seconds) {
+                        if (fastTimeScrollBar >= 1.fastSeconds) {
                             info.view.alphaF *= 0.9f
                         } else {
-                            timeScrollBar += it
+                            fastTimeScrollBar += it
                         }
                     }
                 }

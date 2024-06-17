@@ -16,7 +16,7 @@ group = RootKorlibsPlugin.KORGE_GRADLE_PLUGIN_GROUP
 
 dependencies {
     implementation(project(":korge-gradle-plugin-common"))
-    implementation(libs.korlibs.serialization.yaml)
+    implementation(libs.korlibs.serialization)
 }
 
 gradlePlugin {

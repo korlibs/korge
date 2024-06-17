@@ -7,7 +7,6 @@ import korlibs.image.atlas.readAtlas
 import korlibs.image.bitmap.*
 import korlibs.io.async.suspendTest
 import korlibs.io.file.std.resourcesVfs
-import korlibs.io.lang.assert
 import korlibs.math.geom.*
 import korlibs.platform.*
 import kotlin.test.Test
@@ -96,11 +95,11 @@ class AtlasInfoTest {
         val bmp = slice.extract()
 
         if (slice.name?.startsWith("1") == true) {
-            assert(bmp.width == 32, { "Extracted slice ${slice.name} failed on width" })
-            assert(bmp.height == 46, { "Extracted slice ${slice.name} failed on height" })
+            check(bmp.width == 32, { "Extracted slice ${slice.name} failed on width" })
+            check(bmp.height == 46, { "Extracted slice ${slice.name} failed on height" })
         } else {
-            assert(bmp.width == 42, { "Extracted slice ${slice.name} failed on width" })
-            assert(bmp.height == 56, { "Extracted slice ${slice.name} failed on height" })
+            check(bmp.width == 42, { "Extracted slice ${slice.name} failed on width" })
+            check(bmp.height == 56, { "Extracted slice ${slice.name} failed on height" })
         }
 
         for (i in 0 until 4) {
@@ -111,9 +110,9 @@ class AtlasInfoTest {
                 else -> bmp.getRgba(xOffset + 0, yOffset + 0)
             }
             val c = 250 - i * 50
-            assert(col.r == if (r) c else 0, { "Extracted slice ${slice.name} failed on pos $i at red" })
-            assert(col.g == if (g) c else 0, { "Extracted slice ${slice.name} failed on pos $i at green" })
-            assert(col.b == if (b) c else 0, { "Extracted slice ${slice.name} failed on pos $i at blue" })
+            check(col.r == if (r) c else 0, { "Extracted slice ${slice.name} failed on pos $i at red" })
+            check(col.g == if (g) c else 0, { "Extracted slice ${slice.name} failed on pos $i at green" })
+            check(col.b == if (b) c else 0, { "Extracted slice ${slice.name} failed on pos $i at blue" })
         }
     }
 }

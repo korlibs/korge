@@ -1,10 +1,7 @@
 
 import korlibs.datastructure.iterators.*
 import korlibs.io.lang.*
-import korlibs.korge.view.Container
-import korlibs.korge.view.View
-import korlibs.korge.view.addUpdater
-import korlibs.korge.view.foreachDescendant
+import korlibs.korge.view.*
 import korlibs.math.geom.shape.*
 import korlibs.math.geom.vector.*
 import kotlin.collections.set
@@ -84,7 +81,7 @@ fun Container.findCollision(subject: View, kind: CollisionKind = CollisionKind.G
  * if no [root] is provided, it computes the root of the view [this] each frame, you can specify a collision [kind]
  */
 fun View.onCollision(filter: (View) -> Boolean = { true }, root: View? = null, kind: CollisionKind = CollisionKind.GLOBAL_RECT, callback: View.(View) -> Unit): Cancellable {
-    return addUpdater {
+    return addFastUpdater {
         (root ?: this.root).foreachDescendant {
             if (this != it && filter(it) && this.collidesWith(it, kind)) {
                 callback(this, it)
@@ -105,7 +102,7 @@ fun View.onCollisionShape(filter: (View) -> Boolean = { true }, root: View? = nu
  * When a collision is found, [callback] is called. It returns a [Cancellable] to remove the component.
  */
 fun View.onDescendantCollision(root: View = this, filterSrc: (View) -> Boolean = { true }, filterDst: (View) -> Boolean = { true }, kind: CollisionKind = CollisionKind.GLOBAL_RECT, callback: View.(View) -> Unit): Cancellable {
-    return addUpdater {
+    return addFastUpdater {
         root.foreachDescendant { src ->
             if (filterSrc(src)) {
                 root.foreachDescendant { dst ->
@@ -130,7 +127,7 @@ fun View.onCollisionExit(
     callback: View.(View) -> Unit
 ): Cancellable {
     val collisionState = mutableMapOf<View, Boolean>()
-    return addUpdater {
+    return addFastUpdater {
         (root ?: this.root).foreachDescendant {
             if (this != it && filter(it)) {
                 if (this.collidesWith(it, kind)) {
@@ -157,7 +154,7 @@ fun List<View>.onCollisionExit(filter: (View) -> Boolean = { true }, root: View?
  */
 fun View.onDescendantCollisionExit(root: View = this, filterSrc: (View) -> Boolean = { true }, filterDst: (View) -> Boolean = { true }, kind: CollisionKind = CollisionKind.GLOBAL_RECT, callback: View.(View) -> Unit): Cancellable {
     val collisionState = mutableMapOf<Pair<View, View>, Boolean>()
-    return addUpdater {
+    return addFastUpdater {
         root.foreachDescendant { src ->
             if (filterSrc(src)) {
                 root.foreachDescendant { dst ->

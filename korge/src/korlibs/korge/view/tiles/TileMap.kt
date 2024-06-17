@@ -480,7 +480,7 @@ class TileMap(
 
     init {
         updatedTileSet()
-        addUpdater { dt ->
+        addFastUpdater { dt ->
             tileset.infos.fastForEachWithIndex { tileIndex, info ->
                 if (info != null && info.frames.isNotEmpty()) {
                     val aindex = animationIndex[tileIndex]

@@ -16,7 +16,7 @@ internal fun ViewsContainer.installFpsDebugOverlay() {
     //val mediumWindow = TimeSlidingWindow(60)
     val shortWindow = TimeSlidingWindow(10)
 
-    var previousTime = PerformanceCounter.reference
+    var previousTime = PerformanceCounter.fastReference
     var frames = 0
 
     var batchCount = 0
@@ -49,12 +49,12 @@ internal fun ViewsContainer.installFpsDebugOverlay() {
         //println("scale=$scale")
 
         val fontSize = 8.0 * scale
-        val currentTime = PerformanceCounter.reference
+        val currentTime = PerformanceCounter.fastReference
         val elapsedTime = (currentTime - previousTime)
 
         if (frames > 3) {
             // @TODO: We are discarding for now too low values. We have to check why this happening. Maybe because vsync is near?
-            if (elapsedTime > 4.milliseconds) {
+            if (elapsedTime > 4.fastMilliseconds) {
                 longWindow.add(elapsedTime)
                 //mediumWindow.add(elapsedTime)
                 shortWindow.add(elapsedTime)
@@ -122,7 +122,7 @@ internal fun ViewsContainer.installFpsDebugOverlay() {
                                 val p0 = n.convertRange(0, totalOverlayLines, 0, longWindow.size.coerceAtLeast(1))
                                 val p1 = (n + 1).convertRange(0, totalOverlayLines, 0, longWindow.size.coerceAtLeast(1))
                                 var plen = 0
-                                var timeSum = 0.milliseconds
+                                var timeSum = 0.fastMilliseconds
                                 for (m in p0 until p1.coerceAtMost(longWindow.size)) {
                                     timeSum += longWindow[m]
                                     plen++
@@ -162,20 +162,20 @@ private class TimeSlidingWindow(val capacity: Int) {
 
     val size get() = deque.size
 
-    val avg: Duration get() = if (deque.size == 0) 0.seconds else (totalMicroseconds.toDouble() / deque.size).microseconds
+    val avg: FastDuration get() = if (deque.size == 0) 0.fastSeconds else (totalMicroseconds.toDouble() / deque.size).fastMicroseconds
 
     // @TODO: Can we compute this incrementally?
-    val min: Duration get() = deque.minOrNull()?.microseconds ?: 1.microseconds
-    val max: Duration get() = deque.maxOrNull()?.microseconds ?: 1.microseconds
+    val min: FastDuration get() = deque.minOrNull()?.fastMicroseconds ?: 1.fastMicroseconds
+    val max: FastDuration get() = deque.maxOrNull()?.fastMicroseconds ?: 1.fastMicroseconds
 
     val avgFps: Float get() = (1.seconds / avg).toFloat()
     val minFps: Float get() = (1.seconds / max).toFloat()
     val maxFps: Float get() = (1.seconds / min).toFloat()
 
-    operator fun get(index: Int): Duration = deque[index].microseconds
+    operator fun get(index: Int): FastDuration = deque[index].fastMicroseconds
 
-    fun add(value: Duration) {
-        val intValue = value.microsecondsInt
+    fun add(value: FastDuration) {
+        val intValue = value.fastMicroseconds.toInt()
         deque.add(intValue)
         totalMicroseconds += intValue
         if (deque.size > capacity) {

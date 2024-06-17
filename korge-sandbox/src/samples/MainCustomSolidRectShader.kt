@@ -16,13 +16,13 @@ class MainCustomSolidRectShader : Scene() {
     override suspend fun SContainer.sceneMain() {
         val solidRect = solidRect(200, 200, Colors.RED).xy(100, 100)
 
-        var time = 0.seconds
+        var time = 0.fastSeconds
         solidRect.updateProgramUniforms = {
             it[TimeUB].push {
                 it[timeUniform] = time.seconds.toFloat()
             }
         }
-        addUpdater {
+        addFastUpdater {
             time += it
             invalidateRender()
         }

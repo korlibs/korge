@@ -126,8 +126,8 @@ open class KorgwSurfaceView constructor(
         println("OpenGL ES Version (actual): $clientVersion")
     }
 
-    private fun runPreFrame(): TimeSpan {
-        val frameStartTime = PerformanceCounter.reference
+    private fun runPreFrame(): FastDuration {
+        val frameStartTime = PerformanceCounter.fastReference
         gameWindow.handleInitEventIfRequired()
         gameWindow.handleReshapeEventIfRequired(0, 0, view.width, view.height)
         gameController.runPreFrame(gameWindow)

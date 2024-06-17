@@ -60,7 +60,7 @@ class MainTilemapTest : Scene() {
             var camPos: Point = Point.ZERO
         }
 
-        addUpdater {
+        addFastUpdater {
             val mouseButtons = input.mouseButtons
             val isDown = (mouseButtons and 5) != 0
             if (isDown) {
