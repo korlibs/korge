@@ -126,7 +126,7 @@ open class SyncEventLoop(
 
     protected fun wait(waitTime: Duration) {
         if (immediateRun) return
-        lock.wait(waitTime, precise)
+        lock { lock.wait(waitTime, precise) }
     }
 
     fun runAvailableNextTasks(runTimers: Boolean = true): Int {
