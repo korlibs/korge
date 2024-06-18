@@ -3,7 +3,7 @@ package korlibs.korge.view.filter
 import korlibs.graphics.shader.*
 import korlibs.image.color.*
 import korlibs.korge.render.*
-import korlibs.korge.view.*
+import korlibs.korge.view.BlendMode
 import korlibs.korge.view.property.*
 import korlibs.math.*
 import korlibs.math.geom.*

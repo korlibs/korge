@@ -4,6 +4,7 @@ import korlibs.datastructure.*
 import korlibs.event.Event
 import korlibs.io.async.*
 import korlibs.korge.internal.*
+import korlibs.korge.render.*
 import korlibs.korge.view.*
 import korlibs.korge.view.Container
 import korlibs.math.geom.Point

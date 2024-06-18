@@ -4,6 +4,8 @@ import korlibs.image.bitmap.*
 import korlibs.image.color.*
 import korlibs.time.*
 import korlibs.korge.awt.*
+import korlibs.korge.awt.views
+import korlibs.korge.render.*
 import korlibs.korge.time.*
 import korlibs.korge.view.*
 import korlibs.korge.view.Ellipse

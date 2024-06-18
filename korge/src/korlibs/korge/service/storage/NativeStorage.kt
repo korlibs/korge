@@ -9,6 +9,7 @@ import kotlin.collections.*
 /** Cross-platform way of synchronously storing small data */
 //expect fun NativeStorage(views: Views): IStorageWithKeys
 
+
 expect class NativeStorage(views: Views) : IStorageWithKeys {
     override fun keys(): List<String>
 	override fun set(key: String, value: String)

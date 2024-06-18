@@ -13,7 +13,7 @@ class FixedSizeContainerTest {
             val windowSize = Size(640, 480)
             val virtualSize = Size(512, 512)
             val ag: AGLog = AGLog(windowSize)
-            val bp: BoundsProvider = BoundsProvider.Base()
+            val bp: BoundsProvider = BoundsProvider()
             bp.setBoundsInfo(virtualSize, windowSize)
             val container = ClipContainer(Size(30f, 40f)).xy(110, 120)
             val log = arrayListOf<String>()
