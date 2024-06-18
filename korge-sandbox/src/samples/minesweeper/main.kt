@@ -14,8 +14,11 @@ class MainMineSweeper : ScaledScene(640, 480) {
         val scene = this@MainMineSweeper
         this.name = "process.root"
         this.setExtra("scene", scene)
-        cancellables += scene.registerProcessSystem()
-        MainProcess(this)
+    }
+
+    override suspend fun sceneAfterInit() {
+        registerProcessSystem()
+        MainProcess(sceneView)
     }
 }
 

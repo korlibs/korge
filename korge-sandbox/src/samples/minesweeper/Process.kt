@@ -1,71 +1,94 @@
 package samples.minesweeper
 
 import findCollision
-import korlibs.datastructure.*
-import korlibs.memory.*
 import korlibs.audio.sound.*
+import korlibs.datastructure.*
 import korlibs.event.*
-import korlibs.korge.component.*
-import korlibs.korge.scene.ScaledScene
-import korlibs.korge.time.*
-import korlibs.korge.view.*
 import korlibs.image.format.*
 import korlibs.io.async.*
 import korlibs.io.file.std.*
-import korlibs.io.lang.CancellableGroup
+import korlibs.korge.render.*
+import korlibs.korge.scene.*
+import korlibs.korge.time.*
+import korlibs.korge.view.*
 import korlibs.math.geom.*
+import korlibs.memory.*
 import kotlinx.coroutines.*
+import kotlin.collections.LinkedHashMap
+import kotlin.collections.fill
+import kotlin.collections.set
 import kotlin.reflect.*
 
 abstract class Process(parent: Container) : Container() {
-    init {
-        parent.addChild(this)
-    }
-
-    override val stage: Stage get() = super.stage!!
+    //override val stage: Stage get() = super.stage!!
     val processRoot: SContainer get() = parent.findFirstAscendant { it.name == "process.root" } as SContainer
     val scene: ScaledScene get() = processRoot.getExtraTyped<ScaledScene>("scene")!!
-    val views: Views get() = stage.views
+    val views: Views by lazy { stage!!.views }
     var fps: Double = 60.0
 
     val key: KeyV get() = scene.key
     val mouse: MouseV get() = scene.mouseV
     val audio: AudioV get() = scene.audioV
+    protected var job: Job? = null
+
+    init {
+        parent.addChild(this)
+    }
 
     suspend fun frame() {
         delayFrame()
+    }
+
+    override fun renderInternal(ctx: RenderContext) {
+        views
+        super.renderInternal(ctx)
     }
 
     fun action(action: KSuspendFunction0<Unit>) {
         throw ChangeActionException(action)
     }
 
-    abstract suspend fun main()
+    override fun onStageSet() {
+        //println("onStageSet[$this]: job=$job, stage=$stage")
 
-    private val job: Job = scene.launchAsap {
-        var action = ::main
-        while (true) {
-            try {
-                action()
-                break
-            } catch (e: ChangeActionException) {
-                action = e.action
+        if (job == null && stage != null) {
+            views
+            job = scene.launchAsap {
+                //println("STARTED COROUTINE!")
+                var action = ::main
+                while (true) {
+                    try {
+                        action()
+                        break
+                    } catch (e: ChangeActionException) {
+                        action = e.action
+                    }
+                }
             }
+        }
+        else if (job != null && stage == null) {
+            //println("removed: $this, $views")
+            job?.cancel()
+            job = null
+            onDestroy()
+        } else {
         }
     }
 
-    init {
-        this.onAttachDetach(
-            onAttach = {
-                //println("added: $views")
-            },
-            onDetach = {
-                //println("removed: $views")
-                job.cancel()
-                onDestroy()
-            }
-        )
-    }
+    abstract suspend fun main()
+
+    //init {
+    //    this.onAttachDetach(
+    //        onAttach = {
+    //            //println("added: $views")
+    //        },
+    //        onDetach = {
+    //            //println("removed: $views")
+    //            job.cancel()
+    //            onDestroy()
+    //        }
+    //    )
+    //}
 
     fun destroy() {
         removeFromParent()
@@ -109,10 +132,8 @@ val ScaledScene.key by Extra.PropertyThis<ScaledScene, KeyV> { KeyV(this) }
 val ScaledScene.mouseV by Extra.PropertyThis<ScaledScene, MouseV> { MouseV(this) }
 val ScaledScene.audioV by Extra.PropertyThis<ScaledScene, AudioV> { AudioV(this) }
 
-fun ScaledScene.registerProcessSystem(): AutoCloseable {
-    val closeable = CancellableGroup()
-
-    closeable += stage.onEvents(*MouseEvent.Type.ALL) { e ->
+fun ScaledScene.registerProcessSystem() {
+    sceneView.onEvents(*MouseEvent.Type.ALL) { e ->
         when (e.type) {
             MouseEvent.Type.MOVE -> Unit
             MouseEvent.Type.DRAG -> Unit
@@ -132,19 +153,15 @@ fun ScaledScene.registerProcessSystem(): AutoCloseable {
             MouseEvent.Type.SCROLL -> Unit
         }
     }
-    // @TODO: Use onAfterRender
-    closeable += views.onBeforeRender {
+    sceneView.addUpdater {
         arraycopy(mouseV._released, 0, mouseV.released, 0, 8)
         arraycopy(mouseV._pressed, 0, mouseV.pressed, 0, 8)
-
         mouseV._released.fill(false)
         mouseV._pressed.fill(false)
     }
-    closeable += stage.onEvents(*KeyEvent.Type.ALL) { e ->
+    sceneView.onEvents(*KeyEvent.Type.ALL) { e ->
         keysPressed[e.key] = e.type == KeyEvent.Type.DOWN
     }
-
-    return closeable
 }
 
 suspend fun readImage(path: String) = resourcesVfs["minesweeper/$path"].readBitmapSlice()
