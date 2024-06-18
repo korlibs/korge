@@ -1,5 +1,6 @@
 
 import korlibs.event.*
+import korlibs.graphics.*
 import korlibs.image.color.*
 import korlibs.image.text.*
 import korlibs.io.async.*
@@ -52,6 +53,13 @@ fun Stage.notification(message: String) {
                 break
             }
         }
+    }
+}
+
+suspend fun main2() = KorgeCore {
+    val stopWatch = Stopwatch().start()
+    onRenderEvent {
+        ag.clear(ag.mainFrameBuffer, color = Colors.RED.interpolateWith((stopWatch.elapsed.seconds % 1.0).toRatio(), Colors.WHITE))
     }
 }
 
