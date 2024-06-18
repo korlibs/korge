@@ -48,6 +48,7 @@ fun Project.toAndroidGenerated(isKorge: Boolean, info: AndroidInfo = AndroidInfo
     androidManifestApplicationChunks = korge.androidManifestApplicationChunks,
     androidManifest = korge.plugins.pluginExts.getAndroidManifestApplication() + info.androidManifest,
     androidLibrary = if (isKorge) korge.androidLibrary else false,
+    androidCustomApplicationAttributes = korge.androidCustomApplicationAttributes,
     projectName = project.name,
     buildDir = project.buildDir,
 )
@@ -66,6 +67,7 @@ data class AndroidGenerated constructor(
     val androidManifestChunks: Set<String> = emptySet(),
     val androidManifestApplicationChunks: Set<String> = emptySet(),
     val androidManifest: List<String> = emptyList(),
+    val androidCustomApplicationAttributes: Map<String, String> = emptyMap(),
     val androidLibrary: Boolean = true,
     val projectName: String,
     val buildDir: File,
