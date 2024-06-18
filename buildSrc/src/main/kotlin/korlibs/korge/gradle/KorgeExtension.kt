@@ -486,6 +486,7 @@ open class KorgeExtension(
     val androidGradleClasspaths = LinkedHashSet<String>()
 	val androidManifestApplicationChunks = LinkedHashSet<String>()
 	val androidManifestChunks = LinkedHashSet<String>()
+    val androidCustomApplicationAttributes = LinkedHashMap<String, String>()
     var androidMsaa: Int? = null
 
     fun plugin(name: String, args: Map<String, String> = mapOf()) {
@@ -510,6 +511,11 @@ open class KorgeExtension(
 	fun androidManifestApplicationChunk(text: String) {
 		androidManifestApplicationChunks += text
 	}
+
+    /** For example: androidCustomApplicationAttribute("android:usesCleartextTraffic", "true") */
+    fun androidCustomApplicationAttribute(key: String, value: String) {
+        androidCustomApplicationAttributes[key] = value
+    }
 
     fun androidGradlePlugin(name: String) {
         androidGradlePlugins += name
