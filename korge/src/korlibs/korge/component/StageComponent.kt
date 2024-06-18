@@ -58,6 +58,7 @@ fun Views.registerStageComponent(view: View) {
         componentsInStageCur.clear()
 
         viewsToTrack!!.forEach { view ->
+            //println("view=$view")
             if (view.hasExtra(__VIEW_STAGE_COMPONENT_NAME) && view.stage != null) {
                 val it = view.viewStageComponent
                 componentsInStageCur += it
@@ -71,6 +72,7 @@ fun Views.registerStageComponent(view: View) {
         componentsInStagePrev.fastForEach {
             if (it !in componentsInStageCur) {
                 it.removed(views)
+                viewsToTrack!!.remove(it.view)
             }
         }
     }
