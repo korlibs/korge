@@ -26,13 +26,13 @@ class MainShape2dScene : Scene() {
         val cursorShape = buildVectorPath { star(7, 10.0, 16.0) }
 
         val shapes = listOf(
-            Circle(Point(100, 100), radius = 50),
-            Ellipse(Point(100, 100), radius = Size(50f, 30f)),
-            Rectangle(50, 50, 250, 100),
-            RoundRectangle(Rectangle(50, 50, 250, 100), RectCorners(10f, 15f, 20f, 30f)),
-            buildVectorPath { star(7, 30.0, 50.0, x = 100.0, y = 100.0) },
-            buildVectorPath { star(7, 30.0, 50.0, x = 100.0, y = 100.0); rectHole(Rectangle(80, 80, 40, 40)) },
-            Line(Point(50, 50), Point(150, 120)),
+            Circle(Point(100, 100), radius = 50).toShape2D(),
+            Ellipse(Point(100, 100), radius = Size(50f, 30f)).toShape2D(),
+            Rectangle(50, 50, 250, 100).toShape2D(),
+            RoundRectangle(Rectangle(50, 50, 250, 100), RectCorners(10f, 15f, 20f, 30f)).toShape2D(),
+            buildVectorPath { star(7, 30.0, 50.0, x = 100.0, y = 100.0) }.toShape2D(),
+            buildVectorPath { star(7, 30.0, 50.0, x = 100.0, y = 100.0); rectHole(Rectangle(80, 80, 40, 40)) }.toShape2D(),
+            Line(Point(50, 50), Point(150, 120)).toShape2D(),
         )
         var shape: Shape2D = shapes.first()
 

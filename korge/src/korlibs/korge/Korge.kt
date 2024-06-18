@@ -35,6 +35,10 @@ import kotlin.time.*
 
 typealias KorgeConfig = Korge
 
+suspend fun test() = Korge {
+
+}
+
 data class KorgeDisplayMode(val scaleMode: ScaleMode, val scaleAnchor: Anchor, val clipBorders: Boolean) {
     companion object {
         val DEFAULT get() = CENTER

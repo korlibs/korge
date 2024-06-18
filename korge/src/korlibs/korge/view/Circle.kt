@@ -5,6 +5,7 @@ import korlibs.image.paint.*
 import korlibs.korge.ui.*
 import korlibs.math.geom.*
 import korlibs.math.geom.Circle
+import korlibs.math.geom.shape.*
 import korlibs.math.geom.vector.*
 
 /**
@@ -46,7 +47,7 @@ open class Circle(
     private fun updateGraphics() {
         val halfStroke = this@Circle.strokeThickness / 2
         val radius = this.radius
-        hitShape2d = Circle(Point(radius, radius), radius.toDouble())
+        hitShape2d = Circle(Point(radius, radius), radius.toDouble()).toShape2D()
         //println("radius=$radius, halfStroke=$halfStroke")
         updatePath {
             clear()

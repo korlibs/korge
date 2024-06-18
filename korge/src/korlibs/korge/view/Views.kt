@@ -50,7 +50,7 @@ class Views(
     val gameId: String = "korgegame",
     val settingsFolder: String? = null,
     val batchMaxQuads: Int = BatchBuilder2D.DEFAULT_BATCH_QUADS,
-    val bp: BoundsProvider = BoundsProvider.Base(),
+    val bp: BoundsProvider = korlibs.korge.render.BoundsProvider.Base(),
     val stageBuilder: (Views) -> Stage = { Stage(it) }
 ) : BaseEventListener(),
     Extra by Extra.Mixin(),
@@ -592,54 +592,8 @@ fun View.updateSingleViewWithViewsAll(
     dispatch(views.viewsUpdateEvent.also { it.fastDelta = delta })
 }
 
-interface BoundsProvider {
-    var windowToGlobalMatrix: Matrix
-    var windowToGlobalTransform: MatrixTransform
-    var globalToWindowMatrix: Matrix
-    var globalToWindowTransform: MatrixTransform
-    var actualVirtualBounds: Rectangle
-
-    @KorgeExperimental val actualVirtualLeft: Int get() = actualVirtualBounds.left.toIntRound()
-    @KorgeExperimental val actualVirtualTop: Int get() = actualVirtualBounds.top.toIntRound()
-    @KorgeExperimental val actualVirtualWidth: Int get() = actualVirtualBounds.width.toIntRound()
-    @KorgeExperimental val actualVirtualHeight: Int get() = actualVirtualBounds.height.toIntRound()
-    //@KorgeExperimental var actualVirtualWidth = DefaultViewport.WIDTH; private set
-    //@KorgeExperimental var actualVirtualHeight = DefaultViewport.HEIGHT; private set
-
-    val virtualLeft: Double get() = actualVirtualBounds.left.toDouble()
-    val virtualTop: Double get() = actualVirtualBounds.top.toDouble()
-    val virtualRight: Double get() = actualVirtualBounds.right.toDouble()
-    val virtualBottom: Double get() = actualVirtualBounds.bottom.toDouble()
-
-    @KorgeExperimental
-    val actualVirtualRight: Double get() = actualVirtualBounds.right.toDouble()
-    @KorgeExperimental
-    val actualVirtualBottom: Double get() = actualVirtualBounds.bottom.toDouble()
-
-    fun globalToWindowBounds(bounds: Rectangle): Rectangle =
-        bounds.transformed(globalToWindowMatrix)
-
-    val windowToGlobalScale: Scale get() = windowToGlobalTransform.scale
-    val windowToGlobalScaleX: Double get() = windowToGlobalTransform.scale.scaleX
-    val windowToGlobalScaleY: Double get() = windowToGlobalTransform.scale.scaleY
-    val windowToGlobalScaleAvg: Double get() = windowToGlobalTransform.scale.scaleAvg
-
-    val globalToWindowScale: Scale get() = globalToWindowTransform.scale
-    val globalToWindowScaleX: Double get() = globalToWindowTransform.scaleX
-    val globalToWindowScaleY: Double get() = globalToWindowTransform.scaleY
-    val globalToWindowScaleAvg: Double get() = globalToWindowTransform.scaleAvg
-
-    fun windowToGlobalCoords(pos: Point): Point = windowToGlobalMatrix.transform(pos)
-    fun globalToWindowCoords(pos: Point): Point = globalToWindowMatrix.transform(pos)
-
-    open class Base : BoundsProvider {
-        override var windowToGlobalMatrix: Matrix = Matrix()
-        override var windowToGlobalTransform: MatrixTransform = MatrixTransform()
-        override var globalToWindowMatrix: Matrix = Matrix()
-        override var globalToWindowTransform: MatrixTransform = MatrixTransform()
-        override var actualVirtualBounds: Rectangle = Rectangle(0, 0, DefaultViewport.WIDTH, DefaultViewport.HEIGHT)
-    }
-}
+fun BoundsProvider(): korlibs.korge.render.BoundsProvider.Base = korlibs.korge.render.BoundsProvider.Base()
+typealias BoundsProvider = korlibs.korge.render.BoundsProvider
 
 fun BoundsProvider.setBoundsInfo(
     reqVirtualSize: Size,
@@ -676,21 +630,7 @@ fun BoundsProvider.setBoundsInfo(
 
 suspend fun views(): Views = injector().get()
 
-class UpdateEvent(var fastDeltaTime: FastDuration = FastDuration.ZERO) : Event(), TEvent<UpdateEvent> {
-    constructor(deltaTime: Duration) : this(deltaTime.fast)
-    var deltaTime: Duration
-        set(value) { fastDeltaTime = value.fast }
-        get() = fastDeltaTime.toDuration()
-
-    companion object : EventType<UpdateEvent>
-    override val type: EventType<UpdateEvent> get() = UpdateEvent
-
-    fun copyFrom(other: UpdateEvent) {
-        this.fastDeltaTime = other.fastDeltaTime
-    }
-
-    override fun toString(): String = "UpdateEvent(time=$fastDeltaTime)"
-}
+typealias UpdateEvent = korlibs.render.event.UpdateEvent
 
 class ViewsUpdateEvent(val views: Views, var fastDelta: FastDuration = FastDuration.ZERO) : Event(), TEvent<ViewsUpdateEvent> {
     constructor(views: Views, delta: Duration) : this(views, delta.fast)

@@ -12,7 +12,8 @@ import korlibs.korge.view.property.*
 import korlibs.math.geom.*
 import korlibs.math.geom.Line
 import korlibs.math.geom.bezier.*
-import korlibs.math.geom.shape.*
+import korlibs.math.geom.shape.getPoints2List
+import korlibs.math.geom.shape.cachedPoints
 import korlibs.math.geom.vector.*
 import korlibs.math.interpolation.*
 import korlibs.time.measureTime

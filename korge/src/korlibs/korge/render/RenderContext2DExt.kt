@@ -238,3 +238,15 @@ fun RenderContext2D.drawText(
         n++
     }
 }
+
+inline fun View.renderCtx2d(ctx: RenderContext, crossinline block: (RenderContext2D) -> Unit) {
+    ctx.useCtx2d { context ->
+        context.keep {
+            context.size = Size(this@renderCtx2d.width, this@renderCtx2d.height)
+            context.blendMode = renderBlendMode
+            context.multiplyColor = renderColorMul
+            context.setMatrix(globalMatrix)
+            block(context)
+        }
+    }
+}
