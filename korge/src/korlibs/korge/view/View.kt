@@ -205,7 +205,11 @@ abstract class View internal constructor(
             if (field === value) return
             field = value
             forEachChild { it._stage = value }
+            onStageSet()
         }
+
+    open protected fun onStageSet() {
+    }
 
     var _invalidateNotifier: InvalidateNotifier? = null
         internal set(value) {
