@@ -74,22 +74,32 @@ class IPCViewsCompleter : ViewsCompleter {
 
                     when (e.type) {
                         IPCEvent.KEY_DOWN, IPCEvent.KEY_UP -> {
-                            views.dispatch(
-                                KeyEvent(when (e.type) {
-                                IPCEvent.KEY_DOWN -> KeyEvent.Type.DOWN
-                                IPCEvent.KEY_UP -> KeyEvent.Type.UP
-                                else -> KeyEvent.Type.DOWN
-                            }, key = awtKeyCodeToKey(e.p0)
-                                )
+                            views.gameWindow.dispatchKeyEvent(
+                                type = when (e.type) {
+                                    IPCEvent.KEY_DOWN -> KeyEvent.Type.DOWN
+                                    IPCEvent.KEY_UP -> KeyEvent.Type.UP
+                                    else -> KeyEvent.Type.DOWN
+                                },
+                                id = 0,
+                                key = awtKeyCodeToKey(e.p0),
+                                character = e.p1.toChar(),
+                                keyCode = e.p0,
+                                str = null,
                             )
                         }
-                        IPCEvent.MOUSE_MOVE, IPCEvent.MOUSE_DOWN, IPCEvent.MOUSE_UP -> {
-                            views.dispatch(MouseEvent(type = when (e.type) {
-                                IPCEvent.MOUSE_MOVE -> MouseEvent.Type.MOVE
-                                IPCEvent.MOUSE_DOWN -> MouseEvent.Type.UP
-                                IPCEvent.MOUSE_UP -> MouseEvent.Type.UP
-                                else -> MouseEvent.Type.DOWN
-                            }, x = e.p0, y = e.p1, button = MouseButton[e.p2]))
+                        IPCEvent.MOUSE_MOVE, IPCEvent.MOUSE_DOWN, IPCEvent.MOUSE_UP, IPCEvent.MOUSE_CLICK -> {
+                            views.gameWindow.dispatchMouseEvent(
+                                id = 0,
+                                type = when (e.type) {
+                                    IPCEvent.MOUSE_CLICK -> MouseEvent.Type.CLICK
+                                    IPCEvent.MOUSE_MOVE -> MouseEvent.Type.MOVE
+                                    IPCEvent.MOUSE_DOWN -> MouseEvent.Type.UP
+                                    IPCEvent.MOUSE_UP -> MouseEvent.Type.UP
+                                    else -> MouseEvent.Type.DOWN
+                                }, x = e.p0, y = e.p1,
+                                button = MouseButton[e.p2]
+                            )
+                            println(e)
                         }
                         IPCEvent.RESIZE -> {
                             val awtGameWindow = (views.gameWindow as? AwtGameWindow?)
