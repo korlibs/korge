@@ -779,6 +779,8 @@ class AGOpengl(val gl: KmlGl, var context: KmlGlContext? = null) : AG() {
         }
     }
 
+    private var tempReadMemory = Buffer.allocDirect(0)
+
     override fun readToMemory(frameBuffer: AGFrameBufferBase, frameBufferInfo: AGFrameBufferInfo, x: Int, y: Int, width: Int, height: Int, data: Any, kind: AGReadKind) {
         val gl: KmlGl = this.gl
         
@@ -789,35 +791,54 @@ class AGOpengl(val gl: KmlGl, var context: KmlGlContext? = null) : AG() {
             is IntArray -> 4
             is FloatArray -> 4
             is ByteArray -> 1
-            else -> TODO()
+            else -> when (kind) {
+                AGReadKind.COLOR -> 4
+                AGReadKind.DEPTH -> 4
+                AGReadKind.STENCIL -> 1
+                else -> 1
+            }
         }
         val flipY = frameBuffer.isMain
         val area = width * height
         val stride = width * bytesPerPixel
-        BufferTemp(height * stride) { buffer ->
-            BufferTemp(stride) { temp ->
-                when (kind) {
-                    AGReadKind.COLOR -> gl.readPixels(region.x, region.y, region.width, region.height, KmlGl.RGBA, KmlGl.UNSIGNED_BYTE, buffer)
-                    AGReadKind.DEPTH -> gl.readPixels(region.x, region.y, region.width, region.height, KmlGl.DEPTH_COMPONENT, KmlGl.FLOAT, buffer)
-                    AGReadKind.STENCIL -> gl.readPixels(region.x, region.y, region.width, region.height, KmlGl.STENCIL_INDEX, KmlGl.UNSIGNED_BYTE, buffer)
-                }
-                when (data) {
-                    is IntArray -> buffer.getArrayInt32(0, data, size = area)
-                    is FloatArray -> buffer.getArrayFloat32(0, data, size = area)
-                    is ByteArray -> buffer.getArrayInt8(0, data, size = area)
-                    else -> TODO()
-                }
+        val nbytes = height * stride
+        if (tempReadMemory.sizeInBytes < nbytes) {
+            tempReadMemory = Buffer.allocDirect(nbytes)
+        }
+        val buffer = tempReadMemory
+        when (kind) {
+            AGReadKind.COLOR -> gl.readPixels(region.x, region.y, region.width, region.height, KmlGl.RGBA, KmlGl.UNSIGNED_BYTE, buffer)
+            AGReadKind.DEPTH -> gl.readPixels(region.x, region.y, region.width, region.height, KmlGl.DEPTH_COMPONENT, KmlGl.FLOAT, buffer)
+            AGReadKind.STENCIL -> gl.readPixels(region.x, region.y, region.width, region.height, KmlGl.STENCIL_INDEX, KmlGl.UNSIGNED_BYTE, buffer)
+        }
+        when (data) {
+            is IntArray -> buffer.getS32Array(0 * Int.SIZE_BYTES, data, size = area)
+            is FloatArray -> buffer.getF32Array(0 * Float.SIZE_BYTES, data, size = area)
+            is ByteArray -> buffer.getS8Array(0 * Byte.SIZE_BYTES, data, size = area)
+            is Buffer -> {
                 if (flipY) {
-                    when (data) {
-                        is IntArray -> Bitmap32(width, height, RgbaArray(data))
-                        is FloatArray -> FloatBitmap32(width, height, data)
-                        is ByteArray -> Bitmap8(width, height, data)
-                        else -> TODO()
-                    }.flipY()
+                    //arraycopy(buffer, 0, data, 0, nbytes)
+                    for (n in 0 until height) {
+                        arraycopy(buffer, (height - 1 - n) * stride, data, n * stride, stride)
+                    }
+                } else {
+                    arraycopy(buffer, 0, data, 0, nbytes)
                 }
             }
-            //println("readColor.HASH:" + bitmap.computeHash())
+            else -> TODO()
         }
+        if (flipY) {
+            when (data) {
+                is IntArray -> Bitmap32(width, height, RgbaArray(data))
+                is FloatArray -> FloatBitmap32(width, height, data)
+                is ByteArray -> Bitmap8(width, height, data)
+                else -> {
+                    // Not flipping Buffer
+                    null
+                }
+            }?.flipY()
+        }
+        //println("readColor.HASH:" + bitmap.computeHash())
     }
 
     fun readPixelsToTexture(tex: AGTexture, x: Int, y: Int, width: Int, height: Int, kind: AGReadKind) {

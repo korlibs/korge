@@ -4,18 +4,19 @@ import korlibs.event.*
 import korlibs.graphics.*
 import korlibs.image.bitmap.*
 import korlibs.image.color.*
-import korlibs.time.*
 import korlibs.korge.awt.*
-import korlibs.korge.awt.views
 import korlibs.korge.ipc.*
 import korlibs.korge.render.*
 import korlibs.korge.time.*
 import korlibs.korge.view.*
 import korlibs.korge.view.Ellipse
+import korlibs.korge.view.Image
 import korlibs.math.geom.*
+import korlibs.memory.*
+import korlibs.time.*
 import kotlinx.coroutines.*
 import java.awt.Container
-import java.util.ServiceLoader
+import java.util.*
 
 interface ViewsCompleter {
     fun completeViews(views: Views)
@@ -88,10 +89,18 @@ class IPCViewsCompleter : ViewsCompleter {
                 }
             }
 
+            var fbMem = Buffer(0, direct = true)
+
             views.onAfterRender {
-                val bmp = it.ag.readColor(it.currentFrameBuffer)
+                val fb = it.currentFrameBufferOrMain
+                val nbytes = fb.width * fb.height * 4
+                if (fbMem.size < nbytes) {
+                    fbMem = Buffer(nbytes, direct = true)
+                }
+                it.ag.readToMemory(fb.base, fb.info, 0, 0, fb.width, fb.height, fbMem, AGReadKind.COLOR)
+                //val bmp = it.ag.readColor(it.currentFrameBuffer)
                 //channel.trySend(bmp)
-                ipc.setFrame(IPCFrame(System.currentTimeMillis().toInt(), bmp.width, bmp.height, bmp.ints))
+                ipc.setFrame(IPCFrame(System.currentTimeMillis().toInt(), fb.width, fb.height, IntArray(0), fbMem.sliceWithSize(0, nbytes).nioIntBuffer))
             }
         }
     }
