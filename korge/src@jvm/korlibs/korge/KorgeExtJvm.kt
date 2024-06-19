@@ -1,10 +1,13 @@
 package korlibs.korge
 
+import korlibs.event.*
+import korlibs.graphics.*
 import korlibs.image.bitmap.*
 import korlibs.image.color.*
 import korlibs.time.*
 import korlibs.korge.awt.*
 import korlibs.korge.awt.views
+import korlibs.korge.ipc.*
 import korlibs.korge.render.*
 import korlibs.korge.time.*
 import korlibs.korge.view.*
@@ -53,6 +56,44 @@ class StandardViewsCompleter : ViewsCompleter {
             ViewFactory("Container") { korlibs.korge.view.Container() },
             ViewFactory("9-Patch") { NinePatch(NinePatchBmpSlice(Bitmap32(62, 62, premultiplied = true))) },
         ))
+    }
+}
+
+class IPCViewsCompleter : ViewsCompleter {
+    override fun completeViews(views: Views) {
+        val korgeIPC = System.getenv("KORGE_IPC")
+        if (korgeIPC != null) {
+            val ipc = KorgeIPC(korgeIPC)
+
+            views.onBeforeRender {
+                while (ipc.availableEvents > 0) {
+                    val e = ipc.readEvent() ?: break
+                    if (e.timestamp < System.currentTimeMillis() - 100) continue
+
+                    when (e.type) {
+                        IPCEvent.KEY_DOWN, IPCEvent.KEY_UP -> {
+                            views.dispatch(
+                                KeyEvent(when (e.type) {
+                                IPCEvent.KEY_DOWN -> KeyEvent.Type.DOWN
+                                IPCEvent.KEY_UP -> KeyEvent.Type.UP
+                                else -> KeyEvent.Type.DOWN
+                            }, key = awtKeyCodeToKey(e.p0)
+                                )
+                            )
+                        }
+                        else -> {
+                            println(e)
+                        }
+                    }
+                }
+            }
+
+            views.onAfterRender {
+                val bmp = it.ag.readColor(it.currentFrameBuffer)
+                //channel.trySend(bmp)
+                ipc.setFrame(IPCFrame(System.currentTimeMillis().toInt(), bmp.width, bmp.height, bmp.ints))
+            }
+        }
     }
 }
 
