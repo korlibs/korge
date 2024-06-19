@@ -70,7 +70,8 @@ class IPCViewsCompleter : ViewsCompleter {
             views.onBeforeRender {
                 while (ipc.availableEvents > 0) {
                     val e = ipc.readEvent() ?: break
-                    if (e.timestamp < System.currentTimeMillis() - 100) continue
+                    //if (e.timestamp < System.currentTimeMillis() - 100) continue
+                    if (e.timestamp < System.currentTimeMillis() - 100 && e.type != IPCEvent.RESIZE && e.type != IPCEvent.BRING_BACK && e.type != IPCEvent.BRING_FRONT) continue // @TODO: BRING_BACK/BRING_FRONT
 
                     when (e.type) {
                         IPCEvent.KEY_DOWN, IPCEvent.KEY_UP -> {
@@ -109,6 +110,16 @@ class IPCViewsCompleter : ViewsCompleter {
                                 views.resized(e.p0, e.p1)
                             }
                             //
+                        }
+                        IPCEvent.BRING_BACK, IPCEvent.BRING_FRONT -> {
+                            val awtGameWindow = (views.gameWindow as? AwtGameWindow?)
+                            if (awtGameWindow != null) {
+                                if (e.type == IPCEvent.BRING_BACK) {
+                                    awtGameWindow.frame.toBack()
+                                } else {
+                                    awtGameWindow.frame.toFront()
+                                }
+                            }
                         }
                         else -> {
                             println(e)

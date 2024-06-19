@@ -18,6 +18,9 @@ class KorgeIPC(val path: String = System.getenv("KORGE_IPC") ?: DEFAULT_PATH) {
     val events = KorgeEventsBuffer("$path.events")
 
     val availableEvents get() = events.availableRead
+    fun resetEvents() {
+        events.reset()
+    }
     fun writeEvent(e: IPCEvent) = events.writeEvent(e)
     fun readEvent(e: IPCEvent = IPCEvent()): IPCEvent? = events.readEvent(e)
     fun setFrame(f: IPCFrame) = frame.setFrame(f)
@@ -40,6 +43,8 @@ data class IPCEvent(
 
     companion object {
         val RESIZE = 1
+        val BRING_BACK = 2
+        val BRING_FRONT = 3
 
         val MOUSE_MOVE = 10
         val MOUSE_DOWN = 11
