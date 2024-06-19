@@ -99,7 +99,7 @@ class IPCViewsCompleter : ViewsCompleter {
                                 }, x = e.p0, y = e.p1,
                                 button = MouseButton[e.p2]
                             )
-                            println(e)
+                            //println(e)
                         }
                         IPCEvent.RESIZE -> {
                             val awtGameWindow = (views.gameWindow as? AwtGameWindow?)
