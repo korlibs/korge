@@ -13,6 +13,7 @@ import korlibs.korge.view.Ellipse
 import korlibs.korge.view.Image
 import korlibs.math.geom.*
 import korlibs.memory.*
+import korlibs.render.awt.*
 import korlibs.time.*
 import kotlinx.coroutines.*
 import java.awt.Container
@@ -81,6 +82,23 @@ class IPCViewsCompleter : ViewsCompleter {
                             }, key = awtKeyCodeToKey(e.p0)
                                 )
                             )
+                        }
+                        IPCEvent.MOUSE_MOVE, IPCEvent.MOUSE_DOWN, IPCEvent.MOUSE_UP -> {
+                            views.dispatch(MouseEvent(type = when (e.type) {
+                                IPCEvent.MOUSE_MOVE -> MouseEvent.Type.MOVE
+                                IPCEvent.MOUSE_DOWN -> MouseEvent.Type.UP
+                                IPCEvent.MOUSE_UP -> MouseEvent.Type.UP
+                                else -> MouseEvent.Type.DOWN
+                            }, x = e.p0, y = e.p1, button = MouseButton[e.p2]))
+                        }
+                        IPCEvent.RESIZE -> {
+                            val awtGameWindow = (views.gameWindow as? AwtGameWindow?)
+                            if (awtGameWindow != null) {
+                                awtGameWindow.frame.setSize(e.p0, e.p1)
+                            } else {
+                                views.resized(e.p0, e.p1)
+                            }
+                            //
                         }
                         else -> {
                             println(e)
