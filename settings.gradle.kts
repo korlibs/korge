@@ -31,6 +31,7 @@ include(":korge-gradle-plugin")
 include(":korge-gradle-plugin-common")
 include(":korge-gradle-plugin-settings")
 include(":korge-reload-agent")
+include(":korge-ipc")
 if (System.getenv("DISABLE_SANDBOX") != "true") {
     include(":korge-sandbox")
 }

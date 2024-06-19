@@ -12,4 +12,5 @@ project.extensions.extraProperties.properties.apply {
 
 dependencies {
     commonMainApi(project(":korge-core"))
+    jvmMainApi(project(":korge-ipc"))
 }
