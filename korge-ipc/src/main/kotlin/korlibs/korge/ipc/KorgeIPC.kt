@@ -6,7 +6,7 @@ import java.nio.channels.*
 import java.nio.file.*
 import kotlin.reflect.*
 
-class KorgeIPC(val path: String = DEFAULT_PATH) {
+class KorgeIPC(val path: String = System.getenv("KORGE_IPC") ?: DEFAULT_PATH) {
     companion object {
         val DEFAULT_PATH = "/tmp/KORGE_IPC"
     }
