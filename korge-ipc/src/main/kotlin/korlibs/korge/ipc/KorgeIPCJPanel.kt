@@ -61,4 +61,21 @@ class KorgeIPCJPanel(val ipc: KorgeIPC = KorgeIPC()) : JPanel(), MouseListener, 
         addMouseMotionListener(this)
         addMouseWheelListener(this)
     }
+
+    companion object {
+        @JvmStatic
+        fun main() {
+            val frame = JFrame()
+            val frameHolder = korlibs.korge.ipc.KorgeIPCJPanel()
+            frame.add(frameHolder)
+            frame.addKeyListener(frameHolder)
+
+            frame.preferredSize = Dimension(640, 480)
+            frame.pack()
+            frame.setLocationRelativeTo(null)
+
+            frame.isVisible = true
+
+        }
+    }
 }

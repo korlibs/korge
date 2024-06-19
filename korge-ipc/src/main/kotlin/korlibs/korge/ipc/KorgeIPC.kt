@@ -7,6 +7,10 @@ import java.nio.file.*
 import kotlin.reflect.*
 
 class KorgeIPC(val path: String = System.getenv("KORGE_IPC") ?: DEFAULT_PATH) {
+    init {
+        println("KorgeIPC:$path")
+    }
+
     companion object {
         val DEFAULT_PATH = "/tmp/KORGE_IPC"
     }
