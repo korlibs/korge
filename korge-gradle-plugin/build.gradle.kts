@@ -7,6 +7,7 @@ plugins {
     id("maven-publish")
     id("com.gradle.plugin-publish")
     id("org.jetbrains.kotlin.jvm")
+    id("com.github.gmazzo.buildconfig") version "5.3.5"
 }
 
 description = "Multiplatform Game Engine written in Kotlin"
@@ -15,6 +16,7 @@ group = RootKorlibsPlugin.KORGE_GRADLE_PLUGIN_GROUP
 //this.name = "korlibs.korge.gradle.plugin"
 
 dependencies {
+    implementation(kotlin("gradle-plugin-api"))
     implementation(project(":korge-gradle-plugin-common"))
     implementation(libs.korlibs.serialization)
 }
@@ -37,9 +39,17 @@ gradlePlugin {
             //PluginDeclaration decl = it
             //id = "korlibs.korge"
             id = "com.soywiz.korge.library"
-            displayName = "Korge"
+            displayName = "Korge Library"
             description = "Multiplatform Game Engine for Kotlin"
             implementationClass = "korlibs.korge.gradle.KorgeLibraryGradlePlugin"
+        }
+        val `korge-kotlin-plugin` by creating {
+            //PluginDeclaration decl = it
+            //id = "korlibs.korge"
+            id = "com.soywiz.korge.kotlinplugin"
+            displayName = "Korge Kotlin Plugin"
+            description = "Multiplatform Game Engine for Kotlin"
+            implementationClass = "korlibs.korge.kotlin.plugin.KorgeKotlinCompilerPlugin"
         }
 
         val kproject by creating {
@@ -154,3 +164,17 @@ tasks { val jvmTest by creating { dependsOn("test") } }
 
 korlibs.NativeTools.groovyConfigurePublishing(project, false)
 korlibs.NativeTools.groovyConfigureSigning(project)
+
+buildConfig {
+    val project = project(":korge-kotlin-plugin")
+    packageName("korlibs.korge.gradle.plugin")
+    //buildConfigField("String", "KOTLIN_PLUGIN_ID", "\"${rootProject.extra["kotlin_plugin_id"]}\"")
+    buildConfigField("String", "KOTLIN_PLUGIN_ID", "\"com.soywiz.korge.korge-kotlin-plugin\"")
+    buildConfigField("String", "KOTLIN_PLUGIN_GROUP", "\"${project.group}\"")
+    buildConfigField("String", "KOTLIN_PLUGIN_NAME", "\"${project.name}\"")
+    buildConfigField("String", "KOTLIN_PLUGIN_VERSION", "\"${project.version}\"")
+}
+
+afterEvaluate {
+    //tasks.getByName("sourceJar").dependsOn("generateBuildConfig")
+}

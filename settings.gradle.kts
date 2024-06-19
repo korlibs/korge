@@ -27,6 +27,7 @@ val disabledExtraKorgeLibs = isPropertyTrue("DISABLED_EXTRA_KORGE_LIBS")
 
 include(":korge")
 include(":korge-core")
+include(":korge-kotlin-plugin")
 include(":korge-gradle-plugin")
 include(":korge-gradle-plugin-common")
 include(":korge-gradle-plugin-settings")
