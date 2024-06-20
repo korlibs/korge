@@ -21,6 +21,13 @@ import java.io.*
 val KORGE_RELOAD_AGENT_CONFIGURATION_NAME = "KorgeReloadAgent"
 val httpPort = 22011
 
+fun Project.ensureSourceSetsConfigure(vararg names: String) {
+    val sourceSets = project.kotlin.sourceSets
+    for (name in names) {
+        sourceSets.createPairSourceSet(name, project = project)
+    }
+}
+
 fun Project.configureJvm(projectType: ProjectType) {
     if (gkotlin.targets.findByName("jvm") != null) return
 
@@ -51,6 +58,8 @@ fun Project.configureJvm(projectType: ProjectType) {
 
     val jvmProcessResources = tasks.findByName("jvmProcessResources") as? Copy?
     jvmProcessResources?.duplicatesStrategy = org.gradle.api.file.DuplicatesStrategy.INCLUDE
+
+    ensureSourceSetsConfigure("common", "jvm")
 }
 
 fun Project.configureJvmRunJvm(isRootKorlibs: Boolean) {

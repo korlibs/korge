@@ -172,6 +172,10 @@ open class KorgeExtension(
         }
     }
 
+    fun loadYaml(file: File) {
+        val korgeYamlString = file.takeIfExists()?.readText() ?: return
+    }
+
     internal fun implicitCheckVersion() {
         checkVersion(check = true, report = false)
     }

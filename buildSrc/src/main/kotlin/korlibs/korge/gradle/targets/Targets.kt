@@ -39,6 +39,8 @@ fun NamedDomainObjectContainer<KotlinSourceSet>.createPairSourceSet(
 
     val newVariant = if (project?.projectDir != null) !File(project.projectDir, "src/commonMain").isDirectory else false
 
+    //println("!!!!!!!!!!! newVariant=$newVariant, project?.projectDir=${project?.projectDir} isDirectory=${project?.projectDir?.get("src/commonMain")?.isDirectory}")
+
     if (newVariant) {
         if (name == "common") {
             main.kotlin.srcDirs(listOf("src"))

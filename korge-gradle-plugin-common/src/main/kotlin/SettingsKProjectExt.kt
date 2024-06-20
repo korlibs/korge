@@ -1,6 +1,11 @@
 import com.soywiz.kproject.model.*
 import org.gradle.api.initialization.*
 import java.io.*
+import kotlin.collections.LinkedHashMap
+import kotlin.collections.contains
+import kotlin.collections.firstOrNull
+import kotlin.collections.listOf
+import kotlin.collections.set
 
 /**
  * Example: "git::korge-dragonbones:korlibs/korge::/korge-dragonbones::v3.2.0"
@@ -33,6 +38,9 @@ fun Settings.kproject(path: String) {
         val sourceDirectory = (result.projectDir as LocalFileRef).file
         //println(":$rname -> $sourceDirectory")
         settings.include(":${rname}")
-        settings.project(":${rname}").projectDir = sourceDirectory.relativeTo(rootDir)
+        val project = settings.project(":${rname}")
+        val projectDir = sourceDirectory.relativeTo(rootDir)
+        project.projectDir = projectDir
+        //project.buildFileName = buildFileKts.relativeTo(projectDir).path
     }
 }

@@ -8,6 +8,7 @@ import korlibs.korge.gradle.*
 import korlibs.korge.gradle.kotlin
 import korlibs.korge.gradle.targets.*
 import korlibs.korge.gradle.targets.all.*
+import korlibs.korge.gradle.targets.jvm.*
 import korlibs.korge.gradle.util.*
 import org.gradle.api.*
 import org.gradle.api.tasks.*
@@ -42,6 +43,8 @@ fun Project.configureAndroidDirect(projectType: ProjectType, isKorge: Boolean) {
         }
         AddFreeCompilerArgs.addFreeCompilerArgs(project, this)
     }
+
+    ensureSourceSetsConfigure("common", "android")
 
     //if (isKorge) {
     //    project.afterEvaluate {

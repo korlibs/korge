@@ -3,6 +3,7 @@ package korlibs.korge.gradle.targets.js
 import korlibs.korge.gradle.gkotlin
 import korlibs.korge.gradle.kotlin
 import korlibs.korge.gradle.targets.*
+import korlibs.korge.gradle.targets.jvm.*
 import korlibs.korge.gradle.targets.wasm.*
 import korlibs.korge.gradle.util.*
 import org.gradle.api.*
@@ -12,6 +13,7 @@ import java.io.*
 
 fun Project.configureWasm(projectType: ProjectType, binaryen: Boolean = false) {
     if (gkotlin.targets.findByName("wasm") != null) return
+    ensureSourceSetsConfigure("common", "wasmJs")
 
     configureWasmTarget(executable = true, binaryen = binaryen)
 
