@@ -28,6 +28,7 @@ import org.jetbrains.kotlin.gradle.targets.js.testing.mocha.*
 import org.jetbrains.kotlin.gradle.tasks.*
 import java.io.*
 import java.nio.file.*
+import kotlin.io.path.*
 
 object RootKorlibsPlugin {
     val KORGE_GROUP = "com.soywiz.korge"
@@ -837,7 +838,13 @@ fun Project.symlinktree(fromFolder: File, intoFolder: File) {
             runCatching { intoFolder.delete() }
             runCatching { intoFolder.deleteRecursively() }
             intoFolder.parentFile.mkdirs()
-            Files.createSymbolicLink(intoFolder.toPath(), intoFolder.parentFile.toPath().relativize(fromFolder.toPath()))
+            val intoPath = intoFolder.toPath()
+            val relativeFromPath = intoFolder.parentFile.toPath().relativize(fromFolder.toPath())
+            //if (isWindows) {
+            //    exec { it.commandLine("cmd", "/c", "mklink", "/d", intoPath.pathString, relativeFromPath.pathString) }
+            //} else {
+                Files.createSymbolicLink(intoPath, relativeFromPath)
+            //}
         }
     } catch (e: Throwable) {
         e.printStackTrace()
