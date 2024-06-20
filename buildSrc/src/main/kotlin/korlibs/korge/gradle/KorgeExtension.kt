@@ -14,6 +14,7 @@ import korlibs.modules.*
 import korlibs.root.*
 import org.gradle.api.*
 import org.gradle.api.artifacts.*
+import org.gradle.api.logging.*
 import org.gradle.internal.impldep.org.yaml.snakeyaml.Yaml
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import java.io.*
@@ -178,9 +179,59 @@ open class KorgeExtension(
         val korgeYamlString = file.takeIfExists()?.readText() ?: return
         try {
             val info = korlibs.io.serialization.yaml.Yaml.read(korgeYamlString).dyn
-            info["id"].toStringOrNull()?.let {
-                this.id = it
+            info["id"].toStringOrNull()?.let { this.id = it }
+
+            author(
+                name = info["author"]["name"].str,
+                email = info["author"]["email"].str,
+                href = info["author"]["href"].str,
+            )
+
+            gameCategory = GameCategory[info["category"].str]
+
+            info["icon"].toStringOrNull()?.also {
+                icon = project.file(it)
             }
+
+            info["banner"].toStringOrNull()?.also {
+                banner = project.file(it)
+            }
+
+            val targetList = info["targets"].list
+            if (targetList.isEmpty()) {
+                targetDefault()
+            } else {
+                for (target in targetList) {
+                    when (target.str) {
+                        "all" -> targetAll()
+                        "default" -> targetDefault()
+                        "jvm" -> targetJvm()
+                        "js" -> targetJs()
+                        "wasm", "wasmJs" -> targetWasmJs()
+                        "android" -> targetAndroid()
+                        "ios" -> targetIos()
+                        else -> project.logger.log(LogLevel.WARN, "Unknown target in korge.yaml: '${target.str}'")
+                    }
+                }
+            }
+
+            for (plugin in info["plugins"].list) {
+                val pluginStr = plugin.str
+                when (pluginStr) {
+                    "\$kotlin.serialization" -> serialization()
+                    "\$kotlin.serialization.json" -> serializationJson()
+                    else -> project.logger.log(LogLevel.WARN, "Unknown plugin in korge.yaml: '${pluginStr}'")
+                }
+            }
+
+            for ((key, value) in info["config"].map) {
+                config(key.str, value.str)
+            }
+
+            for ((name, jvmMainClassName) in info["entrypoints"].map) {
+                entrypoint(name.str, jvmMainClassName.str)
+            }
+
             // @TODO: Implement the rest of the properties including targets etc.
         } catch (e: Throwable) {
             e.printStackTrace()
