@@ -18,6 +18,9 @@ class KorgeIPC(val path: String = System.getenv("KORGE_IPC") ?: DEFAULT_PATH) {
     val events = KorgeEventsBuffer("$path.events")
 
     val availableEvents get() = events.availableRead
+    fun resetEvents() {
+        events.reset()
+    }
     fun writeEvent(e: IPCEvent) = events.writeEvent(e)
     fun readEvent(e: IPCEvent = IPCEvent()): IPCEvent? = events.readEvent(e)
     fun setFrame(f: IPCFrame) = frame.setFrame(f)
@@ -40,6 +43,8 @@ data class IPCEvent(
 
     companion object {
         val RESIZE = 1
+        val BRING_BACK = 2
+        val BRING_FRONT = 3
 
         val MOUSE_MOVE = 10
         val MOUSE_DOWN = 11
@@ -60,7 +65,7 @@ class KorgeEventsBuffer(val path: String) {
     var buffer = channel.map(FileChannel.MapMode.READ_WRITE, 0L, (HEAD_SIZE + EVENT_SIZE * MAX_EVENTS).toLong())
 
     init {
-        File(path).deleteOnExit()
+        //File(path).deleteOnExit()
     }
 
     var readPos: Long by DelegateBufferLong(buffer, 0)
@@ -112,6 +117,11 @@ class KorgeEventsBuffer(val path: String) {
         channel.close()
     }
 
+    fun delete() {
+        close()
+        File(path).delete()
+    }
+
     class DelegateBufferLong(val buffer: ByteBuffer, val index: Int) {
         operator fun getValue(obj: Any, property: KProperty<*>): Long = buffer.getLong(index)
         operator fun setValue(obj: Any, property: KProperty<*>, value: Long) { buffer.putLong(index, value) }
@@ -123,54 +133,66 @@ class KorgeEventsBuffer(val path: String) {
     }
 }
 
-class IPCFrame(val id: Int, val width: Int, val height: Int, val pixels: IntArray = IntArray(width * height))
+class IPCFrame(val id: Int, val width: Int, val height: Int, val pixels: IntArray = IntArray(0), val buffer: IntBuffer? = null, val pid: Int = -1, val version: Int = -1) {
+}
 
 class KorgeFrameBuffer(val path: String) {
     val channel = FileChannel.open(Path.of(path), StandardOpenOption.READ, StandardOpenOption.WRITE, StandardOpenOption.CREATE)
     var width: Int = 0
     var height: Int = 0
-    var buffer = channel.map(FileChannel.MapMode.READ_WRITE, 0L, 16 + 0)
+    var buffer = channel.map(FileChannel.MapMode.READ_WRITE, 0L, 32 + 0)
     var ibuffer = buffer.asIntBuffer()
-
-    init {
-        File(path).deleteOnExit()
-    }
 
     fun ensureSize(width: Int, height: Int) {
         if (this.width < width || this.height < height) {
             this.width = width
             this.height = height
-            buffer = channel.map(FileChannel.MapMode.READ_WRITE, 0L, (16 + (width * height * 4)).toLong())
+            buffer = channel.map(FileChannel.MapMode.READ_WRITE, 0L, (32 + (width * height * 4)).toLong())
             ibuffer = buffer.asIntBuffer()
         }
     }
 
+    val currentProcessId = ProcessHandle.current().pid().toInt()
+
     fun setFrame(frame: IPCFrame) {
         ensureSize(frame.width, frame.height)
         ibuffer.clear()
+        ibuffer.put(0) // version
+        ibuffer.put(currentProcessId)
         ibuffer.put(frame.id)
         ibuffer.put(frame.width)
         ibuffer.put(frame.height)
-        ibuffer.put(frame.pixels)
+        if (frame.buffer != null) {
+            ibuffer.put(frame.buffer)
+        } else {
+            ibuffer.put(frame.pixels)
+        }
     }
 
     fun getFrameId(): Int {
         ibuffer.clear()
-        return ibuffer.get()
+        return ibuffer.get(2)
     }
 
     fun getFrame(): IPCFrame {
         ibuffer.clear()
+        val version = ibuffer.get()
+        val pid = ibuffer.get()
         val id = ibuffer.get()
         val width = ibuffer.get()
         val height = ibuffer.get()
         ensureSize(width, height)
         val pixels = IntArray(width * height)
         ibuffer.get(pixels)
-        return IPCFrame(id, width, height, pixels)
+        return IPCFrame(id, width, height, pixels, pid = pid, version = version)
     }
 
     fun close() {
         channel.close()
+    }
+
+    fun delete() {
+        close()
+        File(path).delete()
     }
 }
