@@ -2,6 +2,7 @@ package korlibs.korge.gradle
 
 import groovy.text.*
 import korlibs.*
+import korlibs.io.serialization.yaml.*
 import korlibs.korge.gradle.processor.*
 import korlibs.korge.gradle.targets.*
 import korlibs.korge.gradle.targets.android.*
@@ -13,6 +14,7 @@ import korlibs.modules.*
 import korlibs.root.*
 import org.gradle.api.*
 import org.gradle.api.artifacts.*
+import org.gradle.internal.impldep.org.yaml.snakeyaml.Yaml
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import java.io.*
 import java.net.*
@@ -174,6 +176,11 @@ open class KorgeExtension(
 
     fun loadYaml(file: File) {
         val korgeYamlString = file.takeIfExists()?.readText() ?: return
+        val info = korlibs.io.serialization.yaml.Yaml.read(korgeYamlString).dyn
+        info["id"].toStringOrNull()?.let {
+            this.id = it
+        }
+        // @TODO: Implement the rest of the properties including targets etc.
     }
 
     internal fun implicitCheckVersion() {
