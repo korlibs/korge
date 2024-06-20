@@ -1,3 +1,5 @@
+import korlibs.root.*
+
 plugins {
     //id "com.dorongold.task-tree" version "2.1.1"
     // ./gradlew :kds:compileKotlinJs taskTree
@@ -18,5 +20,74 @@ tasks {
                 }
             }
         }
+    }
+}
+
+afterEvaluate {
+    allprojects {
+        val publishing = extensions.findByType(PublishingExtension::class.java)
+        if (publishing == null) {
+            val copyArtifactsToDirectory by tasks.registering(Task::class) {
+            }
+        } else {
+            val copyArtifactsToDirectory by tasks.registering(Task::class) {
+                dependsOn("publishToMavenLocal")
+
+                doLast {
+                    val base = rootProject.layout.buildDirectory.dir("artifacts")
+                    for (pub in publishing.publications.filterIsInstance<MavenPublication>()) {
+                        //println(pub.artifacts.toList())
+                        val basePath = pub.groupId.replace(".", "/") + "/" + pub.artifactId + "/" + pub.version
+                        val baseDir = File(base.get().asFile, basePath)
+
+                        val m2Dir = File(File(System.getProperty("user.home"), ".m2/repository"), basePath)
+
+                        //println("m2Dir=$m2Dir")
+                        // .module
+                        copy {
+                            from(m2Dir)
+                            into(baseDir)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+val mversion = project.getForcedVersion()
+
+tasks {
+    val generateArtifactsZip by registering(Zip::class) {
+        subprojects {
+            dependsOn("${this.path}:copyArtifactsToDirectory")
+        }
+        from(rootProject.layout.buildDirectory.dir("artifacts"))
+        archiveFileName = "korge-$mversion.zip"
+        destinationDirectory = rootProject.layout.buildDirectory
+    }
+
+    val generateArtifactsTar by registering(Tar::class) {
+        subprojects {
+            dependsOn("${this.path}:copyArtifactsToDirectory")
+        }
+        from(rootProject.layout.buildDirectory.dir("artifacts"))
+        //compression = Compression.GZIP
+        //into(rootProject.layout.buildDirectory)
+        archiveFileName = "korge-$mversion.tar"
+        destinationDirectory = rootProject.layout.buildDirectory
+    }
+
+    // winget install zstd
+    val generateArtifactsTarZstd by registering(Exec::class) {
+        val rootFile = rootProject.layout.buildDirectory.asFile.get()
+        dependsOn(generateArtifactsTar)
+        commandLine(
+            "zstd", "-z",
+            //"--ultra", "-22",
+            "-17",
+            "-f", File(rootFile, "korge-$mversion.tar").absolutePath,
+            "-o", File(rootFile, "korge-$mversion.tar.zstd").absolutePath
+        )
     }
 }

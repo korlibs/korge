@@ -21,63 +21,24 @@ env:
   JAVA_DISTRIBUTION: zulu
 
 jobs:
-  create-staging-repo:
-    runs-on: ubuntu-latest
-    outputs:
-      stagedRepositoryId: ${{ steps.createStagedRepositoryId.outputs.stagedRepositoryId }}
-    env:
-      DISABLE_JAVASCRIPT_TEST: true
-      DISABLE_KOTLIN_NATIVE: true
-      DISABLE_ANDROID: true
-      DISABLE_SANDBOX: true
-    steps:
-      - run: "echo FORCED_VERSION=$FORCED_VERSION"
-      - uses: actions/checkout@v3
-      - { name: Use Node.js 20.x, uses: actions/setup-node@v3, with: { node-version: 20.x } }
-      - { name: Set up JDK, uses: actions/setup-java@v3, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
-      - { name: Replace gradle wrapper, run: "sed 's/-all/-bin/g' gradle/wrapper/gradle-wrapper.properties > gradle/wrapper/gradle-wrapper.properties.bak; cp gradle/wrapper/gradle-wrapper.properties.bak gradle/wrapper/gradle-wrapper.properties" }
-      - { name: Prepare Gradle, uses: gradle/gradle-build-action@ef76a971e2fa3f867b617efd72f2fbd72cf6f8bc } # v2.8.0
-      - run: sudo apt-get install xvfb
-      - id: createStagedRepositoryId
-        run: xvfb-run --auto-servernum ./gradlew --no-daemon --info --stacktrace startReleasingMavenCentral
-
   publish:
-    strategy:
-      fail-fast: false # Once working, comment this
-      matrix:
-        include:
-          - { os: macos-11, tasks: publishIosArm64PublicationToMavenRepository publishIosX64PublicationToMavenRepository publishIosSimulatorArm64PublicationToMavenRepository }
-          - { os: macos-11, tasks: publishTvosX64PublicationToMavenRepository publishTvosArm64PublicationToMavenRepository publishTvosSimulatorArm64PublicationToMavenRepository }
-          - { os: ubuntu-latest, tasks: publishKotlinMultiplatformPublicationToMavenRepository publishJvmPublicationToMavenRepository }
-          - { os: ubuntu-latest, tasks: publishWasmJsPublicationToMavenRepository publishJsPublicationToMavenRepository publishAndroidPublicationToMavenRepository }
-    runs-on: ${{ matrix.os }}
-    needs: [create-staging-repo]
-    env:
-      stagedRepositoryId: ${{needs.create-staging-repo.outputs.stagedRepositoryId}}
+    runs-on: macos-11
     steps:
-      - uses: actions/checkout@v3
+      - { name: Checkout, uses: actions/checkout@v3 }
       - { name: Use Node.js 20.x, uses: actions/setup-node@v3, with: { node-version: 20.x } }
       - { name: Set up JDK, uses: actions/setup-java@v3, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
-      - { name: Replace gradle wrapper, run: "sed 's/-all/-bin/g' gradle/wrapper/gradle-wrapper.properties > gradle/wrapper/gradle-wrapper.properties.bak; cp gradle/wrapper/gradle-wrapper.properties.bak gradle/wrapper/gradle-wrapper.properties" }
+      - { name: Replace Gradle Wrapper, run: "sed 's/-all/-bin/g' gradle/wrapper/gradle-wrapper.properties > gradle/wrapper/gradle-wrapper.properties.bak; cp gradle/wrapper/gradle-wrapper.properties.bak gradle/wrapper/gradle-wrapper.properties" }
       - { name: Prepare Gradle, uses: gradle/gradle-build-action@ef76a971e2fa3f867b617efd72f2fbd72cf6f8bc } # v2.8.0
-      #- run: sudo apt-get install xvfb
-      #- run: xvfb-run --auto-servernum ./gradlew --no-daemon checkReleasingMavenCentral
-      - run: ./gradlew checkReleasingMavenCentral
-      - run: ./gradlew ${{ matrix.tasks }}
-
-  publish-finalize:
-    runs-on: ubuntu-latest
-    needs: [publish]
-    env:
-      stagedRepositoryId: ${{needs.create-staging-repo.outputs.stagedRepositoryId}}
-      DISABLE_JAVASCRIPT_TEST: true
-      DISABLE_KOTLIN_NATIVE: true
-      DISABLE_ANDROID: true
-      DISABLE_SANDBOX: true
-    steps:
-      - uses: actions/checkout@v3
-      - { name: Use Node.js 20.x, uses: actions/setup-node@v3, with: { node-version: 20.x } }
-      - { name: Set up JDK, uses: actions/setup-java@v3, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
-      - { name: Replace gradle wrapper, run: "sed 's/-all/-bin/g' gradle/wrapper/gradle-wrapper.properties > gradle/wrapper/gradle-wrapper.properties.bak; cp gradle/wrapper/gradle-wrapper.properties.bak gradle/wrapper/gradle-wrapper.properties" }
-      - { name: Prepare Gradle, uses: gradle/gradle-build-action@ef76a971e2fa3f867b617efd72f2fbd72cf6f8bc } # v2.8.0
-      - run: ./gradlew releaseMavenCentral
+      - { name: Initialize Gradle, run: ./gradlew }
+      # To ensure we are fine before staging repository
+      - { name: Publish Publications To Maven Local, run: ./gradlew publishToMavenLocal }
+      - { name: Generate artifacts .tar.zstd, run: ./gradlew generateArtifactsTarZstd }
+      - name: Github Release
+        uses: softprops/action-gh-release@69320dbe05506a9a39fc8ae11030b214ec2d1f87
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            build/korge-*.tar.zstd
+      - { name: Start Maven Central Staging Repository, run: ./gradlew startReleasingMavenCentral }
+      - { name: Publish Publications To Maven Repository, run: "./gradlew publishAllPublicationsToMavenRepository" }
+      - { name: Release to Maven Central, run: ./gradlew releaseMavenCentral }
