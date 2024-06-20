@@ -20,7 +20,7 @@ class KProjectSettingsPlugin : Plugin<Settings> {
         if (!buildFileKts.exists() && !buildFileGroovy.exists()) {
             buildFileKts.writeTextIfNew("""
             import korlibs.korge.gradle.*
-            plugins { alias(libs.plugins.korge) }
+            plugins { alias(libs.plugins.korge) version korlibs.korge.gradle.common.KorgeGradlePluginVersion.VERSION }
             korge { id = "org.korge.unknown.game"; loadYaml(file("korge.yaml")) }
             dependencies { findProject(":deps")?.also { add("commonMainApi", it) } }
             val baseFile = file("build.extra.gradle.kts").takeIf { it.exists() }?.also { apply(from = it) }

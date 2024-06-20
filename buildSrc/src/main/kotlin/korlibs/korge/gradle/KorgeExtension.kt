@@ -176,11 +176,15 @@ open class KorgeExtension(
 
     fun loadYaml(file: File) {
         val korgeYamlString = file.takeIfExists()?.readText() ?: return
-        val info = korlibs.io.serialization.yaml.Yaml.read(korgeYamlString).dyn
-        info["id"].toStringOrNull()?.let {
-            this.id = it
+        try {
+            val info = korlibs.io.serialization.yaml.Yaml.read(korgeYamlString).dyn
+            info["id"].toStringOrNull()?.let {
+                this.id = it
+            }
+            // @TODO: Implement the rest of the properties including targets etc.
+        } catch (e: Throwable) {
+            e.printStackTrace()
         }
-        // @TODO: Implement the rest of the properties including targets etc.
     }
 
     internal fun implicitCheckVersion() {
