@@ -8,6 +8,7 @@ plugins {
     id("maven-publish")
     id("com.gradle.plugin-publish")
     id("org.jetbrains.kotlin.jvm")
+    id("com.github.gmazzo.buildconfig") version "5.3.5"
 }
 
 description = "Multiplatform Game Engine written in Kotlin"
@@ -72,3 +73,8 @@ afterEvaluate {
 }
 
 tasks { val jvmTest by creating { dependsOn("test") } }
+
+buildConfig {
+    packageName("korlibs.korge.gradle.common")
+    buildConfigField("String", "KOTLIN_PLUGIN_VERSION", "\"${project.version}\"")
+}

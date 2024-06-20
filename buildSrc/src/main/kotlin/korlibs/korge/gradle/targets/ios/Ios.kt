@@ -3,6 +3,7 @@ package korlibs.korge.gradle.targets.ios
 import korlibs.korge.gradle.*
 import korlibs.korge.gradle.targets.*
 import korlibs.korge.gradle.targets.desktop.*
+import korlibs.korge.gradle.targets.jvm.*
 import korlibs.korge.gradle.targets.native.*
 import korlibs.korge.gradle.util.*
 import org.gradle.api.*
@@ -16,6 +17,7 @@ import java.io.*
 fun Project.configureNativeIos(projectType: ProjectType) {
     configureNativeIosTvos(projectType, "ios")
     configureNativeIosTvos(projectType, "tvos")
+    ensureSourceSetsConfigure("common", "ios", "tvos")
 
     val exKotlinSourceSetContainer = this.project.exKotlinSourceSetContainer
     this.project.kotlin.apply {

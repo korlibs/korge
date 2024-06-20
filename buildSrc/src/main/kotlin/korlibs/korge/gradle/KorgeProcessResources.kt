@@ -40,13 +40,18 @@ fun Project.generateKorgeProcessedFromTask(task: ProcessResources) {
     val compilation = target.compilations.findByName(compilationName)
     val folders: MutableList<FileCollection> = when {
         compilation != null -> compilation.allKotlinSourceSets.map { it.resources.sourceDirectories }.toMutableList()
-        else -> arrayListOf(project.files(file("src/commonMain/resources"), file("src/${targetNameRaw}${compilationName.capitalize()}/resources")))
+        else -> arrayListOf(project.files(
+            file("resources"),
+            file("src/commonMain/resources"),
+            file("src/${targetNameRaw}${compilationName.capitalize()}/resources")
+        ))
     }
 
     //println("PROJECT: $project : ${this.project.allDependantProjects()}")
 
     for (subproject in this.project.allDependantProjects()) {
         val files = files(
+            file("resources"),
             subproject.file("src/commonMain/resources"),
             subproject.file("src/${targetNameRaw}${compilationName.capitalize()}/resources")
         )

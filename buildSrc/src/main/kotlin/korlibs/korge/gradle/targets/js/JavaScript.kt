@@ -7,6 +7,7 @@ import korlibs.korge.gradle.targets.*
 import korlibs.korge.gradle.targets.windows.*
 import korlibs.korge.gradle.util.*
 import korlibs.*
+import korlibs.korge.gradle.targets.jvm.*
 import org.gradle.api.*
 import org.gradle.api.file.*
 import org.gradle.api.tasks.*
@@ -90,6 +91,8 @@ fun Project.configureJavaScript(projectType: ProjectType) {
         configureJavascriptRun()
     }
     configureWebpack()
+
+    ensureSourceSetsConfigure("common", "js")
 }
 
 fun KotlinJsTargetDsl.configureJsTargetOnce() {

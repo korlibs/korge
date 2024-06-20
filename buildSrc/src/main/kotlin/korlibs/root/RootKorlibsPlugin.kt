@@ -28,6 +28,7 @@ import org.jetbrains.kotlin.gradle.targets.js.testing.mocha.*
 import org.jetbrains.kotlin.gradle.tasks.*
 import java.io.*
 import java.nio.file.*
+import kotlin.io.path.*
 
 object RootKorlibsPlugin {
     val KORGE_GROUP = "com.soywiz.korge"
@@ -808,6 +809,7 @@ fun Project.hasBuildGradle() = listOf("build.gradle", "build.gradle.kts").any { 
 val Project.isSample: Boolean get() = project.path.startsWith(":samples:") || project.path.startsWith(":korge-sandbox") || project.path.startsWith(":korge-editor") || project.path.startsWith(":korge-starter-kit")
 fun Project.mustAutoconfigureKMM(): Boolean =
     !project.name.startsWith("korge-gradle-plugin") &&
+        project.name != "korge-kotlin-plugin" &&
         project.name != "korge-reload-agent" &&
         project.name != "korge-ipc" &&
         project.name != "korge-benchmarks" &&
@@ -836,7 +838,13 @@ fun Project.symlinktree(fromFolder: File, intoFolder: File) {
             runCatching { intoFolder.delete() }
             runCatching { intoFolder.deleteRecursively() }
             intoFolder.parentFile.mkdirs()
-            Files.createSymbolicLink(intoFolder.toPath(), intoFolder.parentFile.toPath().relativize(fromFolder.toPath()))
+            val intoPath = intoFolder.toPath()
+            val relativeFromPath = intoFolder.parentFile.toPath().relativize(fromFolder.toPath())
+            //if (isWindows) {
+            //    exec { it.commandLine("cmd", "/c", "mklink", "/d", intoPath.pathString, relativeFromPath.pathString) }
+            //} else {
+                Files.createSymbolicLink(intoPath, relativeFromPath)
+            //}
         }
     } catch (e: Throwable) {
         e.printStackTrace()
