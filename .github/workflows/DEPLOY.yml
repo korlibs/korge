@@ -33,12 +33,12 @@ jobs:
       # To ensure we are fine before staging repository
       - { name: Publish Publications To Maven Local, run: ./gradlew publishToMavenLocal }
       - { name: Generate artifacts .tar.zstd, run: ./gradlew generateArtifactsTarZstd }
+      - { name: Start Maven Central Staging Repository, run: ./gradlew startReleasingMavenCentral }
+      - { name: Publish Publications To Maven Repository, run: "./gradlew publishAllPublicationsToMavenRepository publishJvmPublicationToMavenRepository" }
+      - { name: Release to Maven Central, run: ./gradlew releaseMavenCentral }
       - name: Github Release
         uses: softprops/action-gh-release@69320dbe05506a9a39fc8ae11030b214ec2d1f87
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: |
             build/korge-*.tar.zstd
-      - { name: Start Maven Central Staging Repository, run: ./gradlew startReleasingMavenCentral }
-      - { name: Publish Publications To Maven Repository, run: "./gradlew publishAllPublicationsToMavenRepository" }
-      - { name: Release to Maven Central, run: ./gradlew releaseMavenCentral }
