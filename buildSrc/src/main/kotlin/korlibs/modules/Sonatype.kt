@@ -13,7 +13,7 @@ val Project.customMavenUrl: String? get() = System.getenv("KORLIBS_CUSTOM_MAVEN_
 val Project.stagedRepositoryId: String? get() =
     System.getenv("stagedRepositoryId")
         ?: rootProject.findProperty("stagedRepositoryId")?.toString()
-        ?: File("stagedRepositoryId").readText()
+        ?: File("stagedRepositoryId").takeIfExists()?.readText()
 
 
 val Project.sonatypePublishUserNull: String? get() = (System.getenv("SONATYPE_USERNAME") ?: rootProject.findProperty("SONATYPE_USERNAME")?.toString() ?: project.findProperty("sonatypeUsername")?.toString())
