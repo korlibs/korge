@@ -1,6 +1,7 @@
 package korlibs.korge.ipc
 
 import korlibs.io.stream.*
+import korlibs.memory.*
 import kotlinx.serialization.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.*
@@ -10,7 +11,7 @@ import java.nio.*
 import java.nio.channels.*
 import java.util.concurrent.*
 
-private val threadPool = Executors.newCachedThreadPool()
+internal val threadPool = Executors.newCachedThreadPool()
 
 interface KorgeIPCSocketListener {
     fun onServerStarted(socket: KorgeIPCServerSocket) {}
@@ -63,9 +64,9 @@ class KorgeIPCSocket(var socketOpt: SocketChannel?, val id: Long) : BaseKorgeIPC
     override val isOpen: Boolean get() = socketOpt?.isOpen == true
 
     companion object {
-        fun openOrListen(path: String, listener: KorgeIPCSocketListener, server: Boolean? = null, serverDeleteOnExit: Boolean = false): BaseKorgeIPCSocket {
+        fun openOrListen(path: String, listener: KorgeIPCSocketListener, server: Boolean? = null, serverDelete: Boolean = false, serverDeleteOnExit: Boolean = false): BaseKorgeIPCSocket {
             return when (server) {
-                true -> listen(path, listener, delete = false)
+                true -> listen(path, listener, delete = serverDelete, deleteOnExit = serverDeleteOnExit)
                 false -> open(path, listener)
                 null -> try {
                     open(path, listener)
@@ -165,7 +166,7 @@ class IPCPacket(
     var optSocket: KorgeIPCSocket? = null
     val socket: KorgeIPCSocket get() = optSocket ?: error("No socket")
 
-    override fun toString(): String = "Packet(type=$type)"
+    override fun toString(): String = "Packet(type=0x${type.toString(16)}, data=bytes[${data.size}])"
 
     inline fun <reified T> parseJson(): T = Json.decodeFromString<T>(dataString)
 
@@ -193,6 +194,7 @@ class IPCPacket(
         val MOUSE_DOWN = 0x0202
         val MOUSE_UP = 0x0203
         val MOUSE_CLICK = 0x0204
+        val MOUSE_SCROLL = 0x0205
 
         val KEY_DOWN = 0x0301
         val KEY_UP = 0x0302
@@ -250,7 +252,10 @@ inline fun IPCPacket.Companion.packetInts(type: Int, vararg pp: Int): IPCPacket 
 //}
 
 fun IPCPacket.Companion.keyPacket(type: Int, keyCode: Int, char: Int): IPCPacket = packetInts(type, keyCode, char)
-fun IPCPacket.Companion.mousePacket(type: Int, x: Int, y: Int, button: Int): IPCPacket = packetInts(type, x, y, button)
+fun IPCPacket.Companion.mousePacket(
+    type: Int, x: Int, y: Int, button: Int,
+    scrollX: Float = 0f, scrollY: Float = 0f, scrollZ: Float = 0f,
+): IPCPacket = packetInts(type, x, y, button, scrollX.reinterpretAsInt(), scrollY.reinterpretAsInt(), scrollZ.reinterpretAsInt())
 fun IPCPacket.Companion.resizePacket(type: Int, width: Int, height: Int): IPCPacket = packetInts(type, width, height)
 fun IPCPacket.Companion.nodePacket(type: Int, nodeId: Int): IPCPacket = packetInts(type, nodeId)
 

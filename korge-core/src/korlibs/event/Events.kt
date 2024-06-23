@@ -465,7 +465,7 @@ data class ChangeEvent(var oldValue: Any? = null, var newValue: Any? = null) : T
     }
 }
 
-data class ReshapeEvent(var x: Int = 0, var y: Int = 0, var width: Int = 0, var height: Int = 0) : TypedEvent<ReshapeEvent>(ReshapeEvent) {
+data class ReshapeEvent(var x: Int = 0, var y: Int = 0, var width: Int = 0, var height: Int = 0, var setPos: Boolean = true) : TypedEvent<ReshapeEvent>(ReshapeEvent) {
     companion object : EventType<ReshapeEvent>
 
     fun copyFrom(other: ReshapeEvent) {
@@ -473,6 +473,7 @@ data class ReshapeEvent(var x: Int = 0, var y: Int = 0, var width: Int = 0, var 
         this.y = other.y
         this.width = other.width
         this.height = other.height
+        this.setPos = other.setPos
     }
 }
 

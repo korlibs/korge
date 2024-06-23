@@ -2,7 +2,6 @@ package korlibs.korge
 
 import korlibs.event.*
 import korlibs.graphics.*
-import korlibs.io.stream.*
 import korlibs.korge.ipc.*
 import korlibs.korge.view.*
 import korlibs.korge.view.property.*
@@ -12,9 +11,9 @@ import korlibs.render.awt.*
 class IPCViewsCompleter : ViewsCompleter {
     override fun completeViews(views: Views) {
         val korgeIPC = KorgeIPCInfo.DEFAULT_PATH_OR_NULL
-        println("KorgeIPC: $korgeIPC : ${KorgeIPCInfo.KORGE_IPC_prop} : ${KorgeIPCInfo.KORGE_IPC_env}")
+        println("KorgeIPC: $korgeIPC : ${KorgeIPCInfo.KORGE_IPC_prop} : ${KorgeIPCInfo.KORGE_IPC_env} : isServer = true")
         if (korgeIPC != null) {
-            val ipc = KorgeIPC(korgeIPC)
+            val ipc = KorgeIPC(korgeIPC, isServer = true)
 
             val viewsNodeId = ViewsNodeId(views)
 
@@ -27,7 +26,7 @@ class IPCViewsCompleter : ViewsCompleter {
                     //if (e.timestamp < System.currentTimeMillis() - 100 && e.type != IPCOldEvent.RESIZE && e.type != IPCOldEvent.BRING_BACK && e.type != IPCOldEvent.BRING_FRONT) continue // @TODO: BRING_BACK/BRING_FRONT
 
                     when (e.type) {
-                        IPCPacket.KEY_DOWN, IPCPacket.KEY_UP -> {
+                        IPCPacket.KEY_DOWN, IPCPacket.KEY_UP, IPCPacket.KEY_TYPE -> {
                             val keyCode = e.buffer.getInt()
                             val char = e.buffer.getInt()
 
@@ -35,6 +34,7 @@ class IPCViewsCompleter : ViewsCompleter {
                                 type = when (e.type) {
                                     IPCPacket.KEY_DOWN -> KeyEvent.Type.DOWN
                                     IPCPacket.KEY_UP -> KeyEvent.Type.UP
+                                    IPCPacket.KEY_TYPE -> KeyEvent.Type.TYPE
                                     else -> KeyEvent.Type.DOWN
                                 },
                                 id = 0,
@@ -45,21 +45,26 @@ class IPCViewsCompleter : ViewsCompleter {
                             )
                         }
 
-                        IPCPacket.MOUSE_MOVE, IPCPacket.MOUSE_DOWN, IPCPacket.MOUSE_UP, IPCPacket.MOUSE_CLICK -> {
+                        IPCPacket.MOUSE_MOVE, IPCPacket.MOUSE_DOWN, IPCPacket.MOUSE_UP, IPCPacket.MOUSE_CLICK, IPCPacket.MOUSE_SCROLL -> {
                             val x = e.buffer.getInt()
                             val y = e.buffer.getInt()
                             val button = e.buffer.getInt()
+                            val scrollX = e.buffer.getFloat()
+                            val scrollY = e.buffer.getFloat()
+                            val scrollZ = e.buffer.getFloat()
 
                             views.gameWindow.dispatchMouseEvent(
                                 id = 0,
                                 type = when (e.type) {
                                     IPCPacket.MOUSE_CLICK -> MouseEvent.Type.CLICK
                                     IPCPacket.MOUSE_MOVE -> MouseEvent.Type.MOVE
+                                    IPCPacket.MOUSE_SCROLL -> MouseEvent.Type.SCROLL
                                     IPCPacket.MOUSE_DOWN -> MouseEvent.Type.DOWN
                                     IPCPacket.MOUSE_UP -> MouseEvent.Type.UP
                                     else -> MouseEvent.Type.DOWN
                                 }, x = x, y = y,
-                                button = MouseButton[button]
+                                button = MouseButton[button],
+                                scrollDeltaX = scrollX, scrollDeltaY = scrollY, scrollDeltaZ = scrollZ,
                             )
                             //println(e)
                         }
@@ -72,7 +77,9 @@ class IPCViewsCompleter : ViewsCompleter {
                             if (awtGameWindow != null) {
                                 awtGameWindow.frame.setSize(width, height)
                             } else {
-                                views.resized(width, height)
+                                views.gameWindow.setSize(width, height)
+                                //views.gameWindow.dispatch(ReshapeEvent(width = width, height = height, setPos = false))
+                                //views.resized(width, height)
                             }
                             //
                         }
@@ -142,7 +149,7 @@ class IPCViewsCompleter : ViewsCompleter {
                         }
 
                         else -> {
-                            println(e)
+                            println("Unhandled event: $e")
                         }
                     }
                 }

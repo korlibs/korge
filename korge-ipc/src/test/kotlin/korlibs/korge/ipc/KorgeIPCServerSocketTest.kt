@@ -10,8 +10,8 @@ class KorgeIPCServerSocketTest {
     @Test
     fun testIPC(): Unit {
         val address = "/tmp/demo1"
-        val ipc1 = KorgeIPC(address)
-        val ipc2 = KorgeIPC(address)
+        val ipc1 = KorgeIPC(address, isServer = true)
+        val ipc2 = KorgeIPC(address, isServer = false)
         ipc1.onEvent = { socket, e -> println("EVENT1: $socket, $e") }
         ipc2.onEvent = { socket, e -> println("EVENT2: $socket, $e") }
         ipc1.writeEvent(IPCPacket(777))

@@ -1,5 +1,6 @@
 package korlibs.korge.ipc
 
+import kotlinx.coroutines.*
 import java.io.*
 
 data class KorgeIPCInfo(val path: String = DEFAULT_PATH) {
@@ -16,9 +17,9 @@ data class KorgeIPCInfo(val path: String = DEFAULT_PATH) {
     }
 }
 
-fun KorgeIPCInfo.createIPC(): KorgeIPC = KorgeIPC(path)
+fun KorgeIPCInfo.createIPC(isServer: Boolean?): KorgeIPC = KorgeIPC(path, isServer)
 
-class KorgeIPC(val path: String = KorgeIPCInfo.DEFAULT_PATH) : AutoCloseable {
+class KorgeIPC(val path: String = KorgeIPCInfo.DEFAULT_PATH, val isServer: Boolean?) : AutoCloseable {
     init {
         println("KorgeIPC:$path")
     }
@@ -37,7 +38,7 @@ class KorgeIPC(val path: String = KorgeIPCInfo.DEFAULT_PATH) : AutoCloseable {
     var onClose: ((socket: KorgeIPCSocket) -> Unit)? = null
     var onEvent: ((socket: KorgeIPCSocket, e: IPCPacket) -> Unit)? = null
 
-    val socket = KorgeIPCSocket.openOrListen(socketPath, object : KorgeIPCSocketListener {
+    val listener = object : KorgeIPCSocketListener {
         var isServer = false
 
         override fun onServerStarted(socket: KorgeIPCServerSocket) {
@@ -67,14 +68,34 @@ class KorgeIPC(val path: String = KorgeIPCInfo.DEFAULT_PATH) : AutoCloseable {
             }
             this@KorgeIPC.onEvent?.invoke(socket, e)
             // BROAD CAST PACKETS SO ALL THE CLIENTS ARE OF THE EVENT
-            if (isServer) {
-                for (sock in connectedSockets) {
-                    if (sock == socket) continue
-                    sock.writePacket(e)
-                }
-            }
+            //if (isServer) {
+            //    for (sock in connectedSockets) {
+            //        if (sock == socket) continue
+            //        sock.writePacket(e)
+            //    }
+            //}
         }
-    }, serverDeleteOnExit = true)
+    }
+
+    val socketJob = CoroutineScope(Dispatchers.IO).launch {
+        while (true) {
+            try {
+                val socket = KorgeIPCSocket.openOrListen(socketPath, listener, server = isServer, serverDelete = true, serverDeleteOnExit = true)
+                try {
+                    while (socket.isOpen) {
+                        delay(100L)
+                    }
+                } catch (e: CancellationException)  {
+                    socket.close()
+                }
+            } catch (e: Throwable) {
+                delay(100L)
+            }
+            delay(100L)
+        }
+    }
+
+    //val socket = KorgeIPCSocket.openOrListen(socketPath, , serverDeleteOnExit = true)
 
     val availableEvents get() = synchronized(_events) { _events.size }
     fun writeEvent(e: IPCPacket) {
@@ -88,7 +109,10 @@ class KorgeIPC(val path: String = KorgeIPCInfo.DEFAULT_PATH) : AutoCloseable {
         return synchronized(_events) { _events.removeLastOrNull() }
     }
     fun readEvent(): IPCPacket {
-        while (socket.isOpen) {
+        val start = System.currentTimeMillis()
+        while (true) {
+            val now = System.currentTimeMillis()
+            if (now - start >= 10_000L) error("Timeout waiting for event")
             tryReadEvent()?.let { return it }
             Thread.sleep(1L)
         }
@@ -109,7 +133,7 @@ class KorgeIPC(val path: String = KorgeIPCInfo.DEFAULT_PATH) : AutoCloseable {
         println("/KorgeIPC:$path")
         frame.close()
         //events.close()
-        socket.close()
+        socketJob.cancel()
     }
 
     fun closeAndDelete() {

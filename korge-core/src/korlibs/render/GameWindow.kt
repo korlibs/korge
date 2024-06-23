@@ -261,6 +261,9 @@ open class GameWindow :
         return onEvent(RenderEvent, block)
     }
 
+    val fastCounterTimePerFrame: FastDuration get() = (1_000_000.0 / fps).fastMicroseconds
+    val fastTimePerFrame: FastDuration get() = fastCounterTimePerFrame
+
     val counterTimePerFrame: Duration get() = (1_000_000.0 / fps).microseconds
     val timePerFrame: Duration get() = counterTimePerFrame
 
@@ -392,8 +395,11 @@ open class GameWindow :
         }
         while (running) {
             val elapsed = frame()
-            val available = counterTimePerFrame - elapsed
-            if (available > TimeSpan.ZERO) delay(available)
+            val available = fastCounterTimePerFrame - elapsed
+            if (available > FastDuration.ZERO) {
+                println("delay=$available, elapsed=$elapsed, counterTimePerFrame=$counterTimePerFrame")
+                delay(available)
+            }
         }
     }
 

@@ -5,7 +5,7 @@ import java.awt.event.*
 import java.awt.image.*
 import javax.swing.*
 
-class KorgeIPCJPanel(val ipc: KorgeIPC = KorgeIPC()) : JPanel(), MouseListener, MouseMotionListener, MouseWheelListener, KeyListener {
+class KorgeIPCJPanel(val ipc: KorgeIPC = KorgeIPC(isServer = false)) : JPanel(), MouseListener, MouseMotionListener, MouseWheelListener, KeyListener {
     var image: BufferedImage? = null
 
     init {
