@@ -3,7 +3,10 @@ package korlibs.render
 import korlibs.graphics.*
 import korlibs.render.awt.*
 
-actual fun CreateDefaultGameWindow(config: GameWindowCreationConfig): GameWindow = AwtGameWindow(config)
+actual fun CreateDefaultGameWindow(config: GameWindowCreationConfig): GameWindow = when {
+    System.getenv("KORGE_HEADLESS") == "true" -> AwtOffscreenGameWindow(config)
+    else -> AwtGameWindow(config)
+}
 
 object JvmAGFactory : AGFactory {
     override val supportsNativeFrame: Boolean = true
