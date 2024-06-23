@@ -3,7 +3,9 @@ import korlibs.root.*
 
 plugins {
     //id "kotlin" version "1.6.21"
-    id("kotlin")
+    kotlin("jvm")
+    //kotlin("plugin.serialization")
+    id("org.jetbrains.kotlin.plugin.serialization") version "2.0.0"
     //id "org.jetbrains.kotlin.jvm"
     id("maven-publish")
 }
@@ -57,7 +59,10 @@ korlibs.NativeTools.groovyConfigureSigning(project)
 
 dependencies {
     //implementation(libs.kotlinx.coroutines.core)
-    testImplementation(libs.korlibs.datastructure.core)
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.0")
+    implementation(libs.korlibs.datastructure.core)
+    implementation(libs.korlibs.memory)
+    implementation(libs.korlibs.io.stream)
     testImplementation(libs.bundles.kotlin.test)
 }
 

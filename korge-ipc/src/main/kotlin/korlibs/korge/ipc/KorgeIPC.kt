@@ -28,7 +28,7 @@ class KorgeIPC(val path: String = DEFAULT_PATH) : AutoCloseable {
     val frame = KorgeFrameBuffer(framePath)
     //val events = KorgeOldEventsBuffer("$path.events")
 
-    private val _events = ArrayDeque<Pair<KorgeIPCSocket, IPCPacket>>()
+    private val _events = ArrayDeque<IPCPacket>()
 
     private val connectedSockets = LinkedHashSet<KorgeIPCSocket>()
 
@@ -49,7 +49,7 @@ class KorgeIPC(val path: String = DEFAULT_PATH) : AutoCloseable {
 
         override fun onEvent(socket: KorgeIPCSocket, e: IPCPacket) {
             synchronized(_events) {
-                _events += socket to e
+                _events += e
             }
             this@KorgeIPC.onEvent?.invoke(socket, e)
         }
@@ -64,7 +64,7 @@ class KorgeIPC(val path: String = DEFAULT_PATH) : AutoCloseable {
         }
     }
     fun tryReadEvent(): IPCPacket? {
-        return synchronized(_events) { _events.removeLastOrNull()?.second }
+        return synchronized(_events) { _events.removeLastOrNull() }
     }
     fun readEvent(): IPCPacket {
         while (socket.isOpen) {

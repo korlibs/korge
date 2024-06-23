@@ -1,9 +1,11 @@
 package korlibs.korge.ipc
 
+import korlibs.io.stream.*
+import kotlinx.serialization.*
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.*
 import java.io.*
-import java.net.BindException
-import java.net.ConnectException
-import java.net.SocketException
+import java.net.*
 import java.nio.*
 import java.nio.channels.*
 import java.util.concurrent.*
@@ -24,7 +26,7 @@ class KorgeIPCSocket(var socketOpt: SocketChannel?, val id: Long) : BaseKorgeIPC
     override fun toString(): String = "KorgeIPCSocket($id)"
     val socket get() = socketOpt ?: error("Socket is closed")
     fun writePacket(packet: IPCPacket) = IPCPacket.write(socket, packet)
-    fun readPacket(): IPCPacket = IPCPacket.read(socket)
+    fun readPacket(): IPCPacket = IPCPacket.read(socket).also { it.optSocket = this }
 
     private var openSocket: Future<*>? = null
 
@@ -146,36 +148,60 @@ class KorgeIPCServerSocket(val socket: ServerSocketChannel) : BaseKorgeIPCSocket
 //fun SocketChannel.readPacket(): Packet = Packet.read(this)
 
 class IPCPacket(
-    var type: Int = -1,
-    var p0: Int = 0,
-    var p1: Int = 0,
-    var p2: Int = 0,
-    var p3: Int = 0,
-    var data: ByteArray = byteArrayOf()
+    val type: Int = -1,
+    val data: ByteArray = byteArrayOf(),
 ) {
+    val buffer = ByteBuffer.wrap(data)
+    val ibuffer = buffer.asIntBuffer()
+    val dataString by lazy { data.decodeToString() }
+
+    var optSocket: KorgeIPCSocket? = null
+    val socket: KorgeIPCSocket get() = optSocket ?: error("No socket")
+
     override fun toString(): String = "Packet(type=$type)"
 
+    inline fun <reified T> parseJson(): T = Json.decodeFromString<T>(dataString)
+
     companion object {
-        val RESIZE = 1
-        val BRING_BACK = 2
-        val BRING_FRONT = 3
+        operator fun invoke(type: Int, size: Int, block: (ByteBuffer) -> Unit): IPCPacket {
+            val data = ByteArray(size)
+            val buffer = ByteBuffer.wrap(data)
+            block(buffer)
+            buffer.flip()
+            return IPCPacket(type, data)
+        }
 
-        val MOUSE_MOVE = 10
-        val MOUSE_DOWN = 11
-        val MOUSE_UP = 12
-        val MOUSE_CLICK = 13
+        operator fun invoke(type: Int, block: SyncOutputStream.() -> Unit): IPCPacket {
+            return IPCPacket(type, MemorySyncStreamToByteArray(128, block))
+        }
 
-        val KEY_DOWN = 20
-        val KEY_UP = 21
-        val KEY_TYPE = 22
+        inline fun <reified T> fromJson(type: Int, value: T): IPCPacket =
+            IPCPacket(type, Json.encodeToString<T>(value).encodeToByteArray())
+
+        val RESIZE = 0x0101
+        val BRING_BACK = 0x0102
+        val BRING_FRONT = 0x0103
+
+        val MOUSE_MOVE = 0x0201
+        val MOUSE_DOWN = 0x0202
+        val MOUSE_UP = 0x0203
+        val MOUSE_CLICK = 0x0204
+
+        val KEY_DOWN = 0x0301
+        val KEY_UP = 0x0302
+        val KEY_TYPE = 0x0303
+
+        val REQUEST_NODE_CHILDREN = 0x7701
+        val REQUEST_NODE_PROPS = 0x7702
+        val REQUEST_NODE_SET_PROP = 0x7703
+
+        val RESPONSE_NODE_CHILDREN = 0x7801
+        val RESPONSE_NODE_PROPS = 0x7802
+        val RESPONSE_NODE_SET_PROP = 0x7803
 
         fun write(socket: SocketChannel, packet: IPCPacket) {
             val head = ByteBuffer.allocate(4 + 4 + (4 * 4) + packet.data.size)
             head.putInt(packet.type)
-            head.putInt(packet.p0)
-            head.putInt(packet.p1)
-            head.putInt(packet.p2)
-            head.putInt(packet.p3)
             head.putInt(packet.data.size)
             head.put(packet.data)
             head.flip()
@@ -187,16 +213,119 @@ class IPCPacket(
             socket.read(head)
             head.flip()
             val type = head.int
-            val p0 = head.int
-            val p1 = head.int
-            val p2 = head.int
-            val p3 = head.int
             val size = head.int
             val data = ByteArray(size)
             if (size > 0) {
                 socket.read(ByteBuffer.wrap(data))
             }
-            return IPCPacket(type, p0, p1, p2, p3, data)
+            return IPCPacket(type, data)
         }
+    }
+}
+
+private operator fun IntBuffer.set(index: Int, value: Int) {
+    this.put(index, value)
+}
+
+inline fun IPCPacket.Companion.packetInts(type: Int, vararg pp: Int): IPCPacket = IPCPacket(type, pp.size * 4) {
+    for (p in pp) it.putInt(p)
+}
+
+//fun IPCPacket.Companion.packetInts2(type: Int, p0: Int, p1: Int): IPCPacket = IPCPacket(type, 8) {
+//    it.putInt(p0)
+//    it.putInt(p1)
+//}
+//
+//fun IPCPacket.Companion.packetInts3(type: Int, p0: Int, p1: Int, p2: Int): IPCPacket = IPCPacket(type, 12) {
+//    it.putInt(p0)
+//    it.putInt(p1)
+//    it.putInt(p2)
+//}
+
+fun IPCPacket.Companion.keyPacket(type: Int, keyCode: Int, char: Int): IPCPacket = packetInts(type, keyCode, char)
+fun IPCPacket.Companion.mousePacket(type: Int, x: Int, y: Int, button: Int): IPCPacket = packetInts(type, x, y, button)
+fun IPCPacket.Companion.resizePacket(type: Int, width: Int, height: Int): IPCPacket = packetInts(type, width, height)
+fun IPCPacket.Companion.nodePacket(type: Int, nodeId: Int): IPCPacket = packetInts(type, nodeId)
+
+fun IPCPacket.Companion.requestNodeChildrenPacket(nodeId: Int): IPCPacket = nodePacket(IPCPacket.REQUEST_NODE_CHILDREN, nodeId)
+fun IPCPacket.Companion.requestNodePropPacket(nodeId: Int): IPCPacket = nodePacket(IPCPacket.REQUEST_NODE_PROPS, nodeId)
+
+@Serializable
+data class IPCNodeInfo(
+    val nodeId: Long,
+    val isContainer: Boolean,
+    val className: String,
+    val name: String,
+) {
+    //val flags: Int get() = 0.insert(isContainer, 0)
+}
+
+@Serializable
+data class IPCNodeChildrenRequest(val nodeId: Long) {
+    companion object {
+        val ID = IPCPacket.REQUEST_NODE_CHILDREN
+    }
+}
+
+@Serializable
+data class IPCNodeChildrenResponse(
+    val nodeId: Long,
+    val parentNodeId: Long,
+    val children: List<IPCNodeInfo>?
+) {
+    companion object {
+        val ID = IPCPacket.RESPONSE_NODE_CHILDREN
+    }
+}
+
+@Serializable
+class IPCPropInfo(
+    val callId: String,
+    val showName: String,
+    val propType: String,
+    val value: String?,
+) {
+    companion object {
+        val ID = IPCPacket.RESPONSE_NODE_PROPS
+    }
+}
+
+@Serializable
+data class IPCNodePropsRequest(val nodeId: Long) {
+    companion object {
+        val ID = IPCPacket.REQUEST_NODE_PROPS
+    }
+}
+
+@Serializable
+data class IPCNodePropsResponse(
+    val nodeId: Long,
+    val parentNodeId: Long,
+    val propGroups: Map<String, List<IPCPropInfo>>,
+) {
+    companion object {
+        val ID = IPCPacket.RESPONSE_NODE_PROPS
+    }
+}
+
+@Serializable
+data class IPCPacketPropSetRequest(
+    val nodeId: Long,
+    val callId: String,
+    val value: String?,
+) {
+    companion object {
+        val ID = IPCPacket.REQUEST_NODE_SET_PROP
+    }
+}
+
+@Serializable
+data class IPCPacketPropSetResponse(
+    val nodeId: Long,
+    val callId: String,
+    val value: String?,
+) {
+    companion object {
+        val ID = IPCPacket.RESPONSE_NODE_SET_PROP
     }
 }

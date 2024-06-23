@@ -40,86 +40,41 @@ internal class UiEditProperties(app: UiApplication, view: View?, val views: View
         update()
     }
 
-    class PropWithProperty(val prop: KProperty<*>, val viewProp: ViewProperty, val clazz: KClass<*>) {
-        val order: Int get() = viewProp.order
-        val name: String get() = viewProp.name.takeIf { it.isNotBlank() } ?: prop.name
-    }
-    class ActionWithProperty(val func: KFunction<*>, val viewProp: ViewProperty, val clazz: KClass<*>) {
-        val order: Int get() = viewProp.order
-        val name: String get() = viewProp.name.takeIf { it.isNotBlank() } ?: func.name
-    }
-
     fun createPropsForInstance(instance: Any?, outputContainer: UiContainer) {
         if (instance == null) return
 
-        val allProps = arrayListOf<PropWithProperty>()
-        val allActions = arrayListOf<ActionWithProperty>()
+        val info = ViewPropsInfo[instance]
 
-        fun findAllProps(clazz: KClass<*>, explored: MutableSet<KClass<*>> = mutableSetOf()) {
-            if (clazz in explored) return
-            explored += clazz
-            //println("findAllProps.explored: clazz=$clazz")
-
-            for (prop in clazz.declaredMemberProperties) {
-                val viewProp = prop.findAnnotation<ViewProperty>()
-                if (viewProp != null) {
-                    prop.isAccessible = true
-                    allProps.add(PropWithProperty(prop, viewProp, clazz))
-                }
-            }
-            for (func in clazz.declaredMemberFunctions) {
-                val viewProp = func.findAnnotation<ViewProperty>()
-                if (viewProp != null) {
-                    func.isAccessible = true
-                    allActions.add(ActionWithProperty(func, viewProp, clazz))
-                }
-            }
-
-            for (sup in clazz.superclasses) {
-                findAllProps(sup, explored)
-            }
-        }
-        findAllProps(instance::class)
-
-        val allPropsByClazz = allProps.groupBy { it.clazz }
-        val allActionsByClazz = allActions.groupBy { it.clazz }
-
-        val classes = allPropsByClazz.keys + allActionsByClazz.keys
-
-        for (clazz in classes) {
-            outputContainer.uiCollapsibleSection("${clazz.simpleName}") {
-                val propWithProperties = allPropsByClazz[clazz]
-                val actionWithProperties = allActionsByClazz[clazz]
+        for (group in info.groups) {
+            outputContainer.uiCollapsibleSection("${group.clazz.simpleName}") {
+                val propWithProperties = group.props
+                val actionWithProperties = group.actions
                 if (actionWithProperties != null) {
-                    for ((groupName, eactions) in actionWithProperties.groupBy { it.viewProp.groupName }) {
-                        for (eaction in eactions.multisorted(ActionWithProperty::order, ActionWithProperty::name)) {
-                            addChild(UiButton(app).also {
-                                it.text = eaction.name
-                                it.onClick {
-                                    (eaction.func as (Any.() -> Unit)).invoke(instance)
-                                }
-                            })
-                        }
+                    for (eaction in actionWithProperties.flatProperties) {
+                        addChild(UiButton(app).also {
+                            it.text = eaction.name
+                            it.onClick {
+                                (eaction.func as (Any.() -> Unit)).invoke(instance)
+                            }
+                        })
                     }
                 }
                 if (propWithProperties != null) {
-                    for ((groupName, eprops) in propWithProperties.groupBy { it.viewProp.groupName }) {
-                        for (eprop in eprops.multisorted(PropWithProperty::order, PropWithProperty::name)) {
-                            val name = eprop.name
-                            val prop = eprop.prop
-                            val viewProp = eprop.viewProp
-                            try {
-                                val res = createUiEditableValueFor(instance, prop.returnType, viewProp, prop as KProperty1<View, *>, null)
-                                val item = res ?: UiLabel(app).also { it.text = "<UNSUPPORTED TYPE>" }
-                                if (item is UiEditableValue<*> || item is UiLabel) {
-                                    addChild(UiRowEditableValue(app, name, item))
-                                } else {
-                                    addChild(item)
-                                }
-                            } catch (e: Throwable) {
-                                e.printStackTrace()
-                                addChild(UiRowEditableValue(app, prop.name, UiLabel(app).also { it.text = "<EXCEPTION>" }))
+                    for (eprop in propWithProperties.flatProperties) {
+                        val name = eprop.name
+                        val prop = eprop.prop
+                        val viewProp = eprop.viewProp
+                        try {
+                            val res = createUiEditableValueFor(instance, prop.returnType, viewProp, prop as KProperty1<View, *>, null)
+                            val item = res ?: UiLabel(app).also { it.text = "<UNSUPPORTED TYPE>" }
+                            if (item is UiEditableValue<*> || item is UiLabel) {
+                                addChild(UiRowEditableValue(app, name, item))
+                            } else {
+                                addChild(item)
                             }
+                        } catch (e: Throwable) {
+                            e.printStackTrace()
+                            addChild(UiRowEditableValue(app, prop.name, UiLabel(app).also { it.text = "<EXCEPTION>" }))
                         }
                     }
                 }
