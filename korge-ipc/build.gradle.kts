@@ -56,6 +56,8 @@ korlibs.NativeTools.groovyConfigurePublishing(project, false)
 korlibs.NativeTools.groovyConfigureSigning(project)
 
 dependencies {
+    //implementation(libs.kotlinx.coroutines.core)
+    testImplementation(libs.korlibs.datastructure.core)
     testImplementation(libs.bundles.kotlin.test)
 }
 

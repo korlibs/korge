@@ -18,6 +18,7 @@ import korlibs.time.*
 import kotlinx.coroutines.*
 import java.awt.Container
 import java.util.*
+import kotlin.collections.ArrayDeque
 
 interface ViewsCompleter {
     fun completeViews(views: Views)
@@ -65,64 +66,72 @@ class IPCViewsCompleter : ViewsCompleter {
     override fun completeViews(views: Views) {
         val korgeIPC = System.getenv("KORGE_IPC")
         if (korgeIPC != null) {
+            val queue = ArrayDeque<Pair<KorgeIPCSocket, IPCPacket>>()
+
             val ipc = KorgeIPC(korgeIPC)
 
             views.onBeforeRender {
-                while (ipc.availableEvents > 0) {
-                    val e = ipc.readEvent() ?: break
-                    //if (e.timestamp < System.currentTimeMillis() - 100) continue
-                    if (e.timestamp < System.currentTimeMillis() - 100 && e.type != IPCEvent.RESIZE && e.type != IPCEvent.BRING_BACK && e.type != IPCEvent.BRING_FRONT) continue // @TODO: BRING_BACK/BRING_FRONT
+                synchronized(queue) {
+                    while (queue.isNotEmpty()) {
+                        val e = ipc.tryReadEvent() ?: break
+                        //if (e.timestamp < System.currentTimeMillis() - 100) continue
+                        //if (e.timestamp < System.currentTimeMillis() - 100 && e.type != IPCOldEvent.RESIZE && e.type != IPCOldEvent.BRING_BACK && e.type != IPCOldEvent.BRING_FRONT) continue // @TODO: BRING_BACK/BRING_FRONT
 
-                    when (e.type) {
-                        IPCEvent.KEY_DOWN, IPCEvent.KEY_UP -> {
-                            views.gameWindow.dispatchKeyEvent(
-                                type = when (e.type) {
-                                    IPCEvent.KEY_DOWN -> KeyEvent.Type.DOWN
-                                    IPCEvent.KEY_UP -> KeyEvent.Type.UP
-                                    else -> KeyEvent.Type.DOWN
-                                },
-                                id = 0,
-                                key = awtKeyCodeToKey(e.p0),
-                                character = e.p1.toChar(),
-                                keyCode = e.p0,
-                                str = null,
-                            )
-                        }
-                        IPCEvent.MOUSE_MOVE, IPCEvent.MOUSE_DOWN, IPCEvent.MOUSE_UP, IPCEvent.MOUSE_CLICK -> {
-                            views.gameWindow.dispatchMouseEvent(
-                                id = 0,
-                                type = when (e.type) {
-                                    IPCEvent.MOUSE_CLICK -> MouseEvent.Type.CLICK
-                                    IPCEvent.MOUSE_MOVE -> MouseEvent.Type.MOVE
-                                    IPCEvent.MOUSE_DOWN -> MouseEvent.Type.UP
-                                    IPCEvent.MOUSE_UP -> MouseEvent.Type.UP
-                                    else -> MouseEvent.Type.DOWN
-                                }, x = e.p0, y = e.p1,
-                                button = MouseButton[e.p2]
-                            )
-                            //println(e)
-                        }
-                        IPCEvent.RESIZE -> {
-                            val awtGameWindow = (views.gameWindow as? AwtGameWindow?)
-                            if (awtGameWindow != null) {
-                                awtGameWindow.frame.setSize(e.p0, e.p1)
-                            } else {
-                                views.resized(e.p0, e.p1)
+                        when (e.type) {
+                            IPCOldEvent.KEY_DOWN, IPCOldEvent.KEY_UP -> {
+                                views.gameWindow.dispatchKeyEvent(
+                                    type = when (e.type) {
+                                        IPCOldEvent.KEY_DOWN -> KeyEvent.Type.DOWN
+                                        IPCOldEvent.KEY_UP -> KeyEvent.Type.UP
+                                        else -> KeyEvent.Type.DOWN
+                                    },
+                                    id = 0,
+                                    key = awtKeyCodeToKey(e.p0),
+                                    character = e.p1.toChar(),
+                                    keyCode = e.p0,
+                                    str = null,
+                                )
                             }
-                            //
-                        }
-                        IPCEvent.BRING_BACK, IPCEvent.BRING_FRONT -> {
-                            val awtGameWindow = (views.gameWindow as? AwtGameWindow?)
-                            if (awtGameWindow != null) {
-                                if (e.type == IPCEvent.BRING_BACK) {
-                                    awtGameWindow.frame.toBack()
+
+                            IPCOldEvent.MOUSE_MOVE, IPCOldEvent.MOUSE_DOWN, IPCOldEvent.MOUSE_UP, IPCOldEvent.MOUSE_CLICK -> {
+                                views.gameWindow.dispatchMouseEvent(
+                                    id = 0,
+                                    type = when (e.type) {
+                                        IPCOldEvent.MOUSE_CLICK -> MouseEvent.Type.CLICK
+                                        IPCOldEvent.MOUSE_MOVE -> MouseEvent.Type.MOVE
+                                        IPCOldEvent.MOUSE_DOWN -> MouseEvent.Type.UP
+                                        IPCOldEvent.MOUSE_UP -> MouseEvent.Type.UP
+                                        else -> MouseEvent.Type.DOWN
+                                    }, x = e.p0, y = e.p1,
+                                    button = MouseButton[e.p2]
+                                )
+                                //println(e)
+                            }
+
+                            IPCOldEvent.RESIZE -> {
+                                val awtGameWindow = (views.gameWindow as? AwtGameWindow?)
+                                if (awtGameWindow != null) {
+                                    awtGameWindow.frame.setSize(e.p0, e.p1)
                                 } else {
-                                    awtGameWindow.frame.toFront()
+                                    views.resized(e.p0, e.p1)
+                                }
+                                //
+                            }
+
+                            IPCOldEvent.BRING_BACK, IPCOldEvent.BRING_FRONT -> {
+                                val awtGameWindow = (views.gameWindow as? AwtGameWindow?)
+                                if (awtGameWindow != null) {
+                                    if (e.type == IPCOldEvent.BRING_BACK) {
+                                        awtGameWindow.frame.toBack()
+                                    } else {
+                                        awtGameWindow.frame.toFront()
+                                    }
                                 }
                             }
-                        }
-                        else -> {
-                            println(e)
+
+                            else -> {
+                                println(e)
+                            }
                         }
                     }
                 }
