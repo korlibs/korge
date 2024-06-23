@@ -4,22 +4,23 @@ import java.io.*
 
 data class KorgeIPCInfo(val path: String = DEFAULT_PATH) {
     companion object {
-        val DEFAULT_PATH = System.getenv("KORGE_IPC")
-            ?: "${System.getProperty("java.io.tmpdir")}/KORGE_IPC-${ProcessHandle.current().pid()}"
+        val KORGE_IPC_prop get() = System.getProperty("korge.ipc")
+        val KORGE_IPC_env get() = System.getenv("KORGE_IPC")
 
+        val DEFAULT_PATH_OR_NULL = KORGE_IPC_prop
+            ?: KORGE_IPC_env
+
+        val DEFAULT_PATH = DEFAULT_PATH_OR_NULL
+            ?: "${System.getProperty("java.io.tmpdir")}/KORGE_IPC-unset"
+        val PROCESS_PATH = "${System.getProperty("java.io.tmpdir")}/KORGE_IPC-${ProcessHandle.current().pid()}"
     }
 }
 
 fun KorgeIPCInfo.createIPC(): KorgeIPC = KorgeIPC(path)
 
-class KorgeIPC(val path: String = DEFAULT_PATH) : AutoCloseable {
+class KorgeIPC(val path: String = KorgeIPCInfo.DEFAULT_PATH) : AutoCloseable {
     init {
         println("KorgeIPC:$path")
-    }
-
-    companion object {
-        val DEFAULT_PATH = System.getenv("KORGE_IPC")
-            ?: "${System.getProperty("java.io.tmpdir")}/KORGE_IPC-${ProcessHandle.current().pid()}"
     }
 
     val framePath = "$path.frame"
@@ -37,28 +38,41 @@ class KorgeIPC(val path: String = DEFAULT_PATH) : AutoCloseable {
     var onEvent: ((socket: KorgeIPCSocket, e: IPCPacket) -> Unit)? = null
 
     val socket = KorgeIPCSocket.openOrListen(socketPath, object : KorgeIPCSocketListener {
+        var isServer = false
+
+        override fun onServerStarted(socket: KorgeIPCServerSocket) {
+            isServer = true
+        }
+
         override fun onConnect(socket: KorgeIPCSocket) {
-            println("onConnect[$socketPath][$socket]")
             synchronized(connectedSockets) {
                 connectedSockets += socket
+                println("onConnect[$socketPath][$socket] : ${connectedSockets.size}")
             }
             onConnect?.invoke(socket)
         }
 
         override fun onClose(socket: KorgeIPCSocket) {
-            println("onClose[$socketPath][$socket]")
-            onClose?.invoke(socket)
             synchronized(connectedSockets) {
                 connectedSockets -= socket
+                println("onClose[$socketPath][$socket] : ${connectedSockets.size}")
             }
+            onClose?.invoke(socket)
         }
 
         override fun onEvent(socket: KorgeIPCSocket, e: IPCPacket) {
-            println("onEvent[$socketPath][$socket]: $e")
+            //println("onEvent[$socketPath][$socket]: $e")
             synchronized(_events) {
                 _events += e
             }
             this@KorgeIPC.onEvent?.invoke(socket, e)
+            // BROAD CAST PACKETS SO ALL THE CLIENTS ARE OF THE EVENT
+            if (isServer) {
+                for (sock in connectedSockets) {
+                    if (sock == socket) continue
+                    sock.writePacket(e)
+                }
+            }
         }
     }, serverDeleteOnExit = true)
 

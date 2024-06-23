@@ -13,12 +13,14 @@ import java.util.concurrent.*
 private val threadPool = Executors.newCachedThreadPool()
 
 interface KorgeIPCSocketListener {
+    fun onServerStarted(socket: KorgeIPCServerSocket) {}
     fun onConnect(socket: KorgeIPCSocket) {}
     fun onClose(socket: KorgeIPCSocket) {}
     fun onEvent(socket: KorgeIPCSocket, e: IPCPacket) {}
 }
 
 interface BaseKorgeIPCSocket : AutoCloseable {
+    val isServer: Boolean
     val isOpen: Boolean
 }
 
@@ -55,6 +57,8 @@ class KorgeIPCSocket(var socketOpt: SocketChannel?, val id: Long) : BaseKorgeIPC
         openSocket?.cancel(true)
         openSocket = null
     }
+
+    override val isServer: Boolean get() = false
 
     override val isOpen: Boolean get() = socketOpt?.isOpen == true
 
@@ -95,10 +99,11 @@ class KorgeIPCServerSocket(val socket: ServerSocketChannel) : BaseKorgeIPCSocket
     companion object {
         fun listen(path: String, listener: KorgeIPCSocketListener, delete: Boolean = false, deleteOnExit: Boolean = false): KorgeIPCServerSocket {
             var id = 0L
-            val server = KorgeUnixSocket.bind(path, delete = delete, deleteOnExit = false)
+            val server = KorgeIPCServerSocket(KorgeUnixSocket.bind(path, delete = delete, deleteOnExit = false))
             threadPool.submit {
+                listener.onServerStarted(server)
                 while (true) {
-                    val socket = KorgeIPCSocket(server.accept(), id++)
+                    val socket = KorgeIPCSocket(server.socket.accept(), id++)
 
                     threadPool.submit {
                         try {
@@ -122,7 +127,7 @@ class KorgeIPCServerSocket(val socket: ServerSocketChannel) : BaseKorgeIPCSocket
                     }
                 }
             }
-            return KorgeIPCServerSocket(server)
+            return server
         }
 
         //fun bind(): kotlinx.coroutines.flow.Flow<AsynchronousSocketChannel> = flow {
@@ -136,6 +141,8 @@ class KorgeIPCServerSocket(val socket: ServerSocketChannel) : BaseKorgeIPCSocket
         //    }
         //}
     }
+
+    override val isServer: Boolean get() = true
 
     override val isOpen: Boolean get() = socket.isOpen
 

@@ -11,7 +11,8 @@ import korlibs.render.awt.*
 
 class IPCViewsCompleter : ViewsCompleter {
     override fun completeViews(views: Views) {
-        val korgeIPC = System.getenv("KORGE_IPC")
+        val korgeIPC = KorgeIPCInfo.DEFAULT_PATH_OR_NULL
+        println("KorgeIPC: $korgeIPC : ${KorgeIPCInfo.KORGE_IPC_prop} : ${KorgeIPCInfo.KORGE_IPC_env}")
         if (korgeIPC != null) {
             val ipc = KorgeIPC(korgeIPC)
 
@@ -21,7 +22,7 @@ class IPCViewsCompleter : ViewsCompleter {
                 while (true) {
                     val e = ipc.tryReadEvent() ?: break
 
-                    println("PROCESSING_PACKET: $e")
+                    //println("PROCESSING_PACKET: $e")
                     //if (e.timestamp < System.currentTimeMillis() - 100) continue
                     //if (e.timestamp < System.currentTimeMillis() - 100 && e.type != IPCOldEvent.RESIZE && e.type != IPCOldEvent.BRING_BACK && e.type != IPCOldEvent.BRING_FRONT) continue // @TODO: BRING_BACK/BRING_FRONT
 
@@ -54,7 +55,7 @@ class IPCViewsCompleter : ViewsCompleter {
                                 type = when (e.type) {
                                     IPCPacket.MOUSE_CLICK -> MouseEvent.Type.CLICK
                                     IPCPacket.MOUSE_MOVE -> MouseEvent.Type.MOVE
-                                    IPCPacket.MOUSE_DOWN -> MouseEvent.Type.UP
+                                    IPCPacket.MOUSE_DOWN -> MouseEvent.Type.DOWN
                                     IPCPacket.MOUSE_UP -> MouseEvent.Type.UP
                                     else -> MouseEvent.Type.DOWN
                                 }, x = x, y = y,
