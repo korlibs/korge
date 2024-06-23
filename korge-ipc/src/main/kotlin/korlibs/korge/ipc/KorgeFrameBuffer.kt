@@ -26,24 +26,38 @@ class KorgeFrameBuffer(val path: String) {
 
     val currentProcessId = ProcessHandle.current().pid().toInt()
 
+    companion object {
+        val IDX_VERSION = 0
+        val IDX_PROCESS = 1
+        val IDX_FRAME_ID = 2
+        val IDX_WIDTH = 3
+        val IDX_HEIGHT = 4
+        val IDX_DATA = 5
+    }
+
     fun setFrame(frame: IPCFrame) {
         ensureSize(frame.width, frame.height)
         ibuffer.clear()
-        ibuffer.put(0) // version
-        ibuffer.put(currentProcessId)
-        ibuffer.put(frame.id)
-        ibuffer.put(frame.width)
-        ibuffer.put(frame.height)
+        ibuffer[IDX_VERSION] = 0 // version
+        ibuffer[IDX_PROCESS] = currentProcessId
+        ibuffer[IDX_WIDTH] = frame.width
+        ibuffer[IDX_HEIGHT] = frame.height
         if (frame.buffer != null) {
+            ibuffer.position(IDX_DATA)
             ibuffer.put(frame.buffer)
         } else {
-            ibuffer.put(frame.pixels)
+            ibuffer.put(IDX_DATA, frame.pixels)
         }
+        // update frame id once everything is set
+        ibuffer[IDX_FRAME_ID] = frame.id // write frame id
     }
 
     fun getFrameId(): Int {
-        ibuffer.clear()
-        return ibuffer.get(2)
+        return ibuffer[IDX_FRAME_ID]
+    }
+
+    private operator fun IntBuffer.set(index: Int, value: Int) {
+        this.put(index, value)
     }
 
     fun getFrame(): IPCFrame {
