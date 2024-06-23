@@ -32,22 +32,29 @@ class KorgeIPC(val path: String = DEFAULT_PATH) : AutoCloseable {
 
     private val connectedSockets = LinkedHashSet<KorgeIPCSocket>()
 
+    var onConnect: ((socket: KorgeIPCSocket) -> Unit)? = null
+    var onClose: ((socket: KorgeIPCSocket) -> Unit)? = null
     var onEvent: ((socket: KorgeIPCSocket, e: IPCPacket) -> Unit)? = null
 
     val socket = KorgeIPCSocket.openOrListen(socketPath, object : KorgeIPCSocketListener {
         override fun onConnect(socket: KorgeIPCSocket) {
+            println("onConnect[$socketPath][$socket]")
             synchronized(connectedSockets) {
                 connectedSockets += socket
             }
+            onConnect?.invoke(socket)
         }
 
         override fun onClose(socket: KorgeIPCSocket) {
+            println("onClose[$socketPath][$socket]")
+            onClose?.invoke(socket)
             synchronized(connectedSockets) {
                 connectedSockets -= socket
             }
         }
 
         override fun onEvent(socket: KorgeIPCSocket, e: IPCPacket) {
+            println("onEvent[$socketPath][$socket]: $e")
             synchronized(_events) {
                 _events += e
             }

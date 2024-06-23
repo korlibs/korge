@@ -200,7 +200,7 @@ class IPCPacket(
         val RESPONSE_NODE_SET_PROP = 0x7803
 
         fun write(socket: SocketChannel, packet: IPCPacket) {
-            val head = ByteBuffer.allocate(4 + 4 + (4 * 4) + packet.data.size)
+            val head = ByteBuffer.allocate(8 + packet.data.size)
             head.putInt(packet.type)
             head.putInt(packet.data.size)
             head.put(packet.data)
@@ -209,7 +209,7 @@ class IPCPacket(
         }
 
         fun read(socket: SocketChannel): IPCPacket {
-            val head = ByteBuffer.allocate(4 + 4 + (4 * 4))
+            val head = ByteBuffer.allocate(8)
             socket.read(head)
             head.flip()
             val type = head.int

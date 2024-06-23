@@ -32,7 +32,7 @@ class KorgeFrameBuffer(val path: String) {
         val IDX_FRAME_ID = 2
         val IDX_WIDTH = 3
         val IDX_HEIGHT = 4
-        val IDX_DATA = 5
+        val IDX_DATA = 8
     }
 
     fun setFrame(frame: IPCFrame) {
