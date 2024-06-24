@@ -398,14 +398,16 @@ open class GameWindow :
             //delay(1L)
             while (running) {
                 var elapsed: FastDuration
-                val realElapsed = fastMeasureTime {
+                val realElapsed = measureTime {
                     elapsed = frame()
                 }
-                val available = fastCounterTimePerFrame - realElapsed
+                val available = fastCounterTimePerFrame - elapsed
+                //val available = fastCounterTimePerFrame - realElapsed
                 //if (available > FastDuration.ZERO) {
-                    println("delay=$available, elapsed=$elapsed, realElapsed=$realElapsed, counterTimePerFrame=$counterTimePerFrame")
+                    //println("delay=$available, elapsed=$elapsed, realElapsed=$realElapsed, fastCounterTimePerFrame=$fastCounterTimePerFrame")
                     //delay(available)
-                    NativeThread.sleepExact(available)
+                    //NativeThread.sleepExact(available)
+                NativeThread.sleepExact(available)
                 //}
             }
         //}
