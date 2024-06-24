@@ -82,6 +82,7 @@ class KorgeIPC(val path: String = KorgeIPCInfo.DEFAULT_PATH, val isServer: Boole
             try {
                 val socket = KorgeIPCSocket.openOrListen(socketPath, listener, server = isServer, serverDelete = true, serverDeleteOnExit = true)
                 try {
+                    println("CONNECTED: isServer=$isServer!")
                     while (socket.isOpen) {
                         delay(100L)
                     }
@@ -97,8 +98,18 @@ class KorgeIPC(val path: String = KorgeIPCInfo.DEFAULT_PATH, val isServer: Boole
 
     //val socket = KorgeIPCSocket.openOrListen(socketPath, , serverDeleteOnExit = true)
 
+    fun waitConnected() {
+        var n = 0
+        while (connectedSockets.size == 0) {
+            Thread.sleep(100L)
+            n++
+            if (n >= 20) error("Too long waiting for connected")
+        }
+    }
+
     val availableEvents get() = synchronized(_events) { _events.size }
     fun writeEvent(e: IPCPacket) {
+        println("writeEvent: $e")
         synchronized(connectedSockets) {
             for (socket in connectedSockets) {
                 socket.writePacket(e)

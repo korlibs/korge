@@ -9,11 +9,12 @@ class KorgeIPCServerSocketTest {
 
     @Test
     fun testIPC(): Unit {
-        val address = "/tmp/demo1"
+        val address = "$TMP/demo1.sock"
         val ipc1 = KorgeIPC(address, isServer = true)
         val ipc2 = KorgeIPC(address, isServer = false)
         ipc1.onEvent = { socket, e -> println("EVENT1: $socket, $e") }
         ipc2.onEvent = { socket, e -> println("EVENT2: $socket, $e") }
+        ipc1.waitConnected()
         ipc1.writeEvent(IPCPacket(777))
         assertEquals(777, ipc2.readEvent().type)
         ipc2.writeEvent(IPCPacket(888))
@@ -65,10 +66,10 @@ class KorgeIPCServerSocketTest {
 
         assertEquals("""
             onConnect[CLI->SER][KorgeIPCSocket(0)]
-            onEvent[CLI->SER][KorgeIPCSocket(0)]: Packet(type=1)
+            onEvent[CLI->SER][KorgeIPCSocket(0)]: Packet(type=0x1, data=bytes[5])
             onClose[CLI->SER][KorgeIPCSocket(0)]
             onConnect[SER->CLI][KorgeIPCSocket(-1)]
-            onEvent[SER->CLI][KorgeIPCSocket(-1)]: Packet(type=2)
+            onEvent[SER->CLI][KorgeIPCSocket(-1)]: Packet(type=0x2, data=bytes[3])
             onClose[SER->CLI][KorgeIPCSocket(-1)]
         """.trimIndent(), logS.joinToString("\n") + "\n" + logC.joinToString("\n"))
     }
