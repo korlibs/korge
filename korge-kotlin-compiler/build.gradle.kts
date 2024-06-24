@@ -8,12 +8,11 @@ plugins {
     id("maven-publish")
     //alias(libs.plugins.conventions.jvm)
     //alias(libs.plugins.compiler.specific.module)
-    id("com.github.gmazzo.buildconfig") version "5.3.5"
 }
 
 //name = "korge-kotlin-plugin"
 description = "Multiplatform Game Engine written in Kotlin"
-group = RootKorlibsPlugin.KORGE_RELOAD_AGENT_GROUP
+group = RootKorlibsPlugin.KORGE_GROUP
 
 val jversion = GRADLE_JAVA_VERSION_STR
 
@@ -35,7 +34,7 @@ publishing {
     publications {
         val maven by creating(MavenPublication::class) {
             groupId = group.toString()
-            artifactId = "korge-kotlin-plugin"
+            artifactId = project.name
             version = version
             from(components["kotlin"])
         }
@@ -69,12 +68,3 @@ dependencies {
 }
 
 tasks { val jvmTest by creating { dependsOn("test") } }
-
-buildConfig {
-    packageName("korlibs.korge.kotlin.plugin")
-    buildConfigField("String", "KOTLIN_PLUGIN_ID", "\"com.soywiz.korge.korge-kotlin-plugin\"")
-}
-
-afterEvaluate {
-    tasks.getByName("sourceJar").dependsOn("generateBuildConfig")
-}
