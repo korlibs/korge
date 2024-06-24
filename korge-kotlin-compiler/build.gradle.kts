@@ -60,6 +60,7 @@ korlibs.NativeTools.groovyConfigurePublishing(project, false)
 korlibs.NativeTools.groovyConfigureSigning(project)
 
 dependencies {
+    implementation("org.jetbrains.kotlin:kotlin-build-tools-impl")
     implementation("org.jetbrains.kotlin:kotlin-compiler-embeddable")
     implementation("org.jetbrains.kotlin:kotlin-compiler-client-embeddable")
     implementation("org.jetbrains.kotlin:kotlin-daemon-embeddable")
