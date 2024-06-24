@@ -4,14 +4,11 @@ package korlibs.korge.kotlincompiler
 
 import org.jetbrains.kotlin.buildtools.api.*
 import org.jetbrains.kotlin.buildtools.api.jvm.*
-import org.jetbrains.kotlin.cli.common.messages.*
-import org.jetbrains.kotlin.cli.jvm.*
-import org.jetbrains.kotlin.cli.metadata.*
 import org.jetbrains.kotlin.daemon.common.*
 import org.w3c.dom.*
 import java.io.*
 import java.net.*
-import java.security.MessageDigest
+import java.security.*
 import java.util.*
 import javax.xml.*
 import javax.xml.parsers.*
@@ -24,291 +21,186 @@ class KorgeKotlinCompiler {
     companion object {
         @JvmStatic
         fun main(args: Array<String>) {
-            val libs = listOf(
-                *MavenTools.getMavenArtifacts(MavenArtifact("org.jetbrains.kotlin", "kotlin-stdlib", "2.0.0")).toTypedArray(),
-                *MavenTools.getMavenArtifacts(MavenArtifact("com.soywiz.korge", "korge-jvm", "999.0.0.999")).toTypedArray(),
-            )
-
-            println(libs.joinToString("\n"))
-
-            //return
-
-            val service = CompilationService.loadImplementation(ClassLoader.getSystemClassLoader())
-            println(service.getCompilerVersion())
-            val executionConfig = service.makeCompilerExecutionStrategyConfiguration()
-                .useInProcessStrategy()
-
-            //executionConfig.useDaemonStrategy(emptyList())
-
-            val buildDirectory = File("/temp/build").absoluteFile
-            val icWorkingDir = File(buildDirectory, "ic")
-            val icCachesDir = File(icWorkingDir, "caches")
-            icWorkingDir.mkdirs()
-            icCachesDir.mkdirs()
-
-            val snapshots = mutableListOf<File>()
-
-            for (lib in libs) {
-                val hexDigest = MessageDigest.getInstance("SHA1").digest(lib.readBytes()).toHexString()
-                val file = File(icWorkingDir, "dep-" + lib.name + "-$hexDigest.snapshot").absoluteFile
-                if (!file.exists()) {
-                    val snapshot = service.calculateClasspathSnapshot(lib, ClassSnapshotGranularity.CLASS_MEMBER_LEVEL)
-                    println("Saving... $file")
-                    file.parentFile.mkdirs()
-                    //println(snapshot.classSnapshots)
-                    snapshot.saveSnapshot(file)
-                } else {
-                    println("Loading... $file")
-                }
-                snapshots += file
-            }
-
-            //val snapshots = libs
-            val shrunkClasspathSnapshotFile = File(icWorkingDir, "shrunk-classpath-snapshot.bin")
-            //shrunkClasspathSnapshotFile.createNewFile()
-            //options.forceNonIncrementalMode(value = true)
-
-            val srcRoots = listOf(
-                File("C:\\Users\\soywiz\\projects\\korge-snake\\src"),
-                File("C:\\Users\\soywiz\\projects\\korge-snake\\modules\\korma-tile-matching\\src\\commonMain\\kotlin")
-            )
-
-            val allFiles = srcRoots.flatMap { it.walkBottomUp() }.filter { it.extension == "kt" }
-
-            println("allFiles=${allFiles.joinToString("\n")}")
-
-            repeat(10) { NN ->
-                val time = measureTimeMillis {
-
-                    val result = service.compileJvm(
-                        projectId = ProjectId.ProjectUUID(UUID.randomUUID()),
-                        strategyConfig = executionConfig,
-                        compilationConfig = service.makeJvmCompilationConfiguration().also { compilationConfig ->
-                            compilationConfig.useIncrementalCompilation(
-                                icCachesDir,
-                                //SourcesChanges.ToBeCalculated,
-                                //SourcesChanges.Known(listOf(allFiles.first()), emptyList()),
-                                SourcesChanges.Known(if (NN == 0) allFiles else listOf(allFiles.first()), emptyList()),
-                                //SourcesChanges.Known(listOf(allFiles.first()), emptyList()),
-                                ClasspathSnapshotBasedIncrementalCompilationApproachParameters(
-                                    snapshots,
-                                    //emptyList(),
-                                    shrunkClasspathSnapshotFile
-                                ),
-                                compilationConfig.makeClasspathSnapshotBasedIncrementalCompilationConfiguration().also {
-                                    it.setBuildDir(buildDirectory)
-                                    it.setRootProjectDir(File("C:\\Users\\soywiz\\projects\\korge-snake"))
-                                    //it.forceNonIncrementalMode(true)
-                                }
-                            )
-                        },
-                        //listOf(File("/temp/1")),
-                        sources = listOf<File>(
-                            //File("/temp/1"),
-                            //File("/temp/1-common")
-                            File("C:\\Users\\soywiz\\projects\\korge-snake\\src"),
-                            File("C:\\Users\\soywiz\\projects\\korge-snake\\modules\\korma-tile-matching\\src\\commonMain\\kotlin"),
-                        ) + allFiles,
-                        //listOf(File("/temp/1-common")),
-                        arguments = listOf(
-                            "-module-name=korge-snake",
-                            "-Xjdk-release=17",
-                            "-Xmulti-platform",
-                            "-language-version=1.9",
-                            "-api-version=1.9",
-                            "-no-stdlib",
-                            "-no-reflect",
-                            "-Xexpect-actual-classes",
-                            "-Xenable-incremental-compilation",
-                            "-classpath=${libs.joinToString(File.pathSeparator) { it.absolutePath }}",
-                            "-d",
-                            File(buildDirectory, "classes").absolutePath,
-                            //add("-Xfriend-paths=${friendPaths.joinToString(",")}")
-                            //"C:\\Users\\soywiz\\projects\\korge-snake\\src",
-                            //"C:\\Users\\soywiz\\projects\\korge-snake\\modules\\korma-tile-matching\\src\\commonMain\\kotlin",
-                        )
+            repeat(10) {
+                run {
+                    val compiler = KorgeKotlinCompiler()
+                    compiler.buildDirectory = File("C:\\temp\\.kotlin")
+                    compiler.rootDir = File("C:\\temp")
+                    compiler.sourceDirs = setOf(
+                        File("C:\\temp\\1"),
+                        File("C:\\temp\\1-common"),
                     )
-                    println("result=$result")
+                    compiler.libs = compiler.filesForMaven(
+                        MavenArtifact("org.jetbrains.kotlin", "kotlin-stdlib", "2.0.0"),
+                        MavenArtifact("com.soywiz.korge", "korge-jvm", "999.0.0.999")
+                    )
+
+                    repeat(1) { NN ->
+                        println(measureTimeMillis {
+                            println(compiler.compileJvm(forceRecompilation = NN == 0))
+                            //println(compiler.compileJvm(forceRecompilation = true))
+                        })
+                    }
                 }
 
-                println("[1]")
-                println(time)
-            }
-//
-            return
-
-
-            println("[2]")
-
-            //KorgeKotlinCompiler().doCompile("/temp/1-common.klib", listOf("/temp/1-common"), target = Target.COMMON)
-            KorgeKotlinCompiler().doCompile(
-                out = "/temp/1.jvm",
-                //srcs = listOf("C:/temp/1"),
-                //srcs = listOf("/temp/1", "/temp/1-common"),
-                srcs = listOf(
-                    "C:\\Users\\soywiz\\projects\\korge-snake\\src",
-                    "C:\\Users\\soywiz\\projects\\korge-snake\\modules\\korma-tile-matching\\src\\commonMain\\kotlin",
-                ),
-                //common = listOf("C:/temp/1-common"),
-                libs = libs.map { it.absolutePath },
-                //klibs = listOf("C:/temp/1-common.klib"),
-                target = Target.JVM
-            )
-
-            /*
-            // Create a message collector to capture compiler messages
-            val messageCollector = PrintingMessageCollector(System.err, MessageRenderer.GRADLE_STYLE, true)
-
-            // Set up compiler configuration
-            val configuration = CompilerConfiguration()
-            configuration.put(CLIConfigurationKeys.MESSAGE_COLLECTOR_KEY, messageCollector)
-            configuration.put(CommonConfigurationKeys.MODULE_NAME, "MultiplatformModule")
-
-            // Specify common, Android, and iOS source directories
-            val commonSrcDir = File("src/commonMain/kotlin")
-            val androidSrcDir = File("src/androidMain/kotlin")
-            val iosSrcDir = File("src/iosMain/kotlin")
-
-            //configuration.addJvmClasspathRoot(PathUtil.getResourcePathForClass(MessageCollector::class.java))
-
-            // Add source directories to the configuration
-            configuration.add(CLIConfigurationKeys.CONTENT_ROOTS, KotlinSourceRoot("/temp/1-common", isCommon = true, hmppModuleName = null))
-            configuration.add(CLIConfigurationKeys.CONTENT_ROOTS, KotlinSourceRoot("/temp/1", isCommon = false, hmppModuleName = null))
-            //configuration.add(CLIConfigurationKeys.CONTENT_ROOTS, iosSrcDir)
-
-            // Add classpath entries
-            //val classpath = (Thread.currentThread().contextClassLoader as URLClassLoader).urLs.map { File(it.toURI()) }
-            //classpath.forEach { configuration.add(CLIConfigurationKeys.CONTENT_ROOTS, it) }
-
-            // Create the environment
-            val environment = KotlinCoreEnvironment.createForProduction(
-                {},
-                configuration,
-                //KotlinCoreEnvironment.ProjectEnvironmentName.Production
-                EnvironmentConfigFiles.JVM_CONFIG_FILES
-            )
-
-            // Set up the compiler
-            val compiler = K2JVMCompiler()
-            val arguments = compiler.createArguments().apply {
-                destination = "build/classes/kotlin/main"
-                freeArgs = listOf(commonSrcDir.path, androidSrcDir.path, iosSrcDir.path)
-                classpath = libs.joinToString(File.pathSeparator) { it.absolutePath }
-            }
-
-            // Invoke the compiler
-            //compiler.exec()
-            K2JVMCompiler().
-            object MyCompiler : K2JVMCompiler() {
-
-            }
-            val result = compiler.exec(messageCollector, Services.EMPTY, arguments)
-            if (result == org.jetbrains.kotlin.cli.common.ExitCode.OK) {
-                println("Compilation succeeded")
-            } else {
-                println("Compilation failed")
-            }
-
-             */
-        }
-
-    }
-
-    val metadataCompiler = K2MetadataCompiler()
-    val jvmCompiler = K2JVMCompiler()
-    val arguments = jvmCompiler.createArguments().also {
-        it.incrementalCompilation = true
-        it.reportOutputFiles = true
-        it.multiPlatform = true
-        it.expectActualClasses = true
-        it.klibLibraries
-        it.languageVersion
-    }
-
-    enum class Target {
-        JVM, JS, COMMON
-    }
-
-    fun doCompile(
-        out: String,
-        srcs: List<String> = emptyList(),
-        common: List<String> = emptyList(),
-        libs: List<String> = emptyList(),
-        klibs: List<String> = emptyList(),
-        target: Target = Target.JVM
-    ) {
-        val args = buildList<String> {
-            //add("-Xmodule-name=mymodule")
-            add("-Xmulti-platform")
-            add("-Xjdk-release=17")
-            //add("-no-stdlib")
-            //add("-help")
-            add("-language-version"); add("1.9")
-            add("-api-version"); add("1.9")
-
-            //add("-verbose")
-            //add("-progressive")
-            add("-Xenable-incremental-compilation")
-            //for (src in common) {
-            //    add(File(src).absolutePath)
-            //}
-            if (common.isNotEmpty()) {
-                add("-Xcommon-sources=${common.joinToString(File.pathSeparator) { File(it).absolutePath }}")
-            }
-            if (target == Target.JVM) add("-no-stdlib")
-            if (libs.isNotEmpty()) {
-                add("-classpath")
-                add(libs.joinToString(File.pathSeparator) { File(it).absolutePath })
-            }
-            if (klibs.isNotEmpty()) {
-                add("-Xklib=${klibs.joinToString(File.pathSeparator) { File(it).absolutePath }}")
-            }
-            add("-d")
-            add(File(out).absolutePath)
-            for (src in srcs) {
-                add(File(src).absolutePath)
-            }
-        }
-
-        println("[3]")
-
-        println("args=$args")
-
-        repeat(20) {
-            println(measureTimeMillis {
-                (if (target == Target.JVM) jvmCompiler else metadataCompiler).exec(
-                    System.err,
-                    MessageRenderer.GRADLE_STYLE,
-                    *args.toTypedArray()
+                val compiler = KorgeKotlinCompiler()
+                compiler.buildDirectory = File("C:\\Users\\soywiz\\projects\\korge-snake\\.kotlin")
+                compiler.rootDir = File("C:\\Users\\soywiz\\projects\\korge-snake")
+                compiler.sourceDirs = setOf(
+                    File("C:\\Users\\soywiz\\projects\\korge-snake\\src"),
+                    File("C:\\Users\\soywiz\\projects\\korge-snake\\modules\\korma-tile-matching\\src\\commonMain\\kotlin"),
                 )
-            })
-        }
+                compiler.libs = compiler.filesForMaven(
+                    MavenArtifact("org.jetbrains.kotlin", "kotlin-stdlib", "2.0.0"),
+                    MavenArtifact("com.soywiz.korge", "korge-jvm", "999.0.0.999")
+                )
 
-
-
-        //compiler.
-        //CLITool.doMain(compiler.createArguments(), arrayOf())
-        /*
-        K2JVMCompiler.main(arrayOf(""))
-        val arguments = createCompilerArguments()
-        val buildArguments = buildMetrics.measure(GradleBuildTime.OUT_OF_WORKER_TASK_ACTION) {
-            val output = outputFile.get()
-            output.parentFile.mkdirs()
-
-            buildFusService.orNull?.reportFusMetrics {
-                NativeCompilerOptionMetrics.collectMetrics(compilerOptions, it)
+                repeat(4) { NN ->
+                    println(measureTimeMillis {
+                        println(compiler.compileJvm(forceRecompilation = NN == 0))
+                        //println(compiler.compileJvm(forceRecompilation = true))
+                    })
+                }
             }
+        }
+    }
 
-            ArgumentUtils.convertArgumentsToStringList(arguments)
+    fun filesForMaven(vararg artifacts: MavenArtifact): Set<File> = artifacts.flatMap { filesForMaven(it) }.toSet()
+    fun filesForMaven(artifacts: List<MavenArtifact>): Set<File> = artifacts.flatMap { filesForMaven(it) }.toSet()
+    fun filesForMaven(artifact: MavenArtifact): Set<File> = MavenTools.getMavenArtifacts(artifact)
+
+    var buildDirectory = File("/temp/build").absoluteFile
+    var rootDir: File = File("/temp")
+    var sourceDirs: Set<File> = emptySet()
+    var libs: Set<File> = emptySet()
+        set(value) {
+            if (field != value) {
+                field = value
+                snapshot = null
+            }
         }
 
-        KotlinNativeCompilerRunner(
-            settings = runnerSettings,
-            executionContext = KotlinToolRunner.GradleExecutionContext.fromTaskContext(objectFactory, execOperations, logger),
-            metricsReporter = buildMetrics
-        ).run(buildArguments)
+    private var snapshot: ClasspathSnapshotBasedIncrementalCompilationApproachParameters? = null
+    private val service = CompilationService.loadImplementation(ClassLoader.getSystemClassLoader())
+    private val executionConfig = service.makeCompilerExecutionStrategyConfiguration()
+        .useInProcessStrategy()
 
-         */
+    private val icWorkingDir by lazy { File(buildDirectory, "ic").also { it.mkdirs() } }
+    private val icCachesDir by lazy { File(icWorkingDir, "caches").also { it.mkdirs() } }
+
+    private fun createSnapshots(): ClasspathSnapshotBasedIncrementalCompilationApproachParameters {
+        val snapshots = mutableListOf<File>()
+
+        for (lib in libs) {
+            val hexDigest = MessageDigest.getInstance("SHA1").digest(lib.readBytes()).toHexString()
+            val file = File(icWorkingDir, "dep-" + lib.name + "-$hexDigest.snapshot").absoluteFile
+            if (!file.exists()) {
+                val snapshot = service.calculateClasspathSnapshot(lib, ClassSnapshotGranularity.CLASS_MEMBER_LEVEL)
+                println("Saving... $file")
+                file.parentFile.mkdirs()
+                //println(snapshot.classSnapshots)
+                snapshot.saveSnapshot(file)
+            } else {
+                //println("Loading... $file")
+            }
+            snapshots += file
+        }
+        val shrunkClasspathSnapshotFile = File(icWorkingDir, "shrunk-classpath-snapshot.bin")
+        return ClasspathSnapshotBasedIncrementalCompilationApproachParameters(
+            snapshots,
+            //emptyList(),
+            shrunkClasspathSnapshotFile
+        )
+    }
+
+    fun getAllFiles(): List<File> {
+        return sourceDirs.flatMap { it.walkBottomUp() }.filter { it.extension == "kt" }.map { it.absoluteFile }
+    }
+
+    fun getAllFilesToModificationTime(): Map<File, Long> {
+        return getAllFiles().associateWith { it.lastModified() }
+    }
+
+    private fun saveFileToTime(files: Map<File, Long>): String {
+        return files.entries.joinToString("\n") { "${it.key}:::${it.value}" }
+    }
+
+    private fun loadFileToTime(text: String): Map<File, Long> {
+        return text.split("\n").filter { it.contains(":::") }.map { val (file, time) = it.split(":::"); File(file) to time.toLong() }.toMap()
+    }
+
+    fun compileJvm(forceRecompilation: Boolean = false): CompilationResult {
+        buildDirectory.mkdirs()
+        val filesTxt = File(buildDirectory, "files.txt")
+        if (forceRecompilation) {
+            filesTxt.delete()
+        }
+        val oldFiles = loadFileToTime(filesTxt.takeIf { it.exists() }?.readText() ?: "")
+        val allFiles = getAllFilesToModificationTime()
+        filesTxt.writeText(saveFileToTime(allFiles))
+        val sourcesChanges = getModifiedFiles(oldFiles, allFiles)
+
+        if (snapshot == null) {
+            snapshot = createSnapshots()
+        }
+
+        return service.compileJvm(
+            projectId = ProjectId.ProjectUUID(UUID.randomUUID()),
+            strategyConfig = executionConfig,
+            compilationConfig = service.makeJvmCompilationConfiguration().also { compilationConfig ->
+                compilationConfig.useIncrementalCompilation(
+                    icCachesDir,
+                    sourcesChanges,
+                    snapshot!!,
+                    compilationConfig.makeClasspathSnapshotBasedIncrementalCompilationConfiguration().also {
+                        it.setBuildDir(buildDirectory)
+                        it.setRootProjectDir(rootDir)
+                        //it.forceNonIncrementalMode(true)
+                    }
+                )
+            },
+            //listOf(File("/temp/1")),
+            sources = listOf<File>(
+                //File("/temp/1"),
+                //File("/temp/1-common")
+                //File("C:\\Users\\soywiz\\projects\\korge-snake\\src"),
+                //File("C:\\Users\\soywiz\\projects\\korge-snake\\modules\\korma-tile-matching\\src\\commonMain\\kotlin"),
+            ) + allFiles.map { it.key },
+            //listOf(File("/temp/1-common")),
+            arguments = listOf(
+                "-module-name=korge-snake",
+                "-Xjdk-release=17",
+                //"-Xuse-fast-jar-file-system",
+                "-jvm-target=17",
+                "-Xmulti-platform",
+                //"-progressive",
+                "-language-version=1.9",
+                "-api-version=1.9",
+                "-no-stdlib",
+                "-no-reflect",
+                "-Xexpect-actual-classes",
+                "-Xenable-incremental-compilation",
+                "-classpath=${libs.joinToString(File.pathSeparator) { it.absolutePath }}",
+                "-d",
+                File(buildDirectory, "classes").absolutePath,
+                //add("-Xfriend-paths=${friendPaths.joinToString(",")}")
+                //"C:\\Users\\soywiz\\projects\\korge-snake\\src",
+                //"C:\\Users\\soywiz\\projects\\korge-snake\\modules\\korma-tile-matching\\src\\commonMain\\kotlin",
+            )
+        )
+    }
+
+    fun getModifiedFiles(old: Map<File, Long>, new: Map<File, Long>): SourcesChanges.Known {
+        val modified = arrayListOf<File>()
+        val removed = arrayListOf<File>()
+        for ((file, newTime) in new) {
+            if (file !in old) {
+                removed += file
+            } else if (old[file] != newTime) {
+                modified += file
+            }
+        }
+        return SourcesChanges.Known(modified, removed)
     }
 }
 
@@ -348,10 +240,10 @@ class Pom(
 }
 
 object MavenTools {
-    fun getMavenArtifacts(artifact: MavenArtifact, explored: MutableSet<MavenArtifact> = mutableSetOf()): List<File> {
+    fun getMavenArtifacts(artifact: MavenArtifact, explored: MutableSet<MavenArtifact> = mutableSetOf()): Set<File> {
         val explore = ArrayDeque<MavenArtifact>()
         explore += artifact
-        val out = arrayListOf<MavenArtifact>()
+        val out = mutableSetOf<MavenArtifact>()
         while (explore.isNotEmpty()) {
             val artifact = explore.removeFirst()
             if (artifact in explored) continue
@@ -364,7 +256,7 @@ object MavenTools {
                 explore += dep.artifact
             }
         }
-        return out.map { getSingleMavenArtifact(it) }
+        return out.map { getSingleMavenArtifact(it) }.toSet()
     }
 
     fun getSingleMavenArtifact(artifact: MavenArtifact): File {
