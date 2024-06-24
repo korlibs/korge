@@ -3,15 +3,16 @@ import korlibs.root.*
 
 plugins {
     //id "kotlin" version "1.6.21"
-    kotlin("jvm")
-    //kotlin("plugin.serialization")
-    id("org.jetbrains.kotlin.plugin.serialization") version "2.0.0"
+    id("kotlin")
     //id "org.jetbrains.kotlin.jvm"
     id("maven-publish")
+    //alias(libs.plugins.conventions.jvm)
+    //alias(libs.plugins.compiler.specific.module)
 }
 
+//name = "korge-kotlin-plugin"
 description = "Multiplatform Game Engine written in Kotlin"
-group = RootKorlibsPlugin.KORGE_RELOAD_AGENT_GROUP
+group = RootKorlibsPlugin.KORGE_GROUP
 
 val jversion = GRADLE_JAVA_VERSION_STR
 
@@ -33,7 +34,7 @@ publishing {
     publications {
         val maven by creating(MavenPublication::class) {
             groupId = group.toString()
-            artifactId = "korge-ipc"
+            artifactId = project.name
             version = version
             from(components["kotlin"])
         }
@@ -58,11 +59,12 @@ korlibs.NativeTools.groovyConfigurePublishing(project, false)
 korlibs.NativeTools.groovyConfigureSigning(project)
 
 dependencies {
-    //implementation(libs.kotlinx.coroutines.core)
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.0")
-    implementation(libs.korlibs.datastructure.core)
-    implementation(libs.korlibs.memory)
-    implementation(libs.korlibs.io.stream)
+    implementation("org.jetbrains.kotlin:kotlin-build-tools-impl")
+    compileOnly("org.jetbrains.kotlin:kotlin-build-tools-api")
+    //api("org.jetbrains.kotlin:kotlin-compiler-embeddable")
+    //api("org.jetbrains.kotlin:kotlin-compiler-client-embeddable")
+    //api("org.jetbrains.kotlin:kotlin-daemon-embeddable")
+    //api("org.jetbrains.kotlin:kotlin-gradle-plugin")
     testImplementation(libs.bundles.kotlin.test)
 }
 

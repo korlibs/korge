@@ -812,6 +812,7 @@ fun Project.mustAutoconfigureKMM(): Boolean =
         project.name != "korge-kotlin-plugin" &&
         project.name != "korge-reload-agent" &&
         project.name != "korge-ipc" &&
+        project.name != "korge-kotlin-compiler" &&
         project.name != "korge-benchmarks" &&
         project.hasBuildGradle()
 

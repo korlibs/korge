@@ -1678,6 +1678,21 @@ fun View?.foreachDescendant(handler: (View) -> Unit) {
     }
 }
 
+inline fun View.foreachDescendantInline(deque: ArrayDeque<View> = ArrayDeque<View>(), handler: (View) -> Unit) {
+    deque.clear()
+    deque.add(this)
+
+    while (deque.isNotEmpty()) {
+        val view = deque.removeFirstOrNull() ?: break
+        handler(view)
+        if (view.isContainer) {
+            view.forEachChild { child: View ->
+                deque.add(child)
+            }
+        }
+    }
+}
+
 inline fun View?.forEachAscendant(includeThis: Boolean = false, handler: (View) -> Unit) {
     var view = this
     if (!includeThis) view = view?.parent

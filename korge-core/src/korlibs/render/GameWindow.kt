@@ -1,6 +1,7 @@
 package korlibs.render
 
 import korlibs.concurrent.lock.*
+import korlibs.concurrent.thread.*
 import korlibs.datastructure.*
 import korlibs.event.*
 import korlibs.graphics.*
@@ -261,6 +262,9 @@ open class GameWindow :
         return onEvent(RenderEvent, block)
     }
 
+    val fastCounterTimePerFrame: FastDuration get() = (1_000_000.0 / fps).fastMicroseconds
+    val fastTimePerFrame: FastDuration get() = fastCounterTimePerFrame
+
     val counterTimePerFrame: Duration get() = (1_000_000.0 / fps).microseconds
     val timePerFrame: Duration get() = counterTimePerFrame
 
@@ -390,11 +394,27 @@ open class GameWindow :
         launchImmediately(getCoroutineDispatcherWithCurrentContext()) {
             entry()
         }
-        while (running) {
-            val elapsed = frame()
-            val available = counterTimePerFrame - elapsed
-            if (available > TimeSpan.ZERO) delay(available)
-        }
+        //withContext(getCoroutineDispatcherWithCurrentContext()) {
+            //delay(1L)
+            while (running) {
+                var elapsed: FastDuration
+                val realElapsed = measureTime {
+                    elapsed = frame()
+                }
+                val available = fastCounterTimePerFrame - elapsed
+                //val available = fastCounterTimePerFrame - realElapsed
+                if (available > FastDuration.ZERO) {
+                    //println("delay=$available, elapsed=$elapsed, realElapsed=$realElapsed, fastCounterTimePerFrame=$fastCounterTimePerFrame")
+                    loopDelay(available)
+                    //NativeThread.sleepExact(available)
+                    //NativeThread.sleepExact(available)
+                }
+            }
+        //}
+    }
+
+    open suspend fun loopDelay(time: FastDuration) {
+        delay(time)
     }
 
     // Referenced from korge-plugins repo
@@ -567,7 +587,7 @@ open class GameWindow :
         dispatchReshapeEventEx(x, y, width, height, width, height)
     }
 
-    fun dispatchReshapeEventEx(x: Int, y: Int, width: Int, height: Int, fullWidth: Int, fullHeight: Int) {
+    fun dispatchReshapeEventEx(x: Int, y: Int, width: Int, height: Int, fullWidth: Int = width, fullHeight: Int = height) {
         ag.mainFrameBuffer.setSize(x, y, width, height, fullWidth, fullHeight)
         dispatch(reshapeEvent.reset {
             this.x = x
