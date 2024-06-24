@@ -11,8 +11,8 @@ import korlibs.render.awt.*
 class IPCViewsCompleter : ViewsCompleter {
     override fun completeViews(views: Views) {
         val korgeIPC = KorgeIPCInfo.DEFAULT_PATH_OR_NULL
-        println("KorgeIPC: $korgeIPC : ${KorgeIPCInfo.KORGE_IPC_prop} : ${KorgeIPCInfo.KORGE_IPC_env} : isServer = true")
         if (korgeIPC != null) {
+            println("KorgeIPC: $korgeIPC : ${KorgeIPCInfo.KORGE_IPC_prop} : ${KorgeIPCInfo.KORGE_IPC_env} : isServer = true")
             val ipc = KorgeIPC(korgeIPC, isServer = true)
 
             val viewsNodeId = ViewsNodeId(views)
