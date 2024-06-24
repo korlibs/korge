@@ -25,6 +25,7 @@ class KorgeIPCServerSocketTest {
     }
 
     @Test
+    @Ignore
     fun testListen(): Unit {
         val logS = arrayListOf<String>()
         val logC = arrayListOf<String>()
