@@ -256,7 +256,7 @@ fun IPCPacket.Companion.mousePacket(
     type: Int, x: Int, y: Int, button: Int,
     scrollX: Float = 0f, scrollY: Float = 0f, scrollZ: Float = 0f,
 ): IPCPacket = packetInts(type, x, y, button, scrollX.reinterpretAsInt(), scrollY.reinterpretAsInt(), scrollZ.reinterpretAsInt())
-fun IPCPacket.Companion.resizePacket(type: Int, width: Int, height: Int): IPCPacket = packetInts(type, width, height)
+fun IPCPacket.Companion.resizePacket(type: Int, width: Int, height: Int, scale: Float = 1f): IPCPacket = packetInts(type, width, height, scale.reinterpretAsInt())
 fun IPCPacket.Companion.nodePacket(type: Int, nodeId: Int): IPCPacket = packetInts(type, nodeId)
 
 fun IPCPacket.Companion.requestNodeChildrenPacket(nodeId: Int): IPCPacket = nodePacket(IPCPacket.REQUEST_NODE_CHILDREN, nodeId)

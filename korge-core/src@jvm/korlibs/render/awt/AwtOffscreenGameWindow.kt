@@ -11,7 +11,7 @@ class AwtOffscreenGameWindow(
     val draw: Boolean = false,
     override val ag: AGOpengl = AGOpenglAWT(context = context.ctx),
     exitProcessOnClose: Boolean = false,
-    override val devicePixelRatio: Double = 1.0,
+    override var devicePixelRatio: Double = 1.0,
 ) : GameWindow() {
     constructor(
         config: GameWindowCreationConfig,
@@ -38,10 +38,12 @@ class AwtOffscreenGameWindow(
     }
 
     override fun setSize(width: Int, height: Int) {
+        val rwidth = (width * devicePixelRatio).toInt()
+        val rheight = (height * devicePixelRatio).toInt()
         //println("OFFSCREEN: setSize: $width, $height")
-        context.setSize(width, height)
+        context.setSize(rwidth, rheight)
         context.doClear()
-        dispatchReshapeEvent(0, 0, width, height)
+        dispatchReshapeEvent(0, 0, rwidth, rheight)
     }
 
     //override val ag: AG = if (draw) AGSoftware(width, height) else DummyAG(width, height)

@@ -1,4 +1,6 @@
 import korlibs.root.*
+import org.jetbrains.kotlin.backend.common.serialization.*
+import org.jetbrains.kotlin.gradle.tasks.*
 
 plugins {
     //id "com.dorongold.task-tree" version "2.1.1"
@@ -90,4 +92,11 @@ tasks {
             "-o", File(rootFile, "korge-$mversion.tar.zstd").absolutePath
         )
     }
+}
+
+afterEvaluate {
+    println("-----------")
+    println(tasks.findByPath(":korge:jvmMainClasses")!!::class)
+    println(tasks.findByPath(":korge:compileKotlinJvm")!!::class)
+    //org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 }

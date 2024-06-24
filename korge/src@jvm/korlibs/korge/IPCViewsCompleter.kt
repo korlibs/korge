@@ -72,11 +72,13 @@ class IPCViewsCompleter : ViewsCompleter {
                         IPCPacket.RESIZE -> {
                             val width = e.buffer.getInt()
                             val height = e.buffer.getInt()
+                            val pixelScale = e.buffer.getFloat()
 
                             val awtGameWindow = (views.gameWindow as? AwtGameWindow?)
                             if (awtGameWindow != null) {
                                 awtGameWindow.frame.setSize(width, height)
                             } else {
+                                (views.gameWindow as? AwtOffscreenGameWindow)?.devicePixelRatio = pixelScale.toDouble()
                                 views.gameWindow.setSize(width, height)
                                 //views.gameWindow.dispatch(ReshapeEvent(width = width, height = height, setPos = false))
                                 //views.resized(width, height)

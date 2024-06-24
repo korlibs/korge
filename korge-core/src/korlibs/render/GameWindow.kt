@@ -1,6 +1,7 @@
 package korlibs.render
 
 import korlibs.concurrent.lock.*
+import korlibs.concurrent.thread.*
 import korlibs.datastructure.*
 import korlibs.event.*
 import korlibs.graphics.*
@@ -393,14 +394,21 @@ open class GameWindow :
         launchImmediately(getCoroutineDispatcherWithCurrentContext()) {
             entry()
         }
-        while (running) {
-            val elapsed = frame()
-            val available = fastCounterTimePerFrame - elapsed
-            if (available > FastDuration.ZERO) {
-                println("delay=$available, elapsed=$elapsed, counterTimePerFrame=$counterTimePerFrame")
-                delay(available)
+        //withContext(getCoroutineDispatcherWithCurrentContext()) {
+            //delay(1L)
+            while (running) {
+                var elapsed: FastDuration
+                val realElapsed = fastMeasureTime {
+                    elapsed = frame()
+                }
+                val available = fastCounterTimePerFrame - realElapsed
+                //if (available > FastDuration.ZERO) {
+                    println("delay=$available, elapsed=$elapsed, realElapsed=$realElapsed, counterTimePerFrame=$counterTimePerFrame")
+                    //delay(available)
+                    NativeThread.sleepExact(available)
+                //}
             }
-        }
+        //}
     }
 
     // Referenced from korge-plugins repo
@@ -573,7 +581,7 @@ open class GameWindow :
         dispatchReshapeEventEx(x, y, width, height, width, height)
     }
 
-    fun dispatchReshapeEventEx(x: Int, y: Int, width: Int, height: Int, fullWidth: Int, fullHeight: Int) {
+    fun dispatchReshapeEventEx(x: Int, y: Int, width: Int, height: Int, fullWidth: Int = width, fullHeight: Int = height) {
         ag.mainFrameBuffer.setSize(x, y, width, height, fullWidth, fullHeight)
         dispatch(reshapeEvent.reset {
             this.x = x
