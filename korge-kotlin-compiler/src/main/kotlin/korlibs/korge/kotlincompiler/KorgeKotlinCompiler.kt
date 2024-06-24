@@ -5,11 +5,10 @@ package korlibs.korge.kotlincompiler
 import korlibs.korge.kotlincompiler.maven.*
 import org.jetbrains.kotlin.buildtools.api.*
 import org.jetbrains.kotlin.buildtools.api.jvm.*
-import org.jetbrains.kotlin.daemon.common.*
-import org.jetbrains.kotlin.utils.addToStdlib.*
 import java.io.*
 import java.security.*
 import java.util.*
+import kotlin.system.*
 
 // https://github.com/JetBrains/kotlin/tree/master/compiler/build-tools/kotlin-build-tools-api
 // https://github.com/JetBrains/kotlin/blob/bc1ddd8205f6107c7aec87a9fb3bd7713e68902d/compiler/build-tools/kotlin-build-tools-api-tests/src/main/kotlin/compilation/model/JvmModule.kt
@@ -74,8 +73,9 @@ class KorgeKotlinCompiler {
             compiler.sourceDirs = srcDirs.toSet()
             compiler.libs = module.libs.toSet() + libFiles.toSet()
 
-            val (time, result) = measureTimeMillisWithResult {
-                compiler.compileJvm()
+            lateinit var result: CompilationResult
+            val time = measureTimeMillis {
+                result = compiler.compileJvm()
                 //println(compiler.compileJvm(forceRecompilation = true))
             }
             if (result != CompilationResult.COMPILATION_SUCCESS) {
@@ -157,7 +157,9 @@ class KorgeKotlinCompiler {
         }
 
     private var snapshot: ClasspathSnapshotBasedIncrementalCompilationApproachParameters? = null
-    private val service = CompilationService.loadImplementation(ClassLoader.getSystemClassLoader())
+    //private val service = CompilationService.loadImplementation(ClassLoader.getSystemClassLoader())
+    //private val service = CompilationService.loadImplementation(KorgeKotlinCompiler::class.java.classLoader)
+    private val service = CompilationService.loadImplementation(ClassLoader.getPlatformClassLoader())
     private val executionConfig = service.makeCompilerExecutionStrategyConfiguration()
         .useInProcessStrategy()
 
@@ -169,7 +171,7 @@ class KorgeKotlinCompiler {
 
         for (lib in libs) {
             if (lib.isFile) {
-                val hexDigest = MessageDigest.getInstance("SHA1").digest(lib.readBytes()).toHexString()
+                val hexDigest = HexFormat.of().formatHex(MessageDigest.getInstance("SHA1").digest(lib.readBytes()))
                 val file = File(icWorkingDir, "dep-" + lib.name + "-$hexDigest.snapshot").absoluteFile
                 if (!file.exists()) {
                     val snapshot = service.calculateClasspathSnapshot(lib, ClassSnapshotGranularity.CLASS_MEMBER_LEVEL)

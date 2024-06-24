@@ -60,10 +60,11 @@ korlibs.NativeTools.groovyConfigureSigning(project)
 
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-build-tools-impl")
-    implementation("org.jetbrains.kotlin:kotlin-compiler-embeddable")
-    implementation("org.jetbrains.kotlin:kotlin-compiler-client-embeddable")
-    implementation("org.jetbrains.kotlin:kotlin-daemon-embeddable")
-    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin")
+    compileOnly("org.jetbrains.kotlin:kotlin-build-tools-api")
+    //api("org.jetbrains.kotlin:kotlin-compiler-embeddable")
+    //api("org.jetbrains.kotlin:kotlin-compiler-client-embeddable")
+    //api("org.jetbrains.kotlin:kotlin-daemon-embeddable")
+    //api("org.jetbrains.kotlin:kotlin-gradle-plugin")
     testImplementation(libs.bundles.kotlin.test)
 }
 
