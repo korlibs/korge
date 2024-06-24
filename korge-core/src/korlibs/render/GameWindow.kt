@@ -403,14 +403,18 @@ open class GameWindow :
                 }
                 val available = fastCounterTimePerFrame - elapsed
                 //val available = fastCounterTimePerFrame - realElapsed
-                //if (available > FastDuration.ZERO) {
+                if (available > FastDuration.ZERO) {
                     //println("delay=$available, elapsed=$elapsed, realElapsed=$realElapsed, fastCounterTimePerFrame=$fastCounterTimePerFrame")
-                    //delay(available)
+                    loopDelay(available)
                     //NativeThread.sleepExact(available)
-                NativeThread.sleepExact(available)
-                //}
+                    //NativeThread.sleepExact(available)
+                }
             }
         //}
+    }
+
+    open suspend fun loopDelay(time: FastDuration) {
+        delay(time)
     }
 
     // Referenced from korge-plugins repo

@@ -1,9 +1,11 @@
 package korlibs.render.awt
 
+import korlibs.concurrent.thread.*
 import korlibs.graphics.gl.*
 import korlibs.kgl.*
 import korlibs.math.geom.*
 import korlibs.render.*
+import korlibs.time.*
 
 class AwtOffscreenGameWindow(
     var size: Size = Size(640, 480),
@@ -44,6 +46,10 @@ class AwtOffscreenGameWindow(
         context.setSize(rwidth, rheight)
         context.doClear()
         dispatchReshapeEvent(0, 0, rwidth, rheight)
+    }
+
+    override suspend fun loopDelay(time: FastDuration) {
+        NativeThread.sleepExact(time)
     }
 
     //override val ag: AG = if (draw) AGSoftware(width, height) else DummyAG(width, height)
