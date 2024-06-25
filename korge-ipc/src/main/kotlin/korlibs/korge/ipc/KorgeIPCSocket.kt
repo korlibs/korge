@@ -217,15 +217,22 @@ class IPCPacket(
             socket.write(head)
         }
 
+        fun ReadableByteChannel.readFull(dst: ByteBuffer) {
+            while (dst.remaining() > 0) {
+                val read = read(dst)
+                if (read <= 0) error("Couldn't read")
+            }
+        }
+
         fun read(socket: SocketChannel): IPCPacket {
             val head = ByteBuffer.allocate(8)
-            socket.read(head)
+            socket.readFull(head)
             head.flip()
             val type = head.int
             val size = head.int
             val data = ByteArray(size)
             if (size > 0) {
-                socket.read(ByteBuffer.wrap(data))
+                socket.readFull(ByteBuffer.wrap(data))
             }
             return IPCPacket(type, data)
         }
