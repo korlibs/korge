@@ -12,6 +12,7 @@ import korlibs.korge.view.align.*
 import korlibs.korge.view.camera.*
 import korlibs.korge.view.tiles.*
 import korlibs.math.geom.*
+import korlibs.memory.*
 import korlibs.number.*
 import kotlin.math.*
 import kotlin.random.*
@@ -29,7 +30,7 @@ class MainTilemapTest : Scene() {
         //filters(IdentityFilter)
         solidRect(width, height, Colors["#3e0000"])
         val cameraContainer = cameraContainer(Size(width, height)) {
-            tilemap = tileMap(donutMap, tileSet).centerOn(this)
+            tilemap = tileMap(donutMap.copy(tileSet = tileSet)).centerOn(this)
         }//.filters(BlurFilter())
         cameraContainer.cameraY = -80.0 * mapSize
         val statusOverlay = text("")
@@ -103,9 +104,9 @@ class MainTilemapTest : Scene() {
     private fun makeDonutMap(
         mapWidth: Int,
         tileSet: TileSet
-    ): IntArray2 {
+    ): TileMapData {
         val rand = Random(3)
-        val mapValues2 = IntArray2(mapWidth, mapWidth, 0)
+        val mapValues2 = TileMapData(mapWidth, mapWidth, TileSet.EMPTY)
         val center = Point(mapWidth / 2, mapWidth / 2)
         for (x in 0 until mapWidth) for (y in 0 until mapWidth) {
             val p = Point(x, y)
@@ -113,7 +114,7 @@ class MainTilemapTest : Scene() {
             val onDisc = dist < mapWidth / 2
             val tooClose = dist < (mapWidth / 2) * 0.7
             mapValues2[x, y] =
-                if (onDisc && !tooClose) 1 + rand.nextInt(tileSet.tilesMap.size - 1) else 0
+                Tile(if (onDisc && !tooClose) 1 + rand.nextInt(tileSet.tilesMap.size - 1) else 0)
         }
         return mapValues2
     }
