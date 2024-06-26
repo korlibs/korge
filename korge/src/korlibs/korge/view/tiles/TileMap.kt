@@ -20,38 +20,6 @@ inline fun Container.tileMap(
     callback: @ViewDslMarker TileMap.() -> Unit = {},
 ) = TileMap(map, map.tileSet, smoothing, map.tileSet.tileSize).repeat(map.repeatX, map.repeatY).addTo(this, callback)
 
-@Deprecated("Use TileMapInfo variant instead")
-inline fun Container.tileMap(
-    map: IStackedIntArray2,
-    tileset: TileSet,
-    repeatX: TileMapRepeat = TileMapRepeat.NONE,
-    repeatY: TileMapRepeat = repeatX,
-    smoothing: Boolean = true,
-    tileSize: SizeInt = tileset.tileSize,
-    callback: @ViewDslMarker TileMap.() -> Unit = {},
-) = TileMap(map, tileset, smoothing, tileSize).repeat(repeatX, repeatY).addTo(this, callback)
-
-@Deprecated("Use TileMapInfo variant instead")
-inline fun Container.tileMap(
-    map: IntArray2,
-    tileset: TileSet,
-    repeatX: TileMapRepeat = TileMapRepeat.NONE,
-    repeatY: TileMapRepeat = repeatX,
-    smoothing: Boolean = true,
-    tileSize: SizeInt = tileset.tileSize,
-    callback: @ViewDslMarker TileMap.() -> Unit = {},
-) = TileMap(map, tileset, smoothing, tileSize).repeat(repeatX, repeatY).addTo(this, callback)
-
-@PublishedApi
-@Deprecated("Use TileMapInfo variant instead")
-internal fun Bitmap32.toIntArray2() = IntArray2(width, height, ints)
-
-@Deprecated("Use korlibs.image.tiles.TileMapRepeat instead", replaceWith = ReplaceWith("korlibs.image.tiles.TileMapRepeat"))
-typealias TileMapRepeat = korlibs.image.tiles.TileMapRepeat
-
-@Deprecated("Use korlibs.image.tiles.Tile instead", replaceWith = ReplaceWith("korlibs.image.tiles.Tile"))
-typealias TileInfo = korlibs.image.tiles.Tile
-
 class TileMap(
     var map: TileMapData = TileMapData(1, 1),
     tileset: TileSet = map.tileSet,
@@ -59,29 +27,6 @@ class TileMap(
     var tileSize: SizeInt = tileset.tileSize,
 //) : BaseTileMap(intMap, smoothing, staggerAxis, staggerIndex, tileSize) {
 ) : View() {
-    @Deprecated("Use map instead", level = DeprecationLevel.WARNING)
-    var stackedIntMap: IStackedIntArray2
-        get() = map.data.asInt()
-        set(value) { map = TileMapData(value.asLong()) }
-
-    // Analogous to Bitmap32.locking
-    @Deprecated("Not required anymore")
-    fun lock() {
-    }
-    @Deprecated("Not required anymore")
-    fun unlock() {
-        //map.contentVersion++
-    }
-    @Deprecated("Not required anymore")
-    inline fun <T> lock(block: () -> T): T {
-        lock()
-        try {
-            return block()
-        } finally {
-            unlock()
-        }
-    }
-
     private var tileWidth: Float = 0f
     private var tileHeight: Float = 0f
 
@@ -421,10 +366,8 @@ class TileMap(
     var tileset: TileSet = tileset
         set(value) {
             if (field === value) return
-            lock {
-                field = value
-                updatedTileSet()
-            }
+            field = value
+            updatedTileSet()
         }
 
     private fun updatedTileSet() {
@@ -435,30 +378,6 @@ class TileMap(
         tileWidth = tileset.width.toFloat()
         tileHeight = tileset.height.toFloat()
     }
-
-    @Deprecated("Use TileMapInfo variant instead")
-    constructor(
-        map: IStackedIntArray2,
-        tileset: TileSet,
-        smoothing: Boolean = true,
-        tileSize: SizeInt = tileset.tileSize,
-    ) : this(TileMapData(map.asLong()), tileset, smoothing, tileSize)
-
-    @Deprecated("Use TileMapInfo variant instead")
-    constructor(
-        map: IntArray2,
-        tileset: TileSet,
-        smoothing: Boolean = true,
-        tileSize: SizeInt = tileset.tileSize,
-    ) : this(map.toStacked(), tileset, smoothing, tileSize)
-
-    @Deprecated("Use TileMapInfo variant instead")
-    constructor(
-        map: Bitmap32,
-        tileset: TileSet,
-        smoothing: Boolean = true,
-        tileSize: SizeInt = tileset.tileSize,
-    ) : this(map.toIntArray2().toStacked(), tileset, smoothing, tileSize)
 
     fun pixelHitTest(x: Int, y: Int, direction: HitTestDirection): Boolean {
         //if (x < 0 || y < 0) return false // Outside bounds
