@@ -1373,7 +1373,8 @@ typealias GPUColorWriteFlags = Number
 
 typealias GPUDepthBias = Int
 
-typealias GPUFlagsConstant = Number
+//typealias GPUFlagsConstant = Number
+typealias GPUFlagsConstant = Int
 
 typealias GPUIndex32 = Int
 
