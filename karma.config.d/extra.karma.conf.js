@@ -10,7 +10,7 @@ config.set({
           '--no-sandbox', // Optional: Helps to run Chrome in certain CI environments
           '--disable-dev-shm-usage', // Optional: Helps to avoid issues with /dev/shm partition in certain CI environments
           '--headless', // Ensures that Chrome runs in headless mode
-          '--disable-gpu', // Optional: Disable hardware GPU acceleration (useful in some CI environments)
+          //'--disable-gpu', // Optional: Disable hardware GPU acceleration (useful in some CI environments)
           '--remote-debugging-port=9222' // Optional: Allows remote debugging
         ]
       }
