@@ -6,6 +6,7 @@ config.set({
         base: 'ChromeHeadless',
         flags: [
           '--enable-unsafe-webgpu', // Enable WebGPU
+          '--enable-features=Vulkan', // Enable Vulkan
           '--no-sandbox', // Optional: Helps to run Chrome in certain CI environments
           '--disable-dev-shm-usage', // Optional: Helps to avoid issues with /dev/shm partition in certain CI environments
           '--headless', // Ensures that Chrome runs in headless mode
