@@ -242,6 +242,19 @@ class IPCPacket(
     }
 }
 
+fun IPCPacket.Companion.genericEventGen(kind: String, eventData: ByteArray): ByteArray = MemorySyncStreamToByteArray(16 + kind.length + 4 + eventData.size + 4) {
+    val kindBytes = kind.encodeToByteArray()
+    writeU_VL(kindBytes.size); writeBytes(kindBytes)
+    writeU_VL(eventData.size); writeBytes(eventData)
+}
+
+fun IPCPacket.Companion.genericEventParse(data: ByteArray): Pair<String, ByteArray> {
+    val s = data.openFastStream()
+    val type = s.readBytes(s.readU_VL()).decodeToString()
+    val data = s.readBytes(s.readU_VL())
+    return type to data
+}
+
 private operator fun IntBuffer.set(index: Int, value: Int) {
     this.put(index, value)
 }

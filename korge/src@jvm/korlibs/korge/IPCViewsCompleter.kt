@@ -19,12 +19,7 @@ class IPCViewsCompleter : ViewsCompleter {
             val viewsNodeId = ViewsNodeId(views)
 
             views.onEvent(GenericEvent.Type.GAME_TO_PROJECTOR) { e ->
-                val typeBytes = e.kind.encodeToByteArray()
-                val dataBytes = e.data
-                ipc.writeEvent(IPCPacket(IPCPacket.EVENT_GAME_TO_PROJECTOR) {
-                    writeU_VL(typeBytes.size); writeBytes(typeBytes)
-                    writeU_VL(dataBytes.size); writeBytes(dataBytes)
-                })
+                ipc.writeEvent(IPCPacket(IPCPacket.EVENT_GAME_TO_PROJECTOR, IPCPacket.genericEventGen(e.kind, e.data)))
             }
 
             views.onBeforeRender {
@@ -55,9 +50,7 @@ class IPCViewsCompleter : ViewsCompleter {
                             )
                         }
                         IPCPacket.EVENT_PROJECTOR_TO_GAME -> {
-                            val s = e.data.openFastStream()
-                            val type = s.readBytes(s.readU_VL()).decodeToString()
-                            val data = s.readBytes(s.readU_VL())
+                            val (type, data) = IPCPacket.genericEventParse(e.data)
                             views.dispatch(GenericEvent(GenericEvent.Type.PROJECTOR_TO_GAME, type, data))
                         }
                         IPCPacket.MOUSE_MOVE, IPCPacket.MOUSE_DOWN, IPCPacket.MOUSE_UP, IPCPacket.MOUSE_CLICK, IPCPacket.MOUSE_SCROLL -> {
