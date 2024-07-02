@@ -43,7 +43,7 @@ object KorgeReloadAgent {
         //val httpPort = portStr.toIntOrNull() ?: 22011
         val httpPort = portOrUnixStr.toIntOrNull() ?: -1
         val unixSocketPath = if (portOrUnixStr.toIntOrNull() == null) portOrUnixStr else null
-        val continuousCommand = continuousCommandStr.split(CMD_SEPARATOR)
+        val continuousCommand = if (continuousCommandStr.isEmpty()) emptyList() else continuousCommandStr.split(CMD_SEPARATOR)
         val enableRedefinition = enableRedefinitionStr.toBoolean()
         val rootFolders = argsStr.split(CMD_SEPARATOR)
 
