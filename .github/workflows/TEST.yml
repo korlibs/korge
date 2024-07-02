@@ -25,10 +25,10 @@ jobs:
       fail-fast: false # Once working, comment this
       matrix:
         include:
-          - { outputKey: testIos, os: macos-11, testTask: iosX64Test, precompileTask: compileTestKotlinIosX64, enableKotlinNative: true }
+          - { outputKey: testIos, os: macos-latest, testTask: iosX64Test, precompileTask: compileTestKotlinIosX64, enableKotlinNative: true }
           - { outputKey: testJs, os: ubuntu-latest, testTask: "wasmJsBrowserTest", buildTasks: "jsBrowserTest", precompileTask: "wasmJsTestClasses jsTestClasses" }
           - { outputKey: testAndroid, os: ubuntu-latest, enableAndroid: true, precompileTask: "compileDebugAndroidTestSources" }
-          - { outputKey: testJvmMacos, os: macos-11, testTask: jvmTest, precompileTask: "compileTestKotlinJvm compileTestKotlin" }
+          - { outputKey: testJvmMacos, os: macos-latest, testTask: jvmTest, precompileTask: "compileTestKotlinJvm compileTestKotlin" }
           - { outputKey: testJvmLinux, os: ubuntu-latest, testTask: jvmTest, precompileTask: "compileTestKotlinJvm compileTestKotlin", enableKotlinNative: true, enableSandbox: true, e2e: true }
           - { outputKey: testJvmWindows, os: windows-latest, testTask: jvmTest, precompileTask: "compileTestKotlinJvm compileTestKotlin" }
     #if: ${{ needs.changes.outputs[matrix.outputKey] == 'true' }}

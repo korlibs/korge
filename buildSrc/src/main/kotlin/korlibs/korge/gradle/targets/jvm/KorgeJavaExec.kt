@@ -113,7 +113,8 @@ open class KorgeJavaExecWithAutoreload : KorgeJavaExec() {
             )
 
             environment("KORGE_AUTORELOAD", "true")
-
+            environment("KORGE_IPC", project.findProperty("korge.ipc")?.toString())
+            environment("KORGE_HEADLESS", project.findProperty("korge.headless")?.toString())
         }
     }
 }

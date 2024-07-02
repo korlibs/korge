@@ -5,7 +5,7 @@ import java.awt.event.*
 import java.awt.image.*
 import javax.swing.*
 
-class KorgeIPCJPanel(val ipc: KorgeIPC = KorgeIPC()) : JPanel(), MouseListener, MouseMotionListener, MouseWheelListener, KeyListener {
+class KorgeIPCJPanel(val ipc: KorgeIPC = KorgeIPC(isServer = false)) : JPanel(), MouseListener, MouseMotionListener, MouseWheelListener, KeyListener {
     var image: BufferedImage? = null
 
     init {
@@ -41,19 +41,19 @@ class KorgeIPCJPanel(val ipc: KorgeIPC = KorgeIPC()) : JPanel(), MouseListener, 
         repaint()
     }
 
-    private fun sendEv(type: Int, e: KeyEvent) = ipc.writeEvent(IPCEvent(type = type, p0 = e.keyCode, p1 = e.keyChar.code))
-    private fun sendEv(type: Int, e: MouseEvent) = ipc.writeEvent(IPCEvent(type = type, p0 = e.x, p1 = e.y, p2 = e.button))
-    override fun keyTyped(e: KeyEvent) = sendEv(IPCEvent.KEY_TYPE, e)
-    override fun keyPressed(e: KeyEvent) = sendEv(IPCEvent.KEY_DOWN, e)
-    override fun keyReleased(e: KeyEvent) = sendEv(IPCEvent.KEY_UP, e)
-    override fun mouseMoved(e: MouseEvent) = sendEv(IPCEvent.MOUSE_MOVE, e)
-    override fun mouseDragged(e: MouseEvent) = sendEv(IPCEvent.MOUSE_MOVE, e)
-    override fun mouseWheelMoved(e: MouseWheelEvent) = sendEv(IPCEvent.MOUSE_MOVE, e)
-    override fun mouseExited(e: MouseEvent) = sendEv(IPCEvent.MOUSE_MOVE, e)
-    override fun mouseEntered(e: MouseEvent) = sendEv(IPCEvent.MOUSE_MOVE, e)
-    override fun mouseReleased(e: MouseEvent) = sendEv(IPCEvent.MOUSE_UP, e)
-    override fun mousePressed(e: MouseEvent)  = sendEv(IPCEvent.MOUSE_DOWN, e)
-    override fun mouseClicked(e: MouseEvent) = sendEv(IPCEvent.MOUSE_CLICK, e)
+    private fun sendEv(type: Int, e: KeyEvent) = ipc.writeEvent(IPCPacket.keyPacket(type = type, keyCode = e.keyCode, char = e.keyChar.code))
+    private fun sendEv(type: Int, e: MouseEvent) = ipc.writeEvent(IPCPacket.mousePacket(type = type, x = e.x, y = e.y, button = e.button))
+    override fun keyTyped(e: KeyEvent) = sendEv(IPCPacket.KEY_TYPE, e)
+    override fun keyPressed(e: KeyEvent) = sendEv(IPCPacket.KEY_DOWN, e)
+    override fun keyReleased(e: KeyEvent) = sendEv(IPCPacket.KEY_UP, e)
+    override fun mouseMoved(e: MouseEvent) = sendEv(IPCPacket.MOUSE_MOVE, e)
+    override fun mouseDragged(e: MouseEvent) = sendEv(IPCPacket.MOUSE_MOVE, e)
+    override fun mouseWheelMoved(e: MouseWheelEvent) = sendEv(IPCPacket.MOUSE_MOVE, e)
+    override fun mouseExited(e: MouseEvent) = sendEv(IPCPacket.MOUSE_MOVE, e)
+    override fun mouseEntered(e: MouseEvent) = sendEv(IPCPacket.MOUSE_MOVE, e)
+    override fun mouseReleased(e: MouseEvent) = sendEv(IPCPacket.MOUSE_UP, e)
+    override fun mousePressed(e: MouseEvent)  = sendEv(IPCPacket.MOUSE_DOWN, e)
+    override fun mouseClicked(e: MouseEvent) = sendEv(IPCPacket.MOUSE_CLICK, e)
 
     init {
         addKeyListener(this)
