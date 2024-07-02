@@ -8,8 +8,16 @@ data class KorgeIPCInfo(val path: String = DEFAULT_PATH) {
         val KORGE_IPC_prop get() = System.getProperty("korge.ipc")
         val KORGE_IPC_env get() = System.getenv("KORGE_IPC")
 
+        val KORGE_IPC_version_prop get() = System.getProperty("korge.ipc.version")?.toIntOrNull()
+        val KORGE_IPC_version_env get() = System.getenv("KORGE_IPC_VERSION")?.toIntOrNull()
+
+        val DEFAULT_VERSION_OR_NULL = KORGE_IPC_version_prop
+            ?: KORGE_IPC_version_env
+
         val DEFAULT_PATH_OR_NULL = KORGE_IPC_prop
             ?: KORGE_IPC_env
+
+        val DEFAULT_VERSION: Int = DEFAULT_VERSION_OR_NULL ?: 0
 
         val DEFAULT_PATH = DEFAULT_PATH_OR_NULL
             ?: "${System.getProperty("java.io.tmpdir")}/KORGE_IPC-unset"
