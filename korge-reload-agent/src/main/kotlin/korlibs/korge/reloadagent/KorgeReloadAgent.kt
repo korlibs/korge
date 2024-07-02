@@ -120,10 +120,18 @@ object KorgeReloadAgent {
                         System.getProperty("os.name").startsWith("Win") -> "${javaHomeBinFolder}java.exe"
                         else -> "${javaHomeBinFolder}java"
                     }
+
+                    val isGradle = (continuousCommand.any { it == "org.gradle.wrapper.GradleWrapperMain" })
+
                     val p = ProcessBuilder()
                         .redirectError(ProcessBuilder.Redirect.INHERIT)
                         //.inheritIO()
-                        .command(listOf(jvmLocation, *continuousCommand.toTypedArray()))
+                        .command(
+                            when {
+                                isGradle -> listOf(jvmLocation, *continuousCommand.toTypedArray())
+                                else -> continuousCommand
+                            }
+                        )
                         .start()
 
                     //val p = Runtime.getRuntime().exec("$jvmLocation $continuousCommand")
