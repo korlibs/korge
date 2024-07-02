@@ -200,6 +200,9 @@ class IPCPacket(
         val KEY_UP = 0x0302
         val KEY_TYPE = 0x0303
 
+        val EVENT_GAME_TO_PROJECTOR = 0x0401
+        val EVENT_PROJECTOR_TO_GAME = 0x0402
+
         val REQUEST_NODE_CHILDREN = 0x7701
         val REQUEST_NODE_PROPS = 0x7702
         val REQUEST_NODE_SET_PROP = 0x7703

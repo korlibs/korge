@@ -2,6 +2,7 @@ package korlibs.korge
 
 import korlibs.event.*
 import korlibs.graphics.*
+import korlibs.io.stream.*
 import korlibs.korge.ipc.*
 import korlibs.korge.view.*
 import korlibs.korge.view.property.*
@@ -16,6 +17,15 @@ class IPCViewsCompleter : ViewsCompleter {
             val ipc = KorgeIPC(korgeIPC, isServer = true)
 
             val viewsNodeId = ViewsNodeId(views)
+
+            views.onEvent(GenericEvent.Type.GAME_TO_PROJECTOR) { e ->
+                val typeBytes = e.kind.encodeToByteArray()
+                val dataBytes = e.data
+                ipc.writeEvent(IPCPacket(IPCPacket.EVENT_GAME_TO_PROJECTOR) {
+                    writeU_VL(typeBytes.size); writeBytes(typeBytes)
+                    writeU_VL(dataBytes.size); writeBytes(dataBytes)
+                })
+            }
 
             views.onBeforeRender {
                 while (true) {
@@ -44,7 +54,12 @@ class IPCViewsCompleter : ViewsCompleter {
                                 str = null,
                             )
                         }
-
+                        IPCPacket.EVENT_PROJECTOR_TO_GAME -> {
+                            val s = e.data.openFastStream()
+                            val type = s.readBytes(s.readU_VL()).decodeToString()
+                            val data = s.readBytes(s.readU_VL())
+                            views.dispatch(GenericEvent(GenericEvent.Type.PROJECTOR_TO_GAME, type, data))
+                        }
                         IPCPacket.MOUSE_MOVE, IPCPacket.MOUSE_DOWN, IPCPacket.MOUSE_UP, IPCPacket.MOUSE_CLICK, IPCPacket.MOUSE_SCROLL -> {
                             val x = e.buffer.getInt()
                             val y = e.buffer.getInt()
