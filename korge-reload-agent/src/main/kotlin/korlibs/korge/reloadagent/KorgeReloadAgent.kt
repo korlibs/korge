@@ -39,10 +39,10 @@ object KorgeReloadAgent {
         val CMD_SEPARATOR = "<@/@>"
         printlnDebug("[KorgeReloadAgent] agentArgs=$agentArgs")
 
-        val (portStr, continuousCommandStr, enableRedefinitionStr, argsStr) = agentArgs.split(ARGS_SEPARATOR)
+        val (portOrUnixStr, continuousCommandStr, enableRedefinitionStr, argsStr) = agentArgs.split(ARGS_SEPARATOR)
         //val httpPort = portStr.toIntOrNull() ?: 22011
-        val httpPort = portStr.toIntOrNull() ?: -1
-        val unixSocketPath = if (portStr.toIntOrNull() == null) portStr else null
+        val httpPort = portOrUnixStr.toIntOrNull() ?: -1
+        val unixSocketPath = if (portOrUnixStr.toIntOrNull() == null) portOrUnixStr else null
         val continuousCommand = continuousCommandStr.split(CMD_SEPARATOR)
         val enableRedefinition = enableRedefinitionStr.toBoolean()
         val rootFolders = argsStr.split(CMD_SEPARATOR)
@@ -104,64 +104,68 @@ object KorgeReloadAgent {
                         printlnDebug("[KorgeReloadAgent] - done shutting down http server")
                     })
                     httpServer.start()
-                }            }
-        }
-        thread(isDaemon = true, name = "KorgeReloadAgent.continuousCommand") {
-            printlnDebug("[KorgeReloadAgent] - Running ${continuousCommand.joinToString(" ")}")
-            while (true) {
-                try {
-                    val isWindows = System.getProperty("os.name").lowercase().contains("win")
-                    //val args = arrayOf<String>()
-                    //val args = if (isWindows) arrayOf("cmd.exe", "/k") else arrayOf("/bin/sh", "-c")
-                    //val args = if (isWindows) arrayOf() else arrayOf("/bin/sh", "-c")
-                    val javaHomeBinFolder =
-                        System.getProperties().getProperty("java.home") + File.separator + "bin" + File.separator
-                    val jvmLocation = when {
-                        System.getProperty("os.name").startsWith("Win") -> "${javaHomeBinFolder}java.exe"
-                        else -> "${javaHomeBinFolder}java"
-                    }
-
-                    val isGradle = (continuousCommand.any { it == "org.gradle.wrapper.GradleWrapperMain" })
-
-                    val p = ProcessBuilder()
-                        .redirectError(ProcessBuilder.Redirect.INHERIT)
-                        //.inheritIO()
-                        .command(
-                            when {
-                                isGradle -> listOf(jvmLocation, *continuousCommand.toTypedArray())
-                                else -> continuousCommand
-                            }
-                        )
-                        .start()
-
-                    //val p = Runtime.getRuntime().exec("$jvmLocation $continuousCommand")
-                    //val p = ProcessBuilder(*args, continuousCommand).inheritIO().start()
-                    //val pID = p.pid()
-                    //printlnDebug("[KorgeReloadAgent] - Started continuousCommand PID=$pID")
-
-                    Runtime.getRuntime().addShutdownHook(Thread {
-                        //if (isWindows) {
-                        //    printlnDebug("[KorgeReloadAgent] - [isAlive=${p.isAlive}] Killing task")
-                        //    Runtime.getRuntime().exec(arrayOf("taskkill", "/PID", "$pID")).waitFor()
-                        //}
-
-                        //p.outputStream.write()
-                        printlnDebug("[KorgeReloadAgent] - [isAlive=${p.isAlive}] Stopping continuousCommand")
-                        p.destroy()
-                        Thread.sleep(500L)
-                        printlnDebug("[KorgeReloadAgent] - [isAlive=${p.isAlive}] Stopping forcibly")
-                        p.destroyForcibly()
-                        printlnDebug("[KorgeReloadAgent] - [isAlive=${p.isAlive}] Done stopping forcibly")
-                    })
-                    val exit = p.waitFor()
-                    printlnDebug("[KorgeReloadAgent] - Exited continuous command with $exit code")
-                } catch (e: Throwable) {
-                    printlnDebug("[KorgeReloadAgent] - Continuous command failed with exception '${e.message}'")
-                    e.printStackTrace()
-                    if (e is InterruptedException) throw e
                 }
-                printlnDebug("[KorgeReloadAgent] Restarting in 5 seconds...")
-                Thread.sleep(5000L)
+            }
+        }
+
+        if (continuousCommand.isNotEmpty()) {
+            thread(isDaemon = true, name = "KorgeReloadAgent.continuousCommand") {
+                printlnDebug("[KorgeReloadAgent] - Running ${continuousCommand.joinToString(" ")}")
+                while (true) {
+                    try {
+                        val isWindows = System.getProperty("os.name").lowercase().contains("win")
+                        //val args = arrayOf<String>()
+                        //val args = if (isWindows) arrayOf("cmd.exe", "/k") else arrayOf("/bin/sh", "-c")
+                        //val args = if (isWindows) arrayOf() else arrayOf("/bin/sh", "-c")
+                        val javaHomeBinFolder =
+                            System.getProperties().getProperty("java.home") + File.separator + "bin" + File.separator
+                        val jvmLocation = when {
+                            System.getProperty("os.name").startsWith("Win") -> "${javaHomeBinFolder}java.exe"
+                            else -> "${javaHomeBinFolder}java"
+                        }
+
+                        val isGradle = (continuousCommand.any { it == "org.gradle.wrapper.GradleWrapperMain" })
+
+                        val p = ProcessBuilder()
+                            .redirectError(ProcessBuilder.Redirect.INHERIT)
+                            //.inheritIO()
+                            .command(
+                                when {
+                                    isGradle -> listOf(jvmLocation, *continuousCommand.toTypedArray())
+                                    else -> continuousCommand
+                                }
+                            )
+                            .start()
+
+                        //val p = Runtime.getRuntime().exec("$jvmLocation $continuousCommand")
+                        //val p = ProcessBuilder(*args, continuousCommand).inheritIO().start()
+                        //val pID = p.pid()
+                        //printlnDebug("[KorgeReloadAgent] - Started continuousCommand PID=$pID")
+
+                        Runtime.getRuntime().addShutdownHook(Thread {
+                            //if (isWindows) {
+                            //    printlnDebug("[KorgeReloadAgent] - [isAlive=${p.isAlive}] Killing task")
+                            //    Runtime.getRuntime().exec(arrayOf("taskkill", "/PID", "$pID")).waitFor()
+                            //}
+
+                            //p.outputStream.write()
+                            printlnDebug("[KorgeReloadAgent] - [isAlive=${p.isAlive}] Stopping continuousCommand")
+                            p.destroy()
+                            Thread.sleep(500L)
+                            printlnDebug("[KorgeReloadAgent] - [isAlive=${p.isAlive}] Stopping forcibly")
+                            p.destroyForcibly()
+                            printlnDebug("[KorgeReloadAgent] - [isAlive=${p.isAlive}] Done stopping forcibly")
+                        })
+                        val exit = p.waitFor()
+                        printlnDebug("[KorgeReloadAgent] - Exited continuous command with $exit code")
+                    } catch (e: Throwable) {
+                        printlnDebug("[KorgeReloadAgent] - Continuous command failed with exception '${e.message}'")
+                        e.printStackTrace()
+                        if (e is InterruptedException) throw e
+                    }
+                    printlnDebug("[KorgeReloadAgent] Restarting in 5 seconds...")
+                    Thread.sleep(5000L)
+                }
             }
         }
 
