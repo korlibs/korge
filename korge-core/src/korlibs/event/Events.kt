@@ -407,6 +407,25 @@ data class TouchEvent(
     val isEnd get() = type == Type.END
 }
 
+class GenericEvent(
+    override var type: Type,
+    var kind: String,
+    var data: ByteArray
+) : Event(), TEvent<GenericEvent> {
+    enum class Type : EventType<GenericEvent> {
+        PROJECTOR_TO_GAME, GAME_TO_PROJECTOR;
+        companion object {
+            val ALL = Type.entries
+        }
+    }
+
+    fun copyFrom(other: GenericEvent) {
+        this.type = other.type
+        this.kind = other.kind
+        this.data = other.data
+    }
+}
+
 data class KeyEvent constructor(
     override var type: Type = Type.UP,
     var id: Int = 0,

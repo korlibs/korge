@@ -90,4 +90,12 @@ class KorgeIPCServerSocketTest {
 
         assertEquals("HELLO", bytes.decodeToString())
     }
+
+    @Test
+    fun testGenericEvent() {
+        val bytes = IPCPacket.genericEventGen("hello", byteArrayOf(1, 2, 3))
+        val (kind, data) = IPCPacket.genericEventParse(bytes)
+        assertEquals("hello", kind)
+        assertEquals(byteArrayOf(1, 2, 3).toList(), data.toList())
+    }
 }
