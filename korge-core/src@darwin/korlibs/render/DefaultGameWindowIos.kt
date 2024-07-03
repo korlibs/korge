@@ -83,7 +83,7 @@ abstract class KorgwBaseNewAppDelegate {
 
     private fun forceGC() {
         logger.info {"Collecting GC..." }
-        val time = measureTime {
+        val time = kotlin.time.measureTime {
             KmemGC.collect() // Forces collection when going to background to release resources to the app
         }
         logger.info {"Collected in $time" }

@@ -40,7 +40,7 @@ class MainEmojiColrv1 : Scene() {
         val shape = buildShape { buildText() }
         //println(shape.toSvg())
 
-        println("native rendered in..." + measureTime {
+        println("native rendered in..." + kotlin.time.measureTime {
             cpuGraphics {
                 it.xy(0, 200)
                 it.useNativeRendering = true
@@ -49,7 +49,7 @@ class MainEmojiColrv1 : Scene() {
                 it.redrawIfRequired()
             }
         })
-        println("non-native rendered in..." + measureTime {
+        println("non-native rendered in..." + kotlin.time.measureTime {
             cpuGraphics {
                 it.xy(0, 350)
                 it.useNativeRendering = false

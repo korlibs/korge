@@ -117,7 +117,7 @@ class KorgeIPC(val path: String = KorgeIPCInfo.DEFAULT_PATH, val isServer: Boole
 
     val availableEvents get() = synchronized(_events) { _events.size }
     fun writeEvent(e: IPCPacket) {
-        println("writeEvent: $e")
+        //println("writeEvent: $e")
         synchronized(connectedSockets) {
             for (socket in connectedSockets) {
                 socket.writePacket(e)
