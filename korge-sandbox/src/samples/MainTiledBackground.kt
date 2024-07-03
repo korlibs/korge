@@ -12,10 +12,14 @@ class MainTiledBackground : Scene() {
     override suspend fun SContainer.sceneMain() {
 
         val tileset = TileSet(
-            TileSetTileInfo(0, bitmap("korge.png").toBMP32().scaleLinear(0.5, 0.5).slice()),
-            TileSetTileInfo(1, bitmap("korim.png").toBMP32().scaleLinear(0.5, 0.5).slice()),
+            listOf(
+                TileSetTileInfo(0, bitmap("korge.png").toBMP32().scaleLinear(0.5, 0.5).slice()),
+                TileSetTileInfo(1, bitmap("korim.png").toBMP32().scaleLinear(0.5, 0.5).slice()),
+            ),
             //TileSetTileInfo(1, Bitmap32(256, 256, Colors.MEDIUMAQUAMARINE).premultipliedIfRequired().slice())
         )
+        println(tileset.get(0))
+        println(tileset.get(1))
         val tileMapData = TileMapData(2, 2, tileset, repeatX = TileMapRepeat.REPEAT, repeatY = TileMapRepeat.REPEAT)
         tileMapData[0, 0] = Tile(0)
         tileMapData[1, 0] = Tile(1)

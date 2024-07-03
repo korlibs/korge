@@ -9,6 +9,7 @@ import korlibs.korge.view.*
 import korlibs.math.geom.*
 import korlibs.math.geom.slice.*
 import korlibs.memory.*
+import korlibs.number.*
 import kotlin.test.*
 
 class TileMapViewScreenshotTest {
