@@ -24,7 +24,7 @@ fun Project.allDependantProjects(): Set<Project> {
         val out = LinkedHashSet<Project>()
         val explored = LinkedHashSet<Project>()
         while (toExplore.isNotEmpty()) {
-            val item = toExplore.removeLast()
+            val item = toExplore.removeAt(toExplore.size - 1)
             if (item in explored) continue
             val directDependencies = item.directDependantProjects()
             explored += item
