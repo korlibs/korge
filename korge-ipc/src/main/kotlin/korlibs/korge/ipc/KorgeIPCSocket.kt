@@ -223,7 +223,9 @@ class IPCPacket(
         fun ReadableByteChannel.readFull(dst: ByteBuffer) {
             while (dst.remaining() > 0) {
                 val read = read(dst)
-                if (read <= 0) error("Couldn't read")
+                if (read <= 0) {
+                    throw ClosedChannelException()
+                }
             }
         }
 
