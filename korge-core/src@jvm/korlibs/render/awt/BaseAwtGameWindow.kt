@@ -21,8 +21,10 @@ import java.awt.datatransfer.*
 import java.awt.event.*
 import java.awt.event.KeyEvent
 import java.awt.event.MouseEvent
+import kotlin.time.Duration
 import javax.swing.*
 import kotlin.system.*
+import kotlin.time.measureTime
 
 abstract class BaseAwtGameWindow(
     override val ag: AGOpengl
@@ -205,9 +207,9 @@ abstract class BaseAwtGameWindow(
 
             //gl.clearColor(1f, 1f, 1f, 1f)
             //gl.clear(gl.COLOR_BUFFER_BIT)
-            var gamePadTime: TimeSpan = 0.milliseconds
-            var frameTime: TimeSpan = 0.milliseconds
-            var finishTime: TimeSpan = 0.milliseconds
+            var gamePadTime: Duration = 0.milliseconds
+            var frameTime: Duration = 0.milliseconds
+            var finishTime: Duration = 0.milliseconds
             val totalTime = measureTime {
                 frameTime = measureTime {
                     frame()

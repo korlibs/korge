@@ -195,7 +195,7 @@ open class GpuShapeView(
 
         //println("doRequireTexture=$doRequireTexture")
 
-        val time = measureTime {
+        val time = kotlin.time.measureTime {
             if (doRequireTexture) {
                 //val currentRenderBuffer = ctx.ag.currentRenderBufferOrMain
                 val currentFrameBuffer = ctx.ag.mainFrameBuffer

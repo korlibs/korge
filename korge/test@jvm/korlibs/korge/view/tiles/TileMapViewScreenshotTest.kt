@@ -18,15 +18,12 @@ class TileMapViewScreenshotTest {
         bgcolor = Colors.RED
     ) {
 
-        fun <T : Int64> int64ArrayOf(vararg values: T): Int64Array = Int64Array(values.size) { values[it] }
-        fun int64ArrayOf(vararg values: Int): Int64Array = Int64Array(values.size) { values[it].toInt64() }
-
         val tileset = TileSet(
             TileSetTileInfo(0, Bitmap32(133, 173, Colors.RED.premultiplied).slice()),
             TileSetTileInfo(1, Bitmap32(133, 173, Colors.GREEN.premultiplied).slice()),
         )
 
-        val tilemap = tileMap(TileMapData(StackedInt64Array2(Int64Array2(2, 2, int64ArrayOf(0, 1, 1, 0))), repeatX = TileMapRepeat.REPEAT, repeatY = TileMapRepeat.REPEAT, tileSet = tileset))
+        val tilemap = tileMap(TileMapData(StackedInt53Array2(Int53Array2(2, 2, int53ArrayOf(0, 1, 1, 0))), repeatX = TileMapRepeat.REPEAT, repeatY = TileMapRepeat.REPEAT, tileSet = tileset))
         tilemap.xy(3000, 1500)
 
         assertScreenshot(this, "offsetInfiniteTilemap", includeBackground = false)

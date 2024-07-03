@@ -11,6 +11,7 @@ import korlibs.math.geom.*
 import korlibs.math.geom.collider.*
 import korlibs.math.geom.shape.*
 import korlibs.memory.*
+import korlibs.number.*
 import kotlin.test.*
 
 class TileMapTest {
@@ -32,9 +33,7 @@ class TileMapTest {
             2 to TileSetTileInfo(0, Bitmap32(16, 16, premultiplied = true).slice(), collision = TileShapeInfoImpl(HitTestDirectionFlags.ALL, EmptyShape2D, Matrix())),
             3 to TileSetTileInfo(0, Bitmap32(16, 16, premultiplied = true).slice(), collision = TileShapeInfoImpl(HitTestDirectionFlags.ALL, Rectangle(0, 0, 16, 16).toShape2D(), Matrix())),
         ))
-        fun <T : Int64> int64ArrayOf(vararg values: T): Int64Array = Int64Array(values.size) { values[it] }
-        fun int64ArrayOf(vararg values: Int): Int64Array = Int64Array(values.size) { values[it].toInt64() }
-        val map = TileMap(TileMapData(SparseChunkedStackedInt64Array2(StackedInt64Array2(Int64Array2(2, 2, int64ArrayOf(0, 1, 2, 3)))), tileSet))
+        val map = TileMap(TileMapData(SparseChunkedStackedInt53Array2(StackedInt53Array2(Int53Array2(2, 2, int53ArrayOf(0, 1, 2, 3)))), tileSet))
         assertEquals(false, map.pixelHitTest(5, 5, HitTestDirection.DOWN))
         assertEquals(false, map.pixelHitTest(16 + 5, 5, HitTestDirection.DOWN))
         assertEquals(false, map.pixelHitTest(5, 16 + 5, HitTestDirection.DOWN))

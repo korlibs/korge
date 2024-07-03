@@ -19,7 +19,9 @@ class TypedResourcesGeneratorTest {
                 "images/image.ase" to "",
                 "images/image2.ase" to "INVALID213123123621639172639127637216",
             )
-        )
+        ) { e, message ->
+
+        }
 
         fun String.normalize(): String {
             return this.trimIndent().replace("\t", "    ").trim().lines().map { it.trimEnd() }.joinToString("\n")

@@ -61,7 +61,7 @@ class MainBVH : Scene() {
             var rayObjectsSize = 0
             var rectangleObjectsSize = 0
             val allObjects = bvh.search(Rectangle(0.0, 0.0, width, height))
-            val time = measureTime {
+            val time = kotlin.time.measureTime {
                 val rayObjects = bvh.intersect(ray)
                 val rectangleObjects = bvh.search(selectedRectangle)
                 for (result in allObjects) result.value?.alphaF = 0.2f
