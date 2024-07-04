@@ -55,11 +55,25 @@ abstract class SDLGameWindow(
             while (sdl.SDL_PollEvent(it)) {
                 val type = it.getS32(0)
                 when (type) {
+                    SDL.SDL_WINDOWEVENT -> {
+                        println("WINDOW EVENT")
+                    }
+                    SDL.SDL_MOUSEMOTION -> {
+                        println("MOUSE MOTION")
+                    }
+                    SDL.SDL_MOUSEBUTTONDOWN -> {
+                        println("MOUSE DOWN")
+                    }
+                    SDL.SDL_MOUSEBUTTONUP -> {
+                        println("MOUSE UP")
+                    }
                     SDL.SDL_QUIT -> {
                         close()
                     }
+                    else -> {
+                        println("EVENT: type=$type")
+                    }
                 }
-                println("EVENT: type=$type")
             }
         }
 

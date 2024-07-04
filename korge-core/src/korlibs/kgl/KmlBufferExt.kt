@@ -5,19 +5,20 @@ import korlibs.memory.*
 fun Buffer.toAsciiString(): String {
 	var out = ""
 	for (n in 0 until size) {
-		val b = getInt8(n)
+		val b = getS8(n)
 		if (b == 0.toByte()) break
 		out += b.toInt().toChar()
 	}
+    //println("BUFFER.toAsciiString: $out")
 	return out
 }
 
 fun Buffer.putAsciiString(str: String): Buffer {
 	var n = 0
 	for (c in str) {
-		if (size >= n) setInt8(n++, c.code)
+		if (size >= n) set8(n++, c.code.toByte())
 	}
-	if (size >= n) setInt8(n++, 0)
+	if (size >= n) set8(n++, 0)
 	return this
 }
 

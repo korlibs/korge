@@ -31,6 +31,14 @@ open class SDL : FFILib(SDLPath) {
         // https://wiki.libsdl.org/SDL2/SDL_Event
         // SDL_Event
         const val SDL_QUIT = 0x100
+        const val SDL_WINDOWEVENT = 0x200
+        const val SDL_KEYDOWN = 0x300
+        const val SDL_KEYUP = 0x301
+        const val SDL_MOUSEMOTION = 0x400
+        const val SDL_MOUSEBUTTONDOWN = 0x401
+        const val SDL_MOUSEBUTTONUP = 0x402
+        const val SDL_MOUSEWHEEL = 0x403
+
     }
 
     val SDL_Init by func<(flags: Int) -> Int>()
@@ -179,8 +187,8 @@ open class OpenGL : FFILib("/System/Library/Frameworks/OpenGL.framework/OpenGL")
     val glGenerateMipmap by func<(GLenum) -> GLvoid>()
     val glGenFramebuffers by func<(GLsizei, GLuintPtr) -> GLvoid>()
     val glGenRenderbuffers by func<(GLsizei, GLuintPtr) -> GLvoid>()
-    val glGetActiveAttrib by func<(GLuint, GLuint, GLsizei, GLsizeiPtr, GLintPtr, GLenumPtr, GLString) -> GLvoid>()
-    val glGetActiveUniform by func<(GLuint, GLuint, GLsizei, GLsizeiPtr, GLintPtr, GLenumPtr, GLString) -> GLvoid>()
+    val glGetActiveAttrib by func<(GLuint, GLuint, GLsizei, GLsizeiPtr, GLintPtr, GLenumPtr, GLcharPtr) -> GLvoid>()
+    val glGetActiveUniform by func<(GLuint, GLuint, GLsizei, GLsizeiPtr, GLintPtr, GLenumPtr, GLcharPtr) -> GLvoid>()
     val glGetAttachedShaders by func<(GLuint, GLsizei, GLsizeiPtr, GLuintPtr) -> GLvoid>()
     val glGetAttribLocation by func<(GLuint, GLString) -> GLint>()
     val glGetUniformLocation by func<(GLuint, GLString) -> GLint>()
@@ -251,35 +259,10 @@ open class OpenGL : FFILib("/System/Library/Frameworks/OpenGL.framework/OpenGL")
     val glBindVertexArray by func<(GLuint) -> GLvoid>()
 }
 
-
-// @TODO: Optimize this
-fun arraycopy(src: Buffer, srcPos: Int, dst: FFIPointer, dstPos: Int, length: Int) {
-    for (n in 0 until length) dst.set8(src.getS8(srcPos + n), dstPos + n)
-}
-
-// @TODO: Optimize this
-fun arraycopy(src: FFIPointer, srcPos: Int, dst: Buffer, dstPos: Int, length: Int) {
-    for (n in 0 until length) dst.set8(dstPos + n, src.getS8(srcPos + n))
-}
-
-// @TODO: Optimize this
-fun arraycopy(src: FFIPointer, srcPos: Int, dst: FFIPointer, dstPos: Int, length: Int) {
-    for (n in 0 until length) dst.set8(src.getS8(srcPos + n), dstPos + n)
-}
-
 class KmlGlOpenGL(val gl: OpenGL = OpenGL()) : KmlGl() {
-    fun Int.toBool(): Boolean = this != 0
+    override val gles: Boolean get() = true
 
-    val tempMem = CreateFFIMemory(16 * 1024)
-    inline fun <T> tempBufferAddress(minSize: Int, block: (FFIPointer) -> T): T =
-        (if (minSize < 16 * 1024) tempMem else CreateFFIMemory(minSize)).usePointer(block)
-    inline fun <T> tempBufferAddressIn(data: Buffer, nbytes: Int = data.sizeInBytes, block: (FFIPointer) -> T): T = tempBufferAddress(nbytes) { ptr ->
-        arraycopy(data, 0, ptr, 0, nbytes)
-        block(ptr)
-    }
-    inline fun <T> tempBufferAddressOut(data: Buffer, nbytes: Int = data.sizeInBytes, block: (FFIPointer) -> T): T = tempBufferAddress(nbytes) { ptr ->
-        block(ptr).also { arraycopy(ptr, 0, data, 0, nbytes) }
-    }
+    fun Int.toBool(): Boolean = this != 0
 
     fun Int.convert(): FFIPointer? = CreateFFIPointer(this.toLong())
     fun Long.convert(): FFIPointer? = CreateFFIPointer(this)
@@ -306,21 +289,21 @@ class KmlGlOpenGL(val gl: OpenGL = OpenGL()) : KmlGl() {
     override fun colorMask(red: Boolean, green: Boolean, blue: Boolean, alpha: Boolean): Unit = gl.glColorMask(red.toInt(), green.toInt(), blue.toInt(), alpha.toInt())
     override fun compileShader(shader: Int): Unit = gl.glCompileShader(shader)
     override fun compressedTexImage2D(target: Int, level: Int, internalformat: Int, width: Int, height: Int, border: Int, imageSize: Int, data: Buffer): Unit =
-        tempBufferAddressIn(data) { gl.glCompressedTexImage2D(target, level, internalformat, width, height, border, imageSize, it) }
+        gl.glCompressedTexImage2D(target, level, internalformat, width, height, border, imageSize, data.pointer)
     override fun compressedTexSubImage2D(target: Int, level: Int, xoffset: Int, yoffset: Int, width: Int, height: Int, format: Int, imageSize: Int, data: Buffer): Unit {
-        tempBufferAddressIn(data) { gl.glCompressedTexSubImage2D(target, level, xoffset, yoffset, width, height, format, imageSize, it) }
+        gl.glCompressedTexSubImage2D(target, level, xoffset, yoffset, width, height, format, imageSize, data.pointer)
     }
     override fun copyTexImage2D(target: Int, level: Int, internalformat: Int, x: Int, y: Int, width: Int, height: Int, border: Int): Unit = gl.glCopyTexImage2D(target, level, internalformat, x, y, width, height, border)
     override fun copyTexSubImage2D(target: Int, level: Int, xoffset: Int, yoffset: Int, x: Int, y: Int, width: Int, height: Int): Unit = gl.glCopyTexSubImage2D(target, level, xoffset, yoffset, x, y, width, height)
     override fun createProgram(): Int = gl.glCreateProgram()
     override fun createShader(type: Int): Int = gl.glCreateShader(type)
     override fun cullFace(mode: Int): Unit = gl.glCullFace(mode)
-    override fun deleteBuffers(n: Int, items: Buffer): Unit = tempBufferAddressIn(items, n * 4) { gl.glDeleteBuffers(n, it) }
-    override fun deleteFramebuffers(n: Int, items: Buffer): Unit = tempBufferAddressIn(items, n * 4) { gl.glDeleteFramebuffers(n, it) }
+    override fun deleteBuffers(n: Int, items: Buffer): Unit = gl.glDeleteBuffers(n, items.pointer)
+    override fun deleteFramebuffers(n: Int, items: Buffer): Unit = gl.glDeleteFramebuffers(n, items.pointer)
     override fun deleteProgram(program: Int): Unit = gl.glDeleteProgram(program)
-    override fun deleteRenderbuffers(n: Int, items: Buffer): Unit = tempBufferAddressIn(items, n * 4) { gl.glDeleteRenderbuffers(n, it) }
+    override fun deleteRenderbuffers(n: Int, items: Buffer): Unit = gl.glDeleteRenderbuffers(n, items.pointer)
     override fun deleteShader(shader: Int): Unit = gl.glDeleteShader(shader)
-    override fun deleteTextures(n: Int, items: Buffer): Unit = tempBufferAddressIn(items, n * 4) { gl.glDeleteTextures(n, it) }
+    override fun deleteTextures(n: Int, items: Buffer): Unit = gl.glDeleteTextures(n, items.pointer)
     override fun depthFunc(func: Int): Unit = gl.glDepthFunc(func)
     override fun depthMask(flag: Boolean): Unit = gl.glDepthMask(flag.toInt())
     override fun depthRangef(n: Float, f: Float): Unit = gl.glDepthRangef(n, f)
@@ -336,61 +319,43 @@ class KmlGlOpenGL(val gl: OpenGL = OpenGL()) : KmlGl() {
     override fun framebufferRenderbuffer(target: Int, attachment: Int, renderbuffertarget: Int, renderbuffer: Int): Unit = gl.glFramebufferRenderbuffer(target, attachment, renderbuffertarget, renderbuffer)
     override fun framebufferTexture2D(target: Int, attachment: Int, textarget: Int, texture: Int, level: Int): Unit = gl.glFramebufferTexture2D(target, attachment, textarget, texture, level)
     override fun frontFace(mode: Int): Unit = gl.glFrontFace(mode)
-    override fun genBuffers(n: Int, buffers: Buffer): Unit = tempBufferAddressOut(buffers, n) { gl.glGenBuffers(n, it) }
+    override fun genBuffers(n: Int, buffers: Buffer): Unit = gl.glGenBuffers(n, buffers.pointer)
     override fun generateMipmap(target: Int): Unit = gl.glGenerateMipmap(target)
-    override fun genFramebuffers(n: Int, framebuffers: Buffer): Unit = tempBufferAddressOut(framebuffers, n * 4) { gl.glGenFramebuffers(n, it) }
-    override fun genRenderbuffers(n: Int, renderbuffers: Buffer): Unit = tempBufferAddressOut(renderbuffers, n * 4) { gl.glGenRenderbuffers(n, it) }
-    override fun genTextures(n: Int, textures: Buffer): Unit = tempBufferAddressOut(textures, n * 4) { gl.glGenTextures(n, it) }
-    //override fun getActiveAttrib(program: Int, index: Int, bufSize: Int, length: Buffer, size: Buffer, type: Buffer, name: Buffer): Unit = gl.glGetActiveAttrib(program, index, bufSize, length, size, type, name)
-    //override fun getActiveUniform(program: Int, index: Int, bufSize: Int, length: Buffer, size: Buffer, type: Buffer, name: Buffer): Unit = gl.glGetActiveUniform(program, index, bufSize, length, size, type, name)
-    //override fun getAttachedShaders(program: Int, maxCount: Int, count: Buffer, shaders: Buffer): Unit = gl.glGetAttachedShaders(program, maxCount, count, shaders)
+    override fun genFramebuffers(n: Int, framebuffers: Buffer): Unit = gl.glGenFramebuffers(n, framebuffers.pointer)
+    override fun genRenderbuffers(n: Int, renderbuffers: Buffer): Unit = gl.glGenRenderbuffers(n, renderbuffers.pointer)
+    override fun genTextures(n: Int, textures: Buffer): Unit = gl.glGenTextures(n, textures.pointer)
+    override fun getActiveAttrib(program: Int, index: Int, bufSize: Int, length: Buffer, size: Buffer, type: Buffer, name: Buffer): Unit = gl.glGetActiveAttrib(program, index, bufSize, length.pointer, size.pointer, type.pointer, name.pointer)
+    override fun getActiveUniform(program: Int, index: Int, bufSize: Int, length: Buffer, size: Buffer, type: Buffer, name: Buffer): Unit = gl.glGetActiveUniform(program, index, bufSize, length.pointer, size.pointer, type.pointer, name.pointer)
+    override fun getAttachedShaders(program: Int, maxCount: Int, count: Buffer, shaders: Buffer): Unit = gl.glGetAttachedShaders(program, maxCount, count.pointer, shaders.pointer)
     override fun getAttribLocation(program: Int, name: String): Int = gl.glGetAttribLocation(program, name)
     override fun getUniformLocation(program: Int, name: String): Int = gl.glGetUniformLocation(program, name)
-    override fun getBooleanv(pname: Int, data: Buffer): Unit = tempBufferAddressOut(data, 4) { gl.glGetBooleanv(pname, it) }
-    override fun getBufferParameteriv(target: Int, pname: Int, params: Buffer): Unit = tempBufferAddressOut(params, 4) { gl.glGetBufferParameteriv(target, pname, it) }
+    override fun getBooleanv(pname: Int, data: Buffer): Unit = gl.glGetBooleanv(pname, data.pointer)
+    override fun getBufferParameteriv(target: Int, pname: Int, params: Buffer): Unit = gl.glGetBufferParameteriv(target, pname, params.pointer)
     override fun getError(): Int = gl.glGetError()
-    override fun getFloatv(pname: Int, data: Buffer): Unit = tempBufferAddressOut(data, 1) { gl.glGetFloatv(pname, it) }
-    override fun getFramebufferAttachmentParameteriv(target: Int, attachment: Int, pname: Int, params: Buffer): Unit { tempBufferAddressOut(params, 4) { gl.glGetFramebufferAttachmentParameteriv(target, attachment, pname, it) } }
-    override fun getIntegerv(pname: Int, data: Buffer): Unit = tempBufferAddressOut(data, 1) { gl.glGetIntegerv(pname, it) }
+    override fun getFloatv(pname: Int, data: Buffer): Unit = gl.glGetFloatv(pname, data.pointer)
+    override fun getFramebufferAttachmentParameteriv(target: Int, attachment: Int, pname: Int, params: Buffer): Unit { gl.glGetFramebufferAttachmentParameteriv(target, attachment, pname, params.pointer) }
+    override fun getIntegerv(pname: Int, data: Buffer): Unit = gl.glGetIntegerv(pname, data.pointer)
     override fun getProgramInfoLog(program: Int, bufSize: Int, length: Buffer, infoLog: Buffer): Unit {
-        val lengthMem = CreateFFIMemory(8)
-        lengthMem.usePointer { lengthPtr ->
-            tempBufferAddressOut(infoLog) { infoPtr ->
-                gl.glGetProgramInfoLog(program, bufSize, lengthPtr, infoPtr)
-            }
-            length.set32LE(0, lengthPtr.getS32())
-        }
+        gl.glGetProgramInfoLog(program, bufSize, length.pointer, infoLog.pointer)
     }
-    override fun getRenderbufferParameteriv(target: Int, pname: Int, params: Buffer): Unit = tempBufferAddressOut(params, 4) { gl.glGetRenderbufferParameteriv(target, pname, it) }
-    override fun getProgramiv(program: Int, pname: Int, params: Buffer): Unit = tempBufferAddressOut(params, 4) { gl.glGetProgramiv(program, pname, it) }
-    override fun getShaderiv(shader: Int, pname: Int, params: Buffer): Unit = tempBufferAddressOut(params, 4) { gl.glGetShaderiv(shader, pname, it) }
+    override fun getRenderbufferParameteriv(target: Int, pname: Int, params: Buffer): Unit = gl.glGetRenderbufferParameteriv(target, pname, params.pointer)
+    override fun getProgramiv(program: Int, pname: Int, params: Buffer): Unit = gl.glGetProgramiv(program, pname, params.pointer)
+    override fun getShaderiv(shader: Int, pname: Int, params: Buffer): Unit = gl.glGetShaderiv(shader, pname, params.pointer)
     override fun getShaderInfoLog(shader: Int, bufSize: Int, length: Buffer, infoLog: Buffer): Unit {
-        val lengthMem = CreateFFIMemory(8)
-        lengthMem.usePointer { lengthPtr ->
-            tempBufferAddressOut(infoLog) { infoPtr ->
-                gl.glGetShaderInfoLog(shader, bufSize, lengthPtr, infoPtr)
-            }
-            length.set32LE(0, lengthPtr.getS32())
-        }
+        gl.glGetShaderInfoLog(shader, bufSize, length.pointer, infoLog.pointer)
     }
     override fun getShaderPrecisionFormat(shadertype: Int, precisiontype: Int, range: Buffer, precision: Buffer): Unit = Unit
     override fun getShaderSource(shader: Int, bufSize: Int, length: Buffer, source: Buffer): Unit {
-        val lengthMem = CreateFFIMemory(8)
-        lengthMem.usePointer { lengthPtr ->
-            tempBufferAddressOut(source) { sourcePtr ->
-                gl.glGetShaderSource(shader, bufSize, lengthPtr, sourcePtr)
-            }
-            length.set32LE(0, lengthPtr.getS32(0))
-        }
+        gl.glGetShaderSource(shader, bufSize, length.pointer, source.pointer)
     }
     override fun getString(name: Int): String = gl.glGetString(name) ?: ""
-    override fun getTexParameterfv(target: Int, pname: Int, params: Buffer): Unit = tempBufferAddressOut(params, 4) { gl.glGetTexParameterfv(target, pname, it) }
-    override fun getTexParameteriv(target: Int, pname: Int, params: Buffer): Unit = tempBufferAddressOut(params, 4) { gl.glGetTexParameteriv(target, pname, it) }
-    override fun getUniformfv(program: Int, location: Int, params: Buffer): Unit  = tempBufferAddressOut(params, 4) { gl.glGetUniformfv(program, location, it) }
-    override fun getUniformiv(program: Int, location: Int, params: Buffer): Unit  = tempBufferAddressOut(params, 4) { gl.glGetUniformiv(program, location, it) }
-    override fun getVertexAttribfv(index: Int, pname: Int, params: Buffer): Unit  = tempBufferAddressOut(params, 4) { gl.glGetVertexAttribfv(index, pname, it) }
-    override fun getVertexAttribiv(index: Int, pname: Int, params: Buffer): Unit  = tempBufferAddressOut(params, 4) { gl.glGetVertexAttribiv(index, pname, it) }
-    override fun getVertexAttribPointerv(index: Int, pname: Int, pointer: Buffer): Unit = tempBufferAddressOut(pointer, 8) { gl.glGetVertexAttribPointerv(index, pname, it) }
+    override fun getTexParameterfv(target: Int, pname: Int, params: Buffer): Unit = gl.glGetTexParameterfv(target, pname, params.pointer)
+    override fun getTexParameteriv(target: Int, pname: Int, params: Buffer): Unit = gl.glGetTexParameteriv(target, pname, params.pointer)
+    override fun getUniformfv(program: Int, location: Int, params: Buffer): Unit  = gl.glGetUniformfv(program, location, params.pointer)
+    override fun getUniformiv(program: Int, location: Int, params: Buffer): Unit  = gl.glGetUniformiv(program, location, params.pointer)
+    override fun getVertexAttribfv(index: Int, pname: Int, params: Buffer): Unit  = gl.glGetVertexAttribfv(index, pname, params.pointer)
+    override fun getVertexAttribiv(index: Int, pname: Int, params: Buffer): Unit  = gl.glGetVertexAttribiv(index, pname, params.pointer)
+    override fun getVertexAttribPointerv(index: Int, pname: Int, pointer: Buffer): Unit = gl.glGetVertexAttribPointerv(index, pname, pointer.pointer)
     override fun hint(target: Int, mode: Int): Unit = gl.glHint(target, mode)
     override fun isBuffer(buffer: Int): Boolean = gl.glIsBuffer(buffer).toBool()
     override fun isEnabled(cap: Int): Boolean = gl.glIsEnabled(cap).toBool()
@@ -404,7 +369,7 @@ class KmlGlOpenGL(val gl: OpenGL = OpenGL()) : KmlGl() {
     override fun pixelStorei(pname: Int, param: Int): Unit = gl.glPixelStorei(pname, param)
     override fun polygonOffset(factor: Float, units: Float): Unit = gl.glPolygonOffset(factor, units)
     override fun readPixels(x: Int, y: Int, width: Int, height: Int, format: Int, type: Int, pixels: Buffer): Unit =
-        tempBufferAddressIn(pixels) { gl.glReadPixels(x, y, width, height, format, type, it) }
+        gl.glReadPixels(x, y, width, height, format, type, pixels.pointer)
     override fun releaseShaderCompiler(): Unit = Unit
     override fun renderbufferStorage(target: Int, internalformat: Int, width: Int, height: Int): Unit = gl.glRenderbufferStorage(target, internalformat, width, height)
     override fun sampleCoverage(value: Float, invert: Boolean): Unit = gl.glSampleCoverage(value, invert.toInt())
@@ -429,13 +394,7 @@ class KmlGlOpenGL(val gl: OpenGL = OpenGL()) : KmlGl() {
     override fun stencilOp(fail: Int, zfail: Int, zpass: Int): Unit = gl.glStencilOp(fail, zfail, zpass)
     override fun stencilOpSeparate(face: Int, sfail: Int, dpfail: Int, dppass: Int): Unit = gl.glStencilOpSeparate(face, sfail, dpfail, dppass)
     override fun texImage2D(target: Int, level: Int, internalformat: Int, width: Int, height: Int, border: Int, format: Int, type: Int, pixels: Buffer?): Unit {
-        if (pixels != null) {
-            tempBufferAddressIn(pixels) {
-                gl.glTexImage2D(target, level, internalformat, width, height, border, format, type, it)
-            }
-        } else {
-            gl.glTexImage2D(target, level, internalformat, width, height, border, format, type, null)
-        }
+        gl.glTexImage2D(target, level, internalformat, width, height, border, format, type, pixels?.pointer)
     }
     override fun texImage2D(target: Int, level: Int, internalformat: Int, format: Int, type: Int, data: NativeImage): Unit {
         val buffer = Buffer(data.width * data.height * 4)
@@ -443,42 +402,42 @@ class KmlGlOpenGL(val gl: OpenGL = OpenGL()) : KmlGl() {
         texImage2D(target, level, internalformat, data.width, data.height, 0, format, type, buffer)
     }
     override fun texParameterf(target: Int, pname: Int, param: Float): Unit = gl.glTexParameterf(target, pname, param)
-    override fun texParameterfv(target: Int, pname: Int, params: Buffer): Unit = tempBufferAddressIn(params, 4) { gl.glTexParameterfv(target, pname, it) }
+    override fun texParameterfv(target: Int, pname: Int, params: Buffer): Unit = gl.glTexParameterfv(target, pname, params.pointer)
     override fun texParameteri(target: Int, pname: Int, param: Int): Unit = gl.glTexParameteri(target, pname, param)
-    override fun texParameteriv(target: Int, pname: Int, params: Buffer): Unit = tempBufferAddressIn(params, 4) { gl.glTexParameteriv(target, pname, it) }
+    override fun texParameteriv(target: Int, pname: Int, params: Buffer): Unit = gl.glTexParameteriv(target, pname, params.pointer)
     override fun texSubImage2D(target: Int, level: Int, xoffset: Int, yoffset: Int, width: Int, height: Int, format: Int, type: Int, pixels: Buffer): Unit {
         //gl.glTexSubImage2D(target, level, xoffset, yoffset, width, height, format, type, pixels)
         TODO()
     }
     override fun uniform1f(location: Int, v0: Float): Unit = gl.glUniform1f(location, v0)
-    override fun uniform1fv(location: Int, count: Int, value: Buffer): Unit = tempBufferAddressIn(value, 1 * count * 4) { gl.glUniform1fv(location, count, it) }
+    override fun uniform1fv(location: Int, count: Int, value: Buffer): Unit = gl.glUniform1fv(location, count, value.pointer)
     override fun uniform1i(location: Int, v0: Int): Unit = gl.glUniform1i(location, v0)
-    override fun uniform1iv(location: Int, count: Int, value: Buffer): Unit = tempBufferAddressIn(value, 1 * count * 4) { gl.glUniform1iv(location, count, it) }
+    override fun uniform1iv(location: Int, count: Int, value: Buffer): Unit = gl.glUniform1iv(location, count, value.pointer)
     override fun uniform2f(location: Int, v0: Float, v1: Float): Unit = gl.glUniform2f(location, v0, v1)
-    override fun uniform2fv(location: Int, count: Int, value: Buffer): Unit = tempBufferAddressIn(value, 2 * count * 4) { gl.glUniform2fv(location, count, it) }
+    override fun uniform2fv(location: Int, count: Int, value: Buffer): Unit = gl.glUniform2fv(location, count, value.pointer)
     override fun uniform2i(location: Int, v0: Int, v1: Int): Unit = gl.glUniform2i(location, v0, v1)
-    override fun uniform2iv(location: Int, count: Int, value: Buffer): Unit = tempBufferAddressIn(value, 2 * count * 4) { gl.glUniform2iv(location, count, it) }
+    override fun uniform2iv(location: Int, count: Int, value: Buffer): Unit = gl.glUniform2iv(location, count, value.pointer)
     override fun uniform3f(location: Int, v0: Float, v1: Float, v2: Float): Unit = gl.glUniform3f(location, v0, v1, v2)
-    override fun uniform3fv(location: Int, count: Int, value: Buffer): Unit = tempBufferAddressIn(value, 1 * count * 3) { gl.glUniform3fv(location, count, it) }
+    override fun uniform3fv(location: Int, count: Int, value: Buffer): Unit = gl.glUniform3fv(location, count, value.pointer)
     override fun uniform3i(location: Int, v0: Int, v1: Int, v2: Int): Unit = gl.glUniform3i(location, v0, v1, v2)
-    override fun uniform3iv(location: Int, count: Int, value: Buffer): Unit = tempBufferAddressIn(value, 3 * count * 4) { gl.glUniform3iv(location, count, it) }
+    override fun uniform3iv(location: Int, count: Int, value: Buffer): Unit = gl.glUniform3iv(location, count, value.pointer)
     override fun uniform4f(location: Int, v0: Float, v1: Float, v2: Float, v3: Float): Unit = gl.glUniform4f(location, v0, v1, v2, v3)
-    override fun uniform4fv(location: Int, count: Int, value: Buffer): Unit = tempBufferAddressIn(value, 4 * count * 4) { gl.glUniform4fv(location, count, it) }
+    override fun uniform4fv(location: Int, count: Int, value: Buffer): Unit = gl.glUniform4fv(location, count, value.pointer)
     override fun uniform4i(location: Int, v0: Int, v1: Int, v2: Int, v3: Int): Unit = gl.glUniform4i(location, v0, v1, v2, v3)
-    override fun uniform4iv(location: Int, count: Int, value: Buffer): Unit = tempBufferAddressIn(value, 4 * count * 4) { gl.glUniform4iv(location, count, it) }
-    override fun uniformMatrix2fv(location: Int, count: Int, transpose: Boolean, value: Buffer): Unit = tempBufferAddressIn(value, 2 * 2 * 4 * count) { gl.glUniformMatrix2fv(location, count, transpose.toInt(), it) }
-    override fun uniformMatrix3fv(location: Int, count: Int, transpose: Boolean, value: Buffer): Unit = tempBufferAddressIn(value, 3 * 3 * 4 * count) { gl.glUniformMatrix3fv(location, count, transpose.toInt(), it) }
-    override fun uniformMatrix4fv(location: Int, count: Int, transpose: Boolean, value: Buffer): Unit = tempBufferAddressIn(value, 4 * 4 * 4 * count) { gl.glUniformMatrix4fv(location, count, transpose.toInt(), it) }
+    override fun uniform4iv(location: Int, count: Int, value: Buffer): Unit = gl.glUniform4iv(location, count, value.pointer)
+    override fun uniformMatrix2fv(location: Int, count: Int, transpose: Boolean, value: Buffer): Unit = gl.glUniformMatrix2fv(location, count, transpose.toInt(), value.pointer)
+    override fun uniformMatrix3fv(location: Int, count: Int, transpose: Boolean, value: Buffer): Unit = gl.glUniformMatrix3fv(location, count, transpose.toInt(), value.pointer)
+    override fun uniformMatrix4fv(location: Int, count: Int, transpose: Boolean, value: Buffer): Unit = gl.glUniformMatrix4fv(location, count, transpose.toInt(), value.pointer)
     override fun useProgram(program: Int): Unit = gl.glUseProgram(program)
     override fun validateProgram(program: Int): Unit = gl.glValidateProgram(program)
     override fun vertexAttrib1f(index: Int, x: Float): Unit = gl.glVertexAttrib1f(index, x)
-    override fun vertexAttrib1fv(index: Int, v: Buffer): Unit = tempBufferAddressIn(v, 1 * 4) { gl.glVertexAttrib1fv(index, it) }
+    override fun vertexAttrib1fv(index: Int, v: Buffer): Unit = gl.glVertexAttrib1fv(index, v.pointer)
     override fun vertexAttrib2f(index: Int, x: Float, y: Float): Unit = gl.glVertexAttrib2f(index, x, y)
-    override fun vertexAttrib2fv(index: Int, v: Buffer): Unit = tempBufferAddressIn(v, 12* 4) { gl.glVertexAttrib2fv(index, it) }
+    override fun vertexAttrib2fv(index: Int, v: Buffer): Unit = gl.glVertexAttrib2fv(index, v.pointer)
     override fun vertexAttrib3f(index: Int, x: Float, y: Float, z: Float): Unit = gl.glVertexAttrib3f(index, x, y, z)
-    override fun vertexAttrib3fv(index: Int, v: Buffer): Unit = tempBufferAddressIn(v, 3 * 4) { gl.glVertexAttrib3fv(index, it) }
+    override fun vertexAttrib3fv(index: Int, v: Buffer): Unit = gl.glVertexAttrib3fv(index, v.pointer)
     override fun vertexAttrib4f(index: Int, x: Float, y: Float, z: Float, w: Float): Unit = gl.glVertexAttrib4f(index, x, y, z, w)
-    override fun vertexAttrib4fv(index: Int, v: Buffer): Unit = tempBufferAddressIn(v, 4 * 4) { gl.glVertexAttrib4fv(index, it) }
+    override fun vertexAttrib4fv(index: Int, v: Buffer): Unit = gl.glVertexAttrib4fv(index, v.pointer)
     override fun vertexAttribPointer(index: Int, size: Int, type: Int, normalized: Boolean, stride: Int, pointer: Long): Unit =
         gl.glVertexAttribPointer(index, size, type, normalized.toInt(), stride, pointer.convert())
     override fun viewport(x: Int, y: Int, width: Int, height: Int): Unit = gl.glViewport(x, y, width, height)
@@ -497,7 +456,7 @@ class KmlGlOpenGL(val gl: OpenGL = OpenGL()) : KmlGl() {
 
     override val isVertexArraysSupported: Boolean get() = true
 
-    override fun genVertexArrays(n: Int, arrays: Buffer) = tempBufferAddressOut(arrays, 4 * n) { gl.glGenVertexArrays(n, it) }
-    override fun deleteVertexArrays(n: Int, arrays: Buffer) = tempBufferAddressIn(arrays, 4 * n) { gl.glDeleteBuffers(n, it) }
+    override fun genVertexArrays(n: Int, arrays: Buffer) = gl.glGenVertexArrays(n, arrays.pointer)
+    override fun deleteVertexArrays(n: Int, arrays: Buffer) = gl.glDeleteBuffers(n, arrays.pointer)
     override fun bindVertexArray(array: Int) = gl.glBindVertexArray(array)
 }
