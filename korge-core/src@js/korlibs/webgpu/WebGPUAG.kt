@@ -85,8 +85,8 @@ class WebGPUAG(val device: GPUDevice) : AG() {
                 colorAttachments = arrayOf(
                     GPURenderPassColorAttachment(
                         view = texture.createView(),
-                        storeOp = "store",
-                        loadOp = "clear",
+                        storeOp = GPUStoreOP.STORE,
+                        loadOp = GPULoadOP.CLEAR,
                         clearValue = arrayOf(0, 1, 0, 1),
                     ),
                 ),

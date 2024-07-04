@@ -652,8 +652,8 @@ external interface GPURenderPassColorAttachment {
     var depthSlice: GPUIntegerCoordinate?
     var resolveTarget: GPUTextureView?
     var clearValue: Array<Number>? /* Iterable<Number>? | GPUColorDict? */
-    var loadOp: String /* "load" | "clear" */
-    var storeOp: String /* "store" | "discard" */
+    var loadOp: GPULoadOP
+    var storeOp: GPUStoreOP
 }
 
 fun GPURenderPassColorAttachment(
@@ -661,8 +661,8 @@ fun GPURenderPassColorAttachment(
     depthSlice: GPUIntegerCoordinate? = undefined,
     resolveTarget: GPUTextureView? = undefined,
     clearValue: Array<Number>? = undefined,
-    loadOp: String,
-    storeOp: String,
+    loadOp: GPULoadOP,
+    storeOp: GPUStoreOP,
 ): GPURenderPassColorAttachment = js("({view: view, depthSlice: depthSlice, resolveTarget: resolveTarget, clearValue: clearValue, loadOp: loadOp, storeOp: storeOp})")
 
 inline class GPULoadOP(val str: String) {
