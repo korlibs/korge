@@ -26,7 +26,7 @@ jobs:
       matrix:
         include:
           - { outputKey: testIos, os: macos-latest, testTask: iosX64Test, precompileTask: compileTestKotlinIosX64, enableKotlinNative: true }
-          - { outputKey: testJs, os: ubuntu-latest, testTask: "wasmJsBrowserTest", buildTasks: "jsBrowserTest", precompileTask: "wasmJsTestClasses jsTestClasses" }
+          - { outputKey: testJs, os: ubuntu-latest, testTask: "wasmJsBrowserTest", buildTasks: "jsBrowserTest jsDenoTest", precompileTask: "wasmJsTestClasses jsTestClasses" }
           - { outputKey: testAndroid, os: ubuntu-latest, enableAndroid: true, precompileTask: "compileDebugAndroidTestSources" }
           - { outputKey: testJvmMacos, os: macos-latest, testTask: jvmTest, precompileTask: "compileTestKotlinJvm compileTestKotlin" }
           - { outputKey: testJvmLinux, os: ubuntu-latest, testTask: jvmTest, precompileTask: "compileTestKotlinJvm compileTestKotlin", enableKotlinNative: true, enableSandbox: true, e2e: true }
