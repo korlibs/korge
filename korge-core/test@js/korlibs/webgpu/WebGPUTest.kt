@@ -79,7 +79,7 @@ class WebGPUTest {
                     )
                 ),
                 primitive = GPUPrimitiveState(
-                    topology = "triangle-list"
+                    topology = GPUTopology.TRIANGLE_LIST
                 )
             )
         );

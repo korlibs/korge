@@ -595,20 +595,51 @@ fun GPUPipelineLayoutDescriptor(
     bindGroupLayouts: Array<GPUBindGroupLayout>,
 ): GPUPipelineLayoutDescriptor = js("({bindGroupLayouts: bindGroupLayouts})")
 
+inline class GPUTopology(val str: String) {
+    companion object {
+        inline val POINT_LIST get() = GPUTopology("point-list")
+        inline val LINE_LIST get() = GPUTopology("line-list")
+        inline val LINE_STRIP get() = GPUTopology("line-strip")
+        inline val TRIANGLE_LIST get() = GPUTopology("triangle-list")
+        inline val TRIANGLE_STRIP get() = GPUTopology("triangle-strip")
+    }
+}
+
+inline class GPUCullMode(val str: String) {
+    companion object {
+        inline val NONE get() = GPUCullMode("none")
+        inline val FRONT get() = GPUCullMode("front")
+        inline val BACK get() = GPUCullMode("back")
+    }
+}
+
+inline class GPUFrontFace(val str: String) {
+    companion object {
+        inline val CCW get() = GPUFrontFace("ccw")
+        inline val CW get() = GPUFrontFace("cw")
+    }
+}
+
+inline class GPUStripIndexFormat(val str: String) {
+    companion object {
+        inline val UINT16 get() = GPUStripIndexFormat("uint16")
+        inline val UINT32 get() = GPUStripIndexFormat("uint32")
+    }
+}
 
 external interface GPUPrimitiveState {
-    var topology: String? /* "point-list" | "line-list" | "line-strip" | "triangle-list" | "triangle-strip" */
-    var stripIndexFormat: String? /* "uint16" | "uint32" */
-    var frontFace: String? /* "ccw" | "cw" */
-    var cullMode: String? /* "none" | "front" | "back" */
+    var topology: GPUTopology?
+    var stripIndexFormat: GPUStripIndexFormat?
+    var frontFace: GPUFrontFace?
+    var cullMode: GPUCullMode?
     var unclippedDepth: Boolean?
 }
 
 fun GPUPrimitiveState(
-    topology: String? = undefined,
-    stripIndexFormat: String? = undefined,
-    frontFace: String? = undefined,
-    cullMode: String? = undefined,
+    topology: GPUTopology? = undefined,
+    stripIndexFormat: GPUStripIndexFormat? = undefined,
+    frontFace: GPUFrontFace? = undefined,
+    cullMode: GPUCullMode? = undefined,
     unclippedDepth: Boolean? = undefined,
 ): GPUPrimitiveState = js("({topology: topology, stripIndexFormat: stripIndexFormat, frontFace: frontFace, cullMode: cullMode, unclippedDepth: unclippedDepth})")
 
@@ -625,14 +656,21 @@ fun GPUProgrammableStage(
     constants: Map<String, GPUPipelineConstantValue>? = undefined,
 ): GPUProgrammableStage = js("({module: module, entryPoint: entryPoint, constants: constants})")
 
+inline class GPUQueryType(val str: String) {
+    companion object {
+        inline val OCCLUSION get() = GPUQueryType("occlusion")
+        //inline val PIPELINE_STATISTICS get() = GPUQueryType("pipeline-statistics")
+        inline val TIMESTAMP get() = GPUQueryType("timestamp")
+    }
+}
 
 external interface GPUQuerySetDescriptor : GPUObjectDescriptorBase {
-    var type: String /* "occlusion" | "timestamp" */
+    var type: GPUQueryType
     var count: GPUSize32
 }
 
 fun GPUQuerySetDescriptor(
-    type: String,
+    type: GPUQueryType,
     count: GPUSize32,
 ): GPUQuerySetDescriptor = js("({type: type, count: count})")
 
@@ -781,9 +819,21 @@ fun GPURequestAdapterOptions(
 ): GPURequestAdapterOptions = js("({powerPreference: powerPreference, forceFallbackAdapter: forceFallbackAdapter})")
 
 
-external interface GPUSamplerBindingLayout {
-    var type: String? /* "filtering" | "non-filtering" | "comparison" */
+inline class GPUSamplerBindingLayoutType(val str: String) {
+    companion object {
+        inline val FILTERING get() = GPUSamplerBindingLayoutType("filtering")
+        inline val NON_FILTERING get() = GPUSamplerBindingLayoutType("non-filtering")
+        inline val COMPARISON get() = GPUSamplerBindingLayoutType("comparison")
+    }
 }
+
+external interface GPUSamplerBindingLayout {
+    var type: GPUSamplerBindingLayoutType?
+}
+
+fun GPUSamplerBindingLayout(
+    type: GPUSamplerBindingLayoutType? = undefined,
+): GPUSamplerBindingLayout = js("({type: type})")
 
 inline class GPUAddressMode(val str: String) {
     companion object {
@@ -851,19 +901,31 @@ fun GPUShaderModuleDescriptor(
     label: String? = undefined,
 ): GPUShaderModuleDescriptor = js("({ code: code, sourceMap: sourceMap, compilationHints: compilationHints, label: label })")
 
+inline class GPUStencilOperation(val str: String) {
+    companion object {
+        inline val KEEP get() = GPUStencilOperation("keep")
+        inline val ZERO get() = GPUStencilOperation("zero")
+        inline val REPLACE get() = GPUStencilOperation("replace")
+        inline val INVERT get() = GPUStencilOperation("invert")
+        inline val INCREMENT_CLAMP get() = GPUStencilOperation("increment-clamp")
+        inline val DECREMENT_CLAMP get() = GPUStencilOperation("decrement-clamp")
+        inline val INCREMENT_WRAP get() = GPUStencilOperation("increment-wrap")
+        inline val DECREMENT_WRAP get() = GPUStencilOperation("decrement-wrap")
+    }
+}
 
 external interface GPUStencilFaceState {
-    var compare: String? /* "never" | "less" | "equal" | "less-equal" | "greater" | "not-equal" | "greater-equal" | "always" */
-    var failOp: String? /* "keep" | "zero" | "replace" | "invert" | "increment-clamp" | "decrement-clamp" | "increment-wrap" | "decrement-wrap" */
-    var depthFailOp: String? /* "keep" | "zero" | "replace" | "invert" | "increment-clamp" | "decrement-clamp" | "increment-wrap" | "decrement-wrap" */
-    var passOp: String? /* "keep" | "zero" | "replace" | "invert" | "increment-clamp" | "decrement-clamp" | "increment-wrap" | "decrement-wrap" */
+    var compare: GPUCompare?
+    var failOp: GPUStencilOperation?
+    var depthFailOp: GPUStencilOperation?
+    var passOp: GPUStencilOperation?
 }
 
 fun GPUStencilFaceState(
-    compare: String? = undefined,
-    failOp: String? = undefined,
-    depthFailOp: String? = undefined,
-    passOp: String? = undefined,
+    compare: GPUCompare? = undefined,
+    failOp: GPUStencilOperation? = undefined,
+    depthFailOp: GPUStencilOperation? = undefined,
+    passOp: GPUStencilOperation? = undefined,
 ): GPUStencilFaceState = js("({compare: compare, failOp: failOp, depthFailOp: depthFailOp, passOp: passOp})")
 
 inline class GPUViewDimension(val str: String) {
@@ -897,15 +959,24 @@ fun GPUStorageTextureBindingLayout(
     viewDimension: GPUViewDimension,
 ): GPUStorageTextureBindingLayout = js("({access: access, format: format, viewDimension: viewDimension})")
 
+inline class GPUSampleType(val str: String) {
+    companion object {
+        inline val FLOAT get() = GPUSampleType("float")
+        inline val UNFILTERABLE_FLOAT get() = GPUSampleType("unfilterable-float")
+        inline val DEPTH get() = GPUSampleType("depth")
+        inline val SINT get() = GPUSampleType("sint")
+        inline val UINT get() = GPUSampleType("uint")
+    }
+}
 
 external interface GPUTextureBindingLayout {
-    var sampleType: String? /* "float" | "unfilterable-float" | "depth" | "sint" | "uint" */
+    var sampleType: GPUSampleType?
     var viewDimension: GPUViewDimension?
     var multisampled: Boolean?
 }
 
 fun GPUTextureBindingLayout(
-    sampleType: String? = undefined,
+    sampleType: GPUSampleType? = undefined,
     viewDimension: GPUViewDimension? = undefined,
     multisampled: Boolean? = undefined,
 ): GPUTextureBindingLayout = js("({sampleType: sampleType, viewDimension: viewDimension, multisampled: multisampled})")
@@ -932,11 +1003,18 @@ fun GPUTextureDescriptor(
     label: String? = undefined,
 ): GPUTextureDescriptor = js("({size: size, mipLevelCount: mipLevelCount, sampleCount: sampleCount, dimension: dimension, format: format, usage: usage, viewFormats: viewFormats, label: label})")
 
+inline class GPUTextureAspect(val str: String) {
+    companion object {
+        inline val ALL get() = GPUTextureAspect("all")
+        inline val STENCIL_ONLY get() = GPUTextureAspect("stencil-only")
+        inline val DEPTH_ONLY get() = GPUTextureAspect("depth-only")
+    }
+}
 
 external interface GPUTextureViewDescriptor : GPUObjectDescriptorBase {
     var format: GPUTextureFormat?
     var dimension: GPUViewDimension?
-    var aspect: String? /* "all" | "stencil-only" | "depth-only" */
+    var aspect: GPUTextureAspect?
     var baseMipLevel: GPUIntegerCoordinate?
     var mipLevelCount: GPUIntegerCoordinate?
     var baseArrayLayer: GPUIntegerCoordinate?
@@ -946,7 +1024,7 @@ external interface GPUTextureViewDescriptor : GPUObjectDescriptorBase {
 fun GPUTextureViewDescriptor(
     format: GPUTextureFormat? = undefined,
     dimension: GPUViewDimension? = undefined,
-    aspect: String? = undefined,
+    aspect: GPUTextureAspect? = undefined,
     baseMipLevel: GPUIntegerCoordinate? = undefined,
     mipLevelCount: GPUIntegerCoordinate? = undefined,
     baseArrayLayer: GPUIntegerCoordinate? = undefined,
