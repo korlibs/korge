@@ -16,10 +16,10 @@ open class SDL : FFILib(SDLPath) {
         const val SDL_WINDOWPOS_CENTERED = 0x2FFF0000
     }
 
-    val SDL_Init: (flags: Int) -> Int by func()
-    val SDL_CreateWindow: (title: String, x: Int, y: Int, w: Int, h: Int, flags: Int) -> FFIPointer by func()
-    val SDL_ShowWindow: (window: FFIPointer) -> Unit by func()
-    val SDL_RaiseWindow: (window: FFIPointer) -> Unit by func()
-    val SDL_PollEvent: (event: FFIPointer) -> Boolean by func()
-    val SDL_Quit: () -> Unit by func()
+    val SDL_Init by func<(flags: Int) -> Int>()
+    val SDL_CreateWindow by func<(title: String, x: Int, y: Int, w: Int, h: Int, flags: Int) -> FFIPointer>()
+    val SDL_ShowWindow by func<(window: FFIPointer) -> Unit>()
+    val SDL_RaiseWindow by func<(window: FFIPointer) -> Unit>()
+    val SDL_PollEvent by func<(event: FFIPointer) -> Boolean>()
+    val SDL_Quit by func<() -> Unit>()
 }
