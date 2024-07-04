@@ -4,11 +4,13 @@ import korlibs.encoding.*
 import korlibs.io.async.*
 import korlibs.io.file.*
 import korlibs.io.stream.*
+import korlibs.platform.*
 import kotlin.test.*
 
 class WindowsRegistryTest {
+    // @TODO: Move to korlibs repo
     @Test
-    fun testRegistry() = suspendTest({ WindowsRegistry.isSupported }) {
+    fun testRegistry() = suspendTest({ WindowsRegistry.isSupported && !Platform.isJsDenoJs }) {
         assertEquals(WindowsRegistry.KEY_MAP.keys.toList().sorted(), WindowsRegistryVfs.root.listNames().sorted())
 
         //println(WindowsRegistryVfs.HKEY_LOCAL_MACHINE["Software"].listNames())

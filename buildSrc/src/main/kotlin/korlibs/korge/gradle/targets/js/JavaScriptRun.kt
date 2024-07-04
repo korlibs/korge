@@ -59,6 +59,54 @@ open class RunJsServer : DefaultTask() {
     }
 }
 
+fun Project.configureDenoTest() {
+    afterEvaluate {
+        if (tasks.findByName("compileTestDevelopmentExecutableKotlinJs") == null) return@afterEvaluate
+
+        val jsDenoTest = project.tasks.createThis<Exec>("jsDenoTest") {
+            fun fullPathName(project: Project): String {
+                if (project.parent == null) return project.name
+                return fullPathName(project.parent!!) + ":" + project.name
+            }
+            val baseTestFileNameBase = fullPathName(project).trim(':').replace(':', '-') + "-test"
+            val baseTestFileName = "$baseTestFileNameBase.mjs"
+
+            //build\js\packages\korge-root-korge-test\kotlin
+
+            //val runFile = file("build/compileSync/js/test/testDevelopmentExecutable/kotlin/$baseTestFileName.deno.mjs")
+            val runFile = File(rootProject.rootDir, "build/js/packages/$baseTestFileNameBase/kotlin/$baseTestFileName.deno.mjs")
+
+            // compileTestDevelopmentExecutableKotlinJs
+            dependsOn("compileTestDevelopmentExecutableKotlinJs")
+            //commandLine("deno", "test", "--unstable-ffi", "-A", "src/test/kotlin")
+
+            //rootProject.
+            commandLine("deno", "test", "--unstable-ffi", "--unstable-webgpu", "-A", runFile)
+            workingDir(runFile.parentFile.absolutePath)
+
+            doFirst {
+                runFile.parentFile.mkdirs()
+                runFile.writeText(
+                    //language=js
+                    """
+                    var describeStack = []
+                    globalThis.describe = (name, callback) => { describeStack.push(name); try { callback() } finally { describeStack.pop() } }
+                    globalThis.it = (name, callback) => { return Deno.test({ name: describeStack.join(".") + "." + name, fn: callback}) }
+                    globalThis.xit = (name, callback) => { return Deno.test({ name: describeStack.join(".") + "." + name, ignore: true, fn: callback}) }
+                    function exists(path) { try { Deno.statSync(path); return true } catch (e) { return false } }
+                    // Polyfill required for kotlinx-coroutines that detects window 
+                    window.postMessage = (message, targetOrigin) => { const ev = new Event('message'); ev.source = window; ev.data = message; window.dispatchEvent(ev); }
+                    const file = './$baseTestFileName';
+                    if (exists(file)) await import(file)
+                """.trimIndent())
+            }
+        }
+    }
+}
+
+fun Project.configureDenoRun() {
+}
+
 fun Project.configureJavascriptRun() {
     val runJsRelease = project.tasks.createThis<RunJsServer>(name = "runJsRelease") {
         group = GROUP_KORGE_RUN

@@ -87,7 +87,9 @@ fun Project.configureJavaScript(projectType: ProjectType) {
 
     configureEsbuild()
     configureWebpackFixes()
+    configureDenoTest()
     if (projectType.isExecutable) {
+        configureDenoRun()
         configureJavascriptRun()
     }
     configureWebpack()

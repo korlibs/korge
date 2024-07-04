@@ -4,6 +4,7 @@ import io.ygdrasil.wgpu.internal.js.*
 import korlibs.image.bitmap.*
 import korlibs.image.format.*
 import korlibs.io.async.*
+import korlibs.io.net.*
 import korlibs.math.geom.*
 import kotlinx.browser.*
 import kotlinx.coroutines.*
@@ -193,6 +194,8 @@ class WebGPUTest {
         device.queue.submit(arrayOf(encoder.finish()));
 
         createPng(outputBuffer, dimensions)
+
+        device.destroy()
     }
 
     data class CreateCapture(val texture: GPUTexture, val outputBuffer: GPUBuffer)
@@ -220,7 +223,7 @@ class WebGPUTest {
                 format = GPUTextureFormat.RGBA8UNORM_SRGB,
                 usage = (GPUTextureUsage.RENDER_ATTACHMENT or GPUTextureUsage.COPY_SRC),
             )
-        );
+        )
 
         return CreateCapture(texture, outputBuffer)
     }
@@ -294,28 +297,10 @@ class WebGPUTest {
 
         val bitmap = Bitmap32(dimensions.width, dimensions.height, Int32Array(outputBuffer.buffer).unsafeCast<IntArray>())
 
-        val nativeImage = nativeImageFormatProvider.create(dimensions.width, dimensions.height).unsafeCast<HtmlNativeImage>()
-        //HtmlNativeImage()
-        //println(PNG.encode(bitmap).base64)
-        nativeImage.context2d {
-            drawImage(bitmap, Point(0, 0))
-        }
+        RegisteredImageFormats.register(PNG)
+        println(DataURL(nativeImageFormatProvider.encodeSuspend(bitmap, ImageEncodingProps("file.png")), "image/png").url)
 
-        println(nativeImage.element.unsafeCast<HTMLCanvasElement>().toDataURL("image/png"))
-
-        //PNG.encode()
-        //val image = png.encode(
-        //    outputBuffer,
-        //dimensions.width,
-        //dimensions.height,
-        //{
-        //        stripAlpha: true,
-        //        color: 2,
-        //},
-        //);
-        //Deno.writeFileSync("./output.png", image);
-
-        buffer.unmap();
+        buffer.unmap()
     }
 
 }

@@ -608,6 +608,7 @@ object RootKorlibsPlugin {
 
             project.configureEsbuild()
             project.configureJavascriptRun()
+            project.configureDenoRun()
         }
     }
 
@@ -723,6 +724,7 @@ object RootKorlibsPlugin {
             //tasks.withType(Test::class.java).allThis {
             afterEvaluate {
                 it.configureTests()
+                project.configureDenoTest()
             }
         }
     }
