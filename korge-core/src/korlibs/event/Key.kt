@@ -1,5 +1,7 @@
 package korlibs.event
 
+import korlibs.datastructure.*
+
 enum class Key {
 	SPACE, APOSTROPHE, COMMA, MINUS, PLUS, PERIOD, SLASH,
 	N0, N1, N2, N3, N4, N5, N6, N7, N8, N9, N11, N12,
@@ -143,5 +145,28 @@ enum class Key {
         @Deprecated("", ReplaceWith("ALT", "korlibs.event.Key.ALT")) val RIGHT_ALT get() = ALT
         @Deprecated("", ReplaceWith("SUPER", "korlibs.event.Key.SUPER")) val LEFT_SUPER get() = SUPER
         @Deprecated("", ReplaceWith("SUPER", "korlibs.event.Key.SUPER")) val RIGHT_SUPER get() = SUPER
+    }
+}
+
+class IntToKeyMap() {
+    val mapping: IntMap<Key> = IntMap<Key>()
+    //val keys = LinkedHashMap<Int, Key>()
+
+    operator fun contains(id: Int): Boolean = id in mapping
+    operator fun get(id: Int): Key? = mapping[id]
+    operator fun set(id: Int, value: Key) { mapping[id] = value }
+
+    fun map(value: Int, key: Key) {
+        this.mapping[value] = key
+    }
+    fun map(start: Int, keys: ClosedRange<Key>) {
+        val count = keys.endInclusive.ordinal - keys.start.ordinal + 1
+        for (n in 0 until count) {
+            map(start + n, Key.entries[keys.start.ordinal])
+        }
+    }
+
+    companion object {
+        operator fun invoke(block: IntToKeyMap.() -> Unit): IntToKeyMap = IntToKeyMap().apply(block)
     }
 }
