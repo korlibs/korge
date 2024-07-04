@@ -12,6 +12,10 @@ private external val navigator: NavigatorGPU
 class WebGPUAG(val device: GPUDevice) : AG() {
     val dimensions = SizeInt(320, 240)
 
+    fun test() {
+        navigator.onLine
+    }
+
     val shaderModule = device.createShaderModule(GPUShaderModuleDescriptor(
         code = """
             @vertex

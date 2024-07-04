@@ -1125,7 +1125,7 @@ external interface GPURenderCommandsMixin {
     fun drawIndexedIndirect(indirectBuffer: GPUBuffer, indirectOffset: GPUSize64)
 }
 
-external interface NavigatorGPU {
+abstract external class NavigatorGPU : Navigator {
     var gpu: GPU
 }
 
@@ -1667,7 +1667,7 @@ external class GPUValidationError : GPUError {
 
 typealias WGSLLanguageFeatures = ReadonlySet<String>
 
-external interface WorkerNavigator : NavigatorGPU
+typealias WorkerNavigator = NavigatorGPU
 
 
 external class GPUBufferUsage {
