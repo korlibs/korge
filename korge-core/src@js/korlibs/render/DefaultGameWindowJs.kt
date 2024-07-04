@@ -552,10 +552,8 @@ private external interface JsGamepadEvent {
 
 class NodeJsGameWindow : JsGameWindow()
 
-class DenoJsGameWindow : JsGameWindow()
-
 actual fun CreateDefaultGameWindow(config: GameWindowCreationConfig): GameWindow = when {
-    Platform.isJsDenoJs -> DenoJsGameWindow()
+    Platform.isJsDenoJs -> DenoJsGameWindow(config = config)
     Platform.isJsNodeJs -> NodeJsGameWindow()
     else -> BrowserCanvasJsGameWindow()
 }

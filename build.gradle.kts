@@ -93,10 +93,3 @@ tasks {
         )
     }
 }
-
-afterEvaluate {
-    println("-----------")
-    println(tasks.findByPath(":korge:jvmMainClasses")!!::class)
-    println(tasks.findByPath(":korge:compileKotlinJvm")!!::class)
-    //org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-}
