@@ -19,6 +19,8 @@ val ENABLE_VERTEX_ARRAY_OBJECTS = Environment["DISABLE_VERTEX_ARRAY_OBJECTS"] !=
 //val ENABLE_UNIFORM_BLOCKS = false
 
 class AGOpengl(val gl: KmlGl, var context: KmlGlContext? = null) : AG() {
+    constructor(context: KmlGlContext) : this(context.gl, context)
+
     val contextsToFree = linkedSetOf<KmlGlContext?>()
 
     class ShaderException(val str: String, val error: String, val errorInt: Int, val gl: KmlGl, val debugName: String?, val type: Int, val shaderReturnInt: Int) :
