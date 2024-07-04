@@ -26,7 +26,7 @@ jobs:
       matrix:
         include:
           - { outputKey: testIos, os: macos-latest, testTask: iosX64Test, precompileTask: compileTestKotlinIosX64, enableKotlinNative: true }
-          - { outputKey: testJs, os: ubuntu-latest, testTask: "wasmJsBrowserTest", buildTasks: "jsBrowserTest", precompileTask: "wasmJsTestClasses jsTestClasses" }
+          - { outputKey: testJs, os: ubuntu-latest, testTask: "wasmJsBrowserTest", buildTasks: "jsBrowserTest jsDenoTest", precompileTask: "wasmJsTestClasses jsTestClasses" }
           - { outputKey: testAndroid, os: ubuntu-latest, enableAndroid: true, precompileTask: "compileDebugAndroidTestSources" }
           - { outputKey: testJvmMacos, os: macos-latest, testTask: jvmTest, precompileTask: "compileTestKotlinJvm compileTestKotlin" }
           - { outputKey: testJvmLinux, os: ubuntu-latest, testTask: jvmTest, precompileTask: "compileTestKotlinJvm compileTestKotlin", enableKotlinNative: true, enableSandbox: true, e2e: true }
@@ -42,6 +42,7 @@ jobs:
     steps:
       - { uses: actions/checkout@v4 }
       - { name: Use Node.js 20.x, uses: actions/setup-node@v4, with: { node-version: 20.x } }
+      - { name: Setup Deno, uses: denoland/setup-deno@v1, with: { deno-version: "1.44.4" } }
       - { name: Configure parallel in local.properties, run: "echo org.gradle.parallel=true >> local.properties" }
       - { name: Replace gradle wrapper, run: "sed 's/-all/-bin/g' gradle/wrapper/gradle-wrapper.properties > gradle/wrapper/gradle-wrapper.properties.bak; cp gradle/wrapper/gradle-wrapper.properties.bak gradle/wrapper/gradle-wrapper.properties" }
       - { if: "${{ startsWith(matrix.os, 'ubuntu-') }}", name: Install freeglut3 & openal, run: sudo apt-get update && sudo apt-get -y install freeglut3-dev libopenal-dev xvfb }
