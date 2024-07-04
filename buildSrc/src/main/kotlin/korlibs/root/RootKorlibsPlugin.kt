@@ -49,6 +49,7 @@ object RootKorlibsPlugin {
 
     fun Project.init() {
         plugins.apply(DokkaPlugin::class.java)
+        //plugins.apply("js-plain-objects")
 
         allprojects {
             tasks.withType(AbstractDokkaTask::class.java).configureEach {
@@ -238,6 +239,7 @@ object RootKorlibsPlugin {
 
                 // AppData\Local\Android\Sdk\tools\bin>sdkmanager --licenses
                 plugins.apply("kotlin-multiplatform")
+                //plugins.apply(JsPlainObjectsKotlinGradleSubplugin::class.java)
 
                 //initAndroidProject()
                 if (hasAndroid) {

@@ -47,6 +47,7 @@ kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", v
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
 dokka = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version.ref = "dokka" }
+#jsplainobjects = { module = "org.jetbrains.kotlin:js-plain-objects", version.ref = "kotlin" }
 kover = { module = "org.jetbrains.kotlinx:kover", version.ref = "kover" }
 kover-intellij-agent = { module = "org.jetbrains.intellij.deps:intellij-coverage-agent", version.ref = "kover-agent" }
 jcodec-core = { module = "org.jcodec:jcodec", version.ref = "jcodec" }

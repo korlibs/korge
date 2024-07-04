@@ -4,7 +4,6 @@ import io.ygdrasil.wgpu.internal.js.*
 import korlibs.image.bitmap.*
 import korlibs.image.format.*
 import korlibs.io.async.*
-import korlibs.js.*
 import korlibs.math.geom.*
 import kotlinx.browser.*
 import kotlinx.coroutines.*
@@ -28,11 +27,11 @@ class WebGPUTest {
         canvas.height = (canvas.clientHeight * devicePixelRatio).toInt()
         val presentationFormat = navigator.gpu.getPreferredCanvasFormat()
         context.configure(
-            jsObjectOf(
-                "device" to device,
-                "format" to presentationFormat,
-                "alphaMode" to "premultiplied",
-            ).unsafeCast<GPUCanvasConfiguration>()
+            GPUCanvasConfiguration(
+                device = device,
+                format = presentationFormat,
+                alphaMode = GPUAlphaMode.PREMULTIPLIED
+            )
         )
 
         val triangleVertWGSL = """
@@ -58,30 +57,30 @@ class WebGPUTest {
         """.trimIndent()
 
         val pipeline = device.createRenderPipeline(
-            jsObjectOf(
-                "layout" to "auto",
-                "vertex" to jsObjectOf(
-                    "module" to device.createShaderModule(
-                        jsObjectOf(
-                            "code" to triangleVertWGSL,
+            GPURenderPipelineDescriptor(
+                layout = "auto",
+                vertex = GPUVertexState(
+                    module = device.createShaderModule(
+                        GPUShaderModuleDescriptor(
+                            code = triangleVertWGSL
+                        )
+                    )
+                ),
+                fragment = GPUFragmentState(
+                    module = device.createShaderModule(
+                        GPUShaderModuleDescriptor(
+                            code = redFragWGSL
                         )
                     ),
-                ),
-                "fragment" to jsObjectOf(
-                    "module" to device.createShaderModule(
-                        jsObjectOf(
-                            "code" to redFragWGSL,
+                    targets = arrayOf(
+                        GPUColorTargetState(
+                            format = presentationFormat
                         )
-                    ),
-                    "targets" to arrayOf(
-                        jsObjectOf(
-                            "format" to presentationFormat,
-                        ),
-                    ),
+                    )
                 ),
-                "primitive" to jsObjectOf(
-                    "topology" to "triangle-list",
-                ),
+                primitive = GPUPrimitiveState(
+                    topology = "triangle-list"
+                )
             )
         );
 
@@ -89,16 +88,16 @@ class WebGPUTest {
             val commandEncoder = device.createCommandEncoder()
             val textureView = context.getCurrentTexture().createView()
 
-            val renderPassDescriptor: GPURenderPassDescriptor = jsObjectOf(
-                "colorAttachments" to arrayOf(
-                    jsObjectOf(
-                        "view" to textureView,
-                        "clearValue" to arrayOf(0, 0, 0, 1),
-                        "loadOp" to "clear",
-                        "storeOp" to "store",
-                    ),
-                ),
-            );
+            val renderPassDescriptor = GPURenderPassDescriptor(
+                colorAttachments = arrayOf(
+                    GPURenderPassColorAttachment(
+                        view = textureView,
+                        clearValue = arrayOf(0, 0, 0, 1),
+                        loadOp = "clear",
+                        storeOp = "store"
+                    )
+                )
+            )
 
             val passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
             passEncoder.setPipeline(pipeline);
@@ -138,33 +137,33 @@ class WebGPUTest {
         """
 
         val shaderModule = device.createShaderModule(
-            jsObjectOf("code" to shaderCode)
-        );
+            GPUShaderModuleDescriptor(code = shaderCode)
+        )
 
         val pipelineLayout = device.createPipelineLayout(
-            jsObjectOf(
-                "bindGroupLayouts" to jsEmptyArray(),
+            GPUPipelineLayoutDescriptor(
+                bindGroupLayouts = emptyArray()
             )
-        );
+        )
 
         val renderPipeline = device.createRenderPipeline(
-            jsObjectOf(
-                "layout" to pipelineLayout,
-                "vertex" to jsObjectOf(
-                    "module" to shaderModule,
-                    "entryPoint" to "vs_main",
+            GPURenderPipelineDescriptor(
+                layout = pipelineLayout,
+                vertex = GPUVertexState(
+                    module = shaderModule,
+                    entryPoint = "vs_main",
                 ),
-                "fragment" to jsObjectOf(
-                    "module" to shaderModule,
-                    "entryPoint" to "fs_main",
-                    "targets" to arrayOf(
-                        jsObjectOf(
-                            "format" to "rgba8unorm-srgb",
+                fragment = GPUFragmentState(
+                    module = shaderModule,
+                    entryPoint = "fs_main",
+                    targets = arrayOf(
+                        GPUColorTargetState(
+                            format = GPUTextureFormat.RGBA8UNORM_SRGB,
                         ),
                     ),
                 ),
             )
-        );
+        )
 
         val (texture, outputBuffer) = createCapture(
             device,
@@ -174,13 +173,13 @@ class WebGPUTest {
 
         val encoder = device.createCommandEncoder();
         val renderPass = encoder.beginRenderPass(
-            jsObjectOf(
-                "colorAttachments" to arrayOf(
-                    jsObjectOf(
-                        "view" to texture.createView(),
-                        "storeOp" to "store",
-                        "loadOp" to "clear",
-                        "clearValue" to arrayOf(0, 1, 0, 1),
+            GPURenderPassDescriptor(
+                colorAttachments = arrayOf(
+                    GPURenderPassColorAttachment(
+                        view = texture.createView(),
+                        storeOp = "store",
+                        loadOp = "clear",
+                        clearValue = arrayOf(0, 1, 0, 1),
                     ),
                 ),
             )
@@ -204,20 +203,24 @@ class WebGPUTest {
         height: Int,
     ): CreateCapture {
         val padded = getRowPadding(width).padded;
-        val outputBuffer = device.createBuffer(jsObjectOf(
-            "label" to "Capture",
-            "size" to padded * height,
-            "usage" to (GPUBufferUsage.MAP_READ or GPUBufferUsage.COPY_DST),
-        ));
-        val texture = device.createTexture(jsObjectOf(
-            "label" to "Capture",
-            "size" to jsObjectOf(
-                "width" to width,
-                "height" to height,
-            ),
-            "format" to "rgba8unorm-srgb",
-            "usage" to (GPUTextureUsage.RENDER_ATTACHMENT or GPUTextureUsage.COPY_SRC),
-        ));
+        val outputBuffer = device.createBuffer(
+            GPUBufferDescriptor(
+                label = "Capture",
+                size = padded * height,
+                usage = (GPUBufferUsage.MAP_READ or GPUBufferUsage.COPY_DST),
+            )
+        )
+        val texture = device.createTexture(
+            GPUTextureDescriptor(
+                label = "Capture",
+                size = GPUExtent3DDict(
+                    width = width,
+                    height = height,
+                ),
+                format = GPUTextureFormat.RGBA8UNORM_SRGB,
+                usage = (GPUTextureUsage.RENDER_ATTACHMENT or GPUTextureUsage.COPY_SRC),
+            )
+        );
 
         return CreateCapture(texture, outputBuffer)
     }
@@ -263,15 +266,10 @@ class WebGPUTest {
         val padded = getRowPadding(dimensions.width).padded;
 
         encoder.copyTextureToBuffer(
-            jsObjectOf(
-                    "texture" to texture,
-            ).unsafeCast<GPUImageCopyTexture>(),
-            jsObjectOf(
-                    "buffer" to outputBuffer,
-                    "bytesPerRow" to padded,
-            ).unsafeCast<GPUImageCopyBuffer>(),
-            jsObjectOf("width" to dimensions.width, "height" to dimensions.height).unsafeCast<GPUExtent3DDictStrict>(),
-        );
+            GPUImageCopyTexture(texture = texture),
+            GPUImageCopyBuffer(buffer = outputBuffer, bytesPerRow = padded),
+            GPUExtent3DDictStrict(width = dimensions.width, height = dimensions.height),
+        )
     }
 
     private suspend fun createPng(
