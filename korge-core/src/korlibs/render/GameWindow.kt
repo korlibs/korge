@@ -43,6 +43,8 @@ data class GameWindowCreationConfig(
     val transparent: Boolean = false,
     /** Allows window to be resizable */
     val resizable: Boolean = true,
+    /** */
+    val title: String = "",
     //val allowMinimize: Boolean = true,
     //val allowMaximize: Boolean = true,
 ) {

@@ -186,7 +186,9 @@ object KorgeRunner {
         if (!Platform.isJsBrowser) {
             configureLoggerFromProperties(localCurrentDirVfs["klogger.properties"])
         }
-        val realGameWindow = (config.gameWindow ?: coroutineContext[GameWindow] ?: CreateDefaultGameWindow(config.windowCreationConfig))
+        val realGameWindow = (config.gameWindow ?: coroutineContext[GameWindow] ?: CreateDefaultGameWindow(
+            config.windowCreationConfig.copy(title = config.title)
+        ))
         realGameWindow.bgcolor = config.backgroundColor ?: Colors.BLACK
         realGameWindow.loop {
             val gameWindow = this
