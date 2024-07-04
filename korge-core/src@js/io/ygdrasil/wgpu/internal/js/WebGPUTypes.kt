@@ -1,5 +1,7 @@
 // From wgpu4k. Eventually it will be used directly
 // https:github.com/wgpu4k/wgpu4k/blob/main/wgpu4k/src/jsMain/kotlin/io.ygdrasil.wgpu/internal.js/webgpu_types.kt
+@file:Suppress("UNUSED_PARAMETER", "UnsafeCastFromDynamic", "unused", "INLINE_CLASS_IN_EXTERNAL_DECLARATION_WARNING")
+
 package io.ygdrasil.wgpu.internal.js
 
 import org.khronos.webgl.*
@@ -7,109 +9,290 @@ import org.w3c.dom.*
 import org.w3c.dom.events.*
 import kotlin.js.Promise
 
+
 external interface GPUOrigin2DDictStrict : GPUOrigin2DDict
 
+fun GPUOrigin2DDictStrict(
+    x: GPUIntegerCoordinate,
+    y: GPUIntegerCoordinate,
+): GPUOrigin2DDictStrict = js("({x: x, y: y})")
+
 external interface GPUExtent3DDictStrict : GPUExtent3DDict
+
+fun GPUExtent3DDictStrict(
+    width: GPUIntegerCoordinate,
+    height: GPUIntegerCoordinate? = undefined,
+    depthOrArrayLayers: GPUIntegerCoordinate? = undefined,
+): GPUExtent3DDictStrict = js("({width: width, height: height, depthOrArrayLayers: depthOrArrayLayers})")
+
 
 external interface GPUBindGroupDescriptor : GPUObjectDescriptorBase {
     var layout: GPUBindGroupLayout
     var entries: Array<GPUBindGroupEntry>
 }
 
+fun GPUBindGroupDescriptor(
+    layout: GPUBindGroupLayout,
+    entries: Array<GPUBindGroupEntry>,
+): GPUBindGroupDescriptor = js("({layout: layout, entries: entries})")
+
+
 external interface GPUBindGroupEntry {
     var binding: GPUIndex32
     var resource: dynamic /* GPUSampler | GPUTextureView | GPUBufferBinding | GPUExternalTexture */
-        get() = definedExternally
-        set(value) = definedExternally
 }
+
+fun GPUBindGroupEntry(
+    binding: GPUIndex32,
+    resource: dynamic /* GPUSampler | GPUTextureView | GPUBufferBinding | GPUExternalTexture */,
+): GPUBindGroupEntry = js("({binding: binding, resource: resource})")
+
 
 external interface GPUBindGroupLayoutDescriptor : GPUObjectDescriptorBase {
     var entries: Iterable<GPUBindGroupLayoutEntry>
 }
 
+fun GPUBindGroupLayoutDescriptor(
+    entries: Iterable<GPUBindGroupLayoutEntry>,
+): GPUBindGroupLayoutDescriptor = js("({entries: entries})")
+
+
 external interface GPUBindGroupLayoutEntry {
     var binding: GPUIndex32
     var visibility: GPUShaderStageFlags
     var buffer: GPUBufferBindingLayout?
-        get() = definedExternally
-        set(value) = definedExternally
     var sampler: GPUSamplerBindingLayout?
-        get() = definedExternally
-        set(value) = definedExternally
     var texture: GPUTextureBindingLayout?
-        get() = definedExternally
-        set(value) = definedExternally
     var storageTexture: GPUStorageTextureBindingLayout?
-        get() = definedExternally
-        set(value) = definedExternally
     var externalTexture: GPUExternalTextureBindingLayout?
-        get() = definedExternally
-        set(value) = definedExternally
+}
+
+fun GPUBindGroupLayoutEntry(
+    binding: GPUIndex32,
+    visibility: GPUShaderStageFlags,
+    buffer: GPUBufferBindingLayout? = undefined,
+    sampler: GPUSamplerBindingLayout? = undefined,
+    texture: GPUTextureBindingLayout? = undefined,
+    storageTexture: GPUStorageTextureBindingLayout? = undefined,
+    externalTexture: GPUExternalTextureBindingLayout? = undefined,
+): GPUBindGroupLayoutEntry = js("({binding: binding, visibility: visibility, buffer: buffer, sampler: sampler, texture: texture, storageTexture: storageTexture, externalTexture: externalTexture})")
+
+inline class GPUBlendOperation(val str: String) {
+    companion object {
+        inline val ADD get() = GPUBlendOperation("add")
+        inline val SUBTRACT get() = GPUBlendOperation("subtract")
+        inline val REVERSE_SUBTRACT get() = GPUBlendOperation("reverse-subtract")
+        inline val MIN get() = GPUBlendOperation("min")
+        inline val MAX get() = GPUBlendOperation("max")
+    }
+}
+
+inline class GPUBlendFactor(val str: String) {
+    companion object {
+        inline val ZERO get() = GPUBlendFactor("zero")
+        inline val ONE get() = GPUBlendFactor("one")
+        inline val SRC get() = GPUBlendFactor("src")
+        inline val ONE_MINUS_SRC get() = GPUBlendFactor("one-minus-src")
+        inline val SRC_ALPHA get() = GPUBlendFactor("src-alpha")
+        inline val ONE_MINUS_SRC_ALPHA get() = GPUBlendFactor("one-minus-src-alpha")
+        inline val DST get() = GPUBlendFactor("dst")
+        inline val ONE_MINUS_DST get() = GPUBlendFactor("one-minus-dst")
+        inline val DST_ALPHA get() = GPUBlendFactor("dst-alpha")
+        inline val ONE_MINUS_DST_ALPHA get() = GPUBlendFactor("one-minus-dst-alpha")
+        inline val SRC_ALPHA_SATURATED get() = GPUBlendFactor("src-alpha-saturated")
+        inline val CONSTANT get() = GPUBlendFactor("constant")
+        inline val ONE_MINUS_CONSTANT get() = GPUBlendFactor("one-minus-constant")
+    }
 }
 
 external interface GPUBlendComponent {
-    var operation: String? /* "add" | "subtract" | "reverse-subtract" | "min" | "max" */
-        get() = definedExternally
-        set(value) = definedExternally
-    var srcFactor: String? /* "zero" | "one" | "src" | "one-minus-src" | "src-alpha" | "one-minus-src-alpha" | "dst" | "one-minus-dst" | "dst-alpha" | "one-minus-dst-alpha" | "src-alpha-saturated" | "constant" | "one-minus-constant" */
-        get() = definedExternally
-        set(value) = definedExternally
-    var dstFactor: String? /* "zero" | "one" | "src" | "one-minus-src" | "src-alpha" | "one-minus-src-alpha" | "dst" | "one-minus-dst" | "dst-alpha" | "one-minus-dst-alpha" | "src-alpha-saturated" | "constant" | "one-minus-constant" */
-        get() = definedExternally
-        set(value) = definedExternally
+    var operation: GPUBlendOperation?
+    var srcFactor: GPUBlendFactor?
+    var dstFactor: GPUBlendFactor?
 }
+
+fun GPUBlendComponent(
+    operation: GPUBlendOperation? = undefined,
+    srcFactor: GPUBlendFactor? = undefined,
+    dstFactor: GPUBlendFactor? = undefined,
+): GPUBlendComponent = js("({operation: operation, srcFactor: srcFactor, dstFactor: dstFactor})")
+
 
 external interface GPUBlendState {
     var color: GPUBlendComponent
     var alpha: GPUBlendComponent
 }
 
+fun GPUBlendState(
+    color: GPUBlendComponent,
+    alpha: GPUBlendComponent,
+): GPUBlendState = js("({color: color, alpha: alpha})")
+
+
 external interface GPUBufferBinding {
     var buffer: GPUBuffer
     var offset: GPUSize64?
-        get() = definedExternally
-        set(value) = definedExternally
     var size: GPUSize64?
-        get() = definedExternally
-        set(value) = definedExternally
 }
+
+fun GPUBufferBinding(
+    buffer: GPUBuffer,
+    offset: GPUSize64? = undefined,
+    size: GPUSize64? = undefined,
+): GPUBufferBinding = js("({buffer: buffer, offset: offset, size: size})")
+
 
 external interface GPUBufferBindingLayout {
     var type: String? /* "uniform" | "storage" | "read-only-storage" */
-        get() = definedExternally
-        set(value) = definedExternally
     var hasDynamicOffset: Boolean?
-        get() = definedExternally
-        set(value) = definedExternally
     var minBindingSize: GPUSize64?
-        get() = definedExternally
-        set(value) = definedExternally
 }
+
+fun GPUBufferBindingLayout(
+    type: String? = undefined,
+    hasDynamicOffset: Boolean? = undefined,
+    minBindingSize: GPUSize64? = undefined,
+): GPUBufferBindingLayout = js("({type: type, hasDynamicOffset: hasDynamicOffset, minBindingSize: minBindingSize})")
+
 
 external interface GPUBufferDescriptor : GPUObjectDescriptorBase {
     var size: GPUSize64
     var usage: GPUBufferUsageFlags
     var mappedAtCreation: Boolean?
-        get() = definedExternally
-        set(value) = definedExternally
+}
+
+fun GPUBufferDescriptor(
+    size: GPUSize64,
+    usage: GPUBufferUsageFlags,
+    mappedAtCreation: Boolean? = undefined,
+    label: String? = undefined,
+): GPUBufferDescriptor = js("({size: size, usage: usage, mappedAtCreation: mappedAtCreation, label: label})")
+
+inline class GPUTextureFormat(val str: String) {
+    companion object {
+        inline val R8UNORM get() = GPUTextureFormat("r8unorm")
+        inline val R8SNORM get() = GPUTextureFormat("r8snorm")
+        inline val R8UINT get() = GPUTextureFormat("r8uint")
+        inline val R8SINT get() = GPUTextureFormat("r8sint")
+        inline val R16UINT get() = GPUTextureFormat("r16uint")
+        inline val R16SINT get() = GPUTextureFormat("r16sint")
+        inline val R16FLOAT get() = GPUTextureFormat("r16float")
+        inline val RG8UNORM get() = GPUTextureFormat("rg8unorm")
+        inline val RG8SNORM get() = GPUTextureFormat("rg8snorm")
+        inline val RG8UINT get() = GPUTextureFormat("rg8uint")
+        inline val RG8SINT get() = GPUTextureFormat("rg8sint")
+        inline val R32UINT get() = GPUTextureFormat("r32uint")
+        inline val R32SINT get() = GPUTextureFormat("r32sint")
+        inline val R32FLOAT get() = GPUTextureFormat("r32float")
+        inline val RG16UINT get() = GPUTextureFormat("rg16uint")
+        inline val RG16SINT get() = GPUTextureFormat("rg16sint")
+        inline val RG16FLOAT get() = GPUTextureFormat("rg16float")
+        inline val RGBA8UNORM get() = GPUTextureFormat("rgba8unorm")
+        inline val RGBA8UNORM_SRGB get() = GPUTextureFormat("rgba8unorm-srgb")
+        inline val RGBA8SNORM get() = GPUTextureFormat("rgba8snorm")
+        inline val RGBA8UINT get() = GPUTextureFormat("rgba8uint")
+        inline val RGBA8SINT get() = GPUTextureFormat("rgba8sint")
+        inline val BGRA8UNORM get() = GPUTextureFormat("bgra8unorm")
+        inline val BGRA8UNORM_SRGB get() = GPUTextureFormat("bgra8unorm-srgb")
+        inline val RGB9E5UFLOAT get() = GPUTextureFormat("rgb9e5ufloat")
+        inline val RGB10A2UINT get() = GPUTextureFormat("rgb10a2uint")
+        inline val RGB10A2UNORM get() = GPUTextureFormat("rgb10a2unorm")
+        inline val RG11B10UFLOAT get() = GPUTextureFormat("rg11b10ufloat")
+        inline val RG32UINT get() = GPUTextureFormat("rg32uint")
+        inline val RG32SINT get() = GPUTextureFormat("rg32sint")
+        inline val RG32FLOAT get() = GPUTextureFormat("rg32float")
+        inline val RGBA16UINT get() = GPUTextureFormat("rgba16uint")
+        inline val RGBA16SINT get() = GPUTextureFormat("rgba16sint")
+        inline val RGBA16FLOAT get() = GPUTextureFormat("rgba16float")
+        inline val RGBA32UINT get() = GPUTextureFormat("rgba32uint")
+        inline val RGBA32SINT get() = GPUTextureFormat("rgba32sint")
+        inline val RGBA32FLOAT get() = GPUTextureFormat("rgba32float")
+        inline val STENCIL8 get() = GPUTextureFormat("stencil8")
+        inline val DEPTH16UNORM get() = GPUTextureFormat("depth16unorm")
+        inline val DEPTH24PLUS get() = GPUTextureFormat("depth24plus")
+        inline val DEPTH24PLUS_STENCIL8 get() = GPUTextureFormat("depth24plus-stencil8")
+        inline val DEPTH32FLOAT get() = GPUTextureFormat("depth32float")
+        inline val DEPTH32FLOAT_STENCIL8 get() = GPUTextureFormat("depth32float-stencil8")
+        inline val BC1_RGBA_UNORM get() = GPUTextureFormat("bc1-rgba-unorm")
+        inline val BC1_RGBA_UNORM_SRGB get() = GPUTextureFormat("bc1-rgba-unorm-srgb")
+        inline val BC2_RGBA_UNORM get() = GPUTextureFormat("bc2-rgba-unorm")
+        inline val BC2_RGBA_UNORM_SRGB get() = GPUTextureFormat("bc2-rgba-unorm-srgb")
+        inline val BC3_RGBA_UNORM get() = GPUTextureFormat("bc3-rgba-unorm")
+        inline val BC3_RGBA_UNORM_SRGB get() = GPUTextureFormat("bc3-rgba-unorm-srgb")
+        inline val BC4_R_UNORM get() = GPUTextureFormat("bc4-r-unorm")
+        inline val BC4_R_SNORM get() = GPUTextureFormat("bc4-r-snorm")
+        inline val BC5_RG_UNORM get() = GPUTextureFormat("bc5-rg-unorm")
+        inline val BC5_RG_SNORM get() = GPUTextureFormat("bc5-rg-snorm")
+        inline val BC6H_RGB_UFLOAT get() = GPUTextureFormat("bc6h-rgb-ufloat")
+        inline val BC6H_RGB_FLOAT get() = GPUTextureFormat("bc6h-rgb-float")
+        inline val BC7_RGBA_UNORM get() = GPUTextureFormat("bc7-rgba-unorm")
+        inline val BC7_RGBA_UNORM_SRGB get() = GPUTextureFormat("bc7-rgba-unorm-srgb")
+        inline val ETC2_RGB8UNORM get() = GPUTextureFormat("etc2-rgb8unorm")
+        inline val ETC2_RGB8UNORM_SRGB get() = GPUTextureFormat("etc2-rgb8unorm-srgb")
+        inline val ETC2_RGB8A1UNORM get() = GPUTextureFormat("etc2-rgb8a1unorm")
+        inline val ETC2_RGB8A1UNORM_SRGB get() = GPUTextureFormat("etc2-rgb8a1unorm-srgb")
+        inline val ETC2_RGBA8UNORM get() = GPUTextureFormat("etc2-rgba8unorm")
+        inline val ETC2_RGBA8UNORM_SRGB get() = GPUTextureFormat("etc2-rgba8unorm-srgb")
+        inline val EAC_R11UNORM get() = GPUTextureFormat("eac-r11unorm")
+        inline val EAC_R11SNORM get() = GPUTextureFormat("eac-r11snorm")
+        inline val EAC_RG11UNORM get() = GPUTextureFormat("eac-rg11unorm")
+        inline val EAC_RG11SNORM get() = GPUTextureFormat("eac-rg11snorm")
+        inline val ASTC_4X4_UNORM get() = GPUTextureFormat("astc-4x4-unorm")
+        inline val ASTC_4X4_UNORM_SRGB get() = GPUTextureFormat("astc-4x4-unorm-srgb")
+        inline val ASTC_5X4_UNORM get() = GPUTextureFormat("astc-5x4-unorm")
+        inline val ASTC_5X4_UNORM_SRGB get() = GPUTextureFormat("astc-5x4-unorm-srgb")
+        inline val ASTC_5X5_UNORM get() = GPUTextureFormat("astc-5x5-unorm")
+        inline val ASTC_5X5_UNORM_SRGB get() = GPUTextureFormat("astc-5x5-unorm-srgb")
+        inline val ASTC_6X5_UNORM get() = GPUTextureFormat("astc-6x5-unorm")
+        inline val ASTC_6X5_UNORM_SRGB get() = GPUTextureFormat("astc-6x5-unorm-srgb")
+        inline val ASTC_6X6_UNORM get() = GPUTextureFormat("astc-6x6-unorm")
+        inline val ASTC_6X6_UNORM_SRGB get() = GPUTextureFormat("astc-6x6-unorm-srgb")
+        inline val ASTC_8X5_UNORM get() = GPUTextureFormat("astc-8x5-unorm")
+        inline val ASTC_8X5_UNORM_SRGB get() = GPUTextureFormat("astc-8x5-unorm-srgb")
+        inline val ASTC_8X6_UNORM get() = GPUTextureFormat("astc-8x6-unorm")
+        inline val ASTC_8X6_UNORM_SRGB get() = GPUTextureFormat("astc-8x6-unorm-srgb")
+        inline val ASTC_8X8_UNORM get() = GPUTextureFormat("astc-8x8-unorm")
+        inline val ASTC_8X8_UNORM_SRGB get() = GPUTextureFormat("astc-8x8-unorm-srgb")
+        inline val ASTC_10X5_UNORM get() = GPUTextureFormat("astc-10x5-unorm")
+        inline val ASTC_10X5_UNORM_SRGB get() = GPUTextureFormat("astc-10x5-unorm-srgb")
+        inline val ASTC_10X6_UNORM get() = GPUTextureFormat("astc-10x6-unorm")
+        inline val ASTC_10X6_UNORM_SRGB get() = GPUTextureFormat("astc-10x6-unorm-srgb")
+        inline val ASTC_10X8_UNORM get() = GPUTextureFormat("astc-10x8-unorm")
+        inline val ASTC_10X8_UNORM_SRGB get() = GPUTextureFormat("astc-10x8-unorm-srgb")
+        inline val ASTC_10X10_UNORM get() = GPUTextureFormat("astc-10x10-unorm")
+        inline val ASTC_10X10_UNORM_SRGB get() = GPUTextureFormat("astc-10x10-unorm-srgb")
+        inline val ASTC_12X10_UNORM get() = GPUTextureFormat("astc-12x10-unorm")
+        inline val ASTC_12X10_UNORM_SRGB get() = GPUTextureFormat("astc-12x10-unorm-srgb")
+        inline val ASTC_12X12_UNORM get() = GPUTextureFormat("astc-12x12-unorm")
+        inline val ASTC_12X12_UNORM_SRGB get() = GPUTextureFormat("astc-12x12-unorm-srgb")
+    }
+}
+
+inline class GPUAlphaMode(val str: String) {
+    companion object {
+        inline val OPAQUE get() = GPUAlphaMode("opaque")
+        inline val PREMULTIPLIED get() = GPUAlphaMode("premultiplied")
+    }
 }
 
 external interface GPUCanvasConfiguration {
     var device: GPUDevice
-    var format: String /* "r8unorm" | "r8snorm" | "r8uint" | "r8sint" | "r16uint" | "r16sint" | "r16float" | "rg8unorm" | "rg8snorm" | "rg8uint" | "rg8sint" | "r32uint" | "r32sint" | "r32float" | "rg16uint" | "rg16sint" | "rg16float" | "rgba8unorm" | "rgba8unorm-srgb" | "rgba8snorm" | "rgba8uint" | "rgba8sint" | "bgra8unorm" | "bgra8unorm-srgb" | "rgb9e5ufloat" | "rgb10a2uint" | "rgb10a2unorm" | "rg11b10ufloat" | "rg32uint" | "rg32sint" | "rg32float" | "rgba16uint" | "rgba16sint" | "rgba16float" | "rgba32uint" | "rgba32sint" | "rgba32float" | "stencil8" | "depth16unorm" | "depth24plus" | "depth24plus-stencil8" | "depth32float" | "depth32float-stencil8" | "bc1-rgba-unorm" | "bc1-rgba-unorm-srgb" | "bc2-rgba-unorm" | "bc2-rgba-unorm-srgb" | "bc3-rgba-unorm" | "bc3-rgba-unorm-srgb" | "bc4-r-unorm" | "bc4-r-snorm" | "bc5-rg-unorm" | "bc5-rg-snorm" | "bc6h-rgb-ufloat" | "bc6h-rgb-float" | "bc7-rgba-unorm" | "bc7-rgba-unorm-srgb" | "etc2-rgb8unorm" | "etc2-rgb8unorm-srgb" | "etc2-rgb8a1unorm" | "etc2-rgb8a1unorm-srgb" | "etc2-rgba8unorm" | "etc2-rgba8unorm-srgb" | "eac-r11unorm" | "eac-r11snorm" | "eac-rg11unorm" | "eac-rg11snorm" | "astc-4x4-unorm" | "astc-4x4-unorm-srgb" | "astc-5x4-unorm" | "astc-5x4-unorm-srgb" | "astc-5x5-unorm" | "astc-5x5-unorm-srgb" | "astc-6x5-unorm" | "astc-6x5-unorm-srgb" | "astc-6x6-unorm" | "astc-6x6-unorm-srgb" | "astc-8x5-unorm" | "astc-8x5-unorm-srgb" | "astc-8x6-unorm" | "astc-8x6-unorm-srgb" | "astc-8x8-unorm" | "astc-8x8-unorm-srgb" | "astc-10x5-unorm" | "astc-10x5-unorm-srgb" | "astc-10x6-unorm" | "astc-10x6-unorm-srgb" | "astc-10x8-unorm" | "astc-10x8-unorm-srgb" | "astc-10x10-unorm" | "astc-10x10-unorm-srgb" | "astc-12x10-unorm" | "astc-12x10-unorm-srgb" | "astc-12x12-unorm" | "astc-12x12-unorm-srgb" */
+    var format: GPUTextureFormat
     var usage: GPUTextureUsageFlags?
-        get() = definedExternally
-        set(value) = definedExternally
-    var viewFormats: Array<String? /* "r8unorm" | "r8snorm" | "r8uint" | "r8sint" | "r16uint" | "r16sint" | "r16float" | "rg8unorm" | "rg8snorm" | "rg8uint" | "rg8sint" | "r32uint" | "r32sint" | "r32float" | "rg16uint" | "rg16sint" | "rg16float" | "rgba8unorm" | "rgba8unorm-srgb" | "rgba8snorm" | "rgba8uint" | "rgba8sint" | "bgra8unorm" | "bgra8unorm-srgb" | "rgb9e5ufloat" | "rgb10a2uint" | "rgb10a2unorm" | "rg11b10ufloat" | "rg32uint" | "rg32sint" | "rg32float" | "rgba16uint" | "rgba16sint" | "rgba16float" | "rgba32uint" | "rgba32sint" | "rgba32float" | "stencil8" | "depth16unorm" | "depth24plus" | "depth24plus-stencil8" | "depth32float" | "depth32float-stencil8" | "bc1-rgba-unorm" | "bc1-rgba-unorm-srgb" | "bc2-rgba-unorm" | "bc2-rgba-unorm-srgb" | "bc3-rgba-unorm" | "bc3-rgba-unorm-srgb" | "bc4-r-unorm" | "bc4-r-snorm" | "bc5-rg-unorm" | "bc5-rg-snorm" | "bc6h-rgb-ufloat" | "bc6h-rgb-float" | "bc7-rgba-unorm" | "bc7-rgba-unorm-srgb" | "etc2-rgb8unorm" | "etc2-rgb8unorm-srgb" | "etc2-rgb8a1unorm" | "etc2-rgb8a1unorm-srgb" | "etc2-rgba8unorm" | "etc2-rgba8unorm-srgb" | "eac-r11unorm" | "eac-r11snorm" | "eac-rg11unorm" | "eac-rg11snorm" | "astc-4x4-unorm" | "astc-4x4-unorm-srgb" | "astc-5x4-unorm" | "astc-5x4-unorm-srgb" | "astc-5x5-unorm" | "astc-5x5-unorm-srgb" | "astc-6x5-unorm" | "astc-6x5-unorm-srgb" | "astc-6x6-unorm" | "astc-6x6-unorm-srgb" | "astc-8x5-unorm" | "astc-8x5-unorm-srgb" | "astc-8x6-unorm" | "astc-8x6-unorm-srgb" | "astc-8x8-unorm" | "astc-8x8-unorm-srgb" | "astc-10x5-unorm" | "astc-10x5-unorm-srgb" | "astc-10x6-unorm" | "astc-10x6-unorm-srgb" | "astc-10x8-unorm" | "astc-10x8-unorm-srgb" | "astc-10x10-unorm" | "astc-10x10-unorm-srgb" | "astc-12x10-unorm" | "astc-12x10-unorm-srgb" | "astc-12x12-unorm" | "astc-12x12-unorm-srgb" */>?
-        get() = definedExternally
-        set(value) = definedExternally
+    var viewFormats: Array<GPUTextureFormat?>?
     var colorSpace: Any?
-        get() = definedExternally
-        set(value) = definedExternally
-    var alphaMode: String? /* "opaque" | "premultiplied" */
-        get() = definedExternally
-        set(value) = definedExternally
+    var alphaMode: GPUAlphaMode?
 }
+
+fun GPUCanvasConfiguration(
+    device: GPUDevice,
+    format: GPUTextureFormat,
+    usage: GPUTextureUsageFlags? = undefined,
+    viewFormats: Array<GPUTextureFormat?>? = undefined,
+    colorSpace: Any? = undefined,
+    alphaMode: GPUAlphaMode? = undefined,
+): GPUCanvasConfiguration = js("({device: device, format: format, usage: usage, viewFormats: viewFormats, colorSpace: colorSpace, alphaMode: alphaMode})")
+
 
 external interface GPUColorDict {
     var r: Number
@@ -118,504 +301,786 @@ external interface GPUColorDict {
     var a: Number
 }
 
+fun GPUColorDict(
+    r: Number,
+    g: Number,
+    b: Number,
+    a: Number,
+): GPUColorDict = js("({r: r, g: g, b: b, a: a})")
+
+
 external interface GPUColorTargetState {
-    var format: String /* "r8unorm" | "r8snorm" | "r8uint" | "r8sint" | "r16uint" | "r16sint" | "r16float" | "rg8unorm" | "rg8snorm" | "rg8uint" | "rg8sint" | "r32uint" | "r32sint" | "r32float" | "rg16uint" | "rg16sint" | "rg16float" | "rgba8unorm" | "rgba8unorm-srgb" | "rgba8snorm" | "rgba8uint" | "rgba8sint" | "bgra8unorm" | "bgra8unorm-srgb" | "rgb9e5ufloat" | "rgb10a2uint" | "rgb10a2unorm" | "rg11b10ufloat" | "rg32uint" | "rg32sint" | "rg32float" | "rgba16uint" | "rgba16sint" | "rgba16float" | "rgba32uint" | "rgba32sint" | "rgba32float" | "stencil8" | "depth16unorm" | "depth24plus" | "depth24plus-stencil8" | "depth32float" | "depth32float-stencil8" | "bc1-rgba-unorm" | "bc1-rgba-unorm-srgb" | "bc2-rgba-unorm" | "bc2-rgba-unorm-srgb" | "bc3-rgba-unorm" | "bc3-rgba-unorm-srgb" | "bc4-r-unorm" | "bc4-r-snorm" | "bc5-rg-unorm" | "bc5-rg-snorm" | "bc6h-rgb-ufloat" | "bc6h-rgb-float" | "bc7-rgba-unorm" | "bc7-rgba-unorm-srgb" | "etc2-rgb8unorm" | "etc2-rgb8unorm-srgb" | "etc2-rgb8a1unorm" | "etc2-rgb8a1unorm-srgb" | "etc2-rgba8unorm" | "etc2-rgba8unorm-srgb" | "eac-r11unorm" | "eac-r11snorm" | "eac-rg11unorm" | "eac-rg11snorm" | "astc-4x4-unorm" | "astc-4x4-unorm-srgb" | "astc-5x4-unorm" | "astc-5x4-unorm-srgb" | "astc-5x5-unorm" | "astc-5x5-unorm-srgb" | "astc-6x5-unorm" | "astc-6x5-unorm-srgb" | "astc-6x6-unorm" | "astc-6x6-unorm-srgb" | "astc-8x5-unorm" | "astc-8x5-unorm-srgb" | "astc-8x6-unorm" | "astc-8x6-unorm-srgb" | "astc-8x8-unorm" | "astc-8x8-unorm-srgb" | "astc-10x5-unorm" | "astc-10x5-unorm-srgb" | "astc-10x6-unorm" | "astc-10x6-unorm-srgb" | "astc-10x8-unorm" | "astc-10x8-unorm-srgb" | "astc-10x10-unorm" | "astc-10x10-unorm-srgb" | "astc-12x10-unorm" | "astc-12x10-unorm-srgb" | "astc-12x12-unorm" | "astc-12x12-unorm-srgb" */
+    var format: GPUTextureFormat
     var blend: GPUBlendState?
-        get() = definedExternally
-        set(value) = definedExternally
     var writeMask: GPUColorWriteFlags?
-        get() = definedExternally
-        set(value) = definedExternally
 }
+
+fun GPUColorTargetState(
+    format: GPUTextureFormat,
+    blend: GPUBlendState? = undefined,
+    writeMask: GPUColorWriteFlags? = undefined,
+): GPUColorTargetState = js("({format: format, blend: blend, writeMask: writeMask})")
 
 typealias GPUCommandBufferDescriptor = GPUObjectDescriptorBase
 
 typealias GPUCommandEncoderDescriptor = GPUObjectDescriptorBase
 
+
 external interface GPUComputePassDescriptor : GPUObjectDescriptorBase {
     var timestampWrites: GPUComputePassTimestampWrites?
-        get() = definedExternally
-        set(value) = definedExternally
 }
+
+fun GPUComputePassDescriptor(
+    timestampWrites: GPUComputePassTimestampWrites? = undefined,
+    label: String? = undefined,
+): GPUComputePassDescriptor = js("({timestampWrites: timestampWrites, label: label})")
+
 
 external interface GPUComputePassTimestampWrites {
     var querySet: GPUQuerySet
     var beginningOfPassWriteIndex: GPUSize32?
-        get() = definedExternally
-        set(value) = definedExternally
     var endOfPassWriteIndex: GPUSize32?
-        get() = definedExternally
-        set(value) = definedExternally
 }
+
+fun GPUComputePassTimestampWrites(
+    querySet: GPUQuerySet,
+    beginningOfPassWriteIndex: GPUSize32? = undefined,
+    endOfPassWriteIndex: GPUSize32? = undefined,
+): GPUComputePassTimestampWrites = js("({querySet: querySet, beginningOfPassWriteIndex: beginningOfPassWriteIndex, endOfPassWriteIndex: endOfPassWriteIndex})")
+
 
 external interface GPUComputePipelineDescriptor : GPUPipelineDescriptorBase {
     var compute: GPUProgrammableStage
 }
 
-external interface GPUDepthStencilState {
-    var format: String /* "r8unorm" | "r8snorm" | "r8uint" | "r8sint" | "r16uint" | "r16sint" | "r16float" | "rg8unorm" | "rg8snorm" | "rg8uint" | "rg8sint" | "r32uint" | "r32sint" | "r32float" | "rg16uint" | "rg16sint" | "rg16float" | "rgba8unorm" | "rgba8unorm-srgb" | "rgba8snorm" | "rgba8uint" | "rgba8sint" | "bgra8unorm" | "bgra8unorm-srgb" | "rgb9e5ufloat" | "rgb10a2uint" | "rgb10a2unorm" | "rg11b10ufloat" | "rg32uint" | "rg32sint" | "rg32float" | "rgba16uint" | "rgba16sint" | "rgba16float" | "rgba32uint" | "rgba32sint" | "rgba32float" | "stencil8" | "depth16unorm" | "depth24plus" | "depth24plus-stencil8" | "depth32float" | "depth32float-stencil8" | "bc1-rgba-unorm" | "bc1-rgba-unorm-srgb" | "bc2-rgba-unorm" | "bc2-rgba-unorm-srgb" | "bc3-rgba-unorm" | "bc3-rgba-unorm-srgb" | "bc4-r-unorm" | "bc4-r-snorm" | "bc5-rg-unorm" | "bc5-rg-snorm" | "bc6h-rgb-ufloat" | "bc6h-rgb-float" | "bc7-rgba-unorm" | "bc7-rgba-unorm-srgb" | "etc2-rgb8unorm" | "etc2-rgb8unorm-srgb" | "etc2-rgb8a1unorm" | "etc2-rgb8a1unorm-srgb" | "etc2-rgba8unorm" | "etc2-rgba8unorm-srgb" | "eac-r11unorm" | "eac-r11snorm" | "eac-rg11unorm" | "eac-rg11snorm" | "astc-4x4-unorm" | "astc-4x4-unorm-srgb" | "astc-5x4-unorm" | "astc-5x4-unorm-srgb" | "astc-5x5-unorm" | "astc-5x5-unorm-srgb" | "astc-6x5-unorm" | "astc-6x5-unorm-srgb" | "astc-6x6-unorm" | "astc-6x6-unorm-srgb" | "astc-8x5-unorm" | "astc-8x5-unorm-srgb" | "astc-8x6-unorm" | "astc-8x6-unorm-srgb" | "astc-8x8-unorm" | "astc-8x8-unorm-srgb" | "astc-10x5-unorm" | "astc-10x5-unorm-srgb" | "astc-10x6-unorm" | "astc-10x6-unorm-srgb" | "astc-10x8-unorm" | "astc-10x8-unorm-srgb" | "astc-10x10-unorm" | "astc-10x10-unorm-srgb" | "astc-12x10-unorm" | "astc-12x10-unorm-srgb" | "astc-12x12-unorm" | "astc-12x12-unorm-srgb" */
-    var depthWriteEnabled: Boolean?
-        get() = definedExternally
-        set(value) = definedExternally
-    var depthCompare: String? /* "never" | "less" | "equal" | "less-equal" | "greater" | "not-equal" | "greater-equal" | "always" */
-        get() = definedExternally
-        set(value) = definedExternally
-    var stencilFront: GPUStencilFaceState?
-        get() = definedExternally
-        set(value) = definedExternally
-    var stencilBack: GPUStencilFaceState?
-        get() = definedExternally
-        set(value) = definedExternally
-    var stencilReadMask: GPUStencilValue?
-        get() = definedExternally
-        set(value) = definedExternally
-    var stencilWriteMask: GPUStencilValue?
-        get() = definedExternally
-        set(value) = definedExternally
-    var depthBias: GPUDepthBias?
-        get() = definedExternally
-        set(value) = definedExternally
-    var depthBiasSlopeScale: Float?
-        get() = definedExternally
-        set(value) = definedExternally
-    var depthBiasClamp: Float?
-        get() = definedExternally
-        set(value) = definedExternally
+fun GPUComputePipelineDescriptor(
+    compute: GPUProgrammableStage,
+    layout: dynamic /* GPUPipelineLayout | "auto" */,
+    label: String? = undefined,
+): GPUComputePipelineDescriptor = js("({compute: compute, layout: layout, label: label})")
+
+inline class GPUCompare(val str: String) {
+    companion object {
+        inline val NEVER get() = GPUCompare("never")
+        inline val LESS get() = GPUCompare("less")
+        inline val EQUAL get() = GPUCompare("equal")
+        inline val LESS_EQUAL get() = GPUCompare("less-equal")
+        inline val GREATER get() = GPUCompare("greater")
+        inline val NOT_EQUAL get() = GPUCompare("not-equal")
+        inline val GREATER_EQUAL get() = GPUCompare("greater-equal")
+        inline val ALWAYS get() = GPUCompare("always")
+    }
 }
 
-external interface GPUDeviceDescriptor : GPUObjectDescriptorBase {
-    var requiredFeatures: Iterable<String? /* "depth-clip-control" | "depth32float-stencil8" | "texture-compression-bc" | "texture-compression-etc2" | "texture-compression-astc" | "timestamp-query" | "indirect-first-instance" | "shader-f16" | "rg11b10ufloat-renderable" | "bgra8unorm-storage" | "float32-filterable" */>?
-        get() = definedExternally
-        set(value) = definedExternally
-    var requiredLimits: Record<String, GPUSize64>?
-        get() = definedExternally
-        set(value) = definedExternally
-    var defaultQueue: GPUQueueDescriptor?
-        get() = definedExternally
-        set(value) = definedExternally
+external interface GPUDepthStencilState {
+    var format: GPUTextureFormat
+    var depthWriteEnabled: Boolean?
+    var depthCompare: GPUCompare?
+    var stencilFront: GPUStencilFaceState?
+    var stencilBack: GPUStencilFaceState?
+    var stencilReadMask: GPUStencilValue?
+    var stencilWriteMask: GPUStencilValue?
+    var depthBias: GPUDepthBias?
+    var depthBiasSlopeScale: Float?
+    var depthBiasClamp: Float?
 }
+
+fun GPUDepthStencilState(
+    format: GPUTextureFormat,
+    depthWriteEnabled: Boolean? = undefined,
+    depthCompare: GPUCompare? = undefined,
+    stencilFront: GPUStencilFaceState? = undefined,
+    stencilBack: GPUStencilFaceState? = undefined,
+    stencilReadMask: GPUStencilValue? = undefined,
+    stencilWriteMask: GPUStencilValue? = undefined,
+    depthBias: GPUDepthBias? = undefined,
+    depthBiasSlopeScale: Float? = undefined,
+    depthBiasClamp: Float? = undefined,
+): GPUDepthStencilState = js("({format: format, depthWriteEnabled: depthWriteEnabled, depthCompare: depthCompare, stencilFront: stencilFront, stencilBack: stencilBack, stencilReadMask: stencilReadMask, stencilWriteMask: stencilWriteMask, depthBias: depthBias, depthBiasSlopeScale: depthBiasSlopeScale, depthBiasClamp: depthBiasClamp})")
+
+
+external interface GPUDeviceDescriptor : GPUObjectDescriptorBase {
+    var requiredFeatures: Array<String? /* "depth-clip-control" | "depth32float-stencil8" | "texture-compression-bc" | "texture-compression-etc2" | "texture-compression-astc" | "timestamp-query" | "indirect-first-instance" | "shader-f16" | "rg11b10ufloat-renderable" | "bgra8unorm-storage" | "float32-filterable" */>?
+    var requiredLimits: Record<String, GPUSize64>?
+    var defaultQueue: GPUQueueDescriptor?
+}
+
+fun GPUDeviceDescriptor(
+    requiredFeatures: Array<String? /* "depth-clip-control" | "depth32float-stencil8" | "texture-compression-bc" | "texture-compression-etc2" | "texture-compression-astc" | "timestamp-query" | "indirect-first-instance" | "shader-f16" | "rg11b10ufloat-renderable" | "bgra8unorm-storage" | "float32-filterable" */>? = undefined,
+    requiredLimits: Record<String, GPUSize64>? = undefined,
+    defaultQueue: GPUQueueDescriptor? = undefined,
+    label: String? = undefined,
+): GPUDeviceDescriptor = js("({requiredFeatures: requiredFeatures, requiredLimits: requiredLimits, defaultQueue: defaultQueue, label: label})")
+
 
 external interface GPUExtent3DDict {
     var width: GPUIntegerCoordinate
     var height: GPUIntegerCoordinate?
-        get() = definedExternally
-        set(value) = definedExternally
     var depthOrArrayLayers: GPUIntegerCoordinate?
-        get() = definedExternally
-        set(value) = definedExternally
 }
+
+fun GPUExtent3DDict(
+    width: GPUIntegerCoordinate,
+    height: GPUIntegerCoordinate? = undefined,
+    depthOrArrayLayers: GPUIntegerCoordinate? = undefined,
+): GPUExtent3DDict = js("({width: width, height: height, depthOrArrayLayers: depthOrArrayLayers})")
 
 external interface GPUExternalTextureBindingLayout
 
+
 external interface GPUExternalTextureDescriptor : GPUObjectDescriptorBase {
     var source: dynamic /* HTMLVideoElement | VideoFrame */
-        get() = definedExternally
-        set(value) = definedExternally
     var colorSpace: Any?
-        get() = definedExternally
-        set(value) = definedExternally
 }
+
+fun GPUExternalTextureDescriptor(
+    source: dynamic /* HTMLVideoElement | VideoFrame */,
+    colorSpace: Any? = undefined,
+    label: String? = undefined,
+): GPUExternalTextureDescriptor = js("({source: source, colorSpace: colorSpace, label: label})")
+
 
 external interface GPUFragmentState : GPUProgrammableStage {
     var targets: Array<GPUColorTargetState?>
 }
 
+fun GPUFragmentState(
+    module: GPUShaderModule,
+    entryPoint: String? = undefined,
+    constants: Map<String, GPUPipelineConstantValue>? = undefined,
+    targets: Array<GPUColorTargetState?>,
+): GPUFragmentState = js("({module: module, entryPoint: entryPoint, constants: constants, targets: targets})")
+
+
 external interface GPUImageCopyBuffer : GPUImageDataLayout {
     var buffer: GPUBuffer
 }
 
+fun GPUImageCopyBuffer(
+    buffer: GPUBuffer,
+    offset: GPUSize64? = undefined,
+    bytesPerRow: GPUSize32? = undefined,
+    rowsPerImage: GPUSize32? = undefined,
+): GPUImageCopyBuffer = js("({buffer: buffer, offset: offset, bytesPerRow: bytesPerRow, rowsPerImage: rowsPerImage})")
+
+
 external interface GPUImageCopyExternalImage {
     var source: Any
-
     /* ImageBitmap | ImageData | HTMLImageElement | HTMLVideoElement | VideoFrame | HTMLCanvasElement | OffscreenCanvas */
     var origin: GPUOrigin2DDictStrict /* Iterable<GPUIntegerCoordinate>? | GPUOrigin2DDictStrict? */
     var flipY: Boolean
 }
 
+fun GPUImageCopyExternalImage(
+    source: Any,
+    origin: GPUOrigin2DDictStrict,
+    flipY: Boolean,
+): GPUImageCopyExternalImage = js("({source: source, origin: origin, flipY: flipY})")
+
+
 external interface GPUImageCopyTexture {
     var texture: GPUTexture
-    var mipLevel: GPUIntegerCoordinate
-    var origin: Array<GPUIntegerCoordinate>
-    var aspect: String
+    var mipLevel: GPUIntegerCoordinate?
+    var origin: Array<GPUIntegerCoordinate>?
+    var aspect: String?
 }
+
+fun GPUImageCopyTexture(
+    texture: GPUTexture,
+    mipLevel: GPUIntegerCoordinate? = undefined,
+    origin: Array<GPUIntegerCoordinate>? = undefined,
+    aspect: String? = undefined,
+): GPUImageCopyTexture = js("({texture: texture, mipLevel: mipLevel, origin: origin, aspect: aspect})")
+
 
 external interface GPUImageCopyTextureTagged : GPUImageCopyTexture {
     var colorSpace: String
     var premultipliedAlpha: Boolean
 }
 
+fun GPUImageCopyTextureTagged(
+    texture: GPUTexture,
+    mipLevel: GPUIntegerCoordinate? = undefined,
+    origin: Array<GPUIntegerCoordinate>? = undefined,
+    aspect: String? = undefined,
+    colorSpace: String,
+    premultipliedAlpha: Boolean,
+): GPUImageCopyTextureTagged = js("({texture: texture, mipLevel: mipLevel, origin: origin, aspect: aspect, colorSpace: colorSpace, premultipliedAlpha: premultipliedAlpha})")
+
+
 external interface GPUImageDataLayout {
     var offset: GPUSize64?
-        get() = definedExternally
-        set(value) = definedExternally
     var bytesPerRow: GPUSize32?
-        get() = definedExternally
-        set(value) = definedExternally
     var rowsPerImage: GPUSize32?
-        get() = definedExternally
-        set(value) = definedExternally
 }
+
+fun GPUImageDataLayout(
+    offset: GPUSize64? = undefined,
+    bytesPerRow: GPUSize32? = undefined,
+    rowsPerImage: GPUSize32? = undefined,
+): GPUImageDataLayout = js("({offset: offset, bytesPerRow: bytesPerRow, rowsPerImage: rowsPerImage})")
+
 
 external interface GPUMultisampleState {
     var count: GPUSize32?
-        get() = definedExternally
-        set(value) = definedExternally
     @Suppress("INLINE_CLASS_IN_EXTERNAL_DECLARATION_WARNING")
     var mask: GPUSampleMask?
-        get() = definedExternally
-        set(value) = definedExternally
     var alphaToCoverageEnabled: Boolean?
-        get() = definedExternally
-        set(value) = definedExternally
 }
+
+fun GPUMultisampleState(
+    count: GPUSize32? = undefined,
+    mask: GPUSampleMask? = undefined,
+    alphaToCoverageEnabled: Boolean? = undefined,
+): GPUMultisampleState = js("({count: count, mask: mask, alphaToCoverageEnabled: alphaToCoverageEnabled})")
+
 
 external interface GPUObjectDescriptorBase {
     var label: String?
-        get() = definedExternally
-        set(value) = definedExternally
 }
+
+fun GPUObjectDescriptorBase(
+    label: String? = undefined,
+): GPUObjectDescriptorBase = js("({label: label})")
+
 
 external interface GPUOrigin2DDict {
     var x: GPUIntegerCoordinate
     var y: GPUIntegerCoordinate
 }
 
+fun GPUOrigin2DDict(
+    x: GPUIntegerCoordinate,
+    y: GPUIntegerCoordinate,
+): GPUOrigin2DDict = js("({x: x, y: y})")
+
+
 external interface GPUOrigin3DDict {
     var x: GPUIntegerCoordinate?
-        get() = definedExternally
-        set(value) = definedExternally
     var y: GPUIntegerCoordinate?
-        get() = definedExternally
-        set(value) = definedExternally
     var z: GPUIntegerCoordinate?
-        get() = definedExternally
-        set(value) = definedExternally
 }
+
+fun GPUOrigin3DDict(
+    x: GPUIntegerCoordinate? = undefined,
+    y: GPUIntegerCoordinate? = undefined,
+    z: GPUIntegerCoordinate? = undefined,
+): GPUOrigin3DDict = js("({x: x, y: y, z: z})")
+
 
 external interface GPUPipelineDescriptorBase : GPUObjectDescriptorBase {
     var layout: dynamic /* GPUPipelineLayout | "auto" */
-        get() = definedExternally
-        set(value) = definedExternally
 }
+
+fun GPUPipelineDescriptorBase(
+    layout: dynamic /* GPUPipelineLayout | "auto" */,
+    label: String? = undefined,
+): GPUPipelineDescriptorBase = js("({layout: layout, label: label})")
+
 
 external interface GPUPipelineErrorInit {
     var reason: String /* "validation" | "internal" */
 }
 
+fun GPUPipelineErrorInit(
+    reason: String,
+): GPUPipelineErrorInit = js("({reason: reason})")
+
+
 external interface GPUPipelineLayoutDescriptor : GPUObjectDescriptorBase {
     var bindGroupLayouts: Array<GPUBindGroupLayout>
 }
 
-external interface GPUPrimitiveState {
-    var topology: String? /* "point-list" | "line-list" | "line-strip" | "triangle-list" | "triangle-strip" */
-        get() = definedExternally
-        set(value) = definedExternally
-    var stripIndexFormat: String? /* "uint16" | "uint32" */
-        get() = definedExternally
-        set(value) = definedExternally
-    var frontFace: String? /* "ccw" | "cw" */
-        get() = definedExternally
-        set(value) = definedExternally
-    var cullMode: String? /* "none" | "front" | "back" */
-        get() = definedExternally
-        set(value) = definedExternally
-    var unclippedDepth: Boolean?
-        get() = definedExternally
-        set(value) = definedExternally
+fun GPUPipelineLayoutDescriptor(
+    bindGroupLayouts: Array<GPUBindGroupLayout>,
+): GPUPipelineLayoutDescriptor = js("({bindGroupLayouts: bindGroupLayouts})")
+
+inline class GPUTopology(val str: String) {
+    companion object {
+        inline val POINT_LIST get() = GPUTopology("point-list")
+        inline val LINE_LIST get() = GPUTopology("line-list")
+        inline val LINE_STRIP get() = GPUTopology("line-strip")
+        inline val TRIANGLE_LIST get() = GPUTopology("triangle-list")
+        inline val TRIANGLE_STRIP get() = GPUTopology("triangle-strip")
+    }
 }
+
+inline class GPUCullMode(val str: String) {
+    companion object {
+        inline val NONE get() = GPUCullMode("none")
+        inline val FRONT get() = GPUCullMode("front")
+        inline val BACK get() = GPUCullMode("back")
+    }
+}
+
+inline class GPUFrontFace(val str: String) {
+    companion object {
+        inline val CCW get() = GPUFrontFace("ccw")
+        inline val CW get() = GPUFrontFace("cw")
+    }
+}
+
+inline class GPUStripIndexFormat(val str: String) {
+    companion object {
+        inline val UINT16 get() = GPUStripIndexFormat("uint16")
+        inline val UINT32 get() = GPUStripIndexFormat("uint32")
+    }
+}
+
+external interface GPUPrimitiveState {
+    var topology: GPUTopology?
+    var stripIndexFormat: GPUStripIndexFormat?
+    var frontFace: GPUFrontFace?
+    var cullMode: GPUCullMode?
+    var unclippedDepth: Boolean?
+}
+
+fun GPUPrimitiveState(
+    topology: GPUTopology? = undefined,
+    stripIndexFormat: GPUStripIndexFormat? = undefined,
+    frontFace: GPUFrontFace? = undefined,
+    cullMode: GPUCullMode? = undefined,
+    unclippedDepth: Boolean? = undefined,
+): GPUPrimitiveState = js("({topology: topology, stripIndexFormat: stripIndexFormat, frontFace: frontFace, cullMode: cullMode, unclippedDepth: unclippedDepth})")
+
 
 external interface GPUProgrammableStage {
     var module: GPUShaderModule
     var entryPoint: String?
-        get() = definedExternally
-        set(value) = definedExternally
     var constants: Map<String, GPUPipelineConstantValue>?
-        get() = definedExternally
-        set(value) = definedExternally
+}
+
+fun GPUProgrammableStage(
+    module: GPUShaderModule,
+    entryPoint: String? = undefined,
+    constants: Map<String, GPUPipelineConstantValue>? = undefined,
+): GPUProgrammableStage = js("({module: module, entryPoint: entryPoint, constants: constants})")
+
+inline class GPUQueryType(val str: String) {
+    companion object {
+        inline val OCCLUSION get() = GPUQueryType("occlusion")
+        //inline val PIPELINE_STATISTICS get() = GPUQueryType("pipeline-statistics")
+        inline val TIMESTAMP get() = GPUQueryType("timestamp")
+    }
 }
 
 external interface GPUQuerySetDescriptor : GPUObjectDescriptorBase {
-    var type: String /* "occlusion" | "timestamp" */
+    var type: GPUQueryType
     var count: GPUSize32
 }
+
+fun GPUQuerySetDescriptor(
+    type: GPUQueryType,
+    count: GPUSize32,
+): GPUQuerySetDescriptor = js("({type: type, count: count})")
 
 typealias GPUQueueDescriptor = GPUObjectDescriptorBase
 
 typealias GPURenderBundleDescriptor = GPUObjectDescriptorBase
 
+
 external interface GPURenderBundleEncoderDescriptor : GPURenderPassLayout {
     var depthReadOnly: Boolean?
-        get() = definedExternally
-        set(value) = definedExternally
     var stencilReadOnly: Boolean?
-        get() = definedExternally
-        set(value) = definedExternally
 }
+
 
 external interface GPURenderPassColorAttachment {
     var view: GPUTextureView
     var depthSlice: GPUIntegerCoordinate?
-        get() = definedExternally
-        set(value) = definedExternally
     var resolveTarget: GPUTextureView?
-        get() = definedExternally
-        set(value) = definedExternally
     var clearValue: Array<Number>? /* Iterable<Number>? | GPUColorDict? */
-        get() = definedExternally
-        set(value) = definedExternally
-    var loadOp: String /* "load" | "clear" */
-    var storeOp: String /* "store" | "discard" */
+    var loadOp: GPULoadOP
+    var storeOp: GPUStoreOP
+}
+
+fun GPURenderPassColorAttachment(
+    view: GPUTextureView,
+    depthSlice: GPUIntegerCoordinate? = undefined,
+    resolveTarget: GPUTextureView? = undefined,
+    clearValue: Array<Number>? = undefined,
+    loadOp: GPULoadOP,
+    storeOp: GPUStoreOP,
+): GPURenderPassColorAttachment = js("({view: view, depthSlice: depthSlice, resolveTarget: resolveTarget, clearValue: clearValue, loadOp: loadOp, storeOp: storeOp})")
+
+inline class GPULoadOP(val str: String) {
+    companion object {
+        inline val LOAD get() = GPULoadOP("load")
+        inline val CLEAR get() = GPULoadOP("clear")
+    }
+}
+
+inline class GPUStoreOP(val str: String) {
+    companion object {
+        inline val STORE get() = GPUStoreOP("store")
+        inline val DISCARD get() = GPUStoreOP("discard")
+    }
 }
 
 external interface GPURenderPassDepthStencilAttachment {
     var view: GPUTextureView
     var depthClearValue: Number?
-        get() = definedExternally
-        set(value) = definedExternally
-    var depthLoadOp: String? /* "load" | "clear" */
-        get() = definedExternally
-        set(value) = definedExternally
-    var depthStoreOp: String? /* "store" | "discard" */
-        get() = definedExternally
-        set(value) = definedExternally
+    var depthLoadOp: GPULoadOP?
+    var depthStoreOp: GPUStoreOP?
     var depthReadOnly: Boolean?
-        get() = definedExternally
-        set(value) = definedExternally
     var stencilClearValue: GPUStencilValue?
-        get() = definedExternally
-        set(value) = definedExternally
-    var stencilLoadOp: String? /* "load" | "clear" */
-        get() = definedExternally
-        set(value) = definedExternally
-    var stencilStoreOp: String? /* "store" | "discard" */
-        get() = definedExternally
-        set(value) = definedExternally
+    var stencilLoadOp: GPULoadOP?
+    var stencilStoreOp: GPUStoreOP?
     var stencilReadOnly: Boolean?
-        get() = definedExternally
-        set(value) = definedExternally
 }
+
+fun GPURenderPassDepthStencilAttachment(
+    view: GPUTextureView,
+    depthClearValue: Number? = undefined,
+    depthLoadOp: GPULoadOP? = undefined,
+    depthStoreOp: GPUStoreOP? = undefined,
+    depthReadOnly: Boolean? = undefined,
+    stencilClearValue: GPUStencilValue? = undefined,
+    stencilLoadOp: GPULoadOP? = undefined,
+    stencilStoreOp: GPUStoreOP? = undefined,
+    stencilReadOnly: Boolean? = undefined,
+): GPURenderPassDepthStencilAttachment = js("({view: view, depthClearValue: depthClearValue, depthLoadOp: depthLoadOp, depthStoreOp: depthStoreOp, depthReadOnly: depthReadOnly, stencilClearValue: stencilClearValue, stencilLoadOp: stencilLoadOp, stencilStoreOp: stencilStoreOp, stencilReadOnly: stencilReadOnly})")
 
 external interface GPURenderPassDescriptor : GPUObjectDescriptorBase {
     var colorAttachments: Array<GPURenderPassColorAttachment>
     var depthStencilAttachment: GPURenderPassDepthStencilAttachment?
-        get() = definedExternally
-        set(value) = definedExternally
     var occlusionQuerySet: GPUQuerySet?
-        get() = definedExternally
-        set(value) = definedExternally
     var timestampWrites: GPURenderPassTimestampWrites?
-        get() = definedExternally
-        set(value) = definedExternally
     var maxDrawCount: GPUSize64?
-        get() = definedExternally
-        set(value) = definedExternally
 }
 
+fun GPURenderPassDescriptor(
+    colorAttachments: Array<GPURenderPassColorAttachment>,
+    depthStencilAttachment: GPURenderPassDepthStencilAttachment? = undefined,
+    occlusionQuerySet: GPUQuerySet? = undefined,
+    timestampWrites: GPURenderPassTimestampWrites? = undefined,
+    maxDrawCount: GPUSize64? = undefined,
+): GPURenderPassDescriptor = js("({colorAttachments: colorAttachments, depthStencilAttachment: depthStencilAttachment, occlusionQuerySet: occlusionQuerySet, timestampWrites: timestampWrites, maxDrawCount: maxDrawCount})")
+
+
 external interface GPURenderPassLayout : GPUObjectDescriptorBase {
-    var colorFormats: Iterable<String /* "r8unorm" | "r8snorm" | "r8uint" | "r8sint" | "r16uint" | "r16sint" | "r16float" | "rg8unorm" | "rg8snorm" | "rg8uint" | "rg8sint" | "r32uint" | "r32sint" | "r32float" | "rg16uint" | "rg16sint" | "rg16float" | "rgba8unorm" | "rgba8unorm-srgb" | "rgba8snorm" | "rgba8uint" | "rgba8sint" | "bgra8unorm" | "bgra8unorm-srgb" | "rgb9e5ufloat" | "rgb10a2uint" | "rgb10a2unorm" | "rg11b10ufloat" | "rg32uint" | "rg32sint" | "rg32float" | "rgba16uint" | "rgba16sint" | "rgba16float" | "rgba32uint" | "rgba32sint" | "rgba32float" | "stencil8" | "depth16unorm" | "depth24plus" | "depth24plus-stencil8" | "depth32float" | "depth32float-stencil8" | "bc1-rgba-unorm" | "bc1-rgba-unorm-srgb" | "bc2-rgba-unorm" | "bc2-rgba-unorm-srgb" | "bc3-rgba-unorm" | "bc3-rgba-unorm-srgb" | "bc4-r-unorm" | "bc4-r-snorm" | "bc5-rg-unorm" | "bc5-rg-snorm" | "bc6h-rgb-ufloat" | "bc6h-rgb-float" | "bc7-rgba-unorm" | "bc7-rgba-unorm-srgb" | "etc2-rgb8unorm" | "etc2-rgb8unorm-srgb" | "etc2-rgb8a1unorm" | "etc2-rgb8a1unorm-srgb" | "etc2-rgba8unorm" | "etc2-rgba8unorm-srgb" | "eac-r11unorm" | "eac-r11snorm" | "eac-rg11unorm" | "eac-rg11snorm" | "astc-4x4-unorm" | "astc-4x4-unorm-srgb" | "astc-5x4-unorm" | "astc-5x4-unorm-srgb" | "astc-5x5-unorm" | "astc-5x5-unorm-srgb" | "astc-6x5-unorm" | "astc-6x5-unorm-srgb" | "astc-6x6-unorm" | "astc-6x6-unorm-srgb" | "astc-8x5-unorm" | "astc-8x5-unorm-srgb" | "astc-8x6-unorm" | "astc-8x6-unorm-srgb" | "astc-8x8-unorm" | "astc-8x8-unorm-srgb" | "astc-10x5-unorm" | "astc-10x5-unorm-srgb" | "astc-10x6-unorm" | "astc-10x6-unorm-srgb" | "astc-10x8-unorm" | "astc-10x8-unorm-srgb" | "astc-10x10-unorm" | "astc-10x10-unorm-srgb" | "astc-12x10-unorm" | "astc-12x10-unorm-srgb" | "astc-12x12-unorm" | "astc-12x12-unorm-srgb" */>
-    var depthStencilFormat: String? /* "r8unorm" | "r8snorm" | "r8uint" | "r8sint" | "r16uint" | "r16sint" | "r16float" | "rg8unorm" | "rg8snorm" | "rg8uint" | "rg8sint" | "r32uint" | "r32sint" | "r32float" | "rg16uint" | "rg16sint" | "rg16float" | "rgba8unorm" | "rgba8unorm-srgb" | "rgba8snorm" | "rgba8uint" | "rgba8sint" | "bgra8unorm" | "bgra8unorm-srgb" | "rgb9e5ufloat" | "rgb10a2uint" | "rgb10a2unorm" | "rg11b10ufloat" | "rg32uint" | "rg32sint" | "rg32float" | "rgba16uint" | "rgba16sint" | "rgba16float" | "rgba32uint" | "rgba32sint" | "rgba32float" | "stencil8" | "depth16unorm" | "depth24plus" | "depth24plus-stencil8" | "depth32float" | "depth32float-stencil8" | "bc1-rgba-unorm" | "bc1-rgba-unorm-srgb" | "bc2-rgba-unorm" | "bc2-rgba-unorm-srgb" | "bc3-rgba-unorm" | "bc3-rgba-unorm-srgb" | "bc4-r-unorm" | "bc4-r-snorm" | "bc5-rg-unorm" | "bc5-rg-snorm" | "bc6h-rgb-ufloat" | "bc6h-rgb-float" | "bc7-rgba-unorm" | "bc7-rgba-unorm-srgb" | "etc2-rgb8unorm" | "etc2-rgb8unorm-srgb" | "etc2-rgb8a1unorm" | "etc2-rgb8a1unorm-srgb" | "etc2-rgba8unorm" | "etc2-rgba8unorm-srgb" | "eac-r11unorm" | "eac-r11snorm" | "eac-rg11unorm" | "eac-rg11snorm" | "astc-4x4-unorm" | "astc-4x4-unorm-srgb" | "astc-5x4-unorm" | "astc-5x4-unorm-srgb" | "astc-5x5-unorm" | "astc-5x5-unorm-srgb" | "astc-6x5-unorm" | "astc-6x5-unorm-srgb" | "astc-6x6-unorm" | "astc-6x6-unorm-srgb" | "astc-8x5-unorm" | "astc-8x5-unorm-srgb" | "astc-8x6-unorm" | "astc-8x6-unorm-srgb" | "astc-8x8-unorm" | "astc-8x8-unorm-srgb" | "astc-10x5-unorm" | "astc-10x5-unorm-srgb" | "astc-10x6-unorm" | "astc-10x6-unorm-srgb" | "astc-10x8-unorm" | "astc-10x8-unorm-srgb" | "astc-10x10-unorm" | "astc-10x10-unorm-srgb" | "astc-12x10-unorm" | "astc-12x10-unorm-srgb" | "astc-12x12-unorm" | "astc-12x12-unorm-srgb" */
-        get() = definedExternally
-        set(value) = definedExternally
+    var colorFormats: Iterable<GPUTextureFormat>
+    var depthStencilFormat: GPUTextureFormat?
     var sampleCount: GPUSize32?
-        get() = definedExternally
-        set(value) = definedExternally
 }
+
+fun GPURenderPassLayout(
+    colorFormats: Iterable<GPUTextureFormat>,
+    depthStencilFormat: GPUTextureFormat? = undefined,
+    sampleCount: GPUSize32? = undefined,
+    label: String? = undefined,
+): GPURenderPassLayout = js("({colorFormats: colorFormats, depthStencilFormat: depthStencilFormat, sampleCount: sampleCount, label: label})")
 
 external interface GPURenderPassTimestampWrites {
     var querySet: GPUQuerySet
     var beginningOfPassWriteIndex: GPUSize32?
-        get() = definedExternally
-        set(value) = definedExternally
     var endOfPassWriteIndex: GPUSize32?
-        get() = definedExternally
-        set(value) = definedExternally
 }
+
+fun GPURenderPassTimestampWrites(
+    querySet: GPUQuerySet,
+    beginningOfPassWriteIndex: GPUSize32? = undefined,
+    endOfPassWriteIndex: GPUSize32? = undefined,
+): GPURenderPassTimestampWrites = js("({querySet: querySet, beginningOfPassWriteIndex: beginningOfPassWriteIndex, endOfPassWriteIndex: endOfPassWriteIndex})")
 
 external interface GPURenderPipelineDescriptor : GPUPipelineDescriptorBase {
     var vertex: GPUVertexState
     var primitive: GPUPrimitiveState?
-        get() = definedExternally
-        set(value) = definedExternally
     var depthStencil: GPUDepthStencilState?
-        get() = definedExternally
-        set(value) = definedExternally
     var multisample: GPUMultisampleState?
-        get() = definedExternally
-        set(value) = definedExternally
     var fragment: GPUFragmentState?
-        get() = definedExternally
-        set(value) = definedExternally
+}
+
+fun GPURenderPipelineDescriptor(
+    vertex: GPUVertexState,
+    primitive: GPUPrimitiveState? = undefined,
+    depthStencil: GPUDepthStencilState? = undefined,
+    multisample: GPUMultisampleState? = undefined,
+    fragment: GPUFragmentState? = undefined,
+    layout: dynamic = undefined,
+    label: String? = undefined,
+): GPURenderPipelineDescriptor = js("({vertex: vertex, primitive: primitive, depthStencil: depthStencil, multisample: multisample, fragment: fragment, layout: layout, label: label})")
+
+inline class GPUPowerPreference(val str: String) {
+    companion object {
+        inline val LOW_POWER get() = GPUPowerPreference("low-power")
+        inline val HIGH_PERFORMANCE get() = GPUPowerPreference("high-performance")
+    }
 }
 
 external interface GPURequestAdapterOptions {
-    var powerPreference: String? /* "low-power" | "high-performance" */
-        get() = definedExternally
-        set(value) = definedExternally
+    var powerPreference: GPUPowerPreference?
     var forceFallbackAdapter: Boolean?
-        get() = definedExternally
-        set(value) = definedExternally
+}
+
+fun GPURequestAdapterOptions(
+    powerPreference: GPUPowerPreference? = undefined,
+    forceFallbackAdapter: Boolean? = undefined,
+): GPURequestAdapterOptions = js("({powerPreference: powerPreference, forceFallbackAdapter: forceFallbackAdapter})")
+
+
+inline class GPUSamplerBindingLayoutType(val str: String) {
+    companion object {
+        inline val FILTERING get() = GPUSamplerBindingLayoutType("filtering")
+        inline val NON_FILTERING get() = GPUSamplerBindingLayoutType("non-filtering")
+        inline val COMPARISON get() = GPUSamplerBindingLayoutType("comparison")
+    }
 }
 
 external interface GPUSamplerBindingLayout {
-    var type: String? /* "filtering" | "non-filtering" | "comparison" */
-        get() = definedExternally
-        set(value) = definedExternally
+    var type: GPUSamplerBindingLayoutType?
+}
+
+fun GPUSamplerBindingLayout(
+    type: GPUSamplerBindingLayoutType? = undefined,
+): GPUSamplerBindingLayout = js("({type: type})")
+
+inline class GPUAddressMode(val str: String) {
+    companion object {
+        inline val CLAMP_TO_EDGE get() = GPUAddressMode("clamp-to-edge")
+        inline val REPEAT get() = GPUAddressMode("repeat")
+        inline val MIRROR_REPEAT get() = GPUAddressMode("mirror-repeat")
+    }
+}
+
+inline class GPUFilterMode(val str: String) {
+    companion object {
+        inline val NEAREST get() = GPUFilterMode("nearest")
+        inline val LINEAR get() = GPUFilterMode("linear")
+    }
 }
 
 external interface GPUSamplerDescriptor : GPUObjectDescriptorBase {
-    var addressModeU: String? /* "clamp-to-edge" | "repeat" | "mirror-repeat" */
-        get() = definedExternally
-        set(value) = definedExternally
-    var addressModeV: String? /* "clamp-to-edge" | "repeat" | "mirror-repeat" */
-        get() = definedExternally
-        set(value) = definedExternally
-    var addressModeW: String? /* "clamp-to-edge" | "repeat" | "mirror-repeat" */
-        get() = definedExternally
-        set(value) = definedExternally
-    var magFilter: String? /* "nearest" | "linear" */
-        get() = definedExternally
-        set(value) = definedExternally
-    var minFilter: String? /* "nearest" | "linear" */
-        get() = definedExternally
-        set(value) = definedExternally
-    var mipmapFilter: String? /* "nearest" | "linear" */
-        get() = definedExternally
-        set(value) = definedExternally
+    var addressModeU: GPUAddressMode?
+    var addressModeV: GPUAddressMode?
+    var addressModeW: GPUAddressMode?
+    var magFilter: GPUFilterMode?
+    var minFilter: GPUFilterMode?
+    var mipmapFilter: GPUFilterMode?
     var lodMinClamp: Number?
-        get() = definedExternally
-        set(value) = definedExternally
     var lodMaxClamp: Number?
-        get() = definedExternally
-        set(value) = definedExternally
-    var compare: String? /* "never" | "less" | "equal" | "less-equal" | "greater" | "not-equal" | "greater-equal" | "always" */
-        get() = definedExternally
-        set(value) = definedExternally
+    var compare: GPUCompare?
     var maxAnisotropy: Number?
-        get() = definedExternally
-        set(value) = definedExternally
 }
+
+fun GPUSamplerDescriptor(
+    addressModeU: GPUAddressMode? = undefined,
+    addressModeV: GPUAddressMode? = undefined,
+    addressModeW: GPUAddressMode? = undefined,
+    magFilter: GPUFilterMode? = undefined,
+    minFilter: GPUFilterMode? = undefined,
+    mipmapFilter: GPUFilterMode? = undefined,
+    lodMinClamp: Number? = undefined,
+    lodMaxClamp: Number? = undefined,
+    compare: GPUCompare? = undefined,
+    maxAnisotropy: Number? = undefined,
+    label: String? = undefined,
+): GPUSamplerDescriptor = js("({addressModeU: addressModeU, addressModeV: addressModeV, addressModeW: addressModeW, magFilter: magFilter, minFilter: minFilter, mipmapFilter: mipmapFilter, lodMinClamp: lodMinClamp, lodMaxClamp: lodMaxClamp, compare: compare, maxAnisotropy: maxAnisotropy, label: label})")
 
 external interface GPUShaderModuleCompilationHint {
     var entryPoint: String
     var layout: dynamic /* GPUPipelineLayout? | "auto" */
-        get() = definedExternally
-        set(value) = definedExternally
 }
+
+fun GPUShaderModuleCompilationHint(
+    entryPoint: String,
+    layout: dynamic = undefined,
+): GPUShaderModuleCompilationHint = js("({entryPoint: entryPoint, layout: layout})")
 
 external interface GPUShaderModuleDescriptor : GPUObjectDescriptorBase {
     var code: String
     var sourceMap: Any?
-        get() = definedExternally
-        set(value) = definedExternally
     var compilationHints: Array<GPUShaderModuleCompilationHint>?
-        get() = definedExternally
-        set(value) = definedExternally
+}
+
+fun GPUShaderModuleDescriptor(
+    //language=WGSL
+    code: String,
+    sourceMap: Any? = undefined,
+    compilationHints: Array<GPUShaderModuleCompilationHint>? = undefined,
+    label: String? = undefined,
+): GPUShaderModuleDescriptor = js("({ code: code, sourceMap: sourceMap, compilationHints: compilationHints, label: label })")
+
+inline class GPUStencilOperation(val str: String) {
+    companion object {
+        inline val KEEP get() = GPUStencilOperation("keep")
+        inline val ZERO get() = GPUStencilOperation("zero")
+        inline val REPLACE get() = GPUStencilOperation("replace")
+        inline val INVERT get() = GPUStencilOperation("invert")
+        inline val INCREMENT_CLAMP get() = GPUStencilOperation("increment-clamp")
+        inline val DECREMENT_CLAMP get() = GPUStencilOperation("decrement-clamp")
+        inline val INCREMENT_WRAP get() = GPUStencilOperation("increment-wrap")
+        inline val DECREMENT_WRAP get() = GPUStencilOperation("decrement-wrap")
+    }
 }
 
 external interface GPUStencilFaceState {
-    var compare: String? /* "never" | "less" | "equal" | "less-equal" | "greater" | "not-equal" | "greater-equal" | "always" */
-        get() = definedExternally
-        set(value) = definedExternally
-    var failOp: String? /* "keep" | "zero" | "replace" | "invert" | "increment-clamp" | "decrement-clamp" | "increment-wrap" | "decrement-wrap" */
-        get() = definedExternally
-        set(value) = definedExternally
-    var depthFailOp: String? /* "keep" | "zero" | "replace" | "invert" | "increment-clamp" | "decrement-clamp" | "increment-wrap" | "decrement-wrap" */
-        get() = definedExternally
-        set(value) = definedExternally
-    var passOp: String? /* "keep" | "zero" | "replace" | "invert" | "increment-clamp" | "decrement-clamp" | "increment-wrap" | "decrement-wrap" */
-        get() = definedExternally
-        set(value) = definedExternally
+    var compare: GPUCompare?
+    var failOp: GPUStencilOperation?
+    var depthFailOp: GPUStencilOperation?
+    var passOp: GPUStencilOperation?
+}
+
+fun GPUStencilFaceState(
+    compare: GPUCompare? = undefined,
+    failOp: GPUStencilOperation? = undefined,
+    depthFailOp: GPUStencilOperation? = undefined,
+    passOp: GPUStencilOperation? = undefined,
+): GPUStencilFaceState = js("({compare: compare, failOp: failOp, depthFailOp: depthFailOp, passOp: passOp})")
+
+inline class GPUViewDimension(val str: String) {
+    companion object {
+        inline val _1D get() = GPUViewDimension("1d")
+        inline val _2D get() = GPUViewDimension("2d")
+        inline val _2D_ARRAY get() = GPUViewDimension("2d-array")
+        inline val CUBE get() = GPUViewDimension("cube")
+        inline val CUBE_ARRAY get() = GPUViewDimension("cube-array")
+        inline val _3D get() = GPUViewDimension("3d")
+    }
+}
+
+inline class GPUAccess(val str: String) {
+    companion object {
+        inline val READ_ONLY get() = GPUAccess("read-only")
+        inline val WRITE_ONLY get() = GPUAccess("write-only")
+        inline val READ_WRITE get() = GPUAccess("read-write")
+    }
 }
 
 external interface GPUStorageTextureBindingLayout {
-    var access: String? /* "write-only" | "read-only" | "read-write" */
-        get() = definedExternally
-        set(value) = definedExternally
-    var format: String /* "r8unorm" | "r8snorm" | "r8uint" | "r8sint" | "r16uint" | "r16sint" | "r16float" | "rg8unorm" | "rg8snorm" | "rg8uint" | "rg8sint" | "r32uint" | "r32sint" | "r32float" | "rg16uint" | "rg16sint" | "rg16float" | "rgba8unorm" | "rgba8unorm-srgb" | "rgba8snorm" | "rgba8uint" | "rgba8sint" | "bgra8unorm" | "bgra8unorm-srgb" | "rgb9e5ufloat" | "rgb10a2uint" | "rgb10a2unorm" | "rg11b10ufloat" | "rg32uint" | "rg32sint" | "rg32float" | "rgba16uint" | "rgba16sint" | "rgba16float" | "rgba32uint" | "rgba32sint" | "rgba32float" | "stencil8" | "depth16unorm" | "depth24plus" | "depth24plus-stencil8" | "depth32float" | "depth32float-stencil8" | "bc1-rgba-unorm" | "bc1-rgba-unorm-srgb" | "bc2-rgba-unorm" | "bc2-rgba-unorm-srgb" | "bc3-rgba-unorm" | "bc3-rgba-unorm-srgb" | "bc4-r-unorm" | "bc4-r-snorm" | "bc5-rg-unorm" | "bc5-rg-snorm" | "bc6h-rgb-ufloat" | "bc6h-rgb-float" | "bc7-rgba-unorm" | "bc7-rgba-unorm-srgb" | "etc2-rgb8unorm" | "etc2-rgb8unorm-srgb" | "etc2-rgb8a1unorm" | "etc2-rgb8a1unorm-srgb" | "etc2-rgba8unorm" | "etc2-rgba8unorm-srgb" | "eac-r11unorm" | "eac-r11snorm" | "eac-rg11unorm" | "eac-rg11snorm" | "astc-4x4-unorm" | "astc-4x4-unorm-srgb" | "astc-5x4-unorm" | "astc-5x4-unorm-srgb" | "astc-5x5-unorm" | "astc-5x5-unorm-srgb" | "astc-6x5-unorm" | "astc-6x5-unorm-srgb" | "astc-6x6-unorm" | "astc-6x6-unorm-srgb" | "astc-8x5-unorm" | "astc-8x5-unorm-srgb" | "astc-8x6-unorm" | "astc-8x6-unorm-srgb" | "astc-8x8-unorm" | "astc-8x8-unorm-srgb" | "astc-10x5-unorm" | "astc-10x5-unorm-srgb" | "astc-10x6-unorm" | "astc-10x6-unorm-srgb" | "astc-10x8-unorm" | "astc-10x8-unorm-srgb" | "astc-10x10-unorm" | "astc-10x10-unorm-srgb" | "astc-12x10-unorm" | "astc-12x10-unorm-srgb" | "astc-12x12-unorm" | "astc-12x12-unorm-srgb" */
-    var viewDimension: String? /* "1d" | "2d" | "2d-array" | "cube" | "cube-array" | "3d" */
-        get() = definedExternally
-        set(value) = definedExternally
+    var access: GPUAccess?
+    var format: GPUTextureFormat
+    var viewDimension: GPUViewDimension?
+}
+
+fun GPUStorageTextureBindingLayout(
+    access: GPUAccess? = undefined,
+    format: GPUTextureFormat,
+    viewDimension: GPUViewDimension,
+): GPUStorageTextureBindingLayout = js("({access: access, format: format, viewDimension: viewDimension})")
+
+inline class GPUSampleType(val str: String) {
+    companion object {
+        inline val FLOAT get() = GPUSampleType("float")
+        inline val UNFILTERABLE_FLOAT get() = GPUSampleType("unfilterable-float")
+        inline val DEPTH get() = GPUSampleType("depth")
+        inline val SINT get() = GPUSampleType("sint")
+        inline val UINT get() = GPUSampleType("uint")
+    }
 }
 
 external interface GPUTextureBindingLayout {
-    var sampleType: String? /* "float" | "unfilterable-float" | "depth" | "sint" | "uint" */
-        get() = definedExternally
-        set(value) = definedExternally
-    var viewDimension: String? /* "1d" | "2d" | "2d-array" | "cube" | "cube-array" | "3d" */
-        get() = definedExternally
-        set(value) = definedExternally
+    var sampleType: GPUSampleType?
+    var viewDimension: GPUViewDimension?
     var multisampled: Boolean?
-        get() = definedExternally
-        set(value) = definedExternally
 }
+
+fun GPUTextureBindingLayout(
+    sampleType: GPUSampleType? = undefined,
+    viewDimension: GPUViewDimension? = undefined,
+    multisampled: Boolean? = undefined,
+): GPUTextureBindingLayout = js("({sampleType: sampleType, viewDimension: viewDimension, multisampled: multisampled})")
+
 
 external interface GPUTextureDescriptor : GPUObjectDescriptorBase {
     var size: dynamic /* Iterable<GPUIntegerCoordinate> | GPUExtent3DDictStrict */
-        get() = definedExternally
-        set(value) = definedExternally
     var mipLevelCount: GPUIntegerCoordinate?
-        get() = definedExternally
-        set(value) = definedExternally
     var sampleCount: GPUSize32?
-        get() = definedExternally
-        set(value) = definedExternally
     var dimension: String? /* "1d" | "2d" | "3d" */
-        get() = definedExternally
-        set(value) = definedExternally
-    var format: String /* "r8unorm" | "r8snorm" | "r8uint" | "r8sint" | "r16uint" | "r16sint" | "r16float" | "rg8unorm" | "rg8snorm" | "rg8uint" | "rg8sint" | "r32uint" | "r32sint" | "r32float" | "rg16uint" | "rg16sint" | "rg16float" | "rgba8unorm" | "rgba8unorm-srgb" | "rgba8snorm" | "rgba8uint" | "rgba8sint" | "bgra8unorm" | "bgra8unorm-srgb" | "rgb9e5ufloat" | "rgb10a2uint" | "rgb10a2unorm" | "rg11b10ufloat" | "rg32uint" | "rg32sint" | "rg32float" | "rgba16uint" | "rgba16sint" | "rgba16float" | "rgba32uint" | "rgba32sint" | "rgba32float" | "stencil8" | "depth16unorm" | "depth24plus" | "depth24plus-stencil8" | "depth32float" | "depth32float-stencil8" | "bc1-rgba-unorm" | "bc1-rgba-unorm-srgb" | "bc2-rgba-unorm" | "bc2-rgba-unorm-srgb" | "bc3-rgba-unorm" | "bc3-rgba-unorm-srgb" | "bc4-r-unorm" | "bc4-r-snorm" | "bc5-rg-unorm" | "bc5-rg-snorm" | "bc6h-rgb-ufloat" | "bc6h-rgb-float" | "bc7-rgba-unorm" | "bc7-rgba-unorm-srgb" | "etc2-rgb8unorm" | "etc2-rgb8unorm-srgb" | "etc2-rgb8a1unorm" | "etc2-rgb8a1unorm-srgb" | "etc2-rgba8unorm" | "etc2-rgba8unorm-srgb" | "eac-r11unorm" | "eac-r11snorm" | "eac-rg11unorm" | "eac-rg11snorm" | "astc-4x4-unorm" | "astc-4x4-unorm-srgb" | "astc-5x4-unorm" | "astc-5x4-unorm-srgb" | "astc-5x5-unorm" | "astc-5x5-unorm-srgb" | "astc-6x5-unorm" | "astc-6x5-unorm-srgb" | "astc-6x6-unorm" | "astc-6x6-unorm-srgb" | "astc-8x5-unorm" | "astc-8x5-unorm-srgb" | "astc-8x6-unorm" | "astc-8x6-unorm-srgb" | "astc-8x8-unorm" | "astc-8x8-unorm-srgb" | "astc-10x5-unorm" | "astc-10x5-unorm-srgb" | "astc-10x6-unorm" | "astc-10x6-unorm-srgb" | "astc-10x8-unorm" | "astc-10x8-unorm-srgb" | "astc-10x10-unorm" | "astc-10x10-unorm-srgb" | "astc-12x10-unorm" | "astc-12x10-unorm-srgb" | "astc-12x12-unorm" | "astc-12x12-unorm-srgb" */
+    var format: GPUTextureFormat
     var usage: GPUTextureUsageFlags
-    abstract var viewFormats: Array<String /* "r8unorm" | "r8snorm" | "r8uint" | "r8sint" | "r16uint" | "r16sint" | "r16float" | "rg8unorm" | "rg8snorm" | "rg8uint" | "rg8sint" | "r32uint" | "r32sint" | "r32float" | "rg16uint" | "rg16sint" | "rg16float" | "rgba8unorm" | "rgba8unorm-srgb" | "rgba8snorm" | "rgba8uint" | "rgba8sint" | "bgra8unorm" | "bgra8unorm-srgb" | "rgb9e5ufloat" | "rgb10a2uint" | "rgb10a2unorm" | "rg11b10ufloat" | "rg32uint" | "rg32sint" | "rg32float" | "rgba16uint" | "rgba16sint" | "rgba16float" | "rgba32uint" | "rgba32sint" | "rgba32float" | "stencil8" | "depth16unorm" | "depth24plus" | "depth24plus-stencil8" | "depth32float" | "depth32float-stencil8" | "bc1-rgba-unorm" | "bc1-rgba-unorm-srgb" | "bc2-rgba-unorm" | "bc2-rgba-unorm-srgb" | "bc3-rgba-unorm" | "bc3-rgba-unorm-srgb" | "bc4-r-unorm" | "bc4-r-snorm" | "bc5-rg-unorm" | "bc5-rg-snorm" | "bc6h-rgb-ufloat" | "bc6h-rgb-float" | "bc7-rgba-unorm" | "bc7-rgba-unorm-srgb" | "etc2-rgb8unorm" | "etc2-rgb8unorm-srgb" | "etc2-rgb8a1unorm" | "etc2-rgb8a1unorm-srgb" | "etc2-rgba8unorm" | "etc2-rgba8unorm-srgb" | "eac-r11unorm" | "eac-r11snorm" | "eac-rg11unorm" | "eac-rg11snorm" | "astc-4x4-unorm" | "astc-4x4-unorm-srgb" | "astc-5x4-unorm" | "astc-5x4-unorm-srgb" | "astc-5x5-unorm" | "astc-5x5-unorm-srgb" | "astc-6x5-unorm" | "astc-6x5-unorm-srgb" | "astc-6x6-unorm" | "astc-6x6-unorm-srgb" | "astc-8x5-unorm" | "astc-8x5-unorm-srgb" | "astc-8x6-unorm" | "astc-8x6-unorm-srgb" | "astc-8x8-unorm" | "astc-8x8-unorm-srgb" | "astc-10x5-unorm" | "astc-10x5-unorm-srgb" | "astc-10x6-unorm" | "astc-10x6-unorm-srgb" | "astc-10x8-unorm" | "astc-10x8-unorm-srgb" | "astc-10x10-unorm" | "astc-10x10-unorm-srgb" | "astc-12x10-unorm" | "astc-12x10-unorm-srgb" | "astc-12x12-unorm" | "astc-12x12-unorm-srgb" */>
+    var viewFormats: Array<GPUTextureFormat>?
+}
+
+fun GPUTextureDescriptor(
+    size: dynamic,
+    mipLevelCount: GPUIntegerCoordinate? = undefined,
+    sampleCount: GPUSize32? = undefined,
+    dimension: String? = undefined,
+    format: GPUTextureFormat,
+    usage: GPUTextureUsageFlags,
+    viewFormats: Array<GPUTextureFormat>? = undefined,
+    label: String? = undefined,
+): GPUTextureDescriptor = js("({size: size, mipLevelCount: mipLevelCount, sampleCount: sampleCount, dimension: dimension, format: format, usage: usage, viewFormats: viewFormats, label: label})")
+
+inline class GPUTextureAspect(val str: String) {
+    companion object {
+        inline val ALL get() = GPUTextureAspect("all")
+        inline val STENCIL_ONLY get() = GPUTextureAspect("stencil-only")
+        inline val DEPTH_ONLY get() = GPUTextureAspect("depth-only")
+    }
 }
 
 external interface GPUTextureViewDescriptor : GPUObjectDescriptorBase {
-    var format: String? /* "r8unorm" | "r8snorm" | "r8uint" | "r8sint" | "r16uint" | "r16sint" | "r16float" | "rg8unorm" | "rg8snorm" | "rg8uint" | "rg8sint" | "r32uint" | "r32sint" | "r32float" | "rg16uint" | "rg16sint" | "rg16float" | "rgba8unorm" | "rgba8unorm-srgb" | "rgba8snorm" | "rgba8uint" | "rgba8sint" | "bgra8unorm" | "bgra8unorm-srgb" | "rgb9e5ufloat" | "rgb10a2uint" | "rgb10a2unorm" | "rg11b10ufloat" | "rg32uint" | "rg32sint" | "rg32float" | "rgba16uint" | "rgba16sint" | "rgba16float" | "rgba32uint" | "rgba32sint" | "rgba32float" | "stencil8" | "depth16unorm" | "depth24plus" | "depth24plus-stencil8" | "depth32float" | "depth32float-stencil8" | "bc1-rgba-unorm" | "bc1-rgba-unorm-srgb" | "bc2-rgba-unorm" | "bc2-rgba-unorm-srgb" | "bc3-rgba-unorm" | "bc3-rgba-unorm-srgb" | "bc4-r-unorm" | "bc4-r-snorm" | "bc5-rg-unorm" | "bc5-rg-snorm" | "bc6h-rgb-ufloat" | "bc6h-rgb-float" | "bc7-rgba-unorm" | "bc7-rgba-unorm-srgb" | "etc2-rgb8unorm" | "etc2-rgb8unorm-srgb" | "etc2-rgb8a1unorm" | "etc2-rgb8a1unorm-srgb" | "etc2-rgba8unorm" | "etc2-rgba8unorm-srgb" | "eac-r11unorm" | "eac-r11snorm" | "eac-rg11unorm" | "eac-rg11snorm" | "astc-4x4-unorm" | "astc-4x4-unorm-srgb" | "astc-5x4-unorm" | "astc-5x4-unorm-srgb" | "astc-5x5-unorm" | "astc-5x5-unorm-srgb" | "astc-6x5-unorm" | "astc-6x5-unorm-srgb" | "astc-6x6-unorm" | "astc-6x6-unorm-srgb" | "astc-8x5-unorm" | "astc-8x5-unorm-srgb" | "astc-8x6-unorm" | "astc-8x6-unorm-srgb" | "astc-8x8-unorm" | "astc-8x8-unorm-srgb" | "astc-10x5-unorm" | "astc-10x5-unorm-srgb" | "astc-10x6-unorm" | "astc-10x6-unorm-srgb" | "astc-10x8-unorm" | "astc-10x8-unorm-srgb" | "astc-10x10-unorm" | "astc-10x10-unorm-srgb" | "astc-12x10-unorm" | "astc-12x10-unorm-srgb" | "astc-12x12-unorm" | "astc-12x12-unorm-srgb" */
-        get() = definedExternally
-        set(value) = definedExternally
-    var dimension: String? /* "1d" | "2d" | "2d-array" | "cube" | "cube-array" | "3d" */
-        get() = definedExternally
-        set(value) = definedExternally
-    var aspect: String? /* "all" | "stencil-only" | "depth-only" */
-        get() = definedExternally
-        set(value) = definedExternally
+    var format: GPUTextureFormat?
+    var dimension: GPUViewDimension?
+    var aspect: GPUTextureAspect?
     var baseMipLevel: GPUIntegerCoordinate?
-        get() = definedExternally
-        set(value) = definedExternally
     var mipLevelCount: GPUIntegerCoordinate?
-        get() = definedExternally
-        set(value) = definedExternally
     var baseArrayLayer: GPUIntegerCoordinate?
-        get() = definedExternally
-        set(value) = definedExternally
     var arrayLayerCount: GPUIntegerCoordinate?
-        get() = definedExternally
-        set(value) = definedExternally
 }
+
+fun GPUTextureViewDescriptor(
+    format: GPUTextureFormat? = undefined,
+    dimension: GPUViewDimension? = undefined,
+    aspect: GPUTextureAspect? = undefined,
+    baseMipLevel: GPUIntegerCoordinate? = undefined,
+    mipLevelCount: GPUIntegerCoordinate? = undefined,
+    baseArrayLayer: GPUIntegerCoordinate? = undefined,
+    arrayLayerCount: GPUIntegerCoordinate? = undefined,
+    label: String? = undefined,
+): GPUTextureViewDescriptor = js("({format: format, dimension: dimension, aspect: aspect, baseMipLevel: baseMipLevel, mipLevelCount: mipLevelCount, baseArrayLayer: baseArrayLayer, arrayLayerCount: arrayLayerCount, label: label})")
 
 external interface GPUUncapturedErrorEventInit : EventInit {
     var error: GPUError
 }
 
-external interface GPUVertexAttribute {
-    var format: String
+fun GPUUncapturedErrorEventInit(
+    error: GPUError,
+    bubbles: Boolean? = undefined,
+    cancelable: Boolean? = undefined,
+    composed: Boolean? = undefined,
+): GPUUncapturedErrorEventInit = js("({error: error, bubbles: bubbles, cancelable: cancelable, composed: composed})")
 
-    /* "uint8x2" | "uint8x4" | "sint8x2" | "sint8x4" | "unorm8x2" | "unorm8x4" | "snorm8x2" | "snorm8x4" | "uint16x2" | "uint16x4" | "sint16x2" | "sint16x4" | "unorm16x2" | "unorm16x4" | "snorm16x2" | "snorm16x4" | "float16x2" | "float16x4" | "float32" | "float32x2" | "float32x3" | "float32x4" | "uint32" | "uint32x2" | "uint32x3" | "uint32x4" | "sint32" | "sint32x2" | "sint32x3" | "sint32x4" | "unorm10-10-10-2" */
+
+external interface GPUVertexAttribute {
+    var format: GPUTextureFormat
     var offset: GPUSize64
     var shaderLocation: GPUIndex32
 }
 
+fun GPUVertexAttribute(
+    format: GPUTextureFormat,
+    offset: GPUSize64,
+    shaderLocation: GPUIndex32,
+): GPUVertexAttribute = js("({format: format, offset: offset, shaderLocation: shaderLocation})")
+
+
 external interface GPUVertexBufferLayout {
     var arrayStride: GPUSize64
     var stepMode: String? /* "vertex" | "instance" */
-        get() = definedExternally
-        set(value) = definedExternally
+
     var attributes: Array<GPUVertexAttribute>
 }
 
+fun GPUVertexBufferLayout(
+    arrayStride: GPUSize64,
+    stepMode: String? = undefined,
+    attributes: Array<GPUVertexAttribute>,
+): GPUVertexBufferLayout = js("({arrayStride: arrayStride, stepMode: stepMode, attributes: attributes})")
+
+
 external interface GPUVertexState : GPUProgrammableStage {
     var buffers: Array<GPUVertexBufferLayout?>?
-        get() = definedExternally
-        set(value) = definedExternally
 }
+
+fun GPUVertexState(
+    module: GPUShaderModule,
+    entryPoint: String? = undefined,
+    constants: Map<String, GPUPipelineConstantValue>? = undefined,
+    buffers: Array<GPUVertexBufferLayout?>? = undefined
+): GPUVertexState = js("({ module : module, entryPoint : entryPoint, constants : constants, buffers : buffers })")
 
 external interface GPUBindingCommandsMixin {
     fun setBindGroup(
@@ -660,15 +1125,14 @@ external interface GPURenderCommandsMixin {
     fun drawIndexedIndirect(indirectBuffer: GPUBuffer, indirectOffset: GPUSize64)
 }
 
-external interface NavigatorGPU {
+abstract external class NavigatorGPU : Navigator {
     var gpu: GPU
 }
-
 
 external class GPU {
     var __brand: String /* "GPU" */
     fun requestAdapter(options: GPURequestAdapterOptions = definedExternally): Promise<GPUAdapter?>
-    fun getPreferredCanvasFormat(): String /* "r8unorm" | "r8snorm" | "r8uint" | "r8sint" | "r16uint" | "r16sint" | "r16float" | "rg8unorm" | "rg8snorm" | "rg8uint" | "rg8sint" | "r32uint" | "r32sint" | "r32float" | "rg16uint" | "rg16sint" | "rg16float" | "rgba8unorm" | "rgba8unorm-srgb" | "rgba8snorm" | "rgba8uint" | "rgba8sint" | "bgra8unorm" | "bgra8unorm-srgb" | "rgb9e5ufloat" | "rgb10a2uint" | "rgb10a2unorm" | "rg11b10ufloat" | "rg32uint" | "rg32sint" | "rg32float" | "rgba16uint" | "rgba16sint" | "rgba16float" | "rgba32uint" | "rgba32sint" | "rgba32float" | "stencil8" | "depth16unorm" | "depth24plus" | "depth24plus-stencil8" | "depth32float" | "depth32float-stencil8" | "bc1-rgba-unorm" | "bc1-rgba-unorm-srgb" | "bc2-rgba-unorm" | "bc2-rgba-unorm-srgb" | "bc3-rgba-unorm" | "bc3-rgba-unorm-srgb" | "bc4-r-unorm" | "bc4-r-snorm" | "bc5-rg-unorm" | "bc5-rg-snorm" | "bc6h-rgb-ufloat" | "bc6h-rgb-float" | "bc7-rgba-unorm" | "bc7-rgba-unorm-srgb" | "etc2-rgb8unorm" | "etc2-rgb8unorm-srgb" | "etc2-rgb8a1unorm" | "etc2-rgb8a1unorm-srgb" | "etc2-rgba8unorm" | "etc2-rgba8unorm-srgb" | "eac-r11unorm" | "eac-r11snorm" | "eac-rg11unorm" | "eac-rg11snorm" | "astc-4x4-unorm" | "astc-4x4-unorm-srgb" | "astc-5x4-unorm" | "astc-5x4-unorm-srgb" | "astc-5x5-unorm" | "astc-5x5-unorm-srgb" | "astc-6x5-unorm" | "astc-6x5-unorm-srgb" | "astc-6x6-unorm" | "astc-6x6-unorm-srgb" | "astc-8x5-unorm" | "astc-8x5-unorm-srgb" | "astc-8x6-unorm" | "astc-8x6-unorm-srgb" | "astc-8x8-unorm" | "astc-8x8-unorm-srgb" | "astc-10x5-unorm" | "astc-10x5-unorm-srgb" | "astc-10x6-unorm" | "astc-10x6-unorm-srgb" | "astc-10x8-unorm" | "astc-10x8-unorm-srgb" | "astc-10x10-unorm" | "astc-10x10-unorm-srgb" | "astc-12x10-unorm" | "astc-12x10-unorm-srgb" | "astc-12x12-unorm" | "astc-12x12-unorm-srgb" */
+    fun getPreferredCanvasFormat(): GPUTextureFormat
     var wgslLanguageFeatures: WGSLLanguageFeatures
 
     companion object {
@@ -744,8 +1208,7 @@ external class GPUBuffer : GPUObjectBase {
 external class GPUCanvasContext {
     var __brand: String /* "GPUCanvasContext" */
     var canvas: dynamic /* HTMLCanvasElement | OffscreenCanvas */
-        get() = definedExternally
-        set(value) = definedExternally
+
     fun configure(configuration: GPUCanvasConfiguration)
     fun unconfigure()
     fun getCurrentTexture(): GPUTexture
@@ -1165,7 +1628,7 @@ external class GPUTexture : GPUObjectBase {
     var mipLevelCount: GPUIntegerCoordinateOut
     var sampleCount: GPUSize32Out
     var dimension: String /* "1d" | "2d" | "3d" */
-    var format: String /* "r8unorm" | "r8snorm" | "r8uint" | "r8sint" | "r16uint" | "r16sint" | "r16float" | "rg8unorm" | "rg8snorm" | "rg8uint" | "rg8sint" | "r32uint" | "r32sint" | "r32float" | "rg16uint" | "rg16sint" | "rg16float" | "rgba8unorm" | "rgba8unorm-srgb" | "rgba8snorm" | "rgba8uint" | "rgba8sint" | "bgra8unorm" | "bgra8unorm-srgb" | "rgb9e5ufloat" | "rgb10a2uint" | "rgb10a2unorm" | "rg11b10ufloat" | "rg32uint" | "rg32sint" | "rg32float" | "rgba16uint" | "rgba16sint" | "rgba16float" | "rgba32uint" | "rgba32sint" | "rgba32float" | "stencil8" | "depth16unorm" | "depth24plus" | "depth24plus-stencil8" | "depth32float" | "depth32float-stencil8" | "bc1-rgba-unorm" | "bc1-rgba-unorm-srgb" | "bc2-rgba-unorm" | "bc2-rgba-unorm-srgb" | "bc3-rgba-unorm" | "bc3-rgba-unorm-srgb" | "bc4-r-unorm" | "bc4-r-snorm" | "bc5-rg-unorm" | "bc5-rg-snorm" | "bc6h-rgb-ufloat" | "bc6h-rgb-float" | "bc7-rgba-unorm" | "bc7-rgba-unorm-srgb" | "etc2-rgb8unorm" | "etc2-rgb8unorm-srgb" | "etc2-rgb8a1unorm" | "etc2-rgb8a1unorm-srgb" | "etc2-rgba8unorm" | "etc2-rgba8unorm-srgb" | "eac-r11unorm" | "eac-r11snorm" | "eac-rg11unorm" | "eac-rg11snorm" | "astc-4x4-unorm" | "astc-4x4-unorm-srgb" | "astc-5x4-unorm" | "astc-5x4-unorm-srgb" | "astc-5x5-unorm" | "astc-5x5-unorm-srgb" | "astc-6x5-unorm" | "astc-6x5-unorm-srgb" | "astc-6x6-unorm" | "astc-6x6-unorm-srgb" | "astc-8x5-unorm" | "astc-8x5-unorm-srgb" | "astc-8x6-unorm" | "astc-8x6-unorm-srgb" | "astc-8x8-unorm" | "astc-8x8-unorm-srgb" | "astc-10x5-unorm" | "astc-10x5-unorm-srgb" | "astc-10x6-unorm" | "astc-10x6-unorm-srgb" | "astc-10x8-unorm" | "astc-10x8-unorm-srgb" | "astc-10x10-unorm" | "astc-10x10-unorm-srgb" | "astc-12x10-unorm" | "astc-12x10-unorm-srgb" | "astc-12x12-unorm" | "astc-12x12-unorm-srgb" */
+    var format: GPUTextureFormat
     var usage: GPUFlagsConstant
 
     companion object {
@@ -1204,7 +1667,7 @@ external class GPUValidationError : GPUError {
 
 typealias WGSLLanguageFeatures = ReadonlySet<String>
 
-external interface WorkerNavigator : NavigatorGPU
+typealias WorkerNavigator = NavigatorGPU
 
 
 external class GPUBufferUsage {
@@ -1329,8 +1792,7 @@ external interface ReadonlySet<T> {
 
 external interface IteratorYieldResult<TYield> {
     var done: Boolean?
-        get() = definedExternally
-        set(value) = definedExternally
+
     var value: TYield
 }
 
@@ -1398,11 +1860,11 @@ typealias GPUSize32 = Int
 
 typealias GPUSize32Out = Int
 
-typealias GPUSize64 = Long
+typealias GPUSize64 = Number
 
-typealias GPUSize64Out = Long
+typealias GPUSize64Out = Number
 
-typealias GPUStencilValue = Long
+typealias GPUStencilValue = Number
 
 typealias GPUTextureUsageFlags = Int
 

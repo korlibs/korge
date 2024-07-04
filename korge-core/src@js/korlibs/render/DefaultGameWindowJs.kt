@@ -552,7 +552,13 @@ private external interface JsGamepadEvent {
 
 class NodeJsGameWindow : JsGameWindow()
 
-actual fun CreateDefaultGameWindow(config: GameWindowCreationConfig): GameWindow = if (Platform.isJsNodeJs) NodeJsGameWindow() else BrowserCanvasJsGameWindow()
+class DenoJsGameWindow : JsGameWindow()
+
+actual fun CreateDefaultGameWindow(config: GameWindowCreationConfig): GameWindow = when {
+    Platform.isJsDenoJs -> DenoJsGameWindow()
+    Platform.isJsNodeJs -> NodeJsGameWindow()
+    else -> BrowserCanvasJsGameWindow()
+}
 
 /*
 public external open class TouchEvent(type: String, eventInitDict: MouseEventInit = definedExternally) : UIEvent {

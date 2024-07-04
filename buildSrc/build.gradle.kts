@@ -27,6 +27,7 @@ if (isJava8or9) {
 dependencies {
     implementation(libs.kover)
     implementation(libs.dokka)
+    //implementation(libs.jsplainobjects)
     implementation(libs.proguard.gradle)
     implementation(libs.gson)
     implementation(libs.gradle.publish.plugin)
