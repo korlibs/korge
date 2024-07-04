@@ -59,28 +59,25 @@ open class RunJsServer : DefaultTask() {
     }
 }
 
+fun Project.fullPathName(): String {
+    if (this.parent == null) return this.name
+    return this.parent!!.fullPathName() + ":" + this.name
+}
+
 fun Project.configureDenoTest() {
     afterEvaluate {
         if (tasks.findByName("compileTestDevelopmentExecutableKotlinJs") == null) return@afterEvaluate
 
         val jsDenoTest = project.tasks.createThis<Exec>("jsDenoTest") {
-            fun fullPathName(project: Project): String {
-                if (project.parent == null) return project.name
-                return fullPathName(project.parent!!) + ":" + project.name
-            }
-            val baseTestFileNameBase = fullPathName(project).trim(':').replace(':', '-') + "-test"
+            group = "verification"
+
+            dependsOn("compileTestDevelopmentExecutableKotlinJs")
+
+            val baseTestFileNameBase = project.fullPathName().trim(':').replace(':', '-') + "-test"
             val baseTestFileName = "$baseTestFileNameBase.mjs"
 
-            //build\js\packages\korge-root-korge-test\kotlin
-
-            //val runFile = file("build/compileSync/js/test/testDevelopmentExecutable/kotlin/$baseTestFileName.deno.mjs")
             val runFile = File(rootProject.rootDir, "build/js/packages/$baseTestFileNameBase/kotlin/$baseTestFileName.deno.mjs")
 
-            // compileTestDevelopmentExecutableKotlinJs
-            dependsOn("compileTestDevelopmentExecutableKotlinJs")
-            //commandLine("deno", "test", "--unstable-ffi", "-A", "src/test/kotlin")
-
-            //rootProject.
             commandLine("deno", "test", "--unstable-ffi", "--unstable-webgpu", "-A", runFile)
             workingDir(runFile.parentFile.absolutePath)
 
@@ -105,6 +102,27 @@ fun Project.configureDenoTest() {
 }
 
 fun Project.configureDenoRun() {
+    afterEvaluate {
+        if (tasks.findByName("compileDevelopmentExecutableKotlinJs") == null) return@afterEvaluate
+
+        val baseRunFileNameBase = project.fullPathName().trim(':').replace(':', '-')
+        val baseRunFileName = "$baseRunFileNameBase.mjs"
+        val runFile = File(rootProject.rootDir, "build/js/packages/$baseRunFileNameBase/kotlin/$baseRunFileName")
+
+        val runDeno = project.tasks.createThis<Exec>("runDeno") {
+            group = GROUP_KORGE_RUN
+            dependsOn("compileDevelopmentExecutableKotlinJs")
+            commandLine("deno", "run", "--unstable-ffi", "--unstable-webgpu", "-A", runFile)
+            workingDir(runFile.parentFile.absolutePath)
+        }
+
+        val packageDeno = project.tasks.createThis<Exec>("packageDeno") {
+            group = GROUP_KORGE_PACKAGE
+            dependsOn("compileDevelopmentExecutableKotlinJs")
+            commandLine("deno", "compile", "--unstable-ffi", "--unstable-webgpu", "-A", runFile)
+            workingDir(runFile.parentFile.absolutePath)
+        }
+    }
 }
 
 fun Project.configureJavascriptRun() {
