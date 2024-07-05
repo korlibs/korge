@@ -64,67 +64,6 @@ fun Project.fullPathName(): String {
     return this.parent!!.fullPathName() + ":" + this.name
 }
 
-fun Project.configureDenoTest() {
-    afterEvaluate {
-        if (tasks.findByName("compileTestDevelopmentExecutableKotlinJs") == null) return@afterEvaluate
-
-        val jsDenoTest = project.tasks.createThis<Exec>("jsDenoTest") {
-            group = "verification"
-
-            dependsOn("compileTestDevelopmentExecutableKotlinJs")
-
-            val baseTestFileNameBase = project.fullPathName().trim(':').replace(':', '-') + "-test"
-            val baseTestFileName = "$baseTestFileNameBase.mjs"
-
-            val runFile = File(rootProject.rootDir, "build/js/packages/$baseTestFileNameBase/kotlin/$baseTestFileName.deno.mjs")
-
-            commandLine("deno", "test", "--unstable-ffi", "--unstable-webgpu", "-A", runFile)
-            workingDir(runFile.parentFile.absolutePath)
-
-            doFirst {
-                runFile.parentFile.mkdirs()
-                runFile.writeText(
-                    //language=js
-                    """
-                    var describeStack = []
-                    globalThis.describe = (name, callback) => { describeStack.push(name); try { callback() } finally { describeStack.pop() } }
-                    globalThis.it = (name, callback) => { return Deno.test({ name: describeStack.join(".") + "." + name, fn: callback}) }
-                    globalThis.xit = (name, callback) => { return Deno.test({ name: describeStack.join(".") + "." + name, ignore: true, fn: callback}) }
-                    function exists(path) { try { Deno.statSync(path); return true } catch (e) { return false } }
-                    // Polyfill required for kotlinx-coroutines that detects window 
-                    window.postMessage = (message, targetOrigin) => { const ev = new Event('message'); ev.source = window; ev.data = message; window.dispatchEvent(ev); }
-                    const file = './$baseTestFileName';
-                    if (exists(file)) await import(file)
-                """.trimIndent())
-            }
-        }
-    }
-}
-
-fun Project.configureDenoRun() {
-    afterEvaluate {
-        if (tasks.findByName("compileDevelopmentExecutableKotlinJs") == null) return@afterEvaluate
-
-        val baseRunFileNameBase = project.fullPathName().trim(':').replace(':', '-')
-        val baseRunFileName = "$baseRunFileNameBase.mjs"
-        val runFile = File(rootProject.rootDir, "build/js/packages/$baseRunFileNameBase/kotlin/$baseRunFileName")
-
-        val runDeno = project.tasks.createThis<Exec>("runDeno") {
-            group = GROUP_KORGE_RUN
-            dependsOn("compileDevelopmentExecutableKotlinJs")
-            commandLine("deno", "run", "--unstable-ffi", "--unstable-webgpu", "-A", runFile)
-            workingDir(runFile.parentFile.absolutePath)
-        }
-
-        val packageDeno = project.tasks.createThis<Exec>("packageDeno") {
-            group = GROUP_KORGE_PACKAGE
-            dependsOn("compileDevelopmentExecutableKotlinJs")
-            commandLine("deno", "compile", "--unstable-ffi", "--unstable-webgpu", "-A", runFile)
-            workingDir(runFile.parentFile.absolutePath)
-        }
-    }
-}
-
 fun Project.configureJavascriptRun() {
     val runJsRelease = project.tasks.createThis<RunJsServer>(name = "runJsRelease") {
         group = GROUP_KORGE_RUN
