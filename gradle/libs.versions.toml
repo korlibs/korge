@@ -15,8 +15,8 @@ kotlinx-coroutines = "1.9.0-RC"
 kotlinx-serialization = "1.7.0"
 kotlinx-atomicfu = "0.24.0"
 
-#korlibs = "6.0.0-alpha7"
-korlibs = "999.0.0.999"
+korlibs = "6.0.0-alpha9"
+#korlibs = "999.0.0.999"
 
 kotlinx-benchmark = "0.4.7"
 dokka = "1.9.10"
@@ -29,6 +29,7 @@ gradle-publish-plugin = "1.1.0"
 # https://repo.maven.apache.org/maven2/org/jetbrains/intellij/deps/intellij-coverage-agent/
 
 [libraries]
+korlibs-all = { module = "com.soywiz:korlibs-all", version.ref = "korlibs" }
 korlibs-audio = { module = "com.soywiz:korlibs-audio", version.ref = "korlibs" }
 korlibs-image = { module = "com.soywiz:korlibs-image", version.ref = "korlibs" }
 korlibs-inject = { module = "com.soywiz:korlibs-inject", version.ref = "korlibs" }

@@ -31,7 +31,6 @@ dependencies {
     implementation(libs.proguard.gradle)
     implementation(libs.gson)
     implementation(libs.gradle.publish.plugin)
-    implementation(libs.korlibs.serialization)
     implementation(libs.kotlin.gradle.plugin)
     implementation(libs.android.build.gradle)
     testImplementation(libs.junit)

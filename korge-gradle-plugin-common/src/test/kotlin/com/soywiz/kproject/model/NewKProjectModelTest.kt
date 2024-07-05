@@ -1,7 +1,6 @@
 package com.soywiz.kproject.model
 
-import com.soywiz.kproject.internal.*
-import korlibs.io.serialization.yaml.*
+import com.soywiz.kproject.util.*
 import kotlin.test.*
 
 class NewKProjectModelTest {

@@ -2,7 +2,6 @@ package korlibs.korge.gradle
 
 import groovy.text.*
 import korlibs.*
-import korlibs.io.serialization.yaml.*
 import korlibs.korge.gradle.processor.*
 import korlibs.korge.gradle.targets.*
 import korlibs.korge.gradle.targets.android.*
@@ -178,7 +177,7 @@ open class KorgeExtension(
     fun loadYaml(file: File) {
         val korgeYamlString = file.takeIfExists()?.readText() ?: return
         try {
-            val info = korlibs.io.serialization.yaml.Yaml.read(korgeYamlString).dyn
+            val info = korlibs.korge.gradle.util.Yaml.read(korgeYamlString).dyn
             info["id"].toStringOrNull()?.let { this.id = it }
 
             author(

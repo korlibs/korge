@@ -11,11 +11,12 @@ project.extensions.extraProperties.properties.apply {
 }
 
 dependencies {
-    commonMainApi(libs.korlibs.audio)
-    commonMainApi(libs.korlibs.image)
-    commonMainApi(libs.korlibs.inject)
-    commonMainApi(libs.korlibs.template)
-    commonMainApi(libs.korlibs.time)
+    commonMainApi(libs.korlibs.all)
+    //commonMainApi(libs.korlibs.audio)
+    //commonMainApi(libs.korlibs.image)
+    //commonMainApi(libs.korlibs.inject)
+    //commonMainApi(libs.korlibs.template)
+    //commonMainApi(libs.korlibs.time)
     commonMainApi(libs.kotlinx.atomicfu)
     commonMainApi(libs.kotlinx.coroutines.core)
     //commonTestApi(project(":korge-test"))
