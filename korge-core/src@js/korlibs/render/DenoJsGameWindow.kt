@@ -22,6 +22,7 @@ class DenoJsGameWindow(
             //println("INTERVAL")
             updateSDLEvents()
             frame()
+            afterFrame()
         }, 16)
 
         //CompletableDeferred<Unit>().await()

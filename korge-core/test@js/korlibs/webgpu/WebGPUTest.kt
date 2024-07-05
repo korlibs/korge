@@ -6,6 +6,7 @@ import korlibs.image.format.*
 import korlibs.io.async.*
 import korlibs.io.net.*
 import korlibs.math.geom.*
+import korlibs.platform.*
 import kotlinx.browser.*
 import kotlinx.coroutines.*
 import org.khronos.webgl.*
@@ -115,6 +116,8 @@ class WebGPUTest {
     // https://github.com/denoland/webgpu-examples/blob/e8498aa0e001168b77762dde8a1f5fca30c551a7/hello-triangle/mod.ts
     @Test
     fun testOffscreen() = suspendTest {
+        if (Platform.isJsDenoJs) return@suspendTest
+
         val dimensions = SizeInt(200, 200)
         val adapter: GPUAdapter = navigator.gpu.requestAdapter().await()
             ?: (return@suspendTest Unit.also {

@@ -1,12 +1,12 @@
 package korlibs.render.win32
 
-import korlibs.event.Key
 import com.sun.jna.Native
 import com.sun.jna.Pointer
 import com.sun.jna.Structure
 import com.sun.jna.platform.win32.*
 import com.sun.jna.ptr.PointerByReference
 import com.sun.jna.win32.W32APIOptions
+import korlibs.event.*
 import java.nio.Buffer
 
 object Win32 : MyKernel32 by MyKernel32,
@@ -237,87 +237,17 @@ internal const val VK_SNAPSHOT = 0x2C /* PRINT SCREEN key */
 internal const val VK_INSERT = 0x2D   /* INS key */
 internal const val VK_DELETE = 0x2E   /* DEL key */
 internal const val VK_HELP = 0x2F     /* HELP key */
-internal const val VK_KEY_0 = 0x30 /* '0' key */
-internal const val VK_KEY_1 = 0x31 /* '1' key */
-internal const val VK_KEY_2 = 0x32 /* '2' key */
-internal const val VK_KEY_3 = 0x33 /* '3' key */
-internal const val VK_KEY_4 = 0x34 /* '4' key */
-internal const val VK_KEY_5 = 0x35 /* '5' key */
-internal const val VK_KEY_6 = 0x36 /* '6' key */
-internal const val VK_KEY_7 = 0x37 /* '7' key */
-internal const val VK_KEY_8 = 0x38 /* '8' key */
-internal const val VK_KEY_9 = 0x39 /* '9' key */
-internal const val VK_KEY_A = 0x41 /* 'A' key */
-internal const val VK_KEY_B = 0x42 /* 'B' key */
-internal const val VK_KEY_C = 0x43 /* 'C' key */
-internal const val VK_KEY_D = 0x44 /* 'D' key */
-internal const val VK_KEY_E = 0x45 /* 'E' key */
-internal const val VK_KEY_F = 0x46 /* 'F' key */
-internal const val VK_KEY_G = 0x47 /* 'G' key */
-internal const val VK_KEY_H = 0x48 /* 'H' key */
-internal const val VK_KEY_I = 0x49 /* 'I' key */
-internal const val VK_KEY_J = 0x4A /* 'J' key */
-internal const val VK_KEY_K = 0x4B /* 'K' key */
-internal const val VK_KEY_L = 0x4C /* 'L' key */
-internal const val VK_KEY_M = 0x4D /* 'M' key */
-internal const val VK_KEY_N = 0x4E /* 'N' key */
-internal const val VK_KEY_O = 0x4F /* 'O' key */
-internal const val VK_KEY_P = 0x50 /* 'P' key */
-internal const val VK_KEY_Q = 0x51 /* 'Q' key */
-internal const val VK_KEY_R = 0x52 /* 'R' key */
-internal const val VK_KEY_S = 0x53 /* 'S' key */
-internal const val VK_KEY_T = 0x54 /* 'T' key */
-internal const val VK_KEY_U = 0x55 /* 'U' key */
-internal const val VK_KEY_V = 0x56 /* 'V' key */
-internal const val VK_KEY_W = 0x57 /* 'W' key */
-internal const val VK_KEY_X = 0x58 /* 'X' key */
-internal const val VK_KEY_Y = 0x59 /* 'Y' key */
-internal const val VK_KEY_Z = 0x5A /* 'Z' key */
 internal const val VK_LWIN = 0x5B /* Left Windows key (Microsoft Natural keyboard) */
 internal const val VK_RWIN = 0x5C /* Right Windows key (Natural keyboard) */
 internal const val VK_APPS = 0x5D /* Applications key (Natural keyboard) */
 internal const val VK_POWER = 0x5E /* Power key */
 internal const val VK_SLEEP = 0x5F /* Computer Sleep key */
-internal const val VK_NUMPAD0 = 0x60 /* Numeric keypad '0' key */
-internal const val VK_NUMPAD1 = 0x61 /* Numeric keypad '1' key */
-internal const val VK_NUMPAD2 = 0x62 /* Numeric keypad '2' key */
-internal const val VK_NUMPAD3 = 0x63 /* Numeric keypad '3' key */
-internal const val VK_NUMPAD4 = 0x64 /* Numeric keypad '4' key */
-internal const val VK_NUMPAD5 = 0x65 /* Numeric keypad '5' key */
-internal const val VK_NUMPAD6 = 0x66 /* Numeric keypad '6' key */
-internal const val VK_NUMPAD7 = 0x67 /* Numeric keypad '7' key */
-internal const val VK_NUMPAD8 = 0x68 /* Numeric keypad '8' key */
-internal const val VK_NUMPAD9 = 0x69 /* Numeric keypad '9' key */
 internal const val VK_MULTIPLY = 0x6A  /* Multiply key */
 internal const val VK_ADD = 0x6B       /* Add key */
 internal const val VK_SEPARATOR = 0x6C /* Separator key */
 internal const val VK_SUBTRACT = 0x6D  /* Subtract key */
 internal const val VK_DECIMAL = 0x6E   /* Decimal key */
 internal const val VK_DIVIDE = 0x6F    /* Divide key */
-internal const val VK_F1 = 0x70  /* F1 key */
-internal const val VK_F2 = 0x71  /* F2 key */
-internal const val VK_F3 = 0x72  /* F3 key */
-internal const val VK_F4 = 0x73  /* F4 key */
-internal const val VK_F5 = 0x74  /* F5 key */
-internal const val VK_F6 = 0x75  /* F6 key */
-internal const val VK_F7 = 0x76  /* F7 key */
-internal const val VK_F8 = 0x77  /* F8 key */
-internal const val VK_F9 = 0x78  /* F9 key */
-internal const val VK_F10 = 0x79 /* F10 key */
-internal const val VK_F11 = 0x7A /* F11 key */
-internal const val VK_F12 = 0x7B /* F12 key */
-internal const val VK_F13 = 0x7C /* F13 key */
-internal const val VK_F14 = 0x7D /* F14 key */
-internal const val VK_F15 = 0x7E /* F15 key */
-internal const val VK_F16 = 0x7F /* F16 key */
-internal const val VK_F17 = 0x80 /* F17 key */
-internal const val VK_F18 = 0x81 /* F18 key */
-internal const val VK_F19 = 0x82 /* F19 key */
-internal const val VK_F20 = 0x83 /* F20 key */
-internal const val VK_F21 = 0x84 /* F21 key */
-internal const val VK_F22 = 0x85 /* F22 key */
-internal const val VK_F23 = 0x86 /* F23 key */
-internal const val VK_F24 = 0x87 /* F24 key */
 internal const val VK_NUMLOCK = 0x90 /* NUM LOCK key */
 internal const val VK_SCROLL = 0x91  /* SCROLL LOCK key */
 internal const val VK_LSHIFT = 0xA0   /* Left SHIFT key */
@@ -387,7 +317,17 @@ internal const val VK_PA1 = 0xFD       /* PA1 key */
 internal const val VK_OEM_CLEAR = 0xFE /* Clear key */
 internal const val VK_NONE = 0xFF /* no key */
 
-val VK_TABLE: Map<Int, Key> = mapOf(
+internal const val VK_KEY_0 = 0x30 /* '0' key */
+internal const val VK_KEY_A = 0x41 /* 'A' key */
+internal const val VK_NUMPAD0 = 0x60 /* Numeric keypad '0' key */
+
+val VK_TABLE: IntToKeyMap = IntToKeyMap {
+    map(VK_KEY_0, Key.N0..Key.N9)
+    map(VK_NUMPAD0, Key.NUMPAD0..Key.NUMPAD9)
+    map(VK_KEY_A, Key.A..Key.Z)
+}
+/*
+= mapOf(
     KBDEXT to Key.UNKNOWN,
     KBDMULTIVK to Key.UNKNOWN,
     KBDSPECIAL to Key.UNKNOWN,
@@ -590,3 +530,4 @@ val VK_TABLE: Map<Int, Key> = mapOf(
     VK_OEM_CLEAR to Key.UNKNOWN,
     VK_NONE to Key.UNKNOWN
 )
+*/

@@ -58,11 +58,11 @@ korlibs.NativeTools.groovyConfigurePublishing(project, false)
 korlibs.NativeTools.groovyConfigureSigning(project)
 
 dependencies {
-    //implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.kotlinx.coroutines.core)
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.0")
-    implementation(libs.korlibs.datastructure.core)
-    implementation(libs.korlibs.memory)
-    implementation(libs.korlibs.io.stream)
+    //implementation(libs.korlibs.all)
+    //implementation(libs.korlibs.datastructure.core)
+    //implementation(libs.korlibs.io.stream)
     testImplementation(libs.bundles.kotlin.test)
 }
 

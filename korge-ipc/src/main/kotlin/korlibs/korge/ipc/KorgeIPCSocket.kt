@@ -1,7 +1,5 @@
 package korlibs.korge.ipc
 
-import korlibs.io.stream.*
-import korlibs.memory.*
 import kotlinx.serialization.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.*
@@ -179,8 +177,8 @@ class IPCPacket(
             return IPCPacket(type, data)
         }
 
-        operator fun invoke(type: Int, block: SyncOutputStream.() -> Unit): IPCPacket {
-            return IPCPacket(type, MemorySyncStreamToByteArray(128, block))
+        operator fun invoke(type: Int, block: OutputStream.() -> Unit): IPCPacket {
+            return IPCPacket(type, ByteArrayOutputStream(128).apply(block).toByteArray())
         }
 
         inline fun <reified T> fromJson(type: Int, value: T): IPCPacket =
@@ -244,14 +242,50 @@ class IPCPacket(
     }
 }
 
-fun IPCPacket.Companion.genericEventGen(kind: String, eventData: ByteArray): ByteArray = MemorySyncStreamToByteArray(16 + kind.length + 4 + eventData.size + 4) {
+private fun InputStream.readU8(): Int {
+    return read().also {
+        if (it < 0) error("EOF")
+    }
+}
+
+private fun InputStream.readU_VL(): Int {
+    var result = readU8()
+    if ((result and 0x80) == 0) return result
+    result = (result and 0x7f) or (readU8() shl 7)
+    if ((result and 0x4000) == 0) return result
+    result = (result and 0x3fff) or (readU8() shl 14)
+    if ((result and 0x200000) == 0) return result
+    result = (result and 0x1fffff) or (readU8() shl 21)
+    if ((result and 0x10000000) == 0) return result
+    result = (result and 0xfffffff) or (readU8() shl 28)
+    return result
+}
+
+private fun InputStream.readBytes(size: Int): ByteArray {
+    return readNBytes(size)
+}
+
+private fun OutputStream.writeU_VL(v: Int) {
+    var value = v
+    while (true) {
+        val c = value and 0x7f
+        value = value ushr 7
+        if (value == 0) {
+            write(c)
+            break
+        }
+        write(c or 0x80)
+    }
+}
+
+fun IPCPacket.Companion.genericEventGen(kind: String, eventData: ByteArray): ByteArray = ByteArrayOutputStream(16 + kind.length + 4 + eventData.size + 4).apply {
     val kindBytes = kind.encodeToByteArray()
     writeU_VL(kindBytes.size); writeBytes(kindBytes)
     writeU_VL(eventData.size); writeBytes(eventData)
-}
+}.toByteArray()
 
 fun IPCPacket.Companion.genericEventParse(data: ByteArray): Pair<String, ByteArray> {
-    val s = data.openFastStream()
+    val s = ByteArrayInputStream(data)
     val type = s.readBytes(s.readU_VL()).decodeToString()
     val data = s.readBytes(s.readU_VL())
     return type to data
@@ -280,8 +314,8 @@ fun IPCPacket.Companion.keyPacket(type: Int, keyCode: Int, char: Int): IPCPacket
 fun IPCPacket.Companion.mousePacket(
     type: Int, x: Int, y: Int, button: Int,
     scrollX: Float = 0f, scrollY: Float = 0f, scrollZ: Float = 0f,
-): IPCPacket = packetInts(type, x, y, button, scrollX.reinterpretAsInt(), scrollY.reinterpretAsInt(), scrollZ.reinterpretAsInt())
-fun IPCPacket.Companion.resizePacket(type: Int, width: Int, height: Int, scale: Float = 1f): IPCPacket = packetInts(type, width, height, scale.reinterpretAsInt())
+): IPCPacket = packetInts(type, x, y, button, scrollX.toRawBits(), scrollY.toRawBits(), scrollZ.toRawBits())
+fun IPCPacket.Companion.resizePacket(type: Int, width: Int, height: Int, scale: Float = 1f): IPCPacket = packetInts(type, width, height, scale.toRawBits())
 fun IPCPacket.Companion.nodePacket(type: Int, nodeId: Int): IPCPacket = packetInts(type, nodeId)
 
 fun IPCPacket.Companion.requestNodeChildrenPacket(nodeId: Int): IPCPacket = nodePacket(IPCPacket.REQUEST_NODE_CHILDREN, nodeId)
