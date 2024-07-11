@@ -4,104 +4,41 @@ on:
   push:
     tags:
       - 'v*'
-
+  workflow_dispatch:
+    inputs:
+      forced_version:
+        description: 'FORCED_VERSION to use'
+        required: true
+        type: string
 env:
   CI: true
-  FORCED_VERSION: ${{ github.ref }}
+  FORCED_VERSION: ${{ inputs.forced_version || github.ref }}
   ORG_GRADLE_PROJECT_signingKey: ${{ secrets.ORG_GRADLE_PROJECT_SIGNINGKEY }}
   ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.ORG_GRADLE_PROJECT_SIGNINGPASSWORD }}
   SONATYPE_USERNAME: ${{ secrets.SONATYPEUSERNAME }}
   SONATYPE_PASSWORD: ${{ secrets.SONATYPEPASSWORD }}
-  JAVA_VERSION: 11
+  JAVA_VERSION: 17
   JAVA_DISTRIBUTION: zulu
 
 jobs:
-  create-staging-repo:
-    runs-on: ubuntu-latest
-    outputs:
-      stagedRepositoryId: ${{ steps.createStagedRepositoryId.outputs.stagedRepositoryId }}
-    env:
-      DISABLE_JAVASCRIPT_TEST: true
-      DISABLE_KOTLIN_NATIVE: true
-      DISABLE_ANDROID: true
-      DISABLE_SANDBOX: true
+  publish:
+    runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v1
+      - { name: Checkout, uses: actions/checkout@v3 }
+      - { name: Use Node.js 20.x, uses: actions/setup-node@v3, with: { node-version: 20.x } }
       - { name: Set up JDK, uses: actions/setup-java@v3, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
-      - { name: Replace gradle wrapper, run: "sed 's/-all/-bin/g' gradle/wrapper/gradle-wrapper.properties > gradle/wrapper/gradle-wrapper.properties.bak; cp gradle/wrapper/gradle-wrapper.properties.bak gradle/wrapper/gradle-wrapper.properties" }
+      - { name: Replace Gradle Wrapper, run: "sed 's/-all/-bin/g' gradle/wrapper/gradle-wrapper.properties > gradle/wrapper/gradle-wrapper.properties.bak; cp gradle/wrapper/gradle-wrapper.properties.bak gradle/wrapper/gradle-wrapper.properties" }
       - { name: Prepare Gradle, uses: gradle/gradle-build-action@ef76a971e2fa3f867b617efd72f2fbd72cf6f8bc } # v2.8.0
-      - run: sudo apt-get install xvfb
-      - id: createStagedRepositoryId
-        run: xvfb-run --auto-servernum ./gradlew --no-daemon --info --stacktrace startReleasingMavenCentral
-
-  publish-ios:
-    runs-on: macos-11
-    needs: [create-staging-repo]
-    env:
-      stagedRepositoryId: ${{needs.create-staging-repo.outputs.stagedRepositoryId}}
-    steps:
-      - uses: actions/checkout@v1
-      - { name: Set up JDK, uses: actions/setup-java@v3, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
-      - { name: Replace gradle wrapper, run: "sed 's/-all/-bin/g' gradle/wrapper/gradle-wrapper.properties > gradle/wrapper/gradle-wrapper.properties.bak; cp gradle/wrapper/gradle-wrapper.properties.bak gradle/wrapper/gradle-wrapper.properties" }
-      - { name: Prepare Gradle, uses: gradle/gradle-build-action@ef76a971e2fa3f867b617efd72f2fbd72cf6f8bc } # v2.8.0
-      - run: ./gradlew checkReleasingMavenCentral
-      - run: ./gradlew publishIosArm64PublicationToMavenRepository publishIosX64PublicationToMavenRepository publishIosSimulatorArm64PublicationToMavenRepository
-        env:
-          DISABLE_JAVASCRIPT_TEST: true
-  publish-tvos:
-    runs-on: macos-11
-    needs: [create-staging-repo]
-    env:
-      stagedRepositoryId: ${{needs.create-staging-repo.outputs.stagedRepositoryId}}
-    steps:
-      - uses: actions/checkout@v1
-      - { name: Set up JDK, uses: actions/setup-java@v3, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
-      - { name: Replace gradle wrapper, run: "sed 's/-all/-bin/g' gradle/wrapper/gradle-wrapper.properties > gradle/wrapper/gradle-wrapper.properties.bak; cp gradle/wrapper/gradle-wrapper.properties.bak gradle/wrapper/gradle-wrapper.properties" }
-      - { name: Prepare Gradle, uses: gradle/gradle-build-action@ef76a971e2fa3f867b617efd72f2fbd72cf6f8bc } # v2.8.0
-      - run: ./gradlew checkReleasingMavenCentral
-      - run: ./gradlew publishTvosX64PublicationToMavenRepository publishTvosArm64PublicationToMavenRepository publishTvosSimulatorArm64PublicationToMavenRepository
-        env:
-          DISABLE_JAVASCRIPT_TEST: true
-  publish-jvm-multiplatform:
-    runs-on: ubuntu-latest
-    needs: [create-staging-repo]
-    env:
-      stagedRepositoryId: ${{needs.create-staging-repo.outputs.stagedRepositoryId}}
-    steps:
-      - uses: actions/checkout@v1
-      - { name: Set up JDK, uses: actions/setup-java@v3, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
-      - { name: Replace gradle wrapper, run: "sed 's/-all/-bin/g' gradle/wrapper/gradle-wrapper.properties > gradle/wrapper/gradle-wrapper.properties.bak; cp gradle/wrapper/gradle-wrapper.properties.bak gradle/wrapper/gradle-wrapper.properties" }
-      - { name: Prepare Gradle, uses: gradle/gradle-build-action@ef76a971e2fa3f867b617efd72f2fbd72cf6f8bc } # v2.8.0
-      - run: sudo apt-get install xvfb
-      - run: xvfb-run --auto-servernum ./gradlew --no-daemon checkReleasingMavenCentral
-      - run: xvfb-run --auto-servernum ./gradlew --no-daemon publishKotlinMultiplatformPublicationToMavenRepository publishJvmPublicationToMavenRepository
-  publish-js-android:
-    runs-on: ubuntu-latest
-    needs: [create-staging-repo]
-    env:
-      stagedRepositoryId: ${{needs.create-staging-repo.outputs.stagedRepositoryId}}
-    steps:
-      - uses: actions/checkout@v1
-      - { name: Set up JDK, uses: actions/setup-java@v3, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
-      - { name: Replace gradle wrapper, run: "sed 's/-all/-bin/g' gradle/wrapper/gradle-wrapper.properties > gradle/wrapper/gradle-wrapper.properties.bak; cp gradle/wrapper/gradle-wrapper.properties.bak gradle/wrapper/gradle-wrapper.properties" }
-      - { name: Prepare Gradle, uses: gradle/gradle-build-action@ef76a971e2fa3f867b617efd72f2fbd72cf6f8bc } # v2.8.0
-      - run: sudo apt-get install xvfb
-      - run: xvfb-run --auto-servernum ./gradlew --no-daemon checkReleasingMavenCentral
-      #- run: xvfb-run --auto-servernum ./gradlew --no-daemon publishWasmJsPublicationToMavenRepository
-      - run: xvfb-run --auto-servernum ./gradlew --no-daemon publishJsPublicationToMavenRepository publishAndroidPublicationToMavenRepository
-
-  publish-finalize:
-    runs-on: ubuntu-latest
-    needs: [publish-ios, publish-jvm-multiplatform, publish-js-android, publish-tvos]
-    env:
-      stagedRepositoryId: ${{needs.create-staging-repo.outputs.stagedRepositoryId}}
-      DISABLE_JAVASCRIPT_TEST: true
-      DISABLE_KOTLIN_NATIVE: true
-      DISABLE_ANDROID: true
-      DISABLE_SANDBOX: true
-    steps:
-      - uses: actions/checkout@v1
-      - { name: Set up JDK, uses: actions/setup-java@v3, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
-      - { name: Replace gradle wrapper, run: "sed 's/-all/-bin/g' gradle/wrapper/gradle-wrapper.properties > gradle/wrapper/gradle-wrapper.properties.bak; cp gradle/wrapper/gradle-wrapper.properties.bak gradle/wrapper/gradle-wrapper.properties" }
-      - { name: Prepare Gradle, uses: gradle/gradle-build-action@ef76a971e2fa3f867b617efd72f2fbd72cf6f8bc } # v2.8.0
-      - run: ./gradlew releaseMavenCentral
+      - { name: Initialize Gradle, run: ./gradlew }
+      # To ensure we are fine before staging repository
+      - { name: Publish Publications To Maven Local, run: ./gradlew publishToMavenLocal }
+      - { name: Generate artifacts .tar.zstd, run: ./gradlew generateArtifactsTarZstd }
+      - { name: Start Maven Central Staging Repository, run: ./gradlew startReleasingMavenCentral }
+      - { name: Publish Publications To Maven Repository, run: "./gradlew publishAllPublicationsToMavenRepository publishJvmPublicationToMavenRepository" }
+      - { name: Release to Maven Central, run: ./gradlew releaseMavenCentral }
+      - name: Github Release
+        uses: softprops/action-gh-release@69320dbe05506a9a39fc8ae11030b214ec2d1f87
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            build/korge-*.tar.zstd

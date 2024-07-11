@@ -3,6 +3,7 @@ package korlibs.korge.gradle.targets.ios
 import korlibs.korge.gradle.*
 import korlibs.korge.gradle.targets.*
 import korlibs.korge.gradle.targets.desktop.*
+import korlibs.korge.gradle.targets.jvm.*
 import korlibs.korge.gradle.targets.native.*
 import korlibs.korge.gradle.util.*
 import org.gradle.api.*
@@ -16,12 +17,13 @@ import java.io.*
 fun Project.configureNativeIos(projectType: ProjectType) {
     configureNativeIosTvos(projectType, "ios")
     configureNativeIosTvos(projectType, "tvos")
+    ensureSourceSetsConfigure("common", "ios", "tvos")
 
     val exKotlinSourceSetContainer = this.project.exKotlinSourceSetContainer
     this.project.kotlin.apply {
         sourceSets.apply {
             for (target in listOf(iosArm64(), iosX64(), iosSimulatorArm64(), tvosArm64(), tvosX64(), tvosSimulatorArm64())) {
-                val native = createPairSourceSet(target.name)
+                val native = createPairSourceSet(target.name, project = project)
                 when {
                     target.isIos -> native.dependsOn(exKotlinSourceSetContainer.ios)
                     target.isTvos -> native.dependsOn(exKotlinSourceSetContainer.tvos)

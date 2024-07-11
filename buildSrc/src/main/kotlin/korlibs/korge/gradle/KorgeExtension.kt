@@ -13,6 +13,8 @@ import korlibs.modules.*
 import korlibs.root.*
 import org.gradle.api.*
 import org.gradle.api.artifacts.*
+import org.gradle.api.logging.*
+import org.gradle.internal.impldep.org.yaml.snakeyaml.Yaml
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import java.io.*
 import java.net.*
@@ -95,7 +97,7 @@ open class KorgeExtension(
 	}
 
     companion object {
-        const val ESBUILD_DEFAULT_VERSION = "0.17.10"
+        const val ESBUILD_DEFAULT_VERSION = "0.21.5"
 
         val DEFAULT_ANDROID_EXCLUDE_PATTERNS = setOf(
             "META-INF/DEPENDENCIES",
@@ -172,6 +174,69 @@ open class KorgeExtension(
         }
     }
 
+    fun loadYaml(file: File) {
+        val korgeYamlString = file.takeIfExists()?.readText() ?: return
+        try {
+            val info = korlibs.korge.gradle.util.Yaml.read(korgeYamlString).dyn
+            info["id"].toStringOrNull()?.let { this.id = it }
+
+            author(
+                name = info["author"]["name"].str,
+                email = info["author"]["email"].str,
+                href = info["author"]["href"].str,
+            )
+
+            gameCategory = GameCategory[info["category"].str]
+
+            info["icon"].toStringOrNull()?.also {
+                icon = project.file(it)
+            }
+
+            info["banner"].toStringOrNull()?.also {
+                banner = project.file(it)
+            }
+
+            val targetList = info["targets"].list
+            if (targetList.isEmpty()) {
+                targetDefault()
+            } else {
+                for (target in targetList) {
+                    when (target.str) {
+                        "all" -> targetAll()
+                        "default" -> targetDefault()
+                        "jvm" -> targetJvm()
+                        "js" -> targetJs()
+                        "wasm", "wasmJs" -> targetWasmJs()
+                        "android" -> targetAndroid()
+                        "ios" -> targetIos()
+                        else -> project.logger.log(LogLevel.WARN, "Unknown target in korge.yaml: '${target.str}'")
+                    }
+                }
+            }
+
+            for (plugin in info["plugins"].list) {
+                val pluginStr = plugin.str
+                when (pluginStr) {
+                    "\$kotlin.serialization" -> serialization()
+                    "\$kotlin.serialization.json" -> serializationJson()
+                    else -> project.logger.log(LogLevel.WARN, "Unknown plugin in korge.yaml: '${pluginStr}'")
+                }
+            }
+
+            for ((key, value) in info["config"].map) {
+                config(key.str, value.str)
+            }
+
+            for ((name, jvmMainClassName) in info["entrypoints"].map) {
+                entrypoint(name.str, jvmMainClassName.str)
+            }
+
+            // @TODO: Implement the rest of the properties including targets etc.
+        } catch (e: Throwable) {
+            e.printStackTrace()
+        }
+    }
+
     internal fun implicitCheckVersion() {
         checkVersion(check = true, report = false)
     }
@@ -194,10 +259,15 @@ open class KorgeExtension(
         }
     }
 
+    @Deprecated("Use targetWasmJs instead", ReplaceWith("targetWasmJs(binaryen)"))
+    fun targetWasm(binaryen: Boolean = false) {
+        targetWasmJs(binaryen)
+    }
+
     /**
      * Configures WASM target
      */
-    fun targetWasm(binaryen: Boolean = false) {
+    fun targetWasmJs(binaryen: Boolean = false) {
         if (korlibs.korge.gradle.targets.wasm.isWasmEnabled(project)) {
             target("wasmJs") {
                 project.configureWasm(projectType, binaryen)
@@ -274,6 +344,7 @@ open class KorgeExtension(
     fun targetAll() {
         targetJvm()
         targetJs()
+        targetWasmJs()
         targetDesktop()
         targetAndroid()
         targetIos()
@@ -422,7 +493,7 @@ open class KorgeExtension(
 	//var proguardObfuscate: Boolean = false
 	var proguardObfuscate: Boolean = true
 
-	val realEntryPoint get() = entryPoint ?: (jvmMainClassName.substringBeforeLast('.', "") + ".main").trimStart('.')
+	val realEntryPoint: String get() = entryPoint ?: (jvmMainClassName.substringBeforeLast('.', "") + ".main").trimStart('.')
 	val realJvmMainClassName: String get() = jvmMainClassName
 
 	val extraEntryPoints = arrayListOf<Entrypoint>()
@@ -480,6 +551,7 @@ open class KorgeExtension(
     val androidGradleClasspaths = LinkedHashSet<String>()
 	val androidManifestApplicationChunks = LinkedHashSet<String>()
 	val androidManifestChunks = LinkedHashSet<String>()
+    val androidCustomApplicationAttributes = LinkedHashMap<String, String>()
     var androidMsaa: Int? = null
 
     fun plugin(name: String, args: Map<String, String> = mapOf()) {
@@ -504,6 +576,11 @@ open class KorgeExtension(
 	fun androidManifestApplicationChunk(text: String) {
 		androidManifestApplicationChunks += text
 	}
+
+    /** For example: androidCustomApplicationAttribute("android:usesCleartextTraffic", "true") */
+    fun androidCustomApplicationAttribute(key: String, value: String) {
+        androidCustomApplicationAttributes[key] = value
+    }
 
     fun androidGradlePlugin(name: String) {
         androidGradlePlugins += name

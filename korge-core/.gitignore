@@ -1,9 +1,7 @@
-/.idea
 /.gradle
 /build
-/out
-/classes
-/web
-/__existing
-/node_modules
-/target
+/game.storage
+/libglapi.dll
+/opengl32.dll
+/opengl32-x64.zip
+/libs

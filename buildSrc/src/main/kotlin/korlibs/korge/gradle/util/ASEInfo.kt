@@ -34,7 +34,7 @@ data class ASEInfo(
             val tags = arrayListOf<AseTag>()
 
             val fileSize = s.readS32LE()
-            if (s.length < fileSize) error("File too short")
+            if (s.length < fileSize) error("File too short s.length=${s.length} < fileSize=${fileSize}")
             val headerMagic = s.readU16LE()
             if (headerMagic != 0xA5E0) error("Not an Aseprite file : headerMagic=$headerMagic")
             val numFrames = s.readU16LE()
@@ -64,7 +64,7 @@ data class ASEInfo(
                 val bytesInFrame = s.readS32LE()
                 val fs = s.readStream(bytesInFrame - 4)
                 val frameMagic = fs.readU16LE()
-                //println("  bytesInFrame=$bytesInFrame, frameMagic=$frameMagic")
+                //println("  bytesInFrame=$bytesInFrame, frameMagic=$frameMagic, fs=$fs")
                 if (frameMagic != 0xF1FA) error("Invalid ASE sprite file or error parsing : frameMagic=$frameMagic")
                 fs.readU16LE()
                 val frameDuration = fs.readU16LE()

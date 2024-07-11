@@ -1,6 +1,7 @@
 package com.soywiz.kproject.model
 
 import com.soywiz.kproject.internal.*
+import com.soywiz.kproject.util.*
 
 //enum class NewKProjectType { LIBRARY, EXECUTABLE }
 

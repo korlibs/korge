@@ -1,18 +1,32 @@
-description = "Korge Core Libraries"
+import korlibs.applyProjectProperties
 
-dependencies {
-    configurations.findByName("androidMainApi")?.let {
-        //add("androidMainApi", "androidx.javascriptengine:javascriptengine:1.0.0-alpha05")
-        //add("androidMainApi", "com.google.guava:guava:31.0.1-android")
-    }
-    commonMainApi(project(":korge-foundation"))
-    commonMainApi(libs.kotlinx.coroutines.core)
-    //add("commonMainApi", libs.kotlinx.atomicfu)
-    //add("commonTestApi", project(":korge-test"))
-    commonTestApi(libs.kotlinx.coroutines.test)
-    jvmMainImplementation(libs.bundles.jna)
-    jvmMainImplementation(libs.asm.core)
-    jvmMainImplementation(libs.asm.util)
+description = "Multiplatform Game Engine written in Kotlin"
+
+project.extensions.extraProperties.properties.apply {
+    applyProjectProperties(
+        "https://github.com/korlibs/korge",
+        "MIT License",
+        "https://raw.githubusercontent.com/korlibs/korge/master/LICENSE"
+    )
 }
 
-korlibs.NativeTools.configureAndroidDependency(project, libs.kotlinx.coroutines.android)
+dependencies {
+    commonMainApi(libs.korlibs.all)
+    //commonMainApi(libs.korlibs.audio)
+    //commonMainApi(libs.korlibs.image)
+    //commonMainApi(libs.korlibs.inject)
+    //commonMainApi(libs.korlibs.template)
+    //commonMainApi(libs.korlibs.time)
+    commonMainApi(libs.kotlinx.atomicfu)
+    commonMainApi(libs.kotlinx.coroutines.core)
+    //commonTestApi(project(":korge-test"))
+    jvmMainApi("org.jetbrains.kotlin:kotlin-reflect")
+    jvmMainImplementation(libs.jackson.databind)
+    jvmMainImplementation(libs.jackson.module.kotlin)
+
+    //commonTestApi(testFixtures(project(":korma")))
+
+    //add("jvmMainApi", project(":korte"))
+
+    //add("commonTestApi", "it.krzeminski.vis-assert:vis-assert:0.4.0-beta")
+}

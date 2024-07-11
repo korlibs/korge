@@ -8,6 +8,7 @@ import korlibs.korge.gradle.*
 import korlibs.korge.gradle.kotlin
 import korlibs.korge.gradle.targets.*
 import korlibs.korge.gradle.targets.all.*
+import korlibs.korge.gradle.targets.jvm.*
 import korlibs.korge.gradle.util.*
 import org.gradle.api.*
 import org.gradle.api.tasks.*
@@ -43,6 +44,8 @@ fun Project.configureAndroidDirect(projectType: ProjectType, isKorge: Boolean) {
         AddFreeCompilerArgs.addFreeCompilerArgs(project, this)
     }
 
+    ensureSourceSetsConfigure("common", "android")
+
     //if (isKorge) {
     //    project.afterEvaluate {
     //        //println("@TODO: Info is not generated")
@@ -72,7 +75,7 @@ fun Project.configureAndroidDirect(projectType: ProjectType, isKorge: Boolean) {
         setCompileSdkVersion(if (isKorge) project.korge.androidCompileSdk else project.getAndroidCompileSdkVersion())
         //buildToolsVersion(project.findProperty("android.buildtools.version")?.toString() ?: "30.0.2")
 
-        (this as CommonExtension<*, *, *, *>).installation.apply {
+        (this as CommonExtension<*, *, *, *, *>).installation.apply {
             // @TODO: Android Build Gradle newer version
             installOptions("-r")
             timeOutInMs = project.korge.androidTimeoutMs
@@ -81,6 +84,12 @@ fun Project.configureAndroidDirect(projectType: ProjectType, isKorge: Boolean) {
         compileOptions.apply {
             sourceCompatibility = ANDROID_JAVA_VERSION
             targetCompatibility = ANDROID_JAVA_VERSION
+        }
+
+        buildFeatures.apply {
+            if (project.name == "korlibs-platform") {
+                buildConfig = true
+            }
         }
 
         packagingOptions.also {

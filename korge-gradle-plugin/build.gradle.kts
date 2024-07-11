@@ -7,6 +7,7 @@ plugins {
     id("maven-publish")
     id("com.gradle.plugin-publish")
     id("org.jetbrains.kotlin.jvm")
+    id("com.github.gmazzo.buildconfig") version "5.3.5"
 }
 
 description = "Multiplatform Game Engine written in Kotlin"
@@ -15,6 +16,7 @@ group = RootKorlibsPlugin.KORGE_GRADLE_PLUGIN_GROUP
 //this.name = "korlibs.korge.gradle.plugin"
 
 dependencies {
+    implementation(kotlin("gradle-plugin-api"))
     implementation(project(":korge-gradle-plugin-common"))
 }
 
@@ -36,9 +38,17 @@ gradlePlugin {
             //PluginDeclaration decl = it
             //id = "korlibs.korge"
             id = "com.soywiz.korge.library"
-            displayName = "Korge"
+            displayName = "Korge Library"
             description = "Multiplatform Game Engine for Kotlin"
             implementationClass = "korlibs.korge.gradle.KorgeLibraryGradlePlugin"
+        }
+        val `korge-kotlin-plugin` by creating {
+            //PluginDeclaration decl = it
+            //id = "korlibs.korge"
+            id = "com.soywiz.korge.kotlinplugin"
+            displayName = "Korge Kotlin Plugin"
+            description = "Multiplatform Game Engine for Kotlin"
+            implementationClass = "korlibs.korge.kotlin.plugin.KorgeKotlinCompilerPlugin"
         }
 
         val kproject by creating {
@@ -91,6 +101,9 @@ kotlin.sourceSets.test.configure {
 java.sourceSets.main.configure {
     resources.srcDirs(File(projectDir, "build/srcgen2res"))
 }
+java.sourceSets.test.configure {
+    resources.srcDirs(File(projectDir, "build/testgen2res"))
+}
 
 dependencies {
     //implementation(project(":korge-gradle-plugin-common"))
@@ -99,7 +112,6 @@ dependencies {
     implementation(libs.kotlin.serialization)
 
     implementation(libs.proguard.gradle)
-    implementation(libs.closure.compiler)
     implementation(libs.gson)
     implementation(libs.gradle.publish.plugin)
 
@@ -112,9 +124,7 @@ dependencies {
 	implementation(localGroovy())
     //compileOnly(gradleKotlinDsl())
 
-    testImplementation("org.jetbrains.kotlin:kotlin-test")
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
-    testImplementation(libs.junit)
+    testImplementation(libs.bundles.kotlin.test)
 
     //implementation(project(":korge-reload-agent"))
 }
@@ -149,9 +159,21 @@ afterEvaluate {
     }
 }
 
-val jvmTest = tasks.register("jvmTest", Task::class) {
-    dependsOn("test")
-}
+tasks { val jvmTest by creating { dependsOn("test") } }
 
 korlibs.NativeTools.groovyConfigurePublishing(project, false)
 korlibs.NativeTools.groovyConfigureSigning(project)
+
+buildConfig {
+    val project = project(":korge-kotlin-plugin")
+    packageName("korlibs.korge.gradle.plugin")
+    //buildConfigField("String", "KOTLIN_PLUGIN_ID", "\"${rootProject.extra["kotlin_plugin_id"]}\"")
+    buildConfigField("String", "KOTLIN_PLUGIN_ID", "\"com.soywiz.korge.korge-kotlin-plugin\"")
+    buildConfigField("String", "KOTLIN_PLUGIN_GROUP", "\"${project.group}\"")
+    buildConfigField("String", "KOTLIN_PLUGIN_NAME", "\"${project.name}\"")
+    buildConfigField("String", "KOTLIN_PLUGIN_VERSION", "\"${project.version}\"")
+}
+
+afterEvaluate {
+    //tasks.getByName("sourceJar").dependsOn("generateBuildConfig")
+}

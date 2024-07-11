@@ -21,6 +21,13 @@ import java.io.*
 val KORGE_RELOAD_AGENT_CONFIGURATION_NAME = "KorgeReloadAgent"
 val httpPort = 22011
 
+fun Project.ensureSourceSetsConfigure(vararg names: String) {
+    val sourceSets = project.kotlin.sourceSets
+    for (name in names) {
+        sourceSets.createPairSourceSet(name, project = project)
+    }
+}
+
 fun Project.configureJvm(projectType: ProjectType) {
     if (gkotlin.targets.findByName("jvm") != null) return
 
@@ -51,6 +58,8 @@ fun Project.configureJvm(projectType: ProjectType) {
 
     val jvmProcessResources = tasks.findByName("jvmProcessResources") as? Copy?
     jvmProcessResources?.duplicatesStrategy = org.gradle.api.file.DuplicatesStrategy.INCLUDE
+
+    ensureSourceSetsConfigure("common", "jvm")
 }
 
 fun Project.configureJvmRunJvm(isRootKorlibs: Boolean) {
@@ -181,9 +190,6 @@ private fun Project.addProguard() {
             "META-INF/*.kotlin_module",
 		)
         duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-        doFirst {
-            from(project.files().from(project.getCompilationKorgeProcessedResourcesFolder(mainJvmCompilation)))
-        }
 		project.afterEvaluate {
 			manifest { manifest ->
 				manifest.attributes(
@@ -205,6 +211,7 @@ private fun Project.addProguard() {
             val jvmJarTask = project.getTasksByName("jvmJar", false).first() as Jar
             //jvmJarTask.entryCompression = ZipEntryCompression.STORED
             with(jvmJarTask)
+            from(project.files().from(project.getCompilationKorgeProcessedResourcesFolder(mainJvmCompilation)))
             //println("jvmJarTask=$jvmJarTask")
 		}
 	}

@@ -25,13 +25,14 @@ fun isPropertyTrue(name: String): Boolean {
 val inCI = isPropertyTrue("CI")
 val disabledExtraKorgeLibs = isPropertyTrue("DISABLED_EXTRA_KORGE_LIBS")
 
-include(":korge-foundation")
-include(":korge-core")
 include(":korge")
+include(":korge-core")
+include(":korge-kotlin-plugin")
 include(":korge-gradle-plugin")
 include(":korge-gradle-plugin-common")
 include(":korge-gradle-plugin-settings")
 include(":korge-reload-agent")
+include(":korge-ipc")
 if (System.getenv("DISABLE_SANDBOX") != "true") {
     include(":korge-sandbox")
 }

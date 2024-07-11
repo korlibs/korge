@@ -4,8 +4,11 @@ import com.sun.net.httpserver.*
 import java.io.*
 import java.lang.instrument.*
 import java.net.*
+import java.nio.*
+import java.nio.channels.*
 import java.security.*
 import java.util.concurrent.*
+import kotlin.concurrent.*
 import kotlin.system.*
 
 // https://www.baeldung.com/java-instrumentation
@@ -22,20 +25,31 @@ object KorgeReloadAgent {
         reloadCommon("agentmain", agentArgs, inst)
     }
 
+    fun ReadableByteChannel.readFully(size: Int): ByteBuffer = readFully(ByteBuffer.allocate(size))
+
+    fun ReadableByteChannel.readFully(buffer: ByteBuffer): ByteBuffer {
+        while (buffer.hasRemaining()) if (this.read(buffer) == -1) break
+        buffer.flip()
+        return buffer
+    }
+
     fun reloadCommon(type: String, agentArgs: String?, inst: Instrumentation) {
         val agentArgs = agentArgs ?: ""
         val ARGS_SEPARATOR = "<:/:>"
         val CMD_SEPARATOR = "<@/@>"
         printlnDebug("[KorgeReloadAgent] agentArgs=$agentArgs")
 
-        val (portStr, continuousCommandStr, enableRedefinitionStr, argsStr) = agentArgs.split(ARGS_SEPARATOR)
-        val httpPort = portStr.toIntOrNull() ?: 22011
-        val continuousCommand = continuousCommandStr.split(CMD_SEPARATOR)
+        val (portOrUnixStr, continuousCommandStr, enableRedefinitionStr, argsStr) = agentArgs.split(ARGS_SEPARATOR)
+        //val httpPort = portStr.toIntOrNull() ?: 22011
+        val httpPort = portOrUnixStr.toIntOrNull() ?: -1
+        val unixSocketPath = if (portOrUnixStr.toIntOrNull() == null) portOrUnixStr else null
+        val continuousCommand = if (continuousCommandStr.isEmpty()) emptyList() else continuousCommandStr.split(CMD_SEPARATOR)
         val enableRedefinition = enableRedefinitionStr.toBoolean()
         val rootFolders = argsStr.split(CMD_SEPARATOR)
 
         printlnDebug("[KorgeReloadAgent] In $type method")
         printlnDebug("[KorgeReloadAgent] - httpPort=$httpPort")
+        printlnDebug("[KorgeReloadAgent] - unixSocketPath=$unixSocketPath")
         printlnDebug("[KorgeReloadAgent] - continuousCommand=$continuousCommand")
         printlnDebug("[KorgeReloadAgent] - enableRedefinition=$enableRedefinition")
         printlnDebug("[KorgeReloadAgent] - rootFolders=$rootFolders")
@@ -46,78 +60,114 @@ object KorgeReloadAgent {
         Runtime.getRuntime().addShutdownHook(Thread {
             printlnDebug("[KorgeReloadAgent] - shutdown")
         })
-        Thread {
-            val httpServer = HttpServer.create(InetSocketAddress("127.0.0.1", httpPort), 0)
-            httpServer.createContext("/") { t ->
-                val response = "ok".toByteArray()
-                val parts = t.requestURI.query.trim('?').split("&").associate { val (key, value) = it.split('=', limit = 2); key to value }
-                val startTime = parts["startTime"]?.toLongOrNull() ?: 0L
-                val endTime = parts["endTime"]?.toLongOrNull() ?: 0L
-                printlnDebug("[KorgeReloadAgent] startTime=$startTime, endTime=$endTime, parts=$parts")
-                taskExecutor.submit {
-                    processor.reloadClassFilesChangedIn(startTime, endTime)
-                }
-                t.sendResponseHeaders(200, response.size.toLong())
-                t.responseBody.write(response)
-                t.responseBody.close()
-            }
-            Runtime.getRuntime().addShutdownHook(Thread {
-                printlnDebug("[KorgeReloadAgent] - shutdown http server")
-                httpServer.stop(0)
-                printlnDebug("[KorgeReloadAgent] - done shutting down http server")
-            })
-            httpServer.start()
-        }.also { it.isDaemon = true }.also { it.name = "KorgeReloadAgent.httpServer" }.start()
-        Thread {
-            printlnDebug("[KorgeReloadAgent] - Running ${continuousCommand.joinToString(" ")}")
-            while (true) {
-                try {
-                    val isWindows = System.getProperty("os.name").lowercase().contains("win")
-                    //val args = arrayOf<String>()
-                    //val args = if (isWindows) arrayOf("cmd.exe", "/k") else arrayOf("/bin/sh", "-c")
-                    //val args = if (isWindows) arrayOf() else arrayOf("/bin/sh", "-c")
-                    val javaHomeBinFolder =
-                        System.getProperties().getProperty("java.home") + File.separator + "bin" + File.separator
-                    val jvmLocation = when {
-                        System.getProperty("os.name").startsWith("Win") -> "${javaHomeBinFolder}java.exe"
-                        else -> "${javaHomeBinFolder}java"
+        when {
+            unixSocketPath != null -> {
+                thread(start = true, isDaemon = true, name = "KorgeReloadAgent.unixSocketServer") {
+                    ServerSocketChannel.open(StandardProtocolFamily.UNIX).bind(UnixDomainSocketAddress.of(unixSocketPath)).use { server ->
+                        printlnDebug("[KorgeReloadAgent] - Listening to $unixSocketPath")
+                        while (true) {
+                            try {
+                                val socket = server.accept()
+                                val buf = socket.readFully(16)
+                                val startTime = buf.getLong()
+                                val endTime = buf.getLong()
+                                taskExecutor.submit {
+                                    processor.reloadClassFilesChangedIn(startTime, endTime)
+                                }
+                                socket.close()
+                            } catch (e: Throwable) {
+                                e.printStackTrace()
+                            }
+                        }
                     }
-                    val p = ProcessBuilder()
-                        .redirectError(ProcessBuilder.Redirect.INHERIT)
-                        //.inheritIO()
-                        .command(listOf(jvmLocation, *continuousCommand.toTypedArray()))
-                        .start()
-
-                    //val p = Runtime.getRuntime().exec("$jvmLocation $continuousCommand")
-                    //val p = ProcessBuilder(*args, continuousCommand).inheritIO().start()
-                    //val pID = p.pid()
-                    //printlnDebug("[KorgeReloadAgent] - Started continuousCommand PID=$pID")
-
-                    Runtime.getRuntime().addShutdownHook(Thread {
-                        //if (isWindows) {
-                        //    printlnDebug("[KorgeReloadAgent] - [isAlive=${p.isAlive}] Killing task")
-                        //    Runtime.getRuntime().exec(arrayOf("taskkill", "/PID", "$pID")).waitFor()
-                        //}
-
-                        //p.outputStream.write()
-                        printlnDebug("[KorgeReloadAgent] - [isAlive=${p.isAlive}] Stopping continuousCommand")
-                        p.destroy()
-                        Thread.sleep(500L)
-                        printlnDebug("[KorgeReloadAgent] - [isAlive=${p.isAlive}] Stopping forcibly")
-                        p.destroyForcibly()
-                        printlnDebug("[KorgeReloadAgent] - [isAlive=${p.isAlive}] Done stopping forcibly")
-                    })
-                    val exit = p.waitFor()
-                    printlnDebug("[KorgeReloadAgent] - Exited continuous command with $exit code")
-                } catch (e: Throwable) {
-                    printlnDebug("[KorgeReloadAgent] - Continuous command failed with exception '${e.message}'")
-                    e.printStackTrace()
-                    if (e is InterruptedException) throw e
                 }
-                printlnDebug("[KorgeReloadAgent] Restarting in 5 seconds...")
-                Thread.sleep(5000L)
             }
-        }.also { it.isDaemon = true }.also { it.name = "KorgeReloadAgent.continuousCommand" }.start()
+            httpPort != -1 -> {
+                thread(start = true, isDaemon = true, name = "KorgeReloadAgent.httpServer") {
+                    val httpServer = HttpServer.create(InetSocketAddress("127.0.0.1", httpPort), 0)
+                    httpServer.createContext("/") { t ->
+                        val response = "ok".toByteArray()
+                        val parts = t.requestURI.query.trim('?').split("&").associate { val (key, value) = it.split('=', limit = 2); key to value }
+                        val startTime = parts["startTime"]?.toLongOrNull() ?: 0L
+                        val endTime = parts["endTime"]?.toLongOrNull() ?: 0L
+                        printlnDebug("[KorgeReloadAgent] startTime=$startTime, endTime=$endTime, parts=$parts")
+                        taskExecutor.submit {
+                            processor.reloadClassFilesChangedIn(startTime, endTime)
+                        }
+                        t.sendResponseHeaders(200, response.size.toLong())
+                        t.responseBody.write(response)
+                        t.responseBody.close()
+                    }
+                    Runtime.getRuntime().addShutdownHook(Thread {
+                        printlnDebug("[KorgeReloadAgent] - shutdown http server")
+                        httpServer.stop(0)
+                        printlnDebug("[KorgeReloadAgent] - done shutting down http server")
+                    })
+                    httpServer.start()
+                }
+            }
+        }
+
+        if (continuousCommand.isNotEmpty()) {
+            thread(isDaemon = true, name = "KorgeReloadAgent.continuousCommand") {
+                printlnDebug("[KorgeReloadAgent] - Running ${continuousCommand.joinToString(" ")}")
+                while (true) {
+                    try {
+                        val isWindows = System.getProperty("os.name").lowercase().contains("win")
+                        //val args = arrayOf<String>()
+                        //val args = if (isWindows) arrayOf("cmd.exe", "/k") else arrayOf("/bin/sh", "-c")
+                        //val args = if (isWindows) arrayOf() else arrayOf("/bin/sh", "-c")
+                        val javaHomeBinFolder =
+                            System.getProperties().getProperty("java.home") + File.separator + "bin" + File.separator
+                        val jvmLocation = when {
+                            System.getProperty("os.name").startsWith("Win") -> "${javaHomeBinFolder}java.exe"
+                            else -> "${javaHomeBinFolder}java"
+                        }
+
+                        val isGradle = (continuousCommand.any { it == "org.gradle.wrapper.GradleWrapperMain" })
+
+                        val p = ProcessBuilder()
+                            .redirectError(ProcessBuilder.Redirect.INHERIT)
+                            //.inheritIO()
+                            .command(
+                                when {
+                                    isGradle -> listOf(jvmLocation, *continuousCommand.toTypedArray())
+                                    else -> continuousCommand
+                                }
+                            )
+                            .start()
+
+                        //val p = Runtime.getRuntime().exec("$jvmLocation $continuousCommand")
+                        //val p = ProcessBuilder(*args, continuousCommand).inheritIO().start()
+                        //val pID = p.pid()
+                        //printlnDebug("[KorgeReloadAgent] - Started continuousCommand PID=$pID")
+
+                        Runtime.getRuntime().addShutdownHook(Thread {
+                            //if (isWindows) {
+                            //    printlnDebug("[KorgeReloadAgent] - [isAlive=${p.isAlive}] Killing task")
+                            //    Runtime.getRuntime().exec(arrayOf("taskkill", "/PID", "$pID")).waitFor()
+                            //}
+
+                            //p.outputStream.write()
+                            printlnDebug("[KorgeReloadAgent] - [isAlive=${p.isAlive}] Stopping continuousCommand")
+                            p.destroy()
+                            Thread.sleep(500L)
+                            printlnDebug("[KorgeReloadAgent] - [isAlive=${p.isAlive}] Stopping forcibly")
+                            p.destroyForcibly()
+                            printlnDebug("[KorgeReloadAgent] - [isAlive=${p.isAlive}] Done stopping forcibly")
+                        })
+                        val exit = p.waitFor()
+                        printlnDebug("[KorgeReloadAgent] - Exited continuous command with $exit code")
+                    } catch (e: Throwable) {
+                        printlnDebug("[KorgeReloadAgent] - Continuous command failed with exception '${e.message}'")
+                        e.printStackTrace()
+                        if (e is InterruptedException) throw e
+                    }
+                    printlnDebug("[KorgeReloadAgent] Restarting in 5 seconds...")
+                    Thread.sleep(5000L)
+                }
+            }
+        }
 
         Runtime.getRuntime().addShutdownHook(Thread {
             val threadSet = Thread.getAllStackTraces().keys
@@ -256,7 +306,11 @@ class KorgeReloaderProcessor(val rootFolders: List<String>, val inst: Instrument
                 successRedefinition = false
             }
             printlnDebug("[KorgeReloadAgent] reload enableRedefinition=$enableRedefinition, successRedefinition=$successRedefinition, changedDefinitions=${changedDefinitions.size}, classNameToBytes=${classNameToBytes.size}, times[${times.size}]=${times.sum()}ms")
-            val triggerReload = Class.forName("korlibs.korge.KorgeReload").getMethod("triggerReload", java.util.List::class.java, java.lang.Boolean.TYPE, java.util.List::class.java)
+
+            //korlibs.korge.KorgeReload.triggerReload(changedDefinitions, successRedefinition, rootFolders)
+            val triggerReload = Class.forName("korlibs.korge.KorgeReload")
+                .getMethod("triggerReload", java.util.List::class.java, java.lang.Boolean.TYPE, java.util.List::class.java)
+
             triggerReload.invoke(null, changedDefinitions.map { it.definitionClass.name }, successRedefinition, rootFolders)
         }
     }

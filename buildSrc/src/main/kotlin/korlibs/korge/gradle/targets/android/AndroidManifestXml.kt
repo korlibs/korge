@@ -9,13 +9,13 @@ object AndroidManifestXml {
         line("<resources>")
         indent {
             line("<style name=\"AppThemeOverride\" parent=\"@android:style/Theme\">")
-                line("<item name=\"android:windowNoTitle\">true</item>")
-                line("<item name=\"android:windowFullscreen\">true</item>")
-                line("<item name=\"android:windowContentOverlay\">@null</item>")
-                line("<item name=\"android:windowLayoutInDisplayCutoutMode\">${config.displayCutout.lc}</item>")
-                line("<item name=\"android:windowTranslucentStatus\">true</item>")
-                line("<item name=\"android:windowTranslucentNavigation\">true</item>")
-                line("<item name=\"android:windowDrawsSystemBarBackgrounds\">false</item>")
+            line("<item name=\"android:windowNoTitle\">true</item>")
+            line("<item name=\"android:windowFullscreen\">true</item>")
+            line("<item name=\"android:windowContentOverlay\">@null</item>")
+            line("<item name=\"android:windowLayoutInDisplayCutoutMode\">${config.displayCutout.lc}</item>")
+            line("<item name=\"android:windowTranslucentStatus\">true</item>")
+            line("<item name=\"android:windowTranslucentNavigation\">true</item>")
+            line("<item name=\"android:windowDrawsSystemBarBackgrounds\">false</item>")
             line("</style>")
         }
         line("</resources>")
@@ -39,6 +39,10 @@ object AndroidManifestXml {
                 line("")
                 //line("tools:replace=\"android:appComponentFactory\"")
                 line("android:allowBackup=\"true\"")
+
+                for ((key, value) in config.androidCustomApplicationAttributes) {
+                    line("$key=\"${value.htmlspecialchars()}\"")
+                }
 
                 if (!config.androidLibrary) {
                     line("android:label=\"${config.androidAppName}\"")
@@ -97,4 +101,17 @@ object AndroidManifestXml {
         }
         line("</manifest>")
     }.toString()
+}
+
+private fun String.htmlspecialchars(): String = buildString(this@htmlspecialchars.length + 16) {
+    for (it in this@htmlspecialchars) {
+        when (it) {
+            '"' -> append("&quot;")
+            '\'' -> append("&apos;")
+            '<' -> append("&lt;")
+            '>' -> append("&gt;")
+            '&' -> append("&amp;")
+            else -> append(it)
+        }
+    }
 }

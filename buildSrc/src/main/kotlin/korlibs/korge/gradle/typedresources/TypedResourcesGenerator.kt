@@ -24,7 +24,10 @@ class TypedResourcesGenerator {
         return normalizeName().textCase().camelCase()
     }
 
-    fun generateForFolders(resourcesFolder: SFile): String {
+    fun generateForFolders(resourcesFolder: SFile, reporter: (e: Throwable, message: String) -> Unit = { e, message ->
+        System.err.println(message)
+        e.printStackTrace()
+    }): String {
         return Indenter {
             line("import korlibs.audio.sound.*")
             line("import korlibs.io.file.*")
@@ -146,9 +149,8 @@ class TypedResourcesGenerator {
                 val info = try {
                     ASEInfo.getAseInfo(ase.file.readBytes())
                 } catch (e: Throwable) {
-                    System.err.println("ERROR LOADING FILE: aseFile=$aseFile")
-                    e.printStackTrace()
-                    continue
+                    reporter(e, "ERROR LOADING FILE: aseFile=$aseFile")
+                    ASEInfo()
                 }
 
                 line("")

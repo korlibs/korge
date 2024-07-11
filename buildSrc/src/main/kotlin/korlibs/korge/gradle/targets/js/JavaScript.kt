@@ -7,6 +7,7 @@ import korlibs.korge.gradle.targets.*
 import korlibs.korge.gradle.targets.windows.*
 import korlibs.korge.gradle.util.*
 import korlibs.*
+import korlibs.korge.gradle.targets.jvm.*
 import org.gradle.api.*
 import org.gradle.api.file.*
 import org.gradle.api.tasks.*
@@ -44,6 +45,7 @@ fun Project.configureJavaScript(projectType: ProjectType) {
 					suppressWarnings = korge.supressWarnings
 				}
 			}
+            configureJsTargetOnce()
             configureJSTestsOnce()
 		}
 
@@ -65,7 +67,10 @@ fun Project.configureJavaScript(projectType: ProjectType) {
         val jsCreateIndexHtml = project.tasks.createThis<JsCreateIndexTask>("jsCreateIndexHtml").also { task ->
             val jsMainCompilation = kotlin.js().compilations["main"]!!
             val resourcesFolders: List<File> = jsMainCompilation.allKotlinSourceSets
-                .flatMap { it.resources.srcDirs } + listOf(File(rootProject.rootDir, "_template"))
+                .flatMap { it.resources.srcDirs } + listOf(
+                    File(rootProject.rootDir, "_template"),
+                    File(rootProject.rootDir, "buildSrc/src/main/resources"),
+                )
             task.resourcesFolders = resourcesFolders
             task.targetDir = generatedIndexHtmlDir
         }
@@ -82,10 +87,20 @@ fun Project.configureJavaScript(projectType: ProjectType) {
 
     configureEsbuild()
     configureWebpackFixes()
+    configureDenoTest()
     if (projectType.isExecutable) {
+        configureDenoRun()
         configureJavascriptRun()
     }
-    configureClosureCompiler()
+    configureWebpack()
+
+    ensureSourceSetsConfigure("common", "js")
+}
+
+fun KotlinJsTargetDsl.configureJsTargetOnce() {
+    this.compilerOptions {
+        target.set("es2015")
+    }
 }
 
 fun KotlinJsTargetDsl.configureJSTestsOnce() {
@@ -98,12 +113,6 @@ fun KotlinJsTargetDsl.configureJSTestsOnce() {
                     useConfigDirectory(it)
                 }
             }
-        }
-    }
-    nodejs {
-        //testTask { useMocha() }
-        testRuns.getByName(KotlinTargetWithTests.DEFAULT_TEST_RUN_NAME).executionTask.configure {
-            it.useMocha()
         }
     }
 

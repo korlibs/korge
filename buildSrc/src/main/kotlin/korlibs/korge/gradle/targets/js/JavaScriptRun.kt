@@ -59,6 +59,11 @@ open class RunJsServer : DefaultTask() {
     }
 }
 
+fun Project.fullPathName(): String {
+    if (this.parent == null) return this.name
+    return this.parent!!.fullPathName() + ":" + this.name
+}
+
 fun Project.configureJavascriptRun() {
     val runJsRelease = project.tasks.createThis<RunJsServer>(name = "runJsRelease") {
         group = GROUP_KORGE_RUN

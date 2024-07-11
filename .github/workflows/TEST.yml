@@ -1,4 +1,5 @@
 name: TEST
+# https://docs.github.com/en/actions/learn-github-actions/expressions
 
 on:
   push:
@@ -14,236 +15,59 @@ env:
   CI: true
   SKIP_KORGE_SAMPLES: true
   DISPLAY: ":99"
-  JAVA_VERSION: 11
+  JAVA_VERSION: 17
   JAVA_DISTRIBUTION: zulu
   ENABLE_BENCHMARKS: false
 
 jobs:
-  changes:
-    runs-on: ubuntu-latest
-    outputs:
-      testDocs: ${{ steps.filter.outputs.docs == 'true' || steps.filter.outputs.all == 'true' }}
-      testJvm: ${{ steps.filter.outputs.jvm == 'true' || steps.filter.outputs.all == 'true' }}
-      testJs: ${{ steps.filter.outputs.js == 'true' || steps.filter.outputs.all == 'true' }}
-      testWasm: ${{ steps.filter.outputs.wasm == 'true' || steps.filter.outputs.all == 'true' }}
-      testAndroid: ${{ steps.filter.outputs.android == 'true' || steps.filter.outputs.all == 'true' }}
-      testWindows: ${{ steps.filter.outputs.windows == 'true' || steps.filter.outputs.native == 'true' || steps.filter.outputs.all == 'true' || steps.filter.outputs.jvm == 'true' }}
-      testLinux: ${{ steps.filter.outputs.linux == 'true' || steps.filter.outputs.native == 'true' || steps.filter.outputs.all == 'true' || steps.filter.outputs.jvm == 'true' }}
-      testMacos: ${{ steps.filter.outputs.macos == 'true' || steps.filter.outputs.native == 'true' || steps.filter.outputs.all == 'true' || steps.filter.outputs.jvm == 'true' }}
-      testIos: ${{ steps.filter.outputs.ios == 'true' || steps.filter.outputs.native == 'true' || steps.filter.outputs.all == 'true' || steps.filter.outputs.jvm == 'true' }}
-    steps:
-      - uses: actions/checkout@v3
-        if: ${{ github.event_name != 'pull_request' }}
-      - uses: dorny/paths-filter@v2
-        id: filter
-        with:
-          base: ${{ github.ref }}
-          filters: |
-            docs:
-              - '.github/workflows/PAGES.yml'
-              - 'docs/**'
-            all:
-              - '.github/workflows/TEST.yml'
-              - '**/build.gradle'
-              - '**/build.gradle.kts'
-              - '**/settings.gradle'
-              - '**/settings.gradle.kts'
-              - '**/buildSrc/**'
-              - '**/gradle/**'
-              - '**/src/common*/**'
-              - '**/test/common*/**'
-            jvm:
-              - '**/src/jvm*/**'
-              - '**/src/concurrent*/**'
-              - '**/test/jvm*/**'
-              - '**/test/concurrent*/**'
-            android:
-              - '**/AndroidManifest.xml'
-              - '**/src/android*/**'
-              - '**/src/jvmAndroid*/**'
-              - '**/src/concurrent*/**'
-              - '**/src/main/**'
-              - '**/test/android*/**'
-              - '**/test/jvmAndroid*/**'
-              - '**/test/concurrent*/**'
-              - '**/test/main/**'
-            js:
-              - '**/src/js*/**'
-              - '**/test/js*/**'
-            wasm:
-              - '**/src/wasm*/**'
-              - '**/test/wasm*/**'
-            native:
-              - '**/src/native*/**'
-              - '**/src/concurrent*/**'
-              - '**/test/native*/**'
-              - '**/test/concurrent*/**'
-            windows:
-              - '**/src/mingw*/**'
-              - '**/test/mingw*/**'
-            linux:
-              - '**/src/linux*/**'
-              - '**/src/posix*/**'
-              - '**/test/linux*/**'
-              - '**/test/posix*/**'
-            macos:
-              - '**/src/apple*/**'
-              - '**/src/macos*/**'
-              - '**/src/darwin*/**'
-              - '**/src/posix*/**'
-              - '**/test/apple*/**'
-              - '**/test/macos*/**'
-              - '**/test/darwin*/**'
-              - '**/test/posix*/**'
-            ios:
-              - '**/src/apple*/**'
-              - '**/src/ios*/**'
-              - '**/src/tvos*/**'
-              - '**/src/darwin*/**'
-              - '**/src/posix*/**'
-              - '**/test/apple*/**'
-              - '**/test/ios*/**'
-              - '**/test/tvos*/**'
-              - '**/test/darwin*/**'
-              - '**/test/posix*/**'
-  test-docs:
-    needs: changes
-    if: ${{ needs.changes.outputs.testDocs == 'true' }}
-    timeout-minutes: 240
-    runs-on: ubuntu-latest
+  test:
+    strategy:
+      fail-fast: false # Once working, comment this
+      matrix:
+        include:
+          - { outputKey: testIos, os: macos-latest, testTask: iosX64Test, precompileTask: compileTestKotlinIosX64, enableKotlinNative: true }
+          - { outputKey: testJs, os: ubuntu-latest, testTask: "wasmJsBrowserTest", buildTasks: "jsBrowserTest jsDenoTest", precompileTask: "wasmJsTestClasses jsTestClasses" }
+          - { outputKey: testAndroid, os: ubuntu-latest, enableAndroid: true, precompileTask: "compileDebugAndroidTestSources" }
+          - { outputKey: testJvmMacos, os: macos-latest, testTask: jvmTest, precompileTask: "compileTestKotlinJvm compileTestKotlin" }
+          - { outputKey: testJvmLinux, os: ubuntu-latest, testTask: jvmTest, precompileTask: "compileTestKotlinJvm compileTestKotlin", enableKotlinNative: true, enableSandbox: true, e2e: true }
+          - { outputKey: testJvmWindows, os: windows-latest, testTask: jvmTest, precompileTask: "compileTestKotlinJvm compileTestKotlin" }
+    #if: ${{ needs.changes.outputs[matrix.outputKey] == 'true' }}
+    timeout-minutes: 30
+    runs-on: ${{ matrix.os }}
     env:
-      DISABLE_JAVASCRIPT_TEST: true
-      DISABLE_ANDROID: true
+      DISABLE_KOTLIN_NATIVE: ${{ !matrix.enableKotlinNative }}
+      DISABLE_ANDROID: ${{ !matrix.enableAndroid }}
+      DISABLE_SANDBOX: ${{ !matrix.enableSandbox }}
+      #GRADLE_OPTS: -Dorg.gradle.daemon=false -Dkotlin.compiler.execution.strategy=in-process -Dorg.gradle.workers.max=3
     steps:
-      - { name: Checkout, uses: actions/checkout@v3 }
-      - { name: Setup Pages, uses: actions/configure-pages@v3 }
-      - { name: Build with Jekyll, uses: actions/jekyll-build-pages@v1, with: { source: ./docs, destination: ./_site } }
-      - { name: Check broken links, run: "npx --yes broken-link-checker-local _site --filter-level=3 -e -r" }
-
-  test-jvm:
-    needs: changes
-    if: ${{ needs.changes.outputs.testJvm == 'true' }}
-    timeout-minutes: 240
-    runs-on: ubuntu-latest
-    env:
-      DISABLE_JAVASCRIPT_TEST: true
-      DISABLE_ANDROID: true
-    steps:
-      - { uses: actions/checkout@v3 }
-      - { name: Configure local.properties, run: "echo org.gradle.parallel=true >> local.properties" }
+      - { uses: actions/checkout@v4 }
+      - { name: Use Node.js 20.x, uses: actions/setup-node@v4, with: { node-version: 20.x } }
+      - { name: Setup Deno, uses: denoland/setup-deno@v1, with: { deno-version: "1.44.4" } }
+      - { name: Configure parallel in local.properties, run: "echo org.gradle.parallel=true >> local.properties" }
       - { name: Replace gradle wrapper, run: "sed 's/-all/-bin/g' gradle/wrapper/gradle-wrapper.properties > gradle/wrapper/gradle-wrapper.properties.bak; cp gradle/wrapper/gradle-wrapper.properties.bak gradle/wrapper/gradle-wrapper.properties" }
-      - { name: Install freeglut3 & openal, run: sudo apt-get update && sudo apt-get -y install freeglut3-dev libopenal-dev xvfb }
-      - { name: Run Xvfb in Background, run: "Xvfb :99 &" }
-      - { name: Set up JDK, uses: actions/setup-java@v3, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
-      - { name: Prepare Gradle, uses: gradle/gradle-build-action@ef76a971e2fa3f867b617efd72f2fbd72cf6f8bc } # v2.8.0
-      - { name: Start gradle, run: ./gradlew --stacktrace }
-      - { name: Building classes, run: ./gradlew  --stacktrace --parallel compileTestKotlinJvm }
-      - { name: Testing JVM, run: "./gradlew --stacktrace --parallel jvmTest", env: { EGL_LOG_LEVEL: debug, LIBGL_DEBUG: verbose, LIBGL_ALWAYS_SOFTWARE: true, MESA_DEBUG: true } }
-      - { name: Archive Test Results, if: failure(), uses: actions/upload-artifact@v3, with: { name: screenshot-test-results-linux, retention-days: 21, path: "**/build/reports", if-no-files-found: ignore } }
-      - { name: Check sandbox compiles, run: "./gradlew :korge-sandbox:jvmJar" }
-      - { name: Publish to maven local, run: ./gradlew --parallel publishJvmLocal publishKotlinMultiplatformPublicationToMavenLocal }
-      - { name: e2e test, working-directory: e2e/e2e-test, run: ./gradlew checkReferencesJvm --stacktrace }
-      - { name: Archive E2E Test Results, if: failure(), uses: actions/upload-artifact@v3, with: { name: e2e-test-results-linux-jvm, retention-days: 21, path: "**/e2e/e2e-test/build/screenshots", if-no-files-found: ignore } }
-      - { name: e2e multi test and hotreload, working-directory: e2e/e2e-test-multi, run: "./gradlew --watch-fs --warn --configuration-cache --configuration-cache-problems=warn compileKotlinJvm" }
-      - { name: e2e multi test runJvmAutoreload, working-directory: e2e/e2e-test-multi, run: "./gradlew --configuration-cache :client:runJvmAutoreload" }
-      - { name: Check publication includes iOS, run: ./gradlew checkModulePublication }
-
-  test-jvm-macos:
-    needs: changes
-    if: ${{ needs.changes.outputs.testMacos == 'true' }}
-    timeout-minutes: 240
-    runs-on: macos-11
-    env:
-      DISABLE_JAVASCRIPT_TEST: true
-      DISABLE_ANDROID: true
-      DISABLE_SANDBOX: true
-    steps:
-      - { uses: actions/checkout@v3 }
-      - { name: Replace gradle wrapper, run: "sed 's/-all/-bin/g' gradle/wrapper/gradle-wrapper.properties > gradle/wrapper/gradle-wrapper.properties.bak; cp gradle/wrapper/gradle-wrapper.properties.bak gradle/wrapper/gradle-wrapper.properties" }
-      - { name: Set up JDK, uses: actions/setup-java@v3, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
-      - { name: Prepare Gradle, uses: gradle/gradle-build-action@ef76a971e2fa3f867b617efd72f2fbd72cf6f8bc } # v2.8.0
+      - { if: "${{ startsWith(matrix.os, 'ubuntu-') }}", name: Install freeglut3 & openal, run: sudo apt-get update && sudo apt-get -y install freeglut3-dev libopenal-dev xvfb }
+      - { if: "${{ startsWith(matrix.os, 'ubuntu-') }}", name: Run Xvfb in Background, run: "Xvfb :99 &" }
+      - { if: "${{ startsWith(matrix.os, 'windows-') }}", name: Download and unzip opengl, shell: cmd, run: "curl -L -o opengl32-x64.zip https://github.com/korlibs/mesa-dist-win/releases/download/21.2.3/opengl32-x64.zip && unzip opengl32-x64.zip && unzip opengl32-x64.zip -d korge" }
+      - { name: Set up JDK, uses: actions/setup-java@v4, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
+      - { name: Prepare Gradle, uses: gradle/actions/setup-gradle@417ae3ccd767c252f5661f1ace9f835f9654f2b5 } # https://github.com/gradle/actions/releases/tag/v3.1.0
       - { name: Start gradle, run: ./gradlew }
-      - { name: Testing JVM on MacosX64, run: ./gradlew jvmTest }
-      - { name: Archive Test Results, if: failure(), uses: actions/upload-artifact@v3, with: { name: screenshot-test-results-macos, retention-days: 21, path: "**/build/reports", if-no-files-found: ignore } }
-
-  test-jvm-windows:
-    needs: changes
-    if: ${{ needs.changes.outputs.testWindows == 'true' }}
-    timeout-minutes: 240
-    runs-on: windows-latest
-    env:
-      DISABLE_JAVASCRIPT_TEST: true
-      DISABLE_KOTLIN_NATIVE: true
-      DISABLE_ANDROID: true
-      DISABLE_SANDBOX: true
-      GRADLE_OPTS: -Dorg.gradle.daemon=false -Dkotlin.compiler.execution.strategy=in-process -Dorg.gradle.workers.max=3
-    steps:
-      - { uses: actions/checkout@v3 }
-      - uses: denoland/setup-deno@v1
-        with:
-          deno-version: v1.x
-      - { name: Replace gradle wrapper, run: "sed 's/-all/-bin/g' gradle/wrapper/gradle-wrapper.properties > gradle/wrapper/gradle-wrapper.properties.bak; cp gradle/wrapper/gradle-wrapper.properties.bak gradle/wrapper/gradle-wrapper.properties" }
-      - { name: Configure local.properties, run: "echo org.gradle.parallel=false >> local.properties" }
-      - { name: Download, shell: cmd, run: "curl -L -o opengl32-x64.zip https://github.com/korlibs/mesa-dist-win/releases/download/21.2.3/opengl32-x64.zip" }
-      - { name: unzip, shell: cmd, run: "unzip opengl32-x64.zip" }
-      - { name: unzip to korge, shell: cmd, run: "unzip opengl32-x64.zip -d korge" }
-      - { name: Set up JDK, uses: actions/setup-java@v3, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
-      - { name: Prepare Gradle, uses: gradle/gradle-build-action@ef76a971e2fa3f867b617efd72f2fbd72cf6f8bc } # v2.8.0
-      - { name: Testing JVM on windows, shell: cmd, run: "CALL gradlew.bat --parallel jvmTest", env: { EGL_LOG_LEVEL: debug, LIBGL_DEBUG: verbose, LIBGL_ALWAYS_SOFTWARE: true, MESA_DEBUG: true } }
-      - { name: Archive Test Results, if: failure(), uses: actions/upload-artifact@v3, with: { name: screenshot-test-results-windows, retention-days: 21, path: "**/build/reports", if-no-files-found: ignore } }
-
-  test-js-wasm:
-    needs: changes
-    if: ${{ needs.changes.outputs.testJs == 'true' || needs.changes.outputs.testWasm == 'true' }}
-    timeout-minutes: 240
-    runs-on: ubuntu-latest
-    env:
-      DISABLE_KOTLIN_NATIVE: true
-      DISABLE_ANDROID: true
-      DISABLE_SANDBOX: true
-    steps:
-      - { uses: actions/checkout@v3 }
-      - { name: Replace gradle wrapper, run: "sed 's/-all/-bin/g' gradle/wrapper/gradle-wrapper.properties > gradle/wrapper/gradle-wrapper.properties.bak; cp gradle/wrapper/gradle-wrapper.properties.bak gradle/wrapper/gradle-wrapper.properties" }
-      - { name: Set up JDK, uses: actions/setup-java@v3, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
-      - { name: Install freeglut3 & openal, run: sudo apt-get update && sudo apt-get -y install freeglut3-dev libopenal-dev }
-      - { name: Prepare Gradle, uses: gradle/gradle-build-action@ef76a971e2fa3f867b617efd72f2fbd72cf6f8bc } # v2.8.0
-      #- { name: Compile WASM, run: ./gradlew --parallel compileTestKotlinWasmJs }
-      - { name: Test JS, run: ./gradlew --parallel jsNodeTest jsBrowserTest }
-
-  test-android:
-    needs: changes
-    if: ${{ needs.changes.outputs.testAndroid == 'true' }}
-    timeout-minutes: 240
-    #runs-on: macos-11
-    runs-on: ubuntu-latest
-    env:
-      DISABLE_KOTLIN_NATIVE: true
-      DISABLE_SANDBOX: true
-    steps:
-      - { uses: actions/checkout@v3 }
-      - { name: Replace gradle wrapper, run: "sed 's/-all/-bin/g' gradle/wrapper/gradle-wrapper.properties > gradle/wrapper/gradle-wrapper.properties.bak; cp gradle/wrapper/gradle-wrapper.properties.bak gradle/wrapper/gradle-wrapper.properties" }
-      - { name: Set up JDK, uses: actions/setup-java@v3, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
-      - { name: Prepare Gradle, uses: gradle/gradle-build-action@ef76a971e2fa3f867b617efd72f2fbd72cf6f8bc } # v2.8.0
-      - name: Run Android Connected Tests
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: 21
-          script: ./gradlew connectedCheck
-
-  test-ios:
-    needs: changes
-    if: ${{ needs.changes.outputs.testMacos == 'true' }}
-    timeout-minutes: 240
-    runs-on: macos-11
-    env:
-      DISABLE_ANDROID: true
-      DISABLE_SANDBOX: true
-    steps:
-      - { uses: actions/checkout@v3 }
-      - { name: Replace gradle wrapper, run: "sed 's/-all/-bin/g' gradle/wrapper/gradle-wrapper.properties > gradle/wrapper/gradle-wrapper.properties.bak; cp gradle/wrapper/gradle-wrapper.properties.bak gradle/wrapper/gradle-wrapper.properties" }
-      - { name: Set up JDK, uses: actions/setup-java@v3, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
-      - { name: Prepare Gradle, uses: gradle/gradle-build-action@ef76a971e2fa3f867b617efd72f2fbd72cf6f8bc } # v2.8.0
-      - { name: Start gradle, run: ./gradlew }
-      - { name: Run ios simulator tests, run: ./gradlew iosX64Test }
-      #- { name: Check compilation of tvOS targets, run: ./gradlew publishTvosArm64PublicationToMavenLocal }
-      - { name: Archive Test Results, if: failure(), uses: actions/upload-artifact@v3, with: { name: screenshot-test-results-macos, retention-days: 21, path: "**/build/reports", if-no-files-found: ignore } }
+      - { if: "${{ matrix.precompileTask }}", name: "Building ${{ matrix.precompileTask }} classes", run: "./gradlew --stacktrace --parallel ${{ matrix.precompileTask }}" }
+      #- { name: Testing JVM on windows, shell: cmd, run: "CALL gradlew.bat --parallel jvmTest", env: { EGL_LOG_LEVEL: debug, LIBGL_DEBUG: verbose, LIBGL_ALWAYS_SOFTWARE: true, MESA_DEBUG: true } }
+      - { if: "${{ matrix.testTask }}", name: "Run ${{ matrix.testTask }} tests", run: "./gradlew ${{ matrix.testTask }}", env: { EGL_LOG_LEVEL: debug, LIBGL_DEBUG: verbose, LIBGL_ALWAYS_SOFTWARE: true, MESA_DEBUG: true } }
+      - { if: "${{ matrix.buildTasks }}", name: "Run ${{ matrix.buildTasks }}", run: "./gradlew ${{ matrix.buildTasks }}" }
+      - name: Enable KVM
+        if: "${{ matrix.enableAndroid }}"
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - { name: "Run Android Tests", if: "${{ matrix.enableAndroid }}", uses: reactivecircus/android-emulator-runner@v2, with: { "api-level": 21, "script": "./gradlew connectedCheck" } }
+      - { name: Archive Test Results, if: failure(), uses: actions/upload-artifact@v4, with: { name: "test-results-${{ matrix.os }}", retention-days: 21, path: "**/build/reports", if-no-files-found: ignore } }
+      - { if: "${{ matrix.e2e }}", name: Check sandbox compiles, run: "./gradlew :korge-sandbox:jvmJar" }
+      - { if: "${{ matrix.e2e }}", name: Publish to maven local, run: ./gradlew --parallel publishJvmLocal publishKotlinMultiplatformPublicationToMavenLocal }
+      - { if: "${{ matrix.e2e }}", name: e2e test, working-directory: e2e/e2e-test, run: ./gradlew checkReferencesJvm --stacktrace }
+      - { if: "${{ matrix.e2e && failure() }}", name: Archive E2E Test Results, uses: actions/upload-artifact@v4, with: { name: e2e-test-results-linux-jvm, retention-days: 21, path: "**/e2e/e2e-test/build/screenshots", if-no-files-found: ignore } }
+      - { if: "${{ matrix.e2e }}", name: e2e multi test and hotreload, working-directory: e2e/e2e-test-multi, run: "./gradlew --watch-fs --warn --configuration-cache --configuration-cache-problems=warn compileKotlinJvm" }
+      - { if: "${{ matrix.e2e }}", name: e2e multi test runJvmAutoreload, working-directory: e2e/e2e-test-multi, run: "./gradlew --configuration-cache :client:runJvmAutoreload" }
+      - { if: "${{ matrix.e2e }}", name: e2e multi test packageJvmFatJar, working-directory: e2e/e2e-test-multi, run: "./gradlew --configuration-cache :client:packageJvmFatJar" }
+      - { if: "${{ matrix.e2e }}", name: Check publication includes iOS, run: ./gradlew checkModulePublication }

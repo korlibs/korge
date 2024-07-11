@@ -1,0 +1,36 @@
+name: "TEST SNAPSHOT"
+
+on:
+  #push:
+  #  branches: [ main ]
+  #pull_request:
+  #  branches: [ main ]
+  schedule:
+    # https://crontab.guru/#0_0_*_*_4
+    # “At 00:00 on Thursday.”
+    - cron: "0 0 * * 4"
+
+env:
+  # https://oss.sonatype.org/content/repositories/snapshots/org/jetbrains/kotlin/kotlin-compiler/
+  FORCED_KOTLIN_VERSION: "1.9.255-SNAPSHOT"
+  SKIP_KORGE_SAMPLES: true
+  JAVA_VERSION: 17
+  JAVA_DISTRIBUTION: zulu
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    #continue-on-error: true
+
+    steps:
+    - uses: actions/checkout@v2
+    - { name: Set up JDK, uses: actions/setup-java@v3, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
+    - { name: Replace gradle wrapper, run: "sed 's/-all/-bin/g' gradle/wrapper/gradle-wrapper.properties > gradle/wrapper/gradle-wrapper.properties.bak; cp gradle/wrapper/gradle-wrapper.properties.bak gradle/wrapper/gradle-wrapper.properties" }
+    - { name: Prepare Gradle, uses: gradle/gradle-build-action@ef76a971e2fa3f867b617efd72f2fbd72cf6f8bc } # v2.8.0
+    - name: Start gradle
+      run: ./gradlew
+    - name: Testing JVM
+      run: ./gradlew --no-daemon jvmTest
+    - name: Testing JS
+      run: ./gradlew --no-daemon jsNodeTest

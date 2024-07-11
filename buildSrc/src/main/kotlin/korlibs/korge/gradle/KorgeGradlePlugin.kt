@@ -22,17 +22,6 @@ import java.util.*
 import java.util.concurrent.*
 import kotlin.concurrent.*
 
-abstract class KorgeGradleAbstractPlugin(val projectType: ProjectType) : Plugin<Project> {
-    override fun apply(project: Project) {
-        project.configureAutoVersions()
-        project.configureBuildScriptClasspathTasks()
-        KorgeGradleApply(project, projectType).apply(includeIndirectAndroid = true)
-    }
-}
-
-open class KorgeGradlePlugin : KorgeGradleAbstractPlugin(projectType = ProjectType.EXECUTABLE)
-open class KorgeLibraryGradlePlugin : KorgeGradleAbstractPlugin(projectType = ProjectType.LIBRARY)
-
 class KorgeGradleApply(val project: Project, val projectType: ProjectType) {
 	fun apply(includeIndirectAndroid: Boolean = true) = project {
         checkMinimumJavaVersion()

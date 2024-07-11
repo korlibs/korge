@@ -42,11 +42,16 @@ fun Project.configureErrorableEsbuild() {
 
         val esbuildVersion = korge.esbuildVersion
         doFirst {
-            val npmCmd = arrayOf(
-                File(env.nodeExecutable),
-                File(env.nodeDir, "lib/node_modules/npm/bin/npm-cli.js").takeIf { it.exists() }
-                    ?: File(env.nodeDir, "node_modules/npm/bin/npm-cli.js").takeIf { it.exists() }
-                    ?: error("Can't find npm-cli.js in ${env.nodeDir} standard folders")
+            //val nodeDir = env.nodeBinDir
+            val nodeDir = env.dir
+            val file1: File = File(env.nodeExecutable)
+            val file2: File? = File(nodeDir, "lib/node_modules/npm/bin/npm-cli.js").takeIf { it.exists() }
+            val file3: File? = File(nodeDir, "node_modules/npm/bin/npm-cli.js").takeIf { it.exists() }
+            val npmCmd = arrayOf<File>(
+                file1,
+                file2
+                    ?: file2
+                    ?: error("Can't find npm-cli.js in ${nodeDir} standard folders")
             )
 
             environment("PATH", ENV_PATH)
@@ -107,8 +112,12 @@ fun Project.configureErrorableEsbuild() {
             dependsOn(browserPrepareEsbuild)
             dependsOn(compileExecutableKotlinJs)
 
-            //println("compileExecutableKotlinJs:" + compileExecutableKotlinJs::class)
-            val jsPath = compileExecutableKotlinJs.outputFileProperty.get()
+            val jsBasePath = compileExecutableKotlinJs.destinationDirectory.asFile.get().absolutePath + "/" + compileExecutableKotlinJs.compilerOptions.moduleName.get()
+            val jsPath = "$jsBasePath.js" // Normal JS
+            val mjsPath = "$jsBasePath.mjs" // ES2015
+            val finalJsPath = mjsPath
+            //val finalJsPath = jsPath
+
             val output = File(wwwFolder, "${project.name}.js")
             //println("jsPath=$jsPath")
             //println("jsPath.parentFile=${jsPath.parentFile}")
@@ -116,19 +125,22 @@ fun Project.configureErrorableEsbuild() {
             inputs.files(compileExecutableKotlinJs.outputs.files)
             outputs.file(output)
             environment("PATH", ENV_PATH)
-            commandLine(buildList {
-                addAll(esbuildCmd)
-                //add("--watch",)
-                add("--bundle")
-                if (!debug) {
-                    add("--minify")
-                    add("--sourcemap=external")
-                }
-                add(jsPath)
-                add("--outfile=$output")
-                // @TODO: Close this command on CTRL+C
-                //if (run) add("--servedir=$wwwFolder")
-            })
+            doFirst {
+                commandLine(buildList {
+                    addAll(esbuildCmd)
+                    //add("--watch",)
+                    add("--bundle")
+                    if (!debug) {
+                        add("--minify")
+                        add("--sourcemap=external")
+                    }
+                    add(finalJsPath)
+                    add("--outfile=$output")
+                    // @TODO: Close this command on CTRL+C
+                    //if (run) add("--servedir=$wwwFolder")
+                })
+            }
+
         }
     }
 }

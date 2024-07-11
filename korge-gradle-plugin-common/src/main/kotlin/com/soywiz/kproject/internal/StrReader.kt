@@ -16,6 +16,7 @@ internal class StrReader(val str: String, var pos: Int = 0) {
 
     fun skip() = skip(1)
     fun peek(): Char = if (hasMore) this.str[this.pos] else '\u0000'
+    fun peekChar(): Char = peek()
     fun read(): Char = if (hasMore) this.str[posSkip(1)] else '\u0000'
     fun unread() = skip(-1)
 

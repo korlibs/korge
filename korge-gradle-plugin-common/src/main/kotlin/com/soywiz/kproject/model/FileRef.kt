@@ -75,6 +75,11 @@ data class LocalFileRef(val file: File) : FileRef {
 }
 
 data class GitFileRef(val git: GitRepository, val ref: String, val path: String) : FileRef {
+    init {
+        //println("GitFileRef(ref='$ref', path='$path')")
+        //check(!ref.contains("#")) { "Ref contains #" }
+    }
+
     override val name: String get() = PathInfo(path).name
     override fun writeBytes(data: ByteArray) = TODO()
     override fun readBytes(): ByteArray = git.useGit { it.readFile(ref, path) }

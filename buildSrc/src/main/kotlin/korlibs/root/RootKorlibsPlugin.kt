@@ -19,6 +19,7 @@ import org.gradle.api.*
 import org.gradle.api.file.*
 import org.gradle.api.tasks.*
 import org.gradle.api.tasks.testing.*
+import org.jetbrains.dokka.gradle.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import org.jetbrains.kotlin.gradle.targets.js.npm.*
 import org.jetbrains.kotlin.gradle.targets.js.testing.*
@@ -27,6 +28,7 @@ import org.jetbrains.kotlin.gradle.targets.js.testing.mocha.*
 import org.jetbrains.kotlin.gradle.tasks.*
 import java.io.*
 import java.nio.file.*
+import kotlin.io.path.*
 
 object RootKorlibsPlugin {
     val KORGE_GROUP = "com.soywiz.korge"
@@ -46,7 +48,15 @@ object RootKorlibsPlugin {
     }
 
     fun Project.init() {
-        plugins.apply("org.jetbrains.dokka")
+        plugins.apply(DokkaPlugin::class.java)
+        //plugins.apply("js-plain-objects")
+
+        allprojects {
+            tasks.withType(AbstractDokkaTask::class.java).configureEach {
+                //println("DOKKA=$it")
+                it.offlineMode.set(true)
+            }
+        }
 
         checkMinimumJavaVersion()
         configureBuildScriptClasspathTasks()
@@ -149,6 +159,11 @@ object RootKorlibsPlugin {
             fromFolder = File(rootProject.projectDir, "buildSrc/src/main/resources"),
             intoFolder = File(rootProject.projectDir, "korge-gradle-plugin/build/srcgen2res")
         )
+
+        project.symlinktree(
+            fromFolder = File(rootProject.projectDir, "buildSrc/src/test/resources"),
+            intoFolder = File(rootProject.projectDir, "korge-gradle-plugin/build/testgen2res")
+        )
     }
 
     fun Project.initShowSystemInfoWhenLinkingInWindows() {
@@ -224,6 +239,7 @@ object RootKorlibsPlugin {
 
                 // AppData\Local\Android\Sdk\tools\bin>sdkmanager --licenses
                 plugins.apply("kotlin-multiplatform")
+                //plugins.apply(JsPlainObjectsKotlinGradleSubplugin::class.java)
 
                 //initAndroidProject()
                 if (hasAndroid) {
@@ -295,13 +311,13 @@ object RootKorlibsPlugin {
                         AddFreeCompilerArgs.addFreeCompilerArgs(project, this)
                     }
                     if (isWasmEnabled(project)) {
-                        configureWasm(executable = false)
+                        configureWasmTarget(executable = false)
                         val wasmBrowserTest = tasks.getByName("wasmJsBrowserTest") as KotlinJsTest
                         // ~/projects/korge/build/js/packages/korge-root-klock-wasm-test
                         wasmBrowserTest.doFirst {
                             logger.info("!!!!! wasmBrowserTest PATCH :: $wasmBrowserTest : ${wasmBrowserTest::class.java}")
 
-                            val npmProjectDir = wasmBrowserTest.compilation.npmProject.dir
+                            val npmProjectDir: File = wasmBrowserTest.compilation.npmProject.dir.get().asFile
                             val projectName = npmProjectDir.name
                             val uninstantiatedMjs = File(npmProjectDir, "kotlin/$projectName.uninstantiated.mjs")
 
@@ -323,6 +339,7 @@ object RootKorlibsPlugin {
                                 //kotlinOptions.sourceMap = true
                             }
                         }
+                        configureJsTargetOnce()
                         configureJSTestsOnce()
                     }
                     //configureJSTests()
@@ -364,7 +381,7 @@ object RootKorlibsPlugin {
                     //    nonNative: [js, jvmAndroid]
                     sourceSets.apply {
 
-                        val common = createPairSourceSet("common") { test ->
+                        val common = createPairSourceSet("common", project = project) { test ->
                             dependencies {
                                 if (test) {
                                     implementation(kotlin("test-common"))
@@ -375,12 +392,12 @@ object RootKorlibsPlugin {
                             }
                         }
 
-                        val concurrent = createPairSourceSet("concurrent", common)
-                        val jvmAndroid = createPairSourceSet("jvmAndroid", concurrent)
+                        val concurrent = createPairSourceSet("concurrent", common, project = project)
+                        val jvmAndroid = createPairSourceSet("jvmAndroid", concurrent, project = project)
 
                         // Default source set for JVM-specific sources and dependencies:
                         // JVM-specific tests and their dependencies:
-                        val jvm = createPairSourceSet("jvm", jvmAndroid) { test ->
+                        val jvm = createPairSourceSet("jvm", jvmAndroid, project = project) { test ->
                             dependencies {
                                 if (test) {
                                     implementation(kotlin("test-junit"))
@@ -391,7 +408,7 @@ object RootKorlibsPlugin {
                         }
 
                         if (hasAndroid) {
-                            val android = createPairSourceSet("android", jvmAndroid, doTest = false) { test ->
+                            val android = createPairSourceSet("android", jvmAndroid, doTest = false, project = project) { test ->
                                 dependencies {
                                     if (test) {
                                         //implementation(kotlin("test"))
@@ -405,7 +422,7 @@ object RootKorlibsPlugin {
                             }
                         }
 
-                        val js = createPairSourceSet("js", common) { test ->
+                        val js = createPairSourceSet("js", common, project = project) { test ->
                             dependencies {
                                 if (test) {
                                     implementation(kotlin("test-js"))
@@ -416,7 +433,7 @@ object RootKorlibsPlugin {
                         }
 
                         if (isWasmEnabled(project)) {
-                            val wasm = createPairSourceSet("wasmJs", common) { test ->
+                            val wasm = createPairSourceSet("wasmJs", common, project = project) { test ->
                                 dependencies {
                                     if (test) {
                                         implementation(kotlin("test-wasm-js"))
@@ -431,20 +448,17 @@ object RootKorlibsPlugin {
                             //val iosTvosMacos by lazy { createPairSourceSet("iosTvosMacos", darwin) }
                             //val iosMacos by lazy { createPairSourceSet("iosMacos", iosTvosMacos) }
 
-                            //val linux by lazy { createPairSourceSet("linux", posix) }
-                            //val macos by lazy { createPairSourceSet("macos", iosMacos) }
-                            //val mingw by lazy { createPairSourceSet("mingw", native) }
-
-                            val native by lazy { createPairSourceSet("native", concurrent) }
-                            val posix by lazy { createPairSourceSet("posix", native) }
-                            val darwin by lazy { createPairSourceSet("darwin", posix) }
-                            val darwinMobile by lazy { createPairSourceSet("darwinMobile", darwin) }
-                            val iosTvos by lazy { createPairSourceSet("iosTvos", darwinMobile/*, iosTvosMacos*/) }
-                            val tvos by lazy { createPairSourceSet("tvos", iosTvos) }
-                            val ios by lazy { createPairSourceSet("ios", iosTvos/*, iosMacos*/) }
+                            val native by lazy { createPairSourceSet("native", concurrent, project = project) }
+                            val posix by lazy { createPairSourceSet("posix", native, project = project) }
+                            val apple by lazy { createPairSourceSet("apple", posix, project = project) }
+                            val darwin by lazy { createPairSourceSet("darwin", apple, project = project) }
+                            val darwinMobile by lazy { createPairSourceSet("darwinMobile", darwin, project = project) }
+                            val iosTvos by lazy { createPairSourceSet("iosTvos", darwinMobile/*, iosTvosMacos*/, project = project) }
+                            val tvos by lazy { createPairSourceSet("tvos", iosTvos, project = project) }
+                            val ios by lazy { createPairSourceSet("ios", iosTvos/*, iosMacos*/, project = project) }
 
                             for (target in mobileTargets(project)) {
-                                val native = createPairSourceSet(target.name)
+                                val native = createPairSourceSet(target.name, project = project)
                                 when {
                                     target.isIos -> native.dependsOn(ios)
                                     target.isTvos -> native.dependsOn(tvos)
@@ -494,19 +508,7 @@ object RootKorlibsPlugin {
     fun Project.initSamples() {
         rootProject.samples {
             if (isWasmEnabled(project)) {
-                configureWasm(executable = true)
-                project.tasks.createThis<Task>("wasmCreateIndex") {
-                    doFirst {
-                        wasmCreateIndex(project)
-                    }
-                }
-                project.tasks.findByName("wasmBrowserDevelopmentRun")?.apply {
-                    dependsOn("wasmCreateIndex")
-                    doFirst { wasmCreateIndex(project) }
-                }
-                val task = project.tasks.createThis<Task>("runWasm") {
-                    dependsOn("wasmRun")
-                }
+                configureWasm(ProjectType.EXECUTABLE, binaryen = false)
             }
 
             // @TODO: Move to KorGE plugin
@@ -554,6 +556,7 @@ object RootKorlibsPlugin {
                     browser {
                         binaries.executable()
                     }
+                    configureJsTargetOnce()
                 }
 
                 tasks.getByName("jsProcessResources").apply {
@@ -565,7 +568,10 @@ object RootKorlibsPlugin {
                         // @TODO: How to get the actual .js file generated/served?
                         val jsFile = File("${project.name}.js").name
                         val resourcesFolders = jsMainCompilation.allKotlinSourceSets
-                            .flatMap { it.resources.srcDirs } + listOf(File(rootProject.rootDir, "_template"))
+                            .flatMap { it.resources.srcDirs } + listOf(
+                                File(rootProject.rootDir, "_template"),
+                                File(rootProject.rootDir, "buildSrc/src/main/resources"),
+                            )
                         //println("jsFile: $jsFile")
                         //println("resourcesFolders: $resourcesFolders")
                         fun readTextFile(name: String): String {
@@ -602,6 +608,7 @@ object RootKorlibsPlugin {
 
             project.configureEsbuild()
             project.configureJavascriptRun()
+            project.configureDenoRun()
         }
     }
 
@@ -717,6 +724,7 @@ object RootKorlibsPlugin {
             //tasks.withType(Test::class.java).allThis {
             afterEvaluate {
                 it.configureTests()
+                project.configureDenoTest()
             }
         }
     }
@@ -805,7 +813,10 @@ fun Project.hasBuildGradle() = listOf("build.gradle", "build.gradle.kts").any { 
 val Project.isSample: Boolean get() = project.path.startsWith(":samples:") || project.path.startsWith(":korge-sandbox") || project.path.startsWith(":korge-editor") || project.path.startsWith(":korge-starter-kit")
 fun Project.mustAutoconfigureKMM(): Boolean =
     !project.name.startsWith("korge-gradle-plugin") &&
+        project.name != "korge-kotlin-plugin" &&
         project.name != "korge-reload-agent" &&
+        project.name != "korge-ipc" &&
+        project.name != "korge-kotlin-compiler" &&
         project.name != "korge-benchmarks" &&
         project.hasBuildGradle()
 
@@ -832,7 +843,13 @@ fun Project.symlinktree(fromFolder: File, intoFolder: File) {
             runCatching { intoFolder.delete() }
             runCatching { intoFolder.deleteRecursively() }
             intoFolder.parentFile.mkdirs()
-            Files.createSymbolicLink(intoFolder.toPath(), intoFolder.parentFile.toPath().relativize(fromFolder.toPath()))
+            val intoPath = intoFolder.toPath()
+            val relativeFromPath = intoFolder.parentFile.toPath().relativize(fromFolder.toPath())
+            //if (isWindows) {
+            //    exec { it.commandLine("cmd", "/c", "mklink", "/d", intoPath.pathString, relativeFromPath.pathString) }
+            //} else {
+                Files.createSymbolicLink(intoPath, relativeFromPath)
+            //}
         }
     } catch (e: Throwable) {
         e.printStackTrace()
