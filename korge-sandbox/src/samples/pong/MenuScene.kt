@@ -20,7 +20,7 @@ class MenuScene() : Scene() {
 		var playButton = uiButton(size = Size(256.0, 32.0)) {
 			text = "Play"
 			position(sceneWidth / 2 - 128, sceneHeight / 2 - 64)
-			onClick {
+			onClickSuspend {
 				sceneContainer.changeTo<PlayScene>()
 			}
 		}

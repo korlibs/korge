@@ -44,7 +44,7 @@ class MainEasing : Scene() {
                 text("$easing", textSize = textSize).xy(0.0, textSize)
                 onOver { bg.color = Colors.BLACK.withAd(1.0) }
                 onOut { bg.color = Colors.BLACK.withAd(0.2) }
-                onClick {
+                onClickSuspend(coroutineContext) {
                     ballTween?.cancel()
                     ballTween = ball.tweenAsync(ball::x[64f, 64f + 512f], easing = easing)
                 }

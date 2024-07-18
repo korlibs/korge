@@ -15,7 +15,6 @@ import korlibs.math.interpolation.*
 import korlibs.render.*
 import korlibs.time.*
 
-
 @KorgeExperimental
 inline fun Container.uiWindow(
     title: String,
@@ -59,8 +58,9 @@ class UIWindow(title: String, size: Size = Size(256, 256)) : UIContainer(size) {
         elevation = false
         bgColorOut = MaterialColors.RED_600
         bgColorOver = MaterialColors.RED_800
-        onClick { closeAnimated() }
+        onClickSuspend(null) { closeAnimated() }
     }
+
     var title: String by titleView::plainText
     val container = uiScrollable(Size(width, height - titleHeight)).position(0.0, titleHeight).also {
         it.backgroundColor = Colors["#161a1d"]

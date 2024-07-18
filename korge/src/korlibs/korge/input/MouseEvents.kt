@@ -1,6 +1,7 @@
 package korlibs.korge.input
 
 import korlibs.datastructure.*
+import korlibs.datastructure.iterators.*
 import korlibs.event.*
 import korlibs.image.bitmap.*
 import korlibs.image.color.*
@@ -13,6 +14,8 @@ import korlibs.korge.view.*
 import korlibs.math.geom.*
 import korlibs.render.*
 import korlibs.time.*
+import kotlinx.coroutines.*
+import kotlin.coroutines.*
 import kotlin.math.*
 import kotlin.native.concurrent.*
 import kotlin.reflect.*
@@ -556,12 +559,26 @@ inline fun <T : View> T.mouse(callback: MouseEvents.() -> Unit): T {
 }
 
 @PublishedApi
-internal inline fun <T : View?> T?.doMouseEvent(
+internal inline fun <T : BView?> T?.doMouseEventSuspend(
     prop: KProperty1<MouseEvents, Signal<MouseEvents>>,
-    noinline handler: suspend (MouseEvents) -> Unit
+    noinline handler: suspend (MouseEvents) -> Unit,
+    coroutineContext: CoroutineContext? = null,
 ): T? {
-    this?.mouse?.let { mouse ->
-        prop.get(mouse).add { launchImmediately(mouse.coroutineContext) { handler(it) } }
+    this?.bviewAll?.fastForEach {
+        it?.mouse?.let { mouse ->
+            prop.get(mouse).add { launchImmediately(coroutineContext ?: mouse.coroutineContext) { handler(it) } }
+        }
+    }
+    return this
+}
+
+@PublishedApi
+internal inline fun <T : BView?> T?.doMouseEvent(
+    prop: KProperty1<MouseEvents, Signal<MouseEvents>>,
+    noinline handler: (MouseEvents) -> Unit,
+): T? {
+    this?.bviewAll?.fastForEach {
+        it?.mouse?.let { mouse -> prop.get(mouse).add { handler(it) } }
     }
     return this
 }
@@ -572,49 +589,55 @@ annotation class EventsDslMarker
 
 // @TODO: onOut should happen before onOver (circumvented via onNextFrame)
 
-inline fun <T : View> T.onOutOnOver(
+inline fun <T : BView> T.onOutOnOver(
     noinline out: @EventsDslMarker (MouseEvents) -> Unit,
     noinline over: @EventsDslMarker (MouseEvents) -> Unit
 ): T {
-    var component: AutoCloseable? = null
+    var components: List<AutoCloseable> = emptyList()
     onOut { events ->
-        component?.close()
-        component = null
+        components.fastForEach { it.close() }
+        components = emptyList()
         out(events)
     }
-    onOver { events -> component = onNextFrame { over(events) } }
+    onOver { events ->
+        components = bviewAll.map { it.onNextFrame { over(events) } }
+    }
     return this
 }
 
-inline fun <T : View?> T.onClick(noinline handler: @EventsDslMarker suspend (MouseEvents) -> Unit) =
-    doMouseEvent(MouseEvents::click, handler)
+inline fun <T : BView?> T.onClickSuspend(coroutineContext: CoroutineContext?, noinline handler: @EventsDslMarker suspend (MouseEvents) -> Unit) = doMouseEventSuspend(MouseEvents::click, handler, coroutineContext)
+inline fun <T : BView?> T.onOverSuspend(coroutineContext: CoroutineContext?, noinline handler: @EventsDslMarker suspend (MouseEvents) -> Unit) = doMouseEventSuspend(MouseEvents::over, handler, coroutineContext)
+inline fun <T : BView?> T.onOutSuspend(coroutineContext: CoroutineContext?, noinline handler: @EventsDslMarker suspend (MouseEvents) -> Unit) = doMouseEventSuspend(MouseEvents::out, handler, coroutineContext)
+inline fun <T : BView?> T.onDownSuspend(coroutineContext: CoroutineContext?, noinline handler: @EventsDslMarker suspend (MouseEvents) -> Unit) = doMouseEventSuspend(MouseEvents::down, handler, coroutineContext)
+inline fun <T : BView?> T.onDownFromOutsideSuspend(coroutineContext: CoroutineContext?, noinline handler: @EventsDslMarker suspend (MouseEvents) -> Unit) = doMouseEventSuspend(MouseEvents::downFromOutside, handler, coroutineContext)
+inline fun <T : BView?> T.onUpSuspend(coroutineContext: CoroutineContext?, noinline handler: @EventsDslMarker suspend (MouseEvents) -> Unit) = doMouseEventSuspend(MouseEvents::up, handler, coroutineContext)
+inline fun <T : BView?> T.onUpOutsideSuspend(coroutineContext: CoroutineContext?, noinline handler: @EventsDslMarker suspend (MouseEvents) -> Unit) = doMouseEventSuspend(MouseEvents::upOutside, handler, coroutineContext)
+inline fun <T : BView?> T.onUpAnywhereSuspend(coroutineContext: CoroutineContext?, noinline handler: @EventsDslMarker suspend (MouseEvents) -> Unit) = doMouseEventSuspend(MouseEvents::upAnywhere, handler, coroutineContext)
+inline fun <T : BView?> T.onMoveSuspend(coroutineContext: CoroutineContext?, noinline handler: @EventsDslMarker suspend (MouseEvents) -> Unit) = doMouseEventSuspend(MouseEvents::move, handler, coroutineContext)
+inline fun <T : BView?> T.onScrollSuspend(coroutineContext: CoroutineContext?, noinline handler: @EventsDslMarker suspend (MouseEvents) -> Unit) = doMouseEventSuspend(MouseEvents::scroll, handler, coroutineContext)
 
-inline fun <T : View?> T.onOver(noinline handler: @EventsDslMarker suspend (MouseEvents) -> Unit) =
-    doMouseEvent(MouseEvents::over, handler)
+suspend inline fun <T : BView?> T.onClickSuspend(noinline handler: @EventsDslMarker suspend (MouseEvents) -> Unit) = doMouseEventSuspend(MouseEvents::click, handler, coroutineContext)
+suspend inline fun <T : BView?> T.onOverSuspend(noinline handler: @EventsDslMarker suspend (MouseEvents) -> Unit) = doMouseEventSuspend(MouseEvents::over, handler, coroutineContext)
+suspend inline fun <T : BView?> T.onOutSuspend(noinline handler: @EventsDslMarker suspend (MouseEvents) -> Unit) = doMouseEventSuspend(MouseEvents::out, handler, coroutineContext)
+suspend inline fun <T : BView?> T.onDownSuspend(noinline handler: @EventsDslMarker suspend (MouseEvents) -> Unit) = doMouseEventSuspend(MouseEvents::down, handler, coroutineContext)
+suspend inline fun <T : BView?> T.onDownFromOutsideSuspend(noinline handler: @EventsDslMarker suspend (MouseEvents) -> Unit) = doMouseEventSuspend(MouseEvents::downFromOutside, handler, coroutineContext)
+suspend inline fun <T : BView?> T.onUpSuspend(noinline handler: @EventsDslMarker suspend (MouseEvents) -> Unit) = doMouseEventSuspend(MouseEvents::up, handler, coroutineContext)
+suspend inline fun <T : BView?> T.onUpOutsideSuspend(noinline handler: @EventsDslMarker suspend (MouseEvents) -> Unit) = doMouseEventSuspend(MouseEvents::upOutside, handler, coroutineContext)
+suspend inline fun <T : BView?> T.onUpAnywhereSuspend(noinline handler: @EventsDslMarker suspend (MouseEvents) -> Unit) = doMouseEventSuspend(MouseEvents::upAnywhere, handler, coroutineContext)
+suspend inline fun <T : BView?> T.onMoveSuspend(noinline handler: @EventsDslMarker suspend (MouseEvents) -> Unit) = doMouseEventSuspend(MouseEvents::move, handler, coroutineContext)
+suspend inline fun <T : BView?> T.onScrollSuspend(noinline handler: @EventsDslMarker suspend (MouseEvents) -> Unit) = doMouseEventSuspend(MouseEvents::scroll, handler, coroutineContext)
 
-inline fun <T : View?> T.onOut(noinline handler: @EventsDslMarker suspend (MouseEvents) -> Unit) =
-    doMouseEvent(MouseEvents::out, handler)
+inline fun <T : BView?> T.onClick(noinline handler: @EventsDslMarker (MouseEvents) -> Unit) = doMouseEvent(MouseEvents::click, handler)
+inline fun <T : BView?> T.onOver(noinline handler: @EventsDslMarker (MouseEvents) -> Unit) = doMouseEvent(MouseEvents::over, handler)
+inline fun <T : BView?> T.onOut(noinline handler: @EventsDslMarker (MouseEvents) -> Unit) = doMouseEvent(MouseEvents::out, handler)
+inline fun <T : BView?> T.onDown(noinline handler: @EventsDslMarker (MouseEvents) -> Unit) = doMouseEvent(MouseEvents::down, handler)
+inline fun <T : BView?> T.onDownFromOutside(noinline handler: @EventsDslMarker (MouseEvents) -> Unit) = doMouseEvent(MouseEvents::downFromOutside, handler)
+inline fun <T : BView?> T.onUp(noinline handler: @EventsDslMarker (MouseEvents) -> Unit) = doMouseEvent(MouseEvents::up, handler)
+inline fun <T : BView?> T.onUpOutside(noinline handler: @EventsDslMarker (MouseEvents) -> Unit) = doMouseEvent(MouseEvents::upOutside, handler)
+inline fun <T : BView?> T.onUpAnywhere(noinline handler: @EventsDslMarker (MouseEvents) -> Unit) = doMouseEvent(MouseEvents::upAnywhere, handler)
+inline fun <T : BView?> T.onMove(noinline handler: @EventsDslMarker (MouseEvents) -> Unit) = doMouseEvent(MouseEvents::move, handler)
+inline fun <T : BView?> T.onScroll(noinline handler: @EventsDslMarker (MouseEvents) -> Unit) = doMouseEvent(MouseEvents::scroll, handler)
 
-inline fun <T : View?> T.onDown(noinline handler: @EventsDslMarker suspend (MouseEvents) -> Unit) =
-    doMouseEvent(MouseEvents::down, handler)
-
-inline fun <T : View?> T.onDownFromOutside(noinline handler: @EventsDslMarker suspend (MouseEvents) -> Unit) =
-    doMouseEvent(MouseEvents::downFromOutside, handler)
-
-inline fun <T : View?> T.onUp(noinline handler: @EventsDslMarker suspend (MouseEvents) -> Unit) =
-    doMouseEvent(MouseEvents::up, handler)
-
-inline fun <T : View?> T.onUpOutside(noinline handler: @EventsDslMarker suspend (MouseEvents) -> Unit) =
-    doMouseEvent(MouseEvents::upOutside, handler)
-
-inline fun <T : View?> T.onUpAnywhere(noinline handler: @EventsDslMarker suspend (MouseEvents) -> Unit) =
-    doMouseEvent(MouseEvents::upAnywhere, handler)
-
-inline fun <T : View?> T.onMove(noinline handler: @EventsDslMarker suspend (MouseEvents) -> Unit) =
-    doMouseEvent(MouseEvents::move, handler)
-
-inline fun <T : View?> T.onScroll(noinline handler: @EventsDslMarker suspend (MouseEvents) -> Unit) =
-    doMouseEvent(MouseEvents::scroll, handler)
 
 fun ViewsContainer.installMouseDebugExtensionOnce() = MouseEvents.installDebugExtensionOnce(views)
 
