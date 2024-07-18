@@ -8,7 +8,7 @@ import kotlin.coroutines.*
 
 @OptIn(InternalCoroutinesApi::class)
 class SyncEventLoopCoroutineDispatcher(val eventLoop: SyncEventLoop) : CoroutineDispatcher(), Delay, AutoCloseable {
-    constructor(precise: Boolean = true, immediateRun: Boolean = false) : this(SyncEventLoop(precise, immediateRun))
+    constructor(immediateRun: Boolean = false) : this(SyncEventLoop(immediateRun))
 
     override fun close() {
         eventLoop.close()

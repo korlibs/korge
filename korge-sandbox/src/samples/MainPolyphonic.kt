@@ -376,7 +376,7 @@ class MainPolyphonic : Scene() {
             return 0.0f
         }
 
-        fun audioOutCallback(channel: Int, buf: ShortArray, reqn: Int = buf.size, bufn: Int = 0, nchannels: Int = 1) {
+        fun audioOutCallback(channel: Int, buf: AudioSampleArray, reqn: Int = buf.size, bufn: Int = 0, nchannels: Int = 1) {
             val state = channelStates[channel]
             var bufn = bufn
             for (i in 0 until reqn) {
@@ -394,7 +394,7 @@ class MainPolyphonic : Scene() {
                 }
                 val rvalue = value.clamp(Short.MIN_VALUE.toFloat(), Short.MAX_VALUE.toInt().toFloat()).toInt().toShort()
                 //for (n in 0 until nchannels) buf[bufn++] = value.toShort()
-                buf[bufn++] = rvalue
+                buf[bufn++] = AudioSample(rvalue)
                 //buf[bufn++] = rvalue
             }
         }
