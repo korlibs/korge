@@ -210,6 +210,10 @@ fun Project.configureNativeIosTvosRun(targetName: String) {
                 simulator -> if (isArm) "SimulatorArm64" else "X64"
                 else -> "Arm64"
             }
+            val archNoSim = when {
+                simulator -> "X64"
+                else -> "Arm64"
+            }
             val arch2 = when {
                 simulator -> if (isArm) "arm64" else "x86_64"
                 else -> "arm64"
@@ -229,6 +233,7 @@ fun Project.configureNativeIosTvosRun(targetName: String) {
                 //}
                 workingDir(xcodeProjDir)
                 doFirst {
+                    //commandLine("xcrun", "xcodebuild", "-allowProvisioningUpdates", "-scheme", "app-$archNoSim-$debugSuffix", "-project", ".", "-configuration", debugSuffix, "-derivedDataPath", "build", "-arch", arch2, "-sdk", iosSdkExt.appleFindSdk(sdkName))
                     commandLine("xcrun", "xcodebuild", "-allowProvisioningUpdates", "-scheme", "app-$arch-$debugSuffix", "-project", ".", "-configuration", debugSuffix, "-derivedDataPath", "build", "-arch", arch2, "-sdk", iosSdkExt.appleFindSdk(sdkName))
                     println("COMMAND: ${commandLine.joinToString(" ")}")
                 }
@@ -275,7 +280,8 @@ fun Project.configureNativeIosTvosRun(targetName: String) {
                 val device = iosSdkExt.appleGetInstallDevice(iphoneVersion)
                 // xcrun simctl launch --console 7F49203A-1F16-4DEE-B9A2-7A1BB153DF70 com.sample.demo.app-X64-Debug
                 //logger.info(params.joinToString(" "))
-                execLogger { it.commandLine("xcrun", "simctl", "launch", "--console", device.udid, "${korge.id}.app-X64-$debugSuffix") }
+                val arch = if (isArm) "SimulatorArm64" else "X64"
+                execLogger { it.commandLine("xcrun", "simctl", "launch", "--console", device.udid, "${korge.id}.app-$arch-$debugSuffix") }
             }
         }
 
