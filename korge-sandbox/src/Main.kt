@@ -134,6 +134,7 @@ suspend fun main() = Korge(
         //Demo(::MainShape2dScene),
         //Demo(::MainUIStacks),
         Demo(::MainAudioScene),
+        //Demo(::MainAsteroids),
         //Demo(::MainSprites10k),
         //Demo(::MainStressMatrixMultiplication),
         //Demo(::MainSDF),
