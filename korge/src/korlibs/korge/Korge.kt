@@ -217,7 +217,7 @@ object KorgeRunner {
             // Use this once Korgw is on 1.12.5
             //val views = Views(gameWindow.getCoroutineDispatcherWithCurrentContext() + SupervisorJob(), ag, injector, input, timeProvider, stats, gameWindow)
             val views: Views = Views(
-                coroutineContext = coroutineContext + gameWindow.coroutineDispatcher + InjectorContext(config.injector) + SupervisorJob(),
+                coroutineContext = coroutineContext + gameWindow.coroutineDispatcher + InjectorContext(config.injector) + SupervisorJob() + CoroutineName("Views"),
                 ag = if (config.debugAg) AGPrint() else ag,
                 injector = config.injector,
                 input = input,

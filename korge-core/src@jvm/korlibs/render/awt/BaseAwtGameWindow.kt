@@ -274,7 +274,7 @@ abstract class BaseAwtGameWindow(
     protected var mouseY: Int = 0
 
     override suspend fun loop(entry: suspend GameWindow.() -> Unit) {
-        launchImmediately(getCoroutineDispatcherWithCurrentContext()) {
+        launchImmediately(getCoroutineDispatcherWithCurrentContext() + CoroutineName("BaseAwtGameWindow.loop")) {
             entry()
         }
 

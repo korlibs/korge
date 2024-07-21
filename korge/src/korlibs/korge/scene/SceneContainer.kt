@@ -14,9 +14,7 @@ import korlibs.logger.*
 import korlibs.math.geom.*
 import korlibs.math.interpolation.*
 import korlibs.time.*
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.*
 import kotlin.reflect.*
 import kotlin.time.*
 
@@ -281,7 +279,7 @@ class SceneContainer(
 
         transitionView.startNewTransition(newScene._sceneViewContainer, transition)
 
-        //println("SCENE PREINIT")
+        //println("&&&&&&&&&&&& SCENE PREINIT: newScene=$newScene")
         try {
             newScene.coroutineContext.launchUnscopedAndWait {
                 //println("coroutineContext=$coroutineContext")
@@ -292,14 +290,17 @@ class SceneContainer(
             if (e is CancellationException) throw e
             //println("WOOOPS!")
             e.printStackTrace()
+        } finally {
+            //println("&&&&&&&&& SCENE POSTINIT newScene=$newScene, oldScene=$oldScene")
         }
-        //println("SCENE POSTINIT")
 
+        //CoroutineScope(newScene.coroutineContext).launch {
         newScene.launchUnscoped {
             newScene.sceneView.apply { newScene.apply { sceneMain() } }
         }
 
         if (oldScene != null) {
+            //withContext(oldScene.coroutineContext) {
             oldScene.coroutineContext.launchUnscopedAndWait {
                 oldScene.sceneBeforeLeaving()
             }
@@ -314,12 +315,14 @@ class SceneContainer(
         transitionView.endTransition()
 
         if (oldScene != null) {
+            //withContext(oldScene.coroutineContext) {
             oldScene.coroutineContext.launchUnscopedAndWait {
                 //println("sceneDestroy.coroutineContext=$coroutineContext")
                 oldScene.sceneDestroy()
                 oldScene.sceneDestroyInternal()
             }
 
+            //CoroutineScope(oldScene.coroutineContext).launch {
             oldScene.launchUnscoped {
                 //println("sceneAfterDestroyInternal.coroutineContext=$coroutineContext")
 
@@ -327,6 +330,7 @@ class SceneContainer(
             }
         }
 
+        //CoroutineScope(newScene.coroutineContext).launch {
         newScene.coroutineContext.launchUnscoped {
             newScene.sceneAfterInit()
         }
