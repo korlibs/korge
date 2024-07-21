@@ -90,6 +90,7 @@ suspend fun Korge(
     targetFps: Double = 0.0,
     /** false by default, useful only for debugging on the JVM */
     preferSyncIo: Boolean? = null,
+    debugCoroutines: Boolean? = null,
     entry: suspend Stage.() -> Unit = {}
 ): Unit = Korge(
     args = args, imageFormats = imageFormats, gameWindow = gameWindow, mainSceneClass = mainSceneClass,
@@ -109,6 +110,7 @@ suspend fun Korge(
     unit = Unit,
     targetFps = targetFps,
     preferSyncIo = preferSyncIo,
+    debugCoroutines = debugCoroutines,
 ).start(entry)
 
 data class Korge(
@@ -147,8 +149,11 @@ data class Korge(
     val stageBuilder: (Views) -> Stage = { Stage(it) },
     val targetFps: Double = 0.0,
     val preferSyncIo: Boolean? = null,
+    val debugCoroutines: Boolean? = null,
     val unit: Unit = Unit,
 ) {
+    val realDebugCoroutines get() = debugCoroutines ?: (korlibs.io.lang.Environment["DEBUG_COROUTINES"] == "true")
+
     companion object {
         val logger = Logger("Korge")
         val DEFAULT_GAME_ID = "korlibs.korge.unknown"
@@ -174,7 +179,10 @@ suspend fun KorgeWithConfig(config: KorgeConfig, entry: suspend Stage.() -> Unit
  * You have to call the [Korge] method by either providing some parameters, or a [Korge.Config] object.
  */
 object KorgeRunner {
-    suspend operator fun invoke(config: Korge) = Worker.init {
+    suspend operator fun invoke(config: Korge) = run {
+        beforeStartingKorge(config)
+        null
+    } ?: Worker.init {
         nativeSoundProvider // Ensure web audio hooks are added to avoid first click not working on JS
         RegisteredImageFormats.register(config.imageFormats)
 
