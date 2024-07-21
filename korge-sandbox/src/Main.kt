@@ -63,7 +63,11 @@ suspend fun main2() = KorgeCore {
     }
 }
 
-suspend fun main() = Korge(
+suspend fun main() = run {
+    kotlinx.coroutines.debug.DebugProbes.enableCreationStackTraces = true
+    kotlinx.coroutines.debug.DebugProbes.install()
+    null
+} ?: Korge(
     windowSize = Korge.DEFAULT_WINDOW_SIZE,
     backgroundColor = DEFAULT_KORGE_BG_COLOR,
     displayMode = KorgeDisplayMode.CENTER_NO_CLIP,

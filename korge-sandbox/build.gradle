@@ -8,6 +8,7 @@ korge {
 
 dependencies {
 	add("commonMainApi", project(":korge"))
+    add("commonMainApi", "org.jetbrains.kotlinx:kotlinx-coroutines-debug:1.9.0-RC")
 }
 
 tasks.register("runJvmAwtSandbox", KorgeJavaExec) {
