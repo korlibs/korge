@@ -18,7 +18,7 @@ class JvmSyncEventLoopTest {
     fun test() {
         //val precise = false
         val precise = true
-        val el = SyncEventLoop(precise = precise)
+        val el = SyncEventLoop()
         val lock = Lock()
         var n = 0
 

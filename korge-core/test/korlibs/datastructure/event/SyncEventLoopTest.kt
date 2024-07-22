@@ -17,7 +17,7 @@ class SyncEventLoopTest {
     fun test() = suspendTest({ NativeThread.isSupported }) {
     //fun test() = suspendTest {
         repeat(2) {
-            val ep = SyncEventLoop(precise = true)
+            val ep = SyncEventLoop()
             val start = TimeSource.Monotonic.markNow()
             fun log(msg: String) {
                 println("${start.elapsedNow().milliseconds}: $msg")
