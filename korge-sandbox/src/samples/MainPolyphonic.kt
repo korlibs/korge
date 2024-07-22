@@ -7,6 +7,7 @@ import korlibs.korge.ui.*
 import korlibs.korge.view.*
 import korlibs.math.*
 import kotlinx.atomicfu.*
+import kotlinx.coroutines.*
 import kotlin.math.*
 
 class MainPolyphonic : Scene() {
@@ -23,12 +24,18 @@ class MainPolyphonic : Scene() {
         channelStates[0].noteIndex.value = 0; nextNote(0)
         channelStates[1].noteIndex.value = 0; nextNote(1)
 
-        for (nchannel in 0 until 2) {
-            val stream2 = nativeSoundProvider.createNewPlatformAudioOutput(1, 44100) { samples ->
-                audioOutCallback(nchannel, samples.data, samples.data.size)
-                samples.scaleVolume(.05f)
+        CoroutineScope(coroutineContext).launch {
+            val channels = (0 until 2).map { ch ->
+                nativeSoundProvider.createNewPlatformAudioOutput(1, 44100) { samples ->
+                    audioOutCallback(ch, samples.data, samples.data.size)
+                    samples.scaleVolume(.05f)
+                }.also { it.start() }
             }
-            stream2.start()
+            try {
+                while (channels.all { it.running }) delay(1L)
+            } finally {
+                channels.forEach { it.stop() }
+            }
         }
     }
 

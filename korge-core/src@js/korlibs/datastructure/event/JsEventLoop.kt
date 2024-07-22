@@ -10,7 +10,7 @@ actual fun createPlatformEventLoop(precise: Boolean): SyncEventLoop =
 open class LocalJsEventLoop(
     precise: Boolean = false,
     immediateRun: Boolean = false,
-) : SyncEventLoop(precise, immediateRun) {
+) : SyncEventLoop(precise) {
     private var closeable: AutoCloseable? = null
 
     override fun start() {

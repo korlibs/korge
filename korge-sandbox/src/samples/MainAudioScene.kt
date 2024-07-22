@@ -1,6 +1,9 @@
 package samples
 
+import korlibs.audio.format.*
+import korlibs.audio.format.mod.*
 import korlibs.audio.sound.*
+import korlibs.image.format.*
 import korlibs.io.file.std.*
 import korlibs.korge.input.*
 import korlibs.korge.scene.*
@@ -10,12 +13,13 @@ import kotlin.time.Duration.Companion.seconds
 
 class MainAudioScene : Scene() {
     override suspend fun SContainer.sceneMain() {
+        defaultAudioFormats.register(MOD, S3M, XM)
         uiVerticalStack(width = 640.0) {
             var lastChannel: SoundChannel? = null
             val len = uiText("Length: 0")
             suspend fun play(file: String, music: Boolean) {
                 val vfs = resourcesVfs[file]
-                lastChannel = if (music) vfs.readMusic().play() else vfs.readSound().play()
+                lastChannel = if (music) vfs.readMusic(AudioDecodingProps()).play() else vfs.readSound().play()
                 len.text = "Length: ${lastChannel?.total}"
             }
             fun seekRatio(ratio: Double) {
@@ -31,6 +35,7 @@ class MainAudioScene : Scene() {
             uiButton(label = "Small WAV Music") { onClickSuspend { play("sounds/wav.wav", music = true) } }
             uiButton(label = "Long MP3 Sound") { onClickSuspend { play("sounds/Snowland.mp3", music = false) } }
             uiButton(label = "Long MP3 Music") { onClickSuspend { play("sounds/Snowland.mp3", music = true) } }
+            uiButton(label = "Long XM Music") { onClickSuspend { play("sounds/poliamber.xm", music = true) } }
             uiHorizontalStack {
                 uiButton(label = "Seek Start") { onClickSuspend { seekRatio(0.001) } }
                 uiButton(label = "Seek 0.25") { onClickSuspend { seekRatio(0.25) } }
