@@ -12,6 +12,7 @@ import kotlin.math.*
 
 class MainPolyphonic : Scene() {
     // https://github.com/pspdev/pspsdk/blob/master/src/samples/audio/polyphonic/main.c
+    @OptIn(ExperimentalStdlibApi::class)
     override suspend fun SContainer.sceneMain() {
         uiVerticalStack(adjustSize = false) {
             text("Polyphonic sample by Shine")
