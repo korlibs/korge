@@ -39,7 +39,7 @@ class MainScenes : Scene() {
                 alpha = 0.7
                 onOver { alpha = 1.0 }
                 onOut { alpha = 0.7 }
-                onClick {
+                onClickSuspend {
                     sceneContainer.changeTo<MyScene2>()
                 }
             }
@@ -48,7 +48,7 @@ class MainScenes : Scene() {
                 alpha = 0.7
                 onOver { alpha = 1.0 }
                 onOut { alpha = 0.7 }
-                onClick {
+                onClickSuspend {
                     sceneContainer.changeTo<MyScene2>()
                 }
             }
@@ -64,7 +64,7 @@ class MainScenes : Scene() {
 
             val blueSquare = solidRect(100, 100, Colors.BLUE) {
                 position(200, 200)
-                onClick {
+                onClickSuspend {
                     sceneContainer.changeTo<MyScene1>(MyDependency("From MyScene2"))
                 }
             }

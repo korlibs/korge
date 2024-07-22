@@ -1,16 +1,14 @@
 package korlibs.datastructure.event
 
-import korlibs.datastructure.closeable.*
 import korlibs.time.*
 import kotlinx.browser.*
 
 actual fun createPlatformEventLoop(precise: Boolean): SyncEventLoop =
-    LocalJsEventLoop(precise)
+    LocalJsEventLoop()
 
 open class LocalJsEventLoop(
-    precise: Boolean = false,
     immediateRun: Boolean = false,
-) : SyncEventLoop(precise, immediateRun) {
+) : SyncEventLoop(immediateRun) {
     private var closeable: AutoCloseable? = null
 
     override fun start() {

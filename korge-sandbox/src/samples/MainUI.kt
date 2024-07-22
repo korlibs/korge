@@ -50,7 +50,7 @@ class MainUI : Scene() {
             }
             uiButton(size = Size(256.0, 32.0)) {
                 text = "Close Window"
-                onClick {
+                onClickSuspend {
                     if (gameWindow.confirm("Are you sure to close the window?")) {
                         gameWindow.close()
                     }

@@ -2,7 +2,6 @@ package korlibs.korge.view
 
 import korlibs.datastructure.iterators.*
 import korlibs.image.color.*
-import korlibs.korge.input.*
 import korlibs.math.geom.*
 import kotlin.reflect.*
 
@@ -54,7 +53,6 @@ class QView(val views: List<View>) : List<View> by views, BView {
 
 fun QView.visible(value: Boolean) { visible = value }
 fun QView.alpha(value: Double) { alpha = value }
-fun QView.onClick(handler: @EventsDslMarker suspend (MouseEvents) -> Unit) = fastForEach { it.onClick(handler) }
 inline fun <reified T : View> QView.castTo(): T? = firstOrNull as? T?
 
 /** Indexer that allows to get a descendant marked with the name [name]. */

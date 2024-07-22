@@ -243,12 +243,12 @@ object IosProjectTools {
             indent {
                 for (debug in listOf(false, true)) {
                     val debugSuffix = if (debug) "Debug" else "Release"
-                    for (arch in listOf("X64", "Arm64")) {
+                    for (arch in listOf("X64", "SimulatorArm64", "Arm64")) {
                         line("app-$arch-$debugSuffix:")
                         indent {
                             line("platform: ${if (targetName == "ios") "iOS" else "tvOS"}")
                             line("type: application")
-                            line("deploymentTarget: \"10.0\"")
+                            line("deploymentTarget: \"15.0\"")
                             line("sources:")
                             indent {
                                 line("- app")
@@ -275,7 +275,7 @@ object IosProjectTools {
                                 line("  DEVELOPMENT_TEAM: $team")
                             }
                             line("dependencies:")
-                            line("  - framework: ../../bin/${targetName}$arch/${debugSuffix.toLowerCase()}Framework/GameMain.framework")
+                            line("  - framework: ../../bin/${targetName}$arch/${debugSuffix.lowercase()}Framework/GameMain.framework")
                         }
                     }
                 }

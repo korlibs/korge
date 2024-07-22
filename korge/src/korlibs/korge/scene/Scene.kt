@@ -55,7 +55,12 @@ abstract class Scene : InjectorAsyncDependency, ViewsContainer, CoroutineScope, 
 	val root get() = _sceneViewContainer
 
 	protected val cancellables = CancellableGroup()
-    override val coroutineContext by lazy { views.coroutineContext + InjectorContext(injector) + Job(views.coroutineContext[Job.Key]) }
+    override val coroutineContext by lazy {
+        views.coroutineContext +
+            InjectorContext(injector) +
+            SupervisorJob(views.coroutineContext[Job.Key]) +
+            CoroutineName("Scene:$this")
+    }
 	val sceneView: SContainer by lazy {
         createSceneView(sceneContainer.size).apply {
             _sceneViewContainer += this
@@ -119,7 +124,7 @@ abstract class Scene : InjectorAsyncDependency, ViewsContainer, CoroutineScope, 
 	open suspend fun sceneDestroy() {
 	}
 
-    internal suspend fun sceneDestroyInternal() {
+    internal fun sceneDestroyInternal() {
         cancellables.cancel()
         injector.deinit()
     }
@@ -134,10 +139,12 @@ abstract class Scene : InjectorAsyncDependency, ViewsContainer, CoroutineScope, 
 	open suspend fun sceneAfterDestroy() {
 	}
 
+    class SceneCancellationException(val scene: Scene) : CancellationException("Scene.sceneAfterDestroyInternal:$scene")
+
     internal suspend fun sceneAfterDestroyInternal() {
         sceneAfterDestroy()
         try {
-            coroutineContext.cancel() // cancelAndJoin was being used when hanged on native?
+            coroutineContext.cancel(SceneCancellationException(this)) // cancelAndJoin was being used when hanged on native?
         } catch (e: Throwable) {
             if (e is CancellationException) throw e
             e.printStackTrace()

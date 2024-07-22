@@ -8,7 +8,7 @@ import kotlin.test.*
 class SyncEventLoopCoroutineDispatcherTest {
     @Test
     fun test() {
-        val dispatcher = SyncEventLoopCoroutineDispatcher(precise = true, immediateRun = true)
+        val dispatcher = SyncEventLoopCoroutineDispatcher(immediateRun = true)
         launchImmediately(dispatcher) {
             println("${DateTime.now()}: a")
             delay(1000.milliseconds)

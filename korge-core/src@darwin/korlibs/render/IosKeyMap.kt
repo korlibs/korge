@@ -93,6 +93,7 @@ object IosKeyMap {
         put(UIKeyboardHIDUsageKeyboardEscape, Key.ESCAPE)
         put(UIKeyboardHIDUsageKeyboardInsert, Key.INSERT)
         put(UIKeyboardHIDUsageKeyboardReturn, Key.RETURN)
+        put(UIKeyboardHIDUsageKeyboardReturnOrEnter, Key.RETURN)
         put(UIKeyboardHIDUsageKeyboardTab, Key.TAB)
 
         // Function Keys

@@ -5,15 +5,9 @@ package korlibs.datastructure.event
 import korlibs.concurrent.lock.*
 import korlibs.concurrent.thread.*
 import korlibs.datastructure.*
-import korlibs.datastructure.lock.*
-import korlibs.datastructure.lock.Lock
 import korlibs.datastructure.pauseable.*
-import korlibs.datastructure.thread.*
-import korlibs.datastructure.thread.NativeThread
-import korlibs.datastructure.thread.nativeThread
 import korlibs.logger.*
 import korlibs.time.*
-import kotlinx.atomicfu.locks.*
 import kotlin.time.*
 
 expect fun createPlatformEventLoop(precise: Boolean = true): SyncEventLoop
@@ -24,25 +18,22 @@ interface EventLoop : Pauseable, AutoCloseable {
     fun setImmediate(task: () -> Unit)
     fun setTimeout(time: Duration, task: () -> Unit): AutoCloseable
     fun setInterval(time: Duration, task: () -> Unit): AutoCloseable
-    fun setIntervalFrame(task: () -> Unit): AutoCloseable = setInterval(60.hz.timeSpan, task)
+    fun setIntervalFrame(task: () -> Unit): AutoCloseable = setInterval(60.hz.duration, task)
 }
 
-fun EventLoop.setInterval(time: Frequency, task: () -> Unit): AutoCloseable = setInterval(time.timeSpan, task)
+fun EventLoop.setInterval(time: Frequency, task: () -> Unit): AutoCloseable = setInterval(time.duration, task)
 
 abstract class BaseEventLoop : EventLoop, Pauseable {
     val runLock = Lock()
 }
 
 open class SyncEventLoop(
-    /** precise=true will have better precision at the cost of more CPU-usage (busy waiting) */
-    //var precise: Boolean = true,
-    var precise: Boolean = false,
     /** Execute timers immediately instead of waiting. Useful for testing. */
     var immediateRun: Boolean = false,
 ) : BaseEventLoop(), Pauseable {
     private val pauseable = SyncPauseable()
     override var paused: Boolean by pauseable::paused
-    private val lock = korlibs.concurrent.lock.Lock()
+    private val lock = Lock()
     private var running = true
 
     protected class TimedTask(val eventLoop: SyncEventLoop, var now: Duration, val time: Duration, var interval: Boolean, val callback: () -> Unit) :
@@ -126,7 +117,7 @@ open class SyncEventLoop(
 
     protected fun wait(waitTime: Duration) {
         if (immediateRun) return
-        lock { lock.wait(waitTime, precise) }
+        lock { lock.wait(waitTime) }
     }
 
     fun runAvailableNextTasks(runTimers: Boolean = true): Int {
@@ -232,12 +223,12 @@ open class SyncEventLoop(
     open fun start(): Unit {
         if (thread != null) return
         thread = nativeThread {
-            runTasksForever { thread?.threadSuggestRunning == true }
+            runTasksForever { running }
         }
     }
 
     open fun stop(): Unit {
-        thread?.threadSuggestRunning = false
+        running = false
         thread = null
     }
 }

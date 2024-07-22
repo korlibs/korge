@@ -9,8 +9,8 @@ val Project.iosXcodegenExt by projectExtension {
 }
 
 class IosXcodegen(val project: Project) {
-    val xcodeGenGitTag = "2.37.0"
-    val korlibsFolder = File(System.getProperty("user.home") + "/.korlibs").apply { mkdirs() }
+    val xcodeGenGitTag = "2.42.0"
+    val korlibsFolder = File(System.getProperty("user.home") + "/.korge").apply { mkdirs() }
     val xcodeGenFolder = File(korlibsFolder, "XcodeGen-$xcodeGenGitTag")
     val xcodeGenLocalExecutable = File("/usr/local/bin/xcodegen")
     val xcodeGenExecutable = FileList(

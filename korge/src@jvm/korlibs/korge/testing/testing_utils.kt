@@ -137,7 +137,7 @@ inline fun korgeScreenshotTestV2(
 
                                 viewsToAlign += uiButton("Accept change?") {
                                     centerXOn(this@container)
-                                    onClick {
+                                    onClickSuspend {
                                         val goldenFileNameWithExt =
                                             context.makeGoldenFileNameWithExtension(testResult.goldenName)
                                         if (testResult.newBitmap != null) {
