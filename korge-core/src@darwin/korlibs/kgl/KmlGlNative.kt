@@ -132,7 +132,16 @@ actual class KmlGlNative actual constructor() : NativeBaseKmlGl() {
     override fun stencilOp(fail: Int, zfail: Int, zpass: Int): Unit = tempBufferAddress { glStencilOp(fail.convert(), zfail.convert(), zpass.convert()) }
     override fun stencilOpSeparate(face: Int, sfail: Int, dpfail: Int, dppass: Int): Unit = tempBufferAddress { glStencilOpSeparate(face.convert(), sfail.convert(), dpfail.convert(), dppass.convert()) }
     override fun texImage2D(target: Int, level: Int, internalformat: Int, width: Int, height: Int, border: Int, format: Int, type: Int, pixels: Buffer?): Unit = tempBufferAddress { glTexImage2D(target.convert(), level.convert(), internalformat.convert(), width.convert(), height.convert(), border.convert(), format.convert(), type.convert(), pixels?.unsafeAddress()) }
-    override fun texImage2D(target: Int, level: Int, internalformat: Int, format: Int, type: Int, data: NativeImage): Unit = tempBufferAddress { run { val intData = (data as BitmapNativeImage).intData; if (intData != null) {	intData.usePinned { dataPin -> glTexImage2D(target.convert(), level.convert(), internalformat.convert(), data.width.convert(), data.height.convert(), 0.convert(), format.convert(), type.convert(), dataPin.addressOf(0)) }} else {	glTexImage2D(target.convert(), level.convert(), internalformat.convert(), data.width.convert(), data.height.convert(), 0.convert(), format.convert(), type.convert(), null)}} }
+    override fun texImage2D(target: Int, level: Int, internalformat: Int, format: Int, type: Int, data: NativeImage): Unit {
+        when (data) {
+            is BitmapNativeImage -> {
+                data.intData.usePinned { dataPin ->
+                    glTexImage2D(target.convert(), level.convert(), internalformat.convert(), data.width.convert(), data.height.convert(), 0.convert(), format.convert(), type.convert(), dataPin.addressOf(0))
+                }
+            }
+            else -> super.texImage2D(target, level, internalformat, format, type, data)
+        }
+    }
     override fun texParameterf(target: Int, pname: Int, param: Float): Unit = tempBufferAddress { glTexParameterf(target.convert(), pname.convert(), param) }
     override fun texParameterfv(target: Int, pname: Int, params: Buffer): Unit = tempBufferAddress { glTexParameterfv(target.convert(), pname.convert(), params.unsafeAddress().reinterpret()) }
     override fun texParameteri(target: Int, pname: Int, param: Int): Unit = tempBufferAddress { glTexParameteri(target.convert(), pname.convert(), param.convert()) }
