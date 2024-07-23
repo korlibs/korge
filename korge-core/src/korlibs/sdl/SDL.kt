@@ -396,11 +396,6 @@ class KmlGlOpenGL(val gl: OpenGL = OpenGL()) : KmlGl() {
     override fun texImage2D(target: Int, level: Int, internalformat: Int, width: Int, height: Int, border: Int, format: Int, type: Int, pixels: Buffer?): Unit {
         gl.glTexImage2D(target, level, internalformat, width, height, border, format, type, pixels?.pointer)
     }
-    override fun texImage2D(target: Int, level: Int, internalformat: Int, format: Int, type: Int, data: NativeImage): Unit {
-        val buffer = Buffer(data.width * data.height * 4)
-        buffer.setArrayLE(0, data.toBMP32IfRequired().ints)
-        texImage2D(target, level, internalformat, data.width, data.height, 0, format, type, buffer)
-    }
     override fun texParameterf(target: Int, pname: Int, param: Float): Unit = gl.glTexParameterf(target, pname, param)
     override fun texParameterfv(target: Int, pname: Int, params: Buffer): Unit = gl.glTexParameterfv(target, pname, params.pointer)
     override fun texParameteri(target: Int, pname: Int, param: Int): Unit = gl.glTexParameteri(target, pname, param)

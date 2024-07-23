@@ -136,9 +136,14 @@ abstract class NativeBaseKmlGl : KmlGl() {
     override fun stencilOpSeparate(face: Int, sfail: Int, dpfail: Int, dppass: Int): Unit = tempBufferAddress { glStencilOpSeparateExt(face.convert(), sfail.convert(), dpfail.convert(), dppass.convert()) }
     override fun texImage2D(target: Int, level: Int, internalformat: Int, width: Int, height: Int, border: Int, format: Int, type: Int, pixels: Buffer?): Unit = tempBufferAddress { glTexImage2DExt(target.convert(), level.convert(), internalformat.convert(), width.convert(), height.convert(), border.convert(), format.convert(), type.convert(), pixels?.unsafeAddress()) }
     override fun texImage2D(target: Int, level: Int, internalformat: Int, format: Int, type: Int, data: NativeImage): Unit = tempBufferAddress {
-        val intData = (data as BitmapNativeImage).intData;
-        intData.usePinned { dataPin ->
-            glTexImage2DExt(target.convert(), level.convert(), internalformat.convert(), data.width.convert(), data.height.convert(), 0.convert(), format.convert(), type.convert(), dataPin.startAddressOf.reinterpret())
+        when (data) {
+            is BitmapNativeImage -> {
+                val intData = data.intData;
+                intData.usePinned { dataPin ->
+                    glTexImage2DExt(target.convert(), level.convert(), internalformat.convert(), data.width.convert(), data.height.convert(), 0.convert(), format.convert(), type.convert(), dataPin.startAddressOf.reinterpret())
+                }
+            }
+            else -> super.texImage2D(target, level, internalformat, format, type, data)
         }
     }
     override fun texParameterf(target: Int, pname: Int, param: Float): Unit = tempBufferAddress { glTexParameterfExt(target.convert(), pname.convert(), param) }

@@ -123,12 +123,16 @@ class KmlGlAndroid(val clientVersion: () -> Int) : KmlGl() {
     override fun stencilOpSeparate(face: Int, sfail: Int, dpfail: Int, dppass: Int): Unit = glStencilOpSeparate(face, sfail, dpfail, dppass)
     override fun texImage2D(target: Int, level: Int, internalformat: Int, width: Int, height: Int, border: Int, format: Int, type: Int, pixels: Buffer?): Unit = glTexImage2D(target, level, internalformat, width, height, border, format, type, pixels?.nioBuffer)
     override fun texImage2D(target: Int, level: Int, internalformat: Int, format: Int, type: Int, data: NativeImage) {
-        val out = ByteBuffer.allocateDirect(data.width * data.height * 4)
-        val image = (data as AndroidNativeImage)
-        image.androidBitmap.copyPixelsToBuffer(out)
-        out.flip()
-        glTexImage2D(target, level, internalformat, data.width, data.height, 0, format, type, out)
-        out.clear()
+        when (data) {
+            is AndroidNativeImage -> {
+                val out = ByteBuffer.allocateDirect(data.width * data.height * 4)
+                data.androidBitmap.copyPixelsToBuffer(out)
+                out.flip()
+                glTexImage2D(target, level, internalformat, data.width, data.height, 0, format, type, out)
+                out.clear()
+            }
+            else -> return super.texImage2D(target, level, internalformat, format, type, data)
+        }
     }
     override fun texParameterf(target: Int, pname: Int, param: Float): Unit = glTexParameterf(target, pname, param)
     override fun texParameterfv(target: Int, pname: Int, params: Buffer): Unit = glTexParameterfv(target, pname, params.directFloatBuffer)
