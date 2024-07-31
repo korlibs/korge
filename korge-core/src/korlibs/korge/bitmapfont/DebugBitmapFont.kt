@@ -39,7 +39,8 @@ private fun debugBmpFont(tex: BmpSlice): BitmapFont {
 
 suspend fun debugBmpFont(): BitmapFont {
     if (debugBmpFontOrNull == null) {
-        debugBmpFontOrNull = debugBmpFont(DEBUG_FONT_BYTES.openAsync().readBitmap(ImageDecodingProps(preferKotlinDecoder = true)).slice())
+        //debugBmpFontOrNull = debugBmpFont(DEBUG_FONT_BYTES.openAsync().readBitmap(ImageDecodingProps(preferKotlinDecoder = true)).slice())
+        debugBmpFontOrNull = debugBmpFont(DEBUG_FONT_BYTES.openAsync().readBitmap(ImageDecodingProps(preferKotlinDecoder = true)).toBMP32IfRequired().slice())
     }
     return debugBmpFontOrNull!!
 }
