@@ -9,8 +9,10 @@ import korlibs.math.*
 import kotlinx.atomicfu.*
 import kotlin.math.*
 
+@OptIn(kotlin.ExperimentalStdlibApi::class)
 class MainPolyphonic : Scene() {
     // https://github.com/pspdev/pspsdk/blob/master/src/samples/audio/polyphonic/main.c
+
     override suspend fun SContainer.sceneMain() {
         uiVerticalStack(adjustSize = false) {
             text("Polyphonic sample by Shine")
