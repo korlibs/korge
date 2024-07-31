@@ -59,7 +59,7 @@ korlibs.NativeTools.groovyConfigureSigning(project)
 
 dependencies {
     implementation(libs.kotlinx.coroutines.core)
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.0")
+    implementation(libs.kotlinx.serialization.json)
     //implementation(libs.korlibs.all)
     //implementation(libs.korlibs.datastructure.core)
     //implementation(libs.korlibs.io.stream)

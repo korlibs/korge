@@ -9,37 +9,33 @@ proguard-gradle = "7.2.2"
 asm = "9.5"
 jgit = "5.13.1.202206130422-r"
 
-kotlin = "2.0.0"
+kotlin = "2.0.20-RC"
 #kotlinx-coroutines = "1.8.1"
 kotlinx-coroutines = "1.9.0-RC"
 kotlinx-serialization = "1.7.0"
 kotlinx-atomicfu = "0.24.0"
 
-korlibs = "6.0.0-beta1"
-#korlibs = "999.0.0.999"
-
 kotlinx-benchmark = "0.4.7"
-dokka = "1.9.10"
+dokka = "1.9.20"
 kover = "0.6.1"
 kover-agent = "1.0.712"
 node = "20.12.1"
-android-build-gradle = "8.2.0"
+android-build-gradle = "8.2.2"
 gson = "2.10.1"
 gradle-publish-plugin = "1.1.0"
 # https://repo.maven.apache.org/maven2/org/jetbrains/intellij/deps/intellij-coverage-agent/
 
 [libraries]
-korlibs-all = { module = "com.soywiz:korlibs-all", version.ref = "korlibs" }
-korlibs-audio = { module = "com.soywiz:korlibs-audio", version.ref = "korlibs" }
-korlibs-image = { module = "com.soywiz:korlibs-image", version.ref = "korlibs" }
-korlibs-inject = { module = "com.soywiz:korlibs-inject", version.ref = "korlibs" }
-korlibs-template = { module = "com.soywiz:korlibs-template", version.ref = "korlibs" }
-korlibs-time = { module = "com.soywiz:korlibs-time", version.ref = "korlibs" }
-korlibs-serialization = { module = "com.soywiz:korlibs-serialization", version.ref = "korlibs" }
-korlibs-datastructure = { module = "com.soywiz:korlibs-datastructure", version.ref = "korlibs" }
-korlibs-datastructure-core = { module = "com.soywiz:korlibs-datastructure-core", version.ref = "korlibs" }
-korlibs-memory = { module = "com.soywiz:korlibs-memory", version.ref = "korlibs" }
-korlibs-io-stream = { module = "com.soywiz:korlibs-io-stream", version.ref = "korlibs" }
+korlibs-audio = { module = "com.soywiz:korlibs-audio", version = "6.0.0" }
+korlibs-image = { module = "com.soywiz:korlibs-image", version = "6.0.0" }
+korlibs-inject = { module = "com.soywiz:korlibs-inject", version = "6.0.0" }
+korlibs-template = { module = "com.soywiz:korlibs-template", version = "6.0.0" }
+korlibs-time = { module = "com.soywiz:korlibs-time", version = "6.0.0" }
+korlibs-serialization = { module = "com.soywiz:korlibs-serialization", version = "6.0.0" }
+korlibs-datastructure = { module = "com.soywiz:korlibs-datastructure", version = "6.0.0" }
+korlibs-datastructure-core = { module = "com.soywiz:korlibs-datastructure-core", version = "6.0.0" }
+korlibs-memory = { module = "com.soywiz:korlibs-memory", version = "6.0.0" }
+korlibs-io-stream = { module = "com.soywiz:korlibs-io-stream", version = "6.0.0" }
 jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
 jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson" }
 junit = { module = "junit:junit", version.ref = "junit" }
@@ -49,6 +45,7 @@ kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotl
 kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
 dokka = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version.ref = "dokka" }
 #jsplainobjects = { module = "org.jetbrains.kotlin:js-plain-objects", version.ref = "kotlin" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
 kover = { module = "org.jetbrains.kotlinx:kover", version.ref = "kover" }
 kover-intellij-agent = { module = "org.jetbrains.intellij.deps:intellij-coverage-agent", version.ref = "kover-agent" }
 jcodec-core = { module = "org.jcodec:jcodec", version.ref = "jcodec" }
@@ -64,6 +61,7 @@ jgit = { module = "org.eclipse.jgit:org.eclipse.jgit", version.ref = "jgit" }
 
 [bundles]
 kotlin-test = ["junit", "kotlin-test", "kotlin-test-junit"]
+korlibs-all = ["korlibs-audio", "korlibs-image", "korlibs-inject", "korlibs-template", "korlibs-time", "korlibs-serialization", "korlibs-datastructure", "korlibs-datastructure-core", "korlibs-memory", "korlibs-io-stream"]
 
 #[plugins]
 #jmh = { id = "me.champeau.jmh", version = "0.6.5" }

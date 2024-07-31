@@ -165,13 +165,13 @@ korlibs.NativeTools.groovyConfigurePublishing(project, false)
 korlibs.NativeTools.groovyConfigureSigning(project)
 
 buildConfig {
-    val project = project(":korge-kotlin-plugin")
+    //val project = project(":korge-kotlin-plugin")
     packageName("korlibs.korge.gradle.plugin")
     //buildConfigField("String", "KOTLIN_PLUGIN_ID", "\"${rootProject.extra["kotlin_plugin_id"]}\"")
     buildConfigField("String", "KOTLIN_PLUGIN_ID", "\"com.soywiz.korge.korge-kotlin-plugin\"")
-    buildConfigField("String", "KOTLIN_PLUGIN_GROUP", "\"${project.group}\"")
-    buildConfigField("String", "KOTLIN_PLUGIN_NAME", "\"${project.name}\"")
-    buildConfigField("String", "KOTLIN_PLUGIN_VERSION", "\"${project.version}\"")
+    //buildConfigField("String", "KOTLIN_PLUGIN_GROUP", "\"${project.group}\"")
+    //buildConfigField("String", "KOTLIN_PLUGIN_NAME", "\"${project.name}\"")
+    //buildConfigField("String", "KOTLIN_PLUGIN_VERSION", "\"${project.version}\"")
 }
 
 afterEvaluate {

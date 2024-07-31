@@ -11,7 +11,7 @@ project.extensions.extraProperties.properties.apply {
 }
 
 dependencies {
-    commonMainApi(libs.korlibs.all)
+    commonMainApi(libs.bundles.korlibs.all)
     //commonMainApi(libs.korlibs.audio)
     //commonMainApi(libs.korlibs.image)
     //commonMainApi(libs.korlibs.inject)

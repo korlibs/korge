@@ -813,7 +813,6 @@ fun Project.hasBuildGradle() = listOf("build.gradle", "build.gradle.kts").any { 
 val Project.isSample: Boolean get() = project.path.startsWith(":samples:") || project.path.startsWith(":korge-sandbox") || project.path.startsWith(":korge-editor") || project.path.startsWith(":korge-starter-kit")
 fun Project.mustAutoconfigureKMM(): Boolean =
     !project.name.startsWith("korge-gradle-plugin") &&
-        project.name != "korge-kotlin-plugin" &&
         project.name != "korge-reload-agent" &&
         project.name != "korge-ipc" &&
         project.name != "korge-kotlin-compiler" &&

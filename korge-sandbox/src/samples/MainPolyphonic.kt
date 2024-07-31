@@ -10,6 +10,7 @@ import kotlinx.atomicfu.*
 import kotlinx.coroutines.*
 import kotlin.math.*
 
+@OptIn(kotlin.ExperimentalStdlibApi::class)
 class MainPolyphonic : Scene() {
     // https://github.com/pspdev/pspsdk/blob/master/src/samples/audio/polyphonic/main.c
     @OptIn(ExperimentalStdlibApi::class)
