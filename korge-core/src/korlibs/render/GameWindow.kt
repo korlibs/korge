@@ -393,7 +393,7 @@ open class GameWindow :
     }
 
     open suspend fun loop(entry: suspend GameWindow.() -> Unit) {
-        launchImmediately(getCoroutineDispatcherWithCurrentContext()) {
+        launchImmediately(getCoroutineDispatcherWithCurrentContext() + CoroutineName("GameWindow.loop")) {
             entry()
         }
         //withContext(getCoroutineDispatcherWithCurrentContext()) {

@@ -158,15 +158,16 @@ class ViewController(
             val keyCode = uiKey.keyCode.toInt()
             val modifierFlags = uiKey.modifierFlags.toInt()
             val key = IosKeyMap.KEY_MAP[keyCode.toInt()] ?: Key.UNKNOWN
-            //println("pressesHandler[$type]: ${keyCode}, ${modifierFlags}, $key, ${uiKey.charactersIgnoringModifiers}")
 
             val char = uiKey.charactersIgnoringModifiers.firstOrNull() ?: '\u0000'
+
+            //println("pressesHandler[$type]: ${keyCode}, ${modifierFlags}, $key, char='$char', char.code=${char.code}, uiKey.characters='${uiKey.characters}'")
 
             val shift = modifierFlags.hasFlags(UIKeyModifierShift.toInt())
             val ctrl = modifierFlags.hasFlags(UIKeyModifierControl.toInt())
             val alt = modifierFlags.hasFlags(UIKeyModifierAlternate.toInt())
             val meta = modifierFlags.hasFlags(UIKeyModifierCommand.toInt())
-            if (type == KeyEvent.Type.DOWN && char >= '\u0020') {
+            if (type == KeyEvent.Type.DOWN && char >= '\u0020' && uiKey.characters.length == 1) {
                 gameWindow.dispatchKeyEventEx(KeyEvent.Type.TYPE, 0, char, key, keyCode.toInt(), shift = shift, ctrl = ctrl, alt = alt, meta = meta,)
             }
             gameWindow.dispatchKeyEventEx(type, 0, char, key, keyCode.toInt(), shift = shift, ctrl = ctrl, alt = alt, meta = meta,)

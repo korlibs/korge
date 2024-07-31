@@ -68,6 +68,7 @@ suspend fun main() = Korge(
     backgroundColor = DEFAULT_KORGE_BG_COLOR,
     displayMode = KorgeDisplayMode.CENTER_NO_CLIP,
     debug = false,
+    debugCoroutines = true,
     //forceRenderEveryFrame = false
 ) {
     //sceneContainer().changeTo({MainSprites10k()}); return@start
@@ -133,6 +134,7 @@ suspend fun main() = Korge(
         //Demo(::MainShape2dScene),
         //Demo(::MainUIStacks),
         Demo(::MainAudioScene),
+        //Demo(::MainAsteroids),
         //Demo(::MainSprites10k),
         //Demo(::MainStressMatrixMultiplication),
         //Demo(::MainSDF),

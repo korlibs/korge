@@ -12,17 +12,21 @@ class Demo(val sceneBuilder: () -> Scene, val name: String = sceneBuilder()::cla
 suspend fun Stage.demoSelector(default: Demo, all: List<Demo>) {
     val container = sceneContainer(size = Size(width, height - 48f)) { }.xy(0, 48)
     val containerFocus = container.makeFocusable()
+    var currentDemo: Demo? = null
 
     lateinit var comboBox: UIComboBox<Demo>
 
     suspend fun setDemo(demo: Demo?) {
+        if (currentDemo != demo) currentDemo = demo else return
+
         //container.removeChildren()
+        //println("setDemo: demo=$demo")
         if (demo != null) {
             comboBox.selectedItem = demo
             views.clearColor = DEFAULT_KORGE_BG_COLOR
             container.changeTo {
                 containerFocus.focus()
-                demo.sceneBuilder().also { it.init(this) }
+                demo.sceneBuilder()
             }
         }
     }
@@ -33,6 +37,7 @@ suspend fun Stage.demoSelector(default: Demo, all: List<Demo>) {
             this.viewportHeight = 600
             this.onSelectionUpdate.add {
                 //println(it)
+                //CoroutineScope(this@demoSelector.coroutineContext).launchImmediately { setDemo(it.selectedItem!!) }
                 launchImmediately { setDemo(it.selectedItem!!) }
             }
         }

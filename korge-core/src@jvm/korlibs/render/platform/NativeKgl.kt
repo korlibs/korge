@@ -4,9 +4,11 @@ import com.sun.jna.*
 import korlibs.graphics.shader.gl.*
 import korlibs.image.awt.*
 import korlibs.image.bitmap.*
+import korlibs.image.format.*
 import korlibs.kgl.*
 import korlibs.math.*
 import korlibs.memory.*
+import java.nio.IntBuffer
 
 open class NativeKgl constructor(private val gl: INativeGL) : KmlGl() {
     override val variant: GLVariant = GLVariant.JVM
@@ -118,7 +120,10 @@ open class NativeKgl constructor(private val gl: INativeGL) : KmlGl() {
     override fun stencilOpSeparate(face: Int, sfail: Int, dpfail: Int, dppass: Int): Unit = gl.glStencilOpSeparate(face, sfail, dpfail, dppass)
     override fun texImage2D(target: Int, level: Int, internalformat: Int, width: Int, height: Int, border: Int, format: Int, type: Int, pixels: Buffer?): Unit = gl.glTexImage2D(target, level, internalformat, width, height, border, format, type, pixels?.nioBuffer)
     override fun texImage2D(target: Int, level: Int, internalformat: Int, format: Int, type: Int, data: NativeImage): Unit {
-        gl.glTexImage2D(target, level, internalformat, data.width, data.height, 0, format, type, (data as BaseAwtNativeImage).buffer)
+        when (data) {
+            is BaseAwtNativeImage -> gl.glTexImage2D(target, level, internalformat, data.width, data.height, 0, format, type, data.buffer)
+            else -> super.texImage2D(target, level, internalformat, format, type, data)
+        }
     }
     override fun texParameterf(target: Int, pname: Int, param: Float): Unit = gl.glTexParameterf(target, pname, param)
     override fun texParameterfv(target: Int, pname: Int, params: Buffer): Unit = gl.glTexParameterfv(target, pname, params.directFloatBuffer)

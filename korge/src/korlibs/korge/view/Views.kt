@@ -63,7 +63,7 @@ class Views(
     DeviceDimensionsProvider by gameWindow
 {
     constructor(gameWindow: GameWindow) : this(
-        gameWindow, gameWindow.ag, gameWindow = gameWindow
+        gameWindow + CoroutineName("Views"), gameWindow.ag, gameWindow = gameWindow
     )
 
     var quality by gameWindow::quality
@@ -506,7 +506,7 @@ class ViewsLog constructor(
 	val stats: Stats = Stats(),
 	val gameWindow: GameWindow = GameWindowLog()
 ) : CoroutineScope {
-	val views: Views = Views(coroutineContext + InjectorContext(injector), ag, injector, input, timeProvider, stats, gameWindow).also {
+	val views: Views = Views(coroutineContext + InjectorContext(injector) + CoroutineName("Views"), ag, injector, input, timeProvider, stats, gameWindow).also {
 	    it.rethrowRenderError = true
     }
     val stage: Stage get() = views.stage
