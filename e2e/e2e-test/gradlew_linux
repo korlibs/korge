@@ -1,0 +1,7 @@
+#!/bin/bash
+
+docker run -it -w /app \
+    -v "$(pwd)":/app \
+    -v "$HOME/.gradle_linux:/root/.gradle" \
+    -v "$HOME/.m2:/root/.m2" \
+    eclipse-temurin:21 ./gradlew --no-daemon $*
