@@ -68,7 +68,6 @@ class KProjectPlugin : Plugin<Project> {
                     compilations.all {
                         it.kotlinOptions.jvmTarget = androidJvmVersion
                     }
-
                 }
                 project.afterEvaluate {
                     val compileDebugJavaWithJavac = project.tasks.findByName("compileDebugJavaWithJavac") as? org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile?
@@ -78,16 +77,20 @@ class KProjectPlugin : Plugin<Project> {
                     val compileSdk = ANDROID_DEFAULT_COMPILE_SDK
                     val targetSdk = ANDROID_DEFAULT_TARGET_SDK
                     val minSdk = ANDROID_DEFAULT_MIN_SDK
-                    this.compileSdk = ANDROID_DEFAULT_COMPILE_SDK
+                    this.compileSdk = compileSdk
+                    this.defaultConfig {
+                        this.minSdk = minSdk
+                        this.targetSdk = targetSdk
+                    }
                     namespace = ("${project.group}.${project.name}").replace("-", ".")
                     sourceSets.apply {
                         maybeCreate("main").apply {
-                            manifest.srcFile(AndroidConfig.getAndroidManifestFile(
-                                project,
-                                minSdk = minSdk,
-                                targetSdk = targetSdk,
-                                compileSdk = compileSdk,
-                            ))
+                            //manifest.srcFile(AndroidConfig.getAndroidManifestFile(
+                            //    project,
+                            //    minSdk = minSdk,
+                            //    targetSdk = targetSdk,
+                            //    compileSdk = compileSdk,
+                            //))
                         }
                     }
                 }

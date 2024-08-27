@@ -12,8 +12,7 @@ import korlibs.korge.gradle.targets.jvm.*
 import korlibs.korge.gradle.util.*
 import org.gradle.api.*
 import org.gradle.api.tasks.*
-import org.gradle.api.tasks.compile.*
-import org.jetbrains.kotlin.gradle.dsl.*
+import org.gradle.configurationcache.extensions.*
 import java.io.*
 
 fun Project.configureAndroidDirect(projectType: ProjectType, isKorge: Boolean) {
@@ -207,6 +206,15 @@ fun Project.configureAndroidDirect(projectType: ProjectType, isKorge: Boolean) {
         }
         val compileDebugJavaWithJavac = project.tasks.findByName("compileDebugJavaWithJavac") as? org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile?
         compileDebugJavaWithJavac?.compilerOptions?.jvmTarget?.set(ANDROID_JVM_TARGET)
+
+        for (kind in listOf("debug", "release")) {
+            val kindCap = kind.capitalized()
+            tasks.create("packageAndroid$kindCap", Task::class.java) {
+                it.dependsOn("bundle$kindCap")
+                it.group = GROUP_KORGE_PACKAGE
+                it.description = "Creates an AAB $kind file in the `build/outputs/bundle/$kind` folder (replaces APK)"
+            }
+        }
 
         //tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile::class.java).configureEach {
         //    it.compilerOptions.jvmTarget.set(ANDROID_JVM_TARGET)
