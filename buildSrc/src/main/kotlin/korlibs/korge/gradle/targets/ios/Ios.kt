@@ -74,7 +74,6 @@ fun Project.configureNativeIosTvos(projectType: ProjectType, targetName: String)
                     framework {
                         baseName = "GameMain"
                         xcf.add(this)
-                        embedBitcodeMode.set(Framework.BitcodeEmbeddingMode.BITCODE)
                     }
                 }
 				target.compilations["main"].also { compilation ->
