@@ -85,6 +85,11 @@ fun Project.configureAndroidDirect(projectType: ProjectType, isKorge: Boolean) {
             targetCompatibility = ANDROID_JAVA_VERSION
         }
 
+        lintOptions.apply {
+            checkOnly()
+            //checkReleaseBuilds = false
+        }
+
         buildFeatures.apply {
             if (project.name == "korlibs-platform") {
                 buildConfig = true

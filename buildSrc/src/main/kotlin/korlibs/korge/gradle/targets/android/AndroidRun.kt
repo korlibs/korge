@@ -1,5 +1,6 @@
 package korlibs.korge.gradle.targets.android
 
+import com.android.build.gradle.internal.lint.*
 import korlibs.korge.gradle.*
 import korlibs.korge.gradle.targets.*
 import korlibs.korge.gradle.util.*
@@ -40,6 +41,7 @@ fun Project.installAndroidRun(dependsOnList: List<String>, direct: Boolean, isKo
 
             tasks.findByName("generate${Type}BuildConfig")?.dependsOn(createAndroidManifest)
             tasks.findByName("process${Type}MainManifest")?.dependsOn(createAndroidManifest)
+            tasks.findByName("process${Type}Resources")?.dependsOn(createAndroidManifest)
 
 
             // Not required anymore
@@ -106,6 +108,7 @@ fun Project.installAndroidRun(dependsOnList: List<String>, direct: Boolean, isKo
                 dependsOn(ordered("createAndroidManifest", installAndroidTaskName))
                 finalizedBy(onlyRunAndroid)
             }
+
         }
     }
 
@@ -124,6 +127,18 @@ fun Project.installAndroidRun(dependsOnList: List<String>, direct: Boolean, isKo
 
     tasks.createTyped<AndroidAdbLogcatTask>("adbLogcat") {
         group = GROUP_KORGE_ADB
+    }
+
+    afterEvaluate {
+        afterEvaluate {
+            listOfNotNull(
+                tasks.findByName("generateReleaseLintVitalReportModel"),
+                tasks.findByName("generateDebugLintVitalReportModel")
+            ).forEach {
+                it.dependsOn("jvmProcessResources")
+                it.enabled = false
+            }
+        }
     }
 }
 
