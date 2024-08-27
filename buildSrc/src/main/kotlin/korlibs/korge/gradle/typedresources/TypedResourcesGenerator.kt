@@ -208,7 +208,10 @@ open class GenerateTypedResourcesTask : DefaultTask() {
 }
 
 private val Project.krDir: File get() = File(project.buildDir, "KR")
-private val Project.resourceFileCollection: FileCollection get() = project.files("src/commonMain/resources")
+private val Project.resourceFileCollection: FileCollection get() = project.files(
+    "resources",
+    "src/commonMain/resources",
+)
 
 private fun generateTypedResources(krDir: File, resourcesFolders: List<File>) {
     val file = File(krDir, "KR.kt").ensureParents()
