@@ -1,10 +1,10 @@
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.format.*
-import com.soywiz.korio.*
-import com.soywiz.korio.dynamic.dyn
-import com.soywiz.korio.file.*
-import com.soywiz.korio.file.std.*
-import com.soywiz.korio.serialization.json.Json
+import korlibs.image.bitmap.*
+import korlibs.image.format.*
+import korlibs.io.*
+import korlibs.io.dynamic.dyn
+import korlibs.io.file.*
+import korlibs.io.file.std.*
+import korlibs.io.serialization.json.Json
 import kotlinx.coroutines.flow.*
 import java.io.File
 import kotlin.jvm.*

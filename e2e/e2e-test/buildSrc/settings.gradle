@@ -1,10 +1,16 @@
 pluginManagement {
-    Eval.xy(this, it, file('../../../gradle/repositories.settings.gradle').text)
+    repositories {
+        //Eval.xy(this, it, file('../../../gradle/repositories.settings.gradle').text)
+        mavenLocal()
+        mavenCentral()
+        google()
+        gradlePluginPortal()
+    }
 }
 dependencyResolutionManagement {
     versionCatalogs {
         libs {
-            from(files("../../../gradle/libs.versions.toml"))
+            //from(files("../../../gradle/libs.versions.toml"))
         }
     }
 }
