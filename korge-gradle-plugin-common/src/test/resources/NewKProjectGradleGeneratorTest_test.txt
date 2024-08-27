@@ -32,7 +32,7 @@ plugins {
   id("org.jetbrains.kotlin.plugin.serialization")
 }
 dependencies {
-  add("commonMainApi", "org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.0")
+  add("commonMainApi", "org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.1")
   add("commonMainApi", project(":mymodule"))
 }
 [file("build.extra.gradle"), file("build.extra.gradle.kts")].each { extraGradle ->
