@@ -253,6 +253,17 @@ fun Project.configureNativeIosTvosRun(targetName: String) {
             }
         }
 
+        // packageIosSimulatorDebug
+        // packageIosDeviceDebug
+        // packageIosSimulatorRelease
+        // packageIosDeviceRelease
+        for (Kind in listOf("Simulator", "Device")) {
+            val packageIos = tasks.createThis<Task>("package${targetNameCapitalized}$Kind$debugSuffix") {
+                group = GROUP_KORGE_PACKAGE
+                dependsOn("${targetName}Build$Kind$debugSuffix")
+            }
+        }
+
         val installIosTvosDevice = tasks.createThis<Task>("install${targetNameCapitalized}Device$debugSuffix") {
             group = GROUP_KORGE_INSTALL
             val buildTaskName = "${targetName}BuildDevice$debugSuffix"
