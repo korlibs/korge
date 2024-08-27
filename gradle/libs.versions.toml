@@ -9,20 +9,20 @@ proguard-gradle = "7.2.2"
 asm = "9.5"
 jgit = "5.13.1.202206130422-r"
 
-kotlin = "2.0.20-RC"
+kotlin = "2.0.20"
 #kotlinx-coroutines = "1.8.1"
-kotlinx-coroutines = "1.9.0-RC"
-kotlinx-serialization = "1.7.0"
+kotlinx-coroutines = "1.9.0-RC.2"
+kotlinx-serialization = "1.7.1"
 kotlinx-atomicfu = "0.24.0"
 
 kotlinx-benchmark = "0.4.7"
 dokka = "1.9.20"
 kover = "0.6.1"
-kover-agent = "1.0.712"
+kover-agent = "1.0.761"
 node = "20.12.1"
 android-build-gradle = "8.2.2"
 gson = "2.10.1"
-gradle-publish-plugin = "1.1.0"
+gradle-publish-plugin = "1.2.1"
 # https://repo.maven.apache.org/maven2/org/jetbrains/intellij/deps/intellij-coverage-agent/
 
 [libraries]
