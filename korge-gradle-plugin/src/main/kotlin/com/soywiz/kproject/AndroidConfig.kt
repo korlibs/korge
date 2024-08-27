@@ -16,7 +16,7 @@ object AndroidConfig {
                 it.writeText(buildString {
                     appendLine("<?xml version=\"1.0\" encoding=\"utf-8\"?>")
                     appendLine("<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\">")
-                    appendLine("    <uses-sdk android:minSdkVersion=\"${minSdk}\" android:targetSdkVersion=\"${targetSdk}\" />")
+                    //appendLine("    <uses-sdk android:minSdkVersion=\"${minSdk}\" android:targetSdkVersion=\"${targetSdk}\" />")
                     appendLine("</manifest>")
                 })
             }
