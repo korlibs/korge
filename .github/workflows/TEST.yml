@@ -41,33 +41,30 @@ jobs:
       #GRADLE_OPTS: -Dorg.gradle.daemon=false -Dkotlin.compiler.execution.strategy=in-process -Dorg.gradle.workers.max=3
     steps:
       - { uses: actions/checkout@v4 }
-      - { name: Use Node.js 20.x, uses: actions/setup-node@v4, with: { node-version: 20.x } }
-      - { name: Setup Deno, uses: denoland/setup-deno@v1, with: { deno-version: "1.44.4" } }
-      - { name: Configure parallel in local.properties, run: "echo org.gradle.parallel=true >> local.properties" }
-      - { name: Replace gradle wrapper, run: "sed 's/-all/-bin/g' gradle/wrapper/gradle-wrapper.properties > gradle/wrapper/gradle-wrapper.properties.bak; cp gradle/wrapper/gradle-wrapper.properties.bak gradle/wrapper/gradle-wrapper.properties" }
-      - { if: "${{ startsWith(matrix.os, 'ubuntu-') }}", name: Install freeglut3 & openal, run: sudo apt-get update && sudo apt-get -y install freeglut3-dev libopenal-dev xvfb }
-      - { if: "${{ startsWith(matrix.os, 'ubuntu-') }}", name: Run Xvfb in Background, run: "Xvfb :99 &" }
-      - { if: "${{ startsWith(matrix.os, 'windows-') }}", name: Download and unzip opengl, shell: cmd, run: "curl -L -o opengl32-x64.zip https://github.com/korlibs/mesa-dist-win/releases/download/21.2.3/opengl32-x64.zip && unzip opengl32-x64.zip && unzip opengl32-x64.zip -d korge" }
-      - { name: Set up JDK, uses: actions/setup-java@v4, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } }
+      - { name: Setup Deno, uses: denoland/setup-deno@916edb9a40fd86d1ff57b758807ebe57242f7407, with: { deno-version: "1.44.4" } } # https://github.com/denoland/setup-deno/releases/tag/1.4.0
+      - { name: Install freeglut3 & openal, if: "${{ startsWith(matrix.os, 'ubuntu-') }}", run: sudo apt-get update && sudo apt-get -y install freeglut3-dev libopenal-dev xvfb }
+      - { name: Run Xvfb in Background, if: "${{ startsWith(matrix.os, 'ubuntu-') }}", run: "Xvfb :99 &" }
+      - { name: Download and unzip opengl, if: "${{ startsWith(matrix.os, 'windows-') }}", shell: cmd, run: "curl -L -o opengl32-x64.zip https://github.com/korlibs/mesa-dist-win/releases/download/21.2.3/opengl32-x64.zip && unzip opengl32-x64.zip && unzip opengl32-x64.zip -d korge" }
+      - { name: Set up JDK, uses: actions/setup-java@6a0805fcefea3d4657a47ac4c165951e33482018, with: { distribution: "${{ env.JAVA_DISTRIBUTION }}", java-version: "${{ env.JAVA_VERSION }}" } } # https://github.com/actions/setup-java/releases/tag/v4.2.2
       - { name: Prepare Gradle, uses: gradle/actions/setup-gradle@417ae3ccd767c252f5661f1ace9f835f9654f2b5 } # https://github.com/gradle/actions/releases/tag/v3.1.0
       - { name: Start gradle, run: ./gradlew }
-      - { if: "${{ matrix.precompileTask }}", name: "Building ${{ matrix.precompileTask }} classes", run: "./gradlew --stacktrace --parallel ${{ matrix.precompileTask }}" }
+      - { name: "Building ${{ matrix.precompileTask }} classes", if: "${{ matrix.precompileTask }}", run: "./gradlew --stacktrace ${{ matrix.precompileTask }}" }
       #- { name: Testing JVM on windows, shell: cmd, run: "CALL gradlew.bat --parallel jvmTest", env: { EGL_LOG_LEVEL: debug, LIBGL_DEBUG: verbose, LIBGL_ALWAYS_SOFTWARE: true, MESA_DEBUG: true } }
-      - { if: "${{ matrix.testTask }}", name: "Run ${{ matrix.testTask }} tests", run: "./gradlew ${{ matrix.testTask }}", env: { EGL_LOG_LEVEL: debug, LIBGL_DEBUG: verbose, LIBGL_ALWAYS_SOFTWARE: true, MESA_DEBUG: true } }
-      - { if: "${{ matrix.buildTasks }}", name: "Run ${{ matrix.buildTasks }}", run: "./gradlew ${{ matrix.buildTasks }}" }
+      - { name: "Run ${{ matrix.testTask }} tests", if: "${{ matrix.testTask }}", run: "./gradlew ${{ matrix.testTask }}", env: { EGL_LOG_LEVEL: debug, LIBGL_DEBUG: verbose, LIBGL_ALWAYS_SOFTWARE: true, MESA_DEBUG: true } }
+      - { name: "Run ${{ matrix.buildTasks }}", if: "${{ matrix.buildTasks }}", run: "./gradlew ${{ matrix.buildTasks }}" }
       - name: Enable KVM
         if: "${{ matrix.enableAndroid }}"
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
-      - { name: "Run Android Tests", if: "${{ matrix.enableAndroid }}", uses: reactivecircus/android-emulator-runner@v2, with: { "api-level": 21, "script": "./gradlew connectedCheck" } }
+      - { name: "Run Android Tests", if: "${{ matrix.enableAndroid }}", uses: reactivecircus/android-emulator-runner@f0d1ed2dcad93c7479e8b2f2226c83af54494915, with: { "api-level": 21, "script": "./gradlew connectedCheck" } } # https://github.com/ReactiveCircus/android-emulator-runner/releases/tag/v2.32.0
       - { name: Archive Test Results, if: failure(), uses: actions/upload-artifact@v4, with: { name: "test-results-${{ matrix.os }}", retention-days: 21, path: "**/build/reports", if-no-files-found: ignore } }
-      - { if: "${{ matrix.e2e }}", name: Check sandbox compiles, run: "./gradlew :korge-sandbox:jvmJar" }
-      - { if: "${{ matrix.e2e }}", name: Publish to maven local, run: ./gradlew --parallel publishJvmLocal publishKotlinMultiplatformPublicationToMavenLocal }
-      - { if: "${{ matrix.e2e }}", name: e2e test, working-directory: e2e/e2e-test, run: ./gradlew checkReferencesJvm --stacktrace }
-      - { if: "${{ matrix.e2e && failure() }}", name: Archive E2E Test Results, uses: actions/upload-artifact@v4, with: { name: e2e-test-results-linux-jvm, retention-days: 21, path: "**/e2e/e2e-test/build/screenshots", if-no-files-found: ignore } }
-      - { if: "${{ matrix.e2e }}", name: e2e multi test and hotreload, working-directory: e2e/e2e-test-multi, run: "./gradlew --watch-fs --warn --configuration-cache --configuration-cache-problems=warn compileKotlinJvm" }
-      - { if: "${{ matrix.e2e }}", name: e2e multi test runJvmAutoreload, working-directory: e2e/e2e-test-multi, run: "./gradlew --configuration-cache :client:runJvmAutoreload" }
-      - { if: "${{ matrix.e2e }}", name: e2e multi test packageJvmFatJar, working-directory: e2e/e2e-test-multi, run: "./gradlew --configuration-cache :client:packageJvmFatJar" }
-      - { if: "${{ matrix.e2e }}", name: Check publication includes iOS, run: ./gradlew checkModulePublication }
+      - { name: Check sandbox compiles, if: "${{ matrix.e2e }}", run: "./gradlew :korge-sandbox:jvmJar" }
+      - { name: Publish to maven local, if: "${{ matrix.e2e }}", run: ./gradlew --parallel publishJvmLocal publishKotlinMultiplatformPublicationToMavenLocal }
+      - { name: e2e test, if: "${{ matrix.e2e }}", working-directory: e2e/e2e-test, run: ./gradlew checkReferencesJvm --stacktrace }
+      - { name: Archive E2E Test Results, if: "${{ matrix.e2e && failure() }}", uses: actions/upload-artifact@v4, with: { name: e2e-test-results-linux-jvm, retention-days: 21, path: "**/e2e/e2e-test/build/screenshots", if-no-files-found: ignore } }
+      - { name: e2e multi test and hotreload, if: "${{ matrix.e2e }}", working-directory: e2e/e2e-test-multi, run: "./gradlew --watch-fs --warn --configuration-cache --configuration-cache-problems=warn compileKotlinJvm" }
+      - { name: e2e multi test runJvmAutoreload, if: "${{ matrix.e2e }}", working-directory: e2e/e2e-test-multi, run: "./gradlew --configuration-cache :client:runJvmAutoreload" }
+      - { name: e2e multi test packageJvmFatJar, if: "${{ matrix.e2e }}", working-directory: e2e/e2e-test-multi, run: "./gradlew --configuration-cache :client:packageJvmFatJar" }
+      - { name: Check publication includes iOS, if: "${{ matrix.e2e }}", run: ./gradlew checkModulePublication }
