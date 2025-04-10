@@ -500,7 +500,11 @@ open class BrowserCanvasJsGameWindow(
     private val navigatorClipboard get() = navigator.clipboard.unsafeCast<Clipboard>()
 
     override suspend fun clipboardWrite(data: ClipboardData) {
-        navigatorClipboard.writeText((data as TextClipboardData).text)
+        try {
+            navigatorClipboard.writeText((data as TextClipboardData).text)
+        } catch (e: Throwable) {
+            console.error("Failed to write to clipboard: ${e.message}")
+        }
     }
 
     override suspend fun clipboardRead(): ClipboardData? {
