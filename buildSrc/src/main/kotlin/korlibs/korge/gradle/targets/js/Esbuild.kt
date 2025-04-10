@@ -49,9 +49,8 @@ fun Project.configureErrorableEsbuild() {
             val file3: File? = File(nodeDir, "node_modules/npm/bin/npm-cli.js").takeIf { it.exists() }
             val npmCmd = arrayOf<File>(
                 file1,
-                file2
-                    ?: file2
-                    ?: error("Can't find npm-cli.js in ${nodeDir} standard folders")
+                file2 ?: file2 ?: file3
+                    ?: error("Can't find npm-cli.js in $nodeDir standard folders $file1, $file2, $file3")
             )
 
             environment("PATH", ENV_PATH)
