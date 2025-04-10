@@ -14,8 +14,10 @@ import kotlinx.browser.*
 import kotlinx.coroutines.*
 import org.w3c.dom.*
 import org.w3c.dom.TouchEvent
+import org.w3c.dom.clipboard.*
 import org.w3c.dom.events.*
 import org.w3c.dom.events.MouseEvent
+import kotlin.js.*
 
 private external val navigator: dynamic
 
@@ -493,6 +495,19 @@ open class BrowserCanvasJsGameWindow(
             //document.body?.appendChild(softKeyboardInput2!!)
             //enterDebugger()
         }
+    }
+
+    private val navigatorClipboard get() = navigator.clipboard.unsafeCast<Clipboard>()
+
+    override suspend fun clipboardWrite(data: ClipboardData) {
+        navigatorClipboard.writeText((data as TextClipboardData).text)
+    }
+
+    override suspend fun clipboardRead(): ClipboardData? {
+        //navigatorClipboard.read().await()
+        //navigator.clipboard.unsafeCast<Clipboard>().read().unsafeCast<Promise<DataTransfer>>()
+        val text = navigatorClipboard.readText().await()
+        return if (text.isNotEmpty()) TextClipboardData(text) else null
     }
 
     override fun setInputRectangle(windowRect: Rectangle) {
