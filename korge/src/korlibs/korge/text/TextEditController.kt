@@ -363,7 +363,7 @@ class TextEditController(
             typed {
                 //println("focused=$focused, focus=${textView.stage?.uiFocusManager?.uiFocusedView}")
                 if (!focused) return@typed
-                if (it.meta) return@typed
+                if (it.meta || it.ctrl) return@typed
                 val code = it.character.code
                 when (code) {
                     8, 127 -> Unit // backspace, backspace (handled by down event)
@@ -392,14 +392,16 @@ class TextEditController(
                                     if (it.shift) redo() else undo()
                                 }
                                 Key.C, Key.X -> {
-                                    if (selectionText.isNotEmpty()) {
-                                        gameWindow.clipboardWrite(TextClipboardData(selectionText))
+                                    val oldText = when {
+                                        selectionText.isNotEmpty() -> TextClipboardData(selectionText)
+                                        else -> null
                                     }
                                     if (it.key == Key.X) {
                                         val selection = selectionRange
                                         text = text.withoutRange(selectionRange)
                                         moveToIndex(false, selection.first)
                                     }
+                                    oldText?.let { gameWindow.clipboardWrite(it) }
                                 }
                                 Key.V -> {
                                     val rtext = (gameWindow.clipboardRead() as? TextClipboardData?)?.text
