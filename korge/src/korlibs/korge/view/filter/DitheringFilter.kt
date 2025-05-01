@@ -33,13 +33,12 @@ class DitheringFilter(
                 63, 31, 55, 23, 61, 29, 53, 21
             )
             val indexValue by FUNC(Float2, returns = Float1) { coords ->
-                val index = TEMP(Float1)
                 val matrix = indexMatrix8x8
                 //val matrix = indexMatrix4x4
                 val width = kotlin.math.sqrt(matrix.size.toDouble()).toInt()
                 val x = int(mod(coords.x, width.toFloat().lit))
                 val y = int(mod(coords.y, width.toFloat().lit))
-                SET(index, float(x + y * width.lit))
+                val index = TEMP(float(x + y * width.lit))
                 IF_ELSE_BINARY_LOOKUP(index, 0, matrix.size - 1) {
                     RETURN((matrix[it].toFloat() / matrix.size.toFloat()).lit)
                 }
@@ -48,26 +47,23 @@ class DitheringFilter(
         }
 
         override val fragment: FragmentShader = FragmentShaderDefault {
-            val COL = TEMP(Float4)
-            val COL1 = TEMP(Float4)
-            val COL2 = TEMP(Float4)
-            val DIST1 = TEMP(Float4)
-            val DIST3 = TEMP(Float4)
-            val INDEX1 = TEMP(Float1)
-            val STEPS = DitherUB.u_Levels
-            val hueDiff = TEMP(Float4)
-            SET(COL, tex(fragmentCoords))
-            SET(COL1, vec4(floor(COL * STEPS)) / STEPS)
-            SET(COL2, vec4(ceil(COL * STEPS)) / STEPS)
-            SET(DIST1, abs(COL1 - COL))
-            SET(DIST3, abs(COL2 - COL1))
-            SET(INDEX1, DitheringTools.indexValue(fragmentCoords))
-            SET(hueDiff , DIST1 / DIST3)
+            val steps = DitherUB.u_Levels
+
+            val col = TEMP(tex(fragmentCoords))
+            val col1 = TEMP(vec4(floor(col * steps)) / steps)
+            val col2 = TEMP(vec4(ceil(col * steps)) / steps)
+
+            val dist1 = TEMP(abs(col1 - col))
+            val dist3 = TEMP(abs(col2 - col1))
+
+            val index1 = TEMP(DitheringTools.indexValue(fragmentCoords))
+            val hueDiff = TEMP(dist1 / dist3)
+
             SET(out, vec4(
-                TERNARY(hueDiff.x lt INDEX1, COL1.x, COL2.x),
-                TERNARY(hueDiff.y lt INDEX1, COL1.y, COL2.y),
-                TERNARY(hueDiff.z lt INDEX1, COL1.z, COL2.z),
-                TERNARY(hueDiff.w lt INDEX1, COL1.w, COL2.w),
+                TERNARY(hueDiff.x lt index1, col1.x, col2.x),
+                TERNARY(hueDiff.y lt index1, col1.y, col2.y),
+                TERNARY(hueDiff.z lt index1, col1.z, col2.z),
+                TERNARY(hueDiff.w lt index1, col1.w, col2.w),
             ))
         }
     }
