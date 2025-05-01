@@ -759,6 +759,12 @@ data class Program(val vertex: VertexShader, val fragment: FragmentShader, val n
 
         fun TEMP(type: VarType): Temp = Temp(context.tempLastId++, type)
 
+        fun TEMP(initialValue: Operand): Temp {
+            val temp = TEMP(initialValue.type)
+            SET(temp, initialValue)
+            return temp
+        }
+
         class FuncDeclGetter<T : FuncRef>(val decl: FuncDecl) {
             operator fun getValue(thisRef: Any?, property: KProperty<*>): T = decl as T
         }
