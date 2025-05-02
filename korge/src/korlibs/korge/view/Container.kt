@@ -180,10 +180,30 @@ open class Container(
     fun removeChildAt(index: Int): Boolean =
         removeChild(getChildAtOrNull(index))
 
-    // @TODO: Optimize
-    fun removeChildAt(index: Int, count: Int) {
-        repeat(count) { removeChildAt(index) }
+    fun removeChildAt(index: Int, count: Int): Int {
+        var actuallyRemoved = 0
+        while (actuallyRemoved < count) {
+            val view = getChildAtOrNull(index + actuallyRemoved)
+            if (view?.parent !== this) break
+            actuallyRemoved++
+        }
+
+        for (removedIndex in index until index + actuallyRemoved) {
+            getChildAtOrNull(removedIndex)?.let { view ->
+                view.parent = null
+                view.index = -1
+            }
+        }
+
+        __children.removeRange(index, index + actuallyRemoved)
+
+        for (i in index until numChildren) __children[i].index -= actuallyRemoved
+
         invalidateZIndexChildren()
+        invalidateContainer()
+        invalidateLocalBounds()
+
+        return actuallyRemoved
     }
 
     // @TODO: Optimize

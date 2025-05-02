@@ -85,8 +85,33 @@ internal class ContainerTest {
             solidRect(1, 1).name("d")
             solidRect(1, 1).name("e")
         }
-        c.removeChildAt(1, 2)
+
+        val removedCount = c.removeChildAt(1, 2)
+
+        assertEquals(removedCount, 2)
+
         assertEquals(listOf("a", "d", "e"), c.children.map { it.name })
+
+        // Assert that the indices are correct
+        for (i in 0 until c.numChildren) {
+            assertEquals(i, c.children[i].index)
+        }
+    }
+
+    @Test
+    fun testRemoveMoreThanPresent() {
+        val c = Container().apply {
+            solidRect(1, 1).name("a")
+            solidRect(1, 1).name("b")
+            solidRect(1, 1).name("c")
+            solidRect(1, 1).name("d")
+            solidRect(1, 1).name("e")
+        }
+
+        val removedCount = c.removeChildAt(0, 10)
+
+        assertEquals(5, removedCount)
+        assertEquals(emptyList(), c.children)
     }
 
     @Test
