@@ -111,7 +111,7 @@ internal class ContainerTest {
         val removedCount = c.removeChildAt(0, 10)
 
         assertEquals(5, removedCount)
-        assertEquals(emptyList(), c.children)
+        assertEquals(0, c.children.size)
     }
 
     @Test
