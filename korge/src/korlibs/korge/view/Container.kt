@@ -177,24 +177,7 @@ open class Container(
     @KorgeUntested
     fun getChildByName(name: String): View? = __children.firstOrNull { it.name == name }
 
-    fun removeChildAt(index: Int): Boolean {
-        require(index >= 0) { "Index should be greater than or equal to 0" }
-        require(index < numChildren) { "Index should be less than numChildren: $numChildren, but was: $index" }
-
-        val view = getChildAt(index)
-        view.parent = null
-        view.index = -1
-
-        __children.removeAt(index)
-
-        for (i in index until numChildren) __children[i].index = i
-
-        invalidateZIndexChildren()
-        invalidateContainer()
-        invalidateLocalBounds()
-
-        return true
-    }
+    fun removeChildAt(index: Int) = removeChildAt(index, 1) == 1
 
     fun removeChildAt(index: Int, count: Int): Int {
         if (count <= 0 || index < 0) return 0
@@ -483,9 +466,7 @@ open class Container(
      * Remarks: If the parent of [view] is not this container, this function doesn't do anything.
      */
     fun removeChild(view: View?): Boolean {
-        require(view != null) { "Removed view should not be null" }
-        require(view.parent === this) { "View $view is not a child of this container" }
-        check(getChildAt(view.index) === view) { "View at index ${view.index} is not $view" }
+        if (view?.parent !== this) return false
 
         return removeChildAt(view.index)
     }
