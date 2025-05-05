@@ -227,9 +227,7 @@ open class FSprites(val maxSize: Int) {
             return Program(VertexShaderDefault {
                 //SET(out, (u_ProjMat * u_ViewMat) * vec4(vec2(a_x, a_y), 0f.lit, 1f.lit))
                 //SET(v_color, texture2D(u_Tex, vec2(vec1(id) / 4f.lit, 0f.lit)))
-                val baseSize = TEMP(VarType.Float2)
                 val texSize = TEMP(VarType.Float2)
-                SET(baseSize, a_uv1 - a_uv0)
                 SET(v_Col, vec4(a_colMul["rgb"] * a_colMul["a"], a_colMul["a"])) // Pre-multiply color here
                 SET(v_TexId, a_texId)
 
@@ -241,10 +239,8 @@ open class FSprites(val maxSize: Int) {
                     mix(a_uv0.y, a_uv1.y, a_xy.y),
                 ) * texSize)
 
-                val cos = TEMP(VarType.Float1)
-                val sin = TEMP(VarType.Float1)
-                SET(cos, cos(a_angle))
-                SET(sin, sin(a_angle))
+                val cos = TEMP(cos(a_angle))
+                val sin = TEMP(sin(a_angle))
                 SET(t_TempMat2, mat2(
                     cos, -sin,
                     sin, cos,
@@ -252,6 +248,7 @@ open class FSprites(val maxSize: Int) {
                 val size = t_Temp0["zw"]
                 val localPos = t_Temp0["xy"]
 
+                val baseSize = a_uv1 - a_uv0
                 SET(size, baseSize * a_scale)
                 SET(localPos, t_TempMat2 * ((a_xy - a_anchor) * size))
                 SET(out, (u_ProjMat * u_ViewMat) * vec4(localPos + vec2(a_pos.x, a_pos.y), 0f.lit, 1f.lit))

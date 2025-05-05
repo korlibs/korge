@@ -45,18 +45,15 @@ object SDFShaders : Program.Builder() {
         RETURN(clamp(d / fwidth(d) + 0.5f, 0f.lit, 1f.lit))
     }
     val opSmoothUnion by FUNC(Float1, Float1, Float1, returns = Float1) { d1, d2, k ->
-        val h = TEMP(Float1)
-        SET(h, clamp(.5f + .5f * (d2 - d1) / k, 0f.lit, 1f.lit))
+        val h = TEMP(clamp(.5f + .5f * (d2 - d1) / k, 0f.lit, 1f.lit))
         RETURN(mix(d2, d1, h) - k * h * (1f - h))
     }
     val opSmoothSubtraction by FUNC(Float1, Float1, Float1, returns = Float1) { d1, d2, k ->
-        val h = TEMP(Float1)
-        SET(h, clamp(.5f - .5f * (d2 + d1) / k, 0f.lit, 1f.lit))
+        val h = TEMP(clamp(.5f - .5f * (d2 + d1) / k, 0f.lit, 1f.lit))
         RETURN(mix(d2, -d1, h) + k * h * (1f - h))
     }
     val opSmoothIntersection by FUNC(Float1, Float1, Float1, returns = Float1) { d1, d2, k ->
-        val h = TEMP(Float1)
-        SET(h, clamp(.5f - .5f * (d2 - d1) / k, 0f.lit, 1f.lit))
+        val h = TEMP(clamp(.5f - .5f * (d2 - d1) / k, 0f.lit, 1f.lit))
         RETURN(mix(d2, d1, h) + k * h * (1f - h))
     }
 
@@ -65,15 +62,13 @@ object SDFShaders : Program.Builder() {
         RETURN(length(p) - r)
     }
     val roundedBox by FUNC(Float2, Float2, Float4, returns = Float1) { p, b, r ->
-        val q = TEMP(Float2)
         SET(r["xy"], TERNARY(p.x gt 0f, r["xy"], r["zw"]))
         SET(r.x, TERNARY(p.y gt 0f, r.x, r.y))
-        SET(q, abs(p) - b + r.x)
+        val q = TEMP(abs(p) - b + r.x)
         RETURN(min(max(q.x, q.y), 0f.lit) + length(max(q, 0f.lit)) - r.x)
     }
     val box by FUNC(Float2, Float2, returns = Float1) { p, b ->
-        val d = TEMP(Float2)
-        SET(d, abs(p) - b)
+        val d = TEMP(abs(p) - b)
         RETURN(length(max(d, 0f.lit)) + min(max(d.x, d.y), 0f.lit))
     }
 

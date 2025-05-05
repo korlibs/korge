@@ -490,63 +490,70 @@ data class Program(val vertex: VertexShader, val fragment: FragmentShader, val n
         val out: Output get() = Output
         //fun out(to: Operand) = Stm.Set(if (type == ShaderType.VERTEX) out_Position else out_FragColor, to)
 
-        fun sin(arg: Operand): Operand = Func("sin", arg)
-        fun cos(arg: Operand): Operand = Func("cos", arg)
-        fun tan(arg: Operand): Operand = Func("tan", arg)
+        fun sin(angle: Operand): Operand = Func("sin", angle, type = angle.type)
+        fun cos(angle: Operand): Operand = Func("cos", angle, type = angle.type)
+        fun tan(angle: Operand): Operand = Func("tan", angle, type = angle.type)
 
-        fun asin(arg: Operand): Operand = Func("asin", arg)
-        fun acos(arg: Operand): Operand = Func("acos", arg)
-        fun atan(y_over_x: Operand): Operand = Func("atan", y_over_x)
-        fun atan(y: Operand, x: Operand): Operand = Func("atan", y, x)
+        fun asin(x: Operand): Operand = Func("asin", x, type = x.type)
+        fun acos(x: Operand): Operand = Func("acos", x, type = x.type)
+        fun atan(yOverX: Operand): Operand = Func("atan", yOverX, type = yOverX.type)
+        fun atan(y: Operand, x: Operand): Operand = Func("atan", y, x, type = y.type)
+
+        fun sinh(x: Operand): Operand = Func("sinh", x, type = x.type)
+        fun cosh(x: Operand): Operand = Func("cosh", x, type = x.type)
+        fun tanh(x: Operand): Operand = Func("tanh", x, type = x.type)
+        fun asinh(x: Operand): Operand = Func("asinh", x, type = x.type)
+        fun acosh(x: Operand): Operand = Func("acosh", x, type = x.type)
+        fun atanh(x: Operand): Operand = Func("atanh", x, type = x.type)
 
         // @TODO: https://en.wikipedia.org/wiki/Atan2#Definition_and_computation (IF chain)
         //fun atan2(a: Operand, b: Operand): Operand = atan(a / b) * 2f.lit
 
-        fun radians(arg: Operand): Operand = Func("radians", arg)
-        fun degrees(arg: Operand): Operand = Func("degrees", arg)
+        fun radians(degrees: Operand): Operand = Func("radians", degrees, type = degrees.type)
+        fun degrees(radians: Operand): Operand = Func("degrees", radians, type = radians.type)
 
         // Sampling
         fun texture2D(sampler: Operand, coord: Operand): Operand = Func("texture2D", sampler, coord, type = VarType.Float4)
-        fun texture(sampler: Operand, P: Operand): Operand = Func("texture", sampler, P)
+        fun texture(sampler: Operand, P: Operand): Operand = Func("texture", sampler, P, type = VarType.Float4) // @TODO: calculate correct result type based on operand types
 
-        fun func(name: String, vararg args: Operand): Operand = Func(name, *args.map { it }.toTypedArray())
+        fun func(name: String, vararg args: Operand, type: VarType = VarType.Float1): Operand = Func(name, *args.map { it }.toTypedArray(), type = type)
 
         fun TERNARY(cond: Operand, otrue: Operand, ofalse: Operand): Operand = Ternary(cond, otrue, ofalse)
 
         // CAST
-        fun int(v: Operand): Operand = Func("int", v)
-        fun float(v: Operand): Operand = Func("float", v)
+        fun int(v: Operand): Operand = Func("int", v, type = VarType.Int1)
+        fun float(v: Operand): Operand = Func("float", v, type = VarType.Float1)
 
-        fun pow(b: Operand, e: Operand): Operand = Func("pow", b, e)
-        fun exp(v: Operand): Operand = Func("exp", v)
-        fun exp2(v: Operand): Operand = Func("exp2", v)
-        fun log(v: Operand): Operand = Func("log", v)
-        fun log2(v: Operand): Operand = Func("log2", v)
-        fun sqrt(v: Operand): Operand = Func("sqrt", v)
-        fun inversesqrt(v: Operand): Operand = Func("inversesqrt", v)
+        fun pow(b: Operand, e: Operand): Operand = Func("pow", b, e, type = b.type)
+        fun exp(v: Operand): Operand = Func("exp", v, type = v.type)
+        fun exp2(v: Operand): Operand = Func("exp2", v, type = v.type)
+        fun log(v: Operand): Operand = Func("log", v, type = v.type)
+        fun log2(v: Operand): Operand = Func("log2", v, type = v.type)
+        fun sqrt(v: Operand): Operand = Func("sqrt", v, type = v.type)
+        fun inversesqrt(v: Operand): Operand = Func("inversesqrt", v, type = v.type)
 
-        fun abs(v: Operand): Operand = Func("abs", v)
-        fun sign(v: Operand): Operand = Func("sign", v)
-        fun ceil(v: Operand): Operand = Func("ceil", v)
-        fun floor(v: Operand): Operand = Func("floor", v)
+        fun abs(v: Operand): Operand = Func("abs", v, type = v.type)
+        fun sign(v: Operand): Operand = Func("sign", v, type = v.type)
+        fun ceil(v: Operand): Operand = Func("ceil", v, type = v.type)
+        fun floor(v: Operand): Operand = Func("floor", v, type = v.type)
 
         /** The fractional part of v. This is calculated as v - floor(v). */
-        fun fract(v: Operand): Operand = Func("fract", v)
+        fun fract(v: Operand): Operand = Func("fract", v, type = v.type)
 
         fun clamp01(v: Operand): Operand = clamp(v, 0f.lit, 1f.lit)
-        fun clamp(v: Operand, min: Operand, max: Operand): Operand = Func("clamp", v, min, max)
-        fun min(a: Operand, b: Operand): Operand = Func("min", a, b)
-        fun max(a: Operand, b: Operand): Operand = Func("max", a, b)
-        fun mod(a: Operand, b: Operand): Operand = Func("mod", a, b)
+        fun clamp(v: Operand, min: Operand, max: Operand): Operand = Func("clamp", v, min, max, type = v.type)
+        fun min(a: Operand, b: Operand): Operand = Func("min", a, b, type = a.type)
+        fun max(a: Operand, b: Operand): Operand = Func("max", a, b, type = a.type)
+        fun mod(a: Operand, b: Operand): Operand = Func("mod", a, b, type = a.type)
 
         //fun lerp(a: Operand, b: Operand, c: Operand): Operand = Func("lerp", a, b, c)
 
         // https://learnwebgl.brown37.net/12_shader_language/documents/webgl-reference-card-1_0.pdf
         // #extension GL_OES_standard_derivatives : enable
         // https://stackoverflow.com/questions/68573364/enable-extension-and-fwidth-in-glsl
-        fun fwidth(a: Operand): Operand = Func("fwidth", a)
-        fun dFdx(a: Operand): Operand = Func("dFdx", a)
-        fun dFdy(a: Operand): Operand = Func("dFdy", a)
+        fun fwidth(a: Operand): Operand = Func("fwidth", a, type = a.type)
+        fun dFdx(a: Operand): Operand = Func("dFdx", a, type = a.type)
+        fun dFdy(a: Operand): Operand = Func("dFdy", a, type = a.type)
 
         //lessThan
 
@@ -554,21 +561,22 @@ data class Program(val vertex: VertexShader, val fragment: FragmentShader, val n
         //@JvmName("modInfix") infix fun Operand.mod(that: Operand): Operand = mod(this, that)
 
         fun mix(a: Operand, b: Operand, step: Operand): Operand =
-            Func("mix", a, b, step)
-        fun step(a: Operand, b: Operand): Operand = Func("step", a, b)
+            Func("mix", a, b, step, type = a.type)
+        fun step(a: Operand, b: Operand): Operand = Func("step", a, b, type = a.type)
         fun smoothstep(a: Operand, b: Operand, c: Operand): Operand =
-            Func("smoothstep", a, b, c)
+            Func("smoothstep", a, b, c, type = a.type)
 
-        fun length(a: Operand): Operand = Func("length", a)
-        fun distance(a: Operand, b: Operand): Operand = Func("distance", a, b)
-        fun dot(a: Operand, b: Operand): Operand = Func("dot", a, b)
-        fun cross(a: Operand, b: Operand): Operand = Func("cross", a, b)
-        fun normalize(a: Operand): Operand = Func("normalize", a)
+        fun length(a: Operand): Operand = Func("length", a, type = VarType.Float1)
+        fun distance(a: Operand, b: Operand): Operand = Func("distance", a, b, type = VarType.Float1)
+        fun dot(a: Operand, b: Operand): Operand = Func("dot", a, b, type = VarType.Float1)
+        fun cross(a: Operand, b: Operand): Operand = Func("cross", a, b, type = VarType.Float3)
+        fun normalize(a: Operand): Operand = Func("normalize", a, type = a.type)
         fun faceforward(a: Operand, b: Operand, c: Operand): Operand =
-            Func("faceforward", a, b, c)
-        fun reflect(a: Operand, b: Operand): Operand = Func("reflect", a, b)
+            Func("faceforward", a, b, c, type = a.type)
+        fun reflect(a: Operand, b: Operand): Operand =
+            Func("reflect", a, b, type = a.type)
         fun refract(a: Operand, b: Operand, c: Operand): Operand =
-            Func("refract", a, b, c)
+            Func("refract", a, b, c, type = a.type)
 
         val Int.lit: IntLiteral get() = IntLiteral(this)
         @Deprecated("", ReplaceWith("this.toFloat().lit"))
@@ -758,6 +766,12 @@ data class Program(val vertex: VertexShader, val fragment: FragmentShader, val n
         ): FuncProvider<FuncRef5> = FuncProvider(returns, listOf(p0, p1, p2, p3, p4), this) { block(it[0], it[1], it[2], it[3], it[4]) }
 
         fun TEMP(type: VarType): Temp = Temp(context.tempLastId++, type)
+
+        fun TEMP(initialValue: Operand): Temp {
+            val temp = TEMP(initialValue.type)
+            SET(temp, initialValue)
+            return temp
+        }
 
         class FuncDeclGetter<T : FuncRef>(val decl: FuncDecl) {
             operator fun getValue(thisRef: Any?, property: KProperty<*>): T = decl as T

@@ -70,22 +70,18 @@ object MaterialRender {
     }
 
     val PROGRAM = ShadedView.buildShader {
-        val roundedDist = TEMP(Float1)
-        val borderDist = TEMP(Float1)
-        val highlightDist = TEMP(Float1)
-        val borderAlpha = TEMP(Float1)
-        val highlightAlpha = TEMP(Float1)
-
         // The pixel space scale of the rectangle.
         val size = u_Size
 
-        SET(roundedDist, SDFShaders.roundedBox(v_Tex - (size / 2f), size / 2f, u_Radius))
+        val roundedDist = TEMP(SDFShaders.roundedBox(v_Tex - (size / 2f), size / 2f, u_Radius))
+
         SET(out, u_BackgroundColor * SDFShaders.opAA(roundedDist))
 
         // Render circle highlight
         IF(u_HighlightRadius gt 0f) {
-            SET(highlightDist, SDFShaders.opIntersect(roundedDist, SDFShaders.circle(v_Tex - u_HighlightPos, u_HighlightRadius)))
-            SET(highlightAlpha, SDFShaders.opAA(highlightDist))
+            val highlightDist = SDFShaders.opIntersect(roundedDist, SDFShaders.circle(v_Tex - u_HighlightPos, u_HighlightRadius))
+            val highlightAlpha = TEMP(SDFShaders.opAA(highlightDist))
+
             IF(highlightAlpha gt 0f) {
                 SET(out, SDFShaders.opCombinePremultipliedColors(out, u_HighlightColor * highlightAlpha))
             }
@@ -93,9 +89,9 @@ object MaterialRender {
 
         // Render border
         IF(u_BorderSizeHalf gt 0f) {
-            SET(borderDist, SDFShaders.opBorderInner(roundedDist, u_BorderSizeHalf * 2f))
+            val borderDist = SDFShaders.opBorderInner(roundedDist, u_BorderSizeHalf * 2f)
             //SET(borderDist, SDFShaders.opBorder(roundedDist, u_BorderSizeHalf))
-            SET(borderAlpha, SDFShaders.opAA(borderDist))
+            val borderAlpha = TEMP(SDFShaders.opAA(borderDist))
             IF(borderAlpha gt 0f) {
                 SET(out, SDFShaders.opCombinePremultipliedColors(out, u_BorderColor * borderAlpha))
             }
