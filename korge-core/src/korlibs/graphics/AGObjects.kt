@@ -45,20 +45,33 @@ class AGBuffer : AGObject() {
     // @TODO: Allow upload range in addition to the full buffer.
     // @TODO: This will allow to upload chunks of uniform buffers for example.
     // glBufferData & glBufferSubData
-    fun upload(data: ByteArray, offset: Int = 0, length: Int = data.size - offset): AGBuffer = upload(Int8Buffer(data, offset, length).buffer)
-    fun upload(data: UByteArray): AGBuffer = upload(Uint8Buffer(data).buffer)
-    fun upload(data: FloatArray, offset: Int = 0, length: Int = data.size - offset): AGBuffer = upload(Float32Buffer(data, offset, length).buffer)
-    fun upload(data: IntArray, offset: Int = 0, length: Int = data.size - offset): AGBuffer = upload(Int32Buffer(data, offset, length).buffer)
-    fun upload(data: ShortArray, offset: Int = 0, length: Int = data.size - offset): AGBuffer = upload(Int16Buffer(data, offset, length).buffer)
-    fun upload(data: Buffer, offset: Int, length: Int = data.size - offset): AGBuffer = upload(data.sliceWithSize(offset, length))
-    fun upload(data: Buffer): AGBuffer {
-        //println(data.sizeInBytes)
-        // Only check small buffers
-        if (data.sizeInBytes < 1024) {
-            if (this.mem != null && this.mem!!.sizeInBytes == data.sizeInBytes && arrayequal(this.mem!!, 0, data, 0, data.sizeInBytes)) return this
+    fun upload(data: ByteArray, offset: Int = 0, length: Int = data.size - offset): AGBuffer =
+        upload(Int8Buffer(data, offset, length).buffer, needClone = false)
+
+    fun upload(data: UByteArray): AGBuffer =
+        upload(Uint8Buffer(data).buffer, needClone = false)
+
+    fun upload(data: FloatArray, offset: Int = 0, length: Int = data.size - offset): AGBuffer =
+        upload(Float32Buffer(data, offset, length).buffer, needClone = false)
+
+    fun upload(data: IntArray, offset: Int = 0, length: Int = data.size - offset): AGBuffer =
+        upload(Int32Buffer(data, offset, length).buffer, needClone = false)
+
+    fun upload(data: ShortArray, offset: Int = 0, length: Int = data.size - offset): AGBuffer =
+        upload(Int16Buffer(data, offset, length).buffer, needClone = false)
+
+    fun upload(data: Buffer, offset: Int, length: Int = data.size - offset): AGBuffer =
+        upload(data.sliceWithSize(offset, length), needClone = true)
+
+    fun upload(data: Buffer): AGBuffer =
+        upload(data, needClone = true)
+
+    private fun upload(data: Buffer, needClone: Boolean): AGBuffer {
+        if (mem?.sizeInBytes == data.sizeInBytes) {
+            Buffer.copy(data, 0, mem!!, 0, data.sizeInBytes)
+        } else {
+            mem = if (needClone) data.clone() else data
         }
-        //println("New Data!")
-        mem = data.clone()
         markAsDirty()
         return this
     }
