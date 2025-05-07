@@ -68,10 +68,16 @@ class AGBuffer : AGObject() {
 
     private fun upload(data: Buffer, needClone: Boolean): AGBuffer {
         if (mem?.sizeInBytes == data.sizeInBytes) {
+            // Do not mark as dirty if the data is the same
+            if (data.sizeInBytes < 1024 && Buffer.equals(data, 0, mem!!, 0, data.sizeInBytes)) {
+                return this
+            }
+
             Buffer.copy(data, 0, mem!!, 0, data.sizeInBytes)
         } else {
             mem = if (needClone) data.clone() else data
         }
+
         markAsDirty()
         return this
     }
