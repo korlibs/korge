@@ -1,5 +1,6 @@
 package korlibs.korge.gradle.targets.js
 
+import korlibs.korge.gradle.targets.*
 import korlibs.korge.gradle.util.*
 import org.gradle.api.*
 import org.gradle.api.tasks.Copy
@@ -19,6 +20,7 @@ fun Project.configureWebpack() {
         from(project.tasks.getByName("jsProcessResources").outputs.files)
         from(jsFile)
         from(mapFile)
+        registerModulesResources(project)
         into(wwwFolder)
     }
 }
