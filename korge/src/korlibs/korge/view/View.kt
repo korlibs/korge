@@ -1553,12 +1553,6 @@ fun <T : View> T.addFixedUpdater(
                 break
             }
         }
-        if (calls > 0) {
-            // Do not accumulate for small fractions since this would cause hiccups!
-            if (accum < time * 0.25) {
-                accum = FastDuration.ZERO
-            }
-        }
     }
 }
 
