@@ -1,6 +1,7 @@
 package korlibs.korge.gradle.targets.js
 
 import korlibs.korge.gradle.*
+import korlibs.korge.gradle.targets.*
 import korlibs.korge.gradle.util.*
 import org.gradle.api.*
 import org.gradle.api.file.*
@@ -64,20 +65,9 @@ fun Project.configureErrorableEsbuild() {
 
         duplicatesStrategy = DuplicatesStrategy.EXCLUDE
         from(project.tasks.getByName("jsProcessResources").outputs.files)
-        //afterEvaluate {
-        //    project.tasks.findByName(getKorgeProcessResourcesTaskName("js", "main"))?.outputs?.files?.let {
-        //        from(it)
-        //    }
-        //}
-        //for (sourceSet in gkotlin.js().compilations.flatMap { it.kotlinSourceSets }) from(sourceSet.resources)
+        //from(kotlin.targets.getByName("js").compilations.main.defaultSourceSet.resources)
+        registerModulesResources(project)
         into(wwwFolder)
-        //afterEvaluate {
-        //    afterEvaluate {
-        //        val korgeGeneratedTask = project.tasks.findByName(korgeProcessResourcesTaskName) as? KorgeGenerateResourcesTask?
-        //        println("korgeGeneratedTaskName=$korgeGeneratedTask : korgeProcessResourcesTaskName=$korgeProcessResourcesTaskName")
-        //        korgeGeneratedTask?.addExcludeToCopyTask(this)
-        //    }
-        //}
     }
 
     val browserPrepareEsbuildPrepare = tasks.createThis<Task>("browserPrepareEsbuildPrepare") {
