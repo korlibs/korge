@@ -93,16 +93,7 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile::class).all {
 }
 
 kotlin.sourceSets.main.configure {
-    kotlin.srcDirs(File(projectDir, "build/srcgen"), File(projectDir, "build/srcgen2"))
-}
-kotlin.sourceSets.test.configure {
-    kotlin.srcDirs(File(projectDir, "build/testgen2"))
-}
-java.sourceSets.main.configure {
-    resources.srcDirs(File(projectDir, "build/srcgen2res"))
-}
-java.sourceSets.test.configure {
-    resources.srcDirs(File(projectDir, "build/testgen2res"))
+    kotlin.srcDirs(File(projectDir, "build/srcgen"))
 }
 
 dependencies {
