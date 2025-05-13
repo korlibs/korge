@@ -66,6 +66,24 @@ class AGBuffer : AGObject() {
     fun upload(data: Buffer): AGBuffer =
         upload(data, needClone = true)
 
+    /**
+     * Marks this buffer as dirty, so it will be uploaded to the GPU later.
+     */
+    fun upload(): AGBuffer {
+        markAsDirty()
+        return this
+    }
+
+    /**
+     * Wraps the given buffer, so it will be used as is.
+     * This buffer can be modified later, and the changes will be reflected in the GPU after call to [upload] without arguments.
+     */
+    fun wrap(data: Buffer): AGBuffer {
+        mem = data
+        markAsDirty()
+        return this
+    }
+
     private fun upload(data: Buffer, needClone: Boolean): AGBuffer {
         if (mem?.sizeInBytes == data.sizeInBytes) {
             // Do not mark as dirty if the data is the same
