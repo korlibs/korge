@@ -44,6 +44,7 @@ object NewTexturePacker {
         vararg folders: File,
         enableRotation: Boolean = true,
         enableTrimming: Boolean = true,
+        padding: Int = 2,
     ): List<AtlasInfo> {
         val images: List<Pair<File, SimpleBitmap>> = getAllFiles(*folders).mapNotNull {
             try {
@@ -54,16 +55,14 @@ object NewTexturePacker {
             }
         }
 
-        val PADDING = 2
-
-        val packer = NewBinPacker.MaxRectsPacker(4096, 4096, PADDING * 2, NewBinPacker.IOption(
+        val packer = NewBinPacker.MaxRectsPacker(4096, 4096, padding * 2, NewBinPacker.IOption(
             smart = true,
             pot = true,
             square = false,
             allowRotation = enableRotation,
             //allowRotation = false,
             tag = false,
-            border = PADDING
+            border = padding
         ))
 
         packer.addArray(images.map { (file, image) ->
@@ -94,7 +93,7 @@ object NewTexturePacker {
                 //println("$rect :: info=$info")
 
                 val chunk = if (rect.rot) info.trimmedImage.flipY().rotate90() else info.trimmedImage
-                out.put(rect.x - PADDING, rect.y - PADDING, chunk.extrude(PADDING))
+                out.put(rect.x - padding, rect.y - padding, chunk.extrude(padding))
                 //out.put(rect.x, rect.y, chunk)
 
                 val obj = LinkedHashMap<String, Any?>()
@@ -139,3 +138,4 @@ object NewTexturePacker {
         return outAtlases
     }
 }
+
