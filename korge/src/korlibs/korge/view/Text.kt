@@ -309,13 +309,25 @@ open class Text(
                     //println("lineInfos=$lineInfos")
                     //println("Text.BitmapFont: bounds=$bounds, firstBounds=$firstBounds, textWidth=$textWidth, textHeight=$textHeight, verticalAlign=$verticalAlign")
 
-                    //val dx = (-_textBounds.width - textWidth) * horizontalAlign.ratio
-                    val dx = _textBounds.x
-                    val dy: Double = when (verticalAlign) {
-                        VerticalAlign.BASELINE -> 0.0
-                        VerticalAlign.TOP -> firstLineInfos.maxTop
-                        else -> firstLineInfos.maxTop - (totalHeight) * verticalAlign.ratioFake
+                    val dx = when {
+                        autoSize -> _textBounds.x
+                        else -> _textBounds.x + 1 + ((_textBounds.width - textWidth) * horizontalAlign.ratio)
                     }
+                    val dy: Double = when {
+                        autoSize -> {
+                            _textBounds.y + firstLineInfos.maxTop
+                        }
+                        else -> {
+                            when (verticalAlign) {
+                                VerticalAlign.BASELINE -> _textBounds.y
+                                else -> (_textBounds.y + firstLineInfos.maxTop) + ((_textBounds.height - totalHeight) * verticalAlign.ratioFake)
+                            }
+                        }
+
+                    }
+
+
+                    //println("dx=$dx, dy=$dy, totalHeight=$totalHeight, textHeight=$textHeight, textWidth=$textWidth, _textBounds=$_textBounds")
 
                     val program = font.agProgram
                     //val program = null
