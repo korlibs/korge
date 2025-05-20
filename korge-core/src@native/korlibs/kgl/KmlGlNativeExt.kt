@@ -182,6 +182,7 @@ abstract class NativeBaseKmlGl : KmlGl() {
     override fun vertexAttrib4fv(index: Int, v: Buffer): Unit = tempBufferAddress { glVertexAttrib4fvExt(index.convert(), v.unsafeAddress().reinterpret()) }
     override fun viewport(x: Int, y: Int, width: Int, height: Int): Unit = tempBufferAddress { glViewportExt(x.convert(), y.convert(), width.convert(), height.convert()) }
     override fun vertexAttribPointer(index: Int, size: Int, type: Int, normalized: Boolean, stride: Int, pointer: Long): Unit = tempBufferAddress { glVertexAttribPointerExt(index.convert(), size.convert(), type.convert(), normalized.toInt().convert(), stride.convert(), pointer.toCPointer<IntVar>()?.reinterpret()) }
+    override fun vertexAttribIPointer(index: Int, size: Int, type: Int, stride: Int, pointer: Long): Unit = tempBufferAddress { glVertexAttribIPointerExt(index.convert(), size.convert(), type.convert(), stride.convert(), pointer.toCPointer<IntVar>()?.reinterpret()) }
 
     override val isInstancedSupported: Boolean get() = true
     override fun drawArraysInstanced(mode: Int, first: Int, count: Int, instancecount: Int): Unit = glDrawArraysInstancedExt(mode.convert(), first.convert(), count.convert(), instancecount.convert())
@@ -282,6 +283,7 @@ abstract class NativeBaseKmlGl : KmlGl() {
         val glGetStringExt by GLFunc<(GLenum) -> GLString>()
         val glGetStringiExt by GLFunc<(GLenum, GLuint) -> GLString>()
         val glVertexAttribPointerExt by GLFunc<(GLuint, GLint, GLenum, GLboolean, GLsizei, GLvoidPtr) -> Unit>()
+        val glVertexAttribIPointerExt by GLFunc<(GLuint, GLint, GLenum, GLsizei, GLvoidPtr) -> Unit>()
         val glVertexAttrib4fvExt by GLFunc<(GLuint, GLfloatPtr) -> Unit>()
         val glActiveTextureExt by GLFunc<(GLenum) -> Unit>()
         val glAttachShaderExt by GLFunc<(GLuint, GLuint) -> Unit>()

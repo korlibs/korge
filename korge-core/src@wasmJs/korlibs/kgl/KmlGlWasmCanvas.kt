@@ -32,6 +32,7 @@ public external interface WebGLRenderingContextBase2 : WebGLRenderingContextBase
     fun deleteVertexArray(free: WebGLVertexArrayObject?)
     fun bindVertexArray(get: WebGLVertexArrayObject?)
     fun renderbufferStorageMultisample(target: Int, samples: Int, internalformat: Int, width: Int, height: Int)
+    fun vertexAttribIPointer(index: Int, size: Int, type: Int, stride: Int, offset: Int)
 }
 
 
@@ -274,6 +275,8 @@ class KmlGlWasmCanvas(val canvas: HTMLCanvasElement, val glOpts: JsAny) : KmlGl(
     override fun vertexAttrib4f(index: Int, x: Float, y: Float, z: Float, w: Float): Unit = gl.vertexAttrib4f(index, x, y, z, w)
     override fun vertexAttrib4fv(index: Int, v: Buffer): Unit = gl.vertexAttrib4fv(index, v.toF32())
     override fun vertexAttribPointer(index: Int, size: Int, type: Int, normalized: Boolean, stride: Int, pointer: Long): Unit = gl.vertexAttribPointer(index, size, type, normalized, stride, pointer.toInt())
+    override fun vertexAttribIPointer(index: Int, size: Int, type: Int, stride: Int, pointer: Long): Unit =
+        gl.vertexAttribIPointer(index, size, type, stride, pointer.toInt())
     override fun viewport(x: Int, y: Int, width: Int, height: Int): Unit = gl.viewport(x, y, width, height)
 
     private fun Float32Array.sliceIfRequired(count: Int): Float32Array = if (this.length == count) this else Float32Array(this.buffer, 0, count)

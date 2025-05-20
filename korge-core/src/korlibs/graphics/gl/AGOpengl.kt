@@ -11,6 +11,7 @@ import korlibs.image.bitmap.*
 import korlibs.image.color.*
 import korlibs.io.lang.*
 import korlibs.kgl.*
+import korlibs.logger.*
 import korlibs.memory.*
 
 //val ENABLE_UNIFORM_BLOCKS = Environment["ENABLE_UNIFORM_BLOCKS"] == "true"
@@ -541,14 +542,24 @@ class AGOpengl(val gl: KmlGl, var context: KmlGlContext? = null) : AG() {
                 //println("loc=$loc")
                 if (loc >= 0) {
                     gl.enableVertexAttribArray(loc)
-                    gl.vertexAttribPointer(
-                        loc,
-                        elementCount,
-                        glElementType,
-                        att.normalized,
-                        totalSize,
-                        entry.baseOffset + off.toLong()
-                    )
+                    if (att.type == VarType.SInt1) {
+                        gl.vertexAttribIPointer(
+                            loc,
+                            elementCount,
+                            glElementType,
+                            totalSize,
+                            entry.baseOffset + off.toLong()
+                        )
+                    } else {
+                        gl.vertexAttribPointer(
+                            loc,
+                            elementCount,
+                            glElementType,
+                            att.normalized,
+                            totalSize,
+                            entry.baseOffset + off.toLong()
+                        )
+                    }
                     if (att.divisor != 0) {
                         gl.vertexAttribDivisor(loc, att.divisor)
                     }

@@ -126,7 +126,7 @@ fun VarType.toGl(): Int = when (this.kind) {
     VarKind.TUNSIGNED_BYTE -> KmlGl.UNSIGNED_BYTE
     VarKind.TSHORT -> KmlGl.SHORT
     VarKind.TUNSIGNED_SHORT -> KmlGl.UNSIGNED_SHORT
-    VarKind.TINT -> KmlGl.UNSIGNED_INT
+    VarKind.TINT -> KmlGl.INT
     VarKind.TFLOAT -> KmlGl.FLOAT
 }
 
