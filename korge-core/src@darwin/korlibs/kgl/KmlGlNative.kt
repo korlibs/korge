@@ -177,6 +177,7 @@ actual class KmlGlNative actual constructor() : NativeBaseKmlGl() {
     override fun vertexAttrib4f(index: Int, x: Float, y: Float, z: Float, w: Float): Unit = tempBufferAddress { glVertexAttrib4f(index.convert(), x, y, z, w) }
     override fun vertexAttrib4fv(index: Int, v: Buffer): Unit = tempBufferAddress { glVertexAttrib4fv(index.convert(), v.unsafeAddress().reinterpret()) }
     override fun vertexAttribPointer(index: Int, size: Int, type: Int, normalized: Boolean, stride: Int, pointer: Long): Unit = tempBufferAddress { glVertexAttribPointer(index.convert(), size.convert(), type.convert(), normalized.toInt().convert(), stride.convert(), pointer.toCPointer<IntVar>()) }
+    override fun vertexAttribIPointer(index: Int, size: Int, type: Int, stride: Int, pointer: Long): Unit = tempBufferAddress { glVertexAttribIPointer(index.convert(), size.convert(), type.convert(), stride.convert(), pointer.toCPointer<IntVar>()) }
     override fun viewport(x: Int, y: Int, width: Int, height: Int): Unit = tempBufferAddress { glViewport(x.convert(), y.convert(), width.convert(), height.convert()) }
 
     override val isInstancedSupported: Boolean get() = true

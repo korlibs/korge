@@ -4,10 +4,12 @@
 
 package korlibs.kgl
 
+import korlibs.audio.format.MP3Base.Parser.Companion.samples
 import korlibs.graphics.gl.*
 import korlibs.graphics.shader.gl.*
 import korlibs.image.bitmap.*
 import korlibs.image.format.*
+import korlibs.logger.*
 import korlibs.math.*
 import korlibs.memory.*
 import korlibs.memory.Buffer
@@ -237,6 +239,13 @@ class KmlGlJsCanvas(val canvas: HTMLCanvasElement, val glOpts: dynamic) : KmlGl(
     override fun vertexAttrib4f(index: Int, x: Float, y: Float, z: Float, w: Float): Unit = gl.vertexAttrib4f(index, x, y, z, w)
     override fun vertexAttrib4fv(index: Int, v: Buffer): Unit = gl.vertexAttrib4fv(index, v)
     override fun vertexAttribPointer(index: Int, size: Int, type: Int, normalized: Boolean, stride: Int, pointer: Long): Unit = gl.vertexAttribPointer(index, size, type, normalized, stride, pointer.toInt())
+    override fun vertexAttribIPointer(index: Int, size: Int, type: Int, stride: Int, pointer: Long): Unit {
+        if (webglVersion >= 2) {
+            gl.asDynamic().vertexAttribIPointer(index, size, type, stride, pointer.toInt())
+        } else {
+            TODO()
+        }
+    }
     override fun viewport(x: Int, y: Int, width: Int, height: Int): Unit = gl.viewport(x, y, width, height)
 
     private fun Float32Array.sliceIfRequired(count: Int): Float32Array = if (this.length == count) this else Float32Array(this.buffer, 0, count)
