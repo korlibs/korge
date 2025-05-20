@@ -11,7 +11,6 @@ import korlibs.image.bitmap.*
 import korlibs.image.color.*
 import korlibs.io.lang.*
 import korlibs.kgl.*
-import korlibs.logger.*
 import korlibs.memory.*
 
 //val ENABLE_UNIFORM_BLOCKS = Environment["ENABLE_UNIFORM_BLOCKS"] == "true"

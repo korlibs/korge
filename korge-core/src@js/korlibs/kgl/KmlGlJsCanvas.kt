@@ -240,7 +240,11 @@ class KmlGlJsCanvas(val canvas: HTMLCanvasElement, val glOpts: dynamic) : KmlGl(
     override fun vertexAttrib4fv(index: Int, v: Buffer): Unit = gl.vertexAttrib4fv(index, v)
     override fun vertexAttribPointer(index: Int, size: Int, type: Int, normalized: Boolean, stride: Int, pointer: Long): Unit = gl.vertexAttribPointer(index, size, type, normalized, stride, pointer.toInt())
     override fun vertexAttribIPointer(index: Int, size: Int, type: Int, stride: Int, pointer: Long): Unit {
-        gl.asDynamic().vertexAttribIPointer(index, size, type, stride, pointer.toInt())
+        if (webglVersion >= 2) {
+            gl.asDynamic().vertexAttribIPointer(index, size, type, stride, pointer.toInt())
+        } else {
+            TODO()
+        }
     }
     override fun viewport(x: Int, y: Int, width: Int, height: Int): Unit = gl.viewport(x, y, width, height)
 
