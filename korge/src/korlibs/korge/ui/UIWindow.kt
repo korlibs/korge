@@ -1,5 +1,6 @@
 package korlibs.korge.ui
 
+
 import korlibs.datastructure.iterators.*
 import korlibs.image.color.*
 import korlibs.image.text.*
@@ -8,6 +9,7 @@ import korlibs.korge.input.*
 import korlibs.korge.internal.*
 import korlibs.korge.render.*
 import korlibs.korge.tween.*
+import korlibs.korge.ui.*
 import korlibs.korge.view.*
 import korlibs.math.*
 import korlibs.math.geom.*
@@ -19,12 +21,13 @@ import korlibs.time.*
 inline fun Container.uiWindow(
     title: String,
     size: Size = Size(256, 256),
+    resizable: Boolean = true,
     configure: @ViewDslMarker UIWindow.() -> Unit = {},
     block: @ViewDslMarker Container.(UIWindow) -> Unit = {},
-): UIWindow = UIWindow(title, size).addTo(this).apply(configure).also { block(it.container.container, it) }
+): UIWindow = UIWindow(title, size, resizable).addTo(this).apply(configure).also { block(it.container.container, it) }
 
 @KorgeExperimental
-class UIWindow(title: String, size: Size = Size(256, 256)) : UIContainer(size) {
+class UIWindow(title: String, size: Size = Size(256, 256), private var resizable: Boolean = true) : UIContainer(size) {
     private val titleHeight = 32.0
     private val buttonSeparation = 6.0
     val isFocused get() = this.index == (parent?.numChildren ?: 0) -1
@@ -235,7 +238,11 @@ class UIWindow(title: String, size: Size = Size(256, 256)) : UIContainer(size) {
         titleContainer.size(width, titleHeight)
         container.size(width, height - titleHeight)
         closeButton.position(width - titleHeight - buttonSeparation, buttonSeparation)
-        scaleHandlers.fastForEach { it.resized(width, height) }
+
+        if (resizable){
+            scaleHandlers.fastForEach { it.resized(width, height) }
+        }
+
     }
 
     fun close() {
