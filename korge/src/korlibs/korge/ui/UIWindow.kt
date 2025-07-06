@@ -1,6 +1,5 @@
 package korlibs.korge.ui
 
-
 import korlibs.datastructure.iterators.*
 import korlibs.image.color.*
 import korlibs.image.text.*
@@ -9,7 +8,6 @@ import korlibs.korge.input.*
 import korlibs.korge.internal.*
 import korlibs.korge.render.*
 import korlibs.korge.tween.*
-import korlibs.korge.ui.*
 import korlibs.korge.view.*
 import korlibs.math.*
 import korlibs.math.geom.*
