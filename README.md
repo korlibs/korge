@@ -32,7 +32,7 @@ KorGE is a modern multiplatform game engine for Kotlin. Features include:
 * Multiplatform
   * KorGE gradle plugin allows to target the following platforms: JVM for Android, JS & WASM for the Web, native code for iOS, and JVM/JS for Desktop
 * Quick installation
-  * Install the KorGE IntelliJ Plugin or clone the “Hello World!” project and start making your own game in less than a minute
+  * Install [KorGE Forge](https://forge.korge.org/) or clone the “Hello World!” project and start making your own game in less than a minute
 * Fully productive
   * Since KorGE targets the JVM, you can develop your game, try it, debug it and test it using IntelliJ IDEA
 * Tons of features
