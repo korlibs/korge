@@ -5,7 +5,7 @@ import korlibs.korge.view.*
 
 /** Chainable method returning this that sets [this] View in the middle between [x1] and [x2] */
 fun <T : View> T.centerXBetween(x1: Double, x2: Double): T {
-    this.x = (x2 + x1 - this.width) / 2
+    this.x = (x2 + x1 - this.scaledWidth) / 2
     return this
 }
 fun <T : View> T.centerXBetween(x1: Float, x2: Float): T = centerXBetween(x1.toDouble(), x2.toDouble())
@@ -13,7 +13,7 @@ fun <T : View> T.centerXBetween(x1: Int, x2: Int): T = centerXBetween(x1.toDoubl
 
 /** Chainable method returning this that sets [this] View in the middle between [y1] and [y2] */
 fun <T : View> T.centerYBetween(y1: Double, y2: Double): T {
-    this.y = (y2 + y1 - this.height) / 2
+    this.y = (y2 + y1 - this.scaledHeight) / 2
     return this
 }
 fun <T : View> T.centerYBetween(y1: Float, y2: Float): T = centerYBetween(y1.toDouble(), y2.toDouble())
