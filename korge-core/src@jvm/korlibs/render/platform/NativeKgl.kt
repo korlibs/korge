@@ -160,6 +160,7 @@ open class NativeKgl constructor(private val gl: INativeGL) : KmlGl() {
     override fun vertexAttrib4f(index: Int, x: Float, y: Float, z: Float, w: Float): Unit = gl.glVertexAttrib4f(index, x, y, z, w)
     override fun vertexAttrib4fv(index: Int, v: Buffer): Unit = gl.glVertexAttrib4fv(index, v.directFloatBuffer)
     override fun vertexAttribPointer(index: Int, size: Int, type: Int, normalized: Boolean, stride: Int, pointer: Long): Unit = gl.glVertexAttribPointer(index, size, type, normalized.toByte(), stride, NativeLong(pointer))
+    override fun vertexAttribIPointer(index: Int, size: Int, type: Int, stride: Int, pointer: Long): Unit = gl.glVertexAttribIPointer(index, size, type, stride, NativeLong(pointer))
     override fun viewport(x: Int, y: Int, width: Int, height: Int): Unit = gl.glViewport(x, y, width, height)
 
     // GL_ARB_instanced_arrays
