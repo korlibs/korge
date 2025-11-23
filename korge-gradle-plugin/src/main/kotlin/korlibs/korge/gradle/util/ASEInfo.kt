@@ -3,6 +3,7 @@ package korlibs.korge.gradle.util
 data class ASEInfo(
     val slices: List<AseSlice> = emptyList(),
     val tags: List<AseTag> = emptyList(),
+    val layers: List<AseLayer> = emptyList(),
 ) {
     data class AseSlice(
         val sliceName: String,
@@ -18,6 +19,52 @@ data class ASEInfo(
         val tagName: String
     )
 
+    data class AseLayer(
+        val layerName: String,
+        val visible: Boolean,
+        val type: AseLayerType,
+        val blendMode: AseBlendMode,
+        val opacity: Int
+    ) {
+        enum class AseLayerType(val value: Int) {
+            NORMAL(0),
+            GROUP(1),
+            TILEMAP(2);
+
+            companion object {
+                private val map = values().associateBy(AseLayerType::value)
+                fun fromInt(value: Int): AseLayerType = map[value] ?: NORMAL
+            }
+        }
+
+        enum class AseBlendMode(val value: Int) {
+            NORMAL(0),
+            MULTIPLY(1),
+            SCREEN(2),
+            OVERLAY(3),
+            DARKEN(4),
+            LIGHTEN(5),
+            COLOR_DODGE(6),
+            COLOR_BURN(7),
+            HARD_LIGHT(8),
+            SOFT_LIGHT(9),
+            DIFFERENCE(10),
+            EXCLUSION(11),
+            HUE(12),
+            SATURATION(13),
+            COLOR(14),
+            LUMINOSITY(15),
+            ADDITION(16),
+            SUBTRACT(17),
+            DIVIDE(18);
+
+            companion object {
+                private val map = values().associateBy(AseBlendMode::value)
+                fun fromInt(value: Int): AseBlendMode = map[value] ?: NORMAL
+            }
+        }
+    }
+
     companion object {
         fun getAseInfo(file: SFile): ASEInfo {
             return getAseInfo(file.readBytes())
@@ -32,6 +79,7 @@ data class ASEInfo(
 
             val slices = arrayListOf<AseSlice>()
             val tags = arrayListOf<AseTag>()
+            val layers = arrayListOf<AseLayer>()
 
             val fileSize = s.readS32LE()
             if (s.length < fileSize) error("File too short s.length=${s.length} < fileSize=${fileSize}")
@@ -81,6 +129,26 @@ data class ASEInfo(
                     //println(" chunkType=$chunkType, chunkSize=$chunkSize")
 
                     when (chunkType) {
+                        0x2004 -> { // LAYER
+                            // Layer chunk
+                            val flags = cs.readU16LE()
+                            val type = cs.readU16LE()
+                            val layerChildLevel = cs.readU16LE()
+                            cs.skip(2)
+                            val blendMode = cs.readU16LE()
+                            val opacity = cs.readU8()
+                            cs.skip(3)
+                            val layerName = cs.readAseString()
+                            layers += AseLayer(
+                                layerName = layerName,
+                                visible = !flags.hasBitSet(0),
+                                type = AseLayer.AseLayerType.fromInt(type),
+                                blendMode = AseLayer.AseBlendMode.fromInt(blendMode),
+                                opacity = opacity
+                            )
+
+                            //println(" Layer: name='$layerName', type=$type, blendMode=$blendMode, opacity=$opacity, flags=$flags")
+                        }
                         0x2022 -> { // SLICE KEYS
                             val numSliceKeys = cs.readS32LE()
                             val sliceFlags = cs.readS32LE()
@@ -120,6 +188,7 @@ data class ASEInfo(
             return ASEInfo(
                 slices = slices,
                 tags = tags,
+                layers = layers
             )
         }
 
