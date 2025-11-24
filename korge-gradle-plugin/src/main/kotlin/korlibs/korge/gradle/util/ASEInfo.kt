@@ -169,7 +169,8 @@ data class ASEInfo(
                             val flags = cs.readU16LE()
                             val type = cs.readU16LE()
                             val layerChildLevel = cs.readU16LE()
-                            cs.skip(2)
+                            val defaultLayerWidth = cs.readU16LE()  // ignore default width
+                            val defaultLayerHeight = cs.readU16LE()  // ignore default height
                             val blendMode = cs.readU16LE()
                             val opacity = cs.readU8()
                             cs.skip(3)

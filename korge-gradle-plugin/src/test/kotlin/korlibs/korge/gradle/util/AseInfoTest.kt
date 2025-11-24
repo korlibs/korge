@@ -7,9 +7,10 @@ import org.junit.Test
 class AseInfoTest {
     @Test
     fun test() {
-        val info = ASEInfo.Companion.getAseInfo(getResourceBytes("sprites.ase"))
+        val info = ASEInfo.getAseInfo(getResourceBytes("sprites.ase"))
         Assert.assertEquals(0, info.slices.size)
         Assert.assertEquals(listOf("TestNum", "FireTrail", "FireTrail2"), info.tags.map { it.tagName })
+        Assert.assertEquals(listOf("Layer1", "Layer2", "Layer3"), info.layers.map { it.layerName })
     }
 
     @Test
