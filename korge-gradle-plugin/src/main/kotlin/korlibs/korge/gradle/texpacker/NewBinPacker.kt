@@ -815,7 +815,7 @@ object NewBinPacker {
                         if (i == 0) currentTag = tag
 
                         if (tag != currentTag) {
-                            // all current tag memeber tested successfully
+                            // all current tag members tested successfully
                             currentTag = tag
                             // do addArray()
                             for (r in this.sort(rects.slice(currentIdx, i), this.options.logic)) {
@@ -823,7 +823,7 @@ object NewBinPacker {
                             }
                             currentIdx = i
 
-                            // recrusively addArray() with remaining rects
+                            // recursively addArray() with remaining rects
                             this.addArray(rects.drop(i))
                             return@find true
                         }

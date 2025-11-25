@@ -15,20 +15,22 @@ open class KorgeFleksExtension(
     val project: Project,
 ) {
     private val assetGroup = "assets"
-    // Define any configuration properties or methods for the extension here
 
-    var asepriteExe: String = ""  // = "C:/Tools/Aseprite/Aseprite.exe",
+    var asepriteExe: String = ""
+    var spriteAtlasName: String = "sprite"
+    var tilesetAtlasName: String = "tileset"
 
     fun commonAssets(path: String, callback: AssetsConfig.() -> Unit) {
         if (!File(asepriteExe).exists()) throw GradleException("Aseprite executable not found: '$asepriteExe' " +
             "Make sure to set 'asepriteExe' property in korgeFleks extension.")
 
-        val commonAssetsConfig = AssetsConfig(asepriteExe, project.projectDir, path)
+        val commonAssetsConfig = AssetsConfig(asepriteExe, project.projectDir, path, "common")
 
         project.tasks.createThis<Task>("commonAssets") {
             group = assetGroup
             doLast {
                 commonAssetsConfig.apply(callback)
+                commonAssetsConfig.buildAtlases(spriteAtlasName, tilesetAtlasName)
             }
         }
     }
