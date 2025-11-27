@@ -7,6 +7,7 @@ import korlibs.korge.gradle.util.executeSystemCommand
 import org.gradle.api.GradleException
 import java.io.File
 
+
 class AssetsConfig(
     private val asepriteExe: String,
     projectDir: File,
@@ -17,7 +18,7 @@ class AssetsConfig(
     private val assetDir = projectDir.resolve(assetPath)
     // Directory where exported tiles and tilesets will be stored
     private val exportTilesDir = projectDir.resolve("build/assets/${assetPath.replace("/", "-").replace("\\", "-")}-tiles")
-    private val exportTilesetDir = projectDir.resolve("build/assets/${assetPath.replace("/", "-").replace("\\", "-")}-tilesets")
+    private val exportTilesetDir = projectDir.resolve("build/assets/${assetPath.replace("/", "-").replace("\\", "-")}-tilesets2")
     // Directory where game resources are located
     private val gameResourcesDir = projectDir.resolve("src/commonMain/resources/${resourcePath}")
 
@@ -26,10 +27,10 @@ class AssetsConfig(
 
     init {
         // Make sure the export directories exist and that they are empty
-        if (exportTilesDir.exists()) exportTilesDir.deleteRecursively()
-        if (exportTilesetDir.exists()) exportTilesetDir.deleteRecursively()
-        exportTilesDir.mkdirs()
-        exportTilesetDir.mkdirs()
+//        if (exportTilesDir.exists()) exportTilesDir.deleteRecursively()
+//        if (exportTilesetDir.exists()) exportTilesetDir.deleteRecursively()
+//        exportTilesDir.mkdirs()
+//        exportTilesetDir.mkdirs()
     }
 
     /** Get the Aseprite File object from the asset path
@@ -178,20 +179,19 @@ class AssetsConfig(
             val atlasInfoList = NewTexturePacker.packImages(exportTilesDir,
                 enableRotation = false,
                 enableTrimming = true,
-                padding = 1
+                padding = 1,
+                trimFileName = true
             )
             atlasInfoList.forEachIndexed { idx, atlasInfo ->
                 val atlasOutputFile = gameResourcesDir.resolve("${spriteAtlasName}_${idx}.atlas.png")
                 atlasInfo.write(atlasOutputFile)
+
+//                println("Sprite atlas $idx: $atlasInfo")
             }
         }
         // Then build tilesets atlas
         if (exportTilesetDir.listFiles().isNotEmpty()) {
-            val atlasInfoList = NewTexturePacker.packImages(exportTilesetDir,
-                enableRotation = false,
-                enableTrimming = false,
-                padding = 1
-            )
+            val atlasInfoList = NewTexturePacker.packTilesets(exportTilesetDir)
             atlasInfoList.forEachIndexed { idx, atlasInfo ->
                 val atlasOutputFile = gameResourcesDir.resolve("${tilesetAtlasName}_${idx}.atlas.png")
                 atlasInfo.write(atlasOutputFile)
