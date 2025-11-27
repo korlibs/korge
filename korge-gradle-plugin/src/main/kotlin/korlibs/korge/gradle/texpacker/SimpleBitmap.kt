@@ -139,4 +139,16 @@ class SimpleBitmap(val width: Int, val height: Int, val data: IntArray = IntArra
         }
         return out
     }
+
+    /**
+     * Get hash code of SimpleBitmap object based on its pixel data.
+     */
+    override fun hashCode(): Int {
+        // Using two prime numbers (17, 31) here for hash code calculation in order to distribute hash codes uniformly and reduce collisions
+        var hash = 17
+        for (pixel in data) {
+            hash = hash * 31 + pixel
+        }
+        return hash
+    }
 }
