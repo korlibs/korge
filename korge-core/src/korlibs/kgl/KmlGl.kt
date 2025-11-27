@@ -161,6 +161,7 @@ open class KmlGl : Extra by Extra.Mixin(), AGFeatures {
     open fun vertexAttrib4f(index: Int, x: Float, y: Float, z: Float, w: Float): Unit = TODO()
     open fun vertexAttrib4fv(index: Int, v: Buffer): Unit = TODO()
     open fun vertexAttribPointer(index: Int, size: Int, type: Int, normalized: Boolean, stride: Int, pointer: Long): Unit = TODO()
+    open fun vertexAttribIPointer(index: Int, size: Int, type: Int, stride: Int, pointer: Long): Unit = TODO()
     open fun viewport(x: Int, y: Int, width: Int, height: Int): Unit = TODO()
     fun enableDisable(cap: Int, enable: Boolean): Boolean {
         if (enable) enable(cap) else disable(cap)

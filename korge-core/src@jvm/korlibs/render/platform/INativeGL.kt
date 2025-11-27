@@ -202,6 +202,7 @@ object DirectGL : INativeGL {
     external override fun glVertexAttrib4f(index: GLuint, x: GLfloat, y: GLfloat, z: GLfloat, w: GLfloat)
     external override fun glVertexAttrib4fv(index: GLuint, v: FloatPtr)
     external override fun glVertexAttribPointer(index: GLuint, size: GLint, type: GLenum, normalized: GLboolean, stride: GLsizei, pointer: IntSize)
+    external override fun glVertexAttribIPointer(index: GLuint, size: GLint, type: GLenum, stride: GLsizei, pointer: IntSize)
     external override fun glViewport(x: GLint, y: GLint, width: GLsizei, height: GLsizei)
     external override fun glDrawArraysInstanced(mode: GLenum, first: GLint, count: GLsizei, instancecount: GLsizei)
     external override fun glDrawElementsInstanced(mode: GLenum, count: GLsizei, type: GLenum, indices: IntSize, instancecount: GLsizei)
@@ -449,6 +450,7 @@ interface INativeGL {
     fun glVertexAttrib4f(index: GLuint, x: GLfloat, y: GLfloat, z: GLfloat, w: GLfloat)
     fun glVertexAttrib4fv(index: GLuint, v: FloatPtr)
     fun glVertexAttribPointer(index: GLuint, size: GLint, type: GLenum, normalized: GLboolean, stride: GLsizei, pointer: IntSize)
+    fun glVertexAttribIPointer(index: GLuint, size: GLint, type: GLenum, stride: GLsizei, pointer: IntSize)
     fun glViewport(x: GLint, y: GLint, width: GLsizei, height: GLsizei)
 
     fun glDrawArraysInstanced(mode: GLenum, first: GLint, count: GLsizei, instancecount: GLsizei): Unit
