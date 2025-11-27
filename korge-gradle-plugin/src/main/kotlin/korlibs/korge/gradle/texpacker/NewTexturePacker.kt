@@ -144,6 +144,7 @@ object NewTexturePacker {
             // No duplicate removal, use all images
             for ((fileName, _) in images) {
                 val file = if (trimFileName) File(fileName.nameWithoutExtension) else fileName
+            for ((file, _) in images) {
                 tileMapping[file] = file
             }
             images
