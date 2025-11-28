@@ -117,7 +117,7 @@ object NewTexturePacker {
         enableTrimming: Boolean,
         padding: Int,
         trimFileName: Boolean,
-        removeDuplicates: Boolean = false
+        removeDuplicates: Boolean
     ): List<AtlasInfo> {
         val packer = NewBinPacker.MaxRectsPacker(4096, 4096, padding * 2, NewBinPacker.IOption(
             smart = true,
@@ -166,6 +166,7 @@ object NewTexturePacker {
 
         // Building info which includes mapping  duplicates
         val outAtlases = arrayListOf<AtlasInfo>()
+        // TODO for loop needs to go over tileMapping to map possible duplicate files to the same image area in the atlas
         for (bin in packer.bins) {
             val out = SimpleBitmap(bin.width, bin.height)
             val frames = linkedMapOf<String, Any?>()
