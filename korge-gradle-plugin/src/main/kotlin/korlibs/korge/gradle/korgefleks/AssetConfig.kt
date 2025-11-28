@@ -175,7 +175,7 @@ class AssetsConfig(
 
     internal fun buildAtlases(spriteAtlasName: String, tilesetAtlasName: String) {
         // First build tiles atlas
-        if (exportTilesDir.listFiles().isNotEmpty()) {
+        if (exportTilesDir.listFiles() != null && exportTilesDir.listFiles().isNotEmpty()) {
             val atlasInfoList = NewTexturePacker.packImages(exportTilesDir,
                 enableRotation = false,
                 enableTrimming = true,
@@ -190,7 +190,7 @@ class AssetsConfig(
             }
         }
         // Then build tilesets atlas
-        if (exportTilesetDir.listFiles().isNotEmpty()) {
+        if (exportTilesetDir.listFiles() != null && exportTilesetDir.listFiles().isNotEmpty()) {
             val atlasInfoList = NewTexturePacker.packTilesets(exportTilesetDir)
             atlasInfoList.forEachIndexed { idx, atlasInfo ->
                 val atlasOutputFile = gameResourcesDir.resolve("${tilesetAtlasName}_${idx}.atlas.png")
