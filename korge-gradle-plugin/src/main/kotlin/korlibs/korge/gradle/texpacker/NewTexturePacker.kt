@@ -164,6 +164,7 @@ object NewTexturePacker {
 
         // Building atlas info which includes mapping duplicates
         val outAtlases = arrayListOf<AtlasInfo>()
+        // TODO for loop needs to go over tileMapping to map possible duplicate files to the same image area in the atlas
         for (bin in packer.bins) {
             val out = SimpleBitmap(bin.width, bin.height)
             val frames = linkedMapOf<String, Any?>()
