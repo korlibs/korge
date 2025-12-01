@@ -76,9 +76,7 @@ object NewTexturePacker {
 //            println("Tileset: ${file}, images: $images")
         }
 
-        packImages(images, enableRotation = false, enableTrimming = false, padding = padding, trimFileName = true, removeDuplicates = true)
-
-        return listOf()
+        return packImages(images, enableRotation = false, enableTrimming = false, padding = padding, trimFileName = true, removeDuplicates = true)
     }
 
     /**
@@ -133,7 +131,8 @@ object NewTexturePacker {
         val mappedImages = if (removeDuplicates) {   // mappedImages will contain only unique images if removeDuplicates is true
             // Remove duplicate images
             val uniqueMap = linkedMapOf<Int, Pair<File, SimpleBitmap>>()
-            for ((file, image) in images) {
+            for ((fileName, image) in images) {
+                val file = if (trimFileName) File(fileName.nameWithoutExtension) else fileName
                 val hash = image.hashCode()
                 val existing = uniqueMap[hash]
                 if (existing == null) {
@@ -144,7 +143,8 @@ object NewTexturePacker {
             uniqueMap.values.toList()
         } else {
             // No duplicate removal, use all images
-            for ((file, _) in images) {
+            for ((fileName, _) in images) {
+                val file = if (trimFileName) File(fileName.nameWithoutExtension) else fileName
                 tileMapping[file] = file
             }
             images
@@ -164,7 +164,7 @@ object NewTexturePacker {
             ))
         })
 
-        // Building info which includes mapping  duplicates
+        // Building info which includes mapping duplicates
         val outAtlases = arrayListOf<AtlasInfo>()
         // TODO for loop needs to go over tileMapping to map possible duplicate files to the same image area in the atlas
         for (bin in packer.bins) {
@@ -173,31 +173,37 @@ object NewTexturePacker {
 
             for (rect in bin.rects) {
                 val info = rect.raw as Info
-                val fileName = info.file.name
-                //println("$rect :: info=$info")
+//                val fileName = info.file.name
+                // Check if this rect (image) is used by any duplicate files
+                val files = tileMapping.filterValues { it == info.file }.keys
+                for (file in files) {
 
-                val chunk = if (rect.rot) info.trimmedImage.flipY().rotate90() else info.trimmedImage
-                out.put(rect.x - padding, rect.y - padding, chunk.extrude(padding))
-                //out.put(rect.x, rect.y, chunk)
+                    val fileName = file.name
 
-                val obj = LinkedHashMap<String, Any?>()
+                    val chunk = if (rect.rot) info.trimmedImage.flipY().rotate90() else info.trimmedImage
+                    out.put(rect.x - padding, rect.y - padding, chunk.extrude(padding))
+                    //out.put(rect.x, rect.y, chunk)
 
-                fun Dimension.toObj(rot: Boolean): Map<String, Any?> {
-                    val w = if (!rot) width else height
-                    val h = if (!rot) height else width
-                    return mapOf("w" to w, "h" to h)
+                    val obj = LinkedHashMap<String, Any?>()
+
+                    fun Dimension.toObj(rot: Boolean): Map<String, Any?> {
+                        val w = if (!rot) width else height
+                        val h = if (!rot) height else width
+                        return mapOf("w" to w, "h" to h)
+                    }
+
+                    fun Rectangle.toObj(rot: Boolean): Map<String, Any?> {
+                        return mapOf("x" to x, "y" to y) + this.size.toObj(rot)
+                    }
+
+                    obj["frame"] = Rectangle(rect.x, rect.y, rect.width, rect.height).toObj(rect.rot)
+                    obj["rotated"] = rect.rot
+                    obj["trimmed"] = info.trimArea != info.fullArea
+                    obj["spriteSourceSize"] = info.trimArea.toObj(false)
+                    obj["sourceSize"] = info.fullArea.size.toObj(false)
+
+                    frames[fileName] = obj
                 }
-                fun Rectangle.toObj(rot: Boolean): Map<String, Any?> {
-                    return mapOf("x" to x, "y" to y) + this.size.toObj(rot)
-                }
-
-                obj["frame"] = Rectangle(rect.x, rect.y, rect.width, rect.height).toObj(rect.rot)
-                obj["rotated"] = rect.rot
-                obj["trimmed"] = info.trimArea != info.fullArea
-                obj["spriteSourceSize"] = info.trimArea.toObj(false)
-                obj["sourceSize"] = info.fullArea.size.toObj(false)
-
-                frames[fileName] = obj
             }
 
 
