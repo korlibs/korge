@@ -44,7 +44,7 @@ object NewTexturePacker {
      * Packs tilesets from the given folders into texture atlases.
      *
      * Each tileset image is split into individual tiles of the specified size.
-     * These tiles are then checked for duplicates and then packed into atlases.
+     * These tiles are checked for duplicates and then packed into atlases.
      *
      * @param folders The folders containing tilesets to be packed.
      * @param padding The padding to apply around each tile in the atlas.
@@ -56,7 +56,7 @@ object NewTexturePacker {
         padding: Int = 1,
         tileSize: Int = 16
     ): List<AtlasInfo> {
-        // Load all tilesets and creaet SimpleBitmap instances
+        // Load all tilesets and create SimpleBitmap instances
         val tilesets: List<Pair<File, SimpleBitmap>> = getAllFiles(*folders).mapNotNull {
             try {
                 it.relative to SimpleBitmap(it.file)
@@ -73,7 +73,6 @@ object NewTexturePacker {
                 throw IllegalArgumentException("Tileset image size must be multiple of tileSize ($tileSize): $file with size ${image.width}x${image.height}")
             }
             images += image.splitInListOfTiles(file.nameWithoutExtension, tileSize)
-//            println("Tileset: ${file}, images: $images")
         }
 
         return packImages(images, enableRotation = false, enableTrimming = false, padding = padding, trimFileName = true, removeDuplicates = true)
@@ -149,8 +148,6 @@ object NewTexturePacker {
             }
             images
         }
-//        println("duplicateFileMap: $tileMapping")
-//        println("Processed images: $mappedImages")
 
         // Add images to the packer (possibly without duplicates)
         packer.addArray(mappedImages.map { (file, image) ->
@@ -164,25 +161,22 @@ object NewTexturePacker {
             ))
         })
 
-        // Building info which includes mapping duplicates
+        // Building atlas info which includes mapping duplicates
         val outAtlases = arrayListOf<AtlasInfo>()
-        // TODO for loop needs to go over tileMapping to map possible duplicate files to the same image area in the atlas
         for (bin in packer.bins) {
             val out = SimpleBitmap(bin.width, bin.height)
             val frames = linkedMapOf<String, Any?>()
 
             for (rect in bin.rects) {
                 val info = rect.raw as Info
-//                val fileName = info.file.name
-                // Check if this rect (image) is used by any duplicate files
+
+                // Check if this rect (image) is used by any duplicate files - if so, map them all to the same rect area in the atlas
                 val files = tileMapping.filterValues { it == info.file }.keys
                 for (file in files) {
-
                     val fileName = file.name
 
                     val chunk = if (rect.rot) info.trimmedImage.flipY().rotate90() else info.trimmedImage
                     out.put(rect.x - padding, rect.y - padding, chunk.extrude(padding))
-                    //out.put(rect.x, rect.y, chunk)
 
                     val obj = LinkedHashMap<String, Any?>()
 
@@ -205,7 +199,6 @@ object NewTexturePacker {
                     frames[fileName] = obj
                 }
             }
-
 
             val atlasOut = linkedMapOf<String, Any?>(
                 "frames" to frames,
