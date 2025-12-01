@@ -1,10 +1,10 @@
-package korlibs.korge.gradle.typedresources
+package korlibs.korge.gradle.util
 
-import korlibs.korge.gradle.util.*
+import korlibs.korge.gradle.typedresources.getResourceBytes
 import org.junit.Assert
 import org.junit.Test
 
-class AseSpriteTest {
+class AseInfoTest {
     @Test
     fun test() {
         val info = ASEInfo.Companion.getAseInfo(getResourceBytes("sprites.ase"))
