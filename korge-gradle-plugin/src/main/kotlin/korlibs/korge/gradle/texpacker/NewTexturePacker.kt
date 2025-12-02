@@ -17,12 +17,29 @@ object NewTexturePacker {
         val image: SimpleBitmap,
         val info: Map<String, Any?>
     ) {
+        /**
+         * Writes the atlas info as json string to given output file.
+         * Write atlas image as PNG to the specified output file + png file extension.
+         *
+         * @param output The output file for the atlas info JSON.
+         * @return The output file where the atlas PNG image was written.
+         */
         fun write(output: File): File {
             val imageOut = File(output.parentFile, output.nameWithoutExtension + ".png")
             (info["meta"] as MutableMap<String, Any?>)["image"] = imageOut.name
             output.writeText(jsonStringOf(info))
             image.writeTo(imageOut)
             return imageOut
+        }
+
+        /**
+         * Writes only the atlas image as PNG to the specified output file + png file extension.
+         *
+         * @param output The output file for the atlas PNG image.
+         */
+        fun writeImage(output: File) {
+            val imageOut = File(output.parentFile, output.nameWithoutExtension + ".png")
+            image.writeTo(imageOut)
         }
     }
 
@@ -108,7 +125,7 @@ object NewTexturePacker {
         return packImages(images, enableRotation, enableTrimming, padding, trimFileName, removeDuplicates)
     }
 
-    private fun packImages(
+    internal fun packImages(
         images: List<Pair<File, SimpleBitmap>>,
         enableRotation: Boolean,
         enableTrimming: Boolean,
