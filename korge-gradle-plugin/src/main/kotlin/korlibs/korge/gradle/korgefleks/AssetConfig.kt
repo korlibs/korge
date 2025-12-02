@@ -5,9 +5,18 @@ import korlibs.korge.gradle.util.ASEInfo
 import korlibs.korge.gradle.util.LocalSFile
 import korlibs.korge.gradle.util.executeSystemCommand
 import org.gradle.api.GradleException
+import java.awt.Rectangle
 import java.io.File
 
 
+/**
+ * Configuration for managing assets in a KorgeFleks project.
+ *
+ * @param asepriteExe The path to the Aseprite executable.
+ * @param projectDir The root directory of the project.
+ * @param assetPath The relative path to the directory containing asset files.
+ * @param resourcePath The relative path to the directory for game resources.
+ */
 class AssetsConfig(
     private val asepriteExe: String,
     projectDir: File,
@@ -33,6 +42,36 @@ class AssetsConfig(
 //        exportTilesetDir.mkdirs()
     }
 
+    data class AssetInfo(
+        val images: MutableMap<String, MutableList<AssetInfoImageFrames>> = mutableMapOf(),
+        val ninePatches: MutableMap<String, MutableList<AssetInfoNinePatch>> = mutableMapOf(),
+        val pixelFonts: MutableMap<String, MutableList<AssetInfoPixelFonts>> = mutableMapOf()
+    ) {
+        data class AssetInfoImageFrames(
+            val frames: MutableList<ImageFrame> = mutableListOf(),
+            val width: Int,  // virtual size of the sprite - can be different from frame.width
+            val height: Int  // and frame.height if cropped)
+        ) {
+            data class ImageFrame(
+                val frame: Rectangle,
+                val targetX: Int = 0,  // offset from the top-left corner of the original sprite if cropped
+                val targetY: Int = 0,
+                // Duration in seconds will be set later after all frames have been loaded from texture atlas
+                var duration: Float = 0f
+            )
+        }
+
+        data class AssetInfoNinePatch(
+            val frame: Rectangle  // not cropped
+        )
+
+        data class AssetInfoPixelFonts(
+            val frame: Rectangle  // not cropped
+        )
+    }
+
+    val assetInfoList = AssetInfo()
+
     /** Get the Aseprite File object from the asset path
      */
     private fun getAseFile(filename: String): File {
@@ -41,34 +80,43 @@ class AssetsConfig(
         return aseFile
     }
 
-    /** Check that the specified layers and tags exist in the Aseprite file
+    /**
+     * Check that the specified layers and tags exist in the Aseprite file.
+     *
+     * @param aseInfo The ASEInfo object containing layers and tags information.
+     * @param aseFileName The name of the Aseprite file being checked (Used for error output).
+     * @param layers The list of layer names to check.
+     * @param tags The list of tag names to check.
+     * @throws GradleException if any specified layer or tag is not found.
      */
-    private fun checkLayersTagsAvailable(aseFile: File, layers: List<String>, tags: List<String>) {
-        val aseInfo = ASEInfo.getAseInfo(LocalSFile(aseFile))
+    private fun checkLayersTagsAvailable(aseInfo: ASEInfo, aseFileName: String, layers: List<String>, tags: List<String>) {
         val availableLayers = aseInfo.layers.map { it.layerName }
         val availableTags = aseInfo.tags.map { it.tagName }
         for (layer in layers) {
             if (layer !in availableLayers) {
-                throw GradleException("Layer '${layer}' not found in Aseprite file '${aseFile.name}'! " +
+                throw GradleException("Layer '${layer}' not found in Aseprite file '$aseFileName'! " +
                     "Available layers: ${availableLayers.joinToString(", ")}")
             }
         }
         for (tag in tags) {
             if (tag !in availableTags) {
-                throw GradleException("Tag '${tag}' not found in Aseprite file '${aseFile.name}'! " +
+                throw GradleException("Tag '${tag}' not found in Aseprite file '$aseFileName'! " +
                     "Available tags: ${availableTags.joinToString(", ")}")
             }
         }
     }
 
-    /** Export specific layers and tags from Aseprite file
+    /**
+     * Export specific layers and tags from Aseprite file as independent png images.
+     * Adds exported images to internal asset info list.
      */
     fun addImageAse(filename: String, layers: List<String>, tags: List<String>, output: String) {
         if (output.isBlank()) throw GradleException("No output file specified for Aseprite export of '${filename}'!")
         println("Export image file: '${filename}', layers: '${layers}', tags: '${tags}', output: '${output}'")
 
         val aseFile = getAseFile(filename)
-        checkLayersTagsAvailable(aseFile, layers, tags)
+        val aseInfo = ASEInfo.getAseInfo(LocalSFile(aseFile))
+        checkLayersTagsAvailable(aseInfo, aseFile.name, layers, tags)
 
         if (layers.isNotEmpty()) {
             val useLayerName = layers.size != 1  // Only use layer name in output if multiple layers are specified
@@ -78,50 +126,53 @@ class AssetsConfig(
                     val useTagName = tags.size != 1  // Only use tag name in output if multiple tags are specified
 
                     for (tag in tags) {
+                        val imageName = if (useLayerName && useTagName) "${imagePrefix}${output}_${layer}_${tag}"
+                        else if (useLayerName) "${imagePrefix}${output}_${layer}"
+                        else if (useTagName) "${imagePrefix}${output}_${tag}"
+                        else "${imagePrefix}${output}"
                         val cmd = arrayOf(asepriteExe, "-b",
                             "--layer", layer,
                             "--tag", tag,
-                            aseFile.absolutePath, "--save-as", exportTilesDir.resolve(
-                                if (useLayerName && useTagName) "${imagePrefix}${output}_${layer}_${tag}_{frame0}.png"
-                                else if (useLayerName) "${imagePrefix}${output}_${layer}_{frame0}.png"
-                                else if (useTagName) "${imagePrefix}${output}_${tag}_{frame0}.png"
-                                else "${imagePrefix}${output}_{frame0}.png").absolutePath)
+                            aseFile.absolutePath, "--save-as", exportTilesDir.resolve("${imageName}_{frame0}.png").absolutePath)
 
                         //println("Executing command: ${cmd.joinToString(" ")}")
                         executeSystemCommand(cmd)
+                        assetInfoList.images[imageName] = mutableListOf()
                     }
                 } else {
+                    val imageName = if (useLayerName) "${imagePrefix}${output}_${layer}" else "${imagePrefix}${output}"
                     val cmd = arrayOf(asepriteExe, "-b",
                         "--layer", layer,
-                        aseFile.absolutePath, "--save-as", exportTilesDir.resolve(
-                            if (useLayerName) "${imagePrefix}${output}_${layer}_{frame0}.png"
-                            else "${imagePrefix}${output}_{frame0}.png").absolutePath)
+                        aseFile.absolutePath, "--save-as", exportTilesDir.resolve("${imageName}_{frame0}.png").absolutePath)
 
                     //println("Executing command: ${cmd.joinToString(" ")}")
                     executeSystemCommand(cmd)
+                    assetInfoList.images[imageName] = mutableListOf()
                 }
+
             }
         } else {
             if (tags.isNotEmpty()) {
                 val useTagName = tags.size != 1  // Only use tag name in output if multiple tags are specified
 
                 for (tag in tags) {
+                    val imageName = if (useTagName) "${imagePrefix}${output}_${tag}" else "${imagePrefix}${output}"
                     val cmd = arrayOf(asepriteExe, "-b",
                         "--tag", tag,
-                        aseFile.absolutePath, "--save-as", exportTilesDir.resolve(
-                            if (useTagName) "${imagePrefix}${output}_${tag}_{frame0}.png"
-                            else "${imagePrefix}${output}_{frame0}.png").absolutePath)
+                        aseFile.absolutePath, "--save-as", exportTilesDir.resolve("${imageName}_{frame0}.png").absolutePath)
 
                     //println("Executing command: ${cmd.joinToString(" ")}")
                     executeSystemCommand(cmd)
+                    assetInfoList.images[imageName] = mutableListOf()
                 }
             } else {
+                val imageName = "${imagePrefix}${output}"
                 val cmd = arrayOf(asepriteExe, "-b",
-                    aseFile.absolutePath, "--save-as", exportTilesDir.resolve(
-                        "${imagePrefix}${output}_{frame0}.png").absolutePath)
+                    aseFile.absolutePath, "--save-as", exportTilesDir.resolve("${imageName}_{frame0}.png").absolutePath)
 
                 //println("Executing command: ${cmd.joinToString(" ")}")
                 executeSystemCommand(cmd)
+                assetInfoList.images[imageName] = mutableListOf()
             }
         }
     }
@@ -183,8 +234,8 @@ class AssetsConfig(
                 trimFileName = true
             )
             atlasInfoList.forEachIndexed { idx, atlasInfo ->
-                val atlasOutputFile = gameResourcesDir.resolve("${spriteAtlasName}_${idx}.atlas.png")
-                atlasInfo.write(atlasOutputFile)
+                val atlasOutputFile = gameResourcesDir.resolve("${spriteAtlasName}_${idx}.atlas")
+                atlasInfo.writeImage(atlasOutputFile)
 
 //                println("Sprite atlas $idx: $atlasInfo")
             }
@@ -194,7 +245,7 @@ class AssetsConfig(
             val atlasInfoList = NewTexturePacker.packTilesets(exportTilesetDir)
             atlasInfoList.forEachIndexed { idx, atlasInfo ->
                 val atlasOutputFile = gameResourcesDir.resolve("${tilesetAtlasName}_${idx}.atlas.png")
-                atlasInfo.write(atlasOutputFile)
+                atlasInfo.writeImage(atlasOutputFile)
             }
         }
     }
