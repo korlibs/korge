@@ -6,13 +6,14 @@ import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.Task
 import java.io.File
+import javax.inject.Inject
 
 
 fun Project.korgeFleks(callback: KorgeFleksExtension.() -> Unit) = korgeFleks.apply(callback)
 val Project.korgeFleks: KorgeFleksExtension get() = extensionGetOrCreate("korgeFleks")
 
 open class KorgeFleksExtension(
-    val project: Project,
+    @Inject val project: Project,
 ) {
     private val assetGroup = "assets"
 
@@ -34,7 +35,7 @@ open class KorgeFleksExtension(
             }
         }
     }
-
+/*
     // TODO: Implement LDtk level parsing and loading
     fun loadLDtkLevel(name: String) =
         project.tasks.createThis<Task>(name) {
@@ -44,6 +45,6 @@ open class KorgeFleksExtension(
 //                KorgeFleksAssets.parseLDtkLevel()
             }
         }
-
+*/
 
 }

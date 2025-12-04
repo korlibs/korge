@@ -1,12 +1,14 @@
 package korlibs.korge.gradle.korgefleks
 
 import korlibs.korge.gradle.texpacker.NewTexturePacker
+import korlibs.korge.gradle.korgefleks.AssetInfo.*
 import korlibs.korge.gradle.util.ASEInfo
 import korlibs.korge.gradle.util.LocalSFile
 import korlibs.korge.gradle.util.executeSystemCommand
 import org.gradle.api.GradleException
 import java.awt.Rectangle
 import java.io.File
+import kotlin.collections.set
 
 
 /**
@@ -36,38 +38,10 @@ class AssetsConfig(
 
     init {
         // Make sure the export directories exist and that they are empty
-//        if (exportTilesDir.exists()) exportTilesDir.deleteRecursively()
-//        if (exportTilesetDir.exists()) exportTilesetDir.deleteRecursively()
-//        exportTilesDir.mkdirs()
-//        exportTilesetDir.mkdirs()
-    }
-
-    data class AssetInfo(
-        val images: MutableMap<String, MutableList<AssetInfoImageFrames>> = mutableMapOf(),
-        val ninePatches: MutableMap<String, MutableList<AssetInfoNinePatch>> = mutableMapOf(),
-        val pixelFonts: MutableMap<String, MutableList<AssetInfoPixelFonts>> = mutableMapOf()
-    ) {
-        data class AssetInfoImageFrames(
-            val frames: MutableList<ImageFrame> = mutableListOf(),
-            val width: Int,  // virtual size of the sprite - can be different from frame.width
-            val height: Int  // and frame.height if cropped)
-        ) {
-            data class ImageFrame(
-                val frame: Rectangle,
-                val targetX: Int = 0,  // offset from the top-left corner of the original sprite if cropped
-                val targetY: Int = 0,
-                // Duration in seconds will be set later after all frames have been loaded from texture atlas
-                var duration: Float = 0f
-            )
-        }
-
-        data class AssetInfoNinePatch(
-            val frame: Rectangle  // not cropped
-        )
-
-        data class AssetInfoPixelFonts(
-            val frame: Rectangle  // not cropped
-        )
+        if (exportTilesDir.exists()) exportTilesDir.deleteRecursively()
+        if (exportTilesetDir.exists()) exportTilesetDir.deleteRecursively()
+        exportTilesDir.mkdirs()
+        exportTilesetDir.mkdirs()
     }
 
     val assetInfoList = AssetInfo()
@@ -137,7 +111,7 @@ class AssetsConfig(
 
                         //println("Executing command: ${cmd.joinToString(" ")}")
                         executeSystemCommand(cmd)
-                        assetInfoList.images[imageName] = mutableListOf()
+                        assetInfoList.images[imageName] = ImageFrames()
                     }
                 } else {
                     val imageName = if (useLayerName) "${imagePrefix}${output}_${layer}" else "${imagePrefix}${output}"
@@ -147,7 +121,7 @@ class AssetsConfig(
 
                     //println("Executing command: ${cmd.joinToString(" ")}")
                     executeSystemCommand(cmd)
-                    assetInfoList.images[imageName] = mutableListOf()
+                    assetInfoList.images[imageName] = ImageFrames()
                 }
 
             }
@@ -163,7 +137,7 @@ class AssetsConfig(
 
                     //println("Executing command: ${cmd.joinToString(" ")}")
                     executeSystemCommand(cmd)
-                    assetInfoList.images[imageName] = mutableListOf()
+                    assetInfoList.images[imageName] = ImageFrames()
                 }
             } else {
                 val imageName = "${imagePrefix}${output}"
@@ -172,7 +146,7 @@ class AssetsConfig(
 
                 //println("Executing command: ${cmd.joinToString(" ")}")
                 executeSystemCommand(cmd)
-                assetInfoList.images[imageName] = mutableListOf()
+                assetInfoList.images[imageName] = ImageFrames()
             }
         }
     }
@@ -237,14 +211,49 @@ class AssetsConfig(
                 val atlasOutputFile = gameResourcesDir.resolve("${spriteAtlasName}_${idx}.atlas")
                 atlasInfo.writeImage(atlasOutputFile)
 
-//                println("Sprite atlas $idx: $atlasInfo")
+                val frames = atlasInfo.info["frames"] as Map<String, Any>
+                frames.forEach { frameName, frameEntry ->
+                    frameEntry as Map<String, Any>
+                    val frame = frameEntry["frame"] as Map<String, Int>
+                    val spriteSource = frameEntry["spriteSourceSize"] as Map<String, Int>
+                    val sourceSize = frameEntry["sourceSize"] as Map<String, Int>
+                    val duration = (frameEntry["duration"] as? Int)?.toFloat() ?: 0f
+
+                    // Split frameName into frameTag and index
+                    // Get the animation index number
+                    val regex = "_(\\d+)$".toRegex()
+                    val match = regex.find(frameName)
+                    val animIndex = match?.groupValues?.get(1)?.toInt()
+                        ?: error("BuildAtlas - Cannot get animation index of sprite '${frameName}'!")
+                    val frameTag = frameName.replace(regex, "")
+
+                    assetInfoList.images[frameTag]?.let { image ->
+                        while (animIndex >= image.frames.size) {
+                            image.frames.add(ImageFrame())
+                        }
+                        image.frames[animIndex] = ImageFrame(
+                            frame = Rectangle(
+                                frame["x"] ?: error("AssetConfig - frame x is null for sprite '${frameName}'!"),
+                                frame["y"] ?: error("AssetConfig - frame y is null for sprite '${frameName}'!"),
+                                frame["w"] ?: error("AssetConfig - frame w is null for sprite '${frameName}'!"),
+                                frame["h"] ?: error("AssetConfig - frame h is null for sprite '${frameName}'!")
+                            ),
+                            targetX = spriteSource["x"] ?: error("AssetConfig - spriteSource x is null for sprite '${frameName}'!"),
+                            targetY = spriteSource["y"] ?: error("AssetConfig - spriteSource y is null for sprite '${frameName}'!"),
+                            duration = duration
+                        )
+                        image.width = sourceSize["w"] ?: error("AssetConfig - sourceSize w is null for sprite '${frameName}'!")
+                        image.height = sourceSize["h"] ?: error("AssetConfig - sourceSize h is null for sprite '${frameName}'!")
+                    }
+                }
             }
         }
+
         // Then build tilesets atlas
         if (exportTilesetDir.listFiles() != null && exportTilesetDir.listFiles().isNotEmpty()) {
             val atlasInfoList = NewTexturePacker.packTilesets(exportTilesetDir)
             atlasInfoList.forEachIndexed { idx, atlasInfo ->
-                val atlasOutputFile = gameResourcesDir.resolve("${tilesetAtlasName}_${idx}.atlas.png")
+                val atlasOutputFile = gameResourcesDir.resolve("${tilesetAtlasName}_${idx}.atlas")
                 atlasInfo.writeImage(atlasOutputFile)
             }
         }
