@@ -4,6 +4,7 @@ data class ASEInfo(
     val slices: List<AseSlice> = emptyList(),
     val tags: List<AseTag> = emptyList(),
     val layers: List<AseLayer> = emptyList(),
+    val frameDurations: List<Int> = emptyList(),
 ) {
     data class AseSlice(
         val sliceName: String,
@@ -80,6 +81,7 @@ data class ASEInfo(
             val slices = arrayListOf<AseSlice>()
             val tags = arrayListOf<AseTag>()
             val layers = arrayListOf<AseLayer>()
+            val frameDurations = arrayListOf<Int>()
 
             val fileSize = s.readS32LE()
             if (s.length < fileSize) error("File too short s.length=${s.length} < fileSize=${fileSize}")
@@ -118,6 +120,7 @@ data class ASEInfo(
                 val frameDuration = fs.readU16LE()
                 fs.skip(2)
                 val numChunks = fs.readS32LE()
+                frameDurations += frameDuration
 
                 //println("   - $numChunks")
 
@@ -157,6 +160,26 @@ data class ASEInfo(
                             val sliceName = cs.readAseString()
                             val hasNinePatch = sliceFlags.hasBitSet(0)
                             val hasPivotInfo = sliceFlags.hasBitSet(1)
+
+                            // TODO read 9-patch and pivot info
+                            for (numsliceKey in 0 until numSliceKeys) {
+                                cs.readS32LE() // frameNumber
+                                cs.readU32LE() // x
+                                cs.readU32LE() // y
+                                cs.readS32LE() // width
+                                cs.readS32LE() // height
+                                if (hasNinePatch) {
+                                    cs.readU32LE() // centerX
+                                    cs.readU32LE() // centerY
+                                    cs.readS32LE() // centerWidth
+                                    cs.readS32LE() // centerHeight
+                                }
+                                if (hasPivotInfo) {
+                                    cs.readU32LE() // pivotX
+                                    cs.readU32LE() // pivotY
+                                }
+                            }
+
                             val aslice = AseSlice(sliceName, hasNinePatch, hasPivotInfo)
                             slices += aslice
                         }
@@ -189,7 +212,8 @@ data class ASEInfo(
             return ASEInfo(
                 slices = slices,
                 tags = tags,
-                layers = layers
+                layers = layers,
+                frameDurations = frameDurations
             )
         }
 
