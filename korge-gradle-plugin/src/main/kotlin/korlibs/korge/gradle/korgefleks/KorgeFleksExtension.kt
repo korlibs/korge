@@ -18,7 +18,7 @@ open class KorgeFleksExtension(
     private val assetGroup = "assets"
 
     var asepriteExe: String = ""
-    var spriteAtlasName: String = "sprite"
+    var textureAtlasName: String = "texture"
     var tilesetAtlasName: String = "tileset"
 
     fun commonAssets(path: String, callback: AssetsConfig.() -> Unit) {
@@ -31,7 +31,7 @@ open class KorgeFleksExtension(
             group = assetGroup
             doLast {
                 commonAssetsConfig.apply(callback)
-                commonAssetsConfig.buildAtlases(spriteAtlasName, tilesetAtlasName)
+                commonAssetsConfig.buildAtlases(textureAtlasName, tilesetAtlasName)
             }
         }
     }

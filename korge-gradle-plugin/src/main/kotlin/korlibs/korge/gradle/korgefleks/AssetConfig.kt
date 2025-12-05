@@ -92,6 +92,8 @@ class AssetsConfig(
         val aseInfo = ASEInfo.getAseInfo(LocalSFile(aseFile))
         checkLayersTagsAvailable(aseInfo, aseFile.name, layers, tags)
 
+        println(aseInfo)
+
         if (layers.isNotEmpty()) {
             val useLayerName = layers.size != 1  // Only use layer name in output if multiple layers are specified
 
@@ -198,7 +200,12 @@ class AssetsConfig(
         executeSystemCommand(cmd)
     }
 
-    internal fun buildAtlases(spriteAtlasName: String, tilesetAtlasName: String) {
+    internal fun buildAtlases(textureAtlasName: String, tilesetAtlasName: String) {
+        val assetInfoYaml = StringBuilder()
+        val assetInfoVersion = 1
+        val assetInfoBuild = 1
+        assetInfoYaml.append("info: { v: ${assetInfoVersion}, b: $assetInfoBuild }\n")
+
         // First build tiles atlas
         if (exportTilesDir.listFiles() != null && exportTilesDir.listFiles().isNotEmpty()) {
             val atlasInfoList = NewTexturePacker.packImages(exportTilesDir,
@@ -207,30 +214,33 @@ class AssetsConfig(
                 padding = 1,
                 trimFileName = true
             )
+            assetInfoYaml.append("textures:\n")
+
+            // Go through each generated atlas entry and map frames to asset info list
             atlasInfoList.forEachIndexed { idx, atlasInfo ->
-                val atlasOutputFile = gameResourcesDir.resolve("${spriteAtlasName}_${idx}.atlas")
+                val atlasOutputFile = gameResourcesDir.resolve("${textureAtlasName}_${idx}.atlas.png")
                 atlasInfo.writeImage(atlasOutputFile)
+                assetInfoYaml.append("  - ${atlasOutputFile.name}\n")
 
                 val frames = atlasInfo.info["frames"] as Map<String, Any>
-                frames.forEach { frameName, frameEntry ->
+                frames.forEach { (frameName, frameEntry) ->
                     frameEntry as Map<String, Any>
-                    val frame = frameEntry["frame"] as Map<String, Int>
-                    val spriteSource = frameEntry["spriteSourceSize"] as Map<String, Int>
-                    val sourceSize = frameEntry["sourceSize"] as Map<String, Int>
-                    val duration = (frameEntry["duration"] as? Int)?.toFloat() ?: 0f
-
-                    // Split frameName into frameTag and index
-                    // Get the animation index number
+                    // Split frameName into frameTag and animation index number
                     val regex = "_(\\d+)$".toRegex()
-                    val match = regex.find(frameName)
-                    val animIndex = match?.groupValues?.get(1)?.toInt()
-                        ?: error("BuildAtlas - Cannot get animation index of sprite '${frameName}'!")
                     val frameTag = frameName.replace(regex, "")
+                    val match = regex.find(frameName)
+                    val animIndex = match?.groupValues?.get(1)?.toInt() ?: 0
 
                     assetInfoList.images[frameTag]?.let { image ->
+                        // Ensure the frames list is large enough and set the frame at the correct index
                         while (animIndex >= image.frames.size) {
                             image.frames.add(ImageFrame())
                         }
+
+                        val frame = frameEntry["frame"] as Map<String, Int>
+                        val spriteSource = frameEntry["spriteSourceSize"] as Map<String, Int>
+                        val sourceSize = frameEntry["sourceSize"] as Map<String, Int>
+                        val duration = (frameEntry["duration"] as? Int)?.toFloat() ?: 0f
                         image.frames[animIndex] = ImageFrame(
                             frame = Rectangle(
                                 frame["x"] ?: error("AssetConfig - frame x is null for sprite '${frameName}'!"),
@@ -247,6 +257,28 @@ class AssetsConfig(
                     }
                 }
             }
+
+            // Now append the asset info sections for images, nine-patches, pixel fonts ,etc.
+            assetInfoYaml.append("images:\n")
+            assetInfoList.images.forEach { (imageName, imageFrames) ->
+                assetInfoYaml.append("  $imageName:\n")
+                assetInfoYaml.append("    w: ${imageFrames.width}\n")
+                assetInfoYaml.append("    h: ${imageFrames.height}\n")
+                assetInfoYaml.append("    frames:\n")
+                imageFrames.frames.forEach { frame ->
+                    assetInfoYaml.append("      - frame: { x: ${frame.frame.x}, y: ${frame.frame.y}, w: ${frame.frame.width}, h: ${frame.frame.height} }\n")
+                    assetInfoYaml.append("        x: ${frame.targetX}\n")
+                    assetInfoYaml.append("        y: ${frame.targetY}\n")
+                    assetInfoYaml.append("        duration: ${frame.duration}\n")
+                }
+            }
+
+            // Finally, write out the asset info yaml file
+            val assetInfoYamlFile = gameResourcesDir.resolve("${textureAtlasName}.atlas.yml")
+            assetInfoYamlFile.parentFile?.let { parent ->
+                if (!parent.exists() && !parent.mkdirs()) error("Failed to create directory: ${parent.path}")
+                assetInfoYamlFile.writeText(assetInfoYaml.toString())
+            }
         }
 
         // Then build tilesets atlas
@@ -256,6 +288,9 @@ class AssetsConfig(
                 val atlasOutputFile = gameResourcesDir.resolve("${tilesetAtlasName}_${idx}.atlas")
                 atlasInfo.writeImage(atlasOutputFile)
             }
+
+            assetInfoYaml.append("tilesets:\n")
+
         }
     }
 }

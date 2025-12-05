@@ -38,8 +38,7 @@ object NewTexturePacker {
          * @param output The output file for the atlas PNG image.
          */
         fun writeImage(output: File) {
-            val imageOut = File(output.parentFile, output.nameWithoutExtension + ".png")
-            image.writeTo(imageOut)
+            image.writeTo(output)
         }
     }
 
