@@ -33,8 +33,9 @@ class AssetsConfig(
     // Directory where game resources are located
     private val gameResourcesDir = projectDir.resolve("src/commonMain/resources/${resourcePath}")
 
-    private val imagePrefix = "img_"
-    private val ninePatchPrefix = "npt_"
+    // Enable prefixes for exported images if needed
+    private val imagePrefix = ""  // "img_"
+    private val ninePatchPrefix = ""  // "npt_"
 
     init {
         // Make sure the export directories exist and that they are empty
@@ -93,6 +94,7 @@ class AssetsConfig(
         checkLayersTagsAvailable(aseInfo, aseFile.name, layers, tags)
 
         println(aseInfo)
+        val defaultAnimLength = aseInfo.frames.size
 
         if (layers.isNotEmpty()) {
             val useLayerName = layers.size != 1  // Only use layer name in output if multiple layers are specified
@@ -113,7 +115,9 @@ class AssetsConfig(
 
                         //println("Executing command: ${cmd.joinToString(" ")}")
                         executeSystemCommand(cmd)
-                        assetInfoList.images[imageName] = ImageFrames()
+
+                        val animLength: Int = aseInfo.tagsByName[tag]!!.toFrame - aseInfo.tagsByName[tag]!!.fromFrame + 1
+                        assetInfoList.images[imageName] = ImageFrames(frames = MutableList(animLength) { ImageFrame() } )
                     }
                 } else {
                     val imageName = if (useLayerName) "${imagePrefix}${output}_${layer}" else "${imagePrefix}${output}"
@@ -123,7 +127,8 @@ class AssetsConfig(
 
                     //println("Executing command: ${cmd.joinToString(" ")}")
                     executeSystemCommand(cmd)
-                    assetInfoList.images[imageName] = ImageFrames()
+
+                    assetInfoList.images[imageName] = ImageFrames(frames = MutableList(defaultAnimLength) { ImageFrame() } )
                 }
 
             }
@@ -139,7 +144,9 @@ class AssetsConfig(
 
                     //println("Executing command: ${cmd.joinToString(" ")}")
                     executeSystemCommand(cmd)
-                    assetInfoList.images[imageName] = ImageFrames()
+
+                    val animLength: Int = aseInfo.tagsByName[tag]!!.toFrame - aseInfo.tagsByName[tag]!!.fromFrame + 1
+                    assetInfoList.images[imageName] = ImageFrames(frames = MutableList(animLength) { ImageFrame() } )
                 }
             } else {
                 val imageName = "${imagePrefix}${output}"
@@ -148,7 +155,8 @@ class AssetsConfig(
 
                 //println("Executing command: ${cmd.joinToString(" ")}")
                 executeSystemCommand(cmd)
-                assetInfoList.images[imageName] = ImageFrames()
+
+                assetInfoList.images[imageName] = ImageFrames(frames = MutableList(defaultAnimLength) { ImageFrame() } )
             }
         }
     }
@@ -212,7 +220,8 @@ class AssetsConfig(
                 enableRotation = false,
                 enableTrimming = true,
                 padding = 1,
-                trimFileName = true
+                trimFileName = true,
+                removeDuplicates = true
             )
             assetInfoYaml.append("textures:\n")
 
@@ -233,9 +242,7 @@ class AssetsConfig(
 
                     assetInfoList.images[frameTag]?.let { image ->
                         // Ensure the frames list is large enough and set the frame at the correct index
-                        while (animIndex >= image.frames.size) {
-                            image.frames.add(ImageFrame())
-                        }
+                        if (animIndex >= image.frames.size) error("AssetConfig - Animation index ${animIndex} out of bounds for sprite '${frameTag}' with ${image.frames.size} frames!")
 
                         val frame = frameEntry["frame"] as Map<String, Int>
                         val spriteSource = frameEntry["spriteSourceSize"] as Map<String, Int>
