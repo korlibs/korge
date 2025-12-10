@@ -1,7 +1,5 @@
 package korlibs.korge.gradle.korgefleks
 
-import java.awt.Rectangle
-
 
 data class AssetInfo(
     val images: MutableMap<String, ImageFrames> = mutableMapOf(),
@@ -15,17 +13,25 @@ data class AssetInfo(
     )
 
     data class ImageFrame(
-        var frame: Rectangle = Rectangle(0, 0, 0, 0),
+        var frame: Frame = Frame( 0, 0, 0, 0, 0),
         var targetX: Int = 0,  // offset from the top-left corner of the original sprite if cropped
         var targetY: Int = 0,
         var duration: Float = 0f  // frame duration in milliseconds
     )
 
     data class AssetInfoNinePatch(
-        val frame: Rectangle  // not cropped
+        val frame: Frame  // not cropped
     )
 
     data class AssetInfoPixelFonts(
-        val frame: Rectangle  // not cropped
+        val frame: Frame  // not cropped
+    )
+
+    data class Frame(
+        val index: Int,
+        val x: Int,
+        val y: Int,
+        val width: Int,
+        val height: Int
     )
 }

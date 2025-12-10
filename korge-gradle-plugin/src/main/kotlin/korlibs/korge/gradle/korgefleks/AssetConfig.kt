@@ -249,7 +249,8 @@ class AssetsConfig(
                         val sourceSize = frameEntry["sourceSize"] as Map<String, Int>
                         val duration = (frameEntry["duration"] as? Int)?.toFloat() ?: 0f
                         image.frames[animIndex] = ImageFrame(
-                            frame = Rectangle(
+                            frame = Frame(
+                                idx,
                                 frame["x"] ?: error("AssetConfig - frame x is null for sprite '${frameName}'!"),
                                 frame["y"] ?: error("AssetConfig - frame y is null for sprite '${frameName}'!"),
                                 frame["w"] ?: error("AssetConfig - frame w is null for sprite '${frameName}'!"),
