@@ -92,8 +92,6 @@ class AssetsConfig(
         val aseFile = getAseFile(filename)
         val aseInfo = ASEInfo.getAseInfo(LocalSFile(aseFile))
         checkLayersTagsAvailable(aseInfo, aseFile.name, layers, tags)
-
-        println(aseInfo)
         val defaultAnimLength = aseInfo.frames.size
 
         if (layers.isNotEmpty()) {
@@ -274,7 +272,7 @@ class AssetsConfig(
                 assetInfoYaml.append("    h: ${imageFrames.height}\n")
                 assetInfoYaml.append("    frames:\n")
                 imageFrames.frames.forEach { frame ->
-                    assetInfoYaml.append("      - frame: { x: ${frame.frame.x}, y: ${frame.frame.y}, w: ${frame.frame.width}, h: ${frame.frame.height} }\n")
+                    assetInfoYaml.append("      - frame: { i: ${frame.frame.index}, x: ${frame.frame.x}, y: ${frame.frame.y}, w: ${frame.frame.width}, h: ${frame.frame.height} }\n")
                     assetInfoYaml.append("        x: ${frame.targetX}\n")
                     assetInfoYaml.append("        y: ${frame.targetY}\n")
                     assetInfoYaml.append("        duration: ${frame.duration}\n")
