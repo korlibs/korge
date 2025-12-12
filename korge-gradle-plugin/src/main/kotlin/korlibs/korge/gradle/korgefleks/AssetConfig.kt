@@ -134,19 +134,18 @@ class AssetsConfig(
                         val frame = frameEntry["frame"] as Map<String, Int>
                         val spriteSource = frameEntry["spriteSourceSize"] as Map<String, Int>
                         val sourceSize = frameEntry["sourceSize"] as Map<String, Int>
-                        val duration = (frameEntry["duration"] as? Int)?.toFloat() ?: 0f
-                        image.frames[animIndex] = ImageFrame(
-                            frame = Frame(
+                        val imageFrame = image.frames[animIndex]
+                        imageFrame.frame = Frame(
                                 idx,
                                 frame["x"] ?: error("AssetConfig - frame x is null for sprite '${frameName}'!"),
                                 frame["y"] ?: error("AssetConfig - frame y is null for sprite '${frameName}'!"),
                                 frame["w"] ?: error("AssetConfig - frame w is null for sprite '${frameName}'!"),
                                 frame["h"] ?: error("AssetConfig - frame h is null for sprite '${frameName}'!")
-                            ),
-                            targetX = spriteSource["x"] ?: error("AssetConfig - spriteSource x is null for sprite '${frameName}'!"),
-                            targetY = spriteSource["y"] ?: error("AssetConfig - spriteSource y is null for sprite '${frameName}'!"),
-                            duration = duration
-                        )
+                            )
+                        imageFrame.targetX = spriteSource["x"] ?: error("AssetConfig - spriteSource x is null for sprite '${frameName}'!")
+                        imageFrame.targetY = spriteSource["y"] ?: error("AssetConfig - spriteSource y is null for sprite '${frameName}'!")
+                        // Do not set duration here - it is set when loading from Aseprite
+
                         image.width = sourceSize["w"] ?: error("AssetConfig - sourceSize w is null for sprite '${frameName}'!")
                         image.height = sourceSize["h"] ?: error("AssetConfig - sourceSize h is null for sprite '${frameName}'!")
                     }

@@ -16,7 +16,7 @@ data class AssetInfo(
         var frame: Frame = Frame( 0, 0, 0, 0, 0),
         var targetX: Int = 0,  // offset from the top-left corner of the original sprite if cropped
         var targetY: Int = 0,
-        var duration: Float = 0f  // frame duration in milliseconds
+        var duration: Int = 0  // frame duration in milliseconds
     )
 
     data class AssetInfoNinePatch(

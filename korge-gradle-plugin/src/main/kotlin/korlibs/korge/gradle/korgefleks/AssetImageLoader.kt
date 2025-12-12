@@ -155,7 +155,7 @@ class AssetImageLoader(
 
         // Now set the frame durations based on the Aseprite info
         for (animIndex in animStart until animStart + animLength) {
-            val frameDuration = aseInfo.frames[animIndex].duration.toFloat()
+            val frameDuration = aseInfo.frames[animIndex].duration
             assetInfoList.images[imageName]?.frames?.get(animIndex - animStart)?.duration = frameDuration
         }
     }
