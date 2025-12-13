@@ -1,5 +1,6 @@
 package korlibs.korge.gradle.korgefleks
 
+import com.android.build.gradle.internal.cxx.json.jsonStringOf
 import korlibs.korge.gradle.texpacker.NewTexturePacker
 import korlibs.korge.gradle.korgefleks.AssetInfo.*
 import java.io.File
@@ -19,7 +20,8 @@ class AssetsConfig(
     private val asepriteExe: String,
     projectDir: File,
     assetPath: String,
-    resourcePath: String
+    resourcePath: String,
+    private val simplifyJson: Boolean
 ) {
     // Directory where Aseprite files are located
     private val assetDir = projectDir.resolve(assetPath)
@@ -37,14 +39,12 @@ class AssetsConfig(
         exportTilesetDir.mkdirs()
     }
 
-    private val assetInfoList = AssetInfo()
+    private val assetInfoList = linkedMapOf<String, Any>()
 
     private val assetImageLoader = AssetImageLoader(
         asepriteExe,
         assetDir,
         exportTilesDir,
-        exportTilesetDir,
-        gameResourcesDir,
         assetInfoList
     )
 
@@ -95,28 +95,37 @@ class AssetsConfig(
     fun addNinePatchImageAse(filename: String, output: String) {
     }
 
-    internal fun buildAtlases(textureAtlasName: String, tilesetAtlasName: String) {
-        val assetInfoYaml = StringBuilder()
+    internal fun buildAtlases(
+        textureAtlasName: String,
+        tilesetAtlasName: String,
+        textureAtlasWidth: Int,
+        textureAtlasHeight: Int
+    ) {
         val assetInfoVersion = 1
         val assetInfoBuild = 1
-        assetInfoYaml.append("info: { v: ${assetInfoVersion}, b: $assetInfoBuild }\n")
+        assetInfoList["info"] = arrayOf(assetInfoVersion, assetInfoBuild)
 
-        // First build tiles atlas
         if (exportTilesDir.listFiles() != null && exportTilesDir.listFiles().isNotEmpty()) {
+            // First build texture atlas
             val atlasInfoList = NewTexturePacker.packImages(exportTilesDir,
                 enableRotation = false,
                 enableTrimming = true,
                 padding = 1,
                 trimFileName = true,
-                removeDuplicates = true
+                removeDuplicates = true,
+                textureAtlasWidth = textureAtlasWidth,
+                textureAtlasHeight = textureAtlasHeight
             )
-            assetInfoYaml.append("textures:\n")
+
+            val textures = arrayListOf<String>()
+            assetInfoList["textures"] = textures
 
             // Go through each generated atlas entry and map frames to asset info list
+            val imagesInfo = assetInfoList["images"] as LinkedHashMap<String, Any>
             atlasInfoList.forEachIndexed { idx, atlasInfo ->
                 val atlasOutputFile = gameResourcesDir.resolve("${textureAtlasName}_${idx}.atlas.png")
                 atlasInfo.writeImage(atlasOutputFile)
-                assetInfoYaml.append("  - ${atlasOutputFile.name}\n")
+                textures.add(atlasOutputFile.name)
 
                 val frames = atlasInfo.info["frames"] as Map<String, Any>
                 frames.forEach { (frameName, frameEntry) ->
@@ -127,51 +136,42 @@ class AssetsConfig(
                     val match = regex.find(frameName)
                     val animIndex = match?.groupValues?.get(1)?.toInt() ?: 0
 
-                    assetInfoList.images[frameTag]?.let { image ->
+                    imagesInfo[frameTag]?.let { imageInfo ->
+                        imageInfo as LinkedHashMap<String, Any>
                         // Ensure the frames list is large enough and set the frame at the correct index
-                        if (animIndex >= image.frames.size) error("AssetConfig - Animation index ${animIndex} out of bounds for sprite '${frameTag}' with ${image.frames.size} frames!")
+                        val framesInfo = imageInfo["fs"] as MutableList<LinkedHashMap<String, Any>>
+                        if (animIndex >= framesInfo.size) error("AssetConfig - Animation index ${animIndex} out of bounds for sprite '${frameTag}' with ${framesInfo.size} frames!")
 
                         val frame = frameEntry["frame"] as Map<String, Int>
                         val spriteSource = frameEntry["spriteSourceSize"] as Map<String, Int>
                         val sourceSize = frameEntry["sourceSize"] as Map<String, Int>
-                        val imageFrame = image.frames[animIndex]
-                        imageFrame.frame = Frame(
-                                idx,
-                                frame["x"] ?: error("AssetConfig - frame x is null for sprite '${frameName}'!"),
-                                frame["y"] ?: error("AssetConfig - frame y is null for sprite '${frameName}'!"),
-                                frame["w"] ?: error("AssetConfig - frame w is null for sprite '${frameName}'!"),
-                                frame["h"] ?: error("AssetConfig - frame h is null for sprite '${frameName}'!")
-                            )
-                        imageFrame.targetX = spriteSource["x"] ?: error("AssetConfig - spriteSource x is null for sprite '${frameName}'!")
-                        imageFrame.targetY = spriteSource["y"] ?: error("AssetConfig - spriteSource y is null for sprite '${frameName}'!")
-                        // Do not set duration here - it is set when loading from Aseprite
 
-                        image.width = sourceSize["w"] ?: error("AssetConfig - sourceSize w is null for sprite '${frameName}'!")
-                        image.height = sourceSize["h"] ?: error("AssetConfig - sourceSize h is null for sprite '${frameName}'!")
+                        framesInfo[animIndex]["f"] = arrayOf(
+                            idx,
+                            frame["x"] ?: error("AssetConfig - frame x is null for sprite '${frameName}'!"),
+                            frame["y"] ?: error("AssetConfig - frame y is null for sprite '${frameName}'!"),
+                            frame["w"] ?: error("AssetConfig - frame w is null for sprite '${frameName}'!"),
+                            frame["h"] ?: error("AssetConfig - frame h is null for sprite '${frameName}'!")
+                        )
+                        framesInfo[animIndex]["x"] = spriteSource["x"] ?: error("AssetConfig - spriteSource x is null for sprite '${frameName}'!")
+                        framesInfo[animIndex]["y"] = spriteSource["y"] ?: error("AssetConfig - spriteSource y is null for sprite '${frameName}'!")
+                        // Do not set duration here - it was set already from ASEInfo during texture export from Aseprite
+
+                        imageInfo["w"] = sourceSize["w"] ?: error("AssetConfig - sourceSize w is null for sprite '${frameName}'!")
+                        imageInfo["h"] = sourceSize["h"] ?: error("AssetConfig - sourceSize h is null for sprite '${frameName}'!")
                     }
                 }
             }
 
-            // Now append the asset info sections for images, nine-patches, pixel fonts ,etc.
-            assetInfoYaml.append("images:\n")
-            assetInfoList.images.forEach { (imageName, imageFrames) ->
-                assetInfoYaml.append("  $imageName:\n")
-                assetInfoYaml.append("    w: ${imageFrames.width}\n")
-                assetInfoYaml.append("    h: ${imageFrames.height}\n")
-                assetInfoYaml.append("    frames:\n")
-                imageFrames.frames.forEach { frame ->
-                    assetInfoYaml.append("      - frame: { i: ${frame.frame.index}, x: ${frame.frame.x}, y: ${frame.frame.y}, w: ${frame.frame.width}, h: ${frame.frame.height} }\n")
-                    assetInfoYaml.append("        x: ${frame.targetX}\n")
-                    assetInfoYaml.append("        y: ${frame.targetY}\n")
-                    assetInfoYaml.append("        duration: ${frame.duration}\n")
-                }
-            }
-
-            // Finally, write out the asset info yaml file
-            val assetInfoYamlFile = gameResourcesDir.resolve("${textureAtlasName}.atlas.yml")
-            assetInfoYamlFile.parentFile?.let { parent ->
+            // Finally, write out the asset info as JSON file
+            val assetInfoJsonFile = gameResourcesDir.resolve("${textureAtlasName}.atlas.json")
+            assetInfoJsonFile.parentFile?.let { parent ->
                 if (!parent.exists() && !parent.mkdirs()) error("Failed to create directory: ${parent.path}")
-                assetInfoYamlFile.writeText(assetInfoYaml.toString())
+                val jsonString = jsonStringOf(assetInfoList)
+                // Simplify JSON string by removing unnecessary spaces and line breaks
+                val simplifiedJsonString = if (simplifyJson) jsonString.replace(Regex("\\s+"), "")
+                else jsonString
+                assetInfoJsonFile.writeText(simplifiedJsonString)
             }
         }
 
@@ -182,11 +182,6 @@ class AssetsConfig(
                 val atlasOutputFile = gameResourcesDir.resolve("${tilesetAtlasName}_${idx}.atlas")
                 atlasInfo.writeImage(atlasOutputFile)
             }
-
-            assetInfoYaml.append("tilesets:\n")
-
         }
     }
-
-
 }

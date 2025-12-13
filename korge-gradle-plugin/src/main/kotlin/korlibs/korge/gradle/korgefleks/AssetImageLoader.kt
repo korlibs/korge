@@ -1,7 +1,5 @@
 package korlibs.korge.gradle.korgefleks
 
-import korlibs.korge.gradle.korgefleks.AssetInfo.ImageFrame
-import korlibs.korge.gradle.korgefleks.AssetInfo.ImageFrames
 import korlibs.korge.gradle.util.ASEInfo
 import korlibs.korge.gradle.util.LocalSFile
 import korlibs.korge.gradle.util.executeSystemCommand
@@ -9,13 +7,20 @@ import org.gradle.api.GradleException
 import java.io.File
 import kotlin.collections.set
 
+/**
+ * Asset image loader which can export images from Aseprite files and
+ * add them to the internal asset info structure.
+ *
+ * @param asepriteExe Path to the Aseprite executable.
+ * @param assetDir Directory where the Aseprite source files are located relative to the root of the project.
+ * @param exportTilesDir Directory where the exported images should be saved. Normally inside the build resources directory.
+ * @param assetInfo The internal asset info structure where exported images will be added.
+ */
 class AssetImageLoader(
     private val asepriteExe: String,
     private val assetDir: File,
     private val exportTilesDir: File,
-    private val exportTilesetDir: File,
-    private val gameResourcesDir: File,
-    private val assetInfoList: AssetInfo
+    private val assetInfo: LinkedHashMap<String, Any>
 ) {
     // Enable prefixes for exported images if needed
     private val imagePrefix = ""  // "img_"
@@ -26,8 +31,19 @@ class AssetImageLoader(
         //println("Executing command: ${cmd.joinToString(" ")}")
         executeSystemCommand(it)
     }
+    internal var getAseFile: (filename: String) -> File = {
+        // Get the Aseprite File object from the asset path
+        val aseFile = assetDir.resolve(it)
+        if (!aseFile.exists()) throw GradleException("Aseprite file '${aseFile}' not found!")
+        aseFile
+    }
     internal var loadAseInfo: (file: File) -> ASEInfo = {
         ASEInfo.getAseInfo(LocalSFile(it))
+    }
+
+    init {
+        // Initialize images list in asset info
+        assetInfo["images"] = linkedMapOf<String, Any>()
     }
 
     /**
@@ -104,15 +120,6 @@ class AssetImageLoader(
         executeSystemCommand(cmd)
     }
 
-
-    /** Get the Aseprite File object from the asset path
-     */
-    private fun getAseFile(filename: String): File {
-        val aseFile = assetDir.resolve(filename)
-//        if (!aseFile.exists()) throw GradleException("Aseprite file '${aseFile}' not found!")
-        return aseFile
-    }
-
     /**
      * Check that the specified layers and tags exist in the Aseprite file.
      *
@@ -151,13 +158,16 @@ class AssetImageLoader(
             animStart = 0
         }
         // Create empty frames list
-        assetInfoList.images[imageName] = ImageFrames(frames = MutableList(animLength) { ImageFrame() } )
+        val images = assetInfo["images"] as LinkedHashMap<String, Any>
+        val image = linkedMapOf<String, Any>()
+        val frames = MutableList(animLength) { LinkedHashMap<String, Any>() }
 
         // Now set the frame durations based on the Aseprite info
         for (animIndex in animStart until animStart + animLength) {
             val frameDuration = aseInfo.frames[animIndex].duration
-            assetInfoList.images[imageName]?.frames?.get(animIndex - animStart)?.duration = frameDuration
+            frames[animIndex - animStart]["d"] = frameDuration
         }
+        image["fs"] = frames
+        images[imageName] = image
     }
-
 }

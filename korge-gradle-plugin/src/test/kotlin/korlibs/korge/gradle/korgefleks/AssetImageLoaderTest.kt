@@ -9,17 +9,16 @@ import java.io.File
 class AssetImageLoaderTest {
     @Test
     fun testImageFrameDuration() {
-        val assetInfo = AssetInfo()
+        val assetInfo = linkedMapOf<String, Any>()
         val assetImageLoader = AssetImageLoader(
             asepriteExe = "aseprite",
             assetDir = File("."),
             exportTilesDir = File("."),
-            exportTilesetDir = File("."),
-            gameResourcesDir = File("."),
-            assetInfoList = assetInfo
+            assetInfo = assetInfo
         )
 
         assetImageLoader.runAsepriteExport = {}  // In case of testing do not run export command
+        assetImageLoader.getAseFile = { File(it) }
         assetImageLoader.loadAseInfo = { filename ->
             ASEInfo.getAseInfo(getResourceBytes(filename.name))
         }
@@ -28,21 +27,21 @@ class AssetImageLoaderTest {
         // Frames:
         // TestNum: 1 - 10
         // FireTrail: 12 - 34
-        val spriteTestnumFrames = assetInfo.images["sprites_TestNum"]?.frames ?: error("sprites_TestNum not found in sprites.ase")
-        val spriteFiretrailFrames = assetInfo.images["sprites_FireTrail"]?.frames ?: error("sprites_FireTrail not found in sprites.ase")
+        val spriteTestnumFrames = (((assetInfo["images"] as Map<String, Any>)["sprites_TestNum"] as Map<String, Any>)["fs"] as List<Map<String, Int>>)
+        val spriteFiretrailFrames = (((assetInfo["images"] as Map<String, Any>)["sprites_FireTrail"] as Map<String, Any>)["fs"] as List<Map<String, Int>>)
 
         // Check now that frame durations were correctly read from aseprite file and inserted into the frames array
-        Assert.assertEquals("Expect correct frame 0 duration", 242, spriteTestnumFrames[0].duration)
-        Assert.assertEquals("Expect correct frame 1 duration", 200, spriteTestnumFrames[1].duration)
-        Assert.assertEquals("Expect correct frame 2 duration", 200, spriteTestnumFrames[8].duration)
-        Assert.assertEquals("Expect correct frame 3 duration", 242, spriteTestnumFrames[9].duration)
+        Assert.assertEquals("Expect correct \"Testnum\" frame 0 duration", 242, spriteTestnumFrames[0]["d"])
+        Assert.assertEquals("Expect correct \"Testnum\" frame 1 duration", 200, spriteTestnumFrames[1]["d"])
+        Assert.assertEquals("Expect correct \"Testnum\" frame 2 duration", 200, spriteTestnumFrames[8]["d"])
+        Assert.assertEquals("Expect correct \"Testnum\" frame 3 duration", 242, spriteTestnumFrames[9]["d"])
 
-        Assert.assertEquals("Expect correct frame 0 duration", 40, spriteFiretrailFrames[0].duration)
-        Assert.assertEquals("Expect correct frame 1 duration", 41, spriteFiretrailFrames[1].duration)
-        Assert.assertEquals("Expect correct frame 2 duration", 42, spriteFiretrailFrames[2].duration)
-        Assert.assertEquals("Expect correct frame 3 duration", 40, spriteFiretrailFrames[3].duration)
-        Assert.assertEquals("Expect correct frame 20 duration", 40, spriteFiretrailFrames[20].duration)
-        Assert.assertEquals("Expect correct frame 21 duration", 41, spriteFiretrailFrames[21].duration)
-        Assert.assertEquals("Expect correct frame 22 duration", 42, spriteFiretrailFrames[22].duration)
+        Assert.assertEquals("Expect correct \"Firetrail\" frame 0 duration", 40, spriteFiretrailFrames[0]["d"])
+        Assert.assertEquals("Expect correct \"Firetrail\" frame 1 duration", 41, spriteFiretrailFrames[1]["d"])
+        Assert.assertEquals("Expect correct \"Firetrail\" frame 2 duration", 42, spriteFiretrailFrames[2]["d"])
+        Assert.assertEquals("Expect correct \"Firetrail\" frame 3 duration", 40, spriteFiretrailFrames[3]["d"])
+        Assert.assertEquals("Expect correct \"Firetrail\" frame 20 duration", 40, spriteFiretrailFrames[20]["d"])
+        Assert.assertEquals("Expect correct \"Firetrail\" frame 21 duration", 41, spriteFiretrailFrames[21]["d"])
+        Assert.assertEquals("Expect correct \"Firetrail\" frame 22 duration", 42, spriteFiretrailFrames[22]["d"])
     }
 }

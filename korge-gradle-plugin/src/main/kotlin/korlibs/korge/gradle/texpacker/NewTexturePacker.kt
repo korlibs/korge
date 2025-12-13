@@ -70,7 +70,9 @@ object NewTexturePacker {
     fun packTilesets(
         vararg folders: File,
         padding: Int = 1,
-        tileSize: Int = 16
+        tileSize: Int = 16,
+        textureAtlasWidth: Int = 4096,
+        textureAtlasHeight: Int = 4096
     ): List<AtlasInfo> {
         // Load all tilesets and create SimpleBitmap instances
         val tilesets: List<Pair<File, SimpleBitmap>> = getAllFiles(*folders).mapNotNull {
@@ -91,7 +93,7 @@ object NewTexturePacker {
             images += image.splitInListOfTiles(file.nameWithoutExtension, tileSize)
         }
 
-        return packImages(images, enableRotation = false, enableTrimming = false, padding = padding, trimFileName = true, removeDuplicates = true)
+        return packImages(images, enableRotation = false, enableTrimming = false, padding = padding, trimFileName = true, removeDuplicates = true, textureAtlasWidth, textureAtlasHeight)
     }
 
     /**
@@ -111,7 +113,9 @@ object NewTexturePacker {
         enableTrimming: Boolean = true,
         padding: Int = 2,
         trimFileName: Boolean = false,
-        removeDuplicates: Boolean = false
+        removeDuplicates: Boolean = false,
+        textureAtlasWidth: Int = 4096,
+        textureAtlasHeight: Int = 4096
     ): List<AtlasInfo> {
         val images: List<Pair<File, SimpleBitmap>> = getAllFiles(*folders).mapNotNull {
             try {
@@ -121,7 +125,7 @@ object NewTexturePacker {
                 null
             }
         }
-        return packImages(images, enableRotation, enableTrimming, padding, trimFileName, removeDuplicates)
+        return packImages(images, enableRotation, enableTrimming, padding, trimFileName, removeDuplicates, textureAtlasWidth, textureAtlasHeight)
     }
 
     internal fun packImages(
@@ -130,9 +134,11 @@ object NewTexturePacker {
         enableTrimming: Boolean,
         padding: Int,
         trimFileName: Boolean,
-        removeDuplicates: Boolean
+        removeDuplicates: Boolean,
+        textureAtlasWidth: Int,
+        textureAtlasHeight: Int
     ): List<AtlasInfo> {
-        val packer = NewBinPacker.MaxRectsPacker(4096, 4096, padding * 2, NewBinPacker.IOption(
+        val packer = NewBinPacker.MaxRectsPacker(textureAtlasWidth, textureAtlasHeight, padding * 2, NewBinPacker.IOption(
             smart = true,
             pot = true,
             square = false,

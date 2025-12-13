@@ -20,18 +20,26 @@ open class KorgeFleksExtension(
     var asepriteExe: String = ""
     var textureAtlasName: String = "texture"
     var tilesetAtlasName: String = "tileset"
+    var simplifyJson: Boolean = true
+    var atlasWidth: Int = 2048
+    var atlasHeight: Int = 2048
 
-    fun commonAssets(path: String, callback: AssetsConfig.() -> Unit) {
+    fun commonAssets(
+        path: String,
+        textureAtlasWidth: Int = atlasWidth,
+        textureAtlasHeight: Int = atlasHeight,
+        callback: AssetsConfig.() -> Unit
+    ) {
         if (!File(asepriteExe).exists()) throw GradleException("Aseprite executable not found: '$asepriteExe' " +
             "Make sure to set 'asepriteExe' property in korgeFleks extension.")
 
-        val commonAssetsConfig = AssetsConfig(asepriteExe, project.projectDir, path, "common")
+        val commonAssetsConfig = AssetsConfig(asepriteExe, project.projectDir, path, "common", simplifyJson)
 
         project.tasks.createThis<Task>("commonAssets") {
             group = assetGroup
             doLast {
                 commonAssetsConfig.apply(callback)
-                commonAssetsConfig.buildAtlases(textureAtlasName, tilesetAtlasName)
+                commonAssetsConfig.buildAtlases(textureAtlasName, tilesetAtlasName, textureAtlasWidth, textureAtlasHeight)
             }
         }
     }
