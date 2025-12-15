@@ -19,9 +19,15 @@ class AssetsConfig(
     private val asepriteExe: String,
     projectDir: File,
     assetPath: String,
-    resourcePath: String,
-    private val simplifyJson: Boolean
+    resourcePath: String
 ) {
+    var textureAtlasName: String = "texture"
+    var tilesetAtlasName: String = "tileset"
+    var simplifyJson: Boolean = true
+    var atlasWidth: Int = 2048
+    var atlasHeight: Int = 2048
+
+
     // Directory where Aseprite files are located
     private val assetDir = projectDir.resolve(assetPath)
     // Directory where exported tiles and tilesets will be stored
@@ -30,20 +36,33 @@ class AssetsConfig(
     // Directory where game resources are located
     private val gameResourcesDir = projectDir.resolve("src/commonMain/resources/${resourcePath}")
 
+    private val assetInfoList = linkedMapOf<String, Any>()
+
     init {
         // Make sure the export directories exist and that they are empty
         if (exportTilesDir.exists()) exportTilesDir.deleteRecursively()
         if (exportTilesetDir.exists()) exportTilesetDir.deleteRecursively()
         exportTilesDir.mkdirs()
         exportTilesetDir.mkdirs()
-    }
 
-    private val assetInfoList = linkedMapOf<String, Any>()
+        // Set version info
+        val major = 1
+        val minor = 0
+        val build = 1
+        assetInfoList["info"] = arrayOf(major, minor, build)
+    }
 
     private val assetImageLoader = AssetImageLoader(
         asepriteExe,
         assetDir,
         exportTilesDir,
+        assetInfoList
+    )
+
+    private val assetImageAtlasWriter = AssetImageAtlasWriter(
+        exportTilesDir,
+        exportTilesetDir,
+        gameResourcesDir,
         assetInfoList
     )
 
@@ -99,112 +118,41 @@ class AssetsConfig(
         assetImageLoader.addNinePatchImageAse(filename, emptyList(), emptyList(), output)
     }
 
-    internal fun buildAtlases(
-        textureAtlasName: String,
-        tilesetAtlasName: String,
-        textureAtlasWidth: Int,
-        textureAtlasHeight: Int
-    ) {
-        // Set version info
-        val major = 1
-        val minor = 0
-        val build = 1
-        assetInfoList["info"] = arrayOf(major, minor, build)
+    /**
+     * Export pixel font file and associated pixel font image.
+     * It copies font file to game resources and exports font image to assets folder for atlas packing.
+     */
+    fun addPixelFont(filename: String) {
+        val fontFile = assetDir.resolve(filename)
+        val fontConfig = fontFile.readText()
 
-        if (exportTilesDir.listFiles() != null && exportTilesDir.listFiles().isNotEmpty()) {
-            // First build texture atlas
-            val atlasInfoList = NewTexturePacker.packImages(exportTilesDir,
-                enableRotation = false,
-                enableTrimming = true,
-                padding = 1,
-                trimFileName = true,
-                removeDuplicates = true,
-                textureAtlasWidth = textureAtlasWidth,
-                textureAtlasHeight = textureAtlasHeight
-            )
+        // Get file name for image "file=XXX"
+        val imageFileName = fontConfig.lines().firstOrNull { it.startsWith("page id=") }
+            ?.split("file=")?.getOrNull(1)?.trim()?.trim('"')
+            ?: throw Exception("Could not find image file in font file: $filename")
+        println("Export pixel font image file: $imageFileName")
 
-            val textures = arrayListOf<String>()
-            assetInfoList["textures"] = textures
+        // Copy over font file to resources folder
+        val resourceFontFile = gameResourcesDir.resolve(filename)
+        resourceFontFile.parentFile.mkdirs()
+        fontFile.copyTo(resourceFontFile, overwrite = true)
 
-            // Go through each generated atlas entry and map frames to asset info list
-            val imagesInfo = assetInfoList["images"] as LinkedHashMap<String, Any>
-            val ninePatchesInfo = assetInfoList["ninePatches"] as LinkedHashMap<String, Any>
-            atlasInfoList.forEachIndexed { idx, atlasInfo ->
-                val atlasOutputFile = gameResourcesDir.resolve("${textureAtlasName}_${idx}.atlas.png")
-                atlasInfo.writeImage(atlasOutputFile)
-                textures.add(atlasOutputFile.name)
-
-                val frames = atlasInfo.info["frames"] as Map<String, Any>
-                frames.forEach { (frameName, frameEntry) ->
-                    frameEntry as Map<String, Any>
-                    val frame = frameEntry["frame"] as Map<String, Int>
-                    // Split frameName into frameTag and animation index number
-                    val regex = "_(\\d+)$".toRegex()
-                    val frameTag = frameName.replace(regex, "")
-                    val animIndex = regex.find(frameName)?.groupValues?.get(1)?.toInt() ?: 0
-
-                    // Check if this frame is an image (animation)
-                    imagesInfo[frameTag]?.let { imageInfo ->
-                        imageInfo as LinkedHashMap<String, Any>
-                        // Ensure the frames list is large enough and set the frame at the correct index
-                        val framesInfo = imageInfo["fs"] as MutableList<LinkedHashMap<String, Any>>
-                        if (animIndex >= framesInfo.size) error("AssetConfig - Animation index ${animIndex} out of bounds for sprite '${frameTag}' with ${framesInfo.size} frames!")
-
-                        val spriteSource = frameEntry["spriteSourceSize"] as Map<String, Int>
-                        val sourceSize = frameEntry["sourceSize"] as Map<String, Int>
-
-                        // Set frame info for animIndex: [textureIndex, x, y, width, height]
-                        framesInfo[animIndex]["f"] = arrayOf(
-                            idx,
-                            frame["x"] ?: error("AssetConfig - frame x is null for sprite '${frameName}'!"),
-                            frame["y"] ?: error("AssetConfig - frame y is null for sprite '${frameName}'!"),
-                            frame["w"] ?: error("AssetConfig - frame w is null for sprite '${frameName}'!"),
-                            frame["h"] ?: error("AssetConfig - frame h is null for sprite '${frameName}'!")
-                        )
-                        framesInfo[animIndex]["x"] = spriteSource["x"] ?: error("AssetConfig - spriteSource x is null for sprite '${frameName}'!")
-                        framesInfo[animIndex]["y"] = spriteSource["y"] ?: error("AssetConfig - spriteSource y is null for sprite '${frameName}'!")
-                        // Do not set duration here - it was already set by AssetImageLoader from ASEInfo during texture export from Aseprite
-
-                        imageInfo["w"] = sourceSize["w"] ?: error("AssetConfig - sourceSize w is null for sprite '${frameName}'!")
-                        imageInfo["h"] = sourceSize["h"] ?: error("AssetConfig - sourceSize h is null for sprite '${frameName}'!")
-                    }
-
-                    // Check if this frame is a nine-patch image
-                    ninePatchesInfo[frameTag]?.let { ninePatchInfo ->
-                        ninePatchInfo as LinkedHashMap<String, Any>
-
-                        // Set frame info: [textureIndex, x, y, width, height]
-                        ninePatchInfo["f"] = arrayOf(
-                            idx,
-                            frame["x"] ?: error("AssetConfig - frame x is null for sprite '${frameName}'!"),
-                            frame["y"] ?: error("AssetConfig - frame y is null for sprite '${frameName}'!"),
-                            frame["w"] ?: error("AssetConfig - frame w is null for sprite '${frameName}'!"),
-                            frame["h"] ?: error("AssetConfig - frame h is null for sprite '${frameName}'!")
-                        )
-                        // Nine-patch center info was already set by AssetImageLoader during export
-                    }
-                }
-            }
-
-            // Finally, write out the asset info as JSON file
-            val assetInfoJsonFile = gameResourcesDir.resolve("${textureAtlasName}.atlas.json")
-            assetInfoJsonFile.parentFile?.let { parent ->
-                if (!parent.exists() && !parent.mkdirs()) error("Failed to create directory: ${parent.path}")
-                val jsonString = jsonStringOf(assetInfoList)
-                // Simplify JSON string by removing unnecessary spaces and line breaks
-                val simplifiedJsonString = if (simplifyJson) jsonString.replace(Regex("\\s+"), "")
-                else jsonString
-                assetInfoJsonFile.writeText(simplifiedJsonString)
-            }
-        }
-
-        // Then build tilesets atlas
-        if (exportTilesetDir.listFiles() != null && exportTilesetDir.listFiles().isNotEmpty()) {
-            val atlasInfoList = NewTexturePacker.packTilesets(exportTilesetDir)
-            atlasInfoList.forEachIndexed { idx, atlasInfo ->
-                val atlasOutputFile = gameResourcesDir.resolve("${tilesetAtlasName}_${idx}.atlas")
-                atlasInfo.writeImage(atlasOutputFile)
-            }
-        }
+        // Copy over font image to assets folder for atlas packing
+        val assetFontImageFile = assetDir.resolve(imageFileName)
+        if (!assetFontImageFile.exists()) error("Font image file not found: $imageFileName")
+        val exportFontImageFile = exportTilesDir.resolve(imageFileName)
+        exportFontImageFile.parentFile.mkdirs()
+        assetFontImageFile.copyTo(exportFontImageFile, overwrite = true)
     }
+
+    fun buildAtlases() {
+        assetImageAtlasWriter.buildAtlases(
+            textureAtlasName,
+            tilesetAtlasName,
+            atlasWidth,
+            atlasHeight,
+            simplifyJson
+        )
+    }
+
 }

@@ -197,7 +197,4 @@ class AssetImageLoader(
             }
         }
     }
-
-    private fun createImageAnimWithFrameDuration(aseInfo: ASEInfo, imageName: String, tag: String = "") {
-    }
 }

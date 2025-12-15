@@ -161,6 +161,7 @@ object NewTexturePacker {
                     tileMapping[file] = file
                 } else tileMapping[file] = existing.first
             }
+            println("Texture packer: Removed ${images.size - uniqueMap.size} duplicate images out of ${images.size} total images.")
             uniqueMap.values.toList()
         } else {
             // No duplicate removal, use all images
