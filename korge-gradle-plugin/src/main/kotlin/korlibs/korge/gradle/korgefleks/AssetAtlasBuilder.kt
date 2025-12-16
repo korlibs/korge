@@ -3,9 +3,10 @@ package korlibs.korge.gradle.korgefleks
 import com.android.build.gradle.internal.cxx.json.jsonStringOf
 import korlibs.korge.gradle.texpacker.NewTexturePacker
 import java.io.File
+import java.util.ArrayList
 
 
-class AssetImageAtlasWriter(
+class AssetAtlasBuilder(
     private val exportTilesDir: File,
     private val exportTilesetDir: File,
     private val gameResourcesDir: File,
@@ -32,12 +33,12 @@ class AssetImageAtlasWriter(
                 textureAtlasHeight = textureAtlasHeight
             )
 
-            val textures = arrayListOf<String>()
-            assetInfo["textures"] = textures
+            val textures = assetInfo["textures"] as ArrayList<String>
 
             // Go through each generated atlas entry and map frames to asset info list
             val imagesInfo = assetInfo["images"] as LinkedHashMap<String, Any>
             val ninePatchesInfo = assetInfo["ninePatches"] as LinkedHashMap<String, Any>
+            val pixelFontsInfo = assetInfo["pixelFonts"] as LinkedHashMap<String, Any>
             atlasInfoList.forEachIndexed { idx, atlasInfo ->
                 val atlasOutputFile = gameResourcesDir.resolve("${textureAtlasName}_${idx}.atlas.png")
                 atlasInfo.writeImage(atlasOutputFile)
@@ -91,6 +92,20 @@ class AssetImageAtlasWriter(
                             frame["h"] ?: error("AssetConfig - frame h is null for sprite '${frameName}'!")
                         )
                         // Nine-patch center info was already set by AssetImageLoader during export
+                    }
+
+                    // Check if this frame is a pixel font map image
+                    pixelFontsInfo[frameTag]?.let { pixelFontInfo ->
+                        pixelFontInfo as LinkedHashMap<String, Any>
+
+                        // Set frame info: [textureIndex, x, y, width, height]
+                        pixelFontInfo["f"] = arrayOf(
+                            idx,
+                            frame["x"] ?: error("AssetConfig - frame x is null for sprite '${frameName}'!"),
+                            frame["y"] ?: error("AssetConfig - frame y is null for sprite '${frameName}'!"),
+                            frame["w"] ?: error("AssetConfig - frame w is null for sprite '${frameName}'!"),
+                            frame["h"] ?: error("AssetConfig - frame h is null for sprite '${frameName}'!")
+                        )
                     }
                 }
             }

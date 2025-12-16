@@ -10,20 +10,22 @@ class AssetImageLoaderTest {
     @Test
     fun testImageFrameDuration() {
         val assetInfo = linkedMapOf<String, Any>()
-        val assetImageLoader = AssetImageLoader(
+        assetInfo["images"] = linkedMapOf<String, Any>()
+
+        val assetImageAseExporter = AssetImageAseExporter(
             asepriteExe = "aseprite",
             assetDir = File("."),
             exportTilesDir = File("."),
             assetInfo = assetInfo
         )
 
-        assetImageLoader.runAsepriteExport = {}  // In case of testing do not run export command
-        assetImageLoader.getAseFile = { File(it) }
-        assetImageLoader.loadAseInfo = { filename ->
+        assetImageAseExporter.runAsepriteExport = {}  // In case of testing do not run export command
+        assetImageAseExporter.getAseFile = { File(it) }
+        assetImageAseExporter.loadAseInfo = { filename ->
             ASEInfo.getAseInfo(getResourceBytes(filename.name))
         }
 
-        assetImageLoader.addImageAse("sprites.ase", listOf("Layer1"), listOf("TestNum", "FireTrail"), "sprites")
+        assetImageAseExporter.addImageAse("sprites.ase", listOf("Layer1"), listOf("TestNum", "FireTrail"), "sprites")
         // Frames:
         // TestNum: 1 - 10
         // FireTrail: 12 - 34

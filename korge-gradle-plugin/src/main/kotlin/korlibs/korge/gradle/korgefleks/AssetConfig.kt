@@ -1,7 +1,5 @@
 package korlibs.korge.gradle.korgefleks
 
-import com.android.build.gradle.internal.cxx.json.jsonStringOf
-import korlibs.korge.gradle.texpacker.NewTexturePacker
 import java.io.File
 
 
@@ -36,7 +34,7 @@ class AssetsConfig(
     // Directory where game resources are located
     private val gameResourcesDir = projectDir.resolve("src/commonMain/resources/${resourcePath}")
 
-    private val assetInfoList = linkedMapOf<String, Any>()
+    private val assetInfo = linkedMapOf<String, Any>()
 
     init {
         // Make sure the export directories exist and that they are empty
@@ -49,21 +47,34 @@ class AssetsConfig(
         val major = 1
         val minor = 0
         val build = 1
-        assetInfoList["info"] = arrayOf(major, minor, build)
+        assetInfo["info"] = arrayOf(major, minor, build)
+
+        // Initialize maps and lists in asset info
+        assetInfo["textures"] = arrayListOf<String>()
+        assetInfo["images"] = linkedMapOf<String, Any>()
+        assetInfo["ninePatches"] = linkedMapOf<String, Any>()
+        assetInfo["pixelFonts"] = linkedMapOf<String, Any>()
     }
 
-    private val assetImageLoader = AssetImageLoader(
+    private val assetImageAseExporter = AssetImageAseExporter(
         asepriteExe,
         assetDir,
         exportTilesDir,
-        assetInfoList
+        assetInfo
     )
 
-    private val assetImageAtlasWriter = AssetImageAtlasWriter(
+    private val assetAtlasBuilder = AssetAtlasBuilder(
         exportTilesDir,
         exportTilesetDir,
         gameResourcesDir,
-        assetInfoList
+        assetInfo
+    )
+
+    private val assetFileInstaller = AssetFileInstaller(
+        assetDir,
+        exportTilesDir,
+        gameResourcesDir,
+        assetInfo
     )
 
     /**
@@ -71,43 +82,43 @@ class AssetsConfig(
      * Adds exported images to internal asset info list.
      */
     fun addImageAse(filename: String, layers: List<String>, tags: List<String>, output: String) {
-        assetImageLoader.addImageAse(filename, layers, tags, output)
+        assetImageAseExporter.addImageAse(filename, layers, tags, output)
     }
 
     /** Export full image from Aseprite file
      */
     fun addImageAse(filename: String, output: String) {
-        assetImageLoader.addImageAse(filename, emptyList(), emptyList(), output )
+        assetImageAseExporter.addImageAse(filename, emptyList(), emptyList(), output )
     }
 
     /** Export specific layer from Aseprite file
      */
     fun addImageAse(filename: String, layer: String, output: String) {
-        assetImageLoader.addImageAse(filename, listOf(layer), emptyList(), output)
+        assetImageAseExporter.addImageAse(filename, listOf(layer), emptyList(), output)
     }
 
     /** Export specific layer and tag from Aseprite file
      */
     fun addImageAse(filename: String, layer: String, tag: String, output: String) {
-        assetImageLoader.addImageAse(filename, listOf(layer), listOf(tag), output)
+        assetImageAseExporter.addImageAse(filename, listOf(layer), listOf(tag), output)
     }
 
     /** Export specific layer and tags from Aseprite file
      */
     fun addImageAse(filename: String, layer: String, tags: List<String>, output: String) {
-        assetImageLoader.addImageAse(filename, listOf(layer), tags, output)
+        assetImageAseExporter.addImageAse(filename, listOf(layer), tags, output)
     }
 
     /** Export specific layers from Aseprite file
      */
     fun addImageAse(filename: String, layers: List<String>, output: String) {
-        assetImageLoader.addImageAse(filename, layers, emptyList(), output)
+        assetImageAseExporter.addImageAse(filename, layers, emptyList(), output)
     }
 
     /** Export specific layers and tag from Aseprite file
      */
     fun addImageAse(filename: String, layers: List<String>, tag: String, output: String) {
-        assetImageLoader.addImageAse(filename, layers, listOf(tag), output)
+        assetImageAseExporter.addImageAse(filename, layers, listOf(tag), output)
     }
 
     /**
@@ -115,7 +126,7 @@ class AssetsConfig(
      * Adds exported nine-patch image to internal asset info list.
      */
     fun addNinePatchImageAse(filename: String, output: String) {
-        assetImageLoader.addNinePatchImageAse(filename, emptyList(), emptyList(), output)
+        assetImageAseExporter.addNinePatchImageAse(filename, emptyList(), emptyList(), output)
     }
 
     /**
@@ -123,30 +134,11 @@ class AssetsConfig(
      * It copies font file to game resources and exports font image to assets folder for atlas packing.
      */
     fun addPixelFont(filename: String) {
-        val fontFile = assetDir.resolve(filename)
-        val fontConfig = fontFile.readText()
-
-        // Get file name for image "file=XXX"
-        val imageFileName = fontConfig.lines().firstOrNull { it.startsWith("page id=") }
-            ?.split("file=")?.getOrNull(1)?.trim()?.trim('"')
-            ?: throw Exception("Could not find image file in font file: $filename")
-        println("Export pixel font image file: $imageFileName")
-
-        // Copy over font file to resources folder
-        val resourceFontFile = gameResourcesDir.resolve(filename)
-        resourceFontFile.parentFile.mkdirs()
-        fontFile.copyTo(resourceFontFile, overwrite = true)
-
-        // Copy over font image to assets folder for atlas packing
-        val assetFontImageFile = assetDir.resolve(imageFileName)
-        if (!assetFontImageFile.exists()) error("Font image file not found: $imageFileName")
-        val exportFontImageFile = exportTilesDir.resolve(imageFileName)
-        exportFontImageFile.parentFile.mkdirs()
-        assetFontImageFile.copyTo(exportFontImageFile, overwrite = true)
+        assetFileInstaller.addPixelFont(filename)
     }
 
     fun buildAtlases() {
-        assetImageAtlasWriter.buildAtlases(
+        assetAtlasBuilder.buildAtlases(
             textureAtlasName,
             tilesetAtlasName,
             atlasWidth,

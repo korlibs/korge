@@ -16,7 +16,7 @@ import kotlin.collections.set
  * @param exportTilesDir Directory where the exported images should be saved. Normally inside the build resources directory.
  * @param assetInfo The internal asset info structure where exported images will be added.
  */
-class AssetImageLoader(
+class AssetImageAseExporter(
     private val asepriteExe: String,
     private val assetDir: File,
     private val exportTilesDir: File,
@@ -35,12 +35,6 @@ class AssetImageLoader(
     }
     internal var loadAseInfo: (file: File) -> ASEInfo = {
         ASEInfo.getAseInfo(LocalSFile(it))
-    }
-
-    init {
-        // Initialize lists in asset info
-        assetInfo["images"] = linkedMapOf<String, Any>()
-        assetInfo["ninePatches"] = linkedMapOf<String, Any>()
     }
 
     /**
