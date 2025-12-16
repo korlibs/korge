@@ -8,7 +8,9 @@
 </p>
 <!-- /BADGES -->
 
+<!--
 Accepting Donations/Sponsorship via Bitcoin: `bc1qfmnd2jazh6czsuvvvy5rc3fxwsfvj6e8zwesdg`
+-->
 
 <!-- SUPPORT -->
 <h2 align="center">Support korge</h2>
