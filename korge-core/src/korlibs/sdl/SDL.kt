@@ -153,6 +153,7 @@ open class OpenGL : FFILib("/System/Library/Frameworks/OpenGL.framework/OpenGL")
     val glGetString by func<(GLenum) -> GLString>()
     val glGetStringi by func<(GLenum, GLuint) -> GLString>()
     val glVertexAttribPointer by func<(GLuint, GLint, GLenum, GLboolean, GLsizei, GLvoidPtr) -> Unit>()
+    val glVertexAttribIPointer by func<(GLuint, GLint, GLenum, GLsizei, GLvoidPtr) -> Unit>()
     val glVertexAttrib4fv by func<(GLuint, GLfloatPtr) -> Unit>()
     val glActiveTexture by func<(GLenum) -> Unit>()
     val glAttachShader by func<(GLuint, GLuint) -> Unit>()
@@ -435,6 +436,8 @@ class KmlGlOpenGL(val gl: OpenGL = OpenGL()) : KmlGl() {
     override fun vertexAttrib4fv(index: Int, v: Buffer): Unit = gl.glVertexAttrib4fv(index, v.pointer)
     override fun vertexAttribPointer(index: Int, size: Int, type: Int, normalized: Boolean, stride: Int, pointer: Long): Unit =
         gl.glVertexAttribPointer(index, size, type, normalized.toInt(), stride, pointer.convert())
+    override fun vertexAttribIPointer(index: Int, size: Int, type: Int, stride: Int, pointer: Long): Unit =
+        gl.glVertexAttribIPointer(index, size, type, stride, pointer.convert())
     override fun viewport(x: Int, y: Int, width: Int, height: Int): Unit = gl.glViewport(x, y, width, height)
 
     override val isInstancedSupported: Boolean get() = true
