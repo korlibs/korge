@@ -1,9 +1,15 @@
 package korlibs.korge.gradle.korgefleks
 
 import com.android.build.gradle.internal.cxx.json.jsonStringOf
+import korlibs.korge.gradle.korgefleks.AssetConfig.Companion.IMAGES
+import korlibs.korge.gradle.korgefleks.AssetConfig.Companion.NINE_PATCHES
+import korlibs.korge.gradle.korgefleks.AssetConfig.Companion.PARALLAX_IMAGES
+import korlibs.korge.gradle.korgefleks.AssetConfig.Companion.PIXEL_FONTS
+import korlibs.korge.gradle.korgefleks.AssetConfig.Companion.TEXTURES
 import korlibs.korge.gradle.texpacker.NewTexturePacker
 import java.io.File
 import java.util.ArrayList
+import kotlin.String
 
 
 class AssetAtlasBuilder(
@@ -33,12 +39,13 @@ class AssetAtlasBuilder(
                 textureAtlasHeight = textureAtlasHeight
             )
 
-            val textures = assetInfo["textures"] as ArrayList<String>
-
             // Go through each generated atlas entry and map frames to asset info list
-            val imagesInfo = assetInfo["images"] as LinkedHashMap<String, Any>
-            val ninePatchesInfo = assetInfo["ninePatches"] as LinkedHashMap<String, Any>
-            val pixelFontsInfo = assetInfo["pixelFonts"] as LinkedHashMap<String, Any>
+            val textures = assetInfo[TEXTURES] as ArrayList<String>
+            val imagesInfo = assetInfo[IMAGES] as LinkedHashMap<String, Any>
+            val ninePatchesInfo = assetInfo[NINE_PATCHES] as LinkedHashMap<String, Any>
+            val pixelFontsInfo = assetInfo[PIXEL_FONTS] as LinkedHashMap<String, Any>
+            val parallaxImageInfo = assetInfo[PARALLAX_IMAGES] as LinkedHashMap<String, Any>
+
             atlasInfoList.forEachIndexed { idx, atlasInfo ->
                 val atlasOutputFile = gameResourcesDir.resolve("${textureAtlasName}_${idx}.atlas.png")
                 atlasInfo.writeImage(atlasOutputFile)
@@ -47,7 +54,6 @@ class AssetAtlasBuilder(
                 val frames = atlasInfo.info["frames"] as Map<String, Any>
                 frames.forEach { (frameName, frameEntry) ->
                     frameEntry as Map<String, Any>
-                    val frame = frameEntry["frame"] as Map<String, Int>
                     // Split frameName into frameTag and animation index number
                     val regex = "_(\\d+)$".toRegex()
                     val frameTag = frameName.replace(regex, "")
@@ -55,33 +61,13 @@ class AssetAtlasBuilder(
 
                     // Check if this frame is an image (animation)
                     imagesInfo[frameTag]?.let { imageInfo ->
-                        imageInfo as LinkedHashMap<String, Any>
-                        // Ensure the frames list is large enough and set the frame at the correct index
-                        val framesInfo = imageInfo["fs"] as MutableList<LinkedHashMap<String, Any>>
-                        if (animIndex >= framesInfo.size) error("AssetConfig - Animation index ${animIndex} out of bounds for sprite '${frameTag}' with ${framesInfo.size} frames!")
-
-                        val spriteSource = frameEntry["spriteSourceSize"] as Map<String, Int>
-                        val sourceSize = frameEntry["sourceSize"] as Map<String, Int>
-
-                        // Set frame info for animIndex: [textureIndex, x, y, width, height]
-                        framesInfo[animIndex]["f"] = arrayOf(
-                            idx,
-                            frame["x"] ?: error("AssetConfig - frame x is null for sprite '${frameName}'!"),
-                            frame["y"] ?: error("AssetConfig - frame y is null for sprite '${frameName}'!"),
-                            frame["w"] ?: error("AssetConfig - frame w is null for sprite '${frameName}'!"),
-                            frame["h"] ?: error("AssetConfig - frame h is null for sprite '${frameName}'!")
-                        )
-                        framesInfo[animIndex]["x"] = spriteSource["x"] ?: error("AssetConfig - spriteSource x is null for sprite '${frameName}'!")
-                        framesInfo[animIndex]["y"] = spriteSource["y"] ?: error("AssetConfig - spriteSource y is null for sprite '${frameName}'!")
-                        // Do not set duration here - it was already set by AssetImageLoader from ASEInfo during texture export from Aseprite
-
-                        imageInfo["w"] = sourceSize["w"] ?: error("AssetConfig - sourceSize w is null for sprite '${frameName}'!")
-                        imageInfo["h"] = sourceSize["h"] ?: error("AssetConfig - sourceSize h is null for sprite '${frameName}'!")
+                        saveImageInfo(imageInfo as LinkedHashMap<String, Any>, frameEntry as Map<String, Int>, frameTag, idx, animIndex)
                     }
 
                     // Check if this frame is a nine-patch image
                     ninePatchesInfo[frameTag]?.let { ninePatchInfo ->
                         ninePatchInfo as LinkedHashMap<String, Any>
+                        val frame = frameEntry["frame"] as Map<String, Int>
 
                         // Set frame info: [textureIndex, x, y, width, height]
                         ninePatchInfo["f"] = arrayOf(
@@ -97,6 +83,7 @@ class AssetAtlasBuilder(
                     // Check if this frame is a pixel font map image
                     pixelFontsInfo[frameTag]?.let { pixelFontInfo ->
                         pixelFontInfo as LinkedHashMap<String, Any>
+                        val frame = frameEntry["frame"] as Map<String, Int>
 
                         // Set frame info: [textureIndex, x, y, width, height]
                         pixelFontInfo["f"] = arrayOf(
@@ -106,6 +93,10 @@ class AssetAtlasBuilder(
                             frame["w"] ?: error("AssetConfig - frame w is null for sprite '${frameName}'!"),
                             frame["h"] ?: error("AssetConfig - frame h is null for sprite '${frameName}'!")
                         )
+                    }
+
+                    parallaxImageInfo[frameTag]?.let { parallaxInfo ->
+                        saveImageInfo(parallaxInfo as LinkedHashMap<String, Any>, frameEntry as Map<String, Int>, frameTag, idx, animIndex)
                     }
                 }
             }
@@ -132,4 +123,28 @@ class AssetAtlasBuilder(
         }
     }
 
+    private fun saveImageInfo(imageInfo: LinkedHashMap<String, Any>, frameEntry: Map<String, Int>, frameTag: String, idx: Int, animIndex: Int) {
+        // Ensure the frames list is large enough and set the frame at the correct index
+        val framesInfo = imageInfo["fs"] as MutableList<LinkedHashMap<String, Any>>
+        if (animIndex >= framesInfo.size) error("AssetConfig - Animation index ${animIndex} out of bounds for sprite '${frameTag}' with ${framesInfo.size} frames!")
+
+        val spriteSource = frameEntry["spriteSourceSize"] as Map<String, Int>
+        val sourceSize = frameEntry["sourceSize"] as Map<String, Int>
+        val frame = frameEntry["frame"] as Map<String, Int>
+
+        // Set frame info for animIndex: [textureIndex, x, y, width, height]
+        framesInfo[animIndex]["f"] = arrayOf(
+            idx,
+            frame["x"] ?: error("AssetConfig - frame x is null for sprite '${frameTag}' index '$idx'!"),
+            frame["y"] ?: error("AssetConfig - frame y is null for sprite '${frameTag}' index '$idx'!"),
+            frame["w"] ?: error("AssetConfig - frame w is null for sprite '${frameTag}' index '$idx'!"),
+            frame["h"] ?: error("AssetConfig - frame h is null for sprite '${frameTag}' index '$idx'!")
+        )
+        framesInfo[animIndex]["x"] = spriteSource["x"] ?: error("AssetConfig - spriteSource x is null for sprite '${frameTag}'!")
+        framesInfo[animIndex]["y"] = spriteSource["y"] ?: error("AssetConfig - spriteSource y is null for sprite '${frameTag}'!")
+        // Do not set duration here - it was already set by AssetImageLoader from ASEInfo during texture export from Aseprite
+
+        imageInfo["w"] = sourceSize["w"] ?: error("AssetConfig - sourceSize w is null for sprite '${frameTag}'!")
+        imageInfo["h"] = sourceSize["h"] ?: error("AssetConfig - sourceSize h is null for sprite '${frameTag}'!")
+    }
 }

@@ -47,27 +47,27 @@ open class KorgeFleksExtension(
      */
     fun commonAssets(
         path: String,
-        callback: AssetsConfig.() -> Unit
+        callback: AssetConfig.() -> Unit
     ) = processAssets(path, null, null, callback)
 
     fun worldAssets(
         path: String,
         world: Int,
-        callback: AssetsConfig.() -> Unit
+        callback: AssetConfig.() -> Unit
     ) = processAssets(path, world, null, callback)
 
     fun worldLevelAssets(
         path: String,
         world: Int,
         level: Int,
-        callback: AssetsConfig.() -> Unit
+        callback: AssetConfig.() -> Unit
     ) = processAssets(path, world, level, callback)
 
     private fun processAssets(
         path: String,
         world: Int? = null,
         level: Int? = null,
-        callback: AssetsConfig.() -> Unit
+        callback: AssetConfig.() -> Unit
     ) {
         if (!File(asepriteExe).exists()) throw GradleException("Aseprite executable not found: '$asepriteExe' " +
             "Make sure to set 'asepriteExe' property in KorgeFleks extension.")
@@ -76,19 +76,19 @@ open class KorgeFleksExtension(
         else if (world != null) "world_$world"
         else if (level != null) throw GradleException("KorgeFleksExtension: worldAssets: levelNum specified without worldNum!")
         else "common"
-        val assetsConfig = AssetsConfig(asepriteExe, project.projectDir, path, assetName )
+        val assetConfig = AssetConfig(asepriteExe, project.projectDir, path, assetName )
         // Set default names and atlas size
-        assetsConfig.textureAtlasName = textureAtlasName
-        assetsConfig.tilesetAtlasName = tilesetAtlasName
-        assetsConfig.atlasWidth = atlasWidth
-        assetsConfig.atlasHeight = atlasHeight
+        assetConfig.textureAtlasName = textureAtlasName
+        assetConfig.tilesetAtlasName = tilesetAtlasName
+        assetConfig.atlasWidth = atlasWidth
+        assetConfig.atlasHeight = atlasHeight
 
         val taskName = assetName.replace("/", "").replace("_", "")
         project.tasks.createThis<Task>("${taskName}Assets") {
             group = assetGroup
             doLast {
-                assetsConfig.apply(callback)
-                assetsConfig.buildAtlases()
+                assetConfig.apply(callback)
+                assetConfig.buildAtlases()
             }
         }
     }

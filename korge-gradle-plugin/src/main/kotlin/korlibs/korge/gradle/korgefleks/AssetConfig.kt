@@ -13,7 +13,7 @@ import java.io.File
  * @param assetPath The relative path to the directory containing asset files.
  * @param resourcePath The relative path to the directory for game resources.
  */
-class AssetsConfig(
+class AssetConfig(
     private val asepriteExe: String,
     projectDir: File,
     assetPath: String,
@@ -25,6 +25,15 @@ class AssetsConfig(
     var atlasWidth: Int = 2048
     var atlasHeight: Int = 2048
 
+    companion object {
+        internal const val VERSION = "version"
+        internal const val TEXTURES = "textures"
+        internal const val IMAGES = "images"
+        internal const val NINE_PATCHES = "ninePatches"
+        internal const val PIXEL_FONTS = "pixelFonts"
+        internal const val PARALLAX_IMAGES = "parallaxImages"
+        internal const val PARALLAX_CONFIGS = "parallaxConfigs"
+    }
 
     // Directory where Aseprite files are located
     private val assetDir = projectDir.resolve(assetPath)
@@ -47,13 +56,15 @@ class AssetsConfig(
         val major = 1
         val minor = 0
         val build = 1
-        assetInfo["info"] = arrayOf(major, minor, build)
+        assetInfo[VERSION] = arrayOf(major, minor, build)
 
         // Initialize maps and lists in asset info
-        assetInfo["textures"] = arrayListOf<String>()
-        assetInfo["images"] = linkedMapOf<String, Any>()
-        assetInfo["ninePatches"] = linkedMapOf<String, Any>()
-        assetInfo["pixelFonts"] = linkedMapOf<String, Any>()
+        assetInfo[TEXTURES] = arrayListOf<String>()
+        assetInfo[IMAGES] = linkedMapOf<String, Any>()
+        assetInfo[NINE_PATCHES] = linkedMapOf<String, Any>()
+        assetInfo[PIXEL_FONTS] = linkedMapOf<String, Any>()
+        assetInfo[PARALLAX_IMAGES] = linkedMapOf<String, Any>()
+        assetInfo[PARALLAX_CONFIGS] = linkedMapOf<String, Any>()
     }
 
     private val assetImageAseExporter = AssetImageAseExporter(
@@ -136,6 +147,16 @@ class AssetsConfig(
     fun addPixelFont(filename: String) {
         assetFileInstaller.addPixelFont(filename)
     }
+
+    /**
+     * Export parallax layer images from Aseprite file.
+     * Adds exported parallax images to internal asset info list.
+     */
+    fun addParallaxImageAse(filename: String, parallaxInfo: ParallaxInfo) {
+        assetImageAseExporter.addParallaxImageAse(filename, parallaxInfo)
+    }
+
+
 
     fun buildAtlases() {
         assetAtlasBuilder.buildAtlases(

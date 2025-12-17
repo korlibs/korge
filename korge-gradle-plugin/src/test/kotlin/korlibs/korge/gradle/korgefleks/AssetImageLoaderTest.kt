@@ -1,5 +1,6 @@
 package korlibs.korge.gradle.korgefleks
 
+import korlibs.korge.gradle.korgefleks.AssetConfig.Companion.IMAGES
 import korlibs.korge.gradle.typedresources.getResourceBytes
 import korlibs.korge.gradle.util.ASEInfo
 import org.junit.Assert
@@ -10,7 +11,7 @@ class AssetImageLoaderTest {
     @Test
     fun testImageFrameDuration() {
         val assetInfo = linkedMapOf<String, Any>()
-        assetInfo["images"] = linkedMapOf<String, Any>()
+        assetInfo[IMAGES] = linkedMapOf<String, Any>()
 
         val assetImageAseExporter = AssetImageAseExporter(
             asepriteExe = "aseprite",
@@ -20,7 +21,7 @@ class AssetImageLoaderTest {
         )
 
         assetImageAseExporter.runAsepriteExport = {}  // In case of testing do not run export command
-        assetImageAseExporter.getAseFile = { File(it) }
+        assetImageAseExporter.getFile = { File(it) }
         assetImageAseExporter.loadAseInfo = { filename ->
             ASEInfo.getAseInfo(getResourceBytes(filename.name))
         }
@@ -29,8 +30,8 @@ class AssetImageLoaderTest {
         // Frames:
         // TestNum: 1 - 10
         // FireTrail: 12 - 34
-        val spriteTestnumFrames = (((assetInfo["images"] as Map<String, Any>)["sprites_TestNum"] as Map<String, Any>)["fs"] as List<Map<String, Int>>)
-        val spriteFiretrailFrames = (((assetInfo["images"] as Map<String, Any>)["sprites_FireTrail"] as Map<String, Any>)["fs"] as List<Map<String, Int>>)
+        val spriteTestnumFrames = (((assetInfo[IMAGES] as Map<String, Any>)["sprites_TestNum"] as Map<String, Any>)["fs"] as List<Map<String, Int>>)
+        val spriteFiretrailFrames = (((assetInfo[IMAGES] as Map<String, Any>)["sprites_FireTrail"] as Map<String, Any>)["fs"] as List<Map<String, Int>>)
 
         // Check now that frame durations were correctly read from aseprite file and inserted into the frames array
         Assert.assertEquals("Expect correct \"Testnum\" frame 0 duration", 242, spriteTestnumFrames[0]["d"])

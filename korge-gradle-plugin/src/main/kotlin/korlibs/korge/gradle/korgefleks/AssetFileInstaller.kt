@@ -1,5 +1,6 @@
 package korlibs.korge.gradle.korgefleks
 
+import korlibs.korge.gradle.korgefleks.AssetConfig.Companion.PIXEL_FONTS
 import java.io.File
 
 class AssetFileInstaller(
@@ -35,7 +36,7 @@ class AssetFileInstaller(
         assetFontImageFile.copyTo(exportFontImageFile, overwrite = true)
 
         // Create empty pixel font info and store it - it will be filled later during atlas packing
-        assetInfo["pixelFonts"]?.let {
+        assetInfo[PIXEL_FONTS]?.let {
             (it as LinkedHashMap<String, Any>)[fontName] = linkedMapOf<String, Any>(
                 "t" to fontExtension,
             )

@@ -1,7 +1,12 @@
 package korlibs.korge.gradle.korgefleks
 
+import korlibs.korge.gradle.korgefleks.AssetConfig.Companion.IMAGES
+import korlibs.korge.gradle.korgefleks.AssetConfig.Companion.NINE_PATCHES
+import korlibs.korge.gradle.korgefleks.AssetConfig.Companion.PARALLAX_CONFIGS
+import korlibs.korge.gradle.korgefleks.AssetConfig.Companion.PARALLAX_IMAGES
 import korlibs.korge.gradle.util.ASEInfo
 import korlibs.korge.gradle.util.LocalSFile
+import korlibs.korge.gradle.util.Yaml
 import korlibs.korge.gradle.util.executeSystemCommand
 import org.gradle.api.GradleException
 import java.io.File
@@ -27,7 +32,7 @@ class AssetImageAseExporter(
         //println("Executing command: ${cmd.joinToString(" ")}")
         executeSystemCommand(it)
     }
-    internal var getAseFile: (filename: String) -> File = {
+    internal var getFile: (filename: String) -> File = {
         // Get the Aseprite File object from the asset path
         val aseFile = assetDir.resolve(it)
         if (!aseFile.exists()) throw GradleException("Aseprite file '${aseFile}' not found!")
@@ -46,29 +51,7 @@ class AssetImageAseExporter(
         println("Export image file: '${filename}', layers: '${layers}', tags: '${tags}', output: '${output}'")
 
         exportImageFromAseprite(filename, layers, tags, output, /* OPTIONAL: prefix = "img_" */) { aseInfo, imageName, tag ->
-            // Create image animation and store frame duration
-            val animLength: Int
-            val animStart: Int
-            if (tag.isNotEmpty()) {
-                animLength = aseInfo.tagsByName[tag]!!.toFrame - aseInfo.tagsByName[tag]!!.fromFrame + 1
-                animStart = aseInfo.tagsByName[tag]!!.fromFrame
-
-            } else {
-                animLength = aseInfo.frames.size
-                animStart = 0
-            }
-
-            // Create frames list and set frame durations based on the Aseprite info
-            val frames = MutableList(animLength) { LinkedHashMap<String, Any>() }
-            for (animIndex in animStart until animStart + animLength) {
-                val frameDuration = aseInfo.frames[animIndex].duration
-                frames[animIndex - animStart]["d"] = frameDuration
-            }
-            // Get image map from asset info and store frames list
-            val images = assetInfo["images"] as LinkedHashMap<String, Any>
-            val image = linkedMapOf<String, Any>()
-            image["fs"] = frames
-            images[imageName] = image
+            createImageFramesList(aseInfo, imageName, tag, IMAGES)
         }
     }
 
@@ -85,7 +68,7 @@ class AssetImageAseExporter(
             val slicename = ""
 
             // Create and store nine-patch info
-            val ninepaches = assetInfo["ninePatches"] as LinkedHashMap<String, Any>
+            val ninepaches = assetInfo[NINE_PATCHES] as LinkedHashMap<String, Any>
             val ninepatch = linkedMapOf<String, Any>()
             // For nine-patches we only store the frame info of the first frame ???
             if (slicename.isEmpty()) {
@@ -102,6 +85,75 @@ class AssetImageAseExporter(
         }
     }
 
+    fun addParallaxImageAse(filename: String, parallaxInfo: ParallaxInfo) {
+        // Define defaults for usage as parallax layer images
+        val tags = listOf("export")
+        val output = "parallax"
+
+        val layers = arrayListOf<String>()
+        parallaxInfo.backgroundLayers.forEach { layer -> layers.add(layer.name) }
+        parallaxInfo.foregroundLayers.forEach { layer -> layers.add(layer.name) }
+        parallaxInfo.parallaxPlane?.topAttachedLayers?.forEach { layer -> layers.add(layer.name) }
+        parallaxInfo.parallaxPlane?.bottomAttachedLayers?.forEach { layer -> layers.add(layer.name) }
+
+        println("Export parallax image file: '${filename}', layers: '${layers}', tags: '${tags}', output: '${output}'")
+/*
+            exportImageFromAseprite(filename, layers, tags, output, /* OPTIONAL: prefix = "px_" */) { aseInfo, imageName, tag ->
+                createImageFramesList(aseInfo, imageName, tag, PARALLAX_IMAGES)
+
+                // Check if we need to store parallax layer or plane info
+
+                // TODO: Store parallax layer config info
+
+                // Save additional parallax info
+                assetInfo["p"] = linkedMapOf<String, Any?>(
+                    "tx" to 0,  // targetX - offset from the left corner of the parallax background image used in VERTICAL_PLANE mode
+                    "ty" to 0,  // targetY - offset from the top corner of the parallax background image used in HORIZONTAL_PLANE mode
+                    "rx" to false,  // repeatX
+                    "ry" to false,  // repeatY
+                    "cx" to false,  // centerX - Center the layer in the parallax background image
+                    "cy" to false,  // centerY
+                    "sf" to null,  // speedFactor - It this is null than no movement is applied to the layer
+                    "sx" to 0f,  // selfSpeedX
+                    "sy" to 0f // selfSpeedY
+                )
+            }
+*/
+        // Store parallax config info
+        val parallaxConfigs = assetInfo[PARALLAX_CONFIGS] as LinkedHashMap<String, Any>
+        parallaxConfigs[parallaxInfo.name] = layers
+
+        val mode = parallaxInfo.mode
+        val parallaxHeight = parallaxInfo.parallaxHeight
+
+    }
+
+    private fun createImageFramesList(aseInfo: ASEInfo, imageName: String, tag: String, assetSectionName: String) {
+        // Create image animation and store frame duration
+        val animLength: Int
+        val animStart: Int
+        if (tag.isNotEmpty()) {
+            animLength = aseInfo.tagsByName[tag]!!.toFrame - aseInfo.tagsByName[tag]!!.fromFrame + 1
+            animStart = aseInfo.tagsByName[tag]!!.fromFrame
+
+        } else {
+            animLength = aseInfo.frames.size
+            animStart = 0
+        }
+
+        // Create frames list and set frame durations based on the Aseprite info
+        val frames = MutableList(animLength) { LinkedHashMap<String, Any>() }
+        for (animIndex in animStart until animStart + animLength) {
+            val frameDuration = aseInfo.frames[animIndex].duration
+            frames[animIndex - animStart]["d"] = frameDuration
+        }
+        // Get image map from asset info and store frames list
+        val images = assetInfo[assetSectionName] as LinkedHashMap<String, Any>
+        val image = linkedMapOf<String, Any>()
+        image["fs"] = frames
+        images[imageName] = image
+    }
+
     private fun exportImageFromAseprite(
         filename: String,
         layers: List<String>,
@@ -110,7 +162,7 @@ class AssetImageAseExporter(
         prefix: String = "",
         configure: (aseInfo: ASEInfo, imageName: String, tag: String) -> Unit
     ) {
-        val aseFile = getAseFile(filename)
+        val aseFile = getFile(filename)
         val aseInfo = loadAseInfo(aseFile)
         checkLayersTagsAvailable(aseInfo, filename, layers, tags)
 
