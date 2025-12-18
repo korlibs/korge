@@ -4,9 +4,9 @@ import korlibs.korge.gradle.korgefleks.AssetConfig.Companion.IMAGES
 import korlibs.korge.gradle.korgefleks.AssetConfig.Companion.NINE_PATCHES
 import korlibs.korge.gradle.korgefleks.AssetConfig.Companion.PARALLAX_CONFIGS
 import korlibs.korge.gradle.korgefleks.AssetConfig.Companion.PARALLAX_IMAGES
+import korlibs.korge.gradle.korgefleks.ParallaxInfo.*
 import korlibs.korge.gradle.util.ASEInfo
 import korlibs.korge.gradle.util.LocalSFile
-import korlibs.korge.gradle.util.Yaml
 import korlibs.korge.gradle.util.executeSystemCommand
 import org.gradle.api.GradleException
 import java.io.File
@@ -97,35 +97,59 @@ class AssetImageAseExporter(
         parallaxInfo.parallaxPlane?.bottomAttachedLayers?.forEach { layer -> layers.add(layer.name) }
 
         println("Export parallax image file: '${filename}', layers: '${layers}', tags: '${tags}', output: '${output}'")
-/*
-            exportImageFromAseprite(filename, layers, tags, output, /* OPTIONAL: prefix = "px_" */) { aseInfo, imageName, tag ->
-                createImageFramesList(aseInfo, imageName, tag, PARALLAX_IMAGES)
 
-                // Check if we need to store parallax layer or plane info
+        exportImageFromAseprite(filename, layers, tags, output, /* OPTIONAL: prefix = "plx_" */) { aseInfo, imageName, tag ->
+            createImageFramesList(aseInfo, imageName, tag, PARALLAX_IMAGES)
+            // Get image map from asset info and store frames list
+            println("Processing parallax image: '${imageName}'")
+            val layerName = imageName.removePrefix("parallax_")  // Remove default prefix to get the original layer name
+            val parallaxImages = assetInfo[PARALLAX_IMAGES] as LinkedHashMap<String, Any>
+            val image = parallaxImages[imageName] as LinkedHashMap<String, Any>
 
-                // TODO: Store parallax layer config info
-
-                // Save additional parallax info
-                assetInfo["p"] = linkedMapOf<String, Any?>(
-                    "tx" to 0,  // targetX - offset from the left corner of the parallax background image used in VERTICAL_PLANE mode
-                    "ty" to 0,  // targetY - offset from the top corner of the parallax background image used in HORIZONTAL_PLANE mode
-                    "rx" to false,  // repeatX
-                    "ry" to false,  // repeatY
-                    "cx" to false,  // centerX - Center the layer in the parallax background image
-                    "cy" to false,  // centerY
-                    "sf" to null,  // speedFactor - It this is null than no movement is applied to the layer
-                    "sx" to 0f,  // selfSpeedX
-                    "sy" to 0f // selfSpeedY
+            fun setParallaxLayerInfo(image: LinkedHashMap<String, Any>, layer: ParallaxLayerInfo) {
+                image["pl"] = linkedMapOf<String, Any?>(
+                    "tx" to layer.targetX,  // offset from the left corner of the parallax background image used in VERTICAL_PLANE mode
+                    "ty" to layer.targetY,  // offset from the top corner of the parallax background image used in HORIZONTAL_PLANE mode
+                    "rx" to layer.repeatX,
+                    "ry" to layer.repeatX,
+                    "cx" to layer.centerX,  // Center the layer in the parallax background image
+                    "cy" to layer.centerY,
+                    "sf" to layer.speedFactor,  // If this is null than no movement is applied to the layer
+                    "sx" to layer.selfSpeedX,
+                    "sy" to layer.selfSpeedY
                 )
             }
-*/
+
+            fun setParallaxAttachedLayerInfo(image: LinkedHashMap<String, Any>, layer: ParallaxAttachedLayerInfo) {
+                image["pl"] = linkedMapOf<String, Any>(
+                    "i" to layer.attachIndex,
+                    "r" to layer.repeat,
+                    "a" to layer.attachBottomRight
+                )
+            }
+
+            parallaxInfo.backgroundLayers.forEach { layer -> if (layer.name == layerName) setParallaxLayerInfo(image, layer) }
+            parallaxInfo.foregroundLayers.forEach { layer -> if (layer.name == layerName) setParallaxLayerInfo(image, layer) }
+            parallaxInfo.parallaxPlane?.topAttachedLayers?.forEach { layer -> if (layer.name == layerName) setParallaxAttachedLayerInfo(image, layer) }
+            parallaxInfo.parallaxPlane?.bottomAttachedLayers?.forEach { layer -> if (layer.name == layerName) setParallaxAttachedLayerInfo(image, layer) }
+        }
+
         // Store parallax config info
         val parallaxConfigs = assetInfo[PARALLAX_CONFIGS] as LinkedHashMap<String, Any>
-        parallaxConfigs[parallaxInfo.name] = layers
-
-        val mode = parallaxInfo.mode
-        val parallaxHeight = parallaxInfo.parallaxHeight
-
+        parallaxConfigs[parallaxInfo.name] = linkedMapOf<String, Any?>(
+            "w" to parallaxInfo.parallaxWidth,
+            "h" to parallaxInfo.parallaxHeight,
+            "m" to parallaxInfo.mode,
+            "b" to parallaxInfo.backgroundLayers.map { layer -> layer.name },
+            "f" to parallaxInfo.foregroundLayers.map { layer -> layer.name },
+            "p" to if (parallaxInfo.parallaxPlane != null) linkedMapOf<String, Any?>(
+                "n" to parallaxInfo.parallaxPlane.name,
+                "sf" to parallaxInfo.parallaxPlane.speedFactor,
+                "s" to parallaxInfo.parallaxPlane.selfSpeed,
+                "t" to parallaxInfo.parallaxPlane.topAttachedLayers.map { layer -> layer.name },
+                "b" to parallaxInfo.parallaxPlane.bottomAttachedLayers.map { layer -> layer.name }
+            ) else null
+        )
     }
 
     private fun createImageFramesList(aseInfo: ASEInfo, imageName: String, tag: String, assetSectionName: String) {
