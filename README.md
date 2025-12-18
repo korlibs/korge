@@ -8,13 +8,17 @@
 </p>
 <!-- /BADGES -->
 
+<!--
 Accepting Donations/Sponsorship via Bitcoin: `bc1qfmnd2jazh6czsuvvvy5rc3fxwsfvj6e8zwesdg`
+-->
 
 <!-- SUPPORT -->
+<!--
 <h2 align="center">Support korge</h2>
 <p align="center">
 If you like korge, or want your company logo here, please consider <a href="https://github.com/sponsors/soywiz">becoming a GitHub sponsor ★</a>,<br />
 </p>
+-->
 <!-- /SUPPORT -->
 
 ## Info about the project:

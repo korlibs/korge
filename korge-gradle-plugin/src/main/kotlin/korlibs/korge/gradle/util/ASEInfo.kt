@@ -1,14 +1,43 @@
 package korlibs.korge.gradle.util
 
 data class ASEInfo(
+    val pixelWidth: Int = 0,
+    val pixelHeight: Int = 0,
     val slices: List<AseSlice> = emptyList(),
     val tags: List<AseTag> = emptyList(),
+    val layers: List<AseLayer> = emptyList(),
+    val frames: List<Frame> = emptyList(),
 ) {
+
+    val tagsByName: Map<String, AseTag> by lazy { tags.associateBy { it.tagName } }
+    val layersByName: Map<String, AseLayer> by lazy { layers.associateBy { it.layerName } }
+
     data class AseSlice(
         val sliceName: String,
         val hasNinePatch: Boolean,
         val hasPivotInfo: Boolean,
-    )
+        val keys: List<SliceKey>
+    ) {
+        data class SliceKey(
+            val frameNumber: Int,
+            val x: Int,
+            val y: Int,
+            val width: Int,
+            val height: Int,
+            val ninePatch: NinePatchInfo? = null,
+            val pivot: PivotInfo? = null
+        )
+        data class NinePatchInfo(
+            val centerX: Int,
+            val centerY: Int,
+            val centerWidth: Int,
+            val centerHeight: Int
+        )
+        data class PivotInfo(
+            val pivotX: Int,
+            val pivotY: Int
+        )
+    }
 
     data class AseTag(
         val fromFrame: Int,
@@ -16,6 +45,57 @@ data class ASEInfo(
         val direction: Int,
         val tagColor: Int,
         val tagName: String
+    )
+
+    data class AseLayer(
+        val layerName: String,
+        val visible: Boolean,
+        val type: AseLayerType,
+        val blendMode: AseBlendMode,
+        val opacity: Int
+    ) {
+        enum class AseLayerType(val value: Int) {
+            NORMAL(0),
+            GROUP(1),
+            TILEMAP(2);
+
+            companion object {
+                private val map = values().associateBy(AseLayerType::value)
+                fun fromInt(value: Int): AseLayerType = map[value] ?: NORMAL
+            }
+        }
+
+        enum class AseBlendMode(val value: Int) {
+            NORMAL(0),
+            MULTIPLY(1),
+            SCREEN(2),
+            OVERLAY(3),
+            DARKEN(4),
+            LIGHTEN(5),
+            COLOR_DODGE(6),
+            COLOR_BURN(7),
+            HARD_LIGHT(8),
+            SOFT_LIGHT(9),
+            DIFFERENCE(10),
+            EXCLUSION(11),
+            HUE(12),
+            SATURATION(13),
+            COLOR(14),
+            LUMINOSITY(15),
+            ADDITION(16),
+            SUBTRACT(17),
+            DIVIDE(18);
+
+            companion object {
+                private val map = values().associateBy(AseBlendMode::value)
+                fun fromInt(value: Int): AseBlendMode = map[value] ?: NORMAL
+            }
+        }
+    }
+
+    data class Frame(
+        val index: Int,
+        val duration: Int
     )
 
     companion object {
@@ -32,6 +112,8 @@ data class ASEInfo(
 
             val slices = arrayListOf<AseSlice>()
             val tags = arrayListOf<AseTag>()
+            val layers = arrayListOf<AseLayer>()
+            val frames = arrayListOf<Frame>()
 
             val fileSize = s.readS32LE()
             if (s.length < fileSize) error("File too short s.length=${s.length} < fileSize=${fileSize}")
@@ -70,6 +152,7 @@ data class ASEInfo(
                 val frameDuration = fs.readU16LE()
                 fs.skip(2)
                 val numChunks = fs.readS32LE()
+                frames += Frame(frameIndex, frameDuration)
 
                 //println("   - $numChunks")
 
@@ -81,6 +164,26 @@ data class ASEInfo(
                     //println(" chunkType=$chunkType, chunkSize=$chunkSize")
 
                     when (chunkType) {
+                        0x2004 -> { // LAYER
+                            // Layer chunk
+                            val flags = cs.readU16LE()
+                            val type = cs.readU16LE()
+                            val layerChildLevel = cs.readU16LE()
+                            cs.skip(2)
+                            val blendMode = cs.readU16LE()
+                            val opacity = cs.readU8()
+                            cs.skip(3)
+                            val layerName = cs.readAseString()
+                            layers += AseLayer(
+                                layerName = layerName,
+                                visible = !flags.hasBitSet(0),
+                                type = AseLayer.AseLayerType.fromInt(type),
+                                blendMode = AseLayer.AseBlendMode.fromInt(blendMode),
+                                opacity = opacity
+                            )
+
+                            //println(" Layer: name='$layerName', type=$type, blendMode=$blendMode, opacity=$opacity, flags=$flags")
+                        }
                         0x2022 -> { // SLICE KEYS
                             val numSliceKeys = cs.readS32LE()
                             val sliceFlags = cs.readS32LE()
@@ -88,7 +191,38 @@ data class ASEInfo(
                             val sliceName = cs.readAseString()
                             val hasNinePatch = sliceFlags.hasBitSet(0)
                             val hasPivotInfo = sliceFlags.hasBitSet(1)
-                            val aslice = AseSlice(sliceName, hasNinePatch, hasPivotInfo)
+
+                            // Read 9-patch and pivot info
+                            val keys = mutableListOf<AseSlice.SliceKey>()
+                            for (key in 0 until numSliceKeys) {
+                                val frameNumber = cs.readS32LE()
+                                val x = cs.readU32LE()
+                                val y = cs.readU32LE()
+                                val width = cs.readS32LE()
+                                val height = cs.readS32LE()
+
+                                var ninePatch: AseSlice.NinePatchInfo? = null
+                                var pivot: AseSlice.PivotInfo? = null
+
+                                if (hasNinePatch) {
+                                    val centerX = cs.readU32LE()
+                                    val centerY = cs.readU32LE()
+                                    val centerWidth = cs.readS32LE()
+                                    val centerHeight = cs.readS32LE()
+                                    ninePatch = AseSlice.NinePatchInfo(centerX.toInt(), centerY.toInt(), centerWidth, centerHeight)
+                                }
+                                if (hasPivotInfo) {
+                                    val pivotX = cs.readU32LE()
+                                    val pivotY = cs.readU32LE()
+                                    pivot = AseSlice.PivotInfo(pivotX.toInt(), pivotY.toInt())
+                                }
+
+                                keys += AseSlice.SliceKey(
+                                    frameNumber, x.toInt(), y.toInt(), width, height, ninePatch, pivot
+                                )
+                            }
+
+                            val aslice = AseSlice(sliceName, hasNinePatch, hasPivotInfo, keys)
                             slices += aslice
                         }
                         0x2018 -> { // TAGS
@@ -118,8 +252,12 @@ data class ASEInfo(
             }
 
             return ASEInfo(
+                pixelWidth = imageWidth,
+                pixelHeight = imageHeight,
                 slices = slices,
                 tags = tags,
+                layers = layers,
+                frames = frames
             )
         }
 
