@@ -125,7 +125,7 @@ class AssetAtlasBuilder(
 
     private fun saveImageInfo(imageInfo: LinkedHashMap<String, Any>, frameEntry: Map<String, Int>, frameTag: String, idx: Int, animIndex: Int) {
         // Ensure the frames list is large enough and set the frame at the correct index
-        val framesInfo = imageInfo["fs"] as MutableList<LinkedHashMap<String, Any>>
+        val framesInfo = imageInfo["f"] as MutableList<LinkedHashMap<String, Any>>
         if (animIndex >= framesInfo.size) error("AssetConfig - Animation index ${animIndex} out of bounds for sprite '${frameTag}' with ${framesInfo.size} frames!")
 
         val spriteSource = frameEntry["spriteSourceSize"] as Map<String, Int>

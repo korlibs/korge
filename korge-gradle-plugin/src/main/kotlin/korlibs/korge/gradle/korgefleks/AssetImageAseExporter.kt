@@ -107,7 +107,7 @@ class AssetImageAseExporter(
             val image = parallaxImages[imageName] as LinkedHashMap<String, Any>
 
             fun setParallaxLayerInfo(image: LinkedHashMap<String, Any>, layer: ParallaxLayerInfo) {
-                image["pl"] = linkedMapOf<String, Any?>(
+                image["p"] = linkedMapOf<String, Any?>(
                     "tx" to layer.targetX,  // offset from the left corner of the parallax background image used in VERTICAL_PLANE mode
                     "ty" to layer.targetY,  // offset from the top corner of the parallax background image used in HORIZONTAL_PLANE mode
                     "rx" to layer.repeatX,
@@ -121,7 +121,7 @@ class AssetImageAseExporter(
             }
 
             fun setParallaxAttachedLayerInfo(image: LinkedHashMap<String, Any>, layer: ParallaxAttachedLayerInfo) {
-                image["pl"] = linkedMapOf<String, Any>(
+                image["p"] = linkedMapOf<String, Any>(
                     "i" to layer.attachIndex,
                     "r" to layer.repeat,
                     "a" to layer.attachBottomRight
@@ -174,7 +174,7 @@ class AssetImageAseExporter(
         // Get image map from asset info and store frames list
         val images = assetInfo[assetSectionName] as LinkedHashMap<String, Any>
         val image = linkedMapOf<String, Any>()
-        image["fs"] = frames
+        image["f"] = frames
         images[imageName] = image
     }
 
