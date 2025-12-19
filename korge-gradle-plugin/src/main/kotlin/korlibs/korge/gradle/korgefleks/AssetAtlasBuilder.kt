@@ -96,7 +96,7 @@ class AssetAtlasBuilder(
                     }
 
                     parallaxImageInfo[frameTag]?.let { parallaxInfo ->
-                        saveImageInfo(parallaxInfo as LinkedHashMap<String, Any>, frameEntry as Map<String, Int>, frameTag, idx, animIndex)
+                        saveImageInfo(parallaxInfo as LinkedHashMap<String, Any>, frameEntry as Map<String, Int>, frameTag, idx, animIndex, saveSize = false)
                     }
                 }
             }
@@ -123,7 +123,7 @@ class AssetAtlasBuilder(
         }
     }
 
-    private fun saveImageInfo(imageInfo: LinkedHashMap<String, Any>, frameEntry: Map<String, Int>, frameTag: String, idx: Int, animIndex: Int) {
+    private fun saveImageInfo(imageInfo: LinkedHashMap<String, Any>, frameEntry: Map<String, Int>, frameTag: String, idx: Int, animIndex: Int, saveSize: Boolean = true) {
         // Ensure the frames list is large enough and set the frame at the correct index
         val framesInfo = imageInfo["f"] as MutableList<LinkedHashMap<String, Any>>
         if (animIndex >= framesInfo.size) error("AssetConfig - Animation index ${animIndex} out of bounds for sprite '${frameTag}' with ${framesInfo.size} frames!")
@@ -144,7 +144,9 @@ class AssetAtlasBuilder(
         framesInfo[animIndex]["y"] = spriteSource["y"] ?: error("AssetConfig - spriteSource y is null for sprite '${frameTag}'!")
         // Do not set duration here - it was already set by AssetImageLoader from ASEInfo during texture export from Aseprite
 
-        imageInfo["w"] = sourceSize["w"] ?: error("AssetConfig - sourceSize w is null for sprite '${frameTag}'!")
-        imageInfo["h"] = sourceSize["h"] ?: error("AssetConfig - sourceSize h is null for sprite '${frameTag}'!")
+        if (saveSize) {
+            imageInfo["w"] = sourceSize["w"] ?: error("AssetConfig - sourceSize w is null for sprite '${frameTag}'!")
+            imageInfo["h"] = sourceSize["h"] ?: error("AssetConfig - sourceSize h is null for sprite '${frameTag}'!")
+        }
     }
 }

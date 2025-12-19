@@ -50,7 +50,7 @@ class AssetImageAseExporter(
         if (output.isBlank()) throw GradleException("No output file specified for Aseprite export of image '${filename}'!")
         println("Export image file: '${filename}', layers: '${layers}', tags: '${tags}', output: '${output}'")
 
-        exportImageFromAseprite(filename, layers, tags, output, /* OPTIONAL: prefix = "img_" */) { aseInfo, imageName, tag ->
+        exportImageFromAseprite(filename, layers, tags, output) { aseInfo, imageName, tag ->
             createImageFramesList(aseInfo, imageName, tag, IMAGES)
         }
     }
@@ -87,27 +87,28 @@ class AssetImageAseExporter(
 
     fun addParallaxImageAse(filename: String, parallaxInfo: ParallaxInfo) {
         // Define defaults for usage as parallax layer images
-        val tags = listOf("export")
+        val tags = listOf("export")  // TODO remove hard coded value later
         val output = "parallax"
 
+        // (1) Export all parallax layers as individual images
         val layers = arrayListOf<String>()
         parallaxInfo.backgroundLayers.forEach { layer -> layers.add(layer.name) }
         parallaxInfo.foregroundLayers.forEach { layer -> layers.add(layer.name) }
         parallaxInfo.parallaxPlane?.topAttachedLayers?.forEach { layer -> layers.add(layer.name) }
         parallaxInfo.parallaxPlane?.bottomAttachedLayers?.forEach { layer -> layers.add(layer.name) }
 
-        println("Export parallax image file: '${filename}', layers: '${layers}', tags: '${tags}', output: '${output}'")
+        println("Export parallax layer from image file: '${filename}', layers: '${layers}', tags: '${tags}', output: '${output}'")
+        val parallaxImages = assetInfo[PARALLAX_IMAGES] as LinkedHashMap<String, Any>
 
-        exportImageFromAseprite(filename, layers, tags, output, /* OPTIONAL: prefix = "plx_" */) { aseInfo, imageName, tag ->
+        exportImageFromAseprite(filename, layers, tags, output) { aseInfo, imageName, tag ->
             createImageFramesList(aseInfo, imageName, tag, PARALLAX_IMAGES)
             // Get image map from asset info and store frames list
             println("Processing parallax image: '${imageName}'")
             val layerName = imageName.removePrefix("parallax_")  // Remove default prefix to get the original layer name
-            val parallaxImages = assetInfo[PARALLAX_IMAGES] as LinkedHashMap<String, Any>
             val image = parallaxImages[imageName] as LinkedHashMap<String, Any>
 
             fun setParallaxLayerInfo(image: LinkedHashMap<String, Any>, layer: ParallaxLayerInfo) {
-                image["p"] = linkedMapOf<String, Any?>(
+                image["l"] = linkedMapOf<String, Any?>(
                     "tx" to layer.targetX,  // offset from the left corner of the parallax background image used in VERTICAL_PLANE mode
                     "ty" to layer.targetY,  // offset from the top corner of the parallax background image used in HORIZONTAL_PLANE mode
                     "rx" to layer.repeatX,
@@ -121,20 +122,84 @@ class AssetImageAseExporter(
             }
 
             fun setParallaxAttachedLayerInfo(image: LinkedHashMap<String, Any>, layer: ParallaxAttachedLayerInfo) {
-                image["p"] = linkedMapOf<String, Any>(
+                image["a"] = linkedMapOf<String, Any>(
                     "i" to layer.attachIndex,
                     "r" to layer.repeat,
                     "a" to layer.attachBottomRight
                 )
             }
 
-            parallaxInfo.backgroundLayers.forEach { layer -> if (layer.name == layerName) setParallaxLayerInfo(image, layer) }
-            parallaxInfo.foregroundLayers.forEach { layer -> if (layer.name == layerName) setParallaxLayerInfo(image, layer) }
-            parallaxInfo.parallaxPlane?.topAttachedLayers?.forEach { layer -> if (layer.name == layerName) setParallaxAttachedLayerInfo(image, layer) }
-            parallaxInfo.parallaxPlane?.bottomAttachedLayers?.forEach { layer -> if (layer.name == layerName) setParallaxAttachedLayerInfo(image, layer) }
+            parallaxInfo.backgroundLayers.forEach { layer ->
+                if (layer.name == layerName) setParallaxLayerInfo(
+                    image,
+                    layer
+                )
+            }
+            parallaxInfo.foregroundLayers.forEach { layer ->
+                if (layer.name == layerName) setParallaxLayerInfo(
+                    image,
+                    layer
+                )
+            }
+            parallaxInfo.parallaxPlane?.topAttachedLayers?.forEach { layer ->
+                if (layer.name == layerName) setParallaxAttachedLayerInfo(
+                    image,
+                    layer
+                )
+            }
+            parallaxInfo.parallaxPlane?.bottomAttachedLayers?.forEach { layer ->
+                if (layer.name == layerName) setParallaxAttachedLayerInfo(
+                    image,
+                    layer
+                )
+            }
         }
 
-        // Store parallax config info
+        // (2) Export slices from 2.5 D parallax plane if available
+        parallaxInfo.parallaxPlane?.let { parallaxPlane ->
+            val planeName = parallaxPlane.name
+            println("Export parallax plane from image file: '${filename}', layer: '${planeName}', tags: '${tags}', output: '${output}'")
+
+            exportImageFromAseprite(filename, listOf(planeName), tags, output, slice = true) { aseInfo, imageName, tag ->
+                // Create image animation and store frame duration
+                val animLength: Int
+                val animStart: Int
+                if (tag.isNotEmpty()) {
+                    animLength = aseInfo.tagsByName[tag]!!.toFrame - aseInfo.tagsByName[tag]!!.fromFrame + 1
+                    animStart = aseInfo.tagsByName[tag]!!.fromFrame
+
+                } else {
+                    animLength = aseInfo.frames.size
+                    animStart = 0
+                }
+
+                // Create frames list and set frame durations based on the Aseprite info
+                val frames = MutableList(animLength) { LinkedHashMap<String, Any>() }
+                for (animIndex in animStart until animStart + animLength) {
+                    val frameDuration = aseInfo.frames[animIndex].duration
+                    frames[animIndex - animStart]["d"] = frameDuration
+                }
+
+                // Create object for parallax plane textures if not existing yet
+                val name = "${imageName}_${planeName}"
+                if (!parallaxImages.containsKey(name)) parallaxImages[name] = arrayListOf<LinkedHashMap<String ,Any>>()
+
+                // Get the parallax plane index number
+                val planeName = imageName.removePrefix("parallax_")  // Remove default prefix to get the original layer name
+
+                val regex = "_slice(\\d+)$".toRegex()
+                val match = regex.find(planeName)
+                val planeIndex = match?.groupValues?.get(1)?.toInt() ?: error("Cannot get plane index of texture '${imageName}'!")
+
+                parallaxImages[imageName] = linkedMapOf<String, Any>(
+                    "f" to frames,
+                    "i" to planeIndex,
+                    "sf" to getParallaxPlaneSpeedFactor(planeIndex, parallaxInfo.parallaxHeight, parallaxPlane.speedFactor)
+                )
+            }
+        }
+
+        // (3) Store generic parallax config info
         val parallaxConfigs = assetInfo[PARALLAX_CONFIGS] as LinkedHashMap<String, Any>
         parallaxConfigs[parallaxInfo.name] = linkedMapOf<String, Any?>(
             "w" to parallaxInfo.parallaxWidth,
@@ -150,6 +215,18 @@ class AssetImageAseExporter(
                 "b" to parallaxInfo.parallaxPlane.bottomAttachedLayers.map { layer -> layer.name }
             ) else null
         )
+    }
+
+    private fun getParallaxPlaneSpeedFactor(index: Int, size: Int, speedFactor: Float) : Float {
+        val midPoint: Float = size * 0.5f
+        return speedFactor * (
+            // The pixel in the point of view must not stand still, they need to move with the lowest possible speed (= 1 / midpoint)
+            // Otherwise the midpoint is "running" away over time
+            if (index < midPoint)
+                1f - (index / midPoint)
+            else
+                (index - midPoint + 1f) / midPoint
+            )
     }
 
     private fun createImageFramesList(aseInfo: ASEInfo, imageName: String, tag: String, assetSectionName: String) {
@@ -184,11 +261,14 @@ class AssetImageAseExporter(
         tags: List<String>,
         output: String,
         prefix: String = "",
+        slice: Boolean = false,
         configure: (aseInfo: ASEInfo, imageName: String, tag: String) -> Unit
     ) {
         val aseFile = getFile(filename)
         val aseInfo = loadAseInfo(aseFile)
         checkLayersTagsAvailable(aseInfo, filename, layers, tags)
+
+        val slice = if (slice) "_{slice}" else ""
 
         if (layers.isNotEmpty()) {
             val useLayerName = layers.size != 1  // Use layer name in output if multiple layers are specified
@@ -198,9 +278,9 @@ class AssetImageAseExporter(
                     val useTagName = tags.size != 1  // Use tag name in output if multiple tags are specified
 
                     for (tag in tags) {
-                        val imageName = if (useLayerName && useTagName) "${prefix}${output}_${layer}_${tag}"
-                        else if (useLayerName) "${prefix}${output}_${layer}"
-                        else if (useTagName) "${prefix}${output}_${tag}"
+                        val imageName = if (useLayerName && useTagName) "${prefix}${output}_${layer}_${tag}${slice}"
+                        else if (useLayerName) "${prefix}${output}_${layer}${slice}"
+                        else if (useTagName) "${prefix}${output}_${tag}${slice}"
                         else "${prefix}${output}"
                         val cmd = arrayOf(asepriteExe, "-b",
                             "--layer", layer,
@@ -210,7 +290,7 @@ class AssetImageAseExporter(
                         configure(aseInfo, imageName, tag)
                     }
                 } else {
-                    val imageName = if (useLayerName) "${prefix}${output}_${layer}" else "${prefix}${output}"
+                    val imageName = if (useLayerName) "${prefix}${output}_${layer}${slice}" else "${prefix}${output}${slice}"
                     val cmd = arrayOf(asepriteExe, "-b",
                         "--layer", layer,
                         aseFile.absolutePath, "--save-as", exportTilesDir.resolve("${imageName}_{frame0}.png").absolutePath)
@@ -224,7 +304,7 @@ class AssetImageAseExporter(
                 val useTagName = tags.size != 1  // Only use tag name in output if multiple tags are specified
 
                 for (tag in tags) {
-                    val imageName = if (useTagName) "${prefix}${output}_${tag}" else "${prefix}${output}"
+                    val imageName = if (useTagName) "${prefix}${output}_${tag}${slice}" else "${prefix}${output}${slice}"
                     val cmd = arrayOf(asepriteExe, "-b",
                         "--tag", tag,
                         aseFile.absolutePath, "--save-as", exportTilesDir.resolve("${imageName}_{frame0}.png").absolutePath)
@@ -232,14 +312,13 @@ class AssetImageAseExporter(
                     configure(aseInfo, imageName, tag)
                 }
             } else {
-                val imageName = "${prefix}${output}"
+                val imageName = "${prefix}${output}${slice}"
                 val cmd = arrayOf(asepriteExe, "-b",
                     aseFile.absolutePath, "--save-as", exportTilesDir.resolve("${imageName}_{frame0}.png").absolutePath)
                 runAsepriteExport(cmd)
                 configure(aseInfo, imageName, "")
             }
         }
-
     }
 
     /**
