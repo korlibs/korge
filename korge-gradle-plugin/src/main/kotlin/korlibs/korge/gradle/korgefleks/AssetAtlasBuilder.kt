@@ -3,7 +3,7 @@ package korlibs.korge.gradle.korgefleks
 import com.android.build.gradle.internal.cxx.json.jsonStringOf
 import korlibs.korge.gradle.korgefleks.AssetConfig.Companion.IMAGES
 import korlibs.korge.gradle.korgefleks.AssetConfig.Companion.NINE_PATCHES
-import korlibs.korge.gradle.korgefleks.AssetConfig.Companion.PARALLAX_IMAGES
+import korlibs.korge.gradle.korgefleks.AssetConfig.Companion.PARALLAX_LAYERS
 import korlibs.korge.gradle.korgefleks.AssetConfig.Companion.PIXEL_FONTS
 import korlibs.korge.gradle.korgefleks.AssetConfig.Companion.TEXTURES
 import korlibs.korge.gradle.texpacker.NewTexturePacker
@@ -44,7 +44,7 @@ class AssetAtlasBuilder(
             val imagesInfo = assetInfo[IMAGES] as LinkedHashMap<String, Any>
             val ninePatchesInfo = assetInfo[NINE_PATCHES] as LinkedHashMap<String, Any>
             val pixelFontsInfo = assetInfo[PIXEL_FONTS] as LinkedHashMap<String, Any>
-            val parallaxImageInfo = assetInfo[PARALLAX_IMAGES] as LinkedHashMap<String, Any>
+            val parallaxImageInfo = assetInfo[PARALLAX_LAYERS] as LinkedHashMap<String, Any>
 
             atlasInfoList.forEachIndexed { idx, atlasInfo ->
                 val atlasOutputFile = gameResourcesDir.resolve("${textureAtlasName}_${idx}.atlas.png")
@@ -96,7 +96,7 @@ class AssetAtlasBuilder(
                     }
 
                     parallaxImageInfo[frameTag]?.let { parallaxInfo ->
-                        saveImageInfo(parallaxInfo as LinkedHashMap<String, Any>, frameEntry as Map<String, Int>, frameTag, idx, animIndex, saveSize = false)
+// TODO adapt                       saveImageInfo(parallaxInfo as LinkedHashMap<String, Any>, frameEntry as Map<String, Int>, frameTag, idx, animIndex, saveSize = false)
                     }
                 }
             }

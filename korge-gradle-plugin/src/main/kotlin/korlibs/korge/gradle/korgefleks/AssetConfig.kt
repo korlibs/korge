@@ -31,8 +31,7 @@ class AssetConfig(
         internal const val IMAGES = "images"
         internal const val NINE_PATCHES = "ninePatches"
         internal const val PIXEL_FONTS = "pixelFonts"
-        internal const val PARALLAX_IMAGES = "parallaxImages"
-        internal const val PARALLAX_CONFIGS = "parallaxConfigs"
+        internal const val PARALLAX_LAYERS = "parallaxLayers"
     }
 
     // Directory where Aseprite files are located
@@ -63,8 +62,7 @@ class AssetConfig(
         assetInfo[IMAGES] = linkedMapOf<String, Any>()
         assetInfo[NINE_PATCHES] = linkedMapOf<String, Any>()
         assetInfo[PIXEL_FONTS] = linkedMapOf<String, Any>()
-        assetInfo[PARALLAX_IMAGES] = linkedMapOf<String, Any>()
-        assetInfo[PARALLAX_CONFIGS] = linkedMapOf<String, Any>()
+        assetInfo[PARALLAX_LAYERS] = linkedMapOf<String, Any>()
     }
 
     private val assetImageAseExporter = AssetImageAseExporter(
