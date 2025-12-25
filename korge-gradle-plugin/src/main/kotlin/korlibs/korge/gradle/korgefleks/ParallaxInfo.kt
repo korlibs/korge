@@ -26,8 +26,8 @@ package korlibs.korge.gradle.korgefleks
  */
 data class ParallaxInfo(
     val name: String,
-    val parallaxWidth: Int = 0,   // width of the parallax effect used in VERTICAL_PLANE mode for horizontal scrolling
-    val parallaxHeight: Int = 0,  // height of the parallax effect used in HORIZONTAL_PLANE mode for vertical scrolling
+    val offsetX: Int = 0,  // offset in X direction - offsets will be substructed from the parallax image size
+    val offsetY: Int = 0,  // offset in Y direction
     val mode: Mode = Mode.NO_PLANE,
 
     val backgroundLayers: List<ParallaxLayerInfo> = emptyList(),
@@ -52,9 +52,6 @@ data class ParallaxInfo(
      */
     data class ParallaxLayerInfo(
         val name: String,
-        val targetX: Int = 0,  // offset from the left corner of the parallax background image used in VERTICAL_PLANE mode
-        val targetY: Int = 0,  // offset from the top corner of the parallax background image used in HORIZONTAL_PLANE mode
-
         val repeatX: Boolean = false,
         val repeatY: Boolean = false,
         val centerX: Boolean = false,  // Center the layer in the parallax background image
@@ -93,18 +90,9 @@ data class ParallaxInfo(
      *
      * [repeat] describes if the image of the layer object should be repeated in the scroll direction (horizontal or
      * vertical) of the parallax plane.
-     *
-     * When mode is set to [HORIZONTAL_PLANE] and [attachBottomRight] is set to false then the top
-     * border of the layer is attached to the parallax plane. If [attachBottomRight] is set to true than the bottom
-     * border is attached.
-     * When [mode][ParallaxConfig.Mode] is [VERTICAL_PLANE] and [attachBottomRight] is false then the left border
-     * of the layer will be attached to the parallax plane. If [attachBottomRight] is true then the right border
-     * will be attached.
      */
     data class ParallaxAttachedLayerInfo(
         val name: String,
-        val attachIndex: Int,
-        val repeat: Boolean = true,
-        val attachBottomRight: Boolean = true
+        val repeat: Boolean = true
     )
 }

@@ -84,10 +84,21 @@ class AssetImageAseExporter(
         }
     }
 
-    fun addParallaxImageAse(filename: String, parallaxInfo: ParallaxInfo) {
-        // Define defaults for usage as parallax layer images
-        val tags = listOf("export")  // TODO remove hard coded value later
-        val output = "parallax"
+    fun addParallaxImageAse(filename: String, parallaxInfo: ParallaxInfo, tags: List<String> = listOf("export"), output: String = "parallax") {
+
+        // Prepare parallax layer info storage
+        val parallaxLayersJson = assetInfo[PARALLAX_LAYERS] as LinkedHashMap<String, Any>
+        parallaxLayersJson[parallaxInfo.name] = linkedMapOf(
+            "m" to parallaxInfo.mode,
+            "offsetX" to parallaxInfo.offsetX,  // Save offsets for usage in AssetAtlasBuilder
+            "offsetY" to parallaxInfo.offsetY,
+            "b" to arrayListOf<LinkedHashMap<String, Any?>>(),  // background layers
+            "f" to arrayListOf<LinkedHashMap<String, Any?>>()   // foreground layers
+        )
+        val parallaxLayerJson = parallaxLayersJson[parallaxInfo.name] as LinkedHashMap<String, Any>
+        // Fast access to background and foreground layers
+        val backgroundLayersJson = parallaxLayerJson["b"] as ArrayList<LinkedHashMap<String, Any?>>
+        val foregroundLayersJson = parallaxLayerJson["f"] as ArrayList<LinkedHashMap<String, Any?>>
 
         // (1) Prepare list of parallax layers to export
         val layers = arrayListOf<String>()
@@ -96,31 +107,17 @@ class AssetImageAseExporter(
 
         println("Export parallax layers from image file: '${filename}', layers: '${layers}', tags: '${tags}', output: '${output}'")
 
-        // Prepare parallax layer info storage
-        val parallaxLayersJson = assetInfo[PARALLAX_LAYERS] as LinkedHashMap<String, Any>
-        parallaxLayersJson[parallaxInfo.name] = linkedMapOf(
-            "w" to parallaxInfo.parallaxWidth,
-            "h" to parallaxInfo.parallaxHeight,
-            "m" to parallaxInfo.mode,
-            "b" to arrayListOf<LinkedHashMap<String, Any?>>(),  // background layers
-            "f" to arrayListOf<LinkedHashMap<String, Any?>>(),   // foreground layers
-        )
-        val parallaxLayerJson = parallaxLayersJson[parallaxInfo.name] as LinkedHashMap<String, Any>
-        // Fast access to background and foreground layers
-        val backgroundLayersJson = parallaxLayerJson["b"] as ArrayList<LinkedHashMap<String, Any?>>
-        val foregroundLayersJson = parallaxLayerJson["f"] as ArrayList<LinkedHashMap<String, Any?>>
-
         // (2) Export all parallax layers as individual images and store layer info
         exportImageFromAseprite(filename, layers, tags, output) { _, imageName, _ ->
 
-            fun setParallaxLayerInfo(layersJson: ArrayList<LinkedHashMap<String, Any?>>, layerInfo: ParallaxLayerInfo) {
+            fun setLayerInfo(layersJson: ArrayList<LinkedHashMap<String, Any?>>, layerInfo: ParallaxLayerInfo) {
                 layersJson.add(linkedMapOf(
-                    "n" to layerInfo.name,
+                    "n"  to imageName,
                     // "f" will be populated in AssetAtlasBuilder
-                    "tx" to layerInfo.targetX,  // offset from the left corner of the parallax background image used in VERTICAL_PLANE mode
-                    "ty" to layerInfo.targetY,  // offset from the top corner of the parallax background image used in HORIZONTAL_PLANE mode
+                    // "tx" will be populated in AssetAtlasBuilder
+                    // "ty" will be populated in AssetAtlasBuilder
                     "rx" to layerInfo.repeatX,
-                    "ry" to layerInfo.repeatX,
+                    "ry" to layerInfo.repeatY,
                     "cx" to layerInfo.centerX,  // Center the layer in the parallax background image
                     "cy" to layerInfo.centerY,
                     "sf" to layerInfo.speedFactor,  // If this is null than no movement is applied to the layer
@@ -134,18 +131,18 @@ class AssetImageAseExporter(
             val layerName = imageName.removePrefix("parallax_")  // Remove default prefix to get the original layer name
 
             // Store background and foreground layer info
-            parallaxInfo.backgroundLayers.forEach { layerInfo -> if (layerInfo.name == layerName) setParallaxLayerInfo(backgroundLayersJson, layerInfo) }
-            parallaxInfo.foregroundLayers.forEach { layerInfo -> if (layerInfo.name == layerName) setParallaxLayerInfo(foregroundLayersJson, layerInfo) }
+            parallaxInfo.backgroundLayers.forEach { layerInfo -> if (layerInfo.name == layerName) setLayerInfo(backgroundLayersJson, layerInfo) }
+            parallaxInfo.foregroundLayers.forEach { layerInfo -> if (layerInfo.name == layerName) setLayerInfo(foregroundLayersJson, layerInfo) }
         }
 
-        // (3) Prepare parallax plane
         parallaxInfo.parallaxPlane?.let { parallaxPlaneInfo ->
+            // (3) Prepare parallax plane
             val parallaxPlaneJson = linkedMapOf<String, Any>(
                 "n" to parallaxPlaneInfo.name,
                 "s" to parallaxPlaneInfo.selfSpeed,
-                "l" to arrayListOf<LinkedHashMap<String, Any>>(),  // line textuers
                 "t" to arrayListOf<LinkedHashMap<String, Any>>(),  // top attached layers
-                "b" to arrayListOf<LinkedHashMap<String, Any>>()   // bottom attached layers
+                "b" to arrayListOf<LinkedHashMap<String, Any>>(),  // bottom attached layers
+                "l" to arrayListOf<LinkedHashMap<String, Any>>()   // line textuers
             )
             parallaxLayerJson["p"] = parallaxPlaneJson
 
@@ -163,12 +160,13 @@ class AssetImageAseExporter(
 
             // (5) Export all parallax attached layers as individual images and store layer info
             exportImageFromAseprite(filename, layers, tags, output) { _, imageName, _ ->
-                fun setLayerInfo(layersJson: ArrayList<LinkedHashMap<String, Any>>, layerInfo: ParallaxAttachedLayerInfo) {
+
+                fun setLayerInfo(layersJson: ArrayList<LinkedHashMap<String, Any>>) {
                     layersJson.add(linkedMapOf(
-                        "n" to layerInfo.name,
-                        // "f" will be populated in AssetAtlasBuilder
-                        "i" to layerInfo.attachIndex,  // TODO calculate from targetX/Y
-                        "s" to getParallaxPlaneSpeedFactor(layerInfo.attachIndex, parallaxInfo.parallaxHeight, parallaxPlaneInfo.speedFactor),
+                        "n" to imageName,
+                        // "f" frame info will be populated in AssetAtlasBuilder
+                        // "i" index will be populated in AssetAtlasBuilder
+                        "s" to parallaxPlaneInfo.speedFactor  // Store speed factor here - the correct speed per slice index will be calculated in AssetAtlasBuilder
                     ))
                 }
 
@@ -177,8 +175,8 @@ class AssetImageAseExporter(
                 val layerName = imageName.removePrefix("parallax_")  // Remove default prefix to get the original layer name
 
                 // Store background and foreground layer info
-                parallaxPlaneInfo.topAttachedLayers.forEach { layerInfo -> if (layerInfo.name == layerName) setLayerInfo(topAttachedLayersJson, layerInfo) }
-                parallaxPlaneInfo.bottomAttachedLayers.forEach { layerInfo -> if (layerInfo.name == layerName) setLayerInfo(bottomAttachedLayersJson, layerInfo) }
+                parallaxPlaneInfo.topAttachedLayers.forEach { layerInfo -> if (layerInfo.name == layerName) setLayerInfo(topAttachedLayersJson) }
+                parallaxPlaneInfo.bottomAttachedLayers.forEach { layerInfo -> if (layerInfo.name == layerName) setLayerInfo(bottomAttachedLayersJson) }
             }
 
             // (6) Prepare list of parallax plane slices to export
@@ -187,8 +185,8 @@ class AssetImageAseExporter(
             aseInfo.slices.forEach { slice ->
                 slice.sliceName
                 val index = when (parallaxInfo.mode) {
-                    Mode.HORIZONTAL_PLANE -> slice.keys.first().y
-                    Mode.VERTICAL_PLANE -> slice.keys.first().x
+                    Mode.HORIZONTAL_PLANE -> slice.keys.first().y + parallaxInfo.offsetY
+                    Mode.VERTICAL_PLANE -> slice.keys.first().x + parallaxInfo.offsetX
                     else -> throw GradleException("Parallax mode must be HORIZONTAL_PLANE or VERTICAL_PLANE to export parallax plane slices!")
                 }
 
@@ -196,31 +194,18 @@ class AssetImageAseExporter(
                     "name" to slice.sliceName,  // Name is needed here to identify the slice in the atlas in AssetAtlasBuilder
                     // "f" will be populated in AssetAtlasBuilder
                     "i" to index,
-                    "s" to getParallaxPlaneSpeedFactor(index, parallaxInfo.parallaxHeight, parallaxPlaneInfo.speedFactor)
+                    "s" to parallaxPlaneInfo.speedFactor  // Store speed factor here - the correct speed per slice index will be calculated in AssetAtlasBuilder
                 ))
             }
-
 
             val planeName = parallaxPlaneInfo.name
             println("Export parallax plane from image file: '${filename}', layer: '${planeName}', tags: '${tags}', output: '${output}'")
 
             // (7) Export ground plane as individual sliced images
-            exportImageFromAseprite(filename, listOf(planeName), tags, output, slice = true, frame = false) { _, _, _ ->
+            exportImageFromAseprite(filename, listOf(planeName), tags, "${output}_${planeName}", slice = true, frame = false) { _, _, _ ->
                 // Nothing to do here - slices are stores already in step (6)
             }
         }
-    }
-
-    private fun getParallaxPlaneSpeedFactor(index: Int, size: Int, speedFactor: Float) : Float {
-        val midPoint: Float = size * 0.5f
-        return speedFactor * (
-            // The pixel in the point of view must not stand still, they need to move with the lowest possible speed (= 1 / midpoint)
-            // Otherwise the midpoint is "running" away over time
-            if (index < midPoint)
-                1f - (index / midPoint)
-            else
-                (index - midPoint + 1f) / midPoint
-            )
     }
 
     private fun createImageFramesList(aseInfo: ASEInfo, imageName: String, tag: String, assetSectionName: String) {
