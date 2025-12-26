@@ -104,7 +104,6 @@ class AssetImageAseExporter(
         val layers = arrayListOf<String>()
         parallaxInfo.backgroundLayers.forEach { layer -> layers.add(layer.name) }
         parallaxInfo.foregroundLayers.forEach { layer -> layers.add(layer.name) }
-
         println("Export parallax layers from image file: '${filename}', layers: '${layers}', tags: '${tags}', output: '${output}'")
 
         // (2) Export all parallax layers as individual images and store layer info
@@ -127,7 +126,6 @@ class AssetImageAseExporter(
             }
 
             // Get image map from asset info and store frames list
-            println("Processing layer image: '${imageName}'")
             val layerName = imageName.removePrefix("parallax_")  // Remove default prefix to get the original layer name
 
             // Store background and foreground layer info
@@ -155,7 +153,6 @@ class AssetImageAseExporter(
             val layers = arrayListOf<String>()
             parallaxPlaneInfo.topAttachedLayers.forEach { layer -> layers.add(layer.name) }
             parallaxPlaneInfo.bottomAttachedLayers.forEach { layer -> layers.add(layer.name) }
-
             println("Export parallax attached layers from image file: '${filename}', layers: '${layers}', tags: '${tags}', output: '${output}'")
 
             // (5) Export all parallax attached layers as individual images and store layer info
@@ -171,7 +168,6 @@ class AssetImageAseExporter(
                 }
 
                 // Get parallax map from asset info and store layer list
-                println("Processing attached layer image: '${imageName}'")
                 val layerName = imageName.removePrefix("parallax_")  // Remove default prefix to get the original layer name
 
                 // Store background and foreground layer info
@@ -198,10 +194,9 @@ class AssetImageAseExporter(
                 ))
             }
 
+            // (7) Export ground plane as individual sliced images
             val planeName = parallaxPlaneInfo.name
             println("Export parallax plane from image file: '${filename}', layer: '${planeName}', tags: '${tags}', output: '${output}'")
-
-            // (7) Export ground plane as individual sliced images
             exportImageFromAseprite(filename, listOf(planeName), tags, "${output}_${planeName}", slice = true, frame = false) { _, _, _ ->
                 // Nothing to do here - slices are stores already in step (6)
             }
