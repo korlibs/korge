@@ -2,6 +2,7 @@ package korlibs.korge.gradle.texpacker
 
 import com.android.build.gradle.internal.cxx.json.*
 import korlibs.korge.gradle.*
+import org.gradle.api.GradleException
 import java.awt.*
 import java.io.*
 
@@ -38,7 +39,11 @@ object NewTexturePacker {
          * @param output The output file for the atlas PNG image.
          */
         fun writeImage(output: File) {
-            image.writeTo(output)
+            output.parent?.let { outputPath ->
+                // make sure the output directory exists
+                File(outputPath).mkdirs()
+                image.writeTo(output)
+            } ?: throw GradleException("Unable to create output directory for '$output'!")
         }
     }
 

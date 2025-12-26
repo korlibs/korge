@@ -41,38 +41,53 @@ open class KorgeFleksExtension(
      * Atlas names and sizes can be customized via parameters, with defaults provided from the KorgeFleks extension's properties.
      *
      * @param path The relative path to the asset directory.
-     * @param callback A lambda function to configure the assets.
+     * @param config A lambda function to configure the assets.
      *
      * @throws GradleException if the Aseprite executable is not found.
      */
     fun commonAssets(
         path: String,
-        callback: AssetConfig.() -> Unit
-    ) = processAssets(path, null, null, callback)
+        config: AssetConfig.() -> Unit
+    ) = processAssets(path, callback = config)
 
     fun worldAssets(
         path: String,
         world: Int,
-        callback: AssetConfig.() -> Unit
-    ) = processAssets(path, world, null, callback)
+        config: AssetConfig.() -> Unit
+    ) = processAssets(path, world, callback = config)
 
     fun worldLevelAssets(
         path: String,
         world: Int,
         level: Int,
-        callback: AssetConfig.() -> Unit
-    ) = processAssets(path, world, level, callback)
+        config: AssetConfig.() -> Unit
+    ) = processAssets(path, world, level, callback = config)
+
+    fun worldLevelChunkAssets(
+        path: String,
+        world: Int,
+        level: Int,
+        config: AssetConfig.() -> Unit
+    ) = processAssets(path, world, level, true, config)
 
     private fun processAssets(
         path: String,
         world: Int? = null,
         level: Int? = null,
-        callback: AssetConfig.() -> Unit
+        chunk: Boolean = false,
+        callback: AssetConfig.() -> Unit,
     ) {
-        if (!File(asepriteExe).exists()) throw GradleException("Aseprite executable not found: '$asepriteExe' " +
-            "Make sure to set 'asepriteExe' property in KorgeFleks extension.")
+        if (!File(asepriteExe).exists()) throw GradleException("Aseprite executable not found: '$asepriteExe' - Make sure to set 'asepriteExe' property in KorgeFleks extension.")
 
-        val assetName = if (world != null && level != null) "world_${world}/level_${level}"
+        // Sanity check for special chunk assets
+        if (chunk && (world == null || level == null)) {
+            throw GradleException("KorgeFleksExtension: worldLevelChunkAssets function called without worldNum and levelNum!")
+        }
+
+        // TODO here we need to check how we cluster assets from chunks into asset bundles which are loaded together
+        val special = if (chunk) "/chunk" else ""
+
+        val assetName = if (world != null && level != null) "world_${world}/level_${level}${special}"
         else if (world != null) "world_$world"
         else if (level != null) throw GradleException("KorgeFleksExtension: worldAssets: levelNum specified without worldNum!")
         else "common"
@@ -92,18 +107,4 @@ open class KorgeFleksExtension(
             }
         }
     }
-
-
-/*
-    // TODO: Implement LDtk level parsing and loading
-    fun loadLDtkLevel(name: String) =
-        project.tasks.createThis<Task>(name) {
-            group = assetGroup
-            doFirst {
-                println("KorgeFleksExtension: loadLDtkLevel: $name")
-//                KorgeFleksAssets.parseLDtkLevel()
-            }
-        }
-*/
-
 }
