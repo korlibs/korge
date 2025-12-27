@@ -71,4 +71,22 @@ class AssetFileInstaller(
     fun addSoundFile(filename: String) {
         TODO("Not yet implemented")
     }
+
+    /**
+     * Adds a generic file to the game resources directory.
+     * Copies the specified file from the asset directory to the game resources directory.
+     *
+     * @param filename The name of the file to be added.
+     */
+    fun addFile(filename: String) {
+        val sourceFile = assetDir.resolve(filename)
+        // Just take the file name without any path for the destination
+        val destFile = gameResourcesDir.resolve(sourceFile.name)
+
+        // Make sure destination directory under resources exists
+        destFile.parentFile?.let { it.mkdirs() } ?: error("Could not create game resources directory: ${gameResourcesDir.path}")
+
+        // Copy file to game resources directory
+        sourceFile.copyTo(destFile, overwrite = true)
+    }
 }

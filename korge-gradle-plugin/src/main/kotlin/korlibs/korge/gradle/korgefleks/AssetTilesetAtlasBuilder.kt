@@ -48,7 +48,7 @@ class AssetTilesetAtlasBuilder(
 
             // Go through all packed atlases
             val tilesets = assetInfo[TILESETS] as ArrayList<String>
-            val tilesInfo = assetInfo[TILES] as LinkedHashMap<String, Any>
+            val tileFramesInfo = linkedMapOf<String, IntArray>()
 
             atlasInfoList.forEachIndexed { idx, atlasInfo ->
                 // And store their tileset atlas image as png files
@@ -64,16 +64,24 @@ class AssetTilesetAtlasBuilder(
                 val frames = atlasInfo.info["frames"] as Map<String, Any>
                 frames.forEach { (frameName, frameEntry) ->
                     frameEntry as Map<String, Any>
+                    val frame = frameEntry["frame"] as Map<String, Int>
 
-                    val tileInfo = linkedMapOf(
-// TODO check if a map or list fits here better
-//                        "n" to frameName,
-                        "i" to idx
+                    // Set frame info: [textureIndex, x, y]
+                    val tileInfo = intArrayOf(
+                        idx,  // Save index to texture atlas where the frame is located
+                        frame["x"] ?: error("TilesetBuilder - frame x is null for sprite '${frameName}'!"),
+                        frame["y"] ?: error("TilesetBuilder - frame y is null for sprite '${frameName}'!")
                     )
-                    tilesInfo[frameName] = tileInfo
-
+                    tileFramesInfo[frameName] = tileInfo
                 }
             }
+
+            // Finally, store tileset info
+            assetInfo[TILES] = linkedMapOf(
+                "w" to tileWidth,
+                "h" to tileHeight,
+                "f" to tileFramesInfo
+            )
         }
     }
 }

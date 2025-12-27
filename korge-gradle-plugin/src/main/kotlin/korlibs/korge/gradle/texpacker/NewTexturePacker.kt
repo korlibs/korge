@@ -93,10 +93,10 @@ object NewTexturePacker {
                 null
             }
         }
+
         // Split each tileset into tiles
         val images = arrayListOf<Pair<File, SimpleBitmap>>()
-        tilesets.forEach { tileset ->
-            val (file, image) = tileset
+        tilesets.forEach { (file, image) ->
             if (image.width % tileWidth != 0 || image.height % tileHeight != 0) {
                 throw IllegalArgumentException("Tileset image size must be multiple of tile size '$tileWidth x $tileHeight': $file with size '${image.width} x ${image.height}'")
             }

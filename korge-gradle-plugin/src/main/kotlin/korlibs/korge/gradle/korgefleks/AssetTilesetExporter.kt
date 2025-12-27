@@ -20,12 +20,15 @@ class AssetTilesetExporter(
     fun addTilesetImagePng(filename: String) {
         val tilesetFile = assetDir.resolve(filename)
 
-        // Store tileset image file in export tileset directory for atlas packing
-        val exportTilesetFile = exportTilesetDir.resolve(filename)
+        // Store tileset image file in export tileset directory for atlas packing (take only file name without path)
+        val exportTilesetFile = exportTilesetDir.resolve(tilesetFile.name)
 
         // Make sure export directory exists
         exportTilesetFile.parentFile?.let { it.mkdirs() }
             ?: error("Could not create export tileset directory: ${exportTilesetDir.path}")
+
+        // Check if file already exists in export directory
+        if (exportTilesetFile.exists()) println("ERROR: Tileset file '${exportTilesetFile.name}' already exists in export directory and will be overwritten. Please check if this is intended.")
 
         // Copy tileset file to export directory
         tilesetFile.copyTo(exportTilesetFile, overwrite = true)

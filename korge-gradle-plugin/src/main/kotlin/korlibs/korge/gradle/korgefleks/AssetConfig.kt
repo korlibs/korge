@@ -44,8 +44,8 @@ class AssetConfig(
     // Directory where Aseprite files are located
     private val assetDir = projectDir.resolve(assetPath)
     // Directory where exported tiles and tilesets will be stored
-    private val exportTilesDir = projectDir.resolve("build/assets/${assetPath.replace("/", "-").replace("\\", "-")}-tiles")
-    private val exportTilesetDir = projectDir.resolve("build/assets/${assetPath.replace("/", "-").replace("\\", "-")}-tilesets")
+    private val exportTilesDir = projectDir.resolve("build/assets/imageAtlasInput")
+    private val exportTilesetDir = projectDir.resolve("build/assets/tilesetAtlasInput")
     // Directory where game resources are located
     private val gameResourcesDir = projectDir.resolve("src/commonMain/resources/${resourcePath}")
 
@@ -154,6 +154,14 @@ class AssetConfig(
      */
     fun addTilesetImagePng(filename: String) {
         assetTilesetExporter.addTilesetImagePng(filename)
+    }
+
+    /**
+     * Add a generic file to the asset configuration.
+     * Copies the file to the game resources' directory.
+     */
+    fun addFile(filename: String) {
+        assetFileInstaller.addFile(filename)
     }
 
     /**

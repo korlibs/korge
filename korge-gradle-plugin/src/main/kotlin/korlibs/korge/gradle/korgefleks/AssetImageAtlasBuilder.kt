@@ -84,10 +84,10 @@ class AssetImageAtlasBuilder(
                         // Set frame info: [textureIndex, x, y, width, height]
                         ninePatchInfo["f"] = arrayOf(
                             idx,
-                            frame["x"] ?: error("AssetConfig - frame x is null for sprite '${frameName}'!"),
-                            frame["y"] ?: error("AssetConfig - frame y is null for sprite '${frameName}'!"),
-                            frame["w"] ?: error("AssetConfig - frame w is null for sprite '${frameName}'!"),
-                            frame["h"] ?: error("AssetConfig - frame h is null for sprite '${frameName}'!")
+                            frame["x"] ?: error("NinePatchImageBuilder - frame x is null for sprite '${frameName}'!"),
+                            frame["y"] ?: error("NinePatchImageBuilder - frame y is null for sprite '${frameName}'!"),
+                            frame["w"] ?: error("NinePatchImageBuilder - frame w is null for sprite '${frameName}'!"),
+                            frame["h"] ?: error("NinePatchImageBuilder - frame h is null for sprite '${frameName}'!")
                         )
                         // Nine-patch center info was already set by AssetImageLoader during export
                     }
@@ -100,10 +100,10 @@ class AssetImageAtlasBuilder(
                         // Set frame info: [textureIndex, x, y, width, height]
                         pixelFontInfo["f"] = arrayOf(
                             idx,
-                            frame["x"] ?: error("AssetConfig - frame x is null for sprite '${frameName}'!"),
-                            frame["y"] ?: error("AssetConfig - frame y is null for sprite '${frameName}'!"),
-                            frame["w"] ?: error("AssetConfig - frame w is null for sprite '${frameName}'!"),
-                            frame["h"] ?: error("AssetConfig - frame h is null for sprite '${frameName}'!")
+                            frame["x"] ?: error("PixelFontImageBuilder - frame x is null for sprite '${frameName}'!"),
+                            frame["y"] ?: error("PixelFontImageBuilder - frame y is null for sprite '${frameName}'!"),
+                            frame["w"] ?: error("PixelFontImageBuilder - frame w is null for sprite '${frameName}'!"),
+                            frame["h"] ?: error("PixelFontImageBuilder - frame h is null for sprite '${frameName}'!")
                         )
                     }
 
@@ -270,7 +270,7 @@ class AssetImageAtlasBuilder(
     private fun saveImageInfo(imageInfo: LinkedHashMap<String, Any>, frameEntry: Map<String, Int>, frameTag: String, idx: Int, animIndex: Int, saveSize: Boolean = true) {
         // Ensure the frames list is large enough and set the frame at the correct index
         val framesInfo = imageInfo["f"] as MutableList<LinkedHashMap<String, Any>>
-        if (animIndex >= framesInfo.size) error("ImageInfoBuilder - Animation index ${animIndex} out of bounds for sprite '${frameTag}' with ${framesInfo.size} frames!")
+        if (animIndex >= framesInfo.size) error("ImageBuilder - Animation index ${animIndex} out of bounds for sprite '${frameTag}' with ${framesInfo.size} frames!")
 
         val spriteSource = frameEntry["spriteSourceSize"] as Map<String, Int>
         val sourceSize = frameEntry["sourceSize"] as Map<String, Int>
@@ -279,18 +279,18 @@ class AssetImageAtlasBuilder(
         // Set frame info for animIndex: [textureIndex, x, y, width, height]
         framesInfo[animIndex]["f"] = arrayOf(
             idx,
-            frame["x"] ?: error("ImageInfoBuilder - frame x is null for sprite '${frameTag}' index '$idx'!"),
-            frame["y"] ?: error("ImageInfoBuilder - frame y is null for sprite '${frameTag}' index '$idx'!"),
-            frame["w"] ?: error("ImageInfoBuilder - frame w is null for sprite '${frameTag}' index '$idx'!"),
-            frame["h"] ?: error("ImageInfoBuilder - frame h is null for sprite '${frameTag}' index '$idx'!")
+            frame["x"] ?: error("ImageBuilder - frame x is null for sprite '${frameTag}' index '$idx'!"),
+            frame["y"] ?: error("ImageBuilder - frame y is null for sprite '${frameTag}' index '$idx'!"),
+            frame["w"] ?: error("ImageBuilder - frame w is null for sprite '${frameTag}' index '$idx'!"),
+            frame["h"] ?: error("ImageBuilder - frame h is null for sprite '${frameTag}' index '$idx'!")
         )
-        framesInfo[animIndex]["x"] = spriteSource["x"] ?: error("ImageInfoBuilder - spriteSource x is null for sprite '${frameTag}'!")
-        framesInfo[animIndex]["y"] = spriteSource["y"] ?: error("ImageInfoBuilder - spriteSource y is null for sprite '${frameTag}'!")
+        framesInfo[animIndex]["x"] = spriteSource["x"] ?: error("ImageBuilder - spriteSource x is null for sprite '${frameTag}'!")
+        framesInfo[animIndex]["y"] = spriteSource["y"] ?: error("ImageBuilder - spriteSource y is null for sprite '${frameTag}'!")
         // Do not set duration here - it was already set by AssetImageLoader from ASEInfo during texture export from Aseprite
 
         if (saveSize) {
-            imageInfo["w"] = sourceSize["w"] ?: error("ImageInfoBuilder - sourceSize w is null for sprite '${frameTag}'!")
-            imageInfo["h"] = sourceSize["h"] ?: error("ImageInfoBuilder - sourceSize h is null for sprite '${frameTag}'!")
+            imageInfo["w"] = sourceSize["w"] ?: error("ImageBuilder - sourceSize w is null for sprite '${frameTag}'!")
+            imageInfo["h"] = sourceSize["h"] ?: error("ImageBuilder - sourceSize h is null for sprite '${frameTag}'!")
         }
     }
 }
