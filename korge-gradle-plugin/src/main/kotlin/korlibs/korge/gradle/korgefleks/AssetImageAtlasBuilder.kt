@@ -1,6 +1,5 @@
 package korlibs.korge.gradle.korgefleks
 
-import com.android.build.gradle.internal.cxx.json.jsonStringOf
 import korlibs.korge.gradle.korgefleks.AssetConfig.Companion.IMAGES
 import korlibs.korge.gradle.korgefleks.AssetConfig.Companion.NINE_PATCHES
 import korlibs.korge.gradle.korgefleks.AssetConfig.Companion.PARALLAX_LAYERS
@@ -13,31 +12,38 @@ import java.util.ArrayList
 import kotlin.String
 
 
-class AssetAtlasBuilder(
+/**
+ * Builds texture atlases from exported tile images and updates asset information accordingly.
+ *
+ * @param exportTilesDir The directory containing exported tile images.
+ * @param gameResourcesDir The directory where the generated texture atlases will be stored.
+ * @param assetInfo The asset information map to be updated with texture atlas data.
+ */
+class AssetImageAtlasBuilder(
     private val exportTilesDir: File,
-    private val exportTilesetDir: File,
     private val gameResourcesDir: File,
     private val assetInfo: LinkedHashMap<String, Any>
 ) {
-
+    /**
+     * Builds a texture atlas from the exported tiles in the export tiles directory.
+     * Adds the texture atlas information to the internal asset info list.
+     */
     fun buildAtlases(
         textureAtlasName: String,
-        tilesetAtlasName: String,
-        textureAtlasWidth: Int,
-        textureAtlasHeight: Int,
-        simplifyJson: Boolean
+        atlasWidth: Int,
+        atlasHeight: Int,
+        atlasPadding: Int
     ) {
-
         if (exportTilesDir.listFiles() != null && exportTilesDir.listFiles().isNotEmpty()) {
             // First build texture atlas
             val atlasInfoList = NewTexturePacker.packImages(exportTilesDir,
                 enableRotation = false,
                 enableTrimming = true,
-                padding = 1,
+                padding = atlasPadding,
                 trimFileName = true,
                 removeDuplicates = true,
-                textureAtlasWidth = textureAtlasWidth,
-                textureAtlasHeight = textureAtlasHeight
+                textureAtlasWidth = atlasWidth,
+                textureAtlasHeight = atlasHeight
             )
 
             // Go through each generated atlas entry and map frames to asset info list
@@ -245,26 +251,6 @@ class AssetAtlasBuilder(
                 parallaxLayerInfo as LinkedHashMap<String, Any>
                 parallaxLayerInfo.remove("offsetX")
                 parallaxLayerInfo.remove("offsetY")
-            }
-
-            // Finally, write out the asset info as JSON file
-            val assetInfoJsonFile = gameResourcesDir.resolve("${textureAtlasName}.atlas.json")
-            assetInfoJsonFile.parentFile?.let { parent ->
-                if (!parent.exists() && !parent.mkdirs()) error("Failed to create directory: ${parent.path}")
-                val jsonString = jsonStringOf(assetInfo)
-                // Simplify JSON string by removing unnecessary spaces and line breaks
-                val simplifiedJsonString = if (simplifyJson) jsonString.replace(Regex("\\s+"), "")
-                else jsonString
-                assetInfoJsonFile.writeText(simplifiedJsonString)
-            }
-        }
-
-        // Then build tilesets atlas
-        if (exportTilesetDir.listFiles() != null && exportTilesetDir.listFiles().isNotEmpty()) {
-            val atlasInfoList = NewTexturePacker.packTilesets(exportTilesetDir)
-            atlasInfoList.forEachIndexed { idx, atlasInfo ->
-                val atlasOutputFile = gameResourcesDir.resolve("${tilesetAtlasName}_${idx}.atlas")
-                atlasInfo.writeImage(atlasOutputFile)
             }
         }
     }

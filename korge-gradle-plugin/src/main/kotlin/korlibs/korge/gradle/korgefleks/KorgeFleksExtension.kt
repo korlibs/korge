@@ -37,6 +37,8 @@ open class KorgeFleksExtension(
 
     /**
      * Prepares asset processing by creating a Gradle task for handling common assets.
+     * Assets which are added here will be grouped into a common asset bundle loaded for all worlds and levels.
+     * Common assets are typically used for shared resources like UI elements, sounds, and other global assets.
      *
      * Atlas names and sizes can be customized via parameters, with defaults provided from the KorgeFleks extension's properties.
      *
@@ -50,12 +52,33 @@ open class KorgeFleksExtension(
         config: AssetConfig.() -> Unit
     ) = processAssets(path, callback = config)
 
+    /**
+     * Prepares asset processing by creating a Gradle task for handling world-level assets.
+     * Assets which are added here will be grouped into separate asset bundles per world.
+     *
+     * @param path The relative path to the asset directory.
+     * @param world The world number for which the assets are being configured.
+     * @param config A lambda function to configure the assets.
+     *
+     * @throws GradleException if the Aseprite executable is not found.
+     */
     fun worldAssets(
         path: String,
         world: Int,
         config: AssetConfig.() -> Unit
     ) = processAssets(path, world, callback = config)
 
+    /**
+     * Prepares asset processing by creating a Gradle task for handling world-level and level-level assets.
+     * Assets which are added here will be grouped into separate asset bundles per world and level.
+     *
+     * @param path The relative path to the asset directory.
+     * @param world The world number for which the assets are being configured.
+     * @param level The level number for which the assets are being configured.
+     * @param config A lambda function to configure the assets.
+     *
+     * @throws GradleException if the Aseprite executable is not found.
+     */
     fun worldLevelAssets(
         path: String,
         world: Int,
@@ -63,6 +86,19 @@ open class KorgeFleksExtension(
         config: AssetConfig.() -> Unit
     ) = processAssets(path, world, level, callback = config)
 
+    /**
+     * Prepares asset processing by creating a Gradle task for handling world-level chunk assets.
+     * Assets which are added here will be grouped into separate asset bundles per chunk (group).
+     * Chunk assets are typically used for large levels that are divided into smaller sections (chunks)
+     * to optimize loading, performance and memory consumption.
+     *
+     * @param path The relative path to the asset directory.
+     * @param world The world number for which the chunk assets are being configured.
+     * @param level The level number for which the chunk assets are being configured.
+     * @param config A lambda function to configure the assets.
+     *
+     * @throws GradleException if the Aseprite executable is not found.
+     */
     fun worldLevelChunkAssets(
         path: String,
         world: Int,
@@ -103,7 +139,7 @@ open class KorgeFleksExtension(
             group = assetGroup
             doLast {
                 assetConfig.apply(callback)
-                assetConfig.buildAtlases()
+                assetConfig.buildAssetStore()
             }
         }
     }

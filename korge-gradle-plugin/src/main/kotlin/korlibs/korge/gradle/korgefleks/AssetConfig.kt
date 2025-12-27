@@ -1,5 +1,6 @@
 package korlibs.korge.gradle.korgefleks
 
+import com.android.build.gradle.internal.cxx.json.jsonStringOf
 import java.io.File
 
 
@@ -22,23 +23,29 @@ class AssetConfig(
     var textureAtlasName: String = "texture"
     var tilesetAtlasName: String = "tileset"
     var simplifyJson: Boolean = true
+
+    var tileWidth: Int = 16
+    var tileHeight: Int = 16
     var atlasWidth: Int = 2048
     var atlasHeight: Int = 2048
+    var atlasPadding: Int = 1
 
     companion object {
         internal const val VERSION = "version"
         internal const val TEXTURES = "textures"
+        internal const val TILESETS = "tilesets"
         internal const val IMAGES = "images"
         internal const val NINE_PATCHES = "ninePatches"
         internal const val PIXEL_FONTS = "pixelFonts"
         internal const val PARALLAX_LAYERS = "parallaxLayers"
+        internal const val TILES = "tiles"
     }
 
     // Directory where Aseprite files are located
     private val assetDir = projectDir.resolve(assetPath)
     // Directory where exported tiles and tilesets will be stored
     private val exportTilesDir = projectDir.resolve("build/assets/${assetPath.replace("/", "-").replace("\\", "-")}-tiles")
-    private val exportTilesetDir = projectDir.resolve("build/assets/${assetPath.replace("/", "-").replace("\\", "-")}-tilesets2")
+    private val exportTilesetDir = projectDir.resolve("build/assets/${assetPath.replace("/", "-").replace("\\", "-")}-tilesets")
     // Directory where game resources are located
     private val gameResourcesDir = projectDir.resolve("src/commonMain/resources/${resourcePath}")
 
@@ -59,32 +66,19 @@ class AssetConfig(
 
         // Initialize maps and lists in asset info
         assetInfo[TEXTURES] = arrayListOf<String>()
+        assetInfo[TILESETS] = arrayListOf<String>()
         assetInfo[IMAGES] = linkedMapOf<String, Any>()
         assetInfo[NINE_PATCHES] = linkedMapOf<String, Any>()
         assetInfo[PIXEL_FONTS] = linkedMapOf<String, Any>()
         assetInfo[PARALLAX_LAYERS] = linkedMapOf<String, Any>()
+        assetInfo[TILES] = linkedMapOf<String, Any>()
     }
 
-    private val assetImageAseExporter = AssetImageAseExporter(
-        asepriteExe,
-        assetDir,
-        exportTilesDir,
-        assetInfo
-    )
-
-    private val assetAtlasBuilder = AssetAtlasBuilder(
-        exportTilesDir,
-        exportTilesetDir,
-        gameResourcesDir,
-        assetInfo
-    )
-
-    private val assetFileInstaller = AssetFileInstaller(
-        assetDir,
-        exportTilesDir,
-        gameResourcesDir,
-        assetInfo
-    )
+    private val assetImageAseExporter = AssetImageAseExporter(asepriteExe, assetDir, exportTilesDir, assetInfo)
+    private val assetFileInstaller = AssetFileInstaller(assetDir, exportTilesDir, gameResourcesDir, assetInfo)
+    private val assetTilesetExporter = AssetTilesetExporter(assetDir, exportTilesetDir)
+    private val assetImageAtlasBuilder = AssetImageAtlasBuilder(exportTilesDir, gameResourcesDir, assetInfo)
+    private val assetTilesetAtlasBuilder = AssetTilesetAtlasBuilder(exportTilesetDir, gameResourcesDir, assetInfo)
 
     /**
      * Export specific layers and tags from Aseprite file as independent png images.
@@ -154,16 +148,46 @@ class AssetConfig(
         assetImageAseExporter.addParallaxImageAse(filename, parallaxInfo)
     }
 
-
-
-    fun buildAtlases() {
-        assetAtlasBuilder.buildAtlases(
-            textureAtlasName,
-            tilesetAtlasName,
-            atlasWidth,
-            atlasHeight,
-            simplifyJson
-        )
+    /**
+     * Export single tiles from a png tileset file and stores them in a tileset atlas.
+     * Adds exported tiles and tileset images to internal asset info list.
+     */
+    fun addTilesetImagePng(filename: String) {
+        assetTilesetExporter.addTilesetImagePng(filename)
     }
 
+    /**
+     * Build texture and tileset atlases from exported images.
+     * Uses atlas names and sizes from the AssetConfig properties.
+     *
+     * This will always be called as last step after all assets have been added.
+     */
+    internal fun buildAssetStore() {
+        // First build the image and tileset atlases
+        assetImageAtlasBuilder.buildAtlases(
+            textureAtlasName,
+            atlasWidth,
+            atlasHeight,
+            atlasPadding
+        )
+        assetTilesetAtlasBuilder.buildTilesetAtlas(
+            tilesetAtlasName,
+            tileWidth,
+            tileHeight,
+            atlasWidth,
+            atlasHeight,
+            atlasPadding
+        )
+
+        // Finally, write out the asset info as JSON file
+        val assetInfoJsonFile = gameResourcesDir.resolve("${textureAtlasName}.atlas.json")
+        assetInfoJsonFile.parentFile?.let { parent ->
+            if (!parent.exists() && !parent.mkdirs()) error("Failed to create directory: ${parent.path}")
+            val jsonString = jsonStringOf(assetInfo)
+            // Simplify JSON string by removing unnecessary spaces and line breaks
+            val simplifiedJsonString = if (simplifyJson) jsonString.replace(Regex("\\s+"), "")
+            else jsonString
+            assetInfoJsonFile.writeText(simplifiedJsonString)
+        }
+    }
 }

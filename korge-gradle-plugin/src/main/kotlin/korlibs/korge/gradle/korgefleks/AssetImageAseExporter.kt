@@ -84,8 +84,11 @@ class AssetImageAseExporter(
         }
     }
 
+    /**
+     * Export parallax layers and parallax plane from Aseprite file as independent png images.
+     * Adds exported parallax layers and parallax plane to internal asset info list.
+     */
     fun addParallaxImageAse(filename: String, parallaxInfo: ParallaxInfo, tags: List<String> = listOf("export"), output: String = "parallax") {
-
         // Prepare parallax layer info storage
         val parallaxLayersJson = assetInfo[PARALLAX_LAYERS] as LinkedHashMap<String, Any>
         parallaxLayersJson[parallaxInfo.name] = linkedMapOf(
