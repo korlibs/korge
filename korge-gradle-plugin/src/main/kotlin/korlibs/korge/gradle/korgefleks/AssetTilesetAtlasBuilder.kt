@@ -4,7 +4,6 @@ import korlibs.korge.gradle.korgefleks.AssetConfig.Companion.TILES
 import korlibs.korge.gradle.korgefleks.AssetConfig.Companion.TILESETS
 import korlibs.korge.gradle.texpacker.NewTexturePacker
 import java.io.File
-import java.util.ArrayList
 
 
 /**
@@ -26,19 +25,24 @@ class AssetTilesetAtlasBuilder(
     /**
      * Builds a tileset atlas from the exported tiles in the export tiles directory.
      * Adds the tileset atlas information to the internal asset info list.
+     *
+     * Each tileset is expected to have the same tile width and height.
+     * Also each tileset is expected to contain 4096 tiles (64x64) by default, but this can be changed via the amountOfTiles parameter.
      */
     fun buildTilesetAtlas(
         tilesetAtlasName: String,
-        tileWidth : Int,
-        tileHeight : Int,
+        tileWidth: Int,
+        tileHeight: Int,
         atlasWidth: Int,
         atlasHeight: Int,
-        atlasPadding : Int
+        atlasPadding: Int,
+        amountOfTiles: Int = 64 * 64  // Default to 4096 tiles per tileset
     ) {
         // Then build tilesets atlas
         if (exportTilesetDir.listFiles() != null && exportTilesetDir.listFiles().isNotEmpty()) {
             // First build texture atlas
-            val atlasInfoList = NewTexturePacker.packTilesets(exportTilesetDir,
+            val atlasInfoPair = NewTexturePacker.packTilesets(
+                exportTilesetDir,
                 padding = atlasPadding,
                 tileWidth = tileWidth,
                 tileHeight = tileHeight,
@@ -46,15 +50,23 @@ class AssetTilesetAtlasBuilder(
                 textureAtlasHeight = atlasHeight
             )
 
+            // Tileset names list contains the original tileset names in the order they were packed into the atlas
+            // This is used below to check if the tiles are put in the correct order into the fileFrameInfo list
+            val tilesetNames = atlasInfoPair.first
+
+            // Create map of tilesets for counting how many tilesets were processed
+            val tilesetMap = tilesetNames.associateWith { 0 }.toMutableMap()
+
+            val atlasInfoList = atlasInfoPair.second
             // Go through all packed atlases
             val tilesets = assetInfo[TILESETS] as ArrayList<String>
-            val tileFramesInfo = linkedMapOf<String, IntArray>()
+            val tileFramesInfo = Array(amountOfTiles * tilesetNames.size) { intArrayOf() }
 
             atlasInfoList.forEachIndexed { idx, atlasInfo ->
                 // And store their tileset atlas image as png files
                 val atlasOutputFile = gameResourcesDir.resolve("${tilesetAtlasName}_${idx}.atlas.png")
                 atlasOutputFile.parentFile?.let { it.mkdirs() }
-                    ?: error("Could not create game resources directory: ${gameResourcesDir.path}")
+                    ?: error("TilesetBuilder - could not create game resources directory: ${gameResourcesDir.path}")
                 atlasInfo.writeImage(atlasOutputFile)
 
                 // Add tileset atlas file name to asset info
@@ -66,22 +78,46 @@ class AssetTilesetAtlasBuilder(
                     frameEntry as Map<String, Any>
                     val frame = frameEntry["frame"] as Map<String, Int>
 
-                    // Set frame info: [textureIndex, x, y]
+                    // Split frame name into index number and tileset name parts
+                    val regex = "^(\\d+)_".toRegex()
+                    val frameNumberString = regex.find(frameName)?.groupValues?.get(1)
+                        ?: error("TilesetBuilder - frame name '${frameName}' is not in expected format '<index>_<name>'!")
+                    val tileIndex = frameNumberString.toIntOrNull()
+                        ?: error("TilesetBuilder - frame name is not a valid tile index number: '${frameName}'!")
+                    val tilesetName = frameName.replace(regex, "")
+
+                    // Sanity check - make sure tileset name exists in tileset names list
+                    if (!tilesetNames.contains(tilesetName)) {
+                        error("TilesetBuilder - tileset name '${tilesetName}' from frame '${frameName}' not found in tileset names list!")
+                    }
+                    tilesetMap[tilesetName] = tilesetMap[tilesetName]!! + 1
+
+                    // Set frame info: [textureIndex, x, y, [frame index]]  -- frame index is used for debugging only
                     val tileInfo = intArrayOf(
                         idx,  // Save index to texture atlas where the frame is located
-                        frame["x"] ?: error("TilesetBuilder - frame x is null for sprite '${frameName}'!"),
-                        frame["y"] ?: error("TilesetBuilder - frame y is null for sprite '${frameName}'!")
+                        frame["x"] ?: error("TilesetBuilder - frame x is 'null' for tile '${frameName}'!"),
+                        frame["y"] ?: error("TilesetBuilder - frame y is 'null' for tile '${frameName}'!"),
+                        tileIndex
                     )
-                    tileFramesInfo[frameName] = tileInfo
+                    // Put the tile info into the correct position in the tileFramesInfo array
+                    tileFramesInfo[tileIndex] = tileInfo
                 }
-            }
 
-            // Finally, store tileset info
-            assetInfo[TILES] = linkedMapOf(
-                "w" to tileWidth,
-                "h" to tileHeight,
-                "f" to tileFramesInfo
-            )
+                // Check if all tilesets consists of the expected amount of tiles
+                tilesetMap.forEach { (name, count) ->
+                    if (count != amountOfTiles) {
+                        error("TilesetBuilder - tileset '${name}' contains ${count} tiles, expected ${amountOfTiles} tiles!")
+                    }
+                }
+
+                // Finally, store tileset info
+                assetInfo[TILES] = linkedMapOf(
+                    "w" to tileWidth,
+                    "h" to tileHeight,
+                    "t" to tilesetNames,
+                    "f" to tileFramesInfo
+                )
+            }
         }
     }
 }
