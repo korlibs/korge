@@ -192,7 +192,12 @@ object NewTexturePacker {
 
         // Add images to the packer (possibly without duplicates)
         packer.addArray(mappedImages.map { (file, image) ->
-            val fullArea = Rectangle(0, 0, image.width, image.height)
+            // Check if image is empty and set size to 0x0 in that case (needed for tilesets with empty tiles)
+            val tileIsEmpty = image.isEmpty()
+            val fullArea = Rectangle(0, 0,
+                if (tileIsEmpty) 0 else image.width,
+                if (tileIsEmpty) 0 else image.height
+            )
             val trimArea = if (enableTrimming) image.trim() else fullArea
             val trimmedImage = image.slice(trimArea)
             //println(trimArea == fullArea)
@@ -289,4 +294,15 @@ fun SimpleBitmap.splitInListOfTiles(indexStart: Int = 0, name: String, tileWidth
         }
     }
     return tiles
+}
+
+fun SimpleBitmap.isEmpty(): Boolean {
+    for (y in 0 until height) {
+        for (x in 0 until width) {
+            if (this[x, y].r != 0) return false
+            if (this[x, y].g != 0) return false
+            if (this[x, y].b != 0) return false
+        }
+    }
+    return true
 }

@@ -92,11 +92,16 @@ class AssetTilesetAtlasBuilder(
                     }
                     tilesetMap[tilesetName] = tilesetMap[tilesetName]!! + 1
 
+                    val frameWidth = frame["w"] ?: error("TilesetBuilder - frame width is 'null' for tile '${frameName}'!")
+                    val frameHeight = frame["h"] ?: error("TilesetBuilder - frame height is 'null' for tile '${frameName}'!")
+                    val emptyFrame = (frameWidth == 0) && (frameHeight == 0)
+                    // Mark empty frames with x=0 and y=0 in the tile info
+
                     // Set frame info: [textureIndex, x, y, [frame index]]  -- frame index is used for debugging only
                     val tileInfo = intArrayOf(
                         idx,  // Save index to texture atlas where the frame is located
-                        frame["x"] ?: error("TilesetBuilder - frame x is 'null' for tile '${frameName}'!"),
-                        frame["y"] ?: error("TilesetBuilder - frame y is 'null' for tile '${frameName}'!"),
+                        if (emptyFrame) 0 else frame["x"] ?: error("TilesetBuilder - frame x is 'null' for tile '${frameName}'!"),
+                        if (emptyFrame) 0 else frame["y"] ?: error("TilesetBuilder - frame y is 'null' for tile '${frameName}'!"),
                         tileIndex
                     )
                     // Put the tile info into the correct position in the tileFramesInfo array

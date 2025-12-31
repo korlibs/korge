@@ -6,7 +6,8 @@ import java.io.*
 import javax.imageio.*
 import kotlin.math.*
 
-inline class SimpleRGBA(val data: Int) {
+@JvmInline
+value class SimpleRGBA(val data: Int) {
     val r: Int get() = (data ushr 0) and 0xFF
     val g: Int get() = (data ushr 8) and 0xFF
     val b: Int get() = (data ushr 16) and 0xFF
@@ -149,6 +150,6 @@ class SimpleBitmap(val width: Int, val height: Int, val data: IntArray = IntArra
         for (pixel in data) {
             hash = hash * 31 + pixel
         }
-        return hash
+        return if (hash == 17) 0 else hash  // Ensure that the hash code is not equal to the initial value
     }
 }
