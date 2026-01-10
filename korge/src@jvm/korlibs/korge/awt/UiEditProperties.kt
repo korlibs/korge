@@ -24,6 +24,8 @@ import kotlin.reflect.*
 import kotlin.reflect.full.*
 import kotlin.reflect.jvm.*
 
+typealias KObservableProperty<T> = korlibs.io.async.ObservableProperty<T>
+
 internal var UiApplication.views by Extra.PropertyThis<UiApplication, Views?> { null }
 
 internal class UiEditProperties(app: UiApplication, view: View?, val views: Views) : UiContainer(app) {
@@ -65,7 +67,7 @@ internal class UiEditProperties(app: UiApplication, view: View?, val views: View
                         val prop = eprop.prop
                         val viewProp = eprop.viewProp
                         try {
-                            val res = createUiEditableValueFor(instance, prop.returnType, viewProp, prop as KProperty1<View, *>, null)
+                            val res = createUiEditableValueFor(instance, prop.returnType, viewProp, prop as KProperty1<Any, *>, null)
                             val item = res ?: UiLabel(app).also { it.text = "<UNSUPPORTED TYPE>" }
                             if (item is UiEditableValue<*> || item is UiLabel) {
                                 addChild(UiRowEditableValue(app, name, item))
@@ -173,7 +175,7 @@ internal class UiEditProperties(app: UiApplication, view: View?, val views: View
         override fun toString(): String = if (value == null) "null" else "$value"
     }
 
-    fun createUiEditableValueFor(instance: Any, type: KType, viewProp: ViewProperty, prop: KProperty1<View, Any?>?, obs: ObservableProperty<*>? = null): UiComponent? {
+    fun createUiEditableValueFor(instance: Any, type: KType, viewProp: ViewProperty, prop: KProperty1<Any, Any?>?, obs: ObservableProperty<*>? = null): UiComponent? {
         val name = prop?.name ?: "Unknown"
         val obs: ObservableProperty<Any?> = (obs ?: ObservableProperty<Any?>(
             name,
@@ -211,6 +213,15 @@ internal class UiEditProperties(app: UiApplication, view: View?, val views: View
                     createUiEditableValueFor(instance, type.arguments[index].type!!, viewProp, prop, obs) as UiEditableValue<Any>
                 }
                 UiTwoItemEditableValue(app, vv[0], vv[1])
+            }
+            type.isSubtypeOf(KObservableProperty::class.starProjectedType) -> {
+                if (prop == null) return null
+                val arguments0Type = type.arguments[0].type!!
+                // Nested ObservableProperty types are not supported
+                if (arguments0Type.isSubtypeOf(KObservableProperty::class.starProjectedType)) return null
+                val rprop = prop as KProperty1<Any, KObservableProperty<Any>>
+                val obs = ObservableProperty(name, { rprop.get(instance).apply { this(it) } }, { rprop.get(instance).value })
+                createUiEditableValueFor(rprop.get(instance), arguments0Type, viewProp, KObservableProperty<Any>::value as KProperty1<Any, Any?>?, obs)
             }
             type.isSubtypeOf(MPoint::class.starProjectedType) -> createPair({ MPoint(it.x, it.y) }, { Two(it.x, it.y) }, instance, prop, viewProp)
             type.isSubtypeOf(Vector2D::class.starProjectedType) -> createPair({ Vector2D(it.x, it.y) }, { Two(it.x, it.y) }, instance, prop, viewProp)
