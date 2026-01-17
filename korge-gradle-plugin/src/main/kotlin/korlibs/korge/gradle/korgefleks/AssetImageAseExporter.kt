@@ -89,9 +89,14 @@ class AssetImageAseExporter(
      * Adds exported parallax layers and parallax plane to internal asset info list.
      */
     fun addParallaxImageAse(filename: String, parallaxInfo: ParallaxInfo, tags: List<String> = listOf("export"), output: String = "parallax") {
+        val aseFile = getFile(filename)
+        val aseInfo = loadAseInfo(aseFile)
+
         // Prepare parallax layer info storage
         val parallaxLayersJson = assetInfo[PARALLAX_LAYERS] as LinkedHashMap<String, Any>
         parallaxLayersJson[parallaxInfo.name] = linkedMapOf(
+            "w" to aseInfo.pixelWidth + parallaxInfo.offsetX,
+            "h" to aseInfo.pixelHeight + parallaxInfo.offsetY,
             "m" to parallaxInfo.mode,
             "offsetX" to parallaxInfo.offsetX,  // Save offsets for usage in AssetAtlasBuilder
             "offsetY" to parallaxInfo.offsetY,
@@ -179,8 +184,6 @@ class AssetImageAseExporter(
             }
 
             // (6) Prepare list of parallax plane slices to export
-            val aseFile = getFile(filename)
-            val aseInfo = loadAseInfo(aseFile)
             aseInfo.slices.forEach { slice ->
                 slice.sliceName
                 val index = when (parallaxInfo.mode) {

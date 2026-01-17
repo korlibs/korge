@@ -110,6 +110,11 @@ class AssetImageAtlasBuilder(
                     // (4) Check if this frame is a parallax layer image
                     parallaxLayersInfo.forEach { (_, parallaxLayerInfo) ->
                         parallaxLayerInfo as LinkedHashMap<String, Any>
+
+                        // Get image size - it was already read from ASEInfo
+                        parallaxWidth = parallaxLayerInfo["w"] as Int
+                        parallaxHeight = parallaxLayerInfo["h"] as Int
+
                         // Get offset info
                         val offsetX = parallaxLayerInfo["offsetX"]?.let { it as Int } ?: error("AssetConfig - parallaxLayerInfo offsetX is null")
                         val offsetY = parallaxLayerInfo["offsetY"]?.let { it as Int } ?: error("AssetConfig - parallaxLayerInfo offsetY is null")
@@ -125,8 +130,6 @@ class AssetImageAtlasBuilder(
                                 // Save parallax size (possibly redundant if multiple frames exist for the same layer)
                                 parallaxWidth = sourceSize["w"]?.let { it + offsetX } ?: error("ParallaxImageBuilder - sourceSize w is null for sprite '${frameTag}'!")
                                 parallaxHeight = sourceSize["h"]?.let { it + offsetY } ?: error("ParallaxImageBuilder - sourceSize h is null for sprite '${frameTag}'!")
-                                parallaxLayerInfo["w"] = parallaxWidth
-                                parallaxLayerInfo["h"] = parallaxHeight
 
                                 // Set layer position (targetX/Y) within parallax background
                                 layerInfo["tx"] = spriteSource["x"]?.let { it + offsetX } ?: error("ParallaxImageBuilder - spriteSource x is null for sprite '${frameTag}'!")
@@ -163,8 +166,6 @@ class AssetImageAtlasBuilder(
                                     // Save parallax size (possibly redundant if multiple frames exist for the same layer)
                                     parallaxWidth = sourceSize["w"]?.let { it + offsetX } ?: error("ParallaxImageBuilder - sourceSize w is null for sprite '${frameTag}'!")
                                     parallaxHeight = sourceSize["h"]?.let { it + offsetY } ?: error("ParallaxImageBuilder - sourceSize h is null for sprite '${frameTag}'!")
-                                    parallaxLayerInfo["w"] = parallaxWidth
-                                    parallaxLayerInfo["h"] = parallaxHeight
 
                                     // Set frame info for animIndex: [textureIndex, x, y, width, height]
                                     layerInfo["f"] = arrayOf(
