@@ -1568,6 +1568,11 @@ fun <T : View> T.onNextFrame(block: T.(views: Views) -> Unit): CloseableCancella
     return closeable
 }
 
+/** Add an arbitrary view to a mutable list. */
+fun <T : View> T.addTo(parent: MutableList<in T>): T {
+    parent += this
+    return this
+}
 
 // @TODO: Replace width, height with SizeInt
 fun <T : View> T.onStageResized(firstTrigger: Boolean = true, block: Views.(width: Int, height: Int) -> Unit): T = this.apply {
