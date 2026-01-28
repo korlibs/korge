@@ -14,7 +14,7 @@ import java.io.File
  * @param assetPath The relative path to the directory containing asset files.
  * @param resourcePath The relative path to the directory for game resources.
  */
-class AssetConfig(
+open class AssetConfig(
     private val asepriteExe: String,
     projectDir: File,
     assetPath: String,
@@ -74,11 +74,12 @@ class AssetConfig(
         assetInfo[TILES] = linkedMapOf<String, Any>()
     }
 
-    private val assetImageAseExporter = AssetImageAseExporter(asepriteExe, assetDir, exportTilesDir, assetInfo)
-    private val assetFileInstaller = AssetFileInstaller(assetDir, exportTilesDir, gameResourcesDir, assetInfo)
-    private val assetTilesetExporter = AssetTilesetExporter(assetDir, exportTilesetDir)
-    private val assetImageAtlasBuilder = AssetImageAtlasBuilder(exportTilesDir, gameResourcesDir, assetInfo)
-    private val assetTilesetAtlasBuilder = AssetTilesetAtlasBuilder(exportTilesetDir, gameResourcesDir, assetInfo)
+    protected val assetImageAseExporter = AssetImageAseExporter(asepriteExe, assetDir, exportTilesDir, assetInfo)
+    protected val assetFileInstaller = AssetFileInstaller(assetDir, exportTilesDir, gameResourcesDir, assetInfo)
+//    protected val assetTilesetExporter = AssetTilesetExporter(assetDir, exportTilesetDir)
+    protected val assetImageAtlasBuilder = AssetImageAtlasBuilder(exportTilesDir, gameResourcesDir, assetInfo)
+    protected val assetTilesetAtlasBuilder = AssetTilesetAtlasBuilder(exportTilesetDir, gameResourcesDir, assetInfo)
+    protected val assetLevelMapExporter = AssetLevelMapExporter(assetDir, gameResourcesDir, assetInfo)
 
     /**
      * Export specific layers and tags from Aseprite file as independent png images.
@@ -152,9 +153,9 @@ class AssetConfig(
      * Export single tiles from a png tileset file and stores them in a tileset atlas.
      * Adds exported tiles and tileset images to internal asset info list.
      */
-    fun addTilesetImagePng(filename: String) {
-        assetTilesetExporter.addTilesetImagePng(filename)
-    }
+//    fun addTilesetImagePng(filename: String) {
+//        assetTilesetExporter.addTilesetImagePng(filename)
+//    }
 
     /**
      * Add a generic file to the asset configuration.
@@ -198,4 +199,35 @@ class AssetConfig(
             assetInfoJsonFile.writeText(simplifiedJsonString)
         }
     }
+}
+
+class WorldLevelAssetConfig(
+    private val asepriteExe: String,
+    projectDir: File,
+    assetPath: String,
+    resourcePath: String
+) : AssetConfig(asepriteExe, projectDir, assetPath, resourcePath) {
+
+
+    /**
+     * Export single level from LDtk file as an TileMap object.
+     * Adds exported level map to internal asset info list.
+     *
+     * @param filename The LDtk file containing the level data.
+     * @param levelName The name of the level to export.
+     */
+    fun addTileMapLDtkFile(filename: String, levelName: String) {
+        assetLevelMapExporter.exportTileMapLDtk(filename, levelName)
+    }
+
+    /**
+     * Export level map from LDtk file as chunked level map.
+     * Adds exported level map to internal asset info list.
+     *
+     * @param filename The LDtk file containing the level data.
+     */
+    fun addLevelMapLDtkFile(filename: String) {
+        assetLevelMapExporter.exportLevelMapLDtk(filename)
+    }
+
 }

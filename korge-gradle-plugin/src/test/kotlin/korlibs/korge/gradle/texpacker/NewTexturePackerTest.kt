@@ -12,7 +12,7 @@ class NewTexturePackerTest {
         val atlasInfos = NewTexturePacker.packTilesets(File(getResourceURL("tilesets").file))
 
         // Check if duplicate tiles were detected and merged into one tile rect area in the tileset atlas
-        val atlasInfo = atlasInfos.first()
+        val atlasInfo = atlasInfos.second.first()
         val frames = atlasInfo.info["frames"] as Map<String, Any>
 
         val tile_1 = frames["test_tileset_1"] as Map<String, Any>

@@ -83,8 +83,8 @@ open class KorgeFleksExtension(
         path: String,
         world: Int,
         level: Int,
-        config: AssetConfig.() -> Unit
-    ) = processAssets(path, world, level, callback = config)
+        config: WorldLevelAssetConfig.() -> Unit
+    ) = processWorldLevelAssets(path, world, level, callback = config)
 
     /**
      * Prepares asset processing by creating a Gradle task for handling world-level chunk assets.
@@ -104,28 +104,16 @@ open class KorgeFleksExtension(
         world: Int,
         level: Int,
         config: AssetConfig.() -> Unit
-    ) = processAssets(path, world, level, true, config)
+    ) = processWorldLevelChunkAssets(path, world, level, config)
 
     private fun processAssets(
         path: String,
         world: Int? = null,
-        level: Int? = null,
-        chunk: Boolean = false,
-        callback: AssetConfig.() -> Unit,
+        callback: AssetConfig.() -> Unit
     ) {
         if (!File(asepriteExe).exists()) throw GradleException("Aseprite executable not found: '$asepriteExe' - Make sure to set 'asepriteExe' property in KorgeFleks extension.")
 
-        // Sanity check for special chunk assets
-        if (chunk && (world == null || level == null)) {
-            throw GradleException("KorgeFleksExtension: worldLevelChunkAssets function called without worldNum and levelNum!")
-        }
-
-        // TODO here we need to check how we cluster assets from chunks into asset bundles which are loaded together
-        val special = if (chunk) "/chunk" else ""
-
-        val assetName = if (world != null && level != null) "world_${world}/level_${level}${special}"
-        else if (world != null) "world_$world"
-        else if (level != null) throw GradleException("KorgeFleksExtension: worldAssets: levelNum specified without worldNum!")
+        val assetName = if (world != null) "world_${world}"
         else "common"
         val assetConfig = AssetConfig(asepriteExe, project.projectDir, path, assetName )
         // Set default names and atlas size
@@ -143,4 +131,60 @@ open class KorgeFleksExtension(
             }
         }
     }
+
+    private fun processWorldLevelAssets(
+        path: String,
+        world: Int,
+        level: Int,
+        callback: WorldLevelAssetConfig.() -> Unit
+    ) {
+        if (!File(asepriteExe).exists()) throw GradleException("Aseprite executable not found: '$asepriteExe' - Make sure to set 'asepriteExe' property in KorgeFleks extension.")
+
+        val assetName = "world_${world}/level_${level}$"
+        val assetConfig = WorldLevelAssetConfig(asepriteExe, project.projectDir, path, assetName )
+        // Set default names and atlas size
+        assetConfig.textureAtlasName = textureAtlasName
+        assetConfig.tilesetAtlasName = tilesetAtlasName
+        assetConfig.atlasWidth = atlasWidth
+        assetConfig.atlasHeight = atlasHeight
+
+        val taskName = assetName.replace("/", "").replace("_", "")
+        project.tasks.createThis<Task>("${taskName}Assets") {
+            group = assetGroup
+            doLast {
+                assetConfig.apply(callback)
+                assetConfig.buildAssetStore()
+            }
+        }
+    }
+
+    private fun processWorldLevelChunkAssets(
+        path: String,
+        world: Int,
+        level: Int,
+        callback: AssetConfig.() -> Unit
+    ) {
+        if (!File(asepriteExe).exists()) throw GradleException("Aseprite executable not found: '$asepriteExe' - Make sure to set 'asepriteExe' property in KorgeFleks extension.")
+
+        // TODO here we need to check how we cluster assets from chunks into asset bundles which are loaded together
+        val special = "/chunk"
+
+        val assetName = "world_${world}/level_${level}${special}"
+        val assetConfig = AssetConfig(asepriteExe, project.projectDir, path, assetName )
+        // Set default names and atlas size
+        assetConfig.textureAtlasName = textureAtlasName
+        assetConfig.tilesetAtlasName = tilesetAtlasName
+        assetConfig.atlasWidth = atlasWidth
+        assetConfig.atlasHeight = atlasHeight
+
+        val taskName = assetName.replace("/", "").replace("_", "")
+        project.tasks.createThis<Task>("${taskName}Assets") {
+            group = assetGroup
+            doLast {
+                assetConfig.apply(callback)
+                assetConfig.buildAssetStore()
+            }
+        }
+    }
+
 }

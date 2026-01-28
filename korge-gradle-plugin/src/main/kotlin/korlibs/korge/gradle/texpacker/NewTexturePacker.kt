@@ -74,7 +74,7 @@ object NewTexturePacker {
      * @param textureAtlasWidth The width of the texture atlases to be created.
      * @param textureAtlasHeight The height of the texture atlases to be created.
      *
-     * @return A list of AtlasInfo objects representing the packed atlases.
+     * @return A pair of lists of AtlasInfo objects representing the packed atlases.
      */
     fun packTilesets(
         vararg folders: File,
