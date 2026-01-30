@@ -1,6 +1,7 @@
 package korlibs.korge.gradle.korgefleks
 
 import com.android.build.gradle.internal.cxx.json.jsonStringOf
+import com.android.tools.r8.internal.wr
 import java.io.File
 
 
@@ -42,21 +43,18 @@ open class AssetConfig(
     }
 
     // Directory where Aseprite files are located
-    private val assetDir = projectDir.resolve(assetPath)
+    protected val assetDir = projectDir.resolve(assetPath)
     // Directory where exported tiles and tilesets will be stored
-    private val exportTilesDir = projectDir.resolve("build/assets/imageAtlasInput")
-    private val exportTilesetDir = projectDir.resolve("build/assets/tilesetAtlasInput")
+    protected val exportTilesDir = projectDir.resolve("build/assets/imageAtlasInput")
     // Directory where game resources are located
-    private val gameResourcesDir = projectDir.resolve("src/commonMain/resources/${resourcePath}")
+    protected val gameResourcesDir = projectDir.resolve("src/commonMain/resources/${resourcePath}")
 
-    private val assetInfo = linkedMapOf<String, Any>()
+    protected val assetInfo = linkedMapOf<String, Any>()
 
     init {
         // Make sure the export directories exist and that they are empty
         if (exportTilesDir.exists()) exportTilesDir.deleteRecursively()
-        if (exportTilesetDir.exists()) exportTilesetDir.deleteRecursively()
         exportTilesDir.mkdirs()
-        exportTilesetDir.mkdirs()
 
         // Set version info
         val major = 1
@@ -76,9 +74,7 @@ open class AssetConfig(
 
     protected val assetImageAseExporter = AssetImageAseExporter(asepriteExe, assetDir, exportTilesDir, assetInfo)
     protected val assetFileInstaller = AssetFileInstaller(assetDir, exportTilesDir, gameResourcesDir, assetInfo)
-//    protected val assetTilesetExporter = AssetTilesetExporter(assetDir, exportTilesetDir)
     protected val assetImageAtlasBuilder = AssetImageAtlasBuilder(exportTilesDir, gameResourcesDir, assetInfo)
-    protected val assetTilesetAtlasBuilder = AssetTilesetAtlasBuilder(exportTilesetDir, gameResourcesDir, assetInfo)
     protected val assetLevelMapExporter = AssetLevelMapExporter(assetDir, gameResourcesDir, assetInfo)
 
     /**
@@ -150,14 +146,6 @@ open class AssetConfig(
     }
 
     /**
-     * Export single tiles from a png tileset file and stores them in a tileset atlas.
-     * Adds exported tiles and tileset images to internal asset info list.
-     */
-//    fun addTilesetImagePng(filename: String) {
-//        assetTilesetExporter.addTilesetImagePng(filename)
-//    }
-
-    /**
      * Add a generic file to the asset configuration.
      * Copies the file to the game resources' directory.
      */
@@ -171,7 +159,7 @@ open class AssetConfig(
      *
      * This will always be called as last step after all assets have been added.
      */
-    internal fun buildAssetStore() {
+    internal open fun buildAssetStore() {
         // First build the image and tileset atlases
         assetImageAtlasBuilder.buildAtlases(
             textureAtlasName,
@@ -179,16 +167,11 @@ open class AssetConfig(
             atlasHeight,
             atlasPadding
         )
-        assetTilesetAtlasBuilder.buildTilesetAtlas(
-            tilesetAtlasName,
-            tileWidth,
-            tileHeight,
-            atlasWidth,
-            atlasHeight,
-            atlasPadding
-        )
-
         // Finally, write out the asset info as JSON file
+        writeAssetInfoJson()
+    }
+
+    protected fun writeAssetInfoJson() {
         val assetInfoJsonFile = gameResourcesDir.resolve("${textureAtlasName}.atlas.json")
         assetInfoJsonFile.parentFile?.let { parent ->
             if (!parent.exists() && !parent.mkdirs()) error("Failed to create directory: ${parent.path}")
@@ -201,13 +184,33 @@ open class AssetConfig(
     }
 }
 
-class WorldLevelAssetConfig(
-    private val asepriteExe: String,
+class WorldAssetConfig(
+    asepriteExe: String,
     projectDir: File,
     assetPath: String,
     resourcePath: String
 ) : AssetConfig(asepriteExe, projectDir, assetPath, resourcePath) {
 
+    private val tileSetFiles: MutableList<File> = mutableListOf()
+    private val exportTilesetDir = projectDir.resolve("build/assets/tilesetAtlasInput")
+
+    private val assetTilesetExporter = AssetTilesetExporter(assetDir, exportTilesetDir, tileSetFiles)
+    private val assetTilesetAtlasBuilder = AssetTilesetAtlasBuilder(exportTilesetDir, gameResourcesDir, assetInfo, tileSetFiles)
+
+    init {
+        // Make sure the export directories exist and that they are empty
+        if (exportTilesDir.exists()) exportTilesDir.deleteRecursively()
+        if (exportTilesetDir.exists()) exportTilesetDir.deleteRecursively()
+        exportTilesDir.mkdirs()
+        exportTilesetDir.mkdirs()
+    }
+        /**
+     * Export single tiles from a png tileset file and stores them in a tileset atlas.
+     * Adds exported tiles and tileset images to internal asset info list.
+     */
+    fun addTilesetImagePng(filename: String) {
+        assetTilesetExporter.addTilesetImagePng(filename)
+    }
 
     /**
      * Export single level from LDtk file as an TileMap object.
@@ -230,4 +233,23 @@ class WorldLevelAssetConfig(
         assetLevelMapExporter.exportLevelMapLDtk(filename)
     }
 
+    override fun buildAssetStore() {
+        // First build the image and tileset atlases
+        assetImageAtlasBuilder.buildAtlases(
+            textureAtlasName,
+            atlasWidth,
+            atlasHeight,
+            atlasPadding
+        )
+        assetTilesetAtlasBuilder.buildTilesetAtlas(
+            tilesetAtlasName,
+            tileWidth,
+            tileHeight,
+            atlasWidth,
+            atlasHeight,
+            atlasPadding
+        )
+        // Finally, write out the asset info as JSON file
+        writeAssetInfoJson()
+    }
 }

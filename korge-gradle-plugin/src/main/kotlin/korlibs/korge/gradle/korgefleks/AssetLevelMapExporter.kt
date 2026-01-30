@@ -25,32 +25,25 @@ class AssetLevelMapExporter(
         LocalSFile(it).read().fromJson() as Map<String, Any?>
     }
 
+    data class TileSetData(
+        val name: String,
+        val cluster: Int,
+        val layer: Int,
+        val filePath: String
+    )
+
     /**
      * Export a single level map from an LDtk file as tile map object
      *
      * @param filename LDtk filename
      * @param levelName Level name to export
-     * @param listOfCommonTileSetNames List of common tileset names. These tilesets are used in all levels of all World.
-     * @param listOfWorldTileSetNames List of world specific tileset names. These tilesets are used in all levels of a specific World.
-     * @param listOfLevelTileSetNames List of level specific tileset names. These tilesets are used in a specific level.
-     * @param listOfChunkTileSetNames List of chunk specific tileset names. These tilesets are used in specific chunks only.
      */
-    fun exportTileMapLDtk(
-        filename: String,
-        levelName: String,
-        listOfCommonTileSetNames: List<String> = listOf(),
-        listOfWorldTileSetNames: List<String> = listOf(),
-        listOfLevelTileSetNames: List<String> = listOf(),
-        listOfChunkTileSetNames: List<String> = listOf()
-    ) {
+    fun exportTileMapLDtk(filename: String, levelName: String) {
         // Load single level map from LDtk file and export as tile map object
         println("\nLDtk level parser started for exporting single level map from LDtk...")
 
-
         val ldtkFile = getFile(filename)
-
-
-        val ldtkJson = loadLDtkFile(ldtkFile) //ldtkFile.readText().fromJson() as Map<String, Any?>
+        val ldtkJson = loadLDtkFile(ldtkFile)
 
         val ldtkLevels = ldtkJson["levels"] as List<Map<String, Any?>>
         val defaultGridSize = ldtkJson["defaultGridSize"] as Int
@@ -60,20 +53,54 @@ class AssetLevelMapExporter(
         // Check which tilesets are available
         // Load tags of tilesets and store tileset info into map for LEVEL (common) or SPECIAL (specific name)
 
+        val tileSetDataByUid = mutableMapOf<Int, TileSetData>()
 
-        // We have a maximum of 16 tilesets
-        jsonTileSets.forEach { jsonTileSets ->
-            // Where to export tilesets
-            // - common
-            // - world specific
-            // - level specific
-            // - chunk (special) specific  --> intro
+        // Go through all tilesets and export them into clusters
+        jsonTileSets.forEach { jsonTileSet ->
+            val tileSetName = jsonTileSet["identifier"] as String
 
-            println("Tileset found: '${jsonTileSets["identifier"]}' (Uid: '${jsonTileSets["uid"]}')")
+            // Sanity checks
+            // Check if tileset size is 64x64 grid cells
+//            if (jsonTileSet["__cHei"] as Int != 64 || jsonTileSet["__cWid"] as Int != 64) error("ERROR: Tileset '$tileSetName' (${jsonTileSet["__cHei"] as Int} x ${jsonTileSet["__cWid"] as Int}) has invalid size! Only 64x64 tilesets are supported!")
 
+            // Check if tags contains exactly one of the cluster, layer and name tags
+            val tags = jsonTileSet["tags"] as List<String>
+//            val clusterTags = tags.filter { it in validClusters }
+            val assetTags = tags.filter { it.startsWith("asset_") }
+            val clusterTags = tags.filter { it.startsWith("cluster_") }
+            if (assetTags.size != 1) error("ERROR: Tileset '$tileSetName' must be tagged with (only) one asset tag like 'asset_<name>'!")
+            if (clusterTags.size != 1) error("ERROR: Tileset '$tileSetName' must be tagged with (only) one cluster tag like 'cluster_X_Y', where X, Y is out of [1..4]!")
 
+            val clusterName = assetTags[0].substringAfter("asset_")
+//            println("Tileset found: '$tileSetName' with cluster name '$clusterName'")
+
+            val regex = Regex("""cluster_(\d+)_(\d+)""")
+            val matchResult = regex.find(clusterTags[0])
+            val (clusterString, layerString) = matchResult?.destructured
+                ?: error("ERROR: Tileset '$tileSetName' has invalid cluster tag '${clusterTags[0]}'! It must be in format 'cluster_X_Y', where X, Y is out of [1..4]'!")
+            val cluster: Int = clusterString.toInt()
+            val layer: Int = layerString.toInt()
+//            println("cluster: $cluster, layer: $layer")
+
+            val tileSetUid = jsonTileSet["uid"] as Int
+            val tileSetPathName = jsonTileSet["relPath"] as String
+            println("  Exporting tileset '$tileSetName' from path '$tileSetPathName' ...")
+
+            val tilesetData = TileSetData(
+                clusterName,
+                cluster,
+                layer,
+                filePath = tileSetPathName
+            )
+
+            tileSetDataByUid[tileSetUid] = tilesetData
+
+            //
 
         }
+        println(tileSetDataByUid)
+
+        return
 
         // We have a maximum of 16 layers per level --> Each level chunk can use up to 16 tilesets
 

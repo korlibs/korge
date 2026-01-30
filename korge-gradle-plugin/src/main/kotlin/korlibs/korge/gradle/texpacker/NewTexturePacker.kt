@@ -77,17 +77,17 @@ object NewTexturePacker {
      * @return A pair of lists of AtlasInfo objects representing the packed atlases.
      */
     fun packTilesets(
-        vararg folders: File,
+        files: List<File>,
         padding: Int = 1,
         tileWidth: Int = 16,
         tileHeight: Int = 16,
         textureAtlasWidth: Int = 4096,
         textureAtlasHeight: Int = 4096
-    ): Pair<List<String>, List<AtlasInfo>> {
+    ): List<AtlasInfo> {
         // Load all tilesets and create SimpleBitmap instances
-        val tilesets: List<Pair<File, SimpleBitmap>> = getAllFiles(*folders).mapNotNull {
+        val tilesets: List<Pair<String, SimpleBitmap>> = files.mapNotNull {
             try {
-                it.relative to SimpleBitmap(it.file)
+                it.nameWithoutExtension to SimpleBitmap(it)
             } catch (e: Throwable) {
                 e.printStackTrace()
                 null
@@ -97,21 +97,20 @@ object NewTexturePacker {
         // Split each tileset into tiles
         val images = arrayListOf<Pair<File, SimpleBitmap>>()
         val tilesetNames = arrayListOf<String>()
-        tilesets.forEachIndexed { index, (file, image) ->
+        tilesets.forEachIndexed { index, (name, image) ->
             val tilesetWidth = image.width
             val tilesetHeight = image.height
             if (tilesetWidth % tileWidth != 0 || tilesetHeight % tileHeight != 0) {
-                throw IllegalArgumentException("Tileset image size must be multiple of tile size '$tileWidth x $tileHeight': $file with size '${image.width} x ${image.height}'")
+                throw IllegalArgumentException("Tileset image size must be multiple of tile size '$tileWidth x $tileHeight': '$name' with size '${image.width} x ${image.height}'")
             }
             // Split tileset into tiles and add to images list
-            val name = file.nameWithoutExtension
             val indexStart = index * (tilesetWidth / tileWidth) * (tilesetHeight / tileHeight)
             images += image.splitInListOfTiles( indexStart, name, tileWidth, tileHeight)
             tilesetNames += name
         }
 
         val atlasInfo = packImages(images, enableRotation = false, enableTrimming = false, padding = padding, trimFileName = true, removeDuplicates = true, textureAtlasWidth, textureAtlasHeight)
-        return Pair(tilesetNames, atlasInfo)
+        return atlasInfo
     }
 
     /**

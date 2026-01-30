@@ -9,11 +9,15 @@ import java.io.File
 class NewTexturePackerTest {
     @Test
     fun testPackTilesets() {
-        val atlasInfos = NewTexturePacker.packTilesets(File(getResourceURL("tilesets").file))
+        val atlasInfo = NewTexturePacker.packTilesets(
+            listOf(
+                File(getResourceURL("tilesets/test_tileset.png").file),
+                File(getResourceURL("tilesets/test_tileset_2.png").file)
+            )
+        )
 
         // Check if duplicate tiles were detected and merged into one tile rect area in the tileset atlas
-        val atlasInfo = atlasInfos.second.first()
-        val frames = atlasInfo.info["frames"] as Map<String, Any>
+        val frames = atlasInfo.first().info["frames"] as Map<String, Any>
 
         val tile_1 = frames["test_tileset_1"] as Map<String, Any>
         val tile_2 = frames["test_tileset_4"] as Map<String, Any>

@@ -50,141 +50,67 @@ open class KorgeFleksExtension(
     fun commonAssets(
         path: String,
         config: AssetConfig.() -> Unit
-    ) = processAssets(path, callback = config)
+    ) {
+        if (!File(asepriteExe).exists()) throw GradleException("Aseprite executable not found: '$asepriteExe' - Make sure to set 'asepriteExe' property in KorgeFleks extension.")
+
+        val assetName = "common"
+        val assetConfig = AssetConfig(asepriteExe, project.projectDir, path, assetName )
+        // Set default names and atlas size
+        assetConfig.textureAtlasName = textureAtlasName
+        assetConfig.tilesetAtlasName = tilesetAtlasName
+        assetConfig.atlasWidth = atlasWidth
+        assetConfig.atlasHeight = atlasHeight
+
+        val taskName = assetName.replace("/", "").replace("_", "")
+        project.tasks.createThis<Task>("${taskName}Assets") {
+            group = assetGroup
+            doLast {
+                assetConfig.apply(config)
+                assetConfig.buildAssetStore()
+            }
+        }
+    }
 
     /**
-     * Prepares asset processing by creating a Gradle task for handling world-level assets.
-     * Assets which are added here will be grouped into separate asset bundles per world.
+     * Prepares asset processing by creating a Gradle task for handling world assets.
+     * Assets which are added here in the root of worldAssets { ... } will be used for the entire world,
+     * across all chunks within that world.
      *
-     * @param path The relative path to the asset directory.
-     * @param world The world number for which the assets are being configured.
-     * @param config A lambda function to configure the assets.
-     *
-     * @throws GradleException if the Aseprite executable is not found.
-     */
-    fun worldAssets(
-        path: String,
-        world: Int,
-        config: AssetConfig.() -> Unit
-    ) = processAssets(path, world, callback = config)
-
-    /**
-     * Prepares asset processing by creating a Gradle task for handling world-level and level-level assets.
-     * Assets which are added here will be grouped into separate asset bundles per world and level.
-     *
-     * @param path The relative path to the asset directory.
-     * @param world The world number for which the assets are being configured.
-     * @param level The level number for which the assets are being configured.
-     * @param config A lambda function to configure the assets.
-     *
-     * @throws GradleException if the Aseprite executable is not found.
-     */
-    fun worldLevelAssets(
-        path: String,
-        world: Int,
-        level: Int,
-        config: WorldLevelAssetConfig.() -> Unit
-    ) = processWorldLevelAssets(path, world, level, callback = config)
-
-    /**
-     * Prepares asset processing by creating a Gradle task for handling world-level chunk assets.
-     * Assets which are added here will be grouped into separate asset bundles per chunk (group).
-     * Chunk assets are typically used for large levels that are divided into smaller sections (chunks)
+     * TODO
+     * It is possible to define assets specific to world chunks using the chunkAssets lambda function.
+     * Chunk assets are typically used for large worlds that are divided into smaller sections (chunks)
      * to optimize loading, performance and memory consumption.
      *
      * @param path The relative path to the asset directory.
-     * @param world The world number for which the chunk assets are being configured.
-     * @param level The level number for which the chunk assets are being configured.
+     * @param world The world number for which the assets are being configured.
      * @param config A lambda function to configure the assets.
      *
      * @throws GradleException if the Aseprite executable is not found.
      */
-    fun worldLevelChunkAssets(
+    fun worldClusterAssets(
         path: String,
         world: Int,
-        level: Int,
-        config: AssetConfig.() -> Unit
-    ) = processWorldLevelChunkAssets(path, world, level, config)
-
-    private fun processAssets(
-        path: String,
-        world: Int? = null,
-        callback: AssetConfig.() -> Unit
+        clusterName: String,
+        config: WorldAssetConfig.() -> Unit
     ) {
         if (!File(asepriteExe).exists()) throw GradleException("Aseprite executable not found: '$asepriteExe' - Make sure to set 'asepriteExe' property in KorgeFleks extension.")
 
-        val assetName = if (world != null) "world_${world}"
-        else "common"
-        val assetConfig = AssetConfig(asepriteExe, project.projectDir, path, assetName )
+        val assetResourcePath = "world_${world}/${clusterName}"
+        val assetConfig = WorldAssetConfig(asepriteExe, project.projectDir, path, assetResourcePath )
         // Set default names and atlas size
         assetConfig.textureAtlasName = textureAtlasName
         assetConfig.tilesetAtlasName = tilesetAtlasName
         assetConfig.atlasWidth = atlasWidth
         assetConfig.atlasHeight = atlasHeight
 
+        val assetName = "world${world}_${clusterName.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }}"
         val taskName = assetName.replace("/", "").replace("_", "")
         project.tasks.createThis<Task>("${taskName}Assets") {
             group = assetGroup
             doLast {
-                assetConfig.apply(callback)
+                assetConfig.apply(config)
                 assetConfig.buildAssetStore()
             }
         }
     }
-
-    private fun processWorldLevelAssets(
-        path: String,
-        world: Int,
-        level: Int,
-        callback: WorldLevelAssetConfig.() -> Unit
-    ) {
-        if (!File(asepriteExe).exists()) throw GradleException("Aseprite executable not found: '$asepriteExe' - Make sure to set 'asepriteExe' property in KorgeFleks extension.")
-
-        val assetName = "world_${world}/level_${level}$"
-        val assetConfig = WorldLevelAssetConfig(asepriteExe, project.projectDir, path, assetName )
-        // Set default names and atlas size
-        assetConfig.textureAtlasName = textureAtlasName
-        assetConfig.tilesetAtlasName = tilesetAtlasName
-        assetConfig.atlasWidth = atlasWidth
-        assetConfig.atlasHeight = atlasHeight
-
-        val taskName = assetName.replace("/", "").replace("_", "")
-        project.tasks.createThis<Task>("${taskName}Assets") {
-            group = assetGroup
-            doLast {
-                assetConfig.apply(callback)
-                assetConfig.buildAssetStore()
-            }
-        }
-    }
-
-    private fun processWorldLevelChunkAssets(
-        path: String,
-        world: Int,
-        level: Int,
-        callback: AssetConfig.() -> Unit
-    ) {
-        if (!File(asepriteExe).exists()) throw GradleException("Aseprite executable not found: '$asepriteExe' - Make sure to set 'asepriteExe' property in KorgeFleks extension.")
-
-        // TODO here we need to check how we cluster assets from chunks into asset bundles which are loaded together
-        val special = "/chunk"
-
-        val assetName = "world_${world}/level_${level}${special}"
-        val assetConfig = AssetConfig(asepriteExe, project.projectDir, path, assetName )
-        // Set default names and atlas size
-        assetConfig.textureAtlasName = textureAtlasName
-        assetConfig.tilesetAtlasName = tilesetAtlasName
-        assetConfig.atlasWidth = atlasWidth
-        assetConfig.atlasHeight = atlasHeight
-
-        val taskName = assetName.replace("/", "").replace("_", "")
-        project.tasks.createThis<Task>("${taskName}Assets") {
-            group = assetGroup
-            doLast {
-                assetConfig.apply(callback)
-                assetConfig.buildAssetStore()
-            }
-        }
-    }
-
 }

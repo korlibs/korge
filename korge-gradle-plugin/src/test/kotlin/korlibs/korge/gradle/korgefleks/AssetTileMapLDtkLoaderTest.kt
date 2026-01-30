@@ -20,16 +20,19 @@ class AssetTileMapLDtkLoaderTest {
             assetInfo = assetInfo
         )
 
-        assetLevelMapExporter.getFile = { File(it) }
+        // Adjust loading functions for testing
+        assetLevelMapExporter.getFile = {
+            // Just return the file itself for testing
+            File(it)
+        }
         assetLevelMapExporter.loadLDtkFile = { filename ->
-            // Load test LDtk file from resources
+            // Load LDtk json file from resources
             getResourceText(filename.name).fromJson() as Map<String, Any?>
         }
 
         assetLevelMapExporter.exportTileMapLDtk(
             filename = "testLevelMap.ldtk",
-            levelName = "chunk_0",
-            listOfCommonTileSetNames = listOf(),
+            levelName = "chunk_0"
         )
 
         // Check if tile map object was added to asset info correctly

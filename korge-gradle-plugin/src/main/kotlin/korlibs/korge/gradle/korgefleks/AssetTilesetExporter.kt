@@ -8,10 +8,12 @@ import java.io.File
  *
  * @param assetDir The directory containing the original asset files.
  * @param exportTilesetDir The directory where exported tileset images will be stored.
+ * @param tileSetFiles A mutable list to store references to the exported tileset files.
  */
 class AssetTilesetExporter(
     private val assetDir: File,
-    private val exportTilesetDir: File
+    private val exportTilesetDir: File,
+    private val tileSetFiles: MutableList<File>
 ) {
     /**
      * Exports single tiles from a png tileset file and stores them in a tileset atlas.
@@ -23,8 +25,11 @@ class AssetTilesetExporter(
         // Store tileset image file in export tileset directory for atlas packing (take only file name without path)
         val exportTilesetFile = exportTilesetDir.resolve(tilesetFile.name)
 
+        // Store reference to tileset file for later atlas packing - We need to remember the order of tilesets
+        tileSetFiles.add(exportTilesetFile)
+
         // Make sure export directory exists
-        exportTilesetFile.parentFile?.let { it.mkdirs() }
+        exportTilesetFile.parentFile?.mkdirs()
             ?: error("Could not create export tileset directory: ${exportTilesetDir.path}")
 
         // Check if file already exists in export directory
