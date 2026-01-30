@@ -38,7 +38,7 @@ class AssetLevelMapExporter(
      * @param filename LDtk filename
      * @param levelName Level name to export
      */
-    fun exportTileMapLDtk(filename: String, levelName: String) {
+    fun exportTileMapLDtk(filename: String, levelName: String, tileSetsPerClusterMap: Map<String, List<String>>) {
         // Load single level map from LDtk file and export as tile map object
         println("\nLDtk level parser started for exporting single level map from LDtk...")
 
@@ -195,7 +195,7 @@ class AssetLevelMapExporter(
         TODO("Not yet implemented")
     }
 
-    fun exportLevelMapLDtk(filename: String) {
+    fun exportLevelMapLDtk(filename: String, tileSetsPerClusterMap: Map<String, List<String>>) {
 
 
         // Set input

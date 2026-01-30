@@ -1,5 +1,6 @@
 package korlibs.korge.gradle.korgefleks
 
+import com.android.build.gradle.internal.cxx.json.jsonStringOf
 import korlibs.korge.gradle.korgefleks.AssetConfig.Companion.TILES
 import korlibs.korge.gradle.korgefleks.AssetConfig.Companion.TILESETS
 import korlibs.korge.gradle.texpacker.NewTexturePacker
@@ -21,7 +22,8 @@ class AssetTilesetAtlasBuilder(
     private val exportTilesetDir: File,
     private val gameResourcesDir: File,
     private val assetInfo: LinkedHashMap<String, Any>,
-    private val tileSetFiles: List<File>
+    private val tileSetFiles: List<File>,
+    private val clusterAssetInfoDir: File
 ) {
     /**
      * Builds a tileset atlas from the exported tiles in the export tiles directory.
@@ -31,13 +33,14 @@ class AssetTilesetAtlasBuilder(
      * Also, each tileset is expected to contain 4096 tiles (64x64) by default, but this can be changed via the amountOfTiles parameter.
      */
     fun buildTilesetAtlas(
+        clusterName: String,
         tilesetAtlasName: String,
         tileWidth: Int,
         tileHeight: Int,
         atlasWidth: Int,
         atlasHeight: Int,
         atlasPadding: Int,
-        amountOfTiles: Int = 64 * 64  // Default to 4096 tiles per tileset
+        amountOfTiles: Int = 64 * 64 // Default to 4096 tiles per tileset
     ) {
         // Then build tilesets atlas
         if (exportTilesetDir.listFiles() != null && exportTilesetDir.listFiles().isNotEmpty()) {
@@ -50,12 +53,22 @@ class AssetTilesetAtlasBuilder(
                 textureAtlasWidth = atlasWidth,
                 textureAtlasHeight = atlasHeight
             )
-
             // Tileset names list contains the original tileset names in the order they were packed into the atlas
             // This is used below to check if the tiles are put in the correct order into the fileFrameInfo list
+            val tileSetFilenames: List<String> = tileSetFiles.map { it.nameWithoutExtension }
+
+            println("tileset names of packed atlases:")
+            tileSetFilenames.forEach { name -> println(" - ${name}") }
+
+            // Store tileset names list into asset info json file for each asset cluster - it is needed to load correct tileset for each level map layer later
+            val clusterAssetInfoJsonFile = clusterAssetInfoDir.resolve("${clusterName}.json")
+            clusterAssetInfoJsonFile.parentFile?.let { parent ->
+                if (!parent.exists() && !parent.mkdirs()) error("Failed to create directory: ${parent.path}")
+                val jsonString = jsonStringOf(tileSetFilenames)
+                clusterAssetInfoJsonFile.writeText(jsonString)
+            }
 
             // Create map of tilesets for counting how many tilesets were processed
-            val tileSetFilenames: List<String> = tileSetFiles.map { it.nameWithoutExtension }
             val tileSetMap = tileSetFilenames.associateWith { 0 }.toMutableMap()
 
             // Go through all packed atlases
@@ -119,7 +132,7 @@ class AssetTilesetAtlasBuilder(
                 assetInfo[TILES] = linkedMapOf(
                     "w" to tileWidth,
                     "h" to tileHeight,
-                    "t" to tileSetFilenames,
+                    "t" to tileSetFilenames,  // TODO not really needed - remove later after testing finished
                     "f" to tileFramesInfo
                 )
             }

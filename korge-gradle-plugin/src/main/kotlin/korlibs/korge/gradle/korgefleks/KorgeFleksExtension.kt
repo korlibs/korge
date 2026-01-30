@@ -37,7 +37,7 @@ open class KorgeFleksExtension(
 
     /**
      * Prepares asset processing by creating a Gradle task for handling common assets.
-     * Assets which are added here will be grouped into a common asset bundle loaded for all worlds and levels.
+     * Assets which are added here will be grouped into a common asset bundle loaded for all worlds of the game.
      * Common assets are typically used for shared resources like UI elements, sounds, and other global assets.
      *
      * Atlas names and sizes can be customized via parameters, with defaults provided from the KorgeFleks extension's properties.
@@ -73,16 +73,13 @@ open class KorgeFleksExtension(
 
     /**
      * Prepares asset processing by creating a Gradle task for handling world assets.
-     * Assets which are added here in the root of worldAssets { ... } will be used for the entire world,
-     * across all chunks within that world.
-     *
-     * TODO
-     * It is possible to define assets specific to world chunks using the chunkAssets lambda function.
-     * Chunk assets are typically used for large worlds that are divided into smaller sections (chunks)
+     * Assets which are added here are grouped into world cluster specific asset bundles.
+     * Cluster assets are typically used for large worlds that are divided into smaller sections (chunks)
      * to optimize loading, performance and memory consumption.
      *
      * @param path The relative path to the asset directory.
      * @param world The world number for which the assets are being configured.
+     * @param clusterName The name of the cluster within the world.
      * @param config A lambda function to configure the assets.
      *
      * @throws GradleException if the Aseprite executable is not found.
@@ -91,12 +88,12 @@ open class KorgeFleksExtension(
         path: String,
         world: Int,
         clusterName: String,
-        config: WorldAssetConfig.() -> Unit
+        config: WorldClusterAssetConfig.() -> Unit
     ) {
         if (!File(asepriteExe).exists()) throw GradleException("Aseprite executable not found: '$asepriteExe' - Make sure to set 'asepriteExe' property in KorgeFleks extension.")
 
         val assetResourcePath = "world_${world}/${clusterName}"
-        val assetConfig = WorldAssetConfig(asepriteExe, project.projectDir, path, assetResourcePath )
+        val assetConfig = WorldClusterAssetConfig(asepriteExe, project.projectDir, path, assetResourcePath )
         // Set default names and atlas size
         assetConfig.textureAtlasName = textureAtlasName
         assetConfig.tilesetAtlasName = tilesetAtlasName
@@ -109,7 +106,28 @@ open class KorgeFleksExtension(
             group = assetGroup
             doLast {
                 assetConfig.apply(config)
-                assetConfig.buildAssetStore()
+                assetConfig.buildAssetStore(assetResourcePath)
+            }
+        }
+    }
+
+    /**
+     * Prepares asset processing by creating a Gradle task for handling loading of the level map of a specific world.
+     * The level map defines the layout and structure of the world, including terrain, objects,
+     * and other environmental features.
+     *
+     * @param levelMapFile The filename of the level map LDtk file.
+     * @param world The world number for which the level map is being loaded.
+     */
+    fun worldLDtkLevelMapAssets(levelMapFile: String, world: Int) {
+        val assetResourcePath = "world_${world}"
+        val taskName = "world${world}LevelMap"
+        val assetConfig = WorldLDtkLevelMapAssetConfig(project.projectDir, world, levelMapFile, assetResourcePath)
+
+        project.tasks.createThis<Task>("${taskName}Assets") {
+            group = assetGroup
+            doLast {
+                assetConfig.buildAssetStore()  // start to load the level map
             }
         }
     }
