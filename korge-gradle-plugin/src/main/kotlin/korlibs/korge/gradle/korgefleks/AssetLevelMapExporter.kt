@@ -26,10 +26,9 @@ class AssetLevelMapExporter(
     }
 
     data class TileSetData(
-        val name: String,
-        val cluster: Int,
-        val layer: Int,
-        val filePath: String
+        val tileSetName: String,
+        val clusterName: String,
+        val filePath: String  // TODO check if really needed
     )
 
     /**
@@ -37,6 +36,8 @@ class AssetLevelMapExporter(
      *
      * @param filename LDtk filename
      * @param levelName Level name to export
+     * @param tileSetsPerClusterMap Map of tileset names per cluster asset. This indicates the order of tilesets in the cluster, which
+     *        is important to map tiles correctly from LDtk level layers to the tilesets.
      */
     fun exportTileMapLDtk(filename: String, levelName: String, tileSetsPerClusterMap: Map<String, List<String>>) {
         // Load single level map from LDtk file and export as tile map object
@@ -66,30 +67,33 @@ class AssetLevelMapExporter(
             // Check if tags contains exactly one of the cluster, layer and name tags
             val tags = jsonTileSet["tags"] as List<String>
 //            val clusterTags = tags.filter { it in validClusters }
-            val assetTags = tags.filter { it.startsWith("asset_") }
-            val clusterTags = tags.filter { it.startsWith("cluster_") }
-            if (assetTags.size != 1) error("ERROR: Tileset '$tileSetName' must be tagged with (only) one asset tag like 'asset_<name>'!")
-            if (clusterTags.size != 1) error("ERROR: Tileset '$tileSetName' must be tagged with (only) one cluster tag like 'cluster_X_Y', where X, Y is out of [1..4]!")
+// This is not needed
+//            val assetTags = tags.filter { it.startsWith("asset_") }
+//            val clusterTags = tags.filter { it.startsWith("cluster_") }
+//            if (assetTags.size != 1) error("ERROR: Tileset '$tileSetName' must be tagged with (only) one asset tag like 'asset_<name>'!")
+//            if (clusterTags.size != 1) error("ERROR: Tileset '$tileSetName' must be tagged with (only) one cluster tag like 'cluster_X_Y', where X, Y is out of [1..4]!")
 
-            val clusterName = assetTags[0].substringAfter("asset_")
+//            val clusterName = assetTags[0].substringAfter("asset_")
 //            println("Tileset found: '$tileSetName' with cluster name '$clusterName'")
 
-            val regex = Regex("""cluster_(\d+)_(\d+)""")
-            val matchResult = regex.find(clusterTags[0])
-            val (clusterString, layerString) = matchResult?.destructured
-                ?: error("ERROR: Tileset '$tileSetName' has invalid cluster tag '${clusterTags[0]}'! It must be in format 'cluster_X_Y', where X, Y is out of [1..4]'!")
-            val cluster: Int = clusterString.toInt()
-            val layer: Int = layerString.toInt()
+//            val regex = Regex("""cluster_(\d+)_(\d+)""")
+//            val matchResult = regex.find(clusterTags[0])
+//            val (clusterString, layerString) = matchResult?.destructured
+//                ?: error("ERROR: Tileset '$tileSetName' has invalid cluster tag '${clusterTags[0]}'! It must be in format 'cluster_X_Y', where X, Y is out of [1..4]'!")
+//            val cluster: Int = clusterString.toInt()
+//            val layer: Int = layerString.toInt()
 //            println("cluster: $cluster, layer: $layer")
 
             val tileSetUid = jsonTileSet["uid"] as Int
             val tileSetPathName = jsonTileSet["relPath"] as String
             println("  Exporting tileset '$tileSetName' from path '$tileSetPathName' ...")
 
+            // TODO Find tileset in cluster map and store
+            val clusterName = "TODO"
+
             val tilesetData = TileSetData(
+                tileSetName,
                 clusterName,
-                cluster,
-                layer,
                 filePath = tileSetPathName
             )
 

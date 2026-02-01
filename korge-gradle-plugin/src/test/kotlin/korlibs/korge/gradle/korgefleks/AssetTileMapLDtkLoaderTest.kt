@@ -30,10 +30,16 @@ class AssetTileMapLDtkLoaderTest {
             getResourceText(filename.name).fromJson() as Map<String, Any?>
         }
 
+        // Define tilesets per cluster asset config
         val tileSetsPerClusterMap = mapOf(
-            "cluster_name" to listOf(
-                "tileset_name_1",
-                "tileset_name_2"
+            "common" to listOf(
+                "tileset_test_1",
+                "tileset_test_5"
+            ),
+            "intro" to listOf(
+                "tileset_name_2",
+                "tileset_name_3",
+                "tileset_name_4"
             )
         )
 

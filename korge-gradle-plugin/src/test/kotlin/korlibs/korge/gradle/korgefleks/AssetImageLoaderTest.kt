@@ -30,8 +30,8 @@ class AssetImageLoaderTest {
         // Frames:
         // TestNum: 1 - 10
         // FireTrail: 12 - 34
-        val spriteTestnumFrames = (((assetInfo[IMAGES] as Map<String, Any>)["sprites_TestNum"] as Map<String, Any>)["fs"] as List<Map<String, Int>>)
-        val spriteFiretrailFrames = (((assetInfo[IMAGES] as Map<String, Any>)["sprites_FireTrail"] as Map<String, Any>)["fs"] as List<Map<String, Int>>)
+        val spriteTestnumFrames = (((assetInfo[IMAGES] as Map<String, Any>)["sprites_TestNum"] as Map<String, Any>)["f"] as List<Map<String, Int>>)
+        val spriteFiretrailFrames = (((assetInfo[IMAGES] as Map<String, Any>)["sprites_FireTrail"] as Map<String, Any>)["f"] as List<Map<String, Int>>)
 
         // Check now that frame durations were correctly read from aseprite file and inserted into the frames array
         Assert.assertEquals("Expect correct \"Testnum\" frame 0 duration", 242, spriteTestnumFrames[0]["d"])

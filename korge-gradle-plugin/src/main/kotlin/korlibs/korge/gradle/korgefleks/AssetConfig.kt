@@ -224,7 +224,10 @@ class WorldClusterAssetConfig(
      * @param levelName The name of the level to export.
      */
     fun addTileMapLDtkFile(filename: String, levelName: String) {
-        assetLevelMapExporter.exportTileMapLDtk(filename, levelName)
+        // TODO Get data for all clusters and extract used tilesets
+        val tileSetsPerClusterMap = mapOf<String, List<String>>()
+
+        assetLevelMapExporter.exportTileMapLDtk(filename, levelName, tileSetsPerClusterMap)
     }
 
     /**
