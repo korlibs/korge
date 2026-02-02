@@ -2,6 +2,7 @@ package korlibs.korge.gradle.texpacker
 
 import com.android.build.gradle.internal.cxx.json.*
 import korlibs.korge.gradle.*
+import org.gradle.api.GradleException
 import java.awt.*
 import java.io.*
 
@@ -17,12 +18,32 @@ object NewTexturePacker {
         val image: SimpleBitmap,
         val info: Map<String, Any?>
     ) {
+        /**
+         * Writes the atlas info as json string to given output file.
+         * Write atlas image as PNG to the specified output file + png file extension.
+         *
+         * @param output The output file for the atlas info JSON.
+         * @return The output file where the atlas PNG image was written.
+         */
         fun write(output: File): File {
             val imageOut = File(output.parentFile, output.nameWithoutExtension + ".png")
             (info["meta"] as MutableMap<String, Any?>)["image"] = imageOut.name
             output.writeText(jsonStringOf(info))
             image.writeTo(imageOut)
             return imageOut
+        }
+
+        /**
+         * Writes only the atlas image as PNG to the specified output file + png file extension.
+         *
+         * @param output The output file for the atlas PNG image.
+         */
+        fun writeImage(output: File) {
+            output.parentFile?.let { outputPath ->
+                // make sure the output directory exists
+                outputPath.mkdirs()
+                image.writeTo(output)
+            } ?: throw GradleException("Unable to create output directory for '$output'!")
         }
     }
 
@@ -37,7 +58,7 @@ object NewTexturePacker {
                 it.isFile -> FileWithBase(base, it)
                 else -> null
             }
-        } }
+        }}
     }
 
     /**
@@ -48,34 +69,48 @@ object NewTexturePacker {
      *
      * @param folders The folders containing tilesets to be packed.
      * @param padding The padding to apply around each tile in the atlas.
-     * @param tileSize The size of each tile in the tilesets.
-     * @return A list of AtlasInfo objects representing the packed atlases.
+     * @param tileWidth The width of each tile in the tilesets.
+     * @param tileHeight The height of each tile in the tilesets.
+     * @param textureAtlasWidth The width of the texture atlases to be created.
+     * @param textureAtlasHeight The height of the texture atlases to be created.
+     *
+     * @return A pair of lists of AtlasInfo objects representing the packed atlases.
      */
     fun packTilesets(
-        vararg folders: File,
+        files: List<File>,
         padding: Int = 1,
-        tileSize: Int = 16
+        tileWidth: Int = 16,
+        tileHeight: Int = 16,
+        textureAtlasWidth: Int = 4096,
+        textureAtlasHeight: Int = 4096
     ): List<AtlasInfo> {
         // Load all tilesets and create SimpleBitmap instances
-        val tilesets: List<Pair<File, SimpleBitmap>> = getAllFiles(*folders).mapNotNull {
+        val tilesets: List<Pair<String, SimpleBitmap>> = files.mapNotNull {
             try {
-                it.relative to SimpleBitmap(it.file)
+                it.nameWithoutExtension to SimpleBitmap(it)
             } catch (e: Throwable) {
                 e.printStackTrace()
                 null
             }
         }
+
         // Split each tileset into tiles
         val images = arrayListOf<Pair<File, SimpleBitmap>>()
-        tilesets.forEach { tileset ->
-            val (file, image) = tileset
-            if (image.width % tileSize != 0 || image.height % tileSize != 0) {
-                throw IllegalArgumentException("Tileset image size must be multiple of tileSize ($tileSize): $file with size ${image.width}x${image.height}")
+        val tilesetNames = arrayListOf<String>()
+        tilesets.forEachIndexed { index, (name, image) ->
+            val tilesetWidth = image.width
+            val tilesetHeight = image.height
+            if (tilesetWidth % tileWidth != 0 || tilesetHeight % tileHeight != 0) {
+                throw IllegalArgumentException("Tileset image size must be multiple of tile size '$tileWidth x $tileHeight': '$name' with size '${image.width} x ${image.height}'")
             }
-            images += image.splitInListOfTiles(file.nameWithoutExtension, tileSize)
+            // Split tileset into tiles and add to images list
+            val indexStart = index * (tilesetWidth / tileWidth) * (tilesetHeight / tileHeight)
+            images += image.splitInListOfTiles( indexStart, name, tileWidth, tileHeight)
+            tilesetNames += name
         }
 
-        return packImages(images, enableRotation = false, enableTrimming = false, padding = padding, trimFileName = true, removeDuplicates = true)
+        val atlasInfo = packImages(images, enableRotation = false, enableTrimming = false, padding = padding, trimFileName = true, removeDuplicates = true, textureAtlasWidth, textureAtlasHeight)
+        return atlasInfo
     }
 
     /**
@@ -95,7 +130,9 @@ object NewTexturePacker {
         enableTrimming: Boolean = true,
         padding: Int = 2,
         trimFileName: Boolean = false,
-        removeDuplicates: Boolean = false
+        removeDuplicates: Boolean = false,
+        textureAtlasWidth: Int = 4096,
+        textureAtlasHeight: Int = 4096
     ): List<AtlasInfo> {
         val images: List<Pair<File, SimpleBitmap>> = getAllFiles(*folders).mapNotNull {
             try {
@@ -105,18 +142,20 @@ object NewTexturePacker {
                 null
             }
         }
-        return packImages(images, enableRotation, enableTrimming, padding, trimFileName, removeDuplicates)
+        return packImages(images, enableRotation, enableTrimming, padding, trimFileName, removeDuplicates, textureAtlasWidth, textureAtlasHeight)
     }
 
-    private fun packImages(
+    internal fun packImages(
         images: List<Pair<File, SimpleBitmap>>,
         enableRotation: Boolean,
         enableTrimming: Boolean,
         padding: Int,
         trimFileName: Boolean,
-        removeDuplicates: Boolean
+        removeDuplicates: Boolean,
+        textureAtlasWidth: Int,
+        textureAtlasHeight: Int
     ): List<AtlasInfo> {
-        val packer = NewBinPacker.MaxRectsPacker(4096, 4096, padding * 2, NewBinPacker.IOption(
+        val packer = NewBinPacker.MaxRectsPacker(textureAtlasWidth, textureAtlasHeight, padding * 2, NewBinPacker.IOption(
             smart = true,
             pot = true,
             square = false,
@@ -139,6 +178,7 @@ object NewTexturePacker {
                     tileMapping[file] = file
                 } else tileMapping[file] = existing.first
             }
+            println("Texture packer: Removed ${images.size - uniqueMap.size} duplicate images out of ${images.size} total images.")
             uniqueMap.values.toList()
         } else {
             // No duplicate removal, use all images
@@ -151,7 +191,12 @@ object NewTexturePacker {
 
         // Add images to the packer (possibly without duplicates)
         packer.addArray(mappedImages.map { (file, image) ->
-            val fullArea = Rectangle(0, 0, image.width, image.height)
+            // Check if image is empty and set size to 0x0 in that case (needed for tilesets with empty tiles)
+            val tileIsEmpty = image.isEmpty()
+            val fullArea = Rectangle(0, 0,
+                if (tileIsEmpty) 0 else image.width,
+                if (tileIsEmpty) 0 else image.height
+            )
             val trimArea = if (enableTrimming) image.trim() else fullArea
             val trimmedImage = image.slice(trimArea)
             //println(trimArea == fullArea)
@@ -224,20 +269,37 @@ object NewTexturePacker {
 
 /**
  * Split the bitmap into tiles of given size and return them as a list of pairs (File, SimpleBitmap).
- * The File is named as "${name}_${index} without extension."
+ * The File is named as "${index}_${name}" without extension."
+ *
+ * It is important that the index number goes first in the file name to ensure correct ordering when packing into atlas.
+ *
+ * @param name The base name for the tiles.
+ * @param tileWidth The width of each tile.
+ * @param tileHeight The height of each tile.
+ *
+ * @return A list of pairs containing the tile (file) name and the corresponding bitmap.
  */
-fun SimpleBitmap.splitInListOfTiles(name: String, tileSize: Int): List<Pair<File, SimpleBitmap>> {
+fun SimpleBitmap.splitInListOfTiles(indexStart: Int = 0, name: String, tileWidth: Int, tileHeight: Int): List<Pair<File, SimpleBitmap>> {
     val tiles = arrayListOf<Pair<File, SimpleBitmap>>()
-    val tilesX = this.width / tileSize
-    val tilesY = this.height / tileSize
-    var index = 0
+    val tilesX = this.width / tileWidth
+    val tilesY = this.height / tileHeight
+    var index = indexStart
     for (ty in 0 until tilesY) {
         for (tx in 0 until tilesX) {
-            val tileBitmap = this.slice(Rectangle(tx * tileSize, ty * tileSize, tileSize, tileSize))
-            val tileFile = File("${name}_${index}")
+            val tileBitmap = this.slice(Rectangle(tx * tileWidth, ty * tileHeight, tileWidth, tileHeight))
+            val tileFile = File("${index}_${name}")
             tiles.add(tileFile to tileBitmap)
             index++
         }
     }
     return tiles
+}
+
+fun SimpleBitmap.isEmpty(): Boolean {
+    for (y in 0 until height) {
+        for (x in 0 until width) {
+            if (this[x, y].data != 0) return false
+        }
+    }
+    return true
 }

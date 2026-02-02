@@ -9,15 +9,19 @@ import java.io.File
 class NewTexturePackerTest {
     @Test
     fun testPackTilesets() {
-        val atlasInfos = NewTexturePacker.packTilesets(File(getResourceURL("tilesets").file))
+        val atlasInfo = NewTexturePacker.packTilesets(
+            listOf(
+                File(getResourceURL("tilesets/test_tileset.png").file),
+                File(getResourceURL("tilesets/test_tileset_2.png").file)
+            )
+        )
 
         // Check if duplicate tiles were detected and merged into one tile rect area in the tileset atlas
-        val atlasInfo = atlasInfos.first()
-        val frames = atlasInfo.info["frames"] as Map<String, Any>
+        val frames = atlasInfo.first().info["frames"] as Map<String, Any>
 
-        val tile_1 = frames["test_tileset_1"] as Map<String, Any>
-        val tile_2 = frames["test_tileset_4"] as Map<String, Any>
-        val tile_3 = frames["test_tileset_2_0"] as Map<String, Any>  // This tile is in the second tileset but is a duplicate of test_tileset_1
+        val tile_1 = frames["1_test_tileset"] as Map<String, Any>
+        val tile_2 = frames["4_test_tileset"] as Map<String, Any>
+        val tile_3 = frames["8_test_tileset_2"] as Map<String, Any>  // This tile is in the second tileset but is a duplicate of test_tileset_1
 
         // Check that all three tiles point to the same frame data (i.e., they are duplicates)
         val tileFrame_1 = tile_1["frame"] as Map<String, Int>
