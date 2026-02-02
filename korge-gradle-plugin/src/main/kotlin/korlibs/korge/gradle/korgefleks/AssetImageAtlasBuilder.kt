@@ -73,7 +73,7 @@ class AssetImageAtlasBuilder(
 
                     // (1) Check if this frame is an image (animation)
                     imagesInfo[frameTag]?.let { imageInfo ->
-                        saveImageInfo(imageInfo as LinkedHashMap<String, Any>, frameEntry as Map<String, Int>, frameTag, idx, animIndex)
+                        saveImageInfo(imageInfo as LinkedHashMap<String, Any>, frameEntry, frameTag, idx, animIndex)
                     }
 
                     // (2) Check if this frame is a nine-patch image
@@ -192,7 +192,7 @@ class AssetImageAtlasBuilder(
                                         }
                                         else -> error("ParallaxImageBuilder - Parallax mode must be set to HORIZONTAL_PLANE or VERTICAL_PLANE in parallax plane '$planeName'!")
                                     }
-                                    val index = if (attachBottomRight) offset else offset
+                                    val index = offset
                                     val indexForSpeed = if (attachBottomRight) offset else offset + layerTextureSize
                                     val speedFactor = layerInfo["s"]?.let { it as Float } ?: error("ParallaxImageBuilder - attached layer speedFactor is null for parallax layer '$layerName'!")
 
@@ -268,7 +268,7 @@ class AssetImageAtlasBuilder(
             )
     }
 
-    private fun saveImageInfo(imageInfo: LinkedHashMap<String, Any>, frameEntry: Map<String, Int>, frameTag: String, idx: Int, animIndex: Int, saveSize: Boolean = true) {
+    private fun saveImageInfo(imageInfo: LinkedHashMap<String, Any>, frameEntry: Map<String, Any>, frameTag: String, idx: Int, animIndex: Int, saveSize: Boolean = true) {
         // Ensure the frames list is large enough and set the frame at the correct index
         val framesInfo = imageInfo["f"] as MutableList<LinkedHashMap<String, Any>>
         if (animIndex >= framesInfo.size) error("ImageBuilder - Animation index ${animIndex} out of bounds for sprite '${frameTag}' with ${framesInfo.size} frames!")

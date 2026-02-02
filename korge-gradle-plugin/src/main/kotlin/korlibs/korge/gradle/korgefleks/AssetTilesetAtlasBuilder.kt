@@ -58,7 +58,7 @@ class AssetTilesetAtlasBuilder(
             val tileSetFilenames: List<String> = tileSetFiles.map { it.nameWithoutExtension }
 
             println("tileset names of packed atlases:")
-            tileSetFilenames.forEach { name -> println(" - ${name}") }
+            tileSetFilenames.forEach { name -> println(" - $name") }
 
             // Store tileset names list into asset info json file for each asset cluster - it is needed to load correct tileset for each level map layer later
             val clusterAssetInfoJsonFile = clusterAssetInfoDir.resolve("${clusterName}.json")
@@ -121,13 +121,6 @@ class AssetTilesetAtlasBuilder(
                     tileFramesInfo[tileIndex] = tileInfo
                 }
 
-                // Check if all tilesets consists of the expected amount of tiles
-                tileSetMap.forEach { (name, count) ->
-                    if (count != amountOfTiles) {
-                        error("TilesetBuilder - tileset '${name}' contains ${count} tiles, expected ${amountOfTiles} tiles!")
-                    }
-                }
-
                 // Finally, store tileset info
                 assetInfo[TILES] = linkedMapOf(
                     "w" to tileWidth,
@@ -135,6 +128,13 @@ class AssetTilesetAtlasBuilder(
                     "t" to tileSetFilenames,  // TODO not really needed - remove later after testing finished
                     "f" to tileFramesInfo
                 )
+            }
+
+            // Check if all tilesets consists of the expected amount of tiles
+            tileSetMap.forEach { (name, count) ->
+                if (count != amountOfTiles) {
+                    error("TilesetBuilder - tileset '${name}' contains ${count} tiles, expected ${amountOfTiles} tiles!")
+                }
             }
         }
     }

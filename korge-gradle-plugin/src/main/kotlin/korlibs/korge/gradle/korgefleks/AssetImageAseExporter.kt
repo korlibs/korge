@@ -71,16 +71,16 @@ class AssetImageAseExporter(
             val ninepatch = linkedMapOf<String, Any>()
             // For nine-patches we only store the frame info of the first frame
             if (slicename.isEmpty()) {
-                val ninePatchslice = aseInfo.slices.first()
-                if (ninePatchslice.hasNinePatch && ninePatchslice.keys.isNotEmpty() && ninePatchslice.keys.first().ninePatch != null) {
-                    val ninePatchInfo = ninePatchslice.keys.first().ninePatch
+                val ninePatchSlice = aseInfo.slices.first()
+                if (ninePatchSlice.hasNinePatch && ninePatchSlice.keys.isNotEmpty() && ninePatchSlice.keys.first().ninePatch != null) {
+                    val ninePatchInfo = ninePatchSlice.keys.first().ninePatch
                     ninepatch["x"] = ninePatchInfo!!.centerX
                     ninepatch["y"] = ninePatchInfo.centerY
                     ninepatch["w"] = ninePatchInfo.centerWidth
                     ninepatch["h"] = ninePatchInfo.centerHeight
-                } else error("No nine-patch slice found in Aseprite file '${filename}' for nine-patch image '${imageName}'!")
+                } else throw GradleException("No nine-patch slice found in Aseprite file '${filename}' for nine-patch image '${imageName}'!")
                 ninepaches[imageName] = ninepatch
-            }
+            } else throw GradleException("No slice found in Aseprite file '${filename}' for nine-patch image '${imageName}'!")
         }
     }
 

@@ -298,9 +298,7 @@ fun SimpleBitmap.splitInListOfTiles(indexStart: Int = 0, name: String, tileWidth
 fun SimpleBitmap.isEmpty(): Boolean {
     for (y in 0 until height) {
         for (x in 0 until width) {
-            if (this[x, y].r != 0) return false
-            if (this[x, y].g != 0) return false
-            if (this[x, y].b != 0) return false
+            if (this[x, y].data != 0) return false
         }
     }
     return true
