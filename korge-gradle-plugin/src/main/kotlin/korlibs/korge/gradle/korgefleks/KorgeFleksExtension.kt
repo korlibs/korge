@@ -85,8 +85,8 @@ open class KorgeFleksExtension(
      * @throws GradleException if the Aseprite executable is not found.
      */
     fun worldClusterAssets(
-        path: String,
         world: Int,
+        path: String,
         clusterName: String,
         config: WorldClusterAssetConfig.() -> Unit
     ) {
@@ -116,13 +116,17 @@ open class KorgeFleksExtension(
      * The level map defines the layout and structure of the world, including terrain, objects,
      * and other environmental features.
      *
-     * @param levelMapFile The filename of the level map LDtk file.
+     * @param ldtkFile The filename of the level map LDtk file.
      * @param world The world number for which the level map is being loaded.
      */
-    fun worldLDtkLevelMapAssets(levelMapFile: String, world: Int) {
+    fun worldLevelMapAssets(
+        world: Int,
+        ldtkFile: String,
+        config: WorldClusterAssetConfig.() -> Unit
+    ) {
         val assetResourcePath = "world_${world}"
         val taskName = "world${world}LevelMap"
-        val assetConfig = WorldLDtkLevelMapAssetConfig(project.projectDir, world, levelMapFile, assetResourcePath)
+        val assetConfig = WorldLDtkLevelMapAssetConfig(project.projectDir, world, ldtkFile, assetResourcePath)
 
         project.tasks.createThis<Task>("${taskName}Assets") {
             group = assetGroup

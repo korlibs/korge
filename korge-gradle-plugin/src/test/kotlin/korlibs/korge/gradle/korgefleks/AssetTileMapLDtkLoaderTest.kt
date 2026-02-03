@@ -37,9 +37,9 @@ class AssetTileMapLDtkLoaderTest {
                 "tileset_test_5"
             ),
             "intro" to listOf(
-                "tileset_name_2",
-                "tileset_name_3",
-                "tileset_name_4"
+                "tileset_test_2",
+                "tileset_test_3",
+                "tileset_test_4"
             )
         )
 
@@ -48,6 +48,8 @@ class AssetTileMapLDtkLoaderTest {
             levelName = "chunk_0",
             tileSetsPerClusterMap = tileSetsPerClusterMap
         )
+
+
 
         // Check if tile map object was added to asset info correctly
         // Check if tile sets were exported correctly

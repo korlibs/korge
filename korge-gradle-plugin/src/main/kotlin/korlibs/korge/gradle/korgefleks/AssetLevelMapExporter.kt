@@ -25,10 +25,28 @@ class AssetLevelMapExporter(
         LocalSFile(it).read().fromJson() as Map<String, Any?>
     }
 
+    private var stackedTileMapPopulated: Boolean = false
+
+    /**
+     * Data class for storing tileset info per cluster.
+     *
+     * @param tileSetName Name of the tileset. It is defined in worldClusterAssets config and as name of tile set in LDtk file.
+     *                    Both names must match.
+     * @param offset Offset of the tileset in the cluster. This is important to map tiles correctly from LDtk level layers to the tilesets.
+     *               A tile ID in LDtk level layer will be mapped by this offset to the correct tile set in the cluster asset.
+     * @param clusterName Name of the cluster asset the tileset belongs to.
+     */
     data class TileSetData(
         val tileSetName: String,
-        val clusterName: String,
-        val filePath: String  // TODO check if really needed
+        val offset: Int,
+        val clusterName: String
+    )
+
+    data class ChunkData(
+        val chunkName: String,
+        val entities: List<Map<String, Any>>,
+        val stackedTileMapData: List<MutableList<Int>>,
+        val clusterList: List<String>
     )
 
     /**
@@ -51,67 +69,46 @@ class AssetLevelMapExporter(
         val defs = ldtkJson["defs"] as Map<String, Any?>
         val jsonTileSets = defs["tilesets"] as List<Map<String, Any?>>
 
-        // Check which tilesets are available
-        // Load tags of tilesets and store tileset info into map for LEVEL (common) or SPECIAL (specific name)
-
+        // Map for storing starting index for each tileset based on its order in the asset cluster
         val tileSetDataByUid = mutableMapOf<Int, TileSetData>()
 
-        // Go through all tilesets and export them into clusters
+        // Go through all tilesets and save their cluster assignment from tags and external tileSetsPerClusterMap
         jsonTileSets.forEach { jsonTileSet ->
             val tileSetName = jsonTileSet["identifier"] as String
 
-            // Sanity checks
-            // Check if tileset size is 64x64 grid cells
-//            if (jsonTileSet["__cHei"] as Int != 64 || jsonTileSet["__cWid"] as Int != 64) error("ERROR: Tileset '$tileSetName' (${jsonTileSet["__cHei"] as Int} x ${jsonTileSet["__cWid"] as Int}) has invalid size! Only 64x64 tilesets are supported!")
-
             // Check if tags contains exactly one of the cluster, layer and name tags
             val tags = jsonTileSet["tags"] as List<String>
-//            val clusterTags = tags.filter { it in validClusters }
-// This is not needed
-//            val assetTags = tags.filter { it.startsWith("asset_") }
-//            val clusterTags = tags.filter { it.startsWith("cluster_") }
-//            if (assetTags.size != 1) error("ERROR: Tileset '$tileSetName' must be tagged with (only) one asset tag like 'asset_<name>'!")
-//            if (clusterTags.size != 1) error("ERROR: Tileset '$tileSetName' must be tagged with (only) one cluster tag like 'cluster_X_Y', where X, Y is out of [1..4]!")
-
-//            val clusterName = assetTags[0].substringAfter("asset_")
-//            println("Tileset found: '$tileSetName' with cluster name '$clusterName'")
-
-//            val regex = Regex("""cluster_(\d+)_(\d+)""")
-//            val matchResult = regex.find(clusterTags[0])
-//            val (clusterString, layerString) = matchResult?.destructured
-//                ?: error("ERROR: Tileset '$tileSetName' has invalid cluster tag '${clusterTags[0]}'! It must be in format 'cluster_X_Y', where X, Y is out of [1..4]'!")
-//            val cluster: Int = clusterString.toInt()
-//            val layer: Int = layerString.toInt()
-//            println("cluster: $cluster, layer: $layer")
+            val clusterLDtkTag: String = if (tags.isNotEmpty()) tags[0] else throw GradleException("Tileset '$tileSetName' has no 'cluster name' defined as tag in LDtk file!")
 
             val tileSetUid = jsonTileSet["uid"] as Int
             val tileSetPathName = jsonTileSet["relPath"] as String
             println("  Exporting tileset '$tileSetName' from path '$tileSetPathName' ...")
 
-            // TODO Find tileset in cluster map and store
-            val clusterName = "TODO"
+            // Find tileset in cluster map and store
+            var clusterName = ""
+            var offset = 0
+            tileSetsPerClusterMap.forEach { (cluster, listOfTileSets) ->
+                listOfTileSets.forEachIndexed { idx, tileSet ->
+                    if (tileSet == tileSetName) {
+                        // Tileset found in this cluster
+                        clusterName = cluster
+                        offset = idx
+                        return@forEach
+                    }
+                }
+            }
+            // Sanity checks
+            if (clusterName.isEmpty()) throw GradleException("Tileset '$tileSetName' not found in tileset per cluster map!")
+            if (clusterLDtkTag != clusterName) throw GradleException("Tileset '$tileSetName' has cluster tag '$clusterLDtkTag' in LDtk file but is assigned to cluster '$clusterName' in tileset per cluster map!")
 
-            val tilesetData = TileSetData(
-                tileSetName,
-                clusterName,
-                filePath = tileSetPathName
-            )
-
-            tileSetDataByUid[tileSetUid] = tilesetData
-
-            //
-
+            tileSetDataByUid[tileSetUid] = TileSetData(tileSetName, offset, clusterName)
         }
         println(tileSetDataByUid)
 
-        return
-
-        // We have a maximum of 16 layers per level --> Each level chunk can use up to 16 tilesets
-
+        // Definition: maximum of 16 layers per level --> Each level chunk can use up to 16 tilesets
         ldtkLevels.forEach { ldtkLevel ->
             val chunkName = ldtkLevel["identifier"] as String
             if (chunkName == levelName) {
-
                 println("Processing '$chunkName' ...")
 
                 val levelGridHeight = (ldtkLevel["pxHei"] as Int) / defaultGridSize  // Level height in tiles
@@ -123,59 +120,78 @@ class AssetLevelMapExporter(
                 val ldtkLevelLayers = ldtkLevel["layerInstances"] as List<Map<String, Any?>>
 
                 // Create stacked tile map data array (width * height) with max 10 stacked tiles per cell
-                // TODO remove hardcoded size
-                val stackedTileMapData: List<MutableList<Int>> = List(levelGridHeight * levelGridWidth) { MutableList(STACK_SIZE) { 0 } }
+                val stackedTileMapData: List<MutableList<Int>> = List(levelGridHeight * levelGridWidth) { MutableList(STACK_SIZE) { -1 } }
+                stackedTileMapPopulated = false
 
+                val clusterList = mutableListOf<String>()
+
+                // Go through all layers in reverse order (from background to foreground)
                 for (layerIdx in ldtkLevelLayers.size - 1 downTo 0) {
                     val ldtkLayer = ldtkLevelLayers[layerIdx]
-//                ldtkLevelLayers.forEach { ldtkLayer ->
                     val layerName = ldtkLayer["__identifier"] as String
-                    val layerGridWidth = ldtkLayer["__cWid"] as Int  // Layer width in grid cells
-                    val layerGridHeight = ldtkLayer["__cHei"] as Int  // Layer height in grid cells
-//                    val tileSize = ldtkLayer["__gridSize"] as Int
-
                     println("  Layer: '$layerName'")
+                    val layerGridWidth = ldtkLayer["__cWid"] as Int  // Layer width in grid cells
 
-                    val tilesetDefUid = ldtkLayer["__tilesetDefUid"] as Int?
-
-//                    if (tilesetDefUid != null && tileSets.containsKey(tilesetDefUid)) {
-                    // An array containing all tiles generated by Auto-layer rules.
+                    // Layer contains either auto-tiles or grid-tiles, so add
                     val autoLayerTiles = ldtkLayer["autoLayerTiles"] as List<Map<String, Any?>>
                     val gridTiles = ldtkLayer["gridTiles"] as List<Map<String, Any?>>
+                    val entityInstances = ldtkLayer["entityInstances"] as List<Map<String, Any?>>
 
-                    stackTilesIntoTileMap(
-                        autoLayerTiles + gridTiles,
+                    when {
+                        entityInstances.isNotEmpty() -> {
+                            // TODO
+                        }
+                        autoLayerTiles.isNotEmpty() || gridTiles.isNotEmpty() -> {
+                            // Get the used tileset for this layer and pass its index in the cluster for correct tile mapping
+                            val tilesetDefUid = ldtkLayer["__tilesetDefUid"] as Int?
+                            if (tilesetDefUid != null && tileSetDataByUid.containsKey(tilesetDefUid)) {
+                                // Add cluster name to clusterList if not already present
+                                val clusterName = tileSetDataByUid[tilesetDefUid]!!.clusterName
+                                if (!clusterList.contains(clusterName)) {
+                                    clusterList.add(clusterName)
+                                }
+                                // Get index of cluster in cluster list
+                                val clusterIndex = clusterList.indexOf(clusterName)
+                                val tileOffset = tileSetDataByUid[tilesetDefUid]!!.offset
+
+                                stackTilesIntoTileMap(autoLayerTiles + gridTiles, stackedTileMapData, layerGridWidth, defaultGridSize, clusterIndex, tileOffset)
+                            }
+                        }
+                        else -> println("WARNING: No tiles or entities found in layer '$layerName'!")
+                    }
+                }
+
+                if (stackedTileMapPopulated) {
+                    // TODO - write stacked tile map data to asset info
+                    println("  Stacked tile map data exported for level '$levelName'.")
+
+                    val chunkData = ChunkData(
+                        chunkName,
+                        emptyList(),
                         stackedTileMapData,
-                        layerGridWidth,
-                        defaultGridSize
+                        clusterList
                     )
-                    // TODO - cleanup ldtkWorld.tilesetDefsById[ldtkLayer.tilesetDefUid]!!)
-
-                        // Write stacked tile map data to YAML
-                        // TODO
-                        println("stacked tile map with ${autoLayerTiles.size} tiles processed.")
-//                    }
-
                 }
                 println()
             }
         }
     }
 
-    private fun stackTilesIntoTileMap(layerTiles: List<Map<String, Any?>>, stackedTileMapData: List<MutableList<Int>>, width: Int, tileSize: Int) {  //, tilesetDef: Map<String, Any?>) {
+    private fun stackTilesIntoTileMap(layerTiles: List<Map<String, Any?>>, stackedTileMapData: List<MutableList<Int>>, width: Int, tileSize: Int, clusterIndex: Int, tileOffset: Int) {
         for (tile in layerTiles) {
             val (px, py) = tile["px"] as List<Int>  // Tile x, y position in layer
             val x = px / tileSize
             val y = py / tileSize
             val dx = px % tileSize
             val dy = py % tileSize
-            val tileId = tile["t"] as Int // Tile id in the tileset which identifies the tile graphic
-            //val flipX = (tile["f"] as Int).hasBitSet(0)
+            // Tile id in the tileset which identifies the tile graphic
+            // plus offset which is determined by the tileset order in the cluster
+            val tileId = (tile["t"] as Int) + tileOffset
+            //val flipX = (tile["f"] as Int).hasBitSet(0)  -- not supported yet
             //val flipY = (tile["f"] as Int).hasBitSet(1)
 
-            if ((dx != 0 || dy != 0)) {
-                println("WARNING: Tile at pixel position ($px,$py) is not aligned to tile size $tileSize (dx=$dx, dy=$dy)! This is currently not supported and tile offset will be ignored!")
-            }
+            if ((dx != 0 || dy != 0)) println("WARNING: Tile at pixel position ($px,$py) is not aligned to tile size $tileSize" +
+                " (dx=$dx, dy=$dy)! This is not supported and tile offset will be ignored!")
 
             if (px == 0 && py == 0) {
                 println("  0:0 tileId=$tileId")
@@ -185,10 +201,14 @@ class AssetLevelMapExporter(
             val stackedTile = stackedTileMapData[tileIndex]
 
             for ((idx, tile) in stackedTile.withIndex()) {
-                if (tile == 0) {
+                if (tile == -1) {
                     // Empty tile found, stack tile here
-                    if (idx < STACK_SIZE) stackedTileMapData[tileIndex][idx] = tileId
-                    else println("ERROR: Stack size exceeded at position ($x,$y)! Max stack size is $STACK_SIZE tiles per cell.")
+                    if (idx < STACK_SIZE) {
+                        // chunk index in bits 0-3, tile id in bits 4 - 19
+                        val tile = (clusterIndex and 0xf) or ((tileId and 0xffff) shl 4)
+                        stackedTileMapData[tileIndex][idx] = tile
+                        stackedTileMapPopulated = true
+                    } else println("ERROR: Stack size exceeded at position ($x,$y)! Max stack size is $STACK_SIZE tiles per cell.")
                     break
                 }
             }
@@ -200,116 +220,12 @@ class AssetLevelMapExporter(
     }
 
     fun exportLevelMapLDtk(filename: String, tileSetsPerClusterMap: Map<String, List<String>>) {
-
-
-        // Set input
-//        val tilesetNames = listOf("tileset_planet_highlight", "tileset_planet_foreground", "tileset_planet_background")
-
-        println("\nLDtk level parser started...")
-
-        val ldtkFile = assetDir.resolve(filename)  // File("src/commonMain/resources/world_1/level_1/assets/level_1.ldtk")
-        val ldtkJson = ldtkFile.readText().fromJson() as Map<String, Any?>
-
-        val levelWidth: Int = ldtkJson["worldGridWidth"] as Int? ?: 0  // Level width in pixels
-        val levelHeight = ldtkJson["worldGridHeight"] as Int? ?: 0     // Level height in pixels
-
-        val ldtkLevels = ldtkJson["levels"] as List<Map<String, Any?>>    // Read all LDtk levels and store them
-        val defs = ldtkJson["defs"] as Map<String, Any?>
-        val jsonTileSets = defs["tilesets"] as List<Map<String, Any?>>
-
-        // Check which tilesets are available
-        // Load tags of tilesets and store tileset info into map for LEVEL (common) or SPECIAL (specific name)
-
-
-        jsonTileSets.forEach { jsonTileSets ->
-            println("Tileset found: '${jsonTileSets["identifier"]}' (Uid: '${jsonTileSets["uid"]}')")
-        }
-//            if (tileset != null) {
-//                println("Tileset '$tilesetName' (Uid: '${tileset["uid"]}') found in LDtk file.")
-//                val saveTileOffset = tileOffset
-//                tileOffset += (tileset["__cWid"] as Int) * (tileset["__cHei"] as Int)
-//                TileSetInfo(
-//                    tileset["uid"] as Int,
-//                    saveTileOffset,
-//                    tileset["__cWid"] as Int,
-//                    tileset["__cHei"] as Int,
-//                    tileset["tileGridSize"] as Int
-//                )
-//            } else {
-//                println("ERROR: Tileset '$tilesetName' not found in LDtk file!")
-//                null
-//            }
-//        }.associateBy { it.uid }
-
-
-        ldtkLevels.forEach { ldtkLevel ->
-            val chunkName = ldtkLevel["identifier"]
-            println("Processing '$chunkName' ...")
-
-            // Create YAML string of an entity config from LDtk
-            val yamlString = StringBuilder()
-            yamlString.append("entities:\n")
-
-            var gameObjectCnt = 0
-
-            // Calculate level position in world grid
-            val levelX: Int = ldtkLevel["worldX"] as Int / levelWidth
-            val levelY: Int = ldtkLevel["worldY"] as Int / levelHeight
-            val levelHeight = ldtkLevel["pxHei"] as Int  // Level height in pixels
-            val levelWidth = ldtkLevel["pxWid"] as Int   // Level width in pixels
-            val ldtkLevels = ldtkLevel["layerInstances"] as List<Map<String, Any?>>
-
-            // Create stacked tile map data array (width * height) with max 10 stacked tiles per cell
-            // TODO remove hardcoded size
-            val stackedTileMapData: List<MutableList<Int>> = List(64 * 64) { MutableList(STACK_SIZE) { 0 } }
-
-
-            ldtkLevels.forEach { ldtkLayer ->
-                val layerName = ldtkLayer["__identifier"] as String
-                val layerGridWidth = ldtkLayer["__cWid"] as Int  // Layer width in grid cells
-                //val layerGridHeight = ldtkLayer["__cHei"] as Int  // Layer height in grid cells
-                val tileSize = ldtkLayer["__gridSize"] as Int
-
-                print("  Layer: '$layerName' ... ")
-
-
-                val tilesetDefUid = ldtkLayer["__tilesetDefUid"] as Int?
-
-                // Store tiles into stacked tile map data array
-
-                // Check for each layer which tileset it uses
-            //
-            // and map tiles accordingly
-
-/*
-                if (tilesetDefUid != null && tileSets.containsKey(tilesetDefUid)) {
-                    /**
-                     * An array containing all tiles generated by Auto-layer rules. The array is already sorted
-                     * in display order (ie. 1st tile is beneath 2nd, which is beneath 3rd etc.).<br/><br/>
-                     * Note: if multiple tiles are stacked in the same cell as the result of different rules,
-                     * all tiles behind opaque ones will be discarded.
-                     */
-                    val autoLayerTiles = ldtkLayer["autoLayerTiles"] as List<Map<String, Any?>>
-                    stackTilesIntoTileMap(
-                        autoLayerTiles,
-                        stackedTileMapData,
-                        layerGridWidth,
-                        tileSize
-                    )  // TODO - cleanup ldtkWorld.tilesetDefsById[ldtkLayer.tilesetDefUid]!!)
-
-                    // Write stacked tile map data to YAML
-                    // TODO
-                    println("stacked tile map with ${autoLayerTiles.size} tiles processed.")
-                }
-*/
-            }
-        }
+        // TODO
     }
-
-
-
 }
 
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 object KorgeFleksAssets {
 
     data class TileSetInfo(
