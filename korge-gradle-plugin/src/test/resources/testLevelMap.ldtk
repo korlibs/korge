@@ -593,8 +593,8 @@
 					"__opacity": 1,
 					"__pxTotalOffsetX": 0,
 					"__pxTotalOffsetY": 0,
-					"__tilesetDefUid": 11,
-					"__tilesetRelPath": "tileset_test_3.png",
+					"__tilesetDefUid": 1,
+					"__tilesetRelPath": "tileset_test_1.png",
 					"iid": "46f19282-fa90-11f0-8573-edc72130df24",
 					"levelId": 6,
 					"layerDefUid": 12,
@@ -605,8 +605,14 @@
 					"intGridCsv": [],
 					"autoLayerTiles": [],
 					"seed": 1109722,
-					"overrideTilesetUid": null,
-					"gridTiles": [{ "px": [368,480], "src": [0,0], "f": 0, "t": 0, "d": [1943], "a": 1 }],
+					"overrideTilesetUid": 1,
+					"gridTiles": [
+						{ "px": [0,0], "src": [0,0], "f": 0, "t": 0, "d": [0], "a": 1 },
+						{ "px": [16,0], "src": [16,0], "f": 0, "t": 1, "d": [1], "a": 1 },
+						{ "px": [32,0], "src": [32,0], "f": 0, "t": 2, "d": [2], "a": 1 },
+						{ "px": [1008,0], "src": [0,0], "f": 0, "t": 0, "d": [63], "a": 1 },
+						{ "px": [1008,1008], "src": [0,0], "f": 0, "t": 0, "d": [4095], "a": 1 }
+					],
 					"entityInstances": []
 				},
 				{
@@ -618,8 +624,8 @@
 					"__opacity": 1,
 					"__pxTotalOffsetX": 0,
 					"__pxTotalOffsetY": 0,
-					"__tilesetDefUid": 2,
-					"__tilesetRelPath": "tileset_test_2.png",
+					"__tilesetDefUid": 1,
+					"__tilesetRelPath": "tileset_test_1.png",
 					"iid": "6d58be41-fa90-11f0-a98c-8fed0deab694",
 					"levelId": 6,
 					"layerDefUid": 3,
@@ -630,8 +636,8 @@
 					"intGridCsv": [],
 					"autoLayerTiles": [],
 					"seed": 5553463,
-					"overrideTilesetUid": null,
-					"gridTiles": [{ "px": [16,16], "src": [16,16], "f": 0, "t": 65, "d": [65], "a": 1 }],
+					"overrideTilesetUid": 1,
+					"gridTiles": [{ "px": [0,0], "src": [0,32], "f": 0, "t": 128, "d": [0], "a": 1 }],
 					"entityInstances": []
 				},
 				{
@@ -656,7 +662,7 @@
 					"autoLayerTiles": [],
 					"seed": 5977887,
 					"overrideTilesetUid": null,
-					"gridTiles": [{ "px": [16,0], "src": [0,0], "f": 0, "t": 0, "d": [1], "a": 1 }],
+					"gridTiles": [],
 					"entityInstances": []
 				}
 			],

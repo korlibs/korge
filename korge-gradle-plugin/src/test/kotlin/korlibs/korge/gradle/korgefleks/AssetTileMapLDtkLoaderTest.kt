@@ -30,6 +30,28 @@ class AssetTileMapLDtkLoaderTest {
             getResourceText(filename.name).fromJson() as Map<String, Any?>
         }
 
+        val listOfTileSets = listOf(
+            "tileset_test_1"
+        )
+
+        assetLevelMapExporter.exportTileMapLDtk(
+            filename = "testLevelMap.ldtk",
+            levelName = "chunk_2",
+            clusterName = "common",
+            tileSetList = listOfTileSets
+        )
+
+
+
+        // Check if tile map object was added to asset info correctly
+        // Check if tile sets were exported correctly
+
+
+    }
+
+    @Test
+    fun testLevelMapLDtkLoader() {
+
         // Define tilesets per cluster asset config
         val tileSetsPerClusterMap = mapOf(
             "common" to listOf(
@@ -43,17 +65,6 @@ class AssetTileMapLDtkLoaderTest {
             )
         )
 
-        assetLevelMapExporter.exportTileMapLDtk(
-            filename = "testLevelMap.ldtk",
-            levelName = "chunk_0",
-            tileSetsPerClusterMap = tileSetsPerClusterMap
-        )
-
-
-
-        // Check if tile map object was added to asset info correctly
-        // Check if tile sets were exported correctly
-
-
     }
+
 }

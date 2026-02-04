@@ -40,6 +40,7 @@ open class AssetConfig(
         internal const val PIXEL_FONTS = "pixelFonts"
         internal const val PARALLAX_LAYERS = "parallaxLayers"
         internal const val TILES = "tiles"
+        internal const val TILE_MAPS = "tileMaps"
     }
 
     // Directory where Aseprite files are located
@@ -64,7 +65,6 @@ open class AssetConfig(
 
         // Initialize maps and lists in asset info
         assetInfo[TEXTURES] = arrayListOf<String>()
-        assetInfo[TILESETS] = arrayListOf<String>()
         assetInfo[IMAGES] = linkedMapOf<String, Any>()
         assetInfo[NINE_PATCHES] = linkedMapOf<String, Any>()
         assetInfo[PIXEL_FONTS] = linkedMapOf<String, Any>()
@@ -75,7 +75,6 @@ open class AssetConfig(
     protected val assetImageAseExporter = AssetImageAseExporter(asepriteExe, assetDir, exportTilesDir, assetInfo)
     protected val assetFileInstaller = AssetFileInstaller(assetDir, exportTilesDir, gameResourcesDir, assetInfo)
     protected val assetImageAtlasBuilder = AssetImageAtlasBuilder(exportTilesDir, gameResourcesDir, assetInfo)
-    protected val assetLevelMapExporter = AssetLevelMapExporter(assetDir, gameResourcesDir, assetInfo)
 
     /**
      * Export specific layers and tags from Aseprite file as independent png images.
@@ -188,7 +187,8 @@ class WorldClusterAssetConfig(
     asepriteExe: String,
     projectDir: File,
     assetPath: String,
-    resourcePath: String
+    resourcePath: String,
+    private val clusterName: String
 ) : AssetConfig(asepriteExe, projectDir, assetPath, resourcePath) {
 
     private val tileSetFiles: MutableList<File> = mutableListOf()
@@ -199,6 +199,7 @@ class WorldClusterAssetConfig(
 
     private val assetTilesetExporter = AssetTilesetExporter(assetDir, exportTilesetDir, tileSetFiles)
     private val assetTilesetAtlasBuilder = AssetTilesetAtlasBuilder(exportTilesetDir, gameResourcesDir, assetInfo, tileSetFiles, clusterAssetInfoDir)
+    private val assetLevelMapExporter = AssetLevelMapExporter(assetDir, gameResourcesDir, assetInfo)
 
     init {
         // Make sure the export directories exist and that they are empty
@@ -206,6 +207,10 @@ class WorldClusterAssetConfig(
         if (exportTilesetDir.exists()) exportTilesetDir.deleteRecursively()
         exportTilesDir.mkdirs()
         exportTilesetDir.mkdirs()
+
+        // Initialize maps and lists in asset info
+        assetInfo[TILESETS] = arrayListOf<String>()
+        assetInfo[TILE_MAPS] = linkedMapOf<String, Any>()
     }
 
     /**
@@ -222,12 +227,11 @@ class WorldClusterAssetConfig(
      *
      * @param filename The LDtk file containing the level data.
      * @param levelName The name of the level to export.
+     * @param tileSetList The list of tileset names to be used for the level map. The tile sets must be added in the
+     *                    same world cluster asset config block with [addTilesetImagePng].
      */
-    fun addTileMapLDtkFile(filename: String, levelName: String) {
-        // TODO Get data for all clusters and extract used tilesets
-        val tileSetsPerClusterMap = mapOf<String, List<String>>()
-
-        assetLevelMapExporter.exportTileMapLDtk(filename, levelName, tileSetsPerClusterMap)
+    fun addTileMapLDtkFile(filename: String, levelName: String, tileSetList: List<String>) {
+        assetLevelMapExporter.exportTileMapLDtk(filename, levelName, clusterName, tileSetList)
     }
 
     /**
@@ -260,23 +264,45 @@ class WorldClusterAssetConfig(
     }
 }
 
-class WorldLDtkLevelMapAssetConfig(
+class WorldLevelMapAssetConfig(
     projectDir: File,
     world: Int,
-    private val levelMapFilePath: String,
+    private val assetPath: String,
     resourcePath: String
 ) {
+    var simplifyJson: Boolean = true
+
     // Directory with cluster asset info files (e.g. world.json, intro.json, etc.)
     private val clusterAssetInfoDir = projectDir.resolve("gradle/worldClusterAssetInfo/world_${world}")
     // Directory where game resources are located
     private val gameResourcesDir = projectDir.resolve("src/commonMain/resources/${resourcePath}")
     private val assetLevelMapExporter = AssetLevelMapExporter(projectDir, gameResourcesDir, linkedMapOf())
+//    private val assetLevelMapExporter = AssetLevelMapExporter(assetDir, gameResourcesDir, assetInfo)
+
+    /**
+     * Export level map from LDtk file as chunked level map.
+     * This creates for each chunk of the world level map a separate json file which
+     * contains the tile map data and entity configs for that chunk.
+     */
+    fun addLevelMapLdtkFile(ldtkFile: String) {
+
+    }
+
+    /**
+     * Define tilesets per cluster for the level map export.
+     *
+     * @param clustetName The name of the cluster within the world.
+     * @param tileSetList The list of tileset names associated with the cluster.
+     */
+    fun tileSetsPerCluster(clustetName : String, tileSetList: List<String>) {
+
+    }
 
     /**
      * Export level map from LDtk file as chunked level map.
      * Adds exported level map to internal asset info list.
      */
-    fun buildAssetStore() {
+    internal fun buildAssetStore() {
         // Get the info which tileset are available in each processed asset cluster
         if (clusterAssetInfoDir.listFiles() != null && clusterAssetInfoDir.listFiles().isNotEmpty()) {
             val clusterAssetInfoFiles = clusterAssetInfoDir.listFiles()!!.filter { it.extension == "json" }
@@ -292,7 +318,7 @@ class WorldLDtkLevelMapAssetConfig(
             println("Tilesets per cluster: $tileSetsPerClusterMap")
 
             // TODO change to support world chunks
-            assetLevelMapExporter.exportLevelMapLDtk(levelMapFilePath, tileSetsPerClusterMap)
+//            assetLevelMapExporter.exportLevelMapLDtk(levelMapFilePath, tileSetsPerClusterMap)
         } else error("ERROR: No cluster asset info files found. Please run first all world cluster asset tasks before running level map asset task.")
     }
 }
