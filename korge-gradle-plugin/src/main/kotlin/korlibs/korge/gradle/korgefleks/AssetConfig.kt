@@ -196,11 +196,9 @@ class WorldClusterAssetConfig(
     private val tileSetFiles: MutableList<File> = mutableListOf()
     private val exportTilesetDir = projectDir.resolve("build/assets/tilesetAtlasInput")
 
-    // Directory with cluster asset info files (e.g. world.json, intro.json, etc.)
-    private val clusterAssetInfoDir = projectDir.resolve("gradle/worldClusterAssetInfo")
 
     private val assetTilesetExporter = AssetTilesetExporter(assetDir, exportTilesetDir, tileSetFiles)
-    private val assetTilesetAtlasBuilder = AssetTilesetAtlasBuilder(exportTilesetDir, gameResourcesDir, assetInfo, tileSetFiles, clusterAssetInfoDir)
+    private val assetTilesetAtlasBuilder = AssetTilesetAtlasBuilder(exportTilesetDir, gameResourcesDir, assetInfo, tileSetFiles)
     private val assetLevelMapExporter = AssetLevelMapExporter(assetDir, gameResourcesDir, assetInfo)
 
     // Save input data for exporters
