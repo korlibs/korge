@@ -184,6 +184,9 @@ class AssetLevelMapExporter(
                     val tileMaps = assetInfo[TILE_MAPS] as LinkedHashMap<String, Any>
                     tileMaps[chunkName] = linkedMapOf(
                         "m" to stackedTileMap,
+                        "w" to levelGridWidth,
+                        "h" to levelGridHeight,
+                        "g" to defaultGridSize,
                         "c" to clusterList
                     )
 //                    println()
