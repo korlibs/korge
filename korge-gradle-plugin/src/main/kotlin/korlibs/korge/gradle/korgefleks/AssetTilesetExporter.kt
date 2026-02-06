@@ -20,6 +20,8 @@ class AssetTilesetExporter(
      * Adds exported tiles and tileset images to internal asset info list.
      */
     fun addTilesetImagePng(filename: String) {
+        println("Export tileset png file: '${filename}'")
+
         val tilesetFile = assetDir.resolve(filename)
 
         // Store tileset image file in export tileset directory for atlas packing (take only file name without path)

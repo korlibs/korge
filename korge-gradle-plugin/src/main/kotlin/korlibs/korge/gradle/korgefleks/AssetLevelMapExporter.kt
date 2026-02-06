@@ -1,5 +1,6 @@
 package korlibs.korge.gradle.korgefleks
 
+import com.android.build.gradle.internal.cxx.json.jsonStringOf
 import korlibs.korge.gradle.korgefleks.AssetConfig.Companion.TILE_MAPS
 import korlibs.korge.gradle.util.LocalSFile
 import korlibs.korge.gradle.util.fromJson
@@ -8,10 +9,12 @@ import java.io.File
 
 class AssetLevelMapExporter(
     private val assetDir: File,
-    private val exportTilesDir: File,
+    private val gameResourcesDir: File,
     private val assetInfo: LinkedHashMap<String, Any>
 ) {
     var STACK_SIZE = 10  // Max number of stacked tiles per cell
+
+    private val levelDataDir = gameResourcesDir.resolve("level_data")
 
 //    val assetTilesetExporter = AssetTilesetExporter(assetDir, "common")
 
@@ -67,7 +70,7 @@ class AssetLevelMapExporter(
      */
     fun exportTileMapLDtk(filename: String, levelName: String, clusterName: String, tileSetList: List<String>) {
         // Load single level map from LDtk file and export as tile map object
-        println("\nLDtk level parser started for exporting single level map from LDtk...")
+//        println("\nLDtk level parser started for exporting single level map from LDtk...")
 
         val ldtkFile = getFile(filename)
         val ldtkJson = loadLDtkFile(ldtkFile)
@@ -90,7 +93,7 @@ class AssetLevelMapExporter(
 
             val tileSetUid = jsonTileSet["uid"] as Int
             val tileSetPathName = jsonTileSet["relPath"] as String
-            println("  Exporting tileset '$tileSetName' from path '$tileSetPathName' ...")
+//            println("  Exporting tileset '$tileSetName' from path '$tileSetPathName' ...")
 
             // Find tileset in cluster map and store
             var offset = 0
@@ -104,13 +107,13 @@ class AssetLevelMapExporter(
 
             tileSetDataByUid[tileSetUid] = TileSetData(tileSetName, offset, clusterName)
         }
-        println(tileSetDataByUid)
+//        println(tileSetDataByUid)
 
         // Definition: maximum of 16 layers per level --> Each level chunk can use up to 16 tilesets
         ldtkLevels.forEach { ldtkLevel ->
             val chunkName = ldtkLevel["identifier"] as String
             if (chunkName == levelName) {
-                println("Processing '$chunkName' ...")
+//                println("Processing '$chunkName' ...")
 
                 val levelGridHeight = (ldtkLevel["pxHei"] as Int) / defaultGridSize  // Level height in tiles
                 val levelGridWidth = (ldtkLevel["pxWid"] as Int) / defaultGridSize   // Level width in tiles
@@ -130,7 +133,7 @@ class AssetLevelMapExporter(
                 for (layerIdx in ldtkLevelLayers.size - 1 downTo 0) {
                     val ldtkLayer = ldtkLevelLayers[layerIdx]
                     val layerName = ldtkLayer["__identifier"] as String
-                    println("  Layer: '$layerName'")
+//                    println("  Layer: '$layerName'")
                     val layerGridWidth = ldtkLayer["__cWid"] as Int  // Layer width in grid cells
 
                     // Layer contains either auto-tiles or grid-tiles, so add
@@ -159,8 +162,7 @@ class AssetLevelMapExporter(
                 }
 
                 if (stackedTileMapPopulated) {
-                    // TODO - write stacked tile map data to asset info
-                    println("  Stacked tile map data exported for level '$levelName'.")
+                    println("Export LDtk file: '${filename}', layer: '${levelName}'")
 
                     // Tile map object consists of
                     // - tile map name
@@ -179,13 +181,13 @@ class AssetLevelMapExporter(
                         stackedTileMap.add(tiles)
                     }
 
-                    assetInfo[TILE_MAPS] = linkedMapOf(
-                        "n" to chunkName,
+                    val tileMaps = assetInfo[TILE_MAPS] as LinkedHashMap<String, Any>
+                    tileMaps[chunkName] = linkedMapOf(
                         "m" to stackedTileMap,
                         "c" to clusterList
                     )
+//                    println()
                 }
-                println()
             }
         }
     }
@@ -206,9 +208,9 @@ class AssetLevelMapExporter(
             if ((dx != 0 || dy != 0)) println("WARNING: Tile at pixel position ($px,$py) is not aligned to tile size $tileSize" +
                 " (dx=$dx, dy=$dy)! This is not supported and tile offset will be ignored!")
 
-            if (px == 0 && py == 0) {
-                println("  0:0 tileId=$tileId")
-            }
+//            if (px == 0 && py == 0) {
+//                println("  0:0 tileId=$tileId")
+//            }
 
             val tileIndex = x + y * width
             val stackedTile = stackedTileMapData[tileIndex]
@@ -229,13 +231,13 @@ class AssetLevelMapExporter(
     }
 
     fun exportLevelMapTiled(filename: String) {
-        TODO("Not yet implemented")
+        TODO("Not implemented - if you want this feature please contact us or contribute a pull request!")
     }
 
-    fun exportLevelMapLDtk(filename: String, tileSetsPerClusterMap: Map<String, List<String>>) {
+    fun exportLevelMapLDtk(filename: String, tileSetsPerClusterMap: Map<String, List<String>>, simplifyJson: Boolean) {
         // TODO
         // Load single level map from LDtk file and export as tile map object
-        println("\nLDtk level parser started for exporting single level map from LDtk...")
+//        println("\nLDtk level parser started for exporting single level map from LDtk...")
 
         val ldtkFile = getFile(filename)
         val ldtkJson = loadLDtkFile(ldtkFile)
@@ -244,6 +246,8 @@ class AssetLevelMapExporter(
         val defaultGridSize = ldtkJson["defaultGridSize"] as Int
         val defs = ldtkJson["defs"] as Map<String, Any?>
         val jsonTileSets = defs["tilesets"] as List<Map<String, Any?>>
+        val levelWidth: Int = ldtkJson["worldGridWidth"] as Int? ?: 0  // Level width in pixels
+        val levelHeight = ldtkJson["worldGridHeight"] as Int? ?: 0     // Level height in pixels
 
         // Map for storing starting index for each tileset based on its order in the asset cluster
         val tileSetDataByUid = mutableMapOf<Int, TileSetData>()
@@ -254,11 +258,12 @@ class AssetLevelMapExporter(
 
             // Check if tags contains exactly one of the cluster, layer and name tags
             val tags = jsonTileSet["tags"] as List<String>
-            val clusterLDtkTag: String = if (tags.isNotEmpty()) tags[0] else throw GradleException("Tileset '$tileSetName' has no 'cluster name' defined as tag in LDtk file!")
+//            val clusterLDtkTag: String = if (tags.isNotEmpty()) tags[0] else throw GradleException("Tileset '$tileSetName' has no 'cluster name' defined as tag in LDtk file!")
+            val clusterLDtkTag: String = if (tags.isEmpty()) "ignored" else tags[0]
 
             val tileSetUid = jsonTileSet["uid"] as Int
-            val tileSetPathName = jsonTileSet["relPath"] as String
-            println("  Exporting tileset '$tileSetName' from path '$tileSetPathName' ...")
+//            val tileSetPathName = jsonTileSet["relPath"]?.let { it as String } ?: "undefined"
+//            println("  Exporting tileset '$tileSetName' from path '$tileSetPathName' ...")
 
             // Find tileset in cluster map and store
             var clusterName = ""
@@ -274,83 +279,173 @@ class AssetLevelMapExporter(
                 }
             }
             // Sanity checks
-            if (clusterName.isEmpty()) throw GradleException("Tileset '$tileSetName' not found in tileset per cluster map!")
-            if (clusterLDtkTag != clusterName) throw GradleException("Tileset '$tileSetName' has cluster tag '$clusterLDtkTag' in LDtk file but is assigned to cluster '$clusterName' in tileset per cluster map!")
+//            if (clusterName.isEmpty()) throw GradleException("Tileset '$tileSetName' not found in tileset per cluster map!")
+//            if (clusterLDtkTag != clusterName) throw GradleException("Tileset '$tileSetName' has cluster tag '$clusterLDtkTag' in LDtk file but is assigned to cluster '$clusterName' in tileset per cluster map!")
+//            if (clusterName.isEmpty()) println("Tileset '$tileSetName' not found in tileset per cluster map!")
+//            if (clusterLDtkTag != clusterName) println("Tileset '$tileSetName' has cluster tag '$clusterLDtkTag' in LDtk file but is assigned to cluster '$clusterName' in tileset per cluster map!")
 
-            tileSetDataByUid[tileSetUid] = TileSetData(tileSetName, offset, clusterName)
+            if (clusterName.isNotEmpty()) tileSetDataByUid[tileSetUid] = TileSetData(tileSetName, offset, clusterName)
+            else println("Ignoring tileset: '$tileSetName'")
         }
-        println(tileSetDataByUid)
+        println("tileSets by uid: $tileSetDataByUid")
 
         // Definition: maximum of 16 layers per level --> Each level chunk can use up to 16 tilesets
         ldtkLevels.forEach { ldtkLevel ->
+            // Game object counter per chunk
+            var gameObjectCnt = 0
+
+            val chunkInfo = mutableMapOf<String, Any>()
+            val chunkEntities: MutableList<MutableMap<String, Any>> = mutableListOf()
+            chunkInfo["version"] = listOf(1, 0, 1)
+            chunkInfo["entities"] = chunkEntities
+            chunkInfo["levelMap"] = mutableListOf<List<Int>>()
+
+            // Calculate level position in world grid
+            val levelX: Int = ldtkLevel["worldX"] as Int / levelWidth
+            val levelY: Int = ldtkLevel["worldY"] as Int / levelHeight
+            val levelHeight = ldtkLevel["pxHei"] as Int  // Level height in pixels
+            val levelWidth = ldtkLevel["pxWid"] as Int   // Level width in pixels
+
             val chunkName = ldtkLevel["identifier"] as String
-//            if (chunkName == levelName) {
-                println("Processing '$chunkName' ...")
 
-                val levelGridHeight = (ldtkLevel["pxHei"] as Int) / defaultGridSize  // Level height in tiles
-                val levelGridWidth = (ldtkLevel["pxWid"] as Int) / defaultGridSize   // Level width in tiles
+            println("Processing '$chunkName' ...")
 
-                // An array containing all Layer instances.
-                // **IMPORTANT**: if the project option "*Save levels separately*" is enabled, this field will be `null`.
-                // This array is **sorted in display order**: the 1st layer is the top-most and the last is behind.
-                val ldtkLevelLayers = ldtkLevel["layerInstances"] as List<Map<String, Any?>>
+            val levelGridHeight = (ldtkLevel["pxHei"] as Int) / defaultGridSize  // Level height in tiles
+            val levelGridWidth = (ldtkLevel["pxWid"] as Int) / defaultGridSize   // Level width in tiles
 
-                // Create stacked tile map data array (width * height) with max 10 stacked tiles per cell
-                val stackedTileMapData: List<MutableList<Int>> = List(levelGridHeight * levelGridWidth) { MutableList(STACK_SIZE) { -1 } }
-                stackedTileMapPopulated = false
+            // An array containing all Layer instances.
+            // **IMPORTANT**: if the project option "*Save levels separately*" is enabled, this field will be `null`.
+            // This array is **sorted in display order**: the 1st layer is the top-most and the last is behind.
+            val ldtkLevelLayers = ldtkLevel["layerInstances"] as List<Map<String, Any?>>
 
-                val clusterList = mutableListOf<String>()
+            // Create stacked tile map data array (width * height) with max 10 stacked tiles per cell
+            val stackedTileMapData: List<MutableList<Int>> =
+                List(levelGridHeight * levelGridWidth) { MutableList(STACK_SIZE) { -1 } }
+            stackedTileMapPopulated = false
 
-                // Go through all layers in reverse order (from background to foreground)
-                for (layerIdx in ldtkLevelLayers.size - 1 downTo 0) {
-                    val ldtkLayer = ldtkLevelLayers[layerIdx]
-                    val layerName = ldtkLayer["__identifier"] as String
-                    println("  Layer: '$layerName'")
-                    val layerGridWidth = ldtkLayer["__cWid"] as Int  // Layer width in grid cells
+            val clusterList = mutableListOf<String>()
 
-                    // Layer contains either auto-tiles or grid-tiles, so add
-                    val autoLayerTiles = ldtkLayer["autoLayerTiles"] as List<Map<String, Any?>>
-                    val gridTiles = ldtkLayer["gridTiles"] as List<Map<String, Any?>>
-                    val entityInstances = ldtkLayer["entityInstances"] as List<Map<String, Any?>>
+            // Go through all layers in reverse order (from background to foreground)
+            for (layerIdx in ldtkLevelLayers.size - 1 downTo 0) {
+                val ldtkLayer = ldtkLevelLayers[layerIdx]
+                val layerName = ldtkLayer["__identifier"] as String
+//                println("  Layer: '$layerName'")
+                val layerGridWidth = ldtkLayer["__cWid"] as Int  // Layer width in grid cells
 
-                    when {
-                        entityInstances.isNotEmpty() -> {
-                            // TODO
-                        }
-                        autoLayerTiles.isNotEmpty() || gridTiles.isNotEmpty() -> {
-                            // Get the used tileset for this layer and pass its index in the cluster for correct tile mapping
-                            val tilesetDefUid = ldtkLayer["__tilesetDefUid"] as Int?
-                            if (tilesetDefUid != null && tileSetDataByUid.containsKey(tilesetDefUid)) {
-                                // Add cluster name to clusterList if not already present
-                                val clusterName = tileSetDataByUid[tilesetDefUid]!!.clusterName
-                                if (!clusterList.contains(clusterName)) {
-                                    clusterList.add(clusterName)
+                // Layer contains either auto-tiles or grid-tiles, so add
+                val autoLayerTiles = ldtkLayer["autoLayerTiles"] as List<Map<String, Any?>>
+                val gridTiles = ldtkLayer["gridTiles"] as List<Map<String, Any?>>
+                val entityInstances = ldtkLayer["entityInstances"] as List<Map<String, Any?>>
+
+                when {
+                    entityInstances.isNotEmpty() -> {
+                        entityInstances.forEach { ldtkEntity ->
+                            // Put all entity configs into one JSON file per chunk as list with local game object counter
+                            val entityName = ldtkEntity["__identifier"]?.let { it as String } ?: "undefined_entity"
+                            // Load all entity configs by first checking if field 'entityConfig' exists
+                            val ldtkEntities = ldtkEntity["fieldInstances"] as List<Map<String, Any?>>
+
+                            if (ldtkEntities.firstOrNull { it["__identifier"] == "entityConfig" } != null) {
+                                val gameObjectName: String =
+                                    if ((ldtkEntity["__tags"] as List<String>).firstOrNull { it == "unique" } != null) {
+                                        // Add scripts without unique count value - they are unique by name because they exist only once
+                                        entityName
+                                    } else {
+                                        // Add other game objects with a unique name as identifier
+                                        "${chunkName}_${entityName}_${gameObjectCnt++}"
+                                    }
+//                                val clusterEntity = mutableMapOf<String, Any>()
+//                                clusterEntity["name"] = gameObjectName
+//                                print("- name: ${gameObjectName}\n")
+                                // Add entity config type
+                                val entityConfigField = ldtkEntities.first { it["__identifier"] == "entityConfig" }
+                                val entityConfigType = entityConfigField["__value"]?.let { it as String } ?: error("Entity config field '__value' is null for entity '$entityName' in chunk '$chunkName'!")
+
+                                val chunkEntity = mutableMapOf<String, Any>()
+                                chunkEntities.add(chunkEntity)
+                                chunkEntity["type"] = entityConfigType
+                                chunkEntity["name"] = gameObjectName
+
+//                                clusterEntity["entityConfig"] = entityConfigField["__value"] as String
+//                                print("  entityConfig: ${entityConfigField["__value"]}\n")
+
+                                // Add position of entity = (chunk position in the level) + (position within the chunk) + (pivot point)
+                                val entityPosX: Int =
+                                    (ldtkEntity["px"] as List<Int>)[0] + (levelWidth * levelX)  // x position in pixels
+                                val entityPosY: Int =
+                                    (ldtkEntity["px"] as List<Int>)[1] + (levelHeight * levelY) // y position pixels
+                                val entityPivotX: Float =
+                                    (ldtkEntity["__pivot"] as List<Float>)[0]               // pivot within entity width/height [0..1]
+                                val entityPivotY: Float = (ldtkEntity["__pivot"] as List<Float>)[1]
+
+                                // Add position of entity
+                                (ldtkEntity["__tags"] as List<String>).firstOrNull { it == "positionable" }?.let {
+                                    chunkEntity["x"] = entityPosX
+                                    chunkEntity["y"] = entityPosY
+                                    chunkEntity["anchorX"] = (entityPivotX * ldtkEntity["width"] as Int).toInt()
+                                    chunkEntity["anchorY"] = (entityPivotY * ldtkEntity["height"] as Int).toInt()
+//                                    print("  x: $entityPosX\n")
+//                                    print("  y: $entityPosY\n")
+//                                    print("  anchorX: ${entityPivotX * ldtkEntity["width"] as Int}\n")
+//                                    print("  anchorY: ${entityPivotY * ldtkEntity["height"] as Int}\n")
                                 }
-                                // Get index of cluster in cluster list
-                                val clusterIndex = clusterList.indexOf(clusterName)
-                                val tileOffset = tileSetDataByUid[tilesetDefUid]!!.offset
 
-                                stackTilesIntoTileMap(autoLayerTiles + gridTiles, stackedTileMapData, layerGridWidth, defaultGridSize, clusterIndex, tileOffset)
-                            }
+                                // Add all other fields of entity
+                                ldtkEntities.forEach { field ->
+                                    if (field["__identifier"] != "entityConfig") {
+                                        chunkEntity[field["__identifier"] as String] = field["__value"] as Any
+//                                        print("  ${field["__identifier"]}: ${field["__value"]}\n")
+                                    }
+                                }
+                            } else println("ERROR: Game object with name '${entityName}' has no field 'entityConfig'!")
                         }
-                        else -> println("WARNING: No tiles or entities found in layer '$layerName'!")
+//                 
+//                (ldtkLayer["entityInstances"] as List<Map<String, Any?>>).forEach { ldtkEntity ->
+                        // TODO
+
+
                     }
-                }
 
-                if (stackedTileMapPopulated) {
-                    // TODO - write stacked tile map data to asset info
-//                    println("  Stacked tile map data exported for level '$levelName'.")
+                    autoLayerTiles.isNotEmpty() || gridTiles.isNotEmpty() -> {
+//                        println("Skipping tile stacking for '$layerName' ...")
+// TODO
+//                            // Get the used tileset for this layer and pass its index in the cluster for correct tile mapping
+//                            val tilesetDefUid = ldtkLayer["__tilesetDefUid"] as Int?
+//                            if (tilesetDefUid != null && tileSetDataByUid.containsKey(tilesetDefUid)) {
+//                                // Add cluster name to clusterList if not already present
+//                                val clusterName = tileSetDataByUid[tilesetDefUid]!!.clusterName
+//                                if (!clusterList.contains(clusterName)) {
+//                                    clusterList.add(clusterName)
+//                                }
+//                                // Get index of cluster in cluster list
+//                                val clusterIndex = clusterList.indexOf(clusterName)
+//                                val tileOffset = tileSetDataByUid[tilesetDefUid]!!.offset
+//
+//                                stackTilesIntoTileMap(autoLayerTiles + gridTiles, stackedTileMapData, layerGridWidth, defaultGridSize, clusterIndex, tileOffset)
+//                            }
+                    }
 
-                    val chunkData = ChunkData(
-                        chunkName,
-                        emptyList(),
-                        stackedTileMapData,
-                        clusterList
-                    )
+//                    else -> println("WARNING: No tiles or entities found in layer '$layerName'!")
                 }
-                println()
             }
-//        }
+
+            if (stackedTileMapPopulated) {
+                // TODO - write stacked tile map data to asset info
+            }
+            if (chunkEntities.isNotEmpty()) {
+                println("Add '${chunkEntities.size}' entities to chunk JSON file.")
+            }
+
+            val chunkJsonFile = levelDataDir.resolve("${chunkName}.json")
+            chunkJsonFile.parentFile?.let { parent ->
+                if (!parent.exists() && !parent.mkdirs()) error("ChunkJSonFile - Failed to create directory: ${parent.path}")
+                val jsonString = jsonStringOf(chunkInfo)
+                // Simplify JSON string by removing unnecessary spaces and line breaks
+                val simplifiedJsonString = if (simplifyJson) jsonString.replace(Regex("\\s+"), "")
+                else jsonString
+                chunkJsonFile.writeText(simplifiedJsonString)
+            }
+        }
     }
 }
 
@@ -411,7 +506,7 @@ object KorgeFleksAssets {
 
             // Create YAML string of an entity config from LDtk
             val yamlString = StringBuilder()
-            yamlString.append("entities:\n")
+            println("entities:\n")
 
             var gameObjectCnt = 0
 
@@ -468,10 +563,10 @@ object KorgeFleksAssets {
                             // Add other game objects with a unique name as identifier
                             "${chunkName}_${entityName}_${gameObjectCnt++}"
                         }
-                        yamlString.append("- name: ${gameObjectName}\n")
+                        println("- name: ${gameObjectName}\n")
                         // Add entity config type
                         val entityConfigField = ldtkEntities.first { it["__identifier"] == "entityConfig" }
-                        yamlString.append("  entityConfig: ${entityConfigField["__value"]}\n")
+                        println("  entityConfig: ${entityConfigField["__value"]}\n")
 
                         // Add position of entity = (chunk position in the level) + (position within the chunk) + (pivot point)
                         val entityPosX: Int = (ldtkEntity["px"] as List<Int>)[0] + (levelWidth * levelX)  // x position in pixels
@@ -481,15 +576,15 @@ object KorgeFleksAssets {
 
                         // Add position of entity
                         (ldtkEntity["__tags"] as List<String>).firstOrNull { it == "positionable" }?.let {
-                            yamlString.append("  x: $entityPosX\n")
-                            yamlString.append("  y: $entityPosY\n")
-                            yamlString.append("  anchorX: ${entityPivotX * ldtkEntity["width"] as Int}\n")
-                            yamlString.append("  anchorY: ${entityPivotY * ldtkEntity["height"] as Int}\n")
+                            println("  x: $entityPosX\n")
+                            println("  y: $entityPosY\n")
+                            println("  anchorX: ${entityPivotX * ldtkEntity["width"] as Int}\n")
+                            println("  anchorY: ${entityPivotY * ldtkEntity["height"] as Int}\n")
                         }
 
                         // Add all other fields of entity
                         ldtkEntities.forEach { field ->
-                            if (field["__identifier"] != "entityConfig") yamlString.append("  ${field["__identifier"]}: ${field["__value"]}\n")
+                            if (field["__identifier"] != "entityConfig") println("  ${field["__identifier"]}: ${field["__value"]}\n")
                         }
                         println("INFO: Game object '${ldtkEntity["__identifier"]}' loaded for '$chunkName'")
                         /*

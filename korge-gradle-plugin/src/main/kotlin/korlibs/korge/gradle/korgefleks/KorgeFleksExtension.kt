@@ -116,8 +116,9 @@ open class KorgeFleksExtension(
      * The level map defines the layout and structure of the world, including terrain, objects,
      * and other environmental features.
      *
-     * @param ldtkFile The filename of the level map LDtk file.
      * @param world The world number for which the level map is being loaded.
+     * @param path The relative path to the level map directory.
+     * @param config A lambda function to configure the assets.
      */
     fun worldLevelMapAssets(
         world: Int,

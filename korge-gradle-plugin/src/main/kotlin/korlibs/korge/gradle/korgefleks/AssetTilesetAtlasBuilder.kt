@@ -57,8 +57,8 @@ class AssetTilesetAtlasBuilder(
             // This is used below to check if the tiles are put in the correct order into the fileFrameInfo list
             val tileSetFilenames: List<String> = tileSetFiles.map { it.nameWithoutExtension }
 
-            println("tileset names of packed atlases:")
-            tileSetFilenames.forEach { name -> println(" - $name") }
+            //println("tileset names of packed atlases:")
+            //tileSetFilenames.forEach { name -> println(" - $name") }
 
             // Store tileset names list into asset info json file for each asset cluster - it is needed to load correct tileset for each level map layer later
             val clusterAssetInfoJsonFile = clusterAssetInfoDir.resolve("${clusterName}.json")
