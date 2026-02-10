@@ -285,14 +285,13 @@ class WorldClusterAssetConfig(
 
 class WorldLevelMapAssetConfig(
     projectDir: File,
-    private val world: Int,
+    worldName: String,
     private val assetPath: String = "",
-    resourcePath: String
 ) {
     var simplifyJson: Boolean = true
 
     // Directory where game resources are located
-    private val gameResourcesDir = projectDir.resolve("src/commonMain/resources/${resourcePath}")
+    private val gameResourcesDir = projectDir.resolve("src/commonMain/resources/${worldName}")
     private val assetLevelMapExporter = AssetLevelMapExporter(projectDir, gameResourcesDir, linkedMapOf())
 
     // Save input data for exporters
@@ -331,8 +330,5 @@ class WorldLevelMapAssetConfig(
         }
         if (levelMapLdtkFile.isEmpty()) throw GradleException("ERROR: worldLevelMapAssets - No LDtk file defined for exporting level maps as world chunks!")
         assetLevelMapExporter.exportLevelMapLDtk(levelMapLdtkFile, mapOfClustersWithTileMaps, simplifyJson)
-
-            // TODO change to support world chunks
-//            assetLevelMapExporter.exportLevelMapLDtk(levelMapFilePath, tileSetsPerClusterMap)
     }
 }
