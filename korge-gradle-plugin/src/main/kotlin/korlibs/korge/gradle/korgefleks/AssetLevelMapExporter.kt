@@ -240,6 +240,9 @@ class AssetLevelMapExporter(
 
         val ldtkLevels = ldtkJson["levels"] as List<Map<String, Any?>>
         val defaultGridSize = ldtkJson["defaultGridSize"] as Int
+        val defaultLevelWidth = ldtkJson["defaultLevelWidth"]?.let { it as Int } ?: 0
+        val defaultLevelHeight = ldtkJson["defaultLevelHeight"]?.let { it as Int } ?: 0
+
         val defs = ldtkJson["defs"] as Map<String, Any?>
         val jsonTileSets = defs["tilesets"] as List<Map<String, Any?>>
         val levelWidth: Int = ldtkJson["worldGridWidth"] as Int? ?: 0  // Level width in pixels
@@ -280,6 +283,36 @@ class AssetLevelMapExporter(
             gridVaniaMap[Pair(levelX, levelY)] = chunkNumber
         }
 
+        var maxLevelX = 0
+        var maxLevelY = 0
+
+        // Get size of grid-vania map
+        gridVaniaMap.forEach { (pair, _) ->
+            val levelX = pair.first
+            val levelY = pair.second
+            if (levelX > maxLevelX) maxLevelX = levelX
+            if (levelY > maxLevelY) maxLevelY = levelY
+        }
+
+        // Save common level map data
+        val levelMapInfo = mutableMapOf<String, Any>()
+        levelMapInfo["v"] = listOf(1, 0, 1)
+        levelMapInfo["x"] = maxLevelX
+        levelMapInfo["y"] = maxLevelY
+        levelMapInfo["w"] = defaultLevelWidth
+        levelMapInfo["h"] = defaultLevelHeight
+        levelMapInfo["t"] = defaultGridSize
+
+        val commonChunkJsonFile = levelDataDir.resolve("common.json")
+        commonChunkJsonFile.parentFile?.let { parent ->
+            if (!parent.exists() && !parent.mkdirs()) error("CommonChunkJSonFile - Failed to create directory: ${parent.path}")
+            val jsonString = jsonStringOf(levelMapInfo)
+            // Simplify JSON string by removing unnecessary spaces and line breaks
+            val simplifiedJsonString = if (simplifyJson) jsonString.replace(Regex("\\s+"), "")
+            else jsonString
+            commonChunkJsonFile.writeText(simplifiedJsonString)
+        }
+
         // Definition: maximum of 16 layers per level --> Each level chunk can use up to 16 tilesets
         ldtkLevels.forEach { ldtkLevel ->
             // Game object counter per chunk
@@ -289,7 +322,6 @@ class AssetLevelMapExporter(
             val chunkLevelMap: MutableMap<String, Any> = mutableMapOf()  // MutableList<List<Int>> = mutableListOf()
             val chunkEntities: MutableList<MutableMap<String, Any>> = mutableListOf()
 
-            chunkInfo["v"] = listOf(1, 0, 1)
             chunkInfo["e"] = chunkEntities
 
             // Calculate level position in world grid
@@ -437,9 +469,6 @@ class AssetLevelMapExporter(
                     // Scroll factor is calculated based on layer size in tiles compared to normal tile size of 64x64.
                     // So if a layer has 48x48 tiles, scroll factor is 48/64 = 0.75f, if a layer has 90x90 tiles, scroll factor is 90/64 = 1.4f
                     "m" to stackedTileMap,
-                    "w" to levelGridWidth,
-                    "h" to levelGridHeight,
-                    "g" to defaultGridSize,
                     "c" to clusterList
                 )
             }
