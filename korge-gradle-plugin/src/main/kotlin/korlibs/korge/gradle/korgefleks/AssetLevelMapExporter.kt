@@ -227,10 +227,6 @@ class AssetLevelMapExporter(
         }
     }
 
-    fun exportLevelMapTiled(filename: String) {
-        TODO("Not implemented - if you want this feature please contact us or contribute a pull request!")
-    }
-
     fun exportLevelMapLDtk(filename: String, tileSetsPerClusterMap: Map<String, List<String>>, simplifyJson: Boolean, layerName: String = "default") {
         // Load all level maps from LDtk file and export each as level chunk object
         println("Export LDtk file: '${filename}'")
@@ -299,8 +295,8 @@ class AssetLevelMapExporter(
         levelMapInfo["v"] = listOf(1, 0, 1)
         levelMapInfo["x"] = maxLevelX + 1  // Add 1 to get the total width and height of the grid-vania map
         levelMapInfo["y"] = maxLevelY + 1
-        levelMapInfo["w"] = defaultLevelWidth
-        levelMapInfo["h"] = defaultLevelHeight
+        levelMapInfo["w"] = defaultLevelWidth / defaultGridSize
+        levelMapInfo["h"] = defaultLevelHeight / defaultGridSize
         levelMapInfo["t"] = defaultGridSize
 
         val commonChunkJsonFile = levelDataDir.resolve("common.json")
@@ -390,14 +386,13 @@ class AssetLevelMapExporter(
 
                                 // Add position of entity = (chunk position in the level) + (position within the chunk) + (pivot point)
                                 // x and y position in pixels relative to the top left corner of the chunk, levelX and levelY are the position of the chunk in the world grid, so they are not needed for entity position within the chunk
-                                val entityPosX: Int = (ldtkEntity["px"] as List<Int>)[0]
-                                val entityPosY: Int = (ldtkEntity["px"] as List<Int>)[1]
+                                val entityPosX: Int = (ldtkEntity["px"] as List<Int>)[0] + (levelWidth * levelX)  // x position in pixels
+                                val entityPosY: Int = (ldtkEntity["px"] as List<Int>)[1] + (levelHeight * levelY)  // y position in pixels
                                 val entityPivotX: Float = (ldtkEntity["__pivot"] as List<Float>)[0]  // pivot within entity width/height [0..1]
                                 val entityPivotY: Float = (ldtkEntity["__pivot"] as List<Float>)[1]
 
                                 // Add position of entity
                                 (ldtkEntity["__tags"] as List<String>).firstOrNull { it == "positionable" }?.let {
-                                    chunkEntity["chunk"] = chunkNumber
                                     chunkEntity["x"] = entityPosX
                                     chunkEntity["y"] = entityPosY
                                     chunkEntity["anchorX"] = (entityPivotX * ldtkEntity["width"] as Int).toInt()
