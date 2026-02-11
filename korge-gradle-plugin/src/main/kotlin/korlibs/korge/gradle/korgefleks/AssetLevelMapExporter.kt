@@ -297,8 +297,8 @@ class AssetLevelMapExporter(
         // Save common level map data
         val levelMapInfo = mutableMapOf<String, Any>()
         levelMapInfo["v"] = listOf(1, 0, 1)
-        levelMapInfo["x"] = maxLevelX
-        levelMapInfo["y"] = maxLevelY
+        levelMapInfo["x"] = maxLevelX + 1  // Add 1 to get the total width and height of the grid-vania map
+        levelMapInfo["y"] = maxLevelY + 1
         levelMapInfo["w"] = defaultLevelWidth
         levelMapInfo["h"] = defaultLevelHeight
         levelMapInfo["t"] = defaultGridSize
