@@ -102,12 +102,14 @@ class AssetTilesetAtlasBuilder(
                     // Mark empty frames with x=0 and y=0 in the tile info
 
                     // Set frame info: [textureIndex, x, y, [tileIndex]]  -- frame index is used for debugging only
-                    val tileInfo = intArrayOf(
-                        idx,  // Save index to texture atlas where the frame is located
-                        if (emptyFrame) 0 else frame["x"] ?: error("TilesetBuilder - frame x is 'null' for tile '${frameName}'!"),
-                        if (emptyFrame) 0 else frame["y"] ?: error("TilesetBuilder - frame y is 'null' for tile '${frameName}'!"),
-                        //tileIndex,  // [Optional] tile index for debugging purposes
-                    )
+                    val tileInfo =
+                        if (emptyFrame) intArrayOf(-1) else intArrayOf(
+                            idx,  // Save index to texture atlas where the frame is located
+                            frame["x"] ?: error("TilesetBuilder - frame x is 'null' for tile '${frameName}'!"),
+                            frame["y"] ?: error("TilesetBuilder - frame y is 'null' for tile '${frameName}'!"),
+                            //tileIndex,  // [Optional] tile index for debugging purposes
+                        )
+
                     // Put the tile info into the correct position in the tileFramesInfo array
                     tileFramesInfo[tileIndex] = tileInfo
                 }
@@ -116,7 +118,7 @@ class AssetTilesetAtlasBuilder(
                 assetInfo[TILES] = linkedMapOf(
                     "w" to tileWidth,
                     "h" to tileHeight,
-                    "t" to tileSetFilenames,  // TODO not really needed - remove later after testing finished
+                    //"t" to tileSetFilenames,  // [Optional] for debugging purposes
                     "f" to tileFramesInfo
                 )
             }
