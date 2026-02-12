@@ -198,8 +198,8 @@ class WorldClusterAssetConfig(
 
 
     private val assetTilesetExporter = AssetTilesetExporter(assetDir, exportTilesetDir, tileSetFiles)
-    private val assetTilesetAtlasBuilder = AssetTilesetAtlasBuilder(exportTilesetDir, gameResourcesDir, assetInfo, tileSetFiles)
-    private val assetLevelMapExporter = AssetLevelMapExporter(assetDir, gameResourcesDir, assetInfo)
+    private val assetTilesetAtlasBuilder = AssetTilesetAtlasBuilder(exportTilesetDir, gameResourcesDir, assetInfo, tileSetFiles, amountOfTiles = 64 * 64)  // Default to 4096 tiles per tileset
+    private val assetLevelMapExporter = AssetLevelMapExporter(assetDir, gameResourcesDir, assetInfo, amountOfTiles = 64 * 64)
 
     // Save input data for exporters
     private val listOfTileSetImageFiles = mutableListOf<String>()
@@ -292,7 +292,7 @@ class WorldLevelMapAssetConfig(
 
     // Directory where game resources are located
     private val gameResourcesDir = projectDir.resolve("src/commonMain/resources/${worldName}")
-    private val assetLevelMapExporter = AssetLevelMapExporter(projectDir, gameResourcesDir, linkedMapOf())
+    private val assetLevelMapExporter = AssetLevelMapExporter(projectDir, gameResourcesDir, linkedMapOf(), amountOfTiles = 64 * 64)  // Default to 4096 tiles per tileset)
 
     // Save input data for exporters
     private var levelMapLdtkFile = ""

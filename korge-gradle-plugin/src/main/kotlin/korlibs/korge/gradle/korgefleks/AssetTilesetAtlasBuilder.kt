@@ -22,7 +22,8 @@ class AssetTilesetAtlasBuilder(
     private val exportTilesetDir: File,
     private val gameResourcesDir: File,
     private val assetInfo: LinkedHashMap<String, Any>,
-    private val tileSetFiles: List<File>
+    private val tileSetFiles: List<File>,
+    private val amountOfTiles: Int
 ) {
     /**
      * Builds a tileset atlas from the exported tiles in the export tiles directory.
@@ -38,8 +39,7 @@ class AssetTilesetAtlasBuilder(
         tileHeight: Int,
         atlasWidth: Int,
         atlasHeight: Int,
-        atlasPadding: Int,
-        amountOfTiles: Int = 64 * 64 // Default to 4096 tiles per tileset
+        atlasPadding: Int
     ) {
         // Then build tilesets atlas
         if (exportTilesetDir.listFiles() != null && exportTilesetDir.listFiles().isNotEmpty()) {
@@ -106,7 +106,7 @@ class AssetTilesetAtlasBuilder(
                         idx,  // Save index to texture atlas where the frame is located
                         if (emptyFrame) 0 else frame["x"] ?: error("TilesetBuilder - frame x is 'null' for tile '${frameName}'!"),
                         if (emptyFrame) 0 else frame["y"] ?: error("TilesetBuilder - frame y is 'null' for tile '${frameName}'!"),
-                        tileIndex  // [Optional] tile index for debugging purposes
+                        //tileIndex,  // [Optional] tile index for debugging purposes
                     )
                     // Put the tile info into the correct position in the tileFramesInfo array
                     tileFramesInfo[tileIndex] = tileInfo

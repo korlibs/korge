@@ -10,7 +10,8 @@ import java.io.File
 class AssetLevelMapExporter(
     private val assetDir: File,
     private val gameResourcesDir: File,
-    private val assetInfo: LinkedHashMap<String, Any>
+    private val assetInfo: LinkedHashMap<String, Any>,
+    private val amountOfTiles: Int
 ) {
     private val stackSize = 10  // Max number of stacked tiles per cell
 
@@ -95,7 +96,7 @@ class AssetLevelMapExporter(
 //            println("  Exporting tileset '$tileSetName' from path '$tileSetPathName' ...")
 
             // Find tileset in cluster map and store
-            var offset = 0
+            var offset = -1
             tileSetList.forEachIndexed { idx, tileSet ->
                 if (tileSet == tileSetName) {
                     // Tileset found in this cluster
@@ -103,6 +104,7 @@ class AssetLevelMapExporter(
                     return@forEachIndexed
                 }
             }
+            if (offset == -1) println("ERROR: Tileset '$tileSetName' not found in cluster '$clusterName'! Please check if the tileset name in the LDtk file matches the name in the cluster asset config and if the cluster asset is assigned to the correct level chunk!")
 
             tileSetDataByUid[tileSetUid] = TileSetData(tileSetName, offset, clusterName)
         }
@@ -193,7 +195,14 @@ class AssetLevelMapExporter(
         }
     }
 
-    private fun stackTilesIntoTileMap(layerTiles: List<Map<String, Any?>>, stackedTileMapData: List<MutableList<Int>>, width: Int, tileSize: Int, clusterIndex: Int, tileOffset: Int) {
+    private fun stackTilesIntoTileMap(
+        layerTiles: List<Map<String, Any?>>,
+        stackedTileMapData: List<MutableList<Int>>,
+        stackedTileMapWidth: Int,
+        tileSize: Int,
+        clusterIndex: Int,
+        tileOffset: Int
+    ) {
         for (tile in layerTiles) {
             val (px, py) = tile["px"] as List<Int>  // Tile x, y position in layer
             val x = px / tileSize
@@ -209,7 +218,7 @@ class AssetLevelMapExporter(
             if ((dx != 0 || dy != 0)) println("WARNING: Tile at pixel position ($px,$py) is not aligned to tile size $tileSize" +
                 " (dx=$dx, dy=$dy)! This is not supported and tile offset will be ignored!")
 
-            val tileIndex = x + y * width
+            val tileIndex = y * stackedTileMapWidth + x
             val stackedTile = stackedTileMapData[tileIndex]
 
             for ((idx, tile) in stackedTile.withIndex()) {
@@ -259,7 +268,7 @@ class AssetLevelMapExporter(
                     if (tileSet == tileSetName) {
                         // Tileset found in this cluster
                         clusterName = cluster
-                        offset = idx
+                        offset = idx * amountOfTiles
                         return@forEach
                     }
                 }
