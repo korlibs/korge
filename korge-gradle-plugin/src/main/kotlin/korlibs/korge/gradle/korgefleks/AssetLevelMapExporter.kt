@@ -86,15 +86,7 @@ class AssetLevelMapExporter(
         // Go through all tilesets and save their cluster assignment from tags and external tileSetsPerClusterMap
         jsonTileSets.forEach { jsonTileSet ->
             val tileSetName = jsonTileSet["identifier"] as String
-
-            // Check if tags contains exactly one of the cluster, layer and name tags
-            val tags = jsonTileSet["tags"] as List<String>
-            val clusterLDtkTag: String = if (tags.isNotEmpty()) tags[0] else throw GradleException("Tileset '$tileSetName' has no 'cluster name' defined as tag in LDtk file!")
-
             val tileSetUid = jsonTileSet["uid"] as Int
-            val tileSetPathName = jsonTileSet["relPath"] as String
-//            println("  Exporting tileset '$tileSetName' from path '$tileSetPathName' ...")
-
             // Find tileset in cluster map and store
             var offset = -1
             tileSetList.forEachIndexed { idx, tileSet ->
@@ -113,8 +105,6 @@ class AssetLevelMapExporter(
         ldtkLevels.forEach { ldtkLevel ->
             val chunkName = ldtkLevel["identifier"] as String
             if (chunkName == levelName) {
-//                println("Processing '$chunkName' ...")
-
                 val levelGridHeight = (ldtkLevel["pxHei"] as Int) / defaultGridSize  // Level height in tiles
                 val levelGridWidth = (ldtkLevel["pxWid"] as Int) / defaultGridSize   // Level width in tiles
 
@@ -133,7 +123,6 @@ class AssetLevelMapExporter(
                 for (layerIdx in ldtkLevelLayers.size - 1 downTo 0) {
                     val ldtkLayer = ldtkLevelLayers[layerIdx]
                     val layerName = ldtkLayer["__identifier"] as String
-//                    println("  Layer: '$layerName'")
                     val layerGridWidth = ldtkLayer["__cWid"] as Int  // Layer width in grid cells
 
                     // Layer contains either auto-tiles or grid-tiles, so add
@@ -163,12 +152,6 @@ class AssetLevelMapExporter(
 
                 if (stackedTileMapPopulated) {
                     println("Export LDtk file: '${filename}', layer: '${levelName}'")
-
-                    // Tile map object consists of
-                    // - tile map name
-                    // - stackedTileMapData
-                    // - list of clusters used in this tile map (tile sets)
-
                     // Build stacked tile map which consists of only populated tiles (without -1 entries)
                     val stackedTileMap = mutableListOf<List<Int>>()
                     stackedTileMapData.forEach { stackedTiles ->
@@ -189,7 +172,6 @@ class AssetLevelMapExporter(
                         "g" to defaultGridSize,
                         "c" to clusterList
                     )
-//                    println()
                 }
             }
         }
@@ -247,7 +229,6 @@ class AssetLevelMapExporter(
         val defaultGridSize = ldtkJson["defaultGridSize"] as Int
         val defaultLevelWidth = ldtkJson["defaultLevelWidth"]?.let { it as Int } ?: 0
         val defaultLevelHeight = ldtkJson["defaultLevelHeight"]?.let { it as Int } ?: 0
-
         val defs = ldtkJson["defs"] as Map<String, Any?>
         val jsonTileSets = defs["tilesets"] as List<Map<String, Any?>>
         val levelWidth: Int = ldtkJson["worldGridWidth"] as Int? ?: 0  // Level width in pixels
@@ -262,7 +243,7 @@ class AssetLevelMapExporter(
             val tileSetUid = jsonTileSet["uid"] as Int
             // Find tileset in cluster map and store
             var clusterName = ""
-            var offset = 0
+            var offset = -1
             tileSetsPerClusterMap.forEach { (cluster, listOfTileSets) ->
                 listOfTileSets.forEachIndexed { idx, tileSet ->
                     if (tileSet == tileSetName) {
@@ -273,9 +254,8 @@ class AssetLevelMapExporter(
                     }
                 }
             }
-
             if (clusterName.isNotEmpty()) tileSetDataByUid[tileSetUid] = TileSetData(tileSetName, offset, clusterName)
-            else println("  Ignoring tileset: '$tileSetName'")
+            //else println("  Ignoring tileset: '$tileSetName'")
         }
 
         // Create Grid-vania map of all level chunks with their chunk numbers - this is used to get the neighboring chunk numbers
@@ -332,9 +312,6 @@ class AssetLevelMapExporter(
             // Calculate level position in world grid
             val levelX: Int = ldtkLevel["worldX"] as Int / levelWidth
             val levelY: Int = ldtkLevel["worldY"] as Int / levelHeight
-//            val levelHeight = ldtkLevel["pxHei"] as Int  // Level height in pixels
-//            val levelWidth = ldtkLevel["pxWid"] as Int   // Level width in pixels
-
             val chunkName = ldtkLevel["identifier"] as String
 
             println("  Processing '$chunkName' ...")
