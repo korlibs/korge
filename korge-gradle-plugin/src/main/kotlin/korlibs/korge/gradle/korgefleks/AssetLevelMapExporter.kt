@@ -306,8 +306,10 @@ class AssetLevelMapExporter(
             val chunkInfo = mutableMapOf<String, Any>()
             val chunkLevelMap: MutableMap<String, Any> = mutableMapOf()  // MutableList<List<Int>> = mutableListOf()
             val chunkEntities: MutableList<MutableMap<String, Any>> = mutableListOf()
+            val chunkSpawnEntities: MutableList<String> = mutableListOf()
 
             chunkInfo["e"] = chunkEntities
+            chunkInfo["s"] = chunkSpawnEntities
 
             // Calculate level position in world grid
             val levelX: Int = ldtkLevel["worldX"] as Int / levelWidth
@@ -389,6 +391,10 @@ class AssetLevelMapExporter(
                                     if (field["__identifier"] != "entityConfig") {
                                         chunkEntity[field["__identifier"] as String] = field["__value"] as Any
                                     }
+                                }
+                                // Add entity to list of game objects which are spawned automatically by the WorldChunkSystem
+                                if ((ldtkEntity["__tags"] as List<String>).firstOrNull { it == "gameobject" } != null) {
+                                    chunkSpawnEntities.add(gameObjectName)
                                 }
                             } else println("ERROR: Game object with name '${entityName}' has no field 'entityConfig'!")
                         }
