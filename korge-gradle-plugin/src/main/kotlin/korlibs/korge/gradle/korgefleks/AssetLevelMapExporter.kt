@@ -105,7 +105,8 @@ class AssetLevelMapExporter(
                 // An array containing all Layer instances.
                 // **IMPORTANT**: if the project option "*Save levels separately*" is enabled, this field will be `null`.
                 // This array is **sorted in display order**: the 1st layer is the top-most and the last is behind.
-                val ldtkLevelLayers = ldtkLevel["layerInstances"] as List<Map<String, Any?>>
+                val ldtkLevelLayers = ldtkLevel["layerInstances"] as List<Map<String, Any?>>? ?: error("Level '${levelName}' does not contain any layers! " +
+                    "Please disable 'Save levels separately' in LDtk configuration!")
 
                 // Create stacked tile map data array (width * height) with max 10 stacked tiles per cell
                 val stackedTileMapData: List<MutableList<Int>> = List(levelGridHeight * levelGridWidth) { MutableList(stackSize) { -1 } }
@@ -369,10 +370,12 @@ class AssetLevelMapExporter(
 
                                 // Add position of entity = (chunk position in the level) + (position within the chunk) + (pivot point)
                                 // x and y position in pixels relative to the top left corner of the chunk, levelX and levelY are the position of the chunk in the world grid, so they are not needed for entity position within the chunk
-                                val entityPosX: Int = (ldtkEntity["px"] as List<Int>)[0] + (levelWidth * levelX)  // x position in pixels
-                                val entityPosY: Int = (ldtkEntity["px"] as List<Int>)[1] + (levelHeight * levelY)  // y position in pixels
-                                val entityPivotX: Float = (ldtkEntity["__pivot"] as List<Float>)[0]  // pivot within entity width/height [0..1]
-                                val entityPivotY: Float = (ldtkEntity["__pivot"] as List<Float>)[1]
+                                // x, y position in pixels
+                                val entityPosX: Int = ((ldtkEntity["px"]?.let { it as List<Int> })?.get(0) ?: error("Entity px is null for entity '$entityName' in chunk '$chunkName'!")) + (levelWidth * levelX)
+                                val entityPosY: Int = ((ldtkEntity["px"]?.let { it as List<Int> })?.get(1) ?: error("Entity py is null for entity '$entityName' in chunk '$chunkName'!")) + (levelHeight * levelY)
+                                // pivot within entity width/height [0..1]
+                                val entityPivotX: Float = (ldtkEntity["__pivot"]?.let { it as List<Number> })?.get(0)?.toFloat() ?: error("Entity pivot x is null for entity '$entityName' in chunk '$chunkName'!")
+                                val entityPivotY: Float = (ldtkEntity["__pivot"]?.let { it as List<Number> })?.get(1)?.toFloat() ?: error("Entity pivot y is null for entity '$entityName' in chunk '$chunkName'!")
 
                                 // Add position of entity
                                 (ldtkEntity["__tags"] as List<String>).firstOrNull { it == "positionable" }?.let {
@@ -416,6 +419,7 @@ class AssetLevelMapExporter(
                 }
             }
 
+            // chunk 0 is not a valid chunk number and indicates "no" chunk, so we use 0 as default value for non-existing neighboring chunks
             val chunkTop: Int = gridVaniaMap[Pair(levelX, levelY - 1)] ?: 0
             val chunkBottom: Int = gridVaniaMap[Pair(levelX, levelY + 1)] ?: 0
             val chunkLeft: Int = gridVaniaMap[Pair(levelX - 1, levelY)] ?: 0
