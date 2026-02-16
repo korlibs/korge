@@ -1,7 +1,7 @@
 package korlibs.korge.gradle.korgefleks
 
 import com.android.build.gradle.internal.cxx.json.jsonStringOf
-import kotlinx.kover.util.json.readJsonArray
+import org.gradle.api.GradleException
 import java.io.File
 
 
@@ -21,6 +21,7 @@ open class AssetConfig(
     assetPath: String,
     resourcePath: String
 ) {
+    var assetInfoName: String = "assets"
     var textureAtlasName: String = "texture"
     var tilesetAtlasName: String = "tileset"
     var simplifyJson: Boolean = true
@@ -40,6 +41,7 @@ open class AssetConfig(
         internal const val PIXEL_FONTS = "pixelFonts"
         internal const val PARALLAX_LAYERS = "parallaxLayers"
         internal const val TILES = "tiles"
+        internal const val TILE_MAPS = "tileMaps"
     }
 
     // Directory where Aseprite files are located
@@ -64,7 +66,6 @@ open class AssetConfig(
 
         // Initialize maps and lists in asset info
         assetInfo[TEXTURES] = arrayListOf<String>()
-        assetInfo[TILESETS] = arrayListOf<String>()
         assetInfo[IMAGES] = linkedMapOf<String, Any>()
         assetInfo[NINE_PATCHES] = linkedMapOf<String, Any>()
         assetInfo[PIXEL_FONTS] = linkedMapOf<String, Any>()
@@ -75,82 +76,81 @@ open class AssetConfig(
     protected val assetImageAseExporter = AssetImageAseExporter(asepriteExe, assetDir, exportTilesDir, assetInfo)
     protected val assetFileInstaller = AssetFileInstaller(assetDir, exportTilesDir, gameResourcesDir, assetInfo)
     protected val assetImageAtlasBuilder = AssetImageAtlasBuilder(exportTilesDir, gameResourcesDir, assetInfo)
-    protected val assetLevelMapExporter = AssetLevelMapExporter(assetDir, gameResourcesDir, assetInfo)
 
     /**
      * Export specific layers and tags from Aseprite file as independent png images.
      * Adds exported images to internal asset info list.
      */
-    fun addImageAse(filename: String, layers: List<String>, tags: List<String>, output: String) {
-        assetImageAseExporter.addImageAse(filename, layers, tags, output)
+    fun addImageAse(fileName: String, layers: List<String>, tags: List<String>, output: String) {
+        assetImageAseExporter.addImageAse(fileName, layers, tags, output)
     }
 
     /** Export full image from Aseprite file
      */
-    fun addImageAse(filename: String, output: String) {
-        assetImageAseExporter.addImageAse(filename, emptyList(), emptyList(), output )
+    fun addImageAse(fileName: String, output: String) {
+        assetImageAseExporter.addImageAse(fileName, emptyList(), emptyList(), output )
     }
 
     /** Export specific layer from Aseprite file
      */
-    fun addImageAse(filename: String, layer: String, output: String) {
-        assetImageAseExporter.addImageAse(filename, listOf(layer), emptyList(), output)
+    fun addImageAse(fileName: String, layer: String, output: String) {
+        assetImageAseExporter.addImageAse(fileName, listOf(layer), emptyList(), output)
     }
 
     /** Export specific layer and tag from Aseprite file
      */
-    fun addImageAse(filename: String, layer: String, tag: String, output: String) {
-        assetImageAseExporter.addImageAse(filename, listOf(layer), listOf(tag), output)
+    fun addImageAse(fileName: String, layer: String, tag: String, output: String) {
+        assetImageAseExporter.addImageAse(fileName, listOf(layer), listOf(tag), output)
     }
 
     /** Export specific layer and tags from Aseprite file
      */
-    fun addImageAse(filename: String, layer: String, tags: List<String>, output: String) {
-        assetImageAseExporter.addImageAse(filename, listOf(layer), tags, output)
+    fun addImageAse(fileName: String, layer: String, tags: List<String>, output: String) {
+        assetImageAseExporter.addImageAse(fileName, listOf(layer), tags, output)
     }
 
     /** Export specific layers from Aseprite file
      */
-    fun addImageAse(filename: String, layers: List<String>, output: String) {
-        assetImageAseExporter.addImageAse(filename, layers, emptyList(), output)
+    fun addImageAse(fileName: String, layers: List<String>, output: String) {
+        assetImageAseExporter.addImageAse(fileName, layers, emptyList(), output)
     }
 
     /** Export specific layers and tag from Aseprite file
      */
-    fun addImageAse(filename: String, layers: List<String>, tag: String, output: String) {
-        assetImageAseExporter.addImageAse(filename, layers, listOf(tag), output)
+    fun addImageAse(fileName: String, layers: List<String>, tag: String, output: String) {
+        assetImageAseExporter.addImageAse(fileName, layers, listOf(tag), output)
     }
 
     /**
      * Export nine-patch image from Aseprite file.
      * Adds exported nine-patch image to internal asset info list.
      */
-    fun addNinePatchImageAse(filename: String, output: String) {
-        assetImageAseExporter.addNinePatchImageAse(filename, emptyList(), emptyList(), output)
+    fun addNinePatchImageAse(fileName: String, output: String) {
+        assetImageAseExporter.addNinePatchImageAse(fileName, emptyList(), emptyList(), output)
     }
 
     /**
      * Export pixel font file and associated pixel font image.
      * It copies font file to game resources and exports font image to assets folder for atlas packing.
      */
-    fun addPixelFont(filename: String) {
-        assetFileInstaller.addPixelFont(filename)
+    fun addPixelFont(fileName: String) {
+        assetFileInstaller.addPixelFont(fileName)
     }
 
     /**
      * Export parallax layer images from Aseprite file.
      * Adds exported parallax images to internal asset info list.
      */
-    fun addParallaxImageAse(filename: String, parallaxInfo: ParallaxInfo) {
-        assetImageAseExporter.addParallaxImageAse(filename, parallaxInfo)
+    fun addParallaxImageAse(fileName: String, parallaxInfo: ParallaxInfo) {
+        assetImageAseExporter.addParallaxImageAse(fileName, parallaxInfo)
     }
 
     /**
      * Add a generic file to the asset configuration.
      * Copies the file to the game resources' directory.
      */
-    fun addFile(filename: String) {
-        assetFileInstaller.addFile(filename)
+    fun addFile(fileName: String) {
+        assetFileInstaller.addFile(fileName)
     }
 
     /**
@@ -160,6 +160,7 @@ open class AssetConfig(
      * This will always be called as last step after all assets have been added.
      */
     internal open fun buildAssetStore() {
+        println()
         // First build the image and tileset atlases
         assetImageAtlasBuilder.buildAtlases(
             textureAtlasName,
@@ -172,7 +173,7 @@ open class AssetConfig(
     }
 
     protected fun writeAssetInfoJson() {
-        val assetInfoJsonFile = gameResourcesDir.resolve("${textureAtlasName}.atlas.json")
+        val assetInfoJsonFile = gameResourcesDir.resolve("${assetInfoName}.json")
         assetInfoJsonFile.parentFile?.let { parent ->
             if (!parent.exists() && !parent.mkdirs()) error("Failed to create directory: ${parent.path}")
             val jsonString = jsonStringOf(assetInfo)
@@ -188,17 +189,21 @@ class WorldClusterAssetConfig(
     asepriteExe: String,
     projectDir: File,
     assetPath: String,
-    resourcePath: String
+    resourcePath: String,
+    private val clusterName: String
 ) : AssetConfig(asepriteExe, projectDir, assetPath, resourcePath) {
 
     private val tileSetFiles: MutableList<File> = mutableListOf()
     private val exportTilesetDir = projectDir.resolve("build/assets/tilesetAtlasInput")
 
-    // Directory with cluster asset info files (e.g. world.json, intro.json, etc.)
-    private val clusterAssetInfoDir = projectDir.resolve("gradle/worldClusterAssetInfo")
 
     private val assetTilesetExporter = AssetTilesetExporter(assetDir, exportTilesetDir, tileSetFiles)
-    private val assetTilesetAtlasBuilder = AssetTilesetAtlasBuilder(exportTilesetDir, gameResourcesDir, assetInfo, tileSetFiles, clusterAssetInfoDir)
+    private val assetTilesetAtlasBuilder = AssetTilesetAtlasBuilder(exportTilesetDir, gameResourcesDir, assetInfo, tileSetFiles, amountOfTiles = 64 * 64)  // Default to 4096 tiles per tileset
+    private val assetLevelMapExporter = AssetLevelMapExporter(assetDir, gameResourcesDir, assetInfo, amountOfTiles = 64 * 64)
+
+    // Save input data for exporters
+    private val listOfTileSetImageFiles = mutableListOf<String>()
+    private val listOfTileMapLdtkFiles = mutableListOf<Pair<String, String>>()
 
     init {
         // Make sure the export directories exist and that they are empty
@@ -206,28 +211,33 @@ class WorldClusterAssetConfig(
         if (exportTilesetDir.exists()) exportTilesetDir.deleteRecursively()
         exportTilesDir.mkdirs()
         exportTilesetDir.mkdirs()
+
+        // Initialize maps and lists in asset info
+        assetInfo[TILESETS] = arrayListOf<String>()
+        assetInfo[TILE_MAPS] = linkedMapOf<String, Any>()
     }
 
     /**
      * Export single tiles from a png tileset file and stores them in a tileset atlas.
      * Adds exported tiles and tileset images to internal asset info list.
+     *
+     * @param fileName The png file containing the tileset image.
      */
-    fun addTilesetImagePng(filename: String) {
-        assetTilesetExporter.addTilesetImagePng(filename)
+    fun addTilesetImagePng(fileName: String) {
+        listOfTileSetImageFiles.add(fileName)
     }
 
     /**
      * Export single level from LDtk file as an TileMap object.
      * Adds exported level map to internal asset info list.
      *
-     * @param filename The LDtk file containing the level data.
+     * Note: The used tile set in the LDtk level map must be included in the same cluster's tileset assets!
+     *
+     * @param fileName The LDtk file containing the level data.
      * @param levelName The name of the level to export.
      */
-    fun addTileMapLDtkFile(filename: String, levelName: String) {
-        // TODO Get data for all clusters and extract used tilesets
-        val tileSetsPerClusterMap = mapOf<String, List<String>>()
-
-        assetLevelMapExporter.exportTileMapLDtk(filename, levelName, tileSetsPerClusterMap)
+    fun addTileMapLDtkFile(fileName: String, levelName: String) {
+        listOfTileMapLdtkFiles.add(Pair(fileName, levelName))
     }
 
     /**
@@ -239,7 +249,20 @@ class WorldClusterAssetConfig(
      * @param assetResourcePath The relative path to the directory for game resources. The name of the last folder is the cluster name.
      */
     fun buildAssetStore(assetResourcePath: String) {
-        // First build the image and tileset atlases
+        // First run exporters for PNG and tile map files
+        listOfTileSetImageFiles.forEach { tileSet ->
+            assetTilesetExporter.addTilesetImagePng(tileSet)
+        }
+        listOfTileMapLdtkFiles.forEach { tileMapInfo ->
+            val fileName = tileMapInfo.first
+            val levelName = tileMapInfo.second
+            val tileSetList = listOfTileSetImageFiles.map { File(it).nameWithoutExtension }
+            println("tileset list: $tileSetList")
+            assetLevelMapExporter.exportTileMapLDtk(fileName, levelName, clusterName, tileSetList)
+        }
+        println()
+
+        // Now build the image and tileset atlases
         assetImageAtlasBuilder.buildAtlases(
             textureAtlasName,
             atlasWidth,
@@ -260,39 +283,52 @@ class WorldClusterAssetConfig(
     }
 }
 
-class WorldLDtkLevelMapAssetConfig(
+class WorldLevelMapAssetConfig(
     projectDir: File,
-    world: Int,
-    private val levelMapFilePath: String,
-    resourcePath: String
+    worldName: String,
+    private val assetPath: String = "",
 ) {
-    // Directory with cluster asset info files (e.g. world.json, intro.json, etc.)
-    private val clusterAssetInfoDir = projectDir.resolve("gradle/worldClusterAssetInfo/world_${world}")
+    var simplifyJson: Boolean = true
+
     // Directory where game resources are located
-    private val gameResourcesDir = projectDir.resolve("src/commonMain/resources/${resourcePath}")
-    private val assetLevelMapExporter = AssetLevelMapExporter(projectDir, gameResourcesDir, linkedMapOf())
+    private val gameResourcesDir = projectDir.resolve("src/commonMain/resources/${worldName}")
+    private val assetLevelMapExporter = AssetLevelMapExporter(projectDir, gameResourcesDir, linkedMapOf(), amountOfTiles = 64 * 64)  // Default to 4096 tiles per tileset)
+
+    // Save input data for exporters
+    private var levelMapLdtkFile = ""
+    private val mapOfClustersWithTileMaps: MutableMap<String, List<String>> = mutableMapOf()
+
+    /**
+     * Export level map from LDtk file as chunked level map.
+     * This creates for each chunk of the world level map a separate JSON file which
+     * contains the tile map data and entity configs for that chunk.
+     */
+    fun addLevelMapLdtkFile(fileName: String) {
+        if (levelMapLdtkFile.isNotEmpty()) throw GradleException("ERROR: worldLevelMapAssets - Only one LDtk file can be added for exporting level maps as world chunks!")
+        levelMapLdtkFile = if (assetPath.isNotEmpty()) "${assetPath}/${fileName}" else fileName
+    }
+
+    /**
+     * Define tilesets per cluster for the level map export.
+     *
+     * @param clusterName The name of the cluster within the world.
+     * @param tileSetNames The list of tileset names which are used in the level map and belong to the cluster.
+     *                     The tileset names must match the ones defined in the cluster's "worldClusterAssets" block.
+     */
+    fun tileSetsPerCluster(clusterName : String, vararg tileSetNames: String) {
+        mapOfClustersWithTileMaps[clusterName] = tileSetNames.toList()
+    }
 
     /**
      * Export level map from LDtk file as chunked level map.
      * Adds exported level map to internal asset info list.
      */
-    fun buildAssetStore() {
-        // Get the info which tileset are available in each processed asset cluster
-        if (clusterAssetInfoDir.listFiles() != null && clusterAssetInfoDir.listFiles().isNotEmpty()) {
-            val clusterAssetInfoFiles = clusterAssetInfoDir.listFiles()!!.filter { it.extension == "json" }
-
-            val tileSetsPerClusterMap: Map<String, List<String>> = clusterAssetInfoFiles.associate { file ->
-                val clusterName = file.nameWithoutExtension
-                val tileSetsList: List<String> = file.readJsonArray().let { jsonArray ->
-                    jsonArray.map { it as String }
-                }
-                clusterName to tileSetsList
-            }
-
-            println("Tilesets per cluster: $tileSetsPerClusterMap")
-
-            // TODO change to support world chunks
-            assetLevelMapExporter.exportLevelMapLDtk(levelMapFilePath, tileSetsPerClusterMap)
-        } else error("ERROR: No cluster asset info files found. Please run first all world cluster asset tasks before running level map asset task.")
+    internal fun buildAssetStore() {
+        // First run exporters for LDtk level map files
+        mapOfClustersWithTileMaps.forEach { (cluster, tileSets) ->
+            println("Cluster '$cluster' with tilesets: $tileSets")
+        }
+        if (levelMapLdtkFile.isEmpty()) throw GradleException("ERROR: worldLevelMapAssets - No LDtk file defined for exporting level maps as world chunks!")
+        assetLevelMapExporter.exportLevelMapLDtk(levelMapLdtkFile, mapOfClustersWithTileMaps, simplifyJson)
     }
 }

@@ -53,15 +53,14 @@ open class KorgeFleksExtension(
     ) {
         if (!File(asepriteExe).exists()) throw GradleException("Aseprite executable not found: '$asepriteExe' - Make sure to set 'asepriteExe' property in KorgeFleks extension.")
 
-        val assetName = "common"
-        val assetConfig = AssetConfig(asepriteExe, project.projectDir, path, assetName )
+        val taskName = "common"
+        val assetConfig = AssetConfig(asepriteExe, project.projectDir, path, taskName )
         // Set default names and atlas size
         assetConfig.textureAtlasName = textureAtlasName
         assetConfig.tilesetAtlasName = tilesetAtlasName
         assetConfig.atlasWidth = atlasWidth
         assetConfig.atlasHeight = atlasHeight
 
-        val taskName = assetName.replace("/", "").replace("_", "")
         project.tasks.createThis<Task>("${taskName}Assets") {
             group = assetGroup
             doLast {
@@ -77,31 +76,31 @@ open class KorgeFleksExtension(
      * Cluster assets are typically used for large worlds that are divided into smaller sections (chunks)
      * to optimize loading, performance and memory consumption.
      *
-     * @param path The relative path to the asset directory.
-     * @param world The world number for which the assets are being configured.
+     * @param worldName The name of the world for which the assets are being configured.
      * @param clusterName The name of the cluster within the world.
+     * @param path The relative path to the asset directory from project root directory.
      * @param config A lambda function to configure the assets.
      *
      * @throws GradleException if the Aseprite executable is not found.
      */
     fun worldClusterAssets(
-        path: String,
-        world: Int,
+        worldName: String,
         clusterName: String,
+        path: String,
         config: WorldClusterAssetConfig.() -> Unit
     ) {
         if (!File(asepriteExe).exists()) throw GradleException("Aseprite executable not found: '$asepriteExe' - Make sure to set 'asepriteExe' property in KorgeFleks extension.")
 
-        val assetResourcePath = "world_${world}/${clusterName}"
-        val assetConfig = WorldClusterAssetConfig(asepriteExe, project.projectDir, path, assetResourcePath )
+        val assetResourcePath = "${worldName}/${clusterName}"
+        val assetConfig = WorldClusterAssetConfig(asepriteExe, project.projectDir, path, assetResourcePath, clusterName)
         // Set default names and atlas size
         assetConfig.textureAtlasName = textureAtlasName
         assetConfig.tilesetAtlasName = tilesetAtlasName
         assetConfig.atlasWidth = atlasWidth
         assetConfig.atlasHeight = atlasHeight
 
-        val assetName = "world${world}_${clusterName.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }}"
-        val taskName = assetName.replace("/", "").replace("_", "")
+        val taskName = "${worldName}${clusterName.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }}"
+            .replace("/", "").replace("_", "")
         project.tasks.createThis<Task>("${taskName}Assets") {
             group = assetGroup
             doLast {
@@ -116,17 +115,23 @@ open class KorgeFleksExtension(
      * The level map defines the layout and structure of the world, including terrain, objects,
      * and other environmental features.
      *
-     * @param levelMapFile The filename of the level map LDtk file.
-     * @param world The world number for which the level map is being loaded.
+     * @param worldName The name of the world for which the level map is being loaded.
+     * @param path The relative path to the level map directory from project root directory.
+     * @param config A lambda function to configure the assets.
      */
-    fun worldLDtkLevelMapAssets(levelMapFile: String, world: Int) {
-        val assetResourcePath = "world_${world}"
-        val taskName = "world${world}LevelMap"
-        val assetConfig = WorldLDtkLevelMapAssetConfig(project.projectDir, world, levelMapFile, assetResourcePath)
+    fun worldLevelMapAssets(
+        worldName: String,
+        path: String,
+        config: WorldLevelMapAssetConfig.() -> Unit
+    ) {
+        val assetName = "${worldName}LevelMap"
+        val assetConfig = WorldLevelMapAssetConfig(project.projectDir, worldName, path)
 
+        val taskName = assetName.replace("/", "").replace("_", "")
         project.tasks.createThis<Task>("${taskName}Assets") {
             group = assetGroup
             doLast {
+                assetConfig.apply(config)
                 assetConfig.buildAssetStore()  // start to load the level map
             }
         }

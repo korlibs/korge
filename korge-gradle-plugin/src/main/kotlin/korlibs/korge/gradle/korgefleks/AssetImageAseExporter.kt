@@ -230,9 +230,9 @@ class AssetImageAseExporter(
         }
         // Get image map from asset info and store frames list
         val images = assetInfo[assetSectionName] as LinkedHashMap<String, Any>
-        val image = linkedMapOf<String, Any>()
-        image["f"] = frames
-        images[imageName] = image
+        images[imageName] = linkedMapOf<String, Any>(
+            "f" to frames
+        )
     }
 
     private fun exportImageFromAseprite(

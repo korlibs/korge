@@ -23,7 +23,7 @@ class AssetTilesetAtlasBuilder(
     private val gameResourcesDir: File,
     private val assetInfo: LinkedHashMap<String, Any>,
     private val tileSetFiles: List<File>,
-    private val clusterAssetInfoDir: File
+    private val amountOfTiles: Int
 ) {
     /**
      * Builds a tileset atlas from the exported tiles in the export tiles directory.
@@ -39,8 +39,7 @@ class AssetTilesetAtlasBuilder(
         tileHeight: Int,
         atlasWidth: Int,
         atlasHeight: Int,
-        atlasPadding: Int,
-        amountOfTiles: Int = 64 * 64 // Default to 4096 tiles per tileset
+        atlasPadding: Int
     ) {
         // Then build tilesets atlas
         if (exportTilesetDir.listFiles() != null && exportTilesetDir.listFiles().isNotEmpty()) {
@@ -57,16 +56,8 @@ class AssetTilesetAtlasBuilder(
             // This is used below to check if the tiles are put in the correct order into the fileFrameInfo list
             val tileSetFilenames: List<String> = tileSetFiles.map { it.nameWithoutExtension }
 
-            println("tileset names of packed atlases:")
-            tileSetFilenames.forEach { name -> println(" - $name") }
-
-            // Store tileset names list into asset info json file for each asset cluster - it is needed to load correct tileset for each level map layer later
-            val clusterAssetInfoJsonFile = clusterAssetInfoDir.resolve("${clusterName}.json")
-            clusterAssetInfoJsonFile.parentFile?.let { parent ->
-                if (!parent.exists() && !parent.mkdirs()) error("Failed to create directory: ${parent.path}")
-                val jsonString = jsonStringOf(tileSetFilenames)
-                clusterAssetInfoJsonFile.writeText(jsonString)
-            }
+            //println("tileset names of packed atlases:")
+            //tileSetFilenames.forEach { name -> println(" - $name") }
 
             // Create map of tilesets for counting how many tilesets were processed
             val tileSetMap = tileSetFilenames.associateWith { 0 }.toMutableMap()
@@ -111,12 +102,14 @@ class AssetTilesetAtlasBuilder(
                     // Mark empty frames with x=0 and y=0 in the tile info
 
                     // Set frame info: [textureIndex, x, y, [tileIndex]]  -- frame index is used for debugging only
-                    val tileInfo = intArrayOf(
-                        idx,  // Save index to texture atlas where the frame is located
-                        if (emptyFrame) 0 else frame["x"] ?: error("TilesetBuilder - frame x is 'null' for tile '${frameName}'!"),
-                        if (emptyFrame) 0 else frame["y"] ?: error("TilesetBuilder - frame y is 'null' for tile '${frameName}'!"),
-                        tileIndex  // [Optional] tile index for debugging purposes
-                    )
+                    val tileInfo =
+                        if (emptyFrame) intArrayOf(-1) else intArrayOf(
+                            idx,  // Save index to texture atlas where the frame is located
+                            frame["x"] ?: error("TilesetBuilder - frame x is 'null' for tile '${frameName}'!"),
+                            frame["y"] ?: error("TilesetBuilder - frame y is 'null' for tile '${frameName}'!"),
+                            //tileIndex,  // [Optional] tile index for debugging purposes
+                        )
+
                     // Put the tile info into the correct position in the tileFramesInfo array
                     tileFramesInfo[tileIndex] = tileInfo
                 }
@@ -125,7 +118,7 @@ class AssetTilesetAtlasBuilder(
                 assetInfo[TILES] = linkedMapOf(
                     "w" to tileWidth,
                     "h" to tileHeight,
-                    "t" to tileSetFilenames,  // TODO not really needed - remove later after testing finished
+                    //"t" to tileSetFilenames,  // [Optional] for debugging purposes
                     "f" to tileFramesInfo
                 )
             }
@@ -133,7 +126,7 @@ class AssetTilesetAtlasBuilder(
             // Check if all tilesets consists of the expected amount of tiles
             tileSetMap.forEach { (name, count) ->
                 if (count != amountOfTiles) {
-                    error("TilesetBuilder - tileset '${name}' contains ${count} tiles, expected ${amountOfTiles} tiles!")
+                    error("TilesetBuilder - tileset '${name}' contains '${count}' tiles, expected '${amountOfTiles}' tiles!")
                 }
             }
         }
