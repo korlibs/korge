@@ -37,27 +37,14 @@ class AssetLevelMapExporter(
      *
      * @param tileSetName Name of the tileset. It is defined in worldClusterAssets config and as name of tile set in LDtk file.
      *                    Both names must match.
-     * @param offset Offset of the tileset in the cluster. This is important to map tiles correctly from LDtk level layers to the tilesets.
+     * @param tileIdOffset Offset of the tileset in the cluster. This is important to map tiles correctly from LDtk level layers to the tilesets.
      *               A tile ID in LDtk level layer will be mapped by this offset to the correct tile set in the cluster asset.
      * @param clusterName Name of the cluster asset the tileset belongs to.
      */
     data class TileSetData(
         val tileSetName: String,
-        val offset: Int,
+        val tileIdOffset: Int,
         val clusterName: String
-    )
-
-    data class ChunkData(
-        val chunkName: String,
-        val entities: List<Map<String, Any>>,
-        val stackedTileMapData: List<MutableList<Int>>,
-        val clusterList: List<String>
-    )
-
-    data class TileMapData(
-        val tileMapName: String,
-        val stackedTileMapData: List<MutableList<Int>>,
-        val clusterList: List<String>  // Needed by renderer for offsets of tilesets in clusters
     )
 
     /**
@@ -88,17 +75,24 @@ class AssetLevelMapExporter(
             val tileSetName = jsonTileSet["identifier"] as String
             val tileSetUid = jsonTileSet["uid"] as Int
             // Find tileset in cluster map and store
-            var offset = -1
+            var tileIdOffset = -1
             tileSetList.forEachIndexed { idx, tileSet ->
+                // Sanity check for white spaces in tileset names
+                if (tileSet.contains(" ") || tileSetName.contains(" ")) error("Tileset name '${tileSet}' " +
+                    "contains white spaces! Please remove white spaces from the tileset name in the gradle task configuration!")
+                if (tileSetName.contains(" ")) error("Tileset name '${tileSetName}' contains white spaces! " +
+                    "Please remove white spaces from the tileset name in the LDtk file!")
+
                 if (tileSet == tileSetName) {
                     // Tileset found in this cluster
-                    offset = idx
+                    tileIdOffset = idx
                     return@forEachIndexed
                 }
             }
-            if (offset == -1) println("ERROR: Tileset '$tileSetName' not found in cluster '$clusterName'! Please check if the tileset name in the LDtk file matches the name in the cluster asset config and if the cluster asset is assigned to the correct level chunk!")
+            if (tileIdOffset == -1) error("Tileset '$tileSetName' not found in cluster '$clusterName'! Please check if the tileset name in the LDtk" +
+                " file matches the name in the cluster asset config and if the cluster asset is assigned to the correct level chunk!")
 
-            tileSetDataByUid[tileSetUid] = TileSetData(tileSetName, offset, clusterName)
+            tileSetDataByUid[tileSetUid] = TileSetData(tileSetName, tileIdOffset, clusterName)
         }
 
         // Definition: maximum of 16 layers per level --> Each level chunk can use up to 16 tilesets
@@ -141,9 +135,9 @@ class AssetLevelMapExporter(
                                 }
                                 // Get index of cluster in cluster list
                                 val clusterIndex = clusterList.indexOf(clusterName)
-                                val tileOffset = tileSetDataByUid[tilesetDefUid]!!.offset
+                                val tileIdOffset = tileSetDataByUid[tilesetDefUid]!!.tileIdOffset
 
-                                stackTilesIntoTileMap(autoLayerTiles + gridTiles, stackedTileMapData, layerGridWidth, defaultGridSize, clusterIndex, tileOffset)
+                                stackTilesIntoTileMap(autoLayerTiles + gridTiles, stackedTileMapData, layerGridWidth, defaultGridSize, clusterIndex, tileIdOffset)
                             }
                         }
                         else -> println("WARNING: No tiles or entities found in layer '$layerName'!")
@@ -183,7 +177,7 @@ class AssetLevelMapExporter(
         stackedTileMapWidth: Int,
         tileSize: Int,
         clusterIndex: Int,
-        tileOffset: Int
+        tileIdOffset: Int
     ) {
         for (tile in layerTiles) {
             val (px, py) = tile["px"] as List<Int>  // Tile x, y position in layer
@@ -193,7 +187,7 @@ class AssetLevelMapExporter(
             val dy = py % tileSize
             // Tile id in the tileset which identifies the tile graphic
             // plus offset which is determined by the tileset order in the cluster
-            val tileId = (tile["t"] as Int) + tileOffset
+            val tileId = (tile["t"] as Int) + tileIdOffset
             //val flipX = (tile["f"] as Int).hasBitSet(0)  -- not supported yet
             //val flipY = (tile["f"] as Int).hasBitSet(1)
 
@@ -293,6 +287,7 @@ class AssetLevelMapExporter(
             if (!parent.exists() && !parent.mkdirs()) error("CommonChunkJSonFile - Failed to create directory: ${parent.path}")
             val jsonString = jsonStringOf(levelMapInfo)
             // Simplify JSON string by removing unnecessary spaces and line breaks
+            // JSON quoted strings shall not contain white spaces
             val simplifiedJsonString = if (simplifyJson) jsonString.replace(Regex("\\s+"), "")
             else jsonString
             commonChunkJsonFile.writeText(simplifiedJsonString)
@@ -388,8 +383,9 @@ class AssetLevelMapExporter(
                                 }
                                 // Add all other fields of entity
                                 ldtkEntities.forEach { field ->
-                                    if (field["__identifier"] != "entityConfig") {
-                                        chunkEntity[field["__identifier"] as String] = field["__value"] as Any
+                                    val fieldName = field["__identifier"] as String
+                                    if (fieldName != "entityConfig") {
+                                        chunkEntity[fieldName] = field["__value"] ?: error("Entity field '__value' is null for field '$fieldName' in entity '$entityName' of chunk '$chunkName'!")
                                     }
                                 }
                                 // Add entity to list of game objects which are spawned automatically by the WorldChunkSystem
@@ -411,7 +407,7 @@ class AssetLevelMapExporter(
                             }
                             // Get index of cluster in cluster list
                             val clusterIndex = clusterList.indexOf(clusterName)
-                            val tileOffset = tileSetDataByUid[tilesetDefUid]!!.offset
+                            val tileOffset = tileSetDataByUid[tilesetDefUid]!!.tileIdOffset
 
                             stackTilesIntoTileMap(autoLayerTiles + gridTiles, stackedTileMapData, layerGridWidth, defaultGridSize, clusterIndex, tileOffset)
                         }
