@@ -17,6 +17,8 @@ class AssetLevelMapExporter(
     private val stackSize = 10  // Max number of stacked tiles per cell
 
     private val levelDataDir = gameResourcesDir.resolve("level_data")
+    private val targetCollisionShapesFile = levelDataDir.resolve("collision_shapes.png")
+    private lateinit var ldtkPath: File
 
 //    val assetTilesetExporter = AssetTilesetExporter(assetDir, "common")
 
@@ -24,6 +26,7 @@ class AssetLevelMapExporter(
         // Get the File object from the asset path in gradle plugin build
         val file = assetDir.resolve(it)
         if (!file.exists()) throw GradleException("LDtk file '${file}' not found!")
+        ldtkPath = file.parentFile  // Get the path of the LDtk file to resolve relative paths for external tilesets
         file
     }
     internal var loadLDtkFile: (file: File) -> Map<String, Any?> = {
@@ -95,7 +98,7 @@ class AssetLevelMapExporter(
             if (tileIdOffset == -1) error("Tileset '$tileSetName' not found in cluster '$clusterName'! Please check if the tileset name in the LDtk" +
                 " file matches the name in the cluster asset config and if the cluster asset is assigned to the correct level chunk!")
 
-            tileSetDataByUid[tileSetUid] = TileSetData(tileSetName, tileIdOffset, clusterName)
+            tileSetDataByUid[tileSetUid] = TileSetData(tileSetName, tileIdOffset, clusterName, mapOf())  // Tile maps do not contain collision info, so empty map is passed here
         }
 
         // Definition: maximum of 16 layers per level --> Each level chunk can use up to 16 tilesets
@@ -139,9 +142,9 @@ class AssetLevelMapExporter(
                                 }
                                 // Get index of cluster in cluster list
                                 val clusterIndex = clusterList.indexOf(clusterName)
-                                val tileIdOffset = tileSetDataByUid[tilesetDefUid]!!.tileIdOffset
+                                val tileSetData = tileSetDataByUid[tilesetDefUid]!!
 
-                                stackTilesIntoTileMap(autoLayerTiles + gridTiles, stackedTileMapData, layerGridWidth, defaultGridSize, clusterIndex, tileIdOffset)
+                                stackTilesIntoTileMap(autoLayerTiles + gridTiles, stackedTileMapData, layerGridWidth, defaultGridSize, clusterIndex, tileSetData)
                             }
                         }
                         else -> println("WARNING: No tiles or entities found in layer '$layerName'!")
@@ -181,23 +184,30 @@ class AssetLevelMapExporter(
         stackedTileMapWidth: Int,
         tileSize: Int,
         clusterIndex: Int,
-        tileIdOffset: Int
+        tileSetData: TileSetData
     ) {
         for (tile in layerTiles) {
-            val (px, py) = tile["px"] as List<Int>  // Tile x, y position in layer
+            val (px, py) = tile["px"]?.let {  // Tile x, y position in layer
+                it as List<Int>
+                if (it.size == 2) it else error("Tile position 'px' does not contain exactly 2 values for x and y position!")
+            } ?: error("Tile position 'px' is null in tile set '${tileSetData.tileSetName}' of cluster '${tileSetData.clusterName}'!")
             val x = px / tileSize
             val y = py / tileSize
             val dx = px % tileSize
             val dy = py % tileSize
             // Tile id in the tileset which identifies the tile graphic
             // plus offset which is determined by the tileset order in the cluster
-            val tileId = (tile["t"] as Int) + tileIdOffset
+            val rawtileId = tile["t"]?.let { it as Int } ?: error("Tile id 't' is null for tile at position ($px,$py) in " +
+                "tile set '${tileSetData.tileSetName}' of cluster '${tileSetData.clusterName}'!")
             //val flipX = (tile["f"] as Int).hasBitSet(0)  -- not supported yet
             //val flipY = (tile["f"] as Int).hasBitSet(1)
 
-            if ((dx != 0 || dy != 0)) println("WARNING: Tile at pixel position ($px,$py) is not aligned to tile size $tileSize" +
-                " (dx=$dx, dy=$dy)! This is not supported and tile offset will be ignored!")
+            if ((dx != 0 || dy != 0)) println("WARNING: Tile at pixel position ($px,$py) is not aligned to tile size $tileSize " +
+                "(dx=$dx, dy=$dy)! This is not supported and tile offset will be ignored!")
 
+            val collision = tileSetData.collisionTiles[rawtileId] ?: 0  // Get collision shape/type for tile if exists, otherwise default to 0 (no collision)
+
+            val tileId = rawtileId + tileSetData.tileIdOffset
             val tileIndex = y * stackedTileMapWidth + x
             val stackedTile = stackedTileMapData[tileIndex]
 
@@ -205,8 +215,12 @@ class AssetLevelMapExporter(
                 if (tile == -1) {
                     // Empty tile found, stack tile here
                     if (idx < stackSize) {
-                        // chunk index in bits 0-3, tile id in bits 4 - 19
-                        val tile = (clusterIndex and 0xf) or ((tileId and 0xffff) shl 4)
+                        // Tile number consists of:
+                        //  4 bits 0-3: chunk index (16 tilesets per cluster)
+                        // 16 bits 4-19: tile id (65536 tiles per cluster = 4096 tiles per tileset with 16 tilesets per cluster)
+                        //  8 bits 20 - 27: collision info (256 collision types overall)
+                        //  4 bits 28-31: reserved for future use (e.g. flipX, flipY, animation frame, etc.)
+                        val tile = (clusterIndex and 0xf) or ((tileId and 0xffff) shl 4) or ((collision and 0xff) shl 20)
                         stackedTileMapData[tileIndex][idx] = tile
                         stackedTileMapPopulated = true
                     } else println("ERROR: Stack size exceeded at position ($x,$y)! Max stack size is $stackSize tiles per cell.")
@@ -223,14 +237,53 @@ class AssetLevelMapExporter(
         val ldtkFile = getFile(filename)
         val ldtkJson = loadLDtkFile(ldtkFile)
 
-        val ldtkLevels = ldtkJson["levels"] as List<Map<String, Any?>>
-        val defaultGridSize = ldtkJson["defaultGridSize"] as Int
-        val defaultLevelWidth = ldtkJson["defaultLevelWidth"]?.let { it as Int } ?: 0
-        val defaultLevelHeight = ldtkJson["defaultLevelHeight"]?.let { it as Int } ?: 0
-        val defs = ldtkJson["defs"] as Map<String, Any?>
-        val jsonTileSets = defs["tilesets"] as List<Map<String, Any?>>
-        val levelWidth: Int = ldtkJson["worldGridWidth"] as Int? ?: 0  // Level width in pixels
-        val levelHeight = ldtkJson["worldGridHeight"] as Int? ?: 0     // Level height in pixels
+        val ldtkLevels = ldtkJson["levels"] as? List<Map<String, Any?>> ?: emptyList()
+        val defaultGridSize = ldtkJson["defaultGridSize"] as? Int ?: error("LDtk JSON file does not contain 'defaultGridSize' definition!")
+        val defaultLevelWidth = ldtkJson["defaultLevelWidth"] as? Int ?: error("LDtk JSON file does not contain 'defaultLevelWidth' definition!")
+        val defaultLevelHeight = ldtkJson["defaultLevelHeight"] as? Int ?: error("LDtk JSON file does not contain 'defaultLevelHeight' definition!")
+        val levelWidth = ldtkJson["worldGridWidth"] as? Int ?: error("LDtk JSON file does not contain 'worldGridWidth' definition!")  // Level width in pixels
+        val levelHeight = ldtkJson["worldGridHeight"] as? Int ?: error("LDtk JSON file does not contain 'worldGridHeight' definition!")     // Level height in pixels
+
+        val defs = ldtkJson["defs"] as? Map<String, Any?> ?: error("LDtk JSON file does not contain 'defs' definition!")
+        val jsonTileSets = defs["tilesets"] as? List<Map<String, Any?>> ?: error("LDtk JSON file does not contain 'defs->tilesets' definition!")
+        val enums = defs["enums"]?.let { it as List<Map<String, Any?>> } ?: error("LDtk JSON file does not contain 'defs->enums' definition!")
+
+        // Find collision config enum and save its values in a map for later use when processing the tilesets and layers of the levels - this is needed to get the collision shape/type info for each tile
+        val nameToCollisionId = mutableMapOf<String, Int>()
+        val idToCollisionShape = mutableListOf<List<Int>>()
+        var collisionTileSetFileName = ""
+        enums.firstOrNull { map -> (map["identifier"] as? String) == "collisionConfig" }?.let { collisionEnum ->
+            val enumValues = collisionEnum["values"] as? List<Map<String, Any?>> ?: error("Collision config enum does not contain 'values' definition!")
+            println("Collision config enum values:")
+            var i = 0
+            enumValues.forEach { enumValue ->
+                val collisionName = enumValue["id"] as? String ?: error("Collision config enum value does not contain 'id' definition!")
+                enumValue["tileRect"]?.let { collisionRect ->
+                    collisionRect as Map<String, Any?>
+                    // Save tile set name which contains the collision shapes
+                    if (collisionTileSetFileName.isEmpty()) {
+                        collisionRect["tilesetUid"]?.let { tileSetUid ->
+                            tileSetUid as Int
+                            collisionTileSetFileName = jsonTileSets.firstOrNull { it["uid"] as? Int == tileSetUid }?.get("relPath") as? String
+                                ?: error("No matching tileset found in 'defs->tilesets' for tileSetUid '$tileSetUid' defined in collision config enum value! Please check if the tileset with the collision shapes is included in the LDtk file!")
+                            println("Tile set file name for collision shapes: '$collisionTileSetFileName'")
+                        }
+                    }
+                    // Get collision shape info from tileRect definition in collision config enum value
+                    val cx = collisionRect["x"] as? Int ?: error("Collision config enum value 'tileRect' does not contain 'x' definition!")
+                    val cy = collisionRect["y"] as? Int ?: error("Collision config enum value 'tileRect' does not contain 'y' definition!")
+                    val cw = collisionRect["w"] as? Int ?: error("Collision config enum value 'tileRect' does not contain 'w' definition!")
+                    val ch = collisionRect["h"] as? Int ?: error("Collision config enum value 'tileRect' does not contain 'h' definition!")
+
+                    nameToCollisionId[collisionName] = i
+                    idToCollisionShape.add(listOf(cx, cy, cw, ch))
+                    println("  $i: '$collisionName' - (x=$cx, y=$cy, w=$cw, h=$ch)")
+                    i++
+                }
+            }
+        }
+        // Check if tile set file name for collision shapes was found in collision config enum
+        if (collisionTileSetFileName.isEmpty()) error("No tile set file name found for collision shapes in collision config enum! Please check if the tileset with the collision shapes is included in the LDtk file!")
 
         // Map for storing starting index for each tileset based on its order in the asset cluster
         val tileSetDataByUid = mutableMapOf<Int, TileSetData>()
@@ -247,8 +300,9 @@ class AssetLevelMapExporter(
                 enumTag as Map<String, Any>
                 enumTag["enumValueId"]?.let { enumValueId ->
                     enumValueId as String
-                    println("enumValueId: $enumValueId")
-                    val collisionTile = 1
+                    // Get collision ID for name of collision enum
+                    val collisionTile = nameToCollisionId[enumValueId] ?: return@let  // Skip if enum value ID is not found in collision config enum - it means that this collision shape has no tile assigned
+                    println("enumValueId: $enumValueId (collision ID: $collisionTile)")
                     enumTag["tileIds"]?.let { tileIds ->
                         tileIds as List<Int>
                         println("tileIds: $tileIds")
@@ -305,6 +359,7 @@ class AssetLevelMapExporter(
         levelMapInfo["w"] = defaultLevelWidth / defaultGridSize
         levelMapInfo["h"] = defaultLevelHeight / defaultGridSize
         levelMapInfo["t"] = defaultGridSize
+        levelMapInfo["c"] = idToCollisionShape
 
         val commonChunkJsonFile = levelDataDir.resolve("common.json")
         commonChunkJsonFile.parentFile?.let { parent ->
@@ -315,6 +370,10 @@ class AssetLevelMapExporter(
             val simplifiedJsonString = if (simplifyJson) jsonString.replace(Regex("\\s+"), "")
             else jsonString
             commonChunkJsonFile.writeText(simplifiedJsonString)
+
+            // Copy over tile set files for collision shapes to level data directory - this is needed to load the tile set in the game for processing the collision shapes of the tiles
+            val sourceCollisionShapesFile = ldtkPath.resolve(collisionTileSetFileName)
+            sourceCollisionShapesFile.copyTo(targetCollisionShapesFile)
         }
 
         // Definition: maximum of 16 layers per level --> Each level chunk can use up to 16 tilesets
@@ -433,9 +492,9 @@ class AssetLevelMapExporter(
                             }
                             // Get index of cluster in cluster list
                             val clusterIndex = clusterList.indexOf(clusterName)
-                            val tileOffset = tileSetDataByUid[tilesetDefUid]!!.tileIdOffset
+                            val tileSetData = tileSetDataByUid[tilesetDefUid]!!
 
-                            stackTilesIntoTileMap(autoLayerTiles + gridTiles, stackedTileMapData, layerGridWidth, defaultGridSize, clusterIndex, tileOffset)
+                            stackTilesIntoTileMap(autoLayerTiles + gridTiles, stackedTileMapData, layerGridWidth, defaultGridSize, clusterIndex, tileSetData)
                         }
                     }
 //                    else -> println("WARNING: No tiles or entities found in layer '$layerName'!")
