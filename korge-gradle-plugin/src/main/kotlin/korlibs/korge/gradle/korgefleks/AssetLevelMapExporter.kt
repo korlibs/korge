@@ -7,9 +7,10 @@ import korlibs.korge.gradle.util.fromJson
 import org.gradle.api.GradleException
 import java.io.File
 
+
 class AssetLevelMapExporter(
     private val assetDir: File,
-    private val gameResourcesDir: File,
+    gameResourcesDir: File,
     private val assetInfo: LinkedHashMap<String, Any>,
     private val amountOfTiles: Int
 ) {
@@ -40,11 +41,13 @@ class AssetLevelMapExporter(
      * @param tileIdOffset Offset of the tileset in the cluster. This is important to map tiles correctly from LDtk level layers to the tilesets.
      *               A tile ID in LDtk level layer will be mapped by this offset to the correct tile set in the cluster asset.
      * @param clusterName Name of the cluster asset the tileset belongs to.
+     * @param collisionTiles A list of tile IDs and their mapping to collision shapes/types.
      */
     data class TileSetData(
         val tileSetName: String,
         val tileIdOffset: Int,
-        val clusterName: String
+        val clusterName: String,
+        val collisionTiles: Map<Int, Int>
     )
 
     /**
@@ -234,8 +237,28 @@ class AssetLevelMapExporter(
 
         // Go through all tilesets and save their cluster assignment from tags and external tileSetsPerClusterMap
         jsonTileSets.forEach { jsonTileSet ->
-            val tileSetName = jsonTileSet["identifier"] as String
-            val tileSetUid = jsonTileSet["uid"] as Int
+            val tileSetName = jsonTileSet["identifier"]?.let { it as String } ?: error("Identifier of tile set from LDtk JSON file is 'null'!")
+            val tileSetUid = jsonTileSet["uid"]?.let { it as Int } ?: error("Uid of tile set '$tileSetName' from LDtk JSON file is 'null'!")
+
+            // Process collision data for tiles
+            val enumTags = jsonTileSet["enumTags"]?.let { it as List<Any> }
+            val collisionTiles = mutableMapOf<Int, Int>()
+            enumTags?.forEach { enumTag ->
+                enumTag as Map<String, Any>
+                enumTag["enumValueId"]?.let { enumValueId ->
+                    enumValueId as String
+                    println("enumValueId: $enumValueId")
+                    val collisionTile = 1
+                    enumTag["tileIds"]?.let { tileIds ->
+                        tileIds as List<Int>
+                        println("tileIds: $tileIds")
+                        tileIds.forEach { tileId ->
+                            collisionTiles[tileId] = collisionTile
+                        }
+                    }
+                }
+            }
+
             // Find tileset in cluster map and store
             var clusterName = ""
             var offset = -1
@@ -249,7 +272,7 @@ class AssetLevelMapExporter(
                     }
                 }
             }
-            if (clusterName.isNotEmpty()) tileSetDataByUid[tileSetUid] = TileSetData(tileSetName, offset, clusterName)
+            if (clusterName.isNotEmpty()) tileSetDataByUid[tileSetUid] = TileSetData(tileSetName, offset, clusterName, collisionTiles)
             //else println("  Ignoring tileset: '$tileSetName'")
         }
 
