@@ -197,7 +197,7 @@ class AssetLevelMapExporter(
             val dy = py % tileSize
             // Tile id in the tileset which identifies the tile graphic
             // plus offset which is determined by the tileset order in the cluster
-            val rawtileId = tile["t"]?.let { it as Int } ?: error("Tile id 't' is null for tile at position ($px,$py) in " +
+            val rawTileId = tile["t"]?.let { it as Int } ?: error("Tile id 't' is null for tile at position ($px,$py) in " +
                 "tile set '${tileSetData.tileSetName}' of cluster '${tileSetData.clusterName}'!")
             //val flipX = (tile["f"] as Int).hasBitSet(0)  -- not supported yet
             //val flipY = (tile["f"] as Int).hasBitSet(1)
@@ -205,9 +205,9 @@ class AssetLevelMapExporter(
             if ((dx != 0 || dy != 0)) println("WARNING: Tile at pixel position ($px,$py) is not aligned to tile size $tileSize " +
                 "(dx=$dx, dy=$dy)! This is not supported and tile offset will be ignored!")
 
-            val collision = tileSetData.collisionTiles[rawtileId] ?: 0  // Get collision shape/type for tile if exists, otherwise default to 0 (no collision)
+            val collision = tileSetData.collisionTiles[rawTileId] ?: 0  // Get collision shape/type for tile if exists, otherwise default to 0 (no collision)
 
-            val tileId = rawtileId + tileSetData.tileIdOffset
+            val tileId = rawTileId + tileSetData.tileIdOffset
             val tileIndex = y * stackedTileMapWidth + x
             val stackedTile = stackedTileMapData[tileIndex]
 
@@ -255,7 +255,13 @@ class AssetLevelMapExporter(
         enums.firstOrNull { map -> (map["identifier"] as? String) == "collisionConfig" }?.let { collisionEnum ->
             val enumValues = collisionEnum["values"] as? List<Map<String, Any?>> ?: error("Collision config enum does not contain 'values' definition!")
             println("Collision config enum values:")
-            var i = 0
+            // Add first collision ID for empty collision (no collision) with empty shape definition, so that the collision ID 0 can be used
+            // for tiles without collision, and it is guaranteed that it does not overlap with any real collision shape definition from the enum values
+            nameToCollisionId["empty"] = 0
+            idToCollisionShape.add(listOf(-1))
+            println("  0: 'empty' - (x=-1) - no collision")
+
+            var i = 1
             enumValues.forEach { enumValue ->
                 val collisionName = enumValue["id"] as? String ?: error("Collision config enum value does not contain 'id' definition!")
                 enumValue["tileRect"]?.let { collisionRect ->
@@ -373,7 +379,7 @@ class AssetLevelMapExporter(
 
             // Copy over tile set files for collision shapes to level data directory - this is needed to load the tile set in the game for processing the collision shapes of the tiles
             val sourceCollisionShapesFile = ldtkPath.resolve(collisionTileSetFileName)
-            sourceCollisionShapesFile.copyTo(targetCollisionShapesFile)
+            sourceCollisionShapesFile.copyTo(targetCollisionShapesFile, overwrite = true)
         }
 
         // Definition: maximum of 16 layers per level --> Each level chunk can use up to 16 tilesets
