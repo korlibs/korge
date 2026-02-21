@@ -115,7 +115,7 @@ class AssetLevelMapExporter(
                     "Please disable 'Save levels separately' in LDtk configuration!")
 
                 // Create stacked tile map data array (width * height) with max 10 stacked tiles per cell
-                val stackedTileMapData: List<MutableList<Int>> = List(levelGridHeight * levelGridWidth) { MutableList(stackSize) { -1 } }
+                val stackedTileMapData: List<MutableList<Int>> = List(levelGridHeight * levelGridWidth) { mutableListOf() }
                 stackedTileMapPopulated = false
 
                 val clusterList = mutableListOf<String>()
@@ -178,58 +178,6 @@ class AssetLevelMapExporter(
         }
     }
 
-    private fun stackTilesIntoTileMap(
-        layerTiles: List<Map<String, Any?>>,
-        stackedTileMapData: List<MutableList<Int>>,
-        stackedTileMapWidth: Int,
-        tileSize: Int,
-        clusterIndex: Int,
-        tileSetData: TileSetData
-    ) {
-        for (tile in layerTiles) {
-            val (px, py) = tile["px"]?.let {  // Tile x, y position in layer
-                it as List<Int>
-                if (it.size == 2) it else error("Tile position 'px' does not contain exactly 2 values for x and y position!")
-            } ?: error("Tile position 'px' is null in tile set '${tileSetData.tileSetName}' of cluster '${tileSetData.clusterName}'!")
-            val x = px / tileSize
-            val y = py / tileSize
-            val dx = px % tileSize
-            val dy = py % tileSize
-            // Tile id in the tileset which identifies the tile graphic
-            // plus offset which is determined by the tileset order in the cluster
-            val rawTileId = tile["t"]?.let { it as Int } ?: error("Tile id 't' is null for tile at position ($px,$py) in " +
-                "tile set '${tileSetData.tileSetName}' of cluster '${tileSetData.clusterName}'!")
-            //val flipX = (tile["f"] as Int).hasBitSet(0)  -- not supported yet
-            //val flipY = (tile["f"] as Int).hasBitSet(1)
-
-            if ((dx != 0 || dy != 0)) println("WARNING: Tile at pixel position ($px,$py) is not aligned to tile size $tileSize " +
-                "(dx=$dx, dy=$dy)! This is not supported and tile offset will be ignored!")
-
-            val collision = tileSetData.collisionTiles[rawTileId] ?: 0  // Get collision shape/type for tile if exists, otherwise default to 0 (no collision)
-
-            val tileId = rawTileId + tileSetData.tileIdOffset
-            val tileIndex = y * stackedTileMapWidth + x
-            val stackedTile = stackedTileMapData[tileIndex]
-
-            for ((idx, tile) in stackedTile.withIndex()) {
-                if (tile == -1) {
-                    // Empty tile found, stack tile here
-                    if (idx < stackSize) {
-                        // Tile number consists of:
-                        //  4 bits 0-3: chunk index (16 tilesets per cluster)
-                        // 16 bits 4-19: tile id (65536 tiles per cluster = 4096 tiles per tileset with 16 tilesets per cluster)
-                        //  8 bits 20 - 27: collision info (256 collision types overall)
-                        //  4 bits 28-31: reserved for future use (e.g. flipX, flipY, animation frame, etc.)
-                        val tile = (clusterIndex and 0xf) or ((tileId and 0xffff) shl 4) or ((collision and 0xff) shl 20)
-                        stackedTileMapData[tileIndex][idx] = tile
-                        stackedTileMapPopulated = true
-                    } else println("ERROR: Stack size exceeded at position ($x,$y)! Max stack size is $stackSize tiles per cell.")
-                    break
-                }
-            }
-        }
-    }
-
     fun exportLevelMapLDtk(filename: String, tileSetsPerClusterMap: Map<String, List<String>>, simplifyJson: Boolean, layerName: String = "default") {
         // Load all level maps from LDtk file and export each as level chunk object
         println("Export LDtk file: '${filename}'")
@@ -254,12 +202,12 @@ class AssetLevelMapExporter(
         var collisionTileSetFileName = ""
         enums.firstOrNull { map -> (map["identifier"] as? String) == "collisionConfig" }?.let { collisionEnum ->
             val enumValues = collisionEnum["values"] as? List<Map<String, Any?>> ?: error("Collision config enum does not contain 'values' definition!")
-            println("Collision config enum values:")
+            //println("Collision config enum values:")
             // Add first collision ID for empty collision (no collision) with empty shape definition, so that the collision ID 0 can be used
             // for tiles without collision, and it is guaranteed that it does not overlap with any real collision shape definition from the enum values
             nameToCollisionId["empty"] = 0
             idToCollisionShape.add(listOf(-1))
-            println("  0: 'empty' - (x=-1) - no collision")
+            //println("  0: 'empty' - (x=-1) - no collision")
 
             var i = 1
             enumValues.forEach { enumValue ->
@@ -272,18 +220,16 @@ class AssetLevelMapExporter(
                             tileSetUid as Int
                             collisionTileSetFileName = jsonTileSets.firstOrNull { it["uid"] as? Int == tileSetUid }?.get("relPath") as? String
                                 ?: error("No matching tileset found in 'defs->tilesets' for tileSetUid '$tileSetUid' defined in collision config enum value! Please check if the tileset with the collision shapes is included in the LDtk file!")
-                            println("Tile set file name for collision shapes: '$collisionTileSetFileName'")
+                            //println("Tile set file name for collision shapes: '$collisionTileSetFileName'")
                         }
                     }
                     // Get collision shape info from tileRect definition in collision config enum value
                     val cx = collisionRect["x"] as? Int ?: error("Collision config enum value 'tileRect' does not contain 'x' definition!")
                     val cy = collisionRect["y"] as? Int ?: error("Collision config enum value 'tileRect' does not contain 'y' definition!")
-                    val cw = collisionRect["w"] as? Int ?: error("Collision config enum value 'tileRect' does not contain 'w' definition!")
-                    val ch = collisionRect["h"] as? Int ?: error("Collision config enum value 'tileRect' does not contain 'h' definition!")
 
                     nameToCollisionId[collisionName] = i
-                    idToCollisionShape.add(listOf(cx, cy, cw, ch))
-                    println("  $i: '$collisionName' - (x=$cx, y=$cy, w=$cw, h=$ch)")
+                    idToCollisionShape.add(listOf(cx, cy))
+                    //println("  $i: '$collisionName' - (x=$cx, y=$cy)")
                     i++
                 }
             }
@@ -308,10 +254,10 @@ class AssetLevelMapExporter(
                     enumValueId as String
                     // Get collision ID for name of collision enum
                     val collisionTile = nameToCollisionId[enumValueId] ?: return@let  // Skip if enum value ID is not found in collision config enum - it means that this collision shape has no tile assigned
-                    println("enumValueId: $enumValueId (collision ID: $collisionTile)")
+                    //println("enumValueId: $enumValueId (collision ID: $collisionTile)")
                     enumTag["tileIds"]?.let { tileIds ->
                         tileIds as List<Int>
-                        println("tileIds: $tileIds")
+                        //println("tileIds: $tileIds")
                         tileIds.forEach { tileId ->
                             collisionTiles[tileId] = collisionTile
                         }
@@ -400,7 +346,7 @@ class AssetLevelMapExporter(
             val levelY: Int = ldtkLevel["worldY"] as Int / levelHeight
             val chunkName = ldtkLevel["identifier"] as String
 
-            println("  Processing '$chunkName' ...")
+            //println("  Processing '$chunkName' ...")
 
             // Get chunk number from chunk name
             val chunkNumber = chunkName.substringAfterLast("_").toIntOrNull() ?: error("Chunk name '$chunkName' does not contain a valid chunk number!")
@@ -414,7 +360,7 @@ class AssetLevelMapExporter(
             val ldtkLevelLayers = ldtkLevel["layerInstances"] as List<Map<String, Any?>>
 
             // Create stacked tile map data array (width * height) with max 10 stacked tiles per cell
-            val stackedTileMapData: List<MutableList<Int>> = List(levelGridHeight * levelGridWidth) { MutableList(stackSize) { -1 } }
+            val stackedTileMapData: List<MutableList<Int>> =  List(levelGridHeight * levelGridWidth) { mutableListOf() }
             stackedTileMapPopulated = false
 
             val clusterList = mutableListOf<String>()
@@ -524,18 +470,22 @@ class AssetLevelMapExporter(
 
             chunkInfo["ls"] = chunkLevelMap
 
-            if (stackedTileMapPopulated) {
-                // Build stacked tile map which consists of only populated tiles (without -1 entries)
-                val stackedTileMap = mutableListOf<List<Int>>()
-                stackedTileMapData.forEach { stackedTiles ->
-                    val tiles = mutableListOf<Int>()
-                    stackedTiles.forEach { tile ->
-                        if (tile != -1) {
-                            tiles.add(tile)
-                        }
+            // Flatten collision info for each stacked tile list into the first tile entry
+            stackedTileMapData.forEach { stackedTiles ->
+                stackedTiles.reversed().forEach { tile ->
+                    val collision = tile and 0xff00000  // Get bits 20-27 for collision index
+                    if (collision != 0) {
+                        // Collision found, set collision info in first tile entry and break
+                        stackedTiles[0] = stackedTiles[0] or collision  // Set collision info in first tile entry
+                        return@forEach
                     }
-                    stackedTileMap.add(tiles)
                 }
+            }
+
+            if (stackedTileMapPopulated) {
+                // We add here the stacked tile map to the chunk info for a layer - so in future we can support multiple layers
+                // per chunk and add parallax scrolling factors for each layer if needed. For now, we just use one layer with
+                // the name "default" and a scroll factor of 1 (no parallax).
                 chunkLevelMap[layerName] = linkedMapOf(
                     "s" to 1f,  // Scroll factor for parallax effect - not supported yet, default is 1 (no parallax)
                     // factor 1f == normal speed, < 1f slower, > 1f faster than normal speed
@@ -543,13 +493,13 @@ class AssetLevelMapExporter(
                     // Effectively scroll speed of all world layers shall be aligned so that chunks move together.
                     // Scroll factor is calculated based on layer size in tiles compared to normal tile size of 64x64.
                     // So if a layer has 48x48 tiles, scroll factor is 48/64 = 0.75f, if a layer has 90x90 tiles, scroll factor is 90/64 = 1.4f
-                    "m" to stackedTileMap,
+                    "m" to stackedTileMapData,
                     "c" to clusterList
                 )
             }
-            if (chunkEntities.isNotEmpty()) {
-                println("  Add '${chunkEntities.size}' entities to chunk JSON file.")
-            }
+            //if (chunkEntities.isNotEmpty()) {
+            //    println("  Add '${chunkEntities.size}' entities to chunk JSON file.")
+            //}
 
             val chunkJsonFile = levelDataDir.resolve("${chunkName}.json")
             chunkJsonFile.parentFile?.let { parent ->
@@ -560,6 +510,49 @@ class AssetLevelMapExporter(
                 else jsonString
                 chunkJsonFile.writeText(simplifiedJsonString)
             }
+        }
+    }
+
+    private fun stackTilesIntoTileMap(
+        layerTiles: List<Map<String, Any?>>,
+        stackedTileMapData: List<MutableList<Int>>,
+        stackedTileMapWidth: Int,
+        tileSize: Int,
+        clusterIndex: Int,
+        tileSetData: TileSetData
+    ) {
+        for (tile in layerTiles) {
+            val (px, py) = tile["px"]?.let {  // Tile x, y position in layer
+                it as List<Int>
+                if (it.size == 2) it else error("Tile position 'px' does not contain exactly 2 values for x and y position!")
+            } ?: error("Tile position 'px' is null in tile set '${tileSetData.tileSetName}' of cluster '${tileSetData.clusterName}'!")
+            val x = px / tileSize
+            val y = py / tileSize
+            val dx = px % tileSize
+            val dy = py % tileSize
+            // Tile id in the tileset which identifies the tile graphic
+            // plus offset which is determined by the tileset order in the cluster
+            val rawTileId = tile["t"]?.let { it as Int } ?: error("Tile id 't' is null for tile at position ($px,$py) in " +
+                "tile set '${tileSetData.tileSetName}' of cluster '${tileSetData.clusterName}'!")
+            //val flipX = (tile["f"] as Int).hasBitSet(0)  -- not supported yet
+            //val flipY = (tile["f"] as Int).hasBitSet(1)
+
+            if ((dx != 0 || dy != 0)) println("WARNING: Tile at pixel position ($px,$py) is not aligned to tile size $tileSize " +
+                "(dx=$dx, dy=$dy)! This is not supported and tile offset will be ignored!")
+
+            val collision = tileSetData.collisionTiles[rawTileId] ?: 0  // Get collision shape/type for tile if exists, otherwise default to 0 (no collision)
+
+            val tileId = rawTileId + tileSetData.tileIdOffset
+            val tileIndex = y * stackedTileMapWidth + x
+
+            // Tile number consists of:
+            //  4 bits 0-3: chunk index (16 tilesets per cluster)
+            // 16 bits 4-19: tile id (65536 tiles per cluster = 4096 tiles per tileset with 16 tilesets per cluster)
+            //  8 bits 20-27: collision info (256 collision types overall)
+            //  4 bits 28-31: reserved for future use (e.g. flipX, flipY, animation frame, etc.)
+            val tileIdx = (clusterIndex and 0xf) or ((tileId and 0xffff) shl 4) or ((collision and 0xff) shl 20)
+            stackedTileMapData[tileIndex].add(tileIdx)
+            stackedTileMapPopulated = true
         }
     }
 }
