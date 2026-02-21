@@ -470,6 +470,16 @@ class AssetLevelMapExporter(
 
             chunkInfo["ls"] = chunkLevelMap
 
+            // Delete all tiles with value 0 from the stacked tile map data - they are not needed since 0 is the default value for empty cells
+            stackedTileMapData.forEach { stackedTiles ->
+                for (i in stackedTiles.size - 1 downTo 0) {
+                    val tileIndex = stackedTiles[i] and 0xffffff0  // Get bits 4-19 and 20-27 for tile index and collision info - ignoring only chunk index in bits 0-3
+                    if (tileIndex == 0) {
+                        stackedTiles.removeAt(i)
+                    }
+                }
+            }
+
             // Flatten collision info for each stacked tile list into the first tile entry
             stackedTileMapData.forEach { stackedTiles ->
                 stackedTiles.reversed().forEach { tile ->
