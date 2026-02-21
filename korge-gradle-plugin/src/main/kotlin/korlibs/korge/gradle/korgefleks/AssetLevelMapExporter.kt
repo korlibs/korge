@@ -14,8 +14,6 @@ class AssetLevelMapExporter(
     private val assetInfo: LinkedHashMap<String, Any>,
     private val amountOfTiles: Int
 ) {
-    private val stackSize = 10  // Max number of stacked tiles per cell
-
     private val levelDataDir = gameResourcesDir.resolve("level_data")
     private val targetCollisionShapesFile = levelDataDir.resolve("collision_shapes.png")
     private lateinit var ldtkPath: File
@@ -325,6 +323,8 @@ class AssetLevelMapExporter(
 
             // Copy over tile set files for collision shapes to level data directory - this is needed to load the tile set in the game for processing the collision shapes of the tiles
             val sourceCollisionShapesFile = ldtkPath.resolve(collisionTileSetFileName)
+            // Sanity check if source collision shapes file exists
+            if (!sourceCollisionShapesFile.exists()) error("Collision shapes file '$collisionTileSetFileName' not found in path '${ldtkPath.path}'!")
             sourceCollisionShapesFile.copyTo(targetCollisionShapesFile, overwrite = true)
         }
 
