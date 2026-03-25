@@ -379,9 +379,9 @@ class AssetLevelMapExporter(
                 when {
                     entityInstances.isNotEmpty() -> {
                         entityInstances.forEach { ldtkEntity ->
-                            // Put all entity configs into one JSON file per chunk as list with local game object counter
+                            // Put all entity blueprints into one JSON file per chunk as list with local game object counter
                             val entityName = ldtkEntity["__identifier"]?.let { it as String } ?: "undefined_entity"
-                            // Load all entity configs by first checking if field 'entityBlueprint' exists
+                            // Load all entity blueprints by first checking if field 'entityBlueprint' exists
                             val ldtkEntities = ldtkEntity["fieldInstances"] as List<Map<String, Any?>>
 
                             if (ldtkEntities.firstOrNull { it["__identifier"] == "entityBlueprint" } != null) {
@@ -393,9 +393,9 @@ class AssetLevelMapExporter(
                                         // Add other game objects with a unique name as identifier
                                         "${chunkName}_${entityName}_${gameObjectCnt++}"
                                     }
-                                // Add entity config type
+                                // Add entity blueprint type
                                 val entityBlueprintField = ldtkEntities.first { it["__identifier"] == "entityBlueprint" }
-                                val entityBlueprintType = entityBlueprintField["__value"]?.let { it as String } ?: error("Entity config field '__value' is null for entity '$entityName' in chunk '$chunkName'!")
+                                val entityBlueprintType = entityBlueprintField["__value"]?.let { it as String } ?: error("Entity blueprint field '__value' is null for entity '$entityName' in chunk '$chunkName'!")
 
                                 val chunkEntity = mutableMapOf<String, Any>()
                                 chunkEntities.add(chunkEntity)
