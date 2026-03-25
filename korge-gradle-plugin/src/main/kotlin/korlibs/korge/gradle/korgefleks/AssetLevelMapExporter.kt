@@ -381,10 +381,10 @@ class AssetLevelMapExporter(
                         entityInstances.forEach { ldtkEntity ->
                             // Put all entity configs into one JSON file per chunk as list with local game object counter
                             val entityName = ldtkEntity["__identifier"]?.let { it as String } ?: "undefined_entity"
-                            // Load all entity configs by first checking if field 'entityConfig' exists
+                            // Load all entity configs by first checking if field 'entityBlueprint' exists
                             val ldtkEntities = ldtkEntity["fieldInstances"] as List<Map<String, Any?>>
 
-                            if (ldtkEntities.firstOrNull { it["__identifier"] == "entityConfig" } != null) {
+                            if (ldtkEntities.firstOrNull { it["__identifier"] == "entityBlueprint" } != null) {
                                 val gameObjectName: String =
                                     if ((ldtkEntity["__tags"] as List<String>).firstOrNull { it == "unique" } != null) {
                                         // Add scripts without unique count value - they are unique by name because they exist only once
@@ -394,12 +394,12 @@ class AssetLevelMapExporter(
                                         "${chunkName}_${entityName}_${gameObjectCnt++}"
                                     }
                                 // Add entity config type
-                                val entityConfigField = ldtkEntities.first { it["__identifier"] == "entityConfig" }
-                                val entityConfigType = entityConfigField["__value"]?.let { it as String } ?: error("Entity config field '__value' is null for entity '$entityName' in chunk '$chunkName'!")
+                                val entityBlueprintField = ldtkEntities.first { it["__identifier"] == "entityBlueprint" }
+                                val entityBlueprintType = entityBlueprintField["__value"]?.let { it as String } ?: error("Entity config field '__value' is null for entity '$entityName' in chunk '$chunkName'!")
 
                                 val chunkEntity = mutableMapOf<String, Any>()
                                 chunkEntities.add(chunkEntity)
-                                chunkEntity["type"] = entityConfigType
+                                chunkEntity["type"] = entityBlueprintType
                                 chunkEntity["name"] = gameObjectName
 
                                 // Add position of entity = (chunk position in the level) + (position within the chunk) + (pivot point)
@@ -421,7 +421,7 @@ class AssetLevelMapExporter(
                                 // Add all other fields of entity
                                 ldtkEntities.forEach { field ->
                                     val fieldName = field["__identifier"] as String
-                                    if (fieldName != "entityConfig") {
+                                    if (fieldName != "entityBlueprint") {
                                         chunkEntity[fieldName] = field["__value"] ?: error("Entity field '__value' is null for field '$fieldName' in entity '$entityName' of chunk '$chunkName'!")
                                     }
                                 }
@@ -429,7 +429,7 @@ class AssetLevelMapExporter(
                                 if ((ldtkEntity["__tags"] as List<String>).firstOrNull { it == "gameobject" } != null) {
                                     chunkSpawnEntities.add(gameObjectName)
                                 }
-                            } else println("ERROR: Game object with name '${entityName}' has no field 'entityConfig'!")
+                            } else println("ERROR: Game object with name '${entityName}' has no field 'entityBlueprint'!")
                         }
                     }
 
