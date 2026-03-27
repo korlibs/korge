@@ -291,10 +291,10 @@ class AssetLevelMapExporter(
         }
 
         // Save indexes of border chunks
-        var minChunkX = 0
-        var minChunkY = 0
-        var maxChunkX = 0
-        var maxChunkY = 0
+        var minChunkX = Int.MAX_VALUE
+        var minChunkY = Int.MAX_VALUE
+        var maxChunkX = Int.MIN_VALUE
+        var maxChunkY = Int.MIN_VALUE
 
         // Get size of grid-vania map
         gridVaniaMap.forEach { (pair, _) ->
@@ -466,7 +466,7 @@ class AssetLevelMapExporter(
                 }
             }
 
-            // chunk 0 is not a valid chunk number and indicates "no" chunk, so we use 0 as default value for non-existing neighboring chunks
+            // chunk -1 is not a valid chunk number and indicates "no" chunk, so we use -1 as default value for non-existing neighboring chunks
             val chunkTop: Int = gridVaniaMapNormalized[Pair(chunkNormalizedX, chunkNormalizedY - 1)] ?: -1
             val chunkBottom: Int = gridVaniaMapNormalized[Pair(chunkNormalizedX, chunkNormalizedY + 1)] ?: -1
             val chunkLeft: Int = gridVaniaMapNormalized[Pair(chunkNormalizedX - 1, chunkNormalizedY)] ?: -1
