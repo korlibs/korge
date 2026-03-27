@@ -285,27 +285,40 @@ class AssetLevelMapExporter(
         ldtkLevels.forEach { ldtkLevel ->
             val chunkName = ldtkLevel["identifier"] as String
             val chunkNumber = chunkName.substringAfterLast("_").toIntOrNull() ?: error("Chunk name '$chunkName' does not contain a valid chunk number!")
-            val levelX: Int = ldtkLevel["worldX"] as Int / levelWidth
-            val levelY: Int = ldtkLevel["worldY"] as Int / levelHeight
-            gridVaniaMap[Pair(levelX, levelY)] = chunkNumber
+            val chunkX: Int = ldtkLevel["worldX"] as Int / levelWidth
+            val chunkY: Int = ldtkLevel["worldY"] as Int / levelHeight
+            gridVaniaMap[Pair(chunkX, chunkY)] = chunkNumber
         }
 
-        var maxLevelX = 0
-        var maxLevelY = 0
+        // Save indexes of border chunks
+        var minChunkX = 0
+        var minChunkY = 0
+        var maxChunkX = 0
+        var maxChunkY = 0
 
         // Get size of grid-vania map
         gridVaniaMap.forEach { (pair, _) ->
-            val levelX = pair.first
-            val levelY = pair.second
-            if (levelX > maxLevelX) maxLevelX = levelX
-            if (levelY > maxLevelY) maxLevelY = levelY
+            val chunkX = pair.first
+            val chunkY = pair.second
+            if (chunkX > maxChunkX) maxChunkX = chunkX
+            if (chunkX < minChunkX) minChunkX = chunkX
+            if (chunkY > maxChunkY) maxChunkY = chunkY
+            if (chunkY < minChunkY) minChunkY = chunkY
+        }
+
+        // Normalize chunk indexes of gridVania array
+        val gridVaniaMapNormalized = mutableMapOf<Pair<Int, Int>, Int>()
+        gridVaniaMap.forEach { (pair, chunkNumber) ->
+            val chunkX = pair.first - minChunkX
+            val chunkY = pair.second - minChunkY
+            gridVaniaMapNormalized[Pair(chunkX, chunkY)] = chunkNumber
         }
 
         // Save common level map data
         val levelMapInfo = mutableMapOf<String, Any>()
         levelMapInfo["v"] = listOf(1, 0, 1)
-        levelMapInfo["x"] = maxLevelX + 1  // Add 1 to get the total width and height of the grid-vania map
-        levelMapInfo["y"] = maxLevelY + 1
+        levelMapInfo["x"] = maxChunkX - minChunkX + 1  // Add 1 to get the total width and height of the grid-vania map
+        levelMapInfo["y"] = maxChunkY - minChunkY + 1
         levelMapInfo["w"] = defaultLevelWidth / defaultGridSize
         levelMapInfo["h"] = defaultLevelHeight / defaultGridSize
         levelMapInfo["t"] = defaultGridSize
@@ -342,14 +355,15 @@ class AssetLevelMapExporter(
             chunkInfo["s"] = chunkSpawnEntities
 
             // Calculate level position in world grid
-            val levelX: Int = ldtkLevel["worldX"] as Int / levelWidth
-            val levelY: Int = ldtkLevel["worldY"] as Int / levelHeight
+            val chunkX: Int = ldtkLevel["worldX"] as Int / levelWidth
+            val chunkY: Int = ldtkLevel["worldY"] as Int / levelHeight
             val chunkName = ldtkLevel["identifier"] as String
 
-            //println("  Processing '$chunkName' ...")
+            // Normalize chunk indexes
+            val chunkNormalizedX = chunkX - minChunkX
+            val chunkNormalizedY = chunkY - minChunkY
 
-            // Get chunk number from chunk name
-            val chunkNumber = chunkName.substringAfterLast("_").toIntOrNull() ?: error("Chunk name '$chunkName' does not contain a valid chunk number!")
+            //println("  Processing '$chunkName' ...")
 
             val levelGridHeight = (ldtkLevel["pxHei"] as Int) / defaultGridSize  // Level height in tiles
             val levelGridWidth = (ldtkLevel["pxWid"] as Int) / defaultGridSize   // Level width in tiles
@@ -368,7 +382,6 @@ class AssetLevelMapExporter(
             // Go through all layers in reverse order (from background to foreground)
             for (layerIdx in ldtkLevelLayers.size - 1 downTo 0) {
                 val ldtkLayer = ldtkLevelLayers[layerIdx]
-                val layerName = ldtkLayer["__identifier"] as String
                 val layerGridWidth = ldtkLayer["__cWid"] as Int  // Layer width in grid cells
 
                 // Layer contains either auto-tiles or grid-tiles, so add
@@ -405,8 +418,8 @@ class AssetLevelMapExporter(
                                 // Add position of entity = (chunk position in the level) + (position within the chunk) + (pivot point)
                                 // x and y position in pixels relative to the top left corner of the chunk, levelX and levelY are the position of the chunk in the world grid, so they are not needed for entity position within the chunk
                                 // x, y position in pixels
-                                val entityPosX: Int = ((ldtkEntity["px"]?.let { it as List<Int> })?.get(0) ?: error("Entity px is null for entity '$entityName' in chunk '$chunkName'!")) + (levelWidth * levelX)
-                                val entityPosY: Int = ((ldtkEntity["px"]?.let { it as List<Int> })?.get(1) ?: error("Entity py is null for entity '$entityName' in chunk '$chunkName'!")) + (levelHeight * levelY)
+                                val entityPosX: Int = ((ldtkEntity["px"]?.let { it as List<Int> })?.get(0) ?: error("Entity px is null for entity '$entityName' in chunk '$chunkName'!")) + (levelWidth * chunkNormalizedX)
+                                val entityPosY: Int = ((ldtkEntity["px"]?.let { it as List<Int> })?.get(1) ?: error("Entity py is null for entity '$entityName' in chunk '$chunkName'!")) + (levelHeight * chunkNormalizedY)
                                 // pivot within entity width/height [0..1]
                                 val entityPivotX: Float = (ldtkEntity["__pivot"]?.let { it as List<Number> })?.get(0)?.toFloat() ?: error("Entity pivot x is null for entity '$entityName' in chunk '$chunkName'!")
                                 val entityPivotY: Float = (ldtkEntity["__pivot"]?.let { it as List<Number> })?.get(1)?.toFloat() ?: error("Entity pivot y is null for entity '$entityName' in chunk '$chunkName'!")
@@ -454,14 +467,14 @@ class AssetLevelMapExporter(
             }
 
             // chunk 0 is not a valid chunk number and indicates "no" chunk, so we use 0 as default value for non-existing neighboring chunks
-            val chunkTop: Int = gridVaniaMap[Pair(levelX, levelY - 1)] ?: 0
-            val chunkBottom: Int = gridVaniaMap[Pair(levelX, levelY + 1)] ?: 0
-            val chunkLeft: Int = gridVaniaMap[Pair(levelX - 1, levelY)] ?: 0
-            val chunkRight: Int = gridVaniaMap[Pair(levelX + 1, levelY)] ?: 0
+            val chunkTop: Int = gridVaniaMapNormalized[Pair(chunkNormalizedX, chunkNormalizedY - 1)] ?: -1
+            val chunkBottom: Int = gridVaniaMapNormalized[Pair(chunkNormalizedX, chunkNormalizedY + 1)] ?: -1
+            val chunkLeft: Int = gridVaniaMapNormalized[Pair(chunkNormalizedX - 1, chunkNormalizedY)] ?: -1
+            val chunkRight: Int = gridVaniaMapNormalized[Pair(chunkNormalizedX + 1, chunkNormalizedY)] ?: -1
 
             // Chunk position in world grid
-            chunkInfo["x"] = levelX
-            chunkInfo["y"] = levelY
+            chunkInfo["x"] = chunkNormalizedX
+            chunkInfo["y"] = chunkNormalizedY
             // Neighbor chunks
             chunkInfo["t"] = chunkTop
             chunkInfo["b"] = chunkBottom
