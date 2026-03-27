@@ -1063,6 +1063,13 @@ open class KmlGlProxy(parent: KmlGl) : KmlGlFastProxy(parent) {
 		after("vertexAttribPointer", sparams, res)
 		return res
 	}
+    override fun vertexAttribIPointer(index: Int, size: Int, type: Int, stride: Int, pointer: Long) {
+        val sparams = listOf<Any?>(index, size, type, stride, pointer)
+        before("vertexAttribIPointer", sparams)
+        val res = parent.vertexAttribIPointer(index, size, type, stride, pointer)
+        after("vertexAttribIPointer", sparams, res)
+        return res
+    }
 	override fun viewport(x: Int, y: Int, width: Int, height: Int) {
 		val sparams = listOf<Any?>(x, y, width, height)
 		before("viewport", sparams)
@@ -1607,6 +1614,7 @@ open class KmlGlFastProxy(var parent: KmlGl) : KmlGl() {
 	}
 	override fun vertexAttrib4fv(index: Int, v: Buffer) = parent.vertexAttrib4fv(index, v)
 	override fun vertexAttribPointer(index: Int, size: Int, type: Int, normalized: Boolean, stride: Int, pointer: Long) = parent.vertexAttribPointer(index, size, type, normalized, stride, pointer)
+    override fun vertexAttribIPointer(index: Int, size: Int, type: Int, stride: Int, pointer: Long) = parent.vertexAttribIPointer(index, size, type, stride, pointer)
 	override fun viewport(x: Int, y: Int, width: Int, height: Int) = parent.viewport(x, y, width, height)
 
     override fun bindBufferRange(target: Int, index: Int, buffer: Int, offset: Int, size: Int) = parent.bindBufferRange(target, index, buffer, offset, size)
