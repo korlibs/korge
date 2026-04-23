@@ -54,7 +54,12 @@ class KProjectPlugin : Plugin<Project> {
             if (hasTarget(KProjectTarget.JVM)) {
                 jvm().apply {
                     compilations.all {
-                        it.kotlinOptions.jvmTarget = jvmVersion
+                        it.compileTaskProvider.configure { task ->
+                            (task as org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile)
+                                .compilerOptions
+                                .jvmTarget
+                                .set(JvmTarget.fromTarget(jvmVersion))
+                        }
                     }
                     //withJava()
                     testRuns.maybeCreate("test").executionTask.configure {
@@ -66,7 +71,12 @@ class KProjectPlugin : Plugin<Project> {
                 project.plugins.applyOnce("com.android.library")
                 androidTarget().apply {
                     compilations.all {
-                        it.kotlinOptions.jvmTarget = androidJvmVersion
+                        it.compileTaskProvider.configure { task ->
+                            (task as org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile)
+                                .compilerOptions
+                                .jvmTarget
+                                .set(JvmTarget.fromTarget(androidJvmVersion))
+                        }
                     }
                 }
                 project.afterEvaluate {

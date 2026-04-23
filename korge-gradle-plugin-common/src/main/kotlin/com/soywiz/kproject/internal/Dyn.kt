@@ -270,7 +270,7 @@ inline class Dyn(val value: Any?) : Comparable<Dyn> {
         is Number -> toDouble() != 0.0
         is String -> {
             if (extraStrings) {
-                when (value.toLowerCase()) {
+                when (value.lowercase()) {
                     "", "0", "false", "NaN", "null", "undefined", "ko", "no" -> false
                     else -> true
                 }

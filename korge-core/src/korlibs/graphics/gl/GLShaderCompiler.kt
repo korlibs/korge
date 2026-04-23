@@ -115,7 +115,6 @@ internal object GLShaderCompiler {
     }
 }
 
-@SharedImmutable
 val KmlGl.versionString by Extra.PropertyThis<KmlGl, String> {
     when {
         this.variant.isWebGL -> if (this.variant.version == 1) "1.00" else "3.00"
@@ -123,7 +122,6 @@ val KmlGl.versionString by Extra.PropertyThis<KmlGl, String> {
     }
 }
 
-@SharedImmutable
 val KmlGl.versionInt by Extra.PropertyThis<KmlGl, Int> {
     Regex("(\\d+\\.\\d+)").find(versionString)?.value?.replace(".", "")?.trim()?.toIntOrNull() ?: 100
 }

@@ -2,8 +2,8 @@ package korlibs.korge.gradle.util
 
 object Hex {
 	private const val DIGITS = "0123456789ABCDEF"
-	val DIGITS_UPPER = DIGITS.toUpperCase()
-	val DIGITS_LOWER = DIGITS.toLowerCase()
+	val DIGITS_UPPER = DIGITS.uppercase()
+	val DIGITS_LOWER = DIGITS.lowercase()
 
 	fun decodeChar(c: Char): Int = when (c) {
 		in '0'..'9' -> c - '0'

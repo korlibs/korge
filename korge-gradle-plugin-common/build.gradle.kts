@@ -33,8 +33,8 @@ java {
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile::class).all {
     compilerOptions {
         jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.fromTarget(jversion))
-        apiVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.fromVersion("1.7"))
-        languageVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.fromVersion("1.7"))
+        apiVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.fromVersion("2.1"))
+        languageVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.fromVersion("2.1"))
     }
 }
 

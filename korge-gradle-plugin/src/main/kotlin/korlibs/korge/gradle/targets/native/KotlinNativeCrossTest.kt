@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION_ERROR", "DEPRECATION")
+
 package korlibs.korge.gradle.targets.native
 
 import korlibs.korge.gradle.targets.*

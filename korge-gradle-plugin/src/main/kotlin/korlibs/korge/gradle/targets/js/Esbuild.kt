@@ -31,7 +31,7 @@ fun Project.configureErrorableEsbuild() {
 
     val env by lazy { org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin.apply(project.rootProject).requireConfigured() }
     val ENV_PATH by lazy {
-        val NODE_PATH = File(env.nodeExecutable).parent
+        val NODE_PATH = File(env.executable).parent
         val PATH_SEPARATOR = File.pathSeparator
         val OLD_PATH = System.getenv("PATH")
         "$NODE_PATH$PATH_SEPARATOR$OLD_PATH"
@@ -45,7 +45,7 @@ fun Project.configureErrorableEsbuild() {
         doFirst {
             //val nodeDir = env.nodeBinDir
             val nodeDir = env.dir
-            val file1: File = File(env.nodeExecutable)
+            val file1: File = File(env.executable)
             val file2: File? = File(nodeDir, "lib/node_modules/npm/bin/npm-cli.js").takeIf { it.exists() }
             val file3: File? = File(nodeDir, "node_modules/npm/bin/npm-cli.js").takeIf { it.exists() }
             val npmCmd = arrayOf<File>(

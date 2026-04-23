@@ -68,7 +68,7 @@ class CGFloat(val value: Double) : Number(), NativeMapped {
     }
 
     override fun toByte(): Byte = value.toInt().toByte()
-    override fun toChar(): Char = value.toChar()
+    override fun toChar(): Char = value.toInt().toChar()
     override fun toDouble(): Double = value.toDouble()
     override fun toFloat(): Float = value.toFloat()
     override fun toInt(): Int = value.toInt()
@@ -985,7 +985,7 @@ open class NSObject(val id: Long) : IntegerType(8, id, false), NativeMapped {
     }
 
     override fun toByte(): Byte = id.toByte()
-    override fun toChar(): Char = id.toChar()
+    override fun toChar(): Char = id.toInt().toChar()
     override fun toShort(): Short = id.toShort()
     override fun toInt(): Int = id.toInt()
     override fun toLong(): Long = id

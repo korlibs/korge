@@ -44,10 +44,8 @@ fun Project.configureJvm(projectType: ProjectType) {
             //it.useJUnitPlatform()
         }
     }
-	project.tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile::class.java).allThis {
-        kotlinOptions {
-            this.jvmTarget = korge.jvmTarget
-        }
+  project.tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile::class.java).configureEach {
+    it.compilerOptions.jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.fromTarget(korge.jvmTarget))
     }
 
     if (projectType.isExecutable) {

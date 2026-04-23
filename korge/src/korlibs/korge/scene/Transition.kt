@@ -119,7 +119,6 @@ fun Transition.withEasing(easing: Easing) = object : Transition {
 }
 
 /** A [Transition] that will blend [prev] and [next] by adjusting its alphas */
-@SharedImmutable
 val AlphaTransition = Transition("AlphaTransition") { ctx, prev, next, ratio ->
 	val prevAlpha = prev.alphaF
 	val nextAlpha = next.alphaF

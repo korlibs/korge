@@ -13,7 +13,6 @@ import korlibs.math.geom.shape.*
 import korlibs.math.geom.vector.*
 import kotlin.native.concurrent.*
 
-@SharedImmutable
 private val logger = Logger("RenderContext2D")
 
 /**

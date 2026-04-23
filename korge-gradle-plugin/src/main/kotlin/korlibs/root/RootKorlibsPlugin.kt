@@ -25,6 +25,7 @@ import org.jetbrains.kotlin.gradle.targets.js.npm.*
 import org.jetbrains.kotlin.gradle.targets.js.testing.*
 import org.jetbrains.kotlin.gradle.targets.js.testing.karma.*
 import org.jetbrains.kotlin.gradle.targets.js.testing.mocha.*
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.*
 import java.io.*
 import java.nio.file.*
@@ -121,9 +122,6 @@ object RootKorlibsPlugin {
 
     fun Project.initNodeJSFixes() {
         plugins.applyOnce<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin>()
-        rootProject.plugins.withType(org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin::class.java, Action {
-            rootProject.the<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension>().nodeVersion = project.nodeVersion
-        })
         // https://youtrack.jetbrains.com/issue/KT-48273
         afterEvaluate {
             rootProject.extensions.configure(org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension::class.java, Action {
@@ -238,7 +236,7 @@ object RootKorlibsPlugin {
                 }
 
                 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile::class.java).configureEach {
-                    it.kotlinOptions.suppressWarnings = true
+                    it.compilerOptions.suppressWarnings.set(true)
                 }
 
                 afterEvaluate {
@@ -272,12 +270,17 @@ object RootKorlibsPlugin {
 
                     metadata {
                         compilations.allThis {
-                            kotlinOptions.suppressWarnings = true
+                            // Suppress warnings is configured globally for compile tasks above.
                         }
                     }
                     jvm {
                         compilations.allThis {
-                            kotlinOptions.jvmTarget = GRADLE_JAVA_VERSION_STR
+                            compileTaskProvider.configure {
+                                (it as org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile)
+                                    .compilerOptions
+                                    .jvmTarget
+                                    .set(JvmTarget.fromTarget(GRADLE_JAVA_VERSION_STR))
+                            }
                             //kotlinOptions.freeCompilerArgs.add("-Xno-param-assertions")
                             //kotlinOptions.
 
