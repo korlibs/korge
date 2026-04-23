@@ -85,10 +85,11 @@ java {
 }
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile::class).all {
-    kotlinOptions {
-        jvmTarget = jversion
-        apiVersion = "1.7"
-        languageVersion = "1.7"
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.fromTarget(jversion))
+        apiVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.fromVersion("1.7"))
+        languageVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.fromVersion("1.7"))
+        suppressWarnings.set(true)
     }
 }
 
@@ -120,9 +121,6 @@ dependencies {
     //implementation(project(":korge-reload-agent"))
 }
 
-tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile::class).configureEach {
-    kotlinOptions.suppressWarnings = true
-}
 
 //def publishAllPublications = false
 

@@ -304,7 +304,7 @@ inline class Dyn(val value: Any?) : Comparable<Dyn> {
     fun toChar(): Char = when {
         value is Char -> value
         value is String && (value.length == 1) -> value.first()
-        else -> toNumber().toChar()
+        else -> toNumber().toInt().toChar()
     }
 
     fun toShort(): Short = toNumber().toShort()

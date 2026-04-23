@@ -681,12 +681,11 @@ open class KorgeExtension(
 	fun dependencyCInterops(name: String, targets: List<String>) = project {
 		cinterops += CInteropTargets(name, targets)
 		for (target in targets) {
-			((kotlin.targets.findByName(target) as AbstractKotlinTarget).compilations["main"] as KotlinNativeCompilation).apply {
-				cinterops.apply {
-					maybeCreate(name).apply {
-					}
-				}
-			}
+			val nativeTarget = kotlin.targets.findByName(target) as? KotlinNativeTarget
+				?: error("Target '$target' is not a Kotlin/Native target")
+			val mainCompilation = nativeTarget.compilations.findByName("main") as? KotlinNativeCompilation
+				?: error("Target '$target' has no 'main' native compilation")
+			mainCompilation.cinterops.maybeCreate(name)
 		}
 	}
 

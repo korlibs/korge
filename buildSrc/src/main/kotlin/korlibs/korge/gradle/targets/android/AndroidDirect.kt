@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION_ERROR", "DEPRECATION")
+
 package korlibs.korge.gradle.targets.android
 
 import com.android.build.api.dsl.*
@@ -13,6 +15,8 @@ import korlibs.korge.gradle.util.*
 import org.gradle.api.*
 import org.gradle.api.tasks.*
 import org.gradle.configurationcache.extensions.*
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 import java.io.*
 
 fun Project.configureAndroidDirect(projectType: ProjectType, isKorge: Boolean) {
@@ -38,7 +42,11 @@ fun Project.configureAndroidDirect(projectType: ProjectType, isKorge: Boolean) {
         publishLibraryVariantsGroupedByFlavor = true
         //this.attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.androidJvm)
         compilations.allThis {
-            kotlinOptions.jvmTarget = ANDROID_JAVA_VERSION_STR
+            compileTaskProvider.configure {
+                (it as KotlinJvmCompile).compilerOptions {
+                    jvmTarget.set(JvmTarget.fromTarget(ANDROID_JAVA_VERSION_STR))
+                }
+            }
         }
         AddFreeCompilerArgs.addFreeCompilerArgs(project, this)
     }

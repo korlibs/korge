@@ -1,13 +1,11 @@
 import korlibs.root.*
-import org.jetbrains.kotlin.backend.common.serialization.*
-import org.jetbrains.kotlin.gradle.tasks.*
 
 plugins {
     //id "com.dorongold.task-tree" version "2.1.1"
     // ./gradlew :kds:compileKotlinJs taskTree
 }
 
-korlibs.root.RootKorlibsPlugin.doInit(rootProject)
+RootKorlibsPlugin.doInit(rootProject)
 
 // Used to verify we are publishing with iOS references even if we do the publishing from another machine like windows or linux
 tasks {
