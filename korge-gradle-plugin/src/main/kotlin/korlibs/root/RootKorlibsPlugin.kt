@@ -21,6 +21,8 @@ import org.gradle.api.tasks.*
 import org.gradle.api.tasks.testing.*
 import org.jetbrains.dokka.gradle.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
+import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsEnvSpec
+import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsPlugin
 import org.jetbrains.kotlin.gradle.targets.js.npm.*
 import org.jetbrains.kotlin.gradle.targets.js.testing.*
 import org.jetbrains.kotlin.gradle.targets.js.testing.karma.*
@@ -29,7 +31,6 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.*
 import java.io.*
 import java.nio.file.*
-import kotlin.io.path.*
 
 object RootKorlibsPlugin {
     val KORGE_GROUP = "com.soywiz.korge"
@@ -122,10 +123,16 @@ object RootKorlibsPlugin {
 
     fun Project.initNodeJSFixes() {
         plugins.applyOnce<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin>()
+        rootProject.plugins.withType(NodeJsPlugin::class.java, Action {
+            rootProject.extensions.configure(NodeJsEnvSpec::class.java, Action { nodeEnv ->
+                nodeEnv.version.set(project.nodeVersion)
+                nodeEnv.download.set(true)
+            })
+        })
         // https://youtrack.jetbrains.com/issue/KT-48273
         afterEvaluate {
-            rootProject.extensions.configure(org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension::class.java, Action {
-                //it.versions.webpackDevServer.version = "4.0.0"
+            rootProject.extensions.configure(org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension::class.java, Action { nodeExt ->
+                //nodeExt.versions.webpackDevServer.version = "4.0.0"
             })
         }
     }

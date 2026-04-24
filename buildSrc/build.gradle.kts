@@ -81,7 +81,13 @@ if (System.getenv("FORCED_VERSION") != null) {
             .directory(rootDir)
             .redirectErrorStream(true)
             .start()
-        gitVersion = process.inputStream.bufferedReader().readText().trim()
+        val describeOutput = process.inputStream.bufferedReader().readText().trim()
+        val exitCode = process.waitFor()
+        val describePattern = Regex("""^.+-dirty$""")
+        val hasExpectedGitSections = describePattern.matches(describeOutput)
+        if (exitCode == 0 && describeOutput.isNotBlank() && hasExpectedGitSections) {
+            gitVersion = describeOutput
+        }
     } catch (e: Throwable) {
         System.err.println(e.message)
     }
