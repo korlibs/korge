@@ -12,6 +12,7 @@ import java.nio.IntBuffer
 
 open class NativeKgl constructor(private val gl: INativeGL) : KmlGl() {
     override val variant: GLVariant = GLVariant.JVM
+    private var uniformBuffersKnownUnsupported: Boolean = false
 
     override fun activeTexture(texture: Int): Unit = gl.glActiveTexture(texture)
     override fun attachShader(program: Int, shader: Int): Unit = gl.glAttachShader(program, shader)
@@ -172,14 +173,64 @@ open class NativeKgl constructor(private val gl: INativeGL) : KmlGl() {
         gl.glRenderbufferStorageMultisample(target, samples, internalformat, width, height)
     }
 
-    override val isUniformBuffersSupported: Boolean get() = true
+    private val isUniformBuffersSupportedDetected: Boolean by lazy {
+        // Some CI/Xvfb Linux setups expose a GL context where UBO entry points are not available.
+        // Only enable UBOs when the context version/extensions explicitly advertise support.
+        val (major, minor) = parseOpenGlVersion(getString(KmlGl.VERSION))
+        val advertisedSupport = (major > 3 || (major == 3 && minor >= 1)) ||
+            "GL_ARB_uniform_buffer_object" in extensions ||
+            "GL_ES_VERSION_3_0" in extensions
+        advertisedSupport && probeUniformBufferEntryPoints()
+    }
+
+    private fun probeUniformBufferEntryPoints(): Boolean {
+        return try {
+            // Program 0 is invalid for real use, but enough to validate native symbol wiring.
+            gl.glGetUniformBlockIndex(0, "__korge_ubo_probe__")
+            true
+        } catch (t: Throwable) {
+            !isUnsupportedUniformBufferError(t)
+        }
+    }
+    override val isUniformBuffersSupported: Boolean get() = isUniformBuffersSupportedDetected && !uniformBuffersKnownUnsupported
 
     override fun bindBufferRange(target: Int, index: Int, buffer: Int, offset: Int, size: Int) {
-        return gl.glBindBufferRange(target, index, buffer, NativeLong(offset.toLong()), NativeLong(size.toLong()))
+        if (!isUniformBuffersSupported) return
+        try {
+            gl.glBindBufferRange(target, index, buffer, NativeLong(offset.toLong()), NativeLong(size.toLong()))
+        } catch (t: Throwable) {
+            if (isUnsupportedUniformBufferError(t)) {
+                uniformBuffersKnownUnsupported = true
+                return
+            }
+            throw t
+        }
     }
-    override fun getUniformBlockIndex(program: Int, name: String): Int = gl.glGetUniformBlockIndex(program, name)
-    override fun uniformBlockBinding(program: Int, uniformBlockIndex: Int, uniformBlockBinding: Int) =
-        gl.glUniformBlockBinding(program, uniformBlockIndex, uniformBlockBinding)
+    override fun getUniformBlockIndex(program: Int, name: String): Int {
+        if (!isUniformBuffersSupported) return -1
+        return try {
+            gl.glGetUniformBlockIndex(program, name)
+        } catch (t: Throwable) {
+            if (isUnsupportedUniformBufferError(t)) {
+                uniformBuffersKnownUnsupported = true
+                -1
+            } else {
+                throw t
+            }
+        }
+    }
+    override fun uniformBlockBinding(program: Int, uniformBlockIndex: Int, uniformBlockBinding: Int) {
+        if (!isUniformBuffersSupported || uniformBlockIndex < 0) return
+        try {
+            gl.glUniformBlockBinding(program, uniformBlockIndex, uniformBlockBinding)
+        } catch (t: Throwable) {
+            if (isUnsupportedUniformBufferError(t)) {
+                uniformBuffersKnownUnsupported = true
+                return
+            }
+            throw t
+        }
+    }
 
     override var isVertexArraysSupported: Boolean = true
 
@@ -202,5 +253,17 @@ open class NativeKgl constructor(private val gl: INativeGL) : KmlGl() {
     override fun bindVertexArray(array: Int): Unit { gl.glBindVertexArray(array) }
 }
 
+private fun parseOpenGlVersion(versionString: String): Pair<Int, Int> {
+    val match = Regex("(\\d+)\\.(\\d+)").find(versionString) ?: return 0 to 0
+    return (match.groupValues[1].toIntOrNull() ?: 0) to (match.groupValues[2].toIntOrNull() ?: 0)
+}
 
-private const val GL_NUM_EXTENSIONS = 0x821D
+private fun isUnsupportedUniformBufferError(t: Throwable): Boolean {
+    var current: Throwable? = t
+    while (current != null) {
+        if (current is UnsupportedOperationException && (current.message?.contains("uniform buffers") == true)) return true
+        current = current.cause
+    }
+    return false
+}
+

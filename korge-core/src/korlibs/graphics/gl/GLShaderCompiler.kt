@@ -7,7 +7,7 @@ import korlibs.kgl.*
 import korlibs.logger.*
 import kotlin.native.concurrent.*
 
-internal data class GLProgramInfo(var programId: Int, var vertexId: Int, var fragmentId: Int, val blocks: List<UniformBlock>, val config: GlslConfig) {
+internal data class GLProgramInfo(var programId: Int, var vertexId: Int, var fragmentId: Int, val blocks: List<UniformBlock>, val config: GlslConfig, val usedUniformBlocks: Boolean) {
     private val blocksByFixedLocation = blocks.associateBy { it.fixedLocation }
     private val maxBlockId = (blocks.maxOfOrNull { it.fixedLocation } ?: -1) + 1
     val uniforms: Array<UniformsRef?> = Array(maxBlockId + 1) { blocksByFixedLocation[it]?.let { UniformsRef(it) } }
@@ -72,7 +72,7 @@ internal object GLShaderCompiler {
         gl.attachShader(id, vertexShaderId)
         gl.linkProgram(id)
         val linkStatus = gl.getProgramiv(id, gl.LINK_STATUS)
-        return GLProgramInfo(id, vertexShaderId, fragmentShaderId, program.uniformBlocks, finalConfig)
+        return GLProgramInfo(id, vertexShaderId, fragmentShaderId, program.uniformBlocks, finalConfig, finalConfig.useUniformBlocks)
     }
 
     fun createShaderWithConfigs(gl: KmlGl, program: Program, debugName: String?, configs: List<GlslConfig>): Triple<Int, Int, GlslConfig> {

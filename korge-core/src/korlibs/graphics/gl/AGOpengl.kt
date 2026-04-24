@@ -123,8 +123,15 @@ class AGOpengl(val gl: KmlGl, var context: KmlGlContext? = null) : AG() {
             logger.info { "gl.versionInt=${gl.versionInt}" }
         }
 
-        val nprogram: GLBaseProgram = map.getOrPut(program) {
-            GLBaseProgram(glGlobalState, GLShaderCompiler.programCreate(gl, this.glslConfig, program, debugName = program.name)).also { baseProgram ->
+        var nprogram: GLBaseProgram? = map[program]
+        if (nprogram != null && nprogram.programInfo.usedUniformBlocks && !gl.isUniformBuffersSupported) {
+            // Rebuild with non-UBO shaders if runtime capability probes downgraded support.
+            nprogram.delete()
+            map.remove(program)
+            nprogram = null
+        }
+        if (nprogram == null) {
+            nprogram = GLBaseProgram(glGlobalState, GLShaderCompiler.programCreate(gl, this.glslConfig, program, debugName = program.name)).also { baseProgram ->
                 baseProgram.use()
 
                 val programInfo = baseProgram.programInfo
@@ -135,19 +142,23 @@ class AGOpengl(val gl: KmlGl, var context: KmlGlContext? = null) : AG() {
                     gl.uniform1i(location, it.index)
                 }
 
-                if (programInfo.config.useUniformBlocks) {
+                if (gl.isUniformBuffersSupported && programInfo.usedUniformBlocks) {
                     program.uniformBlocks.fastForEach {
                         val index = gl.getUniformBlockIndex(programId, it.name)
-                        gl.uniformBlockBinding(programId, index, it.fixedLocation)
+                        if (index >= 0) {
+                            gl.uniformBlockBinding(programId, index, it.fixedLocation)
+                        }
                     }
                 }
             }
+            map[program] = nprogram
         }
         //nprogram.agProgram._native = nprogram.
         //nprogram.
-        if (currentProgram != nprogram) {
-            currentProgram = nprogram
-            nprogram.use()
+        val activeProgram = nprogram ?: error("Program should have been created for ${program.name}")
+        if (currentProgram != activeProgram) {
+            currentProgram = activeProgram
+            activeProgram.use()
         }
     }
 
@@ -624,8 +635,7 @@ class AGOpengl(val gl: KmlGl, var context: KmlGlContext? = null) : AG() {
 
         val glProgramInfo = glProgram.programInfo
         uniformBlocks.fastForEachBlock { index, block, buffer, valueIndex ->
-            //if (gl.isUniformBuffersSupported && glProgram.programInfo.config.useUniformBlocks) {
-            if (glProgram.programInfo.config.useUniformBlocks) {
+            if (gl.isUniformBuffersSupported && glProgram.programInfo.usedUniformBlocks) {
                 //println("isUniformBuffersSupported!!")
                 val buffer = bindBuffer(buffer, AGBufferKind.UNIFORM)
                 gl.bindBufferRange(KmlGl.UNIFORM_BUFFER, block.block.fixedLocation, buffer?.id ?: -1, valueIndex * block.blockSize, block.blockSize)
