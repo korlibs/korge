@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION_ERROR", "DEPRECATION")
+
 package korlibs.root
 
 import korlibs.*
@@ -26,6 +28,7 @@ import org.jetbrains.kotlin.gradle.targets.js.testing.*
 import org.jetbrains.kotlin.gradle.targets.js.testing.karma.*
 import org.jetbrains.kotlin.gradle.targets.js.testing.mocha.*
 import org.jetbrains.kotlin.gradle.tasks.*
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.io.*
 import java.nio.file.*
 import kotlin.io.path.*
@@ -183,7 +186,8 @@ object RootKorlibsPlugin {
     }
 
     fun Project.initPlugins() {
-        plugins.apply("java")
+        // java-base keeps lifecycle tasks without conflicting with kotlin-multiplatform
+        plugins.apply("java-base")
         plugins.apply("kotlin-multiplatform")
         plugins.apply("signing")
         plugins.apply("maven-publish")
@@ -277,7 +281,12 @@ object RootKorlibsPlugin {
                     }
                     jvm {
                         compilations.allThis {
-                            kotlinOptions.jvmTarget = GRADLE_JAVA_VERSION_STR
+                            compileTaskProvider.configure {
+                                (it as org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile)
+                                    .compilerOptions
+                                    .jvmTarget
+                                    .set(JvmTarget.fromTarget(GRADLE_JAVA_VERSION_STR))
+                            }
                             //kotlinOptions.freeCompilerArgs.add("-Xno-param-assertions")
                             //kotlinOptions.
 

@@ -13,6 +13,8 @@ import korlibs.korge.gradle.util.*
 import org.gradle.api.*
 import org.gradle.api.tasks.*
 import org.gradle.configurationcache.extensions.*
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 import java.io.*
 
 fun Project.configureAndroidDirect(projectType: ProjectType, isKorge: Boolean) {
@@ -38,7 +40,11 @@ fun Project.configureAndroidDirect(projectType: ProjectType, isKorge: Boolean) {
         publishLibraryVariantsGroupedByFlavor = true
         //this.attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.androidJvm)
         compilations.allThis {
-            kotlinOptions.jvmTarget = ANDROID_JAVA_VERSION_STR
+            compileTaskProvider.configure {
+                (it as KotlinJvmCompile).compilerOptions {
+                    jvmTarget.set(JvmTarget.fromTarget(ANDROID_JAVA_VERSION_STR))
+                }
+            }
         }
         AddFreeCompilerArgs.addFreeCompilerArgs(project, this)
     }
@@ -54,15 +60,15 @@ fun Project.configureAndroidDirect(projectType: ProjectType, isKorge: Boolean) {
     //val generated = AndroidGenerated(korge)
 
     dependencies {
-        if (SemVer(BuildVersions.KOTLIN) >= SemVer("1.9.0")) {
+        if (SemVer(BuildVersions.KOTLIN) >= SemVer("2.3.20")) {
             add("androidUnitTestImplementation", "org.jetbrains.kotlin:kotlin-test")
         }
         add("androidTestImplementation", "org.jetbrains.kotlin:kotlin-test")
 
         add("androidTestImplementation", "org.jetbrains.kotlin:kotlin-test")
-        add("androidTestImplementation", "androidx.test:core:1.4.0")
-        add("androidTestImplementation", "androidx.test.ext:junit:1.1.2")
-        add("androidTestImplementation", "androidx.test.espresso:espresso-core:3.3.0")
+        add("androidTestImplementation", "androidx.test:core:1.7.0")
+        add("androidTestImplementation", "androidx.test.ext:junit:1.3.0")
+        add("androidTestImplementation", "androidx.test.espresso:espresso-core:3.7.0")
         //androidTestImplementation 'com.android.support.test:runner:1.0.2'
     }
 

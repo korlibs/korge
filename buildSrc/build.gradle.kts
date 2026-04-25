@@ -1,5 +1,5 @@
-
 import org.jetbrains.kotlin.gradle.tasks.*
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.io.StringReader
 import java.util.*
 
@@ -50,13 +50,10 @@ repositories {
     maven { url = uri("https://oss.sonatype.org/content/repositories/snapshots/") }
 }
 
-tasks.withType(KotlinCompile::class).all {
-    kotlinOptions.suppressWarnings = true
-}
-
 tasks.withType(KotlinCompile::class).configureEach {
-    kotlinOptions {
-        jvmTarget = "11"
+    compilerOptions {
+        suppressWarnings.set(true)
+        jvmTarget.set(JvmTarget.JVM_11)
     }
 }
 
@@ -80,11 +77,17 @@ try {
 
 if (System.getenv("FORCED_VERSION") != null) {
     try {
-        gitVersion = Runtime.getRuntime().exec(
-            "git describe --abbrev=8 --tags --dirty",
-            arrayOf(),
-            rootDir
-        ).inputStream.readBytes().toString().trim()
+        val process = ProcessBuilder("git", "describe", "--abbrev=8", "--tags", "--dirty")
+            .directory(rootDir)
+            .redirectErrorStream(true)
+            .start()
+        val describeOutput = process.inputStream.bufferedReader().readText().trim()
+        val exitCode = process.waitFor()
+        val describePattern = Regex("""^.+-dirty$""")
+        val hasExpectedGitSections = describePattern.matches(describeOutput)
+        if (exitCode == 0 && describeOutput.isNotBlank() && hasExpectedGitSections) {
+            gitVersion = describeOutput
+        }
     } catch (e: Throwable) {
         System.err.println(e.message)
     }

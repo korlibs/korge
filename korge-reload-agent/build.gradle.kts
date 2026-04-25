@@ -1,5 +1,7 @@
 import korlibs.korge.gradle.targets.android.*
 import korlibs.root.*
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 
 plugins {
     //id "kotlin" version "1.6.21"
@@ -30,11 +32,11 @@ java {
 }
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile::class).all {
-    kotlinOptions {
-        jvmTarget = jversion
-        apiVersion = "1.6"
-        languageVersion = "1.6"
-        suppressWarnings = true
+    compilerOptions {
+        jvmTarget.set(JvmTarget.fromTarget(jversion))
+        apiVersion.set(KotlinVersion.fromVersion("2.0"))
+        languageVersion.set(KotlinVersion.fromVersion("2.0"))
+        suppressWarnings.set(true)
     }
 }
 

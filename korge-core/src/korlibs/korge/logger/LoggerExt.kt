@@ -18,7 +18,7 @@ fun configureLoggerFromProperties(str: String) {
 	val props = Props.load(str)
 	for ((key, value) in props) {
 		try {
-			Logger(key).level = Logger.Level.valueOf(value.toUpperCase())
+			Logger(key).level = Logger.Level.valueOf(value.uppercase())
 		} catch (e: Throwable) {
 			e.printStackTrace()
 		}

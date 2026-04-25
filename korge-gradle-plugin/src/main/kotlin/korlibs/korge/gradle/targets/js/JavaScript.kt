@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION_ERROR", "DEPRECATION")
+
 package korlibs.korge.gradle.targets.js
 
 import korlibs.korge.gradle.*
@@ -13,21 +15,13 @@ import org.gradle.api.file.*
 import org.gradle.api.tasks.*
 import org.jetbrains.kotlin.gradle.plugin.*
 import org.jetbrains.kotlin.gradle.targets.js.dsl.*
+import org.jetbrains.kotlin.gradle.tasks.Kotlin2JsCompile
 import java.io.*
 
 private object JavaScriptClass
 
 fun Project.configureJavaScript(projectType: ProjectType) {
     if (gkotlin.targets.findByName("js") != null) return
-
-    rootProject.plugins.withType(org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin::class.java).allThis {
-        try {
-            rootProject.the<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension>().nodeVersion =
-                BuildVersions.NODE_JS
-        } catch (e: Throwable) {
-            // Ignore failed because already configured
-        }
-    }
 
     gkotlin.apply {
 		js(KotlinJsCompilerType.IR) {
@@ -38,12 +32,7 @@ fun Project.configureJavaScript(projectType: ProjectType) {
             this.attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.js)
 
 			compilations.allThis {
-				kotlinOptions.apply {
-					sourceMap = korge.sourceMaps
-					//metaInfo = true
-					//moduleKind = "umd"
-					suppressWarnings = korge.supressWarnings
-				}
+        // Handled below for all JS compile tasks
 			}
             configureJsTargetOnce()
             configureJSTestsOnce()
@@ -57,8 +46,9 @@ fun Project.configureJavaScript(projectType: ProjectType) {
 	}
 
     // https://youtrack.jetbrains.com/issue/KT-58187/KJS-IR-Huge-performance-bottleneck-while-generating-sourceMaps-getCannonicalFile#focus=Comments-27-7301819.0-0
-    tasks.withType<org.jetbrains.kotlin.gradle.tasks.Kotlin2JsCompile> {
+    tasks.withType(Kotlin2JsCompile::class.java).allThis {
         kotlinOptions.sourceMap = korge.sourceMaps
+        kotlinOptions.suppressWarnings = korge.supressWarnings
     }
 
     val generatedIndexHtmlDir = File(project.buildDir, "processedResources-www")

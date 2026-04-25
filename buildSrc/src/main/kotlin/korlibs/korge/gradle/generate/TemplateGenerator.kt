@@ -76,7 +76,7 @@ object TemplateGenerator {
     }
 
     fun String.replaceTemplate(kind: String): String {
-        val lkind = kind.toLowerCase()
+        val lkind = kind.lowercase()
         return this
             .replace("FastArrayList", "ArrayList")
             .replace("arrayOfNulls<Any>", "${kind}Array")

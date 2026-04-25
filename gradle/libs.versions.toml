@@ -1,6 +1,6 @@
 [versions]
-jackson = "2.16.1"
-jna = "5.13.0"
+jackson = "2.21.2"
+jna = "5.18.1"
 jcodec = "0.2.5"
 junit = "4.13.2"
 proguard-gradle = "7.2.2"
@@ -9,33 +9,35 @@ proguard-gradle = "7.2.2"
 asm = "9.5"
 jgit = "5.13.1.202206130422-r"
 
-kotlin = "2.0.20"
+korlibs = "6.1.0"
+kotlin = "2.3.21"
 #kotlinx-coroutines = "1.8.1"
-kotlinx-coroutines = "1.9.0-RC.2"
+kotlinx-coroutines = "1.10.2"
 kotlinx-serialization = "1.7.1"
-kotlinx-atomicfu = "0.24.0"
+kotlinx-atomicfu = "0.32.1"
 
 kotlinx-benchmark = "0.4.7"
 dokka = "1.9.20"
 kover = "0.6.1"
-kover-agent = "1.0.761"
+kover-agent = "1.0.775"
 node = "20.12.1"
 android-build-gradle = "8.2.2"
-gson = "2.10.1"
-gradle-publish-plugin = "1.2.1"
+gson = "2.14.0"
+gradle-publish-plugin = "2.1.1"
 # https://repo.maven.apache.org/maven2/org/jetbrains/intellij/deps/intellij-coverage-agent/
 
+
 [libraries]
-korlibs-audio = { module = "com.soywiz:korlibs-audio", version = "6.0.0" }
-korlibs-image = { module = "com.soywiz:korlibs-image", version = "6.0.0" }
-korlibs-inject = { module = "com.soywiz:korlibs-inject", version = "6.0.0" }
-korlibs-template = { module = "com.soywiz:korlibs-template", version = "6.0.0" }
-korlibs-time = { module = "com.soywiz:korlibs-time", version = "6.0.0" }
-korlibs-serialization = { module = "com.soywiz:korlibs-serialization", version = "6.0.0" }
-korlibs-datastructure = { module = "com.soywiz:korlibs-datastructure", version = "6.0.0" }
-korlibs-datastructure-core = { module = "com.soywiz:korlibs-datastructure-core", version = "6.0.0" }
-korlibs-memory = { module = "com.soywiz:korlibs-memory", version = "6.0.0" }
-korlibs-io-stream = { module = "com.soywiz:korlibs-io-stream", version = "6.0.0" }
+korlibs-audio = { module = "org.korge:korlibs-audio", version.ref = "korlibs" }
+korlibs-image = { module = "org.korge:korlibs-image", version.ref = "korlibs" }
+korlibs-inject = { module = "org.korge:korlibs-inject", version.ref = "korlibs" }
+korlibs-template = { module = "org.korge:korlibs-template", version.ref = "korlibs" }
+korlibs-time = { module = "org.korge:korlibs-time", version.ref = "korlibs" }
+korlibs-serialization = { module = "org.korge:korlibs-serialization", version.ref = "korlibs" }
+korlibs-datastructure = { module = "org.korge:korlibs-datastructure", version.ref = "korlibs" }
+korlibs-datastructure-core = { module = "org.korge:korlibs-datastructure-core", version.ref = "korlibs" }
+korlibs-memory = { module = "org.korge:korlibs-memory", version.ref = "korlibs" }
+korlibs-io-stream = { module = "org.korge:korlibs-io-stream", version.ref = "korlibs" }
 jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
 jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson" }
 junit = { module = "junit:junit", version.ref = "junit" }

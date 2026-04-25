@@ -7,7 +7,7 @@ import korlibs.kgl.*
 import korlibs.logger.*
 import kotlin.native.concurrent.*
 
-internal data class GLProgramInfo(var programId: Int, var vertexId: Int, var fragmentId: Int, val blocks: List<UniformBlock>, val config: GlslConfig) {
+internal data class GLProgramInfo(var programId: Int, var vertexId: Int, var fragmentId: Int, val blocks: List<UniformBlock>, val config: GlslConfig, val usedUniformBlocks: Boolean) {
     private val blocksByFixedLocation = blocks.associateBy { it.fixedLocation }
     private val maxBlockId = (blocks.maxOfOrNull { it.fixedLocation } ?: -1) + 1
     val uniforms: Array<UniformsRef?> = Array(maxBlockId + 1) { blocksByFixedLocation[it]?.let { UniformsRef(it) } }
@@ -72,7 +72,7 @@ internal object GLShaderCompiler {
         gl.attachShader(id, vertexShaderId)
         gl.linkProgram(id)
         val linkStatus = gl.getProgramiv(id, gl.LINK_STATUS)
-        return GLProgramInfo(id, vertexShaderId, fragmentShaderId, program.uniformBlocks, finalConfig)
+        return GLProgramInfo(id, vertexShaderId, fragmentShaderId, program.uniformBlocks, finalConfig, finalConfig.useUniformBlocks)
     }
 
     fun createShaderWithConfigs(gl: KmlGl, program: Program, debugName: String?, configs: List<GlslConfig>): Triple<Int, Int, GlslConfig> {
@@ -115,7 +115,6 @@ internal object GLShaderCompiler {
     }
 }
 
-@SharedImmutable
 val KmlGl.versionString by Extra.PropertyThis<KmlGl, String> {
     when {
         this.variant.isWebGL -> if (this.variant.version == 1) "1.00" else "3.00"
@@ -123,7 +122,6 @@ val KmlGl.versionString by Extra.PropertyThis<KmlGl, String> {
     }
 }
 
-@SharedImmutable
 val KmlGl.versionInt by Extra.PropertyThis<KmlGl, Int> {
     Regex("(\\d+\\.\\d+)").find(versionString)?.value?.replace(".", "")?.trim()?.toIntOrNull() ?: 100
 }

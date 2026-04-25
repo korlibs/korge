@@ -21,14 +21,16 @@ import org.gradle.api.tasks.*
 import org.gradle.api.tasks.testing.*
 import org.jetbrains.dokka.gradle.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
+import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsEnvSpec
+import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsPlugin
 import org.jetbrains.kotlin.gradle.targets.js.npm.*
 import org.jetbrains.kotlin.gradle.targets.js.testing.*
 import org.jetbrains.kotlin.gradle.targets.js.testing.karma.*
 import org.jetbrains.kotlin.gradle.targets.js.testing.mocha.*
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.*
 import java.io.*
 import java.nio.file.*
-import kotlin.io.path.*
 
 object RootKorlibsPlugin {
     val KORGE_GROUP = "com.soywiz.korge"
@@ -121,13 +123,16 @@ object RootKorlibsPlugin {
 
     fun Project.initNodeJSFixes() {
         plugins.applyOnce<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin>()
-        rootProject.plugins.withType(org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin::class.java, Action {
-            rootProject.the<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension>().nodeVersion = project.nodeVersion
+        rootProject.plugins.withType(NodeJsPlugin::class.java, Action {
+            rootProject.extensions.configure(NodeJsEnvSpec::class.java, Action { nodeEnv ->
+                nodeEnv.version.set(project.nodeVersion)
+                nodeEnv.download.set(true)
+            })
         })
         // https://youtrack.jetbrains.com/issue/KT-48273
         afterEvaluate {
-            rootProject.extensions.configure(org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension::class.java, Action {
-                //it.versions.webpackDevServer.version = "4.0.0"
+            rootProject.extensions.configure(org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension::class.java, Action { nodeExt ->
+                //nodeExt.versions.webpackDevServer.version = "4.0.0"
             })
         }
     }
@@ -238,7 +243,7 @@ object RootKorlibsPlugin {
                 }
 
                 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile::class.java).configureEach {
-                    it.kotlinOptions.suppressWarnings = true
+                    it.compilerOptions.suppressWarnings.set(true)
                 }
 
                 afterEvaluate {
@@ -272,12 +277,17 @@ object RootKorlibsPlugin {
 
                     metadata {
                         compilations.allThis {
-                            kotlinOptions.suppressWarnings = true
+                            // Suppress warnings is configured globally for compile tasks above.
                         }
                     }
                     jvm {
                         compilations.allThis {
-                            kotlinOptions.jvmTarget = GRADLE_JAVA_VERSION_STR
+                            compileTaskProvider.configure {
+                                (it as org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile)
+                                    .compilerOptions
+                                    .jvmTarget
+                                    .set(JvmTarget.fromTarget(GRADLE_JAVA_VERSION_STR))
+                            }
                             //kotlinOptions.freeCompilerArgs.add("-Xno-param-assertions")
                             //kotlinOptions.
 

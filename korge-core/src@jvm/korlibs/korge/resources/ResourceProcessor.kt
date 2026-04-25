@@ -22,7 +22,7 @@ abstract class ResourceProcessor @JvmOverloads constructor(
 
 	val BINARY_ROOT by lazy { runBlocking { localVfs(System.getProperty("user.home"))[".korge"].apply { mkdir() }.jail() } }
 
-	val extensionLCs = extensions.toList().map(String::toLowerCase)
+	val extensionLCs = extensions.toList().map(String::lowercase)
 	protected abstract suspend fun processInternal(inputFile: VfsFile, outputFile: VfsFile): Unit
 
 	suspend fun requireRegeneration(file: VfsFile, outputFolder: VfsFile): Boolean {

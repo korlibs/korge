@@ -283,7 +283,7 @@ object DirectGL : INativeGL {
     }
 }
 
-private val arch by lazy { System.getProperty("os.arch").toLowerCase() }
+private val arch by lazy { System.getProperty("os.arch").lowercase() }
 
 val nativeOpenGLLibraryPath: String by lazy {
     Environment["OPENGL_LIB_PATH"]?.let { path ->

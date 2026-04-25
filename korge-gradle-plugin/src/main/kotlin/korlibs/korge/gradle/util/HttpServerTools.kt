@@ -166,7 +166,7 @@ fun HttpExchange.respond(content: RangedContent, headers: List<Pair<String, Stri
     }
 }
 
-fun File.miniMimeType() = when (this.extension.toLowerCase()) {
+fun File.miniMimeType() = when (this.extension.lowercase()) {
     "htm", "html" -> "text/html"
     "css" -> "text/css"
     "txt" -> "text/plain"

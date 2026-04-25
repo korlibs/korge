@@ -7,7 +7,7 @@ import org.jetbrains.kotlin.gradle.targets.native.tasks.*
 import org.jetbrains.kotlin.gradle.tasks.*
 
 fun KotlinNativeCompilation.getLinkTask(kind: NativeOutputKind, type: NativeBuildType, project: Project): KotlinNativeLink {
-	val taskName = "link${type.name.toLowerCase().capitalize()}${kind.name.toLowerCase().capitalize()}${target.name.capitalize()}"
+	val taskName = "link${type.name.lowercase().capitalize()}${kind.name.lowercase().capitalize()}${target.name.capitalize()}"
     val taskName2 = "link${target.name.capitalize()}"
 
 	val tasks = listOf(
