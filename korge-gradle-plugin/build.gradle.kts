@@ -40,12 +40,6 @@ gradlePlugin {
             description = "Multiplatform Game Engine for Kotlin"
             implementationClass = "korlibs.korge.gradle.KorgeLibraryGradlePlugin"
         }
-        val `korge-kotlin-plugin` by creating {
-            id = "org.korge.engine.kotlinplugin"
-            displayName = "Korge Kotlin Plugin"
-            description = "Multiplatform Game Engine for Kotlin"
-            implementationClass = "korlibs.korge.kotlin.plugin.KorgeKotlinCompilerPlugin"
-        }
         val kproject by creating {
             id = "org.korge.kproject"
             displayName = "KProject Gradle Plugin"
