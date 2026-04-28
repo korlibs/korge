@@ -69,7 +69,6 @@ object RootKorlibsPlugin {
         configureIdea()
         initGroupOverrides()
         initNodeJSFixes()
-        configureMavenCentralRelease()
         initDuplicatesStrategy()
         initSymlinkTrees()
         initShowSystemInfoWhenLinkingInWindows()

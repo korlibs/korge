@@ -14,7 +14,7 @@ private fun <T> ExtraPropertiesExtension.getOrSet(key: String, build: () -> T): 
     return get(key) as T
 }
 
-fun Project.configureSigning() { //= doOncePerProject("configureSigningOnce") {
+fun Project.configureSigning() {
     //println("configureSigning: $this")
 	val signingSecretKeyRingFile = System.getenv("ORG_GRADLE_PROJECT_signingSecretKeyRingFile") ?: project.findProperty("signing.secretKeyRingFile")?.toString()
 

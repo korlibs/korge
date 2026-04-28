@@ -29,22 +29,17 @@ fun Project.configurePublishing(multiplatform: Boolean = true) {
         }
         // For Gradle plugins: vanniktech auto-detects via java-gradle-plugin
 
-        if (customMavenUrl != null) {
-            // Custom Maven repo – add as an additional publishing repository below;
-            // don't also configure Central Portal to avoid unintended uploads.
-        } else {
-            // Map existing SONATYPE_* credentials to the names vanniktech expects
-            val user = System.getenv("SONATYPE_USERNAME")
-                ?: rootProject.findProperty("SONATYPE_USERNAME")?.toString()
-                ?: rootProject.findProperty("sonatypeUsername")?.toString()
-            val pass = System.getenv("SONATYPE_PASSWORD")
-                ?: rootProject.findProperty("SONATYPE_PASSWORD")?.toString()
-                ?: rootProject.findProperty("sonatypePassword")?.toString()
-            if (user != null) project.extensions.extraProperties["mavenCentralUsername"] = user
-            if (pass != null) project.extensions.extraProperties["mavenCentralPassword"] = pass
+        // Map existing SONATYPE_* credentials to the names vanniktech expects
+        val user = System.getenv("SONATYPE_USERNAME")
+            ?: rootProject.findProperty("SONATYPE_USERNAME")?.toString()
+            ?: rootProject.findProperty("sonatypeUsername")?.toString()
+        val pass = System.getenv("SONATYPE_PASSWORD")
+            ?: rootProject.findProperty("SONATYPE_PASSWORD")?.toString()
+            ?: rootProject.findProperty("sonatypePassword")?.toString()
+        if (user != null) project.extensions.extraProperties["mavenCentralUsername"] = user
+        if (pass != null) project.extensions.extraProperties["mavenCentralPassword"] = pass
 
-            publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL, automaticRelease = false)
-        }
+        publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL, automaticRelease = false)
 
         val baseProjectName = project.name.substringBefore('-')
         val defaultGitUrl = "https://github.com/korlibs/$baseProjectName"
@@ -77,21 +72,6 @@ fun Project.configurePublishing(multiplatform: Boolean = true) {
             }
             pom.scm { scm ->
                 scm.url.set(project.getCustomProp("project.scm.url", defaultGitUrl))
-            }
-        }
-    }
-
-    // Add custom Maven repository when KORLIBS_CUSTOM_MAVEN_* vars are set
-    if (customMavenUrl != null) {
-        afterEvaluate {
-            extensions.getByType(PublishingExtension::class.java).repositories {
-                it.maven { repo ->
-                    repo.credentials {
-                        it.username = project.customMavenUser
-                        it.password = project.customMavenPass
-                    }
-                    repo.url = uri(project.customMavenUrl!!)
-                }
             }
         }
     }
