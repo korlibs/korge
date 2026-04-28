@@ -1,5 +1,16 @@
 plugins {
-    id "org.jetbrains.kotlin.jvm" version "2.0.20"
+    id "org.jetbrains.kotlin.jvm" version "2.3.21"
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11
+    }
+}
+
+java {
+    targetCompatibility = JavaVersion.VERSION_11
+    sourceCompatibility = JavaVersion.VERSION_11
 }
 
 repositories {
