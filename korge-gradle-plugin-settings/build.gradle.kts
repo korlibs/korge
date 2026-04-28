@@ -10,6 +10,7 @@ plugins {
     id("maven-publish")
     id("com.gradle.plugin-publish")
     id("org.jetbrains.kotlin.jvm")
+    id("com.vanniktech.maven.publish")
 }
 val jversion = GRADLE_JAVA_VERSION_STR
 
@@ -38,17 +39,42 @@ gradlePlugin {
 
     plugins {
         val `korge-settings` by creating {
-            //id = "com.soywiz.kproject.settings"
-            id = "com.soywiz.korge.settings"
-            displayName = "kproject-settings"
+            id = "org.korge.engine.settings"
+            displayName = "KProject Settings Gradle Plugin"
             description = "Allows to use sourcecode & git-based dependencies"
             // language=jvm-class-name
-            implementationClass = "com.soywiz.kproject.KProjectSettingsPlugin"
+            implementationClass = "org.korge.kproject.KProjectSettingsPlugin"
         }
     }
 }
 
-korlibs.NativeTools.groovyConfigurePublishing(project, false)
+// GradlePlugin type is auto-detected by vanniktech because java-gradle-plugin is applied
+mavenPublishing {
+    publishToMavenCentral(com.vanniktech.maven.publish.SonatypeHost.CENTRAL_PORTAL, automaticRelease = false)
+
+    pom {
+        name.set("korge-gradle-plugin-settings")
+        description.set("Multiplatform Game Engine written in Kotlin – Settings Gradle Plugin")
+        url.set("https://github.com/korlibs/korge")
+        licenses {
+            license {
+                name.set("MIT")
+                url.set("https://raw.githubusercontent.com/korlibs/korge/master/LICENSE")
+            }
+        }
+        developers {
+            developer {
+                id.set("soywiz")
+                name.set("Carlos Ballesteros Velasco")
+                email.set("soywiz@gmail.com")
+            }
+        }
+        scm {
+            url.set("https://github.com/korlibs/korge")
+        }
+    }
+}
+
 korlibs.NativeTools.groovyConfigureSigning(project)
 
 val publishJvmPublicationToMavenLocal = tasks.register("publishJvmPublicationToMavenLocal", Task::class) {

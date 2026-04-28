@@ -9,6 +9,7 @@ plugins {
     id("com.gradle.plugin-publish")
     id("org.jetbrains.kotlin.jvm")
     id("com.github.gmazzo.buildconfig") version "5.3.5"
+    id("com.vanniktech.maven.publish")
 }
 
 description = "Multiplatform Game Engine written in Kotlin"
@@ -42,7 +43,7 @@ val srcgen = File(project.buildDir, "srcgen")
 kotlin.sourceSets.maybeCreate("main").kotlin.srcDirs(srcgen)
 val KProjectVersionKt = File(srcgen, "KProjectVersion.kt")
 val KProjectVersionContent = """
-package com.soywiz.kproject.version
+package org.korge.kproject.version
 
 object KProjectVersion {
     val VERSION = "${version}"
@@ -53,7 +54,34 @@ if (!KProjectVersionKt.exists() || KProjectVersionKt.text != KProjectVersionCont
     KProjectVersionKt.text = KProjectVersionContent
 }
 
-korlibs.NativeTools.groovyConfigurePublishing(project, false)
+mavenPublishing {
+    publishToMavenCentral(com.vanniktech.maven.publish.SonatypeHost.CENTRAL_PORTAL, automaticRelease = false)
+
+    coordinates(group.toString(), "korge-gradle-plugin-common", version.toString())
+
+    pom {
+        name.set("korge-gradle-plugin-common")
+        description.set("Multiplatform Game Engine written in Kotlin – Gradle Plugin Common")
+        url.set("https://github.com/korlibs/korge")
+        licenses {
+            license {
+                name.set("MIT")
+                url.set("https://raw.githubusercontent.com/korlibs/korge/master/LICENSE")
+            }
+        }
+        developers {
+            developer {
+                id.set("soywiz")
+                name.set("Carlos Ballesteros Velasco")
+                email.set("soywiz@gmail.com")
+            }
+        }
+        scm {
+            url.set("https://github.com/korlibs/korge")
+        }
+    }
+}
+
 korlibs.NativeTools.groovyConfigureSigning(project)
 
 tasks {

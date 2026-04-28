@@ -10,7 +10,7 @@ repositories {
 //Eval.xy(this, this, file("../../../gradle/repositories.settings.gradle").text)
 
 dependencies {
-    implementation("com.soywiz:korlibs-image:6.0.0")
+    implementation("org.korge:korlibs-image:6.1.0")
     //implementation("korlibs.korim:korim-jvm:3.4.0")
     //implementation("korlibs.korim:korim-jvm:999.0.0.999")
 }

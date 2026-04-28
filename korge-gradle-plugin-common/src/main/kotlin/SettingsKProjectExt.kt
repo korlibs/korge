@@ -1,4 +1,4 @@
-import com.soywiz.kproject.model.*
+import org.korge.kproject.model.*
 import org.gradle.api.initialization.*
 import java.io.*
 import kotlin.collections.LinkedHashMap

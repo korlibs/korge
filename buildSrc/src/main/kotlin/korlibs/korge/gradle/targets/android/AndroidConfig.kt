@@ -100,11 +100,10 @@ data class AndroidGenerated constructor(
 
     fun getAppId(isKorge: Boolean): String {
         return if (isKorge) androidPackageName else "korlibs.${projectName.replace("-", "_")}"
-        //val namespace = "com.soywiz.${project.name.replace("-", ".")}"
     }
 
     fun getNamespace(isKorge: Boolean): String {
-        //return if (isKorge) project.korge.id else "com.soywiz.${project.name.replace("-", ".")}"
+        // return if (isKorge) project.korge.id else "korlibs.${project.name.replace("-", ".")}"
         return getAppId(isKorge)
     }
 

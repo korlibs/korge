@@ -2,15 +2,14 @@ import korlibs.korge.gradle.targets.android.*
 import korlibs.root.*
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
+import com.vanniktech.maven.publish.*
 
 plugins {
-    //id "kotlin" version "1.6.21"
     id("kotlin")
-    //id "org.jetbrains.kotlin.jvm"
-    id("maven-publish")
+    id("com.vanniktech.maven.publish")
 }
 
-description = "Multiplatform Game Engine written in Kotlin"
+description = "Korge Reload Agent – JVM hot-reload instrumentation agent"
 group = RootKorlibsPlugin.KORGE_RELOAD_AGENT_GROUP
 
 tasks.jar {
@@ -40,32 +39,35 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile::class).all {
     }
 }
 
-publishing {
-    publications {
-        val maven by creating(MavenPublication::class) {
-            groupId = group.toString()
-            artifactId = "korge-reload-agent"
-            version = version
-            from(components["kotlin"])
+mavenPublishing {
+    configure(JavaLibrary(javadocJar = JavadocJar.Empty(), sourcesJar = true))
+    publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL, automaticRelease = false)
+
+    coordinates(group.toString(), "korge-reload-agent", version.toString())
+
+    pom {
+        name.set("korge-reload-agent")
+        description.set("Korge Reload Agent – JVM hot-reload instrumentation agent")
+        url.set("https://github.com/korlibs/korge")
+        licenses {
+            license {
+                name.set("MIT")
+                url.set("https://raw.githubusercontent.com/korlibs/korge/master/LICENSE")
+            }
+        }
+        developers {
+            developer {
+                id.set("korge")
+                name.set("Carlos Ballesteros Velasco")
+                email.set("soywiz@gmail.com")
+            }
+        }
+        scm {
+            url.set("https://github.com/korlibs/korge")
         }
     }
 }
 
-val publishJvmPublicationToMavenLocal = tasks.register("publishJvmPublicationToMavenLocal", Task::class) {
-    group = "publishing"
-    dependsOn("publishMavenPublicationToMavenLocal")
-}
-
-afterEvaluate {
-    if (tasks.findByName("publishMavenPublicationToMavenRepository") != null) {
-        tasks.register("publishJvmPublicationToMavenRepository", Task::class) {
-            group = "publishing"
-            dependsOn("publishMavenPublicationToMavenRepository")
-        }
-    }
-}
-
-korlibs.NativeTools.groovyConfigurePublishing(project, false)
 korlibs.NativeTools.groovyConfigureSigning(project)
 
 dependencies {

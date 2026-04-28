@@ -28,7 +28,7 @@ buildscript {
     }
 }
 plugins {
-  id("com.soywiz.kproject")
+  id("org.korge.kproject")
   id("org.jetbrains.kotlin.plugin.serialization")
 }
 dependencies {
@@ -61,7 +61,7 @@ buildscript {
     }
 }
 plugins {
-  id("com.soywiz.kproject")
+  id("org.korge.kproject")
 }
 dependencies {
   add("commonMainApi", project(":Ademo2"))
@@ -102,7 +102,7 @@ buildscript {
     }
 }
 plugins {
-  id("com.soywiz.kproject")
+  id("org.korge.kproject")
 }
 dependencies {
   add("commonMainApi", project(":Ademo3"))
@@ -157,7 +157,7 @@ buildscript {
     }
 }
 plugins {
-  id("com.soywiz.kproject")
+  id("org.korge.kproject")
 }
 dependencies {
   add("commonMainApi", "org.jetbrains.compose.runtime:runtime:1.4.1")

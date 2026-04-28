@@ -15,7 +15,6 @@ private fun <T> ExtraPropertiesExtension.getOrSet(key: String, build: () -> T): 
 }
 
 fun Project.configureSigning() { //= doOncePerProject("configureSigningOnce") {
-//fun Project.configureSigning() {
     //println("configureSigning: $this")
 	val signingSecretKeyRingFile = System.getenv("ORG_GRADLE_PROJECT_signingSecretKeyRingFile") ?: project.findProperty("signing.secretKeyRingFile")?.toString()
 
@@ -65,3 +64,23 @@ open class CachedInMemoryPgpSignatoryProvider(signingKey: String?, signingPasswo
 }
 
 val Project.signing get() = extensions.getByType<SigningExtension>()
+
+/**
+ * Makes every Sign task in the project a no-op when signing keys are not present.
+ * This prevents failures on `publishToMavenLocal` and similar local tasks when
+ * com.gradle.plugin-publish (or any other plugin) registers sign tasks unconditionally.
+ */
+fun Project.makeSigningOptional() {
+    val signingKey: String? = System.getenv("ORG_GRADLE_PROJECT_signingKey")
+        ?: findProperty("signing.signingKey")?.toString()
+    val signingKeyRingFile: String? = System.getenv("ORG_GRADLE_PROJECT_signingSecretKeyRingFile")
+        ?: findProperty("signing.secretKeyRingFile")?.toString()
+    val hasSigningKeys = signingKey != null || signingKeyRingFile != null
+
+    afterEvaluate {
+        tasks.withType(org.gradle.plugins.signing.Sign::class.java).configureEach { signTask ->
+            signTask.onlyIf { hasSigningKeys }
+        }
+    }
+}
+
