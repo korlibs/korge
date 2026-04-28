@@ -3,7 +3,7 @@
 <!-- BADGES -->
 <p align="center">
 	<a href="https://github.com/korlibs/korge/actions"><img alt="Build Status" src="https://github.com/korlibs/korge/workflows/TEST/badge.svg" /></a>
-    <a href="https://search.maven.org/artifact/org.korge.gradle.plugins/korge-gradle-plugin"><img alt="Maven Central" src="https://img.shields.io/maven-central/v/org.korge.gradle.plugins/korge-gradle-plugin"></a>
+    <a href="https://search.maven.org/artifact/org.korge.korlibs.korge.plugins/korge-gradle-plugin"><img alt="Maven Central" src="https://img.shields.io/maven-central/v/org.korge.korlibs.korge.plugins/korge-gradle-plugin"></a>
 	<a href="https://discord.korge.org/"><img alt="Discord" src="https://img.shields.io/discord/728582275884908604?logo=discord&label=Discord" /></a>
 </p>
 <!-- /BADGES -->

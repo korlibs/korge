@@ -71,9 +71,9 @@ mavenPublishing {
         }
         developers {
             developer {
-                id.set("soywiz")
-                name.set("Carlos Ballesteros Velasco")
-                email.set("soywiz@gmail.com")
+                id.set("korge")
+                name.set("KorGE Team")
+                email.set("info@korge.org")
             }
         }
         scm {

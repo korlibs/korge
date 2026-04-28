@@ -70,9 +70,9 @@ fun Project.configurePublishing(multiplatform: Boolean = true) {
             }
             pom.developers { devSpec ->
                 devSpec.developer { dev ->
-                    dev.id.set(project.getCustomProp("project.author.id", "soywiz") ?: "soywiz")
-                    dev.name.set(project.getCustomProp("project.author.name", "Carlos Ballesteros Velasco") ?: "")
-                    dev.email.set(project.getCustomProp("project.author.email", "soywiz@gmail.com") ?: "")
+                    dev.id.set(project.getCustomProp("project.author.id", "korge") ?: "korge")
+                    dev.name.set(project.getCustomProp("project.author.name", "KorGE Team") ?: "")
+                    dev.email.set(project.getCustomProp("project.author.email", "info@korge.org") ?: "")
                 }
             }
             pom.scm { scm ->
