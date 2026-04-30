@@ -24,7 +24,7 @@ node = "20.12.1"
 android-build-gradle = "8.2.2"
 gson = "2.14.0"
 gradle-publish-plugin = "2.1.1"
-vanniktech-publish = "0.30.0"  # Update to 0.36.0 ?
+vanniktech-publish = "0.32.0"
 # https://repo.maven.apache.org/maven2/org/jetbrains/intellij/deps/intellij-coverage-agent/
 
 

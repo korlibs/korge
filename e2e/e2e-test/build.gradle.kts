@@ -93,4 +93,20 @@ tasks {
         }
         dependsOn("runJvm")
     }
+
+    // e2e-test is not a published library — register no-op stubs so that running
+    // publish tasks from this directory (or from a parent build that discovers this
+    // project) silently does nothing instead of failing with "task not found".
+    listOf(
+        "publishToMavenCentral",
+        "publishToMavenLocal",
+        "publishAllPublicationsToMavenRepository",
+        "publishJvmPublicationToMavenRepository",
+    ).forEach { taskName ->
+        register(taskName) {
+            group = "publishing"
+            description = "No-op: e2e-test is not a published artifact."
+            logger.lifecycle("Skipping '$taskName' for e2e-test – this project is not published.")
+        }
+    }
 }
