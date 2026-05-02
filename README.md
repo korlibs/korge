@@ -50,6 +50,20 @@ For more information, visit:
 * <https://docs.korge.org/>
 * <https://discord.korge.org/>
 
+## News:
+### 02-May-2026:
+  We are moving Korge to a new namespace on maven central, from `com.soywiz.korge` to `org.korge`.
+  This a breaking change. You will need to change your dependencies to use the new namespace in the configuration of
+  your project. Change your `gradle/libs.versions.toml` to:
+
+```toml
+[plugins]
+#korge = { id = "com.soywiz.korge", version = "6.0.0" }   <-- Old namespace, latest official version
+korge = { id = "org.korge.engine", version = "6.1.0-SNAPSHOT" }   # <-- New namespace, use latest snapshot version
+```
+
+
+
 ## Usage:
 
 KorGE and all the other korlibs in a single monorepo.
