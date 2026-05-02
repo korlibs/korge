@@ -151,7 +151,7 @@ mavenPublishing {
         licenses {
             license {
                 name.set("MIT")
-                url.set("https://raw.githubusercontent.com/korlibs/korge/master/LICENSE")
+                url.set("https://raw.githubusercontent.com/korlibs/korge/main/LICENSE")
             }
         }
         developers {

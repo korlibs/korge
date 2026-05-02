@@ -22,7 +22,7 @@ fun MutableMap<String, Any>.applyProjectProperties(
 ) {
     put("project.scm.url", projectUrl)
     put("project.license.name", "MIT License")
-    put("project.license.url", "https://raw.githubusercontent.com/korlibs/korge/master/LICENSE")
+    put("project.license.url", "https://raw.githubusercontent.com/korlibs/korge/main/LICENSE")
     put("project.author.id", "korge")
     put("project.author.name", "KorGE Team")
     put("project.author.email", "info@korge.org")

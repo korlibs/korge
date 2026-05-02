@@ -6,7 +6,7 @@ project.extensions.extraProperties.properties.apply {
     applyProjectProperties(
         "https://github.com/korlibs/korge",
         "MIT License",
-        "https://raw.githubusercontent.com/korlibs/korge/master/LICENSE"
+        "https://raw.githubusercontent.com/korlibs/korge/main/LICENSE"
     )
 }
 

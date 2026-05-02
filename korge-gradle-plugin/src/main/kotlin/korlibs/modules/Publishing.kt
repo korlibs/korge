@@ -58,7 +58,7 @@ fun Project.configurePublishing(multiplatform: Boolean = true) {
                     license.url.set(
                         project.getCustomProp(
                             "project.license.url",
-                            "https://raw.githubusercontent.com/korlibs/$baseProjectName/master/LICENSE"
+                            "https://raw.githubusercontent.com/korlibs/$baseProjectName/main/LICENSE"
                         ) ?: ""
                     )
                 }
