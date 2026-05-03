@@ -35,7 +35,7 @@ import java.nio.file.*
 object RootKorlibsPlugin {
     val KORGE_GROUP = "org.korge.engine"
     val KORGE_RELOAD_AGENT_GROUP = "org.korge.engine"
-    val KORGE_GRADLE_PLUGIN_GROUP = "org.korge.korlibs.korge.plugins"
+    val KORGE_GRADLE_PLUGIN_GROUP = "org.korge.gradleplugins"
 
     @JvmStatic
     fun doInit(rootProject: Project) {
@@ -229,8 +229,6 @@ object RootKorlibsPlugin {
             if (doConfigure) {
                 val isSample = project.isSample
                 val hasAndroid = doEnableKotlinAndroid && hasAndroidSdk && project.name != "korge-benchmarks"
-                //val hasAndroid = !isSample && true
-                val mustPublish = !isSample
 
                 // AppData\Local\Android\Sdk\tools\bin>sdkmanager --licenses
                 plugins.apply("kotlin-multiplatform")
@@ -247,10 +245,6 @@ object RootKorlibsPlugin {
 
                 if (!isSample && rootProject.plugins.hasPlugin("org.jetbrains.dokka")) {
                     plugins.apply("org.jetbrains.dokka")
-                }
-
-                if (mustPublish) {
-                    // maven-publish is applied by vanniktech inside configurePublishing()
                 }
 
                 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile::class.java).configureEach {
