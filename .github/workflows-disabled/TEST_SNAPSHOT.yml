@@ -11,7 +11,6 @@ on:
     - cron: "0 0 * * 4"
 
 env:
-  # https://oss.sonatype.org/content/repositories/snapshots/org/jetbrains/kotlin/kotlin-compiler/
   FORCED_KOTLIN_VERSION: "1.9.255-SNAPSHOT"
   SKIP_KORGE_SAMPLES: true
   JAVA_VERSION: 17
