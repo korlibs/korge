@@ -55,7 +55,7 @@ if (!KProjectVersionKt.exists() || KProjectVersionKt.text != KProjectVersionCont
 }
 
 mavenPublishing {
-    publishToMavenCentral(com.vanniktech.maven.publish.SonatypeHost.CENTRAL_PORTAL, automaticRelease = false)
+    publishToMavenCentral()
 
     coordinates(group.toString(), "korge-gradle-plugin-common", version.toString())
 

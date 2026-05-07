@@ -39,7 +39,7 @@ fun Project.configurePublishing(multiplatform: Boolean = true) {
         if (user != null) project.extensions.extraProperties["mavenCentralUsername"] = user
         if (pass != null) project.extensions.extraProperties["mavenCentralPassword"] = pass
 
-        publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL, automaticRelease = false)
+        publishToMavenCentral()
 
         val baseProjectName = project.name.substringBefore('-')
         val defaultGitUrl = "https://github.com/korlibs/$baseProjectName"

@@ -50,7 +50,7 @@ gradlePlugin {
 
 // GradlePlugin type is auto-detected by vanniktech because java-gradle-plugin is applied
 mavenPublishing {
-    publishToMavenCentral(com.vanniktech.maven.publish.SonatypeHost.CENTRAL_PORTAL, automaticRelease = false)
+    publishToMavenCentral()
 
     pom {
         name.set("korge-gradle-plugin-settings")
