@@ -23,6 +23,7 @@ testDependencies:
 buildscript {
     repositories {
         mavenLocal(); mavenCentral(); google(); gradlePluginPortal()
+        maven { url = uri("https://central.sonatype.com/repository/maven-snapshots") }
         maven { url = uri("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev") }
         maven { url = uri("https://maven.pkg.jetbrains.space/kotlin/p/wasm/experimental") }
     }
@@ -56,6 +57,7 @@ world
 buildscript {
     repositories {
         mavenLocal(); mavenCentral(); google(); gradlePluginPortal()
+        maven { url = uri("https://central.sonatype.com/repository/maven-snapshots") }
         maven { url = uri("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev") }
         maven { url = uri("https://maven.pkg.jetbrains.space/kotlin/p/wasm/experimental") }
     }
@@ -97,6 +99,7 @@ dependencies:
 buildscript {
     repositories {
         mavenLocal(); mavenCentral(); google(); gradlePluginPortal()
+        maven { url = uri("https://central.sonatype.com/repository/maven-snapshots") }
         maven { url = uri("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev") }
         maven { url = uri("https://maven.pkg.jetbrains.space/kotlin/p/wasm/experimental") }
     }
@@ -152,6 +155,7 @@ dependencies:
 buildscript {
     repositories {
         mavenLocal(); mavenCentral(); google(); gradlePluginPortal()
+        maven { url = uri("https://central.sonatype.com/repository/maven-snapshots") }
         maven { url = uri("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev") }
         maven { url = uri("https://maven.pkg.jetbrains.space/kotlin/p/wasm/experimental") }
     }
