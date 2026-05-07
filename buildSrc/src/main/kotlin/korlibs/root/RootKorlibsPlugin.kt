@@ -201,8 +201,7 @@ object RootKorlibsPlugin {
 
         rootProject.afterEvaluate {
             // Finish signing setup for root project
-            rootProject.configureSigning()
-            rootProject.makeSigningOptional()
+//            rootProject.configureSigning()
 
             rootProject.nonSamples {
                 if (this.project.isKorgeBenchmarks) return@nonSamples
@@ -213,9 +212,7 @@ object RootKorlibsPlugin {
                     // vanniktech handles maven-publish + Central Portal repository setup
                     configurePublishing()
                     // Existing Signing.kt handles GPG signing of the publications
-                    configureSigning()
-                    // Ensure sign tasks are skipped (not fail) when no keys are configured
-                    makeSigningOptional()
+//                    configureSigning()
                 }
             }
         }

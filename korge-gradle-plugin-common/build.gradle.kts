@@ -82,8 +82,6 @@ mavenPublishing {
     }
 }
 
-korlibs.NativeTools.groovyConfigureSigning(project)
-
 tasks {
     val publishJvmPublicationToMavenLocal = creating(Task::class) {
         group = "publishing"

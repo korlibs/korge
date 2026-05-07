@@ -20,7 +20,7 @@ buildscript {
 
     }
     dependencies {
-        classpath("org.korge.korlibs.korge.plugins:korge-gradle-plugin:$korgePluginVersion")
+        classpath("org.korge.gradleplugins:korge-gradle-plugin:$korgePluginVersion")
     }
 }
 

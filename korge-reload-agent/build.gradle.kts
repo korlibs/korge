@@ -68,8 +68,6 @@ mavenPublishing {
     }
 }
 
-korlibs.NativeTools.groovyConfigureSigning(project)
-
 dependencies {
     testImplementation(libs.bundles.kotlin.test)
 }

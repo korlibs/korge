@@ -167,8 +167,6 @@ mavenPublishing {
     }
 }
 
-korlibs.NativeTools.groovyConfigureSigning(project)
-
 buildConfig {
     //val project = project(":korge-kotlin-plugin")
     packageName("korlibs.korge.gradle.plugin")

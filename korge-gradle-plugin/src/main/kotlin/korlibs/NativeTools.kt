@@ -28,11 +28,4 @@ object NativeTools {
             }
         }
     }
-
-
-    @JvmStatic
-    fun groovyConfigureSigning(project: Project) {
-        project.configureSigning()
-        project.makeSigningOptional()
-    }
 }
