@@ -11,6 +11,7 @@ fun Project.configureRepositories() {
 
     repositories.apply {
         mavenLocal().config()
+        maven { it.url = uri("https://central.sonatype.com/repository/maven-snapshots") }.config()
         mavenCentral().config()
         google().config()
         maven { it.url = uri("https://plugins.gradle.org/m2/") }.config()

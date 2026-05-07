@@ -2,6 +2,7 @@ pluginManagement {
     repositories {
         //Eval.xy(this, it, file('../../../gradle/repositories.settings.gradle').text)
         mavenLocal()
+        maven { url = uri("https://central.sonatype.com/repository/maven-snapshots") }
         mavenCentral()
         google()
         gradlePluginPortal()

@@ -40,6 +40,7 @@ dependencies {
 //Eval.xy(this, this, file("../gradle/repositories.settings.gradle").text)
 repositories {
     mavenLocal()
+    maven { url = uri("https://central.sonatype.com/repository/maven-snapshots") }
     mavenCentral()
     google()
     gradlePluginPortal()
@@ -48,7 +49,6 @@ repositories {
     maven { url = uri("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev") }
     maven { url = uri("https://maven.pkg.jetbrains.space/public/p/kotlinx-coroutines/maven") }
     maven { url = uri("https://maven.pkg.jetbrains.space/kotlin/p/wasm/experimental") }
-    maven { url = uri("https://central.sonatype.com/repository/maven-snapshots") }
 }
 
 tasks.withType(KotlinCompile::class).configureEach {

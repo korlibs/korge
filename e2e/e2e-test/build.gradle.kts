@@ -8,6 +8,7 @@ buildscript {
 
     repositories {
         mavenLocal()
+        maven { url = uri("https://central.sonatype.com/repository/maven-snapshots") }
         mavenCentral()
         google()
         maven { url = uri("https://plugins.gradle.org/m2/") }
@@ -16,8 +17,6 @@ buildscript {
         maven { url = uri("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev") }
         maven { url = uri("https://maven.pkg.jetbrains.space/public/p/kotlinx-coroutines/maven") }
         maven { url = uri("https://maven.pkg.jetbrains.space/kotlin/p/wasm/experimental") }
-        maven { url = uri("https://central.sonatype.com/repository/maven-snapshots") }
-
     }
     dependencies {
         classpath("org.korge.gradleplugins:korge-gradle-plugin:$korgePluginVersion")
