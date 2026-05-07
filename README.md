@@ -69,8 +69,8 @@ korge = { id = "org.korge.engine", version = "6.1.0-SNAPSHOT" }   # <-- New name
 KorGE and all the other korlibs in a single monorepo.
 
 To use this version in other projects,
-you have to publish it locally to mavenLocal,
-and then use `999.0.0.999` as version: 
+you can publish it locally to mavenLocal,
+and then use latest snapshot version like `6.1.0-SNAPSHOT` as version: 
 
 ```shell script
 ./gradlew publishToMavenLocal

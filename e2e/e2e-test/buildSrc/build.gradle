@@ -23,5 +23,5 @@ repositories {
 dependencies {
     implementation("org.korge:korlibs-image:6.1.0")
     //implementation("korlibs.korim:korim-jvm:3.4.0")
-    //implementation("korlibs.korim:korim-jvm:999.0.0.999")
+    //implementation("korlibs.korim:korim-jvm:6.1.0-SNAPSHOT")
 }
