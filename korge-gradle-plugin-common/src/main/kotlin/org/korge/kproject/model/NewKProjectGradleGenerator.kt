@@ -62,6 +62,7 @@ class NewKProjectGradleGenerator(val projectRootFolder: FileRef) {
                     appendLine("buildscript {")
                     appendLine("    repositories {")
                     appendLine("        mavenLocal(); mavenCentral(); google(); gradlePluginPortal()")
+                    appendLine("        maven { url = uri(\"https://central.sonatype.com/repository/maven-snapshots\") }")
                     appendLine("        maven { url = uri(\"https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev\") }")
                     appendLine("        maven { url = uri(\"https://maven.pkg.jetbrains.space/kotlin/p/wasm/experimental\") }")
                     appendLine("    }")
