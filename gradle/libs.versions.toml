@@ -1,29 +1,30 @@
 [versions]
-jackson = "2.21.2"
+jackson = "2.21.3"
 jna = "5.18.1"
 jcodec = "0.2.5"
 junit = "4.13.2"
-proguard-gradle = "7.2.2"
+proguard-gradle = "7.9.1"
 #proguard-gradle = "7.4.0" # Exception in thread "main" java.lang.VerifyError: Bad type on operand stack :     l/a/e/e.a()[I @3: invokevirtual :     Type '[I' (current frame, stack[0]) is not assignable to '[Ljava/lang/Object;'
 #proguard-gradle = "7.3.2"
-asm = "9.5"
+asm = "9.9.1"
 jgit = "5.13.1.202206130422-r"
 
 korlibs = "6.1.0"
-kotlin = "2.3.21"
+kotlin = "2.3.20"
 #kotlinx-coroutines = "1.8.1"
 kotlinx-coroutines = "1.10.2"
-kotlinx-serialization = "1.7.1"
+kotlinx-serialization = "1.11.0"
 kotlinx-atomicfu = "0.32.1"
 
 kotlinx-benchmark = "0.4.7"
-dokka = "1.9.20"
+dokka = "2.2.0"
 kover = "0.6.1"
-kover-agent = "1.0.775"
+kover-agent = "1.0.776"
 node = "20.12.1"
 android-build-gradle = "8.2.2"
 gson = "2.14.0"
 gradle-publish-plugin = "2.1.1"
+vanniktech-publish = "0.35.0"
 # https://repo.maven.apache.org/maven2/org/jetbrains/intellij/deps/intellij-coverage-agent/
 
 
@@ -59,6 +60,7 @@ kotlinx-atomicfu = { module = "org.jetbrains.kotlinx:atomicfu", version.ref = "k
 android-build-gradle = { module = "com.android.tools.build:gradle", version.ref = "android-build-gradle" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 gradle-publish-plugin = { module = "com.gradle.publish:plugin-publish-plugin", version.ref = "gradle-publish-plugin" }
+vanniktech-maven-publish = { module = "com.vanniktech:gradle-maven-publish-plugin", version.ref = "vanniktech-publish" }
 jgit = { module = "org.eclipse.jgit:org.eclipse.jgit", version.ref = "jgit" }
 
 [bundles]

@@ -64,10 +64,10 @@ kotlin {
         //}
         //framework().apply {
             // It's possible to export different sets of dependencies to different binaries.
-            //export(/"com.soywiz.korlibs.korgw:korgw")
+            //export(/"org.korge.korlibs:korlibs-image")
         //}
         findFramework(NativeBuildType.DEBUG)!!.apply {
-            export("com.soywiz.korlibs.korgw:korgw")
+            export("org.korge.korlibs:korlibs-image")
         }
     }
 

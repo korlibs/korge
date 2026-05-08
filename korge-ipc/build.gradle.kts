@@ -1,16 +1,14 @@
 import korlibs.korge.gradle.targets.android.*
 import korlibs.root.*
+import com.vanniktech.maven.publish.*
 
 plugins {
-    //id "kotlin" version "1.6.21"
     kotlin("jvm")
-    //kotlin("plugin.serialization")
     id("org.jetbrains.kotlin.plugin.serialization") version "2.0.0"
-    //id "org.jetbrains.kotlin.jvm"
-    id("maven-publish")
+    id("com.vanniktech.maven.publish")
 }
 
-description = "Multiplatform Game Engine written in Kotlin"
+description = "Korge IPC – inter-process communication utilities for the Korge game engine"
 group = RootKorlibsPlugin.KORGE_RELOAD_AGENT_GROUP
 
 val jversion = GRADLE_JAVA_VERSION_STR
@@ -29,40 +27,38 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile::class).all {
     }
 }
 
-publishing {
-    publications {
-        val maven by creating(MavenPublication::class) {
-            groupId = group.toString()
-            artifactId = "korge-ipc"
-            version = version
-            from(components["kotlin"])
+mavenPublishing {
+    configure(JavaLibrary(javadocJar = JavadocJar.Empty(), sourcesJar = true))
+    publishToMavenCentral()
+
+    coordinates(group.toString(), "korge-ipc", version.toString())
+
+    pom {
+        name.set("korge-ipc")
+        description.set("Korge IPC – inter-process communication utilities for the Korge game engine")
+        url.set("https://github.com/korlibs/korge")
+        licenses {
+            license {
+                name.set("MIT")
+                url.set("https://raw.githubusercontent.com/korlibs/korge/main/LICENSE")
+            }
+        }
+        developers {
+            developer {
+                id.set("korge")
+                name.set("KorGE Team")
+                email.set("info@korge.org")
+            }
+        }
+        scm {
+            url.set("https://github.com/korlibs/korge")
         }
     }
 }
-
-val publishJvmPublicationToMavenLocal = tasks.register("publishJvmPublicationToMavenLocal", Task::class) {
-    group = "publishing"
-    dependsOn("publishMavenPublicationToMavenLocal")
-}
-
-afterEvaluate {
-    if (tasks.findByName("publishMavenPublicationToMavenRepository") != null) {
-        tasks.register("publishJvmPublicationToMavenRepository", Task::class) {
-            group = "publishing"
-            dependsOn("publishMavenPublicationToMavenRepository")
-        }
-    }
-}
-
-korlibs.NativeTools.groovyConfigurePublishing(project, false)
-korlibs.NativeTools.groovyConfigureSigning(project)
 
 dependencies {
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.serialization.json)
-    //implementation(libs.korlibs.all)
-    //implementation(libs.korlibs.datastructure.core)
-    //implementation(libs.korlibs.io.stream)
     testImplementation(libs.bundles.kotlin.test)
 }
 

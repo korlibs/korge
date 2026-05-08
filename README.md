@@ -3,7 +3,7 @@
 <!-- BADGES -->
 <p align="center">
 	<a href="https://github.com/korlibs/korge/actions"><img alt="Build Status" src="https://github.com/korlibs/korge/workflows/TEST/badge.svg" /></a>
-    <a href="https://search.maven.org/artifact/com.soywiz.korlibs.korge.plugins/korge-gradle-plugin"><img alt="Maven Central" src="https://img.shields.io/maven-central/v/com.soywiz.korlibs.korge.plugins/korge-gradle-plugin"></a>
+    <a href="https://search.maven.org/artifact/org.korge.gradleplugins/korge-gradle-plugin"><img alt="Maven Central" src="https://img.shields.io/maven-central/v/org.korge.gradleplugins/korge-gradle-plugin"></a>
 	<a href="https://discord.korge.org/"><img alt="Discord" src="https://img.shields.io/discord/728582275884908604?logo=discord&label=Discord" /></a>
 </p>
 <!-- /BADGES -->
@@ -50,13 +50,27 @@ For more information, visit:
 * <https://docs.korge.org/>
 * <https://discord.korge.org/>
 
+## News:
+### 02-May-2026:
+  We are moving Korge to a new namespace on maven central, from `com.soywiz.korge` to `org.korge`.
+  This a breaking change. You will need to change your dependencies to use the new namespace in the configuration of
+  your project. Change your `gradle/libs.versions.toml` to:
+
+```toml
+[plugins]
+#korge = { id = "com.soywiz.korge", version = "6.0.0" }   <-- Old namespace, latest official version
+korge = { id = "org.korge.engine", version = "6.1.0-SNAPSHOT" }   # <-- New namespace, use latest snapshot version
+```
+
+
+
 ## Usage:
 
 KorGE and all the other korlibs in a single monorepo.
 
 To use this version in other projects,
-you have to publish it locally to mavenLocal,
-and then use `999.0.0.999` as version: 
+you can publish it locally to mavenLocal,
+and then use latest snapshot version like `6.1.0-SNAPSHOT` as version: 
 
 ```shell script
 ./gradlew publishToMavenLocal

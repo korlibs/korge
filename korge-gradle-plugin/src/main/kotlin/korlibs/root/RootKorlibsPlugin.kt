@@ -33,9 +33,9 @@ import java.io.*
 import java.nio.file.*
 
 object RootKorlibsPlugin {
-    val KORGE_GROUP = "com.soywiz.korge"
-    val KORGE_RELOAD_AGENT_GROUP = "com.soywiz.korge"
-    val KORGE_GRADLE_PLUGIN_GROUP = "com.soywiz.korlibs.korge.plugins"
+    val KORGE_GROUP = "org.korge.engine"
+    val KORGE_RELOAD_AGENT_GROUP = "org.korge.engine"
+    val KORGE_GRADLE_PLUGIN_GROUP = "org.korge.gradleplugins"
 
     @JvmStatic
     fun doInit(rootProject: Project) {
@@ -69,7 +69,6 @@ object RootKorlibsPlugin {
         configureIdea()
         initGroupOverrides()
         initNodeJSFixes()
-        configureMavenCentralRelease()
         initDuplicatesStrategy()
         initSymlinkTrees()
         initShowSystemInfoWhenLinkingInWindows()
@@ -189,23 +188,32 @@ object RootKorlibsPlugin {
 
     fun Project.initPlugins() {
         plugins.apply("java")
+        // vanniktech (maven-publish) must be applied BEFORE kotlin-multiplatform; otherwise Gradle 8
+        // raises "Plugin 'maven-publish' was applied too late." for the root project.
+        plugins.apply("com.vanniktech.maven.publish")
         plugins.apply("kotlin-multiplatform")
-        plugins.apply("signing")
-        plugins.apply("maven-publish")
+        // signing is applied per-project by configureSigning()
     }
 
     fun Project.initPublishing() {
+        // The vanniktech plugin (which applies maven-publish) must be applied during the configuration
+        // phase — not inside afterEvaluate. Apply it now for the root project (korge-root) itself.
+        rootProject.configurePublishing()
+
         rootProject.afterEvaluate {
+            // Finish signing setup for root project
+//            rootProject.configureSigning()
+
             rootProject.nonSamples {
                 if (this.project.isKorgeBenchmarks) return@nonSamples
-
-                plugins.apply("maven-publish")
 
                 val doConfigure = mustAutoconfigureKMM()
 
                 if (doConfigure) {
+                    // vanniktech handles maven-publish + Central Portal repository setup
                     configurePublishing()
-                    configureSigning()
+                    // Existing Signing.kt handles GPG signing of the publications
+//                    configureSigning()
                 }
             }
         }
@@ -218,8 +226,6 @@ object RootKorlibsPlugin {
             if (doConfigure) {
                 val isSample = project.isSample
                 val hasAndroid = doEnableKotlinAndroid && hasAndroidSdk && project.name != "korge-benchmarks"
-                //val hasAndroid = !isSample && true
-                val mustPublish = !isSample
 
                 // AppData\Local\Android\Sdk\tools\bin>sdkmanager --licenses
                 plugins.apply("kotlin-multiplatform")
@@ -236,10 +242,6 @@ object RootKorlibsPlugin {
 
                 if (!isSample && rootProject.plugins.hasPlugin("org.jetbrains.dokka")) {
                     plugins.apply("org.jetbrains.dokka")
-                }
-
-                if (mustPublish) {
-                    plugins.apply("maven-publish")
                 }
 
                 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile::class.java).configureEach {

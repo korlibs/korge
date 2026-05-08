@@ -7,5 +7,5 @@ logback = { "module" = "ch.qos.logback:logback-classic", version="1.2.3" }
 
 
 [plugins]
-#korge = { id = "com.soywiz.korge", version = "4.0.0-beta2" }
-korge = { id = "com.soywiz.korge", version = "999.0.0.999" }
+#korge = { id = "org.korge.engine", version = "4.0.0-beta2" }
+korge = { id = "org.korge.engine", version = "6.1.0-SNAPSHOT" }

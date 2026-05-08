@@ -8,6 +8,7 @@ buildscript {
 
     repositories {
         mavenLocal()
+        maven { url = uri("https://central.sonatype.com/repository/maven-snapshots") }
         mavenCentral()
         google()
         maven { url = uri("https://plugins.gradle.org/m2/") }
@@ -16,11 +17,9 @@ buildscript {
         maven { url = uri("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev") }
         maven { url = uri("https://maven.pkg.jetbrains.space/public/p/kotlinx-coroutines/maven") }
         maven { url = uri("https://maven.pkg.jetbrains.space/kotlin/p/wasm/experimental") }
-        maven { url = uri("https://oss.sonatype.org/content/repositories/snapshots/") }
-
     }
     dependencies {
-        classpath("com.soywiz.korlibs.korge.plugins:korge-gradle-plugin:$korgePluginVersion")
+        classpath("org.korge.gradleplugins:korge-gradle-plugin:$korgePluginVersion")
     }
 }
 
@@ -92,5 +91,21 @@ tasks {
             CheckReferences.main(project.projectDir, update = true)
         }
         dependsOn("runJvm")
+    }
+
+    // e2e-test is not a published library — register no-op stubs so that running
+    // publish tasks from this directory (or from a parent build that discovers this
+    // project) silently does nothing instead of failing with "task not found".
+    listOf(
+        "publishToMavenCentral",
+        "publishToMavenLocal",
+        "publishAllPublicationsToMavenRepository",
+        "publishJvmPublicationToMavenRepository",
+    ).forEach { taskName ->
+        register(taskName) {
+            group = "publishing"
+            description = "No-op: e2e-test is not a published artifact."
+            logger.lifecycle("Skipping '$taskName' for e2e-test – this project is not published.")
+        }
     }
 }

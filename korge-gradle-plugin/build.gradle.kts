@@ -8,6 +8,7 @@ plugins {
     id("com.gradle.plugin-publish")
     id("org.jetbrains.kotlin.jvm")
     id("com.github.gmazzo.buildconfig") version "5.3.5"
+    id("com.vanniktech.maven.publish")
 }
 
 description = "Multiplatform Game Engine written in Kotlin"
@@ -27,41 +28,29 @@ gradlePlugin {
 
 	plugins {
         val korge by creating {
-            //PluginDeclaration decl = it
-			//id = "korlibs.korge"
-            id = "com.soywiz.korge"
-			displayName = "Korge"
+            id = "org.korge.engine"
+			displayName = "Korge Game Engine"
 			description = "Multiplatform Game Engine for Kotlin"
-			implementationClass = "korlibs.korge.gradle.KorgeGradlePlugin"
+			implementationClass = "korlibs.korge.gradle.KorgeGradlePlugin"  // --> "org.korge.korlibs.korge.gradle.KorgeGradlePlugin"
 		}
+
         val `korge-library` by creating {
-            //PluginDeclaration decl = it
-            //id = "korlibs.korge"
-            id = "com.soywiz.korge.library"
+            id = "org.korge.engine.library"
             displayName = "Korge Library"
             description = "Multiplatform Game Engine for Kotlin"
             implementationClass = "korlibs.korge.gradle.KorgeLibraryGradlePlugin"
         }
-        val `korge-kotlin-plugin` by creating {
-            //PluginDeclaration decl = it
-            //id = "korlibs.korge"
-            id = "com.soywiz.korge.kotlinplugin"
-            displayName = "Korge Kotlin Plugin"
-            description = "Multiplatform Game Engine for Kotlin"
-            implementationClass = "korlibs.korge.kotlin.plugin.KorgeKotlinCompilerPlugin"
-        }
-
         val kproject by creating {
-            id = "com.soywiz.kproject"
-            displayName = "kproject"
+            id = "org.korge.kproject"
+            displayName = "KProject Gradle Plugin"
             description = "Allows to use sourcecode & git-based dependencies"
-            implementationClass = "com.soywiz.kproject.KProjectPlugin"
+            implementationClass = "org.korge.kproject.KProjectPlugin"
         }
         val kprojectRoot by creating {
-            id = "com.soywiz.kproject.root"
-            displayName = "kproject"
+            id = "org.korge.kproject.root"
+            displayName = "KProject Root Gradle Plugin"
             description = "Allows to use sourcecode & git-based dependencies"
-            implementationClass = "com.soywiz.kproject.KProjectRootPlugin"
+            implementationClass = "org.korge.kproject.KProjectRootPlugin"
         }
 	}
 }
@@ -106,6 +95,7 @@ dependencies {
     implementation(libs.proguard.gradle)
     implementation(libs.gson)
     implementation(libs.gradle.publish.plugin)
+    implementation(libs.vanniktech.maven.publish)
 
     implementation(libs.kover)
     implementation(libs.dokka)
@@ -150,14 +140,38 @@ afterEvaluate {
 
 tasks { val jvmTest by creating { dependsOn("test") } }
 
-korlibs.NativeTools.groovyConfigurePublishing(project, false)
-korlibs.NativeTools.groovyConfigureSigning(project)
+// GradlePlugin type is auto-detected by vanniktech because java-gradle-plugin is applied
+mavenPublishing {
+    publishToMavenCentral()
+
+    pom {
+        name.set("korge-gradle-plugin")
+        description.set("Multiplatform Game Engine written in Kotlin – Gradle Plugin")
+        url.set("https://github.com/korlibs/korge")
+        licenses {
+            license {
+                name.set("MIT")
+                url.set("https://raw.githubusercontent.com/korlibs/korge/main/LICENSE")
+            }
+        }
+        developers {
+            developer {
+                id.set("korge")
+                name.set("KorGE Team")
+                email.set("info@korge.org")
+            }
+        }
+        scm {
+            url.set("https://github.com/korlibs/korge")
+        }
+    }
+}
 
 buildConfig {
     //val project = project(":korge-kotlin-plugin")
     packageName("korlibs.korge.gradle.plugin")
     //buildConfigField("String", "KOTLIN_PLUGIN_ID", "\"${rootProject.extra["kotlin_plugin_id"]}\"")
-    buildConfigField("String", "KOTLIN_PLUGIN_ID", "\"com.soywiz.korge.korge-kotlin-plugin\"")
+    buildConfigField("String", "KOTLIN_PLUGIN_ID", "\"org.korge.gradle.korge-kotlin-plugin\"")
     //buildConfigField("String", "KOTLIN_PLUGIN_GROUP", "\"${project.group}\"")
     //buildConfigField("String", "KOTLIN_PLUGIN_NAME", "\"${project.name}\"")
     //buildConfigField("String", "KOTLIN_PLUGIN_VERSION", "\"${project.version}\"")

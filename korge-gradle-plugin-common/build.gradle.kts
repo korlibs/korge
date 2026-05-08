@@ -9,6 +9,7 @@ plugins {
     id("com.gradle.plugin-publish")
     id("org.jetbrains.kotlin.jvm")
     id("com.github.gmazzo.buildconfig") version "5.3.5"
+    id("com.vanniktech.maven.publish")
 }
 
 description = "Multiplatform Game Engine written in Kotlin"
@@ -42,7 +43,7 @@ val srcgen = File(project.buildDir, "srcgen")
 kotlin.sourceSets.maybeCreate("main").kotlin.srcDirs(srcgen)
 val KProjectVersionKt = File(srcgen, "KProjectVersion.kt")
 val KProjectVersionContent = """
-package com.soywiz.kproject.version
+package org.korge.kproject.version
 
 object KProjectVersion {
     val VERSION = "${version}"
@@ -53,8 +54,33 @@ if (!KProjectVersionKt.exists() || KProjectVersionKt.text != KProjectVersionCont
     KProjectVersionKt.text = KProjectVersionContent
 }
 
-korlibs.NativeTools.groovyConfigurePublishing(project, false)
-korlibs.NativeTools.groovyConfigureSigning(project)
+mavenPublishing {
+    publishToMavenCentral()
+
+    coordinates(group.toString(), "korge-gradle-plugin-common", version.toString())
+
+    pom {
+        name.set("korge-gradle-plugin-common")
+        description.set("Multiplatform Game Engine written in Kotlin – Gradle Plugin Common")
+        url.set("https://github.com/korlibs/korge")
+        licenses {
+            license {
+                name.set("MIT")
+                url.set("https://raw.githubusercontent.com/korlibs/korge/main/LICENSE")
+            }
+        }
+        developers {
+            developer {
+                id.set("korge")
+                name.set("KorGE Team")
+                email.set("info@korge.org")
+            }
+        }
+        scm {
+            url.set("https://github.com/korlibs/korge")
+        }
+    }
+}
 
 tasks {
     val publishJvmPublicationToMavenLocal = creating(Task::class) {

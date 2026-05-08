@@ -22,17 +22,21 @@ testDependencies:
 ## deps/build.gradle
 buildscript {
     repositories {
-        mavenLocal(); mavenCentral(); google(); gradlePluginPortal()
+        mavenLocal()
+        maven { url = uri("https://central.sonatype.com/repository/maven-snapshots") }
+        mavenCentral()
+        google()
+        gradlePluginPortal()
         maven { url = uri("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev") }
         maven { url = uri("https://maven.pkg.jetbrains.space/kotlin/p/wasm/experimental") }
     }
 }
 plugins {
-  id("com.soywiz.kproject")
+  id("org.korge.kproject")
   id("org.jetbrains.kotlin.plugin.serialization")
 }
 dependencies {
-  add("commonMainApi", "org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.1")
+  add("commonMainApi", "org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
   add("commonMainApi", project(":mymodule"))
 }
 [file("build.extra.gradle"), file("build.extra.gradle.kts")].each { extraGradle ->
@@ -55,13 +59,17 @@ world
 ## mymodule/build.gradle
 buildscript {
     repositories {
-        mavenLocal(); mavenCentral(); google(); gradlePluginPortal()
+        mavenLocal()
+        maven { url = uri("https://central.sonatype.com/repository/maven-snapshots") }
+        mavenCentral()
+        google()
+        gradlePluginPortal()
         maven { url = uri("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev") }
         maven { url = uri("https://maven.pkg.jetbrains.space/kotlin/p/wasm/experimental") }
     }
 }
 plugins {
-  id("com.soywiz.kproject")
+  id("org.korge.kproject")
 }
 dependencies {
   add("commonMainApi", project(":Ademo2"))
@@ -96,13 +104,17 @@ dependencies:
 ## modules/Ademo2/build.gradle
 buildscript {
     repositories {
-        mavenLocal(); mavenCentral(); google(); gradlePluginPortal()
+        mavenLocal()
+        maven { url = uri("https://central.sonatype.com/repository/maven-snapshots") }
+        mavenCentral()
+        google()
+        gradlePluginPortal()
         maven { url = uri("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev") }
         maven { url = uri("https://maven.pkg.jetbrains.space/kotlin/p/wasm/experimental") }
     }
 }
 plugins {
-  id("com.soywiz.kproject")
+  id("org.korge.kproject")
 }
 dependencies {
   add("commonMainApi", project(":Ademo3"))
@@ -151,13 +163,17 @@ dependencies:
 ## modules/Ademo3/demo3/build.gradle
 buildscript {
     repositories {
-        mavenLocal(); mavenCentral(); google(); gradlePluginPortal()
+        mavenLocal()
+        maven { url = uri("https://central.sonatype.com/repository/maven-snapshots") }
+        mavenCentral()
+        google()
+        gradlePluginPortal()
         maven { url = uri("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev") }
         maven { url = uri("https://maven.pkg.jetbrains.space/kotlin/p/wasm/experimental") }
     }
 }
 plugins {
-  id("com.soywiz.kproject")
+  id("org.korge.kproject")
 }
 dependencies {
   add("commonMainApi", "org.jetbrains.compose.runtime:runtime:1.4.1")

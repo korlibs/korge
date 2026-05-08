@@ -28,14 +28,4 @@ object NativeTools {
             }
         }
     }
-
-    @JvmStatic
-    fun groovyConfigurePublishing(project: Project, multiplatform: Boolean) {
-        project.configurePublishing(multiplatform = multiplatform)
-    }
-
-    @JvmStatic
-    fun groovyConfigureSigning(project: Project) {
-        project.configureSigning()
-    }
 }
