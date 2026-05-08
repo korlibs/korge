@@ -1,11 +1,20 @@
-name: TEST
-# https://docs.github.com/en/actions/learn-github-actions/expressions
+name: Run checks
 
 on:
   push:
     branches: [ main, 'release/**' ]
+    paths:
+      - '**'
+      - '!**.gitignore'
+      - '!**.md'
+      - '!**.github/workflows/*'
   pull_request:
     branches: [ main, 'release/**' ]
+    paths:
+      - '**'
+      - '!**.gitignore'
+      - '!**.md'
+      - '!**.github/workflows/*'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
