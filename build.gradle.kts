@@ -11,7 +11,7 @@ RootKorlibsPlugin.doInit(rootProject)
 tasks {
     val checkModulePublication by creating {
         doLast {
-            val publishedKorgeModule = File("${System.getProperty("user.home")}/.m2/repository/org/korge/engine/korge/6.1.0-SNAPSHOT/korge-6.1.0-SNAPSHOT.module")
+            val publishedKorgeModule = File("${System.getProperty("user.home")}/.m2/repository/org/korge/engine/korge/7.0.0-SNAPSHOT/korge-7.0.0-SNAPSHOT.module")
             val publishedKorgeModuleText = publishedKorgeModule.readText()
             for (ref in listOf("jvmApiElements", "jsApiElements", "android", "iosArm64")) {
                 check (ref in publishedKorgeModuleText) {

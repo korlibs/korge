@@ -22,7 +22,7 @@ fun Project.configureNativeIos(projectType: ProjectType) {
     val exKotlinSourceSetContainer = this.project.exKotlinSourceSetContainer
     this.project.kotlin.apply {
         sourceSets.apply {
-            for (target in listOf(iosArm64(), iosX64(), iosSimulatorArm64(), tvosArm64(), tvosX64(), tvosSimulatorArm64())) {
+            for (target in listOf(iosArm64(), iosX64(), iosSimulatorArm64(), tvosArm64(), tvosSimulatorArm64())) {
                 val native = createPairSourceSet(target.name, project = project)
                 when {
                     target.isIos -> native.dependsOn(exKotlinSourceSetContainer.ios)
@@ -55,7 +55,7 @@ fun Project.configureNativeIosTvos(projectType: ProjectType, targetName: String)
 
     val iosTvosTargets = when (targetName) {
         "ios" -> listOf(kotlin.iosX64(), kotlin.iosArm64(), kotlin.iosSimulatorArm64())
-        "tvos" -> listOf(kotlin.tvosX64(), kotlin.tvosArm64(), kotlin.tvosSimulatorArm64())
+        "tvos" -> listOf(kotlin.tvosArm64(), kotlin.tvosSimulatorArm64())
         else -> TODO()
     }
 

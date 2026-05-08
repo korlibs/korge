@@ -141,7 +141,6 @@ class KProjectPlugin : Plugin<Project> {
                 iosX64()
                 iosArm64()
                 iosSimulatorArm64()
-                tvosX64()
                 tvosArm64()
                 tvosSimulatorArm64()
             }

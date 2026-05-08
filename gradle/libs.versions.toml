@@ -9,7 +9,7 @@ proguard-gradle = "7.9.1"
 asm = "9.9.1"
 jgit = "5.13.1.202206130422-r"
 
-korlibs = "6.1.0"
+korlibs = "7.0.0-SNAPSHOT"
 kotlin = "2.3.20"
 #kotlinx-coroutines = "1.8.1"
 kotlinx-coroutines = "1.10.2"
@@ -29,16 +29,16 @@ vanniktech-publish = "0.35.0"
 
 
 [libraries]
-korlibs-audio = { module = "org.korge:korlibs-audio", version.ref = "korlibs" }
-korlibs-image = { module = "org.korge:korlibs-image", version.ref = "korlibs" }
-korlibs-inject = { module = "org.korge:korlibs-inject", version.ref = "korlibs" }
-korlibs-template = { module = "org.korge:korlibs-template", version.ref = "korlibs" }
-korlibs-time = { module = "org.korge:korlibs-time", version.ref = "korlibs" }
-korlibs-serialization = { module = "org.korge:korlibs-serialization", version.ref = "korlibs" }
-korlibs-datastructure = { module = "org.korge:korlibs-datastructure", version.ref = "korlibs" }
-korlibs-datastructure-core = { module = "org.korge:korlibs-datastructure-core", version.ref = "korlibs" }
-korlibs-memory = { module = "org.korge:korlibs-memory", version.ref = "korlibs" }
-korlibs-io-stream = { module = "org.korge:korlibs-io-stream", version.ref = "korlibs" }
+korlibs-audio = { module = "org.korge.korlibs:korlibs-audio", version.ref = "korlibs" }
+korlibs-image = { module = "org.korge.korlibs:korlibs-image", version.ref = "korlibs" }
+korlibs-inject = { module = "org.korge.korlibs:korlibs-inject", version.ref = "korlibs" }
+korlibs-template = { module = "org.korge.korlibs:korlibs-template", version.ref = "korlibs" }
+korlibs-time = { module = "org.korge.korlibs:korlibs-time", version.ref = "korlibs" }
+korlibs-serialization = { module = "org.korge.korlibs:korlibs-serialization", version.ref = "korlibs" }
+korlibs-datastructure = { module = "org.korge.korlibs:korlibs-datastructure", version.ref = "korlibs" }
+korlibs-datastructure-core = { module = "org.korge.korlibs:korlibs-datastructure-core", version.ref = "korlibs" }
+korlibs-memory = { module = "org.korge.korlibs:korlibs-memory", version.ref = "korlibs" }
+korlibs-io-stream = { module = "org.korge.korlibs:korlibs-io-stream", version.ref = "korlibs" }
 jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
 jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson" }
 junit = { module = "junit:junit", version.ref = "junit" }
