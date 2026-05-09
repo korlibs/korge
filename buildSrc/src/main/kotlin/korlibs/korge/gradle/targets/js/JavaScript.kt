@@ -17,15 +17,17 @@ import org.jetbrains.kotlin.gradle.plugin.*
 import org.jetbrains.kotlin.gradle.targets.js.dsl.*
 import org.jetbrains.kotlin.gradle.tasks.Kotlin2JsCompile
 import java.io.*
+import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension
+import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin
 
 private object JavaScriptClass
 
 fun Project.configureJavaScript(projectType: ProjectType) {
     if (gkotlin.targets.findByName("js") != null) return
 
-    rootProject.plugins.withType(org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin::class.java).allThis {
+    rootProject.plugins.withType(NodeJsRootPlugin::class.java).allThis {
         try {
-            rootProject.the<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension>().nodeVersion =
+            rootProject.extensions.getByType(NodeJsRootExtension::class.java).nodeVersion =
                 BuildVersions.NODE_JS
         } catch (e: Throwable) {
             // Ignore failed because already configured

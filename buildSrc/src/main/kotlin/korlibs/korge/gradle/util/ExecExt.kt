@@ -4,35 +4,24 @@ import org.apache.tools.ant.taskdefs.condition.*
 import org.gradle.api.*
 import org.gradle.process.*
 import java.io.*
+import javax.inject.Inject
+import org.gradle.internal.extensions.core.serviceOf
+
+private interface InjectedExecOps {
+    @get:Inject
+    val execOps: ExecOperations
+}
 
 fun Project.debugExecSpec(exec: ExecSpec) {
     logger.warn("COMMAND: ${exec.commandLine.joinToString(" ")}")
-    //println("COMMAND: ${exec.commandLine.joinToString(" ")}")
 }
 
-/*
-class LoggerOutputStream(val logger: org.gradle.api.logging.Logger, val prefix: String) : OutputStream() {
-    val buffer = ByteArrayOutputStream()
-
-    override fun write(b: Int) {
-        if (b == 13 || b == 10) {
-            val line = buffer.toString("UTF-8")
-            println("$prefix: $line")
-            buffer.reset()
-        } else {
-            buffer.write(b)
-        }
-    }
-}
-*/
-
-fun Project.execThis(block: ExecSpec.() -> Unit): ExecResult = exec(block)
+fun Project.execThis(block: ExecSpec.() -> Unit): ExecResult =
+    objects.newInstance(InjectedExecOps::class.java).execOps.exec(block)
 
 fun Project.execLogger(action: (ExecSpec) -> Unit): ExecResult {
     return execThis {
         action(this)
-        //it.standardOutput = LoggerOutputStream(logger, "OUT")
-        //it.errorOutput = LoggerOutputStream(logger, "ERR")
         debugExecSpec(this)
     }
 }

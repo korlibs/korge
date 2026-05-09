@@ -3,6 +3,7 @@ package korlibs.modules
 import korlibs.*
 import org.gradle.api.*
 import org.gradle.api.plugins.*
+import org.gradle.internal.extensions.core.extra
 import org.gradle.plugins.signing.*
 import org.gradle.plugins.signing.signatory.internal.pgp.*
 import org.gradle.plugins.signing.signatory.pgp.*
@@ -34,7 +35,6 @@ fun Project.configureSigning() {
         //println("signatories=$signatories")
 
         afterEvaluate {
-            //println("configuring signing for $this")
             signing.apply {
                 // This might be duplicated for korge-gradle-plugin? : Signing plugin detected. Will automatically sign the published artifacts.
                 try {
@@ -43,9 +43,7 @@ fun Project.configureSigning() {
                 }
                 if (signingKey != null) {
                     this.signatories = signatories
-                    //useInMemoryPgpKeys(signingKey, signingPassword)
                 }
-                //project.gradle.taskGraph.whenReady {}
             }
         }
     }
@@ -63,4 +61,4 @@ open class CachedInMemoryPgpSignatoryProvider(signingKey: String?, signingPasswo
     }
 }
 
-val Project.signing get() = extensions.getByType<SigningExtension>()
+val Project.signing get() = extensions.getByType(SigningExtension::class.java)

@@ -1,31 +1,18 @@
-import korlibs.korge.gradle.targets.android.*
-import korlibs.root.*
-import com.vanniktech.maven.publish.*
+import com.vanniktech.maven.publish.JavaLibrary
+import com.vanniktech.maven.publish.JavadocJar
+import org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation
 
 plugins {
-    kotlin("jvm")
-    id("org.jetbrains.kotlin.plugin.serialization") version "2.0.0"
-    id("com.vanniktech.maven.publish")
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.kotlinx.kover)
+    alias(libs.plugins.dokka)
+    alias(libs.plugins.vanniktech.mavenPublish)
 }
 
 description = "Korge IPC – inter-process communication utilities for the Korge game engine"
-group = RootKorlibsPlugin.KORGE_RELOAD_AGENT_GROUP
-
-val jversion = GRADLE_JAVA_VERSION_STR
-
-java {
-    setSourceCompatibility(jversion)
-    setTargetCompatibility(jversion)
-}
-
-tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile::class).all {
-    compilerOptions {
-        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.fromTarget(jversion))
-        apiVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.fromVersion("2.1"))
-        languageVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.fromVersion("2.1"))
-        suppressWarnings.set(true)
-    }
-}
+group = "org.korge.engine"
+version = rootProject.libs.versions.korge.get()
 
 mavenPublishing {
     configure(JavaLibrary(javadocJar = JavadocJar.Empty(), sourcesJar = true))
@@ -56,10 +43,20 @@ mavenPublishing {
     }
 }
 
+kotlin {
+    @OptIn(ExperimentalAbiValidation::class)
+    abiValidation {
+        enabled.set(true)
+    }
+}
+
+java {
+    setSourceCompatibility(libs.versions.javaSourceCompatibility.get())
+    setTargetCompatibility(libs.versions.javaTargetCompatibility.get())
+}
+
 dependencies {
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.serialization.json)
     testImplementation(libs.bundles.kotlin.test)
 }
-
-tasks { val jvmTest by creating { dependsOn("test") } }

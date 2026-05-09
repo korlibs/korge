@@ -17,7 +17,10 @@ open class LambdaClosure<T, TR>(val lambda: (value: T) -> TR) : Closure<T>(Unit)
 
 //inline class TaskName(val name: String)
 
+@Deprecated("Use register directly")
 inline fun <reified T : Task> TaskContainer.create(name: String, callback: T.() -> Unit = {}) = create(name, T::class.java).apply(callback)
+
+@Deprecated("Use register directly")
 inline fun <reified T : Task> TaskContainer.createTyped(name: String, callback: T.() -> Unit = {}) = create(name, T::class.java).apply(callback)
 
 
@@ -31,4 +34,4 @@ inline fun ignoreErrors(action: () -> Unit) {
 
 fun <T> Project.getIfExists(name: String): T? = if (this.hasProperty(name)) this.property(name) as T else null
 
-operator fun <T> NamedDomainObjectSet<T>.get(key: String): T = this.getByName(key)
+operator fun <T : Any> NamedDomainObjectSet<T>.get(key: String): T = this.getByName(key)

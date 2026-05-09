@@ -6,19 +6,15 @@ import org.gradle.api.*
 import org.gradle.api.tasks.testing.*
 
 fun Project.configureKover() {
-    rootProject.allprojectsThis {
+    rootProject.allprojects {
         plugins.apply(kotlinx.kover.KoverPlugin::class.java)
-    }
-
-    rootProject.koverMerged {
-        it.enable()
     }
 
     // https://repo.maven.apache.org/maven2/org/jetbrains/intellij/deps/intellij-coverage-agent/1.0.688/
     //val koverVersion = "1.0.688"
     val koverVersion = rootProject._libs["versions"]["kover"]["agent"].dynamicInvoke("get").casted<String>()
 
-    rootProject.allprojectsThis {
+    rootProject.allprojects {
         kover {
             it.engine.set(kotlinx.kover.api.IntellijEngine(koverVersion))
         }

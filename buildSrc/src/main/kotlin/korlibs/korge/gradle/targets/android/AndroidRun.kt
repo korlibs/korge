@@ -75,9 +75,7 @@ fun Project.installAndroidRun(dependsOnList: List<String>, direct: Boolean, isKo
                 }
 
                 else -> tasks.createThis<GradleBuild>(installAndroidTaskName) {
-                    buildFile = File(buildDir, "platforms/android/build.gradle")
-                    //task.version = "4.10.1"
-                    //task.tasks = listOf("install$suffixDevice$suffixDebug")
+                    setDir(layout.buildDirectory.dir("platforms/android").map { it.asFile })
                     tasks = listOf("install$suffixDebug")
                 }
             }

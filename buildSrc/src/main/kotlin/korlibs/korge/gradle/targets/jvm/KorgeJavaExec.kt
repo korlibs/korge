@@ -13,10 +13,10 @@ fun Project.findAllProjectDependencies(visited: MutableSet<Project> = mutableSet
     if (this in visited) return visited
     visited.add(this)
     val dependencies = project.configurations.flatMap { it.dependencies.withType(ProjectDependency::class.java) }.filterIsInstance<ProjectDependency>()
-    return (dependencies.flatMap { it.dependencyProject.findAllProjectDependencies(visited) } + this).toSet()
+    return (dependencies.flatMap { project.rootProject.project(it.path).findAllProjectDependencies(visited) } + this).toSet()
 }
 
-open class KorgeJavaExecWithAutoreload : KorgeJavaExec() {
+abstract class KorgeJavaExecWithAutoreload : KorgeJavaExec() {
     @get:Input
     var enableRedefinition: Boolean = false
 
@@ -113,8 +113,8 @@ open class KorgeJavaExecWithAutoreload : KorgeJavaExec() {
             )
 
             environment("KORGE_AUTORELOAD", "true")
-            environment("KORGE_IPC", project.findProperty("korge.ipc")?.toString())
-            environment("KORGE_HEADLESS", project.findProperty("korge.headless")?.toString())
+            project.findProperty("korge.ipc")?.toString()?.let { environment("KORGE_IPC", it) }
+            project.findProperty("korge.headless")?.toString()?.let { environment("KORGE_HEADLESS", it) }
         }
     }
 }
@@ -135,7 +135,7 @@ fun Project.getKorgeClassPath(): FileCollection {
         .reduceRight { l, r -> l + r }
 }
 
-open class KorgeJavaExec : JavaExec() {
+abstract class KorgeJavaExec : JavaExec() {
     //dependsOn(getKorgeProcessResourcesTaskName("jvm", "main"))
 
     @get:Input

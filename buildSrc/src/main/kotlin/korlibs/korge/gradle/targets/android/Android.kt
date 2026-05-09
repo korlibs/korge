@@ -149,8 +149,8 @@ fun Project.getAndroidTargetSdkVersion(): Int = project.findProperty("android.ta
 //const val ANDROID_DEFAULT_MIN_SDK = 16 // Previously 18
 //const val ANDROID_DEFAULT_MIN_SDK = 18
 const val ANDROID_DEFAULT_MIN_SDK = 33
-const val ANDROID_DEFAULT_COMPILE_SDK = 33
-const val ANDROID_DEFAULT_TARGET_SDK = 33
+const val ANDROID_DEFAULT_COMPILE_SDK = 36
+const val ANDROID_DEFAULT_TARGET_SDK = 36
 
 //val GRADLE_JAVA_VERSION_STR = "11"
 const val GRADLE_JAVA_VERSION_STR = "23"

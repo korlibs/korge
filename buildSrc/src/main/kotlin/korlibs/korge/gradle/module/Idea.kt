@@ -29,7 +29,7 @@ fun Project.configureIdea() {
 
 /*
 fun Project.initIdeaExcludes() {
-    allprojectsThis {
+    allprojects {
         if (project.hasBuildGradle()) {
             val plugin = this.plugins.apply(IdeaPlugin::class.java)
             val idea = this.extensions.getByType<IdeaModel>()

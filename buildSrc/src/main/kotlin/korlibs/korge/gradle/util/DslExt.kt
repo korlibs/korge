@@ -1,7 +1,6 @@
 package korlibs.korge.gradle.util
 
-import korlibs.*
-import kotlinx.kover.api.*
+import kotlinx.kover.gradle.plugin.dsl.KoverProjectExtension
 import org.gradle.api.*
 import org.gradle.api.plugins.*
 import org.gradle.api.tasks.*
@@ -13,11 +12,7 @@ inline fun <reified T : Task> TaskContainer.createThis(name: String, vararg para
     return create(name, T::class.java, *params).apply(block)
 }
 
-fun org.gradle.api.Project.`koverMerged`(configure: Action<KoverMergedConfig>): Unit = (this as org.gradle.api.plugins.ExtensionAware).extensions.configure("koverMerged", configure)
-fun org.gradle.api.Project.`kover`(configure: Action<kotlinx.kover.api.KoverProjectConfig>): Unit = (this as org.gradle.api.plugins.ExtensionAware).extensions.configure("kover", configure)
-//fun TaskContainer.`dokkaHtml`(configure: org.jetbrains.dokka.gradle.DokkaTask.() -> Unit) {
-//    configure(named<org.jetbrains.dokka.gradle.DokkaTask>("dokkaHtml").get())
-//}
+fun org.gradle.api.Project.`kover`(configure: Action<KoverProjectExtension>): Unit = (this as org.gradle.api.plugins.ExtensionAware).extensions.configure("kover", configure)
 
 /**
  * Retrieves the [ext][org.gradle.api.plugins.ExtraPropertiesExtension] extension.

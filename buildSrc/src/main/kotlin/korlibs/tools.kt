@@ -14,6 +14,7 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import java.io.*
 import java.net.*
 import java.util.zip.*
+import org.gradle.internal.extensions.core.extra
 
 fun MutableMap<String, Any>.applyProjectProperties(
     projectUrl: String,
@@ -72,48 +73,30 @@ fun Project.extractArchive(archive: File, output: File) {
     }
 }
 
-val Project.selfExtra: ExtraPropertiesExtension get() = extensions.getByType(ExtraPropertiesExtension::class.java)
-val Project.extra: ExtraPropertiesExtension get() = rootProject.extensions.getByType(ExtraPropertiesExtension::class.java)
-
 // Gradle extensions
 operator fun Project.invoke(callback: Project.() -> Unit) = callback(this)
 operator fun DependencyHandler.invoke(callback: DependencyHandler.() -> Unit) = callback(this)
 operator fun KotlinMultiplatformExtension.invoke(callback: KotlinMultiplatformExtension.() -> Unit) = callback(this)
-fun Project.tasks(callback: TaskContainer.() -> Unit) = this.tasks.apply(callback)
 
-inline fun <reified T> Project.the(): T {
-    return extensions.getByType<T>()
-}
-inline fun <reified T> ExtensionContainer.getByType() = getByType(T::class.java)
-
-inline fun <reified T> DomainObjectCollection<T>.withType(): DomainObjectCollection<T> = withType(T::class.java)
+inline fun <reified T : Any> DomainObjectCollection<T>.withType(): DomainObjectCollection<T> = withType(T::class.java)
 inline fun <reified T : Plugin<*>> PluginCollection<T>.withType(): PluginCollection<T> = withType(T::class.java)
-inline fun <T> DomainObjectCollection<T>.allThis(noinline block: T.() -> Unit) = this.all(block)
+inline fun <T : Any> DomainObjectCollection<T>.allThis(noinline block: T.() -> Unit) = this.all(block)
 
 inline fun <reified T: Task> TaskCollection<*>.withType(noinline block: T.() -> Unit) {
     return (this as TaskCollection<T>).withType(T::class.java).configureEach(block)
 }
-inline fun <reified T> ExtensionContainer.configure(noinline block: T.() -> Unit) {
+inline fun <reified T : Any> ExtensionContainer.configure(noinline block: T.() -> Unit) {
     return configure(T::class.java, Action { block(it) })
 }
 
-operator fun <T> NamedDomainObjectCollection<T>.get(name: String): T = this.getByName(name)
+operator fun <T : Any> NamedDomainObjectCollection<T>.get(name: String): T = this.getByName(name)
 val NamedDomainObjectCollection<KotlinTarget>.js: KotlinOnlyTarget<KotlinJsCompilation> get() = this["js"] as KotlinOnlyTarget<KotlinJsCompilation>
 val NamedDomainObjectCollection<KotlinTarget>.jvm: KotlinOnlyTarget<KotlinJvmCompilation> get() = this["jvm"] as KotlinOnlyTarget<KotlinJvmCompilation>
 val NamedDomainObjectCollection<KotlinTarget>.metadata: KotlinOnlyTarget<KotlinCommonCompilation> get() = this["metadata"] as KotlinOnlyTarget<KotlinCommonCompilation>
 val <T : KotlinCompilation<*>> NamedDomainObjectContainer<T>.main: T get() = this["main"]
 val <T : KotlinCompilation<*>> NamedDomainObjectContainer<T>.test: T get() = this["test"]
 
-inline fun <reified T : Task> TaskContainer.create(name: String, callback: T.() -> Unit) = create<T>(name, T::class.java).apply(callback)
-
-val Project.gkotlin get() = extensions.getByType<KotlinMultiplatformExtension>()
-fun Project.gkotlin(callback: KotlinMultiplatformExtension.() -> Unit) = gkotlin.apply(callback)
-
-val Project.kotlin get() = extensions.getByType<KotlinMultiplatformExtension>()
-fun Project.kotlin(callback: KotlinMultiplatformExtension.() -> Unit) = gkotlin.apply(callback)
-
-fun Project.allprojectsThis(block: Project.() -> Unit) = allprojects(block)
-fun Project.subprojectsThis(block: Project.() -> Unit) = subprojects(block)
+fun Project.kotlin(callback: KotlinMultiplatformExtension.() -> Unit) = extensions.getByType(KotlinMultiplatformExtension::class.java).apply(callback)
 
 // Groovy tools
 fun Node.toXmlString() = XmlUtil.serialize(this)
@@ -128,8 +111,8 @@ fun Project.doOnce(uniqueName: String, block: () -> Unit) {
 
 fun Project.doOncePerProject(uniqueName: String, block: () -> Unit) {
     val key = "doOnceProject-${project.name}-$uniqueName"
-    if (!project.extra.has(key)) {
-        project.extra.set(key, true)
+    if (!rootProject.extra.has(key)) {
+        rootProject.extra.set(key, true)
         block()
     }
 }

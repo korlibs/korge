@@ -42,7 +42,7 @@ fun Project.configureDenoRun() {
     }
 }
 
-open class DenoTestTask : AbstractTestTask() {
+abstract class DenoTestTask : AbstractTestTask() {
 //open class DenoTestTask : KotlinTest() {
 
     //var isDryRun by org.jetbrains.kotlin.gradle.utils.property { false }

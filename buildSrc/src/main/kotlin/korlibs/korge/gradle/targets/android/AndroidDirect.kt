@@ -1,10 +1,13 @@
-@file:Suppress("DEPRECATION_ERROR", "DEPRECATION")
-
 package korlibs.korge.gradle.targets.android
 
-import com.android.build.api.dsl.*
-import com.android.build.gradle.TestedExtension
+import com.android.build.api.dsl.ApplicationExtension
+import com.android.build.api.dsl.ApplicationVariantDimension
+import com.android.build.api.dsl.KotlinMultiplatformAndroidLibraryExtension
+import com.android.build.api.dsl.KotlinMultiplatformAndroidLibraryTarget
+import com.android.build.api.dsl.LibraryExtension
+import com.android.build.api.dsl.TestExtension
 import com.android.build.gradle.tasks.*
+import java.io.File
 import korlibs.*
 import korlibs.korge.gradle.*
 import korlibs.korge.gradle.kotlin
@@ -14,10 +17,9 @@ import korlibs.korge.gradle.targets.jvm.*
 import korlibs.korge.gradle.util.*
 import org.gradle.api.*
 import org.gradle.api.tasks.*
-import org.gradle.configurationcache.extensions.*
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
-import java.io.*
 
 fun Project.configureAndroidDirect(projectType: ProjectType, isKorge: Boolean) {
     if (!AndroidSdk.hasAndroidSdk(this)) {
@@ -27,75 +29,49 @@ fun Project.configureAndroidDirect(projectType: ProjectType, isKorge: Boolean) {
 
     project.ensureAndroidLocalPropertiesWithSdkDir()
 
+    if (projectType.isExecutable) configureAndroidExecutable(isKorge)
+    else configureAndroidLibrary(isKorge)
+
     if (projectType.isExecutable) {
-        project.plugins.apply("com.android.application")
-    } else {
-        plugins.apply("com.android.library")
+        installAndroidRun(listOf(), direct = true, isKorge = isKorge)
     }
 
-    //val android = project.extensions.getByName("android")
-    //project.kotlin.jvmToolchain(11)
+    afterEvaluate {
+        val jvmProcessResources = tasks.findByName("jvmProcessResources") as? Copy?
+        if (jvmProcessResources != null) {
+            jvmProcessResources.duplicatesStrategy = org.gradle.api.file.DuplicatesStrategy.INCLUDE
+            val packageDebugAssets = tasks.findByName("packageDebugAssets") as MergeSourceSetFolders?
+            val packageReleaseAssets = tasks.findByName("packageReleaseAssets") as MergeSourceSetFolders?
 
-    project.kotlin.androidTarget().apply {
-    //project.kotlin.android().apply {
-        publishAllLibraryVariants()
-        publishLibraryVariantsGroupedByFlavor = true
-        //this.attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.androidJvm)
-        compilations.allThis {
-            compileTaskProvider.configure {
-                (it as KotlinJvmCompile).compilerOptions {
-                    jvmTarget.set(JvmTarget.fromTarget(ANDROID_JAVA_VERSION_STR))
-                }
-            }
+            // @TODO: Why is this required with Gradle 8.1.1?
+            packageDebugAssets?.dependsOn(jvmProcessResources) // @TODO: <-- THIS
+            packageReleaseAssets?.dependsOn(jvmProcessResources) // @TODO: <-- THIS
         }
-        AddFreeCompilerArgs.addFreeCompilerArgs(project, this)
+        val compileDebugJavaWithJavac = project.tasks.findByName("compileDebugJavaWithJavac") as? org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile?
+        compileDebugJavaWithJavac?.compilerOptions?.jvmTarget?.set(ANDROID_JVM_TARGET)
     }
+}
 
-    ensureSourceSetsConfigure("common", "android")
+private fun Project.configureAndroidExecutable(isKorge: Boolean) {
+    project.plugins.apply("com.android.application")
+    val android = extensions.findByType(ApplicationExtension::class.java)
 
-    //if (isKorge) {
-    //    project.afterEvaluate {
-    //        //println("@TODO: Info is not generated")
-    //        //writeAndroidManifest(project.rootDir, project.korge)
-    //    }
-    //}
-    //val generated = AndroidGenerated(korge)
-
-    dependencies {
-        if (SemVer(BuildVersions.KOTLIN) >= SemVer("2.3.20")) {
-            add("androidUnitTestImplementation", "org.jetbrains.kotlin:kotlin-test")
-        }
-        add("androidTestImplementation", "org.jetbrains.kotlin:kotlin-test")
-
-        add("androidTestImplementation", "org.jetbrains.kotlin:kotlin-test")
-        add("androidTestImplementation", "androidx.test:core:1.7.0")
-        add("androidTestImplementation", "androidx.test.ext:junit:1.3.0")
-        add("androidTestImplementation", "androidx.test.espresso:espresso-core:3.7.0")
-        //androidTestImplementation 'com.android.support.test:runner:1.0.2'
-    }
-
-    val android = extensions.getByName<TestedExtension>("android")
-    android.apply {
+    println("Application: $android, ${extensions}")
+    android?.apply {
         val androidGenerated = project.toAndroidGenerated(isKorge)
         namespace = androidGenerated.getNamespace(isKorge)
 
-        setCompileSdkVersion(if (isKorge) project.korge.androidCompileSdk else project.getAndroidCompileSdkVersion())
-        //buildToolsVersion(project.findProperty("android.buildtools.version")?.toString() ?: "30.0.2")
+        compileSdk = if (isKorge) project.korge.androidCompileSdk else project.getAndroidCompileSdkVersion()
 
-        (this as CommonExtension<*, *, *, *, *>).installation.apply {
-            // @TODO: Android Build Gradle newer version
-            installOptions("-r")
-            timeOutInMs = project.korge.androidTimeoutMs
-        }
+//        (this as CommonExtension).installation.apply {
+//            // @TODO: Android Build Gradle newer version
+//            installOptions("-r")
+//            timeOutInMs = project.korge.androidTimeoutMs
+//        }
 
         compileOptions.apply {
             sourceCompatibility = ANDROID_JAVA_VERSION
             targetCompatibility = ANDROID_JAVA_VERSION
-        }
-
-        lintOptions.apply {
-            checkOnly()
-            //checkReleaseBuilds = false
         }
 
         buildFeatures.apply {
@@ -115,9 +91,7 @@ fun Project.configureAndroidDirect(projectType: ProjectType, isKorge: Boolean) {
 
         defaultConfig.also {
             it.multiDexEnabled = true
-            if (projectType.isExecutable) {
-                it.applicationId = androidGenerated.getAppId(isKorge)
-            }
+            it.applicationId = androidGenerated.getAppId(isKorge)
             it.minSdk = if (isKorge) project.korge.androidMinSdk else project.getAndroidMinSdkVersion()
             it.targetSdk = if (isKorge) project.korge.androidTargetSdk else project.getAndroidTargetSdkVersion()
             it.versionCode = if (isKorge) project.korge.versionCode else 1
@@ -127,6 +101,12 @@ fun Project.configureAndroidDirect(projectType: ProjectType, isKorge: Boolean) {
             it.manifestPlaceholders.putAll(if (isKorge) korge.configs else emptyMap())
         }
 
+        lintOptions.apply {
+            checkOnly()
+            //checkReleaseBuilds = false
+        }
+
+        // TODO Remove this lint option configuration or remove with above
         lintOptions.also {
             // @TODO: ../../build.gradle: All com.android.support libraries must use the exact same version specification (mixing versions can lead to runtime crashes). Found versions 28.0.0, 26.1.0. Examples include com.android.support:animated-vector-drawable:28.0.0 and com.android.support:customtabs:26.1.0
             it.disable("GradleCompatible")
@@ -141,53 +121,31 @@ fun Project.configureAndroidDirect(projectType: ProjectType, isKorge: Boolean) {
             }
         }
         buildTypes.apply {
-            //this.single().
-            if (projectType.isExecutable) {
-                maybeCreate("debug").apply {
-                    signingConfig = signingConfigs.getByName("release")
-                    isMinifyEnabled = false
-                }
+            maybeCreate("debug").apply {
+                (this as ApplicationVariantDimension).signingConfig = signingConfigs.getByName("release")
+                isMinifyEnabled = false
             }
             maybeCreate("release").apply {
-                signingConfig = signingConfigs.getByName("release")
-                if (projectType.isExecutable) {
-                    isMinifyEnabled = true // for libraries, this would make the library to be empty
-                    proguardFiles(
-                        getDefaultProguardFile("proguard-android-optimize.txt"),
-                        "proguard-rules.pro"
-                    )
-                    File(rootDir, "proguard-rules.pro").takeIfExists()?.also {
-                        proguardFile(it)
-                    }
-                    //proguardFiles(getDefaultProguardFile(ProguardFiles.ProguardFile.OPTIMIZE.fileName), File(rootProject.rootDir, "proguard-rules.pro"))
-                } else {
-                    isMinifyEnabled = false
+                (this as ApplicationVariantDimension).signingConfig = signingConfigs.getByName("release")
+                isMinifyEnabled = true // for libraries, this would make the library to be empty
+                proguardFiles(
+                    getDefaultProguardFile("proguard-android-optimize.txt"),
+                    "proguard-rules.pro"
+                )
+                File(rootDir, "proguard-rules.pro").takeIfExists()?.also {
+                    proguardFile(it)
                 }
             }
         }
 
         sourceSets.apply {
             maybeCreate("main").apply {
-                //assets.srcDirs("src/commonMain/resources",)
-                //val (resourcesSrcDirs, kotlinSrcDirs) = androidGetResourcesFolders()
-                //println("@ANDROID_DIRECT:")
-                //println(resourcesSrcDirs.joinToString("\n"))
-                //println(kotlinSrcDirs.joinToString("\n"))
                 manifest.srcFile(androidGenerated.getAndroidManifestFile(isKorge = isKorge))
                 java.srcDirs(androidGenerated.getAndroidSrcFolder(isKorge = isKorge))
                 res.srcDirs(androidGenerated.getAndroidResFolder(isKorge = isKorge))
                 assets.srcDirs(
                     "${project.buildDir}/processedResources/jvm/main",
-                    //"${project.projectDir}/src/commonMain/resources",
-                    //"${project.projectDir}/src/androidMain/resources",
-                    //"${project.projectDir}/src/main/resources",
-                    //"${project.projectDir}/build/commonMain/korgeProcessedResources/metadata/main",
-                    //"${project.projectDir}/build/korgeProcessedResources/android/main",
                 )
-                //assets.srcDirs(*resourcesSrcDirs.map { it.absoluteFile }.toTypedArray())
-                //java.srcDirs(*kotlinSrcDirs.map { it.absoluteFile }.toTypedArray())
-                //manifest.srcFile(File(project.buildDir, "AndroidManifest.xml"))
-                //manifest.srcFile(File(project.projectDir, "src/main/AndroidManifest.xml"))
             }
             for (name in listOf("test", "testDebug", "testRelease", "androidTest", "androidTestDebug", "androidTestRelease")) {
                 maybeCreate(name).apply {
@@ -196,44 +154,47 @@ fun Project.configureAndroidDirect(projectType: ProjectType, isKorge: Boolean) {
             }
         }
     }
+}
 
-    if (projectType.isExecutable) {
-        installAndroidRun(listOf(), direct = true, isKorge = isKorge)
-    }
+private fun Project.configureAndroidLibrary(isKorge: Boolean) {
+    plugins.apply("com.android.kotlin.multiplatform.library")
 
-    afterEvaluate {
-        val jvmProcessResources = tasks.findByName("jvmProcessResources") as? Copy?
-        if (jvmProcessResources != null) {
-            jvmProcessResources.duplicatesStrategy = org.gradle.api.file.DuplicatesStrategy.INCLUDE
-            val packageDebugAssets = tasks.findByName("packageDebugAssets") as MergeSourceSetFolders?
-            val packageReleaseAssets = tasks.findByName("packageReleaseAssets") as MergeSourceSetFolders?
-
-            // @TODO: Why is this required with Gradle 8.1.1?
-            //println("${project.path} :: $packageDebugAssets dependsOn $jvmProcessResources")
-            packageDebugAssets?.dependsOn(jvmProcessResources) // @TODO: <-- THIS
-            packageReleaseAssets?.dependsOn(jvmProcessResources) // @TODO: <-- THIS
-
-            // @TODO: Why is this required with Gradle 8.1.1?
-            //packageDebugAssets?.mustRunAfter(jvmProcessResources) // @TODO: <-- THIS
-            //packageReleaseAssets?.mustRunAfter(jvmProcessResources) // @TODO: <-- THIS
-        }
-        val compileDebugJavaWithJavac = project.tasks.findByName("compileDebugJavaWithJavac") as? org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile?
-        compileDebugJavaWithJavac?.compilerOptions?.jvmTarget?.set(ANDROID_JVM_TARGET)
-
-        for (kind in listOf("debug", "release")) {
-            val kindCap = kind.capitalized()
-            tasks.create("packageAndroid$kindCap", Task::class.java) {
-                it.dependsOn("bundle$kindCap")
-                it.group = GROUP_KORGE_PACKAGE
-                it.description = "Creates an AAB $kind file in the `build/outputs/bundle/$kind` folder (replaces APK)"
+    project.kotlin.targets.getByName("android").apply {
+        compilations.allThis {
+            compileTaskProvider.configure {
+                (it as KotlinJvmCompile).compilerOptions {
+                    jvmTarget.set(JvmTarget.fromTarget(ANDROID_JAVA_VERSION_STR))
+                }
             }
         }
+        AddFreeCompilerArgs.addFreeCompilerArgs(project, this)
+        // TODO See if this is still required, should already be applied though
+//        (this as? KotlinMultiplatformAndroidLibraryTarget)?.apply {
+//            withHostTest {}
+//            withDeviceTest {}
+//        }
+    }
 
-        //tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile::class.java).configureEach {
-        //    it.compilerOptions.jvmTarget.set(ANDROID_JVM_TARGET)
-        //    //it.jvmTargetValidationMode.set(org.jetbrains.kotlin.gradle.dsl.jvm.JvmTargetValidationMode.WARNING)
-        //}
-        //val compileDebugJavaWithJavac = tasks.findByName("compileDebugJavaWithJavac")
-        //println("compileDebugJavaWithJavac=$compileDebugJavaWithJavac : ${compileDebugJavaWithJavac!!::class}")
+    ensureSourceSetsConfigure("common", "android")
+
+    // TODO Let the module itself configure the dependencies and remove this block
+    dependencies {
+        if (SemVer(BuildVersions.KOTLIN) >= SemVer("2.3.20")) {
+            add("androidTestImplementation", "org.jetbrains.kotlin:kotlin-test")
+        }
+        add("androidTestImplementation", "org.jetbrains.kotlin:kotlin-test")
+
+        add("androidTestImplementation", "org.jetbrains.kotlin:kotlin-test")
+        add("androidTestImplementation", "androidx.test:core:1.7.0")
+        add("androidTestImplementation", "androidx.test.ext:junit:1.3.0")
+        add("androidTestImplementation", "androidx.test.espresso:espresso-core:3.7.0")
+    }
+    val android = extensions.getByType(KotlinMultiplatformExtension::class.java).targets.findByName("android") as KotlinMultiplatformAndroidLibraryTarget
+
+    android.apply {
+        val androidGenerated = project.toAndroidGenerated(isKorge)
+        namespace = androidGenerated.getNamespace(isKorge)
+
+        compileSdk = if (isKorge) project.korge.androidCompileSdk else project.getAndroidCompileSdkVersion()
     }
 }

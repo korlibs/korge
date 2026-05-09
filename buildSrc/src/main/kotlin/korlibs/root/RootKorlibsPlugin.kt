@@ -2,6 +2,8 @@
 
 package korlibs.root
 
+import java.io.*
+import java.nio.file.*
 import korlibs.*
 import korlibs.korge.gradle.*
 import korlibs.korge.gradle.module.*
@@ -14,24 +16,24 @@ import korlibs.korge.gradle.targets.jvm.*
 import korlibs.korge.gradle.targets.native.*
 import korlibs.korge.gradle.targets.wasm.*
 import korlibs.korge.gradle.util.*
-import korlibs.korge.gradle.util.create
-import korlibs.kotlin
 import korlibs.modules.*
 import org.gradle.api.*
 import org.gradle.api.file.*
+import org.gradle.api.reporting.*
 import org.gradle.api.tasks.*
 import org.gradle.api.tasks.testing.*
+import org.gradle.testing.base.plugins.*
 import org.jetbrains.dokka.gradle.*
+import org.jetbrains.kotlin.gradle.dsl.*
+import org.jetbrains.kotlin.gradle.plugin.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
+import org.jetbrains.kotlin.gradle.targets.js.nodejs.*
 import org.jetbrains.kotlin.gradle.targets.js.npm.*
 import org.jetbrains.kotlin.gradle.targets.js.testing.*
 import org.jetbrains.kotlin.gradle.targets.js.testing.karma.*
 import org.jetbrains.kotlin.gradle.targets.js.testing.mocha.*
 import org.jetbrains.kotlin.gradle.tasks.*
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import java.io.*
-import java.nio.file.*
-import kotlin.io.path.*
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 object RootKorlibsPlugin {
     val KORGE_GROUP = "org.korge.engine"
@@ -41,13 +43,6 @@ object RootKorlibsPlugin {
     @JvmStatic
     fun doInit(rootProject: Project) {
         rootProject.init()
-        rootProject.afterEvaluate {
-            rootProject.allprojectsThis {
-                tasks.withType(Test::class.java) {
-                    //it.ignoreFailures = true // This would cause the test to pass even if we have failing tests!
-                }
-            }
-        }
     }
 
     fun Project.init() {
@@ -79,8 +74,6 @@ object RootKorlibsPlugin {
         if (System.getenv("ENABLE_KOVER") == "true") configureKover()
         initPublishing()
         initKMM()
-        initShortcuts()
-        initTests()
         initCrossTests()
         initAllTargets()
         initSamples()
@@ -102,19 +95,19 @@ object RootKorlibsPlugin {
     }
 
     fun Project.initVersions() {
-        allprojectsThis {
+        allprojects {
             project.version = getProjectForcedVersion()
         }
     }
 
     fun Project.initAllRepositories() {
-        allprojectsThis {
+        allprojects {
             configureRepositories()
         }
     }
 
     fun Project.initGroupOverrides() {
-        allprojectsThis {
+        allprojects {
             val projectName = project.name
             val firstComponent = projectName.substringBefore('-')
             group = RootKorlibsPlugin.KORGE_GROUP
@@ -124,18 +117,18 @@ object RootKorlibsPlugin {
     fun Project.initNodeJSFixes() {
         plugins.applyOnce<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin>()
         rootProject.plugins.withType(org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin::class.java, Action {
-            rootProject.the<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension>().nodeVersion = project.nodeVersion
+            rootProject.extensions.getByType(NodeJsRootExtension::class.java).nodeVersion = project.nodeVersion
         })
         // https://youtrack.jetbrains.com/issue/KT-48273
         afterEvaluate {
-            rootProject.extensions.configure(org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension::class.java, Action {
+            rootProject.extensions.configure(NodeJsRootExtension::class.java, Action {
                 //it.versions.webpackDevServer.version = "4.0.0"
             })
         }
     }
 
     fun Project.initDuplicatesStrategy() {
-        allprojectsThis {
+        allprojects {
             tasks.withType(Copy::class.java).allThis {
                 //this.duplicatesStrategy = org.gradle.api.file.DuplicatesStrategy.WARN
                 this.duplicatesStrategy = org.gradle.api.file.DuplicatesStrategy.EXCLUDE
@@ -219,20 +212,21 @@ object RootKorlibsPlugin {
     }
 
     fun Project.initKMM() {
-        rootProject.subprojectsThis {
+        rootProject.subprojects {
             val doConfigure = mustAutoconfigureKMM()
 
             if (doConfigure) {
                 val isSample = project.isSample
+                val isAndroidApp = project.isAndroidApp
                 val hasAndroid = doEnableKotlinAndroid && hasAndroidSdk && project.name != "korge-benchmarks"
 
                 // AppData\Local\Android\Sdk\tools\bin>sdkmanager --licenses
-                plugins.apply("kotlin-multiplatform")
+                if (!isAndroidApp) plugins.apply("kotlin-multiplatform")
                 //plugins.apply(JsPlainObjectsKotlinGradleSubplugin::class.java)
 
                 //initAndroidProject()
                 if (hasAndroid) {
-                    project.configureAndroidDirect(ProjectType.fromExecutable(isSample), isKorge = false)
+                    project.configureAndroidDirect(ProjectType.fromExecutable(isAndroidApp), isKorge = false)
                 }
 
                 if (isSample && supportKotlinNative && isMacos) {
@@ -243,39 +237,12 @@ object RootKorlibsPlugin {
                     plugins.apply("org.jetbrains.dokka")
                 }
 
-                tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile::class.java).configureEach {
+                tasks.withType(KotlinCompile::class.java).configureEach {
                     it.kotlinOptions.suppressWarnings = true
                 }
 
-                afterEvaluate {
-                    val jvmTest = tasks.findByName("jvmTest")
-                    if (jvmTest is org.jetbrains.kotlin.gradle.targets.jvm.tasks.KotlinJvmTest) {
-                        val jvmTestFix = tasks.createThis<Test>("jvmTestFix") {
-                            group = "verification"
-                            environment("UPDATE_TEST_REF", "true")
-                            testClassesDirs = jvmTest.testClassesDirs
-                            classpath = jvmTest.classpath
-                            bootstrapClasspath = jvmTest.bootstrapClasspath
-                            if (!JvmAddOpens.beforeJava9) jvmArgs(*JvmAddOpens.createAddOpensTypedArray())
-                            if (headlessTests) systemProperty("java.awt.headless", "true")
-                        }
-                        val jvmTestInteractive = tasks.createThis<Test>("jvmTestInteractive") {
-                            group = "verification"
-                            environment("INTERACTIVE_SCREENSHOT", "true")
-                            testClassesDirs = jvmTest.testClassesDirs
-                            classpath = jvmTest.classpath
-                            bootstrapClasspath = jvmTest.bootstrapClasspath
-                            if (!JvmAddOpens.beforeJava9) jvmArgs(*JvmAddOpens.createAddOpensTypedArray())
-                        }
-                        if (!JvmAddOpens.beforeJava9) jvmTest.jvmArgs(*JvmAddOpens.createAddOpensTypedArray())
-                        if (headlessTests) jvmTest.systemProperty("java.awt.headless", "true")
-                    }
-                }
-
-                kotlin {
-                    //explicitApi()
-                    //explicitApiWarning()
-
+                // Configure only multiplatform modules, exclude androidApp modules
+                extensions.findByType(KotlinMultiplatformExtension::class.java)?.apply {
                     metadata {
                         compilations.allThis {
                             kotlinOptions.suppressWarnings = true
@@ -323,7 +290,7 @@ object RootKorlibsPlugin {
                             }
                         }
                     }
-                    js(org.jetbrains.kotlin.gradle.plugin.KotlinJsCompilerType.IR) {
+                    js(KotlinJsCompilerType.IR) {
                         browser {
                             compilations.allThis {
                                 //kotlinOptions.sourceMap = true
@@ -464,33 +431,17 @@ object RootKorlibsPlugin {
                                     val compileTestTask = tasks.findByName("compileTestKotlin${target.capitalize()}") ?: continue
                                     val compileMainTask = tasks.findByName("compileKotlin${target.capitalize()}") ?: continue
 
-                                    //println("$targetTestTask -> $target")
-
-                                    tasks {
-                                        create<Copy>(taskName) {
-                                            for (sourceSet in kotlin.sourceSets) {
-                                                from(sourceSet.resources)
-                                            }
-
-                                            into(targetTestTask.executable.parentFile)
-                                        }
-                                    }
-
                                     targetTestTask.inputs.files(
                                         *compileTestTask.outputs.files.files.toTypedArray(),
                                         *compileMainTask.outputs.files.files.toTypedArray()
                                     )
 
                                     targetTestTask.dependsOn(taskName)
-                                    //println(".target=$target")
                                 }
                             }
                         }
                     }
                 }
-            }
-            project.afterEvaluate {
-                project.addGenResourcesTasks()
             }
         }
     }
@@ -503,46 +454,33 @@ object RootKorlibsPlugin {
 
             // @TODO: Move to KorGE plugin
             project.configureJvmRunJvm(isRootKorlibs = true)
-            project.apply {
-
-                project.tasks {
-                    if (!isWindows) {
-                        afterEvaluate {
-                            for (type in CrossExecType.VALID_LIST) {
-                                for (deb in listOf("Debug", "Release")) {
-                                    val linkTask = project.tasks.findByName("link${deb}Executable${type.nameWithArchCapital}") as? KotlinNativeLink? ?: continue
-                                    tasks.createThis<Exec>("runNative${deb}${type.interpCapital}") {
-                                        group = "run"
-                                        dependsOn(linkTask)
-                                        val result = commandLineCross(linkTask.binary.outputFile.absolutePath, type = type)
-                                        doFirst {
-                                            result.ensure()
-                                        }
-                                        this.environment("WINEDEBUG", "-all")
-                                        workingDir = linkTask.binary.outputDirectory
+            tasks.configureEach {
+                if (!isWindows) {
+                    afterEvaluate {
+                        for (type in CrossExecType.VALID_LIST) {
+                            for (deb in listOf("Debug", "Release")) {
+                                val linkTask = project.tasks.findByName("link${deb}Executable${type.nameWithArchCapital}") as? KotlinNativeLink? ?: continue
+                                tasks.createThis<Exec>("runNative${deb}${type.interpCapital}") {
+                                    group = "run"
+                                    dependsOn(linkTask)
+                                    val result = commandLineCross(linkTask.binary.outputFile.absolutePath, type = type)
+                                    doFirst {
+                                        result.ensure()
                                     }
+                                    this.environment("WINEDEBUG", "-all")
+                                    workingDir = linkTask.binary.outputDirectory
                                 }
                             }
                         }
                     }
-
-                    //val jsRun = createThis<Task>("jsRun") { dependsOn("jsBrowserDevelopmentRun") } // Already available
-                    //val jvmRun = createThis("jvmRun") {
-                    //    group = "run"
-                    //    dependsOn(runJvm)
-                    //}
-                    //val run by getting(JavaExec::class)
-
-                    //val processResources by getting {
-                    //	dependsOn(processResourcesKorge)
-                    //}
                 }
             }
 
-            kotlin {
+            // Configure only multiplatform modules, exclude androidApp modules
+            extensions.findByType(KotlinMultiplatformExtension::class.java)?.apply {
                 jvm {
                 }
-                js(org.jetbrains.kotlin.gradle.plugin.KotlinJsCompilerType.IR) {
+                js(KotlinJsCompilerType.IR) {
                     browser {
                         binaries.executable()
                     }
@@ -553,7 +491,7 @@ object RootKorlibsPlugin {
                     //println(this.outputs.files.toList())
                     doLast {
                         val targetDir = this.outputs.files.first()
-                        val jsMainCompilation: KotlinJsCompilation = kotlin.js(org.jetbrains.kotlin.gradle.plugin.KotlinJsCompilerType.IR).compilations.findByName("main")!!
+                        val jsMainCompilation: KotlinJsCompilation = js(KotlinJsCompilerType.IR).compilations.findByName("main")!!
 
                         // @TODO: How to get the actual .js file generated/served?
                         val jsFile = File("${project.name}.js").name
@@ -602,115 +540,8 @@ object RootKorlibsPlugin {
         }
     }
 
-    //println("currentJavaVersion=${korlibs.currentJavaVersion()}")
-    ///
-
-    fun Project.initShortcuts() {
-        rootProject.subprojectsThis {
-            afterEvaluate {
-                tasks {
-                    val publishKotlinMultiplatformPublicationToMavenLocal = "publishKotlinMultiplatformPublicationToMavenLocal"
-                    val publishKotlinMultiplatformPublicationToMavenRepository = "publishKotlinMultiplatformPublicationToMavenRepository"
-
-                    val publishJvmLocal = createThis<Task>("publishJvmLocal") {
-                        if (findByName(publishKotlinMultiplatformPublicationToMavenLocal) != null) {
-                            dependsOn("publishJvmPublicationToMavenLocal")
-                            //dependsOn("publishMetadataPublicationToMavenLocal")
-                            dependsOn(publishKotlinMultiplatformPublicationToMavenLocal)
-                        } else if (findByName("publishToMavenLocal") != null) {
-                            dependsOn("publishToMavenLocal")
-                        }
-                    }
-
-                    val publishJsLocal = createThis<Task>("publishJsLocal") {
-                        if (findByName(publishKotlinMultiplatformPublicationToMavenLocal) != null) {
-                            dependsOn("publishJsPublicationToMavenLocal")
-                            //dependsOn("publishMetadataPublicationToMavenLocal")
-                            dependsOn(publishKotlinMultiplatformPublicationToMavenLocal)
-                        }
-                    }
-
-                    val publishMacosX64Local = createThis<Task>("publishMacosX64Local") {
-                        if (findByName(publishKotlinMultiplatformPublicationToMavenLocal) != null) {
-                            dependsOn("publishMacosX64PublicationToMavenLocal")
-                            dependsOn(publishKotlinMultiplatformPublicationToMavenLocal)
-                        }
-                    }
-                    val publishMacosArm64Local = createThis<Task>("publishMacosArm64Local") {
-                        if (findByName(publishKotlinMultiplatformPublicationToMavenLocal) != null) {
-                            dependsOn("publishMacosArm64PublicationToMavenLocal")
-                            dependsOn(publishKotlinMultiplatformPublicationToMavenLocal)
-                        }
-                    }
-                    val publishIosX64Local = createThis<Task>("publishIosX64Local") {
-                        if (findByName(publishKotlinMultiplatformPublicationToMavenLocal) != null) {
-                            dependsOn("publishIosX64PublicationToMavenLocal")
-                            dependsOn(publishKotlinMultiplatformPublicationToMavenLocal)
-                        }
-                    }
-                    val publishIosArm64Local = createThis<Task>("publishIosArm64Local") {
-                        if (findByName(publishKotlinMultiplatformPublicationToMavenLocal) != null) {
-                            dependsOn("publishIosArm64PublicationToMavenLocal")
-                            dependsOn(publishKotlinMultiplatformPublicationToMavenLocal)
-                        }
-                    }
-                    val publishMobileLocal = createThis<Task>("publishMobileLocal") {
-                        doFirst {
-                            //if (currentJavaVersion != 8) error("To use publishMobileRepo, must be used Java8, but used Java$currentJavaVersion")
-                        }
-                        run {
-                            val taskName = "publishJvmPublicationToMavenLocal"
-                            if (findByName(taskName) != null) {
-                                dependsOn(taskName)
-                            }
-                        }
-                        if (findByName(publishKotlinMultiplatformPublicationToMavenLocal) != null) {
-                            dependsOn(publishKotlinMultiplatformPublicationToMavenLocal)
-                            dependsOn("publishAndroidPublicationToMavenLocal")
-                            dependsOn("publishIosArm64PublicationToMavenLocal")
-                            dependsOn("publishIosX64PublicationToMavenLocal")
-                        }
-                    }
-
-                    val customMavenUser = rootProject.findProperty("KORLIBS_CUSTOM_MAVEN_USER")?.toString()
-                    val customMavenPass = rootProject.findProperty("KORLIBS_CUSTOM_MAVEN_PASS")?.toString()
-                    val customMavenUrl = rootProject.findProperty("KORLIBS_CUSTOM_MAVEN_URL")?.toString()
-                    val customPublishEnabled = forcedVersion != null
-                        && !customMavenUser.isNullOrBlank()
-                        && !customMavenPass.isNullOrBlank()
-                        && !customMavenUrl.isNullOrBlank()
-
-                    val publishMobileRepo = createThis<Task>("publishMobileRepo") {
-                        doFirst {
-                            if (currentJavaVersion != 8) {
-                                error("To use publishMobileRepo, must be used Java8, but used Java$currentJavaVersion")
-                            }
-                            if (!customPublishEnabled) {
-                                error("To use publishMobileRepo, must set `FORCED_VERSION=...` environment variable, and in ~/.gradle/gradle.properties : KORLIBS_CUSTOM_MAVEN_USER, KORLIBS_CUSTOM_MAVEN_PASS & KORLIBS_CUSTOM_MAVEN_URL")
-                            }
-                        }
-                        if (customPublishEnabled) {
-                            run {
-                                val taskName = "publishJvmPublicationToMavenRepository"
-                                if (findByName(taskName) != null) {
-                                    dependsOn(taskName)
-                                }
-                            }
-                            if (findByName(publishKotlinMultiplatformPublicationToMavenRepository) != null) {
-                                dependsOn(publishKotlinMultiplatformPublicationToMavenRepository)
-                                dependsOn("publishAndroidPublicationToMavenRepository")
-                                dependsOn("publishIosArm64PublicationToMavenRepository")
-                                dependsOn("publishIosX64PublicationToMavenRepository")
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
     fun Project.initTests() {
-        rootProject.subprojectsThis {
+        rootProject.subprojects {
             //tasks.withType(Test::class.java).allThis {
             afterEvaluate {
                 it.configureTests()
@@ -720,33 +551,32 @@ object RootKorlibsPlugin {
     }
 
     fun Project.initCrossTests() {
-        rootProject.subprojectsThis {
-            afterEvaluate {
-                tasks {
-                    afterEvaluate {
-                        for (type in CrossExecType.VALID_LIST) {
-                            val linkDebugTest = project.tasks.findByName("linkDebugTest${type.nameWithArchCapital}") as? KotlinNativeLink?
-                            if (linkDebugTest != null) {
-                                tasks.createThis<KotlinNativeCrossTest>("${type.nameWithArch}Test${type.interpCapital}") {
-                                    val link = linkDebugTest
-                                    val testResultsDir = project.buildDir.resolve(org.gradle.testing.base.plugins.TestingBasePlugin.TEST_RESULTS_DIR_NAME)
-                                    val testReportsDir = project.extensions.getByType(org.gradle.api.reporting.ReportingExtension::class.java).baseDir.resolve(org.gradle.testing.base.plugins.TestingBasePlugin.TESTS_DIR_NAME)
-                                    //this.configureConventions()
+        rootProject.subprojects {
+            tasks.configureEach {
+                for (type in CrossExecType.VALID_LIST) {
+                    val linkDebugTest = project.tasks.findByName("linkDebugTest${type.nameWithArchCapital}") as? KotlinNativeLink?
+                    if (linkDebugTest != null) {
+                        tasks.createThis<KotlinNativeCrossTest>("${type.nameWithArch}Test${type.interpCapital}") {
+                            val testResultsDir = project.buildDir.resolve(TestingBasePlugin.TEST_RESULTS_DIR_NAME)
+                            val testReportsDir = project.extensions
+                                .getByType(ReportingExtension::class.java)
+                                .baseDirectory
+                                .get().asFile
+                                .resolve(TestingBasePlugin.TESTS_DIR_NAME)
+                            //this.configureConventions()
 
-                                    val htmlReport = org.gradle.api.internal.plugins.DslObject(reports.html)
-                                    val xmlReport = org.gradle.api.internal.plugins.DslObject(reports.junitXml)
-                                    xmlReport.conventionMapping.map("destination") { testResultsDir.resolve(name) }
-                                    htmlReport.conventionMapping.map("destination") { testReportsDir.resolve(name) }
+                            val htmlReport = org.gradle.api.internal.plugins.DslObject(reports.html)
+                            val xmlReport = org.gradle.api.internal.plugins.DslObject(reports.junitXml)
+                            xmlReport.conventionMapping.map("destination") { testResultsDir.resolve(name) }
+                            htmlReport.conventionMapping.map("destination") { testReportsDir.resolve(name) }
 
-                                    this.type = type
-                                    this.executable = link.binary.outputFile
-                                    this.workingDir = link.binary.outputDirectory.absolutePath
-                                    this.binaryResultsDirectory.set(testResultsDir.resolve("$name/binary"))
-                                    this.environment("WINEDEBUG", "-all")
-                                    group = "verification"
-                                    dependsOn(link)
-                                }
-                            }
+                            this.type = type
+                            this.executable = linkDebugTest.binary.outputFile
+                            this.workingDir = linkDebugTest.binary.outputDirectory.absolutePath
+                            this.binaryResultsDirectory.set(testResultsDir.resolve("$name/binary"))
+                            this.environment("WINEDEBUG", "-all")
+                            group = "verification"
+                            dependsOn(linkDebugTest)
                         }
                     }
                 }
@@ -801,6 +631,15 @@ val Project.enabledSandboxResourceProcessor: Boolean get() = rootProject.findPro
 val Project.currentJavaVersion by LazyExt { currentJavaVersion() }
 fun Project.hasBuildGradle() = listOf("build.gradle", "build.gradle.kts").any { File(projectDir, it).exists() }
 val Project.isSample: Boolean get() = project.path.startsWith(":samples:") || project.path.startsWith(":korge-sandbox") || project.path.startsWith(":korge-editor") || project.path.startsWith(":korge-starter-kit")
+/**
+ * Whether the current project / subproject / module is the android app.
+ *
+ * This value is used to distinguish between android apps that require different setup due to
+ * compatibility with multiplatform projects.
+ *
+ * Right now we only support module names that are named `androidApp`.
+ */
+val Project.isAndroidApp: Boolean get() = project.path.endsWith(":androidApp")
 fun Project.mustAutoconfigureKMM(): Boolean =
     !project.name.startsWith("korge-gradle-plugin") &&
         project.name != "korge-reload-agent" &&
@@ -812,7 +651,7 @@ fun Project.mustAutoconfigureKMM(): Boolean =
 val Project.isKorgeBenchmarks: Boolean get() = path == ":korge-benchmarks"
 
 fun Project.nonSamples(block: Project.() -> Unit) {
-    subprojectsThis {
+    subprojects {
         if (!project.isSample && project.hasBuildGradle()) {
             block()
         }
@@ -820,7 +659,7 @@ fun Project.nonSamples(block: Project.() -> Unit) {
 }
 
 fun Project.samples(block: Project.() -> Unit) {
-    subprojectsThis {
+    subprojects {
         if (project.isSample && project.hasBuildGradle()) {
             block()
         }

@@ -6,9 +6,10 @@ import korlibs.*
 import org.gradle.api.*
 import org.gradle.api.publish.*
 import org.gradle.api.publish.maven.*
+import org.gradle.internal.extensions.core.extra
 
 fun Project.getCustomProp(name: String, default: String): String? {
-    val props = if (extra.has("props")) extra["props"] as? Map<String, String>? else null
+    val props = if (rootProject.extra.has("props")) extra["props"] as? Map<String, String>? else null
     return props?.get(name) ?: (findProperty(name) as? String?) ?: default
 }
 
@@ -23,9 +24,6 @@ fun Project.configurePublishing(multiplatform: Boolean = true) {
         // For plain JVM modules (not KMP, not Gradle plugin) declare the component type explicitly
         if (!multiplatform && !isGradlePlugin) {
             configure(JavaLibrary(javadocJar = JavadocJar.Empty(), sourcesJar = true))
-        } else if (multiplatform && !isGradlePlugin) {
-            // Explicitly configure KMP with Empty javadoc to avoid wiring in slow/broken Dokka tasks
-            configure(KotlinMultiplatform(javadocJar = JavadocJar.Empty()))
         }
         // For Gradle plugins: vanniktech auto-detects via java-gradle-plugin
 
@@ -38,8 +36,6 @@ fun Project.configurePublishing(multiplatform: Boolean = true) {
             ?: rootProject.findProperty("sonatypePassword")?.toString()
         if (user != null) project.extensions.extraProperties["mavenCentralUsername"] = user
         if (pass != null) project.extensions.extraProperties["mavenCentralPassword"] = pass
-
-        publishToMavenCentral()
 
         val baseProjectName = project.name.substringBefore('-')
         val defaultGitUrl = "https://github.com/korlibs/$baseProjectName"
@@ -77,4 +73,4 @@ fun Project.configurePublishing(multiplatform: Boolean = true) {
     }
 }
 
-val Project.publishing get() = extensions.getByType<PublishingExtension>()
+val Project.publishing get() = extensions.getByType(PublishingExtension::class.java)

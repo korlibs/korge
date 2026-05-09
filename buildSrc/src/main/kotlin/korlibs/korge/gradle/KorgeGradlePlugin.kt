@@ -21,6 +21,7 @@ import java.net.*
 import java.util.*
 import java.util.concurrent.*
 import kotlin.concurrent.*
+import org.gradle.internal.extensions.core.extra
 
 class KorgeGradleApply(val project: Project, val projectType: ProjectType) {
 	fun apply(includeIndirectAndroid: Boolean = true) = project {
@@ -101,7 +102,7 @@ fun Project.configureAutoVersions() {
     val korlibsConfigureAutoVersions = "korlibsConfigureAutoVersions"
     if (rootProject.extra.has(korlibsConfigureAutoVersions)) return
     rootProject.extra.set(korlibsConfigureAutoVersions, true)
-    allprojectsThis {
+    allprojects {
         configurations.all {
             if (it.name == KORGE_RELOAD_AGENT_CONFIGURATION_NAME) return@all
 
@@ -195,17 +196,12 @@ fun Project.korge(callback: KorgeExtension.() -> Unit) = korge.apply(callback).a
 val Project.kotlin: KotlinMultiplatformExtension get() = this.extensions.getByType(KotlinMultiplatformExtension::class.java)
 val Project.korge: KorgeExtension get() = extensionGetOrCreate("korge")
 
-inline fun <reified T> Project.extensionGetOrCreate(name: String): T {
-    val extension = project.extensions.findByName(name) as? T?
-    return if (extension == null) {
-        val newExtension = project.extensions.create(name, T::class.java)
-        newExtension
-    } else {
-        extension
-    }
+inline fun <reified T : Any> Project.extensionGetOrCreate(name: String): T {
+    return project.extensions.findByName(name) as? T?
+        ?: project.extensions.create(name, T::class.java)
 }
 
-open class JsWebCopy() : Copy() {
+abstract class JsWebCopy() : Copy() {
     @OutputDirectory
     open lateinit var targetDir: File
 }
