@@ -76,5 +76,17 @@ kotlin {
             implementation(libs.jackson.databind)
             implementation(libs.jackson.module.kotlin)
         }
+
+        val jvmAndAndroidMain by creating {
+            dependsOn(commonMain.get())
+        }
+
+        jvmMain {
+            dependsOn(jvmAndAndroidMain)
+        }
+
+        androidMain {
+            dependsOn(jvmAndAndroidMain)
+        }
     }
 }
