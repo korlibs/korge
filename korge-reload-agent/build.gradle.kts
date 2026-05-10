@@ -1,10 +1,8 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import com.vanniktech.maven.publish.*
 
 plugins {
-    id("kotlin")
-    id("com.vanniktech.maven.publish")
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.vanniktech.mavenPublish)
 }
 
 description = "Korge Reload Agent – JVM hot-reload instrumentation agent"
