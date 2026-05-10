@@ -165,7 +165,7 @@ internal operator fun Length?.times(that: Double): Length? = Length.Scale(this, 
 internal operator fun Length?.div(that: Double): Length? = Length.Scale(this, 1.0 / that)
 
 internal interface LengthExtensions {
-    companion object : LengthExtensions
+    companion object
 
     fun max(a: Length, b: Length): Length = Length.Max(a, b)
     fun min(a: Length, b: Length): Length = Length.Min(a, b)

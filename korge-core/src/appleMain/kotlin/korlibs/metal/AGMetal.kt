@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
+
 package korlibs.metal
 
 import korlibs.graphics.*

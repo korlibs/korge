@@ -102,6 +102,7 @@ class AndroidGameController {
     fun runPreFrame(gameWindow: GameWindow) {
         try {
             val gamepads = InputDevice.getDeviceIds().map { InputDevice.getDevice(it) }
+                .filterNotNull()
                 .filter { it.sources.hasBits(InputDevice.SOURCE_GAMEPAD) }.sortedBy { it.id }
 
             gameWindow.dispatchGamepadUpdateStart()

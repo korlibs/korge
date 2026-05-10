@@ -505,7 +505,7 @@ data class FullScreenEvent(var fullscreen: Boolean = false) : TypedEvent<FullScr
 }
 
 open class RenderEvent : TypedEvent<RenderEvent>(RenderEvent) {
-    companion object : RenderEvent(), EventType<RenderEvent>
+    companion object : EventType<RenderEvent>
 
     var update: Boolean = true
     var render: Boolean = true
@@ -518,7 +518,7 @@ open class RenderEvent : TypedEvent<RenderEvent>(RenderEvent) {
 }
 
 open class InitEvent : TypedEvent<InitEvent>(InitEvent) {
-    companion object : InitEvent(), EventType<InitEvent>
+    companion object : EventType<InitEvent>
 
     fun copyFrom(other: InitEvent) {
     }

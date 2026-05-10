@@ -28,7 +28,9 @@ kotlin {
         minSdk = libs.versions.minSdk.get().toInt()
 
         androidResources.enable = true
-        withHostTest {}
+        withHostTest {
+            isIncludeAndroidResources = true
+        }
         withDeviceTest {}
     }
     js {
@@ -50,16 +52,17 @@ kotlin {
     iosArm64()
     iosSimulatorArm64()
     iosX64()
-    tvosArm64()
-    tvosSimulatorArm64()
-    watchosArm64()
-    watchosArm32()
-    watchosDeviceArm64()
-    watchosSimulatorArm64()
-    mingwX64()
-    linuxX64()
-    linuxArm64()
-    macosArm64()
+    // TODO Add support for these targets as well
+//    tvosArm64()
+//    tvosSimulatorArm64()
+//    watchosArm64()
+//    watchosArm32()
+//    watchosDeviceArm64()
+//    watchosSimulatorArm64()
+//    macosArm64()
+//    linuxX64()
+//    linuxArm64()
+//    mingwX64()
     // TODO Add android native targets as well
 
     sourceSets {
@@ -68,10 +71,25 @@ kotlin {
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
+            implementation(libs.kotlinx.coroutines.test)
         }
         jvmMain.dependencies {
             api(projects.korgeIpc)
             api(libs.kotlinx.coroutines.debug)
         }
+        val androidHostTest by getting {
+            dependencies {
+                // workaround in android host tests to replace main dispatcher (Android looper)
+                // with JVM swing
+                implementation(libs.kotlinx.coroutines.swing)
+            }
+        }
     }
+}
+
+// Workaround in android host tests to exclude android coroutine dispatcher to use swing implementation
+configurations.matching {
+    it.name.contains("android") && it.name.contains("HostTestRuntimeClasspath")
+}.all {
+    exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-android")
 }

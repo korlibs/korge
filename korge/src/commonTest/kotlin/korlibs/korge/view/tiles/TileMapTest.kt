@@ -10,7 +10,6 @@ import korlibs.image.tiles.*
 import korlibs.math.geom.*
 import korlibs.math.geom.collider.*
 import korlibs.math.geom.shape.*
-import korlibs.memory.*
 import korlibs.number.*
 import kotlin.test.*
 

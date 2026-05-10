@@ -1,7 +1,10 @@
+@file:OptIn(UnsafeNumber::class)
+
 package korlibs.render
 
 import korlibs.datastructure.IntMap
 import korlibs.event.Key
+import kotlinx.cinterop.UnsafeNumber
 import platform.UIKit.*
 
 @Suppress("OPT_IN_USAGE", "RemoveRedundantCallsOfConversionMethods")

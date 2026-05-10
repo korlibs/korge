@@ -2,7 +2,7 @@ package korlibs.korge.gradle.util
 
 // https://www.lihaoyi.com/post/BuildyourownCommandLinewithANSIescapecodes.html
 interface AnsiEscape {
-    companion object : AnsiEscape {
+    companion object {
         inline operator fun <T> invoke(block: AnsiEscape.() -> T): T = block()
     }
 

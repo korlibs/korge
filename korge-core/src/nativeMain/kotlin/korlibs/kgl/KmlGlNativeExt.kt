@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalForeignApi::class)
+
 package korlibs.kgl
 
 import korlibs.graphics.shader.gl.*

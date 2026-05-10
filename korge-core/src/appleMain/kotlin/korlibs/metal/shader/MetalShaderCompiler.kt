@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalForeignApi::class)
+
 package korlibs.metal.shader
 
 import korlibs.graphics.metal.shader.*

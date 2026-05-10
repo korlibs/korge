@@ -50,16 +50,17 @@ kotlin {
     iosArm64()
     iosSimulatorArm64()
     iosX64()
-    tvosArm64()
-    tvosSimulatorArm64()
-    watchosArm64()
-    watchosArm32()
-    watchosDeviceArm64()
-    watchosSimulatorArm64()
-    mingwX64()
-    linuxX64()
-    linuxArm64()
-    macosArm64()
+    // TODO Add support for these targets as well
+//    tvosArm64()
+//    tvosSimulatorArm64()
+//    watchosArm64()
+//    watchosArm32()
+//    watchosDeviceArm64()
+//    watchosSimulatorArm64()
+//    macosArm64()
+//    linuxX64()
+//    linuxArm64()
+//    mingwX64()
     // TODO Add android native targets as well
 
     sourceSets {
