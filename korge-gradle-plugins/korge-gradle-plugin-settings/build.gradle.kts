@@ -4,8 +4,7 @@ group = "org.korge.gradleplugins"
 plugins {
     id("java")
     id("java-gradle-plugin")
-    alias(libs.plugins.kotlin.dsl)
-    alias(libs.plugins.kotlin.jvm)
+    `kotlin-dsl`
     alias(libs.plugins.vanniktech.mavenPublish)
 }
 
