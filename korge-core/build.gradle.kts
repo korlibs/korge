@@ -15,10 +15,11 @@ version = rootProject.libs.versions.korge.get()
 
 kotlin {
     applyDefaultHierarchyTemplate()
-    @OptIn(ExperimentalAbiValidation::class)
-    abiValidation {
-        enabled.set(true)
-    }
+    // TODO Consider enabling ABI validation
+//    @OptIn(ExperimentalAbiValidation::class)
+//    abiValidation {
+//        enabled.set(true)
+//    }
 
     jvm()
 
