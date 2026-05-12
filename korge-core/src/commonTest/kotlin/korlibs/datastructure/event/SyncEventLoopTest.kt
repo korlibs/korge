@@ -1,9 +1,8 @@
 package korlibs.datastructure.event
 
+import korlibs.concurrent.lock.Lock
+import korlibs.concurrent.lock.isSupported
 import korlibs.concurrent.thread.*
-import korlibs.datastructure.closeable.*
-import korlibs.datastructure.thread.*
-import korlibs.datastructure.thread.NativeThread
 import korlibs.datastructure.thread.nativeThread
 import korlibs.io.async.*
 import korlibs.time.*
@@ -15,7 +14,11 @@ class SyncEventLoopTest {
     // @TODO: Lock.notify is not implemented on JS
     @Test
     fun test() = suspendTest({ NativeThread.isSupported }) {
-    //fun test() = suspendTest {
+        if (!Lock.isSupported) {
+            println("Lock is not supported, test will be skipped.")
+            return@suspendTest
+        }
+
         repeat(2) {
             val ep = SyncEventLoop()
             val start = TimeSource.Monotonic.markNow()
