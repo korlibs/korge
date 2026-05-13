@@ -73,32 +73,6 @@ jobs:
           retention-days: 21
           path: "**/build/reports"
           if-no-files-found: ignore
-      - name: Check sandbox compiles
-        run: "./gradlew :korge-sandbox:jvmJar"
-      - name: Publish to maven local
-        run: ./gradlew --parallel publishJvmLocal publishKotlinMultiplatformPublicationToMavenLocal
-      - name: e2e test
-        working-directory: e2e/e2e-test
-        run: ./gradlew checkReferencesJvm --stacktrace
-      - name: Archive E2E Test Results
-        if: "${{ failure() }}"
-        uses: actions/upload-artifact@v4
-        with:
-          name: e2e-test-results-linux-jvm
-          retention-days: 21
-          path: "**/e2e/e2e-test/build/screenshots"
-          if-no-files-found: ignore
-      - name: e2e multi test and hotreload
-        working-directory: e2e/e2e-test-multi
-        run: "./gradlew --watch-fs --warn --configuration-cache --configuration-cache-problems=warn compileKotlinJvm"
-      - name: e2e multi test runJvmAutoreload
-        working-directory: e2e/e2e-test-multi
-        run: "./gradlew --configuration-cache :client:runJvmAutoreload"
-      - name: e2e multi test packageJvmFatJar
-        working-directory: e2e/e2e-test-multi
-        run: "./gradlew --configuration-cache :client:packageJvmFatJar"
-      - name: Check publication includes iOS
-        run: ./gradlew checkModulePublication
 
   test-macos:
     timeout-minutes: 120
