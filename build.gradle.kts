@@ -15,5 +15,13 @@ allprojects {
         mavenLocal()
         mavenCentral()
         google()
+        maven {
+            name = "Central Portal Snapshots"
+            url = uri("https://central.sonatype.com/repository/maven-snapshots/")
+            content {
+                // Only consume org.korge.korlibs snapshots
+                includeGroup("org.korge.korlibs")
+            }
+        }
     }
 }
