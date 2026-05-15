@@ -1,32 +1,94 @@
-import korlibs.applyProjectProperties
+import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
+import org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation
 
-description = "Multiplatform Game Engine written in Kotlin"
-
-project.extensions.extraProperties.properties.apply {
-    applyProjectProperties(
-        "https://github.com/korlibs/korge",
-        "MIT License",
-        "https://raw.githubusercontent.com/korlibs/korge/main/LICENSE"
-    )
+plugins {
+    alias(libs.plugins.kotlin.multiplatform)
+    alias(libs.plugins.android.multiplatform.library)
+    alias(libs.plugins.kotlinx.kover)
+    alias(libs.plugins.dokka)
+    alias(libs.plugins.vanniktech.mavenPublish)
 }
 
-dependencies {
-    commonMainApi(libs.bundles.korlibs.all)
-    //commonMainApi(libs.korlibs.audio)
-    //commonMainApi(libs.korlibs.image)
-    //commonMainApi(libs.korlibs.inject)
-    //commonMainApi(libs.korlibs.template)
-    //commonMainApi(libs.korlibs.time)
-    commonMainApi(libs.kotlinx.atomicfu)
-    commonMainApi(libs.kotlinx.coroutines.core)
-    //commonTestApi(project(":korge-test"))
-    jvmMainApi("org.jetbrains.kotlin:kotlin-reflect")
-    jvmMainImplementation(libs.jackson.databind)
-    jvmMainImplementation(libs.jackson.module.kotlin)
+description = "Multiplatform Game Engine written in Kotlin"
+group = "org.korge.engine"
+version = rootProject.libs.versions.korge.get()
 
-    //commonTestApi(testFixtures(project(":korma")))
+kotlin {
+    applyDefaultHierarchyTemplate()
+    // TODO Consider enabling ABI validation
+//    @OptIn(ExperimentalAbiValidation::class)
+//    abiValidation {
+//        enabled.set(true)
+//    }
 
-    //add("jvmMainApi", project(":korte"))
+    jvm()
 
-    //add("commonTestApi", "it.krzeminski.vis-assert:vis-assert:0.4.0-beta")
+    android {
+        namespace = "org.korge.engine"
+        compileSdk = libs.versions.compileSdk.get().toInt()
+        minSdk = libs.versions.minSdk.get().toInt()
+
+        androidResources.enable = true
+        withHostTest {}
+        withDeviceTest {}
+    }
+    js {
+        browser {
+            compilerOptions {
+                target.set("es2015")
+            }
+        }
+    }
+    @OptIn(ExperimentalWasmDsl::class)
+    wasmJs {
+        browser {
+            compilerOptions {
+                target.set("es2015")
+            }
+        }
+    }
+
+    iosArm64()
+    iosSimulatorArm64()
+    iosX64()
+    // TODO Add support for these targets as well
+//    tvosArm64()
+//    tvosSimulatorArm64()
+//    watchosArm64()
+//    watchosArm32()
+//    watchosDeviceArm64()
+//    watchosSimulatorArm64()
+//    macosArm64()
+//    linuxX64()
+//    linuxArm64()
+//    mingwX64()
+    // TODO Add android native targets as well
+
+    sourceSets {
+        commonMain.dependencies {
+            api(libs.bundles.korlibs.all)
+            api(libs.kotlinx.atomicfu)
+            api(libs.kotlinx.coroutines.core)
+        }
+        commonTest.dependencies {
+            implementation(libs.kotlin.test)
+        }
+        jvmMain.dependencies {
+            api(libs.kotlin.reflect)
+            implementation(libs.jackson.databind)
+            implementation(libs.jackson.module.kotlin)
+        }
+
+        val jvmAndAndroidMain by creating {
+            dependsOn(commonMain.get())
+        }
+
+        jvmMain {
+            dependsOn(jvmAndAndroidMain)
+        }
+
+        androidMain {
+            dependsOn(jvmAndAndroidMain)
+        }
+    }
 }

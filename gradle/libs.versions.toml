@@ -1,4 +1,7 @@
 [versions]
+buildconfig = "6.0.9"
+compileSdk = "36"
+minSdk = "20"
 jackson = "2.21.3"
 jna = "5.18.1"
 jcodec = "0.2.5"
@@ -9,55 +12,77 @@ proguard-gradle = "7.9.1"
 asm = "9.9.1"
 jgit = "5.13.1.202206130422-r"
 
-korlibs = "6.1.0"
-kotlin = "2.3.20"
+korlibs = "7.0.0-SNAPSHOT"
+korge = "7.0.0-SNAPSHOT"
+kotlin = "2.3.21"
+kotlin-dsl = "6.6.4"
 #kotlinx-coroutines = "1.8.1"
-kotlinx-coroutines = "1.10.2"
+kotlinx-coroutines = "1.11.0"
 kotlinx-serialization = "1.11.0"
 kotlinx-atomicfu = "0.32.1"
-
-kotlinx-benchmark = "0.4.7"
+javaSourceCompatibility = "21"
+javaTargetCompatibility = "21"
+kotlinx-benchmark = "0.4.17"
 dokka = "2.2.0"
-kover = "0.6.1"
+kover = "0.9.8"
 kover-agent = "1.0.776"
 node = "20.12.1"
-android-build-gradle = "8.2.2"
+android-gradle-plugin = "9.2.0"
 gson = "2.14.0"
 gradle-publish-plugin = "2.1.1"
-vanniktech-publish = "0.35.0"
+vanniktech-publish = "0.36.0"
 # https://repo.maven.apache.org/maven2/org/jetbrains/intellij/deps/intellij-coverage-agent/
 
+[plugins]
+buildconfig = { id = "com.github.gmazzo.buildconfig", version.ref = "buildconfig" }
+android-multiplatform-library = { id = "com.android.kotlin.multiplatform.library", version.ref = "android-gradle-plugin" }
+android-application = { id = "com.android.application", version.ref = "android-gradle-plugin" }
+dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
+kotlin-allopen = { id = "org.jetbrains.kotlin.plugin.allopen", version.ref = "kotlin" }
+kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlin-dsl = { id = "org.gradle.kotlin.kotlin-dsl", version.ref = "kotlin-dsl" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+kotlinx-kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
+kotlinx-benchmark = { id = "org.jetbrains.kotlinx.benchmark", version.ref = "kotlinx-benchmark" }
+vanniktech-mavenPublish = { id = "com.vanniktech.maven.publish", version.ref = "vanniktech-publish" }
 
 [libraries]
-korlibs-audio = { module = "org.korge:korlibs-audio", version.ref = "korlibs" }
-korlibs-image = { module = "org.korge:korlibs-image", version.ref = "korlibs" }
-korlibs-inject = { module = "org.korge:korlibs-inject", version.ref = "korlibs" }
-korlibs-template = { module = "org.korge:korlibs-template", version.ref = "korlibs" }
-korlibs-time = { module = "org.korge:korlibs-time", version.ref = "korlibs" }
-korlibs-serialization = { module = "org.korge:korlibs-serialization", version.ref = "korlibs" }
-korlibs-datastructure = { module = "org.korge:korlibs-datastructure", version.ref = "korlibs" }
-korlibs-datastructure-core = { module = "org.korge:korlibs-datastructure-core", version.ref = "korlibs" }
-korlibs-memory = { module = "org.korge:korlibs-memory", version.ref = "korlibs" }
-korlibs-io-stream = { module = "org.korge:korlibs-io-stream", version.ref = "korlibs" }
+dokka = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version.ref = "dokka" }
 jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
 jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson" }
 junit = { module = "junit:junit", version.ref = "junit" }
+korlibs-audio = { module = "org.korge.korlibs:korlibs-audio", version.ref = "korlibs" }
+korlibs-image = { module = "org.korge.korlibs:korlibs-image", version.ref = "korlibs" }
+korlibs-inject = { module = "org.korge.korlibs:korlibs-inject", version.ref = "korlibs" }
+korlibs-template = { module = "org.korge.korlibs:korlibs-template", version.ref = "korlibs" }
+korlibs-time = { module = "org.korge.korlibs:korlibs-time", version.ref = "korlibs" }
+korlibs-serialization = { module = "org.korge.korlibs:korlibs-serialization", version.ref = "korlibs" }
+korlibs-datastructure = { module = "org.korge.korlibs:korlibs-datastructure", version.ref = "korlibs" }
+korlibs-datastructure-core = { module = "org.korge.korlibs:korlibs-datastructure-core", version.ref = "korlibs" }
+korlibs-memory = { module = "org.korge.korlibs:korlibs-memory", version.ref = "korlibs" }
+korlibs-io-stream = { module = "org.korge.korlibs:korlibs-io-stream", version.ref = "korlibs" }
+kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
 kotlin-serialization = { module = "org.jetbrains.kotlin:kotlin-serialization", version.ref = "kotlin" }
 kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+kotlin-gradle-plugin-api = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin-api", version.ref = "kotlin" }
+kotlin-gradle-dsl = { module = "org.gradle.kotlin.kotlin-dsl:org.gradle.kotlin.kotlin-dsl.gradle.plugin", version.ref = "kotlin-dsl" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
-dokka = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version.ref = "dokka" }
-#jsplainobjects = { module = "org.jetbrains.kotlin:js-plain-objects", version.ref = "kotlin" }
+kotlinx-atomicfu = { module = "org.jetbrains.kotlinx:atomicfu", version.ref = "kotlinx-atomicfu" }
+kotlinx-benchmark-runtime = { module = "org.jetbrains.kotlinx:kotlinx-benchmark-runtime", version.ref = "kotlinx-benchmark" }
+kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinx-coroutines" }
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
+kotlinx-coroutines-debug = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-debug", version.ref = "kotlinx-coroutines" }
+kotlinx-coroutines-swing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
-kover = { module = "org.jetbrains.kotlinx:kover", version.ref = "kover" }
+kotlinx-kover-gradle-plugin = { module = "org.jetbrains.kotlinx.kover:org.jetbrains.kotlinx.kover.gradle.plugin", version.ref = "kover" }
 kover-intellij-agent = { module = "org.jetbrains.intellij.deps:intellij-coverage-agent", version.ref = "kover-agent" }
 jcodec-core = { module = "org.jcodec:jcodec", version.ref = "jcodec" }
 proguard-gradle = { module = "com.guardsquare:proguard-gradle", version.ref = "proguard-gradle" }
-kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
-kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
-kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinx-coroutines" }
-kotlinx-atomicfu = { module = "org.jetbrains.kotlinx:atomicfu", version.ref = "kotlinx-atomicfu" }
-android-build-gradle = { module = "com.android.tools.build:gradle", version.ref = "android-build-gradle" }
+android-build-gradle = { module = "com.android.tools.build:gradle", version.ref = "android-gradle-plugin" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 gradle-publish-plugin = { module = "com.gradle.publish:plugin-publish-plugin", version.ref = "gradle-publish-plugin" }
 vanniktech-maven-publish = { module = "com.vanniktech:gradle-maven-publish-plugin", version.ref = "vanniktech-publish" }
@@ -66,6 +91,3 @@ jgit = { module = "org.eclipse.jgit:org.eclipse.jgit", version.ref = "jgit" }
 [bundles]
 kotlin-test = ["junit", "kotlin-test", "kotlin-test-junit"]
 korlibs-all = ["korlibs-audio", "korlibs-image", "korlibs-inject", "korlibs-template", "korlibs-time", "korlibs-serialization", "korlibs-datastructure", "korlibs-datastructure-core", "korlibs-memory", "korlibs-io-stream"]
-
-#[plugins]
-#jmh = { id = "me.champeau.jmh", version = "0.6.5" }
