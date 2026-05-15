@@ -19,6 +19,7 @@ gradlePlugin {
             id = "org.korge.engine"
             displayName = "Korge Game Engine"
             description = "Multiplatform Game Engine for Kotlin"
+            version = libs.versions.korge.get()
             implementationClass = "korlibs.korge.gradle.KorgeGradlePlugin"
         }
 
@@ -26,6 +27,7 @@ gradlePlugin {
             id = "org.korge.engine.library"
             displayName = "Korge Library"
             description = "Multiplatform Game Engine for Kotlin"
+            version = libs.versions.korge.get()
             implementationClass = "korlibs.korge.gradle.KorgeLibraryGradlePlugin"
         }
 
@@ -33,6 +35,7 @@ gradlePlugin {
             id = "org.korge.kproject"
             displayName = "KProject Gradle Plugin"
             description = "Allows to use sourcecode & git-based dependencies"
+            version = libs.versions.korge.get()
             implementationClass = "org.korge.kproject.KProjectPlugin"
         }
 
@@ -40,6 +43,7 @@ gradlePlugin {
             id = "org.korge.kproject.root"
             displayName = "KProject Root Gradle Plugin"
             description = "Allows to use sourcecode & git-based dependencies"
+            version = libs.versions.korge.get()
             implementationClass = "org.korge.kproject.KProjectRootPlugin"
         }
     }
