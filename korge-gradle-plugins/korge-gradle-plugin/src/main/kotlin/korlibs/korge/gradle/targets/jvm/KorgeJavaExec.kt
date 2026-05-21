@@ -34,7 +34,7 @@ abstract class KorgeJavaExecWithAutoreload : KorgeJavaExec() {
     lateinit var rootJars: List<File>
 
     init {
-        project.afterEvaluate {
+        doFirst {
             val reloadAgent = project.findProject(":korge-reload-agent")
             val reloadAgentJar = when {
                 reloadAgent != null -> (project.rootProject.tasks.getByPath(":korge-reload-agent:jar") as Jar).outputs.files.files.first()
@@ -43,7 +43,9 @@ abstract class KorgeJavaExecWithAutoreload : KorgeJavaExec() {
 
             val allProjects = project.findAllProjectDependencies()
             projectPaths = listOf(project.path)
-            rootJars = allProjects.map { File(it.buildDir, "classes/kotlin/jvm/main") }
+            rootJars = allProjects.map {
+                it.layout.buildDirectory.file("classes/kotlin/jvm/main").get().asFile
+            }
 
             jvmArgs(
                 "-javaagent:$reloadAgentJar=${listOf(
@@ -98,15 +100,6 @@ abstract class KorgeJavaExec : JavaExec() {
     @get:InputFiles
     val korgeClassPath: FileCollection = project.getKorgeClassPath()
 
-    override fun exec() {
-        classpath = korgeClassPath
-        for (classPath in classpath.toList()) {
-            logger.info("- $classPath")
-        }
-        environment("LOG_LEVEL", logLevel)
-        super.exec()
-    }
-
     @get:Input
     @Optional
     var firstThread: Boolean? = null
@@ -114,8 +107,10 @@ abstract class KorgeJavaExec : JavaExec() {
     init {
         systemProperties = (System.getProperties().toMutableMap() as MutableMap<String, Any>) - "java.awt.headless"
         defaultCharacterEncoding = Charsets.UTF_8.toString()
-        // https://github.com/korlibs/korge-plugins/issues/25
-        project.afterEvaluate {
+
+        classpath = korgeClassPath
+
+        doFirst {
             val firstThread = firstThread
                 ?: (
                     System.getenv("KORGE_START_ON_FIRST_THREAD") == "true"
@@ -127,6 +122,12 @@ abstract class KorgeJavaExec : JavaExec() {
             if (firstThread && isMacos) {
                 jvmArgs("-XstartOnFirstThread")
             }
+
+            for (classPath in classpath.files) {
+                logger.info("- $classPath")
+            }
+
+            environment("LOG_LEVEL", logLevel)
         }
     }
 }

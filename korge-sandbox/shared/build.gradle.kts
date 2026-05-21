@@ -1,3 +1,8 @@
+@file:OptIn(ExperimentalKotlinGradlePluginApi::class)
+
+import korlibs.korge.gradle.targets.jvm.KorgeJavaExec
+import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.android.multiplatform.library)
@@ -8,13 +13,18 @@ description = "Multiplatform Game Engine written in Kotlin"
 group = "org.korge.sandbox"
 version = rootProject.libs.versions.korge.get()
 
-// TODO Configure korge
-//korge {
-//    entrypoint("Sandbox", "JvmMain")
-//}
+korge {
+    // Registers a new task runJvm[name] (here "runJvmSandbox")
+    entrypoint(name = "Sandbox", jvmMainClassName =  "JvmMain")
+}
 
 kotlin {
-    jvm()
+    jvm {
+        // Configure jvmRun task to use JvmMain as main class
+        mainRun {
+            mainClass.set("JvmMain")
+        }
+    }
     android {
         namespace = "org.korge.sandbox.shared"
         compileSdk = libs.versions.compileSdk.get().toInt()
@@ -32,10 +42,17 @@ kotlin {
     }
 }
 
-// TODO Configure sandbox project correctly
+tasks.register<KorgeJavaExec>("runJvmAwtSandbox") {
+    group = "run"
+    description = "AWT entrypoint for JVM targets"
+    mainClass.set("AwtSandboxSample")
+    dependsOn("jvmMainClasses")
+}
 
-//tasks.register("runJvmAwtSandbox", KorgeJavaExec) {
-//    it.group = "run"
-//    it.dependsOn("jvmMainClasses")
-//    it.mainClass.set("AwtSandboxSample")
-//}
+tasks.withType<JavaExec> {
+    // Configure required arguments for jvmRun task
+    jvmArgs(
+        "--add-opens=java.desktop/sun.java2d.opengl=ALL-UNNAMED",
+        "--add-exports=java.desktop/com.apple.eawt.event=ALL-UNNAMED",
+    )
+}
