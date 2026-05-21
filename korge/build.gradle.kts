@@ -94,3 +94,37 @@ configurations.matching {
 }.all {
     exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-android")
 }
+
+val appleTestTargets = listOf(
+    "iosSimulatorArm64",
+    "iosArm64",
+    "iosX64",
+    "tvosSimulatorArm64",
+    "tvosArm64",
+    "tvosX64",
+    "macosArm64",
+    "macosX64",
+    "watchosSimulatorArm64",
+    "watchosArm64",
+)
+
+// For all apple test targets configure the test task to copy the resources from
+// commonTest and appleTest to the according build directory where the executable lives.
+// This makes the resources discovrable via the vfs.
+appleTestTargets.forEach { target ->
+    val testTaskName = "${target}Test"
+    val copyTaskName = "copyTestResourcesFor${target.replaceFirstChar { it.uppercaseChar() }}"
+
+    // TODO find a better way, as the test resources are copied multiple times and consume quite some space
+    tasks.register<Copy>(copyTaskName) {
+        from("src/commonTest/resources")
+        from("src/appleTest/resources")
+        // Consider enabling this target if needed for iOS test targets only
+        // from("src/iosTest/resources")
+        into(layout.buildDirectory.dir("bin/$target/debugTest"))
+    }
+
+    tasks.matching { it.name == testTaskName }.configureEach {
+        dependsOn(copyTaskName)
+    }
+}
