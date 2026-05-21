@@ -1,10 +1,15 @@
 package korlibs.korge.gradle
 
+import java.io.ByteArrayOutputStream
+import java.io.File
 import korlibs.korge.gradle.targets.android.*
-import korlibs.korge.gradle.util.*
-import org.gradle.api.*
-import java.io.*
-import kotlin.test.*
+import korlibs.korge.gradle.util.SpawnExtension
+import korlibs.korge.gradle.util.commandLineCompat
+import korlibs.korge.gradle.util.execThis
+import korlibs.korge.gradle.util.spawnExt
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 class AndroidTest : AbstractGradleIntegrationTest() {
     val ANDROID_SDK_PATH = "/fake/android/sdk/path"
@@ -21,17 +26,16 @@ class AndroidTest : AbstractGradleIntegrationTest() {
 
             override fun execLogger(projectDir: File, vararg params: String, filter: Process.(line: String) -> String?) {
                 project.exec {
-                    it.workingDir(projectDir)
-                    it.commandLine(*params)
+                    workingDir(projectDir)
+                    commandLine(*params)
                 }
             }
 
             override fun execOutput(projectDir: File, vararg params: String): String {
                 val stdout = ByteArrayOutputStream()
                 project.exec {
-                    it.commandLineCompat(*params)
-                    it.standardOutput = stdout
-                    //errorOutput = stdout
+                    commandLineCompat(*params)
+                    standardOutput = stdout
                 }
                 return stdout.toString("UTF-8")
             }
@@ -83,7 +87,7 @@ class AndroidTest : AbstractGradleIntegrationTest() {
 
     @Test
     fun testAndroidEmulatorStart() {
-        assertFailsWith<IllegalStateException>() {
+        assertFailsWith<IllegalStateException> {
             project.defineExecResult(*emulatorListAvds, stdout = "")
             androidSdkProvider.androidEmulatorStart()
         }
@@ -113,8 +117,7 @@ class AndroidTest : AbstractGradleIntegrationTest() {
 
     @Test
     fun testAndroidInstall() {
-        project.tasks.create("installDebug", Task::class.java)
-        //project.tasks.create("korgeProcessedResourcesJvmMain", Task::class.java)
+        project.tasks.register("installDebug")
 
         project.installAndroidRun(listOf(), direct = true, isKorge = true)
 

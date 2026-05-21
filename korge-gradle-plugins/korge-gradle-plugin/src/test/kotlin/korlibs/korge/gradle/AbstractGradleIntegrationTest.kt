@@ -1,12 +1,13 @@
 package korlibs.korge.gradle
 
-import groovy.lang.*
-import org.gradle.api.*
-import org.gradle.api.tasks.*
-import org.gradle.process.*
-import org.gradle.testfixtures.*
+import groovy.lang.Closure
 import java.io.*
-import java.nio.file.*
+import java.nio.file.Files
+import org.gradle.api.Action
+import org.gradle.api.Project
+import org.gradle.api.Task
+import org.gradle.process.*
+import org.gradle.testfixtures.ProjectBuilder
 
 class TestableExecSpec : ExecSpec {
     var _executable: Any? = null
@@ -111,8 +112,8 @@ class TestableProject : Project by ProjectBuilder.builder().build() {
         defineExecResult(*commandLine, result = TestableExecResult(stdout, stderr, exitCode))
     }
 
-    override fun exec(closure: Closure<*>): ExecResult = exec { closure.call(this) }
-    override fun exec(action: Action<in ExecSpec>): ExecResult {
+    fun exec(closure: Closure<*>): ExecResult = exec { closure.call(this) }
+    fun exec(action: Action<in ExecSpec>): ExecResult {
         val spec = TestableExecSpec()
         action.execute(spec)
         val request = TestableExecRequest(spec.commandLine.toList(), spec.workingDir)

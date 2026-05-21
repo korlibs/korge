@@ -1,12 +1,13 @@
-description = "Multiplatform Game Engine written in Kotlin"
-group = "org.korge.gradleplugins"
-
 plugins {
     id("java")
     id("java-gradle-plugin")
     `kotlin-dsl`
     alias(libs.plugins.vanniktech.mavenPublish)
 }
+
+description = "Multiplatform Game Engine written in Kotlin"
+group = "org.korge.gradleplugins"
+version = libs.versions.korge.get()
 
 java {
     setSourceCompatibility(libs.versions.javaSourceCompatibility.get())
@@ -32,10 +33,11 @@ gradlePlugin {
     //tags = ["kproject", "git"]
 
     plugins {
-        val `korge-settings` by creating {
+        register("korge-settings") {
             id = "org.korge.engine.settings"
             displayName = "KProject Settings Gradle Plugin"
             description = "Allows to use sourcecode & git-based dependencies"
+            version = libs.versions.korge.get()
             // language=jvm-class-name
             implementationClass = "org.korge.kproject.KProjectSettingsPlugin"
         }

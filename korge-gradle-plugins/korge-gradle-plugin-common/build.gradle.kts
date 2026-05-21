@@ -6,7 +6,8 @@ plugins {
 }
 
 description = "Multiplatform Game Engine written in Kotlin"
-group = "org.korge.gradle"
+group = "org.korge.gradleplugins"
+version = libs.versions.korge.get()
 
 dependencies {
     implementation(libs.jgit)

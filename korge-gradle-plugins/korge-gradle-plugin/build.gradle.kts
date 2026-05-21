@@ -7,7 +7,8 @@ plugins {
 }
 
 description = "Multiplatform Game Engine written in Kotlin"
-group = "org.korge.gradle"
+group = "org.korge.gradleplugins"
+version = libs.versions.korge.get()
 
 gradlePlugin {
     website.set("https://korge.org/")
@@ -15,35 +16,31 @@ gradlePlugin {
     //tags = ["korge", "game", "engine", "game engine", "multiplatform", "kotlin"]
 
     plugins {
-        val korge by registering {
+        register("korge") {
             id = "org.korge.engine"
             displayName = "Korge Game Engine"
             description = "Multiplatform Game Engine for Kotlin"
-            version = libs.versions.korge.get()
             implementationClass = "korlibs.korge.gradle.KorgeGradlePlugin"
         }
 
-        val `korge-library` by registering {
+        register("korge-library") {
             id = "org.korge.engine.library"
             displayName = "Korge Library"
             description = "Multiplatform Game Engine for Kotlin"
-            version = libs.versions.korge.get()
             implementationClass = "korlibs.korge.gradle.KorgeLibraryGradlePlugin"
         }
 
-        val kproject by registering {
+        register("kproject") {
             id = "org.korge.kproject"
             displayName = "KProject Gradle Plugin"
             description = "Allows to use sourcecode & git-based dependencies"
-            version = libs.versions.korge.get()
             implementationClass = "org.korge.kproject.KProjectPlugin"
         }
 
-        val kprojectRoot by registering {
+        register("kprojectRoot") {
             id = "org.korge.kproject.root"
             displayName = "KProject Root Gradle Plugin"
             description = "Allows to use sourcecode & git-based dependencies"
-            version = libs.versions.korge.get()
             implementationClass = "org.korge.kproject.KProjectRootPlugin"
         }
     }
