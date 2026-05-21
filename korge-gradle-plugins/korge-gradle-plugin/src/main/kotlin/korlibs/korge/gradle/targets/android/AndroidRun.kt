@@ -1,14 +1,21 @@
 package korlibs.korge.gradle.targets.android
 
-import com.android.build.gradle.internal.lint.*
-import korlibs.korge.gradle.*
-import korlibs.korge.gradle.targets.*
+import java.io.File
+import korlibs.korge.gradle.getProcessResourcesTaskName
+import korlibs.korge.gradle.targets.GROUP_KORGE_ADB
+import korlibs.korge.gradle.targets.GROUP_KORGE_INSTALL
+import korlibs.korge.gradle.targets.GROUP_KORGE_RUN
 import korlibs.korge.gradle.util.*
 import korlibs.korge.gradle.util.AnsiEscape.Companion.color
-import org.gradle.api.*
-import org.gradle.api.tasks.*
-import org.jetbrains.kotlin.gradle.dsl.*
-import java.io.*
+import org.gradle.api.DefaultTask
+import org.gradle.api.Project
+import org.gradle.api.Task
+import org.gradle.api.tasks.GradleBuild
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.Internal
+import org.gradle.api.tasks.TaskAction
+import org.gradle.work.DisableCachingByDefault
+import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 
 fun Project.installAndroidRun(dependsOnList: List<String>, direct: Boolean, isKorge: Boolean) {
     if (!AndroidSdk.hasAndroidSdk(this)) {
@@ -140,6 +147,7 @@ fun Project.installAndroidRun(dependsOnList: List<String>, direct: Boolean, isKo
     }
 }
 
+@DisableCachingByDefault
 open class AndroidCreateAndroidManifest : DefaultTask() {
     private lateinit var generated: AndroidGenerated
 
@@ -162,6 +170,7 @@ open class AndroidCreateAndroidManifest : DefaultTask() {
     }
 }
 
+@DisableCachingByDefault
 open class OnlyRunAndroidTask : DefaultAndroidTask() {
     @get:Input
     var extra: Array<String> = emptyArray()
@@ -212,12 +221,14 @@ open class OnlyRunAndroidTask : DefaultAndroidTask() {
     }
 }
 
+@DisableCachingByDefault
 open class AndroidEmulatorListAvdsTask : DefaultAndroidTask() {
     override fun run() {
         androidEmulatorListAvds().joinToString("\n")
     }
 }
 
+@DisableCachingByDefault
 open class AndroidAdbDeviceListTask : DefaultAndroidTask() {
     override fun run() {
         println(androidAdbDeviceList().joinToString("\n"))
@@ -225,12 +236,14 @@ open class AndroidAdbDeviceListTask : DefaultAndroidTask() {
     }
 }
 
+@DisableCachingByDefault
 open class AndroidAdbLogcatTask : DefaultAndroidTask() {
     override fun run() {
         execAndroidAdb("logcat")
     }
 }
 
+@DisableCachingByDefault
 open class AndroidEmulatorStartTask : DefaultAndroidTask() {
     override fun run() {
         val avdName = androidEmulatorFirstAvd() ?: error("No android emulators available to start. Please create one using Android Studio")
@@ -242,7 +255,7 @@ open class AndroidEmulatorStartTask : DefaultAndroidTask() {
     }
 }
 
-
+@DisableCachingByDefault
 abstract class DefaultAndroidTask : DefaultTask(), AndroidSdkProvider {
     @TaskAction
     abstract fun run()

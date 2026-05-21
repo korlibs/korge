@@ -7,6 +7,7 @@ import org.gradle.api.internal.tasks.testing.*
 import org.gradle.api.tasks.*
 import org.gradle.api.tasks.testing.*
 import java.io.*
+import org.gradle.work.DisableCachingByDefault
 
 fun Project.configureDenoTest() {
     afterEvaluate {
@@ -42,6 +43,7 @@ fun Project.configureDenoRun() {
     }
 }
 
+@DisableCachingByDefault
 abstract class DenoTestTask : AbstractTestTask() {
 //open class DenoTestTask : KotlinTest() {
 

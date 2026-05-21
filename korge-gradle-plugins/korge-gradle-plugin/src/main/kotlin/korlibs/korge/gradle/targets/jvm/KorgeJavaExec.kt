@@ -1,13 +1,20 @@
 package korlibs.korge.gradle.targets.jvm
 
-import korlibs.korge.gradle.*
-import korlibs.korge.gradle.targets.*
-import org.gradle.api.*
-import org.gradle.api.artifacts.*
-import org.gradle.api.file.*
-import org.gradle.api.tasks.*
-import org.gradle.jvm.tasks.*
-import java.io.*
+import java.io.File
+import korlibs.korge.gradle.getCompilationKorgeProcessedResourcesFolder
+import korlibs.korge.gradle.targets.isMacos
+import org.gradle.api.JavaVersion
+import org.gradle.api.Project
+import org.gradle.api.artifacts.ProjectDependency
+import org.gradle.api.file.FileCollection
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.JavaExec
+import org.gradle.api.tasks.Optional
+import org.gradle.api.tasks.PathSensitive
+import org.gradle.api.tasks.PathSensitivity
+import org.gradle.jvm.tasks.Jar
+import org.gradle.work.DisableCachingByDefault
 
 fun Project.findAllProjectDependencies(visited: MutableSet<Project> = mutableSetOf()): Set<Project> {
     if (this in visited) return visited
@@ -16,6 +23,7 @@ fun Project.findAllProjectDependencies(visited: MutableSet<Project> = mutableSet
     return (dependencies.flatMap { project.rootProject.project(it.path).findAllProjectDependencies(visited) } + this).toSet()
 }
 
+@DisableCachingByDefault
 abstract class KorgeJavaExecWithAutoreload : KorgeJavaExec() {
     @get:Input
     var enableRedefinition: Boolean = false
@@ -31,6 +39,7 @@ abstract class KorgeJavaExecWithAutoreload : KorgeJavaExec() {
     private lateinit var projectPaths: List<String>
     private var rootDir: File = project.rootProject.rootDir
     @get:InputFiles
+    @PathSensitive(PathSensitivity.RELATIVE)
     lateinit var rootJars: List<File>
 
     init {
@@ -93,11 +102,13 @@ fun Project.getKorgeClassPath(): FileCollection {
         .reduceRight { l, r -> l + r }
 }
 
+@DisableCachingByDefault
 abstract class KorgeJavaExec : JavaExec() {
     @get:Input
     var logLevel = "info"
 
     @get:InputFiles
+    @PathSensitive(PathSensitivity.RELATIVE)
     val korgeClassPath: FileCollection = project.getKorgeClassPath()
 
     @get:Input

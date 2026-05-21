@@ -14,6 +14,7 @@ import java.io.*
 import java.util.Locale
 import java.util.Locale.getDefault
 import javax.inject.*
+import org.gradle.work.DisableCachingByDefault
 
 fun Project.getCompilationKorgeProcessedResourcesFolder(compilation: KotlinCompilation<*>): File =
     getCompilationKorgeProcessedResourcesFolder(compilation.target.name, compilation.name)
@@ -138,6 +139,7 @@ fun Project.addGenResourcesTasks() {
     }
 }
 
+@DisableCachingByDefault
 open class KorgeGenerateResourcesTask @Inject constructor(
     //private val fs: FileSystemOperations,
 ) : DefaultTask() {
@@ -145,6 +147,7 @@ open class KorgeGenerateResourcesTask @Inject constructor(
     lateinit var korgeGeneratedFolder: File
 
     @get:InputFiles
+    @PathSensitive(PathSensitivity.RELATIVE)
     lateinit var inputFolders: List<FileCollection>
 
     //@get:Input

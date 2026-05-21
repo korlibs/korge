@@ -1,17 +1,25 @@
 package korlibs.korge.gradle.targets.js
 
-import korlibs.*
-import korlibs.korge.gradle.*
-import korlibs.korge.gradle.targets.*
-import korlibs.korge.gradle.util.*
-import org.gradle.api.*
-import org.gradle.api.tasks.*
-import org.jetbrains.kotlin.gradle.targets.js.npm.tasks.*
-import java.io.*
-import java.lang.management.*
+import java.io.File
+import java.lang.management.ManagementFactory
+import korlibs.allThis
+import korlibs.korge.gradle.korge
+import korlibs.korge.gradle.targets.GROUP_KORGE_RUN
+import korlibs.korge.gradle.util.DecoratedHttpServer
+import korlibs.korge.gradle.util.createThis
+import korlibs.korge.gradle.util.openBrowser
+import korlibs.korge.gradle.util.staticHttpServer
+import org.gradle.api.DefaultTask
+import org.gradle.api.Project
+import org.gradle.api.Task
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.TaskAction
+import org.gradle.work.DisableCachingByDefault
+import org.jetbrains.kotlin.gradle.targets.js.npm.tasks.KotlinNpmInstallTask
 
 internal var _webServer: DecoratedHttpServer? = null
 
+@DisableCachingByDefault
 open class RunJsServer : DefaultTask() {
     @get:Input
     var blocking: Boolean = true

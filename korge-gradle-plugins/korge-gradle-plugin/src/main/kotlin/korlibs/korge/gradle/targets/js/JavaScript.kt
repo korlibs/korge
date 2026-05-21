@@ -2,21 +2,29 @@
 
 package korlibs.korge.gradle.targets.js
 
-import korlibs.korge.gradle.*
+import java.io.File
+import korlibs.allThis
 import korlibs.korge.gradle.gkotlin
+import korlibs.korge.gradle.korge
 import korlibs.korge.gradle.kotlin
-import korlibs.korge.gradle.targets.*
-import korlibs.korge.gradle.targets.windows.*
-import korlibs.korge.gradle.util.*
-import korlibs.*
-import korlibs.korge.gradle.targets.jvm.*
-import org.gradle.api.*
-import org.gradle.api.file.*
+import korlibs.korge.gradle.targets.KorgeIconProvider
+import korlibs.korge.gradle.targets.ProjectType
+import korlibs.korge.gradle.targets.jvm.ensureSourceSetsConfigure
+import korlibs.korge.gradle.targets.windows.ICO2
+import korlibs.korge.gradle.util.createThis
+import korlibs.korge.gradle.util.decodeImage
+import korlibs.korge.gradle.util.get
+import korlibs.korge.gradle.util.takeIfExists
+import org.gradle.api.DefaultTask
+import org.gradle.api.Project
+import org.gradle.api.file.DuplicatesStrategy
 import org.gradle.api.tasks.*
-import org.jetbrains.kotlin.gradle.plugin.*
-import org.jetbrains.kotlin.gradle.targets.js.dsl.*
+import org.gradle.work.DisableCachingByDefault
+import org.jetbrains.kotlin.gradle.plugin.KotlinJsCompilerType
+import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
+import org.jetbrains.kotlin.gradle.plugin.KotlinTargetWithTests
+import org.jetbrains.kotlin.gradle.targets.js.dsl.KotlinJsTargetDsl
 import org.jetbrains.kotlin.gradle.tasks.Kotlin2JsCompile
-import java.io.*
 
 private object JavaScriptClass
 
@@ -116,8 +124,11 @@ fun KotlinJsTargetDsl.configureJSTestsOnce() {
     //}
 }
 
+@DisableCachingByDefault
 abstract class JsCreateIndexTask : DefaultTask() {
-    @get:InputFiles lateinit var resourcesFolders: List<File>
+    @get:InputFiles
+    @PathSensitive(PathSensitivity.RELATIVE)
+    lateinit var resourcesFolders: List<File>
     //@get:OutputDirectory lateinit var targetDir: File
     @Internal lateinit var targetDir: File
     private val projectName: String = project.name

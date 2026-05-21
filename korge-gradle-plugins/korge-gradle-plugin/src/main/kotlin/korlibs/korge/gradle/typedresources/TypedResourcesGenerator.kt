@@ -9,6 +9,7 @@ import org.gradle.api.*
 import org.gradle.api.file.FileCollection
 import org.gradle.api.tasks.*
 import java.io.*
+import org.gradle.work.DisableCachingByDefault
 
 class TypedResourcesGenerator {
     companion object {
@@ -194,11 +195,13 @@ class TypedResourcesGenerator {
     }
 }
 
+@DisableCachingByDefault
 open class GenerateTypedResourcesTask : DefaultTask() {
     @get:OutputDirectory
     var krDir: File = project.krDir
 
     @get:InputDirectory
+    @PathSensitive(PathSensitivity.RELATIVE)
     var resourceFolders: FileCollection = project.resourceFileCollection
 
     @TaskAction

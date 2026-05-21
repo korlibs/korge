@@ -1,14 +1,29 @@
 package org.korge.kproject.git
 
-import org.korge.kproject.util.*
-import org.eclipse.jgit.api.*
-import org.eclipse.jgit.api.errors.*
-import org.eclipse.jgit.errors.*
-import org.eclipse.jgit.lib.*
-import org.eclipse.jgit.revwalk.*
-import org.eclipse.jgit.treewalk.*
-import java.io.*
-import java.util.zip.*
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.OutputStream
+import java.io.PrintWriter
+import java.util.zip.ZipEntry
+import java.util.zip.ZipInputStream
+import java.util.zip.ZipOutputStream
+import org.eclipse.jgit.api.ArchiveCommand
+import org.eclipse.jgit.api.Git
+import org.eclipse.jgit.api.errors.RefNotFoundException
+import org.eclipse.jgit.errors.MissingObjectException
+import org.eclipse.jgit.lib.FileMode
+import org.eclipse.jgit.lib.ObjectId
+import org.eclipse.jgit.lib.ObjectLoader
+import org.eclipse.jgit.lib.TextProgressMonitor
+import org.eclipse.jgit.revwalk.RevCommit
+import org.eclipse.jgit.revwalk.RevTree
+import org.eclipse.jgit.revwalk.RevWalk
+import org.eclipse.jgit.treewalk.TreeWalk
+import org.korge.kproject.util.PathInfo
+import org.korge.kproject.util.ensureRepo
+import org.korge.kproject.util.get
+import org.korge.kproject.util.getKProjectDir
+import org.korge.kproject.util.unzipTo
 
 fun Git.doPull() {
     this.pull()

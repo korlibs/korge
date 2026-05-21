@@ -1,15 +1,19 @@
 package korlibs.korge.gradle.targets.js
 
+import java.io.File
 import korlibs.korge.gradle.gkotlin
 import korlibs.korge.gradle.kotlin
-import korlibs.korge.gradle.targets.*
-import korlibs.korge.gradle.targets.jvm.*
-import korlibs.korge.gradle.targets.wasm.*
-import korlibs.korge.gradle.util.*
-import org.gradle.api.*
+import korlibs.korge.gradle.targets.ProjectType
+import korlibs.korge.gradle.targets.jvm.ensureSourceSetsConfigure
+import korlibs.korge.gradle.targets.wasm.configureWasmTarget
+import korlibs.korge.gradle.util.createThis
+import korlibs.korge.gradle.util.get
+import org.gradle.api.DefaultTask
+import org.gradle.api.Project
+import org.gradle.api.Task
 import org.gradle.api.tasks.TaskAction
-import org.jetbrains.kotlin.gradle.targets.js.npm.*
-import java.io.*
+import org.gradle.work.DisableCachingByDefault
+import org.jetbrains.kotlin.gradle.targets.js.npm.npmProject
 
 fun Project.configureWasm(projectType: ProjectType, binaryen: Boolean = false) {
     if (gkotlin.targets.findByName("wasm") != null) return
@@ -35,6 +39,7 @@ fun Project.configureWasm(projectType: ProjectType, binaryen: Boolean = false) {
     }
 }
 
+@DisableCachingByDefault
 open class WasmJsCreateIndexTask : DefaultTask() {
     private val npmDir: File = project.kotlin.wasmJs().compilations["main"]!!.npmProject.dir.get().asFile
 

@@ -22,6 +22,7 @@ import java.net.*
 import java.util.*
 import java.util.concurrent.*
 import kotlin.concurrent.*
+import org.gradle.work.DisableCachingByDefault
 
 class KorgeGradleApply(val project: Project, val projectType: ProjectType) {
 	fun apply(includeIndirectAndroid: Boolean = true) = project {
@@ -176,6 +177,7 @@ inline fun <reified T : Any> Project.extensionGetOrCreate(name: String): T {
     }
 }
 
+@DisableCachingByDefault
 abstract class JsWebCopy() : Copy() {
     @OutputDirectory
     open lateinit var targetDir: File

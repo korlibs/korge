@@ -7,6 +7,7 @@ import org.gradle.api.tasks.Exec
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.options.Option
+import org.gradle.work.DisableCachingByDefault
 
 fun Exec.commandLineCross(vararg args: String, type: CrossExecType): CommandLineCrossResult {
     val (result, array) = type.commands(*args)
@@ -14,6 +15,7 @@ fun Exec.commandLineCross(vararg args: String, type: CrossExecType): CommandLine
     return result
 }
 
+@DisableCachingByDefault
 abstract class KotlinNativeCrossTest : org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest() {
     @Input
     @Option(option = "type", description = "Sets the executable cross type")

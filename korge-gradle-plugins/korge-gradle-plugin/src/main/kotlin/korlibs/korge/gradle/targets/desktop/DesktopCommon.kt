@@ -1,12 +1,17 @@
 package korlibs.korge.gradle.targets.desktop
 
-import korlibs.korge.gradle.*
-import korlibs.korge.gradle.util.*
-import org.gradle.api.*
+import java.io.File
+import korlibs.korge.gradle.korge
+import korlibs.korge.gradle.util.Indenter
+import korlibs.korge.gradle.util.createThis
+import org.gradle.api.DefaultTask
+import org.gradle.api.Project
+import org.gradle.api.Task
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
-import java.io.*
+import org.gradle.work.DisableCachingByDefault
 
+@DisableCachingByDefault
 open class PrepareKotlinNativeBootstrapTask : DefaultTask() {
     @get:OutputFile
     val output = project.nativeDesktopBootstrapFile

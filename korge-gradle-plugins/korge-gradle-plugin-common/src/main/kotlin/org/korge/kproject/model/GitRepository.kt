@@ -1,18 +1,30 @@
 package org.korge.kproject.model
 
-import org.korge.kproject.git.*
-import org.korge.kproject.internal.*
-import org.korge.kproject.util.*
-import org.eclipse.jgit.api.*
-import org.eclipse.jgit.lib.*
-import java.io.*
+import java.io.File
+import java.io.PrintWriter
+import org.eclipse.jgit.api.Git
+import org.eclipse.jgit.lib.ConfigConstants
+import org.eclipse.jgit.lib.TextProgressMonitor
+import org.korge.kproject.git.archiveZip
+import org.korge.kproject.git.checkRefExists
+import org.korge.kproject.git.countCommits
+import org.korge.kproject.git.generateStableZipContent
+import org.korge.kproject.internal.dyn
+import org.korge.kproject.util.Json
+import org.korge.kproject.util.PathInfo
+import org.korge.kproject.util.get
+import org.korge.kproject.util.getKProjectDir
+import org.korge.kproject.util.pathInfo
+import org.korge.kproject.util.sha256
 
 data class GitRepository(val repo: String) {
     val httpsRepo = when {
         repo.startsWith("git@") -> "https://" + repo.substringAfter("git@").replace(':', '/')
         else -> repo
     }
-    val cachePath: String = PathInfo(httpsRepo.removePrefix("https://").substringAfter("://").replace(':', '/').removeSuffix(".git")).fullPath
+    val cachePath: String = PathInfo(
+        httpsRepo.removePrefix("https://").substringAfter("://").replace(':', '/').removeSuffix(".git")
+    ).fullPath
 
     companion object {
         fun fromGithub(org: String, name: String): GitRepository = GitRepository("https://github.com/$org/$name.git")
