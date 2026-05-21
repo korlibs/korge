@@ -1,18 +1,31 @@
 package org.korge.kproject
 
+import com.android.build.api.dsl.KotlinMultiplatformAndroidLibraryExtension
 import com.android.build.api.dsl.KotlinMultiplatformAndroidLibraryTarget
-import com.android.build.gradle.*
-import org.korge.kproject.internal.*
-import org.korge.kproject.model.*
-import org.korge.kproject.util.*
-import org.gradle.api.*
-import org.gradle.api.plugins.*
-import org.gradle.api.tasks.testing.logging.*
-import org.jetbrains.kotlin.gradle.dsl.*
-import org.jetbrains.kotlin.gradle.plugin.*
-import java.io.*
+import java.io.File
+import org.gradle.api.NamedDomainObjectContainer
+import org.gradle.api.Plugin
+import org.gradle.api.Project
+import org.gradle.api.plugins.PluginContainer
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import org.gradle.api.tasks.testing.logging.TestLogEvent
+import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
+import org.jetbrains.kotlin.gradle.plugin.KotlinJsCompilerType
+import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
+import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
+import org.korge.kproject.internal.dyn
+import org.korge.kproject.model.KProjectTarget
+import org.korge.kproject.model.NewKProjectModel
+import org.korge.kproject.model.fileRef
+import org.korge.kproject.model.loadFile
+import org.korge.kproject.util.Yaml
+import org.korge.kproject.util.defineStandardRepositories
+import org.korge.kproject.util.isWindowsOrLinuxArm
 
 @Suppress("unused")
+@OptIn(ExperimentalWasmDsl::class)
 class KProjectPlugin : Plugin<Project> {
     override fun apply(project: Project) {
         project.defineStandardRepositories()
@@ -56,7 +69,7 @@ class KProjectPlugin : Plugin<Project> {
                 jvm().apply {
                     compilations.all {
                         compileTaskProvider.configure {
-                            (this as org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile)
+                            (this as KotlinJvmCompile)
                                 .compilerOptions
                                 .jvmTarget
                                 .set(JvmTarget.fromTarget(jvmVersion))
@@ -73,7 +86,7 @@ class KProjectPlugin : Plugin<Project> {
                 targets.getByName("android").apply {
                     compilations.all {
                         compileTaskProvider.configure {
-                            (this as org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile)
+                            (this as KotlinJvmCompile)
                                 .compilerOptions
                                 .jvmTarget
                                 .set(JvmTarget.fromTarget(androidJvmVersion))
@@ -86,17 +99,15 @@ class KProjectPlugin : Plugin<Project> {
                     withDeviceTest {}
                 }
                 project.afterEvaluate {
-                    val compileDebugJavaWithJavac = project.tasks.findByName("compileDebugJavaWithJavac") as? org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile?
-                    compileDebugJavaWithJavac?.compilerOptions?.jvmTarget?.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.fromTarget(androidJvmVersion))
+                    val compileDebugJavaWithJavac = project.tasks.findByName("compileDebugJavaWithJavac") as? KotlinJvmCompile?
+                    compileDebugJavaWithJavac?.compilerOptions?.jvmTarget?.set(JvmTarget.fromTarget(androidJvmVersion))
                 }
-                project.extensions.getByType(LibraryExtension::class.java).apply {
-                    val compileSdk = ANDROID_DEFAULT_COMPILE_SDK
-                    val targetSdk = ANDROID_DEFAULT_TARGET_SDK
-                    val minSdk = ANDROID_DEFAULT_MIN_SDK
-                    this.compileSdk = compileSdk
-                    defaultConfig {
-                        this.minSdk = minSdk
-                        // this.targetSdk = targetSdk
+                project.extensions.getByType(KotlinMultiplatformAndroidLibraryExtension::class.java).apply {
+                    compileSdk {
+                        release(ANDROID_DEFAULT_COMPILE_SDK)
+                    }
+                    minSdk {
+                        release(version = ANDROID_DEFAULT_MIN_SDK)
                     }
                     namespace = ("${project.group}.${project.name}").replace("-", ".")
                     sourceSets.apply {
