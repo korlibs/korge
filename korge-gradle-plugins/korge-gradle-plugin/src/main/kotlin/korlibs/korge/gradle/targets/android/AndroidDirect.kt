@@ -2,25 +2,25 @@ package korlibs.korge.gradle.targets.android
 
 import com.android.build.api.dsl.ApplicationExtension
 import com.android.build.api.dsl.ApplicationVariantDimension
-import com.android.build.api.dsl.KotlinMultiplatformAndroidLibraryExtension
 import com.android.build.api.dsl.KotlinMultiplatformAndroidLibraryTarget
-import com.android.build.api.dsl.LibraryExtension
-import com.android.build.api.dsl.TestExtension
-import com.android.build.gradle.tasks.*
+import com.android.build.gradle.tasks.MergeSourceSetFolders
 import java.io.File
-import korlibs.*
-import korlibs.korge.gradle.*
+import korlibs.invoke
+import korlibs.korge.gradle.KorgeExtension
+import korlibs.korge.gradle.korge
 import korlibs.korge.gradle.kotlin
-import korlibs.korge.gradle.targets.*
-import korlibs.korge.gradle.targets.all.*
-import korlibs.korge.gradle.targets.jvm.*
-import korlibs.korge.gradle.util.*
-import org.korge.gradle.BuildVersions
-import org.gradle.api.*
-import org.gradle.api.tasks.*
+import korlibs.korge.gradle.targets.ProjectType
+import korlibs.korge.gradle.targets.all.AddFreeCompilerArgs
+import korlibs.korge.gradle.targets.all.korgeGradlePluginResources
+import korlibs.korge.gradle.targets.jvm.ensureSourceSetsConfigure
+import korlibs.korge.gradle.util.SemVer
+import korlibs.korge.gradle.util.takeIfExists
+import org.gradle.api.Project
+import org.gradle.api.tasks.Copy
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
+import org.korge.gradle.BuildVersions
 
 fun Project.configureAndroidDirect(projectType: ProjectType, isKorge: Boolean) {
     if (!AndroidSdk.hasAndroidSdk(this)) {
