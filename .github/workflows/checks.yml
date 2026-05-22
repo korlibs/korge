@@ -139,3 +139,89 @@ jobs:
           retention-days: 21
           path: "**/build/reports"
           if-no-files-found: ignore
+  e2e-linux:
+    timeout-minutes: 120
+    runs-on: ubuntu-latest
+    env:
+      DISABLE_KOTLIN_NATIVE: false
+      DISABLE_ANDROID: false
+      DISABLE_SANDBOX: false
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install freeglut3 & openal
+        run: sudo apt-get update && sudo apt-get -y install freeglut3-dev libopenal-dev xvfb
+      - name: Run Xvfb in Background
+        run: "Xvfb :99 &"
+      - name: Set up JDK
+        uses: actions/setup-java@6a0805fcefea3d4657a47ac4c165951e33482018
+        with:
+          distribution: "${{ env.JAVA_DISTRIBUTION }}"
+          java-version: "${{ env.JAVA_VERSION }}"
+      - name: Prepare Gradle
+        uses: gradle/actions/setup-gradle@417ae3ccd767c252f5661f1ace9f835f9654f2b5
+      - name: Publish main project to Maven local
+        run: "./gradlew publishToMavenLocal"
+      - name: Run e2e-test
+        run: "./gradlew -p e2e :e2e-test:build"
+        env:
+          EGL_LOG_LEVEL: debug
+          LIBGL_DEBUG: verbose
+          LIBGL_ALWAYS_SOFTWARE: true
+          MESA_DEBUG: true
+      - name: Run e2e-test-multi
+        run: "./gradlew -p e2e :e2e-test-multi:build"
+        env:
+          EGL_LOG_LEVEL: debug
+          LIBGL_DEBUG: verbose
+          LIBGL_ALWAYS_SOFTWARE: true
+          MESA_DEBUG: true
+      - name: Archive E2E Test Results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: "e2e-test-results-ubuntu-latest"
+          retention-days: 21
+          path: "**/build/reports"
+          if-no-files-found: ignore
+
+  e2e-macos-swiftui:
+    timeout-minutes: 120
+    runs-on: macos-latest
+    env:
+      DISABLE_KOTLIN_NATIVE: false
+      DISABLE_ANDROID: true
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK
+        uses: actions/setup-java@6a0805fcefea3d4657a47ac4c165951e33482018
+        with:
+          distribution: "${{ env.JAVA_DISTRIBUTION }}"
+          java-version: "${{ env.JAVA_VERSION }}"
+      - name: Prepare Gradle
+        uses: gradle/actions/setup-gradle@417ae3ccd767c252f5661f1ace9f835f9654f2b5
+      - name: Publish main project to Maven local
+        run: "./gradlew publishToMavenLocal"
+      - name: Run e2e SwiftUI integration
+        run: "./gradlew -p e2e/e2e-test-integration/swiftui/korge-hello-world build"
+      - name: Build Korge iOS simulator framework
+        run: "./gradlew -p e2e/e2e-test-integration/swiftui/korge-hello-world linkDebugFrameworkIosSimulatorArm64"
+      - name: Build SwiftUI Xcode integration project
+        run: |
+          xcodebuild \
+            -project e2e/e2e-test-integration/swiftui/SwiftUIKorgeIntegration/SwiftUIKorgeIntegration.xcodeproj \
+            -scheme SwiftUIKorgeIntegration \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath build/xcode-derived-data/SwiftUIKorgeIntegration \
+            -resultBundlePath build/xcode-results/SwiftUIKorgeIntegration.xcresult \
+            CODE_SIGNING_ALLOWED=NO \
+            clean build
+      - name: Archive E2E SwiftUI Test Results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: "e2e-swiftui-test-results-macos-latest"
+          retention-days: 21
+          path: "**/build/reports"
+          if-no-files-found: ignore

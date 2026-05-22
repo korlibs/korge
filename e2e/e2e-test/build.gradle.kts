@@ -12,11 +12,6 @@ buildscript {
         mavenCentral()
         google()
         maven { url = uri("https://plugins.gradle.org/m2/") }
-        maven { url = uri("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/bootstrap") }
-        maven { url = uri("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/temporary") }
-        maven { url = uri("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev") }
-        maven { url = uri("https://maven.pkg.jetbrains.space/public/p/kotlinx-coroutines/maven") }
-        maven { url = uri("https://maven.pkg.jetbrains.space/kotlin/p/wasm/experimental") }
     }
     dependencies {
         classpath("org.korge.gradleplugins:korge-gradle-plugin:$korgePluginVersion")
@@ -44,12 +39,7 @@ korge {
     targetAndroid()
 
     jvmMainClassName = "RefMainKt"
-
-    //entrypoint("CheckReferences", "CheckReferences")
-    //entrypoint("HelloWorld", "HelloWorld")
 }
-
-//println(BuildVersions.KORGE)
 
 // Use MESA OpenGL 32 since Windows Server doesn't have a proper OpenGL implementation on GitHub Actions
 // @see: https://amiralizadeh9480.medium.com/how-to-run-opengl-based-tests-on-github-actions-60f270b1ea2c
