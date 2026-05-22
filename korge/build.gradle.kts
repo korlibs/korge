@@ -53,9 +53,9 @@ kotlin {
     iosArm64()
     iosSimulatorArm64()
     iosX64()
+    tvosArm64()
+    tvosSimulatorArm64()
     // TODO Add support for these targets as well
-//    tvosArm64()
-//    tvosSimulatorArm64()
 //    watchosArm64()
 //    watchosArm32()
 //    watchosDeviceArm64()
