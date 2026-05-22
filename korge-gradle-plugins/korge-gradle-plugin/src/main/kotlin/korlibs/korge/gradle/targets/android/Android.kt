@@ -146,16 +146,12 @@ fun Project.getAndroidCompileSdkVersion(): Int = project.findProperty("android.c
 fun Project.getAndroidTargetSdkVersion(): Int = project.findProperty("android.target.sdk.version")?.toString()?.toIntOrNull() ?: ANDROID_DEFAULT_TARGET_SDK
 
 // https://apilevels.com/
-//const val ANDROID_DEFAULT_MIN_SDK = 16 // Previously 18
-//const val ANDROID_DEFAULT_MIN_SDK = 18
-const val ANDROID_DEFAULT_MIN_SDK = 33 // Android 5.0
+const val ANDROID_DEFAULT_MIN_SDK = 33
 const val ANDROID_DEFAULT_COMPILE_SDK = 36
 const val ANDROID_DEFAULT_TARGET_SDK = 36
 
 val GRADLE_JAVA_VERSION_STR = "21"
 
-//val ANDROID_JAVA_VERSION = JavaVersion.VERSION_1_8
-//val ANDROID_JAVA_VERSION = JavaVersion.VERSION_11
 val ANDROID_JAVA_VERSION = JavaVersion.VERSION_21
 val ANDROID_JAVA_VERSION_STR = ANDROID_JAVA_VERSION.toString()
 val ANDROID_JVM_TARGET = JvmTarget.fromTarget(ANDROID_JAVA_VERSION_STR)

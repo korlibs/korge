@@ -1,8 +1,10 @@
 package org.korge.kproject.model
 
-import org.korge.kproject.internal.*
-import org.korge.kproject.util.*
-import korlibs.korge.gradle.common.*
+import org.korge.gradle.BuildVersions
+import org.korge.kproject.internal.quoted
+import org.korge.kproject.util.PathInfo
+import org.korge.kproject.util.Version
+import org.korge.kproject.util.pathInfo
 
 class NewKProjectGradleGenerator(val projectRootFolder: FileRef) {
     val resolver = NewKProjectResolver()
@@ -103,7 +105,7 @@ class NewKProjectGradleGenerator(val projectRootFolder: FileRef) {
                     for (plugin in gradlePlugins) {
                         when (plugin) {
                             "serialization" -> {
-                                appendLine("  add(\"commonMainApi\", \"org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0\")")
+                                appendLine("  add(\"commonMainApi\", \"org.jetbrains.kotlinx:kotlinx-serialization-json:${BuildVersions.KOTLIN_SERIALIZATION}\")")
                             }
                         }
                     }

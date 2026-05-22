@@ -3,6 +3,7 @@ plugins {
     id("java-gradle-plugin")
     `kotlin-dsl`
     alias(libs.plugins.vanniktech.mavenPublish)
+    alias(libs.plugins.buildconfig)
 }
 
 description = "Multiplatform Game Engine written in Kotlin"
@@ -45,4 +46,13 @@ mavenPublishing {
             url.set("https://github.com/korlibs/korge")
         }
     }
+}
+
+buildConfig {
+    packageName("org.korge.gradle")
+    className("BuildVersions")
+
+    useKotlinOutput()
+    buildConfigField("KORGE_PLUGIN_VERSION", libs.versions.korge)
+    buildConfigField("KOTLIN_SERIALIZATION", libs.versions.kotlinx.serialization)
 }
