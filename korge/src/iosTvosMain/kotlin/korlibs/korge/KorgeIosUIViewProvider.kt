@@ -2,11 +2,13 @@
 
 package korlibs.korge
 
-import korlibs.korge.scene.*
-import korlibs.math.geom.*
-import korlibs.render.*
-import kotlinx.cinterop.*
-import platform.UIKit.*
+import korlibs.korge.scene.Scene
+import korlibs.korge.scene.sceneContainer
+import korlibs.math.geom.Size
+import korlibs.render.ViewController
+import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.ExportObjCClass
+import platform.UIKit.UIView
 
 /**
  * Create in `src/iosMain/kotlin/KorgeIosUIViewProvider.kt` this file:

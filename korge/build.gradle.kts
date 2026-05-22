@@ -55,12 +55,12 @@ kotlin {
     iosX64()
     tvosArm64()
     tvosSimulatorArm64()
+    watchosArm64()
+    watchosArm32()
+    watchosDeviceArm64()
+    watchosSimulatorArm64()
+    macosArm64()
     // TODO Add support for these targets as well
-//    watchosArm64()
-//    watchosArm32()
-//    watchosDeviceArm64()
-//    watchosSimulatorArm64()
-//    macosArm64()
 //    linuxX64()
 //    linuxArm64()
 //    mingwX64()
@@ -84,6 +84,18 @@ kotlin {
                 // with JVM swing
                 implementation(libs.kotlinx.coroutines.swing)
             }
+        }
+
+        val iosTvosMain by creating {
+            dependsOn(appleMain.get())
+        }
+
+        iosMain {
+            dependsOn(iosTvosMain)
+        }
+
+        tvosMain {
+            dependsOn(iosTvosMain)
         }
     }
 }
