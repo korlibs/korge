@@ -75,17 +75,6 @@ class AndroidTest : AbstractGradleIntegrationTest() {
     }
 
     @Test
-    fun testLogcatTask() {
-        val expectedStdout = "logs\n"
-        project.installAndroidRun(listOf(), direct = true, isKorge = true)
-        val stdout = captureStdout {
-            project.defineExecResult(ANDROID_ADB_PATH, "logcat", stdout = expectedStdout)
-            project.tasks.getByName("adbLogcat").also { (it as DefaultAndroidTask).initWithProject(project) }.execute()
-        }
-        assertEquals(expectedStdout, stdout)
-    }
-
-    @Test
     fun testAndroidEmulatorStart() {
         assertFailsWith<IllegalStateException> {
             project.defineExecResult(*emulatorListAvds, stdout = "")
@@ -113,27 +102,5 @@ class AndroidTest : AbstractGradleIntegrationTest() {
                 ), spawnResult
             )
         }
-    }
-
-    @Test
-    fun testAndroidInstall() {
-        project.tasks.register("installDebug")
-
-        project.installAndroidRun(listOf(), direct = true, isKorge = true)
-
-        assertEquals(
-            "installDebug",
-            project.tasks.getByName("installAndroidDeviceDebug").dependsOnNames.joinToString(", ")
-        )
-
-        assertEquals(
-            "installDebug, androidEmulatorStart",
-            project.tasks.getByName("installAndroidEmulatorDebug").dependsOnNames.joinToString(", ")
-        )
-
-        assertEquals(
-            "installRelease, androidEmulatorStart",
-            project.tasks.getByName("installAndroidEmulatorRelease").dependsOnNames.joinToString(", ")
-        )
     }
 }

@@ -109,13 +109,6 @@ fun Project.configureNativeIosTvosRun(targetName: String) {
     val iosXcodegenExt = project.iosXcodegenExt
     val iosSdkExt = project.iosSdkExt
 
-    if (tasks.findByName("installXcodeGen") == null) {
-        tasks.createThis<Task>("installXcodeGen") {
-            onlyIf { !iosXcodegenExt.isInstalled() }
-            doLast { iosXcodegenExt.install() }
-        }
-    }
-
     val combinedResourcesFolder = File(buildDir, "combinedResources/resources")
     val processedResourcesFolder = File(buildDir, "processedResources/${targetName}Arm64/main")
     val copyIosTvosResources = tasks.createTyped<Copy>("copy${targetNameCapitalized}Resources") {
@@ -126,7 +119,7 @@ fun Project.configureNativeIosTvosRun(targetName: String) {
     }
 
     val prepareKotlinNativeIosTvosProject = tasks.createThis<Task>("prepareKotlinNative${targetNameCapitalized}Project") {
-        dependsOn("installXcodeGen", "prepareKotlinNativeBootstrap${targetNameCapitalized}", prepareKotlinNativeBootstrap, copyIosTvosResources)
+        dependsOn("prepareKotlinNativeBootstrap${targetNameCapitalized}", prepareKotlinNativeBootstrap, copyIosTvosResources)
         doLast {
             // project.yml requires these folders to be available, or it will fail
             //File(rootDir, "src/commonMain/resources").mkdirs()

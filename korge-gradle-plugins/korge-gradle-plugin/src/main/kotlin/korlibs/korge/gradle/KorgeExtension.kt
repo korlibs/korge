@@ -301,9 +301,6 @@ open class KorgeExtension(
         }
     }
 
-    @Deprecated("", ReplaceWith("targetAndroid()")) fun targetAndroidIndirect() = targetAndroid()
-    @Deprecated("", ReplaceWith("targetAndroid()")) fun targetAndroidDirect() = targetAndroid()
-
     /**
      * Configures Kotlin/Native iOS target (only on macOS)
      */
@@ -333,8 +330,6 @@ open class KorgeExtension(
     fun targetDefault() {
         if (newDesktopEnabled) targetDesktop()
         if (newAndroidEnabled) targetAndroid()
-        //if (newAndroidIndirectEnabled) targetAndroidIndirect()
-        //if (newAndroidDirectEnabled) targetAndroidDirect()
         if (newIosEnabled) targetIos()
         if (newJsEnabled) targetJs()
     }

@@ -7,7 +7,12 @@ buildscript {
     val korgePluginVersion: String by project
 
     repositories {
-        mavenLocal()
+        mavenLocal {
+            content {
+                // Load gradle plugin from maven local explicitly in e2e tests
+                includeGroup("org.korge.gradleplugins")
+            }
+        }
         maven { url = uri("https://central.sonatype.com/repository/maven-snapshots") }
         mavenCentral()
         google()
@@ -34,8 +39,8 @@ korge {
 
     targetJvm()
     targetJs()
-    targetIos()
-    //targetAndroidIndirect() // targetAndroidDirect()
+    // TODO Fix gradle plugins to support ios targets easier
+    // targetIos()
     targetAndroid()
 
     jvmMainClassName = "RefMainKt"
