@@ -1,6 +1,12 @@
-import korlibs.korge.view.*
-import korlibs.math.geom.*
-import korlibs.math.interpolation.*
+import korlibs.korge.view.View
+import korlibs.korge.view.onStageResized
+import korlibs.korge.view.position
+import korlibs.korge.view.size
+import korlibs.math.geom.Anchor
+import korlibs.math.geom.Point
+import korlibs.math.geom.ScaleMode
+import korlibs.math.geom.Size
+import korlibs.math.interpolation.interpolate
 
 fun <T : View> T.dockedTo(anchor: Anchor, scaleMode: ScaleMode = ScaleMode.NO_SCALE, offset: Point = Point(), hook: (View) -> Unit = {}): T {
     DockingComponent(this, anchor, scaleMode, offset, hook)

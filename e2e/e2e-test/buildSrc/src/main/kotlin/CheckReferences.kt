@@ -1,13 +1,11 @@
-import korlibs.image.bitmap.*
-import korlibs.image.format.*
-import korlibs.io.*
-import korlibs.io.dynamic.dyn
-import korlibs.io.file.*
-import korlibs.io.file.std.*
-import korlibs.io.serialization.json.Json
-import kotlinx.coroutines.flow.*
 import java.io.File
-import kotlin.jvm.*
+import korlibs.image.bitmap.Bitmap32
+import korlibs.image.bitmap.computePsnr
+import korlibs.image.format.readBitmap
+import korlibs.io.Korio
+import korlibs.io.dynamic.dyn
+import korlibs.io.file.std.toVfs
+import korlibs.io.serialization.json.Json
 
 object CheckReferences {
     @JvmStatic

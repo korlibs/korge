@@ -1,3 +1,5 @@
+enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
+
 pluginManagement {
     repositories {
         mavenLocal()
@@ -8,3 +10,15 @@ pluginManagement {
     }
     //Eval.xy(this, it, file('../../gradle/repositories.settings.gradle').text)
 }
+
+plugins {
+    id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
+}
+
+include(
+    ":shared",
+    ":androidApp",
+    // Uncomment once korge plugin is migrated
+//    ":desktopApp",
+//    ":webApp",
+)
