@@ -24,7 +24,7 @@ kotlin {
     jvm()
 
     android {
-        namespace = "org.korge.engine"
+        namespace = "org.korge.engine.core"
         compileSdk = libs.versions.compileSdk.get().toInt()
         minSdk = libs.versions.minSdk.get().toInt()
 
