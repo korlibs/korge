@@ -1,24 +1,28 @@
-import korlibs.korge.gradle.targets.all.AddFreeCompilerArgs
-
 plugins {
-    id("org.jetbrains.kotlin.multiplatform")
-    id("org.jetbrains.kotlinx.benchmark") version libs.versions.kotlinx.benchmark
-    id("org.jetbrains.kotlin.plugin.allopen") version libs.versions.kotlin
-}
-
-allOpen {
-    annotation("org.openjdk.jmh.annotations.State")
+    alias(libs.plugins.kotlin.multiplatform)
+    alias(libs.plugins.kotlinx.benchmark)
+    alias(libs.plugins.kotlin.allopen)
 }
 
 kotlin {
-    jvm {
-        AddFreeCompilerArgs.addFreeCompilerArgs(project, this)
+    applyDefaultHierarchyTemplate()
+    jvm()
+
+    sourceSets {
+        jvmMain.dependencies {
+            api(projects.korge)
+            api(libs.kotlinx.benchmark.runtime)
+        }
     }
 }
-benchmark.targets.register("jvm")
-//kotlin { js(IR) { nodejs() } }; benchmark.targets.register("js")
 
-dependencies {
-    add("commonMainApi", project(":korge"))
-    add("commonMainApi", "org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.4.7")
+allOpen {
+    // Configure all-open for benchmark testing
+    annotation("org.openjdk.jmh.annotations.State")
+}
+
+benchmark {
+    targets {
+        register("jvm")
+    }
 }

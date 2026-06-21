@@ -1,0 +1,23 @@
+[versions]
+android-gradle-plugin = "9.2.0"
+korge = "7.0.0-SNAPSHOT"
+compileSdk = "36"
+targetSdk = "36"
+minSdk = "26"
+kotlin = "2.3.21"
+korlibs = "7.0.0-SNAPSHOT"
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "android-gradle-plugin" }
+korge = { id = "org.korge.engine", version.ref = "korge" }
+kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+
+[libraries]
+korge = { module = "org.korge.engine:korge", version.ref = "korge" }
+korge-core = { module = "org.korge.engine:korge-core", version.ref = "korge" }
+korlibs-math = { module = "org.korge.korlibs:korlibs-math", version.ref = "korlibs" }
+korlibs-image = { module = "org.korge.korlibs:korlibs-image", version.ref = "korlibs" }
+korlibs-io = { module = "org.korge.korlibs:korlibs-io", version.ref = "korlibs" }
+korlibs-io-vfs = { module = "org.korge.korlibs:korlibs-io-vfs", version.ref = "korlibs" }
+korlibs-time = { module = "org.korge.korlibs:korlibs-time", version.ref = "korlibs" }

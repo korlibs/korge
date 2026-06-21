@@ -9,8 +9,5 @@ pluginManagement {
 }
 
 plugins {
-    //id("org.korge.engine.settings") version "0.0.1-SNAPSHOT"
-    id("org.korge.engine.settings") version "0.3.1"
+    id("org.korge.engine.settings") version "7.0.0-SNAPSHOT"
 }
-
-kproject("./deps")

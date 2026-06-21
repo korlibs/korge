@@ -1,4 +1,3 @@
 [plugins]
-#korge = { id = "org.korge.engine", version = "4.0.6" }
-korge = { id = "org.korge.engine", version = "6.1.0-SNAPSHOT" }
-korge-library = { id = "org.korge.engine.library", version = "6.1.0-SNAPSHOT" }
+korge = { id = "org.korge.engine", version = "7.0.0-SNAPSHOT" }
+korge-library = { id = "org.korge.engine.library", version = "7.0.0-SNAPSHOT" }

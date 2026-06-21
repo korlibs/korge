@@ -59,7 +59,7 @@ For more information, visit:
 ```toml
 [plugins]
 #korge = { id = "com.soywiz.korge", version = "6.0.0" }   <-- Old namespace, latest official version
-korge = { id = "org.korge.engine", version = "6.1.0-SNAPSHOT" }   # <-- New namespace, use latest snapshot version
+korge = { id = "org.korge.engine", version = "7.0.0-SNAPSHOT" }   # <-- New namespace, use latest snapshot version
 ```
 
 
@@ -70,7 +70,7 @@ KorGE and all the other korlibs in a single monorepo.
 
 To use this version in other projects,
 you can publish it locally to mavenLocal,
-and then use latest snapshot version like `6.1.0-SNAPSHOT` as version: 
+and then use latest snapshot version like `7.0.0-SNAPSHOT` as version: 
 
 ```shell script
 ./gradlew publishToMavenLocal

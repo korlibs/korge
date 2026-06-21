@@ -1,16 +1,12 @@
-import korlibs.korge.gradle.targets.android.*
-import korlibs.root.*
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import com.vanniktech.maven.publish.*
 
 plugins {
-    id("kotlin")
-    id("com.vanniktech.maven.publish")
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.vanniktech.mavenPublish)
 }
 
 description = "Korge Reload Agent – JVM hot-reload instrumentation agent"
-group = RootKorlibsPlugin.KORGE_RELOAD_AGENT_GROUP
+group = "org.korge.engine"
 
 tasks.jar {
     manifest {
@@ -23,21 +19,19 @@ tasks.jar {
     }
 }
 
-val jversion = GRADLE_JAVA_VERSION_STR
-
 java {
-    setSourceCompatibility(jversion)
-    setTargetCompatibility(jversion)
+    setSourceCompatibility(libs.versions.javaSourceCompatibility.get())
+    setTargetCompatibility(libs.versions.javaTargetCompatibility.get())
 }
 
-tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile::class).all {
-    compilerOptions {
-        jvmTarget.set(JvmTarget.fromTarget(jversion))
-        apiVersion.set(KotlinVersion.fromVersion("2.0"))
-        languageVersion.set(KotlinVersion.fromVersion("2.0"))
-        suppressWarnings.set(true)
-    }
-}
+//tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile::class).all {
+//    compilerOptions {
+//        jvmTarget.set(JvmTarget.fromTarget(jversion))
+//        apiVersion.set(KotlinVersion.fromVersion("2.0"))
+//        languageVersion.set(KotlinVersion.fromVersion("2.0"))
+//        suppressWarnings.set(true)
+//    }
+//}
 
 mavenPublishing {
     configure(JavaLibrary(javadocJar = JavadocJar.Empty(), sourcesJar = true))
@@ -71,5 +65,3 @@ mavenPublishing {
 dependencies {
     testImplementation(libs.bundles.kotlin.test)
 }
-
-tasks { val jvmTest by creating { dependsOn("test") } }

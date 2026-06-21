@@ -2,13 +2,6 @@ pluginManagement {
     Eval.xy(this, it, file('../../gradle/repositories.settings.gradle').text)
 }
 
-//plugins {
-//    //id("org.korge.engine.settings") version "0.0.1-SNAPSHOT"
-//    id("org.korge.engine.settings") version "0.1.2"
-//}
-
-//kproject("./deps")
-
 include(":shared")
 include(":client")
 include(":server")

@@ -1,22 +1,46 @@
 pluginManagement {
-    //    Eval.xy(this, it, file('./gradle/repositories.settings.gradle').text)
     repositories {
         mavenLocal()
-        maven { url = uri("https://central.sonatype.com/repository/maven-snapshots") }
         mavenCentral()
         google()
         gradlePluginPortal()
-        maven { url = uri("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/bootstrap") }
-        maven { url = uri("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/temporary") }
-        maven { url = uri("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev") }
-        maven { url = uri("https://maven.pkg.jetbrains.space/public/p/kotlinx-coroutines/maven") }
-        maven { url = uri("https://maven.pkg.jetbrains.space/kotlin/p/wasm/experimental") }
+    }
+    includeBuild("korge-gradle-plugins")
+}
+
+dependencyResolutionManagement {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        google()
+        maven {
+            name = "Central Portal Snapshots"
+            url = uri("https://central.sonatype.com/repository/maven-snapshots/")
+            content {
+                // Only consume org.korge.korlibs snapshots
+                includeGroup("org.korge.korlibs")
+            }
+        }
     }
 }
 
+plugins {
+    id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
+}
+
+include(
+    ":korge",
+    ":korge-core",
+    ":korge-ipc",
+    ":korge-reload-agent",
+    ":korge-sandbox:shared",
+    ":korge-sandbox:androidApp",
+)
+
 val enableMetalPlayground: String by settings
 
-rootProject.name = "${rootDir.name}-root"
+rootProject.name = "korge-root"
+enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 fun isPropertyTrue(name: String): Boolean {
     return System.getenv(name) == "true" || System.getProperty(name) == "true"
@@ -25,16 +49,13 @@ fun isPropertyTrue(name: String): Boolean {
 val inCI = isPropertyTrue("CI")
 val disabledExtraKorgeLibs = isPropertyTrue("DISABLED_EXTRA_KORGE_LIBS")
 
-include(":korge")
-include(":korge-core")
-include(":korge-gradle-plugin")
-include(":korge-gradle-plugin-common")
-include(":korge-gradle-plugin-settings")
-include(":korge-reload-agent")
-include(":korge-ipc")
-if (System.getenv("DISABLE_SANDBOX") != "true") {
-    include(":korge-sandbox")
-}
+//if (System.getenv("DISABLE_SANDBOX") != "true") {
+//    include(
+//        ":korge-sandbox:shared",
+//        ":korge-sandbox:androidApp",
+//    )
+//}
+
 if (!inCI || System.getenv("ENABLE_BENCHMARKS") == "true") {
     include(":korge-benchmarks")
 }

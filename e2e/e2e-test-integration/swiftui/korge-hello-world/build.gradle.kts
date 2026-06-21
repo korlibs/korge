@@ -50,12 +50,6 @@ korge {
 	serializationJson()
 }
 
-
-dependencies {
-    add("commonMainApi", project(":deps"))
-    //add("commonMainApi", project(":korge-dragonbones"))
-}
-
 kotlin {
     iosSimulatorArm64().binaries {
         //framework {
@@ -70,5 +64,4 @@ kotlin {
             export("org.korge.korlibs:korlibs-image")
         }
     }
-
 }
