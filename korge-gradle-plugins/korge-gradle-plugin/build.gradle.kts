@@ -10,6 +10,13 @@ description = "Multiplatform Game Engine written in Kotlin"
 group = "org.korge.gradleplugins"
 version = libs.versions.korge.get()
 
+// Pin the published bytecode/metadata to the project's target Java version so the plugin is
+// consumable by builds running that JVM, regardless of which JDK performs the publish.
+java {
+    setSourceCompatibility(libs.versions.javaSourceCompatibility.get())
+    setTargetCompatibility(libs.versions.javaTargetCompatibility.get())
+}
+
 gradlePlugin {
     website.set("https://korge.org/")
     vcsUrl.set("https://github.com/korlibs/korge")
@@ -28,20 +35,6 @@ gradlePlugin {
             displayName = "Korge Library"
             description = "Multiplatform Game Engine for Kotlin"
             implementationClass = "korlibs.korge.gradle.KorgeLibraryGradlePlugin"
-        }
-
-        register("kproject") {
-            id = "org.korge.kproject"
-            displayName = "KProject Gradle Plugin"
-            description = "Allows to use sourcecode & git-based dependencies"
-            implementationClass = "org.korge.kproject.KProjectPlugin"
-        }
-
-        register("kprojectRoot") {
-            id = "org.korge.kproject.root"
-            displayName = "KProject Root Gradle Plugin"
-            description = "Allows to use sourcecode & git-based dependencies"
-            implementationClass = "org.korge.kproject.KProjectRootPlugin"
         }
     }
 }

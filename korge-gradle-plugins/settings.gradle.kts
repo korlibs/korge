@@ -27,5 +27,4 @@ rootProject.name = "korge-gradle-plugins"
 include(
     ":korge-gradle-plugin",
     ":korge-gradle-plugin-common",
-    ":korge-gradle-plugin-settings",
 )

@@ -1,3 +1,5 @@
+package org.korge.sandbox
+
 import korlibs.io.async.*
 import korlibs.io.lang.*
 import korlibs.korge.scene.*

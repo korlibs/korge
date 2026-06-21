@@ -33,8 +33,11 @@ include(
     ":korge-core",
     ":korge-ipc",
     ":korge-reload-agent",
+    // Korge sandbox: shared game code (library) + one application module per entry point
     ":korge-sandbox:shared",
+    ":korge-sandbox:jvmApp",
     ":korge-sandbox:androidApp",
+    ":korge-sandbox:webApp",
 )
 
 val enableMetalPlayground: String by settings
@@ -44,6 +47,12 @@ enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 fun isPropertyTrue(name: String): Boolean {
     return System.getenv(name) == "true" || System.getProperty(name) == "true"
+}
+
+// The iOS entry point links a native framework, which can only be built on macOS.
+// Gate it so the build stays green on Linux/Windows.
+if (System.getProperty("os.name").startsWith("Mac")) {
+    include(":korge-sandbox:iosApp")
 }
 
 val inCI = isPropertyTrue("CI")

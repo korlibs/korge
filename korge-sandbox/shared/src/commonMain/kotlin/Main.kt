@@ -1,3 +1,4 @@
+package org.korge.sandbox
 
 import korlibs.event.*
 import korlibs.graphics.*

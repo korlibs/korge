@@ -11,7 +11,6 @@ group = "org.korge.gradleplugins"
 version = libs.versions.korge.get()
 
 dependencies {
-    implementation(libs.jgit)
     testImplementation(libs.bundles.kotlin.test)
 }
 

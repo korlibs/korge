@@ -1,3 +1,5 @@
+package org.korge.sandbox
+
 import java.awt.image.*
 import javax.imageio.*
 import korlibs.image.awt.*

@@ -1,3 +1,5 @@
+package org.korge.sandbox
+
 import korlibs.io.async.*
 import korlibs.korge.*
 import samples.*

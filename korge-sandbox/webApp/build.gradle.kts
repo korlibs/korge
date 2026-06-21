@@ -1,0 +1,35 @@
+import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
+
+plugins {
+    alias(libs.plugins.kotlin.multiplatform)
+}
+
+description = "Korge Sandbox – Web (JS/WASM) entry point"
+group = "org.korge.sandbox"
+version = rootProject.libs.versions.korge.get()
+
+kotlin {
+    js {
+        browser {
+            compilerOptions {
+                target.set("es2015")
+            }
+        }
+        binaries.executable()
+    }
+    @OptIn(ExperimentalWasmDsl::class)
+    wasmJs {
+        browser {
+            compilerOptions {
+                target.set("es2015")
+            }
+        }
+        binaries.executable()
+    }
+
+    sourceSets {
+        commonMain.dependencies {
+            implementation(projects.korgeSandbox.shared)
+        }
+    }
+}
