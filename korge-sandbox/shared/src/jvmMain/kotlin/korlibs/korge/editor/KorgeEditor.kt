@@ -1,5 +1,5 @@
 import kotlinx.coroutines.*
-import org.korge.sandbox.main
+import org.korge.application.main
 
 object KorgeEditor {
     @JvmStatic

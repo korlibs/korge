@@ -2,16 +2,16 @@ plugins {
     alias(libs.plugins.kotlin.multiplatform)
 }
 
-description = "Korge Sandbox – iOS entry point (framework)"
-group = "org.korge.sandbox"
+description = "Korge Application – iOS entry point (framework)"
+group = "org.korge.application"
 version = rootProject.libs.versions.korge.get()
 
 kotlin {
-    val frameworkName = "SandboxApp"
+    val frameworkName = "iosApp"
     val xcfConfigure: org.jetbrains.kotlin.gradle.plugin.mpp.Framework.() -> Unit = {
         baseName = frameworkName
         isStatic = true
-        export(projects.korgeSandbox.shared)
+        export(projects.korgeApplication.shared)
     }
 
     iosArm64 { binaries.framework(xcfConfigure) }
@@ -20,7 +20,7 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            api(projects.korgeSandbox.shared)
+            api(projects.korgeApplication.shared)
         }
     }
 }

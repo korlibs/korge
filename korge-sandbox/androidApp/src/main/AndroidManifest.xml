@@ -5,7 +5,7 @@
         android:label="Korge Sandbox"
         android:supportsRtl="true">
         <activity
-            android:name="MainActivity"
+            android:name="org.korge.application.MainActivity"
             android:windowSoftInputMode="adjustResize"
             android:exported="true">
             <intent-filter>

@@ -4,8 +4,8 @@ plugins {
     alias(libs.plugins.kotlin.multiplatform)
 }
 
-description = "Korge Sandbox – Web (JS/WASM) entry point"
-group = "org.korge.sandbox"
+description = "Korge Application – Web (JS/WASM) entry point"
+group = "org.korge.application"
 version = rootProject.libs.versions.korge.get()
 
 kotlin {
@@ -29,7 +29,7 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            implementation(projects.korgeSandbox.shared)
+//            implementation(projects.korgeApplication.shared)
         }
     }
 }

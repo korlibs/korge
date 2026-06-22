@@ -3,16 +3,16 @@ plugins {
     alias(libs.plugins.android.application)
 }
 
-description = "Korge Sandbox – Android entry point"
-group = "org.korge.sandbox"
+description = "Korge Application – Android entry point"
+group = "org.korge.application"
 version = rootProject.libs.versions.korge.get()
 
 android {
-    namespace = "org.korge.sandbox.android"
+    namespace = "org.korge.application.android"
     compileSdk = libs.versions.compileSdk.get().toInt()
 
     defaultConfig {
-        applicationId = "org.korge.sandbox"
+        applicationId = "org.korge.application"
         // Korge is large; minSdk >= 21 enables native multidex (method count exceeds 64K).
         minSdk = maxOf(21, libs.versions.minSdk.get().toInt())
         targetSdk = libs.versions.compileSdk.get().toInt()
@@ -23,5 +23,5 @@ android {
 }
 
 dependencies {
-    implementation(projects.korgeSandbox.shared)
+//    implementation(projects.korgeApplication.shared)
 }

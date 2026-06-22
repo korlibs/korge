@@ -3,16 +3,19 @@ plugins {
     application
 }
 
-description = "Korge Sandbox – JVM desktop entry point"
-group = "org.korge.sandbox"
+description = "Korge Application – JVM desktop entry point"
+group = "org.korge.application"
 version = rootProject.libs.versions.korge.get()
 
 dependencies {
-    implementation(projects.korgeSandbox.shared)
+    implementation(project(":korge"))
+    implementation(project(":korge-sandbox:shared"))
+    implementation(projects.korge)
+//    implementation(projects.korgeApplication.shared)
 }
 
 application {
-    mainClass.set("org.korge.sandbox.JvmMain")
+    mainClass.set("org.korge.application.JvmMain")
 }
 
 tasks.withType<JavaExec>().configureEach {

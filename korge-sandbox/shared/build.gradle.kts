@@ -5,8 +5,8 @@ plugins {
     alias(libs.plugins.android.multiplatform.library)
 }
 
-description = "Korge Sandbox – shared game code (library)"
-group = "org.korge.sandbox"
+description = "Korge Application – shared game code (library)"
+group = "org.korge.application"
 version = rootProject.libs.versions.korge.get()
 
 kotlin {
@@ -15,7 +15,7 @@ kotlin {
     jvm()
 
     android {
-        namespace = "org.korge.sandbox.shared"
+        namespace = "org.korge.application.shared"
         compileSdk = libs.versions.compileSdk.get().toInt()
         minSdk = libs.versions.minSdk.get().toInt()
 
@@ -46,7 +46,7 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            api(projects.korge)
+            implementation(projects.korge)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

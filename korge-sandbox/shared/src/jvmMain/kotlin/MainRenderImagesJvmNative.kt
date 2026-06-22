@@ -1,4 +1,4 @@
-package org.korge.sandbox
+package org.korge.application
 
 import java.awt.image.*
 import javax.imageio.*

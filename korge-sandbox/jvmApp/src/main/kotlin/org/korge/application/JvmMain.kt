@@ -1,12 +1,11 @@
-package org.korge.sandbox
+package org.korge.application
 
 import korlibs.io.async.*
 import korlibs.korge.*
-import samples.*
 
 object JvmMain {
   @JvmStatic
-  fun main(args: Array<String>) = runBlockingNoJs {
+  fun main(args: Array<String>): Unit = runBlockingNoJs {
     Korge(
         windowSize = Korge.DEFAULT_WINDOW_SIZE,
         backgroundColor = DEFAULT_KORGE_BG_COLOR,
