@@ -11,7 +11,6 @@ dependencies {
     implementation(project(":korge"))
     implementation(project(":korge-sandbox:shared"))
     implementation(projects.korge)
-//    implementation(projects.korgeApplication.shared)
 }
 
 application {

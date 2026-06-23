@@ -29,7 +29,7 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-//            implementation(projects.korgeApplication.shared)
+            implementation(project(":korge-sandbox:shared"))
         }
     }
 }

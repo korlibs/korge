@@ -23,5 +23,6 @@ android {
 }
 
 dependencies {
-//    implementation(projects.korgeApplication.shared)
+    implementation(project(":korge"))
+    implementation(project(":korge-sandbox:shared"))
 }
