@@ -46,7 +46,7 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            implementation(projects.korge)
+            api(projects.korge)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

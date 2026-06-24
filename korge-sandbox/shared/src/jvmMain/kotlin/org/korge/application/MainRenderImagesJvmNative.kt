@@ -1,13 +1,16 @@
 package org.korge.application
 
-import java.awt.image.*
-import javax.imageio.*
-import korlibs.image.awt.*
-import korlibs.image.format.*
-import korlibs.io.file.std.*
-import korlibs.korge.scene.*
-import korlibs.korge.view.*
-import korlibs.korge.view.align.*
+import korlibs.image.awt.toAwtNativeImage
+import korlibs.image.format.readBitmapNative
+import korlibs.io.file.std.resourcesVfs
+import korlibs.korge.scene.ScaledScene
+import korlibs.korge.view.SContainer
+import korlibs.korge.view.ScalingOption
+import korlibs.korge.view.align.alignLeftToRightOf
+import korlibs.korge.view.image
+import korlibs.korge.view.scaleWhileMaintainingAspect
+import java.awt.image.BufferedImage
+import javax.imageio.ImageIO
 
 class MainRenderImagesJvmNative : ScaledScene(512, 512) {
   override suspend fun SContainer.sceneMain() {

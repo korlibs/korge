@@ -8,9 +8,7 @@ group = "org.korge.application"
 version = rootProject.libs.versions.korge.get()
 
 dependencies {
-    implementation(project(":korge"))
-    implementation(project(":korge-sandbox:shared"))
-    implementation(projects.korge)
+    implementation(projects.korgeSandbox.shared)
 }
 
 application {
