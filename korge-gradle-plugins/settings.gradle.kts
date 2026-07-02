@@ -24,7 +24,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "korge-gradle-plugins"
 
-include(
-    ":korge-gradle-plugin",
-    ":korge-gradle-plugin-common",
-)
+include(":korge-gradle-plugin")

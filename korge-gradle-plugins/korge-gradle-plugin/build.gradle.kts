@@ -40,8 +40,6 @@ gradlePlugin {
 }
 
 dependencies {
-    implementation(project(":korge-gradle-plugin-common"))
-
     implementation(libs.kotlin.gradle.plugin)
     implementation(libs.kotlin.gradle.plugin.api)
     implementation(libs.kotlin.gradle.dsl)
@@ -49,7 +47,6 @@ dependencies {
 
     implementation(libs.proguard.gradle)
     implementation(libs.gson)
-//    implementation(libs.gradle.publish.plugin)
     implementation(libs.vanniktech.maven.publish)
 
     implementation(libs.kotlinx.kover.gradle.plugin)

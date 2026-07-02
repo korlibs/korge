@@ -14,16 +14,7 @@ java {
     setTargetCompatibility(libs.versions.javaTargetCompatibility.get())
 }
 
-//tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile::class).all {
-//    compilerOptions {
-//        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.fromTarget(jversion))
-//        apiVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.fromVersion("2.1"))
-//        languageVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.fromVersion("2.1"))
-//    }
-//}
-
 dependencies {
-    implementation(project(":korge-gradle-plugin-common"))
     testImplementation(libs.bundles.kotlin.test)
 }
 
