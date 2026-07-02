@@ -36,18 +36,18 @@ jobs:
       DISABLE_ANDROID: false
       DISABLE_SANDBOX: false
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - name: Install freeglut3 & openal
         run: sudo apt-get update && sudo apt-get -y install freeglut3-dev libopenal-dev xvfb
       - name: Run Xvfb in Background
         run: "Xvfb :99 &"
       - name: Set up JDK
-        uses: actions/setup-java@6a0805fcefea3d4657a47ac4c165951e33482018
+        uses: actions/setup-java@1bcf9fb12cf4aa7d266a90ae39939e61372fe520 # v5.4.0
         with:
           distribution: "${{ env.JAVA_DISTRIBUTION }}"
           java-version: "${{ env.JAVA_VERSION }}" # https://github.com/actions/setup-java/releases/tag/v4.2.2
       - name: Prepare Gradle
-        uses: gradle/actions/setup-gradle@417ae3ccd767c252f5661f1ace9f835f9654f2b5 # https://github.com/gradle/actions/releases/tag/v3.1.0
+        uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92 # v6.2.0
       - name: "Run check"
         run: "./gradlew check"
         env:
@@ -61,13 +61,13 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
       - name: "Run Android Tests"
-        uses: reactivecircus/android-emulator-runner@1dcd0090116d15e7c562f8db72807de5e036a4ed
+        uses: reactivecircus/android-emulator-runner@e89f39f1abbbd05b1113a29cf4db69e7540cae5a # v2.37.0
         with:
           "api-level": 21
-          "script": "./gradlew connectedCheck" # https://github.com/ReactiveCircus/android-emulator-runner/releases/tag/v2.34.0
+          "script": "./gradlew connectedCheck"
       - name: Archive Test Results
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: "test-results-ubuntu-latest"
           retention-days: 21
@@ -81,14 +81,14 @@ jobs:
       DISABLE_KOTLIN_NATIVE: false
       DISABLE_ANDROID: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - name: Set up JDK
-        uses: actions/setup-java@6a0805fcefea3d4657a47ac4c165951e33482018
+        uses: actions/setup-java@1bcf9fb12cf4aa7d266a90ae39939e61372fe520 # v5.4.0
         with:
           distribution: "${{ env.JAVA_DISTRIBUTION }}"
-          java-version: "${{ env.JAVA_VERSION }}" # https://github.com/actions/setup-java/releases/tag/v4.2.2
+          java-version: "${{ env.JAVA_VERSION }}"
       - name: Prepare Gradle
-        uses: gradle/actions/setup-gradle@417ae3ccd767c252f5661f1ace9f835f9654f2b5 # https://github.com/gradle/actions/releases/tag/v3.1.0
+        uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92 # v6.2.0
       - name: "Run check"
         run: "./gradlew check"
         env:
@@ -98,7 +98,7 @@ jobs:
           MESA_DEBUG: true
       - name: Archive Test Results
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: "test-results-macos-latest"
           retention-days: 21
@@ -113,17 +113,17 @@ jobs:
       DISABLE_ANDROID: true
       # DISABLE_SANDBOX: false # sandbox enabled for all targets
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - name: Download and unzip opengl
         shell: cmd
         run: "curl -L -o opengl32-x64.zip https://github.com/korlibs/mesa-dist-win/releases/download/21.2.3/opengl32-x64.zip && unzip opengl32-x64.zip && unzip opengl32-x64.zip -d korge"
       - name: Set up JDK
-        uses: actions/setup-java@6a0805fcefea3d4657a47ac4c165951e33482018
+        uses: actions/setup-java@1bcf9fb12cf4aa7d266a90ae39939e61372fe520 # v5.4.0
         with:
           distribution: "${{ env.JAVA_DISTRIBUTION }}"
           java-version: "${{ env.JAVA_VERSION }}" # https://github.com/actions/setup-java/releases/tag/v4.2.2
       - name: Prepare Gradle
-        uses: gradle/actions/setup-gradle@417ae3ccd767c252f5661f1ace9f835f9654f2b5 # https://github.com/gradle/actions/releases/tag/v3.1.0
+        uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92 # v6.2.0
       - name: "Run check"
         run: "./gradlew check"
         env:
@@ -133,12 +133,13 @@ jobs:
           MESA_DEBUG: true
       - name: Archive Test Results
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: "test-results-windows-latest"
           retention-days: 21
           path: "**/build/reports"
           if-no-files-found: ignore
+
   e2e-linux:
     timeout-minutes: 120
     runs-on: ubuntu-latest
@@ -147,18 +148,18 @@ jobs:
       DISABLE_ANDROID: false
       DISABLE_SANDBOX: false
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - name: Install freeglut3 & openal
         run: sudo apt-get update && sudo apt-get -y install freeglut3-dev libopenal-dev xvfb
       - name: Run Xvfb in Background
         run: "Xvfb :99 &"
       - name: Set up JDK
-        uses: actions/setup-java@6a0805fcefea3d4657a47ac4c165951e33482018
+        uses: actions/setup-java@1bcf9fb12cf4aa7d266a90ae39939e61372fe520 # v5.4.0
         with:
           distribution: "${{ env.JAVA_DISTRIBUTION }}"
           java-version: "${{ env.JAVA_VERSION }}"
       - name: Prepare Gradle
-        uses: gradle/actions/setup-gradle@417ae3ccd767c252f5661f1ace9f835f9654f2b5
+        uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92 # v6.2.0
       - name: Publish main project and plugins to Maven local
         run: |
           ./gradlew \
@@ -181,7 +182,7 @@ jobs:
           MESA_DEBUG: true
       - name: Archive E2E Test Results
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: "e2e-test-results-ubuntu-latest"
           retention-days: 21
@@ -195,14 +196,14 @@ jobs:
       DISABLE_KOTLIN_NATIVE: false
       DISABLE_ANDROID: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - name: Set up JDK
-        uses: actions/setup-java@6a0805fcefea3d4657a47ac4c165951e33482018
+        uses: actions/setup-java@1bcf9fb12cf4aa7d266a90ae39939e61372fe520 # v5.4.0
         with:
           distribution: "${{ env.JAVA_DISTRIBUTION }}"
           java-version: "${{ env.JAVA_VERSION }}"
       - name: Prepare Gradle
-        uses: gradle/actions/setup-gradle@417ae3ccd767c252f5661f1ace9f835f9654f2b5
+        uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92 # v6.2.0
       - name: Publish main project and plugins to Maven local
         run: |
           ./gradlew \
@@ -227,7 +228,7 @@ jobs:
             clean build
       - name: Archive E2E SwiftUI Test Results
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: "e2e-swiftui-test-results-macos-latest"
           retention-days: 21
