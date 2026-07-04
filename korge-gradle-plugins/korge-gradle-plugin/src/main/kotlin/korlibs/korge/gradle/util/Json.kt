@@ -1,7 +1,7 @@
 package korlibs.korge.gradle.util
 
-import java.io.*
-import kotlin.math.*
+import java.io.IOException
+import kotlin.math.min
 
 object Json {
 	fun parse(s: String): Any? = parse(StrReader(s))

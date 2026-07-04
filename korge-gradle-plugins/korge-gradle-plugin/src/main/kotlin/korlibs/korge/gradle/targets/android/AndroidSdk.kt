@@ -1,8 +1,8 @@
 package korlibs.korge.gradle.targets.android
 
-import org.gradle.api.*
-import java.io.*
-import java.util.*
+import java.io.File
+import java.util.Properties
+import org.gradle.api.Project
 
 object AndroidSdk {
     val ANDROID_SDK_PATH_KEY = "android.sdk.path"

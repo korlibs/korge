@@ -1,10 +1,8 @@
 package korlibs.korge.gradle.processor
 
-import korlibs.korge.gradle.util.*
-import org.gradle.api.file.RelativePath
-import java.io.*
-import java.util.*
-import kotlin.collections.LinkedHashSet
+import java.io.File
+import java.util.ServiceLoader
+import korlibs.korge.gradle.util.isDescendantOf
 
 data class KorgeResourceProcessorContext(
     val logger: org.slf4j.Logger,
@@ -30,8 +28,6 @@ data class KorgeResourceProcessorContext(
 
 fun interface KorgeResourceProcessor {
     fun processFolder(context: KorgeResourceProcessorContext)
-
-    //override fun toString(): String = "${this::class.qualifiedName}"
 
     companion object {
         fun getAll(): List<KorgeResourceProcessor> {

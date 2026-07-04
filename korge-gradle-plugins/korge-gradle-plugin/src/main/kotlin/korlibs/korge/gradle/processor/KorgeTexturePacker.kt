@@ -1,9 +1,9 @@
 package korlibs.korge.gradle.processor
 
-import korlibs.korge.gradle.texpacker.*
-import korlibs.korge.gradle.util.*
-import java.io.*
-import kotlin.system.*
+import java.io.File
+import korlibs.korge.gradle.texpacker.NewTexturePacker
+import korlibs.korge.gradle.util.takeIfExists
+import kotlin.system.measureTimeMillis
 
 open class KorgeTexturePacker : KorgeResourceProcessor {
     override fun processFolder(context: KorgeResourceProcessorContext) {
@@ -46,11 +46,9 @@ open class KorgeTexturePacker : KorgeResourceProcessor {
         padding: Int = 2,
     ) {
         val involvedFiles = NewTexturePacker.getAllFiles(*imageFolders)
-        //val maxLastModifiedTime = involvedFiles.maxOfOrNull { it.file.lastModified() } ?: System.currentTimeMillis()
         val involvedString = involvedFiles.map { it.relative.name + ":" + it.file.length() + ":" + it.file.lastModified() }.sorted().joinToString("\n")
         val involvedFile = File(outputFile.parentFile, "." + outputFile.name + ".info")
 
-        //if (!outputFile.exists() || involvedFile.takeIfExists()?.readText() != involvedString) {
         if (involvedFile.takeIfExists()?.readText() != involvedString) {
             val time = measureTimeMillis {
                 val results = NewTexturePacker.packImages(
@@ -64,8 +62,6 @@ open class KorgeTexturePacker : KorgeResourceProcessor {
                 }
                 involvedFile.writeText(involvedString)
             }
-            //outputFile.setLastModified(maxLastModifiedTime)
-            //imageOut.setLastModified(maxLastModifiedTime)
             logger.info("KorgeTexturePacker.GENERATED in ${time}ms: $involvedFile")
         } else {
             logger.info("KorgeTexturePacker.CACHED: $involvedFile")
@@ -116,7 +112,7 @@ open class KorgeTexturePacker : KorgeResourceProcessor {
             try {
                 val value = line.substringAfter("=").trim()
                 valueParser(value)
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 null
             }
         } else {

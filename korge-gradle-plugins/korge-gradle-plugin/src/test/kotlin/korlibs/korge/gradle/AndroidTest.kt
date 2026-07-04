@@ -2,10 +2,15 @@ package korlibs.korge.gradle
 
 import java.io.ByteArrayOutputStream
 import java.io.File
-import korlibs.korge.gradle.targets.android.*
+import korlibs.korge.gradle.targets.android.AndroidSdk
+import korlibs.korge.gradle.targets.android.androidAdbPath
+import korlibs.korge.gradle.targets.android.androidEmulatorFirstAvd
+import korlibs.korge.gradle.targets.android.androidEmulatorListAvds
+import korlibs.korge.gradle.targets.android.androidEmulatorPath
+import korlibs.korge.gradle.targets.android.androidEmulatorStart
+import korlibs.korge.gradle.targets.android.androidSdkProvider
 import korlibs.korge.gradle.util.SpawnExtension
 import korlibs.korge.gradle.util.commandLineCompat
-import korlibs.korge.gradle.util.execThis
 import korlibs.korge.gradle.util.spawnExt
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -18,7 +23,7 @@ class AndroidTest : AbstractGradleIntegrationTest() {
     val spawnResult = arrayListOf<Any>()
 
     init {
-        project.extensions.add(korlibs.korge.gradle.targets.android.AndroidSdk.ANDROID_SDK_PATH_KEY, ANDROID_SDK_PATH)
+        project.extensions.add(AndroidSdk.ANDROID_SDK_PATH_KEY, ANDROID_SDK_PATH)
         project.spawnExt = object : SpawnExtension() {
             override fun spawn(dir: File, command: List<String>) {
                 spawnResult.add(dir to command)

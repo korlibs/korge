@@ -1,6 +1,7 @@
 package korlibs.korge.gradle.util
 
-import org.junit.*
+import org.junit.Assert
+import org.junit.Test
 
 class UniqueNameGeneratorTest {
     @Test

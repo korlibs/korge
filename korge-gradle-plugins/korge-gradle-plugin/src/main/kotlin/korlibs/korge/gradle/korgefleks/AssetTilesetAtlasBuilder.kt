@@ -1,11 +1,9 @@
 package korlibs.korge.gradle.korgefleks
 
-import com.android.build.gradle.internal.cxx.json.jsonStringOf
 import korlibs.korge.gradle.korgefleks.AssetConfig.Companion.TILES
 import korlibs.korge.gradle.korgefleks.AssetConfig.Companion.TILESETS
 import korlibs.korge.gradle.texpacker.NewTexturePacker
 import java.io.File
-
 
 /**
  * Builds a tileset atlas from exported tiles in the specified directory.
@@ -55,9 +53,6 @@ class AssetTilesetAtlasBuilder(
             // Tileset names list contains the original tileset names in the order they were packed into the atlas
             // This is used below to check if the tiles are put in the correct order into the fileFrameInfo list
             val tileSetFilenames: List<String> = tileSetFiles.map { it.nameWithoutExtension }
-
-            //println("tileset names of packed atlases:")
-            //tileSetFilenames.forEach { name -> println(" - $name") }
 
             // Create map of tilesets for counting how many tilesets were processed
             val tileSetMap = tileSetFilenames.associateWith { 0 }.toMutableMap()
@@ -118,7 +113,6 @@ class AssetTilesetAtlasBuilder(
                 assetInfo[TILES] = linkedMapOf(
                     "w" to tileWidth,
                     "h" to tileHeight,
-                    //"t" to tileSetFilenames,  // [Optional] for debugging purposes
                     "f" to tileFramesInfo
                 )
             }

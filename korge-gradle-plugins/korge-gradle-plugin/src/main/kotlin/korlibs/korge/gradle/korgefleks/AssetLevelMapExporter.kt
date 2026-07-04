@@ -7,7 +7,6 @@ import korlibs.korge.gradle.util.fromJson
 import org.gradle.api.GradleException
 import java.io.File
 
-
 class AssetLevelMapExporter(
     private val assetDir: File,
     gameResourcesDir: File,
@@ -17,8 +16,6 @@ class AssetLevelMapExporter(
     private val levelDataDir = gameResourcesDir.resolve("level_data")
     private val targetCollisionShapesFile = levelDataDir.resolve("collision_shapes.png")
     private lateinit var ldtkPath: File
-
-//    val assetTilesetExporter = AssetTilesetExporter(assetDir, "common")
 
     internal var getFile: (filename: String) -> File = {
         // Get the File object from the asset path in gradle plugin build
@@ -205,7 +202,6 @@ class AssetLevelMapExporter(
             // for tiles without collision, and it is guaranteed that it does not overlap with any real collision shape definition from the enum values
             nameToCollisionId["empty"] = 0
             idToCollisionShape.add(listOf(-1))
-            //println("  0: 'empty' - (x=-1) - no collision")
 
             var i = 1
             enumValues.forEach { enumValue ->
@@ -218,7 +214,6 @@ class AssetLevelMapExporter(
                             tileSetUid as Int
                             collisionTileSetFileName = jsonTileSets.firstOrNull { it["uid"] as? Int == tileSetUid }?.get("relPath") as? String
                                 ?: error("No matching tileset found in 'defs->tilesets' for tileSetUid '$tileSetUid' defined in collision config enum value! Please check if the tileset with the collision shapes is included in the LDtk file!")
-                            //println("Tile set file name for collision shapes: '$collisionTileSetFileName'")
                         }
                     }
                     // Get collision shape info from tileRect definition in collision config enum value
@@ -227,7 +222,6 @@ class AssetLevelMapExporter(
 
                     nameToCollisionId[collisionName] = i
                     idToCollisionShape.add(listOf(cx, cy))
-                    //println("  $i: '$collisionName' - (x=$cx, y=$cy)")
                     i++
                 }
             }
@@ -252,10 +246,8 @@ class AssetLevelMapExporter(
                     enumValueId as String
                     // Get collision ID for name of collision enum
                     val collisionTile = nameToCollisionId[enumValueId] ?: return@let  // Skip if enum value ID is not found in collision config enum - it means that this collision shape has no tile assigned
-                    //println("enumValueId: $enumValueId (collision ID: $collisionTile)")
                     enumTag["tileIds"]?.let { tileIds ->
                         tileIds as List<Int>
-                        //println("tileIds: $tileIds")
                         tileIds.forEach { tileId ->
                             collisionTiles[tileId] = collisionTile
                         }
@@ -277,7 +269,6 @@ class AssetLevelMapExporter(
                 }
             }
             if (clusterName.isNotEmpty()) tileSetDataByUid[tileSetUid] = TileSetData(tileSetName, offset, clusterName, collisionTiles)
-            //else println("  Ignoring tileset: '$tileSetName'")
         }
 
         // Create Grid-vania map of all level chunks with their chunk numbers - this is used to get the neighboring chunk numbers
@@ -362,8 +353,6 @@ class AssetLevelMapExporter(
             // Normalize chunk indexes
             val chunkNormalizedX = chunkX - minChunkX
             val chunkNormalizedY = chunkY - minChunkY
-
-            //println("  Processing '$chunkName' ...")
 
             val levelGridHeight = (ldtkLevel["pxHei"] as Int) / defaultGridSize  // Level height in tiles
             val levelGridWidth = (ldtkLevel["pxWid"] as Int) / defaultGridSize   // Level width in tiles
@@ -462,7 +451,6 @@ class AssetLevelMapExporter(
                             stackTilesIntoTileMap(autoLayerTiles + gridTiles, stackedTileMapData, layerGridWidth, defaultGridSize, clusterIndex, tileSetData)
                         }
                     }
-//                    else -> println("WARNING: No tiles or entities found in layer '$layerName'!")
                 }
             }
 
@@ -520,9 +508,6 @@ class AssetLevelMapExporter(
                     "c" to clusterList
                 )
             }
-            //if (chunkEntities.isNotEmpty()) {
-            //    println("  Add '${chunkEntities.size}' entities to chunk JSON file.")
-            //}
 
             val chunkJsonFile = levelDataDir.resolve("${chunkName}.json")
             chunkJsonFile.parentFile?.let { parent ->
@@ -557,8 +542,6 @@ class AssetLevelMapExporter(
             // plus offset which is determined by the tileset order in the cluster
             val rawTileId = tile["t"]?.let { it as Int } ?: error("Tile id 't' is null for tile at position ($px,$py) in " +
                 "tile set '${tileSetData.tileSetName}' of cluster '${tileSetData.clusterName}'!")
-            //val flipX = (tile["f"] as Int).hasBitSet(0)  -- not supported yet
-            //val flipY = (tile["f"] as Int).hasBitSet(1)
 
             if ((dx != 0 || dy != 0)) println("WARNING: Tile at pixel position ($px,$py) is not aligned to tile size $tileSize " +
                 "(dx=$dx, dy=$dy)! This is not supported and tile offset will be ignored!")

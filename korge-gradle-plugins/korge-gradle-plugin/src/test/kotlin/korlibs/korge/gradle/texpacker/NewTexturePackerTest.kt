@@ -1,10 +1,10 @@
 package korlibs.korge.gradle.texpacker
 
-import korlibs.korge.gradle.typedresources.getResourceURL
-import org.junit.Assert
-import org.junit.Test
 import java.io.File
-
+import korlibs.korge.gradle.typedresources.getResourceURL
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Test
 
 class NewTexturePackerTest {
     @Test
@@ -27,29 +27,27 @@ class NewTexturePackerTest {
         val tileFrame_1 = tile_1["frame"] as Map<String, Int>
         val tileFrame_2 = tile_2["frame"] as Map<String, Int>
         val tileFrame_3 = tile_3["frame"] as Map<String, Int>
-        Assert.assertEquals(tileFrame_1["x"], tileFrame_2["x"])
-        Assert.assertEquals(tileFrame_1["y"], tileFrame_2["y"])
-        Assert.assertEquals(tileFrame_1["w"], tileFrame_2["w"])
-        Assert.assertEquals(tileFrame_1["h"], tileFrame_2["h"])
-        Assert.assertEquals(tileFrame_1["x"], tileFrame_3["x"])
-        Assert.assertEquals(tileFrame_1["y"], tileFrame_3["y"])
-        Assert.assertEquals(tileFrame_1["w"], tileFrame_3["w"])
-        Assert.assertEquals(tileFrame_1["h"], tileFrame_3["h"])
+        assertEquals(tileFrame_1["x"], tileFrame_2["x"])
+        assertEquals(tileFrame_1["y"], tileFrame_2["y"])
+        assertEquals(tileFrame_1["w"], tileFrame_2["w"])
+        assertEquals(tileFrame_1["h"], tileFrame_2["h"])
+        assertEquals(tileFrame_1["x"], tileFrame_3["x"])
+        assertEquals(tileFrame_1["y"], tileFrame_3["y"])
+        assertEquals(tileFrame_1["w"], tileFrame_3["w"])
+        assertEquals(tileFrame_1["h"], tileFrame_3["h"])
 
         // Check that tiles are not rotated or trimmed
         val rotated_1 = tile_1["rotated"] as Boolean
         val rotated_2 = tile_2["rotated"] as Boolean
         val rotated_3 = tile_3["rotated"] as Boolean
-        Assert.assertFalse(rotated_1)
-        Assert.assertFalse(rotated_2)
-        Assert.assertFalse(rotated_3)
+        assertFalse(rotated_1)
+        assertFalse(rotated_2)
+        assertFalse(rotated_3)
         val trimmed_1 = tile_1["trimmed"] as Boolean
         val trimmed_2 = tile_2["trimmed"] as Boolean
         val trimmed_3 = tile_3["trimmed"] as Boolean
-        Assert.assertFalse(trimmed_1)
-        Assert.assertFalse(trimmed_2)
-        Assert.assertFalse(trimmed_3)
-
-        //println("Atlas Info: $atlasInfos")
+        assertFalse(trimmed_1)
+        assertFalse(trimmed_2)
+        assertFalse(trimmed_3)
     }
 }

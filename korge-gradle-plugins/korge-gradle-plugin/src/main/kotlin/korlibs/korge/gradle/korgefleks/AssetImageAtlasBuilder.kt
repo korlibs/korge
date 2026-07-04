@@ -11,7 +11,6 @@ import java.io.File
 import java.util.ArrayList
 import kotlin.String
 
-
 /**
  * Builds texture atlases from exported tile images and updates asset information accordingly.
  *

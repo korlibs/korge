@@ -1,14 +1,19 @@
 package korlibs.korge.gradle.targets.desktop
 
-import korlibs.korge.gradle.*
-import korlibs.korge.gradle.targets.*
-import korlibs.korge.gradle.targets.apple.*
-import korlibs.korge.gradle.targets.windows.*
-import korlibs.korge.gradle.util.*
-import org.gradle.api.*
-import java.io.*
-import java.net.*
-import java.security.*
+import java.io.File
+import java.net.URL
+import java.security.MessageDigest
+import korlibs.korge.gradle.korge
+import korlibs.korge.gradle.korgeCacheDir
+import korlibs.korge.gradle.targets.apple.IcnsBuilder
+import korlibs.korge.gradle.targets.apple.InfoPlistBuilder
+import korlibs.korge.gradle.targets.getIconBytes
+import korlibs.korge.gradle.targets.windows.ICO2
+import korlibs.korge.gradle.targets.windows.WindowsToolchain
+import korlibs.korge.gradle.util.decodeImage
+import korlibs.korge.gradle.util.ensureParents
+import korlibs.korge.gradle.util.hex
+import org.gradle.api.Project
 
 // https://stackoverflow.com/questions/13017121/unpacking-tar-gz-into-root-dir-with-gradle
 // https://github.com/korlibs/universal-jre/

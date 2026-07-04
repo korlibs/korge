@@ -1,10 +1,11 @@
 package korlibs.korge.gradle.util
 
-import groovy.lang.*
-import java.lang.reflect.*
-import java.util.Locale
+import groovy.lang.GroovyObject
+import java.lang.reflect.Field
+import java.lang.reflect.InvocationTargetException
+import java.lang.reflect.Method
 import java.util.Locale.getDefault
-import kotlin.math.*
+import kotlin.math.pow
 
 val Any?.dyn: Dyn get() = Dyn(this)
 
@@ -23,9 +24,6 @@ inline class Dyn(val value: Any?) : Comparable<Dyn> {
         else -> value.toString() as Comparable<Any?>
     }
 
-    //fun unop(op: String): Dyn = unop(this, op)
-    //fun binop(op: String, r: Dyn): Dyn = binop(this, r, op)
-
     operator fun unaryMinus(): Dyn = (-toDouble()).dyn
     operator fun unaryPlus(): Dyn = this
     fun inv(): Dyn = toInt().inv().dyn
@@ -33,7 +31,7 @@ inline class Dyn(val value: Any?) : Comparable<Dyn> {
 
     operator fun plus(r: Dyn): Dyn {
         val l = this
-        val out: Any? = when (l.value) {
+        val out: Any = when (l.value) {
             is String -> l.toString() + r.toString()
             is Iterable<*> -> l.toIterableAny() + r.toIterableAny()
             else -> l.toDouble() + r.toDouble()
@@ -67,18 +65,26 @@ inline class Dyn(val value: Any?) : Comparable<Dyn> {
     }
     /** Strict EQual */
     infix fun seq(r: Dyn): Boolean = this.value === r.value
+
     /** Strict Not Equal */
     infix fun sne(r: Dyn): Boolean = this.value !== r.value
+
     /** Less Than */
     infix fun lt(r: Dyn): Boolean = compare(this, r) < 0
+
     /** Less or Equal */
     infix fun le(r: Dyn): Boolean = compare(this, r) <= 0
+
     /** Greater Than */
     infix fun gt(r: Dyn): Boolean = compare(this, r) > 0
+
     /** Greater or Equal */
     infix fun ge(r: Dyn): Boolean = compare(this, r) >= 0
+
     operator fun contains(r: String): Boolean = contains(r.dyn)
+
     operator fun contains(r: Number): Boolean = contains(r.dyn)
+
     operator fun contains(r: Dyn): Boolean {
         val collection = this
         val element = r
@@ -118,46 +124,6 @@ inline class Dyn(val value: Any?) : Comparable<Dyn> {
 
         fun compare(l: Dyn, r: Dyn): Int = l.compareTo(r)
         fun contains(collection: Dyn, element: Dyn): Boolean = element in collection
-
-        /*
-        fun unop(r: Dyn, op: String): Dyn = when (op) {
-            "+" -> +r
-            "-" -> -r
-            "~" -> r.inv()
-            "!" -> r.not()
-            else -> error("Not implemented unary operator '$op'")
-        }
-
-        fun binop(l: Dyn, r: Dyn, op: String): Dyn {
-            return when (op) {
-                "+" -> (l + r)
-                "-" -> (l - r)
-                "*" -> (l * r)
-                "/" -> (l / r)
-                "%" -> (l % r)
-                "**" -> (l pow r)
-                "&" -> (l bitAnd r)
-                "|" -> (l bitOr r)
-                "^" -> (l bitXor r)
-                "&&" -> (l and r).dyn
-                "and" -> (l and r).dyn
-                "||" -> (l or r).dyn
-                "or" -> (l or r).dyn
-                "==" -> (l eq r).dyn
-                "!=" -> (l ne r).dyn
-                "===" -> (l seq r).dyn
-                "!==" -> (l sne r).dyn
-                "<" -> (l lt r).dyn
-                "<=" -> (l le r).dyn
-                ">" -> (l gt r).dyn
-                ">=" -> (l ge r).dyn
-                "in" -> r.contains(l).dyn
-                "contains" -> l.contains(r).dyn
-                "?:" -> l.coalesce(r)
-                else -> error("Not implemented binary operator '$op'")
-            }
-        }
-         */
     }
 
     fun toList(): List<Dyn> = toListAny().map { it.dyn }
@@ -167,7 +133,6 @@ inline class Dyn(val value: Any?) : Comparable<Dyn> {
 
     fun toIterableAny(): Iterable<*> = when (value) {
         null -> listOf<Any?>()
-        //is Dynamic2Iterable -> it.dynamic2Iterate()
         is Iterable<*> -> value
         is CharSequence -> value.toList()
         is Map<*, *> -> value.toList()
@@ -283,7 +248,6 @@ inline class Dyn(val value: Any?) : Comparable<Dyn> {
         is Number -> value
         is Boolean -> if (value) 1 else 0
         is String -> value.toIntSafe() ?: value.toDoubleSafe() ?: 0
-        //else -> it.toString().toNumber()
         else -> value.toString().toNumber()
     }
 
@@ -384,7 +348,7 @@ private fun String.toLongSafe(radix: Int = 10) = this.toLongOrNull(radix)
 internal object dynApi {
     class JavaPackage(val name: String)
 
-    val global: Any? = JavaPackage("")
+    val global: Any = JavaPackage("")
 
     private fun tryGetField(clazz: Class<*>, name: String): Field? {
         val field = runCatching { clazz.getDeclaredField(name) }.getOrNull()

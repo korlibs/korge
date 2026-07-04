@@ -1,7 +1,7 @@
 package korlibs.korge.gradle.util
 
-import groovy.lang.*
-import org.gradle.api.*
+import groovy.lang.Closure
+import org.gradle.api.Project
 
 fun <T> Project.closure(callback: () -> T) = GroovyClosure(this, callback)
 

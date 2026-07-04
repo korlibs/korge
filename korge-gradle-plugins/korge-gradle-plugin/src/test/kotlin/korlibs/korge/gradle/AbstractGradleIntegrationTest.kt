@@ -1,12 +1,20 @@
 package korlibs.korge.gradle
 
 import groovy.lang.Closure
-import java.io.*
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.InputStream
+import java.io.OutputStream
+import java.io.PrintStream
 import java.nio.file.Files
 import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.Task
-import org.gradle.process.*
+import org.gradle.process.BaseExecSpec
+import org.gradle.process.CommandLineArgumentProvider
+import org.gradle.process.ExecResult
+import org.gradle.process.ExecSpec
+import org.gradle.process.ProcessForkOptions
 import org.gradle.testfixtures.ProjectBuilder
 
 class TestableExecSpec : ExecSpec {

@@ -1,7 +1,8 @@
 package korlibs.korge.gradle.util
 
-import org.gradle.api.*
-import java.io.*
+import java.io.File
+import java.io.IOException
+import org.gradle.api.Project
 
 open class SpawnExtension {
     open fun spawn(dir: File, command: List<String>) {
@@ -15,7 +16,7 @@ open class SpawnExtension {
             reader.forEachLine {
                 filter(process, it)?.let { println(it) }
             }
-        } catch (e: IOException) {
+        } catch (_: IOException) {
             // Steam closed is fine if the filter closed the process
         }
         process.waitFor()

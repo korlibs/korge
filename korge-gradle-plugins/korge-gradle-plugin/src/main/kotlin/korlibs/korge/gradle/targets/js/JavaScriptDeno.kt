@@ -1,12 +1,24 @@
 package korlibs.korge.gradle.targets.js
 
-import korlibs.korge.gradle.targets.*
-import korlibs.korge.gradle.util.*
-import org.gradle.api.*
-import org.gradle.api.internal.tasks.testing.*
-import org.gradle.api.tasks.*
-import org.gradle.api.tasks.testing.*
-import java.io.*
+import java.io.File
+import korlibs.korge.gradle.targets.GROUP_KORGE_PACKAGE
+import korlibs.korge.gradle.targets.GROUP_KORGE_RUN
+import korlibs.korge.gradle.util.createThis
+import org.gradle.api.Project
+import org.gradle.api.internal.tasks.testing.DefaultTestFailure
+import org.gradle.api.internal.tasks.testing.DefaultTestMethodDescriptor
+import org.gradle.api.internal.tasks.testing.DefaultTestOutputEvent
+import org.gradle.api.internal.tasks.testing.DefaultTestSuiteDescriptor
+import org.gradle.api.internal.tasks.testing.TestCompleteEvent
+import org.gradle.api.internal.tasks.testing.TestExecuter
+import org.gradle.api.internal.tasks.testing.TestExecutionSpec
+import org.gradle.api.internal.tasks.testing.TestResultProcessor
+import org.gradle.api.internal.tasks.testing.TestStartEvent
+import org.gradle.api.tasks.Exec
+import org.gradle.api.tasks.testing.AbstractTestTask
+import org.gradle.api.tasks.testing.TestFilter
+import org.gradle.api.tasks.testing.TestOutputEvent
+import org.gradle.api.tasks.testing.TestResult
 import org.gradle.work.DisableCachingByDefault
 
 fun Project.configureDenoTest() {
@@ -17,7 +29,6 @@ fun Project.configureDenoTest() {
         }
     }
 }
-
 
 fun Project.configureDenoRun() {
     afterEvaluate {
@@ -45,18 +56,10 @@ fun Project.configureDenoRun() {
 
 @DisableCachingByDefault
 abstract class DenoTestTask : AbstractTestTask() {
-//open class DenoTestTask : KotlinTest() {
-
-    //var isDryRun by org.jetbrains.kotlin.gradle.utils.property { false }
-
     init {
         this.group = "verification"
         this.dependsOn("compileTestDevelopmentExecutableKotlinJs")
     }
-
-    //@Option(option = "tests", description = "Specify tests to execute as a filter")
-    //@Input
-    //var tests: String = ""
 
     init {
         this.reports {
@@ -64,16 +67,11 @@ abstract class DenoTestTask : AbstractTestTask() {
             html.outputLocation.set(project.file("build/reports/tests/jsDenoTest/"))
         }
         binaryResultsDirectory.set(project.file("build/test-results/jsDenoTest/binary"))
-        //reports.enabledReports["junitXml"]!!.optional
-        //reports.junitXml.outputLocation.opt
-        //reports.enabledReports.clear()
-        //reports.junitXml.outputLocation.set(project.file("build/deno-test-results"))
     }
 
     override fun createTestExecuter(): TestExecuter<out TestExecutionSpec> {
         return DenoTestExecuter(this.project, this.filter)
     }
-    //override fun createTestExecuter(): TestExecuter<out TestExecutionSpec> = TODO()
     override fun createTestExecutionSpec(): TestExecutionSpec = DenoTestExecutionSpec()
 
     init {
@@ -107,7 +105,6 @@ abstract class DenoTestTask : AbstractTestTask() {
                     if (exists(file)) await import(file)
                 """.trimIndent())
 
-            //testResultProcessor.started()
             val process = ProcessBuilder(buildList<String> {
                 add("deno")
                 add("test")
@@ -125,7 +122,7 @@ abstract class DenoTestTask : AbstractTestTask() {
             val buffered = process.inputStream.bufferedReader()
             var capturingOutput = false
             var currentTestId: String? = null
-            var currentTestExtra: String = "ok"
+            var currentTestExtra = "ok"
             var failedCount = 0
 
             fun flush() {
@@ -144,7 +141,6 @@ abstract class DenoTestTask : AbstractTestTask() {
                         }
                         testResultProcessor.completed(currentTestId, TestCompleteEvent(System.currentTimeMillis(), type))
                     } catch (e: Throwable) {
-                        //System.err.println("COMPLETED_ERROR: ${e}")
                         e.printStackTrace()
                     }
                     currentTestId = null
@@ -166,13 +162,9 @@ abstract class DenoTestTask : AbstractTestTask() {
                         testResultProcessor.output(currentTestId, DefaultTestOutputEvent(TestOutputEvent.Destination.StdOut, "$line\n"))
                     }
                     line.contains("...") -> {
-                        //DefaultNestedTestSuiteDescriptor()
                         flush()
                         val (name, extra) = line.split("...").map { it.trim() }
-                        //currentTestId = "$name${id++}"
                         currentTestId = "deno.myid${id++}"
-                        //val demo = CompositeId("Unit", "Name${id++}")
-                        //val descriptor = DefaultTestMethodDescriptor(currentTestId, name.substringBeforeLast('.'), name.substringAfterLast('.'))
 
                         val descriptor = DefaultTestMethodDescriptor(currentTestId, name.substringBeforeLast('.'), name)
                         currentTestExtra = extra

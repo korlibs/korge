@@ -1,7 +1,7 @@
 package korlibs.korge.gradle.targets.android
 
-import korlibs.korge.gradle.*
-import korlibs.korge.gradle.util.*
+import korlibs.korge.gradle.Orientation
+import korlibs.korge.gradle.util.Indenter
 
 object AndroidManifestXml {
     fun genStylesXml(config: AndroidGenerated): String = Indenter {
@@ -25,9 +25,7 @@ object AndroidManifestXml {
         line("<?xml version=\"1.0\" encoding=\"utf-8\"?>")
         line("<manifest")
         indent {
-            //line("xmlns:tools=\"http://schemas.android.com/tools\"")
             line("xmlns:android=\"http://schemas.android.com/apk/res/android\"")
-            //line("package=\"$androidPackageName\"")
         }
         line(">")
         indent {
@@ -37,7 +35,6 @@ object AndroidManifestXml {
             line("<application")
             indent {
                 line("")
-                //line("tools:replace=\"android:appComponentFactory\"")
                 line("android:allowBackup=\"true\"")
 
                 for ((key, value) in config.androidCustomApplicationAttributes) {
@@ -47,10 +44,7 @@ object AndroidManifestXml {
                 if (!config.androidLibrary) {
                     line("android:label=\"${config.androidAppName}\"")
                     line("android:icon=\"@mipmap/icon\"")
-                    // // line("android:icon=\"@android:drawable/sym_def_app_icon\"")
                     line("android:roundIcon=\"@android:drawable/sym_def_app_icon\"")
-                    //line("android:theme=\"@android:style/Theme.Holo.NoActionBar\"")
-                    //line("android:theme=\"@android:style/Theme.NoTitleBar.Fullscreen\"")
                     line("android:theme=\"@style/AppThemeOverride\"")
                 }
                 line("android:supportsRtl=\"true\"")

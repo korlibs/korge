@@ -1,6 +1,9 @@
 package korlibs.korge.gradle
 
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class KorgeExtensionTest {
     @Test

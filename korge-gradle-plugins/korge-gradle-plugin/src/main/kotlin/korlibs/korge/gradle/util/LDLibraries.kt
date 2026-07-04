@@ -1,6 +1,6 @@
 package korlibs.korge.gradle.util
 
-import java.io.*
+import java.io.File
 import java.nio.file.Files
 
 object LDLibraries {
@@ -8,9 +8,6 @@ object LDLibraries {
     private val loadConfFiles = LinkedHashSet<File>()
 
     val ldFolders: List<File> get() = libFolders.toList()
-
-    // /etc/ld.so.conf
-    // include /etc/ld.so.conf.d/*.conf
 
     fun addPath(path: String) {
         val file = File(path)

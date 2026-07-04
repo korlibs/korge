@@ -1,15 +1,19 @@
 package korlibs.korge.gradle.util
 
-import com.sun.net.httpserver.*
+import com.sun.net.httpserver.HttpExchange
+import com.sun.net.httpserver.HttpServer
+import java.io.File
+import java.io.FileInputStream
+import java.io.OutputStream
+import java.lang.management.ManagementFactory
+import java.net.Inet4Address
+import java.net.InetSocketAddress
+import java.net.NetworkInterface
+import java.nio.charset.Charset
+import java.nio.file.Files
+import java.util.concurrent.atomic.AtomicInteger
+import kotlin.math.min
 import org.apache.tools.ant.taskdefs.condition.Os
-import org.gradle.api.*
-import java.io.*
-import java.lang.management.*
-import java.net.*
-import java.nio.charset.*
-import java.nio.file.*
-import java.util.concurrent.atomic.*
-import kotlin.math.*
 
 class DecoratedHttpServer(val server: HttpServer) {
     val port get() = server.address.port
@@ -82,7 +86,6 @@ class FileContent(val file: File) : RangedContent {
 
     override fun write(out: OutputStream, range: LongRange) {
         val len = (range.endInclusive - range.start) + 1
-        //println("range=$range, len=$len")
         FileInputStream(file).use { f ->
             f.skip(range.start)
             var remaining = len
@@ -94,7 +97,6 @@ class FileContent(val file: File) : RangedContent {
                 out.write(temp, 0, read)
                 remaining -= read
             }
-            //println("end")
         }
     }
 }
@@ -154,12 +156,9 @@ fun HttpExchange.respond(content: RangedContent, headers: List<Pair<String, Stri
 
         // Send body if not HEAD
         if (!this.requestMethod.equals("HEAD", ignoreCase = true)) {
-            //println("${this.requestMethod}")
             responseBody.use { os ->
                 content.write(os, reqRange ?: totalRange)
             }
-        } else {
-            //println("HEAD")
         }
     } catch (e: Throwable) {
         e.printStackTrace()
@@ -188,7 +187,6 @@ fun openBrowser(url: String) {
         when {
             isWindows -> {
                 addAll(listOf("cmd", "/c", "explorer.exe $url"))
-                //isIgnoreExitValue = true
             }
             isLinux -> addAll(listOf("xdg-open", url))
             else -> addAll(listOf("open", url))

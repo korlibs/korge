@@ -1,12 +1,13 @@
 package korlibs.korge.gradle.targets
 
-import korlibs.korge.gradle.*
+import java.io.File
+import javax.imageio.ImageIO
+import korlibs.korge.gradle.KorgeExtension
+import korlibs.korge.gradle.korge
 import korlibs.korge.gradle.util.encodePNG
 import korlibs.korge.gradle.util.getScaledInstance
 import korlibs.korge.gradle.util.toBufferedImage
-import org.gradle.api.*
-import java.io.*
-import javax.imageio.ImageIO
+import org.gradle.api.Project
 
 val ICON_SIZES = listOf(20, 29, 40, 44, 48, 50, 55, 57, 58, 60, 72, 76, 80, 87, 88, 100, 114, 120, 144, 152, 167, 172, 180, 196, 1024)
 
@@ -44,5 +45,4 @@ class KorgeIconProvider(val icon: File? = null, val banner: File? = null) {
 
     fun getIconBytes(width: Int, height: Int = width): ByteArray = ImageIO.read(getIconBytes().inputStream()).getScaledInstance(width, height).toBufferedImage().encodePNG()
     fun getBannerBytes(width: Int, height: Int = width): ByteArray = ImageIO.read(getBannerBytes().inputStream()).getScaledInstance(width, height).toBufferedImage().encodePNG()
-
 }

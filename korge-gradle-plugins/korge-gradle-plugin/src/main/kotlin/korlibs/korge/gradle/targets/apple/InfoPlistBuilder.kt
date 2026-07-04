@@ -1,6 +1,7 @@
 package korlibs.korge.gradle.targets.apple
 
-import korlibs.korge.gradle.*
+import korlibs.korge.gradle.GameCategory
+import korlibs.korge.gradle.KorgeExtension
 
 object InfoPlistBuilder {
 	fun GameCategory?.toUTI(): String {
@@ -35,16 +36,6 @@ object InfoPlistBuilder {
         appendLine("""<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">""")
         appendLine("""<plist version="1.0"><dict>""")
 		run {
-			//appendLine("  <key>BuildMachineOSBuild</key><string>16G1510</string>")
-			//appendLine("  <key>LSUIElement</key><string>1</string>")
-			//appendLine("  <key>DTSDKBuild</key><string>14D125</string>")
-			//appendLine("  <key>DTSDKName</key><string>macosx10.1010.10</string>")
-			//appendLine("  <key>DTXcode</key><string>0833</string>")
-			//appendLine("  <key>DTXcodeBuild</key><string>8E3004b</string>")
-			//appendLine("  <key>NSMainNibFile</key><string>MainMenu</string>")
-			//appendLine("  <key>NSPrincipalClass</key><string>MyApplication</string>")
-			//appendLine("  <key>NSSupportsAutomaticGraphicsSwitching</key><true/>")
-
 			appendLine("  <key>CFBundleDisplayName</key><string>${ext.name}</string>")
 			appendLine("  <key>CFBundleExecutable</key><string>${ext.exeBaseName}</string>")
 			appendLine("  <key>CFBundleIconFile</key><string>${ext.exeBaseName}.icns</string>")

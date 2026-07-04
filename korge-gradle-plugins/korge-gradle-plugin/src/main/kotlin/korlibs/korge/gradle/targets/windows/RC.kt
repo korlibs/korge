@@ -1,8 +1,7 @@
 package korlibs.korge.gradle.targets.windows
 
 import korlibs.korge.gradle.KorgeExtension
-import java.io.*
-import korlibs.korge.gradle.util.*
+import korlibs.korge.gradle.util.quoted
 
 object WindowsRC {
     fun generate(info: KorgeExtension): String = kotlin.text.buildString {

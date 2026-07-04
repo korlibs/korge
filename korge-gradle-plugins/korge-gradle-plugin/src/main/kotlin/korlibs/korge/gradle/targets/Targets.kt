@@ -1,9 +1,11 @@
 package korlibs.korge.gradle.targets
 
-import org.apache.tools.ant.taskdefs.condition.*
-import org.gradle.api.*
-import org.jetbrains.kotlin.gradle.plugin.*
-import java.io.*
+import java.io.File
+import org.apache.tools.ant.taskdefs.condition.Os
+import org.gradle.api.NamedDomainObjectContainer
+import org.gradle.api.Project
+import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
+import org.jetbrains.kotlin.gradle.plugin.KotlinTarget
 
 // Only mac has ios/tvos targets but since CI exports multiplatform on linux
 val supportKotlinNative: Boolean get() {
@@ -12,7 +14,6 @@ val supportKotlinNative: Boolean get() {
     // We can also try to disable it manually
     if (System.getenv("DISABLE_KOTLIN_NATIVE") == "true") return false
     // On Mac, CI or when FORCE_ENABLE_KOTLIN_NATIVE=true, let's enable it
-    //return isMacos || (System.getenv("CI") == "true") || (System.getenv("FORCE_ENABLE_KOTLIN_NATIVE") == "true")
     return true
 }
 
@@ -39,8 +40,6 @@ fun NamedDomainObjectContainer<KotlinSourceSet>.createPairSourceSet(
 
     val newVariant = if (project?.projectDir != null) !File(project.projectDir, "src/commonMain").isDirectory else false
 
-    //println("!!!!!!!!!!! newVariant=$newVariant, project?.projectDir=${project?.projectDir} isDirectory=${project?.projectDir?.get("src/commonMain")?.isDirectory}")
-
     if (newVariant) {
         if (name == "common") {
             main.kotlin.srcDirs(listOf("src"))
@@ -49,7 +48,6 @@ fun NamedDomainObjectContainer<KotlinSourceSet>.createPairSourceSet(
             main.kotlin.srcDirs(listOf("src@$name"))
         }
         if (test != null) {
-            //test.kotlin.srcDirs(listOf("test/$name"))
             if (name == "common") {
                 test.kotlin.srcDirs(listOf("test"))
                 test.resources.srcDirs(listOf("testresources"))

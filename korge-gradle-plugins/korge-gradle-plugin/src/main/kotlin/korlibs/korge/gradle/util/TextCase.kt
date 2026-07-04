@@ -12,17 +12,6 @@ class TextCase(val words: List<String>) {
             //   - helloWorld
             //   - HelloWorld
             return TextCase(str.replace('_', '-').split(Regex("\\W+")))
-            //val out = arrayListOf<String>()
-            //val sr = StrReader(str)
-            //var lastLowerCase: Boolean? = null
-            //while (sr.hasMore) {
-            //    val lowerCase = sr.peek().isLowerCase()
-            //    val changedCase = (lowerCase != lastLowerCase)
-            //    if (changedCase) {
-            //    }
-            //    lastLowerCase = lowerCase
-            //}
-            //return TextCase(out)
         }
     }
 

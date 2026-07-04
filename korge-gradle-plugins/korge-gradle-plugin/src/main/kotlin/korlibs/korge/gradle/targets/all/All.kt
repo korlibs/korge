@@ -1,12 +1,10 @@
 package korlibs.korge.gradle.targets.all
 
-import korlibs.*
-import korlibs.korge.gradle.*
-import korlibs.korge.gradle.util.*
-import org.gradle.api.*
-import org.jetbrains.kotlin.gradle.dsl.*
-import org.jetbrains.kotlin.gradle.plugin.*
-import java.io.*
+import java.io.File
+import org.gradle.api.Project
+import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
+import org.jetbrains.kotlin.gradle.dsl.KotlinSingleTargetExtension
+import org.jetbrains.kotlin.gradle.plugin.KotlinTarget
 
 val Project.korgeGradlePluginResources: File get() = File(rootProject.projectDir, "buildSrc/src/main/resources")
 

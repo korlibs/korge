@@ -1,6 +1,6 @@
 package korlibs.korge.gradle.typedresources
 
-import java.net.*
+import java.net.URL
 
 class ResourceTools
 

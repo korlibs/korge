@@ -1,11 +1,12 @@
 package korlibs.korge.gradle.util
 
-import com.google.gson.*
+import com.google.gson.JsonElement
 import com.google.gson.JsonParser
-import groovy.json.*
-import java.net.*
-import java.util.*
-import java.util.concurrent.*
+import groovy.json.JsonOutput
+import java.net.HttpURLConnection
+import java.net.URL
+import java.util.Base64
+import java.util.concurrent.CancellationException
 
 open class SimpleHttpClient(
     val user: String? = null,

@@ -1,7 +1,8 @@
 package korlibs.korge.gradle.targets
 
-import korlibs.korge.gradle.*
-import org.gradle.api.*
+import korlibs.korge.gradle.extensionGetOrCreate
+import korlibs.korge.gradle.kotlin
+import org.gradle.api.Project
 
 val Project.exKotlinSourceSetContainer: ExKotlinSourceSetContainer get() = extensionGetOrCreate("exKotlinSourceSetContainer")
 
@@ -28,4 +29,3 @@ open class ExKotlinSourceSetContainer(val project: Project) {
     val tvos by lazy { sourceSets.createPairSourceSet("tvos", iosTvos, project = project) }
     val ios by lazy { sourceSets.createPairSourceSet("ios", iosTvos/*, iosMacos*/, project = project) }
 }
-

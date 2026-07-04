@@ -4,7 +4,6 @@ import korlibs.korge.gradle.korgefleks.AssetConfig.Companion.PIXEL_FONTS
 import org.gradle.api.GradleException
 import java.io.File
 
-
 /**
  * Asset file loader for generic files (e.g. png, sound,...) in a KorgeFleks project.
  *

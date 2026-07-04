@@ -5,13 +5,10 @@
 
 package korlibs.korge.gradle.targets.wasm
 
-import korlibs.*
-import org.gradle.api.*
+import korlibs.kotlin
+import org.gradle.api.Project
 
-//fun Project.isWasmEnabled(): Boolean = findProperty("enable.wasm") == "true"
 fun isWasmEnabled(project: Project?): Boolean = true
-//fun isWasmEnabled(project: Project?): Boolean = false
-//fun Project.isWasmEnabled(): Boolean = false
 
 fun Project.configureWasmTarget(executable: Boolean, binaryen: Boolean = false) {
     kotlin {
@@ -19,19 +16,11 @@ fun Project.configureWasmTarget(executable: Boolean, binaryen: Boolean = false) 
             if (executable) {
                 binaries.executable()
             }
-            //applyBinaryen()
             browser {
-                //commonWebpackConfig { experiments = mutableSetOf("topLevelAwait") }
                 if (executable) {
                     this.distribution {
                     }
                 }
-                //testTask {
-                //    it.useKarma {
-                //        //useChromeHeadless()
-                //        this.webpackConfig.configDirectory = File(rootProject.rootDir, "karma.config.d")
-                //    }
-                //}
             }
 
             // Binaryen is enabled by default in recent Kotlin versions.

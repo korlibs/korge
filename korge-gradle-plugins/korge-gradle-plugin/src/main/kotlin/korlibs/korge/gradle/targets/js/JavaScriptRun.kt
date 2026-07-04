@@ -91,23 +91,6 @@ fun Project.configureJavascriptRun() {
         dependsOn(runJsDebug)
     }
 
-    /*
-    val runJsWebpack = project.tasks.createThis<Task>(name = "runJsWebpack") {
-        group = GROUP_KORGE_RUN
-        dependsOn("jsBrowserProductionRun")
-    }
-
-    val runJsWebpackDebug = project.tasks.createThis<Task>(name = "runJsWebpackDebug") {
-        group = GROUP_KORGE_RUN
-        dependsOn("jsBrowserDevelopmentRun")
-    }
-
-    val runJsWebpackRelease = project.tasks.createThis<Task>(name = "runJsWebpackRelease") {
-        group = GROUP_KORGE_RUN
-        dependsOn("jsBrowserProductionRun")
-    }
-    */
-
     val jsStopWeb = project.tasks.createThis<Task>(name = "jsStopWeb") {
         doLast {
             println("jsStopWeb: ${ManagementFactory.getRuntimeMXBean().name}-${Thread.currentThread()}")

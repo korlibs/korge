@@ -1,6 +1,5 @@
 package korlibs.korge.gradle.korgefleks
 
-
 /**
  * This is the main parallax configuration.
  *
@@ -29,10 +28,8 @@ data class ParallaxInfo(
     val offsetX: Int = 0,  // offset in X direction - offsets will be substructed from the parallax image size
     val offsetY: Int = 0,  // offset in Y direction
     val mode: Mode = Mode.NO_PLANE,
-
     val backgroundLayers: List<ParallaxLayerInfo> = emptyList(),
     val foregroundLayers: List<ParallaxLayerInfo> = emptyList(),
-
     val parallaxPlane: ParallaxPlaneInfo? = null
 ) {
     enum class Mode {

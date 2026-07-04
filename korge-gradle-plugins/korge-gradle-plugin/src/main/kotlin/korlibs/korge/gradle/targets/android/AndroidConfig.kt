@@ -1,43 +1,30 @@
 package korlibs.korge.gradle.targets.android
 
-import korlibs.korge.gradle.*
-import korlibs.korge.gradle.targets.*
-import korlibs.korge.gradle.targets.all.*
-import korlibs.korge.gradle.util.*
-import org.gradle.api.*
-import java.io.*
-
+import java.io.File
+import korlibs.korge.gradle.DisplayCutout
+import korlibs.korge.gradle.Orientation
+import korlibs.korge.gradle.korge
+import korlibs.korge.gradle.targets.KorgeIconProvider
+import korlibs.korge.gradle.targets.all.korgeGradlePluginResources
+import korlibs.korge.gradle.targets.getResourceBytes
+import korlibs.korge.gradle.targets.iconProvider
+import korlibs.korge.gradle.util.conditionally
+import korlibs.korge.gradle.util.ensureParents
+import korlibs.korge.gradle.util.writeBytesIfChanged
+import korlibs.korge.gradle.util.writeTextIfChanged
+import org.gradle.api.Project
 
 class AndroidInfo(val map: Map<String, Any?>?) {
-    //init { println("AndroidInfo: $map") }
     val androidInit: List<String> = (map?.get("androidInit") as? List<String?>?)?.filterNotNull() ?: listOf()
     val androidManifest: List<String> = (map?.get("androidManifest") as? List<String?>?)?.filterNotNull() ?: listOf()
     val androidDependencies: List<String> = (map?.get("androidDependencies") as? List<String>?)?.filterNotNull() ?: listOf()
 }
 
-/*
-fun Project.toAndroidConfig(): AndroidConfig = AndroidConfig.fromProject(this)
-class AndroidConfig(
-    val buildDir: File,
-    val id: String,
-    val name: String,
-) {
-    companion object {
-        fun fromProject(project: Project): AndroidConfig = AndroidConfig(
-            buildDir = project.buildDir,
-            id = project.korge.id,
-            name = project.name,
-        )
-    }
-}
-
- */
-
 fun Project.toAndroidGenerated(isKorge: Boolean, info: AndroidInfo = AndroidInfo(null)): AndroidGenerated = AndroidGenerated(
     icons = if (isKorge) korge.iconProvider else KorgeIconProvider(File(korgeGradlePluginResources, "icons/korge.png"), File(korgeGradlePluginResources, "banners/korge.png")),
     ifNotExists = if (isKorge) korge.overwriteAndroidFiles else true,
     androidPackageName = AndroidGenerated.getAppId(this, isKorge),
-    androidInit = korge.plugins.pluginExts.getAndroidInit() + info.androidInit,
+    androidInit = info.androidInit,
     androidMsaa = if (isKorge) korge.androidMsaa else 4,
     fullscreen = if (isKorge) korge.fullscreen else true,
     orientation = korge.orientation,
@@ -46,11 +33,11 @@ fun Project.toAndroidGenerated(isKorge: Boolean, info: AndroidInfo = AndroidInfo
     androidAppName = korge.name,
     androidManifestChunks = korge.androidManifestChunks,
     androidManifestApplicationChunks = korge.androidManifestApplicationChunks,
-    androidManifest = korge.plugins.pluginExts.getAndroidManifestApplication() + info.androidManifest,
-    androidLibrary = if (isKorge) korge.androidLibrary else false,
+    androidManifest = info.androidManifest,
+    androidLibrary = isKorge && korge.androidLibrary,
     androidCustomApplicationAttributes = korge.androidCustomApplicationAttributes,
     projectName = project.name,
-    buildDir = project.buildDir,
+    buildDir = project.layout.buildDirectory.asFile.get(),
 )
 
 data class AndroidGenerated constructor(
@@ -100,25 +87,20 @@ data class AndroidGenerated constructor(
 
     fun getAppId(isKorge: Boolean): String {
         return if (isKorge) androidPackageName else "korlibs.${projectName.replace("-", "_")}"
-        //val namespace = "com.soywiz.${project.name.replace("-", ".")}"
     }
 
     fun getNamespace(isKorge: Boolean): String {
-        //return if (isKorge) project.korge.id else "com.soywiz.${project.name.replace("-", ".")}"
         return getAppId(isKorge)
     }
 
     fun getAndroidManifestFile(isKorge: Boolean): File {
-        //return File(project.projectDir, "src/androidMain/AndroidManifest.xml")
         return File(buildDir, "AndroidManifest.xml")
     }
 
     fun getAndroidResFolder(isKorge: Boolean): File {
-        //return File(project.projectDir, "src/androidMain/res")
         return File(buildDir, "platforms/android/androires").ensureParents()
     }
     fun getAndroidSrcFolder(isKorge: Boolean): File {
-        //return File(project.projectDir, "src/androidMain/kotlin")
         return File(buildDir, "platforms/android/androisrc").ensureParents()
     }
 

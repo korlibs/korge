@@ -2,7 +2,6 @@ package korlibs.korge.gradle.korgefleks
 
 import java.io.File
 
-
 /**
  * Exports tileset images from asset directory to export tileset directory for atlas packing.
  *

@@ -1,10 +1,10 @@
 package korlibs.korge.gradle.texpacker
 
-import java.awt.*
-import java.awt.image.*
-import java.io.*
-import javax.imageio.*
-import kotlin.math.*
+import java.awt.Rectangle
+import java.awt.image.BufferedImage
+import java.io.File
+import javax.imageio.ImageIO
+import kotlin.math.min
 
 @JvmInline
 value class SimpleRGBA(val data: Int) {

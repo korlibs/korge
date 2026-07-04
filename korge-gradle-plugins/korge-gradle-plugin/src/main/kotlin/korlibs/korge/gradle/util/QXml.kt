@@ -1,11 +1,12 @@
 package korlibs.korge.gradle.util
 
+import groovy.namespace.QName
 import groovy.util.Node
 import groovy.util.NodeList
-import groovy.namespace.QName
-import groovy.xml.XmlParser
 import groovy.xml.XmlNodePrinter
-import java.io.*
+import groovy.xml.XmlParser
+import java.io.PrintWriter
+import java.io.StringWriter
 
 fun NodeList.toFlatNodeList(): List<Node> = this.flatMap {
     when (it) {

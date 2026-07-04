@@ -1,6 +1,7 @@
 package korlibs.korge.gradle.processor
 
-import korlibs.korge.gradle.util.*
+import korlibs.korge.gradle.util.Json
+import korlibs.korge.gradle.util.get
 
 open class CatalogGenerator : KorgeResourceProcessor {
     override fun processFolder(context: KorgeResourceProcessorContext) {
@@ -13,9 +14,6 @@ open class CatalogGenerator : KorgeResourceProcessor {
                 map[fileName] = listOf(file.length(), file.lastModified())
             }
         }
-        //println("-------- $folders")
-        //println("++++++++ $files")
         context.generatedFolder["\$catalog.json"].writeText(Json.stringify(map))
-        //println("generatedFolder: $generatedFolder")
     }
 }

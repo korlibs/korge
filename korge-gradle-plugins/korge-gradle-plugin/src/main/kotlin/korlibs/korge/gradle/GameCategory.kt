@@ -7,7 +7,7 @@ enum class GameCategory {
     SPORTS, STRATEGY, TRIVIA, WORD;
 
     companion object {
-        val VALUES: Map<String, GameCategory> = GameCategory.values().toList().associateBy { it.name.uppercase() }
+        val VALUES: Map<String, GameCategory> = entries.associateBy { it.name.uppercase() }
         operator fun get(key: String): GameCategory? = VALUES[key.uppercase().trim()]
     }
 }

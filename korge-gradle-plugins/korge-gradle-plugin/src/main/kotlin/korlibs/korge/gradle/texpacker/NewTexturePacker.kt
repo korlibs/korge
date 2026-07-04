@@ -1,11 +1,11 @@
 package korlibs.korge.gradle.texpacker
 
-import com.android.build.gradle.internal.cxx.json.*
-import korlibs.korge.gradle.*
-import org.korge.gradle.BuildVersions
+import com.android.build.gradle.internal.cxx.json.jsonStringOf
+import java.awt.Dimension
+import java.awt.Rectangle
+import java.io.File
 import org.gradle.api.GradleException
-import java.awt.*
-import java.io.*
+import org.korge.gradle.BuildVersions
 
 object NewTexturePacker {
     data class Info(

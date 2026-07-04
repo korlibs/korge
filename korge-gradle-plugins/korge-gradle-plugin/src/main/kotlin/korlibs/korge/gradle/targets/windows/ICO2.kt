@@ -1,9 +1,13 @@
 package korlibs.korge.gradle.targets.windows
 
-import korlibs.korge.gradle.util.*
-import java.awt.image.*
-import java.io.*
-import kotlin.math.*
+import java.awt.image.BufferedImage
+import java.awt.image.DataBufferInt
+import java.io.ByteArrayOutputStream
+import korlibs.korge.gradle.util.area
+import korlibs.korge.gradle.util.encodePNG
+import korlibs.korge.gradle.util.write16LE
+import korlibs.korge.gradle.util.write32LE
+import korlibs.korge.gradle.util.write8
 
 @Suppress("UNUSED_VARIABLE")
 object ICO2 {
@@ -85,7 +89,6 @@ object BMP2 {
                 // @TODO: Check this
                 s.write32LE(ints[y * bmp.width + x])
             }
-            //s.writeBytes(BGRA.encode(bmp.data, y * bmp.width, bmp.width, littleEndian = true))
         }
         return s.toByteArray()
     }

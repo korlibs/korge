@@ -195,10 +195,8 @@ object Yaml {
                     '"', '\'' -> {
                         flush()
                         val last = out.lastOrNull()
-                        //println("out=$last, c='$c', reader=$this")
                         if (last is Token.SYMBOL && (last.str == ":" || last.str == "[" || last.str == "{" || last.str == "," || last.str == "-")) {
                             s.unread()
-                            //println(" -> c='$c', reader=$this")
                             out += Token.STR(s.readStringLit())
                         } else {
                             str += c

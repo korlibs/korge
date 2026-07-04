@@ -4,7 +4,6 @@ import com.android.build.gradle.internal.cxx.json.jsonStringOf
 import org.gradle.api.GradleException
 import java.io.File
 
-
 /**
  * Configuration for managing assets in a KorgeFleks project.
  *

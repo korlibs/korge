@@ -1,7 +1,8 @@
 package korlibs.korge.gradle
 
-import korlibs.korge.gradle.targets.*
-import org.gradle.api.*
+import korlibs.korge.gradle.targets.ProjectType
+import org.gradle.api.Plugin
+import org.gradle.api.Project
 
 abstract class KorgeGradleAbstractPlugin(val projectType: ProjectType) : Plugin<Project> {
     override fun apply(project: Project) {
@@ -11,4 +12,5 @@ abstract class KorgeGradleAbstractPlugin(val projectType: ProjectType) : Plugin<
 }
 
 open class KorgeGradlePlugin : KorgeGradleAbstractPlugin(projectType = ProjectType.EXECUTABLE)
+
 open class KorgeLibraryGradlePlugin : KorgeGradleAbstractPlugin(projectType = ProjectType.LIBRARY)

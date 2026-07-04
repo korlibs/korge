@@ -1,9 +1,11 @@
 package korlibs.korge.gradle
 
-import korlibs.korge.gradle.targets.ios.*
-import korlibs.korge.gradle.util.*
-import java.io.*
-import kotlin.test.*
+import java.io.File
+import korlibs.korge.gradle.targets.ios.iosTvosDeployExt
+import korlibs.korge.gradle.util.get
+import kotlin.test.Ignore
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class IosDeployTest : AbstractGradleIntegrationTest() {
     @Test
@@ -21,12 +23,12 @@ class IosDeployTest : AbstractGradleIntegrationTest() {
             it.workingDir["build/Release"].also { it.mkdirs() }["ios-deploy"].writeText("")
             TestableExecResult("")
         }
-        assertEquals(project.iosTvosDeployExt.isInstalled, false)
+        assertEquals(false, project.iosTvosDeployExt.isInstalled)
         assertEquals("", commandLog.joinToString(", "))
         run {
             project.iosTvosDeployExt.installIfRequired()
         }
-        assertEquals(project.iosTvosDeployExt.isInstalled, true)
+        assertEquals(true, project.iosTvosDeployExt.isInstalled)
         assertEquals("clone, xcodebuild", commandLog.joinToString(", "))
     }
 }

@@ -29,7 +29,6 @@ open class PrepareKotlinNativeBootstrapTask : DefaultTask() {
         output.parentFile.mkdirs()
 
         val text = Indenter {
-            //line("package korge.bootstrap")
             line("import $realEntryPoint")
             line("fun main(args: Array<String> = arrayOf()): Unit = RootGameMain.runMain(args)")
             line("object RootGameMain") {

@@ -1,14 +1,12 @@
 package korlibs.korge.gradle
 
-import korlibs.*
-import org.gradle.api.*
-import org.gradle.api.artifacts.*
+import org.gradle.api.Project
+import org.gradle.api.artifacts.ProjectDependency
 import org.gradle.internal.extensions.core.extra
 
 fun Project.directDependantProjects(): Set<Project> {
     val key = "directDependantProjects"
     if (!project.extra.has(key)) {
-    //if (true) {
         project.extra.set(key, (project.configurations
             .flatMap { it.dependencies.withType(ProjectDependency::class.java).toList() }
             .map { project.rootProject.project(it.path) }
@@ -20,8 +18,7 @@ fun Project.directDependantProjects(): Set<Project> {
 fun Project.allDependantProjects(): Set<Project> {
     val key = "allDependantProjects"
     if (!project.extra.has(key)) {
-    //if (true) {
-        val toExplore = arrayListOf<Project>(this)
+        val toExplore = arrayListOf(this)
         val out = LinkedHashSet<Project>()
         val explored = LinkedHashSet<Project>()
         while (toExplore.isNotEmpty()) {

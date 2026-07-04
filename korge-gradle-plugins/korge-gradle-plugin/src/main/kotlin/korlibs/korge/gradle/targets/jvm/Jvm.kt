@@ -1,28 +1,43 @@
 package korlibs.korge.gradle.targets.jvm
 
-import korlibs.*
-import korlibs.korge.gradle.*
-import korlibs.korge.gradle.gkotlin
-import korlibs.korge.gradle.kotlin
-import korlibs.korge.gradle.targets.*
-import korlibs.korge.gradle.targets.desktop.*
-import korlibs.korge.gradle.util.*
-import korlibs.root.*
-import org.gradle.api.*
-import org.gradle.api.file.*
-import org.gradle.api.tasks.*
-import org.gradle.api.tasks.bundling.*
-import org.gradle.api.tasks.testing.*
-import org.gradle.jvm.tasks.Jar
-import org.korge.gradle.BuildVersions
-import org.jetbrains.kotlin.gradle.plugin.mpp.*
-import proguard.gradle.*
-import java.io.*
-import java.util.Locale
+import java.io.File
 import java.util.Locale.getDefault
+import korlibs.invoke
+import korlibs.jvm
+import korlibs.korge.gradle.KorgeExtension
+import korlibs.korge.gradle.getCompilationKorgeProcessedResourcesFolder
+import korlibs.korge.gradle.gkotlin
+import korlibs.korge.gradle.jnaVersion
+import korlibs.korge.gradle.korge
+import korlibs.korge.gradle.kotlin
+import korlibs.korge.gradle.targets.GROUP_KORGE_PACKAGE
+import korlibs.korge.gradle.targets.GROUP_KORGE_RUN
+import korlibs.korge.gradle.targets.ProjectType
+import korlibs.korge.gradle.targets.createPairSourceSet
+import korlibs.korge.gradle.targets.desktop.DesktopJreBundler
+import korlibs.korge.gradle.util.KorgeReloadNotifier
+import korlibs.korge.gradle.util.closure
+import korlibs.korge.gradle.util.createThis
+import korlibs.korge.gradle.util.get
+import korlibs.korge.gradle.util.writeTextIfChanged
+import korlibs.main
+import korlibs.root.RootKorlibsPlugin
+import org.gradle.api.NamedDomainObjectSet
+import org.gradle.api.Project
+import org.gradle.api.Task
+import org.gradle.api.file.DuplicatesStrategy
+import org.gradle.api.tasks.Copy
+import org.gradle.api.tasks.bundling.ZipEntryCompression
+import org.gradle.api.tasks.testing.Test
+import org.gradle.jvm.tasks.Jar
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinJvmCompilation
+import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
+import org.korge.gradle.BuildVersions
+import proguard.gradle.ProGuardTask
 
-val KORGE_RELOAD_AGENT_CONFIGURATION_NAME = "KorgeReloadAgent"
-val httpPort = 22011
+const val KORGE_RELOAD_AGENT_CONFIGURATION_NAME = "KorgeReloadAgent"
+const val httpPort = 22011
 
 fun Project.ensureSourceSetsConfigure(vararg names: String) {
     val sourceSets = project.kotlin.sourceSets
@@ -47,12 +62,11 @@ fun Project.configureJvm(projectType: ProjectType) {
     gkotlin.jvm {
         testRuns["test"].executionTask.configure {
             useJUnit()
-            //it.useJUnitPlatform()
         }
     }
-    project.tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile::class.java)
+    project.tasks.withType(KotlinJvmCompile::class.java)
         .configureEach {
-            compilerOptions.jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.fromTarget(korge.jvmTarget))
+            compilerOptions.jvmTarget.set(JvmTarget.fromTarget(korge.jvmTarget))
         }
 
     if (projectType.isExecutable) {
@@ -62,7 +76,7 @@ fun Project.configureJvm(projectType: ProjectType) {
     configureJvmTest()
 
     val jvmProcessResources = tasks.findByName("jvmProcessResources") as? Copy?
-    jvmProcessResources?.duplicatesStrategy = org.gradle.api.file.DuplicatesStrategy.INCLUDE
+    jvmProcessResources?.duplicatesStrategy = DuplicatesStrategy.INCLUDE
 
     ensureSourceSetsConfigure("common", "jvm")
 }
@@ -70,7 +84,7 @@ fun Project.configureJvm(projectType: ProjectType) {
 fun Project.configureJvmRunJvm(isRootKorlibs: Boolean) {
     val project = this
 
-    val timeBeforeCompilationFile = File(project.buildDir, "timeBeforeCompilation")
+    val timeBeforeCompilationFile = project.layout.buildDirectory.file("timeBeforeCompilation").get().asFile
 
     project.tasks.createThis<Task>("compileKotlinJvmAndNotifyBefore") {
         doFirst {
@@ -99,7 +113,6 @@ fun Project.configureJvmRunJvm(isRootKorlibs: Boolean) {
                 if (!beforeJava9) jvmArgs(project.korge.javaAddOpens)
             }
         }
-        //for (enableRedefinition in listOf(false, true)) {
         for (enableRedefinition in listOf(false)) {
             val taskName = when (enableRedefinition) {
                 false -> "runJvm${capitalizedEntryName}Autoreload"
@@ -153,7 +166,7 @@ fun Project.configureJvmRunJvm(isRootKorlibs: Boolean) {
 
 internal val Project.jvmCompilation: NamedDomainObjectSet<*> get() = kotlin.targets.getByName("jvm").compilations as NamedDomainObjectSet<*>
 internal val Project.mainJvmCompilation: KotlinJvmCompilation
-    get() = jvmCompilation.getByName("main") as? org.jetbrains.kotlin.gradle.plugin.mpp.KotlinJvmCompilation?
+    get() = jvmCompilation.getByName("main") as? KotlinJvmCompilation?
         ?: error("Can't find main jvm compilation")
 
 private fun Project.configureJvmTest() {
@@ -173,10 +186,8 @@ private fun Project.configureJvmTest() {
 }
 
 private fun Project.addProguard() {
-    // packageJvmFatJar
-    val packageJvmFatJar = project.tasks.createThis<org.gradle.jvm.tasks.Jar>("packageJvmFatJar") {
+    val packageJvmFatJar = project.tasks.createThis<Jar>("packageJvmFatJar") {
         dependsOn("jvmJar")
-        //entryCompression = ZipEntryCompression.STORED
         archiveBaseName.set("${project.name}-all")
         group = GROUP_KORGE_PACKAGE
         exclude(
@@ -210,25 +221,19 @@ private fun Project.addProguard() {
                     )
                 )
             }
-            //it.from()
-            //fileTree()
             from(closure {
                 project.gkotlin.targets.jvm.compilations.main.runtimeDependencyFiles.map {
                     if (it.isDirectory) it else project.zipTree(
                         it
                     ) as Any
                 }
-                //listOf<File>()
             })
-            //val jvmJarTask = project.getTasksByName("jvmJar", true).first { it.project == project } as CopySpec
             val jvmJarTask = project.getTasksByName("jvmJar", false).first() as Jar
-            //jvmJarTask.entryCompression = ZipEntryCompression.STORED
             with(jvmJarTask)
             from(
                 project.files()
                     .from(project.getCompilationKorgeProcessedResourcesFolder(mainJvmCompilation))
             )
-            //println("jvmJarTask=$jvmJarTask")
         }
     }
 
@@ -236,23 +241,23 @@ private fun Project.addProguard() {
         project.tasks.createThis<ProGuardTask>("packageJvmFatJarProguard") {
             dependsOn(packageJvmFatJar)
             group = GROUP_KORGE_PACKAGE
-            val serializationProFile = File(buildDir, "/serialization.pro")
+            val serializationProFile = layout.buildDirectory.file("serialization.pro").get().asFile
 
             doFirst {
                 serializationProFile.writeTextIfChanged(
-                    """
+                    $$"""
                 # Keep `Companion` object fields of serializable classes.
                 # This avoids serializer lookup through `getDeclaredClasses` as done for named companion objects.
                 -if @kotlinx.serialization.Serializable class **
                 -keepclassmembers class <1> {
-                    static <1>${'$'}Companion Companion;
+                    static <1>$Companion Companion;
                 }
 
                 # Keep `serializer()` on companion objects (both default and named) of serializable classes.
                 -if @kotlinx.serialization.Serializable class ** {
-                    static **${'$'}* *;
+                    static **$* *;
                 }
-                -keepclassmembers class <2>${'$'}<3> {
+                -keepclassmembers class <2>$<3> {
                     kotlinx.serialization.KSerializer serializer(...);
                 }
 
@@ -286,9 +291,8 @@ private fun Project.addProguard() {
                 libraryjars(project.fileTree("$javaHome/jmods/") {
                     include("**/java.*.jmod")
                 })
-                //println(packageJvmFatJar.outputs.files.toList())
                 injars(packageJvmFatJar.outputs.files.toList())
-                outjars(File(buildDir, "/libs/${project.name}-all-proguard.jar"))
+                outjars(layout.buildDirectory.file("/libs/${project.name}-all-proguard.jar").get().asFile)
                 dontwarn()
                 ignorewarnings()
                 if (!project.korge.proguardObfuscate) {
@@ -321,17 +325,12 @@ private fun Project.addProguard() {
                 keepclassmembernames("@korlibs.annotations.KeepNames class * { *; }")
                 keepclassmembernames("@korlibs.annotations.KeepNames interface * { *; }")
                 keepclassmembernames("enum * { public *; }")
-                //keepnames("@korlibs.io.annotations.Keep interface *")
-                //keepnames("class korlibs.render.platform.INativeGL")
 
-
-                //task.keepnames("class org.jcodec.** { *; }")
                 keepattributes()
                 keep("class * extends korlibs.ffi.FFILib { *; }")
                 keep("class * implements com.sun.jna.** { *; }")
                 keep("class com.sun.jna.** { *; }")
                 keep("class org.jcodec.** { *; }")
-                //keep("class korlibs.ffi.** { *; }")
                 keep("@korlibs.io.annotations.Keep class * { *; }")
                 keep("@korlibs.annotations.Keep class * { *; }")
                 keep("@kotlinx.serialization class * { *; }")
@@ -348,8 +347,6 @@ private fun Project.addProguard() {
         }
 
     val packageFatJar = packageJvmFatJar
-    //val packageFatJar = packageJvmFatJarProguard
-
 
     project.tasks.createThis<Task>("packageJvmLinuxApp") {
         dependsOn(packageFatJar)
@@ -374,5 +371,4 @@ private fun Project.addProguard() {
             DesktopJreBundler.createMacosApp(project, packageFatJar.outputs.files.first())
         }
     }
-
 }

@@ -18,7 +18,12 @@ import korlibs.korge.gradle.util.takeIfExists
 import org.gradle.api.DefaultTask
 import org.gradle.api.Project
 import org.gradle.api.file.DuplicatesStrategy
-import org.gradle.api.tasks.*
+import org.gradle.api.tasks.Copy
+import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.Internal
+import org.gradle.api.tasks.PathSensitive
+import org.gradle.api.tasks.PathSensitivity
+import org.gradle.api.tasks.TaskAction
 import org.gradle.work.DisableCachingByDefault
 import org.jetbrains.kotlin.gradle.plugin.KotlinJsCompilerType
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
@@ -78,13 +83,10 @@ fun Project.configureJavaScript(projectType: ProjectType) {
             from(generatedIndexHtmlDir) {
                 duplicatesStrategy = DuplicatesStrategy.EXCLUDE
             }
-            //println(this.outputs.files.toList())
-
         }
     }
 
     configureEsbuild()
-    configureWebpackFixes()
     configureDenoTest()
     if (projectType.isExecutable) {
         configureDenoRun()
@@ -103,7 +105,6 @@ fun KotlinJsTargetDsl.configureJsTargetOnce() {
 
 fun KotlinJsTargetDsl.configureJSTestsOnce() {
     browser {
-        //testTask { useKarma { useChromeHeadless() } }
         testRuns.getByName(KotlinTargetWithTests.DEFAULT_TEST_RUN_NAME).executionTask.configure {
             useKarma {
                 useChromeHeadless()
@@ -113,15 +114,6 @@ fun KotlinJsTargetDsl.configureJSTestsOnce() {
             }
         }
     }
-
-    // Kotlin 1.8.10:
-    //   compileSync: task ':korio:jsTestTestDevelopmentExecutableCompileSync' : [/Users/soywiz/projects/korge/build/js/packages/korge-root-korio-test/kotlin]
-    // Kotlin 1.8.20-RC:
-    //   compileSync: task ':korio:jsTestTestDevelopmentExecutableCompileSync' : [/Users/soywiz/projects/korge/build/js/packages/korge-root-korio-test/kotlin]
-    //for (kind in listOf("Development", "Production")) {
-    //    val compileSync = project.tasks.findByName("jsTestTest${kind}ExecutableCompileSync") as Copy
-    //    println("compileSync: $compileSync : ${compileSync.outputs.files.files}")
-    //}
 }
 
 @DisableCachingByDefault
@@ -129,7 +121,6 @@ abstract class JsCreateIndexTask : DefaultTask() {
     @get:InputFiles
     @PathSensitive(PathSensitivity.RELATIVE)
     lateinit var resourcesFolders: List<File>
-    //@get:OutputDirectory lateinit var targetDir: File
     @Internal lateinit var targetDir: File
     private val projectName: String = project.name
     private val korgeTitle: String? = project.korge.title
@@ -141,11 +132,8 @@ abstract class JsCreateIndexTask : DefaultTask() {
     fun run() {
         targetDir.mkdirs()
         logger.info("jsCreateIndexHtml.targetDir: $targetDir")
-        //val jsFile = File(jsMainCompilation.kotlinOptions.outputFile ?: "dummy.js").name
         // @TODO: How to get the actual .js file generated/served?
         val jsFile = File("${projectName}.js").name
-        //println("jsFile: $jsFile")
-        //println("resourcesFolders: $resourcesFolders")
         fun readTextFile(name: String): String {
             for (folder in resourcesFolders) {
                 val file = File(folder, name)?.takeIf { it.exists() } ?: continue
@@ -159,8 +147,6 @@ abstract class JsCreateIndexTask : DefaultTask() {
         val customCss = readTextFile("custom-styles.template.css")
         val customHtmlHead = readTextFile("custom-html-head.template.html")
         val customHtmlBody = readTextFile("custom-html-body.template.html")
-
-        //println(File(targetDir, "index.html"))
 
         try {
             File(targetDir, "favicon.ico").writeBytes(ICO2.encode(listOf(16, 32).map {

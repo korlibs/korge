@@ -1,14 +1,27 @@
 package korlibs.korge.gradle.typedresources
 
-import korlibs.*
-import korlibs.korge.gradle.*
+import java.io.File
+import korlibs.korge.gradle.KorgeGenerateResourcesTask
+import korlibs.korge.gradle.korge
 import korlibs.korge.gradle.kotlin
-import korlibs.korge.gradle.util.*
+import korlibs.korge.gradle.util.ASEInfo
+import korlibs.korge.gradle.util.Indenter
+import korlibs.korge.gradle.util.LocalSFile
+import korlibs.korge.gradle.util.SFile
+import korlibs.korge.gradle.util.UniqueNameGenerator
+import korlibs.korge.gradle.util.createTyped
 import korlibs.korge.gradle.util.ensureParents
-import org.gradle.api.*
+import korlibs.korge.gradle.util.quoted
+import korlibs.korge.gradle.util.textCase
+import korlibs.main
+import org.gradle.api.DefaultTask
+import org.gradle.api.Project
 import org.gradle.api.file.FileCollection
-import org.gradle.api.tasks.*
-import java.io.*
+import org.gradle.api.tasks.InputDirectory
+import org.gradle.api.tasks.OutputDirectory
+import org.gradle.api.tasks.PathSensitive
+import org.gradle.api.tasks.PathSensitivity
+import org.gradle.api.tasks.TaskAction
 import org.gradle.work.DisableCachingByDefault
 
 class TypedResourcesGenerator {
@@ -86,7 +99,6 @@ class TypedResourcesGenerator {
                             val varName = file.nameWithoutExtension.nameToVariable()
                             val fullVarName = file.path.normalizeName()
                             val extension = File(path).extension.lowercase()
-                            //println("extension=$extension")
                             var extraSuffix = ""
                             val isDirectory = file.isDirectory()
                             val type: String? = when (extension) {

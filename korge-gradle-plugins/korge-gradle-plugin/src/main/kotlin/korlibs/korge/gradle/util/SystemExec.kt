@@ -1,6 +1,8 @@
 package korlibs.korge.gradle.util
 
-import java.io.*
+import java.io.BufferedReader
+import java.io.File
+import java.io.InputStreamReader
 
 fun executeSystemCommand(command: Array<String>, cwd: File? = null, envs: Map<String, String>? = null): SystemExecResult {
     val output = StringBuilder()

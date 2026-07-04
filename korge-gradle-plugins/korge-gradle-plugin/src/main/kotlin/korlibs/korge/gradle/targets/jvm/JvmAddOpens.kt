@@ -1,6 +1,7 @@
 package korlibs.korge.gradle.targets.jvm
 
-import korlibs.korge.gradle.targets.*
+import korlibs.korge.gradle.targets.isLinux
+import korlibs.korge.gradle.targets.isMacos
 
 object JvmAddOpens {
     val beforeJava9 = System.getProperty("java.version").startsWith("1.")
@@ -22,7 +23,6 @@ object JvmAddOpens {
         }
     }
 
-    @OptIn(ExperimentalStdlibApi::class)
     fun createAddOpens(): List<String> = buildList<String> {
         for (item in jvmAddOpensList(mac = isMacos, linux = isLinux)) {
             add("--add-opens=$item=ALL-UNNAMED")

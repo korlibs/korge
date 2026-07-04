@@ -1,13 +1,12 @@
 package korlibs.korge.gradle.module
 
-import korlibs.korge.gradle.util.*
+import korlibs.korge.gradle.util.applyOnce
+import korlibs.korge.gradle.util.getByName
 import org.gradle.api.Project
-import org.gradle.plugins.ide.idea.model.*
+import org.gradle.plugins.ide.idea.model.IdeaModel
 
 fun Project.configureIdea() {
     project.plugins.applyOnce("idea")
-    //val plugin = this.plugins.apply(IdeaPlugin::class.java)
-    //val idea = this.extensions.getByType<IdeaModel>()
 
     project.extensions.getByName<IdeaModel>("idea").apply {
         module {
@@ -25,24 +24,3 @@ fun Project.configureIdea() {
         }
     }
 }
-
-/*
-fun Project.initIdeaExcludes() {
-    allprojects {
-        if (project.hasBuildGradle()) {
-            val plugin = this.plugins.apply(IdeaPlugin::class.java)
-            val idea = this.extensions.getByType<IdeaModel>()
-
-            idea.apply {
-                module {
-                    it.excludeDirs = it.excludeDirs + listOf(
-                        file(".gradle"), file("src2"), file("original"), file("original-tests"), file("old-rendering"),
-                        file("gradle/wrapper"), file(".idea"), file("build"), file("@old"), file("_template"),
-                        file("e2e-sample"), file("e2e-test"), file("experiments"),
-                    )
-                }
-            }
-        }
-    }
-}
-*/

@@ -1,18 +1,38 @@
 package korlibs.korge.gradle.targets.ios
 
-import korlibs.korge.gradle.*
-import korlibs.korge.gradle.targets.*
-import korlibs.korge.gradle.targets.desktop.*
-import korlibs.korge.gradle.targets.jvm.*
-import korlibs.korge.gradle.targets.native.*
-import korlibs.korge.gradle.util.*
-import org.gradle.api.*
-import org.gradle.api.tasks.*
-import org.gradle.configurationcache.extensions.*
-import org.jetbrains.kotlin.gradle.plugin.mpp.*
-import org.jetbrains.kotlin.gradle.plugin.mpp.apple.*
-import org.jetbrains.kotlin.gradle.tasks.*
-import java.io.*
+import java.io.File
+import korlibs.korge.gradle.getProcessResourcesTaskName
+import korlibs.korge.gradle.korge
+import korlibs.korge.gradle.kotlin
+import korlibs.korge.gradle.targets.GROUP_KORGE_INSTALL
+import korlibs.korge.gradle.targets.GROUP_KORGE_PACKAGE
+import korlibs.korge.gradle.targets.GROUP_KORGE_RUN
+import korlibs.korge.gradle.targets.ProjectType
+import korlibs.korge.gradle.targets.createPairSourceSet
+import korlibs.korge.gradle.targets.desktop.prepareKotlinNativeBootstrap
+import korlibs.korge.gradle.targets.exKotlinSourceSetContainer
+import korlibs.korge.gradle.targets.getIconBytes
+import korlibs.korge.gradle.targets.isArm
+import korlibs.korge.gradle.targets.isIos
+import korlibs.korge.gradle.targets.isTvos
+import korlibs.korge.gradle.targets.jvm.ensureSourceSetsConfigure
+import korlibs.korge.gradle.targets.native.configureKotlinNativeTarget
+import korlibs.korge.gradle.targets.native.getCompileTask
+import korlibs.korge.gradle.targets.native.getLinkTask
+import korlibs.korge.gradle.util.createThis
+import korlibs.korge.gradle.util.createTyped
+import korlibs.korge.gradle.util.execLogger
+import korlibs.korge.gradle.util.execOutput
+import korlibs.korge.gradle.util.get
+import korlibs.korge.gradle.util.projectExtension
+import org.gradle.api.Project
+import org.gradle.api.Task
+import org.gradle.api.tasks.Copy
+import org.gradle.api.tasks.Exec
+import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
+import org.jetbrains.kotlin.gradle.plugin.mpp.NativeOutputKind
+import org.jetbrains.kotlin.gradle.plugin.mpp.apple.XCFramework
+import org.jetbrains.kotlin.gradle.tasks.KotlinNativeLink
 
 fun Project.configureNativeIos(projectType: ProjectType) {
     configureNativeIosTvos(projectType, "ios")
@@ -34,7 +54,6 @@ fun Project.configureNativeIos(projectType: ProjectType) {
 }
 
 val Project.xcframework by projectExtension() {
-    //XCFramework("${targetName}Universal")
     XCFramework()
 }
 
@@ -61,15 +80,10 @@ fun Project.configureNativeIosTvos(projectType: ProjectType, targetName: String)
 
 	kotlin.apply {
         val xcf = XCFramework("$targetName")
-        //val xcf = project.xcframework
-        //val xcf = XCFramework()
 
         for (target in iosTvosTargets) {
             target.configureKotlinNativeTarget(project)
-            //createCopyToExecutableTarget(target.name)
-			//for (target in listOf(iosX64())) {
 			target.also { target ->
-				//target.attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.native)
 				target.binaries {
                     framework {
                         baseName = "GameMain"
@@ -77,12 +91,6 @@ fun Project.configureNativeIosTvos(projectType: ProjectType, targetName: String)
                     }
                 }
 				target.compilations["main"].also { compilation ->
-					//for (type in listOf(NativeBuildType.DEBUG, NativeBuildType.RELEASE)) {
-					//	//getLinkTask(NativeOutputKind.FRAMEWORK, type).embedBitcode = Framework.BitcodeEmbeddingMode.DISABLE
-					//}
-
-					//compilation.outputKind(NativeOutputKind.FRAMEWORK)
-
 					compilation.defaultSourceSet.kotlin.srcDir(platformNativeFolder)
 
                     if (projectType.isExecutable) {
@@ -121,9 +129,6 @@ fun Project.configureNativeIosTvosRun(targetName: String) {
     val prepareKotlinNativeIosTvosProject = tasks.createThis<Task>("prepareKotlinNative${targetNameCapitalized}Project") {
         dependsOn("prepareKotlinNativeBootstrap${targetNameCapitalized}", prepareKotlinNativeBootstrap, copyIosTvosResources)
         doLast {
-            // project.yml requires these folders to be available, or it will fail
-            //File(rootDir, "src/commonMain/resources").mkdirs()
-
             val folder = File(buildDir, "platforms/$targetName")
             IosProjectTools.prepareKotlinNativeIosProject(folder, targetName)
             IosProjectTools.prepareKotlinNativeIosProjectIcons(folder) { korge.getIconBytes(it) }
@@ -196,8 +201,6 @@ fun Project.configureNativeIosTvosRun(targetName: String) {
         val debugSuffix = if (debug) "Debug" else "Release"
         for (simulator in listOf(false, true)) {
             val simulatorSuffix = if (simulator) "Simulator" else "Device"
-            //val arch = if (simulator) "X64" else "Arm64"
-            //val arch2 = if (simulator) "x64" else "armv8"
             val arch = when {
                 simulator -> if (isArm) "SimulatorArm64" else "X64"
                 else -> "Arm64"
@@ -212,7 +215,6 @@ fun Project.configureNativeIosTvosRun(targetName: String) {
             }
             val sdkName = if (simulator) "iphonesimulator" else "iphoneos"
             tasks.createThis<Exec>("${targetName}Build$simulatorSuffix$debugSuffix") {
-                //task.dependsOn(prepareKotlinNativeIosProject, "linkMain${debugSuffix}FrameworkIos$arch")
                 val linkTaskName = "link${debugSuffix}Framework${targetNameCapitalized}$arch"
                 dependsOn(prepareKotlinNativeIosTvosProject, linkTaskName)
                 val xcodeProjDir = buildDir["platforms/$targetName/app.xcodeproj"]
@@ -221,11 +223,8 @@ fun Project.configureNativeIosTvosRun(targetName: String) {
                     inputs.dir(linkTask.outputFile)
                     outputs.file(xcodeProjDir["build/Build/Products/$debugSuffix-$sdkName/${korge.name}.app/${korge.name}"])
                 }
-                //afterEvaluate {
-                //}
                 workingDir(xcodeProjDir)
                 doFirst {
-                    //commandLine("xcrun", "xcodebuild", "-allowProvisioningUpdates", "-scheme", "app-$archNoSim-$debugSuffix", "-project", ".", "-configuration", debugSuffix, "-derivedDataPath", "build", "-arch", arch2, "-sdk", iosSdkExt.appleFindSdk(sdkName))
                     commandLine("xcrun", "xcodebuild", "-allowProvisioningUpdates", "-scheme", "app-$arch-$debugSuffix", "-project", ".", "-configuration", debugSuffix, "-derivedDataPath", "build", "-arch", arch2, "-sdk", iosSdkExt.appleFindSdk(sdkName))
                     println("COMMAND: ${commandLine.joinToString(" ")}")
                 }
@@ -245,10 +244,6 @@ fun Project.configureNativeIosTvosRun(targetName: String) {
             }
         }
 
-        // packageIosSimulatorDebug
-        // packageIosDeviceDebug
-        // packageIosSimulatorRelease
-        // packageIosDeviceRelease
         for (Kind in listOf("Simulator", "Device")) {
             val packageIos = tasks.createThis<Task>("package${targetNameCapitalized}$Kind$debugSuffix") {
                 group = GROUP_KORGE_PACKAGE
@@ -298,5 +293,4 @@ fun Project.configureNativeIosTvosRun(targetName: String) {
         doLast { execLogger { it.commandLine("osascript", "-e", "tell application \"Simulator\" to quit") } }
         doLast { execLogger { it.commandLine("xcrun", "simctl", "erase", "all") } }
     }
-
 }

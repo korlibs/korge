@@ -1,13 +1,17 @@
 package korlibs.korge.gradle.targets.windows
 
-import korlibs.korge.gradle.targets.*
-import korlibs.korge.gradle.util.*
+import java.io.File
+import java.net.URL
+import korlibs.korge.gradle.targets.WineHQ
+import korlibs.korge.gradle.targets.isWindows
+import korlibs.korge.gradle.util.debugExecSpec
+import korlibs.korge.gradle.util.execThis
 import korlibs.korge.gradle.util.get
-import korlibs.*
-import org.gradle.api.*
-import org.gradle.process.*
-import java.io.*
-import java.net.*
+import korlibs.korge.gradle.util.getFirstRegexOrFail
+import korlibs.korge.gradle.util.getFirstRegexOrNull
+import korlibs.unzipTo
+import org.gradle.api.Project
+import org.gradle.process.ExecSpec
 
 /**
  * @NOTE: We have to call compileKotlinMingw first at least once so the toolchain is downloaded before doing stuff
@@ -35,8 +39,6 @@ object WindowsToolchain {
     }
     val windres by lazy { path["windres.exe"] }
 	val strip by lazy { path["strip.exe"] }
-    //val rcOrNull by lazy { msys2?.get("bin/llvm-rc.exe") }
-    //val rc by lazy { rcOrNull ?: error("Can't find llvm-rc.exe") }
 }
 
 fun Project.compileWindowsRC(rcFile: File, objFile: File, log: Boolean = true): File {
@@ -54,23 +56,13 @@ fun Project.compileWindowsRC(rcFile: File, objFile: File, log: Boolean = true): 
 }
 
 fun Project.compileWindowsRES(rcFile: File, resFile: File, log: Boolean = true): File {
-    /*
     execThis {
-        commandLine(WindowsToolchain.rc.absolutePath, rcFile.path)
-        workingDir(rcFile.parentFile)
-        environment("PATH", System.getenv("PATH") + ";" + listOfNotNull(WindowsToolchain.path.absolutePath, WindowsToolchain.path2?.absolutePath).joinToString(";"))
-    }
-    return File(rcFile.parentFile, "${rcFile.nameWithoutExtension}.res")
-     */
-    execThis {
-    //rh.exe -open .\in\resources.rc -save .\out\resources.res -action compile -log NUL
         workingDir = rcFile.parentFile
         commandLineWindowsExe(
             WindowsToolchain.resourceHackerExe.absolutePath,
             "-open", rcFile.path,
             "-save", resFile.path,
             "-action", "compile",
-            //"-log", "NUL",
         )
     }
     return resFile

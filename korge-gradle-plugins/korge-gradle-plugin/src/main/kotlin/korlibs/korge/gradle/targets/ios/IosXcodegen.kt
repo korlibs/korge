@@ -1,8 +1,11 @@
 package korlibs.korge.gradle.targets.ios
 
-import korlibs.korge.gradle.util.*
-import org.gradle.api.*
-import java.io.*
+import java.io.File
+import korlibs.korge.gradle.util.FileList
+import korlibs.korge.gradle.util.execLogger
+import korlibs.korge.gradle.util.projectExtension
+import korlibs.korge.gradle.util.takeIfExists
+import org.gradle.api.Project
 
 val Project.iosXcodegenExt by projectExtension {
     IosXcodegen(this)
@@ -24,7 +27,6 @@ class IosXcodegen(val project: Project) {
     fun install() {
         if (!File(xcodeGenFolder, ".git").isDirectory) {
             project.execLogger {
-                //it.commandLine("git", "clone", "--depth", "1", "--branch", xcodeGenGitTag, "https://github.com/yonaskolb/XcodeGen.git")
                 it.commandLine("git", "clone", "https://github.com/yonaskolb/XcodeGen.git", xcodeGenFolder)
                 it.workingDir(korlibsFolder)
             }

@@ -1,7 +1,9 @@
 package korlibs.korge.gradle
 
-import korlibs.korge.gradle.util.*
-import kotlin.test.*
+import korlibs.korge.gradle.util.SemVer
+import kotlin.test.Test
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class NativeExtTest {
     @Test

@@ -1,27 +1,34 @@
 package korlibs.korge.gradle
 
+import groovy.text.SimpleTemplateEngine
+import java.io.File
+import java.net.URLClassLoader
+import java.time.Year
+import javax.inject.Inject
+import javax.naming.InvalidNameException
+import korlibs.invoke
+import korlibs.korge.gradle.processor.KorgeResourceProcessor
+import korlibs.korge.gradle.targets.ProjectType
+import korlibs.korge.gradle.targets.android.ANDROID_DEFAULT_COMPILE_SDK
+import korlibs.korge.gradle.targets.android.ANDROID_DEFAULT_MIN_SDK
+import korlibs.korge.gradle.targets.android.ANDROID_DEFAULT_TARGET_SDK
+import korlibs.korge.gradle.targets.android.GRADLE_JAVA_VERSION_STR
+import korlibs.korge.gradle.targets.android.configureAndroidDirect
+import korlibs.korge.gradle.targets.ios.configureNativeIos
+import korlibs.korge.gradle.targets.js.configureJavaScript
+import korlibs.korge.gradle.targets.js.configureWasm
+import korlibs.korge.gradle.targets.jvm.JvmAddOpens
+import korlibs.korge.gradle.targets.jvm.configureJvm
+import korlibs.korge.gradle.targets.supportKotlinNative
+import korlibs.korge.gradle.util.dyn
+import korlibs.korge.gradle.util.takeIfExists
+import korlibs.root.RootKorlibsPlugin
+import org.gradle.api.Project
+import org.gradle.api.artifacts.ExternalModuleDependency
+import org.gradle.api.logging.LogLevel
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeCompilation
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import org.korge.gradle.BuildVersions
-import groovy.text.*
-import korlibs.*
-import korlibs.korge.gradle.processor.*
-import korlibs.korge.gradle.targets.*
-import korlibs.korge.gradle.targets.android.*
-import korlibs.korge.gradle.targets.ios.*
-import korlibs.korge.gradle.targets.js.*
-import korlibs.korge.gradle.targets.jvm.*
-import korlibs.korge.gradle.util.*
-import korlibs.modules.*
-import korlibs.root.*
-import org.gradle.api.*
-import org.gradle.api.artifacts.*
-import org.gradle.api.logging.*
-import org.gradle.internal.impldep.org.yaml.snakeyaml.Yaml
-import org.jetbrains.kotlin.gradle.plugin.mpp.*
-import java.io.*
-import java.net.*
-import java.time.*
-import javax.inject.*
-import javax.naming.*
 
 enum class Orientation(val lc: String) { DEFAULT("default"), LANDSCAPE("landscape"), PORTRAIT("portrait") }
 enum class DisplayCutout(val lc: String) { DEFAULT("default"), SHORT_EDGES("shortEdges"), NEVER("never"), ALWAYS("always") }
@@ -33,11 +40,8 @@ class KorgePluginsContainer(val project: Project, val parentClassLoader: ClassLo
     val files by lazy { project.resolveArtifacts(*plugins.values.map { it.jvmArtifact }.toTypedArray()) }
     val urls by lazy { files.map { it.toURI().toURL() } }
     val classLoader by lazy {
-		//println("KorgePluginsContainer.classLoader: $urls")
 		URLClassLoader(urls.toTypedArray(), parentClassLoader)
 	}
-
-    val pluginExts = KorgePluginExtensions(project)
 
 	fun addPlugin(artifact: MavenLocation): KorgePluginDescriptor {
 		return plugins.getOrPut(artifact) { KorgePluginDescriptor(this, artifact) }
@@ -53,7 +57,6 @@ data class KorgePluginDescriptor(val container: KorgePluginsContainer, val artif
 }
 
 fun String.replaceGroovy(replacements: Map<String, Any?>): String {
-	//println("String.replaceGroovy: this=$this, replacements=$replacements")
 	val templateEngine = SimpleTemplateEngine()
 	val template = templateEngine.createTemplate(this)
 	val replaced = template.make(replacements.toMutableMap())
@@ -84,10 +87,7 @@ data class MavenLocation(val group: String, val name: String, val version: Strin
 }
 
 @Suppress("unused")
-open class KorgeExtension(
-    @Inject val project: Project,
-    //private val objectFactory: ObjectFactory
-) {
+open class KorgeExtension(@Inject val project: Project) {
     private var includeIndirectAndroid: Boolean = false
 	internal fun init(includeIndirectAndroid: Boolean, projectType: ProjectType) {
 	    this.includeIndirectAndroid = includeIndirectAndroid
@@ -216,10 +216,9 @@ open class KorgeExtension(
             }
 
             for (plugin in info["plugins"].list) {
-                val pluginStr = plugin.str
-                when (pluginStr) {
-                    "\$kotlin.serialization" -> serialization()
-                    "\$kotlin.serialization.json" -> serializationJson()
+                when (val pluginStr = plugin.str) {
+                    $$"$kotlin.serialization" -> serialization()
+                    $$"$kotlin.serialization.json" -> serializationJson()
                     else -> project.logger.log(LogLevel.WARN, "Unknown plugin in korge.yaml: '${pluginStr}'")
                 }
             }
@@ -277,23 +276,7 @@ open class KorgeExtension(
     }
 
     /**
-     * Deprecated. Used to create K/N desktop executables.
-     */
-    @Deprecated("")
-    fun targetDesktop() {
-        //println("targetDesktop is deprecated")
-    }
-
-    /**
-     * Deprecated. Used to create K/N desktop executables for other platforms.
-     */
-    @Deprecated("")
-    fun targetDesktopCross() {
-        //println("targetDesktopCross is deprecated")
-    }
-
-    /**
-     * Configures Android indirect. Alias for [targetAndroidIndirect]
+     * Configures Android indirect.
      */
     fun targetAndroid() {
         target("android") {
@@ -316,19 +299,16 @@ open class KorgeExtension(
      * Uses gradle.properties and system environment variables to determine which targets to enable. JVM is always enabled.
      *
      * gradle.properties:
-     * - korge.enable.desktop=true
      * - korge.enable.android=true
      * - korge.enable.ios=true
      * - korge.enable.js=true
      *
      * Environment Variables:
-     * - KORGE_ENABLE_DESKTOP
      * - KORGE_ENABLE_ANDROID
      * - KORGE_ENABLE_ANDROID_IOS
      * - KORGE_ENABLE_ANDROID_JS
      */
     fun targetDefault() {
-        if (newDesktopEnabled) targetDesktop()
         if (newAndroidEnabled) targetAndroid()
         if (newIosEnabled) targetIos()
         if (newJsEnabled) targetJs()
@@ -341,19 +321,22 @@ open class KorgeExtension(
         targetJvm()
         targetJs()
         targetWasmJs()
-        targetDesktop()
         targetAndroid()
         targetIos()
     }
 
-    /** Enables kotlinx.serialization */
+    /**
+     * Enables kotlinx.serialization
+     */
     fun serialization() {
         project.plugins.apply("kotlinx-serialization")
         androidGradlePlugin("kotlinx-serialization")
         androidGradleClasspath("org.jetbrains.kotlin:kotlin-serialization:${BuildVersions.KOTLIN}")
     }
 
-    /** Enables kotlinx.serialization and includes `org.jetbrains.kotlinx:kotlinx-serialization-json` */
+    /**
+     * Enables kotlinx.serialization and includes `org.jetbrains.kotlinx:kotlinx-serialization-json`
+     */
     fun serializationJson() {
         serialization()
         project.dependencies.add("commonMainApi", "org.jetbrains.kotlinx:kotlinx-serialization-json:${BuildVersions.KOTLIN_SERIALIZATION}")
@@ -366,17 +349,11 @@ open class KorgeExtension(
         resourceProcessors += processor
     }
 
-    //val bundles = KorgeBundles(project)
-
-    //@JvmOverloads
-    //fun bundle(uri: String, baseName: String? = null) = bundles.bundle(uri, baseName)
-
     val DEFAULT_JVM_TARGET = GRADLE_JAVA_VERSION_STR
 	var jvmTarget: String = project.findProject("jvm.target")?.toString() ?: DEFAULT_JVM_TARGET
 	var androidLibrary: Boolean = project.findProperty("android.library") == "true"
     var overwriteAndroidFiles: Boolean = project.findProperty("overwrite.android.files") == "false"
     var id: String = "com.unknown.unknownapp"
-        get() = field
         set(value) {
             verifyId(value)
             field = value
@@ -451,10 +428,7 @@ open class KorgeExtension(
 
 	val nativeEnabled = supportKotlinNative
 
-    val newDesktopEnabled get() = project.findProperty("korge.enable.desktop") == "true" || System.getenv("KORGE_ENABLE_DESKTOP") == "true"
     val newAndroidEnabled get() = project.findProperty("korge.enable.android") == "true" || System.getenv("KORGE_ENABLE_ANDROID") == "true"
-    //val newAndroidIndirectEnabled get() = project.findProperty("korge.enable.android.indirect") == "true" || System.getenv("KORGE_ENABLE_ANDROID_INDIRECT") == "true"
-    //val newAndroidDirectEnabled get() = project.findProperty("korge.enable.android.direct") == "true" || System.getenv("KORGE_ENABLE_ANDROID_DIRECT") == "true"
     val newIosEnabled get() = project.findProperty("korge.enable.ios") == "true" || System.getenv("KORGE_ENABLE_IOS") == "true"
     val newJsEnabled get() = project.findProperty("korge.enable.js") == "true" || System.getenv("KORGE_ENABLE_JS") == "true"
 
@@ -475,18 +449,14 @@ open class KorgeExtension(
 	var webBindAddress = project.findProperty("web.bind.address")?.toString() ?: "0.0.0.0"
 	var webBindPort = project.findProperty("web.bind.port")?.toString()?.toIntOrNull() ?: 0
 
-	var appleDevelopmentTeamId: String? = java.lang.System.getenv("DEVELOPMENT_TEAM")
-		?: java.lang.System.getProperty("appleDevelopmentTeamId")?.toString()
+	var appleDevelopmentTeamId: String? = System.getenv("DEVELOPMENT_TEAM")
+		?: System.getProperty("appleDevelopmentTeamId")
 		?: project.findProperty("appleDevelopmentTeamId")?.toString()
 
 	var appleOrganizationName = "User Name Name"
 
 	var entryPoint: String? = null
-    //val jvmMainClassNameProp: Property<String> = objectFactory.property(String::class.java).also { it.set("MainKt") }
 	var jvmMainClassName: String = "MainKt"
-        //get() = jvmMainClassNameProp.get()
-        //set(value) { jvmMainClassNameProp.set(value) }
-	//var proguardObfuscate: Boolean = false
 	var proguardObfuscate: Boolean = true
 
 	val realEntryPoint: String get() = entryPoint ?: (jvmMainClassName.substringBeforeLast('.', "") + ".main").trimStart('.')
@@ -573,7 +543,9 @@ open class KorgeExtension(
 		androidManifestApplicationChunks += text
 	}
 
-    /** For example: androidCustomApplicationAttribute("android:usesCleartextTraffic", "true") */
+    /**
+     * For example: androidCustomApplicationAttribute("android:usesCleartextTraffic", "true")
+     */
     fun androidCustomApplicationAttribute(key: String, value: String) {
         androidCustomApplicationAttributes[key] = value
     }
@@ -602,31 +574,11 @@ open class KorgeExtension(
 		androidPermission("android.permission.VIBRATE")
 	}
 
-    //@Deprecated("")
-    //fun admob(ADMOB_APP_ID: String) {
-    //    bundle("https://github.com/korlibs/korge-bundles.git::korge-admob::4ac7fcee689e1b541849cedd1e017016128624b9##2ca2bf24ab19e4618077f57092abfc8c5c8fba50b2797a9c6d0e139cd24d8b35")
-    //    config("ADMOB_APP_ID", ADMOB_APP_ID)
-    //}
-    //
-    //@Deprecated("")
-    //fun gameServices() {
-    //    bundle("https://github.com/korlibs/korge-bundles.git::korge-services::4ac7fcee689e1b541849cedd1e017016128624b9##392d5ed87428c7137ae40aa7a44f013dd1d759630dca64e151bbc546eb25e28e")
-    //}
-    //
-    //@Deprecated("")
-    //fun billing() {
-    //    bundle("https://github.com/korlibs/korge-bundles.git::korge-billing::4ac7fcee689e1b541849cedd1e017016128624b9##cbde3d386e8d792855b7ef64e5e700f43b7bb367aedc6a27198892e41d50844b")
-    //}
-
     fun author(name: String, email: String, href: String) {
 		authorName = name
 		authorEmail = email
 		authorHref = href
 	}
-
-	/////////////////////////////////////////////////
-	/////////////////////////////////////////////////
-
 
 	fun dependencyProject(name: String) = project {
 		dependencies {
@@ -636,16 +588,13 @@ open class KorgeExtension(
 	}
 
 	val ALL_NATIVE_TARGETS by lazy { listOf("iosArm64", "iosX64", "iosSimulatorArm64") }
-	//val ALL_TARGETS = listOf("android", "js", "jvm", "metadata") + ALL_NATIVE_TARGETS
 	val ALL_TARGETS by lazy { listOf("js", "jvm", "metadata") + ALL_NATIVE_TARGETS }
 
 	@JvmOverloads
 	fun dependencyMulti(group: String, name: String, version: String, targets: List<String> = ALL_TARGETS, suffixCommonRename: Boolean = false, androidIsJvm: Boolean = false): Unit = project {
 		project.dependencies {
-			//println("dependencyMulti --> $group:$name:$version")
             add("commonMainApi", "$group:$name:$version")
 		}
-        Unit
 	}
 
 	@JvmOverloads
@@ -654,20 +603,6 @@ open class KorgeExtension(
 		if (registerPlugin) plugin(location.full)
 		return dependencyMulti(location.group, location.name, location.versionWithClassifier, targets)
 	}
-
-	/*
-	@JvmOverloads
-	fun dependencyNodeModule(name: String, version: String) = project {
-		val node = extensions.getByType(NodeExtension::class.java)
-
-		val installNodeModule = tasks.createThis<NpmTask>("installJs${name.capitalize()}") {
-			onlyIf { !File(node.nodeModulesDir, name).exists() }
-			setArgs(arrayListOf("install", "$name@$version"))
-		}
-
-		tasks.getByName("jsTestNode").dependsOn(installNodeModule)
-	}
-	*/
 
 	data class CInteropTargets(val name: String, val targets: List<String>)
 
@@ -712,13 +647,11 @@ open class KorgeExtension(
         if (!skipDeps && project.allprojects.any { it.path == ":deps" }) {
             project.dependencies {
                 add("commonMainApi", project.project(":deps"))
-                //add("commonMainApi", project(":korge-dragonbones"))
             }
         }
     }
 }
 
-// println(project.resolveArtifacts("korlibs.korge:korge-metadata:1.0.0"))
 fun Project.resolveArtifacts(vararg artifacts: String): Set<File> {
     val config = project.configurations.detachedConfiguration(
         *artifacts.map {

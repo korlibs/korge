@@ -1,7 +1,7 @@
 package korlibs.korge.gradle.targets
 
-import korlibs.korge.gradle.util.*
-import org.gradle.configurationcache.extensions.*
+import korlibs.korge.gradle.util.SystemExecResult
+import korlibs.korge.gradle.util.executeSystemCommand
 
 object WineHQ {
     val EXEC = "wine64"

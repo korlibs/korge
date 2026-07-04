@@ -1,43 +1,44 @@
 package korlibs.korge.gradle
 
-import org.korge.gradle.BuildVersions
-import korlibs.*
-import korlibs.korge.gradle.module.*
-import korlibs.korge.gradle.targets.*
-import korlibs.korge.gradle.targets.all.*
-import korlibs.korge.gradle.targets.jvm.*
+import java.io.File
+import java.net.URI
+import java.net.URL
+import java.net.URLClassLoader
+import java.net.URLEncoder
+import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
+import korlibs.downloadFile
+import korlibs.invoke
+import korlibs.korge.gradle.module.configureIdea
+import korlibs.korge.gradle.targets.ProjectType
+import korlibs.korge.gradle.targets.all.enableFeaturesOnAllTargets
+import korlibs.korge.gradle.targets.isLinux
 import korlibs.korge.gradle.targets.linux.LDLibraries
-import korlibs.korge.gradle.typedresources.*
-import korlibs.korge.gradle.util.*
-import korlibs.modules.*
-import korlibs.root.*
-import org.gradle.api.*
-import org.gradle.api.plugins.*
-import org.gradle.api.tasks.*
-import org.gradle.api.tasks.diagnostics.*
-import org.gradle.internal.classloader.*
-import org.jetbrains.kotlin.gradle.dsl.*
-import java.io.*
-import java.net.*
-import java.util.*
-import java.util.concurrent.*
-import kotlin.concurrent.*
-import org.gradle.work.DisableCachingByDefault
+import korlibs.korge.gradle.typedresources.configureTypedResourcesGenerator
+import korlibs.korge.gradle.util.AnsiEscape
+import korlibs.korge.gradle.util.Json
+import korlibs.korge.gradle.util.applyOnce
+import korlibs.korge.gradle.util.checkGradleVersion
+import korlibs.korge.gradle.util.checkMinimumJavaVersion
+import korlibs.korge.gradle.util.createThis
+import korlibs.korge.gradle.util.dyn
+import korlibs.korge.gradle.util.projectExtension
+import korlibs.modules.configureTests
+import korlibs.root.RootKorlibsPlugin
+import kotlin.concurrent.thread
+import org.gradle.api.Project
+import org.gradle.api.Task
+import org.gradle.api.plugins.ExtraPropertiesExtension
+import org.gradle.api.tasks.diagnostics.DependencyReportTask
+import org.gradle.internal.classloader.ClassLoaderHierarchy
+import org.gradle.internal.classloader.ClassLoaderVisitor
+import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
+import org.korge.gradle.BuildVersions
 
 class KorgeGradleApply(val project: Project, val projectType: ProjectType) {
-	fun apply(includeIndirectAndroid: Boolean = true) = project {
+    fun apply(includeIndirectAndroid: Boolean = true) = project {
         checkMinimumJavaVersion()
-        // @TODO: Doing this disables the ability to use configuration cache
-		//System.setProperty("java.awt.headless", "true")
-
-		val currentGradleVersion = SemVer(project.gradle.gradleVersion)
-        //val expectedGradleVersion = SemVer("6.8.1")
-        val expectedGradleVersion = SemVer("7.5.0")
-		val korgeCheckGradleVersion = (project.ext.properties["korgeCheckGradleVersion"] as? Boolean) ?: true
-
-		if (korgeCheckGradleVersion && currentGradleVersion < expectedGradleVersion) {
-			error("Korge requires at least Gradle $expectedGradleVersion, but running on Gradle $currentGradleVersion. Please, edit gradle/wrapper/gradle-wrapper.properties")
-		}
+        checkGradleVersion()
 
         if (isLinux) {
             project.logger.info("LD folders: ${LDLibraries.ldFolders}")
@@ -53,9 +54,9 @@ class KorgeGradleApply(val project: Project, val projectType: ProjectType) {
         project.korge.init(includeIndirectAndroid, projectType)
 
         project.configureIdea()
-		project.addVersionExtension()
-		project.configureRepositories()
-		project.configureKotlin()
+        project.addVersionExtension()
+        project.configureRepositories()
+        project.configureKotlin()
 
         korge.targetJvm()
 
@@ -68,43 +69,44 @@ class KorgeGradleApply(val project: Project, val projectType: ProjectType) {
         }
 
         project.configureTypedResourcesGenerator()
-	}
+    }
 
-	private fun Project.configureDependencies() {
-		dependencies {
+    private fun Project.configureDependencies() {
+        dependencies {
             add("commonMainApi", "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
             add("commonMainApi", "${RootKorlibsPlugin.KORGE_GROUP}:korge:${korgeVersion}")
-            //add("commonMainApi", "${RootKorlibsPlugin.KORGE_GROUP}:korge-core:${korgeVersion}")
-            //add("commonMainApi", "${RootKorlibsPlugin.KORGE_GROUP}:korge-platform:${korgeVersion}")
-		}
-	}
+        }
+    }
 
-	private fun Project.addVersionExtension() {
-		ext.set("korgeVersion", korgeVersion)
-		ext.set("kotlinVersion", kotlinVersion)
-		ext.set("coroutinesVersion", coroutinesVersion)
-	}
+    @Deprecated("Version extensions will no longer be supported.")
+    private fun Project.addVersionExtension() {
+        ext.set("korgeVersion", korgeVersion)
+        ext.set("kotlinVersion", kotlinVersion)
+        ext.set("coroutinesVersion", coroutinesVersion)
+    }
 
-	private fun Project.configureKotlin() {
-		plugins.applyOnce("kotlin-multiplatform")
+    private fun Project.configureKotlin() {
+        plugins.applyOnce("kotlin-multiplatform")
 
-		project.korge.addDependency("commonMainImplementation", "org.jetbrains.kotlin:kotlin-stdlib-common")
-		project.korge.addDependency("commonTestImplementation", "org.jetbrains.kotlin:kotlin-test")
-
-		//gkotlin.sourceSets.maybeCreate("commonMain").dependencies {
-		//}
-		//kotlin.sourceSets.create("")
-	}
+        project.korge.addDependency(
+            "commonMainImplementation",
+            "org.jetbrains.kotlin:kotlin-stdlib-common"
+        )
+        project.korge.addDependency("commonTestImplementation", "org.jetbrains.kotlin:kotlin-test")
+    }
 }
 
 fun Project.configureBuildScriptClasspathTasks() {
     // https://gist.github.com/xconnecting/4037220
-    val printBuildScriptClasspath = project.tasks.createThis<DependencyReportTask>("printBuildScriptClasspath") {
+    project.tasks.createThis<DependencyReportTask>("printBuildScriptClasspath") {
         configurations = project.buildscript.configurations
     }
-    val printBuildScriptClasspath2 = project.tasks.createThis<Task>("printBuildScriptClasspath2") {
+    project.tasks.createThis<Task>("printBuildScriptClasspath2") {
         doFirst {
-            fun getClassLoaderChain(classLoader: ClassLoader, out: ArrayList<ClassLoader> = arrayListOf()): List<ClassLoader> {
+            fun getClassLoaderChain(
+                classLoader: ClassLoader,
+                out: ArrayList<ClassLoader> = arrayListOf()
+            ): List<ClassLoader> {
                 var current: ClassLoader? = classLoader
                 while (current != null) {
                     out.add(current)
@@ -118,22 +120,11 @@ fun Project.configureBuildScriptClasspathTasks() {
                     is URLClassLoader -> {
                         println(classLoader.urLs.joinToString("\n"))
                     }
+
                     is ClassLoaderHierarchy -> {
                         classLoader.visit(object : ClassLoaderVisitor() {
-                            override fun visit(classLoader: ClassLoader) {
-                                super.visit(classLoader)
-                            }
-
-                            override fun visitSpec(spec: ClassLoaderSpec) {
-                                super.visitSpec(spec)
-                            }
-
                             override fun visitClassPath(classPath: Array<out URL>) {
                                 classPath.forEach { println(it) }
-                            }
-
-                            override fun visitParent(classLoader: ClassLoader) {
-                                super.visitParent(classLoader)
                             }
                         })
                     }
@@ -152,19 +143,18 @@ fun Project.configureBuildScriptClasspathTasks() {
                 println("--------------")
                 printClassLoader(classLoader)
             }
-            //println(ClassLoader.getSystemClassLoader())
-            //println((Thread.currentThread().contextClassLoader as URLClassLoader).parent.urLs.joinToString("\n"))
-            //println((KorgeGradlePlugin::class.java.classLoader as URLClassLoader).urLs.joinToString("\n"))
         }
     }
-
 }
 
 val Project.gkotlin get() = properties["kotlin"] as KotlinMultiplatformExtension
 val Project.ext get() = extensions.getByType(ExtraPropertiesExtension::class.java)
 
 fun Project.korge(callback: KorgeExtension.() -> Unit) = korge.apply(callback).also { it.finish() }
-val Project.kotlin: KotlinMultiplatformExtension get() = this.extensions.getByType(KotlinMultiplatformExtension::class.java)
+val Project.kotlin: KotlinMultiplatformExtension
+    get() = this.extensions.getByType(
+        KotlinMultiplatformExtension::class.java
+    )
 val Project.korge: KorgeExtension get() = extensionGetOrCreate("korge")
 
 inline fun <reified T : Any> Project.extensionGetOrCreate(name: String): T {
@@ -177,31 +167,36 @@ inline fun <reified T : Any> Project.extensionGetOrCreate(name: String): T {
     }
 }
 
-@DisableCachingByDefault
-abstract class JsWebCopy() : Copy() {
-    @OutputDirectory
-    open lateinit var targetDir: File
-}
-
-private val korgeCacheData = ConcurrentHashMap<String, String>()
-val korgeCacheDir: File get() = File(System.getProperty("user.home"), ".korge").apply { if (!this.isDirectory) mkdirs() }
+val korgeCacheDir: File
+    get() = File(
+        System.getProperty("user.home"),
+        ".korge"
+    ).apply { if (!this.isDirectory) mkdirs() }
 
 var Project.korgeCacheData: ConcurrentHashMap<String, String> by projectExtension { ConcurrentHashMap<String, String>() }
-var Project.korgeCacheDir: File by projectExtension { File(System.getProperty("user.home"), ".korge").apply { if (!this.isDirectory) mkdirs() } }
-//val node_modules by lazy { project.file("node_modules") }
-
-val Project.korgeInstallUUID: String get() {
-    return korgeCacheData.getOrPut("korgeInstallUUID") {
-        val uuidFile = File(korgeCacheDir, "install-uuid")
-        if (!uuidFile.exists()) {
-            uuidFile.writeText(UUID.randomUUID().toString().replace('7', '1').replace('3', '9').replace('a', 'f'))
-        }
-        uuidFile.readText()
-    }
+var Project.korgeCacheDir: File by projectExtension {
+    File(
+        System.getProperty("user.home"),
+        ".korge"
+    ).apply { if (!this.isDirectory) mkdirs() }
 }
 
+val Project.korgeInstallUUID: String
+    get() {
+        return korgeCacheData.getOrPut("korgeInstallUUID") {
+            val uuidFile = File(korgeCacheDir, "install-uuid")
+            if (!uuidFile.exists()) {
+                uuidFile.writeText(
+                    UUID.randomUUID().toString().replace('7', '1').replace('3', '9')
+                        .replace('a', 'f')
+                )
+            }
+            uuidFile.readText()
+        }
+    }
+
 fun Project.korgeVersionJson(telemetry: Boolean): String {
-    val DEFAULT_JSON = "{\"version\": \"${BuildVersions.KORGE}\", \"motd\": \"Fallback\"}"
+    val defaultJson = """{"version": "${BuildVersions.KORGE}", "motd": "Fallback"}"""
     return korgeCacheData.getOrPut("korgeVersionJson") {
         val versionJsonFile = File(korgeCacheDir, "version.json")
         if (!versionJsonFile.isFile && System.currentTimeMillis() - versionJsonFile.lastModified() >= 24 * 3600 * 1000L) {
@@ -214,30 +209,37 @@ fun Project.korgeVersionJson(telemetry: Boolean): String {
                 "os.arch" to System.getProperty("os.arch"),
                 "os.version" to System.getProperty("os.version"),
             )
+
             fun Map<String, String>.toQueryString(): String {
                 return this.map {
-                    URLEncoder.encode(it.key, Charsets.UTF_8) + "=" + URLEncoder.encode(it.value, Charsets.UTF_8)
+                    URLEncoder.encode(it.key, Charsets.UTF_8) + "=" + URLEncoder.encode(
+                        it.value,
+                        Charsets.UTF_8
+                    )
                 }.joinToString("&")
             }
             try {
                 downloadFile(
-                    URL(
+                    URI.create(
                         when (telemetry) {
                             true -> "$base&${props.toQueryString()}"
                             else -> base
                         }
-
-                    ),
+                    ).toURL(),
                     versionJsonFile,
                     connectionTimeout = 5_000,
                     readTimeout = 3_000,
                 )
             } catch (e: Throwable) {
                 logger.info(e.stackTraceToString())
-                versionJsonFile.writeText(DEFAULT_JSON)
+                versionJsonFile.writeText(defaultJson)
             }
         }
-        try { versionJsonFile.readText() } catch (e: Throwable) { DEFAULT_JSON }
+        try {
+            versionJsonFile.readText()
+        } catch (_: Throwable) {
+            defaultJson
+        }
     }
 }
 
@@ -248,12 +250,7 @@ fun Project.korgeCheckVersion(report: Boolean = true, telemetry: Boolean = true)
             val latestVersion = versionJson["version"].str
             val motd = versionJson["motd"].str
 
-            //println("versionJson=$versionJson")
-
             if (report && latestVersion != BuildVersions.KORGE) {
-                //val lastReportTimeFile = File(korgeCacheDir, "last-report")
-                //if (!lastReportTimeFile.isFile && System.currentTimeMillis() - lastReportTimeFile.lastModified() >= 24 * 3600 * 1000L) {
-                //    lastReportTimeFile.writeText(System.currentTimeMillis().toString())
                 logger.warn(AnsiEscape {
                     listOf(
                         "You are using KorGE '${BuildVersions.KORGE}', but there is a new version available '$latestVersion' : $motd".yellow.bgGreen,

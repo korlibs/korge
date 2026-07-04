@@ -1,9 +1,12 @@
 package korlibs.korge.gradle.targets.android
 
-import korlibs.korge.gradle.util.*
-import org.gradle.api.*
-import org.jetbrains.kotlin.gradle.dsl.*
-import java.io.*
+import java.io.File
+import korlibs.korge.gradle.util.SpawnExtension
+import korlibs.korge.gradle.util.ensureParents
+import korlibs.korge.gradle.util.spawnExt
+import org.gradle.api.JavaVersion
+import org.gradle.api.Project
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 interface AndroidSdkProvider {
     val projectDir: File
@@ -36,7 +39,6 @@ fun AndroidSdkProvider.execAndroidAdb(vararg args: String) {
 
 fun AndroidSdkProvider.androidAdbDeviceList(): List<String> {
     return execOutput(androidAdbPath, "devices", "-l").trim().split("\n").map { it.trim() }.drop(1)
-
 }
 
 fun AndroidSdkProvider.androidEmulatorListAvds(): List<String> {
@@ -81,43 +83,6 @@ fun AndroidSdkProvider.androidEmulatorStart() {
         Thread.sleep(1000L)
     }
 }
-
-/*
-fun Project.androidGetResourcesFolders(): Pair<List<File>, List<File>> {
-    val targets = listOf(kotlin.metadata())
-    val mainSourceSets = targets.flatMap { it.compilations["main"].allKotlinSourceSets }
-
-    val resourcesSrcDirsBase = mainSourceSets.flatMap { it.resources.srcDirs } + listOf(file("src/androidMain/resources"))//, file("src/main/resources"))
-    //val resourcesSrcDirsBundle = project.korge.bundles.getPaths("android", resources = true, test = false)
-    //val resourcesSrcDirs = resourcesSrcDirsBase + resourcesSrcDirsBundle
-    val resourcesSrcDirs = resourcesSrcDirsBase
-
-    val kotlinSrcDirsBase = mainSourceSets.flatMap { it.kotlin.srcDirs } + listOf(file("src/androidMain/kotlin"))//, file("src/main/java"))
-    //val kotlinSrcDirsBundle = project.korge.bundles.getPaths("android", resources = false, test = false)
-    //val kotlinSrcDirs = kotlinSrcDirsBase + kotlinSrcDirsBundle
-    val kotlinSrcDirs = kotlinSrcDirsBase
-
-    return Pair(resourcesSrcDirs, kotlinSrcDirs)
-}
-
-fun isKorlibsDependency(cleanFullName: String): Boolean {
-    if (cleanFullName.startsWith("org.jetbrains")) return false
-    if (cleanFullName.startsWith("junit:junit")) return false
-    if (cleanFullName.startsWith("org.hamcrest:hamcrest-core")) return false
-    if (cleanFullName.startsWith("org.jogamp")) return false
-    return true
-}
-*/
-
-//fun writeAndroidManifest(outputFolder: File, korge: KorgeExtension, info: AndroidInfo = AndroidInfo(null)) {
-//    val generated = AndroidGenerated(korge, info)
-//
-//    generated.writeKeystore(outputFolder)
-//    val srcMain = "src/androidMain"
-//    generated.writeAndroidManifest(File(outputFolder, srcMain))
-//    generated.writeResources(File(outputFolder, "$srcMain/res"))
-//    generated.writeMainActivity(File(outputFolder, "$srcMain/kotlin"))
-//}
 
 private var _tryAndroidSdkDirs: List<File>? = null
 // @TODO: Use [AndroidSdk] class

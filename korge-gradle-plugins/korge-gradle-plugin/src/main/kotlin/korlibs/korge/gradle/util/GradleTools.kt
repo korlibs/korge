@@ -1,7 +1,9 @@
 package korlibs.korge.gradle.util
 
-import groovy.lang.*
-import org.gradle.api.*
+import groovy.lang.Closure
+import org.gradle.api.NamedDomainObjectSet
+import org.gradle.api.Project
+import org.gradle.api.Task
 import org.gradle.api.artifacts.dsl.DependencyHandler
 import org.gradle.api.tasks.TaskContainer
 
@@ -14,8 +16,6 @@ open class LambdaClosure<T, TR>(val lambda: (value: T) -> TR) : Closure<T>(Unit)
 
 	override fun getProperty(property: String): Any = "lambda"
 }
-
-//inline class TaskName(val name: String)
 
 inline fun <reified T : Task> TaskContainer.create(name: String, callback: T.() -> Unit = {}) = create(name, T::class.java).apply(callback)
 inline fun <reified T : Task> TaskContainer.createTyped(name: String, callback: T.() -> Unit = {}) = create(name, T::class.java).apply(callback)

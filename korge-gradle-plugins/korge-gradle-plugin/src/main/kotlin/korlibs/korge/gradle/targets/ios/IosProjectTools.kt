@@ -1,8 +1,10 @@
 package korlibs.korge.gradle.targets.ios
 
-import korlibs.korge.gradle.util.*
-import org.gradle.configurationcache.extensions.*
-import java.io.*
+import java.io.File
+import korlibs.korge.gradle.util.Indenter
+import korlibs.korge.gradle.util.ensureParents
+import korlibs.korge.gradle.util.get
+import korlibs.korge.gradle.util.quoted
 
 object IosProjectTools {
     fun genBootstrapKt(entrypoint: String): String = """

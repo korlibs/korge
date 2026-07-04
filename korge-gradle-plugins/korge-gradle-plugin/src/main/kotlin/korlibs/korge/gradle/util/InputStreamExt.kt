@@ -1,6 +1,6 @@
 package korlibs.korge.gradle.util
 
-import java.io.*
+import java.io.InputStream
 
 class ByteArraySlice(val ba: ByteArray, val pos: Int = 0, val size: Int = ba.size - pos) {
     fun sliceRange(range: IntRange): ByteArraySlice {
@@ -95,4 +95,3 @@ fun InputStream.readS32LE(): Int {
 fun InputStream.readU32LE(): Long {
     return readS32LE().toLong() and 0xFFFFFFFFL
 }
-

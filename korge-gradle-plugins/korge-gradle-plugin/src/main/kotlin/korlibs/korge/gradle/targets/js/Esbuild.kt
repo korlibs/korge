@@ -1,13 +1,16 @@
 package korlibs.korge.gradle.targets.js
 
-import korlibs.korge.gradle.*
-import korlibs.korge.gradle.targets.*
-import korlibs.korge.gradle.util.*
-import org.gradle.api.*
-import org.gradle.api.file.*
-import org.gradle.api.tasks.*
-import org.jetbrains.kotlin.gradle.targets.js.ir.*
-import java.io.*
+import java.io.File
+import korlibs.korge.gradle.getKorgeProcessResourcesTaskName
+import korlibs.korge.gradle.korge
+import korlibs.korge.gradle.targets.registerModulesResources
+import korlibs.korge.gradle.util.createThis
+import org.gradle.api.Project
+import org.gradle.api.Task
+import org.gradle.api.file.DuplicatesStrategy
+import org.gradle.api.tasks.Copy
+import org.gradle.api.tasks.Exec
+import org.jetbrains.kotlin.gradle.targets.js.ir.KotlinJsIrLink
 
 fun Project.configureEsbuild() {
     try {
@@ -20,9 +23,9 @@ fun Project.configureEsbuild() {
 fun Project.configureErrorableEsbuild() {
     val userGradleFolder = File(System.getProperty("user.home"), ".gradle")
 
-    val wwwFolder = File(buildDir, "www")
+    val wwwFolder = layout.buildDirectory.dir("www").get()
 
-    val esbuildFolder = File(if (userGradleFolder.isDirectory) userGradleFolder else rootProject.buildDir, "esbuild")
+    val esbuildFolder = File(if (userGradleFolder.isDirectory) userGradleFolder else rootProject.layout.buildDirectory.get().asFile, "esbuild")
     val isWindows = org.apache.tools.ant.taskdefs.condition.Os.isFamily(org.apache.tools.ant.taskdefs.condition.Os.FAMILY_WINDOWS)
     val esbuildCommand = File(esbuildFolder, if (isWindows) "esbuild.cmd" else "bin/esbuild")
     val esbuildCmd = if (isWindows) listOf("cmd.exe", "/c", esbuildCommand) else listOf(esbuildCommand)
@@ -43,7 +46,6 @@ fun Project.configureErrorableEsbuild() {
 
         val esbuildVersion = korge.esbuildVersion
         doFirst {
-            //val nodeDir = env.nodeBinDir
             val nodeDir = env.dir
             val file1: File = File(env.executable)
             val file2: File? = File(nodeDir, "lib/node_modules/npm/bin/npm-cli.js").takeIf { it.exists() }
@@ -65,7 +67,6 @@ fun Project.configureErrorableEsbuild() {
 
         duplicatesStrategy = DuplicatesStrategy.EXCLUDE
         from(project.tasks.getByName("jsProcessResources").outputs.files)
-        //from(kotlin.targets.getByName("js").compilations.main.defaultSourceSet.resources)
         registerModulesResources(project)
         into(wwwFolder)
     }
@@ -105,19 +106,14 @@ fun Project.configureErrorableEsbuild() {
             val jsPath = "$jsBasePath.js" // Normal JS
             val mjsPath = "$jsBasePath.mjs" // ES2015
             val finalJsPath = mjsPath
-            //val finalJsPath = jsPath
 
-            val output = File(wwwFolder, "${project.name}.js")
-            //println("jsPath=$jsPath")
-            //println("jsPath.parentFile=${jsPath.parentFile}")
-            //println("outputs=${compileExecutableKotlinJs.outputs.files.toList()}")
+            val output = wwwFolder.file("${project.name}.js").asFile
             inputs.files(compileExecutableKotlinJs.outputs.files)
             outputs.file(output)
             environment("PATH", ENV_PATH)
             doFirst {
                 commandLine(buildList {
                     addAll(esbuildCmd)
-                    //add("--watch",)
                     add("--bundle")
                     if (!debug) {
                         add("--minify")
@@ -129,7 +125,6 @@ fun Project.configureErrorableEsbuild() {
                     //if (run) add("--servedir=$wwwFolder")
                 })
             }
-
         }
     }
 }

@@ -1,7 +1,7 @@
 package korlibs.korge.gradle.util
 
-import java.io.*
-import java.net.*
+import java.io.File
+import java.net.URL
 
 object KorgeReloadNotifier {
     @JvmStatic

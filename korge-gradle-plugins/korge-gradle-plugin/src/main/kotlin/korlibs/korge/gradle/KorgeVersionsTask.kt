@@ -1,10 +1,11 @@
 package korlibs.korge.gradle
 
-import korlibs.korge.gradle.util.*
-import groovy.lang.*
-import org.gradle.api.*
-import org.gradle.util.*
-import org.jetbrains.kotlin.gradle.plugin.*
+import groovy.lang.GroovySystem
+import korlibs.korge.gradle.util.createThis
+import org.gradle.api.Project
+import org.gradle.api.Task
+import org.gradle.util.GradleVersion
+import org.jetbrains.kotlin.gradle.plugin.getKotlinPluginVersion
 
 object KorgeVersionsTask {
     fun registerShowKorgeVersions(project: Project) {

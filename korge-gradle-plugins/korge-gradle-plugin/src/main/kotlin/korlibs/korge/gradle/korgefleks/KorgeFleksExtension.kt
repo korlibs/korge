@@ -8,7 +8,6 @@ import org.gradle.api.Task
 import java.io.File
 import javax.inject.Inject
 
-
 fun Project.korgeFleks(callback: KorgeFleksExtension.() -> Unit) = korgeFleks.apply(callback)
 val Project.korgeFleks: KorgeFleksExtension get() = extensionGetOrCreate("korgeFleks")
 

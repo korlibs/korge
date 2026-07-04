@@ -1,6 +1,6 @@
 package korlibs.korge.gradle.util
 
-import java.util.*
+import java.util.Scanner
 
 data class SemVer(val version: String) : Comparable<SemVer> {
     override fun compareTo(other: SemVer): Int = Scanner(this.version).use { s1 ->
@@ -21,5 +21,4 @@ data class SemVer(val version: String) : Comparable<SemVer> {
             return if (s2.hasNextInt() && s2.nextInt() != 0) -1 else 0
         }
     }
-
 }

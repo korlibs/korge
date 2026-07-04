@@ -1,11 +1,16 @@
 package korlibs.korge.gradle.targets.ios
 
-import korlibs.korge.gradle.util.*
-import org.gradle.api.*
-import java.io.*
-import java.security.cert.*
-import java.util.*
-import javax.security.auth.x500.*
+import java.io.ByteArrayInputStream
+import java.io.IOException
+import java.security.cert.CertificateFactory
+import java.security.cert.X509Certificate
+import java.util.Base64
+import javax.security.auth.x500.X500Principal
+import korlibs.korge.gradle.util.Json
+import korlibs.korge.gradle.util.dyn
+import korlibs.korge.gradle.util.execOutput
+import korlibs.korge.gradle.util.projectExtension
+import org.gradle.api.Project
 
 val Project.iosSdkExt by projectExtension {
     IosSdk(this)
@@ -67,10 +72,6 @@ class IosSdk(val project: Project) {
         val subjectStr = cert.subjectX500Principal.getName(X500Principal.RFC2253)
         val teamId = Regex("OU=([^,]+)").find(subjectStr)?.groups?.get(1)?.value
 
-        //println("CERT=$cert")
-        //println("subjectStr=$subjectStr")
-        //println("teamId=$teamId")
-
         return teamId
     }
 
@@ -80,38 +81,7 @@ class IosSdk(val project: Project) {
         val oses = devices.keys.map { it.str }
         val iosOses = oses.filter { it.contains(os) }
         return iosOses.map { devices[it].list }.flatten().map {
-            //println(it)
-            IosDevice(it["state"].str == "Booted", it["isAvailable"].bool, it["name"].str, it["udid"].str).also {
-                //println(it)
-            }
+            IosDevice(it["state"].str == "Booted", it["isAvailable"].bool, it["name"].str, it["udid"].str)
         }
     }
-
-    //tasks.createThis<Task>("iosLaunchSimulator") {
-    //	dependsOn("iosInstallSimulator")
-    //	doLast {
-    //		val udid = appleGetDevices().firstOrNull { it.name == "iPhone 7" }?.udid ?: error("Can't find iPhone 7 device")
-    //		execLogger { commandLine("xcrun", "simctl", "launch", "-w", udid, korge.id) }
-    //
-    //	}
-    //}
-
-
-    //task iosLaunchSimulator(type: Exec, dependsOn: [iosInstallSimulator]) {
-    //	workingDir file("client-mpp-ios.xcodeproj")
-    //	executable "sh"
-    //	args "-c", "xcrun simctl launch booted io.ktor.samples.mpp.client-mpp-ios"
-    //}
-
-    // https://www.objc.io/issues/17-security/inside-code-signing/
-    // security find-identity -v -p codesigning
-    // codesign -s 'iPhone Developer: Thomas Kollbach (7TPNXN7G6K)' Example.app
-    // codesign -f -s 'iPhone Developer: Thomas Kollbach (7TPNXN7G6K)' Example.app
-
-    //osascript -e 'tell application "iOS Simulator" to quit'
-    //osascript -e 'tell application "Simulator" to quit'
-    //xcrun simctl erase all
-
-    // xcrun lipo
-
 }

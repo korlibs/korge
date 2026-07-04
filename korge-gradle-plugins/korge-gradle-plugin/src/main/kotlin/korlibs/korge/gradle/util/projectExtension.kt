@@ -1,8 +1,8 @@
 package korlibs.korge.gradle.util
 
-import org.gradle.api.*
+import kotlin.reflect.KProperty
+import org.gradle.api.Project
 import org.gradle.api.plugins.ExtraPropertiesExtension
-import kotlin.reflect.*
 
 private val Project.ext get() = extensions.getByType(ExtraPropertiesExtension::class.java)
 

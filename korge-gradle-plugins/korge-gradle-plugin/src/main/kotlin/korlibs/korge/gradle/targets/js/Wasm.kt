@@ -25,8 +25,6 @@ fun Project.configureWasm(projectType: ProjectType, binaryen: Boolean = false) {
 
         val wasmJsCreateIndex = project.tasks.createThis<WasmJsCreateIndexTask>("wasmJsCreateIndex") {
         }
-        //:compileDevelopmentExecutableKotlinWasmJs
-        //project.tasks.findByName("wasmJsBrowserDevelopmentRun")?.apply {
         project.tasks.findByName("compileDevelopmentExecutableKotlinWasmJs")?.apply {
             dependsOn(wasmJsCreateIndex)
         }
@@ -41,7 +39,7 @@ fun Project.configureWasm(projectType: ProjectType, binaryen: Boolean = false) {
 
 @DisableCachingByDefault
 open class WasmJsCreateIndexTask : DefaultTask() {
-    private val npmDir: File = project.kotlin.wasmJs().compilations["main"]!!.npmProject.dir.get().asFile
+    private val npmDir: File = project.kotlin.wasmJs().compilations["main"].npmProject.dir.get().asFile
 
     @TaskAction
     fun run() {

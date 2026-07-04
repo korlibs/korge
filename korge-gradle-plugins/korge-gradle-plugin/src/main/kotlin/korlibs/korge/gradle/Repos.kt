@@ -1,8 +1,7 @@
 package korlibs.korge.gradle
 
 import org.gradle.api.Project
-import org.gradle.api.artifacts.repositories.*
-import java.net.URI
+import org.gradle.api.artifacts.repositories.ArtifactRepository
 
 fun Project.configureRepositories() {
     fun ArtifactRepository.config() {

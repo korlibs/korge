@@ -7,7 +7,6 @@ import korlibs.korge.gradle.util.fromJson
 import org.junit.Test
 import java.io.File
 
-
 class AssetTileMapLDtkLoaderTest {
 
     @Test
@@ -46,17 +45,12 @@ class AssetTileMapLDtkLoaderTest {
             tileSetList = listOfTileSets
         )
 
-
-
         // Check if tile map object was added to asset info correctly
         // Check if tile sets were exported correctly
-
-
     }
 
     @Test
     fun testLevelMapLDtkLoader() {
-
         // Define tilesets per cluster asset config
         val tileSetsPerClusterMap = mapOf(
             "common" to listOf(
@@ -69,7 +63,5 @@ class AssetTileMapLDtkLoaderTest {
                 "tileset_test_4"
             )
         )
-
     }
-
 }
