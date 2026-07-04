@@ -40,4 +40,4 @@ jobs:
         run: "./gradlew --no-configuration-cache"
       - name: "Publish to Maven Central"
         run: "./gradlew --no-configuration-cache publishToMavenCentral \
-            :korge-gradle-plugins:korge-gradle-plugin:publishToMavenCentral
+            :korge-gradle-plugin:publishToMavenCentral

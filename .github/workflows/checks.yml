@@ -164,7 +164,7 @@ jobs:
         run: |
           ./gradlew \
             publishToMavenLocal \
-            :korge-gradle-plugins:korge-gradle-plugin:publishToMavenLocal
+            :korge-gradle-plugin:publishToMavenLocal
       - name: Run e2e-test
         run: "./gradlew -p e2e/e2e-test build"
         env:
@@ -207,7 +207,7 @@ jobs:
         run: |
           ./gradlew \
             publishToMavenLocal \
-            :korge-gradle-plugins:korge-gradle-plugin:publishToMavenLocal
+            :korge-gradle-plugin:publishToMavenLocal
       - name: Run e2e SwiftUI integration
         run: "./gradlew -p e2e/e2e-test-integration/swiftui/korge-hello-world build"
       - name: Build Korge iOS simulator framework
