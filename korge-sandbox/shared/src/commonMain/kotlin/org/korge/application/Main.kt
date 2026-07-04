@@ -1,3 +1,4 @@
+package org.korge.application
 
 import korlibs.event.*
 import korlibs.graphics.*
@@ -8,6 +9,7 @@ import korlibs.korge.*
 import korlibs.korge.input.*
 import korlibs.korge.time.*
 import korlibs.korge.tween.*
+import korlibs.korge.tween.get
 import korlibs.korge.view.*
 import korlibs.korge.view.align.alignBottomToBottomOf
 import korlibs.korge.view.align.centerXOn

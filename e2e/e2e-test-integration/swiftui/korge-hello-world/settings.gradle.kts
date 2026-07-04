@@ -7,7 +7,3 @@ pluginManagement {
         gradlePluginPortal()
     }
 }
-
-plugins {
-    id("org.korge.engine.settings") version "7.0.0-SNAPSHOT"
-}

@@ -1,32 +1,21 @@
-@file:OptIn(ExperimentalKotlinGradlePluginApi::class)
-
-import korlibs.korge.gradle.targets.jvm.KorgeJavaExec
-import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.android.multiplatform.library)
-    id("org.korge.engine")
 }
 
-description = "Multiplatform Game Engine written in Kotlin"
-group = "org.korge.sandbox"
+description = "Korge Application – shared game code (library)"
+group = "org.korge.application"
 version = rootProject.libs.versions.korge.get()
 
-korge {
-    // Registers a new task runJvm[name] (here "runJvmSandbox")
-    entrypoint(name = "Sandbox", jvmMainClassName =  "JvmMain")
-}
-
 kotlin {
-    jvm {
-        // Configure jvmRun task to use JvmMain as main class
-        mainRun {
-            mainClass.set("JvmMain")
-        }
-    }
+    applyDefaultHierarchyTemplate()
+
+    jvm()
+
     android {
-        namespace = "org.korge.sandbox.shared"
+        namespace = "org.korge.application.shared"
         compileSdk = libs.versions.compileSdk.get().toInt()
         minSdk = libs.versions.minSdk.get().toInt()
 
@@ -35,24 +24,33 @@ kotlin {
         withDeviceTest {}
     }
 
-    sourceSets {
-        commonMain.dependencies {
-            implementation(projects.korge)
+    js {
+        browser {
+            compilerOptions {
+                target.set("es2015")
+            }
         }
     }
-}
+    @OptIn(ExperimentalWasmDsl::class)
+    wasmJs {
+        browser {
+            compilerOptions {
+                target.set("es2015")
+            }
+        }
+    }
 
-tasks.register<KorgeJavaExec>("runJvmAwtSandbox") {
-    group = "run"
-    description = "AWT entrypoint for JVM targets"
-    mainClass.set("AwtSandboxSample")
-    dependsOn("jvmMainClasses")
-}
+    iosArm64()
+    iosSimulatorArm64()
+    iosX64()
 
-tasks.withType<JavaExec> {
-    // Configure required arguments for jvmRun task
-    jvmArgs(
-        "--add-opens=java.desktop/sun.java2d.opengl=ALL-UNNAMED",
-        "--add-exports=java.desktop/com.apple.eawt.event=ALL-UNNAMED",
-    )
+    sourceSets {
+        commonMain.dependencies {
+            api(projects.korge)
+        }
+        commonTest.dependencies {
+            implementation(libs.kotlin.test)
+            implementation(libs.kotlinx.coroutines.test)
+        }
+    }
 }
