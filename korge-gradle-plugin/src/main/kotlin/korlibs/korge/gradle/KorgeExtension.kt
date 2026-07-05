@@ -520,11 +520,6 @@ open class KorgeExtension(@Inject val project: Project) {
     val androidCustomApplicationAttributes = LinkedHashMap<String, String>()
     var androidMsaa: Int? = null
 
-    fun plugin(name: String, args: Map<String, String> = mapOf()) {
-		dependencyMulti(name, registerPlugin = false)
-        plugins.addPlugin(MavenLocation(name)).addArgs(args)
-    }
-
 	internal val defaultPluginsClassLoader by lazy { plugins.classLoader }
 
     var androidReleaseSignStoreFile: String = "build/korge.keystore"
@@ -580,67 +575,22 @@ open class KorgeExtension(@Inject val project: Project) {
 		authorHref = href
 	}
 
-	fun dependencyProject(name: String) = project {
-		dependencies {
-			add("commonMainApi", project(name))
-			add("commonTestImplementation", project(name))
-		}
-	}
-
 	val ALL_NATIVE_TARGETS by lazy { listOf("iosArm64", "iosX64", "iosSimulatorArm64") }
 	val ALL_TARGETS by lazy { listOf("js", "jvm", "metadata") + ALL_NATIVE_TARGETS }
-
-	@JvmOverloads
-	fun dependencyMulti(group: String, name: String, version: String, targets: List<String> = ALL_TARGETS, suffixCommonRename: Boolean = false, androidIsJvm: Boolean = false): Unit = project {
-		project.dependencies {
-            add("commonMainApi", "$group:$name:$version")
-		}
-	}
-
-	@JvmOverloads
-	fun dependencyMulti(dependency: String, targets: List<String> = ALL_TARGETS, registerPlugin: Boolean = true) {
-		val location = MavenLocation(dependency)
-		if (registerPlugin) plugin(location.full)
-		return dependencyMulti(location.group, location.name, location.versionWithClassifier, targets)
-	}
 
 	data class CInteropTargets(val name: String, val targets: List<String>)
 
 	val cinterops = arrayListOf<CInteropTargets>()
-
 
 	fun dependencyCInterops(name: String, targets: List<String>) = project {
 		cinterops += CInteropTargets(name, targets)
 		for (target in targets) {
       val nativeTarget = kotlin.targets.findByName(target) as? KotlinNativeTarget
         ?: error("Target '$target' is not a Kotlin/Native target")
-      val mainCompilation = nativeTarget.compilations.findByName("main") as? KotlinNativeCompilation
+      val mainCompilation = nativeTarget.compilations.findByName("main")
         ?: error("Target '$target' has no 'main' native compilation")
       mainCompilation.cinterops.maybeCreate(name)
 		}
-	}
-
-	@JvmOverloads
-	fun dependencyCInteropsExternal(dependency: String, cinterop: String, targets: List<String> = ALL_NATIVE_TARGETS) {
-		dependencyMulti("$dependency:cinterop-$cinterop@klib", targets)
-	}
-
-	fun addDependency(config: String, notation: String) {
-		val cfg = project.configurations.findByName(config)
-		if (cfg == null) {
-			// @TODO: Turkish hack. This doesn't seems right. Probably someone messed something up.
-			if (config.endsWith("Implementation")) {
-				val config2 = config.removeSuffix("Implementation") + "İmplementation"
-				println("Can't find config: $config . Trying: $config2 (Turkish hack)")
-				return addDependency(config2, notation)
-			}
-
-			for (rcfg in project.configurations) {
-				println("CONFIGURATION: ${rcfg.name}")
-			}
-			error("Can't find configuration '$config'")
-		}
-		project.dependencies.add(config, notation)
 	}
 
     fun finish() {
