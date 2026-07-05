@@ -1,3 +1,15 @@
+[versions]
+korge = "7.0.0-SNAPSHOT"
+korlibs = "7.0.0-SNAPSHOT"
+kotlin = "2.3.21"
+kotlinx-serialization = "1.11.0"
+
 [plugins]
-korge = { id = "org.korge.engine", version = "7.0.0-SNAPSHOT" }
 korge-library = { id = "org.korge.engine.library", version = "7.0.0-SNAPSHOT" }
+kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+
+[libraries]
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
+korlibs-image = { module = "org.korge.korlibs:korlibs-image", version.ref = "korlibs" }
+korge-engine = { module = "org.korge.engine:korge", version.ref = "korge" }
