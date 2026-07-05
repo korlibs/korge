@@ -242,7 +242,6 @@ fun Project.configureTypedResourcesGenerator() {
     val generateTypedResources = tasks.createTyped<GenerateTypedResourcesTask>("generateTypedResources")
     afterEvaluate {
         if (project.korge.autoGenerateTypedResources) {
-            tasks.getByName("idea").dependsOn(generateTypedResources)
             tasks.withType(KorgeGenerateResourcesTask::class.java).forEach {
                 it.finalizedBy(generateTypedResources)
             }
