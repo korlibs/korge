@@ -1,39 +1,84 @@
 package korlibs.root
 
-import korlibs.*
-import korlibs.korge.gradle.*
-import korlibs.korge.gradle.targets.*
-import korlibs.korge.gradle.targets.all.*
-import korlibs.korge.gradle.targets.android.*
-import korlibs.korge.gradle.targets.ios.*
-import korlibs.korge.gradle.targets.js.*
-import korlibs.korge.gradle.targets.jvm.*
-import korlibs.korge.gradle.targets.native.*
-import korlibs.korge.gradle.targets.wasm.*
-import korlibs.korge.gradle.util.*
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.nio.file.Files
+import korlibs.allThis
+import korlibs.currentJavaVersion
+import korlibs.korge.gradle.addGenResourcesTasks
+import korlibs.korge.gradle.configureBuildScriptClasspathTasks
+import korlibs.korge.gradle.configureRepositories
+import korlibs.korge.gradle.targets.CrossExecType
+import korlibs.korge.gradle.targets.ProjectType
+import korlibs.korge.gradle.targets.all.AddFreeCompilerArgs
+import korlibs.korge.gradle.targets.all.rootEnableFeaturesOnAllTargets
+import korlibs.korge.gradle.targets.android.AndroidSdk
+import korlibs.korge.gradle.targets.android.GRADLE_JAVA_VERSION_STR
+import korlibs.korge.gradle.targets.android.configureAndroidDirect
+import korlibs.korge.gradle.targets.createPairSourceSet
+import korlibs.korge.gradle.targets.ios.configureNativeIos
+import korlibs.korge.gradle.targets.isIos
+import korlibs.korge.gradle.targets.isLinux
+import korlibs.korge.gradle.targets.isMacos
+import korlibs.korge.gradle.targets.isTvos
+import korlibs.korge.gradle.targets.isWindows
+import korlibs.korge.gradle.targets.js.configureDenoRun
+import korlibs.korge.gradle.targets.js.configureDenoTest
+import korlibs.korge.gradle.targets.js.configureEsbuild
+import korlibs.korge.gradle.targets.js.configureJSTestsOnce
+import korlibs.korge.gradle.targets.js.configureJavascriptRun
+import korlibs.korge.gradle.targets.js.configureJsTargetOnce
+import korlibs.korge.gradle.targets.js.configureWasm
+import korlibs.korge.gradle.targets.jvm.JvmAddOpens
+import korlibs.korge.gradle.targets.jvm.configureJvmRunJvm
+import korlibs.korge.gradle.targets.native.KotlinNativeCrossTest
+import korlibs.korge.gradle.targets.native.commandLineCross
+import korlibs.korge.gradle.targets.native.configureKotlinNativeTarget
+import korlibs.korge.gradle.targets.supportKotlinNative
+import korlibs.korge.gradle.targets.wasm.configureWasmTarget
+import korlibs.korge.gradle.targets.wasm.isWasmEnabled
+import korlibs.korge.gradle.util.DecoratedHttpServer
+import korlibs.korge.gradle.util.Dyn
+import korlibs.korge.gradle.util.LDLibraries
+import korlibs.korge.gradle.util.LazyExt
+import korlibs.korge.gradle.util.applyOnce
+import korlibs.korge.gradle.util.checkMinimumJavaVersion
 import korlibs.korge.gradle.util.create
+import korlibs.korge.gradle.util.createThis
+import korlibs.korge.gradle.util.dyn
+import korlibs.korge.gradle.util.execThis
+import korlibs.korge.gradle.util.openBrowser
+import korlibs.korge.gradle.util.staticHttpServer
+import korlibs.korge.gradle.util.takeIfExists
 import korlibs.kotlin
-import korlibs.modules.*
-import org.gradle.api.*
-import org.gradle.api.file.*
+import korlibs.modules.configurePublishing
+import korlibs.modules.configureTests
+import korlibs.modules.doEnableKotlinAndroid
+import korlibs.modules.doEnableKotlinMobile
+import korlibs.modules.mobileTargets
+import korlibs.tasks
+import org.gradle.api.Action
+import org.gradle.api.Project
+import org.gradle.api.Task
+import org.gradle.api.file.DuplicatesStrategy
 import org.gradle.api.reporting.ReportingExtension
-import org.gradle.api.tasks.*
-import org.gradle.api.tasks.testing.*
-import org.gradle.jvm.toolchain.JavaLanguageVersion
-import org.gradle.jvm.toolchain.JavaToolchainSpec
+import org.gradle.api.tasks.Copy
+import org.gradle.api.tasks.Exec
+import org.gradle.api.tasks.testing.Test
 import org.gradle.testing.base.plugins.TestingBasePlugin
-import org.jetbrains.dokka.gradle.*
-import org.jetbrains.kotlin.gradle.plugin.mpp.*
+import org.jetbrains.dokka.gradle.AbstractDokkaTask
+import org.jetbrains.dokka.gradle.DokkaExtension
+import org.jetbrains.dokka.gradle.DokkaPlugin
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinJsCompilation
 import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsEnvSpec
 import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsPlugin
-import org.jetbrains.kotlin.gradle.targets.js.npm.*
-import org.jetbrains.kotlin.gradle.targets.js.testing.*
-import org.jetbrains.kotlin.gradle.targets.js.testing.karma.*
-import org.jetbrains.kotlin.gradle.targets.js.testing.mocha.*
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.gradle.tasks.*
-import java.io.*
-import java.nio.file.*
+import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin
+import org.jetbrains.kotlin.gradle.targets.js.npm.npmProject
+import org.jetbrains.kotlin.gradle.targets.js.testing.KotlinJsTest
+import org.jetbrains.kotlin.gradle.targets.js.testing.karma.KotlinKarma
+import org.jetbrains.kotlin.gradle.targets.js.testing.mocha.KotlinMocha
+import org.jetbrains.kotlin.gradle.tasks.KotlinNativeLink
 
 object RootKorlibsPlugin {
     val KORGE_GROUP = "org.korge.engine"
@@ -54,11 +99,9 @@ object RootKorlibsPlugin {
 
     fun Project.init() {
         plugins.apply(DokkaPlugin::class.java)
-        //plugins.apply("js-plain-objects")
 
         allprojects {
             tasks.withType(AbstractDokkaTask::class.java).configureEach {
-                //println("DOKKA=$it")
                 offlineMode.set(true)
             }
         }
@@ -72,7 +115,6 @@ object RootKorlibsPlugin {
         initGroupOverrides()
         initNodeJSFixes()
         initDuplicatesStrategy()
-        initSymlinkTrees()
         initShowSystemInfoWhenLinkingInWindows()
         korlibs.korge.gradle.KorgeVersionsTask.registerShowKorgeVersions(project)
         initInstallAndCheckLinuxLibs()
@@ -116,14 +158,12 @@ object RootKorlibsPlugin {
 
     fun Project.initGroupOverrides() {
         allprojects {
-            val projectName = project.name
-            val firstComponent = projectName.substringBefore('-')
-            group = RootKorlibsPlugin.KORGE_GROUP
+            group = KORGE_GROUP
         }
     }
 
     fun Project.initNodeJSFixes() {
-        plugins.applyOnce<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin>()
+        plugins.applyOnce<NodeJsRootPlugin>()
         rootProject.plugins.withType(NodeJsPlugin::class.java, Action {
             rootProject.extensions.configure(NodeJsEnvSpec::class.java, Action {
                 version.set(project.nodeVersion)
@@ -135,14 +175,9 @@ object RootKorlibsPlugin {
     fun Project.initDuplicatesStrategy() {
         allprojects {
             tasks.withType(Copy::class.java).allThis {
-                //this.duplicatesStrategy = org.gradle.api.file.DuplicatesStrategy.WARN
-                this.duplicatesStrategy = org.gradle.api.file.DuplicatesStrategy.EXCLUDE
-                //println("Task $this")
+                this.duplicatesStrategy = DuplicatesStrategy.EXCLUDE
             }
         }
-    }
-
-    fun Project.initSymlinkTrees() {
     }
 
     fun Project.initShowSystemInfoWhenLinkingInWindows() {
@@ -170,7 +205,6 @@ object RootKorlibsPlugin {
         ) {
             rootProject.execThis { commandLine("sudo", "apt-get", "update") }
             rootProject.execThis { commandLine("sudo", "apt-get", "-y", "install", "freeglut3") }
-            // execThis { commandLine("sudo", "apt-get", "-y", "install", "libgtk-3-dev") }
         }
         if (isLinux) {
             project.logger.info("LD folders: ${LDLibraries.ldFolders}")
@@ -225,9 +259,7 @@ object RootKorlibsPlugin {
 
                 // AppData\Local\Android\Sdk\tools\bin>sdkmanager --licenses
                 plugins.apply("kotlin-multiplatform")
-                //plugins.apply(JsPlainObjectsKotlinGradleSubplugin::class.java)
 
-                //initAndroidProject()
                 if (hasAndroid) {
                     project.configureAndroidDirect(ProjectType.fromExecutable(isSample), isKorge = false)
                 }
@@ -321,15 +353,10 @@ object RootKorlibsPlugin {
                         }
                     }
                     js(org.jetbrains.kotlin.gradle.plugin.KotlinJsCompilerType.IR) {
-                        browser {
-                            compilations.allThis {
-                                //kotlinOptions.sourceMap = true
-                            }
-                        }
+                        browser()
                         configureJsTargetOnce()
                         configureJSTestsOnce()
                     }
-                    //configureJSTests()
 
                     tasks.withType(KotlinJsTest::class.java).configureEach {
                         onTestFrameworkSet {
@@ -354,15 +381,6 @@ object RootKorlibsPlugin {
                         target.configureKotlinNativeTarget(project)
                     }
 
-                    // common
-                    //    js
-                    //    concurrent // non-js
-                    //      jvmAndroid
-                    //         android
-                    //         jvm
-                    //      native
-                    //         kotlin-native
-                    //    nonNative: [js, jvmAndroid]
                     sourceSets.apply {
 
                         val common = createPairSourceSet("common", project = project) { test ->
@@ -395,12 +413,7 @@ object RootKorlibsPlugin {
                             val android = createPairSourceSet("android", jvmAndroid, doTest = false, project = project) { test ->
                                 dependencies {
                                     if (test) {
-                                        //implementation(kotlin("test"))
-                                        //implementation(kotlin("test-junit"))
                                         implementation(kotlin("test-junit"))
-                                    } else {
-                                        //implementation(kotlin("stdlib"))
-                                        //implementation(kotlin("stdlib-jdk8"))
                                     }
                                 }
                             }
@@ -429,9 +442,6 @@ object RootKorlibsPlugin {
                         }
 
                         if (supportKotlinNative) {
-                            //val iosTvosMacos by lazy { createPairSourceSet("iosTvosMacos", darwin) }
-                            //val iosMacos by lazy { createPairSourceSet("iosMacos", iosTvosMacos) }
-
                             val native by lazy { createPairSourceSet("native", concurrent, project = project) }
                             val posix by lazy { createPairSourceSet("posix", native, project = project) }
                             val apple by lazy { createPairSourceSet("apple", posix, project = project) }
@@ -458,8 +468,6 @@ object RootKorlibsPlugin {
                                     val compileTestTask = tasks.findByName("compileTestKotlin${target.capitalize()}") ?: continue
                                     val compileMainTask = tasks.findByName("compileKotlin${target.capitalize()}") ?: continue
 
-                                    //println("$targetTestTask -> $target")
-
                                     tasks {
                                         create<Copy>(taskName) {
                                             for (sourceSet in kotlin.sourceSets) {
@@ -476,7 +484,6 @@ object RootKorlibsPlugin {
                                     )
 
                                     targetTestTask.dependsOn(taskName)
-                                    //println(".target=$target")
                                 }
                             }
                         }
@@ -519,17 +526,6 @@ object RootKorlibsPlugin {
                             }
                         }
                     }
-
-                    //val jsRun = createThis<Task>("jsRun") { dependsOn("jsBrowserDevelopmentRun") } // Already available
-                    //val jvmRun = createThis("jvmRun") {
-                    //    group = "run"
-                    //    dependsOn(runJvm)
-                    //}
-                    //val run by getting(JavaExec::class)
-
-                    //val processResources by getting {
-                    //	dependsOn(processResourcesKorge)
-                    //}
                 }
             }
 
@@ -544,7 +540,6 @@ object RootKorlibsPlugin {
                 }
 
                 tasks.getByName("jsProcessResources").apply {
-                    //println(this.outputs.files.toList())
                     doLast {
                         val targetDir = this.outputs.files.first()
                         val jsMainCompilation: KotlinJsCompilation = kotlin.js(org.jetbrains.kotlin.gradle.plugin.KotlinJsCompilerType.IR).compilations.findByName("main")!!
@@ -556,8 +551,6 @@ object RootKorlibsPlugin {
                                 File(rootProject.rootDir, "_template"),
                                 File(rootProject.rootDir, "buildSrc/src/main/resources"),
                             )
-                        //println("jsFile: $jsFile")
-                        //println("resourcesFolders: $resourcesFolders")
                         fun readTextFile(name: String): String {
                             for (folder in resourcesFolders) {
                                 val file = File(folder, name)?.takeIf { it.exists() } ?: continue
@@ -571,8 +564,6 @@ object RootKorlibsPlugin {
                         val customCss = readTextFile("custom-styles.template.css")
                         val customHtmlHead = readTextFile("custom-html-head.template.html")
                         val customHtmlBody = readTextFile("custom-html-body.template.html")
-
-                        //println(File(targetDir, "index.html"))
 
                         File(targetDir, "index.html").writeText(
                             groovy.text.SimpleTemplateEngine().createTemplate(indexTemplateHtml).make(
@@ -596,9 +587,6 @@ object RootKorlibsPlugin {
         }
     }
 
-    //println("currentJavaVersion=${korlibs.currentJavaVersion()}")
-    ///
-
     fun Project.initShortcuts() {
         rootProject.subprojects {
             afterEvaluate {
@@ -619,7 +607,6 @@ object RootKorlibsPlugin {
                     val publishJsLocal = createThis<Task>("publishJsLocal") {
                         if (findByName(publishKotlinMultiplatformPublicationToMavenLocal) != null) {
                             dependsOn("publishJsPublicationToMavenLocal")
-                            //dependsOn("publishMetadataPublicationToMavenLocal")
                             dependsOn(publishKotlinMultiplatformPublicationToMavenLocal)
                         }
                     }
@@ -649,9 +636,6 @@ object RootKorlibsPlugin {
                         }
                     }
                     val publishMobileLocal = createThis<Task>("publishMobileLocal") {
-                        doFirst {
-                            //if (currentJavaVersion != 8) error("To use publishMobileRepo, must be used Java8, but used Java$currentJavaVersion")
-                        }
                         run {
                             val taskName = "publishJvmPublicationToMavenLocal"
                             if (findByName(taskName) != null) {
@@ -705,7 +689,6 @@ object RootKorlibsPlugin {
 
     fun Project.initTests() {
         rootProject.subprojects {
-            //tasks.withType(Test::class.java).allThis {
             afterEvaluate {
                 configureTests()
                 project.configureDenoTest()
@@ -722,14 +705,12 @@ object RootKorlibsPlugin {
                             val linkDebugTest = project.tasks.findByName("linkDebugTest${type.nameWithArchCapital}") as? KotlinNativeLink?
                             if (linkDebugTest != null) {
                                 tasks.createThis<KotlinNativeCrossTest>("${type.nameWithArch}Test${type.interpCapital}") {
-                                    val link = linkDebugTest
-                                    val testResultsDir = project.buildDir.resolve(TestingBasePlugin.TEST_RESULTS_DIR_NAME)
+                                    val testResultsDir = project.layout.buildDirectory.dir(TestingBasePlugin.TEST_RESULTS_DIR_NAME).get().asFile
                                     val testReportsDir = project.extensions
                                         .getByType(ReportingExtension::class.java)
                                         .baseDirectory
                                         .get().asFile
                                         .resolve(TestingBasePlugin.TESTS_DIR_NAME)
-                                    //this.configureConventions()
 
                                     val htmlReport = org.gradle.api.internal.plugins.DslObject(reports.html)
                                     val xmlReport = org.gradle.api.internal.plugins.DslObject(reports.junitXml)
@@ -737,12 +718,12 @@ object RootKorlibsPlugin {
                                     htmlReport.conventionMapping.map("destination") { testReportsDir.resolve(name) }
 
                                     this.type = type
-                                    this.executable = link.binary.outputFile
-                                    this.workingDir = link.binary.outputDirectory.absolutePath
+                                    this.executable = linkDebugTest.binary.outputFile
+                                    this.workingDir = linkDebugTest.binary.outputDirectory.absolutePath
                                     this.binaryResultsDirectory.set(testResultsDir.resolve("$name/binary"))
                                     this.environment("WINEDEBUG", "-all")
                                     group = "verification"
-                                    dependsOn(link)
+                                    dependsOn(linkDebugTest)
                                 }
                             }
                         }
@@ -753,10 +734,7 @@ object RootKorlibsPlugin {
     }
 }
 
-//val headlessTests = true
-//val headlessTests = System.getenv("NON_HEADLESS_TESTS") != "true"
 val headlessTests: Boolean get() = System.getenv("CI") == "true" || System.getenv("HEADLESS_TESTS") == "true"
-//val useMimalloc = false
 
 val Project._libs: Dyn get() = rootProject.extensions.getByName("libs").dyn
 val Project.kotlinVersion: String get() = _libs["versions"]["kotlin"].dynamicInvoke("get").casted()
