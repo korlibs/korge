@@ -5,6 +5,7 @@ import java.io.File
 import java.nio.file.Files
 import korlibs.allThis
 import korlibs.currentJavaVersion
+import korlibs.korge.gradle.KORGE_GROUP
 import korlibs.korge.gradle.addGenResourcesTasks
 import korlibs.korge.gradle.configureBuildScriptClasspathTasks
 import korlibs.korge.gradle.configureRepositories
@@ -81,9 +82,6 @@ import org.jetbrains.kotlin.gradle.targets.js.testing.mocha.KotlinMocha
 import org.jetbrains.kotlin.gradle.tasks.KotlinNativeLink
 
 object RootKorlibsPlugin {
-    val KORGE_GROUP = "org.korge.engine"
-    val KORGE_RELOAD_AGENT_GROUP = "org.korge.engine"
-    val KORGE_GRADLE_PLUGIN_GROUP = "org.korge.gradleplugins"
 
     @JvmStatic
     fun doInit(rootProject: Project) = with(rootProject) {

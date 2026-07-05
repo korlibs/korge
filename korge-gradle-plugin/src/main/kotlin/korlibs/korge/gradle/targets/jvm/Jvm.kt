@@ -3,6 +3,7 @@ package korlibs.korge.gradle.targets.jvm
 import java.util.Locale.getDefault
 import korlibs.invoke
 import korlibs.jvm
+import korlibs.korge.gradle.KORGE_RELOAD_AGENT_GROUP
 import korlibs.korge.gradle.KorgeExtension
 import korlibs.korge.gradle.getCompilationKorgeProcessedResourcesFolder
 import korlibs.korge.gradle.gkotlin
@@ -131,7 +132,7 @@ fun Project.configureJvmRunJvm(isRootKorlibs: Boolean) {
 
             add(
                 KORGE_RELOAD_AGENT_CONFIGURATION_NAME,
-                "${RootKorlibsPlugin.KORGE_RELOAD_AGENT_GROUP}:korge-reload-agent:${project.version}"
+                "${KORGE_RELOAD_AGENT_GROUP}:korge-reload-agent:${project.version}"
             )
         }
     }

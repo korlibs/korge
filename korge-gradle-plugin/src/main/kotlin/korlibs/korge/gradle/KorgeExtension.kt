@@ -354,18 +354,18 @@ open class KorgeExtension(@Inject val project: Project) {
 	var supressWarnings: Boolean = false
 
     val versionSubstitutions = LinkedHashMap<String, String>().also {
-        it["${RootKorlibsPlugin.KORGE_GROUP}:korge"] = project.version.toString()
-        it["${RootKorlibsPlugin.KORGE_GROUP}:korge-root"] = project.version.toString()
-        it["${RootKorlibsPlugin.KORGE_GROUP}:korge-core"] = project.version.toString()
-        it["${RootKorlibsPlugin.KORGE_GROUP}:korge-platform"] = project.version.toString()
-        it["${RootKorlibsPlugin.KORGE_RELOAD_AGENT_GROUP}:korge-reload-agent"] = project.version.toString()
-        it["${RootKorlibsPlugin.KORGE_GRADLE_PLUGIN_GROUP}:korge-gradle-plugin"] = project.version.toString()
+        it["${KORGE_GROUP}:korge"] = project.version.toString()
+        it["${KORGE_GROUP}:korge-root"] = project.version.toString()
+        it["${KORGE_GROUP}:korge-core"] = project.version.toString()
+        it["${KORGE_GROUP}:korge-platform"] = project.version.toString()
+        it["${KORGE_RELOAD_AGENT_GROUP}:korge-reload-agent"] = project.version.toString()
+        it["${KORGE_GRADLE_PLUGIN_GROUP}:korge-gradle-plugin"] = project.version.toString()
     }
 
     val artifactSubstitution = LinkedHashMap<String, String>().also {
-        val korgeArtifact = "${RootKorlibsPlugin.KORGE_GROUP}:korge:${project.version}"
-        val korgeFoundationArtifact = "${RootKorlibsPlugin.KORGE_GROUP}:korge-foundation:${project.version}"
-        val korgeCoreArtifact = "${RootKorlibsPlugin.KORGE_GROUP}:korge-core:${project.version}"
+        val korgeArtifact = "${KORGE_GROUP}:korge:${project.version}"
+        val korgeFoundationArtifact = "${KORGE_GROUP}:korge-foundation:${project.version}"
+        val korgeCoreArtifact = "${KORGE_GROUP}:korge-core:${project.version}"
 
         it["com.soywiz.korlibs.korge2:korge"] = korgeArtifact
         it["com.soywiz.korlibs.korgw:korgw"] = korgeArtifact
