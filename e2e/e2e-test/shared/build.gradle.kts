@@ -3,7 +3,7 @@ import korlibs.korge.gradle.korge
 import korlibs.korge.gradle.targets.jvm.KorgeJavaExec
 
 plugins {
-    alias(libs.plugins.korge)
+    alias(libs.plugins.korge.library)
     alias(libs.plugins.kotlin.multiplatform)
 }
 

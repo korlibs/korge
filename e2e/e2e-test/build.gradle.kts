@@ -18,7 +18,7 @@ allprojects {
 }
 
 plugins {
-    alias(libs.plugins.korge) apply false
+    alias(libs.plugins.korge.library) apply false
     alias(libs.plugins.kotlin.multiplatform) apply false
     alias(libs.plugins.android.application) apply false
 }
