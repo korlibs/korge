@@ -30,7 +30,6 @@ import org.gradle.api.tasks.diagnostics.DependencyReportTask
 import org.gradle.internal.classloader.ClassLoaderHierarchy
 import org.gradle.internal.classloader.ClassLoaderVisitor
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
-import org.korge.gradle.BuildVersions
 
 class KorgeGradleApply(val project: Project, val projectType: ProjectType) {
     fun apply(includeIndirectAndroid: Boolean = true) = project {
@@ -165,13 +164,13 @@ val Project.korgeInstallUUID: String
     }
 
 fun Project.korgeVersionJson(telemetry: Boolean): String {
-    val defaultJson = """{"version": "${BuildVersions.KORGE}", "motd": "Fallback"}"""
+    val defaultJson = """{"version": "${project.version}", "motd": "Fallback"}"""
     return korgeCacheData.getOrPut("korgeVersionJson") {
         val versionJsonFile = File(korgeCacheDir, "version.json")
         if (!versionJsonFile.isFile && System.currentTimeMillis() - versionJsonFile.lastModified() >= 24 * 3600 * 1000L) {
             val base = "https://version.korge.org/version.json?source=gradle"
             val props: Map<String, String> = mapOf(
-                "version" to BuildVersions.KORGE,
+                "version" to project.version.toString(),
                 "install.uuid" to korgeInstallUUID,
                 "ci" to (System.getenv("CI") == "true").toString(),
                 "os.name" to System.getProperty("os.name"),
@@ -219,10 +218,10 @@ fun Project.korgeCheckVersion(report: Boolean = true, telemetry: Boolean = true)
             val latestVersion = versionJson["version"].str
             val motd = versionJson["motd"].str
 
-            if (report && latestVersion != BuildVersions.KORGE) {
+            if (report && latestVersion != project.version.toString()) {
                 logger.warn(AnsiEscape {
                     listOf(
-                        "You are using KorGE '${BuildVersions.KORGE}', but there is a new version available '$latestVersion' : $motd".yellow.bgGreen,
+                        "You are using KorGE '${project.version}', but there is a new version available '$latestVersion' : $motd".yellow.bgGreen,
                         "- You can change your KorGE version typically in the file `gradle/libs.versions.toml` or in your `build.gradle.kts`".yellow,
                         "- You can disable this notice by changing `korge { checkVersion(report = false) }` in your `build.gradle.kts`".yellow,
                     ).joinToString("\n")

@@ -26,9 +26,7 @@ import korlibs.root.RootKorlibsPlugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.ExternalModuleDependency
 import org.gradle.api.logging.LogLevel
-import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeCompilation
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
-import org.korge.gradle.BuildVersions
 
 enum class Orientation(val lc: String) { DEFAULT("default"), LANDSCAPE("landscape"), PORTRAIT("portrait") }
 enum class DisplayCutout(val lc: String) { DEFAULT("default"), SHORT_EDGES("shortEdges"), NEVER("never"), ALWAYS("always") }
@@ -356,18 +354,18 @@ open class KorgeExtension(@Inject val project: Project) {
 	var supressWarnings: Boolean = false
 
     val versionSubstitutions = LinkedHashMap<String, String>().also {
-        it["${RootKorlibsPlugin.KORGE_GROUP}:korge"] = BuildVersions.KORGE
-        it["${RootKorlibsPlugin.KORGE_GROUP}:korge-root"] = BuildVersions.KORGE
-        it["${RootKorlibsPlugin.KORGE_GROUP}:korge-core"] = BuildVersions.KORGE
-        it["${RootKorlibsPlugin.KORGE_GROUP}:korge-platform"] = BuildVersions.KORGE
-        it["${RootKorlibsPlugin.KORGE_RELOAD_AGENT_GROUP}:korge-reload-agent"] = BuildVersions.KORGE
-        it["${RootKorlibsPlugin.KORGE_GRADLE_PLUGIN_GROUP}:korge-gradle-plugin"] = BuildVersions.KORGE
+        it["${RootKorlibsPlugin.KORGE_GROUP}:korge"] = project.version.toString()
+        it["${RootKorlibsPlugin.KORGE_GROUP}:korge-root"] = project.version.toString()
+        it["${RootKorlibsPlugin.KORGE_GROUP}:korge-core"] = project.version.toString()
+        it["${RootKorlibsPlugin.KORGE_GROUP}:korge-platform"] = project.version.toString()
+        it["${RootKorlibsPlugin.KORGE_RELOAD_AGENT_GROUP}:korge-reload-agent"] = project.version.toString()
+        it["${RootKorlibsPlugin.KORGE_GRADLE_PLUGIN_GROUP}:korge-gradle-plugin"] = project.version.toString()
     }
 
     val artifactSubstitution = LinkedHashMap<String, String>().also {
-        val korgeArtifact = "${RootKorlibsPlugin.KORGE_GROUP}:korge:${BuildVersions.KORGE}"
-        val korgeFoundationArtifact = "${RootKorlibsPlugin.KORGE_GROUP}:korge-foundation:${BuildVersions.KORGE}"
-        val korgeCoreArtifact = "${RootKorlibsPlugin.KORGE_GROUP}:korge-core:${BuildVersions.KORGE}"
+        val korgeArtifact = "${RootKorlibsPlugin.KORGE_GROUP}:korge:${project.version}"
+        val korgeFoundationArtifact = "${RootKorlibsPlugin.KORGE_GROUP}:korge-foundation:${project.version}"
+        val korgeCoreArtifact = "${RootKorlibsPlugin.KORGE_GROUP}:korge-core:${project.version}"
 
         it["com.soywiz.korlibs.korge2:korge"] = korgeArtifact
         it["com.soywiz.korlibs.korgw:korgw"] = korgeArtifact

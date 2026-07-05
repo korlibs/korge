@@ -1,13 +1,11 @@
 package korlibs.korge.gradle.targets.jvm
 
-import java.io.File
 import java.util.Locale.getDefault
 import korlibs.invoke
 import korlibs.jvm
 import korlibs.korge.gradle.KorgeExtension
 import korlibs.korge.gradle.getCompilationKorgeProcessedResourcesFolder
 import korlibs.korge.gradle.gkotlin
-import korlibs.korge.gradle.jnaVersion
 import korlibs.korge.gradle.korge
 import korlibs.korge.gradle.kotlin
 import korlibs.korge.gradle.targets.GROUP_KORGE_PACKAGE
@@ -33,7 +31,6 @@ import org.gradle.jvm.tasks.Jar
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinJvmCompilation
 import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
-import org.korge.gradle.BuildVersions
 import proguard.gradle.ProGuardTask
 
 const val KORGE_RELOAD_AGENT_CONFIGURATION_NAME = "KorgeReloadAgent"
@@ -134,7 +131,7 @@ fun Project.configureJvmRunJvm(isRootKorlibs: Boolean) {
 
             add(
                 KORGE_RELOAD_AGENT_CONFIGURATION_NAME,
-                "${RootKorlibsPlugin.KORGE_RELOAD_AGENT_GROUP}:korge-reload-agent:${BuildVersions.KORGE}"
+                "${RootKorlibsPlugin.KORGE_RELOAD_AGENT_GROUP}:korge-reload-agent:${project.version}"
             )
         }
     }
