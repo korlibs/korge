@@ -115,7 +115,6 @@ object RootKorlibsPlugin {
         initGroupOverrides()
         initNodeJSFixes()
         initDuplicatesStrategy()
-        initShowSystemInfoWhenLinkingInWindows()
         korlibs.korge.gradle.KorgeVersionsTask.registerShowKorgeVersions(project)
         initInstallAndCheckLinuxLibs()
         // Disabled by default, since it resolves configurations at configuration time
@@ -177,21 +176,6 @@ object RootKorlibsPlugin {
             tasks.withType(Copy::class.java).allThis {
                 this.duplicatesStrategy = DuplicatesStrategy.EXCLUDE
             }
-        }
-    }
-
-    fun Project.initShowSystemInfoWhenLinkingInWindows() {
-        fun Task.configureGCAndSystemInfo() {
-            val task = this
-            task.doFirst {
-                execThis { commandLine("systeminfo") }
-                println("jcmd -l; jcmd 0 GC.heap_info; jcmd 0 GC.run")
-                execThis { commandLine("jcmd", "-l") }
-                execThis { commandLine("jcmd", "0", "GC.heap_info") }
-                repeat(5) { execThis { commandLine("jcmd", "0", "GC.run") } }
-                execThis { commandLine("systeminfo") }
-            }
-            task.doLast { execThis { commandLine("systeminfo") } }
         }
     }
 
