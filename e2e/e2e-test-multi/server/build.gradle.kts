@@ -1,14 +1,12 @@
 plugins {
+    kotlin("jvm")
     application
 }
 
-apply(plugin = "kotlin")
-
 dependencies {
-    add("implementation", project(":shared"))
-    add("implementation", libs.ktor.server.netty)
-    add("implementation", libs.logback)
-
+    implementation(projects.shared)
+    implementation(libs.ktor.server.netty)
+    implementation(libs.logback)
 }
 
 application {

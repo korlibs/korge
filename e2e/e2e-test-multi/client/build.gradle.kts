@@ -1,14 +1,22 @@
-import korlibs.korge.gradle.*
+plugins {
+    alias(libs.plugins.kotlin.multiplatform)
+    alias(libs.plugins.korge.library)
+    alias(libs.plugins.kotlin.serialization)
+}
 
-apply<korlibs.korge.gradle.KorgeGradlePlugin>()
+kotlin {
+    sourceSets {
+        commonMain.dependencies {
+            implementation(projects.shared)
+            implementation(libs.korge.engine)
+            implementation(libs.kotlinx.serialization.json)
+            implementation(libs.korlibs.image)
+        }
+    }
+}
 
 korge {
     id = "com.sample.clientserver"
     targetJvm()
-    serializationJson()
     //targetJs()
-}
-
-dependencies {
-    add("commonMainImplementation", project(":shared"))
 }

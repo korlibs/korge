@@ -8,6 +8,8 @@ pluginManagement {
     }
 }
 
+enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
+
 include(":shared")
 include(":client")
 include(":server")
