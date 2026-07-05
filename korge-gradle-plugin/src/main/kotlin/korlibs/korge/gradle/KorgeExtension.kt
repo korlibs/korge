@@ -217,8 +217,6 @@ open class KorgeExtension(@Inject val project: Project) {
 
             for (plugin in info["plugins"].list) {
                 when (val pluginStr = plugin.str) {
-                    $$"$kotlin.serialization" -> serialization()
-                    $$"$kotlin.serialization.json" -> serializationJson()
                     else -> project.logger.log(LogLevel.WARN, "Unknown plugin in korge.yaml: '${pluginStr}'")
                 }
             }
@@ -323,24 +321,6 @@ open class KorgeExtension(@Inject val project: Project) {
         targetWasmJs()
         targetAndroid()
         targetIos()
-    }
-
-    /**
-     * Enables kotlinx.serialization
-     */
-    fun serialization() {
-        project.plugins.apply("kotlinx-serialization")
-        androidGradlePlugin("kotlinx-serialization")
-        androidGradleClasspath("org.jetbrains.kotlin:kotlin-serialization:${BuildVersions.KOTLIN}")
-    }
-
-    /**
-     * Enables kotlinx.serialization and includes `org.jetbrains.kotlinx:kotlinx-serialization-json`
-     */
-    fun serializationJson() {
-        serialization()
-        project.dependencies.add("commonMainApi", "org.jetbrains.kotlinx:kotlinx-serialization-json:${BuildVersions.KOTLIN_SERIALIZATION}")
-        androidGradleDependency("org.jetbrains.kotlinx:kotlinx-serialization-json:${BuildVersions.KOTLIN_SERIALIZATION}")
     }
 
     val resourceProcessors = arrayListOf<KorgeResourceProcessor>()
