@@ -1,0 +1,34 @@
+package korlibs.korge.gradle.util
+
+fun String.textCase(): TextCase = TextCase(this)
+
+class TextCase(val words: List<String>) {
+    companion object {
+        operator fun invoke(str: String): TextCase {
+            // @TODO:
+            //   - hello_World
+            //   - SNAKE_CASE
+            //   - TEST-DEMO
+            //   - helloWorld
+            //   - HelloWorld
+            return TextCase(str.replace('_', '-').split(Regex("\\W+")))
+        }
+    }
+
+    fun spaceCase(): String = words.joinToString(" ") { it.lowercase() }
+    fun snakeCase(): String = words.joinToString("_") { it.lowercase() }
+    fun kebabCase(): String = words.joinToString("_") { it.lowercase() }
+    fun screamingSnakeCase(): String = words.joinToString("_") { it.uppercase() }
+    fun pascalCase(): String = words.joinToString("") { it.lowercase().replaceFirstChar { it.uppercaseChar() } }
+    fun camelCase(): String {
+        var first = true
+        return words.joinToString("") {
+            if (first) {
+                first = false
+                it.lowercase()
+            } else {
+                it.lowercase().replaceFirstChar { it.uppercaseChar() }
+            }
+        }
+    }
+}

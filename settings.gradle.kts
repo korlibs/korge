@@ -5,7 +5,7 @@ pluginManagement {
         google()
         gradlePluginPortal()
     }
-    includeBuild("korge-gradle-plugins")
+    includeBuild("korge-gradle-plugin")
 }
 
 dependencyResolutionManagement {
