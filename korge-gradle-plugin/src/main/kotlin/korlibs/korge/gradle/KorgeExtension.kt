@@ -434,7 +434,6 @@ open class KorgeExtension(@Inject val project: Project) {
 
     var searchResourceProcessorsInMainSourceSet: Boolean = false
 
-    var skipDeps: Boolean = false
     var icon: File? = File(project.projectDir, "icon.png")
     var banner: File? = File(project.projectDir, "banner.png")
 
@@ -592,14 +591,6 @@ open class KorgeExtension(@Inject val project: Project) {
       mainCompilation.cinterops.maybeCreate(name)
 		}
 	}
-
-    fun finish() {
-        if (!skipDeps && project.allprojects.any { it.path == ":deps" }) {
-            project.dependencies {
-                add("commonMainApi", project.project(":deps"))
-            }
-        }
-    }
 }
 
 fun Project.resolveArtifacts(vararg artifacts: String): Set<File> {

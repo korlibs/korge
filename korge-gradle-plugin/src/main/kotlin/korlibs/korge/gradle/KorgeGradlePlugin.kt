@@ -119,7 +119,7 @@ fun Project.configureBuildScriptClasspathTasks() {
 val Project.gkotlin get() = properties["kotlin"] as KotlinMultiplatformExtension
 val Project.ext get() = extensions.getByType(ExtraPropertiesExtension::class.java)
 
-fun Project.korge(callback: KorgeExtension.() -> Unit) = korge.apply(callback).also { it.finish() }
+fun Project.korge(callback: KorgeExtension.() -> Unit) = korge.apply(callback)
 val Project.kotlin: KotlinMultiplatformExtension
     get() = this.extensions.getByType(
         KotlinMultiplatformExtension::class.java
