@@ -9,7 +9,6 @@ import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import korlibs.downloadFile
 import korlibs.invoke
-import korlibs.korge.gradle.module.configureIdea
 import korlibs.korge.gradle.targets.ProjectType
 import korlibs.korge.gradle.targets.all.enableFeaturesOnAllTargets
 import korlibs.korge.gradle.targets.isLinux
@@ -53,7 +52,6 @@ class KorgeGradleApply(val project: Project, val projectType: ProjectType) {
 
         project.korge.init(includeIndirectAndroid, projectType)
 
-        project.configureIdea()
         project.addVersionExtension()
         project.configureRepositories()
         project.configureKotlin()

@@ -2,7 +2,6 @@ package korlibs.root
 
 import korlibs.*
 import korlibs.korge.gradle.*
-import korlibs.korge.gradle.module.*
 import korlibs.korge.gradle.targets.*
 import korlibs.korge.gradle.targets.all.*
 import korlibs.korge.gradle.targets.android.*
@@ -70,7 +69,6 @@ object RootKorlibsPlugin {
         initRootKotlinJvmTarget()
         initVersions()
         initAllRepositories()
-        configureIdea()
         initGroupOverrides()
         initNodeJSFixes()
         initDuplicatesStrategy()
