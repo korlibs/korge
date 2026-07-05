@@ -52,13 +52,6 @@ fun Project.configureJvm(projectType: ProjectType) {
     val jvmTarget = gkotlin.jvm()
     gkotlin.targets.add(jvmTarget)
 
-    project.korge.addDependency("jvmMainImplementation", "net.java.dev.jna:jna:$jnaVersion")
-    project.korge.addDependency(
-        "jvmMainImplementation",
-        "net.java.dev.jna:jna-platform:$jnaVersion"
-    )
-    project.korge.addDependency("jvmMainImplementation", "org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-
     gkotlin.jvm {
         testRuns["test"].executionTask.configure {
             useJUnit()

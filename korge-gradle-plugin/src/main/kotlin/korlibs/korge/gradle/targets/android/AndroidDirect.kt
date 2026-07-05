@@ -63,18 +63,6 @@ private fun Project.configureAndroidLibrary(isKorge: Boolean) {
 
     ensureSourceSetsConfigure("common", "android")
 
-    // TODO Let the module itself configure the dependencies and remove this block
-    dependencies {
-        if (SemVer(BuildVersions.KOTLIN) >= SemVer("2.3.20")) {
-            add("androidTestImplementation", "org.jetbrains.kotlin:kotlin-test")
-        }
-        add("androidTestImplementation", "org.jetbrains.kotlin:kotlin-test")
-
-        add("androidTestImplementation", "org.jetbrains.kotlin:kotlin-test")
-        add("androidTestImplementation", "androidx.test:core:1.7.0")
-        add("androidTestImplementation", "androidx.test.ext:junit:1.3.0")
-        add("androidTestImplementation", "androidx.test.espresso:espresso-core:3.7.0")
-    }
     val android = extensions.getByType(KotlinMultiplatformExtension::class.java).targets.findByName("android") as KotlinMultiplatformAndroidLibraryTarget
 
     android.apply {

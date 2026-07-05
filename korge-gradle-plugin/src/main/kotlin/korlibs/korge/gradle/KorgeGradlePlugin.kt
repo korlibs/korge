@@ -16,14 +16,12 @@ import korlibs.korge.gradle.targets.linux.LDLibraries
 import korlibs.korge.gradle.typedresources.configureTypedResourcesGenerator
 import korlibs.korge.gradle.util.AnsiEscape
 import korlibs.korge.gradle.util.Json
-import korlibs.korge.gradle.util.applyOnce
 import korlibs.korge.gradle.util.checkGradleVersion
 import korlibs.korge.gradle.util.checkMinimumJavaVersion
 import korlibs.korge.gradle.util.createThis
 import korlibs.korge.gradle.util.dyn
 import korlibs.korge.gradle.util.projectExtension
 import korlibs.modules.configureTests
-import korlibs.root.RootKorlibsPlugin
 import kotlin.concurrent.thread
 import org.gradle.api.Project
 import org.gradle.api.Task
@@ -52,14 +50,11 @@ class KorgeGradleApply(val project: Project, val projectType: ProjectType) {
 
         project.korge.init(includeIndirectAndroid, projectType)
 
-        project.addVersionExtension()
         project.configureRepositories()
-        project.configureKotlin()
 
         korge.targetJvm()
 
         project.afterEvaluate {
-            project.configureDependencies()
             project.addGenResourcesTasks()
             project.enableFeaturesOnAllTargets()
 
@@ -67,30 +62,6 @@ class KorgeGradleApply(val project: Project, val projectType: ProjectType) {
         }
 
         project.configureTypedResourcesGenerator()
-    }
-
-    private fun Project.configureDependencies() {
-        dependencies {
-            add("commonMainApi", "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
-            add("commonMainApi", "${RootKorlibsPlugin.KORGE_GROUP}:korge:${korgeVersion}")
-        }
-    }
-
-    @Deprecated("Version extensions will no longer be supported.")
-    private fun Project.addVersionExtension() {
-        ext.set("korgeVersion", korgeVersion)
-        ext.set("kotlinVersion", kotlinVersion)
-        ext.set("coroutinesVersion", coroutinesVersion)
-    }
-
-    private fun Project.configureKotlin() {
-        plugins.applyOnce("kotlin-multiplatform")
-
-        project.korge.addDependency(
-            "commonMainImplementation",
-            "org.jetbrains.kotlin:kotlin-stdlib-common"
-        )
-        project.korge.addDependency("commonTestImplementation", "org.jetbrains.kotlin:kotlin-test")
     }
 }
 
