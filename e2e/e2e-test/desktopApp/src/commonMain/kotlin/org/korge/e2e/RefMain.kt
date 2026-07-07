@@ -1,4 +1,4 @@
-package org.korge.e2e
+package org.korge.e2e.jvm
 
 import korlibs.image.bitmap.Bitmap32
 import korlibs.image.color.Colors
@@ -11,6 +11,9 @@ import korlibs.korge.Korge
 import korlibs.korge.time.delayFrame
 import korlibs.korge.view.renderToBitmap
 import korlibs.math.geom.Size2D
+import org.korge.e2e.EmptyE2ETestCase
+import org.korge.e2e.FiltersE2ETestCase
+import org.korge.e2e.IdentityFilterE2ETestCase
 
 suspend fun main() = Korge(windowSize = Size2D(768, 512), backgroundColor = Colors["#2b2b2b"]) {
     val exceptions = arrayListOf<Throwable>()

@@ -9,6 +9,7 @@ korlibs = "7.0.0-SNAPSHOT"
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "android-gradle-plugin" }
+korge-application = { id = "org.korge.engine", version.ref = "korge" }
 korge-library = { id = "org.korge.engine.library", version.ref = "korge" }
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
@@ -21,3 +22,4 @@ korlibs-image = { module = "org.korge.korlibs:korlibs-image", version.ref = "kor
 korlibs-io = { module = "org.korge.korlibs:korlibs-io", version.ref = "korlibs" }
 korlibs-io-vfs = { module = "org.korge.korlibs:korlibs-io-vfs", version.ref = "korlibs" }
 korlibs-time = { module = "org.korge.korlibs:korlibs-time", version.ref = "korlibs" }
+kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
