@@ -39,5 +39,6 @@ jobs:
       - name: "Initialize Gradle"
         run: "./gradlew --no-configuration-cache"
       - name: "Publish to Maven Central"
-        run: "./gradlew --no-configuration-cache publishToMavenCentral \
+        run: |
+          ./gradlew --no-configuration-cache publishToMavenCentral \
             :korge-gradle-plugin:publishToMavenCentral
